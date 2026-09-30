@@ -2419,3 +2419,11 @@ for the exact harness and the schema-path bug this run caught and fixed
 | `docs/evidence/files-app/host/portfolio-light.png` | 20130 | DATA | `373198612a7a7ae65d933697b400d952c5982415e4fce232c827a57bff3cae8f` |
 | `docs/evidence/files-app/host/nautilus-dark.png` | 21129 | DATA | `6219142f5fed441b5021980b3c0f8383228f1417010bf8f9922ea936572a9b68` |
 | `docs/evidence/files-app/host/nautilus-light.png` | 20000 | DATA | `b5c553f6b0d419371460c005b7aaaff96ffce504794591f336e113fb3f688b5e` |
+
+### Fahrenheit weather display evidence
+
+Board-native capture cropped to temperature content; not executable code. Source and crop provenance are in `docs/evidence/fahrenheit-weather/capture.json`.
+
+| File | Bytes | Class | SHA-256 |
+| --- | ---: | --- | --- |
+| `docs/evidence/fahrenheit-weather/weather-fahrenheit.png` | 70227 | DATA | `570d15376898cb6e6af36ff5cb3e54d9f434759ee2fde467efc198810ab40233` |

@@ -3415,12 +3415,12 @@ fn paint_widget_card(cr: &Context, style: &VisualStyle, kind: WidgetKind, rect: 
             }
             draw_weather_glyph(cr, &glyph, x + w - pad - 26.0, y + pad + 22.0, 56.0, style);
             match temp_c {
-                Some(value) => hero_glow(cr, &format!("{value}°"), x + pad, y + h * 0.22, w, h * 0.24, style.text, pango::Weight::Bold, false, FONT_FAMILY),
+                Some(value) => hero_glow(cr, &crate::home_widgets::weather::fahrenheit_label(value), x + pad, y + h * 0.22, w, h * 0.24, style.text, pango::Weight::Bold, false, FONT_FAMILY),
                 None => hero_glow(cr, "--", x + pad, y + h * 0.22, w, h * 0.24, style.text, pango::Weight::Bold, false, FONT_FAMILY),
             }
             match (high_c, low_c) {
                 (Some(high), Some(low)) => {
-                    caption_glow(cr, &format!("H:{high}° L:{low}°"), x + pad, y + h * 0.52, w - pad * 2.0, 13.0, style.text, false);
+                    caption_glow(cr, &format!("H:{} L:{}", crate::home_widgets::weather::fahrenheit_label(high), crate::home_widgets::weather::fahrenheit_label(low)), x + pad, y + h * 0.52, w - pad * 2.0, 13.0, style.text, false);
                 }
                 _ => caption_glow(cr, "No data", x + pad, y + h * 0.52, w - pad * 2.0, 13.0, style.text, false),
             }
@@ -3436,7 +3436,7 @@ fn paint_widget_card(cr: &Context, style: &VisualStyle, kind: WidgetKind, rect: 
                     caption_glow(cr, &entry.label, col_x, strip_y, col_w, 13.0, style.text, true);
                     let entry_glyph = crate::home_widgets::weather::condition_glyph(&entry.condition);
                     draw_weather_glyph(cr, entry_glyph, col_x + col_w / 2.0, strip_y + 38.0, 32.0, style);
-                    centered_glow(cr, &format!("{}°", entry.temp_c), col_x, strip_y + 60.0, col_w, 17.0, style.text);
+                    centered_glow(cr, &crate::home_widgets::weather::fahrenheit_label(entry.temp_c), col_x, strip_y + 60.0, col_w, 17.0, style.text);
                 }
             }
         }

@@ -1,0 +1,13 @@
+$ systemctl is-active shell shell-ui
+active
+active
+$ timedatectl show -p Timezone -p NTPSynchronized
+Timezone=America/Chicago
+NTPSynchronized=yes
+$ readlink -f /run/current-system
+/nix/store/damsvxyr689vrxwr5hkbq7jzv85ff805-nixos-system-nixos-26.11.20260919.20b1ddd
+$ readlink -f /proc/$(systemctl show shell-ui -p MainPID --value)/exe
+/nix/store/4l6zkyfhsl4zpdmf6v7hm6wvsj6hgrbr-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0/bin/k230-shell-rust
+$ systemctl show k230-weather-activate -p Result -p ExecMainStatus
+Result=success
+ExecMainStatus=0

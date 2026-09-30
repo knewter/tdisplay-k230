@@ -302,6 +302,12 @@ pub mod weather {
     /// shows.
     const WTTR_URL: &str = "https://wttr.in/?format=j1";
 
+    /// Home displays Fahrenheit while source and cached snapshots retain Celsius.
+    pub fn fahrenheit_label(celsius: i32) -> String {
+        let fahrenheit = (f64::from(celsius) * 9.0 / 5.0 + 32.0).round();
+        format!("{fahrenheit:.0}°F")
+    }
+
     /// One entry in the widget's short forecast strip: a short clock-style
     /// label (`3pm`) and enough to draw the same condition glyph the
     /// current-conditions card uses ([`condition_glyph`]).

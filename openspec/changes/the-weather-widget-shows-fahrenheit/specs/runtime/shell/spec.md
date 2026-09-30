@@ -2,7 +2,7 @@
 
 ### Requirement: Home weather uses Fahrenheit
 
-<!-- UNVERIFIED: requested display behavior awaits the named physical capture. -->
+*Grounding: `docs/evidence/fahrenheit-weather/README.md`, `activation.log` and the cropped native capture establish physical-board deployment and Fahrenheit rendering. Finger and reboot proof are not claimed.*
 
 The Home weather widget SHALL display current, daily high/low and hourly temperatures in rounded Fahrenheit with an explicit °F label. Fresh and stale Celsius cache snapshots SHALL retain their existing schema and receive the same display conversion.
 
