@@ -24,8 +24,9 @@ Short answers:
 - **There is a third route nobody asked about and it may be the best recovery
   story:** the K230 BootROM's USB boot mode, driven by Canaan's MIT-licensed
   `k230_flash`, writes the SD card over USB *with no working bootloader on the
-  card at all*. BootROM USB recovery is a possible route, but its entry method
-  is unverified for this board revision.
+  card at all*. Canaan documents USB/UART fallback after all boot media fail,
+  but the board-specific entry behavior remains unverified. SW3 is the BOOT0
+  strap, not a dedicated USB-mode button.
 
 ---
 
@@ -344,7 +345,7 @@ the host DFU-writes the card. `KBURN_USB_ISP_SDIO1` is the SD card. All of
 that is readable in
 `buildroot-overlay/boot/uboot/u-boot-2022.10-overlay/board/canaan/common/k230_board_common.c`.
 
-**And this board has the button.** From the schematic:
+**The boot strap buttons are documented in the schematic.** The table is:
 
 ```
 BOOT0 = 0, BOOT1 = 0  SPI Nor
@@ -353,14 +354,16 @@ BOOT0 = 1, BOOT1 = 0  SPI Nand
 BOOT0 = 1, BOOT1 = 1  SD Card
 ```
 
-`SW3` and a user-accessible `BOOT0` control are **not documented** in the
-published T-Display K230 V1.0 schematic. The strap table alone does not show
-how to select another boot mode on the assembled board. Do not assume that
-pressing a board button changes `BOOT0`.
+The K230 sheet pulls both BOOT0 and BOOT1 high by default. On the Peripheral
+sheet, SW3 connects BOOT0 to ground; SW1 is reset and SW2 is INT0. Therefore
+pressing SW3 during power-up changes the selection from SD to eMMC. Leave SW3
+released for a normal SD-card boot. It is not a dedicated USB-mode button.
+See LilyGO's [published V1.0 schematic](https://raw.githubusercontent.com/Xinyuan-LilyGO/T-Display-K230_canmv_rt/main/schematic/T-Display%20K230_V1.0_NEW.pdf).
 
-<!-- UNVERIFIED: BootROM USB-mode entry and fallback after an SD boot failure
-have not been observed on this board. The previous SW3 procedure was
-unsupported by the published schematic and has been removed. -->
+Canaan's [K230 hardware design guide](https://github.com/kendryte/k230_docs/blob/main/en/00_hardware/K230_Hardware_Design_Guide.md)
+says BootROM falls through to USB/UART boot after all four boot media fail.
+That fallback has not yet been observed on this T-Display; SW3's effect is to
+select eMMC, not USB.
 
 ## 6. If the new U-Boot does not boot, how do we recover?
 
@@ -456,29 +459,28 @@ CDC-ACM ports on it) while the board sits at the U-Boot prompt. Expect
 nothing — no gadget is configured. This is the baseline to compare against
 after Route A.
 
-No safe entry sequence can be given from the published schematic. If
-revision-specific documentation identifies the correct BootROM strap, this
-host-side observation can be run during that documented sequence:
+The schematic documents SW3 as BOOT0: pressing it at startup selects eMMC.
+Canaan documents USB/UART fallback after all boot media fail, but that has
+not been observed on this board. With J3 connected to the host during a
+startup that reaches the fallback, watch for:
 
 ```
 watch -n1 'lsusb | grep -i 29f1'
 ```
 
-`29f1:0230` on J3 would be consistent with BootROM USB mode, but the
-published V1.0 schematic does not document a button or other user-accessible
-control for selecting that mode. Do not follow the former SW3/card-removal
-procedure unless hardware documentation for the specific board revision
-identifies the correct strap control. The current board has not enumerated as
-a BootROM USB device.
+`29f1:0230` on J3 would be consistent with BootROM USB mode. Do not treat
+SW3 as a direct USB-mode selector: it pulls BOOT0 low and selects eMMC while
+BOOT1 remains high. The current board has not enumerated as a BootROM USB
+device.
 
 ## 8. Recommendation
 
 1. **Do Route A**, as variant A1 first, stacked on
    `every-blob-is-built-from-source-or-named`. Half a day. Proposed as
    `openspec/changes/the-card-is-flashed-over-usb-from-u-boot/`.
-2. **Resolve Route C's entry method from revision-specific hardware
-   documentation** before attempting USB recovery. The published V1.0
-   schematic does not document the previously claimed SW3 control.
+2. **Test the documented BootROM fallback with J3 attached to the host.**
+   The V1.0 schematic shows SW3 pulling BOOT0 low (eMMC selection); it is not
+   a direct USB-mode button. Normal SD boot uses the default released state.
 3. **Once `ums` works, change what we write.** Writing 2.21 GB per iteration
    is the real cost; a mounted boot partition and a 60 MB copy is the
    order-of-magnitude win, and `ums` is what makes it available.

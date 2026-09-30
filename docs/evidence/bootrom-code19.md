@@ -16,3 +16,24 @@ The capture did not expose the board's TF card as a host block device. A
 separate USB card reader on the host contained a single FAT32 partition named
 `System`; the known K230 image has two Linux-type partitions, so that reader
 card was not treated as the K230 image and was not modified.
+
+## Cold power-cycle and board straps
+
+On 2026-09-29, after J2 was disconnected for ten seconds and reconnected, the
+host recorded the CH342 USB serial adapter being removed and re-enumerated.
+The fresh UART capture then received a clean post-settle line:
+
+```
+boot failed with exit code 19
+```
+
+J3 was not connected during that boot attempt, so BootROM USB enumeration was
+not tested. The exact line remains consistent with Canaan's definition above:
+boot-medium initialization failed before U-Boot stage 1.
+
+LilyGO's published V1.0 schematic (K230 sheet 2; Peripheral sheet 6) shows
+10 kΩ pull-ups on BOOT0 and BOOT1 by default, and SW3 connects BOOT0 to GND.
+Thus the default 1,1 selection is SD; holding SW3 at power-up changes it to
+0,1 (eMMC). For normal SD boot, SW3 must be released. Canaan's hardware guide
+says BootROM falls through to USB/UART after all four boot media fail, but that
+fallback has not yet been observed on this T-Display.
