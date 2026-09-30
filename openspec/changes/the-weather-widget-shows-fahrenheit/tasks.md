@@ -8,4 +8,4 @@
 
 ## 3. Integration
 
-- [ ] 3.1 Run `openspec validate the-weather-widget-shows-fahrenheit --strict`, commit the source/evidence, merge and push master, and inspect the matching Pages deployment.
+- [x] 3.1 Run `openspec validate the-weather-widget-shows-fahrenheit --strict`, commit the source/evidence, merge and push master, and inspect the matching Pages deployment.

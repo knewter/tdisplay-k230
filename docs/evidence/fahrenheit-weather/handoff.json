@@ -1,0 +1,41 @@
+{
+  "recorded_at_utc": "2026-09-30T03:34:51.119339+00:00",
+  "branch": "fix/fahrenheit-weather",
+  "base_revision": "a549bf24cec137361da9ff45b99f0f0fd4e99ded",
+  "implementation_commit": "9ba11f2b9c2d0d959e7f4f1da795f384ef232cac",
+  "inventory_commit": "59d299de48070260f3fab69bd6b8b30c30514ccd",
+  "owned_paths": [
+    "nix/rust-shell-client/src/home_widgets.rs",
+    "nix/rust-shell-client/src/render.rs",
+    "docs/evidence/fahrenheit-weather",
+    "docs/blob-inventory.md (new capture rows only)",
+    "openspec/changes/the-weather-widget-shows-fahrenheit"
+  ],
+  "checks": [
+    "Named Nix system cross-build PASS",
+    "Physical console profile/executable and shell services PASS",
+    "Reviewed native Fahrenheit widget capture PASS",
+    "Strict OpenSpec validation PASS",
+    "python3 tools/blob-scan.py --no-vendor PASS"
+  ],
+  "pages": {
+    "revision": "59d299de48070260f3fab69bd6b8b30c30514ccd",
+    "run": "https://github.com/knewter/tdisplay-k230/actions/runs/36664748274",
+    "result": "success",
+    "published_url": "https://knewter.github.io/tdisplay-k230/work/",
+    "observation": "Fetched dashboard contains exact source revision and Fahrenheit change."
+  },
+  "corrected_failed_run": {
+    "run": "https://github.com/knewter/tdisplay-k230/actions/runs/36664638891",
+    "reason": "Missing machine-readable screenshot inventory entry",
+    "correction": "59d299de adds the row; host scan and successor Pages run pass",
+    "owner": "root"
+  },
+  "installed_system": "/nix/store/damsvxyr689vrxwr5hkbq7jzv85ff805-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "remaining_physical_gate": "none for this bounded temperature-unit change",
+  "reservations": "board and transfer server released",
+  "limits": [
+    "Native screen output is not a photograph or finger/reboot test.",
+    "Metadata-only completion commit will trigger its own Pages rebuild."
+  ]
+}
