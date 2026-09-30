@@ -237,12 +237,12 @@ that milestone 1's methodology extends.
 
 ## 5b. Milestone 2 continuation: isolated mainline DRM display
 
-- [ ] 5b.1 Port the Canaan DRM/DSI/panel sources against the pinned mainline API, then verify the copied driver objects and required DRM/input Kconfig resolution; preserve the exact command and limits in `docs/evidence/mainline-display-api-compile.md` and its log. The first complete kernel attempt found `drm_bridge_connector_init` missing from the link because Canaan Kconfig did not select `DRM_DISPLAY_HELPER`/`DRM_BRIDGE_CONNECTOR`; rerun the object/config check and full derivation after this fix.
-- [ ] 5b.2 Build the complete candidate kernel derivation with `nix build .#kernelMainlineDrm --print-out-paths`.
-- [x] 5b.3a Add a separately named, opt-in mainline DRM display/touch DT source and verify preprocessing, dtc compilation, and round-trip decompilation; record the host-only result and warning in `docs/evidence/mainline-display-dtb.md` and its log.
-- [ ] 5b.3b Build the complete candidate device-tree derivation with `nix build .#deviceTreeMainlineDrm --print-out-paths`.
+- [x] 5b.1 Port the Canaan DRM/DSI/panel sources against the pinned mainline API, then verify the copied driver objects and required DRM/input Kconfig resolution; preserve the exact command and limits in `docs/evidence/mainline-display-api-compile.md` and its log. After the full-build link exposed missing bridge-helper selections, Canaan Kconfig selects `DRM_DISPLAY_HELPER`/`DRM_BRIDGE_CONNECTOR`; the rerun resolved both symbols and compiled the modules. See `docs/evidence/mainline-display-api-compile.log` and `docs/evidence/mainline-display-full-build.log`.
+- [x] 5b.2 Build the complete candidate kernel derivation with `nix build .#kernelMainlineDrm --print-out-paths`; the combined build completed successfully and produced `/nix/store/qa041skh6iy7rmx86c5zfn2xyq036f0g-linux-riscv64-unknown-linux-gnu-7.3.0-rc5` (`docs/evidence/mainline-display-full-build.log`).
+- [x] 5b.3a Add a separately named, opt-in mainline DRM display/touch DT source and verify preprocessing, dtc compilation, and round-trip decompilation; record the host-only result and any compiler warnings in `docs/evidence/mainline-display-dtb.md` and its log.
+- [x] 5b.3b Build the complete candidate device-tree derivation with `nix build .#deviceTreeMainlineDrm --print-out-paths`; the combined build produced `/nix/store/8v2v53z2qpxapsq507nvxsmld4y24d13-k230-tdisplay-mainline-drm.dtb` (`docs/evidence/mainline-display-full-build.log`).
 - [x] 5b.4a Add a separately named boot-files output pairing only the candidate kernel image and DTB; it does not change any normal boot/default output.
-- [ ] 5b.4b Build and inspect that output with `nix build .#kernelMainlineDrmBootFiles --print-out-paths`.
+- [x] 5b.4b Build and inspect that output with `nix build .#kernelMainlineDrmBootFiles --print-out-paths`; `/nix/store/bpbr6vldkm1y48k6wrdh7s6yv5szqa0k-k230-mainline-drm-boot-files` contains only the candidate Image and DTB, byte-identical to the derivation outputs (`docs/evidence/mainline-display-artifact-inspection.log`).
 - [ ] 5b.5 Verify a candidate boot on the physical board using a serial transcript, display photograph, and touch interaction record. No physical result is claimed by host checks.
 - [x] 5b.6 Explicitly scope the display power-domain provider gap: pinned mainline has no `sysctl_power`/`K230_PM_DOMAIN_DISP` provider, so the candidate omits that unsupported phandle and display power behavior remains UNVERIFIED (see `docs/evidence/mainline-display-dtb.md`).
 

@@ -158,10 +158,11 @@ distinct evidence; one class SHALL NOT be described as proof of another.
 RM69A10 panel, and LT9611 code as a separate override of
 `kernelMainline`. `nix/device-tree-mainline-drm.nix` and the separate
 `kernelMainlineDrmBootFiles` output pair the candidate DTB/Image without
-changing default outputs. `docs/evidence/mainline-display-api-compile.md`
-and `docs/evidence/mainline-display-dtb.md` record the prepared-header
-external-module and host DTS checks, their limits, and the absent complete
-Nix builds and hardware results. The DRM driver sources in the pinned
+changing default outputs. `docs/evidence/mainline-display-api-compile.md`,
+`docs/evidence/mainline-display-dtb.md`, and
+`docs/evidence/mainline-display-nix-build.md` record the prepared-header
+external-module, host DTS, and complete Nix kernel/DTB/boot-files checks,
+with their limits and the absent hardware results. The DRM driver sources in the pinned
 upstream source output are absent; this candidate forward-ports them from
 the vendor-derived implementation. Display power-domain wiring is omitted
 because the pinned source has no provider; see the DT evidence.*
@@ -174,7 +175,7 @@ because the pinned source has no provider; see the DT evidence.*
 
 #### Scenario: Someone asks whether the DRM candidate drives the panel
 
-- **WHEN** only external-module compilation or DTB round-trip evidence is
-  available
-- **THEN** the answer describes only those checks and leaves full derivation
-  builds, board probe, panel illumination, and touch behavior unverified
+- **WHEN** the complete derivation builds, prepared-header object check, and
+  DTB round-trip are available, but no physical observation exists
+- **THEN** the answer reports those host results and leaves board probe,
+  display power, panel illumination, and touch behavior unverified

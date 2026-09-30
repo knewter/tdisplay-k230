@@ -238,7 +238,9 @@ prepared-header external-module result is in
 feedback, but the unresolved modpost symbols mean it is not a complete
 in-tree kernel build. The opt-in `deviceTreeMainlineDrm` source and matching
 `kernelMainlineDrmBootFiles` collector now exist. Host cpp/dtc/round-trip
-proof is recorded in `docs/evidence/mainline-display-dtb.md`, but their Nix
-derivation builds remain open. The candidate omits the vendor display power
-domain because the pinned mainline tree has no `sysctl_power` provider.
-Physical probe, panel, and touch behavior remain open tasks.
+proof is recorded in `docs/evidence/mainline-display-dtb.md`. The full kernel,
+DTB, and boot-files derivations now build successfully; their paths and the
+first link failure/correction are recorded in
+`docs/evidence/mainline-display-nix-build.md`. The candidate omits the vendor
+display power domain because the pinned mainline tree has no `sysctl_power`
+provider. Physical probe, panel, and touch behavior remain open tasks.

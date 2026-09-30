@@ -9,9 +9,11 @@ output and round-tripped the resulting DTB. The complete stdout/stderr is in
 `.scratch/mainline-display-dtb-check/` directory.
 
 This proves DTS syntax, includes, phandle resolution, and serialized node
-content for the host compiler invocation. It does not prove the flake
-`deviceTreeMainlineDrm` derivation builds, clock or reset behavior on silicon,
-DT binding correctness at probe time, powered display output, or touch input.
+content for the host compiler invocation. The matching Nix derivation also
+built successfully; its output and the paired boot-files output are recorded
+in `mainline-display-nix-build.md`. Neither host check proves clock or reset
+behavior on silicon, DT binding correctness at probe time, powered display
+output, or touch input.
 The non-MMIO `display-subsystem` sits outside the SoC `simple-bus`, so the
 host compile emits no simple-bus register warning. The source does not claim
 a working panel.
@@ -27,7 +29,7 @@ mainline console DTS and RM69A10 panel DTSI under the checkout's ignored
 `.scratch/`, preprocesses with the kernel's `scripts/dtc/include-prefixes`,
 compiles with `dtc -@`, and decompiles for a round-trip check. It verified the
 resolved Goodix I2C node, display subsystem, VO, DSI, and universal panel
-compatibles. The built blob was 10,553 bytes.
+compatibles. The host-check blob was 10,553 bytes, matching the built Nix derivation DTB.
 
 ## Grounding and known dependency
 

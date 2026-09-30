@@ -216,25 +216,26 @@ support is itself still incomplete upstream).
    `drm_panel_init()` had been replaced by `devm_drm_panel_alloc()`, along
    with Kconfig dependency and removed-symbol adjustments. That trial was
    discarded, then the coordinator authorized a separate opt-in derivation.
-   The resumed source now adapts the panel allocation, fbdev/client setup,
-   atomic helper signatures, and platform remove callbacks. The only
-   recorded compiler result so far is an external-module build against
-   prepared headers; it emitted expected modpost unresolved-symbol warnings
-   and is not a complete kernel build (`docs/evidence/mainline-display-api-compile.md`).
-   A later full kernel attempt reached the vmlinux link and exposed missing
-   `DRM_DISPLAY_HELPER`/`DRM_BRIDGE_CONNECTOR` Kconfig selections; the
-   candidate now selects them and awaits a rerun
-   (`docs/evidence/mainline-display-nix-build.md`).
+   The resumed source adapts the panel allocation, fbdev/client setup,
+   atomic helper signatures, and platform remove callbacks. The prepared-header
+   API check is an external-module build; it emits expected modpost warnings
+   and is not an in-tree link proof
+   (`docs/evidence/mainline-display-api-compile.md`).
+   The first full kernel attempt reached the vmlinux link and exposed missing
+   `DRM_DISPLAY_HELPER`/`DRM_BRIDGE_CONNECTOR` Kconfig selections; after
+   adding them, the corrected object/config check and full Nix derivations
+   succeeded (`docs/evidence/mainline-display-nix-build.md`).
    The separate opt-in DRM display/touch DT source and Image+DTB bundle now
-   exist; the host DTS check is recorded in
-   `docs/evidence/mainline-display-dtb.md`. Their complete Nix builds and
-   physical probe remain open. The candidate omits the vendor display power
+   exist; host DTS, complete kernel/DTB/boot-files builds, and the Kconfig
+   correction are recorded in `docs/evidence/mainline-display-dtb.md` and
+   `docs/evidence/mainline-display-nix-build.md`.
+   Physical probe remains open. The candidate omits the vendor display power
    domain because the pinned mainline tree has no provider for it. The other six
    (audio, power key, thermal, crypto, ADC, PWM) are individually much
    closer in size/shape to RTC (single small self-contained files) and are
    plausible next candidates for the same methodology. Not scheduled
-   further in this pass; revisit with a dedicated session for display, or
-   continue the RTC-style pattern for the smaller remaining drivers.
+   further in this pass; continue the RTC-style pattern for the smaller
+   remaining drivers.
 
 ## Sources
 

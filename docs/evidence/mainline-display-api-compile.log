@@ -11,6 +11,8 @@ CONFIG_DRM=y
 CONFIG_DRM_MIPI_DSI=y
 CONFIG_DRM_CLIENT_SETUP=y
 CONFIG_DRM_FBDEV_EMULATION=y
+CONFIG_DRM_DISPLAY_HELPER=y
+CONFIG_DRM_BRIDGE_CONNECTOR=y
 CONFIG_DRM_CANAAN=y
 CONFIG_DRM_CANAAN_DSI=y
 CONFIG_DRM_LONTIUM_LT9611=y
@@ -30,7 +32,6 @@ canaan_drv.c:44:5: warning: no previous prototype for ‘canaan_drm_gem_dma_mmap
    44 | int canaan_drm_gem_dma_mmap(struct drm_gem_dma_object *dma_obj, struct vm_area_struct *vma)
       |     ^~~~~~~~~~~~~~~~~~~~~~~
 WARNING: modpost: canaan-drm.ko: symbol 'canaan_dsi_driver' undefined!
-WARNING: modpost: canaan_dsi.ko: symbol 'drm_bridge_connector_init' undefined!
 WARNING: modpost: canaan_dsi.ko: symbol 'k230_dsi_config_4lan_phy' undefined!
 Skipping BTF generation for canaan_dsi.ko due to unavailability of vmlinux
 Skipping BTF generation for canaan-drm.ko due to unavailability of vmlinux
@@ -39,9 +40,6 @@ Skipping BTF generation for canaan-drm.ko due to unavailability of vmlinux
 Skipping BTF generation for panel-canaan-universal.ko due to unavailability of vmlinux
 
 == bridge ==
-WARNING: modpost: lontium-lt9611-k230.ko: symbol 'drm_atomic_helper_connector_hdmi_clear_audio_infoframe' undefined!
-WARNING: modpost: lontium-lt9611-k230.ko: symbol 'drm_atomic_helper_connector_hdmi_update_audio_infoframe' undefined!
-WARNING: modpost: lontium-lt9611-k230.ko: symbol 'drm_atomic_helper_connector_hdmi_update_infoframes' undefined!
 Skipping BTF generation for lontium-lt9611-k230.ko due to unavailability of vmlinux
 
 Built external module files:
