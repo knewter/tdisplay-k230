@@ -1,0 +1,19 @@
+{
+  "timestamp": "2026-09-30T15:28:07.154657+00:00",
+  "source_revision": "647c8d3e500d4accc3a87474e8fcab393980a799",
+  "evidence_class": "host-cross-build-and-configuration-check",
+  "build_command": "nix build .#wifi-settings-broker .#handheld-shell-rust .#nixosConfigurations.k230-coherent-shell.config.system.build.toplevel --no-link --print-out-paths --max-jobs 1 --cores 6",
+  "build_result": "success",
+  "outputs": {
+    "wifi_settings_broker": "/nix/store/dhf6jsh8fggp9mkwcbwzgqscldypyq38-k230-wifi-settings-broker",
+    "handheld_shell_rust": "/nix/store/21m31281n2arsysf14dg1gabdnj5ifhi-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0",
+    "system": "/nix/store/idgniizk4dl1z8yas0d5ryby2jjghv9m-nixos-system-nixos-26.11.20260919.20b1ddd"
+  },
+  "configuration_command": "bash tools/test-k230-wifi-persistent-service.sh",
+  "configuration_result": "Persistent Wi-Fi service host checks passed",
+  "limits": [
+    "No board, connection, Forget or reboot test was performed.",
+    "No installation or boot-selection change was made.",
+    "Physical tasks 3.1 and 3.2 remain open."
+  ]
+}
