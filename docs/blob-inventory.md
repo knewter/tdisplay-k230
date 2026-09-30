@@ -651,6 +651,10 @@ Paths are relative to the repository root. `(sdk)` is
 so that building stage 1 from source does not silently drop them from view.
 
 ```
+DATA 0830a5175acc07f25e894a3a461787325056e3fabecc07c76cd9d514a54eb6c5 docs/evidence/the-touchscreen-becomes-an-hdmi-trackpad/gesture-ux/drawer.png
+DATA 682dbe3d1e4008082e9ab3340bf95ea2eebb91693cad1156027eb4f68bd5255e docs/evidence/the-touchscreen-becomes-an-hdmi-trackpad/gesture-ux/home.png
+DATA 6cad046695bacf8c82273f735d8def70ae85b1b861fa98f431a93633fa193ad5 docs/evidence/the-touchscreen-becomes-an-hdmi-trackpad/gesture-ux/overview.png
+DATA 925f658f63ea96fd47bf25d8c851058d363b41cb4d769d91dd45d39cf234df10 docs/evidence/the-touchscreen-becomes-an-hdmi-trackpad/gesture-ux/shade.png
 DATA group:4-files docs/evidence/shell-responsive/board/*.png
 DATA 0fbb9697614b2e271a7982f02c3296fa4febf4333363d8b656e601f2f6f3ca18 docs/evidence/omawrite/board/home.png
 DATA afe1289aee3bde0c258340918783f0d77f1b437f6dd0be135bc722ec5daaf03b docs/evidence/omawrite/board/keyboard.png
