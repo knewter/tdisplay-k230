@@ -62,10 +62,8 @@ impl Relay {
             1 => Some(BTN_TOOL_FINGER),
             2 => Some(BTN_TOOL_DOUBLETAP),
             3 => Some(BTN_TOOL_TRIPLETAP),
-            // Four-plus-finger contact has no dedicated legacy BTN_TOOL_*
-            // bit pair beyond QUADTAP in this codebase's scope; treat it
-            // as a (still-recognizable-by-libinput) triple-tap tool state
-            // rather than dropping the frame.
+            // This relay advertises tool counts up to four; saturate at
+            // QUADTAP for additional contacts rather than dropping them.
             _ => Some(BTN_TOOL_QUADTAP),
         }
     }

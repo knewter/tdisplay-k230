@@ -20,9 +20,9 @@ pub const SYN_REPORT: u16 = 0;
 pub const BTN_LEFT: u16 = 0x110;
 pub const BTN_TOOL_FINGER: u16 = 0x145;
 pub const BTN_TOUCH: u16 = 0x14a;
-pub const BTN_TOOL_DOUBLETAP: u16 = 0x14e;
-pub const BTN_TOOL_TRIPLETAP: u16 = 0x14f;
-pub const BTN_TOOL_QUADTAP: u16 = 0x150;
+pub const BTN_TOOL_DOUBLETAP: u16 = 0x14d;
+pub const BTN_TOOL_TRIPLETAP: u16 = 0x14e;
+pub const BTN_TOOL_QUADTAP: u16 = 0x14f;
 
 pub const ABS_MT_SLOT: u16 = 0x2f;
 pub const ABS_MT_TOUCH_MAJOR: u16 = 0x30;

@@ -1,0 +1,48 @@
+{
+  "evidence_class": "live board serial/configuration observation; physical tap acceptance pending",
+  "captured_utc": "2026-09-30T04:39:38.835097+00:00",
+  "source_artifact": "trackpad-tap-live.private.log (protected capture)",
+  "source_sha256": "8dcf9f3206a154aaea90571a192ff055d2de323f122b9aa116e9f7eefeca6db3",
+  "build_base_revision": "7e6dd079fafb4b89c5f33baf4ec05371ceec0337",
+  "installed_system": "/nix/store/gcm3azrpvcm8vr24wps6wrdiqif6mmbd-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "relay": "/nix/store/j53iiav8xbz0kqrval861z6lky63kbgy-k230-touch-trackpad-riscv64-unknown-linux-gnu-0.1.0",
+  "trial_command": "systemd-run --unit=k230-trackpad-tap-trial --property=RuntimeMaxSec=5m --property=TimeoutStopSec=2s --property=KillMode=control-group /nix/store/j53iiav8xbz0kqrval861z6lky63kbgy-k230-touch-trackpad-riscv64-unknown-linux-gnu-0.1.0/bin/k230-touch-trackpad",
+  "probe_commands": [
+    "readlink -f /run/current-system; readlink -f /nix/var/nix/profiles/system",
+    "systemctl is-active shell shell-ui",
+    "XDG_RUNTIME_DIR=/run/shell SWAYSOCK=/run/shell/sway-ipc.sock swaymsg -r -t get_inputs"
+  ],
+  "virtual_input": {
+    "identifier": "1:1:K230_Virtual_Touchpad_(HDMI_mode)",
+    "name": "K230 Virtual Touchpad (HDMI mode)",
+    "type": "touchpad",
+    "scroll_factor": 1.0,
+    "libinput": {
+      "send_events": "enabled",
+      "tap": "enabled",
+      "tap_button_map": "lrm",
+      "tap_drag": "enabled",
+      "tap_drag_lock": "disabled",
+      "accel_speed": 0.0,
+      "accel_profile": "adaptive",
+      "natural_scroll": "disabled",
+      "left_handed": "disabled",
+      "click_method": "button_areas",
+      "clickfinger_button_map": "lrm",
+      "middle_emulation": "disabled",
+      "scroll_method": "two_finger",
+      "dwt": "enabled",
+      "dwtp": "enabled"
+    },
+    "vendor": 1,
+    "product": 1
+  },
+  "shell_services_active": true,
+  "hdmi_transform": "90",
+  "persistent_relay_service_enabled": false,
+  "limits": [
+    "Sway configuration and virtual classification prove neither physical clicking nor scrolling",
+    "Trial expires after five minutes and releases the glass; persistent integration remains open",
+    "No photograph, video, panel-mode or pinch acceptance in this checkpoint"
+  ]
+}

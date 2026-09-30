@@ -270,3 +270,16 @@ terms, not speculative padding.
   observe that without the board and does not assume otherwise; it is
   named explicitly as an open board-verification question in `tasks.md`
   rather than folded into a confident requirement.
+
+## Board contact checkpoint and tap configuration
+
+The real bounded contact capture contains both one- and two-finger frames.
+It revealed that the original hand bindings emitted `BTN_TOOL_TRIPLETAP`
+for two fingers. The corrected codes now have an independent C/Linux-header
+regression check; relay synthesis and advertised capabilities share those
+bindings. The operator confirmed pointer movement in the live virtual-device
+trial, but tapping did not click. Sway disables tapping by default, so the
+image explicitly enables tapping and two-finger scrolling for
+`1:1:K230_Virtual_Touchpad_(HDMI_mode)`. Direct-touch input keeps its existing
+configuration. See the committed board contact checkpoint for provenance and
+limits; physical click/scroll/pinch and panel restoration are still required.

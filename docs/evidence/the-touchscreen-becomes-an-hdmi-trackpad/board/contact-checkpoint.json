@@ -1,0 +1,60 @@
+{
+  "source_artifact": "trackpad-contacts.private.log (protected host capture; not published)",
+  "source_sha256": "b07bf448052b0b35f566da88d1acb6f22cd2c068513750c322cfedd533af5ed8",
+  "source_mtime_utc": "2026-09-30T04:23:11.200282+00:00",
+  "evidence_class": "physical finger contacts recorded over serial; operator report for cursor movement",
+  "relay_store_path": "/nix/store/v0n70zk76z0p3xky67613769l8pc2lrl-k230-touch-trackpad-riscv64-unknown-linux-gnu-0.1.0",
+  "input_events": 8515,
+  "output_events": 8613,
+  "frames_by_contact_count": {
+    "1": 663,
+    "0": 17,
+    "2": 678
+  },
+  "observed_raw_slots": [
+    0,
+    1
+  ],
+  "output_key_counts": [
+    {
+      "code": 325,
+      "value": 0,
+      "count": 23
+    },
+    {
+      "code": 325,
+      "value": 1,
+      "count": 23
+    },
+    {
+      "code": 330,
+      "value": 0,
+      "count": 34
+    },
+    {
+      "code": 330,
+      "value": 1,
+      "count": 36
+    },
+    {
+      "code": 334,
+      "value": 0,
+      "count": 8
+    },
+    {
+      "code": 334,
+      "value": 1,
+      "count": 9
+    }
+  ],
+  "operator_observation": "i can move the cursor i can't tap",
+  "defects_found": [
+    "Tap disabled in Sway by default",
+    "Two-contact synthesis emitted code 334 (BTN_TOOL_TRIPLETAP) instead of 333 (BTN_TOOL_DOUBLETAP)"
+  ],
+  "limits": [
+    "No tap success, two-finger scroll or pinch confirmed",
+    "Dry-run created no virtual device; cursor observation belongs to subsequent bounded live trial",
+    "No panel-mode proof or permanent-service installation"
+  ]
+}

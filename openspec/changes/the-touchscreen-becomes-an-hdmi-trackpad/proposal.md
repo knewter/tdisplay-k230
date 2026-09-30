@@ -69,19 +69,18 @@ situation (HDMI active), not a new piece of hardware.
   kernel per `nix/kernel.nix`'s existing `evemu`/touch-injection rationale,
   and `TOUCHSCREEN_GOODIX_BERLIN_*` is already on).
 - A new, currently-unwired NixOS module
-  (`nix/touch-trackpad-service.nix`); no change to any file the
-  coordinator's `plugging-in-hdmi-moves-the-display` change is actively
-  editing.
-- Host evidence only in this change: unit tests of the protocol translator
-  and mode detector, ioctl-number/struct-size checks against the kernel
-  UAPI, and one live host `/dev/uinput` device creation showing udev's own
-  `ID_INPUT_TOUCHPAD=1` classification. Whether libinput/Sway actually
-  drive pointer motion and gestures correctly from the real GT9895 through
-  this relay, on the board, with a real HDMI session up, is **not proven
-  by this change** and is left as an explicit open board-verification task
-  — this change cannot itself get board time (no `/dev/ttyACM0` access;
-  the coordinator owns the board and the HDMI prerequisite this depends
-  on is itself still mid-flight).
+  (`nix/touch-trackpad-service.nix`), plus a named virtual-touchpad input
+  stanza in `nix/shell.nix` enabling normal libinput tap and scroll behavior.
+  The coordinator owns that configuration change after the HDMI checkpoint landed.
+- Evidence now includes the host tests/classification plus a bounded real
+  board contact capture and the operator's confirmation of cursor movement.
+  The capture exposed incorrect multi-finger UAPI bindings; these are fixed
+  and independently checked against Linux headers. Tap-to-click is explicitly
+  enabled for the named virtual device in the image's Sway configuration.
+  Physical click/scroll/pinch, persistent service and panel restoration remain
+  open board-verification gates; see `board/contact-checkpoint.json` under
+  this change's evidence directory. The coordinator reserves the board and
+  serial port for those trials.
 - Non-goals: replacing or altering the coordinator's direct `map_to_output`
   touch path (this is a parallel mode, not a replacement); implementing
   the no-reboot HDMI hot-plug automation (`plugging-in-hdmi-moves-the-display`

@@ -2,7 +2,7 @@
 
 ### Requirement: While HDMI is the active output, touch is re-emitted as a virtual touchpad
 
-<!-- UNVERIFIED: host-only evidence so far; see docs/evidence/the-touchscreen-becomes-an-hdmi-trackpad/host-uinput-classification.md and this change's tasks.md group 3 for the board verification this requirement still needs before the marker can be removed. -->
+<!-- UNVERIFIED: physical cursor movement reported, but clicking, scrolling, pinch and panel restoration remain open; see docs/evidence/the-touchscreen-becomes-an-hdmi-trackpad/board/contact-checkpoint.json; see docs/evidence/the-touchscreen-becomes-an-hdmi-trackpad/host-uinput-classification.md and this change's tasks.md group 3 for the board verification this requirement still needs before the marker can be removed. -->
 
 While an HDMI connector is the active display output (per
 `display/hdmi`'s reboot-based device-tree swap in

@@ -800,6 +800,12 @@ let
     input type:touch map_to_output DSI-1
     input type:touch calibration_matrix 1 0 0 0 1 0
 
+    # The HDMI relay is a touchpad: let libinput turn taps into clicks.
+    input "1:1:K230_Virtual_Touchpad_(HDMI_mode)" {
+      tap enabled
+      scroll_method two_finger
+    }
+
     # HDMI boot (k230-tdisplay-hdmi.dtb): the panel is dark and HDMI-A-1 is
     # the only output. Its EDID-preferred mode, rotated per
     # k230.shell.hdmiTransform, on a black background. Touch follows

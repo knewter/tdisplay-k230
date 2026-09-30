@@ -87,19 +87,25 @@
       `nix build .#handheld-touch-trackpad --out-link .build-out/handheld-touch-trackpad --max-jobs 2 --cores 8`
       (new store path in task 2.5).
 
+- [x] 2.8 Correct the independently observed UAPI mismatch: two-, three-
+      and four-finger tool bits are `0x14d`, `0x14e`, `0x14f`. Compare
+      the Rust bindings against a C probe of the host Linux headers:
+      `TMPDIR=$HOME/tmp cargo test` and
+      `TMPDIR=$HOME/tmp cargo clippy --all-targets -- -D warnings`.
+      All 28 existing tests and the new header comparison pass (the
+      integration target also reruns the event-layout test). Configure
+      `tap enabled` and `scroll_method two_finger` for the named virtual
+      touchpad in `nix/shell.nix`. Cross-build with
+      `nix build .#handheld-touch-trackpad .#nixosConfigurations.k230-coherent-shell-hdmi-trial.config.system.build.toplevel --no-link --max-jobs 2 --cores 8`.
+      Corrected relay: `/nix/store/j53iiav8xbz0kqrval861z6lky63kbgy-k230-touch-trackpad-riscv64-unknown-linux-gnu-0.1.0`.
+      Configuration build: `/nix/store/gcm3azrpvcm8vr24wps6wrdiqif6mmbd-nixos-system-nixos-26.11.20260919.20b1ddd`.
+      These host results do not establish physical clicking or gestures.
+
 ## 3. Board verification (remaining contact and virtual-device gates open)
 
-Coordinator checkpoint: `docs/evidence/the-touchscreen-becomes-an-hdmi-trackpad/board/README.md` records a successful 20-second startup-only dry run on the live HDMI board. There were no finger events, so 3.0 remains unchecked and 3.1 has not started. The prototype is already on master through `6534585eb00a`, satisfying 4.2 independently of these gates.
+Coordinator checkpoint: `docs/evidence/the-touchscreen-becomes-an-hdmi-trackpad/board/contact-checkpoint.json` records real one- and two-finger input during the bounded dry run, with clean shutdown and release. A subsequent live trial created a Sway-classified touchpad; the operator confirmed cursor movement but no tap click. That trial exposed incorrect hand-bound multi-finger key codes and default-disabled tapping. The coordinator owns the board and serial lock for the corrected trial. Full click/scroll/pinch and panel-mode proof remain open. The prototype was already merged through `6534585eb00a`, satisfying 4.2 independently.
 
-This change had no `/dev/ttyACM0`/board access (the coordinator owns the
-board) and `plugging-in-hdmi-moves-the-display`'s manual HDMI switch is
-itself not yet proven on hardware — these tasks cannot start before that
-one does. Left open per AGENTS.md ("keep hardware-only tasks open until
-their named physical proof exists"). Task 2.7's fixes are unverified on
-hardware; the sequence below leads with the safest possible re-test rather
-than repeating the exact run that hung the board.
-
-- [ ] 3.0 **Safe re-test first.** Under the reserved board/serial lock, run
+- [x] 3.0 **Safe re-test first.** Under the reserved board/serial lock, run
       the *new* build (task 2.7's store path, not the one from the
       original hang report) with both safety flags and a hard wall-clock
       bound for a process that remains schedulable:
@@ -126,7 +132,7 @@ than repeating the exact run that hung the board.
       report showed and confirm it is gone (pressure axis omitted). Once
       confirmed safe standalone, import `nix/touch-trackpad-service.nix`
       into the booted configuration, set `k230.touchTrackpad.enable = true;`,
-      and flash for the persistent-service form:
+      and install the rebuilt system profile for the persistent-service form:
       `flock -w 120 /tmp/k230-board.lock python3 tools/console.py /dev/ttyACM0 --wait=10 "journalctl -u k230-touch-trackpad -n 20 --no-pager"`.
 - [ ] 3.2 With an HDMI monitor and the panel dark, drag one finger across
       the touchscreen glass and confirm the pointer moves on the monitor;
