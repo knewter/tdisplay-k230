@@ -1,0 +1,45 @@
+{
+  "recorded_at": "2026-09-30T02:24:33.009435+00:00",
+  "evidence_class": "physical-board-system-activation-and-IPC-observation",
+  "source_revision": "5284d758f2c854be2bf03cb0c66943359b7851fc",
+  "build_command": "nix build .#nixosConfigurations.k230-coherent-shell-hdmi-trial.config.system.build.toplevel --no-link --max-jobs 1 --cores 2 --print-out-paths",
+  "installed_system": "/nix/store/f2dfnsqv591fmxmkwbhgdjgdz5jh59h7-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "running_compositor": "/nix/store/fpvmkf27viprfphjnzs5sfwvyzyk3adp-k230-card-shell-hdmi-trial/bin/sway",
+  "running_config": "/nix/store/4d7pam3asmafzjcasn4f8bw31r8yzqkm-k230-sway.conf",
+  "services": {
+    "shell": "active",
+    "shell-ui": "active"
+  },
+  "runtime_service_dropins": [],
+  "observed_automatic_calibration_matrix": [
+    0.0,
+    -1.0,
+    1.0,
+    1.0,
+    0.0,
+    0.0
+  ],
+  "renderer_environment": {
+    "WLR_PIXMAN_QUARTER_TURN": "1",
+    "WLR_PIXMAN_OUTPUT_TURN": "0"
+  },
+  "probe_commands": [
+    "readlink -f /run/current-system",
+    "systemctl is-active shell shell-ui",
+    "SWAYSOCK=/run/shell/sway-ipc.sock swaymsg -r -t get_inputs",
+    "systemctl show shell -p ExecStart -p DropInPaths"
+  ],
+  "prior_operator_observation": {
+    "confirmed": "The earlier quoted live calibration fixed direction on glass.",
+    "subsequent_regression": "The first ordinary-profile activation restored identity calibration and felt slow; both issues led to this corrected explicit trial profile."
+  },
+  "limits": [
+    "Installed running profile and automatically applied configuration are physical observations; latest-profile real-finger acceptance remains pending.",
+    "No reboot proof, normal-panel regression proof, 24-drag workload budget, or complete headless scene acceptance obtained here.",
+    "Per-texture rendering remains explicitly experimental; final-frame output rotation is disabled."
+  ],
+  "latest_operator_observation": {
+    "reported": "Top-down notification drawer works on the installed profile; bottom-up gesture does not open Home or overview.",
+    "interpretation": "Direction correction alone is insufficient for bottom-edge routing acceptance; task group 3 stays open."
+  }
+}

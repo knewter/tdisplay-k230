@@ -194,3 +194,13 @@ Neither this profile nor the operator's qualitative speed report meets the
 unchecked frame budgets, full scene correctness, or normal-panel regression
 requirements. Physical trial results and deployment identity are recorded
 separately when observed.
+
+
+The corrected profile's real activation is recorded in
+[profile-activation.json](profile-activation.json). Its startup script applies
+the compensating matrix automatically, and the running compositor is the
+explicit per-texture trial with no renderer service override. The operator
+subsequently confirmed top-down notification gestures but reported bottom-up
+Home/overview failing. This is an open routing issue, not shipped gesture
+acceptance; group 3 remains unchecked while bounded real-contact trace
+collection is enabled.
