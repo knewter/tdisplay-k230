@@ -308,3 +308,16 @@ buttons for activation, and cancel on leave or capability loss. This uses
 normal Wayland client paths and does not change the compositor or touch mapping.
 Physical launcher activation remains a separate evidence gate from injected
 mouse delivery or host model tests.
+
+## Four-finger trackpad navigation
+
+The board's touchscreen glass remains the input while its built-in display
+is inactive and HDMI presents the image. In relay mode its contacts reach
+libinput as touchpad events, so the direct-touch compositor edge-swipe path
+does not apply. The operator requests a four-finger inward pinch to enter app
+overview. Sway's pinned `sway/sway.5.scd` documents `pinch:4:inward`; its
+`sway/input/seatop_default.c` routes matching pinch gestures to bindings.
+Use `bindgesture --input-device=1:1:K230_Virtual_Touchpad_(HDMI_mode) pinch:4:inward card_shell enter`
+in the generated Sway configuration. A live IPC binding provides immediate
+availability; the image configuration makes it persistent. Actual four-finger
+recognition/overview appearance remains a physical evidence gate.

@@ -51,6 +51,9 @@ mode switch, whenever HDMI is actually the active output.
   activate Home/launcher icons and settings controls. Pointer hover and
   secondary buttons do not accidentally activate apps.
 
+- A four-finger inward pinch on the touchscreen-derived virtual touchpad
+  opens app overview via Sway's normal device-scoped gesture binding.
+
 ## Capabilities
 
 ### New Capabilities
@@ -64,6 +67,8 @@ situation (HDMI active), not a new piece of hardware.
   the touchscreen SHALL be re-emitted as a virtual touchpad rather than
   reporting absolute touch coordinates, and what a consumer (libinput,
   Sway) observes as a result.
+
+- `runtime/shell`: overview entry through four-finger trackpad pinch.
 
 ## Impact
 
