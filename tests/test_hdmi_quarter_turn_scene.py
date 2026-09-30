@@ -102,9 +102,15 @@ def run_variant(args, output, name, transform, quarter_turn):
         'for_window [app_id="^k230.card."] card_shell ordinary, floating enable, '
         "border none, resize set 100 ppt 100 ppt, move position 0 0\n"
     )
+    # Unix sockets have a fixed pathname limit; committed evidence paths can
+    # be much longer. Keep only live sockets in a short persistent-root tempdir.
+    socket_parent = Path.home() / "tmp"
+    socket_parent.mkdir(exist_ok=True)
+    socket_directory = tempfile.TemporaryDirectory(prefix="k230-hs-", dir=socket_parent)
+    sockets = Path(socket_directory.name)
     env = dict(
         os.environ,
-        XDG_RUNTIME_DIR=str(runtime),
+        XDG_RUNTIME_DIR=str(sockets),
         WLR_BACKENDS="headless",
         WLR_HEADLESS_OUTPUTS="1",
         WLR_RENDERER="pixman",
@@ -131,10 +137,10 @@ def run_variant(args, output, name, transform, quarter_turn):
                  (runtime / "sway.log").read_text(errors="replace"),
                  timeout=60, description=f"{name} compositor startup")
         env["WAYLAND_DISPLAY"] = next(
-            path.name for path in runtime.glob("wayland-*")
+            path.name for path in sockets.glob("wayland-*")
             if not path.name.endswith(".lock")
         )
-        outputs = ipc(runtime, "", 3)
+        outputs = ipc(sockets, "", 3)
         headless = next(row for row in outputs if row.get("name") == "HEADLESS-1")
         expected_rect = {"x": 0, "y": 0,
                          "width": 1080 if transform in ("90", "270") else 1920,
@@ -187,7 +193,7 @@ def run_variant(args, output, name, transform, quarter_turn):
             # transform sampler. The current card-shell UI guard declines to
             # initialize at 180 degrees, so do not mislabel an overview as
             # covered for this fallback-only orientation.
-            response = ipc(runtime, "card_shell enter", check=False)
+            response = ipc(sockets, "card_shell enter", check=False)
             assert response and not response[0].get("success") and \
                 response[0].get("error") == "card shell requires one Pixman output", response
             result["overview"] = {
@@ -198,16 +204,16 @@ def run_variant(args, output, name, transform, quarter_turn):
             # Replay the exact y==height contact observed on physical HDMI.
             # This is injected headless proof of the real adapter/policy path.
             width, height = expected_rect["width"], expected_rect["height"]
-            down = ipc(runtime, f"card_shell down 91 {width / 2} {height}")
-            ipc(runtime, f"card_shell motion 91 {width / 2} {height - 300}")
-            ipc(runtime, "card_shell up 91")
+            down = ipc(sockets, f"card_shell down 91 {width / 2} {height}")
+            ipc(sockets, f"card_shell motion 91 {width / 2} {height - 300}")
+            ipc(sockets, "card_shell up 91")
             time.sleep(0.5)
-            ipc(runtime, "card_shell back")
+            ipc(sockets, "card_shell back")
             result["exact_bottom_endpoint"] = {
                 "evidence_class": "headless-qemu-injected-input",
                 "x": width / 2, "y": height, "down_response": down,
             }
-            response = ipc(runtime, "card_shell enter")
+            response = ipc(sockets, "card_shell enter")
             result["overview"] = {"status": "entered", "ipc_response": response}
         if transform != "180":
             time.sleep(2.0)
@@ -275,6 +281,7 @@ def run_variant(args, output, name, transform, quarter_turn):
         for stream in streams:
             stream.close()
         sway_log.close()
+        socket_directory.cleanup()
 
 
 def main():

@@ -1,0 +1,17 @@
+{
+  "recorded_at": "2026-09-30T02:47:51.789102+00:00",
+  "evidence_class": "physical-board-activation-and-operator-real-glass-confirmation",
+  "source_revision": "a5c4a4c8",
+  "installed_system": "/nix/store/r90xnfbh7m0hibs1f941cdfpz4qd7583-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "build_command": "nix build .#nixosConfigurations.k230-coherent-shell-hdmi-trial.config.system.build.toplevel --no-link --max-jobs 2 --cores 4 --print-out-paths",
+  "activation_result": "success, ExecMainStatus=0",
+  "running_compositor": "/nix/store/cmidjj18bi13b6qf5fhsc0pyl5dhsqlj-k230-card-shell-hdmi-trial/bin/sway",
+  "operator_confirmation": "oh hey bottom gesture fixed",
+  "observed": "Bottom y==1920 down is now consumed and edge_tracking becomes true; later Home/app drawer routes are observed.",
+  "host_regression_command": "TMPDIR=$HOME/tmp/k230-coordination python3 tests/test_card_shell_route.py",
+  "host_regression_result": "2 tests pass, including real card-policy replay at panel and portrait-HDMI endpoints and preserved keyboard reservation",
+  "limits": [
+    "Operator confirmed bottom gesture recovery, not the entire gesture sequence or 24-drag latency workload.",
+    "The normal-panel physical regression and reboot proof remain open."
+  ]
+}

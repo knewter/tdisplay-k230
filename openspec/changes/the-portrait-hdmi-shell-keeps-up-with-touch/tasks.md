@@ -27,7 +27,7 @@ reservation. Public traces must omit network/device secrets.
   leaving the existing default available. Verify `nix build .#card-shell-hdmi-trial`
   (cross-build proof only). Result and exact store paths:
   `docs/evidence/hdmi-shell-performance/cross-build.json`.
-- [ ] 2.3 Exercise the real candidate scene with changing clients and confirm
+- [x] 2.3 Exercise the real candidate scene with changing clients and confirm
   pixels, callbacks, buffer release and fallback. Verify
   `python3 tools/hdmi-shell-performance.py --check-scene --variant candidate --output docs/evidence/hdmi-shell-performance/scene`
   (new host/headless harness mode; explicitly not physical acceptance).

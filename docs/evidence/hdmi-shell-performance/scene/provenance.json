@@ -1,0 +1,48 @@
+{
+  "recorded_at_utc": "2026-09-30T03:57:55.667769+00:00",
+  "source_revision": "e3c95c180145dcfd9547961d1216c85a47d9de26 plus the committed short-socket-path harness fix",
+  "command": "python3 tools/hdmi-shell-performance.py --check-scene --variant candidate --sway /nix/store/ppc5a4y2bcdpxlmj96x0g32ryml9p8kn-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway --client /home/jadams/tmp/k230-coordination/scene-client/card-composition-probe-client --output /home/jadams/tmp/k230-coordination/scene-safe-sockets",
+  "artifact_copy": "Result directory copied into this committed scene directory; PNG hashes and result records preserved.",
+  "log_filter": [
+    {
+      "file": "turn90-sampler/sway.log",
+      "original_sha256": "886c4942ee5d8e20661e404afc273722d70a4be712c988e22a87962c7ebbf4fe",
+      "public_sha256": "6d1a62dbb1d60bcacd354c53d895f5f9356830bae11d8b378b46e1a81db8e640",
+      "removed_fields": [
+        "PATH",
+        "LD_PRELOAD",
+        "LD_LIBRARY_PATH"
+      ],
+      "removed_lines": 3
+    },
+    {
+      "file": "turn180-sampler-fallback/sway.log",
+      "original_sha256": "6b1229c1eef1150818f4a7fed1766921c366388d099dd47801c21f6164b269b6",
+      "public_sha256": "cd717ba65e9385191cc37b1bcb189ff23416ccf03595bf731223c981a15567ad",
+      "removed_fields": [
+        "PATH",
+        "LD_PRELOAD",
+        "LD_LIBRARY_PATH"
+      ],
+      "removed_lines": 3
+    },
+    {
+      "file": "turn90-quarter-turn/sway.log",
+      "original_sha256": "69e365245f23af336cc77c5dce0a97e965d6ae130f5b292a0b338e7864e71943",
+      "public_sha256": "0e60cc8156c87f96cba224f922fc95084c65c00d455873a195279ef0e6a92030",
+      "removed_fields": [
+        "PATH",
+        "LD_PRELOAD",
+        "LD_LIBRARY_PATH"
+      ],
+      "removed_lines": 3
+    }
+  ],
+  "prior_failed_attempt": "The previous dispatcher run failed to start the 180-degree variant because its Unix IPC socket path exceeded sun_path. The fixed harness uses a short live socket directory under ~/tmp; the named dispatcher rerun then passed all three variants.",
+  "physical_acceptance": "UNVERIFIED",
+  "limits": [
+    "Headless QEMU invokes the actual RISC-V compositor with a native synthetic changing client.",
+    "Pixel checks confirm animation, not complete baseline/candidate pixel parity.",
+    "Host frame gaps and CPU timings do not prove the physical board budgets."
+  ]
+}

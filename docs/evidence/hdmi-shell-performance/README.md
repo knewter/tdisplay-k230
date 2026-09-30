@@ -204,3 +204,9 @@ subsequently confirmed top-down notification gestures but reported bottom-up
 Home/overview failing. This is an open routing issue, not shipped gesture
 acceptance; group 3 remains unchecked while bounded real-contact trace
 collection is enabled.
+
+## Exact bottom endpoint recovered
+
+The physical trace showed a bottom contact at y=1920, exactly the output height, rejected by the half-open route bounds. The adapter now moves only exact boundary coordinates just inside the output, preserving genuine off-output rejection and keyboard reservation. The real-policy host regression passes. [After trace](bottom-endpoint-after.log) and [activation/operator record](bottom-endpoint-after.json) preserve the installed trial identity and the operator's “oh hey bottom gesture fixed” confirmation. That supersedes the preceding bottom-route failure; the complete physical gesture sequence and budgets remain unchecked.
+
+The [real compositor headless scene](scene/README.md) now passes the named dispatcher and grounds task 2.3 only. This change stays open for the remaining physical, pixel-coverage, performance and panel-regression gates.

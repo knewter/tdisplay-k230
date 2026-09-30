@@ -1,0 +1,109 @@
+{
+  "name": "turn180-sampler-fallback",
+  "transform": "180",
+  "quarter_turn_enabled": true,
+  "captures": {
+    "ordinary": {
+      "a": {
+        "file": "ordinary-a.png",
+        "sha256": "c84f70ac6b2178a285fcc3629a9345310784a4b79ea20098941bf3c7d7b4ef02",
+        "size": [
+          1920,
+          1080
+        ]
+      },
+      "b": {
+        "file": "ordinary-b.png",
+        "sha256": "b37fda708291fac1c44a0559dcafc37fee0505b2f6bacad9f82d88e03a5d4b5d",
+        "size": [
+          1920,
+          1080
+        ]
+      }
+    }
+  },
+  "client_states": {
+    "ordinary_before": {
+      "event": "heartbeat",
+      "app_id": "k230.card.one",
+      "elapsed_ms": 1000,
+      "frames": 39,
+      "callbacks": 38,
+      "releases": 37,
+      "child_frames": 38,
+      "child_callbacks": 37,
+      "child_releases": 36,
+      "callback_age_ms": 2,
+      "child_callback_age_ms": 0,
+      "max_callback_gap_ms": 77,
+      "child_max_callback_gap_ms": 80,
+      "width": 1920,
+      "height": 1080,
+      "stride": 7680,
+      "key_presses": 0,
+      "format": "XRGB8888",
+      "subsurface": "desynchronized",
+      "presentation": "unmeasured"
+    },
+    "ordinary_after": {
+      "event": "heartbeat",
+      "app_id": "k230.card.one",
+      "elapsed_ms": 2014,
+      "frames": 80,
+      "callbacks": 79,
+      "releases": 78,
+      "child_frames": 79,
+      "child_callbacks": 78,
+      "child_releases": 77,
+      "callback_age_ms": 4,
+      "child_callback_age_ms": 0,
+      "max_callback_gap_ms": 77,
+      "child_max_callback_gap_ms": 80,
+      "width": 1920,
+      "height": 1080,
+      "stride": 7680,
+      "key_presses": 0,
+      "format": "XRGB8888",
+      "subsurface": "desynchronized",
+      "presentation": "unmeasured"
+    }
+  },
+  "output": {
+    "name": "HEADLESS-1",
+    "current_mode": {
+      "width": 1920,
+      "height": 1080,
+      "refresh": 0
+    },
+    "transform": "180",
+    "scale": 1.0,
+    "rect": {
+      "x": 0,
+      "y": 0,
+      "width": 1920,
+      "height": 1080
+    }
+  },
+  "overview": {
+    "status": "unavailable-at-transform-180",
+    "ipc_response": [
+      {
+        "success": false,
+        "parse_error": false,
+        "error": "card shell requires one Pixman output"
+      }
+    ]
+  },
+  "draw_trace": {
+    "rows": 170,
+    "paths": [
+      "sampler"
+    ],
+    "tiled_rows": 0,
+    "sampler_rows": 170,
+    "max_copy_cpu_ns": 0,
+    "max_total_cpu_ns": 14844770,
+    "max_scratch_bytes": 0
+  },
+  "evidence_class": "headless-qemu-real-compositor-changing-client"
+}

@@ -1407,6 +1407,16 @@ DATA e25dd43c6c9aca1f1dc57ace48a2de2a682760c5d35c095cd2536603e4e6761d  docs/evid
 DATA 099a47af0e5726fe78af086c0dc9cbbad1b6f4a9c88b30bbdcba5e22f780c980  docs/evidence/card-shell/app-switch-neighbour-render/after-held-1.png
 DATA 55e6ebda0e06d3ccd1ac7b61a94a59912d993b69a30ac1ab97e7685b203d69b1  docs/evidence/card-shell/app-switch-neighbour-render/after-held-2.png
 DATA f338397d2cf535385ce1e57c85756685d8bdb4c62a0856d170be35aec0da312c  docs/evidence/card-shell/app-switch-neighbour-render/before-cropped-neighbour.png
+DATA c84f70ac6b2178a285fcc3629a9345310784a4b79ea20098941bf3c7d7b4ef02 docs/evidence/hdmi-shell-performance/scene/turn180-sampler-fallback/ordinary-a.png
+DATA b37fda708291fac1c44a0559dcafc37fee0505b2f6bacad9f82d88e03a5d4b5d docs/evidence/hdmi-shell-performance/scene/turn180-sampler-fallback/ordinary-b.png
+DATA 8c10dd5611d5b97754603642c6c3728fa3fa4bac939c51b8e75cbe093a046111 docs/evidence/hdmi-shell-performance/scene/turn90-quarter-turn/ordinary-a.png
+DATA ccb7b0f8f15cadc823028d2f79f36c62a6481fa2c36009d0a6f3ae98b7950c9b docs/evidence/hdmi-shell-performance/scene/turn90-quarter-turn/ordinary-b.png
+DATA 1f6a9dfc97ae02e42c44c6f4a4948155786cd4356d436493cf7cc474fb43c48b docs/evidence/hdmi-shell-performance/scene/turn90-quarter-turn/overview-a.png
+DATA 52067082bbf8cdd97ae1e8ca47fc85743a2cb43832de91770794472e3978a26c docs/evidence/hdmi-shell-performance/scene/turn90-quarter-turn/overview-b.png
+DATA 254f10b379df10bc966aeab93e5e307f67c8030d0024cfe041bfaaf687ed27dd docs/evidence/hdmi-shell-performance/scene/turn90-sampler/ordinary-a.png
+DATA e48de1f101b121ada8008b5cd592d01e71d2bad46d7e8cba930543b3fc0f76c2 docs/evidence/hdmi-shell-performance/scene/turn90-sampler/ordinary-b.png
+DATA fcb7183acd5da12e3be0d60d0d02a22f14406135f2657aad652e509785d7aed9 docs/evidence/hdmi-shell-performance/scene/turn90-sampler/overview-a.png
+DATA 5c3fe4dce16a82b17356398f7b070ec26c5dd17cb305ddd21ede874aa6058715 docs/evidence/hdmi-shell-performance/scene/turn90-sampler/overview-b.png
 DATA 07e481cec9ea72eb520c2ecc09c154e216d835381d54ac71b883c5f8e1364328  docs/evidence/card-shell/app-switch-neighbour-render/before-held-1.png
 DATA 1a517e2d67ae74efbc67de841187982617f3bff88b7202ee3a4dad08c14c3692  docs/evidence/card-shell/app-switch-neighbour-render/before-held-2.png
 DATA e23a93dd46e8e71e426fe69a64ff62f5b25b6f21d6775569aaaf70d8416eb14b docs/evidence/card-shell/webos-fan-switcher/dark-01-overview.png
@@ -2419,3 +2429,21 @@ for the exact harness and the schema-path bug this run caught and fixed
 | `docs/evidence/files-app/host/portfolio-light.png` | 20130 | DATA | `373198612a7a7ae65d933697b400d952c5982415e4fce232c827a57bff3cae8f` |
 | `docs/evidence/files-app/host/nautilus-dark.png` | 21129 | DATA | `6219142f5fed441b5021980b3c0f8383228f1417010bf8f9922ea936572a9b68` |
 | `docs/evidence/files-app/host/nautilus-light.png` | 20000 | DATA | `b5c553f6b0d419371460c005b7aaaff96ffce504794591f336e113fb3f688b5e` |
+
+### Portrait HDMI software-rotation scene: headless QEMU
+
+Native changing-client captures under the real RISC-V Sway/Pixman scene.
+These are test fixtures, not physical HDMI or touch photographs.
+
+| File | Bytes | Class | SHA256 |
+| --- | ---: | --- | --- |
+| `docs/evidence/hdmi-shell-performance/scene/turn180-sampler-fallback/ordinary-a.png` | 8782 | DATA | `c84f70ac6b2178a285fcc3629a9345310784a4b79ea20098941bf3c7d7b4ef02` |
+| `docs/evidence/hdmi-shell-performance/scene/turn180-sampler-fallback/ordinary-b.png` | 8790 | DATA | `b37fda708291fac1c44a0559dcafc37fee0505b2f6bacad9f82d88e03a5d4b5d` |
+| `docs/evidence/hdmi-shell-performance/scene/turn90-quarter-turn/ordinary-a.png` | 10537 | DATA | `8c10dd5611d5b97754603642c6c3728fa3fa4bac939c51b8e75cbe093a046111` |
+| `docs/evidence/hdmi-shell-performance/scene/turn90-quarter-turn/ordinary-b.png` | 10545 | DATA | `ccb7b0f8f15cadc823028d2f79f36c62a6481fa2c36009d0a6f3ae98b7950c9b` |
+| `docs/evidence/hdmi-shell-performance/scene/turn90-quarter-turn/overview-a.png` | 20692 | DATA | `1f6a9dfc97ae02e42c44c6f4a4948155786cd4356d436493cf7cc474fb43c48b` |
+| `docs/evidence/hdmi-shell-performance/scene/turn90-quarter-turn/overview-b.png` | 20717 | DATA | `52067082bbf8cdd97ae1e8ca47fc85743a2cb43832de91770794472e3978a26c` |
+| `docs/evidence/hdmi-shell-performance/scene/turn90-sampler/ordinary-a.png` | 10546 | DATA | `254f10b379df10bc966aeab93e5e307f67c8030d0024cfe041bfaaf687ed27dd` |
+| `docs/evidence/hdmi-shell-performance/scene/turn90-sampler/ordinary-b.png` | 10554 | DATA | `e48de1f101b121ada8008b5cd592d01e71d2bad46d7e8cba930543b3fc0f76c2` |
+| `docs/evidence/hdmi-shell-performance/scene/turn90-sampler/overview-a.png` | 20714 | DATA | `fcb7183acd5da12e3be0d60d0d02a22f14406135f2657aad652e509785d7aed9` |
+| `docs/evidence/hdmi-shell-performance/scene/turn90-sampler/overview-b.png` | 20672 | DATA | `5c3fe4dce16a82b17356398f7b070ec26c5dd17cb305ddd21ede874aa6058715` |

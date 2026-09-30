@@ -1,0 +1,297 @@
+00:00:00.000 [INFO] [sway/main.c:308] Sway version 1.12
+00:00:00.000 [INFO] [sway/main.c:309] wlroots version 0.20.2
+00:00:00.022 [INFO] [sway/main.c:78] Linux solomon 7.1.9-1-MANJARO #1 SMP PREEMPT_DYNAMIC Thu, 20 Aug 2026 02:30:29 +0000 x86_64 GNU/Linux
+00:00:00.023 [INFO] [sway/main.c:94] Contents of /etc/lsb-release:
+00:00:00.023 [INFO] [sway/main.c:78] DISTRIB_ID="ManjaroLinux"
+00:00:00.023 [INFO] [sway/main.c:78] DISTRIB_RELEASE="26.1.1"
+00:00:00.023 [INFO] [sway/main.c:78] DISTRIB_CODENAME="Bian-May"
+00:00:00.023 [INFO] [sway/main.c:78] DISTRIB_DESCRIPTION="Manjaro Linux"
+00:00:00.023 [INFO] [sway/main.c:94] Contents of /etc/os-release:
+00:00:00.023 [INFO] [sway/main.c:78] NAME="Manjaro Linux"
+00:00:00.023 [INFO] [sway/main.c:78] PRETTY_NAME="Manjaro Linux"
+00:00:00.023 [INFO] [sway/main.c:78] ID=manjaro
+00:00:00.023 [INFO] [sway/main.c:78] ID_LIKE=arch
+00:00:00.023 [INFO] [sway/main.c:78] BUILD_ID=rolling
+00:00:00.023 [INFO] [sway/main.c:78] ANSI_COLOR="32;1;24;144;200"
+00:00:00.023 [INFO] [sway/main.c:78] HOME_URL="https://manjaro.org/"
+00:00:00.023 [INFO] [sway/main.c:78] DOCUMENTATION_URL="https://wiki.manjaro.org/"
+00:00:00.023 [INFO] [sway/main.c:78] SUPPORT_URL="https://forum.manjaro.org/"
+00:00:00.023 [INFO] [sway/main.c:78] BUG_REPORT_URL="https://manjaro.org/help/"
+00:00:00.023 [INFO] [sway/main.c:78] PRIVACY_POLICY_URL="https://manjaro.org/privacy-policy/"
+00:00:00.023 [INFO] [sway/main.c:78] LOGO=manjarolinux
+00:00:00.024 [INFO] [sway/main.c:66] SWAYSOCK=
+00:00:00.025 [INFO] [sway/main.c:338] Starting sway version 1.12
+00:00:00.025 [DEBUG] [sway/server.c:247] Initializing Wayland server
+00:00:00.027 [INFO] [wlr] [backend/backend.c:342] Loading user-specified backends due to WLR_BACKENDS: headless
+00:00:00.028 [INFO] [wlr] [backend/headless/backend.c:60] Creating headless backend
+00:00:00.030 [INFO] [wlr] [util/env.c:25] Loading WLR_RENDERER option: pixman
+00:00:00.030 [INFO] [wlr] [render/pixman/renderer.c:338] Creating pixman renderer
+00:00:00.031 [DEBUG] [wlr] [render/allocator/allocator.c:132] Trying to create shm allocator
+00:00:00.032 [DEBUG] [wlr] [render/allocator/shm.c:119] Created shm allocator
+00:00:00.034 [DEBUG] [wlr] [types/wlr_drm_lease_v1.c:679] No DRM backend supplied, failed to create wlr_drm_lease_v1_manager
+00:00:00.034 [DEBUG] [sway/server.c:498] Failed to create wlr_drm_lease_device_v1
+00:00:00.034 [INFO] [sway/server.c:499] VR will not be available
+00:00:00.037 [INFO] [wlr] [backend/headless/backend.c:60] Creating headless backend
+00:00:00.099 [INFO] [sway/config.c:423] Loading config from /home/jadams/tmp/k230-coordination/scene-safe-sockets/turn180-sampler-fallback/sway.conf
+00:00:00.102 [DEBUG] [sway/config.c:782] Read line 1: output * mode 1920x1080 transform 180
+00:00:00.103 [INFO] [sway/commands.c:382] Config command: output * mode 1920x1080 transform 180
+00:00:00.103 [INFO] [sway/commands.c:405] After replacement: output * mode 1920x1080 transform 180
+00:00:00.104 [DEBUG] [sway/commands.c:437] Subcommand: mode 1920x1080 transform 180
+00:00:00.104 [DEBUG] [sway/commands.c:437] Subcommand: transform 180
+00:00:00.105 [DEBUG] [sway/config/output.c:279] Config stored for output * (enabled: -1) (1920x1080@-1.000000Hz position 2147483647,2147483647 scale -1.000000 subpixel unknown transform 2) (bg (null) (null)) (power -1) (max render time: -1) (allow tearing: -1) (hdr: -1)
+00:00:00.107 [DEBUG] [sway/config.c:782] Read line 2: seat seat0 fallback true
+00:00:00.107 [INFO] [sway/commands.c:382] Config command: seat seat0 fallback true
+00:00:00.107 [INFO] [sway/commands.c:405] After replacement: seat seat0 fallback true
+00:00:00.107 [DEBUG] [sway/commands.c:437] Subcommand: fallback true
+00:00:00.107 [DEBUG] [sway/config/seat.c:65] Adding non-wildcard seat config
+00:00:00.107 [DEBUG] [sway/config/seat.c:82] Config stored for seat seat0
+00:00:00.107 [DEBUG] [sway/config.c:782] Read line 3: focus_follows_mouse no
+00:00:00.108 [INFO] [sway/commands.c:382] Config command: focus_follows_mouse no
+00:00:00.108 [INFO] [sway/commands.c:405] After replacement: focus_follows_mouse no
+00:00:00.108 [DEBUG] [sway/config.c:782] Read line 4: for_window [app_id="^k230.card."] card_shell ordinary, floating enable, border none, resize set 100 ppt 100 ppt, move position 0 0
+00:00:00.108 [INFO] [sway/commands.c:382] Config command: for_window [app_id="^k230.card."] card_shell ordinary, floating enable, border none, resize set 100 ppt 100 ppt, move position 0 0
+00:00:00.108 [INFO] [sway/commands.c:405] After replacement: for_window [app_id="^k230.card."] card_shell ordinary, floating enable, border none, resize set 100 ppt 100 ppt, move position 0 0
+00:00:00.108 [DEBUG] [sway/criteria.c:841] Found pair: app_id=^k230.card.
+00:00:00.112 [DEBUG] [sway/commands/for_window.c:34] for_window: '[app_id="^k230.card."]' -> 'card_shell ordinary, floating enable, border none, resize set 100 ppt 100 ppt, move position 0 0' added
+00:00:00.652 [DEBUG] [sway/input/input-manager.c:637] applying seat config for seat seat0
+00:00:00.653 [DEBUG] [sway/config/output.c:1286] spawn_swaybg cmd[0] = /nix/store/yhh05srfyhf81cdrm0f9ckxajjgh9qql-swaybg-riscv64-unknown-linux-gnu-1.2.2/bin/swaybg
+00:00:00.663 [INFO] [sway/server.c:789] Starting backend on wayland display 'wayland-1'
+00:00:00.664 [INFO] [wlr] [backend/headless/backend.c:17] Starting headless backend
+00:00:00.664 [DEBUG] [sway/desktop/output.c:570] New output 0x555555614c30: HEADLESS-1 (non-desktop: 0)
+00:00:00.667 [INFO] [wlr] [backend/headless/backend.c:17] Starting headless backend
+00:00:00.668 [DEBUG] [sway/config/output.c:1008] Committing 1 outputs
+00:00:00.669 [DEBUG] [sway/config/output.c:769] Output state for HEADLESS-1
+00:00:00.669 [DEBUG] [sway/config/output.c:771]     enabled:       yes
+00:00:00.669 [DEBUG] [sway/config/output.c:775]     render_format: XR24
+00:00:00.669 [DEBUG] [sway/config/output.c:780]     custom mode:   1920x1080@0mHz
+00:00:00.669 [DEBUG] [sway/config/output.c:793]     scale:         1.000000
+00:00:00.670 [DEBUG] [sway/config/output.c:796]     subpixel:      unknown
+00:00:00.670 [DEBUG] [wlr] [types/wlr_output_swapchain_manager.c:164] Preparing test commit for 1 outputs with explicit modifiers
+00:00:00.671 [DEBUG] [wlr] [render/swapchain.c:103] Allocating new swapchain buffer
+00:00:00.673 [DEBUG] [wlr] [types/wlr_output_swapchain_manager.c:185] Test commit for 1 outputs succeeded
+00:00:00.674 [DEBUG] [wlr] [render/pixman/renderer.c:186] Created pixman buffer 1920x1080
+00:00:00.696 [DEBUG] [sway/config/output.c:1072] Commit of 1 outputs succeeded
+00:00:00.699 [DEBUG] [sway/config/output.c:1080] Finalizing config for HEADLESS-1
+00:00:00.701 [DEBUG] [sway/tree/workspace.c:437] Workspace: Generating new workspace name for output HEADLESS-1
+00:00:00.702 [DEBUG] [sway/tree/output.c:166] Creating default workspace 1
+00:00:00.702 [DEBUG] [sway/tree/workspace.c:185] Adding workspace 1 for output HEADLESS-1
+00:00:00.705 [DEBUG] [sway/desktop/layer_shell.c:98] Usable area changed, rearranging output
+00:00:00.705 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1920x1080@0,0
+00:00:00.705 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+00:00:00.706 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1920x1080@0,0
+00:00:00.706 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+00:00:00.707 [DEBUG] [sway/desktop/transaction.c:821] Transaction 0x55555583c620 committing with 2 instructions
+00:00:00.708 [DEBUG] [sway/desktop/transaction.c:717] Applying transaction 0x55555583c620
+00:00:00.795 [DEBUG] [wlr] [xcursor/wlr_xcursor.c:233] Loaded cursor theme 'default' at size 24 (63 available cursors)
+00:00:00.796 [INFO] [sway/server.c:801] Running compositor on wayland display 'wayland-1'
+2026-09-29 21:44:19 - [main.c:328] Could not find config for output HEADLESS-1 ((null))
+00:00:00.829 [DEBUG] [sway/ipc-server.c:196] New client: fd 17
+00:00:00.835 [INFO] [sway/ipc-server.c:570] IPC Client 17 disconnected
+00:00:00.840 [DEBUG] [wlr] [types/wlr_compositor.c:785] New wlr_surface 0x55555584b640 (res 0x55555584ba10)
+00:00:00.841 [DEBUG] [wlr] [types/xdg_shell/wlr_xdg_surface.c:441] new xdg_surface 0x55555584baa0 (res 0x55555584bc00)
+00:00:00.841 [DEBUG] [sway/desktop/xdg_shell.c:562] New xdg_shell toplevel title='(null)' app_id='(null)'
+00:00:00.843 [DEBUG] [wlr] [types/wlr_compositor.c:785] New wlr_surface 0x555555851610 (res 0x5555558519e0)
+00:00:00.854 [DEBUG] [sway/tree/view.c:529] View 0x55555584c5e0 updated CSD to 1
+00:00:00.902 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1920x1080@0,0
+00:00:00.902 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+00:00:00.902 [DEBUG] [sway/tree/arrange.c:76] Arranging 0x7fcbc7bfab38 horizontally
+00:00:00.905 [DEBUG] [sway/tree/view.c:575] Checking criteria [app_id="^k230.card."]
+00:00:00.905 [DEBUG] [sway/tree/view.c:580] for_window '[app_id="^k230.card."]' matches view 0x55555584c5e0, cmd: 'card_shell ordinary, floating enable, border none, resize set 100 ppt 100 ppt, move position 0 0'
+00:00:00.905 [INFO] [sway/commands.c:262] Handling command 'card_shell ordinary'
+00:00:00.906 [INFO] [sway/commands.c:262] Handling command 'floating enable'
+00:00:00.907 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1920x1080@0,0
+00:00:00.907 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+00:00:00.907 [INFO] [sway/commands.c:262] Handling command 'border none'
+00:00:00.907 [DEBUG] [sway/tree/view.c:517] Telling view 0x55555584c5e0 to set CSD to 0
+00:00:00.908 [INFO] [sway/commands.c:262] Handling command 'resize set 100 ppt 100 ppt'
+00:00:00.908 [INFO] [sway/commands.c:262] Handling command 'move position 0 0'
+00:00:00.911 [DEBUG] [sway/desktop/transaction.c:821] Transaction 0x555555876d60 committing with 3 instructions
+00:00:00.935 [DEBUG] [sway/desktop/transaction.c:907] Transaction 0x555555876d60 is ready
+00:00:00.935 [DEBUG] [sway/desktop/transaction.c:717] Applying transaction 0x555555876d60
+00:00:00.939 [DEBUG] [sway/desktop/transaction.c:821] Transaction 0x555555876a20 committing with 1 instructions
+00:00:00.940 [DEBUG] [sway/desktop/transaction.c:717] Applying transaction 0x555555876a20
+00:00:00.958 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=14844770 dst_pixels=2073600 scratch_bytes=0
+00:00:00.959 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=184396 dst_pixels=12288 scratch_bytes=0
+00:00:00.985 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=8098989 dst_pixels=2073600 scratch_bytes=0
+00:00:00.986 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=230682 dst_pixels=12288 scratch_bytes=0
+00:00:01.011 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=8412996 dst_pixels=2073600 scratch_bytes=0
+00:00:01.012 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=142196 dst_pixels=12288 scratch_bytes=0
+00:00:01.036 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=7114733 dst_pixels=2073600 scratch_bytes=0
+00:00:01.036 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=174447 dst_pixels=12288 scratch_bytes=0
+00:00:01.061 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=8082585 dst_pixels=2073600 scratch_bytes=0
+00:00:01.061 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=124854 dst_pixels=12288 scratch_bytes=0
+00:00:01.086 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=7992947 dst_pixels=2073600 scratch_bytes=0
+00:00:01.087 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=129453 dst_pixels=12288 scratch_bytes=0
+00:00:01.112 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=8006273 dst_pixels=2073600 scratch_bytes=0
+00:00:01.112 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=192301 dst_pixels=12288 scratch_bytes=0
+00:00:01.138 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=8805292 dst_pixels=2073600 scratch_bytes=0
+00:00:01.138 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=185958 dst_pixels=12288 scratch_bytes=0
+00:00:01.164 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=8324832 dst_pixels=2073600 scratch_bytes=0
+00:00:01.164 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=212077 dst_pixels=12288 scratch_bytes=0
+00:00:01.189 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=7821357 dst_pixels=2073600 scratch_bytes=0
+00:00:01.189 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=160150 dst_pixels=12288 scratch_bytes=0
+00:00:01.214 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=8220658 dst_pixels=2073600 scratch_bytes=0
+00:00:01.215 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=212819 dst_pixels=12288 scratch_bytes=0
+00:00:01.240 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=7841222 dst_pixels=2073600 scratch_bytes=0
+00:00:01.240 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=131858 dst_pixels=12288 scratch_bytes=0
+00:00:01.265 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=8459687 dst_pixels=2073600 scratch_bytes=0
+00:00:01.266 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=183404 dst_pixels=12288 scratch_bytes=0
+00:00:01.290 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=7736220 dst_pixels=2073600 scratch_bytes=0
+00:00:01.291 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=148117 dst_pixels=12288 scratch_bytes=0
+00:00:01.315 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=7843406 dst_pixels=2073600 scratch_bytes=0
+00:00:01.316 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=177523 dst_pixels=12288 scratch_bytes=0
+00:00:01.340 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=7649547 dst_pixels=2073600 scratch_bytes=0
+00:00:01.340 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=145082 dst_pixels=12288 scratch_bytes=0
+00:00:01.365 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=7933080 dst_pixels=2073600 scratch_bytes=0
+00:00:01.365 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=181180 dst_pixels=12288 scratch_bytes=0
+00:00:01.389 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=6646124 dst_pixels=2073600 scratch_bytes=0
+00:00:01.389 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=157255 dst_pixels=12288 scratch_bytes=0
+00:00:01.413 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=6812413 dst_pixels=2073600 scratch_bytes=0
+00:00:01.413 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=190607 dst_pixels=12288 scratch_bytes=0
+00:00:01.437 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=6879510 dst_pixels=2073600 scratch_bytes=0
+00:00:01.437 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=183875 dst_pixels=12288 scratch_bytes=0
+00:00:01.462 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=7587849 dst_pixels=2073600 scratch_bytes=0
+00:00:01.462 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=188694 dst_pixels=12288 scratch_bytes=0
+00:00:01.486 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=7296633 dst_pixels=2073600 scratch_bytes=0
+00:00:01.487 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=149250 dst_pixels=12288 scratch_bytes=0
+00:00:01.511 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=7964274 dst_pixels=2073600 scratch_bytes=0
+00:00:01.512 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=219331 dst_pixels=12288 scratch_bytes=0
+00:00:01.536 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=7177597 dst_pixels=2073600 scratch_bytes=0
+00:00:01.536 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=151241 dst_pixels=12288 scratch_bytes=0
+00:00:01.561 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=7558114 dst_pixels=2073600 scratch_bytes=0
+00:00:01.562 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=223970 dst_pixels=12288 scratch_bytes=0
+00:00:01.586 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=7792513 dst_pixels=2073600 scratch_bytes=0
+00:00:01.587 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=172804 dst_pixels=12288 scratch_bytes=0
+00:00:01.611 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=7294529 dst_pixels=2073600 scratch_bytes=0
+00:00:01.611 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=118733 dst_pixels=12288 scratch_bytes=0
+00:00:01.635 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=6918203 dst_pixels=2073600 scratch_bytes=0
+00:00:01.636 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=197631 dst_pixels=12288 scratch_bytes=0
+00:00:01.660 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=7381252 dst_pixels=2073600 scratch_bytes=0
+00:00:01.660 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=202971 dst_pixels=12288 scratch_bytes=0
+00:00:01.685 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=8039029 dst_pixels=2073600 scratch_bytes=0
+00:00:01.686 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=261651 dst_pixels=12288 scratch_bytes=0
+00:00:01.713 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=9550252 dst_pixels=2073600 scratch_bytes=0
+00:00:01.713 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=199645 dst_pixels=12288 scratch_bytes=0
+00:00:01.737 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=7122544 dst_pixels=2073600 scratch_bytes=0
+00:00:01.737 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=184997 dst_pixels=12288 scratch_bytes=0
+00:00:01.762 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=7990494 dst_pixels=2073600 scratch_bytes=0
+00:00:01.763 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=186009 dst_pixels=12288 scratch_bytes=0
+00:00:01.787 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=7297074 dst_pixels=2073600 scratch_bytes=0
+00:00:01.787 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=148448 dst_pixels=12288 scratch_bytes=0
+00:00:01.811 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=6889329 dst_pixels=2073600 scratch_bytes=0
+00:00:01.812 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=219772 dst_pixels=12288 scratch_bytes=0
+00:00:01.834 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=6227655 dst_pixels=2073600 scratch_bytes=0
+00:00:01.835 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=101401 dst_pixels=12288 scratch_bytes=0
+00:00:01.857 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=6217558 dst_pixels=2073600 scratch_bytes=0
+00:00:01.858 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=131837 dst_pixels=12288 scratch_bytes=0
+00:00:01.861 [DEBUG] [wlr] [types/output/render.c:142] Disabling direct scan-out on output 'HEADLESS-1' (locks: 1)
+00:00:01.882 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=7621142 dst_pixels=2073600 scratch_bytes=0
+00:00:01.883 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=167865 dst_pixels=12288 scratch_bytes=0
+00:00:01.916 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=6830261 dst_pixels=2073600 scratch_bytes=0
+00:00:01.916 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=158528 dst_pixels=12288 scratch_bytes=0
+00:00:01.940 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=6676923 dst_pixels=2073600 scratch_bytes=0
+00:00:01.940 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=125566 dst_pixels=12288 scratch_bytes=0
+00:00:01.964 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=7068617 dst_pixels=2073600 scratch_bytes=0
+00:00:01.964 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=179447 dst_pixels=12288 scratch_bytes=0
+00:00:01.987 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=6040558 dst_pixels=2073600 scratch_bytes=0
+00:00:01.987 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=107782 dst_pixels=12288 scratch_bytes=0
+00:00:01.994 [DEBUG] [wlr] [types/output/render.c:142] Enabling direct scan-out on output 'HEADLESS-1' (locks: 0)
+00:00:02.011 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=7145958 dst_pixels=2073600 scratch_bytes=0
+00:00:02.011 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=171352 dst_pixels=12288 scratch_bytes=0
+00:00:02.035 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=6605848 dst_pixels=2073600 scratch_bytes=0
+00:00:02.035 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=177432 dst_pixels=12288 scratch_bytes=0
+00:00:02.059 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=7372905 dst_pixels=2073600 scratch_bytes=0
+00:00:02.060 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=266931 dst_pixels=12288 scratch_bytes=0
+00:00:02.084 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=7186005 dst_pixels=2073600 scratch_bytes=0
+00:00:02.085 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=183915 dst_pixels=12288 scratch_bytes=0
+00:00:02.108 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=6823227 dst_pixels=2073600 scratch_bytes=0
+00:00:02.109 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=197590 dst_pixels=12288 scratch_bytes=0
+00:00:02.133 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=7419072 dst_pixels=2073600 scratch_bytes=0
+00:00:02.133 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=152456 dst_pixels=12288 scratch_bytes=0
+00:00:02.155 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=5832356 dst_pixels=2073600 scratch_bytes=0
+00:00:02.156 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=115878 dst_pixels=12288 scratch_bytes=0
+00:00:02.179 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=6499078 dst_pixels=2073600 scratch_bytes=0
+00:00:02.180 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=150933 dst_pixels=12288 scratch_bytes=0
+00:00:02.203 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=6373894 dst_pixels=2073600 scratch_bytes=0
+00:00:02.203 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=156093 dst_pixels=12288 scratch_bytes=0
+00:00:02.229 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=8925568 dst_pixels=2073600 scratch_bytes=0
+00:00:02.229 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=363872 dst_pixels=12288 scratch_bytes=0
+00:00:02.256 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=9091858 dst_pixels=2073600 scratch_bytes=0
+00:00:02.256 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=155512 dst_pixels=12288 scratch_bytes=0
+00:00:02.280 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=6849385 dst_pixels=2073600 scratch_bytes=0
+00:00:02.280 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=163977 dst_pixels=12288 scratch_bytes=0
+00:00:02.304 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=6843043 dst_pixels=2073600 scratch_bytes=0
+00:00:02.304 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=141054 dst_pixels=12288 scratch_bytes=0
+00:00:02.332 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=10734178 dst_pixels=2073600 scratch_bytes=0
+00:00:02.332 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=131027 dst_pixels=12288 scratch_bytes=0
+00:00:02.356 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=7030435 dst_pixels=2073600 scratch_bytes=0
+00:00:02.356 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=158077 dst_pixels=12288 scratch_bytes=0
+00:00:02.380 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=7179212 dst_pixels=2073600 scratch_bytes=0
+00:00:02.380 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=125476 dst_pixels=12288 scratch_bytes=0
+00:00:02.404 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=6972194 dst_pixels=2073600 scratch_bytes=0
+00:00:02.404 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=204544 dst_pixels=12288 scratch_bytes=0
+00:00:02.428 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=6790456 dst_pixels=2073600 scratch_bytes=0
+00:00:02.428 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=168596 dst_pixels=12288 scratch_bytes=0
+00:00:02.452 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=7377205 dst_pixels=2073600 scratch_bytes=0
+00:00:02.453 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=186760 dst_pixels=12288 scratch_bytes=0
+00:00:02.477 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=7231281 dst_pixels=2073600 scratch_bytes=0
+00:00:02.477 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=260709 dst_pixels=12288 scratch_bytes=0
+00:00:02.502 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=7576411 dst_pixels=2073600 scratch_bytes=0
+00:00:02.502 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=204754 dst_pixels=12288 scratch_bytes=0
+00:00:02.527 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=7386294 dst_pixels=2073600 scratch_bytes=0
+00:00:02.527 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=225933 dst_pixels=12288 scratch_bytes=0
+00:00:02.551 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=7369911 dst_pixels=2073600 scratch_bytes=0
+00:00:02.552 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=273433 dst_pixels=12288 scratch_bytes=0
+00:00:02.576 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=6862911 dst_pixels=2073600 scratch_bytes=0
+00:00:02.576 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=152375 dst_pixels=12288 scratch_bytes=0
+00:00:02.600 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=6928234 dst_pixels=2073600 scratch_bytes=0
+00:00:02.600 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=190438 dst_pixels=12288 scratch_bytes=0
+00:00:02.624 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=7033288 dst_pixels=2073600 scratch_bytes=0
+00:00:02.624 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=157446 dst_pixels=12288 scratch_bytes=0
+00:00:02.648 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=7102037 dst_pixels=2073600 scratch_bytes=0
+00:00:02.648 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=233838 dst_pixels=12288 scratch_bytes=0
+00:00:02.672 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=6917872 dst_pixels=2073600 scratch_bytes=0
+00:00:02.673 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=173685 dst_pixels=12288 scratch_bytes=0
+00:00:02.697 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=7424014 dst_pixels=2073600 scratch_bytes=0
+00:00:02.697 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=236924 dst_pixels=12288 scratch_bytes=0
+00:00:02.721 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=6571134 dst_pixels=2073600 scratch_bytes=0
+00:00:02.721 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=120506 dst_pixels=12288 scratch_bytes=0
+00:00:02.745 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=7080800 dst_pixels=2073600 scratch_bytes=0
+00:00:02.745 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=198252 dst_pixels=12288 scratch_bytes=0
+00:00:02.769 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=7133587 dst_pixels=2073600 scratch_bytes=0
+00:00:02.770 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=170650 dst_pixels=12288 scratch_bytes=0
+00:00:02.793 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=6762009 dst_pixels=2073600 scratch_bytes=0
+00:00:02.793 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=112581 dst_pixels=12288 scratch_bytes=0
+00:00:02.819 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=8535095 dst_pixels=2073600 scratch_bytes=0
+00:00:02.819 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=169047 dst_pixels=12288 scratch_bytes=0
+00:00:02.846 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=9662169 dst_pixels=2073600 scratch_bytes=0
+00:00:02.847 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=373300 dst_pixels=12288 scratch_bytes=0
+00:00:02.852 [DEBUG] [wlr] [types/output/render.c:142] Disabling direct scan-out on output 'HEADLESS-1' (locks: 1)
+00:00:02.870 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=6838683 dst_pixels=2073600 scratch_bytes=0
+00:00:02.871 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=116589 dst_pixels=12288 scratch_bytes=0
+00:00:02.900 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=6616122 dst_pixels=2073600 scratch_bytes=0
+00:00:02.901 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=246943 dst_pixels=12288 scratch_bytes=0
+00:00:02.924 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=6615976 dst_pixels=2073600 scratch_bytes=0
+00:00:02.924 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=169638 dst_pixels=12288 scratch_bytes=0
+00:00:02.948 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=6844165 dst_pixels=2073600 scratch_bytes=0
+00:00:02.949 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=250199 dst_pixels=12288 scratch_bytes=0
+00:00:02.972 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=6946198 dst_pixels=2073600 scratch_bytes=0
+00:00:02.973 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=97563 dst_pixels=12288 scratch_bytes=0
+00:00:02.996 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=6837051 dst_pixels=2073600 scratch_bytes=0
+00:00:02.997 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=138219 dst_pixels=12288 scratch_bytes=0
+00:00:02.997 [DEBUG] [wlr] [types/output/render.c:142] Enabling direct scan-out on output 'HEADLESS-1' (locks: 0)
+00:00:03.022 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=7470419 dst_pixels=2073600 scratch_bytes=0
+00:00:03.022 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=139883 dst_pixels=12288 scratch_bytes=0
+00:00:03.047 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=7700322 dst_pixels=2073600 scratch_bytes=0
+00:00:03.048 [INFO] [wlr] [render/pixman/pass.c:285] K230_PIXMAN_DRAW transform=2 path=sampler copy_cpu_ns=0 total_cpu_ns=203582 dst_pixels=12288 scratch_bytes=0
+00:00:03.048 [DEBUG] [sway/ipc-server.c:196] New client: fd 22
+00:00:03.049 [INFO] [sway/commands.c:262] Handling command 'card_shell enter'
+00:00:03.050 [INFO] [sway/ipc-server.c:570] IPC Client 22 disconnected
+00:00:03.056 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1920x1080@0,0
+00:00:03.056 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+00:00:03.056 [DEBUG] [sway/desktop/transaction.c:821] Transaction 0x55555587c420 committing with 2 instructions
+00:00:03.057 [DEBUG] [sway/desktop/transaction.c:717] Applying transaction 0x55555587c420
+00:00:03.075 [INFO] [sway/main.c:399] Shutting down sway
+00:00:03.077 [DEBUG] [sway/tree/output.c:290] Disabling output 'HEADLESS-1'
+00:00:03.077 [DEBUG] [sway/tree/workspace.c:300] Destroying workspace '1'
+00:00:03.078 [DEBUG] [sway/tree/output.c:307] Destroying output 'HEADLESS-1'
