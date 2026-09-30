@@ -1407,6 +1407,7 @@ DATA e25dd43c6c9aca1f1dc57ace48a2de2a682760c5d35c095cd2536603e4e6761d  docs/evid
 DATA 099a47af0e5726fe78af086c0dc9cbbad1b6f4a9c88b30bbdcba5e22f780c980  docs/evidence/card-shell/app-switch-neighbour-render/after-held-1.png
 DATA 55e6ebda0e06d3ccd1ac7b61a94a59912d993b69a30ac1ab97e7685b203d69b1  docs/evidence/card-shell/app-switch-neighbour-render/after-held-2.png
 DATA f338397d2cf535385ce1e57c85756685d8bdb4c62a0856d170be35aec0da312c  docs/evidence/card-shell/app-switch-neighbour-render/before-cropped-neighbour.png
+DATA 570d15376898cb6e6af36ff5cb3e54d9f434759ee2fde467efc198810ab40233 docs/evidence/fahrenheit-weather/weather-fahrenheit.png
 DATA 07e481cec9ea72eb520c2ecc09c154e216d835381d54ac71b883c5f8e1364328  docs/evidence/card-shell/app-switch-neighbour-render/before-held-1.png
 DATA 1a517e2d67ae74efbc67de841187982617f3bff88b7202ee3a4dad08c14c3692  docs/evidence/card-shell/app-switch-neighbour-render/before-held-2.png
 DATA e23a93dd46e8e71e426fe69a64ff62f5b25b6f21d6775569aaaf70d8416eb14b docs/evidence/card-shell/webos-fan-switcher/dark-01-overview.png
