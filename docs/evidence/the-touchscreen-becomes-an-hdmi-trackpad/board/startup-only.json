@@ -1,0 +1,23 @@
+{
+  "recorded_at_utc": "2026-09-30T04:05:25.814955+00:00",
+  "evidence_class": "physical board console startup/timeout observation, no touch contacts",
+  "command": "timeout -k 2s 20s /nix/store/v0n70zk76z0p3xky67613769l8pc2lrl-k230-touch-trackpad-riscv64-unknown-linux-gnu-0.1.0/bin/k230-touch-trackpad --dry-run --log-events",
+  "exit_status": 124,
+  "exit_meaning": "Expected timeout after 20 seconds; SIGTERM interrupted poll, relay tore down and shut down.",
+  "observed": [
+    "Automatic mode selected Trackpad; panel connected=false.",
+    "Real touchscreen /dev/input/event0 ranges x=0..1023 and y=0..2399.",
+    "Axes 47,57,53,54; degenerate pressure axis omitted.",
+    "Dry-run explicitly did not create any uinput device.",
+    "Touchscreen grabbed, then ungrabbed on timeout; relay reports shutdown.",
+    "Both shell services remain active."
+  ],
+  "installed_system": "/nix/store/damsvxyr689vrxwr5hkbq7jzv85ff805-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "result": "PASS startup-only; real-contact gate OPEN",
+  "limits": [
+    "No one/two-finger events occurred. Task 3.0 remains unchecked; startup is only part of it.",
+    "No real virtual touchpad was created; no pointer/click/scroll/pinch or persistent service proof.",
+    "Timeout confirms this schedulable process stopped; it does not guarantee recovery from a kernel hang.",
+    "No reflash, reboot, or kernel change."
+  ]
+}

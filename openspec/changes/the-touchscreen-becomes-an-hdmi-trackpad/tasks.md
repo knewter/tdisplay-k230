@@ -87,7 +87,9 @@
       `nix build .#handheld-touch-trackpad --out-link .build-out/handheld-touch-trackpad --max-jobs 2 --cores 8`
       (new store path in task 2.5).
 
-## 3. Board verification (board-gated; not run by this change)
+## 3. Board verification (remaining contact and virtual-device gates open)
+
+Coordinator checkpoint: `docs/evidence/the-touchscreen-becomes-an-hdmi-trackpad/board/README.md` records a successful 20-second startup-only dry run on the live HDMI board. There were no finger events, so 3.0 remains unchecked and 3.1 has not started. The prototype is already on master through `6534585eb00a`, satisfying 4.2 independently of these gates.
 
 This change had no `/dev/ttyACM0`/board access (the coordinator owns the
 board) and `plugging-in-hdmi-moves-the-display`'s manual HDMI switch is
@@ -154,7 +156,7 @@ than repeating the exact run that hung the board.
 - [x] 4.1 Validate this change:
       `openspec validate the-touchscreen-becomes-an-hdmi-trackpad --strict`
       (exit code checked directly).
-- [ ] 4.2 Hand off to the coordinator for an early merge to `master` per
+- [x] 4.2 Hand off to the coordinator for an early merge to `master` per
       AGENTS.md, independent of whether group 3 has started — the
       proposal, the host-tested prototype, and the packaged binary are the
       reviewable deliverable now, not a private preface to board work that

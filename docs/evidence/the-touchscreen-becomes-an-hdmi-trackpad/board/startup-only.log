@@ -1,0 +1,11 @@
+$ timeout -k 2s 20s /nix/store/v0n70zk76z0p3xky67613769l8pc2lrl-k230-touch-trackpad-riscv64-unknown-linux-gnu-0.1.0/bin/k230-touch-trackpad --dry-run --log-events
+TRACKPAD_STARTUP_EXIT:124
+k230-touch-trackpad: mode -> Trackpad (panel connected: false)
+k230-touch-trackpad: --dry-run, not creating a uinput device
+k230-touch-trackpad: entered trackpad mode, grabbed /dev/input/event0 (x 0..1023 y 0..2399), axes: 47,57,53,54
+k230-touch-trackpad: poll error, leaving trackpad mode: Interrupted system call (os error 4)
+k230-touch-trackpad: left trackpad mode, ungrabbed touchscreen
+k230-touch-trackpad: shutting down
+$ systemctl is-active shell shell-ui
+active
+active
