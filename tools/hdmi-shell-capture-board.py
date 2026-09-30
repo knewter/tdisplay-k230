@@ -27,7 +27,8 @@ import uuid
 SOCKET = '/run/shell/sway-ipc.sock'
 MAGIC = b'i3-ipc'
 SCHEMA = 'hdmi-shell-performance-v1'
-PREFIXES = ('K230_CARD_BENCH ', 'K230_CARD_SHELL ', 'K230_PIXMAN_DRAW ')
+PREFIXES = ('K230_CARD_BENCH ', 'K230_CARD_SHELL ', 'K230_PIXMAN_DRAW ',
+            'K230_PIXMAN_OUTPUT_TURN ')
 MAX_JOURNAL = 16 * 1024 * 1024
 MAX_ROWS = 20_000
 SAFE_VALUE = re.compile(r'[A-Za-z0-9_.:+/-]{1,512}\Z')
@@ -166,7 +167,9 @@ def allowlisted_records(text, run_id, start_ns, end_ns):
         'input': {'v','run','event','input_id','gesture_id','kind','source','t_ns'},
         'submit': {'v','run','event','input_id','frame_id','t_ns','update_cpu_ns','final'},
         'present': {'v','run','event','frame_id','t_ns','presented','clock'},
-        'resource': {'v','run','event','phase','t_ns','cpu_ns','memory_bytes','scope'}}
+        'resource': {'v','run','event','phase','t_ns','cpu_ns','memory_bytes','scope'},
+        'incomplete': {'v','run','event','reason'},
+        'error': {'v','run','event','reason'}}
     shell_fields = {
         'input-origin': {'run','input_id','source_ns'},
         'repaint-cost': {'run','frame_id','render_cpu_ns','prepare_cpu_ns','build_cpu_ns','commit_cpu_ns','attempts','failed_attempts'},
@@ -174,7 +177,9 @@ def allowlisted_records(text, run_id, start_ns, end_ns):
         'input-cost': {'run','input_id','cpu_ns','policy_cpu_ns','scene_cpu_ns','chrome_cpu_ns'},
         'touch-route': {'phase','id','source_ms','dispatch_ms','x','y','width','height','edge','bottom_reserved','consumed','active','mode','ui','lock','launcher','drawer','popup','points','pointer','contact','edge_tracking','blocked','home'}}
     draw_keys = {'transform','path','copy_cpu_ns','total_cpu_ns','dst_pixels','scratch_bytes'}
+    turn_keys = {'src','dst','format','rotation','rotation_cpu_ns','scratch_bytes'}
     source_lines = text.splitlines()[:MAX_ROWS]
+    benchmark_error = None
     if discovered is None:
         # Journal order is not an API contract. Select the newest benchmark
         # arm by compositor monotonic time, never by the first session row.
@@ -207,7 +212,7 @@ def allowlisted_records(text, run_id, start_ns, end_ns):
         words = line[len(prefix):].split()
         if not words:
             continue
-        kind = words[0] if prefix != 'K230_PIXMAN_DRAW ' else ''
+        kind = words[0] if prefix == 'K230_CARD_SHELL ' else ''
         if prefix == 'K230_CARD_SHELL ' and kind not in shell_fields:
             continue
         if prefix == 'K230_CARD_SHELL ':
@@ -224,7 +229,22 @@ def allowlisted_records(text, run_id, start_ns, end_ns):
         if not valid:
             continue
         expected = (bench_keys.get(fields.get('event')) if prefix == 'K230_CARD_BENCH ' else
-                    shell_fields.get(kind) if prefix == 'K230_CARD_SHELL ' else draw_keys)
+                    shell_fields.get(kind) if prefix == 'K230_CARD_SHELL ' else
+                    draw_keys if prefix == 'K230_PIXMAN_DRAW ' else turn_keys)
+        if (prefix == 'K230_CARD_BENCH ' and fields.get('event') in ('incomplete','error')
+                and fields.get('run') == discovered):
+            # Keep only a known safe reason in context. Do not add this marker
+            # to the parser log, whose stable schema intentionally has no error event.
+            reason = fields.get('reason')
+            benchmark_error = reason if reason in ('input-overflow',) else 'benchmark-error'
+        if prefix == 'K230_PIXMAN_OUTPUT_TURN ':
+            numeric = (re.fullmatch(r'[0-9]{1,6}x[0-9]{1,6}', fields.get('src','')) and
+                       re.fullmatch(r'[0-9]{1,6}x[0-9]{1,6}', fields.get('dst','')) and
+                       re.fullmatch(r'0x[0-9A-Fa-f]{1,8}', fields.get('format','')) and
+                       all(re.fullmatch(r'[0-9]{1,20}', fields.get(key,'')) for key in
+                           ('rotation','rotation_cpu_ns','scratch_bytes')))
+            if not numeric:
+                continue
         if expected is None or set(fields) != expected:
             continue
         if prefix == 'K230_CARD_BENCH ':
@@ -249,12 +269,12 @@ def allowlisted_records(text, run_id, start_ns, end_ns):
             selected_run = discovered
             if 'run' in fields and fields['run'] != selected_run:
                 continue
-        else:
+        elif prefix == 'K230_PIXMAN_DRAW ':
             # Pixman rows have no run id: retain only a fixed numeric grammar from this bounded journal window.
             if not all(value.isdecimal() or SAFE_VALUE.fullmatch(value) for value in fields.values()):
                 continue
         result.append(line)
-    return result, session, discovered
+    return result, session, discovered, benchmark_error
 
 
 def complete_gestures(lines):
@@ -268,10 +288,10 @@ def complete_gestures(lines):
     return sum({'motion','release'} <= kinds for kinds in gestures.values())
 
 
-def outcome(reason, stop_error, restore_error, session, count, target):
+def outcome(reason, stop_error, restore_error, session, count, target, benchmark_error=None):
     """Cleanup failures always override otherwise complete benchmark coverage."""
-    if reason or stop_error or restore_error:
-        return 'INCOMPLETE', reason or stop_error or restore_error
+    if reason or stop_error or restore_error or benchmark_error:
+        return 'INCOMPLETE', reason or stop_error or restore_error or benchmark_error
     if session and session.get('event') == 'session' and count >= target:
         return 'CAPTURED', None
     return 'INCOMPLETE', 'no complete telemetry-covered gesture set'
@@ -312,6 +332,7 @@ def capture(args):
     deadline = started + args.seconds
     entered, touch_down, active_touch_id, stop_failed, restore_failed = False, False, None, None, None
     output_after = None
+    benchmark_error = None
     try:
         ipc.command('card_shell back')
         ipc.command('card_shell benchmark ' + args.input)
@@ -320,7 +341,7 @@ def capture(args):
         if time.monotonic() >= deadline:
             raise CaptureError('capture deadline expired while arming benchmark')
         raw = journal(since, max(.1, min(8, deadline-time.monotonic())))
-        _, _, run_id = allowlisted_records(raw, None, t0_ns, time.monotonic_ns())
+        _, _, run_id, benchmark_error = allowlisted_records(raw, None, t0_ns, time.monotonic_ns())
         if not run_id:
             raise CaptureError('benchmark arm did not emit a run identity')
         if args.input == 'injected':
@@ -348,7 +369,8 @@ def capture(args):
             while time.monotonic() < deadline:
                 time.sleep(min(.2, max(0, deadline-time.monotonic())))
                 raw = journal(since, max(.1, min(8, deadline-time.monotonic())))
-                lines, session, _ = allowlisted_records(raw, run_id, t0_ns, time.monotonic_ns())
+                lines, session, _, marker = allowlisted_records(raw, run_id, t0_ns, time.monotonic_ns())
+                benchmark_error = marker or benchmark_error
                 if complete_gestures(lines) >= args.drags + 1:
                     break
         if args.input == 'injected':
@@ -366,7 +388,8 @@ def capture(args):
         except Exception as error: restore_failed = str(error)
         try:
             raw = journal(since)
-            lines, session, _ = allowlisted_records(raw, run_id, t0_ns, time.monotonic_ns())
+            lines, session, _, marker = allowlisted_records(raw, run_id, t0_ns, time.monotonic_ns())
+            benchmark_error = marker or benchmark_error
         except Exception as error:
             reason = reason or str(error)
         try:
@@ -385,7 +408,7 @@ def capture(args):
         ipc.close()
     count = complete_gestures(lines)
     status, reason = outcome(reason, stop_failed, restore_failed, session, count,
-                             args.drags + (1 if args.input == 'physical' else 0))
+                             args.drags + (1 if args.input == 'physical' else 0), benchmark_error)
     logs = []
     # Never emit a run without a full parser-valid session; preserve honest zero-contact evidence.
     if status == 'CAPTURED' and session and session.get('event') == 'session':
@@ -457,13 +480,30 @@ class Fixtures(unittest.TestCase):
             'K230_CARD_BENCH v=1 run=new event=session t_ns=101 clock=monotonic backend=drm renderer=pixman width=1080 height=1920 output_format=ARGB8888 input=injected cards=1',
             'K230_CARD_SHELL repaint-cost run=new frame_id=5 render_cpu_ns=1 prepare_cpu_ns=1 build_cpu_ns=1 commit_cpu_ns=1 attempts=1 failed_attempts=0',
             'Foot title=private'])
-        rows, session, run = allowlisted_records(raw,None,0,200)
+        rows, session, run, error = allowlisted_records(raw,None,0,200)
         self.assertEqual(run,'new')
         self.assertEqual(session['event'],'session')
+        self.assertIsNone(error)
         self.assertTrue(all('old' not in row and 'private' not in row for row in rows))
 
+    def test_incomplete_overflow_marker_and_output_turn_record(self):
+        raw='\n'.join([
+            'K230_CARD_BENCH v=1 run=selected event=resource t_ns=10 clock=monotonic phase=baseline cpu_ns=1 memory_bytes=2 scope=compositor',
+            'K230_CARD_BENCH v=1 run=selected event=incomplete reason=input-overflow',
+            'K230_PIXMAN_OUTPUT_TURN src=1080x1920 dst=1920x1080 format=0x34325258 rotation=1 rotation_cpu_ns=1234 scratch_bytes=0',
+            'K230_PIXMAN_OUTPUT_TURN src=bad dst=bad format=secret rotation=1 rotation_cpu_ns=1 scratch_bytes=0'])
+        rows, _, run, error = allowlisted_records(raw,'selected',0,20)
+        self.assertEqual(run,'selected')
+        self.assertEqual(error,'input-overflow')
+        self.assertEqual(sum(row.startswith('K230_PIXMAN_OUTPUT_TURN ') for row in rows),1)
+        self.assertNotIn('secret','\n'.join(rows))
+        _, _, _, unknown = allowlisted_records(
+            'K230_CARD_BENCH v=1 run=selected event=error reason=unrecognized-private-text',
+            'selected',0,20)
+        self.assertEqual(unknown,'benchmark-error')
+
     def test_sanitizer_ignores_arbitrary_text_and_pixman_unscoped(self):
-        rows, _, _ = allowlisted_records('password=secret K230_CARD_BENCH junk\nK230_PIXMAN_DRAW transform=90 path=fast copy_cpu_ns=1 total_cpu_ns=2 dst_pixels=3 scratch_bytes=0', 'x',0,3)
+        rows, _, _, _ = allowlisted_records('password=secret K230_CARD_BENCH junk\nK230_PIXMAN_DRAW transform=90 path=fast copy_cpu_ns=1 total_cpu_ns=2 dst_pixels=3 scratch_bytes=0', 'x',0,3)
         self.assertEqual(len(rows),1)
         self.assertTrue(rows[0].startswith('K230_PIXMAN_DRAW '))
         self.assertNotIn('secret','\n'.join(rows))
@@ -495,7 +535,7 @@ class Fixtures(unittest.TestCase):
                     raise CaptureError('fixture stop failure')
             def close(self): self.closed=True
 
-        def run_fixture(directory, fail_stop):
+        def run_fixture(directory, fail_stop=False, overflow=False):
             FakeIPC.instances.clear()
             run='fixture_run'
             calls=[]
@@ -512,6 +552,8 @@ class Fixtures(unittest.TestCase):
                         f'K230_CARD_BENCH v=1 run={run} event=submit input_id={input_id} frame_id={frame} t_ns={stamp+1} update_cpu_ns=1 final={int(kind=="release")}',
                         f'K230_CARD_BENCH v=1 run={run} event=present frame_id={frame} t_ns={stamp+2} presented=1 clock=monotonic',
                         f'K230_CARD_SHELL repaint-cost run={run} frame_id={frame} render_cpu_ns=1 prepare_cpu_ns=1 build_cpu_ns=1 commit_cpu_ns=1 attempts=1 failed_attempts=0'])
+                if overflow:
+                    rows.append(f'K230_CARD_BENCH v=1 run={run} event=incomplete reason=input-overflow')
                 return '\n'.join(rows if len(calls)>1 else rows[:1])
             args=argparse.Namespace(input='injected',operator_confirmed_contacts=False,output=directory,
                 variant='candidate',source_revision='a'*40,seconds=5,drags=1)
@@ -550,6 +592,13 @@ class Fixtures(unittest.TestCase):
             self.assertEqual(meta['runs'],[])
             self.assertEqual(context['status'],'INCOMPLETE')
             self.assertIn('fixture stop failure',context['reason'])
+        with tempfile.TemporaryDirectory() as tmp:
+            directory=Path(tmp)/'overflow'
+            code,meta,context,instances=run_fixture(directory,False,overflow=True)
+            self.assertEqual(code,1)
+            self.assertEqual(meta['runs'],[])
+            self.assertEqual(context['status'],'INCOMPLETE')
+            self.assertEqual(context['reason'],'input-overflow')
 
 
 def parser():
