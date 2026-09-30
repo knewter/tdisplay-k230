@@ -1,0 +1,81 @@
+warning: Git tree '/mnt/MediaVolume/home/jadams/src/gitlab.daringbit.com/josh/tdisplay-k230/.scratch/coordinated-work/mainline-display' is dirty
+these 6 derivations will be built:
+  /nix/store/h4dwhw5g5yqxh0wmdf2c7psba3h51f9b-linux-mainline-k230-drm-src.drv
+  /nix/store/8v08whmldn2z8qg8wplpcpnaj6bcxdjs-kernel-intermediate-config.drv
+  /nix/store/r1qlzz0f2lyqhmjpqp9gif62qx7mcizz-linux-config-riscv64-unknown-linux-gnu-7.3.0-rc5.drv
+  /nix/store/iqnabgswd28rdsrgmpaz5gaj5dr7mb2j-linux-riscv64-unknown-linux-gnu-7.3.0-rc5.drv
+  /nix/store/mll8jcf8snf02gb2y8xf4bp51747hw93-k230-tdisplay-mainline-drm.dtb.drv
+  /nix/store/2p0v70nl4bmqqb53q0yq703bmk1af2bn-k230-mainline-drm-boot-files.drv
+building '/nix/store/mll8jcf8snf02gb2y8xf4bp51747hw93-k230-tdisplay-mainline-drm.dtb.drv'...
+building '/nix/store/h4dwhw5g5yqxh0wmdf2c7psba3h51f9b-linux-mainline-k230-drm-src.drv'...
+building '/nix/store/8v08whmldn2z8qg8wplpcpnaj6bcxdjs-kernel-intermediate-config.drv'...
+building '/nix/store/r1qlzz0f2lyqhmjpqp9gif62qx7mcizz-linux-config-riscv64-unknown-linux-gnu-7.3.0-rc5.drv'...
+building '/nix/store/iqnabgswd28rdsrgmpaz5gaj5dr7mb2j-linux-riscv64-unknown-linux-gnu-7.3.0-rc5.drv'...
+error: Cannot build '/nix/store/iqnabgswd28rdsrgmpaz5gaj5dr7mb2j-linux-riscv64-unknown-linux-gnu-7.3.0-rc5.drv'.
+       Reason: builder failed with exit code 2.
+       Output paths:
+         /nix/store/3yslr6nlqjq1582c0inzc33yghwzd25m-linux-riscv64-unknown-linux-gnu-7.3.0-rc5-dev
+         /nix/store/mna203f96pwm8pa7bjnibnlq7j0hll68-linux-riscv64-unknown-linux-gnu-7.3.0-rc5
+         /nix/store/yi4zgxq6y00vbkand7dx9fpx33qxrmqg-linux-riscv64-unknown-linux-gnu-7.3.0-rc5-modules
+       Last 25 log lines:
+       >   CC [M]  drivers/gpu/drm/nouveau/nv50_fence.o
+       >   CC [M]  drivers/gpu/drm/nouveau/nv84_fence.o
+       >   CC [M]  drivers/gpu/drm/nouveau/nvc0_fence.o
+       >   CC [M]  drivers/gpu/drm/nouveau/gv100_fence.o
+       >   LD [M]  drivers/gpu/drm/nouveau/ch7006.o
+       >   LD [M]  drivers/gpu/drm/nouveau/sil164.o
+       >   LD [M]  drivers/gpu/drm/nouveau/nouveau.o
+       >   AR      drivers/gpu/built-in.a
+       >   AR      drivers/built-in.a
+       >   AR      built-in.a
+       >   AR      built-in-fixup.a
+       >   COPY    vmlinux.a
+       >   LD      vmlinux.o
+       >   MODPOST Module.symvers
+       >   CC      .vmlinux.export.o
+       >   UPD     include/generated/utsversion.h
+       >   CC      init/version-timestamp.o
+       >   KSYMS   .tmp_vmlinux0.kallsyms.S
+       >   AS      .tmp_vmlinux0.kallsyms.o
+       >   LD      .tmp_vmlinux1
+       > /nix/store/9ms2hmks2xw9v039in56q8n21d2rak23-riscv64-unknown-linux-gnu-binutils-2.46/bin/riscv64-unknown-linux-gnu-ld.bfd: drivers/gpu/drm/canaan/canaan_dsi.o: in function `canaan_dsi_bind':
+       > /build/linux-mainline-k230-drm-src/build/../drivers/gpu/drm/canaan/canaan_dsi.c:752:(.text+0x1c6): undefined reference to `drm_bridge_connector_init'
+       > make[2]: *** [../scripts/Makefile.vmlinux:72: vmlinux.unstripped] Error 1
+       > make[1]: *** [/build/linux-mainline-k230-drm-src/Makefile:1387: vmlinux] Error 2
+       > make: *** [/build/linux-mainline-k230-drm-src/Makefile:248: __sub-make] Error 2
+       For full logs, run:
+         nix-store -l /nix/store/iqnabgswd28rdsrgmpaz5gaj5dr7mb2j-linux-riscv64-unknown-linux-gnu-7.3.0-rc5.drv
+error: Cannot build '/nix/store/iqnabgswd28rdsrgmpaz5gaj5dr7mb2j-linux-riscv64-unknown-linux-gnu-7.3.0-rc5.drv'.
+       Reason: builder failed with exit code 2.
+       Output paths:
+         /nix/store/3yslr6nlqjq1582c0inzc33yghwzd25m-linux-riscv64-unknown-linux-gnu-7.3.0-rc5-dev
+         /nix/store/mna203f96pwm8pa7bjnibnlq7j0hll68-linux-riscv64-unknown-linux-gnu-7.3.0-rc5
+         /nix/store/yi4zgxq6y00vbkand7dx9fpx33qxrmqg-linux-riscv64-unknown-linux-gnu-7.3.0-rc5-modules
+       Last 25 log lines:
+       >   CC [M]  drivers/gpu/drm/nouveau/nv50_fence.o
+       >   CC [M]  drivers/gpu/drm/nouveau/nv84_fence.o
+       >   CC [M]  drivers/gpu/drm/nouveau/nvc0_fence.o
+       >   CC [M]  drivers/gpu/drm/nouveau/gv100_fence.o
+       >   LD [M]  drivers/gpu/drm/nouveau/ch7006.o
+       >   LD [M]  drivers/gpu/drm/nouveau/sil164.o
+       >   LD [M]  drivers/gpu/drm/nouveau/nouveau.o
+       >   AR      drivers/gpu/built-in.a
+       >   AR      drivers/built-in.a
+       >   AR      built-in.a
+       >   AR      built-in-fixup.a
+       >   COPY    vmlinux.a
+       >   LD      vmlinux.o
+       >   MODPOST Module.symvers
+       >   CC      .vmlinux.export.o
+       >   UPD     include/generated/utsversion.h
+       >   CC      init/version-timestamp.o
+       >   KSYMS   .tmp_vmlinux0.kallsyms.S
+       >   AS      .tmp_vmlinux0.kallsyms.o
+       >   LD      .tmp_vmlinux1
+       > /nix/store/9ms2hmks2xw9v039in56q8n21d2rak23-riscv64-unknown-linux-gnu-binutils-2.46/bin/riscv64-unknown-linux-gnu-ld.bfd: drivers/gpu/drm/canaan/canaan_dsi.o: in function `canaan_dsi_bind':
+       > /build/linux-mainline-k230-drm-src/build/../drivers/gpu/drm/canaan/canaan_dsi.c:752:(.text+0x1c6): undefined reference to `drm_bridge_connector_init'
+       > make[2]: *** [../scripts/Makefile.vmlinux:72: vmlinux.unstripped] Error 1
+       > make[1]: *** [/build/linux-mainline-k230-drm-src/Makefile:1387: vmlinux] Error 2
+       > make: *** [/build/linux-mainline-k230-drm-src/Makefile:248: __sub-make] Error 2
+       For full logs, run:
+         nix-store -l /nix/store/iqnabgswd28rdsrgmpaz5gaj5dr7mb2j-linux-riscv64-unknown-linux-gnu-7.3.0-rc5.drv

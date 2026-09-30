@@ -31,9 +31,19 @@ copy of the prepared `.config`, then runs `olddefconfig` against the patched
 mainline source output. Effective config retained `DRM=y`,
 `DRM_CANAAN=y`, `DRM_CANAAN_DSI=y`, `DRM_PANEL_CANAAN_UNIVERSAL=y`,
 `DRM_LONTIUM_LT9611=y`, `DRM_CLIENT_SETUP=y`,
-`DRM_FBDEV_EMULATION=y`, and `DRM_MIPI_DSI=y`. The complete sanitized
+`DRM_FBDEV_EMULATION=y`, and `DRM_MIPI_DSI=y`. That original check did not
+assert the bridge-connector helper config. The complete sanitized
 stdout/stderr log is committed beside this report as
 `docs/evidence/mainline-display-api-compile.log`.
+
+The coordinator's subsequent complete-kernel attempt reached the final
+vmlinux link and found that `drm_bridge_connector_init` was not linked. The
+pinned source builds this helper only with `CONFIG_DRM_BRIDGE_CONNECTOR`,
+inside `DRM_DISPLAY_HELPER`; the Canaan Kconfig now selects both symbols,
+following upstream bridge-driver practice. The source/config correction is
+not yet build-verified. The failure log and exact limits are recorded in
+`docs/evidence/mainline-display-nix-build.md` and
+`docs/evidence/mainline-display-full-build-failure.log`.
 
 ## Output and limits
 
@@ -45,7 +55,6 @@ Canaan component symbol, `drm_bridge_connector_init`, and HDMI helper symbols.
 Those warnings were allowed by `KBUILD_MODPOST_WARN=1`; they are why this is
 not evidence of an in-tree kernel build. The command exited 0.
 
-The full `nix build .#kernelMainlineDrm` command has not been rerun. In the
-previous attempt it could not evaluate/build because this environment could
-not connect to `/nix/var/nix/daemon-socket/socket` (`Operation not permitted`).
-No board, serial port, display, or touch test was performed.
+The full candidate kernel derivation has been attempted by the coordinator;
+it failed at the vmlinux link before this Kconfig correction. A rebuild is
+pending. No board, serial port, display, or touch test was performed.

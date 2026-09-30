@@ -237,7 +237,7 @@ that milestone 1's methodology extends.
 
 ## 5b. Milestone 2 continuation: isolated mainline DRM display
 
-- [x] 5b.1 Port the Canaan DRM/DSI/panel sources against the pinned mainline API, then verify the copied driver objects and required DRM/input Kconfig resolution; preserve the exact command and limits in `docs/evidence/mainline-display-api-compile.md` and its log.
+- [ ] 5b.1 Port the Canaan DRM/DSI/panel sources against the pinned mainline API, then verify the copied driver objects and required DRM/input Kconfig resolution; preserve the exact command and limits in `docs/evidence/mainline-display-api-compile.md` and its log. The first complete kernel attempt found `drm_bridge_connector_init` missing from the link because Canaan Kconfig did not select `DRM_DISPLAY_HELPER`/`DRM_BRIDGE_CONNECTOR`; rerun the object/config check and full derivation after this fix.
 - [ ] 5b.2 Build the complete candidate kernel derivation with `nix build .#kernelMainlineDrm --print-out-paths`.
 - [x] 5b.3a Add a separately named, opt-in mainline DRM display/touch DT source and verify preprocessing, dtc compilation, and round-trip decompilation; record the host-only result and warning in `docs/evidence/mainline-display-dtb.md` and its log.
 - [ ] 5b.3b Build the complete candidate device-tree derivation with `nix build .#deviceTreeMainlineDrm --print-out-paths`.

@@ -2,10 +2,21 @@
 
 ## Result
 
-On 2026-09-29, the requested candidate outputs were not built. Both
-attempts failed before Nix evaluated or realized a derivation; there are no
-output paths and this is not build evidence. The complete output of the
-retry is in `mainline-display-nix-build.log`.
+On 2026-09-29, the first two invocations in this checkout could not reach a
+build: the default cache path was read-only, and a checkout-local cache still
+hit `Operation not permitted` connecting to the Nix daemon. Those attempts
+are recorded in `mainline-display-nix-build.log`.
+
+The coordinator then ran the three requested outputs under the shared build
+lock. The candidate kernel compiled through the final link, where vmlinux
+failed because Canaan DSI referenced `drm_bridge_connector_init` while the
+selected config omitted the helper object. The full captured output is in
+`mainline-display-full-build-failure.log`; this was not a successful kernel
+build and the boot-files output was not produced. The DTB derivation was
+requested in the same command, but its output path was not printed, so its
+build gate remains unchecked. Source review against the exact pinned Kconfig
+and Makefile identified the missing `DRM_DISPLAY_HELPER` and
+`DRM_BRIDGE_CONNECTOR` selects. They are now added, pending another build.
 
 The first invocation attempted to use the default Nix fetcher-lock directory
 under `/home/jadams/.cache`, which is read-only in this execution environment:
@@ -30,6 +41,6 @@ flock /tmp/k230-nix-build.lock bash -c \
 
 That passed the cache-directory step but failed connecting to
 `/nix/var/nix/daemon-socket/socket` with `Operation not permitted`. The
-shared lock was held for the attempt and released on exit. No board or serial
-port was used. The derivation tasks remain unchecked; retry when the Nix
-service is accessible from this execution environment.
+coordinator's later full-build attempt is described above. Kernel, device
+Tree, and boot-files tasks remain unchecked until their requested derivations
+complete successfully. No board or serial port was used.

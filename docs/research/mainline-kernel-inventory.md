@@ -221,6 +221,10 @@ support is itself still incomplete upstream).
    recorded compiler result so far is an external-module build against
    prepared headers; it emitted expected modpost unresolved-symbol warnings
    and is not a complete kernel build (`docs/evidence/mainline-display-api-compile.md`).
+   A later full kernel attempt reached the vmlinux link and exposed missing
+   `DRM_DISPLAY_HELPER`/`DRM_BRIDGE_CONNECTOR` Kconfig selections; the
+   candidate now selects them and awaits a rerun
+   (`docs/evidence/mainline-display-nix-build.md`).
    The separate opt-in DRM display/touch DT source and Image+DTB bundle now
    exist; the host DTS check is recorded in
    `docs/evidence/mainline-display-dtb.md`. Their complete Nix builds and
