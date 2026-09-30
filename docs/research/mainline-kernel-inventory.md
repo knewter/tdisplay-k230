@@ -68,7 +68,7 @@ tree can drive.
 | Serial console (UART0) | `snps,dw-apb-uart`, mainline 8250 code already | **Present.** `k230.dtsi`'s `uart0` node is byte-identical in shape to the vendor tree's; `docs/research/board-capability-inventory.md` already confirms our board's console *is* UART0, and neither tree's device tree programs UART0's pinmux (both rely on U-Boot's FPIOA table) — see `nix/dts/k230-tdisplay-mainline.dts`'s header for the full citation chain. | **Use upstream as-is.** No patch needed; only a board `.dts` enabling it (`nix/dts/k230-tdisplay-mainline.dts`, this change). |
 | SoC platform (PLIC/CLINT/reset/clock/pinctrl) | Vendor tree's own copies of the same IP blocks | **Present**, merged for v7.3: `PINCTRL_K230` (`drivers/pinctrl/canaan/pinctrl-k230-iomux.c`), `RESET_K230` (`drivers/reset/reset-k230.c`), `COMMON_CLK_K230`. All gate on `ARCH_CANAAN`. | **Use upstream as-is.** `nix/kernel-mainline.nix` turns on all three. |
 | Second C908 core | N/A — `system/second-core-readiness`, not attempted | **Not modeled at all.** Mainline's `k230.dtsi` `cpus` node has exactly one `cpu@0`; there is no `cpu@1` upstream to even describe the second hart, independent of whether Linux SMP release would be safe (see that capability's own gating). | **Blocked upstream**, not just on us — a future upstream patch would need to add the second hart's CPU node before this project's own SMP-safety gating even becomes relevant. |
-| RM69A10 AMOLED panel (DSI) | `drivers/gpu/drm/panel/panel-canaan-universal.c`, patched | **Missing-driver, no visible upstream work.** `gh api repos/torvalds/linux/contents/drivers/gpu/drm/panel/panel-canaan-universal.c` → 404; no `drivers/gpu/drm/canaan/` directory (`canaan_drv.c`/`canaan_vo.c`/`canaan_dsi.c`/`canaan_phy.c` all 404). No K230 DSI/VO/DRM patch series found in any of this research's mailing-list searches (SDHCI, USB, pinctrl, clk, reset, PCI all turned up multi-revision threads; display did not turn up any). `docs/research/linux-on-t-display-k230.md` (this repo, 2026-09-21) independently found three working Linux-on-this-panel projects, and every one of them is a **fork of the vendor Xuantie tree**, not a mainline submission. | **Forward-port the vendor driver as an out-of-tree module set**, or wait — there is no third option visible today. This is the single largest gap standing between mainline and this handheld's actual shell; nothing in this change attempts it. |
+| RM69A10 AMOLED panel (DSI) | `drivers/gpu/drm/panel/panel-canaan-universal.c`, patched | **Upstream driver still missing; local candidate now in progress.** The pinned upstream source has no `drivers/gpu/drm/panel/panel-canaan-universal.c` and no `drivers/gpu/drm/canaan/` directory (`canaan_drv.c`/`canaan_vo.c`/`canaan_dsi.c`/`canaan_phy.c` all absent). No K230 DSI/VO/DRM patch series was found in this research's mailing-list searches. `docs/research/linux-on-t-display-k230.md` (2026-09-21) found three working Linux-on-this-panel projects, all forks of the vendor Xuantie tree. A separate local candidate now lives in `nix/kernel-mainline-drm.nix` and `nix/patches/mainline/drm/`; its prepared-header external-module check is recorded in `docs/evidence/mainline-display-api-compile.md`. That check is not a complete kernel build or board evidence. | **Candidate remains unproven.** Complete the isolated `kernelMainlineDrm` build, matching board DTB/boot profile, then probe and verify on hardware; it must not change the console-only or vendor defaults. |
 | GT9895 touch | `nix/patches/goodix-berlin/` (v6.12 backport onto the vendor 6.6 tree) | **Present, unusually — already upstream on its own merits.** `gh api .../drivers/input/touchscreen/goodix_berlin_core.c` → 200 (our own backport patch header already says this: "goodix_berlin, backported from v6.12"). But **unusable without an I2C DT node**, and no I2C controller node exists in mainline's `k230.dtsi` at all yet. | **Driver needs no porting; the I2C bus DT plumbing does.** Blocked on an upstream (or our own forward-ported) I2C controller node, not on touch itself. |
 | GC2093 camera | Missing-driver (vendor tree too) | **Missing-driver, same as vendor.** No CSI/ISP driver of any kind for this SoC anywhere; not investigated further here since the vendor-tree gap is already the binding constraint. | Out of scope for both trees today. |
 | HDMI (Lontium LT9611) | `CONFIG_DRM_LONTIUM_LT9611=y` already, vendor tree | **Bridge driver itself is generic upstream code** (not Canaan-specific), but it is DSI-fed, so it inherits the same "no mainline DSI host" blocker as the panel row above. | Blocked on the same DSI/VO gap as the panel. |
@@ -205,26 +205,24 @@ support is itself still incomplete upstream).
    `.remove_new`→`.remove` fix, `rtc@91000c00` added to the board DTS. Built
    cleanly on the first attempt — no API migration needed, unlike GPIO/
    SD-MMC. Board-unverified, same as every row in this document.
-8. **Display, audio, power key, thermal, crypto, ADC, PWM**: each blocked
-   on a missing upstream driver with no in-progress public series found.
-   Display alone was concretely scoped (not attempted to completion): a
-   scratch trial forward-porting the vendor's `canaan_drv.c`/`canaan_vo.c`/
-   `canaan_dsi.c`/`canaan_phy.c`/`canaan_plane.c` + `panel-canaan-universal.c`
-   (~3,900 lines total, before re-applying this project's own ~10 existing
-   patches against the panel/DSI/VO files) hit a real, structural API
-   change on the very first file checked — `drm_panel_init()` was replaced
-   by a refcounted `devm_drm_panel_alloc()` allocation model
-   (`include/drm/drm_panel.h`), which changes the panel struct's allocation
-   pattern, not just a symbol name — after a Kconfig `select DRM` circular-
-   dependency fix (drivers below `if DRM` cannot themselves `select DRM`;
-   `depends on DRM` instead) and one already-removed Kconfig symbol
-   (`DRM_KMS_DMA_HELPER`, dropped upstream). Discarded uncommitted rather
-   than left half-working (`nix build .#kernelMainline` must stay green,
-   per this document's own spec requirement) — this is a genuinely larger
-   class of task than GPIO/SD-MMC/USB/RTC (DRM atomic modeset, bridge,
-   connector and component-framework churn across five interconnected
-   files, not a single self-contained driver), and deserves its own
-   dedicated effort rather than a rushed continuation here. The other six
+8. **Display, audio, power key, thermal, crypto, ADC, PWM**: each missing
+   upstream drivers, with no in-progress public series found. The local
+   DRM candidate is tracked separately from upstream mainline. Display was
+   initially scoped without a port, then resumed in task group 5b of the
+   OpenSpec change. The historical scratch trial copied the vendor's
+   `canaan_drv.c`/`canaan_vo.c`/`canaan_dsi.c`/`canaan_phy.c`/
+   `canaan_plane.c` plus `panel-canaan-universal.c` (about 3,900 lines,
+   before project-specific patches) and exposed structural DRM API changes:
+   `drm_panel_init()` had been replaced by `devm_drm_panel_alloc()`, along
+   with Kconfig dependency and removed-symbol adjustments. That trial was
+   discarded, then the coordinator authorized a separate opt-in derivation.
+   The resumed source now adapts the panel allocation, fbdev/client setup,
+   atomic helper signatures, and platform remove callbacks. The only
+   recorded compiler result so far is an external-module build against
+   prepared headers; it emitted expected modpost unresolved-symbol warnings
+   and is not a complete kernel build (`docs/evidence/mainline-display-api-compile.md`).
+   Complete derivation, matching display DTB/boot files, and physical probe
+   remain open. The other six
    (audio, power key, thermal, crypto, ADC, PWM) are individually much
    closer in size/shape to RTC (single small self-contained files) and are
    plausible next candidates for the same methodology. Not scheduled

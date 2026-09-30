@@ -350,6 +350,19 @@
           cp ${self.packages.${buildSystem}.deviceTreeMainline}/k230-tdisplay-mainline.dtb $out/
         '';
 
+        # openspec/changes/the-board-runs-a-mainline-kernel, milestone 2
+        # (display), IN PROGRESS: the Canaan DRM stack + RM69A10 panel,
+        # forward-ported onto the mainline pin. A SEPARATE derivation from
+        # kernelMainline (per the coordinator's instruction), overriding a
+        # freshly-built, UNWRAPPED kernel-mainline.nix result the same way
+        # nix/kernel-rvv-trial.nix overrides nix/kernel.nix's.
+        #   nix build .#kernelMainlineDrm
+        kernelMainlineDrm = pkgsCross.callPackage ./nix/kernel-mainline-drm.nix {
+          kernelMainline = pkgsCross.callPackage ./nix/kernel-mainline.nix {
+            inherit (pkgsCross) buildLinux;
+          };
+        };
+
         # openspec/changes/the-board-runs-a-mainline-kernel, milestone 1: the
         # full NixOS system variant, cross-built against kernelMainline, and
         # its matching boot files (Image, DTB-with-bootargs, initrd.uimg).

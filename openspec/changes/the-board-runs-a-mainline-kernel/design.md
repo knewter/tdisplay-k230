@@ -219,3 +219,22 @@ built here, to keep this change's own build scope to "does it compile").
   Wrong gate/reset selection would surface as a probe failure or a
   hung/misbehaving peripheral on the board, not a build failure — squarely
   the first hardware milestone's job to find, not this one's.
+
+## Follow-up: isolated DRM display continuation
+
+The original task 5a.2 records why the first milestone-3 display trial was
+reverted. The coordinator later authorized continuing that port as a
+separate, opt-in `kernelMainlineDrm` derivation. Its DRM, DSI, universal
+panel, and LT9611 sources live under `nix/patches/mainline/drm/`, copied
+from the vendor-derived working port and kept out of `kernelMainline` and
+all default outputs. The pin is still Linux v7.3-rc5; this does not change
+the kernel source pin or claim that pin is the latest kernel.org release.
+
+The first source/API increment replaces removed generic fbdev setup with
+the pinned tree's DMA fbdev/client API, updates the changed atomic helper
+and platform remove signatures, and removes `drm_driver.date`. The exact
+prepared-header external-module result is in
+`docs/evidence/mainline-display-api-compile.md`. This is useful compiler
+feedback, but the unresolved modpost symbols mean it is not a complete
+in-tree kernel build. The full DRM derivation, display DTB/boot bundle, and
+all hardware probe, panel, and touch behavior remain open tasks.

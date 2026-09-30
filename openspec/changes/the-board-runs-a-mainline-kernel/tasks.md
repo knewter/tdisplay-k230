@@ -235,6 +235,32 @@ that milestone 1's methodology extends.
       revert is complete and the tree matches the previous commit exactly
       for `nix/kernel-mainline.nix`.
 
+## 5b. Milestone 2 continuation: an isolated mainline DRM port
+
+- [x] 5b.1 Keep the forward-ported Canaan DRM/DSI, RM69A10 panel, and
+      LT9611 code in the separate `kernelMainlineDrm` derivation. Adapt
+      the removed generic fbdev API to the pinned tree's DMA fbdev/client
+      setup, update platform remove callback return types and DRM atomic
+      callback arguments, remove the deleted `drm_driver.date` field, and
+      enable the required client/fbdev config symbols. Proof is limited to
+      the prepared-header external-module command and output in
+      `docs/evidence/mainline-display-api-compile.md`; unresolved symbols
+      are expected at external-module modpost and do not count as an
+      in-tree kernel build.
+- [ ] 5b.2 Run `nix build .#kernelMainlineDrm --print-out-paths` to prove
+      the complete separately configured kernel derivation builds. Keep
+      this unchecked until that command succeeds.
+- [ ] 5b.3 Add and build a separate `deviceTreeMainlineDrm` with the
+      mainline VO/DSI, RM69A10 panel, and GT9895/GT9916-compatible touch
+      path, using only pinned mainline clock/reset IDs and supported
+      providers. Build/round-trip proof does not prove board wiring.
+- [ ] 5b.4 Add a separately named DRM boot-files bundle pairing that
+      kernel and DTB; do not redirect the console-only mainline profile or
+      any vendor/default output.
+- [ ] 5b.5 On a reserved physical board, capture serial probe logs and a
+      panel photograph, then verify touch interaction. Host compilation
+      and DTB round-tripping cannot satisfy this hardware gate.
+
 ## 6. Confirm no existing output changed
 
 - [x] 6.1 Confirm `.#kernel`, `.#deviceTree`, and

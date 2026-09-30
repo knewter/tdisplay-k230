@@ -82,9 +82,10 @@ upstream independently, none require porting as a patch today).*
 
 - **WHEN** someone reads `docs/research/mainline-kernel-inventory.md`'s
   panel row
-- **THEN** it states plainly that no mainline DSI/VO/canaan-drm driver
-  exists, cites the exact file-existence checks that established this, and
-  does not claim a porting effort in progress
+- **THEN** it states that the pinned upstream tree had no DSI/VO/Canaan
+  DRM drivers at the time of the inventory, cites the exact file-existence
+  checks, and points to the separately tracked `kernelMainlineDrm`
+  continuation without claiming that continuation is complete
 
 #### Scenario: A vendor-kernel patch is checked against mainline
 
@@ -143,3 +144,33 @@ performing them.*
 - **WHEN** someone asks whether `.#kernelMainline` has booted on the T-Display-K230
 - **THEN** the answer cites a committed board console transcript under
   `docs/evidence/`, or states plainly that none exists yet
+
+### Requirement: A mainline display port remains isolated and evidence-bounded
+
+The project MAY provide an opt-in mainline DRM candidate, but it SHALL
+remain a separate derivation from the console-only `kernelMainline` and
+SHALL NOT change the vendor kernel, default device tree, system
+configuration, or image outputs. Source/API checks, complete kernel builds,
+DTB checks, and physical display/touch observations SHALL be recorded as
+distinct evidence; one class SHALL NOT be described as proof of another.
+
+*Grounding: `nix/kernel-mainline-drm.nix` builds the copied Canaan DRM/DSI,
+RM69A10 panel, and LT9611 code as a separate override of
+`kernelMainline`. `docs/evidence/mainline-display-api-compile.md` records
+the prepared-header external-module check, its expected unresolved modpost
+warnings, and the absent complete-build and hardware results. The DRM
+driver sources in the pinned upstream source output are absent; this
+candidate forward-ports them from the vendor-derived implementation.*
+
+#### Scenario: Someone builds the console-only mainline kernel
+
+- **WHEN** someone runs `nix build .#kernelMainline`
+- **THEN** the optional DRM candidate does not modify that kernel or its
+  existing console boot-files/DTB outputs
+
+#### Scenario: Someone asks whether the DRM candidate drives the panel
+
+- **WHEN** only external-module compilation or DTB round-trip evidence is
+  available
+- **THEN** the answer describes only those checks and leaves kernel build,
+  board probe, panel illumination, and touch behavior unverified
