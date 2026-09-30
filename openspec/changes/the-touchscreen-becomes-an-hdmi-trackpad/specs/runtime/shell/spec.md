@@ -21,3 +21,37 @@ their existing configuration.
 
 - **WHEN** the operator uses two-finger scrolling or pinch in an app
 - **THEN** the four-finger shell binding does not consume that gesture
+
+### Requirement: HDMI two-finger gestures have explicit ownership and direct motion
+
+<!-- UNVERIFIED: operator requested the gesture UX pass on 2026-09-30; source,
+compositor and physical acceptance for the new edge/motion policy are tasks 5.1-5.7. -->
+
+In HDMI trackpad mode, the shell SHALL offer two-finger vertical swipes from
+the built-in glass's top and bottom edges for shell navigation, independent
+of cursor position. It SHALL move overview cards continuously under a
+horizontal two-finger swipe and settle with the release momentum. It SHALL
+preserve center application scroll/pinch and one-finger pointer/tap input.
+Drawer/shade dismissal SHALL follow current visible geometry and support
+reversal, cancellation and transport-loss recovery. This policy SHALL not
+change direct-touch panel input.
+
+#### Scenario: Open shell surfaces without positioning the cursor
+
+- **WHEN** two fingers swipe down from the glass's top edge or up from its bottom edge in HDMI mode
+- **THEN** Shade or the existing app/overview/Home/drawer navigation follows that movement, independent of where the pointer is
+
+#### Scenario: Browse cards without stepping
+
+- **WHEN** two fingers move horizontally while overview is showing
+- **THEN** live cards move continuously, reverse with the fingers and settle from release velocity without discrete card jumps
+
+#### Scenario: Ordinary input retains its owner
+
+- **WHEN** a center two-finger scroll/pinch, one-finger pointer/tap, incompatible edge movement or additional-contact sequence occurs
+- **THEN** the compatible ordinary sequence remains libinput-owned; a canceled owned shell gesture cannot generate a stray app click
+
+#### Scenario: Dismiss, reverse or lose a controller
+
+- **WHEN** an owned sheet gesture reverses, cancels or loses its transport
+- **THEN** the current sheet settles to a recoverable state without a stale owned contact, half-visible sheet or unrelated route

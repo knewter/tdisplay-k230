@@ -29,7 +29,7 @@ for panel mode completely unaffected; prove the design's mechanism on the
 host to the extent host evidence can reach.
 
 **Non-goals:** implementing or depending on no-reboot HDMI hot-plug
-automation; tuning libinput's gesture/acceleration defaults; a hardened
+automation; retuning pointer acceleration or tap timing; a hardened
 non-root permission model (see "Permissions" below); wiring the resulting
 NixOS module into the shipped configuration (left for the coordinator once
 an HDMI session exists to try it against); any change to the touchscreen's
@@ -321,3 +321,43 @@ Use `bindgesture --input-device=1:1:K230_Virtual_Touchpad_(HDMI_mode) pinch:4:in
 in the generated Sway configuration. A live IPC binding provides immediate
 availability; the image configuration makes it persistent. Actual four-finger
 recognition/overview appearance remains a physical evidence gate.
+
+## 2026-09-30: two-finger shell navigation and motion
+
+The original pure relay remains the app-input path. Its forwarding tests still
+apply. Add a bounded frame gate around it only in trackpad mode, enabled by an
+explicit shell socket argument in the service. This is an intentional refinement
+of the earlier non-goal after real operator feedback.
+
+- Top-edge two-finger downward swipe reveals Shade. Bottom-edge upward swipe
+  follows the existing app -> overview -> Home -> app-drawer route. Physical
+  glass edges determine qualification, independently of monitor transform or
+  pointer location. Use normalized native digitizer ranges without rotating
+  the touchpad's coordinate system.
+- Only exactly two contacts with a predominantly vertical edge movement are
+  eligible. A bounded initial edge buffer disambiguates a second finger from
+  pointer/tap, horizontal scroll and pinch; center contacts pass immediately.
+  Single-finger movement, timeout, extra contacts or incompatible motion flush
+  the original buffered events in order. Reject/fail-open before ownership if
+  the compositor refuses. After ownership, contact changes cancel and wait for
+  lift rather than manufacture a click in another surface.
+- Transport uses a persistent, deadline-bound Sway IPC connection on a worker,
+  coalesces pending motion but retains begin/end/cancel, and sends a stationary
+  heartbeat. No per-frame subprocess, unbounded queue, or synchronous render
+  work in the input-reading loop. The compositor owns a distinct gesture ID,
+  validates sequence/finiteness/ranges and restores ownership on lost transport.
+- Reuse existing card/Home/reveal policy for normalized movement. Add explicit
+  close-from-visible-state to the shared reveal protocol so reverse/cancel and
+  EOF restore the current sheet instead of showing a different route. Ordinary
+  app content is never sent fabricated pointer releases by a shell gesture.
+- In overview, continuous finger-axis scrolling uses the existing drag/coast
+  physics; discrete mouse wheels keep their step policy. Finger lift supplies
+  release velocity; stopping/holding does not keep accumulating movement.
+  Named-device natural scrolling makes content travel with the fingers.
+
+Host gates cover edge/center arbitration, staggered contacts, pinch/horizontal
+fall-through, timing/buffer bounds, transport failure, cancellation and dropped
+controller recovery. Paired real compositor tests cover live geometry, focus,
+normal-app input and reversible sheets. Cross-build and installed-board injected
+proof are separate from real glass feel and camera evidence. Keep every old
+physical restoration/click/pinch gate open until its own proof exists.

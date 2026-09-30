@@ -94,7 +94,19 @@ situation (HDMI active), not a new piece of hardware.
   touch path (this is a parallel mode, not a replacement); implementing
   the no-reboot HDMI hot-plug automation (`plugging-in-hdmi-moves-the-display`
   group 4) — this change's mode detection is written to work under either
-  outcome of that still-open question; tuning libinput's acceleration
-  curve, tap timeout, or scroll speed beyond its defaults (follow-on once
-  someone can feel it on glass); a udev-rule-based non-root permission
+  outcome of that still-open question; retuning pointer acceleration or tap timing; a udev-rule-based non-root permission
   model for the service (documented as follow-on in `design.md`).
+
+## HDMI gesture refinement (2026-09-30)
+
+The operator reports awkward shell gestures and requests an actual HDMI UX
+pass, especially easy two-finger drawer/card navigation. Extend this existing
+change rather than create another unrelated in-flight proposal. Two-finger
+vertical swipes starting near the built-in glass's top/bottom edges navigate
+the shell independently of cursor location; center scrolling/pinch and
+one-finger pointer/taps remain libinput-owned. Two-finger horizontal overview
+scroll follows movement continuously and preserves release momentum. Drawer/
+shade dismissal must be reversible and must not strand a half-visible sheet.
+The coordinator owns relay gesture arbitration, bounded local IPC, compositor
+policy, shared Rust reveal/dismiss and named-device natural scroll defaults.
+No HDMI kernel/DT change, new graphics engine or whole-device flash is needed.
