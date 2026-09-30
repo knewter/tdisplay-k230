@@ -40,10 +40,12 @@ The capture and scene entry points now delegate to their bounded helpers.
 The board helper has separate mocked capture/cleanup fixtures; these are host
 proof, not observations from the board.
 
-The reconstructed final-frame patch passed source/application checks. It has
-not yet been rebuilt or exercised as a scene after recovery. Its predecessor
-compiled natively before environment loss, but that is not proof for this
-reconstructed source. A prior headless run was blocked by sandbox Unix-socket
+The reconstructed final-frame patch now compiles as part of the native pinned
+wlroots build. A socket-free public-render-pass probe confirms rotation
+direction and byte-exact nearest-filter output for both quarter turns and
+ARGB8888/RGB565. It also reproduces bilinear differences; see
+[the probe and measured limits](../../../tests/pixman-output-turn/README.md).
+This is small-surface renderer proof, not a running Sway scene or board proof. A prior headless run was blocked by sandbox Unix-socket
 `bind()` returning `Operation not permitted`; it was not passing scene evidence.
 
 ## Correctness and physical limits
@@ -62,8 +64,8 @@ the proposal's controlled 24-drag budgets for the final-frame candidate.
 
 The operator reported that app-edge gestures worked after recognizing the
 touchscreen's 90-degree orientation. This does not complete the named physical
-capture, keyboard/shade checks or latency gate; no recognition threshold or
-recognition change is justified by that earlier observation alone. The later
+capture, keyboard/shade checks or latency gate; no recognition threshold
+change is justified by that earlier observation alone. The later
 operator correction below proves a separate orientation mismatch.
 
 Next gates are reconstructed scene/pixel proof, exact cross-build identity,
@@ -129,7 +131,7 @@ The board's glass retains its native portrait axes while controlling the
 external monitor. `nix/hdmi-touch-calibration.nix` supplies the compensating
 affine matrix for each supported HDMI transform. For the current 90-degree
 profile it is `0 -1 1 1 0 0`; wlroots subsequently maps the calibrated point
-back to `(x,y)`. `nix/shell.nix` applies it after mapping touch to HDMI and
+back to `(x,y)`. `nix/shell.nix` applies it only when HDMI is active, after mapping touch to it, and
 explicitly restores identity calibration in the panel configuration on reload.
 This uses Sway/libinput configuration and does not change the touch driver or
 gesture thresholds.

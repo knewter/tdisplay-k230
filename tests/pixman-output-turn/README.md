@@ -11,13 +11,14 @@ quarter-turn patch, and their helper headers in place. Then compile and run
 from the repository root, substituting the absolute wlroots source directory:
 
 ```sh
+mkdir -p .scratch
 cc -std=c11 -D_POSIX_C_SOURCE=200809L -Wall -Wextra -Werror \
   -I/path/to/wlroots/include -I/path/to/wlroots/builddir/include \
   -I/usr/include/libdrm -I/usr/include/pixman-1 \
   tests/pixman-output-turn-render-pass.c \
   -L/path/to/wlroots/builddir -Wl,-rpath,/path/to/wlroots/builddir \
-  -l:libwlroots-0.20.so -o /tmp/pixman-output-turn-render-pass
-LD_LIBRARY_PATH=/path/to/wlroots/builddir /tmp/pixman-output-turn-render-pass
+  -l:libwlroots-0.20.so -o .scratch/pixman-output-turn-render-pass
+LD_LIBRARY_PATH=/path/to/wlroots/builddir .scratch/pixman-output-turn-render-pass
 ```
 
 The probe covers both wl_output transform enums, ARGB8888 and RGB565 output,

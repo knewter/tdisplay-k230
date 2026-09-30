@@ -807,7 +807,7 @@ let
     output HDMI-A-1 transform ${cfg.hdmiTransform} bg #000000 solid_color
     exec_always ${pkgs.writeShellScript "k230-touch-follow-output" ''
       # swaymsg from the session's own PATH: the running sway's client.
-      if swaymsg -t get_outputs -r | ${pkgs.gnugrep}/bin/grep -q '"name": "HDMI-A-1"'; then
+      if swaymsg -t get_outputs -r | ${pkgs.jq}/bin/jq -e 'any(.[]; .name == "HDMI-A-1" and .active)' >/dev/null; then
         swaymsg input type:touch map_to_output HDMI-A-1
         swaymsg input type:touch calibration_matrix ${hdmiTouchCalibration}
       fi
