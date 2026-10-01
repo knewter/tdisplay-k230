@@ -8,7 +8,6 @@ import lzma
 from pathlib import Path
 import re
 import subprocess
-import sys
 import tempfile
 from urllib.parse import quote
 
@@ -76,6 +75,13 @@ def evaluate(revision):
     return outputs
 
 
+def source_details(revision):
+    return {'kernel_version': run(['nix', 'eval', '--raw', '--no-write-lock-file',
+                flake(revision) + '#' + TARGETS['kernel'] + '.version']),
+            'flake_lock_sha256': hashlib.sha256(subprocess.check_output(
+                ['git', 'show', revision + ':flake.lock'], cwd=REPO)).hexdigest()}
+
+
 def notes(metadata):
     return (f"Development snapshot of the coherent Rust handheld shell with the normal "
             f"vendor Xuantie kernel {metadata['kernel_version']}.\n\n"
@@ -125,10 +131,7 @@ def stage(args):
     metadata = {'schema': 1, 'revision': revision, 'tag': tag, 'repository': args.repository,
                 'created_at': datetime.now(timezone.utc).isoformat(),
                 'target': 'sdImage-coherent', 'configuration': 'k230-coherent-shell',
-                'kernel_version': run(['nix', 'eval', '--raw', '--no-write-lock-file',
-                     flake(revision) + '#' + TARGETS['kernel'] + '.version']),
-                'flake_lock_sha256': hashlib.sha256(subprocess.check_output(
-                    ['git', 'show', revision + ':flake.lock'], cwd=REPO)).hexdigest(),
+                **source_details(revision),
                 'operator_note': args.validation_note or '',
                 'outputs': outputs, 'build_commands': commands, 'validation_limits': LIMITS,
                 'image': {'name': image_name, 'sha256': digest(image), 'bytes': image.stat().st_size},
@@ -143,6 +146,10 @@ def stage(args):
 def verify_stage(directory, metadata):
     if revision_sha(metadata['revision']) != metadata['revision']:
         raise ValueError('Staged revision is not an exact commit SHA')
+    if metadata['image']['name'] != f'tdisplay-k230-coherent-{metadata["revision"][:12]}.img.xz':
+        raise ValueError('Image filename differs from source revision')
+    if any(metadata.get(key) != value for key, value in source_details(metadata['revision']).items()):
+        raise ValueError('Kernel or lock provenance differs from source revision')
     if metadata['target'] != 'sdImage-coherent' or metadata['configuration'] != 'k230-coherent-shell':
         raise ValueError('Unsupported image selection')
     if evaluate(metadata['revision']) != metadata['outputs']:
