@@ -224,8 +224,8 @@ static const float selected_color[4] = {.184, .420, .310, 1};
  * The RGB565 thumbnail cache and unscaled/alpha/transformed source paths
  * all use the same clip; app pixels and cache memory layout stay intact. */
 #define CARD_CORNER_RADIUS 26.0
-#define CARD_PLATE_STROKE_UNSELECTED 1.5
-#define CARD_PLATE_STROKE_SELECTED 3.0
+#define CARD_PLATE_STROKE_UNSELECTED 0.0
+#define CARD_PLATE_STROKE_SELECTED 1.5
 static uint32_t argb_from_float(const float rgba[4]) {
 	uint32_t a = (uint32_t)lround(rgba[3] * 255.0f) & 0xff;
 	uint32_t r = (uint32_t)lround(rgba[0] * 255.0f) & 0xff;
@@ -255,16 +255,17 @@ static const struct card_brush *card_brush_for(bool selected) {
 		return selected ? &shell.appearance.selected : &shell.appearance.card;
 	return selected ? &fallback_selected : &fallback_card;
 }
-/* A subtle, always-visible rim around the plate: blended toward white rather
- * than reusing the fill colour outright, since a themed fill can be fully
- * opaque (identical fill/rim would vanish) or translucent by design. Selected
- * cards get a stronger, brighter rim instead of a differently coloured plate. */
+/* Reserve the rim for selection and use the authored selected text color.
+ * Mixing every card fill toward white breaks light themes and adds a second
+ * frame around the app's own content. The live crop/radius is unchanged. */
 static void plate_stroke_color(const float fill[4], bool selected, float out[4]) {
-	float mix = selected ? 0.5f : 0.22f;
-	out[0] = fill[0] * (1 - mix) + mix;
-	out[1] = fill[1] * (1 - mix) + mix;
-	out[2] = fill[2] * (1 - mix) + mix;
-	out[3] = 1.0f;
+	(void)fill;
+	uint32_t argb = shell.appearance_enabled ?
+		shell.appearance.selected_text : 0xfff7faff;
+	out[0] = ((argb >> 16) & 255) / 255.0f;
+	out[1] = ((argb >> 8) & 255) / 255.0f;
+	out[2] = (argb & 255) / 255.0f;
+	out[3] = selected ? ((argb >> 24) & 255) / 255.0f : 0.0f;
 }
 static uint32_t appearance_text(bool selected) {
 	return shell.appearance_enabled ?

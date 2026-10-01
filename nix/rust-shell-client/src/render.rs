@@ -477,7 +477,7 @@ fn service_card(
     )
     .or_else(|| theme_brush(theme, "menu", "background"));
     if !brush.is_some_and(|brush| fill_brush(cr, brush, x, y, w, h)) {
-        color(cr, 0x263946, 1.0);
+        color(cr, palette_rgb_or(theme, "background", 0x263946), 1.0);
         cr.paint().ok();
     }
     let tint = if selected {
@@ -486,7 +486,7 @@ fn service_card(
         "normal-fill-alpha"
     };
     let alpha = match theme.and_then(|snapshot| snapshot.token("controls", tint)) {
-        Some(AppearanceToken::Number(value)) => value.clamp(0.04, 0.35),
+        Some(AppearanceToken::Number(value)) => value.clamp(0.0, 1.0),
         _ => {
             if selected {
                 0.18
@@ -507,20 +507,16 @@ fn service_card(
     );
     let _ = cr.restore();
 
-    if let Some(border) = theme_brush(
-        theme,
-        section,
-        if selected {
-            "selected-border"
-        } else {
-            "border"
-        },
-    ) {
-        if let Some(gradient) = brush_gradient(border, x, y, w, h) {
-            rounded(cr, x + 0.75, y + 0.75, w - 1.5, h - 1.5, 15.25);
-            cr.set_line_width(1.5);
-            if cr.set_source(&gradient).is_ok() {
-                let _ = cr.stroke();
+    // Ordinary surfaces are distinguished by their authored fill and spacing.
+    // Reserve an outline for a deliberately selected control, not every row.
+    if selected {
+        if let Some(border) = theme_brush(theme, section, "selected-border") {
+            if let Some(gradient) = brush_gradient(border, x, y, w, h) {
+                rounded(cr, x + 0.75, y + 0.75, w - 1.5, h - 1.5, 15.25);
+                cr.set_line_width(1.5);
+                if cr.set_source(&gradient).is_ok() {
+                    let _ = cr.stroke();
+                }
             }
         }
     }
@@ -528,10 +524,10 @@ fn service_card(
 
 fn control_text(control: &Control) -> String {
     match &control.value {
-        Some(ControlValue::Percent(value)) => format!("{} · {value}%", control.label),
-        Some(ControlValue::Text(value)) => format!("{} · {value}", control.label),
+        Some(ControlValue::Percent(value)) => format!("{value}%"),
+        Some(ControlValue::Text(value)) => value.clone(),
         Some(ControlValue::Boolean(value)) => {
-            format!("{} · {}", control.label, if *value { "on" } else { "off" })
+            if *value { "On".into() } else { "Off".into() }
         }
         None => control.label.clone(),
     }
@@ -687,6 +683,23 @@ fn variant_size(geometry: &theme_carousel::CarouselGeometry, variant: Variant) -
 /// (`ImagePicker.qml`, shared by `omarchy-theme-switcher` and
 /// `omarchy-theme-bg-switcher`).
 #[allow(clippy::too_many_arguments)]
+/// Round the existing skewed preview silhouette without changing its layout.
+fn rounded_skewed(cr: &Context, x: f64, y: f64, tl: f64, tr: f64, bl: f64, br: f64, h: f64, radius: f64) {
+    let r = radius.min((tr - tl) / 3.0).min(h / 3.0).max(0.0);
+    let lean = (tl - bl) / h.max(1.0);
+    cr.new_path();
+    cr.move_to(x + tl + r, y);
+    cr.line_to(x + tr - r, y);
+    cr.curve_to(x + tr, y, x + tr - lean * r, y, x + tr - lean * r, y + r);
+    cr.line_to(x + br + lean * r, y + h - r);
+    cr.curve_to(x + br, y + h, x + br, y + h, x + br - r, y + h);
+    cr.line_to(x + bl + r, y + h);
+    cr.curve_to(x + bl, y + h, x + bl + lean * r, y + h, x + bl + lean * r, y + h - r);
+    cr.line_to(x + tl - lean * r, y + r);
+    cr.curve_to(x + tl, y, x + tl, y, x + tl + r, y);
+    cr.close_path();
+}
+
 fn paint_carousel(
     cr: &Context,
     theme: Option<&AppearanceSnapshot>,
@@ -719,11 +732,9 @@ fn paint_carousel(
         let bottom_right = slice.width - skew;
         let bottom_left = 0.0;
         let parallelogram = |cr: &Context| {
-            cr.move_to(slice.x + top_left, slice.y);
-            cr.line_to(slice.x + top_right, slice.y);
-            cr.line_to(slice.x + bottom_right, slice.y + slice.height);
-            cr.line_to(slice.x + bottom_left, slice.y + slice.height);
-            cr.close_path();
+            rounded_skewed(cr, slice.x, slice.y, top_left, top_right,
+                bottom_left, bottom_right, slice.height, 14.0);
+
         };
         let _ = cr.save();
         parallelogram(cr);
@@ -773,15 +784,12 @@ fn paint_carousel(
         }
         let _ = cr.restore(); // drop the clip
 
-        let selected = slice.index == centered;
-        parallelogram(cr);
-        cr.set_line_width(if selected { 3.0 } else { 1.0 });
-        color(
-            cr,
-            if selected { style.accent } else { style.muted },
-            if selected { 1.0 } else { 0.5 },
-        );
-        let _ = cr.stroke();
+        if slice.index == centered {
+            rounded(cr, slice.x + slice.width / 2.0 - 18.0,
+                slice.y + slice.height + 4.0, 36.0, 3.0, 1.5);
+            color(cr, style.accent, 1.0);
+            let _ = cr.fill();
+        }
 
         // Immediate, same-frame feedback for a tap in flight: a tinted wash
         // over the slice the finger is currently down on (cleared the
@@ -1803,16 +1811,16 @@ fn paint_drawer_chrome(
 
     let (sx, sy, sw, sh) = search_field_rect(width, height);
     rounded(cr, sx, sy, sw, sh, sh / 2.0);
-    // A flat colour, not a gradient brush: a rounded-pill path is already
-    // current here (`rounded` above), and `fill_brush` would clobber it
-    // with its own plain rectangle before filling, same reasoning as the
-    // sheet background below.
-    color(
-        cr,
-        brush_rgb(theme, "launcher", "search", palette_rgb_or(theme, "surface2", 0x2a2f3a)),
-        1.0,
-    );
-    let _ = cr.fill();
+    let _ = cr.save();
+    cr.clip();
+    if !theme_brush(theme, "launcher", "search")
+        .is_some_and(|brush| fill_brush(cr, brush, sx, sy, sw, sh))
+    {
+        color(cr, palette_rgb_or(theme, "surface2", 0x2a2f3a), 1.0);
+        let _ = cr.paint();
+    }
+    let _ = cr.restore();
+
     let label = if search.query.is_empty() {
         "Search apps"
     } else {
@@ -1823,9 +1831,20 @@ fn paint_drawer_chrome(
     } else {
         style.text
     };
-    let tx = sx + 22.0;
+    // A lightweight search glyph provides recognition without another tile.
+    let _ = cr.save();
+    cr.new_path();
+    cr.arc(sx + 26.0, sy + sh / 2.0 - 2.0, 7.0, 0.0, std::f64::consts::TAU);
+    cr.move_to(sx + 31.0, sy + sh / 2.0 + 3.0);
+    cr.line_to(sx + 37.0, sy + sh / 2.0 + 9.0);
+    color(cr, label_color, 0.8);
+    cr.set_line_width(2.0);
+    cr.set_line_cap(cairo::LineCap::Round);
+    let _ = cr.stroke();
+    let _ = cr.restore();
+    let tx = sx + 54.0;
     let ty = sy + sh / 2.0 - 9.0;
-    let available = sw - 44.0;
+    let available = sw - 76.0;
     if !search.focused {
         text(cr, label, tx, ty, available, 18.0, label_color);
         return;
@@ -1892,17 +1911,16 @@ fn paint_drawer(
     cr.translate(0.0, hidden * (h - panel_y));
 
     let style = visual_style(theme, "launcher");
-    // A flat opaque colour (`docs/design/app-drawer-review.md` §2: "an
-    // opaque theme surface colour"), not a gradient brush: `fill_brush`
-    // issues its own plain-rectangle path internally, which would
-    // overwrite the rounded-top path just set below before filling it.
+    let _ = cr.save();
     rounded_top(cr, 0.0, panel_y, w, h - panel_y, radius);
-    color(
-        cr,
-        brush_rgb(theme, "launcher", "background", palette_rgb_or(theme, "background", 0x1e1e2e)),
-        1.0,
-    );
-    let _ = cr.fill();
+    cr.clip();
+    if !theme_brush(theme, "launcher", "background")
+        .is_some_and(|brush| fill_brush(cr, brush, 0.0, panel_y, w, h - panel_y))
+    {
+        color(cr, palette_rgb_or(theme, "background", 0x1e1e2e), 1.0);
+        let _ = cr.paint();
+    }
+    let _ = cr.restore();
 
     paint_drawer_chrome(cr, theme, width, height, search);
 
@@ -2028,29 +2046,9 @@ fn scene(
             .then(|| theme_brush(theme, "menu", "background"))
             .flatten()
     });
-    if matches!(route, Route::Shade | Route::Settings | Route::Power) {
-        // Preserve the authored translucent brush over an opaque theme
-        // plate, rather than letting live card text ghost through apps.
-        // Any theme can author sub-1.0 alpha on `notifications`/`controls`
-        // backgrounds (finding P1-5). The Drawer's own equivalent guard
-        // lives in `paint_drawer` now.
+    if !panel_brush.is_some_and(|brush| fill_brush(cr, brush, 0.0, panel_y, w, panel_h)) {
         color(cr, palette_rgb_or(theme, "background", 0x1e1e2e), 1.0);
         cr.rectangle(0.0, panel_y, w, panel_h);
-        let _ = cr.fill();
-    }
-    if !panel_brush.is_some_and(|brush| fill_brush(cr, brush, 0.0, panel_y, w, panel_h)) {
-        let gradient = LinearGradient::new(0.0, panel_y, w, panel_y + panel_h);
-        gradient.add_color_stop_rgb(0.0, 0.075, 0.12, 0.17);
-        gradient.add_color_stop_rgb(1.0, 0.12, 0.19, 0.24);
-        cr.rectangle(0.0, panel_y, w, panel_h);
-        let _ = cr.set_source(&gradient);
-        let _ = cr.fill();
-    }
-    if !theme_brush(theme, section, "border")
-        .is_some_and(|brush| fill_brush(cr, brush, 0.0, panel_y, w, 2.0))
-    {
-        color(cr, style.accent, 1.0);
-        cr.rectangle(0.0, panel_y, w, 2.0);
         let _ = cr.fill();
     }
     // Whatever content-sizing (Settings) or the fixed Shade cap leaves
@@ -2080,7 +2078,7 @@ fn scene(
                 .and_then(|s| s.wifi.as_ref())
                 .is_some_and(|view| view.page != WifiPage::Closed)))
     {
-        heading(cr, title, 28.0, panel_y + 32.0, w - 56.0, 40.0, style.text);
+        heading(cr, title, 28.0, panel_y + 32.0, w - 180.0, 32.0, style.text);
     }
     match route {
         Route::Drawer => {}
@@ -2435,7 +2433,7 @@ fn scene(
                 ] {
                     let y = settings_row_y(row);
                     service_card(cr, theme, "controls", 24.0, y, w - 48.0, SETTINGS_ROW_H, false);
-                    text(cr, name, 42.0, y + 15.0, w - 84.0, 17.0, style.accent);
+                    medium(cr, name, 42.0, y + 15.0, w - 84.0, 17.0, style.text);
                     text(
                         cr,
                         &control_text(control),
@@ -2484,7 +2482,7 @@ fn scene(
                 // entry points").
                 let volume_y = settings_row_y(SETTINGS_VOLUME_ROW);
                 service_card(cr, theme, "controls", 24.0, volume_y, w - 48.0, SETTINGS_ROW_H, false);
-                text(cr, "Volume", 42.0, volume_y + 15.0, w - 84.0, 17.0, style.accent);
+                medium(cr, "Volume", 42.0, volume_y + 15.0, w - 84.0, 17.0, style.text);
                 if let Some(sink) = default_sink(services.and_then(|view| view.audio.as_ref())) {
                     let percent = volume::linear_to_percent(sink.linear_volume);
                     let label = if sink.muted {
@@ -2680,13 +2678,13 @@ fn shadowed_label(cr: &Context, value: &str, x: f64, y: f64, width: f64, size: f
     let mut font = FontDescription::new();
     font.set_family(FONT_FAMILY);
     font.set_absolute_size(size * f64::from(pango::SCALE));
-    font.set_weight(pango::Weight::Bold);
+    font.set_weight(pango::Weight::Medium);
     layout.set_font_description(Some(&font));
     layout.set_text(value);
     layout.set_width((width * f64::from(pango::SCALE)) as i32);
     layout.set_alignment(pango::Alignment::Center);
     layout.set_ellipsize(EllipsizeMode::End);
-    color(cr, 0x000000, 0.55);
+    color(cr, glow_for(rgb), 0.55);
     cr.move_to(x, y + 1.4);
     pangocairo::functions::show_layout(cr, &layout);
     color(cr, rgb, 1.0);
@@ -2694,14 +2692,8 @@ fn shadowed_label(cr: &Context, value: &str, x: f64, y: f64, width: f64, size: f
     pangocairo::functions::show_layout(cr, &layout);
 }
 
-/// Paints one icon's rounded "squircle" plate (webOS/iOS-style tile) and its
-/// resolved app icon, or an initial-letter fallback matching the drawer's
-/// own fallback, centered within the plate. Shared by grid and dock icons,
-/// which differ only in plate/icon size and whether a label follows.
-/// `pressed` reuses `service_card`'s own selected-state theming for the
-/// tap highlight, instead of a separately hand-drawn ring, so a pressed
-/// icon picks up exactly the same themed feedback every other tappable
-/// surface in this shell already does.
+/// Exposes the icon theme's own artwork. The established plate rectangle
+/// remains the touch target and provides a transient pressed cue only.
 fn paint_icon_plate(
     cr: &Context,
     theme: Option<&AppearanceSnapshot>,
@@ -2714,21 +2706,20 @@ fn paint_icon_plate(
     pressed: bool,
 ) {
     let style = visual_style(theme, "launcher");
-    // Guards against inheriting a stray current point from whatever was
-    // painted just before this tile (see `paint_remove_badge`'s own note):
-    // `service_card`'s themed border stroke builds a path via `rounded()`
-    // before checking whether its gradient source could actually be set,
-    // so a failed `set_source` on one tile could otherwise leave a
-    // dangling line into the next.
     cr.new_path();
-    service_card(cr, theme, "launcher", plate_x, plate_y, plate_size, plate_size, pressed);
+    if pressed {
+        service_card(cr, theme, "launcher", plate_x, plate_y, plate_size, plate_size, true);
+    }
     let icon_x = plate_x + (plate_size - icon_size) / 2.0;
     let icon_y = plate_y + (plate_size - icon_size) / 2.0;
     let painted = app
         .icon
         .as_deref()
-        .is_some_and(|icon| icons.paint(cr, icon, icon_size as i32, icon_x, icon_y));
+        .is_some_and(|icon| icons.paint(cr, icon, icon_size as i32, icon_x, icon_y))
+        || (terminal_like(&app.path)
+            && icons.paint(cr, "utilities-terminal", icon_size as i32, icon_x, icon_y));
     if !painted {
+        service_card(cr, theme, "launcher", icon_x, icon_y, icon_size, icon_size, false);
         let initial = app.name.chars().next().unwrap_or('?').to_uppercase().to_string();
         centered_label(
             cr,
@@ -7765,4 +7756,39 @@ mod tests {
             apps.len()
         );
     }
+    #[test]
+    fn drawer_preserves_authored_gradient_and_alpha_without_an_opaque_mask() {
+        let mut theme = fixture_theme("quiet-drawer", (16, 24, 32));
+        theme.sections.insert("launcher".into(), BTreeMap::from([(
+            "background".into(), AppearanceToken::Brush(Brush {
+                stops: vec![BrushStop {offset: 0.0, argb: "#ff204060".into()},
+                            BrushStop {offset: 1.0, argb: "#ff80a0c0".into()}],
+                angle_degrees: 0.0, alpha: 0.4,
+            })
+        )]));
+        let mut renderer = RendererCache::default();
+        renderer.set_appearance(Some(theme));
+        let mut pixels = vec![0; 568 * 1232 * 4];
+        renderer.draw(&mut pixels, RenderParams {width:568, height:1232,
+            route:Route::Drawer, progress:1.0, scroll:0.0}, &[]).unwrap();
+        let at = |x: usize| &pixels[(900 * 568 + x) * 4..(900 * 568 + x) * 4 + 4];
+        assert_eq!(at(40)[3], 102, "authored alpha must reach the compositor");
+        assert_eq!(at(520)[3], 102);
+        assert!(at(520)[2] > at(40)[2] + 20, "all gradient stops must survive");
+    }
+
+    #[test]
+    fn quiet_control_respects_a_theme_authored_zero_fill() {
+        let mut theme = fixture_theme("no-tint", (32, 64, 96));
+        theme.sections.get_mut("controls").unwrap().insert(
+            "normal-fill-alpha".into(), AppearanceToken::Number(0.0));
+        let surface = ImageSurface::create(Format::ARgb32, 120, 80).unwrap();
+        let cr = Context::new(&surface).unwrap();
+        service_card(&cr, Some(&theme), "controls", 0.0, 0.0, 120.0, 80.0, false);
+        drop(cr);
+        let mut surface = surface;
+        let data = surface.data().unwrap();
+        assert_eq!(&data[(40 * 120 + 60) * 4..(40 * 120 + 60) * 4 + 4], &[96, 64, 32, 255]);
+    }
+
 }
