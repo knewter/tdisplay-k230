@@ -189,3 +189,8 @@ letter, rather than leaving the tile blank.
 - **WHEN** a person focuses the app drawer's Search field
 - **THEN** the normal system keyboard appears and its ordinary typed text and correction update the live app filter, with the list kept visible above the keyboard
 - **AND** dismissing search, launching a result or leaving the drawer releases keyboard focus and lowers the keyboard without stranding application input
+
+#### Scenario: Search focus and correction remain visible
+
+- **WHEN** a person taps Search and types or presses the system keyboard's Backspace
+- **THEN** a visible insertion caret and focus indication identify the active field, correction changes only the query, and the app drawer remains open
