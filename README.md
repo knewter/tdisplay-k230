@@ -221,3 +221,5 @@ kernel. That cost is one-time per nixpkgs pin.
 ships no K230 device tree and no `SOC_CANAAN_K230`, so a stock kernel cannot
 boot QEMU's `k230` machine at all; that needs the Xuantie kernel built with
 `CONFIG_ERRATA_THEAD_PBMT=n`. See `docs/evidence/boot-path-differences.md`.
+
+Build and publish development image snapshots with the manual [release task](docs/image-releases.md).

@@ -1,7 +1,7 @@
 ## 1. Repeatable host task
 
-- [ ] 1.1 Implement manual stage/publish commands with exact revision evaluation, outside-Git staging, GC roots and fresh prerelease protection; prove with `python3 tests/test_release_image.py`.
-- [ ] 1.2 Document the operator command and host/physical limits; prove with `python3 tools/release-image.py --help` and `openspec validate the-image-has-a-repeatable-github-release --strict`.
+- [x] 1.1 Implement manual stage/publish commands with exact revision evaluation, outside-Git staging, GC roots and fresh prerelease protection; prove with `python3 tests/test_release_image.py`.
+- [x] 1.2 Document the operator command and host/physical limits; prove with `python3 tools/release-image.py --help` and `openspec validate the-image-has-a-repeatable-github-release --strict`.
 
 ## 2. First development snapshot
 
