@@ -1109,6 +1109,61 @@ def main():
         except subprocess.TimeoutExpired:
             light_rust.kill()
 
+        # A fresh, isolated layout exercises the live cross-page driver.
+        # Holding one contact proves repeat turns and last-edge page creation;
+        # a separate fast motion ending outside the edge band proves fling.
+        def fluid_layout():
+            pages = [[None] * 20 for _ in range(3)]
+            pages[0][0] = {"kind": "app", "id": "k230-fixture-badge.desktop"}
+            pages[0][8] = {"kind": "widget", "widget": "clock"}
+            pages[1][8] = {"kind": "widget", "widget": "clock_minimal"}
+            pages[2][8] = {"kind": "widget", "widget": "clock_dot_matrix"}
+            pages[2][0] = {"kind": "widget", "widget": "clock_analog"}
+            pages[2][2] = {"kind": "widget", "widget": "weather"}
+            return {"schema": 2, "columns": 4, "pages": pages, "dock": [None] * 4}
+
+        home_json.write_text(json.dumps(fluid_layout()))
+        fluid = start_pass(dark, "fluid-dwell")
+        wait_for_ready("fluid-dwell-rust")
+        capture("home-fluid-clock-bubble.png")
+        edge_drag = long_press_drag(tile_center(0), (WIDTH - 10, tile_center(0)[1]), steps=1)
+        # Native compositor captures are taken with the same contact held.
+        time.sleep(0.15)
+        capture("home-fluid-edge-indicator.png", stable_frames=0)
+        time.sleep(1.6)
+        capture("home-fluid-last-edge-new-page.png", stable_frames=0)
+        ipc(f"card_shell test-touch motion {edge_drag} {tile_center(4)[0]} {tile_center(4)[1]}")
+        time.sleep(0.1)
+        baseline = count_log("fluid-dwell-rust", "home-layout-changed")
+        settle_and_release(edge_drag, *tile_center(4))
+        wait_for_new_log_line("fluid-dwell-rust", "home-layout-changed", baseline)
+        paged = json.loads(home_json.read_text())
+        badge_page = next(i for i, page in enumerate(paged["pages"])
+                          if {"kind": "app", "id": "k230-fixture-badge.desktop"} in page)
+        checks["edge_dwell_repeats_and_creates_a_new_page"] = badge_page >= 3
+        checks["cross_page_release_keeps_the_item_on_the_visible_page"] = badge_page >= 3
+        capture("home-fluid-new-page-drop.png")
+        fluid.terminate(); fluid.wait(timeout=5)
+
+        home_json.write_text(json.dumps(fluid_layout()))
+        fluid = start_pass(dark, "fluid-fling")
+        wait_for_ready("fluid-fling-rust")
+        # One fast displacement remains well outside the 40px edge band.
+        fling = long_press_drag(tile_center(0), (400, tile_center(0)[1]), steps=1)
+        time.sleep(0.25)
+        ipc(f"card_shell test-touch motion {fling} {tile_center(4)[0]} {tile_center(4)[1]}")
+        baseline = count_log("fluid-fling-rust", "home-layout-changed")
+        settle_and_release(fling, *tile_center(4))
+        wait_for_new_log_line("fluid-fling-rust", "home-layout-changed", baseline)
+        flung = json.loads(home_json.read_text())
+        checks["fling_pages_without_an_edge_dwell"] = (
+            {"kind": "app", "id": "k230-fixture-badge.desktop"} in flung["pages"][1])
+        capture("home-fluid-clock-thin-fling.png")
+        swipe = drag_steps(WIDTH - SWIPE_MARGIN, SWIPE_MARGIN, swipe_y())
+        settle_and_release(swipe, SWIPE_MARGIN, swipe_y())
+        capture("home-fluid-analog-dot-matrix-weather.png")
+        fluid.terminate(); fluid.wait(timeout=5)
+
         # --- Showcase pass: a believable, fully-populated Home (not the
         # sparse interactive fixture above), for visual evidence rather than
         # interaction coverage. Every icon here resolves against the real
