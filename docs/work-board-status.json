@@ -430,6 +430,19 @@
         "docs/evidence/home-widgets-folders/closeout-2026-10-01/qemu/README.md"
       ],
       "reviewRevision": "cdb0741bc6713f220140df6143258f1c9d2e83c4"
+    },
+    "2026-10-01-the-home-screen-pages-fluidly-and-widgets-look-designed": {
+      "lane": "archived",
+      "source": "archived",
+      "physical": "verified",
+      "next": "Completed: repeated edge turns, new-page drops, interior fling and redesigned native widgets verified.",
+      "rationale": "Delegated board uinput and native captures plus paired QEMU proof. Battery attachment and daylight measurements are not claimed.",
+      "dependencies": [],
+      "evidence": [
+        "docs/evidence/home-widget-design/closeout-2026-10-01/board/README.md",
+        "docs/evidence/home-widget-design/closeout-2026-10-01/qemu/README.md"
+      ],
+      "reviewRevision": "da1840aff780cb9be7e87cd5284158c02b9f2404"
     }
   }
 }
