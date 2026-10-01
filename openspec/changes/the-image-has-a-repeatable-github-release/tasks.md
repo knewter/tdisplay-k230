@@ -10,4 +10,4 @@
 
 ## 3. Closeout
 
-- [ ] 3.1 Validate the completed change with `openspec validate the-image-has-a-repeatable-github-release --strict`; archive and sync only after committed publication evidence and all above tasks are complete. Physical image acceptance is explicitly outside this change and remains open in the coherent boot-selection proposal.
+- [x] 3.1 Validate the completed change with `openspec validate the-image-has-a-repeatable-github-release --strict`; archive and sync only after committed publication evidence and all above tasks are complete. Physical image acceptance is explicitly outside this change and remains open in the coherent boot-selection proposal.

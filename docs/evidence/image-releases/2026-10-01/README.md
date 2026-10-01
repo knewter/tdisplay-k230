@@ -32,7 +32,7 @@ Run from the isolated `change/repeatable-github-image-release` worktree:
 python3 tools/release-image.py stage \
   --revision 65c0a71d1db55b819633ba7ef9f3040a525ae3ee \
   --directory "$HOME/tmp/k230-release-65c0a71d1db5" \
-  --validation-note '<observed context preserved verbatim in release-metadata.json>'
+  --validation-note 'At this snapshot, the-coherent-shell-boots-the-selected-system remains open. A matching configured vendor-kernel manual trial reached root/services but did not establish accepted startup Home behavior. The restored known-good persistent board boot uses an older vendor system/kernel; newer coherent userspace has been activated temporarily on that older kernel. The local SD image build reuses exact cached target closure outputs exported from the board and independently checksum-checked before import.'
 python3 tools/release-image.py publish \
   --directory "$HOME/tmp/k230-release-65c0a71d1db5"
 python3 tools/release-image.py publish \
