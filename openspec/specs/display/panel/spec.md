@@ -59,6 +59,19 @@ frame and no tearing. Mechanism is not established; the untested
 hypothesis is that `35 00` SET_TEAR_ON is issued but nothing consumes
 TE. See `docs/evidence/flicker-after-headroom-revert.md`.*
 
+*A separate real-finger report -- a band about 50 px tall along the panel's
+bottom edge flickering only during bottom-edge app-switch gestures and in
+the card overview -- was traced with a board scene/render/present
+diagnostic (`docs/evidence/card-shell/bottom-band-flicker/max-render-time-fix.md`)
+to a defect below composition: scene and DRM present timing stayed clean
+while consecutive camera frames showed the band cycling between correct,
+stale-dark and black. Deferring the VO's register commit to vblank did not
+change it and was withdrawn (`kernel-patch-boot-panic.md`). Setting Sway's
+`max_render_time 8` on DSI-1 removed it on real glass
+(`max-render-time-fix.md`) and on the patch-free kernel under injected
+gestures (`kernel-patch-boot-panic.md`). The mechanism is inferred, not
+measured.*
+
 The system SHALL present the panel as a working framebuffer at 568x1232, and
 what is written to that framebuffer SHALL appear on the screen.
 
@@ -76,3 +89,14 @@ Wi-Fi driver reported `start ap successs!` while transmitting nothing.
 
 - **WHEN** a pattern is written to the framebuffer
 - **THEN** it is visible on the physical panel, photographed, and the photograph is committed
+
+#### Scenario: A real-finger gesture animates the panel continuously
+
+- **WHEN** a person performs a real bottom-edge app-switch or app-switcher
+  gesture with continuous finger motion, as opposed to a single static
+  IPC-driven state change
+- **THEN** the bottom ~100 px of the panel does not flicker or tear
+
+<!-- Closeout evidence: docs/evidence/proposal-closeout/2026-10-01/flicker.md. Operator report is physical
+feedback; retained host/QEMU/injected evidence keeps its original class.
+No additional capture, quantitative measurement or fault injection claimed. -->

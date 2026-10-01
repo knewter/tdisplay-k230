@@ -33,3 +33,10 @@ The operator approved dropping it on 2026-09-25.
 - `nix/shell.nix` (already landed). No kernel, device-tree or boot change.
 - If a frame needs more than about 8 ms to render, it can miss its vblank and
   the previous frame repeats. That is preferable to a torn band.
+
+## Accepted closeout, 2026-10-01
+
+The operator accepts this delivered functional scope and waives additional
+capture-only acceptance gates. `docs/evidence/proposal-closeout/2026-10-01/flicker.md` records the exact report,
+prior evidence and limits. Its task dispositions supersede older statements
+that these acceptance gates remain open; they do not claim new test runs.

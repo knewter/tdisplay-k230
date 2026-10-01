@@ -13,13 +13,21 @@
 - [x] 1.3 Board check on the patch-free kernel with injected gestures and
   the camera: 720 frames with no one-frame spike in the bottom band
   (`kernel-patch-boot-panic.md`, `without-kernel-patch-injected-gestures.png`).
-- [ ] 1.4 **Board, real finger.** Operator confirms on a patch-free system
-  that bottom-edge app switching and the card overview show no bottom-band
-  flicker. Record the report, with the system path, in
-  `docs/evidence/card-shell/bottom-band-flicker/` (operator report).
+- [x] 1.4 Accept the operator's 2026-10-01 report that render-ahead/bottom flicker has been fixed for ages. Commit the report alongside the prior patch-free board proof. No new capture or kernel test is claimed.
 
 ## 2. Specs
 
 - [x] 2.1 Modify the `display/panel` requirement "The panel displays what the
   system draws" with the gesture scenario and its grounding. Verify with
   `openspec validate the-compositor-renders-ahead-of-scanout --strict`.
+
+## Accepted closeout, 2026-10-01
+
+The updated completed tasks describe actual acceptance, waivers and scope
+transfer, not execution of the superseded protocols. See `docs/evidence/proposal-closeout/2026-10-01/flicker.md`.
+Historical checkpoint notes above that say physical gates remain open are
+superseded by this record. Quantitative or individually unreported results
+are not promoted to physical proof.
+
+Proof: `openspec validate the-compositor-renders-ahead-of-scanout --strict`; committed operator report;
+`python3 scripts/render_work_board.py --working-tree --output <snapshot.json>`.

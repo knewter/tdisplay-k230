@@ -239,20 +239,6 @@
         "provenance": "Host capture"
       }
     },
-    "the-compositor-renders-ahead-of-scanout": {
-      "lane": "verification",
-      "source": "source-landed",
-      "physical": "pending",
-      "next": "On the patch-free AMOLED system, use a real finger for bottom-edge switching and overview; report any bottom-band flicker.",
-      "dependencies": [],
-      "evidence": [
-        "docs/evidence/proposal-closeout/README.md",
-        "docs/evidence/proposal-closeout/2026-09-30/README.md",
-        "docs/evidence/card-shell/bottom-band-flicker/max-render-time-fix.md"
-      ],
-      "rationale": "Closeout audit at 6306c1d8: all implementation tasks are checked; task 1.4 is the sole remaining physical gate. Existing evidence is retained; no new physical acceptance or archive is claimed.",
-      "reviewRevision": "6306c1d8df787820c1c74e7808be6d853e343b30"
-    },
     "the-shell-is-navigable-with-a-mouse": {
       "lane": "verification",
       "source": "source-landed",
@@ -360,6 +346,21 @@
       "evidence": [],
       "rationale": "Operator-authorized successor for drawer 5.2/5.4 and keyboard 3.3; no performance measurements claimed.",
       "reviewRevision": "5605c9e6c02119c201d2bb95531497639711aacb"
+    },
+    "2026-10-01-the-compositor-renders-ahead-of-scanout": {
+      "lane": "archived",
+      "source": "archived",
+      "physical": "verified",
+      "next": "Closed on operator acceptance; see evidence for waived captures and retained limits.",
+      "dependencies": [],
+      "evidence": [
+        "docs/evidence/proposal-closeout/README.md",
+        "docs/evidence/proposal-closeout/2026-09-30/README.md",
+        "docs/evidence/card-shell/bottom-band-flicker/max-render-time-fix.md",
+        "docs/evidence/proposal-closeout/2026-10-01/flicker.md"
+      ],
+      "rationale": "Operator accepts the delivered behavior and requests closeout without further difficult captures/retesting. Measurements and unreported per-case proof are not fabricated.",
+      "reviewRevision": "792098bc77e4c6336496f07a5550b93f9a221a8b"
     }
   }
 }

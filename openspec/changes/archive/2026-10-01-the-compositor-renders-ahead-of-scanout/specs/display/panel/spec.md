@@ -30,7 +30,7 @@ TE. See `docs/evidence/flicker-after-headroom-revert.md`.*
 *A separate real-finger report -- a band about 50 px tall along the panel's
 bottom edge flickering only during bottom-edge app-switch gestures and in
 the card overview -- was traced with a board scene/render/present
-diagnostic (`docs/evidence/card-shell/bottom-band-flicker/board-diagnostic.md`)
+diagnostic (`docs/evidence/card-shell/bottom-band-flicker/max-render-time-fix.md`)
 to a defect below composition: scene and DRM present timing stayed clean
 while consecutive camera frames showed the band cycling between correct,
 stale-dark and black. Deferring the VO's register commit to vblank did not
@@ -64,3 +64,7 @@ Wi-Fi driver reported `start ap successs!` while transmitting nothing.
   gesture with continuous finger motion, as opposed to a single static
   IPC-driven state change
 - **THEN** the bottom ~100 px of the panel does not flicker or tear
+
+<!-- Closeout evidence: docs/evidence/proposal-closeout/2026-10-01/flicker.md. Operator report is physical
+feedback; retained host/QEMU/injected evidence keeps its original class.
+No additional capture, quantitative measurement or fault injection claimed. -->
