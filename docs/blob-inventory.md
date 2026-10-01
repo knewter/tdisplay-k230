@@ -651,6 +651,12 @@ Paths are relative to the repository root. `(sdk)` is
 so that building stage 1 from source does not silently drop them from view.
 
 ```
+DATA f69f65f6c6d220143a4b54ae15b18444dc5445c734745e3597f443dff77d7ca8 docs/evidence/wifi-settings/closeout-2026-10-01/hidden-again.jpg
+DATA fe473bd186bc8ac642c12a301399ee51e5a592b22e786a8a67b7fbcf421bbd90 docs/evidence/wifi-settings/closeout-2026-10-01/masked-empty.jpg
+DATA f69f65f6c6d220143a4b54ae15b18444dc5445c734745e3597f443dff77d7ca8 docs/evidence/wifi-settings/closeout-2026-10-01/masked-typed.jpg
+DATA fe473bd186bc8ac642c12a301399ee51e5a592b22e786a8a67b7fbcf421bbd90 docs/evidence/wifi-settings/closeout-2026-10-01/reopened-masked-empty.jpg
+DATA 80e3d11f0f230c08eaee29c5ac2f972506f5e0d0863257b279a98b4526b3ea9a docs/evidence/wifi-settings/closeout-2026-10-01/revealed-corrected.jpg
+DATA a1a83cc7ee51c1daac8526a3574e6d7c1ee7e07cd0e017374678709aaf9cdd50 docs/evidence/wifi-settings/closeout-2026-10-01/revealed.jpg
 DATA 6cad046695bacf8c82273f735d8def70ae85b1b861fa98f431a93633fa193ad5 docs/evidence/the-touchscreen-becomes-an-hdmi-trackpad/uniform-gestures/overview.png
 DATA 3dae42c7878555b912b7996fbcd88937a24934699a1a151be12a07df4a7bab76 docs/evidence/the-touchscreen-becomes-an-hdmi-trackpad/uniform-gestures/home.png
 DATA 0830a5175acc07f25e894a3a461787325056e3fabecc07c76cd9d514a54eb6c5 docs/evidence/the-touchscreen-becomes-an-hdmi-trackpad/uniform-gestures/drawer.png

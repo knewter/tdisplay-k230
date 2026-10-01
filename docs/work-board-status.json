@@ -76,10 +76,10 @@
       }
     },
     "the-handheld-configures-wifi-from-settings": {
-      "lane": "in-progress",
-      "source": "in-progress",
-      "physical": "pending",
-      "next": "Add password Show/Hide eye requested after positive glass feedback; finish explicit case coverage and controlled reconnect/Forget reboot checks.",
+      "lane": "archived",
+      "source": "archived",
+      "physical": "verified",
+      "next": "Accepted and archived; no remaining Wi-Fi Settings work.",
       "dependencies": [
         "the-handheld-presents-a-coherent-shell"
       ],
@@ -87,9 +87,10 @@
         "docs/evidence/wifi-settings/README.md",
         "docs/evidence/keyboard-gestures/installed-preview/README.md",
         "docs/evidence/wifi-settings/closeout-host-2026-09-30/README.md",
-        "docs/evidence/proposal-closeout/2026-09-30/operator-feedback.md"
+        "docs/evidence/proposal-closeout/2026-09-30/operator-feedback.md",
+        "docs/evidence/wifi-settings/closeout-2026-10-01/README.md"
       ],
-      "rationale": "Broker configuration and coherent-shell integrated build passed at the reviewed source. Tasks 1.4 and 2.5 are now grounded; only physical 3.1 and 3.2 remain.",
+      "rationale": "Physical operator acceptance plus board-verified password eye, keyboard correction/reset and grip-aware button reflow. No new radio or reboot sequence inferred.",
       "reviewRevision": "475c9a6b",
       "cover": {
         "path": "docs/evidence/wifi-settings/paired-qemu/wifi-list-dark.png",

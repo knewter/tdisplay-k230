@@ -1,0 +1,15 @@
+{
+  "evidence_class": "board-injected-uinput-and-native-capture",
+  "rust": "/nix/store/9yzisj6j6m5xd3g0yl921j7bqks5gjrw-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0/bin/k230-shell-rust",
+  "system": "/nix/store/pkcgqvd0rzf44387l3blwlimz5x3ns75-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "fixture": "one invented network, no radio operations or persistence",
+  "operations": [
+    "scan"
+  ],
+  "keyboard_stays_mapped_during_eye_and_backspace": true,
+  "cancel_lowers_keyboard": true,
+  "reopen_raises_keyboard": true,
+  "limits": [
+    "Image review is required for visibility and text. Injected touches are not real-finger input. Existing connection/reboot/Forget acceptance is the user report."
+  ]
+}
