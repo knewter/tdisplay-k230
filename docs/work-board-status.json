@@ -415,7 +415,8 @@
       "evidence": [
         "docs/evidence/mainline-display-power-domain.md",
         "docs/evidence/mainline-display-boot-preparation.md"
-      ]
+      ],
+      "reviewRevision": "128ea4e705a7d61b7144ec9fd341493f42ecf449"
     }
   }
 }
