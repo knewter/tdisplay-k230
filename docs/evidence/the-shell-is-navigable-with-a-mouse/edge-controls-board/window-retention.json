@@ -1,0 +1,14 @@
+{
+  "before": {
+    "5": "k230-terminal",
+    "7": "dev.tchx84.Portfolio",
+    "6": "org.gnome.Nautilus"
+  },
+  "after": {
+    "5": "k230-terminal",
+    "7": "dev.tchx84.Portfolio",
+    "6": "org.gnome.Nautilus"
+  },
+  "equal": true,
+  "evidence_class": "board-injected-pointer"
+}
