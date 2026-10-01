@@ -49,6 +49,8 @@ pub struct Sink {
     pub linear_volume: f64,
     pub muted: bool,
     pub is_default: bool,
+    /// ALSA device route controls the hardware mixer, when present.
+    pub route: Option<(u32, u32, u32)>,
 }
 
 /// One stream node (a sink-input in PulseAudio terms; PipeWire calls it
@@ -154,6 +156,8 @@ struct Accumulator {
     sinks: std::collections::BTreeMap<u32, (String, String, f64, bool)>,
     streams: std::collections::BTreeMap<u32, (String, Option<String>, f64, bool)>,
     default_sink_name: Option<String>,
+    sink_devices: std::collections::BTreeMap<u32, (u32, u32)>,
+    routes: std::collections::BTreeMap<u32, Vec<(u32, u32, f64, bool)>>,
 }
 
 impl Accumulator {
@@ -178,6 +182,22 @@ impl Accumulator {
             if object.get("info").is_some_and(Value::is_null) {
                 self.sinks.remove(&id);
                 self.streams.remove(&id);
+                self.sink_devices.remove(&id);
+                self.routes.remove(&id);
+                continue;
+            }
+            if object.get("type").and_then(Value::as_str) == Some("PipeWire:Interface:Device") {
+                if let Some(routes) = object.pointer("/info/params/Route").and_then(Value::as_array) {
+                    let active = routes.iter().filter_map(|route| {
+                        if route.get("direction").and_then(Value::as_str) != Some("Output") { return None; }
+                        let index = route.get("index")?.as_u64()? as u32;
+                        let device = route.get("device")?.as_u64()? as u32;
+                        let props = route.get("props")?;
+                        let (volume, muted) = props_volume(&serde_json::json!({"Props": [props]}));
+                        Some((index, device, volume, muted))
+                    }).collect();
+                    self.routes.insert(id, active);
+                }
                 continue;
             }
             if object.get("type").and_then(Value::as_str) != Some("PipeWire:Interface:Node") {
@@ -193,6 +213,9 @@ impl Accumulator {
             match media_class {
                 "Audio/Sink" => {
                     self.streams.remove(&id);
+                    if let (Some(device), Some(profile)) = (props.get("device.id").and_then(Value::as_u64), props.get("card.profile.device").and_then(Value::as_u64)) {
+                        self.sink_devices.insert(id, (device as u32, profile as u32));
+                    } else { self.sink_devices.remove(&id); }
                     let name = props
                         .get("node.name")
                         .and_then(Value::as_str)
@@ -240,14 +263,20 @@ impl Accumulator {
         let sinks = self
             .sinks
             .iter()
-            .map(|(&id, (name, description, linear_volume, muted))| Sink {
+            .map(|(&id, (name, description, linear_volume, muted))| {
+                let route = self.sink_devices.get(&id).and_then(|&(device, profile)| {
+                    self.routes.get(&device)?.iter().find(|r| r.1 == profile)
+                        .map(|&(index, profile, volume, muted)| ((device, index, profile), volume, muted))
+                });
+                Sink {
                 id,
                 name: name.clone(),
                 description: description.clone(),
-                linear_volume: *linear_volume,
-                muted: *muted,
+                linear_volume: route.map_or(*linear_volume, |r| r.1),
+                muted: route.map_or(*muted, |r| r.2),
                 is_default: self.default_sink_name.as_deref() == Some(name.as_str()),
-            })
+                route: route.map(|r| r.0),
+            }})
             .collect();
         let streams = self
             .streams
@@ -325,6 +354,14 @@ pub fn set_volume_command(node_id: u32, linear_volume: f64, muted: bool) -> Stri
         v = clamped,
         m = muted,
     )
+}
+
+/// A device Route write matches WirePlumber/wpctl's ALSA hardware-mixer path.
+/// Writing the sink's DSP Props instead would stack a second volume/mute.
+pub fn set_sink_volume_command(sink: &Sink, linear: f64, muted: bool) -> String {
+    if let Some((device, index, profile)) = sink.route {
+        format!("set-param {device} Route {{ \"index\": {index}, \"device\": {profile}, \"props\": {{ \"channelVolumes\": [ {v:.4}, {v:.4} ], \"mute\": {muted} }}, \"save\": true }}", v=linear.clamp(0.0,1.0))
+    } else { set_volume_command(sink.id, linear, muted) }
 }
 
 /// One PipeWire event this shell's monitor thread hands to `main.rs`:
@@ -713,6 +750,7 @@ mod tests {
                 linear_volume: 0.5,
                 muted: false,
                 is_default: true,
+                route: None,
             }],
             streams: vec![Stream {
                 id: 78,
@@ -726,6 +764,28 @@ mod tests {
         assert!(matches!(snapshot.expanded_row(0), Some(ExpandedRow::Stream(s)) if s.app_name == "mpv"));
         assert!(matches!(snapshot.expanded_row(1), Some(ExpandedRow::Sink(s)) if s.id == 50));
         assert!(snapshot.expanded_row(2).is_none());
+    }
+
+    #[test]
+    fn hardware_route_overrides_dsp_props_and_survives_device_only_updates() {
+        let sink = serde_json::json!({"id":52,"type":"PipeWire:Interface:Node","info":{"props":{"media.class":"Audio/Sink","node.name":"inno","device.id":51,"card.profile.device":3},"params":{"Props":[{"channelVolumes":[1.0,1.0],"mute":false}]}}});
+        let device = |v:f64, muted:bool| serde_json::json!({"id":51,"type":"PipeWire:Interface:Device","info":{"params":{"Route":[{"index":0,"device":2,"direction":"Input","props":{"channelVolumes":[1.0]}},{"index":1,"device":3,"direction":"Output","props":{"channelVolumes":[v,v],"mute":muted}}]}}});
+        let mut acc=Accumulator::default();
+        acc.apply_array(&[device(0.064,false),sink]);
+        let snapshot=acc.snapshot();let sink=&snapshot.sinks[0];
+        assert_eq!(sink.route,Some((51,1,3)));
+        assert!((sink.linear_volume-0.064).abs()<1e-9);
+        let line=set_sink_volume_command(sink,0.125,true);
+        let payload:Value=serde_json::from_str(line.strip_prefix("set-param 51 Route ").unwrap()).unwrap();
+        assert_eq!(payload["index"],1);assert_eq!(payload["device"],3);
+        assert_eq!(payload["props"]["mute"],true);
+        assert_eq!(payload["props"]["channelVolumes"][0],0.125);
+        acc.apply_array(&[device(0.216,true)]);
+        assert_eq!(acc.snapshot().sinks[0].linear_volume,0.216);
+        assert!(acc.snapshot().sinks[0].muted);
+        acc.apply_array(&[serde_json::json!({"id":51,"info":null})]);
+        assert_eq!(acc.snapshot().sinks[0].route,None);
+        assert_eq!(acc.snapshot().sinks[0].linear_volume,1.0);
     }
 
     #[test]

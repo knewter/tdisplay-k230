@@ -1416,6 +1416,7 @@ mod tests {
                     linear_volume: 0.5,
                     muted: false,
                     is_default: true,
+                    route: None,
                 }],
                 streams: Vec::new(),
             }),

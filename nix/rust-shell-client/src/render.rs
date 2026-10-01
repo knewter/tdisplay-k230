@@ -6560,6 +6560,7 @@ mod tests {
                     linear_volume: volume::percent_to_linear(percent),
                     muted,
                     is_default: true,
+                    route: None,
                 }],
                 streams: vec![Stream {
                     id: 78,

@@ -2266,11 +2266,9 @@ impl ShellClient {
             return;
         };
         let linear = volume::percent_to_linear(percent);
-        writer.try_send(pipewire_ipc::set_volume_command(
-            id,
-            linear,
-            self.volume_state.is_muted(),
-        ));
+        if let Some(sink) = self.service_view.audio.as_ref().and_then(|g| g.sinks.iter().find(|s| s.id == id)) {
+            writer.try_send(pipewire_ipc::set_sink_volume_command(sink, linear, self.volume_state.is_muted()));
+        }
         self.mark_own_volume_write();
     }
 
