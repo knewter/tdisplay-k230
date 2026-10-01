@@ -1305,7 +1305,7 @@ the earlier runs were corrected; wider tasks 11/13/14/15 remain open.
 
 ## 17. Reduce measured picker scene cost
 
-- [ ] 17.1 Commit the resolved-two-row baseline, reviewed bounded traces and
+- [x] 17.1 Commit the resolved-two-row baseline, reviewed bounded traces and
   sampled CPU hotspot evidence with commands, source/runtime identities and
   sampling/unwinding limits; do not call commit intervals presentation FPS.
 - [ ] 17.2 Gate speculative preparation on both rows being at rest and repaint
@@ -1319,3 +1319,7 @@ the earlier runs were corrected; wider tasks 11/13/14/15 remain open.
   report CPU/render/presentation separately and capture pixels outside timing.
   Install only the qualified candidate, land source/evidence, push and check
   actual site deployment. Retain task 14.4 real-finger and wider 13/15 gates.
+
+Task 17.1 baseline: `docs/evidence/theme-picker/row-repaint/README.md` records
+resolved two-row physical traces and the separate 1,490-sample CPU capture.
+Caller and observer limits remain open; the user still reports jank.

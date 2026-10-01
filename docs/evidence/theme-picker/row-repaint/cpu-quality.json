@@ -1,0 +1,74 @@
+{
+  "samples": 1490,
+  "unknown_caller_samples": 1490,
+  "unknown_leaf_samples": 0,
+  "max_depth": 46,
+  "redacted_frames": 0,
+  "top_leaf_symbols": [
+    {
+      "symbol": "memset",
+      "samples": 279
+    },
+    {
+      "symbol": "bits_image_fetch_separable_convolution_affine_none_a8r8g8b8",
+      "samples": 89
+    },
+    {
+      "symbol": "rvv_composite_over_8888_0565",
+      "samples": 79
+    },
+    {
+      "symbol": "fetch_horizontal.isra.0",
+      "samples": 75
+    },
+    {
+      "symbol": "fast_fetch_r5g6b5",
+      "samples": 56
+    },
+    {
+      "symbol": "rvv_combine_over_u",
+      "samples": 55
+    },
+    {
+      "symbol": "fast_fetch_bilinear_cover",
+      "samples": 48
+    },
+    {
+      "symbol": "rvv_composite_over_n_8_8888",
+      "samples": 46
+    },
+    {
+      "symbol": "_cairo_tor_scan_converter_generate",
+      "samples": 39
+    },
+    {
+      "symbol": "pixman_transform_point_31_16",
+      "samples": 35
+    },
+    {
+      "symbol": "analyze_extent",
+      "samples": 34
+    },
+    {
+      "symbol": "pixman_image_composite32",
+      "samples": 34
+    },
+    {
+      "symbol": "fast_write_back_r5g6b5",
+      "samples": 33
+    },
+    {
+      "symbol": "_pixman_implementation_iter_init",
+      "samples": 32
+    },
+    {
+      "symbol": "general_composite_rect",
+      "samples": 27
+    }
+  ],
+  "samples_by_thread": {
+    "k230-shell-rust-2490/2490": 1256,
+    "python3-2494/2494": 1,
+    "sway-1309/1309": 233
+  }
+}

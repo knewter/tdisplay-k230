@@ -1,0 +1,158 @@
+{
+  "source_revision": "b57ba41ccf6755c54039fc85b0a54145001b186a",
+  "current_system": "/nix/store/xphf8zb00gz9hiyqkkh399rldr2ljykb-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "kernel_release": "6.6.36",
+  "active_background_count": 8,
+  "identities": {
+    "shell-ui.service": {
+      "pid": 2293,
+      "exe": "/nix/store/8cikjd811d7b7hsdhn7nnb3lnipf3vwp-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0/bin/k230-shell-rust",
+      "cgroup": "/system.slice/shell-ui.service",
+      "start_ticks": 163523
+    },
+    "shell.service": {
+      "pid": 1309,
+      "exe": "/nix/store/sdmmf17jhky37y5h1p8zb7lcmf8p4pan-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway",
+      "cgroup": "/system.slice/shell.service",
+      "start_ticks": 13471
+    },
+    "theme-helper.service": {
+      "pid": 2298,
+      "exe": "/nix/store/v189xydz6qkcd4cbkixcmv91w8hbc560-python3-riscv64-unknown-linux-gnu-3.14.7/bin/python3.14",
+      "cgroup": "/system.slice/theme-helper.service",
+      "start_ticks": 163571
+    }
+  },
+  "generation_unchanged": true,
+  "phases": [
+    {
+      "name": "settings-baseline",
+      "start_monotonic_s": 1642.753865788,
+      "end_monotonic_s": 1644.754090454
+    },
+    {
+      "name": "first-open",
+      "start_monotonic_s": 1644.754114897,
+      "injection_end_monotonic_s": 1644.852227124,
+      "end_monotonic_s": 1654.852460555
+    },
+    {
+      "name": "theme-swipe-0",
+      "start_monotonic_s": 1654.852533255,
+      "injection_end_monotonic_s": 1655.068213482,
+      "end_monotonic_s": 1656.268443362
+    },
+    {
+      "name": "theme-swipe-1",
+      "start_monotonic_s": 1656.268484767,
+      "injection_end_monotonic_s": 1656.488220785,
+      "end_monotonic_s": 1657.68849018
+    },
+    {
+      "name": "theme-swipe-2",
+      "start_monotonic_s": 1657.688525697,
+      "injection_end_monotonic_s": 1657.912217547,
+      "end_monotonic_s": 1659.112436463
+    },
+    {
+      "name": "theme-swipe-3",
+      "start_monotonic_s": 1659.112472424,
+      "injection_end_monotonic_s": 1659.328209463,
+      "end_monotonic_s": 1660.528454822
+    },
+    {
+      "name": "theme-swipe-4",
+      "start_monotonic_s": 1660.528490709,
+      "injection_end_monotonic_s": 1660.752205891,
+      "end_monotonic_s": 1661.953295762
+    },
+    {
+      "name": "theme-swipe-5",
+      "start_monotonic_s": 1661.95333113,
+      "injection_end_monotonic_s": 1662.172194341,
+      "end_monotonic_s": 1663.37533603
+    },
+    {
+      "name": "background-swipe-0",
+      "start_monotonic_s": 1663.375401434,
+      "injection_end_monotonic_s": 1663.588187329,
+      "end_monotonic_s": 1664.788431354
+    },
+    {
+      "name": "background-swipe-1",
+      "start_monotonic_s": 1664.788480092,
+      "injection_end_monotonic_s": 1665.01617929,
+      "end_monotonic_s": 1666.216421796
+    },
+    {
+      "name": "background-swipe-2",
+      "start_monotonic_s": 1666.216457535,
+      "injection_end_monotonic_s": 1666.430429887,
+      "end_monotonic_s": 1667.632173351
+    },
+    {
+      "name": "background-swipe-3",
+      "start_monotonic_s": 1667.632221312,
+      "injection_end_monotonic_s": 1667.862467489,
+      "end_monotonic_s": 1669.06272803
+    },
+    {
+      "name": "idle-first",
+      "start_monotonic_s": 1669.062765251,
+      "end_monotonic_s": 1684.062959756
+    },
+    {
+      "name": "back",
+      "start_monotonic_s": 1684.062986458,
+      "injection_end_monotonic_s": 1684.156210863,
+      "end_monotonic_s": 1685.156438736
+    },
+    {
+      "name": "warm-open",
+      "start_monotonic_s": 1685.15645492,
+      "injection_end_monotonic_s": 1685.256198655,
+      "end_monotonic_s": 1690.25643562
+    },
+    {
+      "name": "warm-theme-swipe-0",
+      "start_monotonic_s": 1690.256499728,
+      "injection_end_monotonic_s": 1690.476215449,
+      "end_monotonic_s": 1691.676435876
+    },
+    {
+      "name": "warm-theme-swipe-1",
+      "start_monotonic_s": 1691.676487243,
+      "injection_end_monotonic_s": 1691.896213149,
+      "end_monotonic_s": 1693.096438649
+    },
+    {
+      "name": "warm-theme-swipe-2",
+      "start_monotonic_s": 1693.096473462,
+      "injection_end_monotonic_s": 1693.320198495,
+      "end_monotonic_s": 1694.52042118
+    },
+    {
+      "name": "warm-theme-swipe-3",
+      "start_monotonic_s": 1694.520465289,
+      "injection_end_monotonic_s": 1694.740200453,
+      "end_monotonic_s": 1695.940428434
+    },
+    {
+      "name": "warm-theme-swipe-4",
+      "start_monotonic_s": 1695.940464025,
+      "injection_end_monotonic_s": 1696.156172138,
+      "end_monotonic_s": 1697.356406341
+    },
+    {
+      "name": "warm-theme-swipe-5",
+      "start_monotonic_s": 1697.356453376,
+      "injection_end_monotonic_s": 1697.576181837,
+      "end_monotonic_s": 1698.776406706
+    },
+    {
+      "name": "idle-warm",
+      "start_monotonic_s": 1698.776432668,
+      "end_monotonic_s": 1713.77663217
+    }
+  ]
+}

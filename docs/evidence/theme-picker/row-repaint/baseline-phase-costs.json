@@ -1,0 +1,92 @@
+[
+  {
+    "phase_prefix": "theme-swipe-",
+    "spans": {
+      "overlay_draw": {
+        "count": 51,
+        "median_wall_us": 107142,
+        "median_cpu_us": 93153
+      },
+      "scene_rebuild": {
+        "count": 51,
+        "median_wall_us": 103701,
+        "median_cpu_us": 89917
+      },
+      "canvas_copy": {
+        "count": 51,
+        "median_wall_us": 3040,
+        "median_cpu_us": 2838
+      },
+      "thumbnail_poll": {
+        "count": 168,
+        "median_wall_us": 181.5,
+        "median_cpu_us": 172.0
+      },
+      "overlay_prerender": {
+        "count": 3,
+        "median_wall_us": 57583,
+        "median_cpu_us": 43861
+      }
+    }
+  },
+  {
+    "phase_prefix": "background-swipe-",
+    "spans": {
+      "overlay_draw": {
+        "count": 30,
+        "median_wall_us": 172924.5,
+        "median_cpu_us": 83684.5
+      },
+      "scene_rebuild": {
+        "count": 30,
+        "median_wall_us": 157937.5,
+        "median_cpu_us": 80326.0
+      },
+      "canvas_copy": {
+        "count": 30,
+        "median_wall_us": 3082.0,
+        "median_cpu_us": 2839.5
+      },
+      "thumbnail_poll": {
+        "count": 65,
+        "median_wall_us": 228,
+        "median_cpu_us": 216
+      },
+      "overlay_prerender": {
+        "count": 1,
+        "median_wall_us": 73903,
+        "median_cpu_us": 57270
+      }
+    }
+  },
+  {
+    "phase_prefix": "warm-theme-swipe-",
+    "spans": {
+      "overlay_draw": {
+        "count": 52,
+        "median_wall_us": 123669.0,
+        "median_cpu_us": 95235.5
+      },
+      "scene_rebuild": {
+        "count": 52,
+        "median_wall_us": 116633.0,
+        "median_cpu_us": 91770.0
+      },
+      "canvas_copy": {
+        "count": 51,
+        "median_wall_us": 3079,
+        "median_cpu_us": 2847
+      },
+      "thumbnail_poll": {
+        "count": 161,
+        "median_wall_us": 179,
+        "median_cpu_us": 171
+      },
+      "overlay_prerender": {
+        "count": 3,
+        "median_wall_us": 59952,
+        "median_cpu_us": 44198
+      }
+    }
+  }
+]
