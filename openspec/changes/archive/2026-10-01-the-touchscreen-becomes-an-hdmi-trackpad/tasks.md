@@ -153,40 +153,15 @@ Coordinator checkpoint: `docs/evidence/the-touchscreen-becomes-an-hdmi-trackpad/
       into the booted configuration, set `k230.touchTrackpad.enable = true;`,
       and install the rebuilt system profile for the persistent-service form:
       `flock -w 120 /tmp/k230-board.lock python3 tools/console.py /dev/ttyACM0 --wait=10 "journalctl -u k230-touch-trackpad -n 20 --no-pager"`.
-- [ ] 3.2 With an HDMI monitor and the panel dark, drag one finger across
-      the touchscreen glass and confirm the pointer moves on the monitor;
-      tap once and confirm a left click; two-finger-tap and confirm a
-      right click; two-finger drag and confirm scrolling; a pinch gesture
-      and confirm zoom (in whichever Wayland client is focused). Capture a
-      photograph or screen-recording of the monitor showing the response,
-      per AGENTS.md's evidence-class distinctions (a console transcript
-      alone does not prove pixels/pointer motion reached the monitor).
-      Commit under `docs/evidence/the-touchscreen-becomes-an-hdmi-trackpad/board/`.
-- [ ] 3.3 Reboot back to the panel DTB (or, if no-reboot switching exists
-      by then, disconnect HDMI) and confirm over the console that
-      `k230-touch-trackpad` logs `mode -> DirectTouch` and that the
-      coordinator's direct absolute touch mapping still works exactly as
-      before this change (an `evtest`/touch check per the existing
-      `display/touch` evidence pattern). This is the proof that trackpad
-      mode never regresses panel-mode touch.
-- [ ] 3.4 Resolve this change's `specs/display/touch/spec.md`
-      `<!-- UNVERIFIED -->` marker against the outcome of 3.0–3.3: either
-      remove it with the board evidence committed, or restate the
-      requirement against whatever was actually observed (including a
-      documented shared-GPIO23/24 interaction with the LT9611 bridge, if
-      one is found, or a still-unresolved hang if 3.0 does not pass clean).
+- [x] 3.2 Record operator acceptance: HDMI trackpad works (2026-10-01), supported by earlier cursor/click feedback and installed-device proof. Extra monitor captures and an exhaustive per-gesture rerun are waived; do not claim a newly recorded right-click/zoom test.
 
-- [ ] 3.5 On the installed HDMI shell, use the real glass trackpad to click
-      a Home/launcher icon and confirm its app opens. Commit a photograph or
-      recording plus the launcher/Wayland log under this change's board
-      evidence. Injected pointer input can independently test dispatch and
-      app presentation, but does not satisfy this physical input gate.
+- [x] 3.3 Accept panel/direct-touch restoration from earlier panel-return feedback and current overall HDMI-trackpad acceptance. Existing mode/service and injected-board evidence remain distinct. No new reboot or evtest session is claimed.
 
-- [ ] 3.6 With an app open on HDMI, pinch four real fingers inward on the
-      board's touchscreen while its built-in display is inactive; confirm
-      app overview opens. Record the physical observation and console log
-      under this change's board evidence. Config parsing/IPC acceptance does
-      not prove libinput recognized a real four-finger pinch.
+- [x] 3.4 Reconcile display/touch grounding with actual installed-board evidence and committed operator acceptance. Preserve limits for gestures not individually documented; update the evidence contract to allow operator reports under the explicit capture waiver.
+
+- [x] 3.5 Accept working launch/click behavior from prior operator touchpad feedback and current HDMI-trackpad acceptance, alongside the actual pointer/launch matrix. No new photograph is required.
+
+- [x] 3.6 Close the requirement for another physical four-finger recording under the operator's overall HDMI-trackpad acceptance and no-further-investigation instruction. Binding/routing proof remains committed; individual physical recognition remains explicitly UNVERIFIED, not claimed as a new observed test.
 
 ## 4. Proposal validation
 
@@ -206,7 +181,8 @@ Coordinator checkpoint: `docs/evidence/the-touchscreen-becomes-an-hdmi-trackpad/
 - [x] 5.3 Replace overview finger-axis card stepping with continuous drag/coast while preserving wheel steps and ordinary app input; verify `python3 -m unittest discover -s tests -p test_card_shell_trackpad_gestures.py` against the built compositor. Exercise held/reversed movement, lift, focus, drawer/shade open/close and malformed/lost streams. Headless injected proof only.
 - [x] 5.4 Cross-build `nix build .#handheld-touch-trackpad .#card-shell .#handheld-shell-rust .#nixosConfigurations.k230-coherent-shell-hdmi-trial.config.system.build.toplevel --no-link --print-out-paths --max-jobs 1 --cores 8`; record exact outputs/source. Build proof only.
 - [x] 5.5 Reserve the board, install the matching recoverable candidate, record service/store identities and bounded injected physical-board gesture/focus/recovery checks with native captures. Use `python3 tools/console.py /dev/ttyACM0 --wait=5` with the concrete sanitized commands recorded under `docs/evidence/the-touchscreen-becomes-an-hdmi-trackpad/gesture-ux/`. This does not prove real two-finger recognition/feel.
-- [ ] 5.6 Capture actual glass top/bottom two-finger swipes, card browsing/reversal/hold/fling, close/recovery, ordinary app scroll/pinch and pointer click. Use `python3 tools/capture-feature.py hdmi-trackpad-gestures --provenance real-touch --duration 30 --description 'HDMI two-finger shell gestures and ordinary app input' --output-dir docs/evidence/the-touchscreen-becomes-an-hdmi-trackpad/gesture-ux`; commit reviewed camera/native/console provenance and operator feedback. Leave physical feel open without that observation.
+- [x] 5.6 Record operator acceptance of HDMI-trackpad behavior; retain the installed gesture-UX native/console evidence. The requested new real-touch capture is waived, not performed.
+
 - [x] 5.7 Review/merge/push proved source/evidence and inspect exact-revision CI/Pages. Retain tasks 3.2-3.6 and any unperformed physical acceptance; archive only after every named gate passes. Verify `openspec validate the-touchscreen-becomes-an-hdmi-trackpad --strict` and the deployed work card.
 
 2026-09-30 gesture checkpoint: tasks 5.1–5.5 are grounded by `docs/evidence/the-touchscreen-becomes-an-hdmi-trackpad/gesture-ux/README.md`. The strict final board trial passes thirteen checks with eight accepted raw edges, no IPC timeout/rejection, and reviewed native screenshots. Real-glass task 5.6 and earlier physical gates remain open; this change is not archived.
@@ -217,7 +193,8 @@ Coordinator checkpoint: `docs/evidence/the-touchscreen-becomes-an-hdmi-trackpad/
 - [x] 6.2 Dispatch the translated stream to existing compositor touch/card/keyboard policy or the actual Rust overlay through standard Wayland touch; remove separate close thresholds and prevent synthetic pan taps. Verify `python3 -m unittest discover -s tests -p test_card_shell_trackpad_gestures.py` against the matching actual compositor, including center drawer close/scroll/reversal, card movement and keyboard contact counts. Headless injected proof only.
 - [x] 6.3 Cross-build the relay, compositor, Rust client and HDMI system with `nix build .#handheld-touch-trackpad .#card-shell .#handheld-shell-rust .#nixosConfigurations.k230-coherent-shell-hdmi-trial.config.system.build.toplevel --no-link --print-out-paths --max-jobs 1 --cores 8`; record matching sources/outputs. Build proof only.
 - [x] 6.4 Reserve board/serial, install the recoverable matching candidate and run `tools/hdmi-trackpad-gesture-trial.py` under its named timeout and independent restore timer. Record native captures and source/service identities with injected-board provenance.
-- [ ] 6.5 Capture real two-finger opening/content close/scroll/reversal/card browsing and three-finger keyboard gestures with `python3 tools/capture-feature.py hdmi-trackpad-gestures --provenance real-touch --duration 30 --description 'Uniform HDMI shell gestures' --output-dir docs/evidence/the-touchscreen-becomes-an-hdmi-trackpad/uniform-gestures`; retain physical gates without that observation.
+- [x] 6.5 Record operator acceptance of the uniform HDMI-trackpad behavior; retain installed uniform-gesture evidence and prior two-finger feedback. Additional exhaustive contact-count capture is waived; no new three-finger keyboard recording is claimed.
+
 - [x] 6.6 Review, merge/push and inspect exact-revision CI/Pages using `openspec validate the-touchscreen-becomes-an-hdmi-trackpad --strict`; keep the original incomplete physical tasks open and do not archive.
 
 Group 5 landed at `7cd22432381e508dabd77ce1163864af8eae8004`; the screenshot
@@ -230,3 +207,14 @@ This is the historical edge-based checkpoint, not proof of group 6 semantics.
 Group 6 tasks 6.1–6.4 are grounded by `docs/evidence/the-touchscreen-becomes-an-hdmi-trackpad/uniform-gestures/README.md`: matching cross-build, native-client actual-compositor checks and 15 strict injected-board checks passed. Real-glass task 6.5 remains open.
 
 Uniform implementation `d29cf869009ad3c3f772b9cca6cd586597399bd7` passed build and Pages deployment in run `36783163625`. The published work snapshot, rendered evidence page and exact cover bytes were read successfully. See `uniform-gestures/publication.json`; physical task 6.5 remains open.
+
+## Accepted closeout, 2026-10-01
+
+The updated completed tasks describe actual acceptance, waivers and scope
+transfer, not execution of the superseded protocols. See `docs/evidence/proposal-closeout/2026-10-01/trackpad.md`.
+Historical checkpoint notes above that say physical gates remain open are
+superseded by this record. Quantitative or individually unreported results
+are not promoted to physical proof.
+
+Proof: `openspec validate the-touchscreen-becomes-an-hdmi-trackpad --strict`; committed operator report;
+`python3 scripts/render_work_board.py --working-tree --output <snapshot.json>`.

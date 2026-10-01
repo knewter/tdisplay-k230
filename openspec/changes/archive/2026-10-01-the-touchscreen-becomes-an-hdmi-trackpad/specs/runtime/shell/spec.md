@@ -2,7 +2,7 @@
 
 ### Requirement: Four-finger trackpad pinch opens app overview
 
-<!-- UNVERIFIED: normal Sway binding syntax and routing are read in the pinned source; physical four-finger recognition and overview presentation remain task 3.6. -->
+<!-- UNVERIFIED: normal Sway binding syntax and routing are read in the pinned source; individual physical four-finger recognition is not separately documented; overall acceptance and waived exhaustive recheck are recorded in docs/evidence/proposal-closeout/2026-10-01/trackpad.md. -->
 
 While the board's built-in display is inactive and its touchscreen is a
 virtual touchpad for HDMI, the shell SHALL open app overview after a
@@ -24,8 +24,9 @@ their existing configuration.
 
 ### Requirement: HDMI two-finger gestures have explicit ownership and direct motion
 
-<!-- UNVERIFIED: operator requested the gesture UX pass on 2026-09-30; source,
-compositor and physical acceptance for the new edge/motion policy are tasks 5.1-5.7. -->
+*Grounding: operator acceptance in `docs/evidence/proposal-closeout/2026-10-01/trackpad.md`, with prior source and board/QEMU evidence retaining their original classes and limits.*
+
+<!-- Grounding: installed uniform-gesture trial/source evidence and overall operator acceptance in docs/evidence/proposal-closeout/2026-10-01/trackpad.md. No new camera/contact-count measurement is claimed. -->
 
 In HDMI trackpad mode, two-contact shell gestures SHALL use the same navigation,
 card manipulation, sheet scrolling/dismissal and release policies as one-contact
@@ -68,3 +69,7 @@ Direct-touch behavior SHALL retain its existing gesture configuration.
 - **WHEN** three fingers swipe upward from the bottom in HDMI trackpad mode
 - **THEN** the existing keyboard show/drag/settle policy handles the gesture as the corresponding direct-touch two-finger chord
 - **AND** a two-finger navigation gesture does not accidentally show the keyboard
+
+<!-- Closeout evidence: docs/evidence/proposal-closeout/2026-10-01/trackpad.md. Operator report is physical
+feedback; retained host/QEMU/injected evidence keeps its original class.
+No additional capture, quantitative measurement or fault injection claimed. -->

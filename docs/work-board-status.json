@@ -177,27 +177,6 @@
         "provenance": "Board capture"
       }
     },
-    "the-touchscreen-becomes-an-hdmi-trackpad": {
-      "lane": "verification",
-      "source": "source-landed",
-      "physical": "pending",
-      "next": "Installed shared touch gestures: test real two-finger drawer close/scroll/reversal and card movement, three-finger keyboard entry, ordinary app input and HDMI-to-panel restoration.",
-      "dependencies": [
-        "plugging-in-hdmi-moves-the-display"
-      ],
-      "evidence": [
-        "docs/evidence/the-touchscreen-becomes-an-hdmi-trackpad/host-uinput-classification.md",
-        "docs/evidence/the-touchscreen-becomes-an-hdmi-trackpad/board-hang-2026-09-29.md",
-        "docs/evidence/the-touchscreen-becomes-an-hdmi-trackpad/uniform-gestures/README.md"
-      ],
-      "rationale": "Uniform contact translation is implemented and installed. Matching actual-compositor tests and 15 strict injected-board checks pass; real-glass feel and panel restoration remain open.",
-      "reviewRevision": "d29cf869009ad3c3f772b9cca6cd586597399bd7",
-      "cover": {
-        "path": "docs/evidence/the-touchscreen-becomes-an-hdmi-trackpad/uniform-gestures/overview.png",
-        "caption": "Native HDMI board capture after injected two-finger overview input; real-glass feel pending",
-        "provenance": "Board capture"
-      }
-    },
     "the-shell-adapts-to-output-resolution": {
       "lane": "in-progress",
       "source": "in-progress",
@@ -374,6 +353,28 @@
       "cover": {
         "path": "docs/evidence/the-shell-is-navigable-with-a-mouse/edge-controls-board/search-backspace.jpg",
         "caption": "Bottom Backspace leaves the actual drawer open and clears the query",
+        "provenance": "Board capture"
+      }
+    },
+    "2026-10-01-the-touchscreen-becomes-an-hdmi-trackpad": {
+      "lane": "archived",
+      "source": "archived",
+      "physical": "verified",
+      "next": "Closed on operator acceptance; see evidence for waived captures and retained limits.",
+      "dependencies": [
+        "plugging-in-hdmi-moves-the-display"
+      ],
+      "evidence": [
+        "docs/evidence/the-touchscreen-becomes-an-hdmi-trackpad/host-uinput-classification.md",
+        "docs/evidence/the-touchscreen-becomes-an-hdmi-trackpad/board-hang-2026-09-29.md",
+        "docs/evidence/the-touchscreen-becomes-an-hdmi-trackpad/uniform-gestures/README.md",
+        "docs/evidence/proposal-closeout/2026-10-01/trackpad.md"
+      ],
+      "rationale": "Operator accepts the delivered behavior and requests closeout without further difficult captures/retesting. Measurements and unreported per-case proof are not fabricated.",
+      "reviewRevision": "c2ba4e0870dad01300e1ebd52ffe2d7383063db5",
+      "cover": {
+        "path": "docs/evidence/the-touchscreen-becomes-an-hdmi-trackpad/uniform-gestures/overview.png",
+        "caption": "Native HDMI board capture after injected two-finger overview input; real-glass feel pending",
         "provenance": "Board capture"
       }
     }

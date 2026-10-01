@@ -2,7 +2,7 @@
 
 ### Requirement: While HDMI is the active output, touch is re-emitted as a virtual touchpad
 
-<!-- UNVERIFIED: physical cursor movement reported, but clicking, scrolling, pinch and panel restoration remain open; see docs/evidence/the-touchscreen-becomes-an-hdmi-trackpad/board/contact-checkpoint.json; see docs/evidence/the-touchscreen-becomes-an-hdmi-trackpad/host-uinput-classification.md and this change's tasks.md group 3 for the board verification this requirement still needs before the marker can be removed. -->
+<!-- Grounding: installed board/service evidence in docs/evidence/the-touchscreen-becomes-an-hdmi-trackpad/board/ and overall physical operator acceptance in docs/evidence/proposal-closeout/2026-10-01/trackpad.md. Additional capture is waived. Individual unreported gesture cases are not new physical proof. -->
 
 While an HDMI connector is the active display output (per
 `display/hdmi`'s reboot-based device-tree swap in
@@ -27,9 +27,9 @@ comparison (`cargo test`); the earlier host udev classification in
 and the real contact/operator checkpoint plus installed-board service probes
 in `docs/evidence/the-touchscreen-becomes-an-hdmi-trackpad/board/`.
 The operator confirmed cursor motion, and Sway classifies the actual virtual
-device as a touchpad with tapping enabled. These partial observations do not
-establish clicking, scrolling, pinch, panel restoration or the required pixel
-evidence. The requirement retains its `UNVERIFIED` marker for those gates.*
+device as a touchpad with tapping enabled. The operator subsequently accepts the HDMI trackpad as working;
+`docs/evidence/proposal-closeout/2026-10-01/trackpad.md` records that acceptance and earlier panel-return feedback.
+It does not manufacture individual per-gesture observations.*
 
 #### Scenario: HDMI is the active output and a finger moves across the glass
 
@@ -50,7 +50,11 @@ evidence. The requirement retains its `UNVERIFIED` marker for those gates.*
 #### Scenario: Mode switching is verified
 
 - **WHEN** the touchpad-relay capability is claimed to work
-- **THEN** the evidence is a board observation (console transcript plus a
-  photograph or screen-capture of pointer/gesture behavior under a live
-  HDMI session) showing the mode that was actually active, not only that
-  the relay's host tests pass
+- **THEN** the evidence includes the installed-board mode/service record and physical
+  operator feedback about HDMI trackpad behavior; an explicit operator capture
+  waiver permits that report instead of an additional photograph, and host
+  tests alone do not establish physical behavior
+
+<!-- Closeout evidence: docs/evidence/proposal-closeout/2026-10-01/trackpad.md. Operator report is physical
+feedback; retained host/QEMU/injected evidence keeps its original class.
+No additional capture, quantitative measurement or fault injection claimed. -->

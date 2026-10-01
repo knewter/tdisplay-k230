@@ -120,3 +120,10 @@ finger in direct touch mode, rather than accumulating independent shortcuts.
 Three fingers from the bottom replace the touch mode's two-contact keyboard
 chord. Both modes share tracking, reversal, scrolling boundaries and release
 physics. Preserve ordinary one-finger pointer input and application scroll/zoom.
+
+## Accepted closeout, 2026-10-01
+
+The operator accepts this delivered functional scope and waives additional
+capture-only acceptance gates. `docs/evidence/proposal-closeout/2026-10-01/trackpad.md` records the exact report,
+prior evidence and limits. Its task dispositions supersede older statements
+that these acceptance gates remain open; they do not claim new test runs.

@@ -409,3 +409,10 @@ The implemented uniform checkpoint, exact sources/outputs, timing failure,
 strict injected-board result and reviewed native captures are recorded in
 `docs/evidence/the-touchscreen-becomes-an-hdmi-trackpad/uniform-gestures/README.md`.
 Physical recognition/feel remains UNVERIFIED.
+
+## Accepted closeout, 2026-10-01
+
+The operator accepts this delivered functional scope and waives additional
+capture-only acceptance gates. `docs/evidence/proposal-closeout/2026-10-01/trackpad.md` records the exact report,
+prior evidence and limits. Its task dispositions supersede older statements
+that these acceptance gates remain open; they do not claim new test runs.
