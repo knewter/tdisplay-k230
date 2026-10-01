@@ -36,3 +36,8 @@ performed; broader shell-polish real-glass acceptance remains task 6.4.
 ![Dark Settings host render](dark-settings.png)
 
 ![Light Settings host render](light-settings.png)
+
+The matching full system subsequently built and passed native board controls and
+dark/light captures: [board qualification](board/README.md). The expected client
+is running; original theme and volume are restored. Boot/profile selection is
+unchanged and broader real-glass polish acceptance remains open.

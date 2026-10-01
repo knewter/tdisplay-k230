@@ -1627,6 +1627,9 @@ DATA  27a43617fdf643598ab4a2a946ba8a1d10c0604f39585bc526f3974e9dfca302  docs/evi
 DATA  ac2be7a175f501ea58ee7fb25fd7a8ecbe60a11b271050ead68ab105dd722454  docs/evidence/home-screen/app-actions/qemu/home-actions-touch-placement.png
 DATA f7d82ddaed45d073d32865f61180c6a2a4a3e9ddfa14c5b767f129a5d35a3b06 docs/evidence/shell-polish/settings-volume-layout/dark-settings.png
 DATA f51202b93578dbf965c365c3174a9eb11d24522d4965c0f0707b7be63db47d3f docs/evidence/shell-polish/settings-volume-layout/light-settings.png
+DATA 4877486f4942ae363c0651664294e0c78fbfafa52a588071fa2b4eb5a04ec61f docs/evidence/shell-polish/settings-volume-layout/board/output-picker.png
+DATA 65da519ed8e6c2013dea69b4b97ef671b2552d21a39aeee4d7203d8cfbebd52b docs/evidence/shell-polish/settings-volume-layout/board/dark-settings.png
+DATA 76360f2debadb7ae6796ceb177d7702067fffe0af0abb155fbcf44984a1536bb docs/evidence/shell-polish/settings-volume-layout/board/light-settings.png
 ```
 
 `group:` rows stand for a directory whose members are enumerated by

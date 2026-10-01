@@ -49,7 +49,8 @@
         "docs/evidence/keyboard-gestures/installed-preview/README.md",
         "docs/evidence/coherent-shell/boot-artifacts/README.md",
         "docs/evidence/omarchy-themes/community-board-fixed/README.md",
-        "docs/evidence/shell-polish/settings-volume-layout/README.md"
+        "docs/evidence/shell-polish/settings-volume-layout/README.md",
+        "docs/evidence/shell-polish/settings-volume-layout/board/README.md"
       ],
       "rationale": "Source 3c502a37 is test-activated with portrait-crop theme preview and the community rgba parser fix. Dark, light and unchanged community themes passed live activation and restoration on this exact system. Notification motion is newer source work; the host SD image still targets the previous 48x70 preview. Physical touch and persistent boot gates remain open.",
       "reviewRevision": "3c502a37540375a74685f70b21d73eaee28c40bc",

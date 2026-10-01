@@ -83,3 +83,11 @@ dark/light renders. See `docs/evidence/shell-polish/settings-volume-layout/READM
 The slider's position and broader route geometry are unchanged. Matching
 cross-build/install and real-glass review are distinct from this host result;
 6.4 remains open.
+
+
+Settings volume-layout follow-up is built and running on the board from source
+`5bb67db1`. Nine native runtime/uinput checks and dark/light/picker captures pass:
+`docs/evidence/shell-polish/settings-volume-layout/board/README.md`.
+The original theme/volume were restored; boot/profile remain unchanged. This
+qualifies these bounded controls, not all six surfaces or the unperformed
+real-glass/persistent-boot parts of 6.4 and 5.8.

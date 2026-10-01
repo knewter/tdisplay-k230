@@ -1,0 +1,41 @@
+{
+  "source": "5bb67db128210f830dab4de0d20a4b0eca13c578",
+  "class": "physical-board-runtime-activation-native-captures-and-uinput",
+  "candidate": "/nix/store/p1a1hz9n8s4g8qyr55ffl3dzbnjgqwr8-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "rust": "/nix/store/3hy6h165ii649z6vjzjd36jwg16d37rc-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0/bin/k230-shell-rust",
+  "helper": "/nix/store/sklk0aqz51qc17nwgpfw5ysavb3xmv1l-handheld-theme-command-0.1",
+  "checks": {
+    "full_runtime_and_services_match_build": true,
+    "settings_volume_loaded_before_picker_tap": true,
+    "moved_output_detail_maps_picker": true,
+    "expanded_picker_pixels_change": true,
+    "slider_changes_real_sink": true,
+    "original_theme_restored": true,
+    "boot_and_profile_preserved": true,
+    "volume_restored": true,
+    "final_services_active": true
+  },
+  "captures": [
+    {
+      "name": "output-picker.png",
+      "sha256": "4877486f4942ae363c0651664294e0c78fbfafa52a588071fa2b4eb5a04ec61f",
+      "generation": "d0a967bf62ad1c144b721078"
+    },
+    {
+      "name": "dark-settings.png",
+      "sha256": "65da519ed8e6c2013dea69b4b97ef671b2552d21a39aeee4d7203d8cfbebd52b",
+      "generation": "a0e98a5114b695a7f8656b88"
+    },
+    {
+      "name": "light-settings.png",
+      "sha256": "76360f2debadb7ae6796ceb177d7702067fffe0af0abb155fbcf44984a1536bb",
+      "generation": "f0b348739c708d9874ea6581"
+    }
+  ],
+  "started_epoch_s": 1790893110.2385273,
+  "boot_acceptance": false,
+  "finger_acceptance": false,
+  "result": "PASS",
+  "runtime_retained": true,
+  "restore_command": "/nix/store/v189xydz6qkcd4cbkixcmv91w8hbc560-python3-riscv64-unknown-linux-gnu-3.14.7/bin/python3 /root/tmp/k230-settings-controls/restore.py"
+}
