@@ -81,3 +81,5 @@ kernel, or NixOS module changes. No new dependency. `cargo build
 (riscv64) as proof the change compiles for the target; no QEMU or board
 run was performed for this change. Real-finger, on-board frame-timing,
 and real-finger search verification remain open gates (`tasks.md` §6).
+
+Follow-up after real-glass acceptance (2026-09-30): search should use the normal wvkbd keyboard shared with Foot and Wi-Fi. The operator noticed the current compact custom keypad; track replacement, focus cleanup, reflow and new physical proof in tasks 6.1–6.3.

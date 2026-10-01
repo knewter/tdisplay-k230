@@ -66,3 +66,7 @@ path a scroll/fling actually exercises.
   any other unification of the two keyboards — explicitly out of scope,
   though now that both exist the shape of that refactor is clearer than
   it was before this change.
+
+## Standard keyboard follow-up (2026-09-30)
+
+The operator accepted reversal and search but immediately noticed search uses a different keyboard from Foot and Wi-Fi. The compact launcher-painted rows were an initial prefix-filter shortcut, not a hardware limitation. Replace them with the normal wvkbd surface, ordinary Wayland text keys and the shared show/hide helper. Reuse Wi-Fi's narrowly scoped keyboard focus approach for an active Search field, and release it on Done/Enter, Escape, app launch, route exit, surface loss or seat loss. Keep Wi-Fi secret state independent from public search text. Size the list's visible region from the actual keyboard reservation rather than assuming the old 300px custom keypad; its scroll cache remains keyed by the current catalog/filter/theme. Preserve existing edge-intent routing and original desktop-entry launch behavior. The already accepted compact-keyboard check is historical proof; the replacement needs its own real-glass acceptance.

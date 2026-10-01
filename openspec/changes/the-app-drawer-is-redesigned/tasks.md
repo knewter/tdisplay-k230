@@ -163,7 +163,7 @@
 
 ## 5. Open: board and real-finger verification
 
-- [ ] 5.1 **Hardware-only, not performed here.** Reproduce the exact
+- [x] 5.1 **Real-glass operator acceptance, 2026-09-30.** Reproduce the exact
       reported scroll-reversal gesture by real finger on glass and
       confirm the drawer does not close (the bug-fix commit's own
       gate).
@@ -173,7 +173,7 @@
       Resolves the design review's UNVERIFIED performance claim into a
       real number, and settles whether the ~20ms target is actually
       met.
-- [ ] 5.3 **Hardware-only, not performed here.** Real-finger tap on the
+- [x] 5.3 **Real-glass operator acceptance, 2026-09-30 (current compact keyboard).** Real-finger tap on the
       search field, type on the compact keyboard, and confirm live
       filtering and correct launch of a filtered result.
 - [ ] 5.4 **Hardware-only, contingent on 5.2.** If the board
@@ -181,3 +181,11 @@
       the scroll-direction damage-limited blitting named in
       `docs/design/app-drawer-review.md` §6 (not implemented in this
       change).
+
+The coordinator asked for the named drawer reversal and search/type/filter/launch checks; the operator replied “drawer works fine. search works fine.” Evidence: `docs/evidence/proposal-closeout/2026-09-30/operator-feedback.md`. This accepts the current interaction only; it does not claim 5.2 timing, a performance-contingent 5.4 follow-up, or the requested standard keyboard below.
+
+## 6. Search uses the normal system keyboard
+
+- [ ] 6.1 Replace the drawer's custom compact letter/control rows with ordinary system-keyboard input and the shared wvkbd show/hide path. Keep search focus only while the field is active, handle text/Backspace/Enter/Escape, and reflow the app list above the actual keyboard reservation. Preserve filtering, scrolling, ordinary desktop-entry activation and the compositor's tap/gesture arbitration. Verify host routing, keyboard geometry and focus teardown with `cargo test --offline --manifest-path nix/rust-shell-client/Cargo.toml`, then `nix build .#handheld-shell-rust`.
+- [ ] 6.2 Exercise the actual Rust drawer and wvkbd under the paired QEMU fixture, recording exact source/store identities: focus Search, type/correct/filter/launch, dismiss/reopen, leave Drawer and reclaim app focus. Host injection is not real-glass evidence. Record the concrete fixture invocation under `docs/evidence/app-drawer/` before ticking this task.
+- [ ] 6.3 Deploy the exact matching userspace on the reserved board and prove real-finger system-keyboard search, correction, launch, dismissal and edge gestures; commit safe native/optical feature evidence and inspect the exact Pages revision. Use `python3 tools/console.py /dev/ttyACM0 --wait=3 'readlink -f /run/current-system'` plus the recorded operator workload. Retain 5.2/5.4 until their separate measured evidence exists.

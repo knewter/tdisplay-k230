@@ -183,3 +183,9 @@ letter, rather than leaving the tile blank.
   resolves against the active icon theme
 - **THEN** its grid tile shows a round, theme-coloured circle bearing the
   application's initial letter, not an empty or broken tile
+
+#### Scenario: Searching uses the same system keyboard as other text fields
+
+- **WHEN** a person focuses the app drawer's Search field
+- **THEN** the normal system keyboard appears and its ordinary typed text and correction update the live app filter, with the list kept visible above the keyboard
+- **AND** dismissing search, launching a result or leaving the drawer releases keyboard focus and lowers the keyboard without stranding application input
