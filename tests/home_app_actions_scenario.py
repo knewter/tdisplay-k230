@@ -4,7 +4,7 @@ import time
 
 
 def exercise_actions(client, spawn, ipc, wait, tap, capture, route, dock, tile,
-                     drawer_tile, hold_drag, release, done, layout_path, marker, log):
+                     drawer_tile, hold_drag, release, done, layout_path, marker, log, click):
     def nodes(node):
         yield node
         for child in node.get("nodes", []) + node.get("floating_nodes", []):
@@ -22,10 +22,11 @@ def exercise_actions(client, spawn, ipc, wait, tap, capture, route, dock, tile,
         ipc("card_shell home")
         time.sleep(.6)
 
-    def click(point, button=1):
-        ipc(f"seat seat0 cursor set {point[0]} {point[1]}")
-        ipc(f"seat seat0 cursor press button{button}")
-        ipc(f"seat seat0 cursor release button{button}")
+    def home_selected():
+        scene = ipc("card_shell debug-scene")[0]["error"]
+        # Wait for Sway to process the layer destroy, not merely for Rust to
+        # log dismissal while that request is still buffered for flush.
+        return "home_selected=1 " in scene and "drawer_mapped=0 " in scene
 
     def menu(point):
         baseline = log().count("app-menu-ready")
@@ -88,28 +89,30 @@ def exercise_actions(client, spawn, ipc, wait, tap, capture, route, dock, tile,
     baseline = log().count("app-menu-dismiss")
     click((30, 150))
     wait(lambda: log().count("app-menu-dismiss") > baseline)
+    wait(home_selected)
     assert layout_path.read_bytes() == before and set(windows()) == before_ids
 
-    desktop = layout_path.parents[2] / "data/applications/k230-fixture-terminal.desktop"
-    desktop_source = desktop.read_text()
-    desktop.write_text(desktop_source.replace("Type=Application", "Type=Application\nX-GNOME-SingleWindow=true"))
+    # A second installed entry declares itself single-window. Its menu
+    # must omit New Window even though an action with that name is present.
     baseline = log().count("app-menu-ready")
-    menu(dock(0))
+    menu(tile(0))
     ready = [line for line in log().splitlines() if "app-menu-ready" in line][baseline:]
     assert any("new-window=false" in line for line in ready), ready
     click((30, 150))
-    desktop.write_text(desktop_source)
+    wait(home_selected)
     assert layout_path.read_bytes() == before and set(windows()) == before_ids
     # Secondary click toggles dismissal too; it cannot launch or rearrange.
     menu(dock(0))
     baseline = log().count("app-menu-dismiss")
     click(dock(0), 3)
     wait(lambda: log().count("app-menu-dismiss") > baseline)
+    wait(home_selected)
     assert layout_path.read_bytes() == before and set(windows()) == before_ids
 
     # A touch hold remains grab-and-move, with no app menu opening at all.
+    capture("home-actions-before-touch.png")
     baseline = log().count("app-menu-open")
-    contact = hold_drag(tile(0), tile(2))  # Fixture Badge, not Terminal
+    contact = hold_drag(tile(0), tile(2), hold_seconds=1.0)  # Fixture Badge, not Terminal
     capture("home-actions-touch-grab.png", stable_frames=0)
     release(contact, *tile(2))
     wait(lambda: json.loads(layout_path.read_text())["pages"][0][2] ==
@@ -119,7 +122,7 @@ def exercise_actions(client, spawn, ipc, wait, tap, capture, route, dock, tile,
     # Drawer-to-Home hold/drag is preserved too, including the chosen cell.
     route("drawer")
     time.sleep(.5)
-    contact = hold_drag(drawer_tile(1), tile(3))
+    contact = hold_drag(drawer_tile(1), tile(3), hold_seconds=1.0)
     release(contact, *tile(3))
     wait(lambda: "k230-fixture-extra.desktop" in layout_path.read_text())
     assert log().count("app-menu-open") == baseline

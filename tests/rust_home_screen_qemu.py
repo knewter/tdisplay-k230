@@ -134,6 +134,43 @@ xkb_symbols "probe" { key <AC01> { type="ONE_LEVEL", [ a ] }; key <RTRN> { type=
     def close(self):
         self.socket.close()
 
+class VirtualPointer(RenameKeyboard):
+    """Advertise a real pointer seat capability and inject wl_pointer events.
+
+    Sway cursor IPC alone can exercise compositor chrome, but it does not
+    create the pointer device capability the Rust layer-shell client needs.
+    """
+    def __init__(self, path):
+        self.socket = socket.socket(socket.AF_UNIX)
+        self.socket.settimeout(10)
+        self.socket.connect(str(path))
+        self.serial = 2
+        self.globals = {}
+        self.send(1, 1, struct.pack('=I', 2))
+        self.roundtrip()
+        self.bind('zwlr_virtual_pointer_manager_v1', 4)
+        self.bind('wl_seat', 5)
+        self.send(4, 0, struct.pack('=II', 5, 6))
+        self.serial = 6
+        self.roundtrip()
+
+    def click(self, point, button=1):
+        stamp = int(time.monotonic() * 1000) & 0xffffffff
+        self.send(6, 1, struct.pack('=IIIII', stamp, int(point[0]), int(point[1]), WIDTH, HEIGHT))
+        self.send(6, 4)
+        self.roundtrip()
+        # Roundtrip acknowledges Sway, not the emulated Rust client's loop.
+        # Give pointer entry and each human click phase distinct dispatch turns.
+        time.sleep(0.1)
+        code = 0x111 if button == 3 else 0x110
+        self.send(6, 2, struct.pack('=III', stamp, code, 1))
+        self.send(6, 4)
+        self.roundtrip()
+        time.sleep(0.1)
+        self.send(6, 2, struct.pack('=III', (stamp + 200) & 0xffffffff, code, 0))
+        self.send(6, 4)
+        self.roundtrip()
+
 # Mirrors home_grid.rs's own constants exactly, so this black-box test can
 # derive exact tap points instead of guessing coordinates. The layout math
 # itself is covered by that module's own unit tests; this only needs
@@ -400,6 +437,7 @@ def main():
 
     config = root / "sway.conf"
     config.write_text(f"output HEADLESS-1 mode {WIDTH}x{HEIGHT}\nseat seat0 fallback true\n"
+                      'focus_follows_mouse no\n'
                       'for_window [app_id="^k230.card."] card_shell ordinary, floating enable, border none, resize set 100 ppt 100 ppt, move position 0 0\n')
     swaymsg_wrapper = root / "swaymsg"
     swaymsg_wrapper.write_text(f"#!/bin/sh\nexec {qemu} {args.swaymsg} \"$@\"\n")
@@ -447,6 +485,10 @@ def main():
         "[Desktop Entry]\nType=Application\nName=Fixture Badge\n"
         f"Exec={launch_script} badge\nIcon=htop\n"
     )
+    if args.actions_only:
+        with (apps_dir / "k230-fixture-badge.desktop").open("a") as desktop:
+            desktop.write("X-GNOME-SingleWindow=true\nActions=new-window;\n"
+                          "[Desktop Action new-window]\nName=New Window\nExec=/bin/true\n")
     # Matches no curated default keyword, so a fresh Home never shows it
     # until it is explicitly pinned from the drawer. No Icon=, proving the
     # initial-letter fallback plate still renders correctly at the new,
@@ -691,6 +733,7 @@ def main():
         time.sleep(0.3)
 
     checks = {}
+    pointer = None
     try:
         spawn("sway", [qemu, str(args.sway), "-c", str(config), "-d"])
         wait_for(lambda: "Running compositor on wayland display" in text("sway"), 60)
@@ -708,10 +751,12 @@ def main():
             page1 = capture("home-dark-page1.png")
             if args.actions_only:
                 from home_app_actions_scenario import exercise_actions
+                pointer = VirtualPointer(root / env['WAYLAND_DISPLAY'])
+                time.sleep(.2)
                 checks.update(exercise_actions(args.client, spawn, ipc, wait_for,
                               tap, capture, route, dock_center, tile_center,
                               drawer_tile_center, long_press_drag, settle_and_release,
-                              done_button_point, home_json, marker, lambda: text("dark-rust")))
+                              done_button_point, home_json, marker, lambda: text("dark-rust"), pointer.click))
                 assert all(checks.values()), checks
                 result = {"result": "PASS", "class": "headless-qemu-injected-touch-and-pointer",
                           "checks": checks, "sway": str(args.sway), "rust": str(args.rust),
@@ -1343,6 +1388,8 @@ def main():
               "widget picker) plus a real virtual-keyboard folder rename; synthetic "
               "backend, no physical touch")
     finally:
+        if pointer:
+            pointer.close()
         for process in reversed(processes):
             if process.poll() is None:
                 process.terminate()

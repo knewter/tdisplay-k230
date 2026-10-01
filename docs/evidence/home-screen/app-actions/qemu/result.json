@@ -1,0 +1,28 @@
+{
+  "result": "PASS",
+  "class": "headless-qemu-injected-touch-and-pointer",
+  "checks": {
+    "home_primary_focus_keeps_window_identity": true,
+    "desktop_new_window_creates_distinct_window": true,
+    "primary_activation_prefers_recent_window": true,
+    "menu_can_focus_specific_older_window": true,
+    "named_desktop_action_dispatches": true,
+    "all_apps_primary_activation_shares_focus_policy": true,
+    "outside_and_secondary_dismiss_preserve_layout_and_windows": true,
+    "single_window_metadata_hides_unsupported_new_window": true,
+    "touch_hold_keeps_home_grab_and_placement": true,
+    "touch_hold_keeps_drawer_drag_to_home": true
+  },
+  "sway": "/nix/store/g7xzwwvr3x05mlmsab5jn5kn1sl41wjb-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway",
+  "rust": "/nix/store/zjlcmhxqkhchysmjj9sk53hks1h5wc3l-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0/bin/k230-shell-rust",
+  "theme_bundle": "/nix/store/lv1rpkgv05ri76zz828xygiz0vggcch8-handheld-theme-default-28ceaae7",
+  "icons": "/nix/store/in3nc21zx02xiz2rdp5bpq36719x3axd-handheld-theme-icons-25.10.3",
+  "source": "288535289172c8465c4fa408eaa8ba2c7ab8a5ac",
+  "recorded_utc": "2026-10-01T21:03:41.271353+00:00",
+  "limits": "Cross Sway and Rust under qemu-riscv64-static; native synthetic app clients and headless backend. No board or real-finger acceptance.",
+  "capture_sha256": {
+    "home-actions-touch-grab.png": "27a43617fdf643598ab4a2a946ba8a1d10c0604f39585bc526f3974e9dfca302",
+    "home-actions-touch-placement.png": "ac2be7a175f501ea58ee7fb25fd7a8ecbe60a11b271050ead68ab105dd722454",
+    "home-actions-right-click.png": "5fdcbf526530d7d11e5a0f658f69a09b8957c3d6ce1923b30b1b21bf533f48b2"
+  }
+}

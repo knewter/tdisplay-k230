@@ -2603,3 +2603,6 @@ DATA  4094b29193330d905cae36305574359b8564e35bb11f7ad2d095bc4b142dd23f  docs/evi
 DATA  9f1b063491fa5e4909d29723dbbde3816c43c2b9268b91ee4906ea4bf3db8505  docs/evidence/omarchy-themes/settings-notifications-themed/board/light-shade.png
 DATA  9944c9fdef515ee3fc71c5a00cc46d6619d6142d6de17fcf3198d9b653cd44b8  docs/evidence/omarchy-themes/settings-notifications-themed/board/rollback-settings.png
 DATA  f96bbf535aa2e78a5b09781c996c7ad4d2359dca838d15ccc28b9c195225a87d  docs/evidence/omarchy-themes/settings-notifications-themed/board/rollback-shade.png
+| `docs/evidence/home-screen/app-actions/qemu/home-actions-right-click.png` | 82147 | DATA | `5fdcbf526530d7d11e5a0f658f69a09b8957c3d6ce1923b30b1b21bf533f48b2` |
+| `docs/evidence/home-screen/app-actions/qemu/home-actions-touch-grab.png` | 195262 | DATA | `27a43617fdf643598ab4a2a946ba8a1d10c0604f39585bc526f3974e9dfca302` |
+| `docs/evidence/home-screen/app-actions/qemu/home-actions-touch-placement.png` | 189281 | DATA | `ac2be7a175f501ea58ee7fb25fd7a8ecbe60a11b271050ead68ab105dd722454` |
