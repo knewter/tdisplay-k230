@@ -19,6 +19,7 @@ pub struct WifiPublic {
     pub snapshot: Option<Snapshot>,
     pub selected: Option<Network>,
     pub password_len: usize,
+    pub password_visible: bool,
     pub use_saved: bool,
     pub pending: bool,
     pub message: Option<String>,
@@ -44,6 +45,7 @@ pub enum Intent {
     Backspace,
     Connect,
     EditPassword,
+    TogglePassword,
     Forget,
     ForgetConfirm,
     ForgetCancel,
@@ -58,6 +60,7 @@ pub struct WifiView {
     pub message: Option<String>,
     pub scroll: f64,
     password: Secret,
+    password_visible: bool,
     pub use_saved: bool,
     pub pending: Option<(u64, Kind)>,
     keyboard_inset: f64,
@@ -71,6 +74,7 @@ impl Default for WifiView {
             message: None,
             scroll: 0.0,
             password: Secret::new(String::new()),
+            password_visible: false,
             use_saved: false,
             pending: None,
             keyboard_inset: 0.0,
@@ -84,6 +88,7 @@ impl WifiView {
             snapshot: self.snapshot.clone(),
             selected: self.selected.clone(),
             password_len: self.password.len(),
+            password_visible: self.password_visible && self.wants_keyboard(),
             use_saved: self.use_saved,
             pending: self.pending.is_some(),
             message: self.message.clone(),
@@ -150,11 +155,13 @@ impl WifiView {
             }
             Ok(WifiResult::Saved) => {
                 self.password = Secret::new(String::new());
+                self.password_visible = false;
                 self.page = Page::List;
                 self.message = Some("Saved. Checking current connection…".into());
             }
             Ok(WifiResult::Selected) => {
                 self.password = Secret::new(String::new());
+                self.password_visible = false;
                 self.page = Page::List;
                 self.message = Some("Saved network selected. Checking current link…".into());
             }
@@ -196,6 +203,7 @@ impl WifiView {
             .any(|saved| saved.ssid == network.ssid);
         self.selected = Some(network);
         self.password = Secret::new(String::new());
+                self.password_visible = false;
         self.page = Page::Entry;
         self.message = None;
     }
@@ -214,6 +222,7 @@ impl WifiView {
             return None;
         }
         let selected = self.selected.as_ref()?;
+        self.password_visible = false;
         self.page = Page::Connecting;
         self.message = Some("Connecting…".into());
         if self.use_saved {
@@ -256,6 +265,7 @@ impl WifiView {
                 self.page = Page::List;
                 self.selected = None;
                 self.password = Secret::new(String::new());
+                self.password_visible = false;
                 self.use_saved = false;
                 self.message = None;
                 true
@@ -282,9 +292,23 @@ impl WifiView {
         {
             self.use_saved = false;
             self.password = Secret::new(String::new());
+                self.password_visible = false;
             self.message = None;
         }
     }
+    /// Only the painter may borrow revealed unsaved input. Public/debug state
+    /// contains a visibility flag and length, never this value.
+    pub fn password_preview(&self) -> Option<&str> {
+        (self.password_visible && self.wants_keyboard())
+            .then(|| self.password.as_str())
+    }
+    pub fn hide_password(&mut self) { self.password_visible = false; }
+    pub fn toggle_password(&mut self) {
+        if self.wants_keyboard() && self.pending.is_none() {
+            self.password_visible = !self.password_visible;
+        }
+    }
+
     pub fn scroll(&mut self, delta: f64) {
         if self.page != Page::List {
             return;
@@ -452,6 +476,11 @@ fn target(view: &WifiPublic, x: f64, y: f64) -> Option<Intent> {
     if view.page != Page::Entry {
         return None;
     }
+    if !view.use_saved && !view.pending
+        && view.selected.as_ref().is_some_and(|n| n.security == Security::Wpa2Psk)
+        && (468.0..540.0).contains(&x) && (314.0..388.0).contains(&y) {
+        return Some(Intent::TogglePassword);
+    }
     let (button_top, button_bottom) = entry_buttons_rect(view.keyboard_inset);
     if (button_top..button_bottom).contains(&y) {
         if (24.0..274.0).contains(&x) {
@@ -500,6 +529,46 @@ mod tests {
             error: None,
         }
     }
+    #[test]
+    fn wifi_password_eye_preserves_input_focus_and_redacts_public_state() {
+        let mut view = WifiView::default();
+        view.page = Page::List; view.snapshot = Some(snapshot()); view.select(0);
+        for ch in "sample-pass".chars() { view.key(Intent::Key(ch)); }
+        assert!(view.password_preview().is_none());
+        assert!(view.wants_keyboard());
+        view.toggle_password();
+        assert_eq!(view.password_preview(), Some("sample-pass"));
+        assert!(!format!("{:?}", view.public()).contains("sample-pass"));
+        assert_eq!(target(&view.public(), 504.0, 350.0), Some(Intent::TogglePassword));
+        view.key(Intent::Backspace);
+        assert_eq!(view.password_preview(), Some("sample-pas"));
+        view.toggle_password();
+        assert!(view.password_preview().is_none());
+        assert_eq!(view.public().password_len, 10);
+        assert!(view.wants_keyboard());
+        view.toggle_password(); view.back();
+        assert!(view.password_preview().is_none());
+        view.select(0);
+        assert!(!view.public().password_visible);
+    }
+
+    #[test]
+    fn wifi_password_eye_resets_on_connect_and_saved_entry_never_reveals() {
+        let mut view = WifiView::default();
+        view.page = Page::List; view.snapshot = Some(snapshot()); view.select(0);
+        for ch in "sample-pass".chars() { view.key(Intent::Key(ch)); }
+        view.toggle_password();
+        assert!(view.connect_request().is_some());
+        assert!(view.password_preview().is_none());
+        view.submit_failed("Could not connect");
+        assert!(!view.public().password_visible);
+        view.use_saved = true; view.toggle_password();
+        assert!(view.password_preview().is_none());
+        assert_ne!(target(&view.public(),504.0,350.0), Some(Intent::TogglePassword));
+        view.close();
+        assert_eq!(view.public().password_len, 0);
+    }
+
     #[test]
     fn keyboard_masks_and_cancel_clears() {
         let mut view = WifiView::default();

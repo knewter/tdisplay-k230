@@ -28,7 +28,7 @@ use crate::{
         background_display_label, ThemeImageKey, ThemeImageWorker, ThemePage, ThemeView,
         BACKGROUND_CAROUSEL_TOP, THEME_CAROUSEL_TOP,
     },
-    wifi_settings::Security,
+    wifi_settings::{Secret, Security},
     wifi_ui::{all_networks, entry_buttons_rect, Page as WifiPage, WifiPublic},
     Route,
 };
@@ -1259,6 +1259,8 @@ fn paint_wifi(
                         cr,
                         if view.use_saved {
                             "Stored securely; no re-entry needed"
+                        } else if view.password_visible {
+                            "" // Revealed input is painted transiently, outside scene caches.
                         } else if mask.is_empty() {
                             "Type the password"
                         } else {
@@ -1266,11 +1268,24 @@ fn paint_wifi(
                         },
                         42.0,
                         337.0,
-                        464.0,
+                        if view.use_saved { 464.0 } else { 410.0 },
                         25.0,
                         style.text,
                     );
                     if !view.use_saved {
+                        // Eye target is 72x74 reference pixels, above the keyboard.
+                        color(cr, style.accent, 1.0);
+                        cr.set_line_width(2.5);
+                        cr.move_to(486.0, 350.0);
+                        cr.curve_to(494.0, 337.0, 514.0, 337.0, 522.0, 350.0);
+                        cr.curve_to(514.0, 363.0, 494.0, 363.0, 486.0, 350.0);
+                        let _ = cr.stroke();
+                        cr.arc(504.0, 350.0, 5.0, 0.0, std::f64::consts::TAU);
+                        let _ = cr.stroke();
+                        if !view.password_visible {
+                            cr.move_to(486.0, 368.0); cr.line_to(522.0, 332.0);
+                            let _ = cr.stroke();
+                        }
                         text(
                             cr,
                             &format!("{} / 63", view.password_len),
@@ -4021,6 +4036,7 @@ pub struct RendererCache {
     pressed: Option<usize>,
     theme: Option<AppearanceSnapshot>,
     services: Option<ServiceView>,
+    wifi_password_preview: Option<Secret>,
     chooser: Option<ThemeView>,
     preview_worker: ThemeImageWorker,
     preview_key: Option<ThemeImageKey>,
@@ -4297,7 +4313,14 @@ impl RendererCache {
         false
     }
 
+    pub fn set_wifi_password_preview(&mut self, preview: Option<&str>) {
+        self.wifi_password_preview = preview.map(|s| Secret::new(s.to_owned()));
+    }
+
     pub fn set_services(&mut self, services: ServiceView) {
+        if !services.wifi.as_ref().is_some_and(|v| v.page == WifiPage::Entry && v.password_visible && !v.use_saved) {
+            self.wifi_password_preview = None;
+        }
         self.services = Some(services);
         self.content_generation = self.content_generation.wrapping_add(1);
         self.invalidate();
@@ -4848,6 +4871,24 @@ impl RendererCache {
         // surface to exist purely because the HUD wants to show while
         // the Home screen alone is visible with nothing else open. See
         // `openspec/changes/the-handheld-controls-volume/tasks.md`.
+        // Explicitly revealed input is never included in static_pixels, theme
+        // prerenders, public service DTOs or trace/debug data.
+        if route == Route::Settings {
+            if let Some(preview) = self.wifi_password_preview.as_ref().filter(|_| {
+                self.services.as_ref().and_then(|s| s.wifi.as_ref())
+                    .is_some_and(|v| v.page == WifiPage::Entry && v.password_visible && !v.use_saved)
+            }) {
+                let surface = unsafe { ImageSurface::create_for_data_unsafe(
+                    canvas.as_mut_ptr(), Format::ARgb32, width as i32, height as i32, row_bytes as i32,
+                ) }.map_err(|e| e.to_string())?;
+                let cr = Context::new(&surface).map_err(|e| e.to_string())?;
+                cr.translate(0.0, f64::from(shift));
+                cr.scale(f64::from(width) / 568.0, f64::from(height) / 1232.0);
+                let style = visual_style(self.theme.as_ref(), "controls");
+                text(&cr, preview.as_str(), 42.0, 337.0, 410.0, 25.0, style.text);
+                drop(cr); surface.flush();
+            }
+        }
         if hud.is_visible(hud_now_ms) {
             let surface = unsafe {
                 ImageSurface::create_for_data_unsafe(
@@ -5439,6 +5480,32 @@ mod tests {
             unavailable: vec![],
             unknown: vec![],
         }
+    }
+
+    #[test]
+    fn wifi_revealed_input_is_painted_outside_the_scene_cache_and_cleared_on_exit() {
+        let mut view = crate::wifi_ui::WifiView::default();
+        view.page = WifiPage::Entry;
+        view.selected = Some(crate::wifi_settings::Network {
+            ssid: "Example".into(), security: Security::Wpa2Psk,
+        });
+        for c in "sample-pass".chars() { view.key(crate::wifi_ui::Intent::Key(c)); }
+        view.toggle_password();
+        let services = ServiceView { wifi: Some(view.public()), ..ServiceView::default() };
+        let mut renderer = RendererCache::default();
+        renderer.set_services(services);
+        renderer.set_wifi_password_preview(view.password_preview());
+        let params = RenderParams { width: 568, height: 1232, route: Route::Settings, progress: 1.0, scroll: 0.0 };
+        let mut first = vec![0; 568 * 1232 * 4];
+        renderer.draw(&mut first, params, &[]).unwrap();
+        let cache = renderer.static_pixels.clone();
+        renderer.set_wifi_password_preview(Some("another-sample"));
+        let mut second = first.clone();
+        renderer.draw(&mut second, params, &[]).unwrap();
+        assert_ne!(first, second);
+        assert_eq!(cache, renderer.static_pixels, "revealed input must not enter static scene cache");
+        renderer.set_services(ServiceView::default());
+        assert!(renderer.wifi_password_preview.is_none());
     }
 
     #[test]

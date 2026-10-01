@@ -1523,6 +1523,7 @@ impl ShellClient {
         self.sync_wifi_keyboard();
         self.service_view.wifi = Some(self.wifi_view.public());
         self.renderer.set_services(self.service_view.clone());
+        self.renderer.set_wifi_password_preview(self.wifi_view.password_preview());
         self.dirty = true;
     }
 
@@ -1545,6 +1546,7 @@ impl ShellClient {
     /// `None`, so it never contests focus with an app the rest of the time.
     fn sync_wifi_keyboard(&mut self) {
         let want = self.wifi_view.wants_keyboard();
+        if !want { self.renderer.set_wifi_password_preview(None); }
         if want == self.wifi_keyboard_active {
             return;
         }
@@ -1728,6 +1730,10 @@ impl ShellClient {
                     self.submit_wifi(request);
                 }
             }
+            WifiIntent::TogglePassword => {
+                self.wifi_view.toggle_password();
+                self.wifi_dirty();
+            }
             WifiIntent::EditPassword => {
                 self.wifi_view.edit_password();
                 self.wifi_dirty();
@@ -1741,6 +1747,7 @@ impl ShellClient {
                             .any(|saved| saved.ssid == selected.ssid)
                     })
                 }) {
+                    self.wifi_view.hide_password();
                     self.wifi_view.page = WifiPage::ForgetConfirm;
                     self.wifi_dirty();
                 }
