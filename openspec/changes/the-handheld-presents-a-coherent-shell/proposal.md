@@ -4,6 +4,7 @@ A person can launch apps, but the current permanent top bar and Back/Home footer
 
 ## What Changes
 
+- Polish the implemented Home, drawer, Settings, shade and theme picker with exposed app artwork, restrained surfaces, consistent type and faithful authored Omarchy colors/brushes. Remove routine icon/row/frame borders while retaining selected/focused and safety affordances; preserve existing targets and gesture mapping. Record before/after host renders separately from real-glass proof.
 - Define an original, Palm/HP phone webOS-inspired visual and motion language for shell, live-card overview, desktop-entry launcher, settings, and notifications. The accompanying SVGs are review mockups, not running UI.
 - Make a bottom-edge Home swipe shrink the current app into the live-card deck; continue a deck pull upward to reveal the installed-app drawer. Use horizontal card swipes, tap expand, recoverable upward throw-close, kinetic list scroll, and cancellable long press as normal interaction.
 - Extend the bottom app gesture to two axes: drag up then sideways without lifting to choose an adjacent running app, or swipe horizontally from the bottom-center gesture region for a direct app switch. Preserve one-to-one finger tracking, stable deck order, reversible cancellation, and focus only after release. Pure upward release still reaches Home; no hold-to-enter mode or second home grid is added.

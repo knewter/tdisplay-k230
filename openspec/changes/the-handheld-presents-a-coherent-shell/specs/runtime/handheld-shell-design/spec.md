@@ -6,11 +6,23 @@ Defines the final gesture-led visual and navigation behavior of the NixOS handhe
 
 ### Requirement: Shared portrait shell language
 <!-- UNVERIFIED: proposed visual contract; current panel evidence proves dimensions, not this final layout. -->
-The shell userspace SHALL use one high-contrast palette, text hierarchy, spacing system, and touch vocabulary across the deck, drawer, shade, Settings, and notifications at the panel's 568×1232 portrait size. At the current output scale of 1, one logical pixel equals one panel pixel; interactive targets SHALL be at least 56 such pixels tall and later scaling SHALL preserve physical size. Essential information SHALL remain legible without color alone. The final normal session SHALL have no permanently visible Apps/Windows/Keyboard/System rail or Back/Home footer.
+The shell userspace SHALL use the active appearance generation's authored palette and section brushes, a consistent text hierarchy, spacing system, and touch vocabulary across the deck, drawer, shade, Settings, and notifications at the panel's 568×1232 portrait size. At the current output scale of 1, one logical pixel equals one panel pixel; interactive targets SHALL be at least 56 such pixels tall and later scaling SHALL preserve physical size. Essential information SHALL remain legible without color alone. The final normal session SHALL have no permanently visible Apps/Windows/Keyboard/System rail or Back/Home footer.
 
 #### Scenario: Move between surfaces
 - **WHEN** a person moves from a live card to the drawer, shade, and Settings
 - **THEN** each surface retains recognizable type, focus, motion direction, and a discoverable gesture cue without permanent navigation buttons
+
+### Requirement: Quiet shell surfaces preserve authored appearance
+<!-- UNVERIFIED: physical problem observed in docs/evidence/mainline-display/physical-2026-10-01/final-runtime-home.jpg and docs/evidence/theme-picker/row-repaint/preflight.png; the proposed polished result still needs real-glass dark/light review. -->
+The shell userspace SHALL preserve authored background gradients, alpha, foreground and accent when painting its Home, drawer, shade, Settings and theme picker. Routine app-icon plates, control rows and theme preview frames SHALL avoid unnecessary borders; focus, selection, destructive actions and drag/drop SHALL remain distinguishable. Existing gestures and interactive targets SHALL retain their behavior. The compositor SHALL continue to own live overview/card pixels and movement.
+
+#### Scenario: Change from a dark theme to a light theme
+- **WHEN** a person applies a built-in dark appearance and then a built-in light appearance
+- **THEN** each shell surface follows the selected appearance without an alternate brand palette or flattening its authored background brush, and retains legible type and deliberate focus/selection cues
+
+#### Scenario: Browse and return to an app
+- **WHEN** a person opens the drawer, shade, Settings and theme picker and returns through existing gestures
+- **THEN** surfaces share recognizable hierarchy and spacing, and the original navigation and app/card behavior remain available
 
 ### Requirement: Home is the live card deck
 <!-- UNVERIFIED: app-to-deck entry, empty deck, and final Home behavior require implementation and real-glass proof. -->
