@@ -1302,3 +1302,20 @@ five newly discovered screenshots. URL:
 https://knewter.github.io/tdisplay-k230/evidence/docs-evidence-theme-picker-background-selection-readme-md/
 The archive override and missing screenshot inventory entries that blocked
 the earlier runs were corrected; wider tasks 11/13/14/15 remain open.
+
+## 17. Reduce measured picker scene cost
+
+- [ ] 17.1 Commit the resolved-two-row baseline, reviewed bounded traces and
+  sampled CPU hotspot evidence with commands, source/runtime identities and
+  sampling/unwinding limits; do not call commit intervals presentation FPS.
+- [ ] 17.2 Gate speculative preparation on both rows being at rest and repaint
+  position/pressed-only changes within the affected row. Preserve full
+  invalidation for all semantic updates and thumbnail completion. Prove with
+  `cargo test --offline --manifest-path nix/rust-shell-client/Cargo.toml --lib picker_row`
+  (full-render pixel comparisons and fallback coverage), `--lib prepare_ahead`,
+  and `--bin k230-shell-rust speculative_theme_motion`; build the Rust target.
+- [ ] 17.3 Run matched baseline/candidate injected swipes for both rows on the
+  reserved board with independent restoration; preserve generation and identities,
+  report CPU/render/presentation separately and capture pixels outside timing.
+  Install only the qualified candidate, land source/evidence, push and check
+  actual site deployment. Retain task 14.4 real-finger and wider 13/15 gates.

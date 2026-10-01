@@ -326,3 +326,22 @@ activation so later taps do not mistake an old theme for the current one.
 Physical background/Home agreement is recorded with injected touch and native
 captures in `docs/evidence/theme-picker/background-selection/README.md`.
 Real-finger acceptance remains UNVERIFIED for this correction.
+
+### Repaint only the moving picker row
+
+The 2026-10-01 physical trace attributes warm swipe frames to about 92 ms of
+main-thread scene CPU versus about 3 ms copying pixels. Both rows are resolved
+in the reviewed preflight. The user reports visible jank, especially themes.
+Restrict the optimization to the existing Settings picker: position/pressed-only
+changes repaint the affected row, including its old/new outlines and labels,
+through the identical Cairo scene under an integer clip. Keep the other row
+and chrome cached. Semantic state, thumbnail completion, theme, services, route
+and geometry changes retain full invalidation. Byte-for-byte full-render
+comparisons protect pixels and fallback behavior. This is a bounded cache
+change, not a new renderer or a claim of smoothness. Admit speculative work
+only while both carousel rows are at rest; preserve queued neighbor work.
+
+Compare the exact candidate on the reserved board against the retained baseline
+with matching input and unchanged generation. Report rendering CPU separately
+from commits/presentation, and retain observer overhead, complete stack and
+real-finger gates when their full proofs are absent.
