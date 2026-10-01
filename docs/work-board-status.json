@@ -213,16 +213,17 @@
       "reviewRevision": "6306c1d8df787820c1c74e7808be6d853e343b30"
     },
     "the-shell-has-a-card-composition-plan": {
-      "lane": "verification",
+      "lane": "archived",
       "source": "source-landed",
-      "physical": "pending",
-      "next": "Reserve a separate probe session for continuous real-finger two-app card tracking, collection and verified restoration of the normal shell.",
+      "physical": "verified",
+      "next": "Completed: operator accepted continuous real-finger card interaction; existing probe collection and restoration evidence retained.",
       "dependencies": [],
       "evidence": [
-        "docs/evidence/proposal-closeout/README.md"
+        "docs/evidence/proposal-closeout/README.md",
+        "docs/evidence/proposal-closeout/2026-10-01/card-composition.md"
       ],
-      "rationale": "Closeout audit found only the named physical acceptance task unchecked; required evidence and spec sync must still pass before archive.",
-      "reviewRevision": "647c8d3e500d4accc3a87474e8fcab393980a799"
+      "rationale": "Explicit operator acceptance on 2026-10-01 completes the remaining interaction gate without claiming new timing or probe measurements.",
+      "reviewRevision": "58ca5bf2781f74305fb687c885ca842272e0373c"
     },
     "plugging-in-hdmi-moves-the-display": {
       "lane": "in-progress",

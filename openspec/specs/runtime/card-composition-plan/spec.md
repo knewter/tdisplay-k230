@@ -1,9 +1,10 @@
-## Purpose
+# runtime/card-composition-plan Specification
 
+## Purpose
 Defines the evidence gates and safe ownership boundaries for an opt-in visual
 application-card composition experiment in the handheld shell.
 
-## ADDED Requirements
+## Requirements
 
 ### Requirement: Card composition has a source-grounded architecture decision
 The system SHALL retain one Sway-owned DRM/KMS presentation path while a card experiment is active. Before a visual-card implementation is selected, the project SHALL compare existing client/protocol and narrow compositor routes using pinned source evidence for application-surface composition, touch routing, focus return, frame completion, and presentation reporting. A client-only metadata overlay SHALL NOT be represented as live application-card composition.
@@ -17,7 +18,7 @@ The system SHALL retain one Sway-owned DRM/KMS presentation path while a card ex
 ### Requirement: A visual-card prototype proves the complete two-app interaction
 If the architecture decision establishes a viable route, an opt-in prototype SHALL prove two simultaneously running application surfaces visually represented in a single card scene, continuous finger tracking, adjacent-card selection and expansion, and a dismissal request with an explicit close-refusal outcome. It SHALL preserve keyboard focus and the existing usable Pixman session on failure. A grounded negative decision SHALL state that product delivery is blocked, not call the capability delivered.
 
-<!-- Board-injected capability proof: docs/evidence/card-composition-board/README.md. UNVERIFIED: real-finger tracking and optical UX acceptance. -->
+<!-- Board-injected capability proof: docs/evidence/card-composition-board/README.md. Real-finger interaction accepted by the operator: docs/evidence/proposal-closeout/2026-10-01/card-composition.md. Quantitative optical latency remains UNVERIFIED. -->
 
 #### Scenario: A card interaction is exercised
 - **WHEN** an operator enters the card scene with two eligible applications

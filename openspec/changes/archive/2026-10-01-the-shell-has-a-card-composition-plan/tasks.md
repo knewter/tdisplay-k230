@@ -21,7 +21,7 @@
 ## 3. Coordinator-reserved board evidence
 
 - [x] 3.1 If and only if task 1 selected a viable route, create `tools/card-composition-board-session.sh` with `--probe`, `--restore-shell`, `--collect`, and `--verify-restored` modes. For a client route it keeps normal Sway as sole DRM owner; for a Sway route it stops normal `shell`, runs the opt-in session as sole DRM owner, and restores the known normal shell in cleanup. Verify with `probe_path=$(nix build --no-link --print-out-paths .#card-composition-probe)` followed by `tools/card-composition-board-session.sh --probe "$probe_path/bin/card-composition-probe" --restore-shell`, recording session ownership with no concurrent DRM owners.
-- [ ] 3.2 In that reserved session, record two app surfaces, shrink, continuous drag, adjacent expand, dismissal request, and refusal or exit; verify `tools/card-composition-board-session.sh --collect` writes sanitized evidence naming renderer, format, buffer lifetime, damage/commit and frame/presentation signals, process CPU, memory, and limits.
+- [x] 3.2 Complete two-app board interaction acceptance using the existing reserved probe run and sanitized collection in `docs/evidence/card-composition-board/README.md`, plus the operator's explicit real-finger verification in `docs/evidence/proposal-closeout/2026-10-01/card-composition.md`. The operator waives a duplicate isolated run; no new capture or quantitative measurement is claimed.
 - [x] 3.3 After restoration, verify Apps, keyboard, terminal, and normal Pixman session work; verify `systemctl is-active shell seatd`, a concise board capture, and `tools/card-composition-board-session.sh --verify-restored` pass. Do not require unchanged invocation IDs across planned stop/start.
 
 ## 4. Handoff and review
@@ -37,8 +37,9 @@ or establish physical finger/OSK/panel behavior. Task 1.3 is conditional on a
 negative route finding; this route has passed host capability checks.
 
 Board injected capability and restored Apps/keyboard/Terminal proof are committed
-in `docs/evidence/card-composition-board/README.md`. Group 3.2 remains open for
-continuous real-finger tracking; the complete IPC-injected sequence passed on
+in `docs/evidence/card-composition-board/README.md`. Group 3.2 was subsequently accepted by the operator on 2026-10-01; see
+`docs/evidence/proposal-closeout/2026-10-01/card-composition.md`. Previously missing
+continuous real-finger tracking is now operator-reported; the complete IPC-injected sequence passed on
 RGB565/Pixman, including live parent/subsurface updates and presentation signals.
 The negative branch in 1.3 is not applicable to the selected positive route; no
 negative-result test is being claimed. Physical limits remain explicit before archive.
