@@ -1,0 +1,125 @@
+{
+  "audit_revision": "6306c1d8df787820c1c74e7808be6d853e343b30",
+  "active": 45,
+  "unchecked_tasks": 263,
+  "ready_to_archive_without_new_proof_or_scope_change": [],
+  "proposed_split_successor": "the-landed-shell-passes-physical-acceptance",
+  "split_authorized": false,
+  "candidates": [
+    {
+      "id": "the-clock-survives-a-reboot",
+      "remaining_task": "4.2",
+      "task_file": "openspec/changes/the-clock-survives-a-reboot/tasks.md",
+      "task_file_sha256": "d6d2d563d9c3b6f14a80d2b1ac1bf33a31f01c17f6f33ba24f59e1c9c0f8e758",
+      "verbatim_remaining_task": "- [ ] 4.2 Leave `UNVERIFIED`: whether the RTC survives a full power-off\n      (main power removed, not just a reboot) rather than only a warm\n      reboot. Requires a documented backing supply or a separate\n      power-off-and-wait board test not performed by this change; do not\n      tick this task without that specific evidence.",
+      "delta_specs": [
+        {
+          "path": "openspec/changes/the-clock-survives-a-reboot/specs/system/rtc/spec.md",
+          "sha256": "791c303c42e6f09e15b83d1a2c91f355241062cc84f06c6520b8ecf1009e3368",
+          "requirements": [
+            "The on-chip RTC is usable from Linux",
+            "The wall clock survives a warm reboot",
+            "Survival across a full power-off is unverified"
+          ]
+        }
+      ],
+      "existing_evidence": "docs/evidence/rtc/mday-mask-fix.md"
+    },
+    {
+      "id": "the-compositor-renders-ahead-of-scanout",
+      "remaining_task": "1.4",
+      "task_file": "openspec/changes/the-compositor-renders-ahead-of-scanout/tasks.md",
+      "task_file_sha256": "04bea0fa2ccaee200cabc9e6465128bc74b958534923ee4a6c48f9c8c3fa7e06",
+      "verbatim_remaining_task": "- [ ] 1.4 **Board, real finger.** Operator confirms on a patch-free system\n  that bottom-edge app switching and the card overview show no bottom-band\n  flicker. Record the report, with the system path, in\n  `docs/evidence/card-shell/bottom-band-flicker/` (operator report).",
+      "delta_specs": [
+        {
+          "path": "openspec/changes/the-compositor-renders-ahead-of-scanout/specs/display/panel/spec.md",
+          "sha256": "40fee2093ee54ec992668a8fdc0fb7edd5d92036cd749815c2f1ef4ea9c5b806",
+          "requirements": [
+            "The panel displays what the system draws"
+          ]
+        }
+      ],
+      "existing_evidence": "docs/evidence/card-shell/bottom-band-flicker/max-render-time-fix.md"
+    },
+    {
+      "id": "the-overview-hides-the-home-screen",
+      "remaining_task": "5.1",
+      "task_file": "openspec/changes/the-overview-hides-the-home-screen/tasks.md",
+      "task_file_sha256": "a4e75afae0a597bf8d609d3e8b63002d2656fa50b15138c8a3520dedaca2a29d",
+      "verbatim_remaining_task": "- [ ] 5.1 Board re-check: repeat the coordinator's original native capture\n  (`swaymsg card_shell enter`, a real focused app, the board's actual theme\n  and wallpaper configured) on the installed system once this change lands,\n  confirming Home no longer bleeds through with a real (not synthetic)\n  theme canvas and real finger input. Operator command:\n  `./tools/console.py /dev/ttyACM0 --wait=3 \"swaymsg card_shell enter\"`\n  plus a photograph of the panel; requires the board and its serial port\n  reserved by one operator, per `AGENTS.md`. Not performed by this task\n  (QEMU-only scope, no board/`/dev/ttyACM0` access).",
+      "delta_specs": [
+        {
+          "path": "openspec/changes/the-overview-hides-the-home-screen/specs/runtime/shell/spec.md",
+          "sha256": "a3994383905f5ed20e54e115f13dc3a96bc59afa2922ff33f959cbc60e83d089",
+          "requirements": [
+            "The card overview hides the Home screen while active"
+          ]
+        }
+      ],
+      "existing_evidence": "docs/evidence/card-shell/overview-home-bleed-through/README.md"
+    },
+    {
+      "id": "the-shell-presents-a-pinned-home-screen",
+      "remaining_task": "8.1",
+      "task_file": "openspec/changes/the-shell-presents-a-pinned-home-screen/tasks.md",
+      "task_file_sha256": "8b910d5799358cda3be66ea0d2863d6b4bf8560e2c1aa905565fb8cd3f39b0d4",
+      "verbatim_remaining_task": "- [ ] 8.1 **Hardware, not claimed by this change.** Real-finger Home page\n  swipe, long-press pin/unpin/rearrange, dock taps, and launch-vs-focus,\n  photographed on the physical AMOLED in both a dark and a light theme;\n  verify on hardware with `python3 tools/capture-feature.py home-screen\n  --provenance real-touch --duration 30 --description 'Real-finger Home\n  page swipe, pin, rearrange, dock, launch-or-focus' --output-dir\n  docs/evidence/home-screen/real-touch`. Left open per the coordinator's\n  explicit instruction that this implementation does not touch the board\n  or `/dev/ttyACM0`.",
+      "delta_specs": [
+        {
+          "path": "openspec/changes/the-shell-presents-a-pinned-home-screen/specs/runtime/home-screen/spec.md",
+          "sha256": "4c768ac728ede7e3221c3ea95844fa8f5063d758d416b0797a284811b1d06897",
+          "requirements": [
+            "Home presents pinned app icons across swipeable pages",
+            "A persistent quick-launch dock spans every Home page",
+            "Apps can be pinned to, unpinned from, and rearranged on Home",
+            "A fresh Home seeds sensible defaults from installed desktop entries",
+            "Home's layout persists across restarts and reboots",
+            "Tapping a Home icon launches the app or focuses it if already running",
+            "Home's gesture topology is reconciled with the card overview and drawer"
+          ]
+        }
+      ],
+      "existing_evidence": "docs/evidence/home-screen/navigation/README.md"
+    },
+    {
+      "id": "the-shell-is-navigable-with-a-mouse",
+      "remaining_task": "3.3",
+      "task_file": "openspec/changes/the-shell-is-navigable-with-a-mouse/tasks.md",
+      "task_file_sha256": "21e4e2338ade5fa59733446bfb999bf74d0ea521551124edf7dfb5e5f57ba054",
+      "verbatim_remaining_task": "- [ ] 3.3 Physical operator acceptance: tap Home in panel-touch mode, click/edge-drag in HDMI trackpad mode and four-finger inward/outward pinch. Record physical observation and photograph. Keep unchecked until actually performed.",
+      "delta_specs": [
+        {
+          "path": "openspec/changes/the-shell-is-navigable-with-a-mouse/specs/runtime/shell/spec.md",
+          "sha256": "9c007e0b2f40fd3acea2b0bc6ade8158ff2bd9c6f39eb554093d666cdf994a80",
+          "requirements": [
+            "Shell navigation is complete with pointer input",
+            "Four-finger spread enters the centered window"
+          ]
+        }
+      ],
+      "existing_evidence": "docs/evidence/the-shell-is-navigable-with-a-mouse/README.md"
+    },
+    {
+      "id": "the-handheld-has-a-themed-files-app",
+      "remaining_task": "5.3",
+      "task_file": "openspec/changes/the-handheld-has-a-themed-files-app/tasks.md",
+      "task_file_sha256": "839d38c585b7eaa554d5a14eefd632ecd07b8066b02cf5142209bade18398011",
+      "verbatim_remaining_task": "- [ ] 5.3 Board evidence: real launch time, RSS and scroll behavior for both\n  candidates on the physical panel, plus confirmation that icons resolve\n  correctly with the `GDK_BACKEND=wayland`/`adwaita-icon-theme`/\n  `hicolor-icon-theme` fix (task 6.2) applied. **Which entry(ies) to keep\n  is no longer blocked on this**: the operator has already decided (task\n  6.1) to keep both by default; this task now covers only the physical\n  performance/appearance observation itself. Operator command once a\n  flashed image exists: launch each \"Files (\u2026)\" drawer entry and observe; no\n  narrow `tools/msh.py`/`console.py` invocation is prescribed here because\n  the observation itself (does it come up, how fast, how smooth, do icons\n  render) is the point, not a scripted check. UNVERIFIED until performed;\n  this change does not claim board behavior.",
+      "delta_specs": [
+        {
+          "path": "openspec/changes/the-handheld-has-a-themed-files-app/specs/runtime/files/spec.md",
+          "sha256": "06f3532afe6dc1d87c4717d73b35997ba6403b91e34adeae11f4612b6de94c0a",
+          "requirements": [
+            "Two off-the-shelf touch-capable file managers are the handheld's only \"Files\" entries, installed by default",
+            "Neither GTK4 candidate attempts a GL scene renderer",
+            "Each candidate's launcher wrapper is self-contained for Wayland and icon resolution",
+            "Both candidates render the active Omarchy theme's dark/light mode and icon variant",
+            "The GTK appearance adapter never crashes on missing input and never accepts unsafe values"
+          ]
+        }
+      ],
+      "existing_evidence": "docs/evidence/files-app/README.md"
+    }
+  ]
+}

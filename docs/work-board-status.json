@@ -241,49 +241,57 @@
       "lane": "verification",
       "source": "source-landed",
       "physical": "pending",
-      "next": "On the built-in panel, perform continuous real-finger app switching and overview; report bottom-band flicker with the installed patch-free system identity.",
+      "next": "On the patch-free AMOLED system, use a real finger for bottom-edge switching and overview; report any bottom-band flicker.",
       "dependencies": [],
       "evidence": [
-        "docs/evidence/proposal-closeout/README.md"
+        "docs/evidence/proposal-closeout/README.md",
+        "docs/evidence/proposal-closeout/2026-09-30/README.md",
+        "docs/evidence/card-shell/bottom-band-flicker/max-render-time-fix.md"
       ],
-      "rationale": "Closeout audit found only the named physical acceptance task unchecked; required evidence and spec sync must still pass before archive.",
-      "reviewRevision": "647c8d3e500d4accc3a87474e8fcab393980a799"
+      "rationale": "Closeout audit at 6306c1d8: all implementation tasks are checked; task 1.4 is the sole remaining physical gate. Existing evidence is retained; no new physical acceptance or archive is claimed.",
+      "reviewRevision": "6306c1d8df787820c1c74e7808be6d853e343b30"
     },
     "the-overview-hides-the-home-screen": {
       "lane": "verification",
       "source": "source-landed",
       "physical": "pending",
-      "next": "With a real theme and focused app on the board, enter and drag overview; collect native capture and photograph showing no Home bleed-through.",
+      "next": "On the themed AMOLED system, capture real-finger overview entry, drag and settlement; confirm Home never bleeds through.",
       "dependencies": [],
       "evidence": [
-        "docs/evidence/proposal-closeout/README.md"
+        "docs/evidence/proposal-closeout/README.md",
+        "docs/evidence/proposal-closeout/2026-09-30/README.md",
+        "docs/evidence/card-shell/overview-home-bleed-through/README.md"
       ],
-      "rationale": "Closeout audit found only the named physical acceptance task unchecked; required evidence and spec sync must still pass before archive.",
-      "reviewRevision": "647c8d3e500d4accc3a87474e8fcab393980a799"
+      "rationale": "Closeout audit at 6306c1d8: all implementation tasks are checked; task 5.1 is the sole remaining physical gate. Existing evidence is retained; no new physical acceptance or archive is claimed.",
+      "reviewRevision": "6306c1d8df787820c1c74e7808be6d853e343b30"
     },
     "the-shell-is-navigable-with-a-mouse": {
       "lane": "verification",
       "source": "source-landed",
       "physical": "pending",
-      "next": "Try Home click and real four-finger inward/outward pinch on HDMI; also verify display-edge drags and panel Home tap, with a physical photograph.",
+      "next": "Check panel Home taps, HDMI pointer clicks and edge drags, and real four-finger inward/outward gestures; record physical observations.",
       "dependencies": [],
       "evidence": [
-        "docs/evidence/proposal-closeout/README.md"
+        "docs/evidence/proposal-closeout/README.md",
+        "docs/evidence/proposal-closeout/2026-09-30/README.md",
+        "docs/evidence/the-shell-is-navigable-with-a-mouse/README.md"
       ],
-      "rationale": "Closeout audit found only the named physical acceptance task unchecked; required evidence and spec sync must still pass before archive.",
-      "reviewRevision": "647c8d3e500d4accc3a87474e8fcab393980a799"
+      "rationale": "Closeout audit at 6306c1d8: all implementation tasks are checked; task 3.3 is the sole remaining physical gate. Existing evidence is retained; no new physical acceptance or archive is claimed.",
+      "reviewRevision": "6306c1d8df787820c1c74e7808be6d853e343b30"
     },
     "the-shell-presents-a-pinned-home-screen": {
       "lane": "verification",
       "source": "source-landed",
       "physical": "pending",
-      "next": "On the panel in dark and light themes, verify page swipe, pin/remove/rearrange, dock taps and launch versus focus; record physical media.",
+      "next": "On AMOLED in dark and light themes, check page swipes, pin/unpin/rearrange, dock taps and launch-versus-focus; capture both runs.",
       "dependencies": [],
       "evidence": [
-        "docs/evidence/proposal-closeout/README.md"
+        "docs/evidence/proposal-closeout/README.md",
+        "docs/evidence/proposal-closeout/2026-09-30/README.md",
+        "docs/evidence/home-screen/navigation/README.md"
       ],
-      "rationale": "Closeout audit found only the named physical acceptance task unchecked; required evidence and spec sync must still pass before archive.",
-      "reviewRevision": "647c8d3e500d4accc3a87474e8fcab393980a799"
+      "rationale": "Closeout audit at 6306c1d8: all implementation tasks are checked; task 8.1 is the sole remaining physical gate. Existing evidence is retained; no new physical acceptance or archive is claimed.",
+      "reviewRevision": "6306c1d8df787820c1c74e7808be6d853e343b30"
     },
     "the-shell-has-a-card-composition-plan": {
       "lane": "verification",
@@ -296,6 +304,32 @@
       ],
       "rationale": "Closeout audit found only the named physical acceptance task unchecked; required evidence and spec sync must still pass before archive.",
       "reviewRevision": "647c8d3e500d4accc3a87474e8fcab393980a799"
+    },
+    "the-clock-survives-a-reboot": {
+      "lane": "verification",
+      "source": "source-landed",
+      "physical": "pending",
+      "next": "Controlled full power-off RTC check before network correction; warm-reboot RTC support is already proved.",
+      "reviewRevision": "6306c1d8df787820c1c74e7808be6d853e343b30",
+      "rationale": "Closeout audit at 6306c1d8: all implementation tasks are checked; task 4.2 is the sole remaining physical gate. Existing evidence is retained; no new physical acceptance or archive is claimed.",
+      "dependencies": [],
+      "evidence": [
+        "docs/evidence/rtc/mday-mask-fix.md",
+        "docs/evidence/proposal-closeout/2026-09-30/README.md"
+      ]
+    },
+    "the-handheld-has-a-themed-files-app": {
+      "lane": "verification",
+      "source": "source-landed",
+      "physical": "pending",
+      "next": "Launch Nautilus and Portfolio on AMOLED; measure launch time and memory, check scrolling and resolved icons.",
+      "reviewRevision": "6306c1d8df787820c1c74e7808be6d853e343b30",
+      "rationale": "Closeout audit at 6306c1d8: all implementation tasks are checked; task 5.3 is the sole remaining physical gate. Existing evidence is retained; no new physical acceptance or archive is claimed.",
+      "dependencies": [],
+      "evidence": [
+        "docs/evidence/files-app/README.md",
+        "docs/evidence/proposal-closeout/2026-09-30/README.md"
+      ]
     }
   }
 }
