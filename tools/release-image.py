@@ -111,6 +111,7 @@ def stage(args):
     directory.mkdir(parents=True, exist_ok=False)
     roots = directory / 'gc-roots'
     roots.mkdir()
+    print('Evaluating pinned source ' + revision, flush=True)
     outputs = evaluate(revision)
     commands = []
     for name, attr in TARGETS.items():
@@ -195,6 +196,7 @@ def publish(args):
     clean_source()
     directory = outside_git(args.directory)
     metadata = json.loads((directory / 'release-metadata.json').read_text())
+    print('Verifying pinned source and staged assets', flush=True)
     assets = verify_stage(directory, metadata)
     repo, tag = metadata['repository'], metadata['tag']
     run(['git', 'check-ref-format', 'refs/tags/' + tag])
@@ -202,6 +204,7 @@ def publish(args):
     remote_commit = json.loads(run(['gh', 'api', f'repos/{repo}/commits/{metadata["revision"]}']))
     if remote_commit['sha'] != metadata['revision']:
         raise ValueError('Source commit unavailable on GitHub')
+    print('Uploading draft prerelease ' + tag, flush=True)
     run(['gh', 'release', 'create', tag, '--repo', repo, '--target', metadata['revision'],
          '--draft', '--prerelease', '--title', 'Coherent handheld development snapshot ' + metadata['revision'][:12],
          '--notes-file', str(directory / 'release-notes.md'), *[str(directory / x) for x in assets]], capture=False)
@@ -209,12 +212,14 @@ def publish(args):
     info = json.loads(run(['gh', 'api', f'repos/{repo}/releases/tags/{quote(tag, safe="")}']))
     if {x['name'] for x in info['assets']} != set(assets):
         raise ValueError('Remote assets differ; release remains draft')
+    print('Downloading uploaded assets for verification', flush=True)
     with tempfile.TemporaryDirectory(prefix='verify-', dir=directory) as temp:
         run(['gh', 'release', 'download', tag, '--repo', repo, '--dir', temp], capture=False)
         for asset in info['assets']:
             name = asset['name']
             if asset['size'] != (directory / name).stat().st_size or digest(Path(temp) / name) != digest(directory / name):
                 raise ValueError('Remote asset mismatch; release remains draft: ' + name)
+    print('Publishing verified prerelease', flush=True)
     run(['gh', 'release', 'edit', tag, '--repo', repo, '--draft=false'], capture=False)
     info = json.loads(run(['gh', 'api', f'repos/{repo}/releases/tags/{quote(tag, safe="")}']))
     if info['draft'] or not info['prerelease']:

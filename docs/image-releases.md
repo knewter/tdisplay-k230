@@ -27,6 +27,9 @@ NARs. `--tag` can select a new tag; the default is `dev-coherent-<12-char-sha>`.
 `--validation-note` can add observed operator context; it cannot remove the
 mandatory statement that host build and upload checks do not prove boot.
 
+If staging is interrupted, inspect the retained directory and use a new
+`--directory` for another attempt; staging never replaces existing files.
+
 Review the notes and metadata, then run publish. Publication re-evaluates the
 source and checks compressed and decompressed image hashes, creates a draft
 prerelease at that exact SHA, downloads all uploaded assets and checks their
