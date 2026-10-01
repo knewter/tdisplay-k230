@@ -1,0 +1,6 @@
+Current userspace: /nix/store/nlgjhifgwcgg0hlbqhnng7xw7cjgxg9a-nixos-system-nixos-26.11.20260919.20b1ddd
+Sway: /nix/store/dsn90m4lcn1mbziy52v1y7a98vdramn4-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway
+Rust: /nix/store/qbi2i7cq00i6z8mshh17bq8vcr7dk3ds-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0/bin/k230-shell-rust
+Services: shell, shell-ui and k230-touch-trackpad active
+Booted kernel unchanged: 6.6.36
+Independent rollback timer stopped after live UI and injected-input checks

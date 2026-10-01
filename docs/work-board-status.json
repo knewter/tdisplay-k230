@@ -254,19 +254,25 @@
       "reviewRevision": "6306c1d8df787820c1c74e7808be6d853e343b30"
     },
     "the-shell-is-navigable-with-a-mouse": {
-      "lane": "in-progress",
-      "source": "in-progress",
+      "lane": "verification",
+      "source": "source-landed",
       "physical": "pending",
-      "next": "Finish pending edge tap/drag arbitration and Home-to-overview handle, deploy and simulate header/Backspace taps, then physical retest and HDMI navigation gates.",
+      "next": "Installed tap fix passed native board simulation: top Files menu, bottom Backspace and Home handle. Retest those on glass and top/bottom drags, then original HDMI pointer/four-finger gate.",
       "dependencies": [],
       "evidence": [
         "docs/evidence/proposal-closeout/README.md",
         "docs/evidence/proposal-closeout/2026-09-30/README.md",
         "docs/evidence/the-shell-is-navigable-with-a-mouse/README.md",
-        "docs/evidence/proposal-closeout/2026-09-30/operator-feedback.md"
+        "docs/evidence/proposal-closeout/2026-09-30/operator-feedback.md",
+        "docs/evidence/the-shell-is-navigable-with-a-mouse/edge-controls-board/README.md"
       ],
-      "rationale": "Physical testing found app header and keyboard bottom taps intercepted as gestures; plan committed on master at a826fa4d, implementation in owned worktree.",
-      "reviewRevision": "6306c1d8df787820c1c74e7808be6d853e343b30"
+      "rationale": "Source 27110ccb cross-build and actual Sway touch/mouse tests passed; exact userspace installed and board uinput/native-capture checks passed. Physical retest and original HDMI acceptance remain open.",
+      "reviewRevision": "27110ccb2391100848461a59bccf4bbcd5a59430",
+      "cover": {
+        "path": "docs/evidence/the-shell-is-navigable-with-a-mouse/edge-controls-board/search-backspace.jpg",
+        "caption": "Bottom Backspace leaves the actual drawer open and clears the query",
+        "provenance": "Board capture after injected uinput"
+      }
     },
     "the-shell-presents-a-pinned-home-screen": {
       "lane": "in-progress",

@@ -1536,6 +1536,11 @@ DATA b828078184dd6dca6e529a1b06025c3305fea75b483ddfc30044e5c9d3d8ac18 docs/evide
 DATA 64da29b4e8a6d62346bab76b1c9424bf10abf0a5809f1a49f9524cccbaa2df4f docs/evidence/card-shell/overview-home-bleed-through/board-2026-09-30/overview-native.jpg
 DATA a76ca87ac3d0823659559f297258be51f2719e8d95efbcb10186a3f68f17040a docs/evidence/card-shell/overview-home-bleed-through/board-2026-09-30/overview-panel.jpg
 DATA a5002406911c3ae20a410d989c6e1ad0a31e46f32062eaec14414873e46d37d2 docs/evidence/hdmi-hotplug/panel-recovery-2026-09-30/native-panel.jpg
+DATA f2ac6301f82eba7310bbe777bd01d05562a8a3eed7a567e5ebae8bdc53f53121 docs/evidence/the-shell-is-navigable-with-a-mouse/edge-controls-board/files-before.jpg
+DATA c9c05b81fb3d12e81f2b5f61135846d7779f4246d1fbda106e2ed5653cc165f5 docs/evidence/the-shell-is-navigable-with-a-mouse/edge-controls-board/files-header-menu.jpg
+DATA 032b3a6635590f6a8e8bc2b976b5afe89a1bc3c7a03648a6cee50a7f21b29062 docs/evidence/the-shell-is-navigable-with-a-mouse/edge-controls-board/home-handle-overview.jpg
+DATA c0f4155dee9e0a9f65f2db9aa231e9d8e481563d5ff3ff1f0ba46466081d59f0 docs/evidence/the-shell-is-navigable-with-a-mouse/edge-controls-board/search-backspace.jpg
+DATA 0e4ea4bbd724e66ca03867a762bc00b24f67c3504dfe9f6703719401edae85d0 docs/evidence/the-shell-is-navigable-with-a-mouse/edge-controls-board/search-q.jpg
 ```
 
 `group:` rows stand for a directory whose members are enumerated by

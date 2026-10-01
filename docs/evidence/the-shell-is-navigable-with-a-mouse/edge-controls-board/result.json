@@ -1,0 +1,53 @@
+{
+  "evidence_class": "board-injected-uinput-and-native-capture",
+  "home_handle_overview": true,
+  "drawer_stays_mapped_after_bottom_backspace": true,
+  "scene": "K230_CARD_SHELL_DEBUG_SCENE active=0 deck_enabled=0 canvas enabled=1 pos=0,0 size=568x1232 rgba=0.102,0.106,0.149,0.000 canvas_gradient enabled=-1 ordinary_backdrop enabled=0 pos=0,0 size=568x1232 rgba=0.075,0.078,0.110,1.000 ordinary_maximized_cards=1 appearance_enabled=1 appearance_wallpaper=1 appearance_canvas_authored=0 home_enabled=1 mode=0 entry_progress=0.0000 chrome_enabled=1 drawer_mapped=1 keyboard_mapped=0 selected_app_id=k230-terminal home_selected=1 home_offset=0.0 home_settling=0 trackpad_owned=0 axis_owned=0 card_dx=0.000 card_velocity=0.000 trackpad_client=0 trackpad_keyboard=0 keyboard_progress=0.0000",
+  "limits": [
+    "Native injected board events are not real-finger acceptance.",
+    "Normal boot selection still points at the earlier x1xbs5qd system; current userspace activation does not prove a persistent next boot.",
+    "Screenshots establish the demonstrated controls, not general animation budgets."
+  ],
+  "query_before": "q",
+  "query_after": "",
+  "query_proof": "Visual inspection of unchanged native search-q.jpg and search-backspace.jpg.",
+  "header_control": {
+    "app_id": "org.gnome.Nautilus",
+    "point": [
+      390,
+      23
+    ],
+    "result": "Menu opened after native uinput tap; no notification shade",
+    "proof": "files-header-menu.jpg",
+    "focus_before_tap": "Explicit matching app focus via Sway IPC"
+  },
+  "installed_system": "/nix/store/nlgjhifgwcgg0hlbqhnng7xw7cjgxg9a-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "source_revision": "27110ccb2391100848461a59bccf4bbcd5a59430",
+  "captures": {
+    "files-header-menu.jpg": {
+      "sha256": "c9c05b81fb3d12e81f2b5f61135846d7779f4246d1fbda106e2ed5653cc165f5",
+      "bytes": 35915,
+      "provenance": "Unmodified original board-native grim JPEG after injected uinput"
+    },
+    "home-handle-overview.jpg": {
+      "sha256": "032b3a6635590f6a8e8bc2b976b5afe89a1bc3c7a03648a6cee50a7f21b29062",
+      "bytes": 56228,
+      "provenance": "Unmodified original board-native grim JPEG after injected uinput"
+    },
+    "search-q.jpg": {
+      "sha256": "0e4ea4bbd724e66ca03867a762bc00b24f67c3504dfe9f6703719401edae85d0",
+      "bytes": 36804,
+      "provenance": "Unmodified original board-native grim JPEG after injected uinput"
+    },
+    "search-backspace.jpg": {
+      "sha256": "c0f4155dee9e0a9f65f2db9aa231e9d8e481563d5ff3ff1f0ba46466081d59f0",
+      "bytes": 71415,
+      "provenance": "Unmodified original board-native grim JPEG after injected uinput"
+    },
+    "files-before.jpg": {
+      "sha256": "f2ac6301f82eba7310bbe777bd01d05562a8a3eed7a567e5ebae8bdc53f53121",
+      "bytes": 27427,
+      "provenance": "Unmodified original board-native grim JPEG after injected uinput"
+    }
+  }
+}
