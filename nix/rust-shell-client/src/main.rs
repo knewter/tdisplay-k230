@@ -1091,6 +1091,7 @@ struct ShellClient {
     /// (write-only, from here) Wayland state.
     wifi_keyboard_active: bool,
     drawer_keyboard_active: bool,
+    drawer_keyboard_focused: bool,
     /// Mirrors whether Home's open-folder rename field currently holds
     /// keyboard focus (task 2, `HomeScreen::OpenFolder::editing_name`) --
     /// the exact same role `wifi_keyboard_active` plays for the Wi-Fi
@@ -3003,6 +3004,7 @@ impl ShellClient {
         } else { 0.0 };
         if want == self.drawer_keyboard_active { return; }
         self.drawer_keyboard_active = want;
+        self.drawer_keyboard_focused = false;
         if let Some(layer) = &self.layer {
             layer.set_keyboard_interactivity(if want {
                 KeyboardInteractivity::Exclusive
@@ -3020,6 +3022,7 @@ impl ShellClient {
 
     fn forget_drawer_keyboard(&mut self) {
         self.drawer_keyboard_active = false;
+        self.drawer_keyboard_focused = false;
         self.drawer_search.unfocus();
         self.renderer.set_drawer_search(self.drawer_search.clone());
         if let Some(layer) = &self.layer {
@@ -3705,7 +3708,7 @@ impl ShellClient {
     /// already-mapped layer alive, which is what avoids ever uncovering
     /// the previously active app between the drawer and the splash.
     fn reset_overlay_interaction(&mut self) {
-        self.drawer_search.unfocus();
+        self.drawer_search = DrawerSearch::default();
         self.sync_drawer_search();
         self.touch.cancel();
         self.panel_start = None;
@@ -5455,7 +5458,10 @@ impl KeyboardHandler for ShellClient {
         // now actually receive typed keys, and what QEMU proof waits on
         // before sending any (see `tests/rust_wifi_settings_qemu.py`).
         if self.layer.as_ref().is_some_and(|layer| layer.wl_surface() == surface) {
-            if self.drawer_keyboard_active { self.log("drawer-keyboard-focus-granted"); }
+            if self.drawer_keyboard_active {
+                self.drawer_keyboard_focused = true;
+                self.log("drawer-keyboard-focus-granted");
+            }
             else if self.wifi_keyboard_active { self.log("wifi-keyboard-focus-granted"); }
         }
         if self.home_surface.layer.as_ref().is_some_and(|layer| layer.wl_surface() == surface) {
@@ -5473,10 +5479,15 @@ impl KeyboardHandler for ShellClient {
         surface: &wl_surface::WlSurface,
         _: u32,
     ) {
-        if self.drawer_keyboard_active
-            && self.layer.as_ref().is_some_and(|layer| layer.wl_surface() == surface) {
-            self.drawer_search.unfocus();
-            self.sync_drawer_search();
+        if self.layer.as_ref().is_some_and(|layer| layer.wl_surface() == surface) {
+            // An old leave may arrive after a new focus request. Only revoke
+            // a granted focus; leave precedes the next enter on this keyboard.
+            let granted = self.drawer_keyboard_focused;
+            self.drawer_keyboard_focused = false;
+            if self.drawer_keyboard_active && granted {
+                self.drawer_search.unfocus();
+                self.sync_drawer_search();
+            }
         }
     }
     /// Routes one physical or virtual (wvkbd) key press through to the Wi-Fi
@@ -5717,6 +5728,7 @@ fn serve() -> Result<(), String> {
         keyboard_device: None,
         wifi_keyboard_active: false,
         drawer_keyboard_active: false,
+        drawer_keyboard_focused: false,
         home_keyboard_active: false,
         keyboard_signal_path: std::env::var_os("K230_KEYBOARD_SIGNAL").map(PathBuf::from),
         // Matches card_shell_keyboard_adjust_usable's grip allocation when
