@@ -60,3 +60,10 @@ Pixman tuning.
 ## Migration Plan
 
 Board-gated from the outset. No host-only path closes this task.
+
+## Ownership after functional archive (2026-10-01)
+
+The operator explicitly approved the functional parent's archive. This change
+now solely owns its original budget task 4.2 and dependent image/non-fixture
+QEMU task 5.1. Criteria and proof commands remain unchanged and unchecked.
+See `docs/evidence/proposal-closeout/2026-10-01/live-card-ui.md`. Functional acceptance is not budget acceptance.

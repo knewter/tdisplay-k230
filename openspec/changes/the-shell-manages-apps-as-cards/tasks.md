@@ -1,3 +1,12 @@
+## Final scope (2026-10-01)
+
+The operator authorized functional UI archive and transfer of unresolved budget
+and integrated image/QEMU work to the existing performance successor. The
+completed handoff tasks below replace the original measurement/boot tasks;
+their original requirements remain unchecked in the successor. Historical
+progress notes below describe the evidence state at their recorded revisions,
+not current ownership. See `docs/evidence/proposal-closeout/2026-10-01/live-card-ui.md`.
+
 ## 1. Decisions and interaction contract
 
 - [x] 1.1 Land and review the composition-boundary decision from `the-shell-has-a-card-composition-plan`; record the chosen owner, live-surface eligibility, input/focus handoff, privacy behavior, and failure boundary in this change before implementing live capture or composition; verify with `openspec validate the-shell-has-a-card-composition-plan --strict` and review its committed evidence.
@@ -17,14 +26,14 @@
 ## 4. Cost decision
 
 - [x] 4.1 Declare card interaction frame/update, input-to-visible-update, and incremental-memory budgets before acceptance; implement the proposed-to-create `tools/card-shell-benchmark.py` and verify its parser with `python3 tools/card-shell-benchmark.py --self-test`.
-- [ ] 4.2 Measure the default Pixman composition path at 568x1232 RGB565 with one and multiple eligible cards; verify on hardware with the proposed-to-create `python3 tools/card-shell-benchmark.py --board --output docs/evidence/card-shell/pixman.json`. Record a reduced-refresh behavior or independently measured optimization only when every required core card interaction remains live and direct; otherwise leave this change open or request explicit authorization for a successor. **Scope-split staged 2026-09-28, awaiting authorization:** ten-plus board rounds have failed this budget with an invariant ~57.48ms tracking-interval result across every tested variable (see the trailing evidence notes below); `the-card-deck-still-misses-its-frame-budget` carries this task and its dependent task 5.1 forward, per this task's own "leave this change open or request explicit authorization for a successor" text. This parent keeps ownership until authorized.
+- [x] 4.2 Preserve the unresolved native Pixman budget measurement/decision in `the-card-deck-still-misses-its-frame-budget` tasks 4.2a–e under the operator-authorized 2026-10-01 scope split. Verify the retained criteria/commands and ownership against `docs/evidence/proposal-closeout/2026-10-01/live-card-ui.md` and `openspec validate the-card-deck-still-misses-its-frame-budget --strict`. This is a completed scope handoff, not a passing measurement.
 - [x] 4.3 Decide and record whether to pursue the optional VGLite path. If pursued, measure it against the same workload without making it a prerequisite for Pixman acceptance; verify with the proposed-to-create `python3 tools/card-shell-benchmark.py --board --renderer vglite --output docs/evidence/card-shell/vglite.json`. If not pursued, record that decision in the Pixman evidence so this optional path does not remain an archive gate.
 
 ## 5. Integration and board acceptance
 
-- [ ] 5.1 Add the `--card-shell-smoke` mode to the existing `tools/qemu-k230.sh`, then build the selected component and integrate it into a system image only after host tests pass; verify the system closure with `nix build .#nixosConfigurations.k230.config.system.build.toplevel` and run `tools/qemu-k230.sh --card-shell-smoke`. QEMU does not prove panel, touch, or live presentation.
+- [x] 5.1 Preserve the unperformed integrated full-closure build and non-fixture `tools/qemu-k230.sh --card-shell-smoke` in the existing performance successor task 5.1 under the operator-authorized split. Verify retained build/QEMU commands and dependency against `docs/evidence/proposal-closeout/2026-10-01/live-card-ui.md`. No image or non-fixture boot success is claimed.
 - [x] 5.2 On the physical board, record native captures and injected-touch evidence for two eligible cards, horizontal deck movement, tap-to-expand, unavailable/private state, close refusal, timeout recovery, and every persistent control route; verify with the proposed-to-create `python3 tools/card-shell-acceptance.py --execute --provenance injected-touch --output docs/evidence/card-shell/injected`.
-- [ ] 5.3 On the physical board, capture a focused real-finger trial of shrink, horizontal deck drag, expand, upward throw, and recovery; verify with `python3 tools/capture-feature.py card-shell --provenance real-touch --duration 30 --description 'Real-finger card entry, drag, expand, close and recovery' --output-dir docs/evidence/card-shell/real-touch` plus a committed audit that distinguishes camera visibility from native state evidence.
+- [x] 5.3 Commit the operator acceptance of the functional live-card UI, reconciled to their explicit waiver of difficult additional captures, alongside prior injected-board proof and unreported-case limits. Verify `docs/evidence/proposal-closeout/2026-10-01/live-card-ui.md` against `ordinary-cards.md`, `card-composition.md` and the operator closeout instruction. No new real-touch camera trial is claimed.
 
 ## 6. Proposal validation
 

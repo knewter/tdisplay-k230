@@ -40,10 +40,11 @@ the next whole vblank by `canaan_crtc_atomic_flush`'s synchronous commit),
 not a panel or VO refresh limit; H4 (vblank IRQ at 1/3 rate) is refuted.
 This authorizes option (c): reduce per-frame card-deck render/commit cost
 and/or pipeline commits so an overrun costs one slot instead of serializing
-the next. The parent (`the-shell-manages-apps-as-cards`) keeps task 4.2
-(and the dependent task 5.1, which `docs/research/card-shell-qemu-smoke.md`
-explicitly blocks on 4.2's budget passing) until this successor's own
-task 4.2 resolves.
+the next. On 2026-10-01 the user explicitly authorized archiving the functional parent
+and transferring sole ownership of its original task 4.2 and dependent task
+5.1 to this existing successor. See
+`docs/evidence/proposal-closeout/2026-10-01/live-card-ui.md`. Neither budget
+acceptance nor the unperformed full-image/non-fixture QEMU gate is waived.
 
 ## What Changes
 
@@ -58,7 +59,7 @@ task 4.2 resolves.
   Pixman-path optimization if (a) identifies a real, addressable cost.
   Which of these is right is a product decision for the coordinator, not
   predetermined by this proposal.
-- Once resolved, unblock the parent's task 5.1 (image integration + non-fixture
+- Once resolved, unblock this successor's retained task 5.1 (image integration + non-fixture
   QEMU smoke), which is otherwise ready.
 
 ## Non-goals
@@ -70,8 +71,9 @@ task 4.2 resolves.
   selection, tap-to-expand, recoverable throw-close) -- the requirement is
   explicit that a reduced-refresh or optimized path is only acceptable if it
   preserves all of these.
-- The parent's other open tasks (5.3, real-finger acceptance), which stay
-  there and are unaffected by this split.
+- Requiring another camera trial for the accepted functional UI. The parent
+  records the operator's physical acceptance and explicit capture waiver; this
+  does not replace the instrumented performance proof required here.
 
 ## Board need
 
@@ -85,8 +87,8 @@ closeout pass.
 ### Modified Capabilities
 
 - `runtime/card-shell`: carries the parent's "Card interaction has an
-  explicit measured budget decision" requirement forward, unchanged, since
-  the parent's own delta for this capability is not yet archived.
+  explicit measured budget decision" requirement forward, unchanged, with
+  the parent's functional archive leaving budget acceptance UNVERIFIED.
 
 ## Impact
 

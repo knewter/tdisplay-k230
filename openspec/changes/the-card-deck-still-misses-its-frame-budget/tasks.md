@@ -1,6 +1,10 @@
 This change was split from `the-shell-manages-apps-as-cards` (task 4.2, plus
-its dependent task 5.1). Task IDs keep the parent's numbering. Authorized by
-the user 2026-09-28 ("frame budget go").
+its dependent task 5.1). Task IDs keep the parent's numbering. Investigation was authorized by the
+user 2026-09-28 ("frame budget go"); sole ownership of the unresolved budget
+and full-image/non-fixture QEMU gates was transferred here by explicit
+2026-10-01 functional-parent archive approval. See
+`docs/evidence/proposal-closeout/2026-10-01/live-card-ui.md`. All unchecked
+measurement, decision and integration tasks below remain unchecked.
 
 ## 4. Cost decision (board-gated throughout)
 

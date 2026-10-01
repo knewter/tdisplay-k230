@@ -169,3 +169,17 @@ not replace the separate finger-tracking/input/frame/memory budget declaration
 or the physical review. The product remains opt-in, Pixman-only and independent
 of the separate VGLite renderer experiment. Failure disables/restores only the
 card scene; the known normal shell package is unchanged.
+
+## Accepted functional scope and performance ownership (2026-10-01)
+
+The operator authorized archiving the functional live-card UI and waived
+additional difficult camera captures. Existing injected-board proof plus their
+physical acceptance are recorded in `docs/evidence/proposal-closeout/2026-10-01/live-card-ui.md`. Privacy/refusal/timeout coverage
+remains injected evidence; no fresh per-case finger or reliability trial is
+claimed. This supersedes the original mandatory-camera acceptance route.
+
+The existing `the-card-deck-still-misses-its-frame-budget` now solely owns
+original tasks 4.2 and 5.1, with their full measured-budget, real integrated
+closure and non-fixture QEMU requirements intact. Historical failed costs
+remain failures and budget acceptance remains UNVERIFIED. This parent archive
+accepts functional UI only, not timing or full-image proof.

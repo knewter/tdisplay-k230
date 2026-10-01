@@ -51,3 +51,17 @@ integration, Nix packaging, tests, and board evidence. Host model tests and a
 narrow derivation build can proceed before hardware, but live content, touch,
 readability, frame cost, and recovery require physical-board evidence. No
 kernel, boot, second-core, or GPU dependency is assumed by this proposal.
+
+## Accepted functional scope and performance ownership (2026-10-01)
+
+The operator authorized archiving the functional live-card UI and waived
+additional difficult camera captures. Existing injected-board proof plus their
+physical acceptance are recorded in `docs/evidence/proposal-closeout/2026-10-01/live-card-ui.md`. Privacy/refusal/timeout coverage
+remains injected evidence; no fresh per-case finger or reliability trial is
+claimed. This supersedes the original mandatory-camera acceptance route.
+
+The existing `the-card-deck-still-misses-its-frame-budget` now solely owns
+original tasks 4.2 and 5.1, with their full measured-budget, real integrated
+closure and non-fixture QEMU requirements intact. Historical failed costs
+remain failures and budget acceptance remains UNVERIFIED. This parent archive
+accepts functional UI only, not timing or full-image proof.
