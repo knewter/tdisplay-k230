@@ -6585,7 +6585,12 @@ fn serve() -> Result<(), String> {
             if state.theme_view.page == ThemePage::List {
                 let centered = (!state.theme_carousel.is_animating() && theme_count > 0)
                     .then(|| state.theme_carousel.index(theme_count));
-                if let Some((index, request)) = state.theme_view.poll_prepare_ahead(elapsed, centered) {
+                let both_rows_at_rest = theme_prerender_at_rest(
+                    &state.theme_carousel, &state.background_carousel,
+                );
+                if let Some((index, request)) = state.theme_view.poll_prepare_ahead_at_rest(
+                    elapsed, centered, both_rows_at_rest,
+                ) {
                     if let Ok(id) = state.themes.try_submit(request) {
                         runtime_trace::event("speculative_admission", [id, index as u64,
                             u64::from(state.theme_carousel.is_animating()),
@@ -7110,7 +7115,7 @@ mod route_tests {
     }
 
     #[test]
-    fn theme_prerender_waits_for_both_carousels_to_finish_moving() {
+    fn speculative_theme_motion_waits_for_both_carousels_to_finish_moving() {
         for background in [false, true] {
             let mut themes = Carousel::new(THEME_GEOMETRY);
             let mut backgrounds = Carousel::new(BACKGROUND_GEOMETRY);

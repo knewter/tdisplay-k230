@@ -563,6 +563,24 @@ impl ThemeView {
     /// `prepare_only()` (task 3.1a) whenever `--rust-socket`/`--deck-socket`
     /// are configured, so a discarded `Preview` reply here has exactly the
     /// warming side effect this task wants, with no new protocol.
+    /// Admission is paused during either row's contact, coast or settle.
+    /// Keep queued neighbors and an executing request intact; a reply may
+    /// finish while paused, but cannot admit its successor. A new settled
+    /// center must earn its own dwell after movement ends.
+    pub fn poll_prepare_ahead_at_rest(
+        &mut self,
+        elapsed_ms: u32,
+        centered: Option<usize>,
+        both_rows_at_rest: bool,
+    ) -> Option<(usize, ThemeRequest)> {
+        if !both_rows_at_rest {
+            self.prepare_ahead_watch = None;
+            self.prepare_ahead_elapsed_ms = 0;
+            return None;
+        }
+        self.poll_prepare_ahead(elapsed_ms, centered)
+    }
+
     pub fn poll_prepare_ahead(
         &mut self,
         elapsed_ms: u32,
@@ -1573,5 +1591,61 @@ mod tests {
                 background_id: None,
             }
         );
+    }
+
+    #[test]
+    fn prepare_ahead_motion_preserves_neighbors_and_expires_dwell() {
+        let mut view = ThemeView::default();
+        view.page = ThemePage::List;
+        load_list(&mut view, 5, Some(2));
+        let queued = view.pending_neighbor_warms.clone();
+        view.prepare_ahead_watch = Some(4);
+        view.prepare_ahead_elapsed_ms = PREPARE_AHEAD_DEBOUNCE_MS;
+        for centered in [None, Some(4), Some(1), None] {
+            assert_eq!(view.poll_prepare_ahead_at_rest(1000, centered, false), None);
+            assert_eq!(view.pending_neighbor_warms, queued);
+            assert_eq!(view.prepare_ahead_watch, None);
+            assert_eq!(view.prepare_ahead_elapsed_ms, 0);
+        }
+        // Latest settled center wins over the old neighbors.
+        let (index, _) = view.poll_prepare_ahead_at_rest(
+            PREPARE_AHEAD_DEBOUNCE_MS, Some(4), true,
+        ).unwrap();
+        assert_eq!(index, 4);
+        assert_eq!(view.pending_neighbor_warms, queued);
+    }
+
+    #[test]
+    fn prepare_ahead_inflight_completion_cannot_admit_during_motion() {
+        let mut view = ThemeView::default();
+        view.page = ThemePage::List;
+        load_list(&mut view, 5, Some(2));
+        let (index, request) = view.poll_prepare_ahead_at_rest(16, None, true).unwrap();
+        view.prepare_ahead_submitted(index, 42);
+        let queued = view.pending_neighbor_warms.clone();
+        assert_eq!(view.poll_prepare_ahead_at_rest(1000, None, false), None);
+        assert_eq!(view.prepare_ahead_inflight, Some(42));
+        assert!(view.prepare_ahead_reply(&ThemeReply {
+            id: 42, request, result: Err("fixture completion".into()),
+        }));
+        assert_eq!(view.poll_prepare_ahead_at_rest(1000, Some(3), false), None);
+        assert_eq!(view.pending_neighbor_warms, queued);
+        // An at-rest caller without a center may still drain its bounded queue.
+        assert_eq!(view.poll_prepare_ahead_at_rest(16, None, true).unwrap().0, 3);
+    }
+
+    #[test]
+    fn prepare_ahead_foreground_request_keeps_priority_after_motion() {
+        let mut view = ThemeView::default();
+        view.page = ThemePage::List;
+        load_list(&mut view, 5, Some(2));
+        let request = view.tap_theme(4).unwrap();
+        view.submitted(request, 99);
+        let queued = view.pending_neighbor_warms.clone();
+        for at_rest in [false, true] {
+            assert_eq!(view.poll_prepare_ahead_at_rest(1000, Some(4), at_rest), None);
+            assert_eq!(view.pending_neighbor_warms, queued);
+            assert_eq!(view.pending_id, Some(99));
+        }
     }
 }

@@ -12,7 +12,7 @@ from pathlib import Path
 KINDS = frozenset('''trace_start input_down input_motion input_up draw_begin draw_end
 commit feedback_unavailable feedback_overflow frame_callback presented discarded
 speculative_admission overlay_draw event_loop_work wayland_dispatch wayland_flush
-appearance_prepare render_total scene_rebuild canvas_copy thumbnail_poll
+appearance_prepare render_total scene_rebuild picker_row_repaint canvas_copy thumbnail_poll
 thumbnail_hash thumbnail_read_cache thumbnail_resolve thumbnail_decode overlay_prerender
 theme_request theme_request_begin theme_request_end theme_helper_rpc helper_request
  theme_activate_invoke theme_activate_checked_copy theme_activate_build_wallpaper_cache

@@ -3884,6 +3884,7 @@ pub fn draw_shm(
         None,
         &DrawerSearch::default(),
         &mut DrawerGridCache::default(),
+        None,
     )
 }
 
@@ -3902,6 +3903,7 @@ fn draw_shm_with_icons(
     pressed: Option<usize>,
     search: &DrawerSearch,
     grid_cache: &mut DrawerGridCache,
+    row_clip: Option<(f64, f64)>,
 ) -> Result<(), String> {
     let RenderParams { width, height, .. } = params;
     let stride = width.checked_mul(4).ok_or("invalid stride")?;
@@ -3921,6 +3923,10 @@ fn draw_shm_with_icons(
     }
     .map_err(|error| error.to_string())?;
     let cr = Context::new(&surface).map_err(|error| error.to_string())?;
+    if let Some((top, bottom)) = row_clip {
+        cr.rectangle(0.0, top, f64::from(width), bottom - top);
+        cr.clip();
+    }
     scene(
         &cr,
         params,
@@ -4021,6 +4027,8 @@ pub struct RendererCache {
     width: u32,
     height: u32,
     static_pixels: Vec<u8>,
+    /// Position/pressed-only picker changes since the last paint.
+    picker_dirty_rows: u8,
     rebuilds: u64,
     icons: IconCache,
     scroll: f64,
@@ -4086,6 +4094,35 @@ fn theme_view_cache_key_differs(old: &ThemeView, new: &ThemeView) -> bool {
         || (old.background_position - new.background_position).abs() >= 0.25
         || old.theme_pressed != new.theme_pressed
         || old.background_pressed != new.background_pressed
+}
+
+/// Some(mask) only when every rendered input other than row geometry is equal.
+/// This is deliberately stricter than optimistic pre-render freshness.
+fn picker_row_changes(old: &ThemeView, new: &ThemeView) -> Option<u8> {
+    if old.page != ThemePage::List || new.page != ThemePage::List
+        || old.list != new.list || old.preview != new.preview
+        || old.pending != new.pending || old.pending_id != new.pending_id
+        || old.error != new.error || old.message != new.message
+        || old.pulse_phase != new.pulse_phase
+        || old.desired != new.desired
+    {
+        return None;
+    }
+    let theme = old.theme_position != new.theme_position || old.theme_pressed != new.theme_pressed;
+    let background = old.background_position != new.background_position
+        || old.background_pressed != new.background_pressed;
+    Some(u8::from(theme) | (u8::from(background) << 1))
+}
+
+/// Integer device-space bands enclose outlines and both row labels.
+fn picker_row_clip(mask: u8) -> (f64, f64) {
+    let top = if mask & 1 != 0 { THEME_CAROUSEL_TOP - 4.0 } else { BACKGROUND_CAROUSEL_TOP - 4.0 };
+    let bottom = if mask & 2 != 0 {
+        BACKGROUND_CAROUSEL_TOP + theme_carousel::BACKGROUND_GEOMETRY.expanded_h + 60.0
+    } else {
+        THEME_CAROUSEL_TOP + theme_carousel::THEME_GEOMETRY.expanded_h + 60.0
+    };
+    (top.floor(), bottom.ceil())
 }
 
 /// Layout still includes distant slices for painting/hit-testing. Decoding only
@@ -4196,13 +4233,14 @@ impl RendererCache {
         {
             self.content_generation = self.content_generation.wrapping_add(1);
         }
+        let rows = self.chooser.as_ref().and_then(|old| picker_row_changes(old, &view));
         self.chooser = Some(view);
-        // `invalidate()` stays unconditional: a live `draw()` call still
-        // rebuilds `static_pixels` on every theme_view change exactly as
-        // before this task (correctness for the cached body itself is
-        // unaffected by this function; only `content_generation` -- read
-        // solely by Optimistic Apply's own pre-render freshness check --
-        // is now selective).
+        if self.route == Some(Route::Settings) && !self.static_pixels.is_empty() {
+            if let Some(rows) = rows {
+                self.picker_dirty_rows |= rows;
+                return;
+            }
+        }
         self.invalidate();
     }
     /// Nonblocking dispatch hook. Only a selected staged still is decoded;
@@ -4347,6 +4385,7 @@ impl RendererCache {
     pub fn invalidate(&mut self) {
         self.route = None;
         self.static_pixels.clear();
+        self.picker_dirty_rows = 0;
     }
 
     /// Warms the Drawer's own pre-rendered grid bitmap (`DrawerGridCache`)
@@ -4443,6 +4482,7 @@ impl RendererCache {
             // its own doc) never actually renders `Route::Drawer` in
             // practice -- Optimistic Apply only pre-renders Settings.
             &mut DrawerGridCache::default(),
+            None,
         )?;
         // Matches `draw()`'s own post-shift backdrop pass exactly (same
         // `progress: 1.0` this bake just used), so a later `adopt_
@@ -4470,6 +4510,7 @@ impl RendererCache {
         self.icons.set_theme(&icon_theme_name_for(theme.as_ref()));
         self.theme = theme;
         self.static_pixels = pixels;
+        self.picker_dirty_rows = 0;
         self.route = Some(route);
         self.width = width;
         self.height = height;
@@ -4804,6 +4845,7 @@ impl RendererCache {
                 self.pressed,
                 &self.drawer_search,
                 &mut self.drawer_grid,
+                None,
             )?;
             self.static_pixels = painted;
             self.width = width;
@@ -4811,6 +4853,18 @@ impl RendererCache {
             self.route = Some(route);
             self.scroll = scroll;
             self.rebuilds += 1;
+            self.picker_dirty_rows = 0;
+        } else if self.picker_dirty_rows != 0 {
+            let _profile = crate::runtime_trace::Span::new("picker_row_repaint");
+            draw_shm_with_icons(
+                &mut self.static_pixels,
+                RenderParams { progress: 1.0, ..params },
+                apps, &mut self.icons, self.theme.as_ref(), self.services.as_ref(),
+                self.chooser.as_ref(), self.preview_surface.as_ref(), self.preview_error,
+                Some(&self.thumbnails), self.pressed, &self.drawer_search,
+                &mut self.drawer_grid, Some(picker_row_clip(self.picker_dirty_rows)),
+            )?;
+            self.picker_dirty_rows = 0;
         }
         let _profile_copy = crate::runtime_trace::Span::new("canvas_copy");
         canvas.fill(0);
@@ -4837,9 +4891,9 @@ impl RendererCache {
         // body (`paint_preview_footer_status`, removed the same task).
         // The single List page's own busy spinner and pending/error/
         // message line are baked straight into `static_pixels` by the
-        // ordinary rebuild above instead: `set_theme_view` still calls
-        // `invalidate()` unconditionally on every `ThemeView` change, so
-        // nothing here needs a second, live paint pass any more. See
+        // full rebuild above on semantic changes; row-only updates repaint
+        // their geometry and labels under a clip. No separate live status
+        // pass is necessary. See
         // `paint_theme_chooser`'s own doc for why an *adopted* pre-render
         // (the one case that skips a fresh rebuild) is still correct at
         // the exact moment it is shown.
@@ -6128,6 +6182,91 @@ mod tests {
             }),
             ..ThemeView::default()
         }
+    }
+
+    fn picker_row_test_renderer(view: &ThemeView) -> RendererCache {
+        let (thumbnails, incoming, complete) = ThemeThumbnailCache::fixture();
+        let mut renderer = RendererCache { thumbnails, ..RendererCache::default() };
+        renderer.set_theme_view(view.clone());
+        for _ in 0..100 {
+            renderer.poll_theme_thumbnails(568);
+            for key in incoming.try_iter() { complete(key); }
+            if !renderer.theme_thumbnails_pending(568) { break; }
+        }
+        assert!(!renderer.theme_thumbnails_pending(568));
+        renderer
+    }
+
+    #[test]
+    fn picker_row_repaint_matches_full_scene_for_motion_and_press() {
+        let mut view = theme_picker_two_row_fixture();
+        view.list.as_mut().unwrap().themes.truncate(4);
+        view.preview.as_mut().unwrap().backgrounds.truncate(4);
+        view.theme_position = 1.0;
+        view.background_position = 1.0;
+        let mut partial = picker_row_test_renderer(&view);
+        let mut full = picker_row_test_renderer(&view);
+        let params = RenderParams { width: 568, height: 1232, route: Route::Settings,
+            progress: 1.0, scroll: 0.0 };
+        let mut actual = vec![0; 568 * 1232 * 4];
+        let mut expected = actual.clone();
+        partial.draw(&mut actual, params, &[]).unwrap();
+        let initial_rebuilds = partial.rebuild_count();
+        for (theme, background, pressed) in [
+            (1.0, 1.0, Some(1)), (1.125, 1.0, None), (1.51, 1.0, None),
+            (1.25, 1.0, None), (0.0, 1.0, None), (3.0, 1.0, None),
+            (3.0, 1.49, None), (3.0, 1.51, None), (3.0, 2.125, None),
+            (1.25, 0.0, None), (1.25, 3.0, Some(3)), (1.0, 1.0, None),
+        ] {
+            view.theme_position = theme; view.background_position = background;
+            view.theme_pressed = pressed; view.background_pressed = pressed;
+            partial.set_theme_view(view.clone()); full.set_theme_view(view.clone());
+            full.invalidate();
+            partial.draw(&mut actual, params, &[]).unwrap();
+            full.draw(&mut expected, params, &[]).unwrap();
+            assert!(actual == expected, "clipped/full pixels differ at {theme}/{background}/{pressed:?}");
+        }
+        assert_eq!(partial.rebuild_count(), initial_rebuilds);
+        // A semantic message invalidates even when both rows have queued damage.
+        view.theme_position = 1.75;
+        partial.set_theme_view(view.clone());
+        view.error = Some("Could not apply".into());
+        partial.set_theme_view(view.clone()); full.set_theme_view(view.clone());
+        partial.draw(&mut actual, params, &[]).unwrap();
+        full.draw(&mut expected, params, &[]).unwrap();
+        assert!(actual == expected);
+        assert_eq!(partial.rebuild_count(), initial_rebuilds + 1);
+        // Route and geometry changes must take the ordinary full scene path.
+        for params in [RenderParams { width: 640, height: 1280, ..params },
+                       RenderParams { route: Route::Shade, ..params }, params] {
+            actual.resize((params.width * params.height * 4) as usize, 0);
+            expected.resize(actual.len(), 0);
+            partial.draw(&mut actual, params, &[]).unwrap();
+            full.invalidate(); full.draw(&mut expected, params, &[]).unwrap();
+            assert!(actual == expected);
+        }
+    }
+
+    #[test]
+    fn picker_row_semantic_updates_keep_full_invalidation() {
+        let original = theme_picker_two_row_fixture();
+        for change in 0..8 {
+            let mut view = original.clone();
+            match change {
+                0 => view.page = ThemePage::Controls,
+                1 => view.list.as_mut().unwrap().themes[20].label = "Changed".into(),
+                2 => view.preview.as_mut().unwrap().backgrounds[20].selected = false,
+                3 => view.message = Some("Background applied".into()),
+                4 => view.error = Some("Failed".into()),
+                5 => view.pulse_phase = 0.5,
+                6 => view.pending_id = Some(42),
+                _ => view.pending = Some(crate::theme_catalog::ThemeRequest::List),
+            }
+            assert_eq!(picker_row_changes(&original, &view), None);
+        }
+        let mut unchanged = original.clone();
+        unchanged.prepare_ahead_elapsed_ms += 1;
+        assert_eq!(picker_row_changes(&original, &unchanged), Some(0));
     }
 
     #[test]
