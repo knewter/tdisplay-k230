@@ -1,0 +1,87 @@
+{
+  "system": "/nix/store/xphf8zb00gz9hiyqkkh399rldr2ljykb-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "kernel": "/nix/store/03zyl0mjsxbjyisb3lhjaxswpxm71ap6-linux-riscv64-unknown-linux-gnu-6.6.36-xuantie/Image",
+  "initrd": "/nix/store/vrkzpx829rh8wqi0jpqzbw88smn9k8gl-initrd-linux-riscv64-unknown-linux-gnu-6.6.36-xuantie/initrd",
+  "dtb_source": "/nix/store/yfda1lasmlgyappdgf6f49g7yj7m8mjd-k230-tdisplay.dtb",
+  "files": {
+    "k230-tdisplay.dtb": {
+      "bytes": 71994,
+      "sha256": "fe451e879795181202941d83e5df3b11cd7dfa2ecd1d62aba33b19c204ef1eaf",
+      "crc32": "e2a9969a"
+    },
+    "Image": {
+      "bytes": 60428800,
+      "sha256": "37d71fc14f9bdafe230767e1709de587c049014660dd59d2f7bcbbce35ac71c2",
+      "crc32": "3ca351cb"
+    },
+    "fw_jump_add_uboot_head.bin": {
+      "bytes": 270808,
+      "sha256": "9627edbeea9b115d7040beea27cc61b23b6aca61cd502fd7760d7ee179f42c99",
+      "crc32": "99b89787"
+    },
+    "initrd.uimg": {
+      "bytes": 27295055,
+      "sha256": "d678b726b4bc2e0f38c7d979d966806689755c3f6606e1e84f02a3dfce26e42d",
+      "crc32": "386945c3"
+    },
+    "bootargs.txt": {
+      "bytes": 211,
+      "sha256": "64662e11e9eceb694aa6afe81def3803babd853c8e510fb930069e36627fe5a0",
+      "crc32": "2ce599be"
+    }
+  },
+  "backup": {
+    "Image": {
+      "bytes": 60428800,
+      "sha256": "8a9a9715bc41dda6172e4c780001e1460ac7ea96c6a5fcd489e2f77b13d69165",
+      "crc32": "f386d812"
+    },
+    "initrd.uimg": {
+      "bytes": 27300862,
+      "sha256": "54cfaea4603c3502ed4fc75327460b96c8363d48bccca229a5cbfff585cf78ad",
+      "crc32": "fb555258"
+    },
+    "k230-tdisplay.dtb": {
+      "bytes": 71994,
+      "sha256": "ffeb528bba1b4c3ab5e6b6f63047cd9ae9512ed853126616853367e93dba2035",
+      "crc32": "17ae15db"
+    },
+    "bootargs.txt": {
+      "bytes": 211,
+      "sha256": "d7e1523191aac7820af356f0c2c22c4144407716626fb2fd2009e6f6d1a3cc1b",
+      "crc32": "c05dcd97"
+    },
+    "fw_jump_add_uboot_head.bin": {
+      "bytes": 270808,
+      "sha256": "9627edbeea9b115d7040beea27cc61b23b6aca61cd502fd7760d7ee179f42c99",
+      "crc32": "99b89787"
+    },
+    "force_dtb": {
+      "bytes": 17,
+      "sha256": "175342c82dd1b437cdafb6bb01090e7ff73c2769515654c48b02c1e9f73440c6",
+      "crc32": "e80b1712"
+    },
+    "lcd_dtb": {
+      "bytes": 17,
+      "sha256": "175342c82dd1b437cdafb6bb01090e7ff73c2769515654c48b02c1e9f73440c6",
+      "crc32": "e80b1712"
+    },
+    "hdmi_dtb": {
+      "bytes": 17,
+      "sha256": "175342c82dd1b437cdafb6bb01090e7ff73c2769515654c48b02c1e9f73440c6",
+      "crc32": "e80b1712"
+    }
+  },
+  "normal_profile": "/nix/store/r0knnb72k3p3mpmbsnfgrk66yg8gl144-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "boot_before": "26d0ffe8-5c14-443c-aca9-f7ba47ab22f4",
+  "status": "UNVERIFIED_VISIBLE_NAVIGATION",
+  "serial_root_boot": "PASS",
+  "shell_services": "PASS",
+  "panel": "Initial dark camera observation ambiguous: native capture shows Foot. Latest userspace on working old kernel produces photographed Home after explicit IPC. Matching-current-kernel repeat still needs demonstrated visible navigation.",
+  "normal_restoration": "PASS: original vendor boot, unchanged profile and protected hashes, photographed Home",
+  "deployment": "Persistent /boot and profile untouched; qualified normal boot install remains pending",
+  "source_revision": "02c4a99850e6cc8a262480d21a17cb7f6dc2b019",
+  "evidence_class": "physical boot + serial + host camera; no new deliberate glass touch",
+  "captured_utc": "2026-10-01T15:02:48.224673+00:00",
+  "normal_manual_baseline": "PASS: original artifacts also boot via same manual load procedure and photographed Home"
+}

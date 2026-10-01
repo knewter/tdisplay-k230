@@ -1,0 +1,51 @@
+COMMAND export SYSTEMD_PAGER=cat; date -u; sha256sum /boot/{Image,initrd.uimg,k230-tdisplay.dtb,bootargs.txt,fw_jump_add_uboot_head.bin}; readlink -f /run/booted-system/kernel; runuser -u shell -- env XDG_RUNTIME_DIR=/run/shell SWAYSOCK=$(find /run/shell -maxdepth 1 -name 'sway-ipc*' -print -quit) swaymsg -t get_outputs; journalctl -u shell --no-pager -n 18; cat /sys/class/backlight/*/brightness
+export SYSTEMD_PAGER=cat PAGER=cat; export SYSTEMD_PAGER=cat; date -u; sha256sum /boot/{Image,initrd.uimg,k230-tdisplay.dtb,bootargs.txt,fw_jump
+_add_uboot_head.bin}; readlink -f /run/booted-system/kernel; runuser -u shell -- env XDG_RUNTIME_DIR=/run/shell SWAYSOCK=$(find /run/shell -maxdepth 1 -name 'sway-ipc*' -print -quit) swaymsg -t get_outputs; journalctl -u shell --no-pager -n 18; cat /sys/class/backlight/*/brightness; k230_op_rc=$?; printf "\nK230_OP_DONE_f0151036cd9342d28c1fc7be3e8aee92 %s\n" "$k230_op_rc"
+
+Thu Oct  1 02:56:14 PM UTC 2026
+8a9a9715bc41dda6172e4c780001e1460ac7ea96c6a5fcd489e2f77b13d69165  /boot/Image
+54cfaea4603c3502ed4fc75327460b96c8363d48bccca229a5cbfff585cf78ad  /boot/initrd.uimg
+ffeb528bba1b4c3ab5e6b6f63047cd9ae9512ed853126616853367e93dba2035  /boot/k230-tdisplay.dtb
+d7e1523191aac7820af356f0c2c22c4144407716626fb2fd2009e6f6d1a3cc1b  /boot/bootargs.txt
+9627edbeea9b115d7040beea27cc61b23b6aca61cd502fd7760d7ee179f42c99  /boot/fw_jump_add_uboot_head.bin
+/nix/store/p6z5nsr2dyb1kfjk1hkzh9vb2nha0ka6-linux-riscv64-unknown-linux-gnu-6.6.36-xuantie/Image
+Output DSI-1 'Unknown Unknown Unknown' (focused)
+  Current mode: 568x1232 @ 52.190 Hz
+  Power: on
+  Position: 0,0
+  Scale factor: 1.000000
+  Scale filter: nearest
+  Subpixel hinting: unknown
+  Transform: normal
+  Workspace: 1
+  Max render time: 8 ms
+  Adaptive sync: unsupported
+  Allow tearing: no
+  HDR: unsupported
+  Available modes:
+    568x1232 @ 52.190 Hz
+
+Oct 01 14:56:00 nixos sway[1071]: 00:00:08.115 [DEBUG] [sway/desktop/transaction.c:821] Transaction 0x2e11e27c40 committing with 1 instructions
+Oct 01 14:56:00 nixos sway[1071]: 00:00:08.115 [DEBUG] [sway/desktop/transaction.c:717] Applying transaction 0x2e11e27c40
+Oct 01 14:56:00 nixos sway[1071]: 00:00:08.115 [DEBUG] [wlr] [backend/drm/fb.c:147] Failed to get DMA-BUF from buffer
+Oct 01 14:56:00 nixos sway[1071]: 00:00:08.116 [DEBUG] [wlr] [backend/drm/drm.c:792] connector DSI-1: Failed to import buffer for scan-out
+Oct 01 14:56:00 nixos sway[1071]: 00:00:10.469 [DEBUG] [wlr] [backend/drm/fb.c:147] Failed to get DMA-BUF from buffer
+Oct 01 14:56:00 nixos sway[1071]: 00:00:10.469 [DEBUG] [wlr] [backend/drm/drm.c:792] connector DSI-1: Failed to import buffer for scan-out
+Oct 01 14:56:00 nixos sway[1071]: 00:00:10.551 [DEBUG] [wlr] [backend/drm/fb.c:147] Failed to get DMA-BUF from buffer
+Oct 01 14:56:00 nixos sway[1071]: 00:00:10.551 [DEBUG] [wlr] [backend/drm/drm.c:792] connector DSI-1: Failed to import buffer for scan-out
+Oct 01 14:56:00 nixos sway[1071]: 00:00:10.700 [DEBUG] [wlr] [backend/drm/fb.c:147] Failed to get DMA-BUF from buffer
+Oct 01 14:56:00 nixos sway[1071]: 00:00:10.700 [DEBUG] [wlr] [backend/drm/drm.c:792] connector DSI-1: Failed to import buffer for scan-out
+Oct 01 14:56:00 nixos sway[1071]: 00:00:10.705 [DEBUG] [sway/card_shell.c:1996] K230_CARD_SHELL state mode=0 actions=32 message=0 cards=0 entry_settling=0 entry_reversing=0 entry_interrupted_hold=0 entry_progress=0.000 blocked_until_up=0 blocked_contacts=0
+Oct 01 14:56:00 nixos sway[1071]: 00:00:10.706 [INFO] [sway/card_shell.c:2639] K230_CARD_SHELL unmap id=5
+Oct 01 14:56:00 nixos sway[1071]: 00:00:10.706 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 568x1232@0,0
+Oct 01 14:56:00 nixos sway[1071]: 00:00:10.706 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+Oct 01 14:56:00 nixos sway[1071]: 00:00:10.706 [DEBUG] [sway/desktop/transaction.c:821] Transaction 0x2e11e69570 committing with 2 instructions
+Oct 01 14:56:00 nixos sway[1071]: 00:00:10.706 [DEBUG] [sway/desktop/transaction.c:717] Applying transaction 0x2e11e69570
+Oct 01 14:56:18 nixos sway[1071]: 00:00:34.642 [DEBUG] [sway/ipc-server.c:196] New client: fd 36
+Oct 01 14:56:18 nixos sway[1071]: 00:00:34.646 [INFO] [sway/ipc-server.c:570] IPC Client 36 disconnected
+254
+
+K230_OP_DONE_f0151036cd9342d28c1fc7be3e8aee92 0
+
+
+[root@nixos:~]#

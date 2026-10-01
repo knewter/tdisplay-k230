@@ -1603,6 +1603,12 @@ DATA ef30699ebb39259b995f81a6b3a266b0b7410965975d81b39143428a665d702a docs/evide
 DATA 4a2e198e3085b10d99599fb9e4949441b2f13b668baf2cdfd5c4591b76f7ea6a docs/evidence/home-widget-design/closeout-2026-10-01/qemu/home-fluid-edge-indicator.png
 DATA 09f2c39d77fa5ef7146bc3c750bca8df3c2235ab035f4d517ba50f7b3dcabe21 docs/evidence/home-widget-design/closeout-2026-10-01/qemu/home-fluid-last-edge-new-page.png
 DATA 5007dedc8ec8342188b82d2b4f5c779113f2e4183915ba43f7c12411c9210860 docs/evidence/home-widget-design/closeout-2026-10-01/qemu/home-fluid-new-page-drop.png
+DATA 8d76e0a35939afc53c59d3265b7f68fe5021042bf11be763cec82632c9a57e2b docs/evidence/boot-verification/2026-10-01/normal-candidate-panel.jpg
+DATA 62cf1b9ed0eeabb10608660522a577cd5fbd2923787a21c10505f1795b012af8 docs/evidence/boot-verification/2026-10-01/normal-restored-panel.jpg
+DATA d37a34af2e23014328b1de92c46a696e9d66c2a961c8e770bd9937a45fc2052c docs/evidence/boot-verification/2026-10-01/runtime-restored-panel.jpg
+DATA e3e93fb0e742aa910f90df9dd611c5923f3f8d63cd3b063cab2476c842bcf51a docs/evidence/boot-verification/2026-10-01/normal-baseline-panel.jpg
+DATA 4af73a4e81494f5be1b8d207f67721345bc565b41264353d709bc987465f0bd8 docs/evidence/boot-verification/2026-10-01/runtime-home-panel.jpg
+DATA ba5e8a4f411fad3bc8b2ae0bba9aeaea5c501ebdd2d51f5dd3f8c387af89dc53 docs/evidence/boot-verification/2026-10-01/normal-candidate2-late-panel.jpg
 ```
 
 `group:` rows stand for a directory whose members are enumerated by

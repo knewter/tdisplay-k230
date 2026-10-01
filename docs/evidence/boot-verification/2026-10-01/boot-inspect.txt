@@ -1,0 +1,24 @@
+COMMAND date -u; sha256sum /boot/{Image,initrd.uimg,k230-tdisplay.dtb,bootargs.txt,fw_jump_add_uboot_head.bin}; cat /boot/bootargs.txt; command -v python3 curl mkimage; test ! -e /nix-path-registration; systemctl is-active shell-ui shell seatd pipewire wireplumber; df -h / /boot
+date -u; sha256sum /boot/{Image,initrd.uimg,k230-tdisplay.dtb,bootargs.txt,fw_jump_add_uboot_head.bin}; cat /boot/bootargs.txt; command -v python3 curl mkimage; test ! -e /nix-path-registration; systemctl is-active shell-ui shell seatd pipewire wireplumber; df -h / /boot; k230_op_rc=$?; printf "\nK230_OP_DONE_0ee0ddc3845c4a9692b1179df3cdd5e3 %s\n" "$k230_op_rc"
+
+Thu Oct  1 02:44:10 PM UTC 2026
+8a9a9715bc41dda6172e4c780001e1460ac7ea96c6a5fcd489e2f77b13d69165  /boot/Image
+54cfaea4603c3502ed4fc75327460b96c8363d48bccca229a5cbfff585cf78ad  /boot/initrd.uimg
+ffeb528bba1b4c3ab5e6b6f63047cd9ae9512ed853126616853367e93dba2035  /boot/k230-tdisplay.dtb
+d7e1523191aac7820af356f0c2c22c4144407716626fb2fd2009e6f6d1a3cc1b  /boot/bootargs.txt
+9627edbeea9b115d7040beea27cc61b23b6aca61cd502fd7760d7ee179f42c99  /boot/fw_jump_add_uboot_head.bin
+bootargs=console=tty0 consoleblank=0 console=ttyS0,115200n8 root=fstab loglevel=4 lsm=landlock,yama,bpf loglevel=7 init=/nix/store/x1xbs5qdb5gn91j6s7gsi8mg18qra5ah-nixos-system-nixos-26.11.20260919.20b1ddd/init
+/run/current-system/sw/bin/curl
+active
+active
+active
+active
+active
+Filesystem      Size  Used Avail Use% Mounted on
+/dev/mmcblk1p2   59G  8.8G   48G  16% /
+/dev/mmcblk1p1  100M   75M   22M  78% /boot
+
+K230_OP_DONE_0ee0ddc3845c4a9692b1179df3cdd5e3 0
+
+
+[root@nixos:~]#

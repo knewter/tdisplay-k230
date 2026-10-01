@@ -1,0 +1,98 @@
+COMMAND date -u; systemctl --failed --no-legend; systemctl is-active shell-ui shell seatd pipewire wireplumber; findmnt /boot; readlink -f /run/current-system/kernel; cat /proc/bus/input/devices; journalctl -u shell-ui -u shell --since '-3 minutes' --no-pager -n 35; cat /proc/asound/cards; amixer -c 0 cget name='External I2S Output Switch'; k230-speaker-test status
+date -u; systemctl --failed --no-legend; systemctl is-active shell-ui shell seatd pipewire wireplumber; findmnt /boot; readlink -f /run/current-system/kernel; cat /proc/bus/input/devices; journalctl -u shell-ui -u shell --since '-3 minutes' --no-pager -n 35; cat /proc/asound/cards; amixer -c 0 cget name
+='External I2S Output Switch'; k230-speaker-test status; k230_op_rc=$?; printf "\nK230_OP_DONE_75f2e8a30d0c4a89a223bb13315a9b89 %s\n" "$k230_op_rc"
+
+Thu Oct  1 02:51:01 PM UTC 2026
+active
+active
+active
+active
+active
+TARGET SOURCE         FSTYPE OPTIONS
+/boot  /dev/mmcblk1p1 ext4   rw,relatime
+/nix/store/03zyl0mjsxbjyisb3lhjaxswpxm71ap6-linux-riscv64-unknown-linux-gnu-6.6.36-xuantie/Image
+I: Bus=0018 Vendor=0000 Product=0000 Version=0000
+N: Name="Goodix Berlin Capacitive TouchScreen"
+P: Phys=input/ts
+S: Sysfs=/devices/platform/soc/91408000.i2c/i2c-1/1-005d/input/input0
+U: Uniq=
+H: Handlers=mouse0 event0
+B: PROP=2
+B: EV=b
+B: KEY=400 0 0 0 0 0
+B: ABS=261800000000003
+
+I: Bus=0019 Vendor=0000 Product=0000 Version=0000
+N: Name="K230 PMU Power Key"
+P: Phys=k230-pmu-pwrkey/input0
+S: Sysfs=/devices/platform/soc/91000000.pmu-pwrkey/input/input1
+U: Uniq=
+H: Handlers=kbd event1
+B: PROP=0
+B: EV=3
+B: KEY=10000000000000 0
+
+Oct 01 09:50:32 nixos sway[1065]: 00:00:07.087 [DEBUG] [sway/desktop/transaction.c:907] Transaction 0x39b1df1e30 is ready
+Oct 01 09:50:32 nixos sway[1065]: 00:00:07.087 [DEBUG] [sway/desktop/transaction.c:717] Applying transaction 0x39b1df1e30
+Oct 01 09:50:32 nixos sway[1065]: 00:00:07.087 [DEBUG] [sway/desktop/transaction.c:821] Transaction 0x39b1df95a0 committing with 1 instructions
+Oct 01 09:50:32 nixos sway[1065]: 00:00:07.087 [DEBUG] [sway/desktop/transaction.c:717] Applying transaction 0x39b1df95a0
+Oct 01 09:50:32 nixos sway[1065]: 00:00:07.088 [DEBUG] [wlr] [backend/drm/fb.c:147] Failed to get DMA-BUF from buffer
+Oct 01 09:50:32 nixos sway[1065]: 00:00:07.088 [DEBUG] [wlr] [backend/drm/drm.c:792] connector DSI-1: Failed to import buffer for scan-out
+Oct 01 09:50:32 nixos k230-shell-rust[1077]: rust-shell 4402ms K230_HOME_FRAME ms=1306.06 pages=2
+Oct 01 09:50:32 nixos k230-shell-rust[1077]: rust-shell 4408ms wallpaper-configure 568x1232
+Oct 01 09:50:32 nixos k230-shell-rust[1077]: rust-shell 4428ms wallpaper-commit
+Oct 01 09:50:32 nixos k230-shell-rust[1077]: rust-shell 4428ms volume-hud-map-request
+Oct 01 09:50:32 nixos sway[1065]: 00:00:07.644 [DEBUG] [wlr] [types/wlr_compositor.c:785] New wlr_surface 0x39b1e4d3b0 (res 0x39b1e7cde0)
+Oct 01 09:50:32 nixos sway[1065]: 00:00:07.644 [DEBUG] [wlr] [types/wlr_layer_shell_v1.c:502] new layer_surface 0x39b1e4d780 (res 0x39b1e7ccc0)
+Oct 01 09:50:32 nixos sway[1065]: 00:00:07.644 [DEBUG] [sway/desktop/layer_shell.c:416] new layer surface: namespace k230-volume-hud layer 3 anchor 0 size 0x0 margin 0,0,0,0,
+Oct 01 09:50:32 nixos k230-shell-rust[1077]: rust-shell 4456ms home-configure 568x1232
+Oct 01 09:50:32 nixos k230-shell-rust[1077]: rust-shell 4456ms wallpaper-configure 568x1232
+Oct 01 09:50:32 nixos k230-shell-rust[1077]: rust-shell 4457ms wallpaper-commit
+Oct 01 09:50:32 nixos k230-shell-rust[1077]: rust-shell 4457ms home-configure 568x1232
+Oct 01 09:50:32 nixos k230-shell-rust[1077]: rust-shell 4457ms wallpaper-configure 568x1232
+Oct 01 09:50:32 nixos k230-shell-rust[1077]: rust-shell 4481ms wallpaper-commit
+Oct 01 09:50:32 nixos k230-shell-rust[1077]: rust-shell 4542ms volume-hud-commit
+Oct 01 09:50:32 nixos k230-shell-rust[1077]: rust-shell 4544ms home-configure 568x1232
+Oct 01 09:50:32 nixos k230-shell-rust[1077]: rust-shell 4544ms wallpaper-configure 568x1232
+Oct 01 09:50:32 nixos k230-shell-rust[1077]: rust-shell 4576ms home-configure 568x1232
+Oct 01 09:50:32 nixos k230-shell-rust[1077]: rust-shell 4576ms wallpaper-configure 568x1232
+Oct 01 09:50:32 nixos k230-shell-rust[1077]: rust-shell 4577ms wallpaper-commit
+Oct 01 09:50:32 nixos k230-shell-rust[1077]: rust-shell 4595ms volume-hud-commit
+Oct 01 09:50:33 nixos sway[1065]: 00:00:08.499 [DEBUG] [sway/tree/view.c:575] Checking criteria [app_id=".+"]
+Oct 01 09:50:33 nixos sway[1065]: 00:00:08.499 [DEBUG] [sway/tree/view.c:577] Criteria already executed
+Oct 01 09:50:35 nixos k230-shell-rust[1077]: rust-shell 6957ms volume-hud-unmap
+Oct 01 09:50:35 nixos k230-shell-rust[1077]: rust-shell 6969ms home-configure 568x1232
+Oct 01 09:50:35 nixos k230-shell-rust[1077]: rust-shell 6969ms wallpaper-configure 568x1232
+Oct 01 09:50:35 nixos k230-shell-rust[1077]: rust-shell 6970ms wallpaper-commit
+Oct 01 09:50:35 nixos sway[1065]: 00:00:10.174 [DEBUG] [wlr] [backend/drm/fb.c:147] Failed to get DMA-BUF from buffer
+Oct 01 09:50:35 nixos sway[1065]: 00:00:10.174 [DEBUG] [wlr] [backend/drm/drm.c:792] connector DSI-1: Failed to import buffer for scan-out
+Oct 01 09:50:58 nixos sway[1065]: 00:00:33.036 [DEBUG] [wlr] [types/wlr_xdg_activation_v1.c:48] Activation token 'ad6aac6257fc290d19bb38f1d8cc7f4a' has expired
+ 0 [K230I2SINNO    ]: K230_I2S_INNO - K230_I2S_INNO
+                      K230_I2S_INNO
+numid=5,iface=MIXER,name='External I2S Output Switch'
+  ; type=BOOLEAN,access=rw------,values=1
+  : values=off
+== /proc/asound/cards ==
+ 0 [K230I2SINNO    ]: K230_I2S_INNO - K230_I2S_INNO
+                      K230_I2S_INNO
+
+== aplay -l ==
+**** List of PLAYBACK Hardware Devices ****
+card 0: K230I2SINNO [K230_I2S_INNO], device 0: Audio 9140e000.inno_codec-0 [Audio 9140e000.inno_codec-0]
+  Subdevices: 1/1
+  Subdevice #0: subdevice #0
+
+== amixer controls ==
+amixer: Control default open error: Host is down
+
+== gpiochip1 line 2 (MAX98357A SDMODE) ==
+/nix/store/bmb3b7x5mnma2lm6056qb0ac40hbn3yf-libgpiod-riscv64-unknown-linux-gnu-2.2.4/bin/gpioinfo: cannot find line 'gpiochip1'
+
+== dmesg (audio-related) ==
+[    5.327187] canaan-k230-snd-inno sound: External I2S output disabled by default
+[    6.016494]   #0: K230_I2S_INNO
+
+K230_OP_DONE_75f2e8a30d0c4a89a223bb13315a9b89 0
+
+
+[root@nixos:~]#
