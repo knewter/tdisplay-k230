@@ -2,6 +2,8 @@
 
 ### Requirement: The card overview shows a webOS-style fan of 2-3 cards, each with a real icon and app name
 
+*Grounding: operator acceptance in `docs/evidence/proposal-closeout/2026-10-01/coherent.md`, with prior source and board/QEMU evidence retaining their original classes and limits.*
+
 <!-- Superseded 2026-09-25 (twice): the user was shown both the
 originally-planned "widen the existing single-card peek" and a richer
 multi-card option (docs/design/shell-ux-critique-switcher.svg) and chose
@@ -31,9 +33,9 @@ now follows the active theme's own icon_theme (report.json, via
 appearance_apply), not just K230_ICON_THEME. Evidence:
 docs/evidence/card-shell/webos-fan-switcher/ (headless-QEMU, dark+light,
 real resolved icons/names including an SVG-only one, scroll/close/open,
-an "ordinary maximized" app-window fixture matching production). Real-
-board/on-glass legibility remains UNVERIFIED beyond the two-real-app board
-report already folded in above; no board access was used for this pass. -->
+an "ordinary maximized" app-window fixture matching production). The later operator accepts coherent shell behavior and waives additional
+recordings; see docs/evidence/proposal-closeout/2026-10-01/coherent.md. No newly measured legibility or latency trial
+is claimed by that acceptance. -->
 
 While the card overview (`CS_DECK` mode) is settled and not being dragged,
 the compositor SHALL lay out its cards as a horizontal, center-selected row
@@ -130,6 +132,8 @@ scroll-end-clamp-soft cases. -->
 
 ### Requirement: The direct app switch keeps its geometry independent of the overview's card size
 
+*Grounding: operator acceptance in `docs/evidence/proposal-closeout/2026-10-01/coherent.md`, with prior source and board/QEMU evidence retaining their original classes and limits.*
+
 <!-- Grounded in nix/card-shell-policy/card-shell-policy.c (entry_card_width/
 entry_card_height, cs_entry_target_rect) and nix/card-shell/adapter.c (both
 cs_entry_set_geometry call sites use cs_entry_target_rect, not
@@ -162,6 +166,8 @@ accuracy.
 
 ### Requirement: Settings is not represented as a card in the overview
 
+*Grounding: operator acceptance in `docs/evidence/proposal-closeout/2026-10-01/coherent.md`, with prior source and board/QEMU evidence retaining their original classes and limits.*
+
 <!-- Design decision, not a code change: Settings is architecturally a
 layer-shell overlay (namespace k230-shell-drawer), never a CS_LIVE toplevel
 card, so this requirement documents and tests the existing construction
@@ -192,3 +198,7 @@ implementation) unextended to a surface that has none of those properties.
 - **WHEN** a person reaches the card overview by swiping up from Settings
 - **THEN** the overview shows the same cards it would show had Settings
   never been open, with no additional card representing Settings itself
+
+<!-- Closeout evidence: docs/evidence/proposal-closeout/2026-10-01/coherent.md. Operator report is physical
+feedback; retained host/QEMU/injected evidence keeps its original class.
+No additional capture, quantitative measurement or fault injection claimed. -->

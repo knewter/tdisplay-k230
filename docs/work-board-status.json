@@ -363,6 +363,18 @@
         "caption": "Installed brighter keyboard handle after supervised recovery; shown by command",
         "provenance": "Board capture"
       }
+    },
+    "2026-10-01-the-shell-behaves-as-one-coherent-system": {
+      "lane": "archived",
+      "source": "archived",
+      "physical": "verified",
+      "next": "Closed on operator acceptance; see evidence for waived captures and retained limits.",
+      "rationale": "Operator accepts the delivered behavior and requests closeout without further difficult captures/retesting. Measurements and unreported per-case proof are not fabricated.",
+      "reviewRevision": "8e88892472b4ede7c528560ada5e3dde25a433e0",
+      "evidence": [
+        "docs/evidence/proposal-closeout/2026-10-01/coherent.md"
+      ],
+      "dependencies": []
     }
   }
 }

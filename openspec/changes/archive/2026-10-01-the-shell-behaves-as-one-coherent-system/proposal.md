@@ -219,3 +219,10 @@ A.1-A.3 and `docs/evidence/card-shell/webos-fan-switcher/`) and slice E
 QEMU-tested, its commands recorded in `tasks.md`). Each keeps its own board
 acceptance task open (A.4, E.4). Slices B and C (shade quick toggles,
 vision accessibility) remain planning-only.
+
+## Accepted closeout, 2026-10-01
+
+The operator accepts this delivered functional scope and waives additional
+capture-only acceptance gates. `docs/evidence/proposal-closeout/2026-10-01/coherent.md` records the exact report,
+prior evidence and limits. Its task dispositions supersede older statements
+that these acceptance gates remain open; they do not claim new test runs.

@@ -1,6 +1,13 @@
+## Purpose
+
+Define coherent navigation between the card overview and transient shell
+surfaces, including uniform bottom-edge escape and overlay dismissal.
+
 ## ADDED Requirements
 
 ### Requirement: A bottom-edge gesture reaches the overview from any transient surface
+
+*Grounding: operator acceptance in `docs/evidence/proposal-closeout/2026-10-01/coherent.md`, with prior source and board/QEMU evidence retaining their original classes and limits.*
 
 <!-- Grounded: nix/card-shell/adapter.c input_down (the drawer_mapped()
 bottom-edge carve-out), nix/card-shell/route.c card_shell_launch_surface's
@@ -76,6 +83,8 @@ bottom edge reaches the overview from any depth.
 
 ### Requirement: Overlay dismiss gestures share one direction
 
+*Grounding: operator acceptance in `docs/evidence/proposal-closeout/2026-10-01/coherent.md`, with prior source and board/QEMU evidence retaining their original classes and limits.*
+
 <!-- Grounded: nix/rust-shell-client/src/service_ui.rs panel_intent
 (Route::Shade and Route::Settings arms), OVERLAY_DISMISS_ZONE_Y/
 OVERLAY_DISMISS_DY constants. Host command: `cargo test --manifest-path
@@ -114,3 +123,7 @@ scrolling the drawer's own content — and is unchanged by this requirement.
   drags downward
 - **THEN** the Drawer is dismissed back toward the bottom edge it rose from,
   unchanged by this requirement
+
+<!-- Closeout evidence: docs/evidence/proposal-closeout/2026-10-01/coherent.md. Operator report is physical
+feedback; retained host/QEMU/injected evidence keeps its original class.
+No additional capture, quantitative measurement or fault injection claimed. -->

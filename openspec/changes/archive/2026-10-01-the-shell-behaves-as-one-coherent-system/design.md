@@ -289,3 +289,10 @@ which remain open for the general side-edge Back mechanism.
   at "at least two" deliberately narrow; a task owner with real low-vision
   input may want more granularity, which would not require new spec text 
   here, only a wider implementation of the same requirement.
+
+## Accepted closeout, 2026-10-01
+
+The operator accepts this delivered functional scope and waives additional
+capture-only acceptance gates. `docs/evidence/proposal-closeout/2026-10-01/coherent.md` records the exact report,
+prior evidence and limits. Its task dispositions supersede older statements
+that these acceptance gates remain open; they do not claim new test runs.
