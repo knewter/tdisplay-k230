@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import importlib.util
+import os
 from contextlib import redirect_stderr
 from io import StringIO
 import subprocess
@@ -63,6 +64,48 @@ class Fixture(unittest.TestCase):
                 "reviewRevision": self.revision, "evidence": ["docs/evidence/proof/README.md"]}
         data.update(changes)
         return data
+
+    def commit_at(self, date: str, message: str) -> str:
+        command(self.repo, "add", ".")
+        subprocess.run(["git", "-C", str(self.repo), "commit", "-qm", message], check=True,
+                       env={**os.environ, "GIT_AUTHOR_DATE": date, "GIT_COMMITTER_DATE": date})
+        return command(self.repo, "rev-parse", "HEAD")
+
+    def test_lanes_sort_by_change_evidence_and_review_activity(self) -> None:
+        put(self.repo, "openspec/changes/the-first-thing/tasks.md", "- [ ] First\n")
+        put(self.repo, "openspec/changes/the-first-thing/design.md",
+            "## Design\n\nEvidence: docs/evidence/proof/README.md\n")
+        self.commit_at("2030-01-01T00:00:00Z", "first proposal update")
+        put(self.repo, "openspec/changes/the-second-thing/design.md", "## Design\n\nNewer design.\n")
+        self.commit_at("2030-01-02T00:00:00Z", "second proposal update")
+
+        def planned(data: dict) -> list[str]:
+            return [item["id"] for item in data["items"] if item["lane"] == "planned"]
+
+        self.assertEqual(planned(self.data()), ["the-second-thing", "the-first-thing"])
+        captured = work.SourceTree(self.repo)
+        put(self.repo, "docs/evidence/proof/README.md", "New evidence for the first change.\n")
+        self.commit_at("2030-01-03T00:00:00Z", "first evidence update")
+        self.assertEqual(planned(self.data()), ["the-first-thing", "the-second-thing"])
+        self.assertEqual(planned(work.snapshot(captured, {"schema": 1, "overrides": {}}, "test")),
+                         ["the-second-thing", "the-first-thing"])
+
+        put(self.repo, "unrelated.md", "Unrelated project work.\n")
+        review = self.commit_at("2030-01-04T00:00:00Z", "unrelated update")
+        self.assertEqual(planned(self.data()), ["the-first-thing", "the-second-thing"])
+        # A reviewed status checkpoint counts for its card only.
+        overrides = {"the-second-thing": self.review(lane="planned", source="not-started",
+                                                      reviewRevision=review, evidence=[])}
+        self.assertEqual(planned(self.data(overrides)), ["the-second-thing", "the-first-thing"])
+
+    def test_archive_lane_sorts_by_latest_committed_activity(self) -> None:
+        root = "openspec/changes/archive/2026-09-22-the-older-archive"
+        for filename in ("proposal.md", "design.md", "tasks.md", "specs/runtime/demo/spec.md"):
+            body = (self.repo / f"openspec/changes/archive/2026-09-23-the-old-thing/{filename}").read_text()
+            put(self.repo, f"{root}/{filename}", body)
+        self.commit_at("2030-01-01T00:00:00Z", "archive with older name but newer activity")
+        archived = [i["id"] for i in self.data()["items"] if i["lane"] == "archived"]
+        self.assertEqual(archived, ["2026-09-22-the-older-archive", "2026-09-23-the-old-thing"])
 
     def test_lanes_and_counts_are_derived_from_the_committed_tasks(self) -> None:
         data = self.data()

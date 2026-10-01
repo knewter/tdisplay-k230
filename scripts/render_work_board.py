@@ -318,8 +318,20 @@ def snapshot(tree: SourceTree, status: dict, generated: str) -> dict:
         check_dependencies(ident)
         discover_evidence(tree, all_changes[ident], status["overrides"].get(ident, {}).get("cover"))
 
+    # Activity belongs to this change's documents and associated evidence,
+    # not the snapshot build time or a shared status file's unrelated edits.
+    # Use the captured revision throughout, just like the document contents.
+    for item in all_changes.values():
+        paths = [doc["path"] for doc in item["details"]] + item["evidence"]
+        changed = git(tree.repo, "log", "-1", "--format=%ct", tree.revision, "--", *paths).strip()
+        activity = int(changed) if changed else 0  # uncommitted fixture documents
+        if item["reviewRevision"]:
+            reviewed = git(tree.repo, "show", "-s", "--format=%ct", item["reviewRevision"]).strip()
+            activity = max(activity, int(reviewed))
+        item["lastActivity"] = activity
+
     order = {lane: i for i, lane in enumerate(LANES)}
-    items = sorted(all_changes.values(), key=lambda i: (order[i["lane"]], i["id"]))
+    items = sorted(all_changes.values(), key=lambda i: (order[i["lane"]], -i["lastActivity"], i["id"]))
     return {"sourceRevision": tree.revision, "generated": generated, "sourceMode": "working-tree" if tree.working_tree else "committed HEAD", "trackedPaths": sorted(tree.paths), "items": items,
             "lanes": [{"id": lane, "count": sum(i["lane"] == lane for i in items)} for lane in LANES]}
 
