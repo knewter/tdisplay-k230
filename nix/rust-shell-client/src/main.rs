@@ -2745,9 +2745,8 @@ impl ShellClient {
         if !visible {
             if self.hud_surface.layer.is_some() {
                 self.hud_surface = HomeSurface::default();
-                self.hud_contact = None;
+                if let Some(id) = self.hud_contact.take() { self.hud.end_drag(id); }
                 self.hud_stream_drag = None;
-                self.hud.end_drag();
                 self.log("volume-hud-unmap");
             }
             return;
