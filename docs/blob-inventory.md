@@ -1557,6 +1557,16 @@ DATA bf9fe2f637ce3ef69b37bbdb7fe37195e996d428cb028c88f67c7cab5579ac23 docs/evide
 DATA 2e2994f2ff284e86f704a3c77f32aeeaa12adc1a85d30882cf13b155cf2845a7 docs/evidence/app-drawer/system-keyboard-board/reopened.jpg
 DATA 913ee16cc135ef498930ae55d25938f9920ef4f6265b2188ea3f3549258e672e docs/evidence/app-drawer/system-keyboard-board/typed-q.jpg
 DATA 59882fcd6820777010fc0e6fb7d553d5fc85a9f1a2bf266af0a10b9774f33096 docs/evidence/app-drawer/system-keyboard-board/unfocused.jpg
+DATA bbe2a1db5210ff7da9a821583e2232e4e27f884adaa0ab550def78f4598b88f6 docs/evidence/home-widgets-folders/closeout-2026-10-01/qemu/home-dark-after-restart.png
+DATA 3fb3ce1e8b330e3fd455a2caf53aea7b67b07baed43260c4f31626948110172a docs/evidence/home-widgets-folders/closeout-2026-10-01/qemu/home-dark-clock-widget-placed.png
+DATA 741a8d2a5c2983fe01a883e480993b334179134a9a926fa350fe30b698ccaf59 docs/evidence/home-widgets-folders/closeout-2026-10-01/qemu/home-dark-dock-folder.png
+DATA 9a91fa9debf2b38dd276966040b7c9a318de20f8044ab8e28a9eaae775dd0f98 docs/evidence/home-widgets-folders/closeout-2026-10-01/qemu/home-dark-folder-created.png
+DATA c0f16c81ef09b464beb034f86286782a6480032e5531906c87a81a60c03372a9 docs/evidence/home-widgets-folders/closeout-2026-10-01/qemu/home-dark-folder-member-extracted.png
+DATA 5df90eb3a83cd4f47427e690b64f742b7795daef9fde3269ae3f7c661721b400 docs/evidence/home-widgets-folders/closeout-2026-10-01/qemu/home-dark-folder-open.png
+DATA 828040b58ad7ad46924fc18d4bf5afad2ddf703037b7323a2ebf0d4a5bea7c22 docs/evidence/home-widgets-folders/closeout-2026-10-01/qemu/home-dark-folder-rename.png
+DATA c32798981358a1dab29599d3437dd7d9ef0643a55d13f2fb28f65d327c9186d4 docs/evidence/home-widgets-folders/closeout-2026-10-01/qemu/home-dark-folder-renamed.png
+DATA 1f13d06090c24cc8eec0535f2ba2930e33f2e03263599eb589160e022c0982b2 docs/evidence/home-widgets-folders/closeout-2026-10-01/qemu/home-dark-picker-widgets.png
+DATA 032f6ab6426c97cdb08ecdb95a32b2c27ed32b848c50d0a747ffa83a91190a4a docs/evidence/home-widgets-folders/closeout-2026-10-01/qemu/home-light-page2.png
 ```
 
 `group:` rows stand for a directory whose members are enumerated by
