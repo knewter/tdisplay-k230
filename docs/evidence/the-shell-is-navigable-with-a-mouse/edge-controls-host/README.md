@@ -16,3 +16,7 @@ The native probe client was compiled from `nix/card-composition-probe-client/car
 An initial build used a nonexistent Sway `geo` member and was corrected to use actual scene-node coordinates and current surface dimensions before the passing build. The first host mouse invocation lacked a built native probe client; the recorded invocation uses the freshly compiled source fixture. No failed result was relabeled a pass.
 
 Deployment and board-injected header/search-key checks are task 4.2; real-glass controls and navigation remain task 4.3. No kernel or device tree changes are part of this fix.
+
+## Home fixture reconciliation, 30 September 2026
+
+The full Rust suite on unchanged master `7515378f` failed the Home portrait pixel-identity test: the earlier Home-handle implementation intentionally added a 96×6 bottom pill but left its committed render fixture stale. Rendering unchanged master source through `render_responsive_evidence` and comparing RGBA pixels shows the sole difference is `(236,1218)..(332,1224)`, the handle's intended rectangle. The portrait Home fixture is refreshed to that visually inspected render; no renderer source changes in this correction. This is host pixel evidence, distinct from the operator's new real-glass report that tapping Home's bottom handle opened overview correctly. Compact search Backspace still closes the drawer according to the same operator: that negative physical result remains open in the app-drawer standard-keyboard follow-up.
