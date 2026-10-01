@@ -1567,6 +1567,12 @@ DATA 828040b58ad7ad46924fc18d4bf5afad2ddf703037b7323a2ebf0d4a5bea7c22 docs/evide
 DATA c32798981358a1dab29599d3437dd7d9ef0643a55d13f2fb28f65d327c9186d4 docs/evidence/home-widgets-folders/closeout-2026-10-01/qemu/home-dark-folder-renamed.png
 DATA 1f13d06090c24cc8eec0535f2ba2930e33f2e03263599eb589160e022c0982b2 docs/evidence/home-widgets-folders/closeout-2026-10-01/qemu/home-dark-picker-widgets.png
 DATA 032f6ab6426c97cdb08ecdb95a32b2c27ed32b848c50d0a747ffa83a91190a4a docs/evidence/home-widgets-folders/closeout-2026-10-01/qemu/home-light-page2.png
+DATA 0ca9d2b169c3e0612a920c08333a610112cd480324c26fc7a30769d6402841eb docs/evidence/home-widget-design/closeout-2026-10-01/qemu/home-fluid-analog-dot-matrix-weather.png
+DATA ba630cbadc8406ed9cc8aed992b3bee046be68bbb48a3a6d0b5a4411d831b79f docs/evidence/home-widget-design/closeout-2026-10-01/qemu/home-fluid-clock-bubble.png
+DATA ef30699ebb39259b995f81a6b3a266b0b7410965975d81b39143428a665d702a docs/evidence/home-widget-design/closeout-2026-10-01/qemu/home-fluid-clock-thin-fling.png
+DATA 4a2e198e3085b10d99599fb9e4949441b2f13b668baf2cdfd5c4591b76f7ea6a docs/evidence/home-widget-design/closeout-2026-10-01/qemu/home-fluid-edge-indicator.png
+DATA 09f2c39d77fa5ef7146bc3c750bca8df3c2235ab035f4d517ba50f7b3dcabe21 docs/evidence/home-widget-design/closeout-2026-10-01/qemu/home-fluid-last-edge-new-page.png
+DATA 5007dedc8ec8342188b82d2b4f5c779113f2e4183915ba43f7c12411c9210860 docs/evidence/home-widget-design/closeout-2026-10-01/qemu/home-fluid-new-page-drop.png
 ```
 
 `group:` rows stand for a directory whose members are enumerated by
@@ -2542,3 +2548,9 @@ Native board captures, camera photograph and headless QEMU screenshots; commands
 | `docs/evidence/home-widgets-folders/closeout-2026-10-01/qemu/home-dark-clock-widget-placed.png` | 183960 | DATA | `3fb3ce1e8b330e3fd455a2caf53aea7b67b07baed43260c4f31626948110172a` |
 | `docs/evidence/home-widgets-folders/closeout-2026-10-01/qemu/home-dark-after-restart.png` | 182811 | DATA | `bbe2a1db5210ff7da9a821583e2232e4e27f884adaa0ab550def78f4598b88f6` |
 | `docs/evidence/home-widgets-folders/closeout-2026-10-01/qemu/home-light-page2.png` | 70711 | DATA | `032f6ab6426c97cdb08ecdb95a32b2c27ed32b848c50d0a747ffa83a91190a4a` |
+| `docs/evidence/home-widget-design/closeout-2026-10-01/qemu/home-fluid-analog-dot-matrix-weather.png` | 233227 | DATA | `0ca9d2b169c3e0612a920c08333a610112cd480324c26fc7a30769d6402841eb` |
+| `docs/evidence/home-widget-design/closeout-2026-10-01/qemu/home-fluid-clock-bubble.png` | 191856 | DATA | `ba630cbadc8406ed9cc8aed992b3bee046be68bbb48a3a6d0b5a4411d831b79f` |
+| `docs/evidence/home-widget-design/closeout-2026-10-01/qemu/home-fluid-clock-thin-fling.png` | 206714 | DATA | `ef30699ebb39259b995f81a6b3a266b0b7410965975d81b39143428a665d702a` |
+| `docs/evidence/home-widget-design/closeout-2026-10-01/qemu/home-fluid-edge-indicator.png` | 197139 | DATA | `4a2e198e3085b10d99599fb9e4949441b2f13b668baf2cdfd5c4591b76f7ea6a` |
+| `docs/evidence/home-widget-design/closeout-2026-10-01/qemu/home-fluid-last-edge-new-page.png` | 193391 | DATA | `09f2c39d77fa5ef7146bc3c750bca8df3c2235ab035f4d517ba50f7b3dcabe21` |
+| `docs/evidence/home-widget-design/closeout-2026-10-01/qemu/home-fluid-new-page-drop.png` | 192621 | DATA | `5007dedc8ec8342188b82d2b4f5c779113f2e4183915ba43f7c12411c9210860` |
