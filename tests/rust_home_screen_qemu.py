@@ -369,6 +369,8 @@ def real_light_generation(bundle, state_root, scratch):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--rename-client", type=Path, help="keep a normal app behind Home during keyboard rename")
+    parser.add_argument("--rename-only", action="store_true", help="stop after keyboard rename over an ordinary app")
     parser.add_argument("--fluid-only", action="store_true", help="only live cross-page and widget-layout scenarios")
     for field in ("sway", "swaymsg", "rust"):
         parser.add_argument("--" + field, required=True, type=Path)
@@ -932,6 +934,15 @@ def main():
             # A headless seat has no keyboard capability until this client binds
             # its virtual keyboard. Create it before requesting/waiting for focus;
             # otherwise the harness waits for an enter event that cannot exist.
+            rename_background = None
+            if args.rename_client:
+                rename_background = spawn("rename-background-app", [str(args.rename_client), "--app-id", "k230.card.one"])
+                def has_background(node):
+                    return (node.get("app_id") == "k230.card.one" or
+                            any(has_background(child) for child in node.get("nodes", []) + node.get("floating_nodes", [])))
+                wait_for(lambda: has_background(ipc("", 4)))
+                ipc("card_shell home")
+                time.sleep(0.3)
             rename_keyboard = RenameKeyboard(wl_socket)
             wait_for(lambda: "keyboard-capability" in text("dark-restarted-rust"), 5)
             tap(*folder_name_center())
@@ -955,7 +966,21 @@ def main():
                 None,
             )
             checks["folder_renamed_via_real_keyboard"] = renamed_folder_name == "aaaa"
+            if rename_background:
+                checks["home_remains_selected_after_keyboard_rename_over_app"] = (
+                    "home_selected=1 " in ipc("card_shell debug-scene")[0]["error"])
+                rename_background.terminate()
+                rename_background.wait(timeout=5)
             after_rename = capture("home-dark-folder-renamed.png")
+            if args.rename_only:
+                assert args.rename_client, "--rename-only requires --rename-client"
+                assert all(checks.values()), checks
+                result = {"result": "PASS", "class": "headless-qemu-real-wayland-app-and-virtual-keyboard",
+                          "checks": checks, "sway": str(args.sway), "rust": str(args.rust),
+                          "rename_client": str(args.rename_client)}
+                (root / "result.json").write_text(json.dumps(result, indent=2) + "\n")
+                print(json.dumps(result, indent=2))
+                return
             checks["folder_rename_visible"] = bool(
                 ImageChops.difference(renaming, after_rename).getbbox()
             )

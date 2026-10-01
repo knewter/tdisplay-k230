@@ -290,6 +290,18 @@
 +	card_shell_focus_changed(seat);
  }
  
+@@ -1303,6 +1303,11 @@
+ 	if (!layer && seat->focused_layer) {
+ 		seat->focused_layer = NULL;
+ 		struct sway_node *previous = seat_get_focus_inactive(seat, &root->node);
++		/* Ending a shell editor must preserve Home rather than expose the
++		 * last app merely because exclusive layer focus was released. */
++		if (card_shell_home_selected(seat) && seat->workspace) {
++			previous = &seat->workspace->node;
++		}
+ 		if (previous) {
+ 			// Hack to get seat to re-focus the return value of get_focus
+ 			seat_set_focus(seat, NULL);
 
 --- a/sway/commands/seat/cursor.c
 +++ b/sway/commands/seat/cursor.c

@@ -1,0 +1,29 @@
+{
+  "result": "PASS",
+  "class": "headless-qemu-real-wayland-app-and-virtual-keyboard",
+  "checks": {
+    "mid_swipe_differs_from_page1": true,
+    "page2_differs_from_page1": true,
+    "dock_tap_launched": true,
+    "drawer_opened": true,
+    "mid_drag_differs_from_drawer": true,
+    "drawer_long_press_dragged_and_placed": true,
+    "pinned_icon_visible": true,
+    "rearrange_mode_shows_done_remove_and_badges": true,
+    "remove_badge_tap_changed_the_screen": true,
+    "still_rearranging_after_badge_removal": true,
+    "drop_target_highlight_visible": true,
+    "badge_removed_from_saved_layout": true,
+    "drag_removed_from_saved_layout": true,
+    "dock_survives_the_removal": true,
+    "stable_after_restart": true,
+    "dragging_onto_an_app_created_a_folder": true,
+    "folder_opened": true,
+    "folder_rename_keyboard_focus_granted": true,
+    "folder_renamed_via_real_keyboard": true,
+    "home_remains_selected_after_keyboard_rename_over_app": true
+  },
+  "sway": "/nix/store/sdmmf17jhky37y5h1p8zb7lcmf8p4pan-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway",
+  "rust": "/nix/store/r78lzzrx4wm4c664hxcwxdncc0kb8bhj-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0/bin/k230-shell-rust",
+  "rename_client": "/home/jadams/tmp/k230-coordination/search-keyboard-client/client"
+}

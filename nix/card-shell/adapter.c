@@ -2494,10 +2494,14 @@ static void home_visibility(bool selected) {
 	shell.home_selected = selected;
 	if (shell.output) wlr_output_schedule_frame(shell.output->wlr_output);
 }
+bool card_shell_home_selected(struct sway_seat *seat) {
+	return shell.initialized && shell.home_selected && seat &&
+		seat->workspace && seat->workspace->output == shell.output;
+}
 /* Called after Sway applies ordinary focus, including IPC focus and new maps.
  * A focused layer (Drawer/Settings) must not reveal the app underneath Home. */
 void card_shell_focus_changed(struct sway_seat *seat) {
-	if (!shell.home_selected || server.session_lock.lock) return;
+	if (!shell.home_selected || server.session_lock.lock || seat->focused_layer) return;
 	struct sway_container *con = seat_get_focused_container(seat);
 	if (con && con->view) home_visibility(false);
 }
