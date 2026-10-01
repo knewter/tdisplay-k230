@@ -350,6 +350,16 @@
         "caption": "Installed Search with a visible caret and the normal themed wvkbd keyboard",
         "provenance": "Board capture"
       }
+    },
+    "the-shell-profiles-reported-interaction-jank": {
+      "lane": "planned",
+      "source": "not-started",
+      "physical": "pending",
+      "next": "When a slow interaction is reported, measure that workload; deferred drawer/keyboard timing is not a blocker on accepted UX.",
+      "dependencies": [],
+      "evidence": [],
+      "rationale": "Operator-authorized successor for drawer 5.2/5.4 and keyboard 3.3; no performance measurements claimed.",
+      "reviewRevision": "5605c9e6c02119c201d2bb95531497639711aacb"
     }
   }
 }
