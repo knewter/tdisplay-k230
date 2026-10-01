@@ -1,0 +1,13 @@
+{
+  "result": "PASS",
+  "evidence_class": "headless-qemu-injected-touch-and-real-wvkbd",
+  "sway": "/nix/store/dsn90m4lcn1mbziy52v1y7a98vdramn4-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway",
+  "rust": "/nix/store/z3ld6xwy5ipcyhnswns1djggmjkrqw9h-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0/bin/k230-shell-rust",
+  "keyboard": "/nix/store/f78wgpdcniq2v2yn274dd0yi29gh9sc6-wvkbd-riscv64-unknown-linux-gnu-0.20/bin/wvkbd-mobintl",
+  "search_backspace_kept_drawer": true,
+  "enter_escape_kept_filter": true,
+  "filtered_launch_and_app_key_focus": true,
+  "full_size_overlay": true,
+  "source_revision": "3e22a36e34ee38ff0171b48f884c52108a2db94f",
+  "recorded_utc": "2026-10-01T04:53:43Z"
+}

@@ -1544,6 +1544,19 @@ DATA 0e4ea4bbd724e66ca03867a762bc00b24f67c3504dfe9f6703719401edae85d0 docs/evide
 DATA bbdbcdff21dbf352505f6ec56ab00748083cc520c875b22a8996f954e50c3786 docs/evidence/files-app/board-2026-09-30/portfolio.jpg
 DATA d96761dea749db42ce7df9f015c216ad7d7ef85be4ef209fe6060b5ecac84864 docs/evidence/files-app/board-2026-09-30/nautilus.jpg
 DATA b702b254e1625c060c50c3a9feea34ade7821b0602d707868b8a1cb68d3bc2f5 docs/evidence/files-app/board-2026-09-30/nautilus-panel.jpg
+DATA a7968af7e10d550affd1bddf59ec069c069caf2516af16a7003b224b37b279a3 docs/evidence/app-drawer/system-keyboard-qemu/app-focus-restored.png
+DATA 511b39b65e5210df3036f6f98c2e472acf293d0b75ced63150d2548ecba4ed0a docs/evidence/app-drawer/system-keyboard-qemu/search-corrected.png
+DATA 1d76f9906d40788df8f1d39ec9d731212e21b8d0883ed6ef9b04cf7583294152 docs/evidence/app-drawer/system-keyboard-qemu/search-focused.png
+DATA a42873650f6c21bc6d5febccd76fcee671c52d9bb08acbe13cc9adc97ff4c592 docs/evidence/app-drawer/system-keyboard-qemu/search-keyboard-dismissed.png
+DATA dc0bb35cd2db00175a49625c4cbfc35db455bd13029ea743254f52cba22b43cf docs/evidence/app-drawer/system-keyboard-qemu/search-typed.png
+DATA 7898de9b3679b7c30a6411dcbe389493c787ab87dd9b785d6c376358eaffb497 docs/evidence/app-drawer/system-keyboard-qemu/search-unfocused.png
+DATA 2e2994f2ff284e86f704a3c77f32aeeaa12adc1a85d30882cf13b155cf2845a7 docs/evidence/app-drawer/system-keyboard-board/corrected.jpg
+DATA 59882fcd6820777010fc0e6fb7d553d5fc85a9f1a2bf266af0a10b9774f33096 docs/evidence/app-drawer/system-keyboard-board/dismissed.jpg
+DATA 2e2994f2ff284e86f704a3c77f32aeeaa12adc1a85d30882cf13b155cf2845a7 docs/evidence/app-drawer/system-keyboard-board/focused.jpg
+DATA bf9fe2f637ce3ef69b37bbdb7fe37195e996d428cb028c88f67c7cab5579ac23 docs/evidence/app-drawer/system-keyboard-board/panel.jpg
+DATA 2e2994f2ff284e86f704a3c77f32aeeaa12adc1a85d30882cf13b155cf2845a7 docs/evidence/app-drawer/system-keyboard-board/reopened.jpg
+DATA 913ee16cc135ef498930ae55d25938f9920ef4f6265b2188ea3f3549258e672e docs/evidence/app-drawer/system-keyboard-board/typed-q.jpg
+DATA 59882fcd6820777010fc0e6fb7d553d5fc85a9f1a2bf266af0a10b9774f33096 docs/evidence/app-drawer/system-keyboard-board/unfocused.jpg
 ```
 
 `group:` rows stand for a directory whose members are enumerated by
@@ -2489,3 +2502,23 @@ Board-native capture cropped to temperature content; not executable code. Source
 ### Board pointer launcher evidence
 
 Native HDMI screenshots from an injected Wayland mouse click; source, commands and limits are in `docs/evidence/the-touchscreen-becomes-an-hdmi-trackpad/board/pointer-launch.json`. These are non-executable image data.
+
+### Drawer search keyboard evidence
+
+Native board captures, camera photograph and headless QEMU screenshots; commands, runtime identities and limits are recorded in their sibling README files. Non-executable image data.
+
+| File | Bytes | Class | SHA-256 |
+| --- | ---: | --- | --- |
+| `docs/evidence/app-drawer/system-keyboard-qemu/app-focus-restored.png` | 5816 | DATA | `a7968af7e10d550affd1bddf59ec069c069caf2516af16a7003b224b37b279a3` |
+| `docs/evidence/app-drawer/system-keyboard-qemu/search-corrected.png` | 25961 | DATA | `511b39b65e5210df3036f6f98c2e472acf293d0b75ced63150d2548ecba4ed0a` |
+| `docs/evidence/app-drawer/system-keyboard-qemu/search-focused.png` | 46026 | DATA | `1d76f9906d40788df8f1d39ec9d731212e21b8d0883ed6ef9b04cf7583294152` |
+| `docs/evidence/app-drawer/system-keyboard-qemu/search-keyboard-dismissed.png` | 9175 | DATA | `a42873650f6c21bc6d5febccd76fcee671c52d9bb08acbe13cc9adc97ff4c592` |
+| `docs/evidence/app-drawer/system-keyboard-qemu/search-typed.png` | 27259 | DATA | `dc0bb35cd2db00175a49625c4cbfc35db455bd13029ea743254f52cba22b43cf` |
+| `docs/evidence/app-drawer/system-keyboard-qemu/search-unfocused.png` | 48468 | DATA | `7898de9b3679b7c30a6411dcbe389493c787ab87dd9b785d6c376358eaffb497` |
+| `docs/evidence/app-drawer/system-keyboard-board/corrected.jpg` | 80196 | DATA | `2e2994f2ff284e86f704a3c77f32aeeaa12adc1a85d30882cf13b155cf2845a7` |
+| `docs/evidence/app-drawer/system-keyboard-board/dismissed.jpg` | 60014 | DATA | `59882fcd6820777010fc0e6fb7d553d5fc85a9f1a2bf266af0a10b9774f33096` |
+| `docs/evidence/app-drawer/system-keyboard-board/focused.jpg` | 80196 | DATA | `2e2994f2ff284e86f704a3c77f32aeeaa12adc1a85d30882cf13b155cf2845a7` |
+| `docs/evidence/app-drawer/system-keyboard-board/panel.jpg` | 42479 | DATA | `bf9fe2f637ce3ef69b37bbdb7fe37195e996d428cb028c88f67c7cab5579ac23` |
+| `docs/evidence/app-drawer/system-keyboard-board/reopened.jpg` | 80196 | DATA | `2e2994f2ff284e86f704a3c77f32aeeaa12adc1a85d30882cf13b155cf2845a7` |
+| `docs/evidence/app-drawer/system-keyboard-board/typed-q.jpg` | 45611 | DATA | `913ee16cc135ef498930ae55d25938f9920ef4f6265b2188ea3f3549258e672e` |
+| `docs/evidence/app-drawer/system-keyboard-board/unfocused.jpg` | 60014 | DATA | `59882fcd6820777010fc0e6fb7d553d5fc85a9f1a2bf266af0a10b9774f33096` |

@@ -1,0 +1,20 @@
+{
+  "evidence_class": "board-injected-uinput-and-native-capture",
+  "rust": "/nix/store/z3ld6xwy5ipcyhnswns1djggmjkrqw9h-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0/bin/k230-shell-rust",
+  "drawer_stays_mapped_after_real_keyboard_backspace": true,
+  "enter_hides_keyboard_only": true,
+  "tap_reopens_keyboard": true,
+  "scene": "K230_CARD_SHELL_DEBUG_SCENE active=0 deck_enabled=0 canvas enabled=1 pos=0,56 size=568x1176 rgba=0.102,0.106,0.149,0.000 canvas_gradient enabled=-1 ordinary_backdrop enabled=1 pos=0,0 size=568x776 rgba=0.075,0.078,0.110,1.000 ordinary_maximized_cards=1 appearance_enabled=1 appearance_wallpaper=1 appearance_canvas_authored=0 home_enabled=1 mode=0 entry_progress=0.0000 chrome_enabled=1 drawer_mapped=1 keyboard_mapped=1 selected_app_id=k230-terminal home_selected=0 home_offset=0.0 home_settling=0 trackpad_owned=0 axis_owned=0 card_dx=0.000 card_velocity=0.000 trackpad_client=0 trackpad_keyboard=0 keyboard_progress=1.0000",
+  "limits": [
+    "Synthetic touch, not real-finger acceptance. Query changes and caret require capture inspection."
+  ],
+  "source_revision": "3e22a36e34ee38ff0171b48f884c52108a2db94f",
+  "installed_system": "/nix/store/y4nvdka66kp6qxb9bkls8r3r5caf19iw-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "recorded_utc": "2026-10-01T05:01:35Z",
+  "capture_inspection": {
+    "focused_caret_and_outline": true,
+    "typed_q_filters_to_no_matches": true,
+    "backspace_restores_empty_query_and_apps": true,
+    "focused_equals_corrected_pixels": true
+  }
+}
