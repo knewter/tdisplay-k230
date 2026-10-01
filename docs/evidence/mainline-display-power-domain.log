@@ -1,0 +1,130 @@
+Host-only source/DTB evidence, no board action.
+Timestamp UTC: 2026-10-01T07:08:02.912026+00:00
+Base: 58ca5bf2781f74305fb687c885ca842272e0373c; preparation: 0b77d433; scoped plan: db9a632a
+Command: flock /tmp/k230-nix-build.lock nix build .#deviceTreeMainlineDrm --no-link --print-out-paths --max-jobs 1 --cores 8
+Result: exit 0
+warning: Git tree '/mnt/MediaVolume/home/jadams/src/gitlab.daringbit.com/josh/k230-mainline-boot-preparation' is dirty
+this derivation will be built:
+  /nix/store/505maa7vcmb5f51zl5c98rh5isyk3c3q-k230-tdisplay-mainline-drm.dtb.drv
+building '/nix/store/505maa7vcmb5f51zl5c98rh5isyk3c3q-k230-tdisplay-mainline-drm.dtb.drv'...
+/nix/store/nxbrd4smrcmknipjn4hjk32n87p4g9k6-k230-tdisplay-mainline-drm.dtb
+
+Command: nix shell --inputs-from . nixpkgs#dtc --command python3 /home/jadams/tmp/inspect-mainline-genpd-dtb.py
+Result: exit 0
+Inspection source:
+import json, subprocess
+from pathlib import Path
+p='/nix/store/nxbrd4smrcmknipjn4hjk32n87p4g9k6-k230-tdisplay-mainline-drm.dtb/k230-tdisplay-mainline-drm.dtb'
+def get(node,prop,typ):
+ return subprocess.check_output(['fdtget','-t',typ,p,node,prop],text=True).strip()
+node='/soc/power-controller@91103000'
+reg=get(node,'reg','x');cells=get(node,'#power-domain-cells','i');phandle=get(node,'phandle','x');consumer=get('/display-subsystem','power-domains','x')
+assert reg=='0 91103000 0 1000' and cells=='1'
+assert consumer.split()==[phandle,'2']
+assert get(node,'compatible','s')=='canaan, k230-sysctl-power'
+r=subprocess.run(['dtc','-I','dtb','-O','dts',p],text=True,capture_output=True,check=True)
+Path('/home/jadams/tmp/mainline-genpd-roundtrip.dts').write_text(r.stdout)
+print(json.dumps({'provider':node,'reg':reg,'cells':cells,'phandle':phandle,'display_power_domains':consumer,'roundtrip_warnings':r.stderr},indent=2))
+
+Inspection output:
+warning: Git tree '/mnt/MediaVolume/home/jadams/src/gitlab.daringbit.com/josh/k230-mainline-boot-preparation' is dirty
+{
+  "provider": "/soc/power-controller@91103000",
+  "reg": "0 91103000 0 1000",
+  "cells": "1",
+  "phandle": "d",
+  "display_power_domains": "d 2",
+  "roundtrip_warnings": "<stdout>: Warning (graph_child_address): /soc/vo@90840000/port: graph node has single child node 'endpoint@0', #address-cells/#size-cells are not necessary\n<stdout>: Warning (graph_child_address): /soc/dsi@90850000/panel@0/ports: graph node has single child node 'port@0', #address-cells/#size-cells are not necessary\n"
+}
+
+Command: rg -n '^CONFIG_(PM|PM_GENERIC_DOMAINS|PM_GENERIC_DOMAINS_OF|SOC_K230_PM_DOMAINS|DRM_CANAAN)=' /nix/store/1ifs1g7fwqs0xxkszgfihfs9frc8ikaa-linux-config-riscv64-unknown-linux-gnu-7.3.0-rc5
+Resolved config: /nix/store/1ifs1g7fwqs0xxkszgfihfs9frc8ikaa-linux-config-riscv64-unknown-linux-gnu-7.3.0-rc5
+541:CONFIG_PM=y
+548:CONFIG_PM_GENERIC_DOMAINS=y
+551:CONFIG_PM_GENERIC_DOMAINS_OF=y
+4844:CONFIG_DRM_CANAAN=y
+6666:CONFIG_SOC_K230_PM_DOMAINS=y
+
+Command: flock /tmp/k230-nix-build.lock nix build .#kernelMainlineDrm --no-link --print-out-paths --max-jobs 1 --cores 8
+Result: exit 0
+warning: Git tree '/mnt/MediaVolume/home/jadams/src/gitlab.daringbit.com/josh/k230-mainline-boot-preparation' is dirty
+these 4 derivations will be built:
+  /nix/store/7sjbqqy7hz62x12ji6nqrlrl2na0dwp9-kernel-intermediate-config.drv
+  /nix/store/hgsr9sd6bb2jwyzrhrv79sahz5wvdbk6-linux-mainline-k230-drm-src.drv
+  /nix/store/vn8gz6v74sanvnqnr46ylcvb43gxf9v9-linux-config-riscv64-unknown-linux-gnu-7.3.0-rc5.drv
+  /nix/store/pcqhi7j43xvzf06v7vnhlmh61g0sha2c-linux-riscv64-unknown-linux-gnu-7.3.0-rc5.drv
+building '/nix/store/hgsr9sd6bb2jwyzrhrv79sahz5wvdbk6-linux-mainline-k230-drm-src.drv'...
+building '/nix/store/7sjbqqy7hz62x12ji6nqrlrl2na0dwp9-kernel-intermediate-config.drv'...
+building '/nix/store/vn8gz6v74sanvnqnr46ylcvb43gxf9v9-linux-config-riscv64-unknown-linux-gnu-7.3.0-rc5.drv'...
+building '/nix/store/pcqhi7j43xvzf06v7vnhlmh61g0sha2c-linux-riscv64-unknown-linux-gnu-7.3.0-rc5.drv'...
+/nix/store/i77i3ppi72k9hw0v2xmnhilc3q7rvv50-linux-riscv64-unknown-linux-gnu-7.3.0-rc5
+
+Command: nix log /nix/store/pcqhi7j43xvzf06v7vnhlmh61g0sha2c-linux-riscv64-unknown-linux-gnu-7.3.0-rc5.drv
+Selected compiler lines (complete log captured in ~/tmp/mainline-genpd-kernel-full.log):
+  CC      drivers/soc/canaan/k230-power-domains.o
+  CC      drivers/gpu/drm/canaan/canaan_drv.o
+
+Command: flock /tmp/k230-nix-build.lock nix build .#kernelMainlineDrmTrialBootFiles --no-link --print-out-paths --max-jobs 1 --cores 8
+Result: exit 0
+warning: Git tree '/mnt/MediaVolume/home/jadams/src/gitlab.daringbit.com/josh/k230-mainline-boot-preparation' is dirty
+these 10 derivations will be built:
+  /nix/store/5gq5ksylcry8a32hcpjsmrj52c1jp56z-55-nixos-aslr-entropy.conf.drv
+  /nix/store/q0rjpiwsd96s2ikqw08ciq0pxqvnd9hx-etc.drv
+  /nix/store/2gw6280y4yrrhmza1ms01p2p9fx401y4-activate.drv
+  /nix/store/k9l54gk84awyxgv108x1mzzwkz63lq4v-linux-riscv64-unknown-linux-gnu-7.3.0-rc5-modules.drv
+  /nix/store/isf47s4y6iibc0gsvr5ci1dmbyz4582f-linux-riscv64-unknown-linux-gnu-7.3.0-rc5-modules-shrunk.drv
+  /nix/store/zkacnf9x3cv58lh4bivc5s6riy707r65-initrd-linux-riscv64-unknown-linux-gnu-7.3.0-rc5.drv
+  /nix/store/n71nxdwk2rvnkvzv0hj5lkfp0zmnrmva-boot.json.drv
+  /nix/store/ks0wgw9kanpn859bfh0bfjrkmhnyphma-nixos-system-nixos-26.11.20260919.20b1ddd.drv
+  /nix/store/x17hflfg50jgz5has5xia5qrvkn0jjj5-closure-info.drv
+  /nix/store/w4hkay87abmhj08j3gg6p9xvfrixjyi6-k230-mainline-drm-trial-boot-files.drv
+building '/nix/store/k9l54gk84awyxgv108x1mzzwkz63lq4v-linux-riscv64-unknown-linux-gnu-7.3.0-rc5-modules.drv'...
+building '/nix/store/5gq5ksylcry8a32hcpjsmrj52c1jp56z-55-nixos-aslr-entropy.conf.drv'...
+building '/nix/store/isf47s4y6iibc0gsvr5ci1dmbyz4582f-linux-riscv64-unknown-linux-gnu-7.3.0-rc5-modules-shrunk.drv'...
+building '/nix/store/q0rjpiwsd96s2ikqw08ciq0pxqvnd9hx-etc.drv'...
+building '/nix/store/zkacnf9x3cv58lh4bivc5s6riy707r65-initrd-linux-riscv64-unknown-linux-gnu-7.3.0-rc5.drv'...
+building '/nix/store/2gw6280y4yrrhmza1ms01p2p9fx401y4-activate.drv'...
+building '/nix/store/n71nxdwk2rvnkvzv0hj5lkfp0zmnrmva-boot.json.drv'...
+building '/nix/store/ks0wgw9kanpn859bfh0bfjrkmhnyphma-nixos-system-nixos-26.11.20260919.20b1ddd.drv'...
+building '/nix/store/x17hflfg50jgz5has5xia5qrvkn0jjj5-closure-info.drv'...
+building '/nix/store/w4hkay87abmhj08j3gg6p9xvfrixjyi6-k230-mainline-drm-trial-boot-files.drv'...
+/nix/store/gf3aqks2dg0z3ksz33ysfprnlbk83vw3-k230-mainline-drm-trial-boot-files
+
+Command: nix shell --inputs-from . nixpkgs#dtc --command python3 tools/mainline-drm-trial-inspect.py /nix/store/gf3aqks2dg0z3ksz33ysfprnlbk83vw3-k230-mainline-drm-trial-boot-files
+Result: exit 0
+warning: Git tree '/mnt/MediaVolume/home/jadams/src/gitlab.daringbit.com/josh/k230-mainline-boot-preparation' is dirty
+Image-mainline-drm: OK
+k230-tdisplay-mainline-drm.dtb: OK
+initrd.uimg: OK
+bootargs.txt: OK
+{
+  "bundle": "/nix/store/gf3aqks2dg0z3ksz33ysfprnlbk83vw3-k230-mainline-drm-trial-boot-files",
+  "system": "/nix/store/k9f4r2i9k9qj58z8z4l2kssy9rpwxxm1-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "kernel": "/nix/store/i77i3ppi72k9hw0v2xmnhilc3q7rvv50-linux-riscv64-unknown-linux-gnu-7.3.0-rc5",
+  "closure_paths": 629,
+  "bootargs": "console=tty0 consoleblank=0 console=ttyS0,115200n8 root=fstab loglevel=4 lsm=landlock,yama,bpf loglevel=7 init=/nix/store/k9f4r2i9k9qj58z8z4l2kssy9rpwxxm1-nixos-system-nixos-26.11.20260919.20b1ddd/init",
+  "files": {
+    "registration": 303363,
+    "Image-mainline-drm": 38530560,
+    "initrd.uimg": 27314097,
+    "k230-tdisplay-mainline-drm.dtb": 11025,
+    "SHA256SUMS": 339,
+    "store-paths": 49876,
+    "bootargs.txt": 211
+  },
+  "uimage_crc_valid": true,
+  "initrd_payload_matches_system": true,
+  "Image_matches_candidate": true,
+  "DTB_bootargs_matches_environment": true
+}
+
+Command: nix flake check --no-build
+Result: exit 0; all checks passed.
+Command: git diff db9a632a -- nix/kernel-mainline.nix nix/device-tree-mainline.nix nix/dts/k230-tdisplay-mainline.dts nix/kernel.nix nix/device-tree.nix nix/k230.nix nix/hardware.nix nix/sd-image.nix
+Result: empty; default and console inputs unchanged.
+Completed UTC: 2026-10-01T07:24:45.064611+00:00
+
+Command: openspec validate the-board-runs-a-mainline-kernel --strict
+Result: exit 0; change valid.
+Command: git diff --check
+Result: exit 0.

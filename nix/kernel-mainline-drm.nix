@@ -56,6 +56,18 @@ kernelMainline.override (old: {
       src = args.src;
 
       postPatch = ''
+        cp ${./patches/mainline/k230-power-domains.c} drivers/soc/canaan/k230-power-domains.c
+        cp ${./patches/mainline/include}/dt-bindings/soc/canaan,k230_pm_domains.h include/dt-bindings/soc/
+        cat >> drivers/soc/canaan/Kconfig <<'EOF'
+
+config SOC_K230_PM_DOMAINS
+	bool "Canaan Kendryte K230 power domains controller"
+	depends on RISCV && ARCH_CANAAN && OF && PM
+	select PM_GENERIC_DOMAINS
+	help
+	  Vendor-derived K230 power controller for the optional DRM trial.
+EOF
+        echo 'obj-$(CONFIG_SOC_K230_PM_DOMAINS) += k230-power-domains.o' >> drivers/soc/canaan/Makefile
         mkdir -p drivers/gpu/drm/canaan
         cp ${./patches/mainline/drm}/canaan_*.c ${./patches/mainline/drm}/canaan_*.h drivers/gpu/drm/canaan/
         cp ${./patches/mainline/drm/Kconfig} drivers/gpu/drm/canaan/Kconfig
@@ -87,6 +99,10 @@ EOK
     };
 
     structuredExtraConfig = (args.structuredExtraConfig or { }) // (with lib.kernel; {
+      PM = yes;
+      PM_GENERIC_DOMAINS = yes;
+      PM_GENERIC_DOMAINS_OF = yes;
+      SOC_K230_PM_DOMAINS = yes;
       DRM_CANAAN = yes;
       DRM_CANAAN_DSI = yes;
       DRM_PANEL_CANAAN_UNIVERSAL = yes;

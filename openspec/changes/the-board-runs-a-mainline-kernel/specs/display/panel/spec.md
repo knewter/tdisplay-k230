@@ -15,7 +15,10 @@ runtime power evidence.
 `nix/dts/k230-tdisplay.dts` and
 `nix/dts/display-rm69a10-568x1232.dtsi`. The opt-in DTS is
 `nix/dts/k230-tdisplay-mainline-drm.dts`; host compilation and its limits are
-recorded in `docs/evidence/mainline-display-dtb.md`. No board probe or panel
+recorded in `docs/evidence/mainline-display-dtb.md`. The vendor-derived
+local genpd provider, checked probe-time power acquisition, and host build
+proof are recorded in `docs/evidence/mainline-display-power-domain.md`, with
+prior vendor-board grounding in `docs/evidence/dsi-phy-hang.md`. No board probe or panel
 photograph exists for this candidate.*
 
 #### Scenario: Someone asks whether the mainline candidate lights the panel

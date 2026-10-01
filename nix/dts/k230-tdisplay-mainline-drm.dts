@@ -7,6 +7,7 @@
 #include <dt-bindings/interrupt-controller/irq.h>
 #include <dt-bindings/clock/canaan,k230-clk.h>
 #include <dt-bindings/reset/canaan,k230-rst.h>
+#include <dt-bindings/soc/canaan,k230_pm_domains.h>
 
 #include "k230-tdisplay-mainline.dts"
 
@@ -24,6 +25,12 @@
 
 / {
 	soc {
+		// Vendor genpd controller; available only with the DRM kernel port.
+		sysctl_power: power-controller@91103000 {
+			compatible = "canaan, k230-sysctl-power";
+			reg = <0x0 0x91103000 0x0 0x1000>;
+			#power-domain-cells = <1>;
+		};
 		// Panel touch: vendor k230.dtsi's i2c3 controller node translated
 		// to the real mainline K230 clock provider IDs. Upstream's DW I2C
 		// platform driver accepts an unnamed functional clock and an
@@ -95,6 +102,7 @@
 / {
 	display: display-subsystem {
 		compatible = "canaan,display-subsystem";
+		power-domains = <&sysctl_power K230_PM_DOMAIN_DISP>;
 		ports = <&vo_out>;
 		status = "okay";
 	};

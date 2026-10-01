@@ -23,6 +23,7 @@ runCommandCC dtbName
     cp --no-preserve=mode ${./dts/display-rm69a10-568x1232.dtsi} display-rm69a10-568x1232.dtsi
 
     $CC -E -nostdinc \
+      -I ${./patches/mainline/include} \
       -I ${kernelMainlineSrc}/scripts/dtc/include-prefixes \
       -undef -D__DTS__ \
       -x assembler-with-cpp \

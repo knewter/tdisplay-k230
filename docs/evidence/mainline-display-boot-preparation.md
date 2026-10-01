@@ -19,8 +19,13 @@ exact trial system directly.
 Display power remains **UNVERIFIED** for this candidate. The existing vendor
 board evidence in `docs/evidence/dsi-phy-hang.md` records DSI reads of
 `0xffffffff` until the display power-domain runtime-PM reference was held.
-The mainline candidate has no `sysctl_power` provider and omits its phandle.
-Matching the boot path does not repair that dependency. Serial/root boot,
+The initial matching snapshot recorded below had no `sysctl_power`
+provider and omitted its phandle. The subsequent DRM-only source port now
+adds a vendor-derived provider and held probe-time power reference; its
+host-only proof and current matching bundle are recorded in
+`docs/evidence/mainline-display-power-domain.md`. Runtime power remains
+UNVERIFIED until observed on the board.
+The boot-path preparation alone did not repair that dependency. Serial/root boot,
 panel illumination, and deliberate touch interaction need separate physical
 observations; a failing panel is not proof that the root staging failed.
 

@@ -1,5 +1,11 @@
 # Opt-in mainline display DTB source check
 
+Follow-up: this evidence records the initial candidate before the local genpd
+port. `docs/evidence/mainline-display-power-domain.md` records the subsequent
+DRM-only provider, current DTB and matching boot bundle. The initial omission
+below remains historical evidence; runtime power/panel/touch behavior is
+still UNVERIFIED.
+
 ## Result
 
 On 2026-09-29, the host C preprocessor and `dtc` compiled

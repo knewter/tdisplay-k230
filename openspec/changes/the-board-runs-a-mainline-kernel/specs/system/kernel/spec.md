@@ -169,7 +169,8 @@ root staging and recoverable U-Boot procedure. The DRM driver sources in the pin
 upstream source output are absent; this candidate forward-ports them from
 the vendor-derived implementation. The initial candidate omitted display power-domain wiring because the
 pinned source has no provider; the DRM-only local provider continuation
-remains gated by separate source/build and physical runtime evidence.*
+remains gated by separate source/build and physical runtime evidence
+(`docs/evidence/mainline-display-power-domain.md`).*
 
 #### Scenario: Someone builds the console-only mainline kernel
 

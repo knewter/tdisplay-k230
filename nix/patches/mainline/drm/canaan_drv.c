@@ -344,21 +344,39 @@ static int canaan_drm_platform_probe(struct platform_device *pdev)
 {
 	struct device *dev = &pdev->dev;
 	struct component_match *match = NULL;
+	int ret;
 
 	disp_dev = dev;
-	pm_runtime_enable(disp_dev);
-	pm_runtime_get_sync(disp_dev); /* pin DISP on; see kernel-patches.md */
+	pm_runtime_enable(dev);
+	/* Keep DISP powered before component binding/modesetting. */
+	ret = pm_runtime_resume_and_get(dev);
+	if (ret < 0) {
+		pm_runtime_disable(dev);
+		return dev_err_probe(dev, ret, "cannot power display domain\n");
+	}
 	match = canaan_drm_match_add(dev);
-	if (IS_ERR(match))
-		return PTR_ERR(match);
+	if (IS_ERR(match)) {
+		ret = PTR_ERR(match);
+		goto err_power;
+	}
 
-	return component_master_add_with_match(dev, &canaan_drm_master_ops,
-					       match);
+	ret = component_master_add_with_match(dev, &canaan_drm_master_ops, match);
+	if (ret)
+		goto err_power;
+	return 0;
+
+err_power:
+	pm_runtime_put_sync(dev);
+	pm_runtime_disable(dev);
+	return ret;
 }
 
 static void canaan_drm_platform_remove(struct platform_device *pdev)
 {
 	component_master_del(&pdev->dev, &canaan_drm_master_ops);
+	/* Release the reference held by successful platform probe. */
+	pm_runtime_put_sync(&pdev->dev);
+	pm_runtime_disable(&pdev->dev);
 }
 
 static const struct of_device_id canaan_drm_of_table[] = {
