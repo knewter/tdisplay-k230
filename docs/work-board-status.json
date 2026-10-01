@@ -218,27 +218,6 @@
         "provenance": "Host capture"
       }
     },
-    "the-shell-is-navigable-with-a-mouse": {
-      "lane": "verification",
-      "source": "source-landed",
-      "physical": "pending",
-      "next": "Installed tap fix passed native board simulation: top Files menu, bottom Backspace and Home handle. Retest those on glass and top/bottom drags, then original HDMI pointer/four-finger gate.",
-      "dependencies": [],
-      "evidence": [
-        "docs/evidence/proposal-closeout/README.md",
-        "docs/evidence/proposal-closeout/2026-09-30/README.md",
-        "docs/evidence/the-shell-is-navigable-with-a-mouse/README.md",
-        "docs/evidence/proposal-closeout/2026-09-30/operator-feedback.md",
-        "docs/evidence/the-shell-is-navigable-with-a-mouse/edge-controls-board/README.md"
-      ],
-      "rationale": "Source 27110ccb cross-build and actual Sway touch/mouse tests passed; exact userspace installed and board uinput/native-capture checks passed. Physical retest and original HDMI acceptance remain open.",
-      "reviewRevision": "27110ccb2391100848461a59bccf4bbcd5a59430",
-      "cover": {
-        "path": "docs/evidence/the-shell-is-navigable-with-a-mouse/edge-controls-board/search-backspace.jpg",
-        "caption": "Bottom Backspace leaves the actual drawer open and clears the query",
-        "provenance": "Board capture"
-      }
-    },
     "the-shell-presents-a-pinned-home-screen": {
       "lane": "in-progress",
       "source": "in-progress",
@@ -375,6 +354,28 @@
         "docs/evidence/proposal-closeout/2026-10-01/coherent.md"
       ],
       "dependencies": []
+    },
+    "2026-10-01-the-shell-is-navigable-with-a-mouse": {
+      "lane": "archived",
+      "source": "archived",
+      "physical": "verified",
+      "next": "Closed on operator acceptance; see evidence for waived captures and retained limits.",
+      "dependencies": [],
+      "evidence": [
+        "docs/evidence/proposal-closeout/README.md",
+        "docs/evidence/proposal-closeout/2026-09-30/README.md",
+        "docs/evidence/the-shell-is-navigable-with-a-mouse/README.md",
+        "docs/evidence/proposal-closeout/2026-09-30/operator-feedback.md",
+        "docs/evidence/the-shell-is-navigable-with-a-mouse/edge-controls-board/README.md",
+        "docs/evidence/proposal-closeout/2026-10-01/mouse.md"
+      ],
+      "rationale": "Operator accepts the delivered behavior and requests closeout without further difficult captures/retesting. Measurements and unreported per-case proof are not fabricated.",
+      "reviewRevision": "22a867da54a1cc77d95e2772fbdfb270db278fc1",
+      "cover": {
+        "path": "docs/evidence/the-shell-is-navigable-with-a-mouse/edge-controls-board/search-backspace.jpg",
+        "caption": "Bottom Backspace leaves the actual drawer open and clears the query",
+        "provenance": "Board capture"
+      }
     }
   }
 }

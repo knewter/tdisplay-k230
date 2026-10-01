@@ -25,3 +25,10 @@ None.
 ## Impact
 
 Userspace Sway adapter, Rust Wayland client, and Nix session configuration. Host/headless tests can establish event dispatch and scene outcomes. The physical board is needed for deployment, captures and real-glass acceptance. No kernel, touch calibration, display rotation, theme redesign, or hardware haptics changes.
+
+## Accepted closeout, 2026-10-01
+
+The operator accepts this delivered functional scope and waives additional
+capture-only acceptance gates. `docs/evidence/proposal-closeout/2026-10-01/mouse.md` records the exact report,
+prior evidence and limits. Its task dispositions supersede older statements
+that these acceptance gates remain open; they do not claim new test runs.

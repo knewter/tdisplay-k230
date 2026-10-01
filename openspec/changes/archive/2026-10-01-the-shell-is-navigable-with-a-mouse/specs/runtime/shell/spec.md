@@ -2,7 +2,9 @@
 
 ### Requirement: Shell navigation is complete with pointer input
 
-<!-- UNVERIFIED: implementation and board pointer matrix pending. -->
+*Grounding: operator acceptance in `docs/evidence/proposal-closeout/2026-10-01/mouse.md`, with prior source and board/QEMU evidence retaining their original classes and limits.*
+
+<!-- Grounding: implemented pointer matrix and installed-board evidence under docs/evidence/the-shell-is-navigable-with-a-mouse/; physical operator acceptance and capture waiver: docs/evidence/proposal-closeout/2026-10-01/mouse.md. -->
 The userspace shell SHALL allow primary clicks/drags and scrolling to navigate Home, app drawer, overview, notification shade and Settings, including theme and Wi-Fi pages. An app SHALL remain open when Home is selected from overview.
 
 #### Scenario: Home without closing windows
@@ -35,7 +37,7 @@ The userspace shell SHALL allow primary clicks/drags and scrolling to navigate H
 
 ### Requirement: Four-finger spread enters the centered window
 
-<!-- UNVERIFIED: physical four-finger recognition pending. -->
+<!-- UNVERIFIED: individual physical four-finger recognition not separately documented. Overall mouse navigation accepted, exhaustive recheck waived; docs/evidence/proposal-closeout/2026-10-01/mouse.md. Host binding/routing is distinct from physical recognition. -->
 In HDMI trackpad mode the userspace shell SHALL use a four-finger outward pinch on the built-in glass to expand the centered live overview window. Inward pinch SHALL open overview. Ordinary two-finger application pinch SHALL remain available to applications.
 
 #### Scenario: Spread from overview
@@ -45,3 +47,7 @@ In HDMI trackpad mode the userspace shell SHALL use a four-finger outward pinch 
 #### Scenario: Empty overview
 - **WHEN** no live window is available and a person spreads four fingers
 - **THEN** no app is closed or incorrectly focused
+
+<!-- Closeout evidence: docs/evidence/proposal-closeout/2026-10-01/mouse.md. Operator report is physical
+feedback; retained host/QEMU/injected evidence keeps its original class.
+No additional capture, quantitative measurement or fault injection claimed. -->

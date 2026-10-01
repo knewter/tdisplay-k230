@@ -53,3 +53,10 @@ Use real Wayland receivers and the actual Sway compositor for injected touch
 and pointer regression checks. On the board, simulate the reported app-header
 and compact-search-keyboard taps; then collect separate real-finger acceptance.
 No existing physical checkbox is completed by this design revision.
+
+## Accepted closeout, 2026-10-01
+
+The operator accepts this delivered functional scope and waives additional
+capture-only acceptance gates. `docs/evidence/proposal-closeout/2026-10-01/mouse.md` records the exact report,
+prior evidence and limits. Its task dispositions supersede older statements
+that these acceptance gates remain open; they do not claim new test runs.
