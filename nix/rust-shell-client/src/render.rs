@@ -16,7 +16,8 @@ use crate::{
     service_data::{Control, ControlState, ControlValue, Priority},
     service_ui::{
         filter_app_indices, DrawerSearch, ServiceView, NOTIFICATION_ROW, NOTIFICATION_TOP,
-        SETTINGS_VOLUME_ROW, SHADE_SLIDER_H, SHADE_SLIDER_TOP, SHADE_VOLUME_H, SHADE_VOLUME_TOP,
+        SETTINGS_OUTPUT_DETAIL_Y, SETTINGS_VOLUME_ROW, SHADE_SLIDER_H, SHADE_SLIDER_TOP,
+        SHADE_VOLUME_H, SHADE_VOLUME_TOP,
     },
     slider,
     volume::{self, Hud},
@@ -2511,12 +2512,12 @@ fn scene(
                     } else {
                         format!("{percent}%")
                     };
-                    text(cr, &label, 42.0, volume_y + 43.0, w - 90.0, 19.0, style.text);
+                    text(cr, &label, w - 138.0, volume_y + 15.0, 96.0, 19.0, style.text);
                     text(
                         cr,
                         &format!("{} · tap to change output", sink.description),
                         42.0,
-                        volume_y + 76.0,
+                        volume_y + SETTINGS_OUTPUT_DETAIL_Y,
                         w - 90.0,
                         14.0,
                         style.muted,

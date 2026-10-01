@@ -73,3 +73,13 @@ Some named host files and narrow packages now exist as source checkpoints; each 
 - [x] 6.2 Commit a reproducible host evidence example and matched before/after Home, drawer, Settings, shade and theme-picker PNGs at 568×1232 for real pinned dark/light appearance inputs. Include existing compositor overview/card capture with explicit provenance and unchanged-scope annotation. Proof: `cargo run --offline --manifest-path nix/rust-shell-client/Cargo.toml --example render_polish_evidence -- <out-dir> <dark-generation> <light-generation>`; record source identity, input paths and limitations under `docs/evidence/shell-polish/`.
 - [x] 6.3 Cross-build the exact coherent-configuration client and compositor in the reserved build slot and record built artifact identity. Proof: the two `nix build --impure --expr` invocations with `--no-link --print-out-paths --max-jobs 1 --cores 4` recorded verbatim in `docs/evidence/shell-polish/cross-build.md`, selecting committed source `376f08632152d03963bd47a86ae9b352e357d271` and `nixosConfigurations.k230-coherent-shell.pkgs.callPackage` for `nix/rust-shell-client` and `nix/card-shell.nix`. Both passed. The generic standalone Rust attribute has a different dependency graph; use the configuration graph for board-qualified binaries. A build does not prove installation or panel behavior.
 - [ ] 6.4 Coordinator only: install the reviewed shell artifact on the reserved board, activate dark and light themes, capture Home/drawer/overview/Settings/shade/theme picker and perform real glass drawer/search/theme apply/return gestures. Record exact operator commands, screenshot/camera provenance, readable theme contrast and limits in `docs/evidence/shell-polish/physical/`. Physical proof remains UNVERIFIED until this exists; use `./tools/console.py /dev/ttyACM0 --wait=3 "<reviewed runtime inspection command>"` plus native `grim` and real-glass observations, not an injected event alone.
+
+
+2026-10-01 Settings polish follow-up to 6.1: separate the output-description
+line from the volume slider and move its picker tap band with the text. The
+library suite passes 426 checks (one existing ignored benchmark); the production
+host evidence example now includes a synthetic present output in both pinned
+dark/light renders. See `docs/evidence/shell-polish/settings-volume-layout/README.md`.
+The slider's position and broader route geometry are unchanged. Matching
+cross-build/install and real-glass review are distinct from this host result;
+6.4 remains open.

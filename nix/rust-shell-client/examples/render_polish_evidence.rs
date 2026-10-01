@@ -108,7 +108,18 @@ fn services() -> ServiceView {
                 },
             ],
         }),
-        audio_error: Some("No audio device available in host fixture".into()),
+        audio: Some(k230_shell_rust::pipewire_ipc::GraphSnapshot {
+            sinks: vec![k230_shell_rust::pipewire_ipc::Sink {
+                id: 1,
+                name: "fixture-output".into(),
+                description: "Audio controller".into(),
+                linear_volume: k230_shell_rust::volume::percent_to_linear(40),
+                muted: false,
+                is_default: true,
+                route: None,
+            }],
+            streams: Vec::new(),
+        }),
         ..ServiceView::default()
     }
 }

@@ -218,6 +218,8 @@ pub const SHADE_VOLUME_H: f64 = 56.0;
 /// directly after Brightness (row 1), before Keyboard/Motion, which both
 /// shift down one row (`render.rs`'s own `SETTINGS_ROW_COUNT` bump).
 pub const SETTINGS_VOLUME_ROW: u32 = 2;
+/// Output detail occupies the line between the volume heading and slider.
+pub const SETTINGS_OUTPUT_DETAIL_Y: f64 = 43.0;
 const SWIPE_START: f64 = 18.0;
 pub const SWIPE_COMMIT: f64 = 85.0;
 const SWIPE_TRAVEL: f64 = 160.0;
@@ -449,13 +451,10 @@ pub fn settings_output_picker_hit(y: f64, route: Route, view: &ServiceView) -> b
     if !has_default_sink {
         return false;
     }
-    // The detail text itself paints at `volume_y + 76.0`; a band a little
-    // above and below that baseline comfortably covers its line height
-    // without reaching into the label above or the slider track below
-    // (the track's own thumb/highlight paints centered at `volume_y +
-    // 86.0`, so this band stops well clear of it).
-    let top = settings_row_y(SETTINGS_VOLUME_ROW) + 66.0;
-    (top..top + 18.0).contains(&y)
+    // The detail occupies the middle line. Keep its tap band clear of the
+    // heading above and the slider thumb (center +86, radius 16) below.
+    let top = settings_row_y(SETTINGS_VOLUME_ROW) + SETTINGS_OUTPUT_DETAIL_Y - 9.0;
+    (top..top + 36.0).contains(&y)
 }
 
 /// The speaker glyph at the volume slider's own left end doubles as the
@@ -1465,7 +1464,7 @@ mod tests {
     #[test]
     fn settings_output_picker_hit_is_settings_only_and_needs_a_default_sink() {
         let view = writable_volume_view();
-        let y = settings_row_y(SETTINGS_VOLUME_ROW) + 76.0;
+        let y = settings_row_y(SETTINGS_VOLUME_ROW) + SETTINGS_OUTPUT_DETAIL_Y;
         assert!(settings_output_picker_hit(y, Route::Settings, &view));
         // Shade's compact volume row shows no such text and has no
         // equivalent zone, even at the analogous offset.
@@ -1482,7 +1481,7 @@ mod tests {
             &view
         ));
         assert!(!settings_output_picker_hit(
-            settings_row_y(SETTINGS_VOLUME_ROW) + 90.0,
+            settings_row_y(SETTINGS_VOLUME_ROW) + 76.0,
             Route::Settings,
             &view
         ));
