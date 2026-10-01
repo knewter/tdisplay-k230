@@ -167,8 +167,9 @@ with their limits and the absent hardware results.
 opt-in trial system/initrd/bootargs and closure inventory, and the unperformed
 root staging and recoverable U-Boot procedure. The DRM driver sources in the pinned
 upstream source output are absent; this candidate forward-ports them from
-the vendor-derived implementation. Display power-domain wiring is omitted
-because the pinned source has no provider; see the DT evidence.*
+the vendor-derived implementation. The initial candidate omitted display power-domain wiring because the
+pinned source has no provider; the DRM-only local provider continuation
+remains gated by separate source/build and physical runtime evidence.*
 
 #### Scenario: Someone builds the console-only mainline kernel
 

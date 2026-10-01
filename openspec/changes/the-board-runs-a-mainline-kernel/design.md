@@ -241,9 +241,10 @@ in-tree kernel build. The opt-in `deviceTreeMainlineDrm` source and matching
 proof is recorded in `docs/evidence/mainline-display-dtb.md`. The full kernel,
 DTB, and boot-files derivations now build successfully; their paths and the
 first link failure/correction are recorded in
-`docs/evidence/mainline-display-nix-build.md`. The candidate omits the vendor
-display power domain because the pinned mainline tree has no `sysctl_power`
-provider. Physical probe, panel, and touch behavior remain open tasks.
+`docs/evidence/mainline-display-nix-build.md`. The initial host candidate omitted the vendor display power domain because
+the pin has no upstream `sysctl_power` provider; the locally forward-ported
+continuation below addresses that source gap. Physical probe, panel, and
+touch behavior remain open tasks.
 
 
 ## Matching DRM trial boot path
@@ -264,3 +265,31 @@ changing the normal card's boot selectors. These hide the kernel/system
 boundary or undermine the recoverable trial. Host build and artifact matching
 are recorded in `docs/evidence/mainline-display-boot-preparation.md`; card
 staging and physical boot/display/touch/restoration remain unperformed.
+
+
+## Optional DRM power-domain continuation
+
+Layer: kernel genpd provider, candidate DRM runtime PM, and candidate device
+tree. Forward-port `drivers/soc/canaan/k230-power-domains.c` and
+`include/dt-bindings/soc/canaan,k230_pm_domains.h` from the pinned vendor
+revision `7d4e1f444f461dbe3833bd99a4640e7b6c2cd529`. Preserve the full five-domain
+one-cell ABI, register offsets, enable/write-enable bits and AI repair logic.
+Use per-device state, checked genpd registration with partial-failure cleanup,
+and omit unused hardlock variables/property reads: the vendor reads them but
+never uses them. Keep the vendor controller compatible string on both sides.
+Only the DRM candidate selects the provider and adds its DT binding header.
+
+The existing DRM master already pins DISP at probe, before modesetting. Use a
+checked runtime-PM acquisition, keep that reference throughout successful
+binding, and release it on probe failure/removal. The logical display master
+receives the vendor DISP domain; VO/DSI clock/reset wiring stays as before.
+The prior board observation in `docs/evidence/dsi-phy-hang.md` establishes why
+this boundary matters. It does not prove the new provider executes correctly
+under the mainline pin. Host proofs and the exact source changes belong in
+`docs/evidence/mainline-display-power-domain.md`.
+
+Rejected: relying on U-Boot to leave DISP powered (not a maintained runtime
+reference), claiming an initrd change fixes power (it does not), changing the
+console/default kernels, or guessing new clock/reset mappings. The complete
+candidate kernel, DTB and matching trial bundle must build before handoff;
+the physical serial/panel/touch/normal-restoration gate remains unchecked.

@@ -139,3 +139,15 @@ root-stage/manual U-Boot procedure. `nix/mainline-drm-trial.nix`,
 `docs/evidence/mainline-display-boot-preparation.md` own this host-only
 preparation. The normal system profile and boot files remain selected; actual
 card staging and task 5b.5's physical evidence are unperformed.
+
+
+A further bounded, coordinator-authorized continuation forward-ports the
+vendor's K230 genpd controller and binding into the optional DRM candidate
+and wires the display domain before a physical trial. Prior vendor-board
+DSI failure/resolution evidence grounds this dependency; mainline runtime
+behavior remains UNVERIFIED. This touches only
+`nix/kernel-mainline-drm.nix`, `nix/patches/mainline/k230-power-domains.c`,
+the local power-domain binding header, the DRM DTB builder/DTS and candidate
+DRM master's runtime-PM error handling. Console/default variants and clock/
+reset choices remain outside this continuation. Full candidate/DTB/boot-bundle
+builds prove the source artifacts; task 5b.5 still requires the board.
