@@ -282,3 +282,91 @@ proposed in `video-windows-become-ordinary-cards` (its task 3.1). Physical-board
 - **THEN** the entry animation and touch handling proceed at essentially
   the same speed as with no such card present, rather than being
   dominated by that one card's recomposition cost
+
+### Requirement: Card entry and recovery do not depend on the launcher
+
+<!-- Injected-touch board evidence: docs/evidence/card-shell/injected/README.md (injected native card entry and every persistent control route observed on DSI-1). Functional operator acceptance: docs/evidence/proposal-closeout/2026-10-01/live-card-ui.md; no new per-case camera trial. -->
+The card shell SHALL be enterable from an arbitrary eligible running
+application through a dedicated edge gesture. It SHALL also provide a
+persistent button route for entry or recovery, without requiring the Apps
+launcher to be open. While the card shell is active, dismissed, unavailable,
+or recovering from a close request, Apps, Windows/Home, Keyboard, System,
+Help, terminal, monitor, and Back SHALL remain usable through their existing
+shell routes.
+
+#### Scenario: A person enters cards from a running application
+
+- **WHEN** an eligible application is active and a person performs the card
+  entry edge gesture
+- **THEN** the card shell opens without first opening Apps or the launcher
+
+#### Scenario: Gesture entry is unavailable
+
+- **WHEN** card entry cannot proceed or a person chooses the persistent button
+- **THEN** the person can enter or recover from the card shell through the
+  persistent route and retain the existing shell controls
+
+### Requirement: A person can manipulate a live application card deck
+
+<!-- Injected-touch board evidence: docs/evidence/card-shell/injected/README.md (two live cards visible during a held drag, then expansion). Functional operator acceptance: docs/evidence/proposal-closeout/2026-10-01/live-card-ui.md; no new per-case camera trial. -->
+The card shell SHALL present eligible running applications as live visual cards,
+not title-only substitutes. Entering the card shell SHALL shrink the active
+application into a card, keep a horizontal deck of eligible cards, move the
+selected card with a single finger, and expand the tapped card back to the
+active application.
+
+#### Scenario: A person resumes another running application
+
+- **WHEN** the card shell contains two eligible running applications and a
+  person drags to and taps one card
+- **THEN** that application's live card is visible during selection and the
+  application expands to become active
+
+### Requirement: The card shell handles unavailable and private content safely
+
+<!-- Injected-touch board evidence: docs/evidence/card-shell/injected/README.md (private/unavailable card state and recovery). UNVERIFIED: a separate per-case real-finger privacy trial; functional operator acceptance does not invent it. -->
+The card shell SHALL identify an application whose live surface is unavailable,
+protected, or excluded by the session privacy policy without exposing its
+content. It SHALL provide a clear non-live card state and a route back to the
+existing Apps or Windows/Home controls.
+
+#### Scenario: A live surface cannot be presented
+
+- **WHEN** an application is not eligible for live card presentation
+- **THEN** the person sees a non-live state rather than stale, unrelated, or
+  private pixels and can leave the card shell through an existing control
+
+### Requirement: An upward throw requests a recoverable close
+
+<!-- Injected-touch board evidence: docs/evidence/card-shell/injected/README.md and docs/evidence/card-shell/throw-sampling/README.md (close refusal and timeout recovery). A later repeat missed one upward throw (docs/evidence/card-shell/repaint-stages/README.md). UNVERIFIED: quantified real-finger throw reliability; functional operator acceptance does not erase the historical failed trials. -->
+The card shell SHALL treat an intentional upward throw of an eligible card as a
+request for that application to close gracefully. If the application refuses,
+times out, or fails to close, the shell SHALL retain or restore a usable card
+and make an existing recovery route available; it SHALL NOT silently discard
+application state.
+
+#### Scenario: An application refuses to close
+
+- **WHEN** a person throws a card upward and the application remains running
+- **THEN** the card shell reports the unsuccessful close without losing the
+  card or the Apps and Windows/Home recovery routes
+
+### Requirement: Card interaction has an explicit measured budget decision
+
+<!-- Board measurements are recorded and FAIL the declared CPU and tracking budgets: docs/evidence/card-shell/board-cost/long-trace/README.md through docs/evidence/card-shell/scaled-cache-board/README.md. UNVERIFIED: budget acceptance, now owned by the explicitly authorized the-card-deck-still-misses-its-frame-budget successor; see docs/evidence/proposal-closeout/2026-10-01/live-card-ui.md. -->
+The card shell SHALL record input-to-visible-update latency, frame/update cost,
+and incremental memory use at the panel's native portrait mode on the default
+Pixman path. If a declared interaction budget is missed, the implementation
+SHALL record the result. A reduced-refresh or optimized path is acceptable only
+when it still preserves live visual cards, finger-following, deck selection,
+tap-to-expand, and recoverable throw-close. If it cannot, the change SHALL
+remain open or move to an explicitly authorized successor; it SHALL NOT be
+archived as accepted card-shell behavior.
+
+#### Scenario: A card workload misses its declared budget
+
+- **WHEN** a measured card interaction exceeds its declared frame, input, or
+  memory budget
+- **THEN** the evidence records the workload and measured result, and any
+  accepted mitigation retains every required core card interaction; otherwise
+  the work remains open or moves to an explicitly authorized successor

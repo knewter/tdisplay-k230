@@ -1,23 +1,6 @@
 {
   "schema": 1,
   "overrides": {
-    "the-shell-manages-apps-as-cards": {
-      "lane": "in-progress",
-      "source": "in-progress",
-      "physical": "pending",
-      "next": "Resolve the measured card budget and integrated non-fixture QEMU smoke; collect real-finger card entry, drag, expand, close and recovery proof.",
-      "dependencies": [],
-      "evidence": [
-        "docs/evidence/card-shell/tracked-motion-host.md",
-        "docs/evidence/card-shell/touch-first-route/README.md",
-        "docs/evidence/card-shell/touch-first-shade/README.md",
-        "docs/evidence/card-shell/scaled-cache-board/README.md",
-        "docs/evidence/card-shell/tracked-motion-qemu/README.md",
-        "docs/evidence/coherent-shell/reveal-stream-host.md"
-      ],
-      "rationale": "The staged card-budget successor remains unapproved. Current injected navigation results are reusable dispatch evidence, not budget or real-finger acceptance.",
-      "reviewRevision": "647c8d3e500d4accc3a87474e8fcab393980a799"
-    },
     "the-system-enables-proven-c908-extensions": {
       "lane": "in-progress",
       "source": "in-progress",
@@ -36,7 +19,7 @@
       "physical": "pending",
       "next": "Test installed keyboard gestures, Wi-Fi Settings and app motion on glass; complete remaining design refinements, recovery and persistent boot/theme proof.",
       "dependencies": [
-        "the-shell-manages-apps-as-cards",
+        "2026-10-01-the-shell-manages-apps-as-cards",
         "the-shell-loads-omarchy-themes"
       ],
       "evidence": [
@@ -468,6 +451,24 @@
         "docs/evidence/boot-verification/2026-10-01/README.md"
       ],
       "reviewRevision": "02c4a99850e6cc8a262480d21a17cb7f6dc2b019"
+    },
+    "2026-10-01-the-shell-manages-apps-as-cards": {
+      "lane": "archived",
+      "source": "archived",
+      "physical": "verified",
+      "next": "Functional live-card UI accepted. Measured performance and full-image/non-fixture QEMU gates remain open in the-card-deck-still-misses-its-frame-budget.",
+      "dependencies": [],
+      "evidence": [
+        "docs/evidence/card-shell/tracked-motion-host.md",
+        "docs/evidence/card-shell/touch-first-route/README.md",
+        "docs/evidence/card-shell/touch-first-shade/README.md",
+        "docs/evidence/card-shell/scaled-cache-board/README.md",
+        "docs/evidence/card-shell/tracked-motion-qemu/README.md",
+        "docs/evidence/coherent-shell/reveal-stream-host.md",
+        "docs/evidence/proposal-closeout/2026-10-01/live-card-ui.md"
+      ],
+      "rationale": "Operator-authorized functional archive and capture waiver, with existing injected-board cases preserved. Budget failures are not accepted as passing; unfinished measurements and image/QEMU proof have sole ownership in the existing successor.",
+      "reviewRevision": "9d6f2459"
     }
   }
 }
