@@ -316,10 +316,12 @@ pub fn parse_dump(json: &str) -> Result<GraphSnapshot, String> {
 /// persistent `pw-cli` child is fed per throttled write. The volume
 /// values themselves are the caller's linear (0.0-1.0) amplitude --
 /// `volume::percent_to_linear`'s job, not this module's.
+// stdin is the pw-cli command language, not a shell: outer shell quotes
+// make SPA parse a string rather than a Props object and silently discard it.
 pub fn set_volume_command(node_id: u32, linear_volume: f64, muted: bool) -> String {
     let clamped = linear_volume.clamp(0.0, 1.0);
     format!(
-        "set-param {node_id} Props '{{ \"channelVolumes\": [ {v:.4}, {v:.4} ], \"mute\": {m} }}'",
+        "set-param {node_id} Props {{ \"channelVolumes\": [ {v:.4}, {v:.4} ], \"mute\": {m} }}",
         v = clamped,
         m = muted,
     )
@@ -731,7 +733,7 @@ mod tests {
         let line = set_volume_command(45, 0.5, false);
         assert_eq!(
             line,
-            "set-param 45 Props '{ \"channelVolumes\": [ 0.5000, 0.5000 ], \"mute\": false }'"
+            "set-param 45 Props { \"channelVolumes\": [ 0.5000, 0.5000 ], \"mute\": false }"
         );
         let muted = set_volume_command(45, 1.0, true);
         assert!(muted.contains("\"mute\": true"));
