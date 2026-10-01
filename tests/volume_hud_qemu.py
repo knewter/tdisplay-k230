@@ -44,7 +44,7 @@ from PIL import Image, ImageChops
 SINK_NAME = "alsa_output.platform-canaan_k230_audio.k230-i2s-inno"
 
 PW_DUMP_FIXTURE = f'''#!/usr/bin/env python3
-import json, sys, time
+import json, os, sys, time
 
 INITIAL = [
     {{
@@ -99,7 +99,8 @@ if "--monitor" not in sys.argv:
     sys.exit(0)
 
 print(json.dumps(INITIAL), flush=True)
-time.sleep(3.0)
+while not os.path.exists(os.environ["K230_TEST_VOLUME_TRIGGER"]):
+    time.sleep(0.02)
 print(json.dumps(EXTERNAL_CHANGE), flush=True)
 time.sleep(3600)
 '''
@@ -163,6 +164,7 @@ def main():
             K230_TEST_SETTINGS_LOG=str(settings_log),
             K230_PW_DUMP=str(pw_dump),
             K230_PW_CLI=str(pw_cli),
+            K230_TEST_VOLUME_TRIGGER=str(root / "trigger-volume"),
         )
         sway_log = (root / "sway.log").open("w")
         rust_log = (root / "rust.log").open("w")
@@ -264,15 +266,7 @@ def main():
             ipc("card_shell test-touch init")
             wallpaper = capture("wallpaper.png")
 
-            # `spawn_monitor`'s own child (the fixture `pw-dump`) started
-            # at client startup, well before this point -- record "now" as
-            # this capture's own reference for the fixture's fixed 3.0s
-            # external-change delay (`PW_DUMP_FIXTURE`), not "now plus a
-            # short guess", so the HUD-visible window below is not a race
-            # against work this script itself still has to do first
-            # (opening the shade, waiting for settings, capturing).
-            pw_dump_started_at = time.monotonic()
-
+            # Trigger the fixture only after the baseline is captured.
             route("shade")
             # Both sliders need their own backing data before they paint
             # at all (`slider_band`/`volume_slider_band`'s own gates): the
@@ -284,21 +278,15 @@ def main():
             # signal `rust_service_surface_qemu.py`'s own capture already
             # uses.
             wait_for(lambda: len(settings_log.read_text().splitlines()) >= 1 and commits() >= 2, 10)
+            wait_for(lambda: "volume-hud-unmap" in (root / "rust.log").read_text(), 10)
             shade = capture_until(
                 "shade-both-sliders.png",
                 lambda frame: changed_area(wallpaper, frame, (0, 150, 568, 420)),
             )
 
-            # The HUD collapsed: raised only by the fixture's own
-            # "external change" delta (`PW_DUMP_FIXTURE`'s second array),
-            # never by this capture's own touches so far -- matching
-            # `ChangeOrigin`/`volume_drag.is_none()`'s own suppression of
-            # the shell's own gesture. Captured inside the fixture's fixed
-            # delay plus a fixed margin, itself comfortably inside the
-            # HUD's own `HUD_AUTO_HIDE_MS` (2.5s) window from when the
-            # change lands, so this does not race the HUD's own auto-hide
-            # either.
-            wait_for(lambda: time.monotonic() >= pw_dump_started_at + 3.3, 15)
+            # A new external graph delta raises a fresh route-independent HUD.
+            (root / "trigger-volume").touch()
+            wait_for(lambda: (root / "rust.log").read_text().count("volume-hud-map-request") >= 2, 10)
             hud_collapsed = capture_until(
                 "hud-collapsed.png",
                 lambda frame: changed_area(shade, frame, (470, 400, 568, 900)),
