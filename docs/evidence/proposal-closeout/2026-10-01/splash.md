@@ -67,3 +67,12 @@ unperformed measurements, rather than falsely checking a test as executed.
   task stays open because it requires a native capture.
 ```
 
+
+## Activation and publication limits
+
+Existing Home/dock focus is distinct from the drawer's launch path. Shared GNOME
+activation/menu parity remains planned in Home group 11. Quantitative one-frame
+timing and physical fault-injection cases keep an explicit UNVERIFIED marker
+in the published spec; functional user acceptance does not establish those
+measurements. The delta is reapplied as MODIFIED through the archive CLI to
+correct the published evidence label and narrow focus scope, without source changes.

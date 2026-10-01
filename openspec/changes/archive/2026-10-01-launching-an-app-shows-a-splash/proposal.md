@@ -71,3 +71,8 @@ The operator accepts this delivered functional scope and waives additional
 capture-only acceptance gates. `docs/evidence/proposal-closeout/2026-10-01/splash.md` records the exact report,
 prior evidence and limits. Its task dispositions supersede older statements
 that these acceptance gates remain open; they do not claim new test runs.
+
+Focus behavior in this accepted implementation applies to identifiable running
+Home/dock entries. The drawer still uses its existing launch path; shared GNOME
+activation and New Window menus remain planned in the Home change, group 11.
+The closeout does not claim those future actions are installed.

@@ -46,7 +46,7 @@ console, PNGs and camera recording establish physical-panel discovery, launch,
 refresh and error recovery using injected input. The user separately confirmed finger usability on 2026-09-22; normal source-image reboot persistence is demonstrated by the separate
 image-launcher video and console, without restoring home-directory state.*
 
-<!-- Grounding: functional launch splash accepted by the operator, docs/evidence/proposal-closeout/2026-10-01/splash.md; prior host/QEMU proofs remain. UNVERIFIED: quantitative one-frame timing and individual physical timeout/failure cases were not newly measured. Additional capture/fault-injection reruns are waived. -->
+<!-- UNVERIFIED: functional launch splash accepted by the operator, docs/evidence/proposal-closeout/2026-10-01/splash.md; prior host/QEMU proofs remain. UNVERIFIED: quantitative one-frame timing and individual physical timeout/failure cases were not newly measured. Additional capture/fault-injection reruns are waived. Shared GNOME activation/menu parity remains the Home proposal's task group 11; this splash closeout does not claim that implementation. -->
 
 The system's Apps surface SHALL list visible application desktop entries from
 the user's XDG data directories and Nix profile data directories, applying
@@ -965,7 +965,7 @@ unfiltered grid would have.
 
 *Grounding: operator acceptance in `docs/evidence/proposal-closeout/2026-10-01/splash.md`, with prior source and board/QEMU evidence retaining their original classes and limits.*
 
-<!-- Grounding: functional launch splash accepted by the operator, docs/evidence/proposal-closeout/2026-10-01/splash.md; prior host/QEMU proofs remain. UNVERIFIED: quantitative one-frame timing and individual physical timeout/failure cases were not newly measured. Additional capture/fault-injection reruns are waived. -->
+<!-- UNVERIFIED: functional launch splash accepted by the operator, docs/evidence/proposal-closeout/2026-10-01/splash.md; prior host/QEMU proofs remain. UNVERIFIED: quantitative one-frame timing and individual physical timeout/failure cases were not newly measured. Additional capture/fault-injection reruns are waived. Shared GNOME activation/menu parity remains the Home proposal's task group 11; this splash closeout does not claim that implementation. -->
 
 Tapping an installed application in the drawer, on Home, or in the dock
 SHALL show a full-screen splash within one visible frame: the active
@@ -981,8 +981,8 @@ application with no further splash. Matching that window SHALL NOT depend
 solely on the launched entry's own identity, since a `Terminal=true` entry's
 window maps under its terminal's identity instead.
 
-When the tapped entry already has a running instance, the shell SHALL focus
-that instance instead of starting a new process, and SHALL show the splash
+When a tapped Home or dock entry has an identifiable running instance, the
+shell SHALL focus that instance instead of starting a new process, and SHALL show the splash
 for no more than one round trip confirming that focus -- never a splash
 lasting as long as a genuine cold start.
 
@@ -1010,7 +1010,7 @@ without requiring a tap.
 
 #### Scenario: The tapped app is already running
 
-- **WHEN** the tapped application already has a running window
+- **WHEN** a tapped Home or dock application has an identifiable running window
 - **THEN** the shell focuses that window directly, and any splash shown is
   no longer than the time needed to confirm that focus, never a splash that
   waits as long as a fresh launch would
