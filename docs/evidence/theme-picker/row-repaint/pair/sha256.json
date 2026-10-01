@@ -1,0 +1,13 @@
+{
+  "candidate.png": "0e9298482e1b34002b85112e991911d80ebc751c1386ea79874892d5d7c5562f",
+  "candidate-summary.json": "ee692ec2053ca1745865be8ffdc95df3fba4df5c25a2f7d23d41a86a02ca6a5a",
+  "base-summary.json": "304ffeac59dccf479c908adf52bb4aa8841a95b54daff3e22c855c6185f0301e",
+  "candidate-helper.json": "1cc256c42d2a0cee07b50ced9ddc3b95c1a53ed655b9307681cfb159fa3764b7",
+  "base-rust.json": "45cc8203f7e072dae9c496c0efd36dda5d4491e15212521bfa77b398a715b9bd",
+  "candidate-rust.json": "26087e5c07f3d8d7124110e3cdcde89301d2d9b4da6c50f991f5e4d994810c26",
+  "baseline.py": "23061f5bc41982fa27ae5c2ed8998689cbece190f40ab73f2b004b714f7203ce",
+  "comparison.json": "b636fee796e8eaa149b3a890ffca37c8f6aabcb25e335a2bdada426fd9ee1b58",
+  "base.png": "324d8f35631972eb0e609882ee747dedbd45a08c12b73fef98d2294d8df4e5a1",
+  "base-helper.json": "e72a14e0fb060a5f57d9e57d6a80e0e09e3aa8176ab85d1836e32b4eec7a1c3c",
+  "capture.py": "068802b42b7efd1320948387db1877ca69ea3fa643c514e179f639bd505fe902"
+}

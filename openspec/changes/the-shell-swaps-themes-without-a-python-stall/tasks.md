@@ -1308,7 +1308,7 @@ the earlier runs were corrected; wider tasks 11/13/14/15 remain open.
 - [x] 17.1 Commit the resolved-two-row baseline, reviewed bounded traces and
   sampled CPU hotspot evidence with commands, source/runtime identities and
   sampling/unwinding limits; do not call commit intervals presentation FPS.
-- [ ] 17.2 Gate speculative preparation on both rows being at rest and repaint
+- [x] 17.2 Gate speculative preparation on both rows being at rest and repaint
   position/pressed-only changes within the affected row. Preserve full
   invalidation for all semantic updates and thumbnail completion. Prove with
   `cargo test --offline --manifest-path nix/rust-shell-client/Cargo.toml --lib picker_row`
@@ -1340,3 +1340,5 @@ Caller and observer limits remain open; the user still reports jank.
 - [ ] 18.4 Obtain user finger feedback on direct tracking, flick distance, final
   settling and interruption in both rows. A report of improvement alone is
   not acceptance of the curves. Keep this open if only injected tests exist.
+
+Task 17.2 source/build and the first task 17.3 injected pair: `docs/evidence/theme-picker/row-repaint/pair/README.md`. Task 17.3 remains open for combined-source installation and deployment; real-finger acceptance is separate.

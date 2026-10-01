@@ -76,3 +76,5 @@ This is a separate injected workload from the span run, without a paired sampler
 overhead measurement. It does not close compositor/scheduler tracing, complete
 stack qualification, wider working-set/overhead tasks 13/15 or finger acceptance.
 Candidate comparison follows below when the actual cross-build is tested.
+
+The first matched physical injected-input comparison is [recorded here](pair/README.md); it improves measured cadence, keeps motion/real-finger acceptance open, and restores the normal shell afterward.

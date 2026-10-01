@@ -1,0 +1,395 @@
+{
+  "base": {
+    "generation_sha256": "88866ed389587f85cb5ec774d37d28101618e97ab65b23392f7b75646f098d57",
+    "current_system": "/nix/store/xphf8zb00gz9hiyqkkh399rldr2ljykb-nixos-system-nixos-26.11.20260919.20b1ddd",
+    "active_background_count": 8,
+    "generation_unchanged": true,
+    "identities_unchanged": true,
+    "identities": {
+      "shell": {
+        "pid": 1309,
+        "start_ticks": 13471,
+        "exe": "/nix/store/sdmmf17jhky37y5h1p8zb7lcmf8p4pan-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway"
+      },
+      "shell-ui": {
+        "pid": 4724,
+        "start_ticks": 657781,
+        "exe": "/nix/store/8cikjd811d7b7hsdhn7nnb3lnipf3vwp-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0/bin/k230-shell-rust"
+      },
+      "theme-helper": {
+        "pid": 4729,
+        "start_ticks": 657828,
+        "exe": "/nix/store/v189xydz6qkcd4cbkixcmv91w8hbc560-python3-riscv64-unknown-linux-gnu-3.14.7/bin/python3.14"
+      }
+    },
+    "normal_wrapper_sha256": "a2ed08d2b327588f10090e748aa91ad4828d5f7fd698f1dadb6b706de7ace160",
+    "trial_wrapper_sha256": "a2ed08d2b327588f10090e748aa91ad4828d5f7fd698f1dadb6b706de7ace160",
+    "phases": [
+      {
+        "row": "theme",
+        "index": 0,
+        "start_us": 6596972839,
+        "release_us": 6597196193,
+        "end_us": 6598396327
+      },
+      {
+        "row": "theme",
+        "index": 1,
+        "start_us": 6598397233,
+        "release_us": 6598612210,
+        "end_us": 6599812351
+      },
+      {
+        "row": "theme",
+        "index": 2,
+        "start_us": 6599813243,
+        "release_us": 6600032190,
+        "end_us": 6601232321
+      },
+      {
+        "row": "theme",
+        "index": 3,
+        "start_us": 6601233214,
+        "release_us": 6601450443,
+        "end_us": 6602650609
+      },
+      {
+        "row": "theme",
+        "index": 4,
+        "start_us": 6602651496,
+        "release_us": 6602872193,
+        "end_us": 6604072481
+      },
+      {
+        "row": "theme",
+        "index": 5,
+        "start_us": 6604073385,
+        "release_us": 6604296198,
+        "end_us": 6605496334
+      },
+      {
+        "row": "background",
+        "index": 0,
+        "start_us": 6605497263,
+        "release_us": 6605717931,
+        "end_us": 6606918082
+      },
+      {
+        "row": "background",
+        "index": 1,
+        "start_us": 6606919022,
+        "release_us": 6607144268,
+        "end_us": 6608344437
+      },
+      {
+        "row": "background",
+        "index": 2,
+        "start_us": 6608345325,
+        "release_us": 6608572544,
+        "end_us": 6609772699
+      },
+      {
+        "row": "background",
+        "index": 3,
+        "start_us": 6609773606,
+        "release_us": 6609992479,
+        "end_us": 6611192625
+      },
+      {
+        "row": "background",
+        "index": 4,
+        "start_us": 6611193531,
+        "release_us": 6611408196,
+        "end_us": 6612608328
+      },
+      {
+        "row": "background",
+        "index": 5,
+        "start_us": 6612609219,
+        "release_us": 6612828191,
+        "end_us": 6614028316
+      }
+    ],
+    "presented_frames": 105,
+    "active_gap_count": 69,
+    "active_gap_us": {
+      "p50": 134121,
+      "p95": 210765,
+      "p99": 229923
+    },
+    "warnings": [],
+    "costs": [
+      {
+        "row": "theme",
+        "spans": {
+          "overlay_draw": {
+            "count": 50,
+            "median_cpu_us": 96443.0,
+            "median_wall_us": 121539.5
+          },
+          "scene_rebuild": {
+            "count": 50,
+            "median_cpu_us": 93101.5,
+            "median_wall_us": 116628.5
+          },
+          "picker_row_repaint": {
+            "count": 0,
+            "median_cpu_us": null,
+            "median_wall_us": null
+          },
+          "canvas_copy": {
+            "count": 49,
+            "median_cpu_us": 2846,
+            "median_wall_us": 3076
+          },
+          "overlay_prerender": {
+            "count": 3,
+            "median_cpu_us": 44410,
+            "median_wall_us": 67527
+          },
+          "speculative_admission": {
+            "count": 1,
+            "median_cpu_us": 0,
+            "median_wall_us": 0
+          }
+        }
+      },
+      {
+        "row": "background",
+        "spans": {
+          "overlay_draw": {
+            "count": 43,
+            "median_cpu_us": 62014,
+            "median_wall_us": 143041
+          },
+          "scene_rebuild": {
+            "count": 43,
+            "median_cpu_us": 58648,
+            "median_wall_us": 133437
+          },
+          "picker_row_repaint": {
+            "count": 0,
+            "median_cpu_us": null,
+            "median_wall_us": null
+          },
+          "canvas_copy": {
+            "count": 44,
+            "median_cpu_us": 2851.0,
+            "median_wall_us": 3175.0
+          },
+          "overlay_prerender": {
+            "count": 2,
+            "median_cpu_us": 57888.0,
+            "median_wall_us": 71476.5
+          },
+          "speculative_admission": {
+            "count": 1,
+            "median_cpu_us": 0,
+            "median_wall_us": 0
+          }
+        }
+      }
+    ],
+    "capture_sha256": "324d8f35631972eb0e609882ee747dedbd45a08c12b73fef98d2294d8df4e5a1"
+  },
+  "candidate": {
+    "generation_sha256": "88866ed389587f85cb5ec774d37d28101618e97ab65b23392f7b75646f098d57",
+    "current_system": "/nix/store/xphf8zb00gz9hiyqkkh399rldr2ljykb-nixos-system-nixos-26.11.20260919.20b1ddd",
+    "active_background_count": 8,
+    "generation_unchanged": true,
+    "identities_unchanged": true,
+    "identities": {
+      "shell": {
+        "pid": 1309,
+        "start_ticks": 13471,
+        "exe": "/nix/store/sdmmf17jhky37y5h1p8zb7lcmf8p4pan-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway"
+      },
+      "shell-ui": {
+        "pid": 5013,
+        "start_ticks": 675306,
+        "exe": "/nix/store/2mprr7lqh4hznwz9z1zmv7vamf5nbnna-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0/bin/k230-shell-rust"
+      },
+      "theme-helper": {
+        "pid": 5017,
+        "start_ticks": 675342,
+        "exe": "/nix/store/v189xydz6qkcd4cbkixcmv91w8hbc560-python3-riscv64-unknown-linux-gnu-3.14.7/bin/python3.14"
+      }
+    },
+    "normal_wrapper_sha256": "a2ed08d2b327588f10090e748aa91ad4828d5f7fd698f1dadb6b706de7ace160",
+    "trial_wrapper_sha256": "771629fda8cd86555eafce6efaaea4deb357a67a5c2c1b9254b99a767ef83cb7",
+    "phases": [
+      {
+        "row": "theme",
+        "index": 0,
+        "start_us": 6772104991,
+        "release_us": 6772324682,
+        "end_us": 6773524835
+      },
+      {
+        "row": "theme",
+        "index": 1,
+        "start_us": 6773525762,
+        "release_us": 6773744204,
+        "end_us": 6774944339
+      },
+      {
+        "row": "theme",
+        "index": 2,
+        "start_us": 6774945297,
+        "release_us": 6775160203,
+        "end_us": 6776360328
+      },
+      {
+        "row": "theme",
+        "index": 3,
+        "start_us": 6776361232,
+        "release_us": 6776580219,
+        "end_us": 6777780387
+      },
+      {
+        "row": "theme",
+        "index": 4,
+        "start_us": 6777781304,
+        "release_us": 6778000187,
+        "end_us": 6779200352
+      },
+      {
+        "row": "theme",
+        "index": 5,
+        "start_us": 6779201266,
+        "release_us": 6779428141,
+        "end_us": 6780628266
+      },
+      {
+        "row": "background",
+        "index": 0,
+        "start_us": 6780629210,
+        "release_us": 6780848190,
+        "end_us": 6782048333
+      },
+      {
+        "row": "background",
+        "index": 1,
+        "start_us": 6782049237,
+        "release_us": 6782268659,
+        "end_us": 6783468785
+      },
+      {
+        "row": "background",
+        "index": 2,
+        "start_us": 6783469789,
+        "release_us": 6783692173,
+        "end_us": 6784892291
+      },
+      {
+        "row": "background",
+        "index": 3,
+        "start_us": 6784893229,
+        "release_us": 6785112205,
+        "end_us": 6786312330
+      },
+      {
+        "row": "background",
+        "index": 4,
+        "start_us": 6786313265,
+        "release_us": 6786528199,
+        "end_us": 6787728365
+      },
+      {
+        "row": "background",
+        "index": 5,
+        "start_us": 6787729286,
+        "release_us": 6787948327,
+        "end_us": 6789148455
+      }
+    ],
+    "presented_frames": 127,
+    "active_gap_count": 88,
+    "active_gap_us": {
+      "p50": 76641,
+      "p95": 153287,
+      "p99": 191602
+    },
+    "warnings": [],
+    "costs": [
+      {
+        "row": "theme",
+        "spans": {
+          "overlay_draw": {
+            "count": 60,
+            "median_cpu_us": 78362.5,
+            "median_wall_us": 101257.5
+          },
+          "scene_rebuild": {
+            "count": 12,
+            "median_cpu_us": 95473.0,
+            "median_wall_us": 141034.5
+          },
+          "picker_row_repaint": {
+            "count": 30,
+            "median_cpu_us": 76612.5,
+            "median_wall_us": 98007.5
+          },
+          "canvas_copy": {
+            "count": 59,
+            "median_cpu_us": 2677,
+            "median_wall_us": 2908
+          },
+          "overlay_prerender": {
+            "count": 3,
+            "median_cpu_us": 44579,
+            "median_wall_us": 68128
+          },
+          "speculative_admission": {
+            "count": 1,
+            "median_cpu_us": 0,
+            "median_wall_us": 0
+          }
+        }
+      },
+      {
+        "row": "background",
+        "spans": {
+          "overlay_draw": {
+            "count": 58,
+            "median_cpu_us": 34014.5,
+            "median_wall_us": 43456.0
+          },
+          "scene_rebuild": {
+            "count": 4,
+            "median_cpu_us": 78240.0,
+            "median_wall_us": 106970.0
+          },
+          "picker_row_repaint": {
+            "count": 34,
+            "median_cpu_us": 41011.0,
+            "median_wall_us": 48657.5
+          },
+          "canvas_copy": {
+            "count": 59,
+            "median_cpu_us": 2676,
+            "median_wall_us": 2880
+          },
+          "overlay_prerender": {
+            "count": 5,
+            "median_cpu_us": 59166,
+            "median_wall_us": 82915
+          },
+          "speculative_admission": {
+            "count": 1,
+            "median_cpu_us": 0,
+            "median_wall_us": 0
+          }
+        }
+      }
+    ],
+    "capture_sha256": "0e9298482e1b34002b85112e991911d80ebc751c1386ea79874892d5d7c5562f"
+  },
+  "limits": [
+    "One baseline/candidate pair of six theme and six background software-injected swipes; not real-finger acceptance or statistical confidence.",
+    "Input programs match but differing frame cadence changes old step-integrated momentum; final theme previews differ (Lupine/matte-black). CPU comparisons are not matched-pixel microbenchmarks.",
+    "Whole bounded recording presentation summaries include picker opening; phase render totals are restricted to each swipe and 1.2-second settling window.",
+    "No compositor internal stages, full scheduler spans or additional CPU stack sample was captured for this pair.",
+    "Authoritative theme and wrapper identities match and services are independently restored; no boot profile or selector changed."
+  ]
+}
