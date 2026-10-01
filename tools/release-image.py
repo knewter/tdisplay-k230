@@ -55,7 +55,7 @@ def outside_git(directory):
     probe = directory
     while not probe.exists():
         probe = probe.parent
-    if subprocess.run(['git', '-C', str(probe), 'rev-parse', '--show-toplevel'],
+    if subprocess.run(['git', '-C', str(probe), 'rev-parse', '--git-dir'],
                       stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL).returncode == 0:
         raise ValueError('Asset directory must be outside every Git checkout')
     return directory

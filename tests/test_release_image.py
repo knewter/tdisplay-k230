@@ -23,8 +23,9 @@ class ReleaseTests(unittest.TestCase):
     def test_staging_inside_any_worktree_refused(self):
         with tempfile.TemporaryDirectory(dir=Path.home() / 'tmp') as temp:
             subprocess.run(['git', 'init', '-q', temp], check=True)
-            with self.assertRaisesRegex(ValueError, 'outside'):
-                release.outside_git(Path(temp) / 'nested' / 'assets')
+            for asset_dir in (Path(temp) / 'nested' / 'assets', Path(temp) / '.git' / 'nested' / 'assets'):
+                with self.assertRaisesRegex(ValueError, 'outside'):
+                    release.outside_git(asset_dir)
 
     def test_existing_release_or_tag_refused(self):
         for pages in [[[{'tag_name': 'taken'}]], [[{'name': 'taken'}]]]:
