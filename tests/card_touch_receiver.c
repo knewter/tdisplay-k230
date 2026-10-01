@@ -147,7 +147,7 @@ int main(int argc,char **argv) {
         else if (!strcmp(argv[i],"--app-id") && i+1<argc) a.app_id=argv[++i];
         else return 64;
     }
-    if (strcmp(a.role,"app") && strcmp(a.role,"launcher") && strcmp(a.role,"bar") && strcmp(a.role,"keyboard")) return 64;
+    if (strcmp(a.role,"app") && strcmp(a.role,"launcher") && strcmp(a.role,"bar") && strcmp(a.role,"keyboard") && strcmp(a.role,"drawer") && strcmp(a.role,"system-keyboard")) return 64;
     if (strcmp(a.app_id,"k230.touch.one") && strcmp(a.app_id,"k230.touch.two")) return 64;
     signal(SIGTERM,signal_stop);signal(SIGINT,signal_stop);
     a.display=wl_display_connect(NULL);if(!a.display)return 1;
@@ -161,10 +161,12 @@ int main(int argc,char **argv) {
         xdg_toplevel_set_app_id(a.top,a.app_id);xdg_toplevel_set_title(a.top,"Synthetic touch receiver");
     } else {
         if (!a.layers) return 1;
-        bool bar=!strcmp(a.role,"bar"),keyboard=!strcmp(a.role,"keyboard");
+        bool bar=!strcmp(a.role,"bar"),system_keyboard=!strcmp(a.role,"system-keyboard"),
+            keyboard=!strcmp(a.role,"keyboard") || system_keyboard;
         a.layer=zwlr_layer_shell_v1_get_layer_surface(a.layers,a.surface,NULL,
-            (bar || keyboard) ? ZWLR_LAYER_SHELL_V1_LAYER_TOP : ZWLR_LAYER_SHELL_V1_LAYER_OVERLAY,
-            bar ? "card-touch-bar" : keyboard ? "card-touch-keyboard" : "k230-launcher");
+            (bar || (keyboard && !system_keyboard)) ? ZWLR_LAYER_SHELL_V1_LAYER_TOP : ZWLR_LAYER_SHELL_V1_LAYER_OVERLAY,
+            bar ? "card-touch-bar" : system_keyboard ? "wvkbd" : keyboard ? "card-touch-keyboard" :
+            !strcmp(a.role,"drawer") ? "k230-shell-drawer" : "k230-launcher");
         zwlr_layer_surface_v1_add_listener(a.layer,&layer_listener,&a);
         zwlr_layer_surface_v1_set_size(a.layer,0,bar ? 56 : keyboard ? 300 : 0);
         zwlr_layer_surface_v1_set_anchor(a.layer,(keyboard ? 0 : ZWLR_LAYER_SURFACE_V1_ANCHOR_TOP)|

@@ -1,0 +1,6 @@
+test_pointer_home_cards_edges_and_spread (test_card_shell_pointer_navigation.PointerNavigation.test_pointer_home_cards_edges_and_spread) ... ok
+
+----------------------------------------------------------------------
+Ran 1 test in 4.456s
+
+OK

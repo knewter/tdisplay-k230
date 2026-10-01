@@ -48,6 +48,26 @@
 #include <wlr/types/wlr_xdg_shell.h>
 #include <wlr/util/box.h>
 extern char **environ;
+#define CARD_POINTER_ID INT32_MAX
+#define CARD_AXIS_ID (INT32_MAX - 1)
+#define CARD_TRACKPAD_ID (INT32_MAX - 2)
+#define CARD_TRACKPAD_SECOND_ID (INT32_MAX - 3)
+enum edge_intent { EDGE_SHADE, EDGE_OVERLAY, EDGE_HOME };
+/* An edge is a possible gesture origin, not an unconditional input grab.
+ * Keep a weak target until motion resolves intent. Taps never map/hide layers. */
+static struct {
+	bool active, cancelled, forwarded, pointer, moved;
+	unsigned contacts;
+	int32_t id;
+	enum edge_intent intent;
+	uint64_t time;
+	double x, y, sx, sy;
+	struct sway_seat *seat;
+	struct wlr_surface *surface;
+	struct wl_listener surface_destroy, seat_destroy;
+} edge;
+static void edge_reset(bool cancel_client);
+static void edge_cancel_client(void);
 struct card;
 struct mirror {
 	struct wl_list link;
@@ -2043,6 +2063,7 @@ static void handle_seat_destroy(struct wl_listener *l, void *data) {
 	handle_result(cs_leave(&shell.policy));
 }
 static void handle_output_destroy(struct wl_listener *l, void *data) {
+	edge_reset(true);
     if (shell.trackpad_owned) card_shell_cancel(shell.trackpad_seat);
     shell.axis_owned = false; shell.axis_seat = NULL;
     shell.trackpad_owned = false; shell.trackpad_seat = NULL;
@@ -2279,6 +2300,15 @@ static struct sway_layer_surface *keyboard_layer(struct sway_output *output) {
 	}
 	return NULL;
 }
+static bool keyboard_at(double x, double y) {
+    struct sway_layer_surface *layer = keyboard_layer(shell.output);
+    int lx, ly;
+    if (!layer || !wlr_scene_node_coords(&layer->scene->tree->node, &lx, &ly)) return false;
+    struct wlr_surface *surface = layer->layer_surface->surface;
+    struct wlr_box bounds = {.x = lx - shell.output->lx, .y = ly - shell.output->ly,
+        .width = surface->current.width, .height = surface->current.height};
+    return wlr_box_contains_point(&bounds, x, y);
+}
 /* Called after wlroots has configured the real layer surface. Only the
  * pinned wvkbd geometry qualifies; an unrelated keyboard stays untouched. */
 void card_shell_keyboard_adjust_usable(struct sway_output *output, struct wlr_box *usable) {
@@ -2323,6 +2353,7 @@ static void keyboard_refresh(void) {
 static bool keyboard_apply_action(unsigned action) {
 	if (!(action & KG_CONSUME)) return false;
 	if (action & KG_CANCEL_CARD) {
+		edge_reset(true);
 		card_shell_reveal_cancel(&shell.reveal);
 		memset(&shell.drawer_gesture, 0, sizeof(shell.drawer_gesture));
 		memset(&shell.shade_gesture, 0, sizeof(shell.shade_gesture));
@@ -2721,6 +2752,91 @@ static bool enter(struct sway_seat *seat) {
 	handle_result(cs_enter(&shell.policy, focus_id(seat)));
 	return shell.active;
 }
+static void edge_surface_destroy(struct wl_listener *listener, void *data) {
+	(void)listener; (void)data;
+	wl_list_remove(&edge.surface_destroy.link);
+	edge.surface = NULL;
+}
+static void edge_seat_destroy(struct wl_listener *listener, void *data) {
+	(void)listener; (void)data;
+	edge_reset(false);
+}
+static void edge_cancel_client(void) {
+	if (edge.forwarded && edge.seat) {
+		if (edge.pointer) {
+			wlr_seat_pointer_notify_button(edge.seat->wlr_seat, (uint32_t)now_ms(),
+				BTN_LEFT, WL_POINTER_BUTTON_STATE_RELEASED);
+			wlr_seat_pointer_notify_frame(edge.seat->wlr_seat);
+		} else {
+			struct wlr_touch_point *point = wlr_seat_touch_get_point(edge.seat->wlr_seat, edge.id);
+			if (point && point->client) wlr_seat_touch_notify_cancel(edge.seat->wlr_seat, point->client);
+			wlr_seat_touch_notify_up(edge.seat->wlr_seat, (uint32_t)now_ms(), edge.id);
+			wlr_seat_touch_notify_frame(edge.seat->wlr_seat);
+		}
+	}
+	edge.forwarded = false;
+}
+static void edge_reset(bool cancel_client) {
+	if (cancel_client) edge_cancel_client();
+	if (edge.surface) wl_list_remove(&edge.surface_destroy.link);
+	if (edge.seat) wl_list_remove(&edge.seat_destroy.link);
+	memset(&edge, 0, sizeof(edge));
+}
+static void edge_begin(struct sway_seat *seat, int32_t id, double x, double y,
+		uint64_t time, enum edge_intent intent) {
+	edge_reset(true);
+	edge.active = true; edge.contacts = 1; edge.id = id;
+	edge.intent = intent; edge.x = x; edge.y = y; edge.time = time;
+	edge.pointer = shell.pointer_dispatch; edge.seat = seat;
+	node_at_coords(seat, x + shell.output->lx, y + shell.output->ly,
+		&edge.surface, &edge.sx, &edge.sy);
+	edge.seat_destroy.notify = edge_seat_destroy;
+	wl_signal_add(&seat->wlr_seat->events.destroy, &edge.seat_destroy);
+	if (edge.surface) {
+		edge.surface_destroy.notify = edge_surface_destroy;
+		wl_signal_add(&edge.surface->events.destroy, &edge.surface_destroy);
+	}
+}
+static void edge_client_begin(void) {
+	if (edge.forwarded || !edge.surface || !edge.surface->mapped) return;
+	if (edge.pointer) {
+		wlr_seat_pointer_notify_enter(edge.seat->wlr_seat, edge.surface, edge.sx, edge.sy);
+		wlr_seat_pointer_notify_button(edge.seat->wlr_seat, (uint32_t)edge.time,
+			BTN_LEFT, WL_POINTER_BUTTON_STATE_PRESSED);
+		wlr_seat_pointer_notify_frame(edge.seat->wlr_seat);
+		edge.forwarded = true;
+	} else {
+		edge.forwarded = wlr_seat_touch_notify_down(edge.seat->wlr_seat, edge.surface,
+			(uint32_t)edge.time, edge.id, edge.sx, edge.sy) != 0;
+		wlr_seat_touch_notify_frame(edge.seat->wlr_seat);
+	}
+}
+static void edge_client_motion(double x, double y, uint64_t time) {
+	edge_client_begin();
+	if (!edge.forwarded || !edge.surface) return;
+	double sx = edge.sx + x - edge.x, sy = edge.sy + y - edge.y;
+	if (edge.pointer) {
+		wlr_seat_pointer_notify_motion(edge.seat->wlr_seat, (uint32_t)time, sx, sy);
+		wlr_seat_pointer_notify_frame(edge.seat->wlr_seat);
+	} else {
+		wlr_seat_touch_notify_motion(edge.seat->wlr_seat, (uint32_t)time, edge.id, sx, sy);
+		wlr_seat_touch_notify_frame(edge.seat->wlr_seat);
+	}
+}
+static void edge_client_up(uint64_t time) {
+	edge_client_begin();
+	if (!edge.forwarded) return;
+	if (edge.pointer) {
+		wlr_seat_pointer_notify_button(edge.seat->wlr_seat, (uint32_t)time,
+			BTN_LEFT, WL_POINTER_BUTTON_STATE_RELEASED);
+		wlr_seat_pointer_notify_frame(edge.seat->wlr_seat);
+	} else {
+		wlr_seat_touch_notify_up(edge.seat->wlr_seat, (uint32_t)time, edge.id);
+		wlr_seat_touch_notify_frame(edge.seat->wlr_seat);
+	}
+}
+static bool edge_replaying;
+static bool input_down(struct sway_seat *seat, int32_t id, double x, double y, uint64_t event_ms);
 static int hit_button(double x, double y) {
 	if (touch_first())
 		return 0;
@@ -2761,6 +2877,13 @@ static bool input_down(struct sway_seat *seat, int32_t id, double x, double y, u
 			launcher_mapped() || drawer_mapped() || popup_at(x, y));
 		if (keyboard_apply_action(action)) return true;
 	}
+	if (edge.active) {
+		if (edge.contacts < UINT_MAX) edge.contacts++;
+		edge.cancelled = true;
+		/* Cancel instead of releasing: a second contact must not become a tap. */
+		edge_cancel_client();
+		return true;
+	}
 	if (shell.policy.blocked_until_up) {
 		struct cs_result r = cs_down(&shell.policy, id, x, y, event_ms);
 		handle_result(r);
@@ -2778,6 +2901,31 @@ static bool input_down(struct sway_seat *seat, int32_t id, double x, double y, u
 			card_shell_reveal_cancel(&shell.reveal);
 		return true;
 	}
+	if (!edge_replaying && id != CARD_TRACKPAD_ID && touch_first() &&
+		!shell.policy.contact && !shell.policy.edge.tracking && !shell.button_down &&
+		wlr_seat_touch_num_points(seat->wlr_seat) == 0 && !popup_mapped()) {
+		bool bottom = shell.policy.config.bottom_reserved <= 0 &&
+			y >= shell.policy.config.height - shell.policy.config.edge_band;
+		bool key = keyboard_at(x, y);
+		if (bottom && drawer_mapped() && !key &&
+			(!shell.active || shell.policy.mode == CS_DECK)) {
+			edge_begin(seat, id, x, y, event_ms, EDGE_OVERLAY);
+			return true;
+		}
+		if (bottom && !shell.active && !drawer_mapped() && !key &&
+			(shell.home_selected || focus_id(seat) == 0)) {
+			edge_begin(seat, id, x, y, event_ms, EDGE_HOME);
+			return true;
+		}
+		if (!drawer_mapped() && !launcher_mapped() && y >= 0 &&
+			y < shell.policy.config.edge_band) {
+			edge_begin(seat, id, x, y, event_ms, EDGE_SHADE);
+			return true;
+		}
+	}
+	/* Keyboard keys own their full surface, even over a mapped drawer.
+	 * The keyboard grip/chord policy above remains authoritative. */
+	if (!edge_replaying && keyboard_at(x, y)) return false;
 	if (drawer_mapped()) {
 		/* A bottom-edge swipe wins over any mapped Rust overlay -- Drawer,
 		 * Shade, Settings and any of its sub-pages (theme chooser, Wi-Fi,
@@ -2912,6 +3060,26 @@ static bool input_motion(struct sway_seat *seat, int32_t id, double x, double y,
 		return false;
 	x = card_shell_touch_output_coordinate(x - shell.output->lx, shell.output->width);
 	y = card_shell_touch_output_coordinate(y - shell.output->ly, shell.output->height);
+	if (edge.active) {
+		if (edge.cancelled || id != edge.id) return true;
+		double dx = x - edge.x, dy = y - edge.y;
+		if (hypot(dx, dy) <= shell.policy.config.tap_slop && !edge.moved) return true;
+		edge.moved = true;
+		bool gesture = edge.intent == EDGE_SHADE ? dy > fabs(dx) :
+			edge.intent == EDGE_HOME ? -dy > fabs(dx) : -dy > 0 || fabs(dx) > fabs(dy);
+		if (edge.forwarded || !gesture) {
+			edge_client_motion(x, y, event_ms);
+			return true;
+		}
+		double origin_x = edge.x + shell.output->lx, origin_y = edge.y + shell.output->ly;
+		uint64_t origin_time = edge.time;
+		edge_reset(false);
+		edge_replaying = true;
+		bool owned = input_down(seat, id, origin_x, origin_y, origin_time);
+		edge_replaying = false;
+		if (owned) return input_motion(seat, id, x + shell.output->lx, y + shell.output->ly, event_ms);
+		return true;
+	}
 	if (shell.home_gesture.contacts) {
 		card_shell_drawer_motion(&shell.home_gesture, id, x, y, shell.policy.config.entry_distance);
 		if (id == shell.home_gesture.owner &&
@@ -2965,6 +3133,17 @@ static bool input_motion(struct sway_seat *seat, int32_t id, double x, double y,
 static bool input_up(struct sway_seat *seat, int32_t id, uint64_t event_ms) {
 	if (!shell.initialized)
 		return false;
+	if (edge.active) {
+		bool home = !edge.cancelled && !edge.moved && id == edge.id &&
+			edge.intent == EDGE_HOME && edge.x >= shell.policy.config.width * .35 &&
+			edge.x <= shell.policy.config.width * .65;
+		if (!edge.cancelled && id == edge.id && !home) edge_client_up(event_ms);
+		if (--edge.contacts == 0) {
+			edge_reset(false);
+			if (home) enter(seat);
+		}
+		return true;
+	}
 	if (shell.home_gesture.contacts) {
 		bool tap = shell.home_tap_candidate && !shell.home_gesture.cancelled &&
 			shell.home_gesture.contacts == 1 && id == shell.home_gesture.owner;
@@ -3027,10 +3206,6 @@ static bool input_up(struct sway_seat *seat, int32_t id, uint64_t event_ms) {
 /* Mouse streams are compositor-owned only in overview or at shell edges.
  * Remember ownership through cancellation so an unmatched release cannot reach
  * an application. INT32_MAX is separate from injected/test and real touch IDs. */
-#define CARD_POINTER_ID INT32_MAX
-#define CARD_AXIS_ID (INT32_MAX - 1)
-#define CARD_TRACKPAD_ID (INT32_MAX - 2)
-#define CARD_TRACKPAD_SECOND_ID (INT32_MAX - 3)
 bool card_shell_pointer_button(struct sway_seat *seat, uint32_t button,
         enum wl_pointer_button_state state, uint32_t time_ms) {
     if (button != BTN_LEFT) return shell.pointer_owned;
@@ -3146,6 +3321,8 @@ void card_shell_pointer_reset(struct sway_seat *seat) {
     card_shell_cancel(seat);
 }
 bool card_shell_cancel(struct sway_seat *seat) {
+	bool edge_owned = edge.active && edge.seat == seat;
+	if (edge_owned) edge_reset(true);
     if (shell.trackpad_client && shell.trackpad_seat == seat && seat) {
         struct wlr_touch_point *point = wlr_seat_touch_get_point(seat->wlr_seat, CARD_TRACKPAD_ID);
         if (point && point->client) wlr_seat_touch_notify_cancel(seat->wlr_seat, point->client);
@@ -3171,7 +3348,7 @@ bool card_shell_cancel(struct sway_seat *seat) {
 		keyboard_layer(shell.output) != NULL);
 	if (keyboard_cancel & KG_HIDE) keyboard_signal("hide");
 	if (keyboard_cancel & KG_DIRTY) keyboard_refresh();
-	bool consumed = shell.button_down || shell.drawer_gesture.contacts || shell.shade_gesture.contacts ||
+	bool consumed = edge_owned || shell.button_down || shell.drawer_gesture.contacts || shell.shade_gesture.contacts ||
 			keyboard_cancel != KG_NONE || keyboard_owned ||
 			shell.policy.contact || shell.policy.edge.tracking ||
 					shell.policy.blocked_until_up || shell.policy.mode == CS_EXPANDING ||

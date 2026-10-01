@@ -95,6 +95,13 @@ class PointerNavigation(unittest.TestCase):
                 wait(lambda: 'home_selected=1 ' in scene())
                 self.assertEqual(apps(), original)
                 self.assertIsNone(focused())
+                # Home's stationary bottom handle returns to the same live cards.
+                click(284, 1220)
+                wait(lambda: 'mode=1 ' in scene())
+                self.assertEqual(apps(), original)
+                self.assertIsNone(focused())
+                click(284, 1210)
+                wait(lambda: 'home_selected=1 ' in scene())
                 # Launching/focusing an ordinary app from Home must expose it,
                 # rather than leave a focused window covered by Home.
                 ipc('[app_id="k230.card.one"] focus')

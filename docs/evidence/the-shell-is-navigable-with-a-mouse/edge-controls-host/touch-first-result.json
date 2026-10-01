@@ -1,0 +1,16 @@
+{
+  "evidence_class": "native-wayland-receiver-headless-injected-device",
+  "passed": [
+    "header-tap-pairing",
+    "horizontal-header-drag",
+    "second-contact-cancel",
+    "top-gesture-no-client-tap",
+    "drawer-bottom-tap-pairing",
+    "keyboard-bottom-key-pairing",
+    "bottom-gesture-retained",
+    "target-loss"
+  ],
+  "limits": [
+    "No physical panel, real finger, or actual Rust search-key semantics proof."
+  ]
+}

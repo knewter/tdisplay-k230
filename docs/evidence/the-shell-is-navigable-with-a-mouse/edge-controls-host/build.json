@@ -1,0 +1,10 @@
+{
+  "system": "/nix/store/nlgjhifgwcgg0hlbqhnng7xw7cjgxg9a-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "sway": "/nix/store/dsn90m4lcn1mbziy52v1y7a98vdramn4-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway",
+  "rust": "/nix/store/qbi2i7cq00i6z8mshh17bq8vcr7dk3ds-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0/bin/k230-shell-rust",
+  "source_sha256": {
+    "nix/card-shell/adapter.c": "7cdb64da9201e0b61506f8325d3486cb565394645952bdda994146c7797c0f02",
+    "nix/rust-shell-client/src/render.rs": "c5a1d8b1ae46a9ce026093ed519c70965d0874589340e8d00907a7e7beadfec1"
+  },
+  "evidence_class": "host-cross-build-and-headless-injected-input"
+}

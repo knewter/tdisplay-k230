@@ -3843,6 +3843,11 @@ pub fn paint_home(
             }
         }
     }
+    // A stationary tap on this bottom handle returns to the retained cards.
+    // Dragging up from the same edge continues to open the app drawer.
+    color(cr, style.text, 0.65);
+    rounded(cr, f64::from(width) / 2.0 - 48.0, f64::from(height) - 14.0, 96.0, 6.0, 3.0);
+    cr.fill().ok();
 }
 
 pub fn draw_shm(

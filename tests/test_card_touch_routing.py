@@ -54,7 +54,7 @@ def build_receiver(directory):
     return binary
 
 
-def run(sway, qemu, output, check_provenance=False):
+def run(sway, qemu, output, check_provenance=False, edge_intent=False):
     output.mkdir(parents=True, exist_ok=True)
     output.chmod(0o700)
     receiver = build_receiver(output)
@@ -63,6 +63,11 @@ def run(sway, qemu, output, check_provenance=False):
                       'for_window [app_id="^k230.touch."] floating enable, border none, resize set 520 1040, move position 24 120\n')
     env = dict(os.environ, XDG_RUNTIME_DIR=str(output), WLR_BACKENDS='headless', WLR_HEADLESS_OUTPUTS='1',
                WLR_RENDERER='pixman', SWAY_K230_CARD_SHELL='1', SWAY_K230_CARD_TEST_INPUT='1')
+    if edge_intent:
+        env['SWAY_K230_CARD_TOUCH_FIRST'] = '1'
+        config.write_text('output HEADLESS-1 mode 568x1232\nseat seat0 fallback true\nfocus_follows_mouse no\n'
+                          'for_window [app_id="^k230.touch."] card_shell ordinary, floating enable, border none, '
+                          'resize set 568 1232, move position 0 0\n')
     processes = []
     log = (output/'sway.log').open('w')
     prefix = [qemu] if Path(sway).read_bytes()[18:20] == b'\xf3\x00' else []
@@ -120,125 +125,179 @@ def run(sway, qemu, output, check_provenance=False):
         wait_for(lambda: list(output.glob('sway-ipc.*.sock')), 'Sway startup', 45)
         env['WAYLAND_DISPLAY'] = next(p.name for p in output.glob('wayland-*') if not p.name.endswith('.lock'))
         native('init')
-        one, one_log = start('one', 'app')
-        two, two_log = start('two', 'app', 'k230.touch.two')
-        bar, bar_log = start('bar', 'bar')
-        launcher, launcher_log = start('launcher', 'launcher')
-        # Actual layer-shell launcher receives the entire footer and the hidden
-        # Cards-button rectangle, including the overlap with the bottom edge.
-        paired(launcher_log, 1, 284, 1195)
-        paired(launcher_log, 2, 480, 90)
-        launcher.terminate(); assert launcher.wait(timeout=5) == 0
-        time.sleep(.15)
-        # Card owns id10. id11 lands on bar second and lifts first: BOTH are
-        # drained, so no unmatched bar touch can survive normal restoration.
-        ipc('card_shell enter')
-        native('down 10 284 450')
-        native('motion 10 250 450')
-        native('down 11 20 20')
-        native('up 11')
-        native('up 10')
-        time.sleep(.1)
-        assert not delivered(bar_log, 11, 'down'), records(bar_log)
-        paired(bar_log, 12, 20, 20)
-        # No wl_touch point remains to block entry after that real paired stream.
-        ipc('card_shell enter'); ipc('card_shell back')
-        paired(two_log, 13, 284, 450)
-        # A real exclusive keyboard layer changes the reserved region. Its
-        # second contact must also drain; a fresh standalone contact is paired.
-        keyboard, keyboard_log = start('keyboard', 'keyboard')
-        ipc('card_shell enter')
-        native('down 40 284 450')
-        native('down 41 284 1100')
-        native('up 41'); native('up 40')
-        time.sleep(.1)
-        assert not delivered(keyboard_log, 41, 'down'), records(keyboard_log)
-        paired(keyboard_log, 42, 284, 1100)
-        keyboard.terminate(); assert keyboard.wait(timeout=5) == 0
-        time.sleep(.15)
-        # Real compositor cancel ends the stream without an up; fresh touch works.
-        ipc('card_shell enter');native('down 20 284 450');native('cancel')
-        select_card(21)
-        ipc('card_shell enter');ipc('card_shell back')
-        # Physical-device removal while a card owns touch likewise has no up.
-        ipc('card_shell enter');native('down 30 284 450');native('remove')
-        wait_for(lambda: records(bar_log)[-1]['event'] == 'touch_removed', 'device removal observed')
-        native('init')
-        wait_for(lambda: records(bar_log)[-1]['event'] == 'touch_ready', 'replacement touch binding')
-        select_card(31)
-        ipc('card_shell enter');ipc('card_shell back')
-        paired(bar_log, 32, 20, 20)
-        provenance_results = []
-        if check_provenance:
-            spec = importlib.util.spec_from_file_location('card_benchmark', ROOT/'tools/card-shell-benchmark.py')
-            benchmark = importlib.util.module_from_spec(spec)
-            spec.loader.exec_module(benchmark)
+        if edge_intent:
+            one, one_log = start('one', 'app')
+            for touch_id, x, y in [(100, 284, 10), (101, 24, 30)]:
+                native(f'down {touch_id} {x} {y}')
+                time.sleep(.05)
+                assert not delivered(one_log, touch_id, 'down'), 'tap mapped client prematurely'
+                assert 'active=0 ' in ipc('card_shell debug-scene')[0]['error']
+                native(f'up {touch_id}')
+                wait_for(lambda: delivered(one_log, touch_id, 'up'), 'header tap pairing')
+            # Wrong-direction motion becomes ordinary client input, and an
+            # additional contact cancels it without activating the control.
+            native('down 102 100 10');native('motion 102 180 10')
+            wait_for(lambda: delivered(one_log, 102, 'motion'), 'header horizontal drag')
+            native('down 103 250 10')
+            wait_for(lambda: any(r['event']=='cancel' for r in records(one_log)), 'second contact cancels client')
+            native('up 103');native('up 102')
+            assert not delivered(one_log, 102, 'up'), 'cancel was converted to tap release'
+            paired(one_log, 104, 284, 10)
+            # A qualified downward top gesture must not leak a client tap.
+            native('down 105 284 10');native('motion 105 284 180');native('up 105')
+            assert not delivered(one_log, 105, 'down')
+            drawer, drawer_log = start('drawer', 'drawer')
+            paired(drawer_log, 106, 500, 1215)
+            assert 'drawer_mapped=1 ' in ipc('card_shell debug-scene')[0]['error']
+            # Model the real wvkbd namespace and geometry above the mapped
+            # overlay. The bottom key belongs to its surface through release.
+            keyboard, keyboard_log = start('system-keyboard', 'system-keyboard')
+            paired(keyboard_log, 107, 500, 1215)
+            assert 'drawer_mapped=1 ' in ipc('card_shell debug-scene')[0]['error']
+            keyboard.terminate();assert keyboard.wait(timeout=5)==0
+            # Let the app commit the geometry restored after keyboard loss.
+            # An unpainted resized source is deliberately refused by cards.
+            time.sleep(.2)
+            # A real overlay-escape drag still enters cards, with no key tap.
+            native('down 108 284 1215');native('motion 108 284 920');native('up 108')
+            assert not delivered(drawer_log, 108, 'down')
+            wait_for(lambda: 'active=1 ' in ipc('card_shell debug-scene')[0]['error'], 'qualified bottom gesture')
+            drawer.terminate();assert drawer.wait(timeout=5)==0
+            ipc('card_shell cancel');ipc('card_shell home')
+            # Losing a weak target before a held edge tap ends is harmless.
+            ipc('[app_id="k230.touch.one"] focus')
+            native('down 109 284 10')
+            one.terminate();assert one.wait(timeout=5)==0
+            native('up 109')
+            for path in [one_log, drawer_log, keyboard_log]:
+                rows=records(path)
+                assert not any(r['event'].startswith(('invalid_', 'unpaired_')) for r in rows), rows
+                assert rows[-1]['active']==0, rows
+            result={'evidence_class':'native-wayland-receiver-headless-injected-device',
+                    'passed':['header-tap-pairing','horizontal-header-drag','second-contact-cancel',
+                              'top-gesture-no-client-tap','drawer-bottom-tap-pairing',
+                              'keyboard-bottom-key-pairing','bottom-gesture-retained','target-loss'],
+                    'limits':['No physical panel, real finger, or actual Rust search-key semantics proof.']}
+        else:
+            one, one_log = start('one', 'app')
+            two, two_log = start('two', 'app', 'k230.touch.two')
+            bar, bar_log = start('bar', 'bar')
+            launcher, launcher_log = start('launcher', 'launcher')
+            # Actual layer-shell launcher receives the entire footer and the hidden
+            # Cards-button rectangle, including the overlap with the bottom edge.
+            paired(launcher_log, 1, 284, 1195)
+            paired(launcher_log, 2, 480, 90)
+            launcher.terminate(); assert launcher.wait(timeout=5) == 0
+            time.sleep(.15)
+            # Card owns id10. id11 lands on bar second and lifts first: BOTH are
+            # drained, so no unmatched bar touch can survive normal restoration.
+            ipc('card_shell enter')
+            native('down 10 284 450')
+            native('motion 10 250 450')
+            native('down 11 20 20')
+            native('up 11')
+            native('up 10')
+            time.sleep(.1)
+            assert not delivered(bar_log, 11, 'down'), records(bar_log)
+            paired(bar_log, 12, 20, 20)
+            # No wl_touch point remains to block entry after that real paired stream.
+            ipc('card_shell enter'); ipc('card_shell back')
+            paired(two_log, 13, 284, 450)
+            # A real exclusive keyboard layer changes the reserved region. Its
+            # second contact must also drain; a fresh standalone contact is paired.
+            keyboard, keyboard_log = start('keyboard', 'keyboard')
+            ipc('card_shell enter')
+            native('down 40 284 450')
+            native('down 41 284 1100')
+            native('up 41'); native('up 40')
+            time.sleep(.1)
+            assert not delivered(keyboard_log, 41, 'down'), records(keyboard_log)
+            paired(keyboard_log, 42, 284, 1100)
+            keyboard.terminate(); assert keyboard.wait(timeout=5) == 0
+            time.sleep(.15)
+            # Real compositor cancel ends the stream without an up; fresh touch works.
+            ipc('card_shell enter');native('down 20 284 450');native('cancel')
+            select_card(21)
+            ipc('card_shell enter');ipc('card_shell back')
+            # Physical-device removal while a card owns touch likewise has no up.
+            ipc('card_shell enter');native('down 30 284 450');native('remove')
+            wait_for(lambda: records(bar_log)[-1]['event'] == 'touch_removed', 'device removal observed')
+            native('init')
+            wait_for(lambda: records(bar_log)[-1]['event'] == 'touch_ready', 'replacement touch binding')
+            select_card(31)
+            ipc('card_shell enter');ipc('card_shell back')
+            paired(bar_log, 32, 20, 20)
+            provenance_results = []
+            if check_provenance:
+                spec = importlib.util.spec_from_file_location('card_benchmark', ROOT/'tools/card-shell-benchmark.py')
+                benchmark = importlib.util.module_from_spec(spec)
+                spec.loader.exec_module(benchmark)
 
-            def device(kind):
-                ready_count = sum(r['event'] == 'touch_ready' for r in records(bar_log))
-                native('remove')
-                wait_for(lambda: records(bar_log)[-1]['event'] == 'touch_removed', 'source device removed')
-                native('init '+kind)
-                wait_for(lambda: sum(r['event'] == 'touch_ready' for r in records(bar_log)) > ready_count,
-                         'source device rebound')
+                def device(kind):
+                    ready_count = sum(r['event'] == 'touch_ready' for r in records(bar_log))
+                    native('remove')
+                    wait_for(lambda: records(bar_log)[-1]['event'] == 'touch_removed', 'source device removed')
+                    native('init '+kind)
+                    wait_for(lambda: sum(r['event'] == 'touch_ready' for r in records(bar_log)) > ready_count,
+                             'source device rebound')
 
-            def gesture(touch_id, direct=False):
-                send = (lambda command: ipc('card_shell '+command)) if direct else native
-                send(f'down {touch_id} 284 450')
-                send(f'motion {touch_id} 244 450')
-                time.sleep(.06)
-                send(f'up {touch_id}')
-                time.sleep(.06)
+                def gesture(touch_id, direct=False):
+                    send = (lambda command: ipc('card_shell '+command)) if direct else native
+                    send(f'down {touch_id} 284 450')
+                    send(f'motion {touch_id} 244 450')
+                    time.sleep(.06)
+                    send(f'up {touch_id}')
+                    time.sleep(.06)
 
-            def scenario(name, declared, kinds, expected_sources, reject=False, direct=False):
-                ipc('card_shell back')
-                device(kinds[0])
-                ipc('card_shell benchmark '+declared)
-                ipc('card_shell enter')
-                for index, kind in enumerate(kinds):
-                    if index:
-                        device(kind)
-                    gesture(100+index, direct)
-                ipc('card_shell back')
-                time.sleep(.08)
-                ipc('card_shell benchmark-stop')
-                # Parse source-emitted records. A deliberate mismatched/mixed
-                # run MUST remain invalid rather than be relabeled on arming.
-                rows, _ = benchmark.parse_rows((output/'sway.log').read_bytes())
-                run_id = next(r['run'] for r in reversed(rows) if r['event'] == 'session')
-                selected = [r for r in rows if r['run'] == run_id]
-                inputs = [r for r in selected if r['event'] == 'input']
-                assert [r['source'] for r in inputs] == expected_sources, inputs
-                assert [r['kind'] for r in inputs] == ['motion', 'release'] * len(kinds), inputs
-                try:
-                    benchmark.analyze_run(run_id, selected)
-                except benchmark.InvalidEvidence as error:
-                    assert reject and str(error) == 'mixed input provenance within a run', str(error)
-                else:
-                    assert not reject, 'mismatched provenance accepted'
-                provenance_results.append({'case': name, 'declared': declared,
-                                           'observed_sources': expected_sources,
-                                           'parser': 'rejected-mixed-provenance' if reject else 'schema-accepted'})
+                def scenario(name, declared, kinds, expected_sources, reject=False, direct=False):
+                    ipc('card_shell back')
+                    device(kinds[0])
+                    ipc('card_shell benchmark '+declared)
+                    ipc('card_shell enter')
+                    for index, kind in enumerate(kinds):
+                        if index:
+                            device(kind)
+                        gesture(100+index, direct)
+                    ipc('card_shell back')
+                    time.sleep(.08)
+                    ipc('card_shell benchmark-stop')
+                    # Parse source-emitted records. A deliberate mismatched/mixed
+                    # run MUST remain invalid rather than be relabeled on arming.
+                    rows, _ = benchmark.parse_rows((output/'sway.log').read_bytes())
+                    run_id = next(r['run'] for r in reversed(rows) if r['event'] == 'session')
+                    selected = [r for r in rows if r['run'] == run_id]
+                    inputs = [r for r in selected if r['event'] == 'input']
+                    assert [r['source'] for r in inputs] == expected_sources, inputs
+                    assert [r['kind'] for r in inputs] == ['motion', 'release'] * len(kinds), inputs
+                    try:
+                        benchmark.analyze_run(run_id, selected)
+                    except benchmark.InvalidEvidence as error:
+                        assert reject and str(error) == 'mixed input provenance within a run', str(error)
+                    else:
+                        assert not reject, 'mismatched provenance accepted'
+                    provenance_results.append({'case': name, 'declared': declared,
+                                               'observed_sources': expected_sources,
+                                               'parser': 'rejected-mixed-provenance' if reject else 'schema-accepted'})
 
-            scenario('named-uinput-device', 'injected', ['injected-device'], ['injected']*2)
-            scenario('native-physical-label-fixture', 'physical', ['physical-label-fixture'], ['physical']*2)
-            scenario('arm-does-not-relabel-native-input', 'injected', ['physical-label-fixture'], ['physical']*2, reject=True)
-            scenario('mixed-native-devices', 'physical', ['physical-label-fixture', 'injected-device'],
-                     ['physical']*2+['injected']*2, reject=True)
-            scenario('direct-ipc-stays-injected', 'injected', ['physical-label-fixture'], ['injected']*2, direct=True)
-        for path in (one_log, two_log, bar_log):
-            rows = records(path)
-            assert not any(r['event'].startswith(('invalid_', 'unpaired_')) for r in rows), rows
-            assert rows[-1]['active'] == 0, rows
-        result = {'provenance': provenance_results,
-                  'evidence_class': 'native-wayland-receiver-headless-injected-device',
-                  'passed': ['launcher-footer-pairing', 'hidden-card-button-pairing',
-                             'second-contact-bar-drain', 'second-contact-keyboard-drain',
-                             'normal-app-touch-pairing',
-                             'cancel-without-up', 'device-removal-without-up'],
-                  'limits': ['No physical panel or finger evidence.',
-                             'Routing input originates from a test wlr_touch device.',
-                             'Provenance fixtures simulate device names; physical labels do not prove a real finger.']}
+                scenario('named-uinput-device', 'injected', ['injected-device'], ['injected']*2)
+                scenario('native-physical-label-fixture', 'physical', ['physical-label-fixture'], ['physical']*2)
+                scenario('arm-does-not-relabel-native-input', 'injected', ['physical-label-fixture'], ['physical']*2, reject=True)
+                scenario('mixed-native-devices', 'physical', ['physical-label-fixture', 'injected-device'],
+                         ['physical']*2+['injected']*2, reject=True)
+                scenario('direct-ipc-stays-injected', 'injected', ['physical-label-fixture'], ['injected']*2, direct=True)
+            for path in (one_log, two_log, bar_log):
+                rows = records(path)
+                assert not any(r['event'].startswith(('invalid_', 'unpaired_')) for r in rows), rows
+                assert rows[-1]['active'] == 0, rows
+            result = {'provenance': provenance_results,
+                      'evidence_class': 'native-wayland-receiver-headless-injected-device',
+                      'passed': ['launcher-footer-pairing', 'hidden-card-button-pairing',
+                                 'second-contact-bar-drain', 'second-contact-keyboard-drain',
+                                 'normal-app-touch-pairing',
+                                 'cancel-without-up', 'device-removal-without-up'],
+                      'limits': ['No physical panel or finger evidence.',
+                                 'Routing input originates from a test wlr_touch device.',
+                                 'Provenance fixtures simulate device names; physical labels do not prove a real finger.']}
     finally:
         # Close clients while Sway is still alive; server disconnect must not
         # masquerade as receiver protocol failure or suppress final assertions.
@@ -261,11 +320,12 @@ if __name__ == '__main__':
     parser.add_argument('--qemu', default='/usr/bin/qemu-riscv64-static')
     parser.add_argument('--output', type=Path)
     parser.add_argument('--provenance', action='store_true', help='also verify native device source labels and parser rejection')
+    parser.add_argument('--edge-intent', action='store_true', help='exercise touch-first edge taps, drags and cancellation')
     arguments = parser.parse_args()
     if arguments.output:
         if arguments.output.exists() and any(arguments.output.iterdir()):
             parser.error('--output must be new or empty')
-        run(arguments.sway, arguments.qemu, arguments.output.resolve(), arguments.provenance)
+        run(arguments.sway, arguments.qemu, arguments.output.resolve(), arguments.provenance, arguments.edge_intent)
     else:
         with tempfile.TemporaryDirectory(prefix='card-touch-routing-') as directory:
-            run(arguments.sway, arguments.qemu, Path(directory), arguments.provenance)
+            run(arguments.sway, arguments.qemu, Path(directory), arguments.provenance, arguments.edge_intent)
