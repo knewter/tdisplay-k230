@@ -1,0 +1,14 @@
+{
+  "source": "288535289172c8465c4fa408eaa8ba2c7ab8a5ac",
+  "rust": "/nix/store/zjlcmhxqkhchysmjj9sk53hks1h5wc3l-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0/bin/k230-shell-rust",
+  "helper": "/nix/store/l6qm7fykcf6bmlhp3wcj7va4v2k4v2fg-handheld-theme-command-0.1",
+  "original_exe": "/nix/store/8cikjd811d7b7hsdhn7nnb3lnipf3vwp-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0/bin/k230-shell-rust",
+  "current_system": "/nix/store/xphf8zb00gz9hiyqkkh399rldr2ljykb-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "profile_unchanged": true,
+  "normal_services_active": true,
+  "class": "physical-board-runtime-component-install",
+  "started_epoch_s": 1790888948.9785454,
+  "restoration_after_s": 1800,
+  "restore_command": "/nix/store/v189xydz6qkcd4cbkixcmv91w8hbc560-python3-riscv64-unknown-linux-gnu-3.14.7/bin/python3 /root/tmp/k230-home-menu/restore.py",
+  "boot_or_finger_acceptance": false
+}

@@ -193,5 +193,10 @@ separate from the accepted mouse/HDMI navigation closeout.
 
 App-actions groups 11.2–11.3 passed: `docs/evidence/home-screen/app-actions/qemu/README.md`.
 Cross Rust and the matching full coherent system also built from source `2885352`;
-11.4 retains the specifically named HDMI trial build, recoverable menu installation
-and operator acceptance, and original 8.1 remains open.
+11.4 retains operator acceptance; its named HDMI trial build and recoverable
+component installation have now passed. Original 8.1 remains open.
+
+Recoverable component installation passed: `docs/evidence/home-screen/app-actions/board/README.md`.
+The candidate has a 30-minute independent restoration timer; operator feedback
+is still required by 11.4. The named individual Rust and HDMI toplevel builds
+have now passed; their exact output paths are recorded in that board README.
