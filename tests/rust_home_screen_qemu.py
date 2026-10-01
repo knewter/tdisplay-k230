@@ -69,10 +69,10 @@ class RenameKeyboard:
         # <RTRN>=36 (Return, evdev 28) are the only two keys this probe ever
         # sends -- enough to type a distinguishable rename and commit it.
         keymap = b'''xkb_keymap {
-xkb_keycodes "probe" { minimum=8; maximum=255; <AC01>=38; <RTRN>=36; };
+xkb_keycodes "probe" { minimum=8; maximum=255; <AC01>=38; <RTRN>=36; <BKSP>=22; };
 xkb_types "probe" { type "ONE_LEVEL" { modifiers=None; map[None]=Level1; level_name[Level1]="Any"; }; };
 xkb_compatibility "probe" {};
-xkb_symbols "probe" { key <AC01> { type="ONE_LEVEL", [ a ] }; key <RTRN> { type="ONE_LEVEL", [ Return ] }; };
+xkb_symbols "probe" { key <AC01> { type="ONE_LEVEL", [ a ] }; key <RTRN> { type="ONE_LEVEL", [ Return ] }; key <BKSP> { type="ONE_LEVEL", [ BackSpace ] }; };
 };\0'''
         fd = os.memfd_create('home-test-keymap', os.MFD_CLOEXEC)
         try:
@@ -927,12 +927,18 @@ def main():
         # Rename it through a real virtual-keyboard-v1 connection (task 2):
         # tap the name, wait for focus, type, press Enter, and read the
         # committed name back from the persisted layout.
+        # A headless seat has no keyboard capability until this client binds
+        # its virtual keyboard. Create it before requesting/waiting for focus;
+        # otherwise the harness waits for an enter event that cannot exist.
+        rename_keyboard = RenameKeyboard(wl_socket)
+        wait_for(lambda: "keyboard-capability" in text("dark-restarted-rust"), 5)
         tap(*folder_name_center())
         wait_for(lambda: "home-keyboard-focus-granted" in text("dark-restarted-rust"), 5)
         renaming = capture("home-dark-folder-rename.png", timeout=2.0, stable_frames=1)
         checks["folder_rename_keyboard_focus_granted"] = True
-        rename_keyboard = RenameKeyboard(wl_socket)
         try:
+            for _ in range(len("Folder")):
+                rename_keyboard.press(14)
             for _ in range(4):
                 rename_keyboard.press_a()
             baseline = count_log("dark-restarted-rust", "home-layout-changed")
@@ -951,6 +957,29 @@ def main():
         checks["folder_rename_visible"] = bool(
             ImageChops.difference(renaming, after_rename).getbbox()
         )
+
+        # Drag one member out of the open folder onto an empty Home cell.
+        # The persisted layout, rather than image differences, proves the
+        # member moved and the remaining one-item folder was unwrapped.
+        baseline = count_log("dark-restarted-rust", "home-layout-changed")
+        member_drag = long_press_drag(folder_app_center(1), tile_center(4))
+        settle_and_release(member_drag, *tile_center(4))
+        wait_for_new_log_line("dark-restarted-rust", "home-layout-changed", baseline)
+        extracted = json.loads(home_json.read_text())
+        checks["folder_member_dragged_out"] = (
+            extracted["pages"][0][4] == {"kind": "app", "id": "k230-fixture-extra.desktop"}
+        )
+        capture("home-dark-folder-member-extracted.png")
+
+        # Recreate/open a folder so the following launch scenario remains
+        # about a member of an open folder, rather than a bare Home icon.
+        baseline = count_log("dark-restarted-rust", "home-layout-changed")
+        recreate = long_press_drag(tile_center(4), badge_target)
+        settle_and_release(recreate, *badge_target)
+        wait_for_new_log_line("dark-restarted-rust", "home-layout-changed", baseline)
+        tap(*done_button_point())
+        tap(*badge_target)
+        capture("home-dark-folder-reopened.png")
 
         # Tap "Fixture Badge" (member 0) to launch it; the overlay closes.
         tap(*folder_app_center(0))
@@ -1052,6 +1081,13 @@ def main():
                 wvkbd_pass.kill()
 
         # --- Light pass: headline captures only. ---
+        # Moving the sole page-2 app into the dock prunes the empty second
+        # page. Restore a real second page before testing light-theme paging.
+        light_layout = json.loads(home_json.read_text())
+        light_layout["pages"].append([
+            {"kind": "app", "id": "k230-fixture-page-two.desktop"}
+        ] + [None] * 19)
+        home_json.write_text(json.dumps(light_layout))
         light_rust = start_pass(light, "light")
         wait_for_ready("light-rust")
         light_page1 = capture("home-light-page1.png")

@@ -1619,6 +1619,10 @@ impl ShellClient {
         }
         self.home_keyboard_active = want;
         if let Some(layer) = self.home_surface.layer.as_ref() {
+            // Sway grants exclusive keyboard focus only on Top/Overlay.
+            // Raise Home for the active folder editor, then restore Bottom
+            // when editing ends so apps and card composition retain priority.
+            layer.set_layer(if want { Layer::Top } else { Layer::Bottom });
             layer.set_keyboard_interactivity(if want {
                 KeyboardInteractivity::Exclusive
             } else {
@@ -1646,6 +1650,7 @@ impl ShellClient {
         self.home.set_keyboard_inset(0.0);
         if let Some(layer) = self.home_surface.layer.as_ref() {
             layer.set_keyboard_interactivity(KeyboardInteractivity::None);
+            layer.set_layer(Layer::Bottom);
             layer.commit();
         }
         self.home_mark_dirty();
