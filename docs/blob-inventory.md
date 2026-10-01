@@ -1616,6 +1616,15 @@ DATA ba5e8a4f411fad3bc8b2ae0bba9aeaea5c501ebdd2d51f5dd3f8c387af89dc53 docs/evide
 DATA 7d9faa8d4dda52bbc207f2a4ba798c1688f3fbcc7e09728ca0072d7bbd02b07b docs/evidence/mainline-display/physical-2026-10-01/panel-boot-text.jpg
 DATA 952197f416b79597b2b237f6e37b5bcc16a6df735439af5c4a9700a7221aaa81 docs/evidence/mainline-display/physical-2026-10-01/normal-restored-home.jpg
 DATA 8584b78379a3ef16d4da74bcbb2c59af9a23967f48741bd254580ff87c8c2302 docs/evidence/mainline-display/physical-2026-10-01/final-runtime-home.jpg
+DATA  9944c9fdef515ee3fc71c5a00cc46d6619d6142d6de17fcf3198d9b653cd44b8  docs/evidence/omarchy-themes/settings-notifications-themed/board/dark-settings.png
+DATA  5cb9ac53740657f87d06e2c9667605bd1dc197ea1f0c8850ea9592019adda1c9  docs/evidence/omarchy-themes/settings-notifications-themed/board/dark-shade.png
+DATA  4094b29193330d905cae36305574359b8564e35bb11f7ad2d095bc4b142dd23f  docs/evidence/omarchy-themes/settings-notifications-themed/board/light-settings.png
+DATA  9f1b063491fa5e4909d29723dbbde3816c43c2b9268b91ee4906ea4bf3db8505  docs/evidence/omarchy-themes/settings-notifications-themed/board/light-shade.png
+DATA  9944c9fdef515ee3fc71c5a00cc46d6619d6142d6de17fcf3198d9b653cd44b8  docs/evidence/omarchy-themes/settings-notifications-themed/board/rollback-settings.png
+DATA  f96bbf535aa2e78a5b09781c996c7ad4d2359dca838d15ccc28b9c195225a87d  docs/evidence/omarchy-themes/settings-notifications-themed/board/rollback-shade.png
+DATA  5fdcbf526530d7d11e5a0f658f69a09b8957c3d6ce1923b30b1b21bf533f48b2  docs/evidence/home-screen/app-actions/qemu/home-actions-right-click.png
+DATA  27a43617fdf643598ab4a2a946ba8a1d10c0604f39585bc526f3974e9dfca302  docs/evidence/home-screen/app-actions/qemu/home-actions-touch-grab.png
+DATA  ac2be7a175f501ea58ee7fb25fd7a8ecbe60a11b271050ead68ab105dd722454  docs/evidence/home-screen/app-actions/qemu/home-actions-touch-placement.png
 ```
 
 `group:` rows stand for a directory whose members are enumerated by
@@ -2597,12 +2606,3 @@ Native board captures, camera photograph and headless QEMU screenshots; commands
 | `docs/evidence/home-widget-design/closeout-2026-10-01/qemu/home-fluid-edge-indicator.png` | 197139 | DATA | `4a2e198e3085b10d99599fb9e4949441b2f13b668baf2cdfd5c4591b76f7ea6a` |
 | `docs/evidence/home-widget-design/closeout-2026-10-01/qemu/home-fluid-last-edge-new-page.png` | 193391 | DATA | `09f2c39d77fa5ef7146bc3c750bca8df3c2235ab035f4d517ba50f7b3dcabe21` |
 | `docs/evidence/home-widget-design/closeout-2026-10-01/qemu/home-fluid-new-page-drop.png` | 192621 | DATA | `5007dedc8ec8342188b82d2b4f5c779113f2e4183915ba43f7c12411c9210860` |
-DATA  9944c9fdef515ee3fc71c5a00cc46d6619d6142d6de17fcf3198d9b653cd44b8  docs/evidence/omarchy-themes/settings-notifications-themed/board/dark-settings.png
-DATA  5cb9ac53740657f87d06e2c9667605bd1dc197ea1f0c8850ea9592019adda1c9  docs/evidence/omarchy-themes/settings-notifications-themed/board/dark-shade.png
-DATA  4094b29193330d905cae36305574359b8564e35bb11f7ad2d095bc4b142dd23f  docs/evidence/omarchy-themes/settings-notifications-themed/board/light-settings.png
-DATA  9f1b063491fa5e4909d29723dbbde3816c43c2b9268b91ee4906ea4bf3db8505  docs/evidence/omarchy-themes/settings-notifications-themed/board/light-shade.png
-DATA  9944c9fdef515ee3fc71c5a00cc46d6619d6142d6de17fcf3198d9b653cd44b8  docs/evidence/omarchy-themes/settings-notifications-themed/board/rollback-settings.png
-DATA  f96bbf535aa2e78a5b09781c996c7ad4d2359dca838d15ccc28b9c195225a87d  docs/evidence/omarchy-themes/settings-notifications-themed/board/rollback-shade.png
-| `docs/evidence/home-screen/app-actions/qemu/home-actions-right-click.png` | 82147 | DATA | `5fdcbf526530d7d11e5a0f658f69a09b8957c3d6ce1923b30b1b21bf533f48b2` |
-| `docs/evidence/home-screen/app-actions/qemu/home-actions-touch-grab.png` | 195262 | DATA | `27a43617fdf643598ab4a2a946ba8a1d10c0604f39585bc526f3974e9dfca302` |
-| `docs/evidence/home-screen/app-actions/qemu/home-actions-touch-placement.png` | 189281 | DATA | `ac2be7a175f501ea58ee7fb25fd7a8ecbe60a11b271050ead68ab105dd722454` |
