@@ -1,0 +1,29 @@
+{
+  "schema": 1,
+  "date": "2026-09-30",
+  "timezone": "America/Chicago",
+  "provenance": {
+    "overview-native.jpg": "Board-native grim JPEG, transferred unchanged through framed serial base64",
+    "overview-panel.jpg": "Physical panel photograph from /dev/video0, unchanged original FFmpeg frame"
+  },
+  "files": {
+    "overview-native.jpg": {
+      "bytes": 55999,
+      "sha256": "64da29b4e8a6d62346bab76b1c9424bf10abf0a5809f1a49f9524cccbaa2df4f"
+    },
+    "overview-panel.jpg": {
+      "bytes": 40636,
+      "sha256": "a76ca87ac3d0823659559f297258be51f2719e8d95efbcb10186a3f68f17040a"
+    },
+    "console.txt": {
+      "bytes": 1130,
+      "sha256": "320981ad2897289dec5a66a7bc6be1625276574e9835018b19b2a14c11ade87b"
+    }
+  },
+  "operator_report": "home icons don't appear behind the cards",
+  "limits": [
+    "Photo has glare and an oblique viewing angle; native capture and operator report establish icon absence.",
+    "A still photo does not establish frame budgets or all motion paths.",
+    "Current userspace was activated after boot; this does not prove persistent next-boot selection."
+  ]
+}

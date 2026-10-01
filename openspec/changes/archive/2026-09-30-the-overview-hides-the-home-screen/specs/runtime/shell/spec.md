@@ -2,9 +2,7 @@
 
 ### Requirement: The card overview hides the Home screen while active
 
-<!-- UNVERIFIED: fixed and headless-QEMU-tested in this change (a native
-Layer::Bottom fixture standing in for Home, plus debug-scene assertions);
-no real-finger or real-theme board observation exists yet. -->
+*Grounding: Real-finger operator confirmation, native overview capture, physical panel photograph and sanitized scene probe on the installed themed system; docs/evidence/card-shell/overview-home-bleed-through/board-2026-09-30/README.md. Entry/drag and self-healing regression coverage remains explicitly headless QEMU evidence in docs/evidence/card-shell/overview-home-bleed-through/README.md.*
 
 The shell SHALL NOT show any part of the Home screen surface while the card
 overview (`card_shell`'s deck) is active, for the whole duration the

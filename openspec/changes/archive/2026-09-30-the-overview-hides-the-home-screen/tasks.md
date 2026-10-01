@@ -44,15 +44,7 @@
 
 ## 5. Outstanding (hardware-only; keep this change open until done)
 
-- [ ] 5.1 Board re-check: repeat the coordinator's original native capture
-  (`swaymsg card_shell enter`, a real focused app, the board's actual theme
-  and wallpaper configured) on the installed system once this change lands,
-  confirming Home no longer bleeds through with a real (not synthetic)
-  theme canvas and real finger input. Operator command:
-  `./tools/console.py /dev/ttyACM0 --wait=3 "swaymsg card_shell enter"`
-  plus a photograph of the panel; requires the board and its serial port
-  reserved by one operator, per `AGENTS.md`. Not performed by this task
-  (QEMU-only scope, no board/`/dev/ttyACM0` access).
+- [x] 5.1 Board re-check on the installed themed panel shell: real-finger operator confirmation that Home icons never appear behind the cards, board-native overview capture, actual panel photograph and sanitized `card_shell enter` / `debug-scene` console probe. Exact identities, commands and limits: `docs/evidence/card-shell/overview-home-bleed-through/board-2026-09-30/README.md`. Stills establish the observed state; prior QEMU regressions separately cover entry/mid-drag/settlement and self-healing.
 
 ## 6. Follow-up: self-healing against unrelated focus changes
 

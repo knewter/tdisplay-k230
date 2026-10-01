@@ -1533,6 +1533,9 @@ DATA 2c27ebb72c882065eb21e2c79e3a3d9b844bb29f00b319d81459f70094380f17 docs/evide
 DATA 29ec4e126cd46e052ebf1247d248fc795b135299e3912116e3d2535588dcc00a docs/evidence/the-shell-is-navigable-with-a-mouse/after-drawer.jpg
 DATA 1e872a35ff03d6ad526fe06fe990f583c9ab240519e53b1b02e8d8e7ca238797 docs/evidence/the-shell-is-navigable-with-a-mouse/after-themes.jpg
 DATA b828078184dd6dca6e529a1b06025c3305fea75b483ddfc30044e5c9d3d8ac18 docs/evidence/the-shell-is-navigable-with-a-mouse/after-calculator-click.jpg
+DATA 64da29b4e8a6d62346bab76b1c9424bf10abf0a5809f1a49f9524cccbaa2df4f docs/evidence/card-shell/overview-home-bleed-through/board-2026-09-30/overview-native.jpg
+DATA a76ca87ac3d0823659559f297258be51f2719e8d95efbcb10186a3f68f17040a docs/evidence/card-shell/overview-home-bleed-through/board-2026-09-30/overview-panel.jpg
+DATA a5002406911c3ae20a410d989c6e1ad0a31e46f32062eaec14414873e46d37d2 docs/evidence/hdmi-hotplug/panel-recovery-2026-09-30/native-panel.jpg
 ```
 
 `group:` rows stand for a directory whose members are enumerated by

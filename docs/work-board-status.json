@@ -251,20 +251,6 @@
       "rationale": "Closeout audit at 6306c1d8: all implementation tasks are checked; task 1.4 is the sole remaining physical gate. Existing evidence is retained; no new physical acceptance or archive is claimed.",
       "reviewRevision": "6306c1d8df787820c1c74e7808be6d853e343b30"
     },
-    "the-overview-hides-the-home-screen": {
-      "lane": "verification",
-      "source": "source-landed",
-      "physical": "pending",
-      "next": "On the themed AMOLED system, capture real-finger overview entry, drag and settlement; confirm Home never bleeds through.",
-      "dependencies": [],
-      "evidence": [
-        "docs/evidence/proposal-closeout/README.md",
-        "docs/evidence/proposal-closeout/2026-09-30/README.md",
-        "docs/evidence/card-shell/overview-home-bleed-through/README.md"
-      ],
-      "rationale": "Closeout audit at 6306c1d8: all implementation tasks are checked; task 5.1 is the sole remaining physical gate. Existing evidence is retained; no new physical acceptance or archive is claimed.",
-      "reviewRevision": "6306c1d8df787820c1c74e7808be6d853e343b30"
-    },
     "the-shell-is-navigable-with-a-mouse": {
       "lane": "verification",
       "source": "source-landed",

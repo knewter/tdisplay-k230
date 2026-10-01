@@ -174,3 +174,7 @@ The real, finger-driven touch-first two-axis entry gesture, fixed
   unconditional title-bar gap) and with real finger input rather than
   injected touch. This task was scoped to QEMU evidence only (no board or
   `/dev/ttyACM0` access); it does not claim that board check.
+
+## Physical gate completed
+
+The previously outstanding board re-check completed on 2026-09-30: [operator report, native image, panel photograph and exact installed identities](board-2026-09-30/README.md). The preceding limits describe the original QEMU-only handoff. This follow-up closes its physical gate without claiming motion-budget or persistent-boot proof.

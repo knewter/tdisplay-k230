@@ -1,0 +1,8 @@
+Sanitized console probe, 2026-09-30 America/Chicago
+K230_CARD_SHELL_DEBUG_SCENE active=1 deck_enabled=1 canvas enabled=1 pos=0,0 size=568x1232 rgba=0.102,0.106,0.149,0.000 canvas_gradient enabled=-1 ordinary_backdrop enabled=0 pos=0,0 size=568x1232 rgba=0.075,0.078,0.110,1.000 ordinary_maximized_cards=5 appearance_enabled=1 appearance_wallpaper=1 appearance_canvas_authored=0 home_enabled=0 mode=1 entry_progress=1.0000 chrome_enabled=1 drawer_mapped=0 keyboard_mapped=0 selected_app_id=k230-terminal home_selected=0 home_offset=0.0 home_settling=0 trackpad_owned=0 axis_owned=0 card_dx=0.000 card_velocity=0.000 trackpad_client=0 trackpad_keyboard=0 keyboard_progress=0.0000
+
+Current userspace: /nix/store/r0knnb72k3p3mpmbsnfgrk66yg8gl144-nixos-system-nixos-26.11.20260919.20b1ddd
+Booted system: /nix/store/x1xbs5qdb5gn91j6s7gsi8mg18qra5ah-nixos-system-nixos-26.11.20260919.20b1ddd
+Kernel: 6.6.36
+Sway: /nix/store/g2yxx2jxas1nhivqcpxwrhsxpdi8367q-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway
+Rust client: /nix/store/lc0ll4ckkm2vif0s82w2phlwn398g0w1-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0/bin/k230-shell-rust
