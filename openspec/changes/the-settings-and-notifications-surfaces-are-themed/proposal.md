@@ -25,11 +25,13 @@ new palette roles, separate fake appearance endpoints, kernel or boot changes.
 
 ## Capabilities
 
-### Modified Capabilities
+### New Capabilities
 
 - `runtime/shell-themes`: adds the distinct Settings/notification coverage
-  requirement through an ADDED delta. This capability already exists; the
-  parent theme change remains open for its separate outstanding proof.
+  requirement through an ADDED delta. The canonical capability is not yet
+  present; its parent theme change remains open for separate outstanding
+  proof. Archiving this bounded change must retain the parent's pending
+  requirements and cannot imply the whole theme proposal is complete.
 
 ## Impact
 

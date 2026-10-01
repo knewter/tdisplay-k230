@@ -51,3 +51,12 @@ for this theme-only scope; injected commands and native screenshots are labeled.
 
 No surface-owner question remains. Physical readability and same-surface theme
 rollback remain unverified until task 4.2's actual board evidence is committed.
+
+## Shared-layer invalidation found during the board trial
+
+Settings and Shade rollback was visible at `eb38af2a`, but Home's independent
+cached layer did not receive a repaint when the renderer changed appearance.
+Mark that layer dirty on optimistic adoption, commit/rollback and failed-commit
+restoration too. Repeat the native trial on the rebuilt source and compare the
+dock as well as the scoped Settings/notification colors. Do not use the earlier
+partially stale frames as proof of a coherent rollback.

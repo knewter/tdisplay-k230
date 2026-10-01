@@ -49,3 +49,11 @@ An attempted legacy standalone `theme_catalog_bridge_host` check could not
 compile because its pre-existing shim lacks the runtime_trace module. No repair
 of that unrelated harness was included; the same new parser regression runs
 against the actual Rust shell library above. No unperformed command is ticked.
+
+A later native board trial at `eb38af2a` showed that Settings and Shade
+repainted on rollback, while the separate Home dock layer retained its light
+frame. Shared appearance adoption now also marks Home dirty for optimistic
+preview adoption, ordinary commit/rollback, and failed-commit restoration.
+The binary/route suite re-ran after this correction: 22 checks PASS. This
+checkpoint still requires an exact rebuilt candidate and fresh board proof;
+the earlier captures cannot establish the correction.

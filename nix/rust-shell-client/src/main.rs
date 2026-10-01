@@ -2109,6 +2109,9 @@ impl ShellClient {
         } else {
             self.renderer.set_appearance(Some(snapshot.clone()));
         }
+        // Home is a separate cached layer. Repaint it along with Settings,
+        // including when the foreground adopts an already-rendered preview.
+        self.home_mark_dirty();
         let adopt_ms = stage_start.elapsed().as_secs_f64() * 1000.0;
         self.dirty = true;
         self.wallpaper.dirty = true;
@@ -6532,6 +6535,7 @@ fn serve() -> Result<(), String> {
                                     event.snapshot.as_ref().map(|snapshot| snapshot.path.clone());
                                 state.video_display = video_key;
                                 state.renderer.set_appearance(event.snapshot.clone());
+                                state.home_mark_dirty();
                                 // Task 5: re-warm the drawer grid for the
                                 // new theme now, at this settled Commit/
                                 // Rollback point, rather than waiting for
@@ -6877,6 +6881,7 @@ fn serve() -> Result<(), String> {
                             (state.wallpaper.width, state.wallpaper.height),
                         );
                         state.renderer.set_appearance(previous);
+                        state.home_mark_dirty();
                         state.dirty = true;
                         state.wallpaper.dirty = true;
                         state.video_candidate = None;
