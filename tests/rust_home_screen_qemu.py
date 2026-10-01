@@ -1161,8 +1161,15 @@ def main():
         checks["fling_pages_without_an_edge_dwell"] = (
             {"kind": "app", "id": "k230-fixture-badge.desktop"} in flung["pages"][1])
         capture("home-fluid-clock-thin-fling.png")
-        swipe = drag_steps(WIDTH - SWIPE_MARGIN, SWIPE_MARGIN, swipe_y())
-        settle_and_release(swipe, SWIPE_MARGIN, swipe_y())
+        fluid.terminate(); fluid.wait(timeout=5)
+        # Start the runtime on the widget-rich page explicitly. A screenshot
+        # immediately after a swipe is not a reliable assertion of which
+        # persisted page supplied the widgets; this fixture makes that exact.
+        widget_layout = fluid_layout()
+        widget_layout["pages"] = [widget_layout["pages"][2]]
+        home_json.write_text(json.dumps(widget_layout))
+        fluid = start_pass(dark, "fluid-widget-layout")
+        wait_for_ready("fluid-widget-layout-rust")
         capture("home-fluid-analog-dot-matrix-weather.png")
         fluid.terminate(); fluid.wait(timeout=5)
 
