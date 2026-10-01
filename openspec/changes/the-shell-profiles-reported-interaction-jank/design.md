@@ -1,7 +1,7 @@
 ## Context
 
 The operator said the drawer seems fine and asked to spend performance effort
-when slow behavior arises. Keyboard gestures are also accepted. The archived
+when slow behavior arises. Keyboard gestures and ordinary-card/video behavior are also accepted. The archived
 functional closeouts must not claim measurements they never performed.
 
 ## Goals / Non-Goals
@@ -19,6 +19,7 @@ target. Client paint timing alone is not a presentation or finger-latency result
 For keyboard show/hold/reverse/hide, use installed compositor instrumentation
 and the already-defined shell responsiveness budgets; preserve failures as
 failures. Static images do not demonstrate motion timing.
+For ordinary cards, retain the sub-400ms entry-animation and sub-100ms touch-ack targets from `the-card-shell-has-no-video-special-case` task 5.1. The earlier per-event subprocess injector did not establish either target. Use real contact with instrumentation or a held uinput device, record installed identities, and distinguish input acknowledgement, presentation and optical latency.
 
 Conditional optimization: if a measured drawer bottleneck justifies it, propose
 scroll-direction damage-limited blitting from `docs/design/app-drawer-review.md`

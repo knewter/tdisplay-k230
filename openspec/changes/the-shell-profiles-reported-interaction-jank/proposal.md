@@ -1,6 +1,6 @@
 ## Why
 
-The operator accepts the drawer and keyboard behavior, but unrelated unperformed
+The operator accepts the drawer, keyboard and ordinary-card behavior, but unrelated unperformed
 performance measurements keep their proposals open. Investigate reported slow
 interactions when they arise, while preserving the exact deferred checks.
 
@@ -13,6 +13,7 @@ interactions when they arise, while preserving the exact deferred checks.
 - Preserve drawer journal timing, the 17.3–34.6 ms estimate comparison and ~20 ms
   target; investigate scroll-direction damage-limited blitting only if warranted.
 - Preserve keyboard visibility/gesture measurement against existing shell budgets.
+- Carry the ordinary-card change's unperformed sub-400ms entry and sub-100ms touch acknowledgement measurements, using real contact or a persistent uinput device rather than process-spawn timing. Functional ordinary-card acceptance does not establish these numbers.
 - Non-goals: new drawer visuals, unconditional performance tuning, more recordings
   just to reconfirm accepted behavior, or declaring an unmeasured budget passed.
 - Board dependency: actual timing needs a reserved physical board; planning and

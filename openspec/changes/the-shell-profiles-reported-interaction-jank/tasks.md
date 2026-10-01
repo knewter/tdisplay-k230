@@ -11,6 +11,10 @@
 
 - [ ] 3.1 Measure keyboard visibility and gesture workload against existing shell responsiveness budgets using installed compositor instrumentation. Commit exact show/type/hold/reverse/hide workload, concrete instrumentation invocation, identities and observed results under `docs/evidence/interaction-jank/`. Use `python3 tools/console.py /dev/ttyACM0 --wait=3` for the documented installed probe; static images cannot establish timing. Keep open until actual measurements exist.
 
-## 4. Review and publish
+## 4. Ordinary-card measurement (parent 5.1, hardware-only)
 
-- [ ] 4.1 Validate `openspec validate the-shell-profiles-reported-interaction-jank --strict`, commit measured results/decision, push and inspect matching CI/Pages; archive only once performed measurements and conditional disposition are committed. Parent UX acceptance is not this proposal's performance proof.
+- [ ] 4.1 Measure entry-animation duration and touch acknowledgement with a live video and a separate busy non-video app on the installed board. Preserve the sub-400ms entry and sub-100ms touch-ack targets. Use real contact or a persistent uinput-holding injector rather than per-sample `evemu-event` process spawns; record concrete instrumentation command, exact identities and samples under `docs/evidence/interaction-jank/`. Existing qualitative acceptance is not measured performance. Keep both targets UNVERIFIED until actual samples establish them.
+
+## 5. Review and publish
+
+- [ ] 5.1 Validate `openspec validate the-shell-profiles-reported-interaction-jank --strict`, commit measured results/decision, push and inspect matching CI/Pages; archive only once performed measurements and conditional disposition are committed. Parent UX acceptance is not this proposal's performance proof.
