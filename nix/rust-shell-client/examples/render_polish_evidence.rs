@@ -165,6 +165,7 @@ fn chooser(theme: &AppearanceSnapshot, all: &[AppearanceSnapshot]) -> ThemeView 
             })
             .collect(),
         compatibility: Compatibility {
+            adapted: vec![],
             applied: theme.applied.clone(),
             unavailable: theme.unavailable.clone(),
             unknown: theme.unknown.clone(),

@@ -21,13 +21,13 @@ command.
 
 ## 2. Wire the appearance fan-out
 
-- [ ] 2.1 Prove that the existing Rust/deck prepare/commit/rollback transaction
+- [x] 2.1 Prove that the existing Rust/deck prepare/commit/rollback transaction
   covers Settings and Shade through their shared Rust scene owner; no separate
   endpoint exists for either JSON/action helper. Run the existing two-receiver
   failure/rollback suite and actual renderer generation/rollback regression.
   Verify `python3 -m unittest tests.test_omarchy_theme_transaction` and
   `cargo test --offline --manifest-path nix/rust-shell-client/Cargo.toml`.
-- [ ] 2.2 Make the Settings/notifications surface(s) read a generation's
+- [x] 2.2 Make the Settings/notifications surface(s) read a generation's
   `appearance.json` on startup and on the existing commit/rollback signal,
   the same way the Rust shell and Sway deck already do. If task 1 found no
   rendered surface at all for one of them, this task's own scope is limited
@@ -38,12 +38,12 @@ relevant client's own unit tests (host).
 
 ## 3. Report coverage honestly and prove it on the host
 
-- [ ] 3.1 Add the `--surface system` flag to
+- [x] 3.1 Add the `--surface system` flag to
   `tests/test_handheld_theme_rendering.py` that `the-shell-loads-omarchy-
   themes`'s own task 3.3 named but never implemented. It SHALL assert every
   Settings/notifications role this change claims and fail (not skip) on one
   left unthemed.
-- [ ] 3.2 Confirm the compatibility report (`applied`/`adapted`/
+- [x] 3.2 Confirm the compatibility report (`applied`/`adapted`/
   `unavailable`/`unknown`) names each Settings/notifications role by name;
   add a host regression for a role with no themeable equivalent reporting
   `unavailable` rather than being silently omitted.
@@ -67,3 +67,5 @@ and the added compatibility-report regression, both host-only.
 Proof for 4.1: the named `nix build`/toplevel evaluation. Proof for 4.2: the
 committed native captures and exact board commands; a host test does not
 establish this by itself.
+
+Host task groups 2–3 passed 2026-10-01: `docs/evidence/omarchy-themes/settings-notifications-themed/host.md`. Build and board groups remain open.

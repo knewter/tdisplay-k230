@@ -794,6 +794,7 @@ mod tests {
                 },
             ],
             compatibility: Compatibility {
+                adapted: vec![],
                 applied: vec![],
                 unavailable: vec![],
                 unknown: vec![],

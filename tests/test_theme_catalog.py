@@ -374,6 +374,15 @@ class CatalogTests(unittest.TestCase):
         self.assertEqual(direct.name, chosen["generation"])
         self.assertEqual(report["selected_background"], "backgrounds/portrait.png")
 
+    def test_preview_preserves_named_system_surface_coverage(self):
+        theme(self.user / "night")
+        status, result = self.run_cli("preview", self.entries()[0].id)
+        self.assertEqual(status, 0)
+        report = result["compatibility"]
+        self.assertTrue(any(row.startswith("notifications.text:") for row in report["adapted"]))
+        self.assertTrue(any(row.startswith("controls.selected-color:") for row in report["applied"]))
+        self.assertTrue(any(row.startswith("notifications.border:") for row in report["unavailable"]))
+
     def test_invalid_removed_theme_and_symlink_asset_are_rejected(self):
         source = theme(self.user / "night")
         entry = self.entries()[0]

@@ -292,7 +292,7 @@ def preview(entry: Entry, generation: Path, report: dict) -> dict:
             "appearance_path": str(generation / "appearance.json"),
             "palette": report["palette"], "icon_theme": report["icon_theme"],
             "backgrounds": backgrounds,
-            "compatibility": {key: report[key] for key in ("applied", "unavailable", "unknown")},
+            "compatibility": {key: report.get(key, []) for key in ("applied", "adapted", "unavailable", "unknown")},
             "activated": False}
 
 

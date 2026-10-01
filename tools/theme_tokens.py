@@ -153,3 +153,42 @@ def compile_tokens(shell: dict) -> dict:
                 output[key] = {"kind": "raw", "value": value}
         compiled[section] = output
     return {"version": 1, "sections": compiled}
+
+
+# These are roles consumed by the actual Rust Settings/Shade renderer, not
+# merely roles accepted by the generic token compiler. Keep reports explicit
+# about intentionally omitted outlines and states with no interaction owner.
+SYSTEM_ROLES = {
+    "controls": {"normal-color", "normal-fill-alpha", "selected-color",
+                 "selected-fill-alpha", "selected-border", "selected-border-width"},
+    "notifications": {"background", "background-alpha", "text", "countdown"},
+}
+
+
+def system_surface_coverage(tokens: dict) -> dict:
+    coverage = {key: [] for key in ("applied", "adapted", "unavailable", "unknown")}
+    sections = tokens.get("sections", {})
+    for section, required in SYSTEM_ROLES.items():
+        fields = sections.get(section, {})
+        for key in sorted(set(fields) | required):
+            role = f"{section}.{key}"
+            if key not in fields:
+                coverage["unavailable"].append(f"{role}: absent; renderer uses documented fallback")
+            elif key in required or (section == "controls" and key in {"background", "background-alpha", "selected-background", "selected-text"}):
+                adapted = key in {"normal-color", "text", "selected-text", "countdown"}
+                # Foreground text is a solid swatch; tint/background painting
+                # separately preserves complete gradients and authored alpha.
+                coverage["adapted" if adapted else "applied"].append(
+                    f"{role}: " + ("solid text uses first brush stop; fill keeps brush" if adapted
+                                   else "Rust Settings/Shade renderer"))
+            elif key.startswith(("normal-border", "hover-cursor-", "focus-", "pressed-", "selection-", "border")) or key == "selected-border-alpha":
+                # Alpha is already folded into the selected brush by compile_tokens.
+                if key == "selected-border-alpha" and "selected-border" in fields:
+                    coverage["applied"].append(f"{role}: compiled into selected outline brush")
+                else:
+                    coverage["unavailable"].append(f"{role}: no separately painted state in border-light Settings/Shade")
+            else:
+                coverage["unknown"].append(f"{role}: preserved; no current system-surface mapping")
+    if "background" not in sections.get("controls", {}):
+        coverage["adapted"].append("controls.background: Settings uses menu.background, then palette.background")
+    return coverage

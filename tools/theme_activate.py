@@ -23,7 +23,7 @@ import tomllib
 
 from theme_sources import source_dir, source_digest, source_fingerprint
 from theme_preferences import SelectionIntent, choice as remembered_choice
-from theme_tokens import TokenError, compile_tokens
+from theme_tokens import system_surface_coverage, TokenError, compile_tokens
 from theme_transaction import TransactionError, activate_generation
 import keyboard_appearance
 import theme_timing
@@ -312,7 +312,7 @@ def prepare(name: str, *, source: Path | None, state_root: Path,
         staged.mkdir()
         report = {"source": str(theme), "source_sha256": source_hash,
                   "helper_sha256": helper_hash, "adapter_sha256": adapter_hash,
-                  "name": name, "applied": [], "unavailable": [], "unknown": [],
+                  "name": name, "applied": [], "adapted": [], "unavailable": [], "unknown": [],
                   "backgrounds": [], "selected_background": None,
                   "icon_theme": None}
         total = 0
@@ -403,6 +403,8 @@ def prepare(name: str, *, source: Path | None, state_root: Path,
             with (staged / "shell.toml").open("rb") as stream:
                 resolved_shell = tomllib.load(stream)
             tokens = compile_tokens(resolved_shell)
+            for category, roles in system_surface_coverage(tokens).items():
+                report[category].extend(roles)
         except (tomllib.TOMLDecodeError, TokenError) as error:
             raise ThemeError(f"invalid shell appearance: {error}") from error
         icon_file = staged / "icons.theme"

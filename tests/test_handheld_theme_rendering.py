@@ -2,13 +2,16 @@
 
 from pathlib import Path
 import json
+import argparse
+import subprocess
+import re
 import sys
 import tempfile
 import unittest
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "tools"))
-from theme_tokens import TokenError, compile_tokens  # noqa: E402
+from theme_tokens import TokenError, compile_tokens, system_surface_coverage, SYSTEM_ROLES  # noqa: E402
 import theme_activate as activation  # noqa: E402
 
 
@@ -87,5 +90,73 @@ class ThemeTokenRendering(unittest.TestCase):
                              'background = "#101820"')
 
 
+class SystemSurfaceCoverage(unittest.TestCase):
+    def test_generated_system_roles_are_named_and_unsupported_states_are_unavailable(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            source = root / "source"
+            source.mkdir()
+            (source / "colors.toml").write_text('background="#101820"\nforeground="#e0e5e8"\naccent="#778899"\n')
+            generation, report = activation.prepare(
+                "system", source=source, state_root=root / "state",
+                user_themes=root / "none", builtins=None, tools=activation.HOST_TOOLS)
+            payload = json.loads((generation / "appearance.json").read_text())
+            coverage = system_surface_coverage(payload)
+            for section, roles in SYSTEM_ROLES.items():
+                for role in roles:
+                    self.assertIn(role, payload["sections"][section])
+            # Every authored system token has exactly one named status.
+            for section in ("controls", "notifications"):
+                for key in payload["sections"][section]:
+                    prefix = f"{section}.{key}:"
+                    found = [category for category, rows in coverage.items()
+                             for row in rows if row.startswith(prefix)]
+                    self.assertEqual(len(found), 1, prefix)
+                    self.assertTrue(any(row.startswith(prefix) for row in report[found[0]]))
+            self.assertTrue(any(row.startswith("controls.hover-cursor-color:")
+                                for row in report["unavailable"]))
+            self.assertTrue(any(row.startswith("notifications.border:")
+                                for row in report["unavailable"]))
+            self.assertTrue(any(row.startswith("notifications.text:")
+                                for row in report["adapted"]))
+
+    def test_missing_and_unknown_roles_are_not_advertised_as_painted(self):
+        payload = compile_tokens({"controls": {"future-effect": "sparkle"}})
+        coverage = system_surface_coverage(payload)
+        self.assertTrue(any(row.startswith("controls.normal-color:") for row in coverage["unavailable"]))
+        self.assertTrue(any(row.startswith("controls.future-effect:") for row in coverage["unknown"]))
+        self.assertFalse(any(row.startswith("controls.future-effect:") for row in coverage["applied"]))
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--surface", choices=("system",))
+    args, remaining = parser.parse_known_args()
+    program = unittest.main(argv=[sys.argv[0], *remaining], exit=False)
+    if not program.result.wasSuccessful():
+        return 1
+    if args.surface == "system":
+        # This deliberately fails when the actual renderer cannot build/run.
+        # Merely generating tokens or inspecting source is insufficient proof.
+        command = ["cargo", "test", "--offline", "--manifest-path",
+                   str(ROOT / "nix/rust-shell-client/Cargo.toml"), "--lib",
+                   "system_theme_", "--", "--nocapture"]
+        try:
+            result = subprocess.run(command, check=False, capture_output=True, text=True)
+            print(result.stdout, end="")
+            print(result.stderr, end="", file=sys.stderr)
+            if result.returncode:
+                return result.returncode
+            match = re.search(r"test result: ok\. (\d+) passed", result.stdout)
+            if not match or int(match[1]) < 2:
+                print("actual system renderer checks did not execute", file=sys.stderr)
+                return 1
+            return 0
+        except OSError as error:
+            print(f"actual system renderer check unavailable: {error}", file=sys.stderr)
+            return 1
+    return 0
+
+
 if __name__ == "__main__":
-    unittest.main()
+    sys.exit(main())

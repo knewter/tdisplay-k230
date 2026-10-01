@@ -240,7 +240,7 @@ fn visual_style(theme: Option<&AppearanceSnapshot>, section: &str) -> VisualStyl
     let text = brush_rgb(
         theme,
         section,
-        "text",
+        if section == "controls" { "normal-color" } else { "text" },
         palette_rgb_or(theme, "foreground", 0xf4f7f8),
     );
     // `muted` is a decorative swatch in both pinned Catppuccin variants;
@@ -497,7 +497,8 @@ fn service_card(
     };
     overlay_brush(
         cr,
-        theme_brush(theme, "controls", "normal-color"),
+        theme_brush(theme, "controls", if selected { "selected-color" } else { "normal-color" })
+            .or_else(|| theme_brush(theme, "controls", "normal-color")),
         x,
         y,
         w,
@@ -510,13 +511,33 @@ fn service_card(
     // Ordinary surfaces are distinguished by their authored fill and spacing.
     // Reserve an outline for a deliberately selected control, not every row.
     if selected {
+        let widths = match theme.and_then(|s| s.token(section, "selected-border-width")) {
+            Some(AppearanceToken::Width(widths)) => *widths,
+            _ => [1.5; 4],
+        };
         if let Some(border) = theme_brush(theme, section, "selected-border") {
             if let Some(gradient) = brush_gradient(border, x, y, w, h) {
-                rounded(cr, x + 0.75, y + 0.75, w - 1.5, h - 1.5, 15.25);
-                cr.set_line_width(1.5);
+                let _ = cr.save();
+                rounded(cr, x, y, w, h, 16.0);
+                cr.clip();
                 if cr.set_source(&gradient).is_ok() {
-                    let _ = cr.stroke();
+                    // Stroke each edge within its own strip, retaining rounded
+                    // corners and independently authored per-side widths.
+                    for (width, strip) in widths.into_iter().zip([
+                        (x, y, w, h / 2.0), (x + w / 2.0, y, w / 2.0, h),
+                        (x, y + h / 2.0, w, h / 2.0), (x, y, w / 2.0, h),
+                    ]) {
+                        if width <= 0.0 { continue; }
+                        let _ = cr.save();
+                        cr.rectangle(strip.0, strip.1, strip.2, strip.3);
+                        cr.clip();
+                        rounded(cr, x, y, w, h, 16.0);
+                        cr.set_line_width(width * 2.0);
+                        let _ = cr.stroke();
+                        let _ = cr.restore();
+                    }
                 }
+                let _ = cr.restore();
             }
         }
     }
@@ -5813,6 +5834,7 @@ mod tests {
                     decode_status: "fixture".into(),
                 }],
                 compatibility: Compatibility {
+                    adapted: vec![],
                     applied: vec!["shell".into()],
                     unavailable: vec![],
                     unknown: vec![],
@@ -5999,6 +6021,7 @@ mod tests {
                 },
             ],
             compatibility: Compatibility {
+                adapted: vec![],
                 applied: vec!["launcher".into()],
                 unavailable: vec![],
                 unknown: vec![],
@@ -6102,6 +6125,7 @@ mod tests {
                 decode_status: "unverified".into(),
             }],
             compatibility: Compatibility {
+                adapted: vec![],
                 applied: vec![],
                 unavailable: vec![],
                 unknown: vec![],
@@ -6166,6 +6190,7 @@ mod tests {
                     })
                     .collect(),
                 compatibility: Compatibility {
+                    adapted: vec![],
                     applied: vec![],
                     unavailable: vec![],
                     unknown: vec![],
@@ -6513,6 +6538,7 @@ mod tests {
                     decode_status: "unverified".into(),
                 }],
                 compatibility: Compatibility {
+                    adapted: vec![],
                     applied: vec![],
                     unavailable: vec![],
                     unknown: vec![],
@@ -6584,6 +6610,7 @@ mod tests {
                     decode_status: "unverified".into(),
                 }],
                 compatibility: Compatibility {
+                    adapted: vec![],
                     applied: vec![],
                     unavailable: vec![],
                     unknown: vec![],
@@ -7716,6 +7743,7 @@ mod tests {
             icon_theme: None,
             backgrounds: vec![],
             compatibility: Compatibility {
+                adapted: vec![],
                 applied: vec![],
                 unavailable: vec![],
                 unknown: vec![],
@@ -7928,6 +7956,96 @@ mod tests {
         let mut surface = surface;
         let data = surface.data().unwrap();
         assert_eq!(&data[(40 * 120 + 60) * 4..(40 * 120 + 60) * 4 + 4], &[96, 64, 32, 255]);
+    }
+
+    #[test]
+    fn system_theme_roles_reach_real_settings_and_shade_pixels() {
+        fn token(rgb: &str, alpha: f64) -> AppearanceToken {
+            AppearanceToken::Brush(Brush { stops: vec![BrushStop {
+                offset: 0.0, argb: rgb.into(),
+            }], angle_degrees: 0.0, alpha })
+        }
+        fn panel(theme: &AppearanceSnapshot, route: Route) -> Vec<u8> {
+            let mut renderer = RendererCache::default();
+            renderer.set_appearance(Some(theme.clone()));
+            let mut pixels = vec![0; 568 * 1232 * 4];
+            renderer.draw(&mut pixels, RenderParams { route, ..SETTINGS_PARAMS }, &[]).unwrap();
+            pixels
+        }
+        fn card(theme: &AppearanceSnapshot, selected: bool) -> Vec<u8> {
+            let mut surface = ImageSurface::create(Format::ARgb32, 160, 100).unwrap();
+            let cr = Context::new(&surface).unwrap();
+            service_card(&cr, Some(theme), "controls", 0.0, 0.0, 160.0, 100.0, selected);
+            drop(cr);
+            let pixels = surface.data().unwrap().to_vec();
+            pixels
+        }
+        let mut theme = fixture_theme("aaaaaaaaaaaaaaaaaaaaaaaa", (16, 24, 32));
+        theme.sections.get_mut("controls").unwrap().extend([
+            ("normal-color".into(), token("#ffdd8844", 1.0)),
+            ("normal-fill-alpha".into(), AppearanceToken::Number(0.25)),
+            ("selected-color".into(), token("#ff44aadd", 1.0)),
+            ("selected-fill-alpha".into(), AppearanceToken::Number(0.35)),
+            ("selected-border".into(), token("#ffcc55ee", 1.0)),
+            ("selected-border-width".into(), AppearanceToken::Width([3.0; 4])),
+        ]);
+        theme.sections.insert("notifications".into(), BTreeMap::from([
+            ("background".into(), token("#ff183044", 0.85)),
+            ("text".into(), token("#ffeeccee", 1.0)),
+            ("countdown".into(), token("#ff55ddaa", 1.0)),
+        ]));
+        for (section, key, replacement, selected) in [
+            ("controls", "normal-color", token("#ff2266bb", 1.0), false),
+            ("controls", "normal-fill-alpha", AppearanceToken::Number(0.0), false),
+            ("controls", "selected-color", token("#ffcc7722", 1.0), true),
+            ("controls", "selected-fill-alpha", AppearanceToken::Number(0.0), true),
+            ("controls", "selected-border", token("#ff2255aa", 1.0), true),
+            ("controls", "selected-border-width", AppearanceToken::Width([0.0; 4]), true),
+        ] {
+            let before = card(&theme, selected);
+            let mut changed = theme.clone();
+            changed.sections.get_mut(section).unwrap().insert(key.into(), replacement);
+            assert_ne!(before, card(&changed, selected), "{section}.{key} must change painted pixels");
+        }
+        // The selected color must not alter an ordinary row's appearance.
+        let mut selected_only = theme.clone();
+        selected_only.sections.get_mut("controls").unwrap().insert("selected-color".into(), token("#ffff0000", 1.0));
+        assert_eq!(card(&theme, false), card(&selected_only, false));
+        for (section, key, replacement, route) in [
+            ("controls", "background", token("#ff503020", 1.0), Route::Settings),
+            ("controls", "normal-color", token("#ff2266bb", 1.0), Route::Settings),
+            ("notifications", "background", token("#ff332255", 0.85), Route::Shade),
+            ("notifications", "background", token("#ff183044", 0.25), Route::Shade),
+            ("notifications", "text", token("#ff22bb66", 1.0), Route::Shade),
+            ("notifications", "countdown", token("#ffcc5522", 1.0), Route::Shade),
+        ] {
+            let before = panel(&theme, route);
+            let mut changed = theme.clone();
+            changed.sections.get_mut(section).unwrap().insert(key.into(), replacement);
+            assert_ne!(before, panel(&changed, route), "{section}.{key} must reach the actual route renderer");
+        }
+    }
+
+    #[test]
+    fn system_theme_swap_and_rollback_restore_settings_and_shade() {
+        for route in [Route::Settings, Route::Shade] {
+            let mut dark = fixture_theme("aaaaaaaaaaaaaaaaaaaaaaaa", (16, 24, 32));
+            dark.sections.insert("notifications".into(), dark.sections["controls"].clone());
+            let mut light = fixture_theme("bbbbbbbbbbbbbbbbbbbbbbbb", (220, 225, 230));
+            light.sections.insert("notifications".into(), light.sections["controls"].clone());
+            let mut renderer = RendererCache::default();
+            let mut pixels = vec![0; 568 * 1232 * 4];
+            let params = RenderParams {route, ..SETTINGS_PARAMS};
+            renderer.set_appearance(Some(dark.clone()));
+            renderer.draw(&mut pixels, params, &[]).unwrap();
+            let previous = pixels.clone();
+            renderer.set_appearance(Some(light));
+            renderer.draw(&mut pixels, params, &[]).unwrap();
+            assert_ne!(previous, pixels, "{route:?} must update on commit");
+            renderer.set_appearance(Some(dark));
+            renderer.draw(&mut pixels, params, &[]).unwrap();
+            assert_eq!(previous, pixels, "{route:?} rollback must restore the same pixels");
+        }
     }
 
 }

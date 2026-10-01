@@ -107,6 +107,7 @@ pub struct BackgroundChoice {
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct Compatibility {
     pub applied: Vec<String>,
+    pub adapted: Vec<String>,
     pub unavailable: Vec<String>,
     pub unknown: Vec<String>,
 }
@@ -782,6 +783,7 @@ fn preview(value: &Value, request: &ThemeRequest) -> Result<ThemePreview, String
         backgrounds,
         compatibility: Compatibility {
             applied: string_list(compatibility.get("applied"))?,
+            adapted: match compatibility.get("adapted") { Some(v) => string_list(Some(v))?, None => vec![] },
             unavailable: string_list(compatibility.get("unavailable"))?,
             unknown: string_list(compatibility.get("unknown"))?,
         },
