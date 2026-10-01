@@ -200,3 +200,7 @@ Recoverable component installation passed: `docs/evidence/home-screen/app-action
 The candidate has a 30-minute independent restoration timer; operator feedback
 is still required by 11.4. The named individual Rust and HDMI toplevel builds
 have now passed; their exact output paths are recorded in that board README.
+
+2026-10-01 operator accepted hold-and-drag without a menu on the installed
+candidate: `docs/evidence/home-screen/app-actions/board/operator-acceptance-2026-10-01.md`.
+11.4 still retains explicit primary-focus/New Window acceptance.

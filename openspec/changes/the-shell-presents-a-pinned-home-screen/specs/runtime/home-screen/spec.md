@@ -210,8 +210,10 @@ contact displacement and settle smoothly after release or cancellation.
 
 ### Requirement: App icons provide explicit window and desktop actions
 
-<!-- UNVERIFIED: GNOME reference behavior has been read; the K230 menu,
-capability checks and contact arbitration in task group 11 are not implemented. -->
+<!-- UNVERIFIED: source, host and paired cross checks are implemented; native
+board pointer delivery/dismissal and operator hold-and-drag acceptance are
+recorded under docs/evidence/home-screen/app-actions/board/. Explicit
+New Window/primary-focus operator acceptance remains open in task 11.4. -->
 
 Home/dock and the shared launcher app-icon path SHALL provide the same menu
 through secondary click in mouse mode. Long-press SHALL retain the existing

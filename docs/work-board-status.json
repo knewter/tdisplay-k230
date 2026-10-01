@@ -162,7 +162,7 @@
       "lane": "in-progress",
       "source": "in-progress",
       "physical": "pending",
-      "next": "Obtain operator acceptance of the recoverably installed app-menu candidate and remaining Home layout scope. Named builds and paired fixture pass. Touch hold rearranges; right-click opens actions.",
+      "next": "Confirm primary activation of an existing window and explicit New Window on the installed candidate, then reconcile the remaining original Home acceptance scope. Real-finger hold-and-drag is accepted.",
       "dependencies": [],
       "evidence": [
         "docs/evidence/proposal-closeout/README.md",
@@ -176,7 +176,8 @@
         "docs/evidence/home-screen/app-actions/qemu/result.json",
         "docs/evidence/home-screen/app-actions/board/README.md",
         "docs/evidence/home-screen/app-actions/board/result.json",
-        "docs/evidence/home-screen/app-actions/board/pointer-result.json"
+        "docs/evidence/home-screen/app-actions/board/pointer-result.json",
+        "docs/evidence/home-screen/app-actions/board/operator-acceptance-2026-10-01.md"
       ],
       "rationale": "Host, paired cross app-action checks and named builds pass. A timed recoverable board trial runs the exact Rust candidate; injected board pointer input also proves menu delivery, dismissal and Home preservation. Real operator menu/grab acceptance remains pending.",
       "reviewRevision": "288535289172c8465c4fa408eaa8ba2c7ab8a5ac",
