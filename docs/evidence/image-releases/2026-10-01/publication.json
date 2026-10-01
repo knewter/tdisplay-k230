@@ -1,0 +1,33 @@
+{
+  "url": "https://github.com/knewter/tdisplay-k230/releases/tag/dev-coherent-65c0a71d1db5",
+  "revision": "65c0a71d1db55b819633ba7ef9f3040a525ae3ee",
+  "tag": "dev-coherent-65c0a71d1db5",
+  "published_at": "2026-10-01T17:29:28Z",
+  "release_id": 401176498,
+  "assets": [
+    {
+      "name": "release-metadata.json",
+      "bytes": 3936,
+      "sha256": "0ae73e708f84d671448681e637a53278c4ea04119034cc862eb12aa2bc07f92d",
+      "url": "https://github.com/knewter/tdisplay-k230/releases/download/dev-coherent-65c0a71d1db5/release-metadata.json"
+    },
+    {
+      "name": "release-notes.md",
+      "bytes": 1394,
+      "sha256": "1c1d86906d78bdd6cfd0018270c6b0ac0108e1a4035f2e309ff67400114f6eab",
+      "url": "https://github.com/knewter/tdisplay-k230/releases/download/dev-coherent-65c0a71d1db5/release-notes.md"
+    },
+    {
+      "name": "SHA256SUMS",
+      "bytes": 280,
+      "sha256": "c86a695f24caebb45b15039bd9930399d070e006e3569e08ea4dfd727e2bba42",
+      "url": "https://github.com/knewter/tdisplay-k230/releases/download/dev-coherent-65c0a71d1db5/SHA256SUMS"
+    },
+    {
+      "name": "tdisplay-k230-coherent-65c0a71d1db5.img.xz",
+      "bytes": 1036505548,
+      "sha256": "14693f6ea2940053ed67332b34bc22e1d73b9deade6cb47a1d54d680b38d7b40",
+      "url": "https://github.com/knewter/tdisplay-k230/releases/download/dev-coherent-65c0a71d1db5/tdisplay-k230-coherent-65c0a71d1db5.img.xz"
+    }
+  ]
+}

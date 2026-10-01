@@ -1,0 +1,60 @@
+--- boot partition
+bootargs: console=tty0 consoleblank=0 console=ttyS0,115200n8 root=fstab loglevel=4 lsm=landlock,yama,bpf loglevel=7 init=/nix/store/xphf8zb00gz9hiyqkkh399rldr2ljykb-nixos-system-nixos-26.11.20260919.20b1ddd/init
+Image Name:   initrd
+Created:      Tue Jan  1 00:00:00 1980
+Image Type:   RISC-V Linux RAMDisk Image (uncompressed)
+Data Size:    27294991 Bytes = 26655.26 KiB = 26.03 MiB
+Load Address: 00000000
+Entry Point:  00000000
+mke2fs 1.47.4 (6-Mar-2025)
+Creating regular file boot.ext4
+64-bit filesystem support is not enabled.  The larger fields afforded by this feature enable full-strength checksumming.  Pass -O 64bit to rectify.
+Creating filesystem with 114688 1k blocks and 28672 inodes
+Filesystem UUID: da208c4d-eca4-44a5-a8d7-ee4b1a0f74ec
+Superblock backups stored on blocks: 
+	8193, 24577, 40961, 57345, 73729
+
+Allocating group tables:  0/14     done                            
+Writing inode tables:  0/14     done                            
+Creating journal (4096 blocks): done
+Copying files into the device: done
+Writing superblocks and filesystem accounting information:  0/14     done
+
+--- root partition
+--- MBR: boot and root only; stage 1 is intentionally NOT in the table
+Checking that no-one is using this disk right now ... OK
+
+Disk /nix/store/hl8xjdwm2ihlcs54zk5mr9zkpxk9vny9-k230-sd-image.img: 5.06 GiB, 5438128128 bytes, 10621344 sectors
+Units: sectors of 1 * 512 = 512 bytes
+Sector size (logical/physical): 512 bytes / 512 bytes
+I/O size (minimum/optimal): 512 bytes / 512 bytes
+
+>>> Script header accepted.
+>>> Created a new DOS (MBR) disklabel with disk identifier 0x8a514176.
+/nix/store/hl8xjdwm2ihlcs54zk5mr9zkpxk9vny9-k230-sd-image.img1: Created a new partition 1 of type 'Linux' and of size 112 MiB.
+Partition #1 contains a ext4 signature.
+/nix/store/hl8xjdwm2ihlcs54zk5mr9zkpxk9vny9-k230-sd-image.img2: Created a new partition 2 of type 'Linux' and of size 4.9 GiB.
+Partition #2 contains a ext4 signature.
+/nix/store/hl8xjdwm2ihlcs54zk5mr9zkpxk9vny9-k230-sd-image.img3: Done.
+
+New situation:
+Disklabel type: dos
+Disk identifier: 0x8a514176
+
+Device                                                         Boot  Start      End  Sectors Size Id Type
+/nix/store/hl8xjdwm2ihlcs54zk5mr9zkpxk9vny9-k230-sd-image.img1        8192   237567   229376 112M 83 Linu
+/nix/store/hl8xjdwm2ihlcs54zk5mr9zkpxk9vny9-k230-sd-image.img2      262144 10619295 10357152 4.9G 83 Linu
+
+The partition table has been altered.
+--- stage 1, raw, into the gap before partition 1
+--- done
+Disk /nix/store/hl8xjdwm2ihlcs54zk5mr9zkpxk9vny9-k230-sd-image.img: 5.06 GiB, 5438128128 bytes, 10621344 sectors
+Units: sectors of 1 * 512 = 512 bytes
+Sector size (logical/physical): 512 bytes / 512 bytes
+I/O size (minimum/optimal): 512 bytes / 512 bytes
+Disklabel type: dos
+Disk identifier: 0x8a514176
+
+Device                                                         Boot  Start      End  Sectors Size Id Type
+/nix/store/hl8xjdwm2ihlcs54zk5mr9zkpxk9vny9-k230-sd-image.img1        8192   237567   229376 112M 83 Linu
+/nix/store/hl8xjdwm2ihlcs54zk5mr9zkpxk9vny9-k230-sd-image.img2      262144 10619295 10357152 4.9G 83 Linu

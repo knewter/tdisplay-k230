@@ -1,0 +1,90 @@
+{
+  "schema": 1,
+  "revision": "65c0a71d1db55b819633ba7ef9f3040a525ae3ee",
+  "tag": "dev-coherent-65c0a71d1db5",
+  "repository": "knewter/tdisplay-k230",
+  "created_at": "2026-10-01T16:59:30.612191+00:00",
+  "target": "sdImage-coherent",
+  "configuration": "k230-coherent-shell",
+  "kernel_version": "6.6.36-xuantie",
+  "flake_lock_sha256": "1dcb23e6820875a38d0a19c9e2e29276fd9f35ebdc0c6cd5480d89cb4be98d1c",
+  "operator_note": "At this snapshot, the-coherent-shell-boots-the-selected-system remains open. A matching configured vendor-kernel manual trial reached root/services but did not establish accepted startup Home behavior. The restored known-good persistent board boot uses an older vendor system/kernel; newer coherent userspace has been activated temporarily on that older kernel. The local SD image build reuses exact cached target closure outputs exported from the board and independently checksum-checked before import.",
+  "outputs": {
+    "image": {
+      "outPath": "/nix/store/hl8xjdwm2ihlcs54zk5mr9zkpxk9vny9-k230-sd-image.img",
+      "drvPath": "/nix/store/mfp8f7zpibqzibwgfpjxnng3fxq1712n-k230-sd-image.img.drv"
+    },
+    "system": {
+      "outPath": "/nix/store/xphf8zb00gz9hiyqkkh399rldr2ljykb-nixos-system-nixos-26.11.20260919.20b1ddd",
+      "drvPath": "/nix/store/45zdf90qynnm7fs2pg6rvbj0q6nf3p2p-nixos-system-nixos-26.11.20260919.20b1ddd.drv"
+    },
+    "kernel": {
+      "outPath": "/nix/store/03zyl0mjsxbjyisb3lhjaxswpxm71ap6-linux-riscv64-unknown-linux-gnu-6.6.36-xuantie",
+      "drvPath": "/nix/store/2ygsvl6i74s65iqhm9dwcnfcva7h6f5m-linux-riscv64-unknown-linux-gnu-6.6.36-xuantie.drv"
+    },
+    "device_tree": {
+      "outPath": "/nix/store/yfda1lasmlgyappdgf6f49g7yj7m8mjd-k230-tdisplay.dtb",
+      "drvPath": "/nix/store/rplyp8gpz9jdqg0rakm4ms61075ydl9k-k230-tdisplay.dtb.drv"
+    }
+  },
+  "build_commands": [
+    [
+      "nix",
+      "build",
+      "--no-write-lock-file",
+      "git+file:///home/jadams/tmp/tdisplay-release-worktree?rev=65c0a71d1db55b819633ba7ef9f3040a525ae3ee#packages.x86_64-linux.sdImage-coherent",
+      "--out-link",
+      "/home/jadams/tmp/k230-release-65c0a71d1db5/gc-roots/image",
+      "--max-jobs",
+      "1",
+      "--cores",
+      "8"
+    ],
+    [
+      "nix",
+      "build",
+      "--no-write-lock-file",
+      "git+file:///home/jadams/tmp/tdisplay-release-worktree?rev=65c0a71d1db55b819633ba7ef9f3040a525ae3ee#nixosConfigurations.k230-coherent-shell.config.system.build.toplevel",
+      "--out-link",
+      "/home/jadams/tmp/k230-release-65c0a71d1db5/gc-roots/system",
+      "--max-jobs",
+      "1",
+      "--cores",
+      "8"
+    ],
+    [
+      "nix",
+      "build",
+      "--no-write-lock-file",
+      "git+file:///home/jadams/tmp/tdisplay-release-worktree?rev=65c0a71d1db55b819633ba7ef9f3040a525ae3ee#nixosConfigurations.k230-coherent-shell.config.boot.kernelPackages.kernel",
+      "--out-link",
+      "/home/jadams/tmp/k230-release-65c0a71d1db5/gc-roots/kernel",
+      "--max-jobs",
+      "1",
+      "--cores",
+      "8"
+    ],
+    [
+      "nix",
+      "build",
+      "--no-write-lock-file",
+      "git+file:///home/jadams/tmp/tdisplay-release-worktree?rev=65c0a71d1db55b819633ba7ef9f3040a525ae3ee#packages.x86_64-linux.deviceTree",
+      "--out-link",
+      "/home/jadams/tmp/k230-release-65c0a71d1db5/gc-roots/device_tree",
+      "--max-jobs",
+      "1",
+      "--cores",
+      "8"
+    ]
+  ],
+  "validation_limits": "Host cross-build and uploaded-byte checks only. This exact full image has not been flashed or accepted on physical hardware and has no QEMU boot proof. Fresh-image startup/Home physical acceptance must be established separately.",
+  "image": {
+    "name": "tdisplay-k230-coherent-65c0a71d1db5.img.xz",
+    "sha256": "67f28f35b97bbea32c146dbb313e8fa587fb925f34faf990eaa81a101512f32d",
+    "bytes": 5438128128
+  },
+  "compressed": {
+    "sha256": "14693f6ea2940053ed67332b34bc22e1d73b9deade6cb47a1d54d680b38d7b40",
+    "bytes": 1036505548
+  }
+}

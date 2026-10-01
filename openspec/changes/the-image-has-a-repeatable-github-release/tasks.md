@@ -5,8 +5,8 @@
 
 ## 2. First development snapshot
 
-- [ ] 2.1 Build and stage the coherent image from an exact master revision using `python3 tools/release-image.py stage --revision <full-master-sha> --directory ~/tmp/k230-release-<sha>`; its recorded `nix build <pinned-flake>#sdImage-coherent --max-jobs 1 --cores 8` proves host cross-build only.
-- [ ] 2.2 Publish and verify fresh GitHub prerelease assets with `python3 tools/release-image.py publish --directory ~/tmp/k230-release-<sha>`; commit release URL, sizes, hashes and actual limits in `docs/evidence/image-releases/`. This proves publication and downloaded-byte integrity, not QEMU or hardware boot.
+- [x] 2.1 Build and stage the coherent image from an exact master revision using `python3 tools/release-image.py stage --revision <full-master-sha> --directory ~/tmp/k230-release-<sha>`; its recorded `nix build <pinned-flake>#sdImage-coherent --max-jobs 1 --cores 8` proves host cross-build only.
+- [x] 2.2 Publish and verify fresh GitHub prerelease assets with `python3 tools/release-image.py publish --directory ~/tmp/k230-release-<sha>`; commit release URL, sizes, hashes and actual limits in `docs/evidence/image-releases/`. This proves publication and downloaded-byte integrity, not QEMU or hardware boot.
 
 ## 3. Closeout
 

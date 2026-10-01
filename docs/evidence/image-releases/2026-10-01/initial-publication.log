@@ -1,0 +1,4 @@
+Verifying decompressed image
+https://github.com/knewter/tdisplay-k230/releases/tag/untagged-30e1e204bfa121e8bd8a
+gh: Not Found (HTTP 404)
+Error: Command '['gh', 'api', 'repos/knewter/tdisplay-k230/releases/tags/dev-coherent-65c0a71d1db5']' returned non-zero exit status 1.
