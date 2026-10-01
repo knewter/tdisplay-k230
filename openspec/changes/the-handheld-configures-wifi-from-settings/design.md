@@ -58,3 +58,7 @@ See proposal.md. `nix/hardware.nix` already defines `k230-wifi.service`: `wlan0`
 ## Migration Plan
 
 Add the broker and Settings client without changing the credential-free default or existing operator file format. Install and host-test the isolated package, then cross-build the full closure. The root operator activates a recovery-capable image and tests open/WPA2 connection, Forget and reboot reconnect on the physical board. Rollback disables the new broker and restores the previous image; the existing root-owned credential remains usable by the proven service.
+
+## Password visibility follow-up (2026-09-30)
+
+The physical operator found the Wi-Fi flow usable but requested an eye toggle to inspect touchscreen typos. Add explicit Show/Hide beside the field with a usable touch target. Keep masked entry as the default and reset visibility on every editor exit and new selection. Preserve the existing secret holder and focus lifecycle; public status/debug state may contain a visibility flag and length, but never the secret. A visible-field render is transient user-requested output, not permission to put its content in worker/debug messages, cache keys, logs or committed captures. Verify with a disposable sample rather than recording actual credentials. See `docs/evidence/wifi-settings/operator-2026-09-30.md`; broad positive feedback does not stand in for the unperformed reboot/Forget cases.

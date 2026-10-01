@@ -24,6 +24,11 @@ The shell userspace SHALL offer masked password entry for a selected supported s
 - **WHEN** a person taps a WPA2-Personal network
 - **THEN** a masked entry appears, the system keyboard raises from the bottom of the screen, Cancel/Connect move to sit above it, and Connect remains disabled until the entered value meets the supported format
 
+#### Scenario: Person checks a possible typing error
+- **WHEN** a person taps the password field's Show eye icon while entering an unsaved password
+- **THEN** only that in-progress field becomes readable, typing and correction continue through the same system keyboard, and the eye changes to Hide
+- **AND** tapping Hide or leaving the editor masks the field again; a later editor starts masked and saved credentials remain unavailable to the shell
+
 #### Scenario: Password field is not focused
 - **WHEN** an open network is selected, a saved credential needs no re-entry, or the Wi-Fi page is closed
 - **THEN** the system keyboard is not raised and the overlay does not hold keyboard focus
