@@ -1,17 +1,15 @@
-All tasks are initially open. This change exists to carry forward exactly
-the scope `the-shell-loads-omarchy-themes`'s own task 3.3 named and left
-open ("Do not tick this while consumers are only mockups") when that
-change's parent is closed out. Nothing here is claimed done by the audit
-that created this file.
+Surface ownership reconciled 2026-10-01 after reading the helpers and actual
+Rust renderer. This supersedes the assumed extra-endpoint plan without dropping
+startup, commit/rollback, role coverage, full-build or physical proof.
 
 ## 1. Find out what Settings and notifications actually are
 
-- [ ] 1.1 Read `nix/handheld-settings.nix` and `nix/handheld-notifications.nix`
+- [x] 1.1 Read `nix/handheld-settings.nix` and `nix/handheld-notifications.nix`
   end to end. Record, in this change's own `design.md` (updating its "Open
   Questions" section rather than guessing here), whether each is a rendered
   surface at all today, or purely a command wrapper with nothing to repaint.
   If either has no rendered surface, say so before task 2 assumes one.
-- [ ] 1.2 Identify the exact palette fields a themed Settings/notifications
+- [x] 1.2 Identify the exact palette fields a themed Settings/notifications
   surface would consume, cross-checking against `theme_tokens.py`'s existing
   `sections["controls"]`/`sections["notifications"]` output (already
   asserted present by `tests/test_handheld_theme_rendering.py::
@@ -23,12 +21,12 @@ command.
 
 ## 2. Wire the appearance fan-out
 
-- [ ] 2.1 Extend `tools/theme_transaction.py`'s receiver fan-out with an
-  optional endpoint pair for whatever rendered surface(s) task 1 found,
-  following the existing `--rust-socket`/`--deck-socket` convention exactly
-  (same prepare/commit/rollback contract, same all-or-nothing semantics).
-  Test with a new `tests/test_omarchy_theme_transaction.py` case exercising
-  the added endpoint alongside the existing two.
+- [ ] 2.1 Prove that the existing Rust/deck prepare/commit/rollback transaction
+  covers Settings and Shade through their shared Rust scene owner; no separate
+  endpoint exists for either JSON/action helper. Run the existing two-receiver
+  failure/rollback suite and actual renderer generation/rollback regression.
+  Verify `python3 -m unittest tests.test_omarchy_theme_transaction` and
+  `cargo test --offline --manifest-path nix/rust-shell-client/Cargo.toml`.
 - [ ] 2.2 Make the Settings/notifications surface(s) read a generation's
   `appearance.json` on startup and on the existing commit/rollback signal,
   the same way the Rust shell and Sway deck already do. If task 1 found no
