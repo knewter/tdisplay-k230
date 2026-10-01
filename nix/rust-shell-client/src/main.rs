@@ -1112,6 +1112,7 @@ struct ShellClient {
     /// set_keyboard_inset` so the Entry page's Cancel/Connect row reflows
     /// above it instead of underneath it.
     keyboard_height_px: f64,
+    keyboard_grip_height_px: f64,
     route: Route,
     touch: TouchTrace,
     width: u32,
@@ -2997,7 +2998,9 @@ impl ShellClient {
     fn sync_drawer_keyboard(&mut self) {
         let want = self.route == Route::Drawer && self.layer.is_some()
             && self.splash.is_none() && self.drawer_search.focused;
-        self.drawer_search.keyboard_inset = if want { self.keyboard_height_px } else { 0.0 };
+        self.drawer_search.keyboard_inset = if want && self.keyboard_signal_path.is_some() {
+            self.keyboard_height_px + self.keyboard_grip_height_px
+        } else { 0.0 };
         if want == self.drawer_keyboard_active { return; }
         self.drawer_keyboard_active = want;
         if let Some(layer) = &self.layer {
@@ -5716,6 +5719,9 @@ fn serve() -> Result<(), String> {
         drawer_keyboard_active: false,
         home_keyboard_active: false,
         keyboard_signal_path: std::env::var_os("K230_KEYBOARD_SIGNAL").map(PathBuf::from),
+        // Matches card_shell_keyboard_adjust_usable's grip allocation when
+        // the configured shared gesture policy is enabled.
+        keyboard_grip_height_px: if std::env::var("K230_KEYBOARD_TOUCH_GESTURES").as_deref() == Ok("1") { 56.0 } else { 0.0 },
         keyboard_height_px: std::env::var("K230_KEYBOARD_HEIGHT")
             .ok()
             .and_then(|value| value.parse::<f64>().ok())
