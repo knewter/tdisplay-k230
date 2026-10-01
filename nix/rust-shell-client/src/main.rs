@@ -1572,7 +1572,7 @@ impl ShellClient {
             layer.commit();
         }
         self.wifi_view
-            .set_keyboard_inset(if want { self.keyboard_height_px } else { 0.0 });
+            .set_keyboard_inset(if want { self.keyboard_height_px + self.keyboard_grip_height_px } else { 0.0 });
         if let Some(path) = &self.keyboard_signal_path {
             // Fire-and-forget, exactly like the compositor's own two-finger
             // gesture handler (`adapter.c`'s `keyboard_signal`) -- a helper
