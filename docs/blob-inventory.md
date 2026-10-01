@@ -651,6 +651,13 @@ Paths are relative to the repository root. `(sdk)` is
 so that building stage 1 from source does not silently drop them from view.
 
 ```
+DATA b10f493aa0185ceb875dd2787cc0402b70985726ec37133145abbae4fae98434 docs/evidence/home-widget-design/closeout-2026-10-01/board/edge-indicator.jpg
+DATA e34f6168a23d7020248b0c195482c50ad9912a845fb94c6b3b2a31c0ccb8e266 docs/evidence/home-widget-design/closeout-2026-10-01/board/fling-drop.jpg
+DATA 4d2b3933bf5bc0d1b8cd4c48c3d4000c04902c8a404dda58bdce1402fef08903 docs/evidence/home-widget-design/closeout-2026-10-01/board/new-page-drop.jpg
+DATA d26682489466c02d7da1f5abbe579a072adaddd6d8d34b68d0422271cc189247 docs/evidence/home-widget-design/closeout-2026-10-01/board/widgets-battery.jpg
+DATA bb79b07f61f8751675f7e072479912e19334af0943a8ec9389237848771d41d0 docs/evidence/home-widget-design/closeout-2026-10-01/board/widgets-bubble.jpg
+DATA a9904e028f756621522a097434859d2ea30343799f76a743c388d04df97ed1f2 docs/evidence/home-widget-design/closeout-2026-10-01/board/widgets-dot-matrix.jpg
+DATA f19494f45aaf64477fa34f4a7decc48051907b68707dabce6c25e78e1019d751 docs/evidence/home-widget-design/closeout-2026-10-01/board/widgets-thin.jpg
 DATA d17d0e60b3dd8343575020284da0773c29c441874c4c1521c866115880d32b22 docs/evidence/home-widgets-folders/closeout-2026-10-01/board/clock-placed.jpg
 DATA 49e0b8b31d9a4fe2a7498490ce2375edfd77ac5143f2ba615e580cf2882a84c3 docs/evidence/home-widgets-folders/closeout-2026-10-01/board/dock-folder-open.jpg
 DATA f439a4c958c0817a03058897a8b0043713bda2c51c6c0f22074914dba018d091 docs/evidence/home-widgets-folders/closeout-2026-10-01/board/folder-created.jpg

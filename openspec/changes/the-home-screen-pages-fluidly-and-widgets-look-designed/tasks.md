@@ -144,16 +144,7 @@
   a synthesis table mapping each of the four shipped styles to the
   principles behind it and the font-decision section `design.md`
   decision 6 cites.
-- [ ] 3.4 A paired Sway/Rust QEMU injected-touch trial of the redesigned
-  widgets and the live cross-page drag (edge dwell, fling, new-page
-  creation) against a real compositor frame. **Not attempted this pass**:
-  the sibling change's own `docs/evidence/home-widgets-folders/README.md`
-  documents this exact harness being silently terminated at a reproducible
-  point across three attempts on this same shared build machine; re-running
-  it blind, with no new evidence that the underlying contention is
-  resolved, would not have produced a trustworthy result. Left
-  **UNVERIFIED** rather than guessed at. Re-attempting this on a less
-  contended run is the next step, not a code change.
+- [x] 3.4 Paired production Sway/Rust injected-touch fluid-only QEMU run passes five paging/widget checks, including dwell/repeat/new page, interior fling, and actual runtime widget placement. Captures, exact artifacts and limits are committed in `docs/evidence/home-widget-design/closeout-2026-10-01/qemu/README.md`; blob inventory passes.
 
 ## 4. Build and checks
 
@@ -196,10 +187,4 @@
 
 ## 5. Board acceptance (explicitly out of scope for this pass)
 
-- [ ] 5.1 **Hardware, not claimed by this change.** Real-finger cross-page
-  drag (edge dwell feel, fling, new-page creation) and the redesigned
-  widgets (daylight readability, real weather data over the board's own
-  network, a real battery device if the keyboard base is connected),
-  photographed on the physical AMOLED. Left open per the coordinator's
-  explicit instruction that this implementation does not touch the board or
-  `/dev/ttyACM0`.
+- [x] 5.1 User-authorized board self-verification complete: repeated held edge turns/new page/drop, interior fling/drop, native clock/weather/no-battery captures and live disk-cached weather are recorded in `docs/evidence/home-widget-design/closeout-2026-10-01/board/README.md`. The user delegated acceptance instead of repeating the earlier manual/photo sequence. No human-finger/daylight measurement is invented; battery attachment is conditional and not applicable to the current board.

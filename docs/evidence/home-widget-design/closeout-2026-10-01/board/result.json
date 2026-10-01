@@ -1,0 +1,41 @@
+{
+  "result": "PASS",
+  "evidence_class": "physical-board-uinput-injection-and-native-captures",
+  "checks": {
+    "home_drag_creates_folder": true,
+    "drag_joins_existing_folder": true,
+    "real_system_keyboard_renames_folder": true,
+    "folder_member_dragged_out_to_requested_cell": true,
+    "folder_moves_to_dock": true,
+    "picker_places_clock_at_requested_cell": true,
+    "layout_survives_shell_restart": true,
+    "edge_repeat_creates_new_page_and_keeps_drop": true,
+    "interior_fling_pages_without_edge_dwell": true,
+    "battery_attachment_absent": true,
+    "weather_disk_cache_present": true
+  },
+  "rust": "/nix/store/9yzisj6j6m5xd3g0yl921j7bqks5gjrw-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0/bin/k230-shell-rust",
+  "system": "/nix/store/k01nc2m16qqbncn0hb7y0z8cz7i8rya3-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "captures": [
+    "initial-isolated-home",
+    "folder-created",
+    "folder-open",
+    "folder-renamed",
+    "member-extracted",
+    "dock-folder-open",
+    "widget-picker-menu",
+    "widget-picker",
+    "clock-placed",
+    "persisted-home",
+    "edge-indicator",
+    "new-page-drop",
+    "fling-drop",
+    "widgets-bubble",
+    "widgets-thin",
+    "widgets-dot-matrix",
+    "widgets-battery"
+  ],
+  "limits": [
+    "Not real-finger acceptance or a daylight contrast measurement. No battery attachment exists. Test layout is isolated; original user layout is untouched."
+  ]
+}
