@@ -443,6 +443,18 @@
         "docs/evidence/home-widget-design/closeout-2026-10-01/qemu/README.md"
       ],
       "reviewRevision": "da1840aff780cb9be7e87cd5284158c02b9f2404"
+    },
+    "the-handheld-controls-volume": {
+      "lane": "verification",
+      "source": "source-landed",
+      "physical": "pending",
+      "next": "Volume UI passes board acceptance; only the named audible headphone/line-out check remains, pending operator scope decision.",
+      "rationale": "Real sink/stream live drags, mute, independent popup and device picker verified. No attached audio add-on or emitting audio-key keyboard.",
+      "dependencies": [],
+      "evidence": [
+        "docs/evidence/volume/closeout-2026-10-01/README.md"
+      ],
+      "reviewRevision": "b9a67187854dcad5330cad3fa80add12e3fa0d87"
     }
   }
 }

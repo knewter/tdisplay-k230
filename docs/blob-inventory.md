@@ -651,6 +651,16 @@ Paths are relative to the repository root. `(sdk)` is
 so that building stage 1 from source does not silently drop them from view.
 
 ```
+DATA 6c932721f51eccfe719486e1474e411c6303c2a95bf1ea7c6240260f1b939669 docs/evidence/volume/closeout-2026-10-01/expanded-real-stream.jpg
+DATA ef63b26ac876397657f42f5e72039874a82b658ef9cd11abf16d96047ed3d8ee docs/evidence/volume/closeout-2026-10-01/hud-dragged.jpg
+DATA 65557a7fe7f93d61c76232c8484f87ac11c2ee475618c61de0c620d1c2da304d docs/evidence/volume/closeout-2026-10-01/hud-hidden.jpg
+DATA a1f5516863d468fdb7db50ed5e7ec0b8b6df2cbec8d0631dc8a5d50e7ce8ca7f docs/evidence/volume/closeout-2026-10-01/hud-over-app.jpg
+DATA c8b6f87b725207d49bb2ada8b93e41afd403490494355371816b95603daffa01 docs/evidence/volume/closeout-2026-10-01/hud-over-home.jpg
+DATA 22656082dcb995fd55faa23823c983683fea7d7c08cb15cbeb1c53d771f8a849 docs/evidence/volume/closeout-2026-10-01/qemu/hud-collapsed.png
+DATA d45bb5c45bb915c22852043bd4db37866331c8afa0de69bf117bc69fedce44d6 docs/evidence/volume/closeout-2026-10-01/qemu/hud-expanded.png
+DATA 32e76a43c396a304855f725750ca6544f9b8a9e5a29b59f8eda5b6f88657a4c1 docs/evidence/volume/closeout-2026-10-01/qemu/shade-both-sliders.png
+DATA 853b935d2441b6214c8efc4a256864f49e7360a622b455be8fe841404d143578 docs/evidence/volume/closeout-2026-10-01/settings-75.jpg
+DATA 3b5fcbe1917ffa20fcbf2c6583f14c0c57e6635cbdec9352faf40d2a6be016c8 docs/evidence/volume/closeout-2026-10-01/shade-50.jpg
 DATA b10f493aa0185ceb875dd2787cc0402b70985726ec37133145abbae4fae98434 docs/evidence/home-widget-design/closeout-2026-10-01/board/edge-indicator.jpg
 DATA e34f6168a23d7020248b0c195482c50ad9912a845fb94c6b3b2a31c0ccb8e266 docs/evidence/home-widget-design/closeout-2026-10-01/board/fling-drop.jpg
 DATA 4d2b3933bf5bc0d1b8cd4c48c3d4000c04902c8a404dda58bdce1402fef08903 docs/evidence/home-widget-design/closeout-2026-10-01/board/new-page-drop.jpg

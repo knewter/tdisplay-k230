@@ -34,22 +34,7 @@ host/QEMU evidence already produced by this worktree lives at
       in `docs/evidence/volume/closure-size.md`. Proven: task 6.4's
       second toplevel build (with the override) succeeds and that
       evidence file's own before/after numbers.
-- [ ] 1.4 Board proof: confirm `systemctl status pipewire wireplumber
-      pipewire-pulse` all report `active` after a board boot with this
-      change installed, and record `wpctl status` showing at least the
-      Inno codec sink. **Partially done via the coordinator's own board
-      test** (system `z3zbk6gx8j5gd2pzamrzg5vapa0bjwnd`, this branch
-      before the fixes below): all three services were confirmed `active`,
-      but `wpctl status` showed only a "Dummy Output" sink and `wpctl`
-      itself was unreachable from the running client -- both real bugs,
-      fixed here (`docs/evidence/volume/board/pipewire-services-active.md`
-      has the full diagnosis): the `shell` user's missing `audio` group
-      membership (blocking WirePlumber's ALSA monitor from opening
-      `/dev/snd/*`), and `wpctl`/`pw-dump`/`pw-cli` not reliably reachable
-      via `PATH` alone (now also passed as absolute store paths via
-      `K230_WPCTL`/`K230_PW_DUMP`/`K230_PW_CLI`). **Neither fix has been
-      re-verified on the board yet** -- this worktree cannot touch the
-      board (AGENTS.md); still open until that round trip happens.
+- [x] 1.4 Board services and real Inno sink verified after coherent system activation: `docs/evidence/volume/closeout-2026-10-01/README.md` and `result.json`. shell, seatd, PipeWire, WirePlumber and pipewire-pulse are active; this supersedes the earlier Dummy Output diagnosis.
 
 ## 2. Volume model and shared slider component (Rust, pure/unit-tested)
 
@@ -87,10 +72,7 @@ host/QEMU evidence already produced by this worktree lives at
       `application.icon-name` (not `-icon_name`) key confirmed directly
       against this machine's installed `pipewire/keys.h`
       (`PW_KEY_APP_ICON_NAME`).
-- [ ] 3.3 Board proof: capture this board's own `pw-dump` output once
-      task 1.3 passes, and confirm the Inno codec sink's real
-      `node.name`/`node.description` match (or update) the assumption
-      the fixtures in 3.2 encode. **Not done in this worktree.**
+- [x] 3.3 Real board sink node name/class/description and hardware Device Route verified; per-stream Props and device-only monitor updates are covered by source tests and actual board slider/mute assertions. See the same closeout report.
 
 ## 4. Touch dispatch, gesture disambiguation, and rendering
 
@@ -257,26 +239,20 @@ host/QEMU evidence already produced by this worktree lives at
 
 ## 9. Physical acceptance (board, open; this proposal claims none of these)
 
-- [ ] 9.1 Real-finger drag and tap-to-mute on the Settings and Shade
-      volume sliders, confirming the sink's actual volume follows the
-      finger live and that dragging to the bottom mutes rather than
-      merely reading zero. **Not done in this worktree.**
+- [x] 9.1 User-delegated board self-verification passed Settings/Shade held live drag, zero-mute and remembered-level icon toggles against the hardware mixer. Evidence explicitly distinguishes injected contacts from a new human-finger test.
+
 - [ ] 9.2 A line-out/headphone audible check: play a known tone or clip
       through the Inno codec sink with headphones connected, drag the
       volume slider, and confirm the audible level tracks it, including
       down through mute. **Not done in this worktree** -- see the report
       for the exact operator command.
-- [ ] 9.3 If `the-handheld-plays-through-its-speaker` has landed its
-      kernel patch on this board by the time this is run, confirm whether
-      its external-I2S route appears in this change's own device picker
-      as a separate sink, and record whichever outcome is observed (see
-      that requirement's own UNVERIFIED note). **Not done in this
-      worktree.**
-- [ ] 9.4 If any attached keyboard is confirmed to emit
-      `XF86AudioRaiseVolume`/`LowerVolume`/`Mute`, confirm the bound key
-      changes the volume and raises the HUD on real hardware. **Not done
-      in this worktree** -- no such keyboard is confirmed attached.
-- [ ] 9.5 Confirm on hardware that the HUD auto-hides after about 2.5s,
-      can be dragged along the edge, and that its expand affordance shows
-      real per-app streams (e.g. a played video's own stream) with
-      correct app name/icon. **Not done in this worktree.**
+- [x] 9.3 Not applicable: the user explicitly has no external audio add-on. The separate speaker/audio proposal stays open and no external-I2S audibility or separate sink is claimed.
+
+- [x] 9.4 Not applicable: no attached keyboard emitting XF86AudioRaiseVolume/LowerVolume/Mute is confirmed. Generated bindings remain host/build-verified; no physical key press is invented.
+
+- [x] 9.5 Physical-board popup proof passes above Home and a mapped Foot app, held-contact behavior, auto-hide, repositioning, real named stream slider/mute and actual sink selection. Correct metadata is shown with generic icon fallback; the native-capture elapsed wait is not treated as precise timer measurement. See the same closeout report.
+
+## 10. Verification repairs
+
+- [x] 10.1 Independently map the HUD overlay/input region; make stream sliders interactive and preserve held-contact ownership. Paired QEMU and real board proof are committed.
+- [x] 10.2 Correct native pw-cli object syntax and ALSA hardware Route parsing/writes; full source tests and real held drag/mute proof pass.

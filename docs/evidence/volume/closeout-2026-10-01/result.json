@@ -1,0 +1,42 @@
+{
+  "result": "PASS",
+  "evidence_class": "physical-board-uinput-and-real-pipewire-graph",
+  "rust": "/nix/store/8cikjd811d7b7hsdhn7nnb3lnipf3vwp-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0/bin/k230-shell-rust",
+  "system": "/nix/store/xphf8zb00gz9hiyqkkh399rldr2ljykb-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "sink": {
+    "id": 52,
+    "class": "Audio/Sink",
+    "name": "alsa_output.platform-sound.stereo-fallback",
+    "description": "Built-in Audio Stereo"
+  },
+  "checks": {
+    "real_sink_exists": true,
+    "settings_live_held_drag_updates_hardware_route": true,
+    "settings_drag_commits_75_percent": true,
+    "settings_zero_mutes": true,
+    "settings_icon_toggles_mute_and_preserves_level": true,
+    "shade_slider_changes_real_sink": true,
+    "hud_maps_over_home_without_another_sheet": true,
+    "held_hud_contact_survives_auto_hide": true,
+    "hud_auto_hides_after_release": true,
+    "real_playback_stream_present": true,
+    "hud_maps_over_an_ordinary_app": true,
+    "stream_live_held_drag_updates_real_node": true,
+    "expanded_stream_slider_changes_real_playback_node": true,
+    "expanded_stream_label_toggles_mute": true,
+    "device_picker_real_sink_selected": true
+  },
+  "hud_hide_wait_after_release_seconds": 3.2890000000000001,
+  "captures": [
+    "settings-75",
+    "shade-50",
+    "hud-over-home",
+    "hud-dragged",
+    "hud-hidden",
+    "hud-over-app",
+    "expanded-real-stream"
+  ],
+  "limits": [
+    "No claim that headphones or an external speaker were audible. No add-on is connected per user. Injected touch is not real-finger input. The generated playback tone proves a graph stream, not acoustic output."
+  ]
+}
