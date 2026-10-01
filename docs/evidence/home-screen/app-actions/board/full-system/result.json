@@ -1,0 +1,16 @@
+{
+  "source": "288535289172c8465c4fa408eaa8ba2c7ab8a5ac",
+  "class": "physical-board-full-system-runtime-test-activation",
+  "candidate": "/nix/store/ija989s4f2la7ms4zbr9dnirpnnp8qyg-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "baseline": "/nix/store/xphf8zb00gz9hiyqkkh399rldr2ljykb-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "rust": "/nix/store/zjlcmhxqkhchysmjj9sk53hks1h5wc3l-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0/bin/k230-shell-rust",
+  "profile_unchanged": true,
+  "boot_files_unchanged": true,
+  "normal_services_active": true,
+  "component_overrides_removed": true,
+  "started_epoch_s": 1790890555.9976354,
+  "restoration_after_s": 1200,
+  "restore_command": "/nix/store/v189xydz6qkcd4cbkixcmv91w8hbc560-python3-riscv64-unknown-linux-gnu-3.14.7/bin/python3 /root/tmp/k230-system-activation/restore.py",
+  "boot_acceptance": false,
+  "result": "PASS"
+}

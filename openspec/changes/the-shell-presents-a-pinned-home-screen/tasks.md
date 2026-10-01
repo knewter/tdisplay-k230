@@ -189,7 +189,7 @@ separate from the accepted mouse/HDMI navigation closeout.
 - [x] 11.2 Wire secondary click to the app menu on Home/dock and the shared app-icon path; preserve long-press-to-grab and do not open a menu on touch hold; preserve deliberate drag-to-pin/rearrange, focus, cancellation and menu dismissal. Verify the same Rust suite with grab/move/cancel/secondary-click routing fixtures.
 - [x] 11.3 Extend the paired real-compositor/Rust fixture to prove primary activation retains a known window ID while explicit New Window produces another, named actions work, unsupported actions are absent and canceled menus preserve input/layout. Record the concrete invocation in `docs/evidence/home-screen/`; run `python3 tests/rust_home_screen_qemu.py --sway <sway> --swaymsg <swaymsg> --rust <rust> --theme-bundle <theme-bundle> --icons <icons> --client <native-probe-client> --output <dir>`, then commit its actual result. QEMU injection is not finger evidence.
 - [ ] 11.4 Build `nix build .#handheld-shell-rust .#nixosConfigurations.k230-coherent-shell-hdmi-trial.config.system.build.toplevel --no-link --print-out-paths`; install the recoverable candidate under the board reservation and record exact identities with `python3 tools/console.py /dev/ttyACM0 --wait=3 'readlink -f /run/current-system'`. Obtain operator acceptance of tap/focus, right-click New Window and preserved icon dragging; a committed operator report suffices unless a defect needs capture.
-- [ ] 11.5 Validate with `openspec validate the-shell-presents-a-pinned-home-screen --strict`, land/push source and evidence and inspect matching CI/Pages. Keep original unresolved placement and physical scope tracked; this planning refinement alone does not ship the menu.
+- [x] 11.5 Validate with `openspec validate the-shell-presents-a-pinned-home-screen --strict`, land/push source and evidence and inspect matching CI/Pages. Keep original unresolved placement and physical scope tracked; this planning refinement alone does not ship the menu.
 
 App-actions groups 11.2–11.3 passed: `docs/evidence/home-screen/app-actions/qemu/README.md`.
 Cross Rust and the matching full coherent system also built from source `2885352`;
@@ -204,3 +204,13 @@ have now passed; their exact output paths are recorded in that board README.
 2026-10-01 operator accepted hold-and-drag without a menu on the installed
 candidate: `docs/evidence/home-screen/app-actions/board/operator-acceptance-2026-10-01.md`.
 11.4 still retains explicit primary-focus/New Window acceptance.
+
+
+Full coherent-system runtime activation passed after the component trial:
+`docs/evidence/home-screen/app-actions/board/full-system/README.md`.
+The built system now runs with the expected Rust executable and without component
+service overrides. Boot files/profile remain unchanged; ordinary boot remains a
+separate gate. Menu delivery/dismissal passed again; automatic primary-focus/New
+Window qualification was inconclusive and operator acceptance remains open.
+11.5 source/evidence validation, master publication and Pages deployment passed
+at `29c9e144`, run `36929358280`; tasks 8.1 and 11.4 remain unchecked.

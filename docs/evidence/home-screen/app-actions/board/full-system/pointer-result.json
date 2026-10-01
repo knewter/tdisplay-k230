@@ -1,0 +1,11 @@
+{
+  "class": "physical-board-injected-virtual-pointer",
+  "source": "288535289172c8465c4fa408eaa8ba2c7ab8a5ac",
+  "checks": {
+    "right_click_reaches_real_menu": true,
+    "outside_click_dismisses_menu": true,
+    "dismiss_preserves_home": true
+  },
+  "result": "PASS",
+  "scope": "Actual board compositor/Rust delivery; no physical mouse or finger claim"
+}

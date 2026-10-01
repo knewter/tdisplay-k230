@@ -1,0 +1,7 @@
+{
+  "runtime": "/nix/store/ija989s4f2la7ms4zbr9dnirpnnp8qyg-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "services_active": true,
+  "restoration_timer_retired_after_runtime_checks": true,
+  "persistent_boot_qualified": false,
+  "restore_command": "/nix/store/v189xydz6qkcd4cbkixcmv91w8hbc560-python3-riscv64-unknown-linux-gnu-3.14.7/bin/python3 /root/tmp/k230-system-activation/restore.py"
+}
