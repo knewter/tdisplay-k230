@@ -67,3 +67,14 @@ Wi-Fi driver reported `start ap successs!` while transmitting nothing.
 
 - **WHEN** a pattern is written to the framebuffer
 - **THEN** it is visible on the physical panel, photographed, and the photograph is committed
+
+#### Scenario: A real-finger gesture animates the panel continuously
+
+- **WHEN** a person performs a real bottom-edge app-switch or app-switcher
+  gesture with continuous finger motion, as opposed to a single static
+  IPC-driven state change
+- **THEN** the bottom ~100 px of the panel does not flicker or tear
+
+<!-- Closeout evidence: docs/evidence/proposal-closeout/2026-10-01/flicker.md. Operator report is physical
+feedback; retained host/QEMU/injected evidence keeps its original class.
+No additional capture, quantitative measurement or fault injection claimed. -->
