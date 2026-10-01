@@ -1244,6 +1244,9 @@ struct ShellClient {
     /// painted; every other frame's dirtiness already follows `hud.is_
     /// visible` on its own.
     hud_last_visible: bool,
+    hud_surface: HomeSurface,
+    hud_contact: Option<i32>,
+    hud_stream_drag: Option<HudStreamDrag>,
     /// The default sink's PipeWire node id, as last reported by `service_
     /// view.audio` -- `None` until the first snapshot names one. Every
     /// `wpctl`/`pw-cli` write this shell sends targets this id, not
@@ -1471,6 +1474,15 @@ fn prerendered_overlay_mismatch_reason(
 /// other request keeps showing its own message exactly as before.
 fn suppresses_action_message(request: &ServiceRequest, outcome_error: Option<&str>) -> bool {
     matches!(request, ServiceRequest::Brightness(_)) && outcome_error.is_none()
+}
+
+struct HudStreamDrag {
+    touch: i32,
+    node: u32,
+    left: f64,
+    right: f64,
+    percent: u8,
+    last_sent_ms: Option<u32>,
 }
 
 #[derive(Default)]
@@ -2281,9 +2293,11 @@ impl ShellClient {
     /// thread per call is the right cost trade-off, matching the
     /// brightness slider's own release-only authoritative write.
     fn commit_volume(&mut self, percent: u8, muted: bool) {
-        let Some(id) = self.default_sink_id else {
-            return;
-        };
+        let Some(id) = self.default_sink_id else { return; };
+        self.commit_node_volume(id, percent, muted);
+    }
+
+    fn commit_node_volume(&mut self, id: u32, percent: u8, muted: bool) {
         let wpctl = self.wpctl_command.clone();
         let id_arg = id.to_string();
         let volume_arg = format!("{percent}%");
@@ -2333,6 +2347,7 @@ impl ShellClient {
     /// separate origin tag, since the two conditions are equivalent for
     /// every write this shell itself ever makes).
     fn apply_pipewire_event(&mut self, event: pipewire_ipc::Event) {
+        self.hud_surface.dirty = true;
         match event {
             pipewire_ipc::Event::Snapshot(graph) => {
                 let previous = (
@@ -2387,8 +2402,8 @@ impl ShellClient {
             0
         };
         volume::hud_geometry(
-            f64::from(self.width),
-            f64::from(self.height),
+            f64::from(if self.hud_surface.configured { self.hud_surface.width } else { self.width }),
+            f64::from(if self.hud_surface.configured { self.hud_surface.height } else { self.height }),
             self.hud.position_fraction(),
             rows,
         )
@@ -2400,6 +2415,7 @@ impl ShellClient {
     /// the right edge", shown regardless of Home/Drawer/Shade/Settings).
     /// Returns whether the touch was consumed.
     fn hud_touch_down(&mut self, id: i32, pos: (f64, f64)) -> bool {
+        self.hud_surface.dirty = true;
         let now = self.started.elapsed().as_millis() as u64;
         if !self.hud.is_visible(now) {
             return false;
@@ -2414,7 +2430,15 @@ impl ShellClient {
             self.hud.toggle_expand(now);
             self.dirty = true;
         } else if let Some(row) = geometry.expanded_row_at(pos.0, pos.1) {
-            self.tap_hud_row(row);
+            let stream = self.service_view.audio.as_ref().and_then(|g| g.streams.get(row));
+            let row_top = geometry.top + geometry.collapsed_h + row as f64 * volume::HUD_ROW_H;
+            if let Some(stream) = stream.filter(|_| pos.1 >= row_top + 26.0 && pos.0 >= geometry.left + 48.0) {
+                self.hud_stream_drag = Some(HudStreamDrag { touch: id, node: stream.id,
+                    left: geometry.left + 48.0, right: geometry.left + geometry.width - 12.0,
+                    percent: volume::linear_to_percent(stream.linear_volume), last_sent_ms: None });
+                self.hud.start_drag(id, now);
+                self.update_hud_stream(pos.0, now as u32);
+            } else { self.tap_hud_row(row); }
         } else {
             // The pill's own body, neither the icon, the affordance, nor
             // an expanded row: reposition drag (task: "can be dragged").
@@ -2422,6 +2446,26 @@ impl ShellClient {
             self.dirty = true;
         }
         true
+    }
+
+    fn update_hud_stream(&mut self, x: f64, now_ms: u32) {
+        let Some(drag) = self.hud_stream_drag.as_mut() else { return; };
+        let percent = slider::value_at_x_with_floor(x, drag.left, drag.right, 0);
+        drag.percent = percent;
+        let linear = volume::percent_to_linear(percent);
+        let muted = percent == 0;
+        if slider::live_write_due(drag.last_sent_ms, now_ms) {
+            if let Some(writer) = self.pipewire_writer.as_ref() {
+                writer.try_send(pipewire_ipc::set_volume_command(drag.node, linear, muted));
+                drag.last_sent_ms = Some(now_ms);
+            }
+        }
+        if let Some(stream) = self.service_view.audio.as_mut().and_then(|g| g.streams.iter_mut().find(|stream| stream.id == drag.node)) {
+            stream.linear_volume = linear; stream.muted = muted;
+        }
+        self.hud.show(u64::from(now_ms));
+        self.renderer.set_services(self.service_view.clone());
+        self.hud_surface.dirty = true;
     }
 
     /// One expanded-panel row tap: `HudGeometry::expanded_row_at`'s own
@@ -2695,6 +2739,71 @@ impl ShellClient {
             "rust-shell {}ms {event}",
             self.started.elapsed().as_millis()
         );
+    }
+
+    fn sync_hud_surface(&mut self, qh: &QueueHandle<Self>, visible: bool) {
+        if !visible {
+            if self.hud_surface.layer.is_some() {
+                self.hud_surface = HomeSurface::default();
+                self.hud_contact = None;
+                self.hud_stream_drag = None;
+                self.hud.end_drag();
+                self.log("volume-hud-unmap");
+            }
+            return;
+        }
+        if self.hud_surface.layer.is_none() {
+            let surface = self.compositor.create_surface(qh);
+            let layer = self.layer_shell.create_layer_surface(qh, surface, Layer::Overlay, Some("k230-volume-hud"), None);
+            layer.set_anchor(Anchor::TOP | Anchor::BOTTOM | Anchor::LEFT | Anchor::RIGHT);
+            layer.set_size(0, 0);
+            layer.set_exclusive_zone(-1);
+            layer.set_keyboard_interactivity(KeyboardInteractivity::None);
+            if let Ok(empty) = Region::new(&self.compositor) {
+                layer.wl_surface().set_input_region(Some(empty.wl_region()));
+            }
+            layer.commit();
+            self.hud_surface.layer = Some(layer);
+            self.hud_surface.dirty = true;
+            self.log("volume-hud-map-request");
+        }
+        if self.hud_surface.dirty && !self.hud_surface.frame_pending { self.draw_volume_hud(qh); }
+    }
+
+    fn draw_volume_hud(&mut self, qh: &QueueHandle<Self>) -> bool {
+        if !self.hud_surface.configured || self.hud_surface.frame_pending { return false; }
+        let (width, height) = (self.hud_surface.width, self.hud_surface.height);
+        let Some(size) = frame_bytes(width, height) else { return false; };
+        let stride = (width * 4) as i32;
+        self.hud_surface.buffers.retain(|b| b.stride() == stride && b.height() == height as i32);
+        let available: Vec<bool> = self.hud_surface.buffers.iter().map(|b| b.canvas(&mut self.pool).is_some()).collect();
+        let (index, canvas) = if let Some(index) = released_slot(&available) {
+            (index, self.hud_surface.buffers[index].canvas(&mut self.pool).expect("released HUD slot"))
+        } else {
+            if self.hud_surface.buffers.len() >= 3 { return false; }
+            let Ok((buffer, canvas)) = self.pool.create_buffer(width as i32, height as i32, stride, wl_shm::Format::Argb8888) else { return false; };
+            if canvas.len() != size { return false; }
+            self.hud_surface.buffers.push(buffer);
+            (self.hud_surface.buffers.len() - 1, canvas)
+        };
+        let now = self.started.elapsed().as_millis() as u64;
+        if let Err(error) = self.renderer.draw_hud(canvas, width, height, &self.hud, now) {
+            self.log(&format!("volume-hud-render-failed {error}")); return false;
+        }
+        let geometry = self.hud_geometry();
+        let Some(layer) = self.hud_surface.layer.as_ref() else { return false; };
+        if let Ok(region) = Region::new(&self.compositor) {
+            region.add(geometry.left.floor() as i32, geometry.top.floor() as i32, geometry.width.ceil() as i32, geometry.height.ceil() as i32);
+            layer.wl_surface().set_input_region(Some(region.wl_region()));
+        }
+        layer.wl_surface().damage_buffer(0, 0, width as i32, height as i32);
+        layer.wl_surface().frame(qh, layer.wl_surface().clone());
+        if self.hud_surface.buffers[index].attach_to(layer.wl_surface()).is_err() { return false; }
+        layer.commit();
+        self.hud_surface.frame_pending = true;
+        self.hud_surface.dirty = false;
+        self.log("volume-hud-commit");
+        true
     }
 
     fn ensure_wallpaper(&mut self, qh: &QueueHandle<Self>) -> bool {
@@ -3218,7 +3327,7 @@ impl ShellClient {
             1.0
         };
         self.renderer
-            .draw_with_hud(
+            .draw(
                 &mut canvas,
                 RenderParams {
                     width: self.width,
@@ -3228,8 +3337,6 @@ impl ShellClient {
                     scroll: if self.route == Route::Drawer { self.nav.scroll } else { 0.0 },
                 },
                 &self.apps,
-                &self.hud,
-                self.started.elapsed().as_millis() as u64,
             )
             .ok()?;
         Some(canvas)
@@ -3934,7 +4041,7 @@ impl ShellClient {
             // `eprintln!` -- no allocation on the frames it does not log.
             let drawer_timing = self.route == Route::Drawer;
             let render_started = drawer_timing.then(Instant::now);
-            let render_result = self.renderer.draw_with_hud(
+            let render_result = self.renderer.draw(
                 canvas,
                 RenderParams {
                     width: self.width,
@@ -3948,8 +4055,6 @@ impl ShellClient {
                     },
                 },
                 &self.apps,
-                &self.hud,
-                self.started.elapsed().as_millis() as u64,
             );
             if let Some(started) = render_started {
                 let now = Instant::now();
@@ -4028,6 +4133,11 @@ impl CompositorHandler for ShellClient {
         surface: &wl_surface::WlSurface,
         _: u32,
     ) {
+        if self.hud_surface.layer.as_ref().is_some_and(|l| l.wl_surface() == surface) {
+            self.hud_surface.frame_pending = false;
+            if self.hud_surface.dirty { self.draw_volume_hud(qh); }
+            return;
+        }
         if self
             .wallpaper
             .layer
@@ -4126,6 +4236,9 @@ impl OutputHandler for ShellClient {
 
 impl LayerShellHandler for ShellClient {
     fn closed(&mut self, _: &Connection, _: &QueueHandle<Self>, layer: &LayerSurface) {
+        if self.hud_surface.layer.as_ref().is_some_and(|l| l.wl_surface() == layer.wl_surface()) {
+            self.hud_surface = HomeSurface::default(); self.hud_contact = None; return;
+        }
         if self
             .wallpaper
             .layer
@@ -4167,6 +4280,14 @@ impl LayerShellHandler for ShellClient {
         _: u32,
     ) {
         let (width, height) = configure.new_size;
+        if self.hud_surface.layer.as_ref().is_some_and(|l| l.wl_surface() == layer.wl_surface()) {
+            let mut geometry = (self.hud_surface.width, self.hud_surface.height);
+            if configure_size(&mut geometry, width, height).is_none() { return; }
+            (self.hud_surface.width, self.hud_surface.height) = geometry;
+            self.hud_surface.configured = true; self.hud_surface.dirty = true;
+            self.draw_volume_hud(qh); return;
+        }
+
         if self
             .wallpaper
             .layer
@@ -4346,6 +4467,10 @@ impl ShellClient {
         id: i32,
         pos: (f64, f64),
     ) {
+        if self.hud_surface.layer.as_ref().is_some_and(|l| l.wl_surface() == &surface) {
+            if self.touch.down(id, pos) && self.hud_touch_down(id, pos) { self.hud_contact = Some(id); }
+            return;
+        }
         self.trace_picker_input("input_down", time_ms, id);
         if id == TRACKPAD_PAN_ID { self.trackpad_pan_start = Some(pos); }
         if self
@@ -4612,6 +4737,13 @@ impl ShellClient {
         time_ms: u32,
         id: i32,
     ) {
+        if self.hud_contact == Some(id) {
+            self.hud_contact = None; self.hud.end_drag(id); self.hud.show(self.started.elapsed().as_millis() as u64); self.touch.up(id);
+            if let Some(drag) = self.hud_stream_drag.take().filter(|drag| drag.touch == id) {
+                self.commit_node_volume(drag.node, drag.percent, drag.percent == 0);
+            }
+            self.hud_surface.dirty = true; return;
+        }
         self.trace_picker_input("input_up", time_ms, id);
         if id == TRACKPAD_PAN_ID {
             if let Some(start) = self.trackpad_pan_start.take() {
@@ -4972,6 +5104,19 @@ impl ShellClient {
         id: i32,
         pos: (f64, f64),
     ) {
+        if self.hud_contact == Some(id) {
+            self.touch.motion(id, pos);
+            if self.hud_stream_drag.as_ref().is_some_and(|drag| drag.touch == id) {
+                self.update_hud_stream(pos.0, self.started.elapsed().as_millis() as u32);
+                return;
+            }
+            if self.hud.drag_owner() == Some(id) {
+                let now = self.started.elapsed().as_millis() as u64;
+                self.hud.drag_to(id, (pos.1 / f64::from(self.hud_surface.height.max(1))).clamp(0.0, 1.0), now);
+                self.hud_surface.dirty = true;
+            }
+            return;
+        }
         self.trace_picker_input("input_motion", time_ms, id);
         if self.home_touch_id == Some(id) {
             self.home_last_point = pos;
@@ -5289,6 +5434,9 @@ impl ShellClient {
         }
     }
     fn contact_cancel(&mut self, qh: &QueueHandle<Self>) {
+        if let Some(id) = self.hud_contact.take() { self.hud.end_drag(id); }
+        self.hud_stream_drag = None;
+        self.hud_surface.dirty = true;
         self.trackpad_pan_start = None;
         self.pointer_contact.cancel();
         self.touch.cancel();
@@ -5812,6 +5960,9 @@ fn serve() -> Result<(), String> {
         volume_state: volume::VolumeState::default(),
         hud: volume::Hud::new(),
         hud_last_visible: false,
+        hud_surface: HomeSurface::default(),
+        hud_contact: None,
+        hud_stream_drag: None,
         default_sink_id: None,
         volume_echo_until_ms: None,
         pipewire_events,
@@ -5967,6 +6118,7 @@ fn serve() -> Result<(), String> {
             state.dirty = true;
         }
         state.hud_last_visible = hud_now_visible;
+        state.sync_hud_surface(&qh, hud_now_visible);
         state.maybe_rescan_catalog(&candidates);
         if state.renderer.poll_theme_image(state.width, state.height) {
             state.dirty = true;

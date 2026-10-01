@@ -4863,16 +4863,9 @@ impl RendererCache {
         // instant `hud.is_visible` reads false, so an idle HUD costs
         // nothing here beyond that one check.
         //
-        // Known gap, not yet closed: this only runs while this overlay
-        // layer surface is already mapped (a Drawer/Shade/Settings sheet
-        // is open) -- `main.rs`'s own touch dispatch already treats the
-        // HUD as route-independent (`hud_touch_down` is checked before
-        // any route-specific branch), but nothing yet forces this layer
-        // surface to exist purely because the HUD wants to show while
-        // the Home screen alone is visible with nothing else open. See
-        // `openspec/changes/the-handheld-controls-volume/tasks.md`.
-        // Explicitly revealed input is never included in static_pixels, theme
-        // prerenders, public service DTOs or trace/debug data.
+        // The production shell now uses its dedicated k230-volume-hud
+        // surface on every route. This optional composition path remains for
+        // standalone renderer callers; main.rs never paints the HUD twice.
         if route == Route::Settings {
             if let Some(preview) = self.wifi_password_preview.as_ref().filter(|_| {
                 self.services.as_ref().and_then(|s| s.wifi.as_ref())

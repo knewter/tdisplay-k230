@@ -269,6 +269,7 @@ impl Hud {
     /// cost rule is "render the HUD only while visible", so a `false`
     /// here means zero HUD-related cairo calls that frame.
     pub fn is_visible(&self, now_ms: u64) -> bool {
+        if self.drag_id.is_some() { return true; }
         match self.shown_at_ms {
             None => false,
             Some(shown_at) => hud_visible(shown_at, now_ms),
@@ -279,6 +280,7 @@ impl Hud {
     /// already hidden/was never shown -- lets the event loop schedule its
     /// next wake precisely instead of polling every idle tick.
     pub fn hide_in_ms(&self, now_ms: u64) -> u64 {
+        if self.drag_id.is_some() { return HUD_AUTO_HIDE_MS; }
         match self.shown_at_ms {
             None => 0,
             Some(shown_at) => hud_hide_in_ms(shown_at, now_ms),
@@ -436,6 +438,17 @@ impl HudGeometry {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn hud_held_contact_keeps_the_control_visible_past_auto_hide() {
+        let mut hud = Hud::new();
+        hud.show(100); hud.start_drag(7, 100);
+        assert!(hud.is_visible(10_000));
+        assert!(hud.hide_in_ms(10_000) > 0);
+        hud.end_drag(7); hud.show(10_000);
+        assert!(hud.is_visible(10_100));
+        assert!(!hud.is_visible(13_000));
+    }
 
     #[test]
     fn percent_to_linear_is_cubic_not_linear() {

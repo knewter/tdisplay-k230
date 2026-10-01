@@ -101,7 +101,7 @@ pub fn x_at_value(percent: u8, left: f64, right: f64) -> f64 {
 /// gesture) always fires immediately, so tap-to-jump reaches the
 /// backlight on the very first frame instead of waiting out a full
 /// interval.
-fn live_write_due(last_sent_ms: Option<u32>, now_ms: u32) -> bool {
+pub fn live_write_due(last_sent_ms: Option<u32>, now_ms: u32) -> bool {
     match last_sent_ms {
         None => true,
         Some(last) => now_ms.wrapping_sub(last) >= LIVE_WRITE_INTERVAL_MS,
