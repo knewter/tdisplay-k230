@@ -391,6 +391,17 @@
         "docs/evidence/proposal-closeout/2026-10-01/splash.md"
       ],
       "dependencies": []
+    },
+    "the-card-shell-has-no-video-special-case": {
+      "lane": "archived",
+      "source": "source-landed",
+      "physical": "verified",
+      "next": "Complete: operator accepted ordinary/video card behavior; unperformed timing preserved in Planned interaction-jank followup.",
+      "rationale": "Functional operator acceptance and existing injected evidence complete the shipped scope; timing remains UNVERIFIED in an explicit successor.",
+      "reviewRevision": "48ead951",
+      "evidence": [
+        "docs/evidence/proposal-closeout/2026-10-01/ordinary-cards.md"
+      ]
     }
   }
 }

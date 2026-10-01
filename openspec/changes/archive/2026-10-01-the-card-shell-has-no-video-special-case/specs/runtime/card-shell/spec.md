@@ -17,11 +17,7 @@ MUST NOT spawn an app-specific helper process as part of closing a card.
 and replaces the app_id-keyed behavior proposed in
 `video-windows-become-ordinary-cards` (its task 2.1
 `card_shell_video_stop`/`SWAY_K230_CARD_VIDEO_STOP` hook is removed by
-this change). Board verification of the close path (mpv actually exits,
-no relaunch) is recorded under
-`docs/evidence/card-shell/video-card-gestures/` or
-`docs/evidence/card-shell/live-card-cost/`. <!-- UNVERIFIED: fill in the
-exact evidence path once board verification for this change lands. -->*
+this change). Physical-board injected close/live-preview proof: `docs/evidence/card-shell/live-card-cost/README.md`. Real-finger functional acceptance: `docs/evidence/proposal-closeout/2026-10-01/ordinary-cards.md`.*
 
 #### Scenario: A fixed-size window becomes an ordinary card like any other
 
@@ -55,13 +51,7 @@ its most recent content with no rate cap.
 
 *Grounding: `nix/card-shell/adapter.c`'s `scaled_mirror` (source read);
 this generalizes and replaces the video-only frozen-thumbnail behavior
-proposed in `video-windows-become-ordinary-cards` (its task 3.1). Board
-timing evidence (entry-animation duration, touch latency, with a live
-video and a separate busy non-video app) is recorded under
-`docs/evidence/card-shell/video-card-gestures/` or
-`docs/evidence/card-shell/live-card-cost/`. <!-- UNVERIFIED: fill in the
-exact evidence path and measured numbers once board verification for
-this change lands. -->*
+proposed in `video-windows-become-ordinary-cards` (its task 3.1). Physical-board injected live-preview proof: `docs/evidence/card-shell/live-card-cost/README.md`; operator functional acceptance: `docs/evidence/proposal-closeout/2026-10-01/ordinary-cards.md`. Quantitative entry and acknowledgement targets remain UNVERIFIED and are retained in `the-shell-profiles-reported-interaction-jank` task 4.1.*
 
 #### Scenario: A busy non-video card's thumbnail never freezes
 
@@ -78,3 +68,9 @@ this change lands. -->*
 - **THEN** the entry animation and touch handling proceed at essentially
   the same speed as with no such card present, rather than being
   dominated by that one card's recomposition cost
+
+## REMOVED Requirements
+
+### Requirement: A video playback window is an ordinary, closable card
+**Reason**: The historical video-only stop helper and frozen-thumbnail behavior were removed; every app now follows the same ordinary close request and live deck-preview policy.
+**Migration**: Use the generic card eligibility/close and bounded live-thumbnail requirements added by this change. Existing video windows retain ordinary overview, gesture, focus and close behavior.

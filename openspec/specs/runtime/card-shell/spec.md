@@ -11,66 +11,6 @@ concrete application is running.
 
 ## Requirements
 
-### Requirement: A video playback window is an ordinary, closable card
-
-Network video windows (`k230-video-software`, `k230-video-mvx`) SHALL receive
-the same ordinary-maximized card treatment as any other coherent-shell
-application: full panel size, present in the overview, reachable by the
-bottom-edge switch gesture, and closable by the same swipe-up-to-close every
-other card uses. A video window MUST NOT be a small floating window with no
-card and no close affordance while the coherent card shell is active.
-
-Closing a video card SHALL also stop the underlying player session (not only
-send the window's own close request), so the session controller cannot
-mistake a requested close for a decode failure and relaunch a fallback
-player. Closing a video card MUST NOT leave an orphaned player process.
-
-A video card's deck-sized thumbnail MAY stop tracking every newly decoded
-frame while the card is not shown at full panel size, provided it still
-reflects a real captured frame of that session (not a placeholder) and
-resumes live updates whenever the card is shown at full panel size again
-(focused full-screen, mid-entry, or expanded).
-
-*Grounding: `nix/card-shell/adapter.c`'s prior "video and transient views
-stay unmarked" exclusion and `nix/shell.nix`'s prior unconditional floating
-`for_window` rules for both video app IDs (source read, not board evidence
-of the fix). The unclosable-video board observation itself is recorded in
-the coordinator's session notes for this change; QEMU regressions proving
-card membership, switch/close reachability and no orphaned process are
-recorded under `docs/evidence/card-shell/video-card/`. Decoded-frame
-presentation and physical touch remain `runtime/video`'s existing board
-evidence and are not re-proven here.*
-
-#### Scenario: A video card appears in the overview like any other app
-
-- **WHEN** the coherent card shell enters the overview while a video window
-  is mapped
-- **THEN** the video window appears as an ordinary card in the deck at the
-  same size and position rules as any other application's card
-
-#### Scenario: A bottom-edge swipe switches away from a playing video
-
-- **WHEN** a video card is focused full-screen and the user performs the
-  bottom-edge app-switch gesture
-- **THEN** the gesture behaves identically to switching away from any other
-  application: the video card becomes reachable in the deck, and its own
-  playback is not a special case in the gesture-handling code path
-
-#### Scenario: Swipe-up-to-close stops the player, not just the window
-
-- **WHEN** a user throws a video card upward to request its close
-- **THEN** the window's ordinary close request is sent, the video-session
-  controller is separately asked to stop, and no player or controller
-  process remains running for that session once the close completes
-
-#### Scenario: An unfocused video card's thumbnail does not chase every frame
-
-- **WHEN** a video card is visible only as a small, unselected deck
-  thumbnail while its player keeps decoding
-- **THEN** the card's mirrored thumbnail may remain on its most recently
-  captured frame rather than rescaling on every new decoded frame, and
-  resumes tracking live frames once the card is shown at full panel size
-
 ### Requirement: The card overview shows a webOS-style fan of 2-3 cards, each with a real icon and app name
 
 *Grounding: operator acceptance in `docs/evidence/proposal-closeout/2026-10-01/coherent.md`, with prior source and board/QEMU evidence retaining their original classes and limits.*
@@ -273,3 +213,72 @@ implementation) unextended to a surface that has none of those properties.
 <!-- Closeout evidence: docs/evidence/proposal-closeout/2026-10-01/coherent.md. Operator report is physical
 feedback; retained host/QEMU/injected evidence keeps its original class.
 No additional capture, quantitative measurement or fault injection claimed. -->
+
+### Requirement: Card eligibility, close, and deck-preview cost do not vary by app identity
+
+The card shell SHALL decide whether a window becomes an ordinary,
+closable card, how closing it is signaled, and how its deck thumbnail is
+kept live, without inspecting the window's app_id or otherwise
+special-casing any particular application. A window that reports a
+fixed, non-resizable size (as mpv's `--geometry=WxH` does) MUST NOT be
+excluded from ordinary-card treatment on that basis alone; only a real
+transient/popup (a toplevel with a parent set) is excluded. Closing any
+card SHALL send only the window's ordinary close request; the compositor
+MUST NOT spawn an app-specific helper process as part of closing a card.
+
+*Grounding: `nix/card-shell/adapter.c`'s `ordinary` command handler and
+`cmd_card_shell`'s `CS_CLOSE` handling (source read); this generalizes
+and replaces the app_id-keyed behavior proposed in
+`video-windows-become-ordinary-cards` (its task 2.1
+`card_shell_video_stop`/`SWAY_K230_CARD_VIDEO_STOP` hook is removed by
+this change). Physical-board injected close/live-preview proof: `docs/evidence/card-shell/live-card-cost/README.md`. Real-finger functional acceptance: `docs/evidence/proposal-closeout/2026-10-01/ordinary-cards.md`.*
+
+#### Scenario: A fixed-size window becomes an ordinary card like any other
+
+- **WHEN** an application window reports a fixed (non-resizable) size and
+  has no toplevel parent
+- **THEN** it receives the same ordinary-maximized, switchable, closable
+  card treatment as any other application window, regardless of its
+  app_id
+
+#### Scenario: Closing a card sends only the ordinary close request
+
+- **WHEN** a user closes any card (video or otherwise) by the swipe-up
+  gesture or the persistent Close control
+- **THEN** the compositor sends that window's ordinary close request and
+  nothing else app-specific; whether the underlying process exits, and
+  whether it relaunches anything, is entirely that application's own
+  concern
+
+### Requirement: Every card's small deck thumbnail stays live at a bounded cost
+
+A card not currently shown at full panel size SHALL continue reflecting
+its source's real, current content -- never a frame frozen indefinitely
+-- while bounding the compositing cost of doing so, for every
+application equally. The card shell MAY refresh such a thumbnail at a
+capped rate (about 15 times per second) instead of on every single
+client commit, and MAY use a cheaper resampling filter while the
+overview is actively animating or being dragged, reverting to the
+higher-quality filter once settled. A card currently shown at full panel
+size (focused full-screen, mid-entry, or expanded) MUST always reflect
+its most recent content with no rate cap.
+
+*Grounding: `nix/card-shell/adapter.c`'s `scaled_mirror` (source read);
+this generalizes and replaces the video-only frozen-thumbnail behavior
+proposed in `video-windows-become-ordinary-cards` (its task 3.1). Physical-board injected live-preview proof: `docs/evidence/card-shell/live-card-cost/README.md`; operator functional acceptance: `docs/evidence/proposal-closeout/2026-10-01/ordinary-cards.md`. Quantitative entry and acknowledgement targets remain UNVERIFIED and are retained in `the-shell-profiles-reported-interaction-jank` task 4.1.*
+
+#### Scenario: A busy non-video card's thumbnail never freezes
+
+- **WHEN** a card whose application commits frequently (a game, a busy
+  scrolling terminal, or a playing video) sits in the deck as a small,
+  unselected thumbnail
+- **THEN** the thumbnail keeps showing real, recent content -- capped to
+  about 15 refreshes per second, never frozen on a single stale frame
+
+#### Scenario: The overview stays responsive with a fast-committing card present
+
+- **WHEN** the overview is entered, browsed, or exited while a
+  frequently-committing card (video or otherwise) is present
+- **THEN** the entry animation and touch handling proceed at essentially
+  the same speed as with no such card present, rather than being
+  dominated by that one card's recomposition cost
