@@ -117,39 +117,11 @@
   with `nix build .#nixosConfigurations.k230-coherent-shell.config.system.build.toplevel --max-jobs 1 --cores 6 --no-link --print-out-paths`.
   Done: `/nix/store/z23fr90qkv8azcawzvi75kh143fp0ggg-nixos-system-nixos-26.11.20260919.20b1ddd`
   (a host cross-build proof only -- not deployed to the board or booted).
-- [ ] 6.4 A paired Sway/Rust QEMU injected-touch trial (styled on
-  `tests/rust_home_screen_qemu.py`) exercising: Home with each widget
-  placed, an open folder, a dock folder, and a drag mid-flight (drawer ->
-  Home reveal, or an on-Home rearrange over a folder-creating drop);
-  capture screenshots under `docs/evidence/home-widgets-folders/` with
-  blob-inventory rows; verify with the harness invocation and
-  `python3 tools/blob-scan.py` exiting 0. This is QEMU proof of wiring and
-  layout, not of real-glass feel or daylight readability. **Partially
-  done**: 16 real captures obtained and blob-scanned (drag-to-place with a
-  mid-drag frame, folder creation by dragging one app onto another,
-  opening the created folder, rearrange-to-remove, and schema-2
-  persistence across a real process restart -- see
-  `docs/evidence/home-widgets-folders/README.md`). The folder-rename
-  (real keyboard), drag-out-of-folder, dock-folder-creation, and
-  widget-picker scenarios could not be captured: the test driver was
-  silently terminated at the same point in every attempt (immediately
-  after tapping an open folder's name to begin a rename), reproducing
-  identically across three different keyboard-interactivity
-  implementations and two sway builds, with the compositor and client
-  both confirmed still alive and genuinely idle afterwards (not a
-  deadlock) -- see the README's "What this run could not reach" section
-  for the full diagnostic trail. Left **UNVERIFIED** rather than guessed
-  at; a re-attempt on a less contended run of this same shared build
-  machine is the next step, not a code change.
+- [x] 6.4 Completed paired Sway/Rust native QEMU folder rename, member extraction, dock, widget-picker and drag scenarios, with committed captures and blob inventory: `docs/evidence/home-widgets-folders/closeout-2026-10-01/qemu/README.md`. Additional mapped-app rename regression passes in its `rename-over-app/` subdirectory. The previously stalled rename was a keyboard/focus bug, now fixed; historical failed attempts remain in the earlier report.
 
 ## 7. Board acceptance (explicitly out of scope for this pass)
 
-- [ ] 7.1 **Hardware, not claimed by this change.** Real-finger drag-to-
-  place from the drawer, folder create/join/open/rename, widget placement
-  and live values (including a real battery device, once the keyboard base
-  is connected), photographed on the physical AMOLED. Left open per the
-  coordinator's explicit instruction that this implementation does not
-  touch the board or `/dev/ttyACM0`.
+- [x] 7.1 User-authorized board self-verification complete: real system-keyboard rename, folder create/join/open/member extraction/dock movement, picker placement and restart persistence, recorded in `docs/evidence/home-widgets-folders/closeout-2026-10-01/board/README.md`. Prior operator finger acceptance and new injected board checks are distinguished explicitly. The user delegated acceptance in place of the former repeat manual/photo sequence. Attached-battery acceptance is conditional and not applicable because no battery is present.
 
 ## 8. Proposal validation
 

@@ -2,9 +2,7 @@
 
 ### Requirement: Home items can be dragged to a specific place instead of instant-pinned
 
-<!-- UNVERIFIED: implemented and host-tested in this change (drag arming,
-edge-page-switch timing, cancel/drop resolution); no real-finger or QEMU
-observation of the reveal/lift-and-follow rendering exists yet. -->
+<!-- Grounding: docs/evidence/home-widgets-folders/closeout-2026-10-01/board/README.md and sibling paired QEMU reports; operator acceptance plus delegated board uinput proof, not new finger measurements. -->
 
 Long-pressing an installed application's tile in the drawer SHALL lift that
 application's icon to follow the finger instead of pinning it immediately,
@@ -52,9 +50,7 @@ held past the last one.
 
 ### Requirement: Rearranging a pinned item on Home follows the same drop rules as a drawer drag
 
-<!-- UNVERIFIED: implemented and host-tested (folder create/join, dock
-placement, same-span swap fallback, widget span-aware placement); no
-real-finger or QEMU observation exists yet. -->
+<!-- Grounding: docs/evidence/home-widgets-folders/closeout-2026-10-01/board/README.md and sibling paired QEMU reports; operator acceptance plus delegated board uinput proof, not new finger measurements. -->
 
 Long-pressing an item already on Home (an application, a folder, or a
 widget) SHALL enter the same drag as a drawer-originated one, resolved by
@@ -91,9 +87,7 @@ except that Home always keeps at least one page even when it is empty.
 
 ### Requirement: Folders group pinned applications in the grid and the dock
 
-<!-- UNVERIFIED: implemented and host-tested (create/join/dissolve, open/
-close/tap-to-launch, rename data model); no real-finger or QEMU observation
-of the rendered overlay or a live keyboard rename exists yet. -->
+<!-- Grounding: docs/evidence/home-widgets-folders/closeout-2026-10-01/board/README.md and sibling paired QEMU reports; operator acceptance plus delegated board uinput proof, not new finger measurements. -->
 
 A folder SHALL display as a single rounded tile showing up to four of its
 members' icons in a 2x2 arrangement. Tapping a folder tile SHALL open an
@@ -127,8 +121,8 @@ one application pinned directly in the folder's former cell.
 <!-- Grounding: `nix/shell.nix`'s existing `k230-weather` desktop entry is
 the reused wttr.in source; this board's actual power-supply hardware is
 UNVERIFIED beyond "no such sysfs device exists today" (design.md Decision
-6). The widgets' rendered appearance and live values are UNVERIFIED against
-the physical board; their content logic (battery absent/present, weather
+6). Native board widget appearance and cached weather are recorded in
+`docs/evidence/home-widget-design/closeout-2026-10-01/board/README.md`; their content logic (battery absent/present, weather
 cache freshness/staleness/offline) is host-tested. -->
 
 Home SHALL support placing a Clock widget, a Battery widget, and a Weather

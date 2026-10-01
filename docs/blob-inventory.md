@@ -651,6 +651,13 @@ Paths are relative to the repository root. `(sdk)` is
 so that building stage 1 from source does not silently drop them from view.
 
 ```
+DATA d17d0e60b3dd8343575020284da0773c29c441874c4c1521c866115880d32b22 docs/evidence/home-widgets-folders/closeout-2026-10-01/board/clock-placed.jpg
+DATA 49e0b8b31d9a4fe2a7498490ce2375edfd77ac5143f2ba615e580cf2882a84c3 docs/evidence/home-widgets-folders/closeout-2026-10-01/board/dock-folder-open.jpg
+DATA f439a4c958c0817a03058897a8b0043713bda2c51c6c0f22074914dba018d091 docs/evidence/home-widgets-folders/closeout-2026-10-01/board/folder-created.jpg
+DATA ce0c05b14f1c6c4111d3ce64fc789ff4f350c420870c97d47b65c42826a63a27 docs/evidence/home-widgets-folders/closeout-2026-10-01/board/folder-open.jpg
+DATA b6512ddd4de177575f96278dbdc3c382a22b0285bb01e7e72841b9298b56c564 docs/evidence/home-widgets-folders/closeout-2026-10-01/board/folder-renamed.jpg
+DATA 4392aa51db53b01d5820e5a6259a2b138fc040f7db0bbbd2f63c1420ebf07bf7 docs/evidence/home-widgets-folders/closeout-2026-10-01/board/member-extracted.jpg
+DATA d17d0e60b3dd8343575020284da0773c29c441874c4c1521c866115880d32b22 docs/evidence/home-widgets-folders/closeout-2026-10-01/board/persisted-home.jpg
 DATA f69f65f6c6d220143a4b54ae15b18444dc5445c734745e3597f443dff77d7ca8 docs/evidence/wifi-settings/closeout-2026-10-01/hidden-again.jpg
 DATA fe473bd186bc8ac642c12a301399ee51e5a592b22e786a8a67b7fbcf421bbd90 docs/evidence/wifi-settings/closeout-2026-10-01/masked-empty.jpg
 DATA f69f65f6c6d220143a4b54ae15b18444dc5445c734745e3597f443dff77d7ca8 docs/evidence/wifi-settings/closeout-2026-10-01/masked-typed.jpg
