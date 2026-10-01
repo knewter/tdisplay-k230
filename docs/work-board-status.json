@@ -417,6 +417,19 @@
         "docs/evidence/mainline-display-boot-preparation.md"
       ],
       "reviewRevision": "128ea4e705a7d61b7144ec9fd341493f42ecf449"
+    },
+    "2026-10-01-the-home-screen-has-widgets-and-folders": {
+      "lane": "archived",
+      "source": "archived",
+      "physical": "verified",
+      "next": "Completed: folder create, join, rename, member extraction, dock placement and widget picker verified.",
+      "rationale": "Delegated board acceptance, native captures and paired QEMU proof. No new finger or daylight measurement claimed.",
+      "dependencies": [],
+      "evidence": [
+        "docs/evidence/home-widgets-folders/closeout-2026-10-01/board/README.md",
+        "docs/evidence/home-widgets-folders/closeout-2026-10-01/qemu/README.md"
+      ],
+      "reviewRevision": "cdb0741bc6713f220140df6143258f1c9d2e83c4"
     }
   }
 }

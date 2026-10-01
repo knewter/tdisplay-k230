@@ -1,3 +1,7 @@
+## Purpose
+
+Define the touch-operated Home layout: exact app and widget placement, paged rearrangement, folders in the grid and dock, system-keyboard naming, and theme-aware clock, weather and battery widgets.
+
 ## ADDED Requirements
 
 ### Requirement: Home items can be dragged to a specific place instead of instant-pinned
