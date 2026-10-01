@@ -330,6 +330,23 @@
         "docs/evidence/files-app/README.md",
         "docs/evidence/proposal-closeout/2026-09-30/README.md"
       ]
+    },
+    "plugging-in-hdmi-moves-the-display": {
+      "lane": "in-progress",
+      "source": "in-progress",
+      "physical": "pending",
+      "next": "Confirm visible panel recovery after reboot; implement the Settings one-shot HDMI switch and investigate the kernel DRM lock stall on unplug. Automatic live output handoff is unfinished.",
+      "rationale": "Reserved-board inspection after the reported unplug found only the HDMI connector and Sway blocked in a kernel modeset lock. A controlled panel reboot and latest-userspace reactivation restored responsive IPC and native panel drawing. Optical/input acceptance and automatic switching are still pending.",
+      "reviewRevision": "75445cc19801a1d497c87b02af81a4e7db16e42c",
+      "dependencies": [],
+      "evidence": [
+        "docs/evidence/hdmi-hotplug/panel-recovery-2026-09-30/README.md"
+      ],
+      "cover": {
+        "path": "docs/evidence/hdmi-hotplug/panel-recovery-2026-09-30/native-panel.jpg",
+        "caption": "Native panel output after recovery; visible-screen acceptance pending",
+        "provenance": "Board capture"
+      }
     }
   }
 }

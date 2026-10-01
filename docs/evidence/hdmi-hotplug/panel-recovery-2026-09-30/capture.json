@@ -1,0 +1,16 @@
+{
+  "captured_at": "2026-10-01T01:38:49.845273+00:00",
+  "evidence_class": "Native physical-board compositor capture; no optical pixels or real-finger proof",
+  "command": "runuser -u shell -- env XDG_RUNTIME_DIR=/run/shell WAYLAND_DISPLAY=wayland-1 grim -t jpeg -q 60 /run/shell/panel-recovery.jpg",
+  "sha256": "a5002406911c3ae20a410d989c6e1ad0a31e46f32062eaec14414873e46d37d2",
+  "booted_system": "/nix/store/x1xbs5qdb5gn91j6s7gsi8mg18qra5ah-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "current_system": "/nix/store/r0knnb72k3p3mpmbsnfgrk66yg8gl144-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "kernel": "6.6.36",
+  "output": "DSI-1",
+  "width": 568,
+  "height": 1232,
+  "transform": "normal",
+  "sway_executable": "/nix/store/g2yxx2jxas1nhivqcpxwrhsxpdi8367q-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway",
+  "shell_executable": "/nix/store/lc0ll4ckkm2vif0s82w2phlwn398g0w1-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0/bin/k230-shell-rust",
+  "relay_executable": "/nix/store/gy6r7r8pf8694pras6njlvgbpmjgg3n8-k230-touch-trackpad-riscv64-unknown-linux-gnu-0.1.0/bin/k230-touch-trackpad"
+}

@@ -1,0 +1,7 @@
+/nix/store/x1xbs5qdb5gn91j6s7gsi8mg18qra5ah-nixos-system-nixos-26.11.20260919.20b1ddd
+/nix/store/r0knnb72k3p3mpmbsnfgrk66yg8gl144-nixos-system-nixos-26.11.20260919.20b1ddd
+shell pid=1316 /nix/store/g2yxx2jxas1nhivqcpxwrhsxpdi8367q-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway
+shell-ui pid=1389 /nix/store/lc0ll4ckkm2vif0s82w2phlwn398g0w1-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0/bin/k230-shell-rust
+k230-touch-trackpad pid=1376 /nix/store/gy6r7r8pf8694pras6njlvgbpmjgg3n8-k230-touch-trackpad-riscv64-unknown-linux-gnu-0.1.0/bin/k230-touch-trackpad
+connected
+kernel 6.6.36
