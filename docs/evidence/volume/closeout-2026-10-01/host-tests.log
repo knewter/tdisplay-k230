@@ -1,0 +1,17 @@
+Full library/binary/integration source checks; compiler: Nix rustc 1.98.1
+Command: cargo test --offline --manifest-path nix/rust-shell-client/Cargo.toml
+test result: ok. 413 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 2.25s
+test result: ok. 22 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.51s
+test result: ok. 14 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.21s
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.34s
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 5.01s
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.08s
+Initial doc-test phase used mismatched rustdoc and failed; rerun with matching Nix rustdoc: cargo test --offline --doc --manifest-path nix/rust-shell-client/Cargo.toml
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.68s
+   Doc-tests k230_shell_rust
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
