@@ -458,7 +458,7 @@
     },
     "the-coherent-shell-boots-the-selected-system": {
       "lane": "in-progress",
-      "source": "proposal-only",
+      "source": "in-progress",
       "physical": "pending",
       "next": "Qualify visible candidate navigation, then persist a coherent bundle and prove ordinary reboot. Working normal/manual baseline restored.",
       "rationale": "Matching vendor candidate reached root/services; dark output included a Foot terminal and requires actual visible navigation proof. Working-kernel Home photographed; persistent boot files/profile remain unchanged.",
