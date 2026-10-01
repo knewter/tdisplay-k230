@@ -19,16 +19,24 @@ Proof: the two narrow Nix builds plus `python3 tests/test_keyboard_gestures_runt
 ## 3. Install and prove on glass
 
 - [x] 3.1 Build `nix build .#nixosConfigurations.k230-coherent-shell.config.system.build.toplevel --max-jobs 1 --cores 4 --no-link --print-out-paths`; record exact output and a recovery-capable installed identity via `python3 tools/console.py /dev/ttyACM0 --wait=3 'readlink -f /run/current-system'` while holding the board reservation.
-- [ ] 3.2 Run a documented real-finger show, type, slow hide/hold/reverse, committed hide and app-navigation sequence. Capture focused feature video with `python3 tools/capture-feature.py keyboard-gestures --duration 15 --provenance real-touch --description "Two-finger show, typing, handle dismissal and reversal"`, record the actual camera and output directory plus camera/native provenance, and keep user acceptance open until explicitly confirmed.
-- [ ] 3.3 Measure keyboard visibility and gesture workload against the existing shell responsiveness budgets using the installed compositor instrumentation; commit the exact workload/operator invocation and observed results. Do not infer motion quality from static captures.
+- [x] 3.2 Record operator acceptance of keyboard gestures (2026-10-01), together with the earlier standalone Foot keyboard confirmation. The operator waives additional capture; this is physical operator feedback, not a new recorded show/hold/reverse sequence.
 
-Proof: exact build and console identity above, committed concrete camera/workload commands and real-glass observations. No routine flash readback is required.
+- [x] 3.3 Transfer the unperformed installed-board visibility/gesture budget measurement intact to `the-shell-profiles-reported-interaction-jank` task 3.1, on the operator-authorized performance deferral. This checks scope transfer, not a measured budget pass.
 
 ## 4. Publish and close
 
-- [ ] 4.1 Publish feature media and updated dashboard evidence as it arrives; run `python3 scripts/build_site.py`, push master and inspect exact-revision Pages deployment.
-- [ ] 4.2 After all source and physical gates pass, run `openspec validate the-keyboard-follows-touch-gestures --strict`, archive/sync the runtime/shell delta, commit and push. Leave incomplete tasks open.
+- [x] 4.1 Retain already-published keyboard feature media and add the committed operator report to the dashboard evidence; validate the working-tree work snapshot. Additional real-touch video is waived, not fabricated.
 
-Proof: `python3 scripts/build_site.py` and `openspec validate the-keyboard-follows-touch-gestures --strict`, followed by exact deployed revision inspection.
+- [x] 4.2 Reconcile accepted functional scope and the explicit measurement successor; validate and archive/sync runtime/shell through the OpenSpec CLI. Source and prior media are already landed; the closeout is pushed and its publication checked separately.
 
-Installed checkpoint: [native board identity and captures](../../../docs/evidence/keyboard-gestures/installed-preview/README.md). Tasks 2.2 and 3.1 have their named build/identity proof; real-finger and output-change recovery gates stay open; the later native Foot text proof completes task 2.3.
+
+## Accepted closeout, 2026-10-01
+
+The updated completed tasks describe actual acceptance, waivers and scope
+transfer, not execution of the superseded protocols. See `docs/evidence/proposal-closeout/2026-10-01/keyboard.md`.
+Historical checkpoint notes above that say physical gates remain open are
+superseded by this record. Quantitative or individually unreported results
+are not promoted to physical proof.
+
+Proof: `openspec validate the-keyboard-follows-touch-gestures --strict`; committed operator report;
+`python3 scripts/render_work_board.py --working-tree --output <snapshot.json>`.

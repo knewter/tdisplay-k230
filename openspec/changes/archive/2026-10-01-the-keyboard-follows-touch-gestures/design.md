@@ -25,3 +25,12 @@ See proposal.md. The installed coherent shell uses wvkbd and compositor-owned bo
 ## Migration Plan
 
 Land the proposal first. Build host policy, then integrate compositor/keyboard grip with the current motion checkpoint in an isolated worktree. Cross-build narrowly and prove native injected input before guarded board deployment. Preserve the existing Settings toggle and previous system for recovery; capture real-finger show/hide/typing before archive.
+
+## Accepted closeout, 2026-10-01
+
+The operator accepts this delivered functional scope and waives additional
+capture-only acceptance gates. `docs/evidence/proposal-closeout/2026-10-01/keyboard.md` records the exact report,
+prior evidence and limits. Its task dispositions supersede older statements
+that these acceptance gates remain open; they do not claim new test runs.
+
+Pending measurement work is preserved in `the-shell-profiles-reported-interaction-jank` before archive.

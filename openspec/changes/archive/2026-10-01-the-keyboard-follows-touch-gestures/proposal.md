@@ -22,3 +22,12 @@ None.
 ## Impact
 
 Userspace compositor input/scene policy, keyboard lifecycle integration, themed grip and Settings text, Nix session wiring, host/native QEMU checks and separate real-glass proof. No kernel, device-tree or stage-1 changes. Physical panel/touch proof is required for completion. Non-goals: replacing wvkbd, changing its key layout, interpreting drags on ordinary keys as dismissal, adding haptics, or replacing the Wi-Fi password editor's explicit close/cancel controls.
+
+## Accepted closeout, 2026-10-01
+
+The operator accepts this delivered functional scope and waives additional
+capture-only acceptance gates. `docs/evidence/proposal-closeout/2026-10-01/keyboard.md` records the exact report,
+prior evidence and limits. Its task dispositions supersede older statements
+that these acceptance gates remain open; they do not claim new test runs.
+
+Pending measurement work is preserved in `the-shell-profiles-reported-interaction-jank` before archive.

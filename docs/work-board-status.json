@@ -1,27 +1,6 @@
 {
   "schema": 1,
   "overrides": {
-    "the-keyboard-follows-touch-gestures": {
-      "lane": "verification",
-      "source": "in-progress",
-      "physical": "pending",
-      "next": "Operator accepted standalone Foot keyboard behavior. Collect the required gesture video and workload measurements; no need to repeat accepted behavior merely for chat confirmation.",
-      "dependencies": [],
-      "evidence": [
-        "docs/evidence/keyboard-gestures/native-qemu/README.md",
-        "docs/evidence/keyboard-gestures/installed-preview/README.md",
-        "docs/evidence/keyboard-gestures/supervised-keyboard-host.md",
-        "docs/evidence/keyboard-gestures/supervised-installed/README.md",
-        "docs/evidence/proposal-closeout/2026-09-30/operator-feedback.md"
-      ],
-      "rationale": "Positive real-glass standalone keyboard feedback recorded; required focused recording and measured responsiveness proof remain open.",
-      "reviewRevision": "dcfbdb0be64dee1ba3ff024541d5bb5bd044d032",
-      "cover": {
-        "path": "docs/evidence/keyboard-gestures/supervised-installed/keyboard-shown.png",
-        "caption": "Installed brighter keyboard handle after supervised recovery; shown by command",
-        "provenance": "Board capture"
-      }
-    },
     "the-shell-manages-apps-as-cards": {
       "lane": "in-progress",
       "source": "in-progress",
@@ -362,6 +341,28 @@
         "docs/evidence/proposal-closeout/2026-09-30/operator-feedback.md",
         "docs/evidence/proposal-closeout/2026-10-01/clock.md"
       ]
+    },
+    "2026-10-01-the-keyboard-follows-touch-gestures": {
+      "lane": "archived",
+      "source": "archived",
+      "physical": "verified",
+      "next": "Closed on operator acceptance; see evidence for waived captures and retained limits.",
+      "dependencies": [],
+      "evidence": [
+        "docs/evidence/keyboard-gestures/native-qemu/README.md",
+        "docs/evidence/keyboard-gestures/installed-preview/README.md",
+        "docs/evidence/keyboard-gestures/supervised-keyboard-host.md",
+        "docs/evidence/keyboard-gestures/supervised-installed/README.md",
+        "docs/evidence/proposal-closeout/2026-09-30/operator-feedback.md",
+        "docs/evidence/proposal-closeout/2026-10-01/keyboard.md"
+      ],
+      "rationale": "Operator accepts the delivered behavior and requests closeout without further difficult captures/retesting. Measurements and unreported per-case proof are not fabricated.",
+      "reviewRevision": "42fb9f55fb7eb08feab76dff0016a0f64a3a4571",
+      "cover": {
+        "path": "docs/evidence/keyboard-gestures/supervised-installed/keyboard-shown.png",
+        "caption": "Installed brighter keyboard handle after supervised recovery; shown by command",
+        "provenance": "Board capture"
+      }
     }
   }
 }
