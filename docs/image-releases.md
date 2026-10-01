@@ -35,8 +35,20 @@ source and checks compressed and decompressed image hashes, creates a draft
 prerelease at that exact SHA, downloads all uploaded assets and checks their
 sizes and hashes, and publishes only after those checks pass. Existing release
 or tag names are refused. Authentication/network failures are errors, not proof
-that a name is unused. A failure after creation leaves the draft for explicit
-operator inspection; the task never overwrites or automatically resumes it.
+that a name is unused. The task records `publication-draft.json` before uploading, because an unpublished
+GitHub draft may have no tag and cannot be looked up through the tag endpoint.
+A failure after creation leaves the draft for explicit operator inspection; the
+task never overwrites or automatically resumes it. Once all expected assets have
+uploaded, explicitly finish that recorded transaction with:
+
+```bash
+python3 tools/release-image.py publish --directory "$HOME/tmp/k230-release-${revision:0:12}" --finish-draft
+```
+
+This requires the local receipt, matching source and asset digests, and the exact
+recorded draft ID/tag/source. It verifies the complete remote asset set and their
+downloaded bytes before publishing; it never uploads or replaces assets. Partial
+uploads require operator inspection before they can be finished.
 
 Keep the staging directory through publication. After successful upload and
 inspection of `publication.json`, it can be removed to release the GC roots.

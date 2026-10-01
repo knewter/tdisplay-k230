@@ -192,24 +192,40 @@ def fresh_release(repository, tag):
             raise ValueError('Release or tag already exists: ' + tag)
 
 
-def publish(args):
-    clean_source()
-    directory = outside_git(args.directory)
-    metadata = json.loads((directory / 'release-metadata.json').read_text())
-    print('Verifying pinned source and staged assets', flush=True)
-    assets = verify_stage(directory, metadata)
+def draft_identity(info, metadata):
+    if (info['tag_name'] != metadata['tag'] or not info['draft'] or not info['prerelease']
+            or info['target_commitish'] != metadata['revision']):
+        raise ValueError('Draft identity or source differs from this transaction')
+
+
+def find_created_draft(repository, tag):
+    pages = json.loads(run(['gh', 'api', '--paginate', '--slurp', f'repos/{repository}/releases']))
+    matches = [item for page in pages for item in page if item['tag_name'] == tag]
+    if len(matches) != 1:
+        raise ValueError('Expected exactly one newly created draft')
+    return matches[0]
+
+
+def save_draft_receipt(directory, metadata, assets, info):
+    draft_identity(info, metadata)
+    receipt = {key: metadata[key] for key in ('repository', 'tag', 'revision')}
+    receipt['release_id'] = info['id']
+    receipt['assets'] = {name: digest(directory / name) for name in assets}
+    with (directory / 'publication-draft.json').open('x') as stream:
+        json.dump(receipt, stream, indent=2)
+        stream.write('\n')
+
+
+def finish_draft(directory, metadata, assets):
+    receipt = json.loads((directory / 'publication-draft.json').read_text())
+    if any(receipt[key] != metadata[key] for key in ('repository', 'tag', 'revision')):
+        raise ValueError('Local draft receipt differs from this source')
+    if receipt['assets'] != {name: digest(directory / name) for name in assets}:
+        raise ValueError('Assets differ from this transaction receipt')
     repo, tag = metadata['repository'], metadata['tag']
-    run(['git', 'check-ref-format', 'refs/tags/' + tag])
-    fresh_release(repo, tag)
-    remote_commit = json.loads(run(['gh', 'api', f'repos/{repo}/commits/{metadata["revision"]}']))
-    if remote_commit['sha'] != metadata['revision']:
-        raise ValueError('Source commit unavailable on GitHub')
-    print('Uploading draft prerelease ' + tag, flush=True)
-    run(['gh', 'release', 'create', tag, '--repo', repo, '--target', metadata['revision'],
-         '--draft', '--prerelease', '--title', 'Coherent handheld development snapshot ' + metadata['revision'][:12],
-         '--notes-file', str(directory / 'release-notes.md'), *[str(directory / x) for x in assets]], capture=False)
-    # A failed verification leaves a draft; never edits/replaces earlier releases.
-    info = json.loads(run(['gh', 'api', f'repos/{repo}/releases/tags/{quote(tag, safe="")}']))
+    release_id = receipt['release_id']
+    info = json.loads(run(['gh', 'api', f'repos/{repo}/releases/{release_id}']))
+    draft_identity(info, metadata)
     if {x['name'] for x in info['assets']} != set(assets):
         raise ValueError('Remote assets differ; release remains draft')
     print('Downloading uploaded assets for verification', flush=True)
@@ -221,15 +237,47 @@ def publish(args):
                 raise ValueError('Remote asset mismatch; release remains draft: ' + name)
     print('Publishing verified prerelease', flush=True)
     run(['gh', 'release', 'edit', tag, '--repo', repo, '--draft=false'], capture=False)
-    info = json.loads(run(['gh', 'api', f'repos/{repo}/releases/tags/{quote(tag, safe="")}']))
+    info = json.loads(run(['gh', 'api', f'repos/{repo}/releases/{release_id}']))
     if info['draft'] or not info['prerelease']:
         raise ValueError('Release publication state differs')
+    tag_info = json.loads(run(['gh', 'api', f'repos/{repo}/git/ref/tags/{quote(tag, safe="")}']))
+    if tag_info['object']['type'] != 'commit' or tag_info['object']['sha'] != metadata['revision']:
+        raise ValueError('Published tag differs from the selected source revision')
     report = {'url': info['html_url'], 'revision': metadata['revision'], 'tag': tag,
-              'published_at': info['published_at'], 'assets': [
+              'published_at': info['published_at'], 'release_id': release_id, 'assets': [
                   {'name': a['name'], 'bytes': a['size'], 'sha256': digest(directory / a['name']),
                    'url': a['browser_download_url']} for a in info['assets']]}
     (directory / 'publication.json').write_text(json.dumps(report, indent=2) + '\n')
     print(info['html_url'])
+
+
+def publish(args):
+    clean_source()
+    directory = outside_git(args.directory)
+    metadata = json.loads((directory / 'release-metadata.json').read_text())
+    print('Verifying pinned source and staged assets', flush=True)
+    assets = verify_stage(directory, metadata)
+    if args.finish_draft:
+        # Explicit continuation requires a receipt created by this local task.
+        finish_draft(directory, metadata, assets)
+        return
+    repo, tag = metadata['repository'], metadata['tag']
+    run(['git', 'check-ref-format', 'refs/tags/' + tag])
+    fresh_release(repo, tag)
+    remote_commit = json.loads(run(['gh', 'api', f'repos/{repo}/commits/{metadata["revision"]}']))
+    if remote_commit['sha'] != metadata['revision']:
+        raise ValueError('Source commit unavailable on GitHub')
+    print('Creating draft prerelease ' + tag, flush=True)
+    run(['gh', 'release', 'create', tag, '--repo', repo, '--target', metadata['revision'],
+         '--draft', '--prerelease', '--title', 'Coherent handheld development snapshot ' + metadata['revision'][:12],
+         '--notes-file', str(directory / 'release-notes.md')], capture=False)
+    info = find_created_draft(repo, tag)
+    # Drafts may have no Git tag yet: authenticated list/ID lookup is required.
+    save_draft_receipt(directory, metadata, assets, info)
+    print('Uploading assets to the recorded draft', flush=True)
+    run(['gh', 'release', 'upload', tag, '--repo', repo,
+         *[str(directory / name) for name in assets]], capture=False)
+    finish_draft(directory, metadata, assets)
 
 
 def main():
@@ -243,6 +291,8 @@ def main():
     build.add_argument('--validation-note', help='Additional observed context; cannot replace mandatory limits')
     publish_parser = sub.add_parser('publish', help='Verify assets, create and publish a fresh prerelease')
     publish_parser.add_argument('--directory', required=True)
+    publish_parser.add_argument('--finish-draft', action='store_true',
+        help='Explicitly verify and finish the draft in the local transaction receipt; never re-upload assets')
     args = parser.parse_args()
     try:
         (stage if args.command == 'stage' else publish)(args)

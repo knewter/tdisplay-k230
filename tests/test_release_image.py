@@ -61,17 +61,46 @@ class ReleaseTests(unittest.TestCase):
                 with self.assertRaisesRegex(ValueError, 'Provenance'):
                     release.verify_stage(p, m)
 
+
+    def test_draft_without_tag_is_found_by_list(self):
+        draft = {'id': 123, 'tag_name': 'new', 'draft': True}
+        with patch.object(release, 'run', return_value=json.dumps([[draft]])) as run:
+            self.assertEqual(release.find_created_draft('owner/repo', 'new'), draft)
+            self.assertEqual(run.call_args.args[0][-1], 'repos/owner/repo/releases')
+
     def test_failed_remote_verification_keeps_draft(self):
         with tempfile.TemporaryDirectory(dir=Path.home() / 'tmp') as temp:
             p = Path(temp); (p / 'one').write_bytes(b'asset')
             metadata = {'repository': 'owner/repo', 'tag': 'new', 'revision': 'a' * 40}
-            (p / 'release-metadata.json').write_text(json.dumps(metadata))
-            responses = ['', json.dumps({'sha': metadata['revision']}), '',
-                         json.dumps({'assets': [{'name': 'one', 'size': 999}]}), '']
-            with patch.object(release, 'clean_source'), patch.object(release, 'outside_git', return_value=p), patch.object(release, 'verify_stage', return_value=['one']), patch.object(release, 'fresh_release'), patch.object(release, 'run', side_effect=responses) as run:
+            info = {'id': 123, 'tag_name': 'new', 'draft': True, 'prerelease': True,
+                    'target_commitish': metadata['revision'], 'assets': [{'name': 'one', 'size': 999}]}
+            release.save_draft_receipt(p, metadata, ['one'], info)
+            with patch.object(release, 'run', side_effect=[json.dumps(info), '']) as run:
                 with self.assertRaisesRegex(ValueError, 'remains draft'):
-                    release.publish(type('Args', (), {'directory': temp})())
+                    release.finish_draft(p, metadata, ['one'])
                 self.assertFalse(any('edit' in call.args[0] for call in run.call_args_list))
+
+    def test_transaction_receipt_refuses_different_source_or_assets(self):
+        with tempfile.TemporaryDirectory(dir=Path.home() / 'tmp') as temp:
+            p = Path(temp); (p / 'one').write_bytes(b'asset')
+            metadata = {'repository': 'owner/repo', 'tag': 'new', 'revision': 'a' * 40}
+            info = {'id': 123, 'tag_name': 'new', 'draft': True, 'prerelease': True,
+                    'target_commitish': metadata['revision']}
+            release.save_draft_receipt(p, metadata, ['one'], info)
+            with patch.object(release, 'run') as run:
+                with self.assertRaisesRegex(ValueError, 'receipt'):
+                    release.finish_draft(p, {**metadata, 'revision': 'b' * 40}, ['one'])
+                (p / 'one').write_bytes(b'changed')
+                with self.assertRaisesRegex(ValueError, 'Assets differ'):
+                    release.finish_draft(p, metadata, ['one'])
+                run.assert_not_called()
+
+    def test_wrong_draft_identity_refused(self):
+        metadata = {'tag': 'new', 'revision': 'a' * 40}
+        for overrides in ({'target_commitish': 'b' * 40}, {'draft': False}, {'tag_name': 'unrelated'}):
+            info = {'tag_name': 'new', 'draft': True, 'prerelease': True, 'target_commitish': metadata['revision'], **overrides}
+            with self.assertRaisesRegex(ValueError, 'identity'):
+                release.draft_identity(info, metadata)
 
 
 if __name__ == '__main__':
