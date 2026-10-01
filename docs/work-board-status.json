@@ -378,6 +378,18 @@
         "caption": "Installed Search with a visible caret and the normal themed wvkbd keyboard",
         "provenance": "Board capture"
       }
+    },
+    "2026-10-01-launching-an-app-shows-a-splash": {
+      "lane": "archived",
+      "source": "archived",
+      "physical": "verified",
+      "next": "Closed on operator acceptance; see evidence for waived captures and retained limits.",
+      "rationale": "Operator accepts the delivered behavior and requests closeout without further difficult captures/retesting. Measurements and unreported per-case proof are not fabricated.",
+      "reviewRevision": "7c270b23793dbe7f464af13089909abb86f8166e",
+      "evidence": [
+        "docs/evidence/proposal-closeout/2026-10-01/splash.md"
+      ],
+      "dependencies": []
     }
   }
 }

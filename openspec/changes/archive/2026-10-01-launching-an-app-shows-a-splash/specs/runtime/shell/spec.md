@@ -7,10 +7,7 @@ console, PNGs and camera recording establish physical-panel discovery, launch,
 refresh and error recovery using injected input. The user separately confirmed finger usability on 2026-09-22; normal source-image reboot persistence is demonstrated by the separate
 image-launcher video and console, without restoring home-directory state.*
 
-<!-- UNVERIFIED: the splash itself (see the new "Launching an app shows an
-instant splash until it appears" requirement) is proven on host and,
-if practical, under QEMU; real-glass splash timing and readability remain
-open board tasks. -->
+<!-- Grounding: functional launch splash accepted by the operator, docs/evidence/proposal-closeout/2026-10-01/splash.md; prior host/QEMU proofs remain. UNVERIFIED: quantitative one-frame timing and individual physical timeout/failure cases were not newly measured. Additional capture/fault-injection reruns are waived. -->
 
 The system's Apps surface SHALL list visible application desktop entries from
 the user's XDG data directories and Nix profile data directories, applying
@@ -18,13 +15,20 @@ user-over-system precedence and desktop visibility rules. Reopening Apps SHALL
 reflect entries added or removed since the previous open. The surface SHALL
 provide readable application names and touch-accessible pages when the list
 exceeds the portrait display. Launching an entry SHALL preserve desktop-entry
-argument expansion and working-directory semantics, and SHALL show the
-instant launch splash defined below rather than leaving the previously
-active app visible while the process starts. Terminal applications SHALL
-open in the configured terminal. A launch failure SHALL be shown through
-that same splash's recoverable failure state, with a way back to Apps or
-Home; it SHALL NOT silently leave the previous app in an unexplained,
-unresponsive state.
+argument expansion and working-directory semantics. Terminal applications SHALL
+open in the configured terminal. A launch error SHALL leave a visible explanation
+and a usable Back control. The application grid SHALL present at least 4
+columns of icons at this panel's width, each icon at least 56 logical
+pixels square, with a single-line, ellipsized application name below each
+icon and no surrounding card or plate. An application with no resolvable
+icon SHALL show a round, theme-coloured fallback bearing its initial
+letter, rather than leaving the tile blank.
+
+A launch SHALL show the instant splash defined below instead of leaving the
+previous app visible during startup. Terminal applications SHALL hand off
+the splash correctly despite mapping under the terminal identity. A launch
+failure SHALL use the splash's recoverable failure state and a reachable
+return to Apps or Home, never an unexplained dead overlay.
 
 #### Scenario: An installed application becomes available
 
@@ -54,13 +58,42 @@ unresponsive state.
   returns the user to Apps or Home, rather than leaving a dead overlay or an
   unexplained, unresponsive previous app
 
+#### Scenario: The application grid presents a dense, legible layout
+
+- **WHEN** the user opens Apps with more entries than fit in one screen
+- **THEN** at least 4 columns of icons are visible per row, each icon at
+  least 56 logical pixels square with a legible, ellipsized name below it
+  and no surrounding card, and the list scrolls to reveal the remainder
+
+#### Scenario: An application with no icon still gets a legible tile
+
+- **WHEN** an installed application's desktop entry names no icon that
+  resolves against the active icon theme
+- **THEN** its grid tile shows a round, theme-coloured circle bearing the
+  application's initial letter, not an empty or broken tile
+
+#### Scenario: Searching uses the same system keyboard as other text fields
+
+- **WHEN** a person focuses the app drawer's Search field
+- **THEN** the normal system keyboard appears and its ordinary typed text and correction update the live app filter, with the list kept visible above the keyboard
+- **AND** dismissing search, launching a result or leaving the drawer releases keyboard focus and lowers the keyboard without stranding application input
+
+#### Scenario: Search focus and correction remain visible
+
+- **WHEN** a person taps Search and types or presses the system keyboard's Backspace
+- **THEN** a visible insertion caret and focus indication identify the active field, correction changes only the query, and the app drawer remains open
+
+<!-- Closeout evidence: docs/evidence/proposal-closeout/2026-10-01/drawer.md. Operator report is physical
+feedback; retained host/QEMU/injected evidence keeps its original class.
+No additional capture, quantitative measurement or fault injection claimed. -->
+
 ## ADDED Requirements
 
 ### Requirement: Launching an app shows an instant splash until it appears
 
-<!-- UNVERIFIED: host build, `cargo test`/`cargo clippy`, and a full system
-closure build are recorded for this requirement; real-glass timing,
-readability, and touch-dismiss feel remain open board tasks. -->
+*Grounding: operator acceptance in `docs/evidence/proposal-closeout/2026-10-01/splash.md`, with prior source and board/QEMU evidence retaining their original classes and limits.*
+
+<!-- Grounding: functional launch splash accepted by the operator, docs/evidence/proposal-closeout/2026-10-01/splash.md; prior host/QEMU proofs remain. UNVERIFIED: quantitative one-frame timing and individual physical timeout/failure cases were not newly measured. Additional capture/fault-injection reruns are waived. -->
 
 Tapping an installed application in the drawer, on Home, or in the dock
 SHALL show a full-screen splash within one visible frame: the active
@@ -141,3 +174,7 @@ without requiring a tap.
   focused application fully covered by the splash for the whole transition,
   with no compositor-side change required to prevent it from showing
   through
+
+<!-- Closeout evidence: docs/evidence/proposal-closeout/2026-10-01/splash.md. Operator report is physical
+feedback; retained host/QEMU/injected evidence keeps its original class.
+No additional capture, quantitative measurement or fault injection claimed. -->

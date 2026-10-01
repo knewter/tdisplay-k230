@@ -64,3 +64,10 @@ QEMU harness proves the splash paints and hands off under the headless
 Pixman backend, but only the physical board proves real-glass timing,
 touch-dismiss feel, and that the previous app is never perceptibly
 uncovered on real hardware. Both remain open until that evidence exists.
+
+## Accepted closeout, 2026-10-01
+
+The operator accepts this delivered functional scope and waives additional
+capture-only acceptance gates. `docs/evidence/proposal-closeout/2026-10-01/splash.md` records the exact report,
+prior evidence and limits. Its task dispositions supersede older statements
+that these acceptance gates remain open; they do not claim new test runs.

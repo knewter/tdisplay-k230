@@ -105,29 +105,24 @@
 
 ## 6. Board acceptance (hardware-only; stays open)
 
-- [ ] 6.1 On the physical board, record a native capture of the splash
-  appearing within one frame of a real finger tap (drawer, Home, and
-  dock), with no visible flash of the previously active app -- verify with
-  `python3 tools/capture-feature.py launch-splash --provenance real-touch
-  --output-dir docs/evidence/launch-splash/real-touch` (or the equivalent
-  current capture tool), reviewed against native state, not camera
-  impression alone.
-- [ ] 6.2 On the physical board, record a real `Terminal=true` launch
-  (e.g. the existing Terminal entry) mapping as `foot` and the splash
-  correctly handing off despite the `app_id` mismatch -- verify with a
-  console/native capture showing the matched pid and the resulting focused
-  `foot` window.
-- [ ] 6.3 On the physical board, record the `TimedOut` and `Failed` states:
-  an artificially slow/failing launch (e.g. a fixture desktop entry
-  pointing at a sleeping or immediately-exiting command) reaching each
-  state, and a real finger dismissing `TimedOut` by tap -- verify with a
-  native capture and console log of the resulting `SplashStatus`
-  transitions.
-  Operator real-finger report, 2026-09-27: "launch splash seems fine"
-  (`docs/evidence/operator-reports/2026-09-27-shell-acceptance.md`). This
-  task stays open because it requires a native capture.
+- [x] 6.1 Record physical operator acceptance: launch splash works (2026-10-01), also reported fine on 2026-09-27. Retain existing QEMU/source evidence. Additional frame-timing/native capture is waived; this is not a measured one-frame latency result.
+
+- [x] 6.2 Accept functional launch splash with the operator report and existing process-identity/terminal launch source tests. A new recorded Terminal=true board launch is waived, not claimed.
+
+- [x] 6.3 Accept the delivered splash behavior using the operator report plus committed host timeout/failure tests. The requested artificial slow/failing physical launches and captures are waived; no newly observed physical fault injection is claimed.
 
 ## 7. Proposal validation
 
 - [x] 7.1 Validate this change -- verify: `openspec validate
   launching-an-app-shows-a-splash --strict` passes.
+
+## Accepted closeout, 2026-10-01
+
+The updated completed tasks describe actual acceptance, waivers and scope
+transfer, not execution of the superseded protocols. See `docs/evidence/proposal-closeout/2026-10-01/splash.md`.
+Historical checkpoint notes above that say physical gates remain open are
+superseded by this record. Quantitative or individually unreported results
+are not promoted to physical proof.
+
+Proof: `openspec validate launching-an-app-shows-a-splash --strict`; committed operator report;
+`python3 scripts/render_work_board.py --working-tree --output <snapshot.json>`.

@@ -189,3 +189,10 @@ design cannot itself provide: splash timing/readability, touch-dismiss on
 `TimedOut`/`Failed`, a real `Terminal=true` launch mapping and handing off
 correctly, and confirmation that the previously active app is never
 perceptibly visible during a real launch.
+
+## Accepted closeout, 2026-10-01
+
+The operator accepts this delivered functional scope and waives additional
+capture-only acceptance gates. `docs/evidence/proposal-closeout/2026-10-01/splash.md` records the exact report,
+prior evidence and limits. Its task dispositions supersede older statements
+that these acceptance gates remain open; they do not claim new test runs.
