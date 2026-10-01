@@ -9,8 +9,8 @@ use crate::{
     home_widgets::weather::WeatherDisplay,
     icon::IconCache,
     navigation::{
-        self, list_top, panel_top, search_field_rect, search_keyboard_top, tile_rect, COLUMNS,
-        GRID_BOTTOM_INSET, ROW_HEIGHT, SEARCH_KEYBOARD_HEIGHT,
+        self, list_top, panel_top, search_field_rect, tile_rect, COLUMNS,
+        GRID_BOTTOM_INSET, ROW_HEIGHT,
     },
     pipewire_ipc::GraphSnapshot,
     service_data::{Control, ControlState, ControlValue, Priority},
@@ -1770,7 +1770,7 @@ fn paint_drawer_tile(
 }
 
 /// Renders the drawer's slim top handle, its pill-shaped search field, and
-/// -- while focused -- the compact search keyboard beneath it. Drawn
+/// a focused field caret. The normal keyboard is a separate wvkbd surface. Drawn
 /// directly every frame (cheap: a handful of small fixed-position shapes,
 /// unrelated to the app grid's own size), never through `DrawerGridCache`.
 fn paint_drawer_chrome(
@@ -1808,38 +1808,42 @@ fn paint_drawer_chrome(
     } else {
         style.text
     };
-    text(cr, label, sx + 22.0, sy + sh / 2.0 - 9.0, sw - 44.0, 18.0, label_color);
-
-    if search.focused {
-        let ky = search_keyboard_top(height);
-        color(cr, palette_rgb_or(theme, "surface1", 0x1a1e26), 1.0);
-        cr.rectangle(0.0, ky, f64::from(width), SEARCH_KEYBOARD_HEIGHT);
-        let _ = cr.fill();
-        paint_search_keyboard(cr, theme, width, height, &style);
+    let tx = sx + 22.0;
+    let ty = sy + sh / 2.0 - 9.0;
+    let available = sw - 44.0;
+    if !search.focused {
+        text(cr, label, tx, ty, available, 18.0, label_color);
+        return;
     }
-}
-
-fn paint_search_keyboard(
-    cr: &Context,
-    theme: Option<&AppearanceSnapshot>,
-    width: u32,
-    height: u32,
-    style: &VisualStyle,
-) {
-    for row in 0..3 {
-        for (ch, x, y, w, h) in navigation::keyboard_row_keys(row, width, height) {
-            service_card(cr, theme, "controls", x + 2.0, y, (w - 4.0).max(1.0), h, false);
-            centered_label(cr, &ch.to_string(), x, y + h / 2.0 - 12.0, w, 22.0, style.text);
-        }
+    // Focus ring plus a steady insertion caret: never invisible during a blink.
+    rounded(cr, sx + 1.0, sy + 1.0, sw - 2.0, sh - 2.0, sh / 2.0);
+    color(cr, style.accent, 1.0);
+    cr.set_line_width(2.0);
+    let _ = cr.stroke();
+    let layout = pangocairo::functions::create_layout(cr);
+    let mut font = FontDescription::new();
+    font.set_family(FONT_FAMILY);
+    font.set_absolute_size(18.0 * f64::from(pango::SCALE));
+    layout.set_font_description(Some(&font));
+    layout.set_single_paragraph_mode(true);
+    layout.set_text(&search.query);
+    let (caret, _) = layout.cursor_pos(search.query.len() as i32);
+    let caret_x = f64::from(caret.x()) / f64::from(pango::SCALE);
+    let shift = (caret_x - available + 4.0).max(0.0);
+    let _ = cr.save();
+    cr.rectangle(tx - 2.0, sy + 8.0, available + 2.0, sh - 16.0);
+    cr.clip();
+    if search.query.is_empty() {
+        text(cr, label, tx, ty, available, 18.0, label_color);
+    } else {
+        color(cr, style.text, 1.0);
+        cr.move_to(tx - shift, ty);
+        pangocairo::functions::show_layout(cr, &layout);
     }
-    let (left, right, side_w, y, h) = navigation::keyboard_control_row(width, height);
-    service_card(cr, theme, "controls", left, y, side_w, h, false);
-    centered_label(cr, "⌫", left, y + h / 2.0 - 12.0, side_w, 22.0, style.text);
-    let space_w = (right - side_w) - (left + side_w);
-    service_card(cr, theme, "controls", left + side_w, y, space_w, h, false);
-    centered_label(cr, "space", left + side_w, y + h / 2.0 - 9.0, space_w, 18.0, style.muted);
-    service_card(cr, theme, "controls", right - side_w, y, side_w, h, false);
-    centered_label(cr, "Done", right - side_w, y + h / 2.0 - 9.0, side_w, 18.0, style.accent);
+    color(cr, style.accent, 1.0);
+    cr.rectangle(tx + caret_x - shift - 1.0, sy + 12.0, 2.0, sh - 24.0);
+    let _ = cr.fill();
+    let _ = cr.restore();
 }
 
 /// The Drawer's whole paint: opaque themed sheet with rounded top corners,
@@ -1893,11 +1897,7 @@ fn paint_drawer(
         search,
     };
     let row_start = list_top(height);
-    let bottom = if search.focused {
-        search_keyboard_top(height)
-    } else {
-        h - GRID_BOTTOM_INSET
-    };
+    let bottom = f64::from(search.viewport_height(height)) - GRID_BOTTOM_INSET;
     let (grid_surface, content_height) = grid_cache.ensure(&content, theme, width, height, icons);
     let _ = cr.save();
     cr.rectangle(0.0, row_start, w, (bottom - row_start).max(0.0));
@@ -7287,6 +7287,7 @@ mod tests {
         let filtered_search = DrawerSearch {
             query: "alpha".into(),
             focused: false,
+            ..DrawerSearch::default()
         };
         let filtered_content = DrawerContent {
             apps: vec![&apps[0]],

@@ -107,20 +107,36 @@ pub fn action_message(outcome: &ActionOutcome) -> String {
 pub struct DrawerSearch {
     pub query: String,
     pub focused: bool,
+    /// Height reserved by the shared system keyboard, in output logical pixels.
+    pub keyboard_inset: f64,
 }
 
 impl DrawerSearch {
-    /// Applies one key from the compact search keyboard
-    /// (`navigation::SearchKey`) to the live query. Takes the key by value
-    /// rather than importing `navigation::SearchKey` into this module's own
-    /// public surface, so callers keep matching on the one enum
-    /// `navigation.rs` already defines it in.
-    pub fn key(&mut self, ch: Option<char>, backspace: bool) {
-        if let Some(ch) = ch {
-            self.query.push(ch);
-        } else if backspace {
-            self.query.pop();
+    /// Applies ordinary Wayland text and control keys only while Search owns focus.
+    /// This public query is independent of Wi-Fi's secret password state.
+    pub fn key_event(&mut self, keysym: u32, utf8: Option<&str>) -> bool {
+        if !self.focused { return false; }
+        match keysym {
+            0xff08 => { self.query.pop(); }
+            0xff0d | 0xff8d | 0xff1b => self.unfocus(),
+            _ => {
+                let Some(text) = utf8 else { return false; };
+                if text.is_empty() || text.chars().any(char::is_control)
+                    || self.query.len().saturating_add(text.len()) > 256 {
+                    return false;
+                }
+                self.query.push_str(text);
+            }
         }
+        true
+    }
+
+    /// List geometry shares the actual configured wvkbd height, not a custom keypad.
+    pub fn viewport_height(&self, height: u32) -> u32 {
+        let inset = if self.keyboard_inset.is_finite() {
+            self.keyboard_inset.clamp(0.0, f64::from(height))
+        } else { 0.0 };
+        height.saturating_sub(inset.ceil() as u32)
     }
 
     /// Opens the field: focuses it and shows the keyboard. A no-op if
@@ -130,10 +146,10 @@ impl DrawerSearch {
     }
 
     /// Closes the keyboard without clearing the query -- the filtered grid
-    /// stays exactly as typed (matches `navigation::SearchKey::Done`'s own
-    /// doc).
+    /// stays exactly as typed.
     pub fn unfocus(&mut self) {
         self.focused = false;
+        self.keyboard_inset = 0.0;
     }
 
     /// Clears the query entirely (the field's own trailing "clear" tap) but
@@ -1003,11 +1019,11 @@ mod tests {
         search.focus();
         assert!(search.focused);
 
-        search.key(Some('c'), false);
-        search.key(Some('a'), false);
+        search.key_event('c' as u32, Some("c"));
+        search.key_event('a' as u32, Some("a"));
         assert_eq!(search.query, "ca");
 
-        search.key(None, true);
+        search.key_event(0xff08, None);
         assert_eq!(search.query, "c", "backspace pops the last character");
 
         search.unfocus();
@@ -1016,6 +1032,37 @@ mod tests {
 
         search.clear();
         assert!(search.query.is_empty());
+    }
+
+    #[test]
+    fn normal_search_keys_correct_text_without_dismissing_the_drawer() {
+        let mut search = DrawerSearch::default();
+        assert!(!search.key_event('q' as u32, Some("q")));
+        search.focus();
+        assert!(search.key_event('A' as u32, Some("A")));
+        assert!(search.key_event(0, Some(" café")));
+        assert!(search.key_event(0xff08, Some("\u{8}")));
+        assert_eq!(search.query, "A caf");
+        assert!(search.focused, "correction retains focus and the open search");
+        assert!(!search.key_event(0, Some("\n")));
+        assert!(search.key_event(0xff0d, Some("\r")));
+        assert!(!search.focused);
+        assert_eq!(search.query, "A caf", "Enter only dismisses the keyboard");
+        search.focus();
+        assert!(search.key_event(0xff1b, None));
+        assert!(!search.focused);
+        assert!(!search.key_event('z' as u32, Some("z")), "late keys cannot edit a closed field");
+    }
+
+    #[test]
+    fn search_viewport_reserves_the_system_keyboard_and_recovers_on_dismiss() {
+        let mut search = DrawerSearch::default();
+        search.focus(); search.keyboard_inset = 420.0;
+        assert_eq!(search.viewport_height(1232), 812);
+        search.unfocus();
+        assert_eq!(search.viewport_height(1232), 1232);
+        search.keyboard_inset = f64::NAN;
+        assert_eq!(search.viewport_height(1232), 1232);
     }
 
     #[test]

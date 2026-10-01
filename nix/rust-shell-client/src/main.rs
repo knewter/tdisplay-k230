@@ -11,7 +11,7 @@ use k230_shell_rust::{
     home_grid, home_state,
     home_screen::{HomeAction, HomeScreen},
     home_widgets,
-    navigation::{self, DrawerAction, DrawerNavigation, SearchKey},
+    navigation::{self, DrawerAction, DrawerNavigation},
     pipewire_ipc,
     pointer_input::{self, PointerContact, POINTER_CONTACT_ID},
     protocol::{Phase, RevealMessage, RevealState, MAX_LINE},
@@ -1090,6 +1090,7 @@ struct ShellClient {
     /// "needs to change" without re-deriving it from `self.layer`'s own
     /// (write-only, from here) Wayland state.
     wifi_keyboard_active: bool,
+    drawer_keyboard_active: bool,
     /// Mirrors whether Home's open-folder rename field currently holds
     /// keyboard focus (task 2, `HomeScreen::OpenFolder::editing_name`) --
     /// the exact same role `wifi_keyboard_active` plays for the Wi-Fi
@@ -2984,6 +2985,7 @@ impl ShellClient {
     /// rebuild if it actually changed) and marks the frame dirty so the
     /// result is visible on the next `draw`.
     fn sync_drawer_search(&mut self) {
+        self.sync_drawer_keyboard();
         if self
             .renderer
             .set_drawer_search(self.drawer_search.clone())
@@ -2992,18 +2994,44 @@ impl ShellClient {
         }
     }
 
-    /// Applies one key from the compact search keyboard
-    /// (`navigation::search_keyboard_key_at`) to the live query and
-    /// re-syncs the renderer. `Done` only closes the keyboard -- the
-    /// query itself is untouched, matching `SearchKey::Done`'s own doc.
-    fn apply_search_key(&mut self, key: SearchKey) {
-        match key {
-            SearchKey::Char(ch) => self.drawer_search.key(Some(ch), false),
-            SearchKey::Backspace => self.drawer_search.key(None, true),
-            SearchKey::Space => self.drawer_search.key(Some(' '), false),
-            SearchKey::Done => self.drawer_search.unfocus(),
+    fn sync_drawer_keyboard(&mut self) {
+        let want = self.route == Route::Drawer && self.layer.is_some()
+            && self.splash.is_none() && self.drawer_search.focused;
+        self.drawer_search.keyboard_inset = if want { self.keyboard_height_px } else { 0.0 };
+        if want == self.drawer_keyboard_active { return; }
+        self.drawer_keyboard_active = want;
+        if let Some(layer) = &self.layer {
+            layer.set_keyboard_interactivity(if want {
+                KeyboardInteractivity::Exclusive
+            } else { KeyboardInteractivity::None });
+            layer.commit();
         }
-        self.sync_drawer_search();
+        if let Some(path) = &self.keyboard_signal_path {
+            if let Err(error) = std::process::Command::new(path)
+                .arg(if want { "show" } else { "hide" }).spawn() {
+                self.log(&format!("drawer-keyboard-signal-failed {error}"));
+            }
+        }
+        self.dirty = true;
+    }
+
+    fn forget_drawer_keyboard(&mut self) {
+        self.drawer_keyboard_active = false;
+        self.drawer_search.unfocus();
+        self.renderer.set_drawer_search(self.drawer_search.clone());
+        if let Some(layer) = &self.layer {
+            layer.set_keyboard_interactivity(KeyboardInteractivity::None);
+            layer.commit();
+        }
+        self.dirty = true;
+    }
+
+    fn handle_drawer_key(&mut self, event: &KeyEvent) {
+        if self.drawer_keyboard_active && self.drawer_search.key_event(
+            u32::from(event.keysym), event.utf8.as_deref()) {
+            self.nav = DrawerNavigation::default();
+            self.sync_drawer_search();
+        }
     }
 
     /// `DrawerAction::Launch(display_index)` -> the real catalog app.
@@ -3489,6 +3517,8 @@ impl ShellClient {
     /// this starts actually reaches 0.0 -- see the event loop's own
     /// `panel_close.tick`/`take_settled_closed` handling.
     fn begin_animated_close(&mut self) {
+        self.drawer_search.unfocus();
+        self.sync_drawer_search();
         let now = self.started.elapsed().as_millis() as u64;
         self.panel_close
             .begin_settle(1.0, 0.0, now, self.reduced_motion);
@@ -3586,6 +3616,10 @@ impl ShellClient {
             self.service_view.notification_swipe = None;
             self.renderer.set_services(self.service_view.clone());
         }
+        if self.route != message.surface {
+            self.drawer_search = DrawerSearch::default();
+            self.sync_drawer_search();
+        }
         self.route = message.surface;
         if message.phase == Phase::Begin && !message.dismiss {
             self.refresh_route(message.surface);
@@ -3668,6 +3702,8 @@ impl ShellClient {
     /// already-mapped layer alive, which is what avoids ever uncovering
     /// the previously active app between the drawer and the splash.
     fn reset_overlay_interaction(&mut self) {
+        self.drawer_search.unfocus();
+        self.sync_drawer_search();
         self.touch.cancel();
         self.panel_start = None;
         self.service_view.notification_swipe = None;
@@ -4248,6 +4284,7 @@ impl SeatHandler for ShellClient {
             }
             self.forget_wifi_keyboard();
             self.forget_home_keyboard();
+            self.forget_drawer_keyboard();
             self.log("keyboard-capability-lost");
         }
     }
@@ -4278,6 +4315,7 @@ impl SeatHandler for ShellClient {
         }
         self.forget_wifi_keyboard();
         self.forget_home_keyboard();
+        self.forget_drawer_keyboard();
     }
 }
 
@@ -4310,21 +4348,6 @@ impl ShellClient {
                     // Nothing to track on `down` -- a dismissable splash
                     // (the only state that ever reaches this branch at all;
                     // see `input_region`'s own doc) only acts on `up`.
-                } else if self.route == Route::Drawer
-                    && self.input_ready
-                    && self.drawer_search.focused
-                    && navigation::search_keyboard_hit(pos, self.height)
-                {
-                    // A touch on the compact search keyboard: tracked only
-                    // through `panel_start` (reused, not a new field --
-                    // only one route is ever open at a time), resolved
-                    // entirely at `up` via `search_keyboard_key_at`. Never
-                    // reaches `nav`/close-drag: those only know about the
-                    // grid and top chrome, not this overlay, and a stray
-                    // tile hit-test underneath a covered row would launch
-                    // an app the finger never actually reached.
-                    self.panel_start = Some((id, pos));
-                    self.panel_close_candidate = false;
                 } else if self.route == Route::Drawer && self.input_ready {
                     // Captured *before* `nav.down` below, which
                     // unconditionally zeroes any in-flight fling velocity
@@ -4342,7 +4365,7 @@ impl ShellClient {
                     self.nav.down(id, pos, time_ms);
                     if self.renderer.set_drawer_pressed(self.nav.pressed(
                         self.width,
-                        self.height,
+                        self.drawer_search.viewport_height(self.height),
                         self.drawer_filtered_apps().len(),
                     )) {
                         self.dirty = true;
@@ -4640,18 +4663,6 @@ impl ShellClient {
                     self.panel_close_velocity = 0.0;
                     self.dirty = true;
                 } else if start.is_some_and(|(_, start_pos)| {
-                    self.drawer_search.focused
-                        && navigation::search_keyboard_hit(start_pos, self.height)
-                }) {
-                    // Resolves a search-keyboard touch entirely from its
-                    // *release* point -- a real on-screen keyboard reads
-                    // whichever key is under the finger when it lifts, not
-                    // where it first touched down, so a small correcting
-                    // slide before release still hits the intended key.
-                    if let Some(key) = navigation::search_keyboard_key_at(point, self.width, self.height) {
-                        self.apply_search_key(key);
-                    }
-                } else if start.is_some_and(|(_, start_pos)| {
                     // The visible handle also works as a tap/click dismiss
                     // target; search immediately below keeps its own action.
                     let (_, handle_y, _, _) = navigation::handle_rect(self.width, self.height);
@@ -4662,8 +4673,7 @@ impl ShellClient {
                     self.nav.cancel();
                     self.begin_animated_close();
                 } else if start.is_some_and(|(_, start_pos)| {
-                    !self.drawer_search.focused
-                        && navigation::search_field_hit(start_pos, self.width, self.height)
+                    navigation::search_field_hit(start_pos, self.width, self.height)
                         && (point.0 - start_pos.0).abs() <= 12.0
                         && (point.1 - start_pos.1).abs() <= 12.0
                 }) {
@@ -4672,15 +4682,23 @@ impl ShellClient {
                     // itself is never `nav`'s (it hit-tests only the grid),
                     // so a released drag/close-drag candidate that landed
                     // here otherwise resolves as nothing at all.
+                    let already_active = self.drawer_keyboard_active;
+                    self.nav.cancel();
                     self.drawer_search.focus();
                     self.sync_drawer_search();
+                    // A tap also reopens a keyboard hidden with its grip gesture.
+                    if already_active {
+                        if let Some(path) = &self.keyboard_signal_path {
+                            let _ = std::process::Command::new(path).arg("show").spawn();
+                        }
+                    }
                 } else {
                     match self.nav.up(
                         id,
                         point,
                         time_ms,
                         self.width,
-                        self.height,
+                        self.drawer_search.viewport_height(self.height),
                         self.drawer_filtered_apps().len(),
                     ) {
                         Some(DrawerAction::Launch(index)) => self.launch_drawer_app(qh, index),
@@ -5056,7 +5074,7 @@ impl ShellClient {
                 }
                 if !engaged_this_sample {
                     let filtered_count = self.drawer_filtered_apps().len();
-                    if self.nav.motion(id, pos, time_ms, self.width, self.height, filtered_count) {
+                    if self.nav.motion(id, pos, time_ms, self.width, self.drawer_search.viewport_height(self.height), filtered_count) {
                         self.dirty = true;
                     }
                     // Once this sample's ordinary scroll has actually
@@ -5080,7 +5098,7 @@ impl ShellClient {
                     );
                     if self
                         .renderer
-                        .set_drawer_pressed(self.nav.pressed(self.width, self.height, filtered_count))
+                        .set_drawer_pressed(self.nav.pressed(self.width, self.drawer_search.viewport_height(self.height), filtered_count))
                     {
                         self.dirty = true;
                     }
@@ -5434,7 +5452,8 @@ impl KeyboardHandler for ShellClient {
         // now actually receive typed keys, and what QEMU proof waits on
         // before sending any (see `tests/rust_wifi_settings_qemu.py`).
         if self.layer.as_ref().is_some_and(|layer| layer.wl_surface() == surface) {
-            self.log("wifi-keyboard-focus-granted");
+            if self.drawer_keyboard_active { self.log("drawer-keyboard-focus-granted"); }
+            else if self.wifi_keyboard_active { self.log("wifi-keyboard-focus-granted"); }
         }
         if self.home_surface.layer.as_ref().is_some_and(|layer| layer.wl_surface() == surface) {
             // Same role as `wifi-keyboard-focus-granted`, for Home's own
@@ -5448,9 +5467,14 @@ impl KeyboardHandler for ShellClient {
         _: &Connection,
         _: &QueueHandle<Self>,
         _: &wl_keyboard::WlKeyboard,
-        _: &wl_surface::WlSurface,
+        surface: &wl_surface::WlSurface,
         _: u32,
     ) {
+        if self.drawer_keyboard_active
+            && self.layer.as_ref().is_some_and(|layer| layer.wl_surface() == surface) {
+            self.drawer_search.unfocus();
+            self.sync_drawer_search();
+        }
     }
     /// Routes one physical or virtual (wvkbd) key press through to the Wi-Fi
     /// password field. Guarded by `wifi_keyboard_active` (only ever true
@@ -5466,6 +5490,7 @@ impl KeyboardHandler for ShellClient {
         _: u32,
         event: KeyEvent,
     ) {
+        self.handle_drawer_key(&event);
         self.handle_wifi_key(event.clone());
         self.handle_home_key(qh, event);
     }
@@ -5477,6 +5502,7 @@ impl KeyboardHandler for ShellClient {
         _: u32,
         event: KeyEvent,
     ) {
+        self.handle_drawer_key(&event);
         self.handle_wifi_key(event.clone());
         self.handle_home_key(qh, event);
     }
@@ -5687,6 +5713,7 @@ fn serve() -> Result<(), String> {
         pointer_contact: PointerContact::default(),
         keyboard_device: None,
         wifi_keyboard_active: false,
+        drawer_keyboard_active: false,
         home_keyboard_active: false,
         keyboard_signal_path: std::env::var_os("K230_KEYBOARD_SIGNAL").map(PathBuf::from),
         keyboard_height_px: std::env::var("K230_KEYBOARD_HEIGHT")
@@ -6319,14 +6346,14 @@ fn serve() -> Result<(), String> {
         if state.route == Route::Drawer && state.drawer_home_drag.is_none() && state.touch.id != Some(TRACKPAD_PAN_ID) {
             let filtered = state.drawer_filtered_apps().len();
             if let Some((display_index, point)) =
-                state.nav.take_long_press_drag(elapsed, state.width, state.height, filtered)
+                state.nav.take_long_press_drag(elapsed, state.width, state.drawer_search.viewport_height(state.height), filtered)
             {
                 if let Some(id) = state.touch.id {
                     state.begin_drawer_home_drag(id, display_index, point);
                 }
             }
         }
-        if state.route == Route::Drawer && state.nav.tick(elapsed, state.width, state.height, state.apps.len()) {
+        if state.route == Route::Drawer && state.nav.tick(elapsed, state.width, state.drawer_search.viewport_height(state.height), state.drawer_filtered_apps().len()) {
             state.dirty = true;
         }
         // Keeps the drawer-drag reveal animation (task 1) advancing every
