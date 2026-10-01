@@ -38,7 +38,7 @@ Host library: 415 passed, 1 ignored. Two added checks assert that a two-stop tra
 
 An additional existing `python3 tests/test_card_shell_deck_title.py` invocation failed because its extracted fixture leaves `desktop_identity_icon` unused under `-Werror=unused-function`. The title/identity helper is untouched here; the unrelated fixture was not repaired as part of the visual pass.
 
-Cross-build, paired compositor installation and **real-glass dark/light readability, gestures and mouse review remain UNVERIFIED** until the coordinator commits their named proof. Task 6.4 stays open. No board, serial port or runtime secret configuration was accessed by this worker.
+The [exact coherent-configuration client and compositor cross-builds](cross-build.md) passed. Paired compositor installation and **real-glass dark/light readability, gestures and mouse review remain UNVERIFIED** until the coordinator commits their named proof. Task 6.4 stays open. No board, serial port or runtime secret configuration was accessed by this worker.
 
 Host evidence generated 2026-10-01T17:49:21.727965+00:00 UTC.
 
