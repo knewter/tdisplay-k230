@@ -1,0 +1,20 @@
+COMMAND runuser -u shell -- env XDG_RUNTIME_DIR=/run/shell SWAYSOCK=$(find /run/shell -maxdepth 1 -name 'sway-ipc*' -print -quit) swaymsg 'output * dpms on'; runuser -u shell -- env XDG_RUNTIME_DIR=/run/shell SWAYSOCK=$(find /run/shell -maxdepth 1 -name 'sway-ipc*' -print -quit) swaymsg 'card_shell home'; journalctl -u shell-ui -n 15 --no-pager
+export SYSTEMD_PAGER=cat PAGER=cat; runuser -u shell -- env XDG_RUNTIME_DIR=/run/shell SWAYSOCK=$(find /run/shell -maxdepth 1 -name 'sway-ipc*' -print -quit) swaymsg 'output * dpms on'; runuser -u shell -- env XDG_RUNTIME_DIR=/run/shell SWAYSOCK=$(find /run/shell -maxdepth 1 -name 'sway-ipc*' -print -quit) swaymsg 'card_shell home'; journalctl -u shell-ui -n 15 --no-pager; k230_op_rc=$?; printf "\nK230_OP_DONE_caf0745272b14a17af4248b0c6f2f59c %s\n" "$k230_op_rc"
+
+Oct 01 10:59:08 nixos k230-shell-rust[1381]: rust-shell 6026ms wallpaper-configure 568x1232
+Oct 01 10:59:08 nixos k230-shell-rust[1381]: rust-shell 6026ms wallpaper-commit
+Oct 01 10:59:08 nixos k230-shell-rust[1381]: rust-shell 6060ms home-configure 568x1232
+Oct 01 10:59:08 nixos k230-shell-rust[1381]: rust-shell 6060ms wallpaper-configure 568x1232
+Oct 01 10:59:08 nixos k230-shell-rust[1381]: rust-shell 6061ms wallpaper-commit
+Oct 01 10:59:08 nixos k230-shell-rust[1381]: rust-shell 6087ms volume-hud-commit
+Oct 01 10:59:11 nixos k230-shell-rust[1381]: rust-shell 8535ms volume-hud-unmap
+Oct 01 10:59:11 nixos k230-shell-rust[1381]: rust-shell 8549ms home-configure 568x1232
+Oct 01 10:59:11 nixos k230-shell-rust[1381]: rust-shell 8550ms wallpaper-configure 568x1232
+Oct 01 10:59:11 nixos k230-shell-rust[1381]: rust-shell 8555ms wallpaper-commit
+Oct 01 11:00:23 nixos k230-shell-rust[1381]: rust-shell 80479ms home-configure 568x1232
+Oct 01 11:00:23 nixos k230-shell-rust[1381]: rust-shell 80480ms wallpaper-configure 568x1232
+Oct 01 11:00:23 nixos k230-shell-rust[1381]: rust-shell 80507ms wallpaper-commit
+Oct 01 11:00:23 nixos k230-shell-rust[1381]: rust-shell 80718ms K230_HOME_FRAME ms=106.70 pages=2
+Oct 01 11:00:23 nixos k230-shell-rust[1381]: rust-shell 80764ms unmap
+
+K230_OP_DONE_caf0745272b14a17af4248b0c6f2f59c 0

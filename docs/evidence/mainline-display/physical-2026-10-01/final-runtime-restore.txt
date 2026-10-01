@@ -1,0 +1,37 @@
+COMMAND date -u; uname -r; cat /proc/cmdline; readlink -f /nix/var/nix/profiles/system; readlink -f /run/booted-system/kernel; sha256sum /boot/{Image,initrd.uimg,k230-tdisplay.dtb,bootargs.txt,fw_jump_add_uboot_head.bin}; /nix/store/xphf8zb00gz9hiyqkkh399rldr2ljykb-nixos-system-nixos-26.11.20260919.20b1ddd/bin/switch-to-configuration test; sleep 3; runuser -u shell -- env XDG_RUNTIME_DIR=/run/shell SWAYSOCK=$(find /run/shell -maxdepth 1 -name 'sway-ipc*' -print -quit) swaymsg 'card_shell home'; readlink -f /run/current-system; systemctl is-active shell-ui shell seatd pipewire wireplumber; test ! -e /nix-path-registration; echo REGISTRATION_MARKER_ABSENT=$?; echo NORMAL_LATEST_RUNTIME_RESTORED
+export SYSTEMD_PAGER=cat PAGER=cat; date -u; uname -r; cat /proc/cmdline; readlink -f /nix/var/nix/profiles/system; readlink -f /run/booted-system/kernel; sha256sum /boot/{Image,initrd.uimg,k230-tdisplay.dtb,bootargs.txt,fw_jump_add_uboot_head.bin}; /nix/store/xphf8zb00gz9hiyqkkh399rldr2ljykb-nixos-system-nixos-26.11.20260919.20b1ddd/bin/switch-to-configuration test; sleep 3; runuser -u shell -- env XDG_RUNTIME_DIR=/run/shell SWAYSOCK=$(find /run/shell -maxdepth 1 -name 'sway-ipc*' -print -quit) swaymsg 'card_shell home'; readlink -f /run/current-system; systemctl is-active shell-ui shell seatd pipewire wireplumber; test ! -e /nix-path-registration; echo REGISTRATION_MARKER_ABSENT=$?; echo NORMAL_LATEST_RUNTIME_RESTORED; k230_op_rc=$?; printf "\nK230_OP_DONE_7679b5e9a8ec496aa757098ea64346ae %s\n" "$k230_op_rc"
+
+Thu Oct  1 03:58:30 PM UTC 2026
+6.6.36
+console=tty0 consoleblank=0 console=ttyS0,115200n8 root=fstab loglevel=4 lsm=landlock,yama,bpf loglevel=7 init=/nix/store/x1xbs5qdb5gn91j6s7gsi8mg18qra5ah-nixos-system-nixos-26.11.20260919.20b1ddd/init
+/nix/store/r0knnb72k3p3mpmbsnfgrk66yg8gl144-nixos-system-nixos-26.11.20260919.20b1ddd
+/nix/store/p6z5nsr2dyb1kfjk1hkzh9vb2nha0ka6-linux-riscv64-unknown-linux-gnu-6.6.36-xuantie/Image
+8a9a9715bc41dda6172e4c780001e1460ac7ea96c6a5fcd489e2f77b13d69165  /boot/Image
+54cfaea4603c3502ed4fc75327460b96c8363d48bccca229a5cbfff585cf78ad  /boot/initrd.uimg
+ffeb528bba1b4c3ab5e6b6f63047cd9ae9512ed853126616853367e93dba2035  /boot/k230-tdisplay.dtb
+d7e1523191aac7820af356f0c2c22c4144407716626fb2fd2009e6f6d1a3cc1b  /boot/bootargs.txt
+9627edbeea9b115d7040beea27cc61b23b6aca61cd502fd7760d7ee179f42c99  /boot/fw_jump_add_uboot_head.bin
+Checking switch inhibitors... done
+stopping the following units: shell-keyboard.service, shell-notifications.service, shell-power-key.service, shell-ui.service, shell.service, theme-helper.service
+activating the configuration...
+setting up /etc...
+reloading user units for root...
+reloading the following user units: dbus-broker.service
+restarting the following user units: nixos-activation.service
+restarting sysinit-reactivation.target
+reloading the following units: dbus-broker.service
+starting the following units: shell-keyboard.service, shell-notifications.service, shell-power-key.service, shell-ui.service, shell.service, theme-helper.service
+the following new units were started: sysinit-reactivation.target, systemd-tmpfiles-resetup.service
+/nix/store/xphf8zb00gz9hiyqkkh399rldr2ljykb-nixos-system-nixos-26.11.20260919.20b1ddd
+active
+active
+active
+active
+active
+REGISTRATION_MARKER_ABSENT=0
+NORMAL_LATEST_RUNTIME_RESTORED
+
+K230_OP_DONE_7679b5e9a8ec496aa757098ea64346ae 0
+
+
+[root@nixos:~]#

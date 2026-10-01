@@ -45,6 +45,15 @@
       "bytes": 78842,
       "command": "ffmpeg -hide_banner -loglevel error -f v4l2 -input_format mjpeg -video_size 1280x720 -i /dev/video0 -vf crop=900:600:380:120,transpose=2,transpose=2 -frames:v 1 -q:v 2 -y <source-artifact>",
       "evidence_class": "Host camera; not native capture or deliberate physical touch"
+    },
+    "final-runtime-home.jpg": {
+      "captured_utc": "2026-10-01T16:01:02.476298+00:00",
+      "timestamp_basis": "Original host FFmpeg output modification time, preserved at collection",
+      "source_artifact": "~/tmp/k230-coordination/mainline-final-runtime-home-retry.jpg",
+      "sha256": "8584b78379a3ef16d4da74bcbb2c59af9a23967f48741bd254580ff87c8c2302",
+      "bytes": 79083,
+      "command": "ffmpeg -hide_banner -loglevel error -f v4l2 -input_format mjpeg -video_size 1280x720 -i /dev/video0 -vf crop=900:600:380:120,transpose=2,transpose=2 -frames:v 1 -q:v 2 -y <source-artifact>",
+      "evidence_class": "Host camera plus independent operator report; no injected or deliberate touch acceptance"
     }
   }
 }
