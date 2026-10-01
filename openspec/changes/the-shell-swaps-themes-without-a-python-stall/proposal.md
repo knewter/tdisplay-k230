@@ -14,6 +14,13 @@ touch and animation never stalling.
 
 ## What Changes
 
+- Tune picker touch motion against an explicit interaction contract: direct
+  tracking during contact, continuous release/settling velocity, actual elapsed
+  time and immediate interruption. Omarchy's current picker supplies discrete
+  geometry rather than touch momentum; Apple's Motion HIG informs behavior,
+  not invented Apple numeric constants. Keep profiling and finger acceptance
+  separate (task group 18).
+
 - Add a persistent `theme-helper.service` (`tools/theme_helperd.py`) that
   imports `tools/theme_catalog.py`'s dependency chain once and serves every
   later `list`/`preview`/`activate` request over a private Unix socket by

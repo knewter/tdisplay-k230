@@ -321,3 +321,23 @@ coalesced to its latest position before the next eligible motion repaint.
 - **WHEN** a person releases after holding the row still
 - **THEN** earlier drag velocity does not launch a delayed fling; only the
   remaining nearest-item settling motion may run
+
+### Requirement: Picker release motion is continuous and interruptible
+
+<!-- UNVERIFIED: new motion tuning; source audit identifies elapsed-time clamps
+and a velocity-discontinuous coast/settle handoff. Task group 18 requires proof. -->
+
+Both picker rows SHALL use actual elapsed time for release motion and SHALL
+carry screen-space release velocity continuously into centering. A new contact
+SHALL interrupt motion at the displayed position without a jump. Held movement
+SHALL remain direct, and settling SHALL not activate a theme or background.
+
+#### Scenario: Frame cadence varies after release
+- **WHEN** identical drag/release input is followed by different frame cadences
+- **THEN** the trajectory at equal elapsed time remains equivalent within a
+  defined numeric tolerance, with no artificial slow-down from elapsed clamps
+
+#### Scenario: Person catches a moving preview
+- **WHEN** a person touches a coasting or settling row and reverses direction
+- **THEN** it stops autonomous movement immediately and follows from the current
+  displayed position without waiting for a snap animation to finish

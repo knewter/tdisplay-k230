@@ -345,3 +345,42 @@ Compare the exact candidate on the reserved board against the retained baseline
 with matching input and unchanged generation. Report rendering CPU separately
 from commits/presentation, and retain observer overhead, complete stack and
 real-finger gates when their full proofs are absent.
+
+### Touch motion reference and tuning
+
+User feedback on 2026-10-01: browsing is somewhat less janky, but acceleration
+and settling still feel wrong. This precedes row-repaint candidate deployment.
+The references serve different purposes:
+
+- [Omarchy ImagePicker.qml](https://github.com/omacom/omarchy/blob/c05d90196fc0dd5c21e2e797d80ffcc60d5e39fa/shell/plugins/image-picker/ImagePicker.qml),
+  quattro SHA read 2026-10-01, sets discrete selectedIndex and derived delegate
+  geometry. Its MouseArea applies/selects; this source has no drag velocity,
+  Flickable, Behavior or easing curve to copy. Keep its visual language; the
+  touch interaction is ours. Our earlier source pin is 28ceaae7.
+- [Apple Motion HIG](https://developer.apple.com/design/human-interface-guidelines/motion)
+  recommends brief, expected gesture feedback and interruptible motion. It
+  does not specify a universal deceleration coefficient or settling duration.
+  Read official article JSON at `/tutorials/data/design/human-interface-guidelines/motion.json`
+  when the JavaScript page cannot be extracted.
+
+Current local source, `theme_carousel.rs`: tick caps coast elapsed at 50 ms
+and settling at 48 ms. Actual 100-200 ms frame intervals therefore stretch
+wall-clock motion. Coast uses stepped integration with 0.88/16 ms decay;
+settling separately starts a cubic ease-out with 140-260 ms duration and
+no inherited velocity. These are source findings, not a new physical acceptance.
+
+Preserve exact reference-card displacement while held. After release, evaluate
+deceleration analytically with full elapsed time and carry screen-space velocity
+into the centering trajectory. Use a critically damped or similarly monotonic
+velocity-continuous settle as a tunable starting point, bounded at catalogue
+ends. A new touch catches the currently displayed position immediately. No
+extra acceleration during contact; do not reproduce a desktop click animation
+under a held finger. Initial tuning parameters are our candidates, not Apple
+values; choose them after comparing slow releases, flicks, reversals, holds,
+interruption and end bounds for both rows. Input adaptation to HDMI mouse/
+trackpad should retain this contract without changing one-finger touch mapping.
+
+Keep the rendering-cost trial unchanged first; otherwise a physics change would
+confound frame-count/performance comparisons. Then plot distance/velocity over
+wall time and test irregular cadences (8/16/33/100/200 ms), with a bounded
+board trial and explicit user feedback. Do not equate lower CPU with good feel.

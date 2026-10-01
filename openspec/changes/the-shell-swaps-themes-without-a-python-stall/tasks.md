@@ -1323,3 +1323,20 @@ the earlier runs were corrected; wider tasks 11/13/14/15 remain open.
 Task 17.1 baseline: `docs/evidence/theme-picker/row-repaint/README.md` records
 resolved two-row physical traces and the separate 1,490-sample CPU capture.
 Caller and observer limits remain open; the user still reports jank.
+
+## 18. Tune touch momentum and settling against explicit references
+
+- [x] 18.1 Compare current pinned Omarchy picker source and Apple Motion HIG;
+  record what they actually prescribe, local time-clamp/velocity discontinuities
+  and the user's partial improvement report. Proof: source paths and primary
+  reference URLs in design.md plus `openspec validate the-shell-swaps-themes-without-a-python-stall --strict`.
+- [ ] 18.2 Implement full-elapsed-time release motion and velocity-continuous,
+  interruptible centering. Compare trajectories across 8/16/33/100/200 ms ticks,
+  slow/flick releases, stale velocity, reversals and end bounds for both rows
+  with `cargo test --offline --manifest-path nix/rust-shell-client/Cargo.toml --lib theme_carousel`.
+- [ ] 18.3 Build and run a guarded board trial only after the row-render cost
+  comparison, retaining a matching baseline. Publish position/velocity plots
+  and injected tests; install only a qualified motion candidate.
+- [ ] 18.4 Obtain user finger feedback on direct tracking, flick distance, final
+  settling and interruption in both rows. A report of improvement alone is
+  not acceptance of the curves. Keep this open if only injected tests exist.
