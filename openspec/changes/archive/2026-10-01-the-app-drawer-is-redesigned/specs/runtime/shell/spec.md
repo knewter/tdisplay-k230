@@ -52,11 +52,9 @@ the drawer.
 *Grounding: `docs/design/app-drawer-review.md` §2.4. Reopens an explicit
 prior deferral (`the-handheld-presents-a-coherent-shell/design.md`
 decision 2, `shell-ux-critique.md` §4) at the coordinator's direction, on
-review of a first redesign attempt that omitted it. Implemented via a
-new compact, lowercase-only on-screen keyboard
-(`navigation::search_keyboard_key_at`) distinct from the existing WiFi
-password entry keyboard (hardcoded to that screen's own full-height
-layout, not reusable without a separate refactor) and a plain
+review of a first redesign attempt that omitted it. Initially implemented with a compact keyboard; superseded by the shared
+system-keyboard path and visible caret proven in
+`docs/evidence/app-drawer/system-keyboard-board/README.md` and a plain
 case-insensitive substring filter (`service_ui::filter_app_indices`).*
 
 The app drawer SHALL present a tappable search field above its icon
@@ -86,34 +84,6 @@ unfiltered grid would have.
 - **WHEN** a person clears the search field's text
 - **THEN** every installed application reappears in the grid
 
-### Requirement: A cheap per-frame timing signal exists for the app drawer
-
-*Grounding: `docs/design/app-drawer-review.md` §3 measured a real,
-previously-uncached per-frame cost (whole-tile repaint on every scroll
-tick) and replaced it with a pre-rendered, cached grid bitmap
-(`render::DrawerGridCache`) that an ordinary scroll/fling frame reuses
-instead of rebuilding, but could not verify the resulting board frame
-time without board access — estimated, labeled UNVERIFIED, at
-17.3-34.6ms per frame against this repo's own established 20-40x
-host-to-board multiplier (`docs/evidence/card-shell/
-backdrop-blur-feasibility.md` §3), which straddles a ~20ms target.
-`main.rs`'s `draw` now emits a rate-limited `K230_DRAWER_FRAME ms=…` log
-line so this estimate can be replaced with a real board measurement
-without a `K230_TRACE_PATH` capture session.*
-
-Whenever the app drawer route renders a frame, the system SHALL be able
-to report that frame's render duration in milliseconds through the
-shell's existing log/journal output, at a bounded rate that does not
-flood the journal during a sustained scroll or fling.
-
-#### Scenario: An operator reads drawer frame cost from the journal
-
-- **WHEN** an operator scrolls the app drawer on the board and reads the
-  shell process's own journal/log output
-- **THEN** a `K230_DRAWER_FRAME ms=` line appears at least once every few
-  hundred milliseconds of sustained scrolling, reporting that frame's own
-  render duration
-
 ## MODIFIED Requirements
 
 ### Requirement: Apps discovers installed desktop applications
@@ -127,9 +97,8 @@ app-drawer-review.md` §2, `nix/rust-shell-client/src/navigation.rs`
 (`COLUMNS = 4`, `ROW_HEIGHT = 110.0`) and `render.rs`
 (`paint_drawer_tile`: a plain icon and label, no card/plate; a round,
 theme-tinted circle-with-initial icon fallback), host-rendered
-before/after evidence at `docs/evidence/app-drawer/`. Not yet confirmed
-on the physical panel or by a real finger — see that evidence
-directory's own limits section.*
+before/after evidence at `docs/evidence/app-drawer/`. Physical operator acceptance is recorded in `docs/evidence/proposal-closeout/2026-10-01/drawer.md` and the
+system-keyboard-board operator report. Measurements remain deferred.*
 
 The system's Apps surface SHALL list visible application desktop entries from
 the user's XDG data directories and Nix profile data directories, applying
@@ -194,3 +163,7 @@ letter, rather than leaving the tile blank.
 
 - **WHEN** a person taps Search and types or presses the system keyboard's Backspace
 - **THEN** a visible insertion caret and focus indication identify the active field, correction changes only the query, and the app drawer remains open
+
+<!-- Closeout evidence: docs/evidence/proposal-closeout/2026-10-01/drawer.md. Operator report is physical
+feedback; retained host/QEMU/injected evidence keeps its original class.
+No additional capture, quantitative measurement or fault injection claimed. -->

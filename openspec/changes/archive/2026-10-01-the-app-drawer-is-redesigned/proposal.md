@@ -83,3 +83,12 @@ run was performed for this change. Real-finger, on-board frame-timing,
 and real-finger search verification remain open gates (`tasks.md` §6).
 
 Follow-up after real-glass acceptance (2026-09-30): search should use the normal wvkbd keyboard shared with Foot and Wi-Fi. The operator noticed the current compact custom keypad; track replacement, focus cleanup, reflow and new physical proof in tasks 6.1–6.3.
+
+## Accepted closeout, 2026-10-01
+
+The operator accepts this delivered functional scope and waives additional
+capture-only acceptance gates. `docs/evidence/proposal-closeout/2026-10-01/drawer.md` records the exact report,
+prior evidence and limits. Its task dispositions supersede older statements
+that these acceptance gates remain open; they do not claim new test runs.
+
+Pending measurement work is preserved in `the-shell-profiles-reported-interaction-jank` before archive.

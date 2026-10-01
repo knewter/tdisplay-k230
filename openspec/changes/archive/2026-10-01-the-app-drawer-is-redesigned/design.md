@@ -72,3 +72,12 @@ path a scroll/fling actually exercises.
 The operator accepted reversal and search but immediately noticed search uses a different keyboard from Foot and Wi-Fi. The compact launcher-painted rows were an initial prefix-filter shortcut, not a hardware limitation. Replace them with the normal wvkbd surface, ordinary Wayland text keys and the shared show/hide helper. Reuse Wi-Fi's narrowly scoped keyboard focus approach for an active Search field, and release it on Done/Enter, Escape, app launch, route exit, surface loss or seat loss. Keep Wi-Fi secret state independent from public search text. Size the list's visible region from the actual keyboard reservation rather than assuming the old 300px custom keypad; its scroll cache remains keyed by the current catalog/filter/theme. Preserve existing edge-intent routing and original desktop-entry launch behavior. The already accepted compact-keyboard check is historical proof; the replacement needs its own real-glass acceptance.
 
 The operator additionally reported that tapping compact Backspace closes the drawer and the Search field never displays an insertion cursor. The replacement SHALL show a themed focus ring and a steady insertion caret, keep long queries horizontally visible at the insertion point, and use the system keyboard's own correction key. Home's bottom handle passed the separate operator check. No real-glass acceptance of the replacement is inferred from that Home result.
+
+## Accepted closeout, 2026-10-01
+
+The operator accepts this delivered functional scope and waives additional
+capture-only acceptance gates. `docs/evidence/proposal-closeout/2026-10-01/drawer.md` records the exact report,
+prior evidence and limits. Its task dispositions supersede older statements
+that these acceptance gates remain open; they do not claim new test runs.
+
+Pending measurement work is preserved in `the-shell-profiles-reported-interaction-jank` before archive.

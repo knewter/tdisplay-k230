@@ -167,29 +167,27 @@
       reported scroll-reversal gesture by real finger on glass and
       confirm the drawer does not close (the bug-fix commit's own
       gate).
-- [ ] 5.2 **Hardware-only, not performed here.** Read
-      `K230_DRAWER_FRAME ms=` from the board's journal while scrolling
-      the drawer and compare against §3's 17.3-34.6ms/frame estimate.
-      Resolves the design review's UNVERIFIED performance claim into a
-      real number, and settles whether the ~20ms target is actually
-      met.
+- [x] 5.2 Transfer the unperformed sustained `K230_DRAWER_FRAME ms=` board measurement, 17.3–34.6 ms estimate comparison and ~20 ms target to `the-shell-profiles-reported-interaction-jank` task 2.1. This is completed scope transfer, not measured performance.
+
 - [x] 5.3 **Real-glass operator acceptance, 2026-09-30 (current compact keyboard).** Real-finger tap on the
       search field, type on the compact keyboard, and confirm live
       filtering and correct launch of a filtered result.
-- [ ] 5.4 **Hardware-only, contingent on 5.2.** If the board
-      measurement still shows a shortfall, open a follow-up change for
-      the scroll-direction damage-limited blitting named in
-      `docs/design/app-drawer-review.md` §6 (not implemented in this
-      change).
-
-The coordinator asked for the named drawer reversal and search/type/filter/launch checks; the operator replied “drawer works fine. search works fine.” Evidence: `docs/evidence/proposal-closeout/2026-09-30/operator-feedback.md`. This accepts the current interaction only; it does not claim 5.2 timing, a performance-contingent 5.4 follow-up, or the requested standard keyboard below.
+- [x] 5.4 Transfer the contingent damage-limited blitting proposal/decision to `the-shell-profiles-reported-interaction-jank` task 2.2, preserving `docs/design/app-drawer-review.md` section 6. No optimization or performance result is claimed.
 
 ## 6. Search uses the normal system keyboard
 
 - [x] 6.1 Replace the drawer's custom compact letter/control rows with ordinary system-keyboard input and the shared wvkbd show/hide path. Show a visible insertion caret and focus indication. Keep search focus only while the field is active, handle text/Backspace/Enter/Escape, and reflow the app list above the actual keyboard reservation. Preserve filtering, scrolling, ordinary desktop-entry activation and the compositor's tap/gesture arbitration. Verify host routing, keyboard geometry and focus teardown with `cargo test --offline --manifest-path nix/rust-shell-client/Cargo.toml`, then `nix build .#handheld-shell-rust`.
 - [x] 6.2 Exercise the actual Rust drawer and wvkbd under the paired QEMU fixture, recording exact source/store identities: focus Search, type/correct/filter/launch, dismiss/reopen, leave Drawer and reclaim app focus. Host injection is not real-glass evidence. Record the concrete fixture invocation under `docs/evidence/app-drawer/` before ticking this task.
-- [ ] 6.3 Deploy the exact matching userspace on the reserved board and prove real-finger system-keyboard search, correction, launch, dismissal and edge gestures; commit safe native/optical feature evidence and inspect the exact Pages revision. Use `python3 tools/console.py /dev/ttyACM0 --wait=3 'readlink -f /run/current-system'` plus the recorded operator workload. Retain 5.2/5.4 until their separate measured evidence exists.
+- [x] 6.3 Complete matching userspace deployment/native proof and exact Pages inspection using the already-committed system-keyboard-board evidence. The user confirmed real-finger Search/correction/dismissal/reopen/launch and now accepts the drawer as fine (2026-10-01). Additional gesture capture is waived; quantitative checks remain in the named successor.
 
-Task 6.2 proof: `docs/evidence/app-drawer/system-keyboard-qemu/README.md`, exact cross-built runtime identities in `result.json`. Real wvkbd correction, dismissal/reopen and app focus passed; injected host evidence only.
 
-Task 6.1 host/build proof and 6.2 QEMU proof are recorded above. Partial 6.3 deployment and board-injected capture proof: `docs/evidence/app-drawer/system-keyboard-board/README.md`; real-finger Search/correction/dismissal/reopen/launch is accepted in `docs/evidence/app-drawer/system-keyboard-board/operator-feedback.md`; exact Pages revision `7eda7f36` passed build/deploy and HTTP inspection (`docs/evidence/app-drawer/system-keyboard-board/deployment.json`). Keyboard-handle/drawer-dismiss gesture acceptance remains required.
+## Accepted closeout, 2026-10-01
+
+The updated completed tasks describe actual acceptance, waivers and scope
+transfer, not execution of the superseded protocols. See `docs/evidence/proposal-closeout/2026-10-01/drawer.md`.
+Historical checkpoint notes above that say physical gates remain open are
+superseded by this record. Quantitative or individually unreported results
+are not promoted to physical proof.
+
+Proof: `openspec validate the-app-drawer-is-redesigned --strict`; committed operator report;
+`python3 scripts/render_work_board.py --working-tree --output <snapshot.json>`.

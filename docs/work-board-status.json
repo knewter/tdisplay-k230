@@ -241,25 +241,6 @@
         "provenance": "Board capture"
       }
     },
-    "the-app-drawer-is-redesigned": {
-      "lane": "in-progress",
-      "source": "in-progress",
-      "physical": "pending",
-      "next": "Real-finger standard-keyboard Search/correction/dismissal/reopen/launch accepted. Finish keyboard-handle/drawer-dismiss gesture check and measure the separate board scroll frame budget.",
-      "dependencies": [],
-      "evidence": [
-        "docs/evidence/app-drawer/system-keyboard-board/README.md",
-        "docs/evidence/app-drawer/system-keyboard-qemu/README.md",
-        "docs/evidence/proposal-closeout/2026-09-30/operator-feedback.md"
-      ],
-      "rationale": "Matching userspace is installed and Search is accepted on real glass. Rust suite, cross-build, paired wvkbd QEMU and native board captures pass. Remaining gesture integration check and frame timing stay open.",
-      "reviewRevision": "3e22a36e34ee38ff0171b48f884c52108a2db94f",
-      "cover": {
-        "path": "docs/evidence/app-drawer/system-keyboard-board/focused.jpg",
-        "caption": "Installed Search with a visible caret and the normal themed wvkbd keyboard",
-        "provenance": "Board capture"
-      }
-    },
     "the-shell-profiles-reported-interaction-jank": {
       "lane": "planned",
       "source": "not-started",
@@ -375,6 +356,26 @@
       "cover": {
         "path": "docs/evidence/the-touchscreen-becomes-an-hdmi-trackpad/uniform-gestures/overview.png",
         "caption": "Native HDMI board capture after injected two-finger overview input; real-glass feel pending",
+        "provenance": "Board capture"
+      }
+    },
+    "2026-10-01-the-app-drawer-is-redesigned": {
+      "lane": "archived",
+      "source": "archived",
+      "physical": "verified",
+      "next": "Closed on operator acceptance; see evidence for waived captures and retained limits.",
+      "dependencies": [],
+      "evidence": [
+        "docs/evidence/app-drawer/system-keyboard-board/README.md",
+        "docs/evidence/app-drawer/system-keyboard-qemu/README.md",
+        "docs/evidence/proposal-closeout/2026-09-30/operator-feedback.md",
+        "docs/evidence/proposal-closeout/2026-10-01/drawer.md"
+      ],
+      "rationale": "Operator accepts the delivered behavior and requests closeout without further difficult captures/retesting. Measurements and unreported per-case proof are not fabricated.",
+      "reviewRevision": "dd62acb46e49be629f31dbde83e2d1797b1b5040",
+      "cover": {
+        "path": "docs/evidence/app-drawer/system-keyboard-board/focused.jpg",
+        "caption": "Installed Search with a visible caret and the normal themed wvkbd keyboard",
         "provenance": "Board capture"
       }
     }
