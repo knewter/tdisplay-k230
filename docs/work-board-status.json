@@ -181,7 +181,7 @@
         "docs/evidence/home-screen/app-actions/board/operator-acceptance-2026-10-01.md",
         "docs/evidence/home-screen/app-actions/board/full-system/README.md"
       ],
-      "rationale": "Home navigation and hold-and-drag are operator accepted. Full coherent runtime activation and menu delivery passed; New Window/primary-focus acceptance and remaining original physical checks stay open.",
+      "rationale": "Home navigation and hold-and-drag are operator accepted. Full coherent runtime activation and all six native injected primary/New Window checks passed; separate physical mouse acceptance and original physical checks remain open.",
       "reviewRevision": "288535289172c8465c4fa408eaa8ba2c7ab8a5ac",
       "cover": {
         "path": "docs/evidence/home-screen/app-actions/qemu/home-actions-right-click.png",

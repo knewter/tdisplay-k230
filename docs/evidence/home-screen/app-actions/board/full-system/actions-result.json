@@ -1,0 +1,16 @@
+{
+  "class": "physical-board-injected-virtual-pointer",
+  "source": "288535289172c8465c4fa408eaa8ba2c7ab8a5ac",
+  "checks": {
+    "primary_focuses_existing_window": true,
+    "primary_does_not_launch_duplicate": true,
+    "explicit_new_window_creates_distinct_window": true,
+    "existing_windows_retained": true,
+    "primary_returns_to_most_recent_window": true,
+    "repeat_primary_does_not_create_third_window": true
+  },
+  "existing_window_count": 1,
+  "probe_windows_cleaned_up": true,
+  "result": "PASS",
+  "scope": "Actual full-system board compositor and Rust app activation; not physical mouse acceptance"
+}

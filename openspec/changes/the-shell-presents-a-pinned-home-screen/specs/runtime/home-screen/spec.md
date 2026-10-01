@@ -138,12 +138,12 @@ reinstalling the same application restores its place.
 
 ### Requirement: Tapping a Home icon launches the app or focuses it if already running
 
-<!-- UNVERIFIED: the running-window match is a best-effort desktop-entry-id
-to app_id heuristic (see `design.md` decision 6); no verified stable mapping
-or board multi-window trial exists yet. A miss always falls back to the
-existing, already-correct launch path in `nix/rust-shell-client/src/main.rs`
-(`launch_selected`), so this requirement cannot regress today's launch
-behavior even when the heuristic does not match. -->
+<!-- UNVERIFIED: real-finger/physical-mouse acceptance of primary focus remains
+open. Production desktop identity matching and six actual-board injected
+multi-window/primary/New Window checks pass; see
+ docs/evidence/home-screen/app-actions/board/full-system/actions-result.json.
+Matching remains best-effort for apps without usable desktop identity; a miss
+falls back to the normal desktop-entry launch path. -->
 
 Tapping or primary-clicking a Home/dock icon outside rearrange mode SHALL
 activate its most recently used identifiable window if already running,

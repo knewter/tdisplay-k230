@@ -214,3 +214,12 @@ separate gate. Menu delivery/dismissal passed again; automatic primary-focus/New
 Window qualification was inconclusive and operator acceptance remains open.
 11.5 source/evidence validation, master publication and Pages deployment passed
 at `29c9e144`, run `36929358280`; tasks 8.1 and 11.4 remain unchecked.
+
+
+The corrected full-system actual-board app-action probe passed all six checks,
+including distinct New Window and primary activation of the most recent existing
+window: `docs/evidence/home-screen/app-actions/board/full-system/actions-result.json`.
+Earlier probes ignored `floating_con` nodes; this was a harness filter error,
+not an established shell defect. Existing windows/layout were preserved and only
+the owned new window was closed. Task 11.4 still awaits separate operator
+acceptance, rather than treating injected pointer input as physical mouse input.

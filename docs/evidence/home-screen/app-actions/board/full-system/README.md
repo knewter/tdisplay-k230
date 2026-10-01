@@ -25,15 +25,22 @@ session, passed all three checks in [pointer-result.json](pointer-result.json):
 actual app-menu delivery, outside dismissal, and Home retained without Drawer.
 This is injected pointer input on the board, not physical mouse acceptance.
 
-A further automatic primary-focus/New Window probe was inconclusive. Its first
-version assumed an existing Foot window, which full session activation had
-removed. Subsequent seeded probes did not observe an app window after a primary
-virtual-pointer dock click, including after keeping the pointer connection alive
-for 300 ms after release. No successful focus/New Window result is claimed; the
-cause is not established as either harness delivery or shell behavior. The
-previous paired cross-compositor/client fixture passes those cases, and separate
-operator confirmation remains pending. No private tree titles or raw console
-logs were committed.
+The corrected [app-action probe](actions-test.py) passed all six checks in
+[actions-result.json](actions-result.json): primary activation focuses the
+existing window without a duplicate, New Window creates one distinct window,
+existing windows survive, subsequent primary activation chooses the most recent
+window, and no third window appears. Its owned new window was closed afterward;
+the pre-existing window and operator layout were retained.
+
+Initial probes were inconclusive because their tree filter ignored the actual
+`floating_con` application node and initially assumed an app_id of `foot`.
+Sanitized diagnostics showed primary input delivery and app-launch-focused
+markers, revealing the harness error. The corrected probe accepts both `con`
+and `floating_con` and uses the actual focused window, matching production's
+window enumeration. No shell source correction was required. It keeps one real
+virtual-pointer connection alive throughout the sequence. This remains injected
+board input; task 11.4's separate operator confirmation of primary-focus/New
+Window is still open. No private tree titles or raw console logs were committed.
 
 The source/operator-report Pages run `36929358280` succeeded and the published
 `https://knewter.github.io/tdisplay-k230/work/` served revision `29c9e144`.
