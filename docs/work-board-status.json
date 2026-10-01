@@ -271,7 +271,7 @@
       "cover": {
         "path": "docs/evidence/the-shell-is-navigable-with-a-mouse/edge-controls-board/search-backspace.jpg",
         "caption": "Bottom Backspace leaves the actual drawer open and clears the query",
-        "provenance": "Board capture after injected uinput"
+        "provenance": "Board capture"
       }
     },
     "the-shell-presents-a-pinned-home-screen": {
