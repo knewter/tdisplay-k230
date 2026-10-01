@@ -162,7 +162,10 @@ changing default outputs. `docs/evidence/mainline-display-api-compile.md`,
 `docs/evidence/mainline-display-dtb.md`, and
 `docs/evidence/mainline-display-nix-build.md` record the prepared-header
 external-module, host DTS, and complete Nix kernel/DTB/boot-files checks,
-with their limits and the absent hardware results. The DRM driver sources in the pinned
+with their limits and the absent hardware results.
+`docs/evidence/mainline-display-boot-preparation.md` records the matching
+opt-in trial system/initrd/bootargs and closure inventory, and the unperformed
+root staging and recoverable U-Boot procedure. The DRM driver sources in the pinned
 upstream source output are absent; this candidate forward-ports them from
 the vendor-derived implementation. Display power-domain wiring is omitted
 because the pinned source has no provider; see the DT evidence.*

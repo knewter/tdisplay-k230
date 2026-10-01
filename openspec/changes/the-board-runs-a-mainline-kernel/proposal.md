@@ -129,3 +129,13 @@ candidate reach a login prompt over SD) is explicitly **not** performed by
 this change and is left as two named, unclaimed evidence gates — see
 tasks.md's "Remaining evidence gate" section — for the coordinator to
 schedule a board boot.
+
+
+The isolated DRM continuation also provides `k230-mainline-drm-trial` and
+`kernelMainlineDrmTrialBootFiles`: a console system built against the DRM
+candidate, its matching initrd/bootargs and closure inventory, and an offline
+root-stage/manual U-Boot procedure. `nix/mainline-drm-trial.nix`,
+`tools/mainline-drm-trial-inspect.py`, and
+`docs/evidence/mainline-display-boot-preparation.md` own this host-only
+preparation. The normal system profile and boot files remain selected; actual
+card staging and task 5b.5's physical evidence are unperformed.

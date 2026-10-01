@@ -215,6 +215,19 @@
             }
           ];
         };
+        # Isolated serial-console system for a recoverable DRM hardware trial.
+        # No shell claim: display/touch still require physical observations.
+        k230-mainline-drm-trial = self.nixosConfigurations.k230-mainline-console.extendModules {
+          # Import directly so the returned kernel keeps buildLinux's override
+          # interface; callPackage's outer DRM function rejects NixOS's
+          # kernel feature overrides.
+          specialArgs.k230Kernel = pkgsCross.linuxPackagesFor (import ./nix/kernel-mainline-drm.nix {
+            kernelMainline = pkgsCross.callPackage ./nix/kernel-mainline.nix {
+              inherit (pkgsCross) buildLinux;
+            };
+            inherit (pkgsCross) applyPatches lib;
+          });
+        };
       };
 
       checks.${buildSystem} = {
@@ -409,6 +422,15 @@
           cp ${self.packages.${buildSystem}.kernelMainlineDrm}/Image $out/Image-mainline-drm
           cp ${self.packages.${buildSystem}.deviceTreeMainlineDrm}/k230-tdisplay-mainline-drm.dtb $out/
         '';
+
+        # Complete matching trial boot path; the Image+DTB-only bundle above
+        # remains available for artifact inspection.
+        toplevel-mainline-drm-trial = self.nixosConfigurations.k230-mainline-drm-trial.config.system.build.toplevel;
+        kernelMainlineDrmTrialBootFiles = pkgs.callPackage ./nix/mainline-drm-trial.nix {
+          cfg = self.nixosConfigurations.k230-mainline-drm-trial.config;
+          kernel = self.nixosConfigurations.k230-mainline-drm-trial.config.boot.kernelPackages.kernel;
+          deviceTree = self.packages.${buildSystem}.deviceTreeMainlineDrm;
+        };
 
         # openspec/changes/the-board-runs-a-mainline-kernel, milestone 1: the
         # full NixOS system variant, cross-built against kernelMainline, and

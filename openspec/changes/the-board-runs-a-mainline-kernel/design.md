@@ -244,3 +244,23 @@ first link failure/correction are recorded in
 `docs/evidence/mainline-display-nix-build.md`. The candidate omits the vendor
 display power domain because the pinned mainline tree has no `sysctl_power`
 provider. Physical probe, panel, and touch behavior remain open tasks.
+
+
+## Matching DRM trial boot path
+
+`k230-mainline-drm-trial` extends the mainline console profile with the
+separate DRM kernel, retaining its disabled out-of-tree Wi-Fi module and
+label-based root configuration. It supplies the candidate's own NixOS
+initrd and exact system `init=` path through
+`kernelMainlineDrmTrialBootFiles`. The recipe writes both DTB bootargs and a
+volatile U-Boot environment import file because the vendor stage 1 can
+overwrite DTB bootargs (`nix/sd-image.nix` and
+`docs/evidence/hardware-boot.txt`). The root-stage procedure copies the exact
+closure beside the normal system and leaves its selected profile and normal
+boot files untouched. The Image+DTB-only collector remains available.
+
+Rejected: pairing the DRM Image with an arbitrary existing initrd/system or
+changing the normal card's boot selectors. These hide the kernel/system
+boundary or undermine the recoverable trial. Host build and artifact matching
+are recorded in `docs/evidence/mainline-display-boot-preparation.md`; card
+staging and physical boot/display/touch/restoration remain unperformed.
