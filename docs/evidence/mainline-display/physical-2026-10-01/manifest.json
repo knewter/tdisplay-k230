@@ -26,5 +26,25 @@
       "sha256": "9627edbeea9b115d7040beea27cc61b23b6aca61cd502fd7760d7ee179f42c99",
       "crc32": "99b89787"
     }
+  },
+  "camera_observations": {
+    "panel-boot-text.jpg": {
+      "captured_utc": "2026-10-01T15:23:47.793949+00:00",
+      "timestamp_basis": "Original host FFmpeg output modification time, preserved at collection",
+      "source_artifact": "~/tmp/k230-coordination/mainline-first-panel.jpg",
+      "sha256": "7d9faa8d4dda52bbc207f2a4ba798c1688f3fbcc7e09728ca0072d7bbd02b07b",
+      "bytes": 74570,
+      "command": "ffmpeg -hide_banner -loglevel error -f v4l2 -input_format mjpeg -video_size 1280x720 -i /dev/video0 -vf crop=900:600:380:120,transpose=2,transpose=2 -frames:v 1 -q:v 2 -y <source-artifact>",
+      "evidence_class": "Host camera; not native capture or deliberate physical touch"
+    },
+    "normal-restored-home.jpg": {
+      "captured_utc": "2026-10-01T15:39:58.565709+00:00",
+      "timestamp_basis": "Original host FFmpeg output modification time, preserved at collection",
+      "source_artifact": "~/tmp/k230-coordination/mainline-restored-home.jpg",
+      "sha256": "952197f416b79597b2b237f6e37b5bcc16a6df735439af5c4a9700a7221aaa81",
+      "bytes": 78842,
+      "command": "ffmpeg -hide_banner -loglevel error -f v4l2 -input_format mjpeg -video_size 1280x720 -i /dev/video0 -vf crop=900:600:380:120,transpose=2,transpose=2 -frames:v 1 -q:v 2 -y <source-artifact>",
+      "evidence_class": "Host camera; not native capture or deliberate physical touch"
+    }
   }
 }
