@@ -9,6 +9,9 @@ Overview offers no obvious route to Home while keeping apps open. Standard mouse
 - Bind four-finger spread to smoothly expand the centered card; keep inward pinch for overview.
 - Support wheel/two-finger scrolling in scrollable shell surfaces and audit Home, drawer, overview, shade, Settings, themes and Wi-Fi routes by actual pointer interaction.
 
+- Complete Home → overview with a visible bottom gesture handle: tap/click for open windows; swipe up for the app drawer.
+- Distinguish an edge tap from a drag before taking client input or hiding a mapped overlay. App header controls and drawer-search Backspace must remain tappable. Ordinary app-launch behavior is unchanged.
+
 ## Capabilities
 
 ### New Capabilities

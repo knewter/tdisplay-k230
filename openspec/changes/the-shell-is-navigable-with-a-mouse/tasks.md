@@ -14,3 +14,10 @@
 - [x] 3.2 Install the built closure on the reserved physical board and verify exact profile, active services and native captures. Proof: `./tools/console.py /dev/ttyACM0 --wait=3 "readlink /run/current-system; systemctl is-active shell shell-ui k230-touch-trackpad"`, plus recorded pointer interactions. No flash required.
 - [ ] 3.3 Physical operator acceptance: tap Home in panel-touch mode, click/edge-drag in HDMI trackpad mode and four-finger inward/outward pinch. Record physical observation and photograph. Keep unchecked until actually performed.
 - [x] 3.4 Land tested source/evidence, push master and confirm exact site revision and media publication. Proof: recorded Pages run and published revision at `https://knewter.github.io/tdisplay-k230/work/`. Do not archive while physical gates remain open.
+
+## 4. Panel acceptance navigation and edge-tap corrections
+
+- [ ] 4.1 Implement Home handle tap/click to overview and defer shell edge ownership until tap/drag intent is known, preserving ordinary drawer activation. Proof: `python3 -m unittest discover -s tests -p 'test_card_shell_pointer_navigation.py'` and the recorded actual-compositor native-touch edge regression (including compact-keyboard pairing), plus the matching full HDMI system cross-build. Host injection is not physical proof.
+- [ ] 4.2 Deploy the matching userspace closure on the reserved board; simulate header and drawer-search Backspace taps through native touch dispatch, verify Home → overview retains window IDs, and record exact system/executable identities. Preserve gestures and recovery. No flash/kernel/DT change.
+- [ ] 4.3 Real-finger panel acceptance on that installed correction: app header controls, drawer-search Backspace, Home handle to overview, and the preserved top-down/bottom-up drags. Commit operator observations and physical photograph; keep open until collected.
+- [ ] 4.4 Validate, land source/evidence, push master and inspect exact publication. Keep task 3.3's HDMI recognition/photograph gate open until performed.

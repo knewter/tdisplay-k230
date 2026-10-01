@@ -25,3 +25,31 @@ Pointer ownership must survive dragging across a card or layer boundary and canc
 ## Installed-board audit correction
 
 The first installed matrix exposed an existing focus hook placed inside Sway's session-lock conditional. A launched application could be focused while Home still hid its scene, causing a following bottom gesture to reopen the drawer. Move the callback after that conditional, using contextual patch anchors. The regression must focus an ordinary app from Home and observe `home_selected=0`; the board launcher assertion requires both app focus and dismissed Home/drawer, not app focus alone.
+
+## Panel acceptance corrections, 2026-09-30
+
+The operator confirmed real-finger overview entry, overview-to-Home and drawer
+scroll/search, but found no discoverable Home-to-overview route. Ordinary drawer
+activation opens another terminal; the operator accepts multiple windows and
+rejected a proposed forced focus-or-launch change. Retain normal GIO desktop
+entry activation, and leave this change focused on navigation/input ownership.
+
+Provide a visible Home bottom handle: tap/click enters overview while retaining
+all windows, and upward drag continues to reveal the drawer. Reject displaced
+or cancelled sequences as handle taps. A translated multi-finger pan is never
+a tap.
+
+The operator also reported that app header taps open the shade and drawer-search
+Backspace taps dismiss the drawer. The compositor currently owns these edge
+contacts and begins navigation at touch-down. Hold edge intent until meaningful
+motion distinguishes a shell drag from ordinary client interaction. A tap must
+reach its original live surface as a balanced input sequence, with no drawer
+unmap or shade reveal. Protect the target lifetime, cancellation, multi-contact
+drain, device/seat loss and pointer pairing. Once a drag qualifies, continue the
+existing native tracking/settlement using the original down position and time.
+Do not shrink edge bands or move app controls as a substitute for arbitration.
+
+Use real Wayland receivers and the actual Sway compositor for injected touch
+and pointer regression checks. On the board, simulate the reported app-header
+and compact-search-keyboard taps; then collect separate real-finger acceptance.
+No existing physical checkbox is completed by this design revision.

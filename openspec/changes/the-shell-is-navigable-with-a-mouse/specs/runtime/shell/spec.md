@@ -9,6 +9,17 @@ The userspace shell SHALL allow primary clicks/drags and scrolling to navigate H
 - **WHEN** a person taps or clicks the Home affordance in overview, or swipes upward from its footer
 - **THEN** Home is displayed and existing app windows remain available in overview
 
+#### Scenario: Return from Home to open windows
+- **WHEN** Home is visible with apps still open and a person taps or clicks its bottom gesture handle
+- **THEN** overview shows those live windows without launching or closing an app
+- **AND** an upward drag from that handle opens the app drawer instead
+
+#### Scenario: Client controls remain tappable at screen edges
+- **WHEN** a person taps a client control in a shell edge band, including an app header or the drawer-search keyboard Backspace key
+- **THEN** the intended live client receives a balanced tap and performs its normal action
+- **AND** no shade is revealed and no drawer is dismissed solely because the contact began at an edge
+- **AND** a deliberate qualifying edge drag still uses the native shell gesture
+
 #### Scenario: Pointer overview round trip
 - **WHEN** a person drags upward from the bottom screen edge with the primary mouse button, then clicks a live overview card
 - **THEN** overview opens and the chosen app expands and receives focus
