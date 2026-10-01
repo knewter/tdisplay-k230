@@ -54,3 +54,10 @@ No device-tree change — the RTC node is already enabled. Confirming
 warm reboot preserves it are hardware-only gates. Whether a full
 power-off preserves it stays `UNVERIFIED` unless a backing supply is
 documented on the schematic; this change does not claim otherwise.
+
+## Accepted closeout, 2026-10-01
+
+The operator accepts this delivered functional scope and waives additional
+capture-only acceptance gates. `docs/evidence/proposal-closeout/2026-10-01/clock.md` records the exact report,
+prior evidence and limits. Its task dispositions supersede older statements
+that these acceptance gates remain open; they do not claim new test runs.

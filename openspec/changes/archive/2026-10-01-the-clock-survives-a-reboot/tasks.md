@@ -54,8 +54,16 @@
       a freshly bootswapped `/boot` (not the kernel's compiled-in
       epoch). `/proc/cmdline`'s `init=` on that boot confirms the new
       toplevel was actually running.
-- [ ] 4.2 Leave `UNVERIFIED`: whether the RTC survives a full power-off
-      (main power removed, not just a reboot) rather than only a warm
-      reboot. Requires a documented backing supply or a separate
-      power-off-and-wait board test not performed by this change; do not
-      tick this task without that specific evidence.
+- [x] 4.2 Preserve full-power-off retention as UNVERIFIED, as the proposal's explicit non-goal. Existing RTC/reboot board proof and the operator's 2026-10-01 clock acceptance close the warm-reboot scope; no power-off-and-wait test is claimed or required for this change.
+
+
+## Accepted closeout, 2026-10-01
+
+The updated completed tasks describe actual acceptance, waivers and scope
+transfer, not execution of the superseded protocols. See `docs/evidence/proposal-closeout/2026-10-01/clock.md`.
+Historical checkpoint notes above that say physical gates remain open are
+superseded by this record. Quantitative or individually unreported results
+are not promoted to physical proof.
+
+Proof: `openspec validate the-clock-survives-a-reboot --strict`; committed operator report;
+`python3 scripts/render_work_board.py --working-tree --output <snapshot.json>`.

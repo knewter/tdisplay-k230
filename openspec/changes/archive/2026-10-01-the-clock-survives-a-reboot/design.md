@@ -100,3 +100,10 @@ config change). Physical acceptance: confirm `/dev/rtc0`, `hwclock -r`,
 `timedatectl`, reboot, and `hwclock -r` again to confirm persistence
 across the warm reboot. Rollback is reverting this commit; nothing else
 about system time handling changes.
+
+## Accepted closeout, 2026-10-01
+
+The operator accepts this delivered functional scope and waives additional
+capture-only acceptance gates. `docs/evidence/proposal-closeout/2026-10-01/clock.md` records the exact report,
+prior evidence and limits. Its task dispositions supersede older statements
+that these acceptance gates remain open; they do not claim new test runs.

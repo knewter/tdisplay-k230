@@ -1,9 +1,14 @@
-## ADDED Requirements
+# system/rtc Specification
+
+## Purpose
+Expose the on-chip RTC to Linux and preserve a synchronized wall clock across
+warm reboots. Full main-power-removal retention is explicitly unverified.
+
+## Requirements
 
 ### Requirement: The on-chip RTC is usable from Linux
 
-<!-- UNVERIFIED: no boot log yet confirms /dev/rtc0 appears or that
-hwclock reads a plausible time on this board. -->
+<!-- Grounding: docs/evidence/rtc/mday-mask-fix.md contains rtc0 registration, hwclock readings and reboot hctosys output. Operator acceptance: docs/evidence/proposal-closeout/2026-10-01/clock.md. -->
 
 The system SHALL expose the K230 SoC's on-chip RTC as `/dev/rtc0`, and
 `hwclock -r` and `timedatectl` SHALL report a plausible time from it.
@@ -70,3 +75,7 @@ the DT node being `okay`.*
   it) preserves the RTC's time
 - **THEN** the answer is that this is unverified, pending either a
   documented backing supply or a recorded power-off-and-wait board test
+
+<!-- Closeout evidence: docs/evidence/proposal-closeout/2026-10-01/clock.md. Operator report is physical
+feedback; retained host/QEMU/injected evidence keeps its original class.
+No additional capture, quantitative measurement or fault injection claimed. -->

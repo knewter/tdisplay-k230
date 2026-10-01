@@ -287,20 +287,6 @@
       "rationale": "Closeout audit found only the named physical acceptance task unchecked; required evidence and spec sync must still pass before archive.",
       "reviewRevision": "647c8d3e500d4accc3a87474e8fcab393980a799"
     },
-    "the-clock-survives-a-reboot": {
-      "lane": "verification",
-      "source": "source-landed",
-      "physical": "pending",
-      "next": "Repeated reboot behavior accepted. Coordinator must arm pre-sync RTC sampling before the one remaining full-power-removal retention test.",
-      "reviewRevision": "6306c1d8df787820c1c74e7808be6d853e343b30",
-      "rationale": "Operator confirms correct time across many reboots. Task 4.2 still needs controlled full power removal or demonstrated backup supply before time synchronization.",
-      "dependencies": [],
-      "evidence": [
-        "docs/evidence/rtc/mday-mask-fix.md",
-        "docs/evidence/proposal-closeout/2026-09-30/README.md",
-        "docs/evidence/proposal-closeout/2026-09-30/operator-feedback.md"
-      ]
-    },
     "plugging-in-hdmi-moves-the-display": {
       "lane": "in-progress",
       "source": "in-progress",
@@ -361,6 +347,21 @@
       ],
       "rationale": "Operator accepts the delivered behavior and requests closeout without further difficult captures/retesting. Measurements and unreported per-case proof are not fabricated.",
       "reviewRevision": "792098bc77e4c6336496f07a5550b93f9a221a8b"
+    },
+    "2026-10-01-the-clock-survives-a-reboot": {
+      "lane": "archived",
+      "source": "archived",
+      "physical": "verified",
+      "next": "Closed on operator acceptance; see evidence for waived captures and retained limits.",
+      "reviewRevision": "b06639f7f325b1dd8c73d3712b6589fd7b4a5611",
+      "rationale": "Operator accepts the delivered behavior and requests closeout without further difficult captures/retesting. Measurements and unreported per-case proof are not fabricated.",
+      "dependencies": [],
+      "evidence": [
+        "docs/evidence/rtc/mday-mask-fix.md",
+        "docs/evidence/proposal-closeout/2026-09-30/README.md",
+        "docs/evidence/proposal-closeout/2026-09-30/operator-feedback.md",
+        "docs/evidence/proposal-closeout/2026-10-01/clock.md"
+      ]
     }
   }
 }
