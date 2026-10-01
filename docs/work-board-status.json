@@ -75,29 +75,6 @@
         "provenance": "Board capture"
       }
     },
-    "the-handheld-configures-wifi-from-settings": {
-      "lane": "archived",
-      "source": "archived",
-      "physical": "verified",
-      "next": "Accepted and archived; no remaining Wi-Fi Settings work.",
-      "dependencies": [
-        "the-handheld-presents-a-coherent-shell"
-      ],
-      "evidence": [
-        "docs/evidence/wifi-settings/README.md",
-        "docs/evidence/keyboard-gestures/installed-preview/README.md",
-        "docs/evidence/wifi-settings/closeout-host-2026-09-30/README.md",
-        "docs/evidence/proposal-closeout/2026-09-30/operator-feedback.md",
-        "docs/evidence/wifi-settings/closeout-2026-10-01/README.md"
-      ],
-      "rationale": "Physical operator acceptance plus board-verified password eye, keyboard correction/reset and grip-aware button reflow. No new radio or reboot sequence inferred.",
-      "reviewRevision": "475c9a6b",
-      "cover": {
-        "path": "docs/evidence/wifi-settings/paired-qemu/wifi-list-dark.png",
-        "caption": "Wi-Fi network list with invented names and a synthetic broker",
-        "provenance": "QEMU capture"
-      }
-    },
     "the-shell-loads-omarchy-themes": {
       "lane": "in-progress",
       "source": "in-progress",
@@ -212,19 +189,6 @@
       ],
       "rationale": "Operator confirmed page swipes and adding a pin, but reported incorrect drop-position behavior. Keep open for source correction and final physical layout proof.",
       "reviewRevision": "6306c1d8df787820c1c74e7808be6d853e343b30"
-    },
-    "the-shell-has-a-card-composition-plan": {
-      "lane": "archived",
-      "source": "source-landed",
-      "physical": "verified",
-      "next": "Completed: operator accepted continuous real-finger card interaction; existing probe collection and restoration evidence retained.",
-      "dependencies": [],
-      "evidence": [
-        "docs/evidence/proposal-closeout/README.md",
-        "docs/evidence/proposal-closeout/2026-10-01/card-composition.md"
-      ],
-      "rationale": "Explicit operator acceptance on 2026-10-01 completes the remaining interaction gate without claiming new timing or probe measurements.",
-      "reviewRevision": "58ca5bf2781f74305fb687c885ca842272e0373c"
     },
     "plugging-in-hdmi-moves-the-display": {
       "lane": "in-progress",
@@ -393,15 +357,64 @@
       ],
       "dependencies": []
     },
-    "the-card-shell-has-no-video-special-case": {
+    "2026-10-01-the-handheld-configures-wifi-from-settings": {
       "lane": "archived",
-      "source": "source-landed",
+      "source": "archived",
+      "physical": "verified",
+      "next": "Accepted and archived; no remaining Wi-Fi Settings work.",
+      "dependencies": [
+        "the-handheld-presents-a-coherent-shell"
+      ],
+      "evidence": [
+        "docs/evidence/wifi-settings/README.md",
+        "docs/evidence/keyboard-gestures/installed-preview/README.md",
+        "docs/evidence/wifi-settings/closeout-host-2026-09-30/README.md",
+        "docs/evidence/proposal-closeout/2026-09-30/operator-feedback.md",
+        "docs/evidence/wifi-settings/closeout-2026-10-01/README.md"
+      ],
+      "rationale": "Physical operator acceptance plus board-verified password eye, keyboard correction/reset and grip-aware button reflow. No new radio or reboot sequence inferred.",
+      "reviewRevision": "475c9a6b",
+      "cover": {
+        "path": "docs/evidence/wifi-settings/paired-qemu/wifi-list-dark.png",
+        "caption": "Wi-Fi network list with invented names and a synthetic broker",
+        "provenance": "QEMU capture"
+      }
+    },
+    "2026-10-01-the-shell-has-a-card-composition-plan": {
+      "lane": "archived",
+      "source": "archived",
+      "physical": "verified",
+      "next": "Completed: operator accepted continuous real-finger card interaction; existing probe collection and restoration evidence retained.",
+      "dependencies": [],
+      "evidence": [
+        "docs/evidence/proposal-closeout/README.md",
+        "docs/evidence/proposal-closeout/2026-10-01/card-composition.md"
+      ],
+      "rationale": "Explicit operator acceptance on 2026-10-01 completes the remaining interaction gate without claiming new timing or probe measurements.",
+      "reviewRevision": "58ca5bf2781f74305fb687c885ca842272e0373c"
+    },
+    "2026-10-01-the-card-shell-has-no-video-special-case": {
+      "lane": "archived",
+      "source": "archived",
       "physical": "verified",
       "next": "Complete: operator accepted ordinary/video card behavior; unperformed timing preserved in Planned interaction-jank followup.",
       "rationale": "Functional operator acceptance and existing injected evidence complete the shipped scope; timing remains UNVERIFIED in an explicit successor.",
       "reviewRevision": "48ead951",
       "evidence": [
         "docs/evidence/proposal-closeout/2026-10-01/ordinary-cards.md"
+      ],
+      "dependencies": []
+    },
+    "the-board-runs-a-mainline-kernel": {
+      "lane": "verification",
+      "source": "source-landed",
+      "physical": "pending",
+      "next": "Stage the matching DRM trial bundle, boot manually, verify panel and touch, then restore the normal system.",
+      "rationale": "Display power-domain provider, checked runtime power reference and matched kernel/DTB/boot bundle are built and landed. Physical trial is the remaining task.",
+      "dependencies": [],
+      "evidence": [
+        "docs/evidence/mainline-display-power-domain.md",
+        "docs/evidence/mainline-display-boot-preparation.md"
       ]
     }
   }
