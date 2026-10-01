@@ -20,8 +20,10 @@
 - [x] 4.1 Implement Home handle tap/click to overview and defer shell edge ownership until tap/drag intent is known, preserving ordinary drawer activation. Proof: `python3 -m unittest discover -s tests -p 'test_card_shell_pointer_navigation.py'` and the recorded actual-compositor native-touch edge regression (including compact-keyboard pairing), plus the matching full HDMI system cross-build. Host injection is not physical proof.
 - [x] 4.2 Deploy the matching userspace closure on the reserved board; simulate header and drawer-search Backspace taps through native touch dispatch, verify Home → overview retains window IDs, and record exact system/executable identities. Preserve gestures and recovery. No flash/kernel/DT change.
 - [ ] 4.3 Real-finger panel acceptance on that installed correction: app header controls, drawer-search Backspace, Home handle to overview, and the preserved top-down/bottom-up drags. Commit operator observations and physical photograph; keep open until collected.
-- [ ] 4.4 Validate, land source/evidence, push master and inspect exact publication. Keep task 3.3's HDMI recognition/photograph gate open until performed.
+- [x] 4.4 Validate, land source/evidence, push master and inspect exact publication. Keep task 3.3's HDMI recognition/photograph gate open until performed.
 
 Task 4.1 exact cross-build and headless input proof: `docs/evidence/the-shell-is-navigable-with-a-mouse/edge-controls-host/README.md`. Fixture protocol checks are distinct from task 4.2 actual-board key semantics and task 4.3 real-glass acceptance.
 
 Task 4.2 installed board identity and native uinput header/Backspace/Home checks: `docs/evidence/the-shell-is-navigable-with-a-mouse/edge-controls-board/README.md`. Real-glass 4.3 remains open.
+
+Task 4.4 successful exact-revision Pages build/deploy and published revision check: `docs/evidence/the-shell-is-navigable-with-a-mouse/edge-controls-board/publication.json`. Physical tasks 3.3 and 4.3 remain open.

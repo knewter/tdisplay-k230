@@ -1,0 +1,12 @@
+{
+  "revision": "f943d0b018d41cadbe76f4456b40986fbe064834",
+  "workflow_run": 36807473702,
+  "result": "success (build and deploy)",
+  "url": "https://knewter.github.io/tdisplay-k230/work/",
+  "published_revision_found": true,
+  "installed_source_revision": "27110ccb2391100848461a59bccf4bbcd5a59430",
+  "installed_system": "/nix/store/nlgjhifgwcgg0hlbqhnng7xw7cjgxg9a-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "limits": [
+    "Docs publication does not constitute real-finger task 4.3 or HDMI task 3.3 acceptance."
+  ]
+}
