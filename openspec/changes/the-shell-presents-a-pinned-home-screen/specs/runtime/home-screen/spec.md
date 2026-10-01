@@ -64,8 +64,8 @@ grid pages change.
 board observation exists yet. -->
 
 A person SHALL be able to add or remove an installed application through
-its app menu and deliberately drag icons from the drawer to Home or rearrange
-them between pages and dock slots. A stationary long-press SHALL open the menu;
+its mouse app menu or long-press grab and deliberately drag icons from the drawer to Home or rearrange
+them between pages and dock slots. A long-press SHALL grab an icon for movement, not open a menu;
 a deliberate drag SHALL preserve direct manipulation without also activating
 the app. Rearrangement SHALL provide contextual Done/remove controls, with no
 permanent navigation chrome. Pinning an already-pinned app SHALL preserve its
@@ -73,7 +73,7 @@ placement rather than duplicate it.
 
 #### Scenario: A person pins an app through its menu
 
-- **WHEN** a person long-presses a drawer icon without moving and selects Add to Home
+- **WHEN** a person right-clicks a drawer icon and selects Add to Home
 - **THEN** the app is pinned once, without launching it or moving an existing pin
 
 #### Scenario: A person moves or removes an icon
@@ -214,7 +214,8 @@ contact displacement and settle smoothly after release or cancellation.
 capability checks and contact arbitration in task group 11 are not implemented. -->
 
 Home/dock and the shared launcher app-icon path SHALL provide the same menu
-through secondary click and stationary long-press. The menu SHALL offer named
+through secondary click in mouse mode. Long-press SHALL retain the existing
+icon-grab/rearrange behavior and SHALL NOT open this menu. The menu SHALL offer named
 supported desktop actions and identified running windows; New Window SHALL
 bypass primary focus behavior when supported, prefer the desktop entry's
 new-window action and not appear twice. Single-window apps SHALL NOT be
@@ -226,10 +227,15 @@ application focus and ordinary pointer/touch ownership.
 - **WHEN** a person opens an app icon's menu and chooses supported New Window
 - **THEN** the shell requests a new window through the desktop-entry launch/action path instead of focusing the existing window
 
-#### Scenario: Secondary click and stationary hold agree
+#### Scenario: Secondary click opens app actions
 
-- **WHEN** a person right-clicks or holds an icon without dragging
-- **THEN** the same app menu opens without activating, pinning or moving that app
+- **WHEN** a person right-clicks an icon
+- **THEN** its app menu opens without activating, pinning or moving that app
+
+#### Scenario: Long-press remains an icon grab
+
+- **WHEN** a person holds an icon to move it
+- **THEN** the existing grab/rearrange flow remains available and no app menu opens
 
 #### Scenario: Deliberate movement remains a drag
 

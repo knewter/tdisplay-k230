@@ -180,12 +180,13 @@ open; no archive is claimed.
 
 ## 11. GNOME activation refinement (user decision 2026-10-01; not implemented)
 
-Historical 4.2 is the old direct-long-press implementation. This group supersedes
-its stationary-hold behavior while preserving deliberate icon placement. It is
+Historical 4.2 remains the accepted long-press-to-grab implementation. The
+operator rejected replacing it with a stationary-hold menu on 2026-10-01.
+This group adds right-click app actions without changing touch placement. It is
 separate from the accepted mouse/HDMI navigation closeout.
 
 - [ ] 11.1 Implement shared app-icon activation and menu action policy: reliably identify/recently focus existing windows, otherwise launch; read supported desktop actions/single-window metadata, prefer declared New Window and avoid duplicates. Verify `cargo test --offline --manifest-path nix/rust-shell-client/Cargo.toml` with multi-window, missing/mismatched identity and desktop-action fixtures.
-- [ ] 11.2 Wire secondary click and stationary long-press to the touch-sized menu on Home/dock and the shared app-icon path; preserve deliberate drag-to-pin/rearrange, focus, cancellation and menu dismissal. Verify the same Rust suite with hold/move/cancel/secondary-click routing fixtures.
+- [ ] 11.2 Wire secondary click to the app menu on Home/dock and the shared app-icon path; preserve long-press-to-grab and do not open a menu on touch hold; preserve deliberate drag-to-pin/rearrange, focus, cancellation and menu dismissal. Verify the same Rust suite with grab/move/cancel/secondary-click routing fixtures.
 - [ ] 11.3 Extend the paired real-compositor/Rust fixture to prove primary activation retains a known window ID while explicit New Window produces another, named actions work, unsupported actions are absent and canceled menus preserve input/layout. Record the concrete invocation in `docs/evidence/home-screen/`; run `python3 tests/rust_home_screen_qemu.py --sway <sway> --swaymsg <swaymsg> --rust <rust> --theme-bundle <theme-bundle> --icons <icons> --client <native-probe-client> --output <dir>`, then commit its actual result. QEMU injection is not finger evidence.
-- [ ] 11.4 Build `nix build .#handheld-shell-rust .#nixosConfigurations.k230-coherent-shell-hdmi-trial.config.system.build.toplevel --no-link --print-out-paths`; install the recoverable candidate under the board reservation and record exact identities with `python3 tools/console.py /dev/ttyACM0 --wait=3 'readlink -f /run/current-system'`. Obtain operator acceptance of tap/focus, right-click/hold New Window and preserved icon dragging; a committed operator report suffices unless a defect needs capture.
+- [ ] 11.4 Build `nix build .#handheld-shell-rust .#nixosConfigurations.k230-coherent-shell-hdmi-trial.config.system.build.toplevel --no-link --print-out-paths`; install the recoverable candidate under the board reservation and record exact identities with `python3 tools/console.py /dev/ttyACM0 --wait=3 'readlink -f /run/current-system'`. Obtain operator acceptance of tap/focus, right-click New Window and preserved icon dragging; a committed operator report suffices unless a defect needs capture.
 - [ ] 11.5 Validate with `openspec validate the-shell-presents-a-pinned-home-screen --strict`, land/push source and evidence and inspect matching CI/Pages. Keep original unresolved placement and physical scope tracked; this planning refinement alone does not ship the menu.

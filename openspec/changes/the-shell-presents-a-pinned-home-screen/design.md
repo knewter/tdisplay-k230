@@ -184,16 +184,16 @@ both reference launchers allow.
 
 ### 5. App menu and deliberate icon movement
 
-User refinement, 2026-10-01: follow GNOME Shell. A secondary click or a
-stationary long-press opens the same touch-sized app menu, including supported
-New Window and named desktop actions, identified running windows, and
-pin/unpin or rearrange actions where relevant. A held contact that deliberately
-moves past drag slop takes the direct manipulation path; it must not also open
-a menu or launch. Preserve drawer-to-Home dragging, dock/page placement and
-remove targets. Opening/dismissing a menu must not alter pin placement.
-A touch menu needs a reachable dismissal action and outside-tap/Escape handling;
-no hover-only controls. Rearrangement remains contextual, with Done/tap-empty
-exit and no permanent navigation chrome or idle wobble animation.
+User correction, 2026-10-01: secondary click opens the app menu in mouse
+mode, including supported New Window and named desktop actions, identified
+running windows, and pin/unpin or rearrange actions where relevant. The
+operator explicitly rejected long-press menus because that contact is how
+icons are grabbed and moved. Preserve the existing long-press-to-grab flow,
+drawer-to-Home dragging, dock/page placement and remove targets. Opening or
+dismissing a right-click menu must not alter placement; outside click and
+Escape dismiss it. Touch has no new app-menu gesture in this scope.
+Rearrangement remains contextual, with Done/tap-empty exit and no permanent
+navigation chrome or idle wobble animation.
 
 ### 6. GNOME activation and an explicit New Window action
 
@@ -216,9 +216,9 @@ opens the menu for long-press/secondary click.
 [Shell appMenu](https://github.com/GNOME/gnome-shell/blob/main/js/ui/appMenu.js)
 uses desktop actions and suppresses a duplicate generic New Window item.
 These sources establish the interaction reference, not K230 hardware proof.
-Rejected: always spawning on primary tap; stationary long-press immediately
-pinning/moving; copying desktop-only modifier shortcuts as the only way to
-create a window. The existing historical implementation remains until group
+Rejected: always spawning on primary tap and taking long-press away from
+icon movement. GNOME is the activation/menu reference, not a requirement to
+copy its conflicting long-press gesture. The existing historical implementation remains until group
 11 is implemented and verified.
 
 ### 7. Fresh-install defaults come from installed desktop entries, not a hardcoded icon set

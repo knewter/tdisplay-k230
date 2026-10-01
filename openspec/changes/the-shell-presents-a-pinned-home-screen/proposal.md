@@ -34,10 +34,10 @@ and the coordinator note about updating the sibling proposal's wording.
   indicators — never buttons), plus a persistent bottom quick-launch dock
   (webOS Quick Launch / Android hotseat convention) whose icons stay fixed
   across every page.
-- Provide an app menu on secondary click or a stationary long-press. It
-  offers supported New Window/desktop actions and pin/unpin or rearrange
-  actions. Deliberate icon dragging retains direct drawer-to-Home placement
-  and Home rearrangement; holding still must not silently move an icon.
+- Provide an app menu on secondary click in mouse mode, offering supported
+  New Window/desktop actions and pin/unpin or rearrange actions. Long-press
+  remains grab/rearrange, preserving drawer-to-Home placement and Home movement;
+  it does not open a menu.
 - Seed a fresh Home from installed desktop entries with a sensible curated
   default set (terminal, file manager, text editor, system monitor, video
   player, Settings, and the app drawer itself) when no saved layout exists,
@@ -111,6 +111,6 @@ open evidence gates for the coordinator.
 ## Activation refinement, 2026-10-01
 
 The user requested GNOME Shell behavior after reconsidering launch-versus-focus.
-Task group 11 carries the unimplemented refinement, including stationary
-long-press versus icon-drag arbitration. It does not reopen accepted mouse
+Task group 11 carries the unimplemented refinement, with right-click menus in mouse mode and the existing
+long-press-to-move interaction preserved on touch. It does not reopen accepted mouse
 navigation or require recordings solely to reconfirm accepted behavior.
