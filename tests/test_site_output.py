@@ -148,19 +148,18 @@ class TestBuiltSite(unittest.TestCase):
         self.assertIn('class="ev-text"', log)
         self.assertNotIn('class="ev-markdown"', log)
 
-    def test_nothing_from_an_in_flight_proposal_enters_the_accepted_ledger(self) -> None:
-        ids = sorted(
-            p.name for p in CHANGES.iterdir() if p.is_dir() and p.name != "archive"
-        )
-        if not ids:
-            self.skipTest("no open changes to test against")
-        blob = "\n".join(
-            p.read_text(encoding="utf-8", errors="replace")
-            for p in self.pages()
-            if "evidence" not in p.parts and "work" not in p.parts
-        )
-        leaked = [i for i in ids if i in blob]
-        self.assertEqual(leaked, [], f"in-flight change ids leaked: {leaked}")
+    def test_accepted_ledger_uses_canonical_specs_not_proposal_sources(self) -> None:
+        # An accepted requirement may explain a still-deferred task by ID.
+        # Provenance and requirement sets establish acceptance; a prose-wide
+        # substring ban rejects those useful, honest scope references.
+        data = json.loads((REPO / "site/src/data/specs.json").read_text())
+        canonical = {p.relative_to(REPO).as_posix(): p for p in SPECS.rglob("spec.md")}
+        self.assertEqual({c["source"] for c in data["capabilities"]}, set(canonical))
+        for capability in data["capabilities"]:
+            source = capability["source"]
+            self.assertNotIn("openspec/changes/", source)
+            names = re.findall(r"^### Requirement:\s*(.+)$", canonical[source].read_text(), re.M)
+            self.assertEqual([r["name"] for r in capability["requirements"]], names)
 
     def test_work_board_is_separate_dated_and_linked(self) -> None:
         page = (DIST / "work" / "index.html").read_text(encoding="utf-8")

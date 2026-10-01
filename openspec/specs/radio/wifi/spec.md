@@ -68,7 +68,7 @@ source, generated world-readable configuration, or the system closure.
 - **THEN** the connection service can receive the runtime credential while source control and the Nix store contain no network secret
 
 ### Requirement: Settings permit touch Wi-Fi discovery and connection
-<!-- Grounding: docs/evidence/wifi-settings/closeout-2026-10-01/README.md; operator acceptance plus independently injected board eye/keyboard checks, with explicit limits. -->
+*Grounding: docs/evidence/wifi-settings/closeout-2026-10-01/README.md; operator acceptance plus independently injected board eye/keyboard checks, with explicit limits.*
 The system's shell userspace SHALL let a person open Network from Settings, refresh and scroll a bounded list of nearby networks, distinguish current and saved connections, select an open or WPA2-Personal network by touch, and return without changing connection. It SHALL show scanning, empty, unavailable, stale, and failed states without presenting a stale scan as current. It SHALL not equate association with Internet reachability.
 
 #### Scenario: Person opens Network
@@ -84,7 +84,7 @@ The system's shell userspace SHALL let a person open Network from Settings, refr
 - **THEN** the old result does not replace the currently visible state or trigger a connection
 
 ### Requirement: Secure network entry is touch-operable and secret-safe
-<!-- Grounding: docs/evidence/wifi-settings/closeout-2026-10-01/README.md; operator acceptance plus independently injected board eye/keyboard checks, with explicit limits. -->
+*Grounding: docs/evidence/wifi-settings/closeout-2026-10-01/README.md; operator acceptance plus independently injected board eye/keyboard checks, with explicit limits.*
 The shell userspace SHALL offer masked password entry for a selected supported secured network using the same system keyboard every other text field in the shell uses (not a separate in-app keypad), mask entered characters by default, permit correction and cancellation, and show a bounded Connect pending state with a useful failure and retry route. The password field SHALL take real keyboard focus only for its own lifetime and release it immediately on Connect, Cancel, or leaving the page, so the system keyboard never contests focus with an application the rest of the time. Cancel/Connect SHALL remain reachable above the raised keyboard rather than hidden beneath it. The system SHALL pass a credential only through a private runtime channel to a privileged Wi-Fi service; neither side SHALL put the secret or a network identifier in command arguments, environment, Nix closure, tracked files, ordinary logs, or committed evidence. The shell SHALL NOT receive saved passwords back from the service.
 
 #### Scenario: Secured network selected
@@ -109,7 +109,7 @@ The shell userspace SHALL offer masked password entry for a selected supported s
 - **THEN** Connect needs no password and still reports progress and a confirmed outcome
 
 ### Requirement: Saved networks reconnect and can be forgotten
-<!-- Grounding: docs/evidence/wifi-settings/closeout-2026-10-01/README.md; operator acceptance plus independently injected board eye/keyboard checks, with explicit limits. -->
+*Grounding: docs/evidence/wifi-settings/closeout-2026-10-01/README.md; operator acceptance plus independently injected board eye/keyboard checks, with explicit limits.*
 The system SHALL save an accepted connection only in the existing root-controlled Wi-Fi credential location outside the image closure and use the existing runtime credential service to reconnect on later boots. Settings SHALL expose saved state and an explicit Forget action that removes the selected saved credential and stops automatic reconnect for that network. A failed, cancelled, or stale attempt SHALL NOT overwrite the last confirmed saved configuration.
 
 #### Scenario: Device restarts after accepted setup

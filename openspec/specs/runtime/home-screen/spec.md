@@ -7,7 +7,7 @@ Define the touch-operated Home layout: exact app and widget placement, paged rea
 
 ### Requirement: Home items can be dragged to a specific place instead of instant-pinned
 
-<!-- Grounding: docs/evidence/home-widgets-folders/closeout-2026-10-01/board/README.md and sibling paired QEMU reports; operator acceptance plus delegated board uinput proof, not new finger measurements. -->
+*Grounding: docs/evidence/home-widgets-folders/closeout-2026-10-01/board/README.md and sibling paired QEMU reports; operator acceptance plus delegated board uinput proof, not new finger measurements. Additional committed native board evidence: docs/evidence/home-widgets-folders/closeout-2026-10-01/board/README.md and docs/evidence/home-widget-design/closeout-2026-10-01/board/README.md.*
 
 Long-pressing an installed application's tile in the drawer SHALL lift that
 application's icon to follow the finger instead of pinning it immediately,
@@ -55,7 +55,7 @@ held past the last one.
 
 ### Requirement: Rearranging a pinned item on Home follows the same drop rules as a drawer drag
 
-<!-- Grounding: docs/evidence/home-widgets-folders/closeout-2026-10-01/board/README.md and sibling paired QEMU reports; operator acceptance plus delegated board uinput proof, not new finger measurements. -->
+*Grounding: docs/evidence/home-widgets-folders/closeout-2026-10-01/board/README.md and sibling paired QEMU reports; operator acceptance plus delegated board uinput proof, not new finger measurements. Additional committed native board evidence: docs/evidence/home-widgets-folders/closeout-2026-10-01/board/README.md and docs/evidence/home-widget-design/closeout-2026-10-01/board/README.md.*
 
 Long-pressing an item already on Home (an application, a folder, or a
 widget) SHALL enter the same drag as a drawer-originated one, resolved by
@@ -92,7 +92,7 @@ except that Home always keeps at least one page even when it is empty.
 
 ### Requirement: Folders group pinned applications in the grid and the dock
 
-<!-- Grounding: docs/evidence/home-widgets-folders/closeout-2026-10-01/board/README.md and sibling paired QEMU reports; operator acceptance plus delegated board uinput proof, not new finger measurements. -->
+*Grounding: docs/evidence/home-widgets-folders/closeout-2026-10-01/board/README.md and sibling paired QEMU reports; operator acceptance plus delegated board uinput proof, not new finger measurements. Additional committed native board evidence: docs/evidence/home-widgets-folders/closeout-2026-10-01/board/README.md and docs/evidence/home-widget-design/closeout-2026-10-01/board/README.md.*
 
 A folder SHALL display as a single rounded tile showing up to four of its
 members' icons in a 2x2 arrangement. Tapping a folder tile SHALL open an
@@ -123,12 +123,12 @@ one application pinned directly in the folder's former cell.
 
 ### Requirement: Home offers Clock, Battery, and Weather widgets drawn by the shell
 
-<!-- Grounding: `nix/shell.nix`'s existing `k230-weather` desktop entry is
+*Grounding: `nix/shell.nix`'s existing `k230-weather` desktop entry is
 the reused wttr.in source; this board's actual power-supply hardware is
 UNVERIFIED beyond "no such sysfs device exists today" (design.md Decision
 6). Native board widget appearance and cached weather are recorded in
 `docs/evidence/home-widget-design/closeout-2026-10-01/board/README.md`; their content logic (battery absent/present, weather
-cache freshness/staleness/offline) is host-tested. -->
+cache freshness/staleness/offline) is host-tested. Additional committed native board evidence: docs/evidence/home-widgets-folders/closeout-2026-10-01/board/README.md and docs/evidence/home-widget-design/closeout-2026-10-01/board/README.md.*
 
 Home SHALL support placing a Clock widget, a Battery widget, and a Weather
 widget, each occupying a fixed cell span, rendered by the shell itself
@@ -177,9 +177,9 @@ than an error or a blank tile.
 
 ### Requirement: Home's persisted layout carries folders and widgets, migrating older files
 
-<!-- Grounding: `home_state.rs`'s existing schema-1 round-trip tests are
+*Grounding: `home_state.rs`'s existing schema-1 round-trip tests are
 the migration source this change's schema-2 loader is tested against
-directly (`a_schema_1_file_migrates_to_plain_apps_on_load`). -->
+directly (`a_schema_1_file_migrates_to_plain_apps_on_load`). Additional committed native board evidence: docs/evidence/home-widgets-folders/closeout-2026-10-01/board/README.md and docs/evidence/home-widget-design/closeout-2026-10-01/board/README.md.*
 
 The on-disk Home layout SHALL record folders (their name and member
 application ids) and widgets (their kind) alongside plain pinned
@@ -197,13 +197,13 @@ existing cell.
 
 ### Requirement: Cross-page dragging pages fluidly with a visible edge affordance
 
-<!-- Grounding: implemented and host-tested (`home_screen`/`home_pager`
+*Grounding: implemented and host-tested (`home_screen`/`home_pager`
 unit tests, including the dwell-timing, page-creation, and fling tests
 named below). The rendered edge glow/arrow and "no room" highlight are
 evidenced by a host Cairo render harness
 (`docs/evidence/home-widget-design/`), not a board or QEMU capture; real
 touch feel and daylight visibility of the affordance are UNVERIFIED on
-hardware. -->
+hardware. Additional committed native board evidence: docs/evidence/home-widgets-folders/closeout-2026-10-01/board/README.md and docs/evidence/home-widget-design/closeout-2026-10-01/board/README.md.*
 
 While a person holds a dragged Home item (an icon, a folder, or a widget)
 within about 40px of the panel's left or right edge, Home SHALL show a
@@ -266,13 +266,13 @@ ordinary accepting one.
 
 ### Requirement: Home's widgets are visually redesigned with distinct styles and richer content
 
-<!-- Grounding: implemented and host-tested (clock style formatting,
+*Grounding: implemented and host-tested (clock style formatting,
 `j1` forecast selection/parsing, battery ring percent/charging state, the
 procedural dot-matrix digit table). Rendered appearance is evidenced by a
 host Cairo render harness (`docs/evidence/home-widget-design/`) composited
 over real Omarchy theme wallpaper images, not a board or QEMU capture;
 daylight readability and on-device color/font reproduction are UNVERIFIED
-on hardware. -->
+on hardware. Additional committed native board evidence: docs/evidence/home-widgets-folders/closeout-2026-10-01/board/README.md and docs/evidence/home-widget-design/closeout-2026-10-01/board/README.md.*
 
 The Clock widget SHALL offer at least four selectable visual styles,
 researched from current mobile-platform and community widget design
