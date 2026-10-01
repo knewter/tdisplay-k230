@@ -182,62 +182,44 @@ Vec<Option<AppRef>>` alongside `pages: Vec<Vec<Option<AppRef>>>`), and an icon
 can be dragged between the dock and a page during rearrange mode, exactly as
 both reference launchers allow.
 
-### 5. Pin/unpin/rearrange interaction
+### 5. App menu and deliberate icon movement
 
-- **Add to Home**: long-press a drawer tile (`navigation.rs`'s existing tap
-  timing already distinguishes a held touch from a tap via `down_ms`; a new
-  `LONG_PRESS_MS = 500` threshold with the existing `TAP_SLOP` distance gate
-  now returns `DrawerAction::LongPress` instead of `Launch` on release)
-  pins that app directly to the first page with a free slot, creating a new
-  page if every existing page is full, and persists immediately -- a no-op,
-  not a move, if it is already pinned somewhere (grid or dock). Implemented
-  this way rather than the two-step confirm sheet first sketched here:
-  both reference launchers place a long-press hold as a direct manipulation
-  (grab-then-place), and a confirm/cancel dialog would be a second new
-  modal-widget system for a single yes/no choice this shell has no other
-  use for. A future revision could add a brief transient acknowledgement
-  (e.g. a flash on the drawer tile) without changing this decision's shape.
-- **Rearrange on Home**: long-press an icon on Home enters rearrange mode
-  (a visible but small "Done" affordance appears — contextual, not permanent
-  chrome, consistent with the "no permanent Back/Home buttons" constraint;
-  tapping empty space also exits rearrange mode, exactly like both reference
-  launchers). While in this mode, dragging an icon moves it within a page,
-  across a page boundary (dragging to the pager's edge for
-  `HOLD_AT_EDGE_MS` pages to the neighbor, then continues the drag), into or
-  out of the dock, or (dragging to a small onscreen "Remove" target that only
-  appears in this mode) off Home entirely, back to being unpinned (still
-  installed, still in the drawer). Every drop position re-persists the whole
-  layout. Rejected: a jiggling/wobbling icon animation — cheap to add later
-  as a decoration, but drag-reorder correctness (not motion polish) is the
-  actual accepted-behavior surface here, and continuous per-icon wobble
-  redraw is exactly the kind of idle/always-animating cost this shell's own
-  "no idle redraw" rule exists to avoid; this proposal ships a static
-  "rearrange mode" affordance (dim overlay + Done button + Remove target)
-  instead.
-- **Tap** (outside rearrange mode): launch-or-focus (Decision 6).
+User refinement, 2026-10-01: follow GNOME Shell. A secondary click or a
+stationary long-press opens the same touch-sized app menu, including supported
+New Window and named desktop actions, identified running windows, and
+pin/unpin or rearrange actions where relevant. A held contact that deliberately
+moves past drag slop takes the direct manipulation path; it must not also open
+a menu or launch. Preserve drawer-to-Home dragging, dock/page placement and
+remove targets. Opening/dismissing a menu must not alter pin placement.
+A touch menu needs a reachable dismissal action and outside-tap/Escape handling;
+no hover-only controls. Rearrangement remains contextual, with Done/tap-empty
+exit and no permanent navigation chrome or idle wobble animation.
 
-### 6. Tap launches, or focuses an already-running instance
+### 6. GNOME activation and an explicit New Window action
 
-`nix/rust-shell-client/src/main.rs::launch_selected` today always calls
-`gio::DesktopAppInfo::launch`, with no check for an existing window — true
-for the drawer today, and the deliverable explicitly asks Home to do better.
-New function `home_screen::focus_or_launch` first asks the compositor (`
-swaymsg -t get_tree`, off the Wayland dispatch thread on the existing launch
-worker thread, matching decision 10 of the sibling design: "keep all blocking
-catalog/decode/service work outside the Wayland dispatch path") for a window
-whose `app_id` matches the tapped entry, using the same heuristic
-`tools/notification_center.py`'s `SwayActions` already uses to walk
-`get_tree` for con nodes carrying an `app_id`/`window`, but matching by
-identity instead of a stored con id: the desktop-entry id with its
-`.desktop` suffix stripped, compared case-insensitively against a run's
-`app_id`, and as a fallback the desktop entry's `Exec` first token's
-basename. This is a best-effort heuristic, not a verified protocol (no
-stable desktop-entry-id-to-app_id mapping exists in this stack yet) — marked
-`<!-- UNVERIFIED -->` in the spec below pending a real multi-window board
-trial: on a match it sends `[app_id="<id>"] focus` (mirroring
-`notification_center.py`'s own focus call exactly) instead of launching a
-second instance; on no match it falls back to today's `launch_selected`
-behavior unchanged.
+Primary tap/click activates the most recently used reliably identified window
+of that app, or launches through GIO desktop-entry semantics when none exists.
+A missed identity match must fall back to launch, never focus an unrelated
+app. Run tree/catalog/launch work off Wayland dispatch. Existing
+`focus_or_launch` is a starting point, not proof of full multi-window parity.
+New Window bypasses the focus shortcut. Prefer the desktop file's `new-window`
+action, expose other named desktop actions through GIO, and avoid duplicate
+New Window entries. A generic fresh launch is offered only when the app's
+capabilities support it; honor single-window metadata and do not invent
+application CLI flags. No guarantee of a second window for single-instance
+applications. Select a listed running window by its verified container ID.
+
+Reference behavior checked 2026-10-01: [GNOME Help](https://help.gnome.org/gnome-help/shell-introduction.html)
+describes primary activation and an icon menu for window selection/new windows.
+[Shell appDisplay](https://github.com/GNOME/gnome-shell/blob/main/js/ui/appDisplay.js)
+opens the menu for long-press/secondary click.
+[Shell appMenu](https://github.com/GNOME/gnome-shell/blob/main/js/ui/appMenu.js)
+uses desktop actions and suppresses a duplicate generic New Window item.
+These sources establish the interaction reference, not K230 hardware proof.
+Rejected: always spawning on primary tap; stationary long-press immediately
+pinning/moving; copying desktop-only modifier shortcuts as the only way to
+create a window. The existing historical implementation remains until group
+11 is implemented and verified.
 
 ### 7. Fresh-install defaults come from installed desktop entries, not a hardcoded icon set
 

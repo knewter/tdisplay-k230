@@ -34,17 +34,19 @@ and the coordinator note about updating the sibling proposal's wording.
   indicators — never buttons), plus a persistent bottom quick-launch dock
   (webOS Quick Launch / Android hotseat convention) whose icons stay fixed
   across every page.
-- Add pinning and unpinning: long-press an app in the drawer for an "Add to
-  Home" action; long-press an icon already on Home to enter a dismissible
-  rearrange mode that drags an icon within or between pages, into or out of
-  the dock, or removes it.
+- Provide an app menu on secondary click or a stationary long-press. It
+  offers supported New Window/desktop actions and pin/unpin or rearrange
+  actions. Deliberate icon dragging retains direct drawer-to-Home placement
+  and Home rearrangement; holding still must not silently move an icon.
 - Seed a fresh Home from installed desktop entries with a sensible curated
   default set (terminal, file manager, text editor, system monitor, video
   player, Settings, and the app drawer itself) when no saved layout exists,
   and persist every change (pin, unpin, reorder, page assignment) under the
   shell user's XDG state directory so it survives a restart and a reboot.
-- Make tapping a Home icon launch the app, or focus its existing window when
-  one is already running, instead of always starting a second instance.
+- Follow GNOME activation for Home/dock and the shared app-icon path: primary
+  tap/click activates the most recently used identifiable window, or launches
+  when none exists. New Window explicitly bypasses focus through the app menu
+  when supported. This refinement is planned, not an installed feature.
 - Wire the user's explicit navigation sequence: the bottom-edge swipe from
   an app opens Overview; an upward swipe from Overview's bottom navigation
   area reveals Home without closing apps; the next upward swipe from Home
@@ -105,3 +107,10 @@ the `k230-coherent-shell` NixOS configuration absorb the change. Host build,
 `cargo test`, and a QEMU injected-touch smoke test can all proceed without the
 physical board; real-finger and daylight-readability board acceptance remain
 open evidence gates for the coordinator.
+
+## Activation refinement, 2026-10-01
+
+The user requested GNOME Shell behavior after reconsidering launch-versus-focus.
+Task group 11 carries the unimplemented refinement, including stationary
+long-press versus icon-drag arbitration. It does not reopen accepted mouse
+navigation or require recordings solely to reconfirm accepted behavior.

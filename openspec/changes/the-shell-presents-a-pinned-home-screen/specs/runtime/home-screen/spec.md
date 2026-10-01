@@ -63,38 +63,24 @@ grid pages change.
 <!-- UNVERIFIED: implemented and host-tested in this change; no real-finger
 board observation exists yet. -->
 
-A person SHALL be able to add an installed application to Home by long-
-pressing its entry in the drawer, without a further confirmation step. A
-person SHALL be able to long-press an icon already on Home to enter a
-rearrange mode in which that icon, or any other pinned icon, can be dragged
-within a page, across a page boundary, into or out of the dock, or off Home
-entirely (unpinning it, without uninstalling it). Rearrange mode SHALL end
-when a person taps empty space or a visible "Done" affordance, and SHALL NOT
-persist as permanent on-screen chrome. Long-pressing an application already
-pinned to Home from the drawer SHALL leave its existing placement unchanged
-rather than duplicating or moving it.
+A person SHALL be able to add or remove an installed application through
+its app menu and deliberately drag icons from the drawer to Home or rearrange
+them between pages and dock slots. A stationary long-press SHALL open the menu;
+a deliberate drag SHALL preserve direct manipulation without also activating
+the app. Rearrangement SHALL provide contextual Done/remove controls, with no
+permanent navigation chrome. Pinning an already-pinned app SHALL preserve its
+placement rather than duplicate it.
 
-#### Scenario: A person pins an app from the drawer
+#### Scenario: A person pins an app through its menu
 
-- **WHEN** a person long-presses an installed application's tile in the
-  drawer
-- **THEN** that application's icon appears on a Home page with a free grid
-  slot, creating a new page if every existing page is full
+- **WHEN** a person long-presses a drawer icon without moving and selects Add to Home
+- **THEN** the app is pinned once, without launching it or moving an existing pin
 
-#### Scenario: A person removes an app from Home
+#### Scenario: A person moves or removes an icon
 
-- **WHEN** a person long-presses a Home icon, enters rearrange mode, and
-  drags it to the remove target
-- **THEN** the icon leaves Home, the application remains installed and still
-  reachable from the drawer, and rearrange mode's remove target is not shown
-  outside that mode
-
-#### Scenario: A person moves an icon to a different page
-
-- **WHEN** a person is in rearrange mode and drags an icon to the pager's
-  edge and holds it there
-- **THEN** the grid pages to the neighboring page and the drag continues,
-  letting the icon be dropped on the new page
+- **WHEN** a person deliberately drags a Home icon in rearrange mode
+- **THEN** it can move between page/dock slots or to the contextual remove target
+- **AND** removing a pin leaves the application installed and reachable in the drawer
 
 ### Requirement: A fresh Home seeds sensible defaults from installed desktop entries
 
@@ -159,8 +145,9 @@ existing, already-correct launch path in `nix/rust-shell-client/src/main.rs`
 (`launch_selected`), so this requirement cannot regress today's launch
 behavior even when the heuristic does not match. -->
 
-Tapping a Home icon outside rearrange mode SHALL bring that application to
-the front if an instance of it is already running, or launch it if none is,
+Tapping or primary-clicking a Home/dock icon outside rearrange mode SHALL
+activate its most recently used identifiable window if already running,
+or launch it if none is,
 using the same desktop-entry argument expansion and working-directory
 semantics the drawer already applies.
 
@@ -220,3 +207,31 @@ contact displacement and settle smoothly after release or cancellation.
 - **WHEN** an upward gesture begins on an app card rather than the bottom
   navigation area
 - **THEN** the existing close-card gesture applies to that card only
+
+### Requirement: App icons provide explicit window and desktop actions
+
+<!-- UNVERIFIED: GNOME reference behavior has been read; the K230 menu,
+capability checks and contact arbitration in task group 11 are not implemented. -->
+
+Home/dock and the shared launcher app-icon path SHALL provide the same menu
+through secondary click and stationary long-press. The menu SHALL offer named
+supported desktop actions and identified running windows; New Window SHALL
+bypass primary focus behavior when supported, prefer the desktop entry's
+new-window action and not appear twice. Single-window apps SHALL NOT be
+promised an unsupported second window. Menu dismissal SHALL preserve layout,
+application focus and ordinary pointer/touch ownership.
+
+#### Scenario: Explicitly open another window
+
+- **WHEN** a person opens an app icon's menu and chooses supported New Window
+- **THEN** the shell requests a new window through the desktop-entry launch/action path instead of focusing the existing window
+
+#### Scenario: Secondary click and stationary hold agree
+
+- **WHEN** a person right-clicks or holds an icon without dragging
+- **THEN** the same app menu opens without activating, pinning or moving that app
+
+#### Scenario: Deliberate movement remains a drag
+
+- **WHEN** an icon contact deliberately moves beyond drag slop
+- **THEN** it takes the supported icon-placement path and cannot also trigger the stationary-hold menu or launch
