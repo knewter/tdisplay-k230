@@ -162,16 +162,19 @@
       "lane": "in-progress",
       "source": "in-progress",
       "physical": "pending",
-      "next": "Fix drawer-to-Home drop landing in the next free slot rather than the dropped cell. Page swipes and pin addition passed; finish remaining dark/light layout checks.",
+      "next": "Finish paired right-click app-actions proof and recoverable device installation; obtain remaining Home layout/menu acceptance. Tap bottom handle opens Overview; swipe up opens All apps; long-press keeps grab-and-move.",
       "dependencies": [],
       "evidence": [
         "docs/evidence/proposal-closeout/README.md",
         "docs/evidence/proposal-closeout/2026-09-30/README.md",
         "docs/evidence/home-screen/navigation/README.md",
-        "docs/evidence/proposal-closeout/2026-09-30/operator-feedback.md"
+        "docs/evidence/proposal-closeout/2026-09-30/operator-feedback.md",
+        "docs/evidence/home-screen/navigation/operator-acceptance-2026-10-01.md",
+        "docs/evidence/home-widget-design/closeout-2026-10-01/board/README.md",
+        "docs/evidence/home-screen/app-actions/host.md"
       ],
-      "rationale": "Operator confirmed page swipes and adding a pin, but reported incorrect drop-position behavior. Keep open for source correction and final physical layout proof.",
-      "reviewRevision": "6306c1d8df787820c1c74e7808be6d853e343b30"
+      "rationale": "Operator accepted Home navigation. Later fluid-Home source/board proof covers chosen-cell placement; the old next-free-slot defect is not a current blocker. App-action host checks pass, with new compositor/device proof still open.",
+      "reviewRevision": "eb38af2a7326d86d42cb26f1969f77dbf9618149"
     },
     "plugging-in-hdmi-moves-the-display": {
       "lane": "in-progress",

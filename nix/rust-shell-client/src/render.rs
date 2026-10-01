@@ -4977,11 +4977,43 @@ impl RendererCache {
         Ok(())
     }
 
-    /// Renders Home's `Layer::Bottom` surface. Unlike [`Self::draw`], there
-    /// is no reveal-progress slide-in to cache/shift here -- Home is always
-    /// mapped, its own pager/drag animation already lives in `HomeScreen`,
-    /// and this simply repaints straight into the caller's buffer whenever
-    /// `main.rs` decides Home is dirty.
+    /// Context app actions overlay. It leaves Home/All apps and their layout
+    /// intact underneath; outside clicks/Escape dismiss instead of navigating.
+    pub fn draw_app_menu(&mut self,canvas:&mut [u8],width:u32,height:u32,menu:&crate::app_actions::AppMenu) -> Result<(),String> {
+        let surface=ImageSurface::create(Format::ARgb32,width as i32,height as i32).map_err(|e|e.to_string())?;
+        let cr=Context::new(&surface).map_err(|e|e.to_string())?;
+        color(&cr,0x000000,0.32);cr.paint().map_err(|e|e.to_string())?;
+        let theme=self.theme.as_ref();
+        let style=visual_style(theme,"menu");
+        let scale=crate::density_scale(width,height);
+        let (x,y,w,h,row)=menu.geometry(width,height);
+        service_card(&cr,theme,"menu",x,y,w,h,false);
+        if let Some(icon)=menu.entry.icon.as_deref() {
+            self.icons.paint(&cr,icon,(44.0*scale) as i32,x+20.0*scale,y+16.0*scale);
+        }
+        heading(&cr,&menu.entry.name,x+80.0*scale,y+18.0*scale,w-100.0*scale,22.0*scale,style.text);
+        text(&cr,"App actions",x+80.0*scale,y+45.0*scale,w-100.0*scale,14.0*scale,style.muted);
+        let top=y+78.0*scale;
+        cr.save().map_err(|e|e.to_string())?;
+        cr.rectangle(x,top,w,(h-90.0*scale).max(0.0));cr.clip();
+        if menu.rows.is_empty() {
+            text(&cr,if menu.ready {"App actions unavailable"}else{"Loading app actions…"},x+24.0*scale,top+16.0*scale,w-48.0*scale,18.0*scale,style.muted);
+        }
+        for (index,action) in menu.rows.iter().enumerate() {
+            let at=top+index as f64*row-menu.scroll;
+            if at+row<top || at>y+h {continue;}
+            text(&cr,&action.label,x+24.0*scale,at+16.0*scale,w-48.0*scale,20.0*scale,
+                if matches!(action.action,crate::app_actions::AppAction::NewWindow(_)) {style.accent}else{style.text});
+        }
+        cr.restore().map_err(|e|e.to_string())?;
+        drop(cr);surface.flush();
+        let mut surface=surface;
+        let data=surface.data().map_err(|e|e.to_string())?;
+        if canvas.len()!=data.len() {return Err("app menu canvas mismatch".into());}
+        canvas.copy_from_slice(&data);Ok(())
+    }
+
+    /// Renders the always-mapped Home layer with its own pager/drag state.
     pub fn draw_home(
         &mut self,
         canvas: &mut [u8],

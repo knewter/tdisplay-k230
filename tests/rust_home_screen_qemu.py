@@ -372,6 +372,7 @@ def main():
     parser.add_argument("--rename-client", type=Path, help="keep a normal app behind Home during keyboard rename")
     parser.add_argument("--rename-only", action="store_true", help="stop after keyboard rename over an ordinary app")
     parser.add_argument("--fluid-only", action="store_true", help="only live cross-page and widget-layout scenarios")
+    parser.add_argument("--actions-only", action="store_true", help="right-click actions, existing-window focus and preserved touch grabs")
     for field in ("sway", "swaymsg", "rust"):
         parser.add_argument("--" + field, required=True, type=Path)
     parser.add_argument("--theme-bundle", required=True, type=Path,
@@ -384,6 +385,8 @@ def main():
     parser.add_argument("--qemu", default="/usr/bin/qemu-riscv64-static")
     parser.add_argument("--output", required=True, type=Path)
     args = parser.parse_args()
+    if args.actions_only and (not args.client or args.fluid_only or args.rename_only):
+        parser.error("--actions-only requires --client and cannot combine with other restricted passes")
     for path in (args.sway, args.swaymsg, args.rust):
         if not path.is_file():
             parser.error(f"exact cross-built executable must exist: {path}")
@@ -426,6 +429,15 @@ def main():
         "[Desktop Entry]\nType=Application\nName=Terminal\n"
         f"Exec={launch_script} terminal\nIcon=foot\nStartupWMClass=k230.card.one\n"
     )
+    if args.actions_only:
+        with (apps_dir / "k230-fixture-terminal.desktop").open("a") as desktop:
+            desktop.write(
+                "Actions=new-window;preferences;\n"
+                "[Desktop Action new-window]\nName=New Window\n"
+                f"Exec={args.client} --app-id k230.card.one\n"
+                "[Desktop Action preferences]\nName=Preferences\n"
+                f"Exec={launch_script} preferences\n"
+            )
     # Pre-pinned at page 0 slot 0 from boot, so this test can exercise the
     # per-icon remove *badge* tap on an icon that was never dragged, kept
     # distinct from "Fixture Extra" below (pinned live via the drawer, then
@@ -694,6 +706,19 @@ def main():
             wait_for_ready("dark-rust")
 
             page1 = capture("home-dark-page1.png")
+            if args.actions_only:
+                from home_app_actions_scenario import exercise_actions
+                checks.update(exercise_actions(args.client, spawn, ipc, wait_for,
+                              tap, capture, route, dock_center, tile_center,
+                              drawer_tile_center, long_press_drag, settle_and_release,
+                              done_button_point, home_json, marker, lambda: text("dark-rust")))
+                assert all(checks.values()), checks
+                result = {"result": "PASS", "class": "headless-qemu-injected-touch-and-pointer",
+                          "checks": checks, "sway": str(args.sway), "rust": str(args.rust),
+                          "theme_bundle": str(bundle), "icons": str(args.icons)}
+                (root / "result.json").write_text(json.dumps(result, indent=2) + "\n")
+                print(json.dumps(result, indent=2))
+                return
             if args.client:
                 from home_navigation_scenario import exercise_navigation
                 checks.update(exercise_navigation(args.client, spawn, ipc, wait_for,

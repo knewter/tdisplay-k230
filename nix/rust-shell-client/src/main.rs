@@ -3,6 +3,7 @@
 //! Smithay Client Toolkit's MIT-licensed v0.20.0 simple_layer example.
 use gio::prelude::*;
 use k230_shell_rust::{
+    app_actions::{self, AppAction, AppMenu, ActionRow, MenuOutcome},
     app_watch::CatalogWatcher,
     appearance::{AppearanceEvent, AppearancePhase, AppearanceReceiver, AppearanceSnapshot},
     background_decode::{BackgroundCache, FitMode},
@@ -1004,13 +1005,6 @@ fn focus_or_launch(id: &str, path: Option<&std::path::Path>, swaymsg: &std::path
 /// a missing binary, an oversized or unparsable reply -- so a lookup
 /// problem always degrades to an ordinary launch, never a stuck tap.
 fn running_con_id(id: &str, path: Option<&std::path::Path>, swaymsg: &std::path::Path) -> Option<i64> {
-    let info = path.and_then(|path| gio::DesktopAppInfo::from_filename(path));
-    let startup_class = info.as_ref().and_then(|app| app.startup_wm_class());
-    let exec_hint = info.as_ref().and_then(|app| {
-        app.executable()
-            .file_name()
-            .map(|name| name.to_string_lossy().into_owned())
-    });
     let output = Command::new(swaymsg)
         .args(["-r", "-t", "get_tree"])
         .output()
@@ -1021,8 +1015,38 @@ fn running_con_id(id: &str, path: Option<&std::path::Path>, swaymsg: &std::path:
     let tree: serde_json::Value = serde_json::from_slice(&output.stdout).ok()?;
     // Our themed terminal wrappers advertise their Wayland app_id through
     // StartupWMClass; neither their desktop ID nor executable basename matches.
-    k230_shell_rust::home_screen::find_running_con_id(&tree, id, startup_class.as_deref())
-        .or_else(|| k230_shell_rust::home_screen::find_running_con_id(&tree, id, exec_hint.as_deref()))
+    app_actions::entry_windows(&tree, id, path).first().map(|window| window.id)
+}
+
+fn app_tree() -> Option<serde_json::Value> {
+    let socket=std::env::var_os("SWAYSOCK")?;
+    sway_ipc::query(std::path::Path::new(&socket),4,b"").ok()
+}
+
+fn run_app_action(id:&str,path:Option<&std::path::Path>,swaymsg:&std::path::Path,action:AppAction) -> Result<LaunchOutcome,String> {
+    if action==AppAction::Activate {return focus_or_launch(id,path,swaymsg);}
+    if let AppAction::Window(con_id)=action {
+        let tree=app_tree().ok_or("window list unavailable")?;
+        if !app_actions::entry_windows(&tree,id,path).iter().any(|w|w.id==con_id) {return Err("window is no longer available".into());}
+        swaymsg_back(swaymsg)?;
+        focus_con(con_id,swaymsg)?;
+        return Ok(LaunchOutcome::Focused);
+    }
+    let path=path.ok_or("installed app disappeared")?;
+    let app=gio::DesktopAppInfo::from_filename(path).filter(|a|a.should_show()&&!a.is_hidden()).ok_or("installed app disappeared")?;
+    let action_id=match &action {
+        AppAction::NewWindow(Some(id))|AppAction::Desktop(id)=>Some(id.clone()),
+        AppAction::NewWindow(None)=>None,
+        _=>return Err("not a launch action".into()),
+    };
+    let entry=AppEntry {id:id.into(),name:app.display_name().into(),icon:None,path:path.into()};
+    let allowed=app_actions::rows(&entry,&[],false);
+    if !allowed.iter().any(|row| row.action==action) {return Err("app action is no longer supported".into());}
+    if let Some(action_id)=action_id {
+        swaymsg_back(swaymsg)?;
+        app.launch_action(&action_id,None::<&gio::AppLaunchContext>);
+        Ok(LaunchOutcome::Spawned(None))
+    } else {launch_selected(path,swaymsg)}
 }
 
 fn focus_con(con_id: i64, swaymsg: &std::path::Path) -> Result<(), String> {
@@ -1134,6 +1158,11 @@ struct ShellClient {
     nav_tick: Instant,
     launch_sender: Sender<(u64, Result<LaunchOutcome, String>)>,
     launch_results: Receiver<(u64, Result<LaunchOutcome, String>)>,
+    app_menu: Option<AppMenu>,
+    app_menu_seq: u64,
+    app_menu_point: (f64,f64),
+    app_menu_sender: Sender<(u64, Vec<ActionRow>)>,
+    app_menu_results: Receiver<(u64, Vec<ActionRow>)>,
     launching: bool,
     launch_in_flight: bool,
     launch_seq: u64,
@@ -3176,6 +3205,7 @@ impl ShellClient {
             return;
         };
         let path = app.path.clone();
+        let id = app.id.clone();
         let name = app.name.clone();
         let icon = app.icon.clone();
         let swaymsg = self.swaymsg.clone();
@@ -3196,7 +3226,7 @@ impl ShellClient {
             let result = swaymsg
                 .as_deref()
                 .ok_or_else(|| "K230_SWAYMSG is unavailable".into())
-                .and_then(|swaymsg| launch_selected(&path, swaymsg));
+                .and_then(|swaymsg| focus_or_launch(&id, Some(&path), swaymsg));
             let _ = sender.send((attempt, result));
         });
     }
@@ -3209,7 +3239,48 @@ impl ShellClient {
     /// drawer it dismissed -- a Home/dock launch that fails or times out
     /// simply dismisses the splash back to Home, which was already showing
     /// underneath and needs no explicit reopen).
+
+    fn open_app_menu(&mut self,qh:&QueueHandle<Self>,id:String,from_home:bool) {
+        if self.launch_in_flight || self.drawer_home_drag.is_some() {return;}
+        let Some(entry)=self.apps.iter().find(|a|a.id==id).cloned() else {return;};
+        if self.touch.id.is_some() || self.home_touch_id.is_some() {return;}
+        self.app_menu_seq=self.app_menu_seq.wrapping_add(1);
+        let serial=self.app_menu_seq;
+        self.app_menu=Some(AppMenu::new(entry.clone(),from_home,serial));
+        if !self.ensure_layer(qh) {self.app_menu=None;return;}
+        if let Some(layer)=&self.layer {layer.set_keyboard_interactivity(KeyboardInteractivity::Exclusive);layer.commit();}
+        let pinned=self.home.layout.contains_app(&id);
+        let sender=self.app_menu_sender.clone();
+        thread::spawn(move || {
+            let running=app_tree().map(|tree|app_actions::entry_windows(&tree,&id,Some(&entry.path))).unwrap_or_default();
+            let _=sender.send((serial,app_actions::rows(&entry,&running,pinned)));
+        });
+        self.input_region_key=None;self.dirty=true;self.draw(qh);
+        self.log("app-menu-open");
+    }
+    fn close_app_menu(&mut self,qh:&QueueHandle<Self>) {
+        let Some(menu)=self.app_menu.take() else {return;};
+        if menu.from_home {self.hide();} else {
+            if let Some(layer)=&self.layer {layer.set_keyboard_interactivity(if self.drawer_keyboard_active {KeyboardInteractivity::Exclusive}else{KeyboardInteractivity::None});layer.commit();}
+            self.input_region_key=None;self.dirty=true;self.draw(qh);
+        }
+        self.log("app-menu-dismiss");
+    }
+    fn app_menu_action(&mut self,qh:&QueueHandle<Self>,action:AppAction) {
+        let Some(menu)=self.app_menu.clone() else {return;};
+        self.close_app_menu(qh);
+        match action {
+            AppAction::Pin=>{self.home.layout.pin(menu.entry.id,home_grid::apps_per_page(self.home_surface.width,self.home_surface.height));self.persist_home_layout();self.home_mark_dirty();},
+            AppAction::Unpin=>{self.home.layout.remove_app(&menu.entry.id);self.persist_home_layout();self.home_mark_dirty();},
+            AppAction::Arrange=>{self.hide();if let Some(sway)=self.swaymsg.clone() {thread::spawn(move || {let _=Command::new(sway).arg("card_shell home").status();});}self.home.rearranging=true;self.home_mark_dirty();},
+            action=>{self.launching=!menu.from_home;self.launch_home_action(qh,menu.entry.id,action);},
+        }
+        self.log("app-menu-action");
+    }
     fn launch_home_app(&mut self, qh: &QueueHandle<Self>, id: String) {
+        self.launch_home_action(qh,id,AppAction::Activate);
+    }
+    fn launch_home_action(&mut self, qh: &QueueHandle<Self>, id: String, action: AppAction) {
         if self.launch_in_flight {
             self.log("app-launch-worker-still-running");
             return;
@@ -3235,7 +3306,7 @@ impl ShellClient {
         }
         self.launch_in_flight = true;
         thread::spawn(move || {
-            let result = focus_or_launch(&id, path.as_deref(), &swaymsg);
+            let result = run_app_action(&id, path.as_deref(), &swaymsg, action);
             let _ = sender.send((attempt, result));
         });
     }
@@ -3648,6 +3719,7 @@ impl ShellClient {
     }
 
     fn show(&mut self, qh: &QueueHandle<Self>, route: Route) -> bool {
+        self.app_menu=None;
         if route == Route::Hide {
             self.hide();
             return true;
@@ -3696,6 +3768,7 @@ impl ShellClient {
     }
 
     fn reveal_message(&mut self, qh: &QueueHandle<Self>, mut message: RevealMessage) {
+        self.app_menu=None;self.input_region_key=None;
         let now = self.started.elapsed().as_millis() as u64;
         if message.dismiss {
             let valid = self.layer.is_some() && match message.surface {
@@ -3762,6 +3835,14 @@ impl ShellClient {
     }
 
     fn input_region(&mut self) {
+        if self.app_menu.is_some() {
+            if let (Some(layer),Ok(region))=(&self.layer,Region::new(&self.compositor)) {
+                region.add(0,0,self.width as i32,self.height as i32);
+                layer.wl_surface().set_input_region(Some(region.wl_region()));
+                self.input_ready=true;self.input_region_key=None;
+            }
+            return;
+        }
         if let Some(splash) = self.splash.as_ref() {
             // The splash's own hit-test, entirely independent of whatever
             // `self.route`'s ordinary input rect was a moment ago: nothing
@@ -3824,6 +3905,7 @@ impl ShellClient {
     /// already-mapped layer alive, which is what avoids ever uncovering
     /// the previously active app between the drawer and the splash.
     fn reset_overlay_interaction(&mut self) {
+        self.app_menu=None;
         self.drawer_search = DrawerSearch::default();
         self.sync_drawer_search();
         self.touch.cancel();
@@ -3967,7 +4049,11 @@ impl ShellClient {
             self.buffers.push(buffer);
             (self.buffers.len() - 1, canvas)
         };
-        if self.drawer_home_drag.is_some() {
+        if let Some(menu)=self.app_menu.as_ref() {
+            if let Err(error)=self.renderer.draw_app_menu(canvas,self.width,self.height,menu) {
+                self.log(&format!("app-menu-render-failed {error}"));return false;
+            }
+        } else if self.drawer_home_drag.is_some() {
             // Task 1's live drag: for the first ~200ms, animate the
             // drawer's own last-rendered frame sliding down and fading out
             // (`RendererCache::draw_drawer_reveal`); once that finishes,
@@ -4464,6 +4550,11 @@ impl ShellClient {
         id: i32,
         pos: (f64, f64),
     ) {
+        if let Some(menu)=self.app_menu.as_mut() {
+            self.app_menu_point=pos;
+            if menu.dragging() {menu.cancel();} else {menu.down(id,pos);}
+            return;
+        }
         if self.hud_surface.layer.as_ref().is_some_and(|l| l.wl_surface() == &surface) {
             if self.touch.down(id, pos) && self.hud_touch_down(id, pos) { self.hud_contact = Some(id); }
             return;
@@ -4734,6 +4825,20 @@ impl ShellClient {
         time_ms: u32,
         id: i32,
     ) {
+        if let Some(menu)=self.app_menu.as_mut() {
+            // Two-finger trackpad pans scroll the menu; releasing one must
+            // never masquerade as a click on a menu action.
+            if id == TRACKPAD_PAN_ID {
+                menu.cancel();
+                self.dirty=true;
+                self.draw(qh);
+                return;
+            }
+            let outcome=menu.up(id,self.app_menu_point,self.width,self.height);
+            match outcome {MenuOutcome::Action(action)=>self.app_menu_action(qh,action),
+                MenuOutcome::Dismiss=>self.close_app_menu(qh),MenuOutcome::Consumed=>{self.dirty=true;self.draw(qh);}}
+            return;
+        }
         if self.hud_contact == Some(id) {
             self.hud_contact = None; self.hud.end_drag(id); self.hud.show(self.started.elapsed().as_millis() as u64); self.touch.up(id);
             if let Some(drag) = self.hud_stream_drag.take().filter(|drag| drag.touch == id) {
@@ -5101,6 +5206,11 @@ impl ShellClient {
         id: i32,
         pos: (f64, f64),
     ) {
+        if let Some(menu)=self.app_menu.as_mut() {
+            self.app_menu_point=pos;menu.motion(id,pos,self.width,self.height);
+            self.dirty=true;self.draw(qh);return;
+        }
+
         if self.hud_contact == Some(id) {
             self.touch.motion(id, pos);
             if self.hud_stream_drag.as_ref().is_some_and(|drag| drag.touch == id) {
@@ -5431,6 +5541,7 @@ impl ShellClient {
         }
     }
     fn contact_cancel(&mut self, qh: &QueueHandle<Self>) {
+        if let Some(menu)=self.app_menu.as_mut() {menu.cancel();return;}
         if let Some(id) = self.hud_contact.take() { self.hud.end_drag(id); }
         self.hud_stream_drag = None;
         self.hud_surface.dirty = true;
@@ -5506,6 +5617,11 @@ impl ShellClient {
     fn pointer_scroll(&mut self, qh: &QueueHandle<Self>, event: &PointerEvent,
                       horizontal: smithay_client_toolkit::seat::pointer::AxisScroll,
                       vertical: smithay_client_toolkit::seat::pointer::AxisScroll) {
+        if let Some(menu)=self.app_menu.as_mut() {
+            menu.scroll_by(pointer_input::axis_delta(vertical.absolute,vertical.discrete,vertical.value120),self.width,self.height);
+            self.dirty=true;self.draw(qh);return;
+        }
+
         if self.touch.id.is_some() || self.home_touch_id.is_some() { return; }
         let dx = pointer_input::axis_delta(horizontal.absolute, horizontal.discrete, horizontal.value120);
         let dy = pointer_input::axis_delta(vertical.absolute, vertical.discrete, vertical.value120);
@@ -5554,6 +5670,19 @@ impl PointerHandler for ShellClient {
     fn pointer_frame(&mut self, _: &Connection, qh: &QueueHandle<Self>,
                      _: &wl_pointer::WlPointer, events: &[PointerEvent]) {
         for event in events {
+            if matches!(event.kind,PointerEventKind::Press {button:0x111,..}) {
+                if self.app_menu.is_some() {self.close_app_menu(qh);continue;}
+                let from_home=self.home_surface.layer.as_ref().is_some_and(|l|l.wl_surface()==&event.surface);
+                let id=if from_home {self.home.app_at(event.position,self.home_surface.width,self.home_surface.height)}
+                else if self.route==Route::Drawer && self.layer.as_ref().is_some_and(|l|l.wl_surface()==&event.surface) {
+                    let filtered=self.drawer_filtered_apps();
+                    navigation::tile_at(event.position,self.width,self.drawer_search.viewport_height(self.height),filtered.len(),self.nav.scroll)
+                        .and_then(|index|filtered.get(index)).and_then(|index|self.apps.get(*index)).map(|a|a.id.clone())
+                } else {None};
+                if let Some(id)=id {self.open_app_menu(qh,id,from_home);}
+                continue;
+            }
+
             if let PointerEventKind::Axis { horizontal, vertical, .. } = event.kind {
                 self.pointer_scroll(qh, event, horizontal, vertical);
                 continue;
@@ -5578,6 +5707,11 @@ impl PointerHandler for ShellClient {
                 Some(pointer_input::Action::Motion) =>
                     self.contact_motion(qh, time_ms, POINTER_CONTACT_ID, event.position),
                 Some(pointer_input::Action::Up) => {
+                    if self.app_menu.is_some() {
+                        self.app_menu_point=event.position;
+                        self.contact_up(qh,time_ms,POINTER_CONTACT_ID);
+                        continue;
+                    }
                     // Use the release position, without adding a zero-distance sample
                     // that would erase a drag's measured release velocity.
                     let last = if self.home_touch_id == Some(POINTER_CONTACT_ID) {
@@ -5661,6 +5795,10 @@ impl KeyboardHandler for ShellClient {
         _: u32,
         event: KeyEvent,
     ) {
+        if self.app_menu.is_some() {
+            if u32::from(event.keysym)==0xff1b {self.close_app_menu(qh);}
+            return;
+        }
         self.handle_drawer_key(&event);
         self.handle_wifi_key(event.clone());
         self.handle_home_key(qh, event);
@@ -5673,6 +5811,7 @@ impl KeyboardHandler for ShellClient {
         _: u32,
         event: KeyEvent,
     ) {
+        if self.app_menu.is_some() { return; }
         self.handle_drawer_key(&event);
         self.handle_wifi_key(event.clone());
         self.handle_home_key(qh, event);
@@ -5768,6 +5907,7 @@ fn serve() -> Result<(), String> {
     // cost an extra mmap resize, never a hard failure.
     let pool = SlotPool::new(568 * 1232 * 4 * 6, &shm).map_err(|e| e.to_string())?;
     let (launch_sender, launch_results) = mpsc::channel();
+    let (app_menu_sender,app_menu_results)=mpsc::channel();
     let (splash_sender, splash_events) = mpsc::channel();
     let settings_command = std::env::var_os("K230_SETTINGS")
         .map(PathBuf::from)
@@ -5911,6 +6051,7 @@ fn serve() -> Result<(), String> {
         nav_tick: Instant::now(),
         launch_sender,
         launch_results,
+        app_menu:None,app_menu_seq:0,app_menu_point:(0.0,0.0),app_menu_sender,app_menu_results,
         launching: false,
         launch_in_flight: false,
         launch_seq: 0,
@@ -6415,6 +6556,13 @@ fn serve() -> Result<(), String> {
             }
             Ok(None) => {}
             Err(error) => state.log(&format!("appearance-receive-failed {error}")),
+        }
+        while let Ok((serial,rows))=state.app_menu_results.try_recv() {
+            if let Some(menu)=state.app_menu.as_mut().filter(|menu|menu.serial==serial) {
+                let message=format!("app-menu-ready rows={} new-window={}", rows.len(),
+                    rows.iter().any(|row|matches!(row.action,AppAction::NewWindow(_))));
+                menu.rows=rows;menu.ready=true;state.dirty=true;state.log(&message);
+            }
         }
         for _ in 0..4 {
             let Ok((attempt, result)) = state.launch_results.try_recv() else {

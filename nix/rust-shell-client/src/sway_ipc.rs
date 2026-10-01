@@ -16,6 +16,27 @@ use std::{
     time::Duration,
 };
 
+/// A bounded one-shot IPC query for background app-menu/activation workers.
+pub fn query(path: &Path, kind: u32, payload: &[u8]) -> Result<serde_json::Value, String> {
+    let mut stream = UnixStream::connect(path).map_err(|e| e.to_string())?;
+    stream.set_write_timeout(Some(Duration::from_secs(1))).map_err(|e| e.to_string())?;
+    write_message(&mut stream,kind,payload).map_err(|e| e.to_string())?;
+    let deadline=std::time::Instant::now()+Duration::from_secs(1);
+    let mut buffer=Vec::new();
+    let mut chunk=[0;4096];
+    loop {
+        let remaining=deadline.checked_duration_since(std::time::Instant::now()).ok_or("IPC query deadline")?;
+        stream.set_read_timeout(Some(remaining)).map_err(|e| e.to_string())?;
+        let count=stream.read(&mut chunk).map_err(|e| e.to_string())?;
+        if count==0 {return Err("IPC reply ended".into());}
+        buffer.extend_from_slice(&chunk[..count]);
+        if let Some((_,reply_kind,data))=try_parse_frame(&buffer)? {
+            if reply_kind!=kind {return Err("IPC reply type changed".into());}
+            return serde_json::from_slice(&data).map_err(|e| e.to_string());
+        }
+    }
+}
+
 const MAGIC: &[u8; 6] = b"i3-ipc";
 const HEADER_LEN: usize = 14;
 /// Bounds a single message's payload. A `window` event's single-container

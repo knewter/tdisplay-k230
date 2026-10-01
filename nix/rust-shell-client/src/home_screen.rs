@@ -510,6 +510,14 @@ impl HomeScreen {
         self.layout.anchor_at(raw).map(|(anchor, _)| anchor)
     }
 
+    /// Secondary-click lookup. This does not arm or alter a touch/drag.
+    pub fn app_at(&self, point: (f64,f64), width:u32,height:u32) -> Option<String> {
+        if self.widget_picker.is_some() || self.rearranging {return None;}
+        if self.open_folder.is_some() {return self.folder_app_id_at(point,width,height);}
+        let slot=self.filled_slot_at(point,width,height)?;
+        match self.layout.get(slot)? {HomeItem::App {id}=>Some(id.clone()),_=>None}
+    }
+
     /// Which filled slot's remove badge (if any) `point` lands in, while
     /// rearranging -- checked across every anchored item on the current
     /// page plus the dock, since a badge sits at a plate's corner, outside
@@ -1258,31 +1266,7 @@ pub fn find_running_con_id(
     entry_id: &str,
     exec_hint: Option<&str>,
 ) -> Option<i64> {
-    let mut pending = vec![tree];
-    let mut budget = 4096;
-    while let Some(node) = pending.pop() {
-        if budget == 0 {
-            break;
-        }
-        budget -= 1;
-        let Some(object) = node.as_object() else {
-            continue;
-        };
-        if matches!(object.get("type").and_then(|value| value.as_str()), Some("con" | "floating_con")) {
-            if let Some(app_id) = object.get("app_id").and_then(|value| value.as_str()) {
-                if app_id_matches(app_id, entry_id, exec_hint) {
-                    return object.get("id").and_then(|value| value.as_i64());
-                }
-            }
-        }
-        if let Some(nodes) = object.get("nodes").and_then(|value| value.as_array()) {
-            pending.extend(nodes);
-        }
-        if let Some(nodes) = object.get("floating_nodes").and_then(|value| value.as_array()) {
-            pending.extend(nodes);
-        }
-    }
-    None
+    crate::app_actions::windows(tree, entry_id, exec_hint).first().map(|window| window.id)
 }
 
 #[cfg(test)]
