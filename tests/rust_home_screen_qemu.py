@@ -369,6 +369,7 @@ def real_light_generation(bundle, state_root, scratch):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--fluid-only", action="store_true", help="only live cross-page and widget-layout scenarios")
     for field in ("sway", "swaymsg", "rust"):
         parser.add_argument("--" + field, required=True, type=Path)
     parser.add_argument("--theme-bundle", required=True, type=Path,
@@ -685,429 +686,430 @@ def main():
         env["SWAYSOCK"] = str(next(root.glob("sway-ipc.*.sock")))
         ipc("card_shell test-touch init")
 
-        # --- Dark pass: full sequence. ---
-        rust = start_pass(dark, "dark")
-        wait_for_ready("dark-rust")
+        if not args.fluid_only:
+            # --- Dark pass: full sequence. ---
+            rust = start_pass(dark, "dark")
+            wait_for_ready("dark-rust")
 
-        page1 = capture("home-dark-page1.png")
-        if args.client:
-            from home_navigation_scenario import exercise_navigation
-            checks.update(exercise_navigation(args.client, spawn, ipc, wait_for,
-                          drag_steps_2d, settle_and_release, tap, capture, route, dock_center))
+            page1 = capture("home-dark-page1.png")
+            if args.client:
+                from home_navigation_scenario import exercise_navigation
+                checks.update(exercise_navigation(args.client, spawn, ipc, wait_for,
+                              drag_steps_2d, settle_and_release, tap, capture, route, dock_center))
 
-        # A leftward drag from near the right edge, well past the 50%
-        # settle threshold but never past the left edge, captured partway
-        # through (a genuine "mid-swipe" frame while the touch is still
-        # down) and then completed and released, so release reliably
-        # rounds forward to page 1 rather than snapping back to page 0.
-        drag_y = swipe_y()
-        start_x = WIDTH - SWIPE_MARGIN
-        end_x = start_x - SWIPE_DISTANCE
-        contact_id = contact
-        contact += 1
-        ipc(f"card_shell test-touch down {contact_id} {start_x} {drag_y}")
-        for fraction in (0.2, 0.35, 0.5):
-            step_x = start_x - SWIPE_DISTANCE * fraction
-            ipc(f"card_shell test-touch motion {contact_id} {step_x:.1f} {drag_y}")
-            time.sleep(0.03)
-        mid_swipe = capture("home-dark-mid-swipe.png", timeout=1.5, stable_frames=1)
-        checks["mid_swipe_differs_from_page1"] = bool(
-            ImageChops.difference(page1, mid_swipe).getbbox()
-        )
-        for fraction in (0.7, 0.9, 1.0):
-            step_x = start_x - SWIPE_DISTANCE * fraction
-            ipc(f"card_shell test-touch motion {contact_id} {step_x:.1f} {drag_y}")
-            time.sleep(0.03)
-        settle_and_release(contact_id, end_x, drag_y)
-        page2 = capture("home-dark-page2.png")
-        checks["page2_differs_from_page1"] = bool(ImageChops.difference(page1, page2).getbbox())
-
-        tap(*dock_center(0))
-        wait_for(lambda: "app-launch-requested" in text("dark-rust")
-                 or "app-launch-failed" in text("dark-rust"), 8)
-        checks["dock_tap_launched"] = "app-launch-requested" in text("dark-rust")
-        wait_for(lambda: marker.exists() and "terminal" in marker.read_text())
-
-        # --- Back to page 1, then the pin flow via the drawer. ---
-        back_y = swipe_y()
-        back_start_x = SWIPE_MARGIN
-        back_end_x = back_start_x + SWIPE_DISTANCE
-        drag_id = drag_steps(back_start_x, back_end_x, back_y)
-        settle_and_release(drag_id, back_end_x, back_y)
-        capture("home-dark-back-to-page1.png")
-
-        route("drawer")
-        drawer_open = capture("home-dark-drawer.png")
-        checks["drawer_opened"] = bool(ImageChops.difference(page1, drawer_open).getbbox())
-        # The drawer lists every desktop entry regardless of Home pin state
-        # (sorted case-insensitively by name): "Fixture Badge", "Fixture
-        # Extra", "Fixture Page Two", "Terminal" -- so index 1 is "Fixture
-        # Extra", the one deliberately left unpinned so this drag actually
-        # adds a new icon. The drawer's own tile geometry is
-        # navigation.rs's, not home_grid.rs's.
-        #
-        # Task 1's drag-to-place contract, not the old instant pin: holding
-        # past LONG_PRESS_MS arms a live drag (`navigation::
-        # DrawerNavigation::take_long_press_drag`, tick-driven) and reveals
-        # Home underneath; a mid-drag frame is captured here, over an
-        # ordinary empty Home cell, before the touch is dragged the rest of
-        # the way to slot 1 and released.
-        drag_target = tile_center(1)
-        drag_id = long_press_drag(drawer_tile_center(1), drag_target)
-        wait_for(lambda: "home-drag-begin" in text("dark-rust"), 5)
-        mid_drag = capture("home-dark-mid-drag.png", timeout=2.0, stable_frames=1)
-        checks["mid_drag_differs_from_drawer"] = bool(
-            ImageChops.difference(drawer_open, mid_drag).getbbox()
-        )
-        settle_and_release(drag_id, *drag_target)
-        wait_for(lambda: "home-drag-placed" in text("dark-rust"), 5)
-        checks["drawer_long_press_dragged_and_placed"] = True
-
-        pinned = capture("home-dark-pin-flow.png")
-        checks["pinned_icon_visible"] = bool(ImageChops.difference(page1, pinned).getbbox())
-
-        # --- Rearrange mode: long-press "Fixture Extra" (now at slot 1;
-        # slot 0 holds the pre-pinned "Fixture Badge"). ---
-        long_press(*tile_center(1))
-        rearranging = capture("home-dark-rearrange.png")
-        checks["rearrange_mode_shows_done_remove_and_badges"] = bool(
-            ImageChops.difference(pinned, rearranging).getbbox()
-        )
-
-        # --- Remove-badge tap: "Fixture Badge" (slot 0) is removed by a
-        # single tap on its badge, with no drag at all -- the newer,
-        # more-discoverable removal affordance, distinct from the
-        # drag-to-Remove-pill flow exercised next. ---
-        tap(*tile_plate_corner(0))
-        badge_removed = capture("home-dark-badge-removed.png")
-        checks["remove_badge_tap_changed_the_screen"] = bool(
-            ImageChops.difference(rearranging, badge_removed).getbbox()
-        )
-        checks["still_rearranging_after_badge_removal"] = bool(
-            ImageChops.difference(badge_removed, rearranging).getbbox()
-        )
-
-        # --- Drag-to-Remove-pill: "Fixture Extra" is still at slot 1 (badge
-        # removal above did not compact slots). A fresh press-and-drag
-        # grabs it (already-rearranging jiggle-mode pickup), paused
-        # mid-drag over an ordinary empty slot to capture the visible
-        # drop-target highlight, then continued onto Remove and released. ---
-        drag_id = drag_steps_2d(tile_center(1), tile_center(2))
-        drop_target_frame = capture("home-dark-drop-target.png", timeout=1.5, stable_frames=1)
-        checks["drop_target_highlight_visible"] = bool(
-            ImageChops.difference(badge_removed, drop_target_frame).getbbox()
-        )
-        remove_x, remove_y = remove_target_point()
-        settle_and_release(drag_id, remove_x, remove_y)
-        capture("home-dark-removed.png")
-        # The authoritative check for both remove flows is the persisted
-        # layout file itself, read after the restart below
-        # ("removed_from_saved_layout") -- a visual diff here would be
-        # fragile (a removed icon's former slot is simply empty grid
-        # space, which can look identical to other empty slots).
-
-        # Done exits rearrange mode (a tap on any non-icon point does, per
-        # home_screen.rs's own "tap elsewhere stops jiggling" behavior; the
-        # Done pill is simply the obvious, labeled place to do it) -- this
-        # settled, non-rearranging frame, not `page1` (which still shows the
-        # now-removed "Fixture Badge"), is the correct baseline for the
-        # restart-stability check below, since both icons removed above are
-        # gone from the persisted layout for good.
-        tap(*done_button_point())
-        settled_after_removals = capture("home-dark-rearrange-done.png")
-
-        # --- Restart proves persistence. ---
-        rust.terminate()
-        try:
-            rust.wait(timeout=5)
-        except subprocess.TimeoutExpired:
-            rust.kill()
-        layout_after_removal = json.dumps(json.loads(home_json.read_text()))
-        checks["badge_removed_from_saved_layout"] = "k230-fixture-badge.desktop" not in layout_after_removal
-        checks["drag_removed_from_saved_layout"] = "k230-fixture-extra.desktop" not in layout_after_removal
-        checks["dock_survives_the_removal"] = "k230-fixture-terminal.desktop" in layout_after_removal
-
-        restarted = start_pass(dark, "dark-restarted")
-        wait_for_ready("dark-restarted-rust")
-        after_restart = capture("home-dark-after-restart.png")
-        checks["stable_after_restart"] = not bool(
-            ImageChops.difference(settled_after_removals, after_restart).getbbox()
-        )
-
-        # --- New scenarios, on this same restarted process: folder
-        # creation (drag onto an existing app, in the grid and in the
-        # dock), opening a folder, renaming it through a real virtual
-        # keyboard, launching a member from it, and the widget-picker
-        # sheet. Kept *after* the restart-persistence checks above so
-        # none of this touches what those checks assert about the badge/
-        # extra/terminal entries. ---
-        wl_socket = root / env["WAYLAND_DISPLAY"]
-
-        def open_drawer_and_settle(prefix, reopen=False):
-            """`route("drawer")` alone only *requests* the route change; the
-            very first drag scenario above reached a settled drawer by
-            following it with a `capture()` (which waits for visual
-            stability). This does the equivalent without a screenshot, for
-            spots that do not need one -- waiting for a fresh
-            `"commit"` line plus a short grace period, so a
-            long-press-drag's own `down` is never injected before the
-            drawer's input region is actually live (confirmed live:
-            without this, an immediate drag after `route("drawer")`
-            silently reached Home's own surface instead, the same bug
-            class `panel_input_rect`'s own fix just above addressed).
-
-            `reopen=True` additionally waits for the drawer's *previous*
-            instance to actually `unmap` first: after a successful
-            drag-and-drop, `end_drawer_home_drag` starts an animated close
-            (`begin_animated_close`) rather than unmapping synchronously,
-            and re-requesting the "drawer" route while `self.layer` still
-            exists is a no-op (`ensure_layer`'s own early return) -- it
-            produces no new frame at all for the plain check above to wait
-            on, so a caller re-opening the drawer after a prior drop must
-            wait for that close to actually finish first.
-
-            The settle signal itself is a fresh `"commit"` line, not
-            `K230_DRAWER_FRAME`: `main.rs`'s own `K230_DRAWER_FRAME` sample
-            is deliberately rate-limited to one line per
-            `DRAWER_FRAME_LOG_INTERVAL` (500ms) of *wall-clock* time, not
-            per route-enter -- a close-then-reopen cycle that lands inside
-            that window (routine here: the prior drag's own live-follow
-            redraws the drawer at up to 60Hz right up until the drop, so
-            `drawer_frame_log_at` is already recent when the very next
-            open's first frame renders) can suppress the reopen's
-            `K230_DRAWER_FRAME` line forever, since nothing else forces a
-            further redraw once the drawer is sitting idle. `"commit"` has
-            no such gate -- `ShellClient::draw()` logs it unconditionally
-            on every call, for every route -- and `show()` itself calls
-            `draw()` synchronously before the route request's `OK` reply
-            is even written, so a fresh `"commit"` line is guaranteed the
-            moment the request lands, independent of the frame-timing
-            sample's own throttling."""
-            if reopen:
-                unmap_baseline = count_log(prefix, "unmap")
-                wait_for_new_log_line(prefix, "unmap", unmap_baseline, seconds=15)
-            baseline = count_log(prefix, "commit")
-            route("drawer")
-            wait_for_new_log_line(prefix, "commit", baseline, seconds=15)
-            time.sleep(0.4)
-
-        # "Fixture Badge" (drawer) onto an empty page-1 cell.
-        open_drawer_and_settle("dark-restarted-rust")
-        badge_target = tile_center(0)
-        baseline = count_log("dark-restarted-rust", "home-drag-placed")
-        begin_baseline = count_log("dark-restarted-rust", "home-drag-begin")
-        badge_drag = long_press_drag(drawer_tile_center(0), badge_target)
-        wait_for_new_log_line("dark-restarted-rust", "home-drag-begin", begin_baseline)
-        settle_and_release(badge_drag, *badge_target)
-        wait_for_new_log_line("dark-restarted-rust", "home-drag-placed", baseline)
-
-        # "Fixture Extra" (drawer) dragged directly onto that same cell --
-        # task: "Dropping on an existing app creates a folder."
-        open_drawer_and_settle("dark-restarted-rust", reopen=True)
-        baseline = count_log("dark-restarted-rust", "home-drag-begin")
-        extra_drag = long_press_drag(drawer_tile_center(1), badge_target)
-        wait_for_new_log_line("dark-restarted-rust", "home-drag-begin", baseline)
-        mid_folder_drag = capture("home-dark-folder-mid-drag.png", timeout=2.0, stable_frames=1)
-        baseline = count_log("dark-restarted-rust", "home-drag-placed")
-        settle_and_release(extra_drag, *badge_target)
-        wait_for_new_log_line("dark-restarted-rust", "home-drag-placed", baseline)
-        folder_created = capture("home-dark-folder-created.png")
-        checks["dragging_onto_an_app_created_a_folder"] = bool(
-            ImageChops.difference(mid_folder_drag, folder_created).getbbox()
-        )
-
-        # Open the folder (folder.apps == [existing "Fixture Badge",
-        # dragged "Fixture Extra"] -- merge_two's own order, home_screen.rs).
-        tap(*badge_target)
-        folder_open = capture("home-dark-folder-open.png")
-        checks["folder_opened"] = bool(
-            ImageChops.difference(folder_created, folder_open).getbbox()
-        )
-
-        # Rename it through a real virtual-keyboard-v1 connection (task 2):
-        # tap the name, wait for focus, type, press Enter, and read the
-        # committed name back from the persisted layout.
-        # A headless seat has no keyboard capability until this client binds
-        # its virtual keyboard. Create it before requesting/waiting for focus;
-        # otherwise the harness waits for an enter event that cannot exist.
-        rename_keyboard = RenameKeyboard(wl_socket)
-        wait_for(lambda: "keyboard-capability" in text("dark-restarted-rust"), 5)
-        tap(*folder_name_center())
-        wait_for(lambda: "home-keyboard-focus-granted" in text("dark-restarted-rust"), 5)
-        renaming = capture("home-dark-folder-rename.png", timeout=2.0, stable_frames=1)
-        checks["folder_rename_keyboard_focus_granted"] = True
-        try:
-            for _ in range(len("Folder")):
-                rename_keyboard.press(14)
-            for _ in range(4):
-                rename_keyboard.press_a()
-            baseline = count_log("dark-restarted-rust", "home-layout-changed")
-            rename_keyboard.press_enter()
-        finally:
-            rename_keyboard.close()
-        wait_for_new_log_line("dark-restarted-rust", "home-layout-changed", baseline)
-        renamed_layout = json.loads(home_json.read_text())
-        renamed_folder_name = next(
-            (item.get("name") for page in renamed_layout["pages"] for item in page
-             if item and item.get("kind") == "folder"),
-            None,
-        )
-        checks["folder_renamed_via_real_keyboard"] = renamed_folder_name == "aaaa"
-        after_rename = capture("home-dark-folder-renamed.png")
-        checks["folder_rename_visible"] = bool(
-            ImageChops.difference(renaming, after_rename).getbbox()
-        )
-
-        # Drag one member out of the open folder onto an empty Home cell.
-        # The persisted layout, rather than image differences, proves the
-        # member moved and the remaining one-item folder was unwrapped.
-        baseline = count_log("dark-restarted-rust", "home-layout-changed")
-        member_drag = long_press_drag(folder_app_center(1), tile_center(4))
-        settle_and_release(member_drag, *tile_center(4))
-        wait_for_new_log_line("dark-restarted-rust", "home-layout-changed", baseline)
-        extracted = json.loads(home_json.read_text())
-        checks["folder_member_dragged_out"] = (
-            extracted["pages"][0][4] == {"kind": "app", "id": "k230-fixture-extra.desktop"}
-        )
-        capture("home-dark-folder-member-extracted.png")
-
-        # Recreate/open a folder so the following launch scenario remains
-        # about a member of an open folder, rather than a bare Home icon.
-        baseline = count_log("dark-restarted-rust", "home-layout-changed")
-        recreate = long_press_drag(tile_center(4), badge_target)
-        settle_and_release(recreate, *badge_target)
-        wait_for_new_log_line("dark-restarted-rust", "home-layout-changed", baseline)
-        tap(*done_button_point())
-        tap(*badge_target)
-        capture("home-dark-folder-reopened.png")
-
-        # Tap "Fixture Badge" (member 0) to launch it; the overlay closes.
-        tap(*folder_app_center(0))
-        wait_for(lambda: "app-launch-requested" in text("dark-restarted-rust")
-                 or "app-launch-failed" in text("dark-restarted-rust"), 8)
-        checks["folder_member_launch_requested"] = "app-launch-requested" in text("dark-restarted-rust")
-
-        # --- Dock folder: swipe to page 2, drag "Fixture Page Two" onto
-        # the dock's own "Terminal" slot -- task: "I can have folders in
-        # the dock bar in theory." ---
-        swipe_y_pos = swipe_y()
-        page2_start_x = WIDTH - SWIPE_MARGIN
-        page2_end_x = page2_start_x - SWIPE_DISTANCE
-        swipe_id = drag_steps(page2_start_x, page2_end_x, swipe_y_pos)
-        settle_and_release(swipe_id, page2_end_x, swipe_y_pos)
-        page_two = capture("home-dark-page-two-restarted.png")
-
-        dock_target = dock_center(0)
-        baseline = count_log("dark-restarted-rust", "home-layout-changed")
-        dock_drag = long_press_drag(tile_center(0), dock_target)
-        settle_and_release(dock_drag, *dock_target)
-        wait_for_new_log_line("dark-restarted-rust", "home-layout-changed", baseline)
-        dock_folder = capture("home-dark-dock-folder.png")
-        checks["dock_folder_created"] = bool(
-            ImageChops.difference(page_two, dock_folder).getbbox()
-        )
-
-        # --- Widget picker: swipe back to page 1, long-press empty Home
-        # space, navigate to Widgets, long-press-drag a Clock widget onto
-        # an empty cell. ---
-        back_id = drag_steps(page2_end_x, page2_start_x, swipe_y_pos)
-        settle_and_release(back_id, page2_start_x, swipe_y_pos)
-        capture("home-dark-back-to-page-one-restarted.png")
-
-        empty_point = empty_home_space_point()
-        long_press(*empty_point)
-        picker_menu = capture("home-dark-picker-menu.png")
-        checks["widget_picker_menu_opened"] = bool(
-            ImageChops.difference(dock_folder, picker_menu).getbbox()
-        )
-        tap(*picker_row_center(0))  # "Widgets"
-        picker_widgets = capture("home-dark-picker-widgets.png")
-        checks["widget_picker_widgets_page_differs_from_menu"] = bool(
-            ImageChops.difference(picker_menu, picker_widgets).getbbox()
-        )
-        widget_target = tile_center(2 * COLUMNS)  # row 2: two clear rows for the 4x2 Clock
-        baseline = count_log("dark-restarted-rust", "home-layout-changed")
-        widget_drag = long_press_drag(picker_row_center(1), widget_target)  # row 1 == Clock
-        settle_and_release(widget_drag, *widget_target)
-        wait_for_new_log_line("dark-restarted-rust", "home-layout-changed", baseline)
-        clock_placed = capture("home-dark-clock-widget-placed.png")
-        checks["clock_widget_placed"] = bool(
-            ImageChops.difference(picker_widgets, clock_placed).getbbox()
-        )
-
-        restarted.terminate()
-        try:
-            restarted.wait(timeout=5)
-        except subprocess.TimeoutExpired:
-            restarted.kill()
-
-        if args.wvkbd:
-            # Bonus, not load-bearing for any `checks` entry above: proves
-            # the real cross-built wvkbd-mobintl actually shows through
-            # `k230-keyboard-gesture-signal` while Home's own rename field
-            # holds keyboard focus, exactly like `sync_wifi_keyboard`
-            # already does for the Wi-Fi password field (`tests/
-            # rust_overlay_keyboard_resize_qemu.py`). Starts against the
-            # same persisted `home.json` the scenario above just left
-            # behind (a real folder, "aaaa", already at page-1 slot 0), so
-            # this only needs to reopen it -- no fresh drag/folder-create
-            # needed to reach the same rename field.
-            wvkbd_pass = start_pass(dark, "wvkbd-dark")
-            wait_for_ready("wvkbd-dark-rust")
-            wvkbd_target = tile_center(0)
-            tap(*wvkbd_target)
-            tap(*folder_name_center())
-            wait_for(lambda: "home-keyboard-focus-granted" in text("wvkbd-dark-rust"), 5)
-            keyboard_hidden = capture("home-dark-wvkbd-hidden.png", timeout=2.0, stable_frames=1)
-            wvkbd_log = (root / "wvkbd.log").open("w")
-            wvkbd_process = subprocess.Popen(
-                [qemu, str(args.wvkbd), "-H", "400"], env=env,
-                stdout=wvkbd_log, stderr=wvkbd_log)
-            processes.append(wvkbd_process)
-            time.sleep(1.0)
-            keyboard_shown = capture("home-dark-wvkbd-shown.png", timeout=3.0, stable_frames=1)
-            checks["wvkbd_shown_alongside_home_rename"] = bool(
-                ImageChops.difference(keyboard_hidden, keyboard_shown).getbbox()
+            # A leftward drag from near the right edge, well past the 50%
+            # settle threshold but never past the left edge, captured partway
+            # through (a genuine "mid-swipe" frame while the touch is still
+            # down) and then completed and released, so release reliably
+            # rounds forward to page 1 rather than snapping back to page 0.
+            drag_y = swipe_y()
+            start_x = WIDTH - SWIPE_MARGIN
+            end_x = start_x - SWIPE_DISTANCE
+            contact_id = contact
+            contact += 1
+            ipc(f"card_shell test-touch down {contact_id} {start_x} {drag_y}")
+            for fraction in (0.2, 0.35, 0.5):
+                step_x = start_x - SWIPE_DISTANCE * fraction
+                ipc(f"card_shell test-touch motion {contact_id} {step_x:.1f} {drag_y}")
+                time.sleep(0.03)
+            mid_swipe = capture("home-dark-mid-swipe.png", timeout=1.5, stable_frames=1)
+            checks["mid_swipe_differs_from_page1"] = bool(
+                ImageChops.difference(page1, mid_swipe).getbbox()
             )
-            wvkbd_process.terminate()
-            try:
-                wvkbd_process.wait(timeout=5)
-            except subprocess.TimeoutExpired:
-                wvkbd_process.kill()
-            wvkbd_pass.terminate()
-            try:
-                wvkbd_pass.wait(timeout=5)
-            except subprocess.TimeoutExpired:
-                wvkbd_pass.kill()
+            for fraction in (0.7, 0.9, 1.0):
+                step_x = start_x - SWIPE_DISTANCE * fraction
+                ipc(f"card_shell test-touch motion {contact_id} {step_x:.1f} {drag_y}")
+                time.sleep(0.03)
+            settle_and_release(contact_id, end_x, drag_y)
+            page2 = capture("home-dark-page2.png")
+            checks["page2_differs_from_page1"] = bool(ImageChops.difference(page1, page2).getbbox())
 
-        # --- Light pass: headline captures only. ---
-        # Moving the sole page-2 app into the dock prunes the empty second
-        # page. Restore a real second page before testing light-theme paging.
-        light_layout = json.loads(home_json.read_text())
-        light_layout["pages"].append([
-            {"kind": "app", "id": "k230-fixture-page-two.desktop"}
-        ] + [None] * 19)
-        home_json.write_text(json.dumps(light_layout))
-        light_rust = start_pass(light, "light")
-        wait_for_ready("light-rust")
-        light_page1 = capture("home-light-page1.png")
-        light_y = swipe_y()
-        light_start_x = WIDTH - SWIPE_MARGIN
-        light_end_x = light_start_x - SWIPE_DISTANCE
-        light_id = drag_steps(light_start_x, light_end_x, light_y)
-        settle_and_release(light_id, light_end_x, light_y)
-        light_page2 = capture("home-light-page2.png")
-        checks["light_page2_differs_from_page1"] = bool(
-            ImageChops.difference(light_page1, light_page2).getbbox()
-        )
-        checks["light_differs_from_dark"] = bool(
-            ImageChops.difference(light_page1, page1).getbbox()
-        )
-        light_rust.terminate()
-        try:
-            light_rust.wait(timeout=5)
-        except subprocess.TimeoutExpired:
-            light_rust.kill()
+            tap(*dock_center(0))
+            wait_for(lambda: "app-launch-requested" in text("dark-rust")
+                     or "app-launch-failed" in text("dark-rust"), 8)
+            checks["dock_tap_launched"] = "app-launch-requested" in text("dark-rust")
+            wait_for(lambda: marker.exists() and "terminal" in marker.read_text())
+
+            # --- Back to page 1, then the pin flow via the drawer. ---
+            back_y = swipe_y()
+            back_start_x = SWIPE_MARGIN
+            back_end_x = back_start_x + SWIPE_DISTANCE
+            drag_id = drag_steps(back_start_x, back_end_x, back_y)
+            settle_and_release(drag_id, back_end_x, back_y)
+            capture("home-dark-back-to-page1.png")
+
+            route("drawer")
+            drawer_open = capture("home-dark-drawer.png")
+            checks["drawer_opened"] = bool(ImageChops.difference(page1, drawer_open).getbbox())
+            # The drawer lists every desktop entry regardless of Home pin state
+            # (sorted case-insensitively by name): "Fixture Badge", "Fixture
+            # Extra", "Fixture Page Two", "Terminal" -- so index 1 is "Fixture
+            # Extra", the one deliberately left unpinned so this drag actually
+            # adds a new icon. The drawer's own tile geometry is
+            # navigation.rs's, not home_grid.rs's.
+            #
+            # Task 1's drag-to-place contract, not the old instant pin: holding
+            # past LONG_PRESS_MS arms a live drag (`navigation::
+            # DrawerNavigation::take_long_press_drag`, tick-driven) and reveals
+            # Home underneath; a mid-drag frame is captured here, over an
+            # ordinary empty Home cell, before the touch is dragged the rest of
+            # the way to slot 1 and released.
+            drag_target = tile_center(1)
+            drag_id = long_press_drag(drawer_tile_center(1), drag_target)
+            wait_for(lambda: "home-drag-begin" in text("dark-rust"), 5)
+            mid_drag = capture("home-dark-mid-drag.png", timeout=2.0, stable_frames=1)
+            checks["mid_drag_differs_from_drawer"] = bool(
+                ImageChops.difference(drawer_open, mid_drag).getbbox()
+            )
+            settle_and_release(drag_id, *drag_target)
+            wait_for(lambda: "home-drag-placed" in text("dark-rust"), 5)
+            checks["drawer_long_press_dragged_and_placed"] = True
+
+            pinned = capture("home-dark-pin-flow.png")
+            checks["pinned_icon_visible"] = bool(ImageChops.difference(page1, pinned).getbbox())
+
+            # --- Rearrange mode: long-press "Fixture Extra" (now at slot 1;
+            # slot 0 holds the pre-pinned "Fixture Badge"). ---
+            long_press(*tile_center(1))
+            rearranging = capture("home-dark-rearrange.png")
+            checks["rearrange_mode_shows_done_remove_and_badges"] = bool(
+                ImageChops.difference(pinned, rearranging).getbbox()
+            )
+
+            # --- Remove-badge tap: "Fixture Badge" (slot 0) is removed by a
+            # single tap on its badge, with no drag at all -- the newer,
+            # more-discoverable removal affordance, distinct from the
+            # drag-to-Remove-pill flow exercised next. ---
+            tap(*tile_plate_corner(0))
+            badge_removed = capture("home-dark-badge-removed.png")
+            checks["remove_badge_tap_changed_the_screen"] = bool(
+                ImageChops.difference(rearranging, badge_removed).getbbox()
+            )
+            checks["still_rearranging_after_badge_removal"] = bool(
+                ImageChops.difference(badge_removed, rearranging).getbbox()
+            )
+
+            # --- Drag-to-Remove-pill: "Fixture Extra" is still at slot 1 (badge
+            # removal above did not compact slots). A fresh press-and-drag
+            # grabs it (already-rearranging jiggle-mode pickup), paused
+            # mid-drag over an ordinary empty slot to capture the visible
+            # drop-target highlight, then continued onto Remove and released. ---
+            drag_id = drag_steps_2d(tile_center(1), tile_center(2))
+            drop_target_frame = capture("home-dark-drop-target.png", timeout=1.5, stable_frames=1)
+            checks["drop_target_highlight_visible"] = bool(
+                ImageChops.difference(badge_removed, drop_target_frame).getbbox()
+            )
+            remove_x, remove_y = remove_target_point()
+            settle_and_release(drag_id, remove_x, remove_y)
+            capture("home-dark-removed.png")
+            # The authoritative check for both remove flows is the persisted
+            # layout file itself, read after the restart below
+            # ("removed_from_saved_layout") -- a visual diff here would be
+            # fragile (a removed icon's former slot is simply empty grid
+            # space, which can look identical to other empty slots).
+
+            # Done exits rearrange mode (a tap on any non-icon point does, per
+            # home_screen.rs's own "tap elsewhere stops jiggling" behavior; the
+            # Done pill is simply the obvious, labeled place to do it) -- this
+            # settled, non-rearranging frame, not `page1` (which still shows the
+            # now-removed "Fixture Badge"), is the correct baseline for the
+            # restart-stability check below, since both icons removed above are
+            # gone from the persisted layout for good.
+            tap(*done_button_point())
+            settled_after_removals = capture("home-dark-rearrange-done.png")
+
+            # --- Restart proves persistence. ---
+            rust.terminate()
+            try:
+                rust.wait(timeout=5)
+            except subprocess.TimeoutExpired:
+                rust.kill()
+            layout_after_removal = json.dumps(json.loads(home_json.read_text()))
+            checks["badge_removed_from_saved_layout"] = "k230-fixture-badge.desktop" not in layout_after_removal
+            checks["drag_removed_from_saved_layout"] = "k230-fixture-extra.desktop" not in layout_after_removal
+            checks["dock_survives_the_removal"] = "k230-fixture-terminal.desktop" in layout_after_removal
+
+            restarted = start_pass(dark, "dark-restarted")
+            wait_for_ready("dark-restarted-rust")
+            after_restart = capture("home-dark-after-restart.png")
+            checks["stable_after_restart"] = not bool(
+                ImageChops.difference(settled_after_removals, after_restart).getbbox()
+            )
+
+            # --- New scenarios, on this same restarted process: folder
+            # creation (drag onto an existing app, in the grid and in the
+            # dock), opening a folder, renaming it through a real virtual
+            # keyboard, launching a member from it, and the widget-picker
+            # sheet. Kept *after* the restart-persistence checks above so
+            # none of this touches what those checks assert about the badge/
+            # extra/terminal entries. ---
+            wl_socket = root / env["WAYLAND_DISPLAY"]
+
+            def open_drawer_and_settle(prefix, reopen=False):
+                """`route("drawer")` alone only *requests* the route change; the
+                very first drag scenario above reached a settled drawer by
+                following it with a `capture()` (which waits for visual
+                stability). This does the equivalent without a screenshot, for
+                spots that do not need one -- waiting for a fresh
+                `"commit"` line plus a short grace period, so a
+                long-press-drag's own `down` is never injected before the
+                drawer's input region is actually live (confirmed live:
+                without this, an immediate drag after `route("drawer")`
+                silently reached Home's own surface instead, the same bug
+                class `panel_input_rect`'s own fix just above addressed).
+
+                `reopen=True` additionally waits for the drawer's *previous*
+                instance to actually `unmap` first: after a successful
+                drag-and-drop, `end_drawer_home_drag` starts an animated close
+                (`begin_animated_close`) rather than unmapping synchronously,
+                and re-requesting the "drawer" route while `self.layer` still
+                exists is a no-op (`ensure_layer`'s own early return) -- it
+                produces no new frame at all for the plain check above to wait
+                on, so a caller re-opening the drawer after a prior drop must
+                wait for that close to actually finish first.
+
+                The settle signal itself is a fresh `"commit"` line, not
+                `K230_DRAWER_FRAME`: `main.rs`'s own `K230_DRAWER_FRAME` sample
+                is deliberately rate-limited to one line per
+                `DRAWER_FRAME_LOG_INTERVAL` (500ms) of *wall-clock* time, not
+                per route-enter -- a close-then-reopen cycle that lands inside
+                that window (routine here: the prior drag's own live-follow
+                redraws the drawer at up to 60Hz right up until the drop, so
+                `drawer_frame_log_at` is already recent when the very next
+                open's first frame renders) can suppress the reopen's
+                `K230_DRAWER_FRAME` line forever, since nothing else forces a
+                further redraw once the drawer is sitting idle. `"commit"` has
+                no such gate -- `ShellClient::draw()` logs it unconditionally
+                on every call, for every route -- and `show()` itself calls
+                `draw()` synchronously before the route request's `OK` reply
+                is even written, so a fresh `"commit"` line is guaranteed the
+                moment the request lands, independent of the frame-timing
+                sample's own throttling."""
+                if reopen:
+                    unmap_baseline = count_log(prefix, "unmap")
+                    wait_for_new_log_line(prefix, "unmap", unmap_baseline, seconds=15)
+                baseline = count_log(prefix, "commit")
+                route("drawer")
+                wait_for_new_log_line(prefix, "commit", baseline, seconds=15)
+                time.sleep(0.4)
+
+            # "Fixture Badge" (drawer) onto an empty page-1 cell.
+            open_drawer_and_settle("dark-restarted-rust")
+            badge_target = tile_center(0)
+            baseline = count_log("dark-restarted-rust", "home-drag-placed")
+            begin_baseline = count_log("dark-restarted-rust", "home-drag-begin")
+            badge_drag = long_press_drag(drawer_tile_center(0), badge_target)
+            wait_for_new_log_line("dark-restarted-rust", "home-drag-begin", begin_baseline)
+            settle_and_release(badge_drag, *badge_target)
+            wait_for_new_log_line("dark-restarted-rust", "home-drag-placed", baseline)
+
+            # "Fixture Extra" (drawer) dragged directly onto that same cell --
+            # task: "Dropping on an existing app creates a folder."
+            open_drawer_and_settle("dark-restarted-rust", reopen=True)
+            baseline = count_log("dark-restarted-rust", "home-drag-begin")
+            extra_drag = long_press_drag(drawer_tile_center(1), badge_target)
+            wait_for_new_log_line("dark-restarted-rust", "home-drag-begin", baseline)
+            mid_folder_drag = capture("home-dark-folder-mid-drag.png", timeout=2.0, stable_frames=1)
+            baseline = count_log("dark-restarted-rust", "home-drag-placed")
+            settle_and_release(extra_drag, *badge_target)
+            wait_for_new_log_line("dark-restarted-rust", "home-drag-placed", baseline)
+            folder_created = capture("home-dark-folder-created.png")
+            checks["dragging_onto_an_app_created_a_folder"] = bool(
+                ImageChops.difference(mid_folder_drag, folder_created).getbbox()
+            )
+
+            # Open the folder (folder.apps == [existing "Fixture Badge",
+            # dragged "Fixture Extra"] -- merge_two's own order, home_screen.rs).
+            tap(*badge_target)
+            folder_open = capture("home-dark-folder-open.png")
+            checks["folder_opened"] = bool(
+                ImageChops.difference(folder_created, folder_open).getbbox()
+            )
+
+            # Rename it through a real virtual-keyboard-v1 connection (task 2):
+            # tap the name, wait for focus, type, press Enter, and read the
+            # committed name back from the persisted layout.
+            # A headless seat has no keyboard capability until this client binds
+            # its virtual keyboard. Create it before requesting/waiting for focus;
+            # otherwise the harness waits for an enter event that cannot exist.
+            rename_keyboard = RenameKeyboard(wl_socket)
+            wait_for(lambda: "keyboard-capability" in text("dark-restarted-rust"), 5)
+            tap(*folder_name_center())
+            wait_for(lambda: "home-keyboard-focus-granted" in text("dark-restarted-rust"), 5)
+            renaming = capture("home-dark-folder-rename.png", timeout=2.0, stable_frames=1)
+            checks["folder_rename_keyboard_focus_granted"] = True
+            try:
+                for _ in range(len("Folder")):
+                    rename_keyboard.press(14)
+                for _ in range(4):
+                    rename_keyboard.press_a()
+                baseline = count_log("dark-restarted-rust", "home-layout-changed")
+                rename_keyboard.press_enter()
+            finally:
+                rename_keyboard.close()
+            wait_for_new_log_line("dark-restarted-rust", "home-layout-changed", baseline)
+            renamed_layout = json.loads(home_json.read_text())
+            renamed_folder_name = next(
+                (item.get("name") for page in renamed_layout["pages"] for item in page
+                 if item and item.get("kind") == "folder"),
+                None,
+            )
+            checks["folder_renamed_via_real_keyboard"] = renamed_folder_name == "aaaa"
+            after_rename = capture("home-dark-folder-renamed.png")
+            checks["folder_rename_visible"] = bool(
+                ImageChops.difference(renaming, after_rename).getbbox()
+            )
+
+            # Drag one member out of the open folder onto an empty Home cell.
+            # The persisted layout, rather than image differences, proves the
+            # member moved and the remaining one-item folder was unwrapped.
+            baseline = count_log("dark-restarted-rust", "home-layout-changed")
+            member_drag = long_press_drag(folder_app_center(1), tile_center(4))
+            settle_and_release(member_drag, *tile_center(4))
+            wait_for_new_log_line("dark-restarted-rust", "home-layout-changed", baseline)
+            extracted = json.loads(home_json.read_text())
+            checks["folder_member_dragged_out"] = (
+                extracted["pages"][0][4] == {"kind": "app", "id": "k230-fixture-extra.desktop"}
+            )
+            capture("home-dark-folder-member-extracted.png")
+
+            # Recreate/open a folder so the following launch scenario remains
+            # about a member of an open folder, rather than a bare Home icon.
+            baseline = count_log("dark-restarted-rust", "home-layout-changed")
+            recreate = long_press_drag(tile_center(4), badge_target)
+            settle_and_release(recreate, *badge_target)
+            wait_for_new_log_line("dark-restarted-rust", "home-layout-changed", baseline)
+            tap(*done_button_point())
+            tap(*badge_target)
+            capture("home-dark-folder-reopened.png")
+
+            # Tap "Fixture Badge" (member 0) to launch it; the overlay closes.
+            tap(*folder_app_center(0))
+            wait_for(lambda: "app-launch-requested" in text("dark-restarted-rust")
+                     or "app-launch-failed" in text("dark-restarted-rust"), 8)
+            checks["folder_member_launch_requested"] = "app-launch-requested" in text("dark-restarted-rust")
+
+            # --- Dock folder: swipe to page 2, drag "Fixture Page Two" onto
+            # the dock's own "Terminal" slot -- task: "I can have folders in
+            # the dock bar in theory." ---
+            swipe_y_pos = swipe_y()
+            page2_start_x = WIDTH - SWIPE_MARGIN
+            page2_end_x = page2_start_x - SWIPE_DISTANCE
+            swipe_id = drag_steps(page2_start_x, page2_end_x, swipe_y_pos)
+            settle_and_release(swipe_id, page2_end_x, swipe_y_pos)
+            page_two = capture("home-dark-page-two-restarted.png")
+
+            dock_target = dock_center(0)
+            baseline = count_log("dark-restarted-rust", "home-layout-changed")
+            dock_drag = long_press_drag(tile_center(0), dock_target)
+            settle_and_release(dock_drag, *dock_target)
+            wait_for_new_log_line("dark-restarted-rust", "home-layout-changed", baseline)
+            dock_folder = capture("home-dark-dock-folder.png")
+            checks["dock_folder_created"] = bool(
+                ImageChops.difference(page_two, dock_folder).getbbox()
+            )
+
+            # --- Widget picker: swipe back to page 1, long-press empty Home
+            # space, navigate to Widgets, long-press-drag a Clock widget onto
+            # an empty cell. ---
+            back_id = drag_steps(page2_end_x, page2_start_x, swipe_y_pos)
+            settle_and_release(back_id, page2_start_x, swipe_y_pos)
+            capture("home-dark-back-to-page-one-restarted.png")
+
+            empty_point = empty_home_space_point()
+            long_press(*empty_point)
+            picker_menu = capture("home-dark-picker-menu.png")
+            checks["widget_picker_menu_opened"] = bool(
+                ImageChops.difference(dock_folder, picker_menu).getbbox()
+            )
+            tap(*picker_row_center(0))  # "Widgets"
+            picker_widgets = capture("home-dark-picker-widgets.png")
+            checks["widget_picker_widgets_page_differs_from_menu"] = bool(
+                ImageChops.difference(picker_menu, picker_widgets).getbbox()
+            )
+            widget_target = tile_center(2 * COLUMNS)  # row 2: two clear rows for the 4x2 Clock
+            baseline = count_log("dark-restarted-rust", "home-layout-changed")
+            widget_drag = long_press_drag(picker_row_center(1), widget_target)  # row 1 == Clock
+            settle_and_release(widget_drag, *widget_target)
+            wait_for_new_log_line("dark-restarted-rust", "home-layout-changed", baseline)
+            clock_placed = capture("home-dark-clock-widget-placed.png")
+            checks["clock_widget_placed"] = bool(
+                ImageChops.difference(picker_widgets, clock_placed).getbbox()
+            )
+
+            restarted.terminate()
+            try:
+                restarted.wait(timeout=5)
+            except subprocess.TimeoutExpired:
+                restarted.kill()
+
+            if args.wvkbd:
+                # Bonus, not load-bearing for any `checks` entry above: proves
+                # the real cross-built wvkbd-mobintl actually shows through
+                # `k230-keyboard-gesture-signal` while Home's own rename field
+                # holds keyboard focus, exactly like `sync_wifi_keyboard`
+                # already does for the Wi-Fi password field (`tests/
+                # rust_overlay_keyboard_resize_qemu.py`). Starts against the
+                # same persisted `home.json` the scenario above just left
+                # behind (a real folder, "aaaa", already at page-1 slot 0), so
+                # this only needs to reopen it -- no fresh drag/folder-create
+                # needed to reach the same rename field.
+                wvkbd_pass = start_pass(dark, "wvkbd-dark")
+                wait_for_ready("wvkbd-dark-rust")
+                wvkbd_target = tile_center(0)
+                tap(*wvkbd_target)
+                tap(*folder_name_center())
+                wait_for(lambda: "home-keyboard-focus-granted" in text("wvkbd-dark-rust"), 5)
+                keyboard_hidden = capture("home-dark-wvkbd-hidden.png", timeout=2.0, stable_frames=1)
+                wvkbd_log = (root / "wvkbd.log").open("w")
+                wvkbd_process = subprocess.Popen(
+                    [qemu, str(args.wvkbd), "-H", "400"], env=env,
+                    stdout=wvkbd_log, stderr=wvkbd_log)
+                processes.append(wvkbd_process)
+                time.sleep(1.0)
+                keyboard_shown = capture("home-dark-wvkbd-shown.png", timeout=3.0, stable_frames=1)
+                checks["wvkbd_shown_alongside_home_rename"] = bool(
+                    ImageChops.difference(keyboard_hidden, keyboard_shown).getbbox()
+                )
+                wvkbd_process.terminate()
+                try:
+                    wvkbd_process.wait(timeout=5)
+                except subprocess.TimeoutExpired:
+                    wvkbd_process.kill()
+                wvkbd_pass.terminate()
+                try:
+                    wvkbd_pass.wait(timeout=5)
+                except subprocess.TimeoutExpired:
+                    wvkbd_pass.kill()
+
+            # --- Light pass: headline captures only. ---
+            # Moving the sole page-2 app into the dock prunes the empty second
+            # page. Restore a real second page before testing light-theme paging.
+            light_layout = json.loads(home_json.read_text())
+            light_layout["pages"].append([
+                {"kind": "app", "id": "k230-fixture-page-two.desktop"}
+            ] + [None] * 19)
+            home_json.write_text(json.dumps(light_layout))
+            light_rust = start_pass(light, "light")
+            wait_for_ready("light-rust")
+            light_page1 = capture("home-light-page1.png")
+            light_y = swipe_y()
+            light_start_x = WIDTH - SWIPE_MARGIN
+            light_end_x = light_start_x - SWIPE_DISTANCE
+            light_id = drag_steps(light_start_x, light_end_x, light_y)
+            settle_and_release(light_id, light_end_x, light_y)
+            light_page2 = capture("home-light-page2.png")
+            checks["light_page2_differs_from_page1"] = bool(
+                ImageChops.difference(light_page1, light_page2).getbbox()
+            )
+            checks["light_differs_from_dark"] = bool(
+                ImageChops.difference(light_page1, page1).getbbox()
+            )
+            light_rust.terminate()
+            try:
+                light_rust.wait(timeout=5)
+            except subprocess.TimeoutExpired:
+                light_rust.kill()
 
         # A fresh, isolated layout exercises the live cross-page driver.
         # Holding one contact proves repeat turns and last-edge page creation;
