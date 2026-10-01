@@ -1,0 +1,30 @@
+{
+  "system": "/nix/store/k9f4r2i9k9qj58z8z4l2kssy9rpwxxm1-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "files": {
+    "bootargs.txt": {
+      "bytes": 211,
+      "sha256": "b2711b59cf2a50551593233c1b1c0bf23675236f52d7f7c778cb1370934aaca7",
+      "crc32": "3742a000"
+    },
+    "Image-mainline-drm": {
+      "bytes": 38530560,
+      "sha256": "befebfd67ea9aa829ace3bfd97d12ced42068ab412b9789221d90028a1328426",
+      "crc32": "26c6a03c"
+    },
+    "k230-tdisplay-mainline-drm.dtb": {
+      "bytes": 11025,
+      "sha256": "91f5d6d7feecdfd28e142040dc8e23807d01001cc456d60b4cb436f617fabba2",
+      "crc32": "38c1cdf7"
+    },
+    "initrd.uimg": {
+      "bytes": 27314097,
+      "sha256": "3f93e8938bb61b69f1b2786ae673a133f570c6a6b589257a5305c9aba7bf0338",
+      "crc32": "bf409384"
+    },
+    "fw_jump_add_uboot_head.bin": {
+      "bytes": 270808,
+      "sha256": "9627edbeea9b115d7040beea27cc61b23b6aca61cd502fd7760d7ee179f42c99",
+      "crc32": "99b89787"
+    }
+  }
+}

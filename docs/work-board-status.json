@@ -409,12 +409,13 @@
       "lane": "verification",
       "source": "source-landed",
       "physical": "pending",
-      "next": "Stage the matching DRM trial bundle, boot manually, verify panel and touch, then restore the normal system.",
-      "rationale": "Display power-domain provider, checked runtime power reference and matched kernel/DTB/boot bundle are built and landed. Physical trial is the remaining task.",
+      "next": "Diagnose initrd progress before root login; then repeat exact temporary boot, capture deliberate touch and verify normal restoration.",
+      "rationale": "Exact physical Linux 7.3.0-rc5 trial initializes DRM/fb0 and displays boot text, Goodix registers, but usable root login was not reached. Normal persistent boot selection untouched.",
       "dependencies": [],
       "evidence": [
         "docs/evidence/mainline-display-power-domain.md",
-        "docs/evidence/mainline-display-boot-preparation.md"
+        "docs/evidence/mainline-display-boot-preparation.md",
+        "docs/evidence/mainline-display/physical-2026-10-01/README.md"
       ],
       "reviewRevision": "128ea4e705a7d61b7144ec9fd341493f42ecf449"
     },

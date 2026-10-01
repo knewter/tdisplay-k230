@@ -328,3 +328,7 @@ No rootfs is staged by test 1; a kernel panic for lack of one, with
 legible OpenSBI + Linux boot output first, is that test's actual pass
 condition (see `docs/research/mainline-kernel-inventory.md`'s phased plan,
 milestone 2).
+
+## 2026-10-01 physical attempt (5b.5 remains open)
+
+Exact matching bundle rebuilt, staged as a registered GC-rooted closure, and manually booted with per-load count/CRC checks. Linux 7.3.0-rc5, DRM/fb0 and photographed boot text are observed; Goodix registers. Both temporary boots stop in initrd before root login, including a repeat with direct initrd console diagnostics; no deliberate touch events were obtained. See `docs/evidence/mainline-display/physical-2026-10-01/README.md` and `result.json`; task 5b.5 stays unchecked pending usable root, physical touch and committed normal restoration. No persistent normal boot selection was changed.

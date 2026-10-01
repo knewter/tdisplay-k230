@@ -1,0 +1,28 @@
+# Mainline DRM physical trial, 2026-10-01
+
+The exact matching mainline bundle boots Linux 7.3.0-rc5, initializes DRM/fb0, lights the panel with boot text and registers the Goodix input device. **Both physical attempts stop before a usable root login.** The final physical task 5b.5 stays open: no deliberate finger events or successful mainline root are claimed. After the first trial, the operator power-cycled to the normal vendor system; root/services, protected hashes and photographed Home restoration are committed.
+
+## Matching artifact and staging
+
+The original bundle `/nix/store/gf3aqks2dg0z3ksz33ysfprnlbk83vw3-k230-mainline-drm-trial-boot-files` had been collected from the host store. The boot-preparation agent reproduced the exact original derivations from clean commit `0d33011b9de688e2f7d6dcbfecc169b66828018e`, rebuilt the bundle and reran `tools/mainline-drm-trial-inspect.py` successfully. A host GC root now protects it. Missing-only registered NAR export had 28 paths: 103,938,057 compressed bytes, 159,679,696 NAR bytes, SHA256 `d2a9c114238cf23d04d15238fc24c3af6d3241c3f3fbd388833eff42352d2205`. Host metadata is retained in `host-recovery-export.json`.
+
+A curated local HTTP transfer (private endpoint omitted) verified this archive SHA before `gzip -dc ... | nix-store --import`, then immediately GC-rooted the bundle with `nix-store --add-root /nix/var/nix/gcroots/mainline-drm-trial --realise <bundle>`. Candidate boot files were copied to `/var/lib/k230-mainline-drm-trial`; all four SHA256SUMS pass. Registered closure paths exist, expected root is ext4 label NIXOS_SD, `/nix-path-registration` is absent, exact system/init exists and normal persistent profile remains unchanged. Normal boot files/selectors were untouched. Included registration was never put at `/nix-path-registration`.
+
+## Physical boot observations
+
+Command: `python3 ~/tmp/k230-coordination/mainline-boot-trial.py candidate`; source artifact `serial-trial-controller.py` uses repository `tools/ums-session.py`, exclusive serial port and `/tmp/k230-board.lock`, CR-only U-Boot lines and exact per-load byte-count+CRC comparison. `manifest.json` preserves all sizes/hashes/CRC, including the original normal OpenSBI wrapper. Load addresses and `bootm 0x8000000 0x9000000 0x8400000` match the committed recoverable procedure. Volatile arguments select exact `k9f4r2…/init`; no saveenv, k230_set_dtb, normal selector/profile or boot-file mutation was used.
+
+`serial-boot.txt` shows Linux 7.3.0-rc5, initial component deferral then both VO and DSI binding, canaan DRM initialized, PHY setup, panel init/brightness writes, fb0 and registered Goodix touchscreen. RDDID/RDDPM reads fail, but the photographed panel displays boot text; those diagnostic read failures do not negate that observation. No new graphical shell is expected from the DRM console/root profile.
+
+Serial stops in the initrd after udev startup around kernel time 7.22 s. The 180-second Linux-login deadline expires. No root identity, mounted stage2 or deliberate finger event report was obtained. The last log line alone does not prove a udev, interrupt, power-domain or framebuffer cause. `result.json` separates these observations and task 5b.5 stays unchecked.
+
+## Camera evidence and limits
+
+`panel-boot-text.jpg` is a host camera observation using `/dev/video0`, MJPEG1280x720 and FFmpeg `-vf 'crop=900:600:380:120,transpose=2,transpose=2' -frames:v 1 -q:v 2`. It is distinct from native capture, injected contact and real-finger interaction. No new finger event, Wi-Fi, SMP, GPU or usable mainline shell result is claimed. Sanitized serial removes terminal controls and network/secret-bearing lines; private source logs remain outside Git.
+
+## Recovery and next diagnosis
+
+Serial BREAK/SysRq sync/remount/reboot attempts produced no reply (`serial-reset-attempt.txt`). The exact mainline config has CONFIG_MAGIC_SYSRQ unset, so these attempts cannot establish a hard lock or recover this kernel. The operator offered a power swap and then reported "i did it". `normal-power-recovery.txt` captures the resulting normal root login, original explicit init/system/profile, old booted kernel, all five active shell/audio services and unchanged five boot hashes. `normal-restored-home.jpg` photographs Home after this recovery.
+A second invocation, `python3 ~/tmp/k230-coordination/mainline-boot-trial.py diagnostic`, repeats the same exact bundle/load checks and adds only volatile `systemd.log_level=debug systemd.log_target=console systemd.show_status=1 rd.udev.log_level=debug`. `serial-diagnostic-boot.txt` reaches DRM/fb0 and Goodix again, then starts PID1 and ends partway through initrd printk setup around 4.03 seconds. It again misses the 180-second login deadline; no stage2 or deliberate touch acceptance is obtained. Added console logging does not resolve the missing root login and does not establish its cause. Second normal recovery is pending at this checkpoint.
+
+Keep trial selection temporary. Next isolate early initrd execution with the matching initrd's emergency target and direct console logging, then consider disabling DRM fbdev emulation as a separate diagnostic variable (`drm_kms_helper.fbdev_emulation=0`, expected dark panel). These are source-reviewed hypotheses, not repairs or results from this run. Root/IRQ/DRM/display observations must be separated before another source change.

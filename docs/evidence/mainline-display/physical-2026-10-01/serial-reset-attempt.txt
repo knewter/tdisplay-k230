@@ -1,0 +1,3 @@
+Attempt serial BREAK/SysRq s
+Attempt serial BREAK/SysRq u
+Attempt serial BREAK/SysRq b

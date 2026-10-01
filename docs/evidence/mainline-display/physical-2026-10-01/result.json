@@ -1,0 +1,23 @@
+{
+  "status": "FAIL_USABLE_ROOT",
+  "kernel": "7.3.0-rc5",
+  "bundle": "/nix/store/gf3aqks2dg0z3ksz33ysfprnlbk83vw3-k230-mainline-drm-trial-boot-files",
+  "system": "/nix/store/k9f4r2i9k9qj58z8z4l2kssy9rpwxxm1-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "load_size_crc": "PASS: every file including original OpenSBI wrapper",
+  "root_staging": "PASS: registered import, GC root, exact SHA verification, current root ext4/NIXOS_SD",
+  "kernel_boot": "PASS: identified exact7.3.0-rc5",
+  "drm": "PASS: initialized and fb0 created after initial deferral",
+  "panel": "PASS_BOOT_TEXT: physical camera, no shell profile",
+  "touch": "REGISTERED_ONLY: Goodix input0, no deliberate glass contacts captured",
+  "usable_root": "FAIL: serial stops in initrd after udev starts at7.22s; Linux login180s deadline exceeded",
+  "persistent_selection_changed": false,
+  "restore": "First trial PASS; diagnostic trial recovery pending",
+  "causality": "Unknown. No new IRQ/genpd/fbcon/udev cause is inferred from last log line.",
+  "diagnostic_trial": {
+    "command": "python3 ~/tmp/k230-coordination/mainline-boot-trial.py diagnostic",
+    "extra_volatile_arguments": "systemd.log_level=debug systemd.log_target=console systemd.show_status=1 rd.udev.log_level=debug",
+    "result": "FAIL_USABLE_ROOT: PID1 started; console ends in initrd printk setup before root login; 180-second login deadline exceeded",
+    "log": "serial-diagnostic-boot.txt",
+    "normal_restore": "PENDING: second operator power swap capture running"
+  }
+}

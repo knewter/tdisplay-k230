@@ -1,0 +1,542 @@
+UART opened/reopened
+[   14.684269] r8152 2-1:1.0 enu1: renamed from eth0
+[  OK  ] Found device /dev/disk/by-label/NIXOS_SD.
+
+[  OK  ] Reached target Initrd Root Device.
+
+         Starting File System Check on /dev/disk/by-label/NIXOS_SD...
+
+[  OK  ] Finished File System Check on /dev/disk/by-label/NIXOS_SD.
+
+         Mounting /sysroot...
+
+[   15.690114] EXT4-fs (mmcblk1p2): mounted filesystem 44444444-4444-4444-8888-888888888888 r/w with ordered data mode. Quota mode: disabled.
+[  OK  ] Mounted /sysroot.
+
+[  OK  ] Reached target Initrd Root File System.
+
+         Starting Find NixOS closure...
+
+         Starting Mountpoints Configured in the Real Root...
+
+[  OK  ] Finished Find NixOS closure.
+
+[  OK  ] Finished Mountpoints Configured in the Real Root.
+
+         Mounting /sysroot/run...
+
+[  OK  ] Mounted /sysroot/run.
+
+[  OK  ] Reached target Initrd File Systems.
+
+         Starting Create Volatile Files and Directories in the Real Root...
+
+[  OK  ] Finished Create Volatile Files and Directories in the Real Root.
+
+[  OK  ] Reached target Initrd Default Target.
+
+         Starting Cleaning Up and Shutting Down Daemons...
+
+[  OK  ] Stopped target Initrd Default Target.
+
+[  OK  ] Stopped target Basic System.
+
+[  OK  ] Stopped target Initrd Root Device.
+
+[  OK  ] Stopped target Path Units.
+
+[  OK  ] Stopped Dispatch Password Requests to Console Directory Watch.
+
+[  OK  ] Stopped target Slice Units.
+
+[  OK  ] Stopped target Socket Units.
+
+[  OK  ] Stopped target System Initialization.
+
+[  OK  ] Stopped target Swaps.
+
+[  OK  ] Stopped target Timer Units.
+
+[  OK  ] Closed D-Bus System Message Bus Socket.
+
+[  OK  ] Stopped Find NixOS closure.
+
+[  OK  ] Stopped Apply Kernel Variables.
+
+[  OK  ] Stopped Load Kernel Modules.
+
+[  OK  ] Stopped Create Volatile Files and Directories in the Real Root.
+
+[  OK  ] Stopped Create System Files and Directories.
+
+[  OK  ] Stopped target Local File Systems.
+
+[  OK  ] Stopped target Preparation for Local File Systems.
+
+[  OK  ] Stopped Coldplug All udev Devices.
+
+         Stopping Rule-based Manager for Device Events and Files...
+
+[  OK  ] Finished Cleaning Up and Shutting Down Daemons.
+
+[  OK  ] Stopped Rule-based Manager for Device Events and Files.
+
+[  OK  ] Closed udev Control Socket.
+
+         Starting Cleanup udev Database...
+
+[  OK  ] Stopped Create Static Device Nodes in /dev.
+
+[  OK  ] Stopped Create Static Device Nodes in /dev gracefully.
+
+[  OK  ] Finished Cleanup udev Database.
+
+[  OK  ] Reached target Switch Root.
+
+         Starting NixOS Activation...
+
+[***   ] A start job is running for NixOS Activation (3s / no limit)
+
+M
+[ ***  ] A start job is running for NixOS Activation (3s / no limit)
+
+M
+[  *** ] A start job is running for NixOS Activation (4s / no limit)
+
+M
+[  OK  ] Finished NixOS Activation.
+
+         Starting Switch Root...
+
+[   22.237083] systemd-journald[96]: Received SIGTERM from PID 1 (systemd).
+[   22.852583] systemd[1]: System time advanced to timestamp on /var/lib/systemd/timesync/clock: Thu 2026-10-01 15:22:23 UTC
+P+q6E616D65\78[   24.090709] systemd[1]: systemd 261.2 running in system mode (+PAM +AUDIT -SELINUX +APPARMOR +IMA +IPE +SMACK +SECCOMP +GCRYPT -GNUTLS +OPENSSL +ACL +BLKID +CURL +ELFUTILS +FIDO2 +IDN2 +KMOD +LIBCRYPTSETUP +LIBCRYPTSETUP_PLUGINS +LIBFDISK +PCRE2 +PWQUALITY +P11KIT +QRENCODE +TPM2 +BZIP2 +LZ4 +XZ +ZLIB +ZSTD +BPF_FRAMEWORK -BTF -XKBCOMMON +UTMP +LIBARCHIVE)
+[   24.133590] systemd[1]: Detected architecture riscv64.
+
+Welcome to NixOS 26.11 (Zokor)!
+
+
+[   24.902971] systemd[1]: bpf-restrict-fs: Failed to link program; assuming BPF LSM is not available.
+[   27.194442] systemd[1]: initrd-switch-root.service: Deactivated successfully.
+[   27.207858] systemd[1]: Stopped initrd-switch-root.service.
+[  OK  ] Stopped initrd-switch-root.service.
+
+[   27.241295] systemd[1]: systemd-journald.service: Scheduled restart job, restart counter is at 1.
+[   27.261182] systemd[1]: Created slice Slice /system/serial-getty.
+[  OK  ] Created slice Slice /system/serial-getty.
+
+[   27.290410] systemd[1]: Created slice Slice /system/systemd-fsck.
+[  OK  ] Created slice Slice /system/systemd-fsck.
+
+[   27.318141] systemd[1]: Created slice User and Session Slice.
+[  OK  ] Created slice User and Session Slice.
+
+[   27.343217] systemd[1]: Started Dispatch Password Requests to Console Directory Watch.
+[  OK  ] Started Dispatch Password Requests to Console Directory Watch.
+
+[   27.375274] systemd[1]: Started Forward Password Requests to Wall Directory Watch.
+[  OK  ] Started Forward Password Requests to Wall Directory Watch.
+
+[   27.406838] systemd[1]: Expecting device /dev/disk/by-label/K230_BOOT...
+         Expecting device /dev/disk/by-label/K230_BOOT...
+
+[   27.434709] systemd[1]: Expecting device /dev/ttyS0...
+         Expecting device /dev/ttyS0...
+
+[   27.458767] systemd[1]: Expecting device /sys/subsystem/net/devices/wlan0...
+         Expecting device /sys/subsystem/net/devices/wlan0...
+
+[   27.486793] systemd[1]: Reached target Local Encrypted Volumes.
+[  OK  ] Reached target Local Encrypted Volumes.
+
+[   27.510810] systemd[1]: Stopped target initrd-fs.target.
+[  OK  ] Stopped target initrd-fs.target.
+
+[   27.534762] systemd[1]: Stopped target initrd-root-fs.target.
+[  OK  ] Stopped target initrd-root-fs.target.
+
+[   27.558771] systemd[1]: Stopped target initrd-switch-root.target.
+[  OK  ] Stopped target initrd-switch-root.target.
+
+[   27.582875] systemd[1]: Reached target Virtual Machines and Containers.
+[  OK  ] Reached target Virtual Machines and Containers.
+
+[   27.610896] systemd[1]: Reached target Path Units.
+[  OK  ] Reached target Path Units.
+
+[   27.634863] systemd[1]: Reached target Remote File Systems.
+[  OK  ] Reached target Remote File Systems.
+
+[   27.658839] systemd[1]: Reached target Slice Units.
+[  OK  ] Reached target Slice Units.
+
+[   27.682872] systemd[1]: Reached target Swaps.
+[  OK  ] Reached target Swaps.
+
+[   27.716299] systemd[1]: Listening on Query the User Interactively for a Password.
+[  OK  ] Listening on Query the User Interactively for a Password.
+
+[   27.755927] systemd[1]: Listening on Process Core Dump Socket.
+[  OK  ] Listening on Process Core Dump Socket.
+
+[   27.789608] systemd[1]: Listening on Credential Encryption/Decryption.
+[  OK  ] Listening on Credential Encryption/Decryption.
+
+[   27.828069] systemd[1]: Listening on Factory Reset Management.
+[  OK  ] Listening on Factory Reset Management.
+
+[   27.855349] systemd[1]: Listening on Hostname Service Socket.
+[  OK  ] Listening on Hostname Service Socket.
+
+[   27.891208] systemd[1]: Starting Journal Log Access Socket...
+         Starting Journal Log Access Socket...
+
+[   27.916169] systemd[1]: Listening on Journal Audit Socket.
+[  OK  ] Listening on Journal Audit Socket.
+
+[   27.952489] systemd[1]: Listening on Console Output Muting Service Socket.
+[  OK  ] Listening on Console Output Muting Service Socket.
+
+[   27.983771] systemd[1]: Listening on Userspace Out-Of-Memory (OOM) Killer Socket.
+[  OK  ] Listening on Userspace Out-Of-Memory (OOM) Killer Socket.
+
+[   28.015046] systemd[1]: TPM PCR Measurements skipped, unmet condition check ConditionSecurity=measured-os
+[   28.029453] systemd[1]: Make TPM PCR Policy skipped, unmet condition check ConditionSecurity=measured-uki
+[   28.058310] systemd[1]: Listening on Disk Repartitioning Service Socket.
+[  OK  ] Listening on Disk Repartitioning Service Socket.
+
+[   28.087402] systemd[1]: Listening on udev Control Socket.
+[  OK  ] Listening on udev Control Socket.
+
+[   28.111485] systemd[1]: Listening on udev Varlink Socket.
+[  OK  ] Listening on udev Varlink Socket.
+
+[   28.143691] systemd[1]: Mounting Huge Pages File System...
+         Mounting Huge Pages File System...
+
+[   28.189882] systemd[1]: Mounting POSIX Message Queue File System...
+         Mounting POSIX Message Queue File System...
+
+[   28.243868] systemd[1]: Mounting Kernel Debug File System...
+         Mounting Kernel Debug File System...
+
+[   28.303298] systemd[1]: Mounting Kernel Trace File System...
+         Mounting Kernel Trace File System...
+
+[   28.379654] systemd[1]: Starting Create List of Static Device Nodes...
+         Starting Create List of Static Device Nodes...
+
+[   28.455521] systemd[1]: Starting Load Kernel Module configfs...
+         Starting Load Kernel Module configfs...
+
+[   28.510987] systemd[1]: Load Kernel Module drm skipped, unmet condition check ConditionKernelModuleLoaded=!drm
+[   28.526093] systemd[1]: Load Kernel Module efi_pstore skipped, unmet condition check ConditionKernelModuleLoaded=!efi_pstore
+[   28.551022] systemd[1]: Load Kernel Module fuse skipped, unmet condition check ConditionKernelModuleLoaded=!fuse
+[   28.591172] systemd[1]: Mounting FUSE Control File System...
+         Mounting FUSE Control File System...
+
+[   28.623413] systemd[1]: Clear Stale Hibernate Storage Info skipped, unmet condition check ConditionPathExists=/sys/firmware/efi/efivars/HibernateLocation-8cf2644b-4b0b-428f-9387-6d876050dc67
+[   28.672832] systemd[1]: Starting Journal Service...
+         Starting Journal Service...
+
+[   28.731465] systemd[1]: Starting Load Kernel Modules...
+         Starting Load Kernel Modules...
+
+[   28.795473] systemd[1]: Starting Userspace Out-Of-Memory (OOM) Killer...
+         Starting Userspace Out-Of-Memory (OOM) Killer...
+
+[   28.899422] systemd[1]: Starting Remount Root and Kernel File Systems...
+         Starting Remount Root and Kernel File Systems...
+
+[   28.975026] systemd[1]: Early TPM SRK Setup skipped, unmet condition check ConditionSecurity=measured-os
+[   29.044759] systemd[1]: Starting Coldplug All udev Devices...
+         Starting Coldplug All udev Devices...
+
+[   29.145477] systemd[1]: Listening on Journal Log Access Socket.
+[  OK  ] Listening on Journal Log Access Socket.
+
+[   30.011771] systemd[1]: Mounted Huge Pages File System.
+[  OK  ] Mounted Huge Pages File System.[   30.043769] systemd-journald[275]: Collecting audit messages is enabled.
+
+
+[   30.132855] systemd[1]: Started Journal Service.
+[  OK  ] Started Journal Service.
+
+[  OK  ] Mounted POSIX Message Queue File System.
+
+[   30.209667] EXT4-fs (mmcblk1p2): re-mounted 44444444-4444-4444-8888-888888888888 r/w. Quota mode: disabled.
+[  OK  ] Mounted Kernel Debug File System.
+
+[  OK  ] Mounted Kernel Trace File System.
+
+[   30.265985] 8189fs: loading out-of-tree module taints kernel.
+[  OK  ] Started Userspace Out-Of-Memory (OOM) Killer.
+
+[  OK  ] Finished Create List of Static Device Nodes.
+
+[  OK  ] Finished Load Kernel Module configfs.
+
+[  OK  ] Mounted FUSE Control File System.
+
+[  OK  ] Finished Remount Root and Kernel File Systems.
+
+[  OK  ] Listening on Disk Image Download Service Socket.
+
+         Starting Flush Journal to Persistent Storage...
+
+         Starting Load/Save OS Random Seed...
+
+         Starting Network Time Synchronization...
+
+[   33.401087] systemd-journald[275]: Received client request to flush runtime journal.
+         Starting Create Static Device Nodes in /dev gracefully...
+
+[  OK  ] Finished Load Kernel Modules.
+
+         Starting Firewall...
+
+[   33.602335] systemd-journald[275]: /var/log/journal/dbd9845b72b74b88b81b5dd3dd6926b2/system.journal: Realtime clock jumped backwards relative to last journal entry, rotating.
+         Starting Apply Kernel Variables...
+
+[   33.706666] systemd-journald[275]: Rotating system journal.
+[  OK  ] Finished Load/Save OS Random Seed.
+
+[  OK  ] Finished Create Static Device Nodes in /dev gracefully.
+
+         Starting Create Static Device Nodes in /dev...
+
+[  OK  ] Finished Apply Kernel Variables.
+
+[  OK  ] Finished Create Static Device Nodes in /dev.
+
+[  OK  ] Reached target Preparation for Local File Systems.
+
+         Starting Rule-based Manager for Device Events and Files...
+
+         Mounting /run/wrappers...
+
+[  OK  ] Started Network Time Synchronization.
+
+[  OK  ] Reached target System Time Set.
+
+[  OK  ] Reached target System Time Synchronized.
+
+[  OK  ] Mounted /run/wrappers.
+
+         Starting Create SUID/SGID Wrappers...
+
+[*     ] (1 of 8) A start job is running for Firewall (10s / no limit)
+
+M
+[  OK  ] Finished Flush Journal to Persistent Storage.
+
+[  OK  ] Finished Create SUID/SGID Wrappers.
+
+[  OK  ] Finished Firewall.
+
+[  OK  ] Started Rule-based Manager for Device Events and Files.
+
+[**    ] (1 of 4) A start job is running for…y-label/K230_BOOT (13s / 1min 30s)
+
+M
+[***   ] (1 of 4) A start job is running for…y-label/K230_BOOT (13s / 1min 30s)
+
+M
+[ ***  ] (2 of 4) A start job is running for /dev/ttyS0 (13s / 1min 30s)
+
+M
+[  *** ] (2 of 4) A start job is running for /dev/ttyS0 (14s / 1min 30s)
+
+M
+[   ***] (2 of 4) A start job is running for /dev/ttyS0 (14s / 1min 30s)
+
+M
+[    **] (3 of 4) A start job is running for… All udev Devices (15s / no limit)
+
+M
+[  OK  ] Finished Coldplug All udev Devices.
+
+[     *] (3 of 3) A start job is running for…net/devices/wlan0 (17s / 1min 30s)
+
+M
+[    **] (3 of 3) A start job is running for…net/devices/wlan0 (17s / 1min 30s)
+
+M
+[  OK  ] Created slice Slice /system/systemd-backlight.
+
+         Starting Load/Save Screen Backligh…f backlight:canaan-dsi-backlight...
+
+[  OK  ] Finished Load/Save Screen Backligh… of backlight:canaan-dsi-backlight.
+
+[  OK  ] Reached target Sound Card.
+
+         Starting Virtual Console Setup...
+
+[  OK  ] Stopped Virtual Console Setup.
+
+         Starting Virtual Console Setup...
+
+[  OK  ] Finished Virtual Console Setup.
+
+[  OK  ] Found device /sys/subsystem/net/devices/wlan0.
+
+         Starting File System Check on /dev/disk/by-label/K230_BOOT...
+
+[  OK  ] Finished File System Check on /dev/disk/by-label/K230_BOOT.
+
+         Mounting /boot...
+
+[  OK  ] Mounted /boot.
+
+[  OK  ] Reached target Local File Systems.
+
+[  OK  ] Listening on Boot Loader Control Service Socket.
+
+         Starting Create System Files and Directories...
+
+[  OK  ] Finished Create System Files and Directories.
+
+         Starting Record System Boot/Shutdown in UTMP...
+
+[  OK  ] Finished Record System Boot/Shutdown in UTMP.
+
+[  OK  ] Reached target System Initialization.
+
+[  OK  ] Started Discard unused filesystem blocks once a week.
+
+[  OK  ] Started Daily Cleanup of Temporary Directories.
+
+[  OK  ] Reached target Timer Units.
+
+[  OK  ] Listening on D-Bus System Message Bus Socket.
+
+[  OK  ] Listening on Nix Daemon Socket.
+
+[  OK  ] Listening on Virtual Machine and C…tainer Registration Service Socket.
+
+[  OK  ] Reached target Socket Units.
+
+[  OK  ] Reached target Basic System.
+
+         Starting Use the K230 card's trail…capacity after layout validation...
+
+         Starting Write the synchronized system clock to the K230 RTC...
+
+[  OK  ] Started Private Wi-Fi Settings broker.
+
+         Starting K230 persistent Wi-Fi supplicant...
+
+         Starting Name Service Cache Daemon (nsncd)...
+
+         Starting Post-Boot Actions...
+
+[  OK  ] Started Reset console on configuration changes.
+
+         Starting resolvconf update...
+
+[  OK  ] Started Seat management daemon.
+
+[  OK  ] Started Handheld notification history.
+
+         Starting Handheld application session bus...
+
+[  OK  ] Started Name Service Cache Daemon (nsncd).
+
+[  OK  ] Started K230 persistent Wi-Fi supplicant.
+
+[  OK  ] Finished Post-Boot Actions.
+
+[  OK  ] Finished Write the synchronized system clock to the K230 RTC.
+
+[  OK  ] Reached target Host and Network Name Lookups.
+
+[  OK  ] Reached target User and Group Name Lookups.
+
+         Starting D-Bus System Message Bus...
+
+         Starting User Login Management...
+
+[  OK  ] Stopped target Host and Network Name Lookups.
+
+         Stopping Host and Network Name Lookups...
+
+[  OK  ] Stopped target User and Group Name Lookups.
+
+         Stopping User and Group Name Lookups...
+
+         Stopping Name Service Cache Daemon (nsncd)...
+
+[  OK  ] Stopped Name Service Cache Daemon (nsncd).
+
+[  OK  ] Started Handheld application session bus.
+
+         Starting Name Service Cache Daemon (nsncd)...
+
+[  OK  ] Started D-Bus System Message Bus.
+
+[  OK  ] Finished resolvconf update.
+
+[  OK  ] Started Name Service Cache Daemon (nsncd).
+
+[  OK  ] Reached target Preparation for Network.
+
+[  OK  ] Reached target Host and Network Name Lookups.
+
+[  OK  ] Reached target User and Group Name Lookups.
+
+         Starting DHCP Client...
+
+         Starting Extra networking commands....
+
+[  OK  ] Started User Login Management.
+
+         Starting linger-users.service...
+
+[  OK  ] Finished linger-users.service.
+
+[  OK  ] Finished Extra networking commands..
+
+[  OK  ] Reached target Network.
+
+         Starting Permit User Sessions...
+
+[  OK  ] Finished Permit User Sessions.
+
+[  OK  ] Started Serial Getty on ttyS0.
+
+[  OK  ] Reached target Login Prompts.
+
+7878P+q6E616D65\
+
+
+<<< Welcome to NixOS 26.11.20260919.20b1ddd (riscv64) - ttyS0 >>>
+
+
+nixos login: root (automatic login)
+
+
+
+
+[root@nixos:~]# export SYSTEMD_PAGER=cat PAGER=cat; echo K230_RECOVERY_START; date -u; uname -r; cat /proc/cmdline; readlink -f /run/current-system; readlink -f /nix/var/nix/profiles/system; readlink -f /run/booted-system/kernel; systemctl is-active shell-ui shell seatd pipewire wireplumber; sha256sum /boot/{Image,initrd.uimg,k230-tdisplay.dtb,bootargs.txt,fw_jump_add_uboot_head.bin}; echo K230_RECOVERY_END
+
+K230_RECOVERY_START
+Thu Oct  1 03:36:28 PM UTC 2026
+6.6.36
+console=tty0 consoleblank=0 console=ttyS0,115200n8 root=fstab loglevel=4 lsm=landlock,yama,bpf loglevel=7 init=/nix/store/x1xbs5qdb5gn91j6s7gsi8mg18qra5ah-nixos-system-nixos-26.11.20260919.20b1ddd/init
+/nix/store/x1xbs5qdb5gn91j6s7gsi8mg18qra5ah-nixos-system-nixos-26.11.20260919.20b1ddd
+/nix/store/r0knnb72k3p3mpmbsnfgrk66yg8gl144-nixos-system-nixos-26.11.20260919.20b1ddd
+/nix/store/p6z5nsr2dyb1kfjk1hkzh9vb2nha0ka6-linux-riscv64-unknown-linux-gnu-6.6.36-xuantie/Image
+active
+active
+active
+active
+active
+8a9a9715bc41dda6172e4c780001e1460ac7ea96c6a5fcd489e2f77b13d69165  /boot/Image
+54cfaea4603c3502ed4fc75327460b96c8363d48bccca229a5cbfff585cf78ad  /boot/initrd.uimg
+ffeb528bba1b4c3ab5e6b6f63047cd9ae9512ed853126616853367e93dba2035  /boot/k230-tdisplay.dtb
+d7e1523191aac7820af356f0c2c22c4144407716626fb2fd2009e6f6d1a3cc1b  /boot/bootargs.txt
+9627edbeea9b115d7040beea27cc61b23b6aca61cd502fd7760d7ee179f42c99  /boot/fw_jump_add_uboot_head.bin
+K230_RECOVERY_END
+
+
+[root@nixos:~]#
