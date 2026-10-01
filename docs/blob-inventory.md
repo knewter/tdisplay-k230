@@ -2597,3 +2597,9 @@ Native board captures, camera photograph and headless QEMU screenshots; commands
 | `docs/evidence/home-widget-design/closeout-2026-10-01/qemu/home-fluid-edge-indicator.png` | 197139 | DATA | `4a2e198e3085b10d99599fb9e4949441b2f13b668baf2cdfd5c4591b76f7ea6a` |
 | `docs/evidence/home-widget-design/closeout-2026-10-01/qemu/home-fluid-last-edge-new-page.png` | 193391 | DATA | `09f2c39d77fa5ef7146bc3c750bca8df3c2235ab035f4d517ba50f7b3dcabe21` |
 | `docs/evidence/home-widget-design/closeout-2026-10-01/qemu/home-fluid-new-page-drop.png` | 192621 | DATA | `5007dedc8ec8342188b82d2b4f5c779113f2e4183915ba43f7c12411c9210860` |
+DATA  9944c9fdef515ee3fc71c5a00cc46d6619d6142d6de17fcf3198d9b653cd44b8  docs/evidence/omarchy-themes/settings-notifications-themed/board/dark-settings.png
+DATA  5cb9ac53740657f87d06e2c9667605bd1dc197ea1f0c8850ea9592019adda1c9  docs/evidence/omarchy-themes/settings-notifications-themed/board/dark-shade.png
+DATA  4094b29193330d905cae36305574359b8564e35bb11f7ad2d095bc4b142dd23f  docs/evidence/omarchy-themes/settings-notifications-themed/board/light-settings.png
+DATA  9f1b063491fa5e4909d29723dbbde3816c43c2b9268b91ee4906ea4bf3db8505  docs/evidence/omarchy-themes/settings-notifications-themed/board/light-shade.png
+DATA  9944c9fdef515ee3fc71c5a00cc46d6619d6142d6de17fcf3198d9b653cd44b8  docs/evidence/omarchy-themes/settings-notifications-themed/board/rollback-settings.png
+DATA  f96bbf535aa2e78a5b09781c996c7ad4d2359dca838d15ccc28b9c195225a87d  docs/evidence/omarchy-themes/settings-notifications-themed/board/rollback-shade.png

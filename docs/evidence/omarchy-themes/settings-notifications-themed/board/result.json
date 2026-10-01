@@ -1,0 +1,1977 @@
+{
+  "source": "288535289172c8465c4fa408eaa8ba2c7ab8a5ac",
+  "class": "physical-board-native-captures",
+  "rust": "/nix/store/zjlcmhxqkhchysmjj9sk53hks1h5wc3l-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0/bin/k230-shell-rust",
+  "helper": "/nix/store/l6qm7fykcf6bmlhp3wcj7va4v2k4v2fg-handheld-theme-command-0.1",
+  "started_epoch_s": 1790886821.2976756,
+  "phases": [
+    {
+      "prepare": "catppuccin",
+      "generation": "25160e6a7d3e541b57ecba31",
+      "coverage": {
+        "applied": [
+          "colors.toml",
+          "icons.theme",
+          "controls.normal-fill-alpha: Rust Settings/Shade renderer",
+          "controls.selected-border: Rust Settings/Shade renderer",
+          "controls.selected-border-alpha: compiled into selected outline brush",
+          "controls.selected-border-width: Rust Settings/Shade renderer",
+          "controls.selected-color: Rust Settings/Shade renderer",
+          "controls.selected-fill-alpha: Rust Settings/Shade renderer",
+          "notifications.background: Rust Settings/Shade renderer",
+          "notifications.background-alpha: Rust Settings/Shade renderer"
+        ],
+        "adapted": [
+          "controls.normal-color: solid text uses first brush stop; fill keeps brush",
+          "notifications.countdown: solid text uses first brush stop; fill keeps brush",
+          "notifications.text: solid text uses first brush stop; fill keeps brush",
+          "controls.background: Settings uses menu.background, then palette.background"
+        ],
+        "unavailable": [
+          "controls.focus-border: no separately painted state in border-light Settings/Shade",
+          "controls.focus-border-alpha: no separately painted state in border-light Settings/Shade",
+          "controls.focus-border-width: no separately painted state in border-light Settings/Shade",
+          "controls.focus-color: no separately painted state in border-light Settings/Shade",
+          "controls.focus-fill-alpha: no separately painted state in border-light Settings/Shade",
+          "controls.hover-cursor-border: no separately painted state in border-light Settings/Shade",
+          "controls.hover-cursor-border-alpha: no separately painted state in border-light Settings/Shade",
+          "controls.hover-cursor-border-width: no separately painted state in border-light Settings/Shade",
+          "controls.hover-cursor-color: no separately painted state in border-light Settings/Shade",
+          "controls.hover-cursor-fill-alpha: no separately painted state in border-light Settings/Shade",
+          "controls.normal-border: no separately painted state in border-light Settings/Shade",
+          "controls.normal-border-alpha: no separately painted state in border-light Settings/Shade",
+          "controls.normal-border-width: no separately painted state in border-light Settings/Shade",
+          "controls.pressed-fill-alpha: no separately painted state in border-light Settings/Shade",
+          "controls.selection-fill-alpha: no separately painted state in border-light Settings/Shade",
+          "notifications.border: no separately painted state in border-light Settings/Shade",
+          "notifications.border-alpha: no separately painted state in border-light Settings/Shade"
+        ],
+        "unknown": [
+          "neovim.lua: not an appearance input",
+          "preview-unlock.png: not an appearance input",
+          "preview.png: not an appearance input",
+          "unlock.png: not an appearance input",
+          "vscode.json: not an appearance input"
+        ]
+      },
+      "sections": {
+        "bar": {
+          "active": {
+            "alpha": 1.0,
+            "angle_degrees": 0.0,
+            "kind": "brush",
+            "stops": [
+              {
+                "argb": "#fff38ba8",
+                "offset": 0.0
+              }
+            ]
+          },
+          "background": {
+            "alpha": 1.0,
+            "angle_degrees": 0.0,
+            "kind": "brush",
+            "stops": [
+              {
+                "argb": "#ff1e1e2e",
+                "offset": 0.0
+              }
+            ]
+          },
+          "background-alpha": {
+            "kind": "number",
+            "value": 1.0
+          },
+          "scale-with-font": {
+            "kind": "boolean",
+            "value": true
+          },
+          "size-horizontal": {
+            "kind": "number",
+            "value": 26.0
+          },
+          "size-vertical": {
+            "kind": "number",
+            "value": 28.0
+          },
+          "text": {
+            "alpha": 1.0,
+            "angle_degrees": 0.0,
+            "kind": "brush",
+            "stops": [
+              {
+                "argb": "#ffcdd6f4",
+                "offset": 0.0
+              }
+            ]
+          }
+        },
+        "controls": {
+          "focus-border": {
+            "alpha": 0.25,
+            "angle_degrees": 0.0,
+            "kind": "brush",
+            "stops": [
+              {
+                "argb": "#ffcdd6f4",
+                "offset": 0.0
+              }
+            ]
+          },
+          "focus-border-alpha": {
+            "kind": "number",
+            "value": 0.25
+          },
+          "focus-border-width": {
+            "kind": "width",
+            "value": [
+              1.0,
+              1.0,
+              1.0,
+              1.0
+            ]
+          },
+          "focus-color": {
+            "alpha": 1.0,
+            "angle_degrees": 0.0,
+            "kind": "brush",
+            "stops": [
+              {
+                "argb": "#ffcdd6f4",
+                "offset": 0.0
+              }
+            ]
+          },
+          "focus-fill-alpha": {
+            "kind": "number",
+            "value": 0.08
+          },
+          "hover-cursor-border": {
+            "alpha": 0.25,
+            "angle_degrees": 0.0,
+            "kind": "brush",
+            "stops": [
+              {
+                "argb": "#ffcdd6f4",
+                "offset": 0.0
+              }
+            ]
+          },
+          "hover-cursor-border-alpha": {
+            "kind": "number",
+            "value": 0.25
+          },
+          "hover-cursor-border-width": {
+            "kind": "width",
+            "value": [
+              1.0,
+              1.0,
+              1.0,
+              1.0
+            ]
+          },
+          "hover-cursor-color": {
+            "alpha": 1.0,
+            "angle_degrees": 0.0,
+            "kind": "brush",
+            "stops": [
+              {
+                "argb": "#ffcdd6f4",
+                "offset": 0.0
+              }
+            ]
+          },
+          "hover-cursor-fill-alpha": {
+            "kind": "number",
+            "value": 0.08
+          },
+          "normal-border": {
+            "alpha": 0.4,
+            "angle_degrees": 0.0,
+            "kind": "brush",
+            "stops": [
+              {
+                "argb": "#ffcdd6f4",
+                "offset": 0.0
+              }
+            ]
+          },
+          "normal-border-alpha": {
+            "kind": "number",
+            "value": 0.4
+          },
+          "normal-border-width": {
+            "kind": "width",
+            "value": [
+              1.0,
+              1.0,
+              1.0,
+              1.0
+            ]
+          },
+          "normal-color": {
+            "alpha": 1.0,
+            "angle_degrees": 0.0,
+            "kind": "brush",
+            "stops": [
+              {
+                "argb": "#ffcdd6f4",
+                "offset": 0.0
+              }
+            ]
+          },
+          "normal-fill-alpha": {
+            "kind": "number",
+            "value": 0.04
+          },
+          "pressed-fill-alpha": {
+            "kind": "number",
+            "value": 0.22
+          },
+          "selected-border": {
+            "alpha": 1.0,
+            "angle_degrees": 0.0,
+            "kind": "brush",
+            "stops": [
+              {
+                "argb": "#ffcdd6f4",
+                "offset": 0.0
+              }
+            ]
+          },
+          "selected-border-alpha": {
+            "kind": "number",
+            "value": 1.0
+          },
+          "selected-border-width": {
+            "kind": "width",
+            "value": [
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ]
+          },
+          "selected-color": {
+            "alpha": 1.0,
+            "angle_degrees": 0.0,
+            "kind": "brush",
+            "stops": [
+              {
+                "argb": "#ffcdd6f4",
+                "offset": 0.0
+              }
+            ]
+          },
+          "selected-fill-alpha": {
+            "kind": "number",
+            "value": 0.18
+          },
+          "selection-fill-alpha": {
+            "kind": "number",
+            "value": 0.35
+          }
+        },
+        "font": {
+          "base-size": {
+            "kind": "number",
+            "value": 12.0
+          }
+        },
+        "hyprland": {
+          "active-border": {
+            "alpha": 1.0,
+            "angle_degrees": 0.0,
+            "kind": "brush",
+            "stops": [
+              {
+                "argb": "#ff89b4fa",
+                "offset": 0.0
+              }
+            ]
+          },
+          "active-border-foreground": {
+            "alpha": 1.0,
+            "angle_degrees": 0.0,
+            "kind": "brush",
+            "stops": [
+              {
+                "argb": "#ffcdd6f4",
+                "offset": 0.0
+              }
+            ]
+          }
+        },
+        "image-picker": {
+          "scrim": {
+            "alpha": 0.5,
+            "angle_degrees": 0.0,
+            "kind": "brush",
+            "stops": [
+              {
+                "argb": "#ff1e1e2e",
+                "offset": 0.0
+              }
+            ]
+          },
+          "scrim-alpha": {
+            "kind": "number",
+            "value": 0.5
+          },
+          "selected-border": {
+            "alpha": 1.0,
+            "angle_degrees": 0.0,
+            "kind": "brush",
+            "stops": [
+              {
+                "argb": "#ff89b4fa",
+                "offset": 0.0
+              }
+            ]
+          },
+          "selected-border-alpha": {
+            "kind": "number",
+            "value": 1.0
+          },
+          "text": {
+            "alpha": 1.0,
+            "angle_degrees": 0.0,
+            "kind": "brush",
+            "stops": [
+              {
+                "argb": "#ffcdd6f4",
+                "offset": 0.0
+              }
+            ]
+          },
+          "unselected-border": {
+            "alpha": 0.28,
+            "angle_degrees": 0.0,
+            "kind": "brush",
+            "stops": [
+              {
+                "argb": "#ffcdd6f4",
+                "offset": 0.0
+              }
+            ]
+          },
+          "unselected-border-alpha": {
+            "kind": "number",
+            "value": 0.28
+          }
+        },
+        "launcher": {
+          "background": {
+            "alpha": 0.95,
+            "angle_degrees": 0.0,
+            "kind": "brush",
+            "stops": [
+              {
+                "argb": "#ff1e1e2e",
+                "offset": 0.0
+              }
+            ]
+          },
+          "background-alpha": {
+            "kind": "number",
+            "value": 0.95
+          },
+          "border": {
+            "alpha": 1.0,
+            "angle_degrees": 0.0,
+            "kind": "brush",
+            "stops": [
+              {
+                "argb": "#ffcdd6f4",
+                "offset": 0.0
+              }
+            ]
+          },
+          "border-alpha": {
+            "kind": "number",
+            "value": 1.0
+          },
+          "scrim": {
+            "alpha": 0.5,
+            "angle_degrees": 0.0,
+            "kind": "brush",
+            "stops": [
+              {
+                "argb": "#ff1e1e2e",
+                "offset": 0.0
+              }
+            ]
+          },
+          "scrim-alpha": {
+            "kind": "number",
+            "value": 0.5
+          },
+          "selected-background": {
+            "alpha": 0.08,
+            "angle_degrees": 0.0,
+            "kind": "brush",
+            "stops": [
+              {
+                "argb": "#ffcdd6f4",
+                "offset": 0.0
+              }
+            ]
+          },
+          "selected-background-alpha": {
+            "kind": "number",
+            "value": 0.08
+          },
+          "selected-border": {
+            "alpha": 0.25,
+            "angle_degrees": 0.0,
+            "kind": "brush",
+            "stops": [
+              {
+                "argb": "#ffcdd6f4",
+                "offset": 0.0
+              }
+            ]
+          },
+          "selected-border-alpha": {
+            "kind": "number",
+            "value": 0.25
+          },
+          "selected-text": {
+            "alpha": 1.0,
+            "angle_degrees": 0.0,
+            "kind": "brush",
+            "stops": [
+              {
+                "argb": "#ff89b4fa",
+                "offset": 0.0
+              }
+            ]
+          },
+          "text": {
+            "alpha": 1.0,
+            "angle_degrees": 0.0,
+            "kind": "brush",
+            "stops": [
+              {
+                "argb": "#ffcdd6f4",
+                "offset": 0.0
+              }
+            ]
+          }
+        },
+        "lock": {
+          "background": {
+            "alpha": 0.8,
+            "angle_degrees": 0.0,
+            "kind": "brush",
+            "stops": [
+              {
+                "argb": "#ff1e1e2e",
+                "offset": 0.0
+              }
+            ]
+          },
+          "background-alpha": {
+            "kind": "number",
+            "value": 0.8
+          },
+          "border": {
+            "alpha": 1.0,
+            "angle_degrees": 0.0,
+            "kind": "brush",
+            "stops": [
+              {
+                "argb": "#ff89b4fa",
+                "offset": 0.0
+              }
+            ]
+          },
+          "border-active": {
+            "alpha": 1.0,
+            "angle_degrees": 0.0,
+            "kind": "brush",
+            "stops": [
+              {
+                "argb": "#ff89b4fa",
+                "offset": 0.0
+              }
+            ]
+          },
+          "border-alpha": {
+            "kind": "number",
+            "value": 1.0
+          },
+          "border-error": {
+            "alpha": 1.0,
+            "angle_degrees": 0.0,
+            "kind": "brush",
+            "stops": [
+              {
+                "argb": "#fff38ba8",
+                "offset": 0.0
+              }
+            ]
+          },
+          "placeholder": {
+            "alpha": 1.0,
+            "angle_degrees": 0.0,
+            "kind": "brush",
+            "stops": [
+              {
+                "argb": "#ff9197b1",
+                "offset": 0.0
+              }
+            ]
+          },
+          "selection": {
+            "alpha": 0.45,
+            "angle_degrees": 0.0,
+            "kind": "brush",
+            "stops": [
+              {
+                "argb": "#ff89b4fa",
+                "offset": 0.0
+              }
+            ]
+          },
+          "selection-alpha": {
+            "kind": "number",
+            "value": 0.45
+          },
+          "text": {
+            "alpha": 1.0,
+            "angle_degrees": 0.0,
+            "kind": "brush",
+            "stops": [
+              {
+                "argb": "#ffcdd6f4",
+                "offset": 0.0
+              }
+            ]
+          },
+          "text-error": {
+            "alpha": 1.0,
+            "angle_degrees": 0.0,
+            "kind": "brush",
+            "stops": [
+              {
+                "argb": "#fff38ba8",
+                "offset": 0.0
+              }
+            ]
+          }
+        },
+        "menu": {
+          "background": {
+            "alpha": 1.0,
+            "angle_degrees": 0.0,
+            "kind": "brush",
+            "stops": [
+              {
+                "argb": "#ff1e1e2e",
+                "offset": 0.0
+              }
+            ]
+          },
+          "background-alpha": {
+            "kind": "number",
+            "value": 1.0
+          },
+          "border": {
+            "alpha": 1.0,
+            "angle_degrees": 0.0,
+            "kind": "brush",
+            "stops": [
+              {
+                "argb": "#ffcdd6f4",
+                "offset": 0.0
+              }
+            ]
+          },
+          "border-alpha": {
+            "kind": "number",
+            "value": 1.0
+          },
+          "scrim": {
+            "alpha": 0.5,
+            "angle_degrees": 0.0,
+            "kind": "brush",
+            "stops": [
+              {
+                "argb": "#ff1e1e2e",
+                "offset": 0.0
+              }
+            ]
+          },
+          "scrim-alpha": {
+            "kind": "number",
+            "value": 0.5
+          },
+          "selected-background": {
+            "alpha": 0.08,
+            "angle_degrees": 0.0,
+            "kind": "brush",
+            "stops": [
+              {
+                "argb": "#ffcdd6f4",
+                "offset": 0.0
+              }
+            ]
+          },
+          "selected-background-alpha": {
+            "kind": "number",
+            "value": 0.08
+          },
+          "selected-border": {
+            "alpha": 0.25,
+            "angle_degrees": 0.0,
+            "kind": "brush",
+            "stops": [
+              {
+                "argb": "#ffcdd6f4",
+                "offset": 0.0
+              }
+            ]
+          },
+          "selected-border-alpha": {
+            "kind": "number",
+            "value": 0.25
+          },
+          "selected-text": {
+            "alpha": 1.0,
+            "angle_degrees": 0.0,
+            "kind": "brush",
+            "stops": [
+              {
+                "argb": "#ff89b4fa",
+                "offset": 0.0
+              }
+            ]
+          },
+          "text": {
+            "alpha": 1.0,
+            "angle_degrees": 0.0,
+            "kind": "brush",
+            "stops": [
+              {
+                "argb": "#ffcdd6f4",
+                "offset": 0.0
+              }
+            ]
+          }
+        },
+        "notifications": {
+          "background": {
+            "alpha": 1.0,
+            "angle_degrees": 0.0,
+            "kind": "brush",
+            "stops": [
+              {
+                "argb": "#ff1e1e2e",
+                "offset": 0.0
+              }
+            ]
+          },
+          "background-alpha": {
+            "kind": "number",
+            "value": 1.0
+          },
+          "border": {
+            "alpha": 1.0,
+            "angle_degrees": 0.0,
+            "kind": "brush",
+            "stops": [
+              {
+                "argb": "#ff89b4fa",
+                "offset": 0.0
+              }
+            ]
+          },
+          "border-alpha": {
+            "kind": "number",
+            "value": 1.0
+          },
+          "countdown": {
+            "alpha": 1.0,
+            "angle_degrees": 0.0,
+            "kind": "brush",
+            "stops": [
+              {
+                "argb": "#ff89b4fa",
+                "offset": 0.0
+              }
+            ]
+          },
+          "text": {
+            "alpha": 1.0,
+            "angle_degrees": 0.0,
+            "kind": "brush",
+            "stops": [
+              {
+                "argb": "#ffcdd6f4",
+                "offset": 0.0
+              }
+            ]
+          }
+        },
+        "polkit": {
+          "accent": {
+            "alpha": 1.0,
+            "angle_degrees": 0.0,
+            "kind": "brush",
+            "stops": [
+              {
+                "argb": "#ff89b4fa",
+                "offset": 0.0
+              }
+            ]
+          },
+          "background": {
+            "alpha": 1.0,
+            "angle_degrees": 0.0,
+            "kind": "brush",
+            "stops": [
+              {
+                "argb": "#ff1e1e2e",
+                "offset": 0.0
+              }
+            ]
+          },
+          "background-alpha": {
+            "kind": "number",
+            "value": 1.0
+          },
+          "border": {
+            "alpha": 1.0,
+            "angle_degrees": 0.0,
+            "kind": "brush",
+            "stops": [
+              {
+                "argb": "#ff89b4fa",
+                "offset": 0.0
+              }
+            ]
+          },
+          "border-alpha": {
+            "kind": "number",
+            "value": 1.0
+          },
+          "border-error": {
+            "alpha": 1.0,
+            "angle_degrees": 0.0,
+            "kind": "brush",
+            "stops": [
+              {
+                "argb": "#fff38ba8",
+                "offset": 0.0
+              }
+            ]
+          },
+          "scrim": {
+            "alpha": 0.5,
+            "angle_degrees": 0.0,
+            "kind": "brush",
+            "stops": [
+              {
+                "argb": "#ff1e1e2e",
+                "offset": 0.0
+              }
+            ]
+          },
+          "scrim-alpha": {
+            "kind": "number",
+            "value": 0.5
+          },
+          "text": {
+            "alpha": 1.0,
+            "angle_degrees": 0.0,
+            "kind": "brush",
+            "stops": [
+              {
+                "argb": "#ffcdd6f4",
+                "offset": 0.0
+              }
+            ]
+          },
+          "text-error": {
+            "alpha": 1.0,
+            "angle_degrees": 0.0,
+            "kind": "brush",
+            "stops": [
+              {
+                "argb": "#fff38ba8",
+                "offset": 0.0
+              }
+            ]
+          }
+        },
+        "popups": {
+          "background": {
+            "alpha": 1.0,
+            "angle_degrees": 0.0,
+            "kind": "brush",
+            "stops": [
+              {
+                "argb": "#ff1e1e2e",
+                "offset": 0.0
+              }
+            ]
+          },
+          "background-alpha": {
+            "kind": "number",
+            "value": 1.0
+          },
+          "border": {
+            "alpha": 1.0,
+            "angle_degrees": 0.0,
+            "kind": "brush",
+            "stops": [
+              {
+                "argb": "#ff89b4fa",
+                "offset": 0.0
+              }
+            ]
+          },
+          "border-alpha": {
+            "kind": "number",
+            "value": 1.0
+          },
+          "text": {
+            "alpha": 1.0,
+            "angle_degrees": 0.0,
+            "kind": "brush",
+            "stops": [
+              {
+                "argb": "#ffcdd6f4",
+                "offset": 0.0
+              }
+            ]
+          }
+        },
+        "spacing": {
+          "scale": {
+            "kind": "number",
+            "value": 1.0
+          },
+          "scale-with-font": {
+            "kind": "boolean",
+            "value": true
+          }
+        },
+        "tooltip": {
+          "background": {
+            "alpha": 0.97,
+            "angle_degrees": 0.0,
+            "kind": "brush",
+            "stops": [
+              {
+                "argb": "#ff1e1e2e",
+                "offset": 0.0
+              }
+            ]
+          },
+          "background-alpha": {
+            "kind": "number",
+            "value": 0.97
+          },
+          "border": {
+            "alpha": 1.0,
+            "angle_degrees": 0.0,
+            "kind": "brush",
+            "stops": [
+              {
+                "argb": "#ffcdd6f4",
+                "offset": 0.0
+              }
+            ]
+          },
+          "border-alpha": {
+            "kind": "number",
+            "value": 1.0
+          },
+          "text": {
+            "alpha": 1.0,
+            "angle_degrees": 0.0,
+            "kind": "brush",
+            "stops": [
+              {
+                "argb": "#ffcdd6f4",
+                "offset": 0.0
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "prepare": "catppuccin-latte",
+      "generation": "da8320de401d50cd2fb2fcb3",
+      "coverage": {
+        "applied": [
+          "colors.toml",
+          "icons.theme",
+          "controls.normal-fill-alpha: Rust Settings/Shade renderer",
+          "controls.selected-border: Rust Settings/Shade renderer",
+          "controls.selected-border-alpha: compiled into selected outline brush",
+          "controls.selected-border-width: Rust Settings/Shade renderer",
+          "controls.selected-color: Rust Settings/Shade renderer",
+          "controls.selected-fill-alpha: Rust Settings/Shade renderer",
+          "notifications.background: Rust Settings/Shade renderer",
+          "notifications.background-alpha: Rust Settings/Shade renderer"
+        ],
+        "adapted": [
+          "controls.normal-color: solid text uses first brush stop; fill keeps brush",
+          "notifications.countdown: solid text uses first brush stop; fill keeps brush",
+          "notifications.text: solid text uses first brush stop; fill keeps brush",
+          "controls.background: Settings uses menu.background, then palette.background"
+        ],
+        "unavailable": [
+          "controls.focus-border: no separately painted state in border-light Settings/Shade",
+          "controls.focus-border-alpha: no separately painted state in border-light Settings/Shade",
+          "controls.focus-border-width: no separately painted state in border-light Settings/Shade",
+          "controls.focus-color: no separately painted state in border-light Settings/Shade",
+          "controls.focus-fill-alpha: no separately painted state in border-light Settings/Shade",
+          "controls.hover-cursor-border: no separately painted state in border-light Settings/Shade",
+          "controls.hover-cursor-border-alpha: no separately painted state in border-light Settings/Shade",
+          "controls.hover-cursor-border-width: no separately painted state in border-light Settings/Shade",
+          "controls.hover-cursor-color: no separately painted state in border-light Settings/Shade",
+          "controls.hover-cursor-fill-alpha: no separately painted state in border-light Settings/Shade",
+          "controls.normal-border: no separately painted state in border-light Settings/Shade",
+          "controls.normal-border-alpha: no separately painted state in border-light Settings/Shade",
+          "controls.normal-border-width: no separately painted state in border-light Settings/Shade",
+          "controls.pressed-fill-alpha: no separately painted state in border-light Settings/Shade",
+          "controls.selection-fill-alpha: no separately painted state in border-light Settings/Shade",
+          "notifications.border: no separately painted state in border-light Settings/Shade",
+          "notifications.border-alpha: no separately painted state in border-light Settings/Shade"
+        ],
+        "unknown": [
+          "neovim.lua: not an appearance input",
+          "preview-unlock.png: not an appearance input",
+          "preview.png: not an appearance input",
+          "unlock.png: not an appearance input",
+          "vscode.json: not an appearance input"
+        ]
+      },
+      "sections": {
+        "bar": {
+          "active": {
+            "alpha": 1.0,
+            "angle_degrees": 0.0,
+            "kind": "brush",
+            "stops": [
+              {
+                "argb": "#ffd20f39",
+                "offset": 0.0
+              }
+            ]
+          },
+          "background": {
+            "alpha": 1.0,
+            "angle_degrees": 0.0,
+            "kind": "brush",
+            "stops": [
+              {
+                "argb": "#ffeff1f5",
+                "offset": 0.0
+              }
+            ]
+          },
+          "background-alpha": {
+            "kind": "number",
+            "value": 1.0
+          },
+          "scale-with-font": {
+            "kind": "boolean",
+            "value": true
+          },
+          "size-horizontal": {
+            "kind": "number",
+            "value": 26.0
+          },
+          "size-vertical": {
+            "kind": "number",
+            "value": 28.0
+          },
+          "text": {
+            "alpha": 1.0,
+            "angle_degrees": 0.0,
+            "kind": "brush",
+            "stops": [
+              {
+                "argb": "#ff4c4f69",
+                "offset": 0.0
+              }
+            ]
+          }
+        },
+        "controls": {
+          "focus-border": {
+            "alpha": 0.25,
+            "angle_degrees": 0.0,
+            "kind": "brush",
+            "stops": [
+              {
+                "argb": "#ff4c4f69",
+                "offset": 0.0
+              }
+            ]
+          },
+          "focus-border-alpha": {
+            "kind": "number",
+            "value": 0.25
+          },
+          "focus-border-width": {
+            "kind": "width",
+            "value": [
+              1.0,
+              1.0,
+              1.0,
+              1.0
+            ]
+          },
+          "focus-color": {
+            "alpha": 1.0,
+            "angle_degrees": 0.0,
+            "kind": "brush",
+            "stops": [
+              {
+                "argb": "#ff4c4f69",
+                "offset": 0.0
+              }
+            ]
+          },
+          "focus-fill-alpha": {
+            "kind": "number",
+            "value": 0.08
+          },
+          "hover-cursor-border": {
+            "alpha": 0.25,
+            "angle_degrees": 0.0,
+            "kind": "brush",
+            "stops": [
+              {
+                "argb": "#ff4c4f69",
+                "offset": 0.0
+              }
+            ]
+          },
+          "hover-cursor-border-alpha": {
+            "kind": "number",
+            "value": 0.25
+          },
+          "hover-cursor-border-width": {
+            "kind": "width",
+            "value": [
+              1.0,
+              1.0,
+              1.0,
+              1.0
+            ]
+          },
+          "hover-cursor-color": {
+            "alpha": 1.0,
+            "angle_degrees": 0.0,
+            "kind": "brush",
+            "stops": [
+              {
+                "argb": "#ff4c4f69",
+                "offset": 0.0
+              }
+            ]
+          },
+          "hover-cursor-fill-alpha": {
+            "kind": "number",
+            "value": 0.08
+          },
+          "normal-border": {
+            "alpha": 0.4,
+            "angle_degrees": 0.0,
+            "kind": "brush",
+            "stops": [
+              {
+                "argb": "#ff4c4f69",
+                "offset": 0.0
+              }
+            ]
+          },
+          "normal-border-alpha": {
+            "kind": "number",
+            "value": 0.4
+          },
+          "normal-border-width": {
+            "kind": "width",
+            "value": [
+              1.0,
+              1.0,
+              1.0,
+              1.0
+            ]
+          },
+          "normal-color": {
+            "alpha": 1.0,
+            "angle_degrees": 0.0,
+            "kind": "brush",
+            "stops": [
+              {
+                "argb": "#ff4c4f69",
+                "offset": 0.0
+              }
+            ]
+          },
+          "normal-fill-alpha": {
+            "kind": "number",
+            "value": 0.04
+          },
+          "pressed-fill-alpha": {
+            "kind": "number",
+            "value": 0.22
+          },
+          "selected-border": {
+            "alpha": 1.0,
+            "angle_degrees": 0.0,
+            "kind": "brush",
+            "stops": [
+              {
+                "argb": "#ff4c4f69",
+                "offset": 0.0
+              }
+            ]
+          },
+          "selected-border-alpha": {
+            "kind": "number",
+            "value": 1.0
+          },
+          "selected-border-width": {
+            "kind": "width",
+            "value": [
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ]
+          },
+          "selected-color": {
+            "alpha": 1.0,
+            "angle_degrees": 0.0,
+            "kind": "brush",
+            "stops": [
+              {
+                "argb": "#ff4c4f69",
+                "offset": 0.0
+              }
+            ]
+          },
+          "selected-fill-alpha": {
+            "kind": "number",
+            "value": 0.18
+          },
+          "selection-fill-alpha": {
+            "kind": "number",
+            "value": 0.35
+          }
+        },
+        "font": {
+          "base-size": {
+            "kind": "number",
+            "value": 12.0
+          }
+        },
+        "hyprland": {
+          "active-border": {
+            "alpha": 1.0,
+            "angle_degrees": 0.0,
+            "kind": "brush",
+            "stops": [
+              {
+                "argb": "#ff1e66f5",
+                "offset": 0.0
+              }
+            ]
+          },
+          "active-border-foreground": {
+            "alpha": 1.0,
+            "angle_degrees": 0.0,
+            "kind": "brush",
+            "stops": [
+              {
+                "argb": "#ff4c4f69",
+                "offset": 0.0
+              }
+            ]
+          }
+        },
+        "image-picker": {
+          "scrim": {
+            "alpha": 0.5,
+            "angle_degrees": 0.0,
+            "kind": "brush",
+            "stops": [
+              {
+                "argb": "#ffeff1f5",
+                "offset": 0.0
+              }
+            ]
+          },
+          "scrim-alpha": {
+            "kind": "number",
+            "value": 0.5
+          },
+          "selected-border": {
+            "alpha": 1.0,
+            "angle_degrees": 0.0,
+            "kind": "brush",
+            "stops": [
+              {
+                "argb": "#ff1e66f5",
+                "offset": 0.0
+              }
+            ]
+          },
+          "selected-border-alpha": {
+            "kind": "number",
+            "value": 1.0
+          },
+          "text": {
+            "alpha": 1.0,
+            "angle_degrees": 0.0,
+            "kind": "brush",
+            "stops": [
+              {
+                "argb": "#ff4c4f69",
+                "offset": 0.0
+              }
+            ]
+          },
+          "unselected-border": {
+            "alpha": 0.28,
+            "angle_degrees": 0.0,
+            "kind": "brush",
+            "stops": [
+              {
+                "argb": "#ff4c4f69",
+                "offset": 0.0
+              }
+            ]
+          },
+          "unselected-border-alpha": {
+            "kind": "number",
+            "value": 0.28
+          }
+        },
+        "launcher": {
+          "background": {
+            "alpha": 0.95,
+            "angle_degrees": 0.0,
+            "kind": "brush",
+            "stops": [
+              {
+                "argb": "#ffeff1f5",
+                "offset": 0.0
+              }
+            ]
+          },
+          "background-alpha": {
+            "kind": "number",
+            "value": 0.95
+          },
+          "border": {
+            "alpha": 1.0,
+            "angle_degrees": 0.0,
+            "kind": "brush",
+            "stops": [
+              {
+                "argb": "#ff4c4f69",
+                "offset": 0.0
+              }
+            ]
+          },
+          "border-alpha": {
+            "kind": "number",
+            "value": 1.0
+          },
+          "scrim": {
+            "alpha": 0.5,
+            "angle_degrees": 0.0,
+            "kind": "brush",
+            "stops": [
+              {
+                "argb": "#ffeff1f5",
+                "offset": 0.0
+              }
+            ]
+          },
+          "scrim-alpha": {
+            "kind": "number",
+            "value": 0.5
+          },
+          "selected-background": {
+            "alpha": 0.08,
+            "angle_degrees": 0.0,
+            "kind": "brush",
+            "stops": [
+              {
+                "argb": "#ff4c4f69",
+                "offset": 0.0
+              }
+            ]
+          },
+          "selected-background-alpha": {
+            "kind": "number",
+            "value": 0.08
+          },
+          "selected-border": {
+            "alpha": 0.25,
+            "angle_degrees": 0.0,
+            "kind": "brush",
+            "stops": [
+              {
+                "argb": "#ff4c4f69",
+                "offset": 0.0
+              }
+            ]
+          },
+          "selected-border-alpha": {
+            "kind": "number",
+            "value": 0.25
+          },
+          "selected-text": {
+            "alpha": 1.0,
+            "angle_degrees": 0.0,
+            "kind": "brush",
+            "stops": [
+              {
+                "argb": "#ff1e66f5",
+                "offset": 0.0
+              }
+            ]
+          },
+          "text": {
+            "alpha": 1.0,
+            "angle_degrees": 0.0,
+            "kind": "brush",
+            "stops": [
+              {
+                "argb": "#ff4c4f69",
+                "offset": 0.0
+              }
+            ]
+          }
+        },
+        "lock": {
+          "background": {
+            "alpha": 0.8,
+            "angle_degrees": 0.0,
+            "kind": "brush",
+            "stops": [
+              {
+                "argb": "#ffeff1f5",
+                "offset": 0.0
+              }
+            ]
+          },
+          "background-alpha": {
+            "kind": "number",
+            "value": 0.8
+          },
+          "border": {
+            "alpha": 1.0,
+            "angle_degrees": 0.0,
+            "kind": "brush",
+            "stops": [
+              {
+                "argb": "#ff1e66f5",
+                "offset": 0.0
+              }
+            ]
+          },
+          "border-active": {
+            "alpha": 1.0,
+            "angle_degrees": 0.0,
+            "kind": "brush",
+            "stops": [
+              {
+                "argb": "#ff1e66f5",
+                "offset": 0.0
+              }
+            ]
+          },
+          "border-alpha": {
+            "kind": "number",
+            "value": 1.0
+          },
+          "border-error": {
+            "alpha": 1.0,
+            "angle_degrees": 0.0,
+            "kind": "brush",
+            "stops": [
+              {
+                "argb": "#ffd20f39",
+                "offset": 0.0
+              }
+            ]
+          },
+          "placeholder": {
+            "alpha": 1.0,
+            "angle_degrees": 0.0,
+            "kind": "brush",
+            "stops": [
+              {
+                "argb": "#ff838699",
+                "offset": 0.0
+              }
+            ]
+          },
+          "selection": {
+            "alpha": 0.45,
+            "angle_degrees": 0.0,
+            "kind": "brush",
+            "stops": [
+              {
+                "argb": "#ff1e66f5",
+                "offset": 0.0
+              }
+            ]
+          },
+          "selection-alpha": {
+            "kind": "number",
+            "value": 0.45
+          },
+          "text": {
+            "alpha": 1.0,
+            "angle_degrees": 0.0,
+            "kind": "brush",
+            "stops": [
+              {
+                "argb": "#ff4c4f69",
+                "offset": 0.0
+              }
+            ]
+          },
+          "text-error": {
+            "alpha": 1.0,
+            "angle_degrees": 0.0,
+            "kind": "brush",
+            "stops": [
+              {
+                "argb": "#ffd20f39",
+                "offset": 0.0
+              }
+            ]
+          }
+        },
+        "menu": {
+          "background": {
+            "alpha": 1.0,
+            "angle_degrees": 0.0,
+            "kind": "brush",
+            "stops": [
+              {
+                "argb": "#ffeff1f5",
+                "offset": 0.0
+              }
+            ]
+          },
+          "background-alpha": {
+            "kind": "number",
+            "value": 1.0
+          },
+          "border": {
+            "alpha": 1.0,
+            "angle_degrees": 0.0,
+            "kind": "brush",
+            "stops": [
+              {
+                "argb": "#ff4c4f69",
+                "offset": 0.0
+              }
+            ]
+          },
+          "border-alpha": {
+            "kind": "number",
+            "value": 1.0
+          },
+          "scrim": {
+            "alpha": 0.5,
+            "angle_degrees": 0.0,
+            "kind": "brush",
+            "stops": [
+              {
+                "argb": "#ffeff1f5",
+                "offset": 0.0
+              }
+            ]
+          },
+          "scrim-alpha": {
+            "kind": "number",
+            "value": 0.5
+          },
+          "selected-background": {
+            "alpha": 0.08,
+            "angle_degrees": 0.0,
+            "kind": "brush",
+            "stops": [
+              {
+                "argb": "#ff4c4f69",
+                "offset": 0.0
+              }
+            ]
+          },
+          "selected-background-alpha": {
+            "kind": "number",
+            "value": 0.08
+          },
+          "selected-border": {
+            "alpha": 0.25,
+            "angle_degrees": 0.0,
+            "kind": "brush",
+            "stops": [
+              {
+                "argb": "#ff4c4f69",
+                "offset": 0.0
+              }
+            ]
+          },
+          "selected-border-alpha": {
+            "kind": "number",
+            "value": 0.25
+          },
+          "selected-text": {
+            "alpha": 1.0,
+            "angle_degrees": 0.0,
+            "kind": "brush",
+            "stops": [
+              {
+                "argb": "#ff1e66f5",
+                "offset": 0.0
+              }
+            ]
+          },
+          "text": {
+            "alpha": 1.0,
+            "angle_degrees": 0.0,
+            "kind": "brush",
+            "stops": [
+              {
+                "argb": "#ff4c4f69",
+                "offset": 0.0
+              }
+            ]
+          }
+        },
+        "notifications": {
+          "background": {
+            "alpha": 1.0,
+            "angle_degrees": 0.0,
+            "kind": "brush",
+            "stops": [
+              {
+                "argb": "#ffeff1f5",
+                "offset": 0.0
+              }
+            ]
+          },
+          "background-alpha": {
+            "kind": "number",
+            "value": 1.0
+          },
+          "border": {
+            "alpha": 1.0,
+            "angle_degrees": 0.0,
+            "kind": "brush",
+            "stops": [
+              {
+                "argb": "#ff1e66f5",
+                "offset": 0.0
+              }
+            ]
+          },
+          "border-alpha": {
+            "kind": "number",
+            "value": 1.0
+          },
+          "countdown": {
+            "alpha": 1.0,
+            "angle_degrees": 0.0,
+            "kind": "brush",
+            "stops": [
+              {
+                "argb": "#ff1e66f5",
+                "offset": 0.0
+              }
+            ]
+          },
+          "text": {
+            "alpha": 1.0,
+            "angle_degrees": 0.0,
+            "kind": "brush",
+            "stops": [
+              {
+                "argb": "#ff4c4f69",
+                "offset": 0.0
+              }
+            ]
+          }
+        },
+        "polkit": {
+          "accent": {
+            "alpha": 1.0,
+            "angle_degrees": 0.0,
+            "kind": "brush",
+            "stops": [
+              {
+                "argb": "#ff1e66f5",
+                "offset": 0.0
+              }
+            ]
+          },
+          "background": {
+            "alpha": 1.0,
+            "angle_degrees": 0.0,
+            "kind": "brush",
+            "stops": [
+              {
+                "argb": "#ffeff1f5",
+                "offset": 0.0
+              }
+            ]
+          },
+          "background-alpha": {
+            "kind": "number",
+            "value": 1.0
+          },
+          "border": {
+            "alpha": 1.0,
+            "angle_degrees": 0.0,
+            "kind": "brush",
+            "stops": [
+              {
+                "argb": "#ff1e66f5",
+                "offset": 0.0
+              }
+            ]
+          },
+          "border-alpha": {
+            "kind": "number",
+            "value": 1.0
+          },
+          "border-error": {
+            "alpha": 1.0,
+            "angle_degrees": 0.0,
+            "kind": "brush",
+            "stops": [
+              {
+                "argb": "#ffd20f39",
+                "offset": 0.0
+              }
+            ]
+          },
+          "scrim": {
+            "alpha": 0.5,
+            "angle_degrees": 0.0,
+            "kind": "brush",
+            "stops": [
+              {
+                "argb": "#ffeff1f5",
+                "offset": 0.0
+              }
+            ]
+          },
+          "scrim-alpha": {
+            "kind": "number",
+            "value": 0.5
+          },
+          "text": {
+            "alpha": 1.0,
+            "angle_degrees": 0.0,
+            "kind": "brush",
+            "stops": [
+              {
+                "argb": "#ff4c4f69",
+                "offset": 0.0
+              }
+            ]
+          },
+          "text-error": {
+            "alpha": 1.0,
+            "angle_degrees": 0.0,
+            "kind": "brush",
+            "stops": [
+              {
+                "argb": "#ffd20f39",
+                "offset": 0.0
+              }
+            ]
+          }
+        },
+        "popups": {
+          "background": {
+            "alpha": 1.0,
+            "angle_degrees": 0.0,
+            "kind": "brush",
+            "stops": [
+              {
+                "argb": "#ffeff1f5",
+                "offset": 0.0
+              }
+            ]
+          },
+          "background-alpha": {
+            "kind": "number",
+            "value": 1.0
+          },
+          "border": {
+            "alpha": 1.0,
+            "angle_degrees": 0.0,
+            "kind": "brush",
+            "stops": [
+              {
+                "argb": "#ff1e66f5",
+                "offset": 0.0
+              }
+            ]
+          },
+          "border-alpha": {
+            "kind": "number",
+            "value": 1.0
+          },
+          "text": {
+            "alpha": 1.0,
+            "angle_degrees": 0.0,
+            "kind": "brush",
+            "stops": [
+              {
+                "argb": "#ff4c4f69",
+                "offset": 0.0
+              }
+            ]
+          }
+        },
+        "spacing": {
+          "scale": {
+            "kind": "number",
+            "value": 1.0
+          },
+          "scale-with-font": {
+            "kind": "boolean",
+            "value": true
+          }
+        },
+        "tooltip": {
+          "background": {
+            "alpha": 0.97,
+            "angle_degrees": 0.0,
+            "kind": "brush",
+            "stops": [
+              {
+                "argb": "#ffeff1f5",
+                "offset": 0.0
+              }
+            ]
+          },
+          "background-alpha": {
+            "kind": "number",
+            "value": 0.97
+          },
+          "border": {
+            "alpha": 1.0,
+            "angle_degrees": 0.0,
+            "kind": "brush",
+            "stops": [
+              {
+                "argb": "#ff4c4f69",
+                "offset": 0.0
+              }
+            ]
+          },
+          "border-alpha": {
+            "kind": "number",
+            "value": 1.0
+          },
+          "text": {
+            "alpha": 1.0,
+            "angle_degrees": 0.0,
+            "kind": "brush",
+            "stops": [
+              {
+                "argb": "#ff4c4f69",
+                "offset": 0.0
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "capture": "dark-settings",
+      "surface": "settings",
+      "active_generation": "25160e6a7d3e541b57ecba31",
+      "sha256": "9944c9fdef515ee3fc71c5a00cc46d6619d6142d6de17fcf3198d9b653cd44b8"
+    },
+    {
+      "capture": "dark-shade",
+      "surface": "shade",
+      "active_generation": "25160e6a7d3e541b57ecba31",
+      "sha256": "5cb9ac53740657f87d06e2c9667605bd1dc197ea1f0c8850ea9592019adda1c9"
+    },
+    {
+      "capture": "light-settings",
+      "surface": "settings",
+      "active_generation": "da8320de401d50cd2fb2fcb3",
+      "sha256": "4094b29193330d905cae36305574359b8564e35bb11f7ad2d095bc4b142dd23f"
+    },
+    {
+      "capture": "light-shade",
+      "surface": "shade",
+      "active_generation": "da8320de401d50cd2fb2fcb3",
+      "sha256": "9f1b063491fa5e4909d29723dbbde3816c43c2b9268b91ee4906ea4bf3db8505"
+    },
+    {
+      "capture": "rollback-settings",
+      "surface": "settings",
+      "active_generation": "25160e6a7d3e541b57ecba31",
+      "sha256": "9944c9fdef515ee3fc71c5a00cc46d6619d6142d6de17fcf3198d9b653cd44b8"
+    },
+    {
+      "capture": "rollback-shade",
+      "surface": "shade",
+      "active_generation": "25160e6a7d3e541b57ecba31",
+      "sha256": "f96bbf535aa2e78a5b09781c996c7ad4d2359dca838d15ccc28b9c195225a87d"
+    }
+  ],
+  "rollback": {
+    "failure": "deliberate second-receiver commit failure",
+    "receivers_acknowledged": 2,
+    "restored_generation": "25160e6a7d3e541b57ecba31"
+  },
+  "current_system": "/nix/store/xphf8zb00gz9hiyqkkh399rldr2ljykb-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "normal_restored": true,
+  "original_generation_restored": true,
+  "notification_history": "isolated actual daemon; operator history untouched",
+  "installed_candidate_pid": 9466,
+  "restored_normal_exe": "/nix/store/8cikjd811d7b7hsdhn7nnb3lnipf3vwp-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0/bin/k230-shell-rust",
+  "boot_and_profile_unchanged": true,
+  "result": "PASS",
+  "scope": "Native presentation and forced transaction rollback, not finger or boot acceptance",
+  "pixel_review": {
+    "settings_panel_point": [
+      10,
+      250
+    ],
+    "settings_control_point": [
+      300,
+      230
+    ],
+    "notification_card_point": [
+      300,
+      510
+    ],
+    "home_dock_point": [
+      20,
+      1110
+    ],
+    "samples": {
+      "dark-settings": {
+        "panel": [
+          24,
+          28,
+          41
+        ],
+        "control_or_notification": [
+          33,
+          36,
+          49
+        ],
+        "dock": [
+          16,
+          20,
+          33
+        ]
+      },
+      "light-settings": {
+        "panel": [
+          239,
+          243,
+          247
+        ],
+        "control_or_notification": [
+          239,
+          235,
+          239
+        ],
+        "dock": [
+          148,
+          154,
+          156
+        ]
+      },
+      "rollback-settings": {
+        "panel": [
+          24,
+          28,
+          41
+        ],
+        "control_or_notification": [
+          33,
+          36,
+          49
+        ],
+        "dock": [
+          16,
+          20,
+          33
+        ]
+      },
+      "dark-shade": {
+        "panel": [
+          24,
+          28,
+          41
+        ],
+        "control_or_notification": [
+          33,
+          36,
+          49
+        ],
+        "dock": [
+          16,
+          20,
+          33
+        ]
+      },
+      "light-shade": {
+        "panel": [
+          239,
+          243,
+          247
+        ],
+        "control_or_notification": [
+          239,
+          235,
+          239
+        ],
+        "dock": [
+          148,
+          154,
+          156
+        ]
+      },
+      "rollback-shade": {
+        "panel": [
+          24,
+          28,
+          41
+        ],
+        "control_or_notification": [
+          33,
+          36,
+          49
+        ],
+        "dock": [
+          16,
+          20,
+          33
+        ]
+      }
+    }
+  }
+}

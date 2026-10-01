@@ -53,10 +53,10 @@ and the added compatibility-report regression, both host-only.
 
 ## 4. Prove it on the actual handheld
 
-- [ ] 4.1 Build the affected outputs individually, then the full
+- [x] 4.1 Build the affected outputs individually, then the full
   `nixosConfigurations.k230-coherent-shell` toplevel; record the exact
   closure and source identities. Needs no board.
-- [ ] 4.2 On the reserved board, activate a built-in dark theme and a
+- [x] 4.2 On the reserved board, activate a built-in dark theme and a
   built-in light theme in turn; open Settings and trigger a notification
   for each. Capture native `grim` screenshots showing each surface's colors
   match the active generation, and that a rollback restores the previous
@@ -68,4 +68,4 @@ Proof for 4.1: the named `nix build`/toplevel evaluation. Proof for 4.2: the
 committed native captures and exact board commands; a host test does not
 establish this by itself.
 
-Host task groups 2–3 passed 2026-10-01: `docs/evidence/omarchy-themes/settings-notifications-themed/host.md`. Build and board groups remain open.
+Host task groups 2–3 passed 2026-10-01: `docs/evidence/omarchy-themes/settings-notifications-themed/host.md`. Build and native physical-board groups passed: `docs/evidence/omarchy-themes/settings-notifications-themed/board/README.md`. All eight scoped tasks are complete; broader theme/polish and persistent deployment remain with their owning proposals.

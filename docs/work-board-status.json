@@ -472,6 +472,25 @@
       ],
       "rationale": "Operator-authorized functional archive and capture waiver, with existing injected-board cases preserved. Budget failures are not accepted as passing; unfinished measurements and image/QEMU proof have sole ownership in the existing successor.",
       "reviewRevision": "9d6f2459"
+    },
+    "2026-10-01-the-settings-and-notifications-surfaces-are-themed": {
+      "lane": "archived",
+      "source": "archived",
+      "physical": "verified",
+      "next": "Scoped theme coverage and native dark/light rollback are complete; continue broader theme-picker, persistent deployment and shell polish in their owning proposals.",
+      "dependencies": [],
+      "evidence": [
+        "docs/evidence/omarchy-themes/settings-notifications-themed/host.md",
+        "docs/evidence/omarchy-themes/settings-notifications-themed/board/README.md",
+        "docs/evidence/omarchy-themes/settings-notifications-themed/board/result.json"
+      ],
+      "rationale": "All eight scoped tasks passed, including the matching coherent-system build and recoverable native board presentation. No boot or real-finger acceptance is inferred.",
+      "reviewRevision": "288535289172c8465c4fa408eaa8ba2c7ab8a5ac",
+      "cover": {
+        "path": "docs/evidence/omarchy-themes/settings-notifications-themed/board/light-settings.png",
+        "caption": "Native physical-board Settings capture after switching to Catppuccin Latte",
+        "provenance": "Board capture"
+      }
     }
   }
 }

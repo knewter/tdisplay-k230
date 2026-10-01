@@ -49,8 +49,10 @@ for this theme-only scope; injected commands and native screenshots are labeled.
 
 ## Open Questions
 
-No surface-owner question remains. Physical readability and same-surface theme
-rollback remain unverified until task 4.2's actual board evidence is committed.
+No surface-owner question remains. Task 4.2's six native physical-board captures
+now establish dark/light presentation and same-surface rollback. See
+`docs/evidence/omarchy-themes/settings-notifications-themed/board/README.md`.
+This scoped change needs no additional boot or finger gate.
 
 ## Shared-layer invalidation found during the board trial
 
@@ -60,3 +62,9 @@ Mark that layer dirty on optimistic adoption, commit/rollback and failed-commit
 restoration too. Repeat the native trial on the rebuilt source and compare the
 dock as well as the scoped Settings/notification colors. Do not use the earlier
 partially stale frames as proof of a coherent rollback.
+
+The repeat at `288535289172c8465c4fa408eaa8ba2c7ab8a5ac` passed: Home dock
+pixels as well as Settings and Shade returned to dark. The matching full
+coherent system built successfully. Normal services and the original active
+generation were restored; this was a recoverable component trial, not full
+system activation. The larger theme/polish proposals retain their own gates.

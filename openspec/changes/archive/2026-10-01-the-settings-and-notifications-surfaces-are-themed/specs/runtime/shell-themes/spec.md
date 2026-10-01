@@ -1,10 +1,16 @@
+## Purpose
+
+The userspace shell applies resolved theme roles to Settings and notification
+Shade surfaces, reports unsupported roles explicitly, and restores their colors
+when a shared appearance transaction rolls back.
+
 ## ADDED Requirements
 
 ### Requirement: Settings and notifications honor the active theme
 
-<!-- UNVERIFIED -->
-The system SHALL make whatever rendered surface Settings and notifications
-actually have (investigated by task 1 before any wiring is attempted) read
+Grounding: `docs/evidence/omarchy-themes/settings-notifications-themed/board/README.md` records the physical dark/light Settings and Shade presentation, named compatibility reports and forced rollback on the same Rust renderer.
+
+The system SHALL make the Rust shell's Settings and notification Shade surfaces read
 the active generation's resolved colors the same way the shell, drawer, and
 card renderers already do, and repaint on the existing commit/rollback
 signal `theme_transaction.py`'s receiver fan-out already sends. It SHALL
@@ -25,8 +31,7 @@ existing `sections["controls"]`/`sections["notifications"]` output.
 
 #### Scenario: Settings reflects the active theme after a swap
 - **WHEN** a person opens Settings after switching themes
-- **THEN** its rendered surface (if any exists once task 1 investigates)
-  shows the newly active generation's colors without a restart, and a
+- **THEN** its rendered surface shows the newly active generation's colors without a restart, and a
   subsequent rollback restores the previous generation's colors on the
   same surface
 
