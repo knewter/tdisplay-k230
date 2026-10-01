@@ -13,12 +13,13 @@ The compositor overview remains a distinct renderer. Its [existing native captur
 Use the existing native Cargo development environment with Cairo, Pango, librsvg, glib and xkbcommon; the proof used the repo's pinned buildPackages from flake revision `b57ba41ccf6755c54039fc85b0a54145001b186a` with two host build jobs and a private copied Cargo target. Icon input was `/nix/store/in3nc21zx02xiz2rdp5bpq36719x3axd-handheld-theme-icons-25.10.3/share` via `XDG_DATA_DIRS`. `K230_THEME_THUMBNAIL_SEED` may point at the pinned theme package's `share/omarchy/thumbs-by-hash`; missing seed data is decoded by the same worker. The example fails if its admitted thumbnails do not resolve within 45 seconds.
 
 ```sh
+PROOF_STATE_ROOT=/path/to/proof-state
 python3 tools/theme_activate.py catppuccin --prepare-only \
-  --state-root /home/jadams/tmp/shell-polish-themes \
+  --state-root $PROOF_STATE_ROOT \
   --builtins /nix/store/9c1i2zfliab82a80iv87929qkngn1ca0-handheld-theme-default-28ceaae7/share/omarchy/themes \
   --background backgrounds/2-waves.webp
 python3 tools/theme_activate.py catppuccin-latte --prepare-only \
-  --state-root /home/jadams/tmp/shell-polish-themes \
+  --state-root $PROOF_STATE_ROOT \
   --builtins /nix/store/9c1i2zfliab82a80iv87929qkngn1ca0-handheld-theme-default-28ceaae7/share/omarchy/themes \
   --background backgrounds/1-color-fade.webp
 cargo run --offline --manifest-path nix/rust-shell-client/Cargo.toml \
