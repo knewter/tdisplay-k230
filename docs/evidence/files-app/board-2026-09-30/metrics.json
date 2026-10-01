@@ -1,0 +1,49 @@
+{
+  "recorded_utc": "2026-10-01T03:00:41.120299+00:00",
+  "current_system": "/nix/store/nlgjhifgwcgg0hlbqhnng7xw7cjgxg9a-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "evidence_class": "physical-board-desktop-entry-exec-launch-and-proc-read",
+  "apps": [
+    {
+      "app_id": "dev.tchx84.Portfolio",
+      "launch_to_wayland_map_ms": 5915.6,
+      "processes": [
+        {
+          "pid": 3876,
+          "exe": "/nix/store/v189xydz6qkcd4cbkixcmv91w8hbc560-python3-riscv64-unknown-linux-gnu-3.14.7/bin/python3.14",
+          "rss_kib": 74388,
+          "wrapper_environment": {
+            "GDK_BACKEND": true,
+            "GSK_RENDERER": true,
+            "app_share": true,
+            "adwaita_icons": true,
+            "hicolor_icons": true
+          }
+        }
+      ],
+      "limits": [
+        "Already warm OS/library caches; first mapped surface is not a first-frame latency measurement."
+      ]
+    },
+    {
+      "app_id": "org.gnome.Nautilus",
+      "launch_to_wayland_map_ms": 3460.8,
+      "processes": [
+        {
+          "pid": 3889,
+          "exe": "/nix/store/ljl5sxwc87zb16b4pnk6dpc17bpqcy82-nautilus-riscv64-unknown-linux-gnu-50.2.2/bin/.nautilus-wrapped",
+          "rss_kib": 64536,
+          "wrapper_environment": {
+            "GDK_BACKEND": true,
+            "GSK_RENDERER": true,
+            "app_share": true,
+            "adwaita_icons": true,
+            "hicolor_icons": true
+          }
+        }
+      ],
+      "limits": [
+        "Already warm OS/library caches; first mapped surface is not a first-frame latency measurement."
+      ]
+    }
+  ]
+}

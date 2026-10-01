@@ -175,18 +175,17 @@
   screenshots (riscv64 binary, patched Sway, `qemu-riscv64-static`, this
   repo's existing brightness/volume-slider QEMU harness pattern) not done in
   this change — blocked on 2.2/2.3's riscv64 builds finishing.
-- [ ] 5.3 Board evidence: real launch time, RSS and scroll behavior for both
-  candidates on the physical panel, plus confirmation that icons resolve
-  correctly with the `GDK_BACKEND=wayland`/`adwaita-icon-theme`/
-  `hicolor-icon-theme` fix (task 6.2) applied. **Which entry(ies) to keep
-  is no longer blocked on this**: the operator has already decided (task
-  6.1) to keep both by default; this task now covers only the physical
-  performance/appearance observation itself. Operator command once a
-  flashed image exists: launch each "Files (…)" drawer entry and observe; no
-  narrow `tools/msh.py`/`console.py` invocation is prescribed here because
-  the observation itself (does it come up, how fast, how smooth, do icons
-  render) is the point, not a scripted check. UNVERIFIED until performed;
-  this change does not claim board behavior.
+- [x] 5.3 Board evidence: both installed candidates launched and were exercised
+  on the physical panel. Operator confirmed icons and scrolling work in both.
+  Exact installed desktop-wrapper launches measured Portfolio 5.916 s / 74,388
+  KiB RSS and Nautilus 3.461 s / 64,536 KiB RSS; both actual processes passed
+  Wayland, cairo and application/adwaita/hicolor share environment checks.
+  Original native captures plus the optical panel photograph, public console
+  record, script, identities and measurement limits are committed in
+  `docs/evidence/files-app/board-2026-09-30/README.md`. Repeatable board command
+  is recorded there. These are warm-cache surface-map measurements, not
+  first-frame latency or quantified scrolling FPS. Keep both by the existing
+  operator decision; no further candidate selection remains.
 
 ## 6. Default both candidates, remove nnn's entry outright
 

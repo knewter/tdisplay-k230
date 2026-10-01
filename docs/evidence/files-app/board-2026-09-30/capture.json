@@ -1,0 +1,25 @@
+{
+  "source_revision": "27110ccb2391100848461a59bccf4bbcd5a59430",
+  "current_system": "/nix/store/nlgjhifgwcgg0hlbqhnng7xw7cjgxg9a-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "recorded_utc": "2026-10-01T03:00:41.120299+00:00",
+  "native_images": {
+    "portfolio.jpg": {
+      "board_path": "/run/shell/files-portfolio.jpg",
+      "sha256": "bbdbcdff21dbf352505f6ec56ab00748083cc520c875b22a8996f954e50c3786",
+      "bytes": 30727,
+      "capture": "grim -t jpeg -q 85; original bytes collected through framed serial base64"
+    },
+    "nautilus.jpg": {
+      "board_path": "/run/shell/files-nautilus.jpg",
+      "sha256": "d96761dea749db42ce7df9f015c216ad7d7ef85be4ef209fe6060b5ecac84864",
+      "bytes": 27470,
+      "capture": "grim -t jpeg -q 85; original bytes collected through framed serial base64"
+    }
+  },
+  "optical_image": {
+    "path": "nautilus-panel.jpg",
+    "capture": "ffmpeg -hide_banner -loglevel error -f v4l2 -i /dev/video0 -frames:v 1 -y CAPTURE.jpg",
+    "sha256": "b702b254e1625c060c50c3a9feea34ade7821b0602d707868b8a1cb68d3bc2f5",
+    "limits": "Oblique, blurred, partly outside camera frame; shows lit panel with empty-folder view, not proof of icon detail or touch."
+  }
+}

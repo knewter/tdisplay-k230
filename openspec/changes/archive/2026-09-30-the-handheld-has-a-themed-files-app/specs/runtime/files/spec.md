@@ -1,3 +1,8 @@
+## Purpose
+
+Provide two installed touchscreen file managers with reproducible software
+rendering, icon resolution and theme appearance from the handheld's Nix image.
+
 ## ADDED Requirements
 
 ### Requirement: Two off-the-shelf touch-capable file managers are the handheld's only "Files" entries, installed by default
@@ -44,13 +49,12 @@ Each candidate's drawer entry SHALL launch through a wrapper that sets
 
 ### Requirement: Each candidate's launcher wrapper is self-contained for Wayland and icon resolution
 
-*Grounding: operator report of board behavior (not reproduced by this
-worktree; a repository board re-check remains open, `tasks.md` 5.3): both
-apps were missing icons on the board without `GDK_BACKEND=wayland` and
-without `adwaita-icon-theme`/`hicolor-icon-theme` on `XDG_DATA_DIRS`. The
-fix is recorded in `nix/shell.nix`'s `mkFilesAppLauncher`, not as hand-made
-files under `/home/shell`, so a fresh home reproduces it without manual
-board setup.*
+*Grounding: `docs/evidence/files-app/board-2026-09-30/README.md` records
+actual desktop-wrapper launches on the installed board, application process
+checks for Wayland and application/adwaita/hicolor shares, original native
+captures showing resolved icons, and operator acceptance of both apps' icons
+and scrolling. The configuration is in `nix/shell.nix`'s `mkFilesAppLauncher`,
+not hand-made files under `/home/shell`.*
 
 Each candidate's launcher wrapper SHALL set `GDK_BACKEND=wayland` and SHALL
 include the launched application's own `share` directory,
@@ -66,10 +70,7 @@ include the launched application's own `share` directory,
   `hicolor-icon-theme`'s `share`, without relying on any file outside the
   Nix store under the launching user's home directory
 
-<!-- UNVERIFIED: this requirement encodes an operator-reported board
-observation into the Nix configuration; no host, QEMU or board check in
-this change independently reproduces "icons were missing without these
-variables" or confirms the fix resolves it on the physical panel. -->
+
 
 ### Requirement: Both candidates render the active Omarchy theme's dark/light mode and icon variant
 

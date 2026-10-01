@@ -1541,6 +1541,9 @@ DATA c9c05b81fb3d12e81f2b5f61135846d7779f4246d1fbda106e2ed5653cc165f5 docs/evide
 DATA 032b3a6635590f6a8e8bc2b976b5afe89a1bc3c7a03648a6cee50a7f21b29062 docs/evidence/the-shell-is-navigable-with-a-mouse/edge-controls-board/home-handle-overview.jpg
 DATA c0f4155dee9e0a9f65f2db9aa231e9d8e481563d5ff3ff1f0ba46466081d59f0 docs/evidence/the-shell-is-navigable-with-a-mouse/edge-controls-board/search-backspace.jpg
 DATA 0e4ea4bbd724e66ca03867a762bc00b24f67c3504dfe9f6703719401edae85d0 docs/evidence/the-shell-is-navigable-with-a-mouse/edge-controls-board/search-q.jpg
+DATA bbdbcdff21dbf352505f6ec56ab00748083cc520c875b22a8996f954e50c3786 docs/evidence/files-app/board-2026-09-30/portfolio.jpg
+DATA d96761dea749db42ce7df9f015c216ad7d7ef85be4ef209fe6060b5ecac84864 docs/evidence/files-app/board-2026-09-30/nautilus.jpg
+DATA b702b254e1625c060c50c3a9feea34ade7821b0602d707868b8a1cb68d3bc2f5 docs/evidence/files-app/board-2026-09-30/nautilus-panel.jpg
 ```
 
 `group:` rows stand for a directory whose members are enumerated by

@@ -315,20 +315,6 @@
         "docs/evidence/proposal-closeout/2026-09-30/operator-feedback.md"
       ]
     },
-    "the-handheld-has-a-themed-files-app": {
-      "lane": "verification",
-      "source": "source-landed",
-      "physical": "pending",
-      "next": "Both apps show icons on glass. After edge taps are fixed, check folder/header controls and scrolling in Portfolio and Nautilus; collect startup/RSS metrics.",
-      "reviewRevision": "6306c1d8df787820c1c74e7808be6d853e343b30",
-      "rationale": "Closeout audit at 6306c1d8: all implementation tasks are checked; task 5.3 is the sole remaining physical gate. Existing evidence is retained; no new physical acceptance or archive is claimed.",
-      "dependencies": [],
-      "evidence": [
-        "docs/evidence/files-app/README.md",
-        "docs/evidence/proposal-closeout/2026-09-30/README.md",
-        "docs/evidence/proposal-closeout/2026-09-30/operator-feedback.md"
-      ]
-    },
     "plugging-in-hdmi-moves-the-display": {
       "lane": "in-progress",
       "source": "in-progress",
