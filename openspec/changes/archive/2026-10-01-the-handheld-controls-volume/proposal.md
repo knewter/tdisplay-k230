@@ -148,9 +148,7 @@ volume control, live-graph awareness, the HUD, and an output device picker.
 
 - No claim that this board has a working loudspeaker or that the external
   I2S route is audible -- that is `the-handheld-plays-through-its-speaker`'s
-  own, still-open UNVERIFIED claim. This change's own audible-output tasks
-  (line-out through headphones, and the external route if present) are left
-  open below.
+  own, still-open UNVERIFIED claim. The headphone listening task is retained in the audio proposal (5.6); the external route remains there too.
 - No change to the theme picker (`theme_ui.rs`, `theme_carousel.rs`,
   `theme_thumbnails.rs`, `theme_catalog.rs`, `appearance.rs`) or the app
   drawer (`navigation.rs`'s drawer paths, the drawer render, `drawer_close_
@@ -159,9 +157,7 @@ volume control, live-graph awareness, the HUD, and an output device picker.
   PipeWire's ALSA-compat layer is the entire integration surface mpv needs.
 - No `pipewire-rs`/native-protocol client and no `security.rtkit.enable`;
   see design.md for why each was rejected.
-- Real-finger board acceptance, real hardware-key acceptance, and any
-  audible-output check are explicitly left open; see tasks.md. This
-  worktree does not touch the board or `/dev/ttyACM0`.
+- Board UI self-verification is committed; physical audio-key checks are conditional on an attached emitting keyboard. Audible-output acceptance is retained in the audio proposal.
 
 ## Capabilities
 
@@ -178,3 +174,7 @@ volume control, live-graph awareness, the HUD, and an output device picker.
   an ordinary further `ADDED Requirements` delta against the now-existing
   capability. Neither change modifies or removes a requirement the other
   owns.
+
+## 2026-10-01 accepted closeout scope
+
+The user delegated board self-verification and accepted closing the UI after the real sink/stream/HUD checks. `docs/evidence/volume/closeout-2026-10-01/README.md` records 15 physical-board assertions using injected contacts, actual PipeWire/ALSA state and native captures; these are not new human-finger or listening observations. The independent HUD and hardware Device Route fixes supersede earlier implementation limitations. The user explicitly moved the unperformed headphone/line-out listening test into `the-handheld-plays-through-its-speaker`, task 5.6. No audible output, absent external add-on or physical audio-key result is claimed.

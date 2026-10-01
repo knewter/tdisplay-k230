@@ -25,6 +25,10 @@ whether a MAX98357A amplifier is attached.
 - **WHEN** the system boots with the patched kernel and unmodified device tree
 - **THEN** `/proc/asound/cards` shows the `CANAAN-K230-I2S` card and audio played on it reaches the Inno codec's line-out/headphone path, exactly as before this change
 
+#### Scenario: Headphone playback follows the verified volume controls
+- **WHEN** headphones or line-out are connected and a known tone or clip plays through the Inno codec's PipeWire sink while Settings volume is dragged and muted
+- **THEN** a listening operator confirms that audible level follows the slider and mute is silent, with the playback command and observation committed; this audible acceptance remains UNVERIFIED until task 5.6 is performed
+
 ### Requirement: An external I2S route to a MAX98357A amplifier is selectable without a reboot
 
 *Grounding: `nix/patches/canaan-audio-external-i2s-switch.patch`, a port of

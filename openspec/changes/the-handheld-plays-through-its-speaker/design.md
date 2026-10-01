@@ -119,3 +119,7 @@ add-on presets (nRF52840, nRF9151, LoRa). A README feature list describing
 the product family is not a photograph of this board's PCB. Per
 `.skills/k230-spec-change/SKILL.md`'s grounding order, this stays
 `<!-- UNVERIFIED -->` rather than becoming a confident requirement.
+
+## Headphone acceptance retained from volume closeout
+
+On 2026-10-01 the user explicitly transferred the unperformed line-out/headphone listening test from the completed volume UI change into task 5.6 here. This proposal now owns confirming that Settings slider levels and mute correspond to audible output through the Inno codec via PipeWire. The connected headphone/line-out and listening observation remain UNVERIFIED. The user confirms there is no external audio add-on; external-amplifier validation is deferred and must not block this independent headphone test.

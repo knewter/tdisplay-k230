@@ -1,14 +1,17 @@
-## Purpose
+# system/audio Specification
 
+## Purpose
 Define the PipeWire/WirePlumber session layer this shell runs, and the
 volume control, live-graph awareness, HUD and output-device-picker surfaces
 built on it. Disjoint from `the-handheld-plays-through-its-speaker`'s own
 Inno-codec/external-I2S-route requirements for the same `system/audio`
 capability; see that change for the board's ALSA/kernel-level audio path.
 
-## ADDED Requirements
+## Requirements
 
 ### Requirement: A session-scoped PipeWire/WirePlumber layer runs for the coherent shell
+
+*Grounding: `docs/evidence/volume/closeout-2026-10-01/README.md` and `result.json`: installed physical-board UI/backend verification using injected contacts, real sink/stream state and native captures. Headphone audibility is retained as UNVERIFIED audio task 5.6; no new human-finger test is claimed.*
 
 *Host build proof: `nix build .#handheld-shell-rust` and the full
 `k230-coherent-shell` system closure cross-build succeed with
@@ -36,6 +39,8 @@ NixOS modules were not used instead.*
 - **THEN** the closure contains `pipewire`, `wireplumber`, `pipewire-pulse` and their two ALSA plugin config files, wired to start with the shell session
 
 ### Requirement: The shade and Settings each show a volume slider, matching the brightness slider's own component and floor semantics
+
+*Grounding: `docs/evidence/volume/closeout-2026-10-01/README.md` and `result.json`: installed physical-board UI/backend verification using injected contacts, real sink/stream state and native captures. Headphone audibility is retained as UNVERIFIED audio task 5.6; no new human-finger test is claimed.*
 
 *Host build proof: `cargo test`/`cargo clippy --all-targets` for
 `nix/rust-shell-client` pass; `slider.rs`'s floor-parameterized functions
@@ -69,6 +74,8 @@ displayed_percent}`.*
 
 ### Requirement: The volume UI maps a slider position through a cubic perceptual curve, matching Android and matching `wpctl` itself
 
+*Grounding: `docs/evidence/volume/closeout-2026-10-01/README.md` and `result.json`: installed physical-board UI/backend verification using injected contacts, real sink/stream state and native captures. Headphone audibility is retained as UNVERIFIED audio task 5.6; no new human-finger test is claimed.*
+
 *Host build proof: `volume::tests::percent_to_linear_is_cubic_not_linear`
 and `linear_to_percent_round_trips_percent_to_linear` (unit tests only);
 `docs/evidence/volume/wpctl.md` records the live `wpctl`/`pw-dump` capture
@@ -89,9 +96,11 @@ independent data point at `0.57`/`0.185185`.*
 
 #### Scenario: Equal slider steps read as roughly equal loudness steps
 - **WHEN** the slider moves from 50% to 60%, and separately from 90% to 100%
-- **THEN** the underlying linear amplitude changes by a small amount near the top and a larger amount lower down, per the cubic curve, not a fixed linear step either place
+- **THEN** the underlying linear amplitude changes by a larger amount near the top and a smaller amount lower down, per the cubic curve, not a fixed linear step either place
 
 ### Requirement: A live drag writes PipeWire directly through one persistent process, throttled, never blocking the UI
+
+*Grounding: `docs/evidence/volume/closeout-2026-10-01/README.md` and `result.json`: installed physical-board UI/backend verification using injected contacts, real sink/stream state and native captures. Headphone audibility is retained as UNVERIFIED audio task 5.6; no new human-finger test is claimed.*
 
 *Host build proof: `pipewire_ipc::tests::writer_handle_delivers_commands_
 in_order_to_a_real_child_process` spawns a real child process (a test
@@ -121,6 +130,8 @@ reasoning.*
 - **THEN** the release still sends the finger's true final value through a `wpctl set-volume` call
 
 ### Requirement: The shell watches the PipeWire graph and reflects external changes live
+
+*Grounding: `docs/evidence/volume/closeout-2026-10-01/README.md` and `result.json`: installed physical-board UI/backend verification using injected contacts, real sink/stream state and native captures. Headphone audibility is retained as UNVERIFIED audio task 5.6; no new human-finger test is claimed.*
 
 *Host build proof: `pipewire_ipc::tests::a_delta_that_only_touches_one_
 node_does_not_wipe_the_others`, `a_removal_delta_drops_only_the_named_
@@ -152,6 +163,8 @@ directly and a live capture of the exact array shapes involved.*
 - **THEN** the app stream remains visible and unchanged in the running model after the sink's own update is applied
 
 ### Requirement: An Android-style volume HUD appears for changes the shell did not itself just show
+
+*Grounding: `docs/evidence/volume/closeout-2026-10-01/README.md` and `result.json`: installed physical-board UI/backend verification using injected contacts, real sink/stream state and native captures. Headphone audibility is retained as UNVERIFIED audio task 5.6; no new human-finger test is claimed.*
 
 *Host build proof: `volume::tests::hud_is_hidden_until_shown_and_
 autohides_after_its_window`, `hud_toggle_expand_flips_state_and_refreshes_
@@ -213,6 +226,8 @@ Mute` lines (`k230.shell.coherentShell`-gated); design.md Decision 7.*
 - **THEN** `wpctl` changes the default sink directly, and the Rust shell client's own graph watcher (not a message from Sway) is what notices and raises the HUD
 
 ### Requirement: An output device picker lists PipeWire sinks in the expanded HUD and in Settings
+
+*Grounding: `docs/evidence/volume/closeout-2026-10-01/README.md` and `result.json`: installed physical-board UI/backend verification using injected contacts, real sink/stream state and native captures. Headphone audibility is retained as UNVERIFIED audio task 5.6; no new human-finger test is claimed.*
 
 *Host build proof: cargo unit tests over `pipewire_ipc::GraphSnapshot::
 sinks`/`Sink::is_default`. QEMU capture under `docs/evidence/volume/`.

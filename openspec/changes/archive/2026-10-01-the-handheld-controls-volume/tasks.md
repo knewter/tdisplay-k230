@@ -124,7 +124,7 @@ host/QEMU evidence already produced by this worktree lives at
       new `draw_with_hud_composites_the_pill_on_top_of_the_live_settings_
       scene`, which specifically catches a regression back to "painted
       but never reaches the live canvas").
-      **Known, still-open gap**: `draw_with_hud` only paints while the
+      **Historical gap, resolved by task 10.1 and the committed 2026-10-01 board proof**: `draw_with_hud` only paints while the
       overlay layer surface is already mapped (a Drawer/Shade/Settings
       sheet open) -- `main.rs`'s touch dispatch (`hud_touch_down`) is
       already fully route-independent, but nothing yet forces this layer
@@ -233,19 +233,13 @@ host/QEMU evidence already produced by this worktree lives at
       `python3 scripts/render_work_board.py > /dev/null` both re-run
       after task 7.1's evidence landed: both exit 0. Rerun once more
       before archiving, in case anything lands between now and then.
-- [ ] 8.2 Keep this change open with groups 1.4, 3.3, 7, and every
-      board/audible task in group 9 unchecked until their named physical
-      proof exists; do not tick them from a host or QEMU run.
+- [x] 8.2 Closeout audit: all retained board UI/backend proof is committed under `docs/evidence/volume/closeout-2026-10-01/`. On 2026-10-01 the user explicitly authorized moving the unperformed headphone listening test to the existing audio proposal, task 5.6. This is a scope transfer, not audible acceptance.
 
-## 9. Physical acceptance (board, open; this proposal claims none of these)
+## 9. Physical acceptance (board UI verified; audibility transferred)
 
 - [x] 9.1 User-delegated board self-verification passed Settings/Shade held live drag, zero-mute and remembered-level icon toggles against the hardware mixer. Evidence explicitly distinguishes injected contacts from a new human-finger test.
 
-- [ ] 9.2 A line-out/headphone audible check: play a known tone or clip
-      through the Inno codec sink with headphones connected, drag the
-      volume slider, and confirm the audible level tracks it, including
-      down through mute. **Not done in this worktree** -- see the report
-      for the exact operator command.
+- [x] 9.2 MOVED, not performed: the user authorized preserving the full line-out/headphone listening test in `the-handheld-plays-through-its-speaker`, task 5.6, before archiving the verified volume UI. Audibility remains UNVERIFIED.
 - [x] 9.3 Not applicable: the user explicitly has no external audio add-on. The separate speaker/audio proposal stays open and no external-I2S audibility or separate sink is claimed.
 
 - [x] 9.4 Not applicable: no attached keyboard emitting XF86AudioRaiseVolume/LowerVolume/Mute is confirmed. Generated bindings remain host/build-verified; no physical key press is invented.

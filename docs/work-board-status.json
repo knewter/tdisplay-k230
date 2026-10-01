@@ -444,12 +444,12 @@
       ],
       "reviewRevision": "da1840aff780cb9be7e87cd5284158c02b9f2404"
     },
-    "the-handheld-controls-volume": {
-      "lane": "verification",
-      "source": "source-landed",
-      "physical": "pending",
-      "next": "Volume UI passes board acceptance; only the named audible headphone/line-out check remains, pending operator scope decision.",
-      "rationale": "Real sink/stream live drags, mute, independent popup and device picker verified. No attached audio add-on or emitting audio-key keyboard.",
+    "2026-10-01-the-handheld-controls-volume": {
+      "lane": "archived",
+      "source": "archived",
+      "physical": "verified",
+      "next": "Volume UI/backend accepted and archived; headphone listening remains open in audio task 5.6.",
+      "rationale": "15 real-board sink/stream/HUD checks passed. User authorized transferring unperformed headphone audibility to the existing audio proposal.",
       "dependencies": [],
       "evidence": [
         "docs/evidence/volume/closeout-2026-10-01/README.md"

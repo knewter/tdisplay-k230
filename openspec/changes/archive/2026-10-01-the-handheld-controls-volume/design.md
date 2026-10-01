@@ -266,3 +266,7 @@ Also added: `DBUS_SESSION_BUS_ADDRESS` on all three PipeWire units,
 connected to the existing `shell-session-bus`, so `module-rt`'s own
 "cannot reach a session bus" warning becomes a real (still harmless,
 still-no-RTKit) bus round trip instead of no bus at all.
+
+## 2026-10-01 accepted closeout scope
+
+The user delegated board self-verification and accepted closing the UI after the real sink/stream/HUD checks. `docs/evidence/volume/closeout-2026-10-01/README.md` records 15 physical-board assertions using injected contacts, actual PipeWire/ALSA state and native captures; these are not new human-finger or listening observations. The independent HUD and hardware Device Route fixes supersede earlier implementation limitations. The user explicitly moved the unperformed headphone/line-out listening test into `the-handheld-plays-through-its-speaker`, task 5.6. No audible output, absent external add-on or physical audio-key result is claimed.

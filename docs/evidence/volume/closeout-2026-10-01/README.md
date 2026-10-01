@@ -13,3 +13,7 @@ Harness corrections: restart the UI before each run so prior popup repositioning
 Limits: injected UI is not a new human-finger acceptance run; the user delegated verification. A playback graph node proves neither headphone nor speaker audibility. No audio add-on is attached; no keyboard emitting XF86 audio keys is confirmed. Task 9.2 remains open unless the user explicitly authorizes transferring it into the existing audio proposal.
 
 The installed closure is `/nix/store/xphf8zb00gz9hiyqkkh399rldr2ljykb-nixos-system-nixos-26.11.20260919.20b1ddd`. Runtime switch and active shell/seat/PipeWire/WirePlumber services were checked. Final boot-profile installation is recorded separately.
+
+## Authorized listening-test transfer
+
+On 2026-10-01 the user said "move headphone listening test into audio proposal". The unperformed volume task 9.2 is preserved as `the-handheld-plays-through-its-speaker` task 5.6, including known playback through PipeWire, several Settings slider levels, mute, connected headphone/line-out and committed listening observations. This permits closing the verified volume UI; no audible test was performed or marked passed.

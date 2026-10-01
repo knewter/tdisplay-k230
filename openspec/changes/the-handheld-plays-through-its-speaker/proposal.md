@@ -87,3 +87,7 @@ and a reboot, per `.skills/k230-spec-change/SKILL.md`'s DT-push note. No task
 here claims board proof; every hardware-observable requirement in the new
 spec is marked `<!-- UNVERIFIED -->` and stays open until a board test is
 run.
+
+## Headphone acceptance retained from volume closeout
+
+On 2026-10-01 the user explicitly transferred the unperformed line-out/headphone listening test from the completed volume UI change into task 5.6 here. This proposal now owns confirming that Settings slider levels and mute correspond to audible output through the Inno codec via PipeWire. The connected headphone/line-out and listening observation remain UNVERIFIED. The user confirms there is no external audio add-on; external-amplifier validation is deferred and must not block this independent headphone test.
