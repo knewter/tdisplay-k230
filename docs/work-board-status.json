@@ -299,13 +299,14 @@
       "lane": "verification",
       "source": "source-landed",
       "physical": "pending",
-      "next": "Controlled full power-off RTC check before network correction; warm-reboot RTC support is already proved.",
+      "next": "Repeated reboot behavior accepted. Coordinator must arm pre-sync RTC sampling before the one remaining full-power-removal retention test.",
       "reviewRevision": "6306c1d8df787820c1c74e7808be6d853e343b30",
-      "rationale": "Closeout audit at 6306c1d8: all implementation tasks are checked; task 4.2 is the sole remaining physical gate. Existing evidence is retained; no new physical acceptance or archive is claimed.",
+      "rationale": "Operator confirms correct time across many reboots. Task 4.2 still needs controlled full power removal or demonstrated backup supply before time synchronization.",
       "dependencies": [],
       "evidence": [
         "docs/evidence/rtc/mday-mask-fix.md",
-        "docs/evidence/proposal-closeout/2026-09-30/README.md"
+        "docs/evidence/proposal-closeout/2026-09-30/README.md",
+        "docs/evidence/proposal-closeout/2026-09-30/operator-feedback.md"
       ]
     },
     "the-handheld-has-a-themed-files-app": {

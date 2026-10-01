@@ -15,3 +15,7 @@ The operator tested the installed panel shell during this session. Exact observe
 | Edge taps | App header taps open notification shade; compact search-keyboard Backspace dismisses drawer | Reproduction report recorded in the mouse navigation change; source fix, simulation and physical retest are required. |
 
 No credential, network identifier or address is included. These are real operator reports, not injected-input observations. Remaining named photographs, recordings, per-case checks and measurements are not silently marked complete. The next easy operator step after deployment of the tap fix is to retest app header and Backspace, then scroll folders in both Portfolio and Nautilus.
+
+## Clock feedback
+
+The operator additionally reported: **“clock survives a reboot seems fine fwiw, it's right now many reboots later.”** This confirms repeated-reboot time correctness at the observed shell. Task 4.2 of `the-clock-survives-a-reboot` specifically calls for full power removal or demonstrated RTC backup supply, with the RTC sampled before network synchronization/writeback. A correct clock after those services run cannot establish that additional retention property; keep the named power-removal gate open. No additional power test was requested or performed during the input deployment.
