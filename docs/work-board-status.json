@@ -411,8 +411,8 @@
       "lane": "verification",
       "source": "source-landed",
       "physical": "pending",
-      "next": "Finish the smaller staged initrd diagnostic, then prove usable mainline root and deliberate touch; recovery after both shell trials passes.",
-      "rationale": "The corrected temporary mainline trial reached Linux and its pre-proc-read marker but no complete fresh result or observed reboot. Physical power-cycle recovery independently verifies normal p1 system/profile/kernel/init, three services, eight unchanged protected hashes and visible Home; mainline root and touch remain pending.",
+      "next": "Recover normal boot after the minimal diagnostic, correct its missing proc mount, then prove usable mainline root and deliberate touch.",
+      "rationale": "The minimal physical probe reached its shell and executed /bin/true successfully. Uptime failed because /proc was unmounted; reboot explicitly refused as a chroot operation, so this run did not pass recovery. Earlier physical resets independently proved the normal p1 system and unchanged protected files. The latest reset/recovery and mainline root/touch remain pending.",
       "dependencies": [],
       "evidence": [
         "docs/evidence/mainline-display-power-domain.md",
@@ -420,9 +420,10 @@
         "docs/evidence/mainline-display/physical-2026-10-01/README.md",
         "docs/evidence/mainline-display/physical-2026-10-01/power-swap-recovery-2026-10-02/README.md",
         "docs/evidence/mainline-display/physical-2026-10-01/corrected-probe-recovery-2026-10-02/README.md",
-        "docs/evidence/mainline-display/physical-2026-10-01/initrd-exec-audit-2026-10-02.md"
+        "docs/evidence/mainline-display/physical-2026-10-01/initrd-exec-audit-2026-10-02.md",
+        "docs/evidence/mainline-display/physical-2026-10-01/minimal-probe-2026-10-02/README.md"
       ],
-      "reviewRevision": "b209129b1cf681669edfe3e1e05be317842bf6f4",
+      "reviewRevision": "d209a062f6826877173a7d2669d99b18c82c6416",
       "media": [
         {
           "path": "docs/evidence/mainline-display/physical-2026-10-01/power-swap-recovery-2026-10-02/home.png",

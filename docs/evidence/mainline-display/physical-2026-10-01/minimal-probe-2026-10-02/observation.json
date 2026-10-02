@@ -1,0 +1,49 @@
+{
+  "candidate_bundle": "/nix/store/gf3aqks2dg0z3ksz33ysfprnlbk83vw3-k230-mainline-drm-trial-boot-files",
+  "candidate_system": "/nix/store/k9f4r2i9k9qj58z8z4l2kssy9rpwxxm1-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "controller_outcome": "normal-login-deadline-expired",
+  "controller_sha256": "e63fed18088138cd51df91611ba6261aab25c382548661ab0326aee632894632",
+  "diagnostic_pass": false,
+  "evidence_class": "physical-board-serial; no real-finger test",
+  "normal_preflight": {
+    "boot_files": {
+      "Image": "37d71fc14f9bdafe230767e1709de587c049014660dd59d2f7bcbbce35ac71c2",
+      "bootargs.txt": "27e85247977a44c8aab0b78ea30f81e368623ba29fba262cd21871cdc31bf476",
+      "force_dtb": "175342c82dd1b437cdafb6bb01090e7ff73c2769515654c48b02c1e9f73440c6",
+      "fw_jump_add_uboot_head.bin": "9627edbeea9b115d7040beea27cc61b23b6aca61cd502fd7760d7ee179f42c99",
+      "hdmi_dtb": "175342c82dd1b437cdafb6bb01090e7ff73c2769515654c48b02c1e9f73440c6",
+      "initrd.uimg": "867e227f333ffe9c0e83a489dbfd0c755d7fcd0a0cf588cf47ec1c139945fb25",
+      "k230-tdisplay.dtb": "07e784fa3b2eeb971df3ba6f22d9909ed8e0424fdd6bdf680724631652bbe65e",
+      "lcd_dtb": "175342c82dd1b437cdafb6bb01090e7ff73c2769515654c48b02c1e9f73440c6"
+    },
+    "boot_id": "e7cf8096-44a0-4bdf-815d-2f1aec4126fb",
+    "init": "init=/nix/store/p1a1hz9n8s4g8qyr55ffl3dzbnjgqwr8-nixos-system-nixos-26.11.20260919.20b1ddd/init",
+    "kernel": "/nix/store/03zyl0mjsxbjyisb3lhjaxswpxm71ap6-linux-riscv64-unknown-linux-gnu-6.6.36-xuantie/Image",
+    "profile": "/nix/store/p1a1hz9n8s4g8qyr55ffl3dzbnjgqwr8-nixos-system-nixos-26.11.20260919.20b1ddd",
+    "services": [
+      "active",
+      "active",
+      "active"
+    ],
+    "system": "/nix/store/p1a1hz9n8s4g8qyr55ffl3dzbnjgqwr8-nixos-system-nixos-26.11.20260919.20b1ddd",
+    "uname": "6.6.36"
+  },
+  "normal_recovery": "pending-physical-reset",
+  "persistent_boot_selection_changed": false,
+  "private_capture_name": "mainline-initrd-shell-20261002T071953Z.private.log",
+  "probe": {
+    "reboot_marker": true,
+    "receipt": true,
+    "true_rc": 0,
+    "uptime": {
+      "rc": 1,
+      "uptime": null
+    }
+  },
+  "raw_capture_bytes": 47745,
+  "raw_capture_sha256": "3c594b9aab71176969dafc6a55e3c0c72d177183de5415719894700fb700f3ed",
+  "reboot_chroot_refusal_observed": true,
+  "schema": "k230-physical-initrd-minimal-observation-v1",
+  "source_revision": "d209a062f6826877173a7d2669d99b18c82c6416",
+  "uptime_file_absent_observed": true
+}
