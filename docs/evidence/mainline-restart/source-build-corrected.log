@@ -1,0 +1,5 @@
+warning: Git tree '/home/jadams/tmp/k230-mainline-restart' is dirty
+this derivation will be built:
+  /nix/store/i885wvqbrxy4i65y2xiwfn8lr1yrv3r7-linux-mainline-k230-drm-src.drv
+building '/nix/store/i885wvqbrxy4i65y2xiwfn8lr1yrv3r7-linux-mainline-k230-drm-src.drv'...
+/nix/store/jvz4v73g8a67pqwm06v079h6s1cpqr9s-linux-mainline-k230-drm-src

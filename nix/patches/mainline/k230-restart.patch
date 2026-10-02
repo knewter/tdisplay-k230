@@ -16,7 +16,7 @@
  	/* protect register read-modify-write */
  	spinlock_t			lock;
  };
-@@ -327,10 +329,31 @@
+@@ -327,10 +329,33 @@
  	.deassert	= k230_rst_deassert,
  };
  
@@ -38,6 +38,8 @@
 +	/* The vendor handler waits for CPU0 reset and never returns. */
 +	while (1)
 +		cpu_relax();
++
++	return NOTIFY_DONE;
 +}
 +
  static int k230_rst_probe(struct platform_device *pdev)
@@ -48,7 +50,7 @@
  
  	rstc = devm_kzalloc(dev, sizeof(*rstc), GFP_KERNEL);
  	if (!rstc)
-@@ -339,6 +362,13 @@
+@@ -339,6 +364,13 @@
  	rstc->base = devm_platform_ioremap_resource(pdev, 0);
  	if (IS_ERR(rstc->base))
  		return PTR_ERR(rstc->base);
@@ -62,7 +64,7 @@
  
  	spin_lock_init(&rstc->lock);
  
-@@ -348,7 +378,14 @@
+@@ -348,7 +380,14 @@
  	rstc->rcdev.nr_resets	= ARRAY_SIZE(k230_resets);
  	rstc->rcdev.of_node	= dev->of_node;
  

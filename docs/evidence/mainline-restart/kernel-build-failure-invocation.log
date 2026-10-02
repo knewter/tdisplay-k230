@@ -1,0 +1,80 @@
+these 4 derivations will be built:
+  /nix/store/7sjbqqy7hz62x12ji6nqrlrl2na0dwp9-kernel-intermediate-config.drv
+  /nix/store/5dlp3wax212nxf2w28g9vk1rqjag8l9v-linux-config-riscv64-unknown-linux-gnu-7.3.0-rc5.drv
+  /nix/store/grsml8nrjad5m4qfslacafpm968688j9-installkernel.drv
+  /nix/store/dpba1ibnhb7vj8aicxxwmxs262s0sp0r-linux-riscv64-unknown-linux-gnu-7.3.0-rc5.drv
+these 18 paths will be fetched (14.1 MiB download, 47.1 MiB unpacked):
+  /nix/store/byjwb34ks192gdxx6jfzmshizxm3lc75-bc-1.08.2
+  /nix/store/fi9vl50qlv31s4znx7mlaz2zh90as3ql-bison-3.8.2
+  /nix/store/5gykw53hlpdra6qy0j4crj1a5jxp5bw2-cpio-2.15
+  /nix/store/gf6jp1pil2gdpwvv2pbz3x8jifffpjxs-elfutils-0.195-bin
+  /nix/store/7qwr21jikh0qgadd04jcm3zyw02qvr5a-elfutils-0.195-dev
+  /nix/store/v98fj7m3dafgxlvhgdb00m8kc7z7w195-flex-2.6.4
+  /nix/store/3p8mp9njvxk25k27kydvzvcjh0fqdi7i-hexdump-util-linux-minimal-2.42.3
+  /nix/store/mlh5isjgb3wr5xrc2svvffsqcnxq0skq-kmod-31-dev
+  /nix/store/7dfg3m2pjzg7q2g1s88vavzdw4np7wlj-mpfr-4.2.2-dev
+  /nix/store/kndnrzw57nlwwwl6kskn75x1cgmrcrhv-pahole-1.31
+  /nix/store/j0c03li98wyk84icrhbjdy1qvp5lrgap-python3-minimal-3.14.7
+  /nix/store/4j2mwxqjvnyr6da0925sp0bm4jaj5r5i-riscv64-unknown-linux-gnu-gcc-wrapper-15.3.0
+  /nix/store/xsqksk052q5vq3pkan275zwh1l0ackr0-rsync-3.5.0
+  /nix/store/64915yzk34xqj2q2j4q63bp36i9glrn2-setup-debug-info-dirs-hook
+  /nix/store/dd86wky37f8j2i9006p294kldy7s8g6a-stdenv-linux
+  /nix/store/ksk6jh8641zijb4zs65vp3dm6dpsnnl8-util-linux-minimal-2.42.3-bin
+  /nix/store/nm6wl1rwrdnks91q60p7l7i209m6nd4a-util-linux-minimal-2.42.3-man
+  /nix/store/f898giq9hminpxv4br46yxbag0nfmxg0-xxhash-0.8.3
+building '/nix/store/grsml8nrjad5m4qfslacafpm968688j9-installkernel.drv'...
+copying path '/nix/store/byjwb34ks192gdxx6jfzmshizxm3lc75-bc-1.08.2' from 'https://cache.nixos.org'...
+copying path '/nix/store/fi9vl50qlv31s4znx7mlaz2zh90as3ql-bison-3.8.2' from 'https://cache.nixos.org'...
+copying path '/nix/store/5gykw53hlpdra6qy0j4crj1a5jxp5bw2-cpio-2.15' from 'https://cache.nixos.org'...
+copying path '/nix/store/7dfg3m2pjzg7q2g1s88vavzdw4np7wlj-mpfr-4.2.2-dev' from 'https://cache.nixos.org'...
+copying path '/nix/store/j0c03li98wyk84icrhbjdy1qvp5lrgap-python3-minimal-3.14.7' from 'https://cache.nixos.org'...
+copying path '/nix/store/4j2mwxqjvnyr6da0925sp0bm4jaj5r5i-riscv64-unknown-linux-gnu-gcc-wrapper-15.3.0' from 'https://cache.nixos.org'...
+copying path '/nix/store/kndnrzw57nlwwwl6kskn75x1cgmrcrhv-pahole-1.31' from 'https://cache.nixos.org'...
+copying path '/nix/store/mlh5isjgb3wr5xrc2svvffsqcnxq0skq-kmod-31-dev' from 'https://cache.nixos.org'...
+copying path '/nix/store/v98fj7m3dafgxlvhgdb00m8kc7z7w195-flex-2.6.4' from 'https://cache.nixos.org'...
+copying path '/nix/store/64915yzk34xqj2q2j4q63bp36i9glrn2-setup-debug-info-dirs-hook' from 'https://cache.nixos.org'...
+copying path '/nix/store/nm6wl1rwrdnks91q60p7l7i209m6nd4a-util-linux-minimal-2.42.3-man' from 'https://cache.nixos.org'...
+copying path '/nix/store/gf6jp1pil2gdpwvv2pbz3x8jifffpjxs-elfutils-0.195-bin' from 'https://cache.nixos.org'...
+copying path '/nix/store/ksk6jh8641zijb4zs65vp3dm6dpsnnl8-util-linux-minimal-2.42.3-bin' from 'https://cache.nixos.org'...
+copying path '/nix/store/f898giq9hminpxv4br46yxbag0nfmxg0-xxhash-0.8.3' from 'https://cache.nixos.org'...
+building '/nix/store/7sjbqqy7hz62x12ji6nqrlrl2na0dwp9-kernel-intermediate-config.drv'...
+copying path '/nix/store/xsqksk052q5vq3pkan275zwh1l0ackr0-rsync-3.5.0' from 'https://cache.nixos.org'...
+copying path '/nix/store/dd86wky37f8j2i9006p294kldy7s8g6a-stdenv-linux' from 'https://cache.nixos.org'...
+copying path '/nix/store/7qwr21jikh0qgadd04jcm3zyw02qvr5a-elfutils-0.195-dev' from 'https://cache.nixos.org'...
+building '/nix/store/5dlp3wax212nxf2w28g9vk1rqjag8l9v-linux-config-riscv64-unknown-linux-gnu-7.3.0-rc5.drv'...
+copying path '/nix/store/3p8mp9njvxk25k27kydvzvcjh0fqdi7i-hexdump-util-linux-minimal-2.42.3' from 'https://cache.nixos.org'...
+building '/nix/store/dpba1ibnhb7vj8aicxxwmxs262s0sp0r-linux-riscv64-unknown-linux-gnu-7.3.0-rc5.drv'...
+error: Cannot build '/nix/store/dpba1ibnhb7vj8aicxxwmxs262s0sp0r-linux-riscv64-unknown-linux-gnu-7.3.0-rc5.drv'.
+       Reason: builder failed with exit code 2.
+       Output paths:
+         /nix/store/bmhldnwy748wz78vapmnlflg8f5ijnc5-linux-riscv64-unknown-linux-gnu-7.3.0-rc5-dev
+         /nix/store/fmaj56wg5166zaf44j9jx4rf3fjpyp1a-linux-riscv64-unknown-linux-gnu-7.3.0-rc5-modules
+         /nix/store/r12cn9pjhm281iza4r768x7pymnmh71l-linux-riscv64-unknown-linux-gnu-7.3.0-rc5
+       Last 25 log lines:
+       >   CC [M]  net/sunrpc/auth_gss/gss_rpc_upcall.o
+       >   CC [M]  net/sunrpc/auth_gss/gss_rpc_xdr.o
+       >   CC [M]  net/sunrpc/xprtrdma/verbs.o
+       >   CC [M]  net/sunrpc/xprtrdma/frwr_ops.o
+       >   CC [M]  net/sunrpc/auth_gss/trace.o
+       >   CC [M]  net/sunrpc/xprtrdma/ib_client.o
+       >   CC [M]  net/sunrpc/auth_gss/gss_krb5_mech.o
+       >   CC [M]  net/sunrpc/xprtrdma/svc_rdma.o
+       >   CC [M]  net/sunrpc/auth_gss/gss_krb5_seal.o
+       >   CC [M]  net/sunrpc/xprtrdma/svc_rdma_backchannel.o
+       >   CC [M]  net/sunrpc/auth_gss/gss_krb5_unseal.o
+       >   CC [M]  net/sunrpc/xprtrdma/svc_rdma_transport.o
+       >   CC [M]  net/sunrpc/auth_gss/gss_krb5_wrap.o
+       >   CC [M]  net/sunrpc/xprtrdma/svc_rdma_sendto.o
+       >   CC [M]  net/sunrpc/auth_gss/gss_krb5_crypto.o
+       >   LD [M]  net/sunrpc/auth_gss/auth_rpcgss.o
+       >   CC [M]  net/sunrpc/xprtrdma/svc_rdma_recvfrom.o
+       >   CC [M]  net/sunrpc/xprtrdma/svc_rdma_rw.o
+       >   LD [M]  net/sunrpc/auth_gss/rpcsec_gss_krb5.o
+       >   CC [M]  net/sunrpc/xprtrdma/svc_rdma_pcl.o
+       >   CC [M]  net/sunrpc/xprtrdma/module.o
+       >   CC [M]  net/sunrpc/xprtrdma/backchannel.o
+       >   LD [M]  net/sunrpc/xprtrdma/rpcrdma.o
+       > make[1]: *** [/build/linux-mainline-k230-drm-src/Makefile:2229: .] Error 2
+       > make: *** [/build/linux-mainline-k230-drm-src/Makefile:248: __sub-make] Error 2
+       For full logs, run:
+         nix-store -l /nix/store/dpba1ibnhb7vj8aicxxwmxs262s0sp0r-linux-riscv64-unknown-linux-gnu-7.3.0-rc5.drv

@@ -1,0 +1,22 @@
+UTC: 2026-10-02T16:06:15Z
+Source: /nix/store/jvz4v73g8a67pqwm06v079h6s1cpqr9s-linux-mainline-k230-drm-src
+9007d8e3b4de77149bcfaf37a9148a5d8b7bdeafbe2b66b8fcd02268ee849fd8  /nix/store/jvz4v73g8a67pqwm06v079h6s1cpqr9s-linux-mainline-k230-drm-src/drivers/reset/reset-k230.c
+48cf7704d93c9799a869759587736aa84dfaa671a8a7075ce750deb809598a85  /nix/store/jvz4v73g8a67pqwm06v079h6s1cpqr9s-linux-mainline-k230-drm-src/include/linux/reboot.h
+riscv64-unknown-linux-gnu-gcc (GCC) 15.3.0
+CONFIG_64BIT=y
+CONFIG_RISCV=y
+CONFIG_OF=y
+CONFIG_RESET_CONTROLLER=y
+CONFIG_RESET_K230=y
+make: Entering directory '/nix/store/jvz4v73g8a67pqwm06v079h6s1cpqr9s-linux-mainline-k230-drm-src'
+make[1]: Entering directory '/home/jadams/tmp/k230-mainline-restart/.scratch/mainline-restart-object/run.CuXzA8/module'
+  CC [M]  reset-k230.o
+make[1]: Leaving directory '/home/jadams/tmp/k230-mainline-restart/.scratch/mainline-restart-object/run.CuXzA8/module'
+make: Leaving directory '/nix/store/jvz4v73g8a67pqwm06v079h6s1cpqr9s-linux-mainline-k230-drm-src'
+/home/jadams/tmp/k230-mainline-restart/.scratch/mainline-restart-object/run.CuXzA8/module/reset-k230.o: ELF 64-bit LSB relocatable, UCB RISC-V, RVC, soft-float ABI, version 1 (SYSV), with debug_info, not stripped
+                 U devm_ioremap
+                 U devm_register_sys_off_handler
+0000000000000110 t k230_rst_restart
+f6ccce5cc537e390514e3eae6e361a9f4fd07dff3f964439be6fb43d5932de46  /home/jadams/tmp/k230-mainline-restart/.scratch/mainline-restart-object/run.CuXzA8/module/reset-k230.o
+40fee52e7dc0d13cc9cd98c51925da55f99c0a4a85c74b390715c264d88cf758  /home/jadams/tmp/k230-mainline-restart/.scratch/mainline-restart-object/run.CuXzA8/build/.config
+Object check passed; this did not link a complete kernel or execute restart.

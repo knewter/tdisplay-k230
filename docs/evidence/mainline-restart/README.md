@@ -53,7 +53,7 @@ does not happen; an operator power cycle remains the recovery procedure
 until physical reset is proved. It does not explain or claim to solve the
 candidate's usable-root failure.
 
-## Source derivation and narrow object proof
+## Initial source derivation and LLVM object proof
 
 Commands (both exited zero):
 
@@ -85,6 +85,48 @@ mapping and sys-off registration (no modpost or full-kernel link claimed).
 - Pinned reboot header SHA-256: `48cf7704d93c9799a869759587736aa84dfaa671a8a7075ce750deb809598a85`.
 - Object SHA-256: `357180aca45dab25c70a940df16d809d7c33afc03cd336e3c14f5ccd98a15aa2`.
 - Object-check config SHA-256: `feae74c06f4924981806903df93e621a39413c2993fdff45ee32172bf3cc1140`.
+
+## GCC failure, correction and pinned GCC object proof
+
+The first complete Nix/GCC kernel invocation (four cores) failed in
+`k230_rst_restart()` at `-Werror=return-type`. LLVM accepted the terminal
+loop without an explicit return, but GCC 15.3 requires it here. The initial
+port omitted the vendor's unreachable `return 0`; the correction restores
+it as `return NOTIFY_DONE` after the unchanged terminal `cpu_relax()` wait.
+The address, write mask and priority are unchanged. This failed run is kept
+in [kernel-build-failure-invocation.log](kernel-build-failure-invocation.log)
+and [kernel-build-failure.log](kernel-build-failure.log); the latter preserves
+the complete build text with ANSI/OSC escapes removed for readability.
+It is failed build evidence, not a complete kernel result.
+
+The corrected source derivation build exited zero and produced
+`/nix/store/jvz4v73g8a67pqwm06v079h6s1cpqr9s-linux-mainline-k230-drm-src`
+([source-build-corrected.log](source-build-corrected.log)). The pinned GCC
+15.3.0 object invocation also exited zero with `W=1` and no compiler warnings:
+
+```sh
+flock /tmp/k230-nix-build.lock env \
+  MAINLINE_RESTART_SRC=/nix/store/jvz4v73g8a67pqwm06v079h6s1cpqr9s-linux-mainline-k230-drm-src \
+  MAINLINE_RESTART_CONFIG=/nix/store/7zp582356s9ss40wjjc0drgxh0vihhi9-linux-config-riscv64-unknown-linux-gnu-7.3.0-rc5 \
+  MAINLINE_RESTART_CROSS_COMPILE=/nix/store/4j2mwxqjvnyr6da0925sp0bm4jaj5r5i-riscv64-unknown-linux-gnu-gcc-wrapper-15.3.0/bin/riscv64-unknown-linux-gnu- \
+  bash docs/evidence/mainline-restart/object-check.sh
+```
+
+[gcc-object-check.log](gcc-object-check.log) starts at UTC
+`2026-10-02T16:06:15Z`. The script copies the actual Nix candidate config,
+disables GCC plugins/debug/Rust selections unnecessary to this object check,
+and regenerates headers with the pinned GCC toolchain. The resulting config
+and compiler are recorded rather than claimed byte-identical to the full
+Nix build. This checks the same reset source with the compiler that named
+the error; it still does not link a complete kernel or execute reset.
+
+- Corrected reset source SHA-256: `9007d8e3b4de77149bcfaf37a9148a5d8b7bdeafbe2b66b8fcd02268ee849fd8`.
+- GCC object SHA-256: `f6ccce5cc537e390514e3eae6e361a9f4fd07dff3f964439be6fb43d5932de46`.
+- GCC object-check config SHA-256: `40fee52e7dc0d13cc9cd98c51925da55f99c0a4a85c74b390715c264d88cf758`.
+
+The coordinator authorized `--max-jobs 1 --cores 16` for the corrected full
+kernel retry and subsequent matching bundle, under the same single build
+lock. The first four-core failed invocation is not overwritten.
 
 ## Remaining gates
 
