@@ -12,4 +12,4 @@ The 2026-10-01 matching vendor trial booted `/nix/store/xphf8zb00gz9hiyqkkh399rl
 
 ## Remaining risks
 
-Visible navigation on the candidate remains unresolved; neither a dark terminal nor a shared debug warning establishes a driver failure. Stage1 startup versus manual load differences must be controlled. A host build cannot establish display readiness. Physical touch acceptance may use the user's focused report; injected board events must retain their own evidence class. Failed boot/recovery must remain documented, not hidden by the final successful run.
+Matching vendor candidate and protected baseline now pass the same manual load path and show photographed Home. The operator accepts candidate navigation in `docs/evidence/boot-verification/coherent-manual-candidate/operator-navigation.json`; no display-driver root cause was established for the earlier ambiguity. Ordinary autoboot after persistent install remains unverified. A host build cannot establish display readiness. Injected board events retain their own evidence class. Failed boot/recovery remains documented alongside successful runs.

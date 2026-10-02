@@ -1,0 +1,99 @@
+{
+  "status": "PASS",
+  "mode": "candidate",
+  "candidate": {
+    "bootargs": "console=tty0 consoleblank=0 console=ttyS0,115200n8 root=fstab loglevel=4 lsm=landlock,yama,bpf loglevel=7 init=/nix/store/p1a1hz9n8s4g8qyr55ffl3dzbnjgqwr8-nixos-system-nixos-26.11.20260919.20b1ddd/init",
+    "configuration": "k230-coherent-shell",
+    "device_tree": "/nix/store/yfda1lasmlgyappdgf6f49g7yj7m8mjd-k230-tdisplay.dtb/k230-tdisplay.dtb",
+    "kernel": "/nix/store/03zyl0mjsxbjyisb3lhjaxswpxm71ap6-linux-riscv64-unknown-linux-gnu-6.6.36-xuantie/Image",
+    "schema": 1,
+    "system": "/nix/store/p1a1hz9n8s4g8qyr55ffl3dzbnjgqwr8-nixos-system-nixos-26.11.20260919.20b1ddd",
+    "bundle": "/nix/store/pnci1pzsca9f45mfyakcrzyk7yx2ad42-k230-coherent-shell-boot-files",
+    "initrd": "/nix/store/vrkzpx829rh8wqi0jpqzbw88smn9k8gl-initrd-linux-riscv64-unknown-linux-gnu-6.6.36-xuantie/initrd",
+    "closure_paths": 1158,
+    "boot_files": {
+      "Image": {
+        "bytes": 60428800,
+        "sha256": "37d71fc14f9bdafe230767e1709de587c049014660dd59d2f7bcbbce35ac71c2",
+        "crc32": "3ca351cb"
+      },
+      "initrd.uimg": {
+        "bytes": 27295055,
+        "sha256": "867e227f333ffe9c0e83a489dbfd0c755d7fcd0a0cf588cf47ec1c139945fb25",
+        "crc32": "f54b8fe8"
+      },
+      "bootargs.txt": {
+        "bytes": 211,
+        "sha256": "27e85247977a44c8aab0b78ea30f81e368623ba29fba262cd21871cdc31bf476",
+        "crc32": "bcae3ef0"
+      },
+      "k230-tdisplay.dtb": {
+        "bytes": 71994,
+        "sha256": "07e784fa3b2eeb971df3ba6f22d9909ed8e0424fdd6bdf680724631652bbe65e",
+        "crc32": "8dcf44c5"
+      }
+    },
+    "Image_matches_selected_kernel": true,
+    "initrd_payload_matches_system": true,
+    "uimage_crc_valid": true,
+    "bootargs_select_matching_system": true,
+    "DTB_matches_selected_board_tree": true,
+    "host_inspection": "PASS",
+    "physical_boot_verified": false,
+    "persistent_boot_selection_changed": false
+  },
+  "loads": [
+    {
+      "file": "bootargs.txt",
+      "address": "0x7000000",
+      "bytes": 211,
+      "sha256": "27e85247977a44c8aab0b78ea30f81e368623ba29fba262cd21871cdc31bf476",
+      "crc32": "bcae3ef0"
+    },
+    {
+      "file": "fw_jump_add_uboot_head.bin",
+      "address": "0x8000000",
+      "bytes": 270808,
+      "sha256": "9627edbeea9b115d7040beea27cc61b23b6aca61cd502fd7760d7ee179f42c99",
+      "crc32": "99b89787"
+    },
+    {
+      "file": "Image",
+      "address": "0x200000",
+      "bytes": 60428800,
+      "sha256": "37d71fc14f9bdafe230767e1709de587c049014660dd59d2f7bcbbce35ac71c2",
+      "crc32": "3ca351cb"
+    },
+    {
+      "file": "k230-tdisplay.dtb",
+      "address": "0x8400000",
+      "bytes": 71994,
+      "sha256": "07e784fa3b2eeb971df3ba6f22d9909ed8e0424fdd6bdf680724631652bbe65e",
+      "crc32": "8dcf44c5"
+    },
+    {
+      "file": "initrd.uimg",
+      "address": "0x9000000",
+      "bytes": 27295055,
+      "sha256": "867e227f333ffe9c0e83a489dbfd0c755d7fcd0a0cf588cf47ec1c139945fb25",
+      "crc32": "f54b8fe8"
+    }
+  ],
+  "persistent_boot_selection_changed": false,
+  "physical_navigation_verified": false,
+  "controller_sha256": "6d9501978ecf7d82d9dec919463d46a890634c1f787baa5feb15d654e13a8d92",
+  "boot_environment_sha256": "0550addbfb42ce6191a8fe80b548ce029a27a88ec79a089ce31bed4bb54ea584",
+  "observed": {
+    "system": "/nix/store/p1a1hz9n8s4g8qyr55ffl3dzbnjgqwr8-nixos-system-nixos-26.11.20260919.20b1ddd",
+    "profile": "/nix/store/r0knnb72k3p3mpmbsnfgrk66yg8gl144-nixos-system-nixos-26.11.20260919.20b1ddd",
+    "kernel": "/nix/store/03zyl0mjsxbjyisb3lhjaxswpxm71ap6-linux-riscv64-unknown-linux-gnu-6.6.36-xuantie/Image",
+    "cmdline": "console=tty0 consoleblank=0 console=ttyS0,115200n8 root=fstab loglevel=4 lsm=landlock,yama,bpf loglevel=7 init=/nix/store/p1a1hz9n8s4g8qyr55ffl3dzbnjgqwr8-nixos-system-nixos-26.11.20260919.20b1ddd/init",
+    "boot_id": "48ae3ccd-e856-44ea-a4c3-bb9a1238ffef",
+    "services": [
+      "active",
+      "active",
+      "active"
+    ]
+  },
+  "serial_boot_observed": true
+}

@@ -2,7 +2,9 @@
 
 2026-10-01. Evidence classes: **reserved physical-board serial boot**, native
 Wayland capture, and camera observation. **Real-finger navigation and ordinary
-autoboot remain unverified.** This is not a persistent installation.
+autoboot were unverified at this capture.** Real-finger navigation was later
+accepted in `operator-navigation.json`; ordinary autoboot remains open.
+This capture is not a persistent installation.
 
 The selected `p1a1hz…` system and its `03zyl0…` vendor kernel boot successfully
 through the same CR-only manual-loading mechanism used in the earlier trial.
@@ -66,10 +68,10 @@ ffmpeg -nostdin -hide_banner -loglevel error -f v4l2 -input_format mjpeg \
 Both images were reviewed before committing. They show the remembered Home
 layout and wallpaper, but do not certify every theme/background option.
 
-**Next:** real-finger Home/All-apps/Overview/Terminal checks are pending with
-the operator. Repeat the same controller with `--baseline` to compare the
-protected working system, return to the candidate, and qualify persistent
-installation followed by an untouched ordinary reboot. Tasks 2.1–3.3 stay open.
+**Update:** the operator accepted the three requested real-finger navigation
+checks. The same controller's baseline/candidate comparison now passes; see
+`../coherent-manual-comparison/README.md`. Persistent installation followed by
+an untouched ordinary reboot remains open.
 While normal files remain unchanged, `reboot` from Linux returns to the original
 normal boot; `--baseline` provides the same protected manual fallback. A failed
 post-jump kernel that cannot reach serial requires a power reset to that intact

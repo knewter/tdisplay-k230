@@ -1,0 +1,15 @@
+{
+  "system": "/nix/store/p1a1hz9n8s4g8qyr55ffl3dzbnjgqwr8-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "kernel": "/nix/store/03zyl0mjsxbjyisb3lhjaxswpxm71ap6-linux-riscv64-unknown-linux-gnu-6.6.36-xuantie/Image",
+  "bundle": "/nix/store/pnci1pzsca9f45mfyakcrzyk7yx2ad42-k230-coherent-shell-boot-files",
+  "evidence_class": "operator-real-finger-report",
+  "report": "1. good.",
+  "reported_at_utc": "2026-10-02T03:48:48.039758+00:00",
+  "shell_executable": "/nix/store/3hy6h165ii649z6vjzjd36jwg16d37rc-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0/bin/k230-shell-rust",
+  "checks": {
+    "home_to_all_apps": true,
+    "bottom_handle_to_overview": true,
+    "terminal_open_and_return": true
+  },
+  "scope": "Acceptance of the three checks requested for this matching-kernel temporary boot; not all Home edit actions or ordinary reboot."
+}

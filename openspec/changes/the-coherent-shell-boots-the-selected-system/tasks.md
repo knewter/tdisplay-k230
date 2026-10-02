@@ -5,8 +5,8 @@
 
 ## 2. Diagnose and prove the candidate on the physical board
 
-- [ ] 2.1 Compare working baseline and current vendor candidate under the same recoverable manual boot procedure; inspect persisted bootcmd/preboot and actual display behavior. Candidate load CRCs, exact identities, active services and photographed/native Home pass in `docs/evidence/boot-verification/coherent-manual-candidate/README.md`. Reserved CR-only controller exists: `python3 tools/coherent-shell-board-boot.py --candidate <bundle> --state <captured-staged-state.json> --output <new-evidence>`; repeat with `--baseline`. Working-baseline comparison remains; do not infer root cause from shared warnings.
-- [ ] 2.2 Repair the identified source/configuration defect, if any, and repeat qualified candidate boot. Run only the narrow affected build and relevant inspector/source tests, then record physical Home/overview/app navigation. Keep the candidate rejected while the panel is black; host or QEMU output alone does not tick this task.
+- [x] 2.1 Compare working baseline and current vendor candidate under the same recoverable manual boot procedure; inspect persisted bootcmd/preboot and actual display behavior. Both pass load sizes/CRCs, exact identities and photographed Home; environment response hashes agree. Proof: `docs/evidence/boot-verification/coherent-manual-comparison/README.md`, its `baseline.json` and `candidate.json`. Commands use the reserved CR-only controller with `--baseline`, then without it. No root cause inferred from shared warnings.
+- [x] 2.2 Repeat qualified candidate boot and record physical Home/overview/app navigation. No further source repair was necessary; repeated candidate Home is visible, matching identities/services pass, and operator report `1. good.` explicitly accepts Home→All apps, bottom handle→Overview and Terminal open/return. Proof: comparison evidence and `docs/evidence/boot-verification/coherent-manual-candidate/operator-navigation.json`; accepted exact bundle, system/kernel and Rust ELF retained.
 
 ## 3. Persist and verify an ordinary reboot
 

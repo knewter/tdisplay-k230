@@ -461,13 +461,14 @@
       "lane": "in-progress",
       "source": "in-progress",
       "physical": "pending",
-      "next": "Matching-kernel temporary boot shows Home on glass and native capture. Check real-finger navigation, repeat protected baseline comparison, then install qualified files and prove ordinary reboot.",
-      "rationale": "Host bundle passes 13 tamper checks; five manual loads pass size/CRC and exact runtime/kernel/init identities match with active services. Earlier dark-panel ambiguity was not reproduced. Normal boot files/profile remain unchanged.",
+      "next": "Operator accepts candidate navigation; baseline and repeat candidate pass. Install the qualified files/profile, then prove ordinary reboot and remembered appearance.",
+      "rationale": "Same CR-only load path and identical boot-environment response used for working baseline and matching candidate; both show photographed Home with exact boot identities. Installer has seven host interruption/qualification checks. Persistent deployment remains open.",
       "dependencies": [],
       "evidence": [
         "docs/evidence/boot-verification/2026-10-01/README.md",
         "docs/evidence/boot-verification/coherent-bundle-host/README.md",
-        "docs/evidence/boot-verification/coherent-manual-candidate/README.md"
+        "docs/evidence/boot-verification/coherent-manual-candidate/README.md",
+        "docs/evidence/boot-verification/coherent-manual-comparison/README.md"
       ],
       "reviewRevision": "02c4a99850e6cc8a262480d21a17cb7f6dc2b019"
     },
