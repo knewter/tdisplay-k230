@@ -218,3 +218,69 @@ toggle would prove the runtime gate only. Shutdown messages remain entry
 checkpoints, and automatic restart still requires the separate real reset,
 fresh normal boot and protected postflight proof in task 5d.4. That task and
 the usable-root/touch gate 5b.5 stay open.
+
+
+## All-mode passive shell readiness follow-up (2026-10-02 18:51 UTC)
+
+Host source/test work uses branch `mainline-all-readiness`, worktree
+`/home/jadams/tmp/k230-mainline-all-readiness`, base
+`6c03cc496fe8f74d1222099280fe0de458d8b05e`. No serial, board input, kernel build
+or physical recovery was performed by this work. Automatic restart and usable
+mainline root remain **UNVERIFIED**; tasks 5d.4 and 5b.5 remain open.
+
+The ordinary controller path previously began its bounded receipt attempts
+immediately after the Linux version banner; only `--debug-shutdown` waited
+for init entry. The later runtime trial reached shell entry but returned no
+fresh executed receipt. Receipt command echoes and a continuation prompt are
+not reception proof. See the coordinator's separate physical evidence and
+[source UART audit](../../research/mainline-uart-readiness-2026-10-02.md).
+That source audit grounds the timing risk, not the exact physical cause.
+
+The exact candidate source above opens `/dev/console` after basic setup and
+initramfs completion (`init/main.c:1632–1645,1677–1680`). It prints
+`Run /bin/sh as init process` **before** `kernel_execve` (`1472–1484`). Serial
+startup applies console termios (`drivers/tty/serial/serial_core.c:304–336`)
+and clears FIFOs (`drivers/tty/serial/8250/8250_port.c:2325–2331`). Thus the
+kernel banner and init entry alone do not establish shell command reception.
+
+Every rdinit diagnostic mode now performs the same read-only wait, bounded
+at 90 seconds, before the first receipt attempt. It requires the fresh exact
+candidate banner, the complete timestamped `/bin/sh` init-entry line, then
+an initial `sh-<major>.<minor># ` prompt at the end of the current output.
+The selected initrd's observed prompt is `sh-5.3# `. Multiline anchoring admits
+the observed two shell warning lines before that prompt; split serial reads
+are retained. Pre-entry prompts, echoed/incomplete entry lines, incomplete
+prompts and continuation `> ` prompts cannot satisfy the gate. An old primary
+prompt followed by command text or a continuation cannot satisfy it either.
+Candidate/init phase state survives the rolling 128 KiB cap; raw logs remain
+untouched. The prompt is a scheduling gate; only a fresh executed receipt
+permits the existing true/proc/uptime and later diagnostic stages.
+
+All modes record `initrd_readiness_observed`. A readiness or protocol timeout
+preserves a structured recovery-required unknown result, now including survey,
+and sends no additional probe, shell repair, reboot or recovery input. Exact
+bootargs, artifact counts/hashes, matching init and normal protection are
+preserved. Runtime tracing still uses ordinary bootargs and its existing
+separate sysfs gates; this change does not enable boot-time debug output.
+
+At 2026-10-02 18:51 UTC the narrow command
+`python3 -m unittest discover -s tests -p test_mainline_drm_initrd_shell_trial.py -q`
+passed **92 tests** (11.334 seconds), retaining all 87 previous tests. The
+real capped serial pump and production orchestration are exercised for
+ordinary minimal, runtime tracing, boot-time debug, label with/without the
+clock flag, root-mount and survey. Each waits through more than eight seconds
+and 128 KiB of boot output before its first receipt; each readiness timeout
+records unknown with zero candidate input. Fresh receipt followed by nonzero
+true stops every mode before further children, trace toggles or reboot.
+Additional tests cover warnings, split prompts, post-entry cap rollover and
+false prompt/entry matches. Initial new fixture failures (synthetic U-Boot
+prompt, reused private log paths and a missing receipt newline after PS1)
+were corrected; they were not hardware failures or passes. Strict OpenSpec
+validation and `git diff --check` also pass. Cached work-status was run at
+start and launched again for handoff.
+
+After review/landing and independently verified protected normal recovery,
+the sole operator may use the same explicit runtime-trace command above with
+fresh protected log/result paths. A new receipt pass would apply only to that
+trial; missing readiness remains unknown. No task checkbox or published
+capability acceptance is changed by these host tests.

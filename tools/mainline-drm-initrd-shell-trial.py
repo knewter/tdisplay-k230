@@ -576,12 +576,14 @@ def await_reception(
 
 
 def await_initrd_ready(session, *, timeout=INITRD_READY_TIMEOUT, clock=time.monotonic) -> bool:
-    """Read only: wait for the pinned candidate's shell-init entry checkpoint."""
+    """Read only: require candidate init entry, then its initial shell prompt."""
     if not 0 < timeout <= INITRD_READY_TIMEOUT:
         raise ValueError("initrd readiness timeout must be positive and at most 90s")
     banner = rb"^\[\s*[0-9]+\.[0-9]+\]\s+Linux version 7\.3\.0-rc5(?:[ \t][^\n]*)?\n"
     ready = rb"^\[\s*[0-9]+\.[0-9]+\]\s+Run /bin/sh as init process\n"
+    prompt = rb"^sh-[0-9]+\.[0-9]+# \Z"
     candidate_seen = False
+    init_seen = False
     deadline = clock() + timeout
     while True:
         output = _PROTOCOL.uart_text(session.buffer)
@@ -593,7 +595,15 @@ def await_initrd_ready(session, *, timeout=INITRD_READY_TIMEOUT, clock=time.mono
                 session.buffer = output[match.start():]
                 output = session.buffer
                 candidate_seen = True
-        if candidate_seen and re.search(ready, output, re.M):
+        if candidate_seen and not init_seen:
+            match = re.search(ready, output, re.M)
+            if match:
+                # Linux prints the entry checkpoint before kernel_execve.
+                # A pre-entry prompt or a continuation prompt is not readiness.
+                session.buffer = output[match.end():]
+                output = session.buffer
+                init_seen = True
+        if init_seen and re.search(prompt, output, re.M):
             return True
         if clock() >= deadline:
             return False
@@ -1280,17 +1290,14 @@ def run_trial(
                 raise RuntimeError("Linux version banner not observed; reset may be required")
             token = uuid.uuid4().hex
             try:
-                if debug_shutdown:
-                    selection["initrd_readiness_observed"] = await_initrd_ready(session)
-                    if not selection["initrd_readiness_observed"]:
-                        raise ProbeProtocolError("initrd readiness")
+                selection["initrd_readiness_observed"] = await_initrd_ready(session)
+                if not selection["initrd_readiness_observed"]:
+                    raise ProbeProtocolError("initrd readiness")
                 probe_outcome = run_probe_protocol(
                     session, token, mode, system=system,
                     **({"runtime_shutdown_trace": True} if runtime_shutdown_trace else {}),
                 )
             except ProbeProtocolError as exc:
-                if mode not in ("minimal", "label", "root-mount"):
-                    raise
                 write_private_result(result_path, {
                     "result_schema": f"mainline-initrd-{mode}-unknown-v1",
                     "status": "recovery-required-unknown-no-reboot-requested",
