@@ -1,8 +1,10 @@
 # Mainline initrd shell diagnostic preparation
 
 Prepared after the two 2026-10-01 DRM trial boots stalled before a root login.
-This is a source and controller review; the `rdinit=/bin/sh` trial has not
-been run. It makes no claim about the stall's cause.
+This note records controller review and physical diagnostic attempts. The
+first `rdinit=/bin/sh` shell attempt reached PID 1 but its probe failed because
+the initrd environment had no usable `PATH`; it makes no claim about the
+stall's cause.
 
 The exact bundle remains
 `/nix/store/gf3aqks2dg0z3ksz33ysfprnlbk83vw3-k230-mainline-drm-trial-boot-files`,
@@ -102,5 +104,20 @@ device observation: the probe did not inspect partitions or labels. Its
 one direct volatile-PATH `/bin/reboot -ff` attempt yielded zero bytes over 60
 seconds. No corrected probe, normal recovery identity check, display check, or
 touch check was obtained. The controller now sets `PATH=/bin:/sbin` before the
-probe and invokes `/bin/reboot -ff`, but this source correction has not yet
-been exercised on hardware. Keep task 5b.5 open.
+probe and invokes `/bin/reboot -ff`. Static inspection of the exact pinned
+kernel/initrd confirms the correction is compatible with that artifact:
+kernel startup initializes only `HOME` and `TERM` (`init/main.c:198-199`); the
+`rdinit` argument is selected before normal init (`init/main.c:590-600`), and
+the console is duplicated onto standard input/output/error
+(`init/main.c:1631-1643`). The pinned initrd's `/bin` resolves to its
+executable environment, which contains Bash 5.3p15 and each external command
+used by the probe. Its `reboot` entry resolves to systemd 261.2's `systemctl`;
+double-force reboot mode is implemented as a direct reboot syscall without
+asking the system manager ([pinned systemctl source](https://github.com/systemd/systemd/blob/v261.2/src/systemctl/systemctl.c)).
+The probe input is 1,934 bytes plus its line ending, below the pinned TTY
+canonical input limit of 4,096 bytes (`drivers/tty/n_tty.c:59,1652-1653`).
+These are source/artifact checks only. They do not establish that the corrected
+probe or reboot ran successfully on hardware. A passive capture following the
+requested physical reset expired after 15 minutes with no UART bytes or
+U-Boot, normal-kernel, or login markers. The reset and normal-system recovery
+remain unobserved. Keep task 5b.5 open.
