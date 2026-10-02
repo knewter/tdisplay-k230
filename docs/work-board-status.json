@@ -408,11 +408,11 @@
       "dependencies": []
     },
     "the-board-runs-a-mainline-kernel": {
-      "lane": "verification",
-      "source": "source-landed",
+      "lane": "in-progress",
+      "source": "in-progress",
       "physical": "pending",
-      "next": "Resolve mainline restart support before another initrd trial, then prove usable mainline root and deliberate touch. The proc setup correction passes host tests and is landed; independent normal recovery is verified.",
-      "rationale": "The minimal physical probe reached its shell and executed /bin/true successfully, but failed its uptime/reboot gate because proc setup was absent. A subsequent operator power cycle and exact postflight now verify normal p1 system/profile/kernel/init, three active services, all eight unchanged boot-file hashes and native Home. Mainline root/touch/restart remain unproved; the revised probe has not run on the board.",
+      "next": "Implement and build the reviewed optional mainline restart port and matching bundle, then verify automatic return to the protected normal system. A separate audit is narrowing the usable-root blocker; deliberate mainline touch remains open.",
+      "rationale": "The minimal physical probe reached its shell and executed /bin/true successfully, but failed its uptime/reboot gate because proc setup was absent. A subsequent operator power cycle and exact postflight now verify normal p1 system/profile/kernel/init, three active services, all eight unchanged boot-file hashes and native Home. Mainline root/touch/restart remain unproved; the revised probe has not run on the board. Group 5d now records four separate source/API, full kernel, matching bundle and physical restart gates; implementation is underway.",
       "dependencies": [],
       "evidence": [
         "docs/evidence/mainline-display-power-domain.md",
@@ -426,7 +426,7 @@
         "docs/evidence/mainline-display/physical-2026-10-01/mainline-restart-source-audit-2026-10-02.md",
         "docs/evidence/mainline-display/physical-2026-10-01/minimal-probe-recovery-2026-10-02/README.md"
       ],
-      "reviewRevision": "86cc840cd7602f437b220e72dd80ee52f27ef69d",
+      "reviewRevision": "a7902369",
       "media": [
         {
           "path": "docs/evidence/mainline-display/physical-2026-10-01/power-swap-recovery-2026-10-02/home.png",
