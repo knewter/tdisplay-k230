@@ -412,8 +412,8 @@
       "lane": "in-progress",
       "source": "in-progress",
       "physical": "pending",
-      "next": "Finish the complete optional restart kernel and matching trial bundle, then physically verify automatic return to the protected normal system. Narrow the usable-root blocker next; deliberate mainline touch remains open.",
-      "rationale": "The minimal physical probe reached its shell and executed /bin/true successfully, but failed its uptime/reboot gate because proc setup was absent. A subsequent operator power cycle and exact postflight now verify normal p1 system/profile/kernel/init, three active services, all eight unchanged boot-file hashes and native Home. Mainline root/touch/restart remain unproved; the revised probe has not run on the board. Group 5d now records four separate source/API, full kernel, matching bundle and physical restart gates; implementation is underway. The vendor-derived restart source now passes Nix patch construction and a warning-free pinned-header RISC-V object check; complete kernel build and physical reset are separate open gates. Root-path inspection confirms MMC/ext4 are built in and SD partitions enumerate before unused-clock cleanup. Unconsumed SD clocks are a source-backed hypothesis; the next discriminator is a separately gated direct root-label read. Explicit candidate bundle/report preparation now passes 36 host tests and checks immutable identities, payload hashes/CRCs and load ranges before serial access.",
+      "next": "Finish the corrected GCC kernel build and matching restart trial bundle, then physically verify automatic return to the protected normal system. Prepare the gated root-label/unused-clock comparison in parallel.",
+      "rationale": "The minimal physical probe reached its shell and executed /bin/true successfully, but failed its uptime/reboot gate because proc setup was absent. A subsequent operator power cycle and exact postflight now verify normal p1 system/profile/kernel/init, three active services, all eight unchanged boot-file hashes and native Home. Mainline root/touch/restart remain unproved; the revised probe has not run on the board. Group 5d now records four separate source/API, full kernel, matching bundle and physical restart gates; implementation is underway. The vendor-derived restart source now passes Nix patch construction and a warning-free pinned-header RISC-V object check; complete kernel build and physical reset are separate open gates. Root-path inspection confirms MMC/ext4 are built in and SD partitions enumerate before unused-clock cleanup. Unconsumed SD clocks are a source-backed hypothesis; the next discriminator is a separately gated direct root-label read. Explicit candidate bundle/report preparation now passes 36 host tests and checks immutable identities, payload hashes/CRCs and load ranges before serial access. The first full GCC build failed on a missing unreachable return after the restart wait. The correction and warning-free pinned GCC object proof are committed, with the failed run preserved; the complete build is retrying.",
       "dependencies": [],
       "evidence": [
         "docs/evidence/mainline-display-power-domain.md",
@@ -430,7 +430,7 @@
         "docs/evidence/mainline-display/physical-2026-10-01/mainline-root-path-audit-2026-10-02.md",
         "docs/evidence/mainline-display/physical-2026-10-01/candidate-controller-host-2026-10-02.md"
       ],
-      "reviewRevision": "c6d2d556",
+      "reviewRevision": "1fb490d0",
       "media": [
         {
           "path": "docs/evidence/mainline-display/physical-2026-10-01/power-swap-recovery-2026-10-02/home.png",
