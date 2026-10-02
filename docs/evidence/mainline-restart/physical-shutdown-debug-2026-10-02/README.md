@@ -56,10 +56,14 @@ controller identity, exact artifacts, preflight and raw-capture hash. The
 
 ## Recovery and next gate
 
-Operator power-cycle recovery and a fresh protected normal postflight are
-pending at the time of this record. The earlier trial's recovered Home must
-not be reused as recovery proof for this boot. Do not send commands into an
-unidentified initrd/PID-1 shell.
+The user subsequently reported a power cycle. Independent physical serial
+[postflight](postflight.json) passed with a new boot ID, exact normal
+system/profile/kernel, three active services and eight unchanged protected
+boot hashes. The [reviewed camera Home](recovered-home-panel.jpg) was obtained
+after postflight and an IPC Home command; [provenance](recovery-camera.json)
+records its source/time/filter. This is manual recovery, not automatic mainline
+restart or new real-finger acceptance. The earlier trial's recovered Home was
+not reused. Do not send commands into an unidentified initrd/PID-1 shell.
 
 Correct the debug readiness gate before another trial: observe the exact late
 shell-init marker within a bounded wait before attempting receipts, and write

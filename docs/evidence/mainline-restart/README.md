@@ -268,8 +268,8 @@ The [verbose physical trial](physical-shutdown-debug-2026-10-02/README.md)
 started Linux 7.3 and successfully probed the reset controller, but stopped
 before diagnostic receipt. It requested no candidate reboot. Reviewed camera
 frames show boot text; subsequent 15- and 90-second receive-only captures got
-no output. Normal recovery remains pending for this trial. This is distinct
-from the earlier recovered Home above.
+no output. Subsequent user power-cycle recovery passed protected serial
+postflight and reviewed webcam Home, separately recorded for this trial.
 
 The [host correction](shutdown-debug-host-preparation-2026-10-02.md)
 waits read-only for the pinned candidate shell-init entry before receipt

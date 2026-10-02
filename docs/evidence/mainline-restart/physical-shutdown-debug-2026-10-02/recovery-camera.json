@@ -1,0 +1,8 @@
+{
+  "source": "physical Logitech C920 webcam /dev/video0",
+  "source_artifact": "private after-home-recovery.jpg",
+  "source_sha256": "f57f30940e3323594f29181beb8ea21cd7ca1fdc5a0f210e4e66e798f45ed875",
+  "source_mtime_utc": "2026-10-02T18:26:53.703273+00:00",
+  "filter": "crop=1260:920:130:140,transpose=2,transpose=2",
+  "observation": "Reviewed normal Home after protected serial postflight and IPC Home command. Angled panel/glare. No new finger or automatic-mainline-restart proof."
+}

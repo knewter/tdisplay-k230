@@ -1618,6 +1618,7 @@ DATA 4af73a4e81494f5be1b8d207f67721345bc565b41264353d709bc987465f0bd8 docs/evide
 DATA ba5e8a4f411fad3bc8b2ae0bba9aeaea5c501ebdd2d51f5dd3f8c387af89dc53 docs/evidence/boot-verification/2026-10-01/normal-candidate2-late-panel.jpg
 DATA 7d9faa8d4dda52bbc207f2a4ba798c1688f3fbcc7e09728ca0072d7bbd02b07b docs/evidence/mainline-display/physical-2026-10-01/panel-boot-text.jpg
 DATA c2d7bd67952385a6729cb1ade6fae9ef1169f585461deea15def08c26f8b4698 docs/evidence/mainline-restart/physical-minimal-2026-10-02/home-panel.jpg
+DATA f57f30940e3323594f29181beb8ea21cd7ca1fdc5a0f210e4e66e798f45ed875 docs/evidence/mainline-restart/physical-shutdown-debug-2026-10-02/recovered-home-panel.jpg
 DATA a938168c80109d82d88683faf251c0be44fd075748c8f47dd5f8a9ebe4ed898b docs/evidence/mainline-restart/physical-shutdown-debug-2026-10-02/boot-panel.jpg
 DATA 952197f416b79597b2b237f6e37b5bcc16a6df735439af5c4a9700a7221aaa81 docs/evidence/mainline-display/physical-2026-10-01/normal-restored-home.jpg
 DATA 8584b78379a3ef16d4da74bcbb2c59af9a23967f48741bd254580ff87c8c2302 docs/evidence/mainline-display/physical-2026-10-01/final-runtime-home.jpg
