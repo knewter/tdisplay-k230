@@ -461,12 +461,13 @@
       "lane": "in-progress",
       "source": "in-progress",
       "physical": "pending",
-      "next": "Matching normal boot bundle and inspector pass, with 13 tamper checks. Compare visible candidate navigation with baseline, then install qualified files and prove ordinary reboot.",
-      "rationale": "Host bundle matches the latest Settings-qualified system and its kernel/initrd/DTB/explicit init. Earlier vendor trial reached root/services but had ambiguous visible acceptance; normal boot files/profile remain unchanged.",
+      "next": "Matching-kernel temporary boot shows Home on glass and native capture. Check real-finger navigation, repeat protected baseline comparison, then install qualified files and prove ordinary reboot.",
+      "rationale": "Host bundle passes 13 tamper checks; five manual loads pass size/CRC and exact runtime/kernel/init identities match with active services. Earlier dark-panel ambiguity was not reproduced. Normal boot files/profile remain unchanged.",
       "dependencies": [],
       "evidence": [
         "docs/evidence/boot-verification/2026-10-01/README.md",
-        "docs/evidence/boot-verification/coherent-bundle-host/README.md"
+        "docs/evidence/boot-verification/coherent-bundle-host/README.md",
+        "docs/evidence/boot-verification/coherent-manual-candidate/README.md"
       ],
       "reviewRevision": "02c4a99850e6cc8a262480d21a17cb7f6dc2b019"
     },

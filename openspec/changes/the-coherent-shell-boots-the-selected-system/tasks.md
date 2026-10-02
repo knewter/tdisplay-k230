@@ -5,7 +5,7 @@
 
 ## 2. Diagnose and prove the candidate on the physical board
 
-- [ ] 2.1 Compare working baseline and current vendor candidate under the same recoverable manual boot procedure; inspect persisted bootcmd/preboot and actual display behavior. Commit exact boot artifacts, serial and panel observations. Use a reserved CR-only controller `python3 tools/coherent-shell-board-boot.py --candidate <bundle> --output <new-evidence>` (planned). Do not infer root cause from shared debug warnings.
+- [ ] 2.1 Compare working baseline and current vendor candidate under the same recoverable manual boot procedure; inspect persisted bootcmd/preboot and actual display behavior. Candidate load CRCs, exact identities, active services and photographed/native Home pass in `docs/evidence/boot-verification/coherent-manual-candidate/README.md`. Reserved CR-only controller exists: `python3 tools/coherent-shell-board-boot.py --candidate <bundle> --state <captured-staged-state.json> --output <new-evidence>`; repeat with `--baseline`. Working-baseline comparison remains; do not infer root cause from shared warnings.
 - [ ] 2.2 Repair the identified source/configuration defect, if any, and repeat qualified candidate boot. Run only the narrow affected build and relevant inspector/source tests, then record physical Home/overview/app navigation. Keep the candidate rejected while the panel is black; host or QEMU output alone does not tick this task.
 
 ## 3. Persist and verify an ordinary reboot

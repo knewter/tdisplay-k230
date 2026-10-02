@@ -60,8 +60,10 @@ jobs:
           python3 tests/test_root_growth.py
           python3 tests/test_root_growth_board.py
 
-      - name: Check recoverable RVV boot protocol
-        run: python3 tests/test_rvv_board_boot.py
+      - name: Check recoverable kernel boot protocols
+        run: |
+          python3 tests/test_rvv_board_boot.py
+          python3 tests/test_coherent_shell_board_boot.py
 
       - name: Check bounded VG-Lite normal-service recovery
         run: |
