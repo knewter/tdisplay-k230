@@ -44,7 +44,12 @@ reports that PID 1 may still be the shell.
 A responsive initrd shell would show that early userspace can run commands
 and report early device state. It would not prove stage2/root login, display
 usability, or touch acceptance. Existing logs show kernel/driver activity
-through roughly 7.22 seconds in the first boot; the later truncated systemd
+through roughly 7.22 seconds in the first boot. A read-only log audit also
+finds systemd waiting for `/dev/disk/by-label/NIXOS_SD` around 5.99 seconds;
+the kernel log detects the SD card and two partitions, but does not establish
+whether udev created that label link or whether the partition label matches.
+The captured directory listing and mounts will help distinguish root-device
+handoff from a broader early-userspace stall. The later truncated systemd
 debug line is not evidence of a failed sysctl write or udev failure. Task
 5b.5 remains open until root login, deliberate touch interaction, and
 committed normal restoration evidence exist.
