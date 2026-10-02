@@ -412,8 +412,8 @@
       "lane": "in-progress",
       "source": "in-progress",
       "physical": "pending",
-      "next": "Verify protected normal recovery after the minimal candidate reboot request, investigate the missing automatic return, then run the gated root-label/read-only mount diagnostics.",
-      "rationale": "The corrected complete kernel and matching bundle builds passed; default outputs are unchanged. The root-label/read-only mount controllers pass 62 host tests. The new physical minimal trial passed /bin/true, proc setup and uptime, then printed systemctl Rebooting; automatic return was not observed before the operator power cycle disconnected serial. Candidate kernel callback and normal postflight remain unverified. Prior protected normal recovery is separate evidence.",
+      "next": "Run the reviewed volatile shutdown trace to locate the missing automatic mainline return, then the gated read-only root-label/mount diagnostics.",
+      "rationale": "The corrected complete kernel and matching bundle builds passed; default outputs are unchanged. Root diagnostic controllers pass 62 host tests. The new physical minimal trial passed true, proc setup and uptime, then printed userspace Rebooting; automatic return was not observed before operator intervention disconnected serial. Independent manual recovery passed fresh identities and eight hashes, with reviewed camera Home. Kernel callback execution, usable mainline root and deliberate touch remain unverified.",
       "dependencies": [],
       "evidence": [
         "docs/evidence/mainline-display-power-domain.md",
@@ -430,10 +430,17 @@
         "docs/evidence/mainline-display/physical-2026-10-01/mainline-root-path-audit-2026-10-02.md",
         "docs/evidence/mainline-display/physical-2026-10-01/candidate-controller-host-2026-10-02.md",
         "docs/evidence/mainline-display/physical-2026-10-01/label-controller-host-2026-10-02.md",
-        "docs/evidence/mainline-display/physical-2026-10-01/root-mount-controller-host-2026-10-02.md"
+        "docs/evidence/mainline-display/physical-2026-10-01/root-mount-controller-host-2026-10-02.md",
+        "docs/evidence/mainline-restart/physical-minimal-2026-10-02/README.md",
+        "docs/evidence/mainline-restart/restart-dispatch-audit-2026-10-02.md"
       ],
-      "reviewRevision": "c10ab60d",
+      "reviewRevision": "47a1157e",
       "media": [
+        {
+          "path": "docs/evidence/mainline-restart/physical-minimal-2026-10-02/home-panel.jpg",
+          "caption": "Normal Home after operator recovery from the new mainline minimal trial; automatic mainline restart remains unverified",
+          "provenance": "Physical camera after IPC Home"
+        },
         {
           "path": "docs/evidence/mainline-display/physical-2026-10-01/power-swap-recovery-2026-10-02/home.png",
           "caption": "Normal vendor-kernel Home after power-swap recovery and IPC Home command; mainline usability remains pending",

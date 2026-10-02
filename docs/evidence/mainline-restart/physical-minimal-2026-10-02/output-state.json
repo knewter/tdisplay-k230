@@ -1,0 +1,15 @@
+[
+  {
+    "name": "DSI-1",
+    "active": true,
+    "dpms": true,
+    "power": true,
+    "transform": "normal",
+    "current_mode": {
+      "width": 568,
+      "height": 1232,
+      "refresh": 52190,
+      "picture_aspect_ratio": "none"
+    }
+  }
+]

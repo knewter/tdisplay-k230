@@ -1,0 +1,9 @@
+{
+  "captured_utc": "2026-10-02T17:25:10.468074+00:00",
+  "source": "host V4L2 /dev/video0, C920, 1920x1080 MJPEG at30fps, one frame after1second",
+  "private_source_sha256": "72f2fb4906b8342894b9b0a334ced0455f73b3b87006091b7e56c40b6ec1189c",
+  "presentation_filter": "crop=1260:920:130:140,transpose=2,transpose=2",
+  "committed_photo_sha256": "c2d7bd67952385a6729cb1ade6fae9ef1169f585461deea15def08c26f8b4698",
+  "interaction": "compositor IPC Home and transient-surface hide; no real finger test",
+  "observed": "Normal Home visible with wallpaper, clock and app icons. Angled capture with glare."
+}

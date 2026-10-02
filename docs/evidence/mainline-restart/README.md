@@ -243,3 +243,21 @@ that capture. A systemd refusal or manual power cycle does not prove automatic
 restart. Task 5b.5 remains open for usable mainline root and deliberate touch
 as well as the other named physical observations. No archive is authorized
 by these host results.
+
+## Later physical minimal trial and manual recovery
+
+The coordinator subsequently ran the inspected bundle with controller
+`f9759f43` and obtained physical receipt, `/bin/true`, proc setup and uptime
+passes. The candidate printed `Rebooting.`, but automatic return was not
+observed before the operator intervention disconnected serial. Neither
+callback execution nor the completed normal-return deadline is proved.
+Independent manual recovery then passed protected serial postflight with
+fresh boot ID `08f9455a-1044-4d72-b7ae-bc70d611a8e2`, and a reviewed webcam
+photo shows normal Home.
+
+[Physical observation and recovery](physical-minimal-2026-10-02/README.md)
+retain exact source/artifacts, fixed console excerpt, normal postflight and
+photo provenance. [Dispatch source audit](restart-dispatch-audit-2026-10-02.md)
+separates userspace request, kernel preparation and callback execution.
+Its pending-recovery statement records the audit boundary; the later protected
+recovery is recorded separately above. Tasks 5d.4 and 5b.5 remain open.
