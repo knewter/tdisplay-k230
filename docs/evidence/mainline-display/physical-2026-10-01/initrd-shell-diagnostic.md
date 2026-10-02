@@ -183,9 +183,28 @@ without failing the probe for that alone; the final gate still requires at
 least one readable ext label, while `NIXOS_SD` remains an independent exact
 observation. It also emits unique-token stage markers around `mkdir`, virtual
 mount checks, and proc/sys/device reads so a future bounded run can locate
-progress without treating command echo as execution. Generated command size
-is 2,885 bytes, below the 4,096-byte TTY canonical input limit. Focused host
-tests cover the strict stage parser and conservative label policy. No further
-board experiment was run. A short fresh-token discriminator using built-in
-markers around `/bin/true` and `/bin/cat /proc/uptime` remains an unperformed
-next step; a broader survey must remain separately gated. Task 5b.5 stays open.
+progress without treating command echo as execution. Generated survey command
+size is 2,885 bytes, below the 4,096-byte TTY canonical input limit. Focused
+host tests cover the strict stage parser and conservative label policy.
+
+## Host-only protocol revision (not physically run)
+
+The controller's default probe is now a short sequential discriminator rather
+than the full device survey: a fresh-token built-in receipt marker, an
+absolute `/bin/true` with its return code, and one bracketed `/bin/cat /proc/uptime`,
+followed by the bounded absolute `/bin/reboot -ff` request.
+Each stage requires a complete standalone marker line for the current UUID;
+missing or malformed stage markers stop further probe input. A missing reboot
+marker is recorded separately while the existing normal login and protected
+identity postflight remain required. The result schema identifies this as
+`k230-initrd-minimal-v1`.
+
+The broader proc/interrupt/device/label survey remains available only through
+explicit `--mode survey`, and only after both minimal external-command stages
+return zero. It has a distinct result schema so a minimal run cannot be read
+as label or IRQ evidence. The focused fake-serial suite passes 16 tests,
+including echoed, stale, truncated, duplicate, missing and nonzero markers,
+timeouts, survey gating and reboot-marker absence. Python compilation,
+`git diff --check`, and strict OpenSpec validation pass. This host-only
+revision does not resolve why the previous probe stopped after `K230_PROC`;
+no additional board attempt was made. Task 5b.5 remains open.
