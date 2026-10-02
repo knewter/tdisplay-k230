@@ -93,6 +93,16 @@ class InitrdShellTrialTests(unittest.TestCase):
             with self.subTest(invalid=invalid):
                 self.assertIsNone(trial.probe_result(invalid, token))
 
+    def test_nixos_sd_label_is_reported_only_from_one_complete_line(self):
+        self.assertTrue(trial.probe_nixos_label(b"K230_LABEL_NIXOS_SD=1\r\n"))
+        self.assertFalse(trial.probe_nixos_label(b"K230_LABEL_NIXOS_SD=0\r\n"))
+        for invalid in (
+            b"echo K230_LABEL_NIXOS_SD=1\r\n",
+            b"K230_LABEL_NIXOS_SD=1",
+            b"K230_LABEL_NIXOS_SD=1\r\nK230_LABEL_NIXOS_SD=1\r\n",
+        ):
+            self.assertIsNone(trial.probe_nixos_label(invalid))
+
     def test_state_and_upload_markers_reject_echo_or_incomplete_lines(self):
         token = "c" * 32
         value = b'{"boot_id":"next","system":"/nix/store/system"}'

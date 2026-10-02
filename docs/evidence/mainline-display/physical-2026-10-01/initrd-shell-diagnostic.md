@@ -45,7 +45,9 @@ command to mount proc, sysfs, and devtmpfs in the in-memory initrd, then record
 `/proc/mounts`, `/sys/block`, block device nodes, udev label links, and direct
 `e2label` results. It requires successful virtual mounts and at least one
 readable partition label. `NIXOS_SD` is recorded independently; a missing
-udev by-label link under direct `rdinit` is not treated as a cause. It does not
+udev by-label link under direct `rdinit` is not treated as a cause. The
+sanitized result file records whether any partition reports that exact label.
+It does not
 send `exit`: the diagnostic shell is PID 1, and exiting it would panic the
 kernel. The command waits ten seconds and invokes `reboot -ff` as a child.
 Successful restoration is counted only after verifying the returned system,

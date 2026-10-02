@@ -141,6 +141,14 @@ def probe_result(output: bytes, token: str) -> int | None:
     return int(matches[0])
 
 
+def probe_nixos_label(output: bytes) -> bool | None:
+    text = _PROTOCOL.uart_text(output)
+    matches = re.findall(rb"^K230_LABEL_NIXOS_SD=([01])\n", text, re.M)
+    if len(matches) != 1:
+        return None
+    return matches[0] == b"1"
+
+
 def normal_expectation(report_path: Path, manifest: dict[str, object]) -> dict[str, object]:
     report = json.loads(report_path.read_text())
     if report.get("system") != "/nix/store/p1a1hz9n8s4g8qyr55ffl3dzbnjgqwr8-nixos-system-nixos-26.11.20260919.20b1ddd":
@@ -424,6 +432,7 @@ def run_trial(manifest_path: Path, log_path: Path, result_path: Path) -> None:
                     break
             if probe_status is None:
                 raise RuntimeError("PID 1 shell probe did not return its complete token; do not send exit")
+            label_present = probe_nixos_label(session.buffer)
             if not session.wait_for(b"nixos login:", 180):
                 raise RuntimeError("normal login not observed after initrd reboot")
             recovery_login_seen = True
@@ -463,6 +472,7 @@ def run_trial(manifest_path: Path, log_path: Path, result_path: Path) -> None:
                 "candidate_system": SYSTEM,
                 "normal_preflight": observed_before,
                 "initrd_probe_rc": probe_status,
+                "initrd_nixos_sd_label_present": label_present,
                 "normal_recovery": observed_after,
                 "persistent_boot_selection_changed": False,
                 "raw_serial_log_path": str(log_path),
