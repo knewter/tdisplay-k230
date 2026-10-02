@@ -151,3 +151,31 @@ the local power-domain binding header, the DRM DTB builder/DTS and candidate
 DRM master's runtime-PM error handling. Console/default variants and clock/
 reset choices remain outside this continuation. Full candidate/DTB/boot-bundle
 builds prove the source artifacts; task 5b.5 still requires the board.
+
+
+## Bounded continuation: recoverable optional mainline restart
+
+A console operator cannot yet rely on a mainline diagnostic trial returning
+itself to the protected normal system. The 2026-10-02 minimal trial reached
+the initrd shell, but systemd refused its reboot request before the kernel
+was called; subsequent normal recovery needed an operator power cycle.
+The read source audit in
+`docs/evidence/mainline-display/physical-2026-10-01/mainline-restart-source-audit-2026-10-02.md`
+finds no advertised SBI SRST in the candidate logs and no restart handler in
+mainline's peripheral reset driver. This is a separate recovery dependency,
+not an explanation for the missing usable NixOS root.
+
+Group 5d adds the pinned vendor K230 restart register sequence to the
+optional `kernelMainlineDrm` only, using the pinned mainline managed restart
+API, checked probe-time mapping and registration, and device-owned cleanup.
+The source/API object proof, complete kernel build, matching trial bundle,
+and physical restart/normal recovery are separate gates. Record host proof
+under `docs/evidence/mainline-restart/`; keep physical restart UNVERIFIED and
+5b.5 open until their named observations exist.
+
+This continuation owns `nix/kernel-mainline-drm.nix` and a narrow patch
+under `nix/patches/mainline/`. No stage-1/OpenSBI change, userspace register
+write, reboot-controller change, new reset address, mainline pin update, or
+vendor/default/console-only kernel change is in scope. Board and serial work
+belong to the reserved operator after review and matching bundle proof;
+host work requires no board reservation.

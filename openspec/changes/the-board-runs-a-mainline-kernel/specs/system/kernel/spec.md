@@ -184,3 +184,44 @@ remains gated by separate source/build and physical runtime evidence
   DTB round-trip are available, but no physical observation exists
 - **THEN** the answer reports those host results and leaves board probe,
   display power, panel illumination, and touch behavior unverified
+
+
+### Requirement: The optional mainline trial owns an explicit restart recovery boundary
+
+The optional DRM mainline kernel SHALL provide a documented restart mechanism
+traceable to the pinned vendor source, isolated from vendor/default and
+console-only mainline outputs. Source/API object proof, complete candidate
+kernel build, matching trial-bundle proof and physical restart/recovery SHALL
+be recorded separately. Physical automatic restart remains UNVERIFIED until
+a committed console transcript shows a kernel restart request reaching stage
+1 and the protected normal system returning with a fresh boot identity.
+
+*Grounding: the read vendor `drivers/reset/reset-k230.c` at
+`7d4e1f444f461dbe3833bd99a4640e7b6c2cd529` registers a priority-128
+restart handler and writes bits 0/16 at `0x91102060`. The source audit at
+`docs/evidence/mainline-display/physical-2026-10-01/mainline-restart-source-audit-2026-10-02.md`
+records the mainline peripheral-only reset driver, absent advertised SBI
+SRST, the systemd refusal and distinct operator recovery. Group 5d owns the
+kernel/Nix continuation and its separate evidence gates.*
+
+<!-- UNVERIFIED: mainline automatic restart and protected normal return -->
+
+#### Scenario: The operator requests restart from the mainline diagnostic trial
+
+- **WHEN** a real kernel restart request is issued from the reviewed optional
+  candidate after the userspace prerequisites pass
+- **THEN** the console shows stage 1 restarting and the protected normal
+  system returning with a fresh boot identity and verified protected hashes
+
+#### Scenario: A reboot command returns a userspace refusal
+
+- **WHEN** systemd refuses the reboot command or the operator power-cycles
+  the board to recover
+- **THEN** that result is recorded with its limits and does not satisfy
+  the optional mainline kernel's automatic restart evidence gate
+
+#### Scenario: Only the host restart checks have passed
+
+- **WHEN** the changed object, complete kernel and matching trial bundle build
+- **THEN** their source/artifact identities are recorded and physical restart
+  remains UNVERIFIED; usable-root, panel and touch requirements remain open

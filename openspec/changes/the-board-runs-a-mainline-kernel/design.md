@@ -293,3 +293,53 @@ reference), claiming an initrd change fixes power (it does not), changing the
 console/default kernels, or guessing new clock/reset mappings. The complete
 candidate kernel, DTB and matching trial bundle must build before handoff;
 the physical serial/panel/touch/normal-restoration gate remains unchecked.
+
+
+## Optional DRM restart continuation (group 5d)
+
+Layer: optional kernel reset driver and Nix patch application. Grounding is
+the committed restart source audit and the read vendor
+`drivers/reset/reset-k230.c` at
+`7d4e1f444f461dbe3833bd99a4640e7b6c2cd529`. Its restart callback writes
+bits 0 and 16 to `SYSCTL_BOOT_BASE_ADDR + CPU0_RST_CTL`
+(`0x91102000 + 0x60`), then waits indefinitely; its probe registers a
+priority-128 restart notifier. The normal vendor boot transcript records
+restart reaching U-Boot SPL. Mainline's `canaan,k230-rst` controller instead
+implements peripheral reset operations only. The boot-control register is
+outside its reset-controller resource; do not reinterpret the peripheral
+CPU0 reset ID as the system restart operation.
+
+Forward-port only that restart sequence alongside mainline's existing reset
+implementation in the separate DRM derivation. Map the vendor-defined four
+bytes at probe time with managed lifetime; check mapping and restart
+registration failures. Use `devm_register_sys_off_handler()` with
+`SYS_OFF_MODE_RESTART` and vendor priority 128, preserving the ordering while
+adapting the callback to `struct sys_off_data`. The pinned
+`include/linux/reboot.h` declares this API; the convenience
+`devm_register_restart_handler()` fixes the priority to zero, so it would
+change the vendor ordering. Keep the vendor write mask and terminal wait,
+with `cpu_relax()` in the wait. Do no allocation or mapping inside the
+atomic restart callback. Managed actions unregister the handler before its
+mapping and per-device state are released on failed probe or removal.
+Register only after the peripheral reset controller has registered, checking
+all results. No DT change is needed if this vendor-defined mapping is
+available independently of the existing peripheral resource.
+
+Rejected: an initrd script writing registers (bypasses the kernel recovery
+boundary), direct SBI SRST calls without advertised support, changing loaded
+OpenSBI/stage 1 in the same increment, borrowing a different platform's reset
+handler, or inferring restart success from a built object or the systemd
+refusal. This write's physical behavior under the mainline kernel remains
+UNVERIFIED. Preserve the existing usable-root/display/touch gate 5b.5.
+
+First compile the changed reset object against the exact pinned prepared
+headers and evaluate/apply the optional Nix source patch. Then, under the
+single shared build slot, build `.#kernelMainlineDrm`, build and inspect its
+matching `.#kernelMainlineDrmTrialBootFiles`, and compare default and
+console-only derivation identities to the base revision. Only the operator
+may perform the recoverable physical trial: preserve a serial log showing a
+kernel reboot request reaching stage 1 and a fresh normal boot identity,
+protected normal hashes and shell postflight. A systemd refusal is a failed
+prerequisite; an operator power cycle records recovery but does not prove
+mainline automatic restart. The actual controller invocation and artifact
+identity must accompany that physical evidence.
