@@ -418,7 +418,8 @@
         "docs/evidence/mainline-display-boot-preparation.md",
         "docs/evidence/mainline-display/physical-2026-10-01/README.md",
         "docs/evidence/mainline-display/physical-2026-10-01/power-swap-recovery-2026-10-02/README.md",
-        "docs/evidence/mainline-display/physical-2026-10-01/corrected-probe-recovery-2026-10-02/README.md"
+        "docs/evidence/mainline-display/physical-2026-10-01/corrected-probe-recovery-2026-10-02/README.md",
+        "docs/evidence/mainline-display/physical-2026-10-01/initrd-exec-audit-2026-10-02.md"
       ],
       "reviewRevision": "b209129b1cf681669edfe3e1e05be317842bf6f4",
       "media": [

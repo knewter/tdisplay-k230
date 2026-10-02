@@ -18,11 +18,11 @@ Host inspection was run 2026-10-02 06:49 UTC. The compressed initrd is
 The archived initrd's `/bin` and `/sbin` resolve through the matching initrd
 binary environment. Bash's `sh`, coreutils (`mkdir`, `cat`, `ls`, `sleep`),
 util-linux `mount`, e2fsprogs `e2label`/`tune2fs`, and systemd `reboot` are
-present there. I checked the exact RISC-V ELF interpreter and every `DT_NEEDED`
+present there. I checked the exact RISC-V ELF interpreter and each executable's direct `DT_NEEDED`
 shared-library name against each executable's embedded RUNPATH and the CPIO
 archive: all were present. Thus this artifact audit found no missing dynamic
 loader or shared library that explains a child executable failing to start.
-The initrd does not include `blkid` in this binary environment.
+The snippet checks direct dependencies, not recursive library dependencies or successful runtime execution. The initrd does not include `blkid` in this binary environment.
 
 This read-only host snippet checks the same executable set against the
 archive. It requires `zstd`, `cpio`, `readelf`, and Python 3 and writes no
