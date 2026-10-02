@@ -1,0 +1,8 @@
+{
+  "source": "physical Logitech C920 webcam /dev/video0",
+  "source_artifact": "private runtime-trace-after.jpg",
+  "source_sha256": "f33f9c628023dc914583694ceb4846d6c4305c80e81a314ce9c32409801ee667",
+  "source_mtime_utc": "2026-10-02T18:39:45.512736+00:00",
+  "filter": "crop=1260:920:130:140,transpose=2,transpose=2",
+  "observation": "Reviewed panel boot text after quiet candidate receipt failure. Angled panel/glare; no Home, touch or automatic restart proof."
+}

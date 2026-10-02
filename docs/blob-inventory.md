@@ -1651,6 +1651,7 @@ DATA 8ecd5d4d0e23f3ea9e2337ecef9cdda69a3ebd61f9d721f2541132129e5a8c8d docs/evide
 DATA 0779dc3360a5f98a39491ac79a1f3bcb050ee486f5614a4af4e34e77215e037d docs/evidence/omarchy-themes/drawer-card-generation/light-card-qemu.png
 DATA c675526827cc922b051f30d402807cc6b13afb226756bc8d47ef17aa630f583b docs/evidence/omarchy-themes/drawer-card-generation/light-drawer-host.png
 DATA 1d1c0a97fb4998450f271b580db263aa21bb8e1ed00fcb1a123cb6b8ab68eb18 docs/evidence/omarchy-themes/drawer-card-generation/light-drawer-qemu.png
+DATA 86a97d3beb06ec564a69256328060642dfbdaacabc59886e0e616bae9a4e07d0 docs/evidence/mainline-restart/physical-runtime-trace-2026-10-02/boot-panel.jpg
 ```
 
 `group:` rows stand for a directory whose members are enumerated by

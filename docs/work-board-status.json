@@ -412,8 +412,8 @@
       "lane": "in-progress",
       "source": "in-progress",
       "physical": "pending",
-      "next": "Qualify independent host power or early-watchdog recovery, then run the reviewed quiet runtime shutdown-trace trial before root-label/mount diagnostics.",
-      "rationale": "The corrected complete kernel and matching bundle builds passed; default outputs are unchanged. Root diagnostic controllers pass 87 host tests. The new physical minimal trial passed true, proc setup and uptime, then printed userspace Rebooting; automatic return was not observed before operator intervention disconnected serial. Independent manual recovery passed fresh identities and eight hashes, with reviewed camera Home. Kernel callback execution, usable mainline root and deliberate touch remain unverified. The verbose trial stopped at receipt readiness before any candidate reboot request; webcam and passive UART checks were obtained, then operator power-cycle recovery passed fresh protected serial postflight and reviewed Home. The runtime shutdown-trace controller now enables logging only after returned sysfs, prior-value, write and readback gates; 87 host tests pass, but no physical runtime-trace trial has been performed.",
+      "next": "Land the ordinary-mode shell-init readiness gate, verify operator recovery, then repeat the bounded quiet runtime shutdown-trace trial before root-label/mount diagnostics.",
+      "rationale": "The corrected complete kernel and matching bundle builds passed; default outputs are unchanged. Root diagnostic controllers pass 87 host tests. The new physical minimal trial passed true, proc setup and uptime, then printed userspace Rebooting; automatic return was not observed before operator intervention disconnected serial. Independent manual recovery passed fresh identities and eight hashes, with reviewed camera Home. Kernel callback execution, usable mainline root and deliberate touch remain unverified. The verbose trial stopped at receipt readiness before any candidate reboot request; webcam and passive UART checks were obtained, then operator power-cycle recovery passed fresh protected serial postflight and reviewed Home. The runtime shutdown-trace controller now enables logging only after returned sysfs, prior-value, write and readback gates; 87 host tests pass, but no physical runtime-trace trial has been performed. The quiet physical runtime-trace attempt reached Bash but failed reception after corrupted input and a continuation prompt; no runtime stage or candidate reboot was sent. Operator recovery is pending. Independent host power/watchdog work was dropped at user request; existing manual power-cycle recovery remains the operator path.",
       "dependencies": [],
       "evidence": [
         "docs/evidence/mainline-display-power-domain.md",
@@ -436,10 +436,16 @@
         "docs/evidence/mainline-restart/shutdown-debug-host-preparation-2026-10-02.md",
         "docs/evidence/mainline-restart/shutdown-path-audit-2026-10-02.md",
         "docs/evidence/mainline-restart/physical-shutdown-debug-2026-10-02/README.md",
-        "docs/evidence/mainline-restart/runtime-shutdown-trace-feasibility-2026-10-02.md"
+        "docs/evidence/mainline-restart/runtime-shutdown-trace-feasibility-2026-10-02.md",
+        "docs/evidence/mainline-restart/physical-runtime-trace-2026-10-02/README.md"
       ],
       "reviewRevision": "379bcb3c",
       "media": [
+        {
+          "path": "docs/evidence/mainline-restart/physical-runtime-trace-2026-10-02/boot-panel.jpg",
+          "caption": "Quiet mainline trial reached Bash but receipt failed; runtime tracing and automatic restart were not attempted",
+          "provenance": "Board capture"
+        },
         {
           "path": "docs/evidence/mainline-restart/physical-shutdown-debug-2026-10-02/recovered-home-panel.jpg",
           "caption": "Normal Home after recovery from verbose mainline boot; protected serial postflight passed, no automatic restart claim",
@@ -447,7 +453,7 @@
         },
         {
           "path": "docs/evidence/mainline-restart/physical-shutdown-debug-2026-10-02/boot-panel.jpg",
-          "caption": "Physical verbose mainline boot text; diagnostic receipt and normal recovery not yet obtained",
+          "caption": "Verbose mainline boot text; receipt failed, later operator recovery passed protected postflight",
           "provenance": "Board capture"
         },
         {

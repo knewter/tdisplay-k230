@@ -281,6 +281,10 @@ been run with the correction. Tasks 5d.4 and 5b.5 remain open.
 The [runtime tracing source note](runtime-shutdown-trace-feasibility-2026-10-02.md)
 identifies a writable runtime parameter that can enable shutdown tracing after
 nondebug shell readiness. Guarded sysfs/write/readback stages are now implemented and pass 87 host
-tests; they remain physically untried. Source feasibility and host simulations
+tests. The [quiet physical attempt](physical-runtime-trace-2026-10-02/README.md)
+reached Bash but returned no reception token after corrupted early input and
+a continuation prompt. No runtime stage or candidate reboot was attempted.
+The ordinary-mode shell-init readiness correction is the next host step.
+Source feasibility and host simulations
 are not returned board proof. It also records why host serial reopening cannot establish a target
 kernel stop.
