@@ -121,3 +121,15 @@ probe or reboot ran successfully on hardware. A passive capture following the
 requested physical reset expired after 15 minutes with no UART bytes or
 U-Boot, normal-kernel, or login markers. The reset and normal-system recovery
 remain unobserved. Keep task 5b.5 open.
+
+## 2026-10-02 observed power-swap recovery
+
+The operator subsequently reported “power swapped it”. The fresh exclusive
+serial postflight passed: exact normal system/profile/kernel/init, Linux
+6.6.36, all three shell services active, a new boot ID and unchanged hashes
+for all eight protected boot/selector files. Home is visible after injected
+DPMS/Home commands and transient-surface hide, with reviewed native and
+physical-camera captures. See [recovery commands, result and limits](power-swap-recovery-2026-10-02/README.md).
+This supersedes the earlier unobserved-restoration status; it does not turn
+the failed PATH probe into valid partition evidence or satisfy mainline
+root-login/touch task 5b.5. The corrected probe remains unperformed.

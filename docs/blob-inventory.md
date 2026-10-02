@@ -1618,6 +1618,8 @@ DATA ba5e8a4f411fad3bc8b2ae0bba9aeaea5c501ebdd2d51f5dd3f8c387af89dc53 docs/evide
 DATA 7d9faa8d4dda52bbc207f2a4ba798c1688f3fbcc7e09728ca0072d7bbd02b07b docs/evidence/mainline-display/physical-2026-10-01/panel-boot-text.jpg
 DATA 952197f416b79597b2b237f6e37b5bcc16a6df735439af5c4a9700a7221aaa81 docs/evidence/mainline-display/physical-2026-10-01/normal-restored-home.jpg
 DATA 8584b78379a3ef16d4da74bcbb2c59af9a23967f48741bd254580ff87c8c2302 docs/evidence/mainline-display/physical-2026-10-01/final-runtime-home.jpg
+DATA 09fa5c7a05a14a70de5910a8a95f3a9e7f0f51d20cbfc7a192a619f6870849c6 docs/evidence/mainline-display/physical-2026-10-01/power-swap-recovery-2026-10-02/home.png
+DATA bdf4467268c6416f3b862b9a4e33a5b956367acc26c4585995eeebacc5c27d9e docs/evidence/mainline-display/physical-2026-10-01/power-swap-recovery-2026-10-02/home-panel.jpg
 DATA  9944c9fdef515ee3fc71c5a00cc46d6619d6142d6de17fcf3198d9b653cd44b8  docs/evidence/omarchy-themes/settings-notifications-themed/board/dark-settings.png
 DATA  5cb9ac53740657f87d06e2c9667605bd1dc197ea1f0c8850ea9592019adda1c9  docs/evidence/omarchy-themes/settings-notifications-themed/board/dark-shade.png
 DATA  4094b29193330d905cae36305574359b8564e35bb11f7ad2d095bc4b142dd23f  docs/evidence/omarchy-themes/settings-notifications-themed/board/light-settings.png

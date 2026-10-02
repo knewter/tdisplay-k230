@@ -28,3 +28,9 @@ A second invocation, `python3 ~/tmp/k230-coordination/mainline-boot-trial.py dia
 Keep trial selection temporary. Next isolate early initrd execution before systemd with the matching initrd's existing `/bin/sh` and volatile `rdinit=/bin/sh`, then consider disabling DRM fbdev emulation as a separate diagnostic variable (`drm_kms_helper.fbdev_emulation=0`, expected dark panel). These are source-reviewed hypotheses, not repairs or results from this run. Root/IRQ/DRM/display observations must be separated before another source change.
 
 See `early-initrd-source-audit.md` for the exact pre-systemd shell path and why an emergency target would not bypass the truncated early-PID1 operation. That future trial is unperformed.
+
+The later PID1 shell diagnostic's 2026-10-02 physical power-swap recovery
+returned to the newly selected coherent normal system with eight unchanged
+protected hashes. Its distinct result, boot ID, native Home and camera proof
+are in [power-swap-recovery-2026-10-02](power-swap-recovery-2026-10-02/README.md).
+Mainline task 5b.5 still needs usable root and deliberate touch evidence.
