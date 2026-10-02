@@ -1342,3 +1342,23 @@ Caller and observer limits remain open; the user still reports jank.
   not acceptance of the curves. Keep this open if only injected tests exist.
 
 Task 17.2 source/build and the first task 17.3 injected pair: `docs/evidence/theme-picker/row-repaint/pair/README.md`. Task 17.3 remains open for combined-source installation and deployment; real-finger acceptance is separate.
+
+**2026-10-01 persistent-install reconciliation:** the combined coherent system
+`/nix/store/p1a1hz9n8s4g8qyr55ffl3dzbnjgqwr8-nixos-system-nixos-26.11.20260919.20b1ddd`
+was selected persistently and survived an ordinary reboot; the running Rust
+client is
+`/nix/store/3hy6h165ii649z6vjzjd36jwg16d37rc-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0/bin/k230-shell-rust`.
+The saved appearance generation and report hash match before and after boot.
+See `docs/evidence/boot-verification/coherent-ordinary-boot/README.md` and
+`postboot.json`. This verifies installation, ordinary boot and remembered
+appearance for the existing home. It does not complete 17.3: the existing
+matched pair measured candidate source `42e22d4353e35d9c4f6367ed5b159c80b489ec5d`
+and binary `/nix/store/2mprr7lqh4hznwz9z1zmv7vamf5nbnna-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0`,
+whereas the installed combined source is `5bb67db128210f830dab4de0d20a4b0eca13c578`.
+Between those identities `main.rs` and `render.rs` changed, including picker
+carousel painting, so the older pair cannot establish the current binary's
+matched swipe cost. A matched baseline/current-candidate pair is still needed;
+do not infer it from the normal reboot or unchanged appearance. The evidence
+inventory and source comparison are recorded in
+`docs/evidence/theme-picker/closeout-2026-10-01/README.md`. Tasks 14.4 (real
+finger), 10.7 (picker panel/tap timing), and wider 13/15 gates remain separate.
