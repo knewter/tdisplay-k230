@@ -69,21 +69,37 @@ python3 tests/test_real_theme_paired_runtime.py \
   --output "$HOME/tmp/theme-qemu-3-2" --check-restart
 ```
 
-The probe client was built as one native derivation with
-`nix build --no-link --max-jobs 1 --cores 8 --print-out-paths <probe.drv>^out`.
-The Sway, Rust, and probe executable SHA-256 values are respectively
-`3e12de25c17e22b02954466872a30cf7c11536801f53f5566d0cdf416acb7ebf`,
-`e89ac92798d3ca2ad7286afd66cdccb68513dc40b64961ae2a2d0c0592d9d900`, and
-`1933c7fefe0bc6173bab2a88393abba3409a61259fc5b3afa14ebc20ffc93ec6`.
-The reviewed checkout's Rust renderer source hash was
-`bb9c97654658aaec8c201446026b0b78bb9a53ee51f254fd76ebf565ee3f2cf4`;
-the installed QEMU Rust executable is the earlier candidate from application
+The probe client derivation was obtained and built with:
+
+```sh
+probe_drv=$(nix eval --impure --raw --expr 'let f = builtins.getFlake (toString ./.); p = import f.inputs.nixpkgs { system = "x86_64-linux"; }; in (p.callPackage (f.outPath + "/nix/card-composition-probe-client") {}).drvPath')
+nix build --no-link --max-jobs 1 --cores 8 --print-out-paths "${probe_drv}^out"
+```
+
+This evaluated to derivation
+`/nix/store/67c3mixvlwazmzxr3zjj9g8llrv8fcq1-card-composition-probe-client-0.1.drv`
+and output
+`/nix/store/yjb89ap4bq5vb29szdzkr5sv9lpw1sz6-card-composition-probe-client-0.1`.
+The installed QEMU Rust executable is the earlier candidate from application
 source revision `5bb67db128210f830dab4de0d20a4b0eca13c578`, not a build of this
 checkout.
-the card appearance, adapter and icon source hashes were
-`35284642fe33cd9e8c201446026b0b78bb9a53ee51f254fd76ebf565ee3f2cf4`,
-`78bd8145c7a6a3676b770c03fca2d47c13cfc02e7ef511579f97fc9ead91e768`, and
-`4dd4ef3eb901d8254991bf04b90c2d4b2f1ab0d27f53fa7790b90572c049719c`.
+
+Source SHA-256 values at review time:
+
+| Source path | SHA-256 |
+| --- | --- |
+| `nix/rust-shell-client/src/render.rs` | `bb9c97654658aaec7d440d57f0a3771923880e0b646383f66bda10e556f34780` |
+| `nix/card-shell/appearance.c` | `35284642fe33cd9e8c201446026b0b78bb9a53ee51f254fd76ebf565ee3f2cf4` |
+| `nix/card-shell/adapter.c` | `78bd8145c7a6a3676b770c03fca2d47c13cfc02e7ef511579f97fc9ead91e768` |
+| `nix/card-shell/icon.c` | `4dd4ef3eb901d8254991bf04b90c2d4b2f1ab0d27f53fa7790b90572c049719c` |
+
+Executable SHA-256 values:
+
+| Nix-store executable | SHA-256 |
+| --- | --- |
+| `/nix/store/g7xzwwvr3x05mlmsab5jn5kn1sl41wjb-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway` | `3e12de25c17e22b02954466872a30cf7c11536801f53f5566d0cdf416acb7ebf` |
+| `/nix/store/3hy6h165ii649z6vjzjd36jwg16d37rc-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0/bin/k230-shell-rust` | `e89ac92798d3ca2ad7286afd66cdccb68513dc40b64961ae2a2d0c0592d9d900` |
+| `/nix/store/yjb89ap4bq5vb29szdzkr5sv9lpw1sz6-card-composition-probe-client-0.1/bin/card-composition-probe-client` | `1933c7fefe0bc6173bab2a88393abba3409a61259fc5b3afa14ebc20ffc93ec6` |
 
 All PNGs are original production renderer or compositor outputs and were
 visually reviewed. Their SHA-256 values are recorded in `docs/blob-inventory.md`.
