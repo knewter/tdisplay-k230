@@ -352,7 +352,8 @@ init, three active shell services and eight unchanged protected hashes. See
 for usable root login and deliberate touch evidence. These captures show the
 normal vendor-kernel system, not a working mainline shell.
 
-The host controller now defaults to the short fresh-token `/bin/true` and
-`/proc/uptime` discriminator; the full device survey requires explicit mode.
-This source/test follow-up has not been run on hardware and does not change
-task 5b.5 evidence status.
+The host controller now waits for one of at most eight fresh-token built-in
+receipt attempts before starting the short `/bin/true` and `/proc/uptime`
+discriminator; the full device survey requires explicit mode. This
+source/test follow-up has not been run on hardware and does not change task
+5b.5 evidence status.

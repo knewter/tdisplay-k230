@@ -37,6 +37,8 @@ PRIVATE_LOG_DIR = Path("/home/jadams/tmp/k230-coordination/mainline-initrd-priva
 LOCK_PATH = Path("/tmp/k230-board.lock")
 SERIAL_DEVICE = "/dev/ttyACM0"
 PROMPT = b"K230# "
+RECEPTION_MAX_ATTEMPTS = 8
+RECEPTION_ATTEMPT_TIMEOUT = 1.0
 _PROTOCOL_SPEC = importlib.util.spec_from_file_location(
     "rvv_board_boot", Path(__file__).with_name("rvv-board-boot.py")
 )
@@ -262,13 +264,64 @@ def await_protocol_marker(session, parser, token: str, timeout: float, clock=tim
     return None
 
 
-def run_probe_protocol(session, token: str, mode: str, *, timeout: float = 30.0, clock=time.monotonic):
+def await_reception(
+    session,
+    first_token: str,
+    *,
+    attempts: int = RECEPTION_MAX_ATTEMPTS,
+    timeout: float = RECEPTION_ATTEMPT_TIMEOUT,
+    token_factory=None,
+    clock=time.monotonic,
+):
+    """Retry only the safe builtin receipt line until the console accepts one fresh token."""
+    _validate_token(first_token)
+    if not 1 <= attempts <= RECEPTION_MAX_ATTEMPTS:
+        raise ValueError(f"reception attempts must be between 1 and {RECEPTION_MAX_ATTEMPTS}")
+    if not 0 < timeout <= RECEPTION_ATTEMPT_TIMEOUT:
+        raise ValueError(f"reception timeout must be positive and at most {RECEPTION_ATTEMPT_TIMEOUT}s")
+    make_token = token_factory or (lambda: uuid.uuid4().hex)
+    seen = {first_token}
+    for attempt in range(attempts):
+        token = first_token if attempt == 0 else make_token()
+        _validate_token(token)
+        if attempt and token in seen:
+            raise ValueError("reception retry tokens must be fresh")
+        seen.add(token)
+        # Drain pending console bytes before each retry. Parser matching is scoped
+        # to this fresh token, so an echo or delayed response from an older line
+        # cannot make the current attempt ready.
+        session.pump()
+        session.write((reception_command(token) + "\r").encode())
+        if await_protocol_marker(session, receive_marker, token, timeout, clock) is True:
+            return token, attempt + 1
+    return None
+
+
+def run_probe_protocol(
+    session,
+    token: str,
+    mode: str,
+    *,
+    timeout: float = 30.0,
+    readiness_attempts: int = RECEPTION_MAX_ATTEMPTS,
+    readiness_timeout: float = RECEPTION_ATTEMPT_TIMEOUT,
+    token_factory=None,
+    clock=time.monotonic,
+):
     """Run short sequential tests; survey is gated on every minimal RC being zero."""
     if mode not in ("minimal", "survey"):
         raise ValueError("probe mode must be minimal or survey")
-    session.write((reception_command(token) + "\r").encode())
-    if await_protocol_marker(session, receive_marker, token, timeout, clock) is None:
+    received = await_reception(
+        session,
+        token,
+        attempts=readiness_attempts,
+        timeout=readiness_timeout,
+        token_factory=token_factory,
+        clock=clock,
+    )
+    if received is None:
         raise ProbeProtocolError("reception")
+    token, reception_attempts_used = received
 
     session.write((true_command(token) + "\r").encode())
     true_rc = await_protocol_marker(
@@ -282,7 +335,13 @@ def run_probe_protocol(session, token: str, mode: str, *, timeout: float = 30.0,
     if uptime is None:
         raise ProbeProtocolError("/bin/cat /proc/uptime")
 
-    minimal = {"reception_marker": True, "true_rc": true_rc, "uptime_rc": uptime["rc"], "uptime": uptime["uptime"]}
+    minimal = {
+        "reception_marker": True,
+        "reception_attempts": reception_attempts_used,
+        "true_rc": true_rc,
+        "uptime_rc": uptime["rc"],
+        "uptime": uptime["uptime"],
+    }
     minimal_ok = true_rc == 0 and uptime["rc"] == 0
     survey = None
     if mode == "survey" and minimal_ok:

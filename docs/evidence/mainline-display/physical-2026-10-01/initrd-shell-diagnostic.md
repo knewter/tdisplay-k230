@@ -190,21 +190,28 @@ host tests cover the strict stage parser and conservative label policy.
 ## Host-only protocol revision (not physically run)
 
 The controller's default probe is now a short sequential discriminator rather
-than the full device survey: a fresh-token built-in receipt marker, an
-absolute `/bin/true` with its return code, and one bracketed `/bin/cat /proc/uptime`,
-followed by the bounded absolute `/bin/reboot -ff` request.
-Each stage requires a complete standalone marker line for the current UUID;
-missing or malformed stage markers stop further probe input. A missing reboot
-marker is recorded separately while the existing normal login and protected
-identity postflight remain required. The result schema identifies this as
-`k230-initrd-minimal-v1`.
+than the full device survey. After the Linux banner, it retries only the safe
+built-in receipt line, with up to eight one-second windows and a fresh UUID
+for each attempt. It proceeds only after exactly one complete standalone
+receipt marker for the current attempt. This establishes that the serial shell
+processed that line; it does not establish general PID1 or userspace readiness.
+Exhaustion sends no external command and stops further probe input.
+
+After receipt, the probe runs absolute `/bin/true` with its return code and one
+bracketed `/bin/cat /proc/uptime`, followed by the bounded absolute
+`/bin/reboot -ff` request. Each stage requires a complete standalone marker
+line for the accepted UUID; missing or malformed stage markers stop further
+probe input. A missing reboot marker is recorded separately while the existing
+normal login and protected identity postflight remain required. The result
+schema identifies this as `k230-initrd-minimal-v1`.
 
 The broader proc/interrupt/device/label survey remains available only through
 explicit `--mode survey`, and only after both minimal external-command stages
 return zero. It has a distinct result schema so a minimal run cannot be read
-as label or IRQ evidence. The focused fake-serial suite passes 16 tests,
-including echoed, stale, truncated, duplicate, missing and nonzero markers,
-timeouts, survey gating and reboot-marker absence. Python compilation,
+as label or IRQ evidence. The focused fake-serial suite passes 18 tests,
+including early ignored input, retry exhaustion, echoed/stale markers,
+truncated/duplicate/missing/nonzero markers, timeouts, survey gating and
+reboot-marker absence. Python compilation,
 `git diff --check`, and strict OpenSpec validation pass. This host-only
 revision does not resolve why the previous probe stopped after `K230_PROC`;
 no additional board attempt was made. Task 5b.5 remains open.

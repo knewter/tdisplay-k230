@@ -141,6 +141,48 @@ class InitrdShellTrialTests(unittest.TestCase):
         self.assertFalse(any("K230_PROC" in command for command in commands))
         self.assertEqual(["/bin/true" in command for command in commands], [False, True, False, False])
 
+    def test_early_receipt_is_retried_and_old_or_echoed_markers_cannot_pass_new_attempt(self):
+        tokens = iter(("3" * 32, "4" * 32))
+        token = "2" * 32
+        echoed_second = f"printf 'K230_RDINIT_RX {'3' * 32}\\n'\r\n".encode()
+        session = FakeSerialSession([
+            None,  # First receipt line was sent before the shell consumed it.
+            echoed_second + f"K230_RDINIT_RX {token}\r\n".encode(),  # Echo + late stale response.
+            f"K230_RDINIT_RX {'4' * 32}\r\n".encode(),
+            f"K230_RDINIT_TRUE {'4' * 32} RC=0\r\n".encode(),
+            f"K230_RDINIT_UP_BEGIN {'4' * 32}\r\n3.0 2.0\r\nK230_RDINIT_UP_END {'4' * 32} RC=0\r\n".encode(),
+            f"K230_RDINIT_REBOOT {'4' * 32}\r\n".encode(),
+        ])
+        outcome = trial.run_probe_protocol(
+            session, token, "minimal", timeout=0.02, readiness_timeout=0.01,
+            token_factory=lambda: next(tokens), clock=FakeClock(),
+        )
+        self.assertEqual(outcome["diagnostic"]["reception_attempts"], 3)
+        self.assertTrue(outcome["diagnostic_ok"])
+        commands = [item.decode().rstrip("\r") for item in session.writes]
+        self.assertEqual(len(commands), 6)
+        self.assertIn(f"K230_RDINIT_RX {token}", commands[0])
+        self.assertIn(f"K230_RDINIT_RX {'3' * 32}", commands[1])
+        self.assertIn(f"K230_RDINIT_RX {'4' * 32}", commands[2])
+        self.assertIn("/bin/true", commands[3])
+        self.assertIn(f"K230_RDINIT_TRUE {'4' * 32}", commands[3])
+
+    def test_receipt_retry_exhaustion_is_bounded_and_never_starts_external_probe(self):
+        tokens = iter(("5" * 32, "6" * 32))
+        session = FakeSerialSession([None, None, None])
+        with self.assertRaisesRegex(trial.ProbeProtocolError, "reception"):
+            trial.run_probe_protocol(
+                session, "7" * 32, "minimal", readiness_attempts=3,
+                readiness_timeout=0.01, token_factory=lambda: next(tokens), clock=FakeClock(),
+            )
+        self.assertEqual(len(session.writes), 3)
+        self.assertTrue(all(b"K230_RDINIT_RX" in command for command in session.writes))
+        self.assertFalse(any(b"/bin/true" in command for command in session.writes))
+        untouched = FakeSerialSession([])
+        with self.assertRaisesRegex(ValueError, "between 1 and 8"):
+            trial.await_reception(untouched, "1" * 32, attempts=9, clock=FakeClock())
+        self.assertEqual(untouched.writes, [])
+
     def test_rc_failure_skips_explicit_survey_but_reboots_after_all_returns(self):
         token = "c" * 32
         session = FakeSerialSession([
@@ -266,7 +308,10 @@ class InitrdShellTrialTests(unittest.TestCase):
             with self.subTest(reply=reply):
                 session = FakeSerialSession([reply])
                 with self.assertRaisesRegex(trial.ProbeProtocolError, "reception"):
-                    trial.run_probe_protocol(session, token, "minimal", timeout=0.01, clock=FakeClock())
+                    trial.run_probe_protocol(
+                        session, token, "minimal", timeout=0.01, readiness_attempts=1,
+                        readiness_timeout=0.01, clock=FakeClock(),
+                    )
                 self.assertEqual(len(session.writes), 1)
         for replies, stage, write_count in (
             ([f"K230_RDINIT_RX {token}\n".encode(), None], "/bin/true", 2),
