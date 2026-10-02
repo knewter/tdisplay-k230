@@ -1634,6 +1634,8 @@ DATA 882ad1253db77ea4253b2c3536bd5fbff35d0e058c2d1dbee5c8f7b4975f5866 docs/evide
 DATA dbb35a801c8ca1d4fafd0a74efd41dc544bd7190030085a2b3bcfe45b82c63bb docs/evidence/boot-verification/coherent-manual-candidate/home-panel.jpg
 DATA a97c7db6d21d50160bbd33877291eba61245b9778728e4c8624df9253c4a16a6 docs/evidence/boot-verification/coherent-manual-comparison/baseline-home-panel.jpg
 DATA fbf3f991f1b88f3ba08b2b7b784ea622ea70fbc3749b468dcd33c1acd9601805 docs/evidence/boot-verification/coherent-manual-comparison/candidate-home-panel.jpg
+DATA 4e178a71d8ed608b6c4fead588c1c083f88ebea474f8290a0176594bf44d9e17 docs/evidence/boot-verification/coherent-ordinary-boot/home.png
+DATA ebb2147f1f632b9d824775d9f010db51061bf87f1241c80b052481e56fb9be82 docs/evidence/boot-verification/coherent-ordinary-boot/home-panel.jpg
 ```
 
 `group:` rows stand for a directory whose members are enumerated by

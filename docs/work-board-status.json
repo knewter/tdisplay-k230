@@ -64,7 +64,7 @@
       "lane": "in-progress",
       "source": "in-progress",
       "physical": "pending",
-      "next": "Finish token/control/font coverage, drawer/card icon captures, tap-to-apply plan reconciliation and reboot workload; then run remaining physical theme/background checks.",
+      "next": "Finish token/control/font coverage and live-card icon captures, then remaining physical theme/background workload checks. Host tap-to-apply task is complete.",
       "dependencies": [],
       "evidence": [
         "docs/evidence/omarchy-themes/helper-package.md",
@@ -459,18 +459,24 @@
     },
     "the-coherent-shell-boots-the-selected-system": {
       "lane": "in-progress",
-      "source": "in-progress",
+      "source": "complete",
       "physical": "pending",
-      "next": "Operator accepts candidate navigation; baseline and repeat candidate pass. Install the qualified files/profile, then prove ordinary reboot and remembered appearance.",
-      "rationale": "Same CR-only load path and identical boot-environment response used for working baseline and matching candidate; both show photographed Home with exact boot identities. Installer has seven host interruption/qualification checks. Persistent deployment remains open.",
+      "next": "Ordinary boot, matching identities, Home captures and remembered appearance pass. Await post-reboot real-finger navigation confirmation, then archive.",
+      "rationale": "Qualified four-file installation and matching persistent profile succeeded; untouched ordinary autoboot returned selected kernel/system with active services and photographed Home. Operator post-reboot navigation remains distinct.",
       "dependencies": [],
       "evidence": [
         "docs/evidence/boot-verification/2026-10-01/README.md",
         "docs/evidence/boot-verification/coherent-bundle-host/README.md",
         "docs/evidence/boot-verification/coherent-manual-candidate/README.md",
-        "docs/evidence/boot-verification/coherent-manual-comparison/README.md"
+        "docs/evidence/boot-verification/coherent-manual-comparison/README.md",
+        "docs/evidence/boot-verification/coherent-ordinary-boot/README.md"
       ],
-      "reviewRevision": "02c4a99850e6cc8a262480d21a17cb7f6dc2b019"
+      "reviewRevision": "60c95d57229505e0b5fdaa6553e5f1ceb025102a",
+      "cover": {
+        "path": "docs/evidence/boot-verification/coherent-ordinary-boot/home.png",
+        "caption": "Home after ordinary reboot into the selected system",
+        "provenance": "Board capture"
+      }
     },
     "2026-10-01-the-shell-manages-apps-as-cards": {
       "lane": "archived",

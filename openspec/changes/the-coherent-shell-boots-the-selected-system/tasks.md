@@ -10,6 +10,7 @@
 
 ## 3. Persist and verify an ordinary reboot
 
-- [ ] 3.1 Stage the registered matching closure and rollback bundle, reserve board, install only qualified normal boot artifacts and select the matching profile. Proof: the operator controller's `--install` mode (planned), committed pre/post boot-file hashes and rollback command; preserve root layout, secrets and stage1. No whole-card flash or blanket readback is needed.
+- [x] 3.1 Installed the qualified bundle's four normal boot artifacts, selected the matching persistent profile and retained checked root backups/GC roots. The controller's `--install` mode passed on the reserved board; `docs/evidence/boot-verification/coherent-ordinary-boot/boot-result.json` records all eight pre/post hashes and installation methods. Stage 1, selectors, root layout and runtime secrets were preserved. Root-backed replacement was necessary for Image/initrd; its limits and exact recovery/rollback commands are documented in that evidence README. No whole-card flash occurred.
+
 - [ ] 3.2 Reboot through untouched normal autoboot and record booted kernel, /proc/cmdline init path, /run/current-system, persistent profile, active shell services, photographed Home and usable touch navigation. Proof: `flock /tmp/k230-board.lock python3 tools/console.py /dev/ttyACM0 --wait=5 'readlink -f /run/current-system; readlink -f /run/booted-system/kernel; cat /proc/cmdline'` plus committed visible observation. Check remembered theme/wallpaper separately; this is not all Omarchy acceptance.
 - [ ] 3.3 Validate `openspec validate the-coherent-shell-boots-the-selected-system --strict`, commit/land/push source and proof, and inspect matching CI/Pages before archive. Leave physical tasks open until their actual evidence exists.
