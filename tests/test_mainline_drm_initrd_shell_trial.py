@@ -1134,7 +1134,17 @@ class CandidateSelectionTests(unittest.TestCase):
     def test_minimal_reception_failure_records_unknown_without_later_input(self):
         self.assert_minimal_unknown("reception", debug=False, ready=True)
 
-    def assert_minimal_unknown(self, stage, *, debug, ready):
+    def test_runtime_unknown_result_preserves_write_ack_and_unverified_parameter_state(self):
+        stage = "runtime shutdown trace readback"
+        diagnostic = {
+            "schema": "k230-initrd-minimal-unknown-v1", "stage": stage, "true_rc": 0,
+            "runtime_shutdown_trace": {"attempted": True, "status": "unknown", "failed_stage": "readback",
+                                       "stages": {"write": {"rc": 0, "match": True}},
+                                       "enable_verified": False, "parameter_state": "UNVERIFIED"},
+        }
+        self.assert_minimal_unknown(stage, debug=False, ready=True, runtime=True, diagnostic=diagnostic)
+
+    def assert_minimal_unknown(self, stage, *, debug, ready, runtime=False, diagnostic=None):
         normal = trial.prepare_trial(self.manifest_path, self.bundle, self.report_path)["normal"]
         observed = {
             **{key: normal[key] for key in ("system", "profile", "kernel", "uname", "init")},
@@ -1144,7 +1154,7 @@ class CandidateSelectionTests(unittest.TestCase):
         session = mock.Mock(); session.buffer = trial.PROMPT
         session.wait_for.return_value = True; session.run_state.return_value = observed
         expected = trial.trial_bootargs((self.bundle / "bootargs.txt").read_text(), self.system,
-                                        debug_shutdown=debug)
+                                        debug_shutdown=debug, runtime_shutdown_trace=runtime)
         session.command.side_effect = lambda command, timeout: (
             (expected + "\nK230# ").encode() if command == "printenv bootargs" else trial.PROMPT
         )
@@ -1155,14 +1165,16 @@ class CandidateSelectionTests(unittest.TestCase):
                 mock.patch.object(trial, "verified_load", return_value=True), \
                 mock.patch.object(trial, "verified_crc", return_value=True), \
                 mock.patch.object(trial, "await_initrd_ready", return_value=ready) as readiness, \
-                mock.patch.object(trial, "run_probe_protocol", side_effect=trial.ProbeProtocolError(stage)) as probe, \
+                mock.patch.object(trial, "run_probe_protocol", side_effect=trial.ProbeProtocolError(stage, diagnostic)) as probe, \
                 mock.patch('sys.stderr'):
             self.assertFalse(trial.run_trial(self.manifest_path, self.root / f"unknown-{debug}.log", result_path,
-                                            "minimal", self.bundle, self.report_path, debug_shutdown=debug))
+                                            "minimal", self.bundle, self.report_path, debug_shutdown=debug,
+                                            runtime_shutdown_trace=runtime))
         result = json.loads(result_path.read_text())
         self.assertEqual(result["status"], "recovery-required-unknown-no-reboot-requested")
         self.assertEqual(result["result_schema"], "mainline-initrd-minimal-unknown-v1")
-        self.assertEqual(result["probe"], {"schema": "k230-initrd-minimal-unknown-v1", "stage": stage})
+        self.assertEqual(result["probe"], diagnostic or {"schema": "k230-initrd-minimal-unknown-v1", "stage": stage})
+        self.assertEqual(result_path.stat().st_mode & 0o077, 0)
         self.assertIsNone(result["normal_recovery"])
         self.assertFalse(result["reboot_marker_observed"])
         self.assertFalse(result["persistent_boot_selection_changed"])
@@ -1180,6 +1192,11 @@ class CandidateSelectionTests(unittest.TestCase):
         else:
             self.assertNotIn("initrd_readiness_observed", result)
             readiness.assert_not_called(); probe.assert_called_once()
+        if runtime:
+            self.assertTrue(result["runtime_shutdown_trace"])
+            self.assertTrue(probe.call_args.kwargs["runtime_shutdown_trace"])
+            self.assertNotIn("initcall_debug", expected)
+            self.assertNotIn("loglevel=8", expected)
 
     def test_outer_label_timeout_records_unknown_and_never_requests_recovery(self):
         self.assert_outer_readonly_timeout("label")
@@ -1340,6 +1357,225 @@ class RecoveryStreamingTests(unittest.TestCase):
         pending.append(b"d" * 131072)
         self.assertEqual(self.wait(session), "login")
         self.assertEqual(len(pending), 1)
+
+
+class RuntimeShutdownTraceTests(unittest.TestCase):
+    token = "e" * 32
+
+    def minimal_replies(self):
+        helper = LabelProbeTests(); helper.token = self.token
+        return helper.minimal_replies()
+
+    def stage_token(self, index):
+        return f"{index + 1:032x}"
+
+    def reply(self, index, rc=0, match=1):
+        token, stage = self.stage_token(index), trial.RUNTIME_TRACE_STAGES[index]
+        return (f"K230_RDINIT_TRACE_BEGIN {token} STAGE={stage}\n"
+                f"K230_RDINIT_TRACE_END {token} STAGE={stage} RC={rc} MATCH={match}\n").encode()
+
+    def run_protocol(self, replies):
+        session = FakeSerialSession(replies)
+        tokens = iter(self.stage_token(i) for i in range(6))
+        outcome = trial.run_probe_protocol(session, self.token, "minimal", runtime_shutdown_trace=True,
+                                           token_factory=lambda: next(tokens), timeout=0.02, clock=FakeClock())
+        return session, outcome
+
+    def test_complete_protocol_enables_only_after_minimal_and_prior_gates_then_reboots_once(self):
+        session, outcome = self.run_protocol(
+            self.minimal_replies() + [self.reply(i) for i in range(6)] +
+            [f"K230_RDINIT_REBOOT {self.token}\n".encode()]
+        )
+        trace = outcome["diagnostic"]["runtime_shutdown_trace"]
+        self.assertTrue(trace["enable_verified"]); self.assertEqual(trace["parameter_state"], "Y")
+        self.assertTrue(outcome["diagnostic_ok"]); self.assertTrue(outcome["reboot_marker"])
+        self.assertEqual(len(session.writes), 11)
+        for index, stage in enumerate(trial.RUNTIME_TRACE_STAGES):
+            self.assertIn(f"STAGE={stage}".encode(), session.writes[4 + index])
+            self.assertIn(self.stage_token(index).encode(), session.writes[4 + index])
+        writes = [i for i, command in enumerate(session.writes) if b"printf '1\\n' >" in command]
+        self.assertEqual(writes, [8])
+        self.assertIn(b"/bin/reboot -ff", session.writes[-1])
+        self.assertFalse(any(b"/bin/reboot" in command for command in session.writes[:-1]))
+
+    def test_known_nonzero_or_bad_match_stops_at_each_stage_without_next_input(self):
+        for index in range(6):
+            for rc, match in ((7, 0), (0, 0)):
+                with self.subTest(stage=index, rc=rc):
+                    session, outcome = self.run_protocol(
+                        self.minimal_replies() + [self.reply(i) for i in range(index)] + [self.reply(index, rc, match)]
+                    )
+                    trace = outcome["diagnostic"]["runtime_shutdown_trace"]
+                    self.assertEqual(trace["status"], "failed")
+                    self.assertEqual(trace["stages"][trial.RUNTIME_TRACE_STAGES[index]], {"rc": rc, "match": False})
+                    self.assertFalse(trace["enable_verified"])
+                    self.assertTrue(outcome["recovery_required"]); self.assertFalse(outcome["reboot_marker"])
+                    self.assertEqual(len(session.writes), 5 + index)
+                    self.assertFalse(any(b"/bin/reboot" in command for command in session.writes))
+                    if index < 4:
+                        self.assertFalse(any(b"printf '1\\n' >" in command for command in session.writes))
+                    else:
+                        self.assertEqual(trace["parameter_state"], "UNVERIFIED")
+
+    def test_timeouts_keep_partial_gates_and_unknown_parameter_after_write(self):
+        for index in range(6):
+            with self.subTest(stage=index):
+                session = FakeSerialSession(self.minimal_replies() + [self.reply(i) for i in range(index)] + [None])
+                tokens = iter(self.stage_token(i) for i in range(6))
+                with self.assertRaises(trial.ProbeProtocolError) as caught:
+                    trial.run_probe_protocol(session, self.token, "minimal", runtime_shutdown_trace=True,
+                                             token_factory=lambda: next(tokens), timeout=0.01, clock=FakeClock())
+                trace = caught.exception.diagnostic["runtime_shutdown_trace"]
+                self.assertEqual(trace["status"], "unknown"); self.assertEqual(len(trace["stages"]), index)
+                self.assertFalse(trace["enable_verified"])
+                self.assertEqual(len(session.writes), 5 + index)
+                self.assertFalse(any(b"/bin/reboot" in command for command in session.writes))
+                if index >= 4:
+                    self.assertEqual(trace["parameter_state"], "UNVERIFIED")
+                if index == 5:
+                    self.assertEqual(trace["stages"]["write"], {"rc": 0, "match": True})
+
+    def test_parser_rejects_stale_echo_duplicate_truncated_inconsistent_and_malformed(self):
+        good = self.reply(0); token = self.stage_token(0)
+        self.assertEqual(trial.runtime_trace_result(good, token, "sys-mkdir"), {"rc": 0, "match": True})
+        for bad in (good.replace(token.encode(), b"a" * 32), b"echo " + good,
+                    good + good, good.rstrip(b"\n"), good.replace(b"RC=0", b"RC=256"),
+                    good.replace(b"RC=0", b"RC=1"), good.replace(b"MATCH=1", b"MATCH=2"),
+                    good.replace(b"RC=0", b"RC=bad"), good + good.splitlines(keepends=True)[1].replace(b"RC=0", b"RC=bad"),
+                    b"\n".join(reversed(good.splitlines())) + b"\n", self.reply(1)):
+            with self.subTest(bad=bad):
+                self.assertIsNone(trial.runtime_trace_result(bad, token, "sys-mkdir"))
+
+    def test_duplicate_final_marker_cannot_advance_protocol_to_toggle(self):
+        session = FakeSerialSession(self.minimal_replies() + [self.reply(0) + self.reply(0)])
+        with self.assertRaises(trial.ProbeProtocolError):
+            trial.run_probe_protocol(session, self.token, "minimal", runtime_shutdown_trace=True,
+                                     token_factory=lambda: self.stage_token(0), timeout=0.01, clock=FakeClock())
+        self.assertEqual(len(session.writes), 5)
+        self.assertFalse(any(b"printf '1\\n' >" in command or b"/bin/reboot" in command for command in session.writes))
+
+    def test_failed_minimal_gates_never_begin_sysfs_or_toggle(self):
+        for index in (1, 2, 3):
+            with self.subTest(index=index):
+                replies = self.minimal_replies()
+                field = b"MOUNT_RC=0" if index == 2 else b"RC=0"
+                replies[index] = replies[index].replace(field, field.replace(b"=0", b"=1"))
+                session, outcome = self.run_protocol(replies)
+                self.assertFalse(outcome["diagnostic"]["runtime_shutdown_trace"]["attempted"])
+                self.assertEqual(len(session.writes), index + 1)
+                self.assertFalse(any(b"K230_RDINIT_TRACE" in command or b"/bin/reboot" in command for command in session.writes))
+
+    def test_stage_timeout_is_validated_before_any_write(self):
+        for timeout in (0, -1, 21, float('nan'), float('inf')):
+            with self.subTest(timeout=timeout):
+                session = FakeSerialSession([])
+                with self.assertRaisesRegex(ValueError, "positive, finite"):
+                    trial.run_runtime_shutdown_trace(session, self.token, timeout=timeout)
+                self.assertEqual(session.writes, [])
+
+    def execute_stage(self, stage, *, mounts="", value=None, mount_rc=0, shell="sh"):
+        import subprocess
+        import shlex
+        with tempfile.TemporaryDirectory(dir=Path.home() / "tmp") as temporary:
+            root = Path(temporary)
+            target, table, parameter, calls = (root / name for name in ("target", "mount-table", "parameter", "calls"))
+            if mounts is not None:
+                table.write_text(mounts.replace("/sys", str(target)))
+            if value is not None:
+                parameter.write_text(value)
+            mkdir_stub, mount_stub = root / "mkdir-stub", root / "mount-stub"
+            mkdir_stub.write_text(
+                f"#!{sys.executable}\nfrom pathlib import Path\nimport sys\n"
+                f"assert sys.argv[-1] == {str(target)!r}\n"
+                f"Path({str(target)!r}).mkdir(exist_ok=True)\n"
+                f"Path({str(calls)!r}).write_text('mkdir\\n')\n"
+            )
+            mount_stub.write_text(
+                f"#!{sys.executable}\nfrom pathlib import Path\nimport sys\n"
+                f"assert sys.argv[1:] == ['-t', 'sysfs', '-o', 'nosuid,nodev,noexec', 'sysfs', {str(target)!r}]\n"
+                f"Path({str(calls)!r}).write_text('mount\\n')\n"
+                f"if {mount_rc} == 0:\n"
+                f" with Path({str(table)!r}).open('a') as stream: stream.write('sysfs {str(target)} sysfs rw 0 0\\n')\n"
+                f"sys.exit({mount_rc})\n"
+            )
+            mkdir_stub.chmod(0o755); mount_stub.chmod(0o755)
+            command = trial.runtime_trace_command(self.stage_token(0), stage)
+            # Every target path and host-affecting utility is isolated before
+            # shell execution. Neither real mount/mkdir nor host sysfs is used.
+            for original, replacement in (
+                (trial.RUNTIME_TRACE_PARAMETER, parameter), ("/proc/mounts", table),
+                ("/bin/mkdir", mkdir_stub), ("/bin/mount", mount_stub), ("/sys", target),
+            ):
+                command = command.replace(original, shlex.quote(str(replacement)))
+            for original in (trial.RUNTIME_TRACE_PARAMETER, "/proc/mounts", "/bin/mkdir", "/bin/mount"):
+                self.assertNotIn(original, command)
+            completed = subprocess.run([shell, "-c", command], text=True, capture_output=True, timeout=5)
+            self.assertEqual(completed.returncode, 0, completed.stderr)
+            self.assertEqual(completed.stderr, "")
+            parsed = trial.runtime_trace_result(completed.stdout.encode(), self.stage_token(0), stage)
+            self.assertIsNotNone(parsed, completed.stdout)
+            return parsed, calls.read_text() if calls.exists() else "", parameter.read_text() if parameter.exists() else None
+
+    def test_generated_commands_execute_isolated_mount_scans_and_preserve_redirection_failure(self):
+        for shell in ("bash", "sh"):
+            for table, expected, mounted in (
+                ("sysfs /sys sysfs rw 0 0\nproc /proc proc rw 0 0\n", True, False),
+                ("sysfs /sys sysfs rw 0 0\nsysfs /sys sysfs rw 0 0\n", False, False),
+                ("tmpfs /sys tmpfs rw 0 0\n", False, False),
+                ("proc /proc proc rw 0 0\n", True, True),
+            ):
+                with self.subTest(shell=shell, table=table):
+                    result, calls, _ = self.execute_stage("sys-mount", mounts=table, shell=shell)
+                    self.assertEqual(result, {"rc": 0, "match": expected})
+                    self.assertEqual(calls, "mount\n" if mounted else "")
+            result, calls, _ = self.execute_stage("sys-mount", mounts=None, shell=shell)
+            self.assertNotEqual(result["rc"], 0); self.assertFalse(result["match"]); self.assertEqual(calls, "")
+            result, calls, _ = self.execute_stage("sys-mount", mount_rc=7, shell=shell)
+            self.assertEqual(result, {"rc": 7, "match": False}); self.assertEqual(calls, "mount\n")
+
+    def test_generated_read_write_commands_require_exact_values_and_keep_return_codes(self):
+        for shell in ("bash", "sh"):
+            result, calls, _ = self.execute_stage("sys-mkdir", shell=shell)
+            self.assertEqual(result, {"rc": 0, "match": True}); self.assertEqual(calls, "mkdir\n")
+            for stage, value, match in (("prior", "N\n", True), ("prior", "Y\n", False),
+                                        ("prior", "N\nY\n", False), ("prior", "N", False),
+                                        ("readback", "Y\n", True), ("readback", "1\n", False)):
+                with self.subTest(shell=shell, stage=stage, value=value):
+                    result, calls, _ = self.execute_stage(stage, value=value, shell=shell)
+                    self.assertEqual(result["match"], match); self.assertEqual(calls, "")
+            result, _, _ = self.execute_stage("prior", shell=shell)
+            self.assertNotEqual(result["rc"], 0); self.assertFalse(result["match"])
+            result, _, _ = self.execute_stage("permissions", shell=shell)
+            self.assertNotEqual(result["rc"], 0); self.assertFalse(result["match"])
+            result, _, _ = self.execute_stage("permissions", value="N\n", shell=shell)
+            self.assertEqual(result, {"rc": 0, "match": True})
+            result, _, after = self.execute_stage("write", value="N\n", shell=shell)
+            self.assertEqual(result, {"rc": 0, "match": True}); self.assertEqual(after, "1\n")
+
+    def test_runtime_bootargs_are_ordinary_and_flags_are_exclusive_minimal_only(self):
+        original = f"bootargs=loglevel=4 loglevel=7 init={trial.SYSTEM}/init"
+        self.assertEqual(trial.trial_bootargs(original, runtime_shutdown_trace=True), trial.trial_bootargs(original))
+        with self.assertRaisesRegex(ValueError, "conflicting shutdown debug"):
+            trial.trial_bootargs(original + " initcall_debug", runtime_shutdown_trace=True)
+        for mode, kwargs in (("survey", {}), ("label", {}), ("root-mount", {}),
+                             ("minimal", {"debug_shutdown": True}), ("minimal", {"ignore_unused_clocks": True})):
+            with self.subTest(mode=mode, kwargs=kwargs), mock.patch.object(trial, "prepare_trial") as prepare, \
+                    mock.patch.object(trial, "PrivateSession") as serial:
+                with self.assertRaises(ValueError):
+                    trial.run_trial(Path('/missing'), Path('/unused'), Path('/unused-result'), mode,
+                                    runtime_shutdown_trace=True, **kwargs)
+                prepare.assert_not_called(); serial.assert_not_called()
+        for args in (["--mode", "label", "--runtime-shutdown-trace"],
+                     ["--runtime-shutdown-trace", "--debug-shutdown"],
+                     ["--runtime-shutdown-trace", "--ignore-unused-clocks"]):
+            with mock.patch.object(sys, "argv", [str(SCRIPT), *args]), \
+                    mock.patch.object(trial, "run_trial") as runner, mock.patch('sys.stderr'):
+                with self.assertRaises(SystemExit): trial.main()
+                runner.assert_not_called()
+        with mock.patch.object(sys, "argv", [str(SCRIPT), "--runtime-shutdown-trace"]), \
+                mock.patch.object(trial, "run_trial", return_value=True) as runner:
+            self.assertEqual(trial.main(), 0)
+            self.assertEqual(runner.call_args.kwargs, {"runtime_shutdown_trace": True})
 
 
 class InitrdReadinessTests(unittest.TestCase):

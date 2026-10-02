@@ -45,6 +45,9 @@ PROMPT = b"K230# "
 RECEPTION_MAX_ATTEMPTS = 8
 RECEPTION_ATTEMPT_TIMEOUT = 1.0
 INITRD_READY_TIMEOUT = 90.0
+RUNTIME_TRACE_TIMEOUT = 20.0
+RUNTIME_TRACE_PARAMETER = "/sys/module/kernel/parameters/initcall_debug"
+RUNTIME_TRACE_STAGES = ("sys-mkdir", "sys-mount", "permissions", "prior", "write", "readback")
 _PROTOCOL_SPEC = importlib.util.spec_from_file_location(
     "rvv_board_boot", Path(__file__).with_name("rvv-board-boot.py")
 )
@@ -109,6 +112,7 @@ PROBE_DATA = (
 def trial_bootargs(
     original: str, system: str = SYSTEM, *, ignore_unused_clocks: bool = False,
     debug_shutdown: bool = False,
+    runtime_shutdown_trace: bool = False,
 ) -> str:
     """Add diagnostic arguments and require the matching NixOS init."""
     args = original.strip()
@@ -122,7 +126,9 @@ def trial_bootargs(
         raise ValueError("bootargs must be a single line")
     if ignore_unused_clocks and any(arg.split("=", 1)[0] == "clk_ignore_unused" for arg in params):
         raise ValueError("original bootargs already contain clk_ignore_unused")
-    if debug_shutdown:
+    if runtime_shutdown_trace and (debug_shutdown or ignore_unused_clocks):
+        raise ValueError("runtime shutdown trace cannot be combined with boot debug or clock diagnostics")
+    if debug_shutdown or runtime_shutdown_trace:
         if ignore_unused_clocks:
             raise ValueError("shutdown debug and clock diagnostics cannot be combined")
         for arg in params:
@@ -437,9 +443,10 @@ def probe_stage_markers(output: bytes, token: str) -> tuple[str, ...]:
 
 
 class ProbeProtocolError(RuntimeError):
-    def __init__(self, stage: str):
+    def __init__(self, stage: str, diagnostic: dict[str, object] | None = None):
         super().__init__(f"initrd minimal protocol did not complete at {stage}; do not send more probe input")
         self.stage = stage
+        self.diagnostic = diagnostic
 
 
 def receive_marker(output: bytes, token: str) -> bool | None:
@@ -593,6 +600,106 @@ def await_initrd_ready(session, *, timeout=INITRD_READY_TIMEOUT, clock=time.mono
         session.pump()
 
 
+def runtime_trace_command(token: str, stage: str) -> str:
+    _validate_token(token)
+    if stage not in RUNTIME_TRACE_STAGES:
+        raise ValueError("unknown runtime shutdown trace stage")
+    parameter = RUNTIME_TRACE_PARAMETER
+    match_rc = "if test $_k230_rc -eq 0; then _k230_match=1; fi; "
+    scan = (
+        "while read _src _mnt _fs _rest; do "
+        "if test \"$_mnt\" = /sys; then _k230_total=$((_k230_total + 1)); "
+        "if test \"$_fs\" = sysfs; then _k230_sysfs=$((_k230_sysfs + 1)); fi; fi; "
+        "done 2>/dev/null < /proc/mounts; _k230_rc=$?; "
+    )
+    if stage == "sys-mkdir":
+        body = "/bin/mkdir -p /sys 2>/dev/null; _k230_rc=$?; " + match_rc
+    elif stage == "sys-mount":
+        body = "_k230_total=0; _k230_sysfs=0; " + scan + (
+            "if test $_k230_rc -eq 0 && test $_k230_total -eq 0; then "
+            "/bin/mount -t sysfs -o nosuid,nodev,noexec sysfs /sys 2>/dev/null; _k230_rc=$?; fi; "
+            "if test $_k230_rc -eq 0; then _k230_total=0; _k230_sysfs=0; "
+        ) + scan + (
+            "fi; if test $_k230_rc -eq 0 && test $_k230_total -eq 1 "
+            "&& test $_k230_sysfs -eq 1; then _k230_match=1; fi; "
+        )
+    elif stage == "permissions":
+        body = f"test -f {parameter} && test -r {parameter} && test -w {parameter}; _k230_rc=$?; " + match_rc
+    elif stage in ("prior", "readback"):
+        expected = "N" if stage == "prior" else "Y"
+        body = (
+            "_k230_value=''; _k230_extra=''; { IFS= read -r _k230_value; _k230_rc=$?; "
+            "if IFS= read -r _k230_extra || test -n \"$_k230_extra\"; then _k230_rc=1; fi; "
+            f"}} 2>/dev/null < {parameter}; _k230_group_rc=$?; "
+            "if test $_k230_group_rc -ne 0; then _k230_rc=$_k230_group_rc; fi; "
+            f"if test $_k230_rc -eq 0 && test \"$_k230_value\" = {expected}; then _k230_match=1; fi; "
+        )
+    else:
+        body = f"{{ printf '1\\n' > {parameter}; }} 2>/dev/null; _k230_rc=$?; " + match_rc
+    return (
+        f"printf 'K230_RDINIT_TRACE_BEGIN {token} STAGE={stage}\\n'; "
+        "_k230_rc=255; _k230_match=0; " + body +
+        f"printf 'K230_RDINIT_TRACE_END {token} STAGE={stage} RC=%s MATCH=%s\\n' "
+        "\"$_k230_rc\" \"$_k230_match\""
+    )
+
+
+def runtime_trace_result(output: bytes, token: str, stage: str) -> dict[str, object] | None:
+    _validate_token(token)
+    if stage not in RUNTIME_TRACE_STAGES:
+        raise ValueError("unknown runtime shutdown trace stage")
+    text = _PROTOCOL.uart_text(output)
+    prefix = rb"K230_RDINIT_TRACE_"
+    suffix = re.escape(f" {token} STAGE={stage}".encode())
+    starts = list(re.finditer(rb"^" + prefix + rb"BEGIN" + suffix + rb"[^\n]*\n", text, re.M))
+    ends = list(re.finditer(rb"^" + prefix + rb"END" + suffix + rb"[^\n]*\n", text, re.M))
+    if len(starts) != 1 or len(ends) != 1 or starts[0].end() > ends[0].start():
+        return None
+    if starts[0].group() != b"K230_RDINIT_TRACE_BEGIN" + f" {token} STAGE={stage}\n".encode():
+        return None
+    result = re.fullmatch(prefix + rb"END" + suffix + rb" RC=([0-9]{1,3}) MATCH=([01])\n", ends[0].group())
+    if result is None:
+        return None
+    rc, match = map(int, result.groups())
+    if rc > 255 or (rc != 0 and match):
+        return None
+    return {"rc": rc, "match": bool(match)}
+
+
+def run_runtime_shutdown_trace(session, token, *, timeout=RUNTIME_TRACE_TIMEOUT, clock=time.monotonic,
+                               token_factory=None):
+    if not 0 < timeout <= RUNTIME_TRACE_TIMEOUT:
+        raise ValueError("runtime trace timeout must be positive, finite and at most 20s")
+    trace = {"schema": "k230-runtime-shutdown-trace-v1", "attempted": True,
+             "stages": {}, "enable_verified": False, "parameter_state": "UNVERIFIED"}
+    make_token = token_factory or (lambda: uuid.uuid4().hex)
+    seen = {token}
+    for stage in RUNTIME_TRACE_STAGES:
+        fresh = make_token()
+        _validate_token(fresh)
+        if fresh in seen:
+            raise ValueError("runtime trace stage tokens must be fresh")
+        seen.add(fresh)
+        if stage == "write":
+            trace["parameter_state"] = "UNVERIFIED"
+        session.write((runtime_trace_command(fresh, stage) + "\r").encode())
+        result = await_protocol_marker(
+            session, lambda output, nonce: runtime_trace_result(output, nonce, stage),
+            fresh, min(timeout, RUNTIME_TRACE_TIMEOUT), clock,
+        )
+        if result is None:
+            trace.update(status="unknown", failed_stage=stage)
+            raise ProbeProtocolError(f"runtime shutdown trace {stage}", trace)
+        trace["stages"][stage] = result
+        if result["rc"] != 0 or not result["match"]:
+            trace.update(status="failed", failed_stage=stage)
+            return trace, False
+        if stage == "prior":
+            trace["parameter_state"] = "N"
+    trace.update(status="complete", enable_verified=True, parameter_state="Y")
+    return trace, True
+
+
 def run_probe_protocol(
     session,
     token: str,
@@ -604,10 +711,13 @@ def run_probe_protocol(
     token_factory=None,
     clock=time.monotonic,
     system: str = SYSTEM,
+    runtime_shutdown_trace: bool = False,
 ):
     """Run sequential tests; label and survey require every minimal RC to be zero."""
     if mode not in ("minimal", "survey", "label", "root-mount"):
         raise ValueError("probe mode must be minimal, survey, label or root-mount")
+    if runtime_shutdown_trace and mode != "minimal":
+        raise ValueError("runtime shutdown trace requires minimal mode")
     prerequisite_schema = (
         f"k230-initrd-{mode}-prerequisite-failure-v1" if mode in ("label", "root-mount")
         else "k230-initrd-prerequisite-failure-v1"
@@ -636,6 +746,9 @@ def run_probe_protocol(
         "reception_attempts": reception_attempts_used,
         "true_rc": true_rc,
     }
+    if runtime_shutdown_trace:
+        minimal["runtime_shutdown_trace"] = {"attempted": False, "stages": {}, "enable_verified": False,
+                                             "parameter_state": "UNVERIFIED"}
     if true_rc != 0:
         diagnostic = {
             "schema": prerequisite_schema,
@@ -696,6 +809,21 @@ def run_probe_protocol(
             "recovery_reason": "proc-uptime-nonzero",
         }
     minimal_ok = True
+    if runtime_shutdown_trace:
+        try:
+            trace, trace_ok = run_runtime_shutdown_trace(
+                session, token, timeout=min(timeout, RUNTIME_TRACE_TIMEOUT), clock=clock,
+                token_factory=token_factory,
+            )
+        except ProbeProtocolError as exc:
+            exc.diagnostic = {"schema": "k230-initrd-minimal-unknown-v1", **minimal,
+                              "runtime_shutdown_trace": exc.diagnostic, "stage": exc.stage}
+            raise
+        minimal["runtime_shutdown_trace"] = trace
+        if not trace_ok:
+            return {"diagnostic": {"schema": "k230-initrd-minimal-v2", **minimal},
+                    "diagnostic_ok": False, "reboot_marker": False, "recovery_required": True,
+                    "recovery_reason": f"runtime-shutdown-trace-{trace['failed_stage']}-failed"}
     label = None
     label_setup = {}
     if mode in ("label", "root-mount"):
@@ -1021,6 +1149,7 @@ def run_trial(
     bundle: Path = BUNDLE, normal_report: Path = NORMAL_REPORT,
     ignore_unused_clocks: bool = False,
     debug_shutdown: bool = False,
+    runtime_shutdown_trace: bool = False,
 ) -> bool:
     if mode not in ("minimal", "survey", "label", "root-mount"):
         raise ValueError("probe mode must be minimal, survey, label or root-mount")
@@ -1028,21 +1157,28 @@ def run_trial(
         raise ValueError("--ignore-unused-clocks requires --mode label")
     if debug_shutdown and mode != "minimal":
         raise ValueError("--debug-shutdown requires --mode minimal")
+    if runtime_shutdown_trace and mode != "minimal":
+        raise ValueError("--runtime-shutdown-trace requires --mode minimal")
+    if runtime_shutdown_trace and (debug_shutdown or ignore_unused_clocks):
+        raise ValueError("--runtime-shutdown-trace cannot be combined with other diagnostic flags")
     prepared = prepare_trial(manifest_path, bundle, normal_report)
     manifest = prepared["manifest"]
     system = prepared["system"]
     files = manifest["files"]
     expected_args = prepared["bootargs"]
-    if ignore_unused_clocks or debug_shutdown:
+    if ignore_unused_clocks or debug_shutdown or runtime_shutdown_trace:
         expected_args = trial_bootargs(
             (bundle / "bootargs.txt").read_text(), system,
             ignore_unused_clocks=ignore_unused_clocks, debug_shutdown=debug_shutdown,
+            runtime_shutdown_trace=runtime_shutdown_trace,
         )
     normal = prepared["normal"]
     helper_text = prepared["helper_text"]
     selection = {"ignore_unused_clocks": ignore_unused_clocks} if mode == "label" else {}
     if debug_shutdown:
         selection["debug_shutdown"] = True
+    if runtime_shutdown_trace:
+        selection["runtime_shutdown_trace"] = True
     try:
         import serial
     except ImportError as exc:
@@ -1148,7 +1284,10 @@ def run_trial(
                     selection["initrd_readiness_observed"] = await_initrd_ready(session)
                     if not selection["initrd_readiness_observed"]:
                         raise ProbeProtocolError("initrd readiness")
-                probe_outcome = run_probe_protocol(session, token, mode, system=system)
+                probe_outcome = run_probe_protocol(
+                    session, token, mode, system=system,
+                    **({"runtime_shutdown_trace": True} if runtime_shutdown_trace else {}),
+                )
             except ProbeProtocolError as exc:
                 if mode not in ("minimal", "label", "root-mount"):
                     raise
@@ -1158,7 +1297,12 @@ def run_trial(
                     "mode": f"volatile-rdinit-{mode}", **selection,
                     "candidate_system": system, "candidate_bundle": str(prepared["bundle"]),
                     "normal_preflight": observed_before,
-                    "probe": {"schema": f"k230-initrd-{mode}-unknown-v1", "stage": exc.stage},
+                    "probe": exc.diagnostic or {
+                        "schema": f"k230-initrd-{mode}-unknown-v1", "stage": exc.stage,
+                        **({"runtime_shutdown_trace": {"attempted": False, "stages": {}, "enable_verified": False,
+                                                       "parameter_state": "UNVERIFIED"}}
+                           if runtime_shutdown_trace else {}),
+                    },
                     "reboot_marker_observed": False, "normal_recovery": None,
                     "persistent_boot_selection_changed": False, "raw_serial_log_path": str(log_path),
                 })
@@ -1307,8 +1451,11 @@ def main() -> int:
     )
     parser.add_argument("--ignore-unused-clocks", action="store_true",
                         help="label mode only: add volatile clk_ignore_unused for the bounded clock discriminator")
-    parser.add_argument("--debug-shutdown", action="store_true",
+    shutdown_flags = parser.add_mutually_exclusive_group()
+    shutdown_flags.add_argument("--debug-shutdown", action="store_true",
                         help="minimal mode only: add volatile initcall_debug loglevel=8 shutdown tracing")
+    shutdown_flags.add_argument("--runtime-shutdown-trace", action="store_true",
+                        help="minimal mode only: enable shutdown tracing after verified sysfs and parameter gates")
     stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
     parser.add_argument(
         "--log", type=Path,
@@ -1323,11 +1470,16 @@ def main() -> int:
         parser.error("--ignore-unused-clocks requires --mode label")
     if args.debug_shutdown and args.mode != "minimal":
         parser.error("--debug-shutdown requires --mode minimal")
+    if args.runtime_shutdown_trace and args.mode != "minimal":
+        parser.error("--runtime-shutdown-trace requires --mode minimal")
+    if args.runtime_shutdown_trace and args.ignore_unused_clocks:
+        parser.error("--runtime-shutdown-trace cannot be combined with --ignore-unused-clocks")
     try:
         diagnostic_ok = run_trial(
             args.manifest, args.log, args.result, args.mode, args.bundle, args.normal_report,
             **({"ignore_unused_clocks": True} if args.ignore_unused_clocks else {}),
             **({"debug_shutdown": True} if args.debug_shutdown else {}),
+            **({"runtime_shutdown_trace": True} if args.runtime_shutdown_trace else {}),
         )
     except Exception as exc:
         print(f"Trial stopped: {exc}", file=sys.stderr)

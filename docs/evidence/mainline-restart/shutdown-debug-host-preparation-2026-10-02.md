@@ -141,3 +141,80 @@ and structured minimal readiness/reception failures with no later board input.
 The first new run had two fixture assertions omit the existing Ctrl-C byte in
 pre-candidate normal-prompt preparation; the expectations were corrected without
 changing that controller behavior. These tests remain host-only proof.
+
+## Follow-up: runtime shutdown tracing, host preparation only
+
+Prepared from integration base `0ae69369` at approximately
+`2026-10-02T18:12Z`, after reviewing the exact path and boolean semantics in
+[the source feasibility note](runtime-shutdown-trace-feasibility-2026-10-02.md).
+Only this note, the controller and its tests changed. No board operation or
+kernel/bundle build was performed; physical runtime availability, tracing and
+restart remain **UNVERIFIED**.
+
+The explicit `--runtime-shutdown-trace` flag is minimal-only and excludes the
+boot-debug and label-clock flags. It preserves ordinary matching bootargs:
+there is no boot-time `initcall_debug` or appended `loglevel=8`. Existing
+debug/quiet/dynamic-debug arguments or loglevel 8 are rejected before serial
+access. The exact kernel, bundle, init, artifact checks and normal protection
+remain those recorded above.
+
+Only after fresh reception, true, proc setup and uptime gates pass does the
+controller send six separate bounded stages, each with its own fresh nonce:
+
+1. Create `/sys` and preserve mkdir status.
+2. Inspect `/proc/mounts`. Require exactly one sysfs entry at `/sys`; reject
+   another filesystem or duplicates. If absent, mount sysfs exactly once with
+   `nosuid,nodev,noexec`, then verify the mount table again. Redirection and
+   mount errors remain failures; a nonmatching final row does not hide status.
+3. Require the exact `/sys/module/kernel/parameters/initcall_debug` file to be
+   regular, readable and writable.
+4. Require a complete prior `N` value, rejecting missing newline/extra lines.
+5. Write `1` through the supported sysfs bool setter and preserve its status.
+6. Independently require a complete `Y` readback.
+
+Each marked stage has a positive finite deadline of at most 20 seconds.
+Generated commands are 331–1005 bytes. Only successful returned status and
+expected-value matching at every stage permit the existing single reboot
+command and bounded protected normal-return checks. No full init activation,
+root mount, repair, unbind or persistent boot-selection write is added.
+
+Known failures preserve their RC/match and skip all remaining input. Missing,
+stale, duplicated, truncated, inconsistent or malformed markers preserve a
+structured unknown result with completed gates and stop further input. There
+is no retry, rollback, Ctrl-C, exit or reboot after an unsafe runtime stage.
+The `enable_verified` field becomes true only after `Y` readback. Parameter
+state is `N` only after the prior gate; it becomes `UNVERIFIED` before the write
+and stays so after a failed/unknown write or readback, even if write acknowledgment
+was received. Raw parameter contents and mount-table rows are not published.
+Stderr redirection does not establish that `/dev/null` is a device node.
+
+The narrow unittest command above passes 87 tests, retaining all 76 prior
+tests; strict OpenSpec validation and cached diff checks pass. Coverage includes
+the full ordered protocol, every stage's known failure and timeout, freshness
+and parser failure cases, no premature toggle/reboot, result selection and
+partial write acknowledgment with unverified state. Generated shell is also
+executed under bash and sh with **all** target paths, `/bin/mount` and
+`/bin/mkdir` replaced by isolated `~/tmp` fixtures/stubs. Those checks cover
+absent/existing/duplicate/wrong mounts, failed redirection and utility status,
+exact bool reads, permission gates and write syntax. No host sysfs, real mount
+or debug state is changed. An initial new prerequisite fixture changed both
+mkdir and mount RCs; it was corrected to inject the intended mount failure.
+These remain host simulations, not physical parameter or recovery proof.
+
+After review/landing and independently verified protected normal recovery, the
+sole operator may use fresh private paths for this next bounded trial:
+
+```sh
+python3 tools/mainline-drm-initrd-shell-trial.py --mode minimal --runtime-shutdown-trace \
+  --bundle /nix/store/asj7l4zj5jrjkgng4nrcx3y72p7jf7aa-k230-mainline-drm-trial-boot-files \
+  --manifest "$HOME/tmp/k230-mainline-restart-board/candidate-manifest.json" \
+  --normal-report "$HOME/tmp/k230-mainline-restart-board/normal-report.json" \
+  --log "$HOME/tmp/k230-mainline-restart-board/runtime-trace-uart.log" \
+  --result "$HOME/tmp/k230-mainline-restart-board/runtime-trace-result.json"
+```
+
+This command is documented, not performed by this work. A returned parameter
+toggle would prove the runtime gate only. Shutdown messages remain entry
+checkpoints, and automatic restart still requires the separate real reset,
+fresh normal boot and protected postflight proof in task 5d.4. That task and
+the usable-root/touch gate 5b.5 stay open.
