@@ -67,6 +67,7 @@ class InitrdShellTrialTests(unittest.TestCase):
     def test_probe_keeps_pid_one_running_then_reboots(self):
         command = trial.probe_command("a" * 32)
         self.assertNotIn("exit", command)
+        self.assertTrue(command.startswith("PATH=/bin:/sbin; export PATH; "))
         self.assertIn("mount -t proc proc /proc", command)
         self.assertIn("mount -t sysfs sysfs /sys", command)
         self.assertIn("mount -t devtmpfs devtmpfs /dev", command)
@@ -76,7 +77,7 @@ class InitrdShellTrialTests(unittest.TestCase):
         self.assertIn("K230_LABEL_NIXOS_SD", command)
         self.assertIn("e2label", command)
         self.assertNotIn("mount /dev/mmc", command)
-        self.assertIn("reboot -ff", command)
+        self.assertIn("/bin/reboot -ff", command)
 
     def test_probe_result_requires_fresh_complete_standalone_line(self):
         token = "a" * 32

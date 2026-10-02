@@ -120,9 +120,10 @@ def probe_command(token: str) -> str:
     if not re.fullmatch(r"[0-9a-f]{32}", token):
         raise ValueError("probe token must be a 32-character lowercase UUID")
     return (
+        "PATH=/bin:/sbin; export PATH; "
         f"{PROBE_DATA}; "
         f"printf 'K230_RDINIT_PROBE {token} RC=%s\\n' \"$_k230_probe_rc\"; "
-        "sleep 10; reboot -ff"
+        "sleep 10; /bin/reboot -ff"
     )
 
 

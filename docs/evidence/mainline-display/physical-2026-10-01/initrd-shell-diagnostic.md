@@ -40,7 +40,8 @@ staged closure, and runs `nix-store --check-validity` in batches. The helper
 and expected data are written only into `/run`.
 
 Once the kernel version banner is seen, the controller sends a bounded shell
-command to mount proc, sysfs, and devtmpfs in the in-memory initrd, then record
+command that first sets volatile `PATH=/bin:/sbin`, then mounts proc, sysfs,
+and devtmpfs in the in-memory initrd and records
 `/proc/uptime`, `/proc/interrupts`, `/proc/cmdline`, `/proc/partitions`,
 `/proc/mounts`, `/sys/block`, block device nodes, udev label links, and direct
 `e2label` results. It requires successful virtual mounts and at least one
@@ -49,7 +50,7 @@ udev by-label link under direct `rdinit` is not treated as a cause. The
 sanitized result file records whether any partition reports that exact label.
 It does not
 send `exit`: the diagnostic shell is PID 1, and exiting it would panic the
-kernel. The command waits ten seconds and invokes `reboot -ff` as a child.
+kernel. The command waits ten seconds and invokes `/bin/reboot -ff` as a child.
 Successful restoration is counted only after verifying the returned system,
 kernel, profile, kernel release, `init=` selector, three services, a new boot
 ID, and the same eight protected boot-file hashes. A login prompt alone is not
@@ -70,3 +71,36 @@ handoff from a broader early-userspace stall. The later truncated systemd
 debug line is not evidence of a failed sysctl write or udev failure. Task
 5b.5 remains open until root login, deliberate touch interaction, and
 committed normal restoration evidence exist.
+
+## 2026-10-01 staging repair and first corrected-path attempt
+
+The first fresh preflight confirmed the protected normal system/profile,
+booted kernel, service state, and all eight baseline boot/selector hashes, then
+stopped at `mainline-drm-normal-state.py:61`: the candidate stage's `system`
+symlink was absent. Read-only inventory found the four candidate load files
+and existing `SHA256SUMS` matched the immutable bundle, while `registration`
+and `store-paths` were absent. Only those two missing files were added from
+the exact bundle, with no-replace writes and board-side size/SHA-256 checks:
+
+| staged file | bytes | SHA-256 |
+| --- | ---: | --- |
+| `registration` | 303363 | `cbd962f866f3d715ab3e56cc30be01e3c0093588834df3d61a0e7e516847d865` |
+| `store-paths` | 49876 | `05b84ef55caf96fd7785b1dbe9760e5276e64c424ac80ab24abce0794bf7509d` |
+
+`nix-store --check-validity` passed for the exact candidate system before a
+no-replace symlink was created at the staging path; the resolved target was
+checked against that system. These changes are confined to the opt-in stage
+directory. The normal profile, normal boot files, selector files, and boot
+selection were not changed.
+
+The next volatile `rdinit=/bin/sh` attempt reached the PID 1 shell and emitted
+its strict fresh-token probe marker, but returned `RC=1`. The raw private log
+showed that PATH resolution failed for `cat`, `ls`, `mkdir`, `mount`, `reboot`,
+and `sleep`. Therefore the accompanying `NIXOS_SD=false` value is invalid as a
+device observation: the probe did not inspect partitions or labels. Its
+`reboot -ff` command was also not found. Afterward the UART remained silent;
+one direct volatile-PATH `/bin/reboot -ff` attempt yielded zero bytes over 60
+seconds. No corrected probe, normal recovery identity check, display check, or
+touch check was obtained. The controller now sets `PATH=/bin:/sbin` before the
+probe and invokes `/bin/reboot -ff`, but this source correction has not yet
+been exercised on hardware. Keep task 5b.5 open.
