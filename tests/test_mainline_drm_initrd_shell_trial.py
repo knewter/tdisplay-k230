@@ -17,11 +17,12 @@ SPEC.loader.exec_module(trial)
 
 
 class FakeClock:
-    def __init__(self):
+    def __init__(self, step=0.001):
         self.now = 0.0
+        self.step = step
 
     def __call__(self):
-        self.now += 0.001
+        self.now += self.step
         return self.now
 
 
@@ -632,7 +633,7 @@ class LabelProbeTests(unittest.TestCase):
             trial.trial_bootargs("bootargs=init=/wrong", ignore_unused_clocks=True)
 
     def test_clock_flag_rejects_other_modes_before_preparation_or_serial(self):
-        for mode in ("minimal", "survey"):
+        for mode in ("minimal", "survey", "root-mount"):
             with self.subTest(mode=mode), mock.patch.object(trial, "prepare_trial") as prepare, \
                     mock.patch.object(trial, "PrivateSession") as session, mock.patch.object(trial.os, "open") as opened:
                 with self.assertRaisesRegex(ValueError, "requires --mode label"):
@@ -652,6 +653,197 @@ class LabelProbeTests(unittest.TestCase):
             self.assertEqual(trial.main(), 0)
             self.assertEqual(runner.call_args.args[3], "label")
             self.assertEqual(runner.call_args.kwargs, {"ignore_unused_clocks": True})
+
+
+class RootMountProbeTests(unittest.TestCase):
+    token = "e" * 32
+
+    def label_replies(self, rc=0, match=1):
+        helper = LabelProbeTests()
+        helper.token = self.token
+        return helper.minimal_replies() + helper.setup_replies() + [helper.label_reply(rc, match)]
+
+    def reply(self, stage, rc=0, mounted=None):
+        suffix = f" MOUNTED={int(mounted)}" if mounted is not None else ""
+        return (f"K230_RDINIT_ROOT_BEGIN {self.token} STAGE={stage}\n"
+                f"K230_RDINIT_ROOT_END {self.token} STAGE={stage} RC={rc}{suffix}\n").encode()
+
+    def root_replies(self):
+        return [self.reply("unmounted", mounted=False), self.reply("mkdir"), self.reply("empty"),
+                self.reply("mount"), self.reply("flags", mounted=True), self.reply("init"),
+                self.reply("prepare-root"), self.reply("umount"), self.reply("after-umount", mounted=False)]
+
+    def run_protocol(self, replies, system=trial.SYSTEM):
+        session = FakeSerialSession(replies + [f"K230_RDINIT_REBOOT {self.token}\n".encode()])
+        outcome = trial.run_probe_protocol(session, self.token, "root-mount", timeout=0.2,
+                                           clock=FakeClock(0.05), system=system)
+        return session, outcome
+
+    def test_success_checks_selected_paths_unmounts_before_reboot_and_never_activates(self):
+        system = "/nix/store/" + "3" * 32 + "-selected-system"
+        session, outcome = self.run_protocol(self.label_replies() + self.root_replies(), system)
+        self.assertTrue(outcome["diagnostic_ok"])
+        self.assertEqual(outcome["diagnostic"]["schema"], "k230-initrd-root-mount-v1")
+        self.assertEqual(outcome["diagnostic"]["root"]["after-umount"]["rc"], 0)
+        commands = [command.decode() for command in session.writes]
+        self.assertEqual(sum('/bin/mount -t ext4 -o ro,noload' in c for c in commands), 1)
+        self.assertEqual(sum('/bin/umount /sysroot' in c for c in commands), 1)
+        self.assertTrue(any(f"test -x /sysroot{system}/init" in c for c in commands))
+        self.assertTrue(any(f"test -x /sysroot{system}/prepare-root" in c for c in commands))
+        self.assertIn("STAGE=after-umount", commands[-2])
+        self.assertIn("/bin/reboot -ff", commands[-1])
+        self.assertFalse(any("fsck" in c or "chroot" in c or "activate" in c or "exec " in c for c in commands))
+
+    def test_label_nonmatch_or_error_skips_mount_and_recovers_failed_diagnostic(self):
+        for rc, match in ((0, 0), (1, 0)):
+            with self.subTest(rc=rc):
+                session, outcome = self.run_protocol(self.label_replies(rc, match))
+                self.assertFalse(outcome["diagnostic_ok"])
+                self.assertEqual(outcome["diagnostic"]["root"], {"attempted": False})
+                self.assertFalse(any(b"K230_RDINIT_ROOT" in c for c in session.writes))
+                self.assertIn(b"/bin/reboot", session.writes[-1])
+
+    def test_failed_minimal_or_dev_setup_never_starts_root_or_label_child(self):
+        helper = LabelProbeTests(); helper.token = self.token
+        cases = [helper.minimal_replies()[:1] + [f"K230_RDINIT_TRUE {self.token} RC=1\n".encode()],
+                 helper.minimal_replies() + helper.setup_replies()[:2] + [helper.setup_reply("node", 1)]]
+        for replies in cases:
+            session, outcome = self.run_protocol(replies)
+            self.assertTrue(outcome["recovery_required"])
+            self.assertFalse(any(b"/bin/e2label" in c or b"K230_RDINIT_ROOT" in c
+                                 or b"/bin/reboot" in c for c in session.writes))
+
+    def test_root_preconditions_fail_without_mount_or_path_access(self):
+        for index, stage in enumerate(("unmounted", "mkdir", "empty")):
+            with self.subTest(stage=stage):
+                failure = self.reply(stage, 1, mounted=True if stage == "unmounted" else None)
+                session, outcome = self.run_protocol(self.label_replies() + self.root_replies()[:index] + [failure])
+                self.assertFalse(outcome["diagnostic_ok"])
+                self.assertFalse(outcome["diagnostic"]["root"]["mount"]["attempted"])
+                self.assertFalse(any(b"/bin/mount -t ext4" in c or b"test -x /sysroot" in c
+                                     or b"/bin/umount" in c for c in session.writes))
+
+    def test_mount_failure_without_observed_mount_skips_paths_and_unmount(self):
+        session, outcome = self.run_protocol(self.label_replies() + self.root_replies()[:3] + [
+            self.reply("mount", 32), self.reply("flags", 1, mounted=False),
+        ])
+        self.assertFalse(outcome["diagnostic_ok"])
+        self.assertFalse(outcome["diagnostic"]["root"]["init"]["attempted"])
+        self.assertFalse(outcome["diagnostic"]["root"]["umount"]["attempted"])
+        self.assertFalse(any(b"test -x /sysroot" in c or b"/bin/umount" in c for c in session.writes))
+
+    def test_failed_flags_or_mount_rc_with_observed_mount_cleans_up_without_paths(self):
+        for mount_rc in (0, 32):
+            with self.subTest(mount_rc=mount_rc):
+                session, outcome = self.run_protocol(self.label_replies() + self.root_replies()[:3] + [
+                    self.reply("mount", mount_rc), self.reply("flags", 1, mounted=True),
+                    self.reply("umount"), self.reply("after-umount", mounted=False),
+                ])
+                self.assertFalse(outcome["diagnostic_ok"])
+                self.assertFalse(any(b"test -x /sysroot" in c for c in session.writes))
+                self.assertEqual(sum(b"/bin/umount" in c for c in session.writes), 1)
+
+    def test_path_failure_stops_further_path_checks_but_unmounts_before_recovery(self):
+        for index, stage in ((5, "init"), (6, "prepare-root")):
+            with self.subTest(stage=stage):
+                session, outcome = self.run_protocol(self.label_replies() + self.root_replies()[:index] + [
+                    self.reply(stage, 1), self.reply("umount"), self.reply("after-umount", mounted=False),
+                ])
+                self.assertFalse(outcome["diagnostic_ok"])
+                self.assertEqual(outcome["diagnostic"]["root"][stage]["rc"], 1)
+                if stage == "init":
+                    self.assertFalse(outcome["diagnostic"]["root"]["prepare-root"]["attempted"])
+                self.assertIn(b"STAGE=umount", session.writes[-3])
+
+    def test_failed_unmount_is_not_retried_or_reported_as_pass(self):
+        session, outcome = self.run_protocol(self.label_replies() + self.root_replies()[:7] + [self.reply("umount", 32)])
+        self.assertFalse(outcome["diagnostic_ok"])
+        self.assertEqual(sum(b"/bin/umount" in c for c in session.writes), 1)
+        self.assertNotIn("after-umount", outcome["diagnostic"]["root"])
+
+    def test_missing_root_markers_stop_without_cleanup_reboot_or_more_input(self):
+        stages = ("unmounted", "mkdir", "empty", "mount", "flags", "init", "prepare-root", "umount", "after-umount")
+        for index, stage in enumerate(stages):
+            with self.subTest(stage=stage):
+                session = FakeSerialSession(self.label_replies() + self.root_replies()[:index] + [None])
+                with self.assertRaisesRegex(trial.ProbeProtocolError, f"root-mount {stage}"):
+                    trial.run_probe_protocol(session, self.token, "root-mount", timeout=0.2, clock=FakeClock(0.05))
+                self.assertEqual(len(session.writes), 9 + index)
+                self.assertFalse(any(b"/bin/reboot" in c or b"\x03" in c or b"exit" in c for c in session.writes))
+                self.assertIn(f"STAGE={stage}".encode(), session.writes[-1])
+
+    def test_root_marker_parsers_reject_stale_echo_duplicate_truncated_and_inconsistent_lines(self):
+        for stage in ("unmounted", "after-umount", "flags", "mkdir", "empty", "mount", "init", "prepare-root", "umount"):
+            mounted = stage == "flags" if stage in ("unmounted", "after-umount", "flags") else None
+            good = self.reply(stage, mounted=mounted)
+            self.assertIsNotNone(trial.root_stage_result(good, self.token, stage))
+            lines = good.splitlines(keepends=True)
+            for bad in (good[:-1], good + good, b"echo " + good, good.replace(self.token.encode(), b"f" * 32),
+                        lines[1] + lines[0], lines[0], lines[1], good.replace(b"RC=0", b"RC=256")):
+                self.assertIsNone(trial.root_stage_result(bad, self.token, stage))
+            if mounted is not None:
+                self.assertIsNone(trial.root_stage_result(self.reply(stage, mounted=not mounted), self.token, stage))
+
+    def test_generated_mount_scans_execute_strict_flags_with_false_last_entries(self):
+        import shlex
+        import subprocess
+        good = "/dev/mmcblk1p2 /sysroot ext4 ro,norecovery 0 0\n"
+        cases = ((good, 0, True), (good + "proc /proc proc rw 0 0\n", 0, True),
+                 (good.replace("norecovery", "noload"), 0, True),
+                 (good.replace("ro,norecovery", "errors=remount-ro,norecovery"), 1, True),
+                 (good.replace("ro,norecovery", "ro"), 1, True),
+                 (good.replace("ext4", "xfs"), 1, True),
+                 (good.replace("mmcblk1p2", "mmcblk0p2"), 1, True),
+                 (good + good, 1, True), ("proc /proc proc rw 0 0\n", 1, False), (None, None, False))
+        for shell in ("sh", "bash"):
+            for table_text, rc, mounted in cases:
+                with self.subTest(shell=shell, table=table_text), tempfile.TemporaryDirectory() as directory:
+                    table = Path(directory) / "mounts"
+                    if table_text is not None:
+                        table.write_text(table_text)
+                    for stage in ("flags", "unmounted", "after-umount"):
+                        command = trial.root_stage_command(self.token, stage).replace("/proc/mounts", shlex.quote(str(table)))
+                        result = subprocess.run([shell, "-c", command], text=True, capture_output=True)
+                        self.assertEqual(result.returncode, 0, result.stderr)
+                        parsed = trial.root_stage_result(result.stdout.encode(), self.token, stage)
+                        self.assertIsNotNone(parsed)
+                        self.assertEqual(parsed["mounted"], mounted)
+                        expected_rc = rc if stage == "flags" else int(mounted)
+                        if rc is None:
+                            self.assertGreater(parsed["rc"], 0)
+                        else:
+                            self.assertEqual(parsed["rc"], expected_rc)
+
+    def test_generated_mount_and_path_commands_execute_only_host_stubs_and_executable_tests(self):
+        import shlex
+        import subprocess
+        for shell in ("sh", "bash"):
+            with self.subTest(shell=shell), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory); sysroot = root / "sysroot"; table = root / "mounts"; log = root / "calls"
+                table.write_text("proc /proc proc rw 0 0\n")
+                executable_dir = sysroot / trial.SYSTEM.lstrip('/')
+                mount, umount = root / "stub-mount", root / "stub-umount"
+                mount.write_text("#!/bin/sh\nprintf 'mount %s\\n' \"$*\" >> " + shlex.quote(str(log)) +
+                                 "\nprintf '%s\\n' " + shlex.quote(f"/dev/mmcblk1p2 {sysroot} ext4 ro,norecovery 0 0") +
+                                 " >> " + shlex.quote(str(table)) + "\n")
+                umount.write_text("#!/bin/sh\nprintf 'umount %s\\n' \"$*\" >> " + shlex.quote(str(log)) +
+                                  "\nprintf '%s\\n' 'proc /proc proc rw 0 0' > " + shlex.quote(str(table)) + "\n")
+                mount.chmod(0o555); umount.chmod(0o555)
+                for stage in ("unmounted", "mkdir", "empty", "mount", "flags", "init", "prepare-root", "umount", "after-umount"):
+                    if stage == "init":
+                        executable_dir.mkdir(parents=True)
+                        for name in ("init", "prepare-root"):
+                            path = executable_dir / name
+                            path.write_text("#!/bin/sh\ntouch " + shlex.quote(str(root / "must-not-execute")) + "\n")
+                            path.chmod(0o555)
+                    command = trial.root_stage_command(self.token, stage).replace("/sysroot", str(sysroot)).replace(
+                        "/proc/mounts", str(table)).replace("/bin/mount", str(mount)).replace("/bin/umount", str(umount))
+                    check = subprocess.run([shell, "-c", command], text=True, capture_output=True)
+                    self.assertEqual(check.returncode, 0, check.stderr)
+                    self.assertEqual(trial.root_stage_result(check.stdout.encode(), self.token, stage)["rc"], 0)
+                self.assertEqual(log.read_text().splitlines(),
+                                 [f"mount -t ext4 -o ro,noload /dev/mmcblk1p2 {sysroot}", f"umount {sysroot}"])
+                self.assertFalse((root / "must-not-execute").exists())
 
 
 class CandidateSelectionTests(unittest.TestCase):
@@ -872,6 +1064,14 @@ class CandidateSelectionTests(unittest.TestCase):
                 self.assertEqual(runner.call_args.args[3:], ("minimal", bundle, report))
 
     def test_outer_label_timeout_records_unknown_and_never_requests_recovery(self):
+        self.assert_outer_readonly_timeout("label")
+
+    def test_outer_root_mount_timeout_records_unknown_without_unmount_or_reboot(self):
+        self.assert_outer_readonly_timeout("root-mount")
+
+    def assert_outer_readonly_timeout(self, mode):
+        clock_flag = mode == "label"
+        blocked_stage = "label read" if clock_flag else "root-mount mount"
         normal = trial.prepare_trial(self.manifest_path, self.bundle, self.report_path)["normal"]
         observed = {
             **{key: normal[key] for key in ("system", "profile", "kernel", "uname", "init")},
@@ -883,32 +1083,37 @@ class CandidateSelectionTests(unittest.TestCase):
         session.wait_for.return_value = True
         session.run_state.return_value = observed
         expected = trial.trial_bootargs((self.bundle / "bootargs.txt").read_text(), self.system,
-                                        ignore_unused_clocks=True)
+                                        ignore_unused_clocks=clock_flag)
         session.command.side_effect = lambda command, timeout: (
             (expected + "\nK230# ").encode() if command == "printenv bootargs" else trial.PROMPT
         )
 
-        def blocked_label(active_session, token, mode):
+        def blocked_probe(active_session, token, selected_mode, *, system):
             self.assertIs(active_session, session)
-            self.assertEqual(mode, "label")
-            active_session.write((trial.label_command(token) + "\r").encode())
-            raise trial.ProbeProtocolError("label read")
+            self.assertEqual(selected_mode, mode)
+            self.assertEqual(system, self.system)
+            command = (trial.label_command(token) if clock_flag else trial.root_stage_command(token, "mount", system))
+            active_session.write((command + "\r").encode())
+            raise trial.ProbeProtocolError(blocked_stage)
 
-        result_path = self.root / "label.result.json"
+        result_path = self.root / f"{mode}.result.json"
         with mock.patch.dict(sys.modules, {"serial": mock.Mock()}), \
                 mock.patch.object(trial, "PrivateSession", return_value=session), \
                 mock.patch.object(trial, "LOCK_PATH", self.root / "host-fixture.lock"), \
                 mock.patch.object(trial, "verified_load", return_value=True), \
                 mock.patch.object(trial, "verified_crc", return_value=True), \
-                mock.patch.object(trial, "run_probe_protocol", side_effect=blocked_label), \
+                mock.patch.object(trial, "run_probe_protocol", side_effect=blocked_probe), \
                 mock.patch('sys.stderr'):
-            self.assertFalse(trial.run_trial(self.manifest_path, self.root / "label.private.log", result_path,
-                                            "label", self.bundle, self.report_path, ignore_unused_clocks=True))
+            self.assertFalse(trial.run_trial(self.manifest_path, self.root / f"{mode}.private.log", result_path,
+                                            mode, self.bundle, self.report_path, ignore_unused_clocks=clock_flag))
         result = json.loads(result_path.read_text())
         self.assertEqual(result["status"], "recovery-required-unknown-no-reboot-requested")
-        self.assertEqual(result["result_schema"], "mainline-initrd-label-unknown-v1")
-        self.assertEqual(result["probe"], {"schema": "k230-initrd-label-unknown-v1", "stage": "label read"})
-        self.assertTrue(result["ignore_unused_clocks"])
+        self.assertEqual(result["result_schema"], f"mainline-initrd-{mode}-unknown-v1")
+        self.assertEqual(result["probe"], {"schema": f"k230-initrd-{mode}-unknown-v1", "stage": blocked_stage})
+        if clock_flag:
+            self.assertTrue(result["ignore_unused_clocks"])
+        else:
+            self.assertNotIn("ignore_unused_clocks", result)
         self.assertIsNone(result["normal_recovery"])
         self.assertFalse(result["reboot_marker_observed"])
         self.assertFalse(result["persistent_boot_selection_changed"])
@@ -917,8 +1122,9 @@ class CandidateSelectionTests(unittest.TestCase):
         self.assertEqual([call.args[0] for call in session.line.call_args_list],
                          ["reboot", "bootm 0x8000000 0x9000000 0x8400000"])
         self.assertEqual(len(session.write.call_args_list), 2)
-        self.assertIn(b"/bin/e2label /dev/mmcblk1p2", session.write.call_args_list[-1].args[0])
-        self.assertIn(mock.call(trial.volatile_bootargs_command(True), 15), session.command.call_args_list)
+        expected_child = b"/bin/e2label /dev/mmcblk1p2" if clock_flag else b"/bin/mount -t ext4 -o ro,noload"
+        self.assertIn(expected_child, session.write.call_args_list[-1].args[0])
+        self.assertIn(mock.call(trial.volatile_bootargs_command(clock_flag), 15), session.command.call_args_list)
 
 
 if __name__ == "__main__":

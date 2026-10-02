@@ -389,3 +389,14 @@ source-audit comparison; it is not a permanent clock policy.
 No new board trial or usable-root/touch proof is supplied by these host checks.
 The operator must first review the matching restart bundle and prove its
 automatic protected-normal return before relying on recovery for label trials.
+
+The bounded `--mode root-mount` follow-up repeats the minimal/device/label gates
+before one `ro,noload` root mount, strict mount-flag checks and executable
+lookups for the selected system's init/prepare-root, without executing either.
+Known mounts receive one bounded unmount; unknown completion stops all input
+and leaves recovery unverified. Its 62 host tests include actual isolated sh/bash
+mount-table and stub-utility execution. Evidence:
+`docs/evidence/mainline-display/physical-2026-10-01/root-mount-controller-host-2026-10-02.md`.
+This does not perform ordinary `/init` activation or close task 5b.5; matching
+bundle review and physical automatic recovery remain prerequisites for the
+operator's root-mount trial. The optional clock flag remains label-only.

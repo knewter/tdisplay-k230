@@ -288,6 +288,105 @@ def label_result(output: bytes, token: str, stage: str = "label") -> dict[str, i
     return result
 
 
+def root_stage_command(token: str, stage: str, system: str = SYSTEM) -> str:
+    _validate_token(token)
+    scan = (
+        "_k230_count=0; _k230_valid=0; while read _src _mnt _fs _opts _rest; do "
+        "if test \"$_mnt\" = /sysroot; then _k230_count=$((_k230_count+1)); "
+        "_ro=0; _noload=0; case \",$_opts,\" in *,ro,*) _ro=1;; esac; "
+        "case \",$_opts,\" in *,noload,*|*,norecovery,*) _noload=1;; esac; "
+        "if test \"$_src\" = /dev/mmcblk1p2 && test \"$_fs\" = ext4 && "
+        "test $_ro -eq 1 && test $_noload -eq 1; then _k230_valid=$((_k230_valid+1)); fi; fi; "
+        "done < /proc/mounts; _k230_rc=$?; _k230_mounted=0; "
+        "if test $_k230_count -gt 0; then _k230_mounted=1; fi; "
+    )
+    commands = {
+        "unmounted": scan + "if test $_k230_rc -eq 0 && test $_k230_count -ne 0; then _k230_rc=1; fi",
+        "flags": scan + "if test $_k230_rc -eq 0; then "
+                 "if test $_k230_count -ne 1 || test $_k230_valid -ne 1; then _k230_rc=1; fi; fi",
+        "mkdir": "/bin/mkdir -p /sysroot 2>/dev/null; _k230_rc=$?",
+        "empty": "_k230_rc=0; test -d /sysroot || _k230_rc=1; "
+                 "for _path in /sysroot/* /sysroot/.[!.]* /sysroot/..?*; do "
+                 "if test -e \"$_path\" || test -L \"$_path\"; then _k230_rc=1; fi; done",
+        "mount": "/bin/mount -t ext4 -o ro,noload /dev/mmcblk1p2 /sysroot 2>/dev/null; _k230_rc=$?",
+        "init": f"test -x {shlex.quote('/sysroot' + system + '/init')}; _k230_rc=$?",
+        "prepare-root": f"test -x {shlex.quote('/sysroot' + system + '/prepare-root')}; _k230_rc=$?",
+        "umount": "/bin/umount /sysroot 2>/dev/null; _k230_rc=$?",
+    }
+    commands["after-umount"] = commands["unmounted"]
+    if stage not in commands:
+        raise ValueError("unknown root mount stage")
+    mounted = " MOUNTED=%s" if stage in ("unmounted", "after-umount", "flags") else ""
+    values = ' "$_k230_rc"' + (' "$_k230_mounted"' if mounted else "")
+    return (
+        f"printf 'K230_RDINIT_ROOT_BEGIN {token} STAGE={stage}\\n'; "
+        f"{commands[stage]}; "
+        f"printf 'K230_RDINIT_ROOT_END {token} STAGE={stage} RC=%s{mounted}\\n'{values}"
+    )
+
+
+def root_stage_result(output: bytes, token: str, stage: str) -> dict[str, int | bool] | None:
+    _validate_token(token)
+    if stage not in ("unmounted", "after-umount", "flags", "mkdir", "empty", "mount", "init", "prepare-root", "umount"):
+        raise ValueError("unknown root mount stage")
+    text = _PROTOCOL.uart_text(output)
+    scope = token.encode() + b" STAGE=" + stage.encode()
+    starts = list(re.finditer(rb"^K230_RDINIT_ROOT_BEGIN " + scope + rb"\n", text, re.M))
+    has_mounted = stage in ("unmounted", "after-umount", "flags")
+    ends = list(re.finditer(
+        rb"^K230_RDINIT_ROOT_END " + scope + rb" RC=([0-9]{1,3})" +
+        (rb" MOUNTED=([01])" if has_mounted else b"") + rb"\n", text, re.M,
+    ))
+    if len(starts) != 1 or len(ends) != 1 or starts[0].end() > ends[0].start():
+        return None
+    rc = int(ends[0].group(1))
+    if rc > 255:
+        return None
+    result = {"rc": rc}
+    if has_mounted:
+        result["mounted"] = ends[0].group(2) == b"1"
+        if rc == 0 and result["mounted"] != (stage == "flags"):
+            return None
+    return result
+
+
+def run_root_mount_protocol(session, token: str, system: str, timeout: float, clock):
+    def stage(name):
+        session.write((root_stage_command(token, name, system) + "\r").encode())
+        bound = 60.0 if name in ("mount", "init", "prepare-root", "umount") else timeout
+        result = await_protocol_marker(
+            session, lambda output, fresh: root_stage_result(output, fresh, name), token, bound, clock,
+        )
+        if result is None:
+            raise ProbeProtocolError(f"root-mount {name}")
+        return {"attempted": True, **result}
+
+    outcome = {
+        "mount": {"attempted": False}, "init": {"attempted": False},
+        "prepare-root": {"attempted": False}, "umount": {"attempted": False},
+    }
+    for name in ("unmounted", "mkdir", "empty"):
+        outcome[name] = stage(name)
+        if outcome[name]["rc"] != 0:
+            return outcome, False
+    outcome["mount"] = stage("mount")
+    outcome["flags"] = stage("flags")
+    ok = outcome["mount"]["rc"] == 0 and outcome["flags"]["rc"] == 0
+    if ok:
+        for name in ("init", "prepare-root"):
+            outcome[name] = stage(name)
+            if outcome[name]["rc"] != 0:
+                ok = False
+                break
+    if outcome["mount"]["rc"] == 0 or outcome["flags"]["mounted"]:
+        outcome["umount"] = stage("umount")
+        ok = ok and outcome["umount"]["rc"] == 0
+        if outcome["umount"]["rc"] == 0:
+            outcome["after-umount"] = stage("after-umount")
+            ok = ok and outcome["after-umount"]["rc"] == 0
+    return outcome, ok
+
+
 def survey_command(token: str) -> str:
     _validate_token(token)
     data = PROBE_DATA.replace("K230_STAGE_TOKEN", token)
@@ -458,10 +557,15 @@ def run_probe_protocol(
     readiness_timeout: float = RECEPTION_ATTEMPT_TIMEOUT,
     token_factory=None,
     clock=time.monotonic,
+    system: str = SYSTEM,
 ):
     """Run sequential tests; label and survey require every minimal RC to be zero."""
-    if mode not in ("minimal", "survey", "label"):
-        raise ValueError("probe mode must be minimal, survey or label")
+    if mode not in ("minimal", "survey", "label", "root-mount"):
+        raise ValueError("probe mode must be minimal, survey, label or root-mount")
+    prerequisite_schema = (
+        f"k230-initrd-{mode}-prerequisite-failure-v1" if mode in ("label", "root-mount")
+        else "k230-initrd-prerequisite-failure-v1"
+    )
     received = await_reception(
         session,
         token,
@@ -488,7 +592,7 @@ def run_probe_protocol(
     }
     if true_rc != 0:
         diagnostic = {
-            "schema": "k230-initrd-label-prerequisite-failure-v1" if mode == "label" else "k230-initrd-prerequisite-failure-v1",
+            "schema": prerequisite_schema,
             "requested_mode": mode,
             **minimal,
             "proc_mount": {"attempted": False},
@@ -508,7 +612,7 @@ def run_probe_protocol(
     minimal["proc_mount"] = mount_rc
     if mount_rc["mkdir_rc"] != 0 or not mount_rc["mount_attempted"] or mount_rc["mount_rc"] != 0:
         diagnostic = {
-            "schema": "k230-initrd-label-prerequisite-failure-v1" if mode == "label" else "k230-initrd-prerequisite-failure-v1",
+            "schema": prerequisite_schema,
             "requested_mode": mode,
             **minimal,
             "uptime": {"attempted": False},
@@ -534,7 +638,7 @@ def run_probe_protocol(
     minimal["uptime"] = uptime["uptime"]
     if uptime["rc"] != 0:
         diagnostic = {
-            "schema": "k230-initrd-label-prerequisite-failure-v1" if mode == "label" else "k230-initrd-prerequisite-failure-v1",
+            "schema": prerequisite_schema,
             "requested_mode": mode,
             **minimal,
         }
@@ -548,7 +652,7 @@ def run_probe_protocol(
     minimal_ok = True
     label = None
     label_setup = {}
-    if mode == "label":
+    if mode in ("label", "root-mount"):
         for stage in ("dev-mkdir", "dev-mount", "node"):
             session.write((label_setup_command(token, stage) + "\r").encode())
             outcome = await_protocol_marker(
@@ -560,8 +664,9 @@ def run_probe_protocol(
             if outcome["rc"] != 0:
                 return {
                     "diagnostic": {
-                        "schema": "k230-initrd-label-v1", "minimal": minimal,
+                        "schema": f"k230-initrd-{mode}-v1", "minimal": minimal,
                         "setup": label_setup, "label": {"attempted": False},
+                        **({"root": {"attempted": False}} if mode == "root-mount" else {}),
                     },
                     "diagnostic_ok": False, "reboot_marker": False,
                     "recovery_required": True, "recovery_reason": f"label-{stage}-nonzero",
@@ -570,6 +675,11 @@ def run_probe_protocol(
         label = await_protocol_marker(session, label_result, token, 60.0, clock)
         if label is None:
             raise ProbeProtocolError("label read")
+    root = {"attempted": False}
+    root_ok = False
+    if mode == "root-mount" and label["rc"] == 0 and label["match"]:
+        root, root_ok = run_root_mount_protocol(session, token, system, timeout, clock)
+        root = {"attempted": True, **root}
     survey = None
     if mode == "survey" and minimal_ok:
         session.write((survey_command(token) + "\r").encode())
@@ -583,7 +693,13 @@ def run_probe_protocol(
     recovery_output_offset = len(session.buffer)
     session.write((reboot_command(token) + "\r").encode())
     reboot_seen = await_protocol_marker(session, reboot_marker, token, min(timeout, 5.0), clock)
-    if mode == "label":
+    if mode == "root-mount":
+        diagnostic = {
+            "schema": "k230-initrd-root-mount-v1", "minimal": minimal,
+            "setup": label_setup, "label": {"attempted": True, **label}, "root": root,
+        }
+        diagnostic_ok = root_ok
+    elif mode == "label":
         diagnostic = {
             "schema": "k230-initrd-label-v1", "minimal": minimal,
             "setup": label_setup, "label": {"attempted": True, **label},
@@ -856,8 +972,8 @@ def run_trial(
     bundle: Path = BUNDLE, normal_report: Path = NORMAL_REPORT,
     ignore_unused_clocks: bool = False,
 ) -> bool:
-    if mode not in ("minimal", "survey", "label"):
-        raise ValueError("probe mode must be minimal, survey or label")
+    if mode not in ("minimal", "survey", "label", "root-mount"):
+        raise ValueError("probe mode must be minimal, survey, label or root-mount")
     if ignore_unused_clocks and mode != "label":
         raise ValueError("--ignore-unused-clocks requires --mode label")
     prepared = prepare_trial(manifest_path, bundle, normal_report)
@@ -969,21 +1085,21 @@ def run_trial(
                 raise RuntimeError("Linux version banner not observed; reset may be required")
             token = uuid.uuid4().hex
             try:
-                probe_outcome = run_probe_protocol(session, token, mode)
+                probe_outcome = run_probe_protocol(session, token, mode, system=system)
             except ProbeProtocolError as exc:
-                if mode != "label":
+                if mode not in ("label", "root-mount"):
                     raise
                 write_private_result(result_path, {
-                    "result_schema": "mainline-initrd-label-unknown-v1",
+                    "result_schema": f"mainline-initrd-{mode}-unknown-v1",
                     "status": "recovery-required-unknown-no-reboot-requested",
-                    "mode": "volatile-rdinit-label", "ignore_unused_clocks": ignore_unused_clocks,
+                    "mode": f"volatile-rdinit-{mode}", **selection,
                     "candidate_system": system, "candidate_bundle": str(prepared["bundle"]),
                     "normal_preflight": observed_before,
-                    "probe": {"schema": "k230-initrd-label-unknown-v1", "stage": exc.stage},
+                    "probe": {"schema": f"k230-initrd-{mode}-unknown-v1", "stage": exc.stage},
                     "reboot_marker_observed": False, "normal_recovery": None,
                     "persistent_boot_selection_changed": False, "raw_serial_log_path": str(log_path),
                 })
-                print(f"Label protocol incomplete at {exc.stage}; no further probe or recovery input was sent. "
+                print(f"{mode} protocol incomplete at {exc.stage}; no further probe or recovery input was sent. "
                       "Protected normal recovery is required and unverified.", file=sys.stderr)
                 return False
             if probe_outcome.get("recovery_required"):
@@ -1123,8 +1239,8 @@ def main() -> int:
     parser.add_argument("--normal-report", type=Path, default=NORMAL_REPORT,
                         help="protected normal identity report matching the committed baseline")
     parser.add_argument(
-        "--mode", choices=("minimal", "survey", "label"), default="minimal",
-        help="minimal sequential discriminator by default; label read and full survey require explicit modes",
+        "--mode", choices=("minimal", "survey", "label", "root-mount"), default="minimal",
+        help="minimal by default; label, read-only root mount and full survey require explicit modes",
     )
     parser.add_argument("--ignore-unused-clocks", action="store_true",
                         help="label mode only: add volatile clk_ignore_unused for the bounded clock discriminator")
