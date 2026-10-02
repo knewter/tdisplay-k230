@@ -1,0 +1,27 @@
+{
+  "base_revision": "9cd4a3f870a62c01d63abae60dc07b309e054c52",
+  "base": {
+    "consoleDtb": "/nix/store/rr14di4rihw97dvcnjrd1f54p05bmqpm-k230-tdisplay-mainline.dtb",
+    "consoleKernel": "/nix/store/xw38bf25mrd5mkjc2gg5qdkglbkl8b7v-linux-riscv64-unknown-linux-gnu-7.3.0-rc5",
+    "defaultKernel": "/nix/store/03zyl0mjsxbjyisb3lhjaxswpxm71ap6-linux-riscv64-unknown-linux-gnu-6.6.36-xuantie",
+    "drmDtb": "/nix/store/nxbrd4smrcmknipjn4hjk32n87p4g9k6-k230-tdisplay-mainline-drm.dtb",
+    "drmKernel": "/nix/store/4wkhxf55y1abg1kg2xd0acsfjqr64j0h-linux-riscv64-unknown-linux-gnu-7.3.0-rc5",
+    "drmSource": "/nix/store/jvz4v73g8a67pqwm06v079h6s1cpqr9s-linux-mainline-k230-drm-src"
+  },
+  "candidate_evaluated": {
+    "config": "/nix/store/7vxby0h1nz78r9qzbqfjjs9vw4x7gpl0-linux-config-riscv64-unknown-linux-gnu-7.3.0-rc5",
+    "consoleDtb": "/nix/store/rr14di4rihw97dvcnjrd1f54p05bmqpm-k230-tdisplay-mainline.dtb",
+    "consoleKernel": "/nix/store/xw38bf25mrd5mkjc2gg5qdkglbkl8b7v-linux-riscv64-unknown-linux-gnu-7.3.0-rc5",
+    "defaultKernel": "/nix/store/03zyl0mjsxbjyisb3lhjaxswpxm71ap6-linux-riscv64-unknown-linux-gnu-6.6.36-xuantie",
+    "drmDtb": "/nix/store/6ryw00w27gnl3hfgifvjljhj2qrr69ij-k230-tdisplay-mainline-drm.dtb",
+    "drmKernel": "/nix/store/9vdk79pa4pm38mlmbflkqh4i4sc9kha0-linux-riscv64-unknown-linux-gnu-7.3.0-rc5",
+    "drmSource": "/nix/store/l0j3rf11mr65wl5x88a9zzma45ciz687-linux-mainline-k230-drm-src"
+  },
+  "unchanged": [
+    "defaultKernel",
+    "consoleKernel",
+    "consoleDtb"
+  ],
+  "full_kernel_build": "UNVERIFIED",
+  "physical_clock_ownership": "UNVERIFIED"
+}

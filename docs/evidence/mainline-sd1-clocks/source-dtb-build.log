@@ -1,0 +1,8 @@
+warning: Git tree '/home/jadams/tmp/k230-mainline-drm-sd1-clocks' is dirty
+these 2 derivations will be built:
+  /nix/store/argvpjhqbc0bwg9ilc67n5cknpf1hnmd-linux-mainline-k230-drm-src.drv
+  /nix/store/kj995xr4bl7jfwv7jz2xw39davpqddss-k230-tdisplay-mainline-drm.dtb.drv
+building '/nix/store/argvpjhqbc0bwg9ilc67n5cknpf1hnmd-linux-mainline-k230-drm-src.drv'...
+building '/nix/store/kj995xr4bl7jfwv7jz2xw39davpqddss-k230-tdisplay-mainline-drm.dtb.drv'...
+/nix/store/l0j3rf11mr65wl5x88a9zzma45ciz687-linux-mainline-k230-drm-src
+/nix/store/6ryw00w27gnl3hfgifvjljhj2qrr69ij-k230-tdisplay-mainline-drm.dtb

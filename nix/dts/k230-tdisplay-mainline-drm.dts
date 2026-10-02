@@ -11,6 +11,18 @@
 
 #include "k230-tdisplay-mainline.dts"
 
+// The K230 upstream clock contract includes the SD AXI, card/block and
+// timer gates. Keep base as core for the existing SDHCI max-clock source.
+// Only the DRM driver consumes these five clocks; console DT is unchanged.
+&mmc_sd1 {
+	clocks = <&sysclk K230_HS_SD1_BASE_GATE>,
+		 <&sysclk K230_HS_SD1_AHB_GATE>,
+		 <&sysclk K230_HS_SD1_AXI_GATE>,
+		 <&sysclk K230_HS_SD1_CARD_GATE>,
+		 <&sysclk K230_HS_SD1_TIMER_GATE>;
+	clock-names = "core", "bus", "axi", "block", "timer";
+};
+
 // Mainline's k230.dtsi currently has no display or I2C controller nodes.
 // Register ranges, VO/DSI IRQ, and I2C3 range/IRQ follow the pinned vendor
 // k230.dtsi (7d4e1f444f461dbe3833bd99a4640e7b6c2cd529). The K230 mainline

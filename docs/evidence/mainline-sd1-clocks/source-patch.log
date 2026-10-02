@@ -1,0 +1,14 @@
+Running phase: unpackPhase
+@nix { "action": "setPhase", "phase": "unpackPhase" }
+unpacking source archive /nix/store/kr8ag5bniybzz4v66ic1s2dygr6iag1c-linux-mainline-k230-src
+source root is linux-mainline-k230-src
+unpackPhase completed in 1 minutes 47 seconds
+Running phase: patchPhase
+@nix { "action": "setPhase", "phase": "patchPhase" }
+applying patch /nix/store/ji48r48fw07qazkvi2w9i863fhgb80hs-k230-restart.patch
+patching file drivers/reset/reset-k230.c
+applying patch /nix/store/9k7ymfsgmkhsiv3rw7svpq2p4kmr1f4v-k230-sdhci-clocks.patch
+patching file drivers/mmc/host/sdhci-of-kendryte.c
+Running phase: installPhase
+@nix { "action": "setPhase", "phase": "installPhase" }
+installPhase completed in 2 minutes 4 seconds

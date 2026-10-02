@@ -1,0 +1,37 @@
+warning: Git tree '/home/jadams/tmp/k230-mainline-drm-sd1-clocks' is dirty
+this derivation will be built:
+  /nix/store/a06gsnxg31fjys5csjfrb2zz6j3n3may-linux-config-riscv64-unknown-linux-gnu-7.3.0-rc5.drv
+building '/nix/store/a06gsnxg31fjys5csjfrb2zz6j3n3may-linux-config-riscv64-unknown-linux-gnu-7.3.0-rc5.drv'...
+/nix/store/7vxby0h1nz78r9qzbqfjjs9vw4x7gpl0-linux-config-riscv64-unknown-linux-gnu-7.3.0-rc5
+UTC: 2026-10-02T20:08:39Z
+Source: /nix/store/l0j3rf11mr65wl5x88a9zzma45ciz687-linux-mainline-k230-drm-src
+Nix config: /nix/store/7vxby0h1nz78r9qzbqfjjs9vw4x7gpl0-linux-config-riscv64-unknown-linux-gnu-7.3.0-rc5
+riscv64-unknown-linux-gnu-gcc (GCC) 15.3.0
+CONFIG_RISCV=y
+CONFIG_PM_SLEEP=y
+CONFIG_MMC=y
+CONFIG_MMC_SDHCI=y
+CONFIG_MMC_SDHCI_PLTFM=y
+CONFIG_MMC_SDHCI_OF_DWCMSHC_KENDRYTE=y
+make: Entering directory '/nix/store/l0j3rf11mr65wl5x88a9zzma45ciz687-linux-mainline-k230-drm-src'
+make[1]: Entering directory '/home/jadams/tmp/k230-mainline-drm-sd1-clocks/.scratch/sd1-clocks/object.EWkKKt/module'
+  CC [M]  sdhci-of-kendryte.o
+sdhci-of-kendryte.c:305:5: warning: no previous prototype for ‘plat_sdio_rescan’ [-Wmissing-prototypes]
+  305 | int plat_sdio_rescan(int slot)
+      |     ^~~~~~~~~~~~~~~~
+make[1]: Leaving directory '/home/jadams/tmp/k230-mainline-drm-sd1-clocks/.scratch/sd1-clocks/object.EWkKKt/module'
+make: Leaving directory '/nix/store/l0j3rf11mr65wl5x88a9zzma45ciz687-linux-mainline-k230-drm-src'
+/home/jadams/tmp/k230-mainline-drm-sd1-clocks/.scratch/sd1-clocks/object.EWkKKt/module/sdhci-of-kendryte.o: ELF 64-bit LSB relocatable, UCB RISC-V, RVC, soft-float ABI, version 1 (SYSV), with debug_info, not stripped
+                 U clk_bulk_disable
+                 U clk_bulk_enable
+                 U clk_bulk_prepare
+                 U clk_bulk_unprepare
+                 U devm_clk_bulk_get
+0000000000000430 t dwcmshc_probe
+0000000000000248 t dwcmshc_remove
+0000000000000378 t dwcmshc_resume
+00000000000002e0 t dwcmshc_suspend
+e226cc359e9277d9ddc53d68647be1a8fd52431662d6f3e842dfa7fb7f611b8e  /home/jadams/tmp/k230-mainline-drm-sd1-clocks/.scratch/sd1-clocks/object.EWkKKt/module/sdhci-of-kendryte.c
+aa73d4c13d860a7f5a7d4150625a81a593610ed8bba5971c557dce06de8b3576  /home/jadams/tmp/k230-mainline-drm-sd1-clocks/.scratch/sd1-clocks/object.EWkKKt/module/sdhci-of-kendryte.o
+40fee52e7dc0d13cc9cd98c51925da55f99c0a4a85c74b390715c264d88cf758  /home/jadams/tmp/k230-mainline-drm-sd1-clocks/.scratch/sd1-clocks/object.EWkKKt/build/.config
+GCC object check passed; full kernel and physical ownership are separate gates.

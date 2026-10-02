@@ -54,8 +54,11 @@ kernelMainline.override (old: {
     src = applyPatches {
       name = "linux-mainline-k230-drm-src";
       src = args.src;
-      # Vendor-derived system restart, isolated from the console-only kernel.
-      patches = [ ./patches/mainline/k230-restart.patch ];
+      # Optional DRM restart and five-clock SD consumer; console is unchanged.
+      patches = [
+        ./patches/mainline/k230-restart.patch
+        ./patches/mainline/k230-sdhci-clocks.patch
+      ];
 
       postPatch = ''
         cp ${./patches/mainline/k230-power-domains.c} drivers/soc/canaan/k230-power-domains.c

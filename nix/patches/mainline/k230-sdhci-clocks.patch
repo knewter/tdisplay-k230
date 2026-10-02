@@ -1,0 +1,164 @@
+--- a/drivers/mmc/host/sdhci-of-kendryte.c
++++ b/drivers/mmc/host/sdhci-of-kendryte.c
+@@ -84,6 +84,7 @@
+ 
+ struct dwcmshc_priv {
+ 	struct clk *bus_clk;
++	struct clk_bulk_data extra_clks[3];
+ 	bool is_emmc_card;
+ 	u32 tx_delay_line;
+ 	u32 rx_delay_line;
+@@ -315,6 +316,41 @@
+ }
+ EXPORT_SYMBOL(plat_sdio_rescan);
+ 
++/* The optional DRM DT supplies core, bus, axi, block and timer clocks. */
++static int dwcmshc_enable_clks(struct sdhci_pltfm_host *pltfm_host,
++                             struct dwcmshc_priv *priv)
++{
++	int ret;
++
++	ret = clk_prepare_enable(pltfm_host->clk);
++	if (ret)
++		return ret;
++
++	ret = clk_prepare_enable(priv->bus_clk);
++	if (ret)
++		goto disable_core;
++
++	ret = clk_bulk_prepare_enable(ARRAY_SIZE(priv->extra_clks), priv->extra_clks);
++	if (ret)
++		goto disable_bus;
++
++	return 0;
++
++disable_bus:
++	clk_disable_unprepare(priv->bus_clk);
++disable_core:
++	clk_disable_unprepare(pltfm_host->clk);
++	return ret;
++}
++
++static void dwcmshc_disable_clks(struct sdhci_pltfm_host *pltfm_host,
++                               struct dwcmshc_priv *priv)
++{
++	clk_bulk_disable_unprepare(ARRAY_SIZE(priv->extra_clks), priv->extra_clks);
++	clk_disable_unprepare(priv->bus_clk);
++	clk_disable_unprepare(pltfm_host->clk);
++}
++
+ static int dwcmshc_probe(struct platform_device *pdev)
+ {
+ 	struct sdhci_pltfm_host *pltfm_host;
+@@ -392,22 +428,36 @@
+ 	 * vendor origin -- sdhci_pltfm_init() manages its own devm-scoped
+ 	 * cleanup now (confirmed against mainline's own sdhci-of-dwcmshc.c,
+ 	 * whose error paths and .remove call no equivalent free function
+-	 * either). The vendor's `goto free_pltfm; ... sdhci_pltfm_free(pdev);`
+-	 * pair is therefore replaced by a direct `return err;` at each site.
++	 * either). Cleanup remains devm-scoped; the optional DRM clock patch
++	 * also unmaps the existing hs mapping on acquisition/probe failure.
+ 	 */
+ 	pltfm_host->clk = devm_clk_get(&pdev->dev, "core");
+ 	if (IS_ERR(pltfm_host->clk)) {
+-		err = PTR_ERR(pltfm_host->clk);
+-		dev_err(&pdev->dev, "failed to get core clk: %d\n", err);
+-		return err;
++		err = dev_err_probe(&pdev->dev, PTR_ERR(pltfm_host->clk),
++				    "failed to get core clk\n");
++		goto err_unmap;
+ 	}
+-	err = clk_prepare_enable(pltfm_host->clk);
+-	if (err)
+-		return err;
+ 
+ 	priv->bus_clk = devm_clk_get(&pdev->dev, "bus");
+-	if (!IS_ERR(priv->bus_clk))
+-		clk_prepare_enable(priv->bus_clk);
++	if (IS_ERR(priv->bus_clk)) {
++		err = dev_err_probe(&pdev->dev, PTR_ERR(priv->bus_clk),
++				    "failed to get bus clk\n");
++		goto err_unmap;
++	}
++
++	priv->extra_clks[0].id = "axi";
++	priv->extra_clks[1].id = "block";
++	priv->extra_clks[2].id = "timer";
++	err = devm_clk_bulk_get(&pdev->dev, ARRAY_SIZE(priv->extra_clks),
++				priv->extra_clks);
++	if (err) {
++		dev_err_probe(&pdev->dev, err, "failed to get SD clocks\n");
++		goto err_unmap;
++	}
++
++	err = dwcmshc_enable_clks(pltfm_host, priv);
++	if (err)
++		goto err_unmap;
+ 
+ 	/* new fix: storage mmc host to array */
+ 	__mmc__host[slot_index++] = host->mmc;
+@@ -425,8 +475,9 @@
+ 	return 0;
+ 
+ err_clk:
+-	clk_disable_unprepare(pltfm_host->clk);
+-	clk_disable_unprepare(priv->bus_clk);
++	dwcmshc_disable_clks(pltfm_host, priv);
++err_unmap:
++	iounmap(priv->hs_regs);
+ 	return err;
+ }
+ 
+@@ -436,7 +487,7 @@
+  * platform_device *)` (changed from `int (*)(...)` upstream around v6.11,
+  * well after this file's origin in the 6.6-based vendor tree). Confirmed
+  * directly against include/linux/platform_device.h at this exact pinned
+- * commit. The body is otherwise byte-identical to the vendor original.
++ * commit. The optional DRM clock patch balances its five-clock lifecycle.
+  */
+ static void dwcmshc_remove(struct platform_device *pdev)
+ {
+@@ -446,8 +497,7 @@
+ 
+ 	sdhci_remove_host(host, 0);
+ 
+-	clk_disable_unprepare(pltfm_host->clk);
+-	clk_disable_unprepare(priv->bus_clk);
++	dwcmshc_disable_clks(pltfm_host, priv);
+ 
+ 	iounmap(priv->hs_regs);
+ }
+@@ -464,9 +514,7 @@
+ 	if (ret)
+ 		return ret;
+ 
+-	clk_disable_unprepare(pltfm_host->clk);
+-	if (!IS_ERR(priv->bus_clk))
+-		clk_disable_unprepare(priv->bus_clk);
++	dwcmshc_disable_clks(pltfm_host, priv);
+ 
+ 	return ret;
+ }
+@@ -478,17 +526,15 @@
+ 	struct dwcmshc_priv *priv = sdhci_pltfm_priv(pltfm_host);
+ 	int ret;
+ 
+-	ret = clk_prepare_enable(pltfm_host->clk);
++	ret = dwcmshc_enable_clks(pltfm_host, priv);
+ 	if (ret)
+ 		return ret;
+ 
+-	if (!IS_ERR(priv->bus_clk)) {
+-		ret = clk_prepare_enable(priv->bus_clk);
+-		if (ret)
+-			return ret;
+-	}
++	ret = sdhci_resume_host(host);
++	if (ret)
++		dwcmshc_disable_clks(pltfm_host, priv);
+ 
+-	return sdhci_resume_host(host);
++	return ret;
+ }
+ #endif
+ 

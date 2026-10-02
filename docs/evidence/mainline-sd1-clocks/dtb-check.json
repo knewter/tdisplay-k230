@@ -1,0 +1,24 @@
+{
+  "dtb": "/nix/store/6ryw00w27gnl3hfgifvjljhj2qrr69ij-k230-tdisplay-mainline-drm.dtb/k230-tdisplay-mainline-drm.dtb",
+  "sha256": "9c1e22d1b3305a4e42cda96cea9217a2e064a8dd1b88a86d5c4d3c198e6132a8",
+  "bytes": 10840,
+  "node": "/soc/sdhci1@91581000",
+  "compatible": "canaan,k230-dw-mshc",
+  "clock_names": [
+    "core",
+    "bus",
+    "axi",
+    "block",
+    "timer"
+  ],
+  "clock_ids": [
+    31,
+    13,
+    29,
+    26,
+    35
+  ],
+  "provider_phandle": 6,
+  "source_driver_sha256": "e226cc359e9277d9ddc53d68647be1a8fd52431662d6f3e842dfa7fb7f611b8e",
+  "physical": "UNVERIFIED"
+}
