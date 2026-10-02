@@ -459,7 +459,7 @@
     },
     "the-coherent-shell-boots-the-selected-system": {
       "lane": "in-progress",
-      "source": "complete",
+      "source": "source-landed",
       "physical": "pending",
       "next": "Ordinary boot, matching identities, Home captures and remembered appearance pass. Await post-reboot real-finger navigation confirmation, then archive.",
       "rationale": "Qualified four-file installation and matching persistent profile succeeded; untouched ordinary autoboot returned selected kernel/system with active services and photographed Home. Operator post-reboot navigation remains distinct.",
