@@ -261,3 +261,19 @@ photo provenance. [Dispatch source audit](restart-dispatch-audit-2026-10-02.md)
 separates userspace request, kernel preparation and callback execution.
 Its pending-recovery statement records the audit boundary; the later protected
 recovery is recorded separately above. Tasks 5d.4 and 5b.5 remain open.
+
+## Verbose trial and bounded readiness correction
+
+The [verbose physical trial](physical-shutdown-debug-2026-10-02/README.md)
+started Linux 7.3 and successfully probed the reset controller, but stopped
+before diagnostic receipt. It requested no candidate reboot. Reviewed camera
+frames show boot text; subsequent 15- and 90-second receive-only captures got
+no output. Normal recovery remains pending for this trial. This is distinct
+from the earlier recovered Home above.
+
+The [host correction](shutdown-debug-host-preparation-2026-10-02.md)
+waits read-only for the pinned candidate shell-init entry before receipt
+attempts and persists a structured unknown result on minimal readiness or
+protocol failure. All 76 host tests pass; this source correction does not prove
+that a longer wait completes the physical boot. No new physical trial has
+been run with the correction. Tasks 5d.4 and 5b.5 remain open.

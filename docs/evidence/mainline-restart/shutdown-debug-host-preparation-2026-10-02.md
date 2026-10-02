@@ -139,5 +139,5 @@ no premature input, followed by readiness and the minimal protocol. They also
 cover stale/echoed/incomplete entry text, an entry already read with its banner,
 and structured minimal readiness/reception failures with no later board input.
 The first new run had two fixture assertions omit the existing Ctrl-C byte in
-pre-candidate U-Boot interception; the expectations were corrected without
+pre-candidate normal-prompt preparation; the expectations were corrected without
 changing that controller behavior. These tests remain host-only proof.

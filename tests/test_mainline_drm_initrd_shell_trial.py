@@ -1170,7 +1170,7 @@ class CandidateSelectionTests(unittest.TestCase):
         session.close.assert_called_once()
         self.assertEqual([call.args[0] for call in session.line.call_args_list],
                          ["reboot", "bootm 0x8000000 0x9000000 0x8400000"])
-        # The sole raw write belongs to U-Boot interception, before candidate
+        # The sole raw write prepares the normal serial prompt, before candidate
         # Linux. No external probe, exit, retry or candidate reboot is sent.
         self.assertEqual(session.write.call_args_list, [mock.call(b"\x03\r")])
         if debug:
