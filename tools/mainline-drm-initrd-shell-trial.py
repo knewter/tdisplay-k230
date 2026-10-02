@@ -105,7 +105,10 @@ PROBE_DATA = (
 )
 
 
-def trial_bootargs(original: str, system: str = SYSTEM, *, ignore_unused_clocks: bool = False) -> str:
+def trial_bootargs(
+    original: str, system: str = SYSTEM, *, ignore_unused_clocks: bool = False,
+    debug_shutdown: bool = False,
+) -> str:
     """Add diagnostic arguments and require the matching NixOS init."""
     args = original.strip()
     params = args.removeprefix("bootargs=").split()
@@ -118,11 +121,28 @@ def trial_bootargs(original: str, system: str = SYSTEM, *, ignore_unused_clocks:
         raise ValueError("bootargs must be a single line")
     if ignore_unused_clocks and any(arg.split("=", 1)[0] == "clk_ignore_unused" for arg in params):
         raise ValueError("original bootargs already contain clk_ignore_unused")
-    return f"{args} rdinit=/bin/sh" + (" clk_ignore_unused" if ignore_unused_clocks else "")
-
-
-def volatile_bootargs_command(ignore_unused_clocks: bool = False) -> str:
+    if debug_shutdown:
+        if ignore_unused_clocks:
+            raise ValueError("shutdown debug and clock diagnostics cannot be combined")
+        for arg in params:
+            name, _, value = arg.partition("=")
+            if (name in {"initcall_debug", "ignore_loglevel", "quiet", "debug", "dyndbg"}
+                    or name.endswith(".dyndbg")
+                    or (name == "loglevel" and value not in tuple(str(n) for n in range(8)))):
+                raise ValueError("original bootargs contain conflicting shutdown debug arguments")
     extra = " clk_ignore_unused" if ignore_unused_clocks else ""
+    if debug_shutdown:
+        # The bundle's existing loglevel=4/7 is preserved; the final 8 wins.
+        extra = " initcall_debug loglevel=8"
+    return f"{args} rdinit=/bin/sh" + extra
+
+
+def volatile_bootargs_command(ignore_unused_clocks: bool = False, *, debug_shutdown: bool = False) -> str:
+    if ignore_unused_clocks and debug_shutdown:
+        raise ValueError("shutdown debug and clock diagnostics cannot be combined")
+    extra = " clk_ignore_unused" if ignore_unused_clocks else ""
+    if debug_shutdown:
+        extra = " initcall_debug loglevel=8"
     return 'setenv bootargs "${bootargs} rdinit=/bin/sh' + extra + '"'
 
 
@@ -690,7 +710,10 @@ def run_probe_protocol(
     elif mode == "survey":
         survey = {"status": "skipped", "reason": "minimal-stage-rc-failure"}
 
-    recovery_output_offset = len(session.buffer)
+    # Start a fresh rolling buffer before the reboot request. A fixed offset
+    # into the capped buffer stops seeing new bytes once verbose output fills
+    # it; clearing also excludes pretrial login/refusal markers.
+    session.buffer = b""
     session.write((reboot_command(token) + "\r").encode())
     reboot_seen = await_protocol_marker(session, reboot_marker, token, min(timeout, 5.0), clock)
     if mode == "root-mount":
@@ -715,7 +738,6 @@ def run_probe_protocol(
         "diagnostic": diagnostic,
         "diagnostic_ok": diagnostic_ok,
         "reboot_marker": reboot_seen is True,
-        "recovery_output_offset": recovery_output_offset,
     }
 
 
@@ -922,16 +944,17 @@ class PrivateSession:
                 return True
         return False
 
-    def wait_for_normal_login(self, timeout: float, start_offset: int) -> str | None:
+    def wait_for_normal_login(self, timeout: float) -> str | None:
+        """Inspect only the rolling phase started before the reboot request."""
         end = time.monotonic() + timeout
-        while time.monotonic() < end:
-            self.pump()
-            recovery_output = self.buffer[start_offset:]
-            if b"nixos login:" in recovery_output:
+        while True:
+            if re.search(rb"^nixos login:(?:[ \t]|$)", _PROTOCOL.uart_text(self.buffer), re.M):
                 return "login"
-            if reboot_chroot_refusal(recovery_output):
+            if reboot_chroot_refusal(self.buffer):
                 return "chroot-refusal"
-        return None
+            if time.monotonic() >= end:
+                return None
+            self.pump()
 
     def command(self, command: str, timeout: float = 30) -> bytes | None:
         self.line(command)
@@ -971,21 +994,29 @@ def run_trial(
     manifest_path: Path, log_path: Path, result_path: Path, mode: str,
     bundle: Path = BUNDLE, normal_report: Path = NORMAL_REPORT,
     ignore_unused_clocks: bool = False,
+    debug_shutdown: bool = False,
 ) -> bool:
     if mode not in ("minimal", "survey", "label", "root-mount"):
         raise ValueError("probe mode must be minimal, survey, label or root-mount")
     if ignore_unused_clocks and mode != "label":
         raise ValueError("--ignore-unused-clocks requires --mode label")
+    if debug_shutdown and mode != "minimal":
+        raise ValueError("--debug-shutdown requires --mode minimal")
     prepared = prepare_trial(manifest_path, bundle, normal_report)
     manifest = prepared["manifest"]
     system = prepared["system"]
     files = manifest["files"]
     expected_args = prepared["bootargs"]
-    if ignore_unused_clocks:
-        expected_args = trial_bootargs((bundle / "bootargs.txt").read_text(), system, ignore_unused_clocks=True)
+    if ignore_unused_clocks or debug_shutdown:
+        expected_args = trial_bootargs(
+            (bundle / "bootargs.txt").read_text(), system,
+            ignore_unused_clocks=ignore_unused_clocks, debug_shutdown=debug_shutdown,
+        )
     normal = prepared["normal"]
     helper_text = prepared["helper_text"]
     selection = {"ignore_unused_clocks": ignore_unused_clocks} if mode == "label" else {}
+    if debug_shutdown:
+        selection["debug_shutdown"] = True
     try:
         import serial
     except ImportError as exc:
@@ -1069,7 +1100,9 @@ def run_trial(
                 raise RuntimeError("could not import the matching volatile bootargs")
             # U-Boot imports the complete exact bootargs file above. Expand its
             # saved value only inside volatile RAM, then append diagnostic arguments.
-            command = volatile_bootargs_command(ignore_unused_clocks)
+            command = volatile_bootargs_command(
+                ignore_unused_clocks, **({"debug_shutdown": True} if debug_shutdown else {}),
+            )
             if session.command(command, 15) is None:
                 raise RuntimeError("could not set volatile rdinit bootargs")
             printed = session.command("printenv bootargs", 15)
@@ -1126,7 +1159,7 @@ def run_trial(
                 )
                 return False
 
-            login_state = session.wait_for_normal_login(180, probe_outcome["recovery_output_offset"])
+            login_state = session.wait_for_normal_login(180)
             if login_state == "chroot-refusal":
                 write_private_result(result_path, {
                     "result_schema": "mainline-initrd-diagnostic-v3",
@@ -1244,6 +1277,8 @@ def main() -> int:
     )
     parser.add_argument("--ignore-unused-clocks", action="store_true",
                         help="label mode only: add volatile clk_ignore_unused for the bounded clock discriminator")
+    parser.add_argument("--debug-shutdown", action="store_true",
+                        help="minimal mode only: add volatile initcall_debug loglevel=8 shutdown tracing")
     stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
     parser.add_argument(
         "--log", type=Path,
@@ -1256,10 +1291,13 @@ def main() -> int:
     args = parser.parse_args()
     if args.ignore_unused_clocks and args.mode != "label":
         parser.error("--ignore-unused-clocks requires --mode label")
+    if args.debug_shutdown and args.mode != "minimal":
+        parser.error("--debug-shutdown requires --mode minimal")
     try:
         diagnostic_ok = run_trial(
             args.manifest, args.log, args.result, args.mode, args.bundle, args.normal_report,
             **({"ignore_unused_clocks": True} if args.ignore_unused_clocks else {}),
+            **({"debug_shutdown": True} if args.debug_shutdown else {}),
         )
     except Exception as exc:
         print(f"Trial stopped: {exc}", file=sys.stderr)

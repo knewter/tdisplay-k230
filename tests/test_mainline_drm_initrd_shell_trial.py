@@ -1,6 +1,7 @@
 import importlib.util
 import copy
 import hashlib
+import io
 import json
 import sys
 import tempfile
@@ -1063,6 +1064,66 @@ class CandidateSelectionTests(unittest.TestCase):
                 self.assertEqual(trial.main(), 0)
                 self.assertEqual(runner.call_args.args[3:], ("minimal", bundle, report))
 
+    def test_shutdown_conflicts_stop_after_identity_validation_before_board(self):
+        for suffix in ("initcall_debug", "initcall_debug=0", "quiet", "debug",
+                       "ignore_loglevel", 'dyndbg="+p"', 'reset_k230.dyndbg="+p"',
+                       "loglevel=8", "loglevel=invalid"):
+            with self.subTest(suffix=suffix):
+                self.replace_artifact("bootargs.txt", f"bootargs=init={self.system}/init {suffix}\n".encode())
+                with mock.patch.object(trial, "PrivateSession") as serial_session, \
+                        mock.patch.object(trial.os, "open") as opened:
+                    with self.assertRaisesRegex(ValueError, "conflicting shutdown debug"):
+                        trial.run_trial(self.manifest_path, self.root / "unused.log", self.root / "unused.json",
+                                        "minimal", self.bundle, self.report_path, debug_shutdown=True)
+                    serial_session.assert_not_called(); opened.assert_not_called()
+
+    def test_debug_trial_checks_printed_args_and_records_explicit_selection(self):
+        normal = trial.prepare_trial(self.manifest_path, self.bundle, self.report_path)["normal"]
+        observed = {
+            **{key: normal[key] for key in ("system", "profile", "kernel", "uname", "init")},
+            "boot_files": {name: info["sha256"] for name, info in normal["boot_files"].items()},
+            "boot_id": normal["boot_id"],
+        }
+        expected = trial.trial_bootargs((self.bundle / "bootargs.txt").read_text(), self.system,
+                                        debug_shutdown=True)
+        for matched in (False, True):
+            with self.subTest(matched=matched):
+                session = mock.Mock(); session.buffer = trial.PROMPT
+                session.wait_for.return_value = True; session.run_state.return_value = observed
+                printed = expected if matched else expected.replace("loglevel=8", "loglevel=7")
+                session.command.side_effect = lambda command, timeout: (
+                    (printed + "\nK230# ").encode() if command == "printenv bootargs" else trial.PROMPT
+                )
+                result_path = self.root / f"debug-{matched}.json"
+                with mock.patch.dict(sys.modules, {"serial": mock.Mock()}), \
+                        mock.patch.object(trial, "PrivateSession", return_value=session), \
+                        mock.patch.object(trial, "LOCK_PATH", self.root / "host-fixture.lock"), \
+                        mock.patch.object(trial, "verified_load", return_value=True), \
+                        mock.patch.object(trial, "verified_crc", return_value=True), \
+                        mock.patch.object(trial, "run_probe_protocol", return_value={
+                            "diagnostic": {"schema": "k230-initrd-minimal-v2", "true_rc": 1},
+                            "diagnostic_ok": False, "recovery_required": True,
+                            "recovery_reason": "true-command-nonzero", "reboot_marker": False,
+                        }) as probe, mock.patch('sys.stderr'):
+                    if matched:
+                        self.assertFalse(trial.run_trial(
+                            self.manifest_path, self.root / "debug-good.log", result_path,
+                            "minimal", self.bundle, self.report_path, debug_shutdown=True,
+                        ))
+                        result = json.loads(result_path.read_text())
+                        self.assertTrue(result["debug_shutdown"])
+                        self.assertEqual(result["candidate_system"], self.system)
+                        self.assertFalse(result["persistent_boot_selection_changed"])
+                        probe.assert_called_once()
+                    else:
+                        with self.assertRaisesRegex(RuntimeError, "volatile bootargs"):
+                            trial.run_trial(self.manifest_path, self.root / "debug-bad.log", result_path,
+                                            "minimal", self.bundle, self.report_path, debug_shutdown=True)
+                        probe.assert_not_called()
+                        self.assertFalse(any(call.args[0].startswith("bootm") for call in session.line.call_args_list))
+                self.assertIn(mock.call(trial.volatile_bootargs_command(False, debug_shutdown=True), 15),
+                              session.command.call_args_list)
+
     def test_outer_label_timeout_records_unknown_and_never_requests_recovery(self):
         self.assert_outer_readonly_timeout("label")
 
@@ -1125,6 +1186,103 @@ class CandidateSelectionTests(unittest.TestCase):
         expected_child = b"/bin/e2label /dev/mmcblk1p2" if clock_flag else b"/bin/mount -t ext4 -o ro,noload"
         self.assertIn(expected_child, session.write.call_args_list[-1].args[0])
         self.assertIn(mock.call(trial.volatile_bootargs_command(clock_flag), 15), session.command.call_args_list)
+
+
+class ShutdownDebugTests(unittest.TestCase):
+    def test_volatile_args_preserve_init_and_require_exact_debug_selection(self):
+        original = f"bootargs=console=ttyS0 loglevel=4 loglevel=7 init={trial.SYSTEM}/init"
+        expected = trial.trial_bootargs(original, debug_shutdown=True)
+        self.assertEqual(expected, original + " rdinit=/bin/sh initcall_debug loglevel=8")
+        self.assertEqual(trial.volatile_bootargs_command(debug_shutdown=True),
+                         'setenv bootargs "${bootargs} rdinit=/bin/sh initcall_debug loglevel=8"')
+        self.assertTrue(trial.verified_bootargs((expected + "\n").encode(), expected))
+        for bad in (trial.trial_bootargs(original), expected.replace("loglevel=8", "loglevel=7"),
+                    expected.replace("initcall_debug", "initcall_debug=0"),
+                    expected.replace(trial.SYSTEM, "/nix/store/wrong-system"),
+                    expected + " clk_ignore_unused", expected + "\n" + expected):
+            self.assertFalse(trial.verified_bootargs((bad + "\n").encode(), expected))
+        with self.assertRaisesRegex(ValueError, "cannot be combined"):
+            trial.trial_bootargs(original, debug_shutdown=True, ignore_unused_clocks=True)
+
+    def test_flag_is_minimal_only_before_preparation_and_serial(self):
+        for mode in ("survey", "label", "root-mount"):
+            with self.subTest(mode=mode), mock.patch.object(trial, "prepare_trial") as prepare, \
+                    mock.patch.object(trial, "PrivateSession") as session, mock.patch.object(trial.os, "open") as opened:
+                with self.assertRaisesRegex(ValueError, "requires --mode minimal"):
+                    trial.run_trial(Path('/missing'), Path('/unused'), Path('/unused-result'), mode,
+                                    debug_shutdown=True)
+                prepare.assert_not_called(); session.assert_not_called(); opened.assert_not_called()
+            with mock.patch.object(sys, "argv", [str(SCRIPT), "--mode", mode, "--debug-shutdown"]), \
+                    mock.patch.object(trial, "run_trial") as runner, mock.patch('sys.stderr'):
+                with self.assertRaises(SystemExit) as error:
+                    trial.main()
+                self.assertEqual(error.exception.code, 2); runner.assert_not_called()
+
+    def test_cli_threads_only_explicit_minimal_debug_flag(self):
+        with mock.patch.object(sys, "argv", [str(SCRIPT), "--mode", "minimal", "--debug-shutdown"]), \
+                mock.patch.object(trial, "run_trial", return_value=True) as runner:
+            self.assertEqual(trial.main(), 0)
+            self.assertEqual(runner.call_args.args[3], "minimal")
+            self.assertEqual(runner.call_args.kwargs, {"debug_shutdown": True})
+
+
+class RecoveryStreamingTests(unittest.TestCase):
+    token = "a" * 32
+
+    def recovery_session(self, reboot_suffix=b""):
+        """Run the real capped pump and protocol with a scripted serial port."""
+        token = self.token
+        stale = b"\nnixos login:\nRunning in chroot, ignoring request.\n"
+        replies = [
+            f"K230_RDINIT_RX {token}\n".encode(),
+            f"K230_RDINIT_TRUE {token} RC=0\n".encode(),
+            f"K230_RDINIT_MOUNT_BEGIN {token}\nK230_RDINIT_MOUNT_END {token} MKDIR_RC=0 MOUNT_ATTEMPTED=1 MOUNT_RC=0\n".encode(),
+            b"d" * 131072 + stale + f"K230_RDINIT_UP_BEGIN {token}\n1.0 2.0\nK230_RDINIT_UP_END {token} RC=0\n".encode(),
+            f"K230_RDINIT_REBOOT {token}\n".encode() + reboot_suffix,
+        ]
+        pending = []
+        port = mock.Mock()
+        def write(data):
+            reply = replies.pop(0)
+            pending.extend(reply[i:i + 65536] for i in range(0, len(reply), 65536))
+        port.write.side_effect = write
+        port.read.side_effect = lambda size: pending.pop(0) if pending else b""
+        serial = mock.Mock(); serial.Serial.return_value = port
+        session = trial.PrivateSession(serial, io.BytesIO())
+        outcome = trial.run_probe_protocol(session, token, "minimal", timeout=0.05, clock=FakeClock())
+        self.assertTrue(outcome["diagnostic_ok"]); self.assertTrue(outcome["reboot_marker"])
+        self.assertNotIn(stale, session.buffer)
+        self.assertIn(stale, session.log.getvalue())
+        return session, pending
+
+    def wait(self, session):
+        with mock.patch.object(trial.time, "monotonic", FakeClock()):
+            return session.wait_for_normal_login(0.02)
+
+    def test_fresh_login_survives_cap_rollover_and_split_marker(self):
+        session, pending = self.recovery_session()
+        pending.extend([b"d" * 65536] * 3 + [b"\nnixos log", b"in:\n"])
+        self.assertEqual(self.wait(session), "login")
+        self.assertEqual(len(session.buffer), 131072)
+
+    def test_fresh_refusal_survives_rollover_and_split_marker(self):
+        session, pending = self.recovery_session()
+        pending.extend([b"d" * 65536] * 3 + [b"\nRunning in chroot, ", b"ignoring request.\n"])
+        self.assertEqual(self.wait(session), "chroot-refusal")
+
+    def test_pretrial_markers_and_echoed_refusal_do_not_satisfy_recovery(self):
+        session, pending = self.recovery_session()
+        pending.extend([b"d" * 65536] * 3 + [
+            b"\nprintf 'Running in chroot, ignoring request.\\n'\n",
+            b"echo nixos login:\n",
+        ])
+        self.assertIsNone(self.wait(session))
+
+    def test_fresh_login_already_received_is_checked_before_another_read(self):
+        session, pending = self.recovery_session(b"nixos login:\n")
+        pending.append(b"d" * 131072)
+        self.assertEqual(self.wait(session), "login")
+        self.assertEqual(len(pending), 1)
 
 
 if __name__ == "__main__":
