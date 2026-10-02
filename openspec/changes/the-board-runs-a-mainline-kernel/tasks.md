@@ -335,7 +335,12 @@ Exact matching bundle rebuilt, staged as a registered GC-rooted closure, and man
 
 The next bounded diagnosis is prepared but unperformed: `rdinit=/bin/sh` with
 the exact matching bundle, unchanged original bootargs plus this one volatile
-argument, load count/CRC checks, and automatic return to the untouched normal
-boot selection. The controller, recovery behavior and expected limits are
-recorded in `docs/evidence/mainline-display/physical-2026-10-01/initrd-shell-diagnostic.md`.
+argument, strict load count/CRC reports, and automatic return to the normal
+selection. It preflights the newly installed protected system/profile/kernel
+and eight normal boot/selector hashes, candidate staged-file hashes and
+registered closure; after reboot it requires matching normal identities and
+hashes again. The PID1 probe mounts virtual filesystems only in memory, reads
+direct block labels, and does not mount the SD writable. The controller,
+recovery behavior, and proof limits are recorded in
+`docs/evidence/mainline-display/physical-2026-10-01/initrd-shell-diagnostic.md`.
 This host-side preparation does not satisfy 5b.5 or establish the stall's cause.

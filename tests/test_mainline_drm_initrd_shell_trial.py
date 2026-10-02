@@ -27,11 +27,26 @@ class InitrdShellTrialTests(unittest.TestCase):
 
     def test_load_requires_both_exact_size_and_crc(self):
         expected = {"bytes": 1234, "crc32": "a1b2c3d4"}
-        good = b"1234 bytes read\n==> a1b2c3d4"
-        self.assertTrue(trial.verified_load(good, expected))
-        self.assertFalse(trial.verified_load(b"1233 bytes read\n==> a1b2c3d4", expected))
-        self.assertFalse(trial.verified_load(b"1234 bytes read\n==> deadbeef", expected))
-        self.assertFalse(trial.verified_load(None, expected))
+        good_load = b"ext4load mmc 1:2 0x200000 /Image\r\n1234 bytes read in 1 ms\r\nK230# "
+        good_crc = b"crc32 0x200000 0x4d2\r\nCRC32 for 00200000 ... 002004d1 ==> a1b2c3d4\r\nK230# "
+        self.assertTrue(trial.verified_load(good_load, expected))
+        self.assertTrue(trial.verified_crc(good_crc, expected))
+        for bad_load in (
+            b"1233 bytes read in 1 ms\r\nK230# ",
+            b"echo 1234 bytes read in 1 ms\r\nK230# ",
+            b"1234 bytes read in 1 ms",
+            b"1234 bytes read in 1 ms\r\n1234 bytes read in 1 ms\r\nK230# ",
+            None,
+        ):
+            self.assertFalse(trial.verified_load(bad_load, expected))
+        for bad_crc in (
+            b"echo CRC32 for 00200000 ... 002004d1 ==> a1b2c3d4\r\nK230# ",
+            b"CRC32 for 00200000 ... 002004d1 ==> deadbeef\r\nK230# ",
+            b"CRC32 for 00200000 ... 002004d1 ==> a1b2c3d4",
+            b"CRC32 for 00200000 ... 002004d1 ==> a1b2c3d4\r\nCRC32 for 00200000 ... 002004d1 ==> a1b2c3d4\r\nK230# ",
+            None,
+        ):
+            self.assertFalse(trial.verified_crc(bad_crc, expected))
 
     def test_candidate_memory_ranges_do_not_overlap(self):
         sizes = {
@@ -50,9 +65,44 @@ class InitrdShellTrialTests(unittest.TestCase):
             self.assertLessEqual(left[1], right[0], f"{left[2]} overlaps {right[2]}")
 
     def test_probe_keeps_pid_one_running_then_reboots(self):
-        self.assertNotIn("exit", trial.PROBE)
-        self.assertIn("K230_RDINIT_PROBE_END", trial.PROBE)
-        self.assertIn("reboot -f", trial.PROBE)
+        command = trial.probe_command("a" * 32)
+        self.assertNotIn("exit", command)
+        self.assertIn("mount -t proc proc /proc", command)
+        self.assertIn("mount -t sysfs sysfs /sys", command)
+        self.assertIn("mount -t devtmpfs devtmpfs /dev", command)
+        self.assertIn("done < /proc/mounts", command)
+        self.assertIn("test $_k230_block_count -gt 0", command)
+        self.assertIn("test $_k230_label_ok -eq 1", command)
+        self.assertIn("K230_LABEL_NIXOS_SD", command)
+        self.assertIn("e2label", command)
+        self.assertNotIn("mount /dev/mmc", command)
+        self.assertIn("reboot -ff", command)
+
+    def test_probe_result_requires_fresh_complete_standalone_line(self):
+        token = "a" * 32
+        valid = f"K230_RDINIT_PROBE {token} RC=0\r\n".encode()
+        self.assertEqual(trial.probe_result(valid, token), 0)
+        self.assertEqual(trial.probe_result(valid.replace(b"RC=0", b"RC=1"), token), 1)
+        for invalid in (
+            b"echo K230_RDINIT_PROBE " + token.encode() + b" RC=0\r\n",
+            b"printf 'K230_RDINIT_PROBE " + token.encode() + b" RC=0\\n'\r\n",
+            f"K230_RDINIT_PROBE {token} RC=0".encode(),
+            f"K230_RDINIT_PROBE {'b' * 32} RC=0\r\n".encode(),
+            f"K230_RDINIT_PROBE {token} RC=0\r\nK230_RDINIT_PROBE {token} RC=0\r\n".encode(),
+        ):
+            with self.subTest(invalid=invalid):
+                self.assertIsNone(trial.probe_result(invalid, token))
+
+    def test_state_and_upload_markers_reject_echo_or_incomplete_lines(self):
+        token = "c" * 32
+        value = b'{"boot_id":"next","system":"/nix/store/system"}'
+        marker = b"K230_MAINLINE_STATE " + token.encode() + b" postflight " + value + b"\r\n"
+        self.assertEqual(trial.state_marker(marker, token, "postflight"), {"boot_id": "next", "system": "/nix/store/system"})
+        self.assertTrue(trial.upload_marker(b"K230_UPLOAD_" + token.encode() + b"\r\n", token))
+        self.assertFalse(trial.upload_marker(b"printf K230_UPLOAD_" + token.encode() + b"\\n\r\n", token))
+        self.assertFalse(trial.upload_marker(b"K230_UPLOAD_" + token.encode(), token))
+        self.assertIsNone(trial.state_marker(b"python3 state " + token.encode() + b"\r\n" + marker[:-2], token, "postflight"))
+        self.assertIsNone(trial.state_marker(marker + marker, token, "postflight"))
 
 
 if __name__ == "__main__":

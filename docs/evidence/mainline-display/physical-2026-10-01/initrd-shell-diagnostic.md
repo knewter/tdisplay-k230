@@ -21,7 +21,7 @@ nix shell nixpkgs#python3Packages.pyserial --command \
 ```
 
 The controller takes `/tmp/k230-board.lock`, checks the exact manifest's
-five loads by reported byte count and U-Boot memory CRC, imports the matching
+five loads with complete standalone byte-count and U-Boot CRC reports, imports the matching
 211-byte bootargs file, checks that its `init=` still names the exact system,
 then appends only volatile `rdinit=/bin/sh`. It uses the existing addresses
 and `bootm 0x8000000 0x9000000 0x8400000`. It never saves U-Boot environment
@@ -30,13 +30,28 @@ with mode 0600 beneath `/home/jadams/tmp/k230-coordination/` and is not sent
 to stdout or committed. The default log directory is
 `/home/jadams/tmp/k230-coordination/mainline-initrd-private/` (mode 0700).
 
+Before rebooting, a temporary helper streamed into `/run` verifies the fresh
+protected baseline in `/home/jadams/tmp/k230-coherent-boot-board/received/after.json`:
+installed system, profile, booted kernel, `uname -r`, normal `init=` selector,
+three services, and all eight protected boot/selector hashes. It also checks
+the four staged candidate files and the `registration`, `store-paths`, and
+`SHA256SUMS` hashes against the exact bundle, compares `nix-store -qR` with the
+staged closure, and runs `nix-store --check-validity` in batches. The helper
+and expected data are written only into `/run`.
+
 Once the kernel version banner is seen, the controller sends a bounded shell
-command to record `/proc/uptime`, `/proc/interrupts`, `/proc/cmdline`,
-`/proc/mounts`, `/dev/disk/by-label`, and `dmesg`. It does not send `exit`:
-the diagnostic shell is PID 1, and exiting it would panic the kernel. The
-command waits ten seconds and invokes the initrd's existing `reboot -f` as a
-child. Successful restoration is counted only when the unchanged normal path
-returns to a `nixos login:` prompt. If the kernel or shell does not reach the
+command to mount proc, sysfs, and devtmpfs in the in-memory initrd, then record
+`/proc/uptime`, `/proc/interrupts`, `/proc/cmdline`, `/proc/partitions`,
+`/proc/mounts`, `/sys/block`, block device nodes, udev label links, and direct
+`e2label` results. It requires successful virtual mounts and at least one
+readable partition label. `NIXOS_SD` is recorded independently; a missing
+udev by-label link under direct `rdinit` is not treated as a cause. It does not
+send `exit`: the diagnostic shell is PID 1, and exiting it would panic the
+kernel. The command waits ten seconds and invokes `reboot -ff` as a child.
+Successful restoration is counted only after verifying the returned system,
+kernel, profile, kernel release, `init=` selector, three services, a new boot
+ID, and the same eight protected boot-file hashes. A login prompt alone is not
+recovery proof. If the kernel or shell does not reach the
 bounded markers, the operator must keep the board reservation and use the
 coordinator's agreed physical power-cycle recovery; the controller clearly
 reports that PID 1 may still be the shell.
