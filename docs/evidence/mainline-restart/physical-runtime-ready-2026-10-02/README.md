@@ -50,3 +50,12 @@ acceptance or native capture was obtained. Root held the board/UART/camera in
 bounded base `3e6941d7`. No kernel rebuild, protected boot-file/profile change
 or persistent boot-selection write was performed. Manual recovery from this
 latest attempt is pending.
+
+
+The subsequent [MMC source audit](../../../research/mainline-mmc-shutdown-boundary-2026-10-02.md)
+traces callback/next-device waits and the missing clock consumers. The
+[reviewed clock-comparison preparation](../minimal-clock-comparison-host-2026-10-02.md)
+passes 96 host tests and gives the exact fresh-path operator command after
+protected recovery. It additionally preserves returned tracing facts in a
+structured normal-timeout result. The comparison is physically unperformed;
+it tests global clock-cleanup dependence, not a particular gate or culprit.
