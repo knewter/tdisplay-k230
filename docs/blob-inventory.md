@@ -651,6 +651,7 @@ Paths are relative to the repository root. `(sdk)` is
 so that building stage 1 from source does not silently drop them from view.
 
 ```
+DATA 1b8409b74178fdc996d5cd617e7f042ae56e59a9b1ba20cd8306bd4640fbd42b docs/evidence/mainline-display/physical-2026-10-01/minimal-probe-recovery-2026-10-02/home.png
 DATA e25bde2aeed303bb0f318292e527f6dc12752579d018309514a851c0236eab0b docs/evidence/omarchy-themes/font-spacing-adaptation/baseline.png
 DATA 2c971a30f7138e3ed0b0cfeb4538bbdf432e33ac65cc329225fc7b5af9d52a6f docs/evidence/omarchy-themes/font-spacing-adaptation/font-spacing-adapted.png
 DATA 6c932721f51eccfe719486e1474e411c6303c2a95bf1ea7c6240260f1b939669 docs/evidence/volume/closeout-2026-10-01/expanded-real-stream.jpg

@@ -24,8 +24,10 @@ The physical run established receipt in the initrd shell, `/bin/true` returning
 zero, and `/proc/uptime` failing because `/proc` was absent. `/bin/reboot -ff`
 then printed the systemd chroot refusal and returned to the shell; it did not
 issue a kernel reboot request. Normal-login recovery timed out and the
-observation remains `pending-physical-reset`. This is not a physical test of
-the candidate kernel's reset behavior.
+observation was `pending-physical-reset` when the controller stopped. A later
+[operator power cycle and protected postflight](minimal-probe-recovery-2026-10-02/README.md)
+verified normal-system recovery. This is not a physical test of the candidate
+kernel's reset behavior.
 
 The exact 7.3-rc5 boot logs report SBI specification 2.0 and detect TIME, IPI,
 RFENCE, DBCN, and HSM, but do not report `SBI SRST extension detected`

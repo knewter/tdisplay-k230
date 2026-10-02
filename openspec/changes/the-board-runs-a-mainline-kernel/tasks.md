@@ -358,5 +358,5 @@ and proc mount RC success before reading uptime or requesting reboot. Failed
 prerequisites stop with a structured recovery-required result; the full device
 survey requires explicit mode. This source/test follow-up has not been run on
 hardware and does not change task 5b.5 evidence status. The preceding physical
-minimal attempt remains documented as failed with recovery pending in
+minimal attempt remains documented as failed, with later independent normal recovery verified, in
 `docs/evidence/mainline-display/physical-2026-10-01/minimal-probe-2026-10-02/README.md`.

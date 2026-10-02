@@ -24,8 +24,10 @@ diagnostic/recovery gate; the receipt marker does not prove a reboot.
 After the controller released serial, a separate deliberate recovery check
 sent only a carriage return and waited five seconds for a fresh shell prompt.
 None arrived, so it sent no mount, reboot, interrupt or exit command. A physical
-power cycle was requested. Normal-system recovery remains pending for this
-attempt; the preceding recovery evidence proves the earlier boot only.
+power cycle was requested. The operator subsequently confirmed it, and an
+[independent protected postflight](../minimal-probe-recovery-2026-10-02/README.md)
+verified the normal system and visible Home with a new boot ID. The failed
+automatic-recovery attempt remains a failed diagnostic result.
 
 `observation.json` records the observed marker results, exact source and
 artifact identities, preflight and private capture hash. Raw serial output

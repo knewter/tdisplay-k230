@@ -28,7 +28,9 @@
     "system": "/nix/store/p1a1hz9n8s4g8qyr55ffl3dzbnjgqwr8-nixos-system-nixos-26.11.20260919.20b1ddd",
     "uname": "6.6.36"
   },
-  "normal_recovery": "pending-physical-reset",
+  "normal_recovery": "verified-by-independent-power-cycle-postflight",
+  "normal_recovery_at_controller_exit": "pending-physical-reset",
+  "normal_recovery_evidence": "docs/evidence/mainline-display/physical-2026-10-01/minimal-probe-recovery-2026-10-02/postflight.json",
   "persistent_boot_selection_changed": false,
   "private_capture_name": "mainline-initrd-shell-20261002T071953Z.private.log",
   "probe": {

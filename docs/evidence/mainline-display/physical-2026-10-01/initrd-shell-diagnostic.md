@@ -228,6 +228,6 @@ reboot-marker absence. Python compilation,
 `git diff --check`, and strict OpenSpec validation pass. This host-only
 revision does not resolve why the previous probe stopped after `K230_PROC`;
 no additional board attempt was made with this revised setup. The earlier
-physical minimal attempt and its pending-reset status are recorded in
+failed physical minimal attempt and its later independently verified recovery are recorded in
 `docs/evidence/mainline-display/physical-2026-10-01/minimal-probe-2026-10-02/README.md`.
 Task 5b.5 remains open.
