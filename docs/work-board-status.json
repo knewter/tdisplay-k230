@@ -410,15 +410,28 @@
       "lane": "verification",
       "source": "source-landed",
       "physical": "pending",
-      "next": "Diagnose initrd progress before root login; then repeat exact temporary boot, capture deliberate touch and verify normal restoration.",
-      "rationale": "Exact physical Linux 7.3.0-rc5 trial initializes DRM/fb0 and displays boot text, Goodix registers, but usable root login was not reached. Normal persistent boot selection untouched.",
+      "next": "Run the corrected bounded initrd diagnosis; then prove usable mainline root and deliberate touch. Normal-system power-swap recovery now passes.",
+      "rationale": "Exact physical Linux 7.3.0-rc5 trial initializes DRM/fb0 and displays boot text, Goodix registers, but usable root login was not reached. The first PID1 probe failed because PATH was absent. Physical power-swap recovery verified the selected normal system, fresh boot ID, active shell services and all eight unchanged boot hashes; mainline root and touch remain pending.",
       "dependencies": [],
       "evidence": [
         "docs/evidence/mainline-display-power-domain.md",
         "docs/evidence/mainline-display-boot-preparation.md",
-        "docs/evidence/mainline-display/physical-2026-10-01/README.md"
+        "docs/evidence/mainline-display/physical-2026-10-01/README.md",
+        "docs/evidence/mainline-display/physical-2026-10-01/power-swap-recovery-2026-10-02/README.md"
       ],
-      "reviewRevision": "128ea4e705a7d61b7144ec9fd341493f42ecf449"
+      "reviewRevision": "8e1459ff36fe9c21ebf26b1532106867664b8eef",
+      "media": [
+        {
+          "path": "docs/evidence/mainline-display/physical-2026-10-01/power-swap-recovery-2026-10-02/home.png",
+          "caption": "Normal vendor-kernel Home after power-swap recovery and IPC Home command; mainline usability remains pending",
+          "provenance": "Board capture"
+        },
+        {
+          "path": "docs/evidence/mainline-display/physical-2026-10-01/power-swap-recovery-2026-10-02/home-panel.jpg",
+          "caption": "Physical panel showing the restored normal system after power swap; this is not mainline touch acceptance",
+          "provenance": "Board capture"
+        }
+      ]
     },
     "2026-10-01-the-home-screen-has-widgets-and-folders": {
       "lane": "archived",

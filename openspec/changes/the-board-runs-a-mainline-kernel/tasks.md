@@ -333,14 +333,19 @@ milestone 2).
 
 Exact matching bundle rebuilt, staged as a registered GC-rooted closure, and manually booted with per-load count/CRC checks. Linux 7.3.0-rc5, DRM/fb0 and photographed boot text are observed; Goodix registers. Both temporary boots stop in initrd before root login, including a repeat with direct initrd console diagnostics; no deliberate touch events were obtained. See `docs/evidence/mainline-display/physical-2026-10-01/README.md` and `result.json`; task 5b.5 stays unchecked pending usable root, physical touch and committed normal restoration. No persistent normal boot selection was changed.
 
-The next bounded diagnosis is prepared but unperformed: `rdinit=/bin/sh` with
-the exact matching bundle, unchanged original bootargs plus this one volatile
-argument, strict load count/CRC reports, and automatic return to the normal
-selection. It preflights the newly installed protected system/profile/kernel
-and eight normal boot/selector hashes, candidate staged-file hashes and
-registered closure; after reboot it requires matching normal identities and
-hashes again. The PID1 probe mounts virtual filesystems only in memory, reads
-direct block labels, and does not mount the SD writable. The controller,
-recovery behavior, and proof limits are recorded in
+The first bounded `rdinit=/bin/sh` diagnosis reached the PID1 shell but
+failed command resolution because PATH was absent; its partition-label value
+is invalid as hardware evidence. The controller now supplies volatile PATH
+and an absolute reboot command. That corrected probe remains unperformed;
+it retains the exact matching bundle, strict load count/CRC checks and
+unchanged normal selection. The controller and proof limits are recorded in
 `docs/evidence/mainline-display/physical-2026-10-01/initrd-shell-diagnostic.md`.
-This host-side preparation does not satisfy 5b.5 or establish the stall's cause.
+
+The 2026-10-02 operator power swap restored the selected normal system:
+fresh boot ID, exact system/profile/kernel/init, three active shell services,
+eight unchanged protected hashes and photographed/native Home after IPC
+commands. See
+`docs/evidence/mainline-display/physical-2026-10-01/power-swap-recovery-2026-10-02/README.md`.
+Normal restoration is now proved; mainline task 5b.5 stays open for usable
+root login and deliberate touch evidence. These captures show the normal
+vendor-kernel system, not a working mainline shell.
