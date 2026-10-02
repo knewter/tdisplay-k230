@@ -49,3 +49,16 @@ sheets; the full site build passed with 503 pages, 15,026,169 bytes and 43.93
 seconds, within the existing 16 MiB / 120 second budgets. The kernel auditor
 independently approved the citation bounds and per-file labels. This checks
 publication integrity, not physical UX acceptance.
+
+## Published browser check
+
+Published revision `c33bae96d7bbff42bb0ef6ef5ed6834b5c55f37b` passed
+[site build and deployment run 36968861312](https://github.com/knewter/tdisplay-k230/actions/runs/36968861312).
+The coordinator then checked the actual [public work board](https://knewter.github.io/tdisplay-k230/work/)
+with Playwright at desktop 1440×1000 and mobile 390×844 viewports, without
+mocked network responses. Both checks passed: exact published artifact-index
+revision, all four SVGs loaded in the gallery, correct distinct captions and
+Design mockup labels, gallery dismissal, and the report opening as rendered
+Markdown in the document modal with return to the same card detail. No page
+errors occurred. This is host-browser publication proof, not K230 input or
+optical acceptance.
