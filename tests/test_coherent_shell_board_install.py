@@ -15,7 +15,9 @@ install = importlib.util.module_from_spec(spec); spec.loader.exec_module(install
 
 class BootInstall(unittest.TestCase):
     def setUp(self):
-        self.temp = tempfile.TemporaryDirectory(dir=Path.home() / 'tmp')
+        scratch = Path.home() / 'tmp'
+        scratch.mkdir(parents=True, exist_ok=True)
+        self.temp = tempfile.TemporaryDirectory(dir=scratch)
         self.addCleanup(self.temp.cleanup)
         self.root = Path(self.temp.name)
         self.source = self.root / 'root-backup'; self.source.write_bytes(b'new kernel')
