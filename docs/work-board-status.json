@@ -410,16 +410,17 @@
       "lane": "verification",
       "source": "source-landed",
       "physical": "pending",
-      "next": "Run the corrected bounded initrd diagnosis; then prove usable mainline root and deliberate touch. Normal-system power-swap recovery now passes.",
-      "rationale": "Exact physical Linux 7.3.0-rc5 trial initializes DRM/fb0 and displays boot text, Goodix registers, but usable root login was not reached. The first PID1 probe failed because PATH was absent. Physical power-swap recovery verified the selected normal system, fresh boot ID, active shell services and all eight unchanged boot hashes; mainline root and touch remain pending.",
+      "next": "Finish the smaller staged initrd diagnostic, then prove usable mainline root and deliberate touch; recovery after both shell trials passes.",
+      "rationale": "The corrected temporary mainline trial reached Linux and its pre-proc-read marker but no complete fresh result or observed reboot. Physical power-cycle recovery independently verifies normal p1 system/profile/kernel/init, three services, eight unchanged protected hashes and visible Home; mainline root and touch remain pending.",
       "dependencies": [],
       "evidence": [
         "docs/evidence/mainline-display-power-domain.md",
         "docs/evidence/mainline-display-boot-preparation.md",
         "docs/evidence/mainline-display/physical-2026-10-01/README.md",
-        "docs/evidence/mainline-display/physical-2026-10-01/power-swap-recovery-2026-10-02/README.md"
+        "docs/evidence/mainline-display/physical-2026-10-01/power-swap-recovery-2026-10-02/README.md",
+        "docs/evidence/mainline-display/physical-2026-10-01/corrected-probe-recovery-2026-10-02/README.md"
       ],
-      "reviewRevision": "8e1459ff36fe9c21ebf26b1532106867664b8eef",
+      "reviewRevision": "b209129b1cf681669edfe3e1e05be317842bf6f4",
       "media": [
         {
           "path": "docs/evidence/mainline-display/physical-2026-10-01/power-swap-recovery-2026-10-02/home.png",
@@ -429,6 +430,16 @@
         {
           "path": "docs/evidence/mainline-display/physical-2026-10-01/power-swap-recovery-2026-10-02/home-panel.jpg",
           "caption": "Physical panel showing the restored normal system after power swap; this is not mainline touch acceptance",
+          "provenance": "Board capture"
+        },
+        {
+          "path": "docs/evidence/mainline-display/physical-2026-10-01/corrected-probe-recovery-2026-10-02/home.png",
+          "caption": "Normal Home after recovery from the corrected mainline diagnostic; native capture after IPC Home command",
+          "provenance": "Board capture"
+        },
+        {
+          "path": "docs/evidence/mainline-display/physical-2026-10-01/corrected-probe-recovery-2026-10-02/home-panel.jpg",
+          "caption": "Physical normal-system panel after the second power cycle; partial camera framing",
           "provenance": "Board capture"
         }
       ]
