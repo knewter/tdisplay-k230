@@ -54,5 +54,9 @@ global unused-clock cleanup; it does not identify one clock or prove the
 MMC callback caused the stall. Permanent global clock bypass is not enabled.
 The next source fix must claim the K230 SD1 clocks required by its binding,
 then independently repeat restart and usable-root probes without the flag.
+The [reviewed five-clock audit](../../../research/mainline-sd1-clock-consumers-2026-10-02.md)
+records the exact proposed IDs, balanced resource lifecycle, binding/legacy
+compatible limits and separate build/physical proof plan. Source implementation
+is underway in its own worktree; this packet does not claim it is installed.
 Task **5b.5**, usable mainline root and deliberate touch, remains
 **UNVERIFIED** and open. The change cannot be archived yet.
