@@ -119,3 +119,25 @@ would not identify a gate or prove the driver/root path. No improvement would
 not exclude other clock or driver issues. No mount, activation or login is
 performed by label mode. Review, merge, push and physical work remain with the
 coordinator.
+
+## Pre-landing review correction
+
+The initial devtmpfs shell loop ended its body with chained `test` predicates.
+A final non-`/dev` entry could leave the loop's RC at 1 and skip the required
+mount. The corrected body uses `if ...; then ...; fi`, which returns success
+when that entry does not match, while retaining the loop redirection's failure
+RC if the mount table cannot be opened.
+
+The generated dev-mount payload was then executed by both host `sh` and `bash`,
+replacing only its literal `/proc/mounts` input and `/bin/mount` executable with
+temporary fixtures. No actual host `/proc` or `/dev` operation was performed.
+A proc-only table invokes the stub mount exactly once and reports RC 0; a
+devtmpfs entry followed by a proc entry invokes no mount and reports RC 0;
+a missing table reports a nonzero RC without a mount; and a stub mount failure
+reports its RC 32 after exactly one invocation. This execution check addresses
+shell semantics that the fake UART protocol tests alone did not cover.
+
+The same four verification commands above passed again with 49 tests, preserving
+the previous 48, plus successful compilation, strict validation and diff checks.
+This correction and fixture execution remain host-only and do not alter any
+physical evidence gate.

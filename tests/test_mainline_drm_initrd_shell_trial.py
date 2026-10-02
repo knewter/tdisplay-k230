@@ -577,6 +577,43 @@ class LabelProbeTests(unittest.TestCase):
                 self.assertEqual(check.returncode, 0, check.stderr)
         self.assertNotIn('"$_k230_label"', commands[-1].split("printf 'K230_RDINIT_LABEL_END", 1)[1])
 
+    def test_generated_dev_mount_payload_executes_mount_table_and_error_semantics(self):
+        import shlex
+        import subprocess
+        cases = (
+            ("proc-only", "proc /proc proc rw 0 0\n", 0, 1, 0),
+            ("dev-before-proc", "devtmpfs /dev devtmpfs rw 0 0\nproc /proc proc rw 0 0\n", 0, 0, 0),
+            ("missing-table", None, 0, 0, None),
+            ("mount-fails", "proc /proc proc rw 0 0\n", 32, 1, 32),
+        )
+        for shell in ("sh", "bash"):
+            for name, table_text, mount_rc, calls, expected_rc in cases:
+                with self.subTest(shell=shell, case=name), tempfile.TemporaryDirectory() as directory:
+                    root = Path(directory)
+                    table, mount, log = root / "mounts", root / "stub-mount", root / "mount-calls"
+                    if table_text is not None:
+                        table.write_text(table_text)
+                    mount.write_text(
+                        "#!/bin/sh\n" + "printf '%s\\n' \"$*\" >> " + shlex.quote(str(log)) +
+                        f"\nexit {mount_rc}\n"
+                    )
+                    mount.chmod(0o555)
+                    # Execute the real generated shell logic; replace only its
+                    # fixed input path and mount executable, never host proc/dev.
+                    command = trial.label_setup_command(self.token, "dev-mount").replace(
+                        "/proc/mounts", shlex.quote(str(table)),
+                    ).replace("/bin/mount", shlex.quote(str(mount)))
+                    result = subprocess.run([shell, "-c", command], text=True, capture_output=True)
+                    self.assertEqual(result.returncode, 0, result.stderr)
+                    parsed = trial.label_result(result.stdout.encode(), self.token, "dev-mount")
+                    self.assertIsNotNone(parsed)
+                    if expected_rc is None:
+                        self.assertGreater(parsed["rc"], 0)  # Shell redirection failure is preserved.
+                    else:
+                        self.assertEqual(parsed["rc"], expected_rc)
+                    observed_calls = log.read_text().splitlines() if log.exists() else []
+                    self.assertEqual(observed_calls, ["-t devtmpfs devtmpfs /dev"] * calls)
+
     def test_clock_flag_adds_exactly_one_argument_and_keeps_strict_identity(self):
         original = f"bootargs=console=ttyS0 init={trial.SYSTEM}/init"
         ordinary = trial.trial_bootargs(original)

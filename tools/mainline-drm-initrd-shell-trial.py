@@ -235,7 +235,7 @@ def label_setup_command(token: str, stage: str) -> str:
         "dev-mkdir": "/bin/mkdir -p /dev 2>/dev/null; _k230_rc=$?",
         "dev-mount": (
             "_k230_have_dev=0; while read _src _mnt _fs _rest; do "
-            "test \"$_mnt\" = /dev && test \"$_fs\" = devtmpfs && _k230_have_dev=1; "
+            "if test \"$_mnt\" = /dev && test \"$_fs\" = devtmpfs; then _k230_have_dev=1; fi; "
             "done < /proc/mounts; _k230_rc=$?; "
             "if test $_k230_rc -eq 0 && test $_k230_have_dev -eq 0; then "
             "/bin/mount -t devtmpfs devtmpfs /dev 2>/dev/null; _k230_rc=$?; fi"
