@@ -44,6 +44,7 @@ SERIAL_DEVICE = "/dev/ttyACM0"
 PROMPT = b"K230# "
 RECEPTION_MAX_ATTEMPTS = 8
 RECEPTION_ATTEMPT_TIMEOUT = 1.0
+INITRD_READY_TIMEOUT = 90.0
 _PROTOCOL_SPEC = importlib.util.spec_from_file_location(
     "rvv_board_boot", Path(__file__).with_name("rvv-board-boot.py")
 )
@@ -565,6 +566,31 @@ def await_reception(
         if await_protocol_marker(session, receive_marker, token, timeout, clock) is True:
             return token, attempt + 1
     return None
+
+
+def await_initrd_ready(session, *, timeout=INITRD_READY_TIMEOUT, clock=time.monotonic) -> bool:
+    """Read only: wait for the pinned candidate's shell-init entry checkpoint."""
+    if not 0 < timeout <= INITRD_READY_TIMEOUT:
+        raise ValueError("initrd readiness timeout must be positive and at most 90s")
+    banner = rb"^\[\s*[0-9]+\.[0-9]+\]\s+Linux version 7\.3\.0-rc5(?:[ \t][^\n]*)?\n"
+    ready = rb"^\[\s*[0-9]+\.[0-9]+\]\s+Run /bin/sh as init process\n"
+    candidate_seen = False
+    deadline = clock() + timeout
+    while True:
+        output = _PROTOCOL.uart_text(session.buffer)
+        if not candidate_seen:
+            match = re.search(banner, output, re.M)
+            if match:
+                # Exclude stale normal/pretrial text; preserve candidate bytes
+                # already read alongside its banner. The raw log is untouched.
+                session.buffer = output[match.start():]
+                output = session.buffer
+                candidate_seen = True
+        if candidate_seen and re.search(ready, output, re.M):
+            return True
+        if clock() >= deadline:
+            return False
+        session.pump()
 
 
 def run_probe_protocol(
@@ -1118,9 +1144,13 @@ def run_trial(
                 raise RuntimeError("Linux version banner not observed; reset may be required")
             token = uuid.uuid4().hex
             try:
+                if debug_shutdown:
+                    selection["initrd_readiness_observed"] = await_initrd_ready(session)
+                    if not selection["initrd_readiness_observed"]:
+                        raise ProbeProtocolError("initrd readiness")
                 probe_outcome = run_probe_protocol(session, token, mode, system=system)
             except ProbeProtocolError as exc:
-                if mode not in ("label", "root-mount"):
+                if mode not in ("minimal", "label", "root-mount"):
                     raise
                 write_private_result(result_path, {
                     "result_schema": f"mainline-initrd-{mode}-unknown-v1",

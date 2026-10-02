@@ -1100,6 +1100,7 @@ class CandidateSelectionTests(unittest.TestCase):
                         mock.patch.object(trial, "LOCK_PATH", self.root / "host-fixture.lock"), \
                         mock.patch.object(trial, "verified_load", return_value=True), \
                         mock.patch.object(trial, "verified_crc", return_value=True), \
+                        mock.patch.object(trial, "await_initrd_ready", return_value=True) as ready, \
                         mock.patch.object(trial, "run_probe_protocol", return_value={
                             "diagnostic": {"schema": "k230-initrd-minimal-v2", "true_rc": 1},
                             "diagnostic_ok": False, "recovery_required": True,
@@ -1112,17 +1113,73 @@ class CandidateSelectionTests(unittest.TestCase):
                         ))
                         result = json.loads(result_path.read_text())
                         self.assertTrue(result["debug_shutdown"])
+                        self.assertTrue(result["initrd_readiness_observed"])
                         self.assertEqual(result["candidate_system"], self.system)
                         self.assertFalse(result["persistent_boot_selection_changed"])
                         probe.assert_called_once()
+                        ready.assert_called_once_with(session)
                     else:
                         with self.assertRaisesRegex(RuntimeError, "volatile bootargs"):
                             trial.run_trial(self.manifest_path, self.root / "debug-bad.log", result_path,
                                             "minimal", self.bundle, self.report_path, debug_shutdown=True)
                         probe.assert_not_called()
+                        ready.assert_not_called()
                         self.assertFalse(any(call.args[0].startswith("bootm") for call in session.line.call_args_list))
                 self.assertIn(mock.call(trial.volatile_bootargs_command(False, debug_shutdown=True), 15),
                               session.command.call_args_list)
+
+    def test_minimal_debug_readiness_timeout_records_unknown_without_candidate_input(self):
+        self.assert_minimal_unknown("initrd readiness", debug=True, ready=False)
+
+    def test_minimal_reception_failure_records_unknown_without_later_input(self):
+        self.assert_minimal_unknown("reception", debug=False, ready=True)
+
+    def assert_minimal_unknown(self, stage, *, debug, ready):
+        normal = trial.prepare_trial(self.manifest_path, self.bundle, self.report_path)["normal"]
+        observed = {
+            **{key: normal[key] for key in ("system", "profile", "kernel", "uname", "init")},
+            "boot_files": {name: info["sha256"] for name, info in normal["boot_files"].items()},
+            "boot_id": normal["boot_id"],
+        }
+        session = mock.Mock(); session.buffer = trial.PROMPT
+        session.wait_for.return_value = True; session.run_state.return_value = observed
+        expected = trial.trial_bootargs((self.bundle / "bootargs.txt").read_text(), self.system,
+                                        debug_shutdown=debug)
+        session.command.side_effect = lambda command, timeout: (
+            (expected + "\nK230# ").encode() if command == "printenv bootargs" else trial.PROMPT
+        )
+        result_path = self.root / f"unknown-{debug}.json"
+        with mock.patch.dict(sys.modules, {"serial": mock.Mock()}), \
+                mock.patch.object(trial, "PrivateSession", return_value=session), \
+                mock.patch.object(trial, "LOCK_PATH", self.root / "host-fixture.lock"), \
+                mock.patch.object(trial, "verified_load", return_value=True), \
+                mock.patch.object(trial, "verified_crc", return_value=True), \
+                mock.patch.object(trial, "await_initrd_ready", return_value=ready) as readiness, \
+                mock.patch.object(trial, "run_probe_protocol", side_effect=trial.ProbeProtocolError(stage)) as probe, \
+                mock.patch('sys.stderr'):
+            self.assertFalse(trial.run_trial(self.manifest_path, self.root / f"unknown-{debug}.log", result_path,
+                                            "minimal", self.bundle, self.report_path, debug_shutdown=debug))
+        result = json.loads(result_path.read_text())
+        self.assertEqual(result["status"], "recovery-required-unknown-no-reboot-requested")
+        self.assertEqual(result["result_schema"], "mainline-initrd-minimal-unknown-v1")
+        self.assertEqual(result["probe"], {"schema": "k230-initrd-minimal-unknown-v1", "stage": stage})
+        self.assertIsNone(result["normal_recovery"])
+        self.assertFalse(result["reboot_marker_observed"])
+        self.assertFalse(result["persistent_boot_selection_changed"])
+        session.wait_for_normal_login.assert_not_called()
+        session.close.assert_called_once()
+        self.assertEqual([call.args[0] for call in session.line.call_args_list],
+                         ["reboot", "bootm 0x8000000 0x9000000 0x8400000"])
+        # The sole raw write belongs to U-Boot interception, before candidate
+        # Linux. No external probe, exit, retry or candidate reboot is sent.
+        self.assertEqual(session.write.call_args_list, [mock.call(b"\x03\r")])
+        if debug:
+            self.assertFalse(result["initrd_readiness_observed"])
+            self.assertTrue(result["debug_shutdown"])
+            readiness.assert_called_once_with(session); probe.assert_not_called()
+        else:
+            self.assertNotIn("initrd_readiness_observed", result)
+            readiness.assert_not_called(); probe.assert_called_once()
 
     def test_outer_label_timeout_records_unknown_and_never_requests_recovery(self):
         self.assert_outer_readonly_timeout("label")
@@ -1283,6 +1340,62 @@ class RecoveryStreamingTests(unittest.TestCase):
         pending.append(b"d" * 131072)
         self.assertEqual(self.wait(session), "login")
         self.assertEqual(len(pending), 1)
+
+
+class InitrdReadinessTests(unittest.TestCase):
+    banner = b"[    0.000000] Linux version 7.3.0-rc5 candidate\n"
+    ready = b"[   12.000000] Run /bin/sh as init process\n"
+
+    def session(self, chunks, initial=b""):
+        pending = list(chunks)
+        port = mock.Mock()
+        port.read.side_effect = lambda size: pending.pop(0) if pending else b""
+        serial = mock.Mock(); serial.Serial.return_value = port
+        session = trial.PrivateSession(serial, io.BytesIO()); session.buffer = initial
+        return session, pending
+
+    def test_verbose_boot_beyond_receipt_window_waits_without_input_then_runs_protocol(self):
+        stale = b"[ 1.000000] Linux version 6.6.36 normal\n" + self.ready
+        trace = b"[ 2.000000] calling debug_init\n" + b"x" * 10000 + b"\n"
+        session, pending = self.session([self.banner] + [trace] * 18 + [self.ready], initial=stale)
+        clock = FakeClock(step=1.0)
+        self.assertTrue(trial.await_initrd_ready(session, clock=clock))
+        self.assertGreater(clock.now, 8.0)
+        session.port.write.assert_not_called()
+        self.assertEqual(len(session.buffer), 131072)
+        self.assertNotIn(stale, session.buffer)
+        token = "a" * 32
+        replies = [
+            f"K230_RDINIT_RX {token}\n".encode(),
+            f"K230_RDINIT_TRUE {token} RC=0\n".encode(),
+            f"K230_RDINIT_MOUNT_BEGIN {token}\nK230_RDINIT_MOUNT_END {token} MKDIR_RC=0 MOUNT_ATTEMPTED=1 MOUNT_RC=0\n".encode(),
+            f"K230_RDINIT_UP_BEGIN {token}\n21.0 22.0\nK230_RDINIT_UP_END {token} RC=0\n".encode(),
+            f"K230_RDINIT_REBOOT {token}\n".encode(),
+        ]
+        def write(data):
+            self.assertIn(self.ready, session.log.getvalue())
+            pending.append(replies.pop(0))
+        session.port.write.side_effect = write
+        outcome = trial.run_probe_protocol(session, token, "minimal", timeout=0.02, clock=FakeClock())
+        self.assertTrue(outcome["diagnostic_ok"])
+        self.assertEqual(session.port.write.call_count, 5)
+
+    def test_stale_normal_and_echoed_or_incomplete_ready_lines_do_not_satisfy_gate(self):
+        stale = self.ready + b"[ 0.000000] Linux version 6.6.36 normal\n" + self.ready
+        for output in (self.ready,
+                       self.banner + b"echo " + self.ready,
+                       self.banner + self.ready.rstrip(b"\n"),
+                       self.banner + b"Run /bin/sh as init process\n",
+                       self.banner + self.ready.replace(b"/bin/sh", b"/sbin/init")):
+            with self.subTest(output=output):
+                session, _ = self.session([output], initial=stale)
+                self.assertFalse(trial.await_initrd_ready(session, timeout=3, clock=FakeClock(step=1)))
+                session.port.write.assert_not_called()
+
+    def test_ready_received_with_banner_is_preserved_and_checked_before_read(self):
+        session, _ = self.session([], initial=self.banner + self.ready)
+        self.assertTrue(trial.await_initrd_ready(session, clock=FakeClock()))
+        session.port.read.assert_not_called(); session.port.write.assert_not_called()
 
 
 if __name__ == "__main__":
