@@ -126,10 +126,10 @@ def trial_bootargs(
         raise ValueError("bootargs must be a single line")
     if ignore_unused_clocks and any(arg.split("=", 1)[0] == "clk_ignore_unused" for arg in params):
         raise ValueError("original bootargs already contain clk_ignore_unused")
-    if runtime_shutdown_trace and (debug_shutdown or ignore_unused_clocks):
-        raise ValueError("runtime shutdown trace cannot be combined with boot debug or clock diagnostics")
+    if runtime_shutdown_trace and debug_shutdown:
+        raise ValueError("runtime shutdown trace cannot be combined with boot debug")
     if debug_shutdown or runtime_shutdown_trace:
-        if ignore_unused_clocks:
+        if debug_shutdown and ignore_unused_clocks:
             raise ValueError("shutdown debug and clock diagnostics cannot be combined")
         for arg in params:
             name, _, value = arg.partition("=")
@@ -1163,14 +1163,14 @@ def run_trial(
 ) -> bool:
     if mode not in ("minimal", "survey", "label", "root-mount"):
         raise ValueError("probe mode must be minimal, survey, label or root-mount")
-    if ignore_unused_clocks and mode != "label":
-        raise ValueError("--ignore-unused-clocks requires --mode label")
+    if ignore_unused_clocks and not (mode == "label" or (mode == "minimal" and runtime_shutdown_trace)):
+        raise ValueError("--ignore-unused-clocks requires --mode label or --mode minimal --runtime-shutdown-trace")
     if debug_shutdown and mode != "minimal":
         raise ValueError("--debug-shutdown requires --mode minimal")
     if runtime_shutdown_trace and mode != "minimal":
         raise ValueError("--runtime-shutdown-trace requires --mode minimal")
-    if runtime_shutdown_trace and (debug_shutdown or ignore_unused_clocks):
-        raise ValueError("--runtime-shutdown-trace cannot be combined with other diagnostic flags")
+    if runtime_shutdown_trace and debug_shutdown:
+        raise ValueError("--runtime-shutdown-trace cannot be combined with --debug-shutdown")
     prepared = prepare_trial(manifest_path, bundle, normal_report)
     manifest = prepared["manifest"]
     system = prepared["system"]
@@ -1184,7 +1184,7 @@ def run_trial(
         )
     normal = prepared["normal"]
     helper_text = prepared["helper_text"]
-    selection = {"ignore_unused_clocks": ignore_unused_clocks} if mode == "label" else {}
+    selection = {"ignore_unused_clocks": ignore_unused_clocks} if mode == "label" or runtime_shutdown_trace else {}
     if debug_shutdown:
         selection["debug_shutdown"] = True
     if runtime_shutdown_trace:
@@ -1364,7 +1364,25 @@ def run_trial(
                 )
                 return False
             if login_state != "login":
-                raise RuntimeError("normal login not observed after initrd reboot")
+                write_private_result(result_path, {
+                    "result_schema": "mainline-initrd-diagnostic-v3", **selection,
+                    "status": "recovery-required-normal-return-timeout",
+                    "mode": f"volatile-rdinit-{mode}",
+                    "candidate_system": system,
+                    "candidate_bundle": str(prepared["bundle"]),
+                    "normal_preflight": observed_before,
+                    "probe": probe_outcome["diagnostic"],
+                    "reboot_marker_observed": probe_outcome["reboot_marker"],
+                    "normal_recovery": None,
+                    "recovery_reason": "normal-login-not-observed-after-initrd-reboot",
+                    "normal_return_timeout_seconds": 180,
+                    "persistent_boot_selection_changed": False,
+                    "raw_serial_log_path": str(log_path),
+                })
+                print("Normal login not observed within 180s after the initrd reboot request; "
+                      "received probe facts were preserved. No further input was sent; "
+                      "protected normal recovery remains unverified.", file=sys.stderr)
+                return False
             recovery_login_seen = True
             if not session.wait_for(b"root@nixos", 30):
                 raise RuntimeError("recovered root shell not observed; preserved recovery identities remain unchecked")
@@ -1457,7 +1475,7 @@ def main() -> int:
         help="minimal by default; label, read-only root mount and full survey require explicit modes",
     )
     parser.add_argument("--ignore-unused-clocks", action="store_true",
-                        help="label mode only: add volatile clk_ignore_unused for the bounded clock discriminator")
+                        help="label, or minimal with runtime tracing: add volatile clk_ignore_unused")
     shutdown_flags = parser.add_mutually_exclusive_group()
     shutdown_flags.add_argument("--debug-shutdown", action="store_true",
                         help="minimal mode only: add volatile initcall_debug loglevel=8 shutdown tracing")
@@ -1473,14 +1491,12 @@ def main() -> int:
         default=PRIVATE_LOG_DIR / f"mainline-initrd-shell-{stamp}.result.json",
     )
     args = parser.parse_args()
-    if args.ignore_unused_clocks and args.mode != "label":
-        parser.error("--ignore-unused-clocks requires --mode label")
+    if args.ignore_unused_clocks and not (args.mode == "label" or (args.mode == "minimal" and args.runtime_shutdown_trace)):
+        parser.error("--ignore-unused-clocks requires --mode label or --mode minimal --runtime-shutdown-trace")
     if args.debug_shutdown and args.mode != "minimal":
         parser.error("--debug-shutdown requires --mode minimal")
     if args.runtime_shutdown_trace and args.mode != "minimal":
         parser.error("--runtime-shutdown-trace requires --mode minimal")
-    if args.runtime_shutdown_trace and args.ignore_unused_clocks:
-        parser.error("--runtime-shutdown-trace cannot be combined with --ignore-unused-clocks")
     try:
         diagnostic_ok = run_trial(
             args.manifest, args.log, args.result, args.mode, args.bundle, args.normal_report,

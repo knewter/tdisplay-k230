@@ -1205,6 +1205,71 @@ class CandidateSelectionTests(unittest.TestCase):
     def test_outer_root_mount_timeout_records_unknown_without_unmount_or_reboot(self):
         self.assert_outer_readonly_timeout("root-mount")
 
+    def test_normal_return_timeout_preserves_complete_runtime_probe_without_more_input(self):
+        self.assert_normal_return_timeout(ignore_clocks=False)
+
+    def test_clock_comparison_timeout_preserves_runtime_trace_and_explicit_selector(self):
+        self.assert_normal_return_timeout(ignore_clocks=True)
+
+    def assert_normal_return_timeout(self, *, ignore_clocks):
+        helper = RuntimeShutdownTraceTests()
+        _, outcome = helper.run_protocol(helper.minimal_replies() + [helper.reply(i) for i in range(6)] +
+                                         [f"K230_RDINIT_REBOOT {helper.token}\n".encode()])
+        normal = trial.prepare_trial(self.manifest_path, self.bundle, self.report_path)["normal"]
+        observed = {
+            **{key: normal[key] for key in ("system", "profile", "kernel", "uname", "init")},
+            "boot_files": {name: info["sha256"] for name, info in normal["boot_files"].items()},
+            "boot_id": normal["boot_id"],
+        }
+        session = mock.Mock(); session.buffer = trial.PROMPT
+        session.wait_for.return_value = True; session.run_state.return_value = observed
+        session.wait_for_normal_login.return_value = None
+        expected = trial.trial_bootargs((self.bundle / "bootargs.txt").read_text(), self.system,
+                                        runtime_shutdown_trace=True, ignore_unused_clocks=ignore_clocks)
+        session.command.side_effect = lambda command, timeout: (
+            (expected + "\nK230# ").encode() if command == "printenv bootargs" else trial.PROMPT
+        )
+        def probe(active, token, mode, **kwargs):
+            active.write((trial.reboot_command(helper.token) + "\r").encode())
+            return outcome
+        result_path = self.root / "normal-timeout.json"
+        with mock.patch.dict(sys.modules, {"serial": mock.Mock()}), \
+                mock.patch.object(trial, "PrivateSession", return_value=session), \
+                mock.patch.object(trial, "LOCK_PATH", self.root / "host-fixture.lock"), \
+                mock.patch.object(trial, "verified_load", return_value=True), \
+                mock.patch.object(trial, "verified_crc", return_value=True), \
+                mock.patch.object(trial, "await_initrd_ready", return_value=True), \
+                mock.patch.object(trial, "run_probe_protocol", side_effect=probe), mock.patch('sys.stderr'):
+            self.assertFalse(trial.run_trial(self.manifest_path, self.root / "normal-timeout.log", result_path,
+                                            "minimal", self.bundle, self.report_path, runtime_shutdown_trace=True,
+                                            ignore_unused_clocks=ignore_clocks))
+        result = json.loads(result_path.read_text())
+        self.assertEqual(result["status"], "recovery-required-normal-return-timeout")
+        self.assertEqual(result["probe"], outcome["diagnostic"])
+        self.assertTrue(result["probe"]["runtime_shutdown_trace"]["enable_verified"])
+        self.assertEqual(result["probe"]["runtime_shutdown_trace"]["parameter_state"], "Y")
+        self.assertEqual(len(result["probe"]["runtime_shutdown_trace"]["stages"]), 6)
+        self.assertTrue(result["reboot_marker_observed"])
+        self.assertTrue(result["initrd_readiness_observed"])
+        self.assertEqual(result["ignore_unused_clocks"], ignore_clocks)
+        self.assertTrue(result["runtime_shutdown_trace"])
+        self.assertIn(mock.call(trial.volatile_bootargs_command(ignore_clocks), 15), session.command.call_args_list)
+        self.assertNotIn("initcall_debug", expected)
+        self.assertNotIn("loglevel=8", expected)
+        self.assertIsNone(result["normal_recovery"])
+        self.assertFalse(result["persistent_boot_selection_changed"])
+        self.assertEqual(result["normal_return_timeout_seconds"], 180)
+        self.assertEqual(result_path.stat().st_mode & 0o077, 0)
+        session.wait_for_normal_login.assert_called_once_with(180)
+        self.assertEqual(session.run_state.call_count, 1)
+        self.assertEqual(session.upload_text.call_count, 2)
+        self.assertEqual(session.wait_for.call_args_list, [mock.call(b"root@nixos", 15),
+                                                        mock.call(b"Linux version 7.3.0-rc5", 45)])
+        self.assertEqual(session.write.call_args_list,
+                         [mock.call(b"\x03\r"), mock.call((trial.reboot_command(helper.token) + "\r").encode())])
+        self.assertEqual([call.args[0] for call in session.line.call_args_list],
+                         ["reboot", "bootm 0x8000000 0x9000000 0x8400000"])
+
     def test_all_modes_pump_verbose_boot_before_any_receipt_or_external_child(self):
         self.assert_all_mode_readiness(ready=True)
 
@@ -1221,6 +1286,7 @@ class CandidateSelectionTests(unittest.TestCase):
         original_ready = trial.await_initrd_ready
         original_probe = trial.run_probe_protocol
         for index, (mode, flags) in enumerate((("minimal", {}), ("minimal", {"runtime_shutdown_trace": True}),
+                            ("minimal", {"runtime_shutdown_trace": True, "ignore_unused_clocks": True}),
                             ("minimal", {"debug_shutdown": True}), ("label", {}),
                             ("label", {"ignore_unused_clocks": True}), ("root-mount", {}), ("survey", {}))):
             with self.subTest(mode=mode, flags=flags, ready=ready):
@@ -1648,13 +1714,14 @@ class RuntimeShutdownTraceTests(unittest.TestCase):
             result, _, after = self.execute_stage("write", value="N\n", shell=shell)
             self.assertEqual(result, {"rc": 0, "match": True}); self.assertEqual(after, "1\n")
 
-    def test_runtime_bootargs_are_ordinary_and_flags_are_exclusive_minimal_only(self):
+    def test_runtime_bootargs_are_ordinary_and_boot_debug_is_exclusive_minimal_only(self):
         original = f"bootargs=loglevel=4 loglevel=7 init={trial.SYSTEM}/init"
         self.assertEqual(trial.trial_bootargs(original, runtime_shutdown_trace=True), trial.trial_bootargs(original))
         with self.assertRaisesRegex(ValueError, "conflicting shutdown debug"):
             trial.trial_bootargs(original + " initcall_debug", runtime_shutdown_trace=True)
         for mode, kwargs in (("survey", {}), ("label", {}), ("root-mount", {}),
-                             ("minimal", {"debug_shutdown": True}), ("minimal", {"ignore_unused_clocks": True})):
+                             ("survey", {"ignore_unused_clocks": True}), ("root-mount", {"ignore_unused_clocks": True}),
+                             ("minimal", {"debug_shutdown": True})):
             with self.subTest(mode=mode, kwargs=kwargs), mock.patch.object(trial, "prepare_trial") as prepare, \
                     mock.patch.object(trial, "PrivateSession") as serial:
                 with self.assertRaises(ValueError):
@@ -1663,7 +1730,8 @@ class RuntimeShutdownTraceTests(unittest.TestCase):
                 prepare.assert_not_called(); serial.assert_not_called()
         for args in (["--mode", "label", "--runtime-shutdown-trace"],
                      ["--runtime-shutdown-trace", "--debug-shutdown"],
-                     ["--runtime-shutdown-trace", "--ignore-unused-clocks"]):
+                     ["--mode", "root-mount", "--runtime-shutdown-trace", "--ignore-unused-clocks"],
+                     ["--mode", "survey", "--runtime-shutdown-trace", "--ignore-unused-clocks"]):
             with mock.patch.object(sys, "argv", [str(SCRIPT), *args]), \
                     mock.patch.object(trial, "run_trial") as runner, mock.patch('sys.stderr'):
                 with self.assertRaises(SystemExit): trial.main()
@@ -1672,6 +1740,40 @@ class RuntimeShutdownTraceTests(unittest.TestCase):
                 mock.patch.object(trial, "run_trial", return_value=True) as runner:
             self.assertEqual(trial.main(), 0)
             self.assertEqual(runner.call_args.kwargs, {"runtime_shutdown_trace": True})
+
+    def test_minimal_runtime_clock_comparison_is_exact_volatile_and_debug_conflicts_remain(self):
+        original = f"bootargs=loglevel=4 loglevel=7 init={trial.SYSTEM}/init"
+        ordinary = trial.trial_bootargs(original, runtime_shutdown_trace=True)
+        compared = trial.trial_bootargs(original, runtime_shutdown_trace=True, ignore_unused_clocks=True)
+        self.assertEqual(compared.split(), ordinary.split() + ["clk_ignore_unused"])
+        self.assertEqual(compared.count("clk_ignore_unused"), 1)
+        self.assertNotIn("initcall_debug", compared)
+        self.assertNotIn("loglevel=8", compared)
+        self.assertNotIn("saveenv", trial.volatile_bootargs_command(True))
+        self.assertTrue(trial.verified_bootargs((compared + "\nK230# ").encode(), compared))
+        for printed in (ordinary, compared + " clk_ignore_unused", compared + " loglevel=8"):
+            self.assertFalse(trial.verified_bootargs((printed + "\nK230# ").encode(), compared))
+        for suffix in ("clk_ignore_unused", "clk_ignore_unused=1", "initcall_debug", "initcall_debug=0",
+                       "quiet", "debug", "ignore_loglevel", 'dyndbg="+p"', "loglevel=8", "loglevel=bad"):
+            with self.subTest(suffix=suffix), self.assertRaises(ValueError):
+                trial.trial_bootargs(original + " " + suffix, runtime_shutdown_trace=True, ignore_unused_clocks=True)
+        with self.assertRaises(ValueError):
+            trial.trial_bootargs(original, runtime_shutdown_trace=True, ignore_unused_clocks=True, debug_shutdown=True)
+
+    def test_cli_allows_only_explicit_minimal_runtime_clock_pair(self):
+        with mock.patch.object(sys, "argv", [str(SCRIPT), "--mode", "minimal", "--runtime-shutdown-trace",
+                                              "--ignore-unused-clocks"]), \
+                mock.patch.object(trial, "run_trial", return_value=True) as runner:
+            self.assertEqual(trial.main(), 0)
+            self.assertEqual(runner.call_args.args[3], "minimal")
+            self.assertEqual(runner.call_args.kwargs, {"runtime_shutdown_trace": True, "ignore_unused_clocks": True})
+        for args in (["--ignore-unused-clocks"], ["--ignore-unused-clocks", "--debug-shutdown"],
+                     ["--mode", "survey", "--ignore-unused-clocks"],
+                     ["--mode", "root-mount", "--ignore-unused-clocks"]):
+            with self.subTest(args=args), mock.patch.object(sys, "argv", [str(SCRIPT), *args]), \
+                    mock.patch.object(trial, "run_trial") as runner, mock.patch('sys.stderr'):
+                with self.assertRaises(SystemExit): trial.main()
+                runner.assert_not_called()
 
 
 class InitrdReadinessTests(unittest.TestCase):
