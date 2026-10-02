@@ -1,0 +1,22 @@
+{
+  "system": "/nix/store/p1a1hz9n8s4g8qyr55ffl3dzbnjgqwr8-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "kernel": "/nix/store/03zyl0mjsxbjyisb3lhjaxswpxm71ap6-linux-riscv64-unknown-linux-gnu-6.6.36-xuantie/Image",
+  "shell_executable": "/nix/store/3hy6h165ii649z6vjzjd36jwg16d37rc-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0/bin/k230-shell-rust",
+  "bundle": "/nix/store/pnci1pzsca9f45mfyakcrzyk7yx2ad42-k230-coherent-shell-boot-files",
+  "boot_id": "f3940c26-ce09-41f5-b53f-fe525a04db06",
+  "evidence_class": "operator-real-finger-report",
+  "report": "yeah it seems great let's go",
+  "recorded_at_utc": "2026-10-02T06:33:16.153917+00:00",
+  "identity_evidence": "docs/evidence/mainline-display/physical-2026-10-01/power-swap-recovery-2026-10-02/postflight.json",
+  "checks": {
+    "home_to_all_apps": true,
+    "bottom_handle_to_overview": true,
+    "terminal_open_and_return": true
+  },
+  "requested_checks": [
+    "Swipe up from Home \u2192 All apps.",
+    "Tap bottom handle \u2192 Overview.",
+    "Open Terminal, then return Home."
+  ],
+  "scope": "Operator acceptance of the three explicitly requested navigation checks after a physical power swap into the persistently selected normal system. Does not certify all Home editing actions, theme performance, or mainline operation."
+}

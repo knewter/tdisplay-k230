@@ -60,8 +60,14 @@ Both images were visually reviewed. The panel extends beyond the camera frame;
 the native capture shows the full frame. These observations are physical boot,
 serial identity, native capture and camera evidence. They do not substitute for
 real-finger contact. Prior real-finger qualification is bound to these exact
-artifacts in `../coherent-manual-candidate/operator-navigation.json`; a separate
-post-ordinary-boot confirmation remains requested.
+artifacts in `../coherent-manual-candidate/operator-navigation.json`; a subsequent physical power swap returned to the same normal selection.
+The fresh identity/hash check and reviewed native/panel observations are in
+[power-swap recovery](../../mainline-display/physical-2026-10-01/power-swap-recovery-2026-10-02/README.md).
+After the three routes were explicitly requested, the operator replied
+“yeah it seems great let's go”. [operator-navigation.json](operator-navigation.json)
+records that distinct real-finger acceptance, bound to the fresh recovery boot
+ID and exact normal artifacts. It does not relabel the earlier injected Home
+captures as finger evidence or certify unrelated theme/Home-editing gates.
 
 ## Recovery retained
 
