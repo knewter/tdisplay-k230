@@ -96,15 +96,18 @@ class InitrdShellTrialTests(unittest.TestCase):
         token = "a" * 32
         commands = (
             trial.reception_command(token), trial.true_command(token),
-            trial.uptime_command(token), trial.reboot_command(token),
+            trial.proc_mount_command(token), trial.uptime_command(token), trial.reboot_command(token),
         )
         self.assertTrue(commands[0].startswith("PATH=/bin:/sbin; export PATH;"))
-        self.assertTrue(all(len(command.encode()) < 200 for command in commands))
+        self.assertTrue(all(len(command.encode()) < 500 for command in commands))
         self.assertIn("/bin/true", commands[1])
-        self.assertIn("/bin/cat /proc/uptime", commands[2])
-        self.assertIn("K230_RDINIT_UP_BEGIN", commands[2])
-        self.assertIn("K230_RDINIT_UP_END", commands[2])
-        self.assertIn("/bin/reboot -ff", commands[3])
+        self.assertIn("/bin/mount -t proc proc /proc", commands[2])
+        self.assertIn("K230_RDINIT_MOUNT_BEGIN", commands[2])
+        self.assertIn("K230_RDINIT_MOUNT_END", commands[2])
+        self.assertIn("/bin/cat /proc/uptime", commands[3])
+        self.assertIn("K230_RDINIT_UP_BEGIN", commands[3])
+        self.assertIn("K230_RDINIT_UP_END", commands[3])
+        self.assertIn("/bin/reboot -ff", commands[4])
         survey = trial.survey_command(token)
         self.assertIn("K230_PROC", survey)
         self.assertIn("K230_RDINIT_SURVEY", survey)
@@ -127,19 +130,21 @@ class InitrdShellTrialTests(unittest.TestCase):
         session = FakeSerialSession([
             f"K230_RDINIT_RX {token}\r\n".encode(),
             [b"K230_RDINIT_TRUE " + token.encode() + b" RC=0\r", b"\n"],
+            f"K230_RDINIT_MOUNT_BEGIN {token}\r\nK230_RDINIT_MOUNT_END {token} MKDIR_RC=0 MOUNT_ATTEMPTED=1 MOUNT_RC=0\r\n".encode(),
             f"K230_RDINIT_UP_BEGIN {token}\r\n12.50 8.25\r\nK230_RDINIT_UP_END {token} RC=0\r\n".encode(),
             f"K230_RDINIT_REBOOT {token}\r\n".encode(),
         ])
         outcome = trial.run_probe_protocol(session, token, "minimal", timeout=0.02, clock=FakeClock())
-        self.assertEqual(outcome["diagnostic"]["schema"], "k230-initrd-minimal-v1")
+        self.assertEqual(outcome["diagnostic"]["schema"], "k230-initrd-minimal-v2")
         self.assertEqual(outcome["diagnostic"]["uptime"], ["12.50", "8.25"])
+        self.assertEqual(outcome["diagnostic"]["proc_mount"], {"mkdir_rc": 0, "mount_attempted": True, "mount_rc": 0})
         self.assertTrue(outcome["diagnostic_ok"])
         self.assertTrue(outcome["reboot_marker"])
         commands = [item.decode().rstrip("\r") for item in session.writes]
-        self.assertEqual(len(commands), 4)
+        self.assertEqual(len(commands), 5)
         self.assertTrue(commands[-1].startswith("printf 'K230_RDINIT_REBOOT"))
         self.assertFalse(any("K230_PROC" in command for command in commands))
-        self.assertEqual(["/bin/true" in command for command in commands], [False, True, False, False])
+        self.assertEqual(["/bin/true" in command for command in commands], [False, True, False, False, False])
 
     def test_early_receipt_is_retried_and_old_or_echoed_markers_cannot_pass_new_attempt(self):
         tokens = iter(("3" * 32, "4" * 32))
@@ -150,6 +155,7 @@ class InitrdShellTrialTests(unittest.TestCase):
             echoed_second + f"K230_RDINIT_RX {token}\r\n".encode(),  # Echo + late stale response.
             f"K230_RDINIT_RX {'4' * 32}\r\n".encode(),
             f"K230_RDINIT_TRUE {'4' * 32} RC=0\r\n".encode(),
+            f"K230_RDINIT_MOUNT_BEGIN {'4' * 32}\r\nK230_RDINIT_MOUNT_END {'4' * 32} MKDIR_RC=0 MOUNT_ATTEMPTED=1 MOUNT_RC=0\r\n".encode(),
             f"K230_RDINIT_UP_BEGIN {'4' * 32}\r\n3.0 2.0\r\nK230_RDINIT_UP_END {'4' * 32} RC=0\r\n".encode(),
             f"K230_RDINIT_REBOOT {'4' * 32}\r\n".encode(),
         ])
@@ -160,12 +166,14 @@ class InitrdShellTrialTests(unittest.TestCase):
         self.assertEqual(outcome["diagnostic"]["reception_attempts"], 3)
         self.assertTrue(outcome["diagnostic_ok"])
         commands = [item.decode().rstrip("\r") for item in session.writes]
-        self.assertEqual(len(commands), 6)
+        self.assertEqual(len(commands), 7)
         self.assertIn(f"K230_RDINIT_RX {token}", commands[0])
         self.assertIn(f"K230_RDINIT_RX {'3' * 32}", commands[1])
         self.assertIn(f"K230_RDINIT_RX {'4' * 32}", commands[2])
         self.assertIn("/bin/true", commands[3])
         self.assertIn(f"K230_RDINIT_TRUE {'4' * 32}", commands[3])
+        self.assertIn("/bin/mount -t proc proc /proc", commands[4])
+        self.assertIn("/bin/cat /proc/uptime", commands[5])
 
     def test_receipt_retry_exhaustion_is_bounded_and_never_starts_external_probe(self):
         tokens = iter(("5" * 32, "6" * 32))
@@ -183,27 +191,74 @@ class InitrdShellTrialTests(unittest.TestCase):
             trial.await_reception(untouched, "1" * 32, attempts=9, clock=FakeClock())
         self.assertEqual(untouched.writes, [])
 
-    def test_rc_failure_skips_explicit_survey_but_reboots_after_all_returns(self):
+    def test_true_rc_failure_stops_before_mount_uptime_survey_or_reboot(self):
         token = "c" * 32
         session = FakeSerialSession([
             f"K230_RDINIT_RX {token}\n".encode(),
             f"K230_RDINIT_TRUE {token} RC=127\n".encode(),
-            f"K230_RDINIT_UP_BEGIN {token}\nK230_RDINIT_UP_END {token} RC=1\n".encode(),
-            f"K230_RDINIT_REBOOT {token}\n".encode(),
         ])
         outcome = trial.run_probe_protocol(session, token, "survey", timeout=0.02, clock=FakeClock())
-        self.assertEqual(outcome["diagnostic"]["schema"], "k230-initrd-survey-v1")
-        self.assertEqual(outcome["diagnostic"]["survey"]["status"], "skipped")
+        self.assertEqual(outcome["diagnostic"]["schema"], "k230-initrd-prerequisite-failure-v1")
+        self.assertEqual(outcome["diagnostic"]["proc_mount"], {"attempted": False})
         self.assertFalse(outcome["diagnostic_ok"])
-        self.assertTrue(outcome["reboot_marker"])
-        self.assertEqual(len(session.writes), 4)
+        self.assertTrue(outcome["recovery_required"])
+        self.assertFalse(outcome["reboot_marker"])
+        self.assertEqual(len(session.writes), 2)
         self.assertFalse(any(b"K230_PROC" in command for command in session.writes))
+        self.assertFalse(any(b"/proc/uptime" in command or b"/bin/reboot" in command for command in session.writes))
+
+    def test_mount_failure_is_structured_and_stops_before_uptime_survey_or_reboot(self):
+        token = "a" * 32
+        session = FakeSerialSession([
+            f"K230_RDINIT_RX {token}\n".encode(),
+            f"K230_RDINIT_TRUE {token} RC=0\n".encode(),
+            f"K230_RDINIT_MOUNT_BEGIN {token}\nK230_RDINIT_MOUNT_END {token} MKDIR_RC=0 MOUNT_ATTEMPTED=1 MOUNT_RC=32\n".encode(),
+        ])
+        outcome = trial.run_probe_protocol(session, token, "survey", timeout=0.02, clock=FakeClock())
+        self.assertEqual(outcome["diagnostic"]["schema"], "k230-initrd-prerequisite-failure-v1")
+        self.assertEqual(outcome["diagnostic"]["proc_mount"], {"mkdir_rc": 0, "mount_attempted": True, "mount_rc": 32})
+        self.assertEqual(outcome["diagnostic"]["uptime"], {"attempted": False})
+        self.assertEqual(outcome["recovery_reason"], "proc-mount-nonzero")
+        self.assertTrue(outcome["recovery_required"])
+        self.assertFalse(outcome["reboot_marker"])
+        self.assertEqual(len(session.writes), 3)
+        self.assertFalse(any(b"K230_PROC" in command or b"/proc/uptime" in command or b"/bin/reboot" in command for command in session.writes))
+
+    def test_missing_proc_directory_setup_rc_is_preserved_and_gates_all_later_stages(self):
+        token = "9" * 32
+        session = FakeSerialSession([
+            f"K230_RDINIT_RX {token}\n".encode(),
+            f"K230_RDINIT_TRUE {token} RC=0\n".encode(),
+            f"K230_RDINIT_MOUNT_BEGIN {token}\nK230_RDINIT_MOUNT_END {token} MKDIR_RC=2 MOUNT_ATTEMPTED=0 MOUNT_RC=255\n".encode(),
+        ])
+        outcome = trial.run_probe_protocol(session, token, "survey", timeout=0.02, clock=FakeClock())
+        self.assertEqual(
+            outcome["diagnostic"]["proc_mount"],
+            {"mkdir_rc": 2, "mount_attempted": False, "mount_rc": 255},
+        )
+        self.assertEqual(outcome["recovery_reason"], "proc-directory-setup-nonzero")
+        self.assertEqual(outcome["diagnostic"]["uptime"], {"attempted": False})
+        self.assertEqual(len(session.writes), 3)
+        self.assertFalse(any(b"/bin/reboot" in command for command in session.writes))
+
+    def test_missing_mount_marker_stops_with_unknown_result_and_no_later_commands(self):
+        token = "b" * 32
+        session = FakeSerialSession([
+            f"K230_RDINIT_RX {token}\n".encode(),
+            f"K230_RDINIT_TRUE {token} RC=0\n".encode(),
+            None,
+        ])
+        with self.assertRaisesRegex(trial.ProbeProtocolError, "mount"):
+            trial.run_probe_protocol(session, token, "minimal", timeout=0.01, clock=FakeClock())
+        self.assertEqual(len(session.writes), 3)
+        self.assertFalse(any(b"/proc/uptime" in command or b"/bin/reboot" in command for command in session.writes))
 
     def test_explicit_survey_runs_only_after_minimal_success(self):
         token = "e" * 32
         session = FakeSerialSession([
             f"K230_RDINIT_RX {token}\n".encode(),
             f"K230_RDINIT_TRUE {token} RC=0\n".encode(),
+            f"K230_RDINIT_MOUNT_BEGIN {token}\nK230_RDINIT_MOUNT_END {token} MKDIR_RC=0 MOUNT_ATTEMPTED=1 MOUNT_RC=0\n".encode(),
             f"K230_RDINIT_UP_BEGIN {token}\n2.0 3.0\nK230_RDINIT_UP_END {token} RC=0\n".encode(),
             f"K230_LABEL_NIXOS_SD=0\nK230_RDINIT_SURVEY {token} RC=0\n".encode(),
             f"K230_RDINIT_REBOOT {token}\n".encode(),
@@ -212,19 +267,20 @@ class InitrdShellTrialTests(unittest.TestCase):
         self.assertEqual(outcome["diagnostic"]["survey"]["status"], "complete")
         self.assertFalse(outcome["diagnostic"]["survey"]["nixos_sd_label_present"])
         self.assertTrue(outcome["diagnostic_ok"])
-        self.assertIn(b"K230_PROC", session.writes[3])
+        self.assertIn(b"K230_PROC", session.writes[4])
 
     def test_survey_timeout_stops_without_reboot_input(self):
         token = "9" * 32
         session = FakeSerialSession([
             f"K230_RDINIT_RX {token}\n".encode(),
             f"K230_RDINIT_TRUE {token} RC=0\n".encode(),
+            f"K230_RDINIT_MOUNT_BEGIN {token}\nK230_RDINIT_MOUNT_END {token} MKDIR_RC=0 MOUNT_ATTEMPTED=1 MOUNT_RC=0\n".encode(),
             f"K230_RDINIT_UP_BEGIN {token}\n1.0 1.0\nK230_RDINIT_UP_END {token} RC=0\n".encode(),
             None,
         ])
         with self.assertRaisesRegex(trial.ProbeProtocolError, "optional survey"):
             trial.run_probe_protocol(session, token, "survey", timeout=0.01, clock=FakeClock())
-        self.assertEqual(len(session.writes), 4)
+        self.assertEqual(len(session.writes), 5)
         self.assertFalse(any(b"K230_RDINIT_REBOOT" in command for command in session.writes))
 
     def test_reboot_marker_timeout_is_reported_separately_from_successful_minimal_probe(self):
@@ -232,13 +288,14 @@ class InitrdShellTrialTests(unittest.TestCase):
         session = FakeSerialSession([
             f"K230_RDINIT_RX {token}\n".encode(),
             f"K230_RDINIT_TRUE {token} RC=0\n".encode(),
+            f"K230_RDINIT_MOUNT_BEGIN {token}\nK230_RDINIT_MOUNT_END {token} MKDIR_RC=0 MOUNT_ATTEMPTED=1 MOUNT_RC=0\n".encode(),
             f"K230_RDINIT_UP_BEGIN {token}\n1.0 1.0\nK230_RDINIT_UP_END {token} RC=0\n".encode(),
             None,
         ])
         outcome = trial.run_probe_protocol(session, token, "minimal", timeout=0.01, clock=FakeClock())
         self.assertTrue(outcome["diagnostic_ok"])
         self.assertFalse(outcome["reboot_marker"])
-        self.assertEqual(len(session.writes), 4)
+        self.assertEqual(len(session.writes), 5)
 
     def test_probe_stage_parser_requires_unique_complete_fresh_lines(self):
         token = "d" * 32
@@ -266,6 +323,10 @@ class InitrdShellTrialTests(unittest.TestCase):
         self.assertTrue(trial.receive_marker(f"K230_RDINIT_RX {token}\r\n".encode(), token))
         self.assertEqual(trial.protocol_rc_marker(f"K230_RDINIT_TRUE {token} RC=0\r\n".encode(), token, "true"), 0)
         self.assertTrue(trial.reboot_marker(f"K230_RDINIT_REBOOT {token}\r\n".encode(), token))
+        mount = f"K230_RDINIT_MOUNT_BEGIN {token}\r\nK230_RDINIT_MOUNT_END {token} MKDIR_RC=0 MOUNT_ATTEMPTED=1 MOUNT_RC=0\r\n".encode()
+        self.assertEqual(trial.proc_mount_result(mount, token), {"mkdir_rc": 0, "mount_attempted": True, "mount_rc": 0})
+        self.assertTrue(trial.reboot_chroot_refusal(b"Running in chroot, ignoring request.\r\n"))
+        self.assertFalse(trial.reboot_chroot_refusal(b"echo Running in chroot, ignoring request.\r\n"))
         uptime = f"K230_RDINIT_UP_BEGIN {token}\r\n5.00 4.00\r\nK230_RDINIT_UP_END {token} RC=0\r\n".encode()
         self.assertEqual(trial.uptime_result(uptime, token), {"rc": 0, "uptime": ["5.00", "4.00"]})
         invalid_receipts = (
@@ -287,6 +348,17 @@ class InitrdShellTrialTests(unittest.TestCase):
         for invalid in invalid_rc:
             with self.subTest(invalid=invalid):
                 self.assertIsNone(trial.protocol_rc_marker(invalid, token, "true"))
+        invalid_mounts = (
+            f"printf 'K230_RDINIT_MOUNT_BEGIN {token}\\n'\r\nK230_RDINIT_MOUNT_END {token} MKDIR_RC=0 MOUNT_ATTEMPTED=1 MOUNT_RC=0\r\n".encode(),
+            f"K230_RDINIT_MOUNT_BEGIN {other}\r\nK230_RDINIT_MOUNT_END {other} MKDIR_RC=0 MOUNT_ATTEMPTED=1 MOUNT_RC=0\r\n".encode(),
+            f"K230_RDINIT_MOUNT_BEGIN {token}\r\nK230_RDINIT_MOUNT_END {token} MKDIR_RC=0 MOUNT_ATTEMPTED=1 MOUNT_RC=0".encode(),
+            (f"K230_RDINIT_MOUNT_BEGIN {token}\r\nK230_RDINIT_MOUNT_END {token} MKDIR_RC=0 MOUNT_ATTEMPTED=1 MOUNT_RC=0\r\n" * 2).encode(),
+            mount.replace(b"MOUNT_RC=0", b"MOUNT_RC=999"),
+            mount.replace(b"MOUNT_ATTEMPTED=1", b"MOUNT_ATTEMPTED=0"),
+        )
+        for invalid in invalid_mounts:
+            with self.subTest(invalid=invalid):
+                self.assertIsNone(trial.proc_mount_result(invalid, token))
         for invalid in (
             uptime.replace(token.encode(), other.encode()),
             uptime.replace(b"\r\n", b"", 1),
@@ -316,7 +388,8 @@ class InitrdShellTrialTests(unittest.TestCase):
         for replies, stage, write_count in (
             ([f"K230_RDINIT_RX {token}\n".encode(), None], "/bin/true", 2),
             ([f"K230_RDINIT_RX {token}\n".encode(), f"K230_RDINIT_TRUE {token} RC=0\n".encode(),
-              f"K230_RDINIT_UP_BEGIN {token}\n".encode()], "/bin/cat /proc/uptime", 3),
+              f"K230_RDINIT_MOUNT_BEGIN {token}\nK230_RDINIT_MOUNT_END {token} MKDIR_RC=0 MOUNT_ATTEMPTED=1 MOUNT_RC=0\n".encode(),
+              f"K230_RDINIT_UP_BEGIN {token}\n".encode()], "/bin/cat /proc/uptime", 4),
         ):
             with self.subTest(stage=stage):
                 session = FakeSerialSession(replies)

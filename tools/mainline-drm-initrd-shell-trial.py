@@ -159,6 +159,18 @@ def uptime_command(token: str) -> str:
     )
 
 
+def proc_mount_command(token: str) -> str:
+    _validate_token(token)
+    return (
+        f"printf 'K230_RDINIT_MOUNT_BEGIN {token}\\n'; "
+        "/bin/mkdir -p /proc; _k230_mkdir_rc=$?; _k230_mount_attempted=0; _k230_mount_rc=255; "
+        "if test $_k230_mkdir_rc -eq 0; then _k230_mount_attempted=1; "
+        "/bin/mount -t proc proc /proc; _k230_mount_rc=$?; fi; "
+        f"printf 'K230_RDINIT_MOUNT_END {token} MKDIR_RC=%s MOUNT_ATTEMPTED=%s MOUNT_RC=%s\\n' "
+        "\"$_k230_mkdir_rc\" \"$_k230_mount_attempted\" \"$_k230_mount_rc\""
+    )
+
+
 def reboot_command(token: str) -> str:
     _validate_token(token)
     return f"printf 'K230_RDINIT_REBOOT {token}\\n'; /bin/reboot -ff"
@@ -243,6 +255,28 @@ def uptime_result(output: bytes, token: str) -> dict[str, object] | None:
     return {"rc": rc, "uptime": uptime}
 
 
+def proc_mount_result(output: bytes, token: str) -> dict[str, int | bool] | None:
+    _validate_token(token)
+    text = _PROTOCOL.uart_text(output)
+    starts = list(re.finditer(rb"^K230_RDINIT_MOUNT_BEGIN " + re.escape(token.encode()) + rb"\n", text, re.M))
+    ends = list(re.finditer(
+        rb"^K230_RDINIT_MOUNT_END " + re.escape(token.encode()) +
+        rb" MKDIR_RC=([0-9]{1,3}) MOUNT_ATTEMPTED=([01]) MOUNT_RC=([0-9]{1,3})\n",
+        text,
+        re.M,
+    ))
+    if len(starts) != 1 or len(ends) != 1 or starts[0].end() > ends[0].start():
+        return None
+    mkdir_rc, attempted, mount_rc = (int(value) for value in ends[0].groups())
+    if mkdir_rc > 255 or mount_rc > 255:
+        return None
+    if (mkdir_rc == 0) != (attempted == 1):
+        return None
+    if not attempted and mount_rc != 255:
+        return None
+    return {"mkdir_rc": mkdir_rc, "mount_attempted": bool(attempted), "mount_rc": mount_rc}
+
+
 def survey_rc_marker(output: bytes, token: str) -> int | None:
     return protocol_rc_marker(output, token, "survey")
 
@@ -252,6 +286,11 @@ def reboot_marker(output: bytes, token: str) -> bool | None:
     text = _PROTOCOL.uart_text(output)
     matches = re.findall(rb"^K230_RDINIT_REBOOT " + re.escape(token.encode()) + rb"\n", text, re.M)
     return True if len(matches) == 1 else None
+
+
+def reboot_chroot_refusal(output: bytes) -> bool:
+    text = _PROTOCOL.uart_text(output)
+    return len(re.findall(rb"^Running in chroot, ignoring request\.\n", text, re.M)) == 1
 
 
 def await_protocol_marker(session, parser, token: str, timeout: float, clock=time.monotonic):
@@ -330,19 +369,71 @@ def run_probe_protocol(
     if true_rc is None:
         raise ProbeProtocolError("/bin/true")
 
-    session.write((uptime_command(token) + "\r").encode())
-    uptime = await_protocol_marker(session, uptime_result, token, timeout, clock)
-    if uptime is None:
-        raise ProbeProtocolError("/bin/cat /proc/uptime")
-
     minimal = {
         "reception_marker": True,
         "reception_attempts": reception_attempts_used,
         "true_rc": true_rc,
-        "uptime_rc": uptime["rc"],
-        "uptime": uptime["uptime"],
     }
-    minimal_ok = true_rc == 0 and uptime["rc"] == 0
+    if true_rc != 0:
+        diagnostic = {
+            "schema": "k230-initrd-prerequisite-failure-v1",
+            "requested_mode": mode,
+            **minimal,
+            "proc_mount": {"attempted": False},
+        }
+        return {
+            "diagnostic": diagnostic,
+            "diagnostic_ok": False,
+            "reboot_marker": False,
+            "recovery_required": True,
+            "recovery_reason": "true-command-nonzero",
+        }
+
+    session.write((proc_mount_command(token) + "\r").encode())
+    mount_rc = await_protocol_marker(session, proc_mount_result, token, timeout, clock)
+    if mount_rc is None:
+        raise ProbeProtocolError("/bin/mkdir -p /proc and /bin/mount -t proc proc /proc")
+    minimal["proc_mount"] = mount_rc
+    if mount_rc["mkdir_rc"] != 0 or not mount_rc["mount_attempted"] or mount_rc["mount_rc"] != 0:
+        diagnostic = {
+            "schema": "k230-initrd-prerequisite-failure-v1",
+            "requested_mode": mode,
+            **minimal,
+            "uptime": {"attempted": False},
+        }
+        recovery_reason = (
+            "proc-directory-setup-nonzero"
+            if mount_rc["mkdir_rc"] != 0 or not mount_rc["mount_attempted"]
+            else "proc-mount-nonzero"
+        )
+        return {
+            "diagnostic": diagnostic,
+            "diagnostic_ok": False,
+            "reboot_marker": False,
+            "recovery_required": True,
+            "recovery_reason": recovery_reason,
+        }
+
+    session.write((uptime_command(token) + "\r").encode())
+    uptime = await_protocol_marker(session, uptime_result, token, timeout, clock)
+    if uptime is None:
+        raise ProbeProtocolError("/bin/cat /proc/uptime")
+    minimal["uptime_rc"] = uptime["rc"]
+    minimal["uptime"] = uptime["uptime"]
+    if uptime["rc"] != 0:
+        diagnostic = {
+            "schema": "k230-initrd-prerequisite-failure-v1",
+            "requested_mode": mode,
+            **minimal,
+        }
+        return {
+            "diagnostic": diagnostic,
+            "diagnostic_ok": False,
+            "reboot_marker": False,
+            "recovery_required": True,
+            "recovery_reason": "proc-uptime-nonzero",
+        }
+    minimal_ok = True
     survey = None
     if mode == "survey" and minimal_ok:
         session.write((survey_command(token) + "\r").encode())
@@ -353,15 +444,21 @@ def run_probe_protocol(
     elif mode == "survey":
         survey = {"status": "skipped", "reason": "minimal-stage-rc-failure"}
 
+    recovery_output_offset = len(session.buffer)
     session.write((reboot_command(token) + "\r").encode())
     reboot_seen = await_protocol_marker(session, reboot_marker, token, min(timeout, 5.0), clock)
     if mode == "minimal":
-        diagnostic = {"schema": "k230-initrd-minimal-v1", **minimal}
+        diagnostic = {"schema": "k230-initrd-minimal-v2", **minimal}
         diagnostic_ok = minimal_ok
     else:
-        diagnostic = {"schema": "k230-initrd-survey-v1", "minimal": minimal, "survey": survey}
+        diagnostic = {"schema": "k230-initrd-survey-v2", "minimal": minimal, "survey": survey}
         diagnostic_ok = minimal_ok and (survey is None or survey.get("rc") == 0)
-    return {"diagnostic": diagnostic, "diagnostic_ok": diagnostic_ok, "reboot_marker": reboot_seen is True}
+    return {
+        "diagnostic": diagnostic,
+        "diagnostic_ok": diagnostic_ok,
+        "reboot_marker": reboot_seen is True,
+        "recovery_output_offset": recovery_output_offset,
+    }
 
 
 def probe_result(output: bytes, token: str) -> int | None:
@@ -508,6 +605,17 @@ class PrivateSession:
                 return True
         return False
 
+    def wait_for_normal_login(self, timeout: float, start_offset: int) -> str | None:
+        end = time.monotonic() + timeout
+        while time.monotonic() < end:
+            self.pump()
+            recovery_output = self.buffer[start_offset:]
+            if b"nixos login:" in recovery_output:
+                return "login"
+            if reboot_chroot_refusal(recovery_output):
+                return "chroot-refusal"
+        return None
+
     def command(self, command: str, timeout: float = 30) -> bytes | None:
         self.line(command)
         if not self.wait_for(PROMPT, timeout):
@@ -533,6 +641,13 @@ def safe_log_path(path: Path) -> Path:
     if resolved.parent.stat().st_mode & 0o077:
         raise PermissionError("private log directory must not be accessible to group/other")
     return resolved
+
+
+def write_private_result(path: Path, value: dict[str, object]) -> None:
+    result_fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+    with os.fdopen(result_fd, "w") as result_file:
+        json.dump(value, result_file, indent=2, sort_keys=True)
+        result_file.write("\n")
 
 
 def run_trial(manifest_path: Path, log_path: Path, result_path: Path, mode: str) -> bool:
@@ -576,6 +691,7 @@ def run_trial(manifest_path: Path, log_path: Path, result_path: Path, mode: str)
         in_uboot = False
         recovery_login_seen = False
         recovery_identity_verified = False
+        probe_outcome = None
         try:
             session = PrivateSession(serial, log_file)
             session.write(b"\x03\r")
@@ -655,7 +771,50 @@ def run_trial(manifest_path: Path, log_path: Path, result_path: Path, mode: str)
                 raise RuntimeError("Linux version banner not observed; reset may be required")
             token = uuid.uuid4().hex
             probe_outcome = run_probe_protocol(session, token, mode)
-            if not session.wait_for(b"nixos login:", 180):
+            if probe_outcome.get("recovery_required"):
+                reason = str(probe_outcome["recovery_reason"])
+                write_private_result(result_path, {
+                    "result_schema": "mainline-initrd-diagnostic-v3",
+                    "status": "recovery-required-no-reboot-requested",
+                    "mode": f"volatile-rdinit-{mode}",
+                    "candidate_system": SYSTEM,
+                    "normal_preflight": observed_before,
+                    "probe": probe_outcome["diagnostic"],
+                    "reboot_marker_observed": False,
+                    "normal_recovery": None,
+                    "recovery_reason": reason,
+                    "persistent_boot_selection_changed": False,
+                    "raw_serial_log_path": str(log_path),
+                })
+                print(
+                    f"Diagnostic stopped at {reason}; no reboot was requested because safe reset prerequisites failed. "
+                    f"Protected normal recovery is not yet verified; private serial log: {log_path}",
+                    file=sys.stderr,
+                )
+                return False
+
+            login_state = session.wait_for_normal_login(180, probe_outcome["recovery_output_offset"])
+            if login_state == "chroot-refusal":
+                write_private_result(result_path, {
+                    "result_schema": "mainline-initrd-diagnostic-v3",
+                    "status": "recovery-required-systemctl-chroot-refusal",
+                    "mode": f"volatile-rdinit-{mode}",
+                    "candidate_system": SYSTEM,
+                    "normal_preflight": observed_before,
+                    "probe": probe_outcome["diagnostic"],
+                    "reboot_marker_observed": probe_outcome["reboot_marker"],
+                    "normal_recovery": None,
+                    "recovery_reason": "systemctl-reboot-alias-refused-in-chroot",
+                    "persistent_boot_selection_changed": False,
+                    "raw_serial_log_path": str(log_path),
+                })
+                print(
+                    "systemctl refused the reboot as a chroot; no retry was sent. "
+                    f"Protected normal recovery is not verified; private serial log: {log_path}",
+                    file=sys.stderr,
+                )
+                return False
+            if login_state != "login":
                 raise RuntimeError("normal login not observed after initrd reboot")
             recovery_login_seen = True
             if not session.wait_for(b"root@nixos", 30):
@@ -690,7 +849,7 @@ def run_trial(manifest_path: Path, log_path: Path, result_path: Path, mode: str)
             print("Recovered system, kernel, profile, services, boot ID, and eight protected boot-file hashes verified.")
             print(f"Diagnostic mode: {mode}; result: {status}; reboot marker: {probe_outcome['reboot_marker']}.")
             safe_result = {
-                "result_schema": "mainline-initrd-diagnostic-v2",
+                "result_schema": "mainline-initrd-diagnostic-v3",
                 "status": status,
                 "mode": f"volatile-rdinit-{mode}",
                 "candidate_system": SYSTEM,
@@ -701,10 +860,7 @@ def run_trial(manifest_path: Path, log_path: Path, result_path: Path, mode: str)
                 "persistent_boot_selection_changed": False,
                 "raw_serial_log_path": str(log_path),
             }
-            result_fd = os.open(result_path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
-            with os.fdopen(result_fd, "w") as result_file:
-                json.dump(safe_result, result_file, indent=2, sort_keys=True)
-                result_file.write("\n")
+            write_private_result(result_path, safe_result)
             return diagnostic_ok
         except Exception:
             if session is not None and in_uboot and not boot_started:

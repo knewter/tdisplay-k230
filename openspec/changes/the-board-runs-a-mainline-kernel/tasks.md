@@ -353,7 +353,10 @@ for usable root login and deliberate touch evidence. These captures show the
 normal vendor-kernel system, not a working mainline shell.
 
 The host controller now waits for one of at most eight fresh-token built-in
-receipt attempts before starting the short `/bin/true` and `/proc/uptime`
-discriminator; the full device survey requires explicit mode. This
-source/test follow-up has not been run on hardware and does not change task
-5b.5 evidence status.
+receipt attempts, then requires `/bin/true`, volatile `/proc` directory setup,
+and proc mount RC success before reading uptime or requesting reboot. Failed
+prerequisites stop with a structured recovery-required result; the full device
+survey requires explicit mode. This source/test follow-up has not been run on
+hardware and does not change task 5b.5 evidence status. The preceding physical
+minimal attempt remains documented as failed with recovery pending in
+`docs/evidence/mainline-display/physical-2026-10-01/minimal-probe-2026-10-02/README.md`.

@@ -197,21 +197,37 @@ receipt marker for the current attempt. This establishes that the serial shell
 processed that line; it does not establish general PID1 or userspace readiness.
 Exhaustion sends no external command and stops further probe input.
 
-After receipt, the probe runs absolute `/bin/true` with its return code and one
-bracketed `/bin/cat /proc/uptime`, followed by the bounded absolute
-`/bin/reboot -ff` request. Each stage requires a complete standalone marker
-line for the accepted UUID; missing or malformed stage markers stop further
-probe input. A missing reboot marker is recorded separately while the existing
-normal login and protected identity postflight remain required. The result
-schema identifies this as `k230-initrd-minimal-v1`.
+After receipt, the probe runs absolute `/bin/true` with its return code. Only
+when it returns zero does the controller create `/proc` in the volatile
+initramfs and attempt `/bin/mount -t proc proc /proc`. The exact initrd archive
+has no `/proc` directory, so this stage records separate `mkdir` RC, whether
+mount was attempted, and mount RC under strict fresh-token begin/end markers.
+The controller runs bracketed `/bin/cat /proc/uptime` only after both setup and
+mount return zero. It does not request reboot on a nonzero prerequisite RC; it
+writes a structured recovery-required result instead. A missing stage marker
+stops without further shell input and is classified as unknown completion.
+
+After successful mount and uptime checks, the controller sends the bounded
+absolute `/bin/reboot -ff` request. The result schema is
+`mainline-initrd-diagnostic-v3`; the successful minimal probe schema is
+`k230-initrd-minimal-v2`, the survey is `k230-initrd-survey-v2`, and
+prerequisite failures have their own `k230-initrd-prerequisite-failure-v1`
+schema. The controller detects the exact systemd chroot-refusal line only in
+the fresh serial slice after the reboot request, records it separately, and
+does not retry reboot. Normal login and the protected identity postflight
+remain mandatory for recovery proof.
 
 The broader proc/interrupt/device/label survey remains available only through
-explicit `--mode survey`, and only after both minimal external-command stages
-return zero. It has a distinct result schema so a minimal run cannot be read
-as label or IRQ evidence. The focused fake-serial suite passes 18 tests,
+explicit `--mode survey`, and only after every minimal prerequisite succeeds:
+`/bin/true`, proc directory creation and mount, and the uptime read. It has a
+distinct result schema so a minimal run cannot be read as label or IRQ
+evidence. The focused fake-serial suite passes 21 tests,
 including early ignored input, retry exhaustion, echoed/stale markers,
 truncated/duplicate/missing/nonzero markers, timeouts, survey gating and
 reboot-marker absence. Python compilation,
 `git diff --check`, and strict OpenSpec validation pass. This host-only
 revision does not resolve why the previous probe stopped after `K230_PROC`;
-no additional board attempt was made. Task 5b.5 remains open.
+no additional board attempt was made with this revised setup. The earlier
+physical minimal attempt and its pending-reset status are recorded in
+`docs/evidence/mainline-display/physical-2026-10-01/minimal-probe-2026-10-02/README.md`.
+Task 5b.5 remains open.
