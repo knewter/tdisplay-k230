@@ -4,7 +4,9 @@ On 2026-10-02, the optional DRM candidate's K230 reset object compiled
 successfully against headers prepared from the exact pinned candidate
 source. Nix also built the patched source derivation. These are host source
 and object checks; automatic restart on this board remains **UNVERIFIED**.
-A complete kernel build and matching trial bundle are separate gates below.
+After the recorded GCC correction, the complete kernel and its matching
+trial bundle build/inspection also passed; those separate host results are
+recorded below. None is physical restart evidence.
 No serial port, board staging, flash or reboot was used for these checks.
 
 The change is on `mainline-restart-port`, in
@@ -114,7 +116,7 @@ flock /tmp/k230-nix-build.lock env \
 
 [gcc-object-check.log](gcc-object-check.log) starts at UTC
 `2026-10-02T16:06:15Z`. The script copies the actual Nix candidate config,
-disables GCC plugins/debug/Rust selections unnecessary to this object check,
+clears GCC plugin/debug/Rust requests unnecessary to this object check,
 and regenerates headers with the pinned GCC toolchain. The resulting config
 and compiler are recorded rather than claimed byte-identical to the full
 Nix build. This checks the same reset source with the compiler that named
@@ -128,11 +130,87 @@ The coordinator authorized `--max-jobs 1 --cores 16` for the corrected full
 kernel retry and subsequent matching bundle, under the same single build
 lock. The first four-core failed invocation is not overwritten.
 
+## Complete corrected kernel and matching trial bundle
+
+The corrected complete kernel invocation exited zero:
+
+```sh
+flock /tmp/k230-nix-build.lock nix build .#kernelMainlineDrm \
+  --no-link --print-out-paths --max-jobs 1 --cores 16 --log-format raw
+```
+
+[kernel-build-invocation.log](kernel-build-invocation.log) names output
+`/nix/store/4wkhxf55y1abg1kg2xd0acsfjqr64j0h-linux-riscv64-unknown-linux-gnu-7.3.0-rc5`.
+[kernel-build.log](kernel-build.log) preserves the full corrected in-tree
+GCC build, including `drivers/reset/reset-k230.o`, final kernel link and
+installation; ANSI/OSC escapes and trailing spaces were removed for
+readability and repository whitespace checks. The log
+contains existing prototype/unused-variable warnings in Canaan DRM, RTC and
+SD/MMC files; no reset-driver warning or final-link error remains. Storage
+waiting dominated link/install time; the extra cores did not remove that
+limit. No kernel source, build flags or configuration were changed to work
+around storage wait.
+
+[kernel-artifact-inspection.log](kernel-artifact-inspection.log) records UTC
+`2026-10-02T16:48:07Z`, the 38,530,560-byte Image, reset source identity and
+`System.map` linkage. Image SHA-256 is
+`70a81b2172710c64463b53693e2e505a4d82ae2f7b644b2fc93cee9016b05330`.
+The completed dev output is
+`/nix/store/5wfn6k1lm9fvbwny2qk52admhwm5q4rm-linux-riscv64-unknown-linux-gnu-7.3.0-rc5-dev`;
+its installed `.config` SHA-256 is
+`c5c128ed8b9701f78a0b8bd4f18dacd0d2407ae90eda79a35bba2d9f5ffbeae7`.
+[config-inspection.log](config-inspection.log) confirms built-in
+`RESET_K230`, `RESET_CONTROLLER`, `RISCV_SBI` and `POWER_RESET`.
+The kernel derivation's source is the corrected `jvz4v73...` output above;
+its reset file matches the pinned GCC object check. The prepared dev output
+retains the headers/build inputs needed by external modules rather than every
+driver `.c` file, so reset source identity is checked in the derivation's
+actual source output. `System.map` contains `k230_rst_restart` and
+`devm_register_sys_off_handler`; linkage does not prove probe-time handler
+registration or a physical reset.
+
+The matching bundle invocation and inspector both exited zero:
+
+```sh
+flock /tmp/k230-nix-build.lock nix build .#kernelMainlineDrmTrialBootFiles \
+  --no-link --print-out-paths --max-jobs 1 --cores 16 --log-format raw
+nix shell --inputs-from . nixpkgs#dtc --command \
+  python3 tools/mainline-drm-trial-inspect.py \
+  /nix/store/asj7l4zj5jrjkgng4nrcx3y72p7jf7aa-k230-mainline-drm-trial-boot-files
+```
+
+[bundle-build.log](bundle-build.log) and
+[bundle-inspection.log](bundle-inspection.log) preserve the exact results:
+
+| Artifact | Store path |
+| --- | --- |
+| Bundle | `/nix/store/asj7l4zj5jrjkgng4nrcx3y72p7jf7aa-k230-mainline-drm-trial-boot-files` |
+| System | `/nix/store/v9qc1sf0iz53s3x6g6vwfyaxghkfpnyk-nixos-system-nixos-26.11.20260919.20b1ddd` |
+| Kernel | `/nix/store/4wkhxf55y1abg1kg2xd0acsfjqr64j0h-linux-riscv64-unknown-linux-gnu-7.3.0-rc5` |
+| Base DRM DTB | `/nix/store/nxbrd4smrcmknipjn4hjk32n87p4g9k6-k230-tdisplay-mainline-drm.dtb` |
+
+The bundle DTB embeds the new system's exact `init=` path, while its base DTB
+input is unchanged. The inspector verifies Image identity, DTB/environment
+bootargs, U-Boot header/payload CRCs, the exact system initrd payload and all
+629 closure paths. [bundle-hashes.log](bundle-hashes.log) records the four
+boot artifacts' SHA-256 values; the initrd wrapper hash is
+`2a4cc196d510bde579498c69758c9e3c52e0a23d6dda8d3297fd16280413d80e`.
+The kernel, dev output and bundle are protected by host GC roots under this
+worktree's ignored `.scratch/mainline-restart-{kernel,kernel-dev,bundle}`.
+This is host artifact preservation, not board staging or deployment.
+
+`python3 docs/evidence/mainline-restart/compare-identities.py` exited zero:
+[unchanged-identities.log](unchanged-identities.log) compares nine exact
+vendor/default/console-only derivation identities to base `c5254075...`,
+including Image-only and full console boot-files collectors. All match.
+This isolates this change against its base; other agents' later changes to
+master are outside that comparison. [flake-check.log](flake-check.log)
+records corrected-source `nix flake check --no-build` passing. Strict
+OpenSpec validation also passes. Task 5d.2/5d.3 host gates are complete;
+5d.4 and 5b.5 remain open.
+
 ## Remaining gates
 
-Task 5d.2 still requires the complete `.#kernelMainlineDrm` Nix/GCC build.
-Task 5d.3 requires the matching `.#kernelMainlineDrmTrialBootFiles`, durable
-artifact inspection and default/console derivation identity comparison.
 Task 5d.4 requires a reviewed, reserved operator trial and committed console
 proof of a real kernel restart returning through stage 1 to the protected
 normal system with a fresh boot ID and normal hashes/shell postflight. The
@@ -142,8 +220,26 @@ operator's serial capture command is:
 flock /tmp/k230-board.lock python3 tools/console.py /dev/ttyACM0 --wait=10
 ```
 
-Record the exact controller invocation and matching bundle/hash beside that
-capture. A systemd refusal or manual power cycle does not prove automatic
+The coordinator's reviewed controller at `48c83245` accepts the exact bundle
+and protected private manifest/report explicitly. Use that controller (the
+older controller at this worktree's base has no `--bundle` argument), without
+changing global defaults:
+
+```sh
+python3 tools/mainline-drm-initrd-shell-trial.py --mode minimal \
+  --bundle /nix/store/asj7l4zj5jrjkgng4nrcx3y72p7jf7aa-k230-mainline-drm-trial-boot-files \
+  --manifest "$HOME/tmp/k230-mainline-restart-board/candidate-manifest.json" \
+  --normal-report "$HOME/tmp/k230-mainline-restart-board/normal-report.json" \
+  --log "$HOME/tmp/k230-mainline-restart-board/minimal-uart.log" \
+  --result "$HOME/tmp/k230-mainline-restart-board/minimal-result.json"
+```
+
+Those are private paths, not committed secret-bearing contents. The protected
+report must come from the operator's live preflight; a host-prepared report is
+not board-state evidence. The controller's own reserved serial capture must
+be retained; do not open the standalone console concurrently. Record the
+actual controller source revision, invocation and matching bundle/hash beside
+that capture. A systemd refusal or manual power cycle does not prove automatic
 restart. Task 5b.5 remains open for usable mainline root and deliberate touch
 as well as the other named physical observations. No archive is authorized
 by these host results.

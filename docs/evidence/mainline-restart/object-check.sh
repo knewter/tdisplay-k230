@@ -18,7 +18,7 @@ else
   flags=(ARCH=riscv LLVM=1)
   clang --version | head -1
 fi
-# Prepare real headers from the exact pinned source with the host LLVM tools.
+# Prepare real headers from the exact pinned source with the selected compiler.
 # The full Nix GCC/config/link proof is a separate task.
 if [[ -n "${MAINLINE_RESTART_CONFIG:-}" ]]; then
   cp "$MAINLINE_RESTART_CONFIG" "$build/.config"

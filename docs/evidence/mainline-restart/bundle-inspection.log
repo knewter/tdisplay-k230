@@ -1,0 +1,25 @@
+warning: Git tree '/home/jadams/tmp/k230-mainline-restart' is dirty
+Image-mainline-drm: OK
+k230-tdisplay-mainline-drm.dtb: OK
+initrd.uimg: OK
+bootargs.txt: OK
+{
+  "bundle": "/nix/store/asj7l4zj5jrjkgng4nrcx3y72p7jf7aa-k230-mainline-drm-trial-boot-files",
+  "system": "/nix/store/v9qc1sf0iz53s3x6g6vwfyaxghkfpnyk-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "kernel": "/nix/store/4wkhxf55y1abg1kg2xd0acsfjqr64j0h-linux-riscv64-unknown-linux-gnu-7.3.0-rc5",
+  "closure_paths": 629,
+  "bootargs": "console=tty0 consoleblank=0 console=ttyS0,115200n8 root=fstab loglevel=4 lsm=landlock,yama,bpf loglevel=7 init=/nix/store/v9qc1sf0iz53s3x6g6vwfyaxghkfpnyk-nixos-system-nixos-26.11.20260919.20b1ddd/init",
+  "files": {
+    "registration": 303363,
+    "Image-mainline-drm": 38530560,
+    "initrd.uimg": 27329664,
+    "k230-tdisplay-mainline-drm.dtb": 11025,
+    "SHA256SUMS": 339,
+    "store-paths": 49876,
+    "bootargs.txt": 211
+  },
+  "uimage_crc_valid": true,
+  "initrd_payload_matches_system": true,
+  "Image_matches_candidate": true,
+  "DTB_bootargs_matches_environment": true
+}

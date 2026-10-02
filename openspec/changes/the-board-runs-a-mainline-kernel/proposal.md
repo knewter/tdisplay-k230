@@ -1,3 +1,17 @@
+## Current evidence status (2026-10-02)
+
+The original host milestones below are historical build records. Committed
+physical trials in
+`docs/evidence/mainline-display/physical-2026-10-01/README.md` observe Linux
+7.3-rc5, DRM/fb0, Goodix input registration and photographed panel boot text,
+but no usable mainline root or deliberate touch. Later PID1 shell probes
+reached `/bin/true`; the minimal trial's systemd reboot refusal did not reach
+the kernel. The protected normal system was independently restored by an
+operator power cycle, recorded in
+`docs/evidence/mainline-display/physical-2026-10-01/minimal-probe-recovery-2026-10-02/README.md`.
+These are partial boot/probe/recovery observations, not product acceptance.
+Tasks 5b.5 and 5d.4 stay open; automatic mainline restart remains UNVERIFIED.
+
 ## Why
 
 Today's kernel is a pinned vendor fork, `ruyisdk/linux-xuantie-kernel` @
@@ -120,15 +134,11 @@ only, no changes to existing ones), `docs/research/mainline-kernel-inventory.md`
 `nix/kernel-src.nix`, `nix/device-tree.nix`, `nix/k230.nix`,
 `nix/hardware.nix`, `nix/sd-image.nix`, `nix/shell.nix`, or any existing
 `nixosConfigurations` output — confirmed by `git diff --stat` against each
-after every task group, including the milestone-1 continuation. This whole
-change's functional proof is host-only (cross-builds, including a full
-NixOS system-closure build); the first hardware milestone (does U-Boot
-actually load and run an Image+DTB(+now, optionally, initrd) and print
-anything on the CH342 console, and separately, does the milestone-1
-candidate reach a login prompt over SD) is explicitly **not** performed by
-this change and is left as two named, unclaimed evidence gates — see
-tasks.md's "Remaining evidence gate" section — for the coordinator to
-schedule a board boot.
+after every task group, including the milestone-1 continuation. The original
+functional proof was host-only (cross-builds, including a full NixOS
+system-closure build). Later physical trials obtained partial boot/probe
+evidence as summarized above; usable root, deliberate touch and automatic
+restart remain named open gates for the board operator.
 
 
 The isolated DRM continuation also provides `k230-mainline-drm-trial` and
@@ -137,8 +147,9 @@ candidate, its matching initrd/bootargs and closure inventory, and an offline
 root-stage/manual U-Boot procedure. `nix/mainline-drm-trial.nix`,
 `tools/mainline-drm-trial-inspect.py`, and
 `docs/evidence/mainline-display-boot-preparation.md` own this host-only
-preparation. The normal system profile and boot files remain selected; actual
-card staging and task 5b.5's physical evidence are unperformed.
+preparation. The normal system profile and boot files remain selected; card staging
+and partial physical boot/probe evidence are now committed, while task
+5b.5 remains open for usable root and deliberate touch.
 
 
 A further bounded, coordinator-authorized continuation forward-ports the

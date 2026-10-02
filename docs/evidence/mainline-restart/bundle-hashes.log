@@ -1,0 +1,4 @@
+70a81b2172710c64463b53693e2e505a4d82ae2f7b644b2fc93cee9016b05330  /nix/store/asj7l4zj5jrjkgng4nrcx3y72p7jf7aa-k230-mainline-drm-trial-boot-files/Image-mainline-drm
+2a4cc196d510bde579498c69758c9e3c52e0a23d6dda8d3297fd16280413d80e  /nix/store/asj7l4zj5jrjkgng4nrcx3y72p7jf7aa-k230-mainline-drm-trial-boot-files/initrd.uimg
+48e3d470264db4f816c428a66d72852b5a283ebf679f647e65725573f70f89a1  /nix/store/asj7l4zj5jrjkgng4nrcx3y72p7jf7aa-k230-mainline-drm-trial-boot-files/k230-tdisplay-mainline-drm.dtb
+91aeeeddfc85c751aefc4a2de8948ec4664d16aa9e62ed9bce99d925367ddaae  /nix/store/asj7l4zj5jrjkgng4nrcx3y72p7jf7aa-k230-mainline-drm-trial-boot-files/bootargs.txt

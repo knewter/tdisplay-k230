@@ -1,0 +1,26 @@
+warning: Git tree '/home/jadams/tmp/k230-mainline-restart' is dirty
+{
+  "base": {
+    "consoleBootFiles": "/nix/store/dqaaqh7lqjy2w7m6r7qaqfymndvj1x5k-k230-mainline-console-boot-files.drv",
+    "consoleImageBootFiles": "/nix/store/bc127z689kmixbkms43khzksj2m7vbif-k230-mainline-boot-files.drv",
+    "consoleSystem": "/nix/store/mvg93dfxrhd4qp6s81p2xsm0g40mp1ky-nixos-system-nixos-26.11.20260919.20b1ddd.drv",
+    "deviceTree": "/nix/store/rplyp8gpz9jdqg0rakm4ms61075ydl9k-k230-tdisplay.dtb.drv",
+    "deviceTreeMainline": "/nix/store/hrsy3hn4k5x1r7hb9fxwwnv9bd4afg8z-k230-tdisplay-mainline.dtb.drv",
+    "kernel": "/nix/store/2ygsvl6i74s65iqhm9dwcnfcva7h6f5m-linux-riscv64-unknown-linux-gnu-6.6.36-xuantie.drv",
+    "kernelMainline": "/nix/store/hy8ng8p1mja4mzmfd83dhbpcb0g9n0pm-linux-riscv64-unknown-linux-gnu-7.3.0-rc5.drv",
+    "sdImage": "/nix/store/k5f7iq9yk4hiwsm2hzr85avpazfv05h9-k230-sd-image.img.drv",
+    "system": "/nix/store/6sps480wbkii38z2rjnrjg5sl38d4sgp-nixos-system-nixos-26.11.20260919.20b1ddd.drv"
+  },
+  "candidate": {
+    "consoleBootFiles": "/nix/store/dqaaqh7lqjy2w7m6r7qaqfymndvj1x5k-k230-mainline-console-boot-files.drv",
+    "consoleImageBootFiles": "/nix/store/bc127z689kmixbkms43khzksj2m7vbif-k230-mainline-boot-files.drv",
+    "consoleSystem": "/nix/store/mvg93dfxrhd4qp6s81p2xsm0g40mp1ky-nixos-system-nixos-26.11.20260919.20b1ddd.drv",
+    "deviceTree": "/nix/store/rplyp8gpz9jdqg0rakm4ms61075ydl9k-k230-tdisplay.dtb.drv",
+    "deviceTreeMainline": "/nix/store/hrsy3hn4k5x1r7hb9fxwwnv9bd4afg8z-k230-tdisplay-mainline.dtb.drv",
+    "kernel": "/nix/store/2ygsvl6i74s65iqhm9dwcnfcva7h6f5m-linux-riscv64-unknown-linux-gnu-6.6.36-xuantie.drv",
+    "kernelMainline": "/nix/store/hy8ng8p1mja4mzmfd83dhbpcb0g9n0pm-linux-riscv64-unknown-linux-gnu-7.3.0-rc5.drv",
+    "sdImage": "/nix/store/k5f7iq9yk4hiwsm2hzr85avpazfv05h9-k230-sd-image.img.drv",
+    "system": "/nix/store/6sps480wbkii38z2rjnrjg5sl38d4sgp-nixos-system-nixos-26.11.20260919.20b1ddd.drv"
+  }
+}
+All nine default/vendor/console-only derivation identities unchanged.

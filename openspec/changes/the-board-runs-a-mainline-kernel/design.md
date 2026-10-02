@@ -1,3 +1,17 @@
+## Current evidence status (2026-10-02)
+
+The original host milestones below are historical build records. Committed
+physical trials in
+`docs/evidence/mainline-display/physical-2026-10-01/README.md` observe Linux
+7.3-rc5, DRM/fb0, Goodix input registration and photographed panel boot text,
+but no usable mainline root or deliberate touch. Later PID1 shell probes
+reached `/bin/true`; the minimal trial's systemd reboot refusal did not reach
+the kernel. The protected normal system was independently restored by an
+operator power cycle, recorded in
+`docs/evidence/mainline-display/physical-2026-10-01/minimal-probe-recovery-2026-10-02/README.md`.
+These are partial boot/probe/recovery observations, not product acceptance.
+Tasks 5b.5 and 5d.4 stay open; automatic mainline restart remains UNVERIFIED.
+
 ## Context
 
 See proposal.md and `docs/research/mainline-kernel-inventory.md` (the full
@@ -26,8 +40,9 @@ named correctly ("reaches the serial console", not "SD rootfs", because SD
 is not yet mainlined for this SoC) so a later change is not surprised by
 that when it tries to prove it.
 
-**Non-Goals:** booting anything on the board (host-only change, hardware
-milestones are explicitly deferred and unclaimed); changing `.#kernel`,
+**Original non-goals (superseded by the later bounded continuations):**
+booting anything on the board (initially host-only, with hardware gates
+deferred); changing `.#kernel`,
 `.#deviceTree`, any `nixosConfigurations` output, or `.#sdImage`; forward-
 porting the SDHCI or USB-PHY-DT-node patches (named as the next change's
 work, not this one's); attempting the display/audio/RTC/power-key/thermal
@@ -263,8 +278,10 @@ boot files untouched. The Image+DTB-only collector remains available.
 Rejected: pairing the DRM Image with an arbitrary existing initrd/system or
 changing the normal card's boot selectors. These hide the kernel/system
 boundary or undermine the recoverable trial. Host build and artifact matching
-are recorded in `docs/evidence/mainline-display-boot-preparation.md`; card
-staging and physical boot/display/touch/restoration remain unperformed.
+are recorded in `docs/evidence/mainline-display-boot-preparation.md`.
+The committed October 1/2 records now establish card staging, partial
+boot/probe/photographed boot text, and distinct protected normal recovery;
+usable mainline root and deliberate touch remain unperformed.
 
 
 ## Optional DRM power-domain continuation

@@ -18,8 +18,11 @@ runtime power evidence.
 recorded in `docs/evidence/mainline-display-dtb.md`. The vendor-derived
 local genpd provider, checked probe-time power acquisition, and host build
 proof are recorded in `docs/evidence/mainline-display-power-domain.md`, with
-prior vendor-board grounding in `docs/evidence/dsi-phy-hang.md`. No board probe or panel
-photograph exists for this candidate.*
+prior vendor-board grounding in `docs/evidence/dsi-phy-hang.md`. Later
+`docs/evidence/mainline-display/physical-2026-10-01/README.md` commits DRM/fb0
+probe and photographed panel boot text. Those observations do not establish
+a usable mainline system, successful DCS readback or deliberate touch; the
+remaining gate 5b.5 stays open.*
 
 #### Scenario: Someone asks whether the mainline candidate lights the panel
 

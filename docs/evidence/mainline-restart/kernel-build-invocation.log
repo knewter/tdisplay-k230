@@ -1,0 +1,7 @@
+warning: Git tree '/home/jadams/tmp/k230-mainline-restart' is dirty
+these 2 derivations will be built:
+  /nix/store/567aw2drchn8qqi89jpzni14688pkb3c-linux-config-riscv64-unknown-linux-gnu-7.3.0-rc5.drv
+  /nix/store/2v6p8mnaj9zs2063w9l3mndd3kypqpgh-linux-riscv64-unknown-linux-gnu-7.3.0-rc5.drv
+building '/nix/store/567aw2drchn8qqi89jpzni14688pkb3c-linux-config-riscv64-unknown-linux-gnu-7.3.0-rc5.drv'...
+building '/nix/store/2v6p8mnaj9zs2063w9l3mndd3kypqpgh-linux-riscv64-unknown-linux-gnu-7.3.0-rc5.drv'...
+/nix/store/4wkhxf55y1abg1kg2xd0acsfjqr64j0h-linux-riscv64-unknown-linux-gnu-7.3.0-rc5

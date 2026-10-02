@@ -164,8 +164,11 @@ changing default outputs. `docs/evidence/mainline-display-api-compile.md`,
 external-module, host DTS, and complete Nix kernel/DTB/boot-files checks,
 with their limits and the absent hardware results.
 `docs/evidence/mainline-display-boot-preparation.md` records the matching
-opt-in trial system/initrd/bootargs and closure inventory, and the unperformed
-root staging and recoverable U-Boot procedure. The DRM driver sources in the pinned
+opt-in trial system/initrd/bootargs and closure inventory, and the recoverable root staging/U-Boot
+procedure. Later committed October 1/2 physical trials at
+`docs/evidence/mainline-display/physical-2026-10-01/README.md` establish
+partial boot/probe/photographed boot text and distinct normal recovery, but
+no usable mainline root or deliberate touch. The DRM driver sources in the pinned
 upstream source output are absent; this candidate forward-ports them from
 the vendor-derived implementation. The initial candidate omitted display power-domain wiring because the
 pinned source has no provider; the DRM-only local provider continuation
@@ -202,7 +205,10 @@ restart handler and writes bits 0/16 at `0x91102060`. The source audit at
 `docs/evidence/mainline-display/physical-2026-10-01/mainline-restart-source-audit-2026-10-02.md`
 records the mainline peripheral-only reset driver, absent advertised SBI
 SRST, the systemd refusal and distinct operator recovery. Group 5d owns the
-kernel/Nix continuation and its separate evidence gates.*
+kernel/Nix continuation and its separate evidence gates.
+`docs/evidence/mainline-restart/README.md` records the initial GCC failure,
+corrected source/object/full-kernel/matching-bundle proof and unchanged
+base-relative default outputs; it does not provide physical restart proof.*
 
 <!-- UNVERIFIED: mainline automatic restart and protected normal return -->
 
