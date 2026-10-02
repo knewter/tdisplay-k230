@@ -411,8 +411,8 @@
       "lane": "in-progress",
       "source": "in-progress",
       "physical": "pending",
-      "next": "Implement and build the reviewed optional mainline restart port and matching bundle, then verify automatic return to the protected normal system. A separate audit is narrowing the usable-root blocker; deliberate mainline touch remains open.",
-      "rationale": "The minimal physical probe reached its shell and executed /bin/true successfully, but failed its uptime/reboot gate because proc setup was absent. A subsequent operator power cycle and exact postflight now verify normal p1 system/profile/kernel/init, three active services, all eight unchanged boot-file hashes and native Home. Mainline root/touch/restart remain unproved; the revised probe has not run on the board. Group 5d now records four separate source/API, full kernel, matching bundle and physical restart gates; implementation is underway.",
+      "next": "Finish the complete optional restart kernel and matching trial bundle, then physically verify automatic return to the protected normal system. Narrow the usable-root blocker next; deliberate mainline touch remains open.",
+      "rationale": "The minimal physical probe reached its shell and executed /bin/true successfully, but failed its uptime/reboot gate because proc setup was absent. A subsequent operator power cycle and exact postflight now verify normal p1 system/profile/kernel/init, three active services, all eight unchanged boot-file hashes and native Home. Mainline root/touch/restart remain unproved; the revised probe has not run on the board. Group 5d now records four separate source/API, full kernel, matching bundle and physical restart gates; implementation is underway. The vendor-derived restart source now passes Nix patch construction and a warning-free pinned-header RISC-V object check; complete kernel build and physical reset are separate open gates.",
       "dependencies": [],
       "evidence": [
         "docs/evidence/mainline-display-power-domain.md",
@@ -424,9 +424,10 @@
         "docs/evidence/mainline-display/physical-2026-10-01/minimal-probe-2026-10-02/README.md",
         "docs/evidence/mainline-display/physical-2026-10-01/initrd-shell-diagnostic.md",
         "docs/evidence/mainline-display/physical-2026-10-01/mainline-restart-source-audit-2026-10-02.md",
-        "docs/evidence/mainline-display/physical-2026-10-01/minimal-probe-recovery-2026-10-02/README.md"
+        "docs/evidence/mainline-display/physical-2026-10-01/minimal-probe-recovery-2026-10-02/README.md",
+        "docs/evidence/mainline-restart/README.md"
       ],
-      "reviewRevision": "a7902369",
+      "reviewRevision": "dd7f063bcf8ba478ae13e6eddb656b44638e1164",
       "media": [
         {
           "path": "docs/evidence/mainline-display/physical-2026-10-01/power-swap-recovery-2026-10-02/home.png",
