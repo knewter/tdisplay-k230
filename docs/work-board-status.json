@@ -411,7 +411,7 @@
       "lane": "verification",
       "source": "source-landed",
       "physical": "pending",
-      "next": "Recover normal boot after the minimal diagnostic, correct its missing proc mount, then prove usable mainline root and deliberate touch.",
+      "next": "Recover normal boot and resolve mainline restart support before another initrd trial, then prove usable mainline root and deliberate touch. The proc setup correction passes host tests and is landed.",
       "rationale": "The minimal physical probe reached its shell and executed /bin/true successfully. Uptime failed because /proc was unmounted; reboot explicitly refused as a chroot operation, so this run did not pass recovery. Earlier physical resets independently proved the normal p1 system and unchanged protected files. The latest reset/recovery and mainline root/touch remain pending.",
       "dependencies": [],
       "evidence": [
@@ -421,9 +421,10 @@
         "docs/evidence/mainline-display/physical-2026-10-01/power-swap-recovery-2026-10-02/README.md",
         "docs/evidence/mainline-display/physical-2026-10-01/corrected-probe-recovery-2026-10-02/README.md",
         "docs/evidence/mainline-display/physical-2026-10-01/initrd-exec-audit-2026-10-02.md",
-        "docs/evidence/mainline-display/physical-2026-10-01/minimal-probe-2026-10-02/README.md"
+        "docs/evidence/mainline-display/physical-2026-10-01/minimal-probe-2026-10-02/README.md",
+        "docs/evidence/mainline-display/physical-2026-10-01/initrd-shell-diagnostic.md"
       ],
-      "reviewRevision": "d209a062f6826877173a7d2669d99b18c82c6416",
+      "reviewRevision": "010de5c410a31f405c069c1f6c8ec7d0068904bd",
       "media": [
         {
           "path": "docs/evidence/mainline-display/physical-2026-10-01/power-swap-recovery-2026-10-02/home.png",
