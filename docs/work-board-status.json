@@ -412,8 +412,8 @@
       "lane": "in-progress",
       "source": "in-progress",
       "physical": "pending",
-      "next": "Land the ordinary-mode shell-init readiness gate, verify operator recovery, then repeat the bounded quiet runtime shutdown-trace trial before root-label/mount diagnostics.",
-      "rationale": "The corrected complete kernel and matching bundle builds passed; default outputs are unchanged. Root diagnostic controllers pass 87 host tests. The new physical minimal trial passed true, proc setup and uptime, then printed userspace Rebooting; automatic return was not observed before operator intervention disconnected serial. Independent manual recovery passed fresh identities and eight hashes, with reviewed camera Home. Kernel callback execution, usable mainline root and deliberate touch remain unverified. The verbose trial stopped at receipt readiness before any candidate reboot request; webcam and passive UART checks were obtained, then operator power-cycle recovery passed fresh protected serial postflight and reviewed Home. The runtime shutdown-trace controller now enables logging only after returned sysfs, prior-value, write and readback gates; 87 host tests pass, but no physical runtime-trace trial has been performed. The quiet physical runtime-trace attempt reached Bash but failed reception after corrupted input and a continuation prompt; no runtime stage or candidate reboot was sent. Operator recovery is pending. Independent host power/watchdog work was dropped at user request; existing manual power-cycle recovery remains the operator path.",
+      "next": "Verify protected operator recovery, then run the bounded quiet runtime-trace trial with the reviewed all-mode shell readiness gate and fresh log/result paths. Root-label/mount diagnostics follow automatic restart proof.",
+      "rationale": "The optional 7.3-rc5 complete kernel and matching bundle build; default outputs remain unchanged. Physical boots observe DRM/fb0, Goodix registration and Bash, but no usable mainline root or deliberate touch. The latest quiet trace attempt failed reception after corrupt early input and a continuation prompt: no runtime tracing or candidate reboot was attempted. Earlier operator recovery passed protected identities and eight hashes; recovery from this latest attempt is pending. All diagnostic modes now wait read-only for fresh candidate init entry and the initial Bash prompt before their first receipt; 92 host tests pass. UART0 clocks are marked critical, so ordinary gate cleanup is not established as the cause. Automatic candidate restart remains unverified.",
       "dependencies": [],
       "evidence": [
         "docs/evidence/mainline-display-power-domain.md",
@@ -439,7 +439,7 @@
         "docs/evidence/mainline-restart/runtime-shutdown-trace-feasibility-2026-10-02.md",
         "docs/evidence/mainline-restart/physical-runtime-trace-2026-10-02/README.md"
       ],
-      "reviewRevision": "379bcb3c",
+      "reviewRevision": "e2e984bf",
       "media": [
         {
           "path": "docs/evidence/mainline-restart/physical-runtime-trace-2026-10-02/boot-panel.jpg",
