@@ -372,3 +372,20 @@ survey requires explicit mode. This source/test follow-up has not been run on
 hardware and does not change task 5b.5 evidence status. The preceding physical
 minimal attempt remains documented as failed, with later independent normal recovery verified, in
 `docs/evidence/mainline-display/physical-2026-10-01/minimal-probe-2026-10-02/README.md`.
+
+
+## 2026-10-02 bounded root-label controller preparation
+
+Task 5b.5 remains unchecked. The explicit candidate selector and gated
+`--mode label` controller now pass 49 host tests, including actual sh/bash
+execution of the generated device-mount payload against isolated fixtures.
+Evidence: `docs/evidence/mainline-display/physical-2026-10-01/candidate-controller-host-2026-10-02.md`
+and `docs/evidence/mainline-display/physical-2026-10-01/label-controller-host-2026-10-02.md`.
+The label mode accepts one read-only root-partition label check only after
+receipt, external-command, proc/uptime, devtmpfs and block-node gates. Unknown
+completion stops input and leaves recovery unverified. The optional
+`--ignore-unused-clocks` flag adds only a volatile argument for the published
+source-audit comparison; it is not a permanent clock policy.
+No new board trial or usable-root/touch proof is supplied by these host checks.
+The operator must first review the matching restart bundle and prove its
+automatic protected-normal return before relying on recovery for label trials.
