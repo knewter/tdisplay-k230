@@ -412,8 +412,8 @@
       "lane": "in-progress",
       "source": "in-progress",
       "physical": "pending",
-      "next": "Finish the corrected GCC kernel build and matching restart trial bundle, then physically verify automatic return to the protected normal system. Prepare the gated root-label/unused-clock comparison in parallel.",
-      "rationale": "The optional restart source passes the pinned GCC object check; a corrected complete kernel and matching bundle are building after the preserved first-build failure. The candidate and root-label controllers pass 49 host tests. Existing board evidence shows early SD enumeration, DRM/fb0 and Goodix registration, but no usable mainline root or deliberate touch. Normal recovery is independently verified; automatic mainline restart and the proposed unused-clock comparison remain unverified.",
+      "next": "Physically verify automatic restart from the inspected matching candidate and protected normal return, then run the gated read-only root-label/mount diagnostics.",
+      "rationale": "The corrected complete GCC kernel build and matching bundle inspection passed. Nine vendor/default/console outputs remain unchanged. The candidate/root-label controllers pass 49 host tests. Existing physical evidence records early SD enumeration, DRM/fb0 and Goodix registration, but no usable mainline root or deliberate touch. Automatic restart and root diagnostics remain unverified; normal recovery was independently proved.",
       "dependencies": [],
       "evidence": [
         "docs/evidence/mainline-display-power-domain.md",
@@ -431,7 +431,7 @@
         "docs/evidence/mainline-display/physical-2026-10-01/candidate-controller-host-2026-10-02.md",
         "docs/evidence/mainline-display/physical-2026-10-01/label-controller-host-2026-10-02.md"
       ],
-      "reviewRevision": "a6f47e0e",
+      "reviewRevision": "f6186b93",
       "media": [
         {
           "path": "docs/evidence/mainline-display/physical-2026-10-01/power-swap-recovery-2026-10-02/home.png",
