@@ -1,0 +1,80 @@
+--- a/drivers/reset/reset-k230.c
++++ b/drivers/reset/reset-k230.c
+@@ -28,6 +28,7 @@
+ #include <linux/of.h>
+ #include <linux/platform_device.h>
+ #include <linux/reset-controller.h>
++#include <linux/reboot.h>
+ #include <linux/spinlock.h>
+ 
+ #include <dt-bindings/reset/canaan,k230-rst.h>
+@@ -64,6 +65,7 @@
+ struct k230_rst {
+ 	struct reset_controller_dev	rcdev;
+ 	void __iomem			*base;
++	void __iomem			*boot_reset;
+ 	/* protect register read-modify-write */
+ 	spinlock_t			lock;
+ };
+@@ -327,10 +329,31 @@
+ 	.deassert	= k230_rst_deassert,
+ };
+ 
++/*
++ * System restart sequence from the pinned vendor drivers/reset/reset-k230.c
++ * (ruyisdk/linux-xuantie-kernel 7d4e1f444f461dbe3833bd99a4640e7b6c2cd529).
++ * This boot-control register is separate from the peripheral reset resource.
++ */
++#define K230_SYSCTL_BOOT_BASE	0x91102000U
++#define K230_CPU0_RST_CTL	0x60
++#define K230_RESTART_PRIORITY	128
++
++static int k230_rst_restart(struct sys_off_data *data)
++{
++	struct k230_rst *rstc = data->cb_data;
++
++	writel(BIT(0) | BIT(16), rstc->boot_reset);
++
++	/* The vendor handler waits for CPU0 reset and never returns. */
++	while (1)
++		cpu_relax();
++}
++
+ static int k230_rst_probe(struct platform_device *pdev)
+ {
+ 	struct device *dev = &pdev->dev;
+ 	struct k230_rst *rstc;
++	int ret;
+ 
+ 	rstc = devm_kzalloc(dev, sizeof(*rstc), GFP_KERNEL);
+ 	if (!rstc)
+@@ -339,6 +362,13 @@
+ 	rstc->base = devm_platform_ioremap_resource(pdev, 0);
+ 	if (IS_ERR(rstc->base))
+ 		return PTR_ERR(rstc->base);
++
++	/* Map before registration: the atomic restart callback cannot ioremap. */
++	rstc->boot_reset = devm_ioremap(dev,
++				       K230_SYSCTL_BOOT_BASE + K230_CPU0_RST_CTL,
++				       sizeof(u32));
++	if (!rstc->boot_reset)
++		return dev_err_probe(dev, -ENOMEM, "cannot map boot reset register\n");
+ 
+ 	spin_lock_init(&rstc->lock);
+ 
+@@ -348,7 +378,14 @@
+ 	rstc->rcdev.nr_resets	= ARRAY_SIZE(k230_resets);
+ 	rstc->rcdev.of_node	= dev->of_node;
+ 
+-	return devm_reset_controller_register(dev, &rstc->rcdev);
++	ret = devm_reset_controller_register(dev, &rstc->rcdev);
++	if (ret)
++		return ret;
++
++	/* Managed unregister runs before either mapping is released. */
++	return devm_register_sys_off_handler(dev, SYS_OFF_MODE_RESTART,
++					     K230_RESTART_PRIORITY,
++					     k230_rst_restart, rstc);
+ }
+ 
+ static const struct of_device_id k230_rst_match[] = {
