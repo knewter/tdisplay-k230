@@ -41,8 +41,8 @@ This is camera observation, not native capture or deliberate touch acceptance.
 The controller's existing shell-init readiness gate ran only for boot-debug
 mode. Ordinary modes began bounded receipt attempts after the early kernel
 banner. Extending that read-only gate is the next host correction; it does
-not prove that waiting alone fixes this physical failure. Operator recovery
-and protected postflight are pending. Tasks 5d.4 and 5b.5 remain open.
+not prove that waiting alone fixes this physical failure. Subsequent user reset-button recovery passed the protected normal postflight
+with a fresh boot ID, three active services and eight unchanged hashes. Tasks 5d.4 and 5b.5 remain open.
 
 A subsequent 10-second receive-only UART check obtained zero new bytes.
 No recovery or additional probe input was sent; silence does not establish
@@ -67,3 +67,15 @@ python3 tools/mainline-drm-initrd-shell-trial.py --mode minimal --runtime-shutdo
 ```
 
 This is the next invocation, not an executed or successful physical trial.
+
+## Subsequent manual reset-button recovery
+
+The user reported pressing the reset button. The first recovery check
+observed normal-system boot/getty output but timed out before the root prompt;
+no commands were sent. A second bounded check obtained the root prompt and
+passed every protected postflight check. [Postflight](postflight.json)
+records the new normal boot ID. [Camera provenance](recovery-camera.json)
+and the [reviewed Home photograph](recovered-home-panel.jpg) provide separate
+visible proof after an IPC Home command. This is operator recovery, not an
+automatic restart or deliberate mainline touch pass. No protected file,
+selected system profile or persistent boot selection was changed.

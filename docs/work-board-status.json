@@ -412,8 +412,8 @@
       "lane": "in-progress",
       "source": "in-progress",
       "physical": "pending",
-      "next": "Verify protected operator recovery, then run the bounded quiet runtime-trace trial with the reviewed all-mode shell readiness gate and fresh log/result paths. Root-label/mount diagnostics follow automatic restart proof.",
-      "rationale": "The optional 7.3-rc5 complete kernel and matching bundle build; default outputs remain unchanged. Physical boots observe DRM/fb0, Goodix registration and Bash, but no usable mainline root or deliberate touch. The latest quiet trace attempt failed reception after corrupt early input and a continuation prompt: no runtime tracing or candidate reboot was attempted. Earlier operator recovery passed protected identities and eight hashes; recovery from this latest attempt is pending. All diagnostic modes now wait read-only for fresh candidate init entry and the initial Bash prompt before their first receipt; 92 host tests pass. UART0 clocks are marked critical, so ordinary gate cleanup is not established as the cause. Automatic candidate restart remains unverified.",
+      "next": "Verify manual recovery from the traced shutdown timeout, review the exact MMC shutdown source boundary, then run a source-grounded minimal clock comparison if justified.",
+      "rationale": "The optional 7.3-rc5 complete kernel and matching bundle build; default outputs remain unchanged. Physical boots observe DRM/fb0, Goodix registration and Bash, but no usable mainline root or deliberate touch. The corrected readiness gate passed on the board: clean receipt, true/proc/uptime and all six runtime tracing stages returned successfully. A real reboot request produced seven shutdown entry checkpoints ending at the MMC block device, then the full180-second normal-return deadline expired without kernel Restarting, SPL or normal login. This narrows the shutdown boundary, not the culprit. Prior user reset-button recovery passed fresh normal identities, three shell services and eight protected hashes, with reviewed camera Home; recovery from this latest traced attempt is pending. Automatic mainline restart remains unverified.",
       "dependencies": [],
       "evidence": [
         "docs/evidence/mainline-display-power-domain.md",
@@ -437,10 +437,21 @@
         "docs/evidence/mainline-restart/shutdown-path-audit-2026-10-02.md",
         "docs/evidence/mainline-restart/physical-shutdown-debug-2026-10-02/README.md",
         "docs/evidence/mainline-restart/runtime-shutdown-trace-feasibility-2026-10-02.md",
-        "docs/evidence/mainline-restart/physical-runtime-trace-2026-10-02/README.md"
+        "docs/evidence/mainline-restart/physical-runtime-trace-2026-10-02/README.md",
+        "docs/evidence/mainline-restart/physical-runtime-ready-2026-10-02/README.md"
       ],
       "reviewRevision": "e2e984bf",
       "media": [
+        {
+          "path": "docs/evidence/mainline-restart/physical-runtime-ready-2026-10-02/boot-panel.jpg",
+          "caption": "Traced mainline shutdown timed out after the MMC block-device entry; commands and runtime tracing passed, automatic restart failed its return deadline",
+          "provenance": "Board capture"
+        },
+        {
+          "path": "docs/evidence/mainline-restart/physical-runtime-trace-2026-10-02/recovered-home-panel.jpg",
+          "caption": "Normal Home after user reset-button recovery from the quiet trace attempt; protected postflight passed, no automatic restart claim",
+          "provenance": "Board capture"
+        },
         {
           "path": "docs/evidence/mainline-restart/physical-runtime-trace-2026-10-02/boot-panel.jpg",
           "caption": "Quiet mainline trial reached Bash but receipt failed; runtime tracing and automatic restart were not attempted",

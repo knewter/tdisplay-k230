@@ -1,0 +1,9 @@
+{
+  "source": "physical Logitech C920 webcam /dev/video0",
+  "source_artifact": "private runtime-ready-trace-panel.jpg",
+  "source_sha256": "4706b7fa26f5b9eb52bc76797a75b420693235dca6d792689a628e2b6b9b1aec",
+  "source_mtime_utc": "2026-10-02T19:25:52.745329+00:00",
+  "filter": "crop=1300:980:180:100,transpose=2,transpose=2",
+  "image_sha256": "d197f47569dbd4b00ffc4e88caa8f57a090707c5d5b54ad255765742f62f8de9",
+  "observation": "Reviewed physical panel boot text during traced shutdown timeout. Glare/angle prevent reading all text; no Home or deliberate mainline touch proof. ffmpeg emitted a teardown ioctl warning but exited0 and produced the reviewed valid still."
+}

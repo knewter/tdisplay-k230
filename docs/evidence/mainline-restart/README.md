@@ -288,3 +288,15 @@ The ordinary-mode shell-init readiness correction is the next host step.
 Source feasibility and host simulations
 are not returned board proof. It also records why host serial reopening cannot establish a target
 kernel stop.
+
+## Quiet tracing after the common readiness correction
+
+The [new physical trial](physical-runtime-ready-2026-10-02/README.md) passed
+fresh shell readiness, reception, minimal prerequisites and all six runtime
+trace gates. A real reboot request produced seven device-shutdown entry
+checkpoints, ending at `mmcblk mmc1:59b4`, then the complete 180-second
+normal-return deadline expired. The entry narrows the source boundary but
+does not prove which callback/next-device lock or PM barrier blocked. No
+kernel restart announcement, SPL or normal login was observed; 5d.4 and
+5b.5 remain open. Prior reset-button recovery is separately proved in the
+preceding attempt's record; recovery from this latest trial is pending.

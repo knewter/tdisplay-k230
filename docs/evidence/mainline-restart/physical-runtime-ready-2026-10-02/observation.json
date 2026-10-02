@@ -1,0 +1,133 @@
+{
+  "schema": "k230-mainline-runtime-ready-observation-v1",
+  "recorded_utc": "2026-10-02T19:28:28.522749+00:00",
+  "controller_source": "3e6941d77280a96619e72c197cf51bbc77f0231c",
+  "controller_sha256": "7a16b472fd4f64a03baf350c33e3fb63a8b13c99b516d9a1832e3b29de893ed5",
+  "candidate_bundle": "/nix/store/asj7l4zj5jrjkgng4nrcx3y72p7jf7aa-k230-mainline-drm-trial-boot-files",
+  "candidate_system": "/nix/store/v9qc1sf0iz53s3x6g6vwfyaxghkfpnyk-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "artifacts": {
+    "Image-mainline-drm": {
+      "bytes": 38530560,
+      "sha256": "70a81b2172710c64463b53693e2e505a4d82ae2f7b644b2fc93cee9016b05330",
+      "crc32": "dc2d7228"
+    },
+    "k230-tdisplay-mainline-drm.dtb": {
+      "bytes": 11025,
+      "sha256": "48e3d470264db4f816c428a66d72852b5a283ebf679f647e65725573f70f89a1",
+      "crc32": "fb8d5243"
+    },
+    "initrd.uimg": {
+      "bytes": 27329664,
+      "sha256": "2a4cc196d510bde579498c69758c9e3c52e0a23d6dda8d3297fd16280413d80e",
+      "crc32": "e227a52a"
+    },
+    "bootargs.txt": {
+      "bytes": 211,
+      "sha256": "91aeeeddfc85c751aefc4a2de8948ec4664d16aa9e62ed9bce99d925367ddaae",
+      "crc32": "b3e66b58"
+    },
+    "fw_jump_add_uboot_head.bin": {
+      "bytes": 270808,
+      "sha256": "9627edbeea9b115d7040beea27cc61b23b6aca61cd502fd7760d7ee179f42c99",
+      "crc32": "99b89787"
+    }
+  },
+  "normal_preflight": {
+    "boot_files": {
+      "Image": "37d71fc14f9bdafe230767e1709de587c049014660dd59d2f7bcbbce35ac71c2",
+      "bootargs.txt": "27e85247977a44c8aab0b78ea30f81e368623ba29fba262cd21871cdc31bf476",
+      "force_dtb": "175342c82dd1b437cdafb6bb01090e7ff73c2769515654c48b02c1e9f73440c6",
+      "fw_jump_add_uboot_head.bin": "9627edbeea9b115d7040beea27cc61b23b6aca61cd502fd7760d7ee179f42c99",
+      "hdmi_dtb": "175342c82dd1b437cdafb6bb01090e7ff73c2769515654c48b02c1e9f73440c6",
+      "initrd.uimg": "867e227f333ffe9c0e83a489dbfd0c755d7fcd0a0cf588cf47ec1c139945fb25",
+      "k230-tdisplay.dtb": "07e784fa3b2eeb971df3ba6f22d9909ed8e0424fdd6bdf680724631652bbe65e",
+      "lcd_dtb": "175342c82dd1b437cdafb6bb01090e7ff73c2769515654c48b02c1e9f73440c6"
+    },
+    "boot_id": "63732478-e899-4360-a3ba-8a7d4bb321fb",
+    "init": "init=/nix/store/p1a1hz9n8s4g8qyr55ffl3dzbnjgqwr8-nixos-system-nixos-26.11.20260919.20b1ddd/init",
+    "kernel": "/nix/store/03zyl0mjsxbjyisb3lhjaxswpxm71ap6-linux-riscv64-unknown-linux-gnu-6.6.36-xuantie/Image",
+    "profile": "/nix/store/p1a1hz9n8s4g8qyr55ffl3dzbnjgqwr8-nixos-system-nixos-26.11.20260919.20b1ddd",
+    "services": [
+      "active",
+      "active",
+      "active"
+    ],
+    "system": "/nix/store/p1a1hz9n8s4g8qyr55ffl3dzbnjgqwr8-nixos-system-nixos-26.11.20260919.20b1ddd",
+    "uname": "6.6.36"
+  },
+  "initrd_readiness_observed": true,
+  "receipt_returned": true,
+  "true_rc": 0,
+  "proc": {
+    "mkdir_rc": 0,
+    "mount_attempted": true,
+    "mount_rc": 0
+  },
+  "uptime": {
+    "rc": 0,
+    "uptime": [
+      "4.60",
+      "0.56"
+    ]
+  },
+  "runtime_shutdown_trace": {
+    "attempted": true,
+    "stages": {
+      "sys-mkdir": {
+        "rc": 0,
+        "match": true
+      },
+      "sys-mount": {
+        "rc": 0,
+        "match": true
+      },
+      "permissions": {
+        "rc": 0,
+        "match": true
+      },
+      "prior": {
+        "rc": 0,
+        "match": true
+      },
+      "write": {
+        "rc": 0,
+        "match": true
+      },
+      "readback": {
+        "rc": 0,
+        "match": true
+      }
+    },
+    "enable_verified": true,
+    "parameter_state": "Y"
+  },
+  "candidate_reboot_requested": true,
+  "reboot_receipt_observed": true,
+  "shutdown_entries": [
+    "[    5.600514] goodix-berlin-i2c 0-005d: shutdown",
+    "[    5.600588] canaan-drm display-subsystem: shutdown",
+    "[    5.600633] gpio-k230 9140c000.gpio: shutdown",
+    "[    5.600669] gpio-k230 9140b000.gpio: shutdown",
+    "[    5.600699] i2c i2c-0: shutdown",
+    "[    5.600724] i2c_designware 91408000.i2c: shutdown",
+    "[    5.600764] mmcblk mmc1:59b4: shutdown"
+  ],
+  "controller_exit": {
+    "code": 1,
+    "normal_return_deadline_seconds": 180,
+    "normal_return_deadline_completed": true,
+    "condition": "normal login not observed after initrd reboot",
+    "structured_result_written": false
+  },
+  "raw_capture_bytes": 52918,
+  "raw_capture_sha256": "cb16e6f7226f8dc3f9fb34b6f8978525fcef830b50a797c1d510bb15d367480e",
+  "last_raw_write_utc": "2026-10-02T19:22:24.594486+00:00",
+  "kernel_restart_announcement_observed": false,
+  "subsequent_spl_observed": false,
+  "normal_recovery": null,
+  "persistent_boot_selection_changed": false,
+  "automatic_restart": "UNVERIFIED",
+  "usable_mainline_root": "UNVERIFIED",
+  "deliberate_mainline_touch": "UNVERIFIED",
+  "limits": "Coordinator reconstruction using production fresh-marker parsers; not a controller-generated result. Shutdown messages are entry checkpoints, not callback completion/culprit proof."
+}

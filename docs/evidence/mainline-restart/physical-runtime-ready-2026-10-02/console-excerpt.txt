@@ -1,0 +1,28 @@
+[    4.024814] Run /bin/sh as init process
+K230_RDINIT_RX [nonce]
+K230_RDINIT_TRUE [nonce] RC=0
+K230_RDINIT_MOUNT_BEGIN [nonce]
+K230_RDINIT_MOUNT_END [nonce] MKDIR_RC=0 MOUNT_ATTEMPTED=1 MOUNT_RC=0
+K230_RDINIT_UP_BEGIN [nonce]
+K230_RDINIT_UP_END [nonce] RC=0
+K230_RDINIT_TRACE_BEGIN [nonce] STAGE=sys-mkdir
+K230_RDINIT_TRACE_END [nonce] STAGE=sys-mkdir RC=0 MATCH=1
+K230_RDINIT_TRACE_BEGIN [nonce] STAGE=sys-mount
+K230_RDINIT_TRACE_END [nonce] STAGE=sys-mount RC=0 MATCH=1
+K230_RDINIT_TRACE_BEGIN [nonce] STAGE=permissions
+K230_RDINIT_TRACE_END [nonce] STAGE=permissions RC=0 MATCH=1
+K230_RDINIT_TRACE_BEGIN [nonce] STAGE=prior
+K230_RDINIT_TRACE_END [nonce] STAGE=prior RC=0 MATCH=1
+K230_RDINIT_TRACE_BEGIN [nonce] STAGE=write
+K230_RDINIT_TRACE_END [nonce] STAGE=write RC=0 MATCH=1
+K230_RDINIT_TRACE_BEGIN [nonce] STAGE=readback
+K230_RDINIT_TRACE_END [nonce] STAGE=readback RC=0 MATCH=1
+K230_RDINIT_REBOOT [nonce]
+Rebooting.[    5.600514] goodix-berlin-i2c 0-005d: shutdown
+[    5.600588] canaan-drm display-subsystem: shutdown
+[    5.600633] gpio-k230 9140c000.gpio: shutdown
+[    5.600669] gpio-k230 9140b000.gpio: shutdown
+[    5.600699] i2c i2c-0: shutdown
+[    5.600724] i2c_designware 91408000.i2c: shutdown
+[    5.600764] mmcblk mmc1:59b4: shutdown
+[CURATION: 180-second normal-return deadline completed; no later kernel Restarting, SPL, or normal login observed.]

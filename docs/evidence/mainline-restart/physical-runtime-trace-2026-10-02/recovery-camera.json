@@ -1,0 +1,9 @@
+{
+  "source": "physical Logitech C920 webcam /dev/video0",
+  "source_artifact": "private reset-button-home.jpg",
+  "source_sha256": "53d02889f20882f16d1014d548f68a241531fde9fa74c95475ab63de0925c73d",
+  "source_mtime_utc": "2026-10-02T19:21:22.416163+00:00",
+  "filter": "crop=1300:980:180:100,transpose=2,transpose=2",
+  "image_sha256": "2c033a1688ad58506e0211539185a97ddaf3c5c86e39a39a392c567d57e2502d",
+  "observation": "Reviewed normal Home after reset-button recovery, protected serial postflight and IPC Home. Glare/angled panel; no new finger or automatic mainline restart proof."
+}
