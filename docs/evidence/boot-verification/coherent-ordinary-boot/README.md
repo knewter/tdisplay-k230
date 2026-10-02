@@ -12,6 +12,9 @@ python3 tools/coherent-shell-board-boot.py \
 ```
 
 Controller/installer source: `0b7fa19f54ec380368ff370190fab43900f96fe9`.
+Selected shell application source: `5bb67db128210f830dab4de0d20a4b0eca13c578`
+(as built in the bundle qualification); metadata/installer changes do not
+change the running Rust executable.
 `boot-result.json` records the controller SHA256, exact selected system, kernel,
 initrd and DTB, all eight original/installed boot-file identities, and actual
 installation methods. Only Image, initrd, DTB and bootargs were replaced;
@@ -98,3 +101,10 @@ The source run `36962592218` failed because the installer test fixture assumed
 `~/tmp` existed on a fresh GitHub runner. Commit `a9f7a24b` creates it before
 allocating temporary fixtures. Seven installer, five boot-plan and five strict
 UART tests pass locally after that correction; matching CI/Pages run `36963303088` passed build and deployment.
+
+Ordinary-boot proof is published by successful CI/Pages run `36963714103`,
+exact revision `779de082d55b0089a044442c6873017da9de2bd2`.
+The preceding proof run `36963641537` rejected an unsupported work-board
+status value. Coordinator correction `779de082` uses the schema's
+`source-landed` value; full work-board generation and the corrected CI pass.
+These publication corrections do not alter board artifacts.

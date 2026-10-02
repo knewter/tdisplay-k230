@@ -459,7 +459,7 @@
       "reviewRevision": "b9a67187854dcad5330cad3fa80add12e3fa0d87"
     },
     "the-coherent-shell-boots-the-selected-system": {
-      "lane": "in-progress",
+      "lane": "verification",
       "source": "source-landed",
       "physical": "pending",
       "next": "Ordinary boot, matching identities, Home captures and remembered appearance pass. Await post-reboot real-finger navigation confirmation, then archive.",
