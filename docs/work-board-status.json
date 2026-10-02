@@ -471,27 +471,6 @@
       ],
       "reviewRevision": "b9a67187854dcad5330cad3fa80add12e3fa0d87"
     },
-    "the-coherent-shell-boots-the-selected-system": {
-      "lane": "verification",
-      "source": "source-landed",
-      "physical": "pending",
-      "next": "Ordinary boot, matching identities, Home captures and remembered appearance pass. Await post-reboot real-finger navigation confirmation, then archive.",
-      "rationale": "Qualified four-file installation and matching persistent profile succeeded; untouched ordinary autoboot returned selected kernel/system with active services and photographed Home. Operator post-reboot navigation remains distinct.",
-      "dependencies": [],
-      "evidence": [
-        "docs/evidence/boot-verification/2026-10-01/README.md",
-        "docs/evidence/boot-verification/coherent-bundle-host/README.md",
-        "docs/evidence/boot-verification/coherent-manual-candidate/README.md",
-        "docs/evidence/boot-verification/coherent-manual-comparison/README.md",
-        "docs/evidence/boot-verification/coherent-ordinary-boot/README.md"
-      ],
-      "reviewRevision": "60c95d57229505e0b5fdaa6553e5f1ceb025102a",
-      "cover": {
-        "path": "docs/evidence/boot-verification/coherent-ordinary-boot/home.png",
-        "caption": "Home after ordinary reboot into the selected system",
-        "provenance": "Board capture"
-      }
-    },
     "2026-10-01-the-shell-manages-apps-as-cards": {
       "lane": "archived",
       "source": "archived",
@@ -567,6 +546,29 @@
           "provenance": "Design mockup"
         }
       ]
+    },
+    "2026-10-02-the-coherent-shell-boots-the-selected-system": {
+      "lane": "archived",
+      "source": "archived",
+      "physical": "verified",
+      "next": "Archived after matching normal artifacts, ordinary autoboot, physical power-swap recovery and accepted Home/Apps/Overview/Terminal navigation.",
+      "rationale": "The selected normal system/profile/kernel/init and eight protected hashes agree after reboot. The operator accepted the three requested navigation checks after physical reset. No physical failed-write rollback or mainline usability is claimed.",
+      "dependencies": [],
+      "evidence": [
+        "docs/evidence/boot-verification/2026-10-01/README.md",
+        "docs/evidence/boot-verification/coherent-bundle-host/README.md",
+        "docs/evidence/boot-verification/coherent-manual-candidate/README.md",
+        "docs/evidence/boot-verification/coherent-manual-comparison/README.md",
+        "docs/evidence/boot-verification/coherent-ordinary-boot/README.md",
+        "docs/evidence/mainline-display/physical-2026-10-01/power-swap-recovery-2026-10-02/README.md",
+        "docs/evidence/boot-verification/coherent-ordinary-boot/operator-navigation.json"
+      ],
+      "reviewRevision": "e86c6786",
+      "cover": {
+        "path": "docs/evidence/boot-verification/coherent-ordinary-boot/home.png",
+        "caption": "Home after ordinary reboot into the selected system",
+        "provenance": "Board capture"
+      }
     }
   }
 }
