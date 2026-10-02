@@ -184,6 +184,14 @@ why it did or did not work.
 
 ## 5. Shell and card-shell landscape support
 
+Coordinator cross-reference (2026-10-01):
+[`the-shell-adapts-to-output-resolution`](../the-shell-adapts-to-output-resolution/tasks.md)
+owns output configures, Drawer/Home column reflow, Settings transforms and matching
+hit-testing. Its host implementation and paired fixtures are recorded there;
+its task group 6 retains physical tap/density, Wi-Fi/theme geometry and dock
+follow-up. Use that work for 5.2/5.3 below rather than implementing it twice.
+These links do not complete this proposal's HDMI hardware or landscape gates.
+
 - [ ] 5.1 Add an `HDMI-A-1` output stanza to `nix/shell.nix`'s Sway config
       (mode matching task 2.2's target, e.g. `1280x720`, `transform
       normal`), alongside the existing `DSI-1` stanza, and decide (record

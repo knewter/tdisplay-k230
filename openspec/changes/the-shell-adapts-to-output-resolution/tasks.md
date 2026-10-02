@@ -69,12 +69,13 @@
       pre-existing warnings are all in files this change does not touch).
 - [x] 5.2 `openspec validate the-shell-adapts-to-output-resolution --strict`
       exits 0.
-- [ ] 5.3 Cross-reference this change from
-      `openspec/changes/plugging-in-hdmi-moves-the-display/tasks.md`'s own
-      task 5.2/5.3 (that proposal's shell/landscape-support group), so a
-      reader of either change finds the other. **Not done by this change**:
-      it touches only its own worktree's files; the coordinator or that
-      change's own owner should link the two to avoid duplicated scope.
+- [x] 5.3 Cross-reference the output configure, reflow and hit-testing work
+      from `plugging-in-hdmi-moves-the-display` tasks 5.2/5.3. Coordinator
+      reconciliation on 2026-10-01 links the completed host work and names
+      the still-open density, Wi-Fi/theme geometry, physical taps and dock
+      decisions here. No HDMI hardware or unfinished layout gate is ticked.
+      Proof: `openspec validate the-shell-adapts-to-output-resolution --strict`
+      and `openspec validate plugging-in-hdmi-moves-the-display --strict`.
 
 ## 6. Board-gated follow-up (explicitly open, out of scope for this change)
 
