@@ -1,0 +1,6 @@
+UTC start: 2026-10-02T20:13:13Z
+UTC observed exit: 2026-10-02T21:10:58Z
+Exit status: 1
+Command: flock /tmp/k230-nix-build.lock nix build .#kernelMainlineDrm --no-link --print-out-paths --max-jobs 1 --cores 16 --keep-failed -L
+All compile/link completed; Nix installation FAILED at store directory creation (ENOSPC).
+No valid kernel output, matching bundle build or physical trial claimed.

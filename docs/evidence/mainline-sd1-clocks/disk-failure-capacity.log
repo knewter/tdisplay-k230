@@ -1,0 +1,8 @@
+Filesystem      Size  Used Avail Use% Mounted on
+/dev/nvme1n1p1  1.8T  1.7T  6.7G 100% /nix/store
+/dev/nvme0n1p2  1.7T  1.5T  149G  91% /
+tmpfs            63G   47G   16G  75% /tmp
+Filesystem        Inodes    IUsed     IFree IUse% Mounted on
+/dev/nvme1n1p1 122101760 11618234 110483526   10% /nix/store
+/dev/nvme0n1p2 113008640 17247512  95761128   16% /
+tmpfs            1048576   787895    260681   76% /tmp

@@ -122,9 +122,52 @@ Strict OpenSpec validation passes. Actual changed C
 and nonpatch files pass whitespace checks; unified-patch context retains its
 required leading space before original tabs/blank lines, which generic new-file
 `git diff --check` reports. Cached work-status was run at start and will be run
-again before handoff. The optional whole-flake `--no-build` evaluation is
-still running and will be recorded separately; the narrow identity evaluation
-above passed. No task checkbox or canonical spec is changed here.
+again before handoff. Whole-flake `nix flake check --no-build` also exited
+zero, ending `all checks passed!` ([flake-check.log](flake-check.log)).
+No task checkbox or canonical spec is changed here.
+
+## Full Nix build failed at installation: store capacity
+
+The next exact optional kernel invocation started `2026-10-02T20:13:13Z`:
+
+```sh
+flock /tmp/k230-nix-build.lock nix build .#kernelMainlineDrm \
+  --no-link --print-out-paths --max-jobs 1 --cores 16 --keep-failed -L
+```
+
+It exited **1**, observed at `2026-10-02T21:10:58Z`. All compilation, kernel
+links, BTF, Image and module generation finished; `buildPhase` took 54 minutes
+55 seconds. Installation then failed creating the kernel output directory:
+`No space left on device`. This is a **failed full Nix build**, not a realized
+kernel or matching bundle. [Invocation](kernel-build-failure-invocation.log),
+[full failure log](kernel-build-failure.log), [capacity](disk-failure-capacity.log)
+and [structured failure](full-build-failure.json) preserve the command and limits.
+The `/nix` NVMe volume has zero available bytes, 100% usage, and only 10% inode
+usage. Linkers spent long intervals in D/storage wait. An authorized attempt
+to improve this job's linker I/O priority failed `Operation not permitted`;
+no process priority or unrelated workload was changed.
+
+`--keep-failed` retained this job's 13 GB build at
+`/nix/var/nix/builds/nix-2288231-62236773/build`. It is owned by `nixbld`, with
+a root-owned parent. Noninteractive administrative access requires a password,
+so no cleanup, garbage collection or unrelated deletion was performed.
+Host storage recovery belongs to the coordinator/administrator. A diagnostic
+copy of the compiled Image and config is preserved under
+`~/tmp/k230-mainline-sd1-failed-artifacts/`; the structured failure records its
+hash/size. It is explicitly **not** a valid Nix output and was not staged.
+
+The first diagnostic copy looked for the Image in the source root; this
+derivation actually uses its nested `build/` directory. The corrected copy
+uses `build/arch/riscv/boot/Image`. No image was accepted from the failed lookup.
+
+Kernel `9vdk79pa4pm38mlmbflkqh4i4sc9kha0`, matching bundle
+`5yqilsfyj35jzrcqjjqilkr6sd47qlms` and system
+`9gdmsrh2igqla1qz0ll97czfw2x42icw` remain **evaluated predictions only**.
+The dependent bundle/inspector were not run after the failed kernel build.
+Once store capacity is restored, retry the named kernel command, then build
+`.#kernelMainlineDrmTrialBootFiles` sequentially under the same lock and
+inspect that exact realized bundle with `tools/mainline-drm-trial-inspect.py`.
+Source/object/DTB proof remains valid independently of this storage failure.
 
 ## Remaining gate
 
