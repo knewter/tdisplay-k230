@@ -5753,6 +5753,15 @@ mod tests {
         if let Some(path) = std::env::var_os("K230_VISUAL_GENERATION_DIR") {
             snapshot = visual_generation(Path::new(&path));
         }
+        let expected_drawer_alpha = snapshot
+            .sections
+            .get("launcher")
+            .and_then(|section| section.get("background"))
+            .and_then(|token| match token {
+                AppearanceToken::Brush(brush) => Some((255.0 * brush.alpha).round() as u8),
+                _ => None,
+            })
+            .unwrap_or(255);
         let apps = vec![
             AppEntry {
                 id: "fixture.desktop".into(),
@@ -5982,10 +5991,9 @@ mod tests {
                 .unwrap();
             assert_eq!(frame.len(), 568 * 1232 * 4);
             if route == Route::Drawer {
-                assert_eq!(
-                    frame[(600 * 568 + 10) * 4 + 3],
-                    255,
-                    "drawer panel must be opaque after theme composition"
+                assert!(
+                    frame[(600 * 568 + 10) * 4 + 3].abs_diff(expected_drawer_alpha) <= 1,
+                    "drawer panel alpha must follow the active generation's launcher background"
                 );
                 assert_eq!(
                     &frame[0..4],
@@ -7581,16 +7589,23 @@ mod tests {
         };
         let mut cache = DrawerGridCache::default();
         let mut icons = IconCache::new();
-        cache.ensure(&content, None, 568, 1232, &mut icons);
+        let dark = fixture_theme("dark-generation", (28, 28, 46));
+        let light = fixture_theme("light-generation", (239, 241, 245));
+        cache.ensure(&content, Some(&dark), 568, 1232, &mut icons);
         assert_eq!(cache.rebuilds(), 1);
 
-        // Same everything: a cache hit, not a rebuild.
-        cache.ensure(&content, None, 568, 1232, &mut icons);
+        // Same generation and content: a cache hit, not a rebuild.
+        cache.ensure(&content, Some(&dark), 568, 1232, &mut icons);
         assert_eq!(cache.rebuilds(), 1);
+
+        // A committed appearance generation repaints drawer chrome even
+        // when the catalog, width and query are unchanged.
+        cache.ensure(&content, Some(&light), 568, 1232, &mut icons);
+        assert_eq!(cache.rebuilds(), 2);
 
         // A different width changes the key.
-        cache.ensure(&content, None, 600, 1232, &mut icons);
-        assert_eq!(cache.rebuilds(), 2);
+        cache.ensure(&content, Some(&light), 600, 1232, &mut icons);
+        assert_eq!(cache.rebuilds(), 3);
 
         // A different query changes the key, even over the same apps.
         let filtered_search = DrawerSearch {
@@ -7602,8 +7617,8 @@ mod tests {
             apps: vec![&apps[0]],
             search: &filtered_search,
         };
-        cache.ensure(&filtered_content, None, 600, 1232, &mut icons);
-        assert_eq!(cache.rebuilds(), 3);
+        cache.ensure(&filtered_content, Some(&light), 600, 1232, &mut icons);
+        assert_eq!(cache.rebuilds(), 4);
     }
 
     #[test]

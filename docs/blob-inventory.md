@@ -1642,6 +1642,11 @@ DATA a97c7db6d21d50160bbd33877291eba61245b9778728e4c8624df9253c4a16a6 docs/evide
 DATA fbf3f991f1b88f3ba08b2b7b784ea622ea70fbc3749b468dcd33c1acd9601805 docs/evidence/boot-verification/coherent-manual-comparison/candidate-home-panel.jpg
 DATA 4e178a71d8ed608b6c4fead588c1c083f88ebea474f8290a0176594bf44d9e17 docs/evidence/boot-verification/coherent-ordinary-boot/home.png
 DATA ebb2147f1f632b9d824775d9f010db51061bf87f1241c80b052481e56fb9be82 docs/evidence/boot-verification/coherent-ordinary-boot/home-panel.jpg
+DATA 00e73f26a9c1a369b358c42113030b9fb746d39527a7c0c1ff7dcf7460d8e35e docs/evidence/omarchy-themes/drawer-card-generation/dark-card-qemu.png
+DATA 8ecd5d4d0e23f3ea9e2337ecef9cdda69a3ebd61f9d721f2541132129e5a8c8d docs/evidence/omarchy-themes/drawer-card-generation/dark-drawer-host.png
+DATA 0779dc3360a5f98a39491ac79a1f3bcb050ee486f5614a4af4e34e77215e037d docs/evidence/omarchy-themes/drawer-card-generation/light-card-qemu.png
+DATA c675526827cc922b051f30d402807cc6b13afb226756bc8d47ef17aa630f583b docs/evidence/omarchy-themes/drawer-card-generation/light-drawer-host.png
+DATA 1d1c0a97fb4998450f271b580db263aa21bb8e1ed00fcb1a123cb6b8ab68eb18 docs/evidence/omarchy-themes/drawer-card-generation/light-drawer-qemu.png
 ```
 
 `group:` rows stand for a directory whose members are enumerated by

@@ -17,13 +17,14 @@ DEFAULT_ID = '111111111111111111111111'
 NEXT_ID = '222222222222222222222222'
 
 
-def generation(root, identity, *, gradient=False, wallpaper=False):
+def generation(root, identity, *, gradient=False, wallpaper=False, icon_theme=None):
     directory = root / 'generations' / identity
     directory.mkdir(parents=True)
     palette = {'background': '#1e1e2e', 'dark_background': '#161622',
                'lighter_background': '#313244', 'foreground': '#cdd6f4'}
     (directory / 'report.json').write_text(json.dumps(
-        {'generation': identity, 'palette': palette}))
+        {'generation': identity, 'palette': palette,
+         **({'icon_theme': icon_theme} if icon_theme else {})}))
     brush = {'kind': 'brush', 'stops': [
         {'argb': '#ff113355', 'offset': 0},
         {'argb': '#804477aa', 'offset': 1}], 'angle_degrees': 72.0, 'alpha': .75}
@@ -56,12 +57,13 @@ class AppearanceReceiver(unittest.TestCase):
         self.temp = tempfile.TemporaryDirectory(prefix='card-appearance-test-')
         self.root = Path(self.temp.name)
         self.default = generation(self.root, DEFAULT_ID)
-        self.next = generation(self.root, NEXT_ID, gradient=True, wallpaper=True)
+        self.next = generation(self.root, NEXT_ID, gradient=True, wallpaper=True,
+                               icon_theme='Yaru-blue')
         self.socket = self.root / 'card-appearance.sock'
         self.process = subprocess.Popen([str(self.binary), str(self.socket), str(self.root),
                                          str(self.default)], stdout=subprocess.PIPE,
                                         stderr=subprocess.PIPE, text=True)
-        self.assertEqual(self.process.stdout.readline().strip(), f'APPLY {DEFAULT_ID} 1 1 0')
+        self.assertEqual(self.process.stdout.readline().strip(), f'APPLY {DEFAULT_ID} 1 1 0 -')
         self.assertEqual(self.process.stdout.readline().strip(), 'READY')
 
     def tearDown(self):
@@ -92,15 +94,15 @@ class AppearanceReceiver(unittest.TestCase):
         # Task 3.1b's advisory warm-up hook fires once per successfully
         # validated prepare, strictly before that prepare's own ack is
         # observable to the client -- see card_appearance_receiver.c.
-        self.assertEqual(self.process.stdout.readline().strip(), f'PREPARE {NEXT_ID} 2 1 1')
+        self.assertEqual(self.process.stdout.readline().strip(), f'PREPARE {NEXT_ID} 2 1 1 Yaru-blue')
         self.assertEqual(self.exchange('commit', NEXT_ID, self.next)['status'], 'ok')
-        self.assertEqual(self.process.stdout.readline().strip(), f'APPLY {NEXT_ID} 2 1 1')
+        self.assertEqual(self.process.stdout.readline().strip(), f'APPLY {NEXT_ID} 2 1 1 Yaru-blue')
         self.assertEqual(self.exchange('commit', NEXT_ID, self.next)['status'], 'ok')
         self.assertEqual(self.exchange('rollback', None, None)['status'], 'ok')
-        self.assertEqual(self.process.stdout.readline().strip(), f'APPLY {NEXT_ID} 2 1 1')
-        self.assertEqual(self.process.stdout.readline().strip(), f'APPLY {DEFAULT_ID} 1 1 0')
+        self.assertEqual(self.process.stdout.readline().strip(), f'APPLY {NEXT_ID} 2 1 1 Yaru-blue')
+        self.assertEqual(self.process.stdout.readline().strip(), f'APPLY {DEFAULT_ID} 1 1 0 -')
         self.assertEqual(self.exchange('rollback', None, None)['status'], 'ok')
-        self.assertEqual(self.process.stdout.readline().strip(), f'APPLY {DEFAULT_ID} 1 1 0')
+        self.assertEqual(self.process.stdout.readline().strip(), f'APPLY {DEFAULT_ID} 1 1 0 -')
 
     def test_failed_prepare_cannot_commit_and_rollback_still_acks(self):
         (self.next / 'appearance.json').write_text(json.dumps(
@@ -109,7 +111,7 @@ class AppearanceReceiver(unittest.TestCase):
         self.assertEqual(self.exchange('prepare', NEXT_ID, self.next, **prior)['status'], 'error')
         self.assertEqual(self.exchange('commit', NEXT_ID, self.next)['status'], 'error')
         self.assertEqual(self.exchange('rollback', None, None)['status'], 'ok')
-        self.assertEqual(self.process.stdout.readline().strip(), f'APPLY {DEFAULT_ID} 1 1 0')
+        self.assertEqual(self.process.stdout.readline().strip(), f'APPLY {DEFAULT_ID} 1 1 0 -')
 
     def test_foreign_path_rejected_and_socket_private(self):
         self.assertEqual(os.stat(self.socket).st_mode & 0o777, 0o600)
@@ -118,7 +120,7 @@ class AppearanceReceiver(unittest.TestCase):
         foreign.symlink_to(self.next)
         self.assertEqual(self.exchange('prepare', NEXT_ID, foreign,
                                        previous_generation=None, previous_path=None)['status'], 'ok')
-        self.assertEqual(self.process.stdout.readline().strip(), f'PREPARE {NEXT_ID} 2 1 1')
+        self.assertEqual(self.process.stdout.readline().strip(), f'PREPARE {NEXT_ID} 2 1 1 Yaru-blue')
         # A real foreign tree cannot resolve to the prepared cache.
         other = self.root / 'other'
         other.mkdir()
@@ -133,7 +135,7 @@ class AppearanceReceiver(unittest.TestCase):
                                     str(self.default)], stdout=subprocess.PIPE,
                                    stderr=subprocess.PIPE, text=True)
         try:
-            self.assertEqual(process.stdout.readline().strip(), f'APPLY {DEFAULT_ID} 1 1 0')
+            self.assertEqual(process.stdout.readline().strip(), f'APPLY {DEFAULT_ID} 1 1 0 -')
             self.assertEqual(process.stdout.readline().strip(), 'READY')
             self.assertTrue(fresh_socket.is_socket())
         finally:
@@ -153,18 +155,18 @@ class AppearanceReceiver(unittest.TestCase):
             self.assertEqual(self.process.stdout.readline().strip(), 'READY')
 
         pointer.symlink_to(self.next)
-        restart(f'APPLY {NEXT_ID} 2 1 1')
+        restart(f'APPLY {NEXT_ID} 2 1 1 Yaru-blue')
 
         foreign = self.root / 'foreign' / NEXT_ID
         foreign.parent.mkdir()
         foreign.mkdir()
         pointer.unlink()
         pointer.symlink_to(foreign)
-        restart(f'APPLY {DEFAULT_ID} 1 1 0')
+        restart(f'APPLY {DEFAULT_ID} 1 1 0 -')
 
         pointer.unlink()
         pointer.symlink_to(self.root / 'missing' / NEXT_ID)
-        restart(f'APPLY {DEFAULT_ID} 1 1 0')
+        restart(f'APPLY {DEFAULT_ID} 1 1 0 -')
 
     def test_rgba_palette_is_accepted(self):
         report = self.next / 'report.json'
@@ -173,7 +175,7 @@ class AppearanceReceiver(unittest.TestCase):
         report.write_text(json.dumps(data))
         self.assertEqual(self.exchange('prepare', NEXT_ID, self.next,
                                        previous_generation=None, previous_path=None)['status'], 'ok')
-        self.assertEqual(self.process.stdout.readline().strip(), f'PREPARE {NEXT_ID} 2 1 1')
+        self.assertEqual(self.process.stdout.readline().strip(), f'PREPARE {NEXT_ID} 2 1 1 Yaru-blue')
 
     def test_show_renders_a_prepared_candidate_without_disturbing_the_two_phase_state(self):
         # Optimistic Apply (2026-09-25, user-approved): "show" is a pure
@@ -182,17 +184,17 @@ class AppearanceReceiver(unittest.TestCase):
         # exactly as able to succeed as if "show" had never been sent.
         prior = {'previous_generation': None, 'previous_path': None}
         self.assertEqual(self.exchange('prepare', NEXT_ID, self.next, **prior)['status'], 'ok')
-        self.assertEqual(self.process.stdout.readline().strip(), f'PREPARE {NEXT_ID} 2 1 1')
+        self.assertEqual(self.process.stdout.readline().strip(), f'PREPARE {NEXT_ID} 2 1 1 Yaru-blue')
         self.assertEqual(self.exchange('show', NEXT_ID, self.next)['status'], 'ok')
-        self.assertEqual(self.process.stdout.readline().strip(), f'APPLY {NEXT_ID} 2 1 1')
+        self.assertEqual(self.process.stdout.readline().strip(), f'APPLY {NEXT_ID} 2 1 1 Yaru-blue')
         # A second "show" for the same still-prepared candidate is equally
         # harmless (idempotent, not a one-shot).
         self.assertEqual(self.exchange('show', NEXT_ID, self.next)['status'], 'ok')
-        self.assertEqual(self.process.stdout.readline().strip(), f'APPLY {NEXT_ID} 2 1 1')
+        self.assertEqual(self.process.stdout.readline().strip(), f'APPLY {NEXT_ID} 2 1 1 Yaru-blue')
         # The real commit this "show" only anticipated still succeeds,
         # proving "show" never touched `service.prepared`/`candidate`.
         self.assertEqual(self.exchange('commit', NEXT_ID, self.next)['status'], 'ok')
-        self.assertEqual(self.process.stdout.readline().strip(), f'APPLY {NEXT_ID} 2 1 1')
+        self.assertEqual(self.process.stdout.readline().strip(), f'APPLY {NEXT_ID} 2 1 1 Yaru-blue')
 
     def test_show_is_rejected_for_a_generation_that_was_never_prepared(self):
         # Cold/unprepared: "show" must never render anything this receiver
@@ -204,7 +206,7 @@ class AppearanceReceiver(unittest.TestCase):
         # prepared.
         prior = {'previous_generation': None, 'previous_path': None}
         self.assertEqual(self.exchange('prepare', NEXT_ID, self.next, **prior)['status'], 'ok')
-        self.assertEqual(self.process.stdout.readline().strip(), f'PREPARE {NEXT_ID} 2 1 1')
+        self.assertEqual(self.process.stdout.readline().strip(), f'PREPARE {NEXT_ID} 2 1 1 Yaru-blue')
         self.assertEqual(self.exchange('show', DEFAULT_ID, self.default)['status'], 'error')
 
     def test_show_never_blocks_a_later_rollback_from_restoring_the_previous_generation(self):
@@ -215,11 +217,11 @@ class AppearanceReceiver(unittest.TestCase):
         # what eventually settles as durably active.
         prior = {'previous_generation': DEFAULT_ID, 'previous_path': str(self.default)}
         self.assertEqual(self.exchange('prepare', NEXT_ID, self.next, **prior)['status'], 'ok')
-        self.assertEqual(self.process.stdout.readline().strip(), f'PREPARE {NEXT_ID} 2 1 1')
+        self.assertEqual(self.process.stdout.readline().strip(), f'PREPARE {NEXT_ID} 2 1 1 Yaru-blue')
         self.assertEqual(self.exchange('show', NEXT_ID, self.next)['status'], 'ok')
-        self.assertEqual(self.process.stdout.readline().strip(), f'APPLY {NEXT_ID} 2 1 1')
+        self.assertEqual(self.process.stdout.readline().strip(), f'APPLY {NEXT_ID} 2 1 1 Yaru-blue')
         self.assertEqual(self.exchange('rollback', DEFAULT_ID, self.default)['status'], 'ok')
-        self.assertEqual(self.process.stdout.readline().strip(), f'APPLY {DEFAULT_ID} 1 1 0')
+        self.assertEqual(self.process.stdout.readline().strip(), f'APPLY {DEFAULT_ID} 1 1 0 -')
 
     def test_fifo_payload_rejected_without_blocking_compositor(self):
         payload = self.next / 'appearance.json'

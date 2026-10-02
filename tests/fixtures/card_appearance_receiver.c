@@ -9,8 +9,9 @@ static volatile sig_atomic_t running = 1;
 static void stop(int signal_number) { (void)signal_number; running = 0; }
 static bool apply(const struct card_appearance *appearance, void *unused) {
 	(void)unused;
-	printf("APPLY %s %zu %zu %d\n", appearance->generation,
-		appearance->card.count, appearance->selected.count, appearance->wallpaper);
+	printf("APPLY %s %zu %zu %d %s\n", appearance->generation,
+		appearance->card.count, appearance->selected.count, appearance->wallpaper,
+		appearance->icon_theme[0] ? appearance->icon_theme : "-");
 	fflush(stdout);
 	return true;
 }
@@ -20,8 +21,9 @@ static bool apply(const struct card_appearance *appearance, void *unused) {
  * test_card_shell_appearance.py's assertions on this line's ordering. */
 static void prepare_candidate(const struct card_appearance *appearance, void *unused) {
 	(void)unused;
-	printf("PREPARE %s %zu %zu %d\n", appearance->generation,
-		appearance->card.count, appearance->selected.count, appearance->wallpaper);
+	printf("PREPARE %s %zu %zu %d %s\n", appearance->generation,
+		appearance->card.count, appearance->selected.count, appearance->wallpaper,
+		appearance->icon_theme[0] ? appearance->icon_theme : "-");
 	fflush(stdout);
 }
 int main(int argc, char **argv) {

@@ -3,6 +3,7 @@
 from pathlib import Path
 import json
 import argparse
+import os
 import subprocess
 import re
 import sys
@@ -146,7 +147,7 @@ class SystemSurfaceCoverage(unittest.TestCase):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--surface", choices=("system",))
+    parser.add_argument("--surface", choices=("system", "drawer-card"))
     args, remaining = parser.parse_known_args()
     program = unittest.main(argv=[sys.argv[0], *remaining], exit=False)
     if not program.result.wasSuccessful():
@@ -171,6 +172,68 @@ def main():
         except OSError as error:
             print(f"actual system renderer check unavailable: {error}", file=sys.stderr)
             return 1
+    if args.surface == "drawer-card":
+        # Exercise the production drawer cache key, Rust's real inherited
+        # icon resolver/cache invalidation, and the card appearance receiver
+        # that consumes report.json's selected icon_theme. These are host
+        # checks; they do not stand in for panel/finger acceptance.
+        commands = [
+            ["cargo", "test", "--offline", "--manifest-path",
+             str(ROOT / "nix/rust-shell-client/Cargo.toml"), "--lib",
+             "drawer_grid_cache_rebuilds_only_when_its_own_key_changes", "--", "--nocapture"],
+            ["cargo", "test", "--offline", "--manifest-path",
+             str(ROOT / "nix/rust-shell-client/Cargo.toml"), "--lib",
+             "theme_inheritance_svg_decode_and_bounded_cache", "--", "--nocapture"],
+            [sys.executable, str(ROOT / "tests/test_card_shell_icons.py")],
+            [sys.executable, str(ROOT / "tests/test_card_shell_appearance.py")],
+        ]
+        for command in commands:
+            try:
+                result = subprocess.run(command, check=False, capture_output=True, text=True)
+            except OSError as error:
+                print(f"drawer/card proof unavailable: {error}", file=sys.stderr)
+                return 1
+            print(result.stdout, end="")
+            print(result.stderr, end="", file=sys.stderr)
+            if result.returncode:
+                return result.returncode
+        # Captures use the same actual RendererCache test as its assertions.
+        # The two immutable generation paths and output root are supplied by
+        # the evidence recipe, so a normal unit-only invocation cannot create
+        # misleading mock or installed-device screenshots.
+        capture = os.environ.get("K230_THEME_CAPTURE_DIR")
+        generations = [os.environ.get("K230_THEME_DARK_GENERATION"),
+                       os.environ.get("K230_THEME_LIGHT_GENERATION")]
+        if not capture or not all(generations):
+            print("drawer/card host evidence needs K230_THEME_CAPTURE_DIR, "
+                  "K230_THEME_DARK_GENERATION, and K230_THEME_LIGHT_GENERATION",
+                  file=sys.stderr)
+            return 1
+        for mode, generation in zip(("dark", "light"), generations):
+            env = os.environ.copy()
+            env["K230_VISUAL_GENERATION_DIR"] = generation
+            env["K230_VISUAL_FIXTURE_DIR"] = str(Path(capture) / mode)
+            env["K230_VISUAL_REQUIRE_ICONS"] = "1"
+            command = ["cargo", "test", "--offline", "--manifest-path",
+                       str(ROOT / "nix/rust-shell-client/Cargo.toml"), "--lib",
+                       "themed_surface_fixtures_keep_live_area_clear_and_use_authored_roles",
+                       "--", "--nocapture"]
+            try:
+                result = subprocess.run(command, check=False, capture_output=True,
+                                        text=True, env=env)
+            except OSError as error:
+                print(f"{mode} production drawer capture unavailable: {error}",
+                      file=sys.stderr)
+                return 1
+            print(result.stdout, end="")
+            print(result.stderr, end="", file=sys.stderr)
+            if result.returncode:
+                return result.returncode
+            drawer = Path(env["K230_VISUAL_FIXTURE_DIR"]) / "drawer.png"
+            if not drawer.is_file() or drawer.stat().st_size < 1024:
+                print(f"{mode} production drawer capture missing: {drawer}",
+                      file=sys.stderr)
+                return 1
     return 0
 
 
