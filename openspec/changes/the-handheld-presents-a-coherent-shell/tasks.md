@@ -60,7 +60,7 @@ Some named host files and narrow packages now exist as source checkpoints; each 
 - [ ] 5.3 Record real-finger drawer/Settings scrolling, icon/text/fallback readability, long-press cancellation, app/keyboard conflict and accessibility aid discovery; verify `python3 tools/capture-feature.py coherent-gestures --provenance real-touch --duration 60 --description 'Gesture ownership and drawer discovery on glass' --output-dir docs/evidence/coherent-gestures` with an outcome table and no accidental activations. Keep the old bar rollback if any mandatory route fails.
 - [ ] 5.4 Record preview while typing, shade scroll/side-swipe cancellation and committed dismiss, critical recovery and failed settings action; verify `python3 tools/capture-feature.py coherent-notifications --provenance real-touch --duration 60 --description 'Shade notification and settings motion on glass' --output-dir docs/evidence/coherent-notifications` with sanitized timestamps and outcome table.
 - [ ] 5.5 Measure two-app live drag, app/deck reversal, drawer rise and shade arrival with `python3 tools/shell-motion-trace.py --board --output docs/evidence/coherent-shell/motion.json` under the board reservation; correlate input→scene commit→output presentation and camera-visible movement, report p50/p95/p99, blank/missed frames, CPU/RSS, renderer and actual cadence. Record failed budgets honestly.
-- [ ] 5.6 Validate after committed evidence and leave unmet physical tasks open; verify `openspec validate the-handheld-presents-a-coherent-shell --strict` and `python3 tools/work-status.py`. Do not archive from host-only or QEMU proof.
+- [x] 5.6 Validated after committed evidence on 2026-10-01; `openspec validate the-handheld-presents-a-coherent-shell --strict` passed and `python3 tools/work-status.py` completed its cached audit. This closes validation/bookkeeping only. Unmet physical tasks remain unchecked; the umbrella is not archived.
 
 - [ ] 5.7 On the reserved board, record up-then-left/right in one contact, both bottom quick-switch directions, stationary hold, diagonal reversal, one-app/end-of-deck behavior, target exit, and app/keyboard conflicts. Verify `python3 tools/capture-feature.py coherent-two-axis --provenance real-touch --duration 60 --description 'Two-axis app entry and bottom quick switch on glass' --output-dir docs/evidence/coherent-two-axis` with installed revision, sanitized scene/focus observations and an outcome table. A host/QEMU pass or native screenshot alone does not complete physical tracking/feel acceptance.
 
@@ -91,3 +91,15 @@ Settings volume-layout follow-up is built and running on the board from source
 The original theme/volume were restored; boot/profile remain unchanged. This
 qualifies these bounded controls, not all six surfaces or the unperformed
 real-glass/persistent-boot parts of 6.4 and 5.8.
+
+2026-10-01 persistent-deployment reconciliation: the exact source `5bb67db1`
+Rust executable (`3hy6h165…`) now runs in normal system/profile `p1a1hz…`
+after an untouched ordinary reboot with matching Image/initrd/DTB/init selector.
+All three shell services are active, Home is visible in a reviewed native
+capture and panel photograph, and saved appearance generation/report hashes
+are unchanged. Proof:
+[`coherent-ordinary-boot`](../../../docs/evidence/boot-verification/coherent-ordinary-boot/README.md).
+This supersedes the runtime-only deployment note above, but does not tick 5.8:
+that task explicitly follows the required on-glass gates, several of which
+remain open in this umbrella. It also does not complete all-six-surface glass
+polish in 6.4. The selected-system boot proposal owns the bounded reboot proof.

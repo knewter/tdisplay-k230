@@ -17,7 +17,7 @@
       "lane": "in-progress",
       "source": "in-progress",
       "physical": "pending",
-      "next": "Test installed keyboard gestures, Wi-Fi Settings and app motion on glass; complete remaining design refinements, recovery and persistent boot/theme proof.",
+      "next": "Complete remaining accessibility, coordinated-motion and six-surface glass polish gates; selected-system persistence and remembered appearance now pass.",
       "dependencies": [
         "2026-10-01-the-shell-manages-apps-as-cards",
         "the-shell-loads-omarchy-themes"
@@ -50,10 +50,11 @@
         "docs/evidence/coherent-shell/boot-artifacts/README.md",
         "docs/evidence/omarchy-themes/community-board-fixed/README.md",
         "docs/evidence/shell-polish/settings-volume-layout/README.md",
-        "docs/evidence/shell-polish/settings-volume-layout/board/README.md"
+        "docs/evidence/shell-polish/settings-volume-layout/board/README.md",
+        "docs/evidence/boot-verification/coherent-ordinary-boot/README.md"
       ],
-      "rationale": "Source 3c502a37 is test-activated with portrait-crop theme preview and the community rgba parser fix. Dark, light and unchanged community themes passed live activation and restoration on this exact system. Notification motion is newer source work; the host SD image still targets the previous 48x70 preview. Physical touch and persistent boot gates remain open.",
-      "reviewRevision": "3c502a37540375a74685f70b21d73eaee28c40bc",
+      "rationale": "Source 5bb67db1 runs in matching normal system/profile p1a1hz after ordinary reboot. Services, Home captures and saved appearance hashes pass; the umbrella retains distinct accessibility, motion/trace and six-surface physical gates.",
+      "reviewRevision": "e9f4148957cc81c84590c0ca57a33d5964858110",
       "cover": {
         "path": "docs/evidence/coherent-shell/refined-installed/drawer.png",
         "caption": "Installed app grid with real icons \u2014 touch acceptance pending",
