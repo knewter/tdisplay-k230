@@ -257,5 +257,248 @@ class ThemeTrialTests(Fixture):
             trial.candidate(path)
 
 
+class RebootTrialTests(Fixture):
+    def setUp(self):
+        super().setUp()
+        _swap_pointer(self.state, self.previous)
+        # Deliberately include unrelated consumer-private theme state: whole
+        # directory preservation must retain it, beyond the old snapshot.
+        (self.state / "keyboard-appearance").mkdir()
+        (self.state / "keyboard-appearance" / "sentinel").write_bytes(b"private unchanged\n")
+        (self.state / ".activation.lock").touch()
+        self.original_bytes = self.state_bytes()
+        self.private = self.root / "persistent-private"
+        self.private.mkdir(mode=0o700)
+        self.source = self.private / "sources" / "trial-fixture"
+        self.source.mkdir(parents=True)
+        (self.source / "colors.toml").write_text('background="#123456"\n')
+        self.source_bytes = (self.source / "colors.toml").read_bytes()
+        self.manifest["reboot_trial"] = {"theme_name": "trial-fixture", "background_id": "d" * 24}
+        self.boot_number = 0
+        self.bad_preview = False
+        self.catalog_calls = []
+
+    def state_bytes(self):
+        return {str(p.relative_to(self.state)): ("link", os.readlink(p)) if p.is_symlink()
+                else ("file", p.read_bytes()) for p in self.state.rglob("*")
+                if p.is_file() or p.is_symlink()}
+
+    def reboot_call(self, argv):
+        self.catalog_calls.append(argv)
+        self.assertEqual(argv[argv.index("--user-themes") + 1], str(self.private / "sources"))
+        self.assertEqual(argv[argv.index("--helper-socket") + 1], str(self.private / "disabled-helper.sock"))
+        self.assertEqual(argv[argv.index("--state-root") + 1], str(self.state))
+        action = next(value for value in argv if value in ("list", "preview", "activate"))
+        if action == "list":
+            pointer = _pointer(self.state)
+            return {"schema": 1, "themes": [
+                {"name": "trial-fixture", "origin": "user", "id": "a" * 24}
+            ] if self.source.exists() else [], "active": {
+                "id": "a" * 24 if self.source.exists() and pointer else None,
+                "generation": pointer.name if pointer else None}}
+        generation = self.state / "generations" / ("2" * 24)
+        if action == "preview":
+            generation.mkdir(exist_ok=True)
+            (generation / "report.json").write_text(json.dumps({
+                "generation": generation.name, "selected_background": "backgrounds/trial.webp",
+                "backgrounds": ["backgrounds/trial.webp"], "source": str(self.source)}))
+            return {"schema": 1, "generation": generation.name, "backgrounds": [
+                {"selected": True, "id": ("e" if self.bad_preview else "d") * 24}]}
+        # Use real pointer publication and preference serialization, with
+        # injected transport only. No fake reboot or panel result is exported.
+        self.assertEqual(argv[argv.index("--expected-generation") + 1], generation.name)
+        trial.activate_generation(generation, state_root=self.state,
+                                  endpoint=self.endpoints[0], endpoints=self.endpoints, transport=self.transport,
+                                  app_sync=lambda *_a, **_k: None)
+        publish_preferences(self.state, b'{"version":1,"choices":{"' + b"a" * 64 + b'":"backgrounds/trial.webp"}}\n')
+        return {"schema": 1, "activated": True, "generation": generation.name}
+
+    def runner(self, **kwargs):
+        return trial.RebootTrial(self.manifest, call=self.reboot_call,
+                                capture=lambda role, raw: {
+                                    "kind": "host-injected-test-only", "sha256": "c" * 64, "bytes": 4},
+                                transport=self.transport,
+                                app_sync=lambda *_a, **_k: None,
+                                boot_reader=lambda: f"00000000-0000-0000-0000-{self.boot_number:012x}",
+                                **kwargs)
+
+    def start(self):
+        return self.runner().run_step(self.out, self.private, "begin")
+
+    def next_boot(self):
+        self.boot_number += 1
+        return self.runner().run_step(self.out, self.private, "resume")
+
+    def assert_restored(self):
+        self.assertEqual(self.state_bytes(), self.original_bytes)
+        self.assertEqual((self.source / "colors.toml").read_bytes(), self.source_bytes)
+        self.assertEqual(_pointer(self.state), self.previous)
+        self.assertEqual(trial.app_pointer(self.state), self.app_before)
+
+    def test_three_distinct_boots_gate_remembered_fresh_state_and_missing_source(self):
+        self.assertEqual(self.start()["next_phase"], "remembered")
+        self.assertEqual(self.next_boot()["next_phase"], "fresh-theme-state")
+        self.assertIsNone(_pointer(self.state))
+        self.assertIsNone(trial.app_pointer(self.state))
+        self.assertIsNone(trial.read_preferences(self.state)[0])
+        self.assertEqual(self.next_boot()["next_phase"], "unavailable-source")
+        self.assertFalse(self.source.exists())
+        # Model the required default policy at startup; this is not the
+        # currently implemented retained-generation behavior.
+        _swap_pointer(self.state, None)
+        result = self.next_boot()
+        self.assertEqual(result["trial"], "completed-needs-operator-review")
+        self.assertEqual([r["gate"] for r in result["arms"]], ["state-check-passed"] * 3)
+        self.assertEqual(len({r["boot_id"] for r in result["boots"]}), 4)
+        self.assertEqual(result["physical_observation"], "UNVERIFIED")
+        self.assertEqual(result["fresh_home"], "UNVERIFIED")
+        self.assert_restored()
+        public = (self.out / "result.json").read_text()
+        for secret in (str(self.source), str(self.state), "trial-fixture", "private unchanged"):
+            self.assertNotIn(secret, public)
+
+    def test_retained_generation_is_failure_and_restores_normal_state_and_fixture(self):
+        self.start()
+        self.next_boot()
+        self.next_boot()
+        with self.assertRaisesRegex(RuntimeError, "reboot trial failed"):
+            self.next_boot()
+        result = json.loads((self.out / "result.json").read_text())
+        self.assertEqual(result["failure_stage"], "unavailable-source")
+        self.assertEqual(result["arms"][-1]["gate"], "failed-default-required")
+        self.assertEqual(result["restoration"], "passed")
+        self.assert_restored()
+
+    def test_same_boot_refuses_without_changes_and_can_later_resume(self):
+        self.start()
+        before = (self.private / "reboot.json").read_bytes()
+        with self.assertRaisesRegex(RuntimeError, "different boot"):
+            self.runner().run_step(self.out, self.private, "resume")
+        self.assertEqual((self.private / "reboot.json").read_bytes(), before)
+        self.assertEqual(self.next_boot()["next_phase"], "fresh-theme-state")
+        self.runner().recover(self.private)
+        self.assert_restored()
+
+    def test_candidate_and_workload_mutation_refuse_before_resume_mutation(self):
+        self.start()
+        self.boot_number += 1
+        self.manifest["source_revision"] = "b" * 40
+        with self.assertRaisesRegex(RuntimeError, "candidate identity"):
+            self.runner().run_step(self.out, self.private, "resume")
+        self.manifest["source_revision"] = "a" * 40
+        self.workload.write_text("changed")
+        with self.assertRaisesRegex(RuntimeError, "workload artifact"):
+            self.runner().run_step(self.out, self.private, "resume")
+        # Recovery deliberately remains available if workload bytes disappear.
+        self.runner().recover(self.private)
+        self.assert_restored()
+
+    def test_wrong_remembered_wallpaper_fails_with_normal_restoration(self):
+        self.start()
+        self.bad_preview = True
+        with self.assertRaisesRegex(RuntimeError, "reboot trial failed"):
+            self.next_boot()
+        self.assertEqual(json.loads((self.out / "result.json").read_text())["failure_stage"], "remembered")
+        self.assert_restored()
+
+    def test_preference_bytes_changed_across_boot_fail_with_restoration(self):
+        self.start()
+        publish_preferences(self.state, self.prefs)
+        with self.assertRaisesRegex(RuntimeError, "reboot trial failed"):
+            self.next_boot()
+        self.assert_restored()
+
+    def test_interrupt_recovery_after_missing_source_is_idempotent(self):
+        self.start()
+        self.next_boot()
+        self.next_boot()
+        self.runner().recover(self.private)
+        self.runner().recover(self.private)
+        self.assert_restored()
+
+    def test_interrupt_before_first_reboot_restores_every_original_state_file(self):
+        self.start()
+        self.runner().recover(self.private)
+        self.assert_restored()
+
+    def test_interrupt_while_fresh_state_waits_restores_every_original_state_file(self):
+        self.start()
+        self.next_boot()
+        self.runner().recover(self.private)
+        self.assert_restored()
+
+    def test_changed_active_wallpaper_report_fails_and_restores(self):
+        self.start()
+        report = _pointer(self.state) / "report.json"
+        data = json.loads(report.read_text())
+        data["backgrounds"] = ["backgrounds/changed.webp"]
+        data["selected_background"] = "backgrounds/changed.webp"
+        report.write_text(json.dumps(data))
+        with self.assertRaisesRegex(RuntimeError, "reboot trial failed"):
+            self.next_boot()
+        self.assert_restored()
+
+    def test_unpinned_reboot_choice_is_rejected_by_manifest(self):
+        data = self.manifest.copy()
+        data["default_generation"] = "/nix/store/" + "a" * 32 + "-default/generations/" + "4" * 24
+        data["reboot_trial"] = {"theme_name": "trial-fixture", "background_id": "unbounded"}
+        path = self.root / "candidate.json"
+        path.write_text(json.dumps(data))
+        with self.assertRaisesRegex(ValueError, "reboot trial choice"):
+            trial.candidate(path)
+
+    def test_missing_catalog_active_fields_do_not_pass_default_gate(self):
+        self.start()
+        self.next_boot()
+        runner = self.runner()
+        actual_call = self.reboot_call
+
+        def broken_call(argv):
+            value = actual_call(argv)
+            if "list" in argv:
+                value.pop("active")
+            return value
+
+        runner.call = broken_call
+        self.boot_number += 1
+        with self.assertRaisesRegex(RuntimeError, "reboot trial failed"):
+            runner.run_step(self.out, self.private, "resume")
+        self.assert_restored()
+
+    def test_restore_ack_failure_is_reported_and_manual_retry_works(self):
+        self.start()
+        original_transport = self.transport
+        fail = [True]
+
+        def transport(endpoint, phase, generation):
+            if fail[0] and phase == "prepare" and generation == self.previous:
+                raise OSError("private transport error must stay out of evidence")
+            return original_transport(endpoint, phase, generation)
+
+        runner = self.runner()
+        runner.transport = transport
+        self.boot_number += 1
+        self.bad_preview = True
+        with self.assertRaisesRegex(RuntimeError, "reboot trial failed"):
+            runner.run_step(self.out, self.private, "resume")
+        public = (self.out / "result.json").read_text()
+        self.assertEqual(json.loads(public)["restoration"], "FAILED")
+        self.assertNotIn("private transport error", public)
+        fail[0] = False
+        runner.recover(self.private)
+        self.assert_restored()
+
+    def test_private_record_and_path_gates_reject_before_state_mutation(self):
+        self.private.chmod(0o755)
+        with self.assertRaisesRegex(RuntimeError, "owned, private"):
+            self.start()
+        self.private.chmod(0o700)
+        self.source.rename(self.source.with_name("absent"))
+        with self.assertRaisesRegex(RuntimeError, "fixture unavailable"):
+            self.start()
+        self.assertEqual(self.state_bytes(), self.original_bytes)
+
+
+
 if __name__ == "__main__":
     unittest.main()

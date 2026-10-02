@@ -2,8 +2,9 @@
 """Reserved-board theme trial. Public output is fixed; raw captures stay private.
 
 Run as the shell user inside its active Wayland session. The operator owns the
-board reservation and keeps the private runtime directory off the evidence
-export. This script never switches system generations or sends remote traffic.
+board reservation and keeps private captures/recovery off the evidence export.
+Reboot checkpoints use persistent private storage and require operator reboots.
+This script never switches system generations or sends remote traffic.
 """
 from __future__ import annotations
 
@@ -35,6 +36,7 @@ STORE = re.compile(r"/nix/store/[0-9abcdfghijklmnpqrsvwxyz]{32}-[A-Za-z0-9+._?=-
 IDENTITY = re.compile(r"[a-f0-9]{24}\Z")
 REVISION = re.compile(r"[a-f0-9]{40}\Z")
 SHA256 = re.compile(r"[a-f0-9]{64}\Z")
+BOOT_ID = re.compile(r"[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}\Z")
 LABEL = re.compile(r"[a-z0-9][a-z0-9._-]{0,79}\Z")
 MAX_JSON = 1024 * 1024
 
@@ -56,7 +58,7 @@ def candidate(path: Path) -> dict:
     required = {"schema", "source_revision", "system", "theme_command", "capture_command",
                 "default_generation", "state_root", "rust_socket", "deck_socket",
                 "workload", "themes"}
-    if not isinstance(raw, dict) or not required.issubset(raw) or set(raw) - required - {"background_trial"} or raw["schema"] != 1:
+    if not isinstance(raw, dict) or not required.issubset(raw) or set(raw) - required - {"background_trial", "reboot_trial"} or raw["schema"] != 1:
         raise ValueError("invalid candidate manifest fields")
     if not REVISION.fullmatch(raw["source_revision"]):
         raise ValueError("invalid source revision")
@@ -101,6 +103,14 @@ def candidate(path: Path) -> dict:
                     or not isinstance(choice["background_id"], str)
                     or not IDENTITY.fullmatch(choice["background_id"])):
                 raise ValueError("invalid background trial choice")
+    if "reboot_trial" in raw:
+        choice = raw["reboot_trial"]
+        if (not isinstance(choice, dict) or set(choice) != {"theme_name", "background_id"}
+                or not isinstance(choice["theme_name"], str)
+                or not LABEL.fullmatch(choice["theme_name"])
+                or not isinstance(choice["background_id"], str)
+                or not IDENTITY.fullmatch(choice["background_id"])):
+            raise ValueError("invalid reboot trial choice")
     return raw
 
 
@@ -438,12 +448,309 @@ class Trial:
         return public
 
 
+
+def boot_identity() -> str:
+    value = Path("/proc/sys/kernel/random/boot_id").read_text().strip()
+    if not BOOT_ID.fullmatch(value):
+        raise RuntimeError("invalid boot identity")
+    return value
+
+
+def manifest_identity(manifest: dict) -> str:
+    return hashlib.sha256(json.dumps(manifest, sort_keys=True).encode()).hexdigest()
+
+
+def private_record(path: Path) -> dict:
+    metadata = path.lstat()
+    if (not stat.S_ISREG(metadata.st_mode) or metadata.st_uid != os.geteuid()
+            or metadata.st_mode & 0o077 or metadata.st_size > 128 * 1024):
+        raise RuntimeError("unsafe private reboot record")
+    value = json.loads(path.read_text())
+    if not isinstance(value, dict):
+        raise RuntimeError("invalid private reboot record")
+    return value
+
+
+def durable_move(source: Path, destination: Path) -> None:
+    # Renames retain the complete original directory, including consumers'
+    # private state. No copied approximation of production state is restored.
+    if destination.exists() or destination.is_symlink():
+        raise RuntimeError("reboot backup destination already exists")
+    source.rename(destination)
+    for parent in {source.parent, destination.parent}:
+        descriptor = os.open(parent, os.O_RDONLY | os.O_DIRECTORY)
+        try:
+            os.fsync(descriptor)
+        finally:
+            os.close(descriptor)
+
+
+class RebootTrial(Trial):
+    """One bounded step per invocation; the reserved operator performs reboots.
+
+    The fresh-state arm empties the entire theme state subtree, not the user's
+    entire home. Its result must be supplemented by a true fresh-home trial.
+    """
+    def __init__(self, manifest: dict, *, boot_reader=boot_identity, **kwargs):
+        super().__init__(manifest, **kwargs)
+        self.boot_reader = boot_reader
+
+    def theme(self, action: str, *args: str) -> dict:
+        return self.call([self.m["theme_command"], "--state-root", self.m["state_root"],
+                          "--rust-socket", self.m["rust_socket"],
+                          "--deck-socket", self.m["deck_socket"],
+                          # The installed helper pins its own catalog and
+                          # ignores per-call roots. Force the real CLI parser
+                          # so this dedicated fixture cannot hit that daemon.
+                          "--helper-socket", str(self.private / "disabled-helper.sock"),
+                          "--user-themes", str(self.private / "sources"),
+                          action, *args, "--json"])
+
+    def checkpoint(self, record: dict) -> None:
+        write_public(self.private / "reboot.json", record)
+        descriptor = os.open(self.private / "reboot.json", os.O_RDONLY)
+        try:
+            os.fsync(descriptor)
+        finally:
+            os.close(descriptor)
+        descriptor = os.open(self.private, os.O_RDONLY | os.O_DIRECTORY)
+        try:
+            os.fsync(descriptor)
+        finally:
+            os.close(descriptor)
+
+    def bind(self, private: Path) -> None:
+        if "reboot_trial" not in self.m:
+            raise ValueError("reboot workload needs pinned trial choice")
+        metadata = private.lstat()
+        if (not stat.S_ISDIR(metadata.st_mode) or metadata.st_uid != os.geteuid()
+                or metadata.st_mode & 0o077 or private.resolve() != private):
+            raise RuntimeError("reboot directory must be owned, private and canonical")
+        self.private = private
+        self.state = Path(self.m["state_root"])
+        if (self.state.is_symlink() or self.state.resolve() != self.state
+                or private.is_relative_to(self.state) or self.state.is_relative_to(private)
+                or self.state.parent.stat().st_dev != metadata.st_dev):
+            raise RuntimeError("state and private backups need separate paths on one filesystem")
+        self.source = private / "sources" / self.m["reboot_trial"]["theme_name"]
+        if (private / "disabled-helper.sock").exists():
+            raise RuntimeError("trial helper socket must be absent")
+
+    def load(self) -> dict:
+        record = private_record(self.private / "reboot.json")
+        if (record.get("protocol") != "reboot-v1"
+                or record.get("manifest_sha256") != manifest_identity(self.m)):
+            raise RuntimeError("reboot candidate identity mismatch")
+        return record
+
+    def recover(self, private: Path) -> None:
+        self.bind(private)
+        record = self.load()
+        if record.get("restoration") == "passed":
+            return
+        if (private / "held-source").exists():
+            durable_move(private / "held-source", self.source)
+        if (private / "normal-state").exists():
+            if self.state.exists():
+                durable_move(self.state, private / "displaced-state")
+            durable_move(private / "normal-state", self.state)
+        snapshot = private_record(private / "recovery.json")
+        restore(snapshot, state_root=self.state,
+                default_generation=Path(self.m["default_generation"]),
+                endpoints=(Path(self.m["rust_socket"]), Path(self.m["deck_socket"])),
+                transport=self.transport, app_sync=self.app_sync)
+        record["restoration"] = "passed"
+        self.checkpoint(record)
+
+    def empty_state(self) -> None:
+        self.state.mkdir(mode=0o700)
+        (self.state / "generations").mkdir(mode=0o700)
+
+    def observed(self) -> dict:
+        pointer = _pointer(self.state)
+        preferences, _ = read_preferences(self.state)
+        if pointer is None:
+            return {"generation": None,
+                    "preferences_sha256": hashlib.sha256(preferences or b"").hexdigest()}
+        report = pointer / "report.json"
+        if report.stat().st_size > MAX_JSON:
+            raise RuntimeError("active report exceeds bound")
+        data = json.loads(report.read_text())
+        if data.get("generation") != pointer.name or not IDENTITY.fullmatch(pointer.name):
+            raise RuntimeError("active report generation mismatch")
+        return {"generation": pointer.name,
+                "background_fingerprint": expected_fingerprint(pointer.name, report),
+                "preferences_sha256": hashlib.sha256(preferences or b"").hexdigest()}
+
+    def listing(self) -> dict:
+        value = self.theme("list")
+        active = value.get("active")
+        if (not isinstance(value.get("themes"), list) or len(value["themes"]) > 512
+                or not isinstance(active, dict) or not {"id", "generation"}.issubset(active)
+                or any(active[key] is not None and (not isinstance(active[key], str)
+                       or not IDENTITY.fullmatch(active[key])) for key in ("id", "generation"))):
+            raise RuntimeError("invalid reboot catalog response")
+        return value
+
+    def run_step(self, output: Path, private: Path, phase: str) -> dict:
+        self.bind(private)
+        if (output.resolve() != output or output.is_relative_to(private)
+                or private.is_relative_to(output) or output.is_relative_to(self.state)
+                or self.state.is_relative_to(output)):
+            raise RuntimeError("reboot output must be separate from state and private backups")
+        boot = self.boot_reader()
+        if not isinstance(boot, str) or not BOOT_ID.fullmatch(boot):
+            raise RuntimeError("invalid boot identity")
+        workload = self.m["workload"]
+        artifact = Path(workload["artifact"])
+        metadata = artifact.lstat()
+        if (not stat.S_ISREG(metadata.st_mode) or metadata.st_size > 64 * 1024
+                or hashlib.sha256(artifact.read_bytes()).hexdigest() != workload["sha256"]):
+            raise RuntimeError("workload artifact changed")
+        if phase == "begin":
+            if (private / "reboot.json").exists() or (output / "result.json").exists():
+                raise RuntimeError("reboot trial already exists")
+            if (not self.source.is_dir() or self.source.is_symlink()
+                    or self.source.resolve() != self.source):
+                raise RuntimeError("trial-owned source fixture unavailable")
+            if not self.state.is_dir() or not Path(self.m["default_generation"]).is_dir():
+                raise RuntimeError("state root or pinned default unavailable")
+            previous = _pointer(self.state)
+            preferences, _ = read_preferences(self.state)
+            previous_app = app_pointer(self.state)
+            snapshot = {"previous": str(previous) if previous else None,
+                        "preferences": base64.b64encode(preferences).decode() if preferences is not None else None,
+                        "missing_links": [p.name for p in _public_links(self.state)],
+                        "app_appearance": str(previous_app) if previous_app else None}
+            save_private(private / "recovery.json", snapshot)
+            record = {"protocol": "reboot-v1", "manifest_sha256": manifest_identity(self.m),
+                      "boot_id": boot, "pending": "preparation", "restoration": "pending"}
+            self.checkpoint(record)
+            public = {"schema": 1, "source_revision": self.m["source_revision"],
+                      "system": self.m["system"], "workload_mode": "reboot",
+                      "workload": {"id": workload["id"], "sha256": workload["sha256"]},
+                      "started_utc": utc(), "boots": [], "arms": [], "restoration": "pending",
+                      "physical_observation": "UNVERIFIED", "fresh_home": "UNVERIFIED",
+                      "evidence_class": "filesystem-and-cli-state-only",
+                      "limits": "Theme-state reset is not a full fresh home; native captures need panel and console review."}
+        elif phase == "resume":
+            record = self.load()
+            if record["restoration"] != "pending" or record["pending"] not in (
+                    "remembered", "fresh-theme-state", "unavailable-source"):
+                raise RuntimeError("reboot trial is not awaiting a boot")
+            if boot == record["boot_id"]:
+                raise RuntimeError("resume requires a different boot identity")
+            public = private_record(output / "result.json")
+            if (public.get("system") != self.m["system"]
+                    or public.get("source_revision") != self.m["source_revision"]):
+                raise RuntimeError("public reboot identity mismatch")
+            if boot in {row.get("boot_id") for row in public.get("boots", [])}:
+                raise RuntimeError("resume boot identity was already recorded")
+        else:
+            raise ValueError("invalid reboot phase")
+        stage = record["pending"]
+        public["boots"].append({"phase": "baseline" if phase == "begin" else stage,
+                                "boot_id": boot, "system": self.m["system"], "observed_utc": utc()})
+        try:
+            if phase == "begin":
+                public["baseline_capture"] = self.capture("baseline", private)
+                durable_move(self.state, private / "normal-state")
+                self.empty_state()
+                listing = self.listing()
+                entries = listing.get("themes", [])
+                matches = [item for item in entries if item.get("name") == self.m["reboot_trial"]["theme_name"]
+                           and item.get("origin") == "user"]
+                if len(matches) != 1 or not IDENTITY.fullmatch(str(matches[0].get("id", ""))):
+                    raise RuntimeError("trial source missing or ambiguous")
+                theme_id = matches[0]["id"]
+                background = self.m["reboot_trial"]["background_id"]
+                preview = self.theme("preview", theme_id, "--background", background)
+                generation = preview.get("generation")
+                if not isinstance(generation, str) or not IDENTITY.fullmatch(generation):
+                    raise RuntimeError("invalid reboot preview generation")
+                selected = [row for row in preview.get("backgrounds", []) if row.get("selected") is True]
+                if len(selected) != 1 or selected[0].get("id") != background:
+                    raise RuntimeError("reboot preview background mismatch")
+                activated = self.theme("activate", theme_id, "--background", background,
+                                       "--expected-generation", generation)
+                if activated.get("activated") is not True or activated.get("generation") != generation:
+                    raise RuntimeError("reboot activation not acknowledged")
+                expected = self.observed()
+                if expected["generation"] != generation:
+                    raise RuntimeError("reboot pointer differs from activation")
+                record.update(expected=expected, theme_id=theme_id, background_id=background,
+                              pending="remembered")
+                public["prepared_capture"] = self.capture("prepared", private)
+            else:
+                observed = self.observed()
+                listing = self.listing()
+                if stage == "remembered":
+                    if observed != record["expected"]:
+                        raise RuntimeError("remembered theme or wallpaper changed across boot")
+                    preview = self.theme("preview", record["theme_id"])
+                    selected = [row for row in preview.get("backgrounds", []) if row.get("selected") is True]
+                    if (preview.get("generation") != observed["generation"] or len(selected) != 1
+                            or selected[0].get("id") != record["background_id"]):
+                        raise RuntimeError("remembered wallpaper no longer selected by default")
+                    public["arms"].append({"role": stage, "observed": observed,
+                                           "capture": self.capture(stage, private), "gate": "state-check-passed"})
+                    durable_move(self.state, private / "remembered-state")
+                    self.empty_state()
+                    record["pending"] = "fresh-theme-state"
+                elif stage == "fresh-theme-state":
+                    if (observed["generation"] is not None or read_preferences(self.state)[0] is not None
+                            or app_pointer(self.state) is not None
+                            or listing.get("active", {}).get("generation") is not None):
+                        raise RuntimeError("fresh theme state did not use pinned default")
+                    public["arms"].append({"role": stage, "expected_default_generation": Path(self.m["default_generation"]).name,
+                                           "capture": self.capture(stage, private), "gate": "state-check-passed",
+                                           "full_fresh_home": "UNVERIFIED"})
+                    durable_move(self.state, private / "fresh-state")
+                    durable_move(private / "remembered-state", self.state)
+                    durable_move(self.source, private / "held-source")
+                    record["pending"] = "unavailable-source"
+                else:
+                    public["arms"].append({"role": stage, "observed": observed,
+                                           "capture": self.capture(stage, private), "gate": "pending"})
+                    if (self.source.exists() or listing.get("active", {}).get("id") is not None
+                            or observed["generation"] is not None):
+                        public["arms"][-1]["gate"] = "failed-default-required"
+                        raise RuntimeError("unavailable source did not recover to pinned default")
+                    public["arms"][-1]["gate"] = "state-check-passed"
+                    self.recover(private)
+                    public["restoration"] = "passed"
+                    public["restored_capture"] = self.capture("restored", private)
+                    public["trial"] = "completed-needs-operator-review"
+                    public["finished_utc"] = utc()
+                    write_public(output / "result.json", public)
+                    return public
+            record["boot_id"] = boot
+            self.checkpoint(record)
+            public["trial"] = "awaiting-operator-reboot"
+            public["next_phase"] = record["pending"]
+            write_public(output / "result.json", public)
+            return public
+        except Exception as error:
+            public.update(trial="failed", failure_stage=stage, finished_utc=utc())
+            try:
+                self.recover(private)
+                public["restoration"] = "passed"
+                public["restored_capture"] = self.capture("restored", private)
+            except Exception:
+                public["restoration"] = "FAILED"
+            write_public(output / "result.json", public)
+            raise RuntimeError("reboot trial failed; inspect fixed result and private recovery") from error
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--candidate-manifest", type=Path, required=True)
     parser.add_argument("--output", type=Path)
     parser.add_argument("--raw-private-dir", type=Path)
-    parser.add_argument("--workload", choices=("themes", "backgrounds"), default="themes")
+    parser.add_argument("--workload", choices=("themes", "backgrounds", "reboot"), default="themes")
+    parser.add_argument("--reboot-phase", choices=("begin", "resume"))
+    parser.add_argument("--reboot-private-dir", type=Path,
+                        help="existing persistent private directory with sources/NAME fixture")
     parser.add_argument("--restore-private-dir", type=Path,
                         help="manually restore from an interrupted trial's private recovery.json")
     args = parser.parse_args()
@@ -453,6 +760,37 @@ def main() -> int:
             raise RuntimeError("execution requires the reserved RISC-V board session")
         if Path("/run/current-system").resolve(strict=True) != Path(manifest["system"]):
             raise RuntimeError("installed system differs from candidate manifest")
+        if args.workload == "reboot":
+            private = args.restore_private_dir or args.reboot_private_dir
+            if private is None or not private.is_absolute():
+                raise RuntimeError("reboot needs an absolute persistent private directory")
+            private = private.resolve(strict=True)
+            if any(private.is_relative_to(Path(path)) for path in ("/run", "/tmp", "/var/tmp", "/nix", "/dev", "/proc", "/sys")):
+                raise RuntimeError("reboot private directory must survive reboot outside transient paths")
+            runner = RebootTrial(manifest)
+            if args.restore_private_dir is not None:
+                runner.recover(private)
+                print("normal theme state restored; verify the normal panel/session")
+                return 0
+            if args.output is None or args.reboot_phase is None or args.raw_private_dir is not None:
+                raise RuntimeError("reboot needs --output and --reboot-phase; captures use the persistent private directory")
+            output = args.output.resolve()
+            state = Path(manifest["state_root"]).resolve()
+            if (output.is_relative_to(private) or private.is_relative_to(output)
+                    or output.is_relative_to(state) or state.is_relative_to(output)
+                    or any(output.is_relative_to(Path(path)) for path in ("/run", "/tmp", "/var/tmp"))):
+                raise RuntimeError("reboot output needs a separate persistent path")
+            if args.reboot_phase == "begin":
+                if output.exists():
+                    raise RuntimeError("output directory already exists")
+                output.mkdir(mode=0o700, parents=True)
+            elif not output.is_dir() or output.stat().st_uid != os.geteuid() or output.stat().st_mode & 0o077:
+                raise RuntimeError("resume output must be owned and private")
+            result = runner.run_step(output, private, args.reboot_phase)
+            print("fixed public result written; " + result["trial"])
+            return 0
+        if args.reboot_phase is not None or args.reboot_private_dir is not None:
+            raise RuntimeError("reboot options require --workload reboot")
         if args.restore_private_dir is not None:
             recovery = args.restore_private_dir / "recovery.json"
             if recovery.is_symlink() or not recovery.is_file() or recovery.stat().st_mode & 0o077 or recovery.stat().st_size > 16 * 1024:

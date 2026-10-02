@@ -1,0 +1,23 @@
+Evidence class: host Python protocol tests and document validation only.
+Source base: c5254075e531487af82841b3ae76582e5535f0fb
+Source artifact: tools/handheld-theme-trial.py and tests/test_handheld_theme_trial.py in this commit.
+Started UTC: 2026-10-02T15:50:44+00:00
+
+Command: python3 tests/test_handheld_theme_trial.py
+......................
+----------------------------------------------------------------------
+Ran 22 tests in 0.101s
+
+OK
+Exit: 0
+
+Command: openspec validate the-shell-loads-omarchy-themes --strict
+Change 'the-shell-loads-omarchy-themes' is valid
+Exit: 0
+
+Command: git diff --check
+
+Exit: 0
+
+Finished UTC: 2026-10-02T15:50:45+00:00
+No board, serial, installed image, physical reboot, QEMU, panel or full fresh-home verification.
