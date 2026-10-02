@@ -32,14 +32,14 @@ RFENCE, DBCN, and HSM, but do not report `SBI SRST extension detected`
 ([`serial-boot.txt`](serial-boot.txt#L450),
 [`serial-diagnostic-boot.txt`](serial-diagnostic-boot.txt#L452)). In the pinned
 kernel source at
-[`arch/riscv/kernel/sbi.c`](</nix/store/kr8ag5bniybzz4v66ic1s2dygr6iag1c-linux-mainline-k230-src/arch/riscv/kernel/sbi.c:682>),
+[`arch/riscv/kernel/sbi.c`](https://github.com/torvalds/linux/blob/72d3fcf802c45d00b300f25b848a93c3a2bd7c7e/arch/riscv/kernel/sbi.c#L682),
 SRST is probed and the SBI restart notifier registered only inside the success
 branch (lines 682–689). The candidate's generated `.config` has
 `CONFIG_RISCV_SBI=y`, so this code is present; `System.map` also contains
 `sbi_srst_reboot`, which proves linkage, not that the conditional notifier was
 registered on this firmware. The same boot logs say UEFI is absent. Without a
 different restart handler,
-[`arch/riscv/kernel/reset.c::machine_restart()`](</nix/store/kr8ag5bniybzz4v66ic1s2dygr6iag1c-linux-mainline-k230-src/arch/riscv/kernel/reset.c:19>)
+[`arch/riscv/kernel/reset.c::machine_restart()`](https://github.com/torvalds/linux/blob/72d3fcf802c45d00b300f25b848a93c3a2bd7c7e/arch/riscv/kernel/reset.c#L19)
 calls `do_kernel_restart()` and then loops forever.
 
 The candidate trial reused the protected normal stage-one wrapper, whose
@@ -61,13 +61,13 @@ and included `k230.dtsi` contain no `gpio-restart`, `syscon-reboot`, or
 watchdog node; the `spacemit,p1` handler is for a different platform. The K230
 node is a normal `canaan,k230-rst` reset controller.
 Mainline's
-[`drivers/reset/reset-k230.c`](</nix/store/kr8ag5bniybzz4v66ic1s2dygr6iag1c-linux-mainline-k230-src/drivers/reset/reset-k230.c:324>)
+[`drivers/reset/reset-k230.c`](https://github.com/torvalds/linux/blob/72d3fcf802c45d00b300f25b848a93c3a2bd7c7e/drivers/reset/reset-k230.c#L324)
 provides reset-control assert/deassert/reset operations but has no restart
 registration. `CONFIG_RESET_K230=y` therefore does not provide a system
 restart handler.
 
 This differs from the pinned vendor kernel's
-[`drivers/reset/reset-k230.c`](</nix/store/hn11x8zd5linl193d8q0k9k99b46zqbm-linux-xuantie-k230-src/drivers/reset/reset-k230.c:328>):
+[`drivers/reset/reset-k230.c`](https://github.com/ruyisdk/linux-xuantie-kernel/blob/7d4e1f444f461dbe3833bd99a4640e7b6c2cd529/drivers/reset/reset-k230.c#L328):
 its probe calls `k230_restart_register()`, which registers a K230 restart
 notifier before registering the peripheral reset controller. The archived
 normal-system serial evidence shows the vendor kernel's restart path reaching

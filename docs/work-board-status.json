@@ -422,7 +422,8 @@
         "docs/evidence/mainline-display/physical-2026-10-01/corrected-probe-recovery-2026-10-02/README.md",
         "docs/evidence/mainline-display/physical-2026-10-01/initrd-exec-audit-2026-10-02.md",
         "docs/evidence/mainline-display/physical-2026-10-01/minimal-probe-2026-10-02/README.md",
-        "docs/evidence/mainline-display/physical-2026-10-01/initrd-shell-diagnostic.md"
+        "docs/evidence/mainline-display/physical-2026-10-01/initrd-shell-diagnostic.md",
+        "docs/evidence/mainline-display/physical-2026-10-01/mainline-restart-source-audit-2026-10-02.md"
       ],
       "reviewRevision": "010de5c410a31f405c069c1f6c8ec7d0068904bd",
       "media": [
