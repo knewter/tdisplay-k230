@@ -105,8 +105,8 @@ PROBE_DATA = (
 )
 
 
-def trial_bootargs(original: str, system: str = SYSTEM) -> str:
-    """Add the sole diagnostic variable and require the matching NixOS init."""
+def trial_bootargs(original: str, system: str = SYSTEM, *, ignore_unused_clocks: bool = False) -> str:
+    """Add diagnostic arguments and require the matching NixOS init."""
     args = original.strip()
     params = args.removeprefix("bootargs=").split()
     init_args = [arg for arg in params if arg.startswith("init=")]
@@ -116,7 +116,14 @@ def trial_bootargs(original: str, system: str = SYSTEM) -> str:
         raise ValueError("original bootargs already contain rdinit")
     if any(ord(char) < 32 for char in args):
         raise ValueError("bootargs must be a single line")
-    return f"{args} rdinit=/bin/sh"
+    if ignore_unused_clocks and any(arg.split("=", 1)[0] == "clk_ignore_unused" for arg in params):
+        raise ValueError("original bootargs already contain clk_ignore_unused")
+    return f"{args} rdinit=/bin/sh" + (" clk_ignore_unused" if ignore_unused_clocks else "")
+
+
+def volatile_bootargs_command(ignore_unused_clocks: bool = False) -> str:
+    extra = " clk_ignore_unused" if ignore_unused_clocks else ""
+    return 'setenv bootargs "${bootargs} rdinit=/bin/sh' + extra + '"'
 
 
 def immutable_store_path(path: Path, description: str) -> Path:
@@ -220,6 +227,65 @@ def proc_mount_command(token: str) -> str:
 def reboot_command(token: str) -> str:
     _validate_token(token)
     return f"printf 'K230_RDINIT_REBOOT {token}\\n'; /bin/reboot -ff"
+
+
+def label_setup_command(token: str, stage: str) -> str:
+    _validate_token(token)
+    commands = {
+        "dev-mkdir": "/bin/mkdir -p /dev 2>/dev/null; _k230_rc=$?",
+        "dev-mount": (
+            "_k230_have_dev=0; while read _src _mnt _fs _rest; do "
+            "test \"$_mnt\" = /dev && test \"$_fs\" = devtmpfs && _k230_have_dev=1; "
+            "done < /proc/mounts; _k230_rc=$?; "
+            "if test $_k230_rc -eq 0 && test $_k230_have_dev -eq 0; then "
+            "/bin/mount -t devtmpfs devtmpfs /dev 2>/dev/null; _k230_rc=$?; fi"
+        ),
+        "node": "test -b /dev/mmcblk1p2; _k230_rc=$?",
+    }
+    if stage not in commands:
+        raise ValueError("unknown label setup stage")
+    return (
+        f"printf 'K230_RDINIT_LABEL_SETUP_BEGIN {token} STAGE={stage}\\n'; "
+        f"{commands[stage]}; "
+        f"printf 'K230_RDINIT_LABEL_SETUP_END {token} STAGE={stage} RC=%s\\n' \"$_k230_rc\""
+    )
+
+
+def label_command(token: str) -> str:
+    _validate_token(token)
+    return (
+        f"printf 'K230_RDINIT_LABEL_BEGIN {token}\\n'; "
+        "_k230_label=$(/bin/e2label /dev/mmcblk1p2 2>/dev/null); _k230_rc=$?; _k230_match=0; "
+        "if test $_k230_rc -eq 0 && test \"$_k230_label\" = NIXOS_SD; then _k230_match=1; fi; "
+        f"printf 'K230_RDINIT_LABEL_END {token} RC=%s MATCH=%s\\n' \"$_k230_rc\" \"$_k230_match\""
+    )
+
+
+def label_result(output: bytes, token: str, stage: str = "label") -> dict[str, int | bool] | None:
+    _validate_token(token)
+    if stage not in ("dev-mkdir", "dev-mount", "node", "label"):
+        raise ValueError("unknown label stage")
+    prefix = b"K230_RDINIT_LABEL" + (b"_SETUP" if stage != "label" else b"")
+    suffix = b" STAGE=" + stage.encode() if stage != "label" else b""
+    text = _PROTOCOL.uart_text(output)
+    starts = list(re.finditer(rb"^" + prefix + b"_BEGIN " + token.encode() + suffix + rb"\n", text, re.M))
+    ends = list(re.finditer(
+        rb"^" + prefix + b"_END " + token.encode() + suffix +
+        rb" RC=([0-9]{1,3})" + (rb" MATCH=([01])" if stage == "label" else b"") + rb"\n",
+        text, re.M,
+    ))
+    if len(starts) != 1 or len(ends) != 1 or starts[0].end() > ends[0].start():
+        return None
+    rc = int(ends[0].group(1))
+    if rc > 255:
+        return None
+    result = {"rc": rc}
+    if stage == "label":
+        match = ends[0].group(2) == b"1"
+        if rc != 0 and match:
+            return None
+        result["match"] = match
+    return result
 
 
 def survey_command(token: str) -> str:
@@ -393,9 +459,9 @@ def run_probe_protocol(
     token_factory=None,
     clock=time.monotonic,
 ):
-    """Run short sequential tests; survey is gated on every minimal RC being zero."""
-    if mode not in ("minimal", "survey"):
-        raise ValueError("probe mode must be minimal or survey")
+    """Run sequential tests; label and survey require every minimal RC to be zero."""
+    if mode not in ("minimal", "survey", "label"):
+        raise ValueError("probe mode must be minimal, survey or label")
     received = await_reception(
         session,
         token,
@@ -422,7 +488,7 @@ def run_probe_protocol(
     }
     if true_rc != 0:
         diagnostic = {
-            "schema": "k230-initrd-prerequisite-failure-v1",
+            "schema": "k230-initrd-label-prerequisite-failure-v1" if mode == "label" else "k230-initrd-prerequisite-failure-v1",
             "requested_mode": mode,
             **minimal,
             "proc_mount": {"attempted": False},
@@ -442,7 +508,7 @@ def run_probe_protocol(
     minimal["proc_mount"] = mount_rc
     if mount_rc["mkdir_rc"] != 0 or not mount_rc["mount_attempted"] or mount_rc["mount_rc"] != 0:
         diagnostic = {
-            "schema": "k230-initrd-prerequisite-failure-v1",
+            "schema": "k230-initrd-label-prerequisite-failure-v1" if mode == "label" else "k230-initrd-prerequisite-failure-v1",
             "requested_mode": mode,
             **minimal,
             "uptime": {"attempted": False},
@@ -468,7 +534,7 @@ def run_probe_protocol(
     minimal["uptime"] = uptime["uptime"]
     if uptime["rc"] != 0:
         diagnostic = {
-            "schema": "k230-initrd-prerequisite-failure-v1",
+            "schema": "k230-initrd-label-prerequisite-failure-v1" if mode == "label" else "k230-initrd-prerequisite-failure-v1",
             "requested_mode": mode,
             **minimal,
         }
@@ -480,6 +546,30 @@ def run_probe_protocol(
             "recovery_reason": "proc-uptime-nonzero",
         }
     minimal_ok = True
+    label = None
+    label_setup = {}
+    if mode == "label":
+        for stage in ("dev-mkdir", "dev-mount", "node"):
+            session.write((label_setup_command(token, stage) + "\r").encode())
+            outcome = await_protocol_marker(
+                session, lambda output, fresh: label_result(output, fresh, stage), token, timeout, clock,
+            )
+            if outcome is None:
+                raise ProbeProtocolError(f"label {stage}")
+            label_setup[stage] = outcome
+            if outcome["rc"] != 0:
+                return {
+                    "diagnostic": {
+                        "schema": "k230-initrd-label-v1", "minimal": minimal,
+                        "setup": label_setup, "label": {"attempted": False},
+                    },
+                    "diagnostic_ok": False, "reboot_marker": False,
+                    "recovery_required": True, "recovery_reason": f"label-{stage}-nonzero",
+                }
+        session.write((label_command(token) + "\r").encode())
+        label = await_protocol_marker(session, label_result, token, 60.0, clock)
+        if label is None:
+            raise ProbeProtocolError("label read")
     survey = None
     if mode == "survey" and minimal_ok:
         session.write((survey_command(token) + "\r").encode())
@@ -493,7 +583,13 @@ def run_probe_protocol(
     recovery_output_offset = len(session.buffer)
     session.write((reboot_command(token) + "\r").encode())
     reboot_seen = await_protocol_marker(session, reboot_marker, token, min(timeout, 5.0), clock)
-    if mode == "minimal":
+    if mode == "label":
+        diagnostic = {
+            "schema": "k230-initrd-label-v1", "minimal": minimal,
+            "setup": label_setup, "label": {"attempted": True, **label},
+        }
+        diagnostic_ok = label["rc"] == 0 and label["match"]
+    elif mode == "minimal":
         diagnostic = {"schema": "k230-initrd-minimal-v2", **minimal}
         diagnostic_ok = minimal_ok
     else:
@@ -758,16 +854,22 @@ def write_private_result(path: Path, value: dict[str, object]) -> None:
 def run_trial(
     manifest_path: Path, log_path: Path, result_path: Path, mode: str,
     bundle: Path = BUNDLE, normal_report: Path = NORMAL_REPORT,
+    ignore_unused_clocks: bool = False,
 ) -> bool:
+    if mode not in ("minimal", "survey", "label"):
+        raise ValueError("probe mode must be minimal, survey or label")
+    if ignore_unused_clocks and mode != "label":
+        raise ValueError("--ignore-unused-clocks requires --mode label")
     prepared = prepare_trial(manifest_path, bundle, normal_report)
     manifest = prepared["manifest"]
     system = prepared["system"]
     files = manifest["files"]
     expected_args = prepared["bootargs"]
+    if ignore_unused_clocks:
+        expected_args = trial_bootargs((bundle / "bootargs.txt").read_text(), system, ignore_unused_clocks=True)
     normal = prepared["normal"]
     helper_text = prepared["helper_text"]
-    if mode not in ("minimal", "survey"):
-        raise ValueError("probe mode must be minimal or survey")
+    selection = {"ignore_unused_clocks": ignore_unused_clocks} if mode == "label" else {}
     try:
         import serial
     except ImportError as exc:
@@ -850,8 +952,8 @@ def run_trial(
             if args is None:
                 raise RuntimeError("could not import the matching volatile bootargs")
             # U-Boot imports the complete exact bootargs file above. Expand its
-            # saved value only inside volatile RAM, then append this one variable.
-            command = 'setenv bootargs "${bootargs} rdinit=/bin/sh"'
+            # saved value only inside volatile RAM, then append diagnostic arguments.
+            command = volatile_bootargs_command(ignore_unused_clocks)
             if session.command(command, 15) is None:
                 raise RuntimeError("could not set volatile rdinit bootargs")
             printed = session.command("printenv bootargs", 15)
@@ -866,11 +968,29 @@ def run_trial(
             if not session.wait_for(b"Linux version 7.3.0-rc5", 45):
                 raise RuntimeError("Linux version banner not observed; reset may be required")
             token = uuid.uuid4().hex
-            probe_outcome = run_probe_protocol(session, token, mode)
+            try:
+                probe_outcome = run_probe_protocol(session, token, mode)
+            except ProbeProtocolError as exc:
+                if mode != "label":
+                    raise
+                write_private_result(result_path, {
+                    "result_schema": "mainline-initrd-label-unknown-v1",
+                    "status": "recovery-required-unknown-no-reboot-requested",
+                    "mode": "volatile-rdinit-label", "ignore_unused_clocks": ignore_unused_clocks,
+                    "candidate_system": system, "candidate_bundle": str(prepared["bundle"]),
+                    "normal_preflight": observed_before,
+                    "probe": {"schema": "k230-initrd-label-unknown-v1", "stage": exc.stage},
+                    "reboot_marker_observed": False, "normal_recovery": None,
+                    "persistent_boot_selection_changed": False, "raw_serial_log_path": str(log_path),
+                })
+                print(f"Label protocol incomplete at {exc.stage}; no further probe or recovery input was sent. "
+                      "Protected normal recovery is required and unverified.", file=sys.stderr)
+                return False
             if probe_outcome.get("recovery_required"):
                 reason = str(probe_outcome["recovery_reason"])
                 write_private_result(result_path, {
                     "result_schema": "mainline-initrd-diagnostic-v3",
+                    **selection,
                     "status": "recovery-required-no-reboot-requested",
                     "mode": f"volatile-rdinit-{mode}",
                     "candidate_system": system,
@@ -894,6 +1014,7 @@ def run_trial(
             if login_state == "chroot-refusal":
                 write_private_result(result_path, {
                     "result_schema": "mainline-initrd-diagnostic-v3",
+                    **selection,
                     "status": "recovery-required-systemctl-chroot-refusal",
                     "mode": f"volatile-rdinit-{mode}",
                     "candidate_system": system,
@@ -948,6 +1069,7 @@ def run_trial(
             print(f"Diagnostic mode: {mode}; result: {status}; reboot marker: {probe_outcome['reboot_marker']}.")
             safe_result = {
                 "result_schema": "mainline-initrd-diagnostic-v3",
+                **selection,
                 "status": status,
                 "mode": f"volatile-rdinit-{mode}",
                 "candidate_system": system,
@@ -1001,9 +1123,11 @@ def main() -> int:
     parser.add_argument("--normal-report", type=Path, default=NORMAL_REPORT,
                         help="protected normal identity report matching the committed baseline")
     parser.add_argument(
-        "--mode", choices=("minimal", "survey"), default="minimal",
-        help="minimal sequential discriminator by default; full device survey requires explicit survey mode",
+        "--mode", choices=("minimal", "survey", "label"), default="minimal",
+        help="minimal sequential discriminator by default; label read and full survey require explicit modes",
     )
+    parser.add_argument("--ignore-unused-clocks", action="store_true",
+                        help="label mode only: add volatile clk_ignore_unused for the bounded clock discriminator")
     stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
     parser.add_argument(
         "--log", type=Path,
@@ -1014,9 +1138,12 @@ def main() -> int:
         default=PRIVATE_LOG_DIR / f"mainline-initrd-shell-{stamp}.result.json",
     )
     args = parser.parse_args()
+    if args.ignore_unused_clocks and args.mode != "label":
+        parser.error("--ignore-unused-clocks requires --mode label")
     try:
         diagnostic_ok = run_trial(
             args.manifest, args.log, args.result, args.mode, args.bundle, args.normal_report,
+            **({"ignore_unused_clocks": True} if args.ignore_unused_clocks else {}),
         )
     except Exception as exc:
         print(f"Trial stopped: {exc}", file=sys.stderr)

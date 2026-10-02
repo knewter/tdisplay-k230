@@ -445,6 +445,178 @@ class InitrdShellTrialTests(unittest.TestCase):
         self.assertIsNone(trial.state_marker(marker + marker, token, "postflight"))
 
 
+class LabelProbeTests(unittest.TestCase):
+    token = "a" * 32
+
+    def minimal_replies(self):
+        t = self.token
+        return [
+            f"K230_RDINIT_RX {t}\n".encode(),
+            f"K230_RDINIT_TRUE {t} RC=0\n".encode(),
+            f"K230_RDINIT_MOUNT_BEGIN {t}\nK230_RDINIT_MOUNT_END {t} MKDIR_RC=0 MOUNT_ATTEMPTED=1 MOUNT_RC=0\n".encode(),
+            f"K230_RDINIT_UP_BEGIN {t}\n1.0 2.0\nK230_RDINIT_UP_END {t} RC=0\n".encode(),
+        ]
+
+    def setup_reply(self, stage, rc=0):
+        return (f"K230_RDINIT_LABEL_SETUP_BEGIN {self.token} STAGE={stage}\n"
+                f"K230_RDINIT_LABEL_SETUP_END {self.token} STAGE={stage} RC={rc}\n").encode()
+
+    def label_reply(self, rc=0, match=1):
+        return (f"K230_RDINIT_LABEL_BEGIN {self.token}\n"
+                f"K230_RDINIT_LABEL_END {self.token} RC={rc} MATCH={match}\n").encode()
+
+    def run_protocol(self, replies):
+        session = FakeSerialSession(replies)
+        outcome = trial.run_probe_protocol(session, self.token, "label", timeout=0.02, clock=FakeClock())
+        return session, outcome
+
+    def setup_replies(self):
+        return [self.setup_reply(stage) for stage in ("dev-mkdir", "dev-mount", "node")]
+
+    def test_label_runs_once_only_after_all_gates_and_uses_distinct_schema(self):
+        session, outcome = self.run_protocol(self.minimal_replies() + self.setup_replies() + [
+            self.label_reply(), f"K230_RDINIT_REBOOT {self.token}\n".encode(),
+        ])
+        self.assertEqual(outcome["diagnostic"]["schema"], "k230-initrd-label-v1")
+        self.assertEqual(outcome["diagnostic"]["label"], {"attempted": True, "rc": 0, "match": True})
+        self.assertTrue(outcome["diagnostic_ok"])
+        self.assertTrue(outcome["reboot_marker"])
+        expected = [trial.reception_command(self.token), trial.true_command(self.token),
+                    trial.proc_mount_command(self.token), trial.uptime_command(self.token),
+                    *(trial.label_setup_command(self.token, s) for s in ("dev-mkdir", "dev-mount", "node")),
+                    trial.label_command(self.token), trial.reboot_command(self.token)]
+        self.assertEqual(session.writes, [(c + "\r").encode() for c in expected])
+        self.assertEqual(sum(c.count(b"/bin/e2label /dev/mmcblk1p2") for c in session.writes), 1)
+
+    def test_returned_nonmatch_and_failed_label_rc_allow_only_existing_recovery(self):
+        for rc, match in ((0, 0), (1, 0), (127, 0)):
+            with self.subTest(rc=rc):
+                session, outcome = self.run_protocol(self.minimal_replies() + self.setup_replies() + [
+                    self.label_reply(rc, match), f"K230_RDINIT_REBOOT {self.token}\n".encode(),
+                ])
+                self.assertFalse(outcome["diagnostic_ok"])
+                self.assertEqual(outcome["diagnostic"]["label"]["rc"], rc)
+                self.assertFalse(outcome["diagnostic"]["label"]["match"])
+                self.assertEqual(session.writes[-1], (trial.reboot_command(self.token) + "\r").encode())
+
+    def test_setup_rc_failure_and_node_absence_stop_before_label_or_reboot(self):
+        for index, stage in enumerate(("dev-mkdir", "dev-mount", "node")):
+            with self.subTest(stage=stage):
+                replies = self.minimal_replies() + self.setup_replies()[:index] + [self.setup_reply(stage, 1)]
+                session, outcome = self.run_protocol(replies)
+                self.assertEqual(len(session.writes), 5 + index)
+                self.assertTrue(outcome["recovery_required"])
+                self.assertEqual(outcome["recovery_reason"], f"label-{stage}-nonzero")
+                self.assertEqual(outcome["diagnostic"]["label"], {"attempted": False})
+                self.assertFalse(any(b"/bin/e2label" in c or b"/bin/reboot" in c for c in session.writes))
+
+    def test_minimal_gate_failures_cannot_start_dev_or_label_probe(self):
+        cases = [
+            self.minimal_replies()[:1] + [f"K230_RDINIT_TRUE {self.token} RC=1\n".encode()],
+            self.minimal_replies()[:2] + [f"K230_RDINIT_MOUNT_BEGIN {self.token}\nK230_RDINIT_MOUNT_END {self.token} MKDIR_RC=0 MOUNT_ATTEMPTED=1 MOUNT_RC=1\n".encode()],
+            self.minimal_replies()[:3] + [f"K230_RDINIT_UP_BEGIN {self.token}\nK230_RDINIT_UP_END {self.token} RC=1\n".encode()],
+        ]
+        for replies in cases:
+            with self.subTest(replies=len(replies)):
+                session, outcome = self.run_protocol(replies)
+                self.assertTrue(outcome["recovery_required"])
+                self.assertEqual(outcome["diagnostic"]["schema"], "k230-initrd-label-prerequisite-failure-v1")
+                self.assertFalse(any(b"LABEL" in c or b"/bin/reboot" in c for c in session.writes))
+
+    def test_incomplete_setup_and_label_never_retry_or_send_recovery_input(self):
+        stages = ("dev-mkdir", "dev-mount", "node", "label")
+        for index, stage in enumerate(stages):
+            with self.subTest(stage=stage):
+                session = FakeSerialSession(self.minimal_replies() + self.setup_replies()[:index] + [None])
+                with self.assertRaisesRegex(trial.ProbeProtocolError, "label"):
+                    trial.run_probe_protocol(session, self.token, "label", timeout=0.01, clock=FakeClock())
+                self.assertEqual(len(session.writes), 5 + index)
+                for command in session.writes:
+                    self.assertNotIn(b"/bin/reboot", command)
+                    self.assertNotIn(b"exit", command)
+                    self.assertNotIn(b"\x03", command)
+                    self.assertNotIn(b"K230_PROC", command)
+
+    def test_label_parsers_reject_echo_stale_duplicates_truncation_and_wrong_order(self):
+        for stage in ("dev-mkdir", "dev-mount", "node", "label"):
+            good = self.label_reply() if stage == "label" else self.setup_reply(stage)
+            self.assertIsNotNone(trial.label_result(good, self.token, stage))
+            lines = good.splitlines(keepends=True)
+            for invalid in (b"echo " + good, good.replace(self.token.encode(), b"b" * 32),
+                            good + good, good[:-1], lines[1] + lines[0], lines[0], lines[1],
+                            good.replace(b"RC=0", b"RC=256")):
+                with self.subTest(stage=stage, invalid=invalid):
+                    self.assertIsNone(trial.label_result(invalid, self.token, stage))
+        self.assertIsNone(trial.label_result(self.label_reply(1, 1), self.token))
+
+    def test_bad_label_final_markers_stop_protocol_without_child_retry(self):
+        good = self.label_reply()
+        for reply in (good[:-1], good + good, good.replace(self.token.encode(), b"b" * 32),
+                      b"echo " + good, good.splitlines(keepends=True)[0]):
+            with self.subTest(reply=reply):
+                session = FakeSerialSession(self.minimal_replies() + self.setup_replies() + [reply])
+                with self.assertRaises(trial.ProbeProtocolError):
+                    trial.run_probe_protocol(session, self.token, "label", timeout=0.01, clock=FakeClock())
+                self.assertEqual(len(session.writes), 8)
+                self.assertEqual(sum(b"/bin/e2label" in c for c in session.writes), 1)
+                self.assertFalse(any(b"/bin/reboot" in c for c in session.writes))
+
+    def test_payload_is_readonly_absolute_and_prints_no_raw_label_or_cmdline(self):
+        import subprocess
+        commands = [*(trial.label_setup_command(self.token, s) for s in ("dev-mkdir", "dev-mount", "node")),
+                    trial.label_command(self.token)]
+        self.assertIn("/bin/e2label /dev/mmcblk1p2 2>/dev/null", commands[-1])
+        self.assertEqual(commands[-1].count("/bin/e2label"), 1)
+        for command in commands:
+            self.assertLess(len(command), 1000)
+            self.assertNotIn("/proc/cmdline", command)
+            self.assertNotIn("/proc/interrupts", command)
+            self.assertNotIn("2>&1", command)
+            for shell in ("sh", "bash"):
+                check = subprocess.run([shell, "-n"], input=command, text=True, capture_output=True)
+                self.assertEqual(check.returncode, 0, check.stderr)
+        self.assertNotIn('"$_k230_label"', commands[-1].split("printf 'K230_RDINIT_LABEL_END", 1)[1])
+
+    def test_clock_flag_adds_exactly_one_argument_and_keeps_strict_identity(self):
+        original = f"bootargs=console=ttyS0 init={trial.SYSTEM}/init"
+        ordinary = trial.trial_bootargs(original)
+        changed = trial.trial_bootargs(original, ignore_unused_clocks=True)
+        self.assertEqual(changed.split(), ordinary.split() + ["clk_ignore_unused"])
+        self.assertEqual(trial.volatile_bootargs_command(True),
+                         'setenv bootargs "${bootargs} rdinit=/bin/sh clk_ignore_unused"')
+        self.assertEqual(trial.volatile_bootargs_command(), 'setenv bootargs "${bootargs} rdinit=/bin/sh"')
+        self.assertNotIn("saveenv", trial.volatile_bootargs_command(True))
+        self.assertTrue(trial.verified_bootargs((changed + "\n").encode(), changed))
+        self.assertFalse(trial.verified_bootargs((ordinary + "\n").encode(), changed))
+        for suffix in ("clk_ignore_unused", "clk_ignore_unused=1"):
+            with self.assertRaisesRegex(ValueError, "already contain clk_ignore_unused"):
+                trial.trial_bootargs(original + " " + suffix, ignore_unused_clocks=True)
+        with self.assertRaisesRegex(ValueError, "matching trial system"):
+            trial.trial_bootargs("bootargs=init=/wrong", ignore_unused_clocks=True)
+
+    def test_clock_flag_rejects_other_modes_before_preparation_or_serial(self):
+        for mode in ("minimal", "survey"):
+            with self.subTest(mode=mode), mock.patch.object(trial, "prepare_trial") as prepare, \
+                    mock.patch.object(trial, "PrivateSession") as session, mock.patch.object(trial.os, "open") as opened:
+                with self.assertRaisesRegex(ValueError, "requires --mode label"):
+                    trial.run_trial(Path('/missing'), Path('/unused'), Path('/unused-result'), mode,
+                                    ignore_unused_clocks=True)
+                prepare.assert_not_called(); session.assert_not_called(); opened.assert_not_called()
+            with mock.patch.object(sys, "argv", [str(SCRIPT), "--mode", mode, "--ignore-unused-clocks"]), \
+                    mock.patch.object(trial, "run_trial") as runner, mock.patch('sys.stderr'):
+                with self.assertRaises(SystemExit) as error:
+                    trial.main()
+                self.assertEqual(error.exception.code, 2)
+                runner.assert_not_called()
+
+    def test_cli_explicit_label_and_clock_selection(self):
+        with mock.patch.object(sys, "argv", [str(SCRIPT), "--mode", "label", "--ignore-unused-clocks"]), \
+                mock.patch.object(trial, "run_trial", return_value=True) as runner:
+            self.assertEqual(trial.main(), 0)
+            self.assertEqual(runner.call_args.args[3], "label")
+            self.assertEqual(runner.call_args.kwargs, {"ignore_unused_clocks": True})
+
+
 class CandidateSelectionTests(unittest.TestCase):
     def setUp(self):
         self.directory = tempfile.TemporaryDirectory()
@@ -661,6 +833,55 @@ class CandidateSelectionTests(unittest.TestCase):
                     mock.patch.object(trial, "run_trial", return_value=True) as runner:
                 self.assertEqual(trial.main(), 0)
                 self.assertEqual(runner.call_args.args[3:], ("minimal", bundle, report))
+
+    def test_outer_label_timeout_records_unknown_and_never_requests_recovery(self):
+        normal = trial.prepare_trial(self.manifest_path, self.bundle, self.report_path)["normal"]
+        observed = {
+            **{key: normal[key] for key in ("system", "profile", "kernel", "uname", "init")},
+            "boot_files": {name: info["sha256"] for name, info in normal["boot_files"].items()},
+            "boot_id": normal["boot_id"],
+        }
+        session = mock.Mock()
+        session.buffer = trial.PROMPT
+        session.wait_for.return_value = True
+        session.run_state.return_value = observed
+        expected = trial.trial_bootargs((self.bundle / "bootargs.txt").read_text(), self.system,
+                                        ignore_unused_clocks=True)
+        session.command.side_effect = lambda command, timeout: (
+            (expected + "\nK230# ").encode() if command == "printenv bootargs" else trial.PROMPT
+        )
+
+        def blocked_label(active_session, token, mode):
+            self.assertIs(active_session, session)
+            self.assertEqual(mode, "label")
+            active_session.write((trial.label_command(token) + "\r").encode())
+            raise trial.ProbeProtocolError("label read")
+
+        result_path = self.root / "label.result.json"
+        with mock.patch.dict(sys.modules, {"serial": mock.Mock()}), \
+                mock.patch.object(trial, "PrivateSession", return_value=session), \
+                mock.patch.object(trial, "LOCK_PATH", self.root / "host-fixture.lock"), \
+                mock.patch.object(trial, "verified_load", return_value=True), \
+                mock.patch.object(trial, "verified_crc", return_value=True), \
+                mock.patch.object(trial, "run_probe_protocol", side_effect=blocked_label), \
+                mock.patch('sys.stderr'):
+            self.assertFalse(trial.run_trial(self.manifest_path, self.root / "label.private.log", result_path,
+                                            "label", self.bundle, self.report_path, ignore_unused_clocks=True))
+        result = json.loads(result_path.read_text())
+        self.assertEqual(result["status"], "recovery-required-unknown-no-reboot-requested")
+        self.assertEqual(result["result_schema"], "mainline-initrd-label-unknown-v1")
+        self.assertEqual(result["probe"], {"schema": "k230-initrd-label-unknown-v1", "stage": "label read"})
+        self.assertTrue(result["ignore_unused_clocks"])
+        self.assertIsNone(result["normal_recovery"])
+        self.assertFalse(result["reboot_marker_observed"])
+        self.assertFalse(result["persistent_boot_selection_changed"])
+        session.wait_for_normal_login.assert_not_called()
+        session.close.assert_called_once()
+        self.assertEqual([call.args[0] for call in session.line.call_args_list],
+                         ["reboot", "bootm 0x8000000 0x9000000 0x8400000"])
+        self.assertEqual(len(session.write.call_args_list), 2)
+        self.assertIn(b"/bin/e2label /dev/mmcblk1p2", session.write.call_args_list[-1].args[0])
+        self.assertIn(mock.call(trial.volatile_bootargs_command(True), 15), session.command.call_args_list)
 
 
 if __name__ == "__main__":
