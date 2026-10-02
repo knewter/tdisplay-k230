@@ -412,8 +412,8 @@
       "lane": "in-progress",
       "source": "in-progress",
       "physical": "pending",
-      "next": "Restore the protected normal system, implement the reviewed late-enable shutdown-trace gates, then prove automatic restart before root-label/mount diagnostics.",
-      "rationale": "The corrected complete kernel and matching bundle builds passed; default outputs are unchanged. Root diagnostic controllers pass 76 host tests. The new physical minimal trial passed true, proc setup and uptime, then printed userspace Rebooting; automatic return was not observed before operator intervention disconnected serial. Independent manual recovery passed fresh identities and eight hashes, with reviewed camera Home. Kernel callback execution, usable mainline root and deliberate touch remain unverified. The verbose trial stopped at receipt readiness before any candidate reboot request; webcam and passive UART checks were obtained, and normal recovery is pending. Source review permits enabling shutdown tracing after shell readiness without verbose boot; that controller mode is not implemented or physically verified.",
+      "next": "Restore and verify the protected normal system, run the reviewed minimal runtime shutdown-trace trial, then prove automatic restart before root-label/mount diagnostics.",
+      "rationale": "The corrected complete kernel and matching bundle builds passed; default outputs are unchanged. Root diagnostic controllers pass 87 host tests. The new physical minimal trial passed true, proc setup and uptime, then printed userspace Rebooting; automatic return was not observed before operator intervention disconnected serial. Independent manual recovery passed fresh identities and eight hashes, with reviewed camera Home. Kernel callback execution, usable mainline root and deliberate touch remain unverified. The verbose trial stopped at receipt readiness before any candidate reboot request; webcam and passive UART checks were obtained, and normal recovery is pending. The runtime shutdown-trace controller now enables logging only after returned sysfs, prior-value, write and readback gates; 87 host tests pass, but no physical runtime-trace trial has been performed.",
       "dependencies": [],
       "evidence": [
         "docs/evidence/mainline-display-power-domain.md",
@@ -438,7 +438,7 @@
         "docs/evidence/mainline-restart/physical-shutdown-debug-2026-10-02/README.md",
         "docs/evidence/mainline-restart/runtime-shutdown-trace-feasibility-2026-10-02.md"
       ],
-      "reviewRevision": "c619401e",
+      "reviewRevision": "379bcb3c",
       "media": [
         {
           "path": "docs/evidence/mainline-restart/physical-shutdown-debug-2026-10-02/boot-panel.jpg",
