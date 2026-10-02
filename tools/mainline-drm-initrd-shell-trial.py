@@ -19,6 +19,7 @@ import shlex
 import sys
 import time
 import uuid
+import zlib
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -29,6 +30,10 @@ BUNDLE = Path(
 )
 SYSTEM = "/nix/store/k9f4r2i9k9qj58z8z4l2kssy9rpwxxm1-nixos-system-nixos-26.11.20260919.20b1ddd"
 NORMAL_REPORT = Path("/home/jadams/tmp/k230-coherent-boot-board/received/after.json")
+NORMAL_BASELINE = Path(__file__).resolve().parents[1] / "docs/evidence/boot-verification/coherent-ordinary-boot/postboot.json"
+# The protected stage-one wrapper's CRC in the committed physical trial manifest.
+NORMAL_WRAPPER_CRC32 = "99b89787"
+STORE_ROOT = Path("/nix/store")
 NORMAL_HELPER = Path(__file__).with_name("mainline-drm-normal-state.py")
 NORMAL_STAGE = "/var/lib/k230-mainline-drm-trial"
 BOARD_PYTHON = "/nix/store/v189xydz6qkcd4cbkixcmv91w8hbc560-python3-riscv64-unknown-linux-gnu-3.14.7/bin/python3"
@@ -103,13 +108,54 @@ PROBE_DATA = (
 def trial_bootargs(original: str, system: str = SYSTEM) -> str:
     """Add the sole diagnostic variable and require the matching NixOS init."""
     args = original.strip()
-    if not re.search(rf"(?:^|\s)init={re.escape(system)}/init(?:\s|$)", args):
+    params = args.removeprefix("bootargs=").split()
+    init_args = [arg for arg in params if arg.startswith("init=")]
+    if init_args != [f"init={system}/init"]:
         raise ValueError("bootargs do not select the matching trial system")
-    if re.search(r"(?:^|\s)rdinit=", args):
+    if any(arg.startswith("rdinit=") for arg in params):
         raise ValueError("original bootargs already contain rdinit")
-    if "\n" in args or "\r" in args:
+    if any(ord(char) < 32 for char in args):
         raise ValueError("bootargs must be a single line")
     return f"{args} rdinit=/bin/sh"
+
+
+def immutable_store_path(path: Path, description: str) -> Path:
+    """Require a direct, existing, read-only store directory, not an alias."""
+    if path.parent != STORE_ROOT or not re.fullmatch(r"[0-9abcdfghijklmnpqrsvwxyz]{32}-[A-Za-z0-9+._?=-]+", path.name):
+        raise ValueError(f"{description} must be a direct immutable /nix/store path")
+    if path.resolve(strict=True) != path or not path.is_dir() or path.stat().st_mode & 0o222:
+        raise ValueError(f"{description} must be an immutable store directory")
+    return path
+
+
+def validate_file_record(info: object, name: str) -> None:
+    if not isinstance(info, dict) or type(info.get("bytes")) is not int or info["bytes"] <= 0:
+        raise ValueError(f"invalid positive artifact size: {name}")
+    if not isinstance(info.get("sha256"), str) or not re.fullmatch(r"[0-9a-fA-F]{64}", info["sha256"]):
+        raise ValueError(f"invalid artifact SHA-256: {name}")
+
+
+def validate_load_ranges(files: dict[str, object]) -> None:
+    """Check actual verified payload sizes at the exact U-Boot load addresses."""
+    intervals = []
+    for name, _, address, _ in LOADS:
+        validate_file_record(files[name], name)
+        start = int(address, 16)
+        end = start + files[name]["bytes"]
+        if not 0 <= start < end <= 0x40000000:
+            raise ValueError(f"artifact load exceeds the board's 1 GiB RAM: {name}")
+        intervals.append((start, end, name))
+    intervals.sort()
+    for left, right in zip(intervals, intervals[1:]):
+        if left[1] > right[0]:
+            raise ValueError(f"artifact load overlap: {left[2]} and {right[2]}")
+
+
+def verified_bootargs(reply: bytes | None, expected: str) -> bool:
+    if reply is None:
+        return False
+    matches = re.findall(rb"^bootargs=([^\n]*)\n", _PROTOCOL.uart_text(reply), re.M)
+    return matches == [expected.removeprefix("bootargs=").encode()]
 
 
 def verified_load(reply: bytes | None, expected: dict[str, object]) -> bool:
@@ -484,8 +530,11 @@ def probe_nixos_label(output: bytes) -> bool | None:
     return matches[0] == b"1"
 
 
-def normal_expectation(report_path: Path, manifest: dict[str, object]) -> dict[str, object]:
+def normal_expectation(
+    report_path: Path, manifest: dict[str, object], bundle: Path = BUNDLE, system: str = SYSTEM,
+) -> dict[str, object]:
     report = json.loads(report_path.read_text())
+    baseline = json.loads(NORMAL_BASELINE.read_text())
     if report.get("system") != "/nix/store/p1a1hz9n8s4g8qyr55ffl3dzbnjgqwr8-nixos-system-nixos-26.11.20260919.20b1ddd":
         raise ValueError("protected normal system differs from the current installed baseline")
     if report.get("profile") != report["system"]:
@@ -497,22 +546,78 @@ def normal_expectation(report_path: Path, manifest: dict[str, object]) -> dict[s
         "fw_jump_add_uboot_head.bin", "force_dtb", "lcd_dtb", "hdmi_dtb",
     }:
         raise ValueError("protected normal boot-file set is incomplete")
+    if report.get("kernel") != baseline["kernel"] or report["boot_files"] != baseline["boot_files"]:
+        raise ValueError("protected normal kernel or boot-file identities differ from the committed baseline")
+    if not isinstance(report.get("boot_id"), str) or not re.fullmatch(
+        r"[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}", report["boot_id"],
+    ):
+        raise ValueError("protected normal report lacks a valid boot ID")
+    wrapper = manifest["files"]["fw_jump_add_uboot_head.bin"]
+    protected_wrapper = report["boot_files"]["fw_jump_add_uboot_head.bin"]
+    if wrapper["bytes"] != protected_wrapper["bytes"] or wrapper["sha256"].lower() != protected_wrapper["sha256"]:
+        raise ValueError("manifest stage-one wrapper differs from the protected normal wrapper")
+    if wrapper["crc32"].lower() != NORMAL_WRAPPER_CRC32:
+        raise ValueError("manifest stage-one wrapper CRC differs from the protected normal wrapper")
     uname = "6.6.36"  # Fresh serial report and nix/kernel.nix modDirVersion.
     files = manifest["files"]
     candidate_files = {
         name: {"bytes": int(files[name]["bytes"]), "sha256": str(files[name]["sha256"]).lower()}
         for name in ("Image-mainline-drm", "k230-tdisplay-mainline-drm.dtb", "initrd.uimg", "bootargs.txt")
     }
-    bundle = BUNDLE
     metadata = {}
     for name in ("registration", "store-paths", "SHA256SUMS"):
-        metadata[name] = hashlib.sha256((bundle / name).read_bytes()).hexdigest()
+        path = bundle / name
+        if not path.is_file() or path.is_symlink() or path.stat().st_size <= 0 or path.stat().st_mode & 0o222:
+            raise FileNotFoundError(f"exact trial bundle metadata is missing or unsafe: {name}")
+        metadata[name] = hashlib.sha256(path.read_bytes()).hexdigest()
     return {
         "system": report["system"], "profile": report["profile"], "kernel": report["kernel"],
         "uname": uname, "boot_id": report["boot_id"], "boot_files": report["boot_files"],
         "init": "init=" + report["system"] + "/init",
-        "stage": NORMAL_STAGE, "candidate_system": SYSTEM,
+        "stage": NORMAL_STAGE, "candidate_system": system,
         "candidate_files": candidate_files, "metadata_sha256": metadata,
+    }
+
+
+def prepare_trial(manifest_path: Path, bundle: Path, report_path: Path) -> dict[str, object]:
+    """Fail closed on selected host identities before any board/serial access."""
+    bundle = immutable_store_path(bundle, "candidate bundle")
+    if not (bundle / "system").is_symlink():
+        raise ValueError("candidate bundle must contain its system symlink")
+    system_path = immutable_store_path((bundle / "system").resolve(strict=True), "candidate system")
+    system = str(system_path)
+    if not (system_path / "init").is_file() or not os.access(system_path / "init", os.X_OK):
+        raise FileNotFoundError("candidate system init is missing")
+    manifest = json.loads(manifest_path.read_text())
+    if manifest.get("system") != system:
+        raise ValueError("manifest does not name the expected matching trial system")
+    files = manifest.get("files", {})
+    if not isinstance(files, dict) or set(files) != {name for name, _, _, _ in LOADS}:
+        raise ValueError("manifest file set does not match the exact trial bundle")
+    validate_load_ranges(files)
+    for name, _, _, _ in LOADS:
+        expected = files[name]
+        if not isinstance(expected.get("crc32"), str) or not re.fullmatch(r"[0-9a-fA-F]{8}", expected["crc32"]):
+            raise ValueError(f"invalid artifact CRC32: {name}")
+        if name == "fw_jump_add_uboot_head.bin":
+            continue  # Protected normal partition; anchored below, verified on board before boot.
+        artifact = bundle / name
+        if (artifact.is_symlink() or not artifact.is_file()
+                or artifact.stat().st_mode & 0o222 or artifact.stat().st_size != expected["bytes"]):
+            raise FileNotFoundError(f"exact trial bundle artifact is missing or has wrong size: {name}")
+        content = artifact.read_bytes()
+        if hashlib.sha256(content).hexdigest() != expected["sha256"].lower():
+            raise ValueError(f"exact trial bundle artifact hash mismatch: {name}")
+        if f"{zlib.crc32(content):08x}" != expected["crc32"].lower():
+            raise ValueError(f"exact trial bundle artifact CRC mismatch: {name}")
+    original_args = (bundle / "bootargs.txt").read_text()
+    if not original_args.startswith("bootargs="):
+        raise ValueError("bundle bootargs must be a U-Boot bootargs assignment")
+    expected_args = trial_bootargs(original_args, system)
+    normal = normal_expectation(report_path, manifest, bundle, system)
+    return {
+        "bundle": bundle, "system": system, "manifest": manifest,
+        "bootargs": expected_args, "normal": normal, "helper_text": NORMAL_HELPER.read_text(),
     }
 
 
@@ -650,30 +755,23 @@ def write_private_result(path: Path, value: dict[str, object]) -> None:
         result_file.write("\n")
 
 
-def run_trial(manifest_path: Path, log_path: Path, result_path: Path, mode: str) -> bool:
+def run_trial(
+    manifest_path: Path, log_path: Path, result_path: Path, mode: str,
+    bundle: Path = BUNDLE, normal_report: Path = NORMAL_REPORT,
+) -> bool:
+    prepared = prepare_trial(manifest_path, bundle, normal_report)
+    manifest = prepared["manifest"]
+    system = prepared["system"]
+    files = manifest["files"]
+    expected_args = prepared["bootargs"]
+    normal = prepared["normal"]
+    helper_text = prepared["helper_text"]
+    if mode not in ("minimal", "survey"):
+        raise ValueError("probe mode must be minimal or survey")
     try:
         import serial
     except ImportError as exc:
         raise RuntimeError("pyserial is required; use nix shell nixpkgs#python3Packages.pyserial") from exc
-
-    manifest = json.loads(manifest_path.read_text())
-    if manifest.get("system") != SYSTEM:
-        raise ValueError("manifest does not name the expected matching trial system")
-    files = manifest.get("files", {})
-    if set(files) != {name for name, _, _, _ in LOADS}:
-        raise ValueError("manifest file set does not match the exact trial bundle")
-    for name, _, _, _ in LOADS:
-        if name == "fw_jump_add_uboot_head.bin":
-            continue  # Loaded from the unchanged normal boot partition.
-        artifact = BUNDLE / name
-        expected = files[name]
-        if not artifact.is_file() or artifact.stat().st_size != int(expected["bytes"]):
-            raise FileNotFoundError(f"exact trial bundle artifact is missing or has wrong size: {name}")
-        digest = hashlib.sha256(artifact.read_bytes()).hexdigest()
-        if digest != str(expected["sha256"]).lower():
-            raise ValueError(f"exact trial bundle artifact hash mismatch: {name}")
-    original_args = (BUNDLE / "bootargs.txt").read_text()
-    expected_args = trial_bootargs(original_args)
 
     log_path = safe_log_path(log_path)
     result_path = safe_log_path(result_path)
@@ -698,9 +796,7 @@ def run_trial(manifest_path: Path, log_path: Path, result_path: Path, mode: str)
             if not session.wait_for(b"root@nixos", 15):
                 raise RuntimeError("root serial shell not observed; no reboot or file access attempted")
 
-            normal = normal_expectation(NORMAL_REPORT, manifest)
             preflight_token = uuid.uuid4().hex
-            helper_text = NORMAL_HELPER.read_text()
             session.upload_text("/run/k230-mainline-normal-state.py", helper_text, preflight_token)
             session.upload_text(
                 "/run/k230-mainline-expected.json",
@@ -759,7 +855,7 @@ def run_trial(manifest_path: Path, log_path: Path, result_path: Path, mode: str)
             if session.command(command, 15) is None:
                 raise RuntimeError("could not set volatile rdinit bootargs")
             printed = session.command("printenv bootargs", 15)
-            if printed is None or b"rdinit=/bin/sh" not in printed or f"init={SYSTEM}/init".encode() not in printed:
+            if not verified_bootargs(printed, expected_args):
                 raise RuntimeError("volatile bootargs do not contain both matching init paths")
             if "rdinit=/bin/sh" not in expected_args:
                 raise AssertionError("pure bootargs validation disagreed with U-Boot check")
@@ -777,7 +873,8 @@ def run_trial(manifest_path: Path, log_path: Path, result_path: Path, mode: str)
                     "result_schema": "mainline-initrd-diagnostic-v3",
                     "status": "recovery-required-no-reboot-requested",
                     "mode": f"volatile-rdinit-{mode}",
-                    "candidate_system": SYSTEM,
+                    "candidate_system": system,
+                    "candidate_bundle": str(prepared["bundle"]),
                     "normal_preflight": observed_before,
                     "probe": probe_outcome["diagnostic"],
                     "reboot_marker_observed": False,
@@ -799,7 +896,8 @@ def run_trial(manifest_path: Path, log_path: Path, result_path: Path, mode: str)
                     "result_schema": "mainline-initrd-diagnostic-v3",
                     "status": "recovery-required-systemctl-chroot-refusal",
                     "mode": f"volatile-rdinit-{mode}",
-                    "candidate_system": SYSTEM,
+                    "candidate_system": system,
+                    "candidate_bundle": str(prepared["bundle"]),
                     "normal_preflight": observed_before,
                     "probe": probe_outcome["diagnostic"],
                     "reboot_marker_observed": probe_outcome["reboot_marker"],
@@ -852,7 +950,8 @@ def run_trial(manifest_path: Path, log_path: Path, result_path: Path, mode: str)
                 "result_schema": "mainline-initrd-diagnostic-v3",
                 "status": status,
                 "mode": f"volatile-rdinit-{mode}",
-                "candidate_system": SYSTEM,
+                "candidate_system": system,
+                "candidate_bundle": str(prepared["bundle"]),
                 "normal_preflight": observed_before,
                 "probe": probe_outcome["diagnostic"],
                 "reboot_marker_observed": probe_outcome["reboot_marker"],
@@ -897,6 +996,10 @@ def run_trial(manifest_path: Path, log_path: Path, result_path: Path, mode: str)
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--manifest", type=Path, default=MANIFEST_DEFAULT)
+    parser.add_argument("--bundle", type=Path, default=BUNDLE,
+                        help="exact immutable candidate boot bundle; system is derived from its system symlink")
+    parser.add_argument("--normal-report", type=Path, default=NORMAL_REPORT,
+                        help="protected normal identity report matching the committed baseline")
     parser.add_argument(
         "--mode", choices=("minimal", "survey"), default="minimal",
         help="minimal sequential discriminator by default; full device survey requires explicit survey mode",
@@ -912,7 +1015,9 @@ def main() -> int:
     )
     args = parser.parse_args()
     try:
-        diagnostic_ok = run_trial(args.manifest, args.log, args.result, args.mode)
+        diagnostic_ok = run_trial(
+            args.manifest, args.log, args.result, args.mode, args.bundle, args.normal_report,
+        )
     except Exception as exc:
         print(f"Trial stopped: {exc}", file=sys.stderr)
         return 1

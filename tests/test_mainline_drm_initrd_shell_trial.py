@@ -1,6 +1,13 @@
 import importlib.util
+import copy
+import hashlib
+import json
+import sys
+import tempfile
 import unittest
+import zlib
 from pathlib import Path
+from unittest import mock
 
 
 SCRIPT = Path(__file__).parents[1] / "tools/mainline-drm-initrd-shell-trial.py"
@@ -91,6 +98,9 @@ class InitrdShellTrialTests(unittest.TestCase):
         intervals.sort()
         for left, right in zip(intervals, intervals[1:]):
             self.assertLessEqual(left[1], right[0], f"{left[2]} overlaps {right[2]}")
+        trial.validate_load_ranges({
+            name: {"bytes": size, "sha256": "a" * 64} for name, size in sizes.items()
+        })
 
     def test_minimal_commands_are_short_and_survey_is_separate(self):
         token = "a" * 32
@@ -433,6 +443,224 @@ class InitrdShellTrialTests(unittest.TestCase):
         self.assertFalse(trial.upload_marker(b"K230_UPLOAD_" + token.encode(), token))
         self.assertIsNone(trial.state_marker(b"python3 state " + token.encode() + b"\r\n" + marker[:-2], token, "postflight"))
         self.assertIsNone(trial.state_marker(marker + marker, token, "postflight"))
+
+
+class CandidateSelectionTests(unittest.TestCase):
+    def setUp(self):
+        self.directory = tempfile.TemporaryDirectory()
+        self.root = Path(self.directory.name)
+        self.store = self.root / "store"
+        self.store.mkdir()
+        self.store_patch = mock.patch.object(trial, "STORE_ROOT", self.store)
+        self.store_patch.start()
+        self.report = json.loads(trial.NORMAL_BASELINE.read_text())
+        self.report_path = self.root / "normal.json"
+        self.report_path.write_text(json.dumps(self.report))
+        self.bundle, self.system, self.manifest = self.make_bundle("1", "2")
+        self.manifest_path = self.root / "manifest.json"
+        self.save_manifest()
+
+    def tearDown(self):
+        self.store_patch.stop()
+        for path in self.store.rglob("*"):
+            if path.is_dir() and not path.is_symlink():
+                path.chmod(0o755)
+        self.directory.cleanup()
+
+    def make_bundle(self, bundle_hash, system_hash):
+        bundle = self.store / (bundle_hash * 32 + "-k230-mainline-drm-trial-boot-files")
+        system = self.store / (system_hash * 32 + "-nixos-system-test")
+        bundle.mkdir(); system.mkdir()
+        (system / "init").write_text("fixture init\n")
+        (system / "init").chmod(0o555)
+        (bundle / "system").symlink_to(system, target_is_directory=True)
+        files = {}
+        for name, _, _, _ in trial.LOADS:
+            if name == "fw_jump_add_uboot_head.bin":
+                files[name] = {**self.report["boot_files"][name], "crc32": trial.NORMAL_WRAPPER_CRC32}
+                continue
+            content = (f"bootargs=console=ttyS0 root=fstab init={system}/init\n".encode()
+                       if name == "bootargs.txt" else (name + " fixture\n").encode())
+            (bundle / name).write_bytes(content)
+            (bundle / name).chmod(0o444)
+            files[name] = self.record(content)
+        for name in ("registration", "store-paths", "SHA256SUMS"):
+            (bundle / name).write_text("fixture metadata\n")
+            (bundle / name).chmod(0o444)
+        system.chmod(0o555); bundle.chmod(0o555)
+        return bundle, str(system), {"system": str(system), "files": files}
+
+    @staticmethod
+    def record(content):
+        return {"bytes": len(content), "sha256": hashlib.sha256(content).hexdigest(),
+                "crc32": f"{zlib.crc32(content):08x}"}
+
+    def save_manifest(self):
+        self.manifest_path.write_text(json.dumps(self.manifest))
+
+    def replace_artifact(self, name, content):
+        path = self.bundle / name
+        path.chmod(0o644); path.write_bytes(content); path.chmod(0o444)
+        self.manifest["files"][name] = self.record(content)
+        self.save_manifest()
+
+    def assert_rejected_before_board(self, error=ValueError, message=None, bundle=None):
+        with mock.patch.object(trial, "PrivateSession") as serial_session, \
+                mock.patch.object(trial.os, "open") as opened:
+            with self.assertRaisesRegex(error, message or "."):
+                trial.run_trial(self.manifest_path, self.root / "trial.log", self.root / "result.json",
+                                "minimal", bundle or self.bundle, self.report_path)
+            serial_session.assert_not_called()
+            opened.assert_not_called()
+        self.assertFalse((self.root / "trial.log").exists())
+
+    def test_changed_bundle_derives_system_and_threads_metadata_without_mutating_defaults(self):
+        bundle, system, manifest = self.make_bundle("3", "4")
+        self.manifest_path.write_text(json.dumps(manifest))
+        defaults = trial.BUNDLE, trial.SYSTEM
+        with mock.patch.object(trial, "PrivateSession") as serial_session:
+            prepared = trial.prepare_trial(self.manifest_path, bundle, self.report_path)
+            serial_session.assert_not_called()
+        self.assertEqual(prepared["system"], system)
+        self.assertEqual(prepared["bundle"], bundle)
+        self.assertEqual(prepared["normal"]["candidate_system"], system)
+        self.assertEqual(prepared["normal"]["metadata_sha256"]["registration"],
+                         hashlib.sha256((bundle / "registration").read_bytes()).hexdigest())
+        self.assertEqual(prepared["bootargs"].count(" init="), 1)
+        self.assertIn("init=" + system + "/init", prepared["bootargs"])
+        self.assertEqual((trial.BUNDLE, trial.SYSTEM), defaults)
+
+    def test_manifest_system_mismatch_stops_before_board(self):
+        self.manifest["system"] = trial.SYSTEM
+        self.save_manifest()
+        self.assert_rejected_before_board(message="matching trial system")
+
+    def test_mutable_or_non_store_bundle_selection_stops_before_board(self):
+        self.assert_rejected_before_board(message="immutable /nix/store", bundle=self.root)
+        self.bundle.chmod(0o755)
+        self.assert_rejected_before_board(message="immutable store directory")
+
+    def test_store_alias_and_unsafe_system_target_stop_before_board(self):
+        alias = self.store / ("5" * 32 + "-bundle-alias")
+        alias.symlink_to(self.bundle, target_is_directory=True)
+        self.assert_rejected_before_board(message="immutable store directory", bundle=alias)
+        self.bundle.chmod(0o755)
+        (self.bundle / "system").unlink()
+        (self.bundle / "system").symlink_to(self.root, target_is_directory=True)
+        self.bundle.chmod(0o555)
+        self.assert_rejected_before_board(message="immutable /nix/store")
+
+    def test_missing_system_symlink_or_init_stops_before_board(self):
+        self.bundle.chmod(0o755); (self.bundle / "system").unlink(); self.bundle.chmod(0o555)
+        self.assert_rejected_before_board(message="system symlink")
+        self.bundle.chmod(0o755)
+        (self.bundle / "system").symlink_to(self.system, target_is_directory=True)
+        self.bundle.chmod(0o555)
+        system = Path(self.system); system.chmod(0o755); (system / "init").unlink(); system.chmod(0o555)
+        self.assert_rejected_before_board(FileNotFoundError, "system init")
+
+    def test_missing_load_artifacts_and_metadata_stop_before_board(self):
+        for name in ("Image-mainline-drm", "bootargs.txt", "registration", "store-paths", "SHA256SUMS"):
+            with self.subTest(name=name):
+                path = self.bundle / name; content = path.read_bytes()
+                self.bundle.chmod(0o755); path.unlink(); self.bundle.chmod(0o555)
+                self.assert_rejected_before_board(FileNotFoundError)
+                self.bundle.chmod(0o755); path.write_bytes(content); path.chmod(0o444); self.bundle.chmod(0o555)
+
+    def test_manifest_artifact_sizes_hashes_and_crcs_are_checked_before_board(self):
+        original = copy.deepcopy(self.manifest)
+        for field, value in (("bytes", 1), ("sha256", "0" * 64), ("crc32", "0" * 8)):
+            with self.subTest(field=field):
+                self.manifest = copy.deepcopy(original)
+                self.manifest["files"]["Image-mainline-drm"][field] = value
+                self.save_manifest()
+                self.assert_rejected_before_board((ValueError, FileNotFoundError))
+
+    def test_bad_size_types_zero_negative_and_ram_overflow_stop_before_board(self):
+        original = copy.deepcopy(self.manifest)
+        for size in (0, -1, True, "1", 0x40000000):
+            with self.subTest(size=size):
+                self.manifest = copy.deepcopy(original)
+                self.manifest["files"]["initrd.uimg"]["bytes"] = size
+                self.save_manifest()
+                self.assert_rejected_before_board(message="size|RAM")
+
+    def test_selected_payload_overlap_stops_before_board(self):
+        # This selection's manifest size (not the old fixture's static size)
+        # makes the Image overwrite the next loaded payload.
+        image = self.bundle / "Image-mainline-drm"
+        image.chmod(0o644)
+        with image.open("r+b") as stream:
+            stream.truncate(0x7000000)
+        image.chmod(0o444)
+        self.manifest["files"]["Image-mainline-drm"]["bytes"] = 0x7000000
+        self.assertEqual(image.stat().st_size, self.manifest["files"]["Image-mainline-drm"]["bytes"])
+        self.save_manifest()
+        self.assert_rejected_before_board(message="overlap")
+
+    def test_missing_and_extra_manifest_files_stop_before_board(self):
+        original = copy.deepcopy(self.manifest)
+        del self.manifest["files"]["initrd.uimg"]; self.save_manifest()
+        self.assert_rejected_before_board(message="file set")
+        self.manifest = original
+        self.manifest["files"]["extra"] = {}; self.save_manifest()
+        self.assert_rejected_before_board(message="file set")
+
+    def test_duplicate_mismatched_init_rdinit_and_multiline_args_stop_before_board(self):
+        for args in (
+            f"bootargs=init={self.system}/init init={self.system}/init\n",
+            f"bootargs=init=/bad init={self.system}/init\n",
+            f"bootargs=init={self.system}/init rdinit=/bin/sh\n",
+            f"bootargs=rdinit=/bin/sh init={self.system}/init\n",
+            f"bootargs=init={self.system}/init\nextra=value\n",
+            f"init={self.system}/init\n",
+        ):
+            with self.subTest(args=args):
+                self.replace_artifact("bootargs.txt", args.encode())
+                self.assert_rejected_before_board(message="bootargs")
+
+    def test_protected_normal_pin_kernel_hashes_services_and_boot_id_cannot_be_overridden(self):
+        for key, value in (("system", self.system), ("profile", self.system),
+                           ("kernel", "/nix/store/other/Image"), ("services", ["active"]),
+                           ("boot_id", "invalid"), ("boot_files", {})):
+            with self.subTest(key=key):
+                changed = copy.deepcopy(self.report); changed[key] = value
+                self.report_path.write_text(json.dumps(changed))
+                self.assert_rejected_before_board(message="protected normal")
+        changed = copy.deepcopy(self.report)
+        changed["boot_files"]["Image"]["sha256"] = "0" * 64
+        self.report_path.write_text(json.dumps(changed))
+        self.assert_rejected_before_board(message="committed baseline")
+
+    def test_missing_report_and_changed_wrapper_fail_before_board(self):
+        self.report_path.unlink()
+        self.assert_rejected_before_board(FileNotFoundError)
+        self.report_path.write_text(json.dumps(self.report))
+        original = copy.deepcopy(self.manifest)
+        for field, value in (("bytes", 1), ("sha256", "0" * 64), ("crc32", "0" * 8)):
+            with self.subTest(field=field):
+                self.manifest = copy.deepcopy(original)
+                self.manifest["files"]["fw_jump_add_uboot_head.bin"][field] = value
+                self.save_manifest()
+                self.assert_rejected_before_board(message="stage-one wrapper")
+
+    def test_printed_bootargs_require_exact_unique_complete_value(self):
+        expected = trial.trial_bootargs(f"bootargs=init={self.system}/init", self.system)
+        good = (expected + "\r\nK230# ").encode()
+        self.assertTrue(trial.verified_bootargs(good, expected))
+        duplicate = ((expected + "\r\n") * 2 + "K230# ").encode()
+        for reply in (None, duplicate, good.replace(b"rdinit=/bin/sh", b"rdinit=/bad"),
+                      good.replace(b"\r\n", b"", 1), b"echo " + good):
+            self.assertFalse(trial.verified_bootargs(reply, expected))
+
+    def test_cli_threads_explicit_selection_and_preserves_defaults(self):
+        for args, bundle, report in (([], trial.BUNDLE, trial.NORMAL_REPORT),
+                                   (["--bundle", str(self.bundle), "--normal-report", str(self.report_path)],
+                                    self.bundle, self.report_path)):
+            with self.subTest(args=args), mock.patch.object(sys, "argv", [str(SCRIPT), *args]), \
+                    mock.patch.object(trial, "run_trial", return_value=True) as runner:
+                self.assertEqual(trial.main(), 0)
+                self.assertEqual(runner.call_args.args[3:], ("minimal", bundle, report))
 
 
 if __name__ == "__main__":
