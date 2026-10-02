@@ -348,6 +348,6 @@ recorded in
 The 2026-10-02 physical power-cycle after the corrected-path trial restored
 the selected normal system with a fresh boot ID, exact system/profile/kernel/
 init, three active shell services and eight unchanged protected hashes. See
-the committed recovery evidence when available. Mainline task 5b.5 stays open
+`docs/evidence/mainline-display/physical-2026-10-01/corrected-probe-recovery-2026-10-02/README.md` for committed identity and reviewed visible Home proof. Mainline task 5b.5 stays open
 for usable root login and deliberate touch evidence. These captures show the
 normal vendor-kernel system, not a working mainline shell.

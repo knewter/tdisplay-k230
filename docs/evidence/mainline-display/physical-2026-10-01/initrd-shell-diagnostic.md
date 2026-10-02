@@ -169,12 +169,12 @@ controller source SHA-256 for that run was
 normal-state helper SHA-256 was
 `86bcf6f2c175d44d27f68015a9cc5a1ad7731ad50b6bbf3347859a4840cc7df7`.
 No result JSON was written because the strict marker gate failed. The
-coordinator then performed a physical power-cycle and independently verified
+operator then performed a physical power-cycle; the coordinator independently verified
 the exact normal p1 system/profile/kernel/init, Linux 6.6.36, all three active
 services, unchanged eight protected hashes, and a new boot ID
 `e7cf8096-44a0-4bdf-815d-2f1aec4126fb`. This restores the normal system after
-this trial; visible Home capture is being recorded separately by the
-coordinator.
+this trial; reviewed native and physical Home captures are committed in
+[corrected-probe recovery](corrected-probe-recovery-2026-10-02/README.md).
 
 Host review found a false-failure case in the probe: `e2label` errors on any
 non-ext partition set the global RC to failure even if another partition had
