@@ -151,6 +151,31 @@ fn theme_brush<'a>(
     }
 }
 
+/// Resolve handheld text size from Omarchy's `[font]` section. Role overrides
+/// win; otherwise base-size scales the design size relative to its 12px
+/// default. Bounds keep theme typography readable within the portrait layout.
+fn theme_font_size(theme: Option<&AppearanceSnapshot>, role: &str, design: f64, min: f64, max: f64) -> f64 {
+    let number = |key| match theme?.token("font", key)? {
+        AppearanceToken::Number(value) if value.is_finite() => Some(*value),
+        _ => None,
+    };
+    number(role)
+        .or_else(|| number("base-size").map(|base| design * base / 12.0))
+        .unwrap_or(design)
+        .clamp(min, max)
+}
+
+/// Theme spacing changes visual Settings row inset only, never the row's
+/// touch bounds. Keep the requested adaptation within handheld limits.
+fn theme_settings_row_padding(theme: Option<&AppearanceSnapshot>) -> f64 {
+    let number = |key| match theme?.token("spacing", key)? {
+        AppearanceToken::Number(value) if value.is_finite() => Some(*value),
+        _ => None,
+    };
+    let scale = number("scale").unwrap_or(1.0).clamp(0.8, 1.25);
+    (18.0 * scale).clamp(12.0, 36.0)
+}
+
 fn fill_brush(cr: &Context, brush: &Brush, x: f64, y: f64, w: f64, h: f64) -> bool {
     let Some(gradient) = brush_gradient(brush, x, y, w, h) else {
         return false;
@@ -306,6 +331,18 @@ fn text(cr: &Context, value: &str, x: f64, y: f64, width: f64, size: f64, rgb: u
 /// deliberately carries one font family (see `FONT_FAMILY`).
 fn medium(cr: &Context, value: &str, x: f64, y: f64, width: f64, size: f64, rgb: u32) {
     text_weight(cr, value, x, y, width, size, rgb, pango::Weight::Medium);
+}
+
+fn themed_text(cr: &Context, theme: Option<&AppearanceSnapshot>, role: &str,
+               value: &str, x: f64, y: f64, width: f64, size: f64,
+               min: f64, max: f64, rgb: u32) {
+    text(cr, value, x, y, width, theme_font_size(theme, role, size, min, max), rgb);
+}
+
+fn themed_medium(cr: &Context, theme: Option<&AppearanceSnapshot>, role: &str,
+                 value: &str, x: f64, y: f64, width: f64, size: f64,
+                 min: f64, max: f64, rgb: u32) {
+    medium(cr, value, x, y, width, theme_font_size(theme, role, size, min, max), rgb);
 }
 
 fn heading(cr: &Context, value: &str, x: f64, y: f64, width: f64, size: f64, rgb: u32) {
@@ -464,6 +501,20 @@ fn service_card(
     h: f64,
     selected: bool,
 ) {
+    service_card_state(cr, theme, section, x, y, w, h, selected, false);
+}
+
+fn service_card_state(
+    cr: &Context,
+    theme: Option<&AppearanceSnapshot>,
+    section: &str,
+    x: f64,
+    y: f64,
+    w: f64,
+    h: f64,
+    selected: bool,
+    pressed: bool,
+) {
     let _ = cr.save();
     rounded(cr, x, y, w, h, 16.0);
     cr.clip();
@@ -481,7 +532,9 @@ fn service_card(
         color(cr, palette_rgb_or(theme, "background", 0x263946), 1.0);
         cr.paint().ok();
     }
-    let tint = if selected {
+    let tint = if pressed {
+        "pressed-fill-alpha"
+    } else if selected {
         "selected-fill-alpha"
     } else {
         "normal-fill-alpha"
@@ -489,7 +542,9 @@ fn service_card(
     let alpha = match theme.and_then(|snapshot| snapshot.token("controls", tint)) {
         Some(AppearanceToken::Number(value)) => value.clamp(0.0, 1.0),
         _ => {
-            if selected {
+            if pressed {
+                0.22
+            } else if selected {
                 0.18
             } else {
                 0.08
@@ -2412,15 +2467,7 @@ fn scene(
                 return;
             }
             text(cr, "Done", w - 114.0, 46.0, 90.0, 20.0, style.accent);
-            medium(
-                cr,
-                "Device controls",
-                28.0,
-                112.0,
-                w - 56.0,
-                19.0,
-                style.muted,
-            );
+            themed_medium(cr, theme, "heading", "Device controls", 28.0, 112.0, w - 56.0, 19.0, 16.0, 24.0, style.muted);
             text(cr, "Themes ›", w - 164.0, 113.0, 140.0, 20.0, style.accent);
             // The row cards/sliders/Power section below are Settings' own
             // scrollable body, not header chrome -- centered and scaled by
@@ -2441,6 +2488,9 @@ fn scene(
             cr.translate(content_x, 0.0);
             cr.scale(content_scale, content_scale);
             let w = crate::DESIGN_WIDTH;
+            let row_padding = theme_settings_row_padding(theme);
+            let row_text_x = 24.0 + row_padding;
+            let row_text_width = w - 48.0 - row_padding * 2.0;
             if let Some(settings) = services.and_then(|view| view.settings.as_ref()) {
                 // Row numbers are explicit, not a plain `enumerate()`,
                 // because row 2 (Volume) is painted separately below --
@@ -2455,38 +2505,44 @@ fn scene(
                 ] {
                     let y = settings_row_y(row);
                     service_card(cr, theme, "controls", 24.0, y, w - 48.0, SETTINGS_ROW_H, false);
-                    medium(cr, name, 42.0, y + 15.0, w - 84.0, 17.0, style.text);
-                    text(
-                        cr,
+                    themed_medium(cr, theme, "body", name, row_text_x, y + 15.0, row_text_width, 17.0, 14.0, 22.0, style.text);
+                    themed_text(
+                        cr, theme, "body",
                         &control_text(control),
-                        42.0,
+                        row_text_x,
                         y + 43.0,
-                        w - 90.0,
+                        row_text_width,
                         19.0,
+                        14.0,
+                        24.0,
                         style.text,
                     );
                     if name == "Keyboard" && services.is_some_and(|view| view.keyboard_gesture_hint)
                     {
-                        text(
-                            cr,
+                        themed_text(
+                            cr, theme, "caption",
                             "Two fingers up at bottom to show;",
-                            42.0,
+                            row_text_x,
                             y + 72.0,
-                            w - 90.0,
+                            row_text_width,
                             14.0,
+                            11.0,
+                            18.0,
                             style.muted,
                         );
-                        text(
-                            cr,
+                        themed_text(
+                            cr, theme, "caption",
                             "drag the handle down to hide.",
-                            42.0,
+                            row_text_x,
                             y + 89.0,
-                            w - 90.0,
+                            row_text_width,
                             14.0,
+                            11.0,
+                            18.0,
                             style.muted,
                         );
                     } else if let Some(detail) = &control.detail {
-                        text(cr, detail, 42.0, y + 76.0, w - 90.0, 14.0, style.muted);
+                        themed_text(cr, theme, "caption", detail, row_text_x, y + 76.0, row_text_width, 14.0, 11.0, 18.0, style.muted);
                     }
                 }
                 if settings.brightness.state == ControlState::Writable {
@@ -2504,7 +2560,7 @@ fn scene(
                 // entry points").
                 let volume_y = settings_row_y(SETTINGS_VOLUME_ROW);
                 service_card(cr, theme, "controls", 24.0, volume_y, w - 48.0, SETTINGS_ROW_H, false);
-                medium(cr, "Volume", 42.0, volume_y + 15.0, w - 84.0, 17.0, style.text);
+                themed_medium(cr, theme, "body", "Volume", row_text_x, volume_y + 15.0, row_text_width, 17.0, 14.0, 22.0, style.text);
                 if let Some(sink) = default_sink(services.and_then(|view| view.audio.as_ref())) {
                     let percent = volume::linear_to_percent(sink.linear_volume);
                     let label = if sink.muted {
@@ -2512,14 +2568,16 @@ fn scene(
                     } else {
                         format!("{percent}%")
                     };
-                    text(cr, &label, w - 138.0, volume_y + 15.0, 96.0, 19.0, style.text);
-                    text(
-                        cr,
+                    themed_text(cr, theme, "body", &label, w - 138.0, volume_y + 15.0, 96.0, 19.0, 14.0, 24.0, style.text);
+                    themed_text(
+                        cr, theme, "caption",
                         &format!("{} · tap to change output", sink.description),
-                        42.0,
+                        row_text_x,
                         volume_y + SETTINGS_OUTPUT_DETAIL_Y,
-                        w - 90.0,
+                        row_text_width,
                         14.0,
+                        11.0,
+                        18.0,
                         style.muted,
                     );
                     paint_volume_slider(cr, style, w, volume_y + 86.0, percent, sink.muted);
@@ -2730,7 +2788,7 @@ fn paint_icon_plate(
     let style = visual_style(theme, "launcher");
     cr.new_path();
     if pressed {
-        service_card(cr, theme, "launcher", plate_x, plate_y, plate_size, plate_size, true);
+        service_card_state(cr, theme, "launcher", plate_x, plate_y, plate_size, plate_size, false, true);
     }
     let icon_x = plate_x + (plate_size - icon_size) / 2.0;
     let icon_y = plate_y + (plate_size - icon_size) / 2.0;
@@ -2850,7 +2908,7 @@ fn paint_item_plate(
         }
         HomeItem::Folder(folder) => {
             cr.new_path();
-            service_card(cr, theme, "launcher", plate_x, plate_y, plate_size, plate_size, pressed);
+            service_card_state(cr, theme, "launcher", plate_x, plate_y, plate_size, plate_size, false, pressed);
             for (index, rect) in home_grid::folder_mini_icon_rects(plate_x, plate_y, plate_size).into_iter().enumerate() {
                 let (x, y, w, h) = rect;
                 if let Some(id) = folder.apps.get(index) {
@@ -7989,6 +8047,57 @@ mod tests {
         let mut surface = surface;
         let data = surface.data().unwrap();
         assert_eq!(&data[(40 * 120 + 60) * 4..(40 * 120 + 60) * 4 + 4], &[96, 64, 32, 255]);
+    }
+
+    #[test]
+    fn theme_font_and_spacing_adapt_with_touch_geometry_preserved() {
+        let mut theme = fixture_theme("metrics", (32, 64, 96));
+        theme.sections.insert("font".into(), BTreeMap::from([
+            ("base-size".into(), AppearanceToken::Number(15.0)),
+            ("body".into(), AppearanceToken::Number(20.0)),
+            ("caption".into(), AppearanceToken::Number(12.0)),
+        ]));
+        theme.sections.insert("spacing".into(), BTreeMap::from([
+            ("scale".into(), AppearanceToken::Number(1.1)),
+        ]));
+        assert_eq!(theme_font_size(Some(&theme), "body", 19.0, 14.0, 24.0), 20.0);
+        assert_eq!(theme_font_size(Some(&theme), "heading", 19.0, 16.0, 24.0), 23.75);
+        assert_eq!(theme_font_size(None, "body", 19.0, 14.0, 24.0), 19.0);
+        assert_eq!(theme_settings_row_padding(Some(&theme)), 19.8);
+        assert_eq!(theme_settings_row_padding(None), 18.0);
+        assert_eq!(settings_row_y(1), 288.0, "theme spacing does not move touch rows");
+
+        fn label(theme: Option<&AppearanceSnapshot>) -> Vec<u8> {
+            let mut surface = ImageSurface::create(Format::ARgb32, 240, 56).unwrap();
+            let cr = Context::new(&surface).unwrap();
+            themed_text(&cr, theme, "body", "Brightness", 12.0, 10.0, 216.0, 19.0, 14.0, 24.0, 0xffffff);
+            drop(cr);
+            let pixels = surface.data().unwrap().to_vec();
+            pixels
+        }
+        assert_ne!(label(None), label(Some(&theme)), "the font token must affect rendered glyph pixels");
+    }
+
+    #[test]
+    fn pressed_home_cards_consume_authored_pressed_fill_without_selection() {
+        let mut theme = fixture_theme("pressed", (32, 64, 96));
+        theme.sections.get_mut("controls").unwrap().extend([
+            ("normal-color".into(), AppearanceToken::Brush(Brush { stops: vec![BrushStop { offset: 0.0, argb: "#ffff0000".into() }], angle_degrees: 0.0, alpha: 1.0 })),
+            ("normal-fill-alpha".into(), AppearanceToken::Number(0.0)),
+            ("pressed-fill-alpha".into(), AppearanceToken::Number(0.65)),
+            ("selected-fill-alpha".into(), AppearanceToken::Number(0.0)),
+            ("selected-border-width".into(), AppearanceToken::Width([0.0; 4])),
+        ]);
+        fn card(theme: &AppearanceSnapshot, pressed: bool) -> Vec<u8> {
+            let mut surface = ImageSurface::create(Format::ARgb32, 120, 80).unwrap();
+            let cr = Context::new(&surface).unwrap();
+            service_card_state(&cr, Some(theme), "launcher", 0.0, 0.0, 120.0, 80.0, false, pressed);
+            drop(cr);
+            let pixels = surface.data().unwrap().to_vec();
+            pixels
+        }
+        assert_ne!(card(&theme, false), card(&theme, true));
+        assert_eq!(settings_row_y(1), 288.0);
     }
 
     #[test]

@@ -12,10 +12,26 @@ import unittest
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "tools"))
 from theme_tokens import TokenError, compile_tokens, system_surface_coverage, SYSTEM_ROLES  # noqa: E402
+from theme_field_inventory import field_status, inventory  # noqa: E402
 import theme_activate as activation  # noqa: E402
 
 
 class ThemeTokenRendering(unittest.TestCase):
+    def test_every_active_upstream_shell_field_has_an_explicit_consumer_status(self):
+        rows = inventory()
+        self.assertEqual(len(rows), 102)
+        self.assertTrue(all(row["status"] in {"applied", "adapted", "unavailable"}
+                            for row in rows),
+                        "new upstream fields must be classified before coverage is claimed")
+        self.assertEqual(len({row["field"] for row in rows}), len(rows))
+        self.assertIn({"field": "font.base-size", "status": "adapted",
+                       "owner": "Rust Settings labels scale design sizes by base-size (defaults to 12), clamped per label to 11–24px."}, rows)
+        self.assertTrue(any(row["field"] == "controls.focus-color" and
+                            row["status"] == "unavailable" for row in rows))
+        self.assertIsNone(field_status("launcher", "backgroun"), "misspelled roles must not be accepted")
+        self.assertIsNone(field_status("launcher", "new-role"), "new roles need explicit review")
+        self.assertEqual(field_status("image-picker", "selected-border")[0], "unavailable")
+
     def test_gradient_reference_alpha_and_per_side_widths(self):
         source = {
             "hyprland": {"active-border": "rgba(10, 20, 30, .5) #112233 45deg"},
