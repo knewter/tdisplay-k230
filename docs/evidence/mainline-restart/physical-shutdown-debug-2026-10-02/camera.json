@@ -1,0 +1,8 @@
+{
+  "source": "physical Logitech C920 webcam /dev/video0",
+  "source_artifact": "private shutdown-debug-now.jpg",
+  "source_sha256": "a938168c80109d82d88683faf251c0be44fd075748c8f47dd5f8a9ebe4ed898b",
+  "source_mtime_utc": "2026-10-02T17:44:31.330865+00:00",
+  "capture_filter": "crop=1260:920:130:140,transpose=2,transpose=2",
+  "limit": "Angled panel and glare; visually confirms text display only. No finger or automatic restart proof."
+}
