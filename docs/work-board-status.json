@@ -412,8 +412,8 @@
       "lane": "in-progress",
       "source": "in-progress",
       "physical": "pending",
-      "next": "Physically verify automatic restart from the inspected matching candidate and protected normal return, then run the gated read-only root-label/mount diagnostics.",
-      "rationale": "The corrected complete GCC kernel build and matching bundle inspection passed. Nine vendor/default/console outputs remain unchanged. The candidate/root-label controllers pass 49 host tests. Existing physical evidence records early SD enumeration, DRM/fb0 and Goodix registration, but no usable mainline root or deliberate touch. Automatic restart and root diagnostics remain unverified; normal recovery was independently proved.",
+      "next": "Verify protected normal recovery after the minimal candidate reboot request, investigate the missing automatic return, then run the gated root-label/read-only mount diagnostics.",
+      "rationale": "The corrected complete kernel and matching bundle builds passed; default outputs are unchanged. The root-label/read-only mount controllers pass 62 host tests. The new physical minimal trial passed /bin/true, proc setup and uptime, then printed systemctl Rebooting; automatic return was not observed before the operator power cycle disconnected serial. Candidate kernel callback and normal postflight remain unverified. Prior protected normal recovery is separate evidence.",
       "dependencies": [],
       "evidence": [
         "docs/evidence/mainline-display-power-domain.md",
@@ -429,9 +429,10 @@
         "docs/evidence/mainline-restart/README.md",
         "docs/evidence/mainline-display/physical-2026-10-01/mainline-root-path-audit-2026-10-02.md",
         "docs/evidence/mainline-display/physical-2026-10-01/candidate-controller-host-2026-10-02.md",
-        "docs/evidence/mainline-display/physical-2026-10-01/label-controller-host-2026-10-02.md"
+        "docs/evidence/mainline-display/physical-2026-10-01/label-controller-host-2026-10-02.md",
+        "docs/evidence/mainline-display/physical-2026-10-01/root-mount-controller-host-2026-10-02.md"
       ],
-      "reviewRevision": "f6186b93",
+      "reviewRevision": "c10ab60d",
       "media": [
         {
           "path": "docs/evidence/mainline-display/physical-2026-10-01/power-swap-recovery-2026-10-02/home.png",
