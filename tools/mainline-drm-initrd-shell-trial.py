@@ -127,24 +127,49 @@ def verified_crc(reply: bytes | None, expected: dict[str, object]) -> bool:
     return True
 
 
-def probe_command(token: str) -> str:
-    if not re.fullmatch(r"[0-9a-f]{32}", token):
-        raise ValueError("probe token must be a 32-character lowercase UUID")
-    data = PROBE_DATA.replace("K230_STAGE_TOKEN", token)
-    return (
-        "PATH=/bin:/sbin; export PATH; "
-        f"printf 'K230_RDINIT_STAGE {token} shell-start\\n'; "
-        f"{data}; "
-        f"printf 'K230_RDINIT_PROBE {token} RC=%s\\n' \"$_k230_probe_rc\"; "
-        "sleep 10; /bin/reboot -ff"
-    )
-
-
 PROBE_STAGE_NAMES = (
     "shell-start", "mkdir-done", "proc-mount-check", "sys-mount-check",
     "dev-mount-check", "proc-read-start", "proc-read-done",
     "sys-block-read-done", "dev-block-read-done", "labels-read-done",
 )
+
+
+def _validate_token(token: str) -> None:
+    if not re.fullmatch(r"[0-9a-f]{32}", token):
+        raise ValueError("probe token must be a 32-character lowercase UUID")
+
+
+def reception_command(token: str) -> str:
+    _validate_token(token)
+    return f"PATH=/bin:/sbin; export PATH; printf 'K230_RDINIT_RX {token}\\n'"
+
+
+def true_command(token: str) -> str:
+    _validate_token(token)
+    return f"/bin/true; printf 'K230_RDINIT_TRUE {token} RC=%s\\n' \"$?\""
+
+
+def uptime_command(token: str) -> str:
+    _validate_token(token)
+    return (
+        f"printf 'K230_RDINIT_UP_BEGIN {token}\\n'; /bin/cat /proc/uptime; "
+        f"printf 'K230_RDINIT_UP_END {token} RC=%s\\n' \"$?\""
+    )
+
+
+def reboot_command(token: str) -> str:
+    _validate_token(token)
+    return f"printf 'K230_RDINIT_REBOOT {token}\\n'; /bin/reboot -ff"
+
+
+def survey_command(token: str) -> str:
+    _validate_token(token)
+    data = PROBE_DATA.replace("K230_STAGE_TOKEN", token)
+    return (
+        "PATH=/bin:/sbin; export PATH; "
+        f"{data}; "
+        f"printf 'K230_RDINIT_SURVEY {token} RC=%s\\n' \"$_k230_probe_rc\""
+    )
 
 
 def probe_stage_markers(output: bytes, token: str) -> tuple[str, ...]:
@@ -163,6 +188,121 @@ def probe_stage_markers(output: bytes, token: str) -> tuple[str, ...]:
     if len(matches) != len(set(matches)):
         return ()
     return tuple(name for name in PROBE_STAGE_NAMES if name.encode() in matches)
+
+
+class ProbeProtocolError(RuntimeError):
+    def __init__(self, stage: str):
+        super().__init__(f"initrd minimal protocol did not complete at {stage}; do not send more probe input")
+        self.stage = stage
+
+
+def receive_marker(output: bytes, token: str) -> bool | None:
+    _validate_token(token)
+    text = _PROTOCOL.uart_text(output)
+    matches = re.findall(rb"^K230_RDINIT_RX " + re.escape(token.encode()) + rb"\n", text, re.M)
+    return True if len(matches) == 1 else None
+
+
+def protocol_rc_marker(output: bytes, token: str, stage: str) -> int | None:
+    _validate_token(token)
+    tags = {"true": "K230_RDINIT_TRUE", "uptime": "K230_RDINIT_UP_END", "survey": "K230_RDINIT_SURVEY"}
+    if stage not in tags:
+        raise ValueError("unknown protocol RC stage")
+    text = _PROTOCOL.uart_text(output)
+    matches = re.findall(
+        rb"^" + tags[stage].encode() + rb" " + re.escape(token.encode()) + rb" RC=([0-9]{1,3})\n",
+        text,
+        re.M,
+    )
+    if len(matches) != 1:
+        return None
+    value = int(matches[0])
+    return value if value <= 255 else None
+
+
+def uptime_result(output: bytes, token: str) -> dict[str, object] | None:
+    _validate_token(token)
+    text = _PROTOCOL.uart_text(output)
+    starts = list(re.finditer(rb"^K230_RDINIT_UP_BEGIN " + re.escape(token.encode()) + rb"\n", text, re.M))
+    ends = list(re.finditer(rb"^K230_RDINIT_UP_END " + re.escape(token.encode()) + rb" RC=([0-9]{1,3})\n", text, re.M))
+    if len(starts) != 1 or len(ends) != 1 or starts[0].end() > ends[0].start():
+        return None
+    values = re.findall(rb"^([0-9]+\.[0-9]+) ([0-9]+\.[0-9]+)$", text[starts[0].end():ends[0].start()], re.M)
+    rc = int(ends[0].group(1))
+    if rc > 255:
+        return None
+    if rc == 0 and len(values) != 1:
+        return None
+    if len(values) > 1:
+        return None
+    uptime = None
+    if values:
+        uptime = [values[0][0].decode(), values[0][1].decode()]
+    return {"rc": rc, "uptime": uptime}
+
+
+def survey_rc_marker(output: bytes, token: str) -> int | None:
+    return protocol_rc_marker(output, token, "survey")
+
+
+def reboot_marker(output: bytes, token: str) -> bool | None:
+    _validate_token(token)
+    text = _PROTOCOL.uart_text(output)
+    matches = re.findall(rb"^K230_RDINIT_REBOOT " + re.escape(token.encode()) + rb"\n", text, re.M)
+    return True if len(matches) == 1 else None
+
+
+def await_protocol_marker(session, parser, token: str, timeout: float, clock=time.monotonic):
+    deadline = clock() + timeout
+    while clock() < deadline:
+        session.pump()
+        result = parser(session.buffer, token)
+        if result is not None:
+            return result
+    return None
+
+
+def run_probe_protocol(session, token: str, mode: str, *, timeout: float = 30.0, clock=time.monotonic):
+    """Run short sequential tests; survey is gated on every minimal RC being zero."""
+    if mode not in ("minimal", "survey"):
+        raise ValueError("probe mode must be minimal or survey")
+    session.write((reception_command(token) + "\r").encode())
+    if await_protocol_marker(session, receive_marker, token, timeout, clock) is None:
+        raise ProbeProtocolError("reception")
+
+    session.write((true_command(token) + "\r").encode())
+    true_rc = await_protocol_marker(
+        session, lambda output, fresh: protocol_rc_marker(output, fresh, "true"), token, timeout, clock
+    )
+    if true_rc is None:
+        raise ProbeProtocolError("/bin/true")
+
+    session.write((uptime_command(token) + "\r").encode())
+    uptime = await_protocol_marker(session, uptime_result, token, timeout, clock)
+    if uptime is None:
+        raise ProbeProtocolError("/bin/cat /proc/uptime")
+
+    minimal = {"reception_marker": True, "true_rc": true_rc, "uptime_rc": uptime["rc"], "uptime": uptime["uptime"]}
+    minimal_ok = true_rc == 0 and uptime["rc"] == 0
+    survey = None
+    if mode == "survey" and minimal_ok:
+        session.write((survey_command(token) + "\r").encode())
+        survey_rc = await_protocol_marker(session, survey_rc_marker, token, max(timeout, 60.0), clock)
+        if survey_rc is None:
+            raise ProbeProtocolError("optional survey")
+        survey = {"status": "complete", "rc": survey_rc, "nixos_sd_label_present": probe_nixos_label(session.buffer)}
+    elif mode == "survey":
+        survey = {"status": "skipped", "reason": "minimal-stage-rc-failure"}
+
+    session.write((reboot_command(token) + "\r").encode())
+    reboot_seen = await_protocol_marker(session, reboot_marker, token, min(timeout, 5.0), clock)
+    if mode == "minimal":
+        diagnostic = {"schema": "k230-initrd-minimal-v1", **minimal}
+        diagnostic_ok = minimal_ok
+    else:
+        diagnostic = {"schema": "k230-initrd-survey-v1", "minimal": minimal, "survey": survey}
+        diagnostic_ok = minimal_ok and (survey is None or survey.get("rc") == 0)
+    return {"diagnostic": diagnostic, "diagnostic_ok": diagnostic_ok, "reboot_marker": reboot_seen is True}
 
 
 def probe_result(output: bytes, token: str) -> int | None:
@@ -336,7 +476,7 @@ def safe_log_path(path: Path) -> Path:
     return resolved
 
 
-def run_trial(manifest_path: Path, log_path: Path, result_path: Path) -> None:
+def run_trial(manifest_path: Path, log_path: Path, result_path: Path, mode: str) -> bool:
     try:
         import serial
     except ImportError as exc:
@@ -454,30 +594,8 @@ def run_trial(manifest_path: Path, log_path: Path, result_path: Path) -> None:
             in_uboot = False
             if not session.wait_for(b"Linux version 7.3.0-rc5", 45):
                 raise RuntimeError("Linux version banner not observed; reset may be required")
-            time.sleep(5)
-            session.pump()
-
-            # The command does not exit the shell: rdinit is PID 1. Its final
-            # reboot -f is a child command that returns to the untouched U-Boot
-            # selection after the bounded proc/sysfs snapshot.
             token = uuid.uuid4().hex
-            session.write((probe_command(token) + "\r").encode())
-            probe_deadline = time.monotonic() + 60
-            probe_status = None
-            probe_stages = ()
-            while time.monotonic() < probe_deadline:
-                session.pump()
-                probe_status = probe_result(session.buffer, token)
-                probe_stages = probe_stage_markers(session.buffer, token)
-                if probe_status is not None:
-                    break
-            if probe_status is None:
-                stages = ",".join(probe_stages) if probe_stages else "none"
-                raise RuntimeError(
-                    "PID 1 shell probe did not return its complete token "
-                    f"(complete stages: {stages}); do not send exit"
-                )
-            label_present = probe_nixos_label(session.buffer)
+            probe_outcome = run_probe_protocol(session, token, mode)
             if not session.wait_for(b"nixos login:", 180):
                 raise RuntimeError("normal login not observed after initrd reboot")
             recovery_login_seen = True
@@ -504,21 +622,22 @@ def run_trial(manifest_path: Path, log_path: Path, result_path: Path) -> None:
             ):
                 raise RuntimeError("recovered system/kernel/profile/services/protected files differ from baseline")
             recovery_identity_verified = True
-            if probe_status != 0:
-                raise RuntimeError(
-                    "initrd probe reached its marker but one or more required proc/sys/devtmpfs/block-label checks failed"
-                )
-            print(f"Trial and protected normal recovery verified; private serial log: {log_path}")
-            print(f"PID 1 probe marker returned with status {probe_status}.")
+            diagnostic_ok = bool(probe_outcome["diagnostic_ok"])
+            status = (
+                "recovery-verified-diagnostic-passed"
+                if diagnostic_ok else "recovery-verified-diagnostic-failed"
+            )
+            print(f"Protected normal recovery identities verified; private serial log: {log_path}")
             print("Recovered system, kernel, profile, services, boot ID, and eight protected boot-file hashes verified.")
+            print(f"Diagnostic mode: {mode}; result: {status}; reboot marker: {probe_outcome['reboot_marker']}.")
             safe_result = {
-                "status": "PASS",
-                "mode": "volatile-rdinit-initrd-shell",
+                "result_schema": "mainline-initrd-diagnostic-v2",
+                "status": status,
+                "mode": f"volatile-rdinit-{mode}",
                 "candidate_system": SYSTEM,
                 "normal_preflight": observed_before,
-                "initrd_probe_rc": probe_status,
-                "initrd_probe_stages": list(probe_stages),
-                "initrd_nixos_sd_label_present": label_present,
+                "probe": probe_outcome["diagnostic"],
+                "reboot_marker_observed": probe_outcome["reboot_marker"],
                 "normal_recovery": observed_after,
                 "persistent_boot_selection_changed": False,
                 "raw_serial_log_path": str(log_path),
@@ -527,6 +646,7 @@ def run_trial(manifest_path: Path, log_path: Path, result_path: Path) -> None:
             with os.fdopen(result_fd, "w") as result_file:
                 json.dump(safe_result, result_file, indent=2, sort_keys=True)
                 result_file.write("\n")
+            return diagnostic_ok
         except Exception:
             if session is not None and in_uboot and not boot_started:
                 # All pre-boot failures leave Linux/normal boot files intact.
@@ -562,6 +682,10 @@ def run_trial(manifest_path: Path, log_path: Path, result_path: Path) -> None:
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--manifest", type=Path, default=MANIFEST_DEFAULT)
+    parser.add_argument(
+        "--mode", choices=("minimal", "survey"), default="minimal",
+        help="minimal sequential discriminator by default; full device survey requires explicit survey mode",
+    )
     stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
     parser.add_argument(
         "--log", type=Path,
@@ -573,11 +697,11 @@ def main() -> int:
     )
     args = parser.parse_args()
     try:
-        run_trial(args.manifest, args.log, args.result)
+        diagnostic_ok = run_trial(args.manifest, args.log, args.result, args.mode)
     except Exception as exc:
         print(f"Trial stopped: {exc}", file=sys.stderr)
         return 1
-    return 0
+    return 0 if diagnostic_ok else 2
 
 
 if __name__ == "__main__":
