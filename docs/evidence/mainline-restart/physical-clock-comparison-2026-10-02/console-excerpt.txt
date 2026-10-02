@@ -1,0 +1,35 @@
+Selected candidate kernel shutdown and following SPL lines only. Raw normal output remains private; SHA-256 recorded in result.json. This excerpt is curated, not the full UART transcript.
+
+[    0.000000] Linux version 7.3.0-rc5 (nixbld@localhost) (riscv64-unknown-linux-gnu-gcc (GCC) 15.3.0, GNU ld (GNU Binutils) 2.46) #1-NixOS SMP PREEMPT Tue Jan  1 00:00:00 UTC 1980
+[    3.209721] clk: Not disabling unused clocks
+[    5.604670] canaan-drm display-subsystem: shutdown
+[    5.604717] gpio-k230 9140c000.gpio: shutdown
+[    5.604753] gpio-k230 9140b000.gpio: shutdown
+[    5.604782] i2c i2c-0: shutdown
+[    5.604807] i2c_designware 91408000.i2c: shutdown
+[    5.604848] mmcblk mmc1:59b4: shutdown
+[    5.624013] riscv-pmu-sbi riscv-pmu-sbi: shutdown
+[    5.624067] mmc_host mmc1: shutdown_pre
+[    5.624107] usb usb2-port1: shutdown
+[    5.624136] hub 2-0:1.0: shutdown
+[    5.624163] dwc2 91540000.usb: shutdown
+[    5.624210] usb usb1-port1: shutdown
+[    5.624237] hub 1-0:1.0: shutdown
+[    5.624261] dwc2 91500000.usb: shutdown
+[    5.624337] serial8250 serial8250: shutdown
+[    5.671209] canaan-mipi-dsi 90850000.dsi: shutdown
+[    5.671268] canaan-vo 90840000.vo: shutdown
+[    5.671302] k230-powerdomain 91103000.power-controller: shutdown
+[    5.671337] k230-rtc 91000c00.rtc: shutdown
+[    5.671366] sdhci-dwcmshc-kendryte 91581000.sdhci1: shutdown
+[    5.687854] dw-apb-uart 91400000.serial: shutdown
+[    5.703828] k230_clock_controller 91102000.clock-controller: shutdown
+[    5.706256] k230-pinctrl 91105000.pinctrl: shutdown
+[    5.707474] k230-rst 91101000.reset-controller: shutdown
+[    5.725574] platform f04000000.timer: shutdown
+[    5.726781] riscv-plic f00000000.interrupt-controller: shutdown
+[    5.738614] simple-pm-bus soc: shutdown
+[    5.743804] platform sbi-cpuidle: shutdown
+[    5.745024] PM: Calling printk_kthreads_shutdown+0x0/0x90
+[    5.756131] reboot: Restarting system
+U-Boot SPL 2022.10 (Oct 03 2022 - 19:25:32 +0000)

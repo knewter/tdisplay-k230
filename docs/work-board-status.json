@@ -412,8 +412,8 @@
       "lane": "in-progress",
       "source": "in-progress",
       "physical": "pending",
-      "next": "After verified manual recovery, run the reviewed minimal runtime-trace clock comparison with fresh paths. Check the kernel clock-cleanup marker and protected automatic normal return; only then continue root-label/mount diagnostics.",
-      "rationale": "The optional 7.3-rc5 complete kernel and matching bundle build; default outputs remain unchanged. Physical boots observe DRM/fb0, Goodix registration and Bash, but no usable mainline root or deliberate touch. The corrected readiness gate passed on the board: clean receipt, true/proc/uptime and all six runtime tracing stages returned successfully. A real reboot request produced seven shutdown entry checkpoints ending at the MMC block device, then the full 180-second normal-return deadline expired without kernel Restarting, SPL or normal login. This narrows the shutdown boundary, not the culprit. Prior user reset-button recovery passed fresh normal identities, three shell services and eight protected hashes, with reviewed camera Home; recovery from this latest traced attempt is pending. Automatic mainline restart remains unverified. The reviewed minimal clock comparison and timeout result persistence pass 96 host tests; they test global unused-clock cleanup dependence and preserve received tracing facts without extra input on timeout. The physical clock comparison has not been run.",
+      "next": "Implement the required SD1 clock consumers in the optional candidate, then rebuild and verify restart without clk_ignore_unused before usable-root and deliberate-touch proof.",
+      "rationale": "The unchanged 7.3-rc5 candidate passed automatic kernel restart \u2192 SPL \u2192 protected normal recovery with the temporary clk_ignore_unused comparison. Kernel cleanup-skip marker, all runtime tracing gates, fresh postflight boot ID, exact profile/kernel, three active shell services and eight unchanged hashes passed. Task 5d.4 is complete for this qualified diagnostic boot. The baseline without the flag still stalls after an MMC shutdown entry; global cleanup dependence does not identify one clock or callback. The source audit finds only two of five K230 SD1 clock consumers claimed. Proper optional-candidate clock ownership and a repeat without the flag remain, alongside usable mainline root and deliberate touch (5b.5). No normal boot selection or default image changed.",
       "dependencies": [],
       "evidence": [
         "docs/evidence/mainline-display-power-domain.md",
@@ -439,10 +439,16 @@
         "docs/evidence/mainline-restart/runtime-shutdown-trace-feasibility-2026-10-02.md",
         "docs/evidence/mainline-restart/physical-runtime-trace-2026-10-02/README.md",
         "docs/evidence/mainline-restart/physical-runtime-ready-2026-10-02/README.md",
-        "docs/evidence/mainline-restart/minimal-clock-comparison-host-2026-10-02.md"
+        "docs/evidence/mainline-restart/minimal-clock-comparison-host-2026-10-02.md",
+        "docs/evidence/mainline-restart/physical-clock-comparison-2026-10-02/README.md"
       ],
       "reviewRevision": "b2bbd9a7",
       "media": [
+        {
+          "path": "docs/evidence/mainline-restart/physical-clock-comparison-2026-10-02/recovered-home-panel.jpg",
+          "caption": "Normal Home after automatic mainline restart through SPL; temporary clock comparison passed protected identity and hash checks",
+          "provenance": "Board capture"
+        },
         {
           "path": "docs/evidence/mainline-restart/physical-runtime-ready-2026-10-02/boot-panel.jpg",
           "caption": "Traced mainline shutdown timed out after the MMC block-device entry; commands and runtime tracing passed, automatic restart failed its return deadline",
@@ -495,8 +501,8 @@
         }
       ],
       "cover": {
-        "path": "docs/evidence/mainline-restart/physical-runtime-ready-2026-10-02/boot-panel.jpg",
-        "caption": "Traced mainline shutdown timed out after the MMC block-device entry; commands and runtime tracing passed, automatic restart failed its return deadline",
+        "path": "docs/evidence/mainline-restart/physical-clock-comparison-2026-10-02/recovered-home-panel.jpg",
+        "caption": "Normal Home after automatic mainline restart through SPL; temporary clock comparison passed protected identity and hash checks",
         "provenance": "Board capture"
       }
     },

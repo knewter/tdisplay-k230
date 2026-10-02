@@ -208,9 +208,16 @@ SRST, the systemd refusal and distinct operator recovery. Group 5d owns the
 kernel/Nix continuation and its separate evidence gates.
 `docs/evidence/mainline-restart/README.md` records the initial GCC failure,
 corrected source/object/full-kernel/matching-bundle proof and unchanged
-base-relative default outputs; it does not provide physical restart proof.*
+base-relative default outputs; its host checks do not provide physical restart proof.*
 
-<!-- UNVERIFIED: mainline automatic restart and protected normal return -->
+*Physical grounding: `docs/evidence/mainline-restart/physical-clock-comparison-2026-10-02/README.md`
+records a real candidate kernel restart → SPL → protected normal return,
+fresh boot ID, matching identities, active shell services and eight unchanged
+hashes with temporary `clk_ignore_unused`. This proves that diagnostic
+selection only; the baseline still stalls and restart without the flag
+requires a separate clock-consumer fix and physical proof.*
+
+<!-- UNVERIFIED: mainline automatic restart without temporary unused-clock bypass -->
 
 #### Scenario: The operator requests restart from the mainline diagnostic trial
 

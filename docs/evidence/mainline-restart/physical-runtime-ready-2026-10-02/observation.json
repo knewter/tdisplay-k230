@@ -124,7 +124,12 @@
   "last_raw_write_utc": "2026-10-02T19:22:24.594486+00:00",
   "kernel_restart_announcement_observed": false,
   "subsequent_spl_observed": false,
-  "normal_recovery": null,
+  "normal_recovery": {
+    "method": "operator-reset-button",
+    "verified": true,
+    "postflight": "postflight.json",
+    "boot_id": "2fd31238-76a4-48f0-b0e4-4c81652b58f9"
+  },
   "persistent_boot_selection_changed": false,
   "automatic_restart": "UNVERIFIED",
   "usable_mainline_root": "UNVERIFIED",

@@ -1,0 +1,9 @@
+{
+  "source": "physical Logitech C920 webcam /dev/video0",
+  "source_artifact": "private runtime-clock-home-panel.jpg",
+  "source_sha256": "44195740d5715af1553fb15e009ba79c73a9e5b8033e67b30976013deec6325e",
+  "source_mtime_utc": "2026-10-02T19:54:21.311635+00:00",
+  "filter": "crop=1300:980:180:100,transpose=2,transpose=2",
+  "image_sha256": "4c396ff3b029fb82ccd6c39d9f3ae5a22b06fb8d9329c991af856459d9be88a5",
+  "observation": "Reviewed normal Home after verified automatic mainline\u2192SPL\u2192normal recovery and successful Home IPC. Glare/angle/blur limit detail. Camera is distinct from protected serial identity proof; no new finger or mainline touch acceptance."
+}

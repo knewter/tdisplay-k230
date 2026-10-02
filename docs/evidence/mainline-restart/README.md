@@ -1,5 +1,15 @@
 # Optional mainline K230 restart source and host evidence
 
+## Latest physical result
+
+The [2026-10-02 clock comparison](physical-clock-comparison-2026-10-02/README.md)
+passed automatic candidate kernel restart → SPL → protected normal recovery
+with a temporary `clk_ignore_unused` diagnostic argument. Task 5d.4 is
+proved for that boot; the baseline still stalls. Usable mainline root and
+deliberate touch remain UNVERIFIED, and a proper clock-consumer fix remains.
+The host-only records below retain their original limits.
+
+
 On 2026-10-02, the optional DRM candidate's K230 reset object compiled
 successfully against headers prepared from the exact pinned candidate
 source. Nix also built the patched source derivation. These are host source

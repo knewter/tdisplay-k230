@@ -48,8 +48,12 @@ with glare/angle limits recorded in [provenance](camera.json). No new finger
 acceptance or native capture was obtained. Root held the board/UART/camera in
 `~/tmp/k230-mainline-probe-integration`, branch `integrate/mainline-probe-path`,
 bounded base `3e6941d7`. No kernel rebuild, protected boot-file/profile change
-or persistent boot-selection write was performed. Manual recovery from this
-latest attempt is pending.
+or persistent boot-selection write was performed. The operator then pressed reset. Protected [normal postflight](postflight.json)
+passed with a fresh boot ID, exact system/profile/kernel/init, three active
+shell services and all eight hashes unchanged. The first 45-second CR-only
+check observed normal boot progress but no prompt; a second bounded check
+passed. No commands were sent before the fresh normal prompt. This manual
+recovery does not satisfy automatic mainline restart.
 
 
 The subsequent [MMC source audit](../../../research/mainline-mmc-shutdown-boundary-2026-10-02.md)

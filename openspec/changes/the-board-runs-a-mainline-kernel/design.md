@@ -10,7 +10,13 @@ the kernel. The protected normal system was independently restored by an
 operator power cycle, recorded in
 `docs/evidence/mainline-display/physical-2026-10-01/minimal-probe-recovery-2026-10-02/README.md`.
 These are partial boot/probe/recovery observations, not product acceptance.
-Tasks 5b.5 and 5d.4 stay open; automatic mainline restart remains UNVERIFIED.
+Task 5d.4 now has physical proof for the reviewed temporary
+`clk_ignore_unused` diagnostic boot: kernel restart → SPL → protected normal
+return with fresh identity and unchanged boot hashes, recorded in
+`docs/evidence/mainline-restart/physical-clock-comparison-2026-10-02/README.md`.
+The baseline without the flag still stalls; a proper clock-consumer fix
+and restart without the flag remain before production acceptance. Task
+5b.5 stays open for usable mainline root and deliberate touch.
 
 ## Context
 

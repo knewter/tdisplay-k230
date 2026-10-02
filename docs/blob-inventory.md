@@ -1654,6 +1654,7 @@ DATA 1d1c0a97fb4998450f271b580db263aa21bb8e1ed00fcb1a123cb6b8ab68eb18 docs/evide
 DATA 86a97d3beb06ec564a69256328060642dfbdaacabc59886e0e616bae9a4e07d0 docs/evidence/mainline-restart/physical-runtime-trace-2026-10-02/boot-panel.jpg
 DATA 2c033a1688ad58506e0211539185a97ddaf3c5c86e39a39a392c567d57e2502d docs/evidence/mainline-restart/physical-runtime-trace-2026-10-02/recovered-home-panel.jpg
 DATA d197f47569dbd4b00ffc4e88caa8f57a090707c5d5b54ad255765742f62f8de9 docs/evidence/mainline-restart/physical-runtime-ready-2026-10-02/boot-panel.jpg
+DATA 4c396ff3b029fb82ccd6c39d9f3ae5a22b06fb8d9329c991af856459d9be88a5 docs/evidence/mainline-restart/physical-clock-comparison-2026-10-02/recovered-home-panel.jpg
 ```
 
 `group:` rows stand for a directory whose members are enumerated by

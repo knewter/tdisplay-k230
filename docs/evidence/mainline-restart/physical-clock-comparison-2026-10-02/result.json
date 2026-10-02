@@ -1,0 +1,116 @@
+{
+  "candidate_bundle": "/nix/store/asj7l4zj5jrjkgng4nrcx3y72p7jf7aa-k230-mainline-drm-trial-boot-files",
+  "candidate_system": "/nix/store/v9qc1sf0iz53s3x6g6vwfyaxghkfpnyk-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "ignore_unused_clocks": true,
+  "initrd_readiness_observed": true,
+  "mode": "volatile-rdinit-minimal",
+  "normal_preflight": {
+    "boot_files": {
+      "Image": "37d71fc14f9bdafe230767e1709de587c049014660dd59d2f7bcbbce35ac71c2",
+      "bootargs.txt": "27e85247977a44c8aab0b78ea30f81e368623ba29fba262cd21871cdc31bf476",
+      "force_dtb": "175342c82dd1b437cdafb6bb01090e7ff73c2769515654c48b02c1e9f73440c6",
+      "fw_jump_add_uboot_head.bin": "9627edbeea9b115d7040beea27cc61b23b6aca61cd502fd7760d7ee179f42c99",
+      "hdmi_dtb": "175342c82dd1b437cdafb6bb01090e7ff73c2769515654c48b02c1e9f73440c6",
+      "initrd.uimg": "867e227f333ffe9c0e83a489dbfd0c755d7fcd0a0cf588cf47ec1c139945fb25",
+      "k230-tdisplay.dtb": "07e784fa3b2eeb971df3ba6f22d9909ed8e0424fdd6bdf680724631652bbe65e",
+      "lcd_dtb": "175342c82dd1b437cdafb6bb01090e7ff73c2769515654c48b02c1e9f73440c6"
+    },
+    "boot_id": "2fd31238-76a4-48f0-b0e4-4c81652b58f9",
+    "init": "init=/nix/store/p1a1hz9n8s4g8qyr55ffl3dzbnjgqwr8-nixos-system-nixos-26.11.20260919.20b1ddd/init",
+    "kernel": "/nix/store/03zyl0mjsxbjyisb3lhjaxswpxm71ap6-linux-riscv64-unknown-linux-gnu-6.6.36-xuantie/Image",
+    "profile": "/nix/store/p1a1hz9n8s4g8qyr55ffl3dzbnjgqwr8-nixos-system-nixos-26.11.20260919.20b1ddd",
+    "services": [
+      "active",
+      "active",
+      "active"
+    ],
+    "system": "/nix/store/p1a1hz9n8s4g8qyr55ffl3dzbnjgqwr8-nixos-system-nixos-26.11.20260919.20b1ddd",
+    "uname": "6.6.36"
+  },
+  "normal_recovery": {
+    "boot_files": {
+      "Image": "37d71fc14f9bdafe230767e1709de587c049014660dd59d2f7bcbbce35ac71c2",
+      "bootargs.txt": "27e85247977a44c8aab0b78ea30f81e368623ba29fba262cd21871cdc31bf476",
+      "force_dtb": "175342c82dd1b437cdafb6bb01090e7ff73c2769515654c48b02c1e9f73440c6",
+      "fw_jump_add_uboot_head.bin": "9627edbeea9b115d7040beea27cc61b23b6aca61cd502fd7760d7ee179f42c99",
+      "hdmi_dtb": "175342c82dd1b437cdafb6bb01090e7ff73c2769515654c48b02c1e9f73440c6",
+      "initrd.uimg": "867e227f333ffe9c0e83a489dbfd0c755d7fcd0a0cf588cf47ec1c139945fb25",
+      "k230-tdisplay.dtb": "07e784fa3b2eeb971df3ba6f22d9909ed8e0424fdd6bdf680724631652bbe65e",
+      "lcd_dtb": "175342c82dd1b437cdafb6bb01090e7ff73c2769515654c48b02c1e9f73440c6"
+    },
+    "boot_id": "73946703-7fde-483a-8cb5-86f6ba013e3d",
+    "init": "init=/nix/store/p1a1hz9n8s4g8qyr55ffl3dzbnjgqwr8-nixos-system-nixos-26.11.20260919.20b1ddd/init",
+    "kernel": "/nix/store/03zyl0mjsxbjyisb3lhjaxswpxm71ap6-linux-riscv64-unknown-linux-gnu-6.6.36-xuantie/Image",
+    "profile": "/nix/store/p1a1hz9n8s4g8qyr55ffl3dzbnjgqwr8-nixos-system-nixos-26.11.20260919.20b1ddd",
+    "services": [
+      "active",
+      "active",
+      "active"
+    ],
+    "system": "/nix/store/p1a1hz9n8s4g8qyr55ffl3dzbnjgqwr8-nixos-system-nixos-26.11.20260919.20b1ddd",
+    "uname": "6.6.36"
+  },
+  "persistent_boot_selection_changed": false,
+  "probe": {
+    "proc_mount": {
+      "mkdir_rc": 0,
+      "mount_attempted": true,
+      "mount_rc": 0
+    },
+    "reception_attempts": 1,
+    "reception_marker": true,
+    "runtime_shutdown_trace": {
+      "attempted": true,
+      "enable_verified": true,
+      "parameter_state": "Y",
+      "schema": "k230-runtime-shutdown-trace-v1",
+      "stages": {
+        "permissions": {
+          "match": true,
+          "rc": 0
+        },
+        "prior": {
+          "match": true,
+          "rc": 0
+        },
+        "readback": {
+          "match": true,
+          "rc": 0
+        },
+        "sys-mkdir": {
+          "match": true,
+          "rc": 0
+        },
+        "sys-mount": {
+          "match": true,
+          "rc": 0
+        },
+        "write": {
+          "match": true,
+          "rc": 0
+        }
+      },
+      "status": "complete"
+    },
+    "schema": "k230-initrd-minimal-v2",
+    "true_rc": 0,
+    "uptime": [
+      "4.61",
+      "0.54"
+    ],
+    "uptime_rc": 0
+  },
+  "reboot_marker_observed": true,
+  "result_schema": "mainline-initrd-diagnostic-v3",
+  "runtime_shutdown_trace": true,
+  "status": "recovery-verified-diagnostic-passed",
+  "controller_source": "9cd4a3f870a62c01d63abae60dc07b309e054c52",
+  "raw_serial_log_sha256": "e05a812d4eb088c6abffcb5670b2fbb094c451a480adf88edcb39336a214fdbe",
+  "raw_serial_log_bytes": 120076,
+  "raw_serial_log_mtime_utc": "2026-10-02T19:53:31.411584+00:00",
+  "clock_cleanup_skip_observed": true,
+  "subsequent_spl_observed": true,
+  "controller_exit": 0,
+  "usable_mainline_root": "UNVERIFIED",
+  "deliberate_mainline_touch": "UNVERIFIED"
+}

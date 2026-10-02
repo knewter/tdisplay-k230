@@ -1,0 +1,23 @@
+{
+  "boot_files": {
+    "Image": "37d71fc14f9bdafe230767e1709de587c049014660dd59d2f7bcbbce35ac71c2",
+    "bootargs.txt": "27e85247977a44c8aab0b78ea30f81e368623ba29fba262cd21871cdc31bf476",
+    "force_dtb": "175342c82dd1b437cdafb6bb01090e7ff73c2769515654c48b02c1e9f73440c6",
+    "fw_jump_add_uboot_head.bin": "9627edbeea9b115d7040beea27cc61b23b6aca61cd502fd7760d7ee179f42c99",
+    "hdmi_dtb": "175342c82dd1b437cdafb6bb01090e7ff73c2769515654c48b02c1e9f73440c6",
+    "initrd.uimg": "867e227f333ffe9c0e83a489dbfd0c755d7fcd0a0cf588cf47ec1c139945fb25",
+    "k230-tdisplay.dtb": "07e784fa3b2eeb971df3ba6f22d9909ed8e0424fdd6bdf680724631652bbe65e",
+    "lcd_dtb": "175342c82dd1b437cdafb6bb01090e7ff73c2769515654c48b02c1e9f73440c6"
+  },
+  "boot_id": "2fd31238-76a4-48f0-b0e4-4c81652b58f9",
+  "init": "init=/nix/store/p1a1hz9n8s4g8qyr55ffl3dzbnjgqwr8-nixos-system-nixos-26.11.20260919.20b1ddd/init",
+  "kernel": "/nix/store/03zyl0mjsxbjyisb3lhjaxswpxm71ap6-linux-riscv64-unknown-linux-gnu-6.6.36-xuantie/Image",
+  "profile": "/nix/store/p1a1hz9n8s4g8qyr55ffl3dzbnjgqwr8-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "services": [
+    "active",
+    "active",
+    "active"
+  ],
+  "system": "/nix/store/p1a1hz9n8s4g8qyr55ffl3dzbnjgqwr8-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "uname": "6.6.36"
+}
