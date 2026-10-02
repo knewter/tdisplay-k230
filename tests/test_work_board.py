@@ -253,6 +253,40 @@ class Fixture(unittest.TestCase):
         item = next(i for i in self.data()["items"] if i["id"] == "the-first-thing")
         self.assertEqual(len(item["media"]), 2)
 
+    def test_cited_research_reports_and_mockups_are_discovered(self) -> None:
+        root = "docs/research/ux-round"
+        record = f"{root}/README.md"
+        drawing = f"{root}/visuals/apps.svg"
+        proposal = "openspec/changes/the-first-thing/proposal.md"
+        put(self.repo, proposal, f"## Why\n\nReview: `{record}`.\n")
+        put(self.repo, record, "[Comparison](visuals/apps.svg).\n")
+        put(self.repo, drawing, '<svg xmlns="http://www.w3.org/2000/svg"/>')
+        captured = f"{root}/frame.png"
+        put(self.repo, captured, "fixture host capture")
+        put(self.repo, "docs/research/unrelated/other.svg", "unrelated")
+        command(self.repo, "add", proposal, "docs/research")
+        command(self.repo, "commit", "-qm", "cited research report")
+        cover = {"path": drawing, "caption": "Proposed Apps layout",
+                 "provenance": "Design mockup"}
+        capture_metadata = {"path": captured, "caption": "Current host render",
+                            "provenance": "Host capture"}
+        metadata = [cover, capture_metadata]
+        item = next(i for i in self.data({"the-first-thing": self.review(cover=cover, media=metadata)})["items"]
+                    if i["id"] == "the-first-thing")
+        self.assertIn(record, item["evidence"])
+        self.assertEqual(item["media"], [cover | {"kind": "image"},
+                                        capture_metadata | {"kind": "image"}])
+        self.assertEqual(item["physical"], "pending")
+        self.assertNotIn("docs/research/unrelated/other.svg", item["evidence"])
+        put(self.repo, f"{root}/not-committed.png", "private fixture")
+        item = next(i for i in self.data()["items"] if i["id"] == "the-first-thing")
+        self.assertEqual(len(item["media"]), 2)
+        for invalid in ([cover, cover], [cover | {"path": "docs/research/missing.svg"}],
+                        [cover | {"caption": ""}], [cover | {"provenance": "invented"}],
+                        [cover | {"caption": "Conflicting cover caption"}], "not a list"):
+            with self.subTest(metadata=invalid), self.assertRaises(work.WorkError):
+                self.data({"the-first-thing": self.review(cover=cover, media=invalid)})
+
     def test_reviewed_video_cover_is_first_without_upgrading_device_proof(self) -> None:
         path = "docs/evidence/proof/demo.webm"
         put(self.repo, path, "fixture")

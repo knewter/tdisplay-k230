@@ -515,6 +515,45 @@
         "caption": "Native physical-board Settings capture after switching to Catppuccin Latte",
         "provenance": "Board capture"
       }
+    },
+    "the-handheld-gets-a-design-and-ux-review": {
+      "lane": "in-progress",
+      "source": "in-progress",
+      "physical": "pending",
+      "next": "Walk the remaining current-source journeys and perform the focused integrated-candidate recheck; the host report and annotated comparisons have landed.",
+      "dependencies": [],
+      "evidence": [
+        "docs/evidence/ux-review-round-2/README.md"
+      ],
+      "rationale": "Five host analysis tasks are complete with independent review. Proposed layouts remain design mockups; current-journey and integrated physical checks remain open.",
+      "reviewRevision": "9d7437b08b1c6429748af29b62b4f8a522ea8dd7",
+      "cover": {
+        "path": "docs/research/handheld-ux/review-round-2/visuals/apps.svg",
+        "caption": "Apps comparison: current host render and proposed refinement",
+        "provenance": "Design mockup"
+      },
+      "media": [
+        {
+          "path": "docs/research/handheld-ux/review-round-2/visuals/apps.svg",
+          "caption": "Apps comparison: current host render and proposed refinement",
+          "provenance": "Design mockup"
+        },
+        {
+          "path": "docs/research/handheld-ux/review-round-2/visuals/cards.svg",
+          "caption": "Cards comparison: older capture and proposed refinement",
+          "provenance": "Design mockup"
+        },
+        {
+          "path": "docs/research/handheld-ux/review-round-2/visuals/keyboard-recovery.svg",
+          "caption": "Keyboard recovery: prior capture and proposed refinement",
+          "provenance": "Design mockup"
+        },
+        {
+          "path": "docs/research/handheld-ux/review-round-2/visuals/overview-to-apps.svg",
+          "caption": "Proposed Overview to Home to Apps transition storyboard",
+          "provenance": "Design mockup"
+        }
+      ]
     }
   }
 }

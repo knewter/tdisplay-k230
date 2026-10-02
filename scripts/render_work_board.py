@@ -141,7 +141,7 @@ def referenced_evidence(tree: SourceTree, source: str, text: str) -> list[str]:
     """Resolve local document citations, never fetch arbitrary URLs."""
     from urllib.parse import unquote, urlsplit
     candidates = re.findall(r"\]\(<?([^\s)>]+)", text)
-    candidates += re.findall(r"\bdocs/(?:evidence|design)/[^\s`<>\"')\],;]+", text)
+    candidates += re.findall(r"\bdocs/(?:evidence|design|research)/[^\s`<>\"')\],;]+", text)
     found = []
     for raw in candidates:
         parsed = urlsplit(raw)
@@ -150,7 +150,7 @@ def referenced_evidence(tree: SourceTree, source: str, text: str) -> list[str]:
         path = unquote(parsed.path).rstrip(".")
         path = posixpath.normpath(path if path.startswith("docs/") else
                                   posixpath.join(posixpath.dirname(source), path))
-        if not path.startswith(("docs/evidence/", "docs/design/")):
+        if not path.startswith(("docs/evidence/", "docs/design/", "docs/research/")):
             continue
         try:
             safe_path(path)
@@ -163,7 +163,8 @@ def referenced_evidence(tree: SourceTree, source: str, text: str) -> list[str]:
     return list(dict.fromkeys(found))
 
 
-def discover_evidence(tree: SourceTree, item: dict, cover: dict | None) -> None:
+def discover_evidence(tree: SourceTree, item: dict, cover: dict | None,
+                      media_metadata: list | None = None) -> None:
     records = list(item["evidence"])
     for doc in item["details"]:
         records.extend(referenced_evidence(tree, doc["path"], doc["markdown"]))
@@ -186,6 +187,22 @@ def discover_evidence(tree: SourceTree, item: dict, cover: dict | None) -> None:
             continue
         public_records.append(path)
     records = public_records
+    metadata = {}
+    if media_metadata is not None:
+        if not isinstance(media_metadata, list):
+            raise WorkError(f"media metadata must be a list for {item['id']}")
+        for entry in media_metadata:
+            if not isinstance(entry, dict) or set(entry) != {"path", "caption", "provenance"}:
+                raise WorkError(f"invalid media metadata for {item['id']}")
+            path = safe_path(entry["path"])
+            if path not in records or Path(path).suffix.lower() not in IMAGE_TYPES | VIDEO_TYPES:
+                raise WorkError(f"metadata is not associated committed media for {item['id']}: {path}")
+            if path in metadata:
+                raise WorkError(f"duplicate media metadata for {item['id']}: {path}")
+            safe_copy(entry["caption"], "media caption")
+            if entry["provenance"] not in ("Board capture", "QEMU capture", "Host capture", "Design mockup", "Evidence — see record"):
+                raise WorkError(f"invalid media provenance for {item['id']}")
+            metadata[path] = entry
     if cover is not None:
         if not isinstance(cover, dict) or set(cover) != {"path", "caption", "provenance"}:
             raise WorkError(f"invalid cover metadata for {item['id']}")
@@ -195,6 +212,9 @@ def discover_evidence(tree: SourceTree, item: dict, cover: dict | None) -> None:
         safe_copy(cover["caption"], "cover caption")
         if cover["provenance"] not in ("Board capture", "QEMU capture", "Host capture", "Design mockup", "Evidence — see record"):
             raise WorkError(f"invalid cover provenance for {item['id']}")
+        if path in metadata and metadata[path] != cover:
+            raise WorkError(f"conflicting cover/media metadata for {item['id']}: {path}")
+        metadata[path] = cover
         records.remove(path)
         records.insert(0, path)
     item["evidence"] = records
@@ -205,8 +225,8 @@ def discover_evidence(tree: SourceTree, item: dict, cover: dict | None) -> None:
             continue
         item["media"].append({
             "path": path, "kind": "image" if suffix in IMAGE_TYPES else "video",
-            "caption": cover["caption"] if cover and cover["path"] == path else Path(path).stem.replace("-", " ").replace("_", " "),
-            "provenance": cover["provenance"] if cover and cover["path"] == path else
+            "caption": metadata[path]["caption"] if path in metadata else Path(path).stem.replace("-", " ").replace("_", " "),
+            "provenance": metadata[path]["provenance"] if path in metadata else
                 ("Design mockup" if path.startswith("docs/design/") else "Evidence — see record"),
         })
 
@@ -257,7 +277,7 @@ def snapshot(tree: SourceTree, status: dict, generated: str) -> dict:
             raise WorkError(f"stale override for unknown work ID: {ident}")
         if not isinstance(override, dict):
             raise WorkError(f"override must be an object: {ident}")
-        allowed = {"lane", "source", "physical", "next", "dependencies", "evidence", "rationale", "reviewRevision", "cover"}
+        allowed = {"lane", "source", "physical", "next", "dependencies", "evidence", "rationale", "reviewRevision", "cover", "media"}
         if set(override) - allowed:
             raise WorkError(f"unknown override fields for {ident}: {sorted(set(override)-allowed)}")
         if not {"lane", "source", "physical", "next", "rationale", "reviewRevision"} <= set(override):
@@ -316,7 +336,8 @@ def snapshot(tree: SourceTree, status: dict, generated: str) -> dict:
 
     for ident in all_changes:
         check_dependencies(ident)
-        discover_evidence(tree, all_changes[ident], status["overrides"].get(ident, {}).get("cover"))
+        override = status["overrides"].get(ident, {})
+        discover_evidence(tree, all_changes[ident], override.get("cover"), override.get("media"))
 
     # Activity belongs to this change's documents and associated evidence,
     # not the snapshot build time or a shared status file's unrelated edits.
