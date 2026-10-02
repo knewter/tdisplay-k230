@@ -1,7 +1,7 @@
 ## 1. Preserve baseline and qualify artifacts
 
 - [x] 1.1 Commit the 2026-10-01 unaccepted matching vendor trial, exact artifact/boot identities, camera observations and successful normal restoration. Proof: committed `docs/evidence/boot-verification/2026-10-01/{README.md,result.json,normal-boot-candidate.txt,normal-boot-restore.txt,restore-verify.txt}`. No persistent selection or new finger acceptance is claimed.
-- [ ] 1.2 Implement a normal bundle built from one selected coherent-shell configuration and its inspector. Proof: `nix build .#coherentShellBootFiles --no-link --print-out-paths --max-jobs 1 --cores 4`, then `python3 tools/coherent-shell-boot-inspect.py <bundle>`. Planned output/tool do not yet exist; compare selected kernel/initrd payloads, DT/env init and CRCs, not just filenames.
+- [x] 1.2 Implement a normal bundle built from one selected coherent-shell configuration and its inspector. Proof: `nix build .#coherentShellBootFiles --no-link --print-out-paths --max-jobs 1 --cores 4`, then `python3 tools/coherent-shell-boot-inspect.py <bundle>`, and 13 tamper tests. Selected kernel/initrd payloads, complete board DTB, DT/env init, CRCs and closure registration pass; see `docs/evidence/boot-verification/coherent-bundle-host/README.md`. Host proof only.
 
 ## 2. Diagnose and prove the candidate on the physical board
 

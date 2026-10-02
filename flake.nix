@@ -478,6 +478,12 @@
         # tested bar-session rollback until physical coherent-shell acceptance.
         sdImage-coherent = mkBoardImage self.nixosConfigurations.k230-coherent-shell.config
           self.k230Kernel.kernel;
+        # Matching normal boot update, independent of whole-card flashing.
+        # Host inspection is not physical boot/display qualification.
+        coherentShellBootFiles = pkgs.callPackage ./nix/coherent-shell-boot-files.nix {
+          cfg = self.nixosConfigurations.k230-coherent-shell.config;
+          inherit (self.packages.${buildSystem}) deviceTree;
+        };
         sdImage-rvv-trial = mkBoardImage self.nixosConfigurations.k230-rvv-trial.config
           self.nixosConfigurations.k230-rvv-trial.config.boot.kernelPackages.kernel;
       };

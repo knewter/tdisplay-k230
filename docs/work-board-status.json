@@ -461,11 +461,12 @@
       "lane": "in-progress",
       "source": "in-progress",
       "physical": "pending",
-      "next": "Qualify visible candidate navigation, then persist a coherent bundle and prove ordinary reboot. Working normal/manual baseline restored.",
-      "rationale": "Matching vendor candidate reached root/services; dark output included a Foot terminal and requires actual visible navigation proof. Working-kernel Home photographed; persistent boot files/profile remain unchanged.",
+      "next": "Matching normal boot bundle and inspector pass, with 13 tamper checks. Compare visible candidate navigation with baseline, then install qualified files and prove ordinary reboot.",
+      "rationale": "Host bundle matches the latest Settings-qualified system and its kernel/initrd/DTB/explicit init. Earlier vendor trial reached root/services but had ambiguous visible acceptance; normal boot files/profile remain unchanged.",
       "dependencies": [],
       "evidence": [
-        "docs/evidence/boot-verification/2026-10-01/README.md"
+        "docs/evidence/boot-verification/2026-10-01/README.md",
+        "docs/evidence/boot-verification/coherent-bundle-host/README.md"
       ],
       "reviewRevision": "02c4a99850e6cc8a262480d21a17cb7f6dc2b019"
     },
