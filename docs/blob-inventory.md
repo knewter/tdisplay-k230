@@ -650,9 +650,9 @@ Paths are relative to the repository root. `(sdk)` is
 `embedded` are not files; they are byte ranges inside another entry, recorded
 so that building stage 1 from source does not silently drop them from view.
 
+```
 DATA e25bde2aeed303bb0f318292e527f6dc12752579d018309514a851c0236eab0b docs/evidence/omarchy-themes/font-spacing-adaptation/baseline.png
 DATA 2c971a30f7138e3ed0b0cfeb4538bbdf432e33ac65cc329225fc7b5af9d52a6f docs/evidence/omarchy-themes/font-spacing-adaptation/font-spacing-adapted.png
-```
 DATA 6c932721f51eccfe719486e1474e411c6303c2a95bf1ea7c6240260f1b939669 docs/evidence/volume/closeout-2026-10-01/expanded-real-stream.jpg
 DATA ef63b26ac876397657f42f5e72039874a82b658ef9cd11abf16d96047ed3d8ee docs/evidence/volume/closeout-2026-10-01/hud-dragged.jpg
 DATA 65557a7fe7f93d61c76232c8484f87ac11c2ee475618c61de0c620d1c2da304d docs/evidence/volume/closeout-2026-10-01/hud-hidden.jpg

@@ -4,7 +4,7 @@ Captured 2026-10-02 05:43 UTC on x86_64. These production Rust
 `RendererCache` / Cairo / Pango frames use identical Settings service fixtures
 and the pinned Catppuccin appearance. The baseline leaves generated theme
 metrics unchanged. The adapted private fixture changes only `[font]
-base-size=15`, an optional `caption=13` role override, and upstream `[spacing]
+base-size=15`, an optional `caption=13` role override, and `[spacing]
 scale=1.25`. Both frames retain the same values, including the unavailable
 audio-device state. No selected theme, palette, icons, wallpaper, or service
 fixture changes between them.
