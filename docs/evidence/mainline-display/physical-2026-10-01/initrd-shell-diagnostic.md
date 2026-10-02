@@ -120,7 +120,8 @@ These are source/artifact checks only. They do not establish that the corrected
 probe or reboot ran successfully on hardware. A passive capture following the
 requested physical reset expired after 15 minutes with no UART bytes or
 U-Boot, normal-kernel, or login markers. The reset and normal-system recovery
-remain unobserved. Keep task 5b.5 open.
+were unobserved at that point. See the 2026-10-02 attempt and subsequent
+recovery below. Keep task 5b.5 open.
 
 ## 2026-10-02 observed power-swap recovery
 
@@ -132,4 +133,59 @@ DPMS/Home commands and transient-surface hide, with reviewed native and
 physical-camera captures. See [recovery commands, result and limits](power-swap-recovery-2026-10-02/README.md).
 This supersedes the earlier unobserved-restoration status; it does not turn
 the failed PATH probe into valid partition evidence or satisfy mainline
-root-login/touch task 5b.5. The corrected probe remains unperformed.
+root-login/touch task 5b.5. The later corrected probe result is below.
+
+## 2026-10-02 corrected PATH probe and recovery
+
+At `2026-10-02T06:34:52Z`, controller source revision
+`b209129b1cf681669edfe3e1e05be317842bf6f4` ran one bounded trial from the
+exact `gf3aqks2dg0z3ksz33ysfprnlbk83vw3` bundle and matching
+`k9f4r2i9k9qj58z8z4l2kssy9rpwxxm1` system. The controller reached volatile
+`bootm` only after its strict five-load count/CRC checks and protected-normal
+preflight, including the selected p1 system/profile/kernel/init, three active
+services, eight protected boot-file hashes, staged artifact hashes, closure
+registration, and store validity. It observed the Linux 7.3.0-rc5 banner.
+
+The corrected initrd command set `PATH=/bin:/sbin` and invoked external probe
+commands before its final marker. The controller did not receive a complete
+fresh-token `K230_RDINIT_PROBE ... RC=...` line within its 60-second bound and
+stopped without sending `exit` or issuing another command. Sanitized parsing of
+the private UART capture found one standalone `K230_PROC` marker, no complete
+later sys-block, device-block, by-label, ext4-label, NIXOS_SD, or reboot marker,
+and no login prompt. The full command echo including its token/final marker
+was not present. The kernel banner was followed by 89 timestamped kernel
+lines; the last reported candidate-kernel timestamp was 0.072493 seconds. A
+generic command-not-found string elsewhere in the capture could not be
+attributed to this probe. These observations do not establish what happened
+inside the subsequent proc read, and provide no disk-label, IRQ, or root-handoff
+evidence.
+
+The raw capture remains outside Git at
+`/home/jadams/tmp/k230-coordination/mainline-initrd-private/mainline-initrd-shell-20261002T063452Z.private.log`,
+mode 0600, 43,726 bytes, SHA-256
+`984609649a9e790e43072e84a70830b4df3357346ceeda7c07b56362701d89df`. The
+controller source SHA-256 for that run was
+`953e3dfdfa7e45f1c7781dd066e736698f19d59affd11b7ec30f142bbd174c10`; the
+normal-state helper SHA-256 was
+`86bcf6f2c175d44d27f68015a9cc5a1ad7731ad50b6bbf3347859a4840cc7df7`.
+No result JSON was written because the strict marker gate failed. The
+coordinator then performed a physical power-cycle and independently verified
+the exact normal p1 system/profile/kernel/init, Linux 6.6.36, all three active
+services, unchanged eight protected hashes, and a new boot ID
+`e7cf8096-44a0-4bdf-815d-2f1aec4126fb`. This restores the normal system after
+this trial; visible Home capture is being recorded separately by the
+coordinator.
+
+Host review found a false-failure case in the probe: `e2label` errors on any
+non-ext partition set the global RC to failure even if another partition had
+a readable label. The controller now reports unreadable per-device labels
+without failing the probe for that alone; the final gate still requires at
+least one readable ext label, while `NIXOS_SD` remains an independent exact
+observation. It also emits unique-token stage markers around `mkdir`, virtual
+mount checks, and proc/sys/device reads so a future bounded run can locate
+progress without treating command echo as execution. Generated command size
+is 2,885 bytes, below the 4,096-byte TTY canonical input limit. Focused host
+tests cover the strict stage parser and conservative label policy. No further
+board experiment was run. A short fresh-token discriminator using built-in
+markers around `/bin/true` and `/bin/cat /proc/uptime` remains an unperformed
+next step; a broader survey must remain separately gated. Task 5b.5 stays open.

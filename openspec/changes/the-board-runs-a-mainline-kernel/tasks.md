@@ -336,16 +336,18 @@ Exact matching bundle rebuilt, staged as a registered GC-rooted closure, and man
 The first bounded `rdinit=/bin/sh` diagnosis reached the PID1 shell but
 failed command resolution because PATH was absent; its partition-label value
 is invalid as hardware evidence. The controller now supplies volatile PATH
-and an absolute reboot command. That corrected probe remains unperformed;
-it retains the exact matching bundle, strict load count/CRC checks and
-unchanged normal selection. The controller and proof limits are recorded in
+and an absolute reboot command. One corrected-path trial then reached the
+Linux 7.3.0-rc5 banner but did not return its complete fresh-token probe
+marker. One standalone `K230_PROC` marker appeared; later proc/device/label
+and reboot markers did not. No disk or IRQ conclusion follows. A subsequent
+physical power-cycle was checked against the protected normal system and all
+eight hashes. The controller, sanitized attempt record and proof limits are
+recorded in
 `docs/evidence/mainline-display/physical-2026-10-01/initrd-shell-diagnostic.md`.
 
-The 2026-10-02 operator power swap restored the selected normal system:
-fresh boot ID, exact system/profile/kernel/init, three active shell services,
-eight unchanged protected hashes and photographed/native Home after IPC
-commands. See
-`docs/evidence/mainline-display/physical-2026-10-01/power-swap-recovery-2026-10-02/README.md`.
-Normal restoration is now proved; mainline task 5b.5 stays open for usable
-root login and deliberate touch evidence. These captures show the normal
-vendor-kernel system, not a working mainline shell.
+The 2026-10-02 physical power-cycle after the corrected-path trial restored
+the selected normal system with a fresh boot ID, exact system/profile/kernel/
+init, three active shell services and eight unchanged protected hashes. See
+the committed recovery evidence when available. Mainline task 5b.5 stays open
+for usable root login and deliberate touch evidence. These captures show the
+normal vendor-kernel system, not a working mainline shell.

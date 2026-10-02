@@ -65,9 +65,21 @@ class InitrdShellTrialTests(unittest.TestCase):
             self.assertLessEqual(left[1], right[0], f"{left[2]} overlaps {right[2]}")
 
     def test_probe_keeps_pid_one_running_then_reboots(self):
-        command = trial.probe_command("a" * 32)
+        token = "a" * 32
+        command = trial.probe_command(token)
         self.assertNotIn("exit", command)
         self.assertTrue(command.startswith("PATH=/bin:/sbin; export PATH; "))
+        self.assertLess(len(command.encode()), 4096)
+        self.assertIn(f"K230_RDINIT_STAGE {token} shell-start", command)
+        self.assertIn(f"K230_RDINIT_STAGE {token} mkdir-done", command)
+        self.assertIn(f"K230_RDINIT_STAGE {token} proc-mount-check", command)
+        self.assertIn(f"K230_RDINIT_STAGE {token} dev-mount-check", command)
+        self.assertIn(f"K230_RDINIT_STAGE {token} proc-read-start", command)
+        self.assertIn(f"K230_RDINIT_STAGE {token} proc-read-done", command)
+        self.assertLess(command.index("shell-start"), command.index("mkdir -p"))
+        self.assertLess(command.index("mkdir -p"), command.index("mkdir-done"))
+        self.assertLess(command.index("proc-read-start"), command.index("cat /proc/uptime"))
+        self.assertLess(command.index("cat /proc/uptime"), command.index("proc-read-done"))
         self.assertIn("mount -t proc proc /proc", command)
         self.assertIn("mount -t sysfs sysfs /sys", command)
         self.assertIn("mount -t devtmpfs devtmpfs /dev", command)
@@ -78,6 +90,32 @@ class InitrdShellTrialTests(unittest.TestCase):
         self.assertIn("e2label", command)
         self.assertNotIn("mount /dev/mmc", command)
         self.assertIn("/bin/reboot -ff", command)
+        label_loop = trial.PROBE_DATA.split("for dev in /dev/mmcblk*p*; do", 1)[1].split(
+            "test $_k230_block_count -gt 0", 1
+        )[0]
+        self.assertIn("if _k230_label=$(e2label", label_loop)
+        self.assertIn("else _k230_label=unreadable; fi;", label_loop)
+        self.assertNotIn("_k230_probe_rc=1", label_loop)
+
+    def test_probe_stage_parser_requires_unique_complete_fresh_lines(self):
+        token = "d" * 32
+        valid = (
+            f"K230_RDINIT_STAGE {token} shell-start\r\n"
+            f"K230_RDINIT_STAGE {token} mkdir-done\r\n"
+            f"K230_RDINIT_STAGE {token} proc-read-start\r\n"
+        ).encode()
+        self.assertEqual(
+            trial.probe_stage_markers(valid, token),
+            ("shell-start", "mkdir-done", "proc-read-start"),
+        )
+        for invalid in (
+            f"printf 'K230_RDINIT_STAGE {token} shell-start\\n'\r\n".encode(),
+            f"K230_RDINIT_STAGE {'e' * 32} shell-start\r\n".encode(),
+            f"K230_RDINIT_STAGE {token} shell-start".encode(),
+            (f"K230_RDINIT_STAGE {token} shell-start\r\n" * 2).encode(),
+        ):
+            with self.subTest(invalid=invalid):
+                self.assertEqual(trial.probe_stage_markers(invalid, token), ())
 
     def test_probe_result_requires_fresh_complete_standalone_line(self):
         token = "a" * 32

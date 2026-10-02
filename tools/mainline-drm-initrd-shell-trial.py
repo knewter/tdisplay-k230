@@ -51,15 +51,20 @@ LOADS = (
 )
 PROBE_DATA = (
     "_k230_probe_rc=0; _k230_block_count=0; _k230_label_ok=0; _k230_nixos_sd=0; "
-    "mkdir -p /proc /sys /dev; "
+    "mkdir -p /proc /sys /dev; _k230_mkdir_rc=$?; "
+    "printf 'K230_RDINIT_STAGE K230_STAGE_TOKEN mkdir-done\\n'; "
+    "test $_k230_mkdir_rc -eq 0 || _k230_probe_rc=1; "
     "mount -t proc proc /proc 2>/dev/null || test -r /proc/mounts || _k230_probe_rc=1; "
+    "printf 'K230_RDINIT_STAGE K230_STAGE_TOKEN proc-mount-check\\n'; "
     "_k230_have_sys=0; _k230_have_dev=0; "
     "while read _src _mnt _fs _rest; do "
     "test \"$_mnt\" = /sys && test \"$_fs\" = sysfs && _k230_have_sys=1; "
     "test \"$_mnt\" = /dev && test \"$_fs\" = devtmpfs && _k230_have_dev=1; "
     "done < /proc/mounts; "
     "test $_k230_have_sys -eq 1 || mount -t sysfs sysfs /sys || _k230_probe_rc=1; "
+    "printf 'K230_RDINIT_STAGE K230_STAGE_TOKEN sys-mount-check\\n'; "
     "test $_k230_have_dev -eq 1 || mount -t devtmpfs devtmpfs /dev || _k230_probe_rc=1; "
+    "printf 'K230_RDINIT_STAGE K230_STAGE_TOKEN dev-mount-check\\n'; "
     "_k230_have_proc=0; _k230_have_sys=0; _k230_have_dev=0; "
     "while read _src _mnt _fs _rest; do "
     "test \"$_mnt\" = /proc && test \"$_fs\" = proc && _k230_have_proc=1; "
@@ -71,17 +76,23 @@ PROBE_DATA = (
     "test -r /proc/partitions || _k230_probe_rc=1; "
     "test -r /proc/interrupts || _k230_probe_rc=1; "
     "test -d /sys/block || _k230_probe_rc=1; "
-    "echo K230_PROC; cat /proc/uptime /proc/interrupts /proc/cmdline "
-    "/proc/partitions /proc/mounts; "
+    "echo K230_PROC; printf 'K230_RDINIT_STAGE K230_STAGE_TOKEN proc-read-start\\n'; "
+    "cat /proc/uptime /proc/interrupts /proc/cmdline /proc/partitions /proc/mounts; "
+    "_k230_proc_read_rc=$?; printf 'K230_RDINIT_STAGE K230_STAGE_TOKEN proc-read-done\\n'; "
+    "test $_k230_proc_read_rc -eq 0 || _k230_probe_rc=1; "
     "echo K230_SYS_BLOCK; ls -l /sys/block; "
+    "printf 'K230_RDINIT_STAGE K230_STAGE_TOKEN sys-block-read-done\\n'; "
     "echo K230_DEV_BLOCK; ls -l /dev/mmcblk* 2>&1; "
+    "printf 'K230_RDINIT_STAGE K230_STAGE_TOKEN dev-block-read-done\\n'; "
     "echo K230_UDEV_LABEL_LINKS; ls -l /dev/disk/by-label; "
     "for dev in /dev/mmcblk*p*; do "
     "if test -b \"$dev\"; then _k230_block_count=$((_k230_block_count+1)); "
-    "_k230_label=$(e2label \"$dev\" 2>&1) && _k230_label_ok=1 || _k230_probe_rc=1; "
+    "if _k230_label=$(e2label \"$dev\" 2>&1); then _k230_label_ok=1; "
+    "else _k230_label=unreadable; fi; "
     "printf 'K230_EXT4_LABEL %s %s\\n' \"$dev\" \"$_k230_label\"; "
     "test \"$_k230_label\" = NIXOS_SD && _k230_nixos_sd=1; fi; done; "
     "test $_k230_block_count -gt 0 || _k230_probe_rc=1; "
+    "printf 'K230_RDINIT_STAGE K230_STAGE_TOKEN labels-read-done\\n'; "
     "test $_k230_label_ok -eq 1 || _k230_probe_rc=1; "
     "printf 'K230_LABEL_NIXOS_SD=%s\\n' \"$_k230_nixos_sd\""
 )
@@ -119,12 +130,39 @@ def verified_crc(reply: bytes | None, expected: dict[str, object]) -> bool:
 def probe_command(token: str) -> str:
     if not re.fullmatch(r"[0-9a-f]{32}", token):
         raise ValueError("probe token must be a 32-character lowercase UUID")
+    data = PROBE_DATA.replace("K230_STAGE_TOKEN", token)
     return (
         "PATH=/bin:/sbin; export PATH; "
-        f"{PROBE_DATA}; "
+        f"printf 'K230_RDINIT_STAGE {token} shell-start\\n'; "
+        f"{data}; "
         f"printf 'K230_RDINIT_PROBE {token} RC=%s\\n' \"$_k230_probe_rc\"; "
         "sleep 10; /bin/reboot -ff"
     )
+
+
+PROBE_STAGE_NAMES = (
+    "shell-start", "mkdir-done", "proc-mount-check", "sys-mount-check",
+    "dev-mount-check", "proc-read-start", "proc-read-done",
+    "sys-block-read-done", "dev-block-read-done", "labels-read-done",
+)
+
+
+def probe_stage_markers(output: bytes, token: str) -> tuple[str, ...]:
+    """Return only unique complete stage lines for this fresh probe token."""
+    if not re.fullmatch(r"[0-9a-f]{32}", token):
+        raise ValueError("probe token must be a 32-character lowercase UUID")
+    text = _PROTOCOL.uart_text(output)
+    matches = re.findall(
+        rb"^K230_RDINIT_STAGE " + re.escape(token.encode()) + rb" ([a-z-]+)\n",
+        text,
+        re.M,
+    )
+    allowed = set(PROBE_STAGE_NAMES)
+    if any(match.decode() not in allowed for match in matches):
+        return ()
+    if len(matches) != len(set(matches)):
+        return ()
+    return tuple(name for name in PROBE_STAGE_NAMES if name.encode() in matches)
 
 
 def probe_result(output: bytes, token: str) -> int | None:
@@ -426,13 +464,19 @@ def run_trial(manifest_path: Path, log_path: Path, result_path: Path) -> None:
             session.write((probe_command(token) + "\r").encode())
             probe_deadline = time.monotonic() + 60
             probe_status = None
+            probe_stages = ()
             while time.monotonic() < probe_deadline:
                 session.pump()
                 probe_status = probe_result(session.buffer, token)
+                probe_stages = probe_stage_markers(session.buffer, token)
                 if probe_status is not None:
                     break
             if probe_status is None:
-                raise RuntimeError("PID 1 shell probe did not return its complete token; do not send exit")
+                stages = ",".join(probe_stages) if probe_stages else "none"
+                raise RuntimeError(
+                    "PID 1 shell probe did not return its complete token "
+                    f"(complete stages: {stages}); do not send exit"
+                )
             label_present = probe_nixos_label(session.buffer)
             if not session.wait_for(b"nixos login:", 180):
                 raise RuntimeError("normal login not observed after initrd reboot")
@@ -473,6 +517,7 @@ def run_trial(manifest_path: Path, log_path: Path, result_path: Path) -> None:
                 "candidate_system": SYSTEM,
                 "normal_preflight": observed_before,
                 "initrd_probe_rc": probe_status,
+                "initrd_probe_stages": list(probe_stages),
                 "initrd_nixos_sd_label_present": label_present,
                 "normal_recovery": observed_after,
                 "persistent_boot_selection_changed": False,
