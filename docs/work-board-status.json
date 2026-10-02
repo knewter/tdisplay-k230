@@ -433,9 +433,10 @@
         "docs/evidence/mainline-display/physical-2026-10-01/root-mount-controller-host-2026-10-02.md",
         "docs/evidence/mainline-restart/physical-minimal-2026-10-02/README.md",
         "docs/evidence/mainline-restart/restart-dispatch-audit-2026-10-02.md",
-        "docs/evidence/mainline-restart/shutdown-debug-host-preparation-2026-10-02.md"
+        "docs/evidence/mainline-restart/shutdown-debug-host-preparation-2026-10-02.md",
+        "docs/evidence/mainline-restart/shutdown-path-audit-2026-10-02.md"
       ],
-      "reviewRevision": "e58d07d1",
+      "reviewRevision": "dc7f77b7",
       "media": [
         {
           "path": "docs/evidence/mainline-restart/physical-minimal-2026-10-02/home-panel.jpg",
