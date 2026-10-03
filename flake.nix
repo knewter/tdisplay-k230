@@ -268,6 +268,21 @@
             );
           }) ];
         };
+        # Isolate diagnostic printk dependency without changing normal logging.
+        k230-mainline-boot-trace-sbi-only = self.nixosConfigurations.k230-mainline-boot-trace.extendModules {
+          specialArgs.k230Kernel = pkgsCross.linuxPackagesFor (import ./nix/kernel-mainline-boot-trace-sbi-only.nix {
+            kernelMainline = pkgsCross.callPackage ./nix/kernel-mainline.nix {
+              inherit (pkgsCross) buildLinux;
+            };
+            inherit (pkgsCross) applyPatches lib;
+          });
+          modules = [ ({ lib, ... }: {
+            boot.kernelParams = lib.mkOverride 40 (
+              self.nixosConfigurations.k230-mainline-boot-trace.config.boot.kernelParams
+              ++ [ "k230.boot_trace_sbi_only=1" ]
+            );
+          }) ];
+        };
       };
 
       checks.${buildSystem} = {
@@ -493,6 +508,18 @@
         kernelMainlineBootTraceSbiTrialBootFiles = pkgs.callPackage ./nix/mainline-drm-trial.nix {
           cfg = self.nixosConfigurations.k230-mainline-boot-trace-sbi.config;
           kernel = self.nixosConfigurations.k230-mainline-boot-trace-sbi.config.boot.kernelPackages.kernel;
+          deviceTree = self.packages.${buildSystem}.deviceTreeMainlineDrm;
+        };
+
+        kernelMainlineBootTraceSbiOnly = pkgsCross.callPackage ./nix/kernel-mainline-boot-trace-sbi-only.nix {
+          kernelMainline = pkgsCross.callPackage ./nix/kernel-mainline.nix {
+            inherit (pkgsCross) buildLinux;
+          };
+        };
+        toplevel-mainline-boot-trace-sbi-only = self.nixosConfigurations.k230-mainline-boot-trace-sbi-only.config.system.build.toplevel;
+        kernelMainlineBootTraceSbiOnlyTrialBootFiles = pkgs.callPackage ./nix/mainline-drm-trial.nix {
+          cfg = self.nixosConfigurations.k230-mainline-boot-trace-sbi-only.config;
+          kernel = self.nixosConfigurations.k230-mainline-boot-trace-sbi-only.config.boot.kernelPackages.kernel;
           deviceTree = self.packages.${buildSystem}.deviceTreeMainlineDrm;
         };
 

@@ -1,0 +1,73 @@
+--- a/init/main.c
++++ b/init/main.c
+@@ -33,0 +34,3 @@
++#ifdef CONFIG_RISCV_SBI
++#include <asm/sbi.h>
++#endif
+@@ -1465,0 +1469,39 @@
++/* Fixed single-attempt records; ordinary storage survives free_initmem(). */
++static bool k230_boot_trace_sbi_only_enabled;
++
++static int __init k230_boot_trace_sbi_only_setup(char *str)
++{
++	if (strcmp(str, "1"))
++		return 0;
++	k230_boot_trace_sbi_only_enabled = true;
++	return 1;
++}
++__setup("k230.boot_trace_sbi_only=", k230_boot_trace_sbi_only_setup);
++
++struct k230_boot_sbi_record {
++	const char *step;
++	char record[64] __aligned(64);
++};
++static const struct k230_boot_sbi_record k230_boot_sbi_records[] = {
++	{ "basic-setup-enter", "\r\nK230_BOOT_SBI_ONLY_V1 step=basic-setup-enter\r\n" },
++	{ "basic-setup-exit", "\r\nK230_BOOT_SBI_ONLY_V1 step=basic-setup-exit\r\n" },
++	{ "initcalls-enter", "\r\nK230_BOOT_SBI_ONLY_V1 step=initcalls-enter\r\n" },
++	{ "initcalls-exit", "\r\nK230_BOOT_SBI_ONLY_V1 step=initcalls-exit\r\n" },
++	{ "initramfs-wait-enter", "\r\nK230_BOOT_SBI_ONLY_V1 step=initramfs-wait-enter\r\n" },
++	{ "initramfs-wait-exit", "\r\nK230_BOOT_SBI_ONLY_V1 step=initramfs-wait-exit\r\n" },
++	{ "root-console-enter", "\r\nK230_BOOT_SBI_ONLY_V1 step=root-console-enter\r\n" },
++	{ "root-console-exit", "\r\nK230_BOOT_SBI_ONLY_V1 step=root-console-exit\r\n" },
++	{ "init-access-enter", "\r\nK230_BOOT_SBI_ONLY_V1 step=init-access-enter\r\n" },
++	{ "init-access-exit", "\r\nK230_BOOT_SBI_ONLY_V1 step=init-access-exit\r\n" },
++	{ "namespace-enter", "\r\nK230_BOOT_SBI_ONLY_V1 step=namespace-enter\r\n" },
++	{ "namespace-exit", "\r\nK230_BOOT_SBI_ONLY_V1 step=namespace-exit\r\n" },
++	{ "integrity-keys-enter", "\r\nK230_BOOT_SBI_ONLY_V1 step=integrity-keys-enter\r\n" },
++	{ "integrity-keys-exit", "\r\nK230_BOOT_SBI_ONLY_V1 step=integrity-keys-exit\r\n" },
++	{ "async-wait-enter", "\r\nK230_BOOT_SBI_ONLY_V1 step=async-wait-enter\r\n" },
++	{ "async-wait-exit", "\r\nK230_BOOT_SBI_ONLY_V1 step=async-wait-exit\r\n" },
++	{ "initmem-readonly-enter", "\r\nK230_BOOT_SBI_ONLY_V1 step=initmem-readonly-enter\r\n" },
++	{ "initmem-readonly-exit", "\r\nK230_BOOT_SBI_ONLY_V1 step=initmem-readonly-exit\r\n" },
++	{ "init-exec-enter", "\r\nK230_BOOT_SBI_ONLY_V1 step=init-exec-enter\r\n" },
++	{ "init-exec-exit", "\r\nK230_BOOT_SBI_ONLY_V1 step=init-exec-exit\r\n" },
++};
++
+@@ -1469,0 +1512,26 @@
++
++	if (k230_boot_trace_sbi_only_enabled) {
++		unsigned int i;
++
++		if (!step)
++			return;
++		for (i = 0; i < ARRAY_SIZE(k230_boot_sbi_records); i++) {
++			const struct k230_boot_sbi_record *r = &k230_boot_sbi_records[i];
++
++			if (strcmp(step, r->step))
++				continue;
++#ifdef CONFIG_RISCV_SBI
++			if (sbi_debug_console_available) {
++				unsigned int len = strnlen(r->record, sizeof(r->record));
++
++				if (len && len < sizeof(r->record)) {
++					++k230_boot_trace_seq;
++					/* Return count/error is discarded; never retry or fall back. */
++					(void)sbi_debug_console_write(r->record, len);
++				}
++			}
++#endif
++			return;
++		}
++		return;
++	}
