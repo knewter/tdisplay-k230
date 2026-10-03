@@ -114,6 +114,134 @@ class FlowSession(PumpSession):
 
 
 class SystemTrialTests(unittest.TestCase):
+    def comparison_args(self):
+        return ARGS.rstrip() + " k230.boot_trace=1 k230.boot_trace_sbi_only=1\n"
+
+    def comparison_prepared(self):
+        p = prepared()
+        p["bootargs"] = trial.ordinary_bootargs(self.comparison_args(), SYSTEM, wait_initramfs_in_initcall=True)
+        p["diagnostic_controls"] = trial.diagnostic_controls(True)
+        return p
+
+    def test_initramfs_comparison_changes_only_one_volatile_token(self):
+        original = self.comparison_args()
+        before = trial.ordinary_bootargs(original, SYSTEM)
+        after = trial.ordinary_bootargs(original, SYSTEM, wait_initramfs_in_initcall=True)
+        self.assertEqual(after, before + " initramfs_async=0")
+        self.assertEqual(after.split().count("initramfs_async=0"), 1)
+        for conflict in ("initramfs_async", "initramfs_async=0", "initramfs_async=1", "initramfs_async=false"):
+            for selected in (False, True):
+                with self.subTest(conflict=conflict, selected=selected), self.assertRaises(ValueError):
+                    trial.ordinary_bootargs(original.rstrip() + " " + conflict, SYSTEM,
+                                            wait_initramfs_in_initcall=selected)
+
+    def test_comparison_rejects_different_console_instrumentation_and_untyped_selector(self):
+        original = self.comparison_args()
+        for changed in (ARGS, original.replace("k230.boot_trace_sbi_only=1", "k230.boot_trace_sbi=1"),
+                        original.replace("console=ttyS0,115200n8", "console=tty0"),
+                        original.rstrip() + " console=tty0", original.rstrip() + " earlycon=sbi",
+                        original.rstrip() + " keep_bootcon", original.rstrip() + " k230.boot_trace_sbi=1",
+                        original.rstrip() + " k230.boot_trace=1"):
+            with self.subTest(changed=changed), self.assertRaises(ValueError):
+                trial.ordinary_bootargs(changed, SYSTEM, wait_initramfs_in_initcall=True)
+        for name in ("k230.boot_trace", "k230.boot_trace_sbi_only", "k230.boot_trace_sbi", "console",
+                     "earlycon", "keep_bootcon"):
+            for suffix in ("", "=0", "=1", "=false"):
+                with self.subTest(name=name, suffix=suffix), self.assertRaises(ValueError):
+                    trial.ordinary_bootargs(original.rstrip() + " " + name + suffix, SYSTEM,
+                                            wait_initramfs_in_initcall=True)
+        for value in (1, 0, "false", None):
+            with self.subTest(value=value), self.assertRaises(ValueError):
+                trial.ordinary_bootargs(original, SYSTEM, wait_initramfs_in_initcall=value)
+
+    def test_comparison_real_boot_keeps_load_crc_printed_args_and_passive_readiness_gates(self):
+        p = self.comparison_prepared()
+        class ComparisonSession(FlowSession):
+            def command(self, command, timeout):
+                if command == "printenv bootargs":
+                    self.writes.append(command.encode())
+                    return (p["bootargs"] + "\nK230# ").encode()
+                return super().command(command, timeout)
+        s = ComparisonSession(None, SimpleNamespace(write=lambda x: None))
+        trial.boot(s, p)
+        self.assertEqual(sum(w.startswith(b"ext4load ") for w in s.writes), 5)
+        self.assertEqual(sum(w.startswith(b"crc32 ") for w in s.writes), 5)
+        setenv = [w for w in s.writes if w.startswith(b"setenv bootargs ")]
+        self.assertEqual(setenv, [('setenv bootargs "${bootargs} ' + " ".join(trial.CONTROLS)
+                                  + ' initramfs_async=0"').encode()])
+        self.assertLess(len(setenv[0]), 512)
+        self.assertEqual(sum(w.startswith(b"bootm ") for w in s.writes), 1)
+        self.assertFalse(any(b"saveenv" in w for w in s.writes))
+
+        # A returned printed line without the token must stop before bootm.
+        s = FlowSession(None, SimpleNamespace(write=lambda x: None))
+        with self.assertRaises(trial.Unknown): trial.boot(s, p)
+        self.assertFalse(any(w.startswith(b"bootm ") for w in s.writes))
+
+        # After bootm, unknown readiness must not send a receipt or retry.
+        s = ComparisonSession(None, SimpleNamespace(write=lambda x: None))
+        with mock.patch.object(trial, "wait_candidate", return_value=False):
+            with self.assertRaises(trial.Unknown): trial.boot(s, p)
+        self.assertEqual(s.writes[-1], b"bootm 0x8000000 0x9000000 0x8400000\r")
+        self.assertEqual(sum(w.startswith(b"reboot") for w in s.writes), 1)
+
+    def test_comparison_identity_requires_exact_runtime_token(self):
+        p = self.comparison_prepared()
+        value = facts()["bootargs"].copy()
+        value["cmdline"] = p["bootargs"].removeprefix("bootargs=")
+        trial.validate_stage("bootargs", value, p, p["normal"])
+        for replacement in ("", "initramfs_async=1", "initramfs_async=0 initramfs_async=0"):
+            bad = value.copy(); bad["cmdline"] = value["cmdline"].replace("initramfs_async=0", replacement)
+            with self.assertRaises(trial.Unknown): trial.validate_stage("bootargs", bad, p, p["normal"])
+
+    def test_comparison_mode_saved_and_restored_without_cli_reselection(self):
+        p = self.comparison_prepared()
+        values = facts(); values["bootargs"]["cmdline"] = p["bootargs"].removeprefix("bootargs=")
+        class ComparisonSession(FlowSession):
+            def command(self, command, timeout):
+                if command == "printenv bootargs":
+                    self.writes.append(command.encode())
+                    return (p["bootargs"] + "\nK230# ").encode()
+                return super().command(command, timeout)
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp); root.chmod(0o700)
+            args = SimpleNamespace(phase="begin", bundle=Path("/nix/store/bundle"), manifest=root/"manifest",
+                                   normal_report=root/"normal-report", state=root/"state.json", log=root/"begin.log",
+                                   result=root/"begin.json", real_touch=False, wait_initramfs_in_initcall=True)
+            FlowSession.values = values; FlowSession.fail_stage = None
+            with mock.patch.dict(sys.modules, {"serial": SimpleNamespace()}), \
+                 mock.patch.object(trial, "prepare", return_value=p) as prepare_call, \
+                 mock.patch.object(trial.rd, "PrivateSession", ComparisonSession), \
+                 mock.patch.object(trial.rd, "LOCK_PATH", root/"lock"):
+                self.assertTrue(trial.run(args))
+                self.assertTrue(json.loads(args.state.read_text())["wait_initramfs_in_initcall"])
+                self.assertTrue(json.loads(args.result.read_text())["wait_initramfs_in_initcall"])
+                args.phase = "finish"; args.log = root/"finish.log"; args.result = root/"finish.json"
+                args.wait_initramfs_in_initcall = False
+                self.assertTrue(trial.run(args))
+                self.assertTrue(prepare_call.call_args.kwargs["wait_initramfs_in_initcall"])
+                self.assertTrue(json.loads(args.result.read_text())["wait_initramfs_in_initcall"])
+                self.assertEqual(json.loads(args.result.read_text())["status"], "normal-recovery-verified")
+            FlowSession.values = None
+
+    def test_invalid_saved_comparison_mode_fails_before_serial_open(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp); root.chmod(0o700)
+            state = self.state(); state["wait_initramfs_in_initcall"] = "false"
+            path = root/"state.json"; path.write_text(json.dumps(state)); path.chmod(0o600)
+            args = SimpleNamespace(phase="finish", state=path, real_touch=False)
+            with mock.patch.object(trial.rd, "PrivateSession") as session:
+                with self.assertRaises(ValueError): trial.run(args)
+                session.assert_not_called()
+
+    def test_cli_comparison_option_is_begin_only_before_any_serial_access(self):
+        for phase in ("touch", "finish"):
+            cmd = [sys.executable, str(Path(trial.__file__)), phase, "--state", "/nonexistent/state",
+                   "--log", "/nonexistent/log", "--result", "/nonexistent/result", "--wait-initramfs-in-initcall"]
+            result = subprocess.run(cmd, capture_output=True)
+            self.assertEqual(result.returncode, 2)
+            self.assertIn(b"begin-only", result.stderr)
+
     def test_exact_qualified_bootargs_and_forbidden_controls(self):
         self.assertEqual(trial.ordinary_bootargs(ARGS, SYSTEM), ARGS.rstrip() + " " + " ".join(trial.CONTROLS))
         for extra in ("rdinit=/bin/sh", "PATH=/bin", "clk_ignore_unused", "initcall_debug", "loglevel=8", "fsck.mode=skip", "systemd.mask=x", "systemd.unit=rescue.target", "rd.systemd.debug_shell", "debug", "dyndbg=x"):

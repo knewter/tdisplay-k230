@@ -653,3 +653,18 @@ See `docs/evidence/mainline-system-trial/boot-boundary-sbi-only-physical-2026-10
 and result JSON. Operator reset recovery is pending; automatic return,
 ordinary root/panel/glass and 5b.5 remain open. Read-only audit is evaluating
 a same-Image `initramfs_async=0` comparison before another kernel rebuild.
+
+
+## 2026-10-03 same-image initramfs/initcall controller opt-in
+
+Independent source audit supports one volatile `initramfs_async=0` token
+as the next bounded discriminator: the same worker is scheduled, then the
+rootfs initcall joins it before later initcalls. The controller's reviewed
+begin-only `--wait-initramfs-in-initcall` preserves exact artifact/identity/
+CRC/argument/state/recovery gates and the 180-second passive deadline.
+Corrected focused 29 tests, actual matching-bundle prepare/unchanged drv,
+strict/all validation and whitespace checks passed. Evidence and exact
+operator command: `docs/evidence/mainline-system-trial/initramfs-initcall-controller-host-2026-10-03.md`.
+This is host proof only. Current candidate reset recovery and the new
+physical comparison remain UNVERIFIED; ordinary root/glass/return and 5b.5
+stay open. No kernel rebuild, board command or production fix is claimed.
