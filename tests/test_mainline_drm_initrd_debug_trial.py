@@ -197,6 +197,35 @@ class ProtocolTests(unittest.TestCase):
             self.assertEqual(t.wait_ready(s, timeout=1, clock=Clock()), expected)
             self.assertEqual(s.writes, [])
 
+    def test_observed_prompt_before_interleaved_boot_status_is_ready(self):
+        # Coordinator-provided safe physical boundary; no raw private log copied.
+        observed = (b'evice Nodes in /dev.\r\n\x1b[?2004hsh-5.3# '
+                    b'[\x1b[0;32m  OK  \x1b[0m] Finished \x1b[0;1;39mCreate Sta'
+                    b'[    7.106130] systemd[1]: Reached target Preparation for Local File Systems.\r\n'
+                    b'tic Device Nodes in /dev\x1b')
+        startup = b'[    0.0] Linux version 7.3.0-rc5 candidate\r\nsystemd 261.2 running in system mode.\r\n'
+        for chunks in ([startup + observed], [startup + observed[:38], observed[38:]]):
+            s = Session(); s.chunks = list(chunks)
+            self.assertTrue(t.wait_ready(s, timeout=1, clock=Clock()))
+            self.assertEqual(s.writes, [])
+            self.assertIn(b'sh-5.3# ',s.log.getvalue())
+
+    def test_prompt_must_be_primary_and_after_candidate_manager(self):
+        banner = b'Linux version 7.3.0-rc5 candidate\n'
+        manager = b'systemd 261.2 running in system mode.\n'
+        for text in (b'sh-5.3# '+banner+manager,
+                     banner+b'sh-5.3# '+manager,
+                     banner+b'systemd 261.2 sh-5.3# quoted status\n',
+                     banner+manager+b'echo sh-5.3# \n',
+                     banner+manager+b'> sh-5.3# \n',
+                     banner+manager+b'sh-5.3#',
+                     banner+manager+b'root@nixos# \n',
+                     banner.replace(b'7.3.0-rc5',b'6.6.36')+manager+b'sh-5.3# \n',
+                     banner+manager.replace(b'261.2 ',b'261.20 ')+b'sh-5.3# \n'):
+            s = Session(); s.chunks = [text]
+            self.assertFalse(t.wait_ready(s,timeout=1,clock=Clock()))
+            self.assertEqual(s.writes,[])
+
 
 class ShellTests(unittest.TestCase):
     def test_actual_mount_table_false_final_entry_and_failures(self):

@@ -93,8 +93,17 @@ def wait_ready(session, timeout=90, clock=time.monotonic):
         session.pump()
         text = rd._PROTOCOL.uart_text(session.buffer)
         banner = re.search(rb"(?:^|\n)(?:\[\s*[0-9]+\.[0-9]+\] )?Linux version 7\.3\.0-rc5(?: |\n)", text)
-        if banner and b"systemd 261.2" in text[banner.end():] and prompt(text.rsplit(b"\n", 1)[-1]):
-            return True
+        if banner:
+            after_banner = text[banner.end():]
+            manager = re.search(rb"systemd 261\.2(?= |\n)", after_banner)
+            if manager:
+                # The interactive prompt has no newline. Asynchronous boot
+                # status can start immediately after its trailing space, so
+                # readiness records the observed fresh line boundary rather
+                # than requiring that prompt to remain the buffer tail.
+                after_manager = after_banner[manager.end():]
+                if re.search(rb"(?:^|\n)(?:\x1b\[\?2004h)?sh-[0-9]+\.[0-9]+# ", after_manager):
+                    return True
     return False
 
 
