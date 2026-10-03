@@ -1,0 +1,50 @@
+{
+  "candidate_bundle": "/nix/store/5yqilsfyj35jzrcqjjqilkr6sd47qlms-k230-mainline-drm-trial-boot-files",
+  "candidate_system": "/nix/store/9gdmsrh2igqla1qz0ll97czfw2x42icw-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "failure": "Unknown: ordinary init login readiness unverified",
+  "last_protocol_stage": "persistent",
+  "normal_preflight": {
+    "boot_files": {
+      "Image": "37d71fc14f9bdafe230767e1709de587c049014660dd59d2f7bcbbce35ac71c2",
+      "bootargs.txt": "27e85247977a44c8aab0b78ea30f81e368623ba29fba262cd21871cdc31bf476",
+      "force_dtb": "175342c82dd1b437cdafb6bb01090e7ff73c2769515654c48b02c1e9f73440c6",
+      "fw_jump_add_uboot_head.bin": "9627edbeea9b115d7040beea27cc61b23b6aca61cd502fd7760d7ee179f42c99",
+      "hdmi_dtb": "175342c82dd1b437cdafb6bb01090e7ff73c2769515654c48b02c1e9f73440c6",
+      "initrd.uimg": "867e227f333ffe9c0e83a489dbfd0c755d7fcd0a0cf588cf47ec1c139945fb25",
+      "k230-tdisplay.dtb": "07e784fa3b2eeb971df3ba6f22d9909ed8e0424fdd6bdf680724631652bbe65e",
+      "lcd_dtb": "175342c82dd1b437cdafb6bb01090e7ff73c2769515654c48b02c1e9f73440c6"
+    },
+    "boot_id": "0602ce01-4d87-487c-99f5-40a17d14b061",
+    "init": "init=/nix/store/p1a1hz9n8s4g8qyr55ffl3dzbnjgqwr8-nixos-system-nixos-26.11.20260919.20b1ddd/init",
+    "kernel": "/nix/store/03zyl0mjsxbjyisb3lhjaxswpxm71ap6-linux-riscv64-unknown-linux-gnu-6.6.36-xuantie/Image",
+    "nix_path_registration_absent": true,
+    "profile": "/nix/store/p1a1hz9n8s4g8qyr55ffl3dzbnjgqwr8-nixos-system-nixos-26.11.20260919.20b1ddd",
+    "services": [
+      "active",
+      "active",
+      "active"
+    ],
+    "system": "/nix/store/p1a1hz9n8s4g8qyr55ffl3dzbnjgqwr8-nixos-system-nixos-26.11.20260919.20b1ddd",
+    "uname": "6.6.36"
+  },
+  "normal_recovery": null,
+  "phase": "begin",
+  "production_unmasked": "UNVERIFIED",
+  "qualified_controls": [
+    "fsck.mode=skip",
+    "systemd.mask=k230-root-growth.service",
+    "systemd.mask=register-nix-paths.service"
+  ],
+  "schema": "mainline-system-trial-v1",
+  "status": "recovery-required-unknown",
+  "controller_source": "2fc70b460a97cdf79ce7bf7104160b7e797e9759",
+  "controller_exit": 1,
+  "evidence_class": "physical-serial",
+  "raw_log_sha256": "3e6c156677aac67d45ff9ed0d45decda282fe7ee35be60ae68d4218e0cd83026",
+  "raw_log_bytes": 54143,
+  "raw_log_mtime_utc": "2026-10-03T04:10:10.745934+00:00",
+  "readiness_deadline_seconds": 180,
+  "deliberate_touch": "NOT_PERFORMED",
+  "ordinary_root_activation": "UNVERIFIED",
+  "no_input_after_readiness_failure": true
+}

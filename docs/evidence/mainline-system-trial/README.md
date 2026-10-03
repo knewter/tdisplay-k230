@@ -155,3 +155,8 @@ python3 tools/mainline-drm-system-trial.py finish \
 Review/merge/push/deployment and physical qualified root/login, real-glass
 interaction and protected normal restoration remain with the coordinator.
 This host preparation cannot close task 5b.5 or establish unmasked acceptance.
+
+The [first physical ordinary-init attempt](physical-2026-10-03/README.md)
+reached systemd/udev but timed out before root activation/login. Its result,
+curated excerpt and camera limits are recorded separately; no touch acceptance
+or task completion is inferred from it.

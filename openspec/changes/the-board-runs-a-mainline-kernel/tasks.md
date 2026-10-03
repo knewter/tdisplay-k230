@@ -421,3 +421,9 @@ coordinator independently passed 122 combined tests. Its physical trial is
 separate from the returned read-only prerequisite. Ordinary NixOS activation,
 deliberate glass touch and protected recovery remain required before 5b.5
 can close. Neither the initrd shell nor host tests establish those outcomes.
+
+The first physical ordinary-init attempt subsequently reached initrd
+systemd/udev and timed out after 180 seconds without login. No touch or
+reboot retry was sent; recovery is pending operator reset and protected
+postflight. See `docs/evidence/mainline-system-trial/physical-2026-10-03/README.md`.
+This failure leaves task 5b.5 open.

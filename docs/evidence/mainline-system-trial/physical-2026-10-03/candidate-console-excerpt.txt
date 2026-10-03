@@ -1,0 +1,43 @@
+Linux version 7.3.0-rc5 (nixbld@localhost) (riscv64-unknown-linux-gnu-gcc (GCC) 15.3.0, GNU ld (GNU Binutils) 2.46) #1-NixOS SMP PREEMPT Tue Jan  1 00:00:00 UTC 1980
+[    0.000000] Kernel command line: console=tty0 consoleblank=0 console=ttyS0,115200n8 root=fstab loglevel=4 lsm=landlock,yama,bpf loglevel=7 init=/nix/store/9gdmsrh2igqla1qz0ll97czfw2x42icw-nixos-system-nixos-26.11.20260919.20b1ddd/init fsck.mode=skip systemd.mask=k230-root-growth.service systemd.mask=register-nix-paths.service
+[    3.185579] clk: Disabling unused clocks
+\x1bP+q6E616D65\x1b\[    4.414097] systemd[1]: Successfully made /usr/ read-only.
+[0;38;2;126;186;[    5.095939] systemd[1]: Detected architecture riscv64.
+228mNixOS 26.11 [    5.095985] systemd[1]: Running in initrd.
+[    5.152703] systemd[1]: Hostname set to <nixos>.
+[    5.944156] systemd[1]: Queued start job for default target Initrd Default Target.
+[  OK      5.961599] systemd[1]: Created slice Slice /system/modprobe.
+         Expecting device     6.003907] systemd[1]: Expecting device /dev/disk/by-label/NIXOS_SD...
+[  OK  ] Reached targ[    6.023821] systemd[1]: Reached target Path Units.
+[  OK  ] Reached targ[    6.039877] systemd[1]: Reached target Slice Units.
+[  OK  ] Reached targ[    6.055890] systemd[1]: Reached target Swaps.
+[  OK  ] Reached targ[    6.071952] systemd[1]: Reached target Timer Units.
+[    6.088503] systemd[1]: Listening on D-Bus System Message Bus Socket.
+[  OK      6.112535] systemd[1]: Listening on Journal Socket (/dev/log).
+[  OK      6.132640] systemd[1]: Listening on Journal Sockets.
+[  OK      6.152525] systemd[1]: Listening on udev Control Socket.
+[  OK  ] Listening on[    6.172305] systemd[1]: Listening on udev Kernel Socket.
+[  OK  ] Reached targ[    6.191943] systemd[1]: Reached target Socket Units.
+[    6.208017] systemd[1]: Create List of Static Device Nodes skipped, unmet condition check ConditionFileNotEmpty=/lib/modules/7.3.0-rc5/modules.devname
+[    6.231392] systemd[1]: Starting Load Kernel Module configfs...
+[    6.280009] systemd[1]: Starting Journal Service...
+[    6.321957] systemd[1]: Starting Load Kernel Modules...
+[    6.357998] systemd[1]: Starting Create Static Device Nodes in /dev gracefully...
+[    6.396982] systemd[1]: Early TPM SRK Setup skipped, unmet condition check ConditionSecurity=measured-os
+[    6.459776] systemd[1]: Starting Coldplug All udev Devices...
+         Starting Coldplug All udev Devices...
+[    6.542725] systemd[1]: modprobe@configfs.service: Deactivated successfully.
+[    6.578048] systemd[1]: Finished Load Kernel Module configfs.
+[    6.629612] systemd[1]: Finished Load Kernel Modules.
+[    6.661264] systemd[1]: Finished Create Static Device Nodes in /dev gracefully.
+[    6.701767] systemd[1]: Kernel Configuration File System skipped, unmet condition check ConditionPathExists=/sys/kernel/config
+[    6.739940] systemd[1]: Starting Apply Kernel Variables...
+[    6.809084] systemd[1]: Starting Create Static Device Nodes in /dev...
+[    7.052623] systemd[1]: Finished Apply Kernel Variables.
+[    7.100526] systemd[1]: Finished Create Static Device Nodes in /dev.
+[    7.126881] systemd[1]: Reached target Preparation for Local File Systems.
+[    7.156751] systemd[1]: Reached target Local File Systems.
+[    7.200689] systemd[1]: Starting Rule-based Manager for Device Events and Files...
+         Starting Rule-based Manager for Device Events and Files...
+[    7.235580] systemd[1]: Started Journal Service.
+[  OK  ] Started Rule-based Manager for Device Events and Files.
