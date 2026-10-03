@@ -172,3 +172,38 @@ bound remain. Raw evidence stays private. Unknown/missing readiness sends no
 commands or guessed reboot; another operator reset may be necessary. Later
 source/driver diagnosis, real root/login, physical touch and protected return
 remain separate gates, not conclusions from these host checks.
+
+## Coordinator's outcome map for the next physical trial
+
+This is a source-based interpretation plan, **not observed direct-SBI output**.
+Use only complete fixed records after the fresh selected-kernel boot. Missing
+or partial records remain unknown; a later record can establish progress even
+when an earlier record was lost. Every case retains the ordinary identity/root
+and physical-touch gates.
+
+| Last direct point observed | What the source establishes | What remains unresolved |
+| --- | --- | --- |
+| None | No direct boundary observed. | Initcall completion, extension/output availability and progress. |
+| `initcalls-before` | `do_initcalls()` reached its return. | That SBI call's return and the complete original initcalls-exit marker call. |
+| `initcalls-after` | The original initcalls-exit marker helper returned. | This SBI call's return, the short do_basic_setup return and next emission. |
+| `basic-before` | `do_basic_setup()` returned. | This SBI call's return and the complete basic-setup-exit marker helper. |
+| `basic-after` | Both suspect printk marker helpers returned. | This SBI call's return and subsequent initramfs/root/init progress. |
+
+The exact pre-SBI trace source has calls at `init/main.c:1486–1488` and
+`1710–1718`; the actual config disables KUnit. A visible printk record still
+does not prove printk returned: `8250_port.c:3493–3526` transmits bytes before
+ownership reacquisition, transmitter-empty wait and IER restoration;
+`nbcon.c:942–943` and `1644–1648` can retry ownership or pending flushes.
+Emergency exit at `nbcon.c:1734–1757` can wake print threads and re-enable
+preemption. These are source-supported possibilities, not observed causes.
+
+If `initcalls-before` and legacy seq3 appear without `initcalls-after`, the
+strongest separately reviewed follow-up is one gated/static direct-SBI point
+immediately after `pr_info` and before emergency exit. That can show the printk
+call returned. It adds an ECALL while preemption/emergency state is held,
+extends that interval, shares UART/firmware and has no firmware deadline;
+missing output remains inconclusive. It is **not implemented** here. Avoid
+placing probes inside UART ownership/IER manipulation. An optional skip of only
+the suspect diagnostic marker could test instrumentation dependence, but would
+lose that marker and perturb sequencing; it is not a production fix. Neither
+follow-up is a reason to change normal outputs or declare a root cause now.
