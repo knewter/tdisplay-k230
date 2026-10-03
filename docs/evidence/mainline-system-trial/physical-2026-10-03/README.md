@@ -58,3 +58,13 @@ text, but glare/angle prevent reliable reading. It is not a native framebuffer
 capture and does not establish that mainline rendered a new frame, correct
 rotation, coordinate mapping or a deliberate glass interaction. Raw UART,
 private state and runtime configuration remain outside the repository.
+
+## Operator reset returns the protected normal shell
+
+The user subsequently pressed reset. The first 45-second fresh-prompt wait
+ended before the normal shell prompt appeared; no command was sent. A second
+fresh check succeeded: exact original system/profile/kernel/init, all three
+shell services active, eight unchanged boot hashes and a new normal boot ID.
+[Protected normal recovery result](operator-reset-recovery.json) records the
+operator reset explicitly. This clears the recovery blocker for host diagnosis;
+it does not establish automatic recovery or ordinary mainline acceptance.

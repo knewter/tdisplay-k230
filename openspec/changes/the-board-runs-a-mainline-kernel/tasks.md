@@ -427,3 +427,8 @@ systemd/udev and timed out after 180 seconds without login. No touch or
 reboot retry was sent; recovery is pending operator reset and protected
 postflight. See `docs/evidence/mainline-system-trial/physical-2026-10-03/README.md`.
 This failure leaves task 5b.5 open.
+
+The user subsequently reset the ordinary-trial board; fresh protected normal
+postflight passed exact identities, three services and eight unchanged boot
+hashes. That operator recovery is now recorded in the same physical packet.
+The full mainline initrd stopping point remains unresolved; 5b.5 stays open.
