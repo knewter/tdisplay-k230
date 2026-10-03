@@ -445,3 +445,15 @@ This narrows the unresolved ordinary-init/coldplug boundary; it does not prove
 whole-device discovery or close 5b.5. The source-supported next observation is
 `docs/research/mainline-initrd-debug-console-2026-10-03.md`; its controller and
 physical initrd state/recovery proof are separate required work.
+
+
+## 2026-10-03 debug-console readiness observation
+
+The bounded debug controller reached the fresh mainline/systemd primary shell
+prompt, but asynchronous boot messages followed it immediately. Its tail-only
+readiness check timed out before sending any diagnostic command. The user reset;
+protected normal recovery and qualified Home IPC passed. Exact command, result
+and limits are in
+`docs/evidence/mainline-system-trial/debug-readiness-physical-2026-10-03/README.md`.
+The prompt-recognition correction needs host review and a separate physical
+rerun; initrd unit/worker state is still UNVERIFIED and 5b.5 stays unchecked.
