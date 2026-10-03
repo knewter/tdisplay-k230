@@ -412,8 +412,8 @@
       "lane": "in-progress",
       "source": "in-progress",
       "physical": "pending",
-      "next": "Complete the retried kernel and matching trial-bundle builds, then verify targeted five-clock restart without clk_ignore_unused before usable-root and deliberate-touch proof.",
-      "rationale": "The unchanged 7.3-rc5 candidate passed automatic kernel restart \u2192 SPL \u2192 protected normal recovery with a temporary clk_ignore_unused comparison; task5d.4 is qualified to that diagnostic boot. A targeted optional DRM five-clock SD1 fix is now landed. Its source/DTB, exact five clock IDs/names, GCC object, lifecycle fault checks, unchanged default/console identities and flake checks passed. The first complete kernel compiled and linked but installation failed ENOSPC; this remains a failed Nix build, not a realized candidate. Store capacity is now available and the exact kernel/bundle retry is underway. The targeted fix is not yet proved on hardware. Restart without the flag, usable mainline root and deliberate touch (5b.5) remain. Normal boot selection/default image is unchanged.",
+      "next": "Stage the inspected five-clock candidate, verify automatic restart without clk_ignore_unused, then returned label/root diagnostics and ordinary mainline init with deliberate touch.",
+      "rationale": "The targeted optional DRM five-clock SD1 source/DTB/object/lifecycle checks and exact complete kernel plus matching trial bundle/inspector now pass. The original ENOSPC failure is preserved separately; the retry completed successfully after capacity recovery. Candidate kernel9vdk79, bundle5yqilsfy and system9gdms have matching hashes/CRCs and 629 closure paths. Default/console identities remain unchanged. Automatic restart was previously proved only with temporary clk_ignore_unused; the targeted correction still needs its own no-flag physical test. Usable mainline root and deliberate touch task5b.5 remain open. Normal boot selection/default image is unchanged.",
       "dependencies": [],
       "evidence": [
         "docs/evidence/mainline-display-power-domain.md",
