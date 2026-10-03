@@ -75,6 +75,11 @@ jobs:
           python3 -m unittest discover -s tests -p 'test_mainline_drm_initrd_shell_trial.py'
           python3 -m unittest discover -s tests -p 'test_mainline_shell_pid1_comparison.py'
 
+      - name: Check finite UART progress source and capture protocol
+        run: |
+          python3 tests/test_mainline_uart_progress.py
+          python3 tests/test_mainline_uart_progress_controller.py
+
       - name: Check bounded VG-Lite normal-service recovery
         run: |
           python3 tests/vglite/test_normal_service_trial.py
