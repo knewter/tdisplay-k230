@@ -561,7 +561,7 @@ UNVERIFIED and task 5b.5 remains unchecked.
 
 The exact optional trace bundle passed staging and protected normal preflight,
 then emitted basic-setup-enter, initcalls-enter and initcalls-exit on the board.
-It produced no next marker or ordinary login within180seconds; controller exit1
+It produced no next marker or ordinary login within 180 seconds; controller exit 1
 closed UART without further candidate input. There is no original blocking work
 between the visible post-initcall marker and the missing basic-setup-exit marker,
 but the visible marker's own return/flush/scheduling is not proved. See
@@ -639,3 +639,17 @@ closure and ordinary-controller host preparation checks passed. See
 `docs/evidence/mainline-system-trial/boot-boundary-sbi-only-build-2026-10-03/README.md`.
 SBI-only physical output/login/root/glass/automatic return remain UNVERIFIED;
 5b.5 stays open before the separately reserved board attempt.
+
+
+## 2026-10-03 SBI-only physical boundary
+
+The matching SBI-only bundle passed staging and protected normal preflight,
+then emitted five complete fixed labels through `initramfs-wait-enter`, with
+zero legacy markers. No exit/login followed within 180 seconds; controller exit 1
+released UART with no further input. The preceding basic-setup SBI call
+returned; the last ECALL return and actual wait entry remain unknown. The
+external `Unpacking initramfs...` printk was visible, with no completion proof.
+See `docs/evidence/mainline-system-trial/boot-boundary-sbi-only-physical-2026-10-03/README.md`
+and result JSON. Operator reset recovery is pending; automatic return,
+ordinary root/panel/glass and 5b.5 remain open. Read-only audit is evaluating
+a same-Image `initramfs_async=0` comparison before another kernel rebuild.
