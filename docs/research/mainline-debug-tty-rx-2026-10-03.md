@@ -164,10 +164,17 @@ without candidate Python. `serial_core.c:1259–1286` implements the counter
 snapshot; `8250_port.c:1610–1667` increments RX before line-discipline delivery
 and counts framing/parity/overrun/break errors. These are driver receive/error
 counters, **not IRQ-entry counts or exact delivered receipt-byte counts**.
-Validate the UART's sysfs ancestry before a bounded runtime-status read. Do not
-dump arbitrary `/proc/interrupts`, raw registers, command lines or private data.
-Actual IRQ-entry attribution needs separately reviewed driver instrumentation;
-do not fabricate it from these counters.
+Validate the UART's sysfs ancestry before a bounded runtime-status read. An
+optional aggregate IRQ comparison can obtain the exact Linux IRQ from cached
+`TIOCGSERIAL` (`serial_core.c:785–816`) on the inherited TTY descriptor, then
+retain only that bounded `/proc/interrupts` row before/after the single receipt.
+The getter copies `uport->irq` without an extra TTY open, PM transition or MMIO;
+retain only needed fields, not its address-bearing structure. See the companion
+[UART RX boundary audit](mainline-uart-rx-boundary-2026-10-03.md). Do not dump
+arbitrary IRQ rows, raw registers, command lines or private data. An aggregate
+IRQ-count increase is not per-receipt or per-byte handler attribution; that
+stronger attribution needs separately reviewed instrumentation. RX counters
+alone must not be presented as IRQ-entry counts.
 
 Host behavior is one fresh receipt after READY/primary prompt, with no second
 input needed to obtain the autonomous snapshots. A counter increase without a
