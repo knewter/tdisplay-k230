@@ -172,7 +172,8 @@ are required: current observer Image/base-kernel equality guards must not be
 bypassed. Host source/API/object proof and a root-owned full matching build
 precede any physical gate. No such patch/build was made here.
 
-Unfiltered `initcall_debug` repeats the previously unsuccessful verbose path.
+Unfiltered `initcall_debug` adds broad output without bracketing the waits
+after initcalls.
 Filtered bootconfig tracing is unavailable on this exact image because
 `CONFIG_BOOT_CONFIG` is unset, despite ftrace/tracepoints being enabled. The
 supported `initramfs_async=0` knob changes where extraction is joined

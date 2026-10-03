@@ -53,5 +53,7 @@
   "raw_serial_log_bytes": 47035,
   "raw_serial_log_sha256": "3446fdaaa2e524d05026409d66a6744c60878b66bd86c51a2fbe11e3f4492d24",
   "operator_reset_recovery": "UNVERIFIED",
-  "usable_root_and_deliberate_touch": "UNVERIFIED"
+  "usable_root_and_deliberate_touch": "UNVERIFIED",
+  "sbi_dbcn_extension_banner_observed": true,
+  "sbi_dbcn_banner_kernel_timestamp": "0.000000"
 }
