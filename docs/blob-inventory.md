@@ -1655,6 +1655,9 @@ DATA 86a97d3beb06ec564a69256328060642dfbdaacabc59886e0e616bae9a4e07d0 docs/evide
 DATA 2c033a1688ad58506e0211539185a97ddaf3c5c86e39a39a392c567d57e2502d docs/evidence/mainline-restart/physical-runtime-trace-2026-10-02/recovered-home-panel.jpg
 DATA d197f47569dbd4b00ffc4e88caa8f57a090707c5d5b54ad255765742f62f8de9 docs/evidence/mainline-restart/physical-runtime-ready-2026-10-02/boot-panel.jpg
 DATA 4c396ff3b029fb82ccd6c39d9f3ae5a22b06fb8d9329c991af856459d9be88a5 docs/evidence/mainline-restart/physical-clock-comparison-2026-10-02/recovered-home-panel.jpg
+# Mainline ordinary-init trial and protected normal return camera stills
+DATA  b7616d6dfc744893c4f52af15cdea1b4fe81f909fe251ea54ac1ced9563484c8  docs/evidence/mainline-system-trial/physical-2026-10-03/normal-return-home.jpg
+DATA  e633d697f387c1d6d4fa7fb827be6bc5665ea54ab3e9e6f1b536724c94d01f10  docs/evidence/mainline-system-trial/physical-2026-10-03/ordinary-boot-panel.jpg
 ```
 
 `group:` rows stand for a directory whose members are enumerated by
@@ -2637,3 +2640,15 @@ Native board captures, camera photograph and headless QEMU screenshots; commands
 | `docs/evidence/home-widget-design/closeout-2026-10-01/qemu/home-fluid-last-edge-new-page.png` | 193391 | DATA | `09f2c39d77fa5ef7146bc3c750bca8df3c2235ab035f4d517ba50f7b3dcabe21` |
 | `docs/evidence/home-widget-design/closeout-2026-10-01/qemu/home-fluid-new-page-drop.png` | 192621 | DATA | `5007dedc8ec8342188b82d2b4f5c779113f2e4183915ba43f7c12411c9210860` |
 | `docs/evidence/mainline-restart/physical-minimal-2026-10-02/home-panel.jpg` | 134465 | DATA | `c2d7bd67952385a6729cb1ade6fae9ef1169f585461deea15def08c26f8b4698` |
+
+### Ordinary mainline trial and normal recovery camera evidence
+
+Non-executable photographs of the physical device. Capture commands and
+limits are in `docs/evidence/mainline-system-trial/physical-2026-10-03/README.md`.
+The ordinary-trial photo does not establish a new mainline frame or touch;
+the normal-return photo follows separately verified protected normal identity.
+
+| File | Bytes | Class | SHA256 |
+| --- | ---: | --- | --- |
+| `docs/evidence/mainline-system-trial/physical-2026-10-03/normal-return-home.jpg` | 74117 | DATA | `b7616d6dfc744893c4f52af15cdea1b4fe81f909fe251ea54ac1ced9563484c8` |
+| `docs/evidence/mainline-system-trial/physical-2026-10-03/ordinary-boot-panel.jpg` | 91919 | DATA | `e633d697f387c1d6d4fa7fb827be6bc5665ea54ab3e9e6f1b536724c94d01f10` |
