@@ -37,7 +37,7 @@ A narrow correction must recognize a fresh observed prompt after the candidate
 banner/systemd observation while retaining all subsequent receipt/identity/
 ownership guards; it must not strip arbitrary kernel text or infer completed jobs.
 
-The user pressed reset after the controller stopped. The first fresh normal
+The user pressed reset after the controller stopped. The first 15-second fresh normal
 prompt wait expired without commands; one subsequent bounded fresh check passed.
 [Protected recovery](operator-reset-recovery.json) confirms a different boot ID,
 exact original system/profile/kernel/init, three active shell services, absence

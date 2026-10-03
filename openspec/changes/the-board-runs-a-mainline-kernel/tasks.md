@@ -457,3 +457,15 @@ and limits are in
 `docs/evidence/mainline-system-trial/debug-readiness-physical-2026-10-03/README.md`.
 The prompt-recognition correction needs host review and a separate physical
 rerun; initrd unit/worker state is still UNVERIFIED and 5b.5 stays unchecked.
+
+
+## 2026-10-03 corrected prompt / unacknowledged receipt
+
+The corrected debug readiness check recognizes the fresh primary prompt, but
+the first framed receipt has no command echo or reply within ten seconds. No
+identity guard, snapshot or reboot followed. The user reset; protected normal
+postflight and Home IPC passed. See
+`docs/evidence/mainline-system-trial/debug-receipt-physical-2026-10-03/README.md`.
+Debug-terminal setup and the exact UART receive boundary need source comparison
+before another physical retry; no IRQ/clock/terminal cause is claimed. Ordinary
+root, deliberate touch and 5b.5 remain open.
