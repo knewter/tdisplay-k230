@@ -787,14 +787,21 @@ and task 5b.5 remain UNVERIFIED; no archive or production fix is claimed.
 
 ## 5f. Finite independent UART/IRQ progress diagnosis (planned, no physical claim)
 
-- [ ] 5f.1 Add separately selected runtime-gated kernel source/configuration:
+- [x] 5f.1 Add separately selected runtime-gated kernel source/configuration:
       normal-priority finite worker, lifecycle-safe cached 8250 snapshot,
       actual mapped timer/UART IRQ accounting and aligned bounded public SBI
       records outside all locks. No MMIO/TTY/settings/critical-path output.
       Source/protocol proof: `python3 tests/test_mainline_uart_progress.py`.
+      Twelve actual-code native fixtures pass; the optional effective Kconfig
+      resolves built-in reporter/dependencies and 22 existing output identities
+      are unchanged. [Source/config/object evidence](../../../docs/evidence/mainline-uart-progress/source-object-host-2026-10-03.md).
+      Full matching build and physical observations remain UNVERIFIED.
 - [ ] 5f.2 Compile the changed 8250/timer/reporter objects against the exact
       configured RISC-V headers and verify record layout/lifetime/Kconfig.
       Host-only proof: `nix build .#kernelMainlineUartProgressObjects --no-link --print-out-paths`.
+      Three changed RISC-V objects compile against immutable installed base
+      headers plus an explicit reporter overlay; layout/API proof passed. Exact
+      new configured-header compilation remains open (see linked evidence).
 - [ ] 5f.3 Build the complete optional matching system/initrd/DT/bundle and
       inspect hashes/CRCs/closure/config and unchanged existing derivations.
       Host-only proof: `nix build .#kernelMainlineUartProgressTrialBootFiles --no-link --print-out-paths`
