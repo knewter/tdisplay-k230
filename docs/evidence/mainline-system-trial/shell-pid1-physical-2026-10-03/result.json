@@ -1,0 +1,95 @@
+{
+  "schema": "mainline-shell-pid1-physical-v1",
+  "controller_revision": "bfce9f8b8e3a162074190cae37e946e6b6336df1",
+  "source_revision": "473d4ab3",
+  "status": "fresh-shell-prompt-receipt-unknown-recovery-required",
+  "controller_exit": 2,
+  "candidate_bundle": "/nix/store/brmp1qf9cz65yciazabc8yg5j39nn643-k230-mainline-drm-trial-boot-files",
+  "candidate_system": "/nix/store/g74hzn6yr07il4r00r5iv3v8baw6q2cf-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "candidate_kernel": "/nix/store/am9cxlangrklamgs5lb0y31q028jbabq-linux-riscv64-unknown-linux-gnu-7.3.0-rc5",
+  "artifact_files": {
+    "Image-mainline-drm": {
+      "bytes": 38530560,
+      "sha256": "6efde73a16ebbbbfd1c1e3a755faa478ff673e01fcfe20582ddf4e25530c94ff",
+      "crc32": "f6ec4190"
+    },
+    "k230-tdisplay-mainline-drm.dtb": {
+      "bytes": 11097,
+      "sha256": "da47de906f885bf709815e5ae294522958d9c537e58b30509813f9b4726b02fa",
+      "crc32": "678a66e8"
+    },
+    "initrd.uimg": {
+      "bytes": 27308549,
+      "sha256": "0baa8cdc6a2a6f85e45f2a112bcf34730af2c5bb7b5f454836fe2975bf2a94d7",
+      "crc32": "0825b54b"
+    },
+    "bootargs.txt": {
+      "bytes": 243,
+      "sha256": "6f997f8308a83fe0babc52509c8129c02f102f9980d4838cc2c2c28d00c966b9",
+      "crc32": "93dfb224"
+    },
+    "fw_jump_add_uboot_head.bin": {
+      "bytes": 270808,
+      "sha256": "9627edbeea9b115d7040beea27cc61b23b6aca61cd502fd7760d7ee179f42c99",
+      "crc32": "99b89787"
+    }
+  },
+  "same_staged_artifacts": true,
+  "only_added_volatile_token": "rdinit=/bin/sh",
+  "retained_initramfs_async": 0,
+  "marker_enable_tokens": "both removed",
+  "qualified_controls": [
+    "fsck.mode=skip",
+    "systemd.mask=k230-root-growth.service",
+    "systemd.mask=register-nix-paths.service"
+  ],
+  "normal_preflight": {
+    "qualified": true,
+    "uname": "6.6.36",
+    "eight_boot_files_unchanged": true,
+    "three_shell_services_active": true,
+    "registration_absence_assertion_executed": true
+  },
+  "single_kernel_command_line_matches_expected": true,
+  "fresh_mainline_banner": true,
+  "run_bin_sh_message_seen": true,
+  "primary_shell_prompt_seen": true,
+  "primary_shell_prompt": "sh-5.3# ",
+  "Bash_userspace_startup": "observed",
+  "builtin_receipt_attempts": {
+    "maximum": 8,
+    "attempt_timeout_seconds": 1,
+    "completed_replies": 0,
+    "command_echoes_seen": 0,
+    "limit_proof": "reviewed await_reception loop exhausted; outgoing write bytes are not separately logged"
+  },
+  "failed_stage": "reception",
+  "bin_true": "NOT_ATTEMPTED",
+  "proc_setup": "NOT_ATTEMPTED",
+  "uptime": "NOT_ATTEMPTED",
+  "guarded_PID1_identity": "UNVERIFIED",
+  "ordinary_init": "NOT_ATTEMPTED",
+  "usable_root": "UNVERIFIED",
+  "panel_acceptance": "UNVERIFIED",
+  "deliberate_glass_touch": "UNVERIFIED",
+  "reboot_marker_observed": false,
+  "reboot_request": "NOT_ATTEMPTED",
+  "automatic_return": "UNVERIFIED",
+  "operator_reset_recovery": "UNVERIFIED",
+  "normal_postflight": "UNVERIFIED",
+  "candidate_input_after_reception_failure": "none",
+  "raw_serial": {
+    "private_path": "~/tmp/k230-mainline-shell-pid1-board/trial.private.log",
+    "bytes": 47107,
+    "sha256": "8cb351d1c3dc17afc622b4ae9e767af1d22bf2d69e8a3b9018ff51f7a4327b15",
+    "last_uart_mtime_utc": "2026-10-03T22:31:08.060714+00:00",
+    "result_saved_utc": "2026-10-03T22:31:16.904749+00:00"
+  },
+  "candidate_camera": {
+    "private_path": "~/tmp/k230-mainline-shell-pid1-board/candidate-camera.private.jpg",
+    "reviewed": true,
+    "observation": "Panel appears dark; no visible shell content.",
+    "limits": "Glare, perspective and focus; the serial Bash prompt supplies separate userspace proof.",
+    "sha256": "e34b72671f1bd5173b6c6369d0e8a3f695a653fdea27465e42b5f4ea3e33afe0"
+  }
+}

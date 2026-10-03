@@ -763,3 +763,19 @@ and operator gate:
 `docs/evidence/mainline-system-trial/shell-pid1-controller-host-2026-10-03.md`.
 CI covers ordinary/minimal/new focused tests. Physical shell receipt/automatic
 return are still UNVERIFIED; ordinary root/panel/glass and task 5b.5 stay open.
+
+
+## 2026-10-03 same-image Bash physical prompt, reception unknown
+
+Reviewed source/CI bfce9f8b passed a reserved single trial's protected preflight,
+five loads/CRCs and exact printed plus kernel-received arguments. Fresh Linux,
+Run /bin/sh and primary sh-5.3 prompt prove Bash userspace startup. Eight bounded
+builtin receipt attempts produced no replies/echoes; exit 2 at reception
+released UART with no further input. True/proc/uptime/full identity/reboot were
+NOT_ATTEMPTED. See
+`docs/evidence/mainline-system-trial/shell-pid1-physical-2026-10-03/README.md`
+and fixed result JSON. New private camera appears dark with explicit limits;
+serial startup proof is separate. A new reset/protected postflight is pending.
+Read-only audits recommend a finite independent cached UART/IRQ/time reporter,
+not a blind shell retry or TTY poll. Ordinary root/panel/glass/automatic return
+and task 5b.5 remain UNVERIFIED; no archive or production fix is claimed.
