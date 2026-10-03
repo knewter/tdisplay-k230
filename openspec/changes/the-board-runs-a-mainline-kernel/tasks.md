@@ -484,3 +484,17 @@ raw-log digest and limits are in
 `docs/evidence/mainline-system-trial/uart-observer-physical-2026-10-03/README.md`.
 No helper, UART, console or kernel cause is inferred. Ordinary usable root,
 panel photograph, deliberate glass touch and task 5b.5 remain open.
+
+
+## 2026-10-03 serial-only pre-init comparison
+
+The reviewed controller removed only volatile `console=tty0` while retaining
+the same built/staged Image, hardware DT, initrd and helper. Protected normal
+preflight, loads/CRCs and exact printed arguments passed. Linux reached display
+and Goodix registration, then clock/power-domain/ALSA milestones; no init or
+systemd banner, observer frame or automatic return was observed. Zero receipt
+commands were sent. Operator reset recovery is UNVERIFIED pending the requested
+reset. Exact command/artifacts/timestamps/limits are in
+`docs/evidence/mainline-system-trial/uart-observer-serial-console-physical-2026-10-03/README.md`.
+No clock, power-domain, UART or console cause is claimed; further source
+discrimination is required. Usable root, panel/touch and task 5b.5 stay open.
