@@ -16,6 +16,7 @@ import json
 import os
 import re
 import shlex
+import struct
 import sys
 import time
 import uuid
@@ -48,6 +49,10 @@ INITRD_READY_TIMEOUT = 90.0
 RUNTIME_TRACE_TIMEOUT = 20.0
 RUNTIME_TRACE_PARAMETER = "/sys/module/kernel/parameters/initcall_debug"
 RUNTIME_TRACE_STAGES = ("sys-mkdir", "sys-mount", "permissions", "prior", "write", "readback")
+SHELL_CONTROLS = ("fsck.mode=skip", "systemd.mask=k230-root-growth.service",
+                  "systemd.mask=register-nix-paths.service", "initramfs_async=0")
+SHELL_TRACE_FLAGS = ("k230.boot_trace=1", "k230.boot_trace_sbi_only=1")
+BOOT_ID_PATTERN = r"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
 _PROTOCOL_SPEC = importlib.util.spec_from_file_location(
     "rvv_board_boot", Path(__file__).with_name("rvv-board-boot.py")
 )
@@ -151,6 +156,169 @@ def volatile_bootargs_command(ignore_unused_clocks: bool = False, *, debug_shutd
     if debug_shutdown:
         extra = " initcall_debug loglevel=8"
     return 'setenv bootargs "${bootargs} rdinit=/bin/sh' + extra + '"'
+
+
+def validate_shell_selector(selector, mode, ignore_unused_clocks=False, debug_shutdown=False,
+                            runtime_shutdown_trace=False):
+    if type(selector) is not bool:
+        raise ValueError("shell PID1 selector must be boolean")
+    if selector and (mode != "minimal" or ignore_unused_clocks or debug_shutdown or runtime_shutdown_trace):
+        raise ValueError("--same-image-shell-pid1 requires minimal mode without other diagnostic flags")
+
+
+def shell_pid1_bootargs(original: str, system: str) -> str:
+    """Qualify the original artifact before changing only its volatile arguments."""
+    expected = ["consoleblank=0", "console=ttyS0,115200n8", "root=fstab", "loglevel=4",
+                "lsm=landlock,yama,bpf", "loglevel=7", *SHELL_TRACE_FLAGS, f"init={system}/init"]
+    if original != "bootargs=" + " ".join(expected) + "\n":
+        raise ValueError("shell comparison requires exact original SBI-only artifact arguments")
+    params = [p for p in expected if p not in SHELL_TRACE_FLAGS]
+    return "bootargs=" + " ".join([*params, *SHELL_CONTROLS, "rdinit=/bin/sh"])
+
+
+def shell_pid1_transport(args: str, system: str) -> str:
+    # Reconstruct the qualified transform instead of accepting arbitrary literal args.
+    original = ("bootargs=consoleblank=0 console=ttyS0,115200n8 root=fstab loglevel=4 "
+                "lsm=landlock,yama,bpf loglevel=7 " + " ".join(SHELL_TRACE_FLAGS) +
+                f" init={system}/init\n")
+    if args != shell_pid1_bootargs(original, system):
+        raise ValueError("unexpected shell comparison arguments")
+    value = args.removeprefix("bootargs=")
+    if not re.fullmatch(r"[A-Za-z0-9_./:=,+@% \-]+", value):
+        raise ValueError("unsafe shell comparison transport")
+    command = 'setenv bootargs "' + value + '"'
+    if len(command.encode()) >= 512:
+        raise ValueError("shell comparison exceeds U-Boot input bound")
+    return command
+
+
+def inspect_shell_initrd(prepared: dict) -> dict:
+    """Inspect archived executables, not host symlink substitutes; never extract."""
+    system = Path(prepared["system"])
+    kernel = (system / "kernel").resolve(strict=True)
+    immutable_store_path(kernel.parent, "selected kernel")
+    if kernel.name != "Image" or hashlib.sha256(kernel.read_bytes()).hexdigest() != prepared["manifest"]["files"]["Image-mainline-drm"]["sha256"]:
+        raise ValueError("shell comparison kernel does not match selected system")
+    initrd = (system / "initrd").resolve(strict=True)
+    immutable_store_path(initrd.parent, "selected initrd")
+    payload = initrd.read_bytes()
+    wrapped = (prepared["bundle"] / "initrd.uimg").read_bytes()
+    if len(wrapped) < 64:
+        raise ValueError("truncated shell comparison ramdisk")
+    magic, hcrc, _, size, _, _, dcrc, os_id, arch, image_type, compression, _ = struct.unpack(">7I4B32s", wrapped[:64])
+    header = wrapped[:4] + bytes(4) + wrapped[8:64]
+    if (magic != 0x27051956 or zlib.crc32(header) != hcrc or (os_id, arch, image_type, compression) != (5, 26, 3, 0)
+            or size != len(payload) or wrapped[64:] != payload or zlib.crc32(payload) != dcrc):
+        raise ValueError("shell comparison initrd wrapper does not match selected system")
+    spec = importlib.util.spec_from_file_location("shell_archive", Path(__file__).with_name("mainline-drm-uart-observer-trial.py"))
+    archive = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(archive)
+    entries = archive.archive_entries(payload)
+    executables = {}
+    loaders = []
+    for name in ("init", "bin/sh", "bin/readlink", "bin/true", "bin/mkdir", "bin/mount", "bin/cat", "bin/reboot"):
+        path = archive.archive_resolve(entries, name)
+        mode, body = entries[path]
+        if not mode & 0o111 or mode & 0o170000 != 0o100000 or not archive.riscv_elf(body):
+            raise ValueError("shell comparison lacks an archived RISC-V executable")
+        if name == "bin/sh" and not re.fullmatch(r"nix/store/[0-9a-z]{32}-bash-interactive-riscv64-unknown-linux-gnu-5\.3p15/bin/bash", path):
+            raise ValueError("shell comparison does not select the intended Bash")
+        if name == "init" and not re.fullmatch(r"nix/store/[0-9a-z]{32}-systemd-riscv64-unknown-linux-gnu-261\.2/lib/systemd/systemd", path):
+            raise ValueError("shell comparison does not contain the intended original PID1")
+        executables[name] = {"path": "/" + path, "sha256": hashlib.sha256(body).hexdigest()}
+        if name in ("init", "bin/sh"):
+            phoff = struct.unpack_from("<Q", body, 32)[0]
+            phsize, phnum = struct.unpack_from("<HH", body, 54)
+            if phsize != 56 or not 0 < phnum <= 128 or phoff + phsize * phnum > len(body):
+                raise ValueError("invalid archived ELF program headers")
+            found = []
+            for i in range(phnum):
+                base = phoff + i * phsize
+                if struct.unpack_from("<I", body, base)[0] == 3:
+                    start, length = struct.unpack_from("<Q", body, base + 8)[0], struct.unpack_from("<Q", body, base + 32)[0]
+                    if not 1 < length <= 4096 or start + length > len(body) or body[start + length - 1] != 0:
+                        raise ValueError("invalid archived ELF interpreter")
+                    found.append(body[start:start + length - 1].decode("ascii"))
+            if len(found) != 1:
+                raise ValueError("missing or duplicate archived ELF interpreter")
+            loaders.append(archive.archive_resolve(entries, found[0]))
+    if loaders[0] != loaders[1]:
+        raise ValueError("shell comparison programs do not share the archived loader")
+    mode, loader = entries[loaders[0]]
+    if not mode & 0o111 or not archive.riscv_elf(loader):
+        raise ValueError("shell comparison common loader is not executable RISC-V")
+    archive.archive_resolve(entries, "etc/initrd-release")
+    return {"bash": executables["bin/sh"]["path"], "executables": executables,
+            "loader": "/" + loaders[0], "loader_sha256": hashlib.sha256(loader).hexdigest(),
+            "initrd_sha256": hashlib.sha256(payload).hexdigest()}
+
+
+def prepare_shell_comparison(prepared: dict) -> dict:
+    p = dict(prepared)
+    p["bootargs"] = shell_pid1_bootargs((p["bundle"] / "bootargs.txt").read_text(), p["system"])
+    p["transport"] = shell_pid1_transport(p["bootargs"], p["system"])
+    p["shell_comparison"] = {**inspect_shell_initrd(p), "bootargs": p["bootargs"], "system": p["system"]}
+    # Actually execute this assertion in both uploaded protected phase helpers.
+    p["helper_text"] = ("from pathlib import Path\nassert not Path('/nix-path-registration').exists() and not Path('/nix-path-registration').is_symlink(), 'registration marker present'\n" + p["helper_text"])
+    shell_guard_command("a" * 32, "initial", p["shell_comparison"], p["normal"])
+    shell_guard_command("b" * 32, "renewed", p["shell_comparison"], p["normal"], "00000000-0000-0000-0000-000000000002")
+    return p
+
+
+def shell_guard_command(token, phase, comparison, normal, boot_id=None):
+    _validate_token(token)
+    if phase not in ("initial", "renewed") or (phase == "renewed") != (boot_id is not None):
+        raise ValueError("invalid shell guard phase")
+    old = normal.get("trial_from_boot_id", normal.get("boot_id"))
+    baseline = normal.get("boot_id")
+    if not all(isinstance(v, str) and re.fullmatch(BOOT_ID_PATTERN, v) for v in (old, baseline)):
+        raise ValueError("invalid protected normal boot identity")
+    if boot_id is not None and not re.fullmatch(BOOT_ID_PATTERN, boot_id):
+        raise ValueError("invalid candidate boot identity")
+    bash = comparison["bash"]
+    if not re.fullmatch(r"/nix/store/[0-9a-z]{32}-bash-interactive-riscv64-unknown-linux-gnu-5\.3p15/bin/bash", bash):
+        raise ValueError("unsafe Bash identity")
+    shell_pid1_transport(comparison["bootargs"], comparison["system"])
+    cmdline = comparison["bootargs"].removeprefix("bootargs=")
+    payload = (
+        "_k230_ok=1; _k230_pid=$$; "
+        'test "$_k230_pid" = 1 && test "$PPID" = 0 && test "$EUID" = 0 || _k230_ok=0; '
+        'case $BASH_VERSION in 5.3.*) :;; *) _k230_ok=0;; esac; '
+        f'_k230_exe=$(/bin/readlink /proc/1/exe 2>/dev/null); test "$?" = 0 && test "$_k230_exe" = {shlex.quote(bash)} || _k230_ok=0; '
+        'IFS= read -r _k230_release 2>/dev/null < /proc/sys/kernel/osrelease; test "$?" = 0 && test "$_k230_release" = 7.3.0-rc5 || _k230_ok=0; '
+        f'IFS= read -r _k230_cmdline 2>/dev/null < /proc/cmdline; test "$?" = 0 && test "$_k230_cmdline" = {shlex.quote(cmdline)} || _k230_ok=0; '
+        'IFS= read -r _k230_boot 2>/dev/null < /proc/sys/kernel/random/boot_id; test "$?" = 0 || _k230_ok=0; '
+        'case $_k230_boot in *[!0-9a-f-]*|\'\') _k230_boot=none; _k230_ok=0;; esac; '
+        f'test "$_k230_boot" != {old} && test "$_k230_boot" != {baseline} || _k230_ok=0; '
+        + (f'test "$_k230_boot" = {boot_id} || _k230_ok=0; ' if boot_id else "") +
+        'test -r /etc/initrd-release && test ! -e /sysroot/nix/store || _k230_ok=0; '
+        '_k230_root=0; while read -r _src _mnt _fs _rest; do '
+        'if test "$_mnt" = /; then case $_fs in rootfs|ramfs|tmpfs) _k230_root=1;; *) _k230_ok=0;; esac; fi; '
+        'case $_mnt in /sysroot|/sysroot/*) _k230_ok=0;; esac; :; '
+        'done 2>/dev/null < /proc/mounts; test "$?" = 0 && test "$_k230_root" = 1 || _k230_ok=0; '
+    )
+    command = (f"printf 'K230_SHELL_PID1_BEGIN {token} {phase}\\n'; " + payload +
+               f"printf 'K230_SHELL_PID1_END {token} {phase} RC=0 MATCH=%s BOOT=%s\\n' \"$_k230_ok\" \"$_k230_boot\"")
+    if len(command.encode()) >= 3072:
+        raise ValueError("shell guard exceeds bounded input length")
+    return command
+
+
+def shell_guard_result(output, token, phase):
+    _validate_token(token)
+    if phase not in ("initial", "renewed"):
+        raise ValueError("invalid shell guard phase")
+    text = _PROTOCOL.uart_text(output)
+    scoped = list(re.finditer(rb"^K230_SHELL_PID1_(?:BEGIN|END) " + token.encode() + rb"[^\n]*\n", text, re.M))
+    starts = list(re.finditer(rb"^K230_SHELL_PID1_BEGIN " + token.encode() + b" " + phase.encode() + rb"\n", text, re.M))
+    ends = list(re.finditer(rb"^K230_SHELL_PID1_END " + token.encode() + b" " + phase.encode() +
+                          rb" RC=([01]) MATCH=([01]) BOOT=(none|" + BOOT_ID_PATTERN.encode() + rb")\n", text, re.M))
+    if len(scoped) != 2 or len(starts) != 1 or len(ends) != 1 or starts[0].end() != ends[0].start():
+        return None
+    if not re.fullmatch(rb"sh-5\.3# ", text[ends[0].end():]):
+        return None
+    rc, match, boot = ends[0].groups()
+    return {"rc": int(rc), "match": match == b"1", "boot_id": boot.decode()}
 
 
 def immutable_store_path(path: Path, description: str) -> Path:
@@ -749,12 +917,17 @@ def run_probe_protocol(
     clock=time.monotonic,
     system: str = SYSTEM,
     runtime_shutdown_trace: bool = False,
+    shell_comparison: dict | None = None,
+    normal: dict | None = None,
 ):
     """Run sequential tests; label and survey require every minimal RC to be zero."""
     if mode not in ("minimal", "survey", "label", "root-mount"):
         raise ValueError("probe mode must be minimal, survey, label or root-mount")
     if runtime_shutdown_trace and mode != "minimal":
         raise ValueError("runtime shutdown trace requires minimal mode")
+    if shell_comparison is not None:
+        validate_shell_selector(True, mode, runtime_shutdown_trace=runtime_shutdown_trace)
+        shell_guard_command("a" * 32, "initial", shell_comparison, normal)
     prerequisite_schema = (
         f"k230-initrd-{mode}-prerequisite-failure-v1" if mode in ("label", "root-mount")
         else "k230-initrd-prerequisite-failure-v1"
@@ -846,6 +1019,35 @@ def run_probe_protocol(
             "recovery_reason": "proc-uptime-nonzero",
         }
     minimal_ok = True
+    shell_boot = None
+    guard_tokens = {token}
+    if shell_comparison is not None:
+        minimal["shell_pid1"] = {}
+
+        def guard(phase):
+            fresh = token_factory() if token_factory else uuid.uuid4().hex
+            if not isinstance(fresh, str) or not re.fullmatch(r"[0-9a-f]{32}", fresh) or fresh in guard_tokens:
+                raise ProbeProtocolError("shell PID1 guard nonce")
+            guard_tokens.add(fresh)
+            session.buffer = b""  # Raw capture is unchanged; exclude the preceding prompt.
+            session.write((shell_guard_command(fresh, phase, shell_comparison, normal, shell_boot) + "\r").encode())
+            result = await_protocol_marker(
+                session, lambda output, nonce: shell_guard_result(output, nonce, phase), fresh, timeout, clock
+            )
+            if result is None:
+                raise ProbeProtocolError("shell PID1 " + phase + " guard", {
+                    "schema": "k230-initrd-shell-pid1-unknown-v1", **minimal, "failed_stage": phase,
+                })
+            minimal["shell_pid1"][phase] = result
+            return (result["rc"] == 0 and result["match"] and re.fullmatch(BOOT_ID_PATTERN, result["boot_id"])
+                    and result["boot_id"] not in (normal["boot_id"], normal.get("trial_from_boot_id"))
+                    and (phase == "initial" or result["boot_id"] == shell_boot))
+
+        if not guard("initial"):
+            return {"diagnostic": {"schema": "k230-initrd-shell-pid1-v1", **minimal},
+                    "diagnostic_ok": False, "reboot_marker": False, "recovery_required": True,
+                    "recovery_reason": "shell-pid1-initial-guard-failed"}
+        shell_boot = minimal["shell_pid1"]["initial"]["boot_id"]
     if runtime_shutdown_trace:
         try:
             trace, trace_ok = run_runtime_shutdown_trace(
@@ -901,6 +1103,10 @@ def run_probe_protocol(
     elif mode == "survey":
         survey = {"status": "skipped", "reason": "minimal-stage-rc-failure"}
 
+    if shell_comparison is not None and not guard("renewed"):
+        return {"diagnostic": {"schema": "k230-initrd-shell-pid1-v1", **minimal},
+                "diagnostic_ok": False, "reboot_marker": False, "recovery_required": True,
+                "recovery_reason": "shell-pid1-renewed-guard-failed"}
     # Start a fresh rolling buffer before the reboot request. A fixed offset
     # into the capped buffer stops seeing new bytes once verbose output fills
     # it; clearing also excludes pretrial login/refusal markers.
@@ -920,7 +1126,7 @@ def run_probe_protocol(
         }
         diagnostic_ok = label["rc"] == 0 and label["match"]
     elif mode == "minimal":
-        diagnostic = {"schema": "k230-initrd-minimal-v2", **minimal}
+        diagnostic = {"schema": "k230-initrd-shell-pid1-v1" if shell_comparison is not None else "k230-initrd-minimal-v2", **minimal}
         diagnostic_ok = minimal_ok
     else:
         diagnostic = {"schema": "k230-initrd-survey-v2", "minimal": minimal, "survey": survey}
@@ -1187,7 +1393,9 @@ def run_trial(
     ignore_unused_clocks: bool = False,
     debug_shutdown: bool = False,
     runtime_shutdown_trace: bool = False,
+    same_image_shell_pid1: bool = False,
 ) -> bool:
+    validate_shell_selector(same_image_shell_pid1, mode, ignore_unused_clocks, debug_shutdown, runtime_shutdown_trace)
     if mode not in ("minimal", "survey", "label", "root-mount"):
         raise ValueError("probe mode must be minimal, survey, label or root-mount")
     if ignore_unused_clocks and not (mode == "label" or (mode == "minimal" and runtime_shutdown_trace)):
@@ -1199,6 +1407,8 @@ def run_trial(
     if runtime_shutdown_trace and debug_shutdown:
         raise ValueError("--runtime-shutdown-trace cannot be combined with --debug-shutdown")
     prepared = prepare_trial(manifest_path, bundle, normal_report)
+    if same_image_shell_pid1:
+        prepared = prepare_shell_comparison(prepared)
     manifest = prepared["manifest"]
     system = prepared["system"]
     files = manifest["files"]
@@ -1212,6 +1422,11 @@ def run_trial(
     normal = prepared["normal"]
     helper_text = prepared["helper_text"]
     selection = {"ignore_unused_clocks": ignore_unused_clocks} if mode == "label" or runtime_shutdown_trace else {}
+    if same_image_shell_pid1:
+        selection.update(same_image_shell_pid1=True, ordinary_init="NOT_ATTEMPTED",
+                         usable_root="UNVERIFIED", touch="UNVERIFIED",
+                         shell_artifacts={key: value for key, value in prepared["shell_comparison"].items()
+                                          if key not in ("bootargs", "system")})
     if debug_shutdown:
         selection["debug_shutdown"] = True
     if runtime_shutdown_trace:
@@ -1299,7 +1514,7 @@ def run_trial(
                 raise RuntimeError("could not import the matching volatile bootargs")
             # U-Boot imports the complete exact bootargs file above. Expand its
             # saved value only inside volatile RAM, then append diagnostic arguments.
-            command = volatile_bootargs_command(
+            command = prepared["transport"] if same_image_shell_pid1 else volatile_bootargs_command(
                 ignore_unused_clocks, **({"debug_shutdown": True} if debug_shutdown else {}),
             )
             if session.command(command, 15) is None:
@@ -1323,6 +1538,8 @@ def run_trial(
                 probe_outcome = run_probe_protocol(
                     session, token, mode, system=system,
                     **({"runtime_shutdown_trace": True} if runtime_shutdown_trace else {}),
+                    **({"shell_comparison": prepared["shell_comparison"], "normal": normal}
+                       if same_image_shell_pid1 else {}),
                 )
             except ProbeProtocolError as exc:
                 write_private_result(result_path, {
@@ -1503,6 +1720,8 @@ def main() -> int:
     )
     parser.add_argument("--ignore-unused-clocks", action="store_true",
                         help="label, or minimal with runtime tracing: add volatile clk_ignore_unused")
+    parser.add_argument("--same-image-shell-pid1", action="store_true",
+                        help="minimal only: exact SBI-only image, markers off, async=0, qualified controls and Bash PID1")
     shutdown_flags = parser.add_mutually_exclusive_group()
     shutdown_flags.add_argument("--debug-shutdown", action="store_true",
                         help="minimal mode only: add volatile initcall_debug loglevel=8 shutdown tracing")
@@ -1518,6 +1737,11 @@ def main() -> int:
         default=PRIVATE_LOG_DIR / f"mainline-initrd-shell-{stamp}.result.json",
     )
     args = parser.parse_args()
+    try:
+        validate_shell_selector(args.same_image_shell_pid1, args.mode, args.ignore_unused_clocks,
+                                args.debug_shutdown, args.runtime_shutdown_trace)
+    except ValueError as exc:
+        parser.error(str(exc))
     if args.ignore_unused_clocks and not (args.mode == "label" or (args.mode == "minimal" and args.runtime_shutdown_trace)):
         parser.error("--ignore-unused-clocks requires --mode label or --mode minimal --runtime-shutdown-trace")
     if args.debug_shutdown and args.mode != "minimal":
@@ -1530,6 +1754,7 @@ def main() -> int:
             **({"ignore_unused_clocks": True} if args.ignore_unused_clocks else {}),
             **({"debug_shutdown": True} if args.debug_shutdown else {}),
             **({"runtime_shutdown_trace": True} if args.runtime_shutdown_trace else {}),
+            **({"same_image_shell_pid1": True} if args.same_image_shell_pid1 else {}),
         )
     except Exception as exc:
         print(f"Trial stopped: {exc}", file=sys.stderr)
