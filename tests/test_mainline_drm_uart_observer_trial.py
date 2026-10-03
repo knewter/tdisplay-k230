@@ -6,6 +6,7 @@ import json
 from pathlib import Path
 import struct
 import shutil
+import shlex
 import subprocess
 import sys
 import tempfile
@@ -27,6 +28,7 @@ FROM = "11111111-1111-1111-1111-111111111111"
 BOOT = "22222222-2222-2222-2222-222222222222"
 SELECTED = "/nix/store/" + "a" * 32 + "-candidate"
 ARGS = "bootargs=console=ttyS0,115200n8 root=fstab loglevel=4 loglevel=7 init=" + SELECTED + "/init\n"
+DUAL_ARGS = ARGS.replace("console=ttyS0,115200n8", "console=tty0 consoleblank=0 console=ttyS0,115200n8")
 BANNER = b"[    0.0] Linux version 7.3.0-rc5 test\nsystemd 261.2 running\n"
 PROMPT = b"\x1b[?2004hsh-5.3# "
 NORMAL = b"\nU-Boot SPL 2022.10\n[    0.0] Linux version 6.6.36 vendor\nnixos login: root\nroot@nixos:~# "
@@ -203,16 +205,16 @@ class ProtocolTests(unittest.TestCase):
 
 
 class RunTests(unittest.TestCase):
-    def run_fixture(self, *, ack=True, recovered=True, prepare_failure=False):
+    def run_fixture(self, *, ack=True, recovered=True, prepare_failure=False, serial_console_only=False):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory); root.chmod(0o700)
-            args = SimpleNamespace(bundle=Path(SELECTED), manifest=root / "manifest", normal_report=root / "normal", blkid_result=root / "blkid", log=root / "wire", result=root / "result")
+            args = SimpleNamespace(bundle=Path(SELECTED), manifest=root / "manifest", normal_report=root / "normal", blkid_result=root / "blkid", log=root / "wire", result=root / "result",serial_console_only=serial_console_only)
             s = Session([ready()], ack=ack, return_output=None if recovered else b"\n" + frame("after"))
             s.chunks.insert(0, b"root@nixos:~# ")
-            p = {"bundle": args.bundle, "system": SELECTED, "observer": {}, "initrd_inspection": {}, "normal": {"boot_id": FROM}, "original_bootargs": ARGS, "helper_text": ""}
+            p = {"bundle": args.bundle, "system": SELECTED, "observer": {}, "initrd_inspection": {}, "normal": {"boot_id": FROM}, "original_bootargs": DUAL_ARGS if serial_console_only else ARGS, "helper_text": ""}
             factory = mock.Mock(side_effect=lambda serial, log: setattr(s, "log", log) or s)
             def checks(session, prepared, normal, mode): return {"boot_id": FROM if mode == "preflight" else "33333333-3333-3333-3333-333333333333"}
-            with mock.patch.object(t, "prepare", side_effect=ValueError("bad manifest") if prepare_failure else lambda *a: p), mock.patch.object(t.rd, "PrivateSession", factory), mock.patch.object(t.rd, "LOCK_PATH", str(root / "lock")), mock.patch.object(t, "boot"), mock.patch.object(t.system, "normal_check", side_effect=checks) as check, mock.patch.object(t.uuid, "uuid4", return_value=SimpleNamespace(hex=NONCE)), mock.patch.dict(sys.modules, {"serial": SimpleNamespace()}), mock.patch.object(t, "monitor", wraps=lambda session, nonce, before: original_monitor(session, nonce, before, clock=Clock(step=1))):
+            with mock.patch.object(t, "prepare", side_effect=ValueError("bad manifest") if prepare_failure else lambda *a, **kw: p), mock.patch.object(t.rd, "PrivateSession", factory), mock.patch.object(t.rd, "LOCK_PATH", str(root / "lock")), mock.patch.object(t, "boot"), mock.patch.object(t.system, "normal_check", side_effect=checks) as check, mock.patch.object(t.uuid, "uuid4", return_value=SimpleNamespace(hex=NONCE)), mock.patch.dict(sys.modules, {"serial": SimpleNamespace()}), mock.patch.object(t, "monitor", wraps=lambda session, nonce, before: original_monitor(session, nonce, before, clock=Clock(step=1))):
                 passed = t.run(args)
             value = json.loads(args.result.read_text())
             self.assertEqual(args.result.stat().st_mode & 0o777, 0o600)
@@ -223,6 +225,13 @@ class RunTests(unittest.TestCase):
         passed, value, writes, opened, checks = self.run_fixture()
         self.assertTrue(passed); self.assertEqual(value["status"], "recovery-verified-diagnostic-passed")
         self.assertEqual(writes, [b"\r", t.receipt_command(NONCE)]); self.assertEqual(checks, ["preflight", "postflight"])
+
+    def test_run_comparison_records_selector_and_exact_fresh_argument_selection(self):
+        passed,value,writes,opened,checks=self.run_fixture(serial_console_only=True)
+        self.assertTrue(passed);self.assertTrue(value["serial_console_only"])
+        self.assertEqual(value["expected_bootargs"],t.bootargs(DUAL_ARGS,SELECTED,NONCE,FROM,serial_console_only=True))
+        self.assertNotIn("console=tty0",value["expected_bootargs"])
+        self.assertEqual(writes,[b"\r",t.receipt_command(NONCE)])
 
     def test_run_missing_receipt_recovers_but_does_not_pass(self):
         passed, value, writes, opened, checks = self.run_fixture(ack=False)
@@ -384,7 +393,7 @@ def artifact_fixture():
         normal = {k:"normal-" + k for k in ("system","profile","kernel","uname","init")}; normal.update(boot_id=FROM,boot_files={"Image":{"sha256":"a"*64}})
         expected = {k:normal[k] for k in ("system","profile","kernel","uname","init")}; expected.update(services=["active"]*3,boot_files={"Image":"a"*64})
         prerequisite = {"schema":"mainline-initrd-blkid-v1","status":"recovery-verified-diagnostic-passed","candidate_bundle":str(base),"candidate_system":str(dirs["base-system"]),"diagnostic":{"passed":True,"retrieval":{"complete":True}},"reboot_marker_observed":True,"normal_recovery":dict(expected,boot_id=BOOT),"normal_preflight":{"boot_id":FROM}}
-        p = {"bundle":bundle,"system":str(selected),"normal":normal,"helper_text":"_fixture_helper_reached=True\n"}
+        p = {"bundle":bundle,"system":str(selected),"normal":normal,"helper_text":"_fixture_helper_reached=True\n","manifest":{"files":{"bootargs.txt":{"bytes":len(original.encode())}}}}
         for directory_path in (base, dirs["base-system"], dirs["observer"]): directory_path.chmod(0o555)
         (bundle / "observer.json").chmod(0o444)
         try:
@@ -420,6 +429,76 @@ class PreparationTests(unittest.TestCase):
                 if fault=="ramdisk": (f.bundle / "initrd.uimg").write_bytes(b"truncated")
                 if fault=="closure": (f.bundle / "store-paths").write_text(str(f.selected)+"\n")
                 with self.assertRaises(ValueError): t.prepare(f.bundle,f.root / "manifest",f.root / "normal",f.root / "blkid",NONCE)
+
+
+class SerialComparisonTests(unittest.TestCase):
+    def prepared(self, comparison=False):
+        return {"manifest":{"files":{name:{"bytes":100,"crc32":"00000000"} for name,*_ in t.rd.LOADS}}, "original_bootargs":DUAL_ARGS,
+                "bootargs":t.bootargs(DUAL_ARGS,SELECTED,NONCE,FROM,serial_console_only=comparison),"serial_console_only":comparison}
+
+    def test_default_arguments_and_transport_remain_exactly_unchanged(self):
+        expected = t.debug.bootargs(DUAL_ARGS,SELECTED) + f" k230.uobs.nonce={NONCE} k230.uobs.from={FROM} k230.uobs.init={SELECTED}/init"
+        self.assertEqual(t.bootargs(DUAL_ARGS,SELECTED,NONCE,FROM),expected)
+        extra=expected.removeprefix(DUAL_ARGS.rstrip()).lstrip()
+        self.assertEqual(t.volatile_commands(self.prepared()),["env import -t 0x7000000 0x64",'setenv bootargs "${bootargs} '+extra+'"'])
+
+    def test_comparison_deletes_only_one_token_and_preserves_all_controls(self):
+        default=t.bootargs(DUAL_ARGS,SELECTED,NONCE,FROM)
+        compared=t.bootargs(DUAL_ARGS,SELECTED,NONCE,FROM,serial_console_only=True)
+        self.assertEqual(compared,default.replace("console=tty0 ","",1))
+        tokens=compared.removeprefix("bootargs=").split()
+        self.assertEqual([p for p in tokens if p.startswith("console=")],["console=ttyS0,115200n8"])
+        self.assertIn("consoleblank=0",tokens)
+        self.assertEqual(tokens.count("init="+SELECTED+"/init"),1)
+        for control in t.debug.CONTROLS: self.assertEqual(tokens.count(control),1)
+        for name in ("k230.uobs.nonce=","k230.uobs.from=","k230.uobs.init="):
+            self.assertEqual(sum(p.startswith(name) for p in tokens),1)
+
+    def test_missing_duplicate_or_other_console_forms_rejected(self):
+        bad = (DUAL_ARGS.replace("console=tty0 ",""), DUAL_ARGS.replace("console=ttyS0,115200n8 ",""),
+               DUAL_ARGS.replace("console=tty0","console=tty0 console=tty0"), DUAL_ARGS.replace("console=ttyS0,115200n8","console=ttyS0,115200n8 console=ttyS0,115200n8"),
+               DUAL_ARGS.replace("console=tty0","console=tty1"), DUAL_ARGS.replace("console=ttyS0,115200n8","console=ttyS0,9600n8"),
+               DUAL_ARGS.replace("console=tty0","console=tty0,115200"), DUAL_ARGS.replace("consoleblank=0","consoleblank=1"),
+               DUAL_ARGS.replace("consoleblank=0","consoleblank=0 consoleblank=0"),DUAL_ARGS.replace("console=tty0","console"))
+        for original in bad:
+            with self.subTest(original=original),self.assertRaises(ValueError):
+                t.bootargs(original,SELECTED,NONCE,FROM,serial_console_only=True)
+
+    def test_uboot_expansion_and_command_syntax_rejected_before_any_boot_input(self):
+        for unsafe in ('"',"'","$x","${bootargs}","$(reboot)","`reboot`",";","\\", "\nreboot"):
+            original=DUAL_ARGS.rstrip()+" unsafe="+unsafe
+            with self.subTest(unsafe=unsafe),self.assertRaises(ValueError): t.bootargs(original,SELECTED,NONCE,FROM,serial_console_only=True)
+        p=self.prepared(True);p["bootargs"]+=' $unsafe'
+        s=SimpleNamespace(writes=[],line=lambda *a,**kw: self.fail("unsafe command sent"))
+        with self.assertRaises(ValueError):t.boot(s,p,clock=Clock())
+
+    def test_exact_comparison_transport_replacement_no_duplicate_and_print_gate(self):
+        class UBoot:
+            def __init__(self,mismatch=False):self.buffer=b"";self.writes=[];self.commands=[];self.args="";self.mismatch=mismatch
+            def line(self,cmd,interrupt=False):self.writes.append(cmd)
+            def write(self,data):self.writes.append(data)
+            def pump(self):self.buffer=t.rd.PROMPT;return self.buffer
+            def command(self,cmd,timeout):
+                self.commands.append(cmd)
+                if cmd.startswith("env import"):self.args=DUAL_ARGS.removeprefix("bootargs=").rstrip()
+                elif cmd.startswith("setenv bootargs"):
+                    parts=shlex.split(cmd);self.assert_parts=parts
+                    self.args=parts[2].replace("${bootargs}",self.args)
+                elif cmd=="printenv bootargs":return ("bootargs="+self.args+(" wrong=1" if self.mismatch else "")+"\nK230# ").encode()
+                return t.rd.PROMPT
+        p=self.prepared(True)
+        for mismatch in (False,True):
+            s=UBoot(mismatch)
+            with mock.patch.object(t.rd,"verified_load",return_value=True),mock.patch.object(t.rd,"verified_crc",return_value=True):
+                if mismatch:
+                    with self.assertRaises(t.Invalid):t.boot(s,p,clock=Clock())
+                    self.assertNotIn("bootm 0x8000000 0x9000000 0x8400000",s.writes)
+                else:
+                    t.boot(s,p,clock=Clock());self.assertEqual(s.args,p["bootargs"].removeprefix("bootargs="))
+                    self.assertEqual(s.writes.count("bootm 0x8000000 0x9000000 0x8400000"),1)
+            expected=t.volatile_commands(p)
+            self.assertEqual(s.commands[-4:],expected+["printenv bootargs"])
+            self.assertTrue(all(len(c.encode())<512 for c in expected))
 
 
 if __name__ == "__main__": unittest.main()

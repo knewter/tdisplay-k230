@@ -162,14 +162,43 @@ class Invalid(RuntimeError):
     pass
 
 
-def bootargs(original, selected, nonce, normal_boot):
+def console_arguments(original, serial_console_only=False):
+    if not serial_console_only:
+        return original
+    args = original.removesuffix("\n")
+    value = args.removeprefix("bootargs=")
+    tokens = list(re.finditer(r"\S+", value))
+    consoles = [m.group() for m in tokens if m.group().partition("=")[0] == "console"]
+    blanks = [m.group() for m in tokens if m.group().partition("=")[0] == "consoleblank"]
+    if sorted(consoles) != ["console=tty0", "console=ttyS0,115200n8"] or blanks != ["consoleblank=0"]:
+        raise ValueError("serial comparison requires sole exact tty0/ttyS0 consoles and consoleblank=0")
+    match = next(m for m in tokens if m.group() == "console=tty0")
+    start, end = match.span()
+    if value[end:end + 1] == " ":
+        end += 1
+    elif start and value[start - 1] == " ":
+        start -= 1
+    result = "bootargs=" + value[:start] + value[end:]
+    return result + ("\n" if original.endswith("\n") else "")
+
+
+def uboot_literal(value):
+    # Double-quoted literal data: no expansion, substitution or command syntax.
+    if not value or not re.fullmatch(r"[A-Za-z0-9_./,:=+? -]+", value):
+        raise ValueError("unsafe volatile U-Boot argument syntax")
+    return '"' + value + '"'
+
+
+def bootargs(original, selected, nonce, normal_boot, *, serial_console_only=False):
     rd._validate_token(nonce)
     if not debug.valid_boot_id(normal_boot):
         raise ValueError("normal boot ID must be exact")
     for arg in original.removeprefix("bootargs=").split():
         if arg.partition("=")[0].startswith("k230.uobs."):
             raise ValueError("preexisting observer argument")
-    return debug.bootargs(original, selected) + f" k230.uobs.nonce={nonce} k230.uobs.from={normal_boot} k230.uobs.init={selected}/init"
+    result = debug.bootargs(console_arguments(original, serial_console_only), selected) + f" k230.uobs.nonce={nonce} k230.uobs.from={normal_boot} k230.uobs.init={selected}/init"
+    uboot_literal(result.removeprefix("bootargs="))
+    return result
 
 
 def receipt_command(nonce):
@@ -189,7 +218,7 @@ def dt_hardware_equal(base, candidate):
         return normalized[0] == normalized[1]
 
 
-def prepare(bundle, manifest, normal_report, blkid_result, nonce):
+def prepare(bundle, manifest, normal_report, blkid_result, nonce, *, serial_console_only=False):
     p = rd.prepare_trial(manifest, bundle, normal_report)
     base = rd.immutable_store_path(BASE_BUNDLE, "proven base bundle")
     base_system = rd.immutable_store_path((base / "system").resolve(strict=True), "proven base system")
@@ -242,10 +271,12 @@ def prepare(bundle, manifest, normal_report, blkid_result, nonce):
     dt_args = subprocess.run(["fdtget", str(p["bundle"] / dtb_name), "/chosen", "bootargs"], check=True, capture_output=True, text=True, timeout=10).stdout.strip()
     if dt_args != selected_args.removeprefix("bootargs=").rstrip("\n"):
         raise ValueError("observer DT bootargs mismatch")
-    p["bootargs"] = bootargs(selected_args, p["system"], nonce, p["normal"]["boot_id"])
+    p["bootargs"] = bootargs(selected_args, p["system"], nonce, p["normal"]["boot_id"], serial_console_only=serial_console_only)
+    p["serial_console_only"] = serial_console_only
     p["original_bootargs"] = selected_args
     p["observer"] = metadata
     p["helper_text"] = "from pathlib import Path\nassert not Path('/nix-path-registration').exists() and not Path('/nix-path-registration').is_symlink(), 'registration marker present'\n" + p["helper_text"]
+    volatile_commands(p)  # Validate every outgoing argument command before UART.
     return p
 
 
@@ -453,7 +484,23 @@ def monitor(session, nonce, from_boot, *, clock=time.monotonic, ready_timeout=18
     return facts
 
 
+def volatile_commands(p):
+    base = console_arguments(p["original_bootargs"], p.get("serial_console_only", False)).rstrip("\n")
+    if not p["bootargs"].startswith(base + " "):
+        raise ValueError("volatile observer argument prefix mismatch")
+    controls = p["bootargs"][len(base) + 1:]
+    uboot_literal(controls)
+    commands = [f"env import -t 0x7000000 {hex(p['manifest']['files']['bootargs.txt']['bytes'])}"]
+    if p.get("serial_console_only", False):
+        commands.append("setenv bootargs " + uboot_literal(base.removeprefix("bootargs=")))
+    commands.append('setenv bootargs "${bootargs} ' + controls + '"')
+    if any(len(command.encode()) >= 512 for command in commands):
+        raise ValueError("volatile U-Boot command exceeds conservative line bound")
+    return commands
+
+
 def boot(session, p, clock=time.monotonic):
+    commands = volatile_commands(p)
     session.buffer = b""
     session.line("reboot", interrupt=False)
     end = clock() + 35
@@ -471,9 +518,7 @@ def boot(session, p, clock=time.monotonic):
             raise Invalid("candidate load mismatch; no boot")
         if not rd.verified_crc(session.command(f"crc32 {address} {hex(expected['bytes'])}", 40), expected):
             raise Invalid("candidate CRC mismatch; no boot")
-    size = p["manifest"]["files"]["bootargs.txt"]["bytes"]
-    controls = p["bootargs"].removeprefix(p["original_bootargs"].rstrip("\n")).lstrip()
-    for command in (f"env import -t 0x7000000 {hex(size)}", 'setenv bootargs "${bootargs} ' + controls + '"'):
+    for command in commands:
         if session.command(command, 15) is None:
             raise Invalid("volatile observer arguments unverified")
     if not rd.verified_bootargs(session.command("printenv bootargs", 15), p["bootargs"]):
@@ -487,13 +532,14 @@ def run(args):
     result_path = rd.safe_log_path(args.result)
     if log_path == result_path:
         raise ValueError("distinct private log/result paths required")
-    result = {"schema": "mainline-uart-observer-v1", "status": "not-started-no-serial-opened", "candidate_bundle": str(args.bundle), "diagnostic": {}, "normal_recovery": None, "persistent_boot_selection_changed": False, "raw_serial_log_path": str(log_path)}
+    comparison = getattr(args, "serial_console_only", False)
+    result = {"schema": "mainline-uart-observer-v1", "status": "not-started-no-serial-opened", "candidate_bundle": str(args.bundle), "serial_console_only": comparison, "diagnostic": {}, "normal_recovery": None, "persistent_boot_selection_changed": False, "raw_serial_log_path": str(log_path)}
     session = None
     lock_fd = None
     log_created = False
     try:
         nonce = uuid.uuid4().hex
-        p = prepare(args.bundle, args.manifest, args.normal_report, args.blkid_result, nonce)
+        p = prepare(args.bundle, args.manifest, args.normal_report, args.blkid_result, nonce, serial_console_only=comparison)
         result.update(candidate_system=p["system"], observer_artifact=p["observer"], initrd_inspection=p["initrd_inspection"], nonce=nonce)
         normal = dict(p["normal"])
         import serial
@@ -510,7 +556,7 @@ def run(args):
             before = system.normal_check(session, p, normal, "preflight")
             result["normal_preflight"] = before
             normal["trial_from_boot_id"] = before["boot_id"]
-            p["bootargs"] = bootargs(p["original_bootargs"], p["system"], nonce, before["boot_id"])
+            p["bootargs"] = bootargs(p["original_bootargs"], p["system"], nonce, before["boot_id"], serial_console_only=comparison)
             result["expected_bootargs"] = p["bootargs"]
             boot(session, p)
             result["candidate_boot_issued"] = True
@@ -547,6 +593,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     for name in ("bundle", "manifest", "normal-report", "blkid-result", "log", "result"):
         parser.add_argument("--" + name, type=Path, required=True)
+    parser.add_argument("--serial-console-only", action="store_true", help="volatile comparison: remove only the sole console=tty0; hardware result UNVERIFIED")
     return 0 if run(parser.parse_args()) else 2
 
 
