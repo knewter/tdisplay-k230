@@ -66,3 +66,24 @@ matched `NIXOS_SD`. The single reboot returned through SPL to a fresh
 protected normal boot; all identities/services/eight hashes passed.
 [Result](label-result.json) and [excerpt](label-console-excerpt.txt) retain
 that physical observation. This neither mounts the root nor activates init.
+
+## Read-only mount reply interleaved with kernel logging
+
+The same exact candidate was next run with `--mode root-mount`, fresh
+`root-mount-uart.log` / `root-mount-result.json` private paths and the
+post-label protected normal report. The controller exited **2**, unknown
+at `root-mount mount`, and sent no subsequent probe or reboot input.
+[Original failed result](root-mount-parser-stop.json) preserves that limit.
+
+The private capture contains complete mount-reply fragments ending in RC0
+and a fresh initrd shell prompt, but an EXT4 informational line splits the
+nonce. The kernel reports a read-only mount without journal replay. This is
+an interleaved protocol response, not proof of a hung mount. The original
+strict parser did not accept it. A narrowly reviewed parser correction and
+independent fresh mount-flag/lookups/unmount checks are required before
+resuming recovery. Root activation, deliberate touch and recovery from this
+specific stopped trial remain UNVERIFIED at this checkpoint.
+
+The [ordinary-init/touch source plan](../../../research/mainline-init-touch-gates-2026-10-02.md)
+records the separate full-boot procedure and profile-preserving trial guards.
+It does not substitute for those physical gates.

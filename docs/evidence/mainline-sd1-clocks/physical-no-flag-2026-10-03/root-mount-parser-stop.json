@@ -1,0 +1,45 @@
+{
+  "candidate_bundle": "/nix/store/5yqilsfyj35jzrcqjjqilkr6sd47qlms-k230-mainline-drm-trial-boot-files",
+  "candidate_system": "/nix/store/9gdmsrh2igqla1qz0ll97czfw2x42icw-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "initrd_readiness_observed": true,
+  "mode": "volatile-rdinit-root-mount",
+  "normal_preflight": {
+    "boot_files": {
+      "Image": "37d71fc14f9bdafe230767e1709de587c049014660dd59d2f7bcbbce35ac71c2",
+      "bootargs.txt": "27e85247977a44c8aab0b78ea30f81e368623ba29fba262cd21871cdc31bf476",
+      "force_dtb": "175342c82dd1b437cdafb6bb01090e7ff73c2769515654c48b02c1e9f73440c6",
+      "fw_jump_add_uboot_head.bin": "9627edbeea9b115d7040beea27cc61b23b6aca61cd502fd7760d7ee179f42c99",
+      "hdmi_dtb": "175342c82dd1b437cdafb6bb01090e7ff73c2769515654c48b02c1e9f73440c6",
+      "initrd.uimg": "867e227f333ffe9c0e83a489dbfd0c755d7fcd0a0cf588cf47ec1c139945fb25",
+      "k230-tdisplay.dtb": "07e784fa3b2eeb971df3ba6f22d9909ed8e0424fdd6bdf680724631652bbe65e",
+      "lcd_dtb": "175342c82dd1b437cdafb6bb01090e7ff73c2769515654c48b02c1e9f73440c6"
+    },
+    "boot_id": "f29107ed-ca0d-4765-8006-b4d9c28305d0",
+    "init": "init=/nix/store/p1a1hz9n8s4g8qyr55ffl3dzbnjgqwr8-nixos-system-nixos-26.11.20260919.20b1ddd/init",
+    "kernel": "/nix/store/03zyl0mjsxbjyisb3lhjaxswpxm71ap6-linux-riscv64-unknown-linux-gnu-6.6.36-xuantie/Image",
+    "profile": "/nix/store/p1a1hz9n8s4g8qyr55ffl3dzbnjgqwr8-nixos-system-nixos-26.11.20260919.20b1ddd",
+    "services": [
+      "active",
+      "active",
+      "active"
+    ],
+    "system": "/nix/store/p1a1hz9n8s4g8qyr55ffl3dzbnjgqwr8-nixos-system-nixos-26.11.20260919.20b1ddd",
+    "uname": "6.6.36"
+  },
+  "normal_recovery": null,
+  "persistent_boot_selection_changed": false,
+  "probe": {
+    "schema": "k230-initrd-root-mount-unknown-v1",
+    "stage": "root-mount mount"
+  },
+  "reboot_marker_observed": false,
+  "result_schema": "mainline-initrd-root-mount-unknown-v1",
+  "status": "recovery-required-unknown-no-reboot-requested",
+  "controller_source": "99068255a82383463681fcdd8e6115e15f06e4ee",
+  "raw_log_sha256": "f3eb822843aec57c5ccc9bb2cbdd61b861e1d31f455ce5e9d11e65ed1b5e7c3e",
+  "raw_log_bytes": 52369,
+  "raw_log_mtime_utc": "2026-10-03T03:42:07.167361+00:00",
+  "controller_exit": 2,
+  "additional_input_after_unknown_result": false,
+  "limits": "Kernel EXT4 informational line interrupted the fresh mount result nonce. Complete RC0 fragments and shell prompt are present in private raw capture; strict original parser rejected them. Independent fresh mount-flag/unmount and normal recovery proof are pending; no usable-root/touch claim."
+}
