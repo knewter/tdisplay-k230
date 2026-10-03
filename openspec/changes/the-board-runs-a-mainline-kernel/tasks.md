@@ -608,3 +608,19 @@ in90seconds and no fresh normal prompt; no Linux command was sent. The camera
 shows a dark panel with observation limits. `operator-reset-check.json` records
 this failed check; power-cycle confirmation is pending. Protected recovery,
 ordinary root/panel/glass/production and task5b.5 remain open.
+
+
+## 2026-10-03 separate SBI-only diagnostic source proof
+
+The reviewed optional `kernelMainlineBootTraceSbiOnlyTrialBootFiles` layers
+over the original trace source and selects single-attempt fixed public SBI
+records at all twenty existing diagnostic sites. Enabled mode skips only
+the diagnostic helper's printk/emergency operations; regular kernel logging
+is unchanged. Eleven focused /28 combined native tests, actual RISC-V object/
+lifetime/table layout, exact source order, narrow Nix evaluation and all
+fifteen previous derivation identities passed. See
+`docs/evidence/mainline-system-trial/boot-boundary-sbi-only-host-2026-10-03.md`.
+The source has landed; full matching bundle build and physical output/root/
+touch/return remain UNVERIFIED. The preceding reset check failed with zero
+UART bytes; protected normal recovery must pass before another board trial.
+Task5b.5 stays open; visible SBI bytes do not prove the last ECALL returned.
