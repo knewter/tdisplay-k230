@@ -793,10 +793,12 @@ and task 5b.5 remain UNVERIFIED; no archive or production fix is claimed.
       Full matching build and physical observations remain UNVERIFIED.
 - [ ] 5f.2 Compile the changed 8250/timer/reporter objects against the exact
       configured RISC-V headers and verify record layout/lifetime/Kconfig.
-      Host-only proof: `nix build .#kernelMainlineUartProgressObjects --no-link --print-out-paths`.
+      Host-only proof: `nix build .#kernelMainlineUartProgressExactObjects --no-link --print-out-paths`.
       Three changed RISC-V objects compile against immutable installed base
       headers plus an explicit reporter overlay; layout/API proof passed. Exact
-      new configured-header compilation remains open (see linked evidence).
+      new configured-header compilation remains open. The separate ExactObjects
+      output requires the selected kernel.dev and applies no CONFIG overlay;
+      root owns its build and [exact-header proof preparation](../../../docs/evidence/mainline-uart-progress/exact-objects-preparation-2026-10-03.md).
 - [ ] 5f.3 Build the complete optional matching system/initrd/DT/bundle and
       inspect hashes/CRCs/closure/config and unchanged existing derivations.
       Host-only proof: `nix build .#kernelMainlineUartProgressTrialBootFiles --no-link --print-out-paths`

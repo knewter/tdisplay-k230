@@ -544,6 +544,11 @@
           baseKernel = self.packages.${buildSystem}.kernelMainlineBootTraceSbiOnly;
         };
 
+        kernelMainlineUartProgressExactObjects = pkgs.callPackage ./nix/kernel-mainline-uart-progress-exact-objects.nix {
+          crossCc = pkgsCross.stdenv.cc;
+          kernel = self.packages.${buildSystem}.kernelMainlineUartProgress;
+        };
+
         toplevel-mainline-uart-progress = self.nixosConfigurations.k230-mainline-uart-progress.config.system.build.toplevel;
         kernelMainlineUartProgressTrialBootFiles = pkgs.callPackage ./nix/mainline-drm-trial.nix {
           cfg = self.nixosConfigurations.k230-mainline-uart-progress.config;
