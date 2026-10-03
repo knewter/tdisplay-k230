@@ -66,6 +66,9 @@ jobs:
           python3 tests/test_coherent_shell_board_boot.py
           python3 tests/test_coherent_shell_board_install.py
 
+      - name: Check mainline boot-boundary diagnostic helpers
+        run: python3 -m unittest discover -s tests -p 'test_mainline_boot_trace*.py'
+
       - name: Check bounded VG-Lite normal-service recovery
         run: |
           python3 tests/vglite/test_normal_service_trial.py
