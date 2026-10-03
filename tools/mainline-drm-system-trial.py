@@ -24,6 +24,7 @@ _spec = importlib.util.spec_from_file_location("mainline_rdinit", Path(__file__)
 rd = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(rd)
 CONTROLS = ("fsck.mode=skip", "systemd.mask=k230-root-growth.service", "systemd.mask=register-nix-paths.service")
+TRACE_ENABLE = ("k230.boot_trace=1", "k230.boot_trace_sbi_only=1")
 STAGES = {
     "identity": ("uid", "system", "booted", "kernel", "uname", "boot_id", "pid1", "getty"),
     "persistent": ("profile", "registration_absent", "root_source", "root_type", "root_options", "root_uuid", "root_label"),
@@ -46,14 +47,19 @@ def finite_timeout(value: float, maximum: float) -> None:
         raise ValueError("timeout must be positive, finite and bounded")
 
 
-def diagnostic_controls(wait_initramfs_in_initcall: bool = False) -> tuple[str, ...]:
+def diagnostic_controls(wait_initramfs_in_initcall: bool = False, *, without_boot_markers: bool = False) -> tuple[str, ...]:
     if type(wait_initramfs_in_initcall) is not bool:
         raise ValueError("initramfs comparison selector must be boolean")
+    if type(without_boot_markers) is not bool:
+        raise ValueError("marker comparison selector must be boolean")
+    if without_boot_markers and not wait_initramfs_in_initcall:
+        raise ValueError("marker comparison requires the earlier initramfs join comparison")
     return CONTROLS + (("initramfs_async=0",) if wait_initramfs_in_initcall else ())
 
 
-def ordinary_bootargs(original: str, system: str, *, wait_initramfs_in_initcall: bool = False) -> str:
-    controls = diagnostic_controls(wait_initramfs_in_initcall)
+def ordinary_bootargs(original: str, system: str, *, wait_initramfs_in_initcall: bool = False,
+                      without_boot_markers: bool = False) -> str:
+    controls = diagnostic_controls(wait_initramfs_in_initcall, without_boot_markers=without_boot_markers)
     args = original[:-1] if original.endswith("\n") else original
     if not original.startswith("bootargs=") or args.strip() != args:
         raise ValueError("expected exact single-line bundle bootargs")
@@ -69,20 +75,27 @@ def ordinary_bootargs(original: str, system: str, *, wait_initramfs_in_initcall:
             raise ValueError("conflicting ordinary-init diagnostic argument")
     if wait_initramfs_in_initcall:
         if any([p for p in params if p.partition("=")[0] == flag.partition("=")[0]] != [flag]
-               for flag in ("k230.boot_trace=1", "k230.boot_trace_sbi_only=1")):
+               for flag in TRACE_ENABLE):
             raise ValueError("initramfs comparison requires the qualified SBI-only candidate")
         if [p for p in params if p.partition("=")[0] == "console"] != ["console=ttyS0,115200n8"]:
             raise ValueError("initramfs comparison requires the sole qualified serial console")
         if any(p.partition("=")[0] in {"earlycon", "keep_bootcon", "k230.boot_trace_sbi"} for p in params):
             raise ValueError("conflicting initramfs comparison instrumentation")
+    if without_boot_markers:
+        args = "bootargs=" + " ".join(p for p in params if p not in TRACE_ENABLE)
     return args + " " + " ".join(controls)
 
 
-def prepare(bundle: Path, manifest: Path, normal_report: Path, *, wait_initramfs_in_initcall: bool = False) -> dict:
-    controls = diagnostic_controls(wait_initramfs_in_initcall)
+def prepare(bundle: Path, manifest: Path, normal_report: Path, *, wait_initramfs_in_initcall: bool = False,
+            without_boot_markers: bool = False) -> dict:
+    controls = diagnostic_controls(wait_initramfs_in_initcall, without_boot_markers=without_boot_markers)
     p = rd.prepare_trial(manifest, bundle, normal_report)
-    p["bootargs"] = ordinary_bootargs((bundle / "bootargs.txt").read_text(), p["system"], wait_initramfs_in_initcall=wait_initramfs_in_initcall)
+    p["bootargs"] = ordinary_bootargs((bundle / "bootargs.txt").read_text(), p["system"],
+                                     wait_initramfs_in_initcall=wait_initramfs_in_initcall,
+                                     without_boot_markers=without_boot_markers)
     p["diagnostic_controls"] = controls
+    p["without_boot_markers"] = without_boot_markers
+    volatile_bootargs_command(p)
     p["kernel"] = str((Path(p["system"]) / "kernel").resolve().parent)
     p["pid1"] = str((Path(p["system"]) / "init").resolve())
     for tool in ("sh", "cat", "id", "readlink", "uname", "findmnt", "systemctl", "sha256sum", "timeout", "evtest"):
@@ -371,10 +384,32 @@ def wait_normal(session, timeout=180.0, clock=time.monotonic) -> bool:
     return False
 
 
-def boot(session, p: dict) -> None:
+def volatile_bootargs_command(p: dict) -> str:
     controls = tuple(p.get("diagnostic_controls", CONTROLS))
     if controls not in (CONTROLS, diagnostic_controls(True)):
         raise ValueError("unexpected volatile diagnostic controls")
+    without = p.get("without_boot_markers", False)
+    if type(without) is not bool:
+        raise ValueError("marker comparison selector must be boolean")
+    if without:
+        value = p["bootargs"].removeprefix("bootargs=")
+        if not p["bootargs"].startswith("bootargs=") or not re.fullmatch(r"[A-Za-z0-9_./:=,+@% \-]+", value):
+            raise ValueError("unsafe explicit volatile bootargs")
+        params = value.split()
+        if any(v.partition("=")[0] in {"k230.boot_trace", "k230.boot_trace_sbi_only"} for v in params):
+            raise ValueError("marker enable token remains in explicit comparison")
+        if controls != diagnostic_controls(True) or params.count("initramfs_async=0") != 1:
+            raise ValueError("marker comparison lost the earlier initramfs join control")
+        command = 'setenv bootargs "' + value + '"'
+    else:
+        command = 'setenv bootargs "${bootargs} ' + " ".join(controls) + '"'
+    if len(command.encode()) >= 512:
+        raise ValueError("volatile bootargs command exceeds U-Boot input bound")
+    return command
+
+
+def boot(session, p: dict) -> None:
+    bootargs_command = volatile_bootargs_command(p)
     session.line("reboot", interrupt=False)
     end = time.monotonic() + 35
     while time.monotonic() < end:
@@ -394,7 +429,7 @@ def boot(session, p: dict) -> None:
         if not rd.verified_crc(crc, expected):
             raise Unknown("candidate CRC mismatch; no boot issued")
     size = p["manifest"]["files"]["bootargs.txt"]["bytes"]
-    for command in (f"env import -t 0x7000000 {hex(size)}", 'setenv bootargs "${bootargs} ' + " ".join(controls) + '"'):
+    for command in (f"env import -t 0x7000000 {hex(size)}", bootargs_command):
         if session.command(command, 15) is None:
             raise Unknown("volatile bootargs setup unverified")
     if not rd.verified_bootargs(session.command("printenv bootargs", 15), p["bootargs"]):
@@ -431,13 +466,16 @@ def run(args) -> bool:
     saved = None if args.phase == "begin" else private_existing(args.state)
     wait_initramfs_in_initcall = (saved.get("wait_initramfs_in_initcall", False) if saved is not None
                                   else getattr(args, "wait_initramfs_in_initcall", False))
-    diagnostic_controls(wait_initramfs_in_initcall)
+    without_boot_markers = (saved.get("without_boot_markers", False) if saved is not None
+                            else getattr(args, "without_boot_markers", False))
+    diagnostic_controls(wait_initramfs_in_initcall, without_boot_markers=without_boot_markers)
     if saved:
         for key in ("bundle", "manifest", "normal_report"):
             setattr(args, key, Path(saved[key]))
     if args.phase == "touch" and not args.real_touch:
         raise ValueError("touch requires --real-touch for deliberate glass interaction")
-    p = prepare(args.bundle, args.manifest, args.normal_report, wait_initramfs_in_initcall=wait_initramfs_in_initcall)
+    p = prepare(args.bundle, args.manifest, args.normal_report, wait_initramfs_in_initcall=wait_initramfs_in_initcall,
+                without_boot_markers=without_boot_markers)
     normal = dict(p["normal"] if saved is None else saved["normal"])
     state_path = rd.safe_log_path(args.state) if saved is None else args.state.expanduser().absolute()
     log_path = rd.safe_log_path(args.log); result_path = rd.safe_log_path(args.result)
@@ -446,6 +484,7 @@ def run(args) -> bool:
     import serial
     result = {"schema": "mainline-system-trial-v1", "phase": args.phase, "status": "recovery-required-unknown", "qualified_controls": list(CONTROLS), "production_unmasked": "UNVERIFIED", "candidate_bundle": str(args.bundle), "candidate_system": p["system"], "raw_serial_log_path": str(log_path), "normal_recovery": None}
     result["wait_initramfs_in_initcall"] = wait_initramfs_in_initcall
+    result["without_boot_markers"] = without_boot_markers
     lock_fd = os.open(rd.LOCK_PATH, os.O_CREAT | os.O_RDWR, 0o600)
     session = None
     try:
@@ -467,6 +506,7 @@ def run(args) -> bool:
                 facts = identity(session, p, normal, root=root, facts=result["candidate"])
                 saved = {"schema": "mainline-system-trial-v1", "status": "candidate-ready", "bundle": str(args.bundle), "manifest": str(args.manifest), "normal_report": str(args.normal_report), "normal": normal, "root": root, "candidate_boot_id": facts["identity"]["boot_id"], "candidate": facts}
                 saved["wait_initramfs_in_initcall"] = wait_initramfs_in_initcall
+                saved["without_boot_markers"] = without_boot_markers
                 save_state(state_path, saved, new=True)
                 result.update(status="candidate-ready-qualified-ordinary-init", candidate=facts)
             else:
@@ -523,6 +563,8 @@ def main() -> int:
     parser.add_argument("--real-touch", action="store_true")
     parser.add_argument("--wait-initramfs-in-initcall", action="store_true",
                         help="begin-only SBI-only comparison: add volatile initramfs_async=0; keep the same async worker")
+    parser.add_argument("--without-boot-markers", action="store_true",
+                        help="begin-only comparison with the earlier join: remove both marker-enable tokens from volatile arguments")
     args = parser.parse_args()
     if args.phase == "begin" and any(getattr(args, k) is None for k in ("bundle", "manifest", "normal_report")):
         parser.error("begin requires --bundle, --manifest and --normal-report")
@@ -532,6 +574,8 @@ def main() -> int:
         parser.error("--real-touch is touch-only")
     if args.wait_initramfs_in_initcall and args.phase != "begin":
         parser.error("--wait-initramfs-in-initcall is begin-only; resumed phases use protected state")
+    if args.without_boot_markers and (args.phase != "begin" or not args.wait_initramfs_in_initcall):
+        parser.error("--without-boot-markers is begin-only and requires --wait-initramfs-in-initcall")
     try:
         return 0 if run(args) else 1
     except Exception as exc:

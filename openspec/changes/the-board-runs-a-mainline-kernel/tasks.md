@@ -705,3 +705,16 @@ passed; Home IPC returned RC0 and a newly reviewed private camera shows Home.
 See `docs/evidence/mainline-system-trial/initramfs-initcall-physical-2026-10-03/operator-reset-recovery.json`.
 This proves operator recovery only; automatic return, mainline root/panel/glass
 and task5b.5 remain UNVERIFIED. Board/UART and camera are released.
+
+
+## 2026-10-03 reviewed same-image marker-free controller
+
+The begin-only `--without-boot-markers` opt-in requires the earlier initramfs
+join selector and removes both original qualified trace-enable tokens only.
+Same Image/closure/DT/logging/controls and exact identity/CRC/arguments/typed
+resume/recovery/180-second unknown gates remain. Literal transport is safe
+and below 512 bytes before first input. 36 focused tests passed independently;
+actual realized-bundle prepare differs only by the two removed tokens and
+uses 317 bytes. Narrow proof and operator command:
+`docs/evidence/mainline-system-trial/marker-free-controller-host-2026-10-03.md`.
+Host proof only; physical root/panel/glass/return and 5b.5 remain UNVERIFIED.

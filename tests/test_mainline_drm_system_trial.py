@@ -114,6 +114,131 @@ class FlowSession(PumpSession):
 
 
 class SystemTrialTests(unittest.TestCase):
+    def marker_free_prepared(self):
+        p = self.comparison_prepared()
+        p["bootargs"] = trial.ordinary_bootargs(self.comparison_args(), SYSTEM,
+                                               wait_initramfs_in_initcall=True, without_boot_markers=True)
+        p["without_boot_markers"] = True
+        return p
+
+    def test_marker_free_comparison_removes_only_both_exact_enable_tokens(self):
+        original = self.comparison_args()
+        before = trial.ordinary_bootargs(original, SYSTEM, wait_initramfs_in_initcall=True)
+        after = trial.ordinary_bootargs(original, SYSTEM, wait_initramfs_in_initcall=True, without_boot_markers=True)
+        self.assertEqual(after.split(), [token for token in before.split() if token not in trial.TRACE_ENABLE])
+        self.assertEqual(original, self.comparison_args())
+        self.assertEqual(after.split().count("initramfs_async=0"), 1)
+        self.assertFalse(any(token.partition("=")[0] in ("k230.boot_trace", "k230.boot_trace_sbi_only")
+                             for token in after.split()))
+        for changed in (original.replace("k230.boot_trace=1", "k230.boot_trace=0"),
+                        original.replace("k230.boot_trace_sbi_only=1", "k230.boot_trace_sbi_only=0"),
+                        original.rstrip() + " k230.boot_trace=1", original.rstrip() + " k230.boot_trace_sbi_only=0"):
+            with self.assertRaises(ValueError):
+                trial.ordinary_bootargs(changed, SYSTEM, wait_initramfs_in_initcall=True, without_boot_markers=True)
+        with self.assertRaises(ValueError):
+            trial.ordinary_bootargs(original, SYSTEM, without_boot_markers=True)
+        for selector in (1, "false", None):
+            with self.assertRaises(ValueError):
+                trial.ordinary_bootargs(original, SYSTEM, wait_initramfs_in_initcall=True, without_boot_markers=selector)
+
+    def test_marker_free_actual_uboot_command_has_no_variable_expansion_or_enable_tokens(self):
+        p = self.marker_free_prepared()
+        class MarkerFreeSession(FlowSession):
+            def command(self, command, timeout):
+                if command == "printenv bootargs":
+                    self.writes.append(command.encode())
+                    return (p["bootargs"] + "\nK230# ").encode()
+                return super().command(command, timeout)
+        s = MarkerFreeSession(None, SimpleNamespace(write=lambda x: None))
+        trial.boot(s, p)
+        writes = [w for w in s.writes if w.startswith(b"setenv bootargs ")]
+        self.assertEqual(writes, [('setenv bootargs "' + p["bootargs"].removeprefix("bootargs=") + '"').encode()])
+        self.assertNotIn(b"${", writes[0]); self.assertNotIn(b"k230.boot_trace", writes[0])
+        self.assertIn(b"initramfs_async=0", writes[0]); self.assertLess(len(writes[0]), 512)
+        self.assertEqual(sum(w.startswith(b"ext4load ") for w in s.writes), 5)
+        self.assertEqual(sum(w.startswith(b"crc32 ") for w in s.writes), 5)
+        self.assertFalse(any(b"saveenv" in w for w in s.writes))
+
+        s = FlowSession(None, SimpleNamespace(write=lambda x: None))
+        with self.assertRaises(trial.Unknown): trial.boot(s, p)
+        self.assertFalse(any(w.startswith(b"bootm ") for w in s.writes))
+        s = MarkerFreeSession(None, SimpleNamespace(write=lambda x: None))
+        with mock.patch.object(trial, "wait_candidate", return_value=False):
+            with self.assertRaises(trial.Unknown): trial.boot(s, p)
+        self.assertEqual(s.writes[-1], b"bootm 0x8000000 0x9000000 0x8400000\r")
+
+    def test_marker_free_transport_rejects_unsafe_oversize_or_remaining_tokens_before_input(self):
+        p = self.marker_free_prepared()
+        for suffix in (' $unsafe', ' "bad"', ' ;saveenv', ' `bad`', '\n', ' filler=' + 'a' * 512,
+                       ' k230.boot_trace=0', ' k230.boot_trace_sbi_only'):
+            bad = copy.deepcopy(p); bad["bootargs"] += suffix
+            s = FlowSession(None, SimpleNamespace(write=lambda x: None))
+            with self.subTest(suffix=suffix), self.assertRaises(ValueError): trial.boot(s, bad)
+            self.assertEqual(s.writes, [])
+        bad = copy.deepcopy(p); bad["bootargs"] = bad["bootargs"].replace("initramfs_async=0", "initramfs_async=1")
+        s = FlowSession(None, SimpleNamespace(write=lambda x: None))
+        with self.assertRaises(ValueError): trial.boot(s, bad)
+        self.assertEqual(s.writes, [])
+
+    def test_marker_free_runtime_argument_guard_rejects_any_restored_enable_token(self):
+        p = self.marker_free_prepared(); value = facts()["bootargs"].copy()
+        value["cmdline"] = p["bootargs"].removeprefix("bootargs=")
+        trial.validate_stage("bootargs", value, p, p["normal"])
+        for flag in trial.TRACE_ENABLE:
+            bad = value.copy(); bad["cmdline"] += " " + flag
+            with self.assertRaises(trial.Unknown): trial.validate_stage("bootargs", bad, p, p["normal"])
+
+    def test_marker_free_mode_saved_and_restored_for_finish(self):
+        p = self.marker_free_prepared(); values = facts()
+        values["bootargs"]["cmdline"] = p["bootargs"].removeprefix("bootargs=")
+        class MarkerFreeSession(FlowSession):
+            def command(self, command, timeout):
+                if command == "printenv bootargs":
+                    self.writes.append(command.encode())
+                    return (p["bootargs"] + "\nK230# ").encode()
+                return super().command(command, timeout)
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp); root.chmod(0o700)
+            args = SimpleNamespace(phase="begin", bundle=Path("/nix/store/bundle"), manifest=root/"manifest",
+                                   normal_report=root/"normal-report", state=root/"state.json", log=root/"begin.log",
+                                   result=root/"begin.json", real_touch=False, wait_initramfs_in_initcall=True,
+                                   without_boot_markers=True)
+            FlowSession.values = values; FlowSession.fail_stage = None
+            with mock.patch.dict(sys.modules, {"serial": SimpleNamespace()}), \
+                 mock.patch.object(trial, "prepare", return_value=p) as prepare_call, \
+                 mock.patch.object(trial.rd, "PrivateSession", MarkerFreeSession), \
+                 mock.patch.object(trial.rd, "LOCK_PATH", root/"lock"):
+                self.assertTrue(trial.run(args))
+                self.assertTrue(json.loads(args.state.read_text())["without_boot_markers"])
+                args.phase = "finish"; args.log = root/"finish.log"; args.result = root/"finish.json"
+                args.without_boot_markers = args.wait_initramfs_in_initcall = False
+                self.assertTrue(trial.run(args))
+                self.assertTrue(prepare_call.call_args.kwargs["without_boot_markers"])
+                self.assertTrue(prepare_call.call_args.kwargs["wait_initramfs_in_initcall"])
+                self.assertTrue(json.loads(args.result.read_text())["without_boot_markers"])
+                self.assertEqual(json.loads(args.result.read_text())["status"], "normal-recovery-verified")
+            FlowSession.values = None
+
+    def test_marker_free_bad_saved_mode_rejected_before_serial(self):
+        for mode, joined in (("false", True), (True, False)):
+            with tempfile.TemporaryDirectory() as tmp:
+                root = Path(tmp); root.chmod(0o700)
+                state = self.state(); state.update(without_boot_markers=mode, wait_initramfs_in_initcall=joined)
+                path = root/"state.json"; path.write_text(json.dumps(state)); path.chmod(0o600)
+                args = SimpleNamespace(phase="finish", state=path, real_touch=False)
+                with mock.patch.object(trial.rd, "PrivateSession") as session:
+                    with self.assertRaises(ValueError): trial.run(args)
+                    session.assert_not_called()
+
+    def test_marker_free_cli_requires_begin_and_earlier_join_before_serial(self):
+        for phase, flags in (("begin", []), ("touch", []), ("finish", [])):
+            cmd = [sys.executable, str(Path(trial.__file__)), phase, "--state", "/nonexistent/state",
+                   "--log", "/nonexistent/log", "--result", "/nonexistent/result", "--without-boot-markers"]
+            if phase == "begin": cmd += ["--bundle", "/none", "--manifest", "/none", "--normal-report", "/none"]
+            result = subprocess.run(cmd + flags, capture_output=True)
+            self.assertEqual(result.returncode, 2)
+            self.assertIn(b"requires --wait-initramfs-in-initcall", result.stderr)
+
     def comparison_args(self):
         return ARGS.rstrip() + " k230.boot_trace=1 k230.boot_trace_sbi_only=1\n"
 
