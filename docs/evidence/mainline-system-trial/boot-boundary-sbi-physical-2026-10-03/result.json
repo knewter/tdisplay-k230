@@ -1,0 +1,102 @@
+{
+  "schema": "mainline-boot-boundary-sbi-physical-v1",
+  "source_revision": "007410ee7daa55cecd4f59708e4941679a701f9d",
+  "controller_revision": "0a345adf34b9b6d8135161d5228d164b27b7a1ef",
+  "status": "failed-login-readiness-recovery-required",
+  "controller_exit": 1,
+  "phase": "begin",
+  "readiness_bound_seconds": 180,
+  "staging_rc": 0,
+  "candidate_bundle": "/nix/store/j0ad6h3s23s5zlwizn3mbiw6cs98s4qn-k230-mainline-drm-trial-boot-files",
+  "candidate_system": "/nix/store/zcsfgwk0hsigg9ccfscssyyx3hzc814g-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "candidate_kernel": "/nix/store/f7h2n15nzn88wvwxd39c0dpjsarcwa6x-linux-riscv64-unknown-linux-gnu-7.3.0-rc5",
+  "artifact_files": {
+    "Image-mainline-drm": {
+      "bytes": 38530560,
+      "sha256": "5fa5127dce494c3aeaf00b6d852afefae225b2c71ecc7b08ebab5eafe4f0ef36",
+      "crc32": "08139b82"
+    },
+    "k230-tdisplay-mainline-drm.dtb": {
+      "bytes": 11093,
+      "sha256": "e6703e57d0c2fd333964eafd7a09b361777c332d2d83bbde82ca38623803697e",
+      "crc32": "000c650c"
+    },
+    "initrd.uimg": {
+      "bytes": 27330595,
+      "sha256": "13afc43f52e82dc26f43e987737ec29fc1e32707203081b75d0fd5e365e3904c",
+      "crc32": "2870e46e"
+    },
+    "bootargs.txt": {
+      "bytes": 238,
+      "sha256": "a7710913614a9d92fa266b5009a3c2bfef5618646c2c67d50fdebb9ff2400db8",
+      "crc32": "c56f0e89"
+    },
+    "fw_jump_add_uboot_head.bin": {
+      "bytes": 270808,
+      "sha256": "9627edbeea9b115d7040beea27cc61b23b6aca61cd502fd7760d7ee179f42c99",
+      "crc32": "99b89787"
+    }
+  },
+  "qualified_controls": [
+    "fsck.mode=skip",
+    "systemd.mask=k230-root-growth.service",
+    "systemd.mask=register-nix-paths.service"
+  ],
+  "normal_preflight": {
+    "qualified": true,
+    "uname": "6.6.36",
+    "eight_boot_files_unchanged": true,
+    "three_shell_services_active": true,
+    "registration_absent": true
+  },
+  "fresh_mainline_banner": true,
+  "legacy_markers": [
+    {
+      "kernel_seconds": "0.018364",
+      "sequence": 1,
+      "step": "basic-setup-enter"
+    },
+    {
+      "kernel_seconds": "0.021732",
+      "sequence": 2,
+      "step": "initcalls-enter"
+    },
+    {
+      "kernel_seconds": "2.774786",
+      "sequence": 3,
+      "step": "initcalls-exit"
+    },
+    {
+      "kernel_seconds": "2.801471",
+      "sequence": 4,
+      "step": "basic-setup-exit"
+    }
+  ],
+  "direct_SBI_points": [
+    "initcalls-before",
+    "initcalls-after",
+    "basic-before",
+    "basic-after"
+  ],
+  "two_suspect_printk_helpers_returned": true,
+  "do_basic_setup_returned": true,
+  "last_SBI_ECALL_return": "UNVERIFIED",
+  "initramfs_wait_enter_seen": false,
+  "initramfs_wait_called": "UNVERIFIED",
+  "login_banner_seen": false,
+  "ordinary_root": "UNVERIFIED",
+  "panel_acceptance": "UNVERIFIED",
+  "deliberate_glass_touch": "UNVERIFIED",
+  "production_unmasked": "UNVERIFIED",
+  "automatic_return": "UNVERIFIED",
+  "operator_reset_recovery": "UNVERIFIED",
+  "normal_postflight": "UNVERIFIED",
+  "candidate_input_after_readiness_failure": "none",
+  "raw_serial": {
+    "private_path": "~/tmp/k230-mainline-boot-trace-sbi-board/ordinary-sbi-uart.log",
+    "bytes": 47963,
+    "sha256": "e9004ca19d46e46c303badc36e384539c4581b0a385f04de47abae91f4cae2e6",
+    "last_uart_utc": "2026-10-03T20:09:15.604722+00:00",
+    "result_utc": "2026-10-03T20:12:11.958290+00:00"
+  }
+}

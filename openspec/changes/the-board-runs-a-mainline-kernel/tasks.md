@@ -594,3 +594,14 @@ VMAP_STACK/4KiB/KUnit disabled config and hardware DT equality are recorded in
 `docs/evidence/mainline-system-trial/boot-boundary-sbi-build-2026-10-03/README.md`.
 No board was used for this increment. Physical direct-SBI output/root/touch/
 return stay UNVERIFIED and task 5b.5 stays unchecked.
+
+## 2026-10-03 physical direct-SBI boundary attempt
+
+The exact direct-SBI bundle passed staging and protected normal preflight,
+then emitted all four direct records plus legacy seq1–4. Both suspect marker
+helpers and `do_basic_setup()` returned; the final `basic-after` ECALL return
+and entry to the next marker/initramfs wait remain unknown. No login arrived
+within 180 seconds; controller exit1 closed UART without further input. See
+`docs/evidence/mainline-system-trial/boot-boundary-sbi-physical-2026-10-03/README.md`
+and result JSON. Operator reset recovery remains UNVERIFIED pending postflight;
+ordinary root/panel/glass/production and task5b.5 remain open.
