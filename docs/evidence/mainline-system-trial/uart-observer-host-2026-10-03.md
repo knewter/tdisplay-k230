@@ -160,3 +160,43 @@ metadata. This is a source correction, not a successful wrapper rebuild or
 artifact inspection. Physical staging stayed paused on protected normal.
 Nix parse, strict OpenSpec validation and diff checks are the bounded checks;
 the coordinator still owns the rebuild and all later physical gates.
+
+## Closure-inventory preflight rejection and correction
+
+The coordinator's wrapper rebuild from `0e5436de` produced
+`/nix/store/hg1yq5qvam1jh07ibz591r0v4g6qzq4b-k230-mainline-uart-observer-boot-files`.
+Standard artifact checks and exact archived helper/unit inspection passed, but
+the full controller preparation rejected `observer closure lacks selected
+helper/system/kernel`: system and kernel were inventoried, while helper
+`7n4rdzx19xxk8r0n4h16gf9s8qsnq85k` was absent from the system-derived store-paths.
+Compressed initrd inclusion alone did not retain its package as a runtime
+reference. No UART was opened and the private export was not staged.
+
+The optional module now adds the same helper to `system.extraDependencies`,
+keeping it in the registered/staged system closure as well as the initrd.
+The controller guard and inventory format remain unchanged. An offline Nix
+assertion checks that the evaluated dependencies contain the exact selected
+helper; only a new cross-build and actual store-paths/controller inspection can
+prove the realized closure correction. The coordinator owns those gates;
+physical observation/recovery remain UNVERIFIED.
+
+The dependency/unit membership check is:
+
+```sh
+nix eval --offline --impure --json --expr '
+let f=builtins.getFlake "git+file:///home/jadams/tmp/k230-mainline-uart-observer";
+    cfg=f.nixosConfigurations.k230-mainline-uart-observer.config;
+    helper=f.packages.x86_64-linux.mainline-uart-observer;
+    dependencies=map toString cfg.system.extraDependencies;
+in assert builtins.elem (toString helper) dependencies;
+   assert builtins.elem "ExecStart=${helper}/bin/k230-uart-observer"
+     (f.inputs.nixpkgs.lib.splitString "\n" cfg.boot.initrd.systemd.units."debug-shell.service".text);
+   { inherit dependencies; selectedHelper=toString helper; }'
+```
+
+The dependency-only assertion passed with exact helper
+`7n4rdzx19xxk8r0n4h16gf9s8qsnq85k` present. The additional unit-line assertion
+and repeat of the three default/console identities were still pending in
+evaluation session86830 at handoff; prior identity proof remains recorded above.
+Nix parse, strict OpenSpec validation and staged diff checks passed. No native test rerun,
+cross-build or board operation was performed for this dependency-list edit.

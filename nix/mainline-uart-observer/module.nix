@@ -6,6 +6,9 @@ let
     systemd = config.boot.initrd.systemd.package;
   };
 in {
+  # Compressed initrd contents do not retain the helper as a toplevel runtime
+  # reference. Keep it in the registered/staged system closure as well.
+  system.extraDependencies = [ helper ];
   boot.initrd.systemd = {
     storePaths = [ helper ];
     contents."/etc/k230-uobs-version".text = "1\n";
