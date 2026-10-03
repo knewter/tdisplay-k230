@@ -86,3 +86,17 @@ without disabling normal kernel logging; it would not prove a root cause.
 Source/native/object/identity and full matching artifact checks remain necessary
 before another physical trial. No such variant is implemented by this evidence
 increment.
+
+
+## Subsequent user-confirmed reset recovery
+
+After the initial zero-byte reset check above, the user confirmed another
+reset. The fresh protected normal postflight now passed: a different boot ID,
+exact system/profile/kernel/init, all eight boot hashes, three active services
+and registration absence. See [operator-reset-recovery.json](operator-reset-recovery.json).
+The bounded Home IPC command returned RC0; the reviewed private camera frame
+shows normal Home icons, clock and wallpaper, with glare/focus/perspective
+limits. This verifies operator reset recovery only. The failed mainline login
+trial, last-SBI-return ambiguity, automatic-return UNVERIFIED marker and
+ordinary root/panel/glass/task5b.5 gates remain unchanged. No power-cycle
+claim is made from the user's reset confirmation.

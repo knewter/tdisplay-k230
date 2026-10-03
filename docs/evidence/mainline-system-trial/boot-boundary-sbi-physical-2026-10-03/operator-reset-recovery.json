@@ -1,0 +1,24 @@
+{
+  "schema": "mainline-boot-boundary-sbi-reset-recovery-v1",
+  "operator_action": "user confirmed a second reset after the first reset check received no UART bytes",
+  "status": "verified",
+  "fresh_boot": true,
+  "protected_system_profile_kernel_init_equal": true,
+  "normal_uname": "6.6.36",
+  "three_shell_services_active": true,
+  "eight_protected_files_unchanged": true,
+  "registration_absent": true,
+  "automatic_return": "UNVERIFIED",
+  "private_raw_path": "~/tmp/k230-mainline-boot-trace-sbi-board/reset-retry-normal-uart.log",
+  "raw_bytes": 28306,
+  "raw_sha256": "9bc117d6dfdcc301eea9dd44c8b105c3843cb20b668a9585d4c0eb30c4d05910",
+  "result_saved_utc": "2026-10-03T20:52:00.667453+00:00",
+  "home_command_rc": 0,
+  "home_camera": {
+    "private_path": "~/tmp/k230-mainline-boot-trace-sbi-board/reset-retry-normal-home.private.jpg",
+    "reviewed": true,
+    "observation": "Normal Home icons, clock and background visible.",
+    "limits": "Glare, perspective and focus; not mainline or deliberate touch acceptance.",
+    "sha256": "64985de25f68f335e6b30cc41027aabebf0ec422dae8bd1845f6ef63c75e8826"
+  }
+}

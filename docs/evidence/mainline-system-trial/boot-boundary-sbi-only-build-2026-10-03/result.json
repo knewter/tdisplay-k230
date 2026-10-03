@@ -1,0 +1,51 @@
+{
+  "bundle": "/nix/store/brmp1qf9cz65yciazabc8yg5j39nn643-k230-mainline-drm-trial-boot-files",
+  "system": "/nix/store/g74hzn6yr07il4r00r5iv3v8baw6q2cf-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "kernel": "/nix/store/am9cxlangrklamgs5lb0y31q028jbabq-linux-riscv64-unknown-linux-gnu-7.3.0-rc5",
+  "closure_paths": 629,
+  "files": {
+    "registration": 303363,
+    "Image-mainline-drm": 38530560,
+    "initrd.uimg": 27308549,
+    "k230-tdisplay-mainline-drm.dtb": 11097,
+    "SHA256SUMS": 339,
+    "store-paths": 49876,
+    "bootargs.txt": 243
+  },
+  "uimage_crc_valid": true,
+  "initrd_payload_matches_system": true,
+  "Image_matches_candidate": true,
+  "DTB_bootargs_matches_environment": true,
+  "schema": "mainline-boot-boundary-sbi-only-host-build-v1",
+  "date_utc": "2026-10-03",
+  "source_revision": "c6896fbc3b4a3e0fe7b3579f0add791adafbef12",
+  "host_build": "passed",
+  "ordinary_controller_prepare": "passed against last verified protected normal baseline; current recovery UNVERIFIED",
+  "hardware_DT_unchanged_except_bootargs": true,
+  "all_twenty_SBI_only_public_records_in_linked_Image": true,
+  "outer_four_record_variant_absent": true,
+  "source_main_c_sha256": "b776bb9707168ed2a26e393bcdd45808e132e661f1083662640268d856f028b9",
+  "built_config": {
+    "path": "/nix/store/iw4iyn2clg4kw7zjds3x186yqcc2w256-linux-riscv64-unknown-linux-gnu-7.3.0-rc5-dev/lib/modules/7.3.0-rc5/build/.config",
+    "sha256": "c5c128ed8b9701f78a0b8bd4f18dacd0d2407ae90eda79a35bba2d9f5ffbeae7",
+    "riscv_sbi": true,
+    "bits": 64,
+    "vmapped_stacks": true,
+    "page_bytes": 4096,
+    "kunit": false
+  },
+  "file_hashes": {
+    "Image-mainline-drm": "6efde73a16ebbbbfd1c1e3a755faa478ff673e01fcfe20582ddf4e25530c94ff",
+    "initrd.uimg": "0baa8cdc6a2a6f85e45f2a112bcf34730af2c5bb7b5f454836fe2975bf2a94d7",
+    "k230-tdisplay-mainline-drm.dtb": "da47de906f885bf709815e5ae294522958d9c537e58b30509813f9b4726b02fa",
+    "bootargs.txt": "6f997f8308a83fe0babc52509c8129c02f102f9980d4838cc2c2c28d00c966b9"
+  },
+  "export_closure_paths_including_bundle": 630,
+  "board_trial": "UNVERIFIED",
+  "ordinary_root": "UNVERIFIED",
+  "automatic_return": "UNVERIFIED",
+  "deliberate_glass_touch": "UNVERIFIED",
+  "current_normal_recovery": "verified separately by user reset; not SBI-only candidate acceptance",
+  "export_bytes": 103844240,
+  "exported_new_paths": 8
+}

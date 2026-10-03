@@ -624,3 +624,18 @@ The source has landed; full matching bundle build and physical output/root/
 touch/return remain UNVERIFIED. The preceding reset check failed with zero
 UART bytes; protected normal recovery must pass before another board trial.
 Task5b.5 stays open; visible SBI bytes do not prove the last ECALL returned.
+
+
+## 2026-10-03 subsequent normal recovery / SBI-only full build
+
+The user's second confirmed reset passed fresh protected normal postflight,
+unchanged identities/eight files, three active services and registration
+absence. Home IPC returned RC0 and reviewed private camera shows normal Home;
+see `docs/evidence/mainline-system-trial/boot-boundary-sbi-physical-2026-10-03/operator-reset-recovery.json`.
+This is operator recovery; automatic return from the failed trial stays
+UNVERIFIED. The matching SBI-only bundle `brmp1qf9…` built successfully,
+with actual config/source/all20 linked strings, hardwareDT, Image/initrd/CRC/
+closure and ordinary-controller host preparation checks passed. See
+`docs/evidence/mainline-system-trial/boot-boundary-sbi-only-build-2026-10-03/README.md`.
+SBI-only physical output/login/root/glass/automatic return remain UNVERIFIED;
+5b.5 stays open before the separately reserved board attempt.

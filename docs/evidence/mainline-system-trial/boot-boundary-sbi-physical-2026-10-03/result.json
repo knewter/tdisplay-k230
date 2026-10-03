@@ -2,7 +2,7 @@
   "schema": "mainline-boot-boundary-sbi-physical-v1",
   "source_revision": "007410ee7daa55cecd4f59708e4941679a701f9d",
   "controller_revision": "0a345adf34b9b6d8135161d5228d164b27b7a1ef",
-  "status": "failed-login-readiness-recovery-required",
+  "status": "failed-login-readiness-operator-reset-recovered",
   "controller_exit": 1,
   "phase": "begin",
   "readiness_bound_seconds": 180,
@@ -89,8 +89,8 @@
   "deliberate_glass_touch": "UNVERIFIED",
   "production_unmasked": "UNVERIFIED",
   "automatic_return": "UNVERIFIED",
-  "operator_reset_recovery": "UNVERIFIED",
-  "normal_postflight": "UNVERIFIED",
+  "operator_reset_recovery": "verified",
+  "normal_postflight": "verified",
   "candidate_input_after_readiness_failure": "none",
   "raw_serial": {
     "private_path": "~/tmp/k230-mainline-boot-trace-sbi-board/ordinary-sbi-uart.log",
@@ -100,5 +100,6 @@
     "result_utc": "2026-10-03T20:12:11.958290+00:00"
   },
   "operator_reset_check": "failed-no-fresh-normal-prompt",
-  "operator_reset_check_evidence": "operator-reset-check.json"
+  "operator_reset_check_evidence": "operator-reset-check.json",
+  "operator_reset_recovery_evidence": "operator-reset-recovery.json"
 }
