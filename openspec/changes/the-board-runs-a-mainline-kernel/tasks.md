@@ -493,8 +493,9 @@ the same built/staged Image, hardware DT, initrd and helper. Protected normal
 preflight, loads/CRCs and exact printed arguments passed. Linux reached display
 and Goodix registration, then clock/power-domain/ALSA milestones; no init or
 systemd banner, observer frame or automatic return was observed. Zero receipt
-commands were sent. Operator reset recovery is UNVERIFIED pending the requested
-reset. Exact command/artifacts/timestamps/limits are in
+commands were sent. The user reset; protected normal postflight and qualified
+Home IPC passed. Automatic return remains UNVERIFIED. Exact
+command/artifacts/timestamps/limits are in
 `docs/evidence/mainline-system-trial/uart-observer-serial-console-physical-2026-10-03/README.md`.
 No clock, power-domain, UART or console cause is claimed; further source
 discrimination is required. Usable root, panel/touch and task 5b.5 stay open.

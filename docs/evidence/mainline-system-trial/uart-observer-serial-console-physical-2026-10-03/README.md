@@ -72,7 +72,26 @@ candidate input or reboot retry followed. Last UART write timestamp:
 bytes, SHA256 `3446fdaaa2e524d05026409d66a6744c60878b66bd86c51a2fbe11e3f4492d24`. Raw logs, volatile nonce/boot IDs
 and transfer addresses remain private.
 
-Operator reset was requested; protected normal recovery is **UNVERIFIED**
-while awaiting that reset. No further boot trial is planned until a
-source-supported discriminator has been reviewed. This failed comparison does
-not satisfy mainline usable-root/panel/touch task 5b.5.
+The user pressed reset. [Protected normal postflight](operator-reset-recovery.json)
+passed with a fresh boot ID, exact system/profile/kernel/init/uname, three
+active shell services, all eight unchanged protected boot hashes and absent
+registration marker. Qualified normal Home IPC returned RC=0; a separately
+reserved private camera frame visually showed Home icons, clock and background.
+Glare limits detail; the frame is not published and is not mainline/touch proof.
+The checks use
+the committed `mainline-drm-system-trial.py` normal-check function and
+`mainline-drm-normal-state.py` helper against the private preflight identity.
+Exact recovery commands:
+
+```sh
+python3 "$HOME/tmp/k230-mainline-uart-observer-board/serial-console-reset-normal-check.py"
+python3 "$HOME/tmp/k230-reset-recovery/serial-op.py" \
+  "$HOME/tmp/k230-mainline-system-board/return-home.command.private" \
+  "$HOME/tmp/k230-mainline-uart-observer-board/serial-console-return-home-uart.log" 45
+```
+
+The reset checker returned 0; its timestamp and raw-log digest/size are in
+the recovery JSON. This qualifies operator-reset recovery; the original
+diagnostic still failed and automatic return remains **UNVERIFIED**.
+No further boot trial was performed. This failed comparison does not satisfy
+mainline usable-root/panel/touch task 5b.5.
