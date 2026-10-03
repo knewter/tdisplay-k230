@@ -1,0 +1,16 @@
+{
+  "evidence_class": "physical-board-serial",
+  "stage_command_rc": 0,
+  "source_bundle": "/nix/store/5yqilsfyj35jzrcqjjqilkr6sd47qlms-k230-mainline-drm-trial-boot-files",
+  "source_system": "/nix/store/9gdmsrh2igqla1qz0ll97czfw2x42icw-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "export_sha256": "c2443dff718218cd8f25f107befe6651e35ee1f735b326c8d336cf827aaec4f2",
+  "export_bytes": 103874521,
+  "exported_new_store_paths": 8,
+  "registered_system_closure_paths_checked_by_preflight": 629,
+  "stage_raw_sha256": "68138adae008800ec209b270ae31b39b8b8ece32e0cf385499ac3ab2d2adcc7b",
+  "stage_raw_mtime_utc": "2026-10-03T03:35:35.713214+00:00",
+  "normal_boot_files_changed": false,
+  "normal_profile_changed": false,
+  "persistent_boot_selection_changed": false,
+  "notes": "Private curated HTTP transfer, archive SHA verification, registered delta import, GC-rooted candidate, four staged artifact SHA checks; complete closure validity and metadata verified by minimal preflight. Raw URL, endpoint and command output stay private."
+}

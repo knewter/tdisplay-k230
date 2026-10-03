@@ -1,0 +1,21 @@
+Curated returned protocol checkpoints and label/reboot/SPL only. Nonces redacted; full raw-log hash/time in label-result.json. Commands/normal machine output excluded.
+
+[  157.182732] reboot: Restarting system
+U-Boot SPL 2022.10 (Oct 03 2022 - 19:25:32 +0000)
+K230_RDINIT_RX [fresh-token-redacted]
+K230_RDINIT_TRUE [fresh-token-redacted] RC=0
+K230_RDINIT_MOUNT_BEGIN [fresh-token-redacted]
+K230_RDINIT_MOUNT_END [fresh-token-redacted] MKDIR_RC=0 MOUNT_ATTEMPTED=1 MOUNT_RC=0
+K230_RDINIT_UP_BEGIN [fresh-token-redacted]
+K230_RDINIT_UP_END [fresh-token-redacted] RC=0
+K230_RDINIT_LABEL_SETUP_BEGIN [fresh-token-redacted] STAGE=dev-mkdir
+K230_RDINIT_LABEL_SETUP_END [fresh-token-redacted] STAGE=dev-mkdir RC=0
+K230_RDINIT_LABEL_SETUP_BEGIN [fresh-token-redacted] STAGE=dev-mount
+K230_RDINIT_LABEL_SETUP_END [fresh-token-redacted] STAGE=dev-mount RC=0
+K230_RDINIT_LABEL_SETUP_BEGIN [fresh-token-redacted] STAGE=node
+K230_RDINIT_LABEL_SETUP_END [fresh-token-redacted] STAGE=node RC=0
+K230_RDINIT_LABEL_BEGIN [fresh-token-redacted]
+K230_RDINIT_LABEL_END [fresh-token-redacted] RC=0 MATCH=1
+K230_RDINIT_REBOOT [fresh-token-redacted]
+[    5.241197] reboot: Restarting system
+U-Boot SPL 2022.10 (Oct 03 2022 - 19:25:32 +0000)

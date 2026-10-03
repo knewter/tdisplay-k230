@@ -217,7 +217,12 @@ hashes with temporary `clk_ignore_unused`. This proves that diagnostic
 selection only; the baseline still stalls and restart without the flag
 requires a separate clock-consumer fix and physical proof.*
 
-<!-- UNVERIFIED: mainline automatic restart without temporary unused-clock bypass -->
+*Further physical grounding: `docs/evidence/mainline-sd1-clocks/physical-no-flag-2026-10-03/README.md`
+records the targeted five-clock candidate with ordinary clock cleanup, no
+`clk_ignore_unused`, real kernel restart → SPL → protected normal boot,
+fresh boot identity, three active shell services and eight unchanged hashes.
+The full initrd-shell result and artifact identities are committed; ordinary
+root activation and deliberate touch remain separately unverified.*
 
 #### Scenario: The operator requests restart from the mainline diagnostic trial
 

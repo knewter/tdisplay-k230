@@ -412,8 +412,8 @@
       "lane": "in-progress",
       "source": "in-progress",
       "physical": "pending",
-      "next": "Stage the inspected five-clock candidate, verify automatic restart without clk_ignore_unused, then returned label/root diagnostics and ordinary mainline init with deliberate touch.",
-      "rationale": "The targeted optional DRM five-clock SD1 source/DTB/object/lifecycle checks and exact complete kernel plus matching trial bundle/inspector now pass. The original ENOSPC failure is preserved separately; the retry completed successfully after capacity recovery. Candidate kernel9vdk79, bundle5yqilsfy and system9gdms have matching hashes/CRCs and 629 closure paths. Default/console identities remain unchanged. Automatic restart was previously proved only with temporary clk_ignore_unused; the targeted correction still needs its own no-flag physical test. Usable mainline root and deliberate touch task5b.5 remain open. Normal boot selection/default image is unchanged.",
+      "next": "Complete returned SD label and read-only root diagnostics, then guarded ordinary NixOS init and deliberate physical touch.",
+      "rationale": "The targeted optional DRM five-clock candidate now passes physical automatic restart without clk_ignore_unused: ordinary clock cleanup, all runtime tracing gates, real kernel restart, SPL and protected normal recovery with fresh bootID, exact identities, three active services and eight unchanged hashes. Complete kernel and matching bundle inspection also pass; default/console outputs and normal boot selection remain unchanged. Task5d.4 has no-bypass proof. Task5b.5 remains for ordinary NixOS root activation and deliberate touch; the successful minimal probe uses an initrd shell.",
       "dependencies": [],
       "evidence": [
         "docs/evidence/mainline-display-power-domain.md",
@@ -441,7 +441,8 @@
         "docs/evidence/mainline-restart/physical-runtime-ready-2026-10-02/README.md",
         "docs/evidence/mainline-restart/minimal-clock-comparison-host-2026-10-02.md",
         "docs/evidence/mainline-restart/physical-clock-comparison-2026-10-02/README.md",
-        "docs/evidence/mainline-sd1-clocks/README.md"
+        "docs/evidence/mainline-sd1-clocks/README.md",
+        "docs/evidence/mainline-sd1-clocks/physical-no-flag-2026-10-03/README.md"
       ],
       "reviewRevision": "497c5d96",
       "media": [

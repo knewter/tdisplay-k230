@@ -10,13 +10,12 @@ the kernel. The protected normal system was independently restored by an
 operator power cycle, recorded in
 `docs/evidence/mainline-display/physical-2026-10-01/minimal-probe-recovery-2026-10-02/README.md`.
 These are partial boot/probe/recovery observations, not product acceptance.
-Task 5d.4 now has physical proof for the reviewed temporary
-`clk_ignore_unused` diagnostic boot: kernel restart → SPL → protected normal
-return with fresh identity and unchanged boot hashes, recorded in
-`docs/evidence/mainline-restart/physical-clock-comparison-2026-10-02/README.md`.
-The baseline without the flag still stalls; a proper clock-consumer fix
-and restart without the flag remain before production acceptance. Task
-5b.5 stays open for usable mainline root and deliberate touch.
+Task 5d.4 now has physical proof for the targeted five-clock candidate
+without `clk_ignore_unused`: ordinary clock cleanup, kernel restart → SPL →
+protected normal return with fresh identity and unchanged boot hashes,
+recorded in `docs/evidence/mainline-sd1-clocks/physical-no-flag-2026-10-03/README.md`.
+The earlier global-clock comparison remains historical evidence. Task 5b.5
+stays open for ordinary NixOS root activation and deliberate touch.
 
 ## Why
 
@@ -144,8 +143,8 @@ after every task group, including the milestone-1 continuation. The original
 functional proof was host-only (cross-builds, including a full NixOS
 system-closure build). Later physical trials obtained partial boot/probe
 evidence as summarized above; usable root and deliberate touch remain named open gates for the board
-operator; automatic restart is physically proved for the explicitly qualified
-clock-comparison boot only.
+operator; automatic restart is now physically proved for the targeted five-clock
+candidate without the temporary clock bypass.
 
 
 The isolated DRM continuation also provides `k230-mainline-drm-trial` and
