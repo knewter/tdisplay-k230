@@ -283,6 +283,16 @@
             );
           }) ];
         };
+        # Separate finite cached UART/IRQ reporter; original artifact policy is
+        # inherited. The reviewed controller supplies its volatile runtime gate.
+        k230-mainline-uart-progress = self.nixosConfigurations.k230-mainline-boot-trace-sbi-only.extendModules {
+          specialArgs.k230Kernel = pkgsCross.linuxPackagesFor (import ./nix/kernel-mainline-uart-progress.nix {
+            kernelMainline = pkgsCross.callPackage ./nix/kernel-mainline.nix {
+              inherit (pkgsCross) buildLinux;
+            };
+            inherit (pkgsCross) applyPatches lib;
+          });
+        };
       };
 
       checks.${buildSystem} = {
@@ -532,6 +542,13 @@
           crossCc = pkgsCross.stdenv.cc;
           kernel = self.packages.${buildSystem}.kernelMainlineUartProgress;
           baseKernel = self.packages.${buildSystem}.kernelMainlineBootTraceSbiOnly;
+        };
+
+        toplevel-mainline-uart-progress = self.nixosConfigurations.k230-mainline-uart-progress.config.system.build.toplevel;
+        kernelMainlineUartProgressTrialBootFiles = pkgs.callPackage ./nix/mainline-drm-trial.nix {
+          cfg = self.nixosConfigurations.k230-mainline-uart-progress.config;
+          kernel = self.nixosConfigurations.k230-mainline-uart-progress.config.boot.kernelPackages.kernel;
+          deviceTree = self.packages.${buildSystem}.deviceTreeMainlineDrm;
         };
 
         mainline-uart-observer = pkgsCross.callPackage ./nix/mainline-uart-observer { };
