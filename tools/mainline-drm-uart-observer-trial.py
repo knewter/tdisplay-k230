@@ -40,6 +40,7 @@ SAMPLE_FIELDS = {"sample", "iflag", "oflag", "cflag", "lflag", "ispeed_code", "o
 SOURCE_FILE = Path(__file__).resolve().parents[1] / "nix/mainline-uart-observer/observer.c"
 BASE_DEBUG_UNIT_SHA = "edc8fe166b94d3c9e76879662780679b6092944f88e9966a27a41f0aa2767a81"
 ARCHIVE_LIMIT = 134217728
+SBI_BOOT_CONTROLS = ("earlycon=sbi", "keep_bootcon")
 
 
 def riscv_elf(content):
@@ -189,14 +190,20 @@ def uboot_literal(value):
     return '"' + value + '"'
 
 
-def bootargs(original, selected, nonce, normal_boot, *, serial_console_only=False):
+def bootargs(original, selected, nonce, normal_boot, *, serial_console_only=False, sbi_boot_console=False):
+    if sbi_boot_console and not serial_console_only:
+        raise ValueError("SBI boot-console comparison requires serial-console-only")
     rd._validate_token(nonce)
     if not debug.valid_boot_id(normal_boot):
         raise ValueError("normal boot ID must be exact")
     for arg in original.removeprefix("bootargs=").split():
         if arg.partition("=")[0].startswith("k230.uobs."):
             raise ValueError("preexisting observer argument")
+        if sbi_boot_console and arg.partition("=")[0] in ("earlycon", "keep_bootcon"):
+            raise ValueError("preexisting boot-console comparison argument")
     result = debug.bootargs(console_arguments(original, serial_console_only), selected) + f" k230.uobs.nonce={nonce} k230.uobs.from={normal_boot} k230.uobs.init={selected}/init"
+    if sbi_boot_console:
+        result += " " + " ".join(SBI_BOOT_CONTROLS)
     uboot_literal(result.removeprefix("bootargs="))
     return result
 
@@ -218,7 +225,9 @@ def dt_hardware_equal(base, candidate):
         return normalized[0] == normalized[1]
 
 
-def prepare(bundle, manifest, normal_report, blkid_result, nonce, *, serial_console_only=False):
+def prepare(bundle, manifest, normal_report, blkid_result, nonce, *, serial_console_only=False, sbi_boot_console=False):
+    if sbi_boot_console and not serial_console_only:
+        raise ValueError("SBI boot-console comparison requires serial-console-only")
     p = rd.prepare_trial(manifest, bundle, normal_report)
     base = rd.immutable_store_path(BASE_BUNDLE, "proven base bundle")
     base_system = rd.immutable_store_path((base / "system").resolve(strict=True), "proven base system")
@@ -271,8 +280,9 @@ def prepare(bundle, manifest, normal_report, blkid_result, nonce, *, serial_cons
     dt_args = subprocess.run(["fdtget", str(p["bundle"] / dtb_name), "/chosen", "bootargs"], check=True, capture_output=True, text=True, timeout=10).stdout.strip()
     if dt_args != selected_args.removeprefix("bootargs=").rstrip("\n"):
         raise ValueError("observer DT bootargs mismatch")
-    p["bootargs"] = bootargs(selected_args, p["system"], nonce, p["normal"]["boot_id"], serial_console_only=serial_console_only)
+    p["bootargs"] = bootargs(selected_args, p["system"], nonce, p["normal"]["boot_id"], serial_console_only=serial_console_only, sbi_boot_console=sbi_boot_console)
     p["serial_console_only"] = serial_console_only
+    p["sbi_boot_console"] = sbi_boot_console
     p["original_bootargs"] = selected_args
     p["observer"] = metadata
     p["helper_text"] = "from pathlib import Path\nassert not Path('/nix-path-registration').exists() and not Path('/nix-path-registration').is_symlink(), 'registration marker present'\n" + p["helper_text"]
@@ -533,13 +543,14 @@ def run(args):
     if log_path == result_path:
         raise ValueError("distinct private log/result paths required")
     comparison = getattr(args, "serial_console_only", False)
-    result = {"schema": "mainline-uart-observer-v1", "status": "not-started-no-serial-opened", "candidate_bundle": str(args.bundle), "serial_console_only": comparison, "diagnostic": {}, "normal_recovery": None, "persistent_boot_selection_changed": False, "raw_serial_log_path": str(log_path)}
+    sbi_comparison = getattr(args, "sbi_boot_console", False)
+    result = {"schema": "mainline-uart-observer-v1", "status": "not-started-no-serial-opened", "candidate_bundle": str(args.bundle), "serial_console_only": comparison, "sbi_boot_console": sbi_comparison, "diagnostic": {}, "normal_recovery": None, "persistent_boot_selection_changed": False, "raw_serial_log_path": str(log_path)}
     session = None
     lock_fd = None
     log_created = False
     try:
         nonce = uuid.uuid4().hex
-        p = prepare(args.bundle, args.manifest, args.normal_report, args.blkid_result, nonce, serial_console_only=comparison)
+        p = prepare(args.bundle, args.manifest, args.normal_report, args.blkid_result, nonce, serial_console_only=comparison, sbi_boot_console=sbi_comparison)
         result.update(candidate_system=p["system"], observer_artifact=p["observer"], initrd_inspection=p["initrd_inspection"], nonce=nonce)
         normal = dict(p["normal"])
         import serial
@@ -556,7 +567,7 @@ def run(args):
             before = system.normal_check(session, p, normal, "preflight")
             result["normal_preflight"] = before
             normal["trial_from_boot_id"] = before["boot_id"]
-            p["bootargs"] = bootargs(p["original_bootargs"], p["system"], nonce, before["boot_id"], serial_console_only=comparison)
+            p["bootargs"] = bootargs(p["original_bootargs"], p["system"], nonce, before["boot_id"], serial_console_only=comparison, sbi_boot_console=sbi_comparison)
             result["expected_bootargs"] = p["bootargs"]
             boot(session, p)
             result["candidate_boot_issued"] = True
@@ -594,6 +605,7 @@ def main():
     for name in ("bundle", "manifest", "normal-report", "blkid-result", "log", "result"):
         parser.add_argument("--" + name, type=Path, required=True)
     parser.add_argument("--serial-console-only", action="store_true", help="volatile comparison: remove only the sole console=tty0; hardware result UNVERIFIED")
+    parser.add_argument("--sbi-boot-console", action="store_true", help="volatile earlycon=sbi keep_bootcon comparison; requires --serial-console-only and qualified SBI DBCN support")
     return 0 if run(parser.parse_args()) else 2
 
 

@@ -205,10 +205,10 @@ class ProtocolTests(unittest.TestCase):
 
 
 class RunTests(unittest.TestCase):
-    def run_fixture(self, *, ack=True, recovered=True, prepare_failure=False, serial_console_only=False):
+    def run_fixture(self, *, ack=True, recovered=True, prepare_failure=False, serial_console_only=False, sbi_boot_console=False):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory); root.chmod(0o700)
-            args = SimpleNamespace(bundle=Path(SELECTED), manifest=root / "manifest", normal_report=root / "normal", blkid_result=root / "blkid", log=root / "wire", result=root / "result",serial_console_only=serial_console_only)
+            args = SimpleNamespace(bundle=Path(SELECTED), manifest=root / "manifest", normal_report=root / "normal", blkid_result=root / "blkid", log=root / "wire", result=root / "result",serial_console_only=serial_console_only,sbi_boot_console=sbi_boot_console)
             s = Session([ready()], ack=ack, return_output=None if recovered else b"\n" + frame("after"))
             s.chunks.insert(0, b"root@nixos:~# ")
             p = {"bundle": args.bundle, "system": SELECTED, "observer": {}, "initrd_inspection": {}, "normal": {"boot_id": FROM}, "original_bootargs": DUAL_ARGS if serial_console_only else ARGS, "helper_text": ""}
@@ -237,6 +237,12 @@ class RunTests(unittest.TestCase):
         passed, value, writes, opened, checks = self.run_fixture(ack=False)
         self.assertFalse(passed); self.assertEqual(value["status"], "recovery-verified-diagnostic-failed")
         self.assertEqual(checks, ["preflight", "postflight"]); self.assertEqual(len(writes), 2)
+
+    def test_run_sbi_comparison_records_both_selectors_and_fresh_arguments(self):
+        passed,value,writes,opened,checks=self.run_fixture(serial_console_only=True,sbi_boot_console=True)
+        self.assertTrue(passed);self.assertTrue(value["serial_console_only"]);self.assertTrue(value["sbi_boot_console"])
+        self.assertEqual(value["expected_bootargs"],t.bootargs(DUAL_ARGS,SELECTED,NONCE,FROM,serial_console_only=True,sbi_boot_console=True))
+        self.assertEqual(writes,[b"\r",t.receipt_command(NONCE)])
 
     def test_run_unknown_return_never_postflight_or_additional_input(self):
         passed, value, writes, opened, checks = self.run_fixture(recovered=False)
@@ -365,7 +371,7 @@ class BootTests(unittest.TestCase):
 
 
 @contextmanager
-def artifact_fixture():
+def artifact_fixture(*, dual_console=False):
     with tempfile.TemporaryDirectory(dir=Path.home() / "tmp") as directory:
         root = Path(directory); store = root / "store"; store.mkdir()
         dirs = {name: store / (letter * 32 + "-" + name) for name, letter in (("observer","a"),("base-system","b"),("system","c"),("base","d"),("kernel","e"),("candidate","f"))}
@@ -377,6 +383,8 @@ def artifact_fixture():
         (base / "system").symlink_to(dirs["base-system"])
         (selected / "kernel").symlink_to(kernel / "Image")
         original = "bootargs=console=ttyS0,115200n8 root=fstab loglevel=4 loglevel=7 init=" + str(selected) + "/init\n"
+        if dual_console:
+            original=original.replace("console=ttyS0,115200n8","console=tty0 consoleblank=0 console=ttyS0,115200n8")
         (bundle / "bootargs.txt").write_text(original)
         for name, args in ((base,"base"),(bundle,original.removeprefix("bootargs=").rstrip())):
             src = root / (name.name + ".dts")
@@ -405,6 +413,17 @@ def artifact_fixture():
 
 @unittest.skipUnless(shutil.which("dtc") and shutil.which("fdtput") and shutil.which("fdtget"), "host lacks DT tools; no actual artifact preparation proof")
 class PreparationTests(unittest.TestCase):
+    def test_sbi_complete_preparation_retains_original_artifacts(self):
+        with artifact_fixture(dual_console=True) as f:
+            names=("bootargs.txt","k230-tdisplay-mainline-drm.dtb","initrd.uimg","Image-mainline-drm")
+            before={name:(f.bundle/name).read_bytes() for name in names}
+            p=t.prepare(f.bundle,f.root/"manifest",f.root/"normal",f.root/"blkid",NONCE,serial_console_only=True,sbi_boot_console=True)
+            self.assertTrue(p["serial_console_only"]);self.assertTrue(p["sbi_boot_console"])
+            self.assertTrue(p["bootargs"].endswith(" earlycon=sbi keep_bootcon"))
+            self.assertNotIn("console=tty0",p["bootargs"])
+            self.assertIn("initrd_inspection",p)
+            self.assertEqual(before,{name:(f.bundle/name).read_bytes() for name in names})
+
     def test_complete_actual_preparation_proves_archive_elf_and_marker_guard(self):
         with artifact_fixture() as f:
             p = t.prepare(f.bundle,f.root / "manifest",f.root / "normal",f.root / "blkid",NONCE)
@@ -432,9 +451,9 @@ class PreparationTests(unittest.TestCase):
 
 
 class SerialComparisonTests(unittest.TestCase):
-    def prepared(self, comparison=False):
+    def prepared(self, comparison=False, sbi=False):
         return {"manifest":{"files":{name:{"bytes":100,"crc32":"00000000"} for name,*_ in t.rd.LOADS}}, "original_bootargs":DUAL_ARGS,
-                "bootargs":t.bootargs(DUAL_ARGS,SELECTED,NONCE,FROM,serial_console_only=comparison),"serial_console_only":comparison}
+                "bootargs":t.bootargs(DUAL_ARGS,SELECTED,NONCE,FROM,serial_console_only=comparison,sbi_boot_console=sbi),"serial_console_only":comparison,"sbi_boot_console":sbi}
 
     def test_default_arguments_and_transport_remain_exactly_unchanged(self):
         expected = t.debug.bootargs(DUAL_ARGS,SELECTED) + f" k230.uobs.nonce={NONCE} k230.uobs.from={FROM} k230.uobs.init={SELECTED}/init"
@@ -464,6 +483,32 @@ class SerialComparisonTests(unittest.TestCase):
             with self.subTest(original=original),self.assertRaises(ValueError):
                 t.bootargs(original,SELECTED,NONCE,FROM,serial_console_only=True)
 
+    def test_sbi_adds_exact_two_tokens_to_serial_comparison(self):
+        compared=t.bootargs(DUAL_ARGS,SELECTED,NONCE,FROM,serial_console_only=True)
+        result=t.bootargs(DUAL_ARGS,SELECTED,NONCE,FROM,serial_console_only=True,sbi_boot_console=True)
+        self.assertEqual(result,compared+" earlycon=sbi keep_bootcon")
+        commands=t.volatile_commands(self.prepared(True,True))
+        self.assertEqual(commands[:2],t.volatile_commands(self.prepared(True))[:2])
+        self.assertEqual(commands[2],t.volatile_commands(self.prepared(True))[2][:-1]+" earlycon=sbi keep_bootcon\"")
+        self.assertTrue(all(len(c.encode())<512 for c in commands))
+
+    def test_sbi_requires_serial_only_before_artifact_or_serial_access(self):
+        with self.assertRaises(ValueError):t.bootargs(DUAL_ARGS,SELECTED,NONCE,FROM,sbi_boot_console=True)
+        with mock.patch.object(t.rd,"prepare_trial") as preparation,self.assertRaises(ValueError):
+            t.prepare(Path(SELECTED),Path("manifest"),Path("normal"),Path("blkid"),NONCE,sbi_boot_console=True)
+        preparation.assert_not_called()
+
+    def test_sbi_rejects_preexisting_early_console_policy(self):
+        for token in ("earlycon", "earlycon=sbi", "earlycon=uart8250,mmio32,0x91400000", "keep_bootcon", "keep_bootcon=0"):
+            with self.subTest(token=token),self.assertRaises(ValueError):
+                t.bootargs(DUAL_ARGS.rstrip()+" "+token,SELECTED,NONCE,FROM,serial_console_only=True,sbi_boot_console=True)
+
+    def test_retained_console_duplicate_frames_still_send_zero_receipts(self):
+        s=Session([BANNER+frame("ready")*2+frame("before")*2+PROMPT+NORMAL])
+        facts=t.monitor(s,NONCE,FROM,clock=Clock())
+        self.assertFalse(facts["passed"]);self.assertTrue(facts["normal_prompt_observed"])
+        self.assertIn("duplicate",facts["failure"]);self.assertEqual(s.writes,[])
+
     def test_uboot_expansion_and_command_syntax_rejected_before_any_boot_input(self):
         for unsafe in ('"',"'","$x","${bootargs}","$(reboot)","`reboot`",";","\\", "\nreboot"):
             original=DUAL_ARGS.rstrip()+" unsafe="+unsafe
@@ -486,8 +531,8 @@ class SerialComparisonTests(unittest.TestCase):
                     self.args=parts[2].replace("${bootargs}",self.args)
                 elif cmd=="printenv bootargs":return ("bootargs="+self.args+(" wrong=1" if self.mismatch else "")+"\nK230# ").encode()
                 return t.rd.PROMPT
-        p=self.prepared(True)
-        for mismatch in (False,True):
+        for sbi,mismatch in ((False,False),(False,True),(True,False),(True,True)):
+            p=self.prepared(True,sbi)
             s=UBoot(mismatch)
             with mock.patch.object(t.rd,"verified_load",return_value=True),mock.patch.object(t.rd,"verified_crc",return_value=True):
                 if mismatch:

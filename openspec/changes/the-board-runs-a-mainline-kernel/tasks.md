@@ -499,3 +499,16 @@ command/artifacts/timestamps/limits are in
 `docs/evidence/mainline-system-trial/uart-observer-serial-console-physical-2026-10-03/README.md`.
 No clock, power-domain, UART or console cause is claimed; further source
 discrimination is required. Usable root, panel/touch and task 5b.5 stay open.
+
+## 2026-10-03 retained SBI boot-console host preparation
+
+The user authorized the same-image comparison before a diagnostic kernel
+rebuild. The observer controller now accepts explicit `--sbi-boot-console`
+only with `--serial-console-only`, adding exactly volatile
+`earlycon=sbi keep_bootcon` while retaining all artifact, identity, printed
+argument and recovery gates. Strict observer parsing is unchanged; duplicate
+readiness still sends zero receipts. The 38 focused tests and actual selected
+artifact preparation pass. Commands and limits are in
+`docs/evidence/mainline-uart-observer-trial/sbi-boot-console-host-2026-10-03.md`.
+Host proof does not diagnose the boot stall or prove automatic return; the
+separate physical comparison and task 5b.5 remain open.
