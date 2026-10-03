@@ -521,7 +521,9 @@ mainline output confirmed SBI DBCN detection and actual SBI boot-console
 enablement; subsequent messages were duplicated. Output ended at the ALSA
 milestone (3.838138), with no visible init launch, systemd, observer frame or
 automatic return. Zero receipts were sent; the bounded passive trial exited 2.
-Operator-reset recovery is pending. Exact command, artifact hashes, sanitized
+The user reset; protected normal postflight, qualified Home IPC and a private
+camera observation of Home passed. Automatic mainline return remains
+UNVERIFIED. Exact command, artifact hashes, sanitized
 observations and limits are in
 `docs/evidence/mainline-system-trial/uart-observer-sbi-boot-console-physical-2026-10-03/README.md`.
 The trial does not identify a cause; optional kernel boundary markers are the

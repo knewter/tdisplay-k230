@@ -64,11 +64,30 @@ Private UART: 52,892 bytes, SHA256
 The result records UTC write timestamps. Raw logs, nonces and boot identities
 remain private; this public packet uses an explicit field allowlist.
 
-<!-- UNVERIFIED --> Operator-reset recovery is pending. This failed trial
-does not establish automatic return, usable root, panel acceptance or touch.
-After the user confirms reset, the protected postflight must verify a fresh
-boot, exact selected identities, three active services, eight unchanged boot
-hashes and registration-marker absence before ordinary board commands resume.
+The user pressed reset. [Protected normal postflight](operator-reset-recovery.json)
+passed with a fresh boot ID, exact system/profile/kernel/init/uname, three
+active shell services, all eight unchanged protected boot hashes and absent
+registration marker. Qualified Home IPC completed with return code 0. A
+separately reserved private C920 camera frame visually showed Home icons,
+clock and background; angle, focus and glare limit detail. The frame remains
+private and is not mainline or touch proof.
+
+Exact recovery commands, run after the confirmed user reset:
+
+```sh
+python3 "$HOME/tmp/k230-mainline-uart-observer-board/sbi-boot-console-reset-normal-check.py"
+python3 "$HOME/tmp/k230-reset-recovery/serial-op.py" \
+  "$HOME/tmp/k230-mainline-system-board/return-home.command.private" \
+  "$HOME/tmp/k230-mainline-uart-observer-board/sbi-boot-console-return-home-uart.log" 45
+```
+
+The reset checker uses the committed system-trial normal-check function and
+normal-state helper against the private preflight identity, and returned 0.
+Its timestamps and private log/image digests are in the recovery JSON.
+This qualifies operator-reset recovery; automatic mainline return, ordinary
+usable mainline root and deliberate touch remain **UNVERIFIED**. No further
+boot trial ran during recovery. Board, serial and camera reservations are
+released.
 
 ## Next diagnostic
 

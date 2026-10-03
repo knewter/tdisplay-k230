@@ -58,7 +58,7 @@
   "init_launch_observed": false,
   "init_memory_freeing_observed": false,
   "last_kernel_timestamp": "3.838138",
-  "operator_reset_recovery": "UNVERIFIED-pending-operator-reset",
+  "operator_reset_recovery": "verified-protected-normal-postflight",
   "usable_root_and_deliberate_touch": "UNVERIFIED",
   "latest_uart_write_utc": "2026-10-03T17:57:55.174905+00:00",
   "result_write_utc": "2026-10-03T18:00:50.043239+00:00"
