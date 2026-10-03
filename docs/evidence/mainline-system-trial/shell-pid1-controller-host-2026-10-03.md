@@ -147,3 +147,28 @@ python3 tools/mainline-drm-initrd-shell-trial.py \
 
 Use new paths if either output already exists. Physical execution, candidate
 guard facts and protected automatic return are UNVERIFIED by this host note.
+
+## Coordinator integration proof
+
+Root integrated reviewed source `00387e51` as `473d4ab3` on
+`integrate/mainline-probe-path`, worktree
+`/home/jadams/tmp/k230-mainline-probe-integration`, after recovery base
+`1088e3ee`. Independent peer approval included 14 focused passes. Root ran:
+
+```sh
+TMPDIR="$HOME/tmp" python3 -m unittest discover -s tests -p 'test_mainline_drm*trial.py'
+TMPDIR="$HOME/tmp" python3 -m unittest discover -s tests -p 'test_mainline_shell_pid1_comparison.py'
+openspec validate the-board-runs-a-mainline-kernel --strict
+openspec validate --all
+git diff --check
+```
+
+All 214 existing trial tests and 14 new tests passed; strict/all56 validation
+and whitespace passed. Actual preparation against the same protected private
+manifest/report verifies identical system/manifest/normal/helper and expected
+arguments exactly equal to the preceding ordinary marker-free arguments plus
+` rdinit=/bin/sh`; literal transport 317 → 332 bytes. This is host proof with
+no serial access; private fixed preparation record is
+`~/tmp/k230-mainline-shell-pid1-board/host-prepare.json`. CI now runs the 36
+ordinary, 100 existing minimal-controller and 14 new focused tests. Source
+landing/deployment does not supply physical shell/root/touch acceptance.

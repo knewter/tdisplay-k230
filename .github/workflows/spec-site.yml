@@ -69,8 +69,11 @@ jobs:
       - name: Check mainline boot-boundary diagnostic helpers
         run: python3 -m unittest discover -s tests -p 'test_mainline_boot_trace*.py'
 
-      - name: Check ordinary mainline trial argument and recovery gates
-        run: python3 -m unittest discover -s tests -p 'test_mainline_drm_system_trial.py'
+      - name: Check ordinary and shell-PID1 mainline trial gates
+        run: |
+          python3 -m unittest discover -s tests -p 'test_mainline_drm_system_trial.py'
+          python3 -m unittest discover -s tests -p 'test_mainline_drm_initrd_shell_trial.py'
+          python3 -m unittest discover -s tests -p 'test_mainline_shell_pid1_comparison.py'
 
       - name: Check bounded VG-Lite normal-service recovery
         run: |

@@ -745,3 +745,21 @@ camera shows normal Home. See
 This is operator recovery only. Automatic return, mainline ordinary root,
 panel/glass and task 5b.5 remain UNVERIFIED. Board/UART/camera are released;
 the next guarded same-image Bash-PID1 controller increment is host work.
+
+
+## 2026-10-03 reviewed same-image Bash PID1 controller
+
+The explicit minimal-only `--same-image-shell-pid1` selector uses the same
+qualified marker-free/async=0 bundle and three controls, adding only
+`rdinit=/bin/sh`. Original artifacts, archived Bash/systemd/common loader,
+safe literal transport before UART and exact printed arguments are checked.
+Fresh Linux/init-entry/prompt/receipt precede proc/uptime and strict PID1/root/
+Bash/kernel/cmdline/new-boot/initrd guards, renewed before one acknowledged
+reboot. Both protected normal phases assert registration absence. Unknown
+stops input; ordinary init is NOT_ATTEMPTED. Independent review approved;
+14 focused and all 214 existing trial tests passed, strict/all56 validation
+and exact realized-bundle single-variable preparation passed. Narrow commands
+and operator gate:
+`docs/evidence/mainline-system-trial/shell-pid1-controller-host-2026-10-03.md`.
+CI covers ordinary/minimal/new focused tests. Physical shell receipt/automatic
+return are still UNVERIFIED; ordinary root/panel/glass and task 5b.5 stay open.
