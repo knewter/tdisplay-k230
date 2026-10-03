@@ -512,3 +512,17 @@ artifact preparation pass. Commands and limits are in
 `docs/evidence/mainline-uart-observer-trial/sbi-boot-console-host-2026-10-03.md`.
 Host proof does not diagnose the boot stall or prove automatic return; the
 separate physical comparison and task 5b.5 remain open.
+
+## 2026-10-03 retained SBI boot-console physical boundary
+
+The same-image serial-only comparison with volatile `earlycon=sbi keep_bootcon`
+passed protected normal preflight, loads/CRCs and printed arguments. Fresh
+mainline output confirmed SBI DBCN detection and actual SBI boot-console
+enablement; subsequent messages were duplicated. Output ended at the ALSA
+milestone (3.838138), with no visible init launch, systemd, observer frame or
+automatic return. Zero receipts were sent; the bounded passive trial exited 2.
+Operator-reset recovery is pending. Exact command, artifact hashes, sanitized
+observations and limits are in
+`docs/evidence/mainline-system-trial/uart-observer-sbi-boot-console-physical-2026-10-03/README.md`.
+The trial does not identify a cause; optional kernel boundary markers are the
+next source-supported diagnostic. Task 5b.5 stays unchecked.
