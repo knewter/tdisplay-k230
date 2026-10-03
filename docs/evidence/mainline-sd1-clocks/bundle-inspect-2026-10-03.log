@@ -1,0 +1,24 @@
+Image-mainline-drm: OK
+k230-tdisplay-mainline-drm.dtb: OK
+initrd.uimg: OK
+bootargs.txt: OK
+{
+  "bundle": "/nix/store/5yqilsfyj35jzrcqjjqilkr6sd47qlms-k230-mainline-drm-trial-boot-files",
+  "system": "/nix/store/9gdmsrh2igqla1qz0ll97czfw2x42icw-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "kernel": "/nix/store/9vdk79pa4pm38mlmbflkqh4i4sc9kha0-linux-riscv64-unknown-linux-gnu-7.3.0-rc5",
+  "closure_paths": 629,
+  "bootargs": "console=tty0 consoleblank=0 console=ttyS0,115200n8 root=fstab loglevel=4 lsm=landlock,yama,bpf loglevel=7 init=/nix/store/9gdmsrh2igqla1qz0ll97czfw2x42icw-nixos-system-nixos-26.11.20260919.20b1ddd/init",
+  "files": {
+    "registration": 303363,
+    "Image-mainline-drm": 38530560,
+    "initrd.uimg": 27311112,
+    "k230-tdisplay-mainline-drm.dtb": 11065,
+    "SHA256SUMS": 339,
+    "store-paths": 49876,
+    "bootargs.txt": 211
+  },
+  "uimage_crc_valid": true,
+  "initrd_payload_matches_system": true,
+  "Image_matches_candidate": true,
+  "DTB_bootargs_matches_environment": true
+}

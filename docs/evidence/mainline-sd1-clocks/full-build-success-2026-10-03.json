@@ -1,0 +1,128 @@
+{
+  "implementation_commit": "b5af2d64e85116c5897275222949401225f73d04",
+  "working_tree_commit": "1aa114954019a4267ffccf92f7658efbfb8b98f8",
+  "base_revision": "9cd4a3f870a62c01d63abae60dc07b309e054c52",
+  "upstream_linux_pin": "72d3fcf802c45d00b300f25b848a93c3a2bd7c7e",
+  "kernel_build": {
+    "command": "flock /tmp/k230-nix-build.lock nix build .#kernelMainlineDrm --no-link --print-out-paths --max-jobs 1 --cores 16 --keep-failed -L",
+    "start_utc": "2026-10-03T03:04:13Z",
+    "observed_exit_utc": "2026-10-03T03:25:37Z",
+    "exit_status": 0
+  },
+  "bundle_build": {
+    "command": "flock /tmp/k230-nix-build.lock nix build .#kernelMainlineDrmTrialBootFiles --no-link --print-out-paths --max-jobs 1 --cores 16 --keep-failed -L",
+    "start_utc": "2026-10-03T03:25:37Z",
+    "observed_exit_utc": "2026-10-03T03:26:52Z",
+    "exit_status": 0
+  },
+  "inspector": {
+    "command": "python3 tools/mainline-drm-trial-inspect.py /nix/store/5yqilsfyj35jzrcqjjqilkr6sd47qlms-k230-mainline-drm-trial-boot-files",
+    "exit_status": 0,
+    "closure_paths": 629
+  },
+  "realized": {
+    "bundle": "/nix/store/5yqilsfyj35jzrcqjjqilkr6sd47qlms-k230-mainline-drm-trial-boot-files",
+    "consoleDtb": "/nix/store/rr14di4rihw97dvcnjrd1f54p05bmqpm-k230-tdisplay-mainline.dtb",
+    "consoleKernel": "/nix/store/xw38bf25mrd5mkjc2gg5qdkglbkl8b7v-linux-riscv64-unknown-linux-gnu-7.3.0-rc5",
+    "defaultKernel": "/nix/store/03zyl0mjsxbjyisb3lhjaxswpxm71ap6-linux-riscv64-unknown-linux-gnu-6.6.36-xuantie",
+    "drmDtb": "/nix/store/6ryw00w27gnl3hfgifvjljhj2qrr69ij-k230-tdisplay-mainline-drm.dtb",
+    "drmKernel": "/nix/store/9vdk79pa4pm38mlmbflkqh4i4sc9kha0-linux-riscv64-unknown-linux-gnu-7.3.0-rc5",
+    "drmSource": "/nix/store/l0j3rf11mr65wl5x88a9zzma45ciz687-linux-mainline-k230-drm-src",
+    "system": "/nix/store/9gdmsrh2igqla1qz0ll97czfw2x42icw-nixos-system-nixos-26.11.20260919.20b1ddd",
+    "kernel_modules": "/nix/store/7zc9h2hprixhc90nql8yfbn6yic97gq2-linux-riscv64-unknown-linux-gnu-7.3.0-rc5-modules"
+  },
+  "bundle_artifacts": {
+    "Image-mainline-drm": {
+      "path": "/nix/store/5yqilsfyj35jzrcqjjqilkr6sd47qlms-k230-mainline-drm-trial-boot-files/Image-mainline-drm",
+      "bytes": 38530560,
+      "sha256": "bca08f824e1db9fc1ee6be455a8a397b6446d9301cf4ae1e517faf9b106ca12f",
+      "crc32": "f63fa1c4"
+    },
+    "k230-tdisplay-mainline-drm.dtb": {
+      "path": "/nix/store/5yqilsfyj35jzrcqjjqilkr6sd47qlms-k230-mainline-drm-trial-boot-files/k230-tdisplay-mainline-drm.dtb",
+      "bytes": 11065,
+      "sha256": "77010c33945caf1e7cdfdeec6bd17475ecc43c8bd692e9228d78e1040b8d72c8",
+      "crc32": "80e6e0c0"
+    },
+    "initrd.uimg": {
+      "path": "/nix/store/5yqilsfyj35jzrcqjjqilkr6sd47qlms-k230-mainline-drm-trial-boot-files/initrd.uimg",
+      "bytes": 27311112,
+      "sha256": "1522d595ace1b102d11f62fd08e65e635c2eb48fa7f0aa8c8534cf94f03303ab",
+      "crc32": "c2db05b2"
+    },
+    "bootargs.txt": {
+      "path": "/nix/store/5yqilsfyj35jzrcqjjqilkr6sd47qlms-k230-mainline-drm-trial-boot-files/bootargs.txt",
+      "bytes": 211,
+      "sha256": "71de3b7e2e8a1e362c3328ddff922c9c43dcdf641267c2c588d92ab90cfcfc3b",
+      "crc32": "78a9a9f5"
+    }
+  },
+  "source_artifacts": {
+    "patched_driver": {
+      "path": "/nix/store/l0j3rf11mr65wl5x88a9zzma45ciz687-linux-mainline-k230-drm-src/drivers/mmc/host/sdhci-of-kendryte.c",
+      "bytes": 15945,
+      "sha256": "e226cc359e9277d9ddc53d68647be1a8fd52431662d6f3e842dfa7fb7f611b8e",
+      "crc32": "da063d65"
+    },
+    "clock_patch": {
+      "path": "/home/jadams/tmp/k230-mainline-drm-sd1-clocks/nix/patches/mainline/k230-sdhci-clocks.patch",
+      "bytes": 4578,
+      "sha256": "65a19d7f561569b3bc5483508eda98f2757b55df025c77fe1284cab3c5a9cd50",
+      "crc32": "48b988cf"
+    },
+    "standalone_dtb": {
+      "path": "/nix/store/6ryw00w27gnl3hfgifvjljhj2qrr69ij-k230-tdisplay-mainline-drm.dtb/k230-tdisplay-mainline-drm.dtb",
+      "bytes": 10840,
+      "sha256": "9c1e22d1b3305a4e42cda96cea9217a2e064a8dd1b88a86d5c4d3c198e6132a8",
+      "crc32": "156aa4f4"
+    },
+    "config": {
+      "path": "/nix/store/7vxby0h1nz78r9qzbqfjjs9vw4x7gpl0-linux-config-riscv64-unknown-linux-gnu-7.3.0-rc5",
+      "bytes": 232353,
+      "sha256": "94e3ab32c17d5ee6f51fcfa0d410bc10927f591db750aafffbd71c7407ef4da8",
+      "crc32": "bc14448f"
+    },
+    "system_init": {
+      "path": "/nix/store/9gdmsrh2igqla1qz0ll97czfw2x42icw-nixos-system-nixos-26.11.20260919.20b1ddd/init",
+      "bytes": 217416,
+      "sha256": "d3e109a270c0b4463ac5b7b0655ce7667d7c55f6f93341bb461300a5dd5c8c63",
+      "crc32": "83e31ead"
+    },
+    "system_initrd": {
+      "path": "/nix/store/9gdmsrh2igqla1qz0ll97czfw2x42icw-nixos-system-nixos-26.11.20260919.20b1ddd/initrd",
+      "bytes": 27311048,
+      "sha256": "046c5b012a2b993caa1082926e9928c14bccc0fff456f20f8716c91d13f51842",
+      "crc32": "babbdc29"
+    }
+  },
+  "bundle_sd1": {
+    "node": "/soc/sdhci1@91581000",
+    "compatible": "canaan,k230-dw-mshc",
+    "clock_names": [
+      "core",
+      "bus",
+      "axi",
+      "block",
+      "timer"
+    ],
+    "clock_ids": [
+      31,
+      13,
+      29,
+      26,
+      35
+    ],
+    "provider_phandle": 6
+  },
+  "unchanged_default_console": {
+    "defaultKernel": "/nix/store/03zyl0mjsxbjyisb3lhjaxswpxm71ap6-linux-riscv64-unknown-linux-gnu-6.6.36-xuantie",
+    "consoleKernel": "/nix/store/xw38bf25mrd5mkjc2gg5qdkglbkl8b7v-linux-riscv64-unknown-linux-gnu-7.3.0-rc5",
+    "consoleDtb": "/nix/store/rr14di4rihw97dvcnjrd1f54p05bmqpm-k230-tdisplay-mainline.dtb"
+  },
+  "full_nix_kernel_build": "PASSED",
+  "matching_bundle_inspection": "PASSED",
+  "normal_protected_operator_manifest": "NOT_CREATED_BY_THIS_HOST_WORK",
+  "physical_no_flag_restart": "UNVERIFIED",
+  "physical_usable_root": "UNVERIFIED",
+  "physical_touch": "UNVERIFIED"
+}

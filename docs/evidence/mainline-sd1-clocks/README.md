@@ -71,8 +71,8 @@ This is compiled DT structure proof, not schema or physical clock proof.
 [identities.json](identities.json) compares evaluated output identities with
 the exact base revision. Default kernel `03zyl0mjsxbjyisb3lhjaxswpxm71ap6`,
 console kernel `xw38bf25mrd5mkjc2gg5qdkglbkl8b7v` and console DTB
-`rr14di4rihw97dvcnjrd1f54p05bmqpm` are unchanged. The candidate full kernel
-identity is evaluated only until its separate full-build proof is added.
+`rr14di4rihw97dvcnjrd1f54p05bmqpm` are unchanged. The initial identity record predates the full build; the separate successful
+retry proof below records these paths as realized outputs.
 The first baseline evaluation used a short `rev=` and was rejected by Nix;
 it was corrected to the full Git SHA before comparison.
 
@@ -142,8 +142,8 @@ links, BTF, Image and module generation finished; `buildPhase` took 54 minutes
 kernel or matching bundle. [Invocation](kernel-build-failure-invocation.log),
 [full failure log](kernel-build-failure.log), [capacity](disk-failure-capacity.log)
 and [structured failure](full-build-failure.json) preserve the command and limits.
-The `/nix` NVMe volume has zero available bytes, 100% usage, and only 10% inode
-usage. Linkers spent long intervals in D/storage wait. An authorized attempt
+At that failure, the `/nix` NVMe volume had zero available bytes, 100% usage,
+and only 10% inode usage. Linkers spent long intervals in D/storage wait. An authorized attempt
 to improve this job's linker I/O priority failed `Operation not permitted`;
 no process priority or unrelated workload was changed.
 
@@ -160,19 +160,76 @@ The first diagnostic copy looked for the Image in the source root; this
 derivation actually uses its nested `build/` directory. The corrected copy
 uses `build/arch/riscv/boot/Image`. No image was accepted from the failed lookup.
 
-Kernel `9vdk79pa4pm38mlmbflkqh4i4sc9kha0`, matching bundle
+At that failed run, kernel `9vdk79pa4pm38mlmbflkqh4i4sc9kha0`, matching bundle
 `5yqilsfyj35jzrcqjjqilkr6sd47qlms` and system
-`9gdmsrh2igqla1qz0ll97czfw2x42icw` remain **evaluated predictions only**.
+`9gdmsrh2igqla1qz0ll97czfw2x42icw` were **evaluated predictions only**.
 The dependent bundle/inspector were not run after the failed kernel build.
 Once store capacity is restored, retry the named kernel command, then build
 `.#kernelMainlineDrmTrialBootFiles` sequentially under the same lock and
 inspect that exact realized bundle with `tools/mainline-drm-trial-inspect.py`.
 Source/object/DTB proof remains valid independently of this storage failure.
 
+## Successful exact retry and matching bundle
+
+Capacity was restored externally before the retry; this worker performed no
+cleanup, garbage collection or deletion. Fresh `df -h /nix/store
+/nix/var/nix/builds` distinguishes `/nix/store` on the NVMe volume (473 GB free
+before retry, 446 GB after) from `/nix` on the array (1.2 TB free).
+[Fresh capacity](retry-capacity-2026-10-03.log) preserves both observations.
+The source and standalone DTB remained present and unchanged. Source code at
+`b5af2d64e85116c5897275222949401225f73d04` was retried from clean evidence
+commit `1aa114954019a4267ffccf92f7658efbfb8b98f8`, on the same worktree/base.
+UTC timestamps fall on October 3 (October 2 in the local America/Chicago date).
+
+```sh
+flock /tmp/k230-nix-build.lock nix build .#kernelMainlineDrm \
+  --no-link --print-out-paths --max-jobs 1 --cores 16 --keep-failed -L
+flock /tmp/k230-nix-build.lock nix build .#kernelMainlineDrmTrialBootFiles \
+  --no-link --print-out-paths --max-jobs 1 --cores 16 --keep-failed -L
+python3 tools/mainline-drm-trial-inspect.py \
+  /nix/store/5yqilsfyj35jzrcqjjqilkr6sd47qlms-k230-mainline-drm-trial-boot-files
+```
+
+These commands ran sequentially and each exited **0**. Kernel retry started
+`2026-10-03T03:04:13Z`; successful exit was observed by
+`2026-10-03T03:25:37Z`. Its build phase took 15 minutes 42 seconds and
+installation 2 minutes 30 seconds. Bundle build started at that latter time;
+exit zero was observed by `2026-10-03T03:26:52Z`. The sole build slot was then
+released. [Kernel log](kernel-retry-2026-10-03.log),
+[bundle log](bundle-retry-2026-10-03.log) and
+[inspector log](bundle-inspect-2026-10-03.log) preserve the actual results.
+The full driver compilation reports the unchanged `plat_sdio_rescan` prototype
+warning; Nix's ELF fixup prints ignored `patchelf` diagnostics for kernel/dev
+files and completes successfully.
+
+[Structured successful proof](full-build-success-2026-10-03.json) records exact
+realized source, kernel, DTB, system and bundle paths, artifact byte counts,
+SHA-256 and CRC32, source driver/patch/config facts, and unchanged default and
+console identities. It is a host artifact inventory, not the protected normal
+operator manifest. The realized system is
+`/nix/store/9gdmsrh2igqla1qz0ll97czfw2x42icw-nixos-system-nixos-26.11.20260919.20b1ddd`;
+its kernel is
+`/nix/store/9vdk79pa4pm38mlmbflkqh4i4sc9kha0-linux-riscv64-unknown-linux-gnu-7.3.0-rc5`.
+The 38,530,560-byte Image SHA-256 is
+`bca08f824e1db9fc1ee6be455a8a397b6446d9301cf4ae1e517faf9b106ca12f`,
+identical to the diagnostic Image preserved from the failed install. This
+successful run supplies the valid Nix output and matching closure.
+
+The inspector checks all four `SHA256SUMS` entries, Image against the system
+kernel, DTB bootargs against the environment file, uImage header/payload CRCs,
+initrd payload against the system initrd, and all 629 closure paths. A fresh
+`fdtget` check of the **bundle DTB** also confirms five names and IDs
+`core/bus/axi/block/timer` → `31/13/29/26/35`, the single provider phandle and
+unchanged legacy compatible. Its 11,065-byte DTB differs from the 10,840-byte
+standalone DTB because the bundle writes matching system bootargs; both hashes
+are explicit. No permanent or volatile clock-ignore argument was added by this
+build. No board operation or physical proof occurred here.
+
 ## Remaining gate
 
-After the separate reviewed full kernel and matching trial-bundle build,
-the sole board operator must validate/stage that exact bundle and run quiet
+The full kernel and matching bundle now pass host checks. The sole board
+operator must create/validate a protected matching manifest and fresh normal
+report, stage that exact bundle, and run quiet
 minimal runtime tracing with explicit candidate selection, **without**
 `--ignore-unused-clocks`. Require readiness, receipt/true/proc/uptime, runtime
 readback `Y`, ordinary unused-clock cleanup, reboot, SPL and fresh protected
@@ -182,12 +239,20 @@ preserve recovery. Only then proceed separately to returned label and
 unproved. Root owns staging, board reservation, physical evidence and all
 planning/dashboard updates.
 
-## Retry queued after capacity recovery
 
-The coordinator and worker rechecked current capacity after the original
-failure: `/nix/store` now has about 473 GB available; `/nix` itself is on
-a distinct array volume. The exact source and DTB outputs remain present.
-The worker restarted the named full kernel build under the sole build lock
-with `--max-jobs 1 --cores 16`, followed by the matching bundle and inspector
-only after kernel success. No cleanup or board action was performed for this
-retry. This is a running build, not successful kernel/bundle or physical proof.
+After those operator preparations, the explicit candidate command is:
+
+```sh
+python3 tools/mainline-drm-initrd-shell-trial.py --mode minimal \
+  --runtime-shutdown-trace \
+  --bundle /nix/store/5yqilsfyj35jzrcqjjqilkr6sd47qlms-k230-mainline-drm-trial-boot-files \
+  --manifest "$HOME/tmp/k230-mainline-sd1-board/candidate-manifest.json" \
+  --normal-report "$HOME/tmp/k230-mainline-sd1-board/normal-report.json" \
+  --log "$HOME/tmp/k230-mainline-sd1-board/minimal-uart.log" \
+  --result "$HOME/tmp/k230-mainline-sd1-board/minimal-result.json"
+```
+
+These private paths are placeholders for the sole operator's protected
+preparation; no manifest, report or serial output is created by this evidence
+commit. Review/merge/push/deployment of this proof remains with the coordinator.
+No task checkbox or accepted capability is changed.

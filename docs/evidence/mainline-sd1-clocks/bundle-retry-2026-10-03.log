@@ -1,0 +1,83 @@
+these 10 derivations will be built:
+  /nix/store/8rn3fkk14q8rapznb2lk9rbk6nwzh6xa-55-nixos-aslr-entropy.conf.drv
+  /nix/store/fh32zpw3sx3k7jpwya30i589n99s9gvs-etc.drv
+  /nix/store/1lv1iyznahmqh75mjl1hidqghc20j6c0-activate.drv
+  /nix/store/39g1krbyhcs8h1jblj1bd4dwdv44gs5k-linux-riscv64-unknown-linux-gnu-7.3.0-rc5-modules.drv
+  /nix/store/qz4gy1gaf03mc700a835kzygrgwbhhlr-linux-riscv64-unknown-linux-gnu-7.3.0-rc5-modules-shrunk.drv
+  /nix/store/v0m2hh32qzgpjf76w88yn2fip0ac0km5-initrd-linux-riscv64-unknown-linux-gnu-7.3.0-rc5.drv
+  /nix/store/sxflqaf01g0cyiqzj41k9sr6ql571mii-boot.json.drv
+  /nix/store/lpfy2yv5mbij78vw9g1s74bh1016qc8b-nixos-system-nixos-26.11.20260919.20b1ddd.drv
+  /nix/store/0a5j6w1n7vzz5v6pgbv7pk9dzyb9ilk0-closure-info.drv
+  /nix/store/g7w90zga8p71fq3fpm01md5vpkkz5196-k230-mainline-drm-trial-boot-files.drv
+building '/nix/store/39g1krbyhcs8h1jblj1bd4dwdv44gs5k-linux-riscv64-unknown-linux-gnu-7.3.0-rc5-modules.drv'...
+linux-riscv64-unknown-linux-gnu> structuredAttrs is enabled
+linux-riscv64-unknown-linux-gnu> created 1 symlinks in user environment
+linux-riscv64-unknown-linux-gnu> structuredAttrs is enabled
+linux-riscv64-unknown-linux-gnu> kernel version is 7.3.0-rc5
+building '/nix/store/8rn3fkk14q8rapznb2lk9rbk6nwzh6xa-55-nixos-aslr-entropy.conf.drv'...
+building '/nix/store/qz4gy1gaf03mc700a835kzygrgwbhhlr-linux-riscv64-unknown-linux-gnu-7.3.0-rc5-modules-shrunk.drv'...
+linux-riscv64-unknown-linux-gnu> kernel version is 7.3.0-rc5
+linux-riscv64-unknown-linux-gnu> 'lib/firmware/regulatory.db.zst' -> '/nix/store/qvfyd1irpbhha31dwqg43f3awqq2xr83-linux-riscv64-unknown-linux-gnu-7.3.0-rc5-modules-shrunk/lib/firmware/regulatory.db.zst'
+linux-riscv64-unknown-linux-gnu> 'lib/firmware/regulatory.db.p7s.zst' -> '/nix/store/qvfyd1irpbhha31dwqg43f3awqq2xr83-linux-riscv64-unknown-linux-gnu-7.3.0-rc5-modules-shrunk/lib/firmware/regulatory.db.p7s.zst'
+linux-riscv64-unknown-linux-gnu> lib/firmware/edid not found, skipping.
+building '/nix/store/fh32zpw3sx3k7jpwya30i589n99s9gvs-etc.drv'...
+building '/nix/store/v0m2hh32qzgpjf76w88yn2fip0ac0km5-initrd-linux-riscv64-unknown-linux-gnu-7.3.0-rc5.drv'...
+initrd-linux-riscv64-unknown-linux-gnu> structuredAttrs is enabled
+initrd-linux-riscv64-unknown-linux-gnu> /bin -> /nix/store/fdxwq7dnxazi7g8bhkv1k8ra0qv3hn7d-initrd-bin-env/bin
+initrd-linux-riscv64-unknown-linux-gnu> /etc/dbus-1 -> /nix/store/p8cjj44y28niyrrhhqqkb03w8fla20w2-dbus-1
+initrd-linux-riscv64-unknown-linux-gnu> /etc/group -> /nix/store/xdwz4maimh81fg5jsn64h0qb6nhv8y80-initrd-group
+initrd-linux-riscv64-unknown-linux-gnu> /etc/hostname -> /nix/store/9r95rrq5jmk6bhvwsaghxiqkb9jdg2mr-initrd-hostname
+initrd-linux-riscv64-unknown-linux-gnu> /etc/initrd-release -> /nix/store/wbih5k9866h4j7nchgxsv248bj2bf201-initrd-release
+initrd-linux-riscv64-unknown-linux-gnu> /etc/kbd/keymaps -> /nix/store/y9cra3y997hh7c6cl7fpbqf8ax56s9qr-console-env/share/keymaps
+initrd-linux-riscv64-unknown-linux-gnu> /etc/modprobe.d/debian.conf -> /nix/store/pvziylrsmhaqpkl3nzw4bvidry5gjy6i-kmod-debian-aliases.conf-riscv64-unknown-linux-gnu-30+20230601-2
+initrd-linux-riscv64-unknown-linux-gnu> /etc/modprobe.d/nixos.conf -> /nix/store/2xbfkhpbfxsc2i09b56gimxgmvsl4j0n-etc-modprobe.d-nixos.conf
+initrd-linux-riscv64-unknown-linux-gnu> /etc/modprobe.d/systemd.conf -> /nix/store/srwrq12f962d5prr382vvsq76nfvmm84-systemd-riscv64-unknown-linux-gnu-261.2/lib/modprobe.d/systemd.conf
+initrd-linux-riscv64-unknown-linux-gnu> /etc/modprobe.d/ubuntu.conf -> /nix/store/3jd6bf48xm18ky9ms3lq0qc01j3dskhr-kmod-blacklist-riscv64-unknown-linux-gnu-31+20240202-2ubuntu8/modprobe.conf
+initrd-linux-riscv64-unknown-linux-gnu> /etc/modules-load.d/nixos.conf -> /nix/store/64wmgniff3g99m5952mvjbw20b3p8b0q-initrd-nixos.conf
+initrd-linux-riscv64-unknown-linux-gnu> /etc/os-release -> /nix/store/wbih5k9866h4j7nchgxsv248bj2bf201-initrd-release
+initrd-linux-riscv64-unknown-linux-gnu> /etc/passwd -> /nix/store/25d60xd4wmjqa7m49k5zf2dnsvyg2drq-initrd-passwd
+initrd-linux-riscv64-unknown-linux-gnu> /etc/shadow -> /nix/store/81xxf9ghy257k3c3vfw3wb4c62p5vj1f-initrd-shadow
+initrd-linux-riscv64-unknown-linux-gnu> /etc/shells -> /nix/store/grrkv9h5004brlw7jcakc25d7iplkn9i-initrd-shells
+initrd-linux-riscv64-unknown-linux-gnu> /etc/sysctl.d/nixos.conf -> /nix/store/sj4zs8nl75cj90i4ch61ib7sqbdxf9zk-initrd-nixos.conf
+initrd-linux-riscv64-unknown-linux-gnu> /etc/systemd/system -> /nix/store/i1b9kchr2jvllnprnb2ic5ch1c6hd07c-initrd-units
+initrd-linux-riscv64-unknown-linux-gnu> /etc/systemd/system.conf -> /nix/store/bfx49qgnm6z1zqlz9dyv800c15x79l3g-initrd-system.conf
+initrd-linux-riscv64-unknown-linux-gnu> /etc/terminfo/l/linux -> /nix/store/r9yzbkcdryrz0gz38i5brga335aq0mc4-ncurses-riscv64-unknown-linux-gnu-6.6/share/terminfo/l/linux
+initrd-linux-riscv64-unknown-linux-gnu> /etc/terminfo/v/vt100 -> /nix/store/r9yzbkcdryrz0gz38i5brga335aq0mc4-ncurses-riscv64-unknown-linux-gnu-6.6/share/terminfo/v/vt100
+initrd-linux-riscv64-unknown-linux-gnu> /etc/terminfo/v/vt102 -> /nix/store/r9yzbkcdryrz0gz38i5brga335aq0mc4-ncurses-riscv64-unknown-linux-gnu-6.6/share/terminfo/v/vt102
+initrd-linux-riscv64-unknown-linux-gnu> /etc/terminfo/v/vt220 -> /nix/store/r9yzbkcdryrz0gz38i5brga335aq0mc4-ncurses-riscv64-unknown-linux-gnu-6.6/share/terminfo/v/vt220
+initrd-linux-riscv64-unknown-linux-gnu> /etc/udev/rules.d -> /nix/store/grbingyip4f722kiw8bapi448si7xq55-initrd-udev-rules
+initrd-linux-riscv64-unknown-linux-gnu> /etc/vconsole.conf -> /nix/store/ggra892rbyymmx9734gqdzzr6fc4fbi1-vconsole.conf
+initrd-linux-riscv64-unknown-linux-gnu> /init -> /nix/store/srwrq12f962d5prr382vvsq76nfvmm84-systemd-riscv64-unknown-linux-gnu-261.2/lib/systemd/systemd
+initrd-linux-riscv64-unknown-linux-gnu> /lib -> /nix/store/qvfyd1irpbhha31dwqg43f3awqq2xr83-linux-riscv64-unknown-linux-gnu-7.3.0-rc5-modules-shrunk/lib
+initrd-linux-riscv64-unknown-linux-gnu> /sbin -> /nix/store/fdxwq7dnxazi7g8bhkv1k8ra0qv3hn7d-initrd-bin-env/sbin
+initrd-linux-riscv64-unknown-linux-gnu> /usr/bin -> /nix/store/fdxwq7dnxazi7g8bhkv1k8ra0qv3hn7d-initrd-bin-env/bin
+initrd-linux-riscv64-unknown-linux-gnu> /usr/sbin -> /nix/store/fdxwq7dnxazi7g8bhkv1k8ra0qv3hn7d-initrd-bin-env/sbin
+initrd-linux-riscv64-unknown-linux-gnu> Warning: Couldn't satisfy dependency libcrypto.so.4 for "/nix/store/srwrq12f962d5prr382vvsq76nfvmm84-systemd-riscv64-unknown-linux-gnu-261.2/lib/systemd/systemd-tpm2-setup"
+initrd-linux-riscv64-unknown-linux-gnu> Warning: Couldn't satisfy dependency libcrypto.so.4 for "/nix/store/srwrq12f962d5prr382vvsq76nfvmm84-systemd-riscv64-unknown-linux-gnu-261.2/lib/systemd/systemd-pcrextend"
+initrd-linux-riscv64-unknown-linux-gnu> Warning: Couldn't satisfy dependency libbpf.so.0 for "/nix/store/srwrq12f962d5prr382vvsq76nfvmm84-systemd-riscv64-unknown-linux-gnu-261.2/lib/systemd/systemd-executor"
+initrd-linux-riscv64-unknown-linux-gnu> Warning: Couldn't satisfy dependency libcrypto.so.4 for "/nix/store/srwrq12f962d5prr382vvsq76nfvmm84-systemd-riscv64-unknown-linux-gnu-261.2/lib/systemd/systemd-executor"
+initrd-linux-riscv64-unknown-linux-gnu> Warning: Couldn't satisfy dependency libcrypt.so.1 for "/nix/store/srwrq12f962d5prr382vvsq76nfvmm84-systemd-riscv64-unknown-linux-gnu-261.2/lib/systemd/libsystemd-shared-261.so"
+initrd-linux-riscv64-unknown-linux-gnu> Warning: Couldn't satisfy dependency libcrypt.so.1.1 for "/nix/store/srwrq12f962d5prr382vvsq76nfvmm84-systemd-riscv64-unknown-linux-gnu-261.2/lib/systemd/libsystemd-shared-261.so"
+initrd-linux-riscv64-unknown-linux-gnu> Warning: Couldn't satisfy dependency libbpf.so.0 for "/nix/store/srwrq12f962d5prr382vvsq76nfvmm84-systemd-riscv64-unknown-linux-gnu-261.2/lib/systemd/libsystemd-core-261.so"
+initrd-linux-riscv64-unknown-linux-gnu> Warning: Couldn't satisfy dependency libcrypto.so.4 for "/nix/store/srwrq12f962d5prr382vvsq76nfvmm84-systemd-riscv64-unknown-linux-gnu-261.2/bin/bootctl"
+initrd-linux-riscv64-unknown-linux-gnu> Warning: Couldn't satisfy dependency libcrypto.so.4 for "/nix/store/srwrq12f962d5prr382vvsq76nfvmm84-systemd-riscv64-unknown-linux-gnu-261.2/bin/resolvectl"
+initrd-linux-riscv64-unknown-linux-gnu> Warning: Couldn't satisfy dependency libssl.so.4 for "/nix/store/srwrq12f962d5prr382vvsq76nfvmm84-systemd-riscv64-unknown-linux-gnu-261.2/bin/resolvectl"
+initrd-linux-riscv64-unknown-linux-gnu> Warning: Couldn't satisfy dependency libcrypto.so.4 for "/nix/store/srwrq12f962d5prr382vvsq76nfvmm84-systemd-riscv64-unknown-linux-gnu-261.2/bin/.systemd-cryptsetup-wrapped"
+initrd-linux-riscv64-unknown-linux-gnu> Warning: Couldn't satisfy dependency libcrypto.so.4 for "/nix/store/srwrq12f962d5prr382vvsq76nfvmm84-systemd-riscv64-unknown-linux-gnu-261.2/bin/homectl"
+initrd-linux-riscv64-unknown-linux-gnu> Warning: Couldn't satisfy dependency libcrypto.so.4 for "/nix/store/srwrq12f962d5prr382vvsq76nfvmm84-systemd-riscv64-unknown-linux-gnu-261.2/bin/systemd-repart"
+building '/nix/store/1lv1iyznahmqh75mjl1hidqghc20j6c0-activate.drv'...
+activate> structuredAttrs is enabled
+building '/nix/store/sxflqaf01g0cyiqzj41k9sr6ql571mii-boot.json.drv'...
+boot.json> structuredAttrs is enabled
+building '/nix/store/lpfy2yv5mbij78vw9g1s74bh1016qc8b-nixos-system-nixos-26.11.20260919.20b1ddd.drv'...
+nixos-system-nixos> structuredAttrs is enabled
+building '/nix/store/0a5j6w1n7vzz5v6pgbv7pk9dzyb9ilk0-closure-info.drv'...
+closure-info> structuredAttrs is enabled
+building '/nix/store/g7w90zga8p71fq3fpm01md5vpkkz5196-k230-mainline-drm-trial-boot-files.drv'...
+k230-mainline-drm-trial-boot-files> Image Name:   initrd
+k230-mainline-drm-trial-boot-files> Created:      Tue Jan  1 00:00:00 1980
+k230-mainline-drm-trial-boot-files> Image Type:   RISC-V Linux RAMDisk Image (uncompressed)
+k230-mainline-drm-trial-boot-files> Data Size:    27311048 Bytes = 26670.95 KiB = 26.05 MiB
+k230-mainline-drm-trial-boot-files> Load Address: 00000000
+k230-mainline-drm-trial-boot-files> Entry Point:  00000000
+/nix/store/5yqilsfyj35jzrcqjjqilkr6sd47qlms-k230-mainline-drm-trial-boot-files

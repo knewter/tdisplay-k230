@@ -1,0 +1,8 @@
+Before exact retry, 2026-10-03T03:04:13Z
+Filesystem                         Size  Used Avail Use% Mounted on
+/dev/nvme1n1p1                     1.8T  1.3T  473G  73% /nix/store
+/dev/mapper/VolGroupArray-lvmedia   15T   13T  1.2T  92% /nix
+After kernel and bundle, 2026-10-03T03:26:52Z
+Filesystem                         Size  Used Avail Use% Mounted on
+/dev/nvme1n1p1                     1.8T  1.3T  446G  75% /nix/store
+/dev/mapper/VolGroupArray-lvmedia   15T   13T  1.2T  92% /nix
