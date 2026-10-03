@@ -718,3 +718,18 @@ actual realized-bundle prepare differs only by the two removed tokens and
 uses 317 bytes. Narrow proof and operator command:
 `docs/evidence/mainline-system-trial/marker-free-controller-host-2026-10-03.md`.
 Host proof only; physical root/panel/glass/return and 5b.5 remain UNVERIFIED.
+
+
+## 2026-10-03 marker-free physical comparison
+
+Same staged Image/initrd/DT/closure with initramfs_async=0 retained and both
+marker flags removed passed preflight, five loads/CRCs and exact printed plus
+kernel-received arguments. No diagnostic records, as expected; unpacking,
+initrd-free and unused-kernel-image-free messages appeared, but no systemd/login
+within 180 seconds. Exit 1 released UART without further input. New private
+camera appears dark with documented limits. See
+`docs/evidence/mainline-system-trial/marker-free-physical-2026-10-03/README.md`
+and fixed result JSON. Another operator reset/protected normal postflight is
+pending. Source audit suggests a separately reviewed same-initrd Bash-PID1
+comparison, not ordinary-root acceptance. 5b.5 remains unchecked; mainline
+root/panel/glass/automatic return and production remain UNVERIFIED.
