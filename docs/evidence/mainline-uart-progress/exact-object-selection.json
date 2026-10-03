@@ -1,0 +1,6 @@
+{
+  "dev": "/nix/store/a3r0fwxh2s594xgz4amb4ydbp22l3w65-linux-riscv64-unknown-linux-gnu-7.3.0-rc5-dev",
+  "exact": "/nix/store/gwx7li1qqrii4183pbs8pcn4fvg2qidc-k230-mainline-uart-progress-exact-objects.drv",
+  "kernel": "/nix/store/yzqsw5jsznyixq2i7c4kws74knp706q7-linux-riscv64-unknown-linux-gnu-7.3.0-rc5.drv",
+  "preliminary": "/nix/store/q3fd8jpm728j6yv3mbvbzhljfmsna084-k230-mainline-uart-progress-objects.drv"
+}
