@@ -228,6 +228,10 @@
             inherit (pkgsCross) applyPatches lib;
           });
         };
+        # Getter-only autonomous UART observation; no existing variant changes.
+        k230-mainline-uart-observer = self.nixosConfigurations.k230-mainline-drm-trial.extendModules {
+          modules = [ ./nix/mainline-uart-observer/module.nix ];
+        };
       };
 
       checks.${buildSystem} = {
@@ -430,6 +434,25 @@
           cfg = self.nixosConfigurations.k230-mainline-drm-trial.config;
           kernel = self.nixosConfigurations.k230-mainline-drm-trial.config.boot.kernelPackages.kernel;
           deviceTree = self.packages.${buildSystem}.deviceTreeMainlineDrm;
+        };
+
+        mainline-uart-observer = pkgsCross.callPackage ./nix/mainline-uart-observer { };
+        toplevel-mainline-uart-observer = self.nixosConfigurations.k230-mainline-uart-observer.config.system.build.toplevel;
+        kernelMainlineUartObserverBootFiles = let
+          cfg = self.nixosConfigurations.k230-mainline-uart-observer.config;
+          trial = pkgs.callPackage ./nix/mainline-drm-trial.nix {
+            inherit cfg;
+            kernel = cfg.boot.kernelPackages.kernel;
+            deviceTree = self.packages.${buildSystem}.deviceTreeMainlineDrm;
+          };
+        in pkgs.callPackage ./nix/mainline-uart-observer/bundle.nix {
+          inherit trial;
+          baseBundle = self.packages.${buildSystem}.kernelMainlineDrmTrialBootFiles;
+          kernel = cfg.boot.kernelPackages.kernel;
+          system = cfg.system.build.toplevel;
+          helper = self.nixosConfigurations.k230-mainline-uart-observer.pkgs.callPackage ./nix/mainline-uart-observer {
+            systemd = cfg.boot.initrd.systemd.package;
+          };
         };
 
         # openspec/changes/the-board-runs-a-mainline-kernel, milestone 1: the
