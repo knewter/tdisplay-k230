@@ -570,3 +570,16 @@ and result JSON. The user pressed reset and protected normal recovery is verifie
 exact normal identities, three active services, eight unchanged files and
 registration absent. Automatic return remains UNVERIFIED; ordinary root/panel/
 glass touch and task5b.5 stay open.
+
+## 2026-10-03 separate direct-SBI boundary source proof
+
+The reviewed optional `kernelMainlineBootTraceSbiTrialBootFiles` source adds
+four single-attempt public DBCN records around the two printk marker calls
+identified by the physical attempt. It preserves all twelve existing output
+identities, including the original trace kernel/system/bundle; there is no new
+console registration or retry/fallback loop. Ten focused native tests, actual
+RISC-V object/API/lifetime/alignment proof and Nix/strictspec checks passed.
+See `docs/evidence/mainline-system-trial/boot-boundary-sbi-host-2026-10-03.md`
+for exact commands, source paths and interpretation limits. Full matching build
+and physical direct-SBI output/root/login/touch/return remain UNVERIFIED; the
+user-reset recovery of the previous diagnostic is verified. Task5b.5 stays open.
