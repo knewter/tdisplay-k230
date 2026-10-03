@@ -544,3 +544,15 @@ existing derivation identities passed. Commands, pins and limitations are in
 Full kernel build/artifact inspection and physical marker/init/root/recovery/
 touch proof remain UNVERIFIED. An enter-only marker is only the last visible
 boundary; the marker itself can block. Task 5b.5 stays unchecked.
+
+## 2026-10-03 matching boot-boundary bundle host proof
+
+The opt-in `kernelMainlineBootTraceTrialBootFiles` full build passed at source
+`7e1e3a60d7ebf607a8312324ae890b97f089b3d1`, producing `cr8bv4s6…` with kernel
+`908wxcz…` and system `dxwjvz…`. Exact Image/initrd/DT/CRC/closure inspection
+and actual ordinary controller preparation passed. The actual built config
+has KUnit disabled; the five-clock hardware DT is unchanged except bootargs.
+See `docs/evidence/mainline-system-trial/boot-boundary-build-2026-10-03/README.md`
+and its result JSON for commands, paths, hashes and remaining physical gates.
+No board was used for this increment; marker output/root/touch/return remain
+UNVERIFIED and task 5b.5 remains unchecked.
