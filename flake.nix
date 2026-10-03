@@ -523,6 +523,17 @@
           deviceTree = self.packages.${buildSystem}.deviceTreeMainlineDrm;
         };
 
+        kernelMainlineUartProgress = pkgsCross.callPackage ./nix/kernel-mainline-uart-progress.nix {
+          kernelMainline = pkgsCross.callPackage ./nix/kernel-mainline.nix {
+            inherit (pkgsCross) buildLinux;
+          };
+        };
+        kernelMainlineUartProgressObjects = pkgs.callPackage ./nix/kernel-mainline-uart-progress-objects.nix {
+          crossCc = pkgsCross.stdenv.cc;
+          kernel = self.packages.${buildSystem}.kernelMainlineUartProgress;
+          baseKernel = self.packages.${buildSystem}.kernelMainlineBootTraceSbiOnly;
+        };
+
         mainline-uart-observer = pkgsCross.callPackage ./nix/mainline-uart-observer { };
         toplevel-mainline-uart-observer = self.nixosConfigurations.k230-mainline-uart-observer.config.system.build.toplevel;
         kernelMainlineUartObserverBootFiles = let

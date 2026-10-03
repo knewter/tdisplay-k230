@@ -1,0 +1,98 @@
+--- a/drivers/tty/serial/8250/8250_core.c
++++ b/drivers/tty/serial/8250/8250_core.c
+@@ -17,0 +18,5 @@
++#include <linux/k230_uart_progress.h>
++#include <linux/irq.h>
++#include <linux/irqdomain.h>
++#include <linux/kernel_stat.h>
++#include <linux/of.h>
+@@ -674,0 +680,55 @@
++
++#ifdef CONFIG_K230_UART_PROGRESS
++/* Internal cached-only snapshot; serial_mutex pins registration/removal.
++ * Plain spin try-lock intentionally avoids nbcon ownership/flush callbacks.
++ */
++void k230_uart_progress_snapshot(struct k230_uart_progress_snapshot *out)
++{
++	struct uart_8250_port *up = &serial8250_ports[0];
++	struct uart_port *p = &up->port;
++	struct irq_data *data;
++	unsigned long flags;
++	bool binding = false;
++
++	memset(out, 0, sizeof(*out));
++	out->state = K230_UP_LIFETIME_BUSY;
++	if (!mutex_trylock(&serial_mutex))
++		return;
++	out->state = K230_UP_UNAVAILABLE;
++	if (!p->dev || !p->state || p->type == PORT_UNKNOWN)
++		goto unlock_lifetime;
++	out->state = K230_UP_BINDING;
++	if (p->line != 0 || p->mapbase != 0x91400000 || !p->irq ||
++	    !of_device_is_compatible(p->dev->of_node, "snps,dw-apb-uart"))
++		goto unlock_lifetime;
++	rcu_read_lock();
++	data = irq_get_irq_data(p->irq);
++	if (data && data->domain && data->hwirq == 16 &&
++	    of_device_is_compatible(irq_domain_get_of_node(data->domain), "canaan,k230-plic"))
++		binding = true;
++	rcu_read_unlock();
++	if (!binding)
++		goto unlock_lifetime;
++	out->state = K230_UP_PORT_BUSY;
++	if (!spin_trylock_irqsave(&p->lock, flags))
++		goto unlock_lifetime;
++	out->irq = p->irq;
++	out->rx = p->icount.rx;
++	out->tx = p->icount.tx;
++	out->frame = p->icount.frame;
++	out->parity = p->icount.parity;
++	out->overrun = p->icount.overrun;
++	out->buf_overrun = p->icount.buf_overrun;
++	out->ier = up->ier;
++	out->read_mask = p->read_status_mask;
++	out->ignore_mask = p->ignore_status_mask;
++	/* This rate also has writers outside the port lock. Independent sample. */
++	out->uartclk = READ_ONCE(p->uartclk);
++	spin_unlock_irqrestore(&p->lock, flags);
++	out->irq_count = kstat_irqs_usr(out->irq);
++	out->state = K230_UP_OK;
++unlock_lifetime:
++	mutex_unlock(&serial_mutex);
++}
++#endif
++
+--- a/drivers/clocksource/timer-riscv.c
++++ b/drivers/clocksource/timer-riscv.c
+@@ -14,0 +15 @@
++#include <linux/k230_uart_progress.h>
+@@ -71,0 +73,8 @@
++#ifdef CONFIG_K230_UART_PROGRESS
++static unsigned int k230_uart_progress_ready_timer_irq;
++unsigned int k230_uart_progress_timer_irq(void)
++{
++	return READ_ONCE(k230_uart_progress_ready_timer_irq);
++}
++#endif
++
+@@ -200,0 +210,4 @@
++#ifdef CONFIG_K230_UART_PROGRESS
++	if (!error)
++		WRITE_ONCE(k230_uart_progress_ready_timer_irq, riscv_clock_event_irq);
++#endif
+--- a/drivers/soc/canaan/Kconfig
++++ b/drivers/soc/canaan/Kconfig
+@@ -18,0 +19,9 @@
++
++config K230_UART_PROGRESS
++	bool "Finite optional K230 cached UART/IRQ progress diagnosis"
++	depends on RISCV && ARCH_CANAAN && RISCV_SBI && RISCV_TIMER=y
++	depends on SERIAL_8250=y && SERIAL_8250_DW=y && OF
++	help
++	  Separately selected diagnostic. The exact runtime opt-in creates
++	  one finite normal-priority worker, with cached-only snapshots and
++	  single-attempt public SBI records. No production or recovery claim.
+--- a/drivers/soc/canaan/Makefile
++++ b/drivers/soc/canaan/Makefile
+@@ -4,0 +5 @@
++obj-$(CONFIG_K230_UART_PROGRESS) += k230-uart-progress.o

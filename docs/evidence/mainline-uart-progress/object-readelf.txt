@@ -1,0 +1,40 @@
+8250_core.o
+  Class:                             ELF64
+  Data:                              2's complement, little endian
+  Type:                              REL (Relocatable file)
+  Machine:                           RISC-V
+  [ 1] .text             PROGBITS        0000000000000000 000040 001b20 00  AX  0   0  8
+  [ 5] .bss              NOBITS          0000000000000000 001cb8 000f10 00  WA  0   0  8
+  [21] .init.text        PROGBITS        0000000000000000 001e20 000248 00  AX  0   0  8
+  [75] .sbss             NOBITS          0000000000000000 002310 000009 00  WA  0   0  8
+ 10131: 0000000000001902   542 FUNC    GLOBAL DEFAULT    1 k230_uart_progress_snapshot
+timer-riscv.o
+  Class:                             ELF64
+  Data:                              2's complement, little endian
+  Type:                              REL (Relocatable file)
+  Machine:                           RISC-V
+  [ 1] .text             PROGBITS        0000000000000000 000040 000300 00  AX  0   0  8
+  [ 5] .bss              NOBITS          0000000000000000 0003f0 000010 00  WA  0   0  8
+  [19] .init.text        PROGBITS        0000000000000000 000718 000318 00  AX  0   0  8
+  [43] .sbss             NOBITS          0000000000000000 000d60 000009 00  WA  0   0  4
+    59: 0000000000000000     4 OBJECT  LOCAL  DEFAULT   43 k230_uart_progress_ready_timer_irq
+  4509: 00000000000002e0    32 FUNC    GLOBAL DEFAULT    1 k230_uart_progress_timer_irq
+k230-uart-progress.o
+  Class:                             ELF64
+  Data:                              2's complement, little endian
+  Type:                              REL (Relocatable file)
+  Machine:                           RISC-V
+  [ 1] .text             PROGBITS        0000000000000000 000040 0001d8 00  AX  0   0  8
+  [ 4] .bss              NOBITS          0000000000000000 000218 000100 00  WA  0   0 256
+  [ 6] .init.text        PROGBITS        0000000000000000 0002d0 0000e8 00  AX  0   0  8
+  [19] .sbss             NOBITS          0000000000000000 000408 000001 00  WA  0   0  1
+     9: 000000000000000e    82 FUNC    LOCAL  DEFAULT    6 k230_uart_progress_setup
+    15: 0000000000000000     1 OBJECT  LOCAL  DEFAULT   19 k230_uart_progress_enabled
+    19: 000000000000000e   456 FUNC    LOCAL  DEFAULT    1 k230_uart_progress_worker
+    24: 000000000000006e   120 FUNC    LOCAL  DEFAULT    6 k230_uart_progress_init
+    31: 0000000000000000   256 OBJECT  LOCAL  DEFAULT    4 k230_uart_progress_record
+    33: 0000000000000000    20 OBJECT  LOCAL  DEFAULT   14 __setup_str_k230_uart_progress_setup
+    35: 0000000000000000    24 OBJECT  LOCAL  DEFAULT   15 __setup_k230_uart_progress_setup
+    37: 0000000000000000     8 OBJECT  LOCAL  DEFAULT   17 __initcall__kmod_k230_uart_progress__376_80_k230_uart_progress_init7
+  2522: 0000000000000000     0 NOTYPE  GLOBAL DEFAULT  UND k230_uart_progress_snapshot
+  2523: 0000000000000000     0 NOTYPE  GLOBAL DEFAULT  UND k230_uart_progress_timer_irq
