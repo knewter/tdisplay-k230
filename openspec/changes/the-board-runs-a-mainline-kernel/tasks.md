@@ -432,3 +432,16 @@ The user subsequently reset the ordinary-trial board; fresh protected normal
 postflight passed exact identities, three services and eight unchanged boot
 hashes. That operator recovery is now recorded in the same physical packet.
 The full mainline initrd stopping point remains unresolved; 5b.5 stays open.
+
+
+## 2026-10-03 standalone udev metadata proof
+
+The same candidate now passes one bounded `udevadm test-builtin blkid` on the
+verified SD1 root partition, including unique ext4/NIXOS_SD properties,
+private raw-output preservation and one automatic protected-normal return.
+Exact operator command and physical result are in
+`docs/evidence/mainline-blkid-trial/physical-2026-10-03/README.md`.
+This narrows the unresolved ordinary-init/coldplug boundary; it does not prove
+whole-device discovery or close 5b.5. The source-supported next observation is
+`docs/research/mainline-initrd-debug-console-2026-10-03.md`; its controller and
+physical initrd state/recovery proof are separate required work.

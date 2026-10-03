@@ -83,3 +83,7 @@ policy or mask additional units. A passing probe would establish one metadata
 boundary only; ordinary usable root and deliberate real touch remain
 **UNVERIFIED**. The process timer cannot guarantee recovery from an uninterruptible
 kernel operation. Root owns reviewed execution, physical evidence and recovery.
+
+The coordinator subsequently ran the [physical probe](physical-2026-10-03/README.md):
+all metadata/private retrieval gates and automatic protected normal return pass.
+The separate ordinary-init/touch acceptance remains open.
