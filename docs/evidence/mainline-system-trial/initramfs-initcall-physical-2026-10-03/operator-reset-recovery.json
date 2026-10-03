@@ -1,0 +1,24 @@
+{
+  "schema": "mainline-initramfs-initcall-reset-recovery-v1",
+  "operator_action": "user reset after bounded initramfs/initcall trial stopped",
+  "status": "verified",
+  "fresh_boot": true,
+  "protected_system_profile_kernel_init_equal": true,
+  "normal_uname": "6.6.36",
+  "three_shell_services_active": true,
+  "eight_protected_files_unchanged": true,
+  "registration_absent": true,
+  "automatic_return": "UNVERIFIED",
+  "private_raw_path": "~/tmp/k230-mainline-initramfs-initcall-board/reset-normal-uart.log",
+  "raw_bytes": 13891,
+  "raw_sha256": "0174d00de19c6a39c4a381c8c076e2f77b15016f4b7beb4cf3e98b7b2ae01fe6",
+  "result_saved_utc": "2026-10-03T21:38:23.128037+00:00",
+  "home_command_rc": 0,
+  "home_camera": {
+    "private_path": "~/tmp/k230-mainline-initramfs-initcall-board/reset-normal-home.private.jpg",
+    "reviewed": true,
+    "observation": "Normal Home icons, clock and background visible.",
+    "limits": "Glare, perspective and focus; not mainline or touch acceptance.",
+    "sha256": "f7fb40ef7839c3f46956007bc087e9c0f52592b2fc8fd99a471117c613dd8fad"
+  }
+}

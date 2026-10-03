@@ -695,3 +695,13 @@ and result JSON. Operator reset recovery is pending; ordinary root/panel/
 glass/automatic return and5b.5 stay open. Read-only source audit recommends
 a same-image no-marker comparison preserving async=0 and normal logging;
 reviewed controller support is required before another boot.
+
+
+## 2026-10-03 initramfs comparison operator recovery verified
+
+The user reset after the failed18-record comparison. Fresh protected normal
+postflight, exact identities/eight files/three services/registration absence
+passed; Home IPC returned RC0 and a newly reviewed private camera shows Home.
+See `docs/evidence/mainline-system-trial/initramfs-initcall-physical-2026-10-03/operator-reset-recovery.json`.
+This proves operator recovery only; automatic return, mainline root/panel/glass
+and task5b.5 remain UNVERIFIED. Board/UART and camera are released.

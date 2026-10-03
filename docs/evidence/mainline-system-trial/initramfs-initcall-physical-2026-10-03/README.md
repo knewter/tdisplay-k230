@@ -57,8 +57,12 @@ artifacts, records, raw hash/byte count/last-write and saved-result timestamps
 are in [result.json](result.json). Raw capture remains private and preserves
 the whole boot phase, including direct records before the printed Linux
 banner. No candidate command, guessed reboot or retry was sent after failure.
-Another user reset and protected normal postflight are pending; the previous
-reset recovered the preceding attempt only. No camera frame was captured
+A new user reset passed fresh protected normal postflight; see
+[operator-reset-recovery.json](operator-reset-recovery.json). Exact identities,
+three services, eight unchanged boot files and registration absence passed.
+Home IPC returned RC0 and a newly reviewed private camera frame shows normal
+Home icons, clock and background. This is operator recovery, not automatic
+return or mainline/glass acceptance. No camera frame was captured
 for this attempt; the earlier dark candidate photo is not reused as proof.
 
 ## What this establishes
