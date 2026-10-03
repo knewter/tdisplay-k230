@@ -196,3 +196,29 @@ write, reboot-controller change, new reset address, mainline pin update, or
 vendor/default/console-only kernel change is in scope. Board and serial work
 belong to the reserved operator after review and matching bundle proof;
 host work requires no board reservation.
+
+## Bounded continuation: observe progress when the serial shell cannot answer
+
+The same-image Bash trial produces a fresh userspace prompt but cannot answer
+one of eight bounded receipt attempts; ordinary NixOS startup remains unproved.
+`docs/evidence/mainline-system-trial/shell-pid1-physical-2026-10-03/README.md`
+records this physical boundary and distinct pending operator recovery. The next
+increment provides a **separate opt-in mainline kernel diagnostic** to distinguish
+cached driver receive progress, actual UART/timer interrupt accounting and
+reporter scheduling without requiring foreground shell commands.
+
+Add a runtime-gated, normal-priority finite kernel reporter, at most six samples
+across approximately thirty seconds. Validate UART0 binding inside the 8250
+core, copy cached counters/state using nonblocking lifecycle/port try-locks, and
+obtain actual mapped UART and RISC-V timer IRQ identities. Release every lock
+before emitting one bounded fixed public SBI record per sample. Keep ordinary
+logging, clock/reset/interrupt settings, shell PID1/async policy and qualified
+controls unchanged. This experiment observes software state; it neither reads
+UART registers nor proves physical FIFO/baud or Bash delivery.
+
+Source/API/object tests, optional complete kernel/matching bundle, unchanged
+existing derivations, host protocol tests and one protected physical comparison
+are separate gates (group 5f). No default image, stage 1, production fix, extra
+core bring-up, TTY polling/configuration, priority/affinity change or automatic
+recovery claim is included. Runtime output and interpretation are UNVERIFIED
+until this named operator trial. Ordinary-root/panel/glass task 5b.5 stays open.

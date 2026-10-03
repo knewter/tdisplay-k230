@@ -243,3 +243,40 @@ root activation and deliberate touch remain separately unverified.*
 - **WHEN** the changed object, complete kernel and matching trial bundle build
 - **THEN** their source/artifact identities are recorded and physical restart
   remains UNVERIFIED; usable-root, panel and touch requirements remain open
+
+### Requirement: Optional mainline progress records distinguish receipt from execution
+
+The project MAY provide a separately named runtime-opt-in kernel diagnostic
+for the observed userspace-prompt/no-receipt boundary. It SHALL record bounded
+cached UART/IRQ/time progress independently of foreground shell input, with
+explicit unavailable/busy/unknown states and no UART register/settings changes.
+Observer source/API/object, matching artifact and physical results SHALL be
+separate. Existing default and diagnostic outputs SHALL remain unchanged;
+finite reporter output SHALL NOT establish ordinary root, Bash receipt,
+physical timer health, automatic recovery or a production fix.
+
+<!-- UNVERIFIED: observer implementation and physical records are planned. -->
+*Grounding: `docs/evidence/mainline-system-trial/shell-pid1-physical-2026-10-03/README.md`
+observes fresh Linux/init entry/Bash prompt and missing bounded receipt.
+Its `uart-source-equality.json` records narrow host source/DT comparison only.
+Read pinned 8250 RX accounting, RISC-V timer IRQ mapping, IRQ descriptor
+accounting and n_tty lock/flush paths as cited in group 5f's design.*
+
+#### Scenario: The serial operator sees a shell prompt but cannot get a reply
+
+- **WHEN** the reviewed optional matching diagnostic is reserved for a physical
+  trial and its fresh prompt receives one bounded receipt stimulus
+- **THEN** finite independently captured records distinguish driver RX counts,
+  actual mapped IRQ accounting and reporter/time progress with their limits
+- **AND** missing receipt/records stop further input and keep root/recovery open
+
+#### Scenario: Someone interprets a progress record
+
+- **WHEN** reporter sequence, RX or timer IRQ counters increase
+- **THEN** the report names scheduling, driver reads or kernel-accounted timer
+  interrupts respectively, without inferring Bash delivery or a causal fix
+
+#### Scenario: Only diagnostic host checks have passed
+
+- **WHEN** optional source/object/kernel/bundle/protocol checks pass
+- **THEN** physical output/receipt/return remain UNVERIFIED and task 5b.5 stays open

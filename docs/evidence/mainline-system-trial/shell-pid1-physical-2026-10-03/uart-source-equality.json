@@ -1,0 +1,489 @@
+{
+  "schema": "k230-uart-source-equality-host-v1",
+  "evidence_class": "read-only host source bytes and immutable DT property inspection",
+  "checked_utc": "2026-10-03T22:48:44.832524+00:00",
+  "old_source": {
+    "path": "/nix/store/l0j3rf11mr65wl5x88a9zzma45ciz687-linux-mainline-k230-drm-src",
+    "deriver": "/nix/store/argvpjhqbc0bwg9ilc67n5cknpf1hnmd-linux-mainline-k230-drm-src.drv"
+  },
+  "selected_source": {
+    "path": "/nix/store/26hzn5vin6b27cc4mpffc9fn5x8ikwqn-linux-mainline-k230-boot-trace-sbi-only-src",
+    "deriver": "/nix/store/dy5gqz0nqydnay9w9wj6xhhp6hhywv3h-linux-mainline-k230-boot-trace-sbi-only-src.drv"
+  },
+  "per_file": [
+    {
+      "path": "arch/riscv/boot/dts/canaan/k230.dtsi",
+      "old_sha256": "65b9156e2df52d0f6f96dde648fcb560342afcc5148faf5a2b9576d0cbe4a7ca",
+      "selected_sha256": "65b9156e2df52d0f6f96dde648fcb560342afcc5148faf5a2b9576d0cbe4a7ca",
+      "old_bytes": 4253,
+      "selected_bytes": 4253,
+      "byte_equal": true
+    },
+    {
+      "path": "drivers/clk/clk-k230.c",
+      "old_sha256": "d2db8f7ea388959b8cd4b89120b965f8ebac758934489d14931c7cac2a4ca548",
+      "selected_sha256": "d2db8f7ea388959b8cd4b89120b965f8ebac758934489d14931c7cac2a4ca548",
+      "old_bytes": 59775,
+      "selected_bytes": 59775,
+      "byte_equal": true
+    },
+    {
+      "path": "drivers/tty/serial/8250/8250_dw.c",
+      "old_sha256": "9fcb9657046ff9eb908de552eb51ed6cd8f88524323e605da0f60056142c879e",
+      "selected_sha256": "9fcb9657046ff9eb908de552eb51ed6cd8f88524323e605da0f60056142c879e",
+      "old_bytes": 25157,
+      "selected_bytes": 25157,
+      "byte_equal": true
+    },
+    {
+      "path": "drivers/tty/serial/8250/8250_port.c",
+      "old_sha256": "369ac35a2b8e4b8ce9123bd3bf1873d9a37988e5302ba90342a049ab5974d5f0",
+      "selected_sha256": "369ac35a2b8e4b8ce9123bd3bf1873d9a37988e5302ba90342a049ab5974d5f0",
+      "old_bytes": 97973,
+      "selected_bytes": 97973,
+      "byte_equal": true
+    },
+    {
+      "path": "drivers/tty/serial/8250/8250_core.c",
+      "old_sha256": "531d79a03acee7570e4fe67eca79334fbb48badc2d6a5f4740328d2542fef36b",
+      "selected_sha256": "531d79a03acee7570e4fe67eca79334fbb48badc2d6a5f4740328d2542fef36b",
+      "old_bytes": 24979,
+      "selected_bytes": 24979,
+      "byte_equal": true
+    },
+    {
+      "path": "drivers/irqchip/irq-sifive-plic.c",
+      "old_sha256": "21390bc9d3015cf20025f993d4b5553325272dacae231d849739667efb53e4a2",
+      "selected_sha256": "21390bc9d3015cf20025f993d4b5553325272dacae231d849739667efb53e4a2",
+      "old_bytes": 22313,
+      "selected_bytes": 22313,
+      "byte_equal": true
+    },
+    {
+      "path": "drivers/clocksource/timer-riscv.c",
+      "old_sha256": "42856bab2c550948df3f0cfce550f7c17f7844ccb4a09d81f7760cbe38ccdb1e",
+      "selected_sha256": "42856bab2c550948df3f0cfce550f7c17f7844ccb4a09d81f7760cbe38ccdb1e",
+      "old_bytes": 6586,
+      "selected_bytes": 6586,
+      "byte_equal": true
+    },
+    {
+      "path": "drivers/tty/n_tty.c",
+      "old_sha256": "5f33bf3bca249d246c2bbf85f7852e77dd65dc14e57a135a83fa03adb9dda0a9",
+      "selected_sha256": "5f33bf3bca249d246c2bbf85f7852e77dd65dc14e57a135a83fa03adb9dda0a9",
+      "old_bytes": 64766,
+      "selected_bytes": 64766,
+      "byte_equal": true
+    }
+  ],
+  "all_selected_files_byte_equal": true,
+  "dt": {
+    "old_path": "/nix/store/5yqilsfyj35jzrcqjjqilkr6sd47qlms-k230-mainline-drm-trial-boot-files/k230-tdisplay-mainline-drm.dtb",
+    "selected_path": "/nix/store/brmp1qf9cz65yciazabc8yg5j39nn643-k230-mainline-drm-trial-boot-files/k230-tdisplay-mainline-drm.dtb",
+    "old_sha256": "77010c33945caf1e7cdfdeec6bd17475ecc43c8bd692e9228d78e1040b8d72c8",
+    "selected_sha256": "da47de906f885bf709815e5ae294522958d9c537e58b30509813f9b4726b02fa",
+    "properties": [
+      {
+        "node": "/soc/serial@91400000",
+        "property": "status",
+        "type": "s",
+        "old": {
+          "command": [
+            "fdtget",
+            "-t",
+            "s",
+            "/nix/store/5yqilsfyj35jzrcqjjqilkr6sd47qlms-k230-mainline-drm-trial-boot-files/k230-tdisplay-mainline-drm.dtb",
+            "/soc/serial@91400000",
+            "status"
+          ],
+          "rc": 0,
+          "value": "okay"
+        },
+        "selected": {
+          "command": [
+            "fdtget",
+            "-t",
+            "s",
+            "/nix/store/brmp1qf9cz65yciazabc8yg5j39nn643-k230-mainline-drm-trial-boot-files/k230-tdisplay-mainline-drm.dtb",
+            "/soc/serial@91400000",
+            "status"
+          ],
+          "rc": 0,
+          "value": "okay"
+        },
+        "equal": true
+      },
+      {
+        "node": "/soc/serial@91400000",
+        "property": "compatible",
+        "type": "s",
+        "old": {
+          "command": [
+            "fdtget",
+            "-t",
+            "s",
+            "/nix/store/5yqilsfyj35jzrcqjjqilkr6sd47qlms-k230-mainline-drm-trial-boot-files/k230-tdisplay-mainline-drm.dtb",
+            "/soc/serial@91400000",
+            "compatible"
+          ],
+          "rc": 0,
+          "value": "snps,dw-apb-uart"
+        },
+        "selected": {
+          "command": [
+            "fdtget",
+            "-t",
+            "s",
+            "/nix/store/brmp1qf9cz65yciazabc8yg5j39nn643-k230-mainline-drm-trial-boot-files/k230-tdisplay-mainline-drm.dtb",
+            "/soc/serial@91400000",
+            "compatible"
+          ],
+          "rc": 0,
+          "value": "snps,dw-apb-uart"
+        },
+        "equal": true
+      },
+      {
+        "node": "/soc/serial@91400000",
+        "property": "reg",
+        "type": "x",
+        "old": {
+          "command": [
+            "fdtget",
+            "-t",
+            "x",
+            "/nix/store/5yqilsfyj35jzrcqjjqilkr6sd47qlms-k230-mainline-drm-trial-boot-files/k230-tdisplay-mainline-drm.dtb",
+            "/soc/serial@91400000",
+            "reg"
+          ],
+          "rc": 0,
+          "value": "0 91400000 0 1000"
+        },
+        "selected": {
+          "command": [
+            "fdtget",
+            "-t",
+            "x",
+            "/nix/store/brmp1qf9cz65yciazabc8yg5j39nn643-k230-mainline-drm-trial-boot-files/k230-tdisplay-mainline-drm.dtb",
+            "/soc/serial@91400000",
+            "reg"
+          ],
+          "rc": 0,
+          "value": "0 91400000 0 1000"
+        },
+        "equal": true
+      },
+      {
+        "node": "/soc/serial@91400000",
+        "property": "interrupts",
+        "type": "x",
+        "old": {
+          "command": [
+            "fdtget",
+            "-t",
+            "x",
+            "/nix/store/5yqilsfyj35jzrcqjjqilkr6sd47qlms-k230-mainline-drm-trial-boot-files/k230-tdisplay-mainline-drm.dtb",
+            "/soc/serial@91400000",
+            "interrupts"
+          ],
+          "rc": 0,
+          "value": "10 4"
+        },
+        "selected": {
+          "command": [
+            "fdtget",
+            "-t",
+            "x",
+            "/nix/store/brmp1qf9cz65yciazabc8yg5j39nn643-k230-mainline-drm-trial-boot-files/k230-tdisplay-mainline-drm.dtb",
+            "/soc/serial@91400000",
+            "interrupts"
+          ],
+          "rc": 0,
+          "value": "10 4"
+        },
+        "equal": true
+      },
+      {
+        "node": "/soc/serial@91400000",
+        "property": "clocks",
+        "type": "x",
+        "old": {
+          "command": [
+            "fdtget",
+            "-t",
+            "x",
+            "/nix/store/5yqilsfyj35jzrcqjjqilkr6sd47qlms-k230-mainline-drm-trial-boot-files/k230-tdisplay-mainline-drm.dtb",
+            "/soc/serial@91400000",
+            "clocks"
+          ],
+          "rc": 0,
+          "value": "6 a1"
+        },
+        "selected": {
+          "command": [
+            "fdtget",
+            "-t",
+            "x",
+            "/nix/store/brmp1qf9cz65yciazabc8yg5j39nn643-k230-mainline-drm-trial-boot-files/k230-tdisplay-mainline-drm.dtb",
+            "/soc/serial@91400000",
+            "clocks"
+          ],
+          "rc": 0,
+          "value": "6 a1"
+        },
+        "equal": true
+      },
+      {
+        "node": "/soc/serial@91400000",
+        "property": "reg-io-width",
+        "type": "u",
+        "old": {
+          "command": [
+            "fdtget",
+            "-t",
+            "u",
+            "/nix/store/5yqilsfyj35jzrcqjjqilkr6sd47qlms-k230-mainline-drm-trial-boot-files/k230-tdisplay-mainline-drm.dtb",
+            "/soc/serial@91400000",
+            "reg-io-width"
+          ],
+          "rc": 0,
+          "value": "4"
+        },
+        "selected": {
+          "command": [
+            "fdtget",
+            "-t",
+            "u",
+            "/nix/store/brmp1qf9cz65yciazabc8yg5j39nn643-k230-mainline-drm-trial-boot-files/k230-tdisplay-mainline-drm.dtb",
+            "/soc/serial@91400000",
+            "reg-io-width"
+          ],
+          "rc": 0,
+          "value": "4"
+        },
+        "equal": true
+      },
+      {
+        "node": "/soc/serial@91400000",
+        "property": "reg-shift",
+        "type": "u",
+        "old": {
+          "command": [
+            "fdtget",
+            "-t",
+            "u",
+            "/nix/store/5yqilsfyj35jzrcqjjqilkr6sd47qlms-k230-mainline-drm-trial-boot-files/k230-tdisplay-mainline-drm.dtb",
+            "/soc/serial@91400000",
+            "reg-shift"
+          ],
+          "rc": 0,
+          "value": "2"
+        },
+        "selected": {
+          "command": [
+            "fdtget",
+            "-t",
+            "u",
+            "/nix/store/brmp1qf9cz65yciazabc8yg5j39nn643-k230-mainline-drm-trial-boot-files/k230-tdisplay-mainline-drm.dtb",
+            "/soc/serial@91400000",
+            "reg-shift"
+          ],
+          "rc": 0,
+          "value": "2"
+        },
+        "equal": true
+      },
+      {
+        "node": "/soc/serial@91400000",
+        "property": "resets",
+        "type": "x",
+        "old": {
+          "command": [
+            "fdtget",
+            "-t",
+            "x",
+            "/nix/store/5yqilsfyj35jzrcqjjqilkr6sd47qlms-k230-mainline-drm-trial-boot-files/k230-tdisplay-mainline-drm.dtb",
+            "/soc/serial@91400000",
+            "resets"
+          ],
+          "rc": 0,
+          "value": "7 32"
+        },
+        "selected": {
+          "command": [
+            "fdtget",
+            "-t",
+            "x",
+            "/nix/store/brmp1qf9cz65yciazabc8yg5j39nn643-k230-mainline-drm-trial-boot-files/k230-tdisplay-mainline-drm.dtb",
+            "/soc/serial@91400000",
+            "resets"
+          ],
+          "rc": 0,
+          "value": "7 32"
+        },
+        "equal": true
+      },
+      {
+        "node": "/soc/interrupt-controller@f00000000",
+        "property": "compatible",
+        "type": "s",
+        "old": {
+          "command": [
+            "fdtget",
+            "-t",
+            "s",
+            "/nix/store/5yqilsfyj35jzrcqjjqilkr6sd47qlms-k230-mainline-drm-trial-boot-files/k230-tdisplay-mainline-drm.dtb",
+            "/soc/interrupt-controller@f00000000",
+            "compatible"
+          ],
+          "rc": 0,
+          "value": "canaan,k230-plic thead,c900-plic"
+        },
+        "selected": {
+          "command": [
+            "fdtget",
+            "-t",
+            "s",
+            "/nix/store/brmp1qf9cz65yciazabc8yg5j39nn643-k230-mainline-drm-trial-boot-files/k230-tdisplay-mainline-drm.dtb",
+            "/soc/interrupt-controller@f00000000",
+            "compatible"
+          ],
+          "rc": 0,
+          "value": "canaan,k230-plic thead,c900-plic"
+        },
+        "equal": true
+      },
+      {
+        "node": "/soc/interrupt-controller@f00000000",
+        "property": "interrupts-extended",
+        "type": "x",
+        "old": {
+          "command": [
+            "fdtget",
+            "-t",
+            "x",
+            "/nix/store/5yqilsfyj35jzrcqjjqilkr6sd47qlms-k230-mainline-drm-trial-boot-files/k230-tdisplay-mainline-drm.dtb",
+            "/soc/interrupt-controller@f00000000",
+            "interrupts-extended"
+          ],
+          "rc": 0,
+          "value": "3 b 3 9"
+        },
+        "selected": {
+          "command": [
+            "fdtget",
+            "-t",
+            "x",
+            "/nix/store/brmp1qf9cz65yciazabc8yg5j39nn643-k230-mainline-drm-trial-boot-files/k230-tdisplay-mainline-drm.dtb",
+            "/soc/interrupt-controller@f00000000",
+            "interrupts-extended"
+          ],
+          "rc": 0,
+          "value": "3 b 3 9"
+        },
+        "equal": true
+      },
+      {
+        "node": "/soc/interrupt-controller@f00000000",
+        "property": "riscv,ndev",
+        "type": "u",
+        "old": {
+          "command": [
+            "fdtget",
+            "-t",
+            "u",
+            "/nix/store/5yqilsfyj35jzrcqjjqilkr6sd47qlms-k230-mainline-drm-trial-boot-files/k230-tdisplay-mainline-drm.dtb",
+            "/soc/interrupt-controller@f00000000",
+            "riscv,ndev"
+          ],
+          "rc": 0,
+          "value": "208"
+        },
+        "selected": {
+          "command": [
+            "fdtget",
+            "-t",
+            "u",
+            "/nix/store/brmp1qf9cz65yciazabc8yg5j39nn643-k230-mainline-drm-trial-boot-files/k230-tdisplay-mainline-drm.dtb",
+            "/soc/interrupt-controller@f00000000",
+            "riscv,ndev"
+          ],
+          "rc": 0,
+          "value": "208"
+        },
+        "equal": true
+      },
+      {
+        "node": "/soc/clock-controller@91102000",
+        "property": "phandle",
+        "type": "x",
+        "old": {
+          "command": [
+            "fdtget",
+            "-t",
+            "x",
+            "/nix/store/5yqilsfyj35jzrcqjjqilkr6sd47qlms-k230-mainline-drm-trial-boot-files/k230-tdisplay-mainline-drm.dtb",
+            "/soc/clock-controller@91102000",
+            "phandle"
+          ],
+          "rc": 0,
+          "value": "6"
+        },
+        "selected": {
+          "command": [
+            "fdtget",
+            "-t",
+            "x",
+            "/nix/store/brmp1qf9cz65yciazabc8yg5j39nn643-k230-mainline-drm-trial-boot-files/k230-tdisplay-mainline-drm.dtb",
+            "/soc/clock-controller@91102000",
+            "phandle"
+          ],
+          "rc": 0,
+          "value": "6"
+        },
+        "equal": true
+      },
+      {
+        "node": "/cpus",
+        "property": "timebase-frequency",
+        "type": "u",
+        "old": {
+          "command": [
+            "fdtget",
+            "-t",
+            "u",
+            "/nix/store/5yqilsfyj35jzrcqjjqilkr6sd47qlms-k230-mainline-drm-trial-boot-files/k230-tdisplay-mainline-drm.dtb",
+            "/cpus",
+            "timebase-frequency"
+          ],
+          "rc": 0,
+          "value": "27000000"
+        },
+        "selected": {
+          "command": [
+            "fdtget",
+            "-t",
+            "u",
+            "/nix/store/brmp1qf9cz65yciazabc8yg5j39nn643-k230-mainline-drm-trial-boot-files/k230-tdisplay-mainline-drm.dtb",
+            "/cpus",
+            "timebase-frequency"
+          ],
+          "rc": 0,
+          "value": "27000000"
+        },
+        "equal": true
+      }
+    ],
+    "all_listed_properties_equal": true
+  },
+  "limits": [
+    "The earlier byte-identical statement was an actual byte comparison of exactly the eight listed source files, not a conceptual similarity claim.",
+    "The earlier DT statement was a selected-artifact property read only. This receipt additionally compares the listed properties against the older 5yq successful-candidate bundle.",
+    "This does not assert complete DTS, DTB, kernel binary, configuration, runtime IRQ, clocks, timer, RX or TTY-state equivalence. Both DTB full hashes are retained; bootargs were not read or dumped.",
+    "No board, serial, camera, builds, evaluation, network or repository edits."
+  ],
+  "reproduction": [
+    "For each listed path, compare old_source/path.read_bytes() == selected_source/path.read_bytes() and compute hashlib.sha256 over both complete byte strings.",
+    "The exact narrow DT command argv arrays are supplied per property for both immutable DTB paths."
+  ]
+}

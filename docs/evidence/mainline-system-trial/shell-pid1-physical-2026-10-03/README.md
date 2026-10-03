@@ -59,8 +59,11 @@ three services and registration absence. Unknown prompt sends no Linux command.
 
 The missing receipt narrows the next investigation to serial RX/interrupt/
 TTY/task progress after observed userspace startup, without identifying a
-cause. Exact UART/clock/PLIC/timer/TTY source matches the earlier candidate
-that passed minimal receipt; this result does not prove a source regression.
+cause. The host-only [source/DT receipt](uart-source-equality.json) compares eight
+complete source files and thirteen targeted properties against the earlier
+candidate that passed minimal receipt. Those files/properties match; full
+DTBs, configs, binaries and runtime state are not claimed equivalent. This
+result does not identify a source regression.
 A finite independent reporter should distinguish cached driver RX/error
 counts, actual mapped UART and RISC-V timer IRQ counters, and scheduling/time
 progress without requiring Bash input. TTY polling flushes work and queued-input

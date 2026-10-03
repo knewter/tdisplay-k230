@@ -393,3 +393,57 @@ Full matching kernel/artifact proof and operator-controlled physical output,
 ordinary root/login, automatic recovery and real touch remain UNVERIFIED.
 This diagnostic increment preserves task 5b.5 and all existing acceptance
 requirements; it adds no shipped capability.
+
+## Finite independent UART/IRQ progress diagnosis (group 5f)
+
+Layer: optional kernel source/configuration and matching Nix system/bundle;
+reserved operator/controller evidence. The physical Bash prompt followed by
+zero receipt replies grounds this diagnostic boundary. The committed source/DT
+receipt compares eight exact files and thirteen properties, not whole kernels
+or runtime equivalence. Pinned source `26hzn5…` locates RX accounting/filtering
+in `8250_port.c:1627–1690`, actual timer IRQ mapping in
+`timer-riscv.c:167–183`, and thread-context aggregate IRQ accounting in
+`irqdesc.c:1066–1073`. Linux IRQ numbers must come from those live bindings;
+PLIC source 16 is not a guessed Linux IRQ number.
+
+A separate runtime opt-in creates one normal-priority kernel thread from late
+init, with at most six samples and finite sleeps over approximately thirty
+seconds. No priority/affinity/tick-policy change or RT/busy loop. State, worker
+and static aligned/page-contained output buffers must survive init cleanup.
+Disabled mode starts no observer and has no output side effect.
+
+A narrow internal 8250 snapshot validates line0, selected device/mapbase and
+hardware interrupt binding; it does not misuse the runtime-PM-only
+`serial8250_get_port()` interface. Protect registration/removal lifetime with
+nonblocking acquisition, then make one port try-lock attempt and copy only
+cached RX/TX/error/failed-flip counts, IER/read/ignore masks and uartclk. Mark
+busy/unavailable/changed binding explicitly, without waiting or dereferencing
+a stale device. Obtain UART/timer IRQ aggregate counters through safe live
+identity and thread-context APIs. Release all locks before formatting or a
+single SBI write; no printk/emergency fallback, retry, MMIO or register writes.
+Buffer/format/frame count and page bounds require actual target object proof.
+
+Records contain fixed version/sample/state and numeric public fields, no raw
+addresses, proc text, UUIDs, private data or credentials. Reporter sequence
+proves scheduling; jiffies/ktime are timekeeping observations. Actual timer IRQ
+increments show accounted interrupts, which may be caused by the reporter's
+own wakeups. RX increments show driver reads before filtering/flip delivery;
+failed-flip counts do not prove successful Bash reads. UART IRQ growth may
+include shared/spurious activity. Absence, busy state or a missing final record
+is unknown, not a timer/UART fault or proof that the last firmware call returned.
+Finite sample count is not a guaranteed wall-clock bound if sleep/SBI stalls.
+
+The matching controller retains shell PID1, async=0, marker suppression, sole
+console and existing three controls. It sends at most one qualified fresh
+builtin receipt stimulus, then captures bounded passive records, preserving
+partial/duplicate/missing/unknown results. No command or reboot after unknown.
+Require fresh protected normal preflight and independent postflight/operator
+recovery; records and heartbeat never supply recovery or ordinary-root proof.
+
+Rejected: another blind shell retry, a systemd-dependent observer before
+systemd startup, IRQ/PID1-path output, guessed MMIO/mapping fixes, TTY poll
+(`n_tty.c:2443` flushes work), and first-probe TIOCINQ (`2488–2494` takes a
+semaphore). These change or depend on the boundary being investigated.
+Diagnostic timing can perturb progress; a successful trial alone is not a
+production fix. Existing default/console/diagnostic output identities remain
+unchanged; only a new named kernel/system/bundle is eligible for this probe.

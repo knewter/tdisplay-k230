@@ -779,3 +779,33 @@ serial startup proof is separate. A new reset/protected postflight is pending.
 Read-only audits recommend a finite independent cached UART/IRQ/time reporter,
 not a blind shell retry or TTY poll. Ordinary root/panel/glass/automatic return
 and task 5b.5 remain UNVERIFIED; no archive or production fix is claimed.
+
+## 5f. Finite independent UART/IRQ progress diagnosis (planned, no physical claim)
+
+- [ ] 5f.1 Add separately selected runtime-gated kernel source/configuration:
+      normal-priority finite worker, lifecycle-safe cached 8250 snapshot,
+      actual mapped timer/UART IRQ accounting and aligned bounded public SBI
+      records outside all locks. No MMIO/TTY/settings/critical-path output.
+      Source/protocol proof: `python3 tests/test_mainline_uart_progress.py`.
+- [ ] 5f.2 Compile the changed 8250/timer/reporter objects against the exact
+      configured RISC-V headers and verify record layout/lifetime/Kconfig.
+      Host-only proof: `nix build .#kernelMainlineUartProgressObjects --no-link --print-out-paths`.
+- [ ] 5f.3 Build the complete optional matching system/initrd/DT/bundle and
+      inspect hashes/CRCs/closure/config and unchanged existing derivations.
+      Host-only proof: `nix build .#kernelMainlineUartProgressTrialBootFiles --no-link --print-out-paths`
+      followed by `python3 tools/mainline-drm-trial-inspect.py BUNDLE`.
+- [ ] 5f.4 Add a reviewed explicit minimal-shell/controller opt-in, exact
+      original artifact and runtime argument qualification, at most one fresh
+      receipt stimulus, bounded passive record capture, fixed public parser,
+      missing/duplicate/unknown-no-input policy and protected recovery gates.
+      Host-only proof: `python3 tests/test_mainline_uart_progress.py` and
+      `python3 -m unittest discover -s tests -p 'test_mainline_drm*trial.py'`.
+- [ ] 5f.5 After fresh protected normal recovery, reserve board/UART and run one
+      matching physical comparison with its exact prepared identities:
+      `python3 tools/mainline-drm-initrd-shell-trial.py --mode minimal --same-image-shell-pid1 --uart-progress --bundle BUNDLE --manifest PRIVATE_MANIFEST --normal-report PRIVATE_NORMAL --log PRIVATE_LOG --result PRIVATE_RESULT`.
+      Commit fixed records/stimulus/interpretation and protected normal
+      postflight or explicit pending operator recovery. This proves only the
+      observations obtained, not full root/panel/glass acceptance.
+- [ ] 5f.6 Reconcile the diagnostic findings with the next narrow discriminator,
+      preserve unknown markers and task 5b.5, land/push evidence and verify
+      exact CI/published revision. Planning proof: `openspec validate the-board-runs-a-mainline-kernel --strict`.
