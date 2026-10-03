@@ -253,6 +253,21 @@
             );
           }) ];
         };
+        # Four direct SBI records outside the original trace emergency calls.
+        k230-mainline-boot-trace-sbi = self.nixosConfigurations.k230-mainline-boot-trace.extendModules {
+          specialArgs.k230Kernel = pkgsCross.linuxPackagesFor (import ./nix/kernel-mainline-boot-trace-sbi.nix {
+            kernelMainline = pkgsCross.callPackage ./nix/kernel-mainline.nix {
+              inherit (pkgsCross) buildLinux;
+            };
+            inherit (pkgsCross) applyPatches lib;
+          });
+          modules = [ ({ lib, ... }: {
+            boot.kernelParams = lib.mkOverride 40 (
+              self.nixosConfigurations.k230-mainline-boot-trace.config.boot.kernelParams
+              ++ [ "k230.boot_trace_sbi=1" ]
+            );
+          }) ];
+        };
       };
 
       checks.${buildSystem} = {
@@ -466,6 +481,18 @@
         kernelMainlineBootTraceTrialBootFiles = pkgs.callPackage ./nix/mainline-drm-trial.nix {
           cfg = self.nixosConfigurations.k230-mainline-boot-trace.config;
           kernel = self.nixosConfigurations.k230-mainline-boot-trace.config.boot.kernelPackages.kernel;
+          deviceTree = self.packages.${buildSystem}.deviceTreeMainlineDrm;
+        };
+
+        kernelMainlineBootTraceSbi = pkgsCross.callPackage ./nix/kernel-mainline-boot-trace-sbi.nix {
+          kernelMainline = pkgsCross.callPackage ./nix/kernel-mainline.nix {
+            inherit (pkgsCross) buildLinux;
+          };
+        };
+        toplevel-mainline-boot-trace-sbi = self.nixosConfigurations.k230-mainline-boot-trace-sbi.config.system.build.toplevel;
+        kernelMainlineBootTraceSbiTrialBootFiles = pkgs.callPackage ./nix/mainline-drm-trial.nix {
+          cfg = self.nixosConfigurations.k230-mainline-boot-trace-sbi.config;
+          kernel = self.nixosConfigurations.k230-mainline-boot-trace-sbi.config.boot.kernelPackages.kernel;
           deviceTree = self.packages.${buildSystem}.deviceTreeMainlineDrm;
         };
 

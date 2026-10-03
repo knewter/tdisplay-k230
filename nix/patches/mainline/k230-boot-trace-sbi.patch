@@ -1,0 +1,56 @@
+--- a/init/main.c
++++ b/init/main.c
+@@ -33,0 +34,3 @@
++#ifdef CONFIG_RISCV_SBI
++#include <asm/sbi.h>
++#endif
+@@ -1477,0 +1481,41 @@
++/* Single-attempt SBI output; all records survive free_initmem(). */
++static bool k230_boot_trace_sbi_enabled;
++
++static int __init k230_boot_trace_sbi_setup(char *str)
++{
++	if (strcmp(str, "1"))
++		return 0;
++	k230_boot_trace_sbi_enabled = true;
++	return 1;
++}
++__setup("k230.boot_trace_sbi=", k230_boot_trace_sbi_setup);
++
++static const char k230_sbi_initcalls_before[] __aligned(64) =
++	"\r\nK230_BOOT_SBI_V1 point=initcalls-before\r\n";
++static const char k230_sbi_initcalls_after[] __aligned(64) =
++	"\r\nK230_BOOT_SBI_V1 point=initcalls-after\r\n";
++static const char k230_sbi_basic_before[] __aligned(64) =
++	"\r\nK230_BOOT_SBI_V1 point=basic-before\r\n";
++static const char k230_sbi_basic_after[] __aligned(64) =
++	"\r\nK230_BOOT_SBI_V1 point=basic-after\r\n";
++
++static bool k230_boot_trace_sbi_mark(const char *record, unsigned int len)
++{
++	if (!k230_boot_trace_enabled || !k230_boot_trace_sbi_enabled ||
++	    !len || len > 64)
++		return false;
++#ifdef CONFIG_RISCV_SBI
++	if (sbi_debug_console_available)
++		/* Zero/partial/error is not retried or reported as complete. */
++		return sbi_debug_console_write(record, len) == (int)len;
++#else
++	(void)record;
++#endif
++	return false;
++}
++
++#define K230_BOOT_SBI_MARK(record) do { \
++	BUILD_BUG_ON(sizeof(record) > 64); \
++	(void)k230_boot_trace_sbi_mark(record, sizeof(record) - 1); \
++} while (0)
++
+@@ -1486,0 +1531 @@
++	K230_BOOT_SBI_MARK(k230_sbi_initcalls_before);
+@@ -1487,0 +1533 @@
++	K230_BOOT_SBI_MARK(k230_sbi_initcalls_after);
+@@ -1711,0 +1758 @@
++	K230_BOOT_SBI_MARK(k230_sbi_basic_before);
+@@ -1712,0 +1760 @@
++	K230_BOOT_SBI_MARK(k230_sbi_basic_after);
