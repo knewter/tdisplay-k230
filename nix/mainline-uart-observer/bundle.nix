@@ -5,6 +5,7 @@ runCommand "k230-mainline-uart-observer-boot-files" {
 } ''
   mkdir -p $out
   cp -a ${trial}/. $out/
+  chmod u+w $out
   chmod +w $out/SHA256SUMS
   test '${kernel}' = "$(dirname "$(readlink -f ${baseBundle}/system/kernel)")"
   cmp $out/Image-mainline-drm ${baseBundle}/Image-mainline-drm

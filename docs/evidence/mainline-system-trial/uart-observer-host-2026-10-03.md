@@ -146,3 +146,17 @@ controller and one reserved physical trial remain. The operator command belongs
 to that separate controller handoff. Require actual complete fresh frames,
 receipt classified independently, kernel restart/SPL, and fresh exact protected
 normal identity/services/eight hashes before any physical recovery claim.
+
+## First wrapper build failure and correction
+
+The coordinator reports a cross-build from merged `5d09128c` under its exclusive
+build slot: helper, initrd, system and underlying trial artifacts built, but
+`/nix/store/wap6rfwd24rmc6naj6qsh2axgbrs6dlb-k230-mainline-uart-observer-boot-files.drv`
+failed while creating `observer.json` with permission denied. `cp -a
+${trial}/. $out/` preserved the source directory's read-only permissions;
+making only `SHA256SUMS` writable left the output directory unwritable.
+The wrapper now runs `chmod u+w $out` immediately after the copy, before adding
+metadata. This is a source correction, not a successful wrapper rebuild or
+artifact inspection. Physical staging stayed paused on protected normal.
+Nix parse, strict OpenSpec validation and diff checks are the bounded checks;
+the coordinator still owns the rebuild and all later physical gates.
