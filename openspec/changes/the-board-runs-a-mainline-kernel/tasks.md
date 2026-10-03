@@ -603,5 +603,8 @@ helpers and `do_basic_setup()` returned; the final `basic-after` ECALL return
 and entry to the next marker/initramfs wait remain unknown. No login arrived
 within 180 seconds; controller exit1 closed UART without further input. See
 `docs/evidence/mainline-system-trial/boot-boundary-sbi-physical-2026-10-03/README.md`
-and result JSON. Operator reset recovery remains UNVERIFIED pending postflight;
+and result JSON. The subsequent user-confirmed reset received zero UART bytes
+in90seconds and no fresh normal prompt; no Linux command was sent. The camera
+shows a dark panel with observation limits. `operator-reset-check.json` records
+this failed check; power-cycle confirmation is pending. Protected recovery,
 ordinary root/panel/glass/production and task5b.5 remain open.

@@ -98,5 +98,7 @@
     "sha256": "e9004ca19d46e46c303badc36e384539c4581b0a385f04de47abae91f4cae2e6",
     "last_uart_utc": "2026-10-03T20:09:15.604722+00:00",
     "result_utc": "2026-10-03T20:12:11.958290+00:00"
-  }
+  },
+  "operator_reset_check": "failed-no-fresh-normal-prompt",
+  "operator_reset_check_evidence": "operator-reset-check.json"
 }

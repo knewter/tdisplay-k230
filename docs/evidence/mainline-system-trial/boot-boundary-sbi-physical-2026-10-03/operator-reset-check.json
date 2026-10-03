@@ -1,0 +1,22 @@
+{
+  "schema": "mainline-boot-boundary-sbi-reset-check-v1",
+  "operator_action": "user confirmed reset after failed direct-SBI trial",
+  "status": "failed-no-fresh-normal-prompt",
+  "prompt_bound_seconds": 90,
+  "checker_exit": 1,
+  "uart_bytes": 0,
+  "raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "candidate_commands_sent": "none; carriage return for prompt check only",
+  "protected_normal_postflight": "UNVERIFIED",
+  "automatic_return": "UNVERIFIED",
+  "camera": {
+    "private_path": "~/tmp/k230-mainline-boot-trace-sbi-board/reset-panel-observation.private.jpg",
+    "sha256": "73c54dd0645ab0a421b95e37d8d871ffd160eb7424ad89f7922f45b425d74ed0",
+    "reviewed": true,
+    "observation": "Panel appears dark.",
+    "limits": "Glare, perspective and focus; does not prove power state or kernel progress."
+  },
+  "next_operator_action": "power cycle requested; confirmation pending",
+  "resources": "UART and camera released",
+  "recorded_utc": "2026-10-03T20:29:12.726018+00:00"
+}

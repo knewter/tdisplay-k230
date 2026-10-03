@@ -44,8 +44,13 @@ Last UART bytes arrived at 20:09:15.604722 UTC; failed result was saved at
 20:12:11.958290 UTC. Exact artifacts, raw-log SHA/byte count/timestamps and
 qualified observations are in [result.json](result.json). Raw UART remains
 private. No candidate command, guessed reboot or retry was sent after failure.
-Operator reset recovery remains **UNVERIFIED** pending a fresh protected
-normal postflight; the previous trial's reset does not recover this attempt.
+The user then confirmed reset. The bounded fresh-prompt checker exited1
+after90seconds with **zero UART bytes**, before sending any Linux command.
+The privately reviewed camera frame shows a dark panel, with glare/focus/
+perspective limits; its power state is unknown. See
+[operator-reset-check.json](operator-reset-check.json). UART and camera are
+released; a power cycle was requested and confirmation remains pending.
+Protected normal recovery and automatic return remain **UNVERIFIED**.
 
 ## What the records establish
 
