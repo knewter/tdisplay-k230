@@ -583,3 +583,14 @@ See `docs/evidence/mainline-system-trial/boot-boundary-sbi-host-2026-10-03.md`
 for exact commands, source paths and interpretation limits. Full matching build
 and physical direct-SBI output/root/login/touch/return remain UNVERIFIED; the
 user-reset recovery of the previous diagnostic is verified. Task5b.5 stays open.
+
+## 2026-10-03 direct-SBI matching full build proof
+
+`kernelMainlineBootTraceSbiTrialBootFiles` built successfully at source `007410ee`,
+producing `j0ad6h3s…` with kernel `f7h2n15…` / system `zcsfgwk…`. Matching Image/
+initrd/DT/CRC/closure inspection and actual ordinary-controller preparation
+passed. Four public SBI record strings are linked; actual RISCV_SBI/64BIT/
+VMAP_STACK/4KiB/KUnit disabled config and hardware DT equality are recorded in
+`docs/evidence/mainline-system-trial/boot-boundary-sbi-build-2026-10-03/README.md`.
+No board was used for this increment. Physical direct-SBI output/root/touch/
+return stay UNVERIFIED and task 5b.5 stays unchecked.

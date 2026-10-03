@@ -1,0 +1,40 @@
+{
+  "bundle": "/nix/store/j0ad6h3s23s5zlwizn3mbiw6cs98s4qn-k230-mainline-drm-trial-boot-files",
+  "system": "/nix/store/zcsfgwk0hsigg9ccfscssyyx3hzc814g-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "kernel": "/nix/store/f7h2n15nzn88wvwxd39c0dpjsarcwa6x-linux-riscv64-unknown-linux-gnu-7.3.0-rc5",
+  "closure_paths": 629,
+  "uimage_crc_valid": true,
+  "initrd_payload_matches_system": true,
+  "Image_matches_candidate": true,
+  "DTB_bootargs_matches_environment": true,
+  "hardware_DT_unchanged_except_bootargs": true,
+  "four_SBI_public_records_in_linked_Image": true,
+  "built_config": {
+    "path": "/nix/store/rifp31n4qz7pa4v8is5m1zmi8c8rl6xf-linux-riscv64-unknown-linux-gnu-7.3.0-rc5-dev/lib/modules/7.3.0-rc5/build/.config",
+    "sha256": "c5c128ed8b9701f78a0b8bd4f18dacd0d2407ae90eda79a35bba2d9f5ffbeae7",
+    "riscv_sbi": true,
+    "bits": 64,
+    "vmapped_stacks": true,
+    "page_bytes": 4096,
+    "kunit": false
+  },
+  "source_revision": "007410ee7daa55cecd4f59708e4941679a701f9d",
+  "source_main_c_sha256": "fa235885447587df2f5125f1a5c39bc392d137f2e42a2d6c0c5ceb6f313184d5",
+  "file_hashes": {
+    "Image-mainline-drm": "5fa5127dce494c3aeaf00b6d852afefae225b2c71ecc7b08ebab5eafe4f0ef36",
+    "initrd.uimg": "13afc43f52e82dc26f43e987737ec29fc1e32707203081b75d0fd5e365e3904c",
+    "k230-tdisplay-mainline-drm.dtb": "e6703e57d0c2fd333964eafd7a09b361777c332d2d83bbde82ca38623803697e",
+    "bootargs.txt": "a7710913614a9d92fa266b5009a3c2bfef5618646c2c67d50fdebb9ff2400db8"
+  },
+  "schema": "mainline-boot-boundary-sbi-host-build-v1",
+  "date_utc": "2026-10-03",
+  "host_build": "passed",
+  "ordinary_controller_prepare": "passed",
+  "export_bytes": 103873318,
+  "exported_new_paths": 8,
+  "export_closure_paths_including_bundle": 630,
+  "board_trial": "UNVERIFIED",
+  "ordinary_root": "UNVERIFIED",
+  "automatic_return": "UNVERIFIED",
+  "deliberate_glass_touch": "UNVERIFIED"
+}
