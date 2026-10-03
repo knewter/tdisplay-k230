@@ -37,12 +37,12 @@ to this exact source, not a newer upstream kernel.
 
 ## Helper bounds and native exit possibilities
 
-`observer.c:487–492` emits READY, constructs the already-collected initial
+`observer.c:480–485` emits READY, constructs the already-collected initial
 sample and emits `before`. There is no intervening getter, guard, wait,
 fork or external utility. READY follows successful initial guard/getter work
 and the observer fork; it does not establish that its `write()` returned.
 
-`sample_payload()` at lines 453–466 formats bounded numeric values and one
+`sample_payload()` at lines 447–458 formats bounded numeric values and one
 fixed runtime string. An intentionally conservative host calculation used:
 four 8-digit flag fields; two maximum unsigned-32 speed codes; `INT_MIN`
 line discipline; seven maximum unsigned-32 counters; maximum accepted IRQ
@@ -50,37 +50,37 @@ line discipline; seven maximum unsigned-32 counters; maximum accepted IRQ
 The `before` payload is **335 bytes**, below `PAYLOAD_MAX=384`; its full record
 including `<6>\n`, nonce, framing, hex payload and newline is **743 bytes**,
 below `FRAME_MAX=900`. The recorded initial snapshot uses zero-initialization
-and fixed, terminated runtime strings (`take_sample()`, lines 336–361).
+and fixed, terminated runtime strings (`take_sample()`, lines 336–359).
 Thus a valid initial sample cannot hit either size rejection. This is a host
 width proof, not execution of the physical sample.
 
-`emit()` at lines 435–446 performs one `write()` and rejects errors or short
+`emit()` at lines 429–440 performs one `write()` and rejects errors or short
 writes without retry. The observer returns silently if READY or `before`
 emission fails; no `failed` frame can establish a failed output path itself.
 A second-write error, a signal/process-lifetime problem, or a write that never
 returns remain distinct possibilities. None is observed directly. Parent
-`execv("/bin/sh", ...)` runs independently after the fork (lines 512–534), so
+`execv("/bin/sh", ...)` runs independently after the fork (lines 501–521), so
 the missing prompt alone cannot choose among these paths.
 
 The fresh `/dev/kmsg` file has its own default rate-limit state
-(`kernel/printk/printk.c:913–947`), with burst 10 / interval five seconds
+(`kernel/printk/printk.c:920–947`), with burst 10 / interval five seconds
 (`include/linux/ratelimit_types.h:9–10`). Only READY and `before` are attempted
 before the 12-second wait. Ordinary exhaustion of that fresh burst is therefore
 not a source-supported explanation for losing the second record. The write
 path can nevertheless return a full byte count while dropping a disabled or
-rate-limited message (`printk.c:751–763`); a successful write is not wire proof.
+rate-limited message (`printk.c:752–760`); a successful write is not wire proof.
 
 ## UART visibility can precede a completed write
 
 `devkmsg_write()` calls `devkmsg_emit()` synchronously before returning
-(`kernel/printk/printk.c:739–805`). Its path reaches `vprintk_emit()`;
+(`kernel/printk/printk.c:739–799`, `726–734`). Its path reaches `vprintk_emit()`;
 `O_NONBLOCK` does not bypass or impose a deadline on console flushing here.
 The helper's bounded child guards do not bound this output syscall.
 
 The 8250 UART console declares `CON_NBCON`
 (`drivers/tty/serial/8250/8250_core.c:523–529`). The VT console uses
 `vt_console_print()` and `CON_PRINTBUFFER`, without `CON_NBCON`
-(`drivers/tty/vt/vt.c:3533–3545`). At normal priority, the flush policy can
+(`drivers/tty/vt/vt.c:3535–3543`). At normal priority, the flush policy can
 choose nbcon atomic/threaded UART output and direct legacy output together
 (`kernel/printk/internal.h:194–215`). With non-RT configuration, ordinary
 userspace printk need not defer the legacy path
@@ -123,7 +123,7 @@ The controller must still validate the untouched artifact bootargs/DT,
 allow only this single volatile token removal, verify the exact resulting
 `printenv bootargs`, and retain preparation, fresh identities, receipt gates,
 raw private framing and normal postflight. The helper's existing strict
-control parser does not require `console=tty0` (`observer.c:112–145`). Host
+control parser does not require `console=tty0` (`observer.c:111–141`). Host
 tests must reject missing/duplicate/wrong original console tokens and any
 other mutation. No physical run was performed by this audit.
 
