@@ -97,5 +97,6 @@
     "last_uart_mtime_utc": "2026-10-03T21:21:21.745293+00:00",
     "result_saved_utc": "2026-10-03T21:24:16.149864+00:00"
   },
-  "candidate_camera": "not obtained in this attempt; earlier dark frame is not reused"
+  "candidate_camera": "not obtained in this attempt; earlier dark frame is not reused",
+  "single_kernel_command_line_matches_expected_comparison": true
 }

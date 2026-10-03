@@ -69,8 +69,8 @@ Exact source remains
 domain/cookie inside the rootfs initcall when this option is false. The
 complete `initcalls-exit` at main.c:1555 proves that earlier join returned.
 The later wait-exit and subsequent labels prove progress through the
-original previously missing boundary. This single comparison establishes
-changed progress with changed overlap/order; it does not name a faulty
+original previously missing boundary. This comparison records different progress with the changed overlap/order;
+repetition would be needed to establish causality. It does not name a faulty
 driver, console, clock or a production fix.
 
 main.c:1581–1583 emits `init-exec-exit` after `kernel_execve()` returns, for
@@ -105,3 +105,14 @@ Do not combine console-null or loglevel changes with this discriminator.
 Systemd/login/guarded root would be positive evidence; another quiet failure
 would remain unknown. Ordinary root, panel/glass/automatic return and task 5b.5
 stay open. No production or archive acceptance follows.
+
+
+## Exact kernel command-line receipt
+
+A separate read-only check found exactly one `Kernel command line:` record
+in this private capture. Its complete parameter bytes equal the controller's
+expected same-image comparison, including one `initramfs_async=0`, both
+marker flags, sole serial/immutable init/root and the original three controls.
+This supplements U-Boot printenv proof with the kernel's received arguments.
+The comparison changed observed progress; one run does not establish a
+repeatable causal fix or userspace acceptance.
