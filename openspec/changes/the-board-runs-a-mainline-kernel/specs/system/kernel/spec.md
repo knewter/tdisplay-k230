@@ -273,8 +273,9 @@ accounting and n_tty lock/flush paths as cited in group 5f's design.*
 #### Scenario: Someone interprets a progress record
 
 - **WHEN** reporter sequence, RX or timer IRQ counters increase
-- **THEN** the report names scheduling, driver reads or kernel-accounted timer
-  interrupts respectively, without inferring Bash delivery or a causal fix
+- **THEN** the report names scheduling, processed RX/break counts or
+  kernel-accounted timer interrupts respectively, without inferring a physical
+  FIFO read for every RX increment, Bash delivery or a causal fix
 
 #### Scenario: Only diagnostic host checks have passed
 

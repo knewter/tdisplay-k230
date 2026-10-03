@@ -427,8 +427,10 @@ Records contain fixed version/sample/state and numeric public fields, no raw
 addresses, proc text, UUIDs, private data or credentials. Reporter sequence
 proves scheduling; jiffies/ktime are timekeeping observations. Actual timer IRQ
 increments show accounted interrupts, which may be caused by the reporter's
-own wakeups. RX increments show driver reads before filtering/flip delivery;
-failed-flip counts do not prove successful Bash reads. UART IRQ growth may
+own wakeups. RX increments count 8250-processed RX/break handling, including
+synthesized break handling without a data byte; they do not prove a physical
+FIFO read per increment or successful TTY/Bash delivery. Failed-flip counts
+do not prove successful Bash reads. UART IRQ growth may
 include shared/spurious activity. Absence, busy state or a missing final record
 is unknown, not a timer/UART fault or proof that the last firmware call returned.
 Finite sample count is not a guaranteed wall-clock bound if sleep/SBI stalls.
