@@ -37,9 +37,12 @@ observations, raw byte/hash/timestamps and private camera hash. Secret-bearing
 raw UART and camera remain private.
 
 The controller released UART and sent no command after unknown readiness.
-A new operator reset and fresh protected normal postflight are required;
-previous recovery belongs to the preceding attempt only. Prepared command
-**after the user confirms a new reset**:
+A new user reset passed fresh protected normal postflight; see
+[operator-reset-recovery.json](operator-reset-recovery.json). Exact identities,
+eight unchanged files, three services and registration absence passed. Home
+IPC returned RC0; a new reviewed private camera frame shows normal Home.
+This is operator recovery, not automatic return or mainline/glass acceptance.
+The command executed once after this new reset was:
 
 ```sh
 python3 ~/tmp/k230-mainline-marker-free-board/reset-normal-check.py

@@ -1,0 +1,24 @@
+{
+  "schema": "mainline-marker-free-reset-recovery-v1",
+  "operator_action": "user pressed reset after bounded marker-free trial stopped",
+  "status": "verified",
+  "fresh_boot": true,
+  "protected_system_profile_kernel_init_equal": true,
+  "normal_uname": "6.6.36",
+  "three_shell_services_active": true,
+  "eight_protected_files_unchanged": true,
+  "registration_absent": true,
+  "automatic_return": "UNVERIFIED",
+  "private_raw_path": "~/tmp/k230-mainline-marker-free-board/reset-normal-uart.log",
+  "raw_bytes": 36540,
+  "raw_sha256": "f076cd7590ae3b7233f7a4f73657416dad3ca30a25f54729ad4ae7b54417d110",
+  "result_saved_utc": "2026-10-03T21:59:27.356202+00:00",
+  "home_command_rc": 0,
+  "home_camera": {
+    "private_path": "~/tmp/k230-mainline-marker-free-board/reset-normal-home.private.jpg",
+    "reviewed": true,
+    "observation": "Normal Home icons, clock and background visible.",
+    "limits": "Glare, perspective and focus; not mainline or touch acceptance.",
+    "sha256": "eaeced4ca7daeb6b0e4897b3d21a4c4682b4c9ea603ad16608ea216d7a7dff7b"
+  }
+}

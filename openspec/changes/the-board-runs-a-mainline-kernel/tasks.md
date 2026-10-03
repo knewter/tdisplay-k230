@@ -733,3 +733,15 @@ and fixed result JSON. Another operator reset/protected normal postflight is
 pending. Source audit suggests a separately reviewed same-initrd Bash-PID1
 comparison, not ordinary-root acceptance. 5b.5 remains unchecked; mainline
 root/panel/glass/automatic return and production remain UNVERIFIED.
+
+
+## 2026-10-03 marker-free comparison operator recovery verified
+
+The user pressed reset after the failed marker-free trial. Fresh protected
+normal postflight passed exact identities, all eight files, three services
+and registration absence; Home IPC returned RC0 and a new reviewed private
+camera shows normal Home. See
+`docs/evidence/mainline-system-trial/marker-free-physical-2026-10-03/operator-reset-recovery.json`.
+This is operator recovery only. Automatic return, mainline ordinary root,
+panel/glass and task 5b.5 remain UNVERIFIED. Board/UART/camera are released;
+the next guarded same-image Bash-PID1 controller increment is host work.
