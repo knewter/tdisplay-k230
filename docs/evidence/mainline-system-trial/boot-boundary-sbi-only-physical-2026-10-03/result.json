@@ -2,7 +2,7 @@
   "schema": "mainline-boot-boundary-sbi-only-physical-v1",
   "source_revision": "c6896fbc3b4a3e0fe7b3579f0add791adafbef12",
   "controller_revision": "e02e553d32eb33e4de6200c4145f075c71e401ba",
-  "status": "failed-login-readiness-recovery-required",
+  "status": "failed-login-readiness-operator-reset-recovered",
   "controller_exit": 1,
   "phase": "begin",
   "readiness_bound_seconds": 180,
@@ -73,8 +73,8 @@
   "deliberate_glass_touch": "UNVERIFIED",
   "production_unmasked": "UNVERIFIED",
   "automatic_return": "UNVERIFIED",
-  "operator_reset_recovery": "UNVERIFIED",
-  "normal_postflight": "UNVERIFIED",
+  "operator_reset_recovery": "verified",
+  "normal_postflight": "verified",
   "candidate_input_after_readiness_failure": "none",
   "raw_serial": {
     "private_path": "~/tmp/k230-mainline-boot-trace-sbi-only-board/ordinary-sbi-only-uart.log",
@@ -89,5 +89,6 @@
     "reviewed": true,
     "observation": "Panel appears dark.",
     "limits": "Glare, perspective and focus; no power-state, usable panel or touch claim."
-  }
+  },
+  "operator_reset_recovery_evidence": "operator-reset-recovery.json"
 }

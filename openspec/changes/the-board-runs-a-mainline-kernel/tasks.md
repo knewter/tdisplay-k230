@@ -668,3 +668,15 @@ operator command: `docs/evidence/mainline-system-trial/initramfs-initcall-contro
 This is host proof only. Current candidate reset recovery and the new
 physical comparison remain UNVERIFIED; ordinary root/glass/return and 5b.5
 stay open. No kernel rebuild, board command or production fix is claimed.
+
+
+## 2026-10-03 SBI-only operator recovery verified
+
+The user hit reset and fresh protected normal postflight passed exact
+identities, three services, all eight unchanged files and registration
+absence. Home IPC returned RC0; reviewed private camera shows normal Home.
+See `docs/evidence/mainline-system-trial/boot-boundary-sbi-only-physical-2026-10-03/operator-reset-recovery.json`.
+Automatic return from the failed candidate remains UNVERIFIED. Reviewed
+controller `1846fd3e` and its29 focused tests passed CI; the same-image
+initramfs comparison is ready for a separately reserved physical attempt.
+Ordinary root/glass/production and5b.5 remain open.

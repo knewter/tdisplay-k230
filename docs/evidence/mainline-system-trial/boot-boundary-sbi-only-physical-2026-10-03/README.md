@@ -81,3 +81,18 @@ before implementation or another boot. Source-level worker progress and
 firmware-return observability remain alternatives after that audit.
 Task 5b.5 stays unchecked for ordinary root, usable panel, deliberate glass
 and protected return. No archive or shipped-mainline claim is made.
+
+
+## Subsequent operator reset recovery
+
+The user hit reset after this completed attempt. Fresh protected normal
+postflight passed a different boot ID, exact system/profile/kernel/init,
+three active services, all eight unchanged files and registration absence.
+See [operator-reset-recovery.json](operator-reset-recovery.json). The bounded
+Home IPC command returned RC0; the reviewed private camera frame shows
+normal Home icons, clock and background, with glare/focus/perspective limits.
+This verifies operator recovery only. The failed mainline login, last-SBI
+return/wait-entry ambiguity, automatic-return UNVERIFIED and root/glass/
+task5b.5 gates remain unchanged. The separately reviewed same-image
+controller comparison is on master and CI passed; its physical result is
+not supplied by this recovery packet.
