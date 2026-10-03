@@ -87,3 +87,39 @@ specific stopped trial remain UNVERIFIED at this checkpoint.
 The [ordinary-init/touch source plan](../../../research/mainline-init-touch-gates-2026-10-02.md)
 records the separate full-boot procedure and profile-preserving trial guards.
 It does not substitute for those physical gates.
+
+## Parser correction and operator-reset recovery
+
+The mount-only parser correction landed in `ad34cc5b`; its 100 host tests
+passed. Independently replaying the original complete private receipt now
+returns RC0. A fresh CR prompt check and a separate LF-only observation each
+received zero bytes. No root, unmount or reboot command was sent after those
+checks. This later silence does not establish the cause or turn the original
+completed mount into a failed mount.
+
+The user pressed reset. A fresh normal check verified the exact original
+system/profile/kernel/init, three active shell services, all eight unchanged
+boot hashes and a new boot identity. [Reset recovery result](operator-reset-recovery.json)
+records this as operator recovery, **not** automatic recovery of the paused
+session. A whole-protocol retry uses the landed parser and new private logs.
+
+## Complete corrected read-only root retry
+
+Source `2fc70b46` ran the same explicit bundle/manifest/normal-report
+invocation with `--mode root-mount` and fresh
+`root-mount-retry-20261003T0415-uart.log` / corresponding result paths.
+Controller exit **0**, `recovery-verified-diagnostic-passed`.
+
+Fresh minimal/device/label prerequisites passed. All root stages returned
+RC0: previously unmounted, directory creation/empty check, `ro,noload` ext4
+mount, exact read-only/no-recovery flags, executable selected init and
+prepare-root lookups, unmount and confirmed absence of the mount. Neither
+init file was executed. One acknowledged reboot returned through SPL to a
+fresh normal boot, with exact protected identities, three active services
+and eight unchanged boot hashes. No operator reset was needed during this
+complete retry and no clock-ignore parameter was used.
+
+[Complete retry result](root-mount-retry-result.json) preserves controller
+facts and private log identity. This supersedes the earlier recovery blocker
+for proceeding to the separate ordinary-init trial; it does not prove root
+activation or real touch, and task 5b.5 remains open.

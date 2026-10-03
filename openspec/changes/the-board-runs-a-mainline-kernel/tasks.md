@@ -403,3 +403,21 @@ mount-table and stub-utility execution. Evidence:
 This does not perform ordinary `/init` activation or close task 5b.5; matching
 bundle review and physical automatic recovery remain prerequisites for the
 operator's root-mount trial. The optional clock flag remains label-only.
+
+## 2026-10-03 complete read-only root prerequisite
+
+Task 5b.5 remains unchecked. The targeted five-clock candidate now passes the
+whole corrected `--mode root-mount` protocol without a clock-ignore flag:
+read-only/no-journal mount, exact flags, selected init/prepare-root executable
+lookups, unmount and one automatic protected-normal return. Command and
+physical result are committed in
+`docs/evidence/mainline-sd1-clocks/physical-no-flag-2026-10-03/README.md`.
+The earlier paused session needed the user's reset after fresh UART checks
+received no response; that separate recovery is recorded explicitly.
+
+The reviewed ordinary-init controller (`tools/mainline-drm-system-trial.py`)
+has landed with host proof and protected begin/touch/finish phases; the
+coordinator independently passed 122 combined tests. Its physical trial is
+separate from the returned read-only prerequisite. Ordinary NixOS activation,
+deliberate glass touch and protected recovery remain required before 5b.5
+can close. Neither the initrd shell nor host tests establish those outcomes.
