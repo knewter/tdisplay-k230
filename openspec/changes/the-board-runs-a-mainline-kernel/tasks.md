@@ -775,7 +775,12 @@ released UART with no further input. True/proc/uptime/full identity/reboot were
 NOT_ATTEMPTED. See
 `docs/evidence/mainline-system-trial/shell-pid1-physical-2026-10-03/README.md`
 and fixed result JSON. New private camera appears dark with explicit limits;
-serial startup proof is separate. A new reset/protected postflight is pending.
+serial startup proof is separate. A subsequent new user reset and checker
+exit 0 proved a fresh protected normal boot, exact system/profile/kernel/init,
+eight unchanged files, three active services and registration absence. Home
+IPC completed with exit 0 and a new privately reviewed camera frame shows
+normal Home; see the packet's `operator-reset-recovery.json`. Board/UART and
+camera are released. This proves operator recovery, not automatic return.
 Read-only audits recommend a finite independent cached UART/IRQ/time reporter,
 not a blind shell retry or TTY poll. Ordinary root/panel/glass/automatic return
 and task 5b.5 remain UNVERIFIED; no archive or production fix is claimed.

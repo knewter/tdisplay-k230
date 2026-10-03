@@ -46,16 +46,22 @@ Exact artifacts and fixed facts/raw byte/hash/timestamps are in
 
 ## Recovery and next discriminator
 
-A **new user reset** is required; the preceding successful recovery happened
-before this trial. Prepared checker, not yet executed:
+A **new user reset after this trial** restored the protected normal system.
+The prepared checker completed successfully (exit 0):
 
 ```sh
 python3 ~/tmp/k230-mainline-shell-pid1-board/reset-normal-check.py
 ```
 
-It sends CR only until a fresh normal prompt, then requires a different boot
-identity, exact protected system/profile/kernel/init, all eight boot files,
-three services and registration absence. Unknown prompt sends no Linux command.
+It sent CR only until a fresh normal prompt, then proved a different boot
+identity, exact protected system/profile/kernel/init, all eight unchanged boot
+files, three active services and registration absence. The Home IPC command
+completed with exit 0; a new private camera frame shows normal Home icons,
+clock and background, with glare/focus/perspective limits. The fixed
+[recovery receipt](operator-reset-recovery.json) preserves raw hash/timestamps
+and those facts without boot UUIDs or secret-bearing console text. Board/UART
+and camera are released. This manual reset is separate from automatic return,
+which remains UNVERIFIED, and supplies no mainline panel/glass acceptance.
 
 The missing receipt narrows the next investigation to serial RX/interrupt/
 TTY/task progress after observed userspace startup, without identifying a

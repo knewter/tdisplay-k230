@@ -75,8 +75,8 @@
   "reboot_marker_observed": false,
   "reboot_request": "NOT_ATTEMPTED",
   "automatic_return": "UNVERIFIED",
-  "operator_reset_recovery": "UNVERIFIED",
-  "normal_postflight": "UNVERIFIED",
+  "operator_reset_recovery": "verified-new-user-reset",
+  "normal_postflight": "verified-after-operator-reset",
   "candidate_input_after_reception_failure": "none",
   "raw_serial": {
     "private_path": "~/tmp/k230-mainline-shell-pid1-board/trial.private.log",
@@ -91,5 +91,6 @@
     "observation": "Panel appears dark; no visible shell content.",
     "limits": "Glare, perspective and focus; the serial Bash prompt supplies separate userspace proof.",
     "sha256": "e34b72671f1bd5173b6c6369d0e8a3f695a653fdea27465e42b5f4ea3e33afe0"
-  }
+  },
+  "recovery_receipt": "operator-reset-recovery.json"
 }

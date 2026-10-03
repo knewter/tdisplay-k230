@@ -1,0 +1,25 @@
+{
+  "schema": "mainline-shell-pid1-reset-recovery-v1",
+  "operator_action": "user pressed reset after bounded same-image Bash PID1 comparison stopped",
+  "status": "verified",
+  "fresh_boot": true,
+  "protected_system_profile_kernel_init_equal": true,
+  "normal_uname": "6.6.36",
+  "three_shell_services_active": true,
+  "eight_protected_files_unchanged": true,
+  "registration_absent": true,
+  "automatic_return": "UNVERIFIED",
+  "private_raw_path": "~/tmp/k230-mainline-shell-pid1-board/reset-normal-uart.log",
+  "raw_bytes": 35430,
+  "raw_sha256": "6e2abdef6e553c6e3e6ecb44bf51e67f39d3b57f00400eb64f087e32a3a93d64",
+  "last_uart_mtime_utc": "2026-10-03T23:11:55.962198+00:00",
+  "result_saved_utc": "2026-10-03T23:11:55.963958+00:00",
+  "home_command_rc": 0,
+  "home_camera": {
+    "private_path": "~/tmp/k230-mainline-shell-pid1-board/reset-normal-home.private.jpg",
+    "reviewed": true,
+    "observation": "Normal Home icons, clock and background visible.",
+    "limits": "Glare, perspective and focus; not mainline or touch acceptance.",
+    "sha256": "43b2c4ac728f4cd023b6f1c305f11ce463abb614dad5e0a4efdeec55c378b9ff"
+  }
+}
