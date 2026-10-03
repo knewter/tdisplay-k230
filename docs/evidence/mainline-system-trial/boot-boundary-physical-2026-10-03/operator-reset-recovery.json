@@ -1,0 +1,24 @@
+{
+  "schema": "mainline-boot-boundary-reset-recovery-v1",
+  "operator_action": "user pressed reset after bounded boot-boundary trial stopped",
+  "status": "verified",
+  "fresh_boot": true,
+  "protected_system_profile_kernel_init_equal": true,
+  "normal_uname": "6.6.36",
+  "three_shell_services_active": true,
+  "eight_protected_files_unchanged": true,
+  "registration_absent": true,
+  "automatic_return": "UNVERIFIED",
+  "private_raw_path": "~/tmp/k230-mainline-boot-trace-board/reset-normal-uart.log",
+  "raw_bytes": 20257,
+  "raw_sha256": "9de0170f06b1e8019419b42ee6d79dbdf11604faa1ad7c92f4ae36644f4fce75",
+  "postflight_utc": "2026-10-03T19:21:03.561962+00:00",
+  "home_command_rc": 0,
+  "home_camera": {
+    "private_path": "~/tmp/k230-mainline-boot-trace-board/reset-normal-home.private.jpg",
+    "reviewed": true,
+    "observation": "Normal Home icons, clock and background visible.",
+    "limits": "Glare, perspective and camera focus; not mainline or touch acceptance.",
+    "sha256": "07ef7b335ba0cf602b0faf69666fcc1709aa36cf5eac8d545526be334621011e"
+  }
+}

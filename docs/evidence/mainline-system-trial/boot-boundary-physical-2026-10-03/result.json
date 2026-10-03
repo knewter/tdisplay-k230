@@ -1,0 +1,100 @@
+{
+  "schema": "mainline-boot-boundary-physical-v1",
+  "source_revision": "7e1e3a60d7ebf607a8312324ae890b97f089b3d1",
+  "controller_revision": "174f8c164b870e5ecd9fa327eef202518fb25b20",
+  "date_utc": "2026-10-03",
+  "status": "failed-login-readiness-recovery-required",
+  "controller_exit": 1,
+  "phase": "begin",
+  "readiness_bound_seconds": 180,
+  "staging_rc": 0,
+  "candidate_bundle": "/nix/store/cr8bv4s6gbchfmcm14c0hrl8agh7zn62-k230-mainline-drm-trial-boot-files",
+  "candidate_system": "/nix/store/dxwjvz1m0klrvwan1ldrwiacfmin1b7p-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "candidate_kernel": "/nix/store/908wxczrj3j16hc1b4xqqrzkgh7cv4z1-linux-riscv64-unknown-linux-gnu-7.3.0-rc5",
+  "artifact_files": {
+    "Image-mainline-drm": {
+      "bytes": 38530560,
+      "sha256": "92195800bc9883c3649bb5487be3ae54de051c8c0bdeda721a531e7759b6bde2",
+      "crc32": "e79c982b"
+    },
+    "k230-tdisplay-mainline-drm.dtb": {
+      "bytes": 11069,
+      "sha256": "84263f3f076d4ccd297300d2d3bc446036d905da72dd605e557ab6758f8d92a6",
+      "crc32": "c2990a08"
+    },
+    "initrd.uimg": {
+      "bytes": 27331107,
+      "sha256": "18980e1da268717cb258869803f27a00ba02b3ed9a541dcf9e8ddcfaa306a658",
+      "crc32": "9211566b"
+    },
+    "bootargs.txt": {
+      "bytes": 216,
+      "sha256": "b2100f0406cdd23b12eb5eabd6de78cd0f1164e1cf6c700b6fcc454a78366aa1",
+      "crc32": "a96c7aa7"
+    },
+    "fw_jump_add_uboot_head.bin": {
+      "bytes": 270808,
+      "sha256": "9627edbeea9b115d7040beea27cc61b23b6aca61cd502fd7760d7ee179f42c99",
+      "crc32": "99b89787"
+    }
+  },
+  "qualified_controls": [
+    "fsck.mode=skip",
+    "systemd.mask=k230-root-growth.service",
+    "systemd.mask=register-nix-paths.service"
+  ],
+  "normal_preflight": {
+    "qualified": true,
+    "uname": "6.6.36",
+    "eight_boot_files_unchanged": true,
+    "three_shell_services_active": true,
+    "registration_absent": true
+  },
+  "fresh_mainline_banner": true,
+  "markers": [
+    {
+      "kernel_seconds": "0.018228",
+      "sequence": 1,
+      "step": "basic-setup-enter"
+    },
+    {
+      "kernel_seconds": "0.021599",
+      "sequence": 2,
+      "step": "initcalls-enter"
+    },
+    {
+      "kernel_seconds": "2.752212",
+      "sequence": 3,
+      "step": "initcalls-exit"
+    }
+  ],
+  "login_banner_seen": false,
+  "last_complete_marker": {
+    "kernel_seconds": "2.752212",
+    "sequence": 3,
+    "step": "initcalls-exit"
+  },
+  "marker_return": "UNVERIFIED",
+  "basic_setup_exit_seen": false,
+  "ordinary_root": "UNVERIFIED",
+  "deliberate_glass_touch": "UNVERIFIED",
+  "production_unmasked": "UNVERIFIED",
+  "automatic_return": "UNVERIFIED",
+  "operator_reset_recovery": "verified",
+  "normal_postflight": "verified",
+  "candidate_input_after_readiness_failure": "none",
+  "raw_serial": {
+    "private_path": "~/tmp/k230-mainline-boot-trace-board/ordinary-trace-uart.log",
+    "bytes": 47664,
+    "sha256": "a7f28c82d781abb2cb12bee66be24f688f0ea694f14717bce71b67b9cf42f9f9",
+    "last_uart_utc": "2026-10-03T19:13:53.477346+00:00",
+    "result_utc": "2026-10-03T19:16:49.802410+00:00"
+  },
+  "camera_observation": {
+    "path": "~/tmp/k230-mainline-boot-trace-board/ordinary-trace-panel.private.jpg",
+    "reviewed": true,
+    "observation": "Panel appears dark; glare and perspective limit observation.",
+    "panel_power_state": "UNVERIFIED"
+  },
+  "recovery_evidence": "operator-reset-recovery.json"
+}

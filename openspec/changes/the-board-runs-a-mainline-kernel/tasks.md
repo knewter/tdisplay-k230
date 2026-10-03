@@ -556,3 +556,17 @@ See `docs/evidence/mainline-system-trial/boot-boundary-build-2026-10-03/README.m
 and its result JSON for commands, paths, hashes and remaining physical gates.
 No board was used for this increment; marker output/root/touch/return remain
 UNVERIFIED and task 5b.5 remains unchecked.
+
+## 2026-10-03 physical boot-boundary attempt
+
+The exact optional trace bundle passed staging and protected normal preflight,
+then emitted basic-setup-enter, initcalls-enter and initcalls-exit on the board.
+It produced no next marker or ordinary login within180seconds; controller exit1
+closed UART without further candidate input. There is no original blocking work
+between the visible post-initcall marker and the missing basic-setup-exit marker,
+but the visible marker's own return/flush/scheduling is not proved. See
+`docs/evidence/mainline-system-trial/boot-boundary-physical-2026-10-03/README.md`
+and result JSON. The user pressed reset and protected normal recovery is verified: fresh boot,
+exact normal identities, three active services, eight unchanged files and
+registration absent. Automatic return remains UNVERIFIED; ordinary root/panel/
+glass touch and task5b.5 stay open.
