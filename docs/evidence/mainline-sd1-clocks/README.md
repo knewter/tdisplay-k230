@@ -181,3 +181,13 @@ preserve recovery. Only then proceed separately to returned label and
 `ro,noload` root diagnostics. Ordinary `/init` and deliberate touch remain
 unproved. Root owns staging, board reservation, physical evidence and all
 planning/dashboard updates.
+
+## Retry queued after capacity recovery
+
+The coordinator and worker rechecked current capacity after the original
+failure: `/nix/store` now has about 473 GB available; `/nix` itself is on
+a distinct array volume. The exact source and DTB outputs remain present.
+The worker restarted the named full kernel build under the sole build lock
+with `--max-jobs 1 --cores 16`, followed by the matching bundle and inspector
+only after kernel success. No cleanup or board action was performed for this
+retry. This is a running build, not successful kernel/bundle or physical proof.

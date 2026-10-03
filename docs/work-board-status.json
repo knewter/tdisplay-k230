@@ -412,8 +412,8 @@
       "lane": "in-progress",
       "source": "in-progress",
       "physical": "pending",
-      "next": "Implement the required SD1 clock consumers in the optional candidate, then rebuild and verify restart without clk_ignore_unused before usable-root and deliberate-touch proof.",
-      "rationale": "The unchanged 7.3-rc5 candidate passed automatic kernel restart \u2192 SPL \u2192 protected normal recovery with the temporary clk_ignore_unused comparison. Kernel cleanup-skip marker, all runtime tracing gates, fresh postflight boot ID, exact profile/kernel, three active shell services and eight unchanged hashes passed. Task 5d.4 is complete for this qualified diagnostic boot. The baseline without the flag still stalls after an MMC shutdown entry; global cleanup dependence does not identify one clock or callback. The source audit finds only two of five K230 SD1 clock consumers claimed. Proper optional-candidate clock ownership and a repeat without the flag remain, alongside usable mainline root and deliberate touch (5b.5). No normal boot selection or default image changed.",
+      "next": "Complete the retried kernel and matching trial-bundle builds, then verify targeted five-clock restart without clk_ignore_unused before usable-root and deliberate-touch proof.",
+      "rationale": "The unchanged 7.3-rc5 candidate passed automatic kernel restart \u2192 SPL \u2192 protected normal recovery with a temporary clk_ignore_unused comparison; task5d.4 is qualified to that diagnostic boot. A targeted optional DRM five-clock SD1 fix is now landed. Its source/DTB, exact five clock IDs/names, GCC object, lifecycle fault checks, unchanged default/console identities and flake checks passed. The first complete kernel compiled and linked but installation failed ENOSPC; this remains a failed Nix build, not a realized candidate. Store capacity is now available and the exact kernel/bundle retry is underway. The targeted fix is not yet proved on hardware. Restart without the flag, usable mainline root and deliberate touch (5b.5) remain. Normal boot selection/default image is unchanged.",
       "dependencies": [],
       "evidence": [
         "docs/evidence/mainline-display-power-domain.md",
@@ -440,9 +440,10 @@
         "docs/evidence/mainline-restart/physical-runtime-trace-2026-10-02/README.md",
         "docs/evidence/mainline-restart/physical-runtime-ready-2026-10-02/README.md",
         "docs/evidence/mainline-restart/minimal-clock-comparison-host-2026-10-02.md",
-        "docs/evidence/mainline-restart/physical-clock-comparison-2026-10-02/README.md"
+        "docs/evidence/mainline-restart/physical-clock-comparison-2026-10-02/README.md",
+        "docs/evidence/mainline-sd1-clocks/README.md"
       ],
-      "reviewRevision": "b2bbd9a7",
+      "reviewRevision": "497c5d96",
       "media": [
         {
           "path": "docs/evidence/mainline-restart/physical-clock-comparison-2026-10-02/recovered-home-panel.jpg",
