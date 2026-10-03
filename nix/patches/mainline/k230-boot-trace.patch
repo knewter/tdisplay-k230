@@ -1,0 +1,74 @@
+--- a/init/main.c
++++ b/init/main.c
+@@ -1452,0 +1453,25 @@
++/* Optional K230 boot diagnosis. These objects survive free_initmem(). */
++static bool k230_boot_trace_enabled;
++static unsigned int k230_boot_trace_seq;
++
++static int __init k230_boot_trace_setup(char *str)
++{
++	if (strcmp(str, "1"))
++		return 0;
++	k230_boot_trace_enabled = true;
++	return 1;
++}
++__setup("k230.boot_trace=", k230_boot_trace_setup);
++
++static void k230_boot_trace_mark(const char *step)
++{
++	if (!k230_boot_trace_enabled || k230_boot_trace_seq >= 32)
++		return;
++
++	/* Never keep emergency state across the work being diagnosed. */
++	nbcon_cpu_emergency_enter();
++	pr_info("K230_BOOT_TRACE_V1 seq=%u step=%s\n",
++		++k230_boot_trace_seq, step);
++	nbcon_cpu_emergency_exit();
++}
++
+@@ -1459,0 +1485 @@
++	k230_boot_trace_mark("initcalls-enter");
+@@ -1460,0 +1487 @@
++	k230_boot_trace_mark("initcalls-exit");
+@@ -1474,0 +1502 @@
++	int ret;
+@@ -1484 +1512,4 @@
+-	return kernel_execve(init_filename, argv_init, envp_init);
++	k230_boot_trace_mark("init-exec-enter");
++	ret = kernel_execve(init_filename, argv_init, envp_init);
++	k230_boot_trace_mark("init-exec-exit");
++	return ret;
+@@ -1566,0 +1598 @@
++	k230_boot_trace_mark("async-wait-enter");
+@@ -1568 +1600,3 @@
+-
++	k230_boot_trace_mark("async-wait-exit");
++
++	k230_boot_trace_mark("initmem-readonly-enter");
+@@ -1581,0 +1616 @@
++	k230_boot_trace_mark("initmem-readonly-exit");
+@@ -1674,0 +1710 @@
++	k230_boot_trace_mark("basic-setup-enter");
+@@ -1675,0 +1712 @@
++	k230_boot_trace_mark("basic-setup-exit");
+@@ -1678,0 +1716 @@
++	k230_boot_trace_mark("initramfs-wait-enter");
+@@ -1679,0 +1718,2 @@
++	k230_boot_trace_mark("initramfs-wait-exit");
++	k230_boot_trace_mark("root-console-enter");
+@@ -1680,0 +1721 @@
++	k230_boot_trace_mark("root-console-exit");
+@@ -1686,0 +1728 @@
++	k230_boot_trace_mark("init-access-enter");
+@@ -1687,0 +1730 @@
++	k230_boot_trace_mark("init-access-exit");
+@@ -1692,0 +1736 @@
++		k230_boot_trace_mark("namespace-enter");
+@@ -1693,0 +1738 @@
++		k230_boot_trace_mark("namespace-exit");
+@@ -1704,0 +1750 @@
++	k230_boot_trace_mark("integrity-keys-enter");
+@@ -1706 +1752,2 @@
+-}
++	k230_boot_trace_mark("integrity-keys-exit");
++}

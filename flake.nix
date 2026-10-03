@@ -232,6 +232,27 @@
         k230-mainline-uart-observer = self.nixosConfigurations.k230-mainline-drm-trial.extendModules {
           modules = [ ./nix/mainline-uart-observer/module.nix ];
         };
+        # Ordinary /init with finite optional kernel milestones, serial only.
+        # No observer service, global clock bypass or retained boot console.
+        k230-mainline-boot-trace = self.nixosConfigurations.k230-mainline-console.extendModules {
+          specialArgs.k230Kernel = pkgsCross.linuxPackagesFor (import ./nix/kernel-mainline-boot-trace.nix {
+            kernelMainline = pkgsCross.callPackage ./nix/kernel-mainline.nix {
+              inherit (pkgsCross) buildLinux;
+            };
+            inherit (pkgsCross) applyPatches lib;
+          });
+          modules = [ ({ lib, ... }: let
+            baseArgs = self.nixosConfigurations.k230-mainline-drm-trial.config.boot.kernelParams;
+          in {
+            assertions = [{
+              assertion = lib.count (arg: arg == "console=tty0") baseArgs == 1;
+              message = "boot-trace base must contain exactly one tty0 console";
+            }];
+            boot.kernelParams = lib.mkForce (
+              lib.filter (arg: arg != "console=tty0") baseArgs ++ [ "k230.boot_trace=1" ]
+            );
+          }) ];
+        };
       };
 
       checks.${buildSystem} = {
@@ -433,6 +454,18 @@
         kernelMainlineDrmTrialBootFiles = pkgs.callPackage ./nix/mainline-drm-trial.nix {
           cfg = self.nixosConfigurations.k230-mainline-drm-trial.config;
           kernel = self.nixosConfigurations.k230-mainline-drm-trial.config.boot.kernelPackages.kernel;
+          deviceTree = self.packages.${buildSystem}.deviceTreeMainlineDrm;
+        };
+
+        kernelMainlineBootTrace = pkgsCross.callPackage ./nix/kernel-mainline-boot-trace.nix {
+          kernelMainline = pkgsCross.callPackage ./nix/kernel-mainline.nix {
+            inherit (pkgsCross) buildLinux;
+          };
+        };
+        toplevel-mainline-boot-trace = self.nixosConfigurations.k230-mainline-boot-trace.config.system.build.toplevel;
+        kernelMainlineBootTraceTrialBootFiles = pkgs.callPackage ./nix/mainline-drm-trial.nix {
+          cfg = self.nixosConfigurations.k230-mainline-boot-trace.config;
+          kernel = self.nixosConfigurations.k230-mainline-boot-trace.config.boot.kernelPackages.kernel;
           deviceTree = self.packages.${buildSystem}.deviceTreeMainlineDrm;
         };
 

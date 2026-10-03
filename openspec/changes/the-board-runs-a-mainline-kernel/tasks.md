@@ -528,3 +528,19 @@ observations and limits are in
 `docs/evidence/mainline-system-trial/uart-observer-sbi-boot-console-physical-2026-10-03/README.md`.
 The trial does not identify a cause; optional kernel boundary markers are the
 next source-supported diagnostic. Task 5b.5 stays unchecked.
+
+
+## 2026-10-03 optional kernel boot-boundary host preparation
+
+Within open task 5b.5, the user authorized finite paired kernel markers after
+same-image console comparisons failed to reach usable init. Separate
+`kernelMainlineBootTrace`, `k230-mainline-boot-trace` and
+`kernelMainlineBootTraceTrialBootFiles` outputs add serial-only ordinary init
+and exact `k230.boot_trace=1`; existing outputs/controllers are unchanged.
+Seven native flag/emergency/cap tests, zero-fuzz source application, a real
+RISC-V `main.o` API/lifetime check, narrow Nix evaluation and nine unchanged
+existing derivation identities passed. Commands, pins and limitations are in
+`docs/evidence/mainline-system-trial/boot-boundary-host-2026-10-03.md`.
+Full kernel build/artifact inspection and physical marker/init/root/recovery/
+touch proof remain UNVERIFIED. An enter-only marker is only the last visible
+boundary; the marker itself can block. Task 5b.5 stays unchecked.

@@ -365,3 +365,31 @@ protected normal hashes and shell postflight. A systemd refusal is a failed
 prerequisite; an operator power cycle records recovery but does not prove
 mainline automatic restart. The actual controller invocation and artifact
 identity must accompany that physical evidence.
+
+
+## Finite opt-in kernel boot-boundary diagnosis (2026-10-03)
+
+Following the bounded serial-only and retained-SBI trials, add a separate
+`kernelMainlineBootTrace` derivation and matching ordinary-init system/bundle.
+The current DRM/restart/five-clock source remains its base; existing kernel,
+console, observer and default outputs stay unchanged. The optional system
+removes exactly tty0 from the base console arguments and adds
+`k230.boot_trace=1`, with no retained boot console or clock bypass. Keep the
+ordinary controller's qualified controls and identity/protected recovery gates.
+
+Use fixed paired markers around basic setup/initcalls, initramfs readiness,
+root-console opening, init accessibility/namespace, integrity keys, async
+completion, initmem/readonly cleanup and init exec. Enable only the exact
+runtime value 1; disabled calls have no output/emergency side effect. Keep the
+helper/state outside freed init sections and cap output at 32 public records.
+Briefly enter nbcon emergency state for each individual printk, then leave it
+before the bracketed work. This can perturb flushing and a marker can itself
+block; an enter-only marker is a last visible boundary, not a stack or cause.
+Namespace and fallback-exec markers preserve the original conditional paths.
+
+Host proof is in
+`docs/evidence/mainline-system-trial/boot-boundary-host-2026-10-03.md`.
+Full matching kernel/artifact proof and operator-controlled physical output,
+ordinary root/login, automatic recovery and real touch remain UNVERIFIED.
+This diagnostic increment preserves task 5b.5 and all existing acceptance
+requirements; it adds no shipped capability.
