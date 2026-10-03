@@ -352,11 +352,38 @@ def root_stage_command(token: str, stage: str, system: str = SYSTEM) -> str:
     )
 
 
+def _root_mount_marker_text(text: bytes, token: str) -> bytes:
+    """Rejoin only the captured EXT4 mount-info insertion inside a fresh nonce.
+
+    This changes a parser view, never the UART log. No other printk, marker
+    field or incomplete line is removed; the normal uniqueness/RC gates still
+    apply to the resulting complete marker.
+    """
+    uuid = rb"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
+    insertion = (
+        rb"\[ {0,8}[0-9]{1,10}\.[0-9]{6}\] EXT4-fs \(mmcblk1p2\): mounted filesystem "
+        + uuid + rb" ro without journal\. Quota mode: disabled\.\n"
+    )
+    split_end = re.compile(
+        rb"^K230_RDINIT_ROOT_END ([0-9a-f]{1,31})" + insertion
+        + rb"([0-9a-f]{1,31})( STAGE=mount RC=[0-9]{1,3}\n)", re.M,
+    )
+
+    def rejoin(match):
+        if match.group(1) + match.group(2) != token.encode():
+            return match.group(0)
+        return b"K230_RDINIT_ROOT_END " + token.encode() + match.group(3)
+
+    return split_end.sub(rejoin, text)
+
+
 def root_stage_result(output: bytes, token: str, stage: str) -> dict[str, int | bool] | None:
     _validate_token(token)
     if stage not in ("unmounted", "after-umount", "flags", "mkdir", "empty", "mount", "init", "prepare-root", "umount"):
         raise ValueError("unknown root mount stage")
     text = _PROTOCOL.uart_text(output)
+    if stage == "mount":
+        text = _root_mount_marker_text(text, token)
     scope = token.encode() + b" STAGE=" + stage.encode()
     starts = list(re.finditer(rb"^K230_RDINIT_ROOT_BEGIN " + scope + rb"\n", text, re.M))
     has_mounted = stage in ("unmounted", "after-umount", "flags")

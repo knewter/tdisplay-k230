@@ -674,6 +674,17 @@ class RootMountProbeTests(unittest.TestCase):
                 self.reply("mount"), self.reply("flags", mounted=True), self.reply("init"),
                 self.reply("prepare-root"), self.reply("umount"), self.reply("after-umount", mounted=False)]
 
+    def interleaved_mount_reply(self, token=None, rc=0, split=11):
+        # Sanitized shape of the physical capture: only nonce/UUID replaced.
+        token = token or self.token
+        return (
+            f"K230_RDINIT_ROOT_BEGIN {token} STAGE=mount\r\n"
+            f"K230_RDINIT_ROOT_END {token[:split]}[    6.030241] EXT4-fs (mmcblk1p2): "
+            "mounted filesystem 11111111-2222-3333-4444-555555555555 ro without journal. "
+            "Quota mode: disabled.\r\n"
+            f"{token[split:]} STAGE=mount RC={rc}\r\n\x1b[?2004hsh-5.3# "
+        ).encode()
+
     def run_protocol(self, replies, system=trial.SYSTEM):
         session = FakeSerialSession(replies + [f"K230_RDINIT_REBOOT {self.token}\n".encode()])
         outcome = trial.run_probe_protocol(session, self.token, "root-mount", timeout=0.2,
@@ -784,6 +795,78 @@ class RootMountProbeTests(unittest.TestCase):
                 self.assertIsNone(trial.root_stage_result(bad, self.token, stage))
             if mounted is not None:
                 self.assertIsNone(trial.root_stage_result(self.reply(stage, mounted=not mounted), self.token, stage))
+
+    def test_sanitized_captured_mount_interleave_requires_complete_fresh_nonce_and_rc(self):
+        token = "0123456789abcdef0123456789abcdef"
+        for split in range(1, 32):
+            for rc in (0, 32, 255):
+                with self.subTest(split=split, rc=rc):
+                    capture = self.interleaved_mount_reply(token, rc, split)
+                    self.assertEqual(trial.root_stage_result(capture, token, "mount"), {"rc": rc})
+        capture = self.interleaved_mount_reply(token)
+        end = capture.index(b"\r\n\x1b[?2004h")
+        # In particular, no complete printk alone or partial final RC is proof.
+        for cut in range(capture.index(b"K230_RDINIT_ROOT_END"), end + 1):
+            self.assertIsNone(trial.root_stage_result(capture[:cut], token, "mount"))
+
+    def test_mount_interleave_rejects_other_messages_stages_stale_echo_and_duplicates(self):
+        token = "0123456789abcdef0123456789abcdef"
+        capture = self.interleaved_mount_reply(token)
+        log = (b"[    6.030241] EXT4-fs (mmcblk1p2): mounted filesystem "
+               b"11111111-2222-3333-4444-555555555555 ro without journal. Quota mode: disabled.\r\n")
+        invalid = [
+            capture.replace(b"mmcblk1p2", b"mmcblk0p2"),
+            capture.replace(b" ro without", b" r/w without"),
+            capture.replace(b"without journal", b"with journal"),
+            capture.replace(b"Quota mode: disabled.", b"Quota mode: enabled."),
+            capture.replace(b"11111111-2222", b"not-a-uuid-2222"),
+            capture.replace(b"[    6.030241]", b"[    6.03]"),
+            capture.replace(b"[    6.030241]", b"[         6.030241]"),
+            capture.replace(b"[    6.030241]", b"[12345678901.030241]"),
+            capture.replace(log, b"[    6.030241] unknown kernel message\r\n"),
+            capture.replace(log, log + b"unknown output\r\n"),
+            capture.replace(log, log + log),
+            capture.replace(b"disabled.", b"disabled"),
+            capture.replace(b" STAGE=mount", b" STAGE=init"),
+            capture.replace(b"RC=0", b"RC=256"),
+            capture.replace(b"RC=0", b"RC=-1"),
+            capture.replace(token[:11].encode(), b"f" * 11),
+            capture.replace(token[11:].encode(), b"f" * 21),
+            capture.replace(token.encode(), b"f" * 32),
+            capture.replace(b"K230_RDINIT_ROOT_BEGIN", b"echo K230_RDINIT_ROOT_BEGIN"),
+            capture.replace(b"K230_RDINIT_ROOT_END", b"echo K230_RDINIT_ROOT_END"),
+            capture + capture,
+            capture + self.reply("mount").replace(self.token.encode(), token.encode()),
+            trial.root_stage_command(token, "mount").encode(),
+        ]
+        for output in invalid:
+            with self.subTest(output=output):
+                self.assertIsNone(trial.root_stage_result(output, token, "mount"))
+        for stage in ("init", "prepare-root", "umount"):
+            modified = capture.replace(b"STAGE=mount", b"STAGE=" + stage.encode())
+            self.assertIsNone(trial.root_stage_result(modified, token, stage))
+
+    def test_complete_mount_interleave_progresses_to_fresh_flags_paths_and_unmount(self):
+        replies = self.root_replies()
+        replies[3] = self.interleaved_mount_reply()
+        # The next real command echo finishes the captured prompt's line.
+        replies[4] = trial.root_stage_command(self.token, "flags").encode() + b"\r\n" + replies[4]
+        session, outcome = self.run_protocol(self.label_replies() + replies)
+        self.assertTrue(outcome["diagnostic_ok"])
+        self.assertEqual(outcome["diagnostic"]["root"]["mount"]["rc"], 0)
+        self.assertIn(b"STAGE=flags", session.writes[9 + 3])
+        self.assertEqual(sum(b"/bin/mount -t ext4" in command for command in session.writes), 1)
+        self.assertEqual(sum(b"/bin/umount /sysroot" in command for command in session.writes), 1)
+        self.assertIn(b"/bin/reboot -ff", session.writes[-1])
+
+    def test_unknown_mount_interleave_stops_without_flags_cleanup_or_reboot(self):
+        reply = self.interleaved_mount_reply().replace(b"Quota mode: disabled.", b"unknown output")
+        session = FakeSerialSession(self.label_replies() + self.root_replies()[:3] + [reply])
+        with self.assertRaisesRegex(trial.ProbeProtocolError, "root-mount mount"):
+            trial.run_probe_protocol(session, self.token, "root-mount", timeout=0.2, clock=FakeClock(0.05))
+        self.assertEqual(len(session.writes), 12)
+        self.assertIn(b"STAGE=mount", session.writes[-1])
+        self.assertFalse(any(b"/bin/umount" in command or b"/bin/reboot" in command for command in session.writes))
 
     def test_generated_mount_scans_execute_strict_flags_with_false_last_entries(self):
         import shlex
