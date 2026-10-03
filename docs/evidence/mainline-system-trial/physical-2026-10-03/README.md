@@ -68,3 +68,9 @@ shell services active, eight unchanged boot hashes and a new normal boot ID.
 [Protected normal recovery result](operator-reset-recovery.json) records the
 operator reset explicitly. This clears the recovery blocker for host diagnosis;
 it does not establish automatic recovery or ordinary mainline acceptance.
+
+After that protected identity check, a normal-session `swaymsg 'card_shell home'`
+and shell overlay hide returned RC0. A separately reviewed [normal Home camera
+still](normal-return-home.jpg), captured with the same camera command and a
+fresh output path, shows the Home clock/icons/background. It confirms a visible
+normal display return; it is not touch acceptance or a mainline frame claim.
