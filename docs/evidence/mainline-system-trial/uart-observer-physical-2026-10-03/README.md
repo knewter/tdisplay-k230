@@ -70,7 +70,13 @@ A separately reserved C920 camera capture showed boot text with glare; it does
 not establish readable candidate identity, a usable root, or deliberate touch.
 That private frame is not published.
 
-Operator reset recovery is **UNVERIFIED** while awaiting the user's reset.
+The user pressed reset. [Protected normal postflight](operator-reset-recovery.json)
+passed with a fresh boot ID, the exact system/profile/kernel/init, three active
+shell services, all eight unchanged protected boot hashes and registration-marker
+absence. Qualified normal Home IPC returned RC=0, and a separately reserved
+private camera frame visually showed Home icons, clock and background. Glare
+limits detail; it is not published and is not a mainline/touch proof. This proves operator-reset
+recovery; automatic return from the observer remains **UNVERIFIED**.
 Task 5b.5 remains open: ordinary usable mainline root, panel photograph,
 deliberate glass touch and protected return are not satisfied by READY or host
 checks. Further source review must distinguish helper early exit, kernel

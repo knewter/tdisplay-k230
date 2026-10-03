@@ -1,0 +1,30 @@
+{
+  "recovery": "operator-reset-after-autonomous-observer-stop",
+  "evidence_class": "physical serial protected normal postflight",
+  "fresh_boot_id": true,
+  "same_protected_system_profile_kernel_init_uname": true,
+  "services": [
+    "active",
+    "active",
+    "active"
+  ],
+  "protected_boot_files_sha256": {
+    "Image": "37d71fc14f9bdafe230767e1709de587c049014660dd59d2f7bcbbce35ac71c2",
+    "bootargs.txt": "27e85247977a44c8aab0b78ea30f81e368623ba29fba262cd21871cdc31bf476",
+    "force_dtb": "175342c82dd1b437cdafb6bb01090e7ff73c2769515654c48b02c1e9f73440c6",
+    "fw_jump_add_uboot_head.bin": "9627edbeea9b115d7040beea27cc61b23b6aca61cd502fd7760d7ee179f42c99",
+    "hdmi_dtb": "175342c82dd1b437cdafb6bb01090e7ff73c2769515654c48b02c1e9f73440c6",
+    "initrd.uimg": "867e227f333ffe9c0e83a489dbfd0c755d7fcd0a0cf588cf47ec1c139945fb25",
+    "k230-tdisplay.dtb": "07e784fa3b2eeb971df3ba6f22d9909ed8e0424fdd6bdf680724631652bbe65e",
+    "lcd_dtb": "175342c82dd1b437cdafb6bb01090e7ff73c2769515654c48b02c1e9f73440c6"
+  },
+  "nix_path_registration_absent": true,
+  "automatic_restart": "UNVERIFIED",
+  "checked_at_utc": "2026-10-03T06:33:09.852617+00:00",
+  "raw_serial_log_bytes": 34585,
+  "raw_serial_log_sha256": "c644480ea3b38333d786ef606206326040cd84ebaf00912170b09e072de611fa",
+  "normal_home_ipc": "completed-return-code-0",
+  "home_ipc_private_log_sha256": "912dd9d0792501c62477947f74b5e8935d7cbaa22444bfb89686e638da2c9d27",
+  "normal_home_camera": "private C920 frame visually shows Home icons, clock and background; glare limits detail",
+  "home_camera_private_sha256": "3ca5588f4286b8df8c95c72672aec3f566336efc9d226a2cf61efaaa54630906"
+}

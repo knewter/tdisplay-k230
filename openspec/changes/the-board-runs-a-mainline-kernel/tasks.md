@@ -477,8 +477,9 @@ The separately built observer bundle passed actual Image/DTB/ramdisk/archive
 and closure inspection, staging and protected normal preflight. Its physical
 trial produced one complete fresh READY frame, then no counter frame, primary
 prompt or return. The host sent zero receipt commands; the bounded passive
-wait ended without automatic recovery. Operator reset recovery remains
-UNVERIFIED pending the requested reset. Exact artifacts, command, timestamps,
+wait ended without automatic recovery. The user reset; protected normal postflight
+and qualified Home IPC passed. Automatic return remains UNVERIFIED. Exact
+artifacts, command, timestamps,
 raw-log digest and limits are in
 `docs/evidence/mainline-system-trial/uart-observer-physical-2026-10-03/README.md`.
 No helper, UART, console or kernel cause is inferred. Ordinary usable root,
