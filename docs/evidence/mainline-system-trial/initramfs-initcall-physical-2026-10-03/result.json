@@ -1,0 +1,101 @@
+{
+  "schema": "mainline-initramfs-initcall-physical-v1",
+  "controller_revision": "636e24e9b321560479c00d041caf4fbc26dd2590",
+  "source_revision": "c6896fbc3b4a3e0fe7b3579f0add791adafbef12",
+  "status": "failed-login-readiness-recovery-required",
+  "controller_exit": 1,
+  "phase": "begin",
+  "readiness_bound_seconds": 180,
+  "candidate_bundle": "/nix/store/brmp1qf9cz65yciazabc8yg5j39nn643-k230-mainline-drm-trial-boot-files",
+  "candidate_system": "/nix/store/g74hzn6yr07il4r00r5iv3v8baw6q2cf-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "candidate_kernel": "/nix/store/am9cxlangrklamgs5lb0y31q028jbabq-linux-riscv64-unknown-linux-gnu-7.3.0-rc5",
+  "artifact_files": {
+    "Image-mainline-drm": {
+      "bytes": 38530560,
+      "sha256": "6efde73a16ebbbbfd1c1e3a755faa478ff673e01fcfe20582ddf4e25530c94ff",
+      "crc32": "f6ec4190"
+    },
+    "k230-tdisplay-mainline-drm.dtb": {
+      "bytes": 11097,
+      "sha256": "da47de906f885bf709815e5ae294522958d9c537e58b30509813f9b4726b02fa",
+      "crc32": "678a66e8"
+    },
+    "initrd.uimg": {
+      "bytes": 27308549,
+      "sha256": "0baa8cdc6a2a6f85e45f2a112bcf34730af2c5bb7b5f454836fe2975bf2a94d7",
+      "crc32": "0825b54b"
+    },
+    "bootargs.txt": {
+      "bytes": 243,
+      "sha256": "6f997f8308a83fe0babc52509c8129c02f102f9980d4838cc2c2c28d00c966b9",
+      "crc32": "93dfb224"
+    },
+    "fw_jump_add_uboot_head.bin": {
+      "bytes": 270808,
+      "sha256": "9627edbeea9b115d7040beea27cc61b23b6aca61cd502fd7760d7ee179f42c99",
+      "crc32": "99b89787"
+    }
+  },
+  "same_staged_artifacts": true,
+  "added_volatile_argument": "initramfs_async=0",
+  "wait_initramfs_in_initcall": true,
+  "qualified_controls": [
+    "fsck.mode=skip",
+    "systemd.mask=k230-root-growth.service",
+    "systemd.mask=register-nix-paths.service"
+  ],
+  "normal_preflight": {
+    "qualified": true,
+    "uname": "6.6.36",
+    "eight_boot_files_unchanged": true,
+    "three_shell_services_active": true,
+    "registration_absent": true
+  },
+  "fresh_mainline_banner": true,
+  "complete_SBI_only_steps": [
+    "basic-setup-enter",
+    "initcalls-enter",
+    "initcalls-exit",
+    "basic-setup-exit",
+    "initramfs-wait-enter",
+    "initramfs-wait-exit",
+    "root-console-enter",
+    "root-console-exit",
+    "init-access-enter",
+    "init-access-exit",
+    "integrity-keys-enter",
+    "integrity-keys-exit",
+    "async-wait-enter",
+    "async-wait-exit",
+    "initmem-readonly-enter",
+    "initmem-readonly-exit",
+    "init-exec-enter",
+    "init-exec-exit"
+  ],
+  "legacy_marker_count": 0,
+  "rootfs_initcall_join_returned": true,
+  "later_initramfs_wait_returned": true,
+  "initrd_free_message_seen": true,
+  "kernel_execve_returned": true,
+  "kernel_execve_return_value": "UNVERIFIED",
+  "last_SBI_ECALL_return": "UNVERIFIED",
+  "first_userspace_instruction": "UNVERIFIED",
+  "systemd_banner_seen": false,
+  "login_banner_seen": false,
+  "ordinary_root": "UNVERIFIED",
+  "panel_acceptance": "UNVERIFIED",
+  "deliberate_glass_touch": "UNVERIFIED",
+  "production_unmasked": "UNVERIFIED",
+  "automatic_return": "UNVERIFIED",
+  "operator_reset_recovery": "UNVERIFIED",
+  "normal_postflight": "UNVERIFIED",
+  "candidate_input_after_readiness_failure": "none",
+  "raw_serial": {
+    "private_path": "~/tmp/k230-mainline-initramfs-initcall-board/ordinary-uart.log",
+    "bytes": 48771,
+    "sha256": "f6e65df41e16e9c8beb17470eac0a99f616f34298f3b96783e7b7a155f39cea1",
+    "last_uart_mtime_utc": "2026-10-03T21:21:21.745293+00:00",
+    "result_saved_utc": "2026-10-03T21:24:16.149864+00:00"
+  },
+  "candidate_camera": "not obtained in this attempt; earlier dark frame is not reused"
+}

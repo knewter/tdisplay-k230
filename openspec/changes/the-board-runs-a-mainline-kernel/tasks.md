@@ -680,3 +680,18 @@ Automatic return from the failed candidate remains UNVERIFIED. Reviewed
 controller `1846fd3e` and its29 focused tests passed CI; the same-image
 initramfs comparison is ready for a separately reserved physical attempt.
 Ordinary root/glass/production and5b.5 remain open.
+
+
+## 2026-10-03 physical initramfs/initcall comparison
+
+The exact same staged bundle with one volatile `initramfs_async=0` argument
+passed protected preflight/loads/CRCs/printed arguments and emitted18 fixed
+records through `init-exec-exit`, including the earlier rootfs join and later
+initramfs wait completion. No login arrived in180seconds; controller exit1
+released UART without further input. `kernel_execve()` returned but retval,
+last SBI return and first userspace instruction are unknown. See
+`docs/evidence/mainline-system-trial/initramfs-initcall-physical-2026-10-03/README.md`
+and result JSON. Operator reset recovery is pending; ordinary root/panel/
+glass/automatic return and5b.5 stay open. Read-only source audit recommends
+a same-image no-marker comparison preserving async=0 and normal logging;
+reviewed controller support is required before another boot.
