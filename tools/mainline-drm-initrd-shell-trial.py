@@ -17,6 +17,7 @@ import os
 import re
 import shlex
 import struct
+import subprocess
 import sys
 import time
 import uuid
@@ -52,6 +53,9 @@ RUNTIME_TRACE_STAGES = ("sys-mkdir", "sys-mount", "permissions", "prior", "write
 SHELL_CONTROLS = ("fsck.mode=skip", "systemd.mask=k230-root-growth.service",
                   "systemd.mask=register-nix-paths.service", "initramfs_async=0")
 SHELL_TRACE_FLAGS = ("k230.boot_trace=1", "k230.boot_trace_sbi_only=1")
+UART_PROGRESS_FLAG = "k230.uart_progress=1"
+UART_PROGRESS_FIELDS = ("j", "t", "u", "ti", "ui", "tc", "rx", "tx", "fe", "pe", "oe", "be", "ie", "rm", "im", "hz")
+UART_PROGRESS_UART_FIELDS = ("u", "ui", "rx", "tx", "fe", "pe", "oe", "be", "ie", "rm", "im", "hz")
 BOOT_ID_PATTERN = r"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
 _PROTOCOL_SPEC = importlib.util.spec_from_file_location(
     "rvv_board_boot", Path(__file__).with_name("rvv-board-boot.py")
@@ -176,12 +180,13 @@ def shell_pid1_bootargs(original: str, system: str) -> str:
     return "bootargs=" + " ".join([*params, *SHELL_CONTROLS, "rdinit=/bin/sh"])
 
 
-def shell_pid1_transport(args: str, system: str) -> str:
+def shell_pid1_transport(args: str, system: str, *, uart_progress=False) -> str:
     # Reconstruct the qualified transform instead of accepting arbitrary literal args.
     original = ("bootargs=consoleblank=0 console=ttyS0,115200n8 root=fstab loglevel=4 "
                 "lsm=landlock,yama,bpf loglevel=7 " + " ".join(SHELL_TRACE_FLAGS) +
                 f" init={system}/init\n")
-    if args != shell_pid1_bootargs(original, system):
+    expected = shell_pid1_bootargs(original, system) + (" " + UART_PROGRESS_FLAG if uart_progress else "")
+    if args != expected:
         raise ValueError("unexpected shell comparison arguments")
     value = args.removeprefix("bootargs=")
     if not re.fullmatch(r"[A-Za-z0-9_./:=,+@% \-]+", value):
@@ -263,6 +268,191 @@ def prepare_shell_comparison(prepared: dict) -> dict:
     shell_guard_command("a" * 32, "initial", p["shell_comparison"], p["normal"])
     shell_guard_command("b" * 32, "renewed", p["shell_comparison"], p["normal"], "00000000-0000-0000-0000-000000000002")
     return p
+
+
+def validate_uart_progress_selector(selector, same_image_shell_pid1, mode,
+                                    ignore_unused_clocks=False, debug_shutdown=False,
+                                    runtime_shutdown_trace=False):
+    if type(selector) is not bool:
+        raise ValueError("UART progress selector must be boolean")
+    if selector and (not same_image_shell_pid1 or mode != "minimal" or
+                     ignore_unused_clocks or debug_shutdown or runtime_shutdown_trace):
+        raise ValueError("--uart-progress requires minimal --same-image-shell-pid1 without other diagnostics")
+
+
+def inspect_uart_progress_kernel(prepared):
+    """Require a realized dev config from the very same kernel derivation."""
+    kernel = (Path(prepared["system"]) / "kernel").resolve(strict=True).parent
+    def query(*args):
+        return subprocess.check_output(["nix-store", "--query", *args], text=True,
+                                       timeout=20).splitlines()
+    derivations = query("--deriver", str(kernel))
+    if len(derivations) != 1 or not re.fullmatch(r"/nix/store/[0-9a-z]{32}-[^/]+\.drv", derivations[0]):
+        raise ValueError("selected progress kernel derivation is unavailable")
+    outputs = query("--outputs", derivations[0])
+    if str(kernel) not in outputs:
+        raise ValueError("selected kernel is not a reported derivation output")
+    configs = []
+    for output in outputs:
+        if not output.endswith("-dev"):
+            continue
+        dev = immutable_store_path(Path(output), "selected kernel dev")
+        config = dev / "lib/modules/7.3.0-rc5/build/.config"
+        if config.is_file():
+            configs.append(config)
+    if len(configs) != 1:
+        raise ValueError("realize the matching progress kernel dev output before UART access")
+    content = configs[0].read_bytes()
+    for name in ("K230_UART_PROGRESS", "RISCV_SBI", "RISCV_TIMER", "SERIAL_8250", "SERIAL_8250_DW", "OF"):
+        if re.findall(rb"^CONFIG_" + name.encode() + rb"=(.*)$", content, re.M) != [b"y"]:
+            raise ValueError("matching kernel config lacks required built-in " + name)
+    return {"kernel": str(kernel), "derivation": derivations[0], "config": str(configs[0]),
+            "config_sha256": hashlib.sha256(content).hexdigest()}
+
+
+def prepare_uart_progress(prepared):
+    p = prepare_shell_comparison(prepared)
+    p["uart_progress_kernel"] = inspect_uart_progress_kernel(p)
+    p["bootargs"] += " " + UART_PROGRESS_FLAG
+    p["transport"] = shell_pid1_transport(p["bootargs"], p["system"], uart_progress=True)
+    return p
+
+
+def uart_progress_record(line):
+    """Only exact complete public records; no printk insertion repair."""
+    pattern = rb"K230_UP1 n=([0-5]) s=([0-5])" + b"".join(
+        b" " + key.encode() + rb"=([0-9a-f]{" + str(16 if key in ("j", "t") else 8).encode() + rb"})"
+        for key in UART_PROGRESS_FIELDS) + rb"\n"
+    match = re.fullmatch(pattern, line)
+    if not match or len(line) >= 256:
+        return None
+    result = {"n": int(match[1]), "s": int(match[2]),
+              **{key: int(value, 16) for key, value in zip(UART_PROGRESS_FIELDS, match.groups()[2:])}}
+    if ((result["s"] and any(result[key] for key in UART_PROGRESS_UART_FIELDS)) or
+            (not result["s"] and not result["u"]) or (not result["ti"] and result["tc"])):
+        return None
+    return result
+
+
+def observe_uart_progress(session, token, expected_args, *, timeout=180, readiness_timeout=90,
+                          clock=time.monotonic):
+    """One fresh stimulus, then read only, including on unknown completion."""
+    _validate_token(token)
+    if not 0 < timeout <= 180 or not 0 < readiness_timeout <= min(timeout, 90):
+        raise ValueError("invalid bounded UART observation deadline")
+    started = clock()
+    expected_cmdline = expected_args.removeprefix("bootargs=")
+    text = b""
+    records, errors = [], []
+    banner = entry = ready = sent = False
+    normal_ready = False
+    candidate_start = init_end = None
+    parsed_lines = 0
+    receipt_count = 0
+    args_status = "UNKNOWN"
+    prompt_seen = False
+    overflow = False
+    normal_tail = b""
+    normal_stage = 0
+    total = 0
+    while clock() - started < timeout:
+        try:
+            chunk = session.pump()
+        except Exception:
+            errors.append("transport-read-unknown")
+            break
+        total += len(chunk)
+        normal_tail = (normal_tail + chunk)[-131072:]
+        normal_text = _PROTOCOL.uart_text(normal_tail)
+        # Recovery is independent of candidate banner/protocol success.
+        normal_patterns = (rb"^U-Boot SPL 2022\.10[^\n]*\n",
+                           rb"^\[\s*[0-9]+\.[0-9]+\]\s+Linux version 6\.6\.36(?:[ \t][^\n]*)?\n",
+                           rb"^nixos login:(?:[ \t]|$)", rb"^root@nixos:[^\n]*# ")
+        while normal_stage < 4:
+            found = re.search(normal_patterns[normal_stage], normal_text, re.M)
+            if not found:
+                break
+            normal_text = normal_text[found.end():]
+            normal_tail = normal_text
+            normal_stage += 1
+        normal_ready = normal_stage == 4
+        if not overflow:
+            if total > 1048576:
+                overflow = True
+                errors.append("capture-byte-bound")
+            else:
+                text += chunk
+        if not overflow:
+            normalized = _PROTOCOL.uart_text(text)
+            if candidate_start is None:
+                found = re.search(rb"^\[\s*[0-9]+\.[0-9]+\]\s+Linux version 7\.3\.0-rc5(?:[ \t][^\n]*)?\n", normalized, re.M)
+                if found:
+                    candidate_start = found.end()
+                    banner = True
+            if banner:
+                phase = normalized[candidate_start:]
+                received_args = re.findall(rb"^\[\s*[0-9]+\.[0-9]+\]\s+Kernel command line: ([^\n]*)\n", phase, re.M)
+                args_status = ("DUPLICATE" if len(received_args) > 1 else
+                               "MATCHED" if received_args == [expected_cmdline.encode()] else
+                               "MISMATCH" if received_args else "UNKNOWN")
+                if args_status in ("DUPLICATE", "MISMATCH") and "kernel-command-line-" + args_status.lower() not in errors:
+                    errors.append("kernel-command-line-" + args_status.lower())
+                complete = phase.split(b"\n")[:-1]
+                for line in complete[parsed_lines:]:
+                    if b"K230_UP" in line:
+                        record = uart_progress_record(line + b"\n")
+                        if record is None:
+                            errors.append("malformed-record")
+                        elif any(r["n"] == record["n"] for r in records):
+                            errors.append("duplicate-record")
+                        elif records and (record["n"] < records[-1]["n"] or record["j"] < records[-1]["j"] or record["t"] < records[-1]["t"]):
+                            errors.append("record-order")
+                        else:
+                            records.append({**record, "observed_after_stimulus": sent})
+                parsed_lines = len(complete)
+                if init_end is None:
+                    found = re.search(rb"^\[\s*[0-9]+\.[0-9]+\]\s+Run /bin/sh as init process\n", phase, re.M)
+                    if found:
+                        init_end = found.end()
+                        entry = True
+                if entry and not sent and clock() - started <= readiness_timeout:
+                    prompt = re.search(rb"^sh-5\.3# (?=\n|\Z)", phase[init_end:], re.M)
+                    if prompt:
+                        suffix = phase[init_end:][prompt.end():]
+                        # Only newlines and complete qualified direct records may
+                        # follow the primary prompt in the same pump batch.
+                        trailing = suffix.splitlines(keepends=True)
+                        prompt_seen = all(line == b"\n" or uart_progress_record(line) is not None for line in trailing)
+                    ready = prompt_seen and args_status == "MATCHED"
+                receipt_count = len(re.findall(rb"^K230_RDINIT_RX " + token.encode() + rb"\n", phase, re.M)) if sent else 0
+                if receipt_count > 1 and "duplicate-receipt" not in errors:
+                    errors.append("duplicate-receipt")
+        if normal_ready:
+            break
+        if ready and not sent and not errors and not overflow:
+            # No line()/Ctrl-U, no retry, no guard/proc/reboot command follows.
+            sent = True
+            try:
+                session.write((reception_command(token) + "\r").encode())
+            except Exception:
+                errors.append("stimulus-write-unknown")
+                break
+    if banner and not overflow:
+        final = _PROTOCOL.uart_text(text)[candidate_start:].split(b"\n")[-1]
+        if b"K230_UP" in final:
+            errors.append("truncated-record")
+    complete = [r["n"] for r in records] == list(range(6)) and not errors
+    return {"schema": "k230-uart-progress-observation-v1", "candidate_banner": banner,
+            "init_entry": entry, "primary_prompt_observed": prompt_seen,
+            "kernel_args_verified": args_status == "MATCHED", "kernel_args_status": args_status,
+            "readiness_observed": ready, "stimulus_attempts": int(sent),
+            "receipt_observed": receipt_count == 1 and "duplicate-receipt" not in errors,
+            "receipt_status": "MATCHED" if receipt_count == 1 else "UNKNOWN",
+            "records": records, "records_complete": complete, "protocol_errors": errors,
+            "samples_observed_after_stimulus": sum(r["observed_after_stimulus"] for r in records),
+            "normal_prompt_observed": normal_ready, "capture_timeout_seconds": timeout,
+            "capture_seconds": max(0, clock() - started),
+            "reboot_requested": False, "pid1_identity": "UNVERIFIED", "usable_root": "UNVERIFIED", "touch": "UNVERIFIED"}
 
 
 def shell_guard_command(token, phase, comparison, normal, boot_id=None):
@@ -1387,6 +1577,49 @@ def write_private_result(path: Path, value: dict[str, object]) -> None:
         result_file.write("\n")
 
 
+def finish_uart_progress(session, token, prepared, before, log_path, result_path):
+    observation = observe_uart_progress(session, token, prepared["bootargs"])
+    after = None
+    recovery_error = None
+    if observation["normal_prompt_observed"]:
+        try:
+            post_token = uuid.uuid4().hex
+            session.upload_text("/run/k230-mainline-normal-state.py", prepared["helper_text"], post_token)
+            session.upload_text("/run/k230-mainline-expected.json", json.dumps(prepared["normal"], indent=2), post_token)
+            candidate = session.run_state("postflight", post_token)
+            normal = prepared["normal"]
+            for key in ("system", "profile", "kernel", "uname", "init"):
+                if candidate.get(key) != normal[key]:
+                    raise ValueError("normal postflight identity mismatch")
+            if (candidate.get("boot_files") != {name: info["sha256"] for name, info in normal["boot_files"].items()}
+                    or candidate.get("services") != ["active"] * 3
+                    or not re.fullmatch(BOOT_ID_PATTERN, candidate.get("boot_id", ""))
+                    or candidate["boot_id"] in (normal["boot_id"], normal["trial_from_boot_id"])):
+                raise ValueError("normal postflight files/services/fresh boot mismatch")
+            after = candidate
+        except Exception:
+            # Preserve observation even if renewed normal guards fail/timeout.
+            recovery_error = "protected-normal-postflight-unverified"
+    diagnostic_ok = (observation["records_complete"] and observation["receipt_observed"] and
+                     all(r["s"] == 0 and r["ti"] > 0 for r in observation["records"]))
+    status = ("recovery-verified-diagnostic-observed" if diagnostic_ok else
+              "recovery-verified-diagnostic-incomplete") if after else "recovery-required-observation-only"
+    write_private_result(result_path, {
+        "result_schema": "mainline-initrd-uart-progress-v1", "status": status,
+        "uart_progress": True, "same_image_shell_pid1": True,
+        "candidate_system": prepared["system"], "candidate_bundle": str(prepared["bundle"]),
+        "expected_bootargs": prepared["bootargs"], "kernel_proof": prepared["uart_progress_kernel"],
+        "normal_preflight": before, "probe": observation, "normal_recovery": after,
+        "recovery_error": recovery_error, "diagnostic_ok": diagnostic_ok,
+        "reboot_requested": False, "persistent_boot_selection_changed": False,
+        "ordinary_init": "NOT_ATTEMPTED", "usable_root": "UNVERIFIED", "touch": "UNVERIFIED",
+        "raw_serial_log_path": str(log_path),
+    })
+    print("Finite UART observation saved; no candidate reboot or retry was sent. " +
+          ("Protected normal postflight verified." if after else "Protected normal recovery remains required."))
+    return bool(after and diagnostic_ok)
+
+
 def run_trial(
     manifest_path: Path, log_path: Path, result_path: Path, mode: str,
     bundle: Path = BUNDLE, normal_report: Path = NORMAL_REPORT,
@@ -1394,8 +1627,11 @@ def run_trial(
     debug_shutdown: bool = False,
     runtime_shutdown_trace: bool = False,
     same_image_shell_pid1: bool = False,
+    uart_progress: bool = False,
 ) -> bool:
     validate_shell_selector(same_image_shell_pid1, mode, ignore_unused_clocks, debug_shutdown, runtime_shutdown_trace)
+    validate_uart_progress_selector(uart_progress, same_image_shell_pid1, mode,
+                                    ignore_unused_clocks, debug_shutdown, runtime_shutdown_trace)
     if mode not in ("minimal", "survey", "label", "root-mount"):
         raise ValueError("probe mode must be minimal, survey, label or root-mount")
     if ignore_unused_clocks and not (mode == "label" or (mode == "minimal" and runtime_shutdown_trace)):
@@ -1407,7 +1643,9 @@ def run_trial(
     if runtime_shutdown_trace and debug_shutdown:
         raise ValueError("--runtime-shutdown-trace cannot be combined with --debug-shutdown")
     prepared = prepare_trial(manifest_path, bundle, normal_report)
-    if same_image_shell_pid1:
+    if uart_progress:
+        prepared = prepare_uart_progress(prepared)
+    elif same_image_shell_pid1:
         prepared = prepare_shell_comparison(prepared)
     manifest = prepared["manifest"]
     system = prepared["system"]
@@ -1528,6 +1766,9 @@ def run_trial(
             session.line("bootm 0x8000000 0x9000000 0x8400000", interrupt=False)
             boot_started = True
             in_uboot = False
+            if uart_progress:
+                return finish_uart_progress(session, uuid.uuid4().hex, prepared, observed_before,
+                                            log_path, result_path)
             if not session.wait_for(b"Linux version 7.3.0-rc5", 45):
                 raise RuntimeError("Linux version banner not observed; reset may be required")
             token = uuid.uuid4().hex
@@ -1722,6 +1963,8 @@ def main() -> int:
                         help="label, or minimal with runtime tracing: add volatile clk_ignore_unused")
     parser.add_argument("--same-image-shell-pid1", action="store_true",
                         help="minimal only: exact SBI-only image, markers off, async=0, qualified controls and Bash PID1")
+    parser.add_argument("--uart-progress", action="store_true",
+                        help="minimal shell comparison only: matching configured kernel; one receipt then passive capture, no candidate reboot; requires host nix-store and matching realized kernel.dev")
     shutdown_flags = parser.add_mutually_exclusive_group()
     shutdown_flags.add_argument("--debug-shutdown", action="store_true",
                         help="minimal mode only: add volatile initcall_debug loglevel=8 shutdown tracing")
@@ -1740,6 +1983,8 @@ def main() -> int:
     try:
         validate_shell_selector(args.same_image_shell_pid1, args.mode, args.ignore_unused_clocks,
                                 args.debug_shutdown, args.runtime_shutdown_trace)
+        validate_uart_progress_selector(args.uart_progress, args.same_image_shell_pid1, args.mode,
+                                        args.ignore_unused_clocks, args.debug_shutdown, args.runtime_shutdown_trace)
     except ValueError as exc:
         parser.error(str(exc))
     if args.ignore_unused_clocks and not (args.mode == "label" or (args.mode == "minimal" and args.runtime_shutdown_trace)):
@@ -1755,6 +2000,7 @@ def main() -> int:
             **({"debug_shutdown": True} if args.debug_shutdown else {}),
             **({"runtime_shutdown_trace": True} if args.runtime_shutdown_trace else {}),
             **({"same_image_shell_pid1": True} if args.same_image_shell_pid1 else {}),
+            **({"uart_progress": True} if args.uart_progress else {}),
         )
     except Exception as exc:
         print(f"Trial stopped: {exc}", file=sys.stderr)

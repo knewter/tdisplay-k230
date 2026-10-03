@@ -810,8 +810,15 @@ and task 5b.5 remain UNVERIFIED; no archive or production fix is claimed.
       original artifact and runtime argument qualification, at most one fresh
       receipt stimulus, bounded passive record capture, fixed public parser,
       missing/duplicate/unknown-no-input policy and protected recovery gates.
-      Host-only proof: `python3 tests/test_mainline_uart_progress.py` and
+      Require the same selected kernel derivation's already-realized dev
+      config before UART; exactly match its fresh received kernel arguments.
+      Never issue a candidate reboot; preserve actual elapsed capture and
+      host-arrival-only sample coverage, then require protected normal recovery.
+      Host-only proof: `python3 tests/test_mainline_uart_progress_controller.py` and
       `python3 -m unittest discover -s tests -p 'test_mainline_drm*trial.py'`.
+      Controller source/fixture preparation is recorded in
+      `docs/evidence/mainline-uart-progress-controller/README.md`; this task
+      remains open until the actual matching bundle/config qualification passes.
 - [ ] 5f.5 After fresh protected normal recovery, reserve board/UART and run one
       matching physical comparison with its exact prepared identities:
       `python3 tools/mainline-drm-initrd-shell-trial.py --mode minimal --same-image-shell-pid1 --uart-progress --bundle BUNDLE --manifest PRIVATE_MANIFEST --normal-report PRIVATE_NORMAL --log PRIVATE_LOG --result PRIVATE_RESULT`.
