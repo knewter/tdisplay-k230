@@ -82,6 +82,7 @@ jobs:
           python3 tests/test_mainline_uart_progress_breadcrumbs.py
           python3 tests/test_mainline_uart_progress_breadcrumbs_controller.py
           python3 tests/test_mainline_uart_progress_post_sample_controller.py
+          python3 tests/test_mainline_uart_progress_post_sample.py
 
       - name: Check bounded VG-Lite normal-service recovery
         run: |
