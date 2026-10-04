@@ -1082,13 +1082,16 @@ completion of ordinary mainline acceptance.
 
 ## 5j. Same built Memory image without candidate stimulus (planned, UNVERIFIED)
 
-- [ ] 5j.1 Implement typed Memory-only no-stimulus selector, identical bootargs/
+- [x] 5j.1 Implement typed Memory-only no-stimulus selector, identical bootargs/
       qualification and zero candidate writes after boot on all paths. Record
       NOT_REQUESTED receipt/zero attempts/RX NOT_TESTED; default still one stimulus.
       Real-pump/write-spy fixtures cover success, missing/malformed/duplicate/
       truncated/stale output, no prompt, wrong args, overflow/read errors/timeout,
       pre-open conflicts and independent guarded normal return. Narrow proof:
       `python3 tests/test_mainline_uart_progress_memory_no_stimulus_controller.py`.
+      Host implementation/15 real-pump fixtures and 228 previous controller tests
+      passed; independent source review PASS. [Host proof](../../../docs/evidence/mainline-uart-progress-memory/no-stimulus-host/README.md).
+      Physical no-stimulus capture/recovery remain UNVERIFIED.
 - [ ] 5j.2 Requalify actual existing lznjjfx1 bundle/1pvqbm4 dev/source 307d7c/
       linked Image/archive/manifests and exact unchanged Memory args. Record
       controller-revision/policy receipt with no implicit build/UART. Host proof:
