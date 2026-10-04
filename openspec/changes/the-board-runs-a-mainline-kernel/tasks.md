@@ -1036,7 +1036,7 @@ completion of ordinary mainline acceptance.
       inspect consistent publication dependencies, ordinary lifetime/aligned
       buffer/page bounds and unchanged getter behavior. Host-only proof:
       `nix build .#kernelMainlineUartProgressMemoryExactObjects --no-link --print-out-paths`.
-- [ ] 5i.4 Implement typed minimal-only Memory controller, reject conflicting
+- [x] 5i.4 Implement typed minimal-only Memory controller, reject conflicting
       breadcrumb/post-sample selection, retain exact qualification/normal guards,
       one fresh stimulus/passive capture and strict single-summary facts. Actual
       NEW matching positive preparation required before checking this task.
@@ -1047,8 +1047,12 @@ completion of ordinary mainline acceptance.
       ordinary checks. Actual fjmxf6 old artifact fails the new reviewed worker
       gate before UART. Consistent incomplete/timeout summary, worker completion,
       receipt and protected return remain independent facts; no candidate reboot
-      or extra input follows. NEW actual positive preparation is UNVERIFIED, so
-      this checkbox remains open; no build/board or live normal check here.
+      or extra input follows. [Actual NEW positive host proof](../../../docs/evidence/mainline-uart-progress-memory/positive-controller-host/README.md)
+      now passes against frozen `7af8f7b8`, realized lznjjfx1 bundle/1pvqbm4 dev,
+      same-drv config, reviewed 307d7c source, unique linked summary format/setup,
+      actual archived executables/shared loader and sole additional gate
+      (353 to 381-byte literal command). No UART/build or performed protected
+      board check by this qualifier. Tasks 5i.5–6 and 5b.5 remain open.
 - [ ] 5i.5 After NEW guarded protected recovery plus exact host/controller proof,
       reserve board/UART and run one comparison; commit fixed public facts and
       independent protected recovery or explicit pending operator reset.
