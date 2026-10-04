@@ -1,12 +1,12 @@
 {
-  "schema": "k230-memory-printk-physical-v1",
-  "evidence_class": "actual reserved board UART capture; no candidate camera or glass proof",
-  "controller_revision": "877bec0ed1bea3df359b8538210e845124d131e6",
-  "controller_source_sha256": "5c227ac0e0cd20c25447d895bb1151751f8ff1ca34efc7d37fc34aedb06d3656",
-  "started_utc": "2026-10-04T07:26:24.209740+00:00",
-  "completed_utc": "2026-10-04T07:29:52.099972+00:00",
+  "schema": "k230-memory-printk-nohz-off-physical-v1",
+  "evidence_class": "actual reserved board UART capture; no candidate camera/glass proof",
+  "controller_revision": "87e5a3440d5103d38ff45af691a9b38d7834dd89",
+  "controller_source_sha256": "34e9ab9189567ac4d91818c79d28450bc70b7cec4560265617d51a4a80b709e6",
+  "started_utc": "2026-10-04T23:40:19.022573+00:00",
+  "completed_utc": "2026-10-04T23:43:45.030352+00:00",
   "controller_returncode": 2,
-  "capture_seconds": 180.10191085806582,
+  "capture_seconds": 180.02499022497796,
   "bundle": "/nix/store/p2kdar89q7dhwdajjy0mrhmxxzcgsalw-k230-mainline-drm-trial-boot-files",
   "system": "/nix/store/yk44vx3ny4h6a9mx3ya4rczh7akhyjbj-nixos-system-nixos-26.11.20260919.20b1ddd",
   "kernel_proof": {
@@ -29,9 +29,26 @@
     "summary_format_offset": 25646280,
     "worker_sha256": "30e8eb1ee365d62665c9d3ffd674e973736f3d04405d53f0f5dc12c3ee23f5f2"
   },
+  "nohz_off_proof": {
+    "config_sha256": "52e7470b108ad094dbdf88b94e3e8838564edbda9e7a015b4279012e6765c9f1",
+    "hz": 250,
+    "image_sha256": "c2c9663bc385a0c62a15b740ccd46b36b51bc3fd9c0c6281b2a2e5a1882878c3",
+    "linked_nohz_setup_offset": 19425910,
+    "required_builtin_config": [
+      "NO_HZ_COMMON",
+      "NO_HZ_FULL",
+      "HIGH_RES_TIMERS",
+      "RISCV_TIMER",
+      "RISCV_SBI"
+    ],
+    "sole_added_kernel_argument": "nohz=off"
+  },
+  "expected_bootargs": "bootargs=consoleblank=0 console=ttyS0,115200n8 root=fstab loglevel=4 lsm=landlock,yama,bpf loglevel=7 init=/nix/store/yk44vx3ny4h6a9mx3ya4rczh7akhyjbj-nixos-system-nixos-26.11.20260919.20b1ddd/init fsck.mode=skip systemd.mask=k230-root-growth.service systemd.mask=register-nix-paths.service initramfs_async=0 rdinit=/bin/sh k230.uart_progress=1 k230.uart_progress_memory=1 k230.uart_progress_memory_printk=1 nohz=off",
   "candidate_banner": true,
   "kernel_args_verified": true,
   "init_entry": true,
+  "primary_prompt_observed": true,
+  "readiness_observed": true,
   "linux_console_backend": {
     "base_baud": 3125000,
     "console_enable_observed": true,
@@ -39,10 +56,6 @@
     "registration_observed": true,
     "status": "MATCHED"
   },
-  "original_live_primary_prompt_observed": false,
-  "original_live_readiness_observed": false,
-  "exact_bracketed_paste_Bash_prompt_bytes_present": true,
-  "later_host_replay": "readiness-host/result.json; host-only reinterpretation, original result unchanged",
   "stimulus_attempts": 0,
   "receipt_status": "NOT_REQUESTED",
   "rx_status": "NOT_TESTED",
@@ -58,17 +71,17 @@
     "active",
     "active"
   ],
-  "normal_preflight_boot_hashes_verified": 8,
+  "normal_preflight_boot_hash_count": 8,
+  "registration_absence_guard_in_executed_preflight_helper": true,
   "candidate_manifest_sha256": "2cedd98406beb6003e274be1612df0edc8b5bf31c5faf1b866dcd44c25cf65ea",
-  "private_uart_bytes": 47518,
-  "private_uart_sha256": "516b0755634d8831a14dc6b13807f0721441378a6aa50f08d87af027e01236aa",
-  "private_original_result_sha256": "401322b6f428b9ef984c5619e04921cdfbf5a8572a4465509db832e4e5a29e01",
-  "staging_returncode": 0,
-  "transfer_missing_paths": 8,
-  "transfer_bytes": 103837115,
-  "transfer_sha256": "3eef636a2d5c48bbb0a4f1ea9c6ef253303b38d967e99a844001a8136c4f0e3f",
-  "normal_recovery": "VERIFIED_NEW_OPERATOR_RESET",
+  "private_uart_bytes": 47571,
+  "private_uart_sha256": "2670398beb95babea3d05147254122b41db0f72ab5a730efec7103990ee7f78b",
+  "private_original_result_sha256": "fab08b5db602e06730a8dcd462193c971371c08996b4cf08e1b7f347db8d1526",
+  "new_kernel_build_performed": false,
+  "new_transfer_performed": false,
+  "source_restoration": "source-restore.json",
+  "normal_recovery": "PENDING_NEW_OPERATOR_RESET",
+  "runtime_tick_policy": "UNVERIFIED: exact received token and compiled parser support only",
   "automatic_return": "UNVERIFIED",
-  "ordinary_mainline_acceptance": "UNVERIFIED",
-  "normal_recovery_proof": "recovery.json"
+  "ordinary_mainline_acceptance": "UNVERIFIED"
 }

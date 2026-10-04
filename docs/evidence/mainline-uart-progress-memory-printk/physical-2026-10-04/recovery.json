@@ -1,0 +1,28 @@
+{
+  "schema": "k230-memory-printk-new-operator-recovery-v1",
+  "evidence_class": "fresh physical UART protected normal postflight; separate Home IPC and camera observation",
+  "receipt_written_utc": "2026-10-04T23:31:57.729787+00:00",
+  "operator_reset": "NEW_USER_CONFIRMATION_THIS_TURN",
+  "normal_recovery": "VERIFIED_NEW_OPERATOR_RESET",
+  "distinct_boot_verified": true,
+  "system": "/nix/store/p1a1hz9n8s4g8qyr55ffl3dzbnjgqwr8-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "profile": "/nix/store/p1a1hz9n8s4g8qyr55ffl3dzbnjgqwr8-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "kernel": "/nix/store/03zyl0mjsxbjyisb3lhjaxswpxm71ap6-linux-riscv64-unknown-linux-gnu-6.6.36-xuantie/Image",
+  "uname": "6.6.36",
+  "protected_boot_hash_count": 8,
+  "protected_boot_hashes_match_prior_preflight": true,
+  "private_recovery_result_sha256": "b64e8348626b7a8db19dd15289b05a08a84e2b324f0fd65c13c67766e5f2d11e",
+  "private_recovery_uart_sha256": "d67d52eff35715df278ea533baed738f19a532a8bf9eb6d6306d24b1dd87f4ae",
+  "home_ipc_returncode": 0,
+  "camera_observation": "reviewed Home screen clock/icons/background; oblique, soft focus and glare; no glass test",
+  "private_camera_sha256": "9796032d09b23cee4341cffbee7dca58352d31a2ab66a01ba6da84379a91d777",
+  "automatic_return": "UNVERIFIED",
+  "ordinary_mainline_acceptance": "UNVERIFIED",
+  "services": [
+    "active",
+    "active",
+    "active"
+  ],
+  "nix_path_registration_absent": true,
+  "independent_protected_recovery_review": "PASS"
+}

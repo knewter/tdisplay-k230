@@ -1,0 +1,18 @@
+{
+  "source": "/nix/store/0l4mgw9hr1j7pj247jsrxjd478fnlfy8-linux-mainline-k230-uart-progress-memory-printk-src",
+  "source_derivation": "/nix/store/1pn3icn3crv39rlrmqwari98ja13qj1s-linux-mainline-k230-uart-progress-memory-printk-src.drv",
+  "returncode": 0,
+  "command": [
+    "nix-store",
+    "--realise",
+    "--add-root",
+    "/home/jadams/tmp/k230-mainline-uart-memory-printk-nohz-board/source-gc-root",
+    "/nix/store/1pn3icn3crv39rlrmqwari98ja13qj1s-linux-mainline-k230-uart-progress-memory-printk-src.drv"
+  ],
+  "source_worker_sha256": "30e8eb1ee365d62665c9d3ffd674e973736f3d04405d53f0f5dc12c3ee23f5f2",
+  "image_sha256": "c2c9663bc385a0c62a15b740ccd46b36b51bc3fd9c0c6281b2a2e5a1882878c3",
+  "kernel_build_performed": false,
+  "previous_failure": "source path absent before candidate/UART trial",
+  "new_host_prepare": "PASS",
+  "receipt_written_utc": "2026-10-04T23:39:57.223165+00:00"
+}

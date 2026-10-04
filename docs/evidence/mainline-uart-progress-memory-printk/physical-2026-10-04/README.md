@@ -48,7 +48,12 @@ Breadcrumbs sleeps/samples did make progress in another comparison; this is not
 proof that timers universally fail. Ordinary `/init`, root, panel/glass and task
 5b.5 remain **UNVERIFIED**.
 
-The controller capture is complete and board/UART/build reservations are released.
-Automatic return was not observed. A NEW operator reset is requested; protected
-normal recovery is **PENDING**. The earlier reset was consumed for the prior
-polling recovery and is not reused as proof for this candidate.
+The controller capture ended with reservations released and protected recovery
+pending. A subsequent NEW user-confirmed reset passed the protected normal
+postflight: distinct boot, exact system/profile/kernel, all eight boot hashes,
+three active services and registration absence. Home IPC returned 0 and a
+separate reviewed C920 frame showed Home clock/icons/background (oblique, soft
+focus and glare; no glass test). [Follow-up recovery receipt](recovery.json)
+retains safe identities and private evidence hashes. This is operator recovery,
+not automatic return or ordinary mainline acceptance; the prior polling reset
+was not reused.

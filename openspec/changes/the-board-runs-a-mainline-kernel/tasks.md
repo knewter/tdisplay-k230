@@ -1220,14 +1220,16 @@ completion of ordinary mainline acceptance.
       fresh exact args/registered Linux backend/bin-sh entry, zero input, no UMK
       or normal return in 180.1019s. Original prompt classification misses the
       observed Readline prefix; later host-only correction preserves original
-      physical result. NEW operator reset/recovery remains explicitly PENDING.
+      physical result. Subsequent NEW reset passed protected normal/Home recovery;
+      [follow-up receipt](../../../docs/evidence/mainline-uart-progress-memory-printk/physical-2026-10-04/recovery.json).
 - [x] 5l.6 Independently reconcile changed-channel limits, review, land/push
       evidence and verify exact CI/published revision. Planning proof:
       `openspec validate the-board-runs-a-mainline-kernel --strict`.
       Independent physical-packet review PASS; master `adf3ac81`, CI
       37186803102 PASS and exact published work/physical/readiness evidence
       revision HTTP 200 verified: [publication receipt](../../../docs/evidence/mainline-uart-progress-memory-printk/physical-2026-10-04/publication.json).
-      NEW protected recovery remains PENDING; no ordinary acceptance inferred.
+      Publication receipt reflects recovery pending at that revision; subsequent
+      NEW protected recovery is recorded separately. No ordinary acceptance inferred.
 
 
 ## 5m. Same-image MemoryPrintk tickless-off comparison (planned, UNVERIFIED)
@@ -1248,11 +1250,16 @@ completion of ordinary mainline acceptance.
       The executed private copy records its frozen source/worktree and private
       output directory; no implicit build or UART. Freeze and review its exact
       code/parameters before physical use.
-- [ ] 5m.3 After NEW protected normal recovery and completed host gates, reserve
+- [x] 5m.3 After NEW protected normal recovery and completed host gates, reserve
       board/UART for one passive same-image comparison. Commit fixed physical
       facts plus independently verified recovery or explicit pending NEW reset.
       Command: `python3 tools/mainline-drm-initrd-shell-trial.py --mode minimal --same-image-shell-pid1 --uart-progress --uart-progress-memory --uart-progress-memory-no-stimulus --uart-progress-memory-printk --uart-progress-memory-printk-nohz-off --bundle BUNDLE --manifest PRIVATE_MANIFEST --normal-report PRIVATE_NORMAL --log PRIVATE_LOG --result PRIVATE_RESULT`.
       No cause/RX/output-return/ordinary-root inference; 5b.5 stays open.
+      [Actual same-image nohz-off capture](../../../docs/evidence/mainline-uart-progress-memory-printk/nohz-off-physical-2026-10-04/README.md):
+      fresh exact args/backend/Bash readiness, zero input, no UMK/normal return
+      in 180.025s, no protocol error. Prior NEW recovery verified; another NEW
+      reset after this capture remains explicitly PENDING. Same-source-only
+      restoration and fresh host requalification are recorded separately.
 - [ ] 5m.4 Independently reconcile tickless-policy limits, review, land/push evidence
       and inspect exact CI/published revision. Planning proof:
       `openspec validate the-board-runs-a-mainline-kernel --strict`.
