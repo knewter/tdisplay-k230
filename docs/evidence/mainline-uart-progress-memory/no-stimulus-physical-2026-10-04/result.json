@@ -44,9 +44,10 @@
   "normal_preflight": "PASS: fresh recovered normal baseline, exact identities/eight hashes/three services/registration absence",
   "new_transfer_or_kernel_build_performed": false,
   "candidate_load_crc_guards": "PASS",
-  "protected_normal_recovery": "PENDING_NEW_OPERATOR_RESET",
+  "protected_normal_recovery": "VERIFIED_NEW_OPERATOR_RESET",
   "candidate_reboot_requested": false,
   "persistent_boot_selection_changed": false,
   "ordinary_init": "NOT_ATTEMPTED",
-  "recovery_before_trial": "../physical-2026-10-03/operator-reset-recovery.json"
+  "recovery_before_trial": "../physical-2026-10-03/operator-reset-recovery.json",
+  "operator_reset_recovery_receipt": "operator-reset-recovery.json"
 }

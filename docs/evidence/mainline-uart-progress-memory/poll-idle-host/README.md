@@ -75,9 +75,10 @@ The protected historical normal report and wrapper CRC anchor host preparation;
 no new live preflight, recovery or wrapper readback was performed. Registration
 absence remains an assertion in the future pre/post helper. Baseline/prepared
 material stays private. Actual archive inspection used Python 3.14 native Zstd.
-No build/UART/physical action has occurred in this task. The preceding zero-input
-trial still requires its NEW operator reset; subsequent physical polling and
-ordinary acceptance 5b.5 remain UNVERIFIED.
+No build/UART/physical action occurred in this host task. The subsequent NEW
+operator reset passed [protected normal recovery](../no-stimulus-physical-2026-10-04/operator-reset-recovery.json).
+Physical polling observation/recovery and ordinary acceptance 5b.5 remain
+UNVERIFIED.
 
 After fresh protected recovery and actual artifact preparation, the sole board
 operator may use fresh private output paths:

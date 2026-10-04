@@ -40,9 +40,16 @@ can itself fail or block; silence cannot separate timer/scheduling/idle/firmware
 and output dependencies. No camera or real-glass proof was obtained in candidate
 mode. Ordinary mainline `/init`, usable root and task 5b.5 remain **UNVERIFIED**.
 
-The capture is complete and board/UART released. A NEW operator reset has been
-requested after completion; the reset preceding this trial cannot establish its
-recovery. The proposed next comparison changes only idle/tick policy through
+The capture is complete. A subsequent NEW operator reset passed protected normal
+postflight: distinct boot identity, exact system/profile/kernel/init, eight boot
+hashes, three services and registration absence. Home IPC returned 0 and a
+reviewed camera image showed its clock/icons/background, with oblique upside-down
+framing, glare and soft focus. This is not touch/orientation acceptance.
+[Recovery receipt](operator-reset-recovery.json) preserves fixed facts and hashes
+without raw UART or boot identities. Automatic return remains UNVERIFIED.
+
+The separately reviewed next comparison changes only idle/tick policy through
 one bare volatile `nohlt` argument, using this same built image and passive
-controller. It requires its own reviewed plan, typed selector, real artifact
-qualification and fresh recovery before another boot.
+controller. [Actual host qualification](../poll-idle-host/README.md) passed.
+Its candidate observation and recovery remain distinct from this verified normal
+recovery and ordinary mainline acceptance.
