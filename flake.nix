@@ -293,6 +293,15 @@
             inherit (pkgsCross) applyPatches lib;
           });
         };
+        # Memory intervention; preserve PostSample artifact parameters.
+        k230-mainline-uart-progress-memory = self.nixosConfigurations.k230-mainline-uart-progress-post-sample.extendModules {
+          specialArgs.k230Kernel = pkgsCross.linuxPackagesFor (import ./nix/kernel-mainline-uart-progress-memory.nix {
+            kernelMainline = pkgsCross.callPackage ./nix/kernel-mainline.nix {
+              inherit (pkgsCross) buildLinux;
+            };
+            inherit (pkgsCross) applyPatches lib;
+          });
+        };
         # Post-sample records; preserve Breadcrumbs artifact parameters.
         k230-mainline-uart-progress-post-sample = self.nixosConfigurations.k230-mainline-uart-progress-breadcrumbs.extendModules {
           specialArgs.k230Kernel = pkgsCross.linuxPackagesFor (import ./nix/kernel-mainline-uart-progress-post-sample.nix {
@@ -572,6 +581,22 @@
           cfg = self.nixosConfigurations.k230-mainline-uart-progress.config;
           kernel = self.nixosConfigurations.k230-mainline-uart-progress.config.boot.kernelPackages.kernel;
           deviceTree = self.packages.${buildSystem}.deviceTreeMainlineDrm;
+        };
+
+        kernelMainlineUartProgressMemory = pkgsCross.callPackage ./nix/kernel-mainline-uart-progress-memory.nix {
+          kernelMainline = pkgsCross.callPackage ./nix/kernel-mainline.nix {
+            inherit (pkgsCross) buildLinux;
+          };
+        };
+        toplevel-mainline-uart-progress-memory = self.nixosConfigurations.k230-mainline-uart-progress-memory.config.system.build.toplevel;
+        kernelMainlineUartProgressMemoryTrialBootFiles = pkgs.callPackage ./nix/mainline-drm-trial.nix {
+          cfg = self.nixosConfigurations.k230-mainline-uart-progress-memory.config;
+          kernel = self.nixosConfigurations.k230-mainline-uart-progress-memory.config.boot.kernelPackages.kernel;
+          deviceTree = self.packages.${buildSystem}.deviceTreeMainlineDrm;
+        };
+        kernelMainlineUartProgressMemoryExactObjects = pkgs.callPackage ./nix/kernel-mainline-uart-progress-exact-objects.nix {
+          crossCc = pkgsCross.stdenv.cc;
+          kernel = self.packages.${buildSystem}.kernelMainlineUartProgressMemory;
         };
 
         kernelMainlineUartProgressPostSample = pkgsCross.callPackage ./nix/kernel-mainline-uart-progress-post-sample.nix {

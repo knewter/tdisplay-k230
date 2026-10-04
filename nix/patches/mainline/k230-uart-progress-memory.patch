@@ -1,0 +1,113 @@
+--- a/drivers/soc/canaan/k230-uart-progress.c
++++ b/drivers/soc/canaan/k230-uart-progress.c
+@@ -2,0 +3,2 @@
++#include <linux/atomic.h>
++#include <linux/completion.h>
+@@ -76,0 +79,52 @@
++/* Memory mode is an intervention: no worker output, one observer summary. */
++static bool k230_uart_progress_memory_enabled;
++static atomic_t k230_uart_progress_memory_state = ATOMIC_INIT(0);
++static DECLARE_COMPLETION(k230_uart_progress_memory_done);
++static char k230_uart_progress_memory_record[256] __aligned(256);
++
++static bool k230_uart_progress_memory_active(void)
++{
++	return IS_ENABLED(CONFIG_RISCV_SBI) && k230_uart_progress_enabled &&
++		k230_uart_progress_memory_enabled && sbi_debug_console_available;
++}
++
++/* One coherent publication: stage[2:0], current index[5:3], bitmap[11:6]. */
++static void k230_uart_progress_memory_publish(unsigned int stage,
++					    unsigned int sample, unsigned int done)
++{
++	atomic_set_release(&k230_uart_progress_memory_state,
++			   stage | (sample << 3) | (done << 6));
++}
++
++static int k230_uart_progress_memory_observer(void *unused)
++{
++	unsigned long waited;
++	unsigned int state, stage, sample, done, last = 6, i;
++	int length;
++	(void)unused;
++	/* One wait and one acquire read; no seqcount polling or retry. */
++	waited = wait_for_completion_timeout(&k230_uart_progress_memory_done,
++					     msecs_to_jiffies(45000));
++	state = atomic_read_acquire(&k230_uart_progress_memory_state);
++	stage = state & 7;
++	sample = (state >> 3) & 7;
++	done = (state >> 6) & 63;
++	for (i = 0; i < K230_UP_SAMPLES; i++)
++		if (done & (1U << i))
++			last = i;
++	length = snprintf(k230_uart_progress_memory_record,
++			  sizeof(k230_uart_progress_memory_record),
++			  "\nK230_UMP1 s=%u n=%u m=%02x l=%u w=%u\n",
++			  stage, sample, done, last, waited ? 1U : 0U);
++	if (length > 0 && (size_t)length < sizeof(k230_uart_progress_memory_record))
++		(void)sbi_debug_console_write(k230_uart_progress_memory_record, length);
++	return 0;
++}
++
++static int __init k230_uart_progress_memory_setup(char *value)
++{
++	k230_uart_progress_memory_enabled = value && !strcmp(value, "1");
++	return 1;
++}
++__setup("k230.uart_progress_memory=", k230_uart_progress_memory_setup);
++
+@@ -79 +133,2 @@
+-	unsigned int sample, first_irq = 0;
++	unsigned int sample, first_irq = 0, done = 0;
++	bool memory = k230_uart_progress_memory_active();
+@@ -87 +142,3 @@
+-		if (kthread_should_stop())
++		if (kthread_should_stop()) {
++			if (memory)
++				k230_uart_progress_memory_publish(5, sample, done);
+@@ -89 +146,2 @@
+-		if (sample == 0)
++		}
++		if (!memory && sample == 0)
+@@ -92,0 +151,2 @@
++		if (memory)
++			k230_uart_progress_memory_publish(1, sample, done);
+@@ -94 +154,3 @@
+-		if (kthread_should_stop())
++		if (kthread_should_stop()) {
++			if (memory)
++				k230_uart_progress_memory_publish(5, sample, done);
+@@ -96 +158,4 @@
+-		if (sample == 2)
++		}
++		if (memory)
++			k230_uart_progress_memory_publish(2, sample, done);
++		if (!memory && sample == 2)
+@@ -99 +164 @@
+-		if (sample == 0)
++		if (!memory && sample == 0)
+@@ -116,0 +182,5 @@
++		if (memory) {
++			done |= 1U << sample;
++			k230_uart_progress_memory_publish(3, sample, done);
++			continue;
++		}
+@@ -130,0 +201,5 @@
++	if (memory) {
++		if (sample == K230_UP_SAMPLES)
++			k230_uart_progress_memory_publish(4, K230_UP_SAMPLES - 1, done);
++		complete(&k230_uart_progress_memory_done);
++	}
+@@ -138,0 +214,7 @@
++	if (k230_uart_progress_memory_active()) {
++		k230_uart_progress_memory_publish(0, 6, 0);
++		task = kthread_run(k230_uart_progress_memory_observer, NULL,
++				   "k230-uart-memory");
++		if (IS_ERR(task))
++			return PTR_ERR(task);
++	}
+@@ -139,0 +222,4 @@
++	if (IS_ERR(task) && k230_uart_progress_memory_active()) {
++		k230_uart_progress_memory_publish(6, 6, 0);
++		complete(&k230_uart_progress_memory_done);
++	}
