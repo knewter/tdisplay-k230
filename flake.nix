@@ -293,6 +293,15 @@
             inherit (pkgsCross) applyPatches lib;
           });
         };
+        # Worker-only breadcrumbs; inherit exact original artifact parameters.
+        k230-mainline-uart-progress-breadcrumbs = self.nixosConfigurations.k230-mainline-uart-progress.extendModules {
+          specialArgs.k230Kernel = pkgsCross.linuxPackagesFor (import ./nix/kernel-mainline-uart-progress-breadcrumbs.nix {
+            kernelMainline = pkgsCross.callPackage ./nix/kernel-mainline.nix {
+              inherit (pkgsCross) buildLinux;
+            };
+            inherit (pkgsCross) applyPatches lib;
+          });
+        };
       };
 
       checks.${buildSystem} = {
@@ -554,6 +563,22 @@
           cfg = self.nixosConfigurations.k230-mainline-uart-progress.config;
           kernel = self.nixosConfigurations.k230-mainline-uart-progress.config.boot.kernelPackages.kernel;
           deviceTree = self.packages.${buildSystem}.deviceTreeMainlineDrm;
+        };
+
+        kernelMainlineUartProgressBreadcrumbs = pkgsCross.callPackage ./nix/kernel-mainline-uart-progress-breadcrumbs.nix {
+          kernelMainline = pkgsCross.callPackage ./nix/kernel-mainline.nix {
+            inherit (pkgsCross) buildLinux;
+          };
+        };
+        toplevel-mainline-uart-progress-breadcrumbs = self.nixosConfigurations.k230-mainline-uart-progress-breadcrumbs.config.system.build.toplevel;
+        kernelMainlineUartProgressBreadcrumbsTrialBootFiles = pkgs.callPackage ./nix/mainline-drm-trial.nix {
+          cfg = self.nixosConfigurations.k230-mainline-uart-progress-breadcrumbs.config;
+          kernel = self.nixosConfigurations.k230-mainline-uart-progress-breadcrumbs.config.boot.kernelPackages.kernel;
+          deviceTree = self.packages.${buildSystem}.deviceTreeMainlineDrm;
+        };
+        kernelMainlineUartProgressBreadcrumbsExactObjects = pkgs.callPackage ./nix/kernel-mainline-uart-progress-exact-objects.nix {
+          crossCc = pkgsCross.stdenv.cc;
+          kernel = self.packages.${buildSystem}.kernelMainlineUartProgressBreadcrumbs;
         };
 
         mainline-uart-observer = pkgsCross.callPackage ./nix/mainline-uart-observer { };
