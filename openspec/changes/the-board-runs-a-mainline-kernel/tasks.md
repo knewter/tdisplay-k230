@@ -993,13 +993,17 @@ records exact limits. Automatic return and task 5b.5 stay open.
       board check by this qualifier. One fresh stimulus is followed only by
       passive bounded capture; no candidate reboot, extra input or physical claim
       is authorized by marker presence. Tasks 5h.5–6 and 5b.5 remain open.
-- [ ] 5h.5 After independently verified protected recovery and exact host/
+- [x] 5h.5 After independently verified protected recovery and exact host/
       controller proof, reserve board/UART for one comparison; commit fixed
       point/sample/receipt facts and independent protected recovery or explicit
       pending operator reset. Hardware operator command:
       `python3 tools/mainline-drm-initrd-shell-trial.py --mode minimal --same-image-shell-pid1 --uart-progress --uart-progress-breadcrumbs --uart-progress-post-sample --bundle BUNDLE --manifest PRIVATE_MANIFEST --normal-report PRIVATE_NORMAL --log PRIVATE_LOG --result PRIVATE_RESULT`.
       Missing output remains unknown; no further input or candidate reboot.
       This is diagnostic observation, not ordinary-root/touch/automatic return.
+      Actual fjmxf6 comparison completed: [physical capture](../../../docs/evidence/mainline-uart-progress-post-sample/physical-2026-10-03/README.md).
+      Fresh args/Bash/worker-entry, one stimulus, no receipt/samples/new points
+      during 180.0975s; no protocol errors or candidate reboot. New operator
+      reset is explicitly pending; the preceding reset does not cover this run.
 - [ ] 5h.6 Reconcile point reach/return/output and sleep/scheduling limits,
       preserve task 5b.5 and unknown states, land/push public-safe evidence and
       verify exact CI/published revision. Planning proof:

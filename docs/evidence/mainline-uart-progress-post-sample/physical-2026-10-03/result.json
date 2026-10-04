@@ -1,0 +1,62 @@
+{
+  "built_revision": "75cc49df12972235be411e6eca739935ce75614d",
+  "candidate_bundle": "/nix/store/fjmxf6kn1yq0xk9v783amgymybhcrwkb-k230-mainline-drm-trial-boot-files",
+  "candidate_reboot_requested": false,
+  "candidate_system": "/nix/store/5ha786snzrp5c8gkfamlzrmdw1anyj6m-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "completed_utc": "2026-10-04T03:45:31.224046+00:00",
+  "controller_returncode": 2,
+  "diagnostic_ok": false,
+  "evidence_class": "physical UART boot and bounded passive capture; no panel/glass or ordinary-root proof",
+  "ordinary_init": "NOT_ATTEMPTED",
+  "persistent_boot_selection_changed": false,
+  "private_capture_bytes": 47798,
+  "private_capture_sha256": "206734f9860a99f2076ecc46c3a54d6338b162411a7114daa8b82bdc87e9b490",
+  "probe": {
+    "breadcrumbs": [
+      {
+        "observed_after_stimulus": false,
+        "point": "worker-entry"
+      }
+    ],
+    "breadcrumbs_complete": false,
+    "candidate_banner": true,
+    "capture_seconds": 180.0975171950413,
+    "capture_timeout_seconds": 180,
+    "init_entry": true,
+    "kernel_args_status": "MATCHED",
+    "kernel_args_verified": true,
+    "normal_prompt_observed": false,
+    "pid1_identity": "UNVERIFIED",
+    "post_sample": [],
+    "post_sample_complete": false,
+    "primary_prompt_observed": true,
+    "protocol_errors": [],
+    "readiness_observed": true,
+    "reboot_requested": false,
+    "receipt_observed": false,
+    "receipt_status": "UNKNOWN",
+    "records": [],
+    "records_complete": false,
+    "samples_observed_after_stimulus": 0,
+    "schema": "k230-uart-progress-observation-v1",
+    "stimulus_attempts": 1,
+    "touch": "UNVERIFIED",
+    "uart_progress_breadcrumbs": true,
+    "uart_progress_post_sample": true,
+    "usable_root": "UNVERIFIED"
+  },
+  "protected_normal_recovery": "PENDING_NEW_OPERATOR_RESET",
+  "schema": "k230-uart-progress-post-sample-public-physical-v1",
+  "source_revision": "e7c2b1a95d753a654b3b06a21793eadebad12b9d",
+  "staging": {
+    "bundle": "/nix/store/fjmxf6kn1yq0xk9v783amgymybhcrwkb-k230-mainline-drm-trial-boot-files",
+    "bytes": 103893092,
+    "closure_paths": 630,
+    "command_returncode": 0,
+    "previous_bundle": "/nix/store/mhq10143lsmgr6wlll431a8s3ggb8q6m-k230-mainline-drm-trial-boot-files",
+    "sha256": "bed38524fa28e9edf75d4bc9bb1e8b9e06ba3a303423f8e7c522b6cbeaabdd13",
+    "system": "/nix/store/5ha786snzrp5c8gkfamlzrmdw1anyj6m-nixos-system-nixos-26.11.20260919.20b1ddd"
+  },
+  "started_utc": "2026-10-04T03:42:05.887013+00:00",
+  "status": "recovery-required-observation-only"
+}
