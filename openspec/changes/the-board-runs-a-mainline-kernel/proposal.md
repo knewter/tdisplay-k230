@@ -251,3 +251,29 @@ firmware call, not that it returned; absence leaves scheduling/output unknown.
 Native/source/object/full-artifact checks and one protected physical comparison
 remain separate gates. Breadcrumb output, RX delivery, automatic return and
 ordinary-root/panel/glass acceptance remain UNVERIFIED; task 5b.5 stays open.
+
+
+## Bounded continuation: distinguish the second write's return from the third wakeup
+
+The committed [breadcrumb packet](../../../docs/evidence/mainline-uart-progress-breadcrumbs/physical-2026-10-03/README.md)
+at revision 278769d0 records both worker points, a matched fresh receipt and
+numeric n0/n1, but no n2–n5 during the bounded 180-second capture. Its
+[result](../../../docs/evidence/mainline-uart-progress-breadcrumbs/physical-2026-10-03/result.json)
+is independently reviewed; protected normal operator recovery remains pending. A complete n1 line does
+not show its firmware call returning, or the worker reaching its third wakeup.
+No counter value, IRQ fault or ordinary-root result is inferred from that gap.
+
+Group 5h adds a separately named layered diagnostic variant with two fixed
+public records: immediately after the n1 numeric SBI call returns, and after
+the n2 sleep/stop check before snapshot. Preserve the six samples, existing
+breadcrumbs, sleeps/getters/stop behavior, normal priority and every existing
+package/source/config/trial identity. A new exact runtime gate requires both
+existing progress/breadcrumb gates. Two single attempts bring the worker's
+maximum to ten writes; no fallback, retry or wall-clock firmware guarantee.
+
+This refines kernel/Nix/controller observability in the open mainline change.
+No IRQ/TTY/PID1, clock/reset, console, firmware, scheduler policy or production
+fix is included. Source/native/exact-object/full-artifact/controller and one
+protected physical comparison remain distinct gates. New output and recovery
+are UNVERIFIED; ordinary-root/panel/glass task 5b.5 remains open. The plan lands
+before source implementation, and only the reserved operator uses the board.

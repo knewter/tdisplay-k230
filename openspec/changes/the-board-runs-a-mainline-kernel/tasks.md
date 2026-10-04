@@ -930,3 +930,50 @@ Independent review matched the fixed public facts/deltas to the private capture.
 Both markers and receipt are proven; later sample/firmware-return/normal-return
 remain unknown. The separately proposed next discriminator targets the sample 1
 write return versus third sleep. Manual recovery is pending; task 5b.5 stays open.
+
+
+## 5h. After-n1-write/third-post-sleep comparison (planned, UNVERIFIED)
+
+- [ ] 5h.1 Add a separately layered PostSample reporter source with exact new
+      runtime gate, requiring both existing gates/config/DBCN. Two fixed <=64
+      aligned ordinary-rodata records occur only after sample1's numeric SBI
+      return and after sample2's sleep/stop check before snapshot. Preserve six
+      samples/two prior breadcrumbs/sleeps/getters/stop behavior and all old
+      package/source/config/trial identities; no IRQ/TTY/PID1/priority changes.
+      Actual-code fixtures cover exact/absent/bare/invalid/config/availability
+      gates, placement/stop behavior, full/partial/zero/error one-attempt and
+      ten-call cap. Source-host proof:
+      `python3 tests/test_mainline_uart_progress_post_sample.py` plus unchanged-output/source/config identity evaluation.
+- [ ] 5h.2 Build separately selected matching kernel/system/initrd/DT/bundle;
+      inspect full installed config, source layering, Image/CRC/closure/hash/
+      original artifact parameters and complete hardware DT comparison, distinct
+      from physical output. Host proof:
+      `nix build .#kernelMainlineUartProgressPostSampleTrialBootFiles --no-link --print-out-paths`
+      then `python3 tools/mainline-drm-trial-inspect.py BUNDLE`.
+- [ ] 5h.3 Compile actual changed worker/getter/timer against the exact selected
+      kernel.dev config/generated headers without overlay; inspect ordinary
+      helper/flag/strings lifetime, lengths/alignment64/page bounds and unchanged
+      getter dependencies. Host-only proof:
+      `nix build .#kernelMainlineUartProgressPostSampleExactObjects --no-link --print-out-paths`.
+- [ ] 5h.4 Add explicit minimal-only `--uart-progress-post-sample` requiring all
+      previous comparison selectors. Preserve exact pre-UART artifact/source/
+      linked Image/dev checks, sole new volatile gate, received args/freshness,
+      protected normal checks, one stimulus and no later input/reboot. Strict
+      record tests cover split transport, complete/partial, stale/echo/extra/
+      duplicate/reorder/interleave and missing-point/numeric/receipt facts.
+      Host-only proof: `python3 tests/test_mainline_uart_progress_post_sample_controller.py`
+      plus existing minimal/progress/breadcrumb controller regression commands.
+      Keep this task unchecked until actual NEW matching bundle/dev/source/Image
+      positive preparation passes. Fixtures and old-artifact rejection alone
+      do not satisfy that gate or establish a performed protected board check.
+- [ ] 5h.5 After independently verified protected recovery and exact host/
+      controller proof, reserve board/UART for one comparison; commit fixed
+      point/sample/receipt facts and independent protected recovery or explicit
+      pending operator reset. Hardware operator command:
+      `python3 tools/mainline-drm-initrd-shell-trial.py --mode minimal --same-image-shell-pid1 --uart-progress --uart-progress-breadcrumbs --uart-progress-post-sample --bundle BUNDLE --manifest PRIVATE_MANIFEST --normal-report PRIVATE_NORMAL --log PRIVATE_LOG --result PRIVATE_RESULT`.
+      Missing output remains unknown; no further input or candidate reboot.
+      This is diagnostic observation, not ordinary-root/touch/automatic return.
+- [ ] 5h.6 Reconcile point reach/return/output and sleep/scheduling limits,
+      preserve task 5b.5 and unknown states, land/push public-safe evidence and
+      verify exact CI/published revision. Planning proof:
+      `openspec validate the-board-runs-a-mainline-kernel --strict`.

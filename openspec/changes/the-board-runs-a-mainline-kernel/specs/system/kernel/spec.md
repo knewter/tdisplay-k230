@@ -330,3 +330,53 @@ of the original reporter, not this new physical comparison.*
 - **THEN** the controller preserves private raw evidence and incomplete/unknown
   status without repairing text, another stimulus or a candidate reboot
 - **AND** root, deliberate touch and independent recovery gates remain open
+
+
+### Requirement: Optional post-sample breadcrumbs separate return from wakeup evidence
+
+The project MAY provide a separately selected reporter variant for the observed
+n1/no-n2 boundary. It SHALL preserve all existing package/source/config/trial
+identities, samples, sleeps, cached getters, stop checks and normal priority.
+It SHALL attempt only two additional fixed public SBI records: after the n1
+numeric call returns, and after the third sleep/stop check before snapshot.
+Ordinary aligned page-contained storage, the new exact opt-in plus both existing
+opt-ins, CONFIG_RISCV_SBI and DBCN availability SHALL gate the records. At most
+ten one-call attempts SHALL occur; absent/invalid new selection SHALL retain
+current behavior without a retry, fallback or IRQ/TTY/PID1 instrumentation.
+
+The separately typed controller SHALL preserve exact candidate/argument and
+protected normal qualification, one fresh stimulus and private bounded capture.
+It SHALL accept only exact bounded complete fresh records and keep new-point,
+old-breadcrumb, numeric-sample, receipt and recovery facts distinct. Missing or
+malformed output SHALL remain unknown without another stimulus or candidate
+reboot, and SHALL NOT establish a causal fix, root/touch or automatic return.
+
+<!-- UNVERIFIED: new source/object/full-build/controller and physical post-sample comparison are planned. -->
+*Grounding: committed [physical packet](../../../../../../docs/evidence/mainline-uart-progress-breadcrumbs/physical-2026-10-03/README.md)
+and [result](../../../../../../docs/evidence/mainline-uart-progress-breadcrumbs/physical-2026-10-03/result.json)
+at revision 278769d0 record both Breadcrumbs points, a matched receipt and
+n0/n1 but no n2–n5 in 180 seconds; only protected normal recovery remains
+pending. The read immutable k5a5zrhq… worker at 67–74 sleeps/checks before snapshot
+and at 98 calls SBI, as detailed in group 5h's design. This is a source-supported
+next boundary, not committed proof of the new diagnostic or a fault.*
+
+#### Scenario: The point following the second numeric write appears
+
+- **WHEN** a qualified fresh trial emits complete after-n1-write
+- **THEN** the report states that the earlier n1 firmware call returned
+- **AND** it does not claim its full count, the new call's return or third wakeup
+
+#### Scenario: The third post-sleep point appears
+
+- **WHEN** the exact third-post-sleep record is complete
+- **THEN** the report states that the earlier point's call returned and the
+  third sleep/stop checks passed
+- **AND** it leaves snapshot, n2 output, RX/Bash delivery and recovery separate
+
+#### Scenario: A point is missing or malformed
+
+- **WHEN** the new record is missing, stale, echoed, duplicated, reordered,
+  truncated or interleaved with other text
+- **THEN** private raw evidence and partial facts are retained as unknown
+- **AND** there is no further stimulus/reboot or inferred ordinary-root/touch,
+  firmware-return or automatic-recovery result
