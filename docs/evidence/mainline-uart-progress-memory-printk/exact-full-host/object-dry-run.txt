@@ -1,0 +1,2 @@
+this derivation will be built:
+  /nix/store/rg0ngd72rmxmccx0542wvarsbp8cjwlw-k230-mainline-uart-progress-exact-objects.drv
