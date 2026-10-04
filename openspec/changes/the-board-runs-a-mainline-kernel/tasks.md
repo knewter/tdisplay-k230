@@ -937,7 +937,7 @@ records exact limits. Automatic return and task 5b.5 stay open.
 
 ## 5h. After-n1-write/third-post-sleep comparison (planned, UNVERIFIED)
 
-- [ ] 5h.1 Add a separately layered PostSample reporter source with exact new
+- [x] 5h.1 Add a separately layered PostSample reporter source with exact new
       runtime gate, requiring both existing gates/config/DBCN. Two fixed <=64
       aligned ordinary-rodata records occur only after sample1's numeric SBI
       return and after sample2's sleep/stop check before snapshot. Preserve six
@@ -947,17 +947,25 @@ records exact limits. Automatic return and task 5b.5 stay open.
       gates, placement/stop behavior, full/partial/zero/error one-attempt and
       ten-call cap. Source-host proof:
       `python3 tests/test_mainline_uart_progress_post_sample.py` plus unchanged-output/source/config identity evaluation.
+      Native 15 new fixtures and 13/12 prior fixtures passed; all 95 prior
+      package identities and 11 exposed kernel source/config pairs were equal.
+      Source-only/native/pure-evaluation receipt: [source host proof](../../../docs/evidence/mainline-uart-progress-post-sample/source-host/README.md).
+      No matching full build, target object or physical claim follows.
 - [ ] 5h.2 Build separately selected matching kernel/system/initrd/DT/bundle;
       inspect full installed config, source layering, Image/CRC/closure/hash/
       original artifact parameters and complete hardware DT comparison, distinct
       from physical output. Host proof:
       `nix build .#kernelMainlineUartProgressPostSampleTrialBootFiles --no-link --print-out-paths`
       then `python3 tools/mainline-drm-trial-inspect.py BUNDLE`.
+      Additive named system/kernel/trial recipe preparation is host-evaluated;
+      actual matching artifact inspection remains UNVERIFIED.
 - [ ] 5h.3 Compile actual changed worker/getter/timer against the exact selected
       kernel.dev config/generated headers without overlay; inspect ordinary
       helper/flag/strings lifetime, lengths/alignment64/page bounds and unchanged
       getter dependencies. Host-only proof:
       `nix build .#kernelMainlineUartProgressPostSampleExactObjects --no-link --print-out-paths`.
+      Additive exact-object selection is evaluated only; actual selected dev
+      headers, compilation, lifetime/layout and getter equality remain UNVERIFIED.
 - [ ] 5h.4 Add explicit minimal-only `--uart-progress-post-sample` requiring all
       previous comparison selectors. Preserve exact pre-UART artifact/source/
       linked Image/dev checks, sole new volatile gate, received args/freshness,
