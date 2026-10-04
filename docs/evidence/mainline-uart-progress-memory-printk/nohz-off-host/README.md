@@ -99,3 +99,12 @@ python3 tools/mainline-drm-initrd-shell-trial.py --mode minimal \
   --manifest PRIVATE_MANIFEST --normal-report PRIVATE_NORMAL \
   --log PRIVATE_LOG --result PRIVATE_RESULT
 ```
+
+
+Coordinator independent review passed. The integration controller bytes match
+the executed qualifier source. A separate protected scratch execution of the
+byte-identical qualifier passed against the same actual artifacts; 143 UART
+controller tests and 14 shell-PID1 regression tests also passed.
+[Independent host receipt](independent-review.json) preserves this additional
+host proof. It does not replace the still-pending NEW protected normal recovery
+or the physical nohz-off comparison.

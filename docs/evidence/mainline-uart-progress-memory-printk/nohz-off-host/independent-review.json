@@ -1,0 +1,20 @@
+{
+  "schema": "k230-memory-printk-nohz-off-independent-host-review-v1",
+  "evidence_class": "independent-existing-artifact-host-preparation-only",
+  "started_utc": "2026-10-04T08:05:42.606677+00:00",
+  "completed_utc": "2026-10-04T08:05:43.136411+00:00",
+  "returncode": 0,
+  "controller_revision_executed": "d4b70b098f7abc842506ba0a717c187b78df54d8",
+  "controller_source_sha256": "34e9ab9189567ac4d91818c79d28450bc70b7cec4560265617d51a4a80b709e6",
+  "qualification_command_sha256": "23872c658b41ae573fcccfc80da2f5dcbf985424c53e765f72047daaf0e87903",
+  "same_controller_bytes_as_integration_revision": "f2fd886f3bb57534ca56c0626a2bfb29b97cf1da",
+  "narrow_fixture_tests_passed": 13,
+  "uart_controller_regressions_passed": 143,
+  "shell_pid1_regressions_passed": 14,
+  "actual_artifact_qualification": "PASS",
+  "base_transport_bytes": 416,
+  "selected_transport_bytes": 425,
+  "sole_added_kernel_argument": "nohz=off",
+  "physical_result": "UNVERIFIED",
+  "new_protected_normal_recovery": "PENDING"
+}
