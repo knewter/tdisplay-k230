@@ -1172,12 +1172,23 @@ completion of ordinary mainline acceptance.
       source/config pairs equal; corrected source realized and hash independently
       reviewed. [Source/native/evaluation proof](../../../docs/evidence/mainline-uart-progress-memory-printk/source-host/README.md).
       Exact/full/controller/physical gates remain separate and unchecked.
-- [ ] 5l.2 Freeze reviewed source/native proof and build matching artifacts.
+- [x] 5l.2 Freeze reviewed source/native proof and build matching artifacts.
       Command: `nix build .#kernelMainlineUartProgressMemoryPrintkTrialBootFiles .#kernelMainlineUartProgressMemoryPrintk.dev --no-link --print-out-paths -L`.
       Preserve full build receipt and actual config/DT/Image/initrd/archive identities.
-- [ ] 5l.3 Inspect exact selected target objects/calls/format, atomic/completion
+      Performed: coordinator full matching build at frozen `1c59f856` returned 0;
+      actual p2kdar bundle and 24hbal dev pass Image/system/kernel/initrd/CRC/closure
+      inspection, original arguments and complete hardware-DT comparison. Installed
+      config/autoconf bytes equal the Memory parent; PRINTK_CALLER is disabled.
+      [Actual exact/full host proof](../../../docs/evidence/mainline-uart-progress-memory-printk/exact-full-host/README.md).
+- [x] 5l.3 Inspect exact selected target objects/calls/format, atomic/completion
       behavior and matching source/config. Command:
       `nix build .#kernelMainlineUartProgressMemoryPrintkExactObjects --no-link --print-out-paths -L`.
+      Performed: only the named offline exact-object output built under a nonblocking
+      shared lock from source revision `bd092485`; actual selected dev headers/config,
+      three GCC RISC-V objects, ordinary lifetimes, acquire/release/completion APIs and
+      unique regular-rodata leading-newline KERN_INFO format passed. The target observer
+      has the ordinary printk call; source/native proof establishes selected return
+      without DBCN fallback. Pahole-version warning retained, no C warning observed.
       Host object proof does not establish console/timer/observer execution.
 - [ ] 5l.4 Add typed controller, strict observed-prefix/new-namespace parser and
       fresh Linux-backend qualification with zero-write/error/recovery fixtures.

@@ -1,0 +1,126 @@
+ELF Header:
+  Magic:   7f 45 4c 46 02 01 01 00 00 00 00 00 00 00 00 00
+  Class:                             ELF64
+  Data:                              2's complement, little endian
+  Version:                           1 (current)
+  OS/ABI:                            UNIX - System V
+  ABI Version:                       0
+  Type:                              REL (Relocatable file)
+  Machine:                           RISC-V
+  Version:                           0x1
+  Entry point address:               0x0
+  Start of program headers:          0 (bytes into file)
+  Start of section headers:          374464 (bytes into file)
+  Flags:                             0x1, RVC, soft-float ABI
+  Size of this header:               64 (bytes)
+  Size of program headers:           0 (bytes)
+  Number of program headers:         0
+  Size of section headers:           64 (bytes)
+  Number of section headers:         57
+  Section header string table index: 56
+
+Section Headers:
+  [Nr] Name              Type            Address          Off    Size   ES Flg Lk Inf Al
+  [ 0]                   NULL            0000000000000000 000000 000000 00      0   0  0
+  [ 1] .text             PROGBITS        0000000000000000 000040 000608 00  AX  0   0  8
+  [ 2] .rela.text        RELA            0000000000000000 0369e0 001a88 18   I 54   1  8
+  [ 3] .data             PROGBITS        0000000000000000 000648 000020 00  WA  0   0  8
+  [ 4] .rela.data        RELA            0000000000000000 038468 000030 18   I 54   3  8
+  [ 5] .bss              NOBITS          0000000000000000 000668 000200 00  WA  0   0 256
+  [ 6] __patchable_function_entries PROGBITS        0000000000000000 000668 000008 00 WAL  1   0  8
+  [ 7] .rela__patchable_function_entries RELA            0000000000000000 038498 000018 18   I 54   6  8
+  [ 8] .rodata.str1.8    PROGBITS        0000000000000000 000670 00013d 01 AMS  0   0  8
+  [ 9] .init.text        PROGBITS        0000000000000000 0007b0 0002d0 00  AX  0   0  8
+  [10] .rela.init.text   RELA            0000000000000000 0384b0 000cf0 18   I 54   9  8
+  [11] __patchable_function_entries PROGBITS        0000000000000000 000a80 000008 00 WAL  9   0  8
+  [12] .rela__patchable_function_entries RELA            0000000000000000 0391a0 000018 18   I 54  11  8
+  [13] __patchable_function_entries PROGBITS        0000000000000000 000a88 000008 00 WAL  9   0  8
+  [14] .rela__patchable_function_entries RELA            0000000000000000 0391b8 000018 18   I 54  13  8
+  [15] __patchable_function_entries PROGBITS        0000000000000000 000a90 000008 00 WAL  9   0  8
+  [16] .rela__patchable_function_entries RELA            0000000000000000 0391d0 000018 18   I 54  15  8
+  [17] __patchable_function_entries PROGBITS        0000000000000000 000a98 000008 00 WAL  9   0  8
+  [18] .rela__patchable_function_entries RELA            0000000000000000 0391e8 000018 18   I 54  17  8
+  [19] __patchable_function_entries PROGBITS        0000000000000000 000aa0 000008 00 WAL  9   0  8
+  [20] .rela__patchable_function_entries RELA            0000000000000000 039200 000018 18   I 54  19  8
+  [21] __patchable_function_entries PROGBITS        0000000000000000 000aa8 000008 00 WAL  1   0  8
+  [22] .rela__patchable_function_entries RELA            0000000000000000 039218 000018 18   I 54  21  8
+  [23] __patchable_function_entries PROGBITS        0000000000000000 000ab0 000008 00 WAL  9   0  8
+  [24] .rela__patchable_function_entries RELA            0000000000000000 039230 000018 18   I 54  23  8
+  [25] __patchable_function_entries PROGBITS        0000000000000000 000ab8 000008 00 WAL  1   0  8
+  [26] .rela__patchable_function_entries RELA            0000000000000000 039248 000018 18   I 54  25  8
+  [27] .rodata           PROGBITS        0000000000000000 000ac0 00013c 00   A  0   0 64
+  [28] .rela.rodata      RELA            0000000000000000 039260 000048 18   I 54  27  8
+  [29] .init.rodata      PROGBITS        0000000000000000 000bfc 000091 00   A  0   0  1
+  [30] .init.setup       PROGBITS        0000000000000000 000c90 000078 00  WA  0   0  8
+  [31] .rela.init.setup  RELA            0000000000000000 0392a8 0000f0 18   I 54  30  8
+  [32] .initcall7.init   PROGBITS        0000000000000000 000d08 000008 00  WA  0   0  8
+  [33] .rela.initcall7.init RELA            0000000000000000 039398 000018 18   I 54  32  8
+  [34] .printk_index     PROGBITS        0000000000000000 000d10 000008 00  WA  0   0  8
+  [35] .rela.printk_index RELA            0000000000000000 0393b0 000018 18   I 54  34  8
+  [36] .sbss             NOBITS          0000000000000000 000d18 000010 00  WA  0   0  8
+  [37] .debug_info       PROGBITS        0000000000000000 000d18 00b5f1 00      0   0  1
+  [38] .rela.debug_info  RELA            0000000000000000 0393c8 0119b8 18   I 54  37  8
+  [39] .debug_abbrev     PROGBITS        0000000000000000 00c309 00092a 00      0   0  1
+  [40] .debug_loclists   PROGBITS        0000000000000000 00cc33 000ce4 00      0   0  1
+  [41] .rela.debug_loclists RELA            0000000000000000 04ad80 004c08 18   I 54  40  8
+  [42] .debug_aranges    PROGBITS        0000000000000000 00d917 000090 00      0   0  1
+  [43] .rela.debug_aranges RELA            0000000000000000 04f988 000210 18   I 54  42  8
+  [44] .debug_rnglists   PROGBITS        0000000000000000 00d9a7 0001aa 00      0   0  1
+  [45] .rela.debug_rnglists RELA            0000000000000000 04fb98 001590 18   I 54  44  8
+  [46] .debug_line       PROGBITS        0000000000000000 00db51 001ac6 00      0   0  1
+  [47] .rela.debug_line  RELA            0000000000000000 051128 009d20 18   I 54  46  8
+  [48] .debug_str        PROGBITS        0000000000000000 00f617 006eaf 01  MS  0   0  1
+  [49] .debug_line_str   PROGBITS        0000000000000000 0164c6 000c16 01  MS  0   0  1
+  [50] .comment          PROGBITS        0000000000000000 0170dc 000013 01  MS  0   0  1
+  [51] .note.GNU-stack   PROGBITS        0000000000000000 0170ef 000000 00      0   0  1
+  [52] .debug_frame      PROGBITS        0000000000000000 0170f0 000208 00      0   0  8
+  [53] .rela.debug_frame RELA            0000000000000000 05ae48 0006f0 18   I 54  52  8
+  [54] .symtab           SYMTAB          0000000000000000 0172f8 017280 18     55 3935  8
+  [55] .strtab           STRTAB          0000000000000000 02e578 008463 00      0   0  1
+  [56] .shstrtab         STRTAB          0000000000000000 05b538 000184 00      0   0  1
+Key to Flags:
+  W (write), A (alloc), X (execute), M (merge), S (strings), I (info),
+  L (link order), O (extra OS processing required), G (group), T (TLS),
+  C (compressed), x (unknown), o (OS specific), E (exclude),
+  D (mbind), p (processor specific)
+
+Symbol table '.symtab' contains 3952 entries:
+   Num:    Value          Size Type    Bind   Vis      Ndx Name
+     0: 0000000000000000     0 NOTYPE  LOCAL  DEFAULT  UND
+     7: 000000000000000e    52 FUNC    LOCAL  DEFAULT    1 k230_uart_progress_memory_active
+    10: 000000000000000f     1 OBJECT  LOCAL  DEFAULT   36 k230_uart_progress_enabled
+    11: 000000000000000c     1 OBJECT  LOCAL  DEFAULT   36 k230_uart_progress_memory_enabled
+    17: 000000000000000e    82 FUNC    LOCAL  DEFAULT    9 k230_uart_progress_breadcrumbs_setup
+    23: 000000000000000e     1 OBJECT  LOCAL  DEFAULT   36 k230_uart_progress_breadcrumbs_enabled
+    26: 000000000000006e    82 FUNC    LOCAL  DEFAULT    9 k230_uart_progress_post_sample_setup
+    32: 000000000000000d     1 OBJECT  LOCAL  DEFAULT   36 k230_uart_progress_post_sample_enabled
+    35: 00000000000000ce    82 FUNC    LOCAL  DEFAULT    9 k230_uart_progress_setup
+    43: 000000000000012e    82 FUNC    LOCAL  DEFAULT    9 k230_uart_progress_memory_printk_setup
+    49: 0000000000000000     1 OBJECT  LOCAL  DEFAULT   36 k230_uart_progress_memory_printk_enabled
+    52: 000000000000018e    82 FUNC    LOCAL  DEFAULT    9 k230_uart_progress_memory_setup
+    60: 0000000000000050   214 FUNC    LOCAL  DEFAULT    1 k230_uart_progress_memory_observer
+    63: 0000000000000008     4 OBJECT  LOCAL  DEFAULT   36 k230_uart_progress_memory_state
+    66: 00000000000001ee   224 FUNC    LOCAL  DEFAULT    9 k230_uart_progress_init
+    69: 0000000000000134  1234 FUNC    LOCAL  DEFAULT    1 k230_uart_progress_worker
+    78: 0000000000000000    31 OBJECT  LOCAL  DEFAULT   27 k230_uart_progress_entry
+    79: 0000000000000040    35 OBJECT  LOCAL  DEFAULT   27 k230_uart_progress_third_post_sleep
+    80: 0000000000000080    35 OBJECT  LOCAL  DEFAULT   27 k230_uart_progress_first_post_sleep
+    81: 00000000000000c0    33 OBJECT  LOCAL  DEFAULT   27 k230_uart_progress_after_n1_write
+    85: 0000000000000000    32 OBJECT  LOCAL  DEFAULT    3 k230_uart_progress_memory_done
+    87: 0000000000000000   256 OBJECT  LOCAL  DEFAULT    5 k230_uart_progress_memory_record
+    88: 0000000000000100   256 OBJECT  LOCAL  DEFAULT    5 k230_uart_progress_record
+    90: 0000000000000000    27 OBJECT  LOCAL  DEFAULT   29 __setup_str_k230_uart_progress_memory_setup
+    91: 000000000000001b    34 OBJECT  LOCAL  DEFAULT   29 __setup_str_k230_uart_progress_memory_printk_setup
+    92: 000000000000003d    20 OBJECT  LOCAL  DEFAULT   29 __setup_str_k230_uart_progress_setup
+    93: 0000000000000051    32 OBJECT  LOCAL  DEFAULT   29 __setup_str_k230_uart_progress_post_sample_setup
+    94: 0000000000000071    32 OBJECT  LOCAL  DEFAULT   29 __setup_str_k230_uart_progress_breadcrumbs_setup
+    96: 0000000000000000    24 OBJECT  LOCAL  DEFAULT   30 __setup_k230_uart_progress_memory_setup
+    97: 0000000000000018    24 OBJECT  LOCAL  DEFAULT   30 __setup_k230_uart_progress_memory_printk_setup
+    98: 0000000000000030    24 OBJECT  LOCAL  DEFAULT   30 __setup_k230_uart_progress_setup
+    99: 0000000000000048    24 OBJECT  LOCAL  DEFAULT   30 __setup_k230_uart_progress_post_sample_setup
+   100: 0000000000000060    24 OBJECT  LOCAL  DEFAULT   30 __setup_k230_uart_progress_breadcrumbs_setup
+   102: 0000000000000000     8 OBJECT  LOCAL  DEFAULT   32 __initcall__kmod_k230_uart_progress__376_243_k230_uart_progress_init7
+  3947: 0000000000000000     0 NOTYPE  GLOBAL DEFAULT  UND k230_uart_progress_snapshot
+  3948: 0000000000000000     0 NOTYPE  GLOBAL DEFAULT  UND k230_uart_progress_timer_irq
+
+Symbol rows above are the K230 progress excerpt; header/section tables are complete.

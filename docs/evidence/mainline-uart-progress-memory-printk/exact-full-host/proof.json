@@ -1,0 +1,281 @@
+{
+  "Image_exact_unique_inherited_records_and_memory_format_setup_keys": true,
+  "PRINTK_CALLER_explicitly_disabled": true,
+  "UMK_KERN_INFO_format_unique_regular_rodata": true,
+  "actual_effective_config_difference_vs_Memory": {},
+  "artifact_original_policy_preserved": true,
+  "artifact_sha256": {
+    "Image-mainline-drm": "c2c9663bc385a0c62a15b740ccd46b36b51bc3fd9c0c6281b2a2e5a1882878c3",
+    "SHA256SUMS": "9bfc73df30b5c861ea66c0c71e0779ca21226b414ff6c7ea4f5a5f4e76fa78eb",
+    "bootargs.txt": "794caaaed934e49a978fe8a401a8403dc92fd0b668c68cb943919d1265d4aaf8",
+    "initrd.uimg": "10bf5d9ad3511037282d364c1ef23235385cb0614b0511c39d4b4340af5c1e0a",
+    "k230-tdisplay-mainline-drm.dtb": "836340a4739b59a4eeb8325f10de64a6fc6844db14947ca99cab8bf7b64a0be3",
+    "registration": "a9ebc1663157f9753a5163007cd9cf9f9fcda15de3e3c977b5e306666c5b0051",
+    "store-paths": "85aac014a222857301eb6b12a0a5fae61ee95df6ddcea9690c1b34558050fdc1"
+  },
+  "canonical_DTS_sha256": "c36085249e61fc1ed6f8f586b1ccbf11f22a4e27428a3e7e23b046384268fc02",
+  "config_autoconf_exact_selected_dev": true,
+  "evidence_class": "host exact configured RISC-V objects and full matching artifacts; no hardware",
+  "full_build": {
+    "command": [
+      "nix",
+      "build",
+      ".#kernelMainlineUartProgressMemoryPrintkTrialBootFiles",
+      ".#kernelMainlineUartProgressMemoryPrintk.dev",
+      "--no-link",
+      "--print-out-paths",
+      "-L",
+      "--max-jobs",
+      "1",
+      "--cores",
+      "24"
+    ],
+    "completed_utc": "2026-10-04T07:13:14.626169+00:00",
+    "output_paths": [
+      "/nix/store/p2kdar89q7dhwdajjy0mrhmxxzcgsalw-k230-mainline-drm-trial-boot-files",
+      "/nix/store/24hbalyljs6gn6fzkkl24znv8a0x6jdl-linux-riscv64-unknown-linux-gnu-7.3.0-rc5-dev"
+    ],
+    "returncode": 0,
+    "revision": "1c59f8565ce6baab1e97ffad23e55556961af308",
+    "started_utc": "2026-10-04T06:47:32.895064+00:00"
+  },
+  "hardware_DT_base_bundle": "/nix/store/lznjjfx1kzm8mp2j0r06c87h2vdymkhd-k230-mainline-drm-trial-boot-files",
+  "hardware_DT_equal_after_only_chosen_bootargs_removed": true,
+  "inherited_records_and_memory_state_buffer_exact_regular_lifetime": true,
+  "inspection": {
+    "DTB_bootargs_matches_environment": true,
+    "Image_matches_candidate": true,
+    "bootargs": "consoleblank=0 console=ttyS0,115200n8 root=fstab loglevel=4 lsm=landlock,yama,bpf loglevel=7 k230.boot_trace=1 k230.boot_trace_sbi_only=1 init=/nix/store/yk44vx3ny4h6a9mx3ya4rczh7akhyjbj-nixos-system-nixos-26.11.20260919.20b1ddd/init",
+    "bundle": "/nix/store/p2kdar89q7dhwdajjy0mrhmxxzcgsalw-k230-mainline-drm-trial-boot-files",
+    "closure_paths": 629,
+    "files": {
+      "Image-mainline-drm": 38530560,
+      "SHA256SUMS": 339,
+      "bootargs.txt": 243,
+      "initrd.uimg": 27308547,
+      "k230-tdisplay-mainline-drm.dtb": 11097,
+      "registration": 303363,
+      "store-paths": 49876
+    },
+    "initrd_payload_matches_system": true,
+    "kernel": "/nix/store/xna7x12lh4lmzwgmwq51cyc9wf86504p-linux-riscv64-unknown-linux-gnu-7.3.0-rc5",
+    "system": "/nix/store/yk44vx3ny4h6a9mx3ya4rczh7akhyjbj-nixos-system-nixos-26.11.20260919.20b1ddd",
+    "uimage_crc_valid": true
+  },
+  "installed_autoconf_bytes_equal_parent": true,
+  "installed_autoconf_sha256": "99f44d781b246202edab1d5ef8c4836b15ae99c590999ff268541dfd673865d0",
+  "installed_config": {
+    "K230_UART_PROGRESS": "y",
+    "KUNIT": null,
+    "OF": "y",
+    "PAGE_SHIFT": "12",
+    "PAGE_SIZE_4KB": "y",
+    "PRINTK": "y",
+    "PRINTK_CALLER": null,
+    "PRINTK_EXECUTION_CTX": "y",
+    "PRINTK_TIME": "y",
+    "RISCV_SBI": "y",
+    "RISCV_TIMER": "y",
+    "SERIAL_8250": "y",
+    "SERIAL_8250_CONSOLE": "y",
+    "SERIAL_8250_DW": "y",
+    "VMAP_STACK": "y"
+  },
+  "installed_config_bytes_equal_parent": true,
+  "installed_config_sha256": "52e7470b108ad094dbdf88b94e3e8838564edbda9e7a015b4279012e6765c9f1",
+  "no_forced_CONFIG_overlay": true,
+  "object_dev": "/nix/store/24hbalyljs6gn6fzkkl24znv8a0x6jdl-linux-riscv64-unknown-linux-gnu-7.3.0-rc5-dev",
+  "object_output": "/nix/store/ndlvakw2vxgkbsdwzw477r44wz8rpyg6-k230-mainline-uart-progress-exact-objects",
+  "object_revision": "bd092485f88223da7777379cfdd432ac8a722335",
+  "objects": {
+    "8250_core.o": {
+      "compiler_comment": "String dump of section '.comment':\n  [     1]  GCC: (GNU) 15.3.0",
+      "sha256": "211fd6f265ade322a34aa154b6caacb1af7add8edbc7f7440f61ff5a93669052",
+      "symbols": {
+        "k230_uart_progress_snapshot": {
+          "section": ".text",
+          "section_alignment": 8,
+          "size": 542,
+          "value": 6402
+        }
+      }
+    },
+    "k230-uart-progress.o": {
+      "compiler_comment": "String dump of section '.comment':\n  [     1]  GCC: (GNU) 15.3.0",
+      "sha256": "39f10aa6590176242be99b7e95d0ac9120ab9525cafeac3682136915cfebbc34",
+      "symbols": {
+        "k230_uart_progress_after_n1_write": {
+          "section": ".rodata",
+          "section_alignment": 64,
+          "size": 33,
+          "value": 192
+        },
+        "k230_uart_progress_breadcrumbs_enabled": {
+          "section": ".sbss",
+          "section_alignment": 8,
+          "size": 1,
+          "value": 14
+        },
+        "k230_uart_progress_breadcrumbs_setup": {
+          "section": ".init.text",
+          "section_alignment": 8,
+          "size": 82,
+          "value": 14
+        },
+        "k230_uart_progress_enabled": {
+          "section": ".sbss",
+          "section_alignment": 8,
+          "size": 1,
+          "value": 15
+        },
+        "k230_uart_progress_entry": {
+          "section": ".rodata",
+          "section_alignment": 64,
+          "size": 31,
+          "value": 0
+        },
+        "k230_uart_progress_first_post_sleep": {
+          "section": ".rodata",
+          "section_alignment": 64,
+          "size": 35,
+          "value": 128
+        },
+        "k230_uart_progress_init": {
+          "section": ".init.text",
+          "section_alignment": 8,
+          "size": 224,
+          "value": 494
+        },
+        "k230_uart_progress_memory_active": {
+          "section": ".text",
+          "section_alignment": 8,
+          "size": 52,
+          "value": 14
+        },
+        "k230_uart_progress_memory_done": {
+          "section": ".data",
+          "section_alignment": 8,
+          "size": 32,
+          "value": 0
+        },
+        "k230_uart_progress_memory_enabled": {
+          "section": ".sbss",
+          "section_alignment": 8,
+          "size": 1,
+          "value": 12
+        },
+        "k230_uart_progress_memory_observer": {
+          "section": ".text",
+          "section_alignment": 8,
+          "size": 214,
+          "value": 80
+        },
+        "k230_uart_progress_memory_printk_enabled": {
+          "section": ".sbss",
+          "section_alignment": 8,
+          "size": 1,
+          "value": 0
+        },
+        "k230_uart_progress_memory_printk_setup": {
+          "section": ".init.text",
+          "section_alignment": 8,
+          "size": 82,
+          "value": 302
+        },
+        "k230_uart_progress_memory_record": {
+          "section": ".bss",
+          "section_alignment": 256,
+          "size": 256,
+          "value": 0
+        },
+        "k230_uart_progress_memory_setup": {
+          "section": ".init.text",
+          "section_alignment": 8,
+          "size": 82,
+          "value": 398
+        },
+        "k230_uart_progress_memory_state": {
+          "section": ".sbss",
+          "section_alignment": 8,
+          "size": 4,
+          "value": 8
+        },
+        "k230_uart_progress_post_sample_enabled": {
+          "section": ".sbss",
+          "section_alignment": 8,
+          "size": 1,
+          "value": 13
+        },
+        "k230_uart_progress_post_sample_setup": {
+          "section": ".init.text",
+          "section_alignment": 8,
+          "size": 82,
+          "value": 110
+        },
+        "k230_uart_progress_record": {
+          "section": ".bss",
+          "section_alignment": 256,
+          "size": 256,
+          "value": 256
+        },
+        "k230_uart_progress_setup": {
+          "section": ".init.text",
+          "section_alignment": 8,
+          "size": 82,
+          "value": 206
+        },
+        "k230_uart_progress_third_post_sleep": {
+          "section": ".rodata",
+          "section_alignment": 64,
+          "size": 35,
+          "value": 64
+        },
+        "k230_uart_progress_worker": {
+          "section": ".text",
+          "section_alignment": 8,
+          "size": 1234,
+          "value": 308
+        }
+      }
+    },
+    "timer-riscv.o": {
+      "compiler_comment": "String dump of section '.comment':\n  [     1]  GCC: (GNU) 15.3.0",
+      "sha256": "831a44e472802309a7a576a90765ea8c487342f6b7639842fd45601b2dfab718",
+      "symbols": {
+        "k230_uart_progress_ready_timer_irq": {
+          "section": ".sbss",
+          "section_alignment": 4,
+          "size": 4,
+          "value": 0
+        },
+        "k230_uart_progress_timer_irq": {
+          "section": ".text",
+          "section_alignment": 8,
+          "size": 32,
+          "value": 736
+        }
+      }
+    }
+  },
+  "prepared_source": "/nix/store/24hbalyljs6gn6fzkkl24znv8a0x6jdl-linux-riscv64-unknown-linux-gnu-7.3.0-rc5-dev/lib/modules/7.3.0-rc5/source",
+  "prepared_source_is_installed_build_skeleton_not_selected_full_src": true,
+  "selected_init_executable": true,
+  "selected_kernel_and_dev_same_derivation": "/nix/store/fdjxx6cggxp2ffhsf7lwmz7mndd2588v-linux-riscv64-unknown-linux-gnu-7.3.0-rc5.drv",
+  "selected_observer_branch_exact_one_ordinary_pr_info_and_return_no_DBCN_fallback_source_native_proof": true,
+  "source": "/nix/store/0l4mgw9hr1j7pj247jsrxjd478fnlfy8-linux-mainline-k230-uart-progress-memory-printk-src",
+  "source_layer": {
+    "deriver": "/nix/store/1pn3icn3crv39rlrmqwari98ja13qj1s-linux-mainline-k230-uart-progress-memory-printk-src.drv",
+    "parent": "/nix/store/f7xg031sjb9dy3bswm5s3qjr9xwx1g02-linux-mainline-k230-uart-progress-memory-src",
+    "patches": "/nix/store/kyggbhxjijvcx5kxcpza8mspw64brhwj-k230-uart-progress-memory-printk.patch"
+  },
+  "source_worker_sha256": "30e8eb1ee365d62665c9d3ffd674e973736f3d04405d53f0f5dc12c3ee23f5f2",
+  "target_memory_printk_atomic_completion_object_refs_and_fences": true,
+  "unchanged_cached_getter_dependencies_vs_Memory": {
+    "drivers/clocksource/timer-riscv.c": "f8e5977bd8170f84719c89952178efa22c1162ebd526c182b1bf74e5c4cffa24",
+    "drivers/soc/canaan/Kconfig": "1b488c3a5633532bbe58e90ce3736e7979c554dd2cb03c3c0a3e082c5b7874cd",
+    "drivers/tty/serial/8250/8250.h": "69523b42abee40768f66a850b40ae642a827cdab86b4790c8f4b965e96775537",
+    "drivers/tty/serial/8250/8250_core.c": "e310fed432d878b81e71b814e7f442c6ae0d3013735f4b6010ee24d35dac8ed7",
+    "include/linux/clocksource.h": "1ee6bfd650f9a7daa0fd566336860a525338046eb9ffa46ebc5762dbf8ce4d97",
+    "include/linux/serial_8250.h": "d2445acf440cb7cf4c4eb3c1fdbd1e8193ea12da16fabe5e3e97f97e32a4e619"
+  }
+}

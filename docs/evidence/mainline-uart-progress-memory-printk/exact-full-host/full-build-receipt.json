@@ -1,0 +1,23 @@
+{
+  "command": [
+    "nix",
+    "build",
+    ".#kernelMainlineUartProgressMemoryPrintkTrialBootFiles",
+    ".#kernelMainlineUartProgressMemoryPrintk.dev",
+    "--no-link",
+    "--print-out-paths",
+    "-L",
+    "--max-jobs",
+    "1",
+    "--cores",
+    "24"
+  ],
+  "revision": "1c59f8565ce6baab1e97ffad23e55556961af308",
+  "started_utc": "2026-10-04T06:47:32.895064+00:00",
+  "completed_utc": "2026-10-04T07:13:14.626169+00:00",
+  "returncode": 0,
+  "output_paths": [
+    "/nix/store/p2kdar89q7dhwdajjy0mrhmxxzcgsalw-k230-mainline-drm-trial-boot-files",
+    "/nix/store/24hbalyljs6gn6fzkkl24znv8a0x6jdl-linux-riscv64-unknown-linux-gnu-7.3.0-rc5-dev"
+  ]
+}
