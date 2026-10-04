@@ -42,9 +42,60 @@ qualifier and all five loads/CRCs/printed exact arguments; no bytes follow bootm
 The first development run exposed fixture-only argument-prefix and copied-name
 errors; final fixtures correct those without changing artifact/runtime semantics.
 
-Actual existing-artifact proof for task 5m.2 will be appended after execution.
+Actual existing-artifact proof for task 5m.2 passed on the first executed run.
+The [safe receipt](result.json) and [exact executed qualifier](qualification-command.py)
+record UTC timestamps, controller `b99d972e`, source/config/Image/archive/manifest
+identities and proof boundaries. Source peer review independently repeated all
+13 focused fixtures PASS; root reviewed and repeated the affected UART pattern
+143 and shell-PID1 14 tests PASS before landing the code.
+
+```sh
+TMPDIR="$HOME/tmp" python3 "$HOME/tmp/k230-mainline-uart-memory-printk-nohz-host-qualification/qualify.py" \
+  --bundle /nix/store/p2kdar89q7dhwdajjy0mrhmxxzcgsalw-k230-mainline-drm-trial-boot-files \
+  --dev /nix/store/24hbalyljs6gn6fzkkl24znv8a0x6jdl-linux-riscv64-unknown-linux-gnu-7.3.0-rc5-dev \
+  --normal-report "$HOME/tmp/k230-mainline-uart-memory-printk-board/normal-report.json"
+```
+
+Execution requires the existing successful frozen artifact receipt `1c59f856`,
+explicit exact bundle/dev and fresh outputs in the protected directory. Python
+3.14 native Zstd, `nix-store`/`nix` offline queries, `fdtget` and `sha256sum` are
+host dependencies. The committed script is byte-identical to its executed private
+copy and retains that protected directory/worktree contract. It reads immutable
+artifacts and copies protected baseline/manifest privately; originals remain
+unchanged. No implicit realization or UART is performed.
+
+The actual selected source worker is the reviewed `30e8eb1e` variant under `0l4mgw9`;
+Image SHA `c2c9663b` and config SHA `52e7470b` match previous actual MemoryPrintk
+proof. Config has the required built-in gates/HZ=250 and unset legacy NO_HZ;
+unique linked `nohz=` offset is 19425910. Actual archive executables/common
+loader, kernel/dev, DT/chosen args, five load hashes/CRCs and manifest equal the
+previous positive proof. Bundle SHA256SUMS passes. Selected bootargs/transport
+are exactly baseline plus sole trailing nohz=off; five original mode transports
+remain equal to frozen fcd1020f. Unchanged preparation/observation/backend AST
+is compared only within its applicable function domain; the intentionally
+extended transport is checked through actual original values and sole token.
+
+Private normal report, selected helper, manifest and transport stay outside the
+repository. The report is a historical host-only anchor, not a new recovery or
+preflight. Registration absence is asserted in the prepared pre/post helper;
+this host run does not claim a newly performed board assertion. No wrapper
+readback/copy or flash is added. No initial actual-artifact failure occurred.
 No UART/board or physical nohz-off trial was performed for this checkpoint.
 Task 5m.3 still needs NEW protected normal recovery, reviewed host gate and one
 reserved operator capture. Received token and linked support do not prove runtime
 tick policy, hardware timer IRQs, output-call return or cause. Ordinary root/touch
 and 5b.5 remain **UNVERIFIED**.
+
+
+After NEW protected normal recovery and reviewed host gates, the sole operator
+may use fresh protected log/result paths:
+
+```sh
+python3 tools/mainline-drm-initrd-shell-trial.py --mode minimal \
+  --same-image-shell-pid1 --uart-progress --uart-progress-memory \
+  --uart-progress-memory-no-stimulus --uart-progress-memory-printk \
+  --uart-progress-memory-printk-nohz-off \
+  --bundle /nix/store/p2kdar89q7dhwdajjy0mrhmxxzcgsalw-k230-mainline-drm-trial-boot-files \
+  --manifest PRIVATE_MANIFEST --normal-report PRIVATE_NORMAL \
+  --log PRIVATE_LOG --result PRIVATE_RESULT
+```
