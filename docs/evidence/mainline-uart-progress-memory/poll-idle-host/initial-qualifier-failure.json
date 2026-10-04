@@ -1,0 +1,13 @@
+{
+  "schema": "k230-poll-idle-host-harness-failure-v1",
+  "evidence_class": "host-qualifier-script-validation-only",
+  "command": "TMPDIR=$HOME/tmp python3 \"$HOME/tmp/k230-mainline-uart-memory-poll-idle-host-qualification/qualify.py\"",
+  "returncode": 1,
+  "failure": "missing qualified preparation functions/constants",
+  "cause": "Compared the later no-stimulus helper/parser against original7af8 source where they do not exist; historical source check must cover only shared preparation functions, and unchanged parser check must use reviewed691 base.",
+  "failed_qualifier_sha256": "25bd696bdf95f0e3209793bd576196c0b3d08c44623f18777bf17aa19dd00e9b",
+  "artifact_preparation_started": false,
+  "outputs_created": false,
+  "uart_opened": false,
+  "build_performed": false
+}

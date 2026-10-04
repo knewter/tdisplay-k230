@@ -37,8 +37,44 @@ Host tests on 2026-10-04 UTC used Python 3.14 and `TMPDIR=$HOME/tmp`:
 - Independent read-only review by `mainline_boot_path`: PASS; reviewer repeated
   all 14 focused tests, checked scope/defaults and found no correction.
 
-Fixture proofs are distinct from actual artifact preparation. Actual 5k.2 proof
-will be appended after qualification of the existing lznjjfx1/1pvqbm4 artifacts.
+Fixture proofs are distinct from actual artifact preparation. Actual group
+5k.2 preparation PASSED on controller `d10b8fa0` with
+`TMPDIR=$HOME/tmp python3 "$HOME/tmp/k230-mainline-uart-memory-poll-idle-host-qualification/qualify.py"`.
+The [safe receipt](result.json) preserves UTC times, command/source hashes and
+exact artifacts. The [executed qualifier](qualification-command.py) preserves
+same-derivation dev/config, source/Image, archive and manifest checks; its private
+expected-root-revision.txt selected the actual successful original full build
+`7af8f7b8b5849c75df61d39ee772c2cc8f38542c`. No output was built implicitly.
+
+The same lznjjfx1 bundle, 1pvqbm4 dev, worker SHA256
+`307d7c0588499dd32826c1d05476e0bf6d46ca0c8939d42e0b4f7180545b98dc`,
+Image SHA256 `dd4466aae08927dd3eb7e2bcbc28c81d7279c341c52bd002ae67fcc04dde42af`
+and config SHA256 `52e7470b108ad094dbdf88b94e3e8838564edbda9e7a015b4279012e6765c9f1`
+matched the prior actual Memory proof. The same protected manifest, hardware DT,
+wrapped initrd and archived Bash/systemd/common loader were requalified. Exact
+Memory arguments gained only trailing bare `nohlt`, changing literal transport
+381→387 bytes. The qualified Image contains the unique linked setup at byte
+19425483. String/config evidence alone is not runtime selection proof; the
+operator controller still requires exact received candidate arguments.
+
+The historical shared preparation functions/constants are AST-identical to
+original build source `7af8f7b8`; unchanged preparation/parser functions are
+AST-identical to reviewed 5k base `691279d0`. Because the transport function was
+extended, the qualifier compares the five previous shell/progress/breadcrumb/
+post-sample/Memory outputs explicitly instead of claiming unchanged transport
+AST. Every old output matched. The passive observer is unchanged.
+
+An [initial harness failure](initial-qualifier-failure.json) is preserved:
+the first invocation asked the older original build controller to contain the
+later no-stimulus helper/parser. It failed before artifact preparation or output
+creation. The corrected qualifier separates historical shared preparations from
+unchanged reviewed-base parsing, then passed. This was a host script error,
+not an artifact/build/hardware failure.
+
+The protected historical normal report and wrapper CRC anchor host preparation;
+no new live preflight, recovery or wrapper readback was performed. Registration
+absence remains an assertion in the future pre/post helper. Baseline/prepared
+material stays private. Actual archive inspection used Python 3.14 native Zstd.
 No build/UART/physical action has occurred in this task. The preceding zero-input
 trial still requires its NEW operator reset; subsequent physical polling and
 ordinary acceptance 5b.5 remain UNVERIFIED.
