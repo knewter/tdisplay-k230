@@ -1,0 +1,37 @@
+--- a/drivers/soc/canaan/k230-uart-progress.c
++++ b/drivers/soc/canaan/k230-uart-progress.c
+@@ -2,0 +3 @@
++#include <linux/build_bug.h>
+@@ -16,0 +18,24 @@
++static bool k230_uart_progress_breadcrumbs_enabled;
++/* Ordinary rodata: short aligned records survive init cleanup. */
++static const char k230_uart_progress_entry[] __aligned(64) =
++	"\nK230_UPB1 point=worker-entry\n";
++static const char k230_uart_progress_first_post_sleep[] __aligned(64) =
++	"\nK230_UPB1 point=first-post-sleep\n";
++static_assert(sizeof(k230_uart_progress_entry) <= 64);
++static_assert(sizeof(k230_uart_progress_first_post_sleep) <= 64);
++
++static void k230_uart_progress_breadcrumb(const char *bytes, unsigned int length)
++{
++	if (!IS_ENABLED(CONFIG_RISCV_SBI) || !k230_uart_progress_enabled ||
++	    !k230_uart_progress_breadcrumbs_enabled || !sbi_debug_console_available)
++		return;
++	/* One attempt only; no return-count claim, retry or output fallback. */
++	(void)sbi_debug_console_write(bytes, length);
++}
++
++static int __init k230_uart_progress_breadcrumbs_setup(char *value)
++{
++	k230_uart_progress_breadcrumbs_enabled = value && !strcmp(value, "1");
++	return 1;
++}
++__setup("k230.uart_progress_breadcrumbs=", k230_uart_progress_breadcrumbs_setup);
+@@ -38,0 +64,3 @@
++		if (sample == 0)
++			k230_uart_progress_breadcrumb(k230_uart_progress_entry,
++						     sizeof(k230_uart_progress_entry) - 1);
+@@ -42,0 +71,3 @@
++		if (sample == 0)
++			k230_uart_progress_breadcrumb(k230_uart_progress_first_post_sleep,
++						     sizeof(k230_uart_progress_first_post_sleep) - 1);

@@ -848,7 +848,7 @@ and task 5b.5 remain UNVERIFIED; no archive or production fix is claimed.
 
 ## 5g. Worker-entry/first-post-sleep comparison (planned, no physical claim)
 
-- [ ] 5g.1 Add a separately layered runtime-gated breadcrumb reporter source:
+- [x] 5g.1 Add a separately layered runtime-gated breadcrumb reporter source:
       exactly two fixed <=64-byte aligned ordinary-rodata records in the
       normal-priority worker, entry before first sleep and post-sleep before
       first snapshot, at most one SBI attempt each and no IRQ/TTY/PID1 output.
@@ -857,6 +857,12 @@ and task 5b.5 remain UNVERIFIED; no archive or production fix is claimed.
       absent/bare/invalid gates, extension absence, placement/stop behavior,
       full/partial/zero/error no-retry and total eight-attempt cap.
       Source/fixture proof: `python3 tests/test_mainline_uart_progress_breadcrumbs.py`.
+      Source-host increment: thirteen actual patched-worker native fixtures and
+      twelve original source/API fixtures passed; evaluation preserves all 91
+      existing package identities and ten kernel source/config pairs. Exact
+      original-source layering and inherited config/params are recorded in
+      [source-host evidence](../../../docs/evidence/mainline-uart-progress-breadcrumbs/source-host/README.md).
+      This is not a full matching build, actual configured object or physical proof.
 - [ ] 5g.2 Add/build the separately selected matching kernel/system/initrd/DT/
       bundle, preserving original artifact parameters and every existing
       package plus kernel source/config and trial derivation identity. Commit
@@ -869,6 +875,10 @@ and task 5b.5 remain UNVERIFIED; no archive or production fix is claimed.
       helper/flag/strings lifetime, <=64-byte lengths, alignment64/page bounds
       and unchanged cached-getter dependencies. Host-only proof:
       `nix build .#kernelMainlineUartProgressBreadcrumbsExactObjects --no-link --print-out-paths`.
+      Preparation only: additive matching system/bundle and ExactObjects recipes
+      are evaluated and preserve all existing identities. Tasks 5g.2–3 remain
+      unchecked until the named matching build/inspection and exact-header object
+      commands actually pass; no full build or hardware action was performed.
 - [ ] 5g.4 Add a separate explicit minimal-only typed breadcrumb selector and
       strict fixed-record parser; preserve default/common/numeric protocols,
       exact artifact/dev/received-args preflight, sole volatile gates and fresh
