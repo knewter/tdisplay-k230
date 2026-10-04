@@ -1,0 +1,184 @@
+{
+  "Image_exact_unique_breadcrumb_records_and_setup_key": true,
+  "actual_effective_config_difference_vs_original_reporter": {},
+  "artifact_original_policy_preserved": true,
+  "artifact_sha256": {
+    "Image-mainline-drm": "58e9ab3217ab54e672f35f13815089db168ee739521164f119a7e5cf34cdb77f",
+    "SHA256SUMS": "40a9469556d142c746f03b4e8e18e32bd3eebd3484040c57206755675aa5d8a4",
+    "bootargs.txt": "1380d0a2c688172a526c9e3a6504d51523920eaa1914a4e52b5815af4685026f",
+    "initrd.uimg": "925f8f9ae10dda798730ae8226a53a3dd2171e03d6c550bb726861345bee3397",
+    "k230-tdisplay-mainline-drm.dtb": "6c0c69ad7726bfd7f5818150c9df0680a675bd8f79b63906ad1bcd012f831539",
+    "registration": "863f93c0cd026b909b93b28bb3b4a37240dcbae8acbb646bc823369cd064dba5",
+    "store-paths": "fcf0ab58457ef43297985f809d177ad8e13881ad9c7be2b65c1fbc657a6244b6"
+  },
+  "breadcrumb_records_exact_aligned_regular_lifetime": true,
+  "canonical_DTS_sha256": "c36085249e61fc1ed6f8f586b1ccbf11f22a4e27428a3e7e23b046384268fc02",
+  "config_autoconf_exact_selected_dev": true,
+  "evidence_class": "host exact configured RISC-V objects and full matching artifacts; no hardware",
+  "full_build": {
+    "command": [
+      "nix",
+      "build",
+      ".#kernelMainlineUartProgressBreadcrumbsTrialBootFiles",
+      ".#kernelMainlineUartProgressBreadcrumbs.dev",
+      "--no-link",
+      "--print-out-paths",
+      "--max-jobs",
+      "1",
+      "--cores",
+      "16"
+    ],
+    "completed_utc": "2026-10-04T02:14:09.485195+00:00",
+    "output_paths": [
+      "/nix/store/mhq10143lsmgr6wlll431a8s3ggb8q6m-k230-mainline-drm-trial-boot-files",
+      "/nix/store/xl3cyf9bbksb5yy2nxc6dgy0fbfd0ii8-linux-riscv64-unknown-linux-gnu-7.3.0-rc5-dev"
+    ],
+    "returncode": 0,
+    "revision": "2a54813575deecce790d4f0df048e5d3746e3d0e",
+    "started_utc": "2026-10-04T02:13:45.683156+00:00"
+  },
+  "hardware_DT_base_bundle": "/nix/store/gmsmqkjcb8vmh6h44xvq7y59dd9xihsh-k230-mainline-drm-trial-boot-files",
+  "hardware_DT_equal_after_only_chosen_bootargs_removed": true,
+  "inspection": {
+    "DTB_bootargs_matches_environment": true,
+    "Image_matches_candidate": true,
+    "bootargs": "consoleblank=0 console=ttyS0,115200n8 root=fstab loglevel=4 lsm=landlock,yama,bpf loglevel=7 k230.boot_trace=1 k230.boot_trace_sbi_only=1 init=/nix/store/ac7radxa3iazk4gd5m8scg8yad9h3q5j-nixos-system-nixos-26.11.20260919.20b1ddd/init",
+    "bundle": "/nix/store/mhq10143lsmgr6wlll431a8s3ggb8q6m-k230-mainline-drm-trial-boot-files",
+    "closure_paths": 629,
+    "files": {
+      "Image-mainline-drm": 38530560,
+      "SHA256SUMS": 339,
+      "bootargs.txt": 243,
+      "initrd.uimg": 27313303,
+      "k230-tdisplay-mainline-drm.dtb": 11097,
+      "registration": 303363,
+      "store-paths": 49876
+    },
+    "initrd_payload_matches_system": true,
+    "kernel": "/nix/store/n8f93vnx87nq5n36zsal7idp2s6c9dkv-linux-riscv64-unknown-linux-gnu-7.3.0-rc5",
+    "system": "/nix/store/ac7radxa3iazk4gd5m8scg8yad9h3q5j-nixos-system-nixos-26.11.20260919.20b1ddd",
+    "uimage_crc_valid": true
+  },
+  "installed_autoconf_sha256": "99f44d781b246202edab1d5ef8c4836b15ae99c590999ff268541dfd673865d0",
+  "installed_config": {
+    "K230_UART_PROGRESS": "y",
+    "KUNIT": null,
+    "OF": "y",
+    "PAGE_SHIFT": "12",
+    "PAGE_SIZE_4KB": "y",
+    "RISCV_SBI": "y",
+    "RISCV_TIMER": "y",
+    "SERIAL_8250": "y",
+    "SERIAL_8250_DW": "y",
+    "VMAP_STACK": "y"
+  },
+  "installed_config_sha256": "52e7470b108ad094dbdf88b94e3e8838564edbda9e7a015b4279012e6765c9f1",
+  "no_forced_CONFIG_overlay": true,
+  "object_dev": "/nix/store/xl3cyf9bbksb5yy2nxc6dgy0fbfd0ii8-linux-riscv64-unknown-linux-gnu-7.3.0-rc5-dev",
+  "object_output": "/nix/store/wi55m1p11zsi5shqrip4da6c4j420n2w-k230-mainline-uart-progress-exact-objects",
+  "object_revision": "071086bc64418c04f7affd67ef56cddac960c896",
+  "objects": {
+    "8250_core.o": {
+      "compiler_comment": "String dump of section '.comment':\n  [     1]  GCC: (GNU) 15.3.0",
+      "sha256": "11c752284bf2ab3ed548da847cab3d8bb77141fac5823d3726b15340bb5eccc3",
+      "symbols": {
+        "k230_uart_progress_snapshot": {
+          "section": ".text",
+          "section_alignment": 8,
+          "size": 542,
+          "value": 6402
+        }
+      }
+    },
+    "k230-uart-progress.o": {
+      "compiler_comment": "String dump of section '.comment':\n  [     1]  GCC: (GNU) 15.3.0",
+      "sha256": "40b26accf70f6d5535f91251a81c1a777b25abd70f618effe798e22598492ca2",
+      "symbols": {
+        "k230_uart_progress_breadcrumbs_enabled": {
+          "section": ".sbss",
+          "section_alignment": 1,
+          "size": 1,
+          "value": 0
+        },
+        "k230_uart_progress_breadcrumbs_setup": {
+          "section": ".init.text",
+          "section_alignment": 8,
+          "size": 82,
+          "value": 14
+        },
+        "k230_uart_progress_enabled": {
+          "section": ".sbss",
+          "section_alignment": 1,
+          "size": 1,
+          "value": 1
+        },
+        "k230_uart_progress_entry": {
+          "section": ".rodata",
+          "section_alignment": 64,
+          "size": 31,
+          "value": 0
+        },
+        "k230_uart_progress_first_post_sleep": {
+          "section": ".rodata",
+          "section_alignment": 64,
+          "size": 35,
+          "value": 64
+        },
+        "k230_uart_progress_init": {
+          "section": ".init.text",
+          "section_alignment": 8,
+          "size": 120,
+          "value": 206
+        },
+        "k230_uart_progress_record": {
+          "section": ".bss",
+          "section_alignment": 256,
+          "size": 256,
+          "value": 0
+        },
+        "k230_uart_progress_setup": {
+          "section": ".init.text",
+          "section_alignment": 8,
+          "size": 82,
+          "value": 110
+        },
+        "k230_uart_progress_worker": {
+          "section": ".text",
+          "section_alignment": 8,
+          "size": 692,
+          "value": 14
+        }
+      }
+    },
+    "timer-riscv.o": {
+      "compiler_comment": "String dump of section '.comment':\n  [     1]  GCC: (GNU) 15.3.0",
+      "sha256": "fa3e7f465483c1cdac670c1add3c6bb63f096e057e85b7367a1906f4b1103c4b",
+      "symbols": {
+        "k230_uart_progress_ready_timer_irq": {
+          "section": ".sbss",
+          "section_alignment": 4,
+          "size": 4,
+          "value": 0
+        },
+        "k230_uart_progress_timer_irq": {
+          "section": ".text",
+          "section_alignment": 8,
+          "size": 32,
+          "value": 736
+        }
+      }
+    }
+  },
+  "selected_init_executable": true,
+  "selected_kernel_and_dev_same_derivation": "/nix/store/4hc3qsi5f2rnzav6q02y04ybsyqhcnav-linux-riscv64-unknown-linux-gnu-7.3.0-rc5.drv",
+  "source": "/nix/store/k5a5zrhqy9ypr3mja1r50mdlcgi74i1f-linux-mainline-k230-uart-progress-breadcrumbs-src",
+  "source_worker_sha256": "7207dcae9462694a07bd4f7d37d1d9ea43a536496f1b96dd94fed3dfa78c6a22",
+  "unchanged_cached_getter_dependencies_vs_original_reporter": {
+    "drivers/clocksource/timer-riscv.c": "f8e5977bd8170f84719c89952178efa22c1162ebd526c182b1bf74e5c4cffa24",
+    "drivers/soc/canaan/Kconfig": "1b488c3a5633532bbe58e90ce3736e7979c554dd2cb03c3c0a3e082c5b7874cd",
+    "drivers/tty/serial/8250/8250.h": "69523b42abee40768f66a850b40ae642a827cdab86b4790c8f4b965e96775537",
+    "drivers/tty/serial/8250/8250_core.c": "e310fed432d878b81e71b814e7f442c6ae0d3013735f4b6010ee24d35dac8ed7",
+    "include/linux/clocksource.h": "1ee6bfd650f9a7daa0fd566336860a525338046eb9ffa46ebc5762dbf8ce4d97",
+    "include/linux/serial_8250.h": "d2445acf440cb7cf4c4eb3c1fdbd1e8193ea12da16fabe5e3e97f97e32a4e619"
+  }
+}
