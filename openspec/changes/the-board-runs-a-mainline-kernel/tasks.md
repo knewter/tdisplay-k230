@@ -1180,6 +1180,10 @@ completion of ordinary mainline acceptance.
       Then run actual matching artifact/controller preparation and commit safe
       receipt/executed qualifier; no UART or implicit build. Source hash must be
       the independently reviewed realized variant, not an unknown placeholder.
+      Controller preparation/20 corrected fixtures and prior controller regressions
+      PASS; root independent review PASS. [Host preparation](../../../docs/evidence/mainline-uart-progress-memory-printk/controller/README.md).
+      Realized reviewed worker 30e8eb1e is pinned; actual matching new Image/dev/
+      archive qualification remains UNVERIFIED, so this checkbox stays open.
 - [ ] 5l.5 After protected normal recovery plus source/native/exact/full/controller
       gates, reserve board/UART for one new-channel comparison. Commit fixed
       physical facts and recovery or explicit pending operator reset. Command:
