@@ -286,7 +286,8 @@ Group5h's matching source/objects/full artifacts and positive controller gates
 passed. Its independently reviewed physical capture reached worker-entry/Bash,
 but no receipt, numeric samples or new points in180.0975s; the committed
 [physical packet](../../../docs/evidence/mainline-uart-progress-post-sample/physical-2026-10-03/README.md)
-and deployment receipt preserve that incomplete result. Fresh recovery is pending.
+and deployment receipt preserve that incomplete result. The subsequent NEW
+operator reset passed guarded fresh normal postflight and reviewed Home evidence.
 No return from entry's output, first sleep completion or later point is proved.
 This leaves the ordinary mainline acceptance requirement and task5b.5 open.
 

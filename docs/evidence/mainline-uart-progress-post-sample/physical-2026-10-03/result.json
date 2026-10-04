@@ -7,6 +7,7 @@
   "controller_returncode": 2,
   "diagnostic_ok": false,
   "evidence_class": "physical UART boot and bounded passive capture; no panel/glass or ordinary-root proof",
+  "operator_reset_recovery": "operator-reset-recovery.json",
   "ordinary_init": "NOT_ATTEMPTED",
   "persistent_boot_selection_changed": false,
   "private_capture_bytes": 47798,
@@ -45,7 +46,7 @@
     "uart_progress_post_sample": true,
     "usable_root": "UNVERIFIED"
   },
-  "protected_normal_recovery": "PENDING_NEW_OPERATOR_RESET",
+  "protected_normal_recovery": "VERIFIED_OPERATOR_RESET",
   "schema": "k230-uart-progress-post-sample-public-physical-v1",
   "source_revision": "e7c2b1a95d753a654b3b06a21793eadebad12b9d",
   "staging": {

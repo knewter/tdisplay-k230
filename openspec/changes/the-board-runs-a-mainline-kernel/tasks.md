@@ -1003,7 +1003,8 @@ records exact limits. Automatic return and task 5b.5 stay open.
       Actual fjmxf6 comparison completed: [physical capture](../../../docs/evidence/mainline-uart-progress-post-sample/physical-2026-10-03/README.md).
       Fresh args/Bash/worker-entry, one stimulus, no receipt/samples/new points
       during 180.0975s; no protocol errors or candidate reboot. New operator
-      reset is explicitly pending; the preceding reset does not cover this run.
+      reset subsequently passed fresh guarded normal postflight and reviewed
+      Home: [reset receipt](../../../docs/evidence/mainline-uart-progress-post-sample/physical-2026-10-03/operator-reset-recovery.json).
 - [x] 5h.6 Reconcile point reach/return/output and sleep/scheduling limits,
       preserve task 5b.5 and unknown states, land/push public-safe evidence and
       verify exact CI/published revision. Planning proof:
@@ -1015,7 +1016,8 @@ capture are complete. Independent review matched private facts/hash. Evidence
 08ea7370 passed CI37175128998; work and physical pages returned HTTP200 with
 that exact revision: committed physical deployment.json. Only worker-entry
 arrived; neither entry ECALL return nor first sleep/output is established.
-NEW operator reset is pending; automatic return and5b.5 stay open. Group5i
+The subsequent NEW reset passed guarded fresh normal postflight/Home evidence;
+automatic return and5b.5 stay open. Group5i
 is a separate output-removal intervention, not a claimed cause or silent scope
 completion of ordinary mainline acceptance.
 

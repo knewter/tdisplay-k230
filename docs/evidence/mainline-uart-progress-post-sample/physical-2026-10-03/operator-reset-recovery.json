@@ -1,0 +1,26 @@
+{
+  "schema": "k230-uart-progress-post-sample-operator-reset-recovery-v1",
+  "observed_utc": "2026-10-04T04:13:58.013979+00:00",
+  "evidence_class": "physical serial guarded normal postflight after operator-declared reset",
+  "fresh_boot_identity": true,
+  "system": "/nix/store/p1a1hz9n8s4g8qyr55ffl3dzbnjgqwr8-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "profile": "/nix/store/p1a1hz9n8s4g8qyr55ffl3dzbnjgqwr8-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "kernel": "/nix/store/03zyl0mjsxbjyisb3lhjaxswpxm71ap6-linux-riscv64-unknown-linux-gnu-6.6.36-xuantie/Image",
+  "init": "init=/nix/store/p1a1hz9n8s4g8qyr55ffl3dzbnjgqwr8-nixos-system-nixos-26.11.20260919.20b1ddd/init",
+  "uname": "6.6.36",
+  "protected_boot_hashes_match": true,
+  "boot_hash_count": 8,
+  "services": [
+    "active",
+    "active",
+    "active"
+  ],
+  "registration_absence": true,
+  "private_capture_sha256": "0054878166efc5011feaa740c505306ccc51f7ad3a9df730a04481321a8a2924",
+  "private_capture_bytes": 39707,
+  "automatic_restart": "UNVERIFIED",
+  "touch": "UNVERIFIED",
+  "home_ipc_returncode": 0,
+  "camera_observation": "Reviewed normal Home clock/icons/background; oblique upside-down camera angle, glare and soft focus. No touch acceptance or display-orientation claim.",
+  "private_camera_sha256": "f0be503244b1047183237abf36cc96a42717670847ab6a444cd8ef54df72cb4a"
+}

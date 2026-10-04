@@ -386,7 +386,8 @@ next boundary, not committed proof of the new diagnostic or a fault.*
 *Subsequent actual [PostSample packet](../../../../../../docs/evidence/mainline-uart-progress-post-sample/physical-2026-10-03/README.md)
 records matched args/Bash/worker-entry only, one stimulus and no receipt/samples/
 new points in180.0975s. It does not prove reaching either new point or entry-call
-return; fresh normal recovery is pending. Host and incomplete capture completion
+return; subsequent NEW operator reset passed guarded fresh normal postflight
+and Home observation. Host and incomplete capture completion
 do not satisfy the scenarios above or ordinary-root task5b.5.*
 
 ### Requirement: Optional memory-progress comparison isolates repeated worker output

@@ -61,12 +61,17 @@ of the reporter's SBI writes and account for the remaining shared serial output
 limit. Another chain of ECALL breadcrumbs alone cannot settle their own return.
 No IRQ/clock/firmware fault is claimed from missing serial output.
 
-The capture is complete and board/UART reservation released. A **new operator
-reset is pending**, requested only after this capture; the earlier reset belongs
-to the previous trial and cannot establish recovery here. Fresh guarded normal
-postflight must verify distinct boot identity, exact identities, eight boot
-hashes, three services and registration absence before another candidate boot.
-Automatic return, ordinary `/init`, usable root, panel/glass and task 5b.5 remain
-**UNVERIFIED**. Task 5h.5 permits this committed capture with explicit pending
-recovery; reconciliation/publication task 5h.6 remains open until its exact CI and
-published revision are checked.
+The capture completed and board/UART reservation was released. The subsequently
+requested NEW operator reset passed fresh guarded normal postflight: distinct
+boot identity, exact system/profile/kernel/init, eight boot hashes, three active
+services and registration absence. Home IPC returned zero; a separate reviewed
+camera image shows Home clock/icons/background, with angle/glare/focus limits.
+[Operator reset receipt](operator-reset-recovery.json). This does not establish
+automatic return, ordinary mainline `/init`, usable root or panel/glass acceptance;
+task5b.5 stays **UNVERIFIED**. The historical controller status records the
+capture's missing return; the separate receipt establishes later manual recovery.
+
+Physical evidence08ea7370 passed CI37175128998 and both published work/physical
+pages returned HTTP200 with that exact revision; [deployment receipt](deployment.json).
+Independent review matched the fixed facts and capture digest to protected data.
+Group5h is reconciled; group5i's separately landed Memory comparison is next.
