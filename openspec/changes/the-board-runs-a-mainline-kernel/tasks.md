@@ -795,7 +795,7 @@ and task 5b.5 remain UNVERIFIED; no archive or production fix is claimed.
       Twelve actual-code native fixtures pass; the optional effective Kconfig
       resolves built-in reporter/dependencies and 22 existing output identities
       are unchanged. [Source/config/object evidence](../../../docs/evidence/mainline-uart-progress/source-object-host-2026-10-03.md).
-      Full matching build and physical observations remain UNVERIFIED.
+      At this initial source proof, the full matching build and physical observations were UNVERIFIED; later host build proof is recorded in 5f.2–3.
 - [x] 5f.2 Compile the changed 8250/timer/reporter objects against the exact
       configured RISC-V headers and verify record layout/lifetime/Kconfig.
       Host-only proof: `nix build .#kernelMainlineUartProgressExactObjects --no-link --print-out-paths`.
@@ -812,7 +812,7 @@ and task 5b.5 remain UNVERIFIED; no archive or production fix is claimed.
       Image/system/initrd/DT/CRCs/closure/config checks and hardware-DT comparison
       passed. Existing identity receipts remain separate from physical proof;
       no UART/receipt/root/touch/recovery result is claimed.
-- [ ] 5f.4 Add a reviewed explicit minimal-shell/controller opt-in, exact
+- [x] 5f.4 Add a reviewed explicit minimal-shell/controller opt-in, exact
       original artifact and runtime argument qualification, at most one fresh
       receipt stimulus, bounded passive record capture, fixed public parser,
       missing/duplicate/unknown-no-input policy and protected recovery gates.
@@ -824,7 +824,8 @@ and task 5b.5 remain UNVERIFIED; no archive or production fix is claimed.
       `python3 -m unittest discover -s tests -p 'test_mainline_drm*trial.py'`.
       Controller source/fixture preparation is recorded in
       `docs/evidence/mainline-uart-progress-controller/README.md`; this task
-      remains open until the actual matching bundle/config qualification passes.
+      actual matching bundle/config qualification subsequently passed.
+      [Matching controller host proof](../../../docs/evidence/mainline-uart-progress/controller-matching-host-2026-10-03.md).
 - [ ] 5f.5 After fresh protected normal recovery, reserve board/UART and run one
       matching physical comparison with its exact prepared identities:
       `python3 tools/mainline-drm-initrd-shell-trial.py --mode minimal --same-image-shell-pid1 --uart-progress --bundle BUNDLE --manifest PRIVATE_MANIFEST --normal-report PRIVATE_NORMAL --log PRIVATE_LOG --result PRIVATE_RESULT`.
