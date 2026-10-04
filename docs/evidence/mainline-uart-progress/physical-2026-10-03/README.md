@@ -33,9 +33,14 @@ anchored Bash primary prompt. It attempted exactly one fresh builtin receipt
 command. No receipt and no complete reporter records arrived. There were no
 parser protocol errors; an empty set of records is not proof of healthy counters.
 No candidate retry, proc command, guard or reboot followed the input attempt.
-No fresh protected normal return was observed. Operator reset/postflight remains
-**PENDING**; mainline root, timer health, UART delivery and panel/glass acceptance
-remain **UNVERIFIED**.
+No fresh protected normal return was observed within the passive capture.
+The subsequent operator reset passed guarded protected normal postflight:
+fresh boot identity, exact system/profile/kernel/init, eight protected boot
+hashes, three active shell services and registration absence. Home IPC returned
+zero and a separate camera observation showed normal clock/icons/background,
+with angle and focus limits. [Reset recovery receipt](operator-reset-recovery.json).
+This is manual recovery; automatic mainline restart, mainline root, timer health,
+UART delivery and panel/glass acceptance remain **UNVERIFIED**.
 
 ## Interpretation and next discriminator
 

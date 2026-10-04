@@ -833,7 +833,8 @@ and task 5b.5 remain UNVERIFIED; no archive or production fix is claimed.
       postflight or explicit pending operator recovery. This proves only the
       observations obtained, not full root/panel/glass acceptance.
       [Physical finite observation](../../../docs/evidence/mainline-uart-progress/physical-2026-10-03/README.md): exact received arguments and Bash prompt, one stimulus,
-      zero receipts and zero records; protected operator reset/postflight pending.
+      zero receipts and zero records; subsequent protected operator reset/postflight verified
+      (fresh boot, exact identities, eight files, three services, registration absence).
       This is observation-only, not successful diagnostic/root/touch acceptance.
 - [ ] 5f.6 Reconcile the diagnostic findings with the next narrow discriminator,
       preserve unknown markers and task 5b.5, land/push evidence and verify

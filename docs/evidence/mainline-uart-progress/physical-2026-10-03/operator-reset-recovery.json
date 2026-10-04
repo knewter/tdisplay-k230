@@ -1,0 +1,25 @@
+{
+  "automatic_restart": "UNVERIFIED",
+  "camera_home_observed": true,
+  "camera_limits": "angled, soft focus; clock/icons/background visible; no new physical gesture acceptance",
+  "evidence_class": "physical UART protected recovery and separate camera Home observation",
+  "fresh_boot_identity": true,
+  "home_ipc_command_returncode": 0,
+  "mainline_ordinary_root": "UNVERIFIED",
+  "mainline_panel_glass": "UNVERIFIED",
+  "method": "operator reset after completed finite capture",
+  "normal_identities_match": true,
+  "normal_kernel_release": "6.6.36",
+  "private_camera_sha256": "c1cf460561abeaf1d4ecc0cf721c51bc995efd657f4b09585242aa9c10a0717d",
+  "private_capture_sha256": "c8a5f76a0412e41ddef3cb6e33c30cc0fe625650f1937cab23a9847c3d36a436",
+  "protected_boot_file_count": 8,
+  "protected_boot_file_hashes_match": true,
+  "registration_marker_absent": true,
+  "result_written_utc": "2026-10-04T00:51:02.985381+00:00",
+  "schema": "k230-uart-progress-operator-reset-v1",
+  "shell_service_states": [
+    "active",
+    "active",
+    "active"
+  ]
+}
