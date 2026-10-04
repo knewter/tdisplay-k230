@@ -1,0 +1,116 @@
+{
+  "schema": "k230-uart-progress-post-sample-positive-host-v1",
+  "evidence_class": "actual-host-artifact-preparation-only",
+  "started_utc": "2026-10-04T03:35:08.275473+00:00",
+  "completed_utc": "2026-10-04T03:35:10.201242+00:00",
+  "controller_revision": "ea31b762477bebbcdcc1e048447fb90870541f91",
+  "frozen_root_revision": "75cc49df12972235be411e6eca739935ce75614d",
+  "matching_build_returncode": 0,
+  "bundle": "/nix/store/fjmxf6kn1yq0xk9v783amgymybhcrwkb-k230-mainline-drm-trial-boot-files",
+  "system": "/nix/store/5ha786snzrp5c8gkfamlzrmdw1anyj6m-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "files": {
+    "bootargs.txt": {
+      "bytes": 243,
+      "sha256": "0b60f0187c0cbec4da7bac9f57d4856b1c5ab4795c4d149f3595d2bf04658e36",
+      "crc32": "ed2ce1a3"
+    },
+    "fw_jump_add_uboot_head.bin": {
+      "bytes": 270808,
+      "sha256": "9627edbeea9b115d7040beea27cc61b23b6aca61cd502fd7760d7ee179f42c99",
+      "crc32": "99b89787"
+    },
+    "Image-mainline-drm": {
+      "bytes": 38530560,
+      "sha256": "2ef34d863f0bb2dee8886d6a2b76fa05c52354e21fe055a2ff56febb26404557",
+      "crc32": "05c479a7"
+    },
+    "k230-tdisplay-mainline-drm.dtb": {
+      "bytes": 11097,
+      "sha256": "0d3f7545f659fde3fc73fca255dfb7613a3ca666de47b8b8cc2da696f55b11be",
+      "crc32": "62841457"
+    },
+    "initrd.uimg": {
+      "bytes": 27330724,
+      "sha256": "1b2b9e43476863d830cbe8c61fbc8d353bdd19faf5d6d2796063b397db6908f1",
+      "crc32": "61e29ea1"
+    }
+  },
+  "kernel_proof": {
+    "kernel": "/nix/store/xhglqk1w6xvvr1f3nbbazgf2mm9fz225-linux-riscv64-unknown-linux-gnu-7.3.0-rc5",
+    "derivation": "/nix/store/0ldhm7ay5596cq4pmaq5np6lyhl7h8h3-linux-riscv64-unknown-linux-gnu-7.3.0-rc5.drv",
+    "config": "/nix/store/js4by9macr407x7zp8hraykh23bb9an7-linux-riscv64-unknown-linux-gnu-7.3.0-rc5-dev/lib/modules/7.3.0-rc5/build/.config",
+    "config_sha256": "52e7470b108ad094dbdf88b94e3e8838564edbda9e7a015b4279012e6765c9f1"
+  },
+  "post_sample_proof": {
+    "source": "/nix/store/wnvbxaiqgbhhajsajy5mlpn36zf8alga-linux-mainline-k230-uart-progress-post-sample-src",
+    "worker_sha256": "aee68aaec5c5c0e2b23919901eb99189265fd2b4787a0e50bc11159afd81ef9b",
+    "image_sha256": "2ef34d863f0bb2dee8886d6a2b76fa05c52354e21fe055a2ff56febb26404557",
+    "marker_offsets": {
+      "K230_UPB1 point=worker-entry": 22211136,
+      "K230_UPB1 point=first-post-sleep": 22211264,
+      "K230_UPP1 point=after-n1-write": 22211328,
+      "K230_UPP1 point=third-post-sleep": 22211200
+    }
+  },
+  "archive_proof": {
+    "bash": "/nix/store/89hsc9vrrk2vr18yp9yrzs365fz490wv-bash-interactive-riscv64-unknown-linux-gnu-5.3p15/bin/bash",
+    "executables": {
+      "init": {
+        "path": "/nix/store/srwrq12f962d5prr382vvsq76nfvmm84-systemd-riscv64-unknown-linux-gnu-261.2/lib/systemd/systemd",
+        "sha256": "d3e109a270c0b4463ac5b7b0655ce7667d7c55f6f93341bb461300a5dd5c8c63"
+      },
+      "bin/sh": {
+        "path": "/nix/store/89hsc9vrrk2vr18yp9yrzs365fz490wv-bash-interactive-riscv64-unknown-linux-gnu-5.3p15/bin/bash",
+        "sha256": "8494a422916b769311e43f2ae463e3e93f520c8657b6c0c98c138a313af124d9"
+      },
+      "bin/readlink": {
+        "path": "/nix/store/3m27x1rrl0wk30lz5fih10cf1dpqbaa6-coreutils-riscv64-unknown-linux-gnu-9.11/bin/coreutils",
+        "sha256": "0f990f00e98050939fedeee9d3c0449c5b42669d2bc0443a7a3bb95bc2376adc"
+      },
+      "bin/true": {
+        "path": "/nix/store/3m27x1rrl0wk30lz5fih10cf1dpqbaa6-coreutils-riscv64-unknown-linux-gnu-9.11/bin/coreutils",
+        "sha256": "0f990f00e98050939fedeee9d3c0449c5b42669d2bc0443a7a3bb95bc2376adc"
+      },
+      "bin/mkdir": {
+        "path": "/nix/store/3m27x1rrl0wk30lz5fih10cf1dpqbaa6-coreutils-riscv64-unknown-linux-gnu-9.11/bin/coreutils",
+        "sha256": "0f990f00e98050939fedeee9d3c0449c5b42669d2bc0443a7a3bb95bc2376adc"
+      },
+      "bin/mount": {
+        "path": "/nix/store/wj2ib2qm1znrpv2i8b433v69m07m86ll-util-linux-minimal-riscv64-unknown-linux-gnu-2.42.3-mount/bin/mount",
+        "sha256": "0f50b69245c684745d13540087e0b436ced81a07df1aed6bd5942c34ed6ecdc9"
+      },
+      "bin/cat": {
+        "path": "/nix/store/3m27x1rrl0wk30lz5fih10cf1dpqbaa6-coreutils-riscv64-unknown-linux-gnu-9.11/bin/coreutils",
+        "sha256": "0f990f00e98050939fedeee9d3c0449c5b42669d2bc0443a7a3bb95bc2376adc"
+      },
+      "bin/reboot": {
+        "path": "/nix/store/srwrq12f962d5prr382vvsq76nfvmm84-systemd-riscv64-unknown-linux-gnu-261.2/bin/systemctl",
+        "sha256": "ab7121b6db7a470ee59ca4c7c61e8b291cd0dfd610ef9b6ab6322eb6454ca999"
+      }
+    },
+    "loader": "/nix/store/syg6xw4x296w82267qnvrd3nn0cp6j31-glibc-riscv64-unknown-linux-gnu-2.42-84/lib/ld-linux-riscv64-lp64d.so.1",
+    "loader_sha256": "19835521e0d42cf163f139040c5c4497edb893153c68997db327bb4a6713f904",
+    "initrd_sha256": "090aef57ce3983c61c185314d6334be5e851caa033f3ffdfab26f4e1e3ad6bf4",
+    "bootargs": "bootargs=consoleblank=0 console=ttyS0,115200n8 root=fstab loglevel=4 lsm=landlock,yama,bpf loglevel=7 init=/nix/store/5ha786snzrp5c8gkfamlzrmdw1anyj6m-nixos-system-nixos-26.11.20260919.20b1ddd/init fsck.mode=skip systemd.mask=k230-root-growth.service systemd.mask=register-nix-paths.service initramfs_async=0 rdinit=/bin/sh",
+    "system": "/nix/store/5ha786snzrp5c8gkfamlzrmdw1anyj6m-nixos-system-nixos-26.11.20260919.20b1ddd"
+  },
+  "bootargs": "bootargs=consoleblank=0 console=ttyS0,115200n8 root=fstab loglevel=4 lsm=landlock,yama,bpf loglevel=7 init=/nix/store/5ha786snzrp5c8gkfamlzrmdw1anyj6m-nixos-system-nixos-26.11.20260919.20b1ddd/init fsck.mode=skip systemd.mask=k230-root-growth.service systemd.mask=register-nix-paths.service initramfs_async=0 rdinit=/bin/sh k230.uart_progress=1 k230.uart_progress_breadcrumbs=1 k230.uart_progress_post_sample=1",
+  "literal_transport_bytes": 419,
+  "prior_literal_transport_bytes": 386,
+  "sole_additional_gate": "k230.uart_progress_post_sample=1",
+  "same_preparation_functions_and_constants_as_frozen_root": true,
+  "matching_dev_output_realized": "/nix/store/js4by9macr407x7zp8hraykh23bb9an7-linux-riscv64-unknown-linux-gnu-7.3.0-rc5-dev",
+  "protected_normal_report_accepted_host_only": true,
+  "protected_wrapper_anchored_to_prior_normal_report_and_crc": true,
+  "registration_absence_assertion_in_prepost_helper": true,
+  "load_ranges_validated": true,
+  "actual_payload_wrapper_archive_checks": true,
+  "manifest_sha256": "da99e68ed9bf00f2ed689ac447b9b4eaba0876e5c9b1590e5192a75bc5d1c2ee",
+  "full_build_receipt_sha256": "523a0d7044b20ac5b4ff7cd0b7a1b78287dfa9102260cc7a8bb8010587d7e4b5",
+  "qualification_command_sha256": "5b8f5d1088bb13252a7dc420a86de9c2fe74eec45de1ac713bf5db78001c6beb",
+  "uart_opened": false,
+  "board_commands_sent": false,
+  "implicit_build_performed": false,
+  "performed_protected_board_preflight": false,
+  "physical_result": "UNVERIFIED"
+}
