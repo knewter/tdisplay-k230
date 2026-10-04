@@ -888,6 +888,13 @@ and task 5b.5 remain UNVERIFIED; no archive or production fix is claimed.
       capture and independent protected normal recovery. Host-only proof:
       `python3 tests/test_mainline_uart_progress_breadcrumbs_controller.py`
       and `python3 -m unittest discover -s tests -p 'test_mainline_drm*trial.py'`.
+      Controller host preparation is recorded in
+      `docs/evidence/mainline-uart-progress-breadcrumbs/controller/README.md`.
+      Pre-UART qualification additionally ties the same kernel drv to its
+      immutable reviewed worker source and unique compiled Image marker/gate
+      bytes, rejecting the old reporter even with CONFIG=y. This task remains
+      open until the actual matching bundle/dev/source qualification passes;
+      fixture and negative old-artifact checks do not satisfy that positive gate.
 - [ ] 5g.5 After fresh protected normal recovery and exact host/controller proof,
       reserve board/UART for one comparison, capture fixed breadcrumb/sample/
       receipt facts and limits, then verify protected normal return or record
