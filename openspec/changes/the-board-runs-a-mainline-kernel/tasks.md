@@ -1021,13 +1021,17 @@ completion of ordinary mainline acceptance.
 
 ## 5i. Memory progress with one final observer output (planned, UNVERIFIED)
 
-- [ ] 5i.1 Implement separately selected layered source/recipes/exact gate;
+- [x] 5i.1 Implement separately selected layered source/recipes/exact gate;
       retain all previous identities, six sleeps/cached snapshots/stop checks.
       Suppress every worker output only in Memory mode, publish consistent finite
       stages/bitmap/index and create independent normal-priority observer with
       one45s kernel wait/one final <=256-byte aligned DBCN attempt. Freeze grammar;
       fixtures cover gates, ordering, stop/timeout/creation failure and one-call
       counts. Narrow proof: `python3 tests/test_mainline_uart_progress_memory.py`.
+      Actual-code 13 fixtures and prior 15/13/12 fixtures passed; all 99 prior
+      package drv identities and 12 exposed kernel source/config pairs equal.
+      [Source/native/pure-evaluation proof](../../../docs/evidence/mainline-uart-progress-memory/source-host/README.md); no matching full artifact, target-object,
+      controller or physical claim follows. Other 5i gates stay open.
 - [ ] 5i.2 Build matching Memory kernel/system/bundle/dev, inspect source/config,
       CRC/closure/archive/original args/complete hardware DT. Host proof:
       `nix build .#kernelMainlineUartProgressMemoryTrialBootFiles .#kernelMainlineUartProgressMemory.dev --no-link --print-out-paths`
