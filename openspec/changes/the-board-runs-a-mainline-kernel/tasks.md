@@ -1092,11 +1092,16 @@ completion of ordinary mainline acceptance.
       Host implementation/15 real-pump fixtures and 228 previous controller tests
       passed; independent source review PASS. [Host proof](../../../docs/evidence/mainline-uart-progress-memory/no-stimulus-host/README.md).
       Physical no-stimulus capture/recovery remain UNVERIFIED.
-- [ ] 5j.2 Requalify actual existing lznjjfx1 bundle/1pvqbm4 dev/source 307d7c/
+- [x] 5j.2 Requalify actual existing lznjjfx1 bundle/1pvqbm4 dev/source 307d7c/
       linked Image/archive/manifests and exact unchanged Memory args. Record
       controller-revision/policy receipt with no implicit build/UART. Host proof:
       actual `prepare_trial` + `prepare_uart_progress(..., uart_progress_memory=True)`
       and exact equality with selected no-stimulus transport. No kernel rebuild.
+      Actual existing lznjjfx1/1pvqbm4 preparation PASS on c62ad389; exact same
+      source/Image/config/archive/manifest and 381-byte Memory transport, no added
+      token/build/UART. [Executed qualifier and safe receipt](../../../docs/evidence/mainline-uart-progress-memory/no-stimulus-host/README.md).
+      Historical baseline acceptance is host-only; fresh physical preflight and
+      no-stimulus capture/recovery remain UNVERIFIED.
 - [ ] 5j.3 After fresh protected normal recovery and host policy/artifact proof,
       reserve board/UART for one same-image zero-stimulus capture; commit fixed
       facts plus protected recovery or explicit pending operator reset. Command:

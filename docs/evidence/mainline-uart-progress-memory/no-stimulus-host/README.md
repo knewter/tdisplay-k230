@@ -43,9 +43,42 @@ Host fixture proof on 2026-10-04 UTC (Python 3.14, `TMPDIR=$HOME/tmp`):
   repeated all 15 focused tests and checked unchanged transport and no-input
   boundaries.
 
-Fixture evidence is separate from actual archive/artifact preparation. The
-existing-artifact proof for 5j.2 will be appended after actual host qualification;
-physical zero-stimulus comparison and new protected recovery remain UNVERIFIED.
+Fixture evidence is separate from actual archive/artifact preparation.
+Actual group 5j.2 host preparation passed on controller `c62ad389` using
+`TMPDIR=$HOME/tmp python3 "$HOME/tmp/k230-mainline-uart-memory-no-stimulus-host-qualification/qualify.py"`.
+The [safe receipt](result.json) preserves command/time/hash identities; the
+[exact executed qualifier](qualification-command.py) preserves fail-closed checks.
+Its private expected-root-revision.txt contained the reviewed original full build
+revision `7af8f7b8b5849c75df61d39ee772c2cc8f38542c`. The actual build receipt
+returned zero and both selected bundle and matching dev output already existed.
+No implicit build or UART action occurred.
+
+The qualifier ran actual `prepare_trial` and
+`prepare_uart_progress(..., uart_progress_memory=True)`, accepted the same
+protected manifest, and verified exact equality with previous Memory source,
+Image, linked summary/gate, config, archive, system, DT and arguments. The
+selected policy adds zero kernel tokens and retains the exact 381-byte literal
+transport. Preparation functions/constants are AST-identical to both the frozen
+build controller and reviewed 5j base `136dbf91`. The receipt's legacy
+`prior_literal_transport_bytes=353` is the progress-only parent comparison;
+the one-stimulus Memory command and zero-stimulus command are both 381 bytes.
+The immutable selected kernel/dev derive from the same exact kernel derivation:
+
+- Kernel: `/nix/store/zk5rbsrgqgp40bk1314mj0i50qhn260m-linux-riscv64-unknown-linux-gnu-7.3.0-rc5`.
+- Dev: `/nix/store/1pvqbm4r3gqcvsabgkz5wvrpxfbk5k1v-linux-riscv64-unknown-linux-gnu-7.3.0-rc5-dev`.
+- Source: `/nix/store/f7xg031sjb9dy3bswm5s3qjr9xwx1g02-linux-mainline-k230-uart-progress-memory-src`,
+  worker SHA256 `307d7c0588499dd32826c1d05476e0bf6d46ca0c8939d42e0b4f7180545b98dc`.
+
+Actual wrapped initrd inspection verified archived Bash, original systemd and
+common dynamic loader; Image byte identity and compiled unique summary/setup
+were verified separately from `.config`. The historical protected normal report
+and existing wrapper CRC anchored this host-only preparation; the previous
+verified board readback is not a new host wrapper readback or current preflight.
+Registration absence is asserted by the future pre/post helper, not performed
+on hardware by this qualifier. Python 3.14 native Zstd supports the actual archive
+inspection. All raw/prepared baseline material remains in a protected private
+directory. Physical zero-stimulus comparison and new protected recovery remain
+UNVERIFIED.
 The preceding Memory trial still needs its newly requested operator reset.
 Task 5b.5 remains open.
 
