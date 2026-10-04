@@ -302,6 +302,15 @@
             inherit (pkgsCross) applyPatches lib;
           });
         };
+        # Separate Linux-console observer output; preserve Memory artifact parameters.
+        k230-mainline-uart-progress-memory-printk = self.nixosConfigurations.k230-mainline-uart-progress-memory.extendModules {
+          specialArgs.k230Kernel = pkgsCross.linuxPackagesFor (import ./nix/kernel-mainline-uart-progress-memory-printk.nix {
+            kernelMainline = pkgsCross.callPackage ./nix/kernel-mainline.nix {
+              inherit (pkgsCross) buildLinux;
+            };
+            inherit (pkgsCross) applyPatches lib;
+          });
+        };
         # Post-sample records; preserve Breadcrumbs artifact parameters.
         k230-mainline-uart-progress-post-sample = self.nixosConfigurations.k230-mainline-uart-progress-breadcrumbs.extendModules {
           specialArgs.k230Kernel = pkgsCross.linuxPackagesFor (import ./nix/kernel-mainline-uart-progress-post-sample.nix {
@@ -597,6 +606,22 @@
         kernelMainlineUartProgressMemoryExactObjects = pkgs.callPackage ./nix/kernel-mainline-uart-progress-exact-objects.nix {
           crossCc = pkgsCross.stdenv.cc;
           kernel = self.packages.${buildSystem}.kernelMainlineUartProgressMemory;
+        };
+
+        kernelMainlineUartProgressMemoryPrintk = pkgsCross.callPackage ./nix/kernel-mainline-uart-progress-memory-printk.nix {
+          kernelMainline = pkgsCross.callPackage ./nix/kernel-mainline.nix {
+            inherit (pkgsCross) buildLinux;
+          };
+        };
+        toplevel-mainline-uart-progress-memory-printk = self.nixosConfigurations.k230-mainline-uart-progress-memory-printk.config.system.build.toplevel;
+        kernelMainlineUartProgressMemoryPrintkTrialBootFiles = pkgs.callPackage ./nix/mainline-drm-trial.nix {
+          cfg = self.nixosConfigurations.k230-mainline-uart-progress-memory-printk.config;
+          kernel = self.nixosConfigurations.k230-mainline-uart-progress-memory-printk.config.boot.kernelPackages.kernel;
+          deviceTree = self.packages.${buildSystem}.deviceTreeMainlineDrm;
+        };
+        kernelMainlineUartProgressMemoryPrintkExactObjects = pkgs.callPackage ./nix/kernel-mainline-uart-progress-exact-objects.nix {
+          crossCc = pkgsCross.stdenv.cc;
+          kernel = self.packages.${buildSystem}.kernelMainlineUartProgressMemoryPrintk;
         };
 
         kernelMainlineUartProgressPostSample = pkgsCross.callPackage ./nix/kernel-mainline-uart-progress-post-sample.nix {

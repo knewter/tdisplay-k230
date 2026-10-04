@@ -1161,11 +1161,17 @@ completion of ordinary mainline acceptance.
 
 ## 5l. Memory observer through registered Linux console (planned, UNVERIFIED)
 
-- [ ] 5l.1 Add separate MemoryPrintk source/kernel/trial/exact-object exports and
+- [x] 5l.1 Add separate MemoryPrintk source/kernel/trial/exact-object exports and
       exact gate; retain worker/observer semantics and all prior identities. One
       KERN_INFO K230_UMK1 call, no final explicit DBCN in selected path. Narrow
       source/native proof: `python3 tests/test_mainline_uart_progress_memory_printk.py`;
       evaluate every prior package/source/config/trial identity and new source only.
+      Preparation: corrected leading-LF one-call source and 10 actual-code native
+      tests passed; the inherited worker/init tail and atomic/completion behavior
+      are unchanged. All 103 previous package drv identities and 13 kernel
+      source/config pairs equal; corrected source realized and hash independently
+      reviewed. [Source/native/evaluation proof](../../../docs/evidence/mainline-uart-progress-memory-printk/source-host/README.md).
+      Exact/full/controller/physical gates remain separate and unchecked.
 - [ ] 5l.2 Freeze reviewed source/native proof and build matching artifacts.
       Command: `nix build .#kernelMainlineUartProgressMemoryPrintkTrialBootFiles .#kernelMainlineUartProgressMemoryPrintk.dev --no-link --print-out-paths -L`.
       Preserve full build receipt and actual config/DT/Image/initrd/archive identities.

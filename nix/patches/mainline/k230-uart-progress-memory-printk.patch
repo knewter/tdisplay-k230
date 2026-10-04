@@ -1,0 +1,19 @@
+--- a/drivers/soc/canaan/k230-uart-progress.c
++++ b/drivers/soc/canaan/k230-uart-progress.c
+@@ -98,0 +99,9 @@
++/* Ordinary lifetime; setup alone is init-only. */
++static bool k230_uart_progress_memory_printk_enabled;
++static int __init k230_uart_progress_memory_printk_setup(char *value)
++{
++	k230_uart_progress_memory_printk_enabled = value && !strcmp(value, "1");
++	return 1;
++}
++__setup("k230.uart_progress_memory_printk=", k230_uart_progress_memory_printk_setup);
++
+@@ -114,0 +124,6 @@
++	/* One ordinary console attempt; no force flush, retry or fallback. */
++	if (k230_uart_progress_memory_printk_enabled) {
++		pr_info("\nK230_UMK1 s=%u n=%u m=%02x l=%u w=%u\n",
++			stage, sample, done, last, waited ? 1U : 0U);
++		return 0;
++	}
