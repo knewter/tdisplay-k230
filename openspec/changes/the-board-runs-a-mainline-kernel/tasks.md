@@ -1211,11 +1211,16 @@ completion of ordinary mainline acceptance.
       [Executed qualifier and safe receipt](../../../docs/evidence/mainline-uart-progress-memory-printk/positive-controller-host/README.md).
       Historical protected normal report is a host anchor only; physical
       observation/recovery and ordinary root/touch remain UNVERIFIED.
-- [ ] 5l.5 After protected normal recovery plus source/native/exact/full/controller
+- [x] 5l.5 After protected normal recovery plus source/native/exact/full/controller
       gates, reserve board/UART for one new-channel comparison. Commit fixed
       physical facts and recovery or explicit pending operator reset. Command:
       `python3 tools/mainline-drm-initrd-shell-trial.py --mode minimal --same-image-shell-pid1 --uart-progress --uart-progress-memory --uart-progress-memory-no-stimulus --uart-progress-memory-printk --bundle BUNDLE --manifest PRIVATE_MANIFEST --normal-report PRIVATE_NORMAL --log PRIVATE_LOG --result PRIVATE_RESULT`.
       No output-return/cause/RX/ordinary-root inference; 5b.5 stays open.
+      [Actual new-channel capture](../../../docs/evidence/mainline-uart-progress-memory-printk/physical-2026-10-04/README.md):
+      fresh exact args/registered Linux backend/bin-sh entry, zero input, no UMK
+      or normal return in 180.1019s. Original prompt classification misses the
+      observed Readline prefix; later host-only correction preserves original
+      physical result. NEW operator reset/recovery remains explicitly PENDING.
 - [ ] 5l.6 Independently reconcile changed-channel limits, review, land/push
       evidence and verify exact CI/published revision. Planning proof:
       `openspec validate the-board-runs-a-mainline-kernel --strict`.
