@@ -1260,6 +1260,38 @@ completion of ordinary mainline acceptance.
       in 180.025s, no protocol error. Prior NEW recovery verified; another NEW
       reset after this capture remains explicitly PENDING. Same-source-only
       restoration and fresh host requalification are recorded separately.
-- [ ] 5m.4 Independently reconcile tickless-policy limits, review, land/push evidence
+- [x] 5m.4 Independently reconcile tickless-policy limits, review, land/push evidence
+      and inspect exact CI/published revision. Planning proof:
+      `openspec validate the-board-runs-a-mainline-kernel --strict`.
+      Independent physical/recovery review PASS; master `b04ac4d0`, CI
+      37245257792 PASS and exact work/new physical/previous recovery publication
+      HTTP 200 verified: [publication receipt](../../../docs/evidence/mainline-uart-progress-memory-printk/nohz-off-physical-2026-10-04/publication.json).
+      NEW recovery after nohz-off remains PENDING; 5b.5 stays open.
+
+
+## 5n. Fixed autonomous Bash-PID1 comparison (planned, UNVERIFIED)
+
+- [ ] 5n.1 Establish native exact Hush lexer/variable/quote/command execution and
+      selected Linux next_arg/repair/set_init_arg argv proof for the fixed scout
+      script/transport. Verify one volatile setenv, exact 477-byte result/two argv,
+      zero expansion/extra/persistent commands and unchanged 512-byte bound.
+      Source models/shlex alone do not pass. No UART/kernel build. Narrow proof:
+      `python3 tests/test_mainline_autonomous_bash_pid1_argv.py`.
+- [ ] 5n.2 Implement only typed `--autonomous-bash-pid1` requiring minimal/same-image
+      and rejecting competing selectors/types/modes/altered syntax before UART.
+      Add strict fresh-nonce begin/end parsing and 60-second zero-input capture, separate
+      prompt/unknown/normal recovery, unchanged defaults and failure/finally write
+      spies. Narrow proof: `python3 tests/test_mainline_autonomous_bash_pid1_controller.py`.
+- [ ] 5n.3 Execute actual same p2/24h artifact/controller preparation and qualify
+      source/config/Image/DT/archive/manifest/loads, executable sh/sleep ABI/loader
+      and Bash builtins. Commit executed qualifier and safe receipt, exact fixed
+      args/503-byte transport and native proof; no implicit build/UART. Command:
+      `python3 docs/evidence/mainline-autonomous-bash-pid1/host/qualification-command.py --bundle BUNDLE --dev DEV --normal-report PRIVATE_NORMAL`.
+- [ ] 5n.4 After NEW protected recovery plus reviewed native/controller/actual host
+      gates, reserve board/UART for one 60-second passive comparison and commit fixed
+      records/facts plus independent recovery or explicit pending NEW reset.
+      Command: `python3 tools/mainline-drm-initrd-shell-trial.py --mode minimal --same-image-shell-pid1 --autonomous-bash-pid1 --bundle BUNDLE --manifest PRIVATE_MANIFEST --normal-report PRIVATE_NORMAL --log PRIVATE_LOG --result PRIVATE_RESULT`.
+      Keep RX/output-return/cause/ordinary-root limits; 5b.5 stays open.
+- [ ] 5n.5 Independently review parser/execution/recovery limits, land/push evidence
       and inspect exact CI/published revision. Planning proof:
       `openspec validate the-board-runs-a-mainline-kernel --strict`.

@@ -577,3 +577,47 @@ The compiled option is grounded; new output and usable mainline boot are unverif
 - **WHEN** output is absent, malformed or capture fails
 - **THEN** preserve unknown facts without sending candidate bytes
 - **AND** require independent protected recovery or a new operator reset
+
+
+### Requirement: Fixed autonomous PID1 comparison remains constrained and passive
+
+The controller MAY offer a separately typed autonomous Bash-PID1 comparison
+using the same actual Image/initrd/DT. It SHALL require minimal/same-image-shell
+selectors and reject all diagnostic progress/timer/trace/shutdown conflicts
+before UART. It SHALL reconstruct only the reviewed fixed script and fresh
+32-hex nonce, remove reporter gates, preserve qualified original init/rdinit
+and boot controls and enforce the unchanged literal transport bound. It SHALL
+not expose arbitrary scripts or weaken existing transport/default policies.
+
+Before physical use it SHALL establish native exact Hush lexer/variable/quote/
+command execution and selected Linux argv handling, actual artifact/archive
+sh/sleep/Bash builtin proof and exact printed bootargs. Source models alone
+SHALL NOT satisfy native execution. Fresh candidate phase/args/backend/bin-sh
+entry SHALL qualify only complete exact-nonce begin/end records; echoed scripts
+and commandline text SHALL NOT count. Malformed/stale/duplicate/reversed/
+truncated records SHALL retain unknown facts without repair.
+
+The script SHALL check PID1/UID0, attempt begin, one five-second sleep and end
+after success, then attempt an interactive exec independently of that chain.
+It SHALL deliberately issue no exit/reboot. The controller SHALL keep a bounded
+60-second zero-input capture on all paths, RX NOT_TESTED and independent
+protected normal recovery. Record presence SHALL NOT authorize candidate input,
+prove that record's own output-call return, a full runtime identity guard, a timer/IRQ cause or
+ordinary boot/touch acceptance. Missing output SHALL remain unknown.
+
+<!-- UNVERIFIED: typed autonomous PID1 native parser/controller/actual host/physical proof are planned. -->
+*Grounding: [nohz-off capture](../../../../../../docs/evidence/mainline-uart-progress-memory-printk/nohz-off-physical-2026-10-04/README.md)
+and [read kernel/Hush/archive scout](../../../../../../docs/research/mainline-autonomous-bash-pid1-comparison-2026-10-04.md).
+Native parser execution and autonomous board records remain unverified.*
+
+#### Scenario: Autonomous PID1 produces begin and end
+
+- **WHEN** qualified exact arguments and fresh complete nonce records occur in order
+- **THEN** record limited PID1/UID0 output and successful earlier printf/sleep
+- **AND** preserve distinct prompt/output-return, RX, recovery and boot limits
+
+#### Scenario: Autonomous PID1 evidence is incomplete
+
+- **WHEN** a record is absent or fails strict qualification
+- **THEN** keep unknown facts and send no candidate bytes
+- **AND** require independent protected recovery or a NEW operator reset

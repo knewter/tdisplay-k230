@@ -866,3 +866,68 @@ actual-artifact qualifier and safe receipts before physical use. Rejected: combi
 nohlt/highres/clock options, new markers, raw IRQ/MMIO intervention and unnecessary
 full builds. A fixed Bash-PID1 autonomous probe is a separately planned fallback,
 not authorization to pass arbitrary scripts through this selector.
+
+
+## Fixed autonomous Bash-PID1 comparison (group 5n, UNVERIFIED)
+
+This controller/userspace comparison uses existing p2/xna/24h/0l4 artifacts. Add
+only typed `--autonomous-bash-pid1`, requiring minimal and same-image-shell-PID1.
+Reject every progress/breadcrumb/post-sample/Memory/no-stimulus/polling/Printk/
+nohz/clock/trace/shutdown selector and invalid types/modes before preparation,
+output creation or UART. Retain all defaults and generic transport restrictions.
+The new helper reconstructs one exact fixed script from a controller-generated
+32-character lowercase hex nonce; it is not a script/args editor. Retain original
+sole init token, rdinit=/bin/sh, async0, fsck skip and the two service masks.
+
+Use the exact 154-byte script and old-Hush transport in the
+[scout](../../../docs/research/mainline-autonomous-bash-pid1-comparison-2026-10-04.md).
+The only new argv after -- are -c and that script. Remove all reporter and trace
+gates so the read source returns before creating either reporter thread. Native
+execution of the exact selected Hush lexer/variable/quote/command handling must
+show one volatile setenv bootargs call, the exact 477-byte result, zero expansion
+or extra/persistent command execution. Use the pinned parser source/hash and
+qualify configuration/version facts with their installed-identity limits. Native
+selected Linux next_arg plus repair/set_init_arg handling must show exactly -c
+and the complete script after init/rdinit clearing and post-- parsing. A Python
+model or POSIX/shlex surrogate alone is insufficient.
+
+The old Hush syntax requires a single-quoted complete data argument with no
+embedded single quote, raw dollars protected and every script backslash doubled.
+Linux strips its outer script doublequotes but cannot escape inner doublequotes;
+the fixed body has none. With the actual system path this yields one 503-byte
+command, 504 with CR, within the unchanged strict 512-byte transport bound. Reject
+nonce changes in shape, script/quote/backslash damage, extra args/gates/options
+and all arbitrary syntax before UART. Actual printenv equality must pass before
+boot; fresh exact kernel arguments, new 7.3 phase, registered Linux ttyS0 and
+/bin/sh entry qualify records. Commandline/echoed script text is never a record.
+
+Requalify same source/config/Image/DT/archive/manifest/load/CRC identities and
+actual archived executable /bin/sh and /bin/sleep, their RISC-V ABI/loader hashes
+and Bash printf/test/exec builtins. Commit executed actual-artifact qualifier,
+native parser proof and safe receipts. No implicit build/transfer or hardware
+claim follows from host execution.
+
+The fixed script checks $$=1 and EUID=0, emits newline-delimited
+K230_BP1:<nonce>:B, runs exactly one absolute /bin/sleep 5 and emits E only after
+prior successful returns. Outside that conditional chain it execs /bin/sh -i,
+including after a failed test/sleep; it deliberately does not exit PID1 or issue
+a reboot. Runtime exec failure/EOF/output blockage remain possible. Capture is
+60 seconds, zero candidate bytes on success/error/finally, no receipt/RX test,
+no shell commands/retries/recovery attempts based on marker presence. Existing
+ordered fresh normal-return markers and protected identities/eight hashes/three
+services/distinct boot/registration checks alone permit normal postflight.
+
+Accept only complete fresh raw B then E lines with the exact nonce, strict CRLF
+handling and no prompt/ANSI/kernel-text repair. Reject malformed record-prefixed
+lines, stale/wrong/duplicate/reversed/truncated/interleaved records. Preserve
+begin/end/prompt separately and keep absence unknown. Begin supports limited
+PID1/UID0 tests and output reached; end supports earlier printf/sleep success,
+not its own printf return. A later interactive prompt adds progress through
+that return/exec. This is not a proc/kernel/initrd full identity guard, RX,
+ordinary /init/root/panel/glass acceptance or a single-fault isolation. Host
+wall time does not prove kernel-clock progress. Recovery remains independent.
+
+Rejected: generic script flags, POSIX-only quoting models, kernel observer
+markers in this comparison, unconditional exit/reboot, another kernel build
+and multiple timer/IRQ interventions. Preserve the zero-input result even on
+incomplete capture and record separate operator recovery or explicit NEW reset.

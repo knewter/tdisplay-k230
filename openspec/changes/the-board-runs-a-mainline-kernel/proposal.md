@@ -369,3 +369,21 @@ nohz activation policy. No kernel/initrd/DT rebuild or firmware/IRQ/MMIO change.
 Land typed controller planning first; actual host qualification and NEW protected
 normal recovery precede one physical comparison. Runtime policy, observer output
 and recovery remain UNVERIFIED; ordinary task 5b.5 stays open.
+
+
+## Bounded continuation: autonomous PID1 output and one sleep
+
+The [same-image nohz-off capture](../../../docs/evidence/mainline-uart-progress-memory-printk/nohz-off-physical-2026-10-04/README.md)
+reached Bash readiness but no observer record in 180.025 seconds. Group 5n
+observes userspace directly: the same p2 Image/initrd/DT runs a fixed Bash-PID1
+script that checks PID1/UID0, emits a fresh begin record, sleeps once for five
+seconds and emits end on success, then attempts an interactive shell. Every
+reporter/trace/nohz/nohlt gate is absent; no received command is needed. The
+[read source/archive/quoting scout](../../../docs/research/mainline-autonomous-bash-pid1-comparison-2026-10-04.md)
+grounds a 503-byte transport, while explicitly leaving native parser execution
+unproved. Native exact Hush and selected Linux argv proof are mandatory before
+physical use; do not weaken the generic transport policy or offer arbitrary
+scripts. No new kernel/initrd/DT build, IRQ/MMIO/firmware change, production fix
+or ordinary-root claim. Land this bounded plan first. Actual host qualification
+and NEW protected normal recovery precede one 60-second passive comparison.
+Missing output remains unknown and ordinary task 5b.5 stays open.

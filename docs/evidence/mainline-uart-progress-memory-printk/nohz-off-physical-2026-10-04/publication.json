@@ -1,0 +1,26 @@
+{
+  "schema": "k230-evidence-publication-v1",
+  "revision": "b04ac4d050c3ac3218989f7c1fad8a047d2b5d89",
+  "ci_run": 37245257792,
+  "ci_conclusion": "success",
+  "independent_physical_review": "PASS",
+  "published": [
+    {
+      "url": "https://knewter.github.io/tdisplay-k230/work/",
+      "http_status": 200,
+      "revision_verified": true
+    },
+    {
+      "url": "https://knewter.github.io/tdisplay-k230/evidence/docs-evidence-mainline-uart-progress-memory-printk-nohz-off-physical-2026-10-04-readme-md/",
+      "http_status": 200,
+      "revision_verified": true
+    },
+    {
+      "url": "https://knewter.github.io/tdisplay-k230/evidence/docs-evidence-mainline-uart-progress-memory-printk-physical-2026-10-04-readme-md/",
+      "http_status": 200,
+      "revision_verified": true
+    }
+  ],
+  "normal_recovery": "PENDING_NEW_OPERATOR_RESET",
+  "ordinary_mainline_acceptance": "UNVERIFIED"
+}
