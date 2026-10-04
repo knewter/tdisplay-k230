@@ -1130,12 +1130,17 @@ completion of ordinary mainline acceptance.
       Typed one-token comparison/14 focused fixtures and 243 prior controller
       tests PASS; independent source review PASS. [Host implementation proof](../../../docs/evidence/mainline-uart-progress-memory/poll-idle-host/README.md).
       Actual preparation and physical comparison/recovery remain separate gates.
-- [ ] 5k.2 Run actual existing lznjjfx1/1pvqbm4 artifact preparation with unchanged
+- [x] 5k.2 Run actual existing lznjjfx1/1pvqbm4 artifact preparation with unchanged
       source/Image/config/DT/archive/manifest/load checks; verify exact one-token
       transform and 381→387-byte literal transport. Commit executed qualifier and
       safe controller/artifact receipt. No build/UART. Host proof: actual
       `prepare_trial`, `prepare_uart_progress(..., uart_progress_memory=True)`
       plus typed polling preparation and exact previous-proof artifact equality.
+      Actual existing artifact qualification PASS on d10b8fa0; same lznjjfx1/
+      1pvqbm4 source/Image/config/DT/archive/manifest, singleton supported setup
+      and exact381→387-byte transform. [Safe receipt/executed qualifier](../../../docs/evidence/mainline-uart-progress-memory/poll-idle-host/README.md).
+      Initial host harness comparison failure is preserved; corrected gate PASS.
+      No build/UART/live preflight. Physical polling/recovery remain UNVERIFIED.
 - [ ] 5k.3 After NEW protected normal recovery and actual host proof, reserve
       board/UART and run one passive same-image polling comparison; commit fixed
       facts plus independent recovery or explicit pending operator reset. Command:
