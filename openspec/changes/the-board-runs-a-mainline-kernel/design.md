@@ -702,3 +702,37 @@ require separate fresh normal recovery. Ordinary root/glass and5b.5 stay open.
 
 Rejected for this bounded comparison: direct UART polling without LSR/nbcon
 ownership proof, firmware replacement, and repeated ECALL point chains.
+
+
+## Same-image no-stimulus comparison (group 5j, UNVERIFIED)
+
+Memory's completed 180.1021-second capture has one stimulus but no receipt/summary.
+Preserve its exact selected lznjjfx1 bundle/307d7c source/dev/config/Image/DT,
+all manifests/archive/load guards and identical volatile Memory bootargs. Add
+`--uart-progress-memory-no-stimulus` requiring Memory, minimal, same-image-shell
+PID1 and progress; reject conflicting comparison selectors before UART access.
+This is only a controller input policy, never an appended kernel argument.
+
+After the candidate boot command, use only read/pump/passive bounded 180-second
+capture: no receipt, CR, Ctrl-U/Ctrl-C, retries, guards/uploads/proc commands,
+reboot or finally/error-path input. Retain strict exact fresh summary parsing,
+early-record argument qualification, banner/binsh/primary-prompt observations.
+Record stimulus_attempts=0, receipt_observed false, receipt_status NOT_REQUESTED
+and RX NOT_TESTED. Keep summary validity, worker completion and recovery separate.
+A valid completed summary may qualify diagnostic observation without a receipt
+in this explicit mode, never ordinary-root or receive acceptance. Default Memory
+mode still sends exactly one stimulus and uses its existing receipt requirement.
+
+Only existing ordered fresh SPL→6.6.36→login→normal-prompt qualification can
+authorize protected NORMAL postflight writes; exact identities/eight hashes/
+services/registration absence and distinct boot checks remain mandatory.
+No summary is inconclusive; no normal return requires separate operator recovery.
+An observed difference supports changed behavior under removed input attempt,
+not a UART/IRQ/firmware fault or timing-independent causal conclusion.
+
+Fixtures use transport write spies across prompt/summary/no prompt/no summary,
+malformed/duplicate/truncated/stale/echo, timeout/read error/overflow and wrong
+args, with zero candidate bytes throughout. Candidate normal-looking text cannot
+authorize helper writes. Test same args, pre-open selector rejection, default
+one-stimulus regression and separate actual protected recovery. Requalify actual
+existing artifacts before physical use; no new kernel or full build is required.

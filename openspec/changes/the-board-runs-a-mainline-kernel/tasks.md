@@ -569,7 +569,7 @@ but the visible marker's own return/flush/scheduling is not proved. See
 and result JSON. The user pressed reset and protected normal recovery is verified: fresh boot,
 exact normal identities, three active services, eight unchanged files and
 registration absent. Automatic return remains UNVERIFIED; ordinary root/panel/
-glass touch and task5b.5 stay open.
+glass touch and task 5b.5 stay open.
 
 ## 2026-10-03 separate direct-SBI boundary source proof
 
@@ -607,7 +607,7 @@ and result JSON. The subsequent user-confirmed reset received zero UART bytes
 in90seconds and no fresh normal prompt; no Linux command was sent. The camera
 shows a dark panel with observation limits. `operator-reset-check.json` records
 this failed check; power-cycle confirmation is pending. Protected recovery,
-ordinary root/panel/glass/production and task5b.5 remain open.
+ordinary root/panel/glass/production and task 5b.5 remain open.
 
 
 ## 2026-10-03 separate SBI-only diagnostic source proof
@@ -704,7 +704,7 @@ postflight, exact identities/eight files/three services/registration absence
 passed; Home IPC returned RC0 and a newly reviewed private camera shows Home.
 See `docs/evidence/mainline-system-trial/initramfs-initcall-physical-2026-10-03/operator-reset-recovery.json`.
 This proves operator recovery only; automatic return, mainline root/panel/glass
-and task5b.5 remain UNVERIFIED. Board/UART and camera are released.
+and task 5b.5 remain UNVERIFIED. Board/UART and camera are released.
 
 
 ## 2026-10-03 reviewed same-image marker-free controller
@@ -902,7 +902,7 @@ and task 5b.5 remain UNVERIFIED; no archive or production fix is claimed.
       `docs/evidence/mainline-uart-progress-breadcrumbs/positive-controller-host/README.md`
       and `result.json`; the named fixture commands also passed, preserving a
       separate quota failure and bounded ~/tmp rerun. This is host-only proof;
-      group5g.5 and task5b.5 remain open, without candidate reboot or hardware claim.
+      group5g.5 and task 5b.5 remain open, without candidate reboot or hardware claim.
       [Integrated source/controller checks](../../../docs/evidence/mainline-uart-progress-breadcrumbs/integration-host-2026-10-03.md) include strict CRLF/embedded-CR framing and CI coverage.
 - [x] 5g.5 After fresh protected normal recovery and exact host/controller proof,
       reserve board/UART for one comparison, capture fixed breadcrumb/sample/
@@ -919,7 +919,7 @@ and task 5b.5 remain UNVERIFIED; no archive or production fix is claimed.
       records fixed facts/deltas, firmware-return limits and distinct operator-reset
       recovery verified after the capture. This is observation proof only; task 5b.5 stays open.
 - [x] 5g.6 Reconcile presence/absence and firmware-return limits, retain unknown
-      states and task5b.5, commit public-safe evidence and land/push with exact
+      states and task 5b.5, commit public-safe evidence and land/push with exact
       CI/published revision. Planning proof: `openspec validate --all`.
 
 The group 5g observation and interpretation landed as 278769d0. CI run
@@ -1067,11 +1067,38 @@ completion of ordinary mainline acceptance.
       actual archived executables/shared loader and sole additional gate
       (353 to 381-byte literal command). No UART/build or performed protected
       board check by this qualifier. Tasks 5i.5–6 and 5b.5 remain open.
-- [ ] 5i.5 After NEW guarded protected recovery plus exact host/controller proof,
+- [x] 5i.5 After NEW guarded protected recovery plus exact host/controller proof,
       reserve board/UART and run one comparison; commit fixed public facts and
       independent protected recovery or explicit pending operator reset.
       Command: `python3 tools/mainline-drm-initrd-shell-trial.py --mode minimal --same-image-shell-pid1 --uart-progress --uart-progress-memory --bundle BUNDLE --manifest PRIVATE_MANIFEST --normal-report PRIVATE_NORMAL --log PRIVATE_LOG --result PRIVATE_RESULT`.
-      Memory progress/output/receipt/recovery remain separate;5b.5 stays open.
+      Memory progress/output/receipt/recovery remain separate; 5b.5 stays open.
+      Actual lznjjfx1 comparison completed: [physical capture](../../../docs/evidence/mainline-uart-progress-memory/physical-2026-10-03/README.md).
+      Fresh banner/args/Bash, one stimulus, no receipt or summary in 180.1021s;
+      no errors or candidate reboot. NEW operator reset is explicitly pending.
 - [ ] 5i.6 Independently reconcile changed-output intervention limits, review,
       land/push public evidence and verify exact CI/published revision.
       Planning proof: `openspec validate the-board-runs-a-mainline-kernel --strict`.
+
+
+## 5j. Same built Memory image without candidate stimulus (planned, UNVERIFIED)
+
+- [ ] 5j.1 Implement typed Memory-only no-stimulus selector, identical bootargs/
+      qualification and zero candidate writes after boot on all paths. Record
+      NOT_REQUESTED receipt/zero attempts/RX NOT_TESTED; default still one stimulus.
+      Real-pump/write-spy fixtures cover success, missing/malformed/duplicate/
+      truncated/stale output, no prompt, wrong args, overflow/read errors/timeout,
+      pre-open conflicts and independent guarded normal return. Narrow proof:
+      `python3 tests/test_mainline_uart_progress_memory_no_stimulus_controller.py`.
+- [ ] 5j.2 Requalify actual existing lznjjfx1 bundle/1pvqbm4 dev/source 307d7c/
+      linked Image/archive/manifests and exact unchanged Memory args. Record
+      controller-revision/policy receipt with no implicit build/UART. Host proof:
+      actual `prepare_trial` + `prepare_uart_progress(..., uart_progress_memory=True)`
+      and exact equality with selected no-stimulus transport. No kernel rebuild.
+- [ ] 5j.3 After fresh protected normal recovery and host policy/artifact proof,
+      reserve board/UART for one same-image zero-stimulus capture; commit fixed
+      facts plus protected recovery or explicit pending operator reset. Command:
+      `python3 tools/mainline-drm-initrd-shell-trial.py --mode minimal --same-image-shell-pid1 --uart-progress --uart-progress-memory --uart-progress-memory-no-stimulus --bundle BUNDLE --manifest PRIVATE_MANIFEST --normal-report PRIVATE_NORMAL --log PRIVATE_LOG --result PRIVATE_RESULT`.
+      No RX, root/glass or cause inference; 5b.5 stays open.
+- [ ] 5j.4 Reconcile removed-input intervention limits, independently review,
+      land/push evidence and verify exact CI/published revision. Planning proof:
+      `openspec validate the-board-runs-a-mainline-kernel --strict`.

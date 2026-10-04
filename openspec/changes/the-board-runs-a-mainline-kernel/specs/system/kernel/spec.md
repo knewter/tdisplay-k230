@@ -423,3 +423,37 @@ record variable reporter progress and firmware output dependencies, not causatio
 - **WHEN** bounded capture has no complete qualified summary or receipt
 - **THEN** preserve each missing fact as unknown, including observer/output limits
 - **AND** send no further candidate input or reboot and require separate recovery
+
+
+### Requirement: Optional same-image zero-stimulus comparison keeps receive untested
+
+The controller MAY provide an explicit Memory-only no-stimulus comparison. It
+SHALL require minimal/same-image/progress/Memory selectors, preserve exact
+candidate/source/config/archive/load guards and identical volatile bootargs, and
+reject conflicts before UART access. After candidate boot it SHALL send zero
+candidate bytes on success/error/timeout/finally paths and retain bounded passive
+capture and strict fresh summary parsing. It SHALL record receipt NOT_REQUESTED,
+stimulus_attempts=0 and RX NOT_TESTED rather than infer receive or ordinary-root
+acceptance. Default one-stimulus behavior SHALL remain unchanged.
+
+Only the existing ordered fresh normal-recovery qualification SHALL permit
+protected normal postflight writes; recovery remains independent of summary
+completeness. Missing output SHALL stay unknown and SHALL NOT establish input
+causation, an IRQ/timer/firmware fault or ordinary mainline acceptance.
+
+<!-- UNVERIFIED: typed zero-stimulus comparison implementation/host/physical proof are planned. -->
+*Grounding: [Memory physical packet](../../../../../../docs/evidence/mainline-uart-progress-memory/physical-2026-10-03/README.md)
+records one input attempt with no summary/receipt; withholding that dependency
+is a distinct controller intervention using existing immutable artifacts.*
+
+#### Scenario: A completed summary arrives without a stimulus
+
+- **WHEN** an exact qualified fresh summary records six worker snapshots complete
+- **THEN** report that pre-output memory progress with zero candidate stimulus
+- **AND** preserve RX NOT_TESTED and independent recovery/ordinary-root limits
+
+#### Scenario: Capture fails or no summary arrives
+
+- **WHEN** passive capture times out or records malformed/missing output
+- **THEN** preserve unknown facts and send no additional candidate bytes
+- **AND** require independently qualified normal recovery or operator reset

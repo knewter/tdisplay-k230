@@ -304,3 +304,16 @@ not a diagnosed cause or proven installed-firmware identity. No new MMIO,
 IRQ/TTY/PID1/firmware/console-policy/scheduler change. New comparison remains
 UNVERIFIED; ordinary root/panel/glass task5b.5 stays open. Fresh protected normal
 recovery is required before another trial. Land this plan before source work.
+
+
+## Same-image continuation: withhold the candidate shell stimulus
+
+The [Memory physical capture](../../../docs/evidence/mainline-uart-progress-memory/physical-2026-10-03/README.md)
+records fresh args/Bash, one attempted stimulus and no receipt/summary in 180.1021s.
+Group 5j adds a separately typed controller-only zero-stimulus comparison against
+the SAME qualified lznjjfx1 image/dev/source/config/DT and identical volatile
+bootargs. No kernel rebuild or runtime firmware/IRQ/TTY/timer change. Strict
+summary and protected normal gates remain; receipt becomes NOT_REQUESTED and RX
+NOT_TESTED. A difference under withheld input is not its cause or RX acceptance.
+Missing summary remains unknown; fresh operator recovery is required first.
+Land this bounded plan before implementation; 5b.5 stays open.
