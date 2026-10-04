@@ -826,12 +826,15 @@ and task 5b.5 remain UNVERIFIED; no archive or production fix is claimed.
       `docs/evidence/mainline-uart-progress-controller/README.md`; this task
       actual matching bundle/config qualification subsequently passed.
       [Matching controller host proof](../../../docs/evidence/mainline-uart-progress/controller-matching-host-2026-10-03.md).
-- [ ] 5f.5 After fresh protected normal recovery, reserve board/UART and run one
+- [x] 5f.5 After fresh protected normal recovery, reserve board/UART and run one
       matching physical comparison with its exact prepared identities:
       `python3 tools/mainline-drm-initrd-shell-trial.py --mode minimal --same-image-shell-pid1 --uart-progress --bundle BUNDLE --manifest PRIVATE_MANIFEST --normal-report PRIVATE_NORMAL --log PRIVATE_LOG --result PRIVATE_RESULT`.
       Commit fixed records/stimulus/interpretation and protected normal
       postflight or explicit pending operator recovery. This proves only the
       observations obtained, not full root/panel/glass acceptance.
+      [Physical finite observation](../../../docs/evidence/mainline-uart-progress/physical-2026-10-03/README.md): exact received arguments and Bash prompt, one stimulus,
+      zero receipts and zero records; protected operator reset/postflight pending.
+      This is observation-only, not successful diagnostic/root/touch acceptance.
 - [ ] 5f.6 Reconcile the diagnostic findings with the next narrow discriminator,
       preserve unknown markers and task 5b.5, land/push evidence and verify
       exact CI/published revision. Planning proof: `openspec validate the-board-runs-a-mainline-kernel --strict`.
