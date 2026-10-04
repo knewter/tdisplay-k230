@@ -54,6 +54,7 @@ SHELL_CONTROLS = ("fsck.mode=skip", "systemd.mask=k230-root-growth.service",
                   "systemd.mask=register-nix-paths.service", "initramfs_async=0")
 SHELL_TRACE_FLAGS = ("k230.boot_trace=1", "k230.boot_trace_sbi_only=1")
 UART_PROGRESS_MEMORY_FLAG = "k230.uart_progress_memory=1"
+UART_MEMORY_POLL_IDLE_FLAG = "nohlt"
 UART_MEMORY_FORMAT = b"\nK230_UMP1 s=%u n=%u m=%02x l=%u w=%u\n\0"
 UART_MEMORY_SOURCE_SHA256 = "307d7c0588499dd32826c1d05476e0bf6d46ca0c8939d42e0b4f7180545b98dc"
 UART_PROGRESS_FLAG = "k230.uart_progress=1"
@@ -189,7 +190,7 @@ def shell_pid1_bootargs(original: str, system: str) -> str:
     return "bootargs=" + " ".join([*params, *SHELL_CONTROLS, "rdinit=/bin/sh"])
 
 
-def shell_pid1_transport(args: str, system: str, *, uart_progress=False, uart_progress_breadcrumbs=False, uart_progress_post_sample=False, uart_progress_memory=False) -> str:
+def shell_pid1_transport(args: str, system: str, *, uart_progress=False, uart_progress_breadcrumbs=False, uart_progress_post_sample=False, uart_progress_memory=False, uart_progress_memory_poll_idle=False) -> str:
     # Reconstruct the qualified transform instead of accepting arbitrary literal args.
     original = ("bootargs=consoleblank=0 console=ttyS0,115200n8 root=fstab loglevel=4 "
                 "lsm=landlock,yama,bpf loglevel=7 " + " ".join(SHELL_TRACE_FLAGS) +
@@ -207,6 +208,12 @@ def shell_pid1_transport(args: str, system: str, *, uart_progress=False, uart_pr
         if not uart_progress or uart_progress_breadcrumbs or uart_progress_post_sample:
             raise ValueError("memory transport requires reporter without point selectors")
         expected += " " + UART_PROGRESS_MEMORY_FLAG
+    if type(uart_progress_memory_poll_idle) is not bool:
+        raise ValueError("UART memory polling transport selector must be boolean")
+    if uart_progress_memory_poll_idle:
+        if uart_progress_memory is not True or uart_progress is not True:
+            raise ValueError("polling transport requires Memory reporter selection")
+        expected += " " + UART_MEMORY_POLL_IDLE_FLAG
     if args != expected:
         raise ValueError("unexpected shell comparison arguments")
     value = args.removeprefix("bootargs=")
@@ -330,6 +337,48 @@ def validate_uart_memory_no_stimulus_selector(selector, memory, progress, shell,
         raise ValueError("UART memory no-stimulus selector must be boolean")
     if selector and (memory is not True or progress is not True or shell is not True or mode != "minimal"):
         raise ValueError("--uart-progress-memory-no-stimulus requires minimal --same-image-shell-pid1 --uart-progress --uart-progress-memory")
+
+
+def validate_uart_memory_poll_idle_selector(selector, no_stimulus, memory, progress, shell, mode):
+    if type(selector) is not bool:
+        raise ValueError("UART memory poll-idle selector must be boolean")
+    if selector and (no_stimulus is not True or memory is not True or progress is not True or
+                     shell is not True or mode != "minimal"):
+        raise ValueError("--uart-progress-memory-poll-idle requires minimal --same-image-shell-pid1 --uart-progress --uart-progress-memory --uart-progress-memory-no-stimulus")
+
+
+def prepare_uart_memory_poll_idle(prepared):
+    """Qualify already realized idle polling support; append only bare nohlt."""
+    validate_uart_memory_poll_idle_selector(True, prepared.get("uart_progress_memory_no_stimulus", False),
+                                           "uart_progress_memory_kernel" in prepared, True, True, "minimal")
+    p = dict(prepared)
+    proof = p["uart_progress_kernel"]
+    config = Path(proof["config"]).read_bytes()
+    if hashlib.sha256(config).hexdigest() != proof["config_sha256"]:
+        raise ValueError("selected polling config differs from qualified kernel dev")
+    if re.findall(rb"^CONFIG_GENERIC_IDLE_POLL_SETUP=(.*)$", config, re.M) != [b"y"]:
+        raise ValueError("matching kernel lacks built-in generic idle polling setup")
+    image = (Path(proof["kernel"]) / "Image").read_bytes()
+    if hashlib.sha256(image).hexdigest() != p["uart_progress_memory_kernel"]["image_sha256"]:
+        raise ValueError("selected polling Image differs from qualified Memory kernel")
+    if image.count(b"nohlt\0") != 1:
+        raise ValueError("selected Image lacks a unique linked nohlt setup")
+    # Validate the previous literal policy before extending it. Any prior nohlt,
+    # hlt, value-form or unrelated token fails reconstruction.
+    previous = shell_pid1_transport(p["bootargs"], p["system"], uart_progress=True, uart_progress_memory=True)
+    if previous != p["transport"]:
+        raise ValueError("selected Memory transport differs from qualified arguments")
+    p["bootargs"] += " " + UART_MEMORY_POLL_IDLE_FLAG
+    p["transport"] = shell_pid1_transport(p["bootargs"], p["system"], uart_progress=True,
+                                          uart_progress_memory=True, uart_progress_memory_poll_idle=True)
+    p["uart_progress_memory_poll_idle"] = True
+    p["uart_progress_memory_poll_idle_kernel"] = {
+        "config_sha256": proof["config_sha256"],
+        "image_sha256": p["uart_progress_memory_kernel"]["image_sha256"],
+        "generic_idle_poll_setup": "y", "linked_nohlt_setup_offset": image.index(b"nohlt\0"),
+        "sole_added_kernel_argument": UART_MEMORY_POLL_IDLE_FLAG,
+    }
+    return p
 
 
 def inspect_uart_progress_kernel(prepared):
@@ -1825,6 +1874,10 @@ def finish_uart_progress(session, token, prepared, before, log_path, result_path
     memory_mode = "uart_progress_memory_kernel" in prepared
     no_stimulus = prepared.get("uart_progress_memory_no_stimulus", False)
     validate_uart_memory_no_stimulus_selector(no_stimulus, memory_mode, True, True, "minimal")
+    poll_idle = prepared.get("uart_progress_memory_poll_idle", False)
+    validate_uart_memory_poll_idle_selector(poll_idle, no_stimulus, memory_mode, True, True, "minimal")
+    if poll_idle and "uart_progress_memory_poll_idle_kernel" not in prepared:
+        raise ValueError("polling preparation proof is missing")
     post_sample_mode = "uart_progress_post_sample_kernel" in prepared
     breadcrumb_mode = "uart_progress_breadcrumb_kernel" in prepared
     observation = observe_uart_progress(session, token, prepared["bootargs"],
@@ -1887,6 +1940,9 @@ def finish_uart_progress(session, token, prepared, before, log_path, result_path
                       memory_kernel_proof=prepared["uart_progress_memory_kernel"])
     if no_stimulus:
         result.update(uart_progress_memory_no_stimulus=True, rx_status="NOT_TESTED")
+    if poll_idle:
+        result.update(uart_progress_memory_poll_idle=True,
+                      poll_idle_kernel_proof=prepared["uart_progress_memory_poll_idle_kernel"])
     write_private_result(result_path, result)
     print("Finite UART observation saved; no candidate reboot or retry was sent. " +
           ("Protected normal postflight verified." if after else "Protected normal recovery remains required."))
@@ -1905,6 +1961,7 @@ def run_trial(
     uart_progress_post_sample: bool = False,
     uart_progress_memory: bool = False,
     uart_progress_memory_no_stimulus: bool = False,
+    uart_progress_memory_poll_idle: bool = False,
 ) -> bool:
     validate_shell_selector(same_image_shell_pid1, mode, ignore_unused_clocks, debug_shutdown, runtime_shutdown_trace)
     validate_uart_progress_selector(uart_progress, same_image_shell_pid1, mode,
@@ -1913,6 +1970,7 @@ def run_trial(
     validate_uart_post_sample_selector(uart_progress_post_sample, uart_progress_breadcrumbs, uart_progress, same_image_shell_pid1, mode)
     validate_uart_memory_selector(uart_progress_memory, uart_progress, same_image_shell_pid1, mode, uart_progress_breadcrumbs, uart_progress_post_sample)
     validate_uart_memory_no_stimulus_selector(uart_progress_memory_no_stimulus, uart_progress_memory, uart_progress, same_image_shell_pid1, mode)
+    validate_uart_memory_poll_idle_selector(uart_progress_memory_poll_idle, uart_progress_memory_no_stimulus, uart_progress_memory, uart_progress, same_image_shell_pid1, mode)
     if mode not in ("minimal", "survey", "label", "root-mount"):
         raise ValueError("probe mode must be minimal, survey, label or root-mount")
     if ignore_unused_clocks and not (mode == "label" or (mode == "minimal" and runtime_shutdown_trace)):
@@ -1933,6 +1991,8 @@ def run_trial(
         prepared = prepare_shell_comparison(prepared)
     if uart_progress_memory_no_stimulus:
         prepared["uart_progress_memory_no_stimulus"] = True
+    if uart_progress_memory_poll_idle:
+        prepared = prepare_uart_memory_poll_idle(prepared)
     manifest = prepared["manifest"]
     system = prepared["system"]
     files = manifest["files"]
@@ -2259,6 +2319,8 @@ def main() -> int:
                         help="minimal same-image shell/progress only, no point selectors: reviewed Memory kernel; one final summary, no candidate reboot")
     parser.add_argument("--uart-progress-memory-no-stimulus", action="store_true",
                         help="requires minimal same-image shell/progress/Memory: identical bootargs, zero candidate input, RX NOT_TESTED")
+    parser.add_argument("--uart-progress-memory-poll-idle", action="store_true",
+                        help="requires all Memory/no-stimulus selectors: qualify existing idle polling setup; append only bare volatile nohlt")
     shutdown_flags = parser.add_mutually_exclusive_group()
     shutdown_flags.add_argument("--debug-shutdown", action="store_true",
                         help="minimal mode only: add volatile initcall_debug loglevel=8 shutdown tracing")
@@ -2287,6 +2349,8 @@ def main() -> int:
                                       args.mode, args.uart_progress_breadcrumbs, args.uart_progress_post_sample)
         validate_uart_memory_no_stimulus_selector(args.uart_progress_memory_no_stimulus, args.uart_progress_memory,
                                                  args.uart_progress, args.same_image_shell_pid1, args.mode)
+        validate_uart_memory_poll_idle_selector(args.uart_progress_memory_poll_idle, args.uart_progress_memory_no_stimulus,
+                                               args.uart_progress_memory, args.uart_progress, args.same_image_shell_pid1, args.mode)
     except ValueError as exc:
         parser.error(str(exc))
     if args.ignore_unused_clocks and not (args.mode == "label" or (args.mode == "minimal" and args.runtime_shutdown_trace)):
@@ -2307,6 +2371,7 @@ def main() -> int:
             **({"uart_progress_post_sample": True} if args.uart_progress_post_sample else {}),
             **({"uart_progress_memory": True} if args.uart_progress_memory else {}),
             **({"uart_progress_memory_no_stimulus": True} if args.uart_progress_memory_no_stimulus else {}),
+            **({"uart_progress_memory_poll_idle": True} if args.uart_progress_memory_poll_idle else {}),
         )
     except Exception as exc:
         print(f"Trial stopped: {exc}", file=sys.stderr)
