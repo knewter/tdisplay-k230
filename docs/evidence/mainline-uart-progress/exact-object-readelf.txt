@@ -1,0 +1,19 @@
+8250_core.o
+ 10130: 0000000000001902   542 FUNC    GLOBAL DEFAULT    1 k230_uart_progress_snapshot
+  [ 1] .text             PROGBITS        0000000000000000 000040 001b20 00  AX  0   0  8
+timer-riscv.o
+    59: 0000000000000000     4 OBJECT  LOCAL  DEFAULT   43 k230_uart_progress_ready_timer_irq
+  [43] .sbss             NOBITS          0000000000000000 000d60 000009 00  WA  0   0  4
+  4509: 00000000000002e0    32 FUNC    GLOBAL DEFAULT    1 k230_uart_progress_timer_irq
+  [ 1] .text             PROGBITS        0000000000000000 000040 000300 00  AX  0   0  8
+k230-uart-progress.o
+     9: 000000000000000e    82 FUNC    LOCAL  DEFAULT    6 k230_uart_progress_setup
+  [ 6] .init.text        PROGBITS        0000000000000000 0002d0 0000e8 00  AX  0   0  8
+    15: 0000000000000000     1 OBJECT  LOCAL  DEFAULT   19 k230_uart_progress_enabled
+  [19] .sbss             NOBITS          0000000000000000 000408 000001 00  WA  0   0  1
+    19: 000000000000000e   456 FUNC    LOCAL  DEFAULT    1 k230_uart_progress_worker
+  [ 1] .text             PROGBITS        0000000000000000 000040 0001d8 00  AX  0   0  8
+    24: 000000000000006e   120 FUNC    LOCAL  DEFAULT    6 k230_uart_progress_init
+  [ 6] .init.text        PROGBITS        0000000000000000 0002d0 0000e8 00  AX  0   0  8
+    31: 0000000000000000   256 OBJECT  LOCAL  DEFAULT    4 k230_uart_progress_record
+  [ 4] .bss              NOBITS          0000000000000000 000218 000100 00  WA  0   0 256

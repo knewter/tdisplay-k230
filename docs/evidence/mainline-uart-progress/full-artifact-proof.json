@@ -1,0 +1,82 @@
+{
+  "DT_equal_after_only_chosen_bootargs_removed": true,
+  "Image_reporter_strings_present": true,
+  "artifact_sha256": {
+    "Image-mainline-drm": "9ad2e5a2a435cc8c2a4d2f21a6e98bd270f83acced2700ce96849ef30f37e2fc",
+    "SHA256SUMS": "e19732b1106463c36747c6e2a55d4bcea5d4dc139b9b5becb673827ba93f8e35",
+    "bootargs.txt": "70348ca8bfb2c52127e7f24878a09094c365dc149fc475dda9883a13ad3c04a7",
+    "initrd.uimg": "19b24317d9dd09c83b21dee5d138dfbd24d57197dae9eef64b0b97b4d742aca1",
+    "k230-tdisplay-mainline-drm.dtb": "4f43da88bdfb49e3037d348482563418a796f2478f953bd5aead9041fbbae7b5",
+    "registration": "19996b8400b833d89c28a0478cda8829fcded36696580ec5ccd6a47a1693af8c",
+    "store-paths": "8b97d0a91ef460ea9ac6bc9ebd21f6f57104d2951d9a449f16e50bf434657ea8"
+  },
+  "base_hardware_dtb": "/nix/store/brmp1qf9cz65yciazabc8yg5j39nn643-k230-mainline-drm-trial-boot-files/k230-tdisplay-mainline-drm.dtb",
+  "canonical_dts_without_bootargs_sha256": "c36085249e61fc1ed6f8f586b1ccbf11f22a4e27428a3e7e23b046384268fc02",
+  "evidence_class": "full matching host artifacts; no board execution",
+  "full_build": {
+    "command": [
+      "nix",
+      "build",
+      ".#kernelMainlineUartProgressTrialBootFiles",
+      ".#kernelMainlineUartProgress.dev",
+      "--no-link",
+      "--print-out-paths",
+      "--max-jobs",
+      "1",
+      "--cores",
+      "16"
+    ],
+    "completed_utc": "2026-10-04T00:09:27.288083+00:00",
+    "output_paths": [
+      "/nix/store/gmsmqkjcb8vmh6h44xvq7y59dd9xihsh-k230-mainline-drm-trial-boot-files",
+      "/nix/store/a3r0fwxh2s594xgz4amb4ydbp22l3w65-linux-riscv64-unknown-linux-gnu-7.3.0-rc5-dev"
+    ],
+    "returncode": 0,
+    "revision": "35e9375736e872a28907420ad7b126596183677b",
+    "started_utc": "2026-10-03T23:38:53.689100+00:00"
+  },
+  "full_installed_config": {
+    "K230_UART_PROGRESS": "CONFIG_K230_UART_PROGRESS=y",
+    "KUNIT": null,
+    "OF": "CONFIG_OF=y",
+    "OPENSSL_SUPPORTS_ML_DSA": "CONFIG_OPENSSL_SUPPORTS_ML_DSA=y",
+    "RISCV_SBI": "CONFIG_RISCV_SBI=y",
+    "RISCV_TIMER": "CONFIG_RISCV_TIMER=y",
+    "SERIAL_8250": "CONFIG_SERIAL_8250=y",
+    "SERIAL_8250_DW": "CONFIG_SERIAL_8250_DW=y",
+    "VMAP_STACK": "CONFIG_VMAP_STACK=y"
+  },
+  "inspection": {
+    "DTB_bootargs_matches_environment": true,
+    "Image_matches_candidate": true,
+    "bootargs": "consoleblank=0 console=ttyS0,115200n8 root=fstab loglevel=4 lsm=landlock,yama,bpf loglevel=7 k230.boot_trace=1 k230.boot_trace_sbi_only=1 init=/nix/store/j312r12misprfg605h49bvqii097shzi-nixos-system-nixos-26.11.20260919.20b1ddd/init",
+    "bundle": "/nix/store/gmsmqkjcb8vmh6h44xvq7y59dd9xihsh-k230-mainline-drm-trial-boot-files",
+    "closure_paths": 629,
+    "files": {
+      "Image-mainline-drm": 38530560,
+      "SHA256SUMS": 339,
+      "bootargs.txt": 243,
+      "initrd.uimg": 27312632,
+      "k230-tdisplay-mainline-drm.dtb": 11097,
+      "registration": 303363,
+      "store-paths": 49876
+    },
+    "initrd_payload_matches_system": true,
+    "kernel": "/nix/store/5cgxny407spyx9la94l1375dmpswigkm-linux-riscv64-unknown-linux-gnu-7.3.0-rc5",
+    "system": "/nix/store/j312r12misprfg605h49bvqii097shzi-nixos-system-nixos-26.11.20260919.20b1ddd",
+    "uimage_crc_valid": true
+  },
+  "installed_autoconf_sha256": "99f44d781b246202edab1d5ef8c4836b15ae99c590999ff268541dfd673865d0",
+  "installed_base_config": "/nix/store/iw4iyn2clg4kw7zjds3x186yqcc2w256-linux-riscv64-unknown-linux-gnu-7.3.0-rc5-dev/lib/modules/7.3.0-rc5/build/.config",
+  "installed_config_sha256": "52e7470b108ad094dbdf88b94e3e8838564edbda9e7a015b4279012e6765c9f1",
+  "installed_dev": "/nix/store/a3r0fwxh2s594xgz4amb4ydbp22l3w65-linux-riscv64-unknown-linux-gnu-7.3.0-rc5-dev",
+  "installed_effective_config_differences": {
+    "CONFIG_K230_UART_PROGRESS": {
+      "installed_base": null,
+      "installed_reporter": "y"
+    }
+  },
+  "installed_source": "/nix/store/a3r0fwxh2s594xgz4amb4ydbp22l3w65-linux-riscv64-unknown-linux-gnu-7.3.0-rc5-dev/lib/modules/7.3.0-rc5/source",
+  "reporter_dependencies_resolved_y": true,
+  "sole_init_and_original_artifact_policy_verified": true
+}
