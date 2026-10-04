@@ -969,7 +969,7 @@ records exact limits. Automatic return and task 5b.5 stay open.
       Keep this task unchecked until actual NEW matching bundle/dev/source/Image
       positive preparation passes. Fixtures and old-artifact rejection alone
       do not satisfy that gate or establish a performed protected board check.
-      Preparation evidence: [PostSample controller host note](../../../../docs/evidence/mainline-uart-progress-post-sample/controller/README.md)
+      Preparation evidence: [PostSample controller host note](../../../docs/evidence/mainline-uart-progress-post-sample/controller/README.md)
       records 20 focused tests plus unchanged 18 breadcrumb/20 progress/100
       minimal/14 shell/36 ordinary tests, the strict source/Image/config gate,
       and actual old matching artifact rejection before UART access. NEW matching
