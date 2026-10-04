@@ -1,0 +1,36 @@
+--- a/drivers/soc/canaan/k230-uart-progress.c
++++ b/drivers/soc/canaan/k230-uart-progress.c
+@@ -41,0 +42,25 @@
++static bool k230_uart_progress_post_sample_enabled;
++/* Ordinary rodata: each fixed record fits its aligned 64-byte region. */
++static const char k230_uart_progress_after_n1_write[] __aligned(64) =
++	"\nK230_UPP1 point=after-n1-write\n";
++static const char k230_uart_progress_third_post_sleep[] __aligned(64) =
++	"\nK230_UPP1 point=third-post-sleep\n";
++static_assert(sizeof(k230_uart_progress_after_n1_write) <= 64);
++static_assert(sizeof(k230_uart_progress_third_post_sleep) <= 64);
++
++static void k230_uart_progress_post_sample(const char *bytes, unsigned int length)
++{
++	if (!IS_ENABLED(CONFIG_RISCV_SBI) || !k230_uart_progress_enabled ||
++	    !k230_uart_progress_breadcrumbs_enabled ||
++	    !k230_uart_progress_post_sample_enabled || !sbi_debug_console_available)
++		return;
++	/* One attempt only; presence does not establish this call's return. */
++	(void)sbi_debug_console_write(bytes, length);
++}
++
++static int __init k230_uart_progress_post_sample_setup(char *value)
++{
++	k230_uart_progress_post_sample_enabled = value && !strcmp(value, "1");
++	return 1;
++}
++__setup("k230.uart_progress_post_sample=", k230_uart_progress_post_sample_setup);
+@@ -70,0 +96,3 @@
++		if (sample == 2)
++			k230_uart_progress_post_sample(k230_uart_progress_third_post_sleep,
++						     sizeof(k230_uart_progress_third_post_sleep) - 1);
+@@ -98,0 +127,3 @@
++		if (sample == 1)
++			k230_uart_progress_post_sample(k230_uart_progress_after_n1_write,
++						     sizeof(k230_uart_progress_after_n1_write) - 1);
