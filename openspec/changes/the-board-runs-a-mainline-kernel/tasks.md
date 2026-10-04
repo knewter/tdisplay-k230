@@ -951,21 +951,25 @@ records exact limits. Automatic return and task 5b.5 stay open.
       package identities and 11 exposed kernel source/config pairs were equal.
       Source-only/native/pure-evaluation receipt: [source host proof](../../../docs/evidence/mainline-uart-progress-post-sample/source-host/README.md).
       No matching full build, target object or physical claim follows.
-- [ ] 5h.2 Build separately selected matching kernel/system/initrd/DT/bundle;
+- [x] 5h.2 Build separately selected matching kernel/system/initrd/DT/bundle;
       inspect full installed config, source layering, Image/CRC/closure/hash/
       original artifact parameters and complete hardware DT comparison, distinct
       from physical output. Host proof:
       `nix build .#kernelMainlineUartProgressPostSampleTrialBootFiles --no-link --print-out-paths`
       then `python3 tools/mainline-drm-trial-inspect.py BUNDLE`.
-      Additive named system/kernel/trial recipe preparation is host-evaluated;
-      actual matching artifact inspection remains UNVERIFIED.
-- [ ] 5h.3 Compile actual changed worker/getter/timer against the exact selected
+      Matching full build from frozen `75cc49df` returned 0; actual inspector,
+      installed config, source layering, linked Image and complete hardware DT
+      comparison passed. [Exact/full host proof](../../../docs/evidence/mainline-uart-progress-post-sample/exact-full-host/README.md); no physical claim.
+- [x] 5h.3 Compile actual changed worker/getter/timer against the exact selected
       kernel.dev config/generated headers without overlay; inspect ordinary
       helper/flag/strings lifetime, lengths/alignment64/page bounds and unchanged
       getter dependencies. Host-only proof:
       `nix build .#kernelMainlineUartProgressPostSampleExactObjects --no-link --print-out-paths`.
-      Additive exact-object selection is evaluated only; actual selected dev
-      headers, compilation, lifetime/layout and getter equality remain UNVERIFIED.
+      Narrow offline exact-object build from source checkpoint `e3edc5e6`
+      returned 0 against actual selected dev, without overlay; three RISC-V
+      objects, four aligned ordinary-rodata records, original 256-byte buffer
+      and unchanged getter dependencies passed inspection. Same host proof;
+      controller/physical/receipt/recovery gates remain separate and open.
 - [x] 5h.4 Add explicit minimal-only `--uart-progress-post-sample` requiring all
       previous comparison selectors. Preserve exact pre-UART artifact/source/
       linked Image/dev checks, sole new volatile gate, received args/freshness,
