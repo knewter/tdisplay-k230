@@ -1127,10 +1127,13 @@ completion of ordinary mainline acceptance.
 
 ## 5k. Same built Memory image with idle polling (planned, UNVERIFIED)
 
-- [ ] 5k.1 Implement typed polling selector requiring all Memory/no-stimulus
+- [x] 5k.1 Implement typed polling selector requiring all Memory/no-stimulus
       dependencies, qualify actual config/linked setup and append only bare nohlt.
       Retain strict zero candidate writes and all default transports. Narrow proof:
       `python3 tests/test_mainline_uart_progress_memory_poll_idle_controller.py`.
+      Typed one-token comparison/14 focused fixtures and 243 prior controller
+      tests PASS; independent source review PASS. [Host implementation proof](../../../docs/evidence/mainline-uart-progress-memory/poll-idle-host/README.md).
+      Actual preparation and physical comparison/recovery remain separate gates.
 - [ ] 5k.2 Run actual existing lznjjfx1/1pvqbm4 artifact preparation with unchanged
       source/Image/config/DT/archive/manifest/load checks; verify exact one-token
       transform and 381→387-byte literal transport. Commit executed qualifier and
