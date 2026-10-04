@@ -918,6 +918,15 @@ and task 5b.5 remain UNVERIFIED; no archive or production fix is claimed.
       [Physical evidence](../../../docs/evidence/mainline-uart-progress-breadcrumbs/physical-2026-10-03/README.md)
       records fixed facts/deltas, firmware-return limits and distinct pending
       operator recovery. This is observation proof only; task 5b.5 stays open.
-- [ ] 5g.6 Reconcile presence/absence and firmware-return limits, retain unknown
+- [x] 5g.6 Reconcile presence/absence and firmware-return limits, retain unknown
       states and task5b.5, commit public-safe evidence and land/push with exact
       CI/published revision. Planning proof: `openspec validate --all`.
+
+The group 5g observation and interpretation landed as 278769d0. CI run
+37171186624 passed build/deploy; both published work and physical evidence pages
+returned HTTP 200 with exact revision 278769d0. The committed deployment receipt
+is `docs/evidence/mainline-uart-progress-breadcrumbs/physical-2026-10-03/deployment.json`.
+Independent review matched the fixed public facts/deltas to the private capture.
+Both markers and receipt are proven; later sample/firmware-return/normal-return
+remain unknown. The separately proposed next discriminator targets the sample 1
+write return versus third sleep. Manual recovery is pending; task 5b.5 stays open.

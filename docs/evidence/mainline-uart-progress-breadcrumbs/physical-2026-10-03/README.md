@@ -83,3 +83,9 @@ sleep boundary. Repeating the same capture or treating the earlier missing
 receipt as current RX failure would not be grounded in this result. Any added
 after-write marker or changed input policy needs a separately reviewed typed
 comparison, exact artifact proof and fresh protected normal recovery.
+
+The evidence revision `278769d0` passed CI run `37171186624` and deployed.
+Both published work and physical evidence pages returned HTTP 200 with that
+exact revision; [deployment receipt](deployment.json). Independent review matched
+all public facts/deltas and capture digest to the protected actual result.
+Publication does not change the pending recovery or ordinary-root/glass gates.

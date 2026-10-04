@@ -1,0 +1,21 @@
+{
+  "schema": "k230-uart-progress-breadcrumbs-evidence-deployment-v1",
+  "revision": "278769d05f7ccfb3a832532b2ce574773f75f061",
+  "ci_run": 37171186624,
+  "ci_conclusion": "success",
+  "build_and_deploy_jobs": "success",
+  "verified_utc": "2026-10-04T02:32:11.514559+00:00",
+  "pages": [
+    {
+      "url": "https://knewter.github.io/tdisplay-k230/work/",
+      "http_status": 200,
+      "exact_revision_verified": true
+    },
+    {
+      "url": "https://knewter.github.io/tdisplay-k230/evidence/docs-evidence-mainline-uart-progress-breadcrumbs-physical-2026-10-03-readme-md/",
+      "http_status": 200,
+      "exact_revision_verified": true
+    }
+  ],
+  "limits": "Publication of diagnostic evidence; no ordinary-root/touch or normal-recovery proof."
+}
