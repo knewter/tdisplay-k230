@@ -895,6 +895,7 @@ and task 5b.5 remain UNVERIFIED; no archive or production fix is claimed.
       bytes, rejecting the old reporter even with CONFIG=y. This task remains
       open until the actual matching bundle/dev/source qualification passes;
       fixture and negative old-artifact checks do not satisfy that positive gate.
+      [Integrated source/controller checks](../../../docs/evidence/mainline-uart-progress-breadcrumbs/integration-host-2026-10-03.md) include strict CRLF/embedded-CR framing and CI coverage.
 - [ ] 5g.5 After fresh protected normal recovery and exact host/controller proof,
       reserve board/UART for one comparison, capture fixed breadcrumb/sample/
       receipt facts and limits, then verify protected normal return or record

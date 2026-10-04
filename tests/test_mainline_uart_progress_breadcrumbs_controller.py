@@ -43,6 +43,19 @@ class BreadcrumbControllerTests(unittest.TestCase):
         self.assertFalse(result["breadcrumbs"][0]["observed_after_stimulus"])
         self.assertTrue(result["breadcrumbs"][1]["observed_after_stimulus"])
 
+    def test_CRLF_framing_is_allowed_but_embedded_CR_is_not_repaired(self):
+        wire = old.Wire([(BOOT + ENTRY + WAKE + old.READY).replace(b"\n", b"\r\n")])
+        result = observe(wire)
+        self.assertTrue(result["breadcrumbs_complete"])
+        self.assertEqual(result["stimulus_attempts"], 1)
+        for bad in (ENTRY.replace(b"worker-entry", b"worker-\rentry"),
+                    ENTRY.replace(b"point=", b"point=\r")):
+            wire = old.Wire([BOOT + bad + WAKE + old.READY])
+            result = observe(wire)
+            self.assertIn("malformed-breadcrumb", result["protocol_errors"])
+            self.assertFalse(result["breadcrumbs_complete"])
+            self.assertEqual(wire.writes, [])
+
     def test_unqualified_missing_wrong_duplicate_or_stale_args_never_trust_records(self):
         for boot in (b"", old.BANNER, old.BANNER + old.CMDLINE,
                      old.BANNER + CMDLINE + CMDLINE, old.BANNER.replace(b"7.3.0-rc5", b"6.6.36") + CMDLINE):

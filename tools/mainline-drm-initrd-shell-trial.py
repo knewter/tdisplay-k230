@@ -460,7 +460,8 @@ def observe_uart_progress(session, token, expected_args, *, timeout=180, readine
                                "MISMATCH" if received_args else "UNKNOWN")
                 if args_status in ("DUPLICATE", "MISMATCH") and "kernel-command-line-" + args_status.lower() not in errors:
                     errors.append("kernel-command-line-" + args_status.lower())
-                record_phase = normalized if uart_progress_breadcrumbs else phase
+                # Fixed SBI records permit CRLF framing, never embedded-CR repair.
+                record_phase = text.replace(b"\r\n", b"\n") if uart_progress_breadcrumbs else phase
                 complete = record_phase.split(b"\n")[:-1] if not uart_progress_breadcrumbs or args_status == "MATCHED" else []
                 for line in complete[parsed_lines:]:
                     if uart_progress_breadcrumbs and b"K230_UPB" in line:
@@ -516,7 +517,7 @@ def observe_uart_progress(session, token, expected_args, *, timeout=180, readine
                 errors.append("stimulus-write-unknown")
                 break
     if banner and not overflow:
-        record_phase = _PROTOCOL.uart_text(text) if uart_progress_breadcrumbs else _PROTOCOL.uart_text(text)[candidate_start:]
+        record_phase = text.replace(b"\r\n", b"\n") if uart_progress_breadcrumbs else _PROTOCOL.uart_text(text)[candidate_start:]
         final = record_phase.split(b"\n")[-1]
         if uart_progress_breadcrumbs and b"K230_UPB" in final:
             errors.append("truncated-breadcrumb")
