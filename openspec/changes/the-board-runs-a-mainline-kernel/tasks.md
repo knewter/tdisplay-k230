@@ -1232,12 +1232,15 @@ completion of ordinary mainline acceptance.
 
 ## 5m. Same-image MemoryPrintk tickless-off comparison (planned, UNVERIFIED)
 
-- [ ] 5m.1 Add typed `--uart-progress-memory-printk-nohz-off` and focused fixtures.
+- [x] 5m.1 Add typed `--uart-progress-memory-printk-nohz-off` and focused fixtures.
       Require existing minimal/same-image/progress/Memory/no-stimulus/MemoryPrintk;
       reject conflicts/types/modes before UART. Qualify actual compiled config/Image
       setup; append only trailing nohz=off. Preserve defaults, strict parsing,
       zero candidate writes and protected recovery. No build/UART. Narrow proof:
       `python3 tests/test_mainline_uart_progress_memory_printk_nohz_off_controller.py`.
+      [Source/fixture proof](../../../docs/evidence/mainline-uart-progress-memory-printk/nohz-off-host/README.md):
+      13 focused plus 23 MemoryPrintk/14 polling/15 no-stimulus PASS; actual
+      existing-artifact gate remains pending under 5m.2. No UART/build.
 - [ ] 5m.2 Run actual existing p2kdar89/24hbalyl artifact/controller preparation,
       verify unchanged source/config/Image/initrd/DT/manifest/load/archive and sole
       literal 416→425-byte transform. Commit executed qualifier and safe receipt.

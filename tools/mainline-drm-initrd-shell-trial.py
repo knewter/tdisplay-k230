@@ -56,6 +56,7 @@ SHELL_TRACE_FLAGS = ("k230.boot_trace=1", "k230.boot_trace_sbi_only=1")
 UART_PROGRESS_MEMORY_FLAG = "k230.uart_progress_memory=1"
 UART_MEMORY_POLL_IDLE_FLAG = "nohlt"
 UART_MEMORY_PRINTK_FLAG = "k230.uart_progress_memory_printk=1"
+UART_MEMORY_PRINTK_NOHZ_OFF_FLAG = "nohz=off"
 UART_MEMORY_PRINTK_SOURCE_SHA256 = "30e8eb1ee365d62665c9d3ffd674e973736f3d04405d53f0f5dc12c3ee23f5f2"
 UART_MEMORY_PRINTK_FORMAT = b"\x016\nK230_UMK1 s=%u n=%u m=%02x l=%u w=%u\n\0"
 UART_MEMORY_FORMAT = b"\nK230_UMP1 s=%u n=%u m=%02x l=%u w=%u\n\0"
@@ -193,7 +194,7 @@ def shell_pid1_bootargs(original: str, system: str) -> str:
     return "bootargs=" + " ".join([*params, *SHELL_CONTROLS, "rdinit=/bin/sh"])
 
 
-def shell_pid1_transport(args: str, system: str, *, uart_progress=False, uart_progress_breadcrumbs=False, uart_progress_post_sample=False, uart_progress_memory=False, uart_progress_memory_poll_idle=False, uart_progress_memory_printk=False) -> str:
+def shell_pid1_transport(args: str, system: str, *, uart_progress=False, uart_progress_breadcrumbs=False, uart_progress_post_sample=False, uart_progress_memory=False, uart_progress_memory_poll_idle=False, uart_progress_memory_printk=False, uart_progress_memory_printk_nohz_off=False) -> str:
     # Reconstruct the qualified transform instead of accepting arbitrary literal args.
     original = ("bootargs=consoleblank=0 console=ttyS0,115200n8 root=fstab loglevel=4 "
                 "lsm=landlock,yama,bpf loglevel=7 " + " ".join(SHELL_TRACE_FLAGS) +
@@ -223,6 +224,12 @@ def shell_pid1_transport(args: str, system: str, *, uart_progress=False, uart_pr
         if uart_progress_memory is not True or uart_progress is not True or uart_progress_memory_poll_idle:
             raise ValueError("printk transport requires Memory reporter without polling")
         expected += " " + UART_MEMORY_PRINTK_FLAG
+    if type(uart_progress_memory_printk_nohz_off) is not bool:
+        raise ValueError("UART MemoryPrintk nohz-off transport selector must be boolean")
+    if uart_progress_memory_printk_nohz_off:
+        if uart_progress_memory_printk is not True or uart_progress_memory_poll_idle:
+            raise ValueError("nohz-off transport requires MemoryPrintk without polling")
+        expected += " " + UART_MEMORY_PRINTK_NOHZ_OFF_FLAG
     if args != expected:
         raise ValueError("unexpected shell comparison arguments")
     value = args.removeprefix("bootargs=")
@@ -362,6 +369,52 @@ def validate_uart_memory_printk_selector(selector, no_stimulus, memory, progress
     if selector and (no_stimulus is not True or memory is not True or progress is not True or
                      shell is not True or mode != "minimal" or poll_idle):
         raise ValueError("--uart-progress-memory-printk requires minimal --same-image-shell-pid1 --uart-progress --uart-progress-memory --uart-progress-memory-no-stimulus without poll-idle")
+
+
+def validate_uart_memory_printk_nohz_off_selector(selector, printk, no_stimulus, memory, progress, shell, mode, poll_idle=False):
+    if type(selector) is not bool:
+        raise ValueError("UART MemoryPrintk nohz-off selector must be boolean")
+    if selector and (printk is not True or no_stimulus is not True or memory is not True or
+                     progress is not True or shell is not True or mode != "minimal" or poll_idle):
+        raise ValueError("--uart-progress-memory-printk-nohz-off requires all minimal MemoryPrintk/no-stimulus selectors without poll-idle")
+
+
+def prepare_uart_memory_printk_nohz_off(prepared):
+    """Qualify existing tickless parser; preserve artifacts and append sole nohz=off."""
+    validate_uart_memory_printk_nohz_off_selector(True, prepared.get("uart_progress_memory_printk", False),
+        prepared.get("uart_progress_memory_no_stimulus", False), "uart_progress_memory_kernel" in prepared,
+        True, True, "minimal", prepared.get("uart_progress_memory_poll_idle", False))
+    p = dict(prepared)
+    proof = p["uart_progress_kernel"]
+    config = Path(proof["config"]).read_bytes()
+    if hashlib.sha256(config).hexdigest() != proof["config_sha256"]:
+        raise ValueError("selected nohz-off config differs from qualified kernel dev")
+    required = ("NO_HZ_COMMON", "NO_HZ_FULL", "HIGH_RES_TIMERS", "RISCV_TIMER", "RISCV_SBI")
+    for name in required:
+        if re.findall(rb"^CONFIG_" + name.encode() + rb"=(.*)$", config, re.M) != [b"y"]:
+            raise ValueError("matching kernel lacks built-in " + name)
+    if re.findall(rb"^CONFIG_HZ=(.*)$", config, re.M) != [b"250"]:
+        raise ValueError("matching nohz-off kernel requires HZ=250")
+    image = (Path(proof["kernel"]) / "Image").read_bytes()
+    if hashlib.sha256(image).hexdigest() != p["uart_progress_memory_kernel"]["image_sha256"]:
+        raise ValueError("selected nohz-off Image differs from qualified MemoryPrintk kernel")
+    if image.count(b"nohz=\0") != 1:
+        raise ValueError("selected Image lacks unique linked nohz setup")
+    previous = shell_pid1_transport(p["bootargs"], p["system"], uart_progress=True,
+                                    uart_progress_memory=True, uart_progress_memory_printk=True)
+    if p["transport"] != previous:
+        raise ValueError("selected MemoryPrintk transport differs from qualified arguments")
+    p["bootargs"] += " " + UART_MEMORY_PRINTK_NOHZ_OFF_FLAG
+    p["transport"] = shell_pid1_transport(p["bootargs"], p["system"], uart_progress=True,
+        uart_progress_memory=True, uart_progress_memory_printk=True, uart_progress_memory_printk_nohz_off=True)
+    p["uart_progress_memory_printk_nohz_off"] = True
+    p["uart_progress_memory_printk_nohz_off_kernel"] = {
+        "config_sha256": proof["config_sha256"], "image_sha256": p["uart_progress_memory_kernel"]["image_sha256"],
+        "required_builtin_config": list(required), "hz": 250,
+        "linked_nohz_setup_offset": image.index(b"nohz=\0"),
+        "sole_added_kernel_argument": UART_MEMORY_PRINTK_NOHZ_OFF_FLAG,
+    }
+    return p
 
 
 def prepare_uart_memory_poll_idle(prepared):
@@ -2029,6 +2082,10 @@ def finish_uart_progress(session, token, prepared, before, log_path, result_path
     validate_uart_memory_printk_selector(memory_printk, no_stimulus, memory_mode, True, True, "minimal", poll_idle)
     if memory_printk and "uart_progress_memory_printk_kernel" not in prepared:
         raise ValueError("printk preparation proof is missing")
+    nohz_off = prepared.get("uart_progress_memory_printk_nohz_off", False)
+    validate_uart_memory_printk_nohz_off_selector(nohz_off, memory_printk, no_stimulus, memory_mode, True, True, "minimal", poll_idle)
+    if nohz_off and "uart_progress_memory_printk_nohz_off_kernel" not in prepared:
+        raise ValueError("nohz-off preparation proof is missing")
     post_sample_mode = "uart_progress_post_sample_kernel" in prepared
     breadcrumb_mode = "uart_progress_breadcrumb_kernel" in prepared
     observation = observe_uart_progress(session, token, prepared["bootargs"],
@@ -2098,6 +2155,9 @@ def finish_uart_progress(session, token, prepared, before, log_path, result_path
     if memory_printk:
         result.update(uart_progress_memory_printk=True,
                       memory_printk_kernel_proof=prepared["uart_progress_memory_printk_kernel"])
+    if nohz_off:
+        result.update(uart_progress_memory_printk_nohz_off=True,
+                      nohz_off_kernel_proof=prepared["uart_progress_memory_printk_nohz_off_kernel"])
     write_private_result(result_path, result)
     print("Finite UART observation saved; no candidate reboot or retry was sent. " +
           ("Protected normal postflight verified." if after else "Protected normal recovery remains required."))
@@ -2118,6 +2178,7 @@ def run_trial(
     uart_progress_memory_no_stimulus: bool = False,
     uart_progress_memory_poll_idle: bool = False,
     uart_progress_memory_printk: bool = False,
+    uart_progress_memory_printk_nohz_off: bool = False,
 ) -> bool:
     validate_shell_selector(same_image_shell_pid1, mode, ignore_unused_clocks, debug_shutdown, runtime_shutdown_trace)
     validate_uart_progress_selector(uart_progress, same_image_shell_pid1, mode,
@@ -2128,6 +2189,8 @@ def run_trial(
     validate_uart_memory_no_stimulus_selector(uart_progress_memory_no_stimulus, uart_progress_memory, uart_progress, same_image_shell_pid1, mode)
     validate_uart_memory_poll_idle_selector(uart_progress_memory_poll_idle, uart_progress_memory_no_stimulus, uart_progress_memory, uart_progress, same_image_shell_pid1, mode)
     validate_uart_memory_printk_selector(uart_progress_memory_printk, uart_progress_memory_no_stimulus, uart_progress_memory, uart_progress, same_image_shell_pid1, mode, uart_progress_memory_poll_idle)
+    validate_uart_memory_printk_nohz_off_selector(uart_progress_memory_printk_nohz_off, uart_progress_memory_printk,
+        uart_progress_memory_no_stimulus, uart_progress_memory, uart_progress, same_image_shell_pid1, mode, uart_progress_memory_poll_idle)
     if mode not in ("minimal", "survey", "label", "root-mount"):
         raise ValueError("probe mode must be minimal, survey, label or root-mount")
     if ignore_unused_clocks and not (mode == "label" or (mode == "minimal" and runtime_shutdown_trace)):
@@ -2152,6 +2215,8 @@ def run_trial(
         prepared["uart_progress_memory_no_stimulus"] = True
     if uart_progress_memory_poll_idle:
         prepared = prepare_uart_memory_poll_idle(prepared)
+    if uart_progress_memory_printk_nohz_off:
+        prepared = prepare_uart_memory_printk_nohz_off(prepared)
     manifest = prepared["manifest"]
     system = prepared["system"]
     files = manifest["files"]
@@ -2482,6 +2547,8 @@ def main() -> int:
                         help="requires all Memory/no-stimulus selectors: qualify existing idle polling setup; append only bare volatile nohlt")
     parser.add_argument("--uart-progress-memory-printk", action="store_true",
                         help="requires all Memory/no-stimulus selectors without polling: reviewed new kernel, strict Linux ttyS0 summary, zero candidate input")
+    parser.add_argument("--uart-progress-memory-printk-nohz-off", action="store_true",
+                        help="requires all minimal MemoryPrintk/no-stimulus selectors: qualify existing nohz support; append only volatile nohz=off")
     shutdown_flags = parser.add_mutually_exclusive_group()
     shutdown_flags.add_argument("--debug-shutdown", action="store_true",
                         help="minimal mode only: add volatile initcall_debug loglevel=8 shutdown tracing")
@@ -2514,6 +2581,9 @@ def main() -> int:
                                                args.uart_progress_memory, args.uart_progress, args.same_image_shell_pid1, args.mode)
         validate_uart_memory_printk_selector(args.uart_progress_memory_printk, args.uart_progress_memory_no_stimulus,
                                             args.uart_progress_memory, args.uart_progress, args.same_image_shell_pid1, args.mode, args.uart_progress_memory_poll_idle)
+        validate_uart_memory_printk_nohz_off_selector(args.uart_progress_memory_printk_nohz_off,
+            args.uart_progress_memory_printk, args.uart_progress_memory_no_stimulus, args.uart_progress_memory,
+            args.uart_progress, args.same_image_shell_pid1, args.mode, args.uart_progress_memory_poll_idle)
     except ValueError as exc:
         parser.error(str(exc))
     if args.ignore_unused_clocks and not (args.mode == "label" or (args.mode == "minimal" and args.runtime_shutdown_trace)):
@@ -2536,6 +2606,7 @@ def main() -> int:
             **({"uart_progress_memory_no_stimulus": True} if args.uart_progress_memory_no_stimulus else {}),
             **({"uart_progress_memory_poll_idle": True} if args.uart_progress_memory_poll_idle else {}),
             **({"uart_progress_memory_printk": True} if args.uart_progress_memory_printk else {}),
+            **({"uart_progress_memory_printk_nohz_off": True} if args.uart_progress_memory_printk_nohz_off else {}),
         )
     except Exception as exc:
         print(f"Trial stopped: {exc}", file=sys.stderr)
