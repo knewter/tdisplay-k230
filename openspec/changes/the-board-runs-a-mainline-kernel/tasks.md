@@ -836,9 +836,14 @@ and task 5b.5 remain UNVERIFIED; no archive or production fix is claimed.
       zero receipts and zero records; subsequent protected operator reset/postflight verified
       (fresh boot, exact identities, eight files, three services, registration absence).
       This is observation-only, not successful diagnostic/root/touch acceptance.
-- [ ] 5f.6 Reconcile the diagnostic findings with the next narrow discriminator,
+- [x] 5f.6 Reconcile the diagnostic findings with the next narrow discriminator,
       preserve unknown markers and task 5b.5, land/push evidence and verify
       exact CI/published revision. Planning proof: `openspec validate the-board-runs-a-mainline-kernel --strict`.
+      Zero-report limits and manual protected recovery are committed in the
+      [physical packet](../../../docs/evidence/mainline-uart-progress/physical-2026-10-03/README.md).
+      Recovery revision 5cdff03b passed CI 37166330080 and published work/evidence
+      checks; the reviewed continuation is preserved as planned group 5g below.
+      No ordinary-root/touch/automatic-recovery result is inferred.
 
 
 ## 5g. Worker-entry/first-post-sleep comparison (planned, no physical claim)
