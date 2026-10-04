@@ -87,6 +87,8 @@ jobs:
           python3 tests/test_mainline_uart_progress_memory_controller.py
           python3 tests/test_mainline_uart_progress_memory_no_stimulus_controller.py
           python3 tests/test_mainline_uart_progress_memory_poll_idle_controller.py
+          python3 tests/test_mainline_uart_progress_memory_printk.py
+          python3 tests/test_mainline_uart_progress_memory_printk_controller.py
 
       - name: Check bounded VG-Lite normal-service recovery
         run: |
