@@ -1195,7 +1195,7 @@ completion of ordinary mainline acceptance.
       has the ordinary printk call; source/native proof establishes selected return
       without DBCN fallback. Pahole-version warning retained, no C warning observed.
       Host object proof does not establish console/timer/observer execution.
-- [ ] 5l.4 Add typed controller, strict observed-prefix/new-namespace parser and
+- [x] 5l.4 Add typed controller, strict observed-prefix/new-namespace parser and
       fresh Linux-backend qualification with zero-write/error/recovery fixtures.
       Qualify disabled PRINTK_CALLER for the timestamp-only parser.
       Narrow proof: `python3 tests/test_mainline_uart_progress_memory_printk_controller.py`.
@@ -1204,8 +1204,13 @@ completion of ordinary mainline acceptance.
       the independently reviewed realized variant, not an unknown placeholder.
       Controller preparation/20 corrected fixtures and prior controller regressions
       PASS; root independent review PASS. [Host preparation](../../../docs/evidence/mainline-uart-progress-memory-printk/controller/README.md).
-      Realized reviewed worker 30e8eb1e is pinned; actual matching new Image/dev/
-      archive qualification remains UNVERIFIED, so this checkbox stays open.
+      Actual new bundle p2kdar89 / dev 24hbalyl / reviewed worker 30e8eb1e
+      qualification PASS (2026-10-04 07:15 UTC, exit 0): same-derivation actual
+      config, linked Image/format/setup, DT/archive/load/CRC and sole gate
+      transport 381→416 bytes; no UART/build/new board preflight.
+      [Executed qualifier and safe receipt](../../../docs/evidence/mainline-uart-progress-memory-printk/positive-controller-host/README.md).
+      Historical protected normal report is a host anchor only; physical
+      observation/recovery and ordinary root/touch remain UNVERIFIED.
 - [ ] 5l.5 After protected normal recovery plus source/native/exact/full/controller
       gates, reserve board/UART for one new-channel comparison. Commit fixed
       physical facts and recovery or explicit pending operator reset. Command:
