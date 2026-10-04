@@ -551,3 +551,89 @@ loosening existing parsers to remove arbitrary console text. These introduce
 additional dependencies or change the boundary being compared. Source/object,
 full build, typed protocol and physical proof tasks stay distinct. Diagnostic
 calls can perturb timing and successful output is not a production fix.
+
+
+## After-n1-write and third-post-sleep discriminator (group 5h)
+
+Layer: a new optional reporter-source/Nix family and separately reviewed typed
+controller selection. The committed [breadcrumb packet](../../../docs/evidence/mainline-uart-progress-breadcrumbs/physical-2026-10-03/README.md)
+and [result](../../../docs/evidence/mainline-uart-progress-breadcrumbs/physical-2026-10-03/result.json)
+at revision 278769d0 record both worker points, a matched fresh receipt and
+complete n0/n1, then no n2–n5 in 180s. CI 37171186624 and exact publication passed;
+protected normal recovery remains pending. No guessed counter/IRQ diagnosis
+is used. The immutable
+selected source `k5a5zrhqy9ypr3mja1r50mdlcgi74i1f` has worker sleep/stop at
+`drivers/soc/canaan/k230-uart-progress.c:67–70`, snapshot at 74 and numeric SBI
+write at 98. A complete n1 frame leaves that call's return and the following
+iteration/sleep/snapshot/output unproved.
+
+### Additive source and finite placement
+
+Layer only a new reporter patch over the current Breadcrumbs source. Name the
+new family `kernelMainlineUartProgressPostSample`, configuration
+`k230-mainline-uart-progress-post-sample`, matching toplevel/trial bundle and
+`kernelMainlineUartProgressPostSampleExactObjects`. Preserve every old package,
+source/config, object and trial derivation identity, including original reporter
+and Breadcrumbs outputs. Inherit original serial-only ordinary-init artifact
+parameters; bake in no reporter/breadcrumb/post-sample runtime flag. Exact
+selected-dev config/headers, applied source, compiled Image and complete hardware
+DT comparison remain separate host gates.
+
+Only exact `k230.uart_progress_post_sample=1`, alongside exact existing
+`k230.uart_progress=1` and `k230.uart_progress_breadcrumbs=1`, CONFIG_RISCV_SBI
+and actual DBCN availability enables the new records. Absent/bare/invalid new
+values preserve the current selected variant's behavior. Setup alone has init
+lifetime; helper/flag and two static const arrays have ordinary lifetime. Each
+array is aligned 64, sizeof<=64 including NUL and page-contained under actual
+4KiB configuration; pass literal length excluding NUL, not a stack/VMAP_STACK
+or freed init buffer. Each point attempts the existing SBI write API once.
+
+Fixed new bytes, with literal leading/trailing LF:
+
+```text
+\nK230_UPP1 point=after-n1-write\n
+\nK230_UPP1 point=third-post-sleep\n
+```
+
+After-n1-write is only sample index1, immediately after the existing numeric
+SBI call returns, before loop advancement. Third-post-sleep is only index2,
+after the unchanged third sleep and second stop check, immediately before
+snapshot. No added stop check, delay, counter query, formatting, retry,
+printk/emergency/fallback, priority/affinity/tick change or IRQ/TTY/PID1 output.
+Existing six samples and two breadcrumbs remain unchanged. At most ten attempts
+occur if calls return: six numeric, two old breadcrumbs, two new records.
+Full/partial/zero/error counts remain discarded. One attempt is not a deadline;
+firmware and sleep/scheduling can block, and the added calls can perturb timing.
+
+### Typed capture and interpretation
+
+Explicit `--uart-progress-post-sample` requires minimal mode and all existing
+`--same-image-shell-pid1 --uart-progress --uart-progress-breadcrumbs` selectors.
+Qualify the new exact manifest/kernel/dev/source and unique linked marker/gate
+bytes before UART. Preserve exact original artifact qualification, marker-free
+async=0/Bash/sole console/three controls, protected normal/registration-absence
+checks and the single fresh receipt stimulus. Add only the new volatile gate.
+No further candidate input or reboot follows that stimulus, irrespective of
+receipt/record completeness. Existing selectors/parsers retain their behavior.
+
+Accept only the two exact complete fresh lines, at most once and in source
+order when both appear. Unknown/extra/stale/echo/duplicate/reordered/truncated/
+interleaved records remain incomplete/unknown; retain private raw bytes, never
+repair or strip arbitrary console text. Capture the whole qualified fresh boot
+phase. Preserve independent facts for receipt, old breadcrumbs, new points,
+six samples and protected recovery; a new point never authorizes input.
+
+A visible after-n1-write proves the numeric n1 call returned, not its full
+write count or this new call's return. A visible third-post-sleep proves the
+prior point's call returned and the third sleep/stop checks passed, not
+snapshot or n2 output. A later n2 record proves progress past that second
+point and snapshot/formatting, not firmware count or physical RX delivery.
+Missing points cannot distinguish blocked/failed/partial output, scheduling or
+later work; do not name a fault from the last line. Independent protected normal
+recovery remains a separate gate; no automatic-return or root/touch claim.
+
+Rejected: another identical eight-call trial, shortened/removed sleeps,
+IRQ/TTY/PID1 output, changed console/SBI fallback, polling/retry, and parser
+loosening. These change other dependencies or repeat the same unresolved
+boundary. Group 5h separates planning, source/native identity, full build,
+exact objects, typed protocol and physical/recovery evidence.
