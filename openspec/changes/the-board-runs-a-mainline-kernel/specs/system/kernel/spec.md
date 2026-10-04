@@ -255,7 +255,7 @@ separate. Existing default and diagnostic outputs SHALL remain unchanged;
 finite reporter output SHALL NOT establish ordinary root, Bash receipt,
 physical timer health, automatic recovery or a production fix.
 
-<!-- UNVERIFIED: observer implementation and physical records are planned. -->
+<!-- UNVERIFIED: physical counter values, receipt and autonomous progress remain unproved. -->
 *Grounding: `docs/evidence/mainline-system-trial/shell-pid1-physical-2026-10-03/README.md`
 observes fresh Linux/init entry/Bash prompt and missing bounded receipt.
 Its `uart-source-equality.json` records narrow host source/DT comparison only.
@@ -281,3 +281,52 @@ accounting and n_tty lock/flush paths as cited in group 5f's design.*
 
 - **WHEN** optional source/object/kernel/bundle/protocol checks pass
 - **THEN** physical output/receipt/return remain UNVERIFIED and task 5b.5 stays open
+
+
+### Requirement: Optional progress breadcrumbs keep worker and wakeup evidence distinct
+
+The project MAY provide a separately selected finite reporter variant for the
+observed zero-report boundary. It SHALL preserve every existing package/source/
+trial identity and attempt only fixed worker-entry and first-post-sleep public
+SBI records in its normal-priority worker, with ordinary aligned page-contained
+storage and no IRQ/TTY/PID1 instrumentation. Both exact runtime opt-ins and
+actual DBCN availability SHALL gate breadcrumbs; absent/invalid breadcrumb
+selection SHALL retain the original six-sample behavior. The six numeric
+sample formats, sleeps, getter semantics and stop checks SHALL remain unchanged.
+
+The explicit controller selection SHALL keep exact candidate/argument and
+protected normal qualification, accept only bounded complete fresh fixed
+records, and distinguish breadcrumb presence, numeric samples and receipt.
+Missing/malformed output SHALL remain unknown and SHALL NOT cause another
+stimulus or candidate reboot. Neither breadcrumb presence nor absence SHALL
+be described as a causal diagnosis, ordinary-root acceptance or recovery.
+
+<!-- UNVERIFIED: new variant/source/object/controller/full-build and physical breadcrumb proof are planned. -->
+*Grounding: `docs/evidence/mainline-uart-progress/physical-2026-10-03/README.md`
+and `result.json` record one stimulus, no receipt, zero reports and DBCN
+detection. The realized source `4av3w0…` reporter's worker at27–69 first sleeps,
+then snapshots/formats/writes, as detailed in group5g's design. Existing
+`docs/evidence/mainline-uart-progress/exact-full-host-2026-10-03.md` is host proof
+of the original reporter, not this new physical comparison.*
+
+#### Scenario: The operator captures an entry record without a delayed sample
+
+- **WHEN** an exactly qualified fresh trial emits only worker-entry
+- **THEN** the report states that the worker reached that output call
+- **AND** it leaves firmware return, sleep/wakeup, counters and receipt unknown
+
+#### Scenario: The first post-sleep record is observed
+
+- **WHEN** the qualified first-post-sleep record is complete
+- **THEN** the report states that the first sleep and existing stop checks passed
+  and the earlier entry call returned
+- **AND** it does not claim complete earlier output, physical timer health,
+  successful snapshot or Bash receipt
+
+#### Scenario: Output is missing or malformed
+
+- **WHEN** fixed records are absent, duplicated, stale, reordered, truncated or
+  interleaved with other console text
+- **THEN** the controller preserves private raw evidence and incomplete/unknown
+  status without repairing text, another stimulus or a candidate reboot
+- **AND** root, deliberate touch and independent recovery gates remain open

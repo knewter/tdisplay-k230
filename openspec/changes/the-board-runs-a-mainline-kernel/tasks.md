@@ -839,3 +839,47 @@ and task 5b.5 remain UNVERIFIED; no archive or production fix is claimed.
 - [ ] 5f.6 Reconcile the diagnostic findings with the next narrow discriminator,
       preserve unknown markers and task 5b.5, land/push evidence and verify
       exact CI/published revision. Planning proof: `openspec validate the-board-runs-a-mainline-kernel --strict`.
+
+
+## 5g. Worker-entry/first-post-sleep comparison (planned, no physical claim)
+
+- [ ] 5g.1 Add a separately layered runtime-gated breadcrumb reporter source:
+      exactly two fixed <=64-byte aligned ordinary-rodata records in the
+      normal-priority worker, entry before first sleep and post-sleep before
+      first snapshot, at most one SBI attempt each and no IRQ/TTY/PID1 output.
+      Preserve six original samples, delays/getters/stop checks and all existing
+      package/source/config/trial identities. Actual-code fixtures cover exact/
+      absent/bare/invalid gates, extension absence, placement/stop behavior,
+      full/partial/zero/error no-retry and total eight-attempt cap.
+      Source/fixture proof: `python3 tests/test_mainline_uart_progress_breadcrumbs.py`.
+- [ ] 5g.2 Add/build the separately selected matching kernel/system/initrd/DT/
+      bundle, preserving original artifact parameters and every existing
+      package plus kernel source/config and trial derivation identity. Commit
+      source-layering/identity evaluation and full installed config/closure/
+      hash/CRC/hardware-DT inspection, distinct from physical output.
+      Host proof: `nix build .#kernelMainlineUartProgressBreadcrumbsTrialBootFiles --no-link --print-out-paths`
+      then `python3 tools/mainline-drm-trial-inspect.py BUNDLE`.
+- [ ] 5g.3 Compile the changed reporter against that exact selected kernel.dev
+      config/generated headers without a forced overlay; inspect regular
+      helper/flag/strings lifetime, <=64-byte lengths, alignment64/page bounds
+      and unchanged cached-getter dependencies. Host-only proof:
+      `nix build .#kernelMainlineUartProgressBreadcrumbsExactObjects --no-link --print-out-paths`.
+- [ ] 5g.4 Add a separate explicit minimal-only typed breadcrumb selector and
+      strict fixed-record parser; preserve default/common/numeric protocols,
+      exact artifact/dev/received-args preflight, sole volatile gates and fresh
+      readiness for at most one receipt stimulus. Test early/late records,
+      stale/echo/unknown/truncated/duplicate/reordered/interleaved bytes, split
+      transport chunks, missing receipt/no retry/no reboot, bounded private
+      capture and independent protected normal recovery. Host-only proof:
+      `python3 tests/test_mainline_uart_progress_breadcrumbs_controller.py`
+      and `python3 -m unittest discover -s tests -p 'test_mainline_drm*trial.py'`.
+- [ ] 5g.5 After fresh protected normal recovery and exact host/controller proof,
+      reserve board/UART for one comparison, capture fixed breadcrumb/sample/
+      receipt facts and limits, then verify protected normal return or record
+      distinct pending operator recovery. Hardware proof operator command:
+      `python3 tools/mainline-drm-initrd-shell-trial.py --mode minimal --same-image-shell-pid1 --uart-progress --uart-progress-breadcrumbs --bundle BUNDLE --manifest PRIVATE_MANIFEST --normal-report PRIVATE_NORMAL --log PRIVATE_LOG --result PRIVATE_RESULT`.
+      No further input or candidate reboot after the single stimulus; this is
+      observation only, not ordinary-root/touch or automatic-return acceptance.
+- [ ] 5g.6 Reconcile presence/absence and firmware-return limits, retain unknown
+      states and task5b.5, commit public-safe evidence and land/push with exact
+      CI/published revision. Planning proof: `openspec validate --all`.

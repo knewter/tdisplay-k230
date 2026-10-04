@@ -222,3 +222,32 @@ are separate gates (group 5f). No default image, stage 1, production fix, extra
 core bring-up, TTY polling/configuration, priority/affinity change or automatic
 recovery claim is included. Runtime output and interpretation are UNVERIFIED
 until this named operator trial. Ordinary-root/panel/glass task 5b.5 stays open.
+
+
+## Bounded continuation: distinguish worker entry from its first delayed sample
+
+The finite comparison recorded in
+`docs/evidence/mainline-uart-progress/physical-2026-10-03/README.md` reached the
+fresh matching kernel arguments and Bash prompt, attempted one receipt, and
+captured neither a receipt nor any of six expected reports. DBCN capability
+detection was printed. There are no UART/timer counters to interpret. The
+first report follows worker scheduling, a five-second sleep, cached snapshot
+and firmware output; that observation cannot distinguish those boundaries.
+
+Group 5g adds a separately selected breadcrumb variant of the existing finite
+reporter. It attempts only two fixed public direct-SBI records: worker-entry
+before its first sleep and first-post-sleep before its first snapshot. Keep
+all six existing sample records, delays, cached getter behavior and normal
+priority unchanged. Both exact runtime gates are required for breadcrumbs;
+new named source/kernel/system/object/trial outputs preserve every existing
+package/source/trial identity. The normal card profile and boot selection stay
+protected. Typed controller qualification and strict parsing are a separate
+implementation task, not an implicit extension of the existing mode.
+
+This is a kernel/Nix/controller observability refinement within the existing
+mainline change. No IRQ, TTY, PID1, clock/reset, firmware, console-policy or
+priority/affinity change is included. A visible record proves reaching its
+firmware call, not that it returned; absence leaves scheduling/output unknown.
+Native/source/object/full-artifact checks and one protected physical comparison
+remain separate gates. Breadcrumb output, RX delivery, automatic return and
+ordinary-root/panel/glass acceptance remain UNVERIFIED; task 5b.5 stays open.
