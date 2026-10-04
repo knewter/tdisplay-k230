@@ -955,7 +955,7 @@ write return versus third sleep. Manual recovery is pending; task 5b.5 stays ope
       helper/flag/strings lifetime, lengths/alignment64/page bounds and unchanged
       getter dependencies. Host-only proof:
       `nix build .#kernelMainlineUartProgressPostSampleExactObjects --no-link --print-out-paths`.
-- [ ] 5h.4 Add explicit minimal-only `--uart-progress-post-sample` requiring all
+- [x] 5h.4 Add explicit minimal-only `--uart-progress-post-sample` requiring all
       previous comparison selectors. Preserve exact pre-UART artifact/source/
       linked Image/dev checks, sole new volatile gate, received args/freshness,
       protected normal checks, one stimulus and no later input/reboot. Strict
@@ -969,10 +969,15 @@ write return versus third sleep. Manual recovery is pending; task 5b.5 stays ope
       Preparation evidence: [PostSample controller host note](../../../docs/evidence/mainline-uart-progress-post-sample/controller/README.md)
       records 20 focused tests plus unchanged 18 breadcrumb/20 progress/100
       minimal/14 shell/36 ordinary tests, the strict source/Image/config gate,
-      and actual old matching artifact rejection before UART access. NEW matching
-      positive preparation remains UNVERIFIED; this checkbox stays open. One
-      fresh stimulus is followed only by passive bounded capture; no candidate
-      reboot, extra input or physical claim is authorized by marker presence.
+      and actual old matching artifact rejection before UART access. Actual NEW
+      positive preparation now passed against frozen `75cc49df` and realized fjmxf6
+      bundle/js4by9 dev: [positive host proof](../../../docs/evidence/mainline-uart-progress-post-sample/positive-controller-host/README.md).
+      Same-drv config, reviewed aee68 source, linked unique Image strings, actual
+      archived executables/common loader and exact sole additional gate passed;
+      literal transport 419 bytes versus 386. No UART/build or performed protected
+      board check by this qualifier. One fresh stimulus is followed only by
+      passive bounded capture; no candidate reboot, extra input or physical claim
+      is authorized by marker presence. Tasks 5h.5–6 and 5b.5 remain open.
 - [ ] 5h.5 After independently verified protected recovery and exact host/
       controller proof, reserve board/UART for one comparison; commit fixed
       point/sample/receipt facts and independent protected recovery or explicit
