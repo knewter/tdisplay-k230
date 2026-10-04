@@ -449,3 +449,105 @@ semaphore). These change or depend on the boundary being investigated.
 Diagnostic timing can perturb progress; a successful trial alone is not a
 production fix. Existing default/console/diagnostic output identities remain
 unchanged; only a new named kernel/system/bundle is eligible for this probe.
+
+
+## Worker-entry and first-post-sleep breadcrumbs (group 5g)
+
+Layer: separate optional kernel reporter source and matching Nix outputs,
+followed by a separately reviewed typed host-controller selection. Physical
+zero-report grounding is the finite packet in
+`docs/evidence/mainline-uart-progress/physical-2026-10-03/README.md` and its fixed
+result. It establishes exact candidate arguments, Bash prompt, one stimulus,
+no receipt and no complete report, not an IRQ/timer fault. DBCN detection is
+availability detection only. The actual selected source
+`4av3w0kigacwah6w04zfpnky4gsh0k59` places the first sleep at
+`drivers/soc/canaan/k230-uart-progress.c:37–43`, snapshot/time formatting at
+43–65 and the single sample write at67. Worker creation follows the runtime
+and DBCN gates at72–78. The initial visible output therefore conflates worker
+scheduling, sleep/wakeup, snapshot and firmware progress.
+
+### Frozen bounded comparison
+
+Add only a new layered source/kernel family, tentatively
+`kernelMainlineUartProgressBreadcrumbs`, optional configuration
+`k230-mainline-uart-progress-breadcrumbs`, toplevel/trial bundle and
+`kernelMainlineUartProgressBreadcrumbsExactObjects`. Layer over the existing
+reporter source rather than changing its recipe or C file. Keep all existing
+package derivations, kernel source/config identities, ordinary trial families
+and default system/image identical to the landed baseline. Inherit the original
+serial-only ordinary-init artifact parameters with both trace tokens; add no
+runtime reporter/breadcrumb flag to the artifact. Matching selected kernel.dev
+headers, actual config, source layering and complete hardware DT identity after
+only chosen bootargs removal require distinct host proof.
+
+The new setup flag is exact `k230.uart_progress_breadcrumbs=1`; absent, bare or
+invalid values retain the original six-sample behavior without breadcrumbs.
+The existing exact `k230.uart_progress=1` remains required to start the worker,
+and existing CONFIG_RISCV_SBI/DBCN availability gates still apply. Setup code
+alone is init-lifetime; helper/flag and two aligned static const byte strings
+use ordinary lifetime. Each string is at most64 bytes, aligned64 and contained
+within an actual configured 4KiB page, never a stack/VMAP_STACK or freed init
+buffer. Call exactly once per point, passing literal length excluding NUL.
+No formatting, printk/emergency, retry, fallback or counter query is added.
+
+Fixed wire bytes (leading and trailing newline; the backslashes below denote
+those literal LF bytes):
+
+```text
+\nK230_UPB1 point=worker-entry\n
+\nK230_UPB1 point=first-post-sleep\n
+```
+
+Worker-entry occurs only on sample0 after the existing first stop check and
+immediately before its `msleep(5000)`. First-post-sleep occurs only on sample0
+after that sleep and the existing second stop check, immediately before the
+cached snapshot. Both execute solely in the normal-priority worker and outside
+all snapshot locks. No IRQ, TTY, PID1/init, priority/affinity/tick change is
+permitted. Six existing samples, format/state semantics, stop checks and delay
+sequence remain unchanged. The whole worker attempts at most eight SBI writes:
+two breadcrumbs plus six samples. Firmware results are deliberately discarded.
+One invocation is not a wall-clock firmware bound; sleep/scheduling may stall.
+The write API in the same source's `arch/riscv/kernel/sbi.c:591–617` performs an
+availability check, static-buffer physical conversion, page clamp and one ECALL;
+full/partial/zero/error returns do not trigger a second attempt.
+
+### Strict controller and interpretation boundary
+
+A separate explicit `--uart-progress-breadcrumbs` selector requires minimal
+mode plus `--same-image-shell-pid1 --uart-progress`. It qualifies the new exact
+manifest/kernel/dev/source/ordinary artifact policy before UART, preserves the
+same async=0, marker suppression, rdinit/Bash and three qualified controls, and
+adds only the exact new volatile gate alongside the existing reporter gate.
+Existing modes and numeric sample parsing remain unchanged. Protected normal
+pre/postflight and registration-absence checks remain mandatory.
+
+Accept each of the two exact complete breadcrumb lines at most once; reject
+unknown versions/points, extra fields, duplicates, reordered observed points,
+truncation, echo/stale lines and inserted kernel text. Preserve raw private
+bytes; do not strip printk or repair a split marker. Retain the whole bounded
+fresh boot phase so early direct output is not lost merely because printed
+kernel banners lag. Associate records only after fresh selected Linux/received
+argument qualification for that boot attempt; old buffers or an unqualified
+prompt do not establish freshness. Breadcrumbs never authorize input. The one
+receipt stimulus still requires the existing fresh init-entry/primary-prompt
+and exact received arguments; afterward input remains stopped, including when
+receipt or any record is unknown. No candidate reboot is added.
+
+Report breadcrumb presence/completeness separately from receipt and the six
+numeric samples. Host arrival before/after stimulus is not per-byte RX timing.
+Entry alone proves worker reach to the entry output call, not return from it,
+sleep completion or failure location. First-post-sleep proves the first sleep
+and both stop checks passed and the earlier entry call returned, not that its
+output was complete. A later sample proves progress past the post-sleep call
+and snapshot/formatting, not firmware count, healthy RX or Bash delivery.
+Missing entry/wake/sample may reflect scheduling, blocked/failed/partial output
+or later work; none alone identifies a cause. Missing/malformed breadcrumbs
+remain incomplete/unknown even if numeric samples or protected recovery appear.
+Automatic return and independent protected operator recovery remain separate.
+
+Rejected: another identical sleeping-worker retry; dropping its first sleep;
+IRQ/PID1/TTY instrumentation; a printk/earlycon fallback; polling/retry; and
+loosening existing parsers to remove arbitrary console text. These introduce
+additional dependencies or change the boundary being compared. Source/object,
+full build, typed protocol and physical proof tasks stay distinct. Diagnostic
+calls can perturb timing and successful output is not a production fix.
