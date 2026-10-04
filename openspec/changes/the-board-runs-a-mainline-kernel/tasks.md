@@ -1041,6 +1041,14 @@ completion of ordinary mainline acceptance.
       one fresh stimulus/passive capture and strict single-summary facts. Actual
       NEW matching positive preparation required before checking this task.
       Narrow proof: `python3 tests/test_mainline_uart_progress_memory_controller.py`.
+      Preparation: [Memory controller host proof](../../../docs/evidence/mainline-uart-progress-memory/controller/README.md)
+      records 20 exact-summary/real-pump/transport/qualification fixtures plus
+      unchanged 20 PostSample/18 Breadcrumbs/20 numeric/100 minimal/14 shell/36
+      ordinary checks. Actual fjmxf6 old artifact fails the new reviewed worker
+      gate before UART. Consistent incomplete/timeout summary, worker completion,
+      receipt and protected return remain independent facts; no candidate reboot
+      or extra input follows. NEW actual positive preparation is UNVERIFIED, so
+      this checkbox remains open; no build/board or live normal check here.
 - [ ] 5i.5 After NEW guarded protected recovery plus exact host/controller proof,
       reserve board/UART and run one comparison; commit fixed public facts and
       independent protected recovery or explicit pending operator reset.

@@ -1,0 +1,63 @@
+{
+  "evidence_class": "host-source-fixtures-and-actual-legacy-artifact-rejection",
+  "base_revision": "a4d6958d",
+  "fixture_tmpdir": "$HOME/tmp",
+  "tests": [
+    {
+      "command": "python3 tests/test_mainline_uart_progress_memory_controller.py",
+      "count": 20,
+      "seconds": 0.055,
+      "result": "PASS"
+    },
+    {
+      "command": "python3 tests/test_mainline_uart_progress_post_sample_controller.py",
+      "count": 20,
+      "seconds": 0.063,
+      "result": "PASS"
+    },
+    {
+      "command": "python3 tests/test_mainline_uart_progress_breadcrumbs_controller.py",
+      "count": 18,
+      "seconds": 0.052,
+      "result": "PASS"
+    },
+    {
+      "command": "python3 tests/test_mainline_uart_progress_controller.py",
+      "count": 20,
+      "seconds": 0.256,
+      "result": "PASS"
+    },
+    {
+      "command": "python3 tests/test_mainline_drm_initrd_shell_trial.py",
+      "count": 100,
+      "seconds": 13.641,
+      "result": "PASS"
+    },
+    {
+      "command": "python3 tests/test_mainline_shell_pid1_comparison.py",
+      "count": 14,
+      "seconds": 1.283,
+      "result": "PASS"
+    },
+    {
+      "command": "python3 tests/test_mainline_drm_system_trial.py",
+      "count": 36,
+      "seconds": 1.1,
+      "result": "PASS"
+    }
+  ],
+  "actual_legacy_artifact": {
+    "bundle": "/nix/store/fjmxf6kn1yq0xk9v783amgymybhcrwkb-k230-mainline-drm-trial-boot-files",
+    "started_utc": "2026-10-04T04:06:16.048729+00:00",
+    "completed_utc": "2026-10-04T04:06:16.933463+00:00",
+    "command": "prepare_trial(existing_private_manifest, legacy_bundle, existing_private_normal); prepare_uart_progress(prepared, uart_progress_memory=True)",
+    "common_artifact_preparation_passed": true,
+    "memory_variant_rejected": true,
+    "rejection": "selected worker is not the reviewed memory variant"
+  },
+  "positive_new_artifact_preparation": "UNVERIFIED",
+  "uart_opened": false,
+  "board_commands_sent": false,
+  "build_performed": false,
+  "physical_result": "UNVERIFIED"
+}
