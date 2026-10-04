@@ -332,3 +332,21 @@ can show idle/tick-policy dependence, not its cause. New runtime selection,
 summary and recovery remain UNVERIFIED; ordinary task 5b.5 stays open. Fresh
 normal recovery and actual host qualification precede one boot. Land this plan
 before controller implementation.
+
+
+## Bounded continuation: independent Linux-console observer output
+
+[Polling](../../../docs/evidence/mainline-uart-progress-memory/poll-idle-physical-2026-10-04/README.md)
+received nohlt/Bash but no summary in 180.0929s; subsequent NEW reset restored
+protected normal/Home. The [timer/backend audit](../../../docs/research/mainline-memory-printk-channel-comparison-2026-10-04.md)
+found no grounded timer-DT switch and observed a registered Linux8250 ttyS0 console.
+Group 5l adds a separately gated source/controller variant: retain Memory progress
+and observer wait/snapshot, replace its one final explicit DBCN attempt with one
+ordinary KERN_INFO Linux-console summary in a distinct K230_UMK1 namespace.
+Baseline zero-input policy remains; no combined nohlt, raw MMIO, force/emergency
+printing, fallback, retry, IRQ/firmware/priority change or production fix.
+This requires a new matching kernel build and exact artifact/controller proof;
+all previous package/source/config/trial identities remain unchanged. Native,
+target-object, full build, physical output and recovery are separate. A record
+supports observer progress through the changed output path, not cause or API
+return. Silence remains unknown; ordinary 5b.5 stays open. Land this plan first.

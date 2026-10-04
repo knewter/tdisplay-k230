@@ -1145,11 +1145,46 @@ completion of ordinary mainline acceptance.
       and exact381→387-byte transform. [Safe receipt/executed qualifier](../../../docs/evidence/mainline-uart-progress-memory/poll-idle-host/README.md).
       Initial host harness comparison failure is preserved; corrected gate PASS.
       No build/UART/live preflight. Physical polling/recovery remain UNVERIFIED.
-- [ ] 5k.3 After NEW protected normal recovery and actual host proof, reserve
+- [x] 5k.3 After NEW protected normal recovery and actual host proof, reserve
       board/UART and run one passive same-image polling comparison; commit fixed
       facts plus independent recovery or explicit pending operator reset. Command:
       `python3 tools/mainline-drm-initrd-shell-trial.py --mode minimal --same-image-shell-pid1 --uart-progress --uart-progress-memory --uart-progress-memory-no-stimulus --uart-progress-memory-poll-idle --bundle BUNDLE --manifest PRIVATE_MANIFEST --normal-report PRIVATE_NORMAL --log PRIVATE_LOG --result PRIVATE_RESULT`.
       No cause/RX/ordinary-root inference; 5b.5 stays open.
+      [Actual polling capture and subsequent protected recovery](../../../docs/evidence/mainline-uart-progress-memory/poll-idle-physical-2026-10-04/README.md):
+      exact nohlt args/Bash, zero input, no summary/normal return in 180.0929s;
+      no protocol error. Subsequent NEW reset passed normal/Home checks; normal
+      system restored. Automatic return and ordinary acceptance remain UNVERIFIED.
 - [ ] 5k.4 Independently reconcile idle/tick-policy limits, review, land/push
       fixed evidence and verify exact CI/published revision. Planning proof:
+      `openspec validate the-board-runs-a-mainline-kernel --strict`.
+
+
+## 5l. Memory observer through registered Linux console (planned, UNVERIFIED)
+
+- [ ] 5l.1 Add separate MemoryPrintk source/kernel/trial/exact-object exports and
+      exact gate; retain worker/observer semantics and all prior identities. One
+      KERN_INFO K230_UMK1 call, no final explicit DBCN in selected path. Narrow
+      source/native proof: `python3 tests/test_mainline_uart_progress_memory_printk.py`;
+      evaluate every prior package/source/config/trial identity and new source only.
+- [ ] 5l.2 Freeze reviewed source/native proof and build matching artifacts.
+      Command: `nix build .#kernelMainlineUartProgressMemoryPrintkTrialBootFiles .#kernelMainlineUartProgressMemoryPrintk.dev --no-link --print-out-paths -L`.
+      Preserve full build receipt and actual config/DT/Image/initrd/archive identities.
+- [ ] 5l.3 Inspect exact selected target objects/calls/format, atomic/completion
+      behavior and matching source/config. Command:
+      `nix build .#kernelMainlineUartProgressMemoryPrintkExactObjects --no-link --print-out-paths -L`.
+      Host object proof does not establish console/timer/observer execution.
+- [ ] 5l.4 Add typed controller, strict observed-prefix/new-namespace parser and
+      fresh Linux-backend qualification with zero-write/error/recovery fixtures.
+      Qualify disabled PRINTK_CALLER for the timestamp-only parser.
+      Narrow proof: `python3 tests/test_mainline_uart_progress_memory_printk_controller.py`.
+      Then run actual matching artifact/controller preparation and commit safe
+      receipt/executed qualifier; no UART or implicit build. Source hash must be
+      the independently reviewed realized variant, not an unknown placeholder.
+- [ ] 5l.5 After protected normal recovery plus source/native/exact/full/controller
+      gates, reserve board/UART for one new-channel comparison. Commit fixed
+      physical facts and recovery or explicit pending operator reset. Command:
+      `python3 tools/mainline-drm-initrd-shell-trial.py --mode minimal --same-image-shell-pid1 --uart-progress --uart-progress-memory --uart-progress-memory-no-stimulus --uart-progress-memory-printk --bundle BUNDLE --manifest PRIVATE_MANIFEST --normal-report PRIVATE_NORMAL --log PRIVATE_LOG --result PRIVATE_RESULT`.
+      No output-return/cause/RX/ordinary-root inference; 5b.5 stays open.
+- [ ] 5l.6 Independently reconcile changed-channel limits, review, land/push
+      evidence and verify exact CI/published revision. Planning proof:
       `openspec validate the-board-runs-a-mainline-kernel --strict`.

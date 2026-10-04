@@ -492,3 +492,46 @@ The already-built setup is host evidence; runtime polling and usable boot are un
 - **WHEN** output is absent, malformed or capture fails
 - **THEN** preserve unknown progress and send no additional candidate bytes
 - **AND** require independent protected recovery or operator reset
+
+
+### Requirement: Separate observer output through the registered Linux console
+
+The diagnostic MAY offer a separately built MemoryPrintk variant with an exact
+gate requiring existing Memory/progress gates. It SHALL retain six worker sleeps/
+cached snapshots/atomic publication and one observer completion wait/acquire,
+suppress worker output, and replace its one final explicit DBCN attempt with one
+ordinary KERN_INFO fixed K230_UMK1 summary. It SHALL not force console ownership,
+use emergency/raw-MMIO/fallback/retry output or change IRQ/firmware/priority policy.
+Every prior source/config/package/trial identity SHALL remain unchanged.
+
+The typed controller SHALL require minimal/same-image/progress/Memory/no-stimulus
+and reject combined idle/point/trace selectors before UART. It SHALL qualify the
+new actual source/config/Image/format/setup and exact DT/archive/load guards,
+receive exact arguments and fresh Linux8250 ttyS0 registration/console markers.
+It SHALL parse only the observed timestamp-prefixed fixed new namespace and
+bounded coherent fields, rejecting old/wrong-channel/stale/malformed/duplicate/
+truncated records. It SHALL keep zero input, NOT_REQUESTED/RX NOT_TESTED, bounded
+capture and independent protected normal recovery.
+
+A record SHALL establish only observer progress through the changed output
+channel, not output-call return, DBCN causation, ordinary-root or glass acceptance.
+Missing output SHALL remain unknown. Native, target object, full artifact,
+controller qualification, physical observation and recovery SHALL stay separate.
+
+<!-- UNVERIFIED: Linux-console variant/source/build/controller/physical proof are planned. -->
+*Grounding: [polling result and recovery](../../../../../../docs/evidence/mainline-uart-progress-memory/poll-idle-physical-2026-10-04/README.md)
+and [actual timer/backend/source audit](../../../../../../docs/research/mainline-memory-printk-channel-comparison-2026-10-04.md).
+The registered backend is observed; future UMK output and useful mainline boot are unverified.*
+
+#### Scenario: A fresh Linux-console summary is observed
+
+- **WHEN** exact new gate/args and fresh Linux ttyS0 backend markers are observed
+- **AND** one timestamp-prefixed K230_UMK1 summary satisfies bounded state rules
+- **THEN** preserve recorded worker/observer progress with zero input
+- **AND** retain separate output-return, recovery and ordinary-boot limits
+
+#### Scenario: No qualified Linux-console summary arrives
+
+- **WHEN** capture is incomplete or output fails strict qualification
+- **THEN** preserve unknown scheduling/timeout/output facts with no further input
+- **AND** require independent protected recovery or operator reset

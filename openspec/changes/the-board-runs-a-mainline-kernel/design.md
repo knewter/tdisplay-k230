@@ -770,3 +770,49 @@ config/Image gates, stale/wrong received args, strict valid/malformed/duplicate/
 truncated summaries and zero candidate writes on read error/overflow/timeout.
 Run actual existing-artifact preparation before the one physical comparison;
 preserve fresh recovery or explicit pending operator reset separately.
+
+
+## Memory summary through Linux printk (group 5l, UNVERIFIED)
+
+Layer a separately named MemoryPrintk source/kernel/trial/exact-object variant
+above unchanged Memory. New exact runtime gate
+`k230.uart_progress_memory_printk=1` requires existing progress and Memory gates.
+Preserve existing invalid/absent behavior and every prior derivation/source/
+config/trial identity. New controller selector `--uart-progress-memory-printk`
+requires minimal/same-image/progress/Memory/no-stimulus; reject nohlt/point/trace
+selectors and type/mode conflicts before UART. Configuration/autoconf and hardware
+DT match baseline Memory; only the reviewed source/Image and matching artifacts
+change. Never select this code through an old artifact/namespace.
+
+Keep worker sleeps, cached getters, stop checks, publication and observer
+allocation/failure/completion/one acquire unchanged. Suppress all worker output.
+With the new gate, observer performs ONE ordinary KERN_INFO/pr_info call instead
+of final explicit DBCN, with fixed format
+`K230_UMK1 s=%u n=%u m=%02x l=%u w=%u\n` and the existing bounded state rules.
+No emergency priority, force flush, raw register access, firmware fallback,
+second channel or retry. The normal registered Linux console owns its IER/
+locking/nbcon behavior; one attempt is not a firmware or console wall-clock bound.
+
+Qualify actual PRINTK/PRINTK_TIME/8250 console/DW support, disabled PRINTK_CALLER,
+reviewed new source and
+unique linked format/setup; target object must show ordinary printk API use plus
+unchanged atomic/completion behavior. Exact config and DT/archive/load/CRC guards
+remain. Literal args add only the new gate to base zero-input Memory; no nohlt,
+earlycon, keep_bootcon, quiet or logger-format override. Received exact args and
+fresh Linux ttyS0 registration/console-enable markers must ground the backend.
+
+Accept only fresh K230_UMK1 with the observed timestamp-only six-decimal kernel
+console prefix/CRLF convention and bounded fields; do not repair embedded CR or
+invent execution-context prefixes. Reject old UMP/wrong-channel, duplicates,
+malformed/truncated/stale/echoed records and wrong received args. Keep one coherent
+summary, validity and worker-completion facts separate. Retain zero candidate
+writes on all capture/error/finally paths, NOT_REQUESTED receipt/RX NOT_TESTED,
+180-second passive capture and independently gated protected normal recovery.
+
+A record establishes observer snapshot/formatting reached changed Linux output;
+not printk return, prior DBCN failure or ordinary root. Absence retains observer,
+timeout/scheduling/console/UART limits. Rejected: unsupported timer-DT switches,
+extra SBI markers, simultaneous nohlt, MMIO polling and force-console bypasses.
+Source/backend grounding and limits are in the linked research note. First land
+native/source identity proof, then freeze matching full build, target object and
+actual artifact/controller gates before one reserved physical boot.

@@ -1,0 +1,32 @@
+{
+  "schema": "k230-memory-poll-idle-operator-reset-recovery-v1",
+  "evidence_class": "protected physical UART normal recovery; reviewed camera Home; no glass acceptance",
+  "verified_utc": "2026-10-04T06:09:25.059425+00:00",
+  "recovery": "VERIFIED_NEW_OPERATOR_RESET",
+  "automatic_return": "UNVERIFIED",
+  "distinct_boot_identity": true,
+  "exact_identity_fields_verified": [
+    "system",
+    "profile",
+    "kernel",
+    "uname",
+    "init"
+  ],
+  "normal_system": "/nix/store/p1a1hz9n8s4g8qyr55ffl3dzbnjgqwr8-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "normal_kernel": "/nix/store/03zyl0mjsxbjyisb3lhjaxswpxm71ap6-linux-riscv64-unknown-linux-gnu-6.6.36-xuantie/Image",
+  "normal_uname": "6.6.36",
+  "protected_boot_hashes_verified": 8,
+  "services": [
+    "active",
+    "active",
+    "active"
+  ],
+  "registration_absence": "VERIFIED_BY_NORMAL_HELPER",
+  "home_ipc_command_returncode": 0,
+  "home_camera_reviewed": true,
+  "camera_limits": "Oblique upside-down framing, glare and soft focus; Home clock/icons/background visible; no touch/orientation acceptance",
+  "private_uart_sha256": "2ab8ac111820b5e07aec71b9195d5b6420c2125bed32102e2f6f8e86e3acd679",
+  "private_uart_bytes": 19597,
+  "private_camera_sha256": "2d60ba6ae8a01948f71644b3174a3f2fd1108d01a472294145a995ad3a42c61b",
+  "ordinary_mainline_root": "UNVERIFIED"
+}
