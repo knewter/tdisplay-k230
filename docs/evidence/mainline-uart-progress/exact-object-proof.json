@@ -1,0 +1,97 @@
+{
+  "command": [
+    "flock",
+    "-n",
+    "/tmp/k230-nix-build.lock",
+    "nix",
+    "build",
+    ".#kernelMainlineUartProgressExactObjects",
+    "--offline",
+    "--no-link",
+    "--print-out-paths",
+    "--max-jobs",
+    "1",
+    "--cores",
+    "2"
+  ],
+  "compile_log_warning": "pahole version mismatch: kernel131 vs object environment0; no C warning observed",
+  "config_and_autoconf_byte_identical_to_selected_dev": true,
+  "derivation": "/nix/store/gwx7li1qqrii4183pbs8pcn4fvg2qidc-k230-mainline-uart-progress-exact-objects.drv",
+  "dev": "/nix/store/a3r0fwxh2s594xgz4amb4ydbp22l3w65-linux-riscv64-unknown-linux-gnu-7.3.0-rc5-dev",
+  "evidence_class": "exact configured-header RISC-V objects; no physical execution",
+  "installed_autoconf_sha256": "99f44d781b246202edab1d5ef8c4836b15ae99c590999ff268541dfd673865d0",
+  "installed_config_sha256": "52e7470b108ad094dbdf88b94e3e8838564edbda9e7a015b4279012e6765c9f1",
+  "no_forced_CONFIG_overlay": true,
+  "objects": {
+    "8250_core.o": {
+      "compiler": "GCC 15.3.0",
+      "sha256": "b7f680d3d956fa506ae66a6680c24c3a4e2f691568f104f10dc2b85f4eb18f4f",
+      "symbols": {
+        "k230_uart_progress_snapshot": {
+          "section": ".text",
+          "section_alignment": 8,
+          "size": 542,
+          "value": "0000000000001902"
+        }
+      }
+    },
+    "k230-uart-progress.o": {
+      "compiler": "GCC 15.3.0",
+      "sha256": "ddceb148b5aa85331c4590e361e7f5990f239f1cd6ff42fe60aef209677fff9d",
+      "symbols": {
+        "k230_uart_progress_enabled": {
+          "section": ".sbss",
+          "section_alignment": 1,
+          "size": 1,
+          "value": "0000000000000000"
+        },
+        "k230_uart_progress_init": {
+          "section": ".init.text",
+          "section_alignment": 8,
+          "size": 120,
+          "value": "000000000000006e"
+        },
+        "k230_uart_progress_record": {
+          "section": ".bss",
+          "section_alignment": 256,
+          "size": 256,
+          "value": "0000000000000000"
+        },
+        "k230_uart_progress_setup": {
+          "section": ".init.text",
+          "section_alignment": 8,
+          "size": 82,
+          "value": "000000000000000e"
+        },
+        "k230_uart_progress_worker": {
+          "section": ".text",
+          "section_alignment": 8,
+          "size": 456,
+          "value": "000000000000000e"
+        }
+      }
+    },
+    "timer-riscv.o": {
+      "compiler": "GCC 15.3.0",
+      "sha256": "370bf1c7373a9a218daf451e2ef0e03d5320dea34068ccc87999d0cbcffdbe7c",
+      "symbols": {
+        "k230_uart_progress_ready_timer_irq": {
+          "section": ".sbss",
+          "section_alignment": 4,
+          "size": 4,
+          "value": "0000000000000000"
+        },
+        "k230_uart_progress_timer_irq": {
+          "section": ".text",
+          "section_alignment": 8,
+          "size": 32,
+          "value": "00000000000002e0"
+        }
+      }
+    }
+  },
+  "output": "/nix/store/i8qvh6gwsrjlg3x12myi6bczdlfyc79j-k230-mainline-uart-progress-exact-objects",
+  "returncode": 0,
+  "revision": "80d581a4993b63354f5a5e5d8509068392a8238d",
+  "source": "/nix/store/4av3w0kigacwah6w04zfpnky4gsh0k59-linux-mainline-k230-uart-progress-src"
+}

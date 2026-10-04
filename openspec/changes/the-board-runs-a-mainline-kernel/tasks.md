@@ -791,18 +791,22 @@ and task 5b.5 remain UNVERIFIED; no archive or production fix is claimed.
       resolves built-in reporter/dependencies and 22 existing output identities
       are unchanged. [Source/config/object evidence](../../../docs/evidence/mainline-uart-progress/source-object-host-2026-10-03.md).
       Full matching build and physical observations remain UNVERIFIED.
-- [ ] 5f.2 Compile the changed 8250/timer/reporter objects against the exact
+- [x] 5f.2 Compile the changed 8250/timer/reporter objects against the exact
       configured RISC-V headers and verify record layout/lifetime/Kconfig.
       Host-only proof: `nix build .#kernelMainlineUartProgressExactObjects --no-link --print-out-paths`.
       Three changed RISC-V objects compile against immutable installed base
-      headers plus an explicit reporter overlay; layout/API proof passed. Exact
-      new configured-header compilation remains open. The separate ExactObjects
-      output requires the selected kernel.dev and applies no CONFIG overlay;
-      root owns its build and [exact-header proof preparation](../../../docs/evidence/mainline-uart-progress/exact-objects-preparation-2026-10-03.md).
-- [ ] 5f.3 Build the complete optional matching system/initrd/DT/bundle and
+      headers plus an explicit reporter overlay; preliminary layout/API proof passed.
+      ExactObjects subsequently passed against the actual selected kernel.dev
+      config/autoconf without an overlay; all three ELF/lifetime/layout checks
+      passed. [Exact/full host proof](../../../docs/evidence/mainline-uart-progress/exact-full-host-2026-10-03.md).
+- [x] 5f.3 Build the complete optional matching system/initrd/DT/bundle and
       inspect hashes/CRCs/closure/config and unchanged existing derivations.
       Host-only proof: `nix build .#kernelMainlineUartProgressTrialBootFiles --no-link --print-out-paths`
       followed by `python3 tools/mainline-drm-trial-inspect.py BUNDLE`.
+      Root's frozen 35e93757 matching build passed; gmsmqk bundle inspection,
+      Image/system/initrd/DT/CRCs/closure/config checks and hardware-DT comparison
+      passed. Existing identity receipts remain separate from physical proof;
+      no UART/receipt/root/touch/recovery result is claimed.
 - [ ] 5f.4 Add a reviewed explicit minimal-shell/controller opt-in, exact
       original artifact and runtime argument qualification, at most one fresh
       receipt stimulus, bounded passive record capture, fixed public parser,
