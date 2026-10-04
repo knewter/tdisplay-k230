@@ -1,0 +1,21 @@
+{
+  "schema": "k230-evidence-publication-v1",
+  "revision": "691279d09806232dadb9279df7ed749f58b7dcd6",
+  "ci_run": 37180546857,
+  "ci_conclusion": "success",
+  "independent_physical_review": "PASS",
+  "published": [
+    {
+      "url": "https://knewter.github.io/tdisplay-k230/work/",
+      "http_status": 200,
+      "revision_verified": true
+    },
+    {
+      "url": "https://knewter.github.io/tdisplay-k230/evidence/docs-evidence-mainline-uart-progress-memory-no-stimulus-physical-2026-10-04-readme-md/",
+      "http_status": 200,
+      "revision_verified": true
+    }
+  ],
+  "normal_recovery": "PENDING_NEW_OPERATOR_RESET",
+  "ordinary_mainline_acceptance": "UNVERIFIED"
+}

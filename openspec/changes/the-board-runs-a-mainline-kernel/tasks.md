@@ -1116,9 +1116,13 @@ completion of ordinary mainline acceptance.
       fresh banner/args/Bash, zero attempts/NOT_REQUESTED/RX NOT_TESTED, no summary
       in 180.0995s, no protocol error or normal return. NEW reset requested after
       completion; separate recovery is pending.
-- [ ] 5j.4 Reconcile removed-input intervention limits, independently review,
+- [x] 5j.4 Reconcile removed-input intervention limits, independently review,
       land/push evidence and verify exact CI/published revision. Planning proof:
       `openspec validate the-board-runs-a-mainline-kernel --strict`.
+      Independent physical review PASS; master `691279d0`, CI 37180546857
+      PASS and exact published work/evidence revision HTTP 200 verified:
+      [publication receipt](../../../docs/evidence/mainline-uart-progress-memory/no-stimulus-physical-2026-10-04/publication.json).
+      NEW recovery remains pending; ordinary acceptance 5b.5 stays open.
 
 
 ## 5k. Same built Memory image with idle polling (planned, UNVERIFIED)
