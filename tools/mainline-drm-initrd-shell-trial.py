@@ -54,6 +54,9 @@ SHELL_CONTROLS = ("fsck.mode=skip", "systemd.mask=k230-root-growth.service",
                   "systemd.mask=register-nix-paths.service", "initramfs_async=0")
 SHELL_TRACE_FLAGS = ("k230.boot_trace=1", "k230.boot_trace_sbi_only=1")
 UART_PROGRESS_FLAG = "k230.uart_progress=1"
+UART_PROGRESS_POST_SAMPLE_FLAG = "k230.uart_progress_post_sample=1"
+UART_PROGRESS_POST_SAMPLE = (b"K230_UPP1 point=after-n1-write\n", b"K230_UPP1 point=third-post-sleep\n")
+UART_POST_SAMPLE_SOURCE_SHA256 = "aee68aaec5c5c0e2b23919901eb99189265fd2b4787a0e50bc11159afd81ef9b"
 UART_PROGRESS_BREADCRUMBS_FLAG = "k230.uart_progress_breadcrumbs=1"
 UART_PROGRESS_BREADCRUMBS = (b"K230_UPB1 point=worker-entry\n", b"K230_UPB1 point=first-post-sleep\n")
 UART_BREADCRUMB_SOURCE_SHA256 = "7207dcae9462694a07bd4f7d37d1d9ea43a536496f1b96dd94fed3dfa78c6a22"
@@ -183,7 +186,7 @@ def shell_pid1_bootargs(original: str, system: str) -> str:
     return "bootargs=" + " ".join([*params, *SHELL_CONTROLS, "rdinit=/bin/sh"])
 
 
-def shell_pid1_transport(args: str, system: str, *, uart_progress=False, uart_progress_breadcrumbs=False) -> str:
+def shell_pid1_transport(args: str, system: str, *, uart_progress=False, uart_progress_breadcrumbs=False, uart_progress_post_sample=False) -> str:
     # Reconstruct the qualified transform instead of accepting arbitrary literal args.
     original = ("bootargs=consoleblank=0 console=ttyS0,115200n8 root=fstab loglevel=4 "
                 "lsm=landlock,yama,bpf loglevel=7 " + " ".join(SHELL_TRACE_FLAGS) +
@@ -193,6 +196,10 @@ def shell_pid1_transport(args: str, system: str, *, uart_progress=False, uart_pr
         if not uart_progress:
             raise ValueError("breadcrumb transport requires reporter selection")
         expected += " " + UART_PROGRESS_BREADCRUMBS_FLAG
+    if uart_progress_post_sample:
+        if not uart_progress_breadcrumbs:
+            raise ValueError("post-sample transport requires breadcrumbs")
+        expected += " " + UART_PROGRESS_POST_SAMPLE_FLAG
     if args != expected:
         raise ValueError("unexpected shell comparison arguments")
     value = args.removeprefix("bootargs=")
@@ -294,6 +301,14 @@ def validate_uart_breadcrumb_selector(selector, uart_progress, same_image_shell_
         raise ValueError("--uart-progress-breadcrumbs requires minimal --same-image-shell-pid1 --uart-progress")
 
 
+def validate_uart_post_sample_selector(selector, breadcrumbs, uart_progress, same_image_shell_pid1, mode):
+    if type(selector) is not bool:
+        raise ValueError("UART post-sample selector must be boolean")
+    if selector and (breadcrumbs is not True or uart_progress is not True or
+                     same_image_shell_pid1 is not True or mode != "minimal"):
+        raise ValueError("--uart-progress-post-sample requires minimal --same-image-shell-pid1 --uart-progress --uart-progress-breadcrumbs")
+
+
 def inspect_uart_progress_kernel(prepared):
     """Require a realized dev config from the very same kernel derivation."""
     kernel = (Path(prepared["system"]) / "kernel").resolve(strict=True).parent
@@ -324,7 +339,7 @@ def inspect_uart_progress_kernel(prepared):
             "config_sha256": hashlib.sha256(content).hexdigest()}
 
 
-def inspect_uart_breadcrumb_kernel(prepared):
+def inspect_uart_breadcrumb_kernel(prepared, *, uart_progress_post_sample=False):
     """Prove selected variant source and linked bytes, not just CONFIG=y."""
     proof = prepared["uart_progress_kernel"]
     description = json.loads(subprocess.check_output(
@@ -347,30 +362,40 @@ def inspect_uart_breadcrumb_kernel(prepared):
     worker = source / "drivers/soc/canaan/k230-uart-progress.c"
     content = worker.read_bytes()
     # Freeze to the reviewed layered worker once its source proof is available.
-    if hashlib.sha256(content).hexdigest() != UART_BREADCRUMB_SOURCE_SHA256:
+    expected_sha = UART_POST_SAMPLE_SOURCE_SHA256 if uart_progress_post_sample else UART_BREADCRUMB_SOURCE_SHA256
+    if hashlib.sha256(content).hexdigest() != expected_sha:
         raise ValueError("selected worker is not the reviewed breadcrumb variant")
     image = (Path(proof["kernel"]) / "Image").read_bytes()
     offsets = {}
-    for marker in UART_PROGRESS_BREADCRUMBS:
+    markers = UART_PROGRESS_BREADCRUMBS + (UART_PROGRESS_POST_SAMPLE if uart_progress_post_sample else ())
+    for marker in markers:
         literal = b"\n" + marker + b"\0"
         if image.count(literal) != 1:
             raise ValueError("selected Image lacks a unique compiled breadcrumb string")
         offsets[marker.decode().strip()] = image.index(literal)
     if image.count(b"k230.uart_progress_breadcrumbs=\0") != 1:
         raise ValueError("selected Image lacks its exact breadcrumb setup gate")
+    if uart_progress_post_sample and image.count(b"k230.uart_progress_post_sample=\0") != 1:
+        raise ValueError("selected Image lacks its exact post-sample setup gate")
     return {"source": str(source), "worker_sha256": hashlib.sha256(content).hexdigest(),
             "image_sha256": hashlib.sha256(image).hexdigest(), "marker_offsets": offsets}
 
 
-def prepare_uart_progress(prepared, *, uart_progress_breadcrumbs=False):
+def prepare_uart_progress(prepared, *, uart_progress_breadcrumbs=False, uart_progress_post_sample=False):
+    validate_uart_post_sample_selector(uart_progress_post_sample, uart_progress_breadcrumbs, True, True, "minimal")
     p = prepare_shell_comparison(prepared)
     p["uart_progress_kernel"] = inspect_uart_progress_kernel(p)
     p["bootargs"] += " " + UART_PROGRESS_FLAG
     if uart_progress_breadcrumbs:
-        p["uart_progress_breadcrumb_kernel"] = inspect_uart_breadcrumb_kernel(p)
+        p["uart_progress_breadcrumb_kernel"] = inspect_uart_breadcrumb_kernel(
+            p, **({"uart_progress_post_sample": True} if uart_progress_post_sample else {}))
         p["bootargs"] += " " + UART_PROGRESS_BREADCRUMBS_FLAG
+    if uart_progress_post_sample:
+        p["uart_progress_post_sample_kernel"] = p["uart_progress_breadcrumb_kernel"]
+        p["bootargs"] += " " + UART_PROGRESS_POST_SAMPLE_FLAG
     p["transport"] = shell_pid1_transport(p["bootargs"], p["system"], uart_progress=True,
-                                          uart_progress_breadcrumbs=uart_progress_breadcrumbs)
+                                          uart_progress_breadcrumbs=uart_progress_breadcrumbs,
+                                          uart_progress_post_sample=uart_progress_post_sample)
     return p
 
 
@@ -396,10 +421,17 @@ def uart_progress_breadcrumb(line):
     return None
 
 
+def uart_progress_post_sample_record(line):
+    if line in UART_PROGRESS_POST_SAMPLE:
+        return line.split(b"=", 1)[1].strip().decode("ascii")
+    return None
+
+
 def observe_uart_progress(session, token, expected_args, *, timeout=180, readiness_timeout=90,
-                          clock=time.monotonic, uart_progress_breadcrumbs=False):
+                          clock=time.monotonic, uart_progress_breadcrumbs=False, uart_progress_post_sample=False):
     """One fresh stimulus, then read only, including on unknown completion."""
     _validate_token(token)
+    validate_uart_post_sample_selector(uart_progress_post_sample, uart_progress_breadcrumbs, True, True, "minimal")
     if not 0 < timeout <= 180 or not 0 < readiness_timeout <= min(timeout, 90):
         raise ValueError("invalid bounded UART observation deadline")
     started = clock()
@@ -407,6 +439,7 @@ def observe_uart_progress(session, token, expected_args, *, timeout=180, readine
     text = b""
     records, errors = [], []
     breadcrumbs = []
+    post_sample = []
     banner = entry = ready = sent = False
     normal_ready = False
     candidate_start = init_end = None
@@ -464,7 +497,17 @@ def observe_uart_progress(session, token, expected_args, *, timeout=180, readine
                 record_phase = text.replace(b"\r\n", b"\n") if uart_progress_breadcrumbs else phase
                 complete = record_phase.split(b"\n")[:-1] if not uart_progress_breadcrumbs or args_status == "MATCHED" else []
                 for line in complete[parsed_lines:]:
-                    if uart_progress_breadcrumbs and b"K230_UPB" in line:
+                    if uart_progress_post_sample and b"K230_UPP" in line:
+                        point = uart_progress_post_sample_record(line + b"\n")
+                        if point is None:
+                            errors.append("malformed-post-sample")
+                        elif any(b["point"] == point for b in post_sample):
+                            errors.append("duplicate-post-sample")
+                        elif point == "after-n1-write" and post_sample:
+                            errors.append("post-sample-order")
+                        else:
+                            post_sample.append({"point": point, "observed_after_stimulus": sent})
+                    elif uart_progress_breadcrumbs and b"K230_UPB" in line:
                         point = uart_progress_breadcrumb(line + b"\n")
                         if point is None:
                             errors.append("malformed-breadcrumb")
@@ -500,7 +543,8 @@ def observe_uart_progress(session, token, expected_args, *, timeout=180, readine
                         # follow the primary prompt in the same pump batch.
                         trailing = suffix.splitlines(keepends=True)
                         prompt_seen = all(line == b"\n" or uart_progress_record(line) is not None or
-                                          (uart_progress_breadcrumbs and uart_progress_breadcrumb(line) is not None)
+                                          (uart_progress_breadcrumbs and uart_progress_breadcrumb(line) is not None) or
+                                          (uart_progress_post_sample and uart_progress_post_sample_record(line) is not None)
                                           for line in trailing)
                     ready = prompt_seen and args_status == "MATCHED"
                 receipt_count = len(re.findall(rb"^K230_RDINIT_RX " + token.encode() + rb"\n", phase, re.M)) if sent else 0
@@ -519,7 +563,9 @@ def observe_uart_progress(session, token, expected_args, *, timeout=180, readine
     if banner and not overflow:
         record_phase = text.replace(b"\r\n", b"\n") if uart_progress_breadcrumbs else _PROTOCOL.uart_text(text)[candidate_start:]
         final = record_phase.split(b"\n")[-1]
-        if uart_progress_breadcrumbs and b"K230_UPB" in final:
+        if uart_progress_post_sample and b"K230_UPP" in final:
+            errors.append("truncated-post-sample")
+        elif uart_progress_breadcrumbs and b"K230_UPB" in final:
             errors.append("truncated-breadcrumb")
         elif b"K230_UP" in final:
             errors.append("truncated-record")
@@ -538,6 +584,9 @@ def observe_uart_progress(session, token, expected_args, *, timeout=180, readine
     if uart_progress_breadcrumbs:
         result.update(uart_progress_breadcrumbs=True, breadcrumbs=breadcrumbs,
                       breadcrumbs_complete=[b["point"] for b in breadcrumbs] == ["worker-entry", "first-post-sleep"] and not errors)
+    if uart_progress_post_sample:
+        result.update(uart_progress_post_sample=True, post_sample=post_sample,
+                      post_sample_complete=[b["point"] for b in post_sample] == ["after-n1-write", "third-post-sleep"] and not errors)
     return result
 
 
@@ -1664,9 +1713,11 @@ def write_private_result(path: Path, value: dict[str, object]) -> None:
 
 
 def finish_uart_progress(session, token, prepared, before, log_path, result_path):
+    post_sample_mode = "uart_progress_post_sample_kernel" in prepared
     breadcrumb_mode = "uart_progress_breadcrumb_kernel" in prepared
     observation = observe_uart_progress(session, token, prepared["bootargs"],
-                                        **({"uart_progress_breadcrumbs": True} if breadcrumb_mode else {}))
+                                        **({"uart_progress_breadcrumbs": True} if breadcrumb_mode else {}),
+                                        **({"uart_progress_post_sample": True} if post_sample_mode else {}))
     after = None
     recovery_error = None
     if observation["normal_prompt_observed"]:
@@ -1692,6 +1743,8 @@ def finish_uart_progress(session, token, prepared, before, log_path, result_path
                      all(r["s"] == 0 and r["ti"] > 0 for r in observation["records"]))
     if breadcrumb_mode:
         diagnostic_ok = diagnostic_ok and observation["breadcrumbs_complete"]
+    if post_sample_mode:
+        diagnostic_ok = diagnostic_ok and observation["post_sample_complete"]
     status = ("recovery-verified-diagnostic-observed" if diagnostic_ok else
               "recovery-verified-diagnostic-incomplete") if after else "recovery-required-observation-only"
     result = {
@@ -1708,6 +1761,9 @@ def finish_uart_progress(session, token, prepared, before, log_path, result_path
     if breadcrumb_mode:
         result.update(uart_progress_breadcrumbs=True,
                       breadcrumb_kernel_proof=prepared["uart_progress_breadcrumb_kernel"])
+    if post_sample_mode:
+        result.update(uart_progress_post_sample=True,
+                      post_sample_kernel_proof=prepared["uart_progress_post_sample_kernel"])
     write_private_result(result_path, result)
     print("Finite UART observation saved; no candidate reboot or retry was sent. " +
           ("Protected normal postflight verified." if after else "Protected normal recovery remains required."))
@@ -1723,11 +1779,13 @@ def run_trial(
     same_image_shell_pid1: bool = False,
     uart_progress: bool = False,
     uart_progress_breadcrumbs: bool = False,
+    uart_progress_post_sample: bool = False,
 ) -> bool:
     validate_shell_selector(same_image_shell_pid1, mode, ignore_unused_clocks, debug_shutdown, runtime_shutdown_trace)
     validate_uart_progress_selector(uart_progress, same_image_shell_pid1, mode,
                                     ignore_unused_clocks, debug_shutdown, runtime_shutdown_trace)
     validate_uart_breadcrumb_selector(uart_progress_breadcrumbs, uart_progress, same_image_shell_pid1, mode)
+    validate_uart_post_sample_selector(uart_progress_post_sample, uart_progress_breadcrumbs, uart_progress, same_image_shell_pid1, mode)
     if mode not in ("minimal", "survey", "label", "root-mount"):
         raise ValueError("probe mode must be minimal, survey, label or root-mount")
     if ignore_unused_clocks and not (mode == "label" or (mode == "minimal" and runtime_shutdown_trace)):
@@ -1741,7 +1799,8 @@ def run_trial(
     prepared = prepare_trial(manifest_path, bundle, normal_report)
     if uart_progress:
         prepared = prepare_uart_progress(prepared,
-                                         **({"uart_progress_breadcrumbs": True} if uart_progress_breadcrumbs else {}))
+                                         **({"uart_progress_breadcrumbs": True} if uart_progress_breadcrumbs else {}),
+                                         **({"uart_progress_post_sample": True} if uart_progress_post_sample else {}))
     elif same_image_shell_pid1:
         prepared = prepare_shell_comparison(prepared)
     manifest = prepared["manifest"]
@@ -2064,6 +2123,8 @@ def main() -> int:
                         help="minimal shell comparison only: matching configured kernel; one receipt then passive capture, no candidate reboot; requires host nix-store and matching realized kernel.dev")
     parser.add_argument("--uart-progress-breadcrumbs", action="store_true",
                         help="requires minimal same-image shell plus UART progress: exact reviewed source/compiled markers; two fixed worker points, no candidate reboot")
+    parser.add_argument("--uart-progress-post-sample", action="store_true",
+                        help="requires all minimal shell/progress/breadcrumb selectors: reviewed PostSample kernel; two fixed return/sleep points, no candidate reboot")
     shutdown_flags = parser.add_mutually_exclusive_group()
     shutdown_flags.add_argument("--debug-shutdown", action="store_true",
                         help="minimal mode only: add volatile initcall_debug loglevel=8 shutdown tracing")
@@ -2086,6 +2147,8 @@ def main() -> int:
                                         args.ignore_unused_clocks, args.debug_shutdown, args.runtime_shutdown_trace)
         validate_uart_breadcrumb_selector(args.uart_progress_breadcrumbs, args.uart_progress,
                                          args.same_image_shell_pid1, args.mode)
+        validate_uart_post_sample_selector(args.uart_progress_post_sample, args.uart_progress_breadcrumbs,
+                                          args.uart_progress, args.same_image_shell_pid1, args.mode)
     except ValueError as exc:
         parser.error(str(exc))
     if args.ignore_unused_clocks and not (args.mode == "label" or (args.mode == "minimal" and args.runtime_shutdown_trace)):
@@ -2103,6 +2166,7 @@ def main() -> int:
             **({"same_image_shell_pid1": True} if args.same_image_shell_pid1 else {}),
             **({"uart_progress": True} if args.uart_progress else {}),
             **({"uart_progress_breadcrumbs": True} if args.uart_progress_breadcrumbs else {}),
+            **({"uart_progress_post_sample": True} if args.uart_progress_post_sample else {}),
         )
     except Exception as exc:
         print(f"Trial stopped: {exc}", file=sys.stderr)

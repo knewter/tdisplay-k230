@@ -1,0 +1,28 @@
+{
+  "evidence_class": "host-source-fixtures-and-legacy-artifact-rejection",
+  "base_revision": "9248ffa4",
+  "completed_utc": "2026-10-04T02:49:19Z",
+  "fixture_tmpdir": "$HOME/tmp",
+  "tests": [
+    {"command": "python3 tests/test_mainline_uart_progress_post_sample_controller.py", "count": 20, "seconds": 0.090, "result": "PASS"},
+    {"command": "python3 tests/test_mainline_uart_progress_breadcrumbs_controller.py", "count": 18, "seconds": 0.250, "result": "PASS"},
+    {"command": "python3 tests/test_mainline_uart_progress_controller.py", "count": 20, "seconds": 0.822, "result": "PASS"},
+    {"command": "python3 tests/test_mainline_drm_initrd_shell_trial.py", "count": 100, "seconds": 23.154, "result": "PASS"},
+    {"command": "python3 tests/test_mainline_shell_pid1_comparison.py", "count": 14, "seconds": 1.644, "result": "PASS"},
+    {"command": "python3 tests/test_mainline_drm_system_trial.py", "count": 36, "seconds": 3.828, "result": "PASS"}
+  ],
+  "actual_legacy_artifact": {
+    "bundle": "/nix/store/mhq10143lsmgr6wlll431a8s3ggb8q6m-k230-mainline-drm-trial-boot-files",
+    "started_utc": "2026-10-04T02:49:18.519073+00:00",
+    "completed_utc": "2026-10-04T02:49:19.646162+00:00",
+    "command": "prepare_trial(existing_private_manifest, legacy_bundle, existing_private_normal); prepare_uart_progress(prepared, uart_progress_breadcrumbs=True, uart_progress_post_sample=True)",
+    "common_artifact_preparation_passed": true,
+    "post_sample_rejected": true,
+    "rejection": "selected worker is not the reviewed breadcrumb variant"
+  },
+  "positive_new_artifact_preparation": "UNVERIFIED",
+  "uart_opened": false,
+  "board_commands_sent": false,
+  "build_performed": false,
+  "physical_result": "UNVERIFIED"
+}
