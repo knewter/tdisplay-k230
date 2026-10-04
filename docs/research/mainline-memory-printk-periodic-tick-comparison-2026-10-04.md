@@ -109,3 +109,54 @@ candidate guards; the current transport rejects script syntax and enforces a
 512-byte U-Boot command bound. No unconditional reboot/exit, arbitrary script
 option or claim of ordinary init is authorized by this fallback description.
 The single nohz token is the smaller practical next comparison.
+
+## Timer/SBI compatibility source audit
+
+Read-only comparison used the selected `0l4…` source above and vendor source
+`/nix/store/pn7bm6ck5a3x6pnk1ng30hlf24qn85jx-source`. Vendor
+`drivers/clocksource/timer-riscv.c:34–48` sets supervisor IE_TIE when programming
+the next event and `121–123` clears it before invoking the event handler.
+Selected source `36–44,154–158` instead stops the timer with
+`sbi_set_timer(U64_MAX)` before invoking that handler; `47–63` rearms an absolute
+64-bit deadline. Both kernel TIME-extension paths pass that deadline unchanged
+on RV64 (`arch/riscv/kernel/sbi.c`: selected `179–188`, vendor `223–232`).
+The max clockevent delta changes from vendor `0x7fffffff` (`timer-riscv.c:97`)
+to selected `ULONG_MAX` (`126`). At the actual DT's 27 MHz timebase, the old
+range is approximately 79.54 seconds, already longer than each five-second
+worker sleep and 45-second observer deadline. A larger range alone does not
+establish overflow or explain missing records.
+
+The actually inspected host OpenSBI build is
+`/nix/store/7fmfx6dan9c2dsa55cs3jba3b5wx6w6p-opensbi-k230-riscv64-unknown-linux-gnu-1.4`,
+deriver `/nix/store/07zh5vbcmn7yi2w7a8kz97v2sw1xrdzr-opensbi-k230-riscv64-unknown-linux-gnu-1.4.drv`.
+Its derivation pins upstream v1.4 source
+`/nix/store/k6kih6q1vh5nashsgaz96ch012742s8z-source` plus the SDK overlay in
+`/nix/store/g58y0fnasf1gapxjnjmbdnmg6zs58yhs-source/buildroot-overlay/boot/opensbi/opensbi-1.4-overlay`.
+The overlay does not replace the following timer files. Installed host config
+has SBI_ECALL_TIME and FDT_TIMER_MTIMER built in; the actual `fw_jump.elf` symbol
+table includes the TIME handler, `sbi_timer_event_start/process`, and
+`mtimer_event_start/stop`. These are host build/source proofs, not runtime probes.
+
+In that OpenSBI source, `lib/sbi/sbi_ecall_time.c:23–28` forwards the complete
+RV64 argument. `lib/sbi/sbi_timer.c:132–151` programs the deadline, clears STIP
+on the non-SSTC backend and enables the machine timer interrupt;
+`154–163` masks that interrupt and raises STIP on delivery. Its SSTC branch
+programs STIMECMP directly; actual branch selection remains unverified.
+`lib/utils/timer/aclint_mtimer.c:72–110` explicitly programs `-1ULL` as the stop
+value and forwards the full rearm value. Both its 64-bit writer (`34–36`) and
+split writer (`52–56`) preserve all deadline bits. Thus the inspected implementation
+supports U64_MAX stop/rearm, rather than rejecting or truncating that value.
+No concrete compatibility fault follows from the changed kernel sequence.
+
+The protected normal report and candidate manifest agree on the 270808-byte
+OpenSBI wrapper SHA `9627edbeea9b115d7040beea27cc61b23b6aca61cd502fd7760d7ee179f42c99`.
+The inspected host build's 270744-byte `fw_jump.bin` SHA is
+`74d08f8701dc72ea166d74be62fc3e5bff437d7c73ab68ad2f113cab289c38f9`.
+However, the queried wrapper output
+`/nix/store/7qrz2jiip1f26pkf9fvhb01qbk3kaiih-k230-fw-jump` is absent locally;
+its payload could not be compared with the protected wrapper. This audit does
+not claim the nearby pinned host source/build is the exact installed firmware,
+and performed no fresh board readback. Prior n0/n1 and timer IRQ progression
+likewise establish a bounded successful interval, not continuing firmware or
+timer health. Keep the sole nohz-off comparison; no speculative timer/SBI patch
+or DT/MMIO/interrupt intervention is justified by these source findings.
