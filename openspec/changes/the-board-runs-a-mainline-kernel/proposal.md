@@ -280,3 +280,26 @@ fix is included. Source/native/exact-object/full-artifact/controller and one
 protected physical comparison remain distinct gates. New output and recovery
 are UNVERIFIED; ordinary-root/panel/glass task 5b.5 remains open. The plan lands
 before source implementation, and only the reserved operator uses the board.
+
+
+Group5h's matching source/objects/full artifacts and positive controller gates
+passed. Its independently reviewed physical capture reached worker-entry/Bash,
+but no receipt, numeric samples or new points in180.0975s; the committed
+[physical packet](../../../docs/evidence/mainline-uart-progress-post-sample/physical-2026-10-03/README.md)
+and deployment receipt preserve that incomplete result. Fresh recovery is pending.
+No return from entry's output, first sleep completion or later point is proved.
+This leaves the ordinary mainline acceptance requirement and task5b.5 open.
+
+## Bounded continuation: memory progress without repeated worker output
+
+The [PostSample capture](../../../docs/evidence/mainline-uart-progress-post-sample/physical-2026-10-03/README.md)
+reached worker-entry/Bash but no receipt or later samples/points, unlike the prior
+n0/n1 result. Group5i adds a separately selected intervention: preserve six
+sleeps/cached snapshots/stop checks, suppress all worker output, record progress
+in ordinary memory and let one independent observer attempt a final summary.
+[Read source and limits](../../../docs/research/mainline-memory-progress-comparison-2026-10-03.md)
+show firmware console locking and unbounded UART polling as possible dependencies,
+not a diagnosed cause or proven installed-firmware identity. No new MMIO,
+IRQ/TTY/PID1/firmware/console-policy/scheduler change. New comparison remains
+UNVERIFIED; ordinary root/panel/glass task5b.5 stays open. Fresh protected normal
+recovery is required before another trial. Land this plan before source work.

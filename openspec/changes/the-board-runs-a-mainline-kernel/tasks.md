@@ -935,7 +935,7 @@ normal postflight and Home IPC, with separately reviewed camera Home;
 records exact limits. Automatic return and task 5b.5 stay open.
 
 
-## 5h. After-n1-write/third-post-sleep comparison (planned, UNVERIFIED)
+## 5h. After-n1-write/third-post-sleep comparison (captured; new points UNVERIFIED)
 
 - [x] 5h.1 Add a separately layered PostSample reporter source with exact new
       runtime gate, requiring both existing gates/config/DBCN. Two fixed <=64
@@ -1004,7 +1004,48 @@ records exact limits. Automatic return and task 5b.5 stay open.
       Fresh args/Bash/worker-entry, one stimulus, no receipt/samples/new points
       during 180.0975s; no protocol errors or candidate reboot. New operator
       reset is explicitly pending; the preceding reset does not cover this run.
-- [ ] 5h.6 Reconcile point reach/return/output and sleep/scheduling limits,
+- [x] 5h.6 Reconcile point reach/return/output and sleep/scheduling limits,
       preserve task 5b.5 and unknown states, land/push public-safe evidence and
       verify exact CI/published revision. Planning proof:
       `openspec validate the-board-runs-a-mainline-kernel --strict`.
+
+
+Group5h source, exact/full artifacts, actual positive preparation and physical
+capture are complete. Independent review matched private facts/hash. Evidence
+08ea7370 passed CI37175128998; work and physical pages returned HTTP200 with
+that exact revision: committed physical deployment.json. Only worker-entry
+arrived; neither entry ECALL return nor first sleep/output is established.
+NEW operator reset is pending; automatic return and5b.5 stay open. Group5i
+is a separate output-removal intervention, not a claimed cause or silent scope
+completion of ordinary mainline acceptance.
+
+## 5i. Memory progress with one final observer output (planned, UNVERIFIED)
+
+- [ ] 5i.1 Implement separately selected layered source/recipes/exact gate;
+      retain all previous identities, six sleeps/cached snapshots/stop checks.
+      Suppress every worker output only in Memory mode, publish consistent finite
+      stages/bitmap/index and create independent normal-priority observer with
+      one45s kernel wait/one final <=256-byte aligned DBCN attempt. Freeze grammar;
+      fixtures cover gates, ordering, stop/timeout/creation failure and one-call
+      counts. Narrow proof: `python3 tests/test_mainline_uart_progress_memory.py`.
+- [ ] 5i.2 Build matching Memory kernel/system/bundle/dev, inspect source/config,
+      CRC/closure/archive/original args/complete hardware DT. Host proof:
+      `nix build .#kernelMainlineUartProgressMemoryTrialBootFiles .#kernelMainlineUartProgressMemory.dev --no-link --print-out-paths`
+      then `python3 tools/mainline-drm-trial-inspect.py BUNDLE`.
+- [ ] 5i.3 Compile exact selected-header worker/getter/timer/observer objects;
+      inspect consistent publication dependencies, ordinary lifetime/aligned
+      buffer/page bounds and unchanged getter behavior. Host-only proof:
+      `nix build .#kernelMainlineUartProgressMemoryExactObjects --no-link --print-out-paths`.
+- [ ] 5i.4 Implement typed minimal-only Memory controller, reject conflicting
+      breadcrumb/post-sample selection, retain exact qualification/normal guards,
+      one fresh stimulus/passive capture and strict single-summary facts. Actual
+      NEW matching positive preparation required before checking this task.
+      Narrow proof: `python3 tests/test_mainline_uart_progress_memory_controller.py`.
+- [ ] 5i.5 After NEW guarded protected recovery plus exact host/controller proof,
+      reserve board/UART and run one comparison; commit fixed public facts and
+      independent protected recovery or explicit pending operator reset.
+      Command: `python3 tools/mainline-drm-initrd-shell-trial.py --mode minimal --same-image-shell-pid1 --uart-progress --uart-progress-memory --bundle BUNDLE --manifest PRIVATE_MANIFEST --normal-report PRIVATE_NORMAL --log PRIVATE_LOG --result PRIVATE_RESULT`.
+      Memory progress/output/receipt/recovery remain separate;5b.5 stays open.
+- [ ] 5i.6 Independently reconcile changed-output intervention limits, review,
+      land/push public evidence and verify exact CI/published revision.
+      Planning proof: `openspec validate the-board-runs-a-mainline-kernel --strict`.

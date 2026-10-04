@@ -639,3 +639,65 @@ IRQ/TTY/PID1 output, changed console/SBI fallback, polling/retry, and parser
 loosening. These change other dependencies or repeat the same unresolved
 boundary. Group 5h separates planning, source/native identity, full build,
 exact objects, typed protocol and physical/recovery evidence.
+
+
+Group5h's matching source/objects/full artifacts and positive controller gates
+passed. Its independently reviewed physical capture reached worker-entry/Bash,
+but no receipt, numeric samples or new points in180.0975s; the committed
+[physical packet](../../../docs/evidence/mainline-uart-progress-post-sample/physical-2026-10-03/README.md)
+and deployment receipt preserve that incomplete result. Fresh recovery is pending.
+No return from entry's output, first sleep completion or later point is proved.
+This leaves the ordinary mainline acceptance requirement and task5b.5 open.
+
+## Memory-progress intervention after group5h (UNVERIFIED)
+
+Group5h's independently reviewed actual capture reached only entry/Bash, with
+no matching receipt, samples or new points. Group5g reached n1. Missing serial
+output cannot identify execution or firmware return. The source audit in
+[the memory comparison note](../../../docs/research/mainline-memory-progress-comparison-2026-10-03.md)
+grounds a distinct intervention rather than another per-boundary ECALL chain.
+
+Add separately named Memory reporter/kernel/system/bundle/exact-object outputs;
+keep all existing package/source/config/trial identities. Explicit
+`k230.uart_progress_memory=1` requires exact existing progress opt-in and actual
+SBI/DBCN support. In that variant and gate only, suppress ALL worker output,
+including numeric, Breadcrumbs and PostSample calls, retaining six5000ms sleeps,
+cached snapshots, existing stop checks, normal priority/affinity and termination.
+Absent/bare/invalid gate retains inherited worker behavior. Do not combine
+runtime Breadcrumbs/PostSample selectors with this comparison.
+
+Publish a finite consistent ordinary-memory state: stage before/after each
+sleep, completion bitmap and last completed index. Publication/read ordering
+must be explicit, bounded, and free of locks across sleep or firmware calls.
+No snapshot/getter gains MMIO. An independently created normal-priority observer
+waits once with finite kernel timeout (45 seconds), copies a consistent bounded
+state, then attempts ONE final <=256-byte aligned page-contained ordinary-buffer
+DBCN summary. No retry/printk/fallback/IRQ output; observer creation failure must
+be explicit and bounded. Timeout depends on kernel execution; it is not a
+firmware wall-clock guarantee. Existing modes must not create this observer.
+
+Freeze the exact public grammar/stage encoding during source/controller review,
+validate completion bitmap/index/stage consistency and fixture exact/absent/
+invalid gates, sleep/stop/publication ordering, observer completion/timeout,
+allocation failure and full/partial/zero/error one-call behavior. Independently
+inspect actual selected headers/objects/linked strings/lifetime/config, original
+artifact policy and complete hardware DT before physical use.
+
+Typed `--uart-progress-memory` requires minimal/same-image-shell-PID1/progress
+and rejects Breadcrumbs/PostSample or conflicting flags. Its actual preparation
+qualifies reviewed source/dev/Image/manifest/archive, adds only the new volatile
+gate, preserves fresh exact args/Bash readiness and protected normal guards,
+and sends at most one fresh receipt followed by passive180-second capture.
+The summary never authorizes another command or candidate reboot. Strict parser
+accepts one complete exact fresh summary, keeping receipt/recovery distinct.
+Unknown/duplicate/echo/stale/truncated/inconsistent output stays unknown.
+
+A received summary proves its recorded progress BEFORE the final firmware call;
+completion supports progress under removed repeated output, not an IRQ/firmware
+fault or this call's return. Missing summary cannot distinguish worker, observer,
+timeout, M-mode or serial failure. An M-mode stall on the only executing hart
+can prevent S-mode observer progress. Protect normal profile/boot selection and
+require separate fresh normal recovery. Ordinary root/glass and5b.5 stay open.
+
+Rejected for this bounded comparison: direct UART polling without LSR/nbcon
+ownership proof, firmware replacement, and repeated ECALL point chains.

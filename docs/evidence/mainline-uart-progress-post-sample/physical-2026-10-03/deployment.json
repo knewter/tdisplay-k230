@@ -1,0 +1,21 @@
+{
+  "schema": "k230-mainline-evidence-deployment-v1",
+  "evidence_revision": "08ea7370dbf2e770e258dd73460c7b74f971e20b",
+  "ci_run": 37175128998,
+  "ci_conclusion": "success",
+  "checked_utc": "2026-10-04T03:52:46.235327+00:00",
+  "published_pages": [
+    {
+      "url": "https://knewter.github.io/tdisplay-k230/work/",
+      "http_status": 200,
+      "exact_revision_present": true
+    },
+    {
+      "url": "https://knewter.github.io/tdisplay-k230/evidence/docs-evidence-mainline-uart-progress-post-sample-physical-2026-10-03-readme-md/",
+      "http_status": 200,
+      "exact_revision_present": true
+    }
+  ],
+  "physical_result": "incomplete-diagnostic-observation",
+  "normal_recovery": "PENDING_NEW_OPERATOR_RESET"
+}

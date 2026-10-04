@@ -351,7 +351,7 @@ old-breadcrumb, numeric-sample, receipt and recovery facts distinct. Missing or
 malformed output SHALL remain unknown without another stimulus or candidate
 reboot, and SHALL NOT establish a causal fix, root/touch or automatic return.
 
-<!-- UNVERIFIED: new source/object/full-build/controller and physical post-sample comparison are planned. -->
+<!-- UNVERIFIED: after-n1-write/third-post-sleep output, receipt, automatic recovery and ordinary root/glass remain unproven. Source/exact/full/controller and incomplete physical capture are committed. -->
 *Grounding: committed [physical packet](../../../../../../docs/evidence/mainline-uart-progress-breadcrumbs/physical-2026-10-03/README.md)
 and [result](../../../../../../docs/evidence/mainline-uart-progress-breadcrumbs/physical-2026-10-03/result.json)
 at revision 278769d0 record both Breadcrumbs points, a matched receipt and
@@ -381,3 +381,44 @@ next boundary, not committed proof of the new diagnostic or a fault.*
 - **THEN** private raw evidence and partial facts are retained as unknown
 - **AND** there is no further stimulus/reboot or inferred ordinary-root/touch,
   firmware-return or automatic-recovery result
+
+
+*Subsequent actual [PostSample packet](../../../../../../docs/evidence/mainline-uart-progress-post-sample/physical-2026-10-03/README.md)
+records matched args/Bash/worker-entry only, one stimulus and no receipt/samples/
+new points in180.0975s. It does not prove reaching either new point or entry-call
+return; fresh normal recovery is pending. Host and incomplete capture completion
+do not satisfy the scenarios above or ordinary-root task5b.5.*
+
+### Requirement: Optional memory-progress comparison isolates repeated worker output
+
+The project MAY provide a separately selected explicit memory-progress reporter.
+It SHALL retain existing outputs/identities and, only under its exact opt-in,
+preserve six sleeps/cached snapshots/stop checks while suppressing every worker
+output call and publishing finite consistent ordinary-memory progress. A separate
+normal-priority observer SHALL use one finite kernel wait and at most one aligned
+bounded-size DBCN summary attempt. It SHALL NOT add MMIO, IRQ/TTY/PID1 output,
+retry/fallback, firmware/console-policy or scheduler changes. Gate absence or
+invalid values SHALL retain inherited behavior without observer creation.
+
+The typed minimal controller SHALL qualify exact host artifacts/source/config,
+fresh received arguments/Bash readiness and protected normal state. It SHALL
+send at most one receipt then bounded passive capture, with no further input or
+candidate reboot. Summary, receipt and recovery SHALL remain independent facts;
+missing output SHALL NOT identify a cause or prove ordinary root/glass.
+
+<!-- UNVERIFIED: memory comparison source/artifacts/controller/physical results are planned. -->
+*Grounding: [PostSample capture](../../../../../../docs/evidence/mainline-uart-progress-post-sample/physical-2026-10-03/README.md)
+and [read-source audit](../../../../../../docs/research/mainline-memory-progress-comparison-2026-10-03.md)
+record variable reporter progress and firmware output dependencies, not causation.*
+
+#### Scenario: A consistent completed summary arrives
+
+- **WHEN** one exact fresh summary records all six worker snapshots completed
+- **THEN** it establishes recorded progress before the observer's final output call
+- **AND** it does not establish that call's return, a root cause or ordinary boot
+
+#### Scenario: Summary or receipt is absent
+
+- **WHEN** bounded capture has no complete qualified summary or receipt
+- **THEN** preserve each missing fact as unknown, including observer/output limits
+- **AND** send no further candidate input or reboot and require separate recovery
