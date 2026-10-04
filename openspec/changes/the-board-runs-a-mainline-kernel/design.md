@@ -788,7 +788,10 @@ Keep worker sleeps, cached getters, stop checks, publication and observer
 allocation/failure/completion/one acquire unchanged. Suppress all worker output.
 With the new gate, observer performs ONE ordinary KERN_INFO/pr_info call instead
 of final explicit DBCN, with fixed format
-`K230_UMK1 s=%u n=%u m=%02x l=%u w=%u\n` and the existing bounded state rules.
+`\nK230_UMK1 s=%u n=%u m=%02x l=%u w=%u\n` and the existing bounded state rules.
+The single call includes a leading newline: printk prefixes an empty line first,
+separating any existing Bash prompt from the following timestamped summary.
+The parser accepts only that following complete line; never strip a shell prompt.
 No emergency priority, force flush, raw register access, firmware fallback,
 second channel or retry. The normal registered Linux console owns its IER/
 locking/nbcon behavior; one attempt is not a firmware or console wall-clock bound.

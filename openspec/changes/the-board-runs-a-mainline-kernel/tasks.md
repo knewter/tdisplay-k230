@@ -1167,7 +1167,8 @@ completion of ordinary mainline acceptance.
 
 - [ ] 5l.1 Add separate MemoryPrintk source/kernel/trial/exact-object exports and
       exact gate; retain worker/observer semantics and all prior identities. One
-      KERN_INFO K230_UMK1 call, no final explicit DBCN in selected path. Narrow
+      KERN_INFO K230_UMK1 call with a leading newline in its format to separate
+      shell prompt output, no final explicit DBCN in selected path. Narrow
       source/native proof: `python3 tests/test_mainline_uart_progress_memory_printk.py`;
       evaluate every prior package/source/config/trial identity and new source only.
 - [ ] 5l.2 Freeze reviewed source/native proof and build matching artifacts.

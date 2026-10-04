@@ -343,6 +343,8 @@ found no grounded timer-DT switch and observed a registered Linux8250 ttyS0 cons
 Group 5l adds a separately gated source/controller variant: retain Memory progress
 and observer wait/snapshot, replace its one final explicit DBCN attempt with one
 ordinary KERN_INFO Linux-console summary in a distinct K230_UMK1 namespace.
+A leading newline in that same call separates the summary from Bash prompt
+output; timestamp-prefixed complete-line parsing stays strict.
 Baseline zero-input policy remains; no combined nohlt, raw MMIO, force/emergency
 printing, fallback, retry, IRQ/firmware/priority change or production fix.
 This requires a new matching kernel build and exact artifact/controller proof;

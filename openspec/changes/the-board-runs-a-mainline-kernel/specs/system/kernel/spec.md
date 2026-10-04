@@ -500,7 +500,10 @@ The diagnostic MAY offer a separately built MemoryPrintk variant with an exact
 gate requiring existing Memory/progress gates. It SHALL retain six worker sleeps/
 cached snapshots/atomic publication and one observer completion wait/acquire,
 suppress worker output, and replace its one final explicit DBCN attempt with one
-ordinary KERN_INFO fixed K230_UMK1 summary. It SHALL not force console ownership,
+ordinary KERN_INFO fixed K230_UMK1 summary. The same call SHALL begin with a
+newline to separate an existing shell prompt from the timestamped summary line;
+the parser SHALL not strip prompts to recover malformed records.
+It SHALL not force console ownership,
 use emergency/raw-MMIO/fallback/retry output or change IRQ/firmware/priority policy.
 Every prior source/config/package/trial identity SHALL remain unchanged.
 

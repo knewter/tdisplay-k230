@@ -45,7 +45,14 @@ Keep the Memory worker's six sleeps/cached snapshots/atomic publication and the
 observer's one 45-second completion wait and acquire snapshot. A separately gated
 variant replaces only that observer's final explicit DBCN attempt with one
 ordinary KERN_INFO/pr_info public K230_UMK1 record, retaining the same bounded
-fields. Log level 7 already includes KERN_INFO. Use registered console ownership;
+fields. Include a leading newline in that same call: the already observed Bash
+prompt has no trailing newline. Selected `kernel/printk/printk.c` lines 1434–1489
+adds a timestamp prefix to each message line, including an initial empty line;
+that separator leaves the following UMK line independently parseable. Without
+it, prompt and timestamp can share one physical UART line. Native fixtures must
+check exact leading-newline bytes; controller fixtures must model prefixed blank
+line plus prefixed summary, without stripping prompts. Physical framing remains
+UNVERIFIED. Log level 7 already includes KERN_INFO. Use registered console ownership;
 no force flush, emergency print, raw MMIO, IRQ changes, fallback or second channel.
 Base zero-input arguments are retained; do not combine the nohlt intervention.
 Every previous source/config/package/trial identity remains available unchanged.
