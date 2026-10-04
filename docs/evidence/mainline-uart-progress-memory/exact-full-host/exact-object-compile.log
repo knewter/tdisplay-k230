@@ -1,0 +1,10 @@
+make: Entering directory '/nix/store/1pvqbm4r3gqcvsabgkz5wvrpxfbk5k1v-linux-riscv64-unknown-linux-gnu-7.3.0-rc5-dev/lib/modules/7.3.0-rc5/source'
+make[1]: Entering directory '/build/module'
+warning: pahole version differs from the one used to build the kernel
+  The kernel was built with: 131
+  You are using:             0
+  CC      8250_core.o
+  CC      timer-riscv.o
+  CC      k230-uart-progress.o
+make[1]: Leaving directory '/build/module'
+make: Leaving directory '/nix/store/1pvqbm4r3gqcvsabgkz5wvrpxfbk5k1v-linux-riscv64-unknown-linux-gnu-7.3.0-rc5-dev/lib/modules/7.3.0-rc5/source'

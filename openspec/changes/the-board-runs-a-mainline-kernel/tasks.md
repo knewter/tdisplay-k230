@@ -1032,14 +1032,22 @@ completion of ordinary mainline acceptance.
       package drv identities and 12 exposed kernel source/config pairs equal.
       [Source/native/pure-evaluation proof](../../../docs/evidence/mainline-uart-progress-memory/source-host/README.md); no matching full artifact, target-object,
       controller or physical claim follows. Other 5i gates stay open.
-- [ ] 5i.2 Build matching Memory kernel/system/bundle/dev, inspect source/config,
+- [x] 5i.2 Build matching Memory kernel/system/bundle/dev, inspect source/config,
       CRC/closure/archive/original args/complete hardware DT. Host proof:
       `nix build .#kernelMainlineUartProgressMemoryTrialBootFiles .#kernelMainlineUartProgressMemory.dev --no-link --print-out-paths`
       then `python3 tools/mainline-drm-trial-inspect.py BUNDLE`.
-- [ ] 5i.3 Compile exact selected-header worker/getter/timer/observer objects;
+      Matching frozen `7af8f7b8` full build returned0; actual selected source,
+      config/Image/initrd/CRCs/closure/original args/full hardware DT passed.
+      [Exact/full host proof](../../../docs/evidence/mainline-uart-progress-memory/exact-full-host/README.md); no physical claim.
+- [x] 5i.3 Compile exact selected-header worker/getter/timer/observer objects;
       inspect consistent publication dependencies, ordinary lifetime/aligned
       buffer/page bounds and unchanged getter behavior. Host-only proof:
       `nix build .#kernelMainlineUartProgressMemoryExactObjects --no-link --print-out-paths`.
+      Offline narrow build from source checkpoint `29979175` returned0 against
+      actual selected dev, no overlay; three RISC-V objects, Memory observer/
+      state/completion/256-aligned buffer, target acquire/release/API and
+      inherited buffers/getters passed. Same host proof; concurrency/physical
+      output/receipt/recovery remain unverified.
 - [ ] 5i.4 Implement typed minimal-only Memory controller, reject conflicting
       breadcrumb/post-sample selection, retain exact qualification/normal guards,
       one fresh stimulus/passive capture and strict single-summary facts. Actual

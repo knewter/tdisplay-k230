@@ -1,0 +1,167 @@
+<k230_uart_progress_memory_observer>:
+  50:	0001                	nop
+  52:	0001                	nop
+  54:	0001                	nop
+  56:	0001                	nop
+
+0000000000000058 <.LFB4466>:
+  58:	1141                	addi	sp,sp,-16
+
+000000000000005a <.LM84>:
+  5a:	658d                	lui	a1,0x3
+
+000000000000005c <.LM85>:
+  5c:	e406                	sd	ra,8(sp)
+  5e:	e022                	sd	s0,0(sp)
+
+0000000000000060 <.LM86>:
+  60:	bf258593          	addi	a1,a1,-1038 # 2bf2 <.LASF2010+0x10>
+
+0000000000000064 <.LM87>:
+  64:	0800                	addi	s0,sp,16
+
+0000000000000066 <.LM88>:
+  66:	00000517          	auipc	a0,0x0
+			66: R_RISCV_PCREL_HI20	.LANCHOR0
+			66: R_RISCV_RELAX	*ABS*
+  6a:	00050513          	mv	a0,a0
+			6a: R_RISCV_PCREL_LO12_I	.L0
+			6a: R_RISCV_RELAX	*ABS*
+
+000000000000006e <.LM89>:
+  6e:	00000097          	auipc	ra,0x0
+			6e: R_RISCV_CALL_PLT	wait_for_completion_timeout
+			6e: R_RISCV_RELAX	*ABS*
+  72:	000080e7          	jalr	ra # 6e <.LM89>
+
+0000000000000076 <.LBB210>:
+  76:	00000697          	auipc	a3,0x0
+			76: R_RISCV_PCREL_HI20	k230_uart_progress_memory_state
+			76: R_RISCV_RELAX	*ABS*
+  7a:	0006a683          	lw	a3,0(a3) # 76 <.LBB210>
+			7a: R_RISCV_PCREL_LO12_I	.L0
+			7a: R_RISCV_RELAX	*ABS*
+
+000000000000007e <.LBB218>:
+  7e:	0230000f          	fence	r,rw
+
+0000000000000082 <.LBE210>:
+  82:	4819                	li	a6,6
+
+0000000000000084 <.LM124>:
+  84:	0036d71b          	srliw	a4,a3,0x3
+
+0000000000000088 <.LM125>:
+  88:	0066d79b          	srliw	a5,a3,0x6
+
+000000000000008c <.LM126>:
+  8c:	8b1d                	andi	a4,a4,7
+
+000000000000008e <.LM127>:
+  8e:	03f7f793          	andi	a5,a5,63
+
+0000000000000092 <.LM128>:
+  92:	8a9d                	andi	a3,a3,7
+
+0000000000000094 <.LM129>:
+  94:	8342                	mv	t1,a6
+
+0000000000000096 <.LM133>:
+  96:	4601                	li	a2,0
+
+0000000000000098 <.L45>:
+  98:	00c7d5bb          	srlw	a1,a5,a2
+
+000000000000009c <.LM136>:
+  9c:	8985                	andi	a1,a1,1
+  9e:	c191                	beqz	a1,a2 <.L44>
+			9e: R_RISCV_RVC_BRANCH	.L44
+
+00000000000000a0 <.LM137>:
+  a0:	8832                	mv	a6,a2
+
+00000000000000a2 <.L44>:
+  a2:	2605                	addiw	a2,a2,1
+
+00000000000000a4 <.LM139>:
+  a4:	fe661ae3          	bne	a2,t1,98 <.L45>
+			a4: R_RISCV_BRANCH	.L45
+
+00000000000000a8 <.LM140>:
+  a8:	00a038b3          	snez	a7,a0
+  ac:	00000617          	auipc	a2,0x0
+			ac: R_RISCV_PCREL_HI20	.LC1
+			ac: R_RISCV_RELAX	*ABS*
+  b0:	00060613          	mv	a2,a2
+			b0: R_RISCV_PCREL_LO12_I	.L0
+			b0: R_RISCV_RELAX	*ABS*
+
+00000000000000b4 <.LM142>:
+  b4:	10000593          	li	a1,256
+  b8:	00000517          	auipc	a0,0x0
+			b8: R_RISCV_PCREL_HI20	.LANCHOR1
+			b8: R_RISCV_RELAX	*ABS*
+  bc:	00050513          	mv	a0,a0
+			bc: R_RISCV_PCREL_LO12_I	.L0
+			bc: R_RISCV_RELAX	*ABS*
+
+00000000000000c0 <.LM143>:
+  c0:	00000097          	auipc	ra,0x0
+			c0: R_RISCV_CALL_PLT	snprintf
+			c0: R_RISCV_RELAX	*ABS*
+  c4:	000080e7          	jalr	ra # c0 <.LM143>
+
+00000000000000c8 <.LM144>:
+  c8:	85aa                	mv	a1,a0
+
+00000000000000ca <.LM145>:
+  ca:	00000517          	auipc	a0,0x0
+			ca: R_RISCV_PCREL_HI20	.LANCHOR1
+			ca: R_RISCV_RELAX	*ABS*
+  ce:	00050513          	mv	a0,a0
+			ce: R_RISCV_PCREL_LO12_I	.L0
+			ce: R_RISCV_RELAX	*ABS*
+  d2:	00000097          	auipc	ra,0x0
+			d2: R_RISCV_CALL_PLT	sbi_debug_console_write
+			d2: R_RISCV_RELAX	*ABS*
+  d6:	000080e7          	jalr	ra # d2 <.LM145+0x8>
+
+00000000000000da <.LM148>:
+  da:	60a2                	ld	ra,8(sp)
+  dc:	6402                	ld	s0,0(sp)
+  de:	4501                	li	a0,0
+  e0:	0141                	addi	sp,sp,16
+  e2:	4301                	li	t1,0
+  e4:	4581                	li	a1,0
+  e6:	4601                	li	a2,0
+  e8:	4681                	li	a3,0
+  ea:	4701                	li	a4,0
+  ec:	4781                	li	a5,0
+  ee:	4801                	li	a6,0
+  f0:	4881                	li	a7,0
+  f2:	8082                	ret
+
+00000000000000f4 <.LFE4466>:
+  f4:	0001                	nop
+			f4: R_RISCV_ALIGN	*ABS*+0x6
+  f6:	00000013          	nop
+
+00000000000000fa <.LPFE4468>:
+  fa:	0001                	nop
+  fc:	0001                	nop
+  fe:	0001                	nop
+ 100:	0001                	nop
+
+0000000000000102
+First release-publication instruction excerpt:
+
+00000000000002e0 <.LBB363>:
+ 2e0:	0310000f          	fence	rw,w
+
+00000000000002e4 <.LBB369>:
+ 2e4:	00000a97          	auipc	s5,0x0
+			2e4: R_RISCV_PCREL_HI20	k230_uart_progress_memory_state
+			2e4: R_RISCV_RELAX	*ABS*
+ 2e8:	000a8a93          	mv	s5,s5
+			2e8: R_RISCV_PCREL_LO12_I	.L0
+			2e8: R_RISCV_RELAX	*ABS*
