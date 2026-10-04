@@ -1,0 +1,25 @@
+{
+  "command": [
+    "flock",
+    "-n",
+    "/tmp/k230-nix-build.lock",
+    "nix",
+    "build",
+    ".#kernelMainlineUartProgressBreadcrumbsExactObjects",
+    "--offline",
+    "--no-link",
+    "--print-out-paths",
+    "--max-jobs",
+    "1",
+    "--cores",
+    "2"
+  ],
+  "derivation": "/nix/store/m2ns72nhlz0miwb75d6196aq8fsr6g47-k230-mainline-uart-progress-exact-objects.drv",
+  "evidence_class": "observed narrow host build; no hardware",
+  "no_full_kernel_rebuild": true,
+  "offline_dry_run_only_exact_object_derivation": true,
+  "output": "/nix/store/wi55m1p11zsi5shqrip4da6c4j420n2w-k230-mainline-uart-progress-exact-objects",
+  "returncode": 0,
+  "revision": "071086bc64418c04f7affd67ef56cddac960c896",
+  "shared_lock_released": true
+}

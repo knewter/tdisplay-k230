@@ -863,22 +863,26 @@ and task 5b.5 remain UNVERIFIED; no archive or production fix is claimed.
       original-source layering and inherited config/params are recorded in
       [source-host evidence](../../../docs/evidence/mainline-uart-progress-breadcrumbs/source-host/README.md).
       This is not a full matching build, actual configured object or physical proof.
-- [ ] 5g.2 Add/build the separately selected matching kernel/system/initrd/DT/
+- [x] 5g.2 Add/build the separately selected matching kernel/system/initrd/DT/
       bundle, preserving original artifact parameters and every existing
       package plus kernel source/config and trial derivation identity. Commit
       source-layering/identity evaluation and full installed config/closure/
       hash/CRC/hardware-DT inspection, distinct from physical output.
       Host proof: `nix build .#kernelMainlineUartProgressBreadcrumbsTrialBootFiles --no-link --print-out-paths`
       then `python3 tools/mainline-drm-trial-inspect.py BUNDLE`.
-- [ ] 5g.3 Compile the changed reporter against that exact selected kernel.dev
+- [x] 5g.3 Compile the changed reporter against that exact selected kernel.dev
       config/generated headers without a forced overlay; inspect regular
       helper/flag/strings lifetime, <=64-byte lengths, alignment64/page bounds
       and unchanged cached-getter dependencies. Host-only proof:
       `nix build .#kernelMainlineUartProgressBreadcrumbsExactObjects --no-link --print-out-paths`.
-      Preparation only: additive matching system/bundle and ExactObjects recipes
-      are evaluated and preserve all existing identities. Tasks 5g.2–3 remain
-      unchecked until the named matching build/inspection and exact-header object
-      commands actually pass; no full build or hardware action was performed.
+      Actual host proof: coordinator frozen 2a548135 resumed build returned 0;
+      verifier source 071086bc exact-object command returned 0 under shared lock.
+      Selected dev config/autoconf, three RISC-V objects/regular aligned storage,
+      source 7207, full bundle hashes/CRCs/closure and complete hardware DT equality
+      passed. [Exact/full host evidence](../../../docs/evidence/mainline-uart-progress-breadcrumbs/exact-full-host/README.md).
+      The initial coordinator session 143/broken-pipe interruption is distinct
+      from the successful completion receipt. No hardware/RX/return result is
+      inferred; tasks 5g.5–6 and task 5b.5 remain open.
 - [ ] 5g.4 Add a separate explicit minimal-only typed breadcrumb selector and
       strict fixed-record parser; preserve default/common/numeric protocols,
       exact artifact/dev/received-args preflight, sole volatile gates and fresh
