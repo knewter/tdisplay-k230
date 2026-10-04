@@ -1,0 +1,22 @@
+{
+  "command": [
+    "nix",
+    "build",
+    ".#kernelMainlineUartProgressMemoryExactObjects",
+    "--offline",
+    "--no-link",
+    "--print-out-paths",
+    "--max-jobs",
+    "1",
+    "--cores",
+    "2"
+  ],
+  "revision": "29979175f000a92ca687ce7a990fb18e0e3d4595",
+  "started_utc": "2026-10-04T04:48:37.513368+00:00",
+  "completed_utc": "2026-10-04T04:48:48.757130+00:00",
+  "returncode": 0,
+  "output_paths": [
+    "/nix/store/v5b3a2ny1gsiyd9fbwqrhq1c9g4lc6xf-k230-mainline-uart-progress-exact-objects"
+  ],
+  "proof_class": "narrow exact-header object build; no full rebuild/hardware"
+}
