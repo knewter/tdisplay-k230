@@ -1,0 +1,104 @@
+ELF Header:
+  Magic:   7f 45 4c 46 02 01 01 00 00 00 00 00 00 00 00 00
+  Class:                             ELF64
+  Data:                              2's complement, little endian
+  Version:                           1 (current)
+  OS/ABI:                            UNIX - System V
+  ABI Version:                       0
+  Type:                              REL (Relocatable file)
+  Machine:                           RISC-V
+  Version:                           0x1
+  Entry point address:               0x0
+  Start of program headers:          0 (bytes into file)
+  Start of section headers:          429960 (bytes into file)
+  Flags:                             0x1, RVC, soft-float ABI
+  Size of this header:               64 (bytes)
+  Size of program headers:           0 (bytes)
+  Number of program headers:         0
+  Size of section headers:           64 (bytes)
+  Number of section headers:         68
+  Section header string table index: 67
+
+Section Headers:
+  [Nr] Name              Type            Address          Off    Size   ES Flg Lk Inf Al
+  [ 0]                   NULL            0000000000000000 000000 000000 00      0   0  0
+  [ 1] .text             PROGBITS        0000000000000000 000040 000300 00  AX  0   0  8
+  [ 2] .rela.text        RELA            0000000000000000 043970 0008a0 18   I 65   1  8
+  [ 3] .data             PROGBITS        0000000000000000 000340 0000b0 00  WA  0   0  8
+  [ 4] .rela.data        RELA            0000000000000000 044210 000030 18   I 65   3  8
+  [ 5] .bss              NOBITS          0000000000000000 0003f0 000010 00  WA  0   0  8
+  [ 6] .export_symbol    PROGBITS        0000000000000000 0003f0 000010 00   A  0   0  8
+  [ 7] .rela.export_symbol RELA            0000000000000000 044240 000018 18   I 65   6  8
+  [ 8] __patchable_function_entries PROGBITS        0000000000000000 000400 000008 00 WAL  1   0  8
+  [ 9] .rela__patchable_function_entries RELA            0000000000000000 044258 000018 18   I 65   8  8
+  [10] __patchable_function_entries PROGBITS        0000000000000000 000408 000008 00 WAL  1   0  8
+  [11] .rela__patchable_function_entries RELA            0000000000000000 044270 000018 18   I 65  10  8
+  [12] __patchable_function_entries PROGBITS        0000000000000000 000410 000008 00 WAL  1   0  8
+  [13] .rela__patchable_function_entries RELA            0000000000000000 044288 000018 18   I 65  12  8
+  [14] __jump_table      PROGBITS        0000000000000000 000418 000060 00  WA  0   0  8
+  [15] .rela__jump_table RELA            0000000000000000 0442a0 000360 18   I 65  14  8
+  [16] __patchable_function_entries PROGBITS        0000000000000000 000478 000008 00 WAL  1   0  8
+  [17] .rela__patchable_function_entries RELA            0000000000000000 044600 000018 18   I 65  16  8
+  [18] .rodata.str1.8    PROGBITS        0000000000000000 000480 000297 01 AMS  0   0  8
+  [19] .init.text        PROGBITS        0000000000000000 000718 000318 00  AX  0   0  8
+  [20] .rela.init.text   RELA            0000000000000000 044618 0010f8 18   I 65  19  8
+  [21] __patchable_function_entries PROGBITS        0000000000000000 000a30 000008 00 WAL 19   0  8
+  [22] .rela__patchable_function_entries RELA            0000000000000000 045710 000018 18   I 65  21  8
+  [23] __patchable_function_entries PROGBITS        0000000000000000 000a38 000008 00 WAL 19   0  8
+  [24] .rela__patchable_function_entries RELA            0000000000000000 045728 000018 18   I 65  23  8
+  [25] __patchable_function_entries PROGBITS        0000000000000000 000a40 000008 00 WAL 19   0  8
+  [26] .rela__patchable_function_entries RELA            0000000000000000 045740 000018 18   I 65  25  8
+  [27] __patchable_function_entries PROGBITS        0000000000000000 000a48 000008 00 WAL  1   0  8
+  [28] .rela__patchable_function_entries RELA            0000000000000000 045758 000018 18   I 65  27  8
+  [29] __patchable_function_entries PROGBITS        0000000000000000 000a50 000008 00 WAL  1   0  8
+  [30] .rela__patchable_function_entries RELA            0000000000000000 045770 000018 18   I 65  29  8
+  [31] __patchable_function_entries PROGBITS        0000000000000000 000a58 000008 00 WAL  1   0  8
+  [32] .rela__patchable_function_entries RELA            0000000000000000 045788 000018 18   I 65  31  8
+  [33] __patchable_function_entries PROGBITS        0000000000000000 000a60 000008 00 WAL  1   0  8
+  [34] .rela__patchable_function_entries RELA            0000000000000000 0457a0 000018 18   I 65  33  8
+  [35] .rodata           PROGBITS        0000000000000000 000a68 0001ac 00   A  0   0  8
+  [36] .rela.rodata      RELA            0000000000000000 0457b8 000240 18   I 65  35  8
+  [37] .data..percpu     PROGBITS        0000000000000000 000c18 000100 00  WA  0   0 64
+  [38] .rela.data..percpu RELA            0000000000000000 0459f8 000048 18   I 65  37  8
+  [39] .discard.addressable PROGBITS        0000000000000000 000d18 000008 00  WA  0   0  8
+  [40] .rela.discard.addressable RELA            0000000000000000 045a40 000018 18   I 65  39  8
+  [41] .printk_index     PROGBITS        0000000000000000 000d20 000040 00  WA  0   0  8
+  [42] .rela.printk_index RELA            0000000000000000 045a58 0000c0 18   I 65  41  8
+  [43] .sbss             NOBITS          0000000000000000 000d60 000009 00  WA  0   0  4
+  [44] __timer_acpi_probe_table PROGBITS        0000000000000000 000d60 000020 00   A  0   0  8
+  [45] .rela__timer_acpi_probe_table RELA            0000000000000000 045b18 000018 18   I 65  44  8
+  [46] __timer_of_table  PROGBITS        0000000000000000 000d80 0000c8 00   A  0   0  8
+  [47] .rela__timer_of_table RELA            0000000000000000 045b30 000018 18   I 65  46  8
+  [48] .debug_info       PROGBITS        0000000000000000 000e48 010427 00      0   0  1
+  [49] .rela.debug_info  RELA            0000000000000000 045b48 0184f8 18   I 65  48  8
+  [50] .debug_abbrev     PROGBITS        0000000000000000 01126f 0009c1 00      0   0  1
+  [51] .debug_loclists   PROGBITS        0000000000000000 011c30 000675 00      0   0  1
+  [52] .rela.debug_loclists RELA            0000000000000000 05e040 002ca0 18   I 65  51  8
+  [53] .debug_aranges    PROGBITS        0000000000000000 0122a5 000060 00      0   0  1
+  [54] .rela.debug_aranges RELA            0000000000000000 060ce0 000138 18   I 65  53  8
+  [55] .debug_rnglists   PROGBITS        0000000000000000 012305 000122 00      0   0  1
+  [56] .rela.debug_rnglists RELA            0000000000000000 060e18 000f18 18   I 65  55  8
+  [57] .debug_line       PROGBITS        0000000000000000 012427 0012e6 00      0   0  1
+  [58] .rela.debug_line  RELA            0000000000000000 061d30 006990 18   I 65  57  8
+  [59] .debug_str        PROGBITS        0000000000000000 01370d 00ac0f 01  MS  0   0  1
+  [60] .debug_line_str   PROGBITS        0000000000000000 01e31c 000eea 01  MS  0   0  1
+  [61] .comment          PROGBITS        0000000000000000 01f206 000013 01  MS  0   0  1
+  [62] .note.GNU-stack   PROGBITS        0000000000000000 01f219 000000 00      0   0  1
+  [63] .debug_frame      PROGBITS        0000000000000000 01f220 000280 00      0   0  8
+  [64] .rela.debug_frame RELA            0000000000000000 0686c0 0006f0 18   I 65  63  8
+  [65] .symtab           SYMTAB          0000000000000000 01f4a0 01a6d0 18     66 4483  8
+  [66] .strtab           STRTAB          0000000000000000 039b70 009dfc 00      0   0  1
+  [67] .shstrtab         STRTAB          0000000000000000 068db0 0001d8 00      0   0  1
+Key to Flags:
+  W (write), A (alloc), X (execute), M (merge), S (strings), I (info),
+  L (link order), O (extra OS processing required), G (group), T (TLS),
+  C (compressed), x (unknown), o (OS specific), E (exclude),
+  D (mbind), p (processor specific)
+
+Symbol table '.symtab' contains 4510 entries:
+   Num:    Value          Size Type    Bind   Vis      Ndx Name
+     0: 0000000000000000     0 NOTYPE  LOCAL  DEFAULT  UND
+    59: 0000000000000000     4 OBJECT  LOCAL  DEFAULT   43 k230_uart_progress_ready_timer_irq
+  4509: 00000000000002e0    32 FUNC    GLOBAL DEFAULT    1 k230_uart_progress_timer_irq
+
+Symbol rows above are the K230 progress excerpt; header/section tables are complete.

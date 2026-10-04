@@ -1,0 +1,22 @@
+{
+  "command": [
+    "nix",
+    "build",
+    ".#kernelMainlineUartProgressPostSampleExactObjects",
+    "--offline",
+    "--no-link",
+    "--print-out-paths",
+    "--max-jobs",
+    "1",
+    "--cores",
+    "2"
+  ],
+  "revision": "e3edc5e6e71219216c78cddae6cf14166c82144d",
+  "started_utc": "2026-10-04T03:35:05.945773+00:00",
+  "completed_utc": "2026-10-04T03:35:18.333116+00:00",
+  "returncode": 0,
+  "output_paths": [
+    "/nix/store/jaxswy1k0vj56460sxc80mh4za57nrga-k230-mainline-uart-progress-exact-objects"
+  ],
+  "proof_class": "narrow exact-header object build; no full rebuild/hardware"
+}
