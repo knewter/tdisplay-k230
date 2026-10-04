@@ -1,0 +1,36 @@
+{
+  "evidence_class": "host fixture tests only",
+  "controller_revision": "c88af5314e19e2514b3ba9b6d30fb62608f7c5f2",
+  "focused": {
+    "command": "python3 tests/test_mainline_uart_progress_breadcrumbs_controller.py",
+    "tests": 17,
+    "seconds": 0.212,
+    "returncode": 0,
+    "private_log_bytes": 230,
+    "private_log_sha256": "86b2c355419a8610b7b972fd44e681b0d98ea00e1f350c1577b2e5b920f90380"
+  },
+  "initial_broad_failure": {
+    "command": "python3 -m unittest discover -s tests -p 'test_mainline_drm*trial.py'",
+    "tests": 214,
+    "errors": 3,
+    "seconds": 73.724,
+    "returncode": 1,
+    "error": "OSError: [Errno 122] Disk quota exceeded during host temporary fixture writes",
+    "affected_tests": [
+      "test_complete_begin_touch_finish_protocol_with_private_state",
+      "test_marker_free_mode_saved_and_restored_for_finish",
+      "test_private_state_rejects_wrong_boot_phase_permissions_and_symlink"
+    ],
+    "private_log_bytes": 6798,
+    "private_log_sha256": "def2ec89483da157063c5cfec5844ce0c59a1186ff8c62155e1858b1c019c04e"
+  },
+  "bounded_scratch_rerun": {
+    "command": "TMPDIR=$HOME/tmp/k230-mainline-uart-breadcrumbs-host-qualification/test-tmp python3 -m unittest discover -s tests -p 'test_mainline_drm*trial.py'",
+    "tests": 214,
+    "seconds": 35.486,
+    "returncode": 0,
+    "private_log_bytes": 1207,
+    "private_log_sha256": "1f9fe14fbac2aa44dee8a8a8a1effd6b4455ca4010bb7515136e8d29b9894d61"
+  },
+  "limits": "No source change, unrelated cleanup, board, UART or build access. Failed run preserved separately; passing rerun is not a hardware result."
+}

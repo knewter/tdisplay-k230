@@ -869,7 +869,7 @@ and task 5b.5 remain UNVERIFIED; no archive or production fix is claimed.
       helper/flag/strings lifetime, <=64-byte lengths, alignment64/page bounds
       and unchanged cached-getter dependencies. Host-only proof:
       `nix build .#kernelMainlineUartProgressBreadcrumbsExactObjects --no-link --print-out-paths`.
-- [ ] 5g.4 Add a separate explicit minimal-only typed breadcrumb selector and
+- [x] 5g.4 Add a separate explicit minimal-only typed breadcrumb selector and
       strict fixed-record parser; preserve default/common/numeric protocols,
       exact artifact/dev/received-args preflight, sole volatile gates and fresh
       readiness for at most one receipt stimulus. Test early/late records,
@@ -882,9 +882,13 @@ and task 5b.5 remain UNVERIFIED; no archive or production fix is claimed.
       `docs/evidence/mainline-uart-progress-breadcrumbs/controller/README.md`.
       Pre-UART qualification additionally ties the same kernel drv to its
       immutable reviewed worker source and unique compiled Image marker/gate
-      bytes, rejecting the old reporter even with CONFIG=y. This task remains
-      open until the actual matching bundle/dev/source qualification passes;
-      fixture and negative old-artifact checks do not satisfy that positive gate.
+      bytes, rejecting the old reporter even with CONFIG=y. Actual matching
+      bundle/dev/source preparation passed on 2026-10-04UTC against mhq10143…,
+      as recorded in
+      `docs/evidence/mainline-uart-progress-breadcrumbs/positive-controller-host/README.md`
+      and `result.json`; the named fixture commands also passed, preserving a
+      separate quota failure and bounded ~/tmp rerun. This is host-only proof;
+      group5g.5 and task5b.5 remain open, without candidate reboot or hardware claim.
 - [ ] 5g.5 After fresh protected normal recovery and exact host/controller proof,
       reserve board/UART for one comparison, capture fixed breadcrumb/sample/
       receipt facts and limits, then verify protected normal return or record
