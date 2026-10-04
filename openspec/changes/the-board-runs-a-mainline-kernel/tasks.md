@@ -916,8 +916,8 @@ and task 5b.5 remain UNVERIFIED; no archive or production fix is claimed.
       matching Bash receipt and samples 0/1 arrived; samples 2–5 and normal return
       did not arrive in 180.084 seconds. No further input or candidate reboot.
       [Physical evidence](../../../docs/evidence/mainline-uart-progress-breadcrumbs/physical-2026-10-03/README.md)
-      records fixed facts/deltas, firmware-return limits and distinct pending
-      operator recovery. This is observation proof only; task 5b.5 stays open.
+      records fixed facts/deltas, firmware-return limits and distinct operator-reset
+      recovery verified after the capture. This is observation proof only; task 5b.5 stays open.
 - [x] 5g.6 Reconcile presence/absence and firmware-return limits, retain unknown
       states and task5b.5, commit public-safe evidence and land/push with exact
       CI/published revision. Planning proof: `openspec validate --all`.
@@ -929,7 +929,10 @@ is `docs/evidence/mainline-uart-progress-breadcrumbs/physical-2026-10-03/deploym
 Independent review matched the fixed public facts/deltas to the private capture.
 Both markers and receipt are proven; later sample/firmware-return/normal-return
 remain unknown. The separately proposed next discriminator targets the sample 1
-write return versus third sleep. Manual recovery is pending; task 5b.5 stays open.
+write return versus third sleep. The subsequent user reset passed fresh protected
+normal postflight and Home IPC, with separately reviewed camera Home;
+`docs/evidence/mainline-uart-progress-breadcrumbs/physical-2026-10-03/operator-reset-recovery.json`
+records exact limits. Automatic return and task 5b.5 stay open.
 
 
 ## 5h. After-n1-write/third-post-sleep comparison (planned, UNVERIFIED)

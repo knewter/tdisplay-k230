@@ -259,7 +259,10 @@ The committed [breadcrumb packet](../../../docs/evidence/mainline-uart-progress-
 at revision 278769d0 records both worker points, a matched fresh receipt and
 numeric n0/n1, but no n2–n5 during the bounded 180-second capture. Its
 [result](../../../docs/evidence/mainline-uart-progress-breadcrumbs/physical-2026-10-03/result.json)
-is independently reviewed; protected normal operator recovery remains pending. A complete n1 line does
+is independently reviewed. The subsequent operator reset passed guarded fresh
+protected normal postflight and Home observation; its distinct
+[recovery receipt](../../../docs/evidence/mainline-uart-progress-breadcrumbs/physical-2026-10-03/operator-reset-recovery.json)
+does not qualify automatic return. A complete n1 line does
 not show its firmware call returning, or the worker reaching its third wakeup.
 No counter value, IRQ fault or ordinary-root result is inferred from that gap.
 

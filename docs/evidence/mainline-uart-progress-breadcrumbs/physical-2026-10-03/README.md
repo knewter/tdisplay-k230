@@ -74,8 +74,12 @@ why this one stopped producing records after sample 1.
 ## Recovery and next boundary
 
 The controller sent no candidate reboot. Normal return was not observed, so a
-new operator reset was requested only after capture completed. Guarded fresh
-normal postflight is pending. Automatic return, ordinary mainline `/init`, usable
+new operator reset was requested only after capture completed. The user reset
+then passed guarded fresh normal postflight: distinct boot identity, exact
+system/profile/kernel/init, eight boot hashes, three active services and
+registration absence. Home IPC returned zero; a separate reviewed camera
+observation showed normal Home, with angle/focus limits.
+[Operator reset receipt](operator-reset-recovery.json). Automatic return, ordinary mainline `/init`, usable
 root, panel/glass and task 5b.5 remain **UNVERIFIED**.
 
 The next source audit must distinguish the sample 1 SBI return from the following
@@ -88,4 +92,4 @@ The evidence revision `278769d0` passed CI run `37171186624` and deployed.
 Both published work and physical evidence pages returned HTTP 200 with that
 exact revision; [deployment receipt](deployment.json). Independent review matched
 all public facts/deltas and capture digest to the protected actual result.
-Publication does not change the pending recovery or ordinary-root/glass gates.
+Publication does not change the separate manual recovery or ordinary-root/glass gates.

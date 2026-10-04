@@ -355,8 +355,9 @@ reboot, and SHALL NOT establish a causal fix, root/touch or automatic return.
 *Grounding: committed [physical packet](../../../../../../docs/evidence/mainline-uart-progress-breadcrumbs/physical-2026-10-03/README.md)
 and [result](../../../../../../docs/evidence/mainline-uart-progress-breadcrumbs/physical-2026-10-03/result.json)
 at revision 278769d0 record both Breadcrumbs points, a matched receipt and
-n0/n1 but no n2–n5 in 180 seconds; only protected normal recovery remains
-pending. The read immutable k5a5zrhq… worker at 67–74 sleeps/checks before snapshot
+n0/n1 but no n2–n5 in 180 seconds. The subsequent operator reset passed guarded
+fresh protected normal postflight and Home observation; automatic return
+remains unverified. The read immutable k5a5zrhq… worker at 67–74 sleeps/checks before snapshot
 and at 98 calls SBI, as detailed in group 5h's design. This is a source-supported
 next boundary, not committed proof of the new diagnostic or a fault.*
 

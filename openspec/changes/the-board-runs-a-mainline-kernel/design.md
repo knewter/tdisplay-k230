@@ -560,7 +560,9 @@ controller selection. The committed [breadcrumb packet](../../../docs/evidence/m
 and [result](../../../docs/evidence/mainline-uart-progress-breadcrumbs/physical-2026-10-03/result.json)
 at revision 278769d0 record both worker points, a matched fresh receipt and
 complete n0/n1, then no n2–n5 in 180s. CI 37171186624 and exact publication passed;
-protected normal recovery remains pending. No guessed counter/IRQ diagnosis
+the subsequent operator reset passed guarded fresh protected normal recovery
+and Home observation, recorded in the packet’s distinct recovery receipt.
+Automatic return remains unverified. No guessed counter/IRQ diagnosis
 is used. The immutable
 selected source `k5a5zrhqy9ypr3mja1r50mdlcgi74i1f` has worker sleep/stop at
 `drivers/soc/canaan/k230-uart-progress.c:67–70`, snapshot at 74 and numeric SBI
