@@ -1221,6 +1221,35 @@ completion of ordinary mainline acceptance.
       or normal return in 180.1019s. Original prompt classification misses the
       observed Readline prefix; later host-only correction preserves original
       physical result. NEW operator reset/recovery remains explicitly PENDING.
-- [ ] 5l.6 Independently reconcile changed-channel limits, review, land/push
+- [x] 5l.6 Independently reconcile changed-channel limits, review, land/push
       evidence and verify exact CI/published revision. Planning proof:
+      `openspec validate the-board-runs-a-mainline-kernel --strict`.
+      Independent physical-packet review PASS; master `adf3ac81`, CI
+      37186803102 PASS and exact published work/physical/readiness evidence
+      revision HTTP 200 verified: [publication receipt](../../../docs/evidence/mainline-uart-progress-memory-printk/physical-2026-10-04/publication.json).
+      NEW protected recovery remains PENDING; no ordinary acceptance inferred.
+
+
+## 5m. Same-image MemoryPrintk tickless-off comparison (planned, UNVERIFIED)
+
+- [ ] 5m.1 Add typed `--uart-progress-memory-printk-nohz-off` and focused fixtures.
+      Require existing minimal/same-image/progress/Memory/no-stimulus/MemoryPrintk;
+      reject conflicts/types/modes before UART. Qualify actual compiled config/Image
+      setup; append only trailing nohz=off. Preserve defaults, strict parsing,
+      zero candidate writes and protected recovery. No build/UART. Narrow proof:
+      `python3 tests/test_mainline_uart_progress_memory_printk_nohz_off_controller.py`.
+- [ ] 5m.2 Run actual existing p2kdar89/24hbalyl artifact/controller preparation,
+      verify unchanged source/config/Image/initrd/DT/manifest/load/archive and sole
+      literal 416→425-byte transform. Commit executed qualifier and safe receipt.
+      Host-only command: `python3 docs/evidence/mainline-uart-progress-memory-printk/nohz-off-host/qualification-command.py --bundle BUNDLE --dev DEV --normal-report PRIVATE_NORMAL`.
+      The executed private copy records its frozen source/worktree and private
+      output directory; no implicit build or UART. Freeze and review its exact
+      code/parameters before physical use.
+- [ ] 5m.3 After NEW protected normal recovery and completed host gates, reserve
+      board/UART for one passive same-image comparison. Commit fixed physical
+      facts plus independently verified recovery or explicit pending NEW reset.
+      Command: `python3 tools/mainline-drm-initrd-shell-trial.py --mode minimal --same-image-shell-pid1 --uart-progress --uart-progress-memory --uart-progress-memory-no-stimulus --uart-progress-memory-printk --uart-progress-memory-printk-nohz-off --bundle BUNDLE --manifest PRIVATE_MANIFEST --normal-report PRIVATE_NORMAL --log PRIVATE_LOG --result PRIVATE_RESULT`.
+      No cause/RX/output-return/ordinary-root inference; 5b.5 stays open.
+- [ ] 5m.4 Independently reconcile tickless-policy limits, review, land/push evidence
+      and inspect exact CI/published revision. Planning proof:
       `openspec validate the-board-runs-a-mainline-kernel --strict`.

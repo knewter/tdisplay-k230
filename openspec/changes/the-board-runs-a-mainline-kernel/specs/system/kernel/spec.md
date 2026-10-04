@@ -538,3 +538,42 @@ The registered backend is observed; future UMK output and useful mainline boot a
 - **WHEN** capture is incomplete or output fails strict qualification
 - **THEN** preserve unknown scheduling/timeout/output facts with no further input
 - **AND** require independent protected recovery or operator reset
+
+
+### Requirement: Optional same-image comparison disables tickless activation only
+
+The controller MAY offer a typed MemoryPrintk nohz-off comparison. It SHALL
+require minimal/same-image/progress/Memory/no-stimulus/MemoryPrintk selectors
+and reject type/mode/competing selector conflicts before UART access. It SHALL
+qualify the same actual source/config/Image/archive/manifest/DT/load identities,
+NO_HZ_COMMON/NO_HZ_FULL/HIGH_RES_TIMERS/HZ=250/RISCV_TIMER/RISCV_SBI support
+and unique linked nohz setup. It SHALL append exactly one trailing `nohz=off`
+to the qualified baseline, reject original/alternate/bare/empty/duplicate nohz
+forms and arbitrary additions, and preserve all existing default transports.
+
+The diagnostic SHALL keep its source/worker/observer/output gate and fresh exact
+arguments/backend/strict UMK parsing. It SHALL send zero candidate bytes through
+bounded capture/error/finally, record NOT_REQUESTED and RX NOT_TESTED and keep
+protected normal recovery independently gated. A valid record SHALL support
+progress under changed tickless policy only, without inferring hardware periodic
+interrupts, a timer/IRQ/firmware cause, printk return or ordinary boot acceptance.
+Missing output SHALL remain unknown. Runtime policy observation SHALL remain
+distinct from compiled parser support and received-token evidence.
+
+<!-- UNVERIFIED: typed nohz-off controller, actual host preparation and new physical comparison are planned. -->
+*Grounding: [MemoryPrintk capture](../../../../../../docs/evidence/mainline-uart-progress-memory-printk/physical-2026-10-04/README.md)
+and [selected config/Image/source audit](../../../../../../docs/research/mainline-memory-printk-periodic-tick-comparison-2026-10-04.md).
+The compiled option is grounded; new output and usable mainline boot are unverified.*
+
+#### Scenario: Tickless-off comparison yields a qualified summary
+
+- **WHEN** fresh exact arguments include the sole nohz=off intervention
+- **AND** one strict fresh UMK record satisfies the existing bounded state rules
+- **THEN** record progress under changed tickless policy with zero input
+- **AND** preserve separate output-return, RX, recovery and ordinary boot limits
+
+#### Scenario: Tickless-off comparison remains incomplete
+
+- **WHEN** output is absent, malformed or capture fails
+- **THEN** preserve unknown facts without sending candidate bytes
+- **AND** require independent protected recovery or a new operator reset

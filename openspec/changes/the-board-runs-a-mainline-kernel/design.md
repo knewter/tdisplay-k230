@@ -819,3 +819,50 @@ extra SBI markers, simultaneous nohlt, MMIO polling and force-console bypasses.
 Source/backend grounding and limits are in the linked research note. First land
 native/source identity proof, then freeze matching full build, target object and
 actual artifact/controller gates before one reserved physical boot.
+
+
+## Same-image tickless-policy comparison (group 5m, UNVERIFIED)
+
+Layer a typed controller-only `--uart-progress-memory-printk-nohz-off` selector
+on the existing MemoryPrintk policy. Require minimal/same-image/progress/Memory/
+no-stimulus/MemoryPrintk and reject invalid types, modes and competing polling,
+point, clock, trace or timer selectors before opening UART. Reuse the actual
+p2kdar89 bundle, xna7x12 kernel, 24hbalyl dev and 0l4mgw9 source. No kernel,
+initrd, DT build or new transfer is necessary. The board operator still verifies
+existing staged artifacts and fresh protected normal state before use.
+
+Keep matching source/config/Image/archive/manifest/load/CRC/DT guards and all
+previous package identities/default transports. Require actual NO_HZ_COMMON and
+NO_HZ_FULL, HIGH_RES_TIMERS, HZ=250, RISCV_TIMER and RISCV_SBI configuration,
+matching config/Image hashes and one linked NUL-terminated `nohz=` setup. Do not
+require the unset legacy CONFIG_NO_HZ symbol. Reconstruct the exact qualified
+MemoryPrintk baseline and append ONLY trailing `nohz=off`: literal U-Boot
+transport changes 416 to 425 bytes within the existing 512-byte bound. Reject
+original nohz/nohz_full tokens, bare/empty/alternate/duplicate nohz forms and
+arbitrary bootarg syntax or changes; do not expose a general option editor.
+
+Retain worker/observer/source/format, fresh exact received args and Linux ttyS0
+backend proof, strict complete-line UMK namespace and bounded state parsing,
+and the qualified optional Readline prompt prefix. Capture remains 180 seconds
+with zero candidate writes on success/error/finally, NOT_REQUESTED receipt,
+zero attempts and RX NOT_TESTED. Only independently ordered fresh normal boot
+markers and protected normal postflight authorize recovery writes. No candidate
+reboot, flash or persistent environment/profile/card change.
+
+The [read source and actual config/Image](../../../docs/research/mainline-memory-printk-periodic-tick-comparison-2026-10-04.md)
+show this inhibits global tickless activation, without disabling high-resolution
+timers or guaranteeing hardware timer interrupts. nohlt already restarts ticks
+in its poll arm; do not relabel that previous test as a tickless-off test. Exact
+received token and compiled parser support do not separately observe runtime
+activation. A valid record supports progress under changed tick policy, not an
+IRQ cause or printk return. Silence retains scheduling, sleep/wakeup and output
+unknowns. Ordinary /init/root/panel/glass acceptance remains separate.
+
+Fixtures cover pre-open dependency/type/conflict rejection; sole exact transform
+and unchanged defaults; unsupported/mismatched actual config/Image; stale/wrong
+args, valid/malformed/duplicate/truncated/wrong-channel records; zero writes on
+all timeout/error paths and independently guarded recovery. Commit an executed
+actual-artifact qualifier and safe receipts before physical use. Rejected: combined
+nohlt/highres/clock options, new markers, raw IRQ/MMIO intervention and unnecessary
+full builds. A fixed Bash-PID1 autonomous probe is a separately planned fallback,
+not authorization to pass arbitrary scripts through this selector.

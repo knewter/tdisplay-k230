@@ -352,3 +352,20 @@ all previous package/source/config/trial identities remain unchanged. Native,
 target-object, full build, physical output and recovery are separate. A record
 supports observer progress through the changed output path, not cause or API
 return. Silence remains unknown; ordinary 5b.5 stays open. Land this plan first.
+
+
+## Same-image continuation: disable tickless activation
+
+The [MemoryPrintk physical capture](../../../docs/evidence/mainline-uart-progress-memory-printk/physical-2026-10-04/README.md)
+reached Bash with exact arguments and a registered Linux console, but no observer
+record or automatic normal return in 180.1019 seconds. Group 5m tests one remaining
+tick-policy dependency using the same already-built p2 MemoryPrintk image: append
+only volatile `nohz=off`, retaining zero candidate input. The
+[source/config/Image audit](../../../docs/research/mainline-memory-printk-periodic-tick-comparison-2026-10-04.md)
+grounds this option. It disables tickless activation; high-resolution timers and
+the RISC-V oneshot/SBI timer path remain. Earlier nohlt already restarts idle
+ticks, so its negative result limits this hypothesis without testing the global
+nohz activation policy. No kernel/initrd/DT rebuild or firmware/IRQ/MMIO change.
+Land typed controller planning first; actual host qualification and NEW protected
+normal recovery precede one physical comparison. Runtime policy, observer output
+and recovery remain UNVERIFIED; ordinary task 5b.5 stays open.
