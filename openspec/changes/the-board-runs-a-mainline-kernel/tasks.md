@@ -1107,11 +1107,37 @@ completion of ordinary mainline acceptance.
       token/build/UART. [Executed qualifier and safe receipt](../../../docs/evidence/mainline-uart-progress-memory/no-stimulus-host/README.md).
       Historical baseline acceptance is host-only; fresh physical preflight and
       no-stimulus capture/recovery remain UNVERIFIED.
-- [ ] 5j.3 After fresh protected normal recovery and host policy/artifact proof,
+- [x] 5j.3 After fresh protected normal recovery and host policy/artifact proof,
       reserve board/UART for one same-image zero-stimulus capture; commit fixed
       facts plus protected recovery or explicit pending operator reset. Command:
       `python3 tools/mainline-drm-initrd-shell-trial.py --mode minimal --same-image-shell-pid1 --uart-progress --uart-progress-memory --uart-progress-memory-no-stimulus --bundle BUNDLE --manifest PRIVATE_MANIFEST --normal-report PRIVATE_NORMAL --log PRIVATE_LOG --result PRIVATE_RESULT`.
       No RX, root/glass or cause inference; 5b.5 stays open.
+      [Actual zero-input capture](../../../docs/evidence/mainline-uart-progress-memory/no-stimulus-physical-2026-10-04/README.md):
+      fresh banner/args/Bash, zero attempts/NOT_REQUESTED/RX NOT_TESTED, no summary
+      in 180.0995s, no protocol error or normal return. NEW reset requested after
+      completion; separate recovery is pending.
 - [ ] 5j.4 Reconcile removed-input intervention limits, independently review,
       land/push evidence and verify exact CI/published revision. Planning proof:
+      `openspec validate the-board-runs-a-mainline-kernel --strict`.
+
+
+## 5k. Same built Memory image with idle polling (planned, UNVERIFIED)
+
+- [ ] 5k.1 Implement typed polling selector requiring all Memory/no-stimulus
+      dependencies, qualify actual config/linked setup and append only bare nohlt.
+      Retain strict zero candidate writes and all default transports. Narrow proof:
+      `python3 tests/test_mainline_uart_progress_memory_poll_idle_controller.py`.
+- [ ] 5k.2 Run actual existing lznjjfx1/1pvqbm4 artifact preparation with unchanged
+      source/Image/config/DT/archive/manifest/load checks; verify exact one-token
+      transform and 381→387-byte literal transport. Commit executed qualifier and
+      safe controller/artifact receipt. No build/UART. Host proof: actual
+      `prepare_trial`, `prepare_uart_progress(..., uart_progress_memory=True)`
+      plus typed polling preparation and exact previous-proof artifact equality.
+- [ ] 5k.3 After NEW protected normal recovery and actual host proof, reserve
+      board/UART and run one passive same-image polling comparison; commit fixed
+      facts plus independent recovery or explicit pending operator reset. Command:
+      `python3 tools/mainline-drm-initrd-shell-trial.py --mode minimal --same-image-shell-pid1 --uart-progress --uart-progress-memory --uart-progress-memory-no-stimulus --uart-progress-memory-poll-idle --bundle BUNDLE --manifest PRIVATE_MANIFEST --normal-report PRIVATE_NORMAL --log PRIVATE_LOG --result PRIVATE_RESULT`.
+      No cause/RX/ordinary-root inference; 5b.5 stays open.
+- [ ] 5k.4 Independently reconcile idle/tick-policy limits, review, land/push
+      fixed evidence and verify exact CI/published revision. Planning proof:
       `openspec validate the-board-runs-a-mainline-kernel --strict`.

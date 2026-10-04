@@ -736,3 +736,37 @@ args, with zero candidate bytes throughout. Candidate normal-looking text cannot
 authorize helper writes. Test same args, pre-open selector rejection, default
 one-stimulus regression and separate actual protected recovery. Requalify actual
 existing artifacts before physical use; no new kernel or full build is required.
+
+
+## Same-image idle-polling comparison (group 5k, UNVERIFIED)
+
+Add typed `--uart-progress-memory-poll-idle`, requiring minimal/same-image/
+progress/Memory AND no-stimulus selectors. Reject conflicts/types/modes before
+UART. Reuse the exact lznjjfx1 bundle, 1pvqbm4 dev, 307d7c source, Image/config/DT,
+archive/manifest/load checks. Qualify `CONFIG_GENERIC_IDLE_POLL_SETUP=y` and the
+linked NUL-terminated `nohlt` setup. The sole bootarg difference is one trailing
+bare `nohlt`; reconstruct the exact literal argument transform and reject
+`hlt`, duplicate/value-form tokens or arbitrary additions. Both previous Memory
+policies and all other default transports remain unchanged. No kernel rebuild.
+
+After boot, preserve strict zero-write behavior on success/timeout/error/finally,
+180-second passive capture, fresh argument/summary parsing, NOT_REQUESTED receipt,
+zero attempts and RX NOT_TESTED. Normal postflight writes require the existing
+ordered fresh SPL→6.6.36→login→normal-prompt gate and independent protected
+identities/eight hashes/three services/registration absence/distinct boot checks.
+No candidate reboot or persistent environment/card/profile change.
+
+The [source audit](../../../docs/research/mainline-memory-idle-polling-comparison-2026-10-04.md)
+shows nohlt forces IRQ-enabled polling and restarts the tick. A summary supports
+an idle/tick-policy-dependent difference only; absent output retains all worker,
+observer, timer, scheduler and final-firmware-output limits. This is neither a
+production power policy nor ordinary `/init`/root/panel/glass acceptance.
+Rejected: cpuidle.off alone (default WFI remains), extra firmware-output markers,
+new MMIO/IRQ/firmware/scheduler modifications and an unnecessary full build.
+
+Fixtures must test typed pre-open dependencies/conflicts, exact sole argument
+change, unchanged default/no-stimulus transports, unsupported/mismatched actual
+config/Image gates, stale/wrong received args, strict valid/malformed/duplicate/
+truncated summaries and zero candidate writes on read error/overflow/timeout.
+Run actual existing-artifact preparation before the one physical comparison;
+preserve fresh recovery or explicit pending operator reset separately.

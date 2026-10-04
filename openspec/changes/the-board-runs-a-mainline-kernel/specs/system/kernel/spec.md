@@ -457,3 +457,38 @@ is a distinct controller intervention using existing immutable artifacts.*
 - **WHEN** passive capture times out or records malformed/missing output
 - **THEN** preserve unknown facts and send no additional candidate bytes
 - **AND** require independently qualified normal recovery or operator reset
+
+
+### Requirement: Optional polling comparison changes only qualified idle policy
+
+The controller MAY offer a typed Memory polling-idle comparison. It SHALL
+require minimal/same-image/progress/Memory/no-stimulus selectors and reject
+conflicts before UART access. It SHALL qualify the same realized source/config/
+Image/archive/manifest and append exactly one bare volatile `nohlt` after
+checking the selected built-in polling setup. It SHALL reject hlt, duplicates,
+value variants and arbitrary bootarg changes; defaults SHALL remain unchanged.
+
+After boot it SHALL send zero candidate bytes and retain bounded passive capture,
+strict fresh args/summary parsing, receipt NOT_REQUESTED, zero stimulus attempts
+and RX NOT_TESTED. Protected normal recovery SHALL remain independently gated.
+A difference SHALL be described only as idle/tick-policy dependence, without
+inferring WFI/IRQ/timer/firmware cause, ordinary-root acceptance or a production
+power policy. Missing output SHALL remain unknown.
+
+<!-- UNVERIFIED: typed polling controller and physical idle-policy comparison are planned. -->
+*Grounding: [zero-input physical result](../../../../../../docs/evidence/mainline-uart-progress-memory/no-stimulus-physical-2026-10-04/README.md)
+and [read source/config/linked setup](../../../../../../docs/research/mainline-memory-idle-polling-comparison-2026-10-04.md).
+The already-built setup is host evidence; runtime polling and usable boot are unverified.*
+
+#### Scenario: Polling produces a valid completed summary
+
+- **WHEN** exact received arguments include the sole bare nohlt intervention
+- **AND** a strict fresh summary reports six completed snapshots
+- **THEN** record that progress with zero input and idle/tick-policy limits
+- **AND** preserve separate RX, normal recovery and ordinary boot acceptance
+
+#### Scenario: Polling capture is incomplete
+
+- **WHEN** output is absent, malformed or capture fails
+- **THEN** preserve unknown progress and send no additional candidate bytes
+- **AND** require independent protected recovery or operator reset

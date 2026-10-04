@@ -317,3 +317,18 @@ summary and protected normal gates remain; receipt becomes NOT_REQUESTED and RX
 NOT_TESTED. A difference under withheld input is not its cause or RX acceptance.
 Missing summary remains unknown; fresh operator recovery is required first.
 Land this bounded plan before implementation; 5b.5 stays open.
+
+
+## Same-image continuation: test idle/tick-policy dependence
+
+The [zero-input capture](../../../docs/evidence/mainline-uart-progress-memory/no-stimulus-physical-2026-10-04/README.md)
+reached Bash but no summary in 180.0995s with zero stimulus. Group 5k adds one
+separately typed idle-polling comparison: append only bare volatile `nohlt` to
+that same Memory image's qualified bootargs and retain zero candidate input.
+[Read source/config/linked setup](../../../docs/research/mainline-memory-idle-polling-comparison-2026-10-04.md)
+support this bounded discriminator without a rebuild. No IRQ/MMIO/firmware,
+worker/observer, affinity/priority or production power-policy change. A result
+can show idle/tick-policy dependence, not its cause. New runtime selection,
+summary and recovery remain UNVERIFIED; ordinary task 5b.5 stays open. Fresh
+normal recovery and actual host qualification precede one boot. Land this plan
+before controller implementation.
