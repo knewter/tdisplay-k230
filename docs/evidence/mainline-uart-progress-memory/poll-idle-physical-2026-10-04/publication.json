@@ -1,0 +1,21 @@
+{
+  "schema": "k230-evidence-publication-v1",
+  "revision": "e2a02cb0015e027f10c7d3fbbacfe1534163a329",
+  "ci_run": 37182761318,
+  "ci_conclusion": "success",
+  "independent_physical_review": "PASS",
+  "published": [
+    {
+      "url": "https://knewter.github.io/tdisplay-k230/work/",
+      "http_status": 200,
+      "revision_verified": true
+    },
+    {
+      "url": "https://knewter.github.io/tdisplay-k230/evidence/docs-evidence-mainline-uart-progress-memory-poll-idle-physical-2026-10-04-readme-md/",
+      "http_status": 200,
+      "revision_verified": true
+    }
+  ],
+  "normal_recovery": "VERIFIED_NEW_OPERATOR_RESET",
+  "ordinary_mainline_acceptance": "UNVERIFIED"
+}

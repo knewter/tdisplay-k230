@@ -1154,9 +1154,13 @@ completion of ordinary mainline acceptance.
       exact nohlt args/Bash, zero input, no summary/normal return in 180.0929s;
       no protocol error. Subsequent NEW reset passed normal/Home checks; normal
       system restored. Automatic return and ordinary acceptance remain UNVERIFIED.
-- [ ] 5k.4 Independently reconcile idle/tick-policy limits, review, land/push
+- [x] 5k.4 Independently reconcile idle/tick-policy limits, review, land/push
       fixed evidence and verify exact CI/published revision. Planning proof:
       `openspec validate the-board-runs-a-mainline-kernel --strict`.
+      Independent physical/recovery review PASS; master `e2a02cb0`, CI
+      37182761318 PASS and exact published work/evidence revision HTTP 200
+      verified: [publication receipt](../../../docs/evidence/mainline-uart-progress-memory/poll-idle-physical-2026-10-04/publication.json).
+      Normal is restored; no timer/firmware cause or ordinary acceptance inferred.
 
 
 ## 5l. Memory observer through registered Linux console (planned, UNVERIFIED)
