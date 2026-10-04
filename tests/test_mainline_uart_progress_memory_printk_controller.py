@@ -68,6 +68,42 @@ class MemoryPrintkControllerTests(unittest.TestCase):
         self.assertTrue(result['memory_summary_valid']);self.assertEqual(result['summary_channel'],'linux-printk')
         self.assertEqual(result['receipt_status'],'NOT_REQUESTED');self.assertEqual(result['rx_status'],'NOT_TESTED')
 
+    def test_observed_bracketed_paste_prompt_at_end_split_and_CRLF(self):
+        enabled=READY.replace(b'sh-5.3# ',b'\x1b[?2004hsh-5.3# ')
+        data=BOOT+enabled
+        for chunks in ([data],[data[:-9],data[-9:-3],data[-3:]],
+                       [data.replace(b'\n',b'\r\n')],
+                       [(BOOT+enabled+b'\n'+summary()).replace(b'\n',b'\r\n')]):
+            wire=passive.PassiveWire(chunks);result=observe(wire)
+            self.assertTrue(result['primary_prompt_observed']);self.assertTrue(result['readiness_observed'])
+            self.assertEqual(wire.writes,[]);self.assertEqual(result['stimulus_attempts'],0)
+            self.assertEqual(result['receipt_status'],'NOT_REQUESTED');self.assertEqual(result['rx_status'],'NOT_TESTED')
+        wire=passive.PassiveWire([BOOT+enabled[:-1]]);result=observe(wire)
+        self.assertFalse(result['primary_prompt_observed']);self.assertEqual(wire.writes,[])
+
+    def test_prompt_prefix_never_accepts_other_ANSI_echo_or_embedded_CR(self):
+        for prefix in (b'\x1b[0m',b'\x1b[?2004l',b'\x1b[?2004h\x1b[0m',b'\x1b[?2004h\x1b[?2004h',
+                       b'\x1b[?200\r4h',b'corrupt\r\x1b[?2004h',b"printf '"):
+            wire=passive.PassiveWire([BOOT+READY.replace(b'sh-5.3# ',prefix+b'sh-5.3# ')])
+            result=observe(wire);self.assertFalse(result['primary_prompt_observed'])
+            self.assertFalse(result['readiness_observed']);self.assertEqual(wire.writes,[])
+        for prompt in (b'\x1b[?2004hsh-5.\r3# ',b'\x1b[?2004hsh-5.3# \r',
+                       b'\x1b[?2004hsh-5.3# \x1b[0m'):
+            wire=passive.PassiveWire([BOOT+READY.replace(b'sh-5.3# ',prompt)])
+            result=observe(wire);self.assertFalse(result['primary_prompt_observed']);self.assertEqual(wire.writes,[])
+
+    def test_prompt_prefix_does_not_sanitize_raw_kernel_qualification(self):
+        enabled=READY.replace(b'sh-5.3# ',b'\x1b[?2004hsh-5.3# ')
+        for boot in (BANNER+b'\x1b[?2004h'+CMDLINE+REG+ENABLE,
+                     BANNER+CMDLINE+b'\x1b[?2004h'+REG+ENABLE,
+                     BANNER+CMDLINE+REG+b'\x1b[?2004h'+ENABLE):
+            wire=passive.PassiveWire([boot+enabled,b'\n'+summary()]);result=observe(wire)
+            self.assertFalse(result['readiness_observed']);self.assertFalse(result['memory_summary_valid'])
+            self.assertEqual(wire.writes,[])
+        wire=passive.PassiveWire([BOOT+enabled,b'\n\x1b[?2004h'+summary()]);result=observe(wire)
+        self.assertFalse(result['memory_summary_valid']);self.assertIn('malformed-memory-printk-summary',result['protocol_errors'])
+        self.assertEqual(wire.writes,[])
+
     def test_real_pump_split_backend_prompt_and_summary_CRLF(self):
         data=(BOOT+READY+b'\n'+summary()).replace(b'\n',b'\r\n')
         wire=passive.PassiveWire([data[:40],data[40:175],data[175:-13],data[-13:]])

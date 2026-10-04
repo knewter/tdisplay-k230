@@ -770,7 +770,10 @@ def observe_uart_progress(session, token, expected_args, *, timeout=180, readine
                         init_end = found.end()
                         entry = True
                 if entry and not sent and (not uart_progress_memory_no_stimulus or not ready) and clock() - started <= readiness_timeout:
-                    prompt = re.search(rb"^sh-5\.3# " if uart_progress_memory_printk else rb"^sh-5\.3# (?=\n|\Z)", phase[init_end:], re.M)
+                    # Bash Readline may enable bracketed paste immediately
+                    # before its primary prompt. Accept only this observed
+                    # prefix here; raw kernel args/backend/records stay intact.
+                    prompt = re.search(rb"^(?:\x1b\[\?2004h)?sh-5\.3# " if uart_progress_memory_printk else rb"^sh-5\.3# (?=\n|\Z)", phase[init_end:], re.M)
                     if prompt:
                         suffix = phase[init_end:][prompt.end():]
                         # Only newlines and complete qualified direct records may
