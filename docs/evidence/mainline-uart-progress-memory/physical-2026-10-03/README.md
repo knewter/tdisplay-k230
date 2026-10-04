@@ -49,11 +49,15 @@ can fail or block. A possible M-mode stall can prevent S-mode observation. This
 run does not establish that repeated worker output caused the earlier result,
 or identify a UART/IRQ/timer/scheduler/firmware fault.
 
-Capture is complete; root released board/UART. A NEW operator reset is explicitly
-pending, requested only after this test. The reset verified before this trial
-cannot establish its recovery. Fresh guarded normal postflight is required before
-another candidate boot. Automatic return, ordinary mainline `/init`, usable root,
-panel/glass and task 5b.5 remain **UNVERIFIED**.
+Capture is complete. A subsequent NEW operator reset passed guarded protected
+normal postflight: distinct boot identity, exact system/profile/kernel/init,
+eight boot hashes, three services and registration absence. Home IPC completed
+with exit 0 and a camera image showed its clock/icons/background. The oblique,
+upside-down image has glare and soft focus; it is not touch/orientation acceptance.
+[Recovery receipt](operator-reset-recovery.json) preserves fixed checks and hashes
+without raw UART or boot identities. This is operator recovery, not automatic
+return. Ordinary mainline `/init`, usable root, panel/glass and task 5b.5 remain
+**UNVERIFIED**.
 
 The next comparison should use the same qualified built image while withholding
 the candidate shell stimulus. This changes one runtime dependency without a
