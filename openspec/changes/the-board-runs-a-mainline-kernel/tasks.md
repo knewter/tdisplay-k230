@@ -1075,9 +1075,13 @@ completion of ordinary mainline acceptance.
       Actual lznjjfx1 comparison completed: [physical capture](../../../docs/evidence/mainline-uart-progress-memory/physical-2026-10-03/README.md).
       Fresh banner/args/Bash, one stimulus, no receipt or summary in 180.1021s;
       no errors or candidate reboot. NEW operator reset is explicitly pending.
-- [ ] 5i.6 Independently reconcile changed-output intervention limits, review,
+- [x] 5i.6 Independently reconcile changed-output intervention limits, review,
       land/push public evidence and verify exact CI/published revision.
       Planning proof: `openspec validate the-board-runs-a-mainline-kernel --strict`.
+      Independent physical review passed; master `136dbf91`, CI37178946290
+      PASS and exact published work/evidence revision verified HTTP200:
+      [publication receipt](../../../docs/evidence/mainline-uart-progress-memory/physical-2026-10-03/publication.json).
+      NEW reset recovery remains pending; ordinary acceptance 5b.5 stays open.
 
 
 ## 5j. Same built Memory image without candidate stimulus (planned, UNVERIFIED)

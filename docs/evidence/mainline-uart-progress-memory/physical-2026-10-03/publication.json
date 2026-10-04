@@ -1,0 +1,21 @@
+{
+  "schema": "k230-evidence-publication-v1",
+  "revision": "136dbf9191348865744bee0b1e1f3a0bd9d60282",
+  "ci_run": 37178946290,
+  "ci_conclusion": "success",
+  "independent_physical_review": "PASS; empty fixed-record allowlist corrected before commit",
+  "published": [
+    {
+      "url": "https://knewter.github.io/tdisplay-k230/work/",
+      "http_status": 200,
+      "revision_verified": true
+    },
+    {
+      "url": "https://knewter.github.io/tdisplay-k230/evidence/docs-evidence-mainline-uart-progress-memory-physical-2026-10-03-readme-md/",
+      "http_status": 200,
+      "revision_verified": true
+    }
+  ],
+  "normal_recovery": "PENDING_NEW_OPERATOR_RESET",
+  "ordinary_mainline_acceptance": "UNVERIFIED"
+}
