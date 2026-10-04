@@ -904,13 +904,20 @@ and task 5b.5 remain UNVERIFIED; no archive or production fix is claimed.
       separate quota failure and bounded ~/tmp rerun. This is host-only proof;
       group5g.5 and task5b.5 remain open, without candidate reboot or hardware claim.
       [Integrated source/controller checks](../../../docs/evidence/mainline-uart-progress-breadcrumbs/integration-host-2026-10-03.md) include strict CRLF/embedded-CR framing and CI coverage.
-- [ ] 5g.5 After fresh protected normal recovery and exact host/controller proof,
+- [x] 5g.5 After fresh protected normal recovery and exact host/controller proof,
       reserve board/UART for one comparison, capture fixed breadcrumb/sample/
       receipt facts and limits, then verify protected normal return or record
       distinct pending operator recovery. Hardware proof operator command:
       `python3 tools/mainline-drm-initrd-shell-trial.py --mode minimal --same-image-shell-pid1 --uart-progress --uart-progress-breadcrumbs --bundle BUNDLE --manifest PRIVATE_MANIFEST --normal-report PRIVATE_NORMAL --log PRIVATE_LOG --result PRIVATE_RESULT`.
       No further input or candidate reboot after the single stimulus; this is
       observation only, not ordinary-root/touch or automatic-return acceptance.
+      Actual comparison: matching mhq10143 bundle staged with return 0; fresh
+      protected preflight/load checks passed. Both fixed breadcrumbs, one
+      matching Bash receipt and samples 0/1 arrived; samples 2–5 and normal return
+      did not arrive in 180.084 seconds. No further input or candidate reboot.
+      [Physical evidence](../../../docs/evidence/mainline-uart-progress-breadcrumbs/physical-2026-10-03/README.md)
+      records fixed facts/deltas, firmware-return limits and distinct pending
+      operator recovery. This is observation proof only; task 5b.5 stays open.
 - [ ] 5g.6 Reconcile presence/absence and firmware-return limits, retain unknown
       states and task5b.5, commit public-safe evidence and land/push with exact
       CI/published revision. Planning proof: `openspec validate --all`.

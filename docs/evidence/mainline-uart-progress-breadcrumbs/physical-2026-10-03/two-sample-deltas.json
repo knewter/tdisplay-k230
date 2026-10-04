@@ -1,0 +1,18 @@
+{
+  "schema": "k230-uart-progress-breadcrumbs-two-sample-deltas-v1",
+  "sample_numbers": [
+    0,
+    1
+  ],
+  "monotonic_time_ns": [
+    8931042327,
+    14048039806
+  ],
+  "monotonic_delta_ns": 5116997479,
+  "jiffies_delta": 1280,
+  "timer_irq_count_delta_modulo_u32": 252,
+  "uart_irq_count_delta_modulo_u32": 0,
+  "uart_rx_delta_modulo_u32": 0,
+  "uart_tx_delta_modulo_u32": 0,
+  "limits": "Host arrival order is not hardware RX timing. No pre-stimulus snapshot; no state after sample1. Printed SBI record does not prove its own ECALL returned."
+}
