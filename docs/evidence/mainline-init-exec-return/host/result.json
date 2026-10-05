@@ -1,0 +1,34 @@
+{
+  "schema": "k230-init-exec-return-source-host-v1",
+  "utc": "2026-10-05T04:29:26.352919+00:00",
+  "base_revision": "8557a21494a46d26e9df195e7d5a17fbeea6a6b1",
+  "source": "/nix/store/dsgrv7744lzh418z22gb865c0j09g1qs-linux-mainline-k230-init-exec-return-src",
+  "main_sha256": "a21ac6a296d4cb3602f127d6270aa4026afe98e582e35d4957494b30c5f86499",
+  "source_build_returncode": 0,
+  "source_build_log_sha256": "2ab91f3b221ea2a437356841fa1195db96ddd09b335b80dbd0e8bce40c81009b",
+  "native_controller_tests": 15,
+  "prior_controller_tests": [
+    9,
+    10,
+    13,
+    36
+  ],
+  "old_packages_unchanged": 107,
+  "config_and_artifact_params_equal_parent": true,
+  "object": {
+    "evidence_class": "selected-source GCC object with copied p2 prepared headers; no full link",
+    "source": "/nix/store/dsgrv7744lzh418z22gb865c0j09g1qs-linux-mainline-k230-init-exec-return-src",
+    "prepared_dev": "/nix/store/24hbalyljs6gn6fzkkl24znv8a0x6jdl-linux-riscv64-unknown-linux-gnu-7.3.0-rc5-dev",
+    "config_sha256": "52e7470b108ad094dbdf88b94e3e8838564edbda9e7a015b4279012e6765c9f1",
+    "main_object_sha256": "f64227fb4547c3b2919100ac673acbd88a131cf778a2d5f79e003c898c6ca525",
+    "compile_log_sha256": "5059367ef9996c754f6cae85e0265ea0bd117d481abbe9c5e166eb10eee38cc3",
+    "readelf_sha256": "16a2ad3e5eab9efab8db6ae8edd878d6fa00c1aca1e4b9b24e49dcdb198cccde",
+    "elf_class": "ELF64 little-endian RISC-V",
+    "runtime_flag_section": ".sbss",
+    "setup_section": ".init.text"
+  },
+  "full_matching_build": "UNVERIFIED",
+  "actual_new_artifact_preparation": "UNVERIFIED",
+  "physical_record": "UNVERIFIED",
+  "UART_opened": false
+}

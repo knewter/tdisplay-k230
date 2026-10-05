@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import argparse
 import fcntl
+import hashlib
 import importlib.util
 import json
 import math
@@ -16,6 +17,7 @@ import os
 from pathlib import Path
 import re
 import shlex
+import subprocess
 import sys
 import time
 import uuid
@@ -28,6 +30,9 @@ TRACE_ENABLE = ("k230.boot_trace=1", "k230.boot_trace_sbi_only=1")
 INITRD_DEBUG_LOGGING = ("rd.systemd.log_level=debug", "rd.systemd.log_target=console")
 INITRD_INFO_LOGGING = ("rd.systemd.log_level=info", "rd.systemd.log_target=console")
 INITRD_INFO_KMSG_LOGGING = ("rd.systemd.log_level=info", "rd.systemd.log_target=kmsg")
+INIT_EXEC_RETURN_FLAG = "k230.init_exec_return=1"
+INIT_EXEC_RETURN_MAIN_SHA256 = "a21ac6a296d4cb3602f127d6270aa4026afe98e582e35d4957494b30c5f86499"
+INIT_EXEC_RETURN_FORMAT = b"K230_INIT_EXEC_RETURN_V1 ret=%d\n\0"
 STAGES = {
     "identity": ("uid", "system", "booted", "kernel", "uname", "boot_id", "pid1", "getty"),
     "persistent": ("profile", "registration_absent", "root_source", "root_type", "root_options", "root_uuid", "root_label"),
@@ -60,25 +65,30 @@ def initrd_logging_controls(debug: bool = False, info: bool = False, info_kmsg: 
 
 def diagnostic_controls(wait_initramfs_in_initcall: bool = False, *, without_boot_markers: bool = False,
                         initrd_debug_logging: bool = False, initrd_info_logging: bool = False,
-                        initrd_info_kmsg_logging: bool = False) -> tuple[str, ...]:
+                        initrd_info_kmsg_logging: bool = False, init_exec_return: bool = False) -> tuple[str, ...]:
     if type(wait_initramfs_in_initcall) is not bool:
         raise ValueError("initramfs comparison selector must be boolean")
     if type(without_boot_markers) is not bool:
         raise ValueError("marker comparison selector must be boolean")
     logging = initrd_logging_controls(initrd_debug_logging, initrd_info_logging, initrd_info_kmsg_logging)
+    if type(init_exec_return) is not bool:
+        raise ValueError("init exec return selector must be boolean")
+    if init_exec_return and (not wait_initramfs_in_initcall or not without_boot_markers or logging):
+        raise ValueError("init exec return requires synchronous marker-free ordinary init without logging variants")
     if logging and not (wait_initramfs_in_initcall and without_boot_markers):
         raise ValueError("initrd logging requires synchronous initramfs and marker-free ordinary init")
     if without_boot_markers and not wait_initramfs_in_initcall:
         raise ValueError("marker comparison requires the earlier initramfs join comparison")
-    return CONTROLS + (("initramfs_async=0",) if wait_initramfs_in_initcall else ()) + logging
+    return CONTROLS + (("initramfs_async=0",) if wait_initramfs_in_initcall else ()) + logging + ((INIT_EXEC_RETURN_FLAG,) if init_exec_return else ())
 
 
 def ordinary_bootargs(original: str, system: str, *, wait_initramfs_in_initcall: bool = False,
                       without_boot_markers: bool = False, initrd_debug_logging: bool = False,
-                      initrd_info_logging: bool = False, initrd_info_kmsg_logging: bool = False) -> str:
+                      initrd_info_logging: bool = False, initrd_info_kmsg_logging: bool = False,
+                      init_exec_return: bool = False) -> str:
     controls = diagnostic_controls(wait_initramfs_in_initcall, without_boot_markers=without_boot_markers,
                                    initrd_debug_logging=initrd_debug_logging, initrd_info_logging=initrd_info_logging,
-                                   initrd_info_kmsg_logging=initrd_info_kmsg_logging)
+                                   initrd_info_kmsg_logging=initrd_info_kmsg_logging, init_exec_return=init_exec_return)
     args = original[:-1] if original.endswith("\n") else original
     if not original.startswith("bootargs=") or args.strip() != args:
         raise ValueError("expected exact single-line bundle bootargs")
@@ -90,11 +100,11 @@ def ordinary_bootargs(original: str, system: str, *, wait_initramfs_in_initcall:
     for p in params:
         name, _, value = p.partition("=")
         canonical = name.replace("-", "_").removeprefix("rd.")
-        if (initrd_debug_logging or initrd_info_logging or initrd_info_kmsg_logging) and (canonical.startswith(("systemd.log_", "systemd.journald.", "udev.",
+        if (initrd_debug_logging or initrd_info_logging or initrd_info_kmsg_logging or init_exec_return) and (canonical.startswith(("systemd.log_", "systemd.journald.", "udev.",
                                                            "k230.uart_progress", "k230.uobs.")) or
                                     canonical in {"systemd.setenv", "systemd.unit", "systemd.mask", "systemd.debug_shell",
                                                   "systemd.break", "fsck.mode", "initcall_debug", "clk_ignore_unused",
-                                                  "ignore_loglevel", "debug", "quiet", "nohz", "nohlt"}):
+                                                  "ignore_loglevel", "debug", "quiet", "nohz", "nohlt", "k230.init_exec_return"}):
             raise ValueError("conflicting inherited initrd logging/instrumentation argument")
         if (name in {"rdinit", "PATH", "clk_ignore_unused", "initcall_debug", "initramfs_async", "fsck.mode", "systemd.mask", "systemd.unit", "systemd.debug_shell", "systemd.break", "rd.systemd.unit", "rd.systemd.mask", "rd.systemd.debug_shell", "rd.systemd.break", "ignore_loglevel", "debug", "quiet", "dyndbg"}
                 or name.endswith(".dyndbg") or (name == "loglevel" and value not in tuple(map(str, range(8))))):
@@ -114,16 +124,17 @@ def ordinary_bootargs(original: str, system: str, *, wait_initramfs_in_initcall:
 
 def prepare(bundle: Path, manifest: Path, normal_report: Path, *, wait_initramfs_in_initcall: bool = False,
             without_boot_markers: bool = False, initrd_debug_logging: bool = False,
-            initrd_info_logging: bool = False, initrd_info_kmsg_logging: bool = False) -> dict:
+            initrd_info_logging: bool = False, initrd_info_kmsg_logging: bool = False,
+            init_exec_return: bool = False) -> dict:
     controls = diagnostic_controls(wait_initramfs_in_initcall, without_boot_markers=without_boot_markers,
                                    initrd_debug_logging=initrd_debug_logging, initrd_info_logging=initrd_info_logging,
-                                   initrd_info_kmsg_logging=initrd_info_kmsg_logging)
+                                   initrd_info_kmsg_logging=initrd_info_kmsg_logging, init_exec_return=init_exec_return)
     p = rd.prepare_trial(manifest, bundle, normal_report)
     p["bootargs"] = ordinary_bootargs((bundle / "bootargs.txt").read_text(), p["system"],
                                      wait_initramfs_in_initcall=wait_initramfs_in_initcall,
                                      without_boot_markers=without_boot_markers,
                                      initrd_debug_logging=initrd_debug_logging, initrd_info_logging=initrd_info_logging,
-                                     initrd_info_kmsg_logging=initrd_info_kmsg_logging)
+                                     initrd_info_kmsg_logging=initrd_info_kmsg_logging, init_exec_return=init_exec_return)
     p["diagnostic_controls"] = controls
     p["without_boot_markers"] = without_boot_markers
     if initrd_debug_logging:
@@ -132,6 +143,15 @@ def prepare(bundle: Path, manifest: Path, normal_report: Path, *, wait_initramfs
         p["initrd_info_logging"] = True
     if initrd_info_kmsg_logging:
         p["initrd_info_kmsg_logging"] = True
+    if init_exec_return:
+        p["init_exec_return"] = True
+        p["init_exec_return_proof"] = inspect_init_exec_kernel(p)
+        p["init_exec_return_archive"] = rd.inspect_shell_initrd(p)
+        original_archive = json.loads((Path(__file__).resolve().parents[1] /
+            "docs/evidence/mainline-uart-progress-memory-printk/positive-controller-host/result.json").read_text())["archive_proof"]
+        for key in ("executables", "bash", "loader", "loader_sha256"):
+            if p["init_exec_return_archive"][key] != original_archive[key]:
+                raise ValueError("selected exec-return archive changed original userspace bytes")
     volatile_bootargs_command(p)
     p["kernel"] = str((Path(p["system"]) / "kernel").resolve().parent)
     p["pid1"] = str((Path(p["system"]) / "init").resolve())
@@ -142,6 +162,118 @@ def prepare(bundle: Path, manifest: Path, normal_report: Path, *, wait_initramfs
     # registration marker before executing any checks or printing success.
     p["helper_text"] = "from pathlib import Path\nassert not Path('/nix-path-registration').exists() and not Path('/nix-path-registration').is_symlink(), 'registration marker present'\n" + p["helper_text"]
     return p
+
+
+def inspect_init_exec_kernel(p: dict) -> dict:
+    """Read-only same-derivation dev/source/Image gate; never realize outputs."""
+    proof = rd.inspect_uart_progress_kernel(p)
+    description = json.loads(subprocess.check_output(
+        ["nix", "--offline", "--extra-experimental-features", "nix-command", "derivation", "show", proof["derivation"]],
+        text=True, timeout=20))
+    if description.get("version") == 4:
+        description = description["derivations"]
+        key = Path(proof["derivation"]).name
+    else:
+        key = proof["derivation"]
+    if set(description) != {key}:
+        raise ValueError("unknown selected exec-return derivation description")
+    drv = description[key]
+    source_value = drv.get("env", {}).get("src") or drv.get("structuredAttrs", {}).get("src")
+    if not isinstance(source_value, str):
+        raise ValueError("selected exec-return source identity absent")
+    source = rd.immutable_store_path(Path(source_value), "selected exec-return source")
+    main = (source / "init/main.c").read_bytes()
+    if hashlib.sha256(main).hexdigest() != INIT_EXEC_RETURN_MAIN_SHA256:
+        raise ValueError("selected main.c is not the reviewed exec-return variant")
+    config = Path(proof["config"]).read_bytes()
+    for name in ("PRINTK", "PRINTK_TIME", "SERIAL_8250_CONSOLE"):
+        if re.findall(rb"^CONFIG_" + name.encode() + rb"=(.*)$", config, re.M) != [b"y"]:
+            raise ValueError("selected config lacks built-in " + name)
+    if re.findall(rb"^# CONFIG_PRINTK_CALLER is not set$", config, re.M) != [b"# CONFIG_PRINTK_CALLER is not set"]:
+        raise ValueError("selected config must disable PRINTK_CALLER")
+    image = (Path(proof["kernel"]) / "Image").read_bytes()
+    literals = (INIT_EXEC_RETURN_FORMAT, b"k230.init_exec_return=\0")
+    if any(image.count(literal) != 1 for literal in literals):
+        raise ValueError("selected Image lacks unique exec-return format/setup")
+    return proof | {"source": str(source), "main_sha256": hashlib.sha256(main).hexdigest(),
+                    "image_sha256": hashlib.sha256(image).hexdigest(),
+                    "format_offset": image.index(literals[0]), "setup_offset": image.index(literals[1])}
+
+
+def init_exec_return_record(line: bytes) -> int | None:
+    """Only complete LF/CRLF records with the actual timestamp-only prefix."""
+    line = line.replace(b"\r\n", b"\n")
+    match = re.fullmatch(rb"\[ *[0-9]+\.[0-9]{6}\] K230_INIT_EXEC_RETURN_V1 ret=(0|-?[1-9][0-9]*)\n", line)
+    if not match:
+        return None
+    value = int(match[1])
+    return value if -(1 << 31) <= value < (1 << 31) else None
+
+
+def wait_init_exec_candidate(session, p: dict, timeout=180.0, clock=time.monotonic) -> bool:
+    """Passive selected capture; a record grants no command/reboot authority."""
+    finite_timeout(timeout, 180)
+    started = clock()
+    deadline = started + timeout
+    phase = False
+    carry = b""
+    facts = {"candidate_banner": False, "received_args": False, "init_announcement": False,
+             "records": [], "errors": [], "login": False, "primary_prompt": False,
+             "bound_seconds": timeout, "elapsed_seconds": 0.0,
+             "record_output_call_return": "UNVERIFIED", "userspace_execution_from_record": "UNVERIFIED"}
+    p["init_exec_return_observation"] = facts
+    arg_count = 0
+    try:
+        while clock() < deadline:
+            chunk = session.pump()
+            carry += chunk
+            complete = carry.split(b"\n")
+            carry = complete.pop()
+            if len(carry) > 4096:
+                raise Unknown("selected exec-return partial line exceeded bound", facts)
+            for raw in complete:
+                line = raw + b"\n"
+                normalized = line.replace(b"\r\n", b"\n")
+                if re.fullmatch(rb"(?:\[ *[0-9]+\.[0-9]{6}\] )?Linux version 7\.3\.0-rc5[^\n\r]*\n", normalized):
+                    if phase:
+                        facts["errors"].append("duplicate-candidate-banner")
+                    phase = True
+                    facts["candidate_banner"] = True
+                    session.buffer = b""
+                    continue
+                if not phase:
+                    continue
+                args = re.fullmatch(rb"\[ *[0-9]+\.[0-9]{6}\] Kernel command line: ([^\r\n]*)\n", normalized)
+                if b"Kernel command line:" in line:
+                    arg_count += 1
+                    facts["received_args"] = arg_count == 1 and args is not None and args[1] == p["bootargs"].removeprefix("bootargs=").encode()
+                    if not facts["received_args"]:
+                        facts["errors"].append("candidate-args-mismatch-or-duplicate")
+                if re.fullmatch(rb"\[ *[0-9]+\.[0-9]{6}\] Run /init as init process\n", normalized):
+                    facts["init_announcement"] = True
+                if b"U-Boot SPL" in line or b"Linux version 6.6.36" in line:
+                    facts["errors"].append("candidate-returned-before-qualified-login")
+                if b"K230_INIT_EXEC_RETURN" in line:
+                    value = init_exec_return_record(line)
+                    if value is None:
+                        facts["errors"].append("malformed-exec-return-record")
+                    elif not facts["received_args"] or not facts["init_announcement"]:
+                        facts["errors"].append("unqualified-exec-return-record")
+                    elif facts["records"]:
+                        facts["errors"].append("duplicate-exec-return-record")
+                    else:
+                        facts["records"].append({"ret": value, "exec_setup_succeeded": value == 0})
+                if re.fullmatch(rb"nixos login:(?: [^\r\n]*)?\n", normalized):
+                    facts["login"] = True
+            if phase and facts["login"] and prompt(carry):
+                facts["primary_prompt"] = True
+                return (facts["received_args"] and len(facts["records"]) == 1 and
+                        facts["records"][0]["ret"] == 0 and not facts["errors"])
+        if b"K230_INIT_EXEC_RETURN" in carry:
+            facts["errors"].append("truncated-exec-return-record")
+        return False
+    finally:
+        facts["elapsed_seconds"] = clock() - started
 
 
 def prompt(output: bytes) -> bool:
@@ -427,10 +559,11 @@ def volatile_bootargs_command(p: dict) -> str:
     info = p.get("initrd_info_logging", False)
     info_kmsg = p.get("initrd_info_kmsg_logging", False)
     logging = initrd_logging_controls(debug, info, info_kmsg)
+    exec_return = p.get("init_exec_return", False)
     without = p.get("without_boot_markers", False)
-    diagnostic_controls(controls != CONTROLS, without_boot_markers=without, initrd_debug_logging=debug, initrd_info_logging=info, initrd_info_kmsg_logging=info_kmsg)
-    allowed = diagnostic_controls(True, without_boot_markers=True, initrd_debug_logging=debug, initrd_info_logging=info, initrd_info_kmsg_logging=info_kmsg) if logging else None
-    if controls not in ((allowed,) if logging else (CONTROLS, diagnostic_controls(True))):
+    diagnostic_controls(controls != CONTROLS, without_boot_markers=without, initrd_debug_logging=debug, initrd_info_logging=info, initrd_info_kmsg_logging=info_kmsg, init_exec_return=exec_return)
+    allowed = diagnostic_controls(True, without_boot_markers=True, initrd_debug_logging=debug, initrd_info_logging=info, initrd_info_kmsg_logging=info_kmsg, init_exec_return=exec_return) if logging or exec_return else None
+    if controls not in ((allowed,) if logging or exec_return else (CONTROLS, diagnostic_controls(True))):
         raise ValueError("unexpected volatile diagnostic controls")
     if type(without) is not bool:
         raise ValueError("marker comparison selector must be boolean")
@@ -441,8 +574,10 @@ def volatile_bootargs_command(p: dict) -> str:
         params = value.split()
         if any(v.partition("=")[0] in {"k230.boot_trace", "k230.boot_trace_sbi_only"} for v in params):
             raise ValueError("marker enable token remains in explicit comparison")
-        if controls != diagnostic_controls(True, without_boot_markers=True, initrd_debug_logging=debug, initrd_info_logging=info, initrd_info_kmsg_logging=info_kmsg) or params.count("initramfs_async=0") != 1:
+        if controls != diagnostic_controls(True, without_boot_markers=True, initrd_debug_logging=debug, initrd_info_logging=info, initrd_info_kmsg_logging=info_kmsg, init_exec_return=exec_return) or params.count("initramfs_async=0") != 1:
             raise ValueError("marker comparison lost the earlier initramfs join control")
+        if exec_return and [token for token in params if token.partition("=")[0].replace("-", "_").removeprefix("rd.") == "k230.init_exec_return"] != [INIT_EXEC_RETURN_FLAG]:
+            raise ValueError("exec return lost its exact singleton gate")
         if logging:
             received = [token for token in params if token.partition("=")[0].replace("-", "_").removeprefix("rd.")
                         in {"systemd.log_level", "systemd.log_target"}]
@@ -510,10 +645,69 @@ def save_state(path: Path, value: dict, *, new=False) -> None:
         os.replace(temp, path)
 
 
+
+# Separate selected transport preserves the established ordinary boot body.
+def boot_init_exec(session, p: dict) -> None:
+    bootargs_command = volatile_bootargs_command(p)
+    session.line("reboot", interrupt=False)
+    end = time.monotonic() + 35
+    while time.monotonic() < end:
+        session.pump()
+        if b"Hit any key to stop autoboot" in session.buffer:
+            session.write(b" ")
+        if rd.PROMPT in session.buffer:
+            break
+    else:
+        raise Unknown("U-Boot prompt not observed")
+    for name, partition, address, source in rd.LOADS:
+        expected = p["manifest"]["files"][name]
+        load = session.command(f"ext4load mmc {partition} {address} {source}", 90)
+        if not rd.verified_load(load, expected):
+            raise Unknown("candidate load mismatch; no boot issued")
+        crc = session.command(f"crc32 {address} {hex(expected['bytes'])}", 40)
+        if not rd.verified_crc(crc, expected):
+            raise Unknown("candidate CRC mismatch; no boot issued")
+    size = p["manifest"]["files"]["bootargs.txt"]["bytes"]
+    for command in (f"env import -t 0x7000000 {hex(size)}", bootargs_command):
+        if session.command(command, 15) is None:
+            raise Unknown("volatile bootargs setup unverified")
+    if not rd.verified_bootargs(session.command("printenv bootargs", 15), p["bootargs"]):
+        raise Unknown("printed bootargs mismatch; no boot issued")
+    session.line("bootm 0x8000000 0x9000000 0x8400000", interrupt=False)
+    if not wait_init_exec_candidate(session, p):
+        raise Unknown("ordinary init login readiness unverified")
+
+
+def private_existing(path: Path) -> dict:
+    path = path.expanduser().absolute()
+    if path.is_symlink() or path.stat().st_mode & 0o077 or path.stat().st_uid != os.getuid():
+        raise ValueError("unsafe private state")
+    if path.parent.stat().st_mode & 0o077 or Path(__file__).resolve().parents[1] in path.resolve().parents:
+        raise ValueError("private state must be protected and outside repository")
+    value = json.loads(path.read_text())
+    if value.get("schema") != "mainline-system-trial-v1" or value.get("status") != "candidate-ready":
+        raise ValueError("state does not allow candidate input")
+    return value
+
+
+def save_state(path: Path, value: dict, *, new=False) -> None:
+    if new:
+        rd.write_private_result(path, value)
+    else:
+        # Only this owned private state is replaced; keep its permissions and
+        # require the same guarded parent. Never overwrite raw result/log files.
+        temp = path.with_name(path.name + "." + uuid.uuid4().hex)
+        rd.write_private_result(temp, value)
+        os.replace(temp, path)
+
+
 def run(args) -> bool:
     requested_debug = getattr(args, "initrd_debug_logging", False)
     requested_info = getattr(args, "initrd_info_logging", False)
     requested_kmsg = getattr(args, "initrd_info_kmsg_logging", False)
+    requested_exec = getattr(args, "init_exec_return", False)
+    if type(requested_exec) is not bool or requested_exec and args.phase != "begin":
+        raise ValueError("init exec return must be a boolean begin-only selection")
     if initrd_logging_controls(requested_debug, requested_info, requested_kmsg) and args.phase != "begin":
         raise ValueError("initrd logging is begin-only; resume uses protected state")
     saved = None if args.phase == "begin" else private_existing(args.state)
@@ -524,9 +718,10 @@ def run(args) -> bool:
     initrd_debug_logging = saved.get("initrd_debug_logging", False) if saved is not None else requested_debug
     initrd_info_logging = saved.get("initrd_info_logging", False) if saved is not None else requested_info
     initrd_info_kmsg_logging = saved.get("initrd_info_kmsg_logging", False) if saved is not None else requested_kmsg
+    init_exec_return = saved.get("init_exec_return", False) if saved is not None else requested_exec
     diagnostic_controls(wait_initramfs_in_initcall, without_boot_markers=without_boot_markers,
                         initrd_debug_logging=initrd_debug_logging, initrd_info_logging=initrd_info_logging,
-                        initrd_info_kmsg_logging=initrd_info_kmsg_logging)
+                        initrd_info_kmsg_logging=initrd_info_kmsg_logging, init_exec_return=init_exec_return)
     if saved:
         for key in ("bundle", "manifest", "normal_report"):
             setattr(args, key, Path(saved[key]))
@@ -536,7 +731,8 @@ def run(args) -> bool:
                 without_boot_markers=without_boot_markers,
                 **{name: True for name, enabled in (("initrd_debug_logging", initrd_debug_logging),
                                                     ("initrd_info_logging", initrd_info_logging),
-                                                    ("initrd_info_kmsg_logging", initrd_info_kmsg_logging)) if enabled})
+                                                    ("initrd_info_kmsg_logging", initrd_info_kmsg_logging),
+                                                    ("init_exec_return", init_exec_return)) if enabled})
     normal = dict(p["normal"] if saved is None else saved["normal"])
     state_path = rd.safe_log_path(args.state) if saved is None else args.state.expanduser().absolute()
     log_path = rd.safe_log_path(args.log); result_path = rd.safe_log_path(args.result)
@@ -549,6 +745,10 @@ def run(args) -> bool:
     result["initrd_debug_logging"] = initrd_debug_logging
     result["initrd_info_logging"] = initrd_info_logging
     result["initrd_info_kmsg_logging"] = initrd_info_kmsg_logging
+    result["init_exec_return"] = init_exec_return
+    if init_exec_return:
+        result["init_exec_return_proof"] = p["init_exec_return_proof"]
+        result["init_exec_return_archive"] = p["init_exec_return_archive"]
     lock_fd = os.open(rd.LOCK_PATH, os.O_CREAT | os.O_RDWR, 0o600)
     session = None
     try:
@@ -565,7 +765,10 @@ def run(args) -> bool:
                 token = uuid.uuid4().hex
                 root = exchange(session, token, "persistent", report_command(token, "persistent", p["system"]))
                 validate_stage("persistent", root, p, normal)
-                boot(session, p)
+                if init_exec_return:
+                    boot_init_exec(session, p)
+                else:
+                    boot(session, p)
                 result["candidate"] = {}
                 facts = identity(session, p, normal, root=root, facts=result["candidate"])
                 saved = {"schema": "mainline-system-trial-v1", "status": "candidate-ready", "bundle": str(args.bundle), "manifest": str(args.manifest), "normal_report": str(args.normal_report), "normal": normal, "root": root, "candidate_boot_id": facts["identity"]["boot_id"], "candidate": facts}
@@ -574,6 +777,7 @@ def run(args) -> bool:
                 saved["initrd_debug_logging"] = initrd_debug_logging
                 saved["initrd_info_logging"] = initrd_info_logging
                 saved["initrd_info_kmsg_logging"] = initrd_info_kmsg_logging
+                saved["init_exec_return"] = init_exec_return
                 save_state(state_path, saved, new=True)
                 result.update(status="candidate-ready-qualified-ordinary-init", candidate=facts)
             else:
@@ -599,10 +803,14 @@ def run(args) -> bool:
                         raise Unknown("recovery reused candidate boot identity")
                     saved["status"] = "normal-recovery-verified"; save_state(state_path, saved)
                     result["status"] = "normal-recovery-verified"
+        if init_exec_return:
+            result["init_exec_return_observation"] = p.get("init_exec_return_observation")
         rd.write_private_result(result_path, result)
         return args.phase != "touch" or result["touch"]["events"]["complete_contact"]
     except Exception as exc:
         result["failure"] = type(exc).__name__ + ": " + str(exc)
+        if init_exec_return:
+            result["init_exec_return_observation"] = p.get("init_exec_return_observation")
         if session is None:
             result["status"] = "not-started-no-serial-opened"
         else:
@@ -638,6 +846,8 @@ def main() -> int:
                         help="begin-only marker-free/initramfs comparison: info level with the same console target")
     parser.add_argument("--initrd-info-kmsg-logging", action="store_true",
                         help="begin-only marker-free/initramfs comparison: info level with kmsg target")
+    parser.add_argument("--init-exec-return", action="store_true",
+                        help="begin-only qualified new kernel: one INFO signed result of ramdisk exec setup")
     args = parser.parse_args()
     if args.phase == "begin" and any(getattr(args, k) is None for k in ("bundle", "manifest", "normal_report")):
         parser.error("begin requires --bundle, --manifest and --normal-report")
@@ -655,6 +865,8 @@ def main() -> int:
         parser.error("--initrd-info-logging is begin-only, requires both comparison selectors and excludes debug logging")
     if args.initrd_info_kmsg_logging and (args.phase != "begin" or not args.wait_initramfs_in_initcall or not args.without_boot_markers or args.initrd_debug_logging or args.initrd_info_logging):
         parser.error("--initrd-info-kmsg-logging is begin-only, requires both comparison selectors and excludes other logging modes")
+    if args.init_exec_return and (args.phase != "begin" or not args.wait_initramfs_in_initcall or not args.without_boot_markers or args.initrd_debug_logging or args.initrd_info_logging or args.initrd_info_kmsg_logging):
+        parser.error("--init-exec-return requires both comparison selectors and excludes logging variants")
     try:
         return 0 if run(args) else 1
     except Exception as exc:
