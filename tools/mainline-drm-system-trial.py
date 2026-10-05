@@ -678,29 +678,6 @@ def boot_init_exec(session, p: dict) -> None:
         raise Unknown("ordinary init login readiness unverified")
 
 
-def private_existing(path: Path) -> dict:
-    path = path.expanduser().absolute()
-    if path.is_symlink() or path.stat().st_mode & 0o077 or path.stat().st_uid != os.getuid():
-        raise ValueError("unsafe private state")
-    if path.parent.stat().st_mode & 0o077 or Path(__file__).resolve().parents[1] in path.resolve().parents:
-        raise ValueError("private state must be protected and outside repository")
-    value = json.loads(path.read_text())
-    if value.get("schema") != "mainline-system-trial-v1" or value.get("status") != "candidate-ready":
-        raise ValueError("state does not allow candidate input")
-    return value
-
-
-def save_state(path: Path, value: dict, *, new=False) -> None:
-    if new:
-        rd.write_private_result(path, value)
-    else:
-        # Only this owned private state is replaced; keep its permissions and
-        # require the same guarded parent. Never overwrite raw result/log files.
-        temp = path.with_name(path.name + "." + uuid.uuid4().hex)
-        rd.write_private_result(temp, value)
-        os.replace(temp, path)
-
-
 def run(args) -> bool:
     requested_debug = getattr(args, "initrd_debug_logging", False)
     requested_info = getattr(args, "initrd_info_logging", False)
