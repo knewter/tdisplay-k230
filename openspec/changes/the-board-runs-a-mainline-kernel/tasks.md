@@ -1392,11 +1392,12 @@ Independent full capture/recovery-limit review PASS. Physical revision236f6bca, 
       independently review. No implicit UART/build. Narrow command:
       `python3 docs/evidence/mainline-system-trial/current-p2-baseline-repeat-host-2026-10-05/qualification-command.py --bundle BUNDLE --dev DEV --normal-report PRIVATE_NORMAL`.
       [Executed same-artifact qualification](../../../docs/evidence/mainline-system-trial/current-p2-baseline-repeat-host-2026-10-05/README.md) exit0 on3d2a080c; exact original299/317, unchanged source/helpers/artifacts and NEW kmsg recovery binding; independent review PASS. No live preflight/UART/build.
-- [ ] 5r.2 After reviewed source/actual host gates and NEW protected recovery,
+- [x] 5r.2 After reviewed source/actual host gates and NEW protected recovery,
       reserve board/UART for ONE passive180s repeat; commit fixed facts plus
       independent recovery or explicit pending NEW reset. Command:
       `python3 tools/mainline-drm-system-trial.py begin --wait-initramfs-in-initcall --without-boot-markers --bundle BUNDLE --manifest PRIVATE_MANIFEST --normal-report PRIVATE_NORMAL --state NEW_PRIVATE_STATE --log PRIVATE_LOG --result PRIVATE_RESULT`.
       No new intervention, helper trace or cause/root/glass acceptance;5b.5 open.
+      [Completed unchanged quiet capture](../../../docs/evidence/mainline-system-trial/current-p2-baseline-repeat-physical-2026-10-05/README.md): same299/317/source/artifacts, freshLinux/pre-exec init only, no systemd/closure/login within180s. Original closure boundary did not reproduce; independent full review PASS. NEW protected recovery pending; no previous reset reused.
 - [ ] 5r.3 Independently review reproducibility/parser/recovery limits, land/push
       and inspect exact CI/published revision. Planning proof:
       `openspec validate the-board-runs-a-mainline-kernel --strict`.

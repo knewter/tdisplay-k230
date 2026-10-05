@@ -1,0 +1,6 @@
+Derived fixed facts; not a raw UART transcript.
+Fresh Linux 7.3.0-rc5 banner observed.
+Run /init as init process observed at candidate kernel time 4.513672 seconds.
+No candidate systemd startup, closure-unit, or login messages observed within the passive 180-second readiness bound.
+The earlier quiet-run closure boundary did not reproduce.
+No ordinary-root, exec-success, failed-instruction, output-call-return, panel or glass claim.
