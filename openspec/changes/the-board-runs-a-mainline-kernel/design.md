@@ -970,3 +970,24 @@ Changed observed progress is sensitivity to one value, not a proven call/cause.
 A silent run cannot distinguish earlier PID1 setup from console open/write.
 [Source/physical scope](../../../docs/research/mainline-initrd-info-console-comparison-2026-10-05.md);
 NEW recovery and actual qualification remain required.
+
+
+## Fixed info/kmsg comparison (group 5q)
+
+Userspace controller: begin-only `--initrd-info-kmsg-logging` requires synchronous
+initramfs and marker-free ordinary init, excluding both debug and info-console.
+Append exactly `rd.systemd.log_level=info rd.systemd.log_target=kmsg`: the sole
+changed value is console→kmsg,352 raw argument/370 literal command bytes.
+Preserve old defaults/profiles, typed saved continuation with old missing=false,
+pre-UART alias/type/conflict guards and the unchanged transport bound. Retain
+same p2/24h source/config/Image/DT/archive/system init, masks/root/console,
+five loads/CRCs, normal and live argument guards,180-second passive capture,
+full private logging and unknown-no-input policy.
+
+Kmsg selection may fall back to console or drop/filter records. Eligible INFO
+severity is not proof of delivery or absence of console calls. Changed progress
+means backend-selection sensitivity; silence does not localize a failing call.
+Reject debug+kmsg, verbosity compensation, arbitrary logging controls, tracing,
+new masks/targets/PID1 or builds: each adds another intervention. Require
+reviewed source/actual host gates and NEW protected recovery before one board
+capture, then independent recovery or explicit NEW reset. [Pinned source audit](../../../docs/research/mainline-initrd-info-kmsg-comparison-2026-10-05.md).

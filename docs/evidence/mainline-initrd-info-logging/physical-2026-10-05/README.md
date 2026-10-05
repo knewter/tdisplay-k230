@@ -39,8 +39,6 @@ No camera or real-glass proof was obtained. Independent full private review
 **PASS**: five strict loads/CRCs, exact printed/fresh received arguments, source
 hash, uniquely guarded normal preflight and false readiness replay match.
 Command annotations/source show no input after bootm; this is not independent
-electrical TX-direction proof. All reservations are released. NEW reset after this capture is
-PENDING; its checker has not run. No earlier reset is reused or automatic
-return claimed. Ordinary root, panel/glass and task 5b.5 stay **UNVERIFIED**.
+electrical TX-direction proof. All reservations are released. The first reset check observed no serial bytes or normal prompt in90s and sent no shell commands. A subsequent NEW reset with capture already armed passed [protected recovery](recovery.json): distinct boot, exact identities/eight hashes/three services and registration absence; independent review PASS. No earlier reset was reused and automatic return is unverified. [Publication receipt](publication.json) records the historical f03 capture revision, where recovery was still pending. Ordinary root, panel/glass and task 5b.5 stay **UNVERIFIED**.
 The next source-grounded comparison keeps info level and changes only the
 console destination to kmsg; it has not been implemented or run.

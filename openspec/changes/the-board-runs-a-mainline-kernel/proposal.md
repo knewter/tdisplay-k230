@@ -407,3 +407,13 @@ fixed child comparison lowering only the log level to info, retaining destinatio
 artifacts and all guards. Its result requires the board; kernel rebuilds, new
 boot targets/masks, tracing and causal claims are outside scope. See [observed
 boundary and plan](../../../docs/research/mainline-initrd-info-console-comparison-2026-10-05.md).
+
+
+## One-value follow-up: info logging through kmsg
+
+The info/console capture still gave no systemd startup or login. Group5q changes
+only the logging destination to kmsg at the same info level and immutable build.
+This needs physical UART evidence; backend selection is a diagnostic comparison,
+not a console-stall diagnosis or ordinary boot acceptance. Keep all guards and
+land this plan before source. No rebuild, added tracing/targets/masks or
+verbosity compensation. [Observed boundary and selected-source scope](../../../docs/research/mainline-initrd-info-kmsg-comparison-2026-10-05.md).

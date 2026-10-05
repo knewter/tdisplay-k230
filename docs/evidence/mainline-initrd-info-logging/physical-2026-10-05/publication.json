@@ -1,0 +1,22 @@
+{
+  "schema": "k230-evidence-publication-v1",
+  "revision": "f03ff3cea415e07a916f7ba1e48c8950ef6e9351",
+  "ci_run": 37257736256,
+  "ci_conclusion": "success",
+  "verified_utc": "2026-10-05T03:11:01.160353+00:00",
+  "independent_physical_review": "PASS",
+  "published": [
+    {
+      "url": "https://knewter.github.io/tdisplay-k230/work/",
+      "http_status": 200,
+      "revision_verified": true
+    },
+    {
+      "url": "https://knewter.github.io/tdisplay-k230/evidence/docs-evidence-mainline-initrd-info-logging-physical-2026-10-05-readme-md/",
+      "http_status": 200,
+      "revision_verified": "CI exact commit and published capture timestamps/boundary checked"
+    }
+  ],
+  "normal_recovery_at_published_revision": "PENDING_NEW_OPERATOR_RESET",
+  "ordinary_mainline_acceptance": "UNVERIFIED"
+}

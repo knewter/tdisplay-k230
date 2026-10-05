@@ -46,5 +46,4 @@ an identified output-call stall. If silent, earlier startup and console
 open/write remain indistinguishable. Do not add kernel verbosity, masks,
 targets, tracing, alternate PID1 or a build to compensate.
 
-Implementation, actual host qualification and physical outcome remain
-**UNVERIFIED**. Ordinary root/panel/glass acceptance and task 5b.5 stay open.
+[Controller and actual host qualification](../evidence/mainline-initrd-info-logging/host/README.md) completed and were independently reviewed. The [physical capture](../evidence/mainline-initrd-info-logging/physical-2026-10-05/README.md) again showed only the kernel/init announcement, with no systemd startup/login inside180s. Lowering verbosity did not restore observed progress. Ordinary root/panel/glass acceptance and task5b.5 stay **UNVERIFIED** and open.

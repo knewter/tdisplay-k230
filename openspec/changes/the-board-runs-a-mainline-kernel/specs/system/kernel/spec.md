@@ -638,10 +638,10 @@ rolling-buffer capacity. Unknown readiness or I/O SHALL send no candidate input.
 Manager job/ExecStart state SHALL NOT be reported as nested command or syscall
 tracing, ordinary-root acceptance or protected recovery.
 
-<!-- UNVERIFIED: typed controller, actual preparation and physical logging comparison remain planned. -->
+<!-- UNVERIFIED: ordinary mainline root/panel/glass acceptance remains open; bounded controller/host/physical logging comparison is recorded below. -->
 *Grounding: [current ordinary physical boundary](../../../../../../docs/evidence/mainline-system-trial/current-p2-ordinary-physical-2026-10-05/README.md)
 and [selected archive/pinned systemd source](../../../../../../docs/research/mainline-initrd-debug-logging-2026-10-05.md).
-Physical logging output and ordinary boot acceptance remain unverified.*
+[Controller and actual host qualification](../../../../../../docs/evidence/mainline-initrd-debug-logging/host/README.md) and [bounded physical result plus NEW recovery](../../../../../../docs/evidence/mainline-initrd-debug-logging/physical-2026-10-05/README.md) are recorded. No systemd startup/login was observed; ordinary boot acceptance remains unverified.*
 
 #### Scenario: Qualified logging comparison reaches an observed unit boundary
 
@@ -669,9 +669,9 @@ The comparison SHALL keep a 180-second passive readiness bound, complete private
 logging and unknown-no-input behavior. Changed observed progress SHALL NOT be
 reported as a blocked output-call diagnosis, ordinary boot acceptance or recovery.
 
-<!-- UNVERIFIED: info-mode controller, actual qualification and physical comparison remain planned. -->
+<!-- UNVERIFIED: ordinary mainline acceptance remains open; bounded controller/host/physical comparison is recorded below. -->
 *Grounding: [debug/console physical result](../../../../../../docs/evidence/mainline-initrd-debug-logging/physical-2026-10-05/README.md)
-and [bounded child/source analysis](../../../../../../docs/research/mainline-initrd-info-console-comparison-2026-10-05.md).*
+and [bounded child/source analysis](../../../../../../docs/research/mainline-initrd-info-console-comparison-2026-10-05.md). [Actual host qualification](../../../../../../docs/evidence/mainline-initrd-info-logging/host/README.md) and [physical capture](../../../../../../docs/evidence/mainline-initrd-info-logging/physical-2026-10-05/README.md) passed their bounded review; no systemd startup/login was observed.*
 
 #### Scenario: Lower verbosity changes observed progress
 
@@ -683,4 +683,36 @@ and [bounded child/source analysis](../../../../../../docs/research/mainline-ini
 
 - **WHEN** qualified login or I/O completion remains unknown
 - **THEN** preserve private facts without candidate input or fallback
+- **AND** require independent protected recovery or a NEW operator reset
+
+
+### Requirement: Fixed info-level ordinary-init kmsg comparison
+
+The userspace trial controller SHALL offer typed begin-only
+`--initrd-info-kmsg-logging`, requiring synchronous initramfs and marker-free
+ordinary init, excluding debug and info-console. It SHALL select exactly
+`rd.systemd.log_level=info rd.systemd.log_target=kmsg`, preserve existing
+profiles/defaults and typed saved continuation with old missing=false, and
+reject aliases/conflicts/types before UART.
+
+It SHALL preserve the immutable artifacts, normal identity, five load/CRC,
+printed/live argument and transport guards,180-second passive readiness,
+complete private logging and unknown-no-input behavior. It SHALL NOT report
+kmsg selection as proof that console was unused, every record was delivered,
+a blocked call was identified, ordinary root worked or recovery succeeded.
+
+<!-- UNVERIFIED: new selector, actual preparation and physical outcome remain planned. -->
+*Grounding: [physical info/console result](../../../../../../docs/evidence/mainline-initrd-info-logging/physical-2026-10-05/README.md)
+and [selected-source backend audit](../../../../../../docs/research/mainline-initrd-info-kmsg-comparison-2026-10-05.md).*
+
+#### Scenario: Changing the destination changes observed progress
+
+- **WHEN** qualified same-artifact info/kmsg output reaches new messages
+- **THEN** record the sole changed destination and observed boundary
+- **AND** retain fallback/filtering, runtime identity, cause and recovery limits
+
+#### Scenario: Kmsg comparison remains unknown
+
+- **WHEN** qualified login or I/O completion is absent
+- **THEN** keep complete private output without candidate input or fallback trial
 - **AND** require independent protected recovery or a NEW operator reset
