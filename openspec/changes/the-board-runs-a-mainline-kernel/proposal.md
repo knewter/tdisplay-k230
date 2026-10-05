@@ -427,3 +427,13 @@ policy previously reached closure lookup. No controller selector or artifact
 changes are needed. This requires the board, reviewed actual qualification
 and NEW protected recovery; no logging, tracing, target, timer/IRQ or build
 intervention. [Observed boundary and bounded roadmap](../../../docs/research/mainline-ordinary-baseline-repeat-2026-10-05.md).
+
+
+## One returned-result probe before userspace diagnostics
+
+The unchanged quiet repeat did not reach its former closure boundary. Group5s
+adds one optional finite signed-return record after the selected ramdisk init
+exec attempt, preserving original init/argv/env and error/fallback behavior.
+It requires an additive kernel build and physical UART proof; successful exec
+setup is not userspace execution. Closure and systemd-main instrumentation are
+outside this bounded change. [Observed boundary and source/proof plan](../../../docs/research/mainline-init-exec-return-probe-2026-10-05.md).

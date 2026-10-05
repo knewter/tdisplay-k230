@@ -732,10 +732,10 @@ reproducibility control, not a logging cause, ordinary-root acceptance, glass
 proof or automatic recovery. Subsequent recovery SHALL be independently
 verified or explicitly pending a NEW operator reset.
 
-<!-- UNVERIFIED: physical baseline repeat/ordinary acceptance remains pending; actual qualification and NEW recovery passed independent review. -->
+<!-- UNVERIFIED: baseline-repeat recovery and ordinary acceptance remain pending; independently reviewed physical repeat did not reproduce the former closure boundary. -->
 *Grounding: [previous quiet ordinary boundary](../../../../../../docs/evidence/mainline-system-trial/current-p2-ordinary-physical-2026-10-05/README.md),
 [silent kmsg capture](../../../../../../docs/evidence/mainline-initrd-info-kmsg-logging/physical-2026-10-05/README.md)
-and [read archive/source control plan](../../../../../../docs/research/mainline-ordinary-baseline-repeat-2026-10-05.md). [Actual unchanged-baseline preparation](../../../../../../docs/evidence/mainline-system-trial/current-p2-baseline-repeat-host-2026-10-05/README.md) and [NEW protected recovery](../../../../../../docs/evidence/mainline-initrd-info-kmsg-logging/physical-2026-10-05/recovery.json) passed independent review; physical repeat remains open.*
+and [read archive/source control plan](../../../../../../docs/research/mainline-ordinary-baseline-repeat-2026-10-05.md). [Actual unchanged-baseline preparation](../../../../../../docs/evidence/mainline-system-trial/current-p2-baseline-repeat-host-2026-10-05/README.md) and [NEW protected recovery](../../../../../../docs/evidence/mainline-initrd-info-kmsg-logging/physical-2026-10-05/recovery.json) passed independent review. [Completed physical repeat](../../../../../../docs/evidence/mainline-system-trial/current-p2-baseline-repeat-physical-2026-10-05/README.md) passed independent review; subsequent NEW recovery remains open.*
 
 #### Scenario: The unchanged baseline reaches the previous unit boundary
 
@@ -748,3 +748,37 @@ and [read archive/source control plan](../../../../../../docs/research/mainline-
 - **WHEN** qualified startup/readiness or I/O remains unknown
 - **THEN** preserve the temporal difference without compensating changes/input
 - **AND** require independent protected recovery or a NEW reset
+
+
+### Requirement: Selected ramdisk init exec return is observable with a bounded optional probe
+
+An additive default-disabled diagnostic SHALL emit at most one fixed versioned
+INFO record containing only the signed return value after the selected ramdisk
+init exec attempt, before the original success/error branch. It SHALL preserve
+original init bytes/ABI/argv/env, return/fallback behavior, old Nix outputs and
+protected root/console/mask/load/CRC/identity guards. Its typed begin-only
+selection SHALL reject aliases/conflicts/types before UART and require exact
+new source/build/archive/arguments/manifests with independent review.
+
+The physical trial SHALL retain the180-second passive readiness bound, full
+private coverage and unknown-no-input policy. Zero SHALL indicate successful
+exec setup only, not user-mode transition, loader, constructors or systemd main.
+Missing/partial records SHALL remain unknown. Record presence SHALL NOT imply
+its own output call returned, a failing instruction was found, ordinary root
+worked or recovery succeeded. Recovery SHALL be independently verified or
+explicitly pending NEW reset.
+
+<!-- UNVERIFIED: source/build/host/physical probe and ordinary acceptance have not run. -->
+*Grounding: [independently reviewed quiet repeat](../../../../../../docs/evidence/mainline-system-trial/current-p2-baseline-repeat-physical-2026-10-05/README.md) and [selected source/alternative/proof plan](../../../../../../docs/research/mainline-init-exec-return-probe-2026-10-05.md). This is a planned diagnostic, not a shipped capability.*
+
+#### Scenario: Selected init exec returns zero
+
+- **WHEN** a qualified fresh capture contains the fixed complete zero result
+- **THEN** record successful exec setup with the exact artifacts and observation
+- **AND** retain userspace-execution, output-call-return, cause and recovery limits
+
+#### Scenario: Returned error or absent record
+
+- **WHEN** a qualified capture contains a nonzero result or no complete result
+- **THEN** record the returned value or unknown boundary without causal inference
+- **AND** send no candidate input on unknown readiness and require protected recovery

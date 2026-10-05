@@ -1012,3 +1012,26 @@ Retain ordinary5b.5 and all runtime/glass/cause limits. Reject multiple repeats,
 compensating verbosity, tracing, targets/masks/PID1/IRQ/MMIO and builds in this
 group. Helper instrumentation is a separately scoped possible follow-up only
 if the original closure boundary reproduces. [Read archive/source roadmap](../../../docs/research/mainline-ordinary-baseline-repeat-2026-10-05.md).
+
+
+## Selected init exec-return record (group 5s)
+
+Use a separately gated, default-disabled child of p2. Emit at most one fixed
+versioned INFO record with the signed return value immediately after the selected
+ramdisk run_init_process call, before its unchanged success/error conditional.
+Existing boot markers stay disabled; do not add generic fallback records, force
+console delivery, change printk mechanics, argv/env, init or existing branches.
+A typed begin-only controller selection must reject conflicts/aliases/types
+before UART, validate exact expected new arguments and manifests, and preserve
+all protected preflight/load/CRC/normal/unknown-no-input guards and180s bound.
+
+Old Nix outputs retain their identities. New kernel/dev/source/system/bundle
+identities and every necessary archive dependency delta require actual proof;
+retain exact config, DT hardware and archived systemd/init/Bash/loader/helper
+bytes. Require source/control-semantic fixtures, selected RISC-V object review,
+actual artifact qualification and independent review before physical capture.
+A record with return value zero shows exec setup success, not user-mode
+transition/loader/main.
+Missing/partial records and output-call return remain unknown; never label them
+a located instruction or hardware cause. Recovery is independently guarded or
+explicitly pending NEW reset. [Pinned source and alternative analysis](../../../docs/research/mainline-init-exec-return-probe-2026-10-05.md).

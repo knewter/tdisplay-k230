@@ -1401,3 +1401,26 @@ Independent full capture/recovery-limit review PASS. Physical revision236f6bca, 
 - [ ] 5r.3 Independently review reproducibility/parser/recovery limits, land/push
       and inspect exact CI/published revision. Planning proof:
       `openspec validate the-board-runs-a-mainline-kernel --strict`.
+
+
+## 5s. Selected ordinary init exec-return record (bounded diagnostic)
+
+- [ ] 5s.1 Implement additive default-disabled source/kernel/trial variant and
+      typed begin-only selection; preserve old outputs, selected init ABI/argv/env,
+      original return/fallback and all guards. Meaningful narrow fixtures plus
+      selected compiled RISC-V object review; independently review source. No UART.
+      Narrow command: `python3 tests/test_mainline_init_exec_return.py`.
+- [ ] 5s.2 Realize the optional variant; execute actual source/config/archive/init/
+      helper/DT-hardware/argument/manifest/five-load/CRC qualification, documenting
+      each necessary new dependency delta and old-output equality. Commit exact
+      build receipt and safe executed qualifier; independently review. No implicit
+      UART. Narrow command: `python3 tools/mainline-init-exec-return-qualify.py --bundle BUNDLE --dev DEV --normal-report PRIVATE_NORMAL`.
+- [ ] 5s.3 After NEW protected recovery and reviewed source/build/host gates,
+      reserve sole board/UART for ONE passive180s capture. Commit finite observations
+      and independent recovery or explicit pending NEW reset; preserve full private
+      coverage/unknown-no-input. Command: `python3 tools/mainline-drm-system-trial.py begin --wait-initramfs-in-initcall --without-boot-markers --init-exec-return --bundle BUNDLE --manifest PRIVATE_MANIFEST --normal-report PRIVATE_NORMAL --state NEW_PRIVATE_STATE --log PRIVATE_LOG --result PRIVATE_RESULT`.
+      No loader/main, failed-instruction, output-call-return or ordinary-root/glass
+      claim from the record;5b.5 stays open.
+- [ ] 5s.4 Independently review recorded boundary/recovery limits, land/push and
+      inspect exact CI/published revision. Planning command:
+      `openspec validate the-board-runs-a-mainline-kernel --strict`.
