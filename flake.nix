@@ -311,6 +311,15 @@
             inherit (pkgsCross) applyPatches lib;
           });
         };
+        # Default-disabled selected init exec result; preserve p2 artifact policy.
+        k230-mainline-init-exec-return = self.nixosConfigurations.k230-mainline-uart-progress-memory-printk.extendModules {
+          specialArgs.k230Kernel = pkgsCross.linuxPackagesFor (import ./nix/kernel-mainline-init-exec-return.nix {
+            kernelMainline = pkgsCross.callPackage ./nix/kernel-mainline.nix {
+              inherit (pkgsCross) buildLinux;
+            };
+            inherit (pkgsCross) applyPatches lib;
+          });
+        };
         # Post-sample records; preserve Breadcrumbs artifact parameters.
         k230-mainline-uart-progress-post-sample = self.nixosConfigurations.k230-mainline-uart-progress-breadcrumbs.extendModules {
           specialArgs.k230Kernel = pkgsCross.linuxPackagesFor (import ./nix/kernel-mainline-uart-progress-post-sample.nix {
@@ -622,6 +631,18 @@
         kernelMainlineUartProgressMemoryPrintkExactObjects = pkgs.callPackage ./nix/kernel-mainline-uart-progress-exact-objects.nix {
           crossCc = pkgsCross.stdenv.cc;
           kernel = self.packages.${buildSystem}.kernelMainlineUartProgressMemoryPrintk;
+        };
+
+        kernelMainlineInitExecReturn = pkgsCross.callPackage ./nix/kernel-mainline-init-exec-return.nix {
+          kernelMainline = pkgsCross.callPackage ./nix/kernel-mainline.nix {
+            inherit (pkgsCross) buildLinux;
+          };
+        };
+        toplevel-mainline-init-exec-return = self.nixosConfigurations.k230-mainline-init-exec-return.config.system.build.toplevel;
+        kernelMainlineInitExecReturnTrialBootFiles = pkgs.callPackage ./nix/mainline-drm-trial.nix {
+          cfg = self.nixosConfigurations.k230-mainline-init-exec-return.config;
+          kernel = self.nixosConfigurations.k230-mainline-init-exec-return.config.boot.kernelPackages.kernel;
+          deviceTree = self.packages.${buildSystem}.deviceTreeMainlineDrm;
         };
 
         kernelMainlineUartProgressPostSample = pkgsCross.callPackage ./nix/kernel-mainline-uart-progress-post-sample.nix {

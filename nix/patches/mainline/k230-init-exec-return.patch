@@ -1,0 +1,16 @@
+--- a/init/main.c
++++ b/init/main.c
+@@ -173,0 +174,10 @@
++/* Read after free_initmem: keep this runtime gate in ordinary storage. */
++static bool k230_init_exec_return_enabled;
++
++static int __init k230_init_exec_return_setup(char *value)
++{
++	k230_init_exec_return_enabled = !strcmp(value, "1");
++	return 1;
++}
++__setup("k230.init_exec_return=", k230_init_exec_return_setup);
++
+@@ -1694,0 +1705,2 @@
++		if (k230_init_exec_return_enabled)
++			pr_info("K230_INIT_EXEC_RETURN_V1 ret=%d\n", ret);

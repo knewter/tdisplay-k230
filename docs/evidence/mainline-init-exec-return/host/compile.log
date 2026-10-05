@@ -1,0 +1,5 @@
+make: Entering directory '/nix/store/dsgrv7744lzh418z22gb865c0j09g1qs-linux-mainline-k230-init-exec-return-src'
+make[1]: Entering directory '/home/jadams/tmp/k230-mainline-init-exec-return-host/object/module'
+  CC      main.o
+make[1]: Leaving directory '/home/jadams/tmp/k230-mainline-init-exec-return-host/object/module'
+make: Leaving directory '/nix/store/dsgrv7744lzh418z22gb865c0j09g1qs-linux-mainline-k230-init-exec-return-src'
