@@ -27,6 +27,7 @@ CONTROLS = ("fsck.mode=skip", "systemd.mask=k230-root-growth.service", "systemd.
 TRACE_ENABLE = ("k230.boot_trace=1", "k230.boot_trace_sbi_only=1")
 INITRD_DEBUG_LOGGING = ("rd.systemd.log_level=debug", "rd.systemd.log_target=console")
 INITRD_INFO_LOGGING = ("rd.systemd.log_level=info", "rd.systemd.log_target=console")
+INITRD_INFO_KMSG_LOGGING = ("rd.systemd.log_level=info", "rd.systemd.log_target=kmsg")
 STAGES = {
     "identity": ("uid", "system", "booted", "kernel", "uname", "boot_id", "pid1", "getty"),
     "persistent": ("profile", "registration_absent", "root_source", "root_type", "root_options", "root_uuid", "root_label"),
@@ -49,21 +50,22 @@ def finite_timeout(value: float, maximum: float) -> None:
         raise ValueError("timeout must be positive, finite and bounded")
 
 
-def initrd_logging_controls(debug: bool = False, info: bool = False) -> tuple[str, ...]:
-    if type(debug) is not bool or type(info) is not bool:
+def initrd_logging_controls(debug: bool = False, info: bool = False, info_kmsg: bool = False) -> tuple[str, ...]:
+    if any(type(mode) is not bool for mode in (debug, info, info_kmsg)):
         raise ValueError("initrd logging selectors must be boolean")
-    if debug and info:
-        raise ValueError("initrd debug and info logging are mutually exclusive")
-    return INITRD_DEBUG_LOGGING if debug else INITRD_INFO_LOGGING if info else ()
+    if sum((debug, info, info_kmsg)) > 1:
+        raise ValueError("initrd logging modes are mutually exclusive")
+    return INITRD_DEBUG_LOGGING if debug else INITRD_INFO_LOGGING if info else INITRD_INFO_KMSG_LOGGING if info_kmsg else ()
 
 
 def diagnostic_controls(wait_initramfs_in_initcall: bool = False, *, without_boot_markers: bool = False,
-                        initrd_debug_logging: bool = False, initrd_info_logging: bool = False) -> tuple[str, ...]:
+                        initrd_debug_logging: bool = False, initrd_info_logging: bool = False,
+                        initrd_info_kmsg_logging: bool = False) -> tuple[str, ...]:
     if type(wait_initramfs_in_initcall) is not bool:
         raise ValueError("initramfs comparison selector must be boolean")
     if type(without_boot_markers) is not bool:
         raise ValueError("marker comparison selector must be boolean")
-    logging = initrd_logging_controls(initrd_debug_logging, initrd_info_logging)
+    logging = initrd_logging_controls(initrd_debug_logging, initrd_info_logging, initrd_info_kmsg_logging)
     if logging and not (wait_initramfs_in_initcall and without_boot_markers):
         raise ValueError("initrd logging requires synchronous initramfs and marker-free ordinary init")
     if without_boot_markers and not wait_initramfs_in_initcall:
@@ -73,9 +75,10 @@ def diagnostic_controls(wait_initramfs_in_initcall: bool = False, *, without_boo
 
 def ordinary_bootargs(original: str, system: str, *, wait_initramfs_in_initcall: bool = False,
                       without_boot_markers: bool = False, initrd_debug_logging: bool = False,
-                      initrd_info_logging: bool = False) -> str:
+                      initrd_info_logging: bool = False, initrd_info_kmsg_logging: bool = False) -> str:
     controls = diagnostic_controls(wait_initramfs_in_initcall, without_boot_markers=without_boot_markers,
-                                   initrd_debug_logging=initrd_debug_logging, initrd_info_logging=initrd_info_logging)
+                                   initrd_debug_logging=initrd_debug_logging, initrd_info_logging=initrd_info_logging,
+                                   initrd_info_kmsg_logging=initrd_info_kmsg_logging)
     args = original[:-1] if original.endswith("\n") else original
     if not original.startswith("bootargs=") or args.strip() != args:
         raise ValueError("expected exact single-line bundle bootargs")
@@ -87,7 +90,7 @@ def ordinary_bootargs(original: str, system: str, *, wait_initramfs_in_initcall:
     for p in params:
         name, _, value = p.partition("=")
         canonical = name.replace("-", "_").removeprefix("rd.")
-        if (initrd_debug_logging or initrd_info_logging) and (canonical.startswith(("systemd.log_", "systemd.journald.", "udev.",
+        if (initrd_debug_logging or initrd_info_logging or initrd_info_kmsg_logging) and (canonical.startswith(("systemd.log_", "systemd.journald.", "udev.",
                                                            "k230.uart_progress", "k230.uobs.")) or
                                     canonical in {"systemd.setenv", "systemd.unit", "systemd.mask", "systemd.debug_shell",
                                                   "systemd.break", "fsck.mode", "initcall_debug", "clk_ignore_unused",
@@ -111,20 +114,24 @@ def ordinary_bootargs(original: str, system: str, *, wait_initramfs_in_initcall:
 
 def prepare(bundle: Path, manifest: Path, normal_report: Path, *, wait_initramfs_in_initcall: bool = False,
             without_boot_markers: bool = False, initrd_debug_logging: bool = False,
-            initrd_info_logging: bool = False) -> dict:
+            initrd_info_logging: bool = False, initrd_info_kmsg_logging: bool = False) -> dict:
     controls = diagnostic_controls(wait_initramfs_in_initcall, without_boot_markers=without_boot_markers,
-                                   initrd_debug_logging=initrd_debug_logging, initrd_info_logging=initrd_info_logging)
+                                   initrd_debug_logging=initrd_debug_logging, initrd_info_logging=initrd_info_logging,
+                                   initrd_info_kmsg_logging=initrd_info_kmsg_logging)
     p = rd.prepare_trial(manifest, bundle, normal_report)
     p["bootargs"] = ordinary_bootargs((bundle / "bootargs.txt").read_text(), p["system"],
                                      wait_initramfs_in_initcall=wait_initramfs_in_initcall,
                                      without_boot_markers=without_boot_markers,
-                                     initrd_debug_logging=initrd_debug_logging, initrd_info_logging=initrd_info_logging)
+                                     initrd_debug_logging=initrd_debug_logging, initrd_info_logging=initrd_info_logging,
+                                     initrd_info_kmsg_logging=initrd_info_kmsg_logging)
     p["diagnostic_controls"] = controls
     p["without_boot_markers"] = without_boot_markers
     if initrd_debug_logging:
         p["initrd_debug_logging"] = True
     if initrd_info_logging:
         p["initrd_info_logging"] = True
+    if initrd_info_kmsg_logging:
+        p["initrd_info_kmsg_logging"] = True
     volatile_bootargs_command(p)
     p["kernel"] = str((Path(p["system"]) / "kernel").resolve().parent)
     p["pid1"] = str((Path(p["system"]) / "init").resolve())
@@ -418,10 +425,11 @@ def volatile_bootargs_command(p: dict) -> str:
     controls = tuple(p.get("diagnostic_controls", CONTROLS))
     debug = p.get("initrd_debug_logging", False)
     info = p.get("initrd_info_logging", False)
-    logging = initrd_logging_controls(debug, info)
+    info_kmsg = p.get("initrd_info_kmsg_logging", False)
+    logging = initrd_logging_controls(debug, info, info_kmsg)
     without = p.get("without_boot_markers", False)
-    diagnostic_controls(controls != CONTROLS, without_boot_markers=without, initrd_debug_logging=debug, initrd_info_logging=info)
-    allowed = diagnostic_controls(True, without_boot_markers=True, initrd_debug_logging=debug, initrd_info_logging=info) if logging else None
+    diagnostic_controls(controls != CONTROLS, without_boot_markers=without, initrd_debug_logging=debug, initrd_info_logging=info, initrd_info_kmsg_logging=info_kmsg)
+    allowed = diagnostic_controls(True, without_boot_markers=True, initrd_debug_logging=debug, initrd_info_logging=info, initrd_info_kmsg_logging=info_kmsg) if logging else None
     if controls not in ((allowed,) if logging else (CONTROLS, diagnostic_controls(True))):
         raise ValueError("unexpected volatile diagnostic controls")
     if type(without) is not bool:
@@ -433,7 +441,7 @@ def volatile_bootargs_command(p: dict) -> str:
         params = value.split()
         if any(v.partition("=")[0] in {"k230.boot_trace", "k230.boot_trace_sbi_only"} for v in params):
             raise ValueError("marker enable token remains in explicit comparison")
-        if controls != diagnostic_controls(True, without_boot_markers=True, initrd_debug_logging=debug, initrd_info_logging=info) or params.count("initramfs_async=0") != 1:
+        if controls != diagnostic_controls(True, without_boot_markers=True, initrd_debug_logging=debug, initrd_info_logging=info, initrd_info_kmsg_logging=info_kmsg) or params.count("initramfs_async=0") != 1:
             raise ValueError("marker comparison lost the earlier initramfs join control")
         if logging:
             received = [token for token in params if token.partition("=")[0].replace("-", "_").removeprefix("rd.")
@@ -505,7 +513,8 @@ def save_state(path: Path, value: dict, *, new=False) -> None:
 def run(args) -> bool:
     requested_debug = getattr(args, "initrd_debug_logging", False)
     requested_info = getattr(args, "initrd_info_logging", False)
-    if initrd_logging_controls(requested_debug, requested_info) and args.phase != "begin":
+    requested_kmsg = getattr(args, "initrd_info_kmsg_logging", False)
+    if initrd_logging_controls(requested_debug, requested_info, requested_kmsg) and args.phase != "begin":
         raise ValueError("initrd logging is begin-only; resume uses protected state")
     saved = None if args.phase == "begin" else private_existing(args.state)
     wait_initramfs_in_initcall = (saved.get("wait_initramfs_in_initcall", False) if saved is not None
@@ -514,8 +523,10 @@ def run(args) -> bool:
                             else getattr(args, "without_boot_markers", False))
     initrd_debug_logging = saved.get("initrd_debug_logging", False) if saved is not None else requested_debug
     initrd_info_logging = saved.get("initrd_info_logging", False) if saved is not None else requested_info
+    initrd_info_kmsg_logging = saved.get("initrd_info_kmsg_logging", False) if saved is not None else requested_kmsg
     diagnostic_controls(wait_initramfs_in_initcall, without_boot_markers=without_boot_markers,
-                        initrd_debug_logging=initrd_debug_logging, initrd_info_logging=initrd_info_logging)
+                        initrd_debug_logging=initrd_debug_logging, initrd_info_logging=initrd_info_logging,
+                        initrd_info_kmsg_logging=initrd_info_kmsg_logging)
     if saved:
         for key in ("bundle", "manifest", "normal_report"):
             setattr(args, key, Path(saved[key]))
@@ -524,7 +535,8 @@ def run(args) -> bool:
     p = prepare(args.bundle, args.manifest, args.normal_report, wait_initramfs_in_initcall=wait_initramfs_in_initcall,
                 without_boot_markers=without_boot_markers,
                 **{name: True for name, enabled in (("initrd_debug_logging", initrd_debug_logging),
-                                                    ("initrd_info_logging", initrd_info_logging)) if enabled})
+                                                    ("initrd_info_logging", initrd_info_logging),
+                                                    ("initrd_info_kmsg_logging", initrd_info_kmsg_logging)) if enabled})
     normal = dict(p["normal"] if saved is None else saved["normal"])
     state_path = rd.safe_log_path(args.state) if saved is None else args.state.expanduser().absolute()
     log_path = rd.safe_log_path(args.log); result_path = rd.safe_log_path(args.result)
@@ -536,6 +548,7 @@ def run(args) -> bool:
     result["without_boot_markers"] = without_boot_markers
     result["initrd_debug_logging"] = initrd_debug_logging
     result["initrd_info_logging"] = initrd_info_logging
+    result["initrd_info_kmsg_logging"] = initrd_info_kmsg_logging
     lock_fd = os.open(rd.LOCK_PATH, os.O_CREAT | os.O_RDWR, 0o600)
     session = None
     try:
@@ -560,6 +573,7 @@ def run(args) -> bool:
                 saved["without_boot_markers"] = without_boot_markers
                 saved["initrd_debug_logging"] = initrd_debug_logging
                 saved["initrd_info_logging"] = initrd_info_logging
+                saved["initrd_info_kmsg_logging"] = initrd_info_kmsg_logging
                 save_state(state_path, saved, new=True)
                 result.update(status="candidate-ready-qualified-ordinary-init", candidate=facts)
             else:
@@ -622,6 +636,8 @@ def main() -> int:
                         help="begin-only marker-free/initramfs comparison: two fixed initrd manager logging settings")
     parser.add_argument("--initrd-info-logging", action="store_true",
                         help="begin-only marker-free/initramfs comparison: info level with the same console target")
+    parser.add_argument("--initrd-info-kmsg-logging", action="store_true",
+                        help="begin-only marker-free/initramfs comparison: info level with kmsg target")
     args = parser.parse_args()
     if args.phase == "begin" and any(getattr(args, k) is None for k in ("bundle", "manifest", "normal_report")):
         parser.error("begin requires --bundle, --manifest and --normal-report")
@@ -637,6 +653,8 @@ def main() -> int:
         parser.error("--initrd-debug-logging is begin-only and requires both earlier comparison selectors")
     if args.initrd_info_logging and (args.phase != "begin" or not args.wait_initramfs_in_initcall or not args.without_boot_markers or args.initrd_debug_logging):
         parser.error("--initrd-info-logging is begin-only, requires both comparison selectors and excludes debug logging")
+    if args.initrd_info_kmsg_logging and (args.phase != "begin" or not args.wait_initramfs_in_initcall or not args.without_boot_markers or args.initrd_debug_logging or args.initrd_info_logging):
+        parser.error("--initrd-info-kmsg-logging is begin-only, requires both comparison selectors and excludes other logging modes")
     try:
         return 0 if run(args) else 1
     except Exception as exc:
