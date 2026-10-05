@@ -241,6 +241,288 @@ def shell_pid1_transport(args: str, system: str, *, uart_progress=False, uart_pr
     return command
 
 
+AUTONOMOUS_CAPTURE_SECONDS = 60
+
+
+def autonomous_bash_script(nonce):
+    _validate_token(nonce)
+    script = ("n=" + nonce + r";test $$ = 1&&test $EUID = 0&&printf \\nK230_BP1:%s:B\\n $n&&/bin/sleep 5&&printf \\nK230_BP1:%s:E\\n $n;exec /bin/sh -i")
+    if len(script.encode()) != 154:
+        raise ValueError("fixed autonomous script length mismatch")
+    return script
+
+
+def autonomous_bash_bootargs(original, system, nonce):
+    return shell_pid1_bootargs(original, system) + ' -- -c "' + autonomous_bash_script(nonce) + '"'
+
+
+def autonomous_bash_transport(args, system, nonce):
+    original = ("bootargs=consoleblank=0 console=ttyS0,115200n8 root=fstab loglevel=4 "
+                "lsm=landlock,yama,bpf loglevel=7 " + " ".join(SHELL_TRACE_FLAGS) +
+                f" init={system}/init\n")
+    if args != autonomous_bash_bootargs(original, system, nonce):
+        raise ValueError("altered autonomous script or arguments")
+    value = args.removeprefix("bootargs=")
+    if "'" in value or any(ord(c) < 32 for c in value):
+        raise ValueError("unsafe autonomous transport")
+    # Exact old Hush single-quoted data, compensating for done_word backslashes.
+    command = "setenv bootargs '" + value.replace("\\", "\\\\") + "'"
+    if len(command.encode()) >= 512:
+        raise ValueError("autonomous transport exceeds unchanged U-Boot bound")
+    return command
+
+
+def validate_autonomous_selector(selector, shell, mode, **conflicts):
+    if type(selector) is not bool:
+        raise ValueError("autonomous Bash PID1 selector must be boolean")
+    if selector and (shell is not True or mode != "minimal" or
+                     any(type(v) is not bool or v for v in conflicts.values())):
+        raise ValueError("--autonomous-bash-pid1 requires minimal --same-image-shell-pid1 without other diagnostics")
+
+
+def elf_interpreter(body):
+    if len(body) < 64:
+        raise ValueError("truncated autonomous ELF")
+    offset = struct.unpack_from("<Q", body, 32)[0]
+    size, count = struct.unpack_from("<HH", body, 54)
+    if size != 56 or not 0 < count <= 128 or offset + size * count > len(body):
+        raise ValueError("invalid autonomous ELF program headers")
+    result = []
+    for i in range(count):
+        header = offset + i * size
+        if struct.unpack_from("<I", body, header)[0] == 3:
+            start, length = struct.unpack_from("<Q", body, header + 8)[0], struct.unpack_from("<Q", body, header + 32)[0]
+            if not 1 < length <= 4096 or start + length > len(body) or body[start + length - 1] != 0:
+                raise ValueError("invalid autonomous ELF interpreter")
+            result.append(body[start:start + length - 1].decode("ascii"))
+    if len(result) != 1:
+        raise ValueError("missing/duplicate autonomous ELF interpreter")
+    return result[0]
+
+
+def bash_builtin_exports(body):
+    offset = struct.unpack_from("<Q", body, 40)[0]
+    size, count = struct.unpack_from("<HH", body, 58)
+    if size != 64 or not 0 < count <= 4096 or offset + size * count > len(body):
+        raise ValueError("invalid Bash ELF sections")
+    sections = [struct.unpack_from("<IIQQQQIIQQ", body, offset + i * size) for i in range(count)]
+    required = {b"printf_builtin", b"test_builtin", b"exec_builtin"}
+    found = set()
+    for section in sections:
+        if section[1] not in (2, 11):
+            continue
+        start, length, link, entry = section[4], section[5], section[6], section[9]
+        if entry != 24 or length % entry or link >= count or start + length > len(body):
+            raise ValueError("invalid Bash symbol table")
+        strings = sections[link]
+        if strings[1] != 3 or strings[4] + strings[5] > len(body):
+            raise ValueError("invalid Bash symbol strings")
+        table = body[strings[4]:strings[4] + strings[5]]
+        for pos in range(start, start + length, entry):
+            name, info, _, defined, _, _ = struct.unpack_from("<IBBHQQ", body, pos)
+            if name >= len(table) or table.find(b"\0", name) < 0:
+                raise ValueError("invalid Bash symbol name")
+            symbol = table[name:table.find(b"\0", name)]
+            if symbol in required and info >> 4 in (1, 2) and info & 15 == 2 and defined:
+                found.add(symbol)
+    if found != required:
+        raise ValueError("archived Bash lacks required defined builtin exports")
+    return sorted(x.decode() for x in found)
+
+
+def inspect_autonomous_archive(prepared):
+    spec = importlib.util.spec_from_file_location("autonomous_archive", Path(__file__).with_name("mainline-drm-uart-observer-trial.py"))
+    archive = importlib.util.module_from_spec(spec); spec.loader.exec_module(archive)
+    payload = (Path(prepared["system"]) / "initrd").read_bytes()
+    if hashlib.sha256(payload).hexdigest() != prepared["shell_comparison"]["initrd_sha256"]:
+        raise ValueError("autonomous archive differs from qualified shell archive")
+    entries = archive.archive_entries(payload)
+    executables = {}
+    loaders = []
+    for alias in ("bin/sh", "bin/sleep"):
+        path = archive.archive_resolve(entries, alias); mode, body = entries[path]
+        if mode & 0o170000 != 0o100000 or not mode & 0o111 or not archive.riscv_elf(body):
+            raise ValueError("autonomous archived sh/sleep is not executable RISC-V")
+        executables[alias] = {"path": "/" + path, "sha256": hashlib.sha256(body).hexdigest()}
+        loaders.append(archive.archive_resolve(entries, elf_interpreter(body)))
+        if alias == "bin/sh":
+            if executables[alias] != prepared["shell_comparison"]["executables"][alias]:
+                raise ValueError("autonomous Bash differs from qualified shell")
+            builtins = bash_builtin_exports(body)
+    if len(set(loaders)) != 1 or "/" + loaders[0] != prepared["shell_comparison"]["loader"]:
+        raise ValueError("autonomous programs lack qualified common loader")
+    mode, body = entries[loaders[0]]
+    if not mode & 0o111 or not archive.riscv_elf(body) or hashlib.sha256(body).hexdigest() != prepared["shell_comparison"]["loader_sha256"]:
+        raise ValueError("autonomous loader differs from qualified loader")
+    return {"executables": executables, "builtin_exports": builtins,
+            "loader": "/" + loaders[0], "loader_sha256": hashlib.sha256(body).hexdigest()}
+
+
+def prepare_autonomous_bash(prepared, nonce):
+    # Qualify the reviewed existing variant without selecting its reporter gates.
+    p = prepare_uart_memory_printk(prepared)
+    p["autonomous_archive"] = inspect_autonomous_archive(p)
+    p["bootargs"] = autonomous_bash_bootargs((p["bundle"] / "bootargs.txt").read_text(), p["system"], nonce)
+    p["transport"] = autonomous_bash_transport(p["bootargs"], p["system"], nonce)
+    for key in ("uart_progress_memory_no_stimulus", "uart_progress_memory_printk"):
+        p.pop(key)
+    p["autonomous_bash_pid1"] = True
+    p["autonomous_nonce"] = nonce
+    return p
+
+
+AUTONOMOUS_NATIVE_RECEIPT_SHA256 = "1a718d596a9c31b65651738df4128687a77f3e00cb0c0922544959dca07f42b7"
+
+
+def qualify_autonomous_native(prepared, *, proof_repo=None):
+    """Bind the fixed generator to reviewed, immutable native-parser evidence."""
+    repo = Path(proof_repo) if proof_repo is not None else Path(__file__).resolve().parents[1]
+    receipt_path = repo / "docs/evidence/mainline-autonomous-bash-pid1/native-argv/result.json"
+    try:
+        body = receipt_path.read_bytes()
+        if hashlib.sha256(body).hexdigest() != AUTONOMOUS_NATIVE_RECEIPT_SHA256:
+            raise ValueError("autonomous native receipt differs from reviewed proof")
+        receipt = json.loads(body)
+        if (receipt["schema"] != 1 or receipt["status"] != "PASS" or
+                receipt["evidence_class"] != "native-host-parser"):
+            raise ValueError("autonomous native evidence class is unknown")
+        for name, digest in receipt["fixture_manifest"].items():
+            path = Path(name)
+            if (path.is_absolute() or ".." in path.parts or
+                    not name.startswith("tests/fixtures/mainline-autonomous-pid1/")):
+                raise ValueError("unsafe autonomous native fixture path")
+            if hashlib.sha256((repo / path).read_bytes()).hexdigest() != digest:
+                raise ValueError("autonomous native fixture differs from reviewed proof")
+        test = repo / "tests/test_mainline_autonomous_bash_pid1_argv.py"
+        if hashlib.sha256(test.read_bytes()).hexdigest() != receipt["test_source_sha256"]:
+            raise ValueError("autonomous native test differs from reviewed proof")
+        fixture = repo / "tests/fixtures/mainline-autonomous-pid1"
+        if (hashlib.sha256((fixture / "cli_hush-v2022.10.c").read_bytes()).hexdigest() != receipt["hush"]["source_sha256"] or
+                hashlib.sha256((fixture / "linux-selected-functions.h").read_bytes()).hexdigest() != receipt["linux"]["excerpts_sha256"]):
+            raise ValueError("autonomous parser source differs from reviewed proof")
+        source = Path(prepared["uart_progress_memory_printk_kernel"]["source"])
+        if str(source) != receipt["linux"]["source"]:
+            raise ValueError("autonomous native selected Linux source mismatch")
+        for name, expected in receipt["linux"]["files"].items():
+            path = Path(name)
+            if path.is_absolute() or ".." in path.parts:
+                raise ValueError("unsafe autonomous Linux source path")
+            if hashlib.sha256((source / path).read_bytes()).hexdigest() != expected["sha256"]:
+                raise ValueError("autonomous selected Linux parser bytes mismatch")
+        if json.loads((fixture / "linux-source.json").read_text())["files"] != receipt["linux"]["files"]:
+            raise ValueError("autonomous Linux function manifest mismatch")
+        nonce = receipt["vector"]["nonce"]
+        script = autonomous_bash_script(nonce)
+        args = autonomous_bash_bootargs((prepared["bundle"] / "bootargs.txt").read_text(), prepared["system"], nonce)
+        command = autonomous_bash_transport(args, prepared["system"], nonce)
+        values = {"script": script, "bootargs": args.removeprefix("bootargs="), "transport": command}
+        for name, value in values.items():
+            expected = receipt["vector"][name]
+            if expected != {"length": len(value.encode()), "sha256": hashlib.sha256(value.encode()).hexdigest()}:
+                raise ValueError("autonomous fixed generator differs from native vector")
+            if (fixture / (name + ".expected")).read_bytes() != value.encode():
+                raise ValueError("autonomous native expected bytes mismatch")
+        hush = receipt["hush"]
+        if (not hush["native_execution"] or hush["dispatch"] != ["setenv", "bootargs"] or
+                hush["command_count"] != 1 or hush["parser_ifs_lookups"] != 1 or
+                any(hush[k] != 0 for k in ("script_variable_lookups", "extra_commands", "persistent_writes")) or
+                not receipt["linux"]["native_execution"] or receipt["linux"]["argv"] != ["-c", script] or
+                receipt["vector"]["transport_with_cr_length"] != len(command.encode()) + 1):
+            raise ValueError("autonomous native execution facts mismatch")
+    except (OSError, KeyError, TypeError, json.JSONDecodeError) as error:
+        raise ValueError("autonomous native proof is missing or malformed") from error
+    return {"receipt_sha256": hashlib.sha256(body).hexdigest(),
+            "fixture_count": len(receipt["fixture_manifest"]), "evidence_class": "native-host-parser",
+            "hush_source_sha256": hush["source_sha256"], "linux_source": str(source),
+            "linux_files": receipt["linux"]["files"], "vector": receipt["vector"],
+            "installed_hush_or_firmware_abi_verified": False}
+
+
+def autonomous_bash_record(line, nonce):
+    _validate_token(nonce)
+    match = re.fullmatch(rb"K230_BP1:" + nonce.encode() + rb":([BE])\n", line)
+    return match[1].decode() if match else None
+
+
+def observe_autonomous_bash(session, nonce, expected_args, *, timeout=60, clock=time.monotonic):
+    _validate_token(nonce)
+    if not 0 < timeout <= AUTONOMOUS_CAPTURE_SECONDS:
+        raise ValueError("invalid autonomous capture bound")
+    started = clock(); text = b""; total = 0; errors = []; records = []
+    banner = entry = prompt = normal_ready = False
+    args_status = "UNKNOWN"; backend = linux_console_backend(b"")
+    normal_tail = b""; normal_stage = 0
+    patterns = (rb"^U-Boot SPL 2022\.10[^\n]*\n", rb"^\[\s*[0-9]+\.[0-9]+\]\s+Linux version 6\.6\.36(?:[ \t][^\n]*)?\n",
+                rb"^nixos login:(?:[ \t]|$)", rb"^root@nixos:[^\n]*# ")
+    while clock() - started < timeout:
+        try: chunk = session.pump()
+        except Exception:
+            errors.append("transport-read-unknown"); break
+        normal_tail = (normal_tail + chunk)[-131072:]
+        normalized = _PROTOCOL.uart_text(normal_tail)
+        while normal_stage < 4:
+            m = re.search(patterns[normal_stage], normalized, re.M)
+            if not m: break
+            normalized = normalized[m.end():]; normal_tail = normalized; normal_stage += 1
+        normal_ready = normal_stage == 4
+        total += len(chunk)
+        if total > 1048576:
+            errors.append("capture-byte-bound"); break
+        text += chunk
+        raw = text.replace(b"\r\n", b"\n")
+        m = re.search(rb"^\[ *[0-9]+\.[0-9]{6}\] Linux version 7\.3\.0-rc5(?:[ \t][^\r\n]*)?\n", raw, re.M)
+        if m:
+            banner = True; phase = raw[m.end():]
+            complete = phase.split(b"\n")[:-1]
+            args = []; args_end = 0; offset = 0
+            for line in complete:
+                framed = linux_console_prefix(line + b"\n"); offset += len(line) + 1
+                if framed and framed["payload"].startswith(b"Kernel command line: "):
+                    args.append(framed["payload"].removeprefix(b"Kernel command line: ")); args_end = offset
+            args_status = "DUPLICATE" if len(args) > 1 else "MATCHED" if args == [expected_args.removeprefix("bootargs=").encode()] else "MISMATCH" if args else "UNKNOWN"
+            backend = linux_console_backend(phase)
+            init = re.search(rb"^\[ *[0-9]+\.[0-9]{6}\] Run /bin/sh as init process\n", phase, re.M)
+            entry = init is not None
+            records = []; local_errors = []; offset = 0
+            for line in complete:
+                start = offset; offset += len(line) + 1
+                if b"K230_BP" not in line.replace(b"\r", b"") or (linux_console_prefix(line + b"\n") or {}).get("payload", b"").startswith(b"Kernel command line: "):
+                    continue
+                record = autonomous_bash_record(line + b"\n", nonce)
+                if record is None:
+                    local_errors.append("malformed-autonomous-record")
+                elif not entry or args_status != "MATCHED" or backend["status"] != "MATCHED" or start < max(args_end, backend["qualified_after"] or 0, init.end()):
+                    local_errors.append("unqualified-autonomous-record")
+                elif record in records:
+                    local_errors.append("duplicate-autonomous-record")
+                elif record == "E" and not records:
+                    local_errors.append("autonomous-record-order")
+                    records.append(record)
+                elif record == "B" and records:
+                    local_errors.append("autonomous-record-order")
+                    records.append(record)
+                else: records.append(record)
+            if b"K230_BP" in phase.split(b"\n")[-1].replace(b"\r", b""):
+                local_errors.append("truncated-autonomous-record")
+            errors = [e for e in errors if e.startswith("transport-") or e == "capture-byte-bound"] + local_errors
+            if args_status in ("DUPLICATE", "MISMATCH"): errors.append("kernel-command-line-" + args_status.lower())
+            if backend["status"] in ("DUPLICATE", "MISMATCH"): errors.append("linux-console-backend-" + backend["status"].lower())
+            if init:
+                prompt = prompt or re.search(rb"^(?:\x1b\[\?2004h)?sh-5\.3# \Z", phase[init.end():], re.M) is not None
+        if normal_ready: break
+    return {"schema": "k230-autonomous-bash-observation-v1", "candidate_banner": banner,
+            "kernel_args_status": args_status, "kernel_args_verified": args_status == "MATCHED",
+            "linux_console_backend": {k:v for k,v in backend.items() if k != "qualified_after"},
+            "init_entry": entry, "primary_prompt_observed": prompt,
+            "records": records, "begin_observed": "B" in records, "end_observed": "E" in records,
+            "records_complete": records == ["B", "E"] and not errors,
+            "protocol_errors": errors, "capture_timeout_seconds": timeout,
+            "capture_seconds": max(0, clock() - started), "normal_prompt_observed": normal_ready,
+            "stimulus_attempts": 0, "receipt_status": "NOT_REQUESTED", "rx_status": "NOT_TESTED",
+            "reboot_requested": False, "pid1_guard": "limited builtin tests only if begin record qualifies",
+            "usable_root": "UNVERIFIED", "touch": "UNVERIFIED"}
+
+
 def inspect_shell_initrd(prepared: dict) -> dict:
     """Inspect archived executables, not host symlink substitutes; never extract."""
     system = Path(prepared["system"])
@@ -2070,6 +2352,40 @@ def write_private_result(path: Path, value: dict[str, object]) -> None:
         result_file.write("\n")
 
 
+def finish_autonomous_bash(session, prepared, before, log_path, result_path):
+    observation = observe_autonomous_bash(session, prepared["autonomous_nonce"], prepared["bootargs"])
+    after = None; recovery_error = None
+    if observation["normal_prompt_observed"]:
+        try:
+            token = uuid.uuid4().hex
+            session.upload_text("/run/k230-mainline-normal-state.py", prepared["helper_text"], token)
+            session.upload_text("/run/k230-mainline-expected.json", json.dumps(prepared["normal"], indent=2), token)
+            candidate = session.run_state("postflight", token); normal = prepared["normal"]
+            for key in ("system", "profile", "kernel", "uname", "init"):
+                if candidate.get(key) != normal[key]: raise ValueError("normal postflight identity mismatch")
+            if (candidate.get("boot_files") != {k:v["sha256"] for k,v in normal["boot_files"].items()}
+                    or candidate.get("services") != ["active"] * 3
+                    or not re.fullmatch(BOOT_ID_PATTERN, candidate.get("boot_id", ""))
+                    or candidate["boot_id"] in (normal["boot_id"], normal["trial_from_boot_id"])):
+                raise ValueError("normal postflight files/services/fresh boot mismatch")
+            after = candidate
+        except Exception: recovery_error = "protected-normal-postflight-unverified"
+    observed = observation["records_complete"]
+    result = {"result_schema": "mainline-initrd-autonomous-bash-v1", "autonomous_bash_pid1": True,
+        "status": ("recovery-verified-diagnostic-observed" if observed else "recovery-verified-diagnostic-incomplete") if after else "recovery-required-observation-only",
+        "candidate_system": prepared["system"], "candidate_bundle": str(prepared["bundle"]),
+        "expected_bootargs": prepared["bootargs"], "kernel_proof": prepared["uart_progress_kernel"],
+        "archive_proof": prepared["autonomous_archive"],
+        "autonomous_native_proof": prepared["autonomous_native_proof"], "normal_preflight": before,
+        "probe": observation, "normal_recovery": after, "recovery_error": recovery_error,
+        "diagnostic_ok": observed, "reboot_requested": False, "persistent_boot_selection_changed": False,
+        "ordinary_init": "NOT_ATTEMPTED", "usable_root": "UNVERIFIED", "touch": "UNVERIFIED",
+        "rx_status": "NOT_TESTED", "raw_serial_log_path": str(log_path)}
+    write_private_result(result_path, result)
+    print("Autonomous zero-input observation saved; protected normal recovery remains independent.")
+    return bool(after and observed)
+
+
 def finish_uart_progress(session, token, prepared, before, log_path, result_path):
     memory_mode = "uart_progress_memory_kernel" in prepared
     no_stimulus = prepared.get("uart_progress_memory_no_stimulus", False)
@@ -2179,6 +2495,7 @@ def run_trial(
     uart_progress_memory_poll_idle: bool = False,
     uart_progress_memory_printk: bool = False,
     uart_progress_memory_printk_nohz_off: bool = False,
+    autonomous_bash_pid1: bool = False,
 ) -> bool:
     validate_shell_selector(same_image_shell_pid1, mode, ignore_unused_clocks, debug_shutdown, runtime_shutdown_trace)
     validate_uart_progress_selector(uart_progress, same_image_shell_pid1, mode,
@@ -2201,8 +2518,17 @@ def run_trial(
         raise ValueError("--runtime-shutdown-trace requires --mode minimal")
     if runtime_shutdown_trace and debug_shutdown:
         raise ValueError("--runtime-shutdown-trace cannot be combined with --debug-shutdown")
+    validate_autonomous_selector(autonomous_bash_pid1, same_image_shell_pid1, mode,
+        uart_progress=uart_progress, breadcrumbs=uart_progress_breadcrumbs, post_sample=uart_progress_post_sample,
+        memory=uart_progress_memory, no_stimulus=uart_progress_memory_no_stimulus,
+        poll_idle=uart_progress_memory_poll_idle, printk=uart_progress_memory_printk,
+        nohz=uart_progress_memory_printk_nohz_off, clock=ignore_unused_clocks,
+        debug=debug_shutdown, runtime=runtime_shutdown_trace)
     prepared = prepare_trial(manifest_path, bundle, normal_report)
-    if uart_progress_memory_printk:
+    if autonomous_bash_pid1:
+        prepared = prepare_autonomous_bash(prepared, uuid.uuid4().hex)
+        prepared["autonomous_native_proof"] = qualify_autonomous_native(prepared)
+    elif uart_progress_memory_printk:
         prepared = prepare_uart_memory_printk(prepared)
     elif uart_progress:
         prepared = prepare_uart_progress(prepared,
@@ -2336,6 +2662,8 @@ def run_trial(
             session.line("bootm 0x8000000 0x9000000 0x8400000", interrupt=False)
             boot_started = True
             in_uboot = False
+            if autonomous_bash_pid1:
+                return finish_autonomous_bash(session, prepared, observed_before, log_path, result_path)
             if uart_progress:
                 return finish_uart_progress(session, uuid.uuid4().hex, prepared, observed_before,
                                             log_path, result_path)
@@ -2533,6 +2861,8 @@ def main() -> int:
                         help="label, or minimal with runtime tracing: add volatile clk_ignore_unused")
     parser.add_argument("--same-image-shell-pid1", action="store_true",
                         help="minimal only: exact SBI-only image, markers off, async=0, qualified controls and Bash PID1")
+    parser.add_argument("--autonomous-bash-pid1", action="store_true",
+                        help="minimal same-image only: fixed qualified Bash PID1 script, one sleep and passive60s; no reporter/input/reboot")
     parser.add_argument("--uart-progress", action="store_true",
                         help="minimal shell comparison only: matching configured kernel; one receipt then passive capture, no candidate reboot; requires host nix-store and matching realized kernel.dev")
     parser.add_argument("--uart-progress-breadcrumbs", action="store_true",
@@ -2584,6 +2914,12 @@ def main() -> int:
         validate_uart_memory_printk_nohz_off_selector(args.uart_progress_memory_printk_nohz_off,
             args.uart_progress_memory_printk, args.uart_progress_memory_no_stimulus, args.uart_progress_memory,
             args.uart_progress, args.same_image_shell_pid1, args.mode, args.uart_progress_memory_poll_idle)
+        validate_autonomous_selector(args.autonomous_bash_pid1, args.same_image_shell_pid1, args.mode,
+            progress=args.uart_progress, breadcrumbs=args.uart_progress_breadcrumbs, post_sample=args.uart_progress_post_sample,
+            memory=args.uart_progress_memory, no_stimulus=args.uart_progress_memory_no_stimulus,
+            poll_idle=args.uart_progress_memory_poll_idle, printk=args.uart_progress_memory_printk,
+            nohz=args.uart_progress_memory_printk_nohz_off, clock=args.ignore_unused_clocks,
+            debug=args.debug_shutdown, runtime=args.runtime_shutdown_trace)
     except ValueError as exc:
         parser.error(str(exc))
     if args.ignore_unused_clocks and not (args.mode == "label" or (args.mode == "minimal" and args.runtime_shutdown_trace)):
@@ -2599,6 +2935,7 @@ def main() -> int:
             **({"debug_shutdown": True} if args.debug_shutdown else {}),
             **({"runtime_shutdown_trace": True} if args.runtime_shutdown_trace else {}),
             **({"same_image_shell_pid1": True} if args.same_image_shell_pid1 else {}),
+            **({"autonomous_bash_pid1": True} if args.autonomous_bash_pid1 else {}),
             **({"uart_progress": True} if args.uart_progress else {}),
             **({"uart_progress_breadcrumbs": True} if args.uart_progress_breadcrumbs else {}),
             **({"uart_progress_post_sample": True} if args.uart_progress_post_sample else {}),

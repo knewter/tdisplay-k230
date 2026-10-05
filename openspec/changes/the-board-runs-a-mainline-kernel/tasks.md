@@ -1277,11 +1277,12 @@ completion of ordinary mainline acceptance.
       zero expansion/extra/persistent commands and unchanged 512-byte bound.
       Source models/shlex alone do not pass. No UART/kernel build. Narrow proof:
       `python3 tests/test_mainline_autonomous_bash_pid1_argv.py`.
-- [ ] 5n.2 Implement only typed `--autonomous-bash-pid1` requiring minimal/same-image
+- [x] 5n.2 Implement only typed `--autonomous-bash-pid1` requiring minimal/same-image
       and rejecting competing selectors/types/modes/altered syntax before UART.
       Add strict fresh-nonce begin/end parsing and 60-second zero-input capture, separate
       prompt/unknown/normal recovery, unchanged defaults and failure/finally write
       spies. Narrow proof: `python3 tests/test_mainline_autonomous_bash_pid1_controller.py`.
+      Host source checkpoint: [controller preparation](../../../docs/evidence/mainline-autonomous-bash-pid1/host/controller-host.md); 16 focused fixtures PASS, strict/affected regressions PASS. No UART/build; actual artifact/native qualification remains 5n.3 and physical 5n.4 remains open.
 - [ ] 5n.3 Execute actual same p2/24h artifact/controller preparation and qualify
       source/config/Image/DT/archive/manifest/loads, executable sh/sleep ABI/loader
       and Bash builtins. Commit executed qualifier and safe receipt, exact fixed
