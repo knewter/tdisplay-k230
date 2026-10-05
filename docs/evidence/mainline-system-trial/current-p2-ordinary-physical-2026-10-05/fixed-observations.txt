@@ -1,0 +1,8 @@
+PUBLIC DERIVED OBSERVATIONS; not a raw transcript
+Systemd PID1 messages observed after the fresh candidate banner.
+Finished Coldplug All udev Devices.
+Reached target Initrd Root Device.
+Reached target Initrd Root File System.
+Mounted /sysroot.
+Starting Find NixOS closure; no completion message observed.
+No login banner or verified stage2 identity within the 180s readiness bound.

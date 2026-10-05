@@ -621,3 +621,36 @@ Native parser execution and autonomous board records remain unverified.*
 - **WHEN** a record is absent or fails strict qualification
 - **THEN** keep unknown facts and send no candidate bytes
 - **AND** require independent protected recovery or a NEW operator reset
+
+
+### Requirement: Fixed ordinary-init manager logging comparison
+
+The system trial controller SHALL offer typed begin-only `--initrd-debug-logging`
+requiring synchronous-initramfs and marker-free ordinary init. It SHALL append
+only `rd.systemd.log_level=debug rd.systemd.log_target=console`, reject inherited
+conflicting logging keys including underscore/hyphen aliases and invalid
+types/combinations before UART, retain unchanged defaults and transport bound,
+and preserve the selected policy through guarded continuation.
+
+It SHALL retain exact artifact/load/CRC/printed/live-argument and normal identity
+guards, a 180-second passive readiness bound and complete private logging past
+rolling-buffer capacity. Unknown readiness or I/O SHALL send no candidate input.
+Manager job/ExecStart state SHALL NOT be reported as nested command or syscall
+tracing, ordinary-root acceptance or protected recovery.
+
+<!-- UNVERIFIED: typed controller, actual preparation and physical logging comparison remain planned. -->
+*Grounding: [current ordinary physical boundary](../../../../../../docs/evidence/mainline-system-trial/current-p2-ordinary-physical-2026-10-05/README.md)
+and [selected archive/pinned systemd source](../../../../../../docs/research/mainline-initrd-debug-logging-2026-10-05.md).
+Physical logging output and ordinary boot acceptance remain unverified.*
+
+#### Scenario: Qualified logging comparison reaches an observed unit boundary
+
+- **WHEN** fresh qualified candidate output names manager jobs or ExecStart state
+- **THEN** record only the observed queued/spawned/running/completed unit facts
+- **AND** retain separate login, identity, blocked-call and recovery limits
+
+#### Scenario: Verbose comparison does not reach qualified readiness
+
+- **WHEN** login or I/O completion is unknown within the fixed bound
+- **THEN** preserve the complete private log without candidate input or fallback
+- **AND** require independent protected recovery or a NEW operator reset

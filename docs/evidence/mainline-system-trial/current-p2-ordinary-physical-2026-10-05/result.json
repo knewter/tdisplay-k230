@@ -1,0 +1,90 @@
+{
+  "schema": "k230-current-p2-ordinary-physical-v1",
+  "evidence_class": "physical UART passive ordinary-init readiness; separate camera observation",
+  "controller_revision": "8982b4988d55a43839633ecb69752665677c91eb",
+  "controller_source_sha256": "8889cef62d8ac7cf94460fbf98ffb82b27fc91fb4ec4f5fbcfa6f840646da56d",
+  "started_utc": "2026-10-05T01:46:26.022703+00:00",
+  "completed_utc": "2026-10-05T01:49:52.367316+00:00",
+  "total_invocation_seconds": 206.344613,
+  "controller_exit": 1,
+  "status": "recovery-required-unknown",
+  "failure": "Unknown: ordinary init login readiness unverified",
+  "phase": "begin",
+  "readiness_bound_seconds": 180,
+  "bundle": "/nix/store/p2kdar89q7dhwdajjy0mrhmxxzcgsalw-k230-mainline-drm-trial-boot-files",
+  "system": "/nix/store/yk44vx3ny4h6a9mx3ya4rczh7akhyjbj-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "kernel": "/nix/store/xna7x12lh4lmzwgmwq51cyc9wf86504p-linux-riscv64-unknown-linux-gnu-7.3.0-rc5",
+  "pid1": "/nix/store/yk44vx3ny4h6a9mx3ya4rczh7akhyjbj-nixos-system-nixos-26.11.20260919.20b1ddd/init",
+  "pid1_sha256": "d3e109a270c0b4463ac5b7b0655ce7667d7c55f6f93341bb461300a5dd5c8c63",
+  "artifact_files": {
+    "bootargs.txt": {
+      "bytes": 243,
+      "sha256": "794caaaed934e49a978fe8a401a8403dc92fd0b668c68cb943919d1265d4aaf8",
+      "crc32": "6f142f8c"
+    },
+    "fw_jump_add_uboot_head.bin": {
+      "bytes": 270808,
+      "sha256": "9627edbeea9b115d7040beea27cc61b23b6aca61cd502fd7760d7ee179f42c99",
+      "crc32": "99b89787"
+    },
+    "Image-mainline-drm": {
+      "bytes": 38530560,
+      "sha256": "c2c9663bc385a0c62a15b740ccd46b36b51bc3fd9c0c6281b2a2e5a1882878c3",
+      "crc32": "29d5b2d5"
+    },
+    "k230-tdisplay-mainline-drm.dtb": {
+      "bytes": 11097,
+      "sha256": "836340a4739b59a4eeb8325f10de64a6fc6844db14947ca99cab8bf7b64a0be3",
+      "crc32": "b2cd7d55"
+    },
+    "initrd.uimg": {
+      "bytes": 27308547,
+      "sha256": "10bf5d9ad3511037282d364c1ef23235385cb0614b0511c39d4b4340af5c1e0a",
+      "crc32": "1fef7a2d"
+    }
+  },
+  "expected_bootargs": "bootargs=consoleblank=0 console=ttyS0,115200n8 root=fstab loglevel=4 lsm=landlock,yama,bpf loglevel=7 init=/nix/store/yk44vx3ny4h6a9mx3ya4rczh7akhyjbj-nixos-system-nixos-26.11.20260919.20b1ddd/init fsck.mode=skip systemd.mask=k230-root-growth.service systemd.mask=register-nix-paths.service initramfs_async=0",
+  "wait_initramfs_in_initcall": true,
+  "without_boot_markers": true,
+  "observations": {
+    "fresh_mainline_banner": true,
+    "systemd_output_observed": true,
+    "coldplug_completion_message": true,
+    "initrd_root_device_target_message": true,
+    "initrd_root_filesystem_target_message": true,
+    "login_banner_observed": false,
+    "switch_root_message_observed": false,
+    "candidate_stage2_identity_verified": false,
+    "sysroot_mounted_message": true,
+    "find_nixos_closure_start_message": true,
+    "find_nixos_closure_completion_message": false
+  },
+  "normal_preflight": {
+    "qualified": true,
+    "uname": "6.6.36",
+    "eight_boot_files_unchanged": true,
+    "three_shell_services_active": true,
+    "registration_absent": true
+  },
+  "candidate_input_after_readiness_failure": "none; reviewed controller preserves unknown state without retries",
+  "normal_recovery": "PENDING_NEW_OPERATOR_RESET",
+  "ordinary_root": "UNVERIFIED",
+  "panel_acceptance": "UNVERIFIED",
+  "deliberate_glass_touch": "NOT_PERFORMED",
+  "production_unmasked": "UNVERIFIED",
+  "automatic_return": "UNVERIFIED",
+  "new_build_transfer_flash_readback": "NOT_PERFORMED",
+  "raw_serial": {
+    "bytes": 54894,
+    "sha256": "4a8892fe9eb41932c7e3335319153f76736500707f51051ddab5bd4212e992ac",
+    "private_result_sha256": "f96805cab2cb2cf4df5014a394692156b57f3e9fe977311c1e00c20ab80a53d0",
+    "private_command_receipt_sha256": "35e2fa67f9a193b6045fca25f7f28dea0c0073a0b0d19703d215337061dcaaf3"
+  },
+  "candidate_camera": {
+    "reviewed": true,
+    "observation": "Panel appears dark and reflective; no readable content.",
+    "limits": "Glare, soft focus, oblique angle; not proof that userspace or display scanout is absent.",
+    "sha256": "2e78dc577b22b872c67b1f1f8a87bcf2a59177e713b38bb5b294738bb4fc7653"
+  },
+  "independent_physical_review": "PASS"
+}

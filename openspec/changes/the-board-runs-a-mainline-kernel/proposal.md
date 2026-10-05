@@ -387,3 +387,14 @@ scripts. No new kernel/initrd/DT build, IRQ/MMIO/firmware change, production fix
 or ordinary-root claim. Land this bounded plan first. Actual host qualification
 and NEW protected normal recovery precede one 60-second passive comparison.
 Missing output remains unknown and ordinary task 5b.5 stays open.
+
+
+## Bounded continuation: ordinary-init manager logging
+
+The current p2 ordinary comparison reaches mounted sysroot and starts closure
+lookup without a usable login. Add one typed logging-only comparison so the
+operator can distinguish queued dependencies, main-process spawn/exec failure,
+running closure lookup and completion before activation. Use the same artifacts
+and protected recovery; no kernel rebuild or new masks/targets. This requires
+the physical board for its result. Nested shell/syscall tracing and ordinary
+boot acceptance are outside this diagnostic. [Scope and source grounding](../../../docs/research/mainline-initrd-debug-logging-2026-10-05.md).

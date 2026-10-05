@@ -153,11 +153,12 @@
   "persistent_boot_selection_changed": false,
   "new_kernel_build_performed": false,
   "new_transfer_flash_or_readback_performed": false,
-  "normal_recovery": "PENDING_NEW_OPERATOR_RESET",
+  "normal_recovery": "VERIFIED_NEW_OPERATOR_RESET",
   "automatic_return": "UNVERIFIED",
   "ordinary_init": "NOT_ATTEMPTED",
   "usable_root": "UNVERIFIED",
   "touch": "UNVERIFIED",
   "independent_physical_review": "PASS",
-  "zero_input_evidence_limit": "reviewed passive source and no post-boot controller command frames; not an independent electrical direction measurement"
+  "zero_input_evidence_limit": "reviewed passive source and no post-boot controller command frames; not an independent electrical direction measurement",
+  "normal_recovery_receipt": "recovery.json"
 }

@@ -931,3 +931,23 @@ Rejected: generic script flags, POSIX-only quoting models, kernel observer
 markers in this comparison, unconditional exit/reboot, another kernel build
 and multiple timer/IRQ interventions. Preserve the zero-input result even on
 incomplete capture and record separate operator recovery or explicit NEW reset.
+
+
+## Fixed initrd manager debug logging (group 5o)
+
+Userspace controller only: begin-only `--initrd-debug-logging` requires the
+existing synchronous-initramfs and marker-free selectors. Append exactly
+`rd.systemd.log_level=debug rd.systemd.log_target=console`; reject inherited
+plain/initrd log settings and underscore/hyphen aliases, duplicate/conflicting
+values, wrong types and other phases before UART. Save the typed selection;
+old state defaults false. Pure policy gives 356 argument / 374 command bytes.
+
+Retain p2 Image/initrd/DT/source/config/manifest, all five load/CRC checks, sole
+console, exact init/root/masks and 180-second passive readiness. Preserve the
+complete private log even past rolling-buffer capacity, split fresh milestones
+and unknown-no-input behavior. Debug output may change timing/console pressure.
+Reject global tracing, journal forwarding, udev verbosity, extra masks/targets,
+alternate PID1 or a new build for this first comparison. Manager state/ExecStart
+logs cannot pinpoint silent shell subcommands; narrower helper instrumentation
+would need separate scope. Physical results and recovery remain unverified.
+See [read archive/source and current physical boundary](../../../docs/research/mainline-initrd-debug-logging-2026-10-05.md).

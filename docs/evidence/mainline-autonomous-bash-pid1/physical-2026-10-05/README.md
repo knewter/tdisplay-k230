@@ -54,10 +54,12 @@ nonce and raw wire. Raw UART, boot IDs, runtime nonce and protected reports
 remain private.
 
 The controller exited 2 because protected normal return was not observed;
-`diagnostic_ok` is true. This is a completed diagnostic with independent recovery
-still required. Board/UART/camera/build reservations are released. A NEW user
-reset after this comparison is requested; recovery is **PENDING**. The reset
-used before this comparison is not reused.
+`diagnostic_ok` is true. The diagnostic completed, with independent recovery
+still required when capture ended. A subsequent NEW user reset passed
+[protected normal recovery](recovery.json): distinct boot, exact system/profile/
+kernel/init, eight matching boot hashes, three active services and registration
+absence. The reset used before this comparison was not reused. This follow-up
+is physical UART evidence; no camera or real-glass proof was obtained for it.
 
 Independent read-only review **PASS**: five strict load counts/CRCs, exact
 volatile arguments and final boot command, complete fresh B/E ordering and
