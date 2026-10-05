@@ -1,0 +1,52 @@
+{
+  "command": [
+    "flock",
+    "-n",
+    "/tmp/k230-nix-build.lock",
+    "make",
+    "-C",
+    "/nix/store/79yd40jv8h4x866bm1vyw94cm948grax-linux-mainline-k230-init-exec-transition-src",
+    "O=/home/jadams/tmp/k230-mainline-init-exec-transition-host/new-headers-object/build",
+    "M=/home/jadams/tmp/k230-mainline-init-exec-transition-host/new-headers-object/module",
+    "ARCH=riscv",
+    "CROSS_COMPILE=/nix/store/4j2mwxqjvnyr6da0925sp0bm4jaj5r5i-riscv64-unknown-linux-gnu-gcc-wrapper-15.3.0/bin/riscv64-unknown-linux-gnu-",
+    "W=1",
+    "-j3",
+    "main.o",
+    "process.o",
+    "traps.o"
+  ],
+  "started_utc": "2026-10-05T20:08:01.477638+00:00",
+  "completed_utc": "2026-10-05T20:08:12.925519+00:00",
+  "returncode": 0,
+  "elapsed_seconds": 11.447896647965536,
+  "evidence_class": "actual-new-selected-header-RISC-V-object",
+  "source": "/nix/store/79yd40jv8h4x866bm1vyw94cm948grax-linux-mainline-k230-init-exec-transition-src",
+  "new_dev": "/nix/store/yz7s78rqdx216bk2kj27q8d9qsi2dap4-linux-riscv64-unknown-linux-gnu-7.3.0-rc5-dev",
+  "config_sha256": "52e7470b108ad094dbdf88b94e3e8838564edbda9e7a015b4279012e6765c9f1",
+  "compile_log_sha256": "5ed3753268febc5d2853651df7f9380d3c63f3b8d5752f3d10fec0e91e65a9ff",
+  "source_sha256": {
+    "init/main.c": "0363265487f8fdbd2ba2fcbbda64e3003bc970ed708c73bb6b31ba4e609ea5b5",
+    "arch/riscv/kernel/process.c": "2ddbcc113d4a943704edaf576d02638c12c605a6e4468ee82c7f731fdbe3d693",
+    "arch/riscv/kernel/traps.c": "0c8aa2616ae1a1a2da6962b12e121ea3b220a940e46a37f82d62b0064c70d433",
+    "include/linux/k230-init-exec-transition.h": "071b94a44889f3a61ec17a3af8f276c3a82e081f85c8c89779f0b8ee0d6e6848"
+  },
+  "header_sha256": {
+    ".config": {
+      "installed": "52e7470b108ad094dbdf88b94e3e8838564edbda9e7a015b4279012e6765c9f1",
+      "post_compile_copy": "52e7470b108ad094dbdf88b94e3e8838564edbda9e7a015b4279012e6765c9f1"
+    },
+    "include/generated/autoconf.h": {
+      "installed": "99f44d781b246202edab1d5ef8c4836b15ae99c590999ff268541dfd673865d0",
+      "post_compile_copy": "99f44d781b246202edab1d5ef8c4836b15ae99c590999ff268541dfd673865d0"
+    }
+  },
+  "unchanged_selected_headers": true,
+  "warning_lines": [],
+  "main_object_sha256": "abfa9a57777f6b726ea4692cd28f42f12a1755a6d4db140d583edb078e8df771",
+  "main_readelf_sha256": "c609d4526d9e9242ccfe481864b634e9bee8f36b082261f4cb695502728be9b4",
+  "process_object_sha256": "54ac3850b59c6577bf6a9a868b3967280dca68ba256fd5a33b5c11a1c18e4e76",
+  "process_readelf_sha256": "8ed5dfcada46337ad8bd9ceb15a5887bfef92e1bb6f284e7cb78178e603ab8d6",
+  "traps_object_sha256": "fc67eac48a7f809dbc0be6b911af7b3f092667ef1c3bf96a1b9067a30d9b1bf3",
+  "traps_readelf_sha256": "3172bafecd980cea73d9081287105fe2eacacc656707e814b4388cc75525d5e6"
+}

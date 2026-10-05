@@ -1,0 +1,22 @@
+{
+  "command": [
+    "python3",
+    "/home/jadams/tmp/k230-mainline-probe-integration/tools/mainline-init-exec-transition-qualify.py",
+    "--bundle",
+    "/nix/store/jx56x86gihamimhj6hqr8d13rn6ax25r-k230-mainline-drm-trial-boot-files",
+    "--dev",
+    "/nix/store/yz7s78rqdx216bk2kj27q8d9qsi2dap4-linux-riscv64-unknown-linux-gnu-7.3.0-rc5-dev",
+    "--normal-report",
+    "/home/jadams/tmp/k230-mainline-init-exec-transition-host/normal-report.json",
+    "--build-receipt",
+    "/home/jadams/tmp/k230-mainline-init-exec-transition-host/full-build-result.private.json",
+    "--output-dir",
+    "/home/jadams/tmp/k230-mainline-init-exec-transition-host/actual-qualification"
+  ],
+  "started_utc": "2026-10-05T20:08:14.194195+00:00",
+  "completed_utc": "2026-10-05T20:08:22.950964+00:00",
+  "returncode": 0,
+  "elapsed_seconds": 8.75676408293657,
+  "log_sha256": "006d99e557b0ba96bf137fae5c250e3bea4fa4871bc0866c3f90d413be2f8695",
+  "UART_opened": false
+}

@@ -1,0 +1,191 @@
+{
+  "revision": "a60b0eaee3a56631060f857e3e7fbb39dac1a911",
+  "returncode": 0,
+  "steps": [
+    {
+      "revision": "a60b0eaee3a56631060f857e3e7fbb39dac1a911",
+      "head_at_invocation": "9a4946882ff6236eea83eea9b233804aeadf5f1e",
+      "command": [
+        "nix",
+        "build",
+        "-L",
+        "--no-write-lock-file",
+        "--no-link",
+        "--max-jobs",
+        "1",
+        "--cores",
+        "4",
+        "--print-out-paths",
+        "git+file:///home/jadams/tmp/k230-mainline-probe-integration?rev=a60b0eaee3a56631060f857e3e7fbb39dac1a911#kernelMainlineInitExecTransition.src"
+      ],
+      "shared_lock": "/tmp/k230-nix-build.lock held by driver",
+      "started_utc": "2026-10-05T19:13:47.844091+00:00",
+      "completed_utc": "2026-10-05T19:13:49.946443+00:00",
+      "elapsed_seconds": 2.1024077229667455,
+      "returncode": 0,
+      "expected_output_paths": [
+        "/nix/store/79yd40jv8h4x866bm1vyw94cm948grax-linux-mainline-k230-init-exec-transition-src"
+      ],
+      "output_paths": [
+        "/nix/store/79yd40jv8h4x866bm1vyw94cm948grax-linux-mainline-k230-init-exec-transition-src"
+      ],
+      "exact_outputs_equal": true,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "gc_root_commands": [
+        [
+          "nix-store",
+          "--add-root",
+          "/home/jadams/tmp/k230-mainline-init-exec-transition-host/retained-store/source",
+          "--indirect",
+          "--realise",
+          "/nix/store/79yd40jv8h4x866bm1vyw94cm948grax-linux-mainline-k230-init-exec-transition-src"
+        ]
+      ]
+    },
+    {
+      "revision": "a60b0eaee3a56631060f857e3e7fbb39dac1a911",
+      "head_at_invocation": "9a4946882ff6236eea83eea9b233804aeadf5f1e",
+      "command": [
+        "nix",
+        "build",
+        "-L",
+        "--no-write-lock-file",
+        "--no-link",
+        "--max-jobs",
+        "1",
+        "--cores",
+        "4",
+        "--print-out-paths",
+        "git+file:///home/jadams/tmp/k230-mainline-probe-integration?rev=a60b0eaee3a56631060f857e3e7fbb39dac1a911#kernelMainlineInitExecTransition",
+        "git+file:///home/jadams/tmp/k230-mainline-probe-integration?rev=a60b0eaee3a56631060f857e3e7fbb39dac1a911#kernelMainlineInitExecTransition.dev"
+      ],
+      "shared_lock": "/tmp/k230-nix-build.lock held by driver",
+      "started_utc": "2026-10-05T19:13:50.028080+00:00",
+      "completed_utc": "2026-10-05T20:06:15.027607+00:00",
+      "elapsed_seconds": 3144.9998030009447,
+      "returncode": 0,
+      "expected_output_paths": [
+        "/nix/store/dibyk3lwys5mzvlf8mxl5l5l6j8x7w1r-linux-riscv64-unknown-linux-gnu-7.3.0-rc5",
+        "/nix/store/yz7s78rqdx216bk2kj27q8d9qsi2dap4-linux-riscv64-unknown-linux-gnu-7.3.0-rc5-dev"
+      ],
+      "output_paths": [
+        "/nix/store/dibyk3lwys5mzvlf8mxl5l5l6j8x7w1r-linux-riscv64-unknown-linux-gnu-7.3.0-rc5",
+        "/nix/store/yz7s78rqdx216bk2kj27q8d9qsi2dap4-linux-riscv64-unknown-linux-gnu-7.3.0-rc5-dev"
+      ],
+      "exact_outputs_equal": true,
+      "log_sha256": "d4ee4084d2a5668c6fd8a61d17db9da5fbf0bec5e5bee0b693c9c8d02971887c",
+      "gc_root_commands": [
+        [
+          "nix-store",
+          "--add-root",
+          "/home/jadams/tmp/k230-mainline-init-exec-transition-host/retained-store/kernel",
+          "--indirect",
+          "--realise",
+          "/nix/store/dibyk3lwys5mzvlf8mxl5l5l6j8x7w1r-linux-riscv64-unknown-linux-gnu-7.3.0-rc5"
+        ],
+        [
+          "nix-store",
+          "--add-root",
+          "/home/jadams/tmp/k230-mainline-init-exec-transition-host/retained-store/kernel-1-dev",
+          "--indirect",
+          "--realise",
+          "/nix/store/yz7s78rqdx216bk2kj27q8d9qsi2dap4-linux-riscv64-unknown-linux-gnu-7.3.0-rc5-dev"
+        ]
+      ]
+    },
+    {
+      "revision": "a60b0eaee3a56631060f857e3e7fbb39dac1a911",
+      "head_at_invocation": "9a4946882ff6236eea83eea9b233804aeadf5f1e",
+      "command": [
+        "nix",
+        "build",
+        "-L",
+        "--no-write-lock-file",
+        "--no-link",
+        "--max-jobs",
+        "1",
+        "--cores",
+        "4",
+        "--print-out-paths",
+        "git+file:///home/jadams/tmp/k230-mainline-probe-integration?rev=a60b0eaee3a56631060f857e3e7fbb39dac1a911#kernelMainlineInitExecTransitionTrialBootFiles"
+      ],
+      "shared_lock": "/tmp/k230-nix-build.lock held by driver",
+      "started_utc": "2026-10-05T20:06:15.739327+00:00",
+      "completed_utc": "2026-10-05T20:07:24.302033+00:00",
+      "elapsed_seconds": 68.56273317500018,
+      "returncode": 0,
+      "expected_output_paths": [
+        "/nix/store/jx56x86gihamimhj6hqr8d13rn6ax25r-k230-mainline-drm-trial-boot-files"
+      ],
+      "output_paths": [
+        "/nix/store/jx56x86gihamimhj6hqr8d13rn6ax25r-k230-mainline-drm-trial-boot-files"
+      ],
+      "exact_outputs_equal": true,
+      "log_sha256": "d41ecdcd7fdcd6adcf136a34711ee4ba6568135b68f1945aff2c0589dc8c8121",
+      "gc_root_commands": [
+        [
+          "nix-store",
+          "--add-root",
+          "/home/jadams/tmp/k230-mainline-init-exec-transition-host/retained-store/bundle",
+          "--indirect",
+          "--realise",
+          "/nix/store/jx56x86gihamimhj6hqr8d13rn6ax25r-k230-mainline-drm-trial-boot-files"
+        ]
+      ]
+    },
+    {
+      "revision": "a60b0eaee3a56631060f857e3e7fbb39dac1a911",
+      "head_at_invocation": "9a4946882ff6236eea83eea9b233804aeadf5f1e",
+      "command": [
+        "nix",
+        "build",
+        "-L",
+        "--no-write-lock-file",
+        "--no-link",
+        "--max-jobs",
+        "1",
+        "--cores",
+        "4",
+        "--print-out-paths",
+        "git+file:///home/jadams/tmp/k230-mainline-probe-integration?rev=a60b0eaee3a56631060f857e3e7fbb39dac1a911#toplevel-mainline-init-exec-transition"
+      ],
+      "shared_lock": "/tmp/k230-nix-build.lock held by driver",
+      "started_utc": "2026-10-05T20:07:24.820418+00:00",
+      "completed_utc": "2026-10-05T20:07:53.785016+00:00",
+      "elapsed_seconds": 28.964593732962385,
+      "returncode": 0,
+      "expected_output_paths": [
+        "/nix/store/28n7jy3g4iz3sy6y6yv8b6p5g5gffgsj-nixos-system-nixos-26.11.20260919.20b1ddd"
+      ],
+      "output_paths": [
+        "/nix/store/28n7jy3g4iz3sy6y6yv8b6p5g5gffgsj-nixos-system-nixos-26.11.20260919.20b1ddd"
+      ],
+      "exact_outputs_equal": true,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "gc_root_commands": [
+        [
+          "nix-store",
+          "--add-root",
+          "/home/jadams/tmp/k230-mainline-init-exec-transition-host/retained-store/system",
+          "--indirect",
+          "--realise",
+          "/nix/store/28n7jy3g4iz3sy6y6yv8b6p5g5gffgsj-nixos-system-nixos-26.11.20260919.20b1ddd"
+        ]
+      ]
+    }
+  ],
+  "output_paths": [
+    "/nix/store/79yd40jv8h4x866bm1vyw94cm948grax-linux-mainline-k230-init-exec-transition-src",
+    "/nix/store/dibyk3lwys5mzvlf8mxl5l5l6j8x7w1r-linux-riscv64-unknown-linux-gnu-7.3.0-rc5",
+    "/nix/store/yz7s78rqdx216bk2kj27q8d9qsi2dap4-linux-riscv64-unknown-linux-gnu-7.3.0-rc5-dev",
+    "/nix/store/jx56x86gihamimhj6hqr8d13rn6ax25r-k230-mainline-drm-trial-boot-files",
+    "/nix/store/28n7jy3g4iz3sy6y6yv8b6p5g5gffgsj-nixos-system-nixos-26.11.20260919.20b1ddd"
+  ],
+  "root_links": {
+    "kernel-1-dev": "/nix/store/yz7s78rqdx216bk2kj27q8d9qsi2dap4-linux-riscv64-unknown-linux-gnu-7.3.0-rc5-dev",
+    "bundle": "/nix/store/jx56x86gihamimhj6hqr8d13rn6ax25r-k230-mainline-drm-trial-boot-files",
+    "kernel": "/nix/store/dibyk3lwys5mzvlf8mxl5l5l6j8x7w1r-linux-riscv64-unknown-linux-gnu-7.3.0-rc5",
+    "system": "/nix/store/28n7jy3g4iz3sy6y6yv8b6p5g5gffgsj-nixos-system-nixos-26.11.20260919.20b1ddd",
+    "source": "/nix/store/79yd40jv8h4x866bm1vyw94cm948grax-linux-mainline-k230-init-exec-transition-src"
+  }
+}

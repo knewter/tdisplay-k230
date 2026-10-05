@@ -1448,13 +1448,15 @@ Independent source/actual host/full physical/parser/recovery-limit/publication r
       require independent review. Narrow proof:
       `python3 tests/test_mainline_init_exec_transition.py`.
       [Source/native/RISC-V parent-header proof](../../../docs/evidence/mainline-init-exec-transition/source/README.md) and [controller/qualifier source proof](../../../docs/evidence/mainline-init-exec-transition/controller/README.md) implemented and independently reviewed. Root reran17 transition and10 actual patched-site tests PASS after integration. [Complete base-package identity comparison](../../../docs/evidence/mainline-init-exec-transition/source/identity-evaluation.json) passed with all110 prior attrs unchanged, equal selected kernel/config/params, and matching independently evaluated new outputs. Root reviewed the actual assertion expression, source hashes and object sections/references. Matching full artifacts remain5t.3–4 and physical outcome5t.5.
-- [ ] 5t.3 Realize and retain new kernel/dev/source outputs with exact config and
+- [x] 5t.3 Realize and retain new kernel/dev/source outputs with exact config and
       object/Image proof; record build failures separately. Host proof:
       `nix build .#kernelMainlineInitExecTransition .#kernelMainlineInitExecTransition.dev --no-link --print-out-paths --max-jobs 1 --cores 4`.
-- [ ] 5t.4 Build matching new system/bundle and qualify actual source/config/DT/
+      [Actual host proof](../../../docs/evidence/mainline-init-exec-transition/actual-host/README.md): frozen revision a60b0eae full build return0 with retained source/kernel/dev roots; actual new-header three-object W=1 compile zero warnings with config/autoconf unchanged and verified sections/references. No build failure occurred. Independent source and controller actual-host reviews PASS. Physical outcome remains5t.5.
+- [x] 5t.4 Build matching new system/bundle and qualify actual source/config/DT/
       archived init/systemd/Bash/loader/helper/transport bytes and manifest. Host
       proof: `nix build .#kernelMainlineInitExecTransitionTrialBootFiles --no-link --print-out-paths --max-jobs 1 --cores 4`, then
       `python3 tools/mainline-init-exec-transition-qualify.py --bundle BUNDLE --dev DEV --normal-report PRIVATE_NORMAL`.
+      [Actual qualification](../../../docs/evidence/mainline-init-exec-transition/actual-host/positive-host-result.json) returned0 for retained bundle/system: four source pins, linked Image/config/dev, archive/DT/init/loader/helper/checksum/CRC/transport verified; 351-byte args, 369-byte literal command. Independent actual-host review PASS. Normal report is an historical host anchor, not live preflight.
 - [ ] 5t.5 After independent source/build/host review and NEW protected recovery,
       guard staging, reserve sole board/UART and capture ONE passive180s trial.
       Commit finite observations plus independently verified recovery or explicit

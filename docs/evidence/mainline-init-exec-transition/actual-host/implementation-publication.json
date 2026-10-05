@@ -1,0 +1,21 @@
+{
+  "checked_utc": "2026-10-05T19:36:12.781160+00:00",
+  "revision": "ab0b2f4097072ab7d7710115f416588fec1b8dbb",
+  "run_id": 37362092220,
+  "conclusion": "success",
+  "checks": [
+    {
+      "url": "https://knewter.github.io/tdisplay-k230/work/",
+      "http_status": 200,
+      "published_revision": "ab0b2f4097072ab7d7710115f416588fec1b8dbb"
+    },
+    {
+      "url": "https://knewter.github.io/tdisplay-k230/evidence/docs-evidence-mainline-init-exec-transition-source-readme-md/",
+      "http_status": 200
+    },
+    {
+      "url": "https://knewter.github.io/tdisplay-k230/evidence/docs-evidence-mainline-init-exec-transition-controller-readme-md/",
+      "http_status": 200
+    }
+  ]
+}
