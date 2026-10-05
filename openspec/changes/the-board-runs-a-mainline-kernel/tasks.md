@@ -1266,7 +1266,7 @@ completion of ordinary mainline acceptance.
       Independent physical/recovery review PASS; master `b04ac4d0`, CI
       37245257792 PASS and exact work/new physical/previous recovery publication
       HTTP 200 verified: [publication receipt](../../../docs/evidence/mainline-uart-progress-memory-printk/nohz-off-physical-2026-10-04/publication.json).
-      NEW recovery after nohz-off remains PENDING; 5b.5 stays open.
+      Subsequent NEW nohz-off [protected recovery](../../../docs/evidence/mainline-uart-progress-memory-printk/nohz-off-physical-2026-10-04/recovery.json) passed: distinct boot, exact identities/eight hashes/three services/registration absence. Automatic return and 5b.5 stay UNVERIFIED.
 
 
 ## 5n. Fixed autonomous Bash-PID1 comparison (planned, UNVERIFIED)
@@ -1293,11 +1293,12 @@ completion of ordinary mainline acceptance.
       args/503-byte transport and native proof; no implicit build/UART. Command:
       `python3 docs/evidence/mainline-autonomous-bash-pid1/host/qualification-command.py --bundle BUNDLE --dev DEV --normal-report PRIVATE_NORMAL`.
       Actual [host qualification](../../../docs/evidence/mainline-autonomous-bash-pid1/host/README.md) PASS on corrected root82b27a36: same p2/24h/0l4 artifacts/archive/loader/Bash exports, committed native receipt/fixtures/selected Linux/vector, exact154/477/503 bytes, historical normal anchors only. No UART/build; 5n.4 requires NEW protected recovery and remains open.
-- [ ] 5n.4 After NEW protected recovery plus reviewed native/controller/actual host
+- [x] 5n.4 After NEW protected recovery plus reviewed native/controller/actual host
       gates, reserve board/UART for one 60-second passive comparison and commit fixed
       records/facts plus independent recovery or explicit pending NEW reset.
       Command: `python3 tools/mainline-drm-initrd-shell-trial.py --mode minimal --same-image-shell-pid1 --autonomous-bash-pid1 --bundle BUNDLE --manifest PRIVATE_MANIFEST --normal-report PRIVATE_NORMAL --log PRIVATE_LOG --result PRIVATE_RESULT`.
       Keep RX/output-return/cause/ordinary-root limits; 5b.5 stays open.
+      [Physical autonomous capture](../../../docs/evidence/mainline-autonomous-bash-pid1/physical-2026-10-05/README.md): strict B then E and later primary prompt in60.035s, exact candidate arguments/backend/bin-sh entry, zero input/errors. Selected sleep returned; RX and ordinary init/root/glass remain UNVERIFIED. Capture complete with NEW reset after this comparison PENDING; no prior reset reused.
 - [ ] 5n.5 Independently review parser/execution/recovery limits, land/push evidence
       and inspect exact CI/published revision. Planning proof:
       `openspec validate the-board-runs-a-mainline-kernel --strict`.

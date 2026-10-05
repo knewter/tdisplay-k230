@@ -80,8 +80,9 @@
   "new_kernel_build_performed": false,
   "new_transfer_performed": false,
   "source_restoration": "source-restore.json",
-  "normal_recovery": "PENDING_NEW_OPERATOR_RESET",
+  "normal_recovery": "VERIFIED_NEW_OPERATOR_RESET",
   "runtime_tick_policy": "UNVERIFIED: exact received token and compiled parser support only",
   "automatic_return": "UNVERIFIED",
-  "ordinary_mainline_acceptance": "UNVERIFIED"
+  "ordinary_mainline_acceptance": "UNVERIFIED",
+  "normal_recovery_receipt": "recovery.json"
 }

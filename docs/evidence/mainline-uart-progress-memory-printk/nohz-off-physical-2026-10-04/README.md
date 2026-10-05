@@ -47,5 +47,8 @@ universally fail. No candidate camera or real-glass acceptance was obtained.
 Ordinary /init/root/panel/glass and task 5b.5 remain **UNVERIFIED**.
 
 Capture is complete and board/UART/build/camera reservations are released.
-Automatic return was not observed. A NEW reset after THIS comparison is requested
-and protected normal recovery is **PENDING**; the predecessor's reset is not reused.
+Automatic return was not observed during capture. A subsequent NEW user reset
+passed [protected normal recovery](recovery.json): distinct boot, exact system/
+profile/kernel/init, eight matching boot hashes, three active services and
+registration absence. The predecessor's reset was not reused. This follow-up is
+physical UART evidence; no camera or real-glass proof was obtained for it.

@@ -1,0 +1,213 @@
+{
+  "schema": "k230-autonomous-bash-pid1-positive-host-v1",
+  "evidence_class": "actual-existing-artifact-host-preparation-only",
+  "started_utc": "2026-10-05T01:05:43.981876+00:00",
+  "completed_utc": "2026-10-05T01:05:45.677501+00:00",
+  "controller_revision": "c0c8e50c47abfb165d3c4b4c0b51b2653fb48e91",
+  "author_controller_revision": "d988bb08",
+  "controller_source_sha256": "666d5019b6446ba4e8e4e8e5ad5cd78315c7f5d5598dbcdc02ee04cbaaba0d36",
+  "original_full_build_revision": "1c59f8565ce6baab1e97ffad23e55556961af308",
+  "original_full_build_returncode": 0,
+  "bundle": "/nix/store/p2kdar89q7dhwdajjy0mrhmxxzcgsalw-k230-mainline-drm-trial-boot-files",
+  "system": "/nix/store/yk44vx3ny4h6a9mx3ya4rczh7akhyjbj-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "dev": "/nix/store/24hbalyljs6gn6fzkkl24znv8a0x6jdl-linux-riscv64-unknown-linux-gnu-7.3.0-rc5-dev",
+  "files": {
+    "bootargs.txt": {
+      "bytes": 243,
+      "sha256": "794caaaed934e49a978fe8a401a8403dc92fd0b668c68cb943919d1265d4aaf8",
+      "crc32": "6f142f8c"
+    },
+    "fw_jump_add_uboot_head.bin": {
+      "bytes": 270808,
+      "sha256": "9627edbeea9b115d7040beea27cc61b23b6aca61cd502fd7760d7ee179f42c99",
+      "crc32": "99b89787"
+    },
+    "Image-mainline-drm": {
+      "bytes": 38530560,
+      "sha256": "c2c9663bc385a0c62a15b740ccd46b36b51bc3fd9c0c6281b2a2e5a1882878c3",
+      "crc32": "29d5b2d5"
+    },
+    "k230-tdisplay-mainline-drm.dtb": {
+      "bytes": 11097,
+      "sha256": "836340a4739b59a4eeb8325f10de64a6fc6844db14947ca99cab8bf7b64a0be3",
+      "crc32": "b2cd7d55"
+    },
+    "initrd.uimg": {
+      "bytes": 27308547,
+      "sha256": "10bf5d9ad3511037282d364c1ef23235385cb0614b0511c39d4b4340af5c1e0a",
+      "crc32": "1fef7a2d"
+    }
+  },
+  "kernel_proof": {
+    "kernel": "/nix/store/xna7x12lh4lmzwgmwq51cyc9wf86504p-linux-riscv64-unknown-linux-gnu-7.3.0-rc5",
+    "derivation": "/nix/store/fdjxx6cggxp2ffhsf7lwmz7mndd2588v-linux-riscv64-unknown-linux-gnu-7.3.0-rc5.drv",
+    "config": "/nix/store/24hbalyljs6gn6fzkkl24znv8a0x6jdl-linux-riscv64-unknown-linux-gnu-7.3.0-rc5-dev/lib/modules/7.3.0-rc5/build/.config",
+    "config_sha256": "52e7470b108ad094dbdf88b94e3e8838564edbda9e7a015b4279012e6765c9f1"
+  },
+  "memory_printk_artifact_proof": {
+    "source": "/nix/store/0l4mgw9hr1j7pj247jsrxjd478fnlfy8-linux-mainline-k230-uart-progress-memory-printk-src",
+    "worker_sha256": "30e8eb1ee365d62665c9d3ffd674e973736f3d04405d53f0f5dc12c3ee23f5f2",
+    "image_sha256": "c2c9663bc385a0c62a15b740ccd46b36b51bc3fd9c0c6281b2a2e5a1882878c3",
+    "summary_format_offset": 25646280,
+    "config_sha256": "52e7470b108ad094dbdf88b94e3e8838564edbda9e7a015b4279012e6765c9f1",
+    "required_builtin_config": [
+      "PRINTK",
+      "PRINTK_TIME",
+      "SERIAL_8250_CONSOLE",
+      "SERIAL_8250_DW"
+    ],
+    "printk_caller": "disabled"
+  },
+  "archive_proof": {
+    "bash": "/nix/store/89hsc9vrrk2vr18yp9yrzs365fz490wv-bash-interactive-riscv64-unknown-linux-gnu-5.3p15/bin/bash",
+    "executables": {
+      "init": {
+        "path": "/nix/store/srwrq12f962d5prr382vvsq76nfvmm84-systemd-riscv64-unknown-linux-gnu-261.2/lib/systemd/systemd",
+        "sha256": "d3e109a270c0b4463ac5b7b0655ce7667d7c55f6f93341bb461300a5dd5c8c63"
+      },
+      "bin/sh": {
+        "path": "/nix/store/89hsc9vrrk2vr18yp9yrzs365fz490wv-bash-interactive-riscv64-unknown-linux-gnu-5.3p15/bin/bash",
+        "sha256": "8494a422916b769311e43f2ae463e3e93f520c8657b6c0c98c138a313af124d9"
+      },
+      "bin/readlink": {
+        "path": "/nix/store/3m27x1rrl0wk30lz5fih10cf1dpqbaa6-coreutils-riscv64-unknown-linux-gnu-9.11/bin/coreutils",
+        "sha256": "0f990f00e98050939fedeee9d3c0449c5b42669d2bc0443a7a3bb95bc2376adc"
+      },
+      "bin/true": {
+        "path": "/nix/store/3m27x1rrl0wk30lz5fih10cf1dpqbaa6-coreutils-riscv64-unknown-linux-gnu-9.11/bin/coreutils",
+        "sha256": "0f990f00e98050939fedeee9d3c0449c5b42669d2bc0443a7a3bb95bc2376adc"
+      },
+      "bin/mkdir": {
+        "path": "/nix/store/3m27x1rrl0wk30lz5fih10cf1dpqbaa6-coreutils-riscv64-unknown-linux-gnu-9.11/bin/coreutils",
+        "sha256": "0f990f00e98050939fedeee9d3c0449c5b42669d2bc0443a7a3bb95bc2376adc"
+      },
+      "bin/mount": {
+        "path": "/nix/store/wj2ib2qm1znrpv2i8b433v69m07m86ll-util-linux-minimal-riscv64-unknown-linux-gnu-2.42.3-mount/bin/mount",
+        "sha256": "0f50b69245c684745d13540087e0b436ced81a07df1aed6bd5942c34ed6ecdc9"
+      },
+      "bin/cat": {
+        "path": "/nix/store/3m27x1rrl0wk30lz5fih10cf1dpqbaa6-coreutils-riscv64-unknown-linux-gnu-9.11/bin/coreutils",
+        "sha256": "0f990f00e98050939fedeee9d3c0449c5b42669d2bc0443a7a3bb95bc2376adc"
+      },
+      "bin/reboot": {
+        "path": "/nix/store/srwrq12f962d5prr382vvsq76nfvmm84-systemd-riscv64-unknown-linux-gnu-261.2/bin/systemctl",
+        "sha256": "ab7121b6db7a470ee59ca4c7c61e8b291cd0dfd610ef9b6ab6322eb6454ca999"
+      }
+    },
+    "loader": "/nix/store/syg6xw4x296w82267qnvrd3nn0cp6j31-glibc-riscv64-unknown-linux-gnu-2.42-84/lib/ld-linux-riscv64-lp64d.so.1",
+    "loader_sha256": "19835521e0d42cf163f139040c5c4497edb893153c68997db327bb4a6713f904",
+    "initrd_sha256": "0c5540f128468665b1a4f348ef8d661e1066bdcbf5a6fcbb40e8370e1c6d3cb8",
+    "bootargs": "bootargs=consoleblank=0 console=ttyS0,115200n8 root=fstab loglevel=4 lsm=landlock,yama,bpf loglevel=7 init=/nix/store/yk44vx3ny4h6a9mx3ya4rczh7akhyjbj-nixos-system-nixos-26.11.20260919.20b1ddd/init fsck.mode=skip systemd.mask=k230-root-growth.service systemd.mask=register-nix-paths.service initramfs_async=0 rdinit=/bin/sh",
+    "system": "/nix/store/yk44vx3ny4h6a9mx3ya4rczh7akhyjbj-nixos-system-nixos-26.11.20260919.20b1ddd"
+  },
+  "autonomous_archive_proof": {
+    "executables": {
+      "bin/sh": {
+        "path": "/nix/store/89hsc9vrrk2vr18yp9yrzs365fz490wv-bash-interactive-riscv64-unknown-linux-gnu-5.3p15/bin/bash",
+        "sha256": "8494a422916b769311e43f2ae463e3e93f520c8657b6c0c98c138a313af124d9"
+      },
+      "bin/sleep": {
+        "path": "/nix/store/3m27x1rrl0wk30lz5fih10cf1dpqbaa6-coreutils-riscv64-unknown-linux-gnu-9.11/bin/coreutils",
+        "sha256": "0f990f00e98050939fedeee9d3c0449c5b42669d2bc0443a7a3bb95bc2376adc"
+      }
+    },
+    "builtin_exports": [
+      "exec_builtin",
+      "printf_builtin",
+      "test_builtin"
+    ],
+    "loader": "/nix/store/syg6xw4x296w82267qnvrd3nn0cp6j31-glibc-riscv64-unknown-linux-gnu-2.42-84/lib/ld-linux-riscv64-lp64d.so.1",
+    "loader_sha256": "19835521e0d42cf163f139040c5c4497edb893153c68997db327bb4a6713f904"
+  },
+  "native_proof": {
+    "receipt_sha256": "1a718d596a9c31b65651738df4128687a77f3e00cb0c0922544959dca07f42b7",
+    "fixture_count": 20,
+    "evidence_class": "native-host-parser",
+    "hush_source_sha256": "954771b8638977d12955c4da3c540a3929d47e4431a092c079192155b2d60011",
+    "linux_source": "/nix/store/0l4mgw9hr1j7pj247jsrxjd478fnlfy8-linux-mainline-k230-uart-progress-memory-printk-src",
+    "linux_files": {
+      "lib/cmdline.c": {
+        "sha256": "1af5ad98fface0b59694e7565c33be2e37c089cc9a1a841285414ee94546ca9d",
+        "functions": {
+          "next_arg": {
+            "line": 237,
+            "sha256": "f0199b7e58216ef3f5b8c8224baacc322381c61b57f4e414db89ac9dd71bcb41"
+          }
+        }
+      },
+      "init/main.c": {
+        "sha256": "b776bb9707168ed2a26e393bcdd45808e132e661f1083662640268d856f028b9",
+        "functions": {
+          "repair_env_string": {
+            "line": 476,
+            "sha256": "cbbe6f8b8db9417a412b1eb6ca292e1ca8dcffc6c917c6a24811997a9b9f40ac"
+          },
+          "set_init_arg": {
+            "line": 491,
+            "sha256": "51322d64e0fb7b2eba0c07ab8749cd96213ad99deff871e8d7b59130e6830fda"
+          },
+          "init_setup": {
+            "line": 576,
+            "sha256": "b1351c4b8aa0a86e9a7e5682a37be6e7c48a691fa503ce4240cc4d15a1685359"
+          },
+          "rdinit_setup": {
+            "line": 593,
+            "sha256": "8269543e8c2058184624b1fb57855bbcd06db438a11cc2623c3e1a06635bee70"
+          }
+        }
+      },
+      "kernel/params.c": {
+        "sha256": "b2afd93cb1300890343947abcdc955c1eedc5294f1abcf0a3145203cf46817c4",
+        "functions": {
+          "parse_args": {
+            "line": 161,
+            "sha256": "e00fd6c51597f1bbd16e78c6a8e2d9614589d882a69541be94ebbde9e7777281"
+          }
+        }
+      }
+    },
+    "vector": {
+      "nonce": "0123456789abcdef0123456789abcdef",
+      "script": {
+        "length": 154,
+        "sha256": "1f71d6c89cb45b8c71c7716e81efac4feff8994b3cf0993bb75c5b021f12c3d4"
+      },
+      "bootargs": {
+        "length": 477,
+        "sha256": "db855e52b4716124db47b8e0e96b357005c1d970aa79876186e37b01b3f433d5"
+      },
+      "transport": {
+        "length": 503,
+        "sha256": "eeff2d69f63945736c5ff1e0a8040c9867ed6ecef13ead3fbfd62c5a6fefbfef"
+      },
+      "transport_with_cr_length": 504
+    },
+    "installed_hush_or_firmware_abi_verified": false
+  },
+  "fixed_script_bytes": 154,
+  "selected_raw_kernel_arguments_bytes": 477,
+  "selected_single_Hush_command_bytes": 503,
+  "with_CR_bytes": 504,
+  "old_shared_preparation_and_observer_AST_unchanged": true,
+  "same_artifacts_manifest_loads_normal_helper": true,
+  "bundle_SHA256SUMS_passed": true,
+  "DT_original_bootargs_match": true,
+  "no_reporter_trace_or_tick_gates_selected": true,
+  "manifest_sha256": "2cedd98406beb6003e274be1612df0edc8b5bf31c5faf1b866dcd44c25cf65ea",
+  "original_full_build_receipt_sha256": "855b65d8175c2269ada0b6ac90b94228ce2a94ede01f3c0be9380604dfa34232",
+  "qualification_command_sha256": "f071c255d16123bbec5839d6513ee6724224b67b3873a18c2b0ed42ad313f32d",
+  "normal_report_class": "protected historical host-only anchor; no fresh recovery/preflight",
+  "registration_absence_assertion_in_prepost_helper": true,
+  "candidate_input_policy": "zero writes after bootm",
+  "capture_seconds_planned": 60,
+  "receipt_status_planned": "NOT_REQUESTED",
+  "rx_status_planned": "NOT_TESTED",
+  "performed_board_preflight": false,
+  "uart_opened": false,
+  "implicit_build_performed": false,
+  "installed_Hush_firmware_ABI_verified": false,
+  "Bash_sleep_or_builtin_execution_verified": false,
+  "physical_result": "UNVERIFIED",
+  "usable_root": "UNVERIFIED",
+  "touch": "UNVERIFIED"
+}

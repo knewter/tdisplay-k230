@@ -1,0 +1,163 @@
+{
+  "schema": "k230-autonomous-bash-pid1-physical-v1",
+  "evidence_class": "physical UART passive capture; fixed autonomous userspace script",
+  "controller_revision": "c0c8e50c47abfb165d3c4b4c0b51b2653fb48e91",
+  "controller_source_sha256": "666d5019b6446ba4e8e4e8e5ad5cd78315c7f5d5598dbcdc02ee04cbaaba0d36",
+  "started_utc": "2026-10-05T01:06:19.815053+00:00",
+  "completed_utc": "2026-10-05T01:07:46.624051+00:00",
+  "controller_returncode": 2,
+  "controller_status": "recovery-required-observation-only",
+  "diagnostic_ok": true,
+  "bundle": "/nix/store/p2kdar89q7dhwdajjy0mrhmxxzcgsalw-k230-mainline-drm-trial-boot-files",
+  "system": "/nix/store/yk44vx3ny4h6a9mx3ya4rczh7akhyjbj-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "kernel_proof": {
+    "config": "/nix/store/24hbalyljs6gn6fzkkl24znv8a0x6jdl-linux-riscv64-unknown-linux-gnu-7.3.0-rc5-dev/lib/modules/7.3.0-rc5/build/.config",
+    "config_sha256": "52e7470b108ad094dbdf88b94e3e8838564edbda9e7a015b4279012e6765c9f1",
+    "derivation": "/nix/store/fdjxx6cggxp2ffhsf7lwmz7mndd2588v-linux-riscv64-unknown-linux-gnu-7.3.0-rc5.drv",
+    "kernel": "/nix/store/xna7x12lh4lmzwgmwq51cyc9wf86504p-linux-riscv64-unknown-linux-gnu-7.3.0-rc5"
+  },
+  "archive_proof": {
+    "builtin_exports": [
+      "exec_builtin",
+      "printf_builtin",
+      "test_builtin"
+    ],
+    "executables": {
+      "bin/sh": {
+        "path": "/nix/store/89hsc9vrrk2vr18yp9yrzs365fz490wv-bash-interactive-riscv64-unknown-linux-gnu-5.3p15/bin/bash",
+        "sha256": "8494a422916b769311e43f2ae463e3e93f520c8657b6c0c98c138a313af124d9"
+      },
+      "bin/sleep": {
+        "path": "/nix/store/3m27x1rrl0wk30lz5fih10cf1dpqbaa6-coreutils-riscv64-unknown-linux-gnu-9.11/bin/coreutils",
+        "sha256": "0f990f00e98050939fedeee9d3c0449c5b42669d2bc0443a7a3bb95bc2376adc"
+      }
+    },
+    "loader": "/nix/store/syg6xw4x296w82267qnvrd3nn0cp6j31-glibc-riscv64-unknown-linux-gnu-2.42-84/lib/ld-linux-riscv64-lp64d.so.1",
+    "loader_sha256": "19835521e0d42cf163f139040c5c4497edb893153c68997db327bb4a6713f904"
+  },
+  "native_proof": {
+    "evidence_class": "native-host-parser",
+    "fixture_count": 20,
+    "hush_source_sha256": "954771b8638977d12955c4da3c540a3929d47e4431a092c079192155b2d60011",
+    "installed_hush_or_firmware_abi_verified": false,
+    "linux_files": {
+      "init/main.c": {
+        "functions": {
+          "init_setup": {
+            "line": 576,
+            "sha256": "b1351c4b8aa0a86e9a7e5682a37be6e7c48a691fa503ce4240cc4d15a1685359"
+          },
+          "rdinit_setup": {
+            "line": 593,
+            "sha256": "8269543e8c2058184624b1fb57855bbcd06db438a11cc2623c3e1a06635bee70"
+          },
+          "repair_env_string": {
+            "line": 476,
+            "sha256": "cbbe6f8b8db9417a412b1eb6ca292e1ca8dcffc6c917c6a24811997a9b9f40ac"
+          },
+          "set_init_arg": {
+            "line": 491,
+            "sha256": "51322d64e0fb7b2eba0c07ab8749cd96213ad99deff871e8d7b59130e6830fda"
+          }
+        },
+        "sha256": "b776bb9707168ed2a26e393bcdd45808e132e661f1083662640268d856f028b9"
+      },
+      "kernel/params.c": {
+        "functions": {
+          "parse_args": {
+            "line": 161,
+            "sha256": "e00fd6c51597f1bbd16e78c6a8e2d9614589d882a69541be94ebbde9e7777281"
+          }
+        },
+        "sha256": "b2afd93cb1300890343947abcdc955c1eedc5294f1abcf0a3145203cf46817c4"
+      },
+      "lib/cmdline.c": {
+        "functions": {
+          "next_arg": {
+            "line": 237,
+            "sha256": "f0199b7e58216ef3f5b8c8224baacc322381c61b57f4e414db89ac9dd71bcb41"
+          }
+        },
+        "sha256": "1af5ad98fface0b59694e7565c33be2e37c089cc9a1a841285414ee94546ca9d"
+      }
+    },
+    "linux_source": "/nix/store/0l4mgw9hr1j7pj247jsrxjd478fnlfy8-linux-mainline-k230-uart-progress-memory-printk-src",
+    "receipt_sha256": "1a718d596a9c31b65651738df4128687a77f3e00cb0c0922544959dca07f42b7",
+    "vector": {
+      "bootargs": {
+        "length": 477,
+        "sha256": "db855e52b4716124db47b8e0e96b357005c1d970aa79876186e37b01b3f433d5"
+      },
+      "nonce": "0123456789abcdef0123456789abcdef",
+      "script": {
+        "length": 154,
+        "sha256": "1f71d6c89cb45b8c71c7716e81efac4feff8994b3cf0993bb75c5b021f12c3d4"
+      },
+      "transport": {
+        "length": 503,
+        "sha256": "eeff2d69f63945736c5ff1e0a8040c9867ed6ecef13ead3fbfd62c5a6fefbfef"
+      },
+      "transport_with_cr_length": 504
+    }
+  },
+  "probe": {
+    "begin_observed": true,
+    "candidate_banner": true,
+    "capture_seconds": 60.03525089600589,
+    "capture_timeout_seconds": 60,
+    "end_observed": true,
+    "init_entry": true,
+    "kernel_args_status": "MATCHED",
+    "kernel_args_verified": true,
+    "linux_console_backend": {
+      "base_baud": 3125000,
+      "console_enable_observed": true,
+      "irq": 12,
+      "registration_observed": true,
+      "status": "MATCHED"
+    },
+    "normal_prompt_observed": false,
+    "pid1_guard": "limited builtin tests only if begin record qualifies",
+    "primary_prompt_observed": true,
+    "protocol_errors": [],
+    "reboot_requested": false,
+    "receipt_status": "NOT_REQUESTED",
+    "records": [
+      "B",
+      "E"
+    ],
+    "records_complete": true,
+    "rx_status": "NOT_TESTED",
+    "schema": "k230-autonomous-bash-observation-v1",
+    "stimulus_attempts": 0,
+    "touch": "UNVERIFIED",
+    "usable_root": "UNVERIFIED"
+  },
+  "expected_kernel_arguments_sha256": "143bbb9963c45a4704fdd42770611738928b1608f386a2b95e9ae3f9c3e7bbfb",
+  "runtime_nonce": "REDACTED; raw nonce matched strict parser and qualified kernel arguments",
+  "fixed_records_public_copy": "runtime nonce replaced with explicitly public placeholder only",
+  "normal_preflight_verified": true,
+  "normal_preflight_services": [
+    "active",
+    "active",
+    "active"
+  ],
+  "normal_preflight_boot_hash_count": 8,
+  "registration_absence_assertion_in_executed_preflight_helper": true,
+  "candidate_manifest_sha256": "2cedd98406beb6003e274be1612df0edc8b5bf31c5faf1b866dcd44c25cf65ea",
+  "private_uart_bytes": 47824,
+  "private_uart_sha256": "142636148387288c7375343ec63ed63a17aa96d8bec59f618ae6e83fec4f58a7",
+  "private_original_result_sha256": "e83adf0444672c9020748a91fdf782d3016a39c516a9bd40bfc44c2f00e17209",
+  "private_command_receipt_sha256": "2391a3473dd1c1e9fd3bd5ea90bb82927c480e0b3fe2dac874461a3fb2a2b9cf",
+  "reboot_requested": false,
+  "persistent_boot_selection_changed": false,
+  "new_kernel_build_performed": false,
+  "new_transfer_flash_or_readback_performed": false,
+  "normal_recovery": "PENDING_NEW_OPERATOR_RESET",
+  "automatic_return": "UNVERIFIED",
+  "ordinary_init": "NOT_ATTEMPTED",
+  "usable_root": "UNVERIFIED",
+  "touch": "UNVERIFIED",
+  "independent_physical_review": "PASS",
+  "zero_input_evidence_limit": "reviewed passive source and no post-boot controller command frames; not an independent electrical direction measurement"
+}
