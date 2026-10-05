@@ -1,0 +1,41 @@
+{
+  "timestamp_utc": "2026-10-05T15:34:50.357686+00:00",
+  "checks": {
+    "source_main": {
+      "actual_sha256": "a21ac6a296d4cb3602f127d6270aa4026afe98e582e35d4957494b30c5f86499",
+      "previous_sha256": "a21ac6a296d4cb3602f127d6270aa4026afe98e582e35d4957494b30c5f86499",
+      "equal": true
+    },
+    "config": {
+      "actual_sha256": "52e7470b108ad094dbdf88b94e3e8838564edbda9e7a015b4279012e6765c9f1",
+      "previous_sha256": "52e7470b108ad094dbdf88b94e3e8838564edbda9e7a015b4279012e6765c9f1",
+      "equal": true
+    },
+    "system_init": {
+      "actual_sha256": "d3e109a270c0b4463ac5b7b0655ce7667d7c55f6f93341bb461300a5dd5c8c63",
+      "previous_sha256": "d3e109a270c0b4463ac5b7b0655ce7667d7c55f6f93341bb461300a5dd5c8c63",
+      "equal": true
+    },
+    "bootargs.txt": {
+      "actual_sha256": "06a665d6125b1ce54f6382229f3de3eab72942ad15727daba47b89c75ce4fa4d",
+      "previous_sha256": "06a665d6125b1ce54f6382229f3de3eab72942ad15727daba47b89c75ce4fa4d",
+      "equal": true
+    },
+    "Image-mainline-drm": {
+      "actual_sha256": "fb2e66c7c69851e1c4b1aabb7a12706f0d702a4e496349ec42e1aa08cde2d477",
+      "previous_sha256": "fb2e66c7c69851e1c4b1aabb7a12706f0d702a4e496349ec42e1aa08cde2d477",
+      "equal": true
+    },
+    "k230-tdisplay-mainline-drm.dtb": {
+      "actual_sha256": "0538ae0bc9d0188b16e0cc763db81fdf4c16c124cce59671c9d08c6571f58465",
+      "previous_sha256": "0538ae0bc9d0188b16e0cc763db81fdf4c16c124cce59671c9d08c6571f58465",
+      "equal": true
+    },
+    "initrd.uimg": {
+      "actual_sha256": "86ede18c533ead2432e368d82690d28a9ba3cb63fc70206b1e661b4c067ce751",
+      "previous_sha256": "86ede18c533ead2432e368d82690d28a9ba3cb63fc70206b1e661b4c067ce751",
+      "equal": true
+    }
+  },
+  "all_equal": true
+}
