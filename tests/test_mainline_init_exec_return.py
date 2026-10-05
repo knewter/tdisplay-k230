@@ -44,6 +44,42 @@ def phase(p):
             b'\n[    4.000000] Run /init as init process\n')
 
 
+class ArchiveDelta(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        spec=importlib.util.spec_from_file_location('exec_return_qualifier',ROOT/'tools/mainline-init-exec-return-qualify.py')
+        cls.q=importlib.util.module_from_spec(spec);spec.loader.exec_module(cls.q)
+
+    def trees(self):
+        old_root='nix/store/'+'a'*32+'-linux-riscv64-unknown-linux-gnu-7.3.0-rc5-modules-shrunk'
+        new_root='nix/store/'+'b'*32+'-linux-riscv64-unknown-linux-gnu-7.3.0-rc5-modules-shrunk'
+        common={'init':(0o120777,b'/selected/systemd'),'etc/unit':(0o100644,b'original unit')}
+        tree={'':(0o040755,b''),'/lib':(0o040755,b''),'/lib/modules':(0o040755,b''),'/lib/modules/modules.dep':(0o100644,b'unchanged')}
+        return tuple({**common,'lib':(0o120777,('/'+root+'/lib').encode()),
+                      **{root+name:value for name,value in tree.items()}}for root in (old_root,new_root))
+
+    def test_exact_module_tree_relocation_and_no_delta(self):
+        old,new=self.trees();proof=self.q.archive_delta(old,new)
+        self.assertEqual(proof['changed'],['lib'])
+        self.assertEqual(proof['module_tree_relocation']['entries'],4)
+        self.assertTrue(proof['module_tree_relocation']['normalized_bytes_and_modes_equal'])
+        self.assertIsNone(self.q.archive_delta(old,old)['module_tree_relocation'])
+
+    def test_rejects_changed_tree_dependency_unit_mode_and_target(self):
+        old,new=self.trees();module=next(k for k in new if k.endswith('modules.dep'))
+        mutations=[{**new,module:(0o100644,b'changed module')},
+                   {**new,module:(0o100600,b'unchanged')},
+                   {**new,'etc/new':(0o100644,b'extra dependency')},
+                   {**new,'etc/unit':(0o100644,b'changed unit')},
+                   {**new,'lib':(0o100644,new['lib'][1])},
+                   {**new,'lib':(0o120700,new['lib'][1])},
+                   {**new,'lib':(0o120777,b'/nix/store/arbitrary/lib')},
+                   {k:v for k,v in new.items()if k!=module}]
+        for changed in mutations:
+            with self.subTest(changed=changed):
+                with self.assertRaises(ValueError):self.q.archive_delta(old,changed)
+
+
 class Native(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
