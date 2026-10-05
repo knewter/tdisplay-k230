@@ -1,0 +1,14 @@
+{
+  "revision": "949205203a2ccab7b4be8b3500cffc99b6225477",
+  "ci_run": 37261983348,
+  "ci_conclusion": "success",
+  "deployment_conclusion": "success",
+  "work_url": "https://knewter.github.io/tdisplay-k230/work/",
+  "work_revision_verified": true,
+  "physical_capture_url": "https://knewter.github.io/tdisplay-k230/evidence/docs-evidence-mainline-system-trial-current-p2-baseline-repeat-physical-2026-10-05-readme-md/",
+  "physical_capture_http_status": 200,
+  "capture_timestamps_verified": true,
+  "verified_utc": "2026-10-05T04:08:34.774369+00:00",
+  "normal_recovery": "UNVERIFIED_PENDING_NEW_OPERATOR_RESET",
+  "ordinary_mainline_acceptance": "UNVERIFIED"
+}

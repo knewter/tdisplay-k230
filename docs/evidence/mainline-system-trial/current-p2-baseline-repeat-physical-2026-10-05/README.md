@@ -49,3 +49,8 @@ normal recovery awaits a NEW operator reset after this capture. The preceding
 reset is not reused. Automatic return, ordinary root/panel/glass and task5b.5
 remain **UNVERIFIED**. No new build, host artifact transfer, flash, readback, camera or glass proof
 was performed for this unchanged repeat.
+
+[Publication receipt](publication.json): exact94920520 CI37261983348 and deployment
+passed, with work revision and capture page/timestamps independently verified
+via HTTP200. Group5r is complete as a bounded control with explicitly pending
+NEW protected recovery; ordinary task5b.5 stays open.

@@ -1398,10 +1398,12 @@ Independent full capture/recovery-limit review PASS. Physical revision236f6bca, 
       `python3 tools/mainline-drm-system-trial.py begin --wait-initramfs-in-initcall --without-boot-markers --bundle BUNDLE --manifest PRIVATE_MANIFEST --normal-report PRIVATE_NORMAL --state NEW_PRIVATE_STATE --log PRIVATE_LOG --result PRIVATE_RESULT`.
       No new intervention, helper trace or cause/root/glass acceptance;5b.5 open.
       [Completed unchanged quiet capture](../../../docs/evidence/mainline-system-trial/current-p2-baseline-repeat-physical-2026-10-05/README.md): same299/317/source/artifacts, freshLinux/pre-exec init only, no systemd/closure/login within180s. Original closure boundary did not reproduce; independent full review PASS. NEW protected recovery pending; no previous reset reused.
-- [ ] 5r.3 Independently review reproducibility/parser/recovery limits, land/push
+- [x] 5r.3 Independently review reproducibility/parser/recovery limits, land/push
       and inspect exact CI/published revision. Planning proof:
       `openspec validate the-board-runs-a-mainline-kernel --strict`.
 
+
+Independent source/actual host/full physical/parser/recovery-limit/publication review PASS. Exact94920520 CI37261983348/deployment and published work revision/capture timestamps verified: [publication receipt](../../../docs/evidence/mainline-system-trial/current-p2-baseline-repeat-physical-2026-10-05/publication.json). NEW protected recovery is pending under5r explicit rule; ordinary5b.5 stays UNVERIFIED.
 
 ## 5s. Selected ordinary init exec-return record (bounded diagnostic)
 
