@@ -1,0 +1,83 @@
+{
+  "schema": "k230-initrd-info-kmsg-logging-physical-v1",
+  "evidence_class": "physical UART passive ordinary-init backend comparison",
+  "controller_revision": "43db3706b3d1aef60000540702271065cf6a7413",
+  "controller_source_sha256": "f5f23057119cb79228ebb868e7f92524a6f9a6f230b9931d438013d34b8da0c5",
+  "started_utc": "2026-10-05T03:22:55.614596+00:00",
+  "completed_utc": "2026-10-05T03:26:21.728500+00:00",
+  "total_invocation_seconds": 206.113904,
+  "readiness_bound_seconds": 180,
+  "controller_exit": 1,
+  "status": "recovery-required-unknown",
+  "failure": "Unknown: ordinary init login readiness unverified",
+  "bundle": "/nix/store/p2kdar89q7dhwdajjy0mrhmxxzcgsalw-k230-mainline-drm-trial-boot-files",
+  "system": "/nix/store/yk44vx3ny4h6a9mx3ya4rczh7akhyjbj-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "kernel": "/nix/store/xna7x12lh4lmzwgmwq51cyc9wf86504p-linux-riscv64-unknown-linux-gnu-7.3.0-rc5",
+  "artifact_files": {
+    "bootargs.txt": {
+      "bytes": 243,
+      "sha256": "794caaaed934e49a978fe8a401a8403dc92fd0b668c68cb943919d1265d4aaf8",
+      "crc32": "6f142f8c"
+    },
+    "fw_jump_add_uboot_head.bin": {
+      "bytes": 270808,
+      "sha256": "9627edbeea9b115d7040beea27cc61b23b6aca61cd502fd7760d7ee179f42c99",
+      "crc32": "99b89787"
+    },
+    "Image-mainline-drm": {
+      "bytes": 38530560,
+      "sha256": "c2c9663bc385a0c62a15b740ccd46b36b51bc3fd9c0c6281b2a2e5a1882878c3",
+      "crc32": "29d5b2d5"
+    },
+    "k230-tdisplay-mainline-drm.dtb": {
+      "bytes": 11097,
+      "sha256": "836340a4739b59a4eeb8325f10de64a6fc6844db14947ca99cab8bf7b64a0be3",
+      "crc32": "b2cd7d55"
+    },
+    "initrd.uimg": {
+      "bytes": 27308547,
+      "sha256": "10bf5d9ad3511037282d364c1ef23235385cb0614b0511c39d4b4340af5c1e0a",
+      "crc32": "1fef7a2d"
+    }
+  },
+  "expected_bootargs": "bootargs=consoleblank=0 console=ttyS0,115200n8 root=fstab loglevel=4 lsm=landlock,yama,bpf loglevel=7 init=/nix/store/yk44vx3ny4h6a9mx3ya4rczh7akhyjbj-nixos-system-nixos-26.11.20260919.20b1ddd/init fsck.mode=skip systemd.mask=k230-root-growth.service systemd.mask=register-nix-paths.service initramfs_async=0 rd.systemd.log_level=info rd.systemd.log_target=kmsg",
+  "observations": {
+    "fresh_mainline_banner": true,
+    "run_archived_init_announcement": true,
+    "systemd_startup_observed": false,
+    "closure_unit_messages_observed": false,
+    "login_banner_observed": false,
+    "candidate_stage2_identity_verified": false
+  },
+  "normal_preflight": {
+    "qualified": true,
+    "uname": "6.6.36",
+    "eight_boot_files_unchanged": true,
+    "three_shell_services_active": true,
+    "registration_absent": true
+  },
+  "normal_recovery": "PENDING_NEW_OPERATOR_RESET",
+  "ordinary_root": "UNVERIFIED",
+  "panel_glass": "UNVERIFIED",
+  "automatic_return": "UNVERIFIED",
+  "new_build_transfer_flash_readback": "NOT_PERFORMED",
+  "raw_serial": {
+    "bytes": 48288,
+    "sha256": "7289907505eee8f7beb28ba7ab43571415c3ef28356c77cb1ef8992eb4b82fba",
+    "private_result_sha256": "12cd6a9e2ec794aa6098ed9f3742a7b164d9f85802974705856c9a013d575b6f",
+    "private_command_receipt_sha256": "022ceb3a336ad3eaab2fb623c793d2bb51c25651408f33a8aa27df5d8d224a97"
+  },
+  "independent_physical_review": "PASS",
+  "initrd_info_kmsg_logging": true,
+  "candidate_input_after_bootm": "none in reviewed command annotations/source; not electrical TX proof",
+  "recovery_listener": {
+    "status": "NO_FRESH_NORMAL_BOOT_CAPTURED",
+    "returncode": 1,
+    "passive_bound_seconds": 180,
+    "bytes_received": 0,
+    "bytes_sent": 0,
+    "protected_postflight": "NOT_RUN",
+    "new_operator_reset_confirmation": "PENDING",
+    "private_uart_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  }
+}

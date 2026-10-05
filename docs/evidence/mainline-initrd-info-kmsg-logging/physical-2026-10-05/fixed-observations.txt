@@ -1,0 +1,10 @@
+DERIVED FIXED OBSERVATIONS: not a raw UART transcript.
+Physical UTC: 2026-10-05T03:22:55.614596+00:00 to 2026-10-05T03:26:21.728500+00:00
+Source revision: 43db3706b3d1aef60000540702271065cf6a7413
+Same p2/24h artifacts; fixed info/console -> info/kmsg destination only.
+Fresh Linux version 7.3.0-rc5 observed.
+Run /init as init process observed; this is a pre-exec announcement.
+No systemd startup/version, closure-unit or login observed within180s.
+Controller exit1: ordinary init login readiness unverified.
+No candidate stage2 identity/root/glass or automatic return claim.
+NEW protected recovery remains PENDING.
