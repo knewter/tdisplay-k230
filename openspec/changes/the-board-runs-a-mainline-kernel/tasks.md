@@ -1271,12 +1271,16 @@ completion of ordinary mainline acceptance.
 
 ## 5n. Fixed autonomous Bash-PID1 comparison (planned, UNVERIFIED)
 
-- [ ] 5n.1 Establish native exact Hush lexer/variable/quote/command execution and
+- [x] 5n.1 Establish native exact Hush lexer/variable/quote/command execution and
       selected Linux next_arg/repair/set_init_arg argv proof for the fixed scout
       script/transport. Verify one volatile setenv, exact 477-byte result/two argv,
       zero expansion/extra/persistent commands and unchanged 512-byte bound.
       Source models/shlex alone do not pass. No UART/kernel build. Narrow proof:
       `python3 tests/test_mainline_autonomous_bash_pid1_argv.py`.
+      Native host proof: 12 tests PASS; full unchanged pinned Hush dispatch and
+      exact selected Linux argv functions recover 477-byte bootargs and two argv.
+      [Receipt](../../../docs/evidence/mainline-autonomous-bash-pid1/native-argv/README.md)
+      records hooks/registration adapters and installed/target/physical limits.
 - [ ] 5n.2 Implement only typed `--autonomous-bash-pid1` requiring minimal/same-image
       and rejecting competing selectors/types/modes/altered syntax before UART.
       Add strict fresh-nonce begin/end parsing and 60-second zero-input capture, separate

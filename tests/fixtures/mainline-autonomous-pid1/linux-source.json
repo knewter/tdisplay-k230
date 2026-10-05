@@ -1,0 +1,44 @@
+{
+  "source": "/nix/store/0l4mgw9hr1j7pj247jsrxjd478fnlfy8-linux-mainline-k230-uart-progress-memory-printk-src",
+  "files": {
+    "lib/cmdline.c": {
+      "sha256": "1af5ad98fface0b59694e7565c33be2e37c089cc9a1a841285414ee94546ca9d",
+      "functions": {
+        "next_arg": {
+          "line": 237,
+          "sha256": "f0199b7e58216ef3f5b8c8224baacc322381c61b57f4e414db89ac9dd71bcb41"
+        }
+      }
+    },
+    "init/main.c": {
+      "sha256": "b776bb9707168ed2a26e393bcdd45808e132e661f1083662640268d856f028b9",
+      "functions": {
+        "repair_env_string": {
+          "line": 476,
+          "sha256": "cbbe6f8b8db9417a412b1eb6ca292e1ca8dcffc6c917c6a24811997a9b9f40ac"
+        },
+        "set_init_arg": {
+          "line": 491,
+          "sha256": "51322d64e0fb7b2eba0c07ab8749cd96213ad99deff871e8d7b59130e6830fda"
+        },
+        "init_setup": {
+          "line": 576,
+          "sha256": "b1351c4b8aa0a86e9a7e5682a37be6e7c48a691fa503ce4240cc4d15a1685359"
+        },
+        "rdinit_setup": {
+          "line": 593,
+          "sha256": "8269543e8c2058184624b1fb57855bbcd06db438a11cc2623c3e1a06635bee70"
+        }
+      }
+    },
+    "kernel/params.c": {
+      "sha256": "b2afd93cb1300890343947abcdc955c1eedc5294f1abcf0a3145203cf46817c4",
+      "functions": {
+        "parse_args": {
+          "line": 161,
+          "sha256": "e00fd6c51597f1bbd16e78c6a8e2d9614589d882a69541be94ebbde9e7777281"
+        }
+      }
+    }
+  }
+}

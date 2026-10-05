@@ -1,0 +1,1 @@
+n=0123456789abcdef0123456789abcdef;test $$ = 1&&test $EUID = 0&&printf \\nK230_BP1:%s:B\\n $n&&/bin/sleep 5&&printf \\nK230_BP1:%s:E\\n $n;exec /bin/sh -i
