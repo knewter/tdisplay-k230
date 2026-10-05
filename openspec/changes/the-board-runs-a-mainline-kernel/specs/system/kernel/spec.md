@@ -808,7 +808,7 @@ no-input behavior. Recovery SHALL be independently verified or explicitly pendin
 NEW reset. Ordinary root/panel/glass acceptance SHALL remain separate.
 
 <!-- UNVERIFIED: source/controller/native/parent-header objects are independently reviewed; full matching artifact qualification and physical two-point behavior remain unverified. -->
-*Grounding: [physical exec setup success without readiness](../../../../../../docs/evidence/mainline-init-exec-return/physical-2026-10-05/README.md) and read exact Linux source sites/context restrictions in design.md group5t. [Implemented source/native/parent-header object proof](../../../../../../docs/evidence/mainline-init-exec-transition/source/README.md) and [controller/qualifier fixtures](../../../../../../docs/evidence/mainline-init-exec-transition/controller/README.md) passed independent review. Full base-package identity evaluation is pending; physical witness behavior remains UNVERIFIED.*
+*Grounding: [physical exec setup success without readiness](../../../../../../docs/evidence/mainline-init-exec-return/physical-2026-10-05/README.md) and read exact Linux source sites/context restrictions in design.md group5t. [Implemented source/native/parent-header object proof](../../../../../../docs/evidence/mainline-init-exec-transition/source/README.md) and [controller/qualifier fixtures](../../../../../../docs/evidence/mainline-init-exec-transition/controller/README.md) passed independent review. All110 prior package derivation identities are unchanged with equal config/parameters: [complete evaluation](../../../../../../docs/evidence/mainline-init-exec-transition/source/identity-evaluation.json). Physical witness behavior remains UNVERIFIED.*
 
 #### Scenario: Kernel init returns before entering userspace
 

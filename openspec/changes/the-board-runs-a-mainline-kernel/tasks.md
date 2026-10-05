@@ -1441,13 +1441,13 @@ Independent source/actual host/full physical/parser/recovery-limit/publication r
 - [x] 5t.1 Land independently reviewed source-grounded bounded plan before source
       work. Proof: `openspec validate the-board-runs-a-mainline-kernel --strict`.
       See design.md group5t; independent exact-source/context/order/both-gate planning review PASS and strict validation PASS. Implementation/build/physical outcomes remain UNVERIFIED.
-- [ ] 5t.2 Implement additive default-disabled two-point PID1 source/kernel/Nix
+- [x] 5t.2 Implement additive default-disabled two-point PID1 source/kernel/Nix
       variant and typed fail-closed controller selection/parser; preserve parent
       output, userspace bytes, control flow and old package identities. Source
       context/lifetime/one-shot/order/negative gates and selected RISC-V objects
       require independent review. Narrow proof:
       `python3 tests/test_mainline_init_exec_transition.py`.
-      [Source/native/RISC-V parent-header proof](../../../docs/evidence/mainline-init-exec-transition/source/README.md) and [controller/qualifier source proof](../../../docs/evidence/mainline-init-exec-transition/controller/README.md) implemented and independently reviewed. Root reran17 transition and10 actual patched-site tests PASS after integration. Full base-package identity comparison is still pending; this task remains open until that gate completes. Matching full artifacts remain5t.3–4 and physical outcome5t.5.
+      [Source/native/RISC-V parent-header proof](../../../docs/evidence/mainline-init-exec-transition/source/README.md) and [controller/qualifier source proof](../../../docs/evidence/mainline-init-exec-transition/controller/README.md) implemented and independently reviewed. Root reran17 transition and10 actual patched-site tests PASS after integration. [Complete base-package identity comparison](../../../docs/evidence/mainline-init-exec-transition/source/identity-evaluation.json) passed with all110 prior attrs unchanged, equal selected kernel/config/params, and matching independently evaluated new outputs. Root reviewed the actual assertion expression, source hashes and object sections/references. Matching full artifacts remain5t.3–4 and physical outcome5t.5.
 - [ ] 5t.3 Realize and retain new kernel/dev/source outputs with exact config and
       object/Image proof; record build failures separately. Host proof:
       `nix build .#kernelMainlineInitExecTransition .#kernelMainlineInitExecTransition.dev --no-link --print-out-paths --max-jobs 1 --cores 4`.
