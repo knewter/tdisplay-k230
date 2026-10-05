@@ -14,6 +14,7 @@
 #include <linux/of_platform.h>
 #include <linux/device.h>
 #include <linux/platform_device.h>
+#include <linux/clk.h>
 #include <linux/pm_runtime.h>
 #include <linux/delay.h>
 
@@ -898,7 +899,14 @@ static const struct component_ops canaan_vo_component_ops = {
 
 static int canaan_vo_probe(struct platform_device *pdev)
 {
+	struct clk_bulk_data *clks;
+	int ret;
+
 	dev_info(&pdev->dev, "probe\n");
+	/* Hold the display gates before late unused-clock cleanup runs. */
+	ret = devm_clk_bulk_get_all_enabled(&pdev->dev, &clks);
+	if (ret < 0)
+		return dev_err_probe(&pdev->dev, ret, "failed to enable clocks\n");
 	return component_add(&pdev->dev, &canaan_vo_component_ops);
 }
 

@@ -74,6 +74,13 @@
 			compatible = "canaan,k230-vo";
 			reg = <0x0 0x90840000 0x0 0x10000>;
 			interrupts = <133 IRQ_TYPE_LEVEL_HIGH>;
+			// Mainline gate ops let unused-clock cleanup turn these off;
+			// the VO and DSI drivers must own them. Same 0x74 gates as
+			// the vendor disp_hclk/disp_aclk/dpipclk tree.
+			clocks = <&sysclk K230_DISPLAY_AHB_GATE>,
+				 <&sysclk K230_DISPLAY_AXI_GATE>,
+				 <&sysclk K230_DISPLAY_DPIP_GATE>;
+			clock-names = "ahb", "axi", "pixel";
 			status = "okay";
 			background = <0xffffff>;
 			vth_line = <10>;
@@ -93,6 +100,10 @@
 			reg = <0x0 0x90850000 0x0 0x1000>;
 			#address-cells = <1>;
 			#size-cells = <0>;
+			clocks = <&sysclk K230_DISPLAY_AHB_GATE>,
+				 <&sysclk K230_DISPLAY_CFG_GATE>,
+				 <&sysclk K230_DISPLAY_REF_GATE>;
+			clock-names = "ahb", "cfg", "ref";
 			status = "okay";
 
 			ports {
