@@ -1,0 +1,21 @@
+{
+  "schema": "k230-opensbi-wrapper-identity-host-v1",
+  "evidence_class": "host deterministic wrapper reconstruction tied to prior physical protected-file preflight",
+  "payload": "/nix/store/7fmfx6dan9c2dsa55cs3jba3b5wx6w6p-opensbi-k230-riscv64-unknown-linux-gnu-1.4/fw_jump.bin",
+  "payload_bytes": 270744,
+  "payload_sha256": "74d08f8701dc72ea166d74be62fc3e5bff437d7c73ab68ad2f113cab289c38f9",
+  "wrapper_bytes": 270808,
+  "wrapper_sha256": "9627edbeea9b115d7040beea27cc61b23b6aca61cd502fd7760d7ee179f42c99",
+  "matches_protected_normal_file": true,
+  "matches_nohz_trial_protected_preflight": true,
+  "source_date_epoch": 1700000000,
+  "header_crc32": "0cd4c04d",
+  "payload_crc32": "28527f2a",
+  "new_firmware_build": false,
+  "new_board_readback": false,
+  "runtime_timer_branch": "UNVERIFIED",
+  "fault_cause": "UNVERIFIED",
+  "packaging_source_sha256": "854a4ed871d3202bc6be33bda9489179e950230a78af7ccb0221c6c770a32044",
+  "verifier_source_sha256": "13e017e32555cc08253d425ed759485401c88f1fb71263b236937077cca2e6f3",
+  "physical_preflight_source_revision": "87e5a3440d5103d38ff45af691a9b38d7834dd89"
+}

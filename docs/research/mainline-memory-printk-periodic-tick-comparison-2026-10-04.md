@@ -160,3 +160,15 @@ and performed no fresh board readback. Prior n0/n1 and timer IRQ progression
 likewise establish a bounded successful interval, not continuing firmware or
 timer health. Keep the sole nohz-off comparison; no speculative timer/SBI patch
 or DT/MMIO/interrupt intervention is justified by these source findings.
+
+
+### Follow-up: protected file identity resolved without readback
+
+The initial audit could not compare the absent wrapped store output. A later
+[deterministic wrapper reconstruction](../evidence/mainline-uart-progress-memory-printk/firmware-identity-host/README.md)
+around the actual inspected fw_jump.bin exactly matches its protected 270808-byte
+wrapper SHA, including the fresh nohz-off trial preflight. This closes that file
+identity gap without another build or board readback. It identifies the inspected
+payload in the protected file; runtime firmware/SSTC/backend/IRQ behavior and
+the fault cause remain unverified. The earlier source comparison still supplies
+no grounds for a speculative timer/SBI patch.
