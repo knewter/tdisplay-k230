@@ -20,6 +20,8 @@ The selected nixos-init source `src/path.rs` resolves the path through
 path-resolution/metadata boundary, not a demonstrated syscall or card-I/O stall.
 The quiet transcript contains no nested shell-command completion evidence.
 
+The earlier [quiet initrd debug-shell controller](../evidence/mainline-system-trial/initrd-debug-controller-host-2026-10-03.md) selects a different target and shell policy. It did not implement this logging-only ordinary-init comparison; its private scratch and captures are kept separate. The [earlier source audit](mainline-initrd-debug-console-2026-10-03.md) listed logging as a future alternative.
+
 The next bounded step adds exactly
 `rd.systemd.log_level=debug rd.systemd.log_target=console` to ordinary init.
 Pinned systemd 261.2 supports the [two logging settings](https://github.com/systemd/systemd/blob/v261.2/src/basic/log.c#L1177-L1202)

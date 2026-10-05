@@ -1309,16 +1309,18 @@ completion of ordinary mainline acceptance.
 
 ## 5o. Fixed ordinary-init manager logging (bounded diagnostic)
 
-- [ ] 5o.1 Implement the typed begin-only two-token policy with required existing
+- [x] 5o.1 Implement the typed begin-only two-token policy with required existing
       selectors, pre-UART alias/conflict/type guards and restored-state selection.
       Test exact/default arguments, split fresh readiness beyond buffer capacity,
       complete private logging and unknown-no-input paths. No UART/build. Narrow
       proof: `python3 tests/test_mainline_initrd_debug_logging.py`.
-- [ ] 5o.2 Execute actual same p2/24h preparation with the fixed policy; verify
+      [Host controller proof](../../../docs/evidence/mainline-initrd-debug-logging/host/controller-host.md): 13 focused plus 36 existing tests PASS, independently rerun; reviewed source integrated ec121e6d, CI37255138757 PASS. No UART/build.
+- [x] 5o.2 Execute actual same p2/24h preparation with the fixed policy; verify
       unchanged source/config/Image/DT/archive/manifest/load identities, systemd
       init, exact 356/374-byte policy and fresh normal anchors. Commit executed
       host qualifier and safe receipt; no implicit build/UART. Narrow command:
       `python3 docs/evidence/mainline-initrd-debug-logging/host/qualification-command.py --bundle BUNDLE --dev DEV --normal-report PRIVATE_NORMAL`.
+      [Executed actual preparation](../../../docs/evidence/mainline-initrd-debug-logging/host/README.md) exit0 on ec121e6d, same artifacts/archive, exact356/374 vs317 bytes and fresh preceding recovery anchor; independent review PASS. No live preflight/UART/build.
 - [ ] 5o.3 After NEW protected recovery and reviewed host/controller gates, reserve
       board/UART for one passive 180-second same-artifact capture. Commit fixed
       safe unit facts plus independently verified recovery or pending NEW reset.
