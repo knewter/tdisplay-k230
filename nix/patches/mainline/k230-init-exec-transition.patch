@@ -1,0 +1,70 @@
+--- /dev/null
++++ b/include/linux/k230-init-exec-transition.h
+@@ -0,0 +1,8 @@
++/* SPDX-License-Identifier: GPL-2.0-only */
++#ifndef _LINUX_K230_INIT_EXEC_TRANSITION_H
++#define _LINUX_K230_INIT_EXEC_TRANSITION_H
++
++void k230_init_exec_transition_kernel_return(void);
++void k230_init_exec_transition_user_ecall(void);
++
++#endif
+--- a/init/main.c
++++ b/init/main.c
+@@ -28,0 +29,2 @@
++#include <linux/pid.h>
++#include <linux/k230-init-exec-transition.h>
+@@ -183,0 +186,33 @@
++/* These witnesses run after free_initmem; all runtime state stays ordinary. */
++static bool k230_init_exec_transition_enabled;
++static bool k230_init_exec_transition_armed;
++static bool k230_init_exec_transition_return_consumed;
++static bool k230_init_exec_transition_ecall_consumed;
++
++static int __init k230_init_exec_transition_setup(char *value)
++{
++	k230_init_exec_transition_enabled = !strcmp(value, "1");
++	return 1;
++}
++__setup("k230.init_exec_transition=", k230_init_exec_transition_setup);
++
++void k230_init_exec_transition_kernel_return(void)
++{
++	if (!READ_ONCE(k230_init_exec_transition_armed) ||
++	    !is_global_init(current) ||
++	    READ_ONCE(k230_init_exec_transition_return_consumed))
++		return;
++	WRITE_ONCE(k230_init_exec_transition_return_consumed, true);
++	pr_info("K230_INIT_EXEC_TRANSITION_V1 point=kernel-init-return\n");
++}
++
++void k230_init_exec_transition_user_ecall(void)
++{
++	if (!READ_ONCE(k230_init_exec_transition_armed) ||
++	    !is_global_init(current) ||
++	    READ_ONCE(k230_init_exec_transition_ecall_consumed))
++		return;
++	WRITE_ONCE(k230_init_exec_transition_ecall_consumed, true);
++	pr_info("K230_INIT_EXEC_TRANSITION_V1 point=first-user-ecall\n");
++}
++
+@@ -1707 +1742,4 @@
+-		if (!ret)
++		if (!ret) {
++			if (k230_init_exec_return_enabled &&
++			    k230_init_exec_transition_enabled && is_global_init(current))
++				WRITE_ONCE(k230_init_exec_transition_armed, true);
+@@ -1708,0 +1747 @@
++		}
+--- a/arch/riscv/kernel/process.c
++++ b/arch/riscv/kernel/process.c
+@@ -20,0 +21 @@
++#include <linux/k230-init-exec-transition.h>
+@@ -230,0 +232 @@
++	k230_init_exec_transition_kernel_return();
+--- a/arch/riscv/kernel/traps.c
++++ b/arch/riscv/kernel/traps.c
+@@ -23,0 +24 @@
++#include <linux/k230-init-exec-transition.h>
+@@ -338,0 +340 @@
++			k230_init_exec_transition_user_ecall();

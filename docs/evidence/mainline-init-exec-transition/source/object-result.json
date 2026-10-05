@@ -1,0 +1,33 @@
+{
+  "command": [
+    "flock",
+    "/tmp/k230-nix-build.lock",
+    "make",
+    "-C",
+    "/nix/store/79yd40jv8h4x866bm1vyw94cm948grax-linux-mainline-k230-init-exec-transition-src",
+    "O=/home/jadams/tmp/k230-init-exec-transition-proof/object-2/build",
+    "M=/home/jadams/tmp/k230-init-exec-transition-proof/object-2/module",
+    "ARCH=riscv",
+    "CROSS_COMPILE=/nix/store/4j2mwxqjvnyr6da0925sp0bm4jaj5r5i-riscv64-unknown-linux-gnu-gcc-wrapper-15.3.0/bin/riscv64-unknown-linux-gnu-",
+    "W=1",
+    "-j3",
+    "main.o",
+    "process.o",
+    "traps.o"
+  ],
+  "started_utc": "2026-10-05T19:06:38.504673+00:00",
+  "completed_utc": "2026-10-05T19:06:46.792718+00:00",
+  "returncode": 0,
+  "elapsed_seconds": 8.288069582078606,
+  "evidence_class": "parent-prepared-header-RISC-V-object",
+  "source": "/nix/store/79yd40jv8h4x866bm1vyw94cm948grax-linux-mainline-k230-init-exec-transition-src",
+  "parent_dev": "/nix/store/9ddh3qgnq1sj3ibqvd9124w4bfij2y6w-linux-riscv64-unknown-linux-gnu-7.3.0-rc5-dev",
+  "config_sha256": "52e7470b108ad094dbdf88b94e3e8838564edbda9e7a015b4279012e6765c9f1",
+  "compile_log_sha256": "26a013f14c52a3d6f4a4512b1a7c661e708c477130659b6a82d47eb1d060e5fe",
+  "main_object_sha256": "d59897584af0d73ef6740e7c0303d8dcaf274e7bd24c03599cc31f38d088484e",
+  "main_readelf_sha256": "59ceddd706cf27bd06859279d5bd0e508469296d5c561e5cb76bbbd42a11282e",
+  "process_object_sha256": "4c7e7b7a69471b58229f0a3998227efd425fabad1c2a4fee2a2c2261b07539bf",
+  "process_readelf_sha256": "dc1647090f28e5eeefd9e22f3651e9d1aaf4e32306be6ff88b17e8f232193121",
+  "traps_object_sha256": "b214c0ac99ddfc706716a96a22a628a6cdc846fd3030f5354b9af31bcd7e76a4",
+  "traps_readelf_sha256": "4e8d5ea750156beeeb973272e20bbda557c64a31190972862902a3599724d305"
+}

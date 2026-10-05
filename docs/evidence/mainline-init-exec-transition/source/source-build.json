@@ -1,0 +1,21 @@
+{
+  "command": [
+    "flock",
+    "/tmp/k230-nix-build.lock",
+    "nix",
+    "build",
+    "--offline",
+    "--no-link",
+    "--print-out-paths",
+    "/nix/store/xh3h9nl8c9bj1iba290q89riiwan13fn-linux-mainline-k230-init-exec-transition-src.drv^out",
+    "--max-jobs",
+    "1",
+    "--cores",
+    "16"
+  ],
+  "started_utc": "2026-10-05T19:02:38.498525+00:00",
+  "completed_utc": "2026-10-05T19:05:40.275990+00:00",
+  "elapsed_seconds": 181.77747078693938,
+  "returncode": 0,
+  "source": "/nix/store/79yd40jv8h4x866bm1vyw94cm948grax-linux-mainline-k230-init-exec-transition-src"
+}

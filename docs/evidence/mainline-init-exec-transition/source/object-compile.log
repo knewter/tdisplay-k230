@@ -1,0 +1,7 @@
+make: Entering directory '/nix/store/79yd40jv8h4x866bm1vyw94cm948grax-linux-mainline-k230-init-exec-transition-src'
+make[1]: Entering directory '/home/jadams/tmp/k230-init-exec-transition-proof/object-2/module'
+  CC      main.o
+  CC      process.o
+  CC      traps.o
+make[1]: Leaving directory '/home/jadams/tmp/k230-init-exec-transition-proof/object-2/module'
+make: Leaving directory '/nix/store/79yd40jv8h4x866bm1vyw94cm948grax-linux-mainline-k230-init-exec-transition-src'

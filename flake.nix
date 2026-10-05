@@ -320,6 +320,15 @@
             inherit (pkgsCross) applyPatches lib;
           });
         };
+        # Two default-disabled PID1 witnesses; preserve the exec-return policy.
+        k230-mainline-init-exec-transition = self.nixosConfigurations.k230-mainline-init-exec-return.extendModules {
+          specialArgs.k230Kernel = pkgsCross.linuxPackagesFor (import ./nix/kernel-mainline-init-exec-transition.nix {
+            kernelMainline = pkgsCross.callPackage ./nix/kernel-mainline.nix {
+              inherit (pkgsCross) buildLinux;
+            };
+            inherit (pkgsCross) applyPatches lib;
+          });
+        };
         # Post-sample records; preserve Breadcrumbs artifact parameters.
         k230-mainline-uart-progress-post-sample = self.nixosConfigurations.k230-mainline-uart-progress-breadcrumbs.extendModules {
           specialArgs.k230Kernel = pkgsCross.linuxPackagesFor (import ./nix/kernel-mainline-uart-progress-post-sample.nix {
@@ -642,6 +651,18 @@
         kernelMainlineInitExecReturnTrialBootFiles = pkgs.callPackage ./nix/mainline-drm-trial.nix {
           cfg = self.nixosConfigurations.k230-mainline-init-exec-return.config;
           kernel = self.nixosConfigurations.k230-mainline-init-exec-return.config.boot.kernelPackages.kernel;
+          deviceTree = self.packages.${buildSystem}.deviceTreeMainlineDrm;
+        };
+
+        kernelMainlineInitExecTransition = pkgsCross.callPackage ./nix/kernel-mainline-init-exec-transition.nix {
+          kernelMainline = pkgsCross.callPackage ./nix/kernel-mainline.nix {
+            inherit (pkgsCross) buildLinux;
+          };
+        };
+        toplevel-mainline-init-exec-transition = self.nixosConfigurations.k230-mainline-init-exec-transition.config.system.build.toplevel;
+        kernelMainlineInitExecTransitionTrialBootFiles = pkgs.callPackage ./nix/mainline-drm-trial.nix {
+          cfg = self.nixosConfigurations.k230-mainline-init-exec-transition.config;
+          kernel = self.nixosConfigurations.k230-mainline-init-exec-transition.config.boot.kernelPackages.kernel;
           deviceTree = self.packages.${buildSystem}.deviceTreeMainlineDrm;
         };
 
