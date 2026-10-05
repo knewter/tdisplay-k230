@@ -46,8 +46,10 @@ logs and their limits. A separately reserved camera photograph appeared dark
 and reflective with no readable content; glare, focus and angle prevent any
 claim that userspace or scanout was absent. The photograph remains private.
 
-**NEW operator reset after this comparison is pending.** No prior reset is
-reused, no fallback command was sent and no automatic return is claimed.
+A subsequent NEW operator reset passed [protected normal recovery](recovery.json):
+distinct boot, exact identities, eight matching boot hashes, three active
+services and registration absence. No prior reset was reused, no fallback
+command was sent and no automatic return is claimed.
 Usable ordinary root, panel/glass acceptance, unmasked production boot and task
 5b.5 remain **UNVERIFIED**. The next bounded comparison is
 [fixed initrd manager logging](../../../research/mainline-initrd-debug-logging-2026-10-05.md).

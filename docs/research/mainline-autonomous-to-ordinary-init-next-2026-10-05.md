@@ -5,7 +5,7 @@ completed B/E and the interactive handoff with all optional reporter gates absen
 The next bounded step uses the existing ordinary controller and the same p2
 bundle, selecting its archived systemd `/init` instead of Bash. This is within
 the existing mainline task 5b.5; no new proposal, controller or kernel build is
-needed. **This comparison has now been run:** the [current-image physical receipt](../evidence/mainline-system-trial/current-p2-ordinary-physical-2026-10-05/README.md) records systemd, completed coldplug, mounted `/sysroot` and starting closure lookup, but no completion/switch-root/login within 180 seconds. Fresh host qualification and preceding protected recovery passed; another NEW reset remains pending. The logging-only successor is [planned separately](mainline-initrd-debug-logging-2026-10-05.md).
+needed. **This comparison has now been run:** the [current-image physical receipt](../evidence/mainline-system-trial/current-p2-ordinary-physical-2026-10-05/README.md) records systemd, completed coldplug, mounted `/sysroot` and starting closure lookup, but no completion/switch-root/login within 180 seconds. Fresh host qualification and preceding protected recovery passed; subsequent NEW protected recovery also passed. The logging-only successor is [planned separately](mainline-initrd-debug-logging-2026-10-05.md).
 
 The earlier [ordinary attempt](../evidence/mainline-system-trial/physical-2026-10-03/README.md)
 used the 5y bundle and reached systemd/udev without usable root. The

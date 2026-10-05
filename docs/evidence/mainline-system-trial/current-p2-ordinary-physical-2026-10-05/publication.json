@@ -1,0 +1,27 @@
+{
+  "schema": "k230-evidence-publication-v1",
+  "revision": "c41217b59710ba6fc9093de97546ed39f25d88e1",
+  "ci_run": 37254263624,
+  "ci_conclusion": "success",
+  "verified_utc": "2026-10-05T02:14:00.534801+00:00",
+  "independent_physical_review": "PASS",
+  "published": [
+    {
+      "url": "https://knewter.github.io/tdisplay-k230/work/",
+      "http_status": 200,
+      "revision_verified": true
+    },
+    {
+      "url": "https://knewter.github.io/tdisplay-k230/evidence/docs-evidence-mainline-system-trial-current-p2-ordinary-physical-2026-10-05-readme-md/",
+      "http_status": 200,
+      "revision_verified": true
+    },
+    {
+      "url": "https://knewter.github.io/tdisplay-k230/evidence/docs-research-mainline-initrd-debug-logging-2026-10-05-md/",
+      "http_status": 200,
+      "revision_verified": true
+    }
+  ],
+  "normal_recovery_at_this_revision": "PENDING_NEW_OPERATOR_RESET",
+  "ordinary_mainline_acceptance": "UNVERIFIED"
+}

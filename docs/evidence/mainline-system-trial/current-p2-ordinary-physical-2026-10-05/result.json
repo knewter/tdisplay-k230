@@ -67,7 +67,7 @@
     "registration_absent": true
   },
   "candidate_input_after_readiness_failure": "none; reviewed controller preserves unknown state without retries",
-  "normal_recovery": "PENDING_NEW_OPERATOR_RESET",
+  "normal_recovery": "VERIFIED_NEW_OPERATOR_RESET",
   "ordinary_root": "UNVERIFIED",
   "panel_acceptance": "UNVERIFIED",
   "deliberate_glass_touch": "NOT_PERFORMED",
@@ -86,5 +86,6 @@
     "limits": "Glare, soft focus, oblique angle; not proof that userspace or display scanout is absent.",
     "sha256": "2e78dc577b22b872c67b1f1f8a87bcf2a59177e713b38bb5b294738bb4fc7653"
   },
-  "independent_physical_review": "PASS"
+  "independent_physical_review": "PASS",
+  "normal_recovery_receipt": "recovery.json"
 }
