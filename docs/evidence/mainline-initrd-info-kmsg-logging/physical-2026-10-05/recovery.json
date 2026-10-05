@@ -1,0 +1,35 @@
+{
+  "schema": "k230-initrd-info-kmsg-new-operator-recovery-v1",
+  "evidence_class": "physical UART protected normal postflight after NEW operator reset",
+  "receipt_written_utc": "2026-10-05T03:41:26.698515+00:00",
+  "operator_reset": "NEW_CONFIRMATION_AFTER_COMPLETED_KMSG_CAPTURE",
+  "normal_recovery": "VERIFIED_NEW_OPERATOR_RESET",
+  "distinct_boot_verified": true,
+  "system": "/nix/store/p1a1hz9n8s4g8qyr55ffl3dzbnjgqwr8-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "profile": "/nix/store/p1a1hz9n8s4g8qyr55ffl3dzbnjgqwr8-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "kernel": "/nix/store/03zyl0mjsxbjyisb3lhjaxswpxm71ap6-linux-riscv64-unknown-linux-gnu-6.6.36-xuantie/Image",
+  "init": "init=/nix/store/p1a1hz9n8s4g8qyr55ffl3dzbnjgqwr8-nixos-system-nixos-26.11.20260919.20b1ddd/init",
+  "uname": "6.6.36",
+  "protected_boot_hash_count": 8,
+  "protected_boot_hashes_match_prior_preflight": true,
+  "services": [
+    "active",
+    "active",
+    "active"
+  ],
+  "nix_path_registration_absent": true,
+  "private_recovery_result_sha256": "c026c105c262db949125f474c24d18171898738cbd3f5d6295686a855aaed64a",
+  "private_recovery_uart_sha256": "96967a55e191ea32f31fd63c7da08c3c936cd8849068155894664385e3a44dcc",
+  "recovery_checker_sha256": "5a9308cbd2f7fb21c594c18b3eaa9552ff66f48129184c66e09267e890277819",
+  "earlier_passive_listener": {
+    "returncode": 1,
+    "bytes_received": 0,
+    "bytes_sent": 0,
+    "protected_postflight": "NOT_RUN"
+  },
+  "passive_fresh_SPL_proof": "NOT_CLAIMED_FOR_THIS_LATE_CONFIRMATION_CHECK",
+  "automatic_return": "UNVERIFIED",
+  "camera_or_real_glass_proof": "NOT_OBTAINED",
+  "ordinary_mainline_acceptance": "UNVERIFIED",
+  "independent_protected_recovery_review": "PASS"
+}

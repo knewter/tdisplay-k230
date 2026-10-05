@@ -1375,22 +1375,23 @@ Independent physical and subsequent armed recovery review PASS. Physical revisio
       facts plus independent recovery or explicit pending NEW reset. Command:
       `python3 tools/mainline-drm-system-trial.py begin --wait-initramfs-in-initcall --without-boot-markers --initrd-info-kmsg-logging --bundle BUNDLE --manifest PRIVATE_MANIFEST --normal-report PRIVATE_NORMAL --state NEW_PRIVATE_STATE --log PRIVATE_LOG --result PRIVATE_RESULT`.
       Preserve fallback/drop/cause limits; ordinary task5b.5 stays open.
-      [Actual passive capture](../../../docs/evidence/mainline-initrd-info-kmsg-logging/physical-2026-10-05/README.md): exact same artifacts/args/source, fresh kernel/pre-exec init only, no systemd/closure/login in180s; independent full review PASS. NEW recovery PENDING; separate passive recovery listener received/sent0 bytes and performed no postflight.
+      [Actual passive capture](../../../docs/evidence/mainline-initrd-info-kmsg-logging/physical-2026-10-05/README.md): exact same artifacts/args/source, fresh kernel/pre-exec init only, no systemd/closure/login in180s; independent full review PASS. Subsequent NEW [confirmed recovery](../../../docs/evidence/mainline-initrd-info-kmsg-logging/physical-2026-10-05/recovery.json) passed independently; expired passive listener0bytes/no postflight remains separate.
 - [x] 5q.4 Independently review comparison, source and recovery limits; land/push
       and inspect exact CI/published revision. Planning proof:
       `openspec validate the-board-runs-a-mainline-kernel --strict`.
 
 
-Independent full capture/recovery-limit review PASS. Physical revision236f6bca, CI37259813601/deployment PASS and exact work revision/published capture HTTP200 verified: [publication receipt](../../../docs/evidence/mainline-initrd-info-kmsg-logging/physical-2026-10-05/publication.json). NEW recovery and ordinary5b.5 remain UNVERIFIED.
+Independent full capture/recovery-limit review PASS. Physical revision236f6bca, CI37259813601/deployment PASS and exact work revision/published capture HTTP200 verified: [publication receipt](../../../docs/evidence/mainline-initrd-info-kmsg-logging/physical-2026-10-05/publication.json). Subsequent NEW confirmed recovery passed; automatic return and ordinary5b.5 remain UNVERIFIED.
 
 ## 5r. Unchanged quiet ordinary-baseline repeat (bounded control)
 
-- [ ] 5r.1 After NEW protected recovery from5q, execute actual same-artifact
+- [x] 5r.1 After NEW protected recovery from5q, execute actual same-artifact
       baseline preparation with existing parents/no logging mode. Qualify exact
      299/317 bytes against the original quiet policy and immutable/root/init/
       helper/load/CRC identities; commit executed qualifier and safe receipt,
       independently review. No implicit UART/build. Narrow command:
       `python3 docs/evidence/mainline-system-trial/current-p2-baseline-repeat-host-2026-10-05/qualification-command.py --bundle BUNDLE --dev DEV --normal-report PRIVATE_NORMAL`.
+      [Executed same-artifact qualification](../../../docs/evidence/mainline-system-trial/current-p2-baseline-repeat-host-2026-10-05/README.md) exit0 on3d2a080c; exact original299/317, unchanged source/helpers/artifacts and NEW kmsg recovery binding; independent review PASS. No live preflight/UART/build.
 - [ ] 5r.2 After reviewed source/actual host gates and NEW protected recovery,
       reserve board/UART for ONE passive180s repeat; commit fixed facts plus
       independent recovery or explicit pending NEW reset. Command:

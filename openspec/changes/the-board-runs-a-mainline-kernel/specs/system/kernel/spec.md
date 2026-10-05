@@ -732,10 +732,10 @@ reproducibility control, not a logging cause, ordinary-root acceptance, glass
 proof or automatic recovery. Subsequent recovery SHALL be independently
 verified or explicitly pending a NEW operator reset.
 
-<!-- UNVERIFIED: NEW recovery, actual qualification and baseline repeat remain pending. -->
+<!-- UNVERIFIED: physical baseline repeat/ordinary acceptance remains pending; actual qualification and NEW recovery passed independent review. -->
 *Grounding: [previous quiet ordinary boundary](../../../../../../docs/evidence/mainline-system-trial/current-p2-ordinary-physical-2026-10-05/README.md),
 [silent kmsg capture](../../../../../../docs/evidence/mainline-initrd-info-kmsg-logging/physical-2026-10-05/README.md)
-and [read archive/source control plan](../../../../../../docs/research/mainline-ordinary-baseline-repeat-2026-10-05.md).*
+and [read archive/source control plan](../../../../../../docs/research/mainline-ordinary-baseline-repeat-2026-10-05.md). [Actual unchanged-baseline preparation](../../../../../../docs/evidence/mainline-system-trial/current-p2-baseline-repeat-host-2026-10-05/README.md) and [NEW protected recovery](../../../../../../docs/evidence/mainline-initrd-info-kmsg-logging/physical-2026-10-05/recovery.json) passed independent review; physical repeat remains open.*
 
 #### Scenario: The unchanged baseline reaches the previous unit boundary
 
