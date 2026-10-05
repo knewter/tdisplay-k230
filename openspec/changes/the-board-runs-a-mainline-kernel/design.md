@@ -951,3 +951,22 @@ alternate PID1 or a new build for this first comparison. Manager state/ExecStart
 logs cannot pinpoint silent shell subcommands; narrower helper instrumentation
 would need separate scope. Physical results and recovery remain unverified.
 See [read archive/source and current physical boundary](../../../docs/research/mainline-initrd-debug-logging-2026-10-05.md).
+
+
+## Fixed info/console comparison (group 5p)
+
+Userspace controller: typed begin-only `--initrd-info-logging` requires both
+existing synchronous-initramfs/marker-free selectors and excludes the debug
+selector. Select exactly `rd.systemd.log_level=info rd.systemd.log_target=console`.
+This changes only one previous value: 355 argument / 373 literal command bytes.
+Persist/restore the typed choice; old states default false. Reuse alias/type/
+pre-UART guards while keeping old defaults and debug mode unchanged. Retain
+same source/config/Image/initrd/DT, normal/artifact/load/CRC/argument gates and
+180-second passive readiness/full private logging/unknown-no-input policy.
+
+Reject compensating kernel verbosity, debug+kmsg, extra masks/targets, global
+tracing and rebuilds for this comparison: each changes additional boundaries.
+Changed observed progress is sensitivity to one value, not a proven call/cause.
+A silent run cannot distinguish earlier PID1 setup from console open/write.
+[Source/physical scope](../../../docs/research/mainline-initrd-info-console-comparison-2026-10-05.md);
+NEW recovery and actual qualification remain required.

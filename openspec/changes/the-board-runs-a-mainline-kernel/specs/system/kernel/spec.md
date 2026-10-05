@@ -654,3 +654,33 @@ Physical logging output and ordinary boot acceptance remain unverified.*
 - **WHEN** login or I/O completion is unknown within the fixed bound
 - **THEN** preserve the complete private log without candidate input or fallback
 - **AND** require independent protected recovery or a NEW operator reset
+
+
+### Requirement: Fixed info-level ordinary-init console comparison
+
+The system trial controller SHALL offer typed begin-only `--initrd-info-logging`,
+requiring synchronous initramfs and marker-free ordinary init, excluding debug
+logging, and selecting only `rd.systemd.log_level=info rd.systemd.log_target=console`.
+It SHALL preserve old/default/debug behavior, typed resumed selection, pre-UART
+alias/conflict/type rejection, the transport bound and all immutable artifact,
+normal identity, load/CRC and exact printed/live argument guards.
+
+The comparison SHALL keep a 180-second passive readiness bound, complete private
+logging and unknown-no-input behavior. Changed observed progress SHALL NOT be
+reported as a blocked output-call diagnosis, ordinary boot acceptance or recovery.
+
+<!-- UNVERIFIED: info-mode controller, actual qualification and physical comparison remain planned. -->
+*Grounding: [debug/console physical result](../../../../../../docs/evidence/mainline-initrd-debug-logging/physical-2026-10-05/README.md)
+and [bounded child/source analysis](../../../../../../docs/research/mainline-initrd-info-console-comparison-2026-10-05.md).*
+
+#### Scenario: Lower verbosity changes observed progress
+
+- **WHEN** qualified same-artifact info/console output reaches new messages
+- **THEN** record those observations and the sole changed value
+- **AND** retain independent runtime identity, cause and recovery limits
+
+#### Scenario: Info comparison remains silent
+
+- **WHEN** qualified login or I/O completion remains unknown
+- **THEN** preserve private facts without candidate input or fallback
+- **AND** require independent protected recovery or a NEW operator reset

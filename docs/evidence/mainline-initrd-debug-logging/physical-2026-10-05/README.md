@@ -43,5 +43,6 @@ bootm; this is not independent electrical TX-direction proof.
 All reservations are released. **NEW operator reset after this capture is
 pending**, and the prepared checker has not run. No previous reset is reused,
 fallback input or automatic return claimed. Ordinary root, panel/glass and
-task 5b.5 stay **UNVERIFIED**. The next source audit considers a one-value
-debug→info comparison with the same console destination; it is not run.
+task 5b.5 stay **UNVERIFIED**. The [next bounded plan](../../../research/mainline-initrd-info-console-comparison-2026-10-05.md)
+considers a one-value debug→info comparison with the same console destination;
+it is not run.

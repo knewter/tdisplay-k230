@@ -398,3 +398,12 @@ running closure lookup and completion before activation. Use the same artifacts
 and protected recovery; no kernel rebuild or new masks/targets. This requires
 the physical board for its result. Nested shell/syscall tracing and ordinary
 boot acceptance are outside this diagnostic. [Scope and source grounding](../../../docs/research/mainline-initrd-debug-logging-2026-10-05.md).
+
+
+## One-value follow-up: info logging with the same console destination
+
+The debug/console run did not provide a systemd banner or usable login. Plan one
+fixed child comparison lowering only the log level to info, retaining destination,
+artifacts and all guards. Its result requires the board; kernel rebuilds, new
+boot targets/masks, tracing and causal claims are outside scope. See [observed
+boundary and plan](../../../docs/research/mainline-initrd-info-console-comparison-2026-10-05.md).
