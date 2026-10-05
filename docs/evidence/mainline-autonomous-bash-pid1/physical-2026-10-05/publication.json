@@ -1,0 +1,26 @@
+{
+  "schema": "k230-evidence-publication-v1",
+  "revision": "ad746e5b6ee2731ccc878b15499c75986e86c5d3",
+  "ci_run": 37250588096,
+  "ci_conclusion": "success",
+  "independent_physical_review": "PASS",
+  "published": [
+    {
+      "url": "https://knewter.github.io/tdisplay-k230/work/",
+      "http_status": 200,
+      "revision_verified": true
+    },
+    {
+      "url": "https://knewter.github.io/tdisplay-k230/evidence/docs-evidence-mainline-autonomous-bash-pid1-physical-2026-10-05-readme-md/",
+      "http_status": 200,
+      "revision_verified": true
+    },
+    {
+      "url": "https://knewter.github.io/tdisplay-k230/evidence/docs-evidence-mainline-uart-progress-memory-printk-nohz-off-physical-2026-10-04-readme-md/",
+      "http_status": 200,
+      "revision_verified": true
+    }
+  ],
+  "normal_recovery": "PENDING_NEW_OPERATOR_RESET_AFTER_AUTONOMOUS_CAPTURE",
+  "ordinary_mainline_acceptance": "UNVERIFIED"
+}

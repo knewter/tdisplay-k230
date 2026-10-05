@@ -245,6 +245,7 @@ that milestone 1's methodology extends.
 - [x] 5b.4b Build and inspect that output with `nix build .#kernelMainlineDrmBootFiles --print-out-paths`; `/nix/store/bpbr6vldkm1y48k6wrdh7s6yv5szqa0k-k230-mainline-drm-boot-files` contains only the candidate Image and DTB, byte-identical to the derivation outputs (`docs/evidence/mainline-display-artifact-inspection.log`).
 - [x] 5b.4c Prepare a matching opt-in console trial system and boot bundle with its own initrd, volatile bootargs, closure inventory and registration; document offline root staging and manual U-Boot trial/restoration. Host proof: `nix build .#kernelMainlineDrmTrialBootFiles --no-link --print-out-paths --max-jobs 1 --cores 4` and `nix shell --inputs-from . nixpkgs#dtc --command python3 tools/mainline-drm-trial-inspect.py <output-path>`. The built bundle is `/nix/store/9v5jwcg97kp96jfj6nll4a4yixxzqh2x-k230-mainline-drm-trial-boot-files`; see `docs/evidence/mainline-display-boot-preparation.md` and its log. This does not stage a physical card or satisfy 5b.5.
 - [ ] 5b.5 After staging a compatible usable root path following `docs/evidence/mainline-display-boot-preparation.md` (the built `kernelMainlineDrmBootFiles` contains only the Image and DTB, with no initrd or root filesystem), reserve the board and perform a recoverable manual U-Boot trial. Capture the serial log with `flock /tmp/k230-board.lock python3 tools/console.py /dev/ttyACM0 --wait=10`, plus a panel photograph and deliberate touch interaction. The candidate's display power-domain behavior remains UNVERIFIED until observed on hardware; the locally forward-ported provider planned in group 5c does not turn a host build into physical proof.
+      Next current-image ordinary comparison: [bounded handoff](../../../docs/research/mainline-autonomous-to-ordinary-init-next-2026-10-05.md); existing begin selectors, fresh recovery/actual preparation first, no new build. Not yet run.
 - [x] 5b.6 Explicitly scope the display power-domain provider gap: pinned mainline has no `sysctl_power`/`K230_PM_DOMAIN_DISP` provider, so the initial host candidate omitted that unsupported phandle (see `docs/evidence/mainline-display-dtb.md`). Group 5c now adds an isolated local provider; physical display power remains UNVERIFIED.
 
 ## 5c. Keep the optional DRM display domain powered
@@ -1269,7 +1270,7 @@ completion of ordinary mainline acceptance.
       Subsequent NEW nohz-off [protected recovery](../../../docs/evidence/mainline-uart-progress-memory-printk/nohz-off-physical-2026-10-04/recovery.json) passed: distinct boot, exact identities/eight hashes/three services/registration absence. Automatic return and 5b.5 stay UNVERIFIED.
 
 
-## 5n. Fixed autonomous Bash-PID1 comparison (planned, UNVERIFIED)
+## 5n. Fixed autonomous Bash-PID1 comparison (bounded diagnostic complete)
 
 - [x] 5n.1 Establish native exact Hush lexer/variable/quote/command execution and
       selected Linux next_arg/repair/set_init_arg argv proof for the fixed scout
@@ -1299,6 +1300,8 @@ completion of ordinary mainline acceptance.
       Command: `python3 tools/mainline-drm-initrd-shell-trial.py --mode minimal --same-image-shell-pid1 --autonomous-bash-pid1 --bundle BUNDLE --manifest PRIVATE_MANIFEST --normal-report PRIVATE_NORMAL --log PRIVATE_LOG --result PRIVATE_RESULT`.
       Keep RX/output-return/cause/ordinary-root limits; 5b.5 stays open.
       [Physical autonomous capture](../../../docs/evidence/mainline-autonomous-bash-pid1/physical-2026-10-05/README.md): strict B then E and later primary prompt in60.035s, exact candidate arguments/backend/bin-sh entry, zero input/errors. Selected sleep returned; RX and ordinary init/root/glass remain UNVERIFIED. Capture complete with NEW reset after this comparison PENDING; no prior reset reused.
-- [ ] 5n.5 Independently review parser/execution/recovery limits, land/push evidence
+- [x] 5n.5 Independently review parser/execution/recovery limits, land/push evidence
       and inspect exact CI/published revision. Planning proof:
       `openspec validate the-board-runs-a-mainline-kernel --strict`.
+
+      Independent raw/parser/load/recovery-limits review PASS; physical evidence master ad746e5b, CI37250588096 PASS, exact work/autonomous/nohz-recovery publication HTTP200 verified: [publication receipt](../../../docs/evidence/mainline-autonomous-bash-pid1/physical-2026-10-05/publication.json). NEW recovery after autonomous capture remains PENDING; ordinary init/root/panel/glass task5b.5 stays open.
