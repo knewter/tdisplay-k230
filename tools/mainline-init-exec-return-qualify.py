@@ -11,6 +11,8 @@ import hashlib
 import importlib.util
 import json
 import os
+import re
+import stat
 from pathlib import Path
 import subprocess
 import sys
@@ -37,6 +39,36 @@ def hardware_dt(bundle):
 def archived(bundle, archive):
     entries=archive.archive_entries((bundle/'initrd.uimg').read_bytes()[64:])
     return entries
+
+
+def archive_delta(old, new):
+    """Permit only a byte-identical module tree relocated by the new kernel."""
+    removed=sorted(old.keys()-new.keys());added=sorted(new.keys()-old.keys())
+    changed=sorted(name for name in old.keys()&new.keys()if old[name]!=new[name])
+    module_relocation=None
+    if added or removed or changed:
+        if changed!=['lib'] or old['lib'][0]!=new['lib'][0]:
+            raise ValueError('unexpected changed archived userspace entries: '+repr(changed))
+        roots=[];trees=[]
+        for entries in (old,new):
+            mode,target=entries['lib']
+            if not stat.S_ISLNK(mode) or not re.fullmatch(
+                rb'/nix/store/[0123456789abcdfghijklmnpqrsvwxyz]{32}-linux-riscv64-unknown-linux-gnu-7\.3\.0-rc5-modules-shrunk/lib',target):
+                raise ValueError('lib is not an exact archived module-tree symlink')
+            root=target.decode().removeprefix('/')[:-4]
+            tree={name.removeprefix(root):value for name,value in entries.items()
+                  if name==root or name.startswith(root+'/')}
+            if '' not in tree or not stat.S_ISDIR(tree[''][0]) or '/lib' not in tree or not stat.S_ISDIR(tree['/lib'][0]):
+                raise ValueError('archived module-tree target is incomplete')
+            roots.append(root);trees.append(tree)
+        if roots[0]==roots[1] or trees[0]!=trees[1]:
+            raise ValueError('relocated archived module-tree bytes or modes differ')
+        if removed!=sorted(roots[0]+name for name in trees[0]) or added!=sorted(roots[1]+name for name in trees[1]):
+            raise ValueError('archive contains an additional dependency delta')
+        module_relocation={'old_root':roots[0],'new_root':roots[1],
+                           'entries':len(trees[0]),'normalized_bytes_and_modes_equal':True}
+    return {'old_entries':len(old),'new_entries':len(new),'added':added,
+            'removed':removed,'changed':changed,'module_tree_relocation':module_relocation}
 
 
 def main():
@@ -84,16 +116,7 @@ def main():
     archive_spec=importlib.util.spec_from_file_location('init_exec_archive',REPO/'tools/mainline-drm-uart-observer-trial.py')
     archive=importlib.util.module_from_spec(archive_spec);archive_spec.loader.exec_module(archive)
     old,new=archived(BASE_BUNDLE,archive),archived(args.bundle,archive)
-    removed=sorted(old.keys()-new.keys());added=sorted(new.keys()-old.keys())
-    changed=sorted(name for name in old.keys()&new.keys()if old[name]!=new[name])
-    # Unit/script and dependencies must stay byte-identical, except kernel-specific
-    # release information and module tree/store symlinks. No silent userspace delta.
-    for name in changed:
-        if name!='etc/os-release'and not name.startswith(('lib/modules/','usr/lib/modules/')):
-            raise ValueError('unexpected changed archived userspace entry: '+name)
-    for name in removed+added:
-        if 'linux-riscv64-unknown-linux-gnu-7.3.0-rc5'not in name and not name.startswith(('lib/modules/','usr/lib/modules/')):
-            raise ValueError('unexpected added/removed archive dependency: '+name)
+    delta=archive_delta(old,new)
     build=None
     if args.build_receipt:
         build=json.loads(args.build_receipt.read_text())
@@ -109,7 +132,7 @@ def main():
           'dev':str(args.dev),'kernel_proof':proof,'archive_proof':prepared['init_exec_return_archive'],
           'files':{k:v for k,v in manifest['files'].items()if k!='fw_jump_add_uboot_head.bin'},
           'manifest_sha256':sha(manifest_path.read_bytes()),'base_bundle':str(BASE_BUNDLE),
-          'archive_delta':{'old_entries':len(old),'new_entries':len(new),'added':added,'removed':removed,'changed':changed},
+          'archive_delta':delta,
           'same_kernel_config':True,'same_DT_hardware':True,'same_original_system_init_bytes':True,
           'SHA256SUMS_and_DTB_bootargs_passed':True,'sole_added_argument':trial.INIT_EXEC_RETURN_FLAG,
           'base_argument_bytes':len(base_args.removeprefix('bootargs=').encode()),'argument_bytes':len(prepared['bootargs'].removeprefix('bootargs=').encode()),
