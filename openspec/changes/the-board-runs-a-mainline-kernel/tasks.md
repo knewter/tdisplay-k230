@@ -1419,11 +1419,11 @@ Independent source/actual host/full physical/parser/recovery-limit/publication r
       build receipt and safe executed qualifier; independently review. No implicit
       UART. Narrow command: `python3 tools/mainline-init-exec-return-qualify.py --bundle BUNDLE --dev DEV --normal-report PRIVATE_NORMAL`.
       [Actual full build/new-header object/positive qualifier](../../../docs/evidence/mainline-init-exec-return/actual-host/README.md) PASS, independently reviewed7a99b32d. Same config/userspace/DT hardware, only identical17-entry module-tree relocation; exact323/341 one-gate policy. Offline build and initial qualifier failures preserved. Root integrated reviewed narrow correctiond361f364 and reran17 focused; no UART/live-preflight claim.
-- [ ] 5s.2a Restore the now-missing exact pinned host outputs, retaining persistent
+- [x] 5s.2a Restore the now-missing exact pinned host outputs, retaining persistent
       store roots; preserve a new realization receipt and recheck actual byte hashes
       against historical proof, then run the qualifier in a fresh protected directory.
       No UART. Narrow restoration command: `flock /tmp/k230-nix-build.lock nix build --no-write-lock-file --out-link PRIVATE_ROOT --max-jobs 1 --cores 16 .#kernelMainlineInitExecReturn.src .#kernelMainlineInitExecReturn .#kernelMainlineInitExecReturn.dev .#kernelMainlineInitExecReturnTrialBootFiles`.
-      [Pre-UART availability failure](../../../docs/evidence/mainline-init-exec-return/actual-host/availability-2026-10-05.json): historical5s.2 proof retained; current availability/retention/requalification pending.
+      [Historical pre-UART availability failure](../../../docs/evidence/mainline-init-exec-return/actual-host/availability-2026-10-05.json) preserved. [Exact restoration/registered roots/fresh qualifier](../../../docs/evidence/mainline-init-exec-return/restoration-host/README.md) PASS with identical bytes/manifest151a; independent reviewb903ceb7 PASS. No source/default or board change.
 - [ ] 5s.3 After NEW protected recovery and reviewed source/build/host gates,
       reserve sole board/UART for ONE passive180s capture. Commit finite observations
       and independent recovery or explicit pending NEW reset; preserve full private
