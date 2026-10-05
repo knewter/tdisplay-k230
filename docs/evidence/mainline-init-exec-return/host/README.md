@@ -75,3 +75,17 @@ It creates a fresh protected host directory; no build, UART or live preflight.
 Require actual source/Image/dev/config/archive/helper/DT/manifest/load/CRC proof
 and document every dependency delta before a root-operated trial after NEW
 protected recovery. Physical output/ordinary root/glass remain unverified.
+
+Independent source/controller/qualifier review PASS at `b5bedcb8`;15 focused
+tests were independently rerun and source/config/object/readelf digests checked.
+Root review requested removal of duplicate identical private state helper
+definitions; correction `67d40217` passed15 focused and68 old regressions,
+without kernel/source/flake changes. Integrated source commits `44edf227` and
+`89751734` preserve the frozen build identities. Root reran15 focused tests
+after integration and added them to the existing CI trial-gate step.
+
+The full matching build is in progress from frozen `b5bedcb8`. An initial
+offline attempt failed before kernel compilation because a prerequisite was
+absent; the failure receipt/log is retained privately. The same output identities
+are being retried with online substitution, max-jobs1/cores16 and sole build
+lock. This is not successful-build or actual-positive-qualification evidence.

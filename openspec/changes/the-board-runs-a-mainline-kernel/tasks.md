@@ -1407,11 +1407,12 @@ Independent source/actual host/full physical/parser/recovery-limit/publication r
 
 ## 5s. Selected ordinary init exec-return record (bounded diagnostic)
 
-- [ ] 5s.1 Implement additive default-disabled source/kernel/trial variant and
+- [x] 5s.1 Implement additive default-disabled source/kernel/trial variant and
       typed begin-only selection; preserve old outputs, selected init ABI/argv/env,
       original return/fallback and all guards. Meaningful narrow fixtures plus
       selected compiled RISC-V object review; independently review source. No UART.
       Narrow command: `python3 tests/test_mainline_init_exec_return.py`.
+      [Reviewed source/native/object/evaluation proof](../../../docs/evidence/mainline-init-exec-return/host/README.md):15 focused and68 old regressions PASS; exact realized source/config and actual RISC-V object verified, runtime gate in ordinary .sbss. Peer review PASS; root removed duplicate identical helper definitions through reviewed67d40217 and reran15 focused after integration.107 old package derivations unchanged. Full matching headers/link/build/positive artifact qualification remain5s.2; no UART claim.
 - [ ] 5s.2 Realize the optional variant; execute actual source/config/archive/init/
       helper/DT-hardware/argument/manifest/five-load/CRC qualification, documenting
       each necessary new dependency delta and old-output equality. Commit exact
