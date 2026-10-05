@@ -1413,11 +1413,12 @@ Independent source/actual host/full physical/parser/recovery-limit/publication r
       selected compiled RISC-V object review; independently review source. No UART.
       Narrow command: `python3 tests/test_mainline_init_exec_return.py`.
       [Reviewed source/native/object/evaluation proof](../../../docs/evidence/mainline-init-exec-return/host/README.md):15 focused and68 old regressions PASS; exact realized source/config and actual RISC-V object verified, runtime gate in ordinary .sbss. Peer review PASS; root removed duplicate identical helper definitions through reviewed67d40217 and reran15 focused after integration.107 old package derivations unchanged. Full matching headers/link/build/positive artifact qualification remain5s.2; no UART claim.
-- [ ] 5s.2 Realize the optional variant; execute actual source/config/archive/init/
+- [x] 5s.2 Realize the optional variant; execute actual source/config/archive/init/
       helper/DT-hardware/argument/manifest/five-load/CRC qualification, documenting
       each necessary new dependency delta and old-output equality. Commit exact
       build receipt and safe executed qualifier; independently review. No implicit
       UART. Narrow command: `python3 tools/mainline-init-exec-return-qualify.py --bundle BUNDLE --dev DEV --normal-report PRIVATE_NORMAL`.
+      [Actual full build/new-header object/positive qualifier](../../../docs/evidence/mainline-init-exec-return/actual-host/README.md) PASS, independently reviewed7a99b32d. Same config/userspace/DT hardware, only identical17-entry module-tree relocation; exact323/341 one-gate policy. Offline build and initial qualifier failures preserved. Root integrated reviewed narrow correctiond361f364 and reran17 focused; no UART/live-preflight claim.
 - [ ] 5s.3 After NEW protected recovery and reviewed source/build/host gates,
       reserve sole board/UART for ONE passive180s capture. Commit finite observations
       and independent recovery or explicit pending NEW reset; preserve full private

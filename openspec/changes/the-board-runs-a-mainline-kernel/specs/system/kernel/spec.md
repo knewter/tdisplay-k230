@@ -768,8 +768,8 @@ its own output call returned, a failing instruction was found, ordinary root
 worked or recovery succeeded. Recovery SHALL be independently verified or
 explicitly pending NEW reset.
 
-<!-- UNVERIFIED: full matching build/actual-positive artifact qualification/physical probe and ordinary acceptance remain pending; source/native/object/evaluation proof passed independent review. -->
-*Grounding: [independently reviewed quiet repeat](../../../../../../docs/evidence/mainline-system-trial/current-p2-baseline-repeat-physical-2026-10-05/README.md) and [selected source/alternative/proof plan](../../../../../../docs/research/mainline-init-exec-return-probe-2026-10-05.md). [Source/native/object/evaluation proof](../../../../../../docs/evidence/mainline-init-exec-return/host/README.md) passed independent review. Full matching build, actual positive qualification and physical output remain open; this is not a shipped capability.*
+<!-- UNVERIFIED: physical probe and ordinary acceptance remain pending; source/native/object/evaluation plus full matching build/new-header object/actual-positive qualification passed independent review. -->
+*Grounding: [independently reviewed quiet repeat](../../../../../../docs/evidence/mainline-system-trial/current-p2-baseline-repeat-physical-2026-10-05/README.md) and [selected source/alternative/proof plan](../../../../../../docs/research/mainline-init-exec-return-probe-2026-10-05.md). [Source/native/object/evaluation proof](../../../../../../docs/evidence/mainline-init-exec-return/host/README.md) passed independent review. [Actual full build/new-header object/artifact qualification](../../../../../../docs/evidence/mainline-init-exec-return/actual-host/README.md) passed independent review. Physical output and ordinary acceptance remain open; this is not a shipped capability.*
 
 #### Scenario: Selected init exec returns zero
 
