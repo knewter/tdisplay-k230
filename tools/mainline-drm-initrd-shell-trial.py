@@ -2659,6 +2659,11 @@ def run_trial(
             if "rdinit=/bin/sh" not in expected_args:
                 raise AssertionError("pure bootargs validation disagreed with U-Boot check")
 
+            if autonomous_bash_pid1:
+                # Accepted bytes plus a failed flush leave execution unknown.
+                # Prohibit all fallback input before attempting this write.
+                boot_started = True
+                in_uboot = False
             session.line("bootm 0x8000000 0x9000000 0x8400000", interrupt=False)
             boot_started = True
             in_uboot = False
@@ -2815,7 +2820,24 @@ def run_trial(
             write_private_result(result_path, safe_result)
             return diagnostic_ok
         except Exception:
-            if session is not None and in_uboot and not boot_started:
+            if autonomous_bash_pid1 and boot_started:
+                # No candidate command follows an unknown boot/flush outcome.
+                if not result_path.exists():
+                    write_private_result(result_path, {
+                        "result_schema": "mainline-initrd-autonomous-bash-v1",
+                        "status": "recovery-required-boot-or-capture-unknown",
+                        "autonomous_bash_pid1": True, "boot_attempted": True,
+                        "candidate_execution": "UNVERIFIED", "candidate_system": system,
+                        "kernel_proof": prepared["uart_progress_kernel"],
+                        "archive_proof": prepared["autonomous_archive"],
+                        "autonomous_native_proof": prepared["autonomous_native_proof"],
+                        "normal_preflight": observed_before, "normal_recovery": None,
+                        "candidate_input_policy": "zero writes after bootm attempt",
+                        "reboot_requested": False, "rx_status": "NOT_TESTED",
+                        "raw_serial_log_path": str(log_path)})
+                print("Autonomous boot/capture completion is unknown; no further candidate input was sent. "
+                      "Protected normal recovery remains unverified.", file=sys.stderr)
+            elif session is not None and in_uboot and not boot_started:
                 # All pre-boot failures leave Linux/normal boot files intact.
                 session.line("reset", interrupt=False)
                 print("Pre-boot failure: reset requested; normal boot selection is unchanged.", file=sys.stderr)
