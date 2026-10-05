@@ -2,9 +2,9 @@
 
 Worktree `/home/jadams/tmp/k230-mainline-init-exec-return`, branch
 `mainline-init-exec-return`, base `8557a21494a46d26e9df195e7d5a17fbeea6a6b1`.
-This is source/native/object/evaluation proof. Full matching build, actual new
-artifact qualification, output, userspace transition and ordinary acceptance
-remain **UNVERIFIED**. No board/UART/camera operation occurred. Root owns the
+This is the source/native/object/evaluation checkpoint. At this checkpoint, full
+matching build, actual new artifact qualification, output, userspace transition
+and ordinary acceptance were **UNVERIFIED**. No board/UART/camera operation occurred. Root owns the
 planning checkboxes and physical evidence; task 5b.5 remains open.
 
 The additive p2 child adds strict exact-value `k230.init_exec_return=1`, default
@@ -84,8 +84,10 @@ without kernel/source/flake changes. Integrated source commits `44edf227` and
 `89751734` preserve the frozen build identities. Root reran15 focused tests
 after integration and added them to the existing CI trial-gate step.
 
-The full matching build is in progress from frozen `b5bedcb8`. An initial
+At the source checkpoint, the full matching build was in progress from frozen `b5bedcb8`. An initial
 offline attempt failed before kernel compilation because a prerequisite was
 absent; the failure receipt/log is retained privately. The same output identities
 are being retried with online substitution, max-jobs1/cores16 and sole build
 lock. This is not successful-build or actual-positive-qualification evidence.
+
+Subsequent [actual full build, new-header object and artifact qualification](../actual-host/README.md) passed on the host; physical gates remain open.

@@ -1,0 +1,61 @@
+{
+  "schema": "k230-init-exec-return-actual-host-history-v1",
+  "evidence_class": "host-build-object-and-artifact-qualification-only",
+  "frozen_build_revision": "b5bedcb8ab46625c1fca621426fa139027ce30fd",
+  "controller_revision": "67d40217",
+  "executed_qualifier_revision": "d361f364",
+  "initial_launcher": "nonpersistent launch; no completed build or receipt",
+  "offline_attempt": {
+    "returncode": 1,
+    "cause": "unavailable bootstrap dependency in offline mode; no kernel compiler failure",
+    "receipt": "offline-attempt-result.json"
+  },
+  "online_retry": {
+    "returncode": 0,
+    "change": "removed --offline; exact same pinned derivations/config/source",
+    "receipt": "build-result.json"
+  },
+  "qualification_attempt_1": {
+    "returncode": 1,
+    "cause": "legacy lib symlink archive allowlist omitted new module-store root relocation",
+    "complete_safe_error": "ValueError: unexpected changed archived userspace entry: lib",
+    "preserved_private_directory": "/home/jadams/tmp/k230-mainline-init-exec-return-host/qualification-attempt-1"
+  },
+  "qualification_attempt_2": {
+    "returncode": 0,
+    "correction": "exact module-tree symlink + normalized byte/mode equality; no other delta allowed",
+    "receipt": "qualification-command.json"
+  },
+  "private_logs": {
+    "kernel-daemon.log": {
+      "bytes": 493767,
+      "sha256": "36a8968a6928681a3f81a2928c1999b83dae046a4ecdc6a2cf3d759fc3cae366"
+    },
+    "kernel-build.log": {
+      "bytes": 2912,
+      "sha256": "35826c9d3f0d6fb20a5da27bd9ccc2beb3faa34df819e993911cedae60d27703"
+    },
+    "bundle-build.log": {
+      "bytes": 11149,
+      "sha256": "01dcc77908c884230c29729308d15218917cb84ba4196996896a357a4d8f9915"
+    },
+    "attempt-1-kernel-build.log": {
+      "bytes": 52567,
+      "sha256": "7a18aba4f790929e9562b5861939d762a630ab0a95690fdf98a59010e312d1e2"
+    },
+    "qualification-attempt-1.log": {
+      "bytes": 517,
+      "sha256": "ebf87b3b04296732f2edcdf551e2cb3c5adb10491ea82c66ad8cc3a277a36151"
+    },
+    "qualification-attempt-2.log": {
+      "bytes": 154,
+      "sha256": "3ae0b6927ba1852747fcb4af3569752112a671b5010760c9f354587df84a2365"
+    },
+    "new-headers-object/readelf-wide.txt": {
+      "bytes": 1198016,
+      "sha256": "befff53c444a0e09be657118c336edee5449ffa38ffaaa695d5dc53d0142daa1"
+    }
+  },
+  "UART_opened": false,
+  "physical": "UNVERIFIED"
+}

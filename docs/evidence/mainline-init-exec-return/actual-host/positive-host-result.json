@@ -1,0 +1,152 @@
+{
+  "schema": "k230-init-exec-return-positive-host-v1",
+  "evidence_class": "actual-new-artifact-host-preparation-only",
+  "started_utc": "2026-10-05T05:09:59.769897+00:00",
+  "completed_utc": "2026-10-05T05:10:02.124879+00:00",
+  "controller_source_sha256": "6e5d99d6c3893558a85dde71768b45bf1ac08084c097d99e3ed048111d21cac1",
+  "qualifier_sha256": "0a31015221a73726f8a77a357626b157c718951056917377e47db1605775d9dd",
+  "bundle": "/nix/store/5f2j4y8hy9cclbqjx4nshhxi4jiwz7iq-k230-mainline-drm-trial-boot-files",
+  "system": "/nix/store/gi850b5xn2s398grgfw7xlbwdf1n5cbf-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "dev": "/nix/store/9ddh3qgnq1sj3ibqvd9124w4bfij2y6w-linux-riscv64-unknown-linux-gnu-7.3.0-rc5-dev",
+  "kernel_proof": {
+    "kernel": "/nix/store/wdrzkb9idb4pl88ws1b7y7vx0j79840l-linux-riscv64-unknown-linux-gnu-7.3.0-rc5",
+    "derivation": "/nix/store/1rghdnpk21l373rwf9j4z5ys0i2wwail-linux-riscv64-unknown-linux-gnu-7.3.0-rc5.drv",
+    "config": "/nix/store/9ddh3qgnq1sj3ibqvd9124w4bfij2y6w-linux-riscv64-unknown-linux-gnu-7.3.0-rc5-dev/lib/modules/7.3.0-rc5/build/.config",
+    "config_sha256": "52e7470b108ad094dbdf88b94e3e8838564edbda9e7a015b4279012e6765c9f1",
+    "source": "/nix/store/dsgrv7744lzh418z22gb865c0j09g1qs-linux-mainline-k230-init-exec-return-src",
+    "main_sha256": "a21ac6a296d4cb3602f127d6270aa4026afe98e582e35d4957494b30c5f86499",
+    "image_sha256": "fb2e66c7c69851e1c4b1aabb7a12706f0d702a4e496349ec42e1aa08cde2d477",
+    "format_offset": 24859514,
+    "setup_offset": 19424938
+  },
+  "archive_proof": {
+    "bash": "/nix/store/89hsc9vrrk2vr18yp9yrzs365fz490wv-bash-interactive-riscv64-unknown-linux-gnu-5.3p15/bin/bash",
+    "executables": {
+      "init": {
+        "path": "/nix/store/srwrq12f962d5prr382vvsq76nfvmm84-systemd-riscv64-unknown-linux-gnu-261.2/lib/systemd/systemd",
+        "sha256": "d3e109a270c0b4463ac5b7b0655ce7667d7c55f6f93341bb461300a5dd5c8c63"
+      },
+      "bin/sh": {
+        "path": "/nix/store/89hsc9vrrk2vr18yp9yrzs365fz490wv-bash-interactive-riscv64-unknown-linux-gnu-5.3p15/bin/bash",
+        "sha256": "8494a422916b769311e43f2ae463e3e93f520c8657b6c0c98c138a313af124d9"
+      },
+      "bin/readlink": {
+        "path": "/nix/store/3m27x1rrl0wk30lz5fih10cf1dpqbaa6-coreutils-riscv64-unknown-linux-gnu-9.11/bin/coreutils",
+        "sha256": "0f990f00e98050939fedeee9d3c0449c5b42669d2bc0443a7a3bb95bc2376adc"
+      },
+      "bin/true": {
+        "path": "/nix/store/3m27x1rrl0wk30lz5fih10cf1dpqbaa6-coreutils-riscv64-unknown-linux-gnu-9.11/bin/coreutils",
+        "sha256": "0f990f00e98050939fedeee9d3c0449c5b42669d2bc0443a7a3bb95bc2376adc"
+      },
+      "bin/mkdir": {
+        "path": "/nix/store/3m27x1rrl0wk30lz5fih10cf1dpqbaa6-coreutils-riscv64-unknown-linux-gnu-9.11/bin/coreutils",
+        "sha256": "0f990f00e98050939fedeee9d3c0449c5b42669d2bc0443a7a3bb95bc2376adc"
+      },
+      "bin/mount": {
+        "path": "/nix/store/wj2ib2qm1znrpv2i8b433v69m07m86ll-util-linux-minimal-riscv64-unknown-linux-gnu-2.42.3-mount/bin/mount",
+        "sha256": "0f50b69245c684745d13540087e0b436ced81a07df1aed6bd5942c34ed6ecdc9"
+      },
+      "bin/cat": {
+        "path": "/nix/store/3m27x1rrl0wk30lz5fih10cf1dpqbaa6-coreutils-riscv64-unknown-linux-gnu-9.11/bin/coreutils",
+        "sha256": "0f990f00e98050939fedeee9d3c0449c5b42669d2bc0443a7a3bb95bc2376adc"
+      },
+      "bin/reboot": {
+        "path": "/nix/store/srwrq12f962d5prr382vvsq76nfvmm84-systemd-riscv64-unknown-linux-gnu-261.2/bin/systemctl",
+        "sha256": "ab7121b6db7a470ee59ca4c7c61e8b291cd0dfd610ef9b6ab6322eb6454ca999"
+      }
+    },
+    "loader": "/nix/store/syg6xw4x296w82267qnvrd3nn0cp6j31-glibc-riscv64-unknown-linux-gnu-2.42-84/lib/ld-linux-riscv64-lp64d.so.1",
+    "loader_sha256": "19835521e0d42cf163f139040c5c4497edb893153c68997db327bb4a6713f904",
+    "initrd_sha256": "e03612e49a5ae859bd954dc1fc96961fb7e438f2ed299f7d1c15c2351cca92fd"
+  },
+  "files": {
+    "bootargs.txt": {
+      "bytes": 243,
+      "sha256": "06a665d6125b1ce54f6382229f3de3eab72942ad15727daba47b89c75ce4fa4d",
+      "crc32": "3e6f6e57"
+    },
+    "Image-mainline-drm": {
+      "bytes": 38530560,
+      "sha256": "fb2e66c7c69851e1c4b1aabb7a12706f0d702a4e496349ec42e1aa08cde2d477",
+      "crc32": "dcedfba2"
+    },
+    "k230-tdisplay-mainline-drm.dtb": {
+      "bytes": 11097,
+      "sha256": "0538ae0bc9d0188b16e0cc763db81fdf4c16c124cce59671c9d08c6571f58465",
+      "crc32": "0baa12c3"
+    },
+    "initrd.uimg": {
+      "bytes": 27332042,
+      "sha256": "86ede18c533ead2432e368d82690d28a9ba3cb63fc70206b1e661b4c067ce751",
+      "crc32": "8a2b2aa7"
+    }
+  },
+  "manifest_sha256": "151a96cb933ed0bede8a143f44a70def00a8c7fc02d6267e4c4793969ee6fd96",
+  "base_bundle": "/nix/store/p2kdar89q7dhwdajjy0mrhmxxzcgsalw-k230-mainline-drm-trial-boot-files",
+  "archive_delta": {
+    "old_entries": 2025,
+    "new_entries": 2025,
+    "added": [
+      "nix/store/8nr6h36nw4brcczf560k9d58yjb2mdhz-linux-riscv64-unknown-linux-gnu-7.3.0-rc5-modules-shrunk",
+      "nix/store/8nr6h36nw4brcczf560k9d58yjb2mdhz-linux-riscv64-unknown-linux-gnu-7.3.0-rc5-modules-shrunk/lib",
+      "nix/store/8nr6h36nw4brcczf560k9d58yjb2mdhz-linux-riscv64-unknown-linux-gnu-7.3.0-rc5-modules-shrunk/lib/firmware",
+      "nix/store/8nr6h36nw4brcczf560k9d58yjb2mdhz-linux-riscv64-unknown-linux-gnu-7.3.0-rc5-modules-shrunk/lib/firmware/regulatory.db.p7s.zst",
+      "nix/store/8nr6h36nw4brcczf560k9d58yjb2mdhz-linux-riscv64-unknown-linux-gnu-7.3.0-rc5-modules-shrunk/lib/firmware/regulatory.db.zst",
+      "nix/store/8nr6h36nw4brcczf560k9d58yjb2mdhz-linux-riscv64-unknown-linux-gnu-7.3.0-rc5-modules-shrunk/lib/modules",
+      "nix/store/8nr6h36nw4brcczf560k9d58yjb2mdhz-linux-riscv64-unknown-linux-gnu-7.3.0-rc5-modules-shrunk/lib/modules/7.3.0-rc5",
+      "nix/store/8nr6h36nw4brcczf560k9d58yjb2mdhz-linux-riscv64-unknown-linux-gnu-7.3.0-rc5-modules-shrunk/lib/modules/7.3.0-rc5/modules.alias",
+      "nix/store/8nr6h36nw4brcczf560k9d58yjb2mdhz-linux-riscv64-unknown-linux-gnu-7.3.0-rc5-modules-shrunk/lib/modules/7.3.0-rc5/modules.alias.bin",
+      "nix/store/8nr6h36nw4brcczf560k9d58yjb2mdhz-linux-riscv64-unknown-linux-gnu-7.3.0-rc5-modules-shrunk/lib/modules/7.3.0-rc5/modules.builtin.alias.bin",
+      "nix/store/8nr6h36nw4brcczf560k9d58yjb2mdhz-linux-riscv64-unknown-linux-gnu-7.3.0-rc5-modules-shrunk/lib/modules/7.3.0-rc5/modules.builtin.bin",
+      "nix/store/8nr6h36nw4brcczf560k9d58yjb2mdhz-linux-riscv64-unknown-linux-gnu-7.3.0-rc5-modules-shrunk/lib/modules/7.3.0-rc5/modules.dep",
+      "nix/store/8nr6h36nw4brcczf560k9d58yjb2mdhz-linux-riscv64-unknown-linux-gnu-7.3.0-rc5-modules-shrunk/lib/modules/7.3.0-rc5/modules.dep.bin",
+      "nix/store/8nr6h36nw4brcczf560k9d58yjb2mdhz-linux-riscv64-unknown-linux-gnu-7.3.0-rc5-modules-shrunk/lib/modules/7.3.0-rc5/modules.devname",
+      "nix/store/8nr6h36nw4brcczf560k9d58yjb2mdhz-linux-riscv64-unknown-linux-gnu-7.3.0-rc5-modules-shrunk/lib/modules/7.3.0-rc5/modules.softdep",
+      "nix/store/8nr6h36nw4brcczf560k9d58yjb2mdhz-linux-riscv64-unknown-linux-gnu-7.3.0-rc5-modules-shrunk/lib/modules/7.3.0-rc5/modules.symbols",
+      "nix/store/8nr6h36nw4brcczf560k9d58yjb2mdhz-linux-riscv64-unknown-linux-gnu-7.3.0-rc5-modules-shrunk/lib/modules/7.3.0-rc5/modules.symbols.bin"
+    ],
+    "removed": [
+      "nix/store/rvjr2ag9ffbw02h83kds3n8r3zkl02x8-linux-riscv64-unknown-linux-gnu-7.3.0-rc5-modules-shrunk",
+      "nix/store/rvjr2ag9ffbw02h83kds3n8r3zkl02x8-linux-riscv64-unknown-linux-gnu-7.3.0-rc5-modules-shrunk/lib",
+      "nix/store/rvjr2ag9ffbw02h83kds3n8r3zkl02x8-linux-riscv64-unknown-linux-gnu-7.3.0-rc5-modules-shrunk/lib/firmware",
+      "nix/store/rvjr2ag9ffbw02h83kds3n8r3zkl02x8-linux-riscv64-unknown-linux-gnu-7.3.0-rc5-modules-shrunk/lib/firmware/regulatory.db.p7s.zst",
+      "nix/store/rvjr2ag9ffbw02h83kds3n8r3zkl02x8-linux-riscv64-unknown-linux-gnu-7.3.0-rc5-modules-shrunk/lib/firmware/regulatory.db.zst",
+      "nix/store/rvjr2ag9ffbw02h83kds3n8r3zkl02x8-linux-riscv64-unknown-linux-gnu-7.3.0-rc5-modules-shrunk/lib/modules",
+      "nix/store/rvjr2ag9ffbw02h83kds3n8r3zkl02x8-linux-riscv64-unknown-linux-gnu-7.3.0-rc5-modules-shrunk/lib/modules/7.3.0-rc5",
+      "nix/store/rvjr2ag9ffbw02h83kds3n8r3zkl02x8-linux-riscv64-unknown-linux-gnu-7.3.0-rc5-modules-shrunk/lib/modules/7.3.0-rc5/modules.alias",
+      "nix/store/rvjr2ag9ffbw02h83kds3n8r3zkl02x8-linux-riscv64-unknown-linux-gnu-7.3.0-rc5-modules-shrunk/lib/modules/7.3.0-rc5/modules.alias.bin",
+      "nix/store/rvjr2ag9ffbw02h83kds3n8r3zkl02x8-linux-riscv64-unknown-linux-gnu-7.3.0-rc5-modules-shrunk/lib/modules/7.3.0-rc5/modules.builtin.alias.bin",
+      "nix/store/rvjr2ag9ffbw02h83kds3n8r3zkl02x8-linux-riscv64-unknown-linux-gnu-7.3.0-rc5-modules-shrunk/lib/modules/7.3.0-rc5/modules.builtin.bin",
+      "nix/store/rvjr2ag9ffbw02h83kds3n8r3zkl02x8-linux-riscv64-unknown-linux-gnu-7.3.0-rc5-modules-shrunk/lib/modules/7.3.0-rc5/modules.dep",
+      "nix/store/rvjr2ag9ffbw02h83kds3n8r3zkl02x8-linux-riscv64-unknown-linux-gnu-7.3.0-rc5-modules-shrunk/lib/modules/7.3.0-rc5/modules.dep.bin",
+      "nix/store/rvjr2ag9ffbw02h83kds3n8r3zkl02x8-linux-riscv64-unknown-linux-gnu-7.3.0-rc5-modules-shrunk/lib/modules/7.3.0-rc5/modules.devname",
+      "nix/store/rvjr2ag9ffbw02h83kds3n8r3zkl02x8-linux-riscv64-unknown-linux-gnu-7.3.0-rc5-modules-shrunk/lib/modules/7.3.0-rc5/modules.softdep",
+      "nix/store/rvjr2ag9ffbw02h83kds3n8r3zkl02x8-linux-riscv64-unknown-linux-gnu-7.3.0-rc5-modules-shrunk/lib/modules/7.3.0-rc5/modules.symbols",
+      "nix/store/rvjr2ag9ffbw02h83kds3n8r3zkl02x8-linux-riscv64-unknown-linux-gnu-7.3.0-rc5-modules-shrunk/lib/modules/7.3.0-rc5/modules.symbols.bin"
+    ],
+    "changed": [
+      "lib"
+    ],
+    "module_tree_relocation": {
+      "old_root": "nix/store/rvjr2ag9ffbw02h83kds3n8r3zkl02x8-linux-riscv64-unknown-linux-gnu-7.3.0-rc5-modules-shrunk",
+      "new_root": "nix/store/8nr6h36nw4brcczf560k9d58yjb2mdhz-linux-riscv64-unknown-linux-gnu-7.3.0-rc5-modules-shrunk",
+      "entries": 17,
+      "normalized_bytes_and_modes_equal": true
+    }
+  },
+  "same_kernel_config": true,
+  "same_DT_hardware": true,
+  "same_original_system_init_bytes": true,
+  "SHA256SUMS_and_DTB_bootargs_passed": true,
+  "sole_added_argument": "k230.init_exec_return=1",
+  "base_argument_bytes": 299,
+  "argument_bytes": 323,
+  "literal_command_bytes": 341,
+  "five_load_files_and_CRC_host_qualified": true,
+  "build_receipt_sha256": "83ef52e537695cdb6b21b068120d55fae6aa48324c67f3bcd2a0ceb81512c16d",
+  "build_revision": "b5bedcb8ab46625c1fca621426fa139027ce30fd",
+  "normal_report_class": "protected historical host anchor; no fresh preflight or recovery",
+  "UART_opened": false,
+  "implicit_build": false,
+  "physical_result": "UNVERIFIED"
+}
