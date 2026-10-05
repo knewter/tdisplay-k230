@@ -31,5 +31,23 @@
     "private copied header root initially read-only; no compiler ran; new writable object-2 scratch succeeded"
   ],
   "initial_identity_harness_failure": "short git rev unsupported by getFlake; corrected to full base revision, no source change",
-  "all_prior_package_identity_evaluation": "PENDING"
+  "all_prior_package_identity_evaluation": "PASS",
+  "prior_package_attributes_unchanged": 110,
+  "identity_evaluation_command": [
+    "nix",
+    "eval",
+    "--offline",
+    "--impure",
+    "--json",
+    "--file",
+    "/home/jadams/tmp/k230-init-exec-transition-proof/identity-eval.nix"
+  ],
+  "identity_evaluation_sha256": "b5cf60a47b923c863ec62853a1feb67d2470a15f5eb1059d8c36d257e42ec959",
+  "identity_evaluation_completed_utc": "2026-10-05T19:13:57.944824+00:00",
+  "registered_source_root": {
+    "path": "/home/jadams/tmp/k230-init-exec-transition-proof/retained-store/source",
+    "source": "/nix/store/79yd40jv8h4x866bm1vyw94cm948grax-linux-mainline-k230-init-exec-transition-src",
+    "query_verified": true,
+    "nix_query_automatic_stale_link_maintenance": 2
+  }
 }
