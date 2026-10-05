@@ -2,9 +2,9 @@
 
 Worktree `/home/jadams/tmp/k230-mainline-init-exec-return`, branch
 `mainline-init-exec-return`, base `8557a21494a46d26e9df195e7d5a17fbeea6a6b1`.
-This is source/native/object/evaluation proof. Full matching build, actual new
-artifact qualification, output, userspace transition and ordinary acceptance
-remain **UNVERIFIED**. No board/UART/camera operation occurred. Root owns the
+This is the source/native/object/evaluation checkpoint. At this checkpoint, full
+matching build, actual new artifact qualification, output, userspace transition
+and ordinary acceptance were **UNVERIFIED**. No board/UART/camera operation occurred. Root owns the
 planning checkboxes and physical evidence; task 5b.5 remains open.
 
 The additive p2 child adds strict exact-value `k230.init_exec_return=1`, default
@@ -75,3 +75,5 @@ It creates a fresh protected host directory; no build, UART or live preflight.
 Require actual source/Image/dev/config/archive/helper/DT/manifest/load/CRC proof
 and document every dependency delta before a root-operated trial after NEW
 protected recovery. Physical output/ordinary root/glass remain unverified.
+
+Subsequent [actual full build, new-header object and artifact qualification](../actual-host/README.md) passed on the host; physical gates remain open.

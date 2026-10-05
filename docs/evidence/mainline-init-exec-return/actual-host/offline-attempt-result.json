@@ -1,0 +1,31 @@
+{
+  "revision": "b5bedcb8ab46625c1fca621426fa139027ce30fd",
+  "returncode": 1,
+  "steps": [
+    {
+      "revision": "b5bedcb8ab46625c1fca621426fa139027ce30fd",
+      "command": [
+        "flock",
+        "/tmp/k230-nix-build.lock",
+        "nix",
+        "build",
+        "--offline",
+        "--no-write-lock-file",
+        "--no-link",
+        "--max-jobs",
+        "1",
+        "--cores",
+        "16",
+        "--print-out-paths",
+        ".#kernelMainlineInitExecReturn",
+        ".#kernelMainlineInitExecReturn.dev"
+      ],
+      "started_utc": "2026-10-05T04:36:14.905616+00:00",
+      "completed_utc": "2026-10-05T04:36:33.728074+00:00",
+      "elapsed_seconds": 18.82245227403473,
+      "returncode": 1,
+      "output_paths": []
+    }
+  ],
+  "output_paths": []
+}

@@ -1,0 +1,24 @@
+{
+  "command": [
+    "flock",
+    "/tmp/k230-nix-build.lock",
+    "make",
+    "-C",
+    "/nix/store/dsgrv7744lzh418z22gb865c0j09g1qs-linux-mainline-k230-init-exec-return-src",
+    "O=/home/jadams/tmp/k230-mainline-init-exec-return-host/new-headers-object/build",
+    "M=/home/jadams/tmp/k230-mainline-init-exec-return-host/new-headers-object/module",
+    "ARCH=riscv",
+    "CROSS_COMPILE=/nix/store/4j2mwxqjvnyr6da0925sp0bm4jaj5r5i-riscv64-unknown-linux-gnu-gcc-wrapper-15.3.0/bin/riscv64-unknown-linux-gnu-",
+    "W=1",
+    "main.o"
+  ],
+  "started_utc": "2026-10-05T05:05:32.542691+00:00",
+  "completed_utc": "2026-10-05T05:05:37.002898+00:00",
+  "elapsed_seconds": 4.460231918026693,
+  "returncode": 0,
+  "new_dev": "/nix/store/9ddh3qgnq1sj3ibqvd9124w4bfij2y6w-linux-riscv64-unknown-linux-gnu-7.3.0-rc5-dev",
+  "config_sha256": "52e7470b108ad094dbdf88b94e3e8838564edbda9e7a015b4279012e6765c9f1",
+  "compile_log_sha256": "9f87ee0ad89c44533e72877d97fa7ccd7d4de0df86cd96e1a83ba352bac67e53",
+  "object_sha256": "2933cf373f5802280cd3210305c1c384112beb34c1a306879c3f65e7b4e3ebd0",
+  "readelf_sha256": "271c3459cae53e707877931878b556790f82e3d62b52e4142873cfae5ca13b4e"
+}
