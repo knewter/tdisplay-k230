@@ -216,6 +216,7 @@ class AutonomousTests(unittest.TestCase):
                     super().line(text,interrupt)
                     if text.startswith('bootm'):raise OSError('write accepted; flush unknown')
             failed=FlushUnknown()
+            prepared.update(uart_progress_memory_no_stimulus=True,uart_progress_memory_printk=True)
             with mock.patch.object(t,'prepare_trial',return_value=prepared),mock.patch.object(t,'prepare_uart_memory_printk',side_effect=lambda x:x),mock.patch.object(t,'inspect_autonomous_archive',return_value={'fixture':True}),mock.patch.object(t,'qualify_autonomous_native',return_value={'fixture':True}),mock.patch.object(t.uuid,'uuid4',return_value=type('UUID',(),{'hex':N})()),mock.patch.object(t,'LOCK_PATH',root/'lock'),mock.patch.object(t,'PrivateSession',return_value=failed),mock.patch.dict(sys.modules,{'serial':mock.Mock()}),mock.patch('sys.stderr'):
                 with self.assertRaises(OSError):t.run_trial(root/'m',root/'unknown.log',root/'unknown.result','minimal',bundle,root/'n',same_image_shell_pid1=True,autonomous_bash_pid1=True)
             boot=next(i for i,w in enumerate(failed.writes)if w.startswith(b'bootm'))
