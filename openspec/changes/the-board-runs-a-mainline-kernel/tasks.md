@@ -1457,13 +1457,14 @@ Independent source/actual host/full physical/parser/recovery-limit/publication r
       proof: `nix build .#kernelMainlineInitExecTransitionTrialBootFiles --no-link --print-out-paths --max-jobs 1 --cores 4`, then
       `python3 tools/mainline-init-exec-transition-qualify.py --bundle BUNDLE --dev DEV --normal-report PRIVATE_NORMAL`.
       [Actual qualification](../../../docs/evidence/mainline-init-exec-transition/actual-host/positive-host-result.json) returned0 for retained bundle/system: four source pins, linked Image/config/dev, archive/DT/init/loader/helper/checksum/CRC/transport verified; 351-byte args, 369-byte literal command. Independent actual-host review PASS. Normal report is an historical host anchor, not live preflight.
-- [ ] 5t.5 After independent source/build/host review and NEW protected recovery,
+- [x] 5t.5 After independent source/build/host review and NEW protected recovery,
       guard staging, reserve sole board/UART and capture ONE passive180s trial.
       Commit finite observations plus independently verified recovery or explicit
       pending NEW reset. Command:
       `python3 tools/mainline-drm-system-trial.py begin --wait-initramfs-in-initcall --without-boot-markers --init-exec-return --init-exec-transition --bundle BUNDLE --manifest PRIVATE_MANIFEST --normal-report PRIVATE_NORMAL --state NEW_PRIVATE_STATE --log PRIVATE_LOG --result PRIVATE_RESULT`.
       No record grants input or proves its own output return, handler/loader/main,
       ordinary root/glass or cause. Task5b.5 remains open.
+      [Physical capture](../../../docs/evidence/mainline-init-exec-transition/physical-2026-10-05/README.md): guarded staging PASS; ONE capture 20:24–20:28 UTC, exit1 readiness unknown; ordered return, kernel-init-return and first-user-ecall records, then only a DCS XTGETTCAP "name" query and silence for 180s. NEW operator reset recovery verified. Independent staging, capture and recovery reviews PASS. Handler/loader/main, emitter of trailing bytes and cause remain UNVERIFIED.
 - [ ] 5t.6 Independently review, land/push and inspect exact CI/published revision.
       Proof: `openspec validate the-board-runs-a-mainline-kernel --strict` plus
       committed physical/recovery/publication bindings and limits.

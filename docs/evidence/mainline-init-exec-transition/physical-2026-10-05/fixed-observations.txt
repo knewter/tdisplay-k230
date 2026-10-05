@@ -1,0 +1,6 @@
+Derived fixed observations, not raw UART.
+[    4.584221] K230_INIT_EXEC_RETURN_V1 ret=0
+[    4.584235] K230_INIT_EXEC_TRANSITION_V1 point=kernel-init-return
+[    4.584361] K230_INIT_EXEC_TRANSITION_V1 point=first-user-ecall
+Bytes after the last record, then nothing within the 180-second bound: b'\r\n\x1bP+q6E616D65\x1b\\'
+No qualified login/primary prompt within180 seconds.
