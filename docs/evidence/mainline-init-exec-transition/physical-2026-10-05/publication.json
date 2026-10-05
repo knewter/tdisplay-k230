@@ -1,0 +1,19 @@
+{
+  "revision": "a6900de769324f213682cfbdb33488827660c8e3",
+  "ci_run": 37385743786,
+  "ci_conclusion": "success",
+  "deployment_conclusion": "success",
+  "work_url": "https://knewter.github.io/tdisplay-k230/work/",
+  "work_revision_verified": true,
+  "physical_capture_url": "https://knewter.github.io/tdisplay-k230/evidence/docs-evidence-mainline-init-exec-transition-physical-2026-10-05-readme-md/",
+  "physical_capture_http_status": 200,
+  "physical_page_contains_records": true,
+  "actual_host_url": "https://knewter.github.io/tdisplay-k230/evidence/docs-evidence-mainline-init-exec-transition-actual-host-readme-md/",
+  "actual_host_http_status": 200,
+  "raw_result_json_sha256_matches_commit": true,
+  "prior_actual_host_ci_run": 37368962919,
+  "prior_actual_host_deploy": "cancelled twice during GitHub Actions major outage; superseded by 37385743786",
+  "verified_utc": "2026-10-05T23:01:09.466077+00:00",
+  "normal_recovery": "VERIFIED_NEW_OPERATOR_RESET",
+  "ordinary_mainline_acceptance": "UNVERIFIED"
+}

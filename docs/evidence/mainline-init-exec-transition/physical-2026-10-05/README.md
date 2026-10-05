@@ -79,4 +79,5 @@ No passive fresh SPL or automatic return is claimed.
 Independent physical capture review PASS: hashes, loads/CRCs, arguments, three
 ordered unique records, trailing bytes, read-only window and result fields.
 Raw UART, URLs, tokens and boot IDs remain private; receipts bind their hashes.
+[Publication receipt](publication.json) verifies the deployed revision.
 Ordinary root, panel, camera/real glass and task5b.5 remain **UNVERIFIED**.

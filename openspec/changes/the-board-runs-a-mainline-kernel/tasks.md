@@ -1465,6 +1465,7 @@ Independent source/actual host/full physical/parser/recovery-limit/publication r
       No record grants input or proves its own output return, handler/loader/main,
       ordinary root/glass or cause. Task5b.5 remains open.
       [Physical capture](../../../docs/evidence/mainline-init-exec-transition/physical-2026-10-05/README.md): guarded staging PASS; ONE capture 20:24–20:28 UTC, exit1 readiness unknown; ordered return, kernel-init-return and first-user-ecall records, then only a DCS XTGETTCAP "name" query and silence for 180s. NEW operator reset recovery verified. Independent staging, capture and recovery reviews PASS. Handler/loader/main, emitter of trailing bytes and cause remain UNVERIFIED.
-- [ ] 5t.6 Independently review, land/push and inspect exact CI/published revision.
+- [x] 5t.6 Independently review, land/push and inspect exact CI/published revision.
       Proof: `openspec validate the-board-runs-a-mainline-kernel --strict` plus
       committed physical/recovery/publication bindings and limits.
+      Independent public-packet review PASS. [Publication receipt](../../../docs/evidence/mainline-init-exec-transition/physical-2026-10-05/publication.json): CI 37385743786 build/deploy success; work page serves a6900de7 and the physical/actual-host pages return200. Ordinary root/panel/glass5b.5 remains open.
