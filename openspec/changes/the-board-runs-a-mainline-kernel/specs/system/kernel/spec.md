@@ -807,8 +807,8 @@ protected staging/normal/load/CRC guards,180-second passive readiness and unknow
 no-input behavior. Recovery SHALL be independently verified or explicitly pending
 NEW reset. Ordinary root/panel/glass acceptance SHALL remain separate.
 
-<!-- UNVERIFIED: planned two-point diagnostic has no implementation, build or physical proof. -->
-*Grounding: [physical exec setup success without readiness](../../../../../../docs/evidence/mainline-init-exec-return/physical-2026-10-05/README.md) and read exact Linux source sites/context restrictions in design.md group5t. Proposed witness behavior remains UNVERIFIED.*
+<!-- UNVERIFIED: source/controller/native/parent-header objects are independently reviewed; full matching artifact qualification and physical two-point behavior remain unverified. -->
+*Grounding: [physical exec setup success without readiness](../../../../../../docs/evidence/mainline-init-exec-return/physical-2026-10-05/README.md) and read exact Linux source sites/context restrictions in design.md group5t. [Implemented source/native/parent-header object proof](../../../../../../docs/evidence/mainline-init-exec-transition/source/README.md) and [controller/qualifier fixtures](../../../../../../docs/evidence/mainline-init-exec-transition/controller/README.md) passed independent review. Full base-package identity evaluation is pending; physical witness behavior remains UNVERIFIED.*
 
 #### Scenario: Kernel init returns before entering userspace
 

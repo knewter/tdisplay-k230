@@ -1447,6 +1447,7 @@ Independent source/actual host/full physical/parser/recovery-limit/publication r
       context/lifetime/one-shot/order/negative gates and selected RISC-V objects
       require independent review. Narrow proof:
       `python3 tests/test_mainline_init_exec_transition.py`.
+      [Source/native/RISC-V parent-header proof](../../../docs/evidence/mainline-init-exec-transition/source/README.md) and [controller/qualifier source proof](../../../docs/evidence/mainline-init-exec-transition/controller/README.md) implemented and independently reviewed. Root reran17 transition and10 actual patched-site tests PASS after integration. Full base-package identity comparison is still pending; this task remains open until that gate completes. Matching full artifacts remain5t.3–4 and physical outcome5t.5.
 - [ ] 5t.3 Realize and retain new kernel/dev/source outputs with exact config and
       object/Image proof; record build failures separately. Host proof:
       `nix build .#kernelMainlineInitExecTransition .#kernelMainlineInitExecTransition.dev --no-link --print-out-paths --max-jobs 1 --cores 4`.
