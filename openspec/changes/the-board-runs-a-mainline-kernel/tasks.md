@@ -1424,12 +1424,13 @@ Independent source/actual host/full physical/parser/recovery-limit/publication r
       against historical proof, then run the qualifier in a fresh protected directory.
       No UART. Narrow restoration command: `flock /tmp/k230-nix-build.lock nix build --no-write-lock-file --out-link PRIVATE_ROOT --max-jobs 1 --cores 16 .#kernelMainlineInitExecReturn.src .#kernelMainlineInitExecReturn .#kernelMainlineInitExecReturn.dev .#kernelMainlineInitExecReturnTrialBootFiles`.
       [Historical pre-UART availability failure](../../../docs/evidence/mainline-init-exec-return/actual-host/availability-2026-10-05.json) preserved. [Exact restoration/registered roots/fresh qualifier](../../../docs/evidence/mainline-init-exec-return/restoration-host/README.md) PASS with identical bytes/manifest151a; independent reviewb903ceb7 PASS. No source/default or board change.
-- [ ] 5s.3 After NEW protected recovery and reviewed source/build/host gates,
+- [x] 5s.3 After NEW protected recovery and reviewed source/build/host gates,
       reserve sole board/UART for ONE passive180s capture. Commit finite observations
       and independent recovery or explicit pending NEW reset; preserve full private
       coverage/unknown-no-input. Command: `python3 tools/mainline-drm-system-trial.py begin --wait-initramfs-in-initcall --without-boot-markers --init-exec-return --bundle BUNDLE --manifest PRIVATE_MANIFEST --normal-report PRIVATE_NORMAL --state NEW_PRIVATE_STATE --log PRIVATE_LOG --result PRIVATE_RESULT`.
       No loader/main, failed-instruction, output-call-return or ordinary-root/glass
       claim from the record;5b.5 stays open.
+      [Reviewed guarded staging](../../../docs/evidence/mainline-init-exec-return/staging-2026-10-05/README.md) and [physical capture](../../../docs/evidence/mainline-init-exec-return/physical-2026-10-05/README.md) PASS: exact323/341 arguments, all load/CRC guards, one `ret=0` at4.548457 and no qualified login within180s. Full private parser/no-input/identity/hash/time review PASS. Exec setup succeeded; userspace transition and the probe output call return remain UNVERIFIED. Subsequent NEW reset recovery is explicitly pending; no earlier reset is reused.
 - [ ] 5s.4 Independently review recorded boundary/recovery limits, land/push and
       inspect exact CI/published revision. Planning command:
       `openspec validate the-board-runs-a-mainline-kernel --strict`.

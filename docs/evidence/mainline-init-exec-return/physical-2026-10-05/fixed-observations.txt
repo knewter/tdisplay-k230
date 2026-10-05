@@ -1,0 +1,5 @@
+Derived fixed observations, not raw UART.
+[    4.548457] K230_INIT_EXEC_RETURN_V1 ret=0
+One valid zero return record follows the fresh candidate banner, exact received arguments and /init announcement.
+No qualified login/primary prompt within180 seconds.
+Zero means exec setup returned success; it does not prove userspace execution or output-call return.

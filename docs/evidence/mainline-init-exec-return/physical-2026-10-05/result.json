@@ -1,0 +1,90 @@
+{
+  "schema": "k230-init-exec-return-physical-v1",
+  "evidence_class": "physical UART passive selected ordinary-init exec-result capture",
+  "controller_revision": "69d7cbb3a6723772affb3615d777554347a5e51a",
+  "controller_sha256": "6e5d99d6c3893558a85dde71768b45bf1ac08084c097d99e3ed048111d21cac1",
+  "started_utc": "2026-10-05T18:30:54.288572+00:00",
+  "completed_utc": "2026-10-05T18:34:18.864736+00:00",
+  "total_invocation_seconds": 204.576164,
+  "controller_exit": 1,
+  "status": "recovery-required-unknown",
+  "failure": "Unknown: ordinary init login readiness unverified",
+  "bundle": "/nix/store/5f2j4y8hy9cclbqjx4nshhxi4jiwz7iq-k230-mainline-drm-trial-boot-files",
+  "candidate_system": "/nix/store/gi850b5xn2s398grgfw7xlbwdf1n5cbf-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "host_kernel_proof": {
+    "kernel": "/nix/store/wdrzkb9idb4pl88ws1b7y7vx0j79840l-linux-riscv64-unknown-linux-gnu-7.3.0-rc5",
+    "derivation": "/nix/store/1rghdnpk21l373rwf9j4z5ys0i2wwail-linux-riscv64-unknown-linux-gnu-7.3.0-rc5.drv",
+    "config": "/nix/store/9ddh3qgnq1sj3ibqvd9124w4bfij2y6w-linux-riscv64-unknown-linux-gnu-7.3.0-rc5-dev/lib/modules/7.3.0-rc5/build/.config",
+    "config_sha256": "52e7470b108ad094dbdf88b94e3e8838564edbda9e7a015b4279012e6765c9f1",
+    "source": "/nix/store/dsgrv7744lzh418z22gb865c0j09g1qs-linux-mainline-k230-init-exec-return-src",
+    "main_sha256": "a21ac6a296d4cb3602f127d6270aa4026afe98e582e35d4957494b30c5f86499",
+    "image_sha256": "fb2e66c7c69851e1c4b1aabb7a12706f0d702a4e496349ec42e1aa08cde2d477",
+    "format_offset": 24859514,
+    "setup_offset": 19424938
+  },
+  "artifact_files": {
+    "bootargs.txt": {
+      "bytes": 243,
+      "sha256": "06a665d6125b1ce54f6382229f3de3eab72942ad15727daba47b89c75ce4fa4d",
+      "crc32": "3e6f6e57"
+    },
+    "Image-mainline-drm": {
+      "bytes": 38530560,
+      "sha256": "fb2e66c7c69851e1c4b1aabb7a12706f0d702a4e496349ec42e1aa08cde2d477",
+      "crc32": "dcedfba2"
+    },
+    "k230-tdisplay-mainline-drm.dtb": {
+      "bytes": 11097,
+      "sha256": "0538ae0bc9d0188b16e0cc763db81fdf4c16c124cce59671c9d08c6571f58465",
+      "crc32": "0baa12c3"
+    },
+    "initrd.uimg": {
+      "bytes": 27332042,
+      "sha256": "86ede18c533ead2432e368d82690d28a9ba3cb63fc70206b1e661b4c067ce751",
+      "crc32": "8a2b2aa7"
+    }
+  },
+  "manifest_sha256": "151a96cb933ed0bede8a143f44a70def00a8c7fc02d6267e4c4793969ee6fd96",
+  "expected_bootargs": "bootargs=consoleblank=0 console=ttyS0,115200n8 root=fstab loglevel=4 lsm=landlock,yama,bpf loglevel=7 init=/nix/store/gi850b5xn2s398grgfw7xlbwdf1n5cbf-nixos-system-nixos-26.11.20260919.20b1ddd/init fsck.mode=skip systemd.mask=k230-root-growth.service systemd.mask=register-nix-paths.service initramfs_async=0 k230.init_exec_return=1",
+  "argument_bytes": 323,
+  "literal_command_bytes": 341,
+  "observation": {
+    "bound_seconds": 180.0,
+    "candidate_banner": true,
+    "elapsed_seconds": 180.09619211498648,
+    "errors": [],
+    "init_announcement": true,
+    "login": false,
+    "primary_prompt": false,
+    "received_args": true,
+    "record_output_call_return": "UNVERIFIED",
+    "records": [
+      {
+        "exec_setup_succeeded": true,
+        "ret": 0
+      }
+    ],
+    "userspace_execution_from_record": "UNVERIFIED"
+  },
+  "candidate_systemd_startup_observed": false,
+  "candidate_closure_messages_observed": false,
+  "ordinary_root": "UNVERIFIED",
+  "userspace_execution": "UNVERIFIED",
+  "probe_output_call_return": "UNVERIFIED",
+  "normal_preflight": {
+    "qualified": true,
+    "uname": "6.6.36",
+    "eight_boot_hashes_unchanged": true,
+    "three_services_active": true,
+    "registration_absent": true
+  },
+  "normal_recovery": "UNVERIFIED_PENDING_NEW_OPERATOR_RESET",
+  "automatic_return": "UNVERIFIED",
+  "camera_or_glass": "NOT_OBTAINED",
+  "candidate_input_after_bootm": "none in reviewed source/annotations; not electrical TX proof",
+  "raw_serial_bytes": 48206,
+  "private_raw_serial_sha256": "3a2f2fc74b2e287ce33865d5126d7925fee00561eeb25b6fb541a54d542b1af2",
+  "private_result_sha256": "7c7896eebc8189217fd44affbf84662522eb857b36e5e0c4f7e101760ff32b7e",
+  "private_command_receipt_sha256": "b144dacb90af70e03d23d1e8491d507d180954e8aaf06130304aafb55220d064",
+  "independent_physical_review": "PASS"
+}

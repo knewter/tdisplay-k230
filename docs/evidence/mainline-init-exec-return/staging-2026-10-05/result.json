@@ -1,0 +1,40 @@
+{
+  "schema": "k230-init-exec-return-staging-v1",
+  "evidence_class": "physical UART guarded normal-session import/staging; no candidate reboot",
+  "receipt_written_utc": "2026-10-05T18:31:52.497182+00:00",
+  "source_revision": "69d7cbb3a6723772affb3615d777554347a5e51a",
+  "controller_sha256": "6e5d99d6c3893558a85dde71768b45bf1ac08084c097d99e3ed048111d21cac1",
+  "stage_returncode": 0,
+  "old_p2_preflight": "PASS",
+  "new_candidate_post_staging_preflight": "PASS",
+  "protected_normal_state_equal_before_after": true,
+  "same_normal_boot": true,
+  "normal_identities": {
+    "system": "/nix/store/p1a1hz9n8s4g8qyr55ffl3dzbnjgqwr8-nixos-system-nixos-26.11.20260919.20b1ddd",
+    "profile": "/nix/store/p1a1hz9n8s4g8qyr55ffl3dzbnjgqwr8-nixos-system-nixos-26.11.20260919.20b1ddd",
+    "kernel": "/nix/store/03zyl0mjsxbjyisb3lhjaxswpxm71ap6-linux-riscv64-unknown-linux-gnu-6.6.36-xuantie/Image",
+    "init": "init=/nix/store/p1a1hz9n8s4g8qyr55ffl3dzbnjgqwr8-nixos-system-nixos-26.11.20260919.20b1ddd/init",
+    "uname": "6.6.36",
+    "services": [
+      "active",
+      "active",
+      "active"
+    ]
+  },
+  "eight_protected_boot_hashes_unchanged": true,
+  "registration_absent": true,
+  "bundle": "/nix/store/5f2j4y8hy9cclbqjx4nshhxi4jiwz7iq-k230-mainline-drm-trial-boot-files",
+  "candidate_system": "/nix/store/gi850b5xn2s398grgfw7xlbwdf1n5cbf-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "compressed_export_bytes": 103917854,
+  "compressed_export_sha256": "503c349debef03a0a29e2cd1e6ad34ec82f07cd6a1e62856b6fd82cd0fbd73ed",
+  "exported_new_closure_paths": 8,
+  "private_stage_result_sha256": "84a1b692cb774cedf6f15d3061d73f340782208e21b20c5b1683bc0b2dd9bb09",
+  "private_stage_uart_sha256": "52bdb2f82477510668efb7102c0204f8371d0a27759c2f0d816fa48da7d1089a",
+  "stage_wrapper_sha256": "c6126de746a2af6dd6d152873338903fe0788ebb043ad1a8e8cc4275e3bbd943",
+  "stage_command_sha256": "f9f812b70b538d9dcc62ed84d9ffc9b82bd42be5911a4e2a3d9a5bbb7622aec6",
+  "trial_reboot_issued_by_staging": false,
+  "independent_stage_review": "PASS",
+  "ordinary_mainline_acceptance": "UNVERIFIED",
+  "camera_or_glass": "NOT_OBTAINED",
+  "attempt_1": "FAILED_BEFORE_STAGING_NEW_CANDIDATE_CHECK; raw and source preserved privately"
+}
