@@ -732,10 +732,10 @@ reproducibility control, not a logging cause, ordinary-root acceptance, glass
 proof or automatic recovery. Subsequent recovery SHALL be independently
 verified or explicitly pending a NEW operator reset.
 
-<!-- UNVERIFIED: baseline-repeat recovery and ordinary acceptance remain pending; independently reviewed physical repeat did not reproduce the former closure boundary. -->
+<!-- UNVERIFIED: ordinary acceptance remains pending; independently reviewed physical repeat did not reproduce the former closure boundary and subsequent NEW protected recovery passed. -->
 *Grounding: [previous quiet ordinary boundary](../../../../../../docs/evidence/mainline-system-trial/current-p2-ordinary-physical-2026-10-05/README.md),
 [silent kmsg capture](../../../../../../docs/evidence/mainline-initrd-info-kmsg-logging/physical-2026-10-05/README.md)
-and [read archive/source control plan](../../../../../../docs/research/mainline-ordinary-baseline-repeat-2026-10-05.md). [Actual unchanged-baseline preparation](../../../../../../docs/evidence/mainline-system-trial/current-p2-baseline-repeat-host-2026-10-05/README.md) and [NEW protected recovery](../../../../../../docs/evidence/mainline-initrd-info-kmsg-logging/physical-2026-10-05/recovery.json) passed independent review. [Completed physical repeat](../../../../../../docs/evidence/mainline-system-trial/current-p2-baseline-repeat-physical-2026-10-05/README.md) passed independent review; subsequent NEW recovery remains open.*
+and [read archive/source control plan](../../../../../../docs/research/mainline-ordinary-baseline-repeat-2026-10-05.md). [Actual unchanged-baseline preparation](../../../../../../docs/evidence/mainline-system-trial/current-p2-baseline-repeat-host-2026-10-05/README.md) and [NEW protected recovery](../../../../../../docs/evidence/mainline-initrd-info-kmsg-logging/physical-2026-10-05/recovery.json) passed independent review. [Completed physical repeat](../../../../../../docs/evidence/mainline-system-trial/current-p2-baseline-repeat-physical-2026-10-05/README.md) passed independent review; subsequent NEW [protected recovery](../../../../../../docs/evidence/mainline-system-trial/current-p2-baseline-repeat-physical-2026-10-05/recovery.json) passed independent review.*
 
 #### Scenario: The unchanged baseline reaches the previous unit boundary
 

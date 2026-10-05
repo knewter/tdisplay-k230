@@ -42,15 +42,17 @@ registration absence and source/hash/time bindings match. A73-byte chunked
 replay consumed the complete candidate stream, returned false readiness and
 sent zero writes. Bootm is the final command annotation; reviewed source sends
 no later candidate input. This is not independent electrical TX proof.
-The reviewed recovery checker requires a genuinely NEW confirmation, fresh
-prompt and full protected guard; it has not run. No passive SPL proof is claimed.
-The port is released;
-normal recovery awaits a NEW operator reset after this capture. The preceding
-reset is not reused. Automatic return, ordinary root/panel/glass and task5b.5
+Subsequent NEW user-confirmed [protected recovery](recovery.json) passed the
+full guard and independent review: fresh prompt, unique postflight/two upload
+ACKs, distinct boot, exact identities/eight hashes/three active services and
+registration absence. The report was updated only after success. No passive
+SPL proof is claimed for this check. The port is released; no preceding reset
+was reused. Automatic return, ordinary root/panel/glass and task5b.5
 remain **UNVERIFIED**. No new build, host artifact transfer, flash, readback, camera or glass proof
 was performed for this unchanged repeat.
 
 [Publication receipt](publication.json): exact94920520 CI37261983348 and deployment
 passed, with work revision and capture page/timestamps independently verified
-via HTTP200. Group5r is complete as a bounded control with explicitly pending
-NEW protected recovery; ordinary task5b.5 stays open.
+via HTTP200. Group5r is complete as a bounded control. That publication receipt records
+pending recovery at its historical revision; subsequent NEW protected recovery
+has now passed independently. Ordinary task5b.5 stays open.
