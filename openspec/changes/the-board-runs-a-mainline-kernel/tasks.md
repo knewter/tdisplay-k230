@@ -1376,10 +1376,12 @@ Independent physical and subsequent armed recovery review PASS. Physical revisio
       `python3 tools/mainline-drm-system-trial.py begin --wait-initramfs-in-initcall --without-boot-markers --initrd-info-kmsg-logging --bundle BUNDLE --manifest PRIVATE_MANIFEST --normal-report PRIVATE_NORMAL --state NEW_PRIVATE_STATE --log PRIVATE_LOG --result PRIVATE_RESULT`.
       Preserve fallback/drop/cause limits; ordinary task5b.5 stays open.
       [Actual passive capture](../../../docs/evidence/mainline-initrd-info-kmsg-logging/physical-2026-10-05/README.md): exact same artifacts/args/source, fresh kernel/pre-exec init only, no systemd/closure/login in180s; independent full review PASS. NEW recovery PENDING; separate passive recovery listener received/sent0 bytes and performed no postflight.
-- [ ] 5q.4 Independently review comparison, source and recovery limits; land/push
+- [x] 5q.4 Independently review comparison, source and recovery limits; land/push
       and inspect exact CI/published revision. Planning proof:
       `openspec validate the-board-runs-a-mainline-kernel --strict`.
 
+
+Independent full capture/recovery-limit review PASS. Physical revision236f6bca, CI37259813601/deployment PASS and exact work revision/published capture HTTP200 verified: [publication receipt](../../../docs/evidence/mainline-initrd-info-kmsg-logging/physical-2026-10-05/publication.json). NEW recovery and ordinary5b.5 remain UNVERIFIED.
 
 ## 5r. Unchanged quiet ordinary-baseline repeat (bounded control)
 
