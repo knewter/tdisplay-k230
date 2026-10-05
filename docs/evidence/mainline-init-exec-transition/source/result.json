@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "evidence_class": "host-native-source-and-parent-header-object",
+  "status": "PASS",
+  "recorded_utc": "2026-10-05T19:08:06.575882+00:00",
+  "base": "ea54f9e0",
+  "parent_source": "/nix/store/dsgrv7744lzh418z22gb865c0j09g1qs-linux-mainline-k230-init-exec-return-src",
+  "source": "/nix/store/79yd40jv8h4x866bm1vyw94cm948grax-linux-mainline-k230-init-exec-transition-src",
+  "patch_sha256": "557fb782df91bad5ee8d7f553aae36d25b892b04d299bfd6baecc4f31411df14",
+  "test_sha256": "e4e92d211a6c137ffef2f26406030b4c06a0c4213d3923ceab2ff88fa6ea2b52",
+  "native_actual_parent": {
+    "tests": 10,
+    "status": "PASS"
+  },
+  "native_ci_excerpt_fixture": {
+    "tests": 10,
+    "status": "PASS"
+  },
+  "objects": [
+    "main.o",
+    "process.o",
+    "traps.o"
+  ],
+  "object_context": "retained parent 9dd headers/config, not new linked output",
+  "full_kernel_build": "UNVERIFIED",
+  "new_header_objects": "UNVERIFIED",
+  "matching_artifact_qualification": "UNVERIFIED",
+  "physical": "UNVERIFIED",
+  "precompile_harness_failures": [
+    "native helper extraction initially extended beyond the helper block; corrected before native PASS",
+    "private copied header root initially read-only; no compiler ran; new writable object-2 scratch succeeded"
+  ],
+  "initial_identity_harness_failure": "short git rev unsupported by getFlake; corrected to full base revision, no source change",
+  "all_prior_package_identity_evaluation": "PENDING"
+}

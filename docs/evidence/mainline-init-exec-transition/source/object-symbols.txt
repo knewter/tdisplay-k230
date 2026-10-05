@@ -1,0 +1,22 @@
+# main.o
+  [ 1] .text             PROGBITS        0000000000000000 000040 000e38 00  AX  0   0  8
+  [21] .init.text        PROGBITS        0000000000000000 001470 001a88 00  AX  0   0  8
+  [141] .sbss             NOBITS          0000000000000000 006bb0 00005d 00  WA  0   0  8
+   145: 0000000000000592    54 FUNC    LOCAL  DEFAULT   21 k230_init_exec_transition_setup
+   150: 0000000000000038     1 OBJECT  LOCAL  DEFAULT  141 k230_init_exec_transition_enabled
+   368: 0000000000000037     1 OBJECT  LOCAL  DEFAULT  141 k230_init_exec_transition_armed
+   369: 0000000000000036     1 OBJECT  LOCAL  DEFAULT  141 k230_init_exec_transition_return_consumed
+   375: 0000000000000035     1 OBJECT  LOCAL  DEFAULT  141 k230_init_exec_transition_ecall_consumed
+   556: 000000000000009a    27 OBJECT  LOCAL  DEFAULT  132 __setup_str_k230_init_exec_transition_setup
+   571: 0000000000000120    24 OBJECT  LOCAL  DEFAULT  133 __setup_k230_init_exec_transition_setup
+ 17381: 0000000000000a84    80 FUNC    GLOBAL DEFAULT    1 k230_init_exec_transition_kernel_return
+ 17382: 0000000000000ae2    80 FUNC    GLOBAL DEFAULT    1 k230_init_exec_transition_user_ecall
+# process.o
+  [ 1] .text             PROGBITS        0000000000000000 000040 001098 00  AX  0   0  8
+  [ 8] .init.text        PROGBITS        0000000000000000 001598 000148 00  AX  0   0  8
+  [66] .sbss             NOBITS          0000000000000000 001dc8 000007 00  WA  0   0  4
+ 11180: 0000000000000000     0 NOTYPE  GLOBAL DEFAULT  UND k230_init_exec_transition_kernel_return
+# traps.o
+  [ 1] .text             PROGBITS        0000000000000000 000040 000ae0 00  AX  0   0  8
+  [39] .sbss             NOBITS          0000000000000000 0040b0 00000c 00  WA  0   0  8
+ 18785: 0000000000000000     0 NOTYPE  GLOBAL DEFAULT  UND k230_init_exec_transition_user_ecall
