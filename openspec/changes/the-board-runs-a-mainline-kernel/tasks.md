@@ -1379,3 +1379,21 @@ Independent physical and subsequent armed recovery review PASS. Physical revisio
 - [ ] 5q.4 Independently review comparison, source and recovery limits; land/push
       and inspect exact CI/published revision. Planning proof:
       `openspec validate the-board-runs-a-mainline-kernel --strict`.
+
+
+## 5r. Unchanged quiet ordinary-baseline repeat (bounded control)
+
+- [ ] 5r.1 After NEW protected recovery from5q, execute actual same-artifact
+      baseline preparation with existing parents/no logging mode. Qualify exact
+     299/317 bytes against the original quiet policy and immutable/root/init/
+      helper/load/CRC identities; commit executed qualifier and safe receipt,
+      independently review. No implicit UART/build. Narrow command:
+      `python3 docs/evidence/mainline-system-trial/current-p2-baseline-repeat-host-2026-10-05/qualification-command.py --bundle BUNDLE --dev DEV --normal-report PRIVATE_NORMAL`.
+- [ ] 5r.2 After reviewed source/actual host gates and NEW protected recovery,
+      reserve board/UART for ONE passive180s repeat; commit fixed facts plus
+      independent recovery or explicit pending NEW reset. Command:
+      `python3 tools/mainline-drm-system-trial.py begin --wait-initramfs-in-initcall --without-boot-markers --bundle BUNDLE --manifest PRIVATE_MANIFEST --normal-report PRIVATE_NORMAL --state NEW_PRIVATE_STATE --log PRIVATE_LOG --result PRIVATE_RESULT`.
+      No new intervention, helper trace or cause/root/glass acceptance;5b.5 open.
+- [ ] 5r.3 Independently review reproducibility/parser/recovery limits, land/push
+      and inspect exact CI/published revision. Planning proof:
+      `openspec validate the-board-runs-a-mainline-kernel --strict`.

@@ -417,3 +417,13 @@ This needs physical UART evidence; backend selection is a diagnostic comparison,
 not a console-stall diagnosis or ordinary boot acceptance. Keep all guards and
 land this plan before source. No rebuild, added tracing/targets/masks or
 verbosity compensation. [Observed boundary and selected-source scope](../../../docs/research/mainline-initrd-info-kmsg-comparison-2026-10-05.md).
+
+
+## Reproducibility control: repeat the unchanged quiet ordinary boot
+
+The info/kmsg capture still gave no systemd startup or login. Group5r repeats
+one existing quiet ordinary policy before another intervention, because that
+policy previously reached closure lookup. No controller selector or artifact
+changes are needed. This requires the board, reviewed actual qualification
+and NEW protected recovery; no logging, tracing, target, timer/IRQ or build
+intervention. [Observed boundary and bounded roadmap](../../../docs/research/mainline-ordinary-baseline-repeat-2026-10-05.md).

@@ -716,3 +716,35 @@ and [selected-source backend audit](../../../../../../docs/research/mainline-ini
 - **WHEN** qualified login or I/O completion is absent
 - **THEN** keep complete private output without candidate input or fallback trial
 - **AND** require independent protected recovery or a NEW operator reset
+
+
+### Requirement: The ordinary baseline is repeated before another boot intervention
+
+The operator SHALL be able to repeat one unchanged quiet p2 ordinary policy
+with existing synchronous-initramfs and marker-free selectors, without any
+logging selector or new artifacts. Actual qualification SHALL establish exact
+299-byte arguments/317-byte literal command and unchanged immutable/root/init/
+mask/console/helper/load/CRC guards after NEW protected recovery.
+
+The repeat SHALL retain the180-second passive readiness bound, complete private
+logging and unknown-no-input policy. Its outcome SHALL be reported as a
+reproducibility control, not a logging cause, ordinary-root acceptance, glass
+proof or automatic recovery. Subsequent recovery SHALL be independently
+verified or explicitly pending a NEW operator reset.
+
+<!-- UNVERIFIED: NEW recovery, actual qualification and baseline repeat remain pending. -->
+*Grounding: [previous quiet ordinary boundary](../../../../../../docs/evidence/mainline-system-trial/current-p2-ordinary-physical-2026-10-05/README.md),
+[silent kmsg capture](../../../../../../docs/evidence/mainline-initrd-info-kmsg-logging/physical-2026-10-05/README.md)
+and [read archive/source control plan](../../../../../../docs/research/mainline-ordinary-baseline-repeat-2026-10-05.md).*
+
+#### Scenario: The unchanged baseline reaches the previous unit boundary
+
+- **WHEN** one qualified repeat again reaches closure lookup
+- **THEN** record that reproduced boundary and any additional observed progress
+- **AND** retain nested-command, cause, root and independent recovery limits
+
+#### Scenario: The unchanged baseline does not reproduce prior progress
+
+- **WHEN** qualified startup/readiness or I/O remains unknown
+- **THEN** preserve the temporal difference without compensating changes/input
+- **AND** require independent protected recovery or a NEW reset

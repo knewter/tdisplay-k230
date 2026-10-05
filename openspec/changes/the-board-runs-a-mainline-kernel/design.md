@@ -991,3 +991,24 @@ Reject debug+kmsg, verbosity compensation, arbitrary logging controls, tracing,
 new masks/targets/PID1 or builds: each adds another intervention. Require
 reviewed source/actual host gates and NEW protected recovery before one board
 capture, then independent recovery or explicit NEW reset. [Pinned source audit](../../../docs/research/mainline-initrd-info-kmsg-comparison-2026-10-05.md).
+
+
+## Unchanged ordinary-baseline repeat (group 5r)
+
+Userspace orchestration/evidence only. Existing begin selectors
+`--wait-initramfs-in-initcall --without-boot-markers` select the quiet policy;
+all three logging selectors remain false. Preserve exactly299 raw argument/
+317 literal bytes, p2/24h source/config/Image/DT/archive/init/root/three controls,
+five loads/CRCs, normal helper and printed/live arguments. Actual preparation
+must show equality with the earlier quiet command, not merely removing an
+arbitrary suffix from a captured string. No new selector or source change.
+
+Require NEW verified recovery after5q, actual artifact qualification and
+independent review before one180-second passive capture. Keep full private
+coverage and no candidate input on unknown readiness; commit independent
+recovery or explicit pending NEW reset. A repeat tests reproducibility before
+new interventions; either outcome does not establish a single logging cause.
+Retain ordinary5b.5 and all runtime/glass/cause limits. Reject multiple repeats,
+compensating verbosity, tracing, targets/masks/PID1/IRQ/MMIO and builds in this
+group. Helper instrumentation is a separately scoped possible follow-up only
+if the original closure boundary reproduces. [Read archive/source roadmap](../../../docs/research/mainline-ordinary-baseline-repeat-2026-10-05.md).
