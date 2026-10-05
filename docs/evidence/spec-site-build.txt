@@ -202,3 +202,24 @@ proposal/media publication. Retain the 120-second build ceiling, evidence
 checks, binary inventory and output assertions. This aggregate ceiling is
 not a per-page load budget; the large dashboard warrants a separate
 payload/loading improvement as proposal history grows.
+
+
+2026-10-05: continued committed evidence exceeded aggregate budget
+=================================================================
+
+Exact master b90a5318d11290f27e6d47dcc3284b9da060d3c6, Spec site
+run37258512080, failed the aggregate size check after Astro and all twelve
+output assertions passed. The deploy job was skipped. Measured620 pages,
+16,784,105 bytes,20.53 seconds; enforced budgets16,777,216 bytes/120 seconds.
+The failed run remains at:
+https://github.com/knewter/tdisplay-k230/actions/runs/37258512080
+
+The previous growth audit counted259 pages. New committed proposal and
+text evidence pages exhausted its aggregate16 MiB headroom; this change
+adds no media or dependency. Set the enforced aggregate ceiling to32 MiB,
+approximately twice the measured output, retaining the120-second ceiling,
+evidence checks, binary inventory and output assertions. This is an
+aggregate site growth allowance, not a per-page performance claim. The
+large dashboard still warrants a separate loading/payload improvement.
+Exact corrected CI/deployment must be inspected after this commit; this
+measurement records the failed build, not a successful new publication.

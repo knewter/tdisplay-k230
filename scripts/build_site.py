@@ -43,9 +43,9 @@ REPO = Path(__file__).resolve().parents[1]
 # where this tree has a handful. A breach should mean something changed, not
 # that the numbers were always tight.
 MAX_BUILD_SECONDS = 120.0
-# 2026-09-24: 259 evidence/spec pages use 8.37 MB (6.63 MB HTML);
-# see docs/evidence/spec-site-build.txt for the measured growth audit.
-MAX_OUTPUT_BYTES = 16 * 1024 * 1024
+# 2026-10-05: 620 evidence/spec pages use 16,784,105 bytes. Restore
+# approximately 2x growth headroom; see docs/evidence/spec-site-build.txt.
+MAX_OUTPUT_BYTES = 32 * 1024 * 1024
 
 
 def load_render_specs():
