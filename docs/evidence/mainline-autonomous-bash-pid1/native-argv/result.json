@@ -1,0 +1,119 @@
+{
+  "schema": 1,
+  "status": "PASS",
+  "evidence_class": "native-host-parser",
+  "timestamp_utc": "2026-10-05T00:11:14.223912+00:00",
+  "source_base": "703e91050375aa260a9b44472e605d390530d3e5",
+  "compiler": "cc (GCC) 16.2.1 20260810",
+  "hush": {
+    "source_sha256": "954771b8638977d12955c4da3c540a3929d47e4431a092c079192155b2d60011",
+    "native_execution": true,
+    "dispatch": [
+      "setenv",
+      "bootargs"
+    ],
+    "command_count": 1,
+    "parser_ifs_lookups": 1,
+    "script_variable_lookups": 0,
+    "extra_commands": 0,
+    "persistent_writes": 0
+  },
+  "linux": {
+    "source": "/nix/store/0l4mgw9hr1j7pj247jsrxjd478fnlfy8-linux-mainline-k230-uart-progress-memory-printk-src",
+    "files": {
+      "lib/cmdline.c": {
+        "sha256": "1af5ad98fface0b59694e7565c33be2e37c089cc9a1a841285414ee94546ca9d",
+        "functions": {
+          "next_arg": {
+            "line": 237,
+            "sha256": "f0199b7e58216ef3f5b8c8224baacc322381c61b57f4e414db89ac9dd71bcb41"
+          }
+        }
+      },
+      "init/main.c": {
+        "sha256": "b776bb9707168ed2a26e393bcdd45808e132e661f1083662640268d856f028b9",
+        "functions": {
+          "repair_env_string": {
+            "line": 476,
+            "sha256": "cbbe6f8b8db9417a412b1eb6ca292e1ca8dcffc6c917c6a24811997a9b9f40ac"
+          },
+          "set_init_arg": {
+            "line": 491,
+            "sha256": "51322d64e0fb7b2eba0c07ab8749cd96213ad99deff871e8d7b59130e6830fda"
+          },
+          "init_setup": {
+            "line": 576,
+            "sha256": "b1351c4b8aa0a86e9a7e5682a37be6e7c48a691fa503ce4240cc4d15a1685359"
+          },
+          "rdinit_setup": {
+            "line": 593,
+            "sha256": "8269543e8c2058184624b1fb57855bbcd06db438a11cc2623c3e1a06635bee70"
+          }
+        }
+      },
+      "kernel/params.c": {
+        "sha256": "b2afd93cb1300890343947abcdc955c1eedc5294f1abcf0a3145203cf46817c4",
+        "functions": {
+          "parse_args": {
+            "line": 161,
+            "sha256": "e00fd6c51597f1bbd16e78c6a8e2d9614589d882a69541be94ebbde9e7777281"
+          }
+        }
+      }
+    },
+    "excerpts_sha256": "888ed098de77d0baeddce8ccbe4f4cf0e519f75c9c6270e4b3afe7f4424cb0a4",
+    "native_execution": true,
+    "argv": [
+      "-c",
+      "n=0123456789abcdef0123456789abcdef;test $$ = 1&&test $EUID = 0&&printf \\\\nK230_BP1:%s:B\\\\n $n&&/bin/sleep 5&&printf \\\\nK230_BP1:%s:E\\\\n $n;exec /bin/sh -i"
+    ]
+  },
+  "vector": {
+    "nonce": "0123456789abcdef0123456789abcdef",
+    "script": {
+      "length": 154,
+      "sha256": "1f71d6c89cb45b8c71c7716e81efac4feff8994b3cf0993bb75c5b021f12c3d4"
+    },
+    "bootargs": {
+      "length": 477,
+      "sha256": "db855e52b4716124db47b8e0e96b357005c1d970aa79876186e37b01b3f433d5"
+    },
+    "transport": {
+      "length": 503,
+      "sha256": "eeff2d69f63945736c5ff1e0a8040c9867ed6ecef13ead3fbfd62c5a6fefbfef"
+    },
+    "transport_with_cr_length": 504
+  },
+  "fixture_manifest": {
+    "tests/fixtures/mainline-autonomous-pid1/COPYING": "0babccc806836e61267516151fae4d433cf90048b5e182b55ff889317a275afb",
+    "tests/fixtures/mainline-autonomous-pid1/README.md": "302d1dd89e94d32b4ca0186a67ade9939159c49772758ca37e6b36fff976b216",
+    "tests/fixtures/mainline-autonomous-pid1/bootargs.expected": "db855e52b4716124db47b8e0e96b357005c1d970aa79876186e37b01b3f433d5",
+    "tests/fixtures/mainline-autonomous-pid1/cli_hush-v2022.10.c": "954771b8638977d12955c4da3c540a3929d47e4431a092c079192155b2d60011",
+    "tests/fixtures/mainline-autonomous-pid1/hush-native.c": "7a487928e8d2a1d83979bec50ca76f1f7c7be0843eb918dd0ca41ddeae9d4932",
+    "tests/fixtures/mainline-autonomous-pid1/include/asm/global_data.h": "020823979ceac45bec260feaea52d4cf87dfd52b55721af74247e60bb0fb200e",
+    "tests/fixtures/mainline-autonomous-pid1/include/bootretry.h": "020823979ceac45bec260feaea52d4cf87dfd52b55721af74247e60bb0fb200e",
+    "tests/fixtures/mainline-autonomous-pid1/include/cli.h": "020823979ceac45bec260feaea52d4cf87dfd52b55721af74247e60bb0fb200e",
+    "tests/fixtures/mainline-autonomous-pid1/include/cli_hush.h": "020823979ceac45bec260feaea52d4cf87dfd52b55721af74247e60bb0fb200e",
+    "tests/fixtures/mainline-autonomous-pid1/include/command.h": "020823979ceac45bec260feaea52d4cf87dfd52b55721af74247e60bb0fb200e",
+    "tests/fixtures/mainline-autonomous-pid1/include/common.h": "96236808b8b5de315a7b689cd83e1ea3c1b30724c77e10fe80941b125e57f7db",
+    "tests/fixtures/mainline-autonomous-pid1/include/console.h": "020823979ceac45bec260feaea52d4cf87dfd52b55721af74247e60bb0fb200e",
+    "tests/fixtures/mainline-autonomous-pid1/include/env.h": "020823979ceac45bec260feaea52d4cf87dfd52b55721af74247e60bb0fb200e",
+    "tests/fixtures/mainline-autonomous-pid1/include/linux/ctype.h": "020823979ceac45bec260feaea52d4cf87dfd52b55721af74247e60bb0fb200e",
+    "tests/fixtures/mainline-autonomous-pid1/include/malloc.h": "020823979ceac45bec260feaea52d4cf87dfd52b55721af74247e60bb0fb200e",
+    "tests/fixtures/mainline-autonomous-pid1/linux-native.c": "e2524abdb9a820657a9aeb51f3ead3f4a00d24495865709dc1d47303e23af6b3",
+    "tests/fixtures/mainline-autonomous-pid1/linux-selected-functions.h": "888ed098de77d0baeddce8ccbe4f4cf0e519f75c9c6270e4b3afe7f4424cb0a4",
+    "tests/fixtures/mainline-autonomous-pid1/linux-source.json": "0f66d3a308a963dc71abcc8e4905e04ac074293163bad5b1a947de48a11fcac4",
+    "tests/fixtures/mainline-autonomous-pid1/script.expected": "1f71d6c89cb45b8c71c7716e81efac4feff8994b3cf0993bb75c5b021f12c3d4",
+    "tests/fixtures/mainline-autonomous-pid1/transport.expected": "eeff2d69f63945736c5ff1e0a8040c9867ed6ecef13ead3fbfd62c5a6fefbfef"
+  },
+  "test_source_sha256": "55eeeab3ecf0c5a07c5f8aeb0d57bb5b23f4990806a486b4291aec8f7f33c234",
+  "test_command": "python3 tests/test_mainline_autonomous_bash_pid1_argv.py",
+  "tests": 12,
+  "result": "12 tests PASS; native whole-Hush capture and exact selected Linux argv path",
+  "limits": [
+    "Capture-only U-Boot command hooks; no installed Hush or firmware ABI proof.",
+    "Other pre-- kernel setup handlers are inert; no kernel boot/ELF execution proof.",
+    "Fixed expected-command check is a fixture policy, not an arbitrary-script authorization API.",
+    "No UART, kernel/Nix build, board, or physical timer/RX/root/recovery result."
+  ]
+}
