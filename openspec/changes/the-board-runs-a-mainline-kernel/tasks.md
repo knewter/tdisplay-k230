@@ -1326,23 +1326,25 @@ completion of ordinary mainline acceptance.
       safe unit facts plus independently verified recovery or pending NEW reset.
       Command: `python3 tools/mainline-drm-system-trial.py begin --wait-initramfs-in-initcall --without-boot-markers --initrd-debug-logging --bundle BUNDLE --manifest PRIVATE_MANIFEST --normal-report PRIVATE_NORMAL --state NEW_PRIVATE_STATE --log PRIVATE_LOG --result PRIVATE_RESULT`.
       No nested-command/call/cause or ordinary-root inference; 5b.5 stays open.
-      [Actual passive capture](../../../docs/evidence/mainline-initrd-debug-logging/physical-2026-10-05/README.md): same artifacts/exact args, fresh Linux/Run init announcement but no systemd/closure/login in 180s, exit1, zero later input in source/annotations; independent full review PASS. NEW recovery after this capture remains PENDING.
+      [Actual passive capture](../../../docs/evidence/mainline-initrd-debug-logging/physical-2026-10-05/README.md): same artifacts/exact args, fresh Linux/Run init announcement but no systemd/closure/login in 180s, exit1, zero later input in source/annotations; independent full review PASS. Subsequent NEW protected recovery passed; see recovery.json.
 - [x] 5o.4 Independently review manager-state/parser/recovery limits, land/push
       evidence and inspect exact CI and published revision. Planning proof:
       `openspec validate the-board-runs-a-mainline-kernel --strict`.
-      Independent physical/parser/load/argument/no-input review PASS; master50daca22, CI37256024917 PASS and exact work/host/physical publication HTTP200 verified: [publication receipt](../../../docs/evidence/mainline-initrd-debug-logging/physical-2026-10-05/publication.json). NEW recovery remains PENDING; automatic return and5b.5 stay UNVERIFIED.
+      Independent physical/parser/load/argument/no-input review PASS; master50daca22, CI37256024917 PASS and exact work/host/physical publication HTTP200 verified: [publication receipt](../../../docs/evidence/mainline-initrd-debug-logging/physical-2026-10-05/publication.json). Subsequent NEW [protected recovery](../../../docs/evidence/mainline-initrd-debug-logging/physical-2026-10-05/recovery.json) passed; automatic return and5b.5 stay UNVERIFIED.
 
 
 ## 5p. Fixed info-level console comparison (bounded diagnostic)
 
-- [ ] 5p.1 Reconcile pinned logging/startup source; implement typed exclusive info
+- [x] 5p.1 Reconcile pinned logging/startup source; implement typed exclusive info
       selector with old default/debug behavior, aliases/types pre-UART and typed
       saved continuation. Meaningful host fixtures; no UART/build. Narrow proof:
       `python3 tests/test_mainline_initrd_info_logging.py`.
-- [ ] 5p.2 Execute actual same p2/24h artifact/preparation qualifier, sole one-value
+      [Source/controller proof](../../../docs/evidence/mainline-initrd-info-logging/host/controller-host.md): exact selected261.2 source pin/patch scope checked; 10 new+13debug+36ordinary tests PASS, independently rerun; reviewed source integrated94c78157. No UART/build.
+- [x] 5p.2 Execute actual same p2/24h artifact/preparation qualifier, sole one-value
       policy delta and exact355/373 bytes. Commit executed qualifier and safe
       receipt, with recovery anchor limits; no implicit UART/build. Command:
       `python3 docs/evidence/mainline-initrd-info-logging/host/qualification-command.py --bundle BUNDLE --dev DEV --normal-report PRIVATE_NORMAL`.
+      [Actual same-artifact qualification](../../../docs/evidence/mainline-initrd-info-logging/host/README.md) exit0 on94c78157, exact355/373 versus356/374, latest NEW protected recovery bound; independent review PASS. No live preflight/UART/build.
 - [ ] 5p.3 After NEW protected recovery and reviewed source/host gates, reserve
       board/UART for one passive180s same-image capture. Commit fixed facts and
       independent recovery or explicit pending NEW reset. Command:

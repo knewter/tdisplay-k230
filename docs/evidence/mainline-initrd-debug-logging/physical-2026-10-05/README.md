@@ -40,9 +40,10 @@ fresh received arguments, source hash, unique protected preflight and replayed
 readiness failure match. Command annotations and source show no input after
 bootm; this is not independent electrical TX-direction proof.
 
-All reservations are released. **NEW operator reset after this capture is
-pending**, and the prepared checker has not run. No previous reset is reused,
-fallback input or automatic return claimed. Ordinary root, panel/glass and
+All reservations are released. A subsequent NEW operator reset passed
+[protected normal recovery](recovery.json): distinct boot, exact identities,
+eight matching hashes, three active services and registration absence.
+No previous reset was reused, fallback input or automatic return claimed. Ordinary root, panel/glass and
 task 5b.5 stay **UNVERIFIED**. The [next bounded plan](../../../research/mainline-initrd-info-console-comparison-2026-10-05.md)
 considers a one-value debug→info comparison with the same console destination;
 it is not run.

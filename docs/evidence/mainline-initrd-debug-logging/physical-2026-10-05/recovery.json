@@ -1,0 +1,28 @@
+{
+  "schema": "k230-initrd-debug-logging-new-operator-recovery-v1",
+  "evidence_class": "fresh physical UART protected normal postflight",
+  "receipt_written_utc": "2026-10-05T02:46:11.043487+00:00",
+  "operator_reset": "NEW_USER_CONFIRMATION_AFTER_INITRD_DEBUG_LOGGING_CAPTURE",
+  "normal_recovery": "VERIFIED_NEW_OPERATOR_RESET",
+  "distinct_boot_verified": true,
+  "system": "/nix/store/p1a1hz9n8s4g8qyr55ffl3dzbnjgqwr8-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "profile": "/nix/store/p1a1hz9n8s4g8qyr55ffl3dzbnjgqwr8-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "kernel": "/nix/store/03zyl0mjsxbjyisb3lhjaxswpxm71ap6-linux-riscv64-unknown-linux-gnu-6.6.36-xuantie/Image",
+  "uname": "6.6.36",
+  "protected_boot_hash_count": 8,
+  "protected_boot_hashes_match_prior_preflight": true,
+  "services": [
+    "active",
+    "active",
+    "active"
+  ],
+  "nix_path_registration_absent": true,
+  "private_recovery_result_sha256": "595112e674686f8c3a6db3a3d8753a19a90c8cd5bb171615a8f15cef1f1db41a",
+  "private_recovery_uart_sha256": "18751822a7c9e02bfbf4fc626a9b633de81457db8395e0a85eabb03cd8edd6d2",
+  "recovery_checker_sha256": "e7731d3dfad465b5013d921e9a2d185c1dc9f022ce2e80ee3ff84bed73f3ca0f",
+  "automatic_return": "UNVERIFIED",
+  "camera_or_real_glass_proof": "NOT_OBTAINED_IN_THIS_RECOVERY",
+  "ordinary_mainline_acceptance": "UNVERIFIED",
+  "independent_protected_recovery_review": "PASS",
+  "init": "init=/nix/store/p1a1hz9n8s4g8qyr55ffl3dzbnjgqwr8-nixos-system-nixos-26.11.20260919.20b1ddd/init"
+}

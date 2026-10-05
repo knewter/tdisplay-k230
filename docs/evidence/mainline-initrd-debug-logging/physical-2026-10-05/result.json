@@ -57,7 +57,7 @@
     "three_shell_services_active": true,
     "registration_absent": true
   },
-  "normal_recovery": "PENDING_NEW_OPERATOR_RESET",
+  "normal_recovery": "VERIFIED_NEW_OPERATOR_RESET",
   "ordinary_root": "UNVERIFIED",
   "panel_glass": "UNVERIFIED",
   "automatic_return": "UNVERIFIED",
@@ -69,5 +69,6 @@
     "private_command_receipt_sha256": "6d075e4acbd0b7dcb88a2e604372b12915ab48d7520e18cb42227803aa53624f"
   },
   "independent_physical_review": "PASS",
-  "candidate_input_after_bootm": "none in reviewed command annotations/source; not electrical TX proof"
+  "candidate_input_after_bootm": "none in reviewed command annotations/source; not electrical TX proof",
+  "normal_recovery_receipt": "recovery.json"
 }

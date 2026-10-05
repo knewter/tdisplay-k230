@@ -6,8 +6,8 @@ showed mounted sysroot and starting closure lookup. The
 showed the kernel's pre-exec `/init` announcement but no systemd/version/unit
 output within 180 seconds. Neither identifies a blocked instruction or establishes guarded ordinary-root
 acceptance. The debug capture alone does not prove `/init` exec success; the
-quiet run did show systemd PID1 startup. NEW protected recovery after the
-latter debug capture is still pending.
+quiet run did show systemd PID1 startup. Subsequent NEW [protected recovery](../evidence/mainline-initrd-debug-logging/physical-2026-10-05/recovery.json)
+after the latter debug capture passed.
 
 Source inspection places backend setup before the version banner. Systemd first
 selects kmsg, mounts early API filesystems, parses logging arguments, then opens
