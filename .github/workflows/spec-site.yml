@@ -91,6 +91,7 @@ jobs:
           python3 tests/test_mainline_uart_progress_memory_printk_controller.py
           python3 tests/test_mainline_uart_progress_memory_printk_nohz_off_controller.py
           python3 tests/test_mainline_autonomous_bash_pid1_argv.py
+          python3 tests/test_mainline_autonomous_bash_pid1_controller.py
 
       - name: Check bounded VG-Lite normal-service recovery
         run: |
