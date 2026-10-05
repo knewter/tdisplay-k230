@@ -437,3 +437,7 @@ exec attempt, preserving original init/argv/env and error/fallback behavior.
 It requires an additive kernel build and physical UART proof; successful exec
 setup is not userspace execution. Closure and systemd-main instrumentation are
 outside this bounded change. [Observed boundary and source/proof plan](../../../docs/research/mainline-init-exec-return-probe-2026-10-05.md).
+
+The built optional outputs were later absent at the pre-UART staging check.
+Restore and retain the exact pinned host artifacts in5s.2a before physical work;
+keep earlier successful proof and the current availability failure distinct.

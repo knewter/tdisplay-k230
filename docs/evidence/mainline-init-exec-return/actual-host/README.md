@@ -86,3 +86,11 @@ Private manifest and report are deliberately not committed. The diagnostic
 record grants no input authority; the existing fresh login, exact arguments and
 identity gates remain mandatory. Unknown readiness stops further candidate input
 and leaves protected recovery to the sole board operator.
+
+A later [host availability check](availability-2026-10-05.json) found the new
+source/kernel/dev/bundle paths absent before staging. Fresh preparation failed
+closed before UART; no board change occurred. The cause has not been verified.
+Historical build and qualification remain valid records, but current staging
+requires restoring the exact pinned outputs, retaining store roots, and a fresh
+hash/qualifier check. That restoration is pending; no current artifact availability
+or physical result is claimed from the earlier receipt.

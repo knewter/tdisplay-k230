@@ -1035,3 +1035,10 @@ transition/loader/main.
 Missing/partial records and output-call return remain unknown; never label them
 a located instruction or hardware cause. Recovery is independently guarded or
 explicitly pending NEW reset. [Pinned source and alternative analysis](../../../docs/research/mainline-init-exec-return-probe-2026-10-05.md).
+
+Host artifact availability is a separate staging prerequisite: retain the optional
+source/kernel/dev/bundle with persistent Nix roots after realization. If outputs
+are absent later, preserve the historical successful receipt, restore the same
+pinned identities with a new receipt, and recheck actual hashes/qualification
+before any UART operation. Missing files are not evidence that source was lost
+or that the board failed. Group5s.2a covers the observed availability gap.
