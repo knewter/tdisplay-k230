@@ -1,0 +1,65 @@
+{
+  "schema": "k230-transition-camera-repeat-v1",
+  "evidence_classes": [
+    "physical UART passive capture",
+    "host camera recording of panel"
+  ],
+  "controller_sha256": "93ef7083a25f15a2cfa19b5727f7d8473d3a22575066e71e43b17240001e8fad",
+  "started_utc": "2026-10-05T23:26:43.978759833Z",
+  "completed_utc": "2026-10-05T23:30:11.579032551Z",
+  "controller_exit": 1,
+  "status": "recovery-required-unknown",
+  "failure": "Unknown: ordinary init login readiness unverified",
+  "bundle": "/nix/store/jx56x86gihamimhj6hqr8d13rn6ax25r-k230-mainline-drm-trial-boot-files",
+  "same_staged_bundle_as_5t": true,
+  "build_or_transfer": false,
+  "records_in_order": [
+    "[    4.568209] K230_INIT_EXEC_RETURN_V1 ret=0",
+    "[    4.568223] K230_INIT_EXEC_TRANSITION_V1 point=kernel-init-return",
+    "[    4.568354] K230_INIT_EXEC_TRANSITION_V1 point=first-user-ecall"
+  ],
+  "bytes_after_last_record": "b'\\r\\n\\x1bP+q6E616D65\\x1b\\\\'",
+  "bytes_after_dcs_terminator_within_bound": 0,
+  "transition_observation": {
+    "errors": [],
+    "exec_result_output_call_return": "OBSERVED",
+    "kernel_init_return_observed": true,
+    "kernel_init_return_output_call_return": "OBSERVED",
+    "loader_or_systemd_main": "UNVERIFIED",
+    "missing_records": [],
+    "points": [
+      "kernel-init-return",
+      "first-user-ecall"
+    ],
+    "record_output_call_return": "UNVERIFIED",
+    "sequence_complete": true,
+    "syscall_handler_completion": "UNVERIFIED",
+    "user_ecall_observed": true
+  },
+  "selected_kernel_lines": [
+    "[    4.445013] canaan-panel-dsi 90850000.dsi.0: canaan_panel_prepare: entered, init_set_v1_flag=1",
+    "[    4.525740] clk: Disabling unused clocks",
+    "[    4.525913] PM: genpd: Disabling unused power domains",
+    "[    4.557645] Run /init as init process"
+  ],
+  "panel_prepare_completion_line_observed": false,
+  "camera": {
+    "device": "/dev/video0",
+    "format": "MJPEG 1280x720 10fps stream copy",
+    "manual_exposure": 94,
+    "gain": 170,
+    "duration_seconds": 280,
+    "private_video_sha256": "beec50c946bf54876a2563c6527ab9f79dc3c432982f157cbe304b99fcf1c41e",
+    "panel_region_mean_luma": "flat ~57-59 after the 24.3 s normal-reset blank; only lit window 19.7-24.3 s (normal system shutdown text)",
+    "classification": "(c) inconclusive: the candidate never visibly lit the panel, so no cursor/text liveness could be observed",
+    "stills": [
+      "panel-normal-shutdown-text-21s.jpg",
+      "panel-dark-candidate-120s.jpg"
+    ]
+  },
+  "private_raw_serial_sha256": "1c0fa58fb67ca66e86e3440e77d47922a3f9093f5eca5ee517b859d1318f02c7",
+  "private_result_sha256": "222ea83b058cf48cf7c0a29e9acb98ed311988bcb3e5d25d6a9316b799f5a0a7",
+  "normal_recovery": "PENDING_NEW_OPERATOR_RESET",
+  "ordinary_root": "UNVERIFIED",
+  "camera_or_glass_acceptance": "NOT_OBTAINED"
+}

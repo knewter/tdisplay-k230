@@ -1144,3 +1144,19 @@ unchanged controller. Recovery requires a NEW operator reset and the reviewed
 recovery checker pattern. The next probe (for example an SBI-console hrtimer
 heartbeat reporting IRQ counts and PID1 state) is planned only from this outcome.
 Task5b.5 remains open.
+
+## Driver-owned display clocks (group5v)
+
+Retained UART logs show every mainline stall following `clk: Disabling unused
+clocks`, immediately when cleanup lands inside the 0.35 s panel prepare window
+(see the 5u camera-repeat evidence). The mainline DT gives `vo`/`dsi` no clocks
+and the canaan VO/DSI drivers request none, while the K230 display gates use
+plain `clk_gate_ops`. As with the SD1 restart fix, the consumers must own their
+clocks: `vo` takes the display AHB/AXI/DPIP gates, `dsi` the AHB/CFG/REF gates
+(the vendor disp_hclk/disp_aclk/dpipclk/cfgclk/refclk tree at sysctl 0x74),
+each enabled from probe with `devm_clk_bulk_get_all_enabled()` before cleanup
+can run. GPU and the DPHY test gate are not claimed. Enabling an already running
+gate does not change rates. This is a fix candidate: it is accepted only by a
+physical ordinary capture under the quiet policy that reproducibly stopped
+(5r/5t/5u) reaching the qualified login. If it fails, the next step is the
+cmdline ablation `clk_ignore_unused pd_ignore_unused` on the same bundle.

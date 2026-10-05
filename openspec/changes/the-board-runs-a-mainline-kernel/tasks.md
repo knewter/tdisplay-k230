@@ -1473,8 +1473,9 @@ Independent source/actual host/full physical/parser/recovery-limit/publication r
 
 ## 5u. Camera liveness repeat of the staged transition capture (bounded diagnostic)
 
-- [ ] 5u.1 Land this plan. Proof: `openspec validate the-board-runs-a-mainline-kernel --strict`.
-- [ ] 5u.2 After NEW protected recovery, reserve board/UART and repeat the unchanged
+- [x] 5u.1 Land this plan. Proof: `openspec validate the-board-runs-a-mainline-kernel --strict`.
+      Landed 3e9edb3b (no separate plan review; no source involved).
+- [x] 5u.2 After NEW protected recovery, reserve board/UART and repeat the unchanged
       5t command ONCE against the staged bundle with fresh private outputs while
       recording the panel with the bench camera through the whole capture. Commit
       sanitized UART facts, camera frame-difference classification with selected
@@ -1482,5 +1483,22 @@ Independent source/actual host/full physical/parser/recovery-limit/publication r
       `python3 tools/mainline-drm-system-trial.py begin --wait-initramfs-in-initcall --without-boot-markers --init-exec-return --init-exec-transition --bundle BUNDLE --manifest PRIVATE_MANIFEST --normal-report PRIVATE_NORMAL --state NEW_PRIVATE_STATE --log NEW_PRIVATE_LOG --result NEW_PRIVATE_RESULT`
       with `ffmpeg -f v4l2 -input_format mjpeg -video_size 1280x720 -i /dev/video0 -c copy PRIVATE_VIDEO`.
       Camera evidence does not identify cause; task5b.5 remains open.
+      [Camera repeat](../../../docs/evidence/mainline-init-exec-transition/camera-repeat-2026-10-05/README.md): UART identical to 5t; camera inconclusive (candidate never lit the panel); exposed panel-init/unused-clock-cleanup timing pattern. NEW reset PENDING.
 - [ ] 5u.3 Independently review, land/push and inspect exact CI/published revision;
       plan the next probe only from the classified outcome.
+
+## 5v. Driver-owned display clocks (fix candidate)
+
+- [ ] 5v.1 List the display AHB/AXI/DPIP gates on `vo` and AHB/CFG/REF on `dsi`
+      and enable them from probe with `devm_clk_bulk_get_all_enabled()`, so late
+      unused-clock cleanup cannot gate them. Host proof: DTB build plus
+      `nix build .#kernelMainlineDrmTrialBootFiles .#toplevel-mainline-drm-trial`.
+- [ ] 5v.2 Stage the rebuilt ordinary bundle under the guarded pattern and run ONE
+      passive180s ordinary capture with the same quiet policy that reproducibly
+      stopped in 5r/5t/5u. Command:
+      `python3 tools/mainline-drm-system-trial.py begin --wait-initramfs-in-initcall --without-boot-markers --bundle BUNDLE --manifest PRIVATE_MANIFEST --normal-report PRIVATE_NORMAL --state NEW_PRIVATE_STATE --log NEW_PRIVATE_LOG --result NEW_PRIVATE_RESULT`.
+      Pass needs panel prepare completion, systemd progress beyond the DCS query
+      and the controller's qualified login/prompt; record camera stills of the panel.
+- [ ] 5v.3 Review, land/push, inspect CI/published revision. A pass makes task
+      5b.5 (ordinary root, deliberate touch) the next step; a fail returns to
+      the clk_ignore_unused/pd_ignore_unused ablation.
