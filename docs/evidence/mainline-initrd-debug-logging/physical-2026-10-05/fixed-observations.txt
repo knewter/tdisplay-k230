@@ -1,0 +1,5 @@
+PUBLIC DERIVED OBSERVATIONS; not a raw transcript
+Fresh mainline Linux banner and exact selected arguments observed.
+Run /init as init process announcement observed; not proof exec succeeded.
+No systemd startup, closure-unit or login message observed within the 180s readiness bound.
+NEW protected normal recovery remains pending.

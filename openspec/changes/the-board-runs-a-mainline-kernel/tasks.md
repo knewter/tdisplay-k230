@@ -1321,11 +1321,12 @@ completion of ordinary mainline acceptance.
       host qualifier and safe receipt; no implicit build/UART. Narrow command:
       `python3 docs/evidence/mainline-initrd-debug-logging/host/qualification-command.py --bundle BUNDLE --dev DEV --normal-report PRIVATE_NORMAL`.
       [Executed actual preparation](../../../docs/evidence/mainline-initrd-debug-logging/host/README.md) exit0 on ec121e6d, same artifacts/archive, exact356/374 vs317 bytes and fresh preceding recovery anchor; independent review PASS. No live preflight/UART/build.
-- [ ] 5o.3 After NEW protected recovery and reviewed host/controller gates, reserve
+- [x] 5o.3 After NEW protected recovery and reviewed host/controller gates, reserve
       board/UART for one passive 180-second same-artifact capture. Commit fixed
       safe unit facts plus independently verified recovery or pending NEW reset.
       Command: `python3 tools/mainline-drm-system-trial.py begin --wait-initramfs-in-initcall --without-boot-markers --initrd-debug-logging --bundle BUNDLE --manifest PRIVATE_MANIFEST --normal-report PRIVATE_NORMAL --state NEW_PRIVATE_STATE --log PRIVATE_LOG --result PRIVATE_RESULT`.
       No nested-command/call/cause or ordinary-root inference; 5b.5 stays open.
+      [Actual passive capture](../../../docs/evidence/mainline-initrd-debug-logging/physical-2026-10-05/README.md): same artifacts/exact args, fresh Linux/Run init announcement but no systemd/closure/login in 180s, exit1, zero later input in source/annotations; independent full review PASS. NEW recovery after this capture remains PENDING.
 - [ ] 5o.4 Independently review manager-state/parser/recovery limits, land/push
       evidence and inspect exact CI and published revision. Planning proof:
       `openspec validate the-board-runs-a-mainline-kernel --strict`.
