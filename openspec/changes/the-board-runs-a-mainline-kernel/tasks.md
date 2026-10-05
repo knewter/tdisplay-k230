@@ -1345,11 +1345,12 @@ completion of ordinary mainline acceptance.
       receipt, with recovery anchor limits; no implicit UART/build. Command:
       `python3 docs/evidence/mainline-initrd-info-logging/host/qualification-command.py --bundle BUNDLE --dev DEV --normal-report PRIVATE_NORMAL`.
       [Actual same-artifact qualification](../../../docs/evidence/mainline-initrd-info-logging/host/README.md) exit0 on94c78157, exact355/373 versus356/374, latest NEW protected recovery bound; independent review PASS. No live preflight/UART/build.
-- [ ] 5p.3 After NEW protected recovery and reviewed source/host gates, reserve
+- [x] 5p.3 After NEW protected recovery and reviewed source/host gates, reserve
       board/UART for one passive180s same-image capture. Commit fixed facts and
       independent recovery or explicit pending NEW reset. Command:
       `python3 tools/mainline-drm-system-trial.py begin --wait-initramfs-in-initcall --without-boot-markers --initrd-info-logging --bundle BUNDLE --manifest PRIVATE_MANIFEST --normal-report PRIVATE_NORMAL --state NEW_PRIVATE_STATE --log PRIVATE_LOG --result PRIVATE_RESULT`.
       No syscall/cause or ordinary-root inference;5b.5 stays open.
+      [Actual passive info/console capture](../../../docs/evidence/mainline-initrd-info-logging/physical-2026-10-05/README.md): exact args/source/same artifacts, freshLinux/Run init announcement but no systemd/closure/login within180s; no later candidateinput insource/annotations; independent fullreview PASS. NEW recovery remains PENDING.
 - [ ] 5p.4 Independently review comparison/source/recovery limits, land/push
       evidence and inspect exact CI and published revision. Planning proof:
       `openspec validate the-board-runs-a-mainline-kernel --strict`.
