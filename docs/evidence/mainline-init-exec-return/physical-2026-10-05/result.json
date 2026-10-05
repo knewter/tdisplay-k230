@@ -78,7 +78,7 @@
     "three_services_active": true,
     "registration_absent": true
   },
-  "normal_recovery": "UNVERIFIED_PENDING_NEW_OPERATOR_RESET",
+  "normal_recovery": "VERIFIED_NEW_OPERATOR_RESET",
   "automatic_return": "UNVERIFIED",
   "camera_or_glass": "NOT_OBTAINED",
   "candidate_input_after_bootm": "none in reviewed source/annotations; not electrical TX proof",
@@ -86,5 +86,6 @@
   "private_raw_serial_sha256": "3a2f2fc74b2e287ce33865d5126d7925fee00561eeb25b6fb541a54d542b1af2",
   "private_result_sha256": "7c7896eebc8189217fd44affbf84662522eb857b36e5e0c4f7e101760ff32b7e",
   "private_command_receipt_sha256": "b144dacb90af70e03d23d1e8491d507d180954e8aaf06130304aafb55220d064",
-  "independent_physical_review": "PASS"
+  "independent_physical_review": "PASS",
+  "recovery_receipt": "recovery.json"
 }

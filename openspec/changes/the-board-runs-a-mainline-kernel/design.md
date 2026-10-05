@@ -1042,3 +1042,71 @@ are absent later, preserve the historical successful receipt, restore the same
 pinned identities with a new receipt, and recheck actual hashes/qualification
 before any UART operation. Missing files are not evidence that source was lost
 or that the board failed. Group5s.2a covers the observed availability gap.
+
+## PID1 return and first user syscall witnesses (group5t, UNVERIFIED)
+
+Layer: optional Linux source/kernel plus additive Nix/controller variant. The
+selected realized source is
+`/nix/store/dsgrv7744lzh418z22gb865c0j09g1qs-linux-mainline-k230-init-exec-return-src`.
+Read sites: init/main.c1704–1708; arch/riscv/kernel/process.c228–233;
+arch/riscv/kernel/entry.S363–370 and return sret; arch/riscv/kernel/traps.c325–345;
+include/linux/entry-common.h185–208 and338–345. These are source analysis,
+not physical proof. The parent capture's one ret0 record does not establish
+that its printk returned or that kernel_init returned.
+
+Keep the parent's exec-return record unchanged. Add exact-value1 boot gate
+`k230.init_exec_transition=1`, ordinary-lifetime storage (not freed initdata),
+and an arm set only on selected ramdisk exec success with both exact runtime
+gates enabled (`k230.init_exec_return=1` and `k230.init_exec_transition=1`).
+Emit at most two new fixed
+versioned INFO records for PID1, consuming each one-shot before its output call:
+
+1. Immediately after fn(fn_arg) returns in ret_from_fork_kernel, before
+   syscall_exit_to_user_mode: `K230_INIT_EXEC_TRANSITION_V1 point=kernel-init-return`.
+2. In do_trap_ecall_u, after syscall_enter_from_user_mode_randomize_stack succeeds
+   and before handler dispatch:
+   `K230_INIT_EXEC_TRANSITION_V1 point=first-user-ecall`.
+
+These sites retain instrumentable kernel context. No printk/current/RCU helper
+is added after syscall_exit_to_user_mode: that path has disabled interrupts and
+already transitioned context tracking to USER. Do not alter assembly, sret,
+exit work, scheduler/interrupt/timer/vector state or syscall results. Scope each
+record to armed PID1; never arm fallback execs or emit from other tasks, and never
+retry a consumed point. Implementation review must verify source context,
+ordinary storage lifetime and selected compiled RISC-V objects.
+
+A kernel-init-return record proves the original selected kernel_init and its
+exec-return printk returned; it does not prove its own printk returned or a user
+instruction ran. A first-user-ecall record proves a user ECALL instruction and
+successful kernel re-entry setup; it does not prove dispatch/handler completion,
+loader completion, constructors or systemd main. Missing records are unknown.
+A qualified ecall after the return record proves that earlier new output call
+returned. Records that are present must follow exec-result0, kernel-init-return,
+first-user-ecall order, with full fresh banner/arguments/init qualification;
+duplicates, malformed, stale, unarmed or reversed observations are errors.
+Missing earlier records remain an incomplete/unknown capture and are never
+repaired or inferred. An independently valid first-user-ecall still proves a user
+ECALL and entry setup if an earlier frame was not captured; it does not grant
+complete sequence or readiness. No record
+alone grants candidate input or claims a failed instruction/hardware cause.
+
+Implement a typed begin-only selector --init-exec-transition as a separately
+qualified child of --init-exec-return; require synchronous initramfs and
+marker-free ordinary init, reject conflicting comparisons before UART, and treat
+missing saved state as false while rejecting invalid types. New volatile args
+contain exactly the two gates, preserving masks/console/other arguments; validate
+actual encoded sizes and existing transport bounds rather than relaxing them.
+Old Nix outputs retain derivation identities. Build new kernel/dev/source/system/
+bundle separately; qualify actual config, Image literals, DT hardware and archived
+init/systemd/Bash/loader/helper bytes, permitting only proven necessary module-tree
+relocation. Retain registered GC roots and new failure receipts. Source review,
+actual build and artifact qualification precede any board action.
+
+The operator first obtains NEW protected normal recovery, then guards candidate
+staging and performs ONE180-second passive capture with sole board/UART ownership,
+complete private logging, exact load/CRC/arguments/normal identity checks and the
+existing unknown-no-input behavior. Recovery is separately verified or explicitly
+pending a NEW reset. Ordinary root/panel/glass task5b.5 remains open. Reject generic
+per-syscall traces, userspace wrappers, systemd rebuilds and post-exit assembly
+logging: they add more changes or unsafe context before this narrower boundary
+has been observed.

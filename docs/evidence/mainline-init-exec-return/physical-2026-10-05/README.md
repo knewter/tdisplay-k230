@@ -35,10 +35,16 @@ Complete independent physical review PASS: all five load/CRC pairs, exact
 arguments, artifact/time/hash bindings and full 73-byte chunked parser replay
 were checked. The replay consumed all candidate bytes with exactly one valid
 return record, no readiness, and zero subsequent input. The recovery checker
-source also passed review, but has not run without a NEW reset confirmation.
+source also passed review and ran only after the subsequent NEW reset confirmation.
 Bootm is the final command
 annotation; reviewed source sends no further candidate input on unknown readiness.
 That is source/transcript evidence, not independent electrical TX proof.
-The port is released. A NEW operator reset after this capture is required for
-separate protected normal recovery; no preceding reset is reused, and automatic
-return remains **UNVERIFIED**. No camera or real-glass acceptance was obtained.
+The port is released. The subsequent NEW operator reset was consumed once:
+`python3 PRIVATE_RESET_NORMAL_CHECK` returned0 after a fresh prompt and full
+protected normal postflight. A distinct boot, exact normal system/profile/kernel/
+init/uname, eight protected boot hashes, three active services and registration
+absence passed. [Recovery receipt](recovery.json) binds the private raw/result/
+checker/command hashes. Independent complete recovery review PASS. This confirmation
+check does not claim a passively observed fresh SPL or automatic return. No camera
+or real-glass acceptance was obtained; ordinary mainline acceptance remains
+**UNVERIFIED**.

@@ -441,3 +441,17 @@ outside this bounded change. [Observed boundary and source/proof plan](../../../
 The built optional outputs were later absent at the pre-UART staging check.
 Restore and retain the exact pinned host artifacts in5s.2a before physical work;
 keep earlier successful proof and the current availability failure distinct.
+
+## Next bounded diagnostic: init return and first userspace syscall
+
+The [physical exec-return capture](../../../docs/evidence/mainline-init-exec-return/physical-2026-10-05/README.md)
+recorded successful exec setup but no systemd startup or login. Group5t adds an
+optional child kernel variant with two finite PID1 witnesses: after kernel_init
+returns, and at the first successfully entered userspace syscall. This can
+separate earlier output-return/kernel-init completion from positive user-mode
+execution without changing the init executable or adding logging to the unsafe
+post-exit assembly path. It requires a new matching build and physical UART
+capture after NEW protected recovery; all outcomes remain UNVERIFIED until then.
+No systemd instrumentation, kernel return-path bypass, timer/IRQ/MMIO changes,
+extra log policy, production kernel replacement or ordinary-root acceptance.
+Source sites, interpretation limits and proof gates are in design.md group5t.

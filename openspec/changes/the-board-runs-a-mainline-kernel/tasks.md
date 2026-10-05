@@ -1430,7 +1430,37 @@ Independent source/actual host/full physical/parser/recovery-limit/publication r
       coverage/unknown-no-input. Command: `python3 tools/mainline-drm-system-trial.py begin --wait-initramfs-in-initcall --without-boot-markers --init-exec-return --bundle BUNDLE --manifest PRIVATE_MANIFEST --normal-report PRIVATE_NORMAL --state NEW_PRIVATE_STATE --log PRIVATE_LOG --result PRIVATE_RESULT`.
       No loader/main, failed-instruction, output-call-return or ordinary-root/glass
       claim from the record;5b.5 stays open.
-      [Reviewed guarded staging](../../../docs/evidence/mainline-init-exec-return/staging-2026-10-05/README.md) and [physical capture](../../../docs/evidence/mainline-init-exec-return/physical-2026-10-05/README.md) PASS: exact323/341 arguments, all load/CRC guards, one `ret=0` at4.548457 and no qualified login within180s. Full private parser/no-input/identity/hash/time review PASS. Exec setup succeeded; userspace transition and the probe output call return remain UNVERIFIED. Subsequent NEW reset recovery is explicitly pending; no earlier reset is reused.
-- [ ] 5s.4 Independently review recorded boundary/recovery limits, land/push and
+      [Reviewed guarded staging](../../../docs/evidence/mainline-init-exec-return/staging-2026-10-05/README.md) and [physical capture](../../../docs/evidence/mainline-init-exec-return/physical-2026-10-05/README.md) PASS: exact323/341 arguments, all load/CRC guards, one `ret=0` at4.548457 and no qualified login within180s. Full private parser/no-input/identity/hash/time review PASS. Exec setup succeeded; userspace transition and the probe output call return remain UNVERIFIED. Subsequent NEW [protected recovery](../../../docs/evidence/mainline-init-exec-return/physical-2026-10-05/recovery.json) passed the checker and independent complete recovery review. No earlier reset is reused.
+- [x] 5s.4 Independently review recorded boundary/recovery limits, land/push and
       inspect exact CI/published revision. Planning command:
       `openspec validate the-board-runs-a-mainline-kernel --strict`.
+      Independent review PASS; physical revision3fbf380d, CI37357725932/deployment PASS and exact work revision, capture timestamps and staging publication HTTP200 verified: [publication receipt](../../../docs/evidence/mainline-init-exec-return/physical-2026-10-05/publication.json). Subsequent NEW protected recovery checker and independent complete review PASS. Ordinary task5b.5 stays open.
+
+## 5t. PID1 return and first userspace syscall (bounded diagnostic)
+
+- [x] 5t.1 Land independently reviewed source-grounded bounded plan before source
+      work. Proof: `openspec validate the-board-runs-a-mainline-kernel --strict`.
+      See design.md group5t; independent exact-source/context/order/both-gate planning review PASS and strict validation PASS. Implementation/build/physical outcomes remain UNVERIFIED.
+- [ ] 5t.2 Implement additive default-disabled two-point PID1 source/kernel/Nix
+      variant and typed fail-closed controller selection/parser; preserve parent
+      output, userspace bytes, control flow and old package identities. Source
+      context/lifetime/one-shot/order/negative gates and selected RISC-V objects
+      require independent review. Narrow proof:
+      `python3 tests/test_mainline_init_exec_transition.py`.
+- [ ] 5t.3 Realize and retain new kernel/dev/source outputs with exact config and
+      object/Image proof; record build failures separately. Host proof:
+      `nix build .#kernelMainlineInitExecTransition .#kernelMainlineInitExecTransition.dev --no-link --print-out-paths --max-jobs 1 --cores 4`.
+- [ ] 5t.4 Build matching new system/bundle and qualify actual source/config/DT/
+      archived init/systemd/Bash/loader/helper/transport bytes and manifest. Host
+      proof: `nix build .#kernelMainlineInitExecTransitionTrialBootFiles --no-link --print-out-paths --max-jobs 1 --cores 4`, then
+      `python3 tools/mainline-init-exec-transition-qualify.py --bundle BUNDLE --dev DEV --normal-report PRIVATE_NORMAL`.
+- [ ] 5t.5 After independent source/build/host review and NEW protected recovery,
+      guard staging, reserve sole board/UART and capture ONE passive180s trial.
+      Commit finite observations plus independently verified recovery or explicit
+      pending NEW reset. Command:
+      `python3 tools/mainline-drm-system-trial.py begin --wait-initramfs-in-initcall --without-boot-markers --init-exec-return --init-exec-transition --bundle BUNDLE --manifest PRIVATE_MANIFEST --normal-report PRIVATE_NORMAL --state NEW_PRIVATE_STATE --log PRIVATE_LOG --result PRIVATE_RESULT`.
+      No record grants input or proves its own output return, handler/loader/main,
+      ordinary root/glass or cause. Task5b.5 remains open.
+- [ ] 5t.6 Independently review, land/push and inspect exact CI/published revision.
+      Proof: `openspec validate the-board-runs-a-mainline-kernel --strict` plus
+      committed physical/recovery/publication bindings and limits.

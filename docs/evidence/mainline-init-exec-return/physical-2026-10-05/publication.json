@@ -1,0 +1,16 @@
+{
+  "revision": "3fbf380d0daec600edd3dfd8731eaf3cf76107da",
+  "ci_run": 37357725932,
+  "ci_conclusion": "success",
+  "deployment_conclusion": "success",
+  "work_url": "https://knewter.github.io/tdisplay-k230/work/",
+  "work_revision_verified": true,
+  "physical_capture_url": "https://knewter.github.io/tdisplay-k230/evidence/docs-evidence-mainline-init-exec-return-physical-2026-10-05-readme-md/",
+  "physical_capture_http_status": 200,
+  "capture_timestamps_verified": true,
+  "staging_url": "https://knewter.github.io/tdisplay-k230/evidence/docs-evidence-mainline-init-exec-return-staging-2026-10-05-readme-md/",
+  "staging_http_status": 200,
+  "verified_utc": "2026-10-05T18:43:43.598565+00:00",
+  "normal_recovery": "UNVERIFIED_PENDING_NEW_OPERATOR_RESET",
+  "ordinary_mainline_acceptance": "UNVERIFIED"
+}

@@ -768,8 +768,8 @@ its own output call returned, a failing instruction was found, ordinary root
 worked or recovery succeeded. Recovery SHALL be independently verified or
 explicitly pending NEW reset.
 
-<!-- UNVERIFIED: physical probe and ordinary acceptance remain pending; source/native/object/evaluation plus full matching build/new-header object/actual-positive qualification passed independent review. -->
-*Grounding: [independently reviewed quiet repeat](../../../../../../docs/evidence/mainline-system-trial/current-p2-baseline-repeat-physical-2026-10-05/README.md) and [selected source/alternative/proof plan](../../../../../../docs/research/mainline-init-exec-return-probe-2026-10-05.md). [Source/native/object/evaluation proof](../../../../../../docs/evidence/mainline-init-exec-return/host/README.md) passed independent review. [Actual full build/new-header object/artifact qualification](../../../../../../docs/evidence/mainline-init-exec-return/actual-host/README.md) passed independent review. [Restoration with retained roots and fresh qualification](../../../../../../docs/evidence/mainline-init-exec-return/restoration-host/README.md) passed independent review after the later availability failure. Physical output and ordinary acceptance remain open; this is not a shipped capability.*
+<!-- UNVERIFIED: userspace transition, output-call return and ordinary acceptance remain pending; physical capture recorded one valid ret=0 with no qualified login within180s, independently reviewed. Subsequent NEW protected normal recovery passed independent review. -->
+*Grounding: [independently reviewed quiet repeat](../../../../../../docs/evidence/mainline-system-trial/current-p2-baseline-repeat-physical-2026-10-05/README.md) and [selected source/alternative/proof plan](../../../../../../docs/research/mainline-init-exec-return-probe-2026-10-05.md). [Source/native/object/evaluation proof](../../../../../../docs/evidence/mainline-init-exec-return/host/README.md) passed independent review. [Actual full build/new-header object/artifact qualification](../../../../../../docs/evidence/mainline-init-exec-return/actual-host/README.md) passed independent review. [Restoration with retained roots and fresh qualification](../../../../../../docs/evidence/mainline-init-exec-return/restoration-host/README.md) passed independent review after the later availability failure. [Reviewed physical capture](../../../../../../docs/evidence/mainline-init-exec-return/physical-2026-10-05/README.md) and [exact publication](../../../../../../docs/evidence/mainline-init-exec-return/physical-2026-10-05/publication.json) establish exec setup success only. Subsequent NEW [protected recovery](../../../../../../docs/evidence/mainline-init-exec-return/physical-2026-10-05/recovery.json) passed independent review. Userspace execution, output-call return and ordinary acceptance remain UNVERIFIED; this is not a shipped capability.*
 
 #### Scenario: Selected init exec returns zero
 
@@ -782,3 +782,48 @@ explicitly pending NEW reset.
 - **WHEN** a qualified capture contains a nonzero result or no complete result
 - **THEN** record the returned value or unknown boundary without causal inference
 - **AND** send no candidate input on unknown readiness and require protected recovery
+
+### Requirement: PID1 return and first userspace syscall have bounded optional witnesses
+
+An additive default-disabled child of the selected init exec-return diagnostic
+SHALL preserve the parent record and offer at most two additional fixed versioned
+INFO records, scoped to armed PID1: after kernel_init returns before user-exit
+preparation, and after successful syscall entry from user mode before dispatch.
+The arm SHALL be set only for selected ramdisk exec success with both exact
+parent and transition runtime gates enabled. Ordinary-lifetime
+exact1 gate and consumed-before-output one-shots SHALL prevent fallback/task/
+retry output. The diagnostic SHALL NOT modify init/argv/env, return values,
+assembly/sret, IRQ/timer/vector/exit-work state or existing Nix output identities.
+
+A typed begin-only selection SHALL require exact parent/new gates, synchronous
+initramfs and marker-free ordinary init, reject conflicting/invalid selection
+before UART, and require independently reviewed source/context/object plus
+actual build/config/DT/archive/arguments/manifest qualification. Records SHALL
+be fresh and strictly ordered among present records; duplicates, malformed or
+reversed observations SHALL fail closed. Missing earlier frames SHALL remain
+incomplete/unknown without negating an independently valid later user ECALL
+witness or fabricating missing observations. The physical capture SHALL preserve complete private logging,
+protected staging/normal/load/CRC guards,180-second passive readiness and unknown
+no-input behavior. Recovery SHALL be independently verified or explicitly pending
+NEW reset. Ordinary root/panel/glass acceptance SHALL remain separate.
+
+<!-- UNVERIFIED: planned two-point diagnostic has no implementation, build or physical proof. -->
+*Grounding: [physical exec setup success without readiness](../../../../../../docs/evidence/mainline-init-exec-return/physical-2026-10-05/README.md) and read exact Linux source sites/context restrictions in design.md group5t. Proposed witness behavior remains UNVERIFIED.*
+
+#### Scenario: Kernel init returns before entering userspace
+
+- **WHEN** a qualified capture records kernel-init-return after exec-result0
+- **THEN** record that the original kernel_init and exec-result output call returned
+- **AND** retain the new output-call-return and user-execution unknowns
+
+#### Scenario: PID1 executes a userspace environment call
+
+- **WHEN** a qualified capture records a valid first-user-ecall witness
+- **THEN** record a user ECALL instruction and successful kernel entry setup
+- **AND** retain missing earlier records as incomplete/unknown plus syscall completion, loader/constructors/systemd-main and cause limits
+
+#### Scenario: A planned witness is missing or invalid
+
+- **WHEN** qualified progress or record validity is absent
+- **THEN** preserve the unknown boundary without candidate input or compensating changes
+- **AND** require independent protected recovery or a NEW operator reset
