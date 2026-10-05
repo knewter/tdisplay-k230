@@ -1,0 +1,22 @@
+{
+  "command": [
+    "python3",
+    "tools/mainline-init-exec-return-qualify.py",
+    "--bundle",
+    "/nix/store/5f2j4y8hy9cclbqjx4nshhxi4jiwz7iq-k230-mainline-drm-trial-boot-files",
+    "--dev",
+    "/nix/store/9ddh3qgnq1sj3ibqvd9124w4bfij2y6w-linux-riscv64-unknown-linux-gnu-7.3.0-rc5-dev",
+    "--normal-report",
+    "/home/jadams/tmp/k230-mainline-current-p2-baseline-repeat-20261005/normal-report.json",
+    "--build-receipt",
+    "/home/jadams/tmp/k230-mainline-init-exec-return-host/restore-full-build-result.private.json",
+    "--output-dir",
+    "/home/jadams/tmp/k230-mainline-init-exec-return-host/restore-qualification"
+  ],
+  "started_utc": "2026-10-05T15:34:50.358480+00:00",
+  "completed_utc": "2026-10-05T15:34:52.798862+00:00",
+  "returncode": 0,
+  "elapsed_seconds": 2.4404026969568804,
+  "revision": "7a99b32d979b9c4df5372476271e24b7546966cb",
+  "log_sha256": "647fb0cef31ef666ef2fbd19cf523b51c970dc1533b0172ee82982e15bc1d43b"
+}

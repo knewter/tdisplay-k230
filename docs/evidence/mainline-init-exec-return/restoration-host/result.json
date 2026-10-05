@@ -1,0 +1,58 @@
+{
+  "schema": "k230-init-exec-return-restoration-host-v1",
+  "timestamp_utc": "2026-10-05T15:37:12.702255+00:00",
+  "evidence_class": "existing-exact-outputs-restored-and-host-qualified",
+  "prior_qualification_fields_equal": {
+    "controller_source_sha256": true,
+    "qualifier_sha256": true,
+    "bundle": true,
+    "system": true,
+    "dev": true,
+    "kernel_proof": true,
+    "archive_proof": true,
+    "files": true,
+    "manifest_sha256": true,
+    "archive_delta": true,
+    "same_kernel_config": true,
+    "same_DT_hardware": true,
+    "same_original_system_init_bytes": true,
+    "sole_added_argument": true,
+    "base_argument_bytes": true,
+    "argument_bytes": true,
+    "literal_command_bytes": true
+  },
+  "all_prior_qualification_fields_equal": true,
+  "source_revision": "7a99b32d979b9c4df5372476271e24b7546966cb",
+  "source_controller_Nix_changes": false,
+  "build_flags_delta": [
+    "-L for logging",
+    "--out-link for GC retention instead of --no-link"
+  ],
+  "registered_roots": "retention.json",
+  "log_identity": {
+    "restore-source-build.log": {
+      "bytes": 1619,
+      "sha256": "61b230d3f8b0c30e4ec1fe33d9774489fb99dd2b4f6b0d7e981af8d8baee5c95"
+    },
+    "restore-kernel-build.log": {
+      "bytes": 3107785,
+      "sha256": "169ca246b528cc8438ccdba5e0f17eea4110b86576fe53dc50029657e76ca61d"
+    },
+    "restore-bundle-build.log": {
+      "bytes": 90736,
+      "sha256": "1ce63f5138db08072ca34963eb7c599d746444a5c349215a758c3a34969e88da"
+    },
+    "restore-system-build.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "restore-qualification.log": {
+      "bytes": 152,
+      "sha256": "647fb0cef31ef666ef2fbd19cf523b51c970dc1533b0172ee82982e15bc1d43b"
+    }
+  },
+  "normal_report_class": "last reviewed protected historical host anchor, not live preflight",
+  "implicit_qualification_build": false,
+  "UART_opened": false,
+  "physical": "UNVERIFIED"
+}
