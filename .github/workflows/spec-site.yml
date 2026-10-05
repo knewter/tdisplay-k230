@@ -74,6 +74,7 @@ jobs:
           python3 -m unittest discover -s tests -p 'test_mainline_drm_system_trial.py'
           python3 tests/test_mainline_initrd_debug_logging.py
           python3 tests/test_mainline_initrd_info_logging.py
+          python3 tests/test_mainline_initrd_info_kmsg_logging.py
           python3 -m unittest discover -s tests -p 'test_mainline_drm_initrd_shell_trial.py'
           python3 -m unittest discover -s tests -p 'test_mainline_shell_pid1_comparison.py'
 

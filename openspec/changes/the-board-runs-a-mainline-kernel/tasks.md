@@ -1360,14 +1360,16 @@ Independent physical and subsequent armed recovery review PASS. Physical revisio
 
 ## 5q. Fixed info-level kmsg comparison (bounded diagnostic)
 
-- [ ] 5q.1 Reconcile pinned backend/priority/fallback source; implement typed
+- [x] 5q.1 Reconcile pinned backend/priority/fallback source; implement typed
       exclusive begin-only kmsg selector, unchanged profiles/defaults, pre-UART
       aliases/types/conflicts and saved typed continuation. Host-only narrow proof:
       `python3 tests/test_mainline_initrd_info_kmsg_logging.py`.
-- [ ] 5q.2 Execute actual same p2/24h artifact qualification and sole one-value
+      [Controller source proof](../../../docs/evidence/mainline-initrd-info-kmsg-logging/host/controller-host.md):9 new+10info+13debug+36ordinary tests PASS, independently rerun; source0ba47bc0 reviewed PASS. No UART/build.
+- [x] 5q.2 Execute actual same p2/24h artifact qualification and sole one-value
       destination delta with exact352/370 bytes. Commit executed qualifier and
       safe receipt/recovery-anchor limits; no implicit UART/build. Command:
       `python3 docs/evidence/mainline-initrd-info-kmsg-logging/host/qualification-command.py --bundle BUNDLE --dev DEV --normal-report PRIVATE_NORMAL`.
+      [Executed actual preparation](../../../docs/evidence/mainline-initrd-info-kmsg-logging/host/README.md) exit0 on0ba47bc0; same artifacts/archive, sole destination delta352/370 and NEW armed recovery binding; independent review PASS. No live preflight/UART/build.
 - [ ] 5q.3 After NEW protected recovery and reviewed source/actual host gates,
       reserve board/UART for one passive180s same-build capture. Commit fixed
       facts plus independent recovery or explicit pending NEW reset. Command:

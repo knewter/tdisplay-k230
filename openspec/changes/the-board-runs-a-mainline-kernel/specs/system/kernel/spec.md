@@ -701,9 +701,9 @@ complete private logging and unknown-no-input behavior. It SHALL NOT report
 kmsg selection as proof that console was unused, every record was delivered,
 a blocked call was identified, ordinary root worked or recovery succeeded.
 
-<!-- UNVERIFIED: new selector, actual preparation and physical outcome remain planned. -->
+<!-- UNVERIFIED: physical kmsg output/ordinary acceptance remains open; independently reviewed controller and actual host proof are recorded below. -->
 *Grounding: [physical info/console result](../../../../../../docs/evidence/mainline-initrd-info-logging/physical-2026-10-05/README.md)
-and [selected-source backend audit](../../../../../../docs/research/mainline-initrd-info-kmsg-comparison-2026-10-05.md).*
+and [selected-source backend audit](../../../../../../docs/research/mainline-initrd-info-kmsg-comparison-2026-10-05.md). [Controller and executed actual host qualification](../../../../../../docs/evidence/mainline-initrd-info-kmsg-logging/host/README.md) passed independent review; no physical delivery is claimed.*
 
 #### Scenario: Changing the destination changes observed progress
 

@@ -223,3 +223,10 @@ aggregate site growth allowance, not a per-page performance claim. The
 large dashboard still warrants a separate loading/payload improvement.
 Exact corrected CI/deployment must be inspected after this commit; this
 measurement records the failed build, not a successful new publication.
+
+Subsequent correction210735d7854114f612358b9f87dcae57668396da passed
+Spec site run37258852614 including deployment:620 pages,16,785,273 bytes,
+20.32 seconds, enforced33,554,432-byte/120-second limits. The published
+https://knewter.github.io/tdisplay-k230/work/ returned HTTP200 with exact
+210735d7854114f612358b9f87dcae57668396da in its artifact-index revision.
+https://github.com/knewter/tdisplay-k230/actions/runs/37258852614
