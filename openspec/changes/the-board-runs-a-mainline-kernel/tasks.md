@@ -1469,3 +1469,18 @@ Independent source/actual host/full physical/parser/recovery-limit/publication r
       Proof: `openspec validate the-board-runs-a-mainline-kernel --strict` plus
       committed physical/recovery/publication bindings and limits.
       Independent public-packet review PASS. [Publication receipt](../../../docs/evidence/mainline-init-exec-transition/physical-2026-10-05/publication.json): CI 37385743786 build/deploy success; work page serves a6900de7 and the physical/actual-host pages return200. Ordinary root/panel/glass5b.5 remains open.
+
+
+## 5u. Camera liveness repeat of the staged transition capture (bounded diagnostic)
+
+- [ ] 5u.1 Land this plan. Proof: `openspec validate the-board-runs-a-mainline-kernel --strict`.
+- [ ] 5u.2 After NEW protected recovery, reserve board/UART and repeat the unchanged
+      5t command ONCE against the staged bundle with fresh private outputs while
+      recording the panel with the bench camera through the whole capture. Commit
+      sanitized UART facts, camera frame-difference classification with selected
+      stills, and verified recovery or explicit pending NEW reset. Command:
+      `python3 tools/mainline-drm-system-trial.py begin --wait-initramfs-in-initcall --without-boot-markers --init-exec-return --init-exec-transition --bundle BUNDLE --manifest PRIVATE_MANIFEST --normal-report PRIVATE_NORMAL --state NEW_PRIVATE_STATE --log NEW_PRIVATE_LOG --result NEW_PRIVATE_RESULT`
+      with `ffmpeg -f v4l2 -input_format mjpeg -video_size 1280x720 -i /dev/video0 -c copy PRIVATE_VIDEO`.
+      Camera evidence does not identify cause; task5b.5 remains open.
+- [ ] 5u.3 Independently review, land/push and inspect exact CI/published revision;
+      plan the next probe only from the classified outcome.

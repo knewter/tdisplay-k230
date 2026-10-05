@@ -1110,3 +1110,37 @@ pending a NEW reset. Ordinary root/panel/glass task5b.5 remains open. Reject gen
 per-syscall traces, userspace wrappers, systemd rebuilds and post-exit assembly
 logging: they add more changes or unsafe context before this narrower boundary
 has been observed.
+
+## Camera liveness repeat of the staged transition capture (group5u, UNVERIFIED)
+
+The group5t capture and the earlier 5s capture both end with systemd 261.2's
+`query_term_for_tty("/dev/console")` DCS query (`src/core/main.c:1727`,
+`src/basic/terminal-util.c` `terminal_get_terminfo_by_dcs`) and then 180 seconds
+of UART silence. On the normal boot the same code returns within its 333 ms
+`fd_wait_for_event` bound and emits `ESC[18t` next. Earlier groups established
+that mainline userspace can complete a timed wait (5n `sleep 5`) and that a
+periodic sampler stopped after its second sample (breadcrumbs). No capture has
+ever observed whether the kernel remains alive after the UART goes silent:
+hung-task, soft-lockup and RCU stall reports are themselves tick-driven and share
+the UART console.
+
+Repeat the identical reviewed 5t operator command once, unchanged, against the
+already staged `jx56x86…` bundle (no build, transfer, source or controller change)
+with fresh private state/log/result paths, while the host records the panel with
+the bench camera (`/dev/video0`, MJPEG 1280x720, stream copy) from before the
+candidate `bootm` until the capture ends. Under this kernel the mainline DRM/fbdev
+console showed boot text on the panel (10-01 photograph), so the panel is an
+output path independent of UART0.
+
+Classify by inspecting raw frames and frame differences over the panel region
+after the last UART byte: (a) periodic change (fbcon cursor blink, which is
+timer/workqueue driven) or new panel text after UART silence → kernel timers and
+workqueues alive, stall is local to PID1/console/tty; (b) a static panel after
+change was observed earlier in the same recording → consistent with system-wide
+stop, not proof of it; (c) no panel change at any point → inconclusive. Camera
+observation is its own evidence class; it cannot identify a cause, an instruction,
+or prove that a specific timer fired. The UART result remains classified by the
+unchanged controller. Recovery requires a NEW operator reset and the reviewed
+recovery checker pattern. The next probe (for example an SBI-console hrtimer
+heartbeat reporting IRQ counts and PID1 state) is planned only from this outcome.
+Task5b.5 remains open.
