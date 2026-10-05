@@ -1283,11 +1283,12 @@ completion of ordinary mainline acceptance.
       prompt/unknown/normal recovery, unchanged defaults and failure/finally write
       spies. Narrow proof: `python3 tests/test_mainline_autonomous_bash_pid1_controller.py`.
       Host source checkpoint: [controller preparation](../../../docs/evidence/mainline-autonomous-bash-pid1/host/controller-host.md); 16 focused fixtures PASS, strict/affected regressions PASS. No UART/build; actual artifact/native qualification remains 5n.3 and physical 5n.4 remains open.
-- [ ] 5n.3 Execute actual same p2/24h artifact/controller preparation and qualify
+- [x] 5n.3 Execute actual same p2/24h artifact/controller preparation and qualify
       source/config/Image/DT/archive/manifest/loads, executable sh/sleep ABI/loader
       and Bash builtins. Commit executed qualifier and safe receipt, exact fixed
       args/503-byte transport and native proof; no implicit build/UART. Command:
       `python3 docs/evidence/mainline-autonomous-bash-pid1/host/qualification-command.py --bundle BUNDLE --dev DEV --normal-report PRIVATE_NORMAL`.
+      Actual [host qualification](../../../docs/evidence/mainline-autonomous-bash-pid1/host/README.md) PASS on corrected root82b27a36: same p2/24h/0l4 artifacts/archive/loader/Bash exports, committed native receipt/fixtures/selected Linux/vector, exact154/477/503 bytes, historical normal anchors only. No UART/build; 5n.4 requires NEW protected recovery and remains open.
 - [ ] 5n.4 After NEW protected recovery plus reviewed native/controller/actual host
       gates, reserve board/UART for one 60-second passive comparison and commit fixed
       records/facts plus independent recovery or explicit pending NEW reset.

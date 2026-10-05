@@ -1,0 +1,20 @@
+{
+  "schema": 1,
+  "evidence_class": "host-run-history-only",
+  "preliminary_artifact_run": {
+    "status": "PASS_SUPERSEDED_SOURCE_CHECKPOINT",
+    "controller_revision": "977466c170b56e5b19ec46178c3ffd7db67fd527",
+    "completed_utc": "2026-10-05T00:20:48.810936+00:00",
+    "qualification_command_sha256": "4e0f329c4b32456e052155e83f90dfd0569902e6b059bc1db40003b1646f9106",
+    "safe_result_sha256": "487aa0fff8f7e68405a8079f1bd7554b3c190777e2919fbd925542bf8a18ba68",
+    "limits": "Artifact/native checks passed, but source was superseded by scoped unknown bootm/flush safety correction. No UART or board run occurred."
+  },
+  "flush_failure_fixture_first_run": {
+    "command": "TMPDIR=\"$HOME/tmp\" PYTHONDONTWRITEBYTECODE=1 python3 tests/test_mainline_autonomous_bash_pid1_controller.py",
+    "result": "16 tests; one fixture error before simulated boot, KeyError uart_progress_memory_no_stimulus",
+    "cause": "The same mocked preparation dictionary was reused after the first full transport fixture removed its selection fields.",
+    "correction": "d988bb08 restores isolated preparation fields before the accepted-bootm/unknown-flush case; 16 tests then passed in0.125 seconds.",
+    "hardware_or_actual_artifact_failure": false
+  },
+  "corrected_actual_artifact_run": "result.json"
+}
