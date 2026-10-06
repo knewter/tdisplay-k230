@@ -255,13 +255,13 @@ ordinary-root/panel/glass acceptance remain UNVERIFIED; task 5b.5 stays open.
 
 ## Bounded continuation: distinguish the second write's return from the third wakeup
 
-The committed [breadcrumb packet](../../../docs/evidence/mainline-uart-progress-breadcrumbs/physical-2026-10-03/README.md)
+The committed [breadcrumb packet](../../../../docs/evidence/mainline-uart-progress-breadcrumbs/physical-2026-10-03/README.md)
 at revision 278769d0 records both worker points, a matched fresh receipt and
 numeric n0/n1, but no n2–n5 during the bounded 180-second capture. Its
-[result](../../../docs/evidence/mainline-uart-progress-breadcrumbs/physical-2026-10-03/result.json)
+[result](../../../../docs/evidence/mainline-uart-progress-breadcrumbs/physical-2026-10-03/result.json)
 is independently reviewed. The subsequent operator reset passed guarded fresh
 protected normal postflight and Home observation; its distinct
-[recovery receipt](../../../docs/evidence/mainline-uart-progress-breadcrumbs/physical-2026-10-03/operator-reset-recovery.json)
+[recovery receipt](../../../../docs/evidence/mainline-uart-progress-breadcrumbs/physical-2026-10-03/operator-reset-recovery.json)
 does not qualify automatic return. A complete n1 line does
 not show its firmware call returning, or the worker reaching its third wakeup.
 No counter value, IRQ fault or ordinary-root result is inferred from that gap.
@@ -285,7 +285,7 @@ before source implementation, and only the reserved operator uses the board.
 Group5h's matching source/objects/full artifacts and positive controller gates
 passed. Its independently reviewed physical capture reached worker-entry/Bash,
 but no receipt, numeric samples or new points in180.0975s; the committed
-[physical packet](../../../docs/evidence/mainline-uart-progress-post-sample/physical-2026-10-03/README.md)
+[physical packet](../../../../docs/evidence/mainline-uart-progress-post-sample/physical-2026-10-03/README.md)
 and deployment receipt preserve that incomplete result. The subsequent NEW
 operator reset passed guarded fresh normal postflight and reviewed Home evidence.
 No return from entry's output, first sleep completion or later point is proved.
@@ -293,12 +293,12 @@ This leaves the ordinary mainline acceptance requirement and task5b.5 open.
 
 ## Bounded continuation: memory progress without repeated worker output
 
-The [PostSample capture](../../../docs/evidence/mainline-uart-progress-post-sample/physical-2026-10-03/README.md)
+The [PostSample capture](../../../../docs/evidence/mainline-uart-progress-post-sample/physical-2026-10-03/README.md)
 reached worker-entry/Bash but no receipt or later samples/points, unlike the prior
 n0/n1 result. Group5i adds a separately selected intervention: preserve six
 sleeps/cached snapshots/stop checks, suppress all worker output, record progress
 in ordinary memory and let one independent observer attempt a final summary.
-[Read source and limits](../../../docs/research/mainline-memory-progress-comparison-2026-10-03.md)
+[Read source and limits](../../../../docs/research/mainline-memory-progress-comparison-2026-10-03.md)
 show firmware console locking and unbounded UART polling as possible dependencies,
 not a diagnosed cause or proven installed-firmware identity. No new MMIO,
 IRQ/TTY/PID1/firmware/console-policy/scheduler change. New comparison remains
@@ -308,7 +308,7 @@ recovery is required before another trial. Land this plan before source work.
 
 ## Same-image continuation: withhold the candidate shell stimulus
 
-The [Memory physical capture](../../../docs/evidence/mainline-uart-progress-memory/physical-2026-10-03/README.md)
+The [Memory physical capture](../../../../docs/evidence/mainline-uart-progress-memory/physical-2026-10-03/README.md)
 records fresh args/Bash, one attempted stimulus and no receipt/summary in 180.1021s.
 Group 5j adds a separately typed controller-only zero-stimulus comparison against
 the SAME qualified lznjjfx1 image/dev/source/config/DT and identical volatile
@@ -321,11 +321,11 @@ Land this bounded plan before implementation; 5b.5 stays open.
 
 ## Same-image continuation: test idle/tick-policy dependence
 
-The [zero-input capture](../../../docs/evidence/mainline-uart-progress-memory/no-stimulus-physical-2026-10-04/README.md)
+The [zero-input capture](../../../../docs/evidence/mainline-uart-progress-memory/no-stimulus-physical-2026-10-04/README.md)
 reached Bash but no summary in 180.0995s with zero stimulus. Group 5k adds one
 separately typed idle-polling comparison: append only bare volatile `nohlt` to
 that same Memory image's qualified bootargs and retain zero candidate input.
-[Read source/config/linked setup](../../../docs/research/mainline-memory-idle-polling-comparison-2026-10-04.md)
+[Read source/config/linked setup](../../../../docs/research/mainline-memory-idle-polling-comparison-2026-10-04.md)
 support this bounded discriminator without a rebuild. No IRQ/MMIO/firmware,
 worker/observer, affinity/priority or production power-policy change. A result
 can show idle/tick-policy dependence, not its cause. New runtime selection,
@@ -336,9 +336,9 @@ before controller implementation.
 
 ## Bounded continuation: independent Linux-console observer output
 
-[Polling](../../../docs/evidence/mainline-uart-progress-memory/poll-idle-physical-2026-10-04/README.md)
+[Polling](../../../../docs/evidence/mainline-uart-progress-memory/poll-idle-physical-2026-10-04/README.md)
 received nohlt/Bash but no summary in 180.0929s; subsequent NEW reset restored
-protected normal/Home. The [timer/backend audit](../../../docs/research/mainline-memory-printk-channel-comparison-2026-10-04.md)
+protected normal/Home. The [timer/backend audit](../../../../docs/research/mainline-memory-printk-channel-comparison-2026-10-04.md)
 found no grounded timer-DT switch and observed a registered Linux8250 ttyS0 console.
 Group 5l adds a separately gated source/controller variant: retain Memory progress
 and observer wait/snapshot, replace its one final explicit DBCN attempt with one
@@ -356,12 +356,12 @@ return. Silence remains unknown; ordinary 5b.5 stays open. Land this plan first.
 
 ## Same-image continuation: disable tickless activation
 
-The [MemoryPrintk physical capture](../../../docs/evidence/mainline-uart-progress-memory-printk/physical-2026-10-04/README.md)
+The [MemoryPrintk physical capture](../../../../docs/evidence/mainline-uart-progress-memory-printk/physical-2026-10-04/README.md)
 reached Bash with exact arguments and a registered Linux console, but no observer
 record or automatic normal return in 180.1019 seconds. Group 5m tests one remaining
 tick-policy dependency using the same already-built p2 MemoryPrintk image: append
 only volatile `nohz=off`, retaining zero candidate input. The
-[source/config/Image audit](../../../docs/research/mainline-memory-printk-periodic-tick-comparison-2026-10-04.md)
+[source/config/Image audit](../../../../docs/research/mainline-memory-printk-periodic-tick-comparison-2026-10-04.md)
 grounds this option. It disables tickless activation; high-resolution timers and
 the RISC-V oneshot/SBI timer path remain. Earlier nohlt already restarts idle
 ticks, so its negative result limits this hypothesis without testing the global
@@ -373,13 +373,13 @@ and recovery remain UNVERIFIED; ordinary task 5b.5 stays open.
 
 ## Bounded continuation: autonomous PID1 output and one sleep
 
-The [same-image nohz-off capture](../../../docs/evidence/mainline-uart-progress-memory-printk/nohz-off-physical-2026-10-04/README.md)
+The [same-image nohz-off capture](../../../../docs/evidence/mainline-uart-progress-memory-printk/nohz-off-physical-2026-10-04/README.md)
 reached Bash readiness but no observer record in 180.025 seconds. Group 5n
 observes userspace directly: the same p2 Image/initrd/DT runs a fixed Bash-PID1
 script that checks PID1/UID0, emits a fresh begin record, sleeps once for five
 seconds and emits end on success, then attempts an interactive shell. Every
 reporter/trace/nohz/nohlt gate is absent; no received command is needed. The
-[read source/archive/quoting scout](../../../docs/research/mainline-autonomous-bash-pid1-comparison-2026-10-04.md)
+[read source/archive/quoting scout](../../../../docs/research/mainline-autonomous-bash-pid1-comparison-2026-10-04.md)
 grounds a 503-byte transport, while explicitly leaving native parser execution
 unproved. Native exact Hush and selected Linux argv proof are mandatory before
 physical use; do not weaken the generic transport policy or offer arbitrary
@@ -397,7 +397,7 @@ operator can distinguish queued dependencies, main-process spawn/exec failure,
 running closure lookup and completion before activation. Use the same artifacts
 and protected recovery; no kernel rebuild or new masks/targets. This requires
 the physical board for its result. Nested shell/syscall tracing and ordinary
-boot acceptance are outside this diagnostic. [Scope and source grounding](../../../docs/research/mainline-initrd-debug-logging-2026-10-05.md).
+boot acceptance are outside this diagnostic. [Scope and source grounding](../../../../docs/research/mainline-initrd-debug-logging-2026-10-05.md).
 
 
 ## One-value follow-up: info logging with the same console destination
@@ -406,7 +406,7 @@ The debug/console run did not provide a systemd banner or usable login. Plan one
 fixed child comparison lowering only the log level to info, retaining destination,
 artifacts and all guards. Its result requires the board; kernel rebuilds, new
 boot targets/masks, tracing and causal claims are outside scope. See [observed
-boundary and plan](../../../docs/research/mainline-initrd-info-console-comparison-2026-10-05.md).
+boundary and plan](../../../../docs/research/mainline-initrd-info-console-comparison-2026-10-05.md).
 
 
 ## One-value follow-up: info logging through kmsg
@@ -416,7 +416,7 @@ only the logging destination to kmsg at the same info level and immutable build.
 This needs physical UART evidence; backend selection is a diagnostic comparison,
 not a console-stall diagnosis or ordinary boot acceptance. Keep all guards and
 land this plan before source. No rebuild, added tracing/targets/masks or
-verbosity compensation. [Observed boundary and selected-source scope](../../../docs/research/mainline-initrd-info-kmsg-comparison-2026-10-05.md).
+verbosity compensation. [Observed boundary and selected-source scope](../../../../docs/research/mainline-initrd-info-kmsg-comparison-2026-10-05.md).
 
 
 ## Reproducibility control: repeat the unchanged quiet ordinary boot
@@ -426,7 +426,7 @@ one existing quiet ordinary policy before another intervention, because that
 policy previously reached closure lookup. No controller selector or artifact
 changes are needed. This requires the board, reviewed actual qualification
 and NEW protected recovery; no logging, tracing, target, timer/IRQ or build
-intervention. [Observed boundary and bounded roadmap](../../../docs/research/mainline-ordinary-baseline-repeat-2026-10-05.md).
+intervention. [Observed boundary and bounded roadmap](../../../../docs/research/mainline-ordinary-baseline-repeat-2026-10-05.md).
 
 
 ## One returned-result probe before userspace diagnostics
@@ -436,7 +436,7 @@ adds one optional finite signed-return record after the selected ramdisk init
 exec attempt, preserving original init/argv/env and error/fallback behavior.
 It requires an additive kernel build and physical UART proof; successful exec
 setup is not userspace execution. Closure and systemd-main instrumentation are
-outside this bounded change. [Observed boundary and source/proof plan](../../../docs/research/mainline-init-exec-return-probe-2026-10-05.md).
+outside this bounded change. [Observed boundary and source/proof plan](../../../../docs/research/mainline-init-exec-return-probe-2026-10-05.md).
 
 The built optional outputs were later absent at the pre-UART staging check.
 Restore and retain the exact pinned host artifacts in5s.2a before physical work;
@@ -444,7 +444,7 @@ keep earlier successful proof and the current availability failure distinct.
 
 ## Next bounded diagnostic: init return and first userspace syscall
 
-The [physical exec-return capture](../../../docs/evidence/mainline-init-exec-return/physical-2026-10-05/README.md)
+The [physical exec-return capture](../../../../docs/evidence/mainline-init-exec-return/physical-2026-10-05/README.md)
 recorded successful exec setup but no systemd startup or login. Group5t adds an
 optional child kernel variant with two finite PID1 witnesses: after kernel_init
 returns, and at the first successfully entered userspace syscall. This can

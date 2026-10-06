@@ -101,7 +101,7 @@ Hold a small implementation set until this queue closes. Eight proposals have no
 
 | Change | Checked/total | Classification by task count |
 | --- | ---: | --- |
-| [the-board-runs-a-mainline-kernel](../../../../openspec/changes/the-board-runs-a-mainline-kernel/tasks.md) | 24/25 | One remaining task |
+| [the-board-runs-a-mainline-kernel](../../../../openspec/changes/archive/2026-10-06-the-board-runs-a-mainline-kernel/tasks.md) | 24/25 | One remaining task |
 | [the-card-shell-has-no-video-special-case](../../../../openspec/changes/the-card-shell-has-no-video-special-case/tasks.md) | 9/10 | One remaining task |
 | [the-clock-survives-a-reboot](../../../../openspec/changes/the-clock-survives-a-reboot/tasks.md) | 5/6 | One remaining task |
 | [the-compositor-renders-ahead-of-scanout](../../../../openspec/changes/the-compositor-renders-ahead-of-scanout/tasks.md) | 4/5 | One remaining task |

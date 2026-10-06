@@ -556,8 +556,8 @@ calls can perturb timing and successful output is not a production fix.
 ## After-n1-write and third-post-sleep discriminator (group 5h)
 
 Layer: a new optional reporter-source/Nix family and separately reviewed typed
-controller selection. The committed [breadcrumb packet](../../../docs/evidence/mainline-uart-progress-breadcrumbs/physical-2026-10-03/README.md)
-and [result](../../../docs/evidence/mainline-uart-progress-breadcrumbs/physical-2026-10-03/result.json)
+controller selection. The committed [breadcrumb packet](../../../../docs/evidence/mainline-uart-progress-breadcrumbs/physical-2026-10-03/README.md)
+and [result](../../../../docs/evidence/mainline-uart-progress-breadcrumbs/physical-2026-10-03/result.json)
 at revision 278769d0 record both worker points, a matched fresh receipt and
 complete n0/n1, then no n2–n5 in 180s. CI 37171186624 and exact publication passed;
 the subsequent operator reset passed guarded fresh protected normal recovery
@@ -644,7 +644,7 @@ exact objects, typed protocol and physical/recovery evidence.
 Group5h's matching source/objects/full artifacts and positive controller gates
 passed. Its independently reviewed physical capture reached worker-entry/Bash,
 but no receipt, numeric samples or new points in180.0975s; the committed
-[physical packet](../../../docs/evidence/mainline-uart-progress-post-sample/physical-2026-10-03/README.md)
+[physical packet](../../../../docs/evidence/mainline-uart-progress-post-sample/physical-2026-10-03/README.md)
 and deployment receipt preserve that incomplete result. The subsequent NEW
 operator reset passed guarded fresh normal postflight and reviewed Home evidence.
 No return from entry's output, first sleep completion or later point is proved.
@@ -655,7 +655,7 @@ This leaves the ordinary mainline acceptance requirement and task5b.5 open.
 Group5h's independently reviewed actual capture reached only entry/Bash, with
 no matching receipt, samples or new points. Group5g reached n1. Missing serial
 output cannot identify execution or firmware return. The source audit in
-[the memory comparison note](../../../docs/research/mainline-memory-progress-comparison-2026-10-03.md)
+[the memory comparison note](../../../../docs/research/mainline-memory-progress-comparison-2026-10-03.md)
 grounds a distinct intervention rather than another per-boundary ECALL chain.
 
 Add separately named Memory reporter/kernel/system/bundle/exact-object outputs;
@@ -756,7 +756,7 @@ ordered fresh SPL→6.6.36→login→normal-prompt gate and independent protecte
 identities/eight hashes/three services/registration absence/distinct boot checks.
 No candidate reboot or persistent environment/card/profile change.
 
-The [source audit](../../../docs/research/mainline-memory-idle-polling-comparison-2026-10-04.md)
+The [source audit](../../../../docs/research/mainline-memory-idle-polling-comparison-2026-10-04.md)
 shows nohlt forces IRQ-enabled polling and restarts the tick. A summary supports
 an idle/tick-policy-dependent difference only; absent output retains all worker,
 observer, timer, scheduler and final-firmware-output limits. This is neither a
@@ -849,7 +849,7 @@ zero attempts and RX NOT_TESTED. Only independently ordered fresh normal boot
 markers and protected normal postflight authorize recovery writes. No candidate
 reboot, flash or persistent environment/profile/card change.
 
-The [read source and actual config/Image](../../../docs/research/mainline-memory-printk-periodic-tick-comparison-2026-10-04.md)
+The [read source and actual config/Image](../../../../docs/research/mainline-memory-printk-periodic-tick-comparison-2026-10-04.md)
 show this inhibits global tickless activation, without disabling high-resolution
 timers or guaranteeing hardware timer interrupts. nohlt already restarts ticks
 in its poll arm; do not relabel that previous test as a tickless-off test. Exact
@@ -880,7 +880,7 @@ The new helper reconstructs one exact fixed script from a controller-generated
 sole init token, rdinit=/bin/sh, async0, fsck skip and the two service masks.
 
 Use the exact 154-byte script and old-Hush transport in the
-[scout](../../../docs/research/mainline-autonomous-bash-pid1-comparison-2026-10-04.md).
+[scout](../../../../docs/research/mainline-autonomous-bash-pid1-comparison-2026-10-04.md).
 The only new argv after -- are -c and that script. Remove all reporter and trace
 gates so the read source returns before creating either reporter thread. Native
 execution of the exact selected Hush lexer/variable/quote/command handling must
@@ -950,7 +950,7 @@ Reject global tracing, journal forwarding, udev verbosity, extra masks/targets,
 alternate PID1 or a new build for this first comparison. Manager state/ExecStart
 logs cannot pinpoint silent shell subcommands; narrower helper instrumentation
 would need separate scope. Physical results and recovery remain unverified.
-See [read archive/source and current physical boundary](../../../docs/research/mainline-initrd-debug-logging-2026-10-05.md).
+See [read archive/source and current physical boundary](../../../../docs/research/mainline-initrd-debug-logging-2026-10-05.md).
 
 
 ## Fixed info/console comparison (group 5p)
@@ -968,7 +968,7 @@ Reject compensating kernel verbosity, debug+kmsg, extra masks/targets, global
 tracing and rebuilds for this comparison: each changes additional boundaries.
 Changed observed progress is sensitivity to one value, not a proven call/cause.
 A silent run cannot distinguish earlier PID1 setup from console open/write.
-[Source/physical scope](../../../docs/research/mainline-initrd-info-console-comparison-2026-10-05.md);
+[Source/physical scope](../../../../docs/research/mainline-initrd-info-console-comparison-2026-10-05.md);
 NEW recovery and actual qualification remain required.
 
 
@@ -990,7 +990,7 @@ means backend-selection sensitivity; silence does not localize a failing call.
 Reject debug+kmsg, verbosity compensation, arbitrary logging controls, tracing,
 new masks/targets/PID1 or builds: each adds another intervention. Require
 reviewed source/actual host gates and NEW protected recovery before one board
-capture, then independent recovery or explicit NEW reset. [Pinned source audit](../../../docs/research/mainline-initrd-info-kmsg-comparison-2026-10-05.md).
+capture, then independent recovery or explicit NEW reset. [Pinned source audit](../../../../docs/research/mainline-initrd-info-kmsg-comparison-2026-10-05.md).
 
 
 ## Unchanged ordinary-baseline repeat (group 5r)
@@ -1011,7 +1011,7 @@ new interventions; either outcome does not establish a single logging cause.
 Retain ordinary5b.5 and all runtime/glass/cause limits. Reject multiple repeats,
 compensating verbosity, tracing, targets/masks/PID1/IRQ/MMIO and builds in this
 group. Helper instrumentation is a separately scoped possible follow-up only
-if the original closure boundary reproduces. [Read archive/source roadmap](../../../docs/research/mainline-ordinary-baseline-repeat-2026-10-05.md).
+if the original closure boundary reproduces. [Read archive/source roadmap](../../../../docs/research/mainline-ordinary-baseline-repeat-2026-10-05.md).
 
 
 ## Selected init exec-return record (group 5s)
@@ -1034,7 +1034,7 @@ A record with return value zero shows exec setup success, not user-mode
 transition/loader/main.
 Missing/partial records and output-call return remain unknown; never label them
 a located instruction or hardware cause. Recovery is independently guarded or
-explicitly pending NEW reset. [Pinned source and alternative analysis](../../../docs/research/mainline-init-exec-return-probe-2026-10-05.md).
+explicitly pending NEW reset. [Pinned source and alternative analysis](../../../../docs/research/mainline-init-exec-return-probe-2026-10-05.md).
 
 Host artifact availability is a separate staging prerequisite: retain the optional
 source/kernel/dev/bundle with persistent Nix roots after realization. If outputs

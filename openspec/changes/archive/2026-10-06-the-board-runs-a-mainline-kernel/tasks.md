@@ -245,8 +245,8 @@ that milestone 1's methodology extends.
 - [x] 5b.4b Build and inspect that output with `nix build .#kernelMainlineDrmBootFiles --print-out-paths`; `/nix/store/bpbr6vldkm1y48k6wrdh7s6yv5szqa0k-k230-mainline-drm-boot-files` contains only the candidate Image and DTB, byte-identical to the derivation outputs (`docs/evidence/mainline-display-artifact-inspection.log`).
 - [x] 5b.4c Prepare a matching opt-in console trial system and boot bundle with its own initrd, volatile bootargs, closure inventory and registration; document offline root staging and manual U-Boot trial/restoration. Host proof: `nix build .#kernelMainlineDrmTrialBootFiles --no-link --print-out-paths --max-jobs 1 --cores 4` and `nix shell --inputs-from . nixpkgs#dtc --command python3 tools/mainline-drm-trial-inspect.py <output-path>`. The built bundle is `/nix/store/9v5jwcg97kp96jfj6nll4a4yixxzqh2x-k230-mainline-drm-trial-boot-files`; see `docs/evidence/mainline-display-boot-preparation.md` and its log. This does not stage a physical card or satisfy 5b.5.
 - [x] 5b.5 After staging a compatible usable root path following `docs/evidence/mainline-display-boot-preparation.md` (the built `kernelMainlineDrmBootFiles` contains only the Image and DTB, with no initrd or root filesystem), reserve the board and perform a recoverable manual U-Boot trial. Capture the serial log with `flock /tmp/k230-board.lock python3 tools/console.py /dev/ttyACM0 --wait=10`, plus a panel photograph and deliberate touch interaction. The candidate's display power-domain behavior remains UNVERIFIED until observed on hardware; the locally forward-ported provider planned in group 5c does not turn a host build into physical proof.
-      Next current-image ordinary comparison: [bounded handoff](../../../docs/research/mainline-autonomous-to-ordinary-init-next-2026-10-05.md); existing begin selectors, no new build. Fresh recovery/actual preparation passed; [physical capture](../../../docs/evidence/mainline-system-trial/current-p2-ordinary-physical-2026-10-05/README.md) reached mounted sysroot/starting closure lookup but no login in 180s. Subsequent NEW [recovery](../../../docs/evidence/mainline-system-trial/current-p2-ordinary-physical-2026-10-05/recovery.json) passed; group 5o plans manager logging.
-      [Full shell, display and touch evidence](../../../docs/evidence/mainline-full-shell-2026-10-06/README.md): the guarded system-trial controller replaced the manual U-Boot/console.py procedure. Ordinary root qualified (`candidate-ready-qualified-ordinary-init`) for the console and full coherent-shell variants; panel photographed (console, then Home matching the normal system); deliberate real-finger touch recorded by evtest (533 MT events) with camera. Display power domain observed on (`disp_domain` on, `display-subsystem` active). Limits: controller touch retrieval timed out (counts from raw capture); touch inside sway, audio, power key and Wi-Fi not verified.
+      Next current-image ordinary comparison: [bounded handoff](../../../../docs/research/mainline-autonomous-to-ordinary-init-next-2026-10-05.md); existing begin selectors, no new build. Fresh recovery/actual preparation passed; [physical capture](../../../../docs/evidence/mainline-system-trial/current-p2-ordinary-physical-2026-10-05/README.md) reached mounted sysroot/starting closure lookup but no login in 180s. Subsequent NEW [recovery](../../../../docs/evidence/mainline-system-trial/current-p2-ordinary-physical-2026-10-05/recovery.json) passed; group 5o plans manager logging.
+      [Full shell, display and touch evidence](../../../../docs/evidence/mainline-full-shell-2026-10-06/README.md): the guarded system-trial controller replaced the manual U-Boot/console.py procedure. Ordinary root qualified (`candidate-ready-qualified-ordinary-init`) for the console and full coherent-shell variants; panel photographed (console, then Home matching the normal system); deliberate real-finger touch recorded by evtest (533 MT events) with camera. Display power domain observed on (`disp_domain` on, `display-subsystem` active). Limits: controller touch retrieval timed out (counts from raw capture); touch inside sway, audio, power key and Wi-Fi not verified.
 - [x] 5b.6 Explicitly scope the display power-domain provider gap: pinned mainline has no `sysctl_power`/`K230_PM_DOMAIN_DISP` provider, so the initial host candidate omitted that unsupported phandle (see `docs/evidence/mainline-display-dtb.md`). Group 5c now adds an isolated local provider; physical display power remains UNVERIFIED.
 
 ## 5c. Keep the optional DRM display domain powered
@@ -796,7 +796,7 @@ and task 5b.5 remain UNVERIFIED; no archive or production fix is claimed.
       Source/protocol proof: `python3 tests/test_mainline_uart_progress.py`.
       Twelve actual-code native fixtures pass; the optional effective Kconfig
       resolves built-in reporter/dependencies and 22 existing output identities
-      are unchanged. [Source/config/object evidence](../../../docs/evidence/mainline-uart-progress/source-object-host-2026-10-03.md).
+      are unchanged. [Source/config/object evidence](../../../../docs/evidence/mainline-uart-progress/source-object-host-2026-10-03.md).
       At this initial source proof, the full matching build and physical observations were UNVERIFIED; later host build proof is recorded in 5f.2–3.
 - [x] 5f.2 Compile the changed 8250/timer/reporter objects against the exact
       configured RISC-V headers and verify record layout/lifetime/Kconfig.
@@ -805,7 +805,7 @@ and task 5b.5 remain UNVERIFIED; no archive or production fix is claimed.
       headers plus an explicit reporter overlay; preliminary layout/API proof passed.
       ExactObjects subsequently passed against the actual selected kernel.dev
       config/autoconf without an overlay; all three ELF/lifetime/layout checks
-      passed. [Exact/full host proof](../../../docs/evidence/mainline-uart-progress/exact-full-host-2026-10-03.md).
+      passed. [Exact/full host proof](../../../../docs/evidence/mainline-uart-progress/exact-full-host-2026-10-03.md).
 - [x] 5f.3 Build the complete optional matching system/initrd/DT/bundle and
       inspect hashes/CRCs/closure/config and unchanged existing derivations.
       Host-only proof: `nix build .#kernelMainlineUartProgressTrialBootFiles --no-link --print-out-paths`
@@ -827,14 +827,14 @@ and task 5b.5 remain UNVERIFIED; no archive or production fix is claimed.
       Controller source/fixture preparation is recorded in
       `docs/evidence/mainline-uart-progress-controller/README.md`; this task
       actual matching bundle/config qualification subsequently passed.
-      [Matching controller host proof](../../../docs/evidence/mainline-uart-progress/controller-matching-host-2026-10-03.md).
+      [Matching controller host proof](../../../../docs/evidence/mainline-uart-progress/controller-matching-host-2026-10-03.md).
 - [x] 5f.5 After fresh protected normal recovery, reserve board/UART and run one
       matching physical comparison with its exact prepared identities:
       `python3 tools/mainline-drm-initrd-shell-trial.py --mode minimal --same-image-shell-pid1 --uart-progress --bundle BUNDLE --manifest PRIVATE_MANIFEST --normal-report PRIVATE_NORMAL --log PRIVATE_LOG --result PRIVATE_RESULT`.
       Commit fixed records/stimulus/interpretation and protected normal
       postflight or explicit pending operator recovery. This proves only the
       observations obtained, not full root/panel/glass acceptance.
-      [Physical finite observation](../../../docs/evidence/mainline-uart-progress/physical-2026-10-03/README.md): exact received arguments and Bash prompt, one stimulus,
+      [Physical finite observation](../../../../docs/evidence/mainline-uart-progress/physical-2026-10-03/README.md): exact received arguments and Bash prompt, one stimulus,
       zero receipts and zero records; subsequent protected operator reset/postflight verified
       (fresh boot, exact identities, eight files, three services, registration absence).
       This is observation-only, not successful diagnostic/root/touch acceptance.
@@ -842,7 +842,7 @@ and task 5b.5 remain UNVERIFIED; no archive or production fix is claimed.
       preserve unknown markers and task 5b.5, land/push evidence and verify
       exact CI/published revision. Planning proof: `openspec validate the-board-runs-a-mainline-kernel --strict`.
       Zero-report limits and manual protected recovery are committed in the
-      [physical packet](../../../docs/evidence/mainline-uart-progress/physical-2026-10-03/README.md).
+      [physical packet](../../../../docs/evidence/mainline-uart-progress/physical-2026-10-03/README.md).
       Recovery revision 5cdff03b passed CI 37166330080 and published work/evidence
       checks; the reviewed continuation is preserved as planned group 5g below.
       No ordinary-root/touch/automatic-recovery result is inferred.
@@ -863,7 +863,7 @@ and task 5b.5 remain UNVERIFIED; no archive or production fix is claimed.
       twelve original source/API fixtures passed; evaluation preserves all 91
       existing package identities and ten kernel source/config pairs. Exact
       original-source layering and inherited config/params are recorded in
-      [source-host evidence](../../../docs/evidence/mainline-uart-progress-breadcrumbs/source-host/README.md).
+      [source-host evidence](../../../../docs/evidence/mainline-uart-progress-breadcrumbs/source-host/README.md).
       This is not a full matching build, actual configured object or physical proof.
 - [x] 5g.2 Add/build the separately selected matching kernel/system/initrd/DT/
       bundle, preserving original artifact parameters and every existing
@@ -881,7 +881,7 @@ and task 5b.5 remain UNVERIFIED; no archive or production fix is claimed.
       verifier source 071086bc exact-object command returned 0 under shared lock.
       Selected dev config/autoconf, three RISC-V objects/regular aligned storage,
       source 7207, full bundle hashes/CRCs/closure and complete hardware DT equality
-      passed. [Exact/full host evidence](../../../docs/evidence/mainline-uart-progress-breadcrumbs/exact-full-host/README.md).
+      passed. [Exact/full host evidence](../../../../docs/evidence/mainline-uart-progress-breadcrumbs/exact-full-host/README.md).
       The initial coordinator session 143/broken-pipe interruption is distinct
       from the successful completion receipt. No hardware/RX/return result is
       inferred; tasks 5g.5–6 and task 5b.5 remain open.
@@ -905,7 +905,7 @@ and task 5b.5 remain UNVERIFIED; no archive or production fix is claimed.
       and `result.json`; the named fixture commands also passed, preserving a
       separate quota failure and bounded ~/tmp rerun. This is host-only proof;
       group5g.5 and task 5b.5 remain open, without candidate reboot or hardware claim.
-      [Integrated source/controller checks](../../../docs/evidence/mainline-uart-progress-breadcrumbs/integration-host-2026-10-03.md) include strict CRLF/embedded-CR framing and CI coverage.
+      [Integrated source/controller checks](../../../../docs/evidence/mainline-uart-progress-breadcrumbs/integration-host-2026-10-03.md) include strict CRLF/embedded-CR framing and CI coverage.
 - [x] 5g.5 After fresh protected normal recovery and exact host/controller proof,
       reserve board/UART for one comparison, capture fixed breadcrumb/sample/
       receipt facts and limits, then verify protected normal return or record
@@ -917,7 +917,7 @@ and task 5b.5 remain UNVERIFIED; no archive or production fix is claimed.
       protected preflight/load checks passed. Both fixed breadcrumbs, one
       matching Bash receipt and samples 0/1 arrived; samples 2–5 and normal return
       did not arrive in 180.084 seconds. No further input or candidate reboot.
-      [Physical evidence](../../../docs/evidence/mainline-uart-progress-breadcrumbs/physical-2026-10-03/README.md)
+      [Physical evidence](../../../../docs/evidence/mainline-uart-progress-breadcrumbs/physical-2026-10-03/README.md)
       records fixed facts/deltas, firmware-return limits and distinct operator-reset
       recovery verified after the capture. This is observation proof only; task 5b.5 stays open.
 - [x] 5g.6 Reconcile presence/absence and firmware-return limits, retain unknown
@@ -951,7 +951,7 @@ records exact limits. Automatic return and task 5b.5 stay open.
       `python3 tests/test_mainline_uart_progress_post_sample.py` plus unchanged-output/source/config identity evaluation.
       Native 15 new fixtures and 13/12 prior fixtures passed; all 95 prior
       package identities and 11 exposed kernel source/config pairs were equal.
-      Source-only/native/pure-evaluation receipt: [source host proof](../../../docs/evidence/mainline-uart-progress-post-sample/source-host/README.md).
+      Source-only/native/pure-evaluation receipt: [source host proof](../../../../docs/evidence/mainline-uart-progress-post-sample/source-host/README.md).
       No matching full build, target object or physical claim follows.
 - [x] 5h.2 Build separately selected matching kernel/system/initrd/DT/bundle;
       inspect full installed config, source layering, Image/CRC/closure/hash/
@@ -961,7 +961,7 @@ records exact limits. Automatic return and task 5b.5 stay open.
       then `python3 tools/mainline-drm-trial-inspect.py BUNDLE`.
       Matching full build from frozen `75cc49df` returned 0; actual inspector,
       installed config, source layering, linked Image and complete hardware DT
-      comparison passed. [Exact/full host proof](../../../docs/evidence/mainline-uart-progress-post-sample/exact-full-host/README.md); no physical claim.
+      comparison passed. [Exact/full host proof](../../../../docs/evidence/mainline-uart-progress-post-sample/exact-full-host/README.md); no physical claim.
 - [x] 5h.3 Compile actual changed worker/getter/timer against the exact selected
       kernel.dev config/generated headers without overlay; inspect ordinary
       helper/flag/strings lifetime, lengths/alignment64/page bounds and unchanged
@@ -983,12 +983,12 @@ records exact limits. Automatic return and task 5b.5 stay open.
       Keep this task unchecked until actual NEW matching bundle/dev/source/Image
       positive preparation passes. Fixtures and old-artifact rejection alone
       do not satisfy that gate or establish a performed protected board check.
-      Preparation evidence: [PostSample controller host note](../../../docs/evidence/mainline-uart-progress-post-sample/controller/README.md)
+      Preparation evidence: [PostSample controller host note](../../../../docs/evidence/mainline-uart-progress-post-sample/controller/README.md)
       records 20 focused tests plus unchanged 18 breadcrumb/20 progress/100
       minimal/14 shell/36 ordinary tests, the strict source/Image/config gate,
       and actual old matching artifact rejection before UART access. Actual NEW
       positive preparation now passed against frozen `75cc49df` and realized fjmxf6
-      bundle/js4by9 dev: [positive host proof](../../../docs/evidence/mainline-uart-progress-post-sample/positive-controller-host/README.md).
+      bundle/js4by9 dev: [positive host proof](../../../../docs/evidence/mainline-uart-progress-post-sample/positive-controller-host/README.md).
       Same-drv config, reviewed aee68 source, linked unique Image strings, actual
       archived executables/common loader and exact sole additional gate passed;
       literal transport 419 bytes versus 386. No UART/build or performed protected
@@ -1002,11 +1002,11 @@ records exact limits. Automatic return and task 5b.5 stay open.
       `python3 tools/mainline-drm-initrd-shell-trial.py --mode minimal --same-image-shell-pid1 --uart-progress --uart-progress-breadcrumbs --uart-progress-post-sample --bundle BUNDLE --manifest PRIVATE_MANIFEST --normal-report PRIVATE_NORMAL --log PRIVATE_LOG --result PRIVATE_RESULT`.
       Missing output remains unknown; no further input or candidate reboot.
       This is diagnostic observation, not ordinary-root/touch/automatic return.
-      Actual fjmxf6 comparison completed: [physical capture](../../../docs/evidence/mainline-uart-progress-post-sample/physical-2026-10-03/README.md).
+      Actual fjmxf6 comparison completed: [physical capture](../../../../docs/evidence/mainline-uart-progress-post-sample/physical-2026-10-03/README.md).
       Fresh args/Bash/worker-entry, one stimulus, no receipt/samples/new points
       during 180.0975s; no protocol errors or candidate reboot. New operator
       reset subsequently passed fresh guarded normal postflight and reviewed
-      Home: [reset receipt](../../../docs/evidence/mainline-uart-progress-post-sample/physical-2026-10-03/operator-reset-recovery.json).
+      Home: [reset receipt](../../../../docs/evidence/mainline-uart-progress-post-sample/physical-2026-10-03/operator-reset-recovery.json).
 - [x] 5h.6 Reconcile point reach/return/output and sleep/scheduling limits,
       preserve task 5b.5 and unknown states, land/push public-safe evidence and
       verify exact CI/published revision. Planning proof:
@@ -1034,7 +1034,7 @@ completion of ordinary mainline acceptance.
       counts. Narrow proof: `python3 tests/test_mainline_uart_progress_memory.py`.
       Actual-code 13 fixtures and prior 15/13/12 fixtures passed; all 99 prior
       package drv identities and 12 exposed kernel source/config pairs equal.
-      [Source/native/pure-evaluation proof](../../../docs/evidence/mainline-uart-progress-memory/source-host/README.md); no matching full artifact, target-object,
+      [Source/native/pure-evaluation proof](../../../../docs/evidence/mainline-uart-progress-memory/source-host/README.md); no matching full artifact, target-object,
       controller or physical claim follows. Other 5i gates stay open.
 - [x] 5i.2 Build matching Memory kernel/system/bundle/dev, inspect source/config,
       CRC/closure/archive/original args/complete hardware DT. Host proof:
@@ -1042,7 +1042,7 @@ completion of ordinary mainline acceptance.
       then `python3 tools/mainline-drm-trial-inspect.py BUNDLE`.
       Matching frozen `7af8f7b8` full build returned0; actual selected source,
       config/Image/initrd/CRCs/closure/original args/full hardware DT passed.
-      [Exact/full host proof](../../../docs/evidence/mainline-uart-progress-memory/exact-full-host/README.md); no physical claim.
+      [Exact/full host proof](../../../../docs/evidence/mainline-uart-progress-memory/exact-full-host/README.md); no physical claim.
 - [x] 5i.3 Compile exact selected-header worker/getter/timer/observer objects;
       inspect consistent publication dependencies, ordinary lifetime/aligned
       buffer/page bounds and unchanged getter behavior. Host-only proof:
@@ -1057,13 +1057,13 @@ completion of ordinary mainline acceptance.
       one fresh stimulus/passive capture and strict single-summary facts. Actual
       NEW matching positive preparation required before checking this task.
       Narrow proof: `python3 tests/test_mainline_uart_progress_memory_controller.py`.
-      Preparation: [Memory controller host proof](../../../docs/evidence/mainline-uart-progress-memory/controller/README.md)
+      Preparation: [Memory controller host proof](../../../../docs/evidence/mainline-uart-progress-memory/controller/README.md)
       records 20 exact-summary/real-pump/transport/qualification fixtures plus
       unchanged 20 PostSample/18 Breadcrumbs/20 numeric/100 minimal/14 shell/36
       ordinary checks. Actual fjmxf6 old artifact fails the new reviewed worker
       gate before UART. Consistent incomplete/timeout summary, worker completion,
       receipt and protected return remain independent facts; no candidate reboot
-      or extra input follows. [Actual NEW positive host proof](../../../docs/evidence/mainline-uart-progress-memory/positive-controller-host/README.md)
+      or extra input follows. [Actual NEW positive host proof](../../../../docs/evidence/mainline-uart-progress-memory/positive-controller-host/README.md)
       now passes against frozen `7af8f7b8`, realized lznjjfx1 bundle/1pvqbm4 dev,
       same-drv config, reviewed 307d7c source, unique linked summary format/setup,
       actual archived executables/shared loader and sole additional gate
@@ -1074,16 +1074,16 @@ completion of ordinary mainline acceptance.
       independent protected recovery or explicit pending operator reset.
       Command: `python3 tools/mainline-drm-initrd-shell-trial.py --mode minimal --same-image-shell-pid1 --uart-progress --uart-progress-memory --bundle BUNDLE --manifest PRIVATE_MANIFEST --normal-report PRIVATE_NORMAL --log PRIVATE_LOG --result PRIVATE_RESULT`.
       Memory progress/output/receipt/recovery remain separate; 5b.5 stays open.
-      Actual lznjjfx1 comparison completed: [physical capture](../../../docs/evidence/mainline-uart-progress-memory/physical-2026-10-03/README.md).
+      Actual lznjjfx1 comparison completed: [physical capture](../../../../docs/evidence/mainline-uart-progress-memory/physical-2026-10-03/README.md).
       Fresh banner/args/Bash, one stimulus, no receipt or summary in 180.1021s;
       no errors or candidate reboot. Subsequent NEW operator reset passed protected
-      normal postflight/Home camera checks: [recovery receipt](../../../docs/evidence/mainline-uart-progress-memory/physical-2026-10-03/operator-reset-recovery.json).
+      normal postflight/Home camera checks: [recovery receipt](../../../../docs/evidence/mainline-uart-progress-memory/physical-2026-10-03/operator-reset-recovery.json).
 - [x] 5i.6 Independently reconcile changed-output intervention limits, review,
       land/push public evidence and verify exact CI/published revision.
       Planning proof: `openspec validate the-board-runs-a-mainline-kernel --strict`.
       Independent physical review passed; master `136dbf91`, CI37178946290
       PASS and exact published work/evidence revision verified HTTP200:
-      [publication receipt](../../../docs/evidence/mainline-uart-progress-memory/physical-2026-10-03/publication.json).
+      [publication receipt](../../../../docs/evidence/mainline-uart-progress-memory/physical-2026-10-03/publication.json).
       Subsequent NEW reset recovery is verified; ordinary acceptance 5b.5 stays open.
 
 
@@ -1097,7 +1097,7 @@ completion of ordinary mainline acceptance.
       pre-open conflicts and independent guarded normal return. Narrow proof:
       `python3 tests/test_mainline_uart_progress_memory_no_stimulus_controller.py`.
       Host implementation/15 real-pump fixtures and 228 previous controller tests
-      passed; independent source review PASS. [Host proof](../../../docs/evidence/mainline-uart-progress-memory/no-stimulus-host/README.md).
+      passed; independent source review PASS. [Host proof](../../../../docs/evidence/mainline-uart-progress-memory/no-stimulus-host/README.md).
       Physical no-stimulus capture/recovery remain UNVERIFIED.
 - [x] 5j.2 Requalify actual existing lznjjfx1 bundle/1pvqbm4 dev/source 307d7c/
       linked Image/archive/manifests and exact unchanged Memory args. Record
@@ -1106,7 +1106,7 @@ completion of ordinary mainline acceptance.
       and exact equality with selected no-stimulus transport. No kernel rebuild.
       Actual existing lznjjfx1/1pvqbm4 preparation PASS on c62ad389; exact same
       source/Image/config/archive/manifest and 381-byte Memory transport, no added
-      token/build/UART. [Executed qualifier and safe receipt](../../../docs/evidence/mainline-uart-progress-memory/no-stimulus-host/README.md).
+      token/build/UART. [Executed qualifier and safe receipt](../../../../docs/evidence/mainline-uart-progress-memory/no-stimulus-host/README.md).
       Historical baseline acceptance is host-only; fresh physical preflight and
       no-stimulus capture/recovery remain UNVERIFIED.
 - [x] 5j.3 After fresh protected normal recovery and host policy/artifact proof,
@@ -1114,16 +1114,16 @@ completion of ordinary mainline acceptance.
       facts plus protected recovery or explicit pending operator reset. Command:
       `python3 tools/mainline-drm-initrd-shell-trial.py --mode minimal --same-image-shell-pid1 --uart-progress --uart-progress-memory --uart-progress-memory-no-stimulus --bundle BUNDLE --manifest PRIVATE_MANIFEST --normal-report PRIVATE_NORMAL --log PRIVATE_LOG --result PRIVATE_RESULT`.
       No RX, root/glass or cause inference; 5b.5 stays open.
-      [Actual zero-input capture](../../../docs/evidence/mainline-uart-progress-memory/no-stimulus-physical-2026-10-04/README.md):
+      [Actual zero-input capture](../../../../docs/evidence/mainline-uart-progress-memory/no-stimulus-physical-2026-10-04/README.md):
       fresh banner/args/Bash, zero attempts/NOT_REQUESTED/RX NOT_TESTED, no summary
       in 180.0995s, no protocol error or normal return. Subsequent NEW operator
-      reset passed protected normal/Home checks: [recovery receipt](../../../docs/evidence/mainline-uart-progress-memory/no-stimulus-physical-2026-10-04/operator-reset-recovery.json).
+      reset passed protected normal/Home checks: [recovery receipt](../../../../docs/evidence/mainline-uart-progress-memory/no-stimulus-physical-2026-10-04/operator-reset-recovery.json).
 - [x] 5j.4 Reconcile removed-input intervention limits, independently review,
       land/push evidence and verify exact CI/published revision. Planning proof:
       `openspec validate the-board-runs-a-mainline-kernel --strict`.
       Independent physical review PASS; master `691279d0`, CI 37180546857
       PASS and exact published work/evidence revision HTTP 200 verified:
-      [publication receipt](../../../docs/evidence/mainline-uart-progress-memory/no-stimulus-physical-2026-10-04/publication.json).
+      [publication receipt](../../../../docs/evidence/mainline-uart-progress-memory/no-stimulus-physical-2026-10-04/publication.json).
       Subsequent NEW recovery is verified; ordinary acceptance 5b.5 stays open.
 
 
@@ -1134,7 +1134,7 @@ completion of ordinary mainline acceptance.
       Retain strict zero candidate writes and all default transports. Narrow proof:
       `python3 tests/test_mainline_uart_progress_memory_poll_idle_controller.py`.
       Typed one-token comparison/14 focused fixtures and 243 prior controller
-      tests PASS; independent source review PASS. [Host implementation proof](../../../docs/evidence/mainline-uart-progress-memory/poll-idle-host/README.md).
+      tests PASS; independent source review PASS. [Host implementation proof](../../../../docs/evidence/mainline-uart-progress-memory/poll-idle-host/README.md).
       Actual preparation and physical comparison/recovery remain separate gates.
 - [x] 5k.2 Run actual existing lznjjfx1/1pvqbm4 artifact preparation with unchanged
       source/Image/config/DT/archive/manifest/load checks; verify exact one-token
@@ -1144,7 +1144,7 @@ completion of ordinary mainline acceptance.
       plus typed polling preparation and exact previous-proof artifact equality.
       Actual existing artifact qualification PASS on d10b8fa0; same lznjjfx1/
       1pvqbm4 source/Image/config/DT/archive/manifest, singleton supported setup
-      and exact381→387-byte transform. [Safe receipt/executed qualifier](../../../docs/evidence/mainline-uart-progress-memory/poll-idle-host/README.md).
+      and exact381→387-byte transform. [Safe receipt/executed qualifier](../../../../docs/evidence/mainline-uart-progress-memory/poll-idle-host/README.md).
       Initial host harness comparison failure is preserved; corrected gate PASS.
       No build/UART/live preflight. Physical polling/recovery remain UNVERIFIED.
 - [x] 5k.3 After NEW protected normal recovery and actual host proof, reserve
@@ -1152,7 +1152,7 @@ completion of ordinary mainline acceptance.
       facts plus independent recovery or explicit pending operator reset. Command:
       `python3 tools/mainline-drm-initrd-shell-trial.py --mode minimal --same-image-shell-pid1 --uart-progress --uart-progress-memory --uart-progress-memory-no-stimulus --uart-progress-memory-poll-idle --bundle BUNDLE --manifest PRIVATE_MANIFEST --normal-report PRIVATE_NORMAL --log PRIVATE_LOG --result PRIVATE_RESULT`.
       No cause/RX/ordinary-root inference; 5b.5 stays open.
-      [Actual polling capture and subsequent protected recovery](../../../docs/evidence/mainline-uart-progress-memory/poll-idle-physical-2026-10-04/README.md):
+      [Actual polling capture and subsequent protected recovery](../../../../docs/evidence/mainline-uart-progress-memory/poll-idle-physical-2026-10-04/README.md):
       exact nohlt args/Bash, zero input, no summary/normal return in 180.0929s;
       no protocol error. Subsequent NEW reset passed normal/Home checks; normal
       system restored. Automatic return and ordinary acceptance remain UNVERIFIED.
@@ -1161,7 +1161,7 @@ completion of ordinary mainline acceptance.
       `openspec validate the-board-runs-a-mainline-kernel --strict`.
       Independent physical/recovery review PASS; master `e2a02cb0`, CI
       37182761318 PASS and exact published work/evidence revision HTTP 200
-      verified: [publication receipt](../../../docs/evidence/mainline-uart-progress-memory/poll-idle-physical-2026-10-04/publication.json).
+      verified: [publication receipt](../../../../docs/evidence/mainline-uart-progress-memory/poll-idle-physical-2026-10-04/publication.json).
       Normal is restored; no timer/firmware cause or ordinary acceptance inferred.
 
 
@@ -1177,7 +1177,7 @@ completion of ordinary mainline acceptance.
       tests passed; the inherited worker/init tail and atomic/completion behavior
       are unchanged. All 103 previous package drv identities and 13 kernel
       source/config pairs equal; corrected source realized and hash independently
-      reviewed. [Source/native/evaluation proof](../../../docs/evidence/mainline-uart-progress-memory-printk/source-host/README.md).
+      reviewed. [Source/native/evaluation proof](../../../../docs/evidence/mainline-uart-progress-memory-printk/source-host/README.md).
       Exact/full/controller/physical gates remain separate and unchecked.
 - [x] 5l.2 Freeze reviewed source/native proof and build matching artifacts.
       Command: `nix build .#kernelMainlineUartProgressMemoryPrintkTrialBootFiles .#kernelMainlineUartProgressMemoryPrintk.dev --no-link --print-out-paths -L`.
@@ -1186,7 +1186,7 @@ completion of ordinary mainline acceptance.
       actual p2kdar bundle and 24hbal dev pass Image/system/kernel/initrd/CRC/closure
       inspection, original arguments and complete hardware-DT comparison. Installed
       config/autoconf bytes equal the Memory parent; PRINTK_CALLER is disabled.
-      [Actual exact/full host proof](../../../docs/evidence/mainline-uart-progress-memory-printk/exact-full-host/README.md).
+      [Actual exact/full host proof](../../../../docs/evidence/mainline-uart-progress-memory-printk/exact-full-host/README.md).
 - [x] 5l.3 Inspect exact selected target objects/calls/format, atomic/completion
       behavior and matching source/config. Command:
       `nix build .#kernelMainlineUartProgressMemoryPrintkExactObjects --no-link --print-out-paths -L`.
@@ -1205,12 +1205,12 @@ completion of ordinary mainline acceptance.
       receipt/executed qualifier; no UART or implicit build. Source hash must be
       the independently reviewed realized variant, not an unknown placeholder.
       Controller preparation/20 corrected fixtures and prior controller regressions
-      PASS; root independent review PASS. [Host preparation](../../../docs/evidence/mainline-uart-progress-memory-printk/controller/README.md).
+      PASS; root independent review PASS. [Host preparation](../../../../docs/evidence/mainline-uart-progress-memory-printk/controller/README.md).
       Actual new bundle p2kdar89 / dev 24hbalyl / reviewed worker 30e8eb1e
       qualification PASS (2026-10-04 07:15 UTC, exit 0): same-derivation actual
       config, linked Image/format/setup, DT/archive/load/CRC and sole gate
       transport 381→416 bytes; no UART/build/new board preflight.
-      [Executed qualifier and safe receipt](../../../docs/evidence/mainline-uart-progress-memory-printk/positive-controller-host/README.md).
+      [Executed qualifier and safe receipt](../../../../docs/evidence/mainline-uart-progress-memory-printk/positive-controller-host/README.md).
       Historical protected normal report is a host anchor only; physical
       observation/recovery and ordinary root/touch remain UNVERIFIED.
 - [x] 5l.5 After protected normal recovery plus source/native/exact/full/controller
@@ -1218,18 +1218,18 @@ completion of ordinary mainline acceptance.
       physical facts and recovery or explicit pending operator reset. Command:
       `python3 tools/mainline-drm-initrd-shell-trial.py --mode minimal --same-image-shell-pid1 --uart-progress --uart-progress-memory --uart-progress-memory-no-stimulus --uart-progress-memory-printk --bundle BUNDLE --manifest PRIVATE_MANIFEST --normal-report PRIVATE_NORMAL --log PRIVATE_LOG --result PRIVATE_RESULT`.
       No output-return/cause/RX/ordinary-root inference; 5b.5 stays open.
-      [Actual new-channel capture](../../../docs/evidence/mainline-uart-progress-memory-printk/physical-2026-10-04/README.md):
+      [Actual new-channel capture](../../../../docs/evidence/mainline-uart-progress-memory-printk/physical-2026-10-04/README.md):
       fresh exact args/registered Linux backend/bin-sh entry, zero input, no UMK
       or normal return in 180.1019s. Original prompt classification misses the
       observed Readline prefix; later host-only correction preserves original
       physical result. Subsequent NEW reset passed protected normal/Home recovery;
-      [follow-up receipt](../../../docs/evidence/mainline-uart-progress-memory-printk/physical-2026-10-04/recovery.json).
+      [follow-up receipt](../../../../docs/evidence/mainline-uart-progress-memory-printk/physical-2026-10-04/recovery.json).
 - [x] 5l.6 Independently reconcile changed-channel limits, review, land/push
       evidence and verify exact CI/published revision. Planning proof:
       `openspec validate the-board-runs-a-mainline-kernel --strict`.
       Independent physical-packet review PASS; master `adf3ac81`, CI
       37186803102 PASS and exact published work/physical/readiness evidence
-      revision HTTP 200 verified: [publication receipt](../../../docs/evidence/mainline-uart-progress-memory-printk/physical-2026-10-04/publication.json).
+      revision HTTP 200 verified: [publication receipt](../../../../docs/evidence/mainline-uart-progress-memory-printk/physical-2026-10-04/publication.json).
       Publication receipt reflects recovery pending at that revision; subsequent
       NEW protected recovery is recorded separately. No ordinary acceptance inferred.
 
@@ -1242,7 +1242,7 @@ completion of ordinary mainline acceptance.
       setup; append only trailing nohz=off. Preserve defaults, strict parsing,
       zero candidate writes and protected recovery. No build/UART. Narrow proof:
       `python3 tests/test_mainline_uart_progress_memory_printk_nohz_off_controller.py`.
-      [Source/fixture proof](../../../docs/evidence/mainline-uart-progress-memory-printk/nohz-off-host/README.md):
+      [Source/fixture proof](../../../../docs/evidence/mainline-uart-progress-memory-printk/nohz-off-host/README.md):
       13 focused plus 23 MemoryPrintk/14 polling/15 no-stimulus PASS; actual
       existing-artifact gate remains pending under 5m.2. No UART/build.
 - [x] 5m.2 Run actual existing p2kdar89/24hbalyl artifact/controller preparation,
@@ -1257,7 +1257,7 @@ completion of ordinary mainline acceptance.
       facts plus independently verified recovery or explicit pending NEW reset.
       Command: `python3 tools/mainline-drm-initrd-shell-trial.py --mode minimal --same-image-shell-pid1 --uart-progress --uart-progress-memory --uart-progress-memory-no-stimulus --uart-progress-memory-printk --uart-progress-memory-printk-nohz-off --bundle BUNDLE --manifest PRIVATE_MANIFEST --normal-report PRIVATE_NORMAL --log PRIVATE_LOG --result PRIVATE_RESULT`.
       No cause/RX/output-return/ordinary-root inference; 5b.5 stays open.
-      [Actual same-image nohz-off capture](../../../docs/evidence/mainline-uart-progress-memory-printk/nohz-off-physical-2026-10-04/README.md):
+      [Actual same-image nohz-off capture](../../../../docs/evidence/mainline-uart-progress-memory-printk/nohz-off-physical-2026-10-04/README.md):
       fresh exact args/backend/Bash readiness, zero input, no UMK/normal return
       in 180.025s, no protocol error. Prior NEW recovery verified; another NEW
       reset after this capture remains explicitly PENDING. Same-source-only
@@ -1267,8 +1267,8 @@ completion of ordinary mainline acceptance.
       `openspec validate the-board-runs-a-mainline-kernel --strict`.
       Independent physical/recovery review PASS; master `b04ac4d0`, CI
       37245257792 PASS and exact work/new physical/previous recovery publication
-      HTTP 200 verified: [publication receipt](../../../docs/evidence/mainline-uart-progress-memory-printk/nohz-off-physical-2026-10-04/publication.json).
-      Subsequent NEW nohz-off [protected recovery](../../../docs/evidence/mainline-uart-progress-memory-printk/nohz-off-physical-2026-10-04/recovery.json) passed: distinct boot, exact identities/eight hashes/three services/registration absence. Automatic return and 5b.5 stay UNVERIFIED.
+      HTTP 200 verified: [publication receipt](../../../../docs/evidence/mainline-uart-progress-memory-printk/nohz-off-physical-2026-10-04/publication.json).
+      Subsequent NEW nohz-off [protected recovery](../../../../docs/evidence/mainline-uart-progress-memory-printk/nohz-off-physical-2026-10-04/recovery.json) passed: distinct boot, exact identities/eight hashes/three services/registration absence. Automatic return and 5b.5 stay UNVERIFIED.
 
 
 ## 5n. Fixed autonomous Bash-PID1 comparison (bounded diagnostic complete)
@@ -1281,31 +1281,31 @@ completion of ordinary mainline acceptance.
       `python3 tests/test_mainline_autonomous_bash_pid1_argv.py`.
       Native host proof: 12 tests PASS; full unchanged pinned Hush dispatch and
       exact selected Linux argv functions recover 477-byte bootargs and two argv.
-      [Receipt](../../../docs/evidence/mainline-autonomous-bash-pid1/native-argv/README.md)
+      [Receipt](../../../../docs/evidence/mainline-autonomous-bash-pid1/native-argv/README.md)
       records hooks/registration adapters and installed/target/physical limits.
 - [x] 5n.2 Implement only typed `--autonomous-bash-pid1` requiring minimal/same-image
       and rejecting competing selectors/types/modes/altered syntax before UART.
       Add strict fresh-nonce begin/end parsing and 60-second zero-input capture, separate
       prompt/unknown/normal recovery, unchanged defaults and failure/finally write
       spies. Narrow proof: `python3 tests/test_mainline_autonomous_bash_pid1_controller.py`.
-      Host source checkpoint: [controller preparation](../../../docs/evidence/mainline-autonomous-bash-pid1/host/controller-host.md); 16 focused fixtures PASS, strict/affected regressions PASS. No UART/build; actual artifact/native qualification remains 5n.3 and physical 5n.4 remains open.
+      Host source checkpoint: [controller preparation](../../../../docs/evidence/mainline-autonomous-bash-pid1/host/controller-host.md); 16 focused fixtures PASS, strict/affected regressions PASS. No UART/build; actual artifact/native qualification remains 5n.3 and physical 5n.4 remains open.
 - [x] 5n.3 Execute actual same p2/24h artifact/controller preparation and qualify
       source/config/Image/DT/archive/manifest/loads, executable sh/sleep ABI/loader
       and Bash builtins. Commit executed qualifier and safe receipt, exact fixed
       args/503-byte transport and native proof; no implicit build/UART. Command:
       `python3 docs/evidence/mainline-autonomous-bash-pid1/host/qualification-command.py --bundle BUNDLE --dev DEV --normal-report PRIVATE_NORMAL`.
-      Actual [host qualification](../../../docs/evidence/mainline-autonomous-bash-pid1/host/README.md) PASS on corrected root82b27a36: same p2/24h/0l4 artifacts/archive/loader/Bash exports, committed native receipt/fixtures/selected Linux/vector, exact154/477/503 bytes, historical normal anchors only. No UART/build; 5n.4 requires NEW protected recovery and remains open.
+      Actual [host qualification](../../../../docs/evidence/mainline-autonomous-bash-pid1/host/README.md) PASS on corrected root82b27a36: same p2/24h/0l4 artifacts/archive/loader/Bash exports, committed native receipt/fixtures/selected Linux/vector, exact154/477/503 bytes, historical normal anchors only. No UART/build; 5n.4 requires NEW protected recovery and remains open.
 - [x] 5n.4 After NEW protected recovery plus reviewed native/controller/actual host
       gates, reserve board/UART for one 60-second passive comparison and commit fixed
       records/facts plus independent recovery or explicit pending NEW reset.
       Command: `python3 tools/mainline-drm-initrd-shell-trial.py --mode minimal --same-image-shell-pid1 --autonomous-bash-pid1 --bundle BUNDLE --manifest PRIVATE_MANIFEST --normal-report PRIVATE_NORMAL --log PRIVATE_LOG --result PRIVATE_RESULT`.
       Keep RX/output-return/cause/ordinary-root limits; 5b.5 stays open.
-      [Physical autonomous capture](../../../docs/evidence/mainline-autonomous-bash-pid1/physical-2026-10-05/README.md): strict B then E and later primary prompt in60.035s, exact candidate arguments/backend/bin-sh entry, zero input/errors. Selected sleep returned; RX and ordinary init/root/glass remain UNVERIFIED. Capture complete; subsequent NEW protected recovery is verified in recovery.json, independently reviewed. No prior reset reused.
+      [Physical autonomous capture](../../../../docs/evidence/mainline-autonomous-bash-pid1/physical-2026-10-05/README.md): strict B then E and later primary prompt in60.035s, exact candidate arguments/backend/bin-sh entry, zero input/errors. Selected sleep returned; RX and ordinary init/root/glass remain UNVERIFIED. Capture complete; subsequent NEW protected recovery is verified in recovery.json, independently reviewed. No prior reset reused.
 - [x] 5n.5 Independently review parser/execution/recovery limits, land/push evidence
       and inspect exact CI/published revision. Planning proof:
       `openspec validate the-board-runs-a-mainline-kernel --strict`.
 
-      Independent raw/parser/load/recovery-limits review PASS; physical evidence master ad746e5b, CI37250588096 PASS, exact work/autonomous/nohz-recovery publication HTTP200 verified: [publication receipt](../../../docs/evidence/mainline-autonomous-bash-pid1/physical-2026-10-05/publication.json). Subsequent NEW [autonomous recovery](../../../docs/evidence/mainline-autonomous-bash-pid1/physical-2026-10-05/recovery.json) passed exact identities/eight boot hashes/three services/registration absence with a distinct boot; automatic return and ordinary init/root/panel/glass task5b.5 stay UNVERIFIED.
+      Independent raw/parser/load/recovery-limits review PASS; physical evidence master ad746e5b, CI37250588096 PASS, exact work/autonomous/nohz-recovery publication HTTP200 verified: [publication receipt](../../../../docs/evidence/mainline-autonomous-bash-pid1/physical-2026-10-05/publication.json). Subsequent NEW [autonomous recovery](../../../../docs/evidence/mainline-autonomous-bash-pid1/physical-2026-10-05/recovery.json) passed exact identities/eight boot hashes/three services/registration absence with a distinct boot; automatic return and ordinary init/root/panel/glass task5b.5 stay UNVERIFIED.
 
 
 ## 5o. Fixed ordinary-init manager logging (bounded diagnostic)
@@ -1315,23 +1315,23 @@ completion of ordinary mainline acceptance.
       Test exact/default arguments, split fresh readiness beyond buffer capacity,
       complete private logging and unknown-no-input paths. No UART/build. Narrow
       proof: `python3 tests/test_mainline_initrd_debug_logging.py`.
-      [Host controller proof](../../../docs/evidence/mainline-initrd-debug-logging/host/controller-host.md): 13 focused plus 36 existing tests PASS, independently rerun; reviewed source integrated ec121e6d, CI37255138757 PASS. No UART/build.
+      [Host controller proof](../../../../docs/evidence/mainline-initrd-debug-logging/host/controller-host.md): 13 focused plus 36 existing tests PASS, independently rerun; reviewed source integrated ec121e6d, CI37255138757 PASS. No UART/build.
 - [x] 5o.2 Execute actual same p2/24h preparation with the fixed policy; verify
       unchanged source/config/Image/DT/archive/manifest/load identities, systemd
       init, exact 356/374-byte policy and fresh normal anchors. Commit executed
       host qualifier and safe receipt; no implicit build/UART. Narrow command:
       `python3 docs/evidence/mainline-initrd-debug-logging/host/qualification-command.py --bundle BUNDLE --dev DEV --normal-report PRIVATE_NORMAL`.
-      [Executed actual preparation](../../../docs/evidence/mainline-initrd-debug-logging/host/README.md) exit0 on ec121e6d, same artifacts/archive, exact356/374 vs317 bytes and fresh preceding recovery anchor; independent review PASS. No live preflight/UART/build.
+      [Executed actual preparation](../../../../docs/evidence/mainline-initrd-debug-logging/host/README.md) exit0 on ec121e6d, same artifacts/archive, exact356/374 vs317 bytes and fresh preceding recovery anchor; independent review PASS. No live preflight/UART/build.
 - [x] 5o.3 After NEW protected recovery and reviewed host/controller gates, reserve
       board/UART for one passive 180-second same-artifact capture. Commit fixed
       safe unit facts plus independently verified recovery or pending NEW reset.
       Command: `python3 tools/mainline-drm-system-trial.py begin --wait-initramfs-in-initcall --without-boot-markers --initrd-debug-logging --bundle BUNDLE --manifest PRIVATE_MANIFEST --normal-report PRIVATE_NORMAL --state NEW_PRIVATE_STATE --log PRIVATE_LOG --result PRIVATE_RESULT`.
       No nested-command/call/cause or ordinary-root inference; 5b.5 stays open.
-      [Actual passive capture](../../../docs/evidence/mainline-initrd-debug-logging/physical-2026-10-05/README.md): same artifacts/exact args, fresh Linux/Run init announcement but no systemd/closure/login in 180s, exit1, zero later input in source/annotations; independent full review PASS. Subsequent NEW protected recovery passed; see recovery.json.
+      [Actual passive capture](../../../../docs/evidence/mainline-initrd-debug-logging/physical-2026-10-05/README.md): same artifacts/exact args, fresh Linux/Run init announcement but no systemd/closure/login in 180s, exit1, zero later input in source/annotations; independent full review PASS. Subsequent NEW protected recovery passed; see recovery.json.
 - [x] 5o.4 Independently review manager-state/parser/recovery limits, land/push
       evidence and inspect exact CI and published revision. Planning proof:
       `openspec validate the-board-runs-a-mainline-kernel --strict`.
-      Independent physical/parser/load/argument/no-input review PASS; master50daca22, CI37256024917 PASS and exact work/host/physical publication HTTP200 verified: [publication receipt](../../../docs/evidence/mainline-initrd-debug-logging/physical-2026-10-05/publication.json). Subsequent NEW [protected recovery](../../../docs/evidence/mainline-initrd-debug-logging/physical-2026-10-05/recovery.json) passed; automatic return and5b.5 stay UNVERIFIED.
+      Independent physical/parser/load/argument/no-input review PASS; master50daca22, CI37256024917 PASS and exact work/host/physical publication HTTP200 verified: [publication receipt](../../../../docs/evidence/mainline-initrd-debug-logging/physical-2026-10-05/publication.json). Subsequent NEW [protected recovery](../../../../docs/evidence/mainline-initrd-debug-logging/physical-2026-10-05/recovery.json) passed; automatic return and5b.5 stay UNVERIFIED.
 
 
 ## 5p. Fixed info-level console comparison (bounded diagnostic)
@@ -1340,24 +1340,24 @@ completion of ordinary mainline acceptance.
       selector with old default/debug behavior, aliases/types pre-UART and typed
       saved continuation. Meaningful host fixtures; no UART/build. Narrow proof:
       `python3 tests/test_mainline_initrd_info_logging.py`.
-      [Source/controller proof](../../../docs/evidence/mainline-initrd-info-logging/host/controller-host.md): exact selected261.2 source pin/patch scope checked; 10 new+13debug+36ordinary tests PASS, independently rerun; reviewed source integrated94c78157. No UART/build.
+      [Source/controller proof](../../../../docs/evidence/mainline-initrd-info-logging/host/controller-host.md): exact selected261.2 source pin/patch scope checked; 10 new+13debug+36ordinary tests PASS, independently rerun; reviewed source integrated94c78157. No UART/build.
 - [x] 5p.2 Execute actual same p2/24h artifact/preparation qualifier, sole one-value
       policy delta and exact355/373 bytes. Commit executed qualifier and safe
       receipt, with recovery anchor limits; no implicit UART/build. Command:
       `python3 docs/evidence/mainline-initrd-info-logging/host/qualification-command.py --bundle BUNDLE --dev DEV --normal-report PRIVATE_NORMAL`.
-      [Actual same-artifact qualification](../../../docs/evidence/mainline-initrd-info-logging/host/README.md) exit0 on94c78157, exact355/373 versus356/374, latest NEW protected recovery bound; independent review PASS. No live preflight/UART/build.
+      [Actual same-artifact qualification](../../../../docs/evidence/mainline-initrd-info-logging/host/README.md) exit0 on94c78157, exact355/373 versus356/374, latest NEW protected recovery bound; independent review PASS. No live preflight/UART/build.
 - [x] 5p.3 After NEW protected recovery and reviewed source/host gates, reserve
       board/UART for one passive180s same-image capture. Commit fixed facts and
       independent recovery or explicit pending NEW reset. Command:
       `python3 tools/mainline-drm-system-trial.py begin --wait-initramfs-in-initcall --without-boot-markers --initrd-info-logging --bundle BUNDLE --manifest PRIVATE_MANIFEST --normal-report PRIVATE_NORMAL --state NEW_PRIVATE_STATE --log PRIVATE_LOG --result PRIVATE_RESULT`.
       No syscall/cause or ordinary-root inference;5b.5 stays open.
-      [Actual passive info/console capture](../../../docs/evidence/mainline-initrd-info-logging/physical-2026-10-05/README.md): exact args/source/same artifacts, freshLinux/Run init announcement but no systemd/closure/login within180s; no later candidateinput insource/annotations; independent fullreview PASS. Subsequent NEW armed [protected recovery](../../../docs/evidence/mainline-initrd-info-logging/physical-2026-10-05/recovery.json) passed; initial zero-byte failed check preserved.
+      [Actual passive info/console capture](../../../../docs/evidence/mainline-initrd-info-logging/physical-2026-10-05/README.md): exact args/source/same artifacts, freshLinux/Run init announcement but no systemd/closure/login within180s; no later candidateinput insource/annotations; independent fullreview PASS. Subsequent NEW armed [protected recovery](../../../../docs/evidence/mainline-initrd-info-logging/physical-2026-10-05/recovery.json) passed; initial zero-byte failed check preserved.
 - [x] 5p.4 Independently review comparison/source/recovery limits, land/push
       evidence and inspect exact CI and published revision. Planning proof:
       `openspec validate the-board-runs-a-mainline-kernel --strict`.
 
 
-Independent physical and subsequent armed recovery review PASS. Physical revision f03ff3ce, CI37257736256 PASS and exact work revision/published capture HTTP200 verified: [publication receipt](../../../docs/evidence/mainline-initrd-info-logging/physical-2026-10-05/publication.json). Automatic return and ordinary task5b.5 remain UNVERIFIED.
+Independent physical and subsequent armed recovery review PASS. Physical revision f03ff3ce, CI37257736256 PASS and exact work revision/published capture HTTP200 verified: [publication receipt](../../../../docs/evidence/mainline-initrd-info-logging/physical-2026-10-05/publication.json). Automatic return and ordinary task5b.5 remain UNVERIFIED.
 
 ## 5q. Fixed info-level kmsg comparison (bounded diagnostic)
 
@@ -1365,24 +1365,24 @@ Independent physical and subsequent armed recovery review PASS. Physical revisio
       exclusive begin-only kmsg selector, unchanged profiles/defaults, pre-UART
       aliases/types/conflicts and saved typed continuation. Host-only narrow proof:
       `python3 tests/test_mainline_initrd_info_kmsg_logging.py`.
-      [Controller source proof](../../../docs/evidence/mainline-initrd-info-kmsg-logging/host/controller-host.md):9 new+10info+13debug+36ordinary tests PASS, independently rerun; source0ba47bc0 reviewed PASS. No UART/build.
+      [Controller source proof](../../../../docs/evidence/mainline-initrd-info-kmsg-logging/host/controller-host.md):9 new+10info+13debug+36ordinary tests PASS, independently rerun; source0ba47bc0 reviewed PASS. No UART/build.
 - [x] 5q.2 Execute actual same p2/24h artifact qualification and sole one-value
       destination delta with exact352/370 bytes. Commit executed qualifier and
       safe receipt/recovery-anchor limits; no implicit UART/build. Command:
       `python3 docs/evidence/mainline-initrd-info-kmsg-logging/host/qualification-command.py --bundle BUNDLE --dev DEV --normal-report PRIVATE_NORMAL`.
-      [Executed actual preparation](../../../docs/evidence/mainline-initrd-info-kmsg-logging/host/README.md) exit0 on0ba47bc0; same artifacts/archive, sole destination delta352/370 and NEW armed recovery binding; independent review PASS. No live preflight/UART/build.
+      [Executed actual preparation](../../../../docs/evidence/mainline-initrd-info-kmsg-logging/host/README.md) exit0 on0ba47bc0; same artifacts/archive, sole destination delta352/370 and NEW armed recovery binding; independent review PASS. No live preflight/UART/build.
 - [x] 5q.3 After NEW protected recovery and reviewed source/actual host gates,
       reserve board/UART for one passive180s same-build capture. Commit fixed
       facts plus independent recovery or explicit pending NEW reset. Command:
       `python3 tools/mainline-drm-system-trial.py begin --wait-initramfs-in-initcall --without-boot-markers --initrd-info-kmsg-logging --bundle BUNDLE --manifest PRIVATE_MANIFEST --normal-report PRIVATE_NORMAL --state NEW_PRIVATE_STATE --log PRIVATE_LOG --result PRIVATE_RESULT`.
       Preserve fallback/drop/cause limits; ordinary task5b.5 stays open.
-      [Actual passive capture](../../../docs/evidence/mainline-initrd-info-kmsg-logging/physical-2026-10-05/README.md): exact same artifacts/args/source, fresh kernel/pre-exec init only, no systemd/closure/login in180s; independent full review PASS. Subsequent NEW [confirmed recovery](../../../docs/evidence/mainline-initrd-info-kmsg-logging/physical-2026-10-05/recovery.json) passed independently; expired passive listener0bytes/no postflight remains separate.
+      [Actual passive capture](../../../../docs/evidence/mainline-initrd-info-kmsg-logging/physical-2026-10-05/README.md): exact same artifacts/args/source, fresh kernel/pre-exec init only, no systemd/closure/login in180s; independent full review PASS. Subsequent NEW [confirmed recovery](../../../../docs/evidence/mainline-initrd-info-kmsg-logging/physical-2026-10-05/recovery.json) passed independently; expired passive listener0bytes/no postflight remains separate.
 - [x] 5q.4 Independently review comparison, source and recovery limits; land/push
       and inspect exact CI/published revision. Planning proof:
       `openspec validate the-board-runs-a-mainline-kernel --strict`.
 
 
-Independent full capture/recovery-limit review PASS. Physical revision236f6bca, CI37259813601/deployment PASS and exact work revision/published capture HTTP200 verified: [publication receipt](../../../docs/evidence/mainline-initrd-info-kmsg-logging/physical-2026-10-05/publication.json). Subsequent NEW confirmed recovery passed; automatic return and ordinary5b.5 remain UNVERIFIED.
+Independent full capture/recovery-limit review PASS. Physical revision236f6bca, CI37259813601/deployment PASS and exact work revision/published capture HTTP200 verified: [publication receipt](../../../../docs/evidence/mainline-initrd-info-kmsg-logging/physical-2026-10-05/publication.json). Subsequent NEW confirmed recovery passed; automatic return and ordinary5b.5 remain UNVERIFIED.
 
 ## 5r. Unchanged quiet ordinary-baseline repeat (bounded control)
 
@@ -1392,19 +1392,19 @@ Independent full capture/recovery-limit review PASS. Physical revision236f6bca, 
       helper/load/CRC identities; commit executed qualifier and safe receipt,
       independently review. No implicit UART/build. Narrow command:
       `python3 docs/evidence/mainline-system-trial/current-p2-baseline-repeat-host-2026-10-05/qualification-command.py --bundle BUNDLE --dev DEV --normal-report PRIVATE_NORMAL`.
-      [Executed same-artifact qualification](../../../docs/evidence/mainline-system-trial/current-p2-baseline-repeat-host-2026-10-05/README.md) exit0 on3d2a080c; exact original299/317, unchanged source/helpers/artifacts and NEW kmsg recovery binding; independent review PASS. No live preflight/UART/build.
+      [Executed same-artifact qualification](../../../../docs/evidence/mainline-system-trial/current-p2-baseline-repeat-host-2026-10-05/README.md) exit0 on3d2a080c; exact original299/317, unchanged source/helpers/artifacts and NEW kmsg recovery binding; independent review PASS. No live preflight/UART/build.
 - [x] 5r.2 After reviewed source/actual host gates and NEW protected recovery,
       reserve board/UART for ONE passive180s repeat; commit fixed facts plus
       independent recovery or explicit pending NEW reset. Command:
       `python3 tools/mainline-drm-system-trial.py begin --wait-initramfs-in-initcall --without-boot-markers --bundle BUNDLE --manifest PRIVATE_MANIFEST --normal-report PRIVATE_NORMAL --state NEW_PRIVATE_STATE --log PRIVATE_LOG --result PRIVATE_RESULT`.
       No new intervention, helper trace or cause/root/glass acceptance;5b.5 open.
-      [Completed unchanged quiet capture](../../../docs/evidence/mainline-system-trial/current-p2-baseline-repeat-physical-2026-10-05/README.md): same299/317/source/artifacts, freshLinux/pre-exec init only, no systemd/closure/login within180s. Original closure boundary did not reproduce; independent full review PASS. Subsequent NEW [protected recovery](../../../docs/evidence/mainline-system-trial/current-p2-baseline-repeat-physical-2026-10-05/recovery.json) passed independent review; no previous reset reused.
+      [Completed unchanged quiet capture](../../../../docs/evidence/mainline-system-trial/current-p2-baseline-repeat-physical-2026-10-05/README.md): same299/317/source/artifacts, freshLinux/pre-exec init only, no systemd/closure/login within180s. Original closure boundary did not reproduce; independent full review PASS. Subsequent NEW [protected recovery](../../../../docs/evidence/mainline-system-trial/current-p2-baseline-repeat-physical-2026-10-05/recovery.json) passed independent review; no previous reset reused.
 - [x] 5r.3 Independently review reproducibility/parser/recovery limits, land/push
       and inspect exact CI/published revision. Planning proof:
       `openspec validate the-board-runs-a-mainline-kernel --strict`.
 
 
-Independent source/actual host/full physical/parser/recovery-limit/publication review PASS. Exact94920520 CI37261983348/deployment and published work revision/capture timestamps verified: [publication receipt](../../../docs/evidence/mainline-system-trial/current-p2-baseline-repeat-physical-2026-10-05/publication.json). Subsequent NEW protected recovery passed independent review; ordinary5b.5 stays UNVERIFIED.
+Independent source/actual host/full physical/parser/recovery-limit/publication review PASS. Exact94920520 CI37261983348/deployment and published work revision/capture timestamps verified: [publication receipt](../../../../docs/evidence/mainline-system-trial/current-p2-baseline-repeat-physical-2026-10-05/publication.json). Subsequent NEW protected recovery passed independent review; ordinary5b.5 stays UNVERIFIED.
 
 ## 5s. Selected ordinary init exec-return record (bounded diagnostic)
 
@@ -1413,29 +1413,29 @@ Independent source/actual host/full physical/parser/recovery-limit/publication r
       original return/fallback and all guards. Meaningful narrow fixtures plus
       selected compiled RISC-V object review; independently review source. No UART.
       Narrow command: `python3 tests/test_mainline_init_exec_return.py`.
-      [Reviewed source/native/object/evaluation proof](../../../docs/evidence/mainline-init-exec-return/host/README.md):15 focused and68 old regressions PASS; exact realized source/config and actual RISC-V object verified, runtime gate in ordinary .sbss. Peer review PASS; root removed duplicate identical helper definitions through reviewed67d40217 and reran15 focused after integration.107 old package derivations unchanged. Full matching headers/link/build/positive artifact qualification remain5s.2; no UART claim.
+      [Reviewed source/native/object/evaluation proof](../../../../docs/evidence/mainline-init-exec-return/host/README.md):15 focused and68 old regressions PASS; exact realized source/config and actual RISC-V object verified, runtime gate in ordinary .sbss. Peer review PASS; root removed duplicate identical helper definitions through reviewed67d40217 and reran15 focused after integration.107 old package derivations unchanged. Full matching headers/link/build/positive artifact qualification remain5s.2; no UART claim.
 - [x] 5s.2 Realize the optional variant; execute actual source/config/archive/init/
       helper/DT-hardware/argument/manifest/five-load/CRC qualification, documenting
       each necessary new dependency delta and old-output equality. Commit exact
       build receipt and safe executed qualifier; independently review. No implicit
       UART. Narrow command: `python3 tools/mainline-init-exec-return-qualify.py --bundle BUNDLE --dev DEV --normal-report PRIVATE_NORMAL`.
-      [Actual full build/new-header object/positive qualifier](../../../docs/evidence/mainline-init-exec-return/actual-host/README.md) PASS, independently reviewed7a99b32d. Same config/userspace/DT hardware, only identical17-entry module-tree relocation; exact323/341 one-gate policy. Offline build and initial qualifier failures preserved. Root integrated reviewed narrow correctiond361f364 and reran17 focused; no UART/live-preflight claim.
+      [Actual full build/new-header object/positive qualifier](../../../../docs/evidence/mainline-init-exec-return/actual-host/README.md) PASS, independently reviewed7a99b32d. Same config/userspace/DT hardware, only identical17-entry module-tree relocation; exact323/341 one-gate policy. Offline build and initial qualifier failures preserved. Root integrated reviewed narrow correctiond361f364 and reran17 focused; no UART/live-preflight claim.
 - [x] 5s.2a Restore the now-missing exact pinned host outputs, retaining persistent
       store roots; preserve a new realization receipt and recheck actual byte hashes
       against historical proof, then run the qualifier in a fresh protected directory.
       No UART. Narrow restoration command: `flock /tmp/k230-nix-build.lock nix build --no-write-lock-file --out-link PRIVATE_ROOT --max-jobs 1 --cores 16 .#kernelMainlineInitExecReturn.src .#kernelMainlineInitExecReturn .#kernelMainlineInitExecReturn.dev .#kernelMainlineInitExecReturnTrialBootFiles`.
-      [Historical pre-UART availability failure](../../../docs/evidence/mainline-init-exec-return/actual-host/availability-2026-10-05.json) preserved. [Exact restoration/registered roots/fresh qualifier](../../../docs/evidence/mainline-init-exec-return/restoration-host/README.md) PASS with identical bytes/manifest151a; independent reviewb903ceb7 PASS. No source/default or board change.
+      [Historical pre-UART availability failure](../../../../docs/evidence/mainline-init-exec-return/actual-host/availability-2026-10-05.json) preserved. [Exact restoration/registered roots/fresh qualifier](../../../../docs/evidence/mainline-init-exec-return/restoration-host/README.md) PASS with identical bytes/manifest151a; independent reviewb903ceb7 PASS. No source/default or board change.
 - [x] 5s.3 After NEW protected recovery and reviewed source/build/host gates,
       reserve sole board/UART for ONE passive180s capture. Commit finite observations
       and independent recovery or explicit pending NEW reset; preserve full private
       coverage/unknown-no-input. Command: `python3 tools/mainline-drm-system-trial.py begin --wait-initramfs-in-initcall --without-boot-markers --init-exec-return --bundle BUNDLE --manifest PRIVATE_MANIFEST --normal-report PRIVATE_NORMAL --state NEW_PRIVATE_STATE --log PRIVATE_LOG --result PRIVATE_RESULT`.
       No loader/main, failed-instruction, output-call-return or ordinary-root/glass
       claim from the record;5b.5 stays open.
-      [Reviewed guarded staging](../../../docs/evidence/mainline-init-exec-return/staging-2026-10-05/README.md) and [physical capture](../../../docs/evidence/mainline-init-exec-return/physical-2026-10-05/README.md) PASS: exact323/341 arguments, all load/CRC guards, one `ret=0` at4.548457 and no qualified login within180s. Full private parser/no-input/identity/hash/time review PASS. Exec setup succeeded; userspace transition and the probe output call return remain UNVERIFIED. Subsequent NEW [protected recovery](../../../docs/evidence/mainline-init-exec-return/physical-2026-10-05/recovery.json) passed the checker and independent complete recovery review. No earlier reset is reused.
+      [Reviewed guarded staging](../../../../docs/evidence/mainline-init-exec-return/staging-2026-10-05/README.md) and [physical capture](../../../../docs/evidence/mainline-init-exec-return/physical-2026-10-05/README.md) PASS: exact323/341 arguments, all load/CRC guards, one `ret=0` at4.548457 and no qualified login within180s. Full private parser/no-input/identity/hash/time review PASS. Exec setup succeeded; userspace transition and the probe output call return remain UNVERIFIED. Subsequent NEW [protected recovery](../../../../docs/evidence/mainline-init-exec-return/physical-2026-10-05/recovery.json) passed the checker and independent complete recovery review. No earlier reset is reused.
 - [x] 5s.4 Independently review recorded boundary/recovery limits, land/push and
       inspect exact CI/published revision. Planning command:
       `openspec validate the-board-runs-a-mainline-kernel --strict`.
-      Independent review PASS; physical revision3fbf380d, CI37357725932/deployment PASS and exact work revision, capture timestamps and staging publication HTTP200 verified: [publication receipt](../../../docs/evidence/mainline-init-exec-return/physical-2026-10-05/publication.json). Subsequent NEW protected recovery checker and independent complete review PASS. Ordinary task5b.5 stays open.
+      Independent review PASS; physical revision3fbf380d, CI37357725932/deployment PASS and exact work revision, capture timestamps and staging publication HTTP200 verified: [publication receipt](../../../../docs/evidence/mainline-init-exec-return/physical-2026-10-05/publication.json). Subsequent NEW protected recovery checker and independent complete review PASS. Ordinary task5b.5 stays open.
 
 ## 5t. PID1 return and first userspace syscall (bounded diagnostic)
 
@@ -1448,16 +1448,16 @@ Independent source/actual host/full physical/parser/recovery-limit/publication r
       context/lifetime/one-shot/order/negative gates and selected RISC-V objects
       require independent review. Narrow proof:
       `python3 tests/test_mainline_init_exec_transition.py`.
-      [Source/native/RISC-V parent-header proof](../../../docs/evidence/mainline-init-exec-transition/source/README.md) and [controller/qualifier source proof](../../../docs/evidence/mainline-init-exec-transition/controller/README.md) implemented and independently reviewed. Root reran17 transition and10 actual patched-site tests PASS after integration. [Complete base-package identity comparison](../../../docs/evidence/mainline-init-exec-transition/source/identity-evaluation.json) passed with all110 prior attrs unchanged, equal selected kernel/config/params, and matching independently evaluated new outputs. Root reviewed the actual assertion expression, source hashes and object sections/references. Matching full artifacts remain5t.3–4 and physical outcome5t.5.
+      [Source/native/RISC-V parent-header proof](../../../../docs/evidence/mainline-init-exec-transition/source/README.md) and [controller/qualifier source proof](../../../../docs/evidence/mainline-init-exec-transition/controller/README.md) implemented and independently reviewed. Root reran17 transition and10 actual patched-site tests PASS after integration. [Complete base-package identity comparison](../../../../docs/evidence/mainline-init-exec-transition/source/identity-evaluation.json) passed with all110 prior attrs unchanged, equal selected kernel/config/params, and matching independently evaluated new outputs. Root reviewed the actual assertion expression, source hashes and object sections/references. Matching full artifacts remain5t.3–4 and physical outcome5t.5.
 - [x] 5t.3 Realize and retain new kernel/dev/source outputs with exact config and
       object/Image proof; record build failures separately. Host proof:
       `nix build .#kernelMainlineInitExecTransition .#kernelMainlineInitExecTransition.dev --no-link --print-out-paths --max-jobs 1 --cores 4`.
-      [Actual host proof](../../../docs/evidence/mainline-init-exec-transition/actual-host/README.md): frozen revision a60b0eae full build return0 with retained source/kernel/dev roots; actual new-header three-object W=1 compile zero warnings with config/autoconf unchanged and verified sections/references. No build failure occurred. Independent source and controller actual-host reviews PASS. Physical outcome remains5t.5.
+      [Actual host proof](../../../../docs/evidence/mainline-init-exec-transition/actual-host/README.md): frozen revision a60b0eae full build return0 with retained source/kernel/dev roots; actual new-header three-object W=1 compile zero warnings with config/autoconf unchanged and verified sections/references. No build failure occurred. Independent source and controller actual-host reviews PASS. Physical outcome remains5t.5.
 - [x] 5t.4 Build matching new system/bundle and qualify actual source/config/DT/
       archived init/systemd/Bash/loader/helper/transport bytes and manifest. Host
       proof: `nix build .#kernelMainlineInitExecTransitionTrialBootFiles --no-link --print-out-paths --max-jobs 1 --cores 4`, then
       `python3 tools/mainline-init-exec-transition-qualify.py --bundle BUNDLE --dev DEV --normal-report PRIVATE_NORMAL`.
-      [Actual qualification](../../../docs/evidence/mainline-init-exec-transition/actual-host/positive-host-result.json) returned0 for retained bundle/system: four source pins, linked Image/config/dev, archive/DT/init/loader/helper/checksum/CRC/transport verified; 351-byte args, 369-byte literal command. Independent actual-host review PASS. Normal report is an historical host anchor, not live preflight.
+      [Actual qualification](../../../../docs/evidence/mainline-init-exec-transition/actual-host/positive-host-result.json) returned0 for retained bundle/system: four source pins, linked Image/config/dev, archive/DT/init/loader/helper/checksum/CRC/transport verified; 351-byte args, 369-byte literal command. Independent actual-host review PASS. Normal report is an historical host anchor, not live preflight.
 - [x] 5t.5 After independent source/build/host review and NEW protected recovery,
       guard staging, reserve sole board/UART and capture ONE passive180s trial.
       Commit finite observations plus independently verified recovery or explicit
@@ -1465,11 +1465,11 @@ Independent source/actual host/full physical/parser/recovery-limit/publication r
       `python3 tools/mainline-drm-system-trial.py begin --wait-initramfs-in-initcall --without-boot-markers --init-exec-return --init-exec-transition --bundle BUNDLE --manifest PRIVATE_MANIFEST --normal-report PRIVATE_NORMAL --state NEW_PRIVATE_STATE --log PRIVATE_LOG --result PRIVATE_RESULT`.
       No record grants input or proves its own output return, handler/loader/main,
       ordinary root/glass or cause. Task5b.5 remains open.
-      [Physical capture](../../../docs/evidence/mainline-init-exec-transition/physical-2026-10-05/README.md): guarded staging PASS; ONE capture 20:24–20:28 UTC, exit1 readiness unknown; ordered return, kernel-init-return and first-user-ecall records, then only a DCS XTGETTCAP "name" query and silence for 180s. NEW operator reset recovery verified. Independent staging, capture and recovery reviews PASS. Handler/loader/main, emitter of trailing bytes and cause remain UNVERIFIED.
+      [Physical capture](../../../../docs/evidence/mainline-init-exec-transition/physical-2026-10-05/README.md): guarded staging PASS; ONE capture 20:24–20:28 UTC, exit1 readiness unknown; ordered return, kernel-init-return and first-user-ecall records, then only a DCS XTGETTCAP "name" query and silence for 180s. NEW operator reset recovery verified. Independent staging, capture and recovery reviews PASS. Handler/loader/main, emitter of trailing bytes and cause remain UNVERIFIED.
 - [x] 5t.6 Independently review, land/push and inspect exact CI/published revision.
       Proof: `openspec validate the-board-runs-a-mainline-kernel --strict` plus
       committed physical/recovery/publication bindings and limits.
-      Independent public-packet review PASS. [Publication receipt](../../../docs/evidence/mainline-init-exec-transition/physical-2026-10-05/publication.json): CI 37385743786 build/deploy success; work page serves a6900de7 and the physical/actual-host pages return200. Ordinary root/panel/glass5b.5 remains open.
+      Independent public-packet review PASS. [Publication receipt](../../../../docs/evidence/mainline-init-exec-transition/physical-2026-10-05/publication.json): CI 37385743786 build/deploy success; work page serves a6900de7 and the physical/actual-host pages return200. Ordinary root/panel/glass5b.5 remains open.
 
 
 ## 5u. Camera liveness repeat of the staged transition capture (bounded diagnostic)
@@ -1484,7 +1484,7 @@ Independent source/actual host/full physical/parser/recovery-limit/publication r
       `python3 tools/mainline-drm-system-trial.py begin --wait-initramfs-in-initcall --without-boot-markers --init-exec-return --init-exec-transition --bundle BUNDLE --manifest PRIVATE_MANIFEST --normal-report PRIVATE_NORMAL --state NEW_PRIVATE_STATE --log NEW_PRIVATE_LOG --result NEW_PRIVATE_RESULT`
       with `ffmpeg -f v4l2 -input_format mjpeg -video_size 1280x720 -i /dev/video0 -c copy PRIVATE_VIDEO`.
       Camera evidence does not identify cause; task5b.5 remains open.
-      [Camera repeat](../../../docs/evidence/mainline-init-exec-transition/camera-repeat-2026-10-05/README.md): UART identical to 5t; camera inconclusive (candidate never lit the panel); exposed panel-init/unused-clock-cleanup timing pattern. NEW reset PENDING.
+      [Camera repeat](../../../../docs/evidence/mainline-init-exec-transition/camera-repeat-2026-10-05/README.md): UART identical to 5t; camera inconclusive (candidate never lit the panel); exposed panel-init/unused-clock-cleanup timing pattern. NEW reset PENDING.
 - [x] 5u.3 Independently review, land/push and inspect exact CI/published revision;
       plan the next probe only from the classified outcome.
       Landed with 5v; CI 37416968692 deploy PASS, page serves 1a03dfcd. Next probe was the 5v clock work.
@@ -1503,7 +1503,7 @@ Independent source/actual host/full physical/parser/recovery-limit/publication r
       `python3 tools/mainline-drm-system-trial.py begin --wait-initramfs-in-initcall --without-boot-markers --bundle BUNDLE --manifest PRIVATE_MANIFEST --normal-report PRIVATE_NORMAL --state NEW_PRIVATE_STATE --log NEW_PRIVATE_LOG --result NEW_PRIVATE_RESULT`.
       Pass needs panel prepare completion, systemd progress beyond the DCS query
       and the controller's qualified login/prompt; record camera stills of the panel.
-      [Clock-ownership evidence](../../../docs/evidence/mainline-clock-ownership-2026-10-06/README.md):
+      [Clock-ownership evidence](../../../../docs/evidence/mainline-clock-ownership-2026-10-06/README.md):
       the quiet SBI-only policy needs a separate variant build, so the plain ordinary
       policy was used. Final `0b327025` bundle reached `candidate-ready-qualified-ordinary-init`
       with normal unused-clock cleanup; recovery verified. Camera showed only the boot splash.
@@ -1518,7 +1518,7 @@ Independent source/actual host/full physical/parser/recovery-limit/publication r
 
 - [x] 5w.1 Keep the display DDR port clock (`vpu_ddrcp2` CLK_IS_CRITICAL) and fix the
       aliased `dphy_dft` gate; camera-judged bisection over a full live `clk_summary`.
-      Proof: console visible on the panel with normal cleanup ([evidence](../../../docs/evidence/mainline-full-shell-2026-10-06/README.md)).
+      Proof: console visible on the panel with normal cleanup ([evidence](../../../../docs/evidence/mainline-full-shell-2026-10-06/README.md)).
 - [x] 5w.2 Add `k230-mainline-drm-shell` and fix canaan DRM fops `FOP_UNSIGNED_OFFSET`
       so userspace can open `/dev/dri/card0`. Proof: qualified full-shell boot with
       sway active and the Home UI on the panel; recovery verified.

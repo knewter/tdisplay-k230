@@ -352,8 +352,8 @@ malformed output SHALL remain unknown without another stimulus or candidate
 reboot, and SHALL NOT establish a causal fix, root/touch or automatic return.
 
 <!-- UNVERIFIED: after-n1-write/third-post-sleep output, receipt, automatic recovery and ordinary root/glass remain unproven. Source/exact/full/controller and incomplete physical capture are committed. -->
-*Grounding: committed [physical packet](../../../../../../docs/evidence/mainline-uart-progress-breadcrumbs/physical-2026-10-03/README.md)
-and [result](../../../../../../docs/evidence/mainline-uart-progress-breadcrumbs/physical-2026-10-03/result.json)
+*Grounding: committed [physical packet](../../../../../../../docs/evidence/mainline-uart-progress-breadcrumbs/physical-2026-10-03/README.md)
+and [result](../../../../../../../docs/evidence/mainline-uart-progress-breadcrumbs/physical-2026-10-03/result.json)
 at revision 278769d0 record both Breadcrumbs points, a matched receipt and
 n0/n1 but no n2–n5 in 180 seconds. The subsequent operator reset passed guarded
 fresh protected normal postflight and Home observation; automatic return
@@ -383,7 +383,7 @@ next boundary, not committed proof of the new diagnostic or a fault.*
   firmware-return or automatic-recovery result
 
 
-*Subsequent actual [PostSample packet](../../../../../../docs/evidence/mainline-uart-progress-post-sample/physical-2026-10-03/README.md)
+*Subsequent actual [PostSample packet](../../../../../../../docs/evidence/mainline-uart-progress-post-sample/physical-2026-10-03/README.md)
 records matched args/Bash/worker-entry only, one stimulus and no receipt/samples/
 new points in180.0975s. It does not prove reaching either new point or entry-call
 return; subsequent NEW operator reset passed guarded fresh normal postflight
@@ -408,8 +408,8 @@ candidate reboot. Summary, receipt and recovery SHALL remain independent facts;
 missing output SHALL NOT identify a cause or prove ordinary root/glass.
 
 <!-- UNVERIFIED: memory comparison source/artifacts/controller/physical results are planned. -->
-*Grounding: [PostSample capture](../../../../../../docs/evidence/mainline-uart-progress-post-sample/physical-2026-10-03/README.md)
-and [read-source audit](../../../../../../docs/research/mainline-memory-progress-comparison-2026-10-03.md)
+*Grounding: [PostSample capture](../../../../../../../docs/evidence/mainline-uart-progress-post-sample/physical-2026-10-03/README.md)
+and [read-source audit](../../../../../../../docs/research/mainline-memory-progress-comparison-2026-10-03.md)
 record variable reporter progress and firmware output dependencies, not causation.*
 
 #### Scenario: A consistent completed summary arrives
@@ -442,7 +442,7 @@ completeness. Missing output SHALL stay unknown and SHALL NOT establish input
 causation, an IRQ/timer/firmware fault or ordinary mainline acceptance.
 
 <!-- UNVERIFIED: typed zero-stimulus comparison implementation/host/physical proof are planned. -->
-*Grounding: [Memory physical packet](../../../../../../docs/evidence/mainline-uart-progress-memory/physical-2026-10-03/README.md)
+*Grounding: [Memory physical packet](../../../../../../../docs/evidence/mainline-uart-progress-memory/physical-2026-10-03/README.md)
 records one input attempt with no summary/receipt; withholding that dependency
 is a distinct controller intervention using existing immutable artifacts.*
 
@@ -476,8 +476,8 @@ inferring WFI/IRQ/timer/firmware cause, ordinary-root acceptance or a production
 power policy. Missing output SHALL remain unknown.
 
 <!-- UNVERIFIED: typed polling controller and physical idle-policy comparison are planned. -->
-*Grounding: [zero-input physical result](../../../../../../docs/evidence/mainline-uart-progress-memory/no-stimulus-physical-2026-10-04/README.md)
-and [read source/config/linked setup](../../../../../../docs/research/mainline-memory-idle-polling-comparison-2026-10-04.md).
+*Grounding: [zero-input physical result](../../../../../../../docs/evidence/mainline-uart-progress-memory/no-stimulus-physical-2026-10-04/README.md)
+and [read source/config/linked setup](../../../../../../../docs/research/mainline-memory-idle-polling-comparison-2026-10-04.md).
 The already-built setup is host evidence; runtime polling and usable boot are unverified.*
 
 #### Scenario: Polling produces a valid completed summary
@@ -522,8 +522,8 @@ Missing output SHALL remain unknown. Native, target object, full artifact,
 controller qualification, physical observation and recovery SHALL stay separate.
 
 <!-- UNVERIFIED: Linux-console variant/source/build/controller/physical proof are planned. -->
-*Grounding: [polling result and recovery](../../../../../../docs/evidence/mainline-uart-progress-memory/poll-idle-physical-2026-10-04/README.md)
-and [actual timer/backend/source audit](../../../../../../docs/research/mainline-memory-printk-channel-comparison-2026-10-04.md).
+*Grounding: [polling result and recovery](../../../../../../../docs/evidence/mainline-uart-progress-memory/poll-idle-physical-2026-10-04/README.md)
+and [actual timer/backend/source audit](../../../../../../../docs/research/mainline-memory-printk-channel-comparison-2026-10-04.md).
 The registered backend is observed; future UMK output and useful mainline boot are unverified.*
 
 #### Scenario: A fresh Linux-console summary is observed
@@ -561,8 +561,8 @@ Missing output SHALL remain unknown. Runtime policy observation SHALL remain
 distinct from compiled parser support and received-token evidence.
 
 <!-- UNVERIFIED: typed nohz-off controller, actual host preparation and new physical comparison are planned. -->
-*Grounding: [MemoryPrintk capture](../../../../../../docs/evidence/mainline-uart-progress-memory-printk/physical-2026-10-04/README.md)
-and [selected config/Image/source audit](../../../../../../docs/research/mainline-memory-printk-periodic-tick-comparison-2026-10-04.md).
+*Grounding: [MemoryPrintk capture](../../../../../../../docs/evidence/mainline-uart-progress-memory-printk/physical-2026-10-04/README.md)
+and [selected config/Image/source audit](../../../../../../../docs/research/mainline-memory-printk-periodic-tick-comparison-2026-10-04.md).
 The compiled option is grounded; new output and usable mainline boot are unverified.*
 
 #### Scenario: Tickless-off comparison yields a qualified summary
@@ -606,8 +606,8 @@ prove that record's own output-call return, a full runtime identity guard, a tim
 ordinary boot/touch acceptance. Missing output SHALL remain unknown.
 
 <!-- UNVERIFIED: typed autonomous PID1 native parser/controller/actual host/physical proof are planned. -->
-*Grounding: [nohz-off capture](../../../../../../docs/evidence/mainline-uart-progress-memory-printk/nohz-off-physical-2026-10-04/README.md)
-and [read kernel/Hush/archive scout](../../../../../../docs/research/mainline-autonomous-bash-pid1-comparison-2026-10-04.md).
+*Grounding: [nohz-off capture](../../../../../../../docs/evidence/mainline-uart-progress-memory-printk/nohz-off-physical-2026-10-04/README.md)
+and [read kernel/Hush/archive scout](../../../../../../../docs/research/mainline-autonomous-bash-pid1-comparison-2026-10-04.md).
 Native parser execution and autonomous board records remain unverified.*
 
 #### Scenario: Autonomous PID1 produces begin and end
@@ -639,9 +639,9 @@ Manager job/ExecStart state SHALL NOT be reported as nested command or syscall
 tracing, ordinary-root acceptance or protected recovery.
 
 <!-- UNVERIFIED: ordinary mainline root/panel/glass acceptance remains open; bounded controller/host/physical logging comparison is recorded below. -->
-*Grounding: [current ordinary physical boundary](../../../../../../docs/evidence/mainline-system-trial/current-p2-ordinary-physical-2026-10-05/README.md)
-and [selected archive/pinned systemd source](../../../../../../docs/research/mainline-initrd-debug-logging-2026-10-05.md).
-[Controller and actual host qualification](../../../../../../docs/evidence/mainline-initrd-debug-logging/host/README.md) and [bounded physical result plus NEW recovery](../../../../../../docs/evidence/mainline-initrd-debug-logging/physical-2026-10-05/README.md) are recorded. No systemd startup/login was observed; ordinary boot acceptance remains unverified.*
+*Grounding: [current ordinary physical boundary](../../../../../../../docs/evidence/mainline-system-trial/current-p2-ordinary-physical-2026-10-05/README.md)
+and [selected archive/pinned systemd source](../../../../../../../docs/research/mainline-initrd-debug-logging-2026-10-05.md).
+[Controller and actual host qualification](../../../../../../../docs/evidence/mainline-initrd-debug-logging/host/README.md) and [bounded physical result plus NEW recovery](../../../../../../../docs/evidence/mainline-initrd-debug-logging/physical-2026-10-05/README.md) are recorded. No systemd startup/login was observed; ordinary boot acceptance remains unverified.*
 
 #### Scenario: Qualified logging comparison reaches an observed unit boundary
 
@@ -670,8 +670,8 @@ logging and unknown-no-input behavior. Changed observed progress SHALL NOT be
 reported as a blocked output-call diagnosis, ordinary boot acceptance or recovery.
 
 <!-- UNVERIFIED: ordinary mainline acceptance remains open; bounded controller/host/physical comparison is recorded below. -->
-*Grounding: [debug/console physical result](../../../../../../docs/evidence/mainline-initrd-debug-logging/physical-2026-10-05/README.md)
-and [bounded child/source analysis](../../../../../../docs/research/mainline-initrd-info-console-comparison-2026-10-05.md). [Actual host qualification](../../../../../../docs/evidence/mainline-initrd-info-logging/host/README.md) and [physical capture](../../../../../../docs/evidence/mainline-initrd-info-logging/physical-2026-10-05/README.md) passed their bounded review; no systemd startup/login was observed.*
+*Grounding: [debug/console physical result](../../../../../../../docs/evidence/mainline-initrd-debug-logging/physical-2026-10-05/README.md)
+and [bounded child/source analysis](../../../../../../../docs/research/mainline-initrd-info-console-comparison-2026-10-05.md). [Actual host qualification](../../../../../../../docs/evidence/mainline-initrd-info-logging/host/README.md) and [physical capture](../../../../../../../docs/evidence/mainline-initrd-info-logging/physical-2026-10-05/README.md) passed their bounded review; no systemd startup/login was observed.*
 
 #### Scenario: Lower verbosity changes observed progress
 
@@ -702,8 +702,8 @@ kmsg selection as proof that console was unused, every record was delivered,
 a blocked call was identified, ordinary root worked or recovery succeeded.
 
 <!-- UNVERIFIED: physical kmsg output/ordinary acceptance remains open; independently reviewed controller and actual host proof are recorded below. -->
-*Grounding: [physical info/console result](../../../../../../docs/evidence/mainline-initrd-info-logging/physical-2026-10-05/README.md)
-and [selected-source backend audit](../../../../../../docs/research/mainline-initrd-info-kmsg-comparison-2026-10-05.md). [Controller and executed actual host qualification](../../../../../../docs/evidence/mainline-initrd-info-kmsg-logging/host/README.md) passed independent review; no physical delivery is claimed.*
+*Grounding: [physical info/console result](../../../../../../../docs/evidence/mainline-initrd-info-logging/physical-2026-10-05/README.md)
+and [selected-source backend audit](../../../../../../../docs/research/mainline-initrd-info-kmsg-comparison-2026-10-05.md). [Controller and executed actual host qualification](../../../../../../../docs/evidence/mainline-initrd-info-kmsg-logging/host/README.md) passed independent review; no physical delivery is claimed.*
 
 #### Scenario: Changing the destination changes observed progress
 
@@ -733,9 +733,9 @@ proof or automatic recovery. Subsequent recovery SHALL be independently
 verified or explicitly pending a NEW operator reset.
 
 <!-- UNVERIFIED: ordinary acceptance remains pending; independently reviewed physical repeat did not reproduce the former closure boundary and subsequent NEW protected recovery passed. -->
-*Grounding: [previous quiet ordinary boundary](../../../../../../docs/evidence/mainline-system-trial/current-p2-ordinary-physical-2026-10-05/README.md),
-[silent kmsg capture](../../../../../../docs/evidence/mainline-initrd-info-kmsg-logging/physical-2026-10-05/README.md)
-and [read archive/source control plan](../../../../../../docs/research/mainline-ordinary-baseline-repeat-2026-10-05.md). [Actual unchanged-baseline preparation](../../../../../../docs/evidence/mainline-system-trial/current-p2-baseline-repeat-host-2026-10-05/README.md) and [NEW protected recovery](../../../../../../docs/evidence/mainline-initrd-info-kmsg-logging/physical-2026-10-05/recovery.json) passed independent review. [Completed physical repeat](../../../../../../docs/evidence/mainline-system-trial/current-p2-baseline-repeat-physical-2026-10-05/README.md) passed independent review; subsequent NEW [protected recovery](../../../../../../docs/evidence/mainline-system-trial/current-p2-baseline-repeat-physical-2026-10-05/recovery.json) passed independent review.*
+*Grounding: [previous quiet ordinary boundary](../../../../../../../docs/evidence/mainline-system-trial/current-p2-ordinary-physical-2026-10-05/README.md),
+[silent kmsg capture](../../../../../../../docs/evidence/mainline-initrd-info-kmsg-logging/physical-2026-10-05/README.md)
+and [read archive/source control plan](../../../../../../../docs/research/mainline-ordinary-baseline-repeat-2026-10-05.md). [Actual unchanged-baseline preparation](../../../../../../../docs/evidence/mainline-system-trial/current-p2-baseline-repeat-host-2026-10-05/README.md) and [NEW protected recovery](../../../../../../../docs/evidence/mainline-initrd-info-kmsg-logging/physical-2026-10-05/recovery.json) passed independent review. [Completed physical repeat](../../../../../../../docs/evidence/mainline-system-trial/current-p2-baseline-repeat-physical-2026-10-05/README.md) passed independent review; subsequent NEW [protected recovery](../../../../../../../docs/evidence/mainline-system-trial/current-p2-baseline-repeat-physical-2026-10-05/recovery.json) passed independent review.*
 
 #### Scenario: The unchanged baseline reaches the previous unit boundary
 
@@ -769,7 +769,7 @@ worked or recovery succeeded. Recovery SHALL be independently verified or
 explicitly pending NEW reset.
 
 <!-- UNVERIFIED: userspace transition, output-call return and ordinary acceptance remain pending; physical capture recorded one valid ret=0 with no qualified login within180s, independently reviewed. Subsequent NEW protected normal recovery passed independent review. -->
-*Grounding: [independently reviewed quiet repeat](../../../../../../docs/evidence/mainline-system-trial/current-p2-baseline-repeat-physical-2026-10-05/README.md) and [selected source/alternative/proof plan](../../../../../../docs/research/mainline-init-exec-return-probe-2026-10-05.md). [Source/native/object/evaluation proof](../../../../../../docs/evidence/mainline-init-exec-return/host/README.md) passed independent review. [Actual full build/new-header object/artifact qualification](../../../../../../docs/evidence/mainline-init-exec-return/actual-host/README.md) passed independent review. [Restoration with retained roots and fresh qualification](../../../../../../docs/evidence/mainline-init-exec-return/restoration-host/README.md) passed independent review after the later availability failure. [Reviewed physical capture](../../../../../../docs/evidence/mainline-init-exec-return/physical-2026-10-05/README.md) and [exact publication](../../../../../../docs/evidence/mainline-init-exec-return/physical-2026-10-05/publication.json) establish exec setup success only. Subsequent NEW [protected recovery](../../../../../../docs/evidence/mainline-init-exec-return/physical-2026-10-05/recovery.json) passed independent review. Userspace execution, output-call return and ordinary acceptance remain UNVERIFIED; this is not a shipped capability.*
+*Grounding: [independently reviewed quiet repeat](../../../../../../../docs/evidence/mainline-system-trial/current-p2-baseline-repeat-physical-2026-10-05/README.md) and [selected source/alternative/proof plan](../../../../../../../docs/research/mainline-init-exec-return-probe-2026-10-05.md). [Source/native/object/evaluation proof](../../../../../../../docs/evidence/mainline-init-exec-return/host/README.md) passed independent review. [Actual full build/new-header object/artifact qualification](../../../../../../../docs/evidence/mainline-init-exec-return/actual-host/README.md) passed independent review. [Restoration with retained roots and fresh qualification](../../../../../../../docs/evidence/mainline-init-exec-return/restoration-host/README.md) passed independent review after the later availability failure. [Reviewed physical capture](../../../../../../../docs/evidence/mainline-init-exec-return/physical-2026-10-05/README.md) and [exact publication](../../../../../../../docs/evidence/mainline-init-exec-return/physical-2026-10-05/publication.json) establish exec setup success only. Subsequent NEW [protected recovery](../../../../../../../docs/evidence/mainline-init-exec-return/physical-2026-10-05/recovery.json) passed independent review. Userspace execution, output-call return and ordinary acceptance remain UNVERIFIED; this is not a shipped capability.*
 
 #### Scenario: Selected init exec returns zero
 
@@ -808,7 +808,7 @@ no-input behavior. Recovery SHALL be independently verified or explicitly pendin
 NEW reset. Ordinary root/panel/glass acceptance SHALL remain separate.
 
 <!-- UNVERIFIED: source/controller/native/parent-header objects are independently reviewed; full matching artifact qualification and physical two-point behavior remain unverified. -->
-*Grounding: [physical exec setup success without readiness](../../../../../../docs/evidence/mainline-init-exec-return/physical-2026-10-05/README.md) and read exact Linux source sites/context restrictions in design.md group5t. [Implemented source/native/parent-header object proof](../../../../../../docs/evidence/mainline-init-exec-transition/source/README.md) and [controller/qualifier fixtures](../../../../../../docs/evidence/mainline-init-exec-transition/controller/README.md) passed independent review. All110 prior package derivation identities are unchanged with equal config/parameters: [complete evaluation](../../../../../../docs/evidence/mainline-init-exec-transition/source/identity-evaluation.json). Physical witness behavior remains UNVERIFIED.*
+*Grounding: [physical exec setup success without readiness](../../../../../../../docs/evidence/mainline-init-exec-return/physical-2026-10-05/README.md) and read exact Linux source sites/context restrictions in design.md group5t. [Implemented source/native/parent-header object proof](../../../../../../../docs/evidence/mainline-init-exec-transition/source/README.md) and [controller/qualifier fixtures](../../../../../../../docs/evidence/mainline-init-exec-transition/controller/README.md) passed independent review. All110 prior package derivation identities are unchanged with equal config/parameters: [complete evaluation](../../../../../../../docs/evidence/mainline-init-exec-transition/source/identity-evaluation.json). Physical witness behavior remains UNVERIFIED.*
 
 #### Scenario: Kernel init returns before entering userspace
 
