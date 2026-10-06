@@ -59,6 +59,7 @@ kernelMainline.override (old: {
         ./patches/mainline/k230-restart.patch
         ./patches/mainline/k230-sdhci-clocks.patch
         ./patches/mainline/k230-clk-spi2axi-critical.patch
+        ./patches/mainline/k230-clk-vpu-ddrcp2-dphy.patch
       ];
 
       postPatch = ''
