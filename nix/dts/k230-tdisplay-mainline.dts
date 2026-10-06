@@ -404,13 +404,24 @@
 		// nix/dts/k230-tdisplay.dts's own `sound` node -- same hardware,
 		// same wiring, only clocks/compatible differ:
 		//
-		//   - i2s: compatible is mainline's own generic
-		//     "snps,designware-i2s", NOT the vendor's
-		//     "canaan,snps,designware-i2s" -- mainline's
-		//     sound/soc/dwc/dwc-i2s.c of_match_table only lists the
-		//     generic string (checked directly); the IP is the same
-		//     Synopsys DesignWare I2S core either way, so no driver
-		//     change is needed, only this DT string.
+		//   - i2s: compatible is the vendor's
+		//     "canaan,snps,designware-i2s", bound by the forward-ported
+		//     sound/soc/dwc_canaan/canaan-dwc-i2s.c
+		//     (nix/patches/mainline/dwc_canaan/,
+		//     CONFIG_CANAAN_SND_DESIGNWARE_I2S) -- NOT mainline's own
+		//     generic "snps,designware-i2s"/sound/soc/dwc/dwc-i2s.c, which
+		//     this DT node used until a board boot showed starting ALSA
+		//     playback against it freezes the whole SoC (even with
+		//     clk_ignore_unused/pd_ignore_unused). The IP register map is
+		//     the same Synopsys DesignWare I2S core either way, but the
+		//     two drivers' i2s_start()/dw_i2s_hw_params() register
+		//     programming differs in K230-critical ways -- see
+		//     canaan-dwc-i2s.c's own header comment and
+		//     docs/research/mainline-audio-port.md for the finding. Every
+		//     other property on this node (reg, dmas/dma-names, clocks/
+		//     clock-names) is unchanged: checked directly against the
+		//     vendor's own k230.dtsi i2s node, which carries no other
+		//     canaan,-prefixed property this driver reads.
 		//   - clocks: K230_LS_AUDIO_DEV_RATE (mainline's split rate
 		//     clock, vendor's single composite "audio_dev_clk"),
 		//     clock-names "i2sclk" matching dw_configure_dai_by_dt()'s
@@ -438,7 +449,7 @@
 		//     provider exists, so no interrupt property is needed for
 		//     this node to bind.
 		i2s: i2s@9140f000 {
-			compatible = "snps,designware-i2s";
+			compatible = "canaan,snps,designware-i2s";
 			reg = <0x0 0x9140f000 0x0 0x400>;
 			dmas = <&pdma 1 0xfff 0 0x14>, <&pdma 1 0xfff 0 0x15>;
 			dma-names = "tx", "rx";

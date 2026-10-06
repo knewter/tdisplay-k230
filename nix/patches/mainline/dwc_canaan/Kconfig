@@ -1,0 +1,23 @@
+config CANAAN_SND_DESIGNWARE_I2S
+	tristate "Canaan K230 Synopsys I2S Device Driver"
+	depends on HAVE_CLK
+	select SND_SOC_GENERIC_DMAENGINE_PCM
+	help
+	  This option enables the Canaan fork of the Synopsys I2S device
+	  driver (compatible "canaan,snps,designware-i2s"), used by the
+	  Canaan K230 SoC's on-die I2S controller. Distinct from mainline's
+	  own SND_DESIGNWARE_I2S ("snps,designware-i2s") -- see
+	  sound/soc/dwc_canaan/canaan-dwc-i2s.c's own header comment for why
+	  this K230 board needs the Canaan variant's register programming,
+	  not the generic one.
+	  Say Y or M if you have a Canaan K230 Synopsys I2S device in your
+	  system.
+
+config CANAAN_SND_DESIGNWARE_PCM
+	bool "PCM PIO extension for the Canaan I2S driver"
+	depends on CANAAN_SND_DESIGNWARE_I2S
+	help
+	 Say Y or N if you want to add a custom ALSA extension that registers
+	 a PCM and uses PIO to transfer data.
+	 This functionality is specially suited for I2S devices that don't have
+	 DMA support.

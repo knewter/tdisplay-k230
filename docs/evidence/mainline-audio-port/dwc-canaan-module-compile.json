@@ -1,0 +1,57 @@
+{
+  "task": "the-mainline-shell-reaches-parity 5.x (forward-port sound/soc/dwc_canaan, replacing the generic dwc-i2s driver after a board-proven freeze)",
+  "evidence_class": "actual-host-cross-compiled-riscv-ko",
+  "started_utc": "2026-10-06T20:30:00Z",
+  "completed_utc": "2026-10-06T20:53:00Z",
+  "note": "Out-of-tree module build against the project's existing pinned mainline v7.3-rc5 dev tree, in a private scratch directory. Did not use /tmp/k230-nix-build.lock, /tmp/k230-board.lock, or /dev/ttyACM0 -- read-only dev tree, no board action.",
+  "dev_tree": "/nix/store/rzp2glc4pkq107vp4jf5p98cc0s2j3di-linux-riscv64-unknown-linux-gnu-7.3.0-rc5-dev",
+  "cross_compiler": "/nix/store/4j2mwxqjvnyr6da0925sp0bm4jaj5r5i-riscv64-unknown-linux-gnu-gcc-wrapper-15.3.0/bin/riscv64-unknown-linux-gnu-",
+  "dev_tree_config_had": {
+    "CONFIG_SND_SOC": "y",
+    "CONFIG_SND_SOC_GENERIC_DMAENGINE_PCM": "y",
+    "CONFIG_SND_DESIGNWARE_I2S": "y",
+    "CONFIG_SND_DESIGNWARE_PCM": "not set",
+    "CONFIG_HAVE_CLK": "y"
+  },
+  "runs": [
+    {
+      "label": "A: canaan-dwc-i2s.c alone (CANAAN_SND_DESIGNWARE_PCM unset -- matches this board's actual structuredExtraConfig)",
+      "command": [
+        "make", "-C", "<dev_tree>/lib/modules/7.3.0-rc5/build",
+        "M=<scratch dir: canaan-dwc-i2s.c, canaan-dwc-pcm.c, canaan-local.h, a Makefile building only canaan-dwc-i2s.o>",
+        "ARCH=riscv", "CROSS_COMPILE=<cross_compiler>", "W=1", "modules"
+      ],
+      "returncode": 0,
+      "warnings": "none",
+      "errors": "none",
+      "module_built": "canaan-designware_i2s.ko",
+      "sha256_ko": "b6bcbb720967defd5ba12320cd9246c43b9480838e7e89821527e4ff2356bf50"
+    },
+    {
+      "label": "B: canaan-dwc-i2s.c + canaan-dwc-pcm.c together, CONFIG_CANAAN_SND_DESIGNWARE_PCM=1 forced via ccflags-y (exercises the PCM PIO file too, even though it is not built for this board)",
+      "command": [
+        "make", "-C", "<dev_tree>/lib/modules/7.3.0-rc5/build",
+        "M=<same scratch dir, Makefile adds ccflags-y += -DCONFIG_CANAAN_SND_DESIGNWARE_PCM=1 and builds canaan-dwc-pcm.o too>",
+        "ARCH=riscv", "CROSS_COMPILE=<cross_compiler>", "W=1", "modules"
+      ],
+      "returncode": 0,
+      "warnings": "none",
+      "errors": "none",
+      "module_built": "canaan-designware_i2s.ko",
+      "sha256_ko": "f5859e2050ca738d3fd9f3d66525aea1f6b74927ab5cc267985f5d5ebf79d293"
+    }
+  ],
+  "source_sha256": {
+    "nix/patches/mainline/dwc_canaan/canaan-dwc-i2s.c": "e98724e36e7458b02a53e9fc2b6360ec0c2fc43fc87cbbc555ea55aed2628ad9",
+    "nix/patches/mainline/dwc_canaan/canaan-dwc-pcm.c": "b10a41a6044ceee9afc0f8d9ccc398a6a4be4131cc2224e764bc57a33efcf22b",
+    "nix/patches/mainline/dwc_canaan/canaan-local.h": "19ef179af680d1b8d07b4010b2cdc035db79158064b7732f26f6ae71470da624",
+    "nix/patches/mainline/dwc_canaan/Kconfig": "27a34e5f10642a1bd4f2715da358454bb003e4795cb20cd4ac073e2ac1aac7b5",
+    "nix/patches/mainline/dwc_canaan/Makefile": "a7161face746f44a58925036176c65955620840e28d2553bf1e8657d8d431cc3"
+  },
+  "also_run": {
+    "dts_validate": "cpp+dtc against nix/dts/k230-tdisplay-mainline.dts and k230-tdisplay-mainline-drm.dts, same include dirs as dtc-validate.json; both returncode 0, decompiled .dtb confirms i2s@9140f000's compatible is canaan,snps,designware-i2s with reg/dmas/dma-names/clocks/clock-names unchanged",
+    "nix_instantiate": "nix-instantiate --parse nix/kernel-mainline.nix -- returncode 0",
+    "postpatch_sed_dryrun": "the sound/soc/Kconfig and sound/soc/Makefile sed/grep hunks this change adds to nix/kernel-mainline.nix's postPatch were dry-run by hand against real copies of those two files from the pinned mainline source tree (after first applying the prior canaan/ insertion they anchor on): produced 'source \"sound/soc/dwc_canaan/Kconfig\"' immediately after the existing canaan/Kconfig line, and 'obj-$(CONFIG_SND_SOC) += dwc_canaan/' appended to the Makefile"
+  },
+  "scope": "Proves the forward-ported sound/soc/dwc_canaan source is syntactically and API-correct against the real v7.3-rc5 ASoC/clk/pm_runtime headers this project's mainline kernel build uses, in both its actual board configuration (PCM PIO extension off) and with that extension forced on. It does NOT prove the driver binds on a booted board, and does NOT exercise CONFIG_CANAAN_SND_DESIGNWARE_I2S/_PCM through a real Kconfig/oldconfig pass or a full kernel build -- that requires the full nix build this task was told not to run. It does NOT prove audio plays correctly or that the freeze this driver swap targets is actually fixed -- only a board boot with a non-frozen speaker-test run would prove that. See docs/research/mainline-audio-port.md."
+}
