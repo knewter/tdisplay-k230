@@ -558,6 +558,17 @@
         # Complete matching trial boot path; the Image+DTB-only bundle above
         # remains available for artifact inspection.
         toplevel-mainline-drm-trial = self.nixosConfigurations.k230-mainline-drm-trial.config.system.build.toplevel;
+        # The console mainline system in the guarded system-trial bundle layout.
+        kernelMainlineConsoleTrialBootFiles = pkgs.callPackage ./nix/mainline-drm-trial.nix {
+          cfg = self.nixosConfigurations.k230-mainline-console.config;
+          kernel = self.nixosConfigurations.k230-mainline-console.config.boot.kernelPackages.kernel;
+          # The trial layout names its DTB after the DRM profile; the console
+          # DTB is presented under that file name, unchanged.
+          deviceTree = pkgs.runCommand "k230-mainline-console-dtb-trial-name" { } ''
+            mkdir -p $out
+            cp ${self.packages.${buildSystem}.deviceTreeMainline}/k230-tdisplay-mainline.dtb $out/k230-tdisplay-mainline-drm.dtb
+          '';
+        };
         toplevel-mainline-drm-shell = self.nixosConfigurations.k230-mainline-drm-shell.config.system.build.toplevel;
         kernelMainlineDrmShellTrialBootFiles = pkgs.callPackage ./nix/mainline-drm-trial.nix {
           cfg = self.nixosConfigurations.k230-mainline-drm-shell.config;
