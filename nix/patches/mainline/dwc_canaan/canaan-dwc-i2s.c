@@ -1129,13 +1129,14 @@ static int dw_i2s_probe(struct platform_device *pdev)
 	}
 
 	dev_set_drvdata(&pdev->dev, dev);
-	ret = devm_snd_soc_register_component(&pdev->dev, &dw_i2s_component,
-					 dw_i2s_dai, 1);
-	if (ret != 0) {
-		dev_err(&pdev->dev, "not able to register dai\n");
-		goto err_assert_reset;
-	}
 
+	/*
+	 * Register the PCM (dmaengine or PIO) before the DAI component. The
+	 * machine driver points its platform at this node, so the card can bind
+	 * as soon as the DAI component appears; a PCM registered afterwards is
+	 * then never attached to the runtime and every open fails with
+	 * -EINVAL (empty ACCESS mask). Observed on the board 2026-10-06.
+	 */
 	if (!pdata || dev->is_jh7110) {
 		if (irq >= 0) {
 			ret = canaan_dw_pcm_register(pdev);
@@ -1153,6 +1154,13 @@ static int dw_i2s_probe(struct platform_device *pdev)
 					ret);
 			goto err_assert_reset;
 		}
+	}
+
+	ret = devm_snd_soc_register_component(&pdev->dev, &dw_i2s_component,
+					 dw_i2s_dai, 1);
+	if (ret != 0) {
+		dev_err(&pdev->dev, "not able to register dai\n");
+		goto err_assert_reset;
 	}
 
 	pm_runtime_enable(&pdev->dev);
