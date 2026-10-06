@@ -6,7 +6,8 @@
 
 ## 2. Clock table record (documentation)
 
-- [ ] 2.1 Commit the vendor-versus-mainline gate comparison to `docs/research/` with the recorded reasons for the shared USB bit and the unmodelled `clkext` gate. Proof: committed file; `openspec validate the-mainline-shell-reaches-parity --strict`.
+- [x] 2.1 Commit the vendor-versus-mainline gate comparison to `docs/research/` with the recorded reasons for the shared USB bit and the unmodelled `clkext` gate. Proof: committed file; `openspec validate the-mainline-shell-reaches-parity --strict`.
+      [Comparison](../../../docs/research/k230-clock-gates-vendor-vs-mainline.md) committed with the shared-USB-bit and clkext reasons.
 
 ## 3. Touch in the shell and controller retrieval (tooling, then board)
 
