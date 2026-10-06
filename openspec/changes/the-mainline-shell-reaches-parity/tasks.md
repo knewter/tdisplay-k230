@@ -5,7 +5,7 @@
 - [x] 1.2 Board: boot the full mainline shell; `systemctl is-active firewall` is active and `systemctl --failed` is empty. Hardware proof: guarded `tools/mainline-drm-system-trial.py begin` on `kernelMainlineDrmShellTrialBootFiles`, then recover.
       2026-10-06 bundle 8bljkjxn…: controller qualified; serial console shows uname 7.3.0-rc5, firewall active, 0 failed units, shell/shell-ui/seatd active; board self-recovered (private capture ~/tmp/k230-bisect-PARITY12).
 - [x] 1.3 Board: boot the console mainline variant with ordinary cleanup to a qualified login. Hardware proof: the same controller on the console bundle.
-      2026-10-06 console bundle 437ggvdp… (7f087e1e): qualified ordinary login with `clk: Disabling unused clocks`, 0 failed units. Needed the SD five-clock ownership moved to the base kernel (first attempt stalled after initrd Basic System). Its `reboot` then stopped at "Restarting system" (restart handler was DRM-only), fixed in 6f86eed2.
+      2026-10-06 console bundle 437ggvdp… (7f087e1e): qualified ordinary login with `clk: Disabling unused clocks`, 0 failed units. Needed the SD five-clock ownership moved to the base kernel (first attempt stalled after initrd Basic System). Its `reboot` then stopped at "Restarting system" (restart handler was DRM-only), fixed in 6f86eed2: console bundle j05znfgq… then booted, rebooted itself into the normal system, and protected recovery passed with no operator reset.
 
 ## 2. Clock table record (documentation)
 
