@@ -1617,6 +1617,8 @@ DATA e3e93fb0e742aa910f90df9dd611c5923f3f8d63cd3b063cab2476c842bcf51a docs/evide
 DATA 4af73a4e81494f5be1b8d207f67721345bc565b41264353d709bc987465f0bd8 docs/evidence/boot-verification/2026-10-01/runtime-home-panel.jpg
 DATA ba5e8a4f411fad3bc8b2ae0bba9aeaea5c501ebdd2d51f5dd3f8c387af89dc53 docs/evidence/boot-verification/2026-10-01/normal-candidate2-late-panel.jpg
 DATA 7d9faa8d4dda52bbc207f2a4ba798c1688f3fbcc7e09728ca0072d7bbd02b07b docs/evidence/mainline-display/physical-2026-10-01/panel-boot-text.jpg
+DATA 5405de961a963cd1446cb7f42382329048367cdbc9866a248c4445666c6a6bbd docs/evidence/mainline-init-exec-transition/camera-repeat-2026-10-05/panel-dark-candidate-120s.jpg
+DATA 31c010bb635bc85bdd6980d8fe602098d4f83ac52a9d36a1c011b50f90fd1b68 docs/evidence/mainline-init-exec-transition/camera-repeat-2026-10-05/panel-normal-shutdown-text-21s.jpg
 DATA c2d7bd67952385a6729cb1ade6fae9ef1169f585461deea15def08c26f8b4698 docs/evidence/mainline-restart/physical-minimal-2026-10-02/home-panel.jpg
 DATA f57f30940e3323594f29181beb8ea21cd7ca1fdc5a0f210e4e66e798f45ed875 docs/evidence/mainline-restart/physical-shutdown-debug-2026-10-02/recovered-home-panel.jpg
 DATA a938168c80109d82d88683faf251c0be44fd075748c8f47dd5f8a9ebe4ed898b docs/evidence/mainline-restart/physical-shutdown-debug-2026-10-02/boot-panel.jpg
