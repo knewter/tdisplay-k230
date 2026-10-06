@@ -59,6 +59,7 @@
 #include <linux/clk.h>
 #include <linux/cpu_cooling.h>
 #include <linux/delay.h>
+#include <linux/math64.h>
 #include <linux/device.h>
 #include <linux/init.h>
 #include <linux/io.h>
@@ -86,6 +87,28 @@ struct canaan_thermal_data {
 	struct clk *clk;
 };
 
+/*
+ * TS_DATA's low 12 bits are a code, not a temperature: the vendor driver
+ * returned the raw register. Canaan's K230 Linux driver API reference
+ * ("TS Usage Reference", kendryte/k230_docs) gives
+ *   T(C) = 1.01472e-10 c^4 - 1.10063e-6 c^3 + 4.36150e-3 c^2
+ *          - 7.10128 c + 3565.87
+ * Evaluated here in integer micro-degrees (no FPU in the kernel) and
+ * returned in millidegrees as the thermal core expects; matches the float
+ * formula within 1 m-degree for every 12-bit code.
+ */
+static int canaan_ts_code_to_mcelsius(u32 code)
+{
+	u64 c = code, c2 = c * c, c3 = c2 * c, c4 = c3 * c;
+	s64 uc = div_u64(div_u64(c4, 1000) * 101472ULL, 1000000)
+		 - (s64)div_u64(c3 * 110063ULL, 100000)
+		 + (s64)div_u64(c2 * 436150ULL, 100)
+		 - (s64)c * 7101280
+		 + 3565870000LL;
+
+	return (int)div_s64(uc, 1000);
+}
+
 static int canaan_get_temp(struct thermal_zone_device *tz, int *temp)
 {
 	struct canaan_thermal_data *data = thermal_zone_device_priv(tz);
@@ -111,7 +134,7 @@ static int canaan_get_temp(struct thermal_zone_device *tz, int *temp)
 		usleep_range(100, 200);
 
 		if (val >> 12) {
-			*temp = val;
+			*temp = canaan_ts_code_to_mcelsius(val & 0xfff);
 			break;
 		}
 	}

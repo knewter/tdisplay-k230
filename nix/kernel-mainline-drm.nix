@@ -57,7 +57,6 @@ kernelMainline.override (old: {
       # Optional DRM restart and five-clock SD consumer; console is unchanged.
       patches = [
         ./patches/mainline/k230-restart.patch
-        ./patches/mainline/k230-sdhci-clocks.patch
       ];
 
       postPatch = ''

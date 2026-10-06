@@ -176,6 +176,9 @@ config GPIO_K230\
 
       # --- SD/MMC: drivers/mmc/host/sdhci-of-kendryte.c ----------------
       cp ${./patches/mainline/sdhci-of-kendryte.c} drivers/mmc/host/sdhci-of-kendryte.c
+      # Every mainline variant: SD hosts own all five gates (the SD1 restart
+      # fix), so unused-clock cleanup cannot gate a live SD/SDIO controller.
+      patch -p1 < ${./patches/mainline/k230-sdhci-clocks.patch}
       grep -q '^config MMC_SDHCI_OF_SPARX5$' drivers/mmc/host/Kconfig
       sed -i '/^config MMC_SDHCI_OF_SPARX5$/i\
 config MMC_SDHCI_OF_DWCMSHC_KENDRYTE\
