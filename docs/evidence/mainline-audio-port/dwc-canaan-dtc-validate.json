@@ -1,0 +1,38 @@
+{
+  "task": "the-mainline-shell-reaches-parity 5.x (i2s node compatible string change, canaan,snps,designware-i2s)",
+  "evidence_class": "host-only-dtc-cpp-validation",
+  "dtc_version": "DTC v1.8.1",
+  "note": "Re-validates the two DTS files docs/evidence/mainline-audio-port/dtc-validate.json already validated, after changing the i2s@9140f000 node's compatible string from the generic snps,designware-i2s to canaan,snps,designware-i2s (see docs/research/mainline-audio-port.md's board-proven-freeze finding). Confirms every other property on that node is unchanged.",
+  "runs": [
+    {
+      "input": "nix/dts/k230-tdisplay-mainline.dts",
+      "cpp_include_dirs": [
+        "/nix/store/79yd40jv8h4x866bm1vyw94cm948grax-linux-mainline-k230-init-exec-transition-src/include",
+        "/nix/store/79yd40jv8h4x866bm1vyw94cm948grax-linux-mainline-k230-init-exec-transition-src/arch/riscv/boot/dts",
+        "/nix/store/79yd40jv8h4x866bm1vyw94cm948grax-linux-mainline-k230-init-exec-transition-src/arch/riscv/boot/dts/canaan"
+      ],
+      "cpp_command": "cpp -nostdinc -I <include dirs above> -undef -x assembler-with-cpp nix/dts/k230-tdisplay-mainline.dts -o <out>.pre.dts",
+      "cpp_returncode": 0,
+      "dtc_command": "dtc -I dts -O dtb -o <out>.dtb <out>.pre.dts",
+      "dtc_returncode": 0,
+      "dtc_stderr": "",
+      "output_dtb_sha256": "2aacbc4d36be78037db958014ac96d3c265b8a3a536e7837b4814fdd49f17274",
+      "decompiled_i2s_node": {
+        "compatible": "canaan,snps,designware-i2s",
+        "reg": "<0x00 0x9140f000 0x00 0x400> (unchanged)",
+        "dmas": "<&pdma 1 0xfff 0 0x14>, <&pdma 1 0xfff 0 0x15> (unchanged, resolved cells 0x08 0x01 0xfff 0x00 0x14 0x08 0x01 0xfff 0x00 0x15)",
+        "dma-names": "\"tx\", \"rx\" (unchanged)",
+        "clocks": "<0x06 0x9e> (unchanged, 0x9e=158=K230_LS_AUDIO_DEV_RATE)",
+        "clock-names": "\"i2sclk\" (unchanged)"
+      }
+    },
+    {
+      "input": "nix/dts/k230-tdisplay-mainline-drm.dts",
+      "note": "Includes k230-tdisplay-mainline.dts; validated to confirm the compatible-string change does not break its sibling.",
+      "cpp_returncode": 0,
+      "dtc_returncode": 0,
+      "output_dtb_sha256": "a974484b3d789d1d4c8d9e6eff900e7df34f208381a4a069ff9a6207f2694d95"
+    }
+  ],
+  "also_run": "nix-instantiate --parse nix/kernel-mainline.nix -- returncode 0, output inspected to confirm the new postPatch dwc_canaan wiring and structuredExtraConfig.CANAAN_SND_DESIGNWARE_I2S = yes; both present and syntactically well-formed."
+}

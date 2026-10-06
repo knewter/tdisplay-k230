@@ -5,7 +5,137 @@ openspec/changes/the-mainline-shell-reaches-parity, task 5.1: "Forward-port
 audio/codec clocks; DT nodes from the vendor tree. Host proof: kernel
 builds; `aplay -l` lists the card in a board boot log."
 
-## What landed
+## Update (task 5.x, board-proven): the generic dwc-i2s driver freezes the SoC
+
+This doc's original conclusion below -- "no Canaan-specific I2S controller
+driver needs porting at all," reusing mainline's own
+`sound/soc/dwc/dwc-i2s.c` (compatible `snps,designware-i2s`) unmodified --
+is **WRONG**, found by an actual board boot: starting ALSA playback
+(`speaker-test -D plughw:0,0`) against that configuration **freezes the
+whole SoC**, even with `clk_ignore_unused`/`pd_ignore_unused` on the kernel
+command line (ruling out an unused-clock-gating hang, this project's other
+recurring freeze cause). On the vendor 6.6 kernel, the identical command
+completes normally -- the vendor kernel does **not** use the generic
+driver; it has its own fork, `sound/soc/dwc_canaan/{canaan-dwc-i2s.c,
+canaan-dwc-pcm.c,canaan-local.h}` (compatible
+`canaan,snps,designware-i2s`), which this doc's original diff undersold as
+"only API-currency differences."
+
+Re-diffing both files directly (this project's pinned mainline
+`sound/soc/dwc/dwc-i2s.c` vs. the vendor's `sound/soc/dwc_canaan/
+canaan-dwc-i2s.c`) finds real register-programming divergence, not just
+API currency:
+
+- **`dw_i2s_hw_params()`**: the vendor driver forces `data_width = 32` and
+  `ccr = 0x10` for every PCM format (S16_LE/S24_LE/S32_LE); mainline's
+  generic driver varies both by format (16/0x00, 24/0x08, 32/0x10). The
+  vendor driver then unconditionally ORs in `(1<<5) | (3<<8)` ("standard
+  i2s format and dma_tx_en/dma_rx_en" per its own comment) -- a CCR bit
+  pattern the generic driver never sets at all. The vendor driver also
+  sets `play_dma_data.dt.addr_width`/`capture_dma_data.dt.addr_width`
+  per format (2 bytes for S16_LE, 4 bytes for S24_LE/S32_LE); the generic
+  driver does not touch `addr_width` in `hw_params()` at all (it comes
+  once, at probe time, from a `COMP1_APB_DATA_WIDTH` register read).
+- **`dw_configure_dai_by_dt()`**: DMA `maxburst` is `4` in the vendor
+  driver, `16` in the generic one.
+- **`i2s_start()`/`i2s_stop()` -- the most likely cause of the freeze**:
+  the vendor driver's IRQ/DMA enable is a strict either/or --
+  `i2s_enable_irqs()` only for the PIO or JH7110 path,
+  `i2s_enable_dma()` only otherwise. Mainline's generic `dwc-i2s.c` no
+  longer branches this way: `i2s_start()` now calls
+  `i2s_enable_irqs(dev, substream->stream, config->chan_nr)`
+  **unconditionally**, in addition to `i2s_enable_dma()` on the
+  DMA-engine path. This board's `i2s` DT node carries **no `interrupts`
+  property** (true in both the vendor and this project's DT, and
+  deliberately so -- the real PLIC line for this IP has never been
+  established from any source this project has, see below), so
+  `dw_i2s_probe()` never calls `devm_request_irq()` and no handler is
+  ever installed for whatever interrupt line this hardware is wired to.
+  Against the generic driver, `TRIGGER_START` -> `i2s_start()` still
+  unmasks the TX-FIFO-empty/RX-data-available sources in the IMR
+  register regardless of that -- if the hardware then raises that PLIC
+  line (plausible: TX FIFO empty happens immediately once playback
+  starts), nothing ever acknowledges it, and depending on how that line
+  is wired this plausibly explains an unhandled-interrupt storm freezing
+  the core. The vendor driver's strict either/or never unmasks an
+  interrupt source when there is no handler for it.
+
+**Fix applied**: forward-ported the vendor's own `sound/soc/dwc_canaan/`
+driver as `nix/patches/mainline/dwc_canaan/{canaan-dwc-i2s.c,
+canaan-dwc-pcm.c,canaan-local.h,Kconfig,Makefile}`, wired into
+`nix/kernel-mainline.nix` under its own `CANAAN_SND_DESIGNWARE_I2S`/
+`CANAAN_SND_DESIGNWARE_PCM` Kconfig symbols (distinct from mainline's own
+`SND_DESIGNWARE_I2S`/`_PCM`, left enabled since nothing on this board's DT
+uses the generic compatible string anymore, so there is no bind
+conflict), and changed the `i2s` DT node's compatible string in
+`nix/dts/k230-tdisplay-mainline.dts` from `snps,designware-i2s` to
+`canaan,snps,designware-i2s`. Every other property on that DT node (reg,
+dmas/dma-names, clocks/clock-names) is unchanged -- checked directly
+against the vendor's own `k230.dtsi` i2s node, which carries no other
+`canaan,`-prefixed property this driver reads.
+
+API-currency changes made porting the vendor file to v7.3-rc5 (see
+`nix/patches/mainline/dwc_canaan/canaan-dwc-i2s.c`'s own header comment
+for the full list, kept in sync): `.remove_new` -> `.remove` (already
+void-returning in the vendor source, only the struct field name moved),
+`asoc_substream_to_rtd()` -> `snd_soc_substream_to_rtd()`,
+`asoc_rtd_to_cpu()` -> `snd_soc_rtd_to_cpu()` (in `canaan-dwc-pcm.c`),
+`SET_RUNTIME_PM_OPS` -> `RUNTIME_PM_OPS` wrapped in `pm_ptr(&dwc_pm_ops)`
+on `.driver.pm` (and `dw_i2s_runtime_suspend()`/`_resume()` moved out from
+under `#ifdef CONFIG_PM` to stay unconditionally compiled, since the
+`dev_pm_ops` struct referencing them by name is itself unconditionally
+compiled now), `devm_clk_get()` + `clk_prepare_enable()` ->
+`devm_clk_get_enabled()` with the `err_clk_disable` probe-error-path label
+and the `remove()` function's own `clk_disable_unprepare()` call both
+dropped (devm's reverse-order cleanup replaces them), `irq >= 0` ->
+explicit `if (irq == -EPROBE_DEFER) return irq;` then `if (irq > 0)`
+(mainline's own currency fix, ported verbatim), and `.pcm_construct` ->
+`.pcm_new` in `canaan-dwc-pcm.c`'s component driver struct. One
+pre-existing vendor bug fixed in `canaan-local.h` (not an API-currency
+change): its `CONFIG_CANAAN_SND_DESIGNWARE_PCM=n` fallback declared
+unprefixed inline stubs (`dw_pcm_push_tx`/`_pop_rx`/`_register`) that
+don't match what `canaan-dwc-i2s.c` actually calls
+(`canaan_dw_pcm_push_tx`/etc.) -- a mismatch the vendor tree never hit
+because its own defconfig always turns the PCM symbol on, but one that
+fails this board's build (which leaves it off, same reasoning as
+mainline's own `SND_DESIGNWARE_PCM` below). Renamed the fallback stubs to
+match.
+
+**Verification performed (host-only; no board)**:
+
+- Both files compiled as out-of-tree kernel modules (`make M=...
+  modules`) against this project's pinned mainline v7.3-rc5 dev tree,
+  riscv64 cross-compiler, `W=1`, zero warnings/errors, in two
+  configurations: `canaan-dwc-i2s.c` alone (`CANAAN_SND_DESIGNWARE_PCM`
+  unset, matching this board's actual `structuredExtraConfig`) and
+  `canaan-dwc-i2s.c` + `canaan-dwc-pcm.c` together with
+  `CONFIG_CANAAN_SND_DESIGNWARE_PCM=1` forced via `ccflags-y` (to exercise
+  the PCM PIO file too, even though it is not built for this board).
+- `nix/dts/k230-tdisplay-mainline.dts` and its
+  `k230-tdisplay-mainline-drm.dts` includer both preprocess (`cpp`) and
+  compile (`dtc -I dts -O dtb`) cleanly against mainline's own
+  `include/`+`arch/riscv/boot/dts(/canaan)` search path, zero
+  warnings; decompiling the resulting `.dtb` confirms the `i2s` node's
+  `compatible` is now `canaan,snps,designware-i2s` with every other
+  property (`reg`, `dmas`, `dma-names`, `clocks`, `clock-names`)
+  byte-identical to before.
+- `nix-instantiate --parse nix/kernel-mainline.nix` succeeds.
+- The `sed`/`grep` hunks this file's `postPatch` adds for
+  `sound/soc/{Kconfig,Makefile}` were dry-run by hand against real copies
+  of those two files from the pinned mainline source tree (after first
+  applying the prior `canaan/` insertion they anchor on) and produced the
+  expected `source "sound/soc/dwc_canaan/Kconfig"` line immediately after
+  the existing `canaan/Kconfig` line, and the expected `obj-$(CONFIG_SND_SOC)
+  += dwc_canaan/` Makefile line.
+- Not run: `nix build` of the kernel derivation itself (out of scope for
+  this task); any board boot, `aplay -l` capture, or a
+  `speaker-test`/playback run against this new driver. **This port fixes
+  the specific freeze-causing divergence identified above, but does not
+  itself prove audio plays** -- `aplay -l` listing the card and a
+  non-frozen `speaker-test` run remain this task's own open host/board
+  proofs.
+
+## What landed (original task 5.1 port; still current for canaan/codecs)
 
 Forward-ported, compiled clean (zero warnings) against this project's
 pinned mainline v7.3-rc5 dev tree, and wired into `nix/kernel-mainline.nix`
@@ -33,19 +163,16 @@ pinned mainline v7.3-rc5 dev tree, and wired into `nix/kernel-mainline.nix`
   Kconfig entry under `sound/soc/codecs/Kconfig`, and
   `structuredExtraConfig` turning all of it on.
 
-Deliberately reused unmodified: mainline's own
-`sound/soc/dwc/{dwc-i2s.c,dwc-pcm.c}` (Synopsys DesignWare I2S), already
-present upstream (`CONFIG_SND_DESIGNWARE_I2S`/`_PCM`, selecting
-`SND_SOC_GENERIC_DMAENGINE_PCM`). Diffing the vendor's
-`sound/soc/dwc_canaan/canaan-dwc-i2s.c` against mainline's
-`sound/soc/dwc/dwc-i2s.c` (same file, same Synopsys/ST authorship lineage)
-shows only API-currency differences (`devm_clk_get_enabled`,
-`.remove_new`->`.remove`, `RUNTIME_PM_OPS`, a few DMA burst/width tuning
-values) and one compatible-string difference
-(`canaan,snps,designware-i2s` vs. mainline's generic
-`snps,designware-i2s`) -- not a different IP. The DT nodes above use the
-generic string, so **no Canaan-specific I2S controller driver needs
-porting at all.**
+**SUPERSEDED by the "Update" section above**: this section originally said
+mainline's own `sound/soc/dwc/{dwc-i2s.c,dwc-pcm.c}` (Synopsys DesignWare
+I2S) was reused unmodified, with only API-currency differences from the
+vendor's `sound/soc/dwc_canaan/canaan-dwc-i2s.c`, and that "no
+Canaan-specific I2S controller driver needs porting at all." A board boot
+proved that wrong (playback freezes the SoC against the generic driver);
+see the "Update" section above for the real register-programming
+divergence and the forward-ported `sound/soc/dwc_canaan/` fix. The DT
+nodes below now use `canaan,snps,designware-i2s` for the `i2s` node, not
+the generic `snps,designware-i2s` this paragraph originally described.
 
 ## API changes made (6.6 vendor -> 7.3-rc5 mainline), confirmed against headers
 

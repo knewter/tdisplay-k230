@@ -106,13 +106,11 @@
 #     "canaan,k230-audio-inno" machine driver, forward-ported with this
 #     project's own external-I2S-switch control folded in and explicit
 #     claims added for K230_LS_AUDIO_APB_GATE/K230_LS_CODEC_APB_GATE (see
-#     each file's own header comment). Reuses mainline's OWN, already-
-#     present sound/soc/dwc/dwc-i2s.c (Synopsys DesignWare I2S) unmodified
-#     as the CPU/platform DAI -- no canaan-specific I2S controller driver
-#     needed. This board's only known i2s DT node (k230.dtsi) carries no
-#     `interrupts` property, so dw_i2s_probe() takes the dmaengine_pcm
-#     path, which needs a DMA provider for `compatible = "canaan,k230-pdma"`
-#     -- see the PDMA entry directly below, which resolves this.
+#     each file's own header comment). This board's only known i2s DT
+#     node (k230.dtsi) carries no `interrupts` property, so dw_i2s_probe()
+#     takes the dmaengine_pcm path, which needs a DMA provider for
+#     `compatible = "canaan,k230-pdma"` -- see the PDMA entry directly
+#     below, which resolves this.
 #   - drivers/dma/k230-peridma.c (nix/patches/mainline/, task 5.1 follow-up):
 #     the vendor's drivers/dma/k230_peridma.c (~1400-line register-level
 #     descriptor-chain DMA engine, not a dw-axi-dmac/dw_dmac variant),
@@ -123,9 +121,24 @@
 #     drivers/clk/clk-k230.c, confirmed register-offset/bit-identical to the
 #     vendor DT's own `pdma_aclk_gate` node). See that file's own header
 #     comment for the full API-delta list. Unblocks the audio dmaengine_pcm
-#     path above: `aplay -l` listing the card is this task's own
-#     remaining host-proof criterion, not yet captured here (no board
-#     access from this worktree) -- see docs/research/mainline-audio-port.md.
+#     path above.
+#   - sound/soc/dwc_canaan/{canaan-dwc-i2s,canaan-dwc-pcm,canaan-local}
+#     (nix/patches/mainline/dwc_canaan/, task 5.x): BOARD-PROVEN this
+#     project's earlier plan -- reusing mainline's own, already-present
+#     sound/soc/dwc/dwc-i2s.c (compatible "snps,designware-i2s") unmodified
+#     as the i2s node's driver -- was wrong: starting ALSA playback
+#     (`speaker-test -D plughw:0,0`) freezes the whole SoC on a real board,
+#     even with clk_ignore_unused/pd_ignore_unused. The vendor kernel does
+#     NOT use the generic driver either; it has its own fork (compatible
+#     "canaan,snps,designware-i2s") that differs in K230-critical register
+#     programming, not just API currency -- see
+#     docs/research/mainline-audio-port.md and
+#     nix/patches/mainline/dwc_canaan/canaan-dwc-i2s.c's own header comment
+#     for the full finding and API-delta list. The `i2s` DT node's
+#     compatible string (nix/dts/k230-tdisplay-mainline.dts) now matches
+#     this driver instead. `aplay -l` listing the card, and a non-frozen
+#     `speaker-test` run, remain this task's own open host/board proofs --
+#     not yet captured (no board access from this worktree).
 #
 # What is NOT ported (unchanged from the "absent" list above): display,
 # crypto, ADC, PWM. See docs/research/mainline-kernel-inventory.md.
@@ -410,6 +423,57 @@ config SND_SOC_K230_INNO\
       echo 'snd-soc-k230-inno-objs := inno_k230_reg.o inno_k230.o' >> sound/soc/codecs/Makefile
       echo 'obj-$(CONFIG_SND_SOC_K230_INNO) += snd-soc-k230-inno.o' >> sound/soc/codecs/Makefile
       grep -q 'CONFIG_SND_SOC_K230_INNO.*snd-soc-k230-inno.o' sound/soc/codecs/Makefile
+
+      # --- I2S controller: sound/soc/dwc_canaan (new dir) --------------
+      #
+      # openspec/changes/the-mainline-shell-reaches-parity, task 5.x.
+      # docs/research/mainline-audio-port.md originally reused mainline's
+      # OWN sound/soc/dwc/dwc-i2s.c (compatible "snps,designware-i2s")
+      # unmodified for this board's i2s node, reasoning the vendor file
+      # was API-currency-only drift from that same driver. Board-proven
+      # wrong: starting ALSA playback against that generic driver
+      # (`speaker-test -D plughw:0,0`) freezes the whole SoC, even with
+      # clk_ignore_unused/pd_ignore_unused -- see that doc's updated
+      # findings. The vendor's own fork,
+      # sound/soc/dwc_canaan/{canaan-dwc-i2s.c,canaan-dwc-pcm.c,
+      # canaan-local.h} (compatible "canaan,snps,designware-i2s"),
+      # forward-ported here as nix/patches/mainline/dwc_canaan/*, differs
+      # from the generic driver in real register-programming ways, not
+      # just API currency: always data_width 32/ccr 0x10 regardless of
+      # PCM format, CCR |= (1<<5)|(3<<8) ("standard i2s format and
+      # dma_tx_en/dma_rx_en"), per-format DMA addr_width, DMA maxburst 4
+      # (mainline's generic driver uses 16), and -- the most likely cause
+      # of the observed freeze -- i2s_start() enables DMA XOR IRQs
+      # strictly (PIO/JH7110 get IRQs, everyone else gets DMA only), where
+      # mainline's generic dwc-i2s.c now enables IRQs unconditionally in
+      # addition to DMA. This board's i2s DT node has no `interrupts`
+      # property, so mainline's generic driver unmasks an IMR interrupt
+      # source with no handler ever installed. See
+      # nix/patches/mainline/dwc_canaan/canaan-dwc-i2s.c's own header
+      # comment for the full API-delta list (void .remove,
+      # snd_soc_substream_to_rtd, RUNTIME_PM_OPS/pm_ptr,
+      # devm_clk_get_enabled, -EPROBE_DEFER irq handling, .pcm_new rename)
+      # and docs/research/mainline-audio-port.md for the rest of this
+      # finding. Namespaced under its own CANAAN_SND_DESIGNWARE_I2S/_PCM
+      # Kconfig symbols -- distinct from mainline's own
+      # SND_DESIGNWARE_I2S/_PCM -- so both drivers can coexist in-tree;
+      # only the `i2s` DT node's compatible string (changed below in
+      # nix/dts/k230-tdisplay-mainline.dts) decides which one binds.
+      # SND_DESIGNWARE_I2S is deliberately left enabled, not disabled:
+      # with no device tree node left using "snps,designware-i2s", it
+      # never binds anything on this board, so there is no conflict to
+      # resolve by turning it off.
+      mkdir -p sound/soc/dwc_canaan
+      cp ${./patches/mainline/dwc_canaan/canaan-dwc-i2s.c} sound/soc/dwc_canaan/canaan-dwc-i2s.c
+      cp ${./patches/mainline/dwc_canaan/canaan-dwc-pcm.c} sound/soc/dwc_canaan/canaan-dwc-pcm.c
+      cp ${./patches/mainline/dwc_canaan/canaan-local.h} sound/soc/dwc_canaan/canaan-local.h
+      cp ${./patches/mainline/dwc_canaan/Kconfig} sound/soc/dwc_canaan/Kconfig
+      cp ${./patches/mainline/dwc_canaan/Makefile} sound/soc/dwc_canaan/Makefile
+      grep -q '^source "sound/soc/canaan/Kconfig"$' sound/soc/Kconfig
+      sed -i '/^source "sound\/soc\/canaan\/Kconfig"$/a source "sound/soc/dwc_canaan/Kconfig"' sound/soc/Kconfig
+      grep -q '^source "sound/soc/dwc_canaan/Kconfig"$' sound/soc/Kconfig
+      echo 'obj-$(CONFIG_SND_SOC)	+= dwc_canaan/' >> sound/soc/Makefile
+      grep -q 'CONFIG_SND_SOC.*+= dwc_canaan/' sound/soc/Makefile
     '';
   };
 
@@ -468,19 +532,26 @@ config SND_SOC_K230_INNO\
     K230_PERIDMA = yes;
 
     # --- Audio (task 5.1) ------------------------------------------------
-    # SND_SOC_GENERIC_DMAENGINE_PCM is pulled in by SND_DESIGNWARE_I2S's own
-    # `select`; not asked for directly. SND_DESIGNWARE_PCM (the PIO PCM
-    # extension) is NOT enabled: this board's i2s DT node carries no
-    # `interrupts` property (matching the only vendor DT reference for this
-    # IP -- see nix/dts/k230-tdisplay-mainline.dts), so dw_i2s_probe()
-    # always takes the dmaengine_pcm branch regardless of this symbol --
-    # which now has a real DMA provider to resolve against (K230_PERIDMA
-    # above), unlike when this comment was first written. See
-    # docs/research/mainline-audio-port.md for the full history.
+    # SND_SOC_GENERIC_DMAENGINE_PCM is pulled in by both SND_DESIGNWARE_I2S's
+    # and CANAAN_SND_DESIGNWARE_I2S's own `select`; not asked for directly.
+    # Neither _PCM PIO extension (SND_DESIGNWARE_PCM, CANAAN_SND_DESIGNWARE_
+    # PCM) is enabled: this board's i2s DT node carries no `interrupts`
+    # property (matching the only vendor DT reference for this IP -- see
+    # nix/dts/k230-tdisplay-mainline.dts), so dw_i2s_probe() always takes the
+    # dmaengine_pcm branch regardless of either symbol -- which now has a
+    # real DMA provider to resolve against (K230_PERIDMA above). See
+    # docs/research/mainline-audio-port.md for the full history, including
+    # the board-proven freeze that moved this board's i2s node (below) from
+    # mainline's own SND_DESIGNWARE_I2S driver to the vendor's
+    # CANAAN_SND_DESIGNWARE_I2S fork. SND_DESIGNWARE_I2S itself is left
+    # enabled, not disabled: with no DT node using "snps,designware-i2s"
+    # left on this board, it never binds anything, so there is nothing for
+    # it to conflict with.
     SOUND = yes;
     SND = yes;
     SND_SOC = yes;
     SND_DESIGNWARE_I2S = yes;
+    CANAAN_SND_DESIGNWARE_I2S = yes;
     SND_SOC_K230_INNO = yes;
     SND_SOC_CANAAN_K230_AUDIO = yes;
     SND_SOC_CANAAN_K230_INNO = yes;
@@ -521,7 +592,7 @@ config SND_SOC_K230_INNO\
   };
 
   extraMeta = {
-    description = "Plain mainline console kernel with Canaan K230 SoC support and this project's forward-ported GPIO/SD-MMC/USB/RTC/power-key/thermal/PDMA/audio drivers (audio's dmaengine_pcm path now has a DMA provider -- board `aplay -l` proof still pending, see docs/research/mainline-audio-port.md; no DRM/display, touch, ADC, PWM or crypto driver)";
+    description = "Plain mainline console kernel with Canaan K230 SoC support and this project's forward-ported GPIO/SD-MMC/USB/RTC/power-key/thermal/PDMA/audio drivers (i2s node now uses the forward-ported canaan,snps,designware-i2s driver, not mainline's generic one, after a board-proven freeze starting ALSA playback against the generic driver -- see docs/research/mainline-audio-port.md; board `aplay -l`/non-frozen-playback proof still pending; no DRM/display, touch, ADC, PWM or crypto driver)";
     platforms = [ "riscv64-linux" ];
   };
 } // (args.argsOverride or { }))
