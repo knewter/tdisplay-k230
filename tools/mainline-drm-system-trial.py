@@ -187,7 +187,8 @@ def prepare(bundle: Path, manifest: Path, normal_report: Path, *, wait_initramfs
                 raise ValueError("selected exec-return archive changed original userspace bytes")
     volatile_bootargs_command(p)
     p["kernel"] = str((Path(p["system"]) / "kernel").resolve().parent)
-    p["pid1"] = str((Path(p["system"]) / "init").resolve())
+    # NixOS stage-2 init execs systemd, so /proc/1/exe is the system's systemd.
+    p["pid1"] = str((Path(p["system"]) / "systemd").resolve() / "lib/systemd/systemd")
     for tool in ("sh", "cat", "id", "readlink", "uname", "findmnt", "systemctl", "sha256sum", "timeout", "evtest"):
         if not os.access(Path(p["system"]) / "sw/bin" / tool, os.X_OK):
             raise ValueError("candidate lacks a required shell diagnostic tool")
