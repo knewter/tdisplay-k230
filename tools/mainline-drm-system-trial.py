@@ -26,6 +26,7 @@ _spec = importlib.util.spec_from_file_location("mainline_rdinit", Path(__file__)
 rd = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(rd)
 CONTROLS = ("fsck.mode=skip", "systemd.mask=k230-root-growth.service", "systemd.mask=register-nix-paths.service")
+IGNORE_UNUSED_RESOURCES_CONTROLS = ("clk_ignore_unused", "pd_ignore_unused")
 TRACE_ENABLE = ("k230.boot_trace=1", "k230.boot_trace_sbi_only=1")
 INITRD_DEBUG_LOGGING = ("rd.systemd.log_level=debug", "rd.systemd.log_target=console")
 INITRD_INFO_LOGGING = ("rd.systemd.log_level=info", "rd.systemd.log_target=console")
@@ -77,7 +78,8 @@ def initrd_logging_controls(debug: bool = False, info: bool = False, info_kmsg: 
 
 def diagnostic_controls(wait_initramfs_in_initcall: bool = False, *, without_boot_markers: bool = False,
                         initrd_debug_logging: bool = False, initrd_info_logging: bool = False,
-                        initrd_info_kmsg_logging: bool = False, init_exec_return: bool = False, init_exec_transition: bool = False) -> tuple[str, ...]:
+                        initrd_info_kmsg_logging: bool = False, init_exec_return: bool = False, init_exec_transition: bool = False,
+                        ignore_unused_resources: bool = False) -> tuple[str, ...]:
     if type(wait_initramfs_in_initcall) is not bool:
         raise ValueError("initramfs comparison selector must be boolean")
     if type(without_boot_markers) is not bool:
@@ -87,6 +89,8 @@ def diagnostic_controls(wait_initramfs_in_initcall: bool = False, *, without_boo
         raise ValueError("init exec return selector must be boolean")
     if type(init_exec_transition) is not bool:
         raise ValueError("init exec transition selector must be boolean")
+    if type(ignore_unused_resources) is not bool:
+        raise ValueError("ignore unused resources selector must be boolean")
     if init_exec_transition and not init_exec_return:
         raise ValueError("init exec transition requires the parent exec return selection")
     if init_exec_return and (not wait_initramfs_in_initcall or not without_boot_markers or logging):
@@ -95,16 +99,22 @@ def diagnostic_controls(wait_initramfs_in_initcall: bool = False, *, without_boo
         raise ValueError("initrd logging requires synchronous initramfs and marker-free ordinary init")
     if without_boot_markers and not wait_initramfs_in_initcall:
         raise ValueError("marker comparison requires the earlier initramfs join comparison")
-    return CONTROLS + (("initramfs_async=0",) if wait_initramfs_in_initcall else ()) + logging + ((INIT_EXEC_RETURN_FLAG,) if init_exec_return else ()) + ((INIT_EXEC_TRANSITION_FLAG,) if init_exec_transition else ())
+    if ignore_unused_resources and (wait_initramfs_in_initcall or without_boot_markers or logging or init_exec_return or init_exec_transition):
+        raise ValueError("ignore unused resources requires plain ordinary mode")
+    return (CONTROLS + (IGNORE_UNUSED_RESOURCES_CONTROLS if ignore_unused_resources else ())
+            + (("initramfs_async=0",) if wait_initramfs_in_initcall else ()) + logging
+            + ((INIT_EXEC_RETURN_FLAG,) if init_exec_return else ()) + ((INIT_EXEC_TRANSITION_FLAG,) if init_exec_transition else ()))
 
 
 def ordinary_bootargs(original: str, system: str, *, wait_initramfs_in_initcall: bool = False,
                       without_boot_markers: bool = False, initrd_debug_logging: bool = False,
                       initrd_info_logging: bool = False, initrd_info_kmsg_logging: bool = False,
-                      init_exec_return: bool = False, init_exec_transition: bool = False) -> str:
+                      init_exec_return: bool = False, init_exec_transition: bool = False,
+                      ignore_unused_resources: bool = False) -> str:
     controls = diagnostic_controls(wait_initramfs_in_initcall, without_boot_markers=without_boot_markers,
                                    initrd_debug_logging=initrd_debug_logging, initrd_info_logging=initrd_info_logging,
-                                   initrd_info_kmsg_logging=initrd_info_kmsg_logging, init_exec_return=init_exec_return, init_exec_transition=init_exec_transition)
+                                   initrd_info_kmsg_logging=initrd_info_kmsg_logging, init_exec_return=init_exec_return, init_exec_transition=init_exec_transition,
+                                   ignore_unused_resources=ignore_unused_resources)
     args = original[:-1] if original.endswith("\n") else original
     if not original.startswith("bootargs=") or args.strip() != args:
         raise ValueError("expected exact single-line bundle bootargs")
@@ -122,7 +132,7 @@ def ordinary_bootargs(original: str, system: str, *, wait_initramfs_in_initcall:
                                                   "systemd.break", "fsck.mode", "initcall_debug", "clk_ignore_unused",
                                                   "ignore_loglevel", "debug", "quiet", "nohz", "nohlt", "k230.init_exec_return", "k230.init_exec_transition"}):
             raise ValueError("conflicting inherited initrd logging/instrumentation argument")
-        if (name in {"rdinit", "PATH", "clk_ignore_unused", "initcall_debug", "initramfs_async", "fsck.mode", "systemd.mask", "systemd.unit", "systemd.debug_shell", "systemd.break", "rd.systemd.unit", "rd.systemd.mask", "rd.systemd.debug_shell", "rd.systemd.break", "ignore_loglevel", "debug", "quiet", "dyndbg"}
+        if (name in {"rdinit", "PATH", "clk_ignore_unused", "pd_ignore_unused", "initcall_debug", "initramfs_async", "fsck.mode", "systemd.mask", "systemd.unit", "systemd.debug_shell", "systemd.break", "rd.systemd.unit", "rd.systemd.mask", "rd.systemd.debug_shell", "rd.systemd.break", "ignore_loglevel", "debug", "quiet", "dyndbg"}
                 or name.endswith(".dyndbg") or (name == "loglevel" and value not in tuple(map(str, range(8))))):
             raise ValueError("conflicting ordinary-init diagnostic argument")
     if wait_initramfs_in_initcall:
@@ -141,16 +151,19 @@ def ordinary_bootargs(original: str, system: str, *, wait_initramfs_in_initcall:
 def prepare(bundle: Path, manifest: Path, normal_report: Path, *, wait_initramfs_in_initcall: bool = False,
             without_boot_markers: bool = False, initrd_debug_logging: bool = False,
             initrd_info_logging: bool = False, initrd_info_kmsg_logging: bool = False,
-            init_exec_return: bool = False, init_exec_transition: bool = False) -> dict:
+            init_exec_return: bool = False, init_exec_transition: bool = False,
+            ignore_unused_resources: bool = False) -> dict:
     controls = diagnostic_controls(wait_initramfs_in_initcall, without_boot_markers=without_boot_markers,
                                    initrd_debug_logging=initrd_debug_logging, initrd_info_logging=initrd_info_logging,
-                                   initrd_info_kmsg_logging=initrd_info_kmsg_logging, init_exec_return=init_exec_return, init_exec_transition=init_exec_transition)
+                                   initrd_info_kmsg_logging=initrd_info_kmsg_logging, init_exec_return=init_exec_return, init_exec_transition=init_exec_transition,
+                                   ignore_unused_resources=ignore_unused_resources)
     p = rd.prepare_trial(manifest, bundle, normal_report)
     p["bootargs"] = ordinary_bootargs((bundle / "bootargs.txt").read_text(), p["system"],
                                      wait_initramfs_in_initcall=wait_initramfs_in_initcall,
                                      without_boot_markers=without_boot_markers,
                                      initrd_debug_logging=initrd_debug_logging, initrd_info_logging=initrd_info_logging,
-                                     initrd_info_kmsg_logging=initrd_info_kmsg_logging, init_exec_return=init_exec_return, init_exec_transition=init_exec_transition)
+                                     initrd_info_kmsg_logging=initrd_info_kmsg_logging, init_exec_return=init_exec_return, init_exec_transition=init_exec_transition,
+                                     ignore_unused_resources=ignore_unused_resources)
     p["diagnostic_controls"] = controls
     p["without_boot_markers"] = without_boot_markers
     if initrd_debug_logging:
@@ -161,6 +174,8 @@ def prepare(bundle: Path, manifest: Path, normal_report: Path, *, wait_initramfs
         p["initrd_info_kmsg_logging"] = True
     if init_exec_transition:
         p["init_exec_transition"] = True
+    if ignore_unused_resources:
+        p["ignore_unused_resources"] = True
     if init_exec_return:
         p["init_exec_return"] = True
         p["init_exec_return_proof"] = inspect_init_exec_kernel(p)
@@ -719,10 +734,17 @@ def volatile_bootargs_command(p: dict) -> str:
     exec_return = p.get("init_exec_return", False)
     transition = p.get("init_exec_transition", False)
     without = p.get("without_boot_markers", False)
-    diagnostic_controls(controls != CONTROLS, without_boot_markers=without, initrd_debug_logging=debug, initrd_info_logging=info, initrd_info_kmsg_logging=info_kmsg, init_exec_return=exec_return, init_exec_transition=transition)
-    allowed = diagnostic_controls(True, without_boot_markers=True, initrd_debug_logging=debug, initrd_info_logging=info, initrd_info_kmsg_logging=info_kmsg, init_exec_return=exec_return, init_exec_transition=transition) if logging or exec_return else None
-    if controls not in ((allowed,) if logging or exec_return else (CONTROLS, diagnostic_controls(True))):
-        raise ValueError("unexpected volatile diagnostic controls")
+    ignore_unused = p.get("ignore_unused_resources", False)
+    if type(ignore_unused) is not bool:
+        raise ValueError("ignore unused resources selector must be boolean")
+    if ignore_unused:
+        if controls != diagnostic_controls(ignore_unused_resources=True):
+            raise ValueError("unexpected volatile diagnostic controls")
+    else:
+        diagnostic_controls(controls != CONTROLS, without_boot_markers=without, initrd_debug_logging=debug, initrd_info_logging=info, initrd_info_kmsg_logging=info_kmsg, init_exec_return=exec_return, init_exec_transition=transition)
+        allowed = diagnostic_controls(True, without_boot_markers=True, initrd_debug_logging=debug, initrd_info_logging=info, initrd_info_kmsg_logging=info_kmsg, init_exec_return=exec_return, init_exec_transition=transition) if logging or exec_return else None
+        if controls not in ((allowed,) if logging or exec_return else (CONTROLS, diagnostic_controls(True))):
+            raise ValueError("unexpected volatile diagnostic controls")
     if type(without) is not bool:
         raise ValueError("marker comparison selector must be boolean")
     if without:
@@ -844,10 +866,13 @@ def run(args) -> bool:
     requested_kmsg = getattr(args, "initrd_info_kmsg_logging", False)
     requested_exec = getattr(args, "init_exec_return", False)
     requested_transition = getattr(args, "init_exec_transition", False)
+    requested_ignore_unused = getattr(args, "ignore_unused_resources", False)
     if type(requested_transition) is not bool or requested_transition and args.phase != "begin":
         raise ValueError("init exec transition must be a boolean begin-only selection")
     if type(requested_exec) is not bool or requested_exec and args.phase != "begin":
         raise ValueError("init exec return must be a boolean begin-only selection")
+    if type(requested_ignore_unused) is not bool or requested_ignore_unused and args.phase != "begin":
+        raise ValueError("ignore unused resources must be a boolean begin-only selection")
     if initrd_logging_controls(requested_debug, requested_info, requested_kmsg) and args.phase != "begin":
         raise ValueError("initrd logging is begin-only; resume uses protected state")
     saved = None if args.phase == "begin" else private_existing(args.state)
@@ -860,9 +885,11 @@ def run(args) -> bool:
     initrd_info_kmsg_logging = saved.get("initrd_info_kmsg_logging", False) if saved is not None else requested_kmsg
     init_exec_return = saved.get("init_exec_return", False) if saved is not None else requested_exec
     init_exec_transition = saved.get("init_exec_transition", False) if saved is not None else requested_transition
+    ignore_unused_resources = saved.get("ignore_unused_resources", False) if saved is not None else requested_ignore_unused
     diagnostic_controls(wait_initramfs_in_initcall, without_boot_markers=without_boot_markers,
                         initrd_debug_logging=initrd_debug_logging, initrd_info_logging=initrd_info_logging,
-                        initrd_info_kmsg_logging=initrd_info_kmsg_logging, init_exec_return=init_exec_return, init_exec_transition=init_exec_transition)
+                        initrd_info_kmsg_logging=initrd_info_kmsg_logging, init_exec_return=init_exec_return, init_exec_transition=init_exec_transition,
+                        ignore_unused_resources=ignore_unused_resources)
     if saved:
         for key in ("bundle", "manifest", "normal_report"):
             setattr(args, key, Path(saved[key]))
@@ -874,7 +901,8 @@ def run(args) -> bool:
                                                     ("initrd_info_logging", initrd_info_logging),
                                                     ("initrd_info_kmsg_logging", initrd_info_kmsg_logging),
                                                     ("init_exec_return", init_exec_return),
-                                                    ("init_exec_transition", init_exec_transition)) if enabled})
+                                                    ("init_exec_transition", init_exec_transition),
+                                                    ("ignore_unused_resources", ignore_unused_resources)) if enabled})
     normal = dict(p["normal"] if saved is None else saved["normal"])
     state_path = rd.safe_log_path(args.state) if saved is None else args.state.expanduser().absolute()
     log_path = rd.safe_log_path(args.log); result_path = rd.safe_log_path(args.result)
@@ -889,6 +917,7 @@ def run(args) -> bool:
     result["initrd_info_kmsg_logging"] = initrd_info_kmsg_logging
     result["init_exec_return"] = init_exec_return
     result["init_exec_transition"] = init_exec_transition
+    result["ignore_unused_resources"] = ignore_unused_resources
     if init_exec_return:
         result["init_exec_return_proof"] = p["init_exec_return_proof"]
         result["init_exec_return_archive"] = p["init_exec_return_archive"]
@@ -922,6 +951,7 @@ def run(args) -> bool:
                 saved["initrd_info_kmsg_logging"] = initrd_info_kmsg_logging
                 saved["init_exec_return"] = init_exec_return
                 saved["init_exec_transition"] = init_exec_transition
+                saved["ignore_unused_resources"] = ignore_unused_resources
                 save_state(state_path, saved, new=True)
                 result.update(status="candidate-ready-qualified-ordinary-init", candidate=facts)
             else:
@@ -998,6 +1028,8 @@ def main() -> int:
                         help="begin-only child of exec-return: two finite PID1 boundary witnesses")
     parser.add_argument("--init-exec-return", action="store_true",
                         help="begin-only qualified new kernel: one INFO signed result of ramdisk exec setup")
+    parser.add_argument("--ignore-unused-resources", action="store_true",
+                        help="begin-only plain ordinary mode: add volatile clk_ignore_unused and pd_ignore_unused")
     args = parser.parse_args()
     if args.phase == "begin" and any(getattr(args, k) is None for k in ("bundle", "manifest", "normal_report")):
         parser.error("begin requires --bundle, --manifest and --normal-report")
@@ -1019,6 +1051,10 @@ def main() -> int:
         parser.error("--init-exec-return requires both comparison selectors and excludes logging variants")
     if args.init_exec_transition and (args.phase != "begin" or not args.init_exec_return):
         parser.error("--init-exec-transition is begin-only and requires --init-exec-return")
+    if args.ignore_unused_resources and (args.phase != "begin" or args.wait_initramfs_in_initcall or args.without_boot_markers
+                                         or args.initrd_debug_logging or args.initrd_info_logging or args.initrd_info_kmsg_logging
+                                         or args.init_exec_return or args.init_exec_transition):
+        parser.error("--ignore-unused-resources is begin-only and requires plain ordinary mode")
     try:
         return 0 if run(args) else 1
     except Exception as exc:
