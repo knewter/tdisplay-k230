@@ -1505,6 +1505,9 @@ Independent source/actual host/full physical/parser/recovery-limit/publication r
       the quiet SBI-only policy needs a separate variant build, so the plain ordinary
       policy was used. Final `0b327025` bundle reached `candidate-ready-qualified-ordinary-init`
       with normal unused-clock cleanup; recovery verified. Camera showed only the boot splash.
-- [ ] 5v.3 Review, land/push, inspect CI/published revision. A pass makes task
+- [x] 5v.3 Review, land/push, inspect CI/published revision. A pass makes task
       5b.5 (ordinary root, deliberate touch) the next step; a fail returns to
       the clk_ignore_unused/pd_ignore_unused ablation.
+      Landed on master; CI 37416968692 build/deploy PASS; work page serves 1a03dfcd and the
+      clock-ownership evidence page returns 200 (CI for 0aa88740/91da9557/4bb0170c failed on missing
+      blob-inventory rows for the 5u stills, fixed in 1a03dfcd). Next: task 5b.5.
