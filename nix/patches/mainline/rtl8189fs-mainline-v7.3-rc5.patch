@@ -102,6 +102,89 @@ index bf94a87..1953acb 100644
  
  					if (tagLen > MAGIC_CODE_LEN + RTL_RELAY_TAG_LEN)
  						offset = TAG_HDR_LEN;
+diff --git a/hal/hal_com.c b/hal/hal_com.c
+index 6e5146a..5b5da5b 100644
+--- a/hal/hal_com.c
++++ b/hal/hal_com.c
+@@ -12957,7 +12957,11 @@ ParseQualifiedString(
+ 		return _FALSE;
+ 
+ 	j = (*Start) - 2;
+-	strncpy((char *)Out, (const char *)(In + i), j - i + 1);
++	/* strncpy -> strscpy: see the Makefile-adjacent rationale at ioctl_linux.c's
++	 * rtw_wx_set_enc_ext() -- mainline v7.3-rc5 dropped strncpy()'s declaration
++	 * entirely. Same explicit size, same call site semantics (strscpy only
++	 * differs by always NUL-terminating, which is strictly safer here). */
++	strscpy((char *)Out, (const char *)(In + i), j - i + 1);
+ 
+ 	return _TRUE;
+ }
+diff --git a/hal/hal_com_phycfg.c b/hal/hal_com_phycfg.c
+index 8e07ab9..e76ee83 100644
+--- a/hal/hal_com_phycfg.c
++++ b/hal/hal_com_phycfg.c
+@@ -4926,9 +4926,13 @@ PHY_ConfigRFWithTxPwrTrackParaFile(
+ 				if (strlen(szLine) < 10 || szLine[0] != '[')
+ 					continue;
+ 
+-				strncpy(band, szLine + 1, 2);
+-				strncpy(path, szLine + 5, 1);
+-				strncpy(sign, szLine + 8, 1);
++	/* strncpy -> strscpy: see the Makefile-adjacent rationale at ioctl_linux.c's
++	 * rtw_wx_set_enc_ext() -- mainline v7.3-rc5 dropped strncpy()'s declaration
++	 * entirely. Same explicit size, same call site semantics (strscpy only
++	 * differs by always NUL-terminating, which is strictly safer here). */
++				strscpy(band, szLine + 1, 2);
++				strscpy(path, szLine + 5, 1);
++				strscpy(sign, szLine + 8, 1);
+ 
+ 				i = 10; /* szLine+10 */
+ 				if (!ParseQualifiedString(szLine, &i, rate, '[', ']')) {
+diff --git a/hal/hal_hci/hal_sdio.c b/hal/hal_hci/hal_sdio.c
+index c04526c..45fb77a 100644
+--- a/hal/hal_hci/hal_sdio.c
++++ b/hal/hal_hci/hal_sdio.c
+@@ -37,13 +37,21 @@ static void dump_mac_page0(PADAPTER padapter)
+ 		p = &str_out[0];
+ 		len = snprintf(str_val, sizeof(str_val),
+ 			       "0x%02x: ", index);
+-		strncpy(str_out, str_val, len);
++	/* strncpy -> strscpy: see the Makefile-adjacent rationale at ioctl_linux.c's
++	 * rtw_wx_set_enc_ext() -- mainline v7.3-rc5 dropped strncpy()'s declaration
++	 * entirely. Same explicit size, same call site semantics (strscpy only
++	 * differs by always NUL-terminating, which is strictly safer here). */
++		strscpy(str_out, str_val, len);
+ 		p += len;
+ 
+ 		for (i = 0 ; i < 16 ; i++) {
+ 			len = snprintf(str_val, sizeof(str_val), "%02x ",
+ 				       rtw_read8(padapter, index + i));
+-			strncpy(p, str_val, len);
++	/* strncpy -> strscpy: see the Makefile-adjacent rationale at ioctl_linux.c's
++	 * rtw_wx_set_enc_ext() -- mainline v7.3-rc5 dropped strncpy()'s declaration
++	 * entirely. Same explicit size, same call site semantics (strscpy only
++	 * differs by always NUL-terminating, which is strictly safer here). */
++			strscpy(p, str_val, len);
+ 			p += len;
+ 		}
+ 		RTW_INFO("%s\n", str_out);
+diff --git a/hal/phydm/phydm_debug.c b/hal/phydm/phydm_debug.c
+index 668cf35..98e0e45 100644
+--- a/hal/phydm/phydm_debug.c
++++ b/hal/phydm/phydm_debug.c
+@@ -5154,7 +5154,11 @@ void phydm_fw_trace_handler(void *dm_void, u8 *cmd_buf, u8 cmd_len)
+ 		return;
+ 	}
+ 
+-	strncpy((char *)&dm->fw_debug_trace[dm->c2h_cmd_start],
++	/* strncpy -> strscpy: see the Makefile-adjacent rationale at ioctl_linux.c's
++	 * rtw_wx_set_enc_ext() -- mainline v7.3-rc5 dropped strncpy()'s declaration
++	 * entirely. Same explicit size, same call site semantics (strscpy only
++	 * differs by always NUL-terminating, which is strictly safer here). */
++	strscpy((char *)&dm->fw_debug_trace[dm->c2h_cmd_start],
+ 		(char *)&cmd_buf[1], (cmd_len - 1));
+ 	dm->c2h_cmd_start += (cmd_len - 1);
+ 	dm->fw_buff_is_enpty = false;
 diff --git a/include/osdep_service_linux.h b/include/osdep_service_linux.h
 index b366b20..6f0aeeb 100644
 --- a/include/osdep_service_linux.h
@@ -126,8 +209,393 @@ index b366b20..6f0aeeb 100644
  #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 14, 0))
  static inline void timer_hdl(struct timer_list *in_timer)
  #else
+diff --git a/os_dep/linux/ioctl_cfg80211.c b/os_dep/linux/ioctl_cfg80211.c
+index c0a4ce5..d3382f0 100644
+--- a/os_dep/linux/ioctl_cfg80211.c
++++ b/os_dep/linux/ioctl_cfg80211.c
+@@ -1657,7 +1657,16 @@ exit:
+ 	return ret;
+ }
+ 
+-static int cfg80211_rtw_add_key(struct wiphy *wiphy, struct net_device *ndev
++static int cfg80211_rtw_add_key(struct wiphy *wiphy,
++	/* Mainline v7.3-rc5's add_key/get_key/del_key moved their second
++	 * parameter from struct net_device * to struct wireless_dev * as part
++	 * of cfg80211's multi-year netdev-to-wdev migration (confirmed against
++	 * this pin's include/net/cfg80211.h). The link_id parameter these
++	 * functions already conditionally took (>= 6.1.0, true at 7.3.0) is
++	 * unaffected and keeps its existing position right after the device
++	 * pointer. ndev is re-derived from wdev->netdev immediately below so
++	 * the rest of the body (which only ever used ndev) is unchanged. */
++	struct wireless_dev *wdev
+ #if (LINUX_VERSION_CODE >= KERNEL_VERSION(6, 1, 0))
+ 	,int link_id
+ #endif
+@@ -1667,6 +1676,7 @@ static int cfg80211_rtw_add_key(struct wiphy *wiphy, struct net_device *ndev
+ #endif
+ 	, const u8 *mac_addr, struct key_params *params)
+ {
++	struct net_device *ndev = wdev->netdev;
+ 	char *alg_name;
+ 	u32 param_len;
+ 	struct ieee_param *param = NULL;
+@@ -1742,7 +1752,11 @@ static int cfg80211_rtw_add_key(struct wiphy *wiphy, struct net_device *ndev
+ 		goto addkey_end;
+ 	}
+ 
+-	strncpy((char *)param->u.crypt.alg, alg_name, IEEE_CRYPT_ALG_NAME_LEN);
++	/* strncpy -> strscpy: see the Makefile-adjacent rationale at ioctl_linux.c's
++	 * rtw_wx_set_enc_ext() -- mainline v7.3-rc5 dropped strncpy()'s declaration
++	 * entirely. Same explicit size, same call site semantics (strscpy only
++	 * differs by always NUL-terminating, which is strictly safer here). */
++	strscpy((char *)param->u.crypt.alg, alg_name, IEEE_CRYPT_ALG_NAME_LEN);
+ 
+ 
+ 	if (!mac_addr || is_broadcast_ether_addr(mac_addr)
+@@ -1804,7 +1818,10 @@ addkey_end:
+ 
+ }
+ 
+-static int cfg80211_rtw_get_key(struct wiphy *wiphy, struct net_device *ndev
++static int cfg80211_rtw_get_key(struct wiphy *wiphy,
++	/* net_device * -> wireless_dev *: see cfg80211_rtw_add_key()'s comment
++	 * above; same mainline v7.3-rc5 API migration, same fix shape. */
++	struct wireless_dev *wdev
+ #if (LINUX_VERSION_CODE >= KERNEL_VERSION(6, 1, 0))
+ 	,int link_id
+ #endif
+@@ -1815,6 +1832,7 @@ static int cfg80211_rtw_get_key(struct wiphy *wiphy, struct net_device *ndev
+ 	, const u8 *mac_addr, void *cookie
+ 	, void (*callback)(void *cookie, struct key_params *))
+ {
++	struct net_device *ndev = wdev->netdev;
+ #define GET_KEY_PARAM_FMT_S " keyid=%d"
+ #define GET_KEY_PARAM_ARG_S , keyid
+ #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 37)) || defined(COMPAT_KERNEL_RELEASE)
+@@ -1972,7 +1990,10 @@ exit:
+ 	return ret;
+ }
+ 
+-static int cfg80211_rtw_del_key(struct wiphy *wiphy, struct net_device *ndev,
++static int cfg80211_rtw_del_key(struct wiphy *wiphy,
++	/* net_device * -> wireless_dev *: see cfg80211_rtw_add_key()'s comment
++	 * above; same mainline v7.3-rc5 API migration, same fix shape. */
++	struct wireless_dev *wdev,
+ #if (LINUX_VERSION_CODE >= KERNEL_VERSION(6, 1, 0))
+ 	int link_id,
+ #endif
+@@ -1982,6 +2003,7 @@ static int cfg80211_rtw_del_key(struct wiphy *wiphy, struct net_device *ndev,
+ 				u8 key_index, const u8 *mac_addr)
+ #endif /* (LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 37)) */
+ {
++	struct net_device *ndev = wdev->netdev;
+ 	_adapter *padapter = (_adapter *)rtw_netdev_priv(ndev);
+ 	struct security_priv *psecuritypriv = &padapter->securitypriv;
+ 
+@@ -2048,12 +2070,15 @@ static int cfg80211_rtw_set_default_key(struct wiphy *wiphy,
+ 
+ #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 30))
+ int cfg80211_rtw_set_default_mgmt_key(struct wiphy *wiphy,
+-	struct net_device *ndev, 
++	/* net_device * -> wireless_dev *: see cfg80211_rtw_add_key()'s comment
++	 * above; same mainline v7.3-rc5 API migration, same fix shape. */
++	struct wireless_dev *wdev,
+ #if (LINUX_VERSION_CODE >= KERNEL_VERSION(6, 1, 0))
+ 	int link_id,
+-#endif	
++#endif
+ 	u8 key_index)
+ {
++	struct net_device *ndev = wdev->netdev;
+ #define SET_DEF_KEY_PARAM_FMT " key_index=%d"
+ #define SET_DEF_KEY_PARAM_ARG , key_index
+ 
+@@ -2198,7 +2223,12 @@ static void rtw_cfg80211_fill_mesh_only_sta_info(struct mesh_plink_ent *plink, s
+ #endif /* CONFIG_RTW_MESH */
+ 
+ static int cfg80211_rtw_get_station(struct wiphy *wiphy,
+-	struct net_device *ndev,
++	/* get_station/add_station/del_station/change_station/dump_station all
++	 * moved their net_device * parameter to wireless_dev * in the same
++	 * mainline v7.3-rc5 cfg80211 migration as add_key() above; each site
++	 * re-derives ndev from wdev->netdev so the unchanged body below still
++	 * has it. */
++	struct wireless_dev *wdev,
+ #if (LINUX_VERSION_CODE < KERNEL_VERSION(3, 16, 0))
+ 	u8 *mac,
+ #else
+@@ -2206,6 +2236,7 @@ static int cfg80211_rtw_get_station(struct wiphy *wiphy,
+ #endif
+ 	struct station_info *sinfo)
+ {
++	struct net_device *ndev = wdev->netdev;
+ 	int ret = 0;
+ 	_adapter *padapter = (_adapter *)rtw_netdev_priv(ndev);
+ 	struct mlme_priv *pmlmepriv = &padapter->mlmepriv;
+@@ -3221,7 +3252,11 @@ exit:
+ 	return ret;
+ }
+ 
+-static int cfg80211_rtw_set_wiphy_params(struct wiphy *wiphy, u32 changed)
++/* Mainline v7.3-rc5 added a radio_idx parameter ahead of the existing
++ * "changed" bitmask (multi-radio wiphy support); this driver has exactly one
++ * radio per wiphy and never consults it, same as the unused "changed" body
++ * below (already a no-op stub). */
++static int cfg80211_rtw_set_wiphy_params(struct wiphy *wiphy, int radio_idx, u32 changed)
+ {
+ #if 0
+ 	struct iwm_priv *iwm = wiphy_to_iwm(wiphy);
+@@ -4064,9 +4099,13 @@ static int cfg80211_rtw_disconnect(struct wiphy *wiphy, struct net_device *ndev,
+ 	return 0;
+ }
+ 
++/* Mainline v7.3-rc5 added a radio_idx parameter between wdev and the tx
++ * power setting (multi-radio wiphy support, same as set_wiphy_params()
++ * above); this is already a no-op stub (#if 0 body) that ignores it. */
+ static int cfg80211_rtw_set_txpower(struct wiphy *wiphy,
+ #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 8, 0))
+ 	struct wireless_dev *wdev,
++	int radio_idx,
+ #endif
+ #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 36)) || defined(COMPAT_KERNEL_RELEASE)
+ 	enum nl80211_tx_power_setting type, int mbm)
+@@ -4104,9 +4143,14 @@ static int cfg80211_rtw_set_txpower(struct wiphy *wiphy,
+ 	return 0;
+ }
+ 
++/* Mainline v7.3-rc5 added radio_idx and link_id parameters ahead of the
++ * output dbm pointer (same multi-radio/MLO-era additions as
++ * cfg80211_rtw_set_txpower() above); this stub ignores both. */
+ static int cfg80211_rtw_get_txpower(struct wiphy *wiphy,
+ #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 8, 0))
+ 	struct wireless_dev *wdev,
++	int radio_idx,
++	unsigned int link_id,
+ #endif
+ 	int *dbm)
+ {
+@@ -4269,7 +4313,11 @@ void rtw_cfg80211_indicate_sta_assoc(_adapter *padapter, u8 *pmgmt_frame, uint f
+ 		sinfo.filled = STATION_INFO_ASSOC_REQ_IES;
+ 		sinfo.assoc_req_ies = pmgmt_frame + WLAN_HDR_A3_LEN + ie_offset;
+ 		sinfo.assoc_req_ies_len = frame_len - WLAN_HDR_A3_LEN - ie_offset;
+-		cfg80211_new_sta(ndev, get_addr2_ptr(pmgmt_frame), &sinfo, GFP_ATOMIC);
++		/* cfg80211_new_sta()'s first parameter moved from net_device * to
++		 * wireless_dev * in the same mainline v7.3-rc5 migration as the
++		 * cfg80211_ops callbacks above; padapter->rtw_wdev is always
++		 * valid here regardless of which #if branch is active. */
++		cfg80211_new_sta(padapter->rtw_wdev, get_addr2_ptr(pmgmt_frame), &sinfo, GFP_ATOMIC);
+ 	}
+ #else /* defined(RTW_USE_CFG80211_STA_EVENT) */
+ 	channel = pmlmeext->cur_channel;
+@@ -4315,7 +4363,9 @@ void rtw_cfg80211_indicate_sta_disassoc(_adapter *padapter, const u8 *da, unsign
+ 	RTW_INFO(FUNC_ADPT_FMT"\n", FUNC_ADPT_ARG(padapter));
+ 
+ #if defined(RTW_USE_CFG80211_STA_EVENT) || defined(COMPAT_KERNEL_RELEASE)
+-	cfg80211_del_sta(ndev, da, GFP_ATOMIC);
++	/* cfg80211_del_sta()'s first parameter moved from net_device * to
++	 * wireless_dev * in the same mainline v7.3-rc5 migration noted above. */
++	cfg80211_del_sta(padapter->rtw_wdev, da, GFP_ATOMIC);
+ #else /* defined(RTW_USE_CFG80211_STA_EVENT) */
+ 	channel = pmlmeext->cur_channel;
+ 	freq = rtw_ch2freq(channel);
+@@ -4586,7 +4636,11 @@ static int rtw_cfg80211_add_monitor_if(_adapter *padapter, char *name, struct ne
+ 	}
+ 
+ 	mon_ndev->type = ARPHRD_IEEE80211_RADIOTAP;
+-	strncpy(mon_ndev->name, name, IFNAMSIZ);
++	/* strncpy -> strscpy: see the Makefile-adjacent rationale at ioctl_linux.c's
++	 * rtw_wx_set_enc_ext() -- mainline v7.3-rc5 dropped strncpy()'s declaration
++	 * entirely. Same explicit size, same call site semantics (strscpy only
++	 * differs by always NUL-terminating, which is strictly safer here). */
++	strscpy(mon_ndev->name, name, IFNAMSIZ);
+ 	mon_ndev->name[IFNAMSIZ - 1] = 0;
+ #if (LINUX_VERSION_CODE > KERNEL_VERSION(4, 11, 8))
+ 	mon_ndev->priv_destructor = rtw_ndev_destructor;
+@@ -5227,7 +5281,10 @@ void dump_station_parameters(void *sel, struct wiphy *wiphy, const struct statio
+ #endif /* DBG_RTW_CFG80211_STA_PARAM */
+ }
+ 
+-static int	cfg80211_rtw_add_station(struct wiphy *wiphy, struct net_device *ndev,
++static int	cfg80211_rtw_add_station(struct wiphy *wiphy,
++	/* net_device * -> wireless_dev *: see cfg80211_rtw_get_station()'s
++	 * comment above; same mainline v7.3-rc5 API migration. */
++	struct wireless_dev *wdev,
+ #if (LINUX_VERSION_CODE < KERNEL_VERSION(3, 16, 0))
+ 	u8 *mac,
+ #else
+@@ -5235,6 +5292,7 @@ static int	cfg80211_rtw_add_station(struct wiphy *wiphy, struct net_device *ndev
+ #endif
+ 	struct station_parameters *params)
+ {
++	struct net_device *ndev = wdev->netdev;
+ 	int ret = 0;
+ 	_adapter *padapter = (_adapter *)rtw_netdev_priv(ndev);
+ #if defined(CONFIG_TDLS) || defined(CONFIG_RTW_MESH)
+@@ -5373,7 +5431,10 @@ release_plink_ctl:
+ 
+ 			/* indicate new sta */
+ 			_rtw_memset(&sinfo, 0, sizeof(sinfo));
+-			cfg80211_new_sta(ndev, mac, &sinfo, GFP_ATOMIC);
++			/* cfg80211_new_sta() takes wireless_dev * as of the same
++			 * mainline v7.3-rc5 migration noted on this function's own
++			 * wdev parameter above; wdev is already in scope here. */
++			cfg80211_new_sta(wdev, mac, &sinfo, GFP_ATOMIC);
+ 		}
+ 		goto exit;
+ 	}
+@@ -5395,7 +5456,10 @@ exit:
+ 	return ret;
+ }
+ 
+-static int	cfg80211_rtw_del_station(struct wiphy *wiphy, struct net_device *ndev,
++static int	cfg80211_rtw_del_station(struct wiphy *wiphy,
++	/* net_device * -> wireless_dev *: see cfg80211_rtw_get_station()'s
++	 * comment above; same mainline v7.3-rc5 API migration. */
++	struct wireless_dev *wdev,
+ #if (LINUX_VERSION_CODE < KERNEL_VERSION(3, 16, 0))
+ 	u8 *mac
+ #elif (LINUX_VERSION_CODE < KERNEL_VERSION(3, 19, 0))
+@@ -5405,6 +5469,7 @@ static int	cfg80211_rtw_del_station(struct wiphy *wiphy, struct net_device *ndev
+ #endif
+ )
+ {
++	struct net_device *ndev = wdev->netdev;
+ 	int ret = 0;
+ 	_irqL irqL;
+ 	_list	*phead, *plist;
+@@ -5501,7 +5566,10 @@ static int	cfg80211_rtw_del_station(struct wiphy *wiphy, struct net_device *ndev
+ 
+ }
+ 
+-static int	cfg80211_rtw_change_station(struct wiphy *wiphy, struct net_device *ndev,
++static int	cfg80211_rtw_change_station(struct wiphy *wiphy,
++	/* net_device * -> wireless_dev *: see cfg80211_rtw_get_station()'s
++	 * comment above; same mainline v7.3-rc5 API migration. */
++	struct wireless_dev *wdev,
+ #if (LINUX_VERSION_CODE < KERNEL_VERSION(3, 16, 0))
+ 	u8 *mac,
+ #else
+@@ -5509,6 +5577,7 @@ static int	cfg80211_rtw_change_station(struct wiphy *wiphy, struct net_device *n
+ #endif
+ 	struct station_parameters *params)
+ {
++	struct net_device *ndev = wdev->netdev;
+ #ifdef CONFIG_RTW_MESH
+ 	_adapter *adapter = (_adapter *)rtw_netdev_priv(ndev);
+ 	struct sta_priv *stapriv = &adapter->stapriv;
+@@ -5656,11 +5725,15 @@ struct sta_info *rtw_sta_info_get_by_idx(struct sta_priv *pstapriv, const int id
+ 	return psta;
+ }
+ 
+-static int	cfg80211_rtw_dump_station(struct wiphy *wiphy, struct net_device *ndev,
++static int	cfg80211_rtw_dump_station(struct wiphy *wiphy,
++	/* net_device * -> wireless_dev *: see cfg80211_rtw_get_station()'s
++	 * comment above; same mainline v7.3-rc5 API migration. */
++	struct wireless_dev *wdev,
+ 		int idx, u8 *mac, struct station_info *sinfo)
+ {
+ #define DBG_DUMP_STATION 0
+ 
++	struct net_device *ndev = wdev->netdev;
+ 	int ret = 0;
+ 	_irqL irqL;
+ 	_adapter *padapter = (_adapter *)rtw_netdev_priv(ndev);
+@@ -6558,7 +6631,15 @@ static s32 cfg80211_rtw_remain_on_channel(struct wiphy *wiphy,
+ #if (LINUX_VERSION_CODE < KERNEL_VERSION(3, 8, 0))
+ 	enum nl80211_channel_type channel_type,
+ #endif
+-	unsigned int duration, u64 *cookie)
++	/* Mainline v7.3-rc5's remain_on_channel (like mgmt_tx below) switched
++	 * cookie from an out-parameter the driver fills in to a value cfg80211
++	 * itself generates (via cfg80211_assign_cookie()) and passes down --
++	 * confirmed against net/wireless/nl80211.c's remain_on_channel request
++	 * path at this pin. The driver no longer generates its own cookie; it
++	 * just forwards the given value to cfg80211_ready_on_channel(). A
++	 * trailing rx_addr parameter was also added for RX-filtered
++	 * remain-on-channel; this driver doesn't use it. */
++	unsigned int duration, u64 cookie, const u8 *rx_addr)
+ {
+ 	s32 err = 0;
+ 	u8 remain_ch = (u8) ieee80211_frequency_to_channel(channel->center_freq);
+@@ -6600,11 +6681,13 @@ static s32 cfg80211_rtw_remain_on_channel(struct wiphy *wiphy,
+ 	is_p2p_find = (duration < (pwdinfo->ext_listen_interval)) ? _TRUE : _FALSE;
+ #endif
+ 
+-	*cookie = ATOMIC_INC_RETURN(&pcfg80211_wdinfo->ro_ch_cookie_gen);
++	/* cookie is now supplied by cfg80211 itself (see the parameter comment
++	 * above); the driver-side counter that used to mint it is no longer
++	 * read anywhere, so it is simply not touched here. */
+ 
+ 	RTW_INFO(FUNC_ADPT_FMT"%s ch:%u duration:%d, cookie:0x%llx\n"
+ 		, FUNC_ADPT_ARG(padapter), wdev == wiphy_to_pd_wdev(wiphy) ? " PD" : ""
+-		, remain_ch, duration, *cookie);
++		, remain_ch, duration, cookie);
+ 
+ 	if (rtw_chset_search_ch(adapter_to_chset(padapter), remain_ch) < 0) {
+ 		RTW_WARN(FUNC_ADPT_FMT" invalid ch:%u\n", FUNC_ADPT_ARG(padapter), remain_ch);
+@@ -6682,7 +6765,7 @@ static s32 cfg80211_rtw_remain_on_channel(struct wiphy *wiphy,
+ 
+ 	rtw_cfg80211_set_is_roch(padapter, _TRUE);
+ 	pcfg80211_wdinfo->ro_ch_wdev = wdev;
+-	pcfg80211_wdinfo->remain_on_ch_cookie = *cookie;
++	pcfg80211_wdinfo->remain_on_ch_cookie = cookie;
+ 	rtw_cfg80211_set_last_ro_ch_time(padapter);
+ 	_rtw_memcpy(&pcfg80211_wdinfo->remain_on_ch_channel, channel, sizeof(struct ieee80211_channel));
+ 	#if (LINUX_VERSION_CODE < KERNEL_VERSION(3, 8, 0))
+@@ -6690,10 +6773,10 @@ static s32 cfg80211_rtw_remain_on_channel(struct wiphy *wiphy,
+ 	#endif
+ 	pcfg80211_wdinfo->restore_channel = rtw_get_oper_ch(padapter);
+ 
+-	p2p_roch_cmd(padapter, *cookie, wdev, channel, pcfg80211_wdinfo->remain_on_ch_type,
++	p2p_roch_cmd(padapter, cookie, wdev, channel, pcfg80211_wdinfo->remain_on_ch_type,
+ 		duration, RTW_CMDF_WAIT_ACK);
+ 
+-	rtw_cfg80211_ready_on_channel(wdev, *cookie, channel, channel_type, duration, GFP_KERNEL);
++	rtw_cfg80211_ready_on_channel(wdev, cookie, channel, channel_type, duration, GFP_KERNEL);
+ exit:
+ 	return err;
+ }
+@@ -7159,7 +7242,14 @@ static int cfg80211_rtw_mgmt_tx(struct wiphy *wiphy,
+ #else
+ 	struct cfg80211_mgmt_tx_params *params,
+ #endif
+-	u64 *cookie)
++	/* Mainline v7.3-rc5 switched mgmt_tx's cookie from an out-parameter to
++	 * a value cfg80211 generates up front and passes in -- confirmed
++	 * against net/wireless/nl80211.c's nl80211_tx_mgmt(), which now calls
++	 * cfg80211_assign_cookie() before invoking this callback. The driver
++	 * no longer mints its own cookie (the mgmt_tx_cookie counter below is
++	 * simply not consulted); it forwards the given value to
++	 * cfg80211_mgmt_tx_status() exactly as before. */
++	u64 cookie)
+ {
+ #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 14, 0)) || defined(COMPAT_KERNEL_RELEASE)
+ 	struct ieee80211_channel *chan = params->chan;
+@@ -7235,8 +7325,8 @@ static int cfg80211_rtw_mgmt_tx(struct wiphy *wiphy,
+ 	dvobj = adapter_to_dvobj(padapter);
+ 	pwdev_priv = adapter_wdev_data(padapter);
+ 
+-	/* cookie generation */
+-	*cookie = pwdev_priv->mgmt_tx_cookie++;
++	/* cookie is now supplied by cfg80211 itself (see the parameter comment
++	 * above); pwdev_priv->mgmt_tx_cookie is no longer consulted here. */
+ 
+ #ifdef CONFIG_DEBUG_CFG80211
+ 	RTW_INFO(FUNC_ADPT_FMT"%s len=%zu, ch=%d"
+@@ -7259,9 +7349,9 @@ static int cfg80211_rtw_mgmt_tx(struct wiphy *wiphy,
+ 
+ 	/* indicate ack before issue frame to avoid racing with rsp frame */
+ #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 37)) || defined(COMPAT_KERNEL_RELEASE)
+-	rtw_cfg80211_mgmt_tx_status(wdev, *cookie, buf, len, ack, GFP_KERNEL);
++	rtw_cfg80211_mgmt_tx_status(wdev, cookie, buf, len, ack, GFP_KERNEL);
+ #elif (LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 34) && LINUX_VERSION_CODE <= KERNEL_VERSION(2, 6, 36))
+-	cfg80211_action_tx_status(ndev, *cookie, buf, len, ack, GFP_KERNEL);
++	cfg80211_action_tx_status(ndev, cookie, buf, len, ack, GFP_KERNEL);
+ #endif
+ 
+ 	frame_styp = le16_to_cpu(((struct rtw_ieee80211_hdr_3addr *)buf)->frame_ctl) & IEEE80211_FCTL_STYPE;
 diff --git a/os_dep/linux/ioctl_linux.c b/os_dep/linux/ioctl_linux.c
-index 376d770..5498b13 100644
+index 376d770..412dcd8 100644
 --- a/os_dep/linux/ioctl_linux.c
 +++ b/os_dep/linux/ioctl_linux.c
 @@ -3145,7 +3145,21 @@ static int rtw_wx_set_enc_ext(struct net_device *dev,
@@ -153,6 +621,32 @@ index 376d770..5498b13 100644
  
  	if (pext->ext_flags & IW_ENCODE_EXT_SET_TX_KEY)
  		param->u.crypt.set_tx = 1;
+@@ -5773,7 +5787,11 @@ static int rtw_rereg_nd_name(struct net_device *dev,
+ #endif
+ 			reg_ifname = padapter->registrypriv.if2name;
+ 
+-		strncpy(rereg_priv->old_ifname, reg_ifname, IFNAMSIZ);
++	/* strncpy -> strscpy: see the Makefile-adjacent rationale at ioctl_linux.c's
++	 * rtw_wx_set_enc_ext() -- mainline v7.3-rc5 dropped strncpy()'s declaration
++	 * entirely. Same explicit size, same call site semantics (strscpy only
++	 * differs by always NUL-terminating, which is strictly safer here). */
++		strscpy(rereg_priv->old_ifname, reg_ifname, IFNAMSIZ);
+ 		rereg_priv->old_ifname[IFNAMSIZ - 1] = 0;
+ 	}
+ 
+@@ -5798,7 +5816,11 @@ static int rtw_rereg_nd_name(struct net_device *dev,
+ 		/* rtw_ips_mode_req(&padapter->pwrctrlpriv, rereg_priv->old_ips_mode); */
+ 	}
+ 
+-	strncpy(rereg_priv->old_ifname, new_ifname, IFNAMSIZ);
++	/* strncpy -> strscpy: see the Makefile-adjacent rationale at ioctl_linux.c's
++	 * rtw_wx_set_enc_ext() -- mainline v7.3-rc5 dropped strncpy()'s declaration
++	 * entirely. Same explicit size, same call site semantics (strscpy only
++	 * differs by always NUL-terminating, which is strictly safer here). */
++	strscpy(rereg_priv->old_ifname, new_ifname, IFNAMSIZ);
+ 	rereg_priv->old_ifname[IFNAMSIZ - 1] = 0;
+ 
+ 	if (_rtw_memcmp(new_ifname, "disable%d", 9) == _TRUE) {
 diff --git a/os_dep/linux/os_intfs.c b/os_dep/linux/os_intfs.c
 index 0abc43a..a0e0d15 100644
 --- a/os_dep/linux/os_intfs.c
