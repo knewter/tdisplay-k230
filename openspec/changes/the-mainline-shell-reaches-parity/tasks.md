@@ -15,13 +15,15 @@
 ## 3. Touch in the shell and controller retrieval (tooling, then board)
 
 - [x] 3.1 Replace raw `evtest` read-back with a bounded board-side summary line in `tools/mainline-drm-system-trial.py`, with fixtures. Host proof: `python3 tests/test_mainline_drm_system_trial.py` and a new focused test.
-- [ ] 3.2 Board (operator present): on the full mainline shell, a deliberate tap on a Home target changes the panel as under the vendor kernel; camera video plus sway input log. Hardware proof: controller `touch --real-touch` reports complete contact; camera recording.
+- [x] 3.2 Board (operator present): on the full mainline shell, a deliberate tap on a Home target changes the panel as under the vendor kernel; camera video plus sway input log. Hardware proof: controller `touch --real-touch` reports complete contact; camera recording.
+      [Board results](../../../docs/evidence/mainline-shell-parity-2026-10-06/README.md): controller `touch --real-touch` complete contact (bounded summary, 4 taps) on the full mainline shell; operator reported the shell responded normally. Camera missed the taps (board lifted).
 
 ## 4. Power key (kernel + DT, then board)
 
 - [x] 4.1 Forward-port `k230-pmu-pwrkey.c` to 7.3 with a PMU DT node claiming the PMU APB gate. Host proof: `nix build .#kernelMainlineDrm` and the object has the driver.
       Kernel built (ky3ac6dg…); on the board `K230 PMU Power Key` registers (IRQ 175).
-- [ ] 4.2 Board (operator present): pressing the side button shows the power sheet on the mainline shell; key event logged. Hardware proof: trial boot, camera, `evtest` summary.
+- [x] 4.2 Board (operator present): pressing the side button shows the power sheet on the mainline shell; key event logged. Hardware proof: trial boot, camera, `evtest` summary.
+      Same session: operator pressed the side button and reported the power sheet; camera still shows the sheet; sway journal logged the output power action; evtest saw no events because the shell holds the input grab.
 
 ## 5. Audio (kernel + DT, then board)
 

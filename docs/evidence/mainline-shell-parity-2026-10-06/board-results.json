@@ -1,0 +1,65 @@
+{
+  "schema": "k230-mainline-shell-parity-board-v1",
+  "date": "2026-10-06",
+  "full_shell_bundle": "/nix/store/80phrxzapq89cq4h8v7ai8avqnhq6i7a-k230-mainline-drm-trial-boot-files",
+  "touch_in_shell": {
+    "controller_status": "candidate-retained-touch-complete",
+    "events": {
+      "complete_contact": true,
+      "coordinate_mapping": "UNVERIFIED",
+      "down": true,
+      "event_rows": 90,
+      "position_change": true,
+      "summary_counts": {
+        "down": 4,
+        "first_down_line": 44,
+        "last_up_line": 202,
+        "pos_x": 21,
+        "pos_y": 24,
+        "rows": 90,
+        "syn": 36,
+        "tracking_release": 4,
+        "up": 4
+      },
+      "syn_after_up": true,
+      "up": true
+    },
+    "operator_observation": "operator tapped the Home screen while holding the board; reported the shell responded normally (drawer and taps worked)",
+    "camera": "board was lifted out of frame during the taps; still shows it returned afterwards (after-touch-camera.jpg)",
+    "private_touch_capture_sha256": "965f3326b59a418dfd88b874e3e562f0cff6c214f142954b50babcd221b7ffae"
+  },
+  "power_key": {
+    "input_device": "K230 PMU Power Key (KEY_POWER)",
+    "evtest": "no events: the shell holds the device grab (evtest reports another open fd), as under the vendor kernel",
+    "operator_observation": "operator pressed the side button; reported the power sheet appeared",
+    "camera": "power sheet visible on the panel during the window (power-sheet-camera.jpg)",
+    "sway_journal": [
+      "Handling command 'output DSI-1 power off'",
+      "Handling command 'output DSI-1 power on'"
+    ],
+    "private_capture_sha256": "5366bcbefc3dbcb53a2844c500147e6f9a796a0e355d07647730bd578d7beb6a"
+  },
+  "no_hands_full_shell": {
+    "firewall": "active",
+    "failed_units": 0,
+    "k230_wifi": "active",
+    "sound_card": "K230_I2S_INNO",
+    "power_key_input": "registered",
+    "wifi": {
+      "associated": "yes",
+      "ipv4": "yes",
+      "gateway_ping": "yes",
+      "secrets_recorded": false
+    }
+  },
+  "thermal_console": {
+    "idle_mC": 52406,
+    "after_60s_load_mC": 54506
+  },
+  "audio_playback": {
+    "vendor_kernel_speaker_test": "completed rc 0",
+    "mainline_generic_dwc_i2s": "starting playback froze the SoC (also with clk_ignore_unused pd_ignore_unused); operator reset",
+    "cause_hypothesis": "generic dwc-i2s unmasks I2S IRQs in DMA mode with no handler; vendor canaan-dwc-i2s uses DMA xor IRQ and K230 CCR/burst settings",
+    "board_transducer": "no onboard speaker or buzzer; MAX98357A is on an optional base board not fitted; 3.5 mm jack listed by LILYGO, untested"
+  }
+}

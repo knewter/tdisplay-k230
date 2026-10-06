@@ -1621,6 +1621,8 @@ DATA c227b66f47d51885f41bb7a13b1da3cafb57355cd1fefa448399e775086f6491 docs/evide
 DATA 7887bc93e8d1ea584a164af871391bb5236306453972a3c324315cd148b3c02b docs/evidence/mainline-full-shell-2026-10-06/full-shell-mainline-top-vs-normal-bottom.jpg
 DATA dcc114f12b60c087ac0663b8cf1109c2b21bd025bb333b872b596447baa1f7c0 docs/evidence/mainline-full-shell-2026-10-06/panel-purple-background.jpg
 DATA ee179c2bd5acb9061a3af48f53535a44026d5e9b9771628b0a77218b13b91e23 docs/evidence/mainline-full-shell-2026-10-06/touch-finger.jpg
+DATA d2af9c82e952991b11d9a3259ceabb0bca7491f948053d7096a8e1e6ef4ef73c docs/evidence/mainline-shell-parity-2026-10-06/after-touch-camera.jpg
+DATA f211031020afcea2fe58537b82bc16635ee2773c34af41df4cde6f8c3d895d8f docs/evidence/mainline-shell-parity-2026-10-06/power-sheet-camera.jpg
 DATA 5405de961a963cd1446cb7f42382329048367cdbc9866a248c4445666c6a6bbd docs/evidence/mainline-init-exec-transition/camera-repeat-2026-10-05/panel-dark-candidate-120s.jpg
 DATA 31c010bb635bc85bdd6980d8fe602098d4f83ac52a9d36a1c011b50f90fd1b68 docs/evidence/mainline-init-exec-transition/camera-repeat-2026-10-05/panel-normal-shutdown-text-21s.jpg
 DATA c2d7bd67952385a6729cb1ade6fae9ef1169f585461deea15def08c26f8b4698 docs/evidence/mainline-restart/physical-minimal-2026-10-02/home-panel.jpg
@@ -2649,6 +2651,8 @@ Native board captures, camera photograph and headless QEMU screenshots; commands
 | `docs/evidence/mainline-full-shell-2026-10-06/full-shell-mainline-top-vs-normal-bottom.jpg` | 47032 | DATA | `7887bc93e8d1ea584a164af871391bb5236306453972a3c324315cd148b3c02b` |
 | `docs/evidence/mainline-full-shell-2026-10-06/panel-purple-background.jpg` | 22447 | DATA | `dcc114f12b60c087ac0663b8cf1109c2b21bd025bb333b872b596447baa1f7c0` |
 | `docs/evidence/mainline-full-shell-2026-10-06/touch-finger.jpg` | 24638 | DATA | `ee179c2bd5acb9061a3af48f53535a44026d5e9b9771628b0a77218b13b91e23` |
+| `docs/evidence/mainline-shell-parity-2026-10-06/after-touch-camera.jpg` | 19030 | DATA | `d2af9c82e952991b11d9a3259ceabb0bca7491f948053d7096a8e1e6ef4ef73c` |
+| `docs/evidence/mainline-shell-parity-2026-10-06/power-sheet-camera.jpg` | 7005 | DATA | `f211031020afcea2fe58537b82bc16635ee2773c34af41df4cde6f8c3d895d8f` |
 | `docs/evidence/mainline-init-exec-transition/camera-repeat-2026-10-05/panel-dark-candidate-120s.jpg` | 21563 | DATA | `5405de961a963cd1446cb7f42382329048367cdbc9866a248c4445666c6a6bbd` |
 | `docs/evidence/mainline-init-exec-transition/camera-repeat-2026-10-05/panel-normal-shutdown-text-21s.jpg` | 31121 | DATA | `31c010bb635bc85bdd6980d8fe602098d4f83ac52a9d36a1c011b50f90fd1b68` |
 | `docs/evidence/mainline-restart/physical-minimal-2026-10-02/home-panel.jpg` | 134465 | DATA | `c2d7bd67952385a6729cb1ade6fae9ef1169f585461deea15def08c26f8b4698` |
