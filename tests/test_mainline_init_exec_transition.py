@@ -111,7 +111,9 @@ class Selection(unittest.TestCase):
         original=subprocess.check_output(['git','show','ea54f9e0:tools/mainline-drm-system-trial.py'],cwd=ROOT,text=True)
         funcs=lambda s:{n.name:ast.dump(n,include_attributes=False) for n in ast.parse(s).body if isinstance(n,ast.FunctionDef)}
         old,new=funcs(original),funcs(Path(t.__file__).read_text())
-        changed={'diagnostic_controls','ordinary_bootargs','prepare','inspect_init_exec_kernel','wait_init_exec_candidate','volatile_bootargs_command','run','main'}
+        # touch: task 3.1 replaced whole-log evtest retrieval with a bounded on-board
+        # K230_TOUCH_SUMMARY record; capture_command and parse_touch are untouched.
+        changed={'diagnostic_controls','ordinary_bootargs','prepare','inspect_init_exec_kernel','wait_init_exec_candidate','volatile_bootargs_command','run','main','touch'}
         for name in old.keys()-changed:self.assertEqual(old[name],new[name],name)
         old_q=subprocess.check_output(['git','show','ea54f9e0:tools/mainline-init-exec-return-qualify.py'],cwd=ROOT)
         self.assertEqual(old_q,(ROOT/'tools/mainline-init-exec-return-qualify.py').read_bytes())

@@ -244,7 +244,9 @@ class Controller(unittest.TestCase):
         original=subprocess.check_output(['git','show','8557a214:tools/mainline-drm-system-trial.py'],cwd=ROOT,text=True)
         defs=lambda s:{x.name:ast.dump(x,include_attributes=False)for x in ast.parse(s).body if isinstance(x,ast.FunctionDef)}
         old,new=defs(original),defs(Path(t.__file__).read_text())
-        changed={'diagnostic_controls','ordinary_bootargs','prepare','volatile_bootargs_command','boot','run','main'}
+        # touch: task 3.1 replaced whole-log evtest retrieval with a bounded on-board
+        # K230_TOUCH_SUMMARY record; capture_command and parse_touch are untouched.
+        changed={'diagnostic_controls','ordinary_bootargs','prepare','volatile_bootargs_command','boot','run','main','touch'}
         for name in old.keys()-changed:self.assertEqual(old[name],new[name],name)
 
 

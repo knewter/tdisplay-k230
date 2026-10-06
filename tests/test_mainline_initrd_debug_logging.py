@@ -102,7 +102,8 @@ class LoggingTests(unittest.TestCase):
             with mock.patch.object(t.rd,'prepare_trial',side_effect=lambda *a:dict(source))as original,mock.patch.object(t.os,'access',return_value=True)as access:
                 base=t.prepare(bundle,Path('m'),Path('n'),wait_initramfs_in_initcall=True,without_boot_markers=True)
                 p=t.prepare(bundle,Path('m'),Path('n'),wait_initramfs_in_initcall=True,without_boot_markers=True,initrd_debug_logging=True)
-            self.assertEqual(original.call_count,2);self.assertEqual(access.call_count,20)
+            # 11 required tools (task 3.1 added "awk" for the bounded on-board touch summary) x 2 prepare() calls.
+            self.assertEqual(original.call_count,2);self.assertEqual(access.call_count,22)
             self.assertNotIn('initrd_debug_logging',base);self.assertTrue(p['initrd_debug_logging'])
             self.assertEqual(p['bootargs'],base['bootargs']+' '+' '.join(t.INITRD_DEBUG_LOGGING))
             for key in ('system','helper_text','normal','manifest','kernel','pid1'):self.assertEqual(p[key],base[key])

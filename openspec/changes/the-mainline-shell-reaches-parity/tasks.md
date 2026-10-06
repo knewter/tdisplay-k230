@@ -11,7 +11,7 @@
 
 ## 3. Touch in the shell and controller retrieval (tooling, then board)
 
-- [ ] 3.1 Replace raw `evtest` read-back with a bounded board-side summary line in `tools/mainline-drm-system-trial.py`, with fixtures. Host proof: `python3 tests/test_mainline_drm_system_trial.py` and a new focused test.
+- [x] 3.1 Replace raw `evtest` read-back with a bounded board-side summary line in `tools/mainline-drm-system-trial.py`, with fixtures. Host proof: `python3 tests/test_mainline_drm_system_trial.py` and a new focused test.
 - [ ] 3.2 Board (operator present): on the full mainline shell, a deliberate tap on a Home target changes the panel as under the vendor kernel; camera video plus sway input log. Hardware proof: controller `touch --real-touch` reports complete contact; camera recording.
 
 ## 4. Power key (kernel + DT, then board)
