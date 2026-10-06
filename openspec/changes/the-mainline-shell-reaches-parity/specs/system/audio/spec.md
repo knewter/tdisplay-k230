@@ -1,16 +1,19 @@
 ## ADDED Requirements
 
-### Requirement: Sound plays from the speaker under the mainline kernel
-On the mainline full shell, the board's speaker SHALL play audio routed through the
-same PipeWire session the vendor-kernel shell uses, and the shell's volume control
-SHALL change what is heard.
+### Requirement: Audio playback runs under the mainline kernel without disturbing the system
+On the mainline full shell, PCM playback to the board's audio card SHALL complete
+the same way it does under the vendor kernel, through the DMA path, without
+freezing or otherwise disturbing the running system. The bare board has no
+speaker or buzzer (the MAX98357A amplifier is on an optional base board that is
+not fitted), so audible output is checked separately on the 3.5 mm jack when a
+headset is attached.
 
-#### Scenario: Test tone is heard
-- **WHEN** an operator plays a test tone through the default PipeWire sink on the mainline shell
-- **THEN** the tone is audible from the board's speaker (a person or a recording microphone confirms it)
-<!-- UNVERIFIED: no K230 audio driver exists in mainline yet -->
+#### Scenario: Playback completes
+- **WHEN** an operator runs `speaker-test -D plughw:0,0 -c1 -t sine -f 440 -l1` on the mainline shell
+- **THEN** it exits 0 with the same period and buffer sizes the vendor kernel reports, and the serial console stays responsive
+<!-- UNVERIFIED: the generic dwc-i2s port froze the SoC; the vendor dwc_canaan port is untested -->
 
-#### Scenario: Volume changes loudness
-- **WHEN** the shell's volume slider is lowered during playback
-- **THEN** the tone becomes quieter
-<!-- UNVERIFIED -->
+#### Scenario: Audible output on the headphone jack
+- **WHEN** a headset is attached to the 3.5 mm jack and the same tone plays
+- **THEN** the tone is heard and lowering the volume makes it quieter
+<!-- UNVERIFIED: deferred until the operator attaches a headset; not required for this change -->

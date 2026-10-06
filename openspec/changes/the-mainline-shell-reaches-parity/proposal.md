@@ -16,9 +16,10 @@ fixes that made the DRM kernel boot. Closing these gaps is what stands between
 - The side power button works under mainline: the vendored PMU power-key
   driver is forward-ported with a PMU device-tree node, and the shell's
   existing power-key behaviour (power sheet) responds to a physical press.
-- Sound plays through the speaker under mainline: the K230 I2S/codec path
-  (vendor `sound/soc/canaan`, with the external I2S switch patch) is
-  forward-ported and PipeWire plays a test tone that a microphone or person hears.
+- Audio playback works under mainline: the K230 I2S/codec path (vendor
+  `sound/soc/canaan`, `dwc_canaan` I2S and the peripheral DMA engine) is
+  forward-ported and playback completes as on the vendor kernel. The bare board
+  has no speaker; an audible check on the 3.5 mm jack follows when a headset is attached.
 - Wi-Fi associates under mainline: `mmc_sd0` (SDIO) is enabled with owned
   clocks, and the RTL8189FTV out-of-tree driver is built against the mainline
   kernel (or the trial records exactly why it cannot be, as a successor).
