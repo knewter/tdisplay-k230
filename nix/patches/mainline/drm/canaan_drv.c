@@ -185,6 +185,8 @@ static const struct file_operations canaan_drm_fops = {
 	.llseek = noop_llseek,
 	.mmap = drm_gem_mmap,
 	DRM_GEM_DMA_UNMAPPED_AREA_FOPS
+	/* drm_open_helper() rejects fops without it since v6.12. */
+	.fop_flags = FOP_UNSIGNED_OFFSET,
 };
 
 static struct drm_driver canaan_drm_driver = {
