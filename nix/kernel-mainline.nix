@@ -109,19 +109,26 @@
 #     each file's own header comment). Reuses mainline's OWN, already-
 #     present sound/soc/dwc/dwc-i2s.c (Synopsys DesignWare I2S) unmodified
 #     as the CPU/platform DAI -- no canaan-specific I2S controller driver
-#     needed. BLOCKED short of real PCM data movement: this board's only
-#     known i2s DT node (k230.dtsi) carries no `interrupts` property, so
-#     dw_i2s_probe() takes the dmaengine_pcm path, which needs a DMA
-#     provider for `compatible = "canaan,k230-pdma"` that does not exist in
-#     mainline (drivers/dma/k230_peridma.c is a from-scratch ~1400-line
-#     register interface, not a dw-axi-dmac/dw_dmac variant). See
-#     docs/research/mainline-audio-port.md for the full analysis and what
-#     would unblock it.
+#     needed. This board's only known i2s DT node (k230.dtsi) carries no
+#     `interrupts` property, so dw_i2s_probe() takes the dmaengine_pcm
+#     path, which needs a DMA provider for `compatible = "canaan,k230-pdma"`
+#     -- see the PDMA entry directly below, which resolves this.
+#   - drivers/dma/k230-peridma.c (nix/patches/mainline/, task 5.1 follow-up):
+#     the vendor's drivers/dma/k230_peridma.c (~1400-line register-level
+#     descriptor-chain DMA engine, not a dw-axi-dmac/dw_dmac variant),
+#     forward-ported essentially unchanged (register programming has no
+#     kernel-version dependency) except for v7.3-rc5 dmaengine/platform_driver
+#     API currency: void-returning `.remove`, and the probe's clock claim
+#     changed to `devm_clk_get_enabled()` (K230_SHRM_PDMA_AXI_GATE,
+#     drivers/clk/clk-k230.c, confirmed register-offset/bit-identical to the
+#     vendor DT's own `pdma_aclk_gate` node). See that file's own header
+#     comment for the full API-delta list. Unblocks the audio dmaengine_pcm
+#     path above: `aplay -l` listing the card is this task's own
+#     remaining host-proof criterion, not yet captured here (no board
+#     access from this worktree) -- see docs/research/mainline-audio-port.md.
 #
 # What is NOT ported (unchanged from the "absent" list above): display,
-# crypto, ADC, PWM. Audio is forward-ported but cannot move PCM data
-# until a DMA provider exists (see above). See
-# docs/research/mainline-kernel-inventory.md.
+# crypto, ADC, PWM. See docs/research/mainline-kernel-inventory.md.
 { lib, buildLinux, fetchFromGitHub, applyPatches, ... }@args:
 
 let
@@ -293,6 +300,41 @@ config CANAAN_K230_THERMAL\
       grep -q '^config CANAAN_K230_THERMAL$' drivers/thermal/Kconfig
       echo 'obj-$(CONFIG_CANAAN_K230_THERMAL)	+= canaan_thermal.o' >> drivers/thermal/Makefile
       grep -q 'CONFIG_CANAAN_K230_THERMAL.*canaan_thermal.o' drivers/thermal/Makefile
+
+      # --- PDMA: drivers/dma/k230-peridma.c ----------------------------
+      #
+      # openspec/changes/the-mainline-shell-reaches-parity task 5.1
+      # follow-up: forward-ported from the pinned VENDOR tree's own
+      # drivers/dma/k230_peridma.c (which that tree already Kconfig-gates
+      # as `K230_PERIDMA`, `depends on ARCH_RV64I` -- too broad for this
+      # project's narrower-than-vendor Kconfig choices elsewhere, so this
+      # entry depends on ARCH_CANAAN instead, same pattern as
+      # CANAAN_K230_THERMAL/INPUT_K230_PMU_PWRKEY above). See
+      # nix/patches/mainline/k230-peridma.c's own header comment for the
+      # API deltas (void remove, devm_clk_get_enabled for
+      # K230_SHRM_PDMA_AXI_GATE). Unblocks the audio dmaengine_pcm path
+      # above (the i2s node's `dmas = <&pdma ...>` phandle in
+      # nix/dts/k230-tdisplay-mainline.dts now resolves to a registered
+      # DMA controller) -- see docs/research/mainline-audio-port.md.
+      cp ${./patches/mainline/k230-peridma.c} drivers/dma/k230-peridma.c
+      grep -q '^config DW_AXI_DMAC$' drivers/dma/Kconfig
+      sed -i '/^config DW_AXI_DMAC$/i\
+config K230_PERIDMA\
+\ttristate "Canaan K230 Peripheral DMA support"\
+\tdepends on OF\
+\tdepends on ARCH_CANAAN || COMPILE_TEST\
+\tselect DMA_ENGINE\
+\tselect DMA_VIRTUAL_CHANNELS\
+\thelp\
+\t  Enable support for the Peripheral DMA controller on the Canaan K230\
+\t  SoC, used by UART/I2C/the on-die I2S audio block/JAMLINK/ADC/PDM\
+\t  peripherals to move data to and from system memory without CPU\
+\t  involvement.\
+' drivers/dma/Kconfig
+      grep -q '^config K230_PERIDMA$' drivers/dma/Kconfig
+      echo 'obj-$(CONFIG_K230_PERIDMA) += k230-peridma.o' >> drivers/dma/Makefile
+      grep -q 'CONFIG_K230_PERIDMA.*k230-peridma.o' drivers/dma/Makefile
+
       # --- Audio: sound/soc/canaan (new dir) + sound/soc/codecs/inno_k230 -
       #
       # openspec/changes/the-mainline-shell-reaches-parity, task 5.1.
@@ -411,15 +453,24 @@ config SND_SOC_K230_INNO\
     THERMAL = yes;
     THERMAL_OF = yes;
     CANAAN_K230_THERMAL = yes;
+
+    # PDMA (task 5.1 follow-up): DMADEVICES/DMA_ENGINE/DMA_VIRTUAL_CHANNELS/
+    # DMA_OF are already `y` in the base riscv defconfig (checked directly
+    # against the built .config -- not asked for here, same
+    # already-satisfied-dependency reasoning as THERMAL/THERMAL_OF above);
+    # only this driver's own symbol needs asking for.
+    K230_PERIDMA = yes;
+
     # --- Audio (task 5.1) ------------------------------------------------
     # SND_SOC_GENERIC_DMAENGINE_PCM is pulled in by SND_DESIGNWARE_I2S's own
     # `select`; not asked for directly. SND_DESIGNWARE_PCM (the PIO PCM
     # extension) is NOT enabled: this board's i2s DT node carries no
     # `interrupts` property (matching the only vendor DT reference for this
     # IP -- see nix/dts/k230-tdisplay-mainline.dts), so dw_i2s_probe()
-    # always takes the dmaengine_pcm branch regardless of this symbol; see
-    # docs/research/mainline-audio-port.md for why forcing the PIO branch
-    # would mean fabricating an unverified PLIC IRQ number.
+    # always takes the dmaengine_pcm branch regardless of this symbol --
+    # which now has a real DMA provider to resolve against (K230_PERIDMA
+    # above), unlike when this comment was first written. See
+    # docs/research/mainline-audio-port.md for the full history.
     SOUND = yes;
     SND = yes;
     SND_SOC = yes;
@@ -439,7 +490,7 @@ config SND_SOC_K230_INNO\
   };
 
   extraMeta = {
-    description = "Plain mainline console kernel with Canaan K230 SoC support and this project's forward-ported GPIO/SD-MMC/USB/RTC/power-key/thermal/audio drivers (audio cannot move PCM data until a DMA provider exists -- see docs/research/mainline-audio-port.md; no DRM/display, touch, ADC, PWM or crypto driver)";
+    description = "Plain mainline console kernel with Canaan K230 SoC support and this project's forward-ported GPIO/SD-MMC/USB/RTC/power-key/thermal/PDMA/audio drivers (audio's dmaengine_pcm path now has a DMA provider -- board `aplay -l` proof still pending, see docs/research/mainline-audio-port.md; no DRM/display, touch, ADC, PWM or crypto driver)";
     platforms = [ "riscv64-linux" ];
   };
 } // (args.argsOverride or { }))

@@ -103,7 +103,140 @@ needed its own explicit, additional claim -- added as `devm_clk_get_optional_ena
 so a device tree written before this change (with no `apb` clock listed)
 still probes.
 
-## The blocker: no mainline DMA provider, and no safe way around it
+## Resolution (2026-10-06): the PDMA controller is now forward-ported
+
+The blocker below (no mainline DMA provider for `compatible =
+"canaan,k230-pdma"`) is resolved by porting
+`drivers/dma/k230_peridma.c` from the pinned vendor tree as
+`nix/patches/mainline/k230-peridma.c`, wired into
+`nix/kernel-mainline.nix` (new `drivers/dma/k230-peridma.c` via
+postPatch, a `K230_PERIDMA` Kconfig entry inserted before
+`DW_AXI_DMAC` in `drivers/dma/Kconfig`, a Makefile line, and
+`structuredExtraConfig.K230_PERIDMA = yes`), with a `&pdma` DT node and
+`dmas`/`dma-names` on the `i2s` node added to
+`nix/dts/k230-tdisplay-mainline.dts`.
+
+**API changes from the vendor's 6.6-era source, confirmed against this
+project's pinned v7.3-rc5 headers** (see the ported file's own header
+comment for the same list, kept in sync):
+
+- `struct platform_driver.remove`: `int (*)(struct platform_device *)`
+  -> `void (*)(...)` (`include/linux/platform_device.h`) -- same
+  signature change every other driver this project has forward-ported
+  needed. Fixed in `k230_peridma_remove()`.
+- `devm_clk_get()` + a separate `clk_prepare_enable()` call in
+  `k230_peridma_probe()` replaced with a single
+  `devm_clk_get_enabled()` (`include/linux/clk.h`) -- the AGENTS.md
+  "claim every clock" lesson. The probe's `err_clk_disable` label and
+  both of its `clk_disable_unprepare()` calls (probe error path and
+  `remove()`) are dropped along with it: devm's reverse-order cleanup
+  now does that automatically.
+- `#include <linux/property.h>` added explicitly for
+  `device_property_read_u32()` (`parse_device_properties()`) -- not
+  reliably pulled in transitively via `platform_device.h` on this tree.
+- One dead-code cleanup unrelated to API currency: a commented-out
+  multi-line debug `dev_vdbg()` call had a stray trailing `\` inside a
+  `//` comment, which GCC's `-Wcomment` (triggered by this task's `W=1`
+  compile check) flags as an unterminated line-continuation. Removed
+  the backslash; no functional change, the code was never live.
+- Checked and found **unchanged**, so left alone: `device_prep_slave_sg`/
+  `device_prep_dma_cyclic`/`device_config`/`device_pause`/
+  `device_resume`/`device_terminate_all`/`device_tx_status`/
+  `device_issue_pending` signatures (`include/linux/dmaengine.h`);
+  `dma_async_device_register()`, `of_dma_controller_register()`/
+  `_free()` (`include/linux/of_dma.h`); every `virt-dma.h` helper this
+  file calls (`vchan_init`, `vchan_tx_prep`, `vchan_cookie_complete`,
+  `vchan_cyclic_callback`, `vchan_get_all_descriptors`,
+  `vchan_dma_desc_free_list`, `vchan_free_chan_resources`) -- including
+  `struct virt_dma_chan` still using a `tasklet_struct` internally in
+  v7.3-rc5, not a workqueue/BH conversion, checked directly rather than
+  assumed. `dma_slave_config`'s `src_addr`/`dst_addr` fields changed
+  type from `dma_addr_t` to `phys_addr_t` upstream, but both are 64-bit
+  on riscv64 and the vendor code only moves them through local
+  `dma_addr_t` variables, so no source change was needed -- confirmed
+  by the zero-warning `W=1` compile, not assumed.
+
+**Clock claimed**: `K230_SHRM_PDMA_AXI_GATE` = 130
+(`include/dt-bindings/clock/canaan,k230-clk.h`), claimed by the driver
+itself via `devm_clk_get_enabled(&pdev->dev, NULL)` (unnamed, single
+clock, matching the vendor's own single-clock probe call) and
+separately listed on the DT node (`clocks = <&sysclk
+K230_SHRM_PDMA_AXI_GATE>;`, no `clock-names` needed for an unnamed
+`devm_clk_get()`/`_enabled()` call). Confirmed register-identical to
+the vendor's own gate, not inferred:
+
+| Source | Register offset | Bit | Parent |
+|---|---|---|---|
+| Vendor `k230_clock_provider.dtsi`, `pdma_aclk_gate` node | `clk-gate-reg-offset = <0x5C>` | `clk-gate-reg-bit-enable = <3>` | `shrm_axim_clk_gate` |
+| Mainline `drivers/clk/clk-k230.c`, `K230_CLK_GATE_FORMAT(shrm_pdma_axi_gate, K230_SHRM_PDMA_AXI_GATE, 0x5C, 3, 0, 0, ...)` | `0x5C` | `3` | `shrm_axim_clk_gate` (mainline's own clock of that exact name, `drivers/clk/clk-k230.c:1772: &shrm_pdma_axi_gate`) |
+
+Same offset, same bit, same parent name -- the mainline clock ID is the
+correct one for this gate, confirmed by reading both sources directly.
+
+**DT changes**: a `pdma: pdma@80804000` node added to
+`nix/dts/k230-tdisplay-mainline.dts` with `reg`, `interrupts = <203
+IRQ_TYPE_LEVEL_HIGH>;`, `#dma-cells = <4>;`, `dma-channels = <8>;`,
+`dma-requests = <35>;`, and `status = "okay";` -- every field copied
+verbatim from the vendor `k230.dtsi`'s own `pdma@0x80804000` node. The
+`i2s` node's `dmas = <&pdma 1 0xfff 0 0x14>, <&pdma 1 0xfff 0 0x15>;`
+and `dma-names = "tx", "rx";` are likewise copied verbatim from the
+vendor's `i2s@0x9140f000` node (args are `<priority, dev_tout,
+dat_endian, dev_sel>`; `0x14`/`0x15` are `AUDIO_TX`/`AUDIO_RX` in the
+driver's own `enum ch_peri_dev_sel_t`). `cpp`+`dtc` validation
+(`docs/evidence/mainline-audio-port/pdma-dtc-validate.json`) decompiles
+the resulting `.dtb` and confirms both the clock-ID and dmas phandle
+args resolve to these exact numeric values, not merely that the syntax
+parses.
+
+**Verification performed (host-only; no board, no full kernel build)**,
+same evidence classes as the rest of this task:
+
+- `nix/patches/mainline/k230-peridma.c` compiled as an out-of-tree
+  kernel module against this project's pinned mainline v7.3-rc5
+  dev/module tree, riscv64 cross-compiler, `W=1`, zero warnings (after
+  the dead-comment fix above), one `.ko` produced. See
+  `docs/evidence/mainline-audio-port/pdma-module-compile.json`. This
+  module build needed two of `drivers/dma/`'s own *private* headers
+  (`virt-dma.h`, `dmaengine.h`) that are not part of the installed
+  dev-tree module headers; unmodified copies from the pinned v7.3-rc5
+  research source tree were used for this build only and are not part
+  of the shipped patch or this commit.
+- `nix/dts/k230-tdisplay-mainline.dts` and its
+  `k230-tdisplay-mainline-drm.dts` includer both preprocess and compile
+  cleanly with the new `&pdma` node and the `i2s` node's new
+  `dmas`/`dma-names`, zero warnings; resolved values checked
+  byte-for-byte as above. See
+  `docs/evidence/mainline-audio-port/pdma-dtc-validate.json`.
+- The exact `postPatch` `grep`/`sed` hunks `nix/kernel-mainline.nix`
+  adds for this driver (Kconfig insertion, Makefile line) were dry-run
+  by hand against copies of the real pinned mainline `drivers/dma/`
+  `Kconfig`/`Makefile` and produced the expected, correctly-indented
+  result -- not run through the full Nix kernel derivation (out of
+  scope for this task; no full kernel/system nix build was run).
+- Not run: `nix build .#deviceTreeMainline` or any full kernel build of
+  the mainline kernel derivation itself; any board boot or `aplay -l`
+  capture.
+
+**What remains**: this task's own host-proof criterion -- `aplay -l`
+listing the card in a board boot log -- requires a full kernel build
+and a board boot, neither performed by this worktree (board access,
+`/dev/ttyACM0` and the nix build lock were explicitly out of scope).
+The `K230_PERIDMA`/audio Kconfig symbols have not been run through a
+real `make oldconfig`/defconfig pass against the full tree, only
+checked against the already-built pinned dev tree's `.config` for the
+dependencies this entry needs (`DMADEVICES`/`DMA_ENGINE`/
+`DMA_VIRTUAL_CHANNELS`/`DMA_OF`/`OF`/`HAS_IOMEM`, all already `y`).
+UNVERIFIED, same as the rest of this task's clock claims: whether
+`K230_SHRM_PDMA_AXI_GATE`'s register-level programming actually gates
+the PDMA block correctly at runtime -- read directly from both sources
+and found identical, not board-tested. UNVERIFIED: the PDMA
+controller's actual descriptor-chain DMA behavior on real silicon (the
+`pdma_llt_t`/`pdma_ch_cfg_t` register programming itself, unchanged
+from the vendor source) -- this port changed only API-currency
+surface, not the register-level logic, so a correct compile does not
+by itself prove correct hardware behavior.
+
+## The blocker (historical; now resolved above): no mainline DMA provider
 
 The vendor `i2s` DT node (`k230.dtsi`, shared by every Canaan board in that
 tree, not just this one) is:
@@ -200,24 +333,29 @@ wires to this specific DesignWare I2S instance, and:
   happens to alias a real peripheral's line, corrupt that peripheral's
   interrupt handling.
 
-## What would unblock task 5.1's remaining host proof
+## What would unblock task 5.1's remaining host proof (historical)
 
-Either of, not both:
+This section recorded two options at the time the DMA gap was first
+found; option 1 is now done (see "Resolution" above). Recorded here
+unedited for history, plus what's now left:
 
-1. **Port `drivers/dma/k230_peridma.c` as a mainline dmaengine driver.**
-   A real, separate forward-port on the order of the audio work done
-   here or larger (1423 lines of register-level descriptor-chain DMA
-   engine code, none of it shared with any existing mainline DMA driver).
-   Out of scope for task 5.1 as a "forward-port the audio driver" task;
-   would need its own OpenSpec task/change.
+1. ~~**Port `drivers/dma/k230_peridma.c` as a mainline dmaengine
+   driver.**~~ Done -- see "Resolution" above,
+   `nix/patches/mainline/k230-peridma.c`.
 2. **Confirm the real PLIC IRQ number** for this DesignWare I2S instance
-   (SoC TRM, a vendor source this project has not yet located, or reading
-   the PLIC pending/enable registers on real hardware while vendor-kernel
-   audio is active) and add `interrupts = <N IRQ_TYPE_LEVEL_HIGH>;` to the
-   `i2s` node in `nix/dts/k230-tdisplay-mainline.dts`, enable
-   `SND_DESIGNWARE_PCM = yes;` in `nix/kernel-mainline.nix`, and the
-   existing, already-compiling forward-port here should bind without
-   further source changes.
+   remains a live alternative/supplement nobody has pursued: it would
+   let `dw_i2s_probe()` take the PIO branch instead of (or in addition
+   to testing) the now-available dmaengine_pcm branch, but still
+   requires a source this project has not located (SoC TRM, or reading
+   PLIC registers on real hardware). Not needed now that the DMA
+   provider exists, but would be a useful independent cross-check if a
+   board boot shows the dmaengine_pcm path failing for an unrelated
+   reason.
+
+What's left now is purely the board-side proof: a full kernel build
+(this worktree did not build one, as directed) and a board boot
+capturing `aplay -l` listing the `canaan,k230-audio-inno` card -- this
+task's own named host-proof criterion, still open.
 
 ## Verification performed (host-only; no board, no full kernel build)
 
@@ -240,7 +378,11 @@ Either of, not both:
   above already gave a clean, fully-resolved compile, so the task's named
   fallback was not needed); any full kernel build (`nix build` of the
   kernel derivation itself, explicitly out of scope for this task); any
-  board boot or `aplay -l` capture (blocked on the DMA gap above).
+  board boot or `aplay -l` capture (at the time, blocked on the DMA gap;
+  see "Resolution" above for the now-ported DMA provider and
+  `docs/evidence/mainline-audio-port/pdma-*.json` for its own, separate
+  verification -- the board boot/`aplay -l` capture itself is still not
+  done by any worktree as of this writing).
 
 ## Remaining risks (not independently confirmed, flagged `UNVERIFIED`)
 

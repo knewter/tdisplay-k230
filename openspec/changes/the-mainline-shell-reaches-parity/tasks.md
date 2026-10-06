@@ -22,7 +22,7 @@
 ## 5. Audio (kernel + DT, then board)
 
 - [ ] 5.1 Forward-port `sound/soc/canaan` with the external-I2S-switch patch and owned audio/codec clocks; DT nodes from the vendor tree. Host proof: kernel builds; `aplay -l` lists the card in a board boot log.
-      Partial: driver/DT/Kconfig forward-ported and compile-verified (module build + dtc), but the card cannot complete probe -- no mainline DMA provider for the vendor's `canaan,k230-pdma`, and this SoC's I2S interrupt line is not established anywhere this project can cite, so PIO cannot be substituted without guessing hardware. `aplay -l` proof and a full kernel build remain open. See `docs/research/mainline-audio-port.md`.
+      Partial: driver/DT/Kconfig forward-ported and compile-verified (module build + dtc). The DMA blocker is now also resolved: `drivers/dma/k230_peridma.c` forward-ported as `nix/patches/mainline/k230-peridma.c` (mainline dmaengine driver for `canaan,k230-pdma`, claims `K230_SHRM_PDMA_AXI_GATE`), wired into `nix/kernel-mainline.nix`, with a `&pdma` DT node and `dmas`/`dma-names` added to the `i2s` node in `nix/dts/k230-tdisplay-mainline.dts` -- module-compile (`W=1`, zero warnings) and dtc/cpp validated, same evidence classes as the rest of this task. No full kernel build or board boot has been run from any worktree yet: `aplay -l` proof and a full kernel build remain open. See `docs/research/mainline-audio-port.md` and `docs/evidence/mainline-audio-port/pdma-*.json`.
 - [ ] 5.2 Board (listener or recording microphone): a test tone through the default PipeWire sink is heard; lowering the shell volume makes it quieter. Hardware proof: trial boot plus audio recording or operator confirmation.
 
 ## 6. Wi-Fi (DT + Nix, then board)

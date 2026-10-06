@@ -1,0 +1,34 @@
+{
+  "task": "the-mainline-shell-reaches-parity 5.1 follow-up (add the pdma DT node and wire dmas/dma-names onto the i2s node)",
+  "evidence_class": "host-only-dtc-cpp-validation",
+  "dtc_version": "DTC v1.8.1",
+  "completed_utc": "2026-10-06T14:52:00Z",
+  "note": "Preprocesses and compiles the two DTS files this change touched against mainline's own include/dt-bindings headers (from the pinned v7.3-rc5 research source tree). Confirms the new &pdma node and the i2s node's new dmas/dma-names parse, the K230_SHRM_PDMA_AXI_GATE clock macro and the pdma phandle resolve to the exact numeric values recorded in nix/kernel-mainline.nix and nix/dts/k230-tdisplay-mainline.dts's own comments. Does NOT run `nix build .#deviceTreeMainline` (not attempted -- host dtc+cpp already gave a clean compile) and does NOT prove the board boots this DT.",
+  "runs": [
+    {
+      "input": "nix/dts/k230-tdisplay-mainline.dts",
+      "cpp_include_dirs": [
+        "<mainline v7.3-rc5 src>/include",
+        "<mainline v7.3-rc5 src>/arch/riscv/boot/dts",
+        "<mainline v7.3-rc5 src>/arch/riscv/boot/dts/canaan"
+      ],
+      "cpp_returncode": 0,
+      "dtc_command": "dtc -I dts -O dtb",
+      "dtc_returncode": 0,
+      "dtc_stderr": "",
+      "output_dtb_sha256": "8f65818a0ca6d15a00f59d3c904a6f23fafff965df3aa186498d3281e66ba9de",
+      "resolved_values_checked": {
+        "pdma@80804000 interrupts": "<0xcb 0x04>  (0xcb=203, matches vendor k230.dtsi's pdma interrupts=<203 IRQ_TYPE_LEVEL_HIGH>)",
+        "pdma@80804000 clocks": "<0x06 0x82>  (0x82=130=K230_SHRM_PDMA_AXI_GATE, phandle 0x06=sysclk -- same phandle the i2s/audio/inno_codec nodes already use)",
+        "i2s@9140f000 dmas": "<0x08 0x01 0xfff 0x00 0x14  0x08 0x01 0xfff 0x00 0x15>  (phandle 0x08=&pdma; args <priority=1 dev_tout=0xfff dat_endian=0 dev_sel=0x14/0x15> byte-for-byte match the vendor k230.dtsi's `dmas = <&pdma 1 0xfff 0 0x14>, <&pdma 1 0xfff 0 0x15>;`)"
+      }
+    },
+    {
+      "input": "nix/dts/k230-tdisplay-mainline-drm.dts",
+      "note": "This board file #includes k230-tdisplay-mainline.dts; validated to confirm the pdma/i2s additions do not break its sibling.",
+      "cpp_returncode": 0,
+      "dtc_returncode": 0,
+      "output_dtb_sha256": "063c605a915e160a633ed20ecb71743e8d86eee8047a17852edcae2d19ef33b5"
+    }
+  ]
+}

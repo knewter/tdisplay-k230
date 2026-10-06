@@ -1,0 +1,42 @@
+{
+  "task": "the-mainline-shell-reaches-parity 5.1 follow-up (forward-port drivers/dma/k230_peridma.c as a mainline dmaengine driver, to unblock sound/soc/canaan's dmaengine_pcm path)",
+  "evidence_class": "actual-host-cross-compiled-riscv-ko",
+  "started_utc": "2026-10-06T14:40:00Z",
+  "completed_utc": "2026-10-06T14:48:02Z",
+  "note": "Out-of-tree module build (make M=...) against the project's existing pinned mainline v7.3-rc5 dev tree, in a private scratch directory -- NOT the shared /tmp/k230-nix-build.lock path (not needed: the build only read the already-built, read-only dev tree and wrote into a private scratch directory, no shared mutable state). Because drivers/dma/k230-peridma.c uses the DMA-engine-private drivers/dma/virt-dma.h and drivers/dma/dmaengine.h headers (not installed into the dev tree's module-build headers, which only ship the public linux/ API), verbatim copies of those two unmodified private headers from the pinned mainline v7.3-rc5 RESEARCH source tree (read-only, same commit the dev tree was built from) were placed alongside the module source for this out-of-tree build only; they are not part of this change's shipped patch and are not committed.",
+  "command": [
+    "make",
+    "-C",
+    "/nix/store/yz7s78rqdx216bk2kj27q8d9qsi2dap4-linux-riscv64-unknown-linux-gnu-7.3.0-rc5-dev/lib/modules/7.3.0-rc5/build",
+    "M=<scratch dir containing k230-peridma.c + unmodified virt-dma.h/dmaengine.h copies + a trivial obj-m Makefile>",
+    "ARCH=riscv",
+    "CROSS_COMPILE=/nix/store/4j2mwxqjvnyr6da0925sp0bm4jaj5r5i-riscv64-unknown-linux-gnu-gcc-wrapper-15.3.0/bin/riscv64-unknown-linux-gnu-",
+    "W=1",
+    "modules"
+  ],
+  "dev_tree": "/nix/store/yz7s78rqdx216bk2kj27q8d9qsi2dap4-linux-riscv64-unknown-linux-gnu-7.3.0-rc5-dev",
+  "dev_tree_config_had": {
+    "CONFIG_DMADEVICES": "y",
+    "CONFIG_DMA_ENGINE": "y",
+    "CONFIG_DMA_VIRTUAL_CHANNELS": "y",
+    "CONFIG_DMA_OF": "y",
+    "CONFIG_OF": "y",
+    "CONFIG_HAS_IOMEM": "y"
+  },
+  "returncode": 0,
+  "first_attempt_warning": "k230-peridma.c:1095:33: warning: multi-line comment [-Wcomment] -- a vendor dead-code debug comment (`//\"hwdesc(%px): ... \\` with a trailing backslash) that GCC treats as a // comment continuation. Fixed by removing the stray trailing backslash in the commented-out text (no functional change, the code was never live); rebuilt clean on the second attempt below.",
+  "stderr": "BTF: Skipping BTF generation for k230-peridma.ko due to unavailability of vmlinux",
+  "warnings": "none (zero compiler warnings after the dead-comment fix above)",
+  "modules_built": [
+    {
+      "name": "k230-peridma.ko",
+      "objs": ["k230-peridma.o"],
+      "sha256_ko": "b63aece36682b42c04e19bbfd82a9e026bd2f03511b4305f1898e9449a85fc7d"
+    }
+  ],
+  "source_sha256": {
+    "nix/patches/mainline/k230-peridma.c": "4b80f32c3bb528d67c8b8a22202ed58ea97d6086eb1c31397fb9ed6e60dd7fb8"
+  },
+  "postpatch_dry_run": "The exact grep/sed hunks nix/kernel-mainline.nix's postPatch adds for this driver (Kconfig insertion before 'config DW_AXI_DMAC', Makefile obj-$(CONFIG_K230_PERIDMA) line) were applied by hand against copies of the pinned mainline v7.3-rc5 research tree's real drivers/dma/Kconfig and drivers/dma/Makefile and produced the expected, correctly-indented config stanza and Makefile line -- not run through the full Nix kernel derivation (explicitly out of scope for this task).",
+  "scope": "Proves the forward-ported driver is syntactically and API-correct against the real v7.3-rc5 dmaengine/clk/platform_device headers this project's mainline kernel build uses (void-returning platform_driver.remove, devm_clk_get_enabled, device_prep_slave_sg/device_prep_dma_cyclic/device_config/device_pause/device_resume/device_terminate_all/device_tx_status/device_issue_pending signatures, dma_async_device_register, of_dma_controller_register/_free, virt-dma.h's vchan_init/vchan_tx_prep/vchan_cookie_complete/vchan_cyclic_callback/vchan_get_all_descriptors/vchan_dma_desc_free_list). It does NOT prove the driver binds or moves data on a booted board, and does NOT exercise CONFIG_K230_PERIDMA through a real Kconfig/oldconfig pass against the full defconfig -- that requires the full nix build this task was told not to run. The task's own remaining host-proof criterion (`aplay -l` listing the audio card in a board boot log) is still open."
+}

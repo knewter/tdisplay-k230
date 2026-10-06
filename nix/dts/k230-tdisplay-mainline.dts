@@ -348,6 +348,47 @@
 			clock-names = "ts";
 			status = "okay";
 		};
+		// Peripheral DMA controller (task 5.1 follow-up: the mainline
+		// forward-port of drivers/dma/k230_peridma.c, this project's own
+		// nix/patches/mainline/k230-peridma.c). Address, #dma-cells,
+		// dma-channels/dma-requests and interrupt number copied verbatim
+		// from the vendor tree's own k230.dtsi `pdma@0x80804000` node --
+		// same register block, same PLIC line (203), same driver (the
+		// vendor .c file ported essentially unchanged; see that file's
+		// own header comment for the API deltas). clocks:
+		// K230_SHRM_PDMA_AXI_GATE is mainline's ID for the exact clock
+		// the vendor DT's `pdma_aclk_gate` node programs -- confirmed
+		// byte-for-byte against both sources, not inferred:
+		//
+		//   - vendor k230_clock_provider.dtsi's `pdma_aclk_gate` node:
+		//     clk-gate-reg-offset = <0x5C>, clk-gate-reg-bit-enable = <3>.
+		//   - mainline drivers/clk/clk-k230.c:
+		//     `K230_CLK_GATE_FORMAT(shrm_pdma_axi_gate,
+		//     K230_SHRM_PDMA_AXI_GATE, 0x5C, 3, 0, 0, ...)` -- same
+		//     register offset, same bit, parented from
+		//     shrm_axim_clk_gate the same way the vendor's gate is
+		//     parented from shrm_axim_clk_gate's own vendor-tree
+		//     equivalent.
+		//   - include/dt-bindings/clock/canaan,k230-clk.h:
+		//     `K230_SHRM_PDMA_AXI_GATE` = 130.
+		//
+		// The driver claims this clock itself via devm_clk_get_enabled()
+		// in probe() (no clock-names property needed -- the driver calls
+		// devm_clk_get(..., NULL), matching the vendor's own single
+		// unnamed-clock probe call) -- the AGENTS.md "claim every clock"
+		// lesson: this gate is otherwise unused by anything else in this
+		// tree and mainline's unused-clock cleanup would strip it.
+		pdma: pdma@80804000 {
+			compatible = "canaan,k230-pdma";
+			reg = <0x0 0x80804000 0x0 0x400>;
+			interrupts = <203 IRQ_TYPE_LEVEL_HIGH>;
+			clocks = <&sysclk K230_SHRM_PDMA_AXI_GATE>;
+			#dma-cells = <4>;
+			dma-channels = <8>;
+			dma-requests = <35>;
+			status = "okay";
+		};
+
 		// Audio (task 5.1, openspec/changes/the-mainline-shell-reaches-
 		// parity). Addresses, compatible strings and dai-link phandles
 		// copied from the vendor tree's own k230.dtsi (i2s@0x9140f000,
@@ -372,23 +413,27 @@
 		//     cascade-enables the gate too through the common clock
 		//     framework's own parent-enable chain -- no second clock
 		//     needed on this node.
-		//   - dmas/dma-names: deliberately NOT carried forward from the
-		//     vendor's `dmas = <&pdma 1 0xfff 0 0x14>, <&pdma ...>;` --
-		//     there is no `pdma` node in this file and no mainline
-		//     driver for the vendor's "canaan,k230-pdma" compatible (see
-		//     docs/research/mainline-audio-port.md). Also deliberately
-		//     NOT carrying an `interrupts` property: the vendor's own
+		//   - dmas/dma-names: now carried forward from the vendor's own
+		//     `dmas = <&pdma 1 0xfff 0 0x14>, <&pdma 1 0xfff 0 0x15>;`
+		//     (k230.dtsi) exactly -- args are <priority, dev_tout,
+		//     dat_endian, dev_sel>; 0x14/0x15 are AUDIO_TX/AUDIO_RX in
+		//     the driver's enum ch_peri_dev_sel_t. The &pdma node above
+		//     now exists and registers a driver for "canaan,k230-pdma",
+		//     so dma_request_chan()'s of_dma phandle resolution can
+		//     succeed. Still deliberately NOT carrying an `interrupts`
+		//     property on this i2s node itself: the vendor's own
 		//     k230.dtsi i2s node has none either, and this SoC's real
-		//     PLIC line for this IP is not established in any source
-		//     this project has -- inventing one to force
-		//     dw_i2s_probe()'s PIO branch would be exactly the kind of
-		//     unverified hardware claim this project's AGENTS.md asks
-		//     not to make. Net effect: this node will sit in deferred
-		//     probe (no DMA channel resolves) rather than bind -- the
-		//     documented, not-yet-closed gap task 5.1 stops at.
+		//     PLIC line for the I2S IP itself (as opposed to the PDMA
+		//     controller, whose line IS known -- 203, above) is not
+		//     established in any source this project has. dw_i2s_probe()
+		//     takes the dmaengine_pcm branch either way now that a DMA
+		//     provider exists, so no interrupt property is needed for
+		//     this node to bind.
 		i2s: i2s@9140f000 {
 			compatible = "snps,designware-i2s";
 			reg = <0x0 0x9140f000 0x0 0x400>;
+			dmas = <&pdma 1 0xfff 0 0x14>, <&pdma 1 0xfff 0 0x15>;
+			dma-names = "tx", "rx";
 			clocks = <&sysclk K230_LS_AUDIO_DEV_RATE>;
 			clock-names = "i2sclk";
 			status = "okay";
