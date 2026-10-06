@@ -479,6 +479,34 @@
           kernel = self.k230Kernel.kernel;
         };
 
+        # openspec/changes/the-mainline-shell-reaches-parity task 6.1: the
+        # same out-of-tree source (nix/k230-wifi-driver.nix is already
+        # parameterized by `kernel`, not vendor-specific), built against the
+        # mainline DRM kernel candidate instead -- kernelMainlineDrm, not
+        # plain kernelMainline, because only its patched sdhci driver
+        # (nix/patches/mainline/k230-sdhci-clocks.patch) claims &mmc_sd0's
+        # three extra K230_HS_SD0_{AXI,CARD,TIMER}_GATE clocks (see that DT
+        # node's own override in nix/dts/k230-tdisplay-mainline-drm.dts);
+        # the plain console kernel's unpatched driver only claims
+        # core/bus, same as before this task.
+        #
+        # UNVERIFIED as a successful build: a manual out-of-tree `make`
+        # against this exact dev tree (docs/evidence/mainline-wifi-port/
+        # module-compile.json) hit a real blocker this task's source
+        # patches do not close -- struct cfg80211_ops callback signatures
+        # (net_device* -> wireless_dev* parameter drift) that need a real
+        # port, not a rename -- on top of CONFIG_CFG80211 not being enabled
+        # in any mainline kernel build yet (added to nix/kernel-mainline.nix
+        # structuredExtraConfig as a candidate, itself unbuilt). This output
+        # exists so `nix build .#k230-wifi-driver-mainline` is the one true
+        # reproduction path for whoever picks up the cfg80211_ops follow-up;
+        # it is expected to fail exactly like the committed evidence until
+        # that port lands. See docs/research/mainline-wifi-port.md.
+        k230-wifi-driver-mainline = pkgsCross.callPackage ./nix/k230-wifi-driver.nix {
+          kernel = self.packages.${buildSystem}.kernelMainlineDrm;
+          extraPatches = [ ./nix/patches/mainline/rtl8189fs-mainline-v7.3-rc5.patch ];
+        };
+
         # Optional source-built GPU diagnostic.  It is deliberately outside
         # the system closure until its /dev/vg_lite ABI is proven on hardware.
         k230-vglite-probe = pkgsCross.callPackage ./nix/vglite-probe.nix { };

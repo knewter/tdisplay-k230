@@ -487,6 +487,31 @@ config SND_SOC_K230_INNO\
     BLK_DEV_INITRD = yes;
     RD_GZIP = yes;
     RD_ZSTD = yes;
+
+    # --- Wi-Fi (task the-mainline-shell-reaches-parity 6.1) --------------
+    # The RTL8189FTV out-of-tree module (nix/k230-wifi-driver.nix) needs
+    # struct net_device's ieee80211_ptr member, which mainline's own
+    # include/linux/netdevice.h guards with `#if IS_ENABLED(CONFIG_CFG80211)`
+    # -- confirmed directly against that header at this pin -- and calls
+    # into net/cfg80211.h's cfg80211_ops/cfg80211_* API, so the module
+    # cannot even type-check against this dev tree's base defconfig, which
+    # has `# CONFIG_CFG80211 is not set`. CFG80211's own Kconfig (pinned
+    # research source's net/wireless/Kconfig) only needs FW_LOADER, CRC32
+    # and CRYPTO_SHA256 -- all three already `y` in the built .config
+    # (checked directly), so asking for this one symbol does not loop
+    # through any unsatisfied dependency. `module`, not `yes`: this is the
+    # wireless configuration API, not a board-specific driver, and every
+    # upstream board that uses it ships it as a module. MAC80211 is
+    # deliberately NOT requested: the pinned RTL8189FTV source
+    # (jwrdegoede/rtl8189ES_linux) implements its own softmac stack against
+    # cfg80211 directly (grep of core/*.c and os_dep/linux/ioctl_cfg80211.c
+    # confirms no net/mac80211.h include or mac80211 symbol use anywhere).
+    # This alone does NOT make the module build succeed -- see
+    # docs/research/mainline-wifi-port.md for the remaining cfg80211_ops
+    # struct (net_device* -> wireless_dev*) signature rework the driver
+    # still needs, which is deeper than a Kconfig gap and UNVERIFIED against
+    # this symbol actually being on (no kernel has been rebuilt with it).
+    CFG80211 = module;
   };
 
   extraMeta = {

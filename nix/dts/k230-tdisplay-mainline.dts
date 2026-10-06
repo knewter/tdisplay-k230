@@ -75,8 +75,9 @@
 	aliases {
 		serial0 = &uart0;
 		// Matches nix/dts/k230-tdisplay.dts's own naming: mmc1 is the
-		// physical TF/SD card, mmc0 the RTL8189FTV SDIO Wi-Fi (not
-		// enabled by this file -- see &mmc_sd0 below).
+		// physical TF/SD card, mmc0 the RTL8189FTV SDIO Wi-Fi (enabled
+		// below -- see &mmc_sd0's own override comment, task
+		// the-mainline-shell-reaches-parity 6.1).
 		mmc0 = &mmc_sd0;
 		mmc1 = &mmc_sd1;
 	};
@@ -258,12 +259,19 @@
 			bus-width = <8>;
 			sdhci,auto-cmd12;
 			dma-noncoherent;
-			// Not enabled below: the RTL8189FTV Wi-Fi driver has no
-			// mainline forward-port in this change (see
-			// docs/research/mainline-kernel-inventory.md). The
-			// controller node exists so a later change need only
-			// flip status.
-			status = "disabled";
+			// Enabled below (task the-mainline-shell-reaches-parity
+			// 6.1): the RTL8189FTV SDIO Wi-Fi function this board
+			// wires here (nix/dts/k230-tdisplay.dts's own &mmc_sd0,
+			// "The RTL8189FTV, over SDIO."). Only the two clocks this
+			// base node already names (core/bus) are claimed at this
+			// level, mirroring &mmc_sd1 below -- the three extra
+			// K230_HS_SD0_{AXI,CARD,TIMER}_GATE clocks are claimed
+			// only where the patched sdhci driver actually requests
+			// them (see &mmc_sd0 in k230-tdisplay-mainline-drm.dts).
+			// UNVERIFIED against a booted board: no SDIO enumeration,
+			// register trace or module bind has been observed; see
+			// docs/research/mainline-wifi-port.md.
+			status = "okay";
 		};
 
 		mmc_sd1: sdhci1@91581000 {
@@ -497,6 +505,29 @@
 &sysclk {
 	clocks = <&osc24m>, <&timerx_pulse_in>;
 	clock-names = "osc24m", "timer-pulse-in";
+};
+
+// The RTL8189FTV, over SDIO (task the-mainline-shell-reaches-parity 6.1).
+// no-1-8-v/rx_delay_line/tx_delay_line match nix/dts/k230-tdisplay.dts's own
+// &mmc_sd0 exactly (grounding tier 2: vendor source read directly). This
+// board's vendor DT wires no card-detect or Wi-Fi power/reset GPIO for this
+// function -- the RTL8189FTV module itself is read-only grep-confirmed absent
+// of a GPIO path in nix/dts/k230-tdisplay.dts, so none is added here either.
+// non-removable/cap-sdio-irq/keep-power-in-suspend are NOT in the vendor
+// source; they are the standard Linux mmc-core properties for a permanently
+// attached SDIO function with no card-detect line (see Documentation/
+// devicetree/bindings/mmc/mmc-controller.yaml), added here because mainline's
+// generic SDHCI core -- unlike the vendor's own driver -- will otherwise poll
+// a nonexistent card-detect GPIO/pin for this function. UNVERIFIED against a
+// booted board: see docs/research/mainline-wifi-port.md.
+&mmc_sd0 {
+	status = "okay";
+	no-1-8-v;
+	rx_delay_line = <0x0d>;
+	tx_delay_line = <0xc0>;
+	non-removable;
+	cap-sdio-irq;
+	keep-power-in-suspend;
 };
 
 // The TF/SD card: this milestone's rootfs device. Matches

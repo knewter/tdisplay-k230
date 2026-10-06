@@ -3,7 +3,17 @@
 # The physical board reports SDIO vendor/device 024c:f179. The selected
 # source calls that RTL8188F and builds the SDIO module as 8189fs.ko; see
 # docs/evidence/wifi-driver-audit.md before changing this pin or module name.
-{ lib, stdenv, fetchFromGitHub, kernel, bc }:
+{ lib, stdenv, fetchFromGitHub, kernel, bc
+# openspec/changes/the-mainline-shell-reaches-parity task 6.1: patches applied
+# ON TOP of the pinned vendor source, empty by default so the existing
+# vendor-kernel `k230-wifi-driver` call (flake.nix) stays byte-identical.
+# The mainline call site passes nix/patches/mainline/
+# rtl8189fs-mainline-v7.3-rc5.patch here instead of this file hardcoding it,
+# because the vendor kernel's older kbuild/timer/pppoe/string APIs do not
+# need (and in at least one case -- EXTRA_CFLAGS -- would double-apply) that
+# patch's renames. See docs/research/mainline-wifi-port.md.
+, extraPatches ? [ ]
+}:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "k230-wifi-driver";
@@ -15,6 +25,8 @@ stdenv.mkDerivation (finalAttrs: {
     rev = "94cc959d56c1425fbca4f6e49e949cf58ec5dc8d";
     hash = "sha256-qQwUfhr8jpo5H/TTJ7abHQLvc8Wqi5GCPu47dE/WgBM=";
   };
+
+  patches = extraPatches;
 
   # The upstream Makefile uses bc to detect GCC >= 4.9 and add its required
   # -Wno-date-time flag. Without it, the kernel's reproducibility warning is
