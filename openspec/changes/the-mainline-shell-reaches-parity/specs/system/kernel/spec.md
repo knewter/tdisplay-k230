@@ -16,15 +16,15 @@ kernel. The protected normal system is not changed by this.
 - **THEN** `systemctl is-active firewall` reports active on the serial console
 <!-- UNVERIFIED: firewall.service failed on the 2026-10-06 full-shell boot -->
 
-### Requirement: The K230 clock table matches the vendor tree for gates the board uses
-No two mainline gates SHALL toggle the same register bit, and display gates the
-vendor tree defines SHALL be modelled, so a driver claiming one clock cannot
-silently change another device.
+### Requirement: The K230 clock gates match the vendor register map
+Every mainline gate SHALL use the register bit the vendor clock tree uses, and
+any deliberate difference (a bit the vendor shares between clocks, or a vendor
+gate mainline leaves unmodelled) SHALL be recorded with the reason, so a driver
+claiming one clock cannot silently change another device.
 
-#### Scenario: USB still enumerates after the USB test-clock gates are separated
-- **WHEN** the corrected clock table boots with a USB device attached
-- **THEN** the device enumerates as before and `clk_summary` lists distinct register bits for each USB gate
-<!-- UNVERIFIED: usb_480m and usb_100m currently share 0x100 bit 0 -->
+#### Scenario: Comparison is committed
+- **WHEN** a reader opens the committed vendor-versus-mainline gate comparison
+- **THEN** every gate shows matching register and bit, or a recorded reason: `usb_480m`/`usb_100m` share 0x100 bit 0 exactly as the vendor `usb_clk480`/`usb_clk100` do; the display `clkext` gate (0x74 bit 5) stays unmodelled because no Linux consumer exists and modelling it would expose it to unused-clock cleanup
 
 ### Requirement: SoC temperature is readable under mainline
 The mainline kernel SHALL expose the K230 thermal sensor so that a person at the

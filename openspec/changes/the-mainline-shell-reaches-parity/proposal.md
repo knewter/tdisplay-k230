@@ -28,9 +28,9 @@ fixes that made the DRM kernel boot. Closing these gaps is what stands between
   pinned mainline tree; thermal is forward-ported (it guards the SoC), ADC and
   crypto are ported only if a shipped service uses them, otherwise recorded as
   explicit non-goals with the reason.
-- Clock table: model the missing display `clkext` gate (sysctl 0x74 bit 5) and
-  resolve the `usb_480m`/`usb_100m` gates aliased on 0x100 bit 0 using the
-  vendor tree, with a physical USB re-check.
+- Clock table: record, against the vendor tree, why `usb_480m`/`usb_100m`
+  share 0x100 bit 0 (the vendor shares it too) and why the display `clkext`
+  gate stays unmodelled (no consumer; modelling it would expose it to cleanup).
 - The console (non-DRM) mainline kernel gets the `spi2axi` and `vpu_ddrcp2`
   critical-clock fixes it currently lacks.
 - The system-trial controller's touch retrieval no longer times out on long
@@ -48,7 +48,7 @@ protected normal (vendor-kernel) system or its boot selection.
 ### Modified Capabilities
 - `system/kernel`: mainline variants carry the clock fixes and firewall config;
   thermal is forward-ported; ADC/crypto disposition is recorded; clock-table
-  defects (clkext, usb_480m/usb_100m alias) are corrected.
+  gates match the vendor map with recorded exceptions.
 - `system/nixos-config`: the mainline full-shell variant starts every unit the
   vendor-kernel system starts, except recorded non-goals.
 - `system/audio`: audio plays under the mainline kernel.

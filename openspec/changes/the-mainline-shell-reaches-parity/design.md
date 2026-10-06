@@ -72,10 +72,14 @@ need operator resets when they pass.
    raw `evtest` log on the board for optional retrieval. Rejected: raising the
    timeout (still scales with touch length).
 
-7. **Clock table (kernel):** add a `display_clkext` gate (0x74 bit 5) and give
-   `usb_480m`/`usb_100m` the vendor tree's distinct bits. These change
-   `clk-k230.c`; verify by `clk_summary` plus USB enumeration and display on board.
-   Rejected: leaving aliases (a future USB claim could gate an unrelated clock).
+7. **Clock table (documentation, no kernel change).** The vendor tree gates
+   `usb_clk480` and `usb_clk100` on the same 0x100 bit 0, so mainline's shared
+   bit is faithful hardware, not an alias to fix. Mainline leaves the vendor
+   `disp_clkext` gate (0x74 bit 5) unmodelled; Linux never writes it, U-Boot's
+   setting stands and the panel works. Rejected: adding a `display_clkext`
+   gate (with no consumer it would be gated by unused-clock cleanup, the bug
+   class this work removed) and splitting the USB bits (would model hardware
+   that does not exist). Commit the comparison table with these reasons.
 
 8. **Thermal (kernel + DT):** forward-port `canaan_thermal.c` with the vendor
    bounded-read-loop fix. ADC/PWM/crypto: inventory first; port only if a shipped

@@ -4,10 +4,9 @@
 - [ ] 1.2 Board: boot the full mainline shell; `systemctl is-active firewall` is active and `systemctl --failed` is empty. Hardware proof: guarded `tools/mainline-drm-system-trial.py begin` on `kernelMainlineDrmShellTrialBootFiles`, then recover.
 - [ ] 1.3 Board: boot the console mainline variant with ordinary cleanup to a qualified login. Hardware proof: the same controller on the console bundle.
 
-## 2. Clock table corrections (kernel)
+## 2. Clock table record (documentation)
 
-- [ ] 2.1 Add `display_clkext` gate (0x74 bit 5) and give `usb_480m`/`usb_100m` the vendor tree's distinct bits in a `clk-k230.c` patch. Host proof: patch applies after the existing clock patches; kernel builds.
-- [ ] 2.2 Board: `clk_summary` shows distinct bits; the attached USB device enumerates; the Home UI still draws. Hardware proof: trial boot plus camera still.
+- [ ] 2.1 Commit the vendor-versus-mainline gate comparison to `docs/research/` with the recorded reasons for the shared USB bit and the unmodelled `clkext` gate. Proof: committed file; `openspec validate the-mainline-shell-reaches-parity --strict`.
 
 ## 3. Touch in the shell and controller retrieval (tooling, then board)
 

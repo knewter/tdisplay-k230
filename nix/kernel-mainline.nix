@@ -96,6 +96,12 @@ buildLinux (args // {
   src = applyPatches {
     name = "linux-mainline-k230-src";
     src = kernelSrc;
+    # Clocks physical bisection showed must never be gated as unused; every
+    # mainline variant needs them, not only the DRM kernel.
+    patches = [
+      ./patches/mainline/k230-clk-spi2axi-critical.patch
+      ./patches/mainline/k230-clk-vpu-ddrcp2-dphy.patch
+    ];
 
     postPatch = ''
       # --- GPIO: drivers/gpio/gpio-k230.c ------------------------------
@@ -244,6 +250,32 @@ config RTC_DRV_K230\
     # switches root onto the SD card's ext4 partition (see
     # nixosConfigurations.k230-mainline-console, flake.nix), not a bare
     # kernel root= alone.
+    # Same netfilter set as the vendor kernel (nix/kernel-firewall.config),
+    # which NixOS's iptables-nft firewall unit needs.
+    NETFILTER = yes;
+    NETFILTER_ADVANCED = yes;
+    NETFILTER_NETLINK = yes;
+    NETFILTER_XTABLES = yes;
+    NF_CONNTRACK = yes;
+    NF_TABLES = yes;
+    NF_TABLES_INET = yes;
+    NFT_CT = yes;
+    NFT_LIMIT = yes;
+    NFT_LOG = yes;
+    NFT_REJECT = yes;
+    NFT_REJECT_INET = yes;
+    NFT_FIB_IPV4 = yes;
+    NFT_FIB_IPV6 = yes;
+    NFT_FIB_INET = yes;
+    NFT_COMPAT = yes;
+    NETFILTER_XT_MATCH_PKTTYPE = yes;
+    IP_NF_IPTABLES = yes;
+    IP_NF_MANGLE = yes;
+    IP_NF_MATCH_RPFILTER = yes;
+    IP6_NF_IPTABLES = yes;
+    IP6_NF_MANGLE = yes;
+    IP6_NF_MATCH_RPFILTER = yes;
+
     BLK_DEV_INITRD = yes;
     RD_GZIP = yes;
     RD_ZSTD = yes;
