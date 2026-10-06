@@ -100,9 +100,28 @@
 #     longer exists in v7.3-rc5), and a void `.remove`. Probe claims the
 #     temperature sensor's own rate clock (K230_SYSCTL_TEMP_SENSOR_RATE)
 #     as an optional "ts" clock, for the same unused-clock-cleanup reason.
+#   - sound/soc/canaan/{canaan_k230_audio,canaan_k230_inno}.c and
+#     sound/soc/codecs/inno_k230{,_reg}.c (task 5.1, openspec/changes/
+#     the-mainline-shell-reaches-parity): the SAI mux, Inno codec and
+#     "canaan,k230-audio-inno" machine driver, forward-ported with this
+#     project's own external-I2S-switch control folded in and explicit
+#     claims added for K230_LS_AUDIO_APB_GATE/K230_LS_CODEC_APB_GATE (see
+#     each file's own header comment). Reuses mainline's OWN, already-
+#     present sound/soc/dwc/dwc-i2s.c (Synopsys DesignWare I2S) unmodified
+#     as the CPU/platform DAI -- no canaan-specific I2S controller driver
+#     needed. BLOCKED short of real PCM data movement: this board's only
+#     known i2s DT node (k230.dtsi) carries no `interrupts` property, so
+#     dw_i2s_probe() takes the dmaengine_pcm path, which needs a DMA
+#     provider for `compatible = "canaan,k230-pdma"` that does not exist in
+#     mainline (drivers/dma/k230_peridma.c is a from-scratch ~1400-line
+#     register interface, not a dw-axi-dmac/dw_dmac variant). See
+#     docs/research/mainline-audio-port.md for the full analysis and what
+#     would unblock it.
 #
 # What is NOT ported (unchanged from the "absent" list above): display,
-# audio, crypto, ADC, PWM. See docs/research/mainline-kernel-inventory.md.
+# crypto, ADC, PWM. Audio is forward-ported but cannot move PCM data
+# until a DMA provider exists (see above). See
+# docs/research/mainline-kernel-inventory.md.
 { lib, buildLinux, fetchFromGitHub, applyPatches, ... }@args:
 
 let
@@ -274,6 +293,75 @@ config CANAAN_K230_THERMAL\
       grep -q '^config CANAAN_K230_THERMAL$' drivers/thermal/Kconfig
       echo 'obj-$(CONFIG_CANAAN_K230_THERMAL)	+= canaan_thermal.o' >> drivers/thermal/Makefile
       grep -q 'CONFIG_CANAAN_K230_THERMAL.*canaan_thermal.o' drivers/thermal/Makefile
+      # --- Audio: sound/soc/canaan (new dir) + sound/soc/codecs/inno_k230 -
+      #
+      # openspec/changes/the-mainline-shell-reaches-parity, task 5.1.
+      # Forward-ported from the pinned vendor tree's sound/soc/canaan/ and
+      # sound/soc/codecs/inno_k230{,_reg}.{c,h}, folding in this project's
+      # own nix/patches/canaan-audio-external-i2s-switch.patch directly
+      # (see nix/patches/mainline/canaan_k230_inno.c's own header) and
+      # adding the clock claims docs/research/mainline-audio-port.md
+      # records as missing from the vendor source. Reuses mainline's own,
+      # already-present sound/soc/dwc/dwc-i2s.c (Synopsys DesignWare I2S)
+      # as the CPU/platform DAI unmodified -- see that research doc for why
+      # no canaan-specific I2S controller driver or compatible string is
+      # needed here, and for the one thing this task could NOT forward-port
+      # (DMA).
+      mkdir -p sound/soc/canaan
+      cp ${./patches/mainline/canaan_k230_audio.c} sound/soc/canaan/canaan_k230_audio.c
+      cp ${./patches/mainline/canaan_k230_audio.h} sound/soc/canaan/canaan_k230_audio.h
+      cp ${./patches/mainline/canaan_k230_inno.c} sound/soc/canaan/canaan_k230_inno.c
+      cat > sound/soc/canaan/Kconfig <<'EOF'
+config SND_SOC_CANAAN_K230_AUDIO
+	tristate "CANAAN K230 AUDIO interface support"
+	help
+	  Say Y or M here if you want to enable k230 audio for canaan soc. This
+	  option provides the necessary interface support for audio functionalities
+	  on CANAAN K230 SoC, enabling audio input and output capabilities. If
+	  unsure, select M.
+
+config SND_SOC_CANAAN_K230_INNO
+	tristate "ASoC support for CANAAN boards using a inno codec"
+	select SND_SOC_K230_INNO
+	help
+	  Say Y or M here if you want to add support for SoC audio on CANAAN K230
+	  boards using the INNO codec. This option enables the ASoC audio driver
+	  for CANAAN K230 boards, allowing audio playback and recording through
+	  the INNO codec. If unsure, select M.
+EOF
+      cat > sound/soc/canaan/Makefile <<'EOF'
+snd-soc-canaan-k230-audio-objs := canaan_k230_audio.o
+obj-$(CONFIG_SND_SOC_CANAAN_K230_AUDIO) += snd-soc-canaan-k230-audio.o
+
+snd-soc-canaan-k230-inno-objs := canaan_k230_inno.o
+obj-$(CONFIG_SND_SOC_CANAAN_K230_INNO) += snd-soc-canaan-k230-inno.o
+EOF
+      grep -q '^source "sound/soc/dwc/Kconfig"$' sound/soc/Kconfig
+      sed -i '/^source "sound\/soc\/dwc\/Kconfig"$/a source "sound/soc/canaan/Kconfig"' sound/soc/Kconfig
+      grep -q '^source "sound/soc/canaan/Kconfig"$' sound/soc/Kconfig
+      echo 'obj-$(CONFIG_SND_SOC)	+= canaan/' >> sound/soc/Makefile
+      grep -q 'CONFIG_SND_SOC.*+= canaan/' sound/soc/Makefile
+
+      # Inno codec: sound/soc/codecs/inno_k230{,_reg}.{c,h}. inno_rk3036.c
+      # (a DIFFERENT, unrelated Rockchip part sharing only an "inno" name
+      # prefix) is already present in this tree -- not touched.
+      cp ${./patches/mainline/inno_k230.c} sound/soc/codecs/inno_k230.c
+      cp ${./patches/mainline/inno_k230_reg.c} sound/soc/codecs/inno_k230_reg.c
+      cp ${./patches/mainline/inno_k230_reg.h} sound/soc/codecs/inno_k230_reg.h
+      grep -q '^endmenu$' sound/soc/codecs/Kconfig
+      sed -i '$ i\
+config SND_SOC_K230_INNO\
+\ttristate "K230 INNO Codec"\
+\tdepends on ARCH_CANAAN || COMPILE_TEST\
+\thelp\
+\t  Enable support for the K230 INNO audio codec. This codec provides\
+\t  audio playback and recording support for Canaan K230 SoC boards.\
+\t  If built as a module, the module will be called snd-soc-k230-inno.\
+' sound/soc/codecs/Kconfig
+      grep -q '^config SND_SOC_K230_INNO$' sound/soc/codecs/Kconfig
+      echo 'snd-soc-k230-inno-objs := inno_k230_reg.o inno_k230.o' >> sound/soc/codecs/Makefile
+      echo 'obj-$(CONFIG_SND_SOC_K230_INNO) += snd-soc-k230-inno.o' >> sound/soc/codecs/Makefile
+      grep -q 'CONFIG_SND_SOC_K230_INNO.*snd-soc-k230-inno.o' sound/soc/codecs/Makefile
     '';
   };
 
@@ -323,6 +411,22 @@ config CANAAN_K230_THERMAL\
     THERMAL = yes;
     THERMAL_OF = yes;
     CANAAN_K230_THERMAL = yes;
+    # --- Audio (task 5.1) ------------------------------------------------
+    # SND_SOC_GENERIC_DMAENGINE_PCM is pulled in by SND_DESIGNWARE_I2S's own
+    # `select`; not asked for directly. SND_DESIGNWARE_PCM (the PIO PCM
+    # extension) is NOT enabled: this board's i2s DT node carries no
+    # `interrupts` property (matching the only vendor DT reference for this
+    # IP -- see nix/dts/k230-tdisplay-mainline.dts), so dw_i2s_probe()
+    # always takes the dmaengine_pcm branch regardless of this symbol; see
+    # docs/research/mainline-audio-port.md for why forcing the PIO branch
+    # would mean fabricating an unverified PLIC IRQ number.
+    SOUND = yes;
+    SND = yes;
+    SND_SOC = yes;
+    SND_DESIGNWARE_I2S = yes;
+    SND_SOC_K230_INNO = yes;
+    SND_SOC_CANAAN_K230_AUDIO = yes;
+    SND_SOC_CANAAN_K230_INNO = yes;
 
     # An initrd remains part of the boot path even with SD/MMC now
     # available: NixOS's own stage-1 initrd is what actually mounts and
@@ -335,7 +439,7 @@ config CANAAN_K230_THERMAL\
   };
 
   extraMeta = {
-    description = "Plain mainline console kernel with Canaan K230 SoC support and this project's forward-ported GPIO/SD-MMC/USB/RTC/power-key/thermal drivers (no DRM/display, touch, audio, ADC, PWM or crypto driver)";
+    description = "Plain mainline console kernel with Canaan K230 SoC support and this project's forward-ported GPIO/SD-MMC/USB/RTC/power-key/thermal/audio drivers (audio cannot move PCM data until a DMA provider exists -- see docs/research/mainline-audio-port.md; no DRM/display, touch, ADC, PWM or crypto driver)";
     platforms = [ "riscv64-linux" ];
   };
 } // (args.argsOverride or { }))

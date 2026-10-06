@@ -1,0 +1,52 @@
+{
+  "task": "the-mainline-shell-reaches-parity 5.1 (forward-port sound/soc/canaan)",
+  "evidence_class": "actual-host-cross-compiled-riscv-ko",
+  "started_utc": "2026-10-06T14:30:00Z",
+  "completed_utc": "2026-10-06T14:36:00Z",
+  "note": "Out-of-tree module build against the project's existing pinned mainline v7.3-rc5 dev tree, in a private scratch directory -- NOT the shared /tmp/k230-nix-build.lock path (that lock was held by a concurrent worktree at the time; this build needed no shared mutable state, only the read-only dev tree, so it did not take the lock).",
+  "command": [
+    "make",
+    "-C",
+    "/nix/store/yz7s78rqdx216bk2kj27q8d9qsi2dap4-linux-riscv64-unknown-linux-gnu-7.3.0-rc5-dev/lib/modules/7.3.0-rc5/build",
+    "M=<scratch dir containing the 6 forward-ported files below + a trivial obj-m Makefile>",
+    "ARCH=riscv",
+    "CROSS_COMPILE=/nix/store/4j2mwxqjvnyr6da0925sp0bm4jaj5r5i-riscv64-unknown-linux-gnu-gcc-wrapper-15.3.0/bin/riscv64-unknown-linux-gnu-",
+    "modules"
+  ],
+  "dev_tree": "/nix/store/yz7s78rqdx216bk2kj27q8d9qsi2dap4-linux-riscv64-unknown-linux-gnu-7.3.0-rc5-dev",
+  "dev_tree_config_had": {
+    "CONFIG_SND_SOC": "y",
+    "CONFIG_SND_SOC_GENERIC_DMAENGINE_PCM": "y",
+    "CONFIG_SND_DESIGNWARE_I2S": "m",
+    "CONFIG_SND_DESIGNWARE_PCM": "not set"
+  },
+  "returncode": 0,
+  "stderr": "Skipping BTF generation for canaan_k230_inno.ko due to unavailability of vmlinux\nSkipping BTF generation for canaan_k230_audio.ko due to unavailability of vmlinux\nSkipping BTF generation for inno_k230_codec.ko due to unavailability of vmlinux",
+  "warnings": "none (zero compiler warnings on any of the 4 forward-ported .c files)",
+  "modules_built": [
+    {
+      "name": "canaan_k230_audio.ko",
+      "objs": ["canaan_k230_audio.o"],
+      "sha256_ko": "fea95cd913ac8c33e7a05c3ef6fba929a4d74c3852dff80fce2ac4d1e9ef1063"
+    },
+    {
+      "name": "canaan_k230_inno.ko",
+      "objs": ["canaan_k230_inno.o"],
+      "sha256_ko": "251b1e987ef3474da260a05351de99357e2034bedfcd3c5afac032968c1af26a"
+    },
+    {
+      "name": "inno_k230_codec.ko",
+      "objs": ["inno_k230_reg.o", "inno_k230.o"],
+      "sha256_ko": "644d2983532cd80e357307aca386d5d353ae524a064e721d97e45fb73c71e8c2"
+    }
+  ],
+  "source_sha256": {
+    "nix/patches/mainline/canaan_k230_audio.c": "14514ee6f6c21564ed4c958984b3c599a62f2ce7f1f17e469daaf30da6fe359a",
+    "nix/patches/mainline/canaan_k230_audio.h": "fa9c7898f2a0ae58a6c70290df2a4e24ff53825a17ca3a9d709b13b4888538c7",
+    "nix/patches/mainline/canaan_k230_inno.c": "19353bd8cd0906b04cf83574fefb6b9c43c2c1346b46b73c55ea1ee28c216078",
+    "nix/patches/mainline/inno_k230.c": "b23910690ec1894f4bf2ae33c05cdd2d9a39cba49f13a1f459d1ae6fd679a1e8",
+    "nix/patches/mainline/inno_k230_reg.c": "beff3fafb1358b38a0e51a5fc289b0f00a7aa3ca0dad145c32be721ad2782206",
+    "nix/patches/mainline/inno_k230_reg.h": "48bc53db3ebb959766decb4257e3c5a9805756d1093ea8346c4657d6744c943c"
+  },
+  "scope": "Proves the forward-ported source is syntactically and API-correct against the real v7.3-rc5 ASoC/clk headers this project's mainline kernel build uses (snd_soc_component_driver fields, void-returning platform_driver.remove, SND_SOC_DAIFMT_CBC_CFC rename, devm_clk_get_enabled/devm_clk_get_optional_enabled). It does NOT prove the drivers bind on a booted board, and does NOT exercise CONFIG_SND_SOC_CANAAN_K230_AUDIO/_INNO or CONFIG_SND_SOC_K230_INNO through a real Kconfig/oldconfig pass -- that requires the full nix build this task was told not to run. See docs/research/mainline-audio-port.md for the remaining DMA blocker that stops the card from completing probe even after a full build."
+}

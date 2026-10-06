@@ -1,0 +1,33 @@
+{
+  "task": "the-mainline-shell-reaches-parity 5.1 (forward-port sound/soc/canaan)",
+  "evidence_class": "host-only-dtc-cpp-validation",
+  "dtc_version": "DTC v1.8.1",
+  "note": "Preprocesses and compiles the two DTS files this task touched against mainline's own include/dt-bindings headers (from the pinned v7.3-rc5 research source tree). Confirms the new audio nodes parse, the K230_LS_* clock macros resolve to the exact numeric IDs recorded in docs/research/mainline-audio-port.md, and the &i2s/&inno_codec phandles the `sound` node references resolve. Does NOT run `nix build .#deviceTreeMainline` (not attempted -- host dtc+cpp already gave a clean compile, so the narrow nix-build fallback in this task's brief was not needed) and does NOT prove the board boots this DT.",
+  "runs": [
+    {
+      "input": "nix/dts/k230-tdisplay-mainline.dts",
+      "cpp_include_dirs": [
+        "<mainline v7.3-rc5 src>/include",
+        "<mainline v7.3-rc5 src>/arch/riscv/boot/dts",
+        "<mainline v7.3-rc5 src>/arch/riscv/boot/dts/canaan"
+      ],
+      "cpp_returncode": 0,
+      "dtc_command": "dtc -I dts -O dtb",
+      "dtc_returncode": 0,
+      "dtc_stderr": "",
+      "output_dtb_sha256": "8ce6bd4d6df3ef3727a8bf59830051ab06e2393fae13cf03c8cbe8d2921b1878",
+      "resolved_clock_cells_checked": {
+        "i2s@9140f000 clocks": "<0x06 0x9e>  (0x9e=158=K230_LS_AUDIO_DEV_RATE)",
+        "audio@9140f400 clocks": "<0x06 0x55>  (0x55=85=K230_LS_AUDIO_APB_GATE)",
+        "inno_codec@9140e000 clocks": "<0x06 0x57 0x06 0x9c 0x06 0x9d>  (0x57=87=K230_LS_CODEC_APB_GATE, 0x9c=156=K230_LS_CODEC_ADC_RATE, 0x9d=157=K230_LS_CODEC_DAC_RATE)"
+      }
+    },
+    {
+      "input": "nix/dts/k230-tdisplay-mainline-drm.dts",
+      "note": "This board file #includes k230-tdisplay-mainline.dts; validated to confirm the audio addition does not break its sibling.",
+      "cpp_returncode": 0,
+      "dtc_returncode": 0,
+      "output_dtb_sha256": "6f7c636d49c349da3aac3297e4459d796333e987fd8738c72cc07031690b55f5"
+    }
+  ]
+}
