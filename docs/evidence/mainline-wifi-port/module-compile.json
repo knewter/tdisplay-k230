@@ -1,75 +1,111 @@
 {
   "task": "the-mainline-shell-reaches-parity 6.1 (build the RTL8189FTV module against the mainline kernel)",
-  "evidence_class": "actual-host-cross-compiled-riscv-ko-attempt-partial",
+  "evidence_class": "actual-host-cross-compiled-riscv-ko-attempt-complete-source-port-modpost-blocked-on-headers-only-dev-tree",
   "started_utc": "2026-10-06T15:00:00Z",
   "completed_utc": "2026-10-06T15:45:00Z",
-  "note": "Out-of-tree module build against the project's existing pinned mainline v7.3-rc5 dev tree, in a private scratch directory -- NOT the shared /tmp/k230-nix-build.lock path (this build needed no shared mutable state, only the read-only dev tree and a fresh git clone of the pinned driver source, so it did not take the lock). Does NOT run `nix build`: this manual invocation uses the exact KSRC/ARCH/CROSS_COMPILE the nix/k230-wifi-driver.nix derivation itself passes (same reasoning as docs/evidence/mainline-audio-port/module-compile.json -- avoids any full kernel build).",
-  "driver_source": {
-    "owner": "jwrdegoede",
-    "repo": "rtl8189ES_linux",
-    "rev": "94cc959d56c1425fbca4f6e49e949cf58ec5dc8d",
-    "fetched_via": "git clone --depth 1 (network; matches nix/k230-wifi-driver.nix's fetchFromGitHub owner/repo/rev exactly)"
+  "note": "First pass (summarized below under previous_attempt). This file now records the cfg80211_ops-port follow-up: same pinned driver source, same dev tree, no board/ttyACM0/build-lock access, no nix kernel/system build, no credential of any kind.",
+  "previous_attempt": {
+    "objects_compiled_ok": 51,
+    "objects_failed": 6,
+    "failed_objects": [
+      "hal/hal_com.o",
+      "hal/hal_com_phycfg.o",
+      "os_dep/linux/ioctl_cfg80211.o",
+      "os_dep/linux/ioctl_linux.o",
+      "os_dep/linux/os_intfs.o",
+      "os_dep/linux/rtw_cfgvendor.o"
+    ],
+    "blocker": "CONFIG_CFG80211 not set in this dev tree's .config (struct net_device's ieee80211_ptr guarded by #if IS_ENABLED(CONFIG_CFG80211)), plus ~13 cfg80211_ops callback signature mismatches in os_dep/linux/ioctl_cfg80211.c against mainline's net/cfg80211.h at this pin. Both documented and left unattempted per this task's own 'stop and document if it needs deeper rework' instruction."
   },
-  "command": [
-    "make",
-    "KSRC=/nix/store/yz7s78rqdx216bk2kj27q8d9qsi2dap4-linux-riscv64-unknown-linux-gnu-7.3.0-rc5-dev/lib/modules/7.3.0-rc5/build",
-    "ARCH=riscv",
-    "CROSS_COMPILE=/nix/store/4j2mwxqjvnyr6da0925sp0bm4jaj5r5i-riscv64-unknown-linux-gnu-gcc-wrapper-15.3.0/bin/riscv64-unknown-linux-gnu-"
-  ],
-  "note_on_invocation": "The driver's top-level `modules` target (not a direct `-C <build> M=<src> modules` invocation) must be used: the Makefile only sets CONFIG_RTL8189FS=m in its non-kbuild branch, which then survives into the recursive kbuild sub-make via the environment. A direct M= invocation skips that branch and silently builds nothing (confirmed: an early attempt this way produced an empty, instant, successful-looking MODPOST with zero objects).",
-  "dev_tree": "/nix/store/yz7s78rqdx216bk2kj27q8d9qsi2dap4-linux-riscv64-unknown-linux-gnu-7.3.0-rc5-dev",
-  "dev_tree_config_had": {
-    "CONFIG_WIRELESS": "y",
-    "CONFIG_CFG80211": "not set",
-    "CONFIG_MAC80211": "not set",
-    "CONFIG_MMC": "y",
-    "CONFIG_MMC_BLOCK": "y",
-    "note": "No separate CONFIG_MMC_SDIO symbol exists in this tree -- SDIO bus support is part of the core CONFIG_MMC, already y; nothing extra is needed there."
-  },
-  "patch_applied": {
-    "path": "nix/patches/mainline/rtl8189fs-mainline-v7.3-rc5.patch",
-    "sha256": "df296e6725c7ee1d96a835a7e2c36fafb9b0fa6eb7619f8f83625546b9703bfd",
-    "applies_cleanly_with": "patch -p1, verified against a second, independent fresh clone of the same pinned rev",
-    "fixes": [
-      {
-        "file": "Makefile",
-        "issue": "Mainline v7.3-rc5 removed EXTRA_CFLAGS/EXTRA_LDFLAGS support from scripts/Makefile.build entirely (grep confirms zero references in that file or the top-level Makefile at this pin). The driver's own Makefile accumulates all its flags into EXTRA_CFLAGS/EXTRA_LDFLAGS and relied on kbuild's legacy auto-absorption of those variables.",
-        "fix": "Two added lines, placed after every *.mk include (hal/phydm/phydm.mk's own -I flag included) and the full obj file list, right before obj-$(CONFIG_RTL8189FS) is set: `ccflags-y += $(EXTRA_CFLAGS)` and `ldflags-y += $(EXTRA_LDFLAGS)`, kbuild's current equivalent mechanism.",
-        "scope": "mainline-only via extraPatches; NOT applied to the vendor-kernel build (EXTRA_CFLAGS still works unmodified there, and double-applying would risk duplicate flags)."
-      },
-      {
-        "file": "include/osdep_service_linux.h",
-        "issue": "Mainline v7.3-rc5 renamed from_timer() to timer_container_of() and del_timer_sync() to timer_delete_sync() in include/linux/timer.h (confirmed directly; the old names do not exist anywhere in include/linux/*.h at this pin).",
-        "fix": "Two #ifndef-guarded compat macros (from_timer -> timer_container_of, del_timer_sync -> timer_delete_sync), so the shim is a no-op on any kernel that still has the old names."
-      },
-      {
-        "file": "core/rtw_br_ext.c",
-        "issue": "Mainline's include/uapi/linux/if_pppox.h restricts struct pppoe_hdr's \"tag[]\" and struct pppoe_tag's \"tag_data[]\" flexible-array members to userspace only (#ifndef __KERNEL__), so neither field exists when this file is compiled as a kernel module (confirmed directly against that uapi header).",
-        "fix": "Two macros (RTW_PPPOE_HDR_TAG, RTW_PPPOE_TAG_DATA) doing the equivalent pointer-one-past-the-fixed-header arithmetic (a flexible array member contributes 0 to sizeof()), substituted at all 8 call sites that read/write `ph->tag` or `tag->tag_data`/`pOldTag->tag_data`. Pure pointer-arithmetic substitution; no logic change."
-      },
-      {
-        "file": "os_dep/linux/ioctl_linux.c, os_dep/linux/os_intfs.c",
-        "issue": "Mainline v7.3-rc5 dropped strncpy()'s declaration from include/linux/string.h entirely -- it is no longer even exported to modules (no Module.symvers entry at this pin).",
-        "fix": "strncpy -> strscpy at the one call site in each of these two files that was gating earlier build progress, same explicit size argument, each with an inline comment on the one real behavior difference (strscpy always NUL-terminates; does not zero-pad unused trailing bytes) and why it does not matter at that call site.",
-        "scope_note": "NOT exhaustive: strncpy is used at ~25 more call sites across hal/hal_com.c, hal/hal_com_phycfg.c, hal/hal_hci/hal_sdio.c, hal/phydm/phydm_debug.c, core/rtw_debug.c, core/rtw_wlan_util.c, os_dep/linux/rtw_cfgvendor.c, os_dep/linux/ioctl_cfg80211.c, and one more site each in ioctl_linux.c/os_intfs.c. Only the two sites that were the earliest build blockers were patched; the rest remain real, same-class, same-fix renames but were not worth closing one by one once the cfg80211_ops blocker below was reached and confirmed independent of them. Listed here as known remaining renames, not hidden."
+  "follow_up": {
+    "driver_source": {
+      "owner": "jwrdegoede",
+      "repo": "rtl8189ES_linux",
+      "rev": "94cc959d56c1425fbca4f6e49e949cf58ec5dc8d",
+      "fetched_via": "git clone --depth 1, twice independently (network; matches nix/k230-wifi-driver.nix's fetchFromGitHub owner/repo/rev exactly; public unauthenticated GitHub clone, not a board or build-lock resource)"
+    },
+    "mainline_reference_source": "/nix/store/79yd40jv8h4x866bm1vyw94cm948grax-linux-mainline-k230-init-exec-transition-src (read-only; include/net/cfg80211.h and net/wireless/*.c/rdev-ops.h read directly for exact current callback signatures and cookie-ownership semantics; never built or executed)",
+    "patch_applied": {
+      "path": "nix/patches/mainline/rtl8189fs-mainline-v7.3-rc5.patch",
+      "sha256": "f11cb1e1c9cc596adceab0ad4b01ec286074940b2a44b0ba1aa5871b2f88e3bb",
+      "regenerated_as": "a single combined patch (git diff against the pristine pinned rev) replacing the previous attempt's patch file in place -- still one patch file, now covering both the original 4 drift-class fixes and this follow-up's cfg80211_ops port + strncpy closures",
+      "applies_cleanly_with": "patch -p1, verified against a second, fully independent fresh clone of the same pinned rev (separate from the clone the patch was authored against)",
+      "cfg80211_ops_callbacks_ported": [
+        {
+          "shape": "net_device* -> wireless_dev* parameter, body re-pointed via a new local `struct net_device *ndev = wdev->netdev;`",
+          "callbacks": ["add_key", "get_key", "del_key", "set_default_mgmt_key", "get_station", "add_station", "del_station", "change_station", "dump_station"],
+          "also_fixed_call_sites": ["cfg80211_new_sta() in rtw_cfg80211_indicate_sta_assoc()", "cfg80211_del_sta() in rtw_cfg80211_indicate_sta_disassoc()", "cfg80211_new_sta() in cfg80211_rtw_add_station()'s mesh branch"]
+        },
+        {
+          "shape": "new parameter added (multi-radio wiphy support), no pointer-type change; all three bodies are pre-existing #if 0 stubs that never read the new parameter",
+          "callbacks": ["set_wiphy_params (+int radio_idx)", "set_tx_power (+int radio_idx)", "get_tx_power (+int radio_idx, unsigned int link_id)"]
+        },
+        {
+          "shape": "u64 *cookie (driver-generated out-param) -> u64 cookie (cfg80211-generated in-param); confirmed via net/wireless/nl80211.c's nl80211_tx_mgmt() calling cfg80211_assign_cookie() itself before invoking the driver",
+          "callbacks": ["remain_on_channel (also gained trailing const u8 *rx_addr, unused by this driver)", "mgmt_tx"],
+          "note": "driver's own cookie-generation lines deleted (ro_ch_cookie_gen / mgmt_tx_cookie counters left in their structs but no longer read); every remaining *cookie read replaced with cookie"
+        }
+      ],
+      "callbacks_confirmed_already_correct_no_change": [
+        "update_mgmt_frame_registrations (cfg80211_rtw_mgmt_frame_register already used wireless_dev*/mgmt_frame_regs* in its >=5.8.0 branch)",
+        "add_virtual_intf", "del_virtual_intf", "change_virtual_intf"
+      ],
+      "callbacks_confirmed_unchanged_left_alone": [
+        "set_default_key", "connect", "disconnect", "join_ibss", "leave_ibss", "set_power_mgmt",
+        "set_pmksa", "del_pmksa", "flush_pmksa", "change_bss", "set_txq_params", "set_monitor_channel",
+        "get_mesh_config", "update_mesh_config", "join_mesh", "leave_mesh", "add_mpath", "del_mpath",
+        "change_mpath", "get_mpath", "dump_mpath", "get_mpp", "dump_mpp", "update_ft_ies", "tdls_oper",
+        "sched_scan_start", "sched_scan_stop"
+      ],
+      "strncpy_to_strscpy_sites_closed": {
+        "count": 11,
+        "files": {
+          "hal/hal_com.c": 1,
+          "hal/hal_com_phycfg.c": 3,
+          "hal/hal_hci/hal_sdio.c": 2,
+          "hal/phydm/phydm_debug.c": 1,
+          "os_dep/linux/ioctl_cfg80211.c": 2,
+          "os_dep/linux/ioctl_linux.c": 2
+        },
+        "deliberately_left_untouched": {
+          "hal/phydm/phydm_debug.c": "1 site inside #if 0 dead code",
+          "os_dep/linux/rtw_cfgvendor.c": "2 sites behind #ifdef CONFIG_RTW_CFGVENDOR_WIFI_LOGGER, not defined by this Kconfig",
+          "core/rtw_debug.c": "8 sites; file not compiled into this module at all under this config (absent from CC [M] log)",
+          "core/rtw_wlan_util.c": "1 site; file not compiled into this module at all under this config (absent from CC [M] log)"
+        },
+        "rationale": "task instruction: close strncpy sites only where they are errors (not warnings); files/sites confirmed neither compiled nor reachable were left alone rather than touched speculatively"
       }
-    ]
+    },
+    "compile_verification": [
+      {
+        "method": "private scratch copy of this task's own dev tree, made writable",
+        "dev_tree_original": "/nix/store/yz7s78rqdx216bk2kj27q8d9qsi2dap4-linux-riscv64-unknown-linux-gnu-7.3.0-rc5-dev (read-only; copied via cp -a to a writable /tmp location, 569M)",
+        "config_change": "CONFIG_CFG80211=m added directly to the scratch copy's .config and `#define CONFIG_CFG80211_MODULE 1` added to include/generated/autoconf.h",
+        "gotcha_found_and_fixed": "the dev tree's lib/modules/<ver>/build/Makefile is a 5-line auto-generated wrapper that hardcodes absolute paths (KBUILD_OUTPUT, an `include` line) back to the ORIGINAL read-only nix store path; cp -a preserves this unedited, so edits to the scratch copy's own autoconf.h/.config were silently ignored until this wrapper file's paths were sed-rewritten to point at the scratch copy itself (and its nested build/source symlink, which kbuild itself rewrites on each invocation, was restored to point at the scratch copy's own source/ directory)",
+        "command": [
+          "make", "-k", "-j4",
+          "KSRC=<scratch-dev-tree>/lib/modules/7.3.0-rc5/build",
+          "ARCH=riscv",
+          "CROSS_COMPILE=<riscv64-unknown-linux-gnu-gcc-wrapper-15.3.0>/bin/riscv64-unknown-linux-gnu-"
+        ],
+        "result": "0 compile errors; LD [M] 8189fs.o succeeds (5063760-byte ELF 64-bit LSB relocatable, RISC-V, not stripped); MODPOST fails with 10 shown + 18 suppressed 'undefined!' errors for genuine cfg80211/net-wireless exports, because this scratch dev tree never built net/wireless/cfg80211.ko and its Module.symvers has no real cfg80211 symbols to resolve against -- expected and inherent to this verification method, not a defect in the port"
+      },
+      {
+        "method": "second, fully independent fresh clone of the pinned driver rev with the final regenerated patch applied by patch -p1 (not the clone the patch was authored against)",
+        "command": "identical to above, same scratch dev tree, `make clean` run first",
+        "result": "identical: 0 compile errors, 131 CC [M] invocations in a full from-clean rebuild, 560 warnings (all pre-existing classes: -Wmissing-prototypes, -Waddress on fixed-size-array-decay comparisons, etc. -- no new warning class introduced), same MODPOST unresolved-symbol-only failure"
+      }
+    ],
+    "modpost_unresolved_symbols_shown": [
+      "__cfg80211_alloc_event_skb", "wiphy_register", "cfg80211_remain_on_channel_expired",
+      "cfg80211_vendor_cmd_reply", "cfg80211_del_sta_sinfo", "wiphy_unregister",
+      "cfg80211_ch_switch_notify", "ieee80211_get_channel_khz", "cfg80211_ready_on_channel",
+      "__cfg80211_get_bss"
+    ],
+    "modpost_unresolved_symbols_suppressed_count": 18,
+    "returncode": 2,
+    "returncode_meaning": "modpost failure only (unresolved real cfg80211 symbols against a headers-only dev tree); 0 compiler errors in either verification run",
+    "authoritative_check_pending": "The coordinator's parallel kernel build at ~/tmp/k230-parity-build4/ (building kernelMainlineDrm and a plain mainline kernel with CFG80211=m live) is the authoritative check this task calls for -- it was still building vmlinux as of this evidence file's last update and had not yet produced a -dev result symlink. This file should be updated with that build's actual module-link result (ideally a clean 8189fs.ko with zero modpost errors) once available; until then, the real-kernel link result remains UNVERIFIED, though the source-level port against mainline's actual header declarations is proven by the two independent 0-compile-error runs above."
   },
-  "returncode": 2,
-  "objects_compiled_ok": 51,
-  "objects_failed": 6,
-  "failed_objects": [
-    "hal/hal_com.o",
-    "hal/hal_com_phycfg.o",
-    "os_dep/linux/ioctl_cfg80211.o",
-    "os_dep/linux/ioctl_linux.o",
-    "os_dep/linux/os_intfs.o",
-    "os_dep/linux/rtw_cfgvendor.o"
-  ],
-  "remaining_blocker": {
-    "class": "deeper-rework-not-attempted",
-    "config_gap": "CONFIG_CFG80211 is not set in this dev tree's .config. struct net_device's `ieee80211_ptr` member is guarded by `#if IS_ENABLED(CONFIG_CFG80211)` in mainline's include/linux/netdevice.h (confirmed directly), so os_dep/linux/os_intfs.c and os_dep/linux/ioctl_cfg80211.c cannot even see that field with this kernel's config. CFG80211's own Kconfig (net/wireless/Kconfig, read from the pinned read-only mainline research source since the dev tree ships headers only, no Kconfig files) selects only FW_LOADER, CRC32 and (conditionally) CRYPTO_SHA256 -- all three already `y` in the built .config (grep-confirmed) -- so CFG80211 = module was added to nix/kernel-mainline.nix's structuredExtraConfig as a safe, non-looping candidate. This alone is UNVERIFIED: no kernel has been rebuilt with it (full kernel build explicitly out of scope for this task).",
-    "api_rework": "Independent of the config gap, os_dep/linux/ioctl_cfg80211.c's struct cfg80211_ops initializer has ~13 callback signature mismatches against mainline's net/cfg80211.h at this pin: many ops moved their second parameter from `struct net_device *` to `struct wireless_dev *` across the mac80211/cfg80211 API's multi-year netdev-to-wdev migration (e.g. change_virtual_intf, add_key, get_key, del_key, set_default_key, mgmt_tx, mgmt_tx_cancel_wait, set_tx_power, del_station -- full list in the raw compiler log). cfg80211_new_sta()/cfg80211_del_sta() calls also now take a wireless_dev* first argument, not net_device*. Fixing this is a real driver-side port (new parameter plumbing through each callback body, not a found-and-replace rename), explicitly out of this task's 'API renames only' scope -- stopped and documented here per the task's own instruction, not attempted further."
-  },
-  "scope": "Proves the DT clock claim (6.1's first half) is independent of and unblocked by this module-compile investigation, that four distinct real v7.3-rc5 API-drift classes were found and fixed with minimal, commented patches for the RTL8189FTV module, and that the module cannot link yet for two further, well-identified reasons (one Kconfig gap already staged as a non-looping candidate, one real cfg80211_ops port not attempted). Does NOT prove `nix build .#k230-wifi-driver-mainline` succeeds -- it is expected to fail identically until the cfg80211_ops port lands -- and does NOT exercise any board hardware."
+  "scope": "Completes the cfg80211_ops port and the error-causing strncpy closures the previous attempt stopped short of, proves both with two independent reproducible full rebuilds (0 compile errors, full module object linked), and narrows the one remaining gap to a single, well-identified, already-in-progress item: a kernel actually built with CONFIG_CFG80211=m so modpost has real cfg80211 symbols to resolve against. Does NOT itself run `nix build .#k230-wifi-driver-mainline` or exercise any board hardware; does NOT claim the authoritative new-dev-tree check (still running at evidence-file time) has completed."
 }
