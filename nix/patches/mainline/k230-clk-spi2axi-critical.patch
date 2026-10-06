@@ -1,0 +1,14 @@
+--- a/drivers/clk/clk-k230.c
++++ b/drivers/clk/clk-k230.c
+@@ -1533,9 +1533,10 @@
+ 		     false, 0,
+ 		     &dphy_dft_gate.clk.hw);
+ 
++/* Gating spi2axi as unused stops the SoC shortly after userspace starts. */
+ K230_CLK_GATE_FORMAT(spi2axi_gate,
+ 		     K230_SPI2AXI_GATE,
+-		     0x108, 0, 0, 0,
++		     0x108, 0, CLK_IS_CRITICAL, 0,
+ 		     &pll0_div4.hw);
+ 
+ K230_CLK_RATE_FORMAT(spi2axi_rate,
