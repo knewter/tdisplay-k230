@@ -1522,4 +1522,6 @@ Independent source/actual host/full physical/parser/recovery-limit/publication r
 - [x] 5w.2 Add `k230-mainline-drm-shell` and fix canaan DRM fops `FOP_UNSIGNED_OFFSET`
       so userspace can open `/dev/dri/card0`. Proof: qualified full-shell boot with
       sway active and the Home UI on the panel; recovery verified.
-- [ ] 5w.3 Review, land/push and inspect exact CI/published revision.
+- [x] 5w.3 Review, land/push and inspect exact CI/published revision.
+      Independent review PASS; master ae1a4009; CI 37446811633 deploy PASS; work page serves
+      ae1a4009 and the full-shell evidence page returns 200. Follow-up: usb_480m/usb_100m still share 0x100 bit 0.
