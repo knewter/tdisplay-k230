@@ -23,6 +23,24 @@
 	clock-names = "core", "bus", "axi", "block", "timer";
 };
 
+// Same five-clock claim for the RTL8189FTV's SDIO controller (task
+// the-mainline-shell-reaches-parity 6.1). nix/patches/mainline/
+// k230-sdhci-clocks.patch's dwcmshc_probe()/devm_clk_bulk_get() path is
+// generic over every "canaan,k230-dw-mshc" instance, not SD1-specific (the
+// three extra clk_bulk_data entries are requested by whichever device probes
+// the shared driver) -- so &mmc_sd0 needs the identical override, not a
+// smaller one, once this DRM kernel's patched driver is the one binding it.
+// The base k230-tdisplay-mainline.dts node still claims only core/bus so the
+// unpatched console driver's two devm_clk_get() calls keep matching exactly.
+&mmc_sd0 {
+	clocks = <&sysclk K230_HS_SD0_BASE_GATE>,
+		 <&sysclk K230_HS_SD0_AHB_GATE>,
+		 <&sysclk K230_HS_SD0_AXI_GATE>,
+		 <&sysclk K230_HS_SD0_CARD_GATE>,
+		 <&sysclk K230_HS_SD0_TIMER_GATE>;
+	clock-names = "core", "bus", "axi", "block", "timer";
+};
+
 // The RTC sits in the PMU block behind the PMU APB gate, which mainline
 // otherwise gates as unused; the RTC driver enables it from probe.
 &rtc {

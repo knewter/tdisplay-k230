@@ -1,0 +1,38 @@
+{
+  "task": "the-mainline-shell-reaches-parity 6.1 (enable &mmc_sd0 SDIO for the RTL8189FTV)",
+  "evidence_class": "host-only-dtc-cpp-validation",
+  "dtc_version": "DTC 1.7.2",
+  "note": "Preprocesses and compiles both mainline board DTS files against mainline's own include/dt-bindings headers (from the pinned v7.3-rc5 research source tree, read-only). Confirms &mmc_sd0 parses in both the console and DRM variants, the K230_HS_SD0_* clock macros resolve to the exact numeric IDs recorded in docs/research/k230-clock-gates-vendor-vs-mainline.md and docs/research/mainline-sd1-clock-consumers-2026-10-02.md, and the DTB round-trips. Does NOT run `nix build .#deviceTreeMainline`/`.#deviceTreeMainlineDrm` (not attempted -- host dtc+cpp already gave a clean compile) and does NOT prove the board boots this DT or that the RTL8189FTV SDIO function enumerates.",
+  "mainline_src_used": "/nix/store/77wzlx4cjhzf2a2k0a9s4fhrsq54wfih-linux-mainline-k230-src (v7.3-rc5, 72d3fcf802c45d00b300f25b848a93c3a2bd7c7e)",
+  "runs": [
+    {
+      "input": "nix/dts/k230-tdisplay-mainline.dts",
+      "cpp_include_dirs": [
+        "<mainline v7.3-rc5 src>/scripts/dtc/include-prefixes"
+      ],
+      "cpp_returncode": 0,
+      "dtc_command": "dtc -I dts -O dtb -b 0 -@ -i . -i <mainline src>/scripts/dtc/include-prefixes",
+      "dtc_returncode": 0,
+      "roundtrip_returncode": 0,
+      "output_dtb_sha256": "b02c8d16e2854cbba34aef7cfd59bc6fed0ffa6abef9346539072849c8e84f98",
+      "resolved_mmc_sd0": {
+        "status": "okay",
+        "clocks": "<0x06 0x1e 0x06 0x0c> (0x1e=30=K230_HS_SD0_BASE_GATE, 0x0c=12=K230_HS_SD0_AHB_GATE)",
+        "clock-names": "core, bus",
+        "extra_properties": ["no-1-8-v", "rx_delay_line=0x0d", "tx_delay_line=0xc0", "non-removable", "cap-sdio-irq", "keep-power-in-suspend"]
+      }
+    },
+    {
+      "input": "nix/dts/k230-tdisplay-mainline-drm.dts",
+      "note": "Includes k230-tdisplay-mainline.dts and overrides &mmc_sd0 with the five-clock claim, mirroring the existing &mmc_sd1 override.",
+      "cpp_returncode": 0,
+      "dtc_returncode": 0,
+      "roundtrip_returncode": 0,
+      "output_dtb_sha256": "08317d0de45d876ac4c5d49734ad36ef37c11efde0a0d667260cbdb212ad7dd0",
+      "resolved_mmc_sd0": {
+        "clocks": "<0x06 0x1e 0x06 0x0c 0x06 0x1c 0x06 0x19 0x06 0x22> (0x1e=30=BASE, 0x0c=12=AHB, 0x1c=28=AXI, 0x19=25=CARD, 0x22=34=TIMER)",
+        "clock-names": "core, bus, axi, block, timer"
+      }
+    }
+  ]
+}
