@@ -4,7 +4,8 @@
       Built 725cc92e: full-shell bundle 8bljkjxn…, console bundle bwvzapyq…; kernel config has NETFILTER_XTABLES/NF_TABLES/NFT_COMPAT/NFT_CT=y (structuredExtraConfig looped on NFT_COMPAT; seeded into defconfig instead).
 - [x] 1.2 Board: boot the full mainline shell; `systemctl is-active firewall` is active and `systemctl --failed` is empty. Hardware proof: guarded `tools/mainline-drm-system-trial.py begin` on `kernelMainlineDrmShellTrialBootFiles`, then recover.
       2026-10-06 bundle 8bljkjxn…: controller qualified; serial console shows uname 7.3.0-rc5, firewall active, 0 failed units, shell/shell-ui/seatd active; board self-recovered (private capture ~/tmp/k230-bisect-PARITY12).
-- [ ] 1.3 Board: boot the console mainline variant with ordinary cleanup to a qualified login. Hardware proof: the same controller on the console bundle.
+- [x] 1.3 Board: boot the console mainline variant with ordinary cleanup to a qualified login. Hardware proof: the same controller on the console bundle.
+      2026-10-06 console bundle 437ggvdp… (7f087e1e): qualified ordinary login with `clk: Disabling unused clocks`, 0 failed units. Needed the SD five-clock ownership moved to the base kernel (first attempt stalled after initrd Basic System). Its `reboot` then stopped at "Restarting system" (restart handler was DRM-only), fixed in 6f86eed2.
 
 ## 2. Clock table record (documentation)
 
@@ -41,7 +42,8 @@
 
 - [x] 7.1 Forward-port `canaan_thermal.c` (bounded read loop) with its DT node. Host proof: kernel builds.
       Kernel built; on the board `canaan_thermal_zone` reads 7218 (vendor kernel 7223).
-- [ ] 7.2 Board: the thermal zone reads a plausible temperature that rises under load. Hardware proof: trial boot and two readings.
+- [x] 7.2 Board: the thermal zone reads a plausible temperature that rises under load. Hardware proof: trial boot and two readings.
+      Same boot, converted driver: thermal_zone0 52406 m°C idle, 54506 m°C after 60 s of CPU load. The driver previously returned the raw TS_DATA code (7221); conversion uses Canaan's documented polynomial.
 - [x] 7.3 Record ADC, PWM and crypto disposition (ported or non-goal with the consuming unit) in `docs/research/mainline-kernel-inventory.md`. Proof: committed inventory diff.
       Inventory records ADC/PWM and crypto as non-goals (no shipped consumer) and power key, thermal, audio and Wi-Fi as ported.
 
