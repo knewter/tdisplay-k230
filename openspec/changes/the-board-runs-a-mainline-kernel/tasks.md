@@ -1489,16 +1489,22 @@ Independent source/actual host/full physical/parser/recovery-limit/publication r
 
 ## 5v. Driver-owned display clocks (fix candidate)
 
-- [ ] 5v.1 List the display AHB/AXI/DPIP gates on `vo` and AHB/CFG/REF on `dsi`
+- [x] 5v.1 List the display AHB/AXI/DPIP gates on `vo` and AHB/CFG/REF on `dsi`
       and enable them from probe with `devm_clk_bulk_get_all_enabled()`, so late
       unused-clock cleanup cannot gate them. Host proof: DTB build plus
       `nix build .#kernelMainlineDrmTrialBootFiles .#toplevel-mainline-drm-trial`.
-- [ ] 5v.2 Stage the rebuilt ordinary bundle under the guarded pattern and run ONE
+      Done: `ad627a2b`, plus RTC `c73f6ea2`, GPIO clock-names `f2403a13` and
+      spi2axi `CLK_IS_CRITICAL` `0b327025` found by physical bisection; builds PASS; reviews PASS.
+- [x] 5v.2 Stage the rebuilt ordinary bundle under the guarded pattern and run ONE
       passive180s ordinary capture with the same quiet policy that reproducibly
       stopped in 5r/5t/5u. Command:
       `python3 tools/mainline-drm-system-trial.py begin --wait-initramfs-in-initcall --without-boot-markers --bundle BUNDLE --manifest PRIVATE_MANIFEST --normal-report PRIVATE_NORMAL --state NEW_PRIVATE_STATE --log NEW_PRIVATE_LOG --result NEW_PRIVATE_RESULT`.
       Pass needs panel prepare completion, systemd progress beyond the DCS query
       and the controller's qualified login/prompt; record camera stills of the panel.
+      [Clock-ownership evidence](../../../docs/evidence/mainline-clock-ownership-2026-10-06/README.md):
+      the quiet SBI-only policy needs a separate variant build, so the plain ordinary
+      policy was used. Final `0b327025` bundle reached `candidate-ready-qualified-ordinary-init`
+      with normal unused-clock cleanup; recovery verified. Camera showed only the boot splash.
 - [ ] 5v.3 Review, land/push, inspect CI/published revision. A pass makes task
       5b.5 (ordinary root, deliberate touch) the next step; a fail returns to
       the clk_ignore_unused/pd_ignore_unused ablation.
