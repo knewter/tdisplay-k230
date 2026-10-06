@@ -23,6 +23,13 @@
 	clock-names = "core", "bus", "axi", "block", "timer";
 };
 
+// The RTC sits in the PMU block behind the PMU APB gate, which mainline
+// otherwise gates as unused; the RTC driver enables it from probe.
+&rtc {
+	clocks = <&sysclk K230_PMU_APB_GATE>;
+	clock-names = "pclk";
+};
+
 // Mainline's k230.dtsi currently has no display or I2C controller nodes.
 // Register ranges, VO/DSI IRQ, and I2C3 range/IRQ follow the pinned vendor
 // k230.dtsi (7d4e1f444f461dbe3833bd99a4640e7b6c2cd529). The K230 mainline
