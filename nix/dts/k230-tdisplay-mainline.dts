@@ -107,7 +107,11 @@
 		gpio0: gpio@9140b000 {
 			compatible = "canaan,k230-apb-gpio";
 			reg = <0x0 0x9140b000 0x0 0x1000>;
-			clocks = <&sysclk K230_LS_GPIO_APB_GATE>;
+			// gpio-k230 requests these by name; unnamed they are
+			// ignored and unused-clock cleanup gates the bus.
+			clocks = <&sysclk K230_LS_GPIO_APB_GATE>,
+				 <&sysclk K230_LS_GPIO_DEBOUNCE_GATE>;
+			clock-names = "bus", "db";
 			resets = <&rst RST_GPIO_APB>;
 			status = "disabled";
 			#address-cells = <1>;
@@ -160,7 +164,11 @@
 		gpio1: gpio@9140c000 {
 			compatible = "canaan,k230-apb-gpio";
 			reg = <0x0 0x9140c000 0x0 0x1000>;
-			clocks = <&sysclk K230_LS_GPIO_APB_GATE>;
+			// gpio-k230 requests these by name; unnamed they are
+			// ignored and unused-clock cleanup gates the bus.
+			clocks = <&sysclk K230_LS_GPIO_APB_GATE>,
+				 <&sysclk K230_LS_GPIO_DEBOUNCE_GATE>;
+			clock-names = "bus", "db";
 			resets = <&rst RST_GPIO_APB>;
 			status = "disabled";
 			#address-cells = <1>;
@@ -279,9 +287,9 @@
 		// the vendor k230.dtsi (`rtc@0x91000c00`, no status property
 		// there, so enabled by default -- mainline's k230.dtsi has no
 		// such node at all yet, hence adding it here). The driver
-		// (nix/patches/mainline/rtc-k230.c) calls neither
-		// devm_clk_get() nor devm_reset_control_get() anywhere, so no
-		// clocks/resets property is needed for probe to succeed.
+		// (nix/patches/mainline/rtc-k230.c) takes an optional "pclk", so
+		// probe succeeds here without one; the DRM DT supplies the PMU
+		// APB gate so unused-clock cleanup cannot gate it.
 		rtc: rtc@91000c00 {
 			compatible = "canaan,k230-rtc";
 			reg = <0x0 0x91000c00 0x0 0x100>;

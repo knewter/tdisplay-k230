@@ -23,6 +23,13 @@
 	clock-names = "core", "bus", "axi", "block", "timer";
 };
 
+// The RTC sits in the PMU block behind the PMU APB gate, which mainline
+// otherwise gates as unused; the RTC driver enables it from probe.
+&rtc {
+	clocks = <&sysclk K230_PMU_APB_GATE>;
+	clock-names = "pclk";
+};
+
 // Mainline's k230.dtsi currently has no display or I2C controller nodes.
 // Register ranges, VO/DSI IRQ, and I2C3 range/IRQ follow the pinned vendor
 // k230.dtsi (7d4e1f444f461dbe3833bd99a4640e7b6c2cd529). The K230 mainline
@@ -74,6 +81,13 @@
 			compatible = "canaan,k230-vo";
 			reg = <0x0 0x90840000 0x0 0x10000>;
 			interrupts = <133 IRQ_TYPE_LEVEL_HIGH>;
+			// Mainline gate ops let unused-clock cleanup turn these off;
+			// the VO and DSI drivers must own them. Same 0x74 gates as
+			// the vendor disp_hclk/disp_aclk/dpipclk tree.
+			clocks = <&sysclk K230_DISPLAY_AHB_GATE>,
+				 <&sysclk K230_DISPLAY_AXI_GATE>,
+				 <&sysclk K230_DISPLAY_DPIP_GATE>;
+			clock-names = "ahb", "axi", "pixel";
 			status = "okay";
 			background = <0xffffff>;
 			vth_line = <10>;
@@ -93,6 +107,10 @@
 			reg = <0x0 0x90850000 0x0 0x1000>;
 			#address-cells = <1>;
 			#size-cells = <0>;
+			clocks = <&sysclk K230_DISPLAY_AHB_GATE>,
+				 <&sysclk K230_DISPLAY_CFG_GATE>,
+				 <&sysclk K230_DISPLAY_REF_GATE>;
+			clock-names = "ahb", "cfg", "ref";
 			status = "okay";
 
 			ports {

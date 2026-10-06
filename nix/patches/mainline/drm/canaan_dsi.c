@@ -802,9 +802,15 @@ static const struct component_ops canaan_dsi_ops = {
 static int canaan_dsi_probe(struct platform_device *pdev)
 {
 	struct device *dev = &pdev->dev;
+	struct clk_bulk_data *clks;
 	struct canaan_dsi *dsi;
 	struct resource *res;
 	int ret;
+
+	/* Hold the display gates before late unused-clock cleanup runs. */
+	ret = devm_clk_bulk_get_all_enabled(dev, &clks);
+	if (ret < 0)
+		return dev_err_probe(dev, ret, "failed to enable clocks\n");
 
 	dsi = devm_kzalloc(dev, sizeof(*dsi), GFP_KERNEL);
 	if (!dsi)

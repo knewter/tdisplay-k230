@@ -173,10 +173,16 @@ static const struct rtc_class_ops k230_rtc_ops = {
 static int k230_rtc_probe(struct platform_device *pdev)
 {
 	struct k230_rtc *rtc;
+	struct clk *pclk;
 
 	rtc = devm_kzalloc(&pdev->dev, sizeof(*rtc), GFP_KERNEL);
 	if (!rtc)
 		return -ENOMEM;
+
+	/* Keep the PMU APB gate on past late unused-clock cleanup. */
+	pclk = devm_clk_get_optional_enabled(&pdev->dev, "pclk");
+	if (IS_ERR(pclk))
+		return dev_err_probe(&pdev->dev, PTR_ERR(pclk), "failed to enable pclk\n");
 
 	rtc->base = devm_platform_ioremap_resource(pdev, 0);
 	if (IS_ERR(rtc->base))
