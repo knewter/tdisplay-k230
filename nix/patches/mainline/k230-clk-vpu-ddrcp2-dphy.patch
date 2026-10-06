@@ -1,0 +1,26 @@
+--- a/drivers/clk/clk-k230.c
++++ b/drivers/clk/clk-k230.c
+@@ -1437,9 +1437,10 @@
+ 		     0xC, 5, 0, 0,
+ 		     &vpu_axi_src_rate.clk.hw);
+ 
++/* The display controller's DDR reads stop when this port clock is gated. */
+ K230_CLK_GATE_FORMAT(vpu_ddrcp2_gate,
+ 		     K230_VPU_DDRCP2_GATE,
+-		     0x60, 5, 0, 0,
++		     0x60, 5, CLK_IS_CRITICAL, 0,
+ 		     &vpu_axi_src_rate.clk.hw);
+ 
+ K230_CLK_GATE_FORMAT(vpu_cfg_gate,
+@@ -1520,9 +1521,10 @@
+ 		     false, 0,
+ 		     &usb_100m_gate.clk.hw);
+ 
++/* Vendor dphy_test_clk gates at 0x104 bit 0, beside this clock's divider. */
+ K230_CLK_GATE_FORMAT(dphy_dft_gate,
+ 		     K230_DPHY_DFT_GATE,
+-		     0x100, 0, 0, 0,
++		     0x104, 0, 0, 0,
+ 		     &pll0.hw);
+ 
+ K230_CLK_RATE_FORMAT(dphy_dft_rate,

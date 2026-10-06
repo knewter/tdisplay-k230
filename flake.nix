@@ -228,6 +228,19 @@
             inherit (pkgsCross) applyPatches lib;
           });
         };
+        # Full coherent shell on the mainline DRM kernel: the daily system with
+        # only the kernel swapped and the vendor-tree Wi-Fi module removed.
+        # Vendor-only drivers (PMU power key, audio, thermal, Wi-Fi) are absent.
+        k230-mainline-drm-shell = self.nixosConfigurations.k230-coherent-shell.extendModules {
+          specialArgs.k230Kernel = self.nixosConfigurations.k230-mainline-drm-trial.config.boot.kernelPackages;
+          modules = [
+            {
+              boot.extraModulePackages = nixpkgs.lib.mkForce [ ];
+              boot.kernelModules = nixpkgs.lib.mkForce [ ];
+              systemd.services.k230-wifi.enable = nixpkgs.lib.mkForce false;
+            }
+          ];
+        };
         # Getter-only autonomous UART observation; no existing variant changes.
         k230-mainline-uart-observer = self.nixosConfigurations.k230-mainline-drm-trial.extendModules {
           modules = [ ./nix/mainline-uart-observer/module.nix ];
@@ -545,6 +558,12 @@
         # Complete matching trial boot path; the Image+DTB-only bundle above
         # remains available for artifact inspection.
         toplevel-mainline-drm-trial = self.nixosConfigurations.k230-mainline-drm-trial.config.system.build.toplevel;
+        toplevel-mainline-drm-shell = self.nixosConfigurations.k230-mainline-drm-shell.config.system.build.toplevel;
+        kernelMainlineDrmShellTrialBootFiles = pkgs.callPackage ./nix/mainline-drm-trial.nix {
+          cfg = self.nixosConfigurations.k230-mainline-drm-shell.config;
+          kernel = self.nixosConfigurations.k230-mainline-drm-shell.config.boot.kernelPackages.kernel;
+          deviceTree = self.packages.${buildSystem}.deviceTreeMainlineDrm;
+        };
         kernelMainlineDrmTrialBootFiles = pkgs.callPackage ./nix/mainline-drm-trial.nix {
           cfg = self.nixosConfigurations.k230-mainline-drm-trial.config;
           kernel = self.nixosConfigurations.k230-mainline-drm-trial.config.boot.kernelPackages.kernel;
