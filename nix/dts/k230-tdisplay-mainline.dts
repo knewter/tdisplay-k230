@@ -107,7 +107,11 @@
 		gpio0: gpio@9140b000 {
 			compatible = "canaan,k230-apb-gpio";
 			reg = <0x0 0x9140b000 0x0 0x1000>;
-			clocks = <&sysclk K230_LS_GPIO_APB_GATE>;
+			// gpio-k230 requests these by name; unnamed they are
+			// ignored and unused-clock cleanup gates the bus.
+			clocks = <&sysclk K230_LS_GPIO_APB_GATE>,
+				 <&sysclk K230_LS_GPIO_DEBOUNCE_GATE>;
+			clock-names = "bus", "db";
 			resets = <&rst RST_GPIO_APB>;
 			status = "disabled";
 			#address-cells = <1>;
@@ -160,7 +164,11 @@
 		gpio1: gpio@9140c000 {
 			compatible = "canaan,k230-apb-gpio";
 			reg = <0x0 0x9140c000 0x0 0x1000>;
-			clocks = <&sysclk K230_LS_GPIO_APB_GATE>;
+			// gpio-k230 requests these by name; unnamed they are
+			// ignored and unused-clock cleanup gates the bus.
+			clocks = <&sysclk K230_LS_GPIO_APB_GATE>,
+				 <&sysclk K230_LS_GPIO_DEBOUNCE_GATE>;
+			clock-names = "bus", "db";
 			resets = <&rst RST_GPIO_APB>;
 			status = "disabled";
 			#address-cells = <1>;
