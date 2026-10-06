@@ -1617,6 +1617,10 @@ DATA e3e93fb0e742aa910f90df9dd611c5923f3f8d63cd3b063cab2476c842bcf51a docs/evide
 DATA 4af73a4e81494f5be1b8d207f67721345bc565b41264353d709bc987465f0bd8 docs/evidence/boot-verification/2026-10-01/runtime-home-panel.jpg
 DATA ba5e8a4f411fad3bc8b2ae0bba9aeaea5c501ebdd2d51f5dd3f8c387af89dc53 docs/evidence/boot-verification/2026-10-01/normal-candidate2-late-panel.jpg
 DATA 7d9faa8d4dda52bbc207f2a4ba798c1688f3fbcc7e09728ca0072d7bbd02b07b docs/evidence/mainline-display/physical-2026-10-01/panel-boot-text.jpg
+DATA c227b66f47d51885f41bb7a13b1da3cafb57355cd1fefa448399e775086f6491 docs/evidence/mainline-full-shell-2026-10-06/console-after-ddrcp2-fix.jpg
+DATA 7887bc93e8d1ea584a164af871391bb5236306453972a3c324315cd148b3c02b docs/evidence/mainline-full-shell-2026-10-06/full-shell-mainline-top-vs-normal-bottom.jpg
+DATA dcc114f12b60c087ac0663b8cf1109c2b21bd025bb333b872b596447baa1f7c0 docs/evidence/mainline-full-shell-2026-10-06/panel-purple-background.jpg
+DATA ee179c2bd5acb9061a3af48f53535a44026d5e9b9771628b0a77218b13b91e23 docs/evidence/mainline-full-shell-2026-10-06/touch-finger.jpg
 DATA 5405de961a963cd1446cb7f42382329048367cdbc9866a248c4445666c6a6bbd docs/evidence/mainline-init-exec-transition/camera-repeat-2026-10-05/panel-dark-candidate-120s.jpg
 DATA 31c010bb635bc85bdd6980d8fe602098d4f83ac52a9d36a1c011b50f90fd1b68 docs/evidence/mainline-init-exec-transition/camera-repeat-2026-10-05/panel-normal-shutdown-text-21s.jpg
 DATA c2d7bd67952385a6729cb1ade6fae9ef1169f585461deea15def08c26f8b4698 docs/evidence/mainline-restart/physical-minimal-2026-10-02/home-panel.jpg
@@ -2641,6 +2645,10 @@ Native board captures, camera photograph and headless QEMU screenshots; commands
 | `docs/evidence/home-widget-design/closeout-2026-10-01/qemu/home-fluid-edge-indicator.png` | 197139 | DATA | `4a2e198e3085b10d99599fb9e4949441b2f13b668baf2cdfd5c4591b76f7ea6a` |
 | `docs/evidence/home-widget-design/closeout-2026-10-01/qemu/home-fluid-last-edge-new-page.png` | 193391 | DATA | `09f2c39d77fa5ef7146bc3c750bca8df3c2235ab035f4d517ba50f7b3dcabe21` |
 | `docs/evidence/home-widget-design/closeout-2026-10-01/qemu/home-fluid-new-page-drop.png` | 192621 | DATA | `5007dedc8ec8342188b82d2b4f5c779113f2e4183915ba43f7c12411c9210860` |
+| `docs/evidence/mainline-full-shell-2026-10-06/console-after-ddrcp2-fix.jpg` | 18462 | DATA | `c227b66f47d51885f41bb7a13b1da3cafb57355cd1fefa448399e775086f6491` |
+| `docs/evidence/mainline-full-shell-2026-10-06/full-shell-mainline-top-vs-normal-bottom.jpg` | 47032 | DATA | `7887bc93e8d1ea584a164af871391bb5236306453972a3c324315cd148b3c02b` |
+| `docs/evidence/mainline-full-shell-2026-10-06/panel-purple-background.jpg` | 22447 | DATA | `dcc114f12b60c087ac0663b8cf1109c2b21bd025bb333b872b596447baa1f7c0` |
+| `docs/evidence/mainline-full-shell-2026-10-06/touch-finger.jpg` | 24638 | DATA | `ee179c2bd5acb9061a3af48f53535a44026d5e9b9771628b0a77218b13b91e23` |
 | `docs/evidence/mainline-init-exec-transition/camera-repeat-2026-10-05/panel-dark-candidate-120s.jpg` | 21563 | DATA | `5405de961a963cd1446cb7f42382329048367cdbc9866a248c4445666c6a6bbd` |
 | `docs/evidence/mainline-init-exec-transition/camera-repeat-2026-10-05/panel-normal-shutdown-text-21s.jpg` | 31121 | DATA | `31c010bb635bc85bdd6980d8fe602098d4f83ac52a9d36a1c011b50f90fd1b68` |
 | `docs/evidence/mainline-restart/physical-minimal-2026-10-02/home-panel.jpg` | 134465 | DATA | `c2d7bd67952385a6729cb1ade6fae9ef1169f585461deea15def08c26f8b4698` |

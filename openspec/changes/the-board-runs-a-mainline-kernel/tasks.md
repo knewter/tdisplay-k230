@@ -244,8 +244,9 @@ that milestone 1's methodology extends.
 - [x] 5b.4a Add a separately named boot-files output pairing only the candidate kernel image and DTB; it does not change any normal boot/default output.
 - [x] 5b.4b Build and inspect that output with `nix build .#kernelMainlineDrmBootFiles --print-out-paths`; `/nix/store/bpbr6vldkm1y48k6wrdh7s6yv5szqa0k-k230-mainline-drm-boot-files` contains only the candidate Image and DTB, byte-identical to the derivation outputs (`docs/evidence/mainline-display-artifact-inspection.log`).
 - [x] 5b.4c Prepare a matching opt-in console trial system and boot bundle with its own initrd, volatile bootargs, closure inventory and registration; document offline root staging and manual U-Boot trial/restoration. Host proof: `nix build .#kernelMainlineDrmTrialBootFiles --no-link --print-out-paths --max-jobs 1 --cores 4` and `nix shell --inputs-from . nixpkgs#dtc --command python3 tools/mainline-drm-trial-inspect.py <output-path>`. The built bundle is `/nix/store/9v5jwcg97kp96jfj6nll4a4yixxzqh2x-k230-mainline-drm-trial-boot-files`; see `docs/evidence/mainline-display-boot-preparation.md` and its log. This does not stage a physical card or satisfy 5b.5.
-- [ ] 5b.5 After staging a compatible usable root path following `docs/evidence/mainline-display-boot-preparation.md` (the built `kernelMainlineDrmBootFiles` contains only the Image and DTB, with no initrd or root filesystem), reserve the board and perform a recoverable manual U-Boot trial. Capture the serial log with `flock /tmp/k230-board.lock python3 tools/console.py /dev/ttyACM0 --wait=10`, plus a panel photograph and deliberate touch interaction. The candidate's display power-domain behavior remains UNVERIFIED until observed on hardware; the locally forward-ported provider planned in group 5c does not turn a host build into physical proof.
+- [x] 5b.5 After staging a compatible usable root path following `docs/evidence/mainline-display-boot-preparation.md` (the built `kernelMainlineDrmBootFiles` contains only the Image and DTB, with no initrd or root filesystem), reserve the board and perform a recoverable manual U-Boot trial. Capture the serial log with `flock /tmp/k230-board.lock python3 tools/console.py /dev/ttyACM0 --wait=10`, plus a panel photograph and deliberate touch interaction. The candidate's display power-domain behavior remains UNVERIFIED until observed on hardware; the locally forward-ported provider planned in group 5c does not turn a host build into physical proof.
       Next current-image ordinary comparison: [bounded handoff](../../../docs/research/mainline-autonomous-to-ordinary-init-next-2026-10-05.md); existing begin selectors, no new build. Fresh recovery/actual preparation passed; [physical capture](../../../docs/evidence/mainline-system-trial/current-p2-ordinary-physical-2026-10-05/README.md) reached mounted sysroot/starting closure lookup but no login in 180s. Subsequent NEW [recovery](../../../docs/evidence/mainline-system-trial/current-p2-ordinary-physical-2026-10-05/recovery.json) passed; group 5o plans manager logging.
+      [Full shell, display and touch evidence](../../../docs/evidence/mainline-full-shell-2026-10-06/README.md): the guarded system-trial controller replaced the manual U-Boot/console.py procedure. Ordinary root qualified (`candidate-ready-qualified-ordinary-init`) for the console and full coherent-shell variants; panel photographed (console, then Home matching the normal system); deliberate real-finger touch recorded by evtest (533 MT events) with camera. Display power domain observed on (`disp_domain` on, `display-subsystem` active). Limits: controller touch retrieval timed out (counts from raw capture); touch inside sway, audio, power key and Wi-Fi not verified.
 - [x] 5b.6 Explicitly scope the display power-domain provider gap: pinned mainline has no `sysctl_power`/`K230_PM_DOMAIN_DISP` provider, so the initial host candidate omitted that unsupported phandle (see `docs/evidence/mainline-display-dtb.md`). Group 5c now adds an isolated local provider; physical display power remains UNVERIFIED.
 
 ## 5c. Keep the optional DRM display domain powered
@@ -1484,8 +1485,9 @@ Independent source/actual host/full physical/parser/recovery-limit/publication r
       with `ffmpeg -f v4l2 -input_format mjpeg -video_size 1280x720 -i /dev/video0 -c copy PRIVATE_VIDEO`.
       Camera evidence does not identify cause; task5b.5 remains open.
       [Camera repeat](../../../docs/evidence/mainline-init-exec-transition/camera-repeat-2026-10-05/README.md): UART identical to 5t; camera inconclusive (candidate never lit the panel); exposed panel-init/unused-clock-cleanup timing pattern. NEW reset PENDING.
-- [ ] 5u.3 Independently review, land/push and inspect exact CI/published revision;
+- [x] 5u.3 Independently review, land/push and inspect exact CI/published revision;
       plan the next probe only from the classified outcome.
+      Landed with 5v; CI 37416968692 deploy PASS, page serves 1a03dfcd. Next probe was the 5v clock work.
 
 ## 5v. Driver-owned display clocks (fix candidate)
 
@@ -1511,3 +1513,13 @@ Independent source/actual host/full physical/parser/recovery-limit/publication r
       Landed on master; CI 37416968692 build/deploy PASS; work page serves 1a03dfcd and the
       clock-ownership evidence page returns 200 (CI for 0aa88740/91da9557/4bb0170c failed on missing
       blob-inventory rows for the 5u stills, fixed in 1a03dfcd). Next: task 5b.5.
+
+## 5w. Display output and full shell on mainline
+
+- [x] 5w.1 Keep the display DDR port clock (`vpu_ddrcp2` CLK_IS_CRITICAL) and fix the
+      aliased `dphy_dft` gate; camera-judged bisection over a full live `clk_summary`.
+      Proof: console visible on the panel with normal cleanup ([evidence](../../../docs/evidence/mainline-full-shell-2026-10-06/README.md)).
+- [x] 5w.2 Add `k230-mainline-drm-shell` and fix canaan DRM fops `FOP_UNSIGNED_OFFSET`
+      so userspace can open `/dev/dri/card0`. Proof: qualified full-shell boot with
+      sway active and the Home UI on the panel; recovery verified.
+- [ ] 5w.3 Review, land/push and inspect exact CI/published revision.
