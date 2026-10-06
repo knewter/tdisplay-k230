@@ -234,11 +234,18 @@
         k230-mainline-drm-shell = self.nixosConfigurations.k230-coherent-shell.extendModules {
           specialArgs.k230Kernel = self.nixosConfigurations.k230-mainline-drm-trial.config.boot.kernelPackages;
           modules = [
-            {
-              boot.extraModulePackages = nixpkgs.lib.mkForce [ ];
-              boot.kernelModules = nixpkgs.lib.mkForce [ ];
-              systemd.services.k230-wifi.enable = nixpkgs.lib.mkForce false;
-            }
+            ({ config, pkgs, ... }: {
+              # The RTL8189FTV module with the 7.3 port patch, built against
+              # this variant's own kernel (CFG80211=m); same load and service
+              # as the vendor-kernel system.
+              boot.extraModulePackages = nixpkgs.lib.mkForce [
+                (pkgs.callPackage ./nix/k230-wifi-driver.nix {
+                  kernel = config.boot.kernelPackages.kernel;
+                  extraPatches = [ ./nix/patches/mainline/rtl8189fs-mainline-v7.3-rc5.patch ];
+                })
+              ];
+              boot.kernelModules = nixpkgs.lib.mkForce [ "8189fs" ];
+            })
           ];
         };
         # Getter-only autonomous UART observation; no existing variant changes.
@@ -490,18 +497,11 @@
         # the plain console kernel's unpatched driver only claims
         # core/bus, same as before this task.
         #
-        # UNVERIFIED as a successful build: a manual out-of-tree `make`
-        # against this exact dev tree (docs/evidence/mainline-wifi-port/
-        # module-compile.json) hit a real blocker this task's source
-        # patches do not close -- struct cfg80211_ops callback signatures
-        # (net_device* -> wireless_dev* parameter drift) that need a real
-        # port, not a rename -- on top of CONFIG_CFG80211 not being enabled
-        # in any mainline kernel build yet (added to nix/kernel-mainline.nix
-        # structuredExtraConfig as a candidate, itself unbuilt). This output
-        # exists so `nix build .#k230-wifi-driver-mainline` is the one true
-        # reproduction path for whoever picks up the cfg80211_ops follow-up;
-        # it is expected to fail exactly like the committed evidence until
-        # that port lands. See docs/research/mainline-wifi-port.md.
+        # Built 2026-10-06 against the CFG80211=m DRM kernel (see
+        # docs/evidence/mainline-wifi-port/): the 7.3 port patch (API drift
+        # plus the cfg80211_ops signature port) compiles and passes modpost.
+        # k230-mainline-drm-shell loads the same module; binding on the
+        # board is a separate physical check.
         k230-wifi-driver-mainline = pkgsCross.callPackage ./nix/k230-wifi-driver.nix {
           kernel = self.packages.${buildSystem}.kernelMainlineDrm;
           extraPatches = [ ./nix/patches/mainline/rtl8189fs-mainline-v7.3-rc5.patch ];
