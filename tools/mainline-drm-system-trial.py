@@ -189,7 +189,7 @@ def prepare(bundle: Path, manifest: Path, normal_report: Path, *, wait_initramfs
     p["kernel"] = str((Path(p["system"]) / "kernel").resolve().parent)
     # NixOS stage-2 init execs systemd, so /proc/1/exe is the system's systemd.
     p["pid1"] = str((Path(p["system"]) / "systemd").resolve() / "lib/systemd/systemd")
-    for tool in ("sh", "cat", "id", "readlink", "uname", "findmnt", "systemctl", "sha256sum", "timeout", "evtest"):
+    for tool in ("sh", "cat", "id", "readlink", "uname", "findmnt", "systemctl", "sha256sum", "timeout", "evtest", "awk"):
         if not os.access(Path(p["system"]) / "sw/bin" / tool, os.X_OK):
             raise ValueError("candidate lacks a required shell diagnostic tool")
     # Original helper remains unchanged. Both protected phases reject a pending
@@ -672,6 +672,70 @@ def parse_touch(output: bytes) -> dict:
     return {"down": down, "position_change": moved, "up": up, "syn_after_up": syn_after_up, "complete_contact": complete, "event_rows": len(rows), "coordinate_mapping": "UNVERIFIED"}
 
 
+# Bounded on-board summary: 3.1 replaces retrieval of the whole (~240 KB for a
+# real 30 s session) evtest log with one framed K230_TOUCH_SUMMARY record,
+# computed on the candidate by awk from the same log file capture_command
+# already wrote. The raw log stays on the board; only the summary crosses the
+# 115200-baud link, so retrieval no longer scales with touch length. The awk
+# state machine mirrors parse_touch's per-slot semantics (reset on each new
+# ABS_MT_TRACKING_ID, position recorded only while active, a release confirmed
+# only by a later SYN_REPORT) so complete_contact means the same thing here as
+# it does there.
+TOUCH_SUMMARY_FIELDS = ("down", "up", "pos_x", "pos_y", "syn", "tracking_release", "first_down_line", "last_up_line", "rows")
+
+
+def touch_summary_command(token: str, system: str) -> str:
+    rd._validate_token(token)
+    b = system + "/sw/bin"
+    awk_src = (
+        "BEGIN{slot=0;down=0;up=0;px=0;py=0;sn=0;tr=0;fd=0;lu=0;rw=0}"
+        "{"
+        "if($0~/^Event: time [0-9]+\\.[0-9]+, type [0-9]+ \\(EV_ABS\\), code [0-9]+ \\(ABS_MT_SLOT\\), value -?[0-9]+$/){t=1}"
+        "else if($0~/^Event: time [0-9]+\\.[0-9]+, type [0-9]+ \\(EV_ABS\\), code [0-9]+ \\(ABS_MT_TRACKING_ID\\), value -?[0-9]+$/){t=2}"
+        "else if($0~/^Event: time [0-9]+\\.[0-9]+, type [0-9]+ \\(EV_ABS\\), code [0-9]+ \\(ABS_MT_POSITION_X\\), value -?[0-9]+$/){t=3}"
+        "else if($0~/^Event: time [0-9]+\\.[0-9]+, type [0-9]+ \\(EV_ABS\\), code [0-9]+ \\(ABS_MT_POSITION_Y\\), value -?[0-9]+$/){t=4}"
+        "else if($0~/^Event: time [0-9]+\\.[0-9]+, type [0-9]+ \\(EV_SYN\\), code [0-9]+ \\(SYN_REPORT\\), value -?[0-9]+$/){t=5}"
+        "else if($0~/^Event: time [0-9]+\\.[0-9]+, -+ SYN_REPORT -+$/){t=5}"
+        "else{next}"
+        "rw++;"
+        "if(t==1){v=$NF+0;if(v>=0)slot=v;next}"
+        "if(t==2){v=$NF+0;if(v>=0){active[slot]=1;down++;if(fd==0)fd=NR}else if(active[slot]==1){active[slot]=0;released[slot]=1;up++;lu=NR};next}"
+        "if(t==3){if(active[slot]==1){v=$NF+0;if(!(v in sx)){sx[v]=1;px++}};next}"
+        "if(t==4){if(active[slot]==1){v=$NF+0;if(!(v in sz)){sz[v]=1;py++}};next}"
+        "if(t==5){sn++;for(s in active){if(released[s]==1){tr++;released[s]=0}};next}"
+        "}"
+        f'END{{printf "K230_TOUCH_SUMMARY {token} down=%d up=%d pos_x=%d pos_y=%d syn=%d tracking_release=%d first_down_line=%d last_up_line=%d rows=%d\\n",down,up,px,py,sn,tr,fd,lu,rw}}'
+    )
+    command = (f"printf 'K230_TOUCH_BEGIN {token}\\n'; "
+               f"{shlex.quote(b + '/timeout')} 5s {shlex.quote(b + '/awk')} {shlex.quote(awk_src)} /run/k230-mainline-touch-{token}.log; "
+               f"_rc=$?; printf 'K230_TOUCH_END {token} RC=%s\\n' \"$_rc\"")
+    if len(command.encode()) >= 4000:
+        raise ValueError("touch summary command exceeds serial line bound")
+    return command
+
+
+def touch_summary_record(line: bytes, token: str) -> dict | None:
+    """Only one complete, canonically-formatted K230_TOUCH_SUMMARY record for this token."""
+    rd._validate_token(token)
+    pattern = (rb"K230_TOUCH_SUMMARY " + token.encode() + b" "
+               + b" ".join(name.encode() + rb"=(0|[1-9][0-9]*)" for name in TOUCH_SUMMARY_FIELDS))
+    match = re.fullmatch(pattern, line)
+    if not match:
+        return None
+    return {name: int(value) for name, value in zip(TOUCH_SUMMARY_FIELDS, match.groups())}
+
+
+def summary_complete_contact(counts: dict) -> dict:
+    down = counts["down"] > 0
+    up = counts["up"] > 0
+    position_change = counts["pos_x"] >= 2 or counts["pos_y"] >= 2
+    syn_after_up = counts["tracking_release"] > 0
+    complete = down and position_change and up and syn_after_up
+    return {"down": down, "position_change": position_change, "up": up, "syn_after_up": syn_after_up,
+            "complete_contact": complete, "event_rows": counts["rows"], "coordinate_mapping": "UNVERIFIED",
+            "summary_counts": counts}
+
+
 def touch(session, p: dict) -> dict:
     token = uuid.uuid4().hex
     device = exchange(session, token, "device", device_command(token, p["system"]))
@@ -682,7 +746,7 @@ def touch(session, p: dict) -> dict:
         raise Unknown("touch capture failed; no file retrieval attempted")
     session.buffer = b""
     session.system_stage = "touch-retrieval"
-    command = f"printf 'K230_TOUCH_BEGIN {token}\\n'; {shlex.quote(p['system'] + '/sw/bin/cat')} /run/k230-mainline-touch-{token}.log; _rc=$?; printf 'K230_TOUCH_END {token} RC=%s\\n' \"$_rc\""
+    command = touch_summary_command(token, p["system"])
     session.write(command.encode() + b"\r")
     deadline = time.monotonic() + 20
     data = b""
@@ -696,7 +760,13 @@ def touch(session, p: dict) -> dict:
         if len(matches) == 1 and prompt(text[matches[0].end():]):
             if len(re.findall(rb"^K230_TOUCH_(?:BEGIN|END) " + token.encode() + rb"(?: |\n)", text, re.M)) != 2:
                 break
-            return {"device": device, "capture_rc": int(result["capture_rc"]), "events": parse_touch(matches[0].group(1)), "provenance": "operator-declared-real-glass; serial events alone cannot prove provenance"}
+            lines = [ln for ln in matches[0].group(1).split(b"\n") if ln]
+            if len(lines) != 1:
+                raise Unknown("touch summary missing or duplicate")
+            counts = touch_summary_record(lines[0], token)
+            if counts is None or (counts["down"] and counts["up"] and counts["first_down_line"] > counts["last_up_line"]):
+                raise Unknown("touch summary malformed")
+            return {"device": device, "capture_rc": int(result["capture_rc"]), "events": summary_complete_contact(counts), "provenance": "operator-declared-real-glass; serial events alone cannot prove provenance"}
     raise Unknown("touch retrieval completion unverified")
 
 

@@ -60,6 +60,15 @@ def touch_rows(move=True, up=True, sync=True):
     return out
 
 
+# The counts the real board-side awk (trial.touch_summary_command) computes for
+# the default touch_rows() (move=True, up=True, sync=True) capture.
+def touch_summary_bytes(token, down=1, up=1, pos_x=2, pos_y=1, syn=3, tracking_release=1,
+                        first_down_line=1, last_up_line=7, rows=8):
+    return (f"K230_TOUCH_SUMMARY {token} down={down} up={up} pos_x={pos_x} pos_y={pos_y} syn={syn} "
+            f"tracking_release={tracking_release} first_down_line={first_down_line} "
+            f"last_up_line={last_up_line} rows={rows}\n").encode()
+
+
 class Clock:
     def __init__(self): self.value = 0
     def __call__(self): self.value += 0.1; return self.value
@@ -93,7 +102,7 @@ class FlowSession(PumpSession):
                 self.chunks.append(b"U-Boot SPL 2022.10\nLinux version 6.6.36 test\nnixos login: root\n[root@nixos:~]# ")
         elif text.startswith("printf 'K230_TOUCH_BEGIN"):
             token = re.search(r"K230_TOUCH_BEGIN ([a-f0-9]{32})", text)[1]
-            self.chunks.append(f"K230_TOUCH_BEGIN {token}\n".encode() + touch_rows() + f"K230_TOUCH_END {token} RC=0\n[root@nixos:~]# ".encode())
+            self.chunks.append(f"K230_TOUCH_BEGIN {token}\n".encode() + touch_summary_bytes(token) + f"K230_TOUCH_END {token} RC=0\n[root@nixos:~]# ".encode())
         elif data == b"\r": self.chunks.append(b"[root@nixos:~]# ")
     def line(self, command, interrupt=True):
         self.buffer = b""; self.write(command.encode() + b"\r")

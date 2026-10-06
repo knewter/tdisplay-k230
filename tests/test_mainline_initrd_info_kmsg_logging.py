@@ -60,7 +60,9 @@ class KmsgTests(unittest.TestCase):
         source=subprocess.run(['git','show','b90a5318:tools/mainline-drm-system-trial.py'],cwd=ROOT,check=True,text=True,capture_output=True).stdout
         def functions(src):return{n.name:ast.dump(n,include_attributes=False)for n in ast.parse(src).body if isinstance(n,ast.FunctionDef)}
         old,new=functions(source),functions(Path(t.__file__).read_text())
-        changed={'initrd_logging_controls','diagnostic_controls','ordinary_bootargs','prepare','volatile_bootargs_command','run','main'}
+        # touch: task 3.1 (bounded on-board K230_TOUCH_SUMMARY, see tools/mainline-drm-system-trial.py) replaced
+        # the whole-log evtest retrieval; capture_command and parse_touch are untouched.
+        changed={'initrd_logging_controls','diagnostic_controls','ordinary_bootargs','prepare','volatile_bootargs_command','run','main','touch'}
         for name in old.keys()-changed:self.assertEqual(new[name],old[name],name)
 
     def test_types_dependencies_phases_and_other_modes_fail_before_preparation_output_UART(self):
