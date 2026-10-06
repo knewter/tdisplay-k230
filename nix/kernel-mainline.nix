@@ -148,6 +148,9 @@ buildLinux (args // {
     patches = [
       ./patches/mainline/k230-clk-spi2axi-critical.patch
       ./patches/mainline/k230-clk-vpu-ddrcp2-dphy.patch
+      # Restart handler in the reset controller; without it `reboot` stops
+      # at "Restarting system".
+      ./patches/mainline/k230-restart.patch
     ];
 
     postPatch = ''

@@ -54,10 +54,6 @@ kernelMainline.override (old: {
     src = applyPatches {
       name = "linux-mainline-k230-drm-src";
       src = args.src;
-      # Optional DRM restart and five-clock SD consumer; console is unchanged.
-      patches = [
-        ./patches/mainline/k230-restart.patch
-      ];
 
       postPatch = ''
         cp ${./patches/mainline/k230-power-domains.c} drivers/soc/canaan/k230-power-domains.c
