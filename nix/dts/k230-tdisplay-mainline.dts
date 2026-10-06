@@ -295,6 +295,59 @@
 			reg = <0x0 0x91000c00 0x0 0x100>;
 			status = "okay";
 		};
+
+		// PMU INT0 power key (openspec/changes/
+		// the-mainline-shell-reaches-parity task 4.1). Reg ranges,
+		// compatible string and IRQ number are the same ones this
+		// project's own VENDOR-kernel board file already uses
+		// (nix/dts/k230-tdisplay.dts): the PMU block itself
+		// (0x91000000, 0xc00 bytes -- ending exactly where &rtc
+		// above begins, both inside the same PMU register region)
+		// and the PWR/sysctl_power block (0x91103000, 0x1000 bytes,
+		// matching the vendor k230.dtsi's own sysctl_power@91103000
+		// node). IRQ 175 comes from the vendor driver's own header
+		// comment (nix/patches/k230-pmu-pwrkey.c): "route PMU
+		// KEY_EDGE to CPU IRQ 175", mirroring the RT-Thread PMU
+		// pwrkey driver -- UNVERIFIED against a booted board, same
+		// as every other interrupt number in this file. The driver
+		// (nix/patches/mainline/k230-pmu-pwrkey.c) takes an optional
+		// "pclk" for the PMU APB gate it shares with &rtc above;
+		// claimed directly here (not deferred to the DRM DT) since
+		// the power key is a console-level feature.
+		pmu_pwrkey: pmu-pwrkey@91000000 {
+			compatible = "canaan,k230-pmu-pwrkey";
+			reg = <0x0 0x91000000 0x0 0xc00>,
+			      <0x0 0x91103000 0x0 0x1000>;
+			reg-names = "pmu", "pwr";
+			interrupts = <175 IRQ_TYPE_LEVEL_HIGH>;
+			clocks = <&sysclk K230_PMU_APB_GATE>;
+			clock-names = "pclk";
+			wakeup-source;
+			status = "okay";
+		};
+
+		// Temperature sensor (openspec/changes/
+		// the-mainline-shell-reaches-parity task 7.1). Reg from the
+		// pinned vendor k230.dtsi's own tsensor@91107000 node
+		// (/nix/store/hn11x8zd5linl193d8q0k9k99b46zqbm-linux-xuantie-
+		// k230-src/arch/riscv/boot/dts/canaan/k230.dtsi): no
+		// interrupt there (the driver polls TS_DATA), and the
+		// vendor's "hardlock = <2>" property is a dual-OS RTOS/Linux
+		// register-access mutex with no mainline binding or driver
+		// use, so it is dropped here, same as this file already
+		// drops other vendor-only dual-OS properties. The driver
+		// (nix/patches/mainline/canaan_thermal.c) takes an optional
+		// "ts" clock for the sensor's own rate clock
+		// (K230_SYSCTL_TEMP_SENSOR_RATE, include/dt-bindings/clock/
+		// canaan,k230-clk.h), claimed directly here for the same
+		// unused-clock-cleanup reason as &pmu_pwrkey and &rtc above.
+		tsensor: tsensor@91107000 {
+			compatible = "canaan,k230-tsensor";
+			reg = <0x0 0x91107000 0x0 0x800>;
+			clocks = <&sysclk K230_SYSCTL_TEMP_SENSOR_RATE>;
+			clock-names = "ts";
+			status = "okay";
+		};
 	};
 };
 

@@ -25,8 +25,9 @@
 #             panel-canaan-universal.c, sound/soc/canaan/, drivers/rtc/
 #             rtc-k230.c, drivers/thermal/canaan_thermal.c, drivers/iio/adc/
 #             k230-adc.c, drivers/pwm/pwm-k230.c, drivers/input/misc/
-#             k230-pmu-pwrkey.c, drivers/crypto/canaan/. None of our
-#             display/audio/RTC/power-key/thermal patches have anything to
+#             k230-pmu-pwrkey.c, drivers/crypto/canaan/. RTC, power-key and
+#             thermal are now forward-ported BY this file (see below); our
+#             display/audio/ADC/PWM/crypto patches still have nothing to
 #             patch here -- unchanged by this file.
 #
 # THIS FILE'S OWN FORWARD PORTS (milestone 1: boot-critical SD/GPIO/USB),
@@ -78,10 +79,30 @@
 #     phy-framework-based binding nobody has run on this board, is the
 #     lower-risk choice for a first forward-port. A later change could
 #     replace this with the phy-framework driver if it proves more correct.
+#   - drivers/input/misc/k230-pmu-pwrkey.c (nix/patches/mainline/,
+#     openspec/changes/the-mainline-shell-reaches-parity task 4.1): this
+#     project's own VENDOR-kernel power-key driver
+#     (nix/patches/k230-pmu-pwrkey.c), unchanged in register behavior.
+#     `.remove` gets the same int -> void signature fix as the other
+#     drivers above, and probe now claims the PMU APB gate
+#     (K230_PMU_APB_GATE) as an optional "pclk" clock -- the same gate
+#     rtc-k230.c below already had to claim, since the power key lives in
+#     the same PMU block and mainline's unused-clock cleanup would
+#     otherwise gate it.
+#   - drivers/thermal/canaan_thermal.c (nix/patches/mainline/,
+#     openspec/changes/the-mainline-shell-reaches-parity task 7.1): ported
+#     from the pinned VENDOR tree's own drivers/thermal/canaan_thermal.c.
+#     Three changes: the same bounded-read-loop fix nix/kernel.nix already
+#     applies by sed to the vendor build (bounded iteration count +
+#     usleep_range instead of an unbounded busy-poll that has soft-locked
+#     this board before), devm_ioremap_resource(dev, res) ->
+#     devm_platform_ioremap_resource(pdev, 0) (the two-argument form no
+#     longer exists in v7.3-rc5), and a void `.remove`. Probe claims the
+#     temperature sensor's own rate clock (K230_SYSCTL_TEMP_SENSOR_RATE)
+#     as an optional "ts" clock, for the same unused-clock-cleanup reason.
 #
 # What is NOT ported (unchanged from the "absent" list above): display,
-# audio, RTC, thermal, PMU/power key, crypto, ADC, PWM. See
-# docs/research/mainline-kernel-inventory.md.
+# audio, crypto, ADC, PWM. See docs/research/mainline-kernel-inventory.md.
 { lib, buildLinux, fetchFromGitHub, applyPatches, ... }@args:
 
 let
@@ -201,6 +222,47 @@ config RTC_DRV_K230\
       grep -q '^config RTC_DRV_K230$' drivers/rtc/Kconfig
       echo 'obj-$(CONFIG_RTC_DRV_K230)	+= rtc-k230.o' >> drivers/rtc/Makefile
       grep -q 'CONFIG_RTC_DRV_K230.*rtc-k230.o' drivers/rtc/Makefile
+
+      # --- Power key: drivers/input/misc/k230-pmu-pwrkey.c -------------
+      #
+      # Forward-ported from this project's own VENDOR-kernel driver
+      # (nix/patches/k230-pmu-pwrkey.c); see
+      # nix/patches/mainline/k230-pmu-pwrkey.c's header for the two API
+      # changes (.remove signature, "pclk" clock claim).
+      cp ${./patches/mainline/k230-pmu-pwrkey.c} drivers/input/misc/k230-pmu-pwrkey.c
+      grep -q '^config INPUT_STPMIC1_ONKEY$' drivers/input/misc/Kconfig
+      sed -i '/^config INPUT_STPMIC1_ONKEY$/i\
+config INPUT_K230_PMU_PWRKEY\
+\ttristate "Kendryte K230 PMU power key"\
+\tdepends on OF\
+\tdepends on ARCH_CANAAN || COMPILE_TEST\
+\thelp\
+\t  Report PMU INT0 power key edges through the Linux input subsystem.\
+' drivers/input/misc/Kconfig
+      grep -q '^config INPUT_K230_PMU_PWRKEY$' drivers/input/misc/Kconfig
+      echo 'obj-$(CONFIG_INPUT_K230_PMU_PWRKEY) += k230-pmu-pwrkey.o' >> drivers/input/misc/Makefile
+      grep -q 'CONFIG_INPUT_K230_PMU_PWRKEY.*k230-pmu-pwrkey.o' drivers/input/misc/Makefile
+
+      # --- Thermal: drivers/thermal/canaan_thermal.c --------------------
+      #
+      # Forward-ported from the pinned VENDOR tree's own
+      # drivers/thermal/canaan_thermal.c; see
+      # nix/patches/mainline/canaan_thermal.c's header for the four API/
+      # robustness changes (bounded read loop, devm_platform_ioremap_
+      # resource, void remove, "ts" clock claim).
+      cp ${./patches/mainline/canaan_thermal.c} drivers/thermal/canaan_thermal.c
+      grep -q '^config LOONGSON2_THERMAL$' drivers/thermal/Kconfig
+      sed -i '/^config LOONGSON2_THERMAL$/i\
+config CANAAN_K230_THERMAL\
+\ttristate "Canaan K230 thermal driver"\
+\tdepends on OF\
+\tdepends on ARCH_CANAAN || COMPILE_TEST\
+\thelp\
+\t  Support for the temperature sensor on the Canaan K230 SoC.\
+' drivers/thermal/Kconfig
+      grep -q '^config CANAAN_K230_THERMAL$' drivers/thermal/Kconfig
+      echo 'obj-$(CONFIG_CANAAN_K230_THERMAL)	+= canaan_thermal.o' >> drivers/thermal/Makefile
+      grep -q 'CONFIG_CANAAN_K230_THERMAL.*canaan_thermal.o' drivers/thermal/Makefile
     '';
   };
 
@@ -239,6 +301,18 @@ config RTC_DRV_K230\
     USB = yes;
     USB_DWC2 = yes;
 
+    # Power key (task 4.1): INPUT_MISC is "# CONFIG_INPUT_MISC is not set"
+    # in the base defconfig (checked directly against the built .config),
+    # so it needs asking for to even reach the input/misc submenu.
+    INPUT_MISC = yes;
+    INPUT_K230_PMU_PWRKEY = yes;
+
+    # Thermal (task 7.1): THERMAL/THERMAL_OF are already on in the base
+    # defconfig; named explicitly anyway, same as RESET_K230 above.
+    THERMAL = yes;
+    THERMAL_OF = yes;
+    CANAAN_K230_THERMAL = yes;
+
     # An initrd remains part of the boot path even with SD/MMC now
     # available: NixOS's own stage-1 initrd is what actually mounts and
     # switches root onto the SD card's ext4 partition (see
@@ -250,7 +324,7 @@ config RTC_DRV_K230\
   };
 
   extraMeta = {
-    description = "Plain mainline console kernel with Canaan K230 SoC support and this project's forward-ported GPIO/SD-MMC/USB/RTC drivers (no DRM/display, touch, audio, power-key, thermal, ADC, PWM or crypto driver)";
+    description = "Plain mainline console kernel with Canaan K230 SoC support and this project's forward-ported GPIO/SD-MMC/USB/RTC/power-key/thermal drivers (no DRM/display, touch, audio, ADC, PWM or crypto driver)";
     platforms = [ "riscv64-linux" ];
   };
 } // (args.argsOverride or { }))
