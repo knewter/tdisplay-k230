@@ -2,7 +2,8 @@
 
 - [x] 1.1 Move `k230-clk-spi2axi-critical.patch` and `k230-clk-vpu-ddrcp2-dphy.patch` into `nix/kernel-mainline.nix` and append `nix/kernel-firewall.config` to the mainline kernel config. Host proof: `nix build .#kernelMainline .#kernelMainlineDrm --no-link` and the built `.config` contains the firewall symbols.
       Built 725cc92e: full-shell bundle 8bljkjxn…, console bundle bwvzapyq…; kernel config has NETFILTER_XTABLES/NF_TABLES/NFT_COMPAT/NFT_CT=y (structuredExtraConfig looped on NFT_COMPAT; seeded into defconfig instead).
-- [ ] 1.2 Board: boot the full mainline shell; `systemctl is-active firewall` is active and `systemctl --failed` is empty. Hardware proof: guarded `tools/mainline-drm-system-trial.py begin` on `kernelMainlineDrmShellTrialBootFiles`, then recover.
+- [x] 1.2 Board: boot the full mainline shell; `systemctl is-active firewall` is active and `systemctl --failed` is empty. Hardware proof: guarded `tools/mainline-drm-system-trial.py begin` on `kernelMainlineDrmShellTrialBootFiles`, then recover.
+      2026-10-06 bundle 8bljkjxn…: controller qualified; serial console shows uname 7.3.0-rc5, firewall active, 0 failed units, shell/shell-ui/seatd active; board self-recovered (private capture ~/tmp/k230-bisect-PARITY12).
 - [ ] 1.3 Board: boot the console mainline variant with ordinary cleanup to a qualified login. Hardware proof: the same controller on the console bundle.
 
 ## 2. Clock table record (documentation)
