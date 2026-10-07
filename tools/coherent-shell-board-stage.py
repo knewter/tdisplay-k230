@@ -45,12 +45,24 @@ def check(stage):
     return state
 
 
+def candidate_present(system, current=Path('/run/current-system')):
+    """A candidate may be the running system or an imported, registered one.
+
+    A different system (for example another kernel family) is imported over
+    the private transport before staging; check() then proves its closure.
+    """
+    if current.resolve() == Path(system):
+        return True
+    return subprocess.run(['nix-store', '--check-validity', system],
+                          stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL).returncode == 0
+
+
 def prepare(stage):
     os.umask(0o077)
     candidate = json.loads((stage / 'manifest.json').read_text())
     assert candidate['host_inspection'] == 'PASS'
     assert re.fullmatch(r'/nix/store/[a-z0-9]{32}-nixos-system-[A-Za-z0-9._+-]+', candidate['system'])
-    assert Path('/run/current-system').resolve() == Path(candidate['system'])
+    assert candidate_present(candidate['system']), 'candidate system is neither running nor registered'
     assert not (stage / 'state.json').exists(), 'preserve an existing trial'
     assert not Path('/nix-path-registration').exists()
     for column, expected in [('FSTYPE', 'ext4'), ('LABEL', 'NIXOS_SD')]:
