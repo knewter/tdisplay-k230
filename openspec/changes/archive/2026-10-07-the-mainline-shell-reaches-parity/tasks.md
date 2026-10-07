@@ -10,13 +10,13 @@
 ## 2. Clock table record (documentation)
 
 - [x] 2.1 Commit the vendor-versus-mainline gate comparison to `docs/research/` with the recorded reasons for the shared USB bit and the unmodelled `clkext` gate. Proof: committed file; `openspec validate the-mainline-shell-reaches-parity --strict`.
-      [Comparison](../../../docs/research/k230-clock-gates-vendor-vs-mainline.md) committed with the shared-USB-bit and clkext reasons.
+      [Comparison](../../../../docs/research/k230-clock-gates-vendor-vs-mainline.md) committed with the shared-USB-bit and clkext reasons.
 
 ## 3. Touch in the shell and controller retrieval (tooling, then board)
 
 - [x] 3.1 Replace raw `evtest` read-back with a bounded board-side summary line in `tools/mainline-drm-system-trial.py`, with fixtures. Host proof: `python3 tests/test_mainline_drm_system_trial.py` and a new focused test.
 - [x] 3.2 Board (operator present): on the full mainline shell, a deliberate tap on a Home target changes the panel as under the vendor kernel; camera video plus sway input log. Hardware proof: controller `touch --real-touch` reports complete contact; camera recording.
-      [Board results](../../../docs/evidence/mainline-shell-parity-2026-10-06/README.md): controller `touch --real-touch` complete contact (bounded summary, 4 taps) on the full mainline shell; operator reported the shell responded normally. Camera missed the taps (board lifted).
+      [Board results](../../../../docs/evidence/mainline-shell-parity-2026-10-06/README.md): controller `touch --real-touch` complete contact (bounded summary, 4 taps) on the full mainline shell; operator reported the shell responded normally. Camera missed the taps (board lifted).
 
 ## 4. Power key (kernel + DT, then board)
 
@@ -31,7 +31,7 @@
       Kernel built with PDMA and audio; on the board `/proc/asound/cards` lists `K230_I2S_INNO` with playback and capture PCMs.
       Partial: driver/DT/Kconfig forward-ported and compile-verified (module build + dtc). The DMA blocker is now also resolved: `drivers/dma/k230_peridma.c` forward-ported as `nix/patches/mainline/k230-peridma.c` (mainline dmaengine driver for `canaan,k230-pdma`, claims `K230_SHRM_PDMA_AXI_GATE`), wired into `nix/kernel-mainline.nix`, with a `&pdma` DT node and `dmas`/`dma-names` added to the `i2s` node in `nix/dts/k230-tdisplay-mainline.dts` -- module-compile (`W=1`, zero warnings) and dtc/cpp validated, same evidence classes as the rest of this task. Board-proven (new finding): with the DMA blocker resolved, a trial boot found that starting ALSA playback against mainline's generic `sound/soc/dwc/dwc-i2s.c` (compatible `snps,designware-i2s`, this task's prior choice) freezes the whole SoC, even with `clk_ignore_unused`/`pd_ignore_unused`; the vendor 6.6 kernel's own fork (`sound/soc/dwc_canaan/`, compatible `canaan,snps,designware-i2s`) does not freeze, and differs in real register programming, not just API currency (most likely cause: mainline's generic driver unconditionally unmasks an IMR interrupt source this board's `i2s` DT node has no handler for). Forward-ported that fork as `nix/patches/mainline/dwc_canaan/{canaan-dwc-i2s.c,canaan-dwc-pcm.c,canaan-local.h,Kconfig,Makefile}`, wired into `nix/kernel-mainline.nix` (`CANAAN_SND_DESIGNWARE_I2S` Kconfig symbol), and changed the `i2s` DT node's compatible string accordingly -- module-compile (`W=1`, zero warnings, two Kconfig configurations) and dtc/cpp re-validated. No full kernel build or board boot of THIS driver swap has been run yet: `aplay -l` proof, a full kernel build, and a non-frozen `speaker-test` run all remain open. See `docs/research/mainline-audio-port.md` and `docs/evidence/mainline-audio-port/{pdma,dwc-canaan}-*.json`.
 - [x] 5.2 Board: `speaker-test -D plughw:0,0 -c1 -t sine -f 440 -l1` completes on the full mainline shell as on the vendor kernel (exit 0, same period/buffer sizes) and the console stays responsive. Hardware proof: trial boot and the command result. The audible headset check on the 3.5 mm jack is a follow-up for the operator, not part of this task.
-      2026-10-06 bundle lmzbqfsk… with ordinary cleanup: speaker-test exit 0, buffer 48000, 2.09 s/period (vendor 2.0 s), console responsive, 0 failed units ([board results](../../../docs/evidence/mainline-shell-parity-2026-10-06/README.md)). Needed the vendor dwc_canaan I2S, PCM-before-DAI registration, and PDMA ownership of the SHRM APB/AXI-slave/SRAM gates. Audible headset check remains an operator follow-up.
+      2026-10-06 bundle lmzbqfsk… with ordinary cleanup: speaker-test exit 0, buffer 48000, 2.09 s/period (vendor 2.0 s), console responsive, 0 failed units ([board results](../../../../docs/evidence/mainline-shell-parity-2026-10-06/README.md)). Needed the vendor dwc_canaan I2S, PCM-before-DAI registration, and PDMA ownership of the SHRM APB/AXI-slave/SRAM gates. Audible headset check remains an operator follow-up.
 
 ## 6. Wi-Fi (DT + Nix, then board)
 

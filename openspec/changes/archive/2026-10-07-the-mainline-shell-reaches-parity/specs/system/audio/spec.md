@@ -11,7 +11,7 @@ headset is attached.
 #### Scenario: Playback completes
 - **WHEN** an operator runs `speaker-test -D plughw:0,0 -c1 -t sine -f 440 -l1` on the mainline shell
 - **THEN** it exits 0 with the same period and buffer sizes the vendor kernel reports, and the serial console stays responsive
-<!-- UNVERIFIED: the generic dwc-i2s port froze the SoC; the vendor dwc_canaan port is untested -->
+<!-- Observed 2026-10-06 (docs/evidence/mainline-shell-parity-2026-10-06/README.md): exit 0, 48000-frame buffer, 2.09 s periods with ordinary cleanup; console responsive. -->
 
 #### Scenario: Audible output on the headphone jack
 - **WHEN** a headset is attached to the 3.5 mm jack and the same tone plays

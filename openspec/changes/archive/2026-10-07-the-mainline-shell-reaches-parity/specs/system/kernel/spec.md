@@ -9,12 +9,12 @@ kernel. The protected normal system is not changed by this.
 #### Scenario: Console mainline boot survives unused-clock cleanup
 - **WHEN** an operator boots the console mainline variant through the guarded trial with ordinary clock cleanup
 - **THEN** the serial console reaches a qualified root login, as the DRM variant already does
-<!-- UNVERIFIED: console variant not yet rebuilt or booted with these fixes -->
+<!-- Observed 2026-10-06 (docs/evidence/mainline-shell-parity-2026-10-06/README.md): console variant qualified login with cleanup, then rebooted itself to normal. -->
 
 #### Scenario: Firewall unit starts on mainline
 - **WHEN** the full mainline shell boots
 - **THEN** `systemctl is-active firewall` reports active on the serial console
-<!-- UNVERIFIED: firewall.service failed on the 2026-10-06 full-shell boot -->
+<!-- Observed 2026-10-06 (docs/evidence/mainline-shell-parity-2026-10-06/README.md): firewall active on the full mainline shell. -->
 
 ### Requirement: The K230 clock gates match the vendor register map
 Every mainline gate SHALL use the register bit the vendor clock tree uses, and
@@ -34,7 +34,7 @@ the sensor's resolution.
 #### Scenario: Temperature reads back
 - **WHEN** an operator reads the thermal zone on the mainline shell
 - **THEN** a plausible SoC temperature is reported and it changes under load
-<!-- UNVERIFIED: no thermal driver exists in mainline yet -->
+<!-- Observed 2026-10-06 (docs/evidence/mainline-shell-parity-2026-10-06/README.md): 52.4 °C idle, 54.5 °C after 60 s load (vendor driver reports raw codes). -->
 
 ### Requirement: Remaining vendor-only drivers have a recorded disposition
 ADC, PWM and crypto SHALL each be recorded as forward-ported, or as an explicit

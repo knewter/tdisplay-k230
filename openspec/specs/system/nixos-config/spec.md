@@ -124,3 +124,18 @@ The system update procedure SHALL retain a usable normal boot backup and serial 
 #### Scenario: The candidate starts services but the panel is black
 - **WHEN** a candidate reaches serial login and active services but fails visible shell acceptance
 - **THEN** it is recorded as a failed display trial, the normal system is restored, and the failed candidate is not selected as the persistent default
+
+### Requirement: The mainline full shell starts the same units as the vendor-kernel shell
+The `k230-mainline-drm-shell` variant SHALL start every systemd unit the
+vendor-kernel coherent shell starts, except units listed as recorded non-goals
+with their reason, and it SHALL remain an opt-in trial that never replaces the
+protected normal system or its boot selection.
+
+#### Scenario: No unexpected failed units
+- **WHEN** the mainline full shell has booted through the guarded trial
+- **THEN** `systemctl --failed` on the serial console lists no units other than recorded non-goals
+<!-- Observed 2026-10-06 (docs/evidence/mainline-shell-parity-2026-10-06/README.md): 0 failed units, firewall active (before the netfilter fragment it failed). -->
+
+#### Scenario: Normal system unaffected
+- **WHEN** the trial ends and the board returns to the normal system
+- **THEN** the protected normal identities, eight boot hashes and three shell services are unchanged

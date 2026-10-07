@@ -166,3 +166,16 @@ coordinate mapping or deliberate finger interaction.*
 - **WHEN** only the candidate source or a round-tripped host DTB is available
 - **THEN** the response leaves controller compatibility, probe, and touch
   interaction UNVERIFIED
+
+### Requirement: A finger on the glass drives the shell under the mainline kernel
+On the mainline full shell, a deliberate finger tap or drag on the panel SHALL
+reach sway and change what the shell shows, as it does under the vendor kernel.
+
+#### Scenario: Tap opens something visible
+- **WHEN** a person taps a Home target on the mainline full shell while the camera records
+- **THEN** the panel changes as it does for the same tap on the vendor-kernel shell, and sway's input log records the touch
+<!-- Observed 2026-10-06 (docs/evidence/mainline-shell-parity-2026-10-06/README.md): controller complete contact (4 taps) on the full shell; operator reported the shell responded. Camera did not capture the taps. -->
+
+#### Scenario: Touch capture completes without a timeout
+- **WHEN** the trial controller captures a long touch session
+- **THEN** it reports a complete contact summary instead of an unverified retrieval

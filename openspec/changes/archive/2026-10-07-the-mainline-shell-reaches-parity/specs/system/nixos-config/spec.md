@@ -9,7 +9,7 @@ protected normal system or its boot selection.
 #### Scenario: No unexpected failed units
 - **WHEN** the mainline full shell has booted through the guarded trial
 - **THEN** `systemctl --failed` on the serial console lists no units other than recorded non-goals
-<!-- UNVERIFIED: firewall.service failed on 2026-10-06 -->
+<!-- Observed 2026-10-06 (docs/evidence/mainline-shell-parity-2026-10-06/README.md): 0 failed units, firewall active (before the netfilter fragment it failed). -->
 
 #### Scenario: Normal system unaffected
 - **WHEN** the trial ends and the board returns to the normal system
