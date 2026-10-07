@@ -52,4 +52,5 @@
 
 ## 8. Land and publish
 
-- [ ] 8.1 Independent review per group, land on master, push, and verify the exact CI run and published work page. Proof: `openspec validate the-mainline-shell-reaches-parity --strict`, CI run id, page revision.
+- [x] 8.1 Independent review per group, land on master, push, and verify the exact CI run and published work page. Proof: `openspec validate the-mainline-shell-reaches-parity --strict`, CI run id, page revision.
+      Independent branch review PASS (stale-comment corrections applied in a5d442d5); master a5d442d5; CI 37564415470 build/deploy PASS; work page serves a5d442d5 and the parity evidence page returns 200.
