@@ -1,0 +1,44 @@
+{
+  "bundle": "/nix/store/rqx0jajd0mhszvyyx7qn2wkv1hagsp6c-k230-coherent-shell-boot-files",
+  "inspection": {
+    "bootargs": "console=tty0 consoleblank=0 console=ttyS0,115200n8 root=fstab loglevel=4 lsm=landlock,yama,bpf loglevel=7 init=/nix/store/5g3ylmyy7s1crbskp6m8s8bgxj0zhif7-nixos-system-nixos-26.11.20260919.20b1ddd/init",
+    "configuration": "k230-mainline-drm-shell",
+    "device_tree": "/nix/store/39jgxr6906yq87qag4chv8n85ahwcr19-k230-mainline-drm-dtb-normal-name/k230-tdisplay.dtb",
+    "kernel": "/nix/store/q1j7zcjh0v2wdjyjb9jmbjc926ac1gf0-linux-riscv64-unknown-linux-gnu-7.3.0-rc5/Image",
+    "schema": 1,
+    "system": "/nix/store/5g3ylmyy7s1crbskp6m8s8bgxj0zhif7-nixos-system-nixos-26.11.20260919.20b1ddd",
+    "bundle": "/nix/store/rqx0jajd0mhszvyyx7qn2wkv1hagsp6c-k230-coherent-shell-boot-files",
+    "initrd": "/nix/store/jg8xrmvcfkl129jypz87lsvbiyvql1cx-initrd-linux-riscv64-unknown-linux-gnu-7.3.0-rc5/initrd",
+    "closure_paths": 1158,
+    "boot_files": {
+      "Image": {
+        "bytes": 42745344,
+        "sha256": "e0fc7864ad665b112e5d7e7b297a44165b3d41626f9b1897d2fd878fdb07692b",
+        "crc32": "7d52e831"
+      },
+      "initrd.uimg": {
+        "bytes": 27309768,
+        "sha256": "f573ed4221b478c8a376bf49f6b5471c8a7f9d64fb9bb5b4d230966111ba5326",
+        "crc32": "391d260b"
+      },
+      "bootargs.txt": {
+        "bytes": 211,
+        "sha256": "fcd044a48a7316c0130b17abc43d2787950854a36c1173b550c7501229a84ed5",
+        "crc32": "dcf87d36"
+      },
+      "k230-tdisplay.dtb": {
+        "bytes": 13219,
+        "sha256": "8052b470e54d91e7dbedc53eb2097cff01e5280e9af085ca99438624ee252ba6",
+        "crc32": "3fe7167f"
+      }
+    },
+    "Image_matches_selected_kernel": true,
+    "initrd_payload_matches_system": true,
+    "uimage_crc_valid": true,
+    "bootargs_select_matching_system": true,
+    "DTB_matches_selected_board_tree": true,
+    "host_inspection": "PASS",
+    "physical_boot_verified": false,
+    "persistent_boot_selection_changed": false
+  }
+}

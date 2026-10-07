@@ -75,6 +75,15 @@ class BundleInspection(unittest.TestCase):
         self.assertFalse(result['physical_boot_verified'])
         self.assertFalse(result['persistent_boot_selection_changed'])
 
+    def test_mainline_configuration_accepted(self):
+        self.identity['configuration'] = 'k230-mainline-drm-shell'
+        self.sums()
+        self.assertEqual(boot.inspect(self.bundle)['host_inspection'], 'PASS')
+
+    def test_unknown_configuration_rejected(self):
+        self.identity['configuration'] = 'k230-console'
+        self.rejected('unexpected configuration')
+
     def test_bad_checksum(self):
         (self.bundle / 'Image').write_bytes(b'changed')
         with self.assertRaisesRegex(ValueError, 'checksum mismatch'):

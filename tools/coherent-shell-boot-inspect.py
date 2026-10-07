@@ -50,7 +50,8 @@ def inspect(bundle):
     bundle = Path(bundle).resolve(strict=True)
     identity = json.loads((bundle / 'identity.json').read_text())
     require(identity.get('schema') == 1, 'unsupported bundle schema')
-    require(identity.get('configuration') == 'k230-coherent-shell',
+    # The vendor-kernel daily shell, or the same shell on the mainline kernel.
+    require(identity.get('configuration') in ('k230-coherent-shell', 'k230-mainline-drm-shell'),
             'unexpected configuration')
     sums = {}
     for line in (bundle / 'SHA256SUMS').read_text().splitlines():

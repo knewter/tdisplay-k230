@@ -1,6 +1,7 @@
 ## 1. Mainline boot bundle (host)
 
-- [ ] 1.1 Add `kernelMainlineDrmShellBootFiles` (coherent boot-files layout, mainline DTB presented as `k230-tdisplay.dtb`) and run the existing host inspection on it. Host proof: `nix build .#kernelMainlineDrmShellBootFiles` plus `python3 tools/coherent-shell-boot-inspect.py` on the result.
+- [x] 1.1 Add `kernelMainlineDrmShellBootFiles` (coherent boot-files layout, mainline DTB presented as `k230-tdisplay.dtb`) and run the existing host inspection on it. Host proof: `nix build .#kernelMainlineDrmShellBootFiles` plus `python3 tools/coherent-shell-boot-inspect.py` on the result.
+      Bundle rqx0jajd…: [host inspection](../../../docs/evidence/mainline-default-boot/host-inspection.json) PASS after allowing the `k230-mainline-drm-shell` configuration name (tests added). Vendor `coherentShellBootFiles` derivation unchanged.
 
 ## 2. Trial and qualification (board)
 
