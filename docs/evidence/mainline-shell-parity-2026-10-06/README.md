@@ -41,4 +41,12 @@ untested). On the vendor kernel `speaker-test` completes. On mainline with the
 generic DesignWare I2S driver, starting playback froze the SoC, also with
 `clk_ignore_unused pd_ignore_unused`; the operator reset the board each time.
 The vendor driver (`dwc_canaan`) differs: DMA xor IRQ, K230 CCR bits, 32-bit
-data and burst 4. It has been ported; its playback result is pending.
+data and burst 4. It was ported; two more defects then surfaced and were fixed. First, the card
+bound before the DMA PCM registered, so every open failed with -EINVAL (kprobe
+traces: `snd_pcm_hw_constraint_mask(ACCESS, 0)`; `dmaengine_pcm_open` never
+ran) — the PCM now registers first. Second, the first transfer hung the bus
+silently (no soft-lockup report); with `clk_ignore_unused` playback completed,
+and `clk_summary` showed the shared-memory APB/AXI-slave/SRAM gates unclaimed —
+the PDMA now holds them. With ordinary cleanup, `speaker-test -D plughw:0,0`
+exits 0 with a 48000-frame buffer and 2.09 s periods (vendor: 2.0 s), the
+console stays responsive and no unit fails. Audible output is not claimed.

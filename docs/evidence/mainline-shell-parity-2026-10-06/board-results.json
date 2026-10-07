@@ -60,6 +60,24 @@
     "vendor_kernel_speaker_test": "completed rc 0",
     "mainline_generic_dwc_i2s": "starting playback froze the SoC (also with clk_ignore_unused pd_ignore_unused); operator reset",
     "cause_hypothesis": "generic dwc-i2s unmasks I2S IRQs in DMA mode with no handler; vendor canaan-dwc-i2s uses DMA xor IRQ and K230 CCR/burst settings",
-    "board_transducer": "no onboard speaker or buzzer; MAX98357A is on an optional base board not fitted; 3.5 mm jack listed by LILYGO, untested"
+    "board_transducer": "no onboard speaker or buzzer; MAX98357A is on an optional base board not fitted; 3.5 mm jack listed by LILYGO, untested",
+    "mainline_canaan_dwc_i2s_before_pcm_order_fix": "card bound before the dmaengine PCM registered: speaker-test open failed -22 (kprobe: snd_pcm_hw_constraint_mask(ACCESS, 0) returned -22; dmaengine_pcm_open never ran)",
+    "pcm_order_fix": "7cdd1557 registers the PCM before the DAI component; open then succeeded",
+    "next_freeze": "first transfer hung the bus silently (no soft-lockup report at watchdog_thresh=5 for 6 min)",
+    "clk_ignore_unused_check": "speaker-test rc 0, buffer 48000, 2.15 s/period; clk_summary showed shrm_apb/axi_slave/sram gates on but unclaimed",
+    "pdma_clock_fix": "f7ef557e: pdma node lists SHRM APB/AXI-slave/SRAM gates and probe enables all listed clocks",
+    "result_normal_cleanup": {
+      "bundle": "/nix/store/lmzbqfskmsh1g0dnivknv924r7jdh459-k230-mainline-drm-trial-boot-files",
+      "clk_ignore_unused_in_cmdline": 0,
+      "speaker_test_rc": 0,
+      "period_size": 12000,
+      "buffer_size": 48000,
+      "time_per_period_s": 2.089787,
+      "failed_units": 0,
+      "console_responsive_after": true,
+      "self_recovered": true,
+      "private_capture_sha256": "845e959f97afcda2c53e52e017d81464050f5b97f9741e6566083b441d7a917f"
+    },
+    "audible": "not tested: no onboard transducer; headset check on the 3.5 mm jack is an operator follow-up"
   }
 }
