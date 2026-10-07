@@ -390,7 +390,10 @@
 			compatible = "canaan,k230-pdma";
 			reg = <0x0 0x80804000 0x0 0x400>;
 			interrupts = <203 IRQ_TYPE_LEVEL_HIGH>;
-			clocks = <&sysclk K230_SHRM_PDMA_AXI_GATE>;
+			clocks = <&sysclk K230_SHRM_PDMA_AXI_GATE>,
+				 <&sysclk K230_SHRM_APB_GATE>,
+				 <&sysclk K230_SHRM_AXI_SLAVE_GATE>,
+				 <&sysclk K230_SHRM_SRAM_GATE>;
 			#dma-cells = <4>;
 			dma-channels = <8>;
 			dma-requests = <35>;

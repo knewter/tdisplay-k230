@@ -1272,6 +1272,7 @@ static struct dma_chan *k230_pdma_of_xlate(struct of_phandle_args *dma_spec,
 static int k230_peridma_probe(struct platform_device *pdev)
 {
 	struct k230_peridma_dev *priv;
+	struct clk_bulk_data *clks;
 	struct resource *res;
 	int i, ret;
 
@@ -1302,6 +1303,16 @@ static int k230_peridma_probe(struct platform_device *pdev)
 		dev_err(&pdev->dev, "No clock specified\n");
 		return PTR_ERR(priv->clk);
 	}
+
+	/*
+	 * The PDMA's registers sit behind the shared-memory APB/AXI-slave/SRAM
+	 * gates, which nothing else claims; unused-clock cleanup gating them
+	 * made the first transfer after boot hang the bus (board, 2026-10-06).
+	 * Hold every clock the DT node lists.
+	 */
+	ret = devm_clk_bulk_get_all_enabled(&pdev->dev, &clks);
+	if (ret < 0)
+		return dev_err_probe(&pdev->dev, ret, "failed to enable clocks\n");
 
 	ret = parse_device_properties(priv);
 	if (ret)
