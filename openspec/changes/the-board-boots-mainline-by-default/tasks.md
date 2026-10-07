@@ -21,4 +21,5 @@
 
 - [x] 4.1 Regenerate the trial tooling's normal baseline from the installed mainline system and update tests pinning `6.6.36`. Proof: affected tests pass.
       `NORMAL_BASELINE` → [postboot.json](../../../docs/evidence/mainline-default-boot/postboot.json); normal system/uname read from it. Remaining `6.6.36` strings in tests are synthetic vendor banners (still valid rejection fixtures). Initrd-shell, system-trial, coherent boot/install/stage, pid1, debug and observer tests pass.
-- [ ] 4.2 Review, land, push, verify CI and the published page. Proof: `openspec validate the-board-boots-mainline-by-default --strict`, CI run id, page revision.
+- [x] 4.2 Review, land, push, verify CI and the published page. Proof: `openspec validate the-board-boots-mainline-by-default --strict`, CI run id, page revision.
+      Strict validate passes; landed 538bcaeb; CI/Pages run 37647787229 build+deploy success; https://knewter.github.io/tdisplay-k230/work/ serves revision 538bcaeb8977.
