@@ -489,13 +489,9 @@
         # openspec/changes/the-mainline-shell-reaches-parity task 6.1: the
         # same out-of-tree source (nix/k230-wifi-driver.nix is already
         # parameterized by `kernel`, not vendor-specific), built against the
-        # mainline DRM kernel candidate instead -- kernelMainlineDrm, not
-        # plain kernelMainline, because only its patched sdhci driver
-        # (nix/patches/mainline/k230-sdhci-clocks.patch) claims &mmc_sd0's
-        # three extra K230_HS_SD0_{AXI,CARD,TIMER}_GATE clocks (see that DT
-        # node's own override in nix/dts/k230-tdisplay-mainline-drm.dts);
-        # the plain console kernel's unpatched driver only claims
-        # core/bus, same as before this task.
+        # mainline DRM kernel (CFG80211=m). Every mainline kernel carries
+        # nix/patches/mainline/k230-sdhci-clocks.patch, so &mmc_sd0 owns all
+        # five SD0 gates (override in nix/dts/k230-tdisplay-mainline.dts).
         #
         # Built 2026-10-06 against the CFG80211=m DRM kernel (see
         # docs/evidence/mainline-wifi-port/): the 7.3 port patch (API drift

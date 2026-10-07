@@ -262,12 +262,9 @@
 			// Enabled below (task the-mainline-shell-reaches-parity
 			// 6.1): the RTL8189FTV SDIO Wi-Fi function this board
 			// wires here (nix/dts/k230-tdisplay.dts's own &mmc_sd0,
-			// "The RTL8189FTV, over SDIO."). Only the two clocks this
-			// base node already names (core/bus) are claimed at this
-			// level, mirroring &mmc_sd1 below -- the three extra
-			// K230_HS_SD0_{AXI,CARD,TIMER}_GATE clocks are claimed
-			// only where the patched sdhci driver actually requests
-			// them (see &mmc_sd0 in k230-tdisplay-mainline-drm.dts).
+			// "The RTL8189FTV, over SDIO."). The five-clock claim the
+			// patched sdhci driver requests is the &mmc_sd0 override at
+			// the end of this file.
 			// UNVERIFIED against a booted board: no SDIO enumeration,
 			// register trace or module bind has been observed; see
 			// docs/research/mainline-wifi-port.md.
@@ -587,9 +584,7 @@
 // generic over every "canaan,k230-dw-mshc" instance, not SD1-specific (the
 // three extra clk_bulk_data entries are requested by whichever device probes
 // the shared driver) -- so &mmc_sd0 needs the identical override, not a
-// smaller one, once this DRM kernel's patched driver is the one binding it.
-// The base k230-tdisplay-mainline.dts node still claims only core/bus so the
-// unpatched console driver's two devm_clk_get() calls keep matching exactly.
+// smaller one. Every mainline kernel applies that patch (nix/kernel-mainline.nix).
 &mmc_sd0 {
 	clocks = <&sysclk K230_HS_SD0_BASE_GATE>,
 		 <&sysclk K230_HS_SD0_AHB_GATE>,
