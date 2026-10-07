@@ -102,7 +102,7 @@ def main():
             else:
                 s.port.write(b'\x03\r'); s.port.flush(); time.sleep(.4); s.pump()
                 s.send_line(shlex.join([PYTHON, '-I', state['stage'] + '/stage.py', 'check', state['stage'], '--token', token]))
-                if not s.wait_for(('\r\nK230_COHERENT_READY ' + token + '\r\n').encode(), 60):
+                if not s.wait_for(('\r\nK230_COHERENT_READY ' + token + '\r\n').encode(), 180):  # cold mainline SD reads took 65 s
                     raise RuntimeError('staged candidate/registered closure/rollback preflight failed')
                 if args.install:
                     s.send_line(shlex.join([PYTHON, '-I', state['stage'] + '/install.py', 'install', state['stage'], '--qualification', state['stage'] + '/qualified.json']) + '; printf "\\nK230_COHERENT_INSTALL_END\\n"')

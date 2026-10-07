@@ -1,0 +1,15 @@
+{
+  "system": "/nix/store/5g3ylmyy7s1crbskp6m8s8bgxj0zhif7-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "kernel": "/nix/store/q1j7zcjh0v2wdjyjb9jmbjc926ac1gf0-linux-riscv64-unknown-linux-gnu-7.3.0-rc5/Image",
+  "bundle": "/nix/store/rqx0jajd0mhszvyyx7qn2wkv1hagsp6c-k230-coherent-shell-boot-files",
+  "evidence_class": "operator-real-finger-report",
+  "report": "i already tested on glass earlier. im not at the desk rn but make mainline default it worked fine go",
+  "reported_at_utc": "2026-10-07T15:21:21.838040+00:00",
+  "shell_executable": "/nix/store/q2rxmp980f9kxi962f29333z9pbixvbk-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0/bin/k230-shell-rust",
+  "checks": {
+    "home_to_all_apps": true,
+    "bottom_handle_to_overview": true,
+    "terminal_open_and_return": true
+  },
+  "scope": "Operator's real-finger acceptance from the earlier mainline parity glass session (same system 5g3y\u2026 and 7.3.0-rc5 kernel, trial bundle; operator: 'the shell responded perfectly everything seems to work'), re-affirmed for installing this normal-boot bundle. The three routes were not re-touched during this boot (operator away from the desk); not a fresh per-route finger test of this boot ID."
+}

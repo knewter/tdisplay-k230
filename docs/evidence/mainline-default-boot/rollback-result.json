@@ -1,0 +1,12 @@
+{
+  "result": "PASS",
+  "phase": "rollback-files-restored",
+  "methods": {
+    "Image": "root-backed-replacement",
+    "initrd.uimg": "root-backed-replacement",
+    "k230-tdisplay.dtb": "atomic-rename",
+    "bootargs.txt": "atomic-rename"
+  },
+  "profile": "/nix/store/p1a1hz9n8s4g8qyr55ffl3dzbnjgqwr8-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "physical_restoration_verified": false
+}

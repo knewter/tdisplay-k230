@@ -1,0 +1,57 @@
+{
+  "evidence_class": "physical-board-serial",
+  "system": "/nix/store/5g3ylmyy7s1crbskp6m8s8bgxj0zhif7-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "profile": "/nix/store/5g3ylmyy7s1crbskp6m8s8bgxj0zhif7-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "kernel": "/nix/store/q1j7zcjh0v2wdjyjb9jmbjc926ac1gf0-linux-riscv64-unknown-linux-gnu-7.3.0-rc5/Image",
+  "uname": "7.3.0-rc5",
+  "cmdline": "console=tty0 consoleblank=0 console=ttyS0,115200n8 root=fstab loglevel=4 lsm=landlock,yama,bpf loglevel=7 init=/nix/store/5g3ylmyy7s1crbskp6m8s8bgxj0zhif7-nixos-system-nixos-26.11.20260919.20b1ddd/init",
+  "shell_executable": "/nix/store/q2rxmp980f9kxi962f29333z9pbixvbk-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0/bin/k230-shell-rust",
+  "boot_id": "dd87c9a0-3014-45c2-b61e-d0256412e592",
+  "services": [
+    "active",
+    "active",
+    "active"
+  ],
+  "system_state": "running",
+  "failed_units": [],
+  "appearance": {
+    "generation": "d0a967bf62ad1c144b721078",
+    "report_sha256": "a147f82243a599878716f97be2892f73ad71a096a8a80aa6bc9b0596c7f8c96f"
+  },
+  "timezone": "/nix/store/ycxsn8k4xxw4kx54fi36hibhry8bjjzw-tzdata-riscv64-unknown-linux-gnu-2026c/share/zoneinfo/America/Chicago",
+  "boot_files": {
+    "Image": {
+      "bytes": 42745344,
+      "sha256": "e0fc7864ad665b112e5d7e7b297a44165b3d41626f9b1897d2fd878fdb07692b"
+    },
+    "initrd.uimg": {
+      "bytes": 27309768,
+      "sha256": "f573ed4221b478c8a376bf49f6b5471c8a7f9d64fb9bb5b4d230966111ba5326"
+    },
+    "k230-tdisplay.dtb": {
+      "bytes": 13219,
+      "sha256": "8052b470e54d91e7dbedc53eb2097cff01e5280e9af085ca99438624ee252ba6"
+    },
+    "bootargs.txt": {
+      "bytes": 211,
+      "sha256": "fcd044a48a7316c0130b17abc43d2787950854a36c1173b550c7501229a84ed5"
+    },
+    "fw_jump_add_uboot_head.bin": {
+      "bytes": 270808,
+      "sha256": "9627edbeea9b115d7040beea27cc61b23b6aca61cd502fd7760d7ee179f42c99"
+    },
+    "force_dtb": {
+      "bytes": 17,
+      "sha256": "175342c82dd1b437cdafb6bb01090e7ff73c2769515654c48b02c1e9f73440c6"
+    },
+    "lcd_dtb": {
+      "bytes": 17,
+      "sha256": "175342c82dd1b437cdafb6bb01090e7ff73c2769515654c48b02c1e9f73440c6"
+    },
+    "hdmi_dtb": {
+      "bytes": 17,
+      "sha256": "175342c82dd1b437cdafb6bb01090e7ff73c2769515654c48b02c1e9f73440c6"
+    }
+  },
+  "real_finger_verified": false
+}

@@ -32,7 +32,7 @@ BUNDLE = Path(
 )
 SYSTEM = "/nix/store/k9f4r2i9k9qj58z8z4l2kssy9rpwxxm1-nixos-system-nixos-26.11.20260919.20b1ddd"
 NORMAL_REPORT = Path("/home/jadams/tmp/k230-coherent-boot-board/received/after.json")
-NORMAL_BASELINE = Path(__file__).resolve().parents[1] / "docs/evidence/boot-verification/coherent-ordinary-boot/postboot.json"
+NORMAL_BASELINE = Path(__file__).resolve().parents[1] / "docs/evidence/mainline-default-boot/postboot.json"
 # The protected stage-one wrapper's CRC in the committed physical trial manifest.
 NORMAL_WRAPPER_CRC32 = "99b89787"
 STORE_ROOT = Path("/nix/store")
@@ -2131,7 +2131,7 @@ def normal_expectation(
 ) -> dict[str, object]:
     report = json.loads(report_path.read_text())
     baseline = json.loads(NORMAL_BASELINE.read_text())
-    if report.get("system") != "/nix/store/p1a1hz9n8s4g8qyr55ffl3dzbnjgqwr8-nixos-system-nixos-26.11.20260919.20b1ddd":
+    if report.get("system") != baseline["system"]:
         raise ValueError("protected normal system differs from the current installed baseline")
     if report.get("profile") != report["system"]:
         raise ValueError("protected normal profile does not select the current system")
@@ -2154,7 +2154,7 @@ def normal_expectation(
         raise ValueError("manifest stage-one wrapper differs from the protected normal wrapper")
     if wrapper["crc32"].lower() != NORMAL_WRAPPER_CRC32:
         raise ValueError("manifest stage-one wrapper CRC differs from the protected normal wrapper")
-    uname = "6.6.36"  # Fresh serial report and nix/kernel.nix modDirVersion.
+    uname = baseline["uname"]  # Installed mainline normal, recorded from the board.
     files = manifest["files"]
     candidate_files = {
         name: {"bytes": int(files[name]["bytes"]), "sha256": str(files[name]["sha256"]).lower()}
