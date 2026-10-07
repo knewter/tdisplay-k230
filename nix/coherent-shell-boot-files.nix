@@ -1,6 +1,7 @@
 # Normal boot files for exactly one evaluated coherent-shell configuration.
 # No image assembly, board mutation, or stage-1 replacement happens here.
-{ lib, runCommand, dtc, ubootTools, closureInfo, cfg, deviceTree }:
+{ lib, runCommand, dtc, ubootTools, closureInfo, cfg, deviceTree
+, configuration ? "k230-coherent-shell" }:
 let
   system = cfg.system.build.toplevel;
   kernel = cfg.boot.kernelPackages.kernel;
@@ -9,7 +10,7 @@ let
     + " init=${system}/init";
   identity = builtins.toJSON {
     schema = 1;
-    configuration = "k230-coherent-shell";
+    inherit configuration;
     system = toString system;
     kernel = "${kernel}/Image";
     device_tree = "${deviceTree}/k230-tdisplay.dtb";

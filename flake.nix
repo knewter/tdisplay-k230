@@ -823,6 +823,16 @@
           cfg = self.nixosConfigurations.k230-coherent-shell.config;
           inherit (self.packages.${buildSystem}) deviceTree;
         };
+        # The mainline full coherent shell as a normal (daily) boot bundle:
+        # same layout, with the mainline DRM DTB under the name stage 1 loads.
+        kernelMainlineDrmShellBootFiles = pkgs.callPackage ./nix/coherent-shell-boot-files.nix {
+          cfg = self.nixosConfigurations.k230-mainline-drm-shell.config;
+          configuration = "k230-mainline-drm-shell";
+          deviceTree = pkgs.runCommand "k230-mainline-drm-dtb-normal-name" { } ''
+            mkdir -p $out
+            cp ${self.packages.${buildSystem}.deviceTreeMainlineDrm}/k230-tdisplay-mainline-drm.dtb $out/k230-tdisplay.dtb
+          '';
+        };
         sdImage-rvv-trial = mkBoardImage self.nixosConfigurations.k230-rvv-trial.config
           self.nixosConfigurations.k230-rvv-trial.config.boot.kernelPackages.kernel;
       };
