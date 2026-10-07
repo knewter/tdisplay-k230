@@ -8,4 +8,4 @@ PMU power-key input device exists.
 #### Scenario: Press shows the power sheet
 - **WHEN** a person presses the side button on the mainline full shell while the camera records
 - **THEN** the power sheet appears on the panel and the key event is logged
-<!-- Observed 2026-10-06 (docs/evidence/mainline-shell-parity-2026-10-06/README.md): operator press brought up the power sheet; camera still and sway journal agree. -->
+*Grounding: observed on hardware 2026-10-06 (`docs/evidence/mainline-shell-parity-2026-10-06/README.md`): operator press brought up the power sheet; camera still and sway journal agree.*
