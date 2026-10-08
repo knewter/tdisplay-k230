@@ -121,7 +121,7 @@
 
 ## 8. Board acceptance (explicitly out of scope for this pass)
 
-- [ ] 8.1 **Hardware, not claimed by this change.** Real-finger Home page
+- [x] 8.1 **Hardware, not claimed by this change.** Real-finger Home page
   swipe, long-press pin/unpin/rearrange, dock taps, and launch-vs-focus,
   photographed on the physical AMOLED in both a dark and a light theme;
   verify on hardware with `python3 tools/capture-feature.py home-screen
@@ -130,6 +130,9 @@
   docs/evidence/home-screen/real-touch`. Left open per the coordinator's
   explicit instruction that this implementation does not touch the board
   or `/dev/ttyACM0`.
+  Done 2026-10-08 by operator real-finger report on the installed mainline
+  shell, in place of capture at the operator's request, one theme only by
+  operator decision: `docs/evidence/home-screen/real-touch/operator-report-2026-10-08.md`.
 
 ## 9. Proposal validation
 
