@@ -11,4 +11,5 @@
 
 ## 3. Publication
 
-- [ ] 3.1 Review, land, push, verify CI and the published page. Proof: `openspec validate --strict`, CI run id, page revision.
+- [x] 3.1 Review, land, push, verify CI and the published page. Proof: `openspec validate --strict`, CI run id, page revision.
+      Strict validate passes; landed e1334c83; CI/Pages run 37837179903 success; https://knewter.github.io/tdisplay-k230/work/ serves e1334c83f1ab. Change stays open for 2.1.
