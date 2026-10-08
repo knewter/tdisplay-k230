@@ -959,3 +959,21 @@ non-goal naming which shipped service would need them; none may be silently abse
 - **WHEN** a reader opens the mainline driver inventory
 - **THEN** ADC, PWM and crypto each show ported or non-goal with a reason and date
 *Grounding: read from the repository 2026-10-06 (`docs/research/mainline-kernel-inventory.md`): no shipped unit, package or tool consumes ADC, PWM or the crypto engine.*
+
+### Requirement: The board boots the mainline kernel by default with a proven way back
+Powering on or rebooting the board SHALL boot the mainline kernel and the full
+coherent shell without operator intervention, and the vendor 6.6 kernel SHALL
+remain restorable as the default by a recorded, tested rollback.
+
+#### Scenario: Power-on reaches the shell on mainline
+- **WHEN** the board is reset or rebooted after installation
+- **THEN** the serial console reports kernel 7.3.0-rc5, the installed mainline system is booted, and the shell services are active with no failed units
+*Grounding: observed on hardware 2026-10-07/08 (`docs/evidence/mainline-default-boot/README.md`): ordinary reboot after install and after reinstall, and one reset-button power-on (`reset-button-postboot.json`), each 7.3.0-rc5, mainline system/profile, three services active, `running`, no failed units.*
+
+#### Scenario: Rollback restores the vendor kernel
+- **WHEN** the operator runs the installer's rollback and reboots
+- **THEN** the board boots the vendor 6.6 kernel with the previous system and boot files byte-identical to their recorded backups
+*Grounding: observed on hardware 2026-10-07 (`docs/evidence/mainline-default-boot/README.md`): `install.py rollback` PASS with every restored file re-hashed against its backup, then an ordinary boot on 6.6.36 with the vendor profile.*
+
+This selection is board state installed from `.#kernelMainlineDrmShellBootFiles`;
+`.#sdImage` still ships the vendor kernel.

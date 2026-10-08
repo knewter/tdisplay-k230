@@ -12,8 +12,8 @@
 
 ## 3. Install and rollback drill (board)
 
-- [ ] 3.1 Install with `tools/coherent-shell-board-install.py install`; reboot; verify 7.3.0-rc5, installed system booted, shell services active, no failed units; also verify one reset-button power-on. Hardware proof: install journal and post-boot serial checks.
-      Install PASS and ordinary reboot verified (7.3.0-rc5, `running`, no failed units, native Home). **Open:** one reset-button power-on (operator).
+- [x] 3.1 Install with `tools/coherent-shell-board-install.py install`; reboot; verify 7.3.0-rc5, installed system booted, shell services active, no failed units; also verify one reset-button power-on. Hardware proof: install journal and post-boot serial checks.
+      Install PASS and ordinary reboot verified (7.3.0-rc5, `running`, no failed units, native Home). Reset-button power-on 2026-10-08: 7.3.0-rc5, mainline system/profile, three services active, `running`, no failed units ([record](../../../docs/evidence/mainline-default-boot/reset-button-postboot.json)).
 - [x] 3.2 Rollback drill: `install.py rollback`, reboot, verify vendor 6.6 with byte-identical backups; reinstall mainline and verify again. Hardware proof: rollback-result.json and both post-boot checks.
       Rollback PASS, ordinary boot 6.6.36/`p1a1hz…`; reinstall PASS, ordinary boot 7.3.0-rc5 ([evidence](../../../docs/evidence/mainline-default-boot/README.md)).
 

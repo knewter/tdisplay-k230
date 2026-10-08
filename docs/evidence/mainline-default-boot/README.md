@@ -75,8 +75,10 @@ units. After `swaymsg 'card_shell home'`, a native capture showed Home:
 
 ![Native Home on the installed mainline system](installed-home.png)
 
-**Not yet observed:** a reset-button power-on of the installed system. This
-needs the operator.
+**Reset-button power-on** (2026-10-08, after the reinstall): the operator
+pressed reset; [reset-button-postboot.json](reset-button-postboot.json) shows
+7.3.0-rc5, a fresh boot ID at 184 s uptime, the mainline system and profile,
+three services active, `running` and no failed units.
 
 ## 3.2 Rollback drill and reinstall
 

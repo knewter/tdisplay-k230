@@ -139,3 +139,19 @@ protected normal system or its boot selection.
 #### Scenario: Normal system unaffected
 - **WHEN** the trial ends and the board returns to the normal system
 - **THEN** the protected normal identities, eight boot hashes and three shell services are unchanged
+
+### Requirement: The installed daily system is the mainline coherent shell
+The system profile and `/boot` mutable files SHALL select the mainline coherent
+shell built from this repository, with stage 1 and the DT selector files
+unchanged, and the board-side trial tooling SHALL treat that installed system as
+the protected normal it verifies before and after every trial.
+
+#### Scenario: Installed identities are recorded
+- **WHEN** installation completes
+- **THEN** the recorded installer journal lists the new system, the four replaced boot files with hashes, the unchanged protected files, and the retained rollback roots
+*Grounding: observed on hardware 2026-10-07 (`docs/evidence/mainline-default-boot/first-install-journal.json`): journal lists system `5g3ylmyy…`, before/after hashes of all eight boot files (OpenSBI wrapper and selectors unchanged) and both rollback GC roots.*
+
+#### Scenario: Trials guard the new normal
+- **WHEN** a guarded mainline trial runs after installation
+- **THEN** its preflight and recovery checks expect the installed mainline identities, not the vendor 6.6 ones
+<!-- UNVERIFIED: the baseline (`docs/evidence/mainline-default-boot/postboot.json`) and tooling are updated and unit-tested, but no guarded trial has yet run against the installed mainline normal -->
