@@ -1,0 +1,55 @@
+{
+  "evidence_class": "host-inspection",
+  "date": "2026-10-08",
+  "image": "/nix/store/20mxf9lrzxp1zz1bk9siz0cffjvm6wli-k230-sd-image.img",
+  "image_bytes": 5430300672,
+  "partitions": {
+    "boot": "sectors 8192-237567 (112 MiB)",
+    "root": "sectors 262144-10604007 (4.9 GiB)"
+  },
+  "boot_files": {
+    "Image": {
+      "bytes": 42745344,
+      "sha256": "c55a52e26c1638608488962bb95874c3ec91aa9a4c9aa320905944899e8e36a1"
+    },
+    "initrd.uimg": {
+      "bytes": 27323822,
+      "sha256": "18ff930ade292578afa3c2398d3dc0be7b7aa7081cefaec3de423e8185116b5f"
+    },
+    "k230-tdisplay.dtb": {
+      "bytes": 13390,
+      "sha256": "a0b307843df4523cadd97928b5f870391d40a5310cce07b40a2316bbf24d5125"
+    },
+    "bootargs.txt": {
+      "bytes": 211,
+      "sha256": "877dffef91c38262c9fa1deadc6365ff863982b7f0874e9a3966d43784c74086"
+    },
+    "fw_jump_add_uboot_head.bin": {
+      "bytes": 270808,
+      "sha256": "9627edbeea9b115d7040beea27cc61b23b6aca61cd502fd7760d7ee179f42c99"
+    }
+  },
+  "image_matches_installed_bundle": {
+    "Image": true,
+    "initrd.uimg": true
+  },
+  "installed_bundle": "/nix/store/p3hh3j326i6vh12q9mgx1r9qnfwi4zrv-k230-coherent-shell-boot-files",
+  "dtb_chosen_init": [
+    "init=/nix/store/kp6ldmdx33lgjl55hzv3xba5a55ils48-nixos-system-nixos-26.11.20260919.20b1ddd/init"
+  ],
+  "bootargs_txt_init": [
+    "init=/nix/store/kp6ldmdx33lgjl55hzv3xba5a55ils48-nixos-system-nixos-26.11.20260919.20b1ddd/init"
+  ],
+  "stage1_slots": {
+    "fn_u-boot-spl.bin@1MiB": "fe3d537f62c3\u2026 = .#stage1",
+    "fn_ug_u-boot.bin@2MiB": "e0b5787f3e68\u2026 = .#stage1",
+    "fw_jump_add_uboot_head.bin": "9627edbeea9b\u2026 = .#stage1 = installed board"
+  },
+  "dtb_has_sd_ref_core_clock": true,
+  "vendor_images_unchanged": {
+    "sdImage-coherent": "/nix/store/i7sfnn3kgala8vnqwdfg89bxalmhh9jd-k230-sd-image.img.drv",
+    "sdImage-rvv-trial": "/nix/store/xqnk1nz111wbc3121cd73gfd4rhs2jsw-k230-sd-image.img.drv",
+    "same_before_and_after": true
+  },
+  "physical_boot_verified": false
+}

@@ -1,7 +1,9 @@
 ## 1. Image (host)
 
-- [ ] 1.1 Give `mkBoardImage` an optional device tree and build `.#sdImage` from `k230-mainline-drm-shell` with its kernel and the mainline DRM DTB as `k230-tdisplay.dtb`. Proof: `nix build .#sdImage`, plus an inspection of the boot partition (kernel identity, DTB `/chosen/bootargs` init, stage-1 slot hashes) recorded in `docs/evidence/mainline-sd-image/`.
-- [ ] 1.2 Confirm vendor images are unchanged: `.#sdImage-coherent` evaluates to the same derivation as on master. Proof: matching `nix eval --raw .#sdImage-coherent.drvPath` before and after.
+- [x] 1.1 Give `mkBoardImage` an optional device tree and build `.#sdImage` from `k230-mainline-drm-shell` with its kernel and the mainline DRM DTB as `k230-tdisplay.dtb`. Proof: `nix build .#sdImage`, plus an inspection of the boot partition (kernel identity, DTB `/chosen/bootargs` init, stage-1 slot hashes) recorded in `docs/evidence/mainline-sd-image/`.
+      Image 20mxf9lr…; boot `Image`/`initrd.uimg` byte-identical to the installed bundle p3hh3j32…; DTB and bootargs.txt `init=` select installed system kp6ldmdx…; DTB has the SD `sd_ref` core clock; stage-1 slots equal `.#stage1` ([inspection](../../../docs/evidence/mainline-sd-image/host-inspection.json)).
+- [x] 1.2 Confirm vendor images are unchanged: `.#sdImage-coherent` evaluates to the same derivation as on master. Proof: matching `nix eval --raw .#sdImage-coherent.drvPath` before and after.
+      `sdImage-coherent` i7sfnn3k… and `sdImage-rvv-trial` xqnk1nz1… drvPaths identical before and after.
 
 ## 2. Hardware (operator-scheduled)
 

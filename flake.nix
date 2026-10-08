@@ -52,7 +52,8 @@
       # supports on this SoC today.
       kernelMainlineSrc = import ./nix/kernel-mainline-src.nix { inherit (pkgs) fetchFromGitHub; };
       bootSplashImage = pkgs.callPackage ./nix/boot-splash-image.nix { };
-      mkBoardImage = cfg: kernel:
+      mkBoardImage = cfg: kernel: mkBoardImageWith { inherit cfg kernel; };
+      mkBoardImageWith = { cfg, kernel, deviceTree ? self.packages.${buildSystem}.deviceTree }:
         let
           rootfsImage = pkgs.callPackage "${nixpkgs}/nixos/lib/make-ext4-fs.nix" {
             storePaths = [ cfg.system.build.toplevel ];
@@ -82,8 +83,7 @@
           inherit stage1 rootfsImage;
           splashImage = if cfg.k230.panelConsole then null else bootSplashImage;
           initrd = "${cfg.system.build.toplevel}/initrd";
-          inherit kernel;
-          inherit (self.packages.${buildSystem}) deviceTree;
+          inherit kernel deviceTree;
           # Our own board, not the CanMV reference. A bare filename now:
           # it names a file in ${deviceTree}, not a path under dtbs/.
           dtbName = "k230-tdisplay.dtb";
@@ -812,9 +812,15 @@
         # The bootable card image: stage 1 at its raw offsets, a boot ext4
         # holding the three filenames U-Boot loads by name, and our root
         # filesystem.
-        sdImage = mkBoardImage self.nixosConfigurations.k230.config self.k230Kernel.kernel;
-        # Exact opt-in Rust shell image. The normal sdImage above remains the
-        # tested bar-session rollback until physical coherent-shell acceptance.
+        # The daily system the board runs: the mainline coherent shell, with
+        # its 7.3 kernel and the mainline DRM tree under the name stage 1 loads
+        # (the same files as kernelMainlineDrmShellBootFiles).
+        sdImage = mkBoardImageWith {
+          cfg = self.nixosConfigurations.k230-mainline-drm-shell.config;
+          kernel = self.nixosConfigurations.k230-mainline-drm-shell.config.boot.kernelPackages.kernel;
+          deviceTree = self.packages.${buildSystem}.mainlineDrmDeviceTreeNormalName;
+        };
+        # Vendor-kernel Rust shell image, kept as a rollback and release target.
         sdImage-coherent = mkBoardImage self.nixosConfigurations.k230-coherent-shell.config
           self.k230Kernel.kernel;
         # Matching normal boot update, independent of whole-card flashing.
@@ -828,11 +834,12 @@
         kernelMainlineDrmShellBootFiles = pkgs.callPackage ./nix/coherent-shell-boot-files.nix {
           cfg = self.nixosConfigurations.k230-mainline-drm-shell.config;
           configuration = "k230-mainline-drm-shell";
-          deviceTree = pkgs.runCommand "k230-mainline-drm-dtb-normal-name" { } ''
-            mkdir -p $out
-            cp ${self.packages.${buildSystem}.deviceTreeMainlineDrm}/k230-tdisplay-mainline-drm.dtb $out/k230-tdisplay.dtb
-          '';
+          deviceTree = self.packages.${buildSystem}.mainlineDrmDeviceTreeNormalName;
         };
+        mainlineDrmDeviceTreeNormalName = pkgs.runCommand "k230-mainline-drm-dtb-normal-name" { } ''
+          mkdir -p $out
+          cp ${self.packages.${buildSystem}.deviceTreeMainlineDrm}/k230-tdisplay-mainline-drm.dtb $out/k230-tdisplay.dtb
+        '';
         sdImage-rvv-trial = mkBoardImage self.nixosConfigurations.k230-rvv-trial.config
           self.nixosConfigurations.k230-rvv-trial.config.boot.kernelPackages.kernel;
       };
