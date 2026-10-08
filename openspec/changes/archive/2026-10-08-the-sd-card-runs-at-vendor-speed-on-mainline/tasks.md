@@ -10,9 +10,11 @@
 ## 2. Board
 
 - [x] 2.1 Stage and trial-boot the new bundle; record `mmc0`/`mmc1` ios, `clk_summary` for SD gates, `dd` throughput, a repeated read checksum match and PDMA audio playback without crash. Proof: serial record in `docs/evidence/mainline-sd-throughput/`.
-      23.8 MB/s (vendor 23.3), 50 MHz actual on mmc0/mmc1, all SD gates still enabled, checksum repeat match, Wi-Fi associated, PDMA playback exit 0 ([evidence](../../../docs/evidence/mainline-sd-throughput/README.md)).
-- [ ] 2.2 Install the new bundle as the normal; verify an ordinary reboot (7.3.0-rc5, services, no failed units) and Wi-Fi association. Proof: install result and post-boot record.
-- [ ] 2.3 Reboot at least 10 times and count `Got command interrupt` occurrences; record the result as fixed or characterised. Proof: count table in the evidence README.
+      23.8 MB/s (vendor 23.3), 50 MHz actual on mmc0/mmc1, all SD gates still enabled, checksum repeat match, Wi-Fi associated, PDMA playback exit 0 ([evidence](../../../../docs/evidence/mainline-sd-throughput/README.md)).
+- [x] 2.2 Install the new bundle as the normal; verify an ordinary reboot (7.3.0-rc5, services, no failed units) and Wi-Fi association. Proof: install result and post-boot record.
+      Operator "works, go."; install PASS; ordinary reboot 7.3.0-rc5, `running`, no failed units, 23.4 MB/s, Wi-Fi up; baseline moved to [postboot.json](../../../../docs/evidence/mainline-sd-throughput/postboot.json).
+- [x] 2.3 Record `Got command interrupt` occurrences on this change's boots, as fixed or as a known leftover. Proof: count in the evidence README.
+      Scope changed by the operator 2026-10-08 ("i don't want a 10 reboot count"); originally a ≥10-reboot count. 0 occurrences on 2 boots (trial, installed); recorded as uncharacterised, not as fixed.
 
 ## 3. Publication
 

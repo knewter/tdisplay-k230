@@ -1,0 +1,15 @@
+{
+  "system": "/nix/store/kp6ldmdx33lgjl55hzv3xba5a55ils48-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "kernel": "/nix/store/zv590h93l5cadw85aw7d66qnis1c7m34-linux-riscv64-unknown-linux-gnu-7.3.0-rc5/Image",
+  "bundle": "/nix/store/p3hh3j326i6vh12q9mgx1r9qnfwi4zrv-k230-coherent-shell-boot-files",
+  "evidence_class": "operator-real-finger-report",
+  "report": "works, go.",
+  "reported_at_utc": "2026-10-08T19:44:18.359190+00:00",
+  "shell_executable": "/nix/store/q2rxmp980f9kxi962f29333z9pbixvbk-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0/bin/k230-shell-rust",
+  "checks": {
+    "home_to_all_apps": true,
+    "bottom_handle_to_overview": true,
+    "terminal_open_and_return": true
+  },
+  "scope": "Operator reply to the three requested routes (Home to All Apps, bottom handle to overview, terminal open and return) on the running SD-clock trial boot 86e89b3d-046f-459e-8720-cbdbae5f68ac: 'works, go.'"
+}

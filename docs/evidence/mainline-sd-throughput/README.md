@@ -56,3 +56,29 @@ blocks) gave an identical SHA-256. Wi-Fi: `wlan0` associated over SDIO and
 held an IPv4 address (SSID and address withheld). PDMA: `aplay -D hw:0,0` of 3 s
 of silence exited 0, with no DMA/oops messages and services still active. `Got
 command interrupt` count on this boot: 0.
+
+## Installed as the normal boot (task 2.2)
+
+The operator ran the three requested routes on the trial boot (`86e89b3d-…`)
+and replied "works, go." ([qualification.json](qualification.json)). Then:
+
+```
+python3 tools/coherent-shell-board-boot.py --candidate <bundle> --state <state.json> \
+  --qualification <qualified.json> --output <dir> --install
+```
+
+[install-serial-result.json](install-serial-result.json): installer PASS. The
+Image was replaced by root-backed replacement; initrd, DTB and bootargs by
+atomic rename. An ordinary reboot came back on kernel `zv590h93…` with system,
+profile and init `kp6ldmdx…`. [postboot.json](postboot.json): 7.3.0-rc5,
+`running`, no failed units, three services active. mmc1 actual clock was
+50000000 Hz, the 4 MiB direct read 23.4 MB/s, and `wlan0` was up with an address.
+This record is now the trial tooling's `NORMAL_BASELINE`.
+
+## Spurious mmc1 command interrupt (task 2.3)
+
+`Got command interrupt … even though no command operation was in progress`
+appeared 0 times on both boots of the fixed kernel (trial and installed).
+Before the fix it appeared on 5 of 29 captured mainline boots. Two boots cannot
+show that it is fixed. The operator declined the planned 10-reboot count
+(2026-10-08), so this remains an uncharacterised, non-fatal leftover.

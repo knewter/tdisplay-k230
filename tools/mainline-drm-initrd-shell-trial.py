@@ -32,7 +32,7 @@ BUNDLE = Path(
 )
 SYSTEM = "/nix/store/k9f4r2i9k9qj58z8z4l2kssy9rpwxxm1-nixos-system-nixos-26.11.20260919.20b1ddd"
 NORMAL_REPORT = Path("/home/jadams/tmp/k230-coherent-boot-board/received/after.json")
-NORMAL_BASELINE = Path(__file__).resolve().parents[1] / "docs/evidence/mainline-default-boot/postboot.json"
+NORMAL_BASELINE = Path(__file__).resolve().parents[1] / "docs/evidence/mainline-sd-throughput/postboot.json"
 # The protected stage-one wrapper's CRC in the committed physical trial manifest.
 NORMAL_WRAPPER_CRC32 = "99b89787"
 STORE_ROOT = Path("/nix/store")
