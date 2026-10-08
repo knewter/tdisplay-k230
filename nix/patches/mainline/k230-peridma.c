@@ -292,7 +292,6 @@ struct k230_peridma_dev {
 	u32 nr_channels;
 	u32 nr_requests;
 	void __iomem *base;
-	struct clk *clk;
 	int irq;
 	spinlock_t lock;
 };
@@ -1294,25 +1293,18 @@ static int k230_peridma_probe(struct platform_device *pdev)
 		return priv->irq;
 	}
 
-	/* K230_SHRM_PDMA_AXI_GATE (clk-k230.c) -- claim and enable up front;
-	 * an unclaimed gate clock is removed by mainline's unused-clock
-	 * cleanup and hangs the SoC on first register access.
-	 */
-	priv->clk = devm_clk_get_enabled(&pdev->dev, NULL);
-	if (IS_ERR(priv->clk)) {
-		dev_err(&pdev->dev, "No clock specified\n");
-		return PTR_ERR(priv->clk);
-	}
-
 	/*
-	 * The PDMA's registers sit behind the shared-memory APB/AXI-slave/SRAM
-	 * gates, which nothing else claims; unused-clock cleanup gating them
-	 * made the first transfer after boot hang the bus (board, 2026-10-06).
-	 * Hold every clock the DT node lists.
+	 * Hold every clock the DT node lists: K230_SHRM_PDMA_AXI_GATE (index 0)
+	 * and the shared-memory APB/AXI-slave/SRAM gates the registers sit
+	 * behind. Nothing else claims them; unused-clock cleanup gating them
+	 * hangs the SoC on first register access or made the first transfer
+	 * after boot hang the bus (board, 2026-10-06).
 	 */
 	ret = devm_clk_bulk_get_all_enabled(&pdev->dev, &clks);
 	if (ret < 0)
 		return dev_err_probe(&pdev->dev, ret, "failed to enable clocks\n");
+	if (ret == 0)
+		return dev_err_probe(&pdev->dev, -EINVAL, "No clock specified\n");
 
 	ret = parse_device_properties(priv);
 	if (ret)
@@ -1453,8 +1445,8 @@ static void k230_peridma_remove(struct platform_device *pdev)
 	of_dma_controller_free(pdev->dev.of_node);
 	dma_async_device_unregister(&priv->slave);
 
-	/* priv->clk is devm_clk_get_enabled(); devm cleanup disables it
-	 * after this function returns.
+	/* The PDMA clocks are devm_clk_bulk_get_all_enabled(); devm cleanup
+	 * disables them after this function returns.
 	 */
 }
 

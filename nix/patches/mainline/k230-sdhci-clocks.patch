@@ -4,7 +4,7 @@
  
  struct dwcmshc_priv {
  	struct clk *bus_clk;
-+	struct clk_bulk_data extra_clks[3];
++	struct clk_bulk_data extra_clks[4];
  	bool is_emmc_card;
  	u32 tx_delay_line;
  	u32 rx_delay_line;
@@ -12,7 +12,7 @@
  }
  EXPORT_SYMBOL(plat_sdio_rescan);
  
-+/* The optional DRM DT supplies core, bus, axi, block and timer clocks. */
++/* The mainline DT supplies core (reference rate), bus, base, axi, block and timer. */
 +static int dwcmshc_enable_clks(struct sdhci_pltfm_host *pltfm_host,
 +                             struct dwcmshc_priv *priv)
 +{
@@ -50,7 +50,7 @@
  static int dwcmshc_probe(struct platform_device *pdev)
  {
  	struct sdhci_pltfm_host *pltfm_host;
-@@ -392,22 +428,36 @@
+@@ -392,22 +428,37 @@
  	 * vendor origin -- sdhci_pltfm_init() manages its own devm-scoped
  	 * cleanup now (confirmed against mainline's own sdhci-of-dwcmshc.c,
  	 * whose error paths and .remove call no equivalent free function
@@ -81,9 +81,10 @@
 +		goto err_unmap;
 +	}
 +
-+	priv->extra_clks[0].id = "axi";
-+	priv->extra_clks[1].id = "block";
-+	priv->extra_clks[2].id = "timer";
++	priv->extra_clks[0].id = "base";
++	priv->extra_clks[1].id = "axi";
++	priv->extra_clks[2].id = "block";
++	priv->extra_clks[3].id = "timer";
 +	err = devm_clk_bulk_get(&pdev->dev, ARRAY_SIZE(priv->extra_clks),
 +				priv->extra_clks);
 +	if (err) {
@@ -97,7 +98,7 @@
  
  	/* new fix: storage mmc host to array */
  	__mmc__host[slot_index++] = host->mmc;
-@@ -425,8 +475,9 @@
+@@ -425,8 +476,9 @@
  	return 0;
  
  err_clk:
@@ -109,7 +110,7 @@
  	return err;
  }
  
-@@ -436,7 +487,7 @@
+@@ -436,7 +488,7 @@
   * platform_device *)` (changed from `int (*)(...)` upstream around v6.11,
   * well after this file's origin in the 6.6-based vendor tree). Confirmed
   * directly against include/linux/platform_device.h at this exact pinned
@@ -118,7 +119,7 @@
   */
  static void dwcmshc_remove(struct platform_device *pdev)
  {
-@@ -446,8 +497,7 @@
+@@ -446,8 +498,7 @@
  
  	sdhci_remove_host(host, 0);
  
@@ -128,7 +129,7 @@
  
  	iounmap(priv->hs_regs);
  }
-@@ -464,9 +514,7 @@
+@@ -464,9 +515,7 @@
  	if (ret)
  		return ret;
  
@@ -139,7 +140,7 @@
  
  	return ret;
  }
-@@ -478,17 +526,15 @@
+@@ -478,17 +527,15 @@
  	struct dwcmshc_priv *priv = sdhci_pltfm_priv(pltfm_host);
  	int ret;
  

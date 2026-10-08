@@ -541,6 +541,15 @@
 	keep-power-in-suspend;
 };
 
+/ {
+	sd_ref_clk: sd-ref-clock {
+		compatible = "fixed-clock";
+		#clock-cells = <0>;
+		clock-frequency = <100000000>;
+		clock-output-names = "sd_ref";
+	};
+};
+
 // The TF/SD card: this milestone's rootfs device. Matches
 // nix/dts/k230-tdisplay.dts's own &mmc_sd1 overrides exactly
 // (no-1-8-v, cap-sd-highspeed, mshc_ctrl_r already set above).
@@ -567,15 +576,20 @@
 };
 
 // The K230 upstream clock contract includes the SD AXI, card/block and
-// timer gates. Keep base as core for the existing SDHCI max-clock source.
+// timer gates. The SDHCI max-clock source ("core") is the controller's
+// 100 MHz reference, as vendor k230.dtsi's dummy_sd: binding the 333 MHz
+// base gate there made the driver divide by 8 and run the card at 12.5 MHz
+// (6.1 vs 23.3 MB/s, docs/evidence/mainline-sd-throughput/). The base gate
+// stays claimed under "base".
 // Every mainline kernel patches the SD driver to claim all five.
 &mmc_sd1 {
-	clocks = <&sysclk K230_HS_SD1_BASE_GATE>,
+	clocks = <&sd_ref_clk>,
 		 <&sysclk K230_HS_SD1_AHB_GATE>,
+		 <&sysclk K230_HS_SD1_BASE_GATE>,
 		 <&sysclk K230_HS_SD1_AXI_GATE>,
 		 <&sysclk K230_HS_SD1_CARD_GATE>,
 		 <&sysclk K230_HS_SD1_TIMER_GATE>;
-	clock-names = "core", "bus", "axi", "block", "timer";
+	clock-names = "core", "bus", "base", "axi", "block", "timer";
 };
 
 // Same five-clock claim for the RTL8189FTV's SDIO controller (task
@@ -586,12 +600,13 @@
 // the shared driver) -- so &mmc_sd0 needs the identical override, not a
 // smaller one. Every mainline kernel applies that patch (nix/kernel-mainline.nix).
 &mmc_sd0 {
-	clocks = <&sysclk K230_HS_SD0_BASE_GATE>,
+	clocks = <&sd_ref_clk>,
 		 <&sysclk K230_HS_SD0_AHB_GATE>,
+		 <&sysclk K230_HS_SD0_BASE_GATE>,
 		 <&sysclk K230_HS_SD0_AXI_GATE>,
 		 <&sysclk K230_HS_SD0_CARD_GATE>,
 		 <&sysclk K230_HS_SD0_TIMER_GATE>;
-	clock-names = "core", "bus", "axi", "block", "timer";
+	clock-names = "core", "bus", "base", "axi", "block", "timer";
 };
 
 // The RTC sits in the PMU block behind the PMU APB gate, which mainline

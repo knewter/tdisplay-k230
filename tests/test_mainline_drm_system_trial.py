@@ -582,4 +582,18 @@ class SystemTrialTests(unittest.TestCase):
             self.assertEqual(json.loads(args.result.read_text())["status"],"not-started-no-serial-opened")
 
 
+class NormalBannerTests(unittest.TestCase):
+    def test_mainline_normal_relies_on_spl_and_duplicate_banner(self):
+        self.assertIsNone(trial.normal_banner({"uname": "7.3.0-rc5"}))
+        self.assertFalse(trial.returned_to_normal(b"[ 0.0] Linux version 7.3.0-rc5 x\n", None))
+        self.assertTrue(trial.returned_to_normal(b"U-Boot SPL 2022.10\n", None))
+
+    def test_distinct_normal_kernel_is_detected(self):
+        banner = trial.normal_banner({"uname": "6.6.36"})
+        self.assertTrue(trial.returned_to_normal(b"[ 0.0] Linux version 6.6.36 vendor\n", banner))
+
+    def test_committed_baseline_is_the_installed_mainline(self):
+        self.assertIsNone(trial.NORMAL_BANNER)
+
+
 if __name__ == "__main__": unittest.main()

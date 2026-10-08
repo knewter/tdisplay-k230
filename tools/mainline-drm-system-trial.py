@@ -25,6 +25,23 @@ import uuid
 _spec = importlib.util.spec_from_file_location("mainline_rdinit", Path(__file__).with_name("mainline-drm-initrd-shell-trial.py"))
 rd = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(rd)
+CANDIDATE_UNAME = "7.3.0-rc5"
+
+
+def normal_banner(baseline: dict = None) -> bytes | None:
+    """Banner of a return to the protected normal, or None when it equals the
+    candidate's (then a second candidate banner is the duplicate-banner error)."""
+    if baseline is None:
+        baseline = json.loads(rd.NORMAL_BASELINE.read_text())
+    uname = baseline["uname"]
+    return None if uname == CANDIDATE_UNAME else b"Linux version " + uname.encode()
+
+
+def returned_to_normal(line: bytes, banner: bytes | None) -> bool:
+    return b"U-Boot SPL" in line or (banner is not None and banner in line)
+
+
+NORMAL_BANNER = normal_banner()
 CONTROLS = ("fsck.mode=skip", "systemd.mask=k230-root-growth.service", "systemd.mask=register-nix-paths.service")
 IGNORE_UNUSED_RESOURCES_CONTROLS = ("clk_ignore_unused", "pd_ignore_unused")
 TRACE_ENABLE = ("k230.boot_trace=1", "k230.boot_trace_sbi_only=1")
@@ -306,7 +323,7 @@ def wait_init_exec_candidate(session, p: dict, timeout=180.0, clock=time.monoton
                         facts["errors"].append("candidate-args-mismatch-or-duplicate")
                 if re.fullmatch(rb"\[ *[0-9]+\.[0-9]{6}\] Run /init as init process\n", normalized):
                     facts["init_announcement"] = True
-                if b"U-Boot SPL" in line or b"Linux version 6.6.36" in line:
+                if returned_to_normal(line, NORMAL_BANNER):
                     facts["errors"].append("candidate-returned-before-qualified-login")
                 if b"K230_INIT_EXEC_RETURN" in line:
                     value = init_exec_return_record(line)
@@ -414,7 +431,7 @@ def wait_init_exec_transition_candidate(session, p: dict, timeout=180.0, clock=t
                         parent["errors"].append("candidate-args-mismatch-or-duplicate")
                 if re.fullmatch(rb"\[ *[0-9]+\.[0-9]{6}\] Run /init as init process\n", line):
                     parent["init_announcement"] = True
-                if b"U-Boot SPL" in line or b"Linux version 6.6.36" in line:
+                if returned_to_normal(line, NORMAL_BANNER):
                     parent["errors"].append("candidate-returned-before-qualified-login")
                 if b"K230_INIT_EXEC_RETURN" in line or b"K230_INIT_EXEC_TRANSITION" in line:
                     if not parent["received_args"] or not parent["init_announcement"]:
