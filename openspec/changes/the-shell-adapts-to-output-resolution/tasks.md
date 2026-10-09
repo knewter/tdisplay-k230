@@ -70,12 +70,15 @@
 - [x] 5.2 `openspec validate the-shell-adapts-to-output-resolution --strict`
       exits 0.
 - [x] 5.3 Cross-reference the output configure, reflow and hit-testing work
-      from `plugging-in-hdmi-moves-the-display` tasks 5.2/5.3. Coordinator
+      from the original HDMI tasks 5.2/5.3, now preserved in
+      `the-hdmi-shell-works-in-landscape`. Coordinator
       reconciliation on 2026-10-01 links the completed host work and names
       the still-open density, Wi-Fi/theme geometry, physical taps and dock
       decisions here. No HDMI hardware or unfinished layout gate is ticked.
       Proof: `openspec validate the-shell-adapts-to-output-resolution --strict`
-      and `openspec validate plugging-in-hdmi-moves-the-display --strict`.
+      and `openspec validate plugging-in-hdmi-moves-the-display --strict`
+      (historical proof before archive). Current successor reference check:
+      `openspec validate the-hdmi-shell-works-in-landscape --strict`.
 
 ## 6. Board-gated follow-up (explicitly open, out of scope for this change)
 
@@ -87,13 +90,14 @@ board traces identify 90° software composition as a major cost (442 ms median
 frame build versus 15 ms unrotated). Tasks below remain open.
 
 - [ ] 6.1 On the physical board with an HDMI monitor attached (requires
-      `plugging-in-hdmi-moves-the-display` task group 3's manual switch, or
-      whatever HDMI-enable path lands first), confirm the compositor
+      the accepted automatic HDMI arrangement, or its separately qualified
+      HDMI-only recovery boot), confirm the compositor
       actually offers this client a whole-output configure at the
       monitor's real resolution, and that `is_whole_output` accepts it
       (board log line `configure WxH`, not `configure-rejected` or the
-      no-longer-existing `pillarbox WxH -> ...`). Capture a photograph of
-      the monitor showing a filled (not pillarboxed) Home screen. Commit
+      no-longer-existing `pillarbox WxH -> ...`). Record the operator observation of
+      a filled (not pillarboxed) Home screen with a matching native capture;
+      the operator waived a monitor photograph on 2026-10-09. Commit
       under `docs/evidence/shell-responsive/board/`.
 - [ ] 6.2 On the same board session, confirm a real finger/stylus tap on a
       reflowed Drawer tile *and* a reflowed Home grid tile (task group 7)

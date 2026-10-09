@@ -88,9 +88,7 @@ teaching the mainline driver the GT9895 and porting the vendor one.
 
 <!-- Grounding: installed board/service evidence in docs/evidence/the-touchscreen-becomes-an-hdmi-trackpad/board/ and overall physical operator acceptance in docs/evidence/proposal-closeout/2026-10-01/trackpad.md. Additional capture is waived. Individual unreported gesture cases are not new physical proof. -->
 
-While an HDMI connector is the active display output (per
-`display/hdmi`'s reboot-based device-tree swap in
-`plugging-in-hdmi-moves-the-display`), the GT9895 touchscreen's raw
+While an HDMI connector is the active display output, the GT9895 touchscreen's raw
 `ABS_MT_*` contact stream SHALL be exclusively grabbed (`EVIOCGRAB`) and
 re-emitted through a virtual `uinput` device declared with touchpad
 properties (`INPUT_PROP_POINTER` + `INPUT_PROP_BUTTONPAD`, `BTN_TOOL_FINGER`/
@@ -113,6 +111,11 @@ in `docs/evidence/the-touchscreen-becomes-an-hdmi-trackpad/board/`.
 The operator confirmed cursor motion, and Sway classifies the actual virtual
 device as a touchpad with tapping enabled. The operator subsequently accepts the HDMI trackpad as working;
 `docs/evidence/proposal-closeout/2026-10-01/trackpad.md` records that acceptance and earlier panel-return feedback.
+The later accepted automatic cable cycle, matching unchanged boot identity
+and normal installation are recorded in
+`docs/evidence/hdmi-hotplug/live-switch/fast-runtime-qualification.json`,
+`docs/evidence/hdmi-hotplug/live-switch/normal-hotplug-install-serial.json` and
+`docs/evidence/hdmi-hotplug/live-switch/normal-hotplug-runtime-state.json`.
 It does not manufacture individual per-gesture observations.*
 
 #### Scenario: HDMI is the active output and a finger moves across the glass
@@ -124,9 +127,8 @@ It does not manufacture individual per-gesture observations.*
 
 #### Scenario: The panel becomes the active output again
 
-- **WHEN** the board is next booted with the panel DTB (or, if
-  `plugging-in-hdmi-moves-the-display` group 4's no-reboot switching later
-  lands, the HDMI connector reports `disconnected` while running)
+- **WHEN** the HDMI cable is unplugged from the combined mainline runtime
+  and the panel becomes the active output, or the panel-only recovery tree boots
 - **THEN** the touchscreen is ungrabbed and the coordinator's direct
   absolute touch-to-output mapping behaves exactly as it did before this
   change existed
@@ -179,3 +181,39 @@ reach sway and change what the shell shows, as it does under the vendor kernel.
 #### Scenario: Touch capture completes without a timeout
 - **WHEN** the trial controller captures a long touch session
 - **THEN** it reports a complete contact summary instead of an unverified retrieval
+
+### Requirement: Touch shares its reset and interrupt lines with the optional HDMI bridge
+
+Touch's reset (GPIO24) and interrupt (GPIO23) lines SHALL be treated as
+shared with the optional LT9611 HDMI bridge, not as touch-exclusive pins,
+by any future change to this capability. The panel's own reset and enable
+lines (GPIO22/GPIO25) are not part of this sharing and are unaffected.
+
+*Grounding: schematic `T-Display K230_V1.0_NEW.pdf` sheet "Video" ties
+`HDMI_RSTN`→`TP_RST` and `HDMI_INT`→`TP_INT` as single unbroken wires — the
+LT9611's reset and interrupt pins are the same physical nets as touch's,
+not merely the same GPIO number reused in a different device tree. The
+vendor's own LT9611 device-tree node (`k230-canmv-v3.dts:64,66`, pinned
+kernel tree) requests `GPIO_ACTIVE_HIGH` reset and `IRQ_TYPE_EDGE_FALLING`
+on these pins, while this board's touch node
+(`nix/dts/k230-tdisplay.dts:200,224`) requests `GPIO_ACTIVE_LOW` reset and
+`IRQ_TYPE_LEVEL_LOW` — a real disagreement on the same wire, not a
+cosmetic one. Full detail, including the specific schematic sheets and net
+labels, in `docs/research/hdmi-hotplug.md` §1–§2.*
+
+The vendor baseline `nix/dts/k230-tdisplay.dts` carries touch only,
+matching the vendor sources surveyed (`docs/research/hdmi-hotplug.md` §3).
+The later mainline HDMI tree from task group 7 combines touch and LT9611
+without giving the bridge reset/IRQ ownership: its polling bridge waits
+for the touch driver to bind before programming the shared-reset device.
+That matching trial and the operator's acceptance are recorded in
+`docs/evidence/hdmi-mainline/README.md`.
+
+#### Scenario: A change proposes adding an LT9611 node to the default tree
+
+- **WHEN** a future change proposes adding the LT9611 to the same device
+  tree that already carries the GT9895 touch node
+- **THEN** the review checks the proposed GPIO23/24 reset polarity and
+  interrupt trigger type against both consumers' existing requirements, not
+  only against the LT9611 in isolation, since the pins are shared hardware,
+  not independently configurable per node

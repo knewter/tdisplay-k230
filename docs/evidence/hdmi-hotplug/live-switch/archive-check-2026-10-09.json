@@ -1,0 +1,43 @@
+{
+  "checked_source_commit": "940e500ce60c10c1359148d8e829ad4abfb92c6e",
+  "result": "PASS",
+  "retained_tasks_complete": 17,
+  "retained_tasks_open": 0,
+  "canceled_tasks": [
+    "3.1",
+    "3.2",
+    "3.3"
+  ],
+  "landscape_tasks_transferred": [
+    "5.1",
+    "5.2",
+    "5.3",
+    "5.4"
+  ],
+  "landscape_proposal_landed": "a9d355ad",
+  "hdmi_requirements_synced": 4,
+  "touch_before": 5,
+  "touch_after": 6,
+  "touch_added": [
+    "Touch shares its reset and interrupt lines with the optional HDMI bridge"
+  ],
+  "touch_modified": [
+    "While HDMI is the active output, touch is re-emitted as a virtual touchpad"
+  ],
+  "untouched_touch_requirements_preserved": 4,
+  "touch_requirement_hashes": {
+    "Touches are reported as input events": "2470753e3affbe4e642ad1997044b71ac5cacb7b5ef892aff2fa26d1998fe1eb",
+    "Touch support is a recorded divergence from upstream": "f21fc0a7752e5a4090a0ce72a236140ca9fb899d91b817eefda8e14fbf80b499",
+    "While HDMI is the active output, touch is re-emitted as a virtual touchpad": "1de5f0b2f9e96ffae643d6530e768d399401199662bbeaa5c7930b242350bfef",
+    "The mainline touch candidate is not reported as working without board evidence": "9f103c74788839d5964705fc9684eda1ff386ec1c13ed5ece30d34e9a46844ee",
+    "A finger on the glass drives the shell under the mainline kernel": "078272fcb3e2a5b94887e8a4408fc1a839c5f36b2459863d9740d2fad4f58844",
+    "Touch shares its reset and interrupt lines with the optional HDMI bridge": "0d9173f063abb623122abe2d512e6d4e2abc4f2a89f45e58db8d85e25b423490"
+  },
+  "hdmi_requirement_hashes": {
+    "The LT9611 is present and addressable": "96f9288b88d5d0d180d70a1f60854a68c7347b7bd28e4d2f261b2fcde4d14de0",
+    "DSI lanes are shared wiring, not a switch": "c2d78d271df885de42e5a98dd27fd24ad567271568ea8a6a9c38bdbdb0dbcd82",
+    "HDMI-only qualification remains a boot-time device-tree choice": "baf1ff143214768f6148bd13202e8bdb5c28c58950c91cb45171e072e459ade5",
+    "The cable selects the active display without a reboot": "86aaba15ac2d7e513983cf6d0afeb631ff1499dae88d5b32c41062aeffd948aa"
+  },
+  "limits": "No new board trial or latency measurement; historical UNVERIFIED markers retained."
+}

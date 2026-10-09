@@ -11,7 +11,7 @@ same check, and made it pass by asking the compositor for a centered
 568-aspect column instead — the shell drew, but pillarboxed, with black bars
 either side. The operator does not want that: plugging in a wider monitor
 should make the shell use the extra space, not float a narrow column inside
-it. `openspec/changes/plugging-in-hdmi-moves-the-display/tasks.md` group 5
+it. `openspec/changes/the-hdmi-shell-works-in-landscape/tasks.md` group 5
 ("Shell and card-shell landscape support," tasks 5.2–5.3) already named this
 exact gap — "not visually broken... without necessarily redesigning the
 layout for landscape" — before any HDMI output existed to test it against;
@@ -122,4 +122,4 @@ board-gated.
   this client a whole-output configure at 1920x1080/1080x1920 today, does
   a person's finger land on the reflowed drawer tiles correctly) remains
   open and board-gated, tracked in `tasks.md` and cross-referenced from
-  `plugging-in-hdmi-moves-the-display`'s own task 5.4.
+  `the-hdmi-shell-works-in-landscape`'s own task 5.4.

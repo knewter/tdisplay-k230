@@ -147,9 +147,9 @@
       "lane": "in-progress",
       "source": "in-progress",
       "physical": "pending",
-      "next": "Complete Home/drawer density scale, Wi-Fi/theme layout and dock design; then photograph real HDMI geometry and verify hit targets and panel restoration.",
+      "next": "Complete Home/drawer density scale, Wi-Fi/theme layout and dock design; then record real HDMI geometry and verify hit targets and panel restoration.",
       "dependencies": [
-        "plugging-in-hdmi-moves-the-display"
+        "2026-10-09-plugging-in-hdmi-moves-the-display"
       ],
       "evidence": [
         "docs/evidence/shell-responsive/README.md",
@@ -195,27 +195,6 @@
         "path": "docs/evidence/home-screen/app-actions/qemu/home-actions-right-click.png",
         "caption": "Right-click app menu in the paired RISC-V compositor/Rust fixture; touch holds still rearrange",
         "provenance": "QEMU capture"
-      }
-    },
-    "plugging-in-hdmi-moves-the-display": {
-      "lane": "in-progress",
-      "source": "in-progress",
-      "physical": "verified",
-      "next": "Automatic HDMI switching is installed and operator-accepted. Settings reboot and landscape remain open; precise HPD timing is deferred by the operator.",
-      "rationale": "Matching faster cable cycle and real-touch navigation accepted; normal installation/autoboot prove the deployed tuple. No sampled latency result is claimed.",
-      "reviewRevision": "6b4fe555645ac553914549fcd926d1f0902b65d1",
-      "dependencies": [],
-      "evidence": [
-        "docs/evidence/hdmi-hotplug/live-switch/README.md",
-        "docs/evidence/hdmi-hotplug/live-switch/closeout-2026-10-09.md",
-        "docs/evidence/hdmi-hotplug/live-switch/normal-hotplug-install-serial.json",
-        "docs/evidence/hdmi-hotplug/live-switch/normal-hotplug-runtime-state.json",
-        "docs/evidence/hdmi-hotplug/panel-recovery-2026-09-30/README.md"
-      ],
-      "cover": {
-        "path": "docs/evidence/hdmi-hotplug/panel-recovery-2026-09-30/native-panel.jpg",
-        "caption": "Historical native panel recovery capture; current switching acceptance is in the linked operator reports",
-        "provenance": "Board capture"
       }
     },
     "the-shell-profiles-reported-interaction-jank": {
@@ -320,7 +299,7 @@
       "physical": "verified",
       "next": "Closed on operator acceptance; see evidence for waived captures and retained limits.",
       "dependencies": [
-        "plugging-in-hdmi-moves-the-display"
+        "2026-10-09-plugging-in-hdmi-moves-the-display"
       ],
       "evidence": [
         "docs/evidence/the-touchscreen-becomes-an-hdmi-trackpad/host-uinput-classification.md",
@@ -552,6 +531,44 @@
         "caption": "Home after ordinary reboot into the selected system",
         "provenance": "Board capture"
       }
+    },
+    "2026-10-09-plugging-in-hdmi-moves-the-display": {
+      "lane": "archived",
+      "source": "archived",
+      "physical": "verified",
+      "next": "Complete: automatic switching and navigation accepted. Settings reboot scope canceled; landscape remains in its separate proposal. Precise latency measurement is deferred.",
+      "rationale": "All 17 retained HDMI tasks complete with committed physical and installed-artifact proof. The operator canceled obsolete Settings reboot scope and authorized the landscape successor; no unperformed test is ticked.",
+      "reviewRevision": "940e500ce60c10c1359148d8e829ad4abfb92c6e",
+      "dependencies": [],
+      "evidence": [
+        "docs/evidence/hdmi-hotplug/live-switch/README.md",
+        "docs/evidence/hdmi-hotplug/live-switch/closeout-2026-10-09.md",
+        "docs/evidence/hdmi-hotplug/live-switch/normal-hotplug-install-serial.json",
+        "docs/evidence/hdmi-hotplug/live-switch/normal-hotplug-runtime-state.json",
+        "docs/evidence/hdmi-hotplug/panel-recovery-2026-09-30/README.md",
+        "docs/evidence/hdmi-hotplug/live-switch/scope-decision-2026-10-09.md",
+        "docs/evidence/hdmi-hotplug/live-switch/archive-check-2026-10-09.json"
+      ],
+      "cover": {
+        "path": "docs/evidence/hdmi-hotplug/panel-recovery-2026-09-30/native-panel.jpg",
+        "caption": "Historical native panel recovery capture; current switching acceptance is in the linked operator reports",
+        "provenance": "Board capture"
+      }
+    },
+    "the-hdmi-shell-works-in-landscape": {
+      "lane": "planned",
+      "source": "not-started",
+      "physical": "pending",
+      "next": "Qualify a landscape HDMI profile, finish geometry integration through the responsive-shell owner, then obtain separate Home/Settings monitor acceptance.",
+      "dependencies": [
+        "2026-10-09-plugging-in-hdmi-moves-the-display",
+        "the-shell-adapts-to-output-resolution"
+      ],
+      "evidence": [
+        "docs/evidence/hdmi-hotplug/live-switch/scope-decision-2026-10-09.md"
+      ],
+      "rationale": "Operator-authorized successor preserves all four original landscape gates; portrait HDMI acceptance is not landscape proof. No implementation is claimed.",
+      "reviewRevision": "a9d355ad"
     }
   }
 }
