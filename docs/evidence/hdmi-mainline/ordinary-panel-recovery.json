@@ -1,0 +1,71 @@
+{
+  "status": "PASS",
+  "command": "reboot (no U-Boot intervention)",
+  "timestamp": "2026-10-09T06:29:53.384772+00:00",
+  "normal_profile": "/nix/store/kp6ldmdx33lgjl55hzv3xba5a55ils48-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "persistent_boot_selection_changed": false,
+  "physical_panel_touch_verified": false,
+  "controller_sha256": "01495b80be2f2d4d70268d0079ae3c2ed25dcd6573e468047b9f47b460ccd2be",
+  "observed": {
+    "system": "/nix/store/kp6ldmdx33lgjl55hzv3xba5a55ils48-nixos-system-nixos-26.11.20260919.20b1ddd",
+    "profile": "/nix/store/kp6ldmdx33lgjl55hzv3xba5a55ils48-nixos-system-nixos-26.11.20260919.20b1ddd",
+    "kernel": "/nix/store/zv590h93l5cadw85aw7d66qnis1c7m34-linux-riscv64-unknown-linux-gnu-7.3.0-rc5/Image",
+    "boot_id": "705aebb4-4e1b-4630-9a67-4788bacd50c2",
+    "files": {
+      "Image": {
+        "bytes": 42745344,
+        "sha256": "c55a52e26c1638608488962bb95874c3ec91aa9a4c9aa320905944899e8e36a1",
+        "crc32": "aab04b7e"
+      },
+      "initrd.uimg": {
+        "bytes": 27323822,
+        "sha256": "18ff930ade292578afa3c2398d3dc0be7b7aa7081cefaec3de423e8185116b5f",
+        "crc32": "f7bf1f27"
+      },
+      "k230-tdisplay.dtb": {
+        "bytes": 13390,
+        "sha256": "a0b307843df4523cadd97928b5f870391d40a5310cce07b40a2316bbf24d5125",
+        "crc32": "bdf20b17"
+      },
+      "bootargs.txt": {
+        "bytes": 211,
+        "sha256": "877dffef91c38262c9fa1deadc6365ff863982b7f0874e9a3966d43784c74086",
+        "crc32": "87c614ca"
+      },
+      "fw_jump_add_uboot_head.bin": {
+        "bytes": 270808,
+        "sha256": "9627edbeea9b115d7040beea27cc61b23b6aca61cd502fd7760d7ee179f42c99",
+        "crc32": "99b89787"
+      },
+      "force_dtb": {
+        "bytes": 17,
+        "sha256": "175342c82dd1b437cdafb6bb01090e7ff73c2769515654c48b02c1e9f73440c6",
+        "crc32": "e80b1712"
+      },
+      "lcd_dtb": {
+        "bytes": 17,
+        "sha256": "175342c82dd1b437cdafb6bb01090e7ff73c2769515654c48b02c1e9f73440c6",
+        "crc32": "e80b1712"
+      },
+      "hdmi_dtb": {
+        "bytes": 17,
+        "sha256": "175342c82dd1b437cdafb6bb01090e7ff73c2769515654c48b02c1e9f73440c6",
+        "crc32": "e80b1712"
+      }
+    },
+    "panel_status": {
+      "/sys/class/drm/card0-DSI-1/status": "connected"
+    },
+    "input_names": [
+      "Goodix Berlin Capacitive TouchScreen",
+      "K230 PMU Power Key"
+    ],
+    "services": [
+      "active",
+      "active",
+      "active"
+    ]
+  },
+  "ordinary_autoboot_observed": true,
+  "normal_files_unchanged": true
+}

@@ -228,13 +228,17 @@ These links do not complete this proposal's HDMI hardware or landscape gates.
       verify with
       `openspec validate plugging-in-hdmi-moves-the-display --strict`.
       *2026-10-09: strict validation passed after recording the mainline
-      live workaround. Hardware switching and the new bundle's complete
-      boot/pointer proof remain unchecked and UNVERIFIED.*
-- [ ] 6.2 Run `python3 scripts/render_work_board.py > /dev/null`, commit,
+      live workaround. Hardware switching and the fresh bundle's physical
+      picture/pointer proof remain unchecked and UNVERIFIED.*
+- [x] 6.2 Run `python3 scripts/render_work_board.py > /dev/null`, commit,
       and hand off to the coordinator for an early merge to `master` per
       AGENTS.md, independent of whether groups 3–5 have started — the
       proposal and the research document are the reviewable deliverable at
       this point, not a private preface to the board work.
+
+      *2026-10-09: the work-board renderer passed. The planning artifacts
+      were already landed at `94196f97`; the continuation commits preserve
+      the remaining source and physical gates for the landing handoff.*
 
 ## 7. Mainline kernel port (the board's default since 2026-10-08)
 
@@ -245,13 +249,21 @@ port already carries the K230 LT9611 driver (`nix/patches/mainline/drm/lontium-l
 `DRM_LONTIUM_LT9611=y`) and `drm_bridge_connector_init()` in `canaan_dsi.c`.
 Groups 3–5 above apply to mainline once these tasks land.
 
-- [ ] 7.1 Make the mainline LT9611 driver's reset GPIO and IRQ optional (HPD by connector polling without an IRQ), as vendor `nix/patches/lt9611-dsi-port-b.patch` does, because GPIO24/GPIO23 belong to the GT9895 touch. Proof: `nix build .#kernelMainlineDrm`.
-- [ ] 7.2 Add `nix/dts/k230-tdisplay-mainline-drm-hdmi.dts` (LT9611 on `&i2c3` at 0x3b, DSI port@1 → LT9611 port@1 (Port B) → `hdmi-connector`, touch keeps GPIO24/23, no panel), a `dtsFile` parameter for `nix/device-tree-mainline-drm.nix`, and flake outputs `deviceTreeMainlineDrmHdmi` and `kernelMainlineDrmShellHdmiBootFiles` (the normal bundle with the HDMI DTB under `k230-tdisplay.dtb`). Proof: DTB builds and decompiles; host inspection of the bundle.
+- [x] 7.1 Make the mainline LT9611 driver's reset GPIO and IRQ optional (HPD by connector polling without an IRQ), as vendor `nix/patches/lt9611-dsi-port-b.patch` does, because GPIO24/GPIO23 belong to the GT9895 touch. Proof: `nix build .#kernelMainlineDrm`.
+- [x] 7.2 Add `nix/dts/k230-tdisplay-mainline-drm-hdmi.dts` (LT9611 on `&i2c3` at 0x3b, DSI port@1 → LT9611 port@1 (Port B) → `hdmi-connector`, touch keeps GPIO24/23, no panel), a `dtsFile` parameter for `nix/device-tree-mainline-drm.nix`, and flake outputs `deviceTreeMainlineDrmHdmi` and `kernelMainlineDrmShellHdmiBootFiles` (the normal bundle with the HDMI DTB under `k230-tdisplay.dtb`). Proof: DTB builds and decompiles; host inspection of the bundle.
+      *2026-10-09: the corrected full kernel and HDMI bundle build, DTB
+      graph/reset inspection, bundle identity inspection and 15 inspector
+      fixtures pass. Commands and immutable hashes are recorded in
+      `docs/evidence/hdmi-mainline/fixed-host-checks.json`,
+      `fixed-dtb-check.json` and `fixed-bundle-inspection.json`.
+      This is host proof, not a board boot.*
 - [ ] 7.3 On the board with a monitor attached, stage and volatile-trial-boot the HDMI bundle with `tools/coherent-shell-board-boot.py` (a plain reboot returns to the panel). Record the `HDMI-A-1` connector, EDID mode, LT9611 probe and `hsfreqrange` messages, a native `grim` capture, and the operator's report of the picture and touch-as-trackpad. Tune `canaan,hsfreqrange` if the link fails. Proof: serial record and operator report in `docs/evidence/hdmi-mainline/`.
       *2026-10-09 continuation: the original trial recovered HDMI after
-      re-enabling I2C access erased by touch's shared reset, then cycling
-      the output. Automatic HPD, a 256-byte EDID, native capture and the
-      operator's "screen works" report are recorded in
-      `docs/evidence/hdmi-mainline/README.md`. The new reset-ordering and
-      relay/uinput profile still need their matching build and board boot;
-      this partial live recovery does not complete 7.3.*
+      touch's shared reset and the operator reported "screen works".
+      The corrected kernel/bundle then built, staged and passed a matching
+      fresh volatile trial with automatic HPD, a 256-byte EDID, native
+      terminal/Home captures and the configured relay grabbing touch.
+      An ordinary protected panel reboot also passed serial checks.
+      Evidence is committed in `docs/evidence/hdmi-mainline/README.md`.
+      The fresh operator picture/cursor/tap report is still missing;
+      no physical touch pass is inferred and 7.3 stays unchecked.*

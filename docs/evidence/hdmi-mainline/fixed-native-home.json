@@ -1,0 +1,15 @@
+{
+  "capture_timestamp": "2026-10-09T06:41:04Z",
+  "transfer_timestamp": "2026-10-09T06:42:00Z",
+  "commands": [
+    "swaymsg 'card_shell home'",
+    "runuser -u shell -- env XDG_RUNTIME_DIR=/run/shell WAYLAND_DISPLAY=wayland-1 grim -c /run/shell/hdmi-fixed-home.png"
+  ],
+  "transfer": "private HTTP, board/host SHA256 matched",
+  "sha256": "6c8632fb3cc8f1871cdf90d06ee54b6841535bd7500fdb94b05869b1610187b1",
+  "bytes": 354298,
+  "width": 800,
+  "height": 1280,
+  "evidence_class": "native board capture after injected Home command",
+  "physical_navigation_verified": false
+}

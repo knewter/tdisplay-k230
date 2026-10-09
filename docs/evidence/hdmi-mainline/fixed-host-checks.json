@@ -1,0 +1,33 @@
+{
+  "timestamp": "2026-10-09T06:25:12.408252+00:00",
+  "source_revision": "f1d9143ac3fae0b67c195744e1c208ea702c63b3",
+  "source_sha256": "9efcaeffc8483725de6caccb0b5b7625df9a31db75ae76e0c5442f71ca54408c",
+  "commands": [
+    {
+      "command": "nix build .#kernelMainlineDrmShellHdmiBootFiles --max-jobs 1 --cores 8 --out-link /home/jadams/tmp/k230-hdmi-continue-private/hdmi-fixed-bundle -L",
+      "exit_code": 0
+    },
+    {
+      "command": "nix build .#kernelMainlineDrm --no-link --print-out-paths --max-jobs 1 --cores 8",
+      "exit_code": 0,
+      "output": "/nix/store/17mn8cyc2bls0yrphlhpcikn77f491kq-linux-riscv64-unknown-linux-gnu-7.3.0-rc5"
+    },
+    {
+      "command": "python3 tools/coherent-shell-boot-inspect.py /home/jadams/tmp/k230-hdmi-continue-private/hdmi-fixed-bundle",
+      "exit_code": 0
+    },
+    {
+      "command": "python3 tests/test_coherent_shell_boot_inspect.py --bundle /home/jadams/tmp/k230-hdmi-continue-private/hdmi-fixed-bundle",
+      "exit_code": 0,
+      "tests": 15
+    }
+  ],
+  "bundle": "/nix/store/fsdklilhav68mqd6z8p0zidvf7s3ws6i-k230-coherent-shell-boot-files",
+  "kernel": "/nix/store/17mn8cyc2bls0yrphlhpcikn77f491kq-linux-riscv64-unknown-linux-gnu-7.3.0-rc5/Image",
+  "system": "/nix/store/yndjf2iz1q1r0dndsbx154yr47bycak8-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "config": "/nix/store/2bzarfxxkfkc88mdg1sd23dk2aalw4s2-linux-config-riscv64-unknown-linux-gnu-7.3.0-rc5",
+  "INPUT_UINPUT": "m",
+  "DRM_DISPLAY_CONNECTOR": "y",
+  "uinput_module": "/nix/store/bc3xlc7iv7v37r8x6f4ik3yy51jip58p-linux-riscv64-unknown-linux-gnu-7.3.0-rc5-modules/lib/modules/7.3.0-rc5/kernel/drivers/input/misc/uinput.ko.xz",
+  "physical_boot_verified": false
+}

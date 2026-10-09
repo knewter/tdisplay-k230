@@ -1,0 +1,13 @@
+{
+  "command": "runuser -u shell -- env XDG_RUNTIME_DIR=/run/shell WAYLAND_DISPLAY=wayland-1 grim -c /run/shell/hdmi-fixed.png",
+  "transfer": "private HTTP, board/host SHA256 matched",
+  "sha256": "cc2d10af36ae21000abaa1911dcbad1e225dda5d3c603cbde016f0cae4577fed",
+  "bytes": 9681,
+  "width": 800,
+  "height": 1280,
+  "evidence_class": "native board capture",
+  "physical_navigation_verified": false,
+  "transfer_timestamp": "2026-10-09T06:39:26Z",
+  "capture_timestamp": "2026-10-09T06:36:46Z",
+  "surface": "startup terminal with cursor"
+}

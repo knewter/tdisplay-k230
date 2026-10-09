@@ -1,0 +1,14 @@
+{
+  "bundle": "/nix/store/fsdklilhav68mqd6z8p0zidvf7s3ws6i-k230-coherent-shell-boot-files",
+  "delta_paths": 18,
+  "stage": "/var/lib/k230/coherent-boot/yndjf2iz1q1r0dndsbx154yr47bycak8-hdmi-fixed",
+  "sha256": {
+    "manifest.json": "acbbec6e9ef7e56da40812997874ed29ebb0849ab4da424592c496c4cb94bee4",
+    "stage.py": "1ea4b198d32f5b57b6f3919e76e092824cd7aeca369bf4abfa237c9771e5cf72",
+    "install.py": "abbb49c2a0305208348882ad8acbcb974d768215166c69453b3a982fef94c6b5",
+    "delta.nar": "83fac19221f1d8f20a00ae3574109dc8d6eac1c6564a13c4a77adf0c2a800a31"
+  },
+  "timestamp": "2026-10-09T06:29:07.754294+00:00",
+  "result": "PASS",
+  "persistent_boot_selection_changed": false
+}

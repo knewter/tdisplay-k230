@@ -2,8 +2,9 @@
 
 Evidence class: **physical board, serial console**, **native Grim capture**,
 and the **operator's monitor observation**. A screenshot is not a photograph
-of the monitor. This change remains open; no automatic switch or repeatable
-fixed-bundle boot is claimed by this checkpoint.
+of the monitor. The corrected bundle has a matching fresh volatile boot and automatic relay
+startup. Physical picture/tap acceptance of that boot and automatic switching
+remain open; this change is not archived.
 
 ## Original trial and identity
 
@@ -166,7 +167,7 @@ checks are not substitutes for the full-kernel build required by task 7.1.
 The corrected HDMI DTB builds and decompiles. [DTB checks](fixed-dtb-check.json)
 record its hash and graph/reset checks; [reproduction command](check-dtb.py)
 checks reciprocal endpoints, one DSI output, no panel and touch ownership
-of GPIO24/23. Bundle inspection still awaits the full build.
+of GPIO24/23. The corrected bundle also passes inspection.
 
 The continuation makes LT9611 wait for the I2C touch device to finish binding,
 using the board-local `lontium,shared-reset-owner` phandle and a managed device
@@ -175,12 +176,87 @@ and system suspend. The panel tree does not instantiate LT9611.
 
 The separate `k230-mainline-drm-shell-hdmi` configuration enables the existing
 relay and loads `uinput`; the HDMI boot bundle now selects that configuration.
-The mainline DRM kernel enables `INPUT_UINPUT=m`. These source changes need
-their own complete build and a new volatile board boot before claiming the
-failure is fixed reproducibly. Task 7.3 stays unchecked until that boot,
-native capture and physical pointer interaction are recorded. Normal panel
-recovery also remains a separate observation.
+The mainline DRM kernel enables `INPUT_UINPUT=m`. The complete corrected
+kernel and bundle build now pass, including the
+narrow `nix build .#kernelMainlineDrm` proof, bundle inspection and all 15
+inspector fixtures; see [full host checks](fixed-host-checks.json) and
+[matching bundle inspection](fixed-bundle-inspection.json). The matching fresh
+boot and native captures are recorded below. Task 7.3
+stays unchecked pending the operator's picture, cursor movement and tap report.
+The ordinary panel recovery below is serial proof; no physical panel taps
+are inferred.
 
 The inherited card-shell QEMU kernel build was stopped to prioritize HDMI
 and retain one heavy build at a time in this session. Its task 5.1 remains
 unproved; no QEMU pass or archive is claimed here.
+
+## Matching corrected-bundle board trial
+
+The host exported an 18-path, 175,871,264-byte NAR closure delta over the
+private transfer link. [Staging report](fixed-stage.json) records immutable
+bundle identity, transfer hashes and the resulting stage. Staging passed its
+closure, artifact and protected-profile checks. Raw UART and transport details
+remain private.
+
+Before the corrected HDMI trial, the controller issued an ordinary `reboot`
+and sent no U-Boot intervention. [Panel recovery](ordinary-panel-recovery.json)
+records the original protected system, connected `DSI-1`, registered Goodix,
+three active shell services and byte-identical boot files. The
+[controller recipe](ordinary-panel-reboot.py) records its exact input checks.
+This is serial recovery proof, not physical panel touch acceptance.
+
+Corrected trial command, run under the controller's exclusive board lock:
+
+```sh
+python3 tools/coherent-shell-board-boot.py \
+  --candidate ~/tmp/k230-hdmi-continue-private/hdmi-fixed-bundle \
+  --state ~/tmp/k230-hdmi-continue-private/fixed-stage/state.json \
+  --output ~/tmp/k230-hdmi-continue-private/fixed-trial
+```
+
+[Trial report](fixed-trial-boot.json) passes every loaded-file CRC and matches
+running system
+`/nix/store/yndjf2iz1q1r0dndsbx154yr47bycak8-nixos-system-nixos-26.11.20260919.20b1ddd`
+and Image
+`/nix/store/17mn8cyc2bls0yrphlhpcikn77f491kq-linux-riscv64-unknown-linux-gnu-7.3.0-rc5/Image`.
+The persistent profile remains the protected panel system. No manual I2C
+recovery, connector force or custom modeline was required on this fresh boot.
+
+[Live state](fixed-live-state.txt), first captured at `2026-10-09T06:35:39Z`
+and repeated with a case-insensitive Goodix log filter, records:
+
+- Goodix input registration at 2.570689 seconds, before LT9611 revision
+  `0xe2` at 2.739239 seconds.
+- Initial 1920-pixel video and DSI lane rate 891000 kbps, `hsfreqrange 0x96`.
+- Automatic `connected` HDMI status, a 256-byte EDID and its mode list.
+- Sway's selected EDID mode **1280×800 at 59.910 Hz**, transform 90,
+  logical 800×1280. The corresponding later bridge check decodes 1280 pixels,
+  lane rate 445500 kbps and `hsfreqrange 0x96`.
+- Four active services: `shell`, `shell-ui`, `theme-helper` and the configured
+  `k230-touch-trackpad`; `/dev/uinput` exists, the relay grabs event1 and Sway
+  recognizes the enabled virtual touchpad.
+
+The vertical counter still reports one extra active line (1081, then 801).
+No hsfreqrange tuning was performed. The relay's grab, rather than Sway's
+raw-touch send-events flag, routes physical Goodix events exclusively to it.
+
+The first [native capture](fixed-native-terminal.png), at
+`2026-10-09T06:36:46Z`, shows the terminal started by the existing unconditional
+Sway `exec` and a rendered cursor. An attempted base64 UART copy failed
+padding validation and is not accepted as image proof. The private HTTP copy
+passed the board/host SHA256 comparison; see [capture metadata](fixed-native-terminal.json).
+
+The compositor then received `swaymsg 'card_shell home'`. At
+`2026-10-09T06:41:04Z`, [native Home capture](fixed-native-home.png) shows the
+shell and cursor at 800×1280. [Home metadata](fixed-native-home.json) records
+commands, timestamp, dimensions and the matched transfer hash. This is a
+native capture following an injected Home command, not a physical tap test
+or monitor photograph. No pointer movement/click was injected during this
+corrected-bundle trial.
+
+The operator was asked to confirm the fresh monitor picture, finger-driven
+cursor movement and taps. No answer has been received at this checkpoint.
+The original operator's "screen works" report applies to the old live
+workaround only. Task 7.3 remains unchecked; groups 3–5 and archive also remain
+open. The board is left on the corrected **volatile HDMI trial**; an ordinary
+reboot retains the protected panel selection.

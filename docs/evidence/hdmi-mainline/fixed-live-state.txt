@@ -1,0 +1,125 @@
+BEGIN_FIXED
+Fri Oct  9 06:37:11 AM UTC 2026
+7.3.0-rc5
+/nix/store/yndjf2iz1q1r0dndsbx154yr47bycak8-nixos-system-nixos-26.11.20260919.20b1ddd
+/nix/store/17mn8cyc2bls0yrphlhpcikn77f491kq-linux-riscv64-unknown-linux-gnu-7.3.0-rc5/Image
+/nix/store/kp6ldmdx33lgjl55hzv3xba5a55ils48-nixos-system-nixos-26.11.20260919.20b1ddd
+active
+active
+active
+active
+crw------- 1 root root 10, 223 Oct  9 01:33 /dev/uinput
+connected
+256 /sys/class/drm/card0-HDMI-A-1/edid
+1920x1080
+1920x1080
+1920x1080
+1920x1080
+1920x1080
+1680x1050
+1600x900
+1280x1024
+1440x900
+1280x800
+1280x720
+1280x720
+1280x720
+1280x720
+1024x768
+800x600
+720x576
+720x576
+720x480
+720x480
+720x480
+720x480
+640x480
+640x480
+640x480
+720x400
+[    2.417617] goodix-berlin-i2c 0-005d: supply avdd not found, using dummy regulator
+[    2.426537] goodix-berlin-i2c 0-005d: supply vddio not found, using dummy regulator
+[    2.570689] input: Goodix Berlin Capacitive TouchScreen as /devices/platform/soc/91408000.i2c/i2c-0/0-005d/input/input1
+[    2.571978] lt9611 0-003b: supply vdd not found, using dummy regulator
+[    2.572151] lt9611 0-003b: supply vcc not found, using dummy regulator
+[    2.739239] lt9611 0-003b: LT9611 revision: 0xe2
+[    2.747281] canaan-mipi-dsi 90850000.dsi: Attached device lt9611
+[    3.590506] canaan-mipi-dsi 90850000.dsi: DSI PHY: lane 891000 kbps, voc 0x7, hsfreqrange 0x96
+[    4.645949] lt9611 0-003b: video check: hactive_a=1920, hactive_b=0, vactive=1081, v_total=1125, h_total_sysclk=400
+[   66.348556] input: K230 Virtual Touchpad (HDMI mode) as /devices/virtual/input/input2
+[   75.237635] canaan-mipi-dsi 90850000.dsi: DSI PHY: lane 445500 kbps, voc 0x17, hsfreqrange 0x96
+[   75.965194] lt9611 0-003b: video check: hactive_a=1280, hactive_b=0, vactive=801, v_total=823, h_total_sysclk=524
+Started Re-emit the touchscreen as a virtual touchpad while HDMI is the active output (prototype).
+k230-touch-trackpad: mode -> Trackpad (panel connected: false)
+k230-touch-trackpad: entered trackpad mode, grabbed /dev/input/event1 (x 0..1023 y 0..2399), axes: 47,57,53,54
+Output HDMI-A-1 'Hewlett Packard HP 27wm 6CM73216RD' (focused)
+  Current mode: 1280x800 @ 59.910 Hz
+  Power: on
+  Position: 0,0
+  Scale factor: 1.000000
+  Scale filter: nearest
+  Subpixel hinting: unknown
+  Transform: 90
+  Workspace: 1
+  Max render time: off
+  Adaptive sync: unsupported
+  Allow tearing: no
+  HDR: unsupported
+  Available modes:
+    1920x1080 @ 60.000 Hz
+    1920x1080 @ 60.000 Hz (16:9)
+    1920x1080 @ 59.940 Hz (16:9)
+    1920x1080 @ 50.000 Hz
+    1920x1080 @ 50.000 Hz (16:9)
+    1680x1050 @ 59.883 Hz
+    1600x900 @ 60.000 Hz
+    1280x1024 @ 60.020 Hz
+    1440x900 @ 59.901 Hz
+    1280x800 @ 59.910 Hz
+    1280x720 @ 60.000 Hz
+    1280x720 @ 60.000 Hz (16:9)
+    1280x720 @ 59.940 Hz (16:9)
+    1280x720 @ 50.000 Hz (16:9)
+    1024x768 @ 60.004 Hz
+    800x600 @ 60.317 Hz
+    720x576 @ 50.000 Hz (16:9)
+    720x576 @ 50.000 Hz (4:3)
+    720x480 @ 60.000 Hz (16:9)
+    720x480 @ 60.000 Hz (4:3)
+    720x480 @ 59.940 Hz (16:9)
+    720x480 @ 59.940 Hz (4:3)
+    640x480 @ 60.000 Hz (4:3)
+    640x480 @ 59.940 Hz
+    640x480 @ 59.940 Hz (4:3)
+    720x400 @ 70.082 Hz
+
+Input device: wlr_virtual_keyboard_v1
+  Type: Keyboard
+  Identifier: 0:0:wlr_virtual_keyboard_v1
+  Product ID: 0
+  Vendor ID: 0
+  Active Keyboard Layout: wvkbd
+
+Input device: K230 Virtual Touchpad (HDMI mode)
+  Type: Touchpad
+  Identifier: 1:1:K230_Virtual_Touchpad_(HDMI_mode)
+  Product ID: 1
+  Vendor ID: 1
+  Libinput Send Events: enabled
+
+Input device: Goodix Berlin Capacitive TouchScreen
+  Type: Touch
+  Identifier: 0:0:Goodix_Berlin_Capacitive_TouchScreen
+  Product ID: 0
+  Vendor ID: 0
+  Libinput Send Events: enabled
+
+Input device: K230 PMU Power Key
+  Type: Keyboard
+  Identifier: 0:0:K230_PMU_Power_Key
+  Product ID: 0
+  Vendor ID: 0
+  Active Keyboard Layout: English (US)
+  Libinput Send Events: enabled
+
+END_FIXED
