@@ -58,7 +58,7 @@ should ever be accepted at its own size; the other must still be rejected.
 - **Follow-up, same branch (coordinator-requested after the above landed):**
   add a shared `crate::density_scale`/`crate::reflow_columns` pair (`lib.rs`)
   and use them for two further reflows, each guarded by new host tests:
-  - Home's grid/dock now reflow their column count too, exactly like the
+  - Home's grid now reflows its column count too, exactly like the
     Drawer's, via a new `columns` field on the persisted `HomeLayout` and
     `HomeLayout::reflow_to` -- a safe migration (flatten the stored items in
     reading order, re-place them through the existing, already-tested
@@ -85,11 +85,15 @@ should ever be accepted at its own size; the other must still be rejected.
 scale with `density_scale` -- only their column counts reflow. A tall,
 dense HDMI output gets more same-sized (80px-icon) tiles, not visibly
 larger ones the way Settings' text/rows now do; a literal icon/text density
-scale for the grid surfaces remains a named follow-up (see `design.md`).
+scale for the grid surfaces is preserved as landscape task 7.1. The dock
+keeps four slots; its slot-count decision is preserved as landscape task 7.3.
 Settings' Wi-Fi sub-page (its own pre-existing, independent, non-uniform
 `cr.scale(width/568.0, height/1232.0)`) and the theme chooser are untouched
 by and excluded from the new content transform -- `scene`'s Settings arm
-returns before reaching it whenever either sub-page is open. No kernel,
+returns before reaching it whenever either sub-page is open. Their reflow is
+preserved as landscape task 7.2. The operator authorized these transfers on
+2026-10-09; all three remain unchecked in
+`the-hdmi-shell-works-in-landscape`. No kernel,
 device-tree, or board-flashing change of any kind; this change touches only
 `nix/rust-shell-client`. No board or QEMU access is used or required to
 implement or test it — see `tasks.md` for what remains genuinely
@@ -119,7 +123,7 @@ board-gated.
   image; `nix build .#handheld-shell-rust`-style closures are unaffected in
   shape, only in the Rust source they build from.
 - Real HDMI-attached board verification (does the compositor actually offer
-  this client a whole-output configure at 1920x1080/1080x1920 today, does
+  this client a whole-output configure at the monitor's actual logical size, does
   a person's finger land on the reflowed drawer tiles correctly) remains
   open and board-gated, tracked in `tasks.md` and cross-referenced from
   `the-hdmi-shell-works-in-landscape`'s own task 5.4.

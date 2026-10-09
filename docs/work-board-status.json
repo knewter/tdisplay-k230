@@ -147,16 +147,17 @@
       "lane": "in-progress",
       "source": "in-progress",
       "physical": "pending",
-      "next": "Complete Home/drawer density scale, Wi-Fi/theme layout and dock design; then record real HDMI geometry and verify hit targets and panel restoration.",
+      "next": "Record matching whole-output configure/native capture and confirm filled Home plus real Home, Drawer and Settings target activation (tasks 6.1/6.2).",
       "dependencies": [
         "2026-10-09-plugging-in-hdmi-moves-the-display"
       ],
       "evidence": [
         "docs/evidence/shell-responsive/README.md",
-        "docs/evidence/shell-responsive/integration-host.json"
+        "docs/evidence/shell-responsive/integration-host.json",
+        "docs/evidence/shell-responsive/scope-decision-2026-10-09.md"
       ],
-      "rationale": "Task 6 still includes source/design work. Existing HDMI installation and pointer checks do not complete the remaining responsive layout.",
-      "reviewRevision": "647c8d3e500d4accc3a87474e8fcab393980a799",
+      "rationale": "Host implementation is complete. Density, Wi-Fi/theme layout and dock policy transfer to landscape tasks 7.1\u20137.3 under the operator\u2019s scope decision; physical responsive proof remains pending.",
+      "reviewRevision": "67b6c55a",
       "cover": {
         "path": "docs/evidence/shell-responsive/home-1080x1920.png",
         "caption": "Host render with synthetic app entries at portrait HDMI size",
@@ -559,16 +560,17 @@
       "lane": "in-progress",
       "source": "in-progress",
       "physical": "pending",
-      "next": "Qualify a landscape HDMI profile, finish geometry integration through the responsive-shell owner, then obtain separate Home/Settings monitor acceptance.",
+      "next": "Qualify a landscape HDMI profile, integrate existing responsive geometry, complete density/Wi-Fi/theme/dock follow-ups, then obtain separate physical landscape acceptance.",
       "dependencies": [
         "2026-10-09-plugging-in-hdmi-moves-the-display",
         "the-shell-adapts-to-output-resolution"
       ],
       "evidence": [
-        "docs/evidence/hdmi-hotplug/live-switch/scope-decision-2026-10-09.md"
+        "docs/evidence/hdmi-hotplug/live-switch/scope-decision-2026-10-09.md",
+        "docs/evidence/shell-responsive/scope-decision-2026-10-09.md"
       ],
-      "rationale": "Planning validation and proposal publication are complete; all four implementation/physical tasks remain open. Portrait HDMI acceptance is not landscape proof. No implementation is claimed.",
-      "reviewRevision": "a9d355ad"
+      "rationale": "Planning is published; seven implementation/physical tasks remain open, including three operator-authorized responsive follow-ups. Portrait HDMI acceptance is not landscape proof.",
+      "reviewRevision": "67b6c55a"
     }
   }
 }

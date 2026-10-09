@@ -224,3 +224,18 @@ Widening `pillarbox_width`'s column (e.g. to some fraction of the output
 rather than the exact design aspect) was considered and rejected outright:
 the operator's own instruction was that a wider monitor should be filled,
 not float any column at all, regardless of the column's width.
+
+## Scope reconciliation — 2026-10-09
+
+The operator authorized: "you can move those into the landscape proposal".
+Original tasks 6.3–6.5 transfer to `the-hdmi-shell-works-in-landscape` as
+unchecked tasks 7.1–7.3: icon/text density, Wi-Fi/theme reflow and the dock
+slot-count decision. The successor preservation landed in `67b6c55a` before
+removing the duplicate open tasks here. No runtime implementation is changed.
+
+The delta's earlier "grid and dock use more columns" wording contradicted
+this audit and the current `home_grid::DOCK_SLOTS = 4` implementation. The
+accepted responsive requirement now describes grid column reflow and retains
+four dock slots; the successor owns whether/how that slot count changes.
+Physical fill and Home/Drawer/Settings target checks remain open as 6.1/6.2.
+This transfer does not prove those checks or authorize an archive without them.

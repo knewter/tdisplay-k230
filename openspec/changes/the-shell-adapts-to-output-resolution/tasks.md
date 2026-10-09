@@ -73,14 +73,15 @@
       from the original HDMI tasks 5.2/5.3, now preserved in
       `the-hdmi-shell-works-in-landscape`. Coordinator
       reconciliation on 2026-10-01 links the completed host work and names
-      the still-open density, Wi-Fi/theme geometry, physical taps and dock
-      decisions here. No HDMI hardware or unfinished layout gate is ticked.
+      the remaining physical checks here and the density, Wi-Fi/theme
+      geometry and dock decisions now owned by the landscape successor. No HDMI
+      hardware or unfinished layout gate is ticked.
       Proof: `openspec validate the-shell-adapts-to-output-resolution --strict`
       and `openspec validate plugging-in-hdmi-moves-the-display --strict`
       (historical proof before archive). Current successor reference check:
       `openspec validate the-hdmi-shell-works-in-landscape --strict`.
 
-## 6. Board-gated follow-up (explicitly open, out of scope for this change)
+## 6. Physical closeout checks and preserved follow-ups
 
 2026-09-29 checkpoint: [physical HDMI trial](../../../docs/evidence/shell-responsive/board/README.md)
 records accepted 1080×1920 configures, native drawer captures and operator-confirmed
@@ -106,19 +107,18 @@ frame build versus 15 ms unrotated). Tasks below remain open.
       scaled content column (this change's host tests prove the geometry
       math; only the board proves a real touch controller and compositor
       agree with it end to end).
-- [ ] 6.3 Design and implement a real icon/text density scale for the Home
-      grid and the Drawer (`design.md`'s "Non-goal, both passes" section):
-      today only their column counts reflow with `crate::reflow_columns`;
-      `ICON_SIZE`/`ROW_HEIGHT`/tile margins stay the panel's own native
-      pixel size at every surface size, unlike Settings' content column.
-- [ ] 6.4 Design and implement a real reflow (or a uniform, centered scale)
-      for `paint_wifi`'s and the theme chooser's existing non-uniform
-      `cr.scale(width/568.0, height/1232.0)`, which this change's Settings
-      content transform deliberately excludes and leaves as-is.
-- [ ] 6.5 Design whether/how Home's dock should reflow its own slot count
-      (`DOCK_SLOTS`, deliberately left fixed at 4 by task group 7 --
-      `design.md`'s audit table) once real board/touch evidence from 6.1/
-      6.2 is in hand to verify against.
+
+### Scope transfer — 2026-10-09
+
+The operator authorized moving original tasks 6.3–6.5 to
+[`the-hdmi-shell-works-in-landscape`](../the-hdmi-shell-works-in-landscape/tasks.md),
+where they remain unchecked as 7.1–7.3. This preserves icon/text density,
+Wi-Fi/theme reflow and the dock slot-count decision without claiming any was
+performed. Tasks 6.1/6.2 remain physical gates here; this proposal stays open.
+See [the committed scope decision](../../../docs/evidence/shell-responsive/scope-decision-2026-10-09.md).
+
+Scope proof: `openspec validate the-shell-adapts-to-output-resolution --strict`
+and `openspec validate the-hdmi-shell-works-in-landscape --strict`.
 
 ## 7. Density scale, Home grid reflow, and a Settings content column (coordinator follow-up, host-only)
 

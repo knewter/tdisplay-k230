@@ -71,10 +71,12 @@ tests, `<!-- UNVERIFIED -->` on the physical board or under QEMU: no test
 here drives a real touch/drag gesture against a reflowed grid, only the
 pure placement/geometry functions a real drag also calls.*
 
-The Home screen's grid and dock SHALL use more columns, proportional to the
+The Home screen's grid SHALL use more columns, proportional to the
 surface's own width (the same reflow the Drawer's grid already uses),
 instead of a fixed column count that leaves a wide output's extra space as
-bigger gaps between the same four columns. Every icon, folder, and widget
+bigger gaps between the same four columns. The dock SHALL retain its existing
+four slots; whether/how its slot count reflows is preserved in
+`the-hdmi-shell-works-in-landscape` task 7.3. Every icon, folder, and widget
 already pinned to the grid SHALL remain present after a column-count
 change, in its original relative reading order (top-left to bottom-right,
 page by page); a widget's multi-cell span SHALL remain a single, contiguous,
@@ -84,7 +86,7 @@ count already in effect SHALL NOT alter the stored layout.
 #### Scenario: An HDMI monitor is configured wider than the panel
 
 - **WHEN** Home is displayed on a surface wider than the 568px design width
-- **THEN** its grid and dock use more columns, proportional to the extra
+- **THEN** its grid uses more columns, proportional to the extra
   width, and every previously pinned item is still present, in its
   original relative order
 
