@@ -1,0 +1,20 @@
+{
+  "archive": "2026-10-09-the-handheld-gets-a-design-and-ux-review",
+  "capability": "docs/handheld-ux-plan",
+  "old_requirements_preserved": {
+    "The project SHALL maintain an evidence-labelled UX plan": "44639ed8ced97fc705533e2487da4756cbe84915bf87b65baafbab46cb3b7c39",
+    "The shell UX plan SHALL cover first use and discovery": "bc00e95605a8dd9cd628dbeb0cfefce7c89af618bf473f6f2f5ddb106e027c9f",
+    "The plan SHALL define a coherent portrait visual and touch system": "d307884cde4af0aa3f6fe0ff31018a7401b25c1b9b6c30da853fa1135b95bd75",
+    "Navigation and transient states SHALL have consistent recovery semantics": "7d13896a5c84092bd306d7379bda1a8de909d87e2b66109386f6dc4a9bb6ab9d",
+    "The plan SHALL define measurable acceptance and an ordered successor backlog": "0c8b365f14be9fbd7fdb05e0e7a34b7a375965cca893ea669688feb801831f5e"
+  },
+  "added_requirements": [
+    "The project SHALL provide a repeatable whole-product design critique",
+    "Design recommendations SHALL include inspectable visual and interaction comparisons",
+    "A review round SHALL close with a candidate recheck and owned next work"
+  ],
+  "delta_matches_main": true,
+  "tasks_done": 9,
+  "tasks_open": 0,
+  "evidence_gate": "Analysis and operator functional walkthrough complete; successor runtime optical/motion/accessibility/exceptional-state evidence remains open with existing owners."
+}

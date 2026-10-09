@@ -473,47 +473,6 @@
         "provenance": "Board capture"
       }
     },
-    "the-handheld-gets-a-design-and-ux-review": {
-      "lane": "in-progress",
-      "source": "in-progress",
-      "physical": "pending",
-      "next": "Publish and archive the completed analysis; runtime motion, accessibility and exceptional-state gates remain with existing owners.",
-      "dependencies": [],
-      "evidence": [
-        "docs/evidence/ux-review-round-2/README.md",
-        "docs/evidence/ux-review-round-2/candidate-2026-10-09/README.md",
-        "docs/evidence/ux-review-round-2/candidate-2026-10-09/operator-report.json"
-      ],
-      "rationale": "Current candidate identity, all findings and operator-confirmed Home/Apps/Settings, Terminal keyboard, switching and video journeys are reviewed; unavailable states and physical unknowns remain explicit.",
-      "reviewRevision": "1e9d42bf1bc60108254daaea07f456a25711c0e8",
-      "cover": {
-        "path": "docs/research/handheld-ux/review-round-2/visuals/apps.svg",
-        "caption": "Apps comparison: current host render and proposed refinement",
-        "provenance": "Design mockup"
-      },
-      "media": [
-        {
-          "path": "docs/research/handheld-ux/review-round-2/visuals/apps.svg",
-          "caption": "Apps comparison: current host render and proposed refinement",
-          "provenance": "Design mockup"
-        },
-        {
-          "path": "docs/research/handheld-ux/review-round-2/visuals/cards.svg",
-          "caption": "Cards comparison: older capture and proposed refinement",
-          "provenance": "Design mockup"
-        },
-        {
-          "path": "docs/research/handheld-ux/review-round-2/visuals/keyboard-recovery.svg",
-          "caption": "Keyboard recovery: prior capture and proposed refinement",
-          "provenance": "Design mockup"
-        },
-        {
-          "path": "docs/research/handheld-ux/review-round-2/visuals/overview-to-apps.svg",
-          "caption": "Proposed Overview to Home to Apps transition storyboard",
-          "provenance": "Design mockup"
-        }
-      ]
-    },
     "2026-10-02-the-coherent-shell-boots-the-selected-system": {
       "lane": "archived",
       "source": "archived",
@@ -575,6 +534,47 @@
       ],
       "rationale": "Planning is published; seven implementation/physical tasks remain open, including three operator-authorized responsive follow-ups. Portrait HDMI acceptance is not landscape proof.",
       "reviewRevision": "67b6c55a"
+    },
+    "2026-10-09-the-handheld-gets-a-design-and-ux-review": {
+      "lane": "archived",
+      "source": "archived",
+      "physical": "verified",
+      "next": "Review the completed analysis and pursue its existing theme-motion, card/keyboard and theme-consumer owners. Landscape remains separate.",
+      "dependencies": [],
+      "evidence": [
+        "docs/evidence/ux-review-round-2/README.md",
+        "docs/evidence/ux-review-round-2/candidate-2026-10-09/README.md",
+        "docs/evidence/ux-review-round-2/candidate-2026-10-09/operator-report.json"
+      ],
+      "rationale": "All nine analysis tasks are complete, with identified native/console evidence and operator-confirmed functional journeys. Optical, accessibility and exceptional-state runtime acceptance remains explicitly unverified with existing owners.",
+      "reviewRevision": "64d71bf9",
+      "cover": {
+        "path": "docs/research/handheld-ux/review-round-2/visuals/apps.svg",
+        "caption": "Apps comparison: current host render and proposed refinement",
+        "provenance": "Design mockup"
+      },
+      "media": [
+        {
+          "path": "docs/research/handheld-ux/review-round-2/visuals/apps.svg",
+          "caption": "Apps comparison: current host render and proposed refinement",
+          "provenance": "Design mockup"
+        },
+        {
+          "path": "docs/research/handheld-ux/review-round-2/visuals/cards.svg",
+          "caption": "Cards comparison: older capture and proposed refinement",
+          "provenance": "Design mockup"
+        },
+        {
+          "path": "docs/research/handheld-ux/review-round-2/visuals/keyboard-recovery.svg",
+          "caption": "Keyboard recovery: prior capture and proposed refinement",
+          "provenance": "Design mockup"
+        },
+        {
+          "path": "docs/research/handheld-ux/review-round-2/visuals/overview-to-apps.svg",
+          "caption": "Proposed Overview to Home to Apps transition storyboard",
+          "provenance": "Design mockup"
+        }
+      ]
     }
   }
 }

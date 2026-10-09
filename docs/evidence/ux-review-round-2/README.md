@@ -89,3 +89,13 @@ returned HTTP 200 and that exact revision.
 [publication.json](candidate-2026-10-09/publication.json) records the check and
 its limits. All nine analysis tasks are complete; successor runtime evidence
 remains open. This supersedes the incomplete historical checkpoints above.
+
+## Analysis archive — 2026-10-09
+
+The [completed change](../../../openspec/changes/archive/2026-10-09-the-handheld-gets-a-design-and-ux-review/tasks.md)
+contains nine completed analysis tasks. OpenSpec synced three new requirements
+into `docs/handheld-ux-plan`; all five prior requirements are preserved byte for
+byte after surrounding whitespace normalization.
+[archive-check.json](candidate-2026-10-09/archive-check.json) records that comparison
+and the remaining runtime evidence owners. The archive changes documentation
+only and requires no newly installed image or repeat of accepted functional checks.
