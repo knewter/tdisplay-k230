@@ -92,8 +92,10 @@ The project SHALL provide a mainline-Linux kernel, device-tree, and
 boot-files build (`.#kernelMainline`, `.#deviceTreeMainline`,
 `.#kernelMainlineBootFiles`) pinned to the newest mainline revision carrying
 basic Canaan K230 support, built entirely separately from the pinned vendor
-Xuantie kernel `.#kernel` uses. No existing package, `nixosConfigurations`
-output, or `.#sdImage` SHALL depend on or be changed by this build existing.
+Xuantie kernel `.#kernel` uses. No vendor package or vendor
+`nixosConfigurations` output SHALL depend on or be changed by this build
+existing. `.#sdImage` deliberately ships the mainline system (see "The
+flashable default image ships the mainline coherent shell").
 
 *Grounding: `nix/kernel-mainline-src.nix` pins `torvalds/linux` at the
 dereferenced `v7.3-rc5` commit — the newest tag with
@@ -112,7 +114,7 @@ by direct tag diff. `nix/kernel-mainline.nix` and
 #### Scenario: Someone builds the default system
 
 - **WHEN** someone builds `.#nixosConfigurations.k230.config.system.build.toplevel`
-  or `.#sdImage`
+  or `.#sdImage-coherent`
 - **THEN** the result is byte-identical to what it would be if
   `nix/kernel-mainline.nix`, `nix/kernel-mainline-src.nix`,
   `nix/device-tree-mainline.nix`, and this change's other new files did not
@@ -976,7 +978,7 @@ remain restorable as the default by a recorded, tested rollback.
 *Grounding: observed on hardware 2026-10-07 (`docs/evidence/mainline-default-boot/README.md`): `install.py rollback` PASS with every restored file re-hashed against its backup, then an ordinary boot on 6.6.36 with the vendor profile.*
 
 This selection is board state installed from `.#kernelMainlineDrmShellBootFiles`;
-`.#sdImage` still ships the vendor kernel.
+`.#sdImage` ships the same mainline system for freshly flashed cards.
 
 ### Requirement: SD storage under mainline runs at the vendor kernel's card clock
 Under the mainline kernel, the SD card and the SDIO radio SHALL be clocked at the
@@ -992,3 +994,19 @@ every SD controller clock gate SHALL stay claimed by its driver.
 - **WHEN** the mainline system with the new SD clocks boots and Wi-Fi is enabled
 - **THEN** the RTL8189FTV interface associates and obtains an address
 *Grounding: observed on hardware 2026-10-08 (`docs/evidence/mainline-sd-throughput/README.md`): `wlan0` associated with an IPv4 address on trial and installed boots.*
+
+### Requirement: The flashable default image ships the mainline coherent shell
+`nix build .#sdImage` SHALL produce a card image whose root holds the
+`k230-mainline-drm-shell` system and whose boot partition holds that system's
+mainline kernel, its initrd, and the mainline DRM device tree under the
+filename stage 1 loads, with stage 1 unchanged.
+
+#### Scenario: Host inspection of the built image
+- **WHEN** someone builds `.#sdImage` and inspects its boot partition
+- **THEN** `Image` is the mainline 7.3.0-rc5 kernel of `k230-mainline-drm-shell`, `k230-tdisplay.dtb` carries the mainline DRM tree with `/chosen/bootargs` selecting that system's init, and the stage-1 slots match `.#stage1`
+*Grounding: host inspection 2026-10-08 (`docs/evidence/mainline-sd-image/host-inspection.json`): boot `Image`/`initrd.uimg` byte-identical to the installed mainline bundle, DTB `/chosen/bootargs` init selects `kp6ldmdx…`, stage-1 slots equal `.#stage1`.*
+
+#### Scenario: A freshly flashed card boots to the shell
+- **WHEN** the image is flashed to a card and the board is powered on
+- **THEN** the serial console reports kernel 7.3.0-rc5 and the shell services become active
+*Grounding: observed on hardware 2026-10-08 (`docs/evidence/mainline-sd-image/README.md`): flashed over U-Boot ums, first power-on reached login on 7.3.0-rc5 with the three shell services active and no failed units.*

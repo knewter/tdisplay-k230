@@ -1668,6 +1668,7 @@ DATA 4c396ff3b029fb82ccd6c39d9f3ae5a22b06fb8d9329c991af856459d9be88a5 docs/evide
 DATA  b7616d6dfc744893c4f52af15cdea1b4fe81f909fe251ea54ac1ced9563484c8  docs/evidence/mainline-system-trial/physical-2026-10-03/normal-return-home.jpg
 DATA  e633d697f387c1d6d4fa7fb827be6bc5665ea54ab3e9e6f1b536724c94d01f10  docs/evidence/mainline-system-trial/physical-2026-10-03/ordinary-boot-panel.jpg
 DATA ab2199317d89f02e711c934b7a453373089c084e12b413e9d636c16bf68f7b38 docs/evidence/launcher-curation/drawer-native-2026-10-08.png
+DATA bbf09476cc92fa4efd0002fdf3efd415c4b2722deb0ed091d7096892f06f000f docs/evidence/mainline-sd-image/fresh-home.png
 ```
 
 `group:` rows stand for a directory whose members are enumerated by
@@ -2672,3 +2673,4 @@ the normal-return photo follows separately verified protected normal identity.
 | `docs/evidence/mainline-system-trial/physical-2026-10-03/normal-return-home.jpg` | 74117 | DATA | `b7616d6dfc744893c4f52af15cdea1b4fe81f909fe251ea54ac1ced9563484c8` |
 | `docs/evidence/mainline-system-trial/physical-2026-10-03/ordinary-boot-panel.jpg` | 91919 | DATA | `e633d697f387c1d6d4fa7fb827be6bc5665ea54ab3e9e6f1b536724c94d01f10` |
 | `docs/evidence/launcher-curation/drawer-native-2026-10-08.png` | 68670 | DATA | `ab2199317d89f02e711c934b7a453373089c084e12b413e9d636c16bf68f7b38` |
+| `docs/evidence/mainline-sd-image/fresh-home.png` | 56268 | DATA | `bbf09476cc92fa4efd0002fdf3efd415c4b2722deb0ed091d7096892f06f000f` |
