@@ -115,6 +115,10 @@ EOK
       # For the LT9611 HDMI bridge path (canaan-dsi-bridge-connector.patch):
       # already-mainline, generic, I2C-attached bridge driver.
       DRM_LONTIUM_LT9611 = yes;
+      # The LT9611's output port is an "hdmi-connector" node; without the
+      # generic display-connector bridge it defers forever ("failed to parse
+      # device tree", board 2026-10-08). The vendor k230_defconfig sets it.
+      DRM_DISPLAY_CONNECTOR = yes;
     });
   });
 })
