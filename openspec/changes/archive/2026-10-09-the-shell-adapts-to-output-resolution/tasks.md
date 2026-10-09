@@ -83,7 +83,7 @@
 
 ## 6. Physical closeout checks and preserved follow-ups
 
-2026-09-29 checkpoint: [physical HDMI trial](../../../docs/evidence/shell-responsive/board/README.md)
+2026-09-29 checkpoint: [physical HDMI trial](../../../../docs/evidence/shell-responsive/board/README.md)
 records accepted 1080×1920 configures, native drawer captures and operator-confirmed
 dragging. The monitor photograph and tap-to-launch proof remain missing; the
 operator reports failed gestures with an app open and slow interaction. Injected
@@ -112,7 +112,7 @@ frame build versus 15 ms unrotated). That dated checkpoint remains historical;
 Physical closeout — 2026-10-09: the operator explicitly accepts filled Home
 and correct Home/All Apps/Settings targets in the accepted HDMI arrangement.
 The matching native capture and numeric accepted configure records are in
-[the acceptance report](../../../docs/evidence/shell-responsive/board/acceptance-2026-10-09/README.md).
+[the acceptance report](../../../../docs/evidence/shell-responsive/board/acceptance-2026-10-09/README.md).
 No photograph is required under the prior waiver. Exact diagnostic command:
 `python3 docs/evidence/shell-responsive/board/acceptance-2026-10-09/capture-board.py
 --output /protected/private-responsive-capture`. This is native/serial evidence
@@ -121,12 +121,12 @@ plus a separately recorded operator physical observation, not a camera recording
 ### Scope transfer — 2026-10-09
 
 The operator authorized moving original tasks 6.3–6.5 to
-[`the-hdmi-shell-works-in-landscape`](../the-hdmi-shell-works-in-landscape/tasks.md),
+[`the-hdmi-shell-works-in-landscape`](../../the-hdmi-shell-works-in-landscape/tasks.md),
 where they remain unchecked as 7.1–7.3. This preserves icon/text density,
 Wi-Fi/theme reflow and the dock slot-count decision without claiming any was
 performed. Tasks 6.1/6.2 are completed by the separate physical closeout above; the
 transferred tasks remain open in their successor.
-See [the committed scope decision](../../../docs/evidence/shell-responsive/scope-decision-2026-10-09.md).
+See [the committed scope decision](../../../../docs/evidence/shell-responsive/scope-decision-2026-10-09.md).
 
 Scope proof: `openspec validate the-shell-adapts-to-output-resolution --strict`
 and `openspec validate the-hdmi-shell-works-in-landscape --strict`.

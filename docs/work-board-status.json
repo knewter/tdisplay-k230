@@ -143,21 +143,23 @@
         "provenance": "Board capture"
       }
     },
-    "the-shell-adapts-to-output-resolution": {
-      "lane": "in-progress",
-      "source": "in-progress",
-      "physical": "pending",
-      "next": "Record matching whole-output configure/native capture and confirm filled Home plus real Home, Drawer and Settings target activation (tasks 6.1/6.2).",
+    "2026-10-09-the-shell-adapts-to-output-resolution": {
+      "lane": "archived",
+      "source": "archived",
+      "physical": "verified",
+      "next": "Complete for accepted portrait HDMI fill and Home/All Apps/Settings targets. Landscape/density/Wi-Fi/theme/dock follow-ups remain with the landscape proposal.",
       "dependencies": [
         "2026-10-09-plugging-in-hdmi-moves-the-display"
       ],
       "evidence": [
         "docs/evidence/shell-responsive/README.md",
         "docs/evidence/shell-responsive/integration-host.json",
-        "docs/evidence/shell-responsive/scope-decision-2026-10-09.md"
+        "docs/evidence/shell-responsive/scope-decision-2026-10-09.md",
+        "docs/evidence/shell-responsive/board/acceptance-2026-10-09/README.md",
+        "docs/evidence/shell-responsive/board/acceptance-2026-10-09/archive-check.json"
       ],
-      "rationale": "Host implementation is complete. Density, Wi-Fi/theme layout and dock policy transfer to landscape tasks 7.1\u20137.3 under the operator\u2019s scope decision; physical responsive proof remains pending.",
-      "reviewRevision": "67b6c55a",
+      "rationale": "All 19 retained tasks are complete. Operator acceptance matches the normal 800\u00d71280 runtime/native capture. Original 6.3\u20136.5 remain unchecked in the authorized successor; broader physical limits stay explicit.",
+      "reviewRevision": "94688440",
       "cover": {
         "path": "docs/evidence/shell-responsive/home-1080x1920.png",
         "caption": "Host render with synthetic app entries at portrait HDMI size",
@@ -563,7 +565,7 @@
       "next": "Qualify a landscape HDMI profile, integrate existing responsive geometry, complete density/Wi-Fi/theme/dock follow-ups, then obtain separate physical landscape acceptance.",
       "dependencies": [
         "2026-10-09-plugging-in-hdmi-moves-the-display",
-        "the-shell-adapts-to-output-resolution"
+        "2026-10-09-the-shell-adapts-to-output-resolution"
       ],
       "evidence": [
         "docs/evidence/hdmi-hotplug/live-switch/scope-decision-2026-10-09.md",
