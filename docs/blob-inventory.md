@@ -1681,6 +1681,7 @@ DATA 19ba27a947777a66004ad7eac0900d0abb4c8e90325c35dacb4e6716fad585e6 docs/evide
 DATA 5490312c11c4c5fdbb92a0f9745a83dce0c316c148cc78379ada559f180e09bf docs/evidence/hdmi-hotplug/manual-switch/host-settings-1920x1080.png
 DATA ce417f85b6a8de46d73fb7b4955524e3463106b90b7e0f09185618ec926aa98e docs/evidence/hdmi-hotplug/manual-switch/host-settings-568x1232.png
 DATA 7139fd4be7aecff236b5df281a2c0a8b62aaad8b8df96bd03a174572183bf3b6 docs/evidence/hdmi-hotplug/manual-switch/host-settings-800x1280.png
+DATA 0938edbc429fe58e4ccc4f16e4f25e163b8a8c3664f8a298bed8b8c19bfc7f1d docs/evidence/shell-responsive/board/acceptance-2026-10-09/home.png
 ```
 
 `group:` rows stand for a directory whose members are enumerated by
