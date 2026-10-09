@@ -4,8 +4,9 @@ Original HDMI group 5 remains unfinished. The accepted monitor uses 1280×800
 with transform 90 and a touchscreen trackpad. That proves portrait HDMI,
 not normal-transform landscape. Shared whole-output configure, Home/Drawer
 reflow, Settings transforms and hit-testing already belong to
-`the-shell-adapts-to-output-resolution`; its tasks retain density, Wi-Fi/theme
-geometry, dock and physical follow-ups. This proposal does not complete them.
+`the-shell-adapts-to-output-resolution`; its physical fill and tap checks
+remain there. This proposal owns the transferred density, Wi-Fi/theme geometry
+and dock follow-ups in tasks 7.1–7.3. None is completed by this transfer.
 
 ## Goals / Non-Goals
 

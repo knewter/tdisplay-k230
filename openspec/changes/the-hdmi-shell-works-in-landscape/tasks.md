@@ -14,8 +14,8 @@ Coordinator cross-reference (2026-10-01):
 [`the-shell-adapts-to-output-resolution`](../the-shell-adapts-to-output-resolution/tasks.md)
 owns output configures, Drawer/Home column reflow, Settings transforms and matching
 hit-testing. Its host implementation and paired fixtures are recorded there;
-its task group 6 retains physical tap/density, Wi-Fi/theme geometry and dock
-follow-up. Use that work for 5.2/5.3 below rather than implementing it twice.
+its tasks 6.1/6.2 retain physical fill and tap checks. This proposal’s
+tasks 7.1–7.3 own density, Wi-Fi/theme geometry and dock follow-ups. Use that work for 5.2/5.3 below rather than implementing it twice.
 These links do not complete this proposal's HDMI hardware or landscape gates.
 
 - [ ] 5.1 Add a separately selected landscape `HDMI-A-1` qualification
@@ -62,7 +62,7 @@ The operator authorized moving the responsive proposal’s original tasks
 6.3–6.5 here. These remain unperformed, with their requirements retained.
 
 - [ ] 7.1 Design and implement a real icon/text density scale for the Home
-      grid and the Drawer (`design.md`'s "Non-goal, both passes" section):
+      grid and the Drawer (the responsive proposal’s density non-goal):
       today only their column counts reflow with `crate::reflow_columns`;
       `ICON_SIZE`/`ROW_HEIGHT`/tile margins stay the panel's own native
       pixel size at every surface size, unlike Settings' content column.
@@ -71,8 +71,8 @@ The operator authorized moving the responsive proposal’s original tasks
       `cr.scale(width/568.0, height/1232.0)`, which this change's Settings
       content transform deliberately excludes and leaves as-is.
 - [ ] 7.3 Design whether/how Home's dock should reflow its own slot count
-      (`DOCK_SLOTS`, deliberately left fixed at 4 by task group 7 --
-      `design.md`'s audit table) once the responsive proposal’s physical 6.1/6.2 and this
+      (`DOCK_SLOTS`, deliberately left fixed at 4 by the responsive
+      implementation) once the responsive proposal’s physical 6.1/6.2 and this
       proposal’s landscape 5.4 evidence are in hand to verify against.
 
 Host implementation proof: `cargo test --offline --manifest-path
