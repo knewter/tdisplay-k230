@@ -573,6 +573,13 @@
         deviceTreeMainlineDrm = pkgs.callPackage ./nix/device-tree-mainline-drm.nix {
           inherit kernelMainlineSrc;
         };
+        # The LT9611 HDMI variant of the same tree (plugging-in-hdmi-moves-the-
+        # display, group 7). Booted instead of the panel DTB; never both.
+        deviceTreeMainlineDrmHdmi = pkgs.callPackage ./nix/device-tree-mainline-drm.nix {
+          inherit kernelMainlineSrc;
+          dtbName = "k230-tdisplay-mainline-drm-hdmi.dtb";
+          dtsFile = ./nix/dts/k230-tdisplay-mainline-drm-hdmi.dts;
+        };
         kernelMainlineDrmBootFiles = pkgs.runCommand "k230-mainline-drm-boot-files" { } ''
           mkdir -p $out
           cp ${self.packages.${buildSystem}.kernelMainlineDrm}/Image $out/Image-mainline-drm
@@ -835,6 +842,16 @@
           cfg = self.nixosConfigurations.k230-mainline-drm-shell.config;
           configuration = "k230-mainline-drm-shell";
           deviceTree = self.packages.${buildSystem}.mainlineDrmDeviceTreeNormalName;
+        };
+        # The daily mainline bundle with the HDMI DTB under the filename stage 1
+        # loads, for a volatile coherent trial boot on a monitor.
+        kernelMainlineDrmShellHdmiBootFiles = pkgs.callPackage ./nix/coherent-shell-boot-files.nix {
+          cfg = self.nixosConfigurations.k230-mainline-drm-shell.config;
+          configuration = "k230-mainline-drm-shell";
+          deviceTree = pkgs.runCommand "k230-mainline-drm-hdmi-dtb-normal-name" { } ''
+            mkdir -p $out
+            cp ${self.packages.${buildSystem}.deviceTreeMainlineDrmHdmi}/k230-tdisplay-mainline-drm-hdmi.dtb $out/k230-tdisplay.dtb
+          '';
         };
         mainlineDrmDeviceTreeNormalName = pkgs.runCommand "k230-mainline-drm-dtb-normal-name" { } ''
           mkdir -p $out

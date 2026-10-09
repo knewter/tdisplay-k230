@@ -1,0 +1,83 @@
+// SPDX-License-Identifier: GPL-2.0 OR MIT
+// Mainline HDMI boot for T-Display-K230: the Lontium LT9611 DSI-to-HDMI
+// bridge instead of the RM69A10 panel. Mirrors the vendor-kernel
+// nix/dts/k230-tdisplay-hdmi.dts that put the shell on a monitor
+// (openspec/changes/plugging-in-hdmi-moves-the-display). The DSI lanes are
+// wired in parallel to the panel and the bridge (docs/research/hdmi-hotplug.md),
+// so which one is used is chosen by which DTB boots.
+
+#include <dt-bindings/gpio/gpio.h>
+#include <dt-bindings/interrupt-controller/irq.h>
+#include <dt-bindings/clock/canaan,k230-clk.h>
+#include <dt-bindings/reset/canaan,k230-rst.h>
+#include <dt-bindings/soc/canaan,k230_pm_domains.h>
+
+#include "k230-tdisplay-mainline.dts"
+#include "k230-tdisplay-mainline-drm-common.dtsi"
+
+/ {
+	// The LT9611 implements EDID itself (DRM_BRIDGE_OP_EDID), so the
+	// connector needs no DDC bus of its own.
+	hdmi: connector {
+		compatible = "hdmi-connector";
+		label = "hdmi";
+		type = "a";
+
+		port {
+			hdmi_connector_in: endpoint {
+				remote-endpoint = <&lt9611_out>;
+			};
+		};
+	};
+};
+
+&gpio0 {
+	status = "okay";
+};
+
+&i2c3 {
+	status = "okay";
+
+	lt9611: hdmi-bridge@3b {
+		compatible = "lontium,lt9611";
+		reg = <0x3b>;
+		// No reset-gpios and no interrupt: GPIO24 (reset) and GPIO23 (INT)
+		// are single nets shared with the GT9895 touch, which owns them.
+		// The touch probe's reset also releases the LT9611; hotplug is
+		// polled (lontium-lt9611-k230.c makes both optional).
+
+		ports {
+			#address-cells = <1>;
+			#size-cells = <0>;
+
+			// DSI reaches the LT9611's Port B (MLRXB_*) only; the
+			// driver reads port 1 as its Port B input.
+			port@1 {
+				reg = <1>;
+				lt9611_in: endpoint {
+					remote-endpoint = <&dsi_out_lt9611>;
+				};
+			};
+
+			port@2 {
+				reg = <2>;
+				lt9611_out: endpoint {
+					remote-endpoint = <&hdmi_connector_in>;
+				};
+			};
+		};
+	};
+};
+
+// canaan_dsi.c looks for its downstream panel or bridge on its own port 1
+// (drm_of_find_panel_or_bridge(np, 1, -1)) and creates a bridge connector.
+&dsi {
+	ports {
+		port@1 {
+			reg = <1>;
+			dsi_out_lt9611: endpoint {
+				remote-endpoint = <&lt9611_in>;
+			};
+		};
+	};
+};

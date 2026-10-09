@@ -4,6 +4,7 @@
 , dtc
 , kernelMainlineSrc
 , dtbName ? "k230-tdisplay-mainline-drm.dtb"
+, dtsFile ? ./dts/k230-tdisplay-mainline-drm.dts
 }:
 
 runCommandCC dtbName
@@ -19,7 +20,8 @@ runCommandCC dtbName
 
     cp --no-preserve=mode "$dtsDir"/*.dtsi "$dtsDir"/*.h .
     cp --no-preserve=mode ${./dts/k230-tdisplay-mainline.dts} k230-tdisplay-mainline.dts
-    cp --no-preserve=mode ${./dts/k230-tdisplay-mainline-drm.dts} k230-tdisplay-mainline-drm.dts
+    cp --no-preserve=mode ${dtsFile} k230-tdisplay-mainline-drm.dts
+    cp --no-preserve=mode ${./dts/k230-tdisplay-mainline-drm-common.dtsi} k230-tdisplay-mainline-drm-common.dtsi
     cp --no-preserve=mode ${./dts/display-rm69a10-568x1232.dtsi} display-rm69a10-568x1232.dtsi
 
     $CC -E -nostdinc \

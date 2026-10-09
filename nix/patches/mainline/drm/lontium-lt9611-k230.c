@@ -1211,7 +1211,15 @@ static int lt9611_gpio_init(struct lt9611 *lt9611)
 {
 	struct device *dev = lt9611->dev;
 
-	lt9611->reset_gpio = devm_gpiod_get(dev, "reset", GPIOD_OUT_HIGH);
+	/*
+	 * Optional: on the T-Display-K230 the LT9611 RSTN and the GT9895
+	 * touch reset are one net (GPIO24). The touch driver owns it and its
+	 * probe-time reset also resets the LT9611; pulsing it from here as
+	 * well reset the touch controller after its driver had initialised
+	 * it (vendor kernel, board, 2026-09-29). gpiod_set_value on a NULL
+	 * descriptor is a no-op.
+	 */
+	lt9611->reset_gpio = devm_gpiod_get_optional(dev, "reset", GPIOD_OUT_HIGH);
 	if (IS_ERR(lt9611->reset_gpio)) {
 		dev_err(dev, "failed to acquire reset gpio\n");
 		return PTR_ERR(lt9611->reset_gpio);
@@ -1296,12 +1304,20 @@ static int lt9611_probe(struct i2c_client *client)
 		goto err_disable_regulators;
 	}
 
-	ret = devm_request_threaded_irq(dev, client->irq, NULL,
-					lt9611_irq_thread_handler,
-					IRQF_ONESHOT, "lt9611", lt9611);
-	if (ret) {
-		dev_err(dev, "failed to request irq\n");
-		goto err_disable_regulators;
+	/*
+	 * The interrupt is optional: on the T-Display-K230 the LT9611 INT
+	 * and the GT9895 touch INT are one net (GPIO23), so the HDMI device
+	 * tree gives that line to touch and HPD falls back to connector
+	 * polling (no DRM_BRIDGE_OP_HPD below).
+	 */
+	if (client->irq > 0) {
+		ret = devm_request_threaded_irq(dev, client->irq, NULL,
+						lt9611_irq_thread_handler,
+						IRQF_ONESHOT, "lt9611", lt9611);
+		if (ret) {
+			dev_err(dev, "failed to request irq\n");
+			goto err_disable_regulators;
+		}
 	}
 
 	i2c_set_clientdata(client, lt9611);
@@ -1311,9 +1327,11 @@ static int lt9611_probe(struct i2c_client *client)
 
 	lt9611->bridge.of_node = client->dev.of_node;
 	lt9611->bridge.ops = DRM_BRIDGE_OP_DETECT | DRM_BRIDGE_OP_EDID |
-			     DRM_BRIDGE_OP_HPD | DRM_BRIDGE_OP_MODES |
+			     DRM_BRIDGE_OP_MODES |
 			     DRM_BRIDGE_OP_HDMI | DRM_BRIDGE_OP_HDMI_AUDIO |
 			     DRM_BRIDGE_OP_HDMI_SPD_INFOFRAME;
+	if (client->irq > 0)
+		lt9611->bridge.ops |= DRM_BRIDGE_OP_HPD;
 	lt9611->bridge.type = DRM_MODE_CONNECTOR_HDMIA;
 	lt9611->bridge.vendor = "Lontium";
 	lt9611->bridge.product = "LT9611";
@@ -1362,7 +1380,8 @@ static void lt9611_remove(struct i2c_client *client)
 {
 	struct lt9611 *lt9611 = i2c_get_clientdata(client);
 
-	disable_irq(client->irq);
+	if (client->irq > 0)
+		disable_irq(client->irq);
 	drm_bridge_remove(&lt9611->bridge);
 
 	regulator_bulk_disable(ARRAY_SIZE(lt9611->supplies), lt9611->supplies);
