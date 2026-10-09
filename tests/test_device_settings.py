@@ -124,35 +124,6 @@ class SettingsTests(unittest.TestCase):
         request = self.settings.power("request", "reboot")
         self.assertEqual(self.settings.power("confirm", request["token"])["state"], "failed")
 
-    def test_hdmi_requires_available_control_and_second_confirmation(self):
-        with patch.object(self.settings, "display", return_value=module.control("unavailable")):
-            self.assertEqual(self.settings.power("request", "hdmi")["error"], "display-unavailable")
-        with patch.object(self.settings, "display", return_value=module.control("action")):
-            request = self.settings.power("request", "hdmi")
-            self.assertEqual(request["state"], "confirmation")
-            self.assertEqual(self.calls, [])
-            self.settings.power("cancel", request["token"])
-            self.assertEqual(self.calls, [])
-            request = self.settings.power("request", "hdmi")
-        with patch.dict(os.environ, {"K230_DISPLAY_SWITCH": "/nix/store/test/bin/k230-display-switch"}), \
-                patch.object(self.settings, "command", return_value=True) as command:
-            self.assertEqual(self.settings.power("confirm", request["token"])["state"], "requested")
-            self.assertEqual(command.call_args.args[0][-2:], ["/nix/store/test/bin/k230-display-switch", "hdmi"])
-            self.assertEqual(command.call_args.kwargs["timeout"], 25)
-            self.assertEqual(self.settings.power("confirm", request["token"])["state"], "failed")
-            self.assertEqual(command.call_count, 1)
-
-    def test_display_status_is_bounded_and_does_not_copy_command_output(self):
-        with patch.dict(os.environ, {"K230_DISPLAY_SWITCH": "/switch"}):
-            with patch.object(self.settings, "run", return_value=subprocess.CompletedProcess([], 0,
-                    b'{"state":"action","active":"AMOLED","next_boot":"AMOLED"}')):
-                self.assertEqual(self.settings.status()["controls"]["display"]["action"], "hdmi")
-            for bad in (b'private command output', b'x' * 4097,
-                        b'{"state":"action","next_boot":"arbitrary"}'):
-                with patch.object(self.settings, "run", return_value=subprocess.CompletedProcess([], 0, bad)):
-                    self.assertEqual(self.settings.display()["state"], "unavailable")
-                    self.assertNotIn("private", json.dumps(self.settings.display()))
-
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()

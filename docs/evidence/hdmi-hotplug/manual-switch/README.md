@@ -1,4 +1,9 @@
-# One-shot HDMI switch
+# One-shot HDMI switch (parked prototype)
+
+The source and host checks below belong to checkpoint `58498320`. The
+operator chose automatic plug/unplug switching; this optional implementation
+is removed from the active source tree while that work proceeds. Recipes
+that import its controller require checking out that checkpoint.
 
 Continuation worktree `/home/jadams/tmp/k230-hdmi-continue`, branch
 `codex/hdmi-mainline-continue`, original base

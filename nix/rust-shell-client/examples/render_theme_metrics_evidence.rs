@@ -31,7 +31,6 @@ fn control(label: &str, value: &str, detail: &str) -> Control {
 fn services() -> ServiceView {
     ServiceView {
         settings: Some(SettingsSnapshot {
-            display: None,
             network: control("Wi-Fi", "Connected", "Wireless network"),
             brightness: control("Brightness", "68%", "Screen brightness"),
             keyboard: control("Keyboard", "Hidden", "Two fingers up at bottom to show"),

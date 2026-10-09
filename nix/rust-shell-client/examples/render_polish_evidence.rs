@@ -57,7 +57,6 @@ fn services() -> ServiceView {
     brightness.value = Some(ControlValue::Percent(68));
     ServiceView {
         settings: Some(SettingsSnapshot {
-            display: None,
             network: control(
                 "Wi-Fi",
                 "Connected",

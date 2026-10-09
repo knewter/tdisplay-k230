@@ -30,7 +30,6 @@
                   #   to the panel init sequence cost a full cross-compile.
 , rootfsImage     # ext4 of the NixOS closure
 , dtbName ? "k230-tdisplay.dtb"   # the bare filename, in ${deviceTree}
-, hdmiDeviceTree ? null # Mainline alternate tree; the panel remains default.
 , bootargs          # the kernel command line, baked into the DTB
 , initrd            # NixOS stage 1 -- without it /etc is never assembled
 , splashImage ? null # Native asset output; null restores panel-console boot.
@@ -103,11 +102,6 @@ stdenvNoCC.mkDerivation {
     # card cannot disagree with the system on it.
     fdtput -t s boot/${dtbName} /chosen bootargs \
       ${lib.escapeShellArg bootargs}
-    ${lib.optionalString (hdmiDeviceTree != null) ''
-      cp ${hdmiDeviceTree}/k230-tdisplay-mainline-drm-hdmi.dtb boot/k230-tdisplay-hdmi.dtb
-      chmod +w boot/k230-tdisplay-hdmi.dtb
-      fdtput -t s boot/k230-tdisplay-hdmi.dtb /chosen bootargs ${lib.escapeShellArg bootargs}
-    ''}
     echo "bootargs: $(fdtget boot/${dtbName} /chosen bootargs)"
 
     # ...and ALSO in the U-Boot environment, which is what actually wins.
@@ -159,7 +153,7 @@ stdenvNoCC.mkDerivation {
     # the same tree, so a board that takes the detection path still works.
     echo -n "${dtbName}" > boot/force_dtb
     echo -n "${dtbName}" > boot/lcd_dtb
-    echo -n "${if hdmiDeviceTree != null then "k230-tdisplay-hdmi.dtb" else dtbName}" > boot/hdmi_dtb
+    echo -n "${dtbName}" > boot/hdmi_dtb
 
     # Deliberately no extlinux: the vendored U-Boot never calls sysboot.
     faketime_unused=1

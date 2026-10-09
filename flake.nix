@@ -53,8 +53,7 @@
       kernelMainlineSrc = import ./nix/kernel-mainline-src.nix { inherit (pkgs) fetchFromGitHub; };
       bootSplashImage = pkgs.callPackage ./nix/boot-splash-image.nix { };
       mkBoardImage = cfg: kernel: mkBoardImageWith { inherit cfg kernel; };
-      mkBoardImageWith = { cfg, kernel, deviceTree ? self.packages.${buildSystem}.deviceTree
-        , hdmiDeviceTree ? null }:
+      mkBoardImageWith = { cfg, kernel, deviceTree ? self.packages.${buildSystem}.deviceTree }:
         let
           rootfsImage = pkgs.callPackage "${nixpkgs}/nixos/lib/make-ext4-fs.nix" {
             storePaths = [ cfg.system.build.toplevel ];
@@ -84,7 +83,7 @@
           inherit stage1 rootfsImage;
           splashImage = if cfg.k230.panelConsole then null else bootSplashImage;
           initrd = "${cfg.system.build.toplevel}/initrd";
-          inherit kernel deviceTree hdmiDeviceTree;
+          inherit kernel deviceTree;
           # Our own board, not the CanMV reference. A bare filename now:
           # it names a file in ${deviceTree}, not a path under dtbs/.
           dtbName = "k230-tdisplay.dtb";
@@ -235,8 +234,6 @@
         k230-mainline-drm-shell = self.nixosConfigurations.k230-coherent-shell.extendModules {
           specialArgs.k230Kernel = self.nixosConfigurations.k230-mainline-drm-trial.config.boot.kernelPackages;
           modules = [
-            ./nix/touch-trackpad-service.nix
-            ./nix/display-switch.nix
             ({ config, pkgs, ... }: {
               # The RTL8189FTV module with the 7.3 port patch, built against
               # this variant's own kernel (CFG80211=m); same load and service
@@ -247,21 +244,20 @@
                   extraPatches = [ ./nix/patches/mainline/rtl8189fs-mainline-v7.3-rc5.patch ];
                 })
               ];
-              boot.kernelModules = nixpkgs.lib.mkForce [ "8189fs" "uinput" ];
-              k230.displaySwitch = {
-                enable = true;
-                panelDeviceTree = self.packages.${buildSystem}.deviceTreeMainlineDrm;
-                hdmiDeviceTree = self.packages.${buildSystem}.deviceTreeMainlineDrmHdmi;
-              };
+              boot.kernelModules = nixpkgs.lib.mkForce [ "8189fs" ];
             })
           ];
         };
-        # Keep the explicit HDMI trial profile. The shared daily system now
-        # selects direct touch or the mouse relay from the connected output.
+        # HDMI keeps the daily mainline compositor, with the existing
+        # touchscreen-to-mouse relay enabled only for this alternate boot.
         k230-mainline-drm-shell-hdmi = self.nixosConfigurations.k230-mainline-drm-shell.extendModules {
           modules = [
-            ({ ... }: {
+            ./nix/touch-trackpad-service.nix
+            ({ lib, ... }: {
               k230.touchTrackpad.enable = true;
+              boot.kernelModules = lib.mkOverride 40 (
+                self.nixosConfigurations.k230-mainline-drm-shell.config.boot.kernelModules ++ [ "uinput" ]
+              );
             })
           ];
         };
@@ -843,7 +839,6 @@
           cfg = self.nixosConfigurations.k230-mainline-drm-shell.config;
           kernel = self.nixosConfigurations.k230-mainline-drm-shell.config.boot.kernelPackages.kernel;
           deviceTree = self.packages.${buildSystem}.mainlineDrmDeviceTreeNormalName;
-          hdmiDeviceTree = self.packages.${buildSystem}.deviceTreeMainlineDrmHdmi;
         };
         # Vendor-kernel Rust shell image, kept as a rollback and release target.
         sdImage-coherent = mkBoardImage self.nixosConfigurations.k230-coherent-shell.config
