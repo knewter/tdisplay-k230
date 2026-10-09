@@ -140,6 +140,18 @@ records its active state, successful grab and enabled virtual touchpad, with
 no unknown-argument warning. The monitor remains automatically connected
 with a 256-byte EDID. This update does not reboot or change the profile.
 
+At `2026-10-09T05:42:05Z`, a compositor command placed the cursor at logical
+`(540, 900)`, then Grim captured it with `-c`:
+
+```sh
+swaymsg 'seat seat0 cursor set 540 900'
+grim -c /run/shell/hdmi-pointer.png
+```
+
+[Native cursor capture](live-pointer-native.png) shows the cursor. This is
+**injected compositor movement**, not finger input or a physical monitor
+photograph. It proves cursor rendering and does not complete the touch gate.
+
 ## Source fix and remaining gates
 
 The reset-ordering LT9611 source cross-compiled as an object against the
@@ -150,6 +162,11 @@ configuration fixtures pass, including the new HDMI profile identity.
 hashes; [object recipe](live-lt9611-check.nix) and
 [module recipe](live-uinput.nix) preserve the commands' inputs. These narrow
 checks are not substitutes for the full-kernel build required by task 7.1.
+
+The corrected HDMI DTB builds and decompiles. [DTB checks](fixed-dtb-check.json)
+record its hash and graph/reset checks; [reproduction command](check-dtb.py)
+checks reciprocal endpoints, one DSI output, no panel and touch ownership
+of GPIO24/23. Bundle inspection still awaits the full build.
 
 The continuation makes LT9611 wait for the I2C touch device to finish binding,
 using the board-local `lontium,shared-reset-owner` phandle and a managed device

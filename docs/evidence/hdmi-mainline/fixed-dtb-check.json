@@ -1,0 +1,26 @@
+{
+  "timestamp": "2026-10-09T05:49:35.891870+00:00",
+  "result": "PASS",
+  "dtb": "/nix/store/07ps2j90mmyldkqdmn3pvb7p7q0g4g1z-k230-tdisplay-mainline-drm-hdmi.dtb/k230-tdisplay-mainline-drm-hdmi.dtb",
+  "sha256": "4bf909c52c113e903def4d51bd58ab52b27df3b1468a20973fa4c4a18276d6b3",
+  "symbols": {
+    "touch": "/soc/i2c@91408000/touchscreen@5d",
+    "lt9611": "/soc/i2c@91408000/hdmi-bridge@3b",
+    "dsi": "/soc/dsi@90850000",
+    "lt9611_in": "/soc/i2c@91408000/hdmi-bridge@3b/ports/port@1/endpoint",
+    "lt9611_out": "/soc/i2c@91408000/hdmi-bridge@3b/ports/port@2/endpoint",
+    "dsi_out_lt9611": "/soc/dsi@90850000/ports/port@1/endpoint",
+    "hdmi_connector_in": "/connector/port/endpoint"
+  },
+  "no_panel": true,
+  "touch_owns_GPIO24_reset_GPIO23_IRQ": true,
+  "bridge_has_no_GPIO_or_IRQ_owner": true,
+  "bridge_waits_for_touch_phandle": true,
+  "reciprocal_Port_B_and_HDMI_endpoints": true,
+  "one_DSI_output_endpoint": true,
+  "physical_boot_verified": false,
+  "commands": [
+    "nix build .#deviceTreeMainlineDrmHdmi --max-jobs 1 --cores 2 --out-link /home/jadams/tmp/k230-hdmi-continue-private/fixed-dtb -L",
+    "python3 docs/evidence/hdmi-mainline/check-dtb.py /home/jadams/tmp/k230-hdmi-continue-private/fixed-dtb/k230-tdisplay-mainline-drm-hdmi.dtb"
+  ]
+}
