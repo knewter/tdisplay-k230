@@ -207,16 +207,19 @@ why it did or did not work.
       by the operator: HDMI replug takes a couple of seconds, panel return is
       almost instant. See `fast-host-checks.json`, `fast-runtime-serial-boot.json`
       and `fast-runtime-operator-report.json` in the same evidence directory.
-      Sampled cable latency and explicit navigation qualification remain open
-      under 4.3; approximate visible timing is not a sampled HPD measurement.*
-- [ ] 4.3 If 4.2 produces something that boots, verify on the board that
+      The later navigation qualification is recorded under 4.3; precise
+      sampled latency is explicitly deferred by the operator; approximate
+      visible timing is not a sampled HPD measurement.*
+- [x] 4.3 If 4.2 produces something that boots, verify on the board that
       plugging an HDMI cable while the panel is active switches the visible
       output within a bounded time and without a reboot, and that
       unplugging switches back with direct touch working again afterward.
-      Use a 30-second ceiling per transition, and qualify the faster
-      worker against targets of ≤1 second HPD-to-connector detection and
-      ≤3 seconds HPD-to-enabled output; record monitor lock/glass timing
-      separately. The first generic-poll trial switched correctly but was
+      Use a 30-second ceiling per transition. Record operator-visible
+      timing separately from sampled HPD timing. The operator explicitly
+      deferred precise latency measurement on 2026-10-09; the ≤1 second
+      HPD-to-connector and ≤3 seconds HPD-to-enabled targets are future
+      measurement targets, not acceptance gates for this delivered path.
+      The first generic-poll trial switched correctly but was
       judged too slow by the operator.
       verify another replug after the return, and retain the accepted HDMI
       portrait rotation and trackpad behavior. Capture
@@ -231,9 +234,12 @@ why it did or did not work.
       retains the trial boot ID, portrait rotation and virtual touchpad.
       `fast-runtime-qualification.json` records the exact question context.
       The bounded watcher captured no cable transitions: `fast-runtime-latency.json`
-      correctly returns INCOMPLETE_OR_SLOW with an empty transition list. This
-      task remains open for the separate sampled ≤1s/≤3s timing targets; no
-      failed measurement or precise latency is inferred from the empty watch.*
+      correctly returns INCOMPLETE_OR_SLOW with an empty transition list.
+      The operator subsequently said "ignore latency measurement good enough
+      for now". The named physical switching and
+      navigation gate is complete; precise timing is deferred, not performed
+      or passed. No failed measurement is inferred from the empty watch.
+      See `docs/evidence/hdmi-hotplug/live-switch/closeout-2026-10-09.md`.*
 - [x] 4.4 Whether or not 4.1–4.3 succeed, record the outcome plainly in
       `specs/display/hdmi/spec.md`'s no-reboot requirement: either resolve
       its `<!-- UNVERIFIED -->` marker against working board evidence, or
@@ -245,7 +251,7 @@ why it did or did not work.
       and default SD image now match that accepted candidate; persistent
       installation and ordinary autoboot pass in
       `docs/evidence/hdmi-hotplug/live-switch/normal-hotplug-install-serial.json`.
-      Precise sampled timing remains explicitly open in 4.3; manual/landscape
+      Precise sampled timing is explicitly deferred in 4.3; manual/landscape
       requirements and unrelated UNVERIFIED markers remain unchanged.*
 
 ## 5. Shell and card-shell landscape support

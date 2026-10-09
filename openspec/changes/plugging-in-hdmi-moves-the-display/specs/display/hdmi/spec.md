@@ -1,3 +1,8 @@
+## Purpose
+
+Describe the board-specific HDMI path, shared hardware constraints, qualification
+outputs and accepted automatic handoff between the monitor and handheld panel.
+
 ## ADDED Requirements
 
 ### Requirement: The LT9611 is present and addressable
@@ -13,7 +18,7 @@ the LT9611 (`U18`) on the net pair `HDMI_CSCL`/`HDMI_CSDA`, which sheet
 touch (`docs/dts-evidence.md`, `docs/research/board-capability-inventory.md`).
 No address collision (`0x3b` vs `0x5d`).*
 
-*Observed 2026-09-29 (docs/evidence/hdmi-hotplug/probe/lt9611-probe-2026-09-29.md):
+*Grounding: observed 2026-09-29 (docs/evidence/hdmi-hotplug/probe/lt9611-probe-2026-09-29.md):
 `&i2c3` is Linux adapter `i2c-1`. `0x3b` acknowledges and returns chip ID
 `0x17 0x02` (rev `0xe2`), and `0x5d` is bound to `gt9895`. The ID read used the
 mainline driver's page-select writes. Touch input was not re-exercised in that
@@ -102,7 +107,7 @@ the board (group 3). Host build confirms the patch applies and compiles and
 the DTB compiles with exactly one `&dsi` port@1 endpoint; it does not confirm
 the LT9611 driver actually probes or that a connector actually appears live. -->
 
-*Observed 2026-10-09 on the shipping mainline path: the group-7 kernel and
+*Grounding: observed 2026-10-09 on the shipping mainline path: the group-7 kernel and
 board-specific mainline HDMI tree passed a matching volatile boot, automatic
 connected status and 256-byte EDID, native shell/cursor captures, and the
 operator's acceptance. See `docs/evidence/hdmi-mainline/README.md`. The
@@ -180,7 +185,7 @@ rather than adding live re-attachment.
 Touch retains both shared pins; their unknown electrical drive type is not
 used as an assumption for shared-IRQ operation.*
 
-*Observed 2026-10-09: the first combined trial established both visible
+*Grounding: observed 2026-10-09: the first combined trial established both visible
 switching directions with trackpad on HDMI and direct touch on return. The
 matching faster kernel trial was accepted by the operator: HDMI replug took
 "couple of seconds", panel return was "almost instant". A later "it works
@@ -191,9 +196,15 @@ Read-only state before and after acceptance retains boot ID
 transform and virtual touchpad. See
 `docs/evidence/hdmi-hotplug/live-switch/fast-runtime-operator-report.json`,
 `fast-runtime-qualification.json` and `fast-runtime-qualified-state.json`.
-No-reboot switching works on this tested mainline arrangement. The separate
+No-reboot switching works on this tested mainline arrangement. The matching
+normal bundle is installed and ordinary autoboot is observed separately in
+`docs/evidence/hdmi-hotplug/live-switch/normal-hotplug-install-serial.json`
+and `normal-hotplug-runtime-state.json`. The separate
 sampled HPD-to-connector ≤1s and HPD-to-enabled ≤3s targets remain unmeasured:
-the bounded watcher captured no transitions. Operator-visible approximate
+the bounded watcher captured no transitions. The operator explicitly deferred
+precise latency measurement on 2026-10-09; no sampled result is claimed. See
+`docs/evidence/hdmi-hotplug/live-switch/closeout-2026-10-09.md`.
+Operator-visible approximate
 timing is evidence for the 30s scenario ceiling, not those precise targets.*
 
 #### Scenario: A cable is plugged in while the panel is active

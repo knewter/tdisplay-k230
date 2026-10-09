@@ -206,3 +206,13 @@ bundle. Physical visible timing and touch acceptance already belong to the
 operator reports. Post-install glass is not separately observed; whole-image
 flashing is not claimed. Manual switch and landscape gates remain open; no
 archive or silent scope split is performed.
+
+## Acceptance closeout update — 2026-10-09
+
+The operator explicitly deferred precise latency measurement and accepts the
+automatic cable switching and real-touch navigation. Task 4.3 is complete for
+that named physical gate; sampled ≤1s/≤3s targets remain unmeasured, not passed.
+See [the closeout report](closeout-2026-10-09.md) for the exact statements and
+installed tuple. Historical sections above retain their chronology. Settings
+reboot and landscape remain open pending the explicit successor scope split;
+this report does not archive either unperformed physical sequence.
