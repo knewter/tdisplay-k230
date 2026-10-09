@@ -185,7 +185,7 @@ narrow `nix build .#kernelMainlineDrm` proof, bundle inspection and all 15
 inspector fixtures; see [full host checks](fixed-host-checks.json) and
 [matching bundle inspection](fixed-bundle-inspection.json). The matching fresh
 boot and native captures are recorded below. Task 7.3
-stays unchecked pending the operator's picture, cursor movement and tap report.
+is now complete with the matching trial and operator acceptance recorded below.
 The ordinary panel recovery below is serial proof; no physical panel taps
 are inferred.
 
@@ -258,11 +258,14 @@ or monitor photograph. No pointer movement/click was injected during this
 corrected-bundle trial.
 
 The operator was asked to confirm the fresh monitor picture, finger-driven
-cursor movement and taps. No answer has been received at this checkpoint.
-The original operator's "screen works" report applies to the old live
-workaround only. Task 7.3 remains unchecked; groups 3–5 and archive also remain
-open. The board is left on the corrected **volatile HDMI trial**; an ordinary
-reboot retains the protected panel selection.
+cursor movement and taps, then replied: "yeah hdmi works great it's perfect
+continue lmk what you need". [Operator acceptance](operator-acceptance.json)
+records the exact response and a read-only serial check confirming the same
+running system, connected HDMI and all four active services. This accepts the
+trial overall; it does not enumerate individual gestures, supply a photograph
+or establish gesture latency. Task 7.3 is complete. Groups 3–5 and archive
+remain open. The board is left on the corrected **volatile HDMI trial**; an
+ordinary reboot retains the protected panel selection.
 
 ## Publishing follow-up
 

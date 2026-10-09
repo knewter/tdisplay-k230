@@ -1,0 +1,26 @@
+{
+  "schema": 1,
+  "recorded_at": "2026-10-09T13:57:17.578082+00:00",
+  "evidence_class": "operator report following matching volatile board trial",
+  "operator_report": "yeah hdmi works great it's perfect continue lmk what you need",
+  "prompt_context": "The operator was asked to check the monitor picture, finger-driven cursor movement and taps after the corrected volatile HDMI boot.",
+  "interpretation": "Operator accepts the HDMI trial overall. The response does not enumerate individual gestures; no separate gesture timing or photograph is claimed.",
+  "running_system": "/nix/store/yndjf2iz1q1r0dndsbx154yr47bycak8-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "state_check": {
+    "command": "readlink -f /run/current-system; cat /sys/class/drm/card*-HDMI-A-1/status; systemctl is-active shell shell-ui theme-helper k230-touch-trackpad",
+    "serial_port": "/dev/ttyACM0",
+    "exclusive_lock": "/tmp/k230-board.lock",
+    "hdmi_status": "connected",
+    "services": {
+      "shell": "active",
+      "shell-ui": "active",
+      "theme-helper": "active",
+      "k230-touch-trackpad": "active"
+    }
+  },
+  "limits": [
+    "No photograph or new touch-event trace was supplied.",
+    "The persistent protected panel boot remains unchanged.",
+    "Manual Settings switching and no-reboot hotplug remain unproved."
+  ]
+}

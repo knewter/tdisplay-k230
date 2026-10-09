@@ -138,7 +138,10 @@ The kernel driver now defers LT9611 probe until its optional
 managed consumer link. The HDMI DTB points that property at touch.
 Rejected: a fixed delay or another bridge-owned reset pulse; neither
 establishes reset ordering, and the second resets already-initialized touch.
-The new driver still needs a matching build and board trial.
+The matching full build and fresh volatile board trial passed. Goodix
+registered before LT9611, automatic HPD returned a 256-byte EDID, and the
+operator accepted the monitor trial. Exact evidence classes and limits are
+recorded in `docs/evidence/hdmi-mainline/README.md`.
 
 The Nix layer supplies a separate `k230-mainline-drm-shell-hdmi` profile
 with the existing touchscreen-to-touchpad service and `uinput` loaded.

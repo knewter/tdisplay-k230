@@ -257,7 +257,7 @@ Groups 3–5 above apply to mainline once these tasks land.
       `docs/evidence/hdmi-mainline/fixed-host-checks.json`,
       `fixed-dtb-check.json` and `fixed-bundle-inspection.json`.
       This is host proof, not a board boot.*
-- [ ] 7.3 On the board with a monitor attached, stage and volatile-trial-boot the HDMI bundle with `tools/coherent-shell-board-boot.py` (a plain reboot returns to the panel). Record the `HDMI-A-1` connector, EDID mode, LT9611 probe and `hsfreqrange` messages, a native `grim` capture, and the operator's report of the picture and touch-as-trackpad. Tune `canaan,hsfreqrange` if the link fails. Proof: serial record and operator report in `docs/evidence/hdmi-mainline/`.
+- [x] 7.3 On the board with a monitor attached, stage and volatile-trial-boot the HDMI bundle with `tools/coherent-shell-board-boot.py` (a plain reboot returns to the panel). Record the `HDMI-A-1` connector, EDID mode, LT9611 probe and `hsfreqrange` messages, a native `grim` capture, and the operator's report of the picture and touch-as-trackpad. Tune `canaan,hsfreqrange` if the link fails. Proof: serial record and operator report in `docs/evidence/hdmi-mainline/`.
       *2026-10-09 continuation: the original trial recovered HDMI after
       touch's shared reset and the operator reported "screen works".
       The corrected kernel/bundle then built, staged and passed a matching
@@ -265,5 +265,7 @@ Groups 3–5 above apply to mainline once these tasks land.
       terminal/Home captures and the configured relay grabbing touch.
       An ordinary protected panel reboot also passed serial checks.
       Evidence is committed in `docs/evidence/hdmi-mainline/README.md`.
-      The fresh operator picture/cursor/tap report is still missing;
-      no physical touch pass is inferred and 7.3 stays unchecked.*
+      The operator subsequently accepted the fresh trial: "yeah hdmi works
+      great it's perfect continue lmk what you need". Exact report and
+      matching read-only state are in `operator-acceptance.json`; no
+      photograph, per-gesture trace or latency measurement is inferred.*
