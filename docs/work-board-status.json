@@ -481,11 +481,10 @@
       "dependencies": [],
       "evidence": [
         "docs/evidence/ux-review-round-2/README.md",
-        "docs/evidence/ux-review-round-2/candidate-2026-10-09/README.md",
-        "docs/research/handheld-ux/review-round-2/candidate-recheck.md"
+        "docs/evidence/ux-review-round-2/candidate-2026-10-09/README.md"
       ],
       "rationale": "Seven of nine tasks are complete: visual/independent host critique and the identified current native/console recheck. Full current journey execution and final closure remain open. Native/injected captures do not prove optical or real-finger motion.",
-      "reviewRevision": "1f1b4ef9",
+      "reviewRevision": "bcb34f18",
       "cover": {
         "path": "docs/research/handheld-ux/review-round-2/visuals/apps.svg",
         "caption": "Apps comparison: current host render and proposed refinement",
