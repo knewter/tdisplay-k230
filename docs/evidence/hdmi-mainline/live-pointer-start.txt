@@ -1,0 +1,38 @@
+BEGIN_POINTER
+Running as unit: k230-hdmi-trackpad-trial.service; invocation ID: 55db30ec61a54325a7d0c90cc593b6e8
+
+active
+Started [systemd-run] /nix/store/v0n70zk76z0p3xky67613769l8pc2lrl-k230-touch-trackpad-riscv64-unknown-linux-gnu-0.1.0/bin/k230-touch-trackpad --shell-socket=/run/shell/sway-ipc.sock.
+k230-touch-trackpad: unknown argument "--shell-socket=/run/shell/sway-ipc.sock", ignoring
+k230-touch-trackpad: mode -> Trackpad (panel connected: false)
+k230-touch-trackpad: entered trackpad mode, grabbed /dev/input/event1 (x 0..1023 y 0..2399), axes: 47,57,53,54
+Input device: K230 Virtual Touchpad (HDMI mode)
+  Type: Touchpad
+  Identifier: 1:1:K230_Virtual_Touchpad_(HDMI_mode)
+  Product ID: 1
+  Vendor ID: 1
+  Libinput Send Events: enabled
+
+Input device: wlr_virtual_keyboard_v1
+  Type: Keyboard
+  Identifier: 0:0:wlr_virtual_keyboard_v1
+  Product ID: 0
+  Vendor ID: 0
+  Active Keyboard Layout: wvkbd
+
+Input device: Goodix Berlin Capacitive TouchScreen
+  Type: Touch
+  Identifier: 0:0:Goodix_Berlin_Capacitive_TouchScreen
+  Product ID: 0
+  Vendor ID: 0
+  Libinput Send Events: disabled
+
+Input device: K230 PMU Power Key
+  Type: Keyboard
+  Identifier: 0:0:K230_PMU_Power_Key
+  Product ID: 0
+  Vendor ID: 0
+  Active Keyboard Layout: English (US)
+  Libinput Send Events: enabled
+
+END_POINTER

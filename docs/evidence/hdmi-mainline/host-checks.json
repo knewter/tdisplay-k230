@@ -11,5 +11,8 @@
   "uinput_compile_command": "nix build --impure --file ~/tmp/k230-hdmi-continue-private/uinput.nix --max-jobs 1 --cores 2 -L",
   "uinput_result": "PASS",
   "inspector_command": "python3 tests/test_coherent_shell_boot_inspect.py --bundle ~/tmp/k230-hdmi-bundle",
-  "inspector_result": "PASS: 15 tests"
+  "inspector_result": "PASS: 15 tests",
+  "uinput_board_destination": "/run/k230-uinput-trial.ko",
+  "uinput_board_md5": "10385a49550e6735a5f84271d08018ba",
+  "uinput_board_result": "insmod succeeded; transient relay entered Trackpad; Sway reports Touchpad enabled"
 }

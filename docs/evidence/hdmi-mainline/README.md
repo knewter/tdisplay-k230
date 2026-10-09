@@ -12,6 +12,8 @@ and ran `tools/coherent-shell-board-boot.py` against its HDMI bundle. The
 continuation found the board still running that volatile trial, with normal
 panel boot files unchanged. The controller's private raw capture and
 `serial-result.json` remain under `~/tmp/k230-hdmi-board/candidate/`.
+The [sanitized trial report](original-trial-boot.json) preserves the controller
+and loaded artifact hashes, running identities and unchanged-profile result.
 The continuation's private raw UART captures are under
 `~/tmp/k230-hdmi-continue-private/`.
 
@@ -106,6 +108,29 @@ the relay enabled by the earlier vendor HDMI trial profile.
 The already-realized relay was imported into the board's store, but starting
 it was blocked by the absence of `uinput` in this kernel; see
 [module diagnostic](missing-uinput.txt). This import alone is not mouse proof.
+
+The host then compiled the upstream `drivers/input/misc/uinput.c` against
+the running Image's exact kernel development output. The module was copied
+to `/run/k230-uinput-trial.ko` with `tools/push-file.py` under the board lock;
+the transfer verified MD5 `10385a49550e6735a5f84271d08018ba` on the board.
+`insmod /run/k230-uinput-trial.ko` succeeded. A transient
+`k230-hdmi-trackpad-trial` service started the already-realized relay:
+
+```sh
+systemd-run --unit=k230-hdmi-trackpad-trial --property=Restart=on-failure \
+  --property=DevicePolicy=closed --property='DeviceAllow=/dev/uinput rw' \
+  --property='DeviceAllow=char-input rw' --property=ProtectSystem=strict \
+  --property=ProtectHome=true --property=NoNewPrivileges=true \
+  /nix/store/v0n70zk76z0p3xky67613769l8pc2lrl-k230-touch-trackpad-riscv64-unknown-linux-gnu-0.1.0/bin/k230-touch-trackpad \
+  --shell-socket=/run/shell/sway-ipc.sock
+```
+
+[Startup state](live-pointer-start.txt) shows the relay grabbing the actual
+Goodix input and Sway recognizing an enabled virtual touchpad. This older
+relay warns that `--shell-socket` is unknown and ignores it: it supplies
+basic pointer/tap behavior, not the newer shell gesture integration. The
+corrected bundle builds the current relay. Physical cursor movement and tap
+acceptance must be recorded separately from this startup result.
 
 ## Source fix and remaining gates
 

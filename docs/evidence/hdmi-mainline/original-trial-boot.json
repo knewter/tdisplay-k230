@@ -1,0 +1,59 @@
+{
+  "status": "PASS",
+  "mode": "candidate",
+  "controller_sha256": "30398e64e61e81d5e270aba17a5fe102d86a83fa712abcd32a72bc90894af4ef",
+  "loads": [
+    {
+      "file": "bootargs.txt",
+      "address": "0x7000000",
+      "bytes": 211,
+      "sha256": "3e227e920ce90ce7854ed8a2a06228e00758de6638f8e150e5eb712fd19ec80b",
+      "crc32": "e9006f39"
+    },
+    {
+      "file": "fw_jump_add_uboot_head.bin",
+      "address": "0x8000000",
+      "bytes": 270808,
+      "sha256": "9627edbeea9b115d7040beea27cc61b23b6aca61cd502fd7760d7ee179f42c99",
+      "crc32": "99b89787"
+    },
+    {
+      "file": "Image",
+      "address": "0x200000",
+      "bytes": 42745856,
+      "sha256": "67fe6c8605d5434c8835b219271397d1c9033c8e9872e7e417968f89c0b8eeda",
+      "crc32": "4bd9e2aa"
+    },
+    {
+      "file": "k230-tdisplay.dtb",
+      "address": "0x8400000",
+      "bytes": 13148,
+      "sha256": "1352999c1c27d5e7068a3f96a4a0b8bcc49dc2e705a9db97683afc37f71b3a32",
+      "crc32": "09f0f44d"
+    },
+    {
+      "file": "initrd.uimg",
+      "address": "0x9000000",
+      "bytes": 27327546,
+      "sha256": "6f8e51d0d0f9f79f4f7dd50dcd23e927fc2698537d02b53fb19f5e827cd43d47",
+      "crc32": "ed14b4c4"
+    }
+  ],
+  "persistent_boot_selection_changed": false,
+  "physical_navigation_verified": false,
+  "serial_boot_observed": true,
+  "ordinary_autoboot_observed": false,
+  "observed": {
+    "system": "/nix/store/6armjz2q35gdyv5l8vas4k9mk48nzzhq-nixos-system-nixos-26.11.20260919.20b1ddd",
+    "profile": "/nix/store/kp6ldmdx33lgjl55hzv3xba5a55ils48-nixos-system-nixos-26.11.20260919.20b1ddd",
+    "kernel": "/nix/store/x7yqia59z8726ia7sa98bb5gwga4vn8n-linux-riscv64-unknown-linux-gnu-7.3.0-rc5/Image",
+    "boot_id": "0ad0cd2c-7238-4cf4-8291-25d02c2b27ba",
+    "services": [
+      "active",
+      "active",
+      "active"
+    ],
+    "cmdline_sha256": "089270ff3a18c79ba31b61e3ef5632e1a0e4df8ff721dc9242dce211f8d1269c"
+  },
+  "source_artifact": "/home/jadams/tmp/k230-hdmi-board/candidate/serial-result.json"
+}
