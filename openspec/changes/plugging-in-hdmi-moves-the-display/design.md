@@ -319,6 +319,9 @@ preserves stage 1 and DT selectors, and observes ordinary autoboot separately.
 Visible HDMI timing is approximately a couple of seconds and panel return
 almost instant, per the operator. The bounded watcher did not overlap a
 cable action, so the separate sampled ≤1s/≤3s targets remain unmeasured and
-task 4.3 stays open. Working no-reboot switching is recorded in task 4.4
+task 4.3 records this limitation. The operator subsequently deferred precise
+latency measurement ("ignore latency measurement good enough for now"); the
+named physical handoff/navigation gate is complete without claiming the
+sampled targets passed. See `docs/evidence/hdmi-hotplug/live-switch/closeout-2026-10-09.md`. Working no-reboot switching is recorded in task 4.4
 without converting those approximate observations into precise measurements.
 Manual switch and landscape tasks remain open; this change is not archived.
