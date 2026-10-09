@@ -22,5 +22,10 @@
     "No photograph or new touch-event trace was supplied.",
     "The persistent protected panel boot remains unchanged.",
     "Manual Settings switching and no-reboot hotplug remain unproved."
-  ]
+  ],
+  "follow_up": {
+    "recorded_at": "2026-10-09T14:49:02.504058+00:00",
+    "operator_report": "i confirmed the hdmi stuff worked fine i don't know why you're mentioning settings-driven hdmi boot that makes no sense to me but anyway you don't need a monitor photo",
+    "interpretation": "The operator reconfirms HDMI acceptance and explicitly waives a monitor photograph. The optional Settings switch is separate work and is not an acceptance gate for this trial."
+  }
 }

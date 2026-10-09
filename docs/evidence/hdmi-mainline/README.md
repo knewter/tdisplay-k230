@@ -263,7 +263,10 @@ continue lmk what you need". [Operator acceptance](operator-acceptance.json)
 records the exact response and a read-only serial check confirming the same
 running system, connected HDMI and all four active services. This accepts the
 trial overall; it does not enumerate individual gestures, supply a photograph
-or establish gesture latency. Task 7.3 is complete. Groups 3–5 and archive
+or establish gesture latency. The operator subsequently reconfirmed HDMI
+and explicitly waived a monitor photograph; the exact follow-up is in the same acceptance record. The optional
+Settings switch is separate work, not an acceptance gate for this trial.
+Task 7.3 is complete. Groups 3–5 and archive
 remain open. The board is left on the corrected **volatile HDMI trial**; an
 ordinary reboot retains the protected panel selection.
 
@@ -277,4 +280,5 @@ per-file DATA rows and hashes were added to `docs/blob-inventory.md`, and
 `python3 tools/blob-scan.py --no-vendor` then passed. The
 [follow-up report](ci-inventory-followup.json) preserves the failed revision,
 log hash, correction and narrow validation. This bookkeeping correction does
-not change the board's running artifacts or finish the physical touch gate.
+not change the board's running artifacts. The subsequent operator acceptance
+above completes the corrected HDMI trial's gate.

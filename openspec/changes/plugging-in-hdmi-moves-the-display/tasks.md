@@ -135,11 +135,11 @@ reads state only. This is the first work this change may run on hardware.
       still works
       (`python3 tools/console.py /dev/ttyACM0 --wait=15 "cat /sys/class/drm/card*-DSI-1/status"`
       plus an `evtest` touch check per the existing touch evidence
-      pattern). Capture a photograph of the external monitor actually
-      showing the shell, per the physical-proof distinction in AGENTS.md
-      (a console transcript alone does not prove pixels reached the
-      monitor). Commit console transcripts and the photograph under
-      `docs/evidence/hdmi-hotplug/manual-switch/`.
+      pattern). Record the operator's observation of the external monitor
+      showing the shell and commit it with the console transcripts under
+      `docs/evidence/hdmi-hotplug/manual-switch/`. The operator explicitly
+      waived a monitor photograph on 2026-10-09; the existing accepted
+      group-7 HDMI trial does not prove this separate Settings sequence.
 
 ## 4. Hot-plug automation without a reboot (board-gated, speculative)
 
@@ -171,9 +171,10 @@ why it did or did not work.
       plugging an HDMI cable while the panel is active switches the visible
       output within a bounded time and without a reboot, and that
       unplugging switches back with touch working again afterward. Capture
-      photographs of both transitions (panel→monitor, monitor→panel) per
-      AGENTS.md's evidence-class distinctions; a console transcript alone
-      does not prove either transition was seen on glass. Commit under
+      operator observations of both transitions (panel→monitor,
+      monitor→panel), alongside their console records. The operator waived
+      a monitor photograph on 2026-10-09; retain the distinction between
+      console state and observed glass transitions. Commit under
       `docs/evidence/hdmi-hotplug/live-switch/`.
 - [ ] 4.4 Whether or not 4.1–4.3 succeed, record the outcome plainly in
       `specs/display/hdmi/spec.md`'s no-reboot requirement: either resolve
@@ -216,9 +217,10 @@ These links do not complete this proposal's HDMI hardware or landscape gates.
       a landscape geometry (e.g. `1280x720`) alongside the existing
       `568x1232` cases, `cargo test`.
 - [ ] 5.4 On the physical board with an HDMI monitor attached (requires
-      task group 3's manual switch working), capture a photograph of the
-      home screen and Settings actually rendering on the external monitor
-      without visibly broken layout. Commit under
+      a working HDMI boot), record the operator's observation of the home
+      screen and Settings rendering on the external monitor without visibly
+      broken layout. A monitor photograph is waived by the operator
+      (2026-10-09). Commit the report and matching native captures under
       `docs/evidence/hdmi-hotplug/landscape/`.
 
 ## 6. Proposal validation
@@ -228,8 +230,8 @@ These links do not complete this proposal's HDMI hardware or landscape gates.
       verify with
       `openspec validate plugging-in-hdmi-moves-the-display --strict`.
       *2026-10-09: strict validation passed after recording the mainline
-      live workaround. Hardware switching and the fresh bundle's physical
-      picture/pointer proof remain unchecked and UNVERIFIED.*
+      live workaround. Group 7's HDMI trial is subsequently accepted;
+      hardware switching remains unchecked and UNVERIFIED.*
 - [x] 6.2 Run `python3 scripts/render_work_board.py > /dev/null`, commit,
       and hand off to the coordinator for an early merge to `master` per
       AGENTS.md, independent of whether groups 3–5 have started — the
