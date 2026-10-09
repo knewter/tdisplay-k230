@@ -95,6 +95,8 @@ does not land.
   single shared board/serial-port reservation rule in `AGENTS.md`.
 - No change to stage 1 binaries, U-Boot SPL, or any file the existing boot
   path depends on other than which named `.dtb` the existing DTB-selector
-  text files point at (`nix/sd-image.nix:142-156`) — a wrong probe or a bad
-  DTB build cannot regress today's panel boot, per the self-reverting
-  one-shot design in `docs/research/hdmi-hotplug.md` §6.
+  text files point at (`nix/sd-image.nix:142-156`). The default image still
+  selects the panel. Early Linux restores that selector after the HDMI boot;
+  failure before the restore unit requires the protected serial baseline,
+  rather than an unproved power-cycle recovery guarantee. See `design.md`'s
+  mainline implementation decision.

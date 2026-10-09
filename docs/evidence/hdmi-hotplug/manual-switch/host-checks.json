@@ -1,0 +1,35 @@
+{
+  "evidence_class": "host-only",
+  "recorded_at": "2026-10-09T14:31:16.209816+00:00",
+  "checks": {
+    "rust-tests": {
+      "result": "PASS",
+      "log_sha256": "67331e6bf25a8ccbc065fcac1a24d26bcd5f523b928189187a911e490a98c62e"
+    },
+    "clippy": {
+      "result": "PASS",
+      "log_sha256": "db05364fcbdc1b101cbb9e3523bf1e853ee6d68aa76cf61b8d3fa5a04b1eb338"
+    },
+    "settings-tests": {
+      "result": "PASS",
+      "log_sha256": "9c280462effad85d1d9ea0807d92fc4a79a88d92caf50993c2aaa0dfea91b07c"
+    },
+    "relay-mode-tests": {
+      "result": "PASS",
+      "log_sha256": "92a8c7b361f1efbfed12d6e9d2849182055767f720bac26eb11e0ecf27c92cbb"
+    },
+    "selector-tests": {
+      "result": "PASS",
+      "cases": 11,
+      "command": "python3 tests/test_display_switch.py"
+    }
+  },
+  "physical_interaction_proved": false,
+  "cross_build": {
+    "command": "nix build .#kernelMainlineDrmShellBootFiles --max-jobs 1 --cores 8 -L",
+    "result": "INTERRUPTED, not build proof",
+    "recorded_at": "2026-10-09T14:53:11.136690+00:00",
+    "log_sha256": "3541e2f9a8cb993fff04b871b5231af0d5293e39d8b1b5e77c99220b1475a95f",
+    "reason": "Stopped the uninstalled optional Settings prototype build while reconciling the operator request. No candidate was installed or booted."
+  }
+}

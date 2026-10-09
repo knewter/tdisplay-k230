@@ -6,7 +6,7 @@ use crate::{
     navigation::{self, list_top, GRID_BOTTOM_INSET},
     pipewire_ipc::GraphSnapshot,
     render::{
-        settings_confirm_layout, settings_layout, settings_row_y, POWER_BUTTON_H, POWER_CANCEL_Y,
+        settings_confirm_layout_for, settings_layout_for, settings_row_y, POWER_BUTTON_H, POWER_CANCEL_Y,
         POWER_CONFIRM_Y, POWER_OFF_Y, POWER_REBOOT_Y, SETTINGS_POWER_CARD_H, SETTINGS_ROW_H,
     },
     service_data::{
@@ -930,7 +930,7 @@ pub fn panel_intent(
                 if Instant::now() >= confirm.expires_at {
                     return None;
                 }
-                let card_y = settings_confirm_layout(settings_layout().poweroff_bottom).card_y;
+                let card_y = settings_confirm_layout_for(view.settings.as_ref(), f64::from(height), content_scale).card_y;
                 if (card_y..card_y + 110.0).contains(&end.1) {
                     return Some(PanelIntent::Request(if end.0 < w / 2.0 {
                         ServiceRequest::PowerCancel(confirm.token.clone())
@@ -944,7 +944,13 @@ pub fn panel_intent(
             // These ranges mirror the row rhythm `render.rs` paints the
             // Settings screen with (finding P0-4); call the same helpers
             // rather than repeating its literals, so the two cannot drift.
-            let layout = settings_layout();
+            let layout = settings_layout_for(Some(settings));
+            if let Some(display) = &settings.display {
+                let top = settings_row_y(crate::render::SETTINGS_ROW_COUNT);
+                if (top..top + SETTINGS_ROW_H).contains(&end.1) && display.state == ControlState::Action {
+                    return Some(PanelIntent::Request(ServiceRequest::PowerRequest(PowerAction::Hdmi)));
+                }
+            }
             if (settings_row_y(0)..settings_row_y(0) + 110.0).contains(&end.1) {
                 return Some(PanelIntent::OpenWifi);
             }
@@ -1502,6 +1508,7 @@ mod tests {
     fn writable_brightness_view() -> ServiceView {
         ServiceView {
             settings: Some(SettingsSnapshot {
+                display: None,
                 network: Control {
                     state: ControlState::ReadOnly,
                     value: None,
@@ -1665,6 +1672,7 @@ mod tests {
     fn shade_and_settings_share_one_upward_dismiss_direction() {
         let settings_view = ServiceView {
             settings: Some(SettingsSnapshot {
+                display: None,
                 network: Control {
                     state: ControlState::ReadOnly,
                     value: None,
@@ -1883,6 +1891,7 @@ mod tests {
             action: None,
         };
         view.settings = Some(SettingsSnapshot {
+            display: None,
             network: unavailable.clone(),
             brightness: unavailable.clone(),
             keyboard: unavailable.clone(),
@@ -1989,6 +1998,7 @@ mod tests {
         };
         let view = ServiceView {
             settings: Some(SettingsSnapshot {
+                display: None,
                 network: unavailable.clone(),
                 brightness: unavailable.clone(),
                 keyboard: unavailable.clone(),
@@ -2048,6 +2058,37 @@ mod tests {
         assert!(!backdrop_tap(Route::Shade, (284.0, 500.0), (284.0, 500.0), travel));
         assert!(!backdrop_tap(Route::Shade, (284.0, 1000.0), (284.0, 900.0), travel));
         assert!(!backdrop_tap(Route::Drawer, (284.0, 1000.0), (284.0, 1000.0), travel));
+    }
+
+    #[test]
+    fn hdmi_row_and_confirmation_follow_output_geometry() {
+        use crate::service_data::{Control, ControlValue};
+        let unavailable = Control { state: ControlState::Unavailable, value: None, label: "Unavailable".into(), detail: None, action: None };
+        let mut view = ServiceView { settings: Some(SettingsSnapshot {
+            network: unavailable.clone(), brightness: unavailable.clone(), keyboard: unavailable.clone(),
+            motion: unavailable.clone(), volume: unavailable.clone(),
+            display: Some(Control { state: ControlState::Action, value: Some(ControlValue::Text("Next boot: AMOLED".into())), label: "Display".into(), detail: None, action: Some("hdmi".into()) }),
+        }), ..ServiceView::default() };
+        for (width, height) in [(568, 1232), (800, 1280), (1920, 1080)] {
+            let (scale, offset) = crate::settings_content_transform(width, height);
+            let map = |x: f64, y: f64| (offset + x * scale, y * scale);
+            let point = map(284.0, settings_row_y(crate::render::SETTINGS_ROW_COUNT) + 55.0);
+            assert_eq!(panel_intent(Route::Settings, point, point, width, height, &view),
+                       Some(PanelIntent::Request(ServiceRequest::PowerRequest(PowerAction::Hdmi))));
+            view.confirmation = Some(Confirmation { token: "a".repeat(32), action: PowerAction::Hdmi,
+                label: "Restart on HDMI for one boot?".into(), expires_at: Instant::now() + std::time::Duration::from_secs(30) });
+            assert_eq!(panel_intent(Route::Settings, point, point, width, height, &view), None);
+            let layout = crate::render::settings_confirm_layout_for(view.settings.as_ref(), f64::from(height), scale);
+            for (x, expected) in [(80.0, ServiceRequest::PowerCancel("a".repeat(32))), (440.0, ServiceRequest::PowerConfirm("a".repeat(32)))] {
+                let point = map(x, layout.card_y + 55.0);
+                assert!(point.1 < f64::from(height), "confirmation must be visible");
+                assert_eq!(panel_intent(Route::Settings, point, point, width, height, &view), Some(PanelIntent::Request(expected)));
+            }
+            view.confirmation = None;
+        }
+        view.settings.as_mut().unwrap().display.as_mut().unwrap().state = ControlState::ReadOnly;
+        let point = (284.0, settings_row_y(crate::render::SETTINGS_ROW_COUNT) + 55.0);
+        assert_eq!(panel_intent(Route::Settings, point, point, 568, 1232, &view), None);
     }
 
 }

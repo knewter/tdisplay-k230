@@ -117,6 +117,11 @@ reads state only. This is the first work this change may run on hardware.
       `nix build .#nixosConfigurations.k230.config.system.build.toplevel`
       and a host-side test of the marker-write/restore logic that does not
       require the board.
+      *Shipping target: use the group-7 mainline kernel/DTBs and additionally
+      build `.#kernelMainlineDrmShellBootFiles`. Keep the vendor `k230`
+      toplevel build as a rollback regression check. The controller changes
+      `force_dtb` atomically instead of overwriting the panel payload; see
+      design's mainline implementation decision and recovery limits.*
 - [ ] 3.2 Add a Settings row that triggers the switch tool from 3.1,
       including the "next boot: HDMI / AMOLED" status readout LILYGO's own
       UI provides (`hdmi_find_connector()` scanning `/sys/class/drm`,
@@ -159,6 +164,11 @@ why it did or did not work.
       If this cannot be made to probe without contending with touch (per
       the shared GPIO24 reset polarity mismatch in `docs/research/hdmi-hotplug.md`
       §1), record that finding and stop this task group here.
+      *2026-10-09 source preflight: the existing driver rejects a node with
+      no remote DSI input and then attaches a DSI device on successful
+      probe. A DT-only standalone monitor is insufficient; see
+      `docs/evidence/hdmi-hotplug/live-switch/source-preflight.md`. No board
+      probe or live-switch result is claimed; this task stays open.*
 - [ ] 4.2 If 4.1 succeeds, design and implement the `canaan_dsi.c` (or a
       new small coordinating driver) logic to tear down the panel
       connector/encoder and bring up the LT9611 bridge connector/encoder

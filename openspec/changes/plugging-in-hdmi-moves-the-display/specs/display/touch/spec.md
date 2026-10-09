@@ -19,10 +19,13 @@ on these pins, while this board's touch node
 cosmetic one. Full detail, including the specific schematic sheets and net
 labels, in `docs/research/hdmi-hotplug.md` §1–§2.*
 
-No device tree this project ships today wires both a touch node and an
-LT9611 node into the same boot — `nix/dts/k230-tdisplay.dts` carries touch
-only, matching every vendor source surveyed (`docs/research/hdmi-hotplug.md`
-§3), which also never combines the two in one working tree.
+The vendor baseline `nix/dts/k230-tdisplay.dts` carries touch only,
+matching the vendor sources surveyed (`docs/research/hdmi-hotplug.md` §3).
+The later mainline HDMI tree from task group 7 combines touch and LT9611
+without giving the bridge reset/IRQ ownership: its polling bridge waits
+for the touch driver to bind before programming the shared-reset device.
+That matching trial and the operator's acceptance are recorded in
+`docs/evidence/hdmi-mainline/README.md`.
 
 #### Scenario: A change proposes adding an LT9611 node to the default tree
 

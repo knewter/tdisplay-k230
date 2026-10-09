@@ -13,7 +13,7 @@ use crate::{
         GRID_BOTTOM_INSET, ROW_HEIGHT,
     },
     pipewire_ipc::GraphSnapshot,
-    service_data::{Control, ControlState, ControlValue, Priority},
+    service_data::{Control, ControlState, ControlValue, Priority, SettingsSnapshot},
     service_ui::{
         filter_app_indices, DrawerSearch, ServiceView, NOTIFICATION_ROW, NOTIFICATION_TOP,
         SETTINGS_OUTPUT_DETAIL_Y, SETTINGS_VOLUME_ROW, SHADE_SLIDER_H, SHADE_SLIDER_TOP,
@@ -391,7 +391,12 @@ pub struct SettingsLayout {
 }
 
 pub fn settings_layout() -> SettingsLayout {
-    let rows_bottom = settings_rows_bottom(SETTINGS_ROW_COUNT);
+    settings_layout_for(None)
+}
+
+pub fn settings_layout_for(settings: Option<&SettingsSnapshot>) -> SettingsLayout {
+    let display_row = u32::from(settings.is_some_and(|s| s.display.is_some()));
+    let rows_bottom = settings_rows_bottom(SETTINGS_ROW_COUNT + display_row);
     let power_heading_y = rows_bottom + 22.0;
     let reboot_y = power_heading_y + 28.0;
     let poweroff_y = reboot_y + SETTINGS_POWER_CARD_H + SETTINGS_ROW_GAP;
@@ -420,6 +425,16 @@ pub fn settings_confirm_layout(after: f64) -> SettingsConfirmLayout {
         card_y,
         bottom: card_y + 110.0,
     }
+}
+
+/// The optional display row extends Settings beyond the original panel
+/// rhythm. Keep its confirmation buttons visible on the current output.
+pub fn settings_confirm_layout_for(settings: Option<&SettingsSnapshot>, height: f64, scale: f64) -> SettingsConfirmLayout {
+    let mut after = settings_layout_for(settings).poweroff_bottom;
+    if settings.is_some_and(|s| s.display.is_some()) {
+        after = after.min(height / scale - 178.0);
+    }
+    settings_confirm_layout(after)
 }
 
 /// Size a secondary panel to its content instead of a full-height sheet
@@ -1537,7 +1552,7 @@ fn settings_content_bottom(services: Option<&ServiceView>) -> f64 {
     if view.settings.is_none() {
         return EMPTY_BOTTOM;
     }
-    let mut bottom = settings_layout().poweroff_bottom;
+    let mut bottom = settings_layout_for(view.settings.as_ref()).poweroff_bottom;
     if view.confirmation.is_some() {
         bottom = settings_confirm_layout(bottom).bottom;
     }
@@ -2497,12 +2512,16 @@ fn scene(
                 // its data comes from the PipeWire monitor
                 // (`GraphSnapshot`), not `k230-settings`, so there is no
                 // `Control` to hand this generic loop.
-                for (row, name, control) in [
+                let mut rows = vec![
                     (0u32, "Wi-Fi ›", &settings.network),
                     (1, "Brightness", &settings.brightness),
                     (3, "Keyboard", &settings.keyboard),
                     (4, "Motion", &settings.motion),
-                ] {
+                ];
+                if let Some(display) = &settings.display {
+                    rows.push((SETTINGS_ROW_COUNT, "Display ›", display));
+                }
+                for (row, name, control) in rows {
                     let y = settings_row_y(row);
                     service_card(cr, theme, "controls", 24.0, y, w - 48.0, SETTINGS_ROW_H, false);
                     themed_medium(cr, theme, "body", name, row_text_x, y + 15.0, row_text_width, 17.0, 14.0, 22.0, style.text);
@@ -2610,7 +2629,7 @@ fn scene(
             // Power heading/actions and the confirm dialog are positioned
             // relative to the row rhythm above (finding P0-4), not as
             // independent literals that stay correct only by coincidence.
-            let layout = settings_layout();
+            let layout = settings_layout_for(services.and_then(|view| view.settings.as_ref()));
             if services.and_then(|view| view.settings.as_ref()).is_some() {
                 text(
                     cr,
@@ -2661,7 +2680,13 @@ fn scene(
                 );
             }
             if let Some(confirm) = services.and_then(|view| view.confirmation.as_ref()) {
-                let confirm_layout = settings_confirm_layout(layout.poweroff_bottom);
+                let settings = services.and_then(|view| view.settings.as_ref());
+                let confirm_layout = settings_confirm_layout_for(settings, f64::from(height), content_scale);
+                if settings.is_some_and(|s| s.display.is_some()) {
+                    // Cover the lower rows beneath this modal confirmation.
+                    service_card(cr, theme, "controls", 24.0, confirm_layout.label_y - 12.0,
+                                 w - 48.0, confirm_layout.bottom - confirm_layout.label_y + 28.0, true);
+                }
                 text(
                     cr,
                     &confirm.label,
@@ -5815,6 +5840,7 @@ mod tests {
         };
         let services = ServiceView {
             settings: Some(SettingsSnapshot {
+                display: None,
                 network: unavailable.clone(),
                 brightness: unavailable.clone(),
                 keyboard: unavailable.clone(),
@@ -6746,6 +6772,7 @@ mod tests {
         };
         let view = ServiceView {
             settings: Some(SettingsSnapshot {
+                display: None,
                 network: unavailable.clone(),
                 brightness: unavailable.clone(),
                 keyboard: unavailable.clone(),

@@ -97,9 +97,10 @@ minimal changes this capability needs.
 ## Risks / Trade-offs
 
 - [A bad LT9611 DT node or GPIO polarity mistake hangs the board on next
-  boot] → mitigated by the one-shot self-reverting selector file pattern
-  (decision 3): any reboot, deliberate or forced, restores the panel DTB.
-  Recovery never requires more than a power cycle.
+  boot] → use a matching qualified kernel/tree and retain serial baseline
+  recovery. The Linux restore unit resets the selector after a successful
+  boot reaches it; a failure before that point is not repaired merely by
+  power cycling. See the mainline implementation's explicit recovery limit.
 - [Sharing GPIO23/24 between touch and the LT9611 causes real contention —
   wrong reset polarity, non-open-drain interrupt lines] → the read-only
   probe task (tasks.md group 1) checks GPIO state and I2C identity before
@@ -147,6 +148,42 @@ The Nix layer supplies a separate `k230-mainline-drm-shell-hdmi` profile
 with the existing touchscreen-to-touchpad service and `uinput` loaded.
 The original mainline HDMI bundle had neither service nor virtual-input
 module. The ordinary panel profile retains its direct-touch setup.
+
+## Manual switch on the shipping mainline system (2026-10-09)
+
+The implementation targets `k230-mainline-drm-shell`, now the default
+`sdImage`, using the matching mainline panel/HDMI trees from group 7. The
+vendor system remains a rollback target, not the source of a DTB for a
+mainline boot. Image assembly adds `k230-tdisplay-hdmi.dtb` with the same
+system boot arguments; `force_dtb` still selects the intact panel tree.
+
+`tools/display_switch.py` verifies the installed Image, panel recovery
+DTB and bootargs against the running system before selecting HDMI. It
+writes/fsyncs a fixed panel restore marker, prepares the HDMI tree with
+those same bootargs, atomically replaces `force_dtb`, remounts `/boot`
+read-only and requests a reboot. A failed write or denied reboot restores
+the panel selector. The root helper has an exact sudo command; Settings
+uses the existing short-lived, single-use confirmation token protocol.
+
+The early `k230-display-restore` unit restores the panel selector before
+Sway starts and removes the marker. This needs Linux to reach the restore
+unit: it cannot recover a kernel/initrd failure before that point. The
+previous assertion that any bad DTB can be repaired by a power cycle is
+not established by a Linux-only marker. Use a qualified, matching boot
+bundle, retain the staged protected baseline and serial recovery, and keep
+task 3.3 open until the Settings-driven forward/return sequence is proved.
+No stage-1 change or pre-Linux rollback guarantee is claimed.
+
+One installed system includes the existing relay and `uinput`. Its mode
+check keeps direct touch on a connected panel and grabs Goodix only for
+connected HDMI; it does not infer that an HDMI-capable kernel means HDMI
+is active. The explicitly named HDMI trial profile remains available.
+The accepted output geometry is preserved.
+
+The extra Settings row appears only when the controller is installed.
+Its confirmation uses the same scaled geometry for painting/hits and
+keeps its buttons within the current output; older Settings fixtures keep
+their existing row rhythm and pixels.
 
 ## Open Questions
 

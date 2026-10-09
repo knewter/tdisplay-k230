@@ -1,0 +1,40 @@
+{
+  "evidence_class": "host-only production paint with synthetic service data",
+  "recorded_at": "2026-10-09T14:25:51.507730+00:00",
+  "source_artifact": "host-render.rs",
+  "commands": [
+    "cargo test --offline --manifest-path nix/rust-shell-client/Cargo.toml --quiet",
+    "rustc --edition=2021 docs/evidence/hdmi-hotplug/manual-switch/host-render.rs --extern k230_shell_rust=<current host rlib> --extern cairo=<current host rlib> -L dependency=nix/rust-shell-client/target/debug/deps -o <private scratch>/host-display-render",
+    "<private scratch>/host-display-render docs/evidence/hdmi-hotplug/manual-switch"
+  ],
+  "images": {
+    "host-confirm-1920x1080.png": {
+      "sha256": "f2f4c25452eaf4d89d9039890238f59faa7398a9fcd13aaafb526243c77fb1f3",
+      "bytes": 55567
+    },
+    "host-confirm-568x1232.png": {
+      "sha256": "7dbe61332db45d9205343d03de556efb9a8a6498d6e40acb978bc34bdc900320",
+      "bytes": 51765
+    },
+    "host-confirm-800x1280.png": {
+      "sha256": "19ba27a947777a66004ad7eac0900d0abb4c8e90325c35dacb4e6716fad585e6",
+      "bytes": 58349
+    },
+    "host-settings-1920x1080.png": {
+      "sha256": "5490312c11c4c5fdbb92a0f9745a83dce0c316c148cc78379ada559f180e09bf",
+      "bytes": 52805
+    },
+    "host-settings-568x1232.png": {
+      "sha256": "ce417f85b6a8de46d73fb7b4955524e3463106b90b7e0f09185618ec926aa98e",
+      "bytes": 46776
+    },
+    "host-settings-800x1280.png": {
+      "sha256": "7139fd4be7aecff236b5df281a2c0a8b62aaad8b8df96bd03a174572183bf3b6",
+      "bytes": 52509
+    }
+  },
+  "limits": [
+    "Synthetic controls and default palette, no running theme.",
+    "No Wayland connection, board event or monitor photograph."
+  ]
+}

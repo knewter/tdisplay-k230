@@ -317,3 +317,19 @@ fn worker_rejects_an_out_of_range_live_brightness_write_without_shelling_out() {
         .unwrap();
     assert!(next(&worker, Duration::from_secs(1)).result.is_err());
 }
+
+#[test]
+fn optional_display_control_and_hdmi_confirmation_are_strict() {
+    let mut value = settings();
+    assert!(parse_settings(&serde_json::to_vec(&value).unwrap()).unwrap().display.is_none());
+    value["controls"]["display"] = json!({"state":"action","value":"Next boot: AMOLED", "label":"Display", "action":"hdmi"});
+    let display = parse_settings(&serde_json::to_vec(&value).unwrap()).unwrap().display.unwrap();
+    assert_eq!(display.state, ControlState::Action);
+    assert_eq!(display.action.as_deref(), Some("hdmi"));
+    value["controls"]["display"]["action"] = json!("reboot");
+    assert!(parse_settings(&serde_json::to_vec(&value).unwrap()).is_err());
+    value["controls"]["display"]["action"] = json!("hdmi");
+    value["controls"]["display"]["value"] = json!("arbitrary");
+    assert!(parse_settings(&serde_json::to_vec(&value).unwrap()).is_err());
+
+}

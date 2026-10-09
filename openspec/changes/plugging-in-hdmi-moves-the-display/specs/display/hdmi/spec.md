@@ -101,6 +101,13 @@ the board (group 3). Host build confirms the patch applies and compiles and
 the DTB compiles with exactly one `&dsi` port@1 endpoint; it does not confirm
 the LT9611 driver actually probes or that a connector actually appears live. -->
 
+*Observed 2026-10-09 on the shipping mainline path: the group-7 kernel and
+board-specific mainline HDMI tree passed a matching volatile boot, automatic
+connected status and 256-byte EDID, native shell/cursor captures, and the
+operator's acceptance. See `docs/evidence/hdmi-mainline/README.md`. The
+vendor kernel/tree pair above remains host-only; the Settings switch has
+its separate group-3 gate below.*
+
 #### Scenario: The HDMI DTB boots with a monitor attached
 
 - **WHEN** the board boots the HDMI device tree with an HDMI monitor

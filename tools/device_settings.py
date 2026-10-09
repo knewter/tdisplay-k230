@@ -27,10 +27,10 @@ class Settings:
         self.runtime = Path(runtime or os.environ.get("K230_SETTINGS_RUNTIME", "/run/shell/settings"))
         self.run = run
 
-    def command(self, argv):
+    def command(self, argv, timeout=3):
         try:
             result = self.run(argv, stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL,
-                              stderr=subprocess.DEVNULL, timeout=3, check=False)
+                              stderr=subprocess.DEVNULL, timeout=timeout, check=False)
             return result.returncode == 0
         except (OSError, subprocess.TimeoutExpired):
             return False
@@ -92,13 +92,38 @@ class Settings:
 
     def status(self):
         motion = os.environ.get("K230_SETTINGS_REDUCED_MOTION")
-        return {"schema": 1, "controls": {
+        controls = {
             "network": self.network(), "brightness": self.brightness(),
             "keyboard": self.keyboard(),
             "motion": control("read-only" if motion in ("0", "1") else "unavailable",
                               motion == "1" if motion in ("0", "1") else None,
                               label="Reduced motion", detail="Session preference"),
-        }}
+        }
+        if os.environ.get("K230_DISPLAY_SWITCH"):
+            controls["display"] = self.display()
+        return {"schema": 1, "controls": controls}
+
+    def display(self):
+        command = os.environ.get("K230_DISPLAY_SWITCH")
+        try:
+            if not command:
+                raise ValueError("switch not installed")
+            result = self.run([command, "status"], stdin=subprocess.DEVNULL,
+                              stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,
+                              timeout=3, check=True)
+            if len(result.stdout) > 4096:
+                raise ValueError("oversize status")
+            data = json.loads(result.stdout)
+            if data.get("state") not in ("action", "read-only") or data.get("next_boot") not in ("HDMI", "AMOLED"):
+                raise ValueError("switch unavailable")
+            return control(data["state"], "Next boot: " + data["next_boot"],
+                           label="Display", action="hdmi" if data["state"] == "action" else None,
+                           detail="Tap for HDMI once; reboot returns to AMOLED" if data["state"] == "action"
+                           else ("HDMI queued; following reboot restores AMOLED" if data["next_boot"] == "HDMI"
+                                 else "Restart to return to AMOLED"))
+        except (OSError, ValueError, subprocess.SubprocessError):
+            return control("unavailable", label="Display switch unavailable",
+                           detail="Install the current system update to enable HDMI")
 
     def change_brightness(self, percent):
         if not 0 <= percent <= 100:
@@ -133,8 +158,10 @@ class Settings:
     def power(self, operation, value):
         if operation not in ("request", "confirm", "cancel"):
             return {"state": "failed", "error": "unknown-operation"}
-        if operation == "request" and value not in ("reboot", "poweroff"):
+        if operation == "request" and value not in ("reboot", "poweroff", "hdmi"):
             return {"state": "failed", "error": "unknown-action"}
+        if operation == "request" and value == "hdmi" and self.display()["state"] != "action":
+            return {"state": "failed", "error": "display-unavailable"}
         if operation != "request" and not re.fullmatch(r"[0-9a-f]{32}", value):
             return {"state": "failed", "error": "invalid-confirmation"}
         try:
@@ -149,7 +176,8 @@ class Settings:
                         json.dump(record, stream)
                     os.replace(tmp, path)
                     return {"state": "confirmation", "action": value, "token": token,
-                            "label": "Restart device?" if value == "reboot" else "Power off device?",
+                            "label": {"reboot": "Restart device?", "poweroff": "Power off device?",
+                                      "hdmi": "Restart on HDMI for one boot?"}[value],
                             "cancel": True, "expires_in_seconds": 30}
                 with path.open() as stream:
                     record = json.loads(stream.read(512))
@@ -159,10 +187,15 @@ class Settings:
                 if operation == "cancel":
                     return {"state": "cancelled"}
                 elapsed = time.monotonic() - record["created"]
-                if not 0 <= elapsed <= 30 or record["action"] not in ("reboot", "poweroff"):
+                if not 0 <= elapsed <= 30 or record["action"] not in ("reboot", "poweroff", "hdmi"):
                     return {"state": "failed", "error": "expired-confirmation"}
-                ok = self.command([os.environ.get("K230_SUDO", "/run/wrappers/bin/sudo"), "-n",
-                                   os.environ.get("K230_SYSTEMCTL", "systemctl"), record["action"]])
+                if record["action"] == "hdmi":
+                    command = os.environ.get("K230_DISPLAY_SWITCH")
+                    ok = bool(command) and self.command(
+                        [os.environ.get("K230_SUDO", "/run/wrappers/bin/sudo"), "-n", command, "hdmi"], timeout=25)
+                else:
+                    ok = self.command([os.environ.get("K230_SUDO", "/run/wrappers/bin/sudo"), "-n",
+                                       os.environ.get("K230_SYSTEMCTL", "systemctl"), record["action"]])
                 return {"state": "requested" if ok else "failed", "action": record["action"],
                         "error": None if ok else "action-denied", "retry": not ok}
         except (OSError, ValueError, KeyError, TypeError):

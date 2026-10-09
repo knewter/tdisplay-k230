@@ -1673,6 +1673,14 @@ DATA 6c8632fb3cc8f1871cdf90d06ee54b6841535bd7500fdb94b05869b1610187b1 docs/evide
 DATA cc2d10af36ae21000abaa1911dcbad1e225dda5d3c603cbde016f0cae4577fed docs/evidence/hdmi-mainline/fixed-native-terminal.png
 DATA 1193184ac0aba5f9e6b8bdc1aa270fc4db3f640ffe77a50a763bff560af2c868 docs/evidence/hdmi-mainline/live-mainline-hdmi.png
 DATA c30fbdbc85783130e8a4606df061767724d2199c07426fabf151349f713c0908 docs/evidence/hdmi-mainline/live-pointer-native.png
+
+# Manual HDMI switch: host-only production Settings paint, synthetic controls.
+DATA f2f4c25452eaf4d89d9039890238f59faa7398a9fcd13aaafb526243c77fb1f3 docs/evidence/hdmi-hotplug/manual-switch/host-confirm-1920x1080.png
+DATA 7dbe61332db45d9205343d03de556efb9a8a6498d6e40acb978bc34bdc900320 docs/evidence/hdmi-hotplug/manual-switch/host-confirm-568x1232.png
+DATA 19ba27a947777a66004ad7eac0900d0abb4c8e90325c35dacb4e6716fad585e6 docs/evidence/hdmi-hotplug/manual-switch/host-confirm-800x1280.png
+DATA 5490312c11c4c5fdbb92a0f9745a83dce0c316c148cc78379ada559f180e09bf docs/evidence/hdmi-hotplug/manual-switch/host-settings-1920x1080.png
+DATA ce417f85b6a8de46d73fb7b4955524e3463106b90b7e0f09185618ec926aa98e docs/evidence/hdmi-hotplug/manual-switch/host-settings-568x1232.png
+DATA 7139fd4be7aecff236b5df281a2c0a8b62aaad8b8df96bd03a174572183bf3b6 docs/evidence/hdmi-hotplug/manual-switch/host-settings-800x1280.png
 ```
 
 `group:` rows stand for a directory whose members are enumerated by
@@ -2693,3 +2701,17 @@ compositor commands, as the evidence records.
 | `docs/evidence/hdmi-mainline/fixed-native-terminal.png` | 9681 | DATA | `cc2d10af36ae21000abaa1911dcbad1e225dda5d3c603cbde016f0cae4577fed` |
 | `docs/evidence/hdmi-mainline/live-mainline-hdmi.png` | 30025 | DATA | `1193184ac0aba5f9e6b8bdc1aa270fc4db3f640ffe77a50a763bff560af2c868` |
 | `docs/evidence/hdmi-mainline/live-pointer-native.png` | 28836 | DATA | `c30fbdbc85783130e8a4606df061767724d2199c07426fabf151349f713c0908` |
+
+### Manual HDMI switch host paints (2026-10-09)
+
+Production Settings paint with synthetic controls; no board or monitor photograph.
+See `docs/evidence/hdmi-hotplug/manual-switch/host-render.json`.
+
+| Path | Bytes | Class | SHA256 |
+| --- | ---: | --- | --- |
+| `docs/evidence/hdmi-hotplug/manual-switch/host-confirm-1920x1080.png` | 55567 | DATA | `f2f4c25452eaf4d89d9039890238f59faa7398a9fcd13aaafb526243c77fb1f3` |
+| `docs/evidence/hdmi-hotplug/manual-switch/host-confirm-568x1232.png` | 51765 | DATA | `7dbe61332db45d9205343d03de556efb9a8a6498d6e40acb978bc34bdc900320` |
+| `docs/evidence/hdmi-hotplug/manual-switch/host-confirm-800x1280.png` | 58349 | DATA | `19ba27a947777a66004ad7eac0900d0abb4c8e90325c35dacb4e6716fad585e6` |
+| `docs/evidence/hdmi-hotplug/manual-switch/host-settings-1920x1080.png` | 52805 | DATA | `5490312c11c4c5fdbb92a0f9745a83dce0c316c148cc78379ada559f180e09bf` |
+| `docs/evidence/hdmi-hotplug/manual-switch/host-settings-568x1232.png` | 46776 | DATA | `ce417f85b6a8de46d73fb7b4955524e3463106b90b7e0f09185618ec926aa98e` |
+| `docs/evidence/hdmi-hotplug/manual-switch/host-settings-800x1280.png` | 52509 | DATA | `7139fd4be7aecff236b5df281a2c0a8b62aaad8b8df96bd03a174572183bf3b6` |

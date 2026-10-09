@@ -79,6 +79,8 @@ pub struct SettingsSnapshot {
     /// JSON that has no `volume` key at all; see
     /// `unknown_volume_placeholder`.
     pub volume: Control,
+    /// Present only on systems with the one-shot HDMI controller installed.
+    pub display: Option<Control>,
 }
 
 /// The value `parse_settings` gives `SettingsSnapshot::volume` before
@@ -188,6 +190,13 @@ fn control(value: &Value, kind: &str) -> Result<Control, String> {
             None | Some(Value::Null) => None,
             _ => return Err("invalid network value".into()),
         },
+        "display" => match raw {
+            Some(Value::String(value)) if matches!(value.as_str(), "Next boot: HDMI" | "Next boot: AMOLED") => {
+                Some(ControlValue::Text(value.clone()))
+            }
+            None | Some(Value::Null) => None,
+            _ => return Err("invalid display value".into()),
+        },
         "keyboard" => match raw {
             None | Some(Value::Null) => None,
             _ => return Err("invalid keyboard value".into()),
@@ -198,8 +207,12 @@ fn control(value: &Value, kind: &str) -> Result<Control, String> {
         return Err("unavailable control has value".into());
     }
     let action = optional_string(value.get("action"), 64)?;
-    if action.as_deref().is_some_and(|a| a != "keyboard-toggle")
-        || (kind != "keyboard" && action.is_some())
+    let expected_action = match kind {
+        "keyboard" => Some("keyboard-toggle"),
+        "display" => Some("hdmi"),
+        _ => None,
+    };
+    if action.is_some() && action.as_deref() != expected_action
         || (state == ControlState::Action) != action.is_some()
     {
         return Err("invalid control action".into());
@@ -231,6 +244,7 @@ pub fn parse_settings(bytes: &[u8]) -> Result<SettingsSnapshot, String> {
         )?,
         motion: control(controls.get("motion").ok_or("missing motion")?, "motion")?,
         volume: unknown_volume_placeholder(),
+        display: controls.get("display").map(|value| control(value, "display")).transpose()?,
     })
 }
 
@@ -334,6 +348,7 @@ pub fn parse_history(bytes: &[u8]) -> Result<NotificationSnapshot, String> {
 pub enum PowerAction {
     Reboot,
     Poweroff,
+    Hdmi,
 }
 
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -531,6 +546,7 @@ fn execute(
             let action = match action {
                 PowerAction::Reboot => "reboot",
                 PowerAction::Poweroff => "poweroff",
+                PowerAction::Hdmi => "hdmi",
             };
             parse_action(&settings_command(settings, &["request", action])?)
                 .map(ServiceResponse::Action)
@@ -613,6 +629,7 @@ fn parse_action(bytes: &[u8]) -> Result<ActionOutcome, String> {
         None => None,
         Some("reboot") => Some(PowerAction::Reboot),
         Some("poweroff") => Some(PowerAction::Poweroff),
+        Some("hdmi") => Some(PowerAction::Hdmi),
         _ => return Err("invalid power action".into()),
     };
     let expires_in_seconds = data
@@ -703,7 +720,13 @@ fn settings_command(command: &Path, args: &[&str]) -> Result<Vec<u8>, String> {
         let _ = child.wait();
         return Err("settings output unavailable".into());
     }
-    let deadline = Instant::now() + SERVICE_DEADLINE;
+    // A confirmed HDMI action verifies the boot kernel and writes/syncs
+    // the selector. The worker remains bounded and off the Wayland loop.
+    let deadline = Instant::now() + if args.first() == Some(&"confirm") {
+        Duration::from_secs(30)
+    } else {
+        SERVICE_DEADLINE
+    };
     let mut bytes = Vec::new();
     let mut eof = false;
     loop {
@@ -879,4 +902,15 @@ fn connect_nonblocking(path: &Path, deadline: Instant) -> Result<UnixStream, Str
         return Err("foreign notification peer".into());
     }
     Ok(stream)
+}
+
+#[cfg(test)]
+mod display_tests {
+    use super::*;
+    #[test]
+    fn hdmi_confirmation_uses_the_power_token_protocol() {
+        let value = json!({"state":"confirmation", "action":"hdmi", "token":"a".repeat(32), "expires_in_seconds":30});
+        let action = parse_action(&serde_json::to_vec(&value).unwrap()).unwrap();
+        assert_eq!(action.power_action, Some(PowerAction::Hdmi));
+    }
 }
