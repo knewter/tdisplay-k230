@@ -163,11 +163,11 @@
         "provenance": "Host capture"
       }
     },
-    "the-shell-presents-a-pinned-home-screen": {
-      "lane": "in-progress",
-      "source": "in-progress",
-      "physical": "pending",
-      "next": "Confirm primary activation of an existing window and explicit New Window on the installed candidate, then reconcile the remaining original Home acceptance scope. Real-finger hold-and-drag is accepted.",
+    "2026-10-09-the-shell-presents-a-pinned-home-screen": {
+      "lane": "archived",
+      "source": "archived",
+      "physical": "verified",
+      "next": "Complete; operator accepts Home interactions and right-click New Window. Physical daylight, fresh-install and reboot-layout limits remain explicit in the spec.",
       "dependencies": [],
       "evidence": [
         "docs/evidence/proposal-closeout/README.md",
@@ -183,10 +183,14 @@
         "docs/evidence/home-screen/app-actions/board/result.json",
         "docs/evidence/home-screen/app-actions/board/pointer-result.json",
         "docs/evidence/home-screen/app-actions/board/operator-acceptance-2026-10-01.md",
-        "docs/evidence/home-screen/app-actions/board/full-system/README.md"
+        "docs/evidence/home-screen/app-actions/board/full-system/README.md",
+        "docs/evidence/home-screen/real-touch/operator-report-2026-10-08.md",
+        "docs/evidence/home-screen/closeout-2026-10-09.md",
+        "docs/evidence/home-screen/archive-check-2026-10-09.json",
+        "docs/evidence/hdmi-hotplug/live-switch/normal-hotplug-runtime-state.json"
       ],
-      "rationale": "Home navigation and hold-and-drag are operator accepted. Full coherent runtime activation and all six native injected primary/New Window checks passed; separate physical mouse acceptance and original physical checks remain open.",
-      "reviewRevision": "288535289172c8465c4fa408eaa8ba2c7ab8a5ac",
+      "rationale": "All 25 Home tasks complete. October 8 focus/drag acceptance and October 9 New Window confirmation apply to the same installed Rust executable; camera and second-theme repeat were waived by the operator. Existing host/QEMU/injected evidence retains its provenance.",
+      "reviewRevision": "83a0b3616fac0b18c7e999a2cbb7cba80a488a6a",
       "cover": {
         "path": "docs/evidence/home-screen/app-actions/qemu/home-actions-right-click.png",
         "caption": "Right-click app menu in the paired RISC-V compositor/Rust fixture; touch holds still rearrange",

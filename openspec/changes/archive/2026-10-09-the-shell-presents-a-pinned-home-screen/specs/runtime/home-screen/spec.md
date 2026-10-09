@@ -10,7 +10,7 @@ and drawer.
 
 ### Requirement: Home presents pinned app icons across swipeable pages
 
-*Observed: operator accepts Home page swipes and icon taps on the installed
+*Grounding: operator accepts Home page swipes and icon taps on the installed
 shell in `docs/evidence/home-screen/real-touch/operator-report-2026-10-08.md`.
 Host pager fixtures and paired QEMU wiring remain separate evidence; no
 physical timing or per-frame tracking measurement is inferred.*
@@ -48,7 +48,7 @@ indicator dots that are visual indicators only and never a tappable control.
 
 ### Requirement: A persistent quick-launch dock spans every Home page
 
-*Observed: dock taps and Home page navigation accepted in
+*Grounding: dock taps and Home page navigation accepted in
 `docs/evidence/home-screen/real-touch/operator-report-2026-10-08.md`; no new
 recording or measured fixed-position trace is inferred.*
 
@@ -64,7 +64,7 @@ grid pages change.
 
 ### Requirement: Apps can be pinned to, unpinned from, and rearranged on Home
 
-*Observed: pin/unpin/rearrange and icon dragging accepted in
+*Grounding: pin/unpin/rearrange and icon dragging accepted in
 `docs/evidence/home-screen/real-touch/operator-report-2026-10-08.md`; the
 final right-click app-action check is accepted in
 `docs/evidence/home-screen/closeout-2026-10-09.md`.*
@@ -89,6 +89,8 @@ placement rather than duplicate it.
 - **AND** removing a pin leaves the application installed and reachable in the drawer
 
 ### Requirement: A fresh Home seeds sensible defaults from installed desktop entries
+
+<!-- UNVERIFIED: physical fresh-install seeding is not observed; host fixtures are separate proof. -->
 
 <!-- Grounding: `nix/rust-shell-client/src/catalog.rs`'s `installed_apps()`
 is the existing, already-shipped desktop-entry discovery this requirement
@@ -144,7 +146,7 @@ reinstalling the same application restores its place.
 
 ### Requirement: Tapping a Home icon launches the app or focuses it if already running
 
-*Observed: primary launch/focus accepted in
+*Grounding: primary launch/focus accepted in
 `docs/evidence/home-screen/real-touch/operator-report-2026-10-08.md`, with
 matching installed executable in the October 9 closeout report. Six
 injected-board multi-window/primary/New Window checks remain separate proof
@@ -173,7 +175,7 @@ semantics the drawer already applies.
 
 ### Requirement: Home's gesture topology is reconciled with the card overview and drawer
 
-*Observed: operator navigation accepted in
+*Grounding: operator navigation accepted in
 `docs/evidence/home-screen/navigation/operator-acceptance-2026-10-01.md` and
 `docs/evidence/hdmi-hotplug/live-switch/fast-runtime-qualification.json`.
 The paired QEMU and injected-board trials in
@@ -220,7 +222,7 @@ contact displacement and settle smoothly after release or cancellation.
 
 ### Requirement: App icons provide explicit window and desktop actions
 
-*Observed: right-click New Window accepted in
+*Grounding: right-click New Window accepted in
 `docs/evidence/home-screen/closeout-2026-10-09.md`, with previous primary focus
 and icon-grab acceptance on the exact same installed Rust executable. Native
 pointer delivery/dismissal and six injected-board action checks remain

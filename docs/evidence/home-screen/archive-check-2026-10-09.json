@@ -1,0 +1,44 @@
+{
+  "existing": {
+    "Home items can be dragged to a specific place instead of instant-pinned": "4ef1d6f090e03b963b6cd164291ea31432bb0d8f037e754cd2f76aa026485d1e",
+    "Rearranging a pinned item on Home follows the same drop rules as a drawer drag": "259b577e38b6688f2a6c293ce67ce46dcbfa70e3ad7f474c9dbaf7b42f2f421e",
+    "Folders group pinned applications in the grid and the dock": "0d597dcb907056ce1ba2d5e84058e006f028f5301ca8fd104bb55941551bfc7a",
+    "Home offers Clock, Battery, and Weather widgets drawn by the shell": "7f1920182ff9d4569d41f6ea6b3e4c8ee9c1d6d04db194b42696b7afa2b513e6",
+    "Home's persisted layout carries folders and widgets, migrating older files": "322141585882c9ededa535e863695908867385cf8f6f2ff17bd80aeb0df205f5",
+    "Cross-page dragging pages fluidly with a visible edge affordance": "61904ca471c5b10d3aaf210cb41bef0991d46e61621d2ab56cad0d3c419f0920",
+    "Home's widgets are visually redesigned with distinct styles and richer content": "dce3c2bd286228a55c89359e21c2803ca134ad58a0ee3d0d8a1e25bbb1f47ef2"
+  },
+  "added": {
+    "Home presents pinned app icons across swipeable pages": "eecc1b482472840a362437c2d77fd058ee83b4ad1de88dc716dae75c8e1b42c6",
+    "A persistent quick-launch dock spans every Home page": "8de9861394b6be41cc915b7fc0eabe3c760cd85a3472063d7f03a83687fb8c50",
+    "Apps can be pinned to, unpinned from, and rearranged on Home": "3d915dc2fc3a93b19f2aa2de8ad937705e9552bad7a728832f1e1cea25fa2821",
+    "A fresh Home seeds sensible defaults from installed desktop entries": "cdcb3d834b5faaa841ec75f4611459696fd7c4db130610bb9c9cc74d53aac3b4",
+    "Home's layout persists across restarts and reboots": "7bc59cc88ef58047e04cfa0c30dc2a9939d620d104242c96c1e5b152dee5000a",
+    "Tapping a Home icon launches the app or focuses it if already running": "438085e670d5c146bc68d23c1246a788045ba95bf510664c8e7e1704e3f114c0",
+    "Home's gesture topology is reconciled with the card overview and drawer": "c5a8fc72a87ed884a4377473c04a8e6a347f78c31cf360ae99ab6b64024e6ad0",
+    "App icons provide explicit window and desktop actions": "34e3bd1b70cd7285f39c3f09babc8c615fd68867d0b8273569c9474465541d28"
+  },
+  "recorded_at": "2026-10-09T20:31:06.180915+00:00",
+  "evidence_class": "documentation archive and complete requirement-block comparison",
+  "change": "the-shell-presents-a-pinned-home-screen",
+  "archive": "openspec/changes/archive/2026-10-09-the-shell-presents-a-pinned-home-screen",
+  "commands": {
+    "change_validation": "openspec validate the-shell-presents-a-pinned-home-screen --strict",
+    "archive": "openspec archive the-shell-presents-a-pinned-home-screen --yes --json",
+    "all_validation": "openspec validate --all --strict"
+  },
+  "all_validation": {
+    "passed": 54,
+    "failed": 0
+  },
+  "all_25_tasks_complete": true,
+  "sync_result": "PASS: 7 existing and 8 added blocks match SHA256, including all scenarios",
+  "archive_warning": "Existing runtime/home-screen Purpose retained; delta Purpose ignored. No main spec was hand-edited.",
+  "physical_acceptance": "closeout-2026-10-09.md",
+  "limits": [
+    "No new source build, physical interaction, camera capture, measurement or reboot inferred from documentation checks.",
+    "Daylight readability and fresh-install/reboot-layout physical claims retain UNVERIFIED markers."
+  ],
+  "prepublication_correction": "Initial site check rejected Observed labels and the pre-existing fresh-seed comment format. Delta uses Grounding labels and an explicit physical fresh-seed UNVERIFIED marker; main spec regenerated through archive CLI.",
+  "work_board_update": "Move reviewed Home override to dated archive ID and preserve cover/evidence provenance; update only necessary dependency references."
+}
