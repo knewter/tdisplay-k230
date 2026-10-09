@@ -58,14 +58,15 @@ and the LT9611 on the schematic. Full detail in
   against an assumption that the two consumers can be independently reset
   or interrupted
 
-### Requirement: HDMI output is a boot-time device-tree choice
+### Requirement: HDMI-only qualification remains a boot-time device-tree choice
 
-The board SHALL expose an `HDMI-A-1` DRM connector, driven by this board's
-own device-tree wiring of the LT9611 (not a copy of an unrelated reference
-board's tree), by loading an alternate device tree — not by any runtime
-reconfiguration of a single booted kernel.
+The separate HDMI-only qualification and recovery path SHALL expose an
+`HDMI-A-1` DRM connector through this board's own LT9611 device-tree wiring,
+loaded at boot. This fallback remains available alongside the combined
+mainline runtime arrangement described in the no-reboot requirement.
+The panel-only qualification tree retains its panel-only graph.
 
-*Grounding: `drivers/gpu/drm/canaan/canaan_dsi.c`'s `canaan_dsi_bind()`
+*Historical baseline grounding: `drivers/gpu/drm/canaan/canaan_dsi.c`'s `canaan_dsi_bind()`
 calls `drm_of_find_panel_or_bridge(dsi->dev->of_node, 1, -1, &dsi->panel,
 &dsi->bridge)` exactly once, at component-bind/boot time (line 695 in the
 pinned Xuantie kernel tree); no code path re-invokes this lookup, and
@@ -82,7 +83,7 @@ DTB file and calling `reboot()` (`ui_hdmi_test.c:312-343`). Full detail in
 `docs/research/hdmi-hotplug.md` §3–§4.*
 
 The kernel's DSI-bridge-attach code path SHALL create a working DRM
-connector for the bridge, which it does not today.
+connector for the bridge, as established by the group-2 host build and the accepted group-7 mainline trial.
 
 *Grounding: `canaan_dsi_bind()`'s bridge branch
 (`canaan_dsi.c:713-714`) calls `drm_bridge_attach(..., NULL,
@@ -117,7 +118,7 @@ its separate group-3 gate below.*
 
 #### Scenario: The panel DTB boots normally
 
-- **WHEN** the board boots the default (panel) device tree
+- **WHEN** the board boots the separate panel-only qualification device tree
 - **THEN** `/sys/class/drm/card*-DSI-1/status` reports `connected`, touch
   reports input events, and no LT9611-related kernel log line appears,
   since that DTB carries no LT9611 node
@@ -172,11 +173,15 @@ to already be a live, probed I2C device while the panel device tree is the
 one running; the shared GPIO24 reset net (see "DSI lanes are shared wiring"
 above) forbids independently resetting either chip after their initial
 power-on reset; and `canaan_dsi.c` has no live panel/bridge re-attach path
-today (see "HDMI output is a boot-time device-tree choice" above) — new
-kernel logic would be required with no existing pattern in any source
-surveyed to base it on.*
+in the surveyed baseline (see the HDMI-only qualification requirement
+above). The runtime re-plan keeps both consumers registered and uses two
+exclusive encoders with polling, rather than adding live re-attachment.
+Touch retains both shared pins; their unknown electrical drive type is not
+used as an assumption for shared-IRQ operation.*
 
-<!-- UNVERIFIED: not attempted. This requirement is expected to resolve
+<!-- UNVERIFIED: the matching HPD-monitor boot captured real unplug/replug
+with the panel enabled on one boot ID; visible handoff and input-mode
+transitions remain unproved. This requirement is expected to resolve
 either to a working scenario below or to a recorded infeasibility finding
 per tasks.md task 4.4; it must not be archived with this marker simply
 removed without one of those two outcomes on file. -->
@@ -184,16 +189,16 @@ removed without one of those two outcomes on file. -->
 #### Scenario: A cable is plugged in while the panel is active
 
 - **WHEN** an HDMI cable is plugged into a monitor while the board is
-  running the panel device tree with touch active
-- **THEN** the visible output moves to the monitor within a bounded time,
-  without a reboot, and touch stops responding to further input while HDMI
-  is active
+  running the combined mainline device tree with the panel and direct touch active
+- **THEN** the visible output moves to the monitor within 30 seconds,
+  without a reboot, preserving the accepted HDMI rotation and using the
+  handheld touchscreen as the accepted HDMI trackpad
 
 #### Scenario: The cable is unplugged
 
 - **WHEN** the HDMI cable is then unplugged
-- **THEN** the visible output returns to the panel and touch responds to
-  input again, without a reboot
+- **THEN** the visible output returns to the panel within 30 seconds and touch responds to
+  direct input again, without a reboot
 
 #### Scenario: The goal proves infeasible
 

@@ -1,28 +1,25 @@
 ## Why
 
-The board has a real HDMI path — a Lontium LT9611 DSI-to-HDMI bridge on
-`&i2c3` — but it does nothing today. LILYGO documents it as "diagnostic,"
-our kernel builds the bridge driver but never references it from any device
-tree we ship, and nobody using this handheld has ever seen an image on an
-external monitor. The person using this board wants HDMI to be usable: plug
-a cable in, the display moves to the monitor; unplug it, the display comes
-back. They are explicit that a full automatic swap, not merely a manual
-toggle, is the goal.
+The board's LT9611 HDMI path now works on the mainline kernel. The operator
+accepted the HDMI image, portrait rotation, and touchscreen-as-trackpad on
+2026-10-09; matching evidence is in `docs/evidence/hdmi-mainline/`. The
+remaining immediate goal is automatic cable switching: plug HDMI in to
+move the shell to the monitor, then unplug it to return to the panel and
+direct touch without rebooting.
 
-`docs/research/hdmi-hotplug.md` (this change) establishes, from the
-schematic and from vendor and our own kernel source, that there is no mux
-chip to switch — the DSI lanes are wired in bare parallel to both the panel
-and the bridge, and the panel/bridge share their reset and interrupt GPIOs
-as literal single nets. Every working HDMI path anyone has ever
-demonstrated on this hardware (LILYGO's own shipped launcher toggle, and
-the vendor reference tree it falls back to) selects the display by which
-device tree boots, and switches by rebooting. Our own kernel's bridge-attach
-code path is additionally missing the connector it would need to expose
-`HDMI-A-1` at all. A no-reboot hot-plug swap is therefore new, unproven
-kernel and shell work, not a device-tree edit — this proposal says so
-before naming any chip or register, and stages the work so a working,
-reboot-based switch ships first instead of being held behind the harder,
-uncertain no-reboot goal.
+The DSI lanes are wired in parallel to panel and bridge, and touch shares
+the bridge's reset and interrupt nets. The accepted HDMI-only boot is a
+qualification/recovery path. The current monitor-only driver has observed
+real cable changes with the panel enabled on an unchanged boot ID, while
+its explicit panel-touch report remains pending. The runtime re-plan keeps
+both DSI consumers registered, uses exclusive DRM encoders with polling,
+and keeps touch as the sole shared-pin owner. Visible handoff remains
+unproved until the combined board trial.
+
+The operator directed this automatic continuation and parked the separate
+Settings reboot prototype. Its historical host proof remains at commit
+`58498320`; the manual and landscape requirements/tasks remain open.
+They are not prerequisites for the requested automatic switching work.
 
 ## What Changes
 
@@ -35,11 +32,12 @@ uncertain no-reboot goal.
 - Add a manual, reboot-based switch between the panel DTB and an HDMI DTB,
   self-reverting on the next boot regardless of cause (mirroring LILYGO's
   own shipped one-shot mechanism), plus a Settings row that triggers it.
-  This is the change's proven, shippable core.
+  This optional prototype is parked; its distinct physical sequence remains unproved.
 - Attempt, as an explicitly separate and higher-risk stage, no-reboot
   hot-plug automation: detecting a live HDMI connection while the panel
-  is active, switching DRM output and touch/LT9611 GPIO ownership without
-  a reboot, and switching back on disconnect. `docs/research/hdmi-hotplug.md`
+  is active, selecting exclusive DRM outputs and switching direct-touch/trackpad
+  mode without a reboot, and switching back on disconnect. Touch retains
+  GPIO23/24 ownership throughout. `docs/research/hdmi-hotplug.md`
   §5 names the specific hardware and kernel-architecture blockers this
   stage must clear; it may turn out to be infeasible without further kernel
   work not scoped here, and that outcome must be recorded rather than
@@ -47,9 +45,8 @@ uncertain no-reboot goal.
 - Audit and begin making `nix/shell.nix` and the `rust-shell-client`/
   `card-shell` runtime landscape-aware: 476 call sites assume a fixed
   568×1232 portrait panel today (`docs/research/hdmi-hotplug.md` §5), and
-  none of the HDMI work above is visually usable until at least the Sway
-  output stanza and the core design-space transform stop being hardcoded
-  to that one geometry.
+  The accepted HDMI trial already uses its EDID-preferred mode and portrait
+  rotation; the separate landscape interaction proof remains open.
 - Every board-touching task is staged separately and marked board-gated,
   per `.skills/k230-spec-change/SKILL.md`'s QEMU-vs-hardware distinction:
   QEMU's `k230` machine models neither the panel, the touch controller, nor
@@ -89,14 +86,28 @@ does not land.
   DT fragment for the LT9611, new `nix/device-tree.nix` alternate output,
   new `nix/sd-image.nix` boot-file wiring for a second DTB, new Settings UI
   row, and (for the no-reboot stage only, gated separately) new kernel
-  and/or shell runtime logic not yet designed.
+  and shell/input runtime logic explicitly re-planned in `design.md`.
 - Read-only board time for the first probe task; write/reboot board time
   for the manual-switch and hotplug-automation stages, all under the
   single shared board/serial-port reservation rule in `AGENTS.md`.
 - No change to stage 1 binaries, U-Boot SPL, or any file the existing boot
   path depends on other than which named `.dtb` the existing DTB-selector
   text files point at (`nix/sd-image.nix:142-156`). The default image still
-  selects the panel. Early Linux restores that selector after the HDMI boot;
-  failure before the restore unit requires the protected serial baseline,
+  selects the protected panel until the combined runtime trial passes. The
+  parked manual plan restores its selector in early Linux after an HDMI boot;
+  that separate sequence remains unproved. Failure before its restore unit
+  requires the protected serial baseline,
   rather than an unproved power-cycle recovery guarantee. See `design.md`'s
   mainline implementation decision.
+
+## Automatic continuation and image gate (2026-10-09)
+
+Preserve the accepted monitor's 1280×800 preferred mode, transform 90, and
+HDMI trackpad behavior. The combined candidate first builds as
+`kernelMainlineDrmShellHotplugBootFiles` and receives a volatile board trial
+with protected panel recovery retained. After matching physical handoff and
+navigation proof, promote the same kernel/tree/system to normal boot and
+`sdImage`, as requested by the operator. A successful host image build is
+not an installed-system or visible-transition result. No monitor photograph
+is required; actual operator observations and matching serial/sysfs evidence
+remain required. No incomplete requirement is archived or silently dropped.

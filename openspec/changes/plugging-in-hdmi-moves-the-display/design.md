@@ -214,8 +214,11 @@ reset owner, enables register access as the existing revision probe does,
 masks its HPD interrupt sources, and exposes read-only `hpd` sysfs status.
 It neither acquires reset/IRQ GPIOs nor attaches a DSI device or DRM bridge.
 This replaces the old shared-interrupt experiment: the electrical drive
-type is still unknown, so polling is the intended path. HPD transitions
-while the panel is active remain UNVERIFIED until the named board trial.
+type is still unknown, so polling is the intended path. The matching monitor-driver trial captured actual unplug/replug with DSI
+connected/enabled on one boot ID; its real-touch operator report remains
+pending. Cable detection is grounded in
+`docs/evidence/hdmi-hotplug/live-switch/monitor-cable-cycle.json`; visible
+handoff is still UNVERIFIED.
 
 The qualification boot is volatile and retains the protected panel bundle.
 Do not infer a live-display switch from this cable-status proof. Once it
@@ -223,3 +226,71 @@ passes, task 4.2 must specify and implement the runtime DRM/DSI arrangement
 explicitly. Both output geometries and HDMI trackpad behavior from the
 accepted trial should be retained. No monitor photograph is required by
 the operator.
+
+## Runtime re-plan from the HPD findings (2026-10-09)
+
+The matching driver trial now establishes polling HPD alongside an enabled
+panel without rebinding DSI or acquiring shared GPIOs. The runtime source
+is prepared privately; applying it and running the combined board trial
+remain conditional on task 4.1's panel/touch physical report.
+The shipping target is automatic cable switching on mainline, preserving
+the accepted HDMI orientation and trackpad behavior; the parked Settings
+prototype is not a prerequisite. The remaining manual and landscape tasks
+stay explicit and open.
+
+The kernel keeps two downstream DSI devices registered at boot: the panel
+on logical channel 0 and LT9611 on logical channel 1. This distinguishes the
+Linux device registrations; the host's video virtual channel remains 0 and
+the LT9611 sends no DSI command messages. The combined device tree gives
+DSI port 1 two indexed endpoints, 0 for the panel and 1 for LT9611 Port B.
+The host adds its DRM component only once both consumers have attached,
+avoiding the vendor master's unsafe deferred-bind cleanup path.
+
+Two encoders share the one CRTC but prohibit cloning onto one another.
+The panel connector reports connected unless HDMI HPD is connected; the
+HDMI bridge connector reports HPD normally. Both use DRM polling. On a cable
+change, the ordinary DRM hotplug event lets the existing Sway session disable
+the old output and enable the other; the connectors and consumers remain
+registered throughout. This avoids live component teardown, graph rebinding,
+and transferring ownership of the shared reset/interrupt pins. The initial
+qualification bound is 30 seconds per transition (DRM polling plus output
+modesetting), measured against real cable actions rather than injected status. The bridge
+also retains the read-only raw `hpd` attribute, letting the watcher measure
+raw HPD-to-DRM activation separately from the operator's visible transition
+report; cached DRM status is not treated as an immediate cable timestamp.
+
+The encoder's enable/disable callbacks use the selected consumer's lane
+count and panel callbacks only for the panel. The panel retains its measured
+`canaan,hsfreqrange=0x87`; HDMI uses the accepted `0x96`. A DSI transfer returns
+`-EPIPE` while the HDMI consumer is selected, so a panel brightness update
+cannot send panel commands onto the HDMI video stream. The stage-1 splash
+handoff remains panel-only and assigns its active DSI device before panel
+callbacks send commands.
+
+Touch remains the sole owner of GPIO23/24 for the entire boot and every
+transition. LT9611 HPD and video interrupt sources remain masked when there
+is no bridge IRQ; the still-unknown shared interrupt drive type is not
+assumed safe. No cable event triggers reset of either shared device. Panel
+GPIO22/25 are independent and follow its ordinary prepare/unprepare path.
+
+The existing touch relay is enabled in the daily mainline system. It selects
+trackpad mode only when HDMI is connected and its scanout is enabled; it
+releases the grab and virtual device before returning to direct touch. It
+restores Sway's `map_to_output DSI-1` and identity calibration, retries while
+the compositor is starting, and repeats after a socket replacement. The
+accepted Sway HDMI preferred mode and `transform 90` remain unchanged.
+The existing shell already cancels card-shell state before an output is
+disabled (`card_shell_output_disable` in `nix/card-shell/adapter.c`), and
+the Rust client's layer-close handlers recreate Home and wallpaper on the
+next available output. Those source paths need no speculative rewrite;
+their actual behavior during the cable trial remains part of task 4.3.
+Host fixtures prove mode selection and IPC retry behavior only, not glass
+or real-finger interaction.
+
+The combined candidate is exposed separately and staged for a volatile
+trial before making it the normal boot/image device tree. The protected
+panel payload and system profile are retained until matching physical
+qualification. Task 4.3 records actual panel→HDMI→panel observations,
+DRM/Sway state, input mode and unchanged boot ID. Task 4.4 resolves only
+against that evidence. Host build, injected input and native screen capture
+are recorded as their own evidence classes and do not complete those gates.

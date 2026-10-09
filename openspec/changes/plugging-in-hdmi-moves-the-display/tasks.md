@@ -178,18 +178,29 @@ why it did or did not work.
       status-only prototype now exposes `/sys/bus/i2c/devices/*-003b/hpd`,
       masks the bridge's HPD IRQ sources and leaves all DSI/GPIO ownership
       unchanged; plug/unplug observations are required before task 4.2.*
-- [ ] 4.2 If 4.1 succeeds, design and implement the `canaan_dsi.c` (or a
-      new small coordinating driver) logic to tear down the panel
-      connector/encoder and bring up the LT9611 bridge connector/encoder
-      live, on an HPD-connect interrupt, and the reverse on disconnect —
-      including handing touch's ownership of GPIO23/24 to the LT9611 and
-      back. This is real kernel design work with no existing pattern to
-      copy; scope and re-plan it explicitly once 4.1's findings are in,
-      rather than estimating it blind here.
+- [ ] 4.2 If 4.1 succeeds, implement the explicitly re-planned persistent
+      consumer arrangement in `design.md`: keep panel and LT9611 attached,
+      give them separate non-cloning encoders on the single CRTC, and use
+      complementary connector detection with DRM polling. Select each
+      consumer's lane/PHY settings, preserve panel callbacks and splash
+      handoff, and mask LT9611 interrupt sources when no bridge IRQ exists.
+      Touch remains the sole owner of GPIO23/24 throughout; do not hand
+      those shared nets between drivers or tear down live DRM components.
+      Enable the existing input relay in the daily mainline system, choose
+      trackpad only for enabled HDMI scanout, and restore direct panel
+      mapping/calibration on return. Expose the combined tree through the
+      separate `kernelMainlineDrmShellHotplugBootFiles` trial bundle before
+      promoting it to normal boot/`sdImage`. Host proof:
+      `nix build .#kernelMainlineDrmShellHotplugBootFiles --max-jobs 1 --cores 16`,
+      matching compiled graph/boot-bundle inspection, plus native relay
+      `cargo test` and `cargo clippy --all-targets`. These do not prove 4.3.
 - [ ] 4.3 If 4.2 produces something that boots, verify on the board that
       plugging an HDMI cable while the panel is active switches the visible
       output within a bounded time and without a reboot, and that
-      unplugging switches back with touch working again afterward. Capture
+      unplugging switches back with direct touch working again afterward.
+      Use a 30-second bound per transition for this polling implementation,
+      verify another replug after the return, and retain the accepted HDMI
+      portrait rotation and trackpad behavior. Capture
       operator observations of both transitions (panel→monitor,
       monitor→panel), alongside their console records. The operator waived
       a monitor photograph on 2026-10-09; retain the distinction between
