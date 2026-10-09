@@ -1,0 +1,39 @@
+## Context
+
+Original HDMI group 5 remains unfinished. The accepted monitor uses 1280×800
+with transform 90 and a touchscreen trackpad. That proves portrait HDMI,
+not normal-transform landscape. Shared whole-output configure, Home/Drawer
+reflow, Settings transforms and hit-testing already belong to
+`the-shell-adapts-to-output-resolution`; its tasks retain density, Wi-Fi/theme
+geometry, dock and physical follow-ups. This proposal does not complete them.
+
+## Goals / Non-Goals
+
+Qualify minimum usable Home/navigation/Settings in landscape and preserve every
+original task 5.1–5.4. No full redesign, default portrait change, new hotplug driver
+or replacement responsive implementation is implied by this proposal.
+
+## Decisions
+
+Layers: Nix/Sway output configuration and Rust/card-shell userspace geometry.
+The combined runtime uses exclusive outputs on one CRTC; keep that constraint.
+Use a separately selected landscape qualification profile, preserving accepted
+portrait defaults until an explicit instruction changes them. Choose an actual
+supported EDID mode rather than assuming the historical 720p example is selected.
+Reuse responsive production paint and hit-test paths and fixtures. The original
+literal/scaling audit includes Wi-Fi and must not be silently dropped merely
+because a shared proposal deferred it.
+
+## Risks / Trade-offs
+
+Host renders establish fixture behavior only. A real monitor can expose density,
+focus, input mapping and output configure differences. Preserve native captures
+and operator observations as separate evidence classes. No monitor photograph
+is required. Do not infer landscape interaction from accepted portrait use.
+
+## Validation and ownership
+
+Original commands and separate board gate are retained in tasks. Worktree
+`/home/jadams/tmp/k230-hdmi-landscape-successor`, branch
+`proposal/hdmi-landscape-successor-2026-10-09`, base `ba5217ca`.
+Owned paths: only this proposal directory. No build slot or board reservation.
