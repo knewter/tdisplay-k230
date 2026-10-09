@@ -46,7 +46,8 @@ and the coordinator note about updating the sibling proposal's wording.
 - Follow GNOME activation for Home/dock and the shared app-icon path: primary
   tap/click activates the most recently used identifiable window, or launches
   when none exists. New Window explicitly bypasses focus through the app menu
-  when supported. This refinement is planned, not an installed feature.
+  when supported. This refinement is installed and operator-accepted; see
+  `docs/evidence/home-screen/closeout-2026-10-09.md`.
 - Wire the user's explicit navigation sequence: the bottom-edge swipe from
   an app opens Overview; an upward swipe from Overview's bottom navigation
   area reveals Home without closing apps; the next upward swipe from Home
@@ -111,6 +112,6 @@ open evidence gates for the coordinator.
 ## Activation refinement, 2026-10-01
 
 The user requested GNOME Shell behavior after reconsidering launch-versus-focus.
-Task group 11 carries the unimplemented refinement, with right-click menus in mouse mode and the existing
+Task group 11 carries the now implemented and accepted refinement, with right-click menus in mouse mode and the existing
 long-press-to-move interaction preserved on touch. It does not reopen accepted mouse
 navigation or require recordings solely to reconfirm accepted behavior.

@@ -10,8 +10,11 @@ and drawer.
 
 ### Requirement: Home presents pinned app icons across swipeable pages
 
-<!-- UNVERIFIED: implemented and host/QEMU-tested in this change; no
-real-finger or daylight-readability board observation exists yet. -->
+*Observed: operator accepts Home page swipes and icon taps on the installed
+shell in `docs/evidence/home-screen/real-touch/operator-report-2026-10-08.md`.
+Host pager fixtures and paired QEMU wiring remain separate evidence; no
+physical timing or per-frame tracking measurement is inferred.*
+<!-- UNVERIFIED: daylight readability has not been observed. -->
 
 Whenever no application is focused and the card overview is not active, the
 shell SHALL present Home: the current theme wallpaper with a grid of
@@ -45,8 +48,9 @@ indicator dots that are visual indicators only and never a tappable control.
 
 ### Requirement: A persistent quick-launch dock spans every Home page
 
-<!-- UNVERIFIED: implemented and host/QEMU-tested in this change; no
-real-finger board observation exists yet. -->
+*Observed: dock taps and Home page navigation accepted in
+`docs/evidence/home-screen/real-touch/operator-report-2026-10-08.md`; no new
+recording or measured fixed-position trace is inferred.*
 
 Home SHALL show a fixed-position quick-launch dock beneath the icon grid,
 holding a bounded number of pinned icons that do not move or scroll when the
@@ -60,8 +64,10 @@ grid pages change.
 
 ### Requirement: Apps can be pinned to, unpinned from, and rearranged on Home
 
-<!-- UNVERIFIED: implemented and host-tested in this change; no real-finger
-board observation exists yet. -->
+*Observed: pin/unpin/rearrange and icon dragging accepted in
+`docs/evidence/home-screen/real-touch/operator-report-2026-10-08.md`; the
+final right-click app-action check is accepted in
+`docs/evidence/home-screen/closeout-2026-10-09.md`.*
 
 A person SHALL be able to add or remove an installed application through
 its mouse app menu or long-press grab and deliberately drag icons from the drawer to Home or rearrange
@@ -138,12 +144,13 @@ reinstalling the same application restores its place.
 
 ### Requirement: Tapping a Home icon launches the app or focuses it if already running
 
-<!-- UNVERIFIED: real-finger/physical-mouse acceptance of primary focus remains
-open. Production desktop identity matching and six actual-board injected
-multi-window/primary/New Window checks pass; see
- docs/evidence/home-screen/app-actions/board/full-system/actions-result.json.
+*Observed: primary launch/focus accepted in
+`docs/evidence/home-screen/real-touch/operator-report-2026-10-08.md`, with
+matching installed executable in the October 9 closeout report. Six
+injected-board multi-window/primary/New Window checks remain separate proof
+in `docs/evidence/home-screen/app-actions/board/full-system/actions-result.json`.
 Matching remains best-effort for apps without usable desktop identity; a miss
-falls back to the normal desktop-entry launch path. -->
+falls back to the normal desktop-entry launch path.*
 
 Tapping or primary-clicking a Home/dock icon outside rearrange mode SHALL
 activate its most recently used identifiable window if already running,
@@ -166,9 +173,12 @@ semantics the drawer already applies.
 
 ### Requirement: Home's gesture topology is reconciled with the card overview and drawer
 
-<!-- UNVERIFIED: real-finger acceptance remains open. The paired QEMU and
-physical-board injected-touch trials pass; see
-docs/evidence/home-screen/navigation/README.md. -->
+*Observed: operator navigation accepted in
+`docs/evidence/home-screen/navigation/operator-acceptance-2026-10-01.md` and
+`docs/evidence/hdmi-hotplug/live-switch/fast-runtime-qualification.json`.
+The paired QEMU and injected-board trials in
+`docs/evidence/home-screen/navigation/README.md` remain distinct from those
+physical reports; no new cancellation/second-contact recording is inferred.*
 
 A bottom-edge swipe from a running application SHALL open Overview. An
 upward swipe beginning in Overview's bottom navigation area SHALL reveal
@@ -210,10 +220,11 @@ contact displacement and settle smoothly after release or cancellation.
 
 ### Requirement: App icons provide explicit window and desktop actions
 
-<!-- UNVERIFIED: source, host and paired cross checks are implemented; native
-board pointer delivery/dismissal and operator hold-and-drag acceptance are
-recorded under docs/evidence/home-screen/app-actions/board/. Explicit
-New Window/primary-focus operator acceptance remains open in task 11.4. -->
+*Observed: right-click New Window accepted in
+`docs/evidence/home-screen/closeout-2026-10-09.md`, with previous primary focus
+and icon-grab acceptance on the exact same installed Rust executable. Native
+pointer delivery/dismissal and six injected-board action checks remain
+separate evidence under `docs/evidence/home-screen/app-actions/board/`.*
 
 Home/dock and the shared launcher app-icon path SHALL provide the same menu
 through secondary click in mouse mode. Long-press SHALL retain the existing

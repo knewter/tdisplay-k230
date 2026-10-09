@@ -301,3 +301,13 @@ Tasks 1–9 document the first Home implementation. Task 10 now authorizes
 compositor navigation changes and a reserved board trial. The older
 no-board/no-gesture-change migration notes describe that original pass,
 not the newly authorized navigation work. Broad task 8.1 stays open.
+
+## Final qualification (2026-10-09)
+
+Home and the app-action refinement are installed and operator-accepted.
+`docs/evidence/home-screen/closeout-2026-10-09.md` records the final New Window
+confirmation and reuses previous Home/focus/drag observations on the exact
+same installed Rust executable. No new camera, measurement or reboot is
+inferred. All 25 tasks are complete; dated earlier open-task notes remain
+historical. The archived spec retains explicit limits on unobserved physical
+fresh-install seeding, reboot-layout persistence and daylight readability.

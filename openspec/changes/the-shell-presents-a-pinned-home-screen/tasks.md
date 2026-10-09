@@ -191,8 +191,10 @@ separate from the accepted mouse/HDMI navigation closeout.
 - [x] 11.1 Implement shared app-icon activation and menu action policy: reliably identify/recently focus existing windows, otherwise launch; read supported desktop actions/single-window metadata, prefer declared New Window and avoid duplicates. Verify `cargo test --offline --manifest-path nix/rust-shell-client/Cargo.toml` with multi-window, missing/mismatched identity and desktop-action fixtures.
 - [x] 11.2 Wire secondary click to the app menu on Home/dock and the shared app-icon path; preserve long-press-to-grab and do not open a menu on touch hold; preserve deliberate drag-to-pin/rearrange, focus, cancellation and menu dismissal. Verify the same Rust suite with grab/move/cancel/secondary-click routing fixtures.
 - [x] 11.3 Extend the paired real-compositor/Rust fixture to prove primary activation retains a known window ID while explicit New Window produces another, named actions work, unsupported actions are absent and canceled menus preserve input/layout. Record the concrete invocation in `docs/evidence/home-screen/`; run `python3 tests/rust_home_screen_qemu.py --sway <sway> --swaymsg <swaymsg> --rust <rust> --theme-bundle <theme-bundle> --icons <icons> --client <native-probe-client> --output <dir>`, then commit its actual result. QEMU injection is not finger evidence.
-- [ ] 11.4 Build `nix build .#handheld-shell-rust .#nixosConfigurations.k230-coherent-shell-hdmi-trial.config.system.build.toplevel --no-link --print-out-paths`; install the recoverable candidate under the board reservation and record exact identities with `python3 tools/console.py /dev/ttyACM0 --wait=3 'readlink -f /run/current-system'`. Obtain operator acceptance of tap/focus, right-click New Window and preserved icon dragging; a committed operator report suffices unless a defect needs capture.
+- [x] 11.4 Build `nix build .#handheld-shell-rust .#nixosConfigurations.k230-coherent-shell-hdmi-trial.config.system.build.toplevel --no-link --print-out-paths`; install the recoverable candidate under the board reservation and record exact identities with `python3 tools/console.py /dev/ttyACM0 --wait=3 'readlink -f /run/current-system'`. Obtain operator acceptance of tap/focus, right-click New Window and preserved icon dragging; a committed operator report suffices unless a defect needs capture.
 - [x] 11.5 Validate with `openspec validate the-shell-presents-a-pinned-home-screen --strict`, land/push source and evidence and inspect matching CI/Pages. Keep original unresolved placement and physical scope tracked; this planning refinement alone does not ship the menu.
+
+### Historical checkpoints (2026-10-01)
 
 App-actions groups 11.2–11.3 passed: `docs/evidence/home-screen/app-actions/qemu/README.md`.
 Cross Rust and the matching full coherent system also built from source `2885352`;
@@ -226,3 +228,14 @@ Earlier probes ignored `floating_con` nodes; this was a harness filter error,
 not an established shell defect. Existing windows/layout were preserved and only
 the owned new window was closed. Task 11.4 still awaits separate operator
 acceptance, rather than treating injected pointer input as physical mouse input.
+
+## Closeout (2026-10-09)
+
+All 25 tasks are complete. Task 8.1's operator exceptions and real-finger
+acceptance are recorded on October 8. Task 11.4's named builds and recoverable
+installation already passed; the October 8 focus/drag observations apply to
+the exact same currently installed Rust executable. The remaining right-click
+New Window check is accepted by "i confirmed it works". See
+`docs/evidence/home-screen/closeout-2026-10-09.md` for context, exact identities,
+proof classes, limitations and the archive commands. Historical open-task
+notes above describe their dated checkpoints, not today's completion state.
