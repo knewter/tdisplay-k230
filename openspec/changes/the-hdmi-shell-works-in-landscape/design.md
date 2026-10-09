@@ -4,8 +4,8 @@ Original HDMI group 5 remains unfinished. The accepted monitor uses 1280×800
 with transform 90 and a touchscreen trackpad. That proves portrait HDMI,
 not normal-transform landscape. Shared whole-output configure, Home/Drawer
 reflow, Settings transforms and hit-testing already belong to
-`the-shell-adapts-to-output-resolution`; its physical fill and tap checks
-remain there. This proposal owns the transferred density, Wi-Fi/theme geometry
+the archived `the-shell-adapts-to-output-resolution`; its accepted portrait
+fill and target evidence is available for reuse. This proposal owns the transferred density, Wi-Fi/theme geometry
 and dock follow-ups in tasks 7.1–7.3. None is completed by this transfer.
 
 ## Goals / Non-Goals
@@ -65,3 +65,13 @@ scale, replacing their independent non-uniform scaling. Decide dock slot
 reflow from actual layout/hit-target evidence rather than merely stretching
 four slots. Reuse the shared responsive owner’s existing geometry paths.
 No implementation, new installed profile or physical qualification is claimed.
+
+
+## Responsive archive reference — 2026-10-09
+
+Responsive physical fill and Home/All Apps/Settings target checks are accepted
+for the normal 800×1280 portrait-HDMI arrangement and committed in
+`docs/evidence/shell-responsive/board/acceptance-2026-10-09/`. The archived
+responsive change supplies the shared implementation and this bounded proof;
+all seven implementation/physical tasks here remain open. No portrait
+observation closes this proposal’s separate normal-transform landscape gate.

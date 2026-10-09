@@ -4,17 +4,18 @@ Original HDMI tasks 5.1–5.4 are preserved below with their proof commands.
 All implementation/physical gates remain unchecked. The operator authorized
 this successor on 2026-10-09 and dropped the obsolete Settings reboot path.
 Task 5.1 now selects landscape through the working automatic arrangement. Implement shared geometry
-through `the-shell-adapts-to-output-resolution` and record its actual evidence,
+through the archived `the-shell-adapts-to-output-resolution` and reuse its
+committed evidence,
 while retaining this proposal's separate physical landscape gate.
 
 ## 5. Shell and card-shell landscape support
 
 
 Coordinator cross-reference (2026-10-01):
-[`the-shell-adapts-to-output-resolution`](../the-shell-adapts-to-output-resolution/tasks.md)
+[`the-shell-adapts-to-output-resolution`](../archive/2026-10-09-the-shell-adapts-to-output-resolution/tasks.md)
 owns output configures, Drawer/Home column reflow, Settings transforms and matching
 hit-testing. Its host implementation and paired fixtures are recorded there;
-its tasks 6.1/6.2 retain physical fill and tap checks. This proposal’s
+its completed tasks 6.1/6.2 record accepted portrait-HDMI fill and targets. This proposal’s
 tasks 7.1–7.3 own density, Wi-Fi/theme geometry and dock follow-ups. Use that work for 5.2/5.3 below rather than implementing it twice.
 These links do not complete this proposal's HDMI hardware or landscape gates.
 
@@ -72,8 +73,8 @@ The operator authorized moving the responsive proposal’s original tasks
       content transform deliberately excludes and leaves as-is.
 - [ ] 7.3 Design whether/how Home's dock should reflow its own slot count
       (`DOCK_SLOTS`, deliberately left fixed at 4 by the responsive
-      implementation) once the responsive proposal’s physical 6.1/6.2 and this
-      proposal’s landscape 5.4 evidence are in hand to verify against.
+      implementation) using the archived responsive 6.1/6.2 evidence and once this
+      proposal’s landscape 5.4 evidence is in hand to verify against.
 
 Host implementation proof: `cargo test --offline --manifest-path
 nix/rust-shell-client/Cargo.toml` and `cargo clippy --all-targets --manifest-path
