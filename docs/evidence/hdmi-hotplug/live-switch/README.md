@@ -99,11 +99,30 @@ revised worker reads bridge HPD every 250 ms and invokes DRM's normal hotplug
 detection only on changes, retaining generic polling as fallback. Both
 connectors are updated without rebinding live components or taking touch's
 GPIO23/24. Startup waits for DRM registration; teardown cancels the worker.
-[Object compilation](fast-hpd-object-check.json) passes. Full matching build,
-timed physical switching and ordinary boot installation remain pending.
+[Object compilation](fast-hpd-object-check.json), the [full matching build](fast-host-checks.json), compiled graph and all 15 bundle-inspector fixtures pass.
+The [faster volatile boot](fast-runtime-serial-boot.json) records system
+`yl3si5ak6yi709yg1fqsnwgq0zn4xfcs`, kernel Image SHA256
+`9d94102c65c8e4fd6b8880ef7b19b8bee5fa91c85596384319f0104bd89509cb`
+and unchanged protected profile. The [operator report](fast-runtime-operator-report.json)
+accepts the result, describes HDMI replug as a couple of seconds, and panel
+return as almost instant. Those actions preceded the timing watcher; these
+are approximate visible timings, not sampled HPD-to-DRM measurements.
+The [matching state](fast-runtime-initial-state.json) captures enabled HDMI,
+accepted rotation and virtual touchpad. Timed cable measurements, explicit
+three-gesture navigation qualification and ordinary boot installation remain
+pending. The bridge enable path retains its 500 ms settling wait; remaining
+visible HDMI delay may also include monitor signal lock, which this state
+snapshot does not measure.
 
 The [initial image inspection](runtime-first-sd-image-inspection.json)
 records a private source snapshot with the combined DT wired as the default:
 its boot partition payload matches the first candidate byte for byte. This
 proves image construction, not a flashed image or accepted fast handoff. The
 repository default has not yet been promoted.
+
+The [prepared faster image inspection](fast-private-sd-image-inspection.json)
+passes with boot payload byte-identical to the faster bundle. Its private
+source snapshot promotes only the two normal DT references; the normal and
+explicit trial bundle derivations match. Repository defaults remain
+panel-only pending qualification. This is host image inspection, not proof
+that the image was flashed.

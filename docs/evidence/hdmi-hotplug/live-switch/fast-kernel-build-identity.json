@@ -1,0 +1,13 @@
+{
+  "recorded_at": "2026-10-09T18:51:33.299060+00:00",
+  "evidence_class": "host full kernel build and registered immutable output; no board result inferred",
+  "source_commit": "5a066a69f4562ace6e60cbd355e2214976edccec",
+  "build_command": "nix build .#kernelMainlineDrmShellHotplugBootFiles --max-jobs 1 --cores 16",
+  "kernel_derivation": "/nix/store/9vcsldwhasqh0x3932vy6mvyz2jxh83q-linux-riscv64-unknown-linux-gnu-7.3.0-rc5.drv",
+  "kernel": "/nix/store/f3rnipvbc5vqam8kwdmn3wgcl5rbz9yx-linux-riscv64-unknown-linux-gnu-7.3.0-rc5/Image",
+  "image_bytes": 42745856,
+  "image_sha256": "9d94102c65c8e4fd6b8880ef7b19b8bee5fa91c85596384319f0104bd89509cb",
+  "registration_command": "nix-store --check-validity /nix/store/f3rnipvbc5vqam8kwdmn3wgcl5rbz9yx-linux-riscv64-unknown-linux-gnu-7.3.0-rc5",
+  "kernel_result": "PASS",
+  "bundle_result": "still building matching system/initrd and bundle"
+}

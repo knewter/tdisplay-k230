@@ -1,0 +1,43 @@
+{
+  "recorded_at": "2026-10-09T18:56:33.143812+00:00",
+  "evidence_class": "host full matching build and compiled-artifact inspection",
+  "source_commit": "5a066a69f4562ace6e60cbd355e2214976edccec",
+  "source_sha256": {
+    "flake.nix": "eef10e7c4f6c82c525a45fceba7af7c603cf3beef9644b9ec011f5b40945e7f3",
+    "nix/dts/k230-tdisplay-mainline-drm-hotplug.dts": "6a9348e9e0635002a4ae585c211e94a2dc71e9b33c24054519b49f91b8babd3d",
+    "nix/patches/mainline/drm/canaan_dsi.c": "6cd646c81abb23b56f84285505fd03e5ec5afb66508d082d0f6b7705c168ace8",
+    "nix/patches/mainline/drm/canaan_dsi.h": "e6c012b7850fc7a1c145ab1d6b0af2c6adecd42e740a1f65f6fff031c051f7e7",
+    "nix/patches/mainline/drm/lontium-lt9611-k230.c": "842ce9ad86ed77b0a9d656c6bee6f4891e7267d6b2e55ceee9f5c34872b5faa8",
+    "nix/shell.nix": "1c438d3f6f6719ef16476eb6b2421ab0f30ac894f3bd2239e1b5650ec71cfc09",
+    "nix/touch-trackpad-service.nix": "c55b79aeb8d40d9ac4407f2a80f1e28e75c92f6f76cf5d8d5cad1e8ab9003c13",
+    "nix/touch-trackpad/src/main.rs": "6990549a3c063c19913564869f3a1c86fca936d0b81a9b8815a044bf0a8f70da",
+    "nix/touch-trackpad/src/mode.rs": "022b1710c6361ab2e37ea3c11ae17af101e42b514de012635d117667689b9c3c",
+    "nix/touch-trackpad/src/shell_ipc.rs": "ab73dea7679bd1b22c3af77942bda56115909bc0b39219e0ce9557805fc71a43"
+  },
+  "build_command": "nix build .#kernelMainlineDrmShellHotplugBootFiles --max-jobs 1 --cores 16",
+  "build_result": "PASS",
+  "kernel_identity_record": "fast-kernel-build-identity.json",
+  "bundle_inspection": "fast-bundle-inspection.json",
+  "wrapped_graph_inspection": "fast-wrapped-dtb-inspection.json",
+  "inspector_fixtures": {
+    "command": "python3 tests/test_coherent_shell_boot_inspect.py --bundle <matching-fast-bundle>",
+    "passed": 15,
+    "result": "PASS"
+  },
+  "relay_proof": "runtime-host-checks.json: unchanged relay source; 44unit+2integration tests and Clippy PASS",
+  "limits": [
+    "No visible handoff, latency, real-finger navigation or ordinary autoboot result inferred.",
+    "Two missing-prototype driver warnings and existing Wi-Fi/initrd library warnings remain outside this change.",
+    "Normal repository DT wiring remains panel-only pending matching fast-candidate qualification."
+  ],
+  "private_build_log_sha256": "2b159a6ef6ab936649053189fc00379a3d2f026bf688d101b201697a1ea740d2",
+  "prepared_sd_image": {
+    "command": "nix build path:<private-tracked-source-snapshot>#sdImage --max-jobs 1 --cores 16",
+    "result": "PASS",
+    "image": "/nix/store/gw9p4yhc2yyp026bgmn635m26bhlrzhv-k230-sd-image.img",
+    "derivation": "/nix/store/4vzmdr1hm9j6d6crhjibcqrkswk7fhf8-k230-sd-image.img.drv",
+    "inspection": "fast-private-sd-image-inspection.json",
+    "default_and_trial_bundle_derivation_match": "/nix/store/69m2mggfzk7k2wxmk6ckilj4xgvykpmj-k230-coherent-shell-boot-files.drv",
+    "limits": "Private snapshot with the same source and two combined-DT default references; repository defaults await qualification. Host-only image, not a flashed SD image."
+  }
+}

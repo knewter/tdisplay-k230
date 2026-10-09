@@ -202,8 +202,13 @@ why it did or did not work.
       44 unit and two integration tests plus Clippy passed. Exact tuple and
       report: `docs/evidence/hdmi-hotplug/live-switch/runtime-first-serial-boot.json`
       and `runtime-first-operator-report.json`. The faster 250 ms worker
-      also passes object compilation; its full build and timed board
-      qualification remain open under 4.3.*
+      passes object compilation, the full matching bundle build, compiled graph
+      and 15 inspector fixtures. The matching faster volatile trial is accepted
+      by the operator: HDMI replug takes a couple of seconds, panel return is
+      almost instant. See `fast-host-checks.json`, `fast-runtime-serial-boot.json`
+      and `fast-runtime-operator-report.json` in the same evidence directory.
+      Sampled cable latency and explicit navigation qualification remain open
+      under 4.3; approximate visible timing is not a sampled HPD measurement.*
 - [ ] 4.3 If 4.2 produces something that boots, verify on the board that
       plugging an HDMI cable while the panel is active switches the visible
       output within a bounded time and without a reboot, and that
