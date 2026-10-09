@@ -12,6 +12,8 @@ implementation owner.
 - Qualify a landscape HDMI output and document mutually exclusive display use.
 - Finish the actual-geometry scaling audit and usable Home/navigation layouts
   using the responsive-shell implementation and its existing host fixtures.
+- Preserve responsive follow-ups for actual Home/Drawer icon and text density,
+  Wi-Fi/theme-chooser geometry and the dock slot policy in tasks 7.1–7.3.
 - Obtain separate physical Home/Settings landscape observations, native captures
   and correct interaction proof; portrait acceptance cannot complete this gate.
 

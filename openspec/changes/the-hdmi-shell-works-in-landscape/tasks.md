@@ -55,3 +55,28 @@ These links do not complete this proposal's HDMI hardware or landscape gates.
       publish the reviewed successor without claiming implementation.
 
 Planning validation passed 2026-10-09. Implementation and physical proof remain open.
+
+## 7. Responsive-layout follow-ups transferred — 2026-10-09
+
+The operator authorized moving the responsive proposal’s original tasks
+6.3–6.5 here. These remain unperformed, with their requirements retained.
+
+- [ ] 7.1 Design and implement a real icon/text density scale for the Home
+      grid and the Drawer (`design.md`'s "Non-goal, both passes" section):
+      today only their column counts reflow with `crate::reflow_columns`;
+      `ICON_SIZE`/`ROW_HEIGHT`/tile margins stay the panel's own native
+      pixel size at every surface size, unlike Settings' content column.
+- [ ] 7.2 Design and implement a real reflow (or a uniform, centered scale)
+      for `paint_wifi`'s and the theme chooser's existing non-uniform
+      `cr.scale(width/568.0, height/1232.0)`, which this change's Settings
+      content transform deliberately excludes and leaves as-is.
+- [ ] 7.3 Design whether/how Home's dock should reflow its own slot count
+      (`DOCK_SLOTS`, deliberately left fixed at 4 by task group 7 --
+      `design.md`'s audit table) once the responsive proposal’s physical 6.1/6.2 and this
+      proposal’s landscape 5.4 evidence are in hand to verify against.
+
+Host implementation proof: `cargo test --offline --manifest-path
+nix/rust-shell-client/Cargo.toml` and `cargo clippy --all-targets --manifest-path
+nix/rust-shell-client/Cargo.toml`, plus reviewed native-portrait and HDMI host
+render fixtures. Physical layout/hit-target acceptance remains task 5.4.
+Planning proof: `openspec validate the-hdmi-shell-works-in-landscape --strict`.

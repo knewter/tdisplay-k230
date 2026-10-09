@@ -51,3 +51,16 @@ implementation, new board trial or installed profile is claimed.
 
 Proposal integration base is `a55e5a55838b150479bf97c43b7406eda7e04a05`; the
 original draft base was `ba5217ca`. Only this proposal directory is owned.
+
+## Responsive follow-up transfer — 2026-10-09
+
+The operator authorized moving icon/text sizing, Wi-Fi/theme layout and dock
+layout into this proposal: "you can move those into the landscape proposal".
+Original responsive tasks 6.3–6.5 are preserved as 7.1–7.3, all unchecked.
+Home/Drawer column reflow alone is not a density scale; keep the existing
+portrait geometry intact while adding a deliberate actual-output sizing
+policy. Wi-Fi and the theme chooser need a real reflow or uniform centered
+scale, replacing their independent non-uniform scaling. Decide dock slot
+reflow from actual layout/hit-target evidence rather than merely stretching
+four slots. Reuse the shared responsive owner’s existing geometry paths.
+No implementation, new installed profile or physical qualification is claimed.
