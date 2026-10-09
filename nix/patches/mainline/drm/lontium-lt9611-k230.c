@@ -46,6 +46,7 @@ struct lt9611 {
 	struct mipi_dsi_device *dsi1;
 
 	bool ac_mode;
+	bool monitor_only;
 
 	struct gpio_desc *reset_gpio;
 	struct gpio_desc *enable_gpio;
@@ -1286,6 +1287,53 @@ static int lt9611_wait_for_shared_reset_owner(struct device *dev)
 	return 0;
 }
 
+/* Standalone HPD qualification: no DSI attachment, GPIO ownership or IRQ. */
+static ssize_t hpd_show(struct device *dev, struct device_attribute *attr,
+                        char *buf)
+{
+	struct lt9611 *lt9611 = dev_get_drvdata(dev);
+	unsigned int value;
+	int ret;
+
+	ret = regmap_read(lt9611->regmap, 0x825e, &value);
+	if (ret)
+		return ret;
+	return sysfs_emit(buf, "%s\n", value & (BIT(2) | BIT(0)) ?
+	                  "connected" : "disconnected");
+}
+static DEVICE_ATTR_RO(hpd);
+
+static struct attribute *lt9611_monitor_attrs[] = {
+	&dev_attr_hpd.attr,
+	NULL,
+};
+static const struct attribute_group lt9611_monitor_group = {
+	.attrs = lt9611_monitor_attrs,
+};
+
+static int lt9611_monitor_probe(struct lt9611 *lt9611)
+{
+	struct device *dev = lt9611->dev;
+	int ret;
+
+	/* Touch alone owns both shared nets. Refuse an accidental IRQ/reset. */
+	if (lt9611->client->irq > 0 ||
+	    of_find_property(dev->of_node, "reset-gpios", NULL))
+		return -EINVAL;
+	ret = lt9611_read_device_rev(lt9611);
+	if (ret)
+		return ret;
+	/* Mask HPD sources instead of driving the shared touch interrupt. */
+	ret = regmap_update_bits(lt9611->regmap, 0x8203, 0xc0, 0xc0);
+	if (ret)
+		return ret;
+	i2c_set_clientdata(lt9611->client, lt9611);
+	ret = devm_device_add_group(dev, &lt9611_monitor_group);
+	if (!ret)
+		dev_info(dev, "HPD monitor ready; panel keeps DSI, touch keeps GPIO23/24\n");
+	return ret;
+}
+
 static int lt9611_probe(struct i2c_client *client)
 {
 	struct lt9611 *lt9611;
@@ -1315,6 +1363,11 @@ static int lt9611_probe(struct i2c_client *client)
 		dev_err(lt9611->dev, "regmap i2c init failed\n");
 		return PTR_ERR(lt9611->regmap);
 	}
+
+	lt9611->monitor_only = of_property_read_bool(dev->of_node,
+						 "lontium,hpd-monitor-only");
+	if (lt9611->monitor_only)
+		return lt9611_monitor_probe(lt9611);
 
 	ret = lt9611_parse_dt(dev, lt9611);
 	if (ret) {
@@ -1419,6 +1472,9 @@ err_of_put:
 static void lt9611_remove(struct i2c_client *client)
 {
 	struct lt9611 *lt9611 = i2c_get_clientdata(client);
+
+	if (lt9611->monitor_only)
+		return;
 
 	if (client->irq > 0)
 		disable_irq(client->irq);

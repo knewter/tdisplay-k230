@@ -1,0 +1,13 @@
+{
+  "recorded_at": "2026-10-09T15:12:06.658521+00:00",
+  "evidence_class": "host compiled device-tree inspection",
+  "command": "python3 docs/evidence/hdmi-hotplug/live-switch/inspect-monitor-dtb.py --dtb <compiled-monitor-dtb> --fdtget <pinned-host-fdtget>",
+  "device_tree": "/nix/store/5bp456gwa300c48b2675xvywplm7wbln-k230-tdisplay-mainline-drm-hpd-monitor.dtb/k230-tdisplay-mainline-drm-hpd-monitor.dtb",
+  "sha256": "b1287b8268adc735bb8cc9aa7b16aba8255ca54bf9bc4ab7cca944d23bc200ee",
+  "panel_is_sole_dsi_endpoint": true,
+  "monitor_has_no_dsi_graph_reset_or_irq": true,
+  "monitor_waits_for_touch_reset_owner": true,
+  "monitor_address": "0x3b",
+  "result": "PASS",
+  "board_probe_or_physical_hotplug_proved": false
+}

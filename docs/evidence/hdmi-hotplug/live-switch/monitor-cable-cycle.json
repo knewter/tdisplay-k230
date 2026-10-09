@@ -1,0 +1,53 @@
+{
+  "evidence_class": "physical cable actions observed through sysfs; glass and real touch require separate operator report",
+  "boot_id_before_and_after": "bc2a3914-80e7-4a31-a98b-5b2243960f83",
+  "sample_interval_seconds": 0.25,
+  "events": [
+    {
+      "boot_id": "bc2a3914-80e7-4a31-a98b-5b2243960f83",
+      "drm": {
+        "card0-DSI-1": {
+          "enabled": "enabled",
+          "status": "connected"
+        }
+      },
+      "hpd": "connected",
+      "monotonic_seconds": 161.549679566,
+      "system": "/nix/store/wwpymaab8wp65kayxbnvsjdacj9ksx86-nixos-system-nixos-26.11.20260919.20b1ddd",
+      "utc": "2026-10-09T16:24:33.668245+00:00"
+    },
+    {
+      "boot_id": "bc2a3914-80e7-4a31-a98b-5b2243960f83",
+      "drm": {
+        "card0-DSI-1": {
+          "enabled": "enabled",
+          "status": "connected"
+        }
+      },
+      "hpd": "disconnected",
+      "monotonic_seconds": 549.65981414,
+      "system": "/nix/store/wwpymaab8wp65kayxbnvsjdacj9ksx86-nixos-system-nixos-26.11.20260919.20b1ddd",
+      "utc": "2026-10-09T16:31:01.778362+00:00"
+    },
+    {
+      "boot_id": "bc2a3914-80e7-4a31-a98b-5b2243960f83",
+      "drm": {
+        "card0-DSI-1": {
+          "enabled": "enabled",
+          "status": "connected"
+        }
+      },
+      "hpd": "connected",
+      "monotonic_seconds": 557.283013856,
+      "system": "/nix/store/wwpymaab8wp65kayxbnvsjdacj9ksx86-nixos-system-nixos-26.11.20260919.20b1ddd",
+      "utc": "2026-10-09T16:31:09.401567+00:00"
+    }
+  ],
+  "private_capture_sha256": "dda34b99c2017d717ebc44d0844a439e73d25f8ef795f494b31dafab827997ac",
+  "command": "python3 board-cmd.py 'echo K230_MONITOR_BEGIN; cat /proc/sys/kernel/random/boot_id; cat /run/k230-monitor-events.jsonl; echo K230_MONITOR_END' 15",
+  "operator_cable_report": [
+    "yeah to the hdmi reboot and panel btw",
+    "replug i mean go on"
+  ],
+  "panel_touch_operator_report": "PENDING"
+}

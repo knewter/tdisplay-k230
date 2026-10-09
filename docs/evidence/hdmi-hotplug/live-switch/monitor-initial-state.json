@@ -1,0 +1,23 @@
+{
+  "evidence_class": "board initial sysfs state on the monitor qualification boot",
+  "event": {
+    "boot_id": "bc2a3914-80e7-4a31-a98b-5b2243960f83",
+    "drm": {
+      "card0-DSI-1": {
+        "enabled": "enabled",
+        "status": "connected"
+      }
+    },
+    "hpd": "connected",
+    "monotonic_seconds": 161.549679566,
+    "system": "/nix/store/wwpymaab8wp65kayxbnvsjdacj9ksx86-nixos-system-nixos-26.11.20260919.20b1ddd",
+    "utc": "2026-10-09T16:24:33.668245+00:00"
+  },
+  "touch_driver": "goodix-berlin-i2c",
+  "command": "cat /run/k230-monitor-events.jsonl; cat /sys/bus/i2c/devices/*-005d/name; readlink -f /sys/bus/i2c/devices/*-005d/driver",
+  "private_capture_sha256": "405a6c57dfe6462734645695611513876cb825bc9d3f3026c4180d439d884d93",
+  "limits": [
+    "Panel is connected/enabled and touch is bound; this does not prove visible pixels or a real tap.",
+    "Physical unplug/replug and operator glass/touch report are still pending."
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "evidence_class": "board raw-register read while protected panel is active",
+  "recorded_at": "2026-10-09T15:21:26.181468+00:00",
+  "capture_completed_at": "2026-10-09T15:19:49.868804+00:00",
+  "kernel": "7.3.0-rc5",
+  "system": "/nix/store/kp6ldmdx33lgjl55hzv3xba5a55ils48-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "adapter": 0,
+  "command": "modprobe i2c-dev; i2cset -y 0 0x3b 0xff 0x80; i2cset -y 0 0x3b 0xee 0x01; i2cget -y 0 0x3b 0x02; i2cset -y 0 0x3b 0xff 0x82; i2cget -y 0 0x3b 0x5e",
+  "revision": "0xe2",
+  "hpd_register": "0x78",
+  "interpretation": "Neither bit 2 nor bit 0 is set, so the current driver interprets this value as disconnected.",
+  "limits": [
+    "The operator reported plugging in after the initial sample; no glass or touch observation is inferred from raw HPD.",
+    "The I2C character-device module was loaded; no reset or interrupt GPIO was changed.",
+    "This is not a new monitor-driver boot or a live display-switch proof."
+  ],
+  "private_capture_sha256": "35d44e7cdd439c5ea903103aea9f4dff5d5a09f4af7c5146df0242aa71871ec9",
+  "after_operator_plug": {
+    "operator_report": "i just plugged in hdmi",
+    "board_time_utc": "Fri Oct  9 03:22:29 PM UTC 2026",
+    "hpd_register": "0x7d",
+    "interpretation": "HPD bits now indicate connected.",
+    "panel_connector_status": "connected",
+    "boot_id": "4e6b3753-1f4d-4945-ac29-cdb9818f4739",
+    "boot_id_matches_initial_panel_state": true,
+    "command": "date -u; i2cset -y 0 0x3b 0xff 0x82; i2cget -y 0 0x3b 0x5e; cat /sys/class/drm/card*-DSI-1/status; cat /proc/sys/kernel/random/boot_id",
+    "private_capture_sha256": "497a74e498386e81d7a2d9625318bb9b5d1f727162389ef5d37840cb44b55f5d"
+  }
+}

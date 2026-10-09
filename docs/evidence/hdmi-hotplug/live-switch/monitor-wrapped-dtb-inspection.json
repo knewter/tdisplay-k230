@@ -1,0 +1,13 @@
+{
+  "recorded_at": "2026-10-09T16:16:51.924411+00:00",
+  "evidence_class": "host compiled device-tree inspection",
+  "command": "python3 docs/evidence/hdmi-hotplug/live-switch/inspect-monitor-dtb.py --dtb <compiled-monitor-dtb> --fdtget <pinned-host-fdtget>",
+  "device_tree": "/nix/store/7k8xj1jq4ryir6s7pv1h6mcj0aqmyl4i-k230-coherent-shell-boot-files/k230-tdisplay.dtb",
+  "sha256": "e227d4aed31fbc55cebb9b2271f6dfe23b672cb4661b16905e96ddf718804bfd",
+  "panel_is_sole_dsi_endpoint": true,
+  "monitor_has_no_dsi_graph_reset_or_irq": true,
+  "monitor_waits_for_touch_reset_owner": true,
+  "monitor_address": "0x3b",
+  "result": "PASS",
+  "board_probe_or_physical_hotplug_proved": false
+}

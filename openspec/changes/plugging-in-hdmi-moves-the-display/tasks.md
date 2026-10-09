@@ -155,11 +155,14 @@ why it did or did not work.
 
 - [ ] 4.1 Design and, if the group-1 probe (task 1.4) did not rule it out,
       prototype a device tree where the LT9611 exists as a plain I2C
-      client (able to probe, read HPD status, and raise its shared-GPIO23
-      interrupt) without being the `&dsi` `port@1` endpoint, coexisting
+      client (able to probe and poll HPD without requesting or enabling
+      its shared-GPIO23 interrupt) without being the `&dsi` `port@1`
+      endpoint, coexisting
       with the active panel node. Verify the DTB compiles and the LT9611
       driver probes (a kernel log line, not yet a working bridge) with the
-      panel still the active display:
+      panel still the active display. Host proof:
+      `nix build .#kernelMainlineDrmShellHpdMonitorBootFiles`; the bundle
+      includes the kernel and `deviceTreeMainlineDrmHpdMonitor`. Board proof:
       `flock -w 120 /tmp/k230-board.lock python3 tools/console.py /dev/ttyACM0 --wait=5 "dmesg | grep -i lt9611"`.
       If this cannot be made to probe without contending with touch (per
       the shared GPIO24 reset polarity mismatch in `docs/research/hdmi-hotplug.md`
@@ -167,8 +170,14 @@ why it did or did not work.
       *2026-10-09 source preflight: the existing driver rejects a node with
       no remote DSI input and then attaches a DSI device on successful
       probe. A DT-only standalone monitor is insufficient; see
-      `docs/evidence/hdmi-hotplug/live-switch/source-preflight.md`. No board
-      probe or live-switch result is claimed; this task stays open.*
+      `docs/evidence/hdmi-hotplug/live-switch/source-preflight.md`. The matching volatile monitor boot and real
+      unplug/replug now pass serial/sysfs checks on an unchanged boot ID,
+      with the panel connected/enabled throughout; the explicit panel-touch
+      operator report remains pending, so this task stays open. No live-switch
+      result is claimed. The
+      status-only prototype now exposes `/sys/bus/i2c/devices/*-003b/hpd`,
+      masks the bridge's HPD IRQ sources and leaves all DSI/GPIO ownership
+      unchanged; plug/unplug observations are required before task 4.2.*
 - [ ] 4.2 If 4.1 succeeds, design and implement the `canaan_dsi.c` (or a
       new small coordinating driver) logic to tear down the panel
       connector/encoder and bring up the LT9611 bridge connector/encoder

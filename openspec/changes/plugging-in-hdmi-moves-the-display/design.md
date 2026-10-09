@@ -199,3 +199,27 @@ their existing row rhythm and pixels.
   is not a schematic-visible property) or from any source read. The
   read-only probe task must establish this, or record it as still
   unknown, before any shared-IRQ design proceeds.
+
+## Automatic switching continuation (2026-10-09)
+
+The operator explicitly requested automatic plug/unplug switching after
+accepting the group-7 HDMI trial. The separate Settings implementation is
+parked at commit `58498320`; it is removed from the active source tree and
+is not a prerequisite for this work. Its host evidence remains a record of
+that checkpoint, not the current installed system.
+
+Task 4.1's mainline qualification tree keeps the existing panel graph and
+adds the LT9611 only as an I2C HPD monitor. The driver waits for the Goodix
+reset owner, enables register access as the existing revision probe does,
+masks its HPD interrupt sources, and exposes read-only `hpd` sysfs status.
+It neither acquires reset/IRQ GPIOs nor attaches a DSI device or DRM bridge.
+This replaces the old shared-interrupt experiment: the electrical drive
+type is still unknown, so polling is the intended path. HPD transitions
+while the panel is active remain UNVERIFIED until the named board trial.
+
+The qualification boot is volatile and retains the protected panel bundle.
+Do not infer a live-display switch from this cable-status proof. Once it
+passes, task 4.2 must specify and implement the runtime DRM/DSI arrangement
+explicitly. Both output geometries and HDMI trackpad behavior from the
+accepted trial should be retained. No monitor photograph is required by
+the operator.

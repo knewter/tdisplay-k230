@@ -1,0 +1,8 @@
+Evidence class: board kernel probe on the staged monitor bundle.
+Command: flock -w 120 /tmp/k230-board.lock python3 tools/console.py /dev/ttyACM0 --wait=5 "dmesg | grep -i lt9611"
+
+[    3.622383] lt9611 0-003b: LT9611 revision: 0xe2
+[    3.624635] lt9611 0-003b: HPD monitor ready; panel keeps DSI, touch keeps GPIO23/24
+
+Private capture SHA256: ed7e402edf4d93e68b8dae74949a7753f3af037207cb38429774aeab61415bc2
+Limits: probe and retained ownership only; no physical cable cycle or glass/touch acceptance inferred.

@@ -1,0 +1,40 @@
+{
+  "recorded_at": "2026-10-09T16:20:53.500066+00:00",
+  "evidence_class": "host build and compiled boot-bundle inspection",
+  "command": "nix build .#kernelMainlineDrmShellHpdMonitorBootFiles --max-jobs 1 --cores 8",
+  "result": "PASS",
+  "bundle": "/nix/store/7k8xj1jq4ryir6s7pv1h6mcj0aqmyl4i-k230-coherent-shell-boot-files",
+  "kernel_identity": {
+    "kernel": "/nix/store/s2sl3p9mlh8f2smx5dw9gf2g5750zd8n-linux-riscv64-unknown-linux-gnu-7.3.0-rc5",
+    "deriver": "/nix/store/jvfvisjznkf1cbqcl3w7cf4qkqixhaa5-linux-riscv64-unknown-linux-gnu-7.3.0-rc5.drv",
+    "image_sha256": "8c3d1b8ee1a0cc983975668e5def4f4ea97fe5a36ef45cb2c7a8372fba9087d4",
+    "image_bytes": 42745856,
+    "evidence_class": "registered host kernel build"
+  },
+  "source_sha256": {
+    "nix/patches/mainline/drm/lontium-lt9611-k230.c": "b7921cd6437e86c5e81b4ec87afbfaca2a733d10af993c94d27874848225e24f",
+    "nix/dts/k230-tdisplay-mainline-drm-hpd-monitor.dts": "1b8157ee895b491787d7f94957720245171815003931a8b3c829bdec5303c814",
+    "flake.nix": "66ff14093d5c91a83c0db76beaf0a74cf6da7d6d91c3c968613152e9d4d8754f"
+  },
+  "inspection": {
+    "command": "python3 tools/coherent-shell-boot-inspect.py <monitor-bundle>",
+    "result": "PASS",
+    "record": "monitor-bundle-inspection.json"
+  },
+  "fixtures": {
+    "command": "python3 tests/test_coherent_shell_boot_inspect.py --bundle <monitor-bundle>",
+    "result": "PASS",
+    "passed": 15
+  },
+  "compiled_graph": {
+    "command": "python3 docs/evidence/hdmi-hotplug/live-switch/inspect-monitor-dtb.py --dtb <monitor-bundle>/k230-tdisplay.dtb --fdtget <monitor-bundle>/inspect-tools/fdtget",
+    "result": "PASS",
+    "record": "monitor-wrapped-dtb-inspection.json"
+  },
+  "build_log_sha256": "808fdeb8cd85b039ccd23db1ff0a67fc250924060716cb53a4dcee2b053609f6",
+  "limits": [
+    "Host proof only: no matching new monitor-driver board boot or physical plug/unplug result yet.",
+    "The boot bundle adds /chosen bootargs; its DTB hash differs from the separately compiled source tree. Both graphs were inspected.",
+    "An earlier full kernel attempt failed on the plural devm_device_add_groups API; the corrected singular devm_device_add_group is in this successful build."
+  ]
+}

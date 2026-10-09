@@ -593,6 +593,11 @@
           dtbName = "k230-tdisplay-mainline-drm-hdmi.dtb";
           dtsFile = ./nix/dts/k230-tdisplay-mainline-drm-hdmi.dts;
         };
+        deviceTreeMainlineDrmHpdMonitor = pkgs.callPackage ./nix/device-tree-mainline-drm.nix {
+          inherit kernelMainlineSrc;
+          dtbName = "k230-tdisplay-mainline-drm-hpd-monitor.dtb";
+          dtsFile = ./nix/dts/k230-tdisplay-mainline-drm-hpd-monitor.dts;
+        };
         kernelMainlineDrmBootFiles = pkgs.runCommand "k230-mainline-drm-boot-files" { } ''
           mkdir -p $out
           cp ${self.packages.${buildSystem}.kernelMainlineDrm}/Image $out/Image-mainline-drm
@@ -855,6 +860,14 @@
           cfg = self.nixosConfigurations.k230-mainline-drm-shell.config;
           configuration = "k230-mainline-drm-shell";
           deviceTree = self.packages.${buildSystem}.mainlineDrmDeviceTreeNormalName;
+        };
+        kernelMainlineDrmShellHpdMonitorBootFiles = pkgs.callPackage ./nix/coherent-shell-boot-files.nix {
+          cfg = self.nixosConfigurations.k230-mainline-drm-shell.config;
+          configuration = "k230-mainline-drm-shell";
+          deviceTree = pkgs.runCommand "k230-mainline-drm-hpd-monitor-dtb-normal-name" { } ''
+            mkdir -p $out
+            cp ${self.packages.${buildSystem}.deviceTreeMainlineDrmHpdMonitor}/k230-tdisplay-mainline-drm-hpd-monitor.dtb $out/k230-tdisplay.dtb
+          '';
         };
         # The daily mainline bundle with the HDMI DTB under the filename stage 1
         # loads, for a volatile coherent trial boot on a monitor.
