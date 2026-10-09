@@ -175,13 +175,18 @@ above) forbids independently resetting either chip after their initial
 power-on reset; and `canaan_dsi.c` has no live panel/bridge re-attach path
 in the surveyed baseline (see the HDMI-only qualification requirement
 above). The runtime re-plan keeps both consumers registered and uses two
-exclusive encoders with polling, rather than adding live re-attachment.
+exclusive encoders with 250 ms HPD work and generic polling as fallback,
+rather than adding live re-attachment.
 Touch retains both shared pins; their unknown electrical drive type is not
 used as an assumption for shared-IRQ operation.*
 
-<!-- UNVERIFIED: the matching HPD-monitor boot captured real unplug/replug
-with the panel enabled on one boot ID; visible handoff and input-mode
-transitions remain unproved. This requirement is expected to resolve
+<!-- UNVERIFIED: the first combined volatile trial has matching boot/sysfs
+identity and operator reports confirming HDMI/trackpad, unplug restoring
+panel/direct touch, and a successful replug. See
+docs/evidence/hdmi-hotplug/live-switch/runtime-first-operator-report.json.
+The operator judged both transitions too slow; no numerical latency bound
+was recorded. The revised 250 ms worker's timed board proof and normal boot
+installation remain open. This requirement is expected to resolve
 either to a working scenario below or to a recorded infeasibility finding
 per tasks.md task 4.4; it must not be archived with this marker simply
 removed without one of those two outcomes on file. -->

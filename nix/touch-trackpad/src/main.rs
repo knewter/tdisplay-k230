@@ -320,6 +320,7 @@ impl Drop for TrackpadSession {
 fn run(args: Args) {
     let mut session: Option<TrackpadSession> = None;
     let mut last_mode: Option<Mode> = None;
+    let mut direct_mapping = shell_ipc::DirectTouchMapping::default();
     // A start failure (e.g. axis_plan rejecting a degenerate range) will
     // keep failing identically every poll until the underlying hardware
     // state changes, so back off the retry log/attempt rate rather than
@@ -338,6 +339,7 @@ fn run(args: Args) {
             );
             last_mode = Some(mode);
             start_failures = 0;
+            direct_mapping.clear();
         }
 
         match (mode, &mut session) {
@@ -360,6 +362,15 @@ fn run(args: Args) {
                 session = None; // Drop ungrabs and destroys the virtual device.
             }
             _ => {}
+        }
+
+        // The session's Drop above releases the grab and virtual device
+        // before absolute touch is mapped back onto the panel. Retry if
+        // Sway is not ready yet or its private socket has been replaced.
+        if mode == Mode::DirectTouch && !args.dry_run {
+            if let Some(socket) = args.shell_socket.as_ref() {
+                let _ = direct_mapping.restore(socket);
+            }
         }
 
         if let Some(s) = session.as_mut() {

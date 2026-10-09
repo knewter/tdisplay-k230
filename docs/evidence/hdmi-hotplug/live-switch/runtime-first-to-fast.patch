@@ -1,0 +1,58 @@
+--- a/nix/patches/mainline/drm/canaan_dsi.c
++++ b/nix/patches/mainline/drm/canaan_dsi.c
+@@ -28,0 +29 @@
++#include <drm/drm_device.h>
+@@ -777,0 +779,27 @@
++/* GPIO23 is owned by touch. Read bridge HPD without claiming its IRQ and
++ * notify DRM promptly instead of waiting for the generic ten-second poll.
++ * Keep that generic poll as a fallback; emit events only on cable changes.
++ */
++static void canaan_dsi_hpd_work(struct work_struct *work)
++{
++	struct canaan_dsi *dsi = container_of(to_delayed_work(work),
++						struct canaan_dsi, hpd_work);
++	enum drm_connector_status status;
++
++	if (READ_ONCE(dsi->hpd_stopping))
++		return;
++	/* Binding precedes DRM registration and poll initialization. */
++	if (!READ_ONCE(dsi->drm->registered) ||
++	    !READ_ONCE(dsi->drm->mode_config.poll_enabled))
++		goto again;
++
++	status = drm_bridge_detect(dsi->bridge, &dsi->connector);
++	if (status != connector_status_unknown && status != dsi->hpd_status) {
++		drm_helper_hpd_irq_event(dsi->drm);
++		dsi->hpd_status = status;
++	}
++again:
++	if (!READ_ONCE(dsi->hpd_stopping))
++		schedule_delayed_work(&dsi->hpd_work, msecs_to_jiffies(250));
++}
++
+@@ -815 +843,2 @@
+-						DRM_CONNECTOR_POLL_DISCONNECT;
++						DRM_CONNECTOR_POLL_DISCONNECT |
++						DRM_CONNECTOR_POLL_HPD;
+@@ -831,0 +861,2 @@
++		if (dsi->dual_output)
++			bridge_connector->polled |= DRM_CONNECTOR_POLL_HPD;
+@@ -835,0 +867,5 @@
++	if (dsi->dual_output) {
++		dsi->hpd_status = connector_status_unknown;
++		WRITE_ONCE(dsi->hpd_stopping, false);
++		schedule_delayed_work(&dsi->hpd_work, msecs_to_jiffies(250));
++	}
+@@ -843,0 +880,2 @@
++	WRITE_ONCE(dsi->hpd_stopping, true);
++	cancel_delayed_work_sync(&dsi->hpd_work);
+@@ -873,0 +912 @@
++	INIT_DELAYED_WORK(&dsi->hpd_work, canaan_dsi_hpd_work);
+--- a/nix/patches/mainline/drm/canaan_dsi.h
++++ b/nix/patches/mainline/drm/canaan_dsi.h
+@@ -12,0 +13 @@
++#include <linux/workqueue.h>
+@@ -42,0 +44,3 @@
++	struct delayed_work hpd_work;
++	enum drm_connector_status hpd_status;
++	bool hpd_stopping;

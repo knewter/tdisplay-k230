@@ -179,10 +179,11 @@ why it did or did not work.
       status-only prototype now exposes `/sys/bus/i2c/devices/*-003b/hpd`,
       masks the bridge's HPD IRQ sources and leaves all DSI/GPIO ownership
       unchanged; plug/unplug observations are required before task 4.2.*
-- [ ] 4.2 If 4.1 succeeds, implement the explicitly re-planned persistent
+- [x] 4.2 If 4.1 succeeds, implement the explicitly re-planned persistent
       consumer arrangement in `design.md`: keep panel and LT9611 attached,
       give them separate non-cloning encoders on the single CRTC, and use
-      complementary connector detection with DRM polling. Select each
+      complementary connector detection with 250 ms HPD work and generic
+      DRM polling as fallback. Select each
       consumer's lane/PHY settings, preserve panel callbacks and splash
       handoff, and mask LT9611 interrupt sources when no bridge IRQ exists.
       Touch remains the sole owner of GPIO23/24 throughout; do not hand
@@ -195,11 +196,23 @@ why it did or did not work.
       `nix build .#kernelMainlineDrmShellHotplugBootFiles --max-jobs 1 --cores 16`,
       matching compiled graph/boot-bundle inspection, plus native relay
       `cargo test` and `cargo clippy --all-targets`. These do not prove 4.3.
+      *2026-10-09: the first persistent-consumer bundle built, passed the
+      compiled graph and 15 inspector fixtures, and booted with the
+      operator confirming HDMI/trackpad → panel/direct touch → HDMI. Relay
+      44 unit and two integration tests plus Clippy passed. Exact tuple and
+      report: `docs/evidence/hdmi-hotplug/live-switch/runtime-first-serial-boot.json`
+      and `runtime-first-operator-report.json`. The faster 250 ms worker
+      also passes object compilation; its full build and timed board
+      qualification remain open under 4.3.*
 - [ ] 4.3 If 4.2 produces something that boots, verify on the board that
       plugging an HDMI cable while the panel is active switches the visible
       output within a bounded time and without a reboot, and that
       unplugging switches back with direct touch working again afterward.
-      Use a 30-second bound per transition for this polling implementation,
+      Use a 30-second ceiling per transition, and qualify the faster
+      worker against targets of ≤1 second HPD-to-connector detection and
+      ≤3 seconds HPD-to-enabled output; record monitor lock/glass timing
+      separately. The first generic-poll trial switched correctly but was
+      judged too slow by the operator.
       verify another replug after the return, and retain the accepted HDMI
       portrait rotation and trackpad behavior. Capture
       operator observations of both transitions (panel→monitor,

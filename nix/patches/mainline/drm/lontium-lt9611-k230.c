@@ -460,16 +460,23 @@ static irqreturn_t lt9611_irq_thread_handler(int irq, void *dev_id)
 	return IRQ_HANDLED;
 }
 
-static void lt9611_enable_hpd_interrupts(struct lt9611 *lt9611)
+static int lt9611_enable_hpd_interrupts(struct lt9611 *lt9611)
 {
-	unsigned int val;
+	int ret;
 
-	regmap_read(lt9611->regmap, 0x8203, &val);
-
-	val &= ~0xc0;
-	regmap_write(lt9611->regmap, 0x8203, val);
-	regmap_write(lt9611->regmap, 0x8207, 0xff); /* clear */
-	regmap_write(lt9611->regmap, 0x8207, 0x3f);
+	ret = regmap_update_bits(lt9611->regmap, 0x8203, 0xc0,
+				 lt9611->client->irq > 0 ? 0 : 0xc0);
+	if (ret)
+		return ret;
+	if (lt9611->client->irq <= 0) {
+		ret = regmap_write(lt9611->regmap, 0x829e, 0xff);
+		if (ret)
+			return ret;
+	}
+	ret = regmap_write(lt9611->regmap, 0x8207, 0xff); /* clear */
+	if (ret)
+		return ret;
+	return regmap_write(lt9611->regmap, 0x8207, 0x3f);
 }
 
 static void lt9611_sleep_setup(struct lt9611 *lt9611)
@@ -508,7 +515,7 @@ static int lt9611_power_on(struct lt9611 *lt9611)
 		{ 0x8251, 0x01 },
 		{ 0x8258, 0x0a }, /* hpd irq */
 		{ 0x8259, 0x80 }, /* hpd debounce width */
-		{ 0x829e, 0xf7 }, /* video check irq */
+		{ 0x829e, lt9611->client->irq > 0 ? 0xf7 : 0xff }, /* video check irq */
 
 		/* power consumption for work */
 		{ 0x8004, 0xf0 },
@@ -601,7 +608,8 @@ lt9611_bridge_detect(struct drm_bridge *bridge, struct drm_connector *connector)
 	unsigned int reg_val = 0;
 	int connected = 0;
 
-	regmap_read(lt9611->regmap, 0x825e, &reg_val);
+	if (regmap_read(lt9611->regmap, 0x825e, &reg_val))
+		return connector_status_unknown;
 	connected  = (reg_val & (BIT(2) | BIT(0)));
 
 	lt9611->status = connected ?  connector_status_connected :
@@ -868,7 +876,7 @@ static void lt9611_bridge_atomic_disable(struct drm_bridge *bridge,
 static struct mipi_dsi_device *lt9611_attach_dsi(struct lt9611 *lt9611,
 						 struct device_node *dsi_node)
 {
-	const struct mipi_dsi_device_info info = { "lt9611", 0, lt9611->dev->of_node};
+	struct mipi_dsi_device_info info = { "lt9611", 0, lt9611->dev->of_node};
 	struct mipi_dsi_device *dsi;
 	struct mipi_dsi_host *host;
 	struct device *dev = lt9611->dev;
@@ -877,6 +885,12 @@ static struct mipi_dsi_device *lt9611_attach_dsi(struct lt9611 *lt9611,
 	host = of_find_mipi_dsi_host_by_node(dsi_node);
 	if (!host)
 		return ERR_PTR(dev_err_probe(lt9611->dev, -EPROBE_DEFER, "failed to find dsi host\n"));
+
+	/* The panel occupies logical channel 0. Video still uses the existing
+	 * host packet configuration; this channel only distinguishes devices.
+	 */
+	if (of_property_read_bool(host->dev->of_node, "canaan,dual-output"))
+		info.channel = 1;
 
 	dsi = devm_mipi_dsi_device_register_full(dev, host, &info);
 	if (IS_ERR(dsi)) {
@@ -965,7 +979,8 @@ static void lt9611_bridge_hpd_enable(struct drm_bridge *bridge)
 {
 	struct lt9611 *lt9611 = bridge_to_lt9611(bridge);
 
-	lt9611_enable_hpd_interrupts(lt9611);
+	if (lt9611_enable_hpd_interrupts(lt9611))
+		dev_err(lt9611->dev, "failed to configure HPD interrupt sources\n");
 }
 
 #define MAX_INPUT_SEL_FORMATS	1
@@ -1414,6 +1429,14 @@ static int lt9611_probe(struct i2c_client *client)
 	}
 
 	i2c_set_clientdata(client, lt9611);
+	/* Keep raw HPD observable independently of cached DRM poll status. */
+	ret = devm_device_add_group(dev, &lt9611_monitor_group);
+	if (ret)
+		goto err_disable_regulators;
+	/* Set IRQ masks before DSI attachment can bind DRM and enable video. */
+	ret = lt9611_enable_hpd_interrupts(lt9611);
+	if (ret)
+		goto err_disable_regulators;
 
 	/* Disable Audio InfoFrame, enabled by default */
 	regmap_update_bits(lt9611->regmap, 0x843d, LT9611_INFOFRAME_AUDIO, 0);
@@ -1451,8 +1474,6 @@ static int lt9611_probe(struct i2c_client *client)
 			goto err_remove_bridge;
 		}
 	}
-
-	lt9611_enable_hpd_interrupts(lt9611);
 
 	return 0;
 

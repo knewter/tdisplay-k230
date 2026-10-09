@@ -1,0 +1,71 @@
+{
+  "boot_id": "061c178f-bbdb-41c9-9643-5f94be5d1946",
+  "cmdline": "console=tty0 consoleblank=0 console=ttyS0,115200n8 root=fstab loglevel=4 lsm=landlock,yama,bpf loglevel=7 init=/nix/store/mvjvi0d4vg33ahw08qyj4pb8by977i93-nixos-system-nixos-26.11.20260919.20b1ddd/init",
+  "drm": {
+    "card0-DSI-1": {
+      "enabled": "disabled",
+      "status": "disconnected"
+    },
+    "card0-HDMI-A-1": {
+      "enabled": "enabled",
+      "status": "connected"
+    }
+  },
+  "evidence_class": "serial/sysfs/compositor state; no physical glass or real-touch result inferred",
+  "hpd": "connected",
+  "kernel": "/nix/store/kb8kh7q73m6n10653sl41hd6pwafmqkj-linux-riscv64-unknown-linux-gnu-7.3.0-rc5/Image",
+  "monotonic_seconds": 369.085237397,
+  "profile": "/nix/store/kp6ldmdx33lgjl55hzv3xba5a55ils48-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "relevant_inputs": [
+    {
+      "identifier": "1:1:K230_Virtual_Touchpad_(HDMI_mode)",
+      "name": "K230 Virtual Touchpad (HDMI mode)",
+      "product": 1,
+      "type": "touchpad",
+      "vendor": 1
+    },
+    {
+      "identifier": "0:0:Goodix_Berlin_Capacitive_TouchScreen",
+      "name": "Goodix Berlin Capacitive TouchScreen",
+      "product": 0,
+      "type": "touch",
+      "vendor": 0
+    },
+    {
+      "identifier": "0:0:K230_PMU_Power_Key",
+      "name": "K230 PMU Power Key",
+      "product": 0,
+      "type": "keyboard",
+      "vendor": 0
+    }
+  ],
+  "services": {
+    "k230-touch-trackpad": "active",
+    "shell": "active",
+    "shell-ui": "active"
+  },
+  "sway_outputs": [
+    {
+      "active": true,
+      "current_mode": {
+        "height": 800,
+        "picture_aspect_ratio": "none",
+        "refresh": 59910,
+        "width": 1280
+      },
+      "name": "HDMI-A-1",
+      "rect": {
+        "height": 1280,
+        "width": 800,
+        "x": 0,
+        "y": 0
+      },
+      "scale": 1.0,
+      "transform": "90"
+    }
+  ],
+  "system": "/nix/store/mvjvi0d4vg33ahw08qyj4pb8by977i93-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "touch_device": "0-005d",
+  "touch_driver": "/sys/bus/i2c/drivers/goodix-berlin-i2c",
+  "utc": "2026-10-09T17:49:59.738321+00:00"
+}

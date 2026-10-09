@@ -74,14 +74,36 @@ observations. No photograph is required.
 
 ## Runtime display switching (tasks 4.2–4.4)
 
-Task 4.1's named driver/probe and actual cable gate now pass. The combined
-candidate implementation/build is in progress; visible switching and
-real-touch/trackpad transitions remain UNVERIFIED. The [source preflight](source-preflight.md)
-explains why a device-tree-only change cannot implement it. Cable detection
-alone does not prove that visible output or touch mode switches.
+The first combined candidate built and passed bundle/compiled-graph checks,
+44 relay unit tests, two integration tests, and Clippy. Its matching
+[volatile serial boot](runtime-first-serial-boot.json) observed system
+`mvjvi0d4vg33ahw08qyj4pb8by977i93`, kernel Image SHA256
+`d4955139c0e16e73fec7dc2e90482b1c360fea0f75cad452ff56dffe3de4d02c`, and
+unchanged protected profile `kp6ldmdx33lgjl55hzv3xba5a55ils48`.
+[Host checks](runtime-host-checks.json) describe the source and limits.
+Reverse-applying [the worker patch](runtime-first-to-fast.patch) with
+`git apply -R --unidiff-zero` to the
+continuation source reproduces the first trial's DSI source/header hashes.
 
-The trial must preserve the accepted panel/HDMI geometry and HDMI trackpad
-behavior, use touch as the sole reset/IRQ owner, and retain the protected
-panel boot for serial recovery. Actual panel→HDMI→panel observations,
-matching DRM/Sway state and unchanged boot identity remain required.
-No hardware task is checked off from the host build or an injected event.
+The operator confirmed visible HDMI with working trackpad, unplug restoring
+visible panel and direct touch, and a subsequent successful replug. The
+[exact reports](runtime-first-operator-report.json) also say both transitions
+were too slow and request faster switching. No numerical latency is inferred.
+The [matching HDMI state](runtime-first-hdmi-state.json) records enabled HDMI,
+1280×800 at 59.910 Hz, the accepted 90° transform, virtual touchpad and
+unchanged boot ID. It is serial state, separate from the operator's physical
+observations. No monitor photo is required.
+
+The initial implementation relied on DRM's ten-second polling period. The
+revised worker reads bridge HPD every 250 ms and invokes DRM's normal hotplug
+detection only on changes, retaining generic polling as fallback. Both
+connectors are updated without rebinding live components or taking touch's
+GPIO23/24. Startup waits for DRM registration; teardown cancels the worker.
+[Object compilation](fast-hpd-object-check.json) passes. Full matching build,
+timed physical switching and ordinary boot installation remain pending.
+
+The [initial image inspection](runtime-first-sd-image-inspection.json)
+records a private source snapshot with the combined DT wired as the default:
+its boot partition payload matches the first candidate byte for byte. This
+proves image construction, not a flashed image or accepted fast handoff. The
+repository default has not yet been promoted.

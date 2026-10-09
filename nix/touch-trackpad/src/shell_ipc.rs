@@ -39,6 +39,10 @@ pub fn monotonic_ms() -> u64 {
     }
     value.tv_sec as u64 * 1000 + value.tv_nsec as u64 / 1_000_000
 }
+fn sequence_epoch(time_ms: u64, pid: u32) -> u64 {
+    (time_ms << 16) | (u64::from(pid) & 0xffff)
+}
+
 pub struct Shell {
     box_: Mailbox,
     worker: Option<std::thread::JoinHandle<()>>,
@@ -52,14 +56,14 @@ impl Shell {
         Self {
             box_,
             worker: Some(worker),
-            seq: (monotonic_ms() << 16) ^ (std::process::id() as u64),
+            seq: sequence_epoch(monotonic_ms(), std::process::id()),
         }
     }
     pub fn begin(&mut self, begin: Begin) -> bool {
         // Refresh the epoch on every begin, including after an idle interval
         // or a separate controller's recovery probe. A long-lived worker
         // must not remain below the compositor's last accepted sequence.
-        self.seq = (self.seq + 1).max((monotonic_ms() << 16) ^ (std::process::id() as u64));
+        self.seq = (self.seq + 1).max(sequence_epoch(monotonic_ms(), std::process::id()));
         let (tx, rx) = mpsc::sync_channel(1);
         {
             let mut pending = self.box_.0.lock().unwrap();
@@ -219,6 +223,42 @@ fn connect(path: &PathBuf) -> io::Result<UnixStream> {
     stream.set_nonblocking(false)?;
     Ok(stream)
 }
+/// Restore absolute touch after releasing the HDMI relay. Remember the
+/// socket identity so a compositor restart restores mapping again, while
+/// an unchanged session incurs only a stat rather than repeated IPC.
+#[derive(Default)]
+pub struct DirectTouchMapping {
+    restored: Option<(u64, u64)>,
+}
+impl DirectTouchMapping {
+    pub fn clear(&mut self) {
+        self.restored = None;
+    }
+    pub fn restore(&mut self, path: &PathBuf) -> io::Result<()> {
+        let meta = std::fs::symlink_metadata(path)?;
+        let identity = (meta.dev(), meta.ino());
+        if self.restored == Some(identity) {
+            return Ok(());
+        }
+        let mut stream = connect(path)?;
+        for text in [
+            "input type:touch map_to_output DSI-1",
+            "input type:touch calibration_matrix 1 0 0 0 1 0",
+        ] {
+            if !command(&mut stream, text)? {
+                return Err(io::Error::other("Direct touch mapping rejected"));
+            }
+        }
+        let after = std::fs::symlink_metadata(path)?;
+        if (after.dev(), after.ino()) != identity {
+            return Err(io::Error::other("Shell socket changed during mapping"));
+        }
+        self.restored = Some(identity);
+        eprintln!("k230-touch-trackpad: mapped direct touch to DSI-1");
+        Ok(())
+    }
+}
+
 fn move_command(seq: u64, point: Point) -> String {
     format!(
         "card_shell trackpad move {seq} {:.6} {:.6} {}",
@@ -347,6 +387,66 @@ fn run(path: PathBuf, box_: Mailbox) {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn recovery_epoch_stays_monotonic_with_large_process_ids() {
+        for pid in [1, 65_536, 2_938_920, u32::MAX] {
+            for time_ms in 0..128 {
+                assert!(sequence_epoch(time_ms + 1, pid) > sequence_epoch(time_ms, pid));
+            }
+        }
+    }
+
+    #[test]
+    fn direct_mapping_retries_rejection_and_reapplies_after_socket_replacement() {
+        use std::os::unix::{fs::PermissionsExt, net::UnixListener};
+        let directory = std::env::temp_dir().join(format!(
+            "k230-direct-map-{}-{}", std::process::id(), monotonic_ms()
+        ));
+        std::fs::create_dir(&directory).unwrap();
+        std::fs::set_permissions(&directory, std::fs::Permissions::from_mode(0o700)).unwrap();
+        let path = directory.join("sway.sock");
+        let mut mapping = DirectTouchMapping::default();
+        assert!(mapping.restore(&path).is_err());
+        let listener = UnixListener::bind(&path).unwrap();
+        let copy = listener.try_clone().unwrap();
+        let read_command = |stream: &mut UnixStream, success: bool| {
+            stream.set_read_timeout(Some(Duration::from_secs(2))).unwrap();
+            let mut header = [0; 14];
+            stream.read_exact(&mut header).unwrap();
+            let mut body = vec![0; u32::from_ne_bytes(header[6..10].try_into().unwrap()) as usize];
+            stream.read_exact(&mut body).unwrap();
+            let reply: &[u8] = if success { b"[{\"success\":true}]" } else { b"[{\"success\":false}]" };
+            let mut frame = b"i3-ipc".to_vec();
+            frame.extend((reply.len() as u32).to_ne_bytes());
+            frame.extend(0u32.to_ne_bytes());
+            frame.extend(reply);
+            stream.write_all(&frame).unwrap();
+            String::from_utf8(body).unwrap()
+        };
+        let server = std::thread::spawn(move || {
+            let (mut rejected, _) = copy.accept().unwrap();
+            assert_eq!(read_command(&mut rejected, false), "input type:touch map_to_output DSI-1");
+            let (mut accepted, _) = copy.accept().unwrap();
+            assert_eq!(read_command(&mut accepted, true), "input type:touch map_to_output DSI-1");
+            assert_eq!(read_command(&mut accepted, true), "input type:touch calibration_matrix 1 0 0 0 1 0");
+        });
+        assert!(mapping.restore(&path).is_err());
+        assert!(mapping.restore(&path).is_ok());
+        server.join().unwrap();
+        assert!(mapping.restore(&path).is_ok()); // No new IPC to the old listener.
+        std::fs::remove_file(&path).unwrap();
+        let replacement = UnixListener::bind(&path).unwrap();
+        let server = std::thread::spawn(move || {
+            let (mut stream, _) = replacement.accept().unwrap();
+            assert_eq!(read_command(&mut stream, true), "input type:touch map_to_output DSI-1");
+            assert_eq!(read_command(&mut stream, true), "input type:touch calibration_matrix 1 0 0 0 1 0");
+        });
+        assert!(mapping.restore(&path).is_ok());
+        server.join().unwrap();
+        drop(listener);
+        std::fs::remove_dir_all(directory).unwrap();
+    }
+
     #[test]
     fn protected_runtime_socket_keeps_final_motion_before_lift() {
         use std::os::unix::{fs::PermissionsExt, net::UnixListener};

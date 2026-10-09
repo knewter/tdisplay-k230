@@ -1,0 +1,103 @@
+// SPDX-License-Identifier: GPL-2.0 OR MIT
+// Combined panel/HDMI companion to k230-tdisplay-mainline.dts.
+// Compiled for deviceTreeMainlineDrmHotplug and its explicit trial bundle.
+// Both downstream devices stay registered; only one encoder drives DSI.
+
+#include <dt-bindings/gpio/gpio.h>
+#include <dt-bindings/interrupt-controller/irq.h>
+#include <dt-bindings/clock/canaan,k230-clk.h>
+#include <dt-bindings/reset/canaan,k230-rst.h>
+#include <dt-bindings/soc/canaan,k230_pm_domains.h>
+
+#include "k230-tdisplay-mainline.dts"
+
+#include "k230-tdisplay-mainline-drm-common.dtsi"
+
+#include "display-rm69a10-568x1232.dtsi"
+
+&gpio0 {
+	status = "okay";
+};
+
+&i2c3 {
+	status = "okay";
+};
+
+&lcd {
+	dsi_reset-gpios = <&gpio0_ports 22 GPIO_ACTIVE_HIGH>;
+	backlight_gpio-gpios = <&gpio0_ports 25 GPIO_ACTIVE_HIGH>;
+};
+
+/ {
+	// The LT9611 implements EDID itself (DRM_BRIDGE_OP_EDID), so the
+	// connector needs no DDC bus of its own.
+	hdmi: connector {
+		compatible = "hdmi-connector";
+		label = "hdmi";
+		type = "a";
+
+		port {
+			hdmi_connector_in: endpoint {
+				remote-endpoint = <&lt9611_out>;
+			};
+		};
+	};
+};
+
+&i2c3 {
+	status = "okay";
+
+	lt9611: hdmi-bridge@3b {
+		compatible = "lontium,lt9611";
+		reg = <0x3b>;
+		// Touch's probe resets this chip too. Initialize the bridge only
+		// after that reset, and order suspend/remove after the bridge.
+		lontium,shared-reset-owner = <&touch>;
+		// No reset-gpios and no interrupt: GPIO24 (reset) and GPIO23 (INT)
+		// are single nets shared with the GT9895 touch, which owns them.
+		// The touch probe's reset also releases the LT9611; hotplug is
+		// polled (lontium-lt9611-k230.c makes both optional).
+
+		ports {
+			#address-cells = <1>;
+			#size-cells = <0>;
+
+			// DSI reaches the LT9611's Port B (MLRXB_*) only; the
+			// driver reads port 1 as its Port B input.
+			port@1 {
+				reg = <1>;
+				lt9611_in: endpoint {
+					remote-endpoint = <&dsi_out_lt9611>;
+				};
+			};
+
+			port@2 {
+				reg = <2>;
+				lt9611_out: endpoint {
+					remote-endpoint = <&hdmi_connector_in>;
+				};
+			};
+		};
+	};
+};
+
+// Both consumers stay bound. The kernel chooses one encoder at a time.
+&dsi {
+	canaan,dual-output;
+	canaan,hdmi-hsfreqrange = <0x96>;
+	ports {
+		port@1 {
+			#address-cells = <1>;
+			#size-cells = <0>;
+			/delete-node/ endpoint;
+			dsi_out_rm69a10: endpoint@0 {
+				reg = <0>;
+				remote-endpoint = <&rm69a10_in>;
+			};
+			dsi_out_lt9611: endpoint@1 {
+				reg = <1>;
+				remote-endpoint = <&lt9611_in>;
+			};
+		};
+	};
+};

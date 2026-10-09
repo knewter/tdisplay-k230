@@ -1,0 +1,21 @@
+{
+  "recorded_at": "2026-10-09T17:53:02.620870+00:00",
+  "command": "nix-build docs/evidence/hdmi-hotplug/live-switch/check-fast-hpd-objects.nix --argstr repo \"$PWD\" --impure --no-out-link",
+  "status": "PASS",
+  "output": "/nix/store/k73pd3xc9svhw1pvx8lpbvgbjf7g1r24-k230-fast-hpd-object-check-riscv64-unknown-linux-gnu",
+  "sources": {
+    "nix/patches/mainline/drm/canaan_dsi.c": "6cd646c81abb23b56f84285505fd03e5ec5afb66508d082d0f6b7705c168ace8",
+    "nix/patches/mainline/drm/canaan_dsi.h": "e6c012b7850fc7a1c145ab1d6b0af2c6adecd42e740a1f65f6fff031c051f7e7",
+    "nix/patches/mainline/drm/lontium-lt9611-k230.c": "842ce9ad86ed77b0a9d656c6bee6f4891e7267d6b2e55ceee9f5c34872b5faa8"
+  },
+  "limits": [
+    "External object compilation against prepared 7.3.0-rc5 headers; not a full kernel or hardware check.",
+    "Two pre-existing missing-prototype warnings remain.",
+    "Full matching fast-poll bundle build is running."
+  ],
+  "preliminary_private_command": "nix-build /home/jadams/tmp/k230-hdmi-continue-private/fast-hpd-object-check.nix --impure --no-out-link",
+  "preliminary_private_output": "/nix/store/3qwvclr9q1dirkf0mx0piy90g8qfaj7h-k230-hdmi-runtime-draft-object-check-riscv64-unknown-linux-gnu",
+  "recipe_sha256": "1e7f2e6b979fb46140e961f99db0d876e792afd42890ef357d443848edfbadd3",
+  "log_sha256": "39a99bf7a0ceca944da09f3dc22183434236a1655590de60f9df6f095563af0a",
+  "recipe_preflight": "Initial portable recipe left dynamic source paths outside the build sandbox. The recipe now imports sources with builtins.path and references the prepared dev output with builtins.storePath; the corrected command passes."
+}

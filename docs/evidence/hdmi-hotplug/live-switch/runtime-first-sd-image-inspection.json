@@ -1,0 +1,66 @@
+{
+  "recorded_at": "2026-10-09T17:39:30.918416+00:00",
+  "evidence_class": "host-built SD image, MBR and extracted boot payload",
+  "command": "python3 docs/evidence/hdmi-hotplug/live-switch/inspect-sd-image.py --image <sdImage> --bundle <matching-trial-bundle> --debugfs <pinned-debugfs> --scratch <private-scratch>",
+  "image": "/nix/store/ygkm991rknkgpa1fjalszzvbpcmr70vd-k230-sd-image.img",
+  "image_bytes": 5431369728,
+  "image_sha256": "605d7fcf23070f7e2c5cb42e9f94dec110059354806cc3aacb39872cfdf975c0",
+  "bundle": "/nix/store/mc6kr9fj7rpg53lchxpiz78khfzwya08-k230-coherent-shell-boot-files",
+  "identity": {
+    "bootargs": "console=tty0 consoleblank=0 console=ttyS0,115200n8 root=fstab loglevel=4 lsm=landlock,yama,bpf loglevel=7 init=/nix/store/mvjvi0d4vg33ahw08qyj4pb8by977i93-nixos-system-nixos-26.11.20260919.20b1ddd/init",
+    "configuration": "k230-mainline-drm-shell",
+    "device_tree": "/nix/store/bql9mkg3r0lviidsf16415asz32xq117-k230-mainline-drm-hotplug-dtb-normal-name/k230-tdisplay.dtb",
+    "kernel": "/nix/store/kb8kh7q73m6n10653sl41hd6pwafmqkj-linux-riscv64-unknown-linux-gnu-7.3.0-rc5/Image",
+    "schema": 1,
+    "system": "/nix/store/mvjvi0d4vg33ahw08qyj4pb8by977i93-nixos-system-nixos-26.11.20260919.20b1ddd"
+  },
+  "partitions": [
+    {
+      "type": 131,
+      "offset_bytes": 4194304,
+      "bytes": 117440512
+    },
+    {
+      "type": 131,
+      "offset_bytes": 134217728,
+      "bytes": 5296103424
+    }
+  ],
+  "boot_payload": {
+    "Image": {
+      "sha256": "d4955139c0e16e73fec7dc2e90482b1c360fea0f75cad452ff56dffe3de4d02c",
+      "bytes": 42745856
+    },
+    "k230-tdisplay.dtb": {
+      "sha256": "937226b070e7988b9564bb569b7f7eea227e067878f6d38e1aa19eeb6a69f324",
+      "bytes": 14538
+    },
+    "initrd.uimg": {
+      "sha256": "a57e20f01cd2f0ae9f5f943eda2bf775af8b4a6e5a7c17c26143eb5ba8c1ca69",
+      "bytes": 27316070
+    },
+    "bootargs.txt": {
+      "sha256": "cb45be7835df3de92b25a3310b6af83e466374321f438153ea5a60c9566609ac",
+      "bytes": 211
+    },
+    "force_dtb": {
+      "sha256": "175342c82dd1b437cdafb6bb01090e7ff73c2769515654c48b02c1e9f73440c6",
+      "bytes": 17
+    },
+    "lcd_dtb": {
+      "sha256": "175342c82dd1b437cdafb6bb01090e7ff73c2769515654c48b02c1e9f73440c6",
+      "bytes": 17
+    },
+    "hdmi_dtb": {
+      "sha256": "175342c82dd1b437cdafb6bb01090e7ff73c2769515654c48b02c1e9f73440c6",
+      "bytes": 17
+    }
+  },
+  "kernel_tree_initrd_and_bootargs_match_trial_bundle": true,
+  "all_selectors_name_combined_tree": true,
+  "result": "PASS",
+  "limits": [
+    "Host boot-payload inspection only; not a flashed-image, untouched autoboot or physical glass/input result.",
+    "The root partition layout is checked; its filesystem contents are not independently extracted by this recipe."
+  ]
+}

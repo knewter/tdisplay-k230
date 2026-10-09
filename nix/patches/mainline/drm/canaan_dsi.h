@@ -10,13 +10,22 @@
 #define _CANAAN_DSI_H_
 
 #include <linux/mutex.h>
+#include <linux/workqueue.h>
 #include <drm/drm_connector.h>
 #include <drm/drm_encoder.h>
 #include <drm/drm_mipi_dsi.h>
 
+struct canaan_dsi_encoder {
+	struct drm_encoder base;
+	struct canaan_dsi *dsi;
+	struct mipi_dsi_device *device;
+	bool panel;
+};
+
 struct canaan_dsi {
 	struct drm_connector connector;
-	struct drm_encoder encoder;
+	struct canaan_dsi_encoder panel_encoder;
+	struct canaan_dsi_encoder hdmi_encoder;
 	struct mipi_dsi_host host;
 
 	struct clk *bus_clk;
@@ -28,6 +37,13 @@ struct canaan_dsi {
 
 	struct device *dev;
 	struct mipi_dsi_device *device;
+	struct mipi_dsi_device *panel_device;
+	struct mipi_dsi_device *bridge_device;
+	bool dual_output;
+	bool component_added;
+	struct delayed_work hpd_work;
+	enum drm_connector_status hpd_status;
+	bool hpd_stopping;
 	struct drm_device *drm;
 	struct drm_panel *panel;
 	struct drm_bridge *bridge;
@@ -56,7 +72,7 @@ connector_to_canaan_dsi(struct drm_connector *connector)
 static inline struct canaan_dsi *
 encoder_to_canaan_dsi(const struct drm_encoder *encoder)
 {
-	return container_of(encoder, struct canaan_dsi, encoder);
+	return container_of(encoder, struct canaan_dsi_encoder, base)->dsi;
 };
 
 static inline bool canaan_dsi_stage1_handoff_active(struct mipi_dsi_device *device)

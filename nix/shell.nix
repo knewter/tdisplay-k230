@@ -807,13 +807,11 @@ let
       scroll_method two_finger
     }
 
-    # HDMI boot (k230-tdisplay-hdmi.dtb): the panel is dark and HDMI-A-1 is
-    # the only output. Its EDID-preferred mode, rotated per
-    # k230.shell.hdmiTransform, on a black background. Touch follows
-    # whichever output exists: map_to_output DSI-1 above names an output
-    # that is absent in this boot, so the exec below remaps it. The physical
-    # glass stays in its native orientation; compensate for wlroots applying
-    # the mapped monitor transform to absolute touch coordinates.
+    # HDMI uses the EDID-preferred mode and the accepted orientation.
+    # This startup mapping also supports the HDMI-only rollback trial;
+    # the automatic relay restores direct panel mapping on disconnect.
+    # Compensate for the monitor transform on raw absolute touch. While
+    # HDMI scanout is enabled, the relay instead emits touchpad events.
     output HDMI-A-1 transform ${cfg.hdmiTransform} bg #000000 solid_color
     exec_always ${pkgs.writeShellScript "k230-touch-follow-output" ''
       # swaymsg from the session's own PATH: the running sway's client.
@@ -936,7 +934,7 @@ in
       type = lib.types.enum [ "normal" "90" "180" "270" ];
       default = "90";
       description = ''
-        Sway transform for HDMI-A-1 in the HDMI boot. "90" suits a monitor
+        Sway transform for the active HDMI-A-1 output. "90" suits a monitor
         rotated to portrait (the operator's), which also matches the shell's
         portrait design; "normal" for a landscape monitor.
       '';

@@ -1,21 +1,8 @@
-//! Automatic trackpad/direct-touch mode detection.
-//!
-//! `openspec/changes/plugging-in-hdmi-moves-the-display` makes HDMI a
-//! *reboot-based* device-tree swap today (task group 4's no-reboot
-//! automation is explicitly speculative and may never land) -- so at any
-//! given moment exactly one of the panel's `DSI-1` connector or the
-//! bridge's `HDMI-A-1` connector is the one Linux actually drives, and
-//! that fact is visible in `/sys/class/drm/*/status` without needing Sway
-//! running at all. Reading DRM sysfs directly (rather than `swaymsg -t
-//! get_outputs` over the Sway IPC socket) means this daemon can decide its
-//! mode before the Sway session exists, doesn't depend on `$SWAYSOCK`, and
-//! costs one directory listing plus a handful of tiny file reads.
-//!
-//! Polling this (rather than reacting to a udev/DRM hotplug event) is a
-//! deliberate simplification for the prototype: it is cheap enough (a few
-//! sysfs reads a second) to be correct today (boot-time-fixed mode) and
-//! ready if `plugging-in-hdmi-moves-the-display` group 4's live switching
-//! ever lands, without this crate needing to know which case it's in.
+//! Automatic trackpad/direct-touch mode detection from DRM sysfs.
+//! The HDMI connector wins when it is connected and enabled. During the
+//! live handoff, keep direct touch until HDMI scanout has been enabled.
+//! Missing/unreadable connector status defaults to direct touch. Legacy
+//! status-only fixtures must also describe whether scanout is enabled.
 
 use std::fs;
 use std::path::Path;
@@ -46,8 +33,8 @@ fn connector_status(dir: &Path) -> Option<String> {
 /// Decides the mode from a DRM sysfs root (normally `/sys/class/drm`, but
 /// parameterized so host tests can point it at a fixture directory without
 /// touching real hardware). Any connector whose directory name contains
-/// `HDMI_MARKER` and whose `status` file reads `connected` selects
-/// `Trackpad`; everything else -- no such connector, not found, unreadable,
+/// `HDMI_MARKER`, whose `status` reads `connected`, and whose `enabled`
+/// reads `enabled` selects `Trackpad`; everything else -- no such connector, not found, unreadable,
 /// any other status string -- defaults to `DirectTouch`, the safe fallback
 /// that never touches the touchscreen if the board's state can't be read.
 pub fn detect_mode(drm_root: &Path) -> Mode {
@@ -58,7 +45,11 @@ pub fn detect_mode(drm_root: &Path) -> Mode {
     for entry in entries.flatten() {
         let name = entry.file_name();
         let name = name.to_string_lossy();
-        if name.contains(HDMI_MARKER) && connector_status(&entry.path()).as_deref() == Some("connected") {
+        if name.contains(HDMI_MARKER)
+            && connector_status(&entry.path()).as_deref() == Some("connected")
+            && fs::read_to_string(entry.path().join("enabled"))
+                .is_ok_and(|value| value.trim() == "enabled")
+        {
             return Mode::Trackpad;
         }
     }
@@ -67,8 +58,7 @@ pub fn detect_mode(drm_root: &Path) -> Mode {
 
 /// True if `drm_root` has a panel connector (`DSI`/`eDP`) reporting
 /// `connected`. Not used to choose the mode (an HDMI `connected` status
-/// always wins per `detect_mode`, matching the reboot-swap model where
-/// only one of the two is ever real at a time) -- exposed for diagnostics
+/// selects trackpad only after HDMI scanout is enabled) -- exposed for diagnostics
 /// and for a host test asserting the panel-only case resolves to
 /// `DirectTouch`.
 pub fn panel_connected(drm_root: &Path) -> bool {
@@ -129,6 +119,7 @@ mod tests {
             let cdir = dir.path().join(name);
             fs::create_dir(&cdir).unwrap();
             fs::write(cdir.join("status"), format!("{status}\n")).unwrap();
+            fs::write(cdir.join("enabled"), if *status == "connected" { "enabled\n" } else { "disabled\n" }).unwrap();
         }
         dir
     }
@@ -142,8 +133,8 @@ mod tests {
 
     #[test]
     fn hdmi_connected_boot_is_trackpad() {
-        // Matches the reboot-swap model: once the HDMI DTB is booted the
-        // panel connector need not even exist, but this must not matter.
+        // Retain the HDMI-only trial: an enabled HDMI connector does not
+        // require the combined tree's panel connector to exist.
         let dir = fixture(&[("card0-HDMI-A-1", "connected")]);
         assert_eq!(detect_mode(dir.path()), Mode::Trackpad);
     }
@@ -157,6 +148,22 @@ mod tests {
     #[test]
     fn missing_drm_root_defaults_to_direct_touch() {
         assert_eq!(detect_mode(Path::new("/nonexistent/k230-drm-fixture-missing")), Mode::DirectTouch);
+    }
+
+    #[test]
+    fn live_handoff_waits_for_hdmi_scanout_and_returns_to_direct_touch() {
+        let dir = fixture(&[("card0-DSI-1", "connected"), ("card0-HDMI-A-1", "disconnected")]);
+        let hdmi = dir.path().join("card0-HDMI-A-1");
+        assert_eq!(detect_mode(dir.path()), Mode::DirectTouch);
+        fs::write(hdmi.join("status"), "connected\n").unwrap();
+        assert_eq!(detect_mode(dir.path()), Mode::DirectTouch);
+        fs::write(hdmi.join("enabled"), "enabled\n").unwrap();
+        assert_eq!(detect_mode(dir.path()), Mode::Trackpad);
+        fs::write(hdmi.join("status"), "disconnected\n").unwrap();
+        assert_eq!(detect_mode(dir.path()), Mode::DirectTouch);
+        fs::write(hdmi.join("status"), "connected\n").unwrap();
+        fs::remove_file(hdmi.join("enabled")).unwrap();
+        assert_eq!(detect_mode(dir.path()), Mode::DirectTouch);
     }
 
     #[test]

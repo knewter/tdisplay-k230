@@ -1,6 +1,6 @@
 # Importable NixOS module for the touchscreen-to-touchpad relay. Enabled
-# by the explicit coherent-shell HDMI trial configuration after its
-# standalone board safety trial; other configurations retain direct touch.
+# in the daily mainline system and HDMI-only rollback trial. It retains
+# direct touch until HDMI scanout is enabled, and restores it on disconnect.
 # See
 # openspec/changes/the-touchscreen-becomes-an-hdmi-trackpad/ for the
 # capability and tasks.md's physical trial steps for the
@@ -20,7 +20,7 @@ in
     systemd.services.k230-touch-trackpad = {
       description = "Re-emit the touchscreen as a virtual touchpad while HDMI is the active output (prototype)";
       documentation = [ "https://github.com/knewter/tdisplay-k230/blob/master/openspec/changes/the-touchscreen-becomes-an-hdmi-trackpad/proposal.md" ];
-      # After the shell/seatd so /sys/class/drm reflects the booted output
+      # After the shell/seatd so /sys/class/drm reflects the active output
       # before the first mode check, and so a crash-restart loop here can
       # never be mistaken for the shell session itself failing.
       after = [ "shell.service" ];

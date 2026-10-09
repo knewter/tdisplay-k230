@@ -1,0 +1,42 @@
+{
+  "recorded_at": "2026-10-09T17:53:02.620724+00:00",
+  "evidence_class": "operator-real-cable-and-touch-report",
+  "candidate": {
+    "system": "/nix/store/mvjvi0d4vg33ahw08qyj4pb8by977i93-nixos-system-nixos-26.11.20260919.20b1ddd",
+    "kernel": "/nix/store/kb8kh7q73m6n10653sl41hd6pwafmqkj-linux-riscv64-unknown-linux-gnu-7.3.0-rc5/Image",
+    "bundle": "/nix/store/mc6kr9fj7rpg53lchxpiz78khfzwya08-k230-coherent-shell-boot-files",
+    "device_tree": "/nix/store/bql9mkg3r0lviidsf16415asz32xq117-k230-mainline-drm-hotplug-dtb-normal-name/k230-tdisplay.dtb"
+  },
+  "boot_id": "061c178f-bbdb-41c9-9643-5f94be5d1946",
+  "reports": [
+    {
+      "quote": "came up on hdmi. worked fine, touchpad worked. unpliugged hdmi, panel came up, touch worked",
+      "claims": [
+        "visible HDMI boot",
+        "real touchscreen as trackpad",
+        "unplug restored visible panel and direct touch"
+      ]
+    },
+    {
+      "quote": "replugged hdmi, kept the display on the panel tho the monitor knows something's connected",
+      "claims": [
+        "replug initially delayed visible handoff"
+      ]
+    },
+    {
+      "quote": "nevermind it came up it just took a really long time. took a long time to switch on the display after unplug too. can it be faster",
+      "claims": [
+        "replug eventually restored visible HDMI",
+        "both handoff directions judged too slow",
+        "operator requests faster switching"
+      ]
+    }
+  ],
+  "limits": [
+    "No precise operator latency or 30-second bound was recorded.",
+    "Initial cycle occurred before the bounded sysfs watcher started.",
+    "No per-gesture Home/Overview/Terminal qualification or ordinary autoboot is inferred.",
+    "The later HDMI sysfs/compositor snapshot is a separate serial observation on the matching boot ID.",
+    "This first candidate uses generic DRM polling, not the later 250ms worker."
+  ]
+}

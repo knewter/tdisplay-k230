@@ -1,0 +1,15 @@
+{
+  "recorded_at": "2026-10-09T16:44:27.906352+00:00",
+  "evidence_class": "host compiled device-tree inspection",
+  "command": "python3 docs/evidence/hdmi-hotplug/live-switch/inspect-hotplug-dtb.py --dtb <compiled-hotplug-dtb> --fdtget <pinned-host-fdtget>",
+  "device_tree": "/nix/store/7kmscmfl6dkqbb48adabya2i3ciwvmyc-k230-tdisplay-mainline-drm-hotplug.dtb/k230-tdisplay-mainline-drm-hotplug.dtb",
+  "sha256": "abfdf2512a6922a9ee469a9a3d98175ab0869f4f14a9d27347efa7d0515e5d4f",
+  "reciprocal_panel_and_bridge_dsi_endpoints": true,
+  "bridge_to_hdmi_connector_reciprocal": true,
+  "bridge_has_no_shared_reset_or_irq_properties": true,
+  "bridge_waits_for_touch_reset_owner": true,
+  "panel_phy": "0x87",
+  "hdmi_phy": "0x96",
+  "result": "PASS",
+  "board_probe_or_physical_hotplug_proved": false
+}

@@ -26,6 +26,7 @@
 #include <linux/slab.h>
 
 #include <drm/drm_atomic_helper.h>
+#include <drm/drm_device.h>
 #include <drm/drm_mipi_dsi.h>
 #include <drm/drm_panel.h>
 #include <drm/drm_print.h>
@@ -398,7 +399,9 @@ static int canaan_dsi_clk_cfg(struct canaan_dsi *dsi, u32 clk)
 
 	{
 		u32 hsfr = 0x96;
-		of_property_read_u32(dsi->dev->of_node, "canaan,hsfreqrange", &hsfr);
+		of_property_read_u32(dsi->dev->of_node,
+			dsi->dual_output && device == dsi->bridge_device ?
+			"canaan,hdmi-hsfreqrange" : "canaan,hsfreqrange", &hsfr);
 		dev_info(dsi->dev, "DSI PHY: lane %u kbps, voc 0x%x, hsfreqrange 0x%x\n", phy_clk_freq * 2, voc, hsfr);
 		k230_dsi_config_4lan_phy(dsi, m - 2, n - 1, voc, (uint8_t)hsfr);
 	}
@@ -417,10 +420,13 @@ static bool canaan_dsi_stage1_mode_matches(const struct drm_display_mode *mode)
 
 static void canaan_dsi_encoder_enable(struct drm_encoder *encoder)
 {
-	struct canaan_dsi *dsi = encoder_to_canaan_dsi(encoder);
+	struct canaan_dsi_encoder *output =
+		container_of(encoder, struct canaan_dsi_encoder, base);
+	struct canaan_dsi *dsi = output->dsi;
+	struct drm_panel *panel = output->panel ? dsi->panel : NULL;
 	struct drm_display_mode *adjusted_mode =
 		&encoder->crtc->state->adjusted_mode;
-	struct mipi_dsi_device *device = dsi->device;
+	struct mipi_dsi_device *device = output->device;
 	int dsi_test_en = 0;
 
 	DRM_DEBUG_DRIVER("Enabling DSI output\n");
@@ -428,15 +434,17 @@ static void canaan_dsi_encoder_enable(struct drm_encoder *encoder)
 	dev_vdbg(dsi->dev, "DSI encoder enable %u\n", adjusted_mode->clock);
 	if (dsi->stage1_handoff_pending) {
 		dsi->stage1_handoff_pending = false;
-		dsi->stage1_handoff_active = canaan_dsi_stage1_mode_matches(adjusted_mode);
+		dsi->stage1_handoff_active = output->panel &&
+			canaan_dsi_stage1_mode_matches(adjusted_mode);
 		if (dsi->stage1_handoff_active) {
 			mutex_lock(&dsi->transfer_lock);
+			dsi->device = device;
 			dsi->transfer_ready = true;
 			mutex_unlock(&dsi->transfer_lock);
-			if (dsi->panel)
-				drm_panel_prepare(dsi->panel);
-			if (dsi->panel)
-				drm_panel_enable(dsi->panel);
+			if (panel)
+				drm_panel_prepare(panel);
+			if (panel)
+				drm_panel_enable(panel);
 			dev_info(dsi->dev, "stage 1 splash: preserving DSI to first plane update\n");
 			return;
 		}
@@ -445,6 +453,7 @@ static void canaan_dsi_encoder_enable(struct drm_encoder *encoder)
 
 	mutex_lock(&dsi->transfer_lock);
 	dsi->transfer_ready = false;
+	dsi->device = device;
 	if (canaan_dsi_clk_cfg(dsi, adjusted_mode->clock))
 		dev_err(dsi->dev, "MIPI clock not support\n");
 
@@ -459,12 +468,12 @@ static void canaan_dsi_encoder_enable(struct drm_encoder *encoder)
 	 * Enable the DSI block.
 	 */
 
-	if (dsi->panel)
-		drm_panel_prepare(dsi->panel);
+	if (panel)
+		drm_panel_prepare(panel);
 
 	/* Panel callbacks may send messages; never hold transfer_lock here. */
-	if (dsi->panel)
-		drm_panel_enable(dsi->panel);
+	if (panel)
+		drm_panel_enable(panel);
 
 	mutex_lock(&dsi->transfer_lock);
 	canaan_mipi_dsi_set_dsi_enable(dsi);
@@ -475,7 +484,10 @@ static void canaan_dsi_encoder_enable(struct drm_encoder *encoder)
 
 static void canaan_dsi_encoder_disable(struct drm_encoder *encoder)
 {
-	struct canaan_dsi *dsi = encoder_to_canaan_dsi(encoder);
+	struct canaan_dsi_encoder *output =
+		container_of(encoder, struct canaan_dsi_encoder, base);
+	struct canaan_dsi *dsi = output->dsi;
+	struct drm_panel *panel = output->panel ? dsi->panel : NULL;
 
 	if (dsi->stage1_handoff_pending) {
 		dev_info(dsi->dev, "stage 1 splash: DSI disabled before handoff; reinitializing later\n");
@@ -486,14 +498,14 @@ static void canaan_dsi_encoder_disable(struct drm_encoder *encoder)
 	DRM_DEBUG_DRIVER("Disabling DSI output\n");
 
 	/* Allow the backlight's final blanking command before closing the host. */
-	if (dsi->panel)
-		drm_panel_disable(dsi->panel);
+	if (panel)
+		drm_panel_disable(panel);
 	mutex_lock(&dsi->transfer_lock);
 	dsi->transfer_ready = false;
 	mutex_unlock(&dsi->transfer_lock);
 	/* A racing brightness request now gets -EPIPE before touching MMIO. */
-	if (dsi->panel)
-		drm_panel_unprepare(dsi->panel);
+	if (panel)
+		drm_panel_unprepare(panel);
 }
 
 bool canaan_dsi_encoder_mode_fixup(struct drm_encoder *encoder,
@@ -527,6 +539,12 @@ canaan_dsi_connector_detect(struct drm_connector *connector, bool force)
 {
 	struct canaan_dsi *dsi = connector_to_canaan_dsi(connector);
 
+	/* One physical pipeline: expose the panel only when HDMI is absent.
+	 * Poll both statuses, retaining the panel on an unreadable HPD signal.
+	 */
+	if (dsi->dual_output && dsi->bridge &&
+	    drm_bridge_detect(dsi->bridge, connector) == connector_status_connected)
+		return connector_status_disconnected;
 	return (dsi->panel || dsi->bridge) ? connector_status_connected :
 			    connector_status_disconnected;
 }
@@ -574,20 +592,41 @@ static bool canaan_dsi_output_is_bridge(struct device *dev)
 	return bridge;
 }
 
+
 static int canaan_dsi_attach(struct mipi_dsi_host *host,
 			     struct mipi_dsi_device *device)
 {
 	struct canaan_dsi *dsi = host_to_canaan_dsi(host);
+	struct mipi_dsi_device **slot = NULL;
+	int ret;
 
-	dsi->connector.status = connector_status_connected;
-	dsi->device = device;
+	if (dsi->dual_output) {
+		if (device->channel > 1)
+			return -EINVAL;
+		slot = device->channel ? &dsi->bridge_device : &dsi->panel_device;
+		if (*slot)
+			return -EBUSY;
+		*slot = device;
+		/* Bind DRM only after both consumers have registered themselves. */
+		if (!dsi->panel_device || !dsi->bridge_device)
+			return 0;
+	} else {
+		dsi->device = device;
+		if (!canaan_dsi_output_is_bridge(host->dev)) {
+			dsi->panel_device = device;
+			return 0;
+		}
+		dsi->bridge_device = device;
+	}
 
-	dev_info(host->dev, "Attached device %s\n", device->name);
-
-	if (canaan_dsi_output_is_bridge(host->dev))
-		return component_add(host->dev, &canaan_dsi_ops);
-
-	return 0;
+	dev_info(host->dev, "Attached device %s (logical channel %u)\n",
+		 device->name, device->channel);
+	ret = component_add(host->dev, &canaan_dsi_ops);
+	if (!ret)
+		dsi->component_added = true;
+	else if (dsi->dual_output)
+		*slot = NULL;
+	return ret;
 }
 
 static int canaan_dsi_detach(struct mipi_dsi_host *host,
@@ -595,13 +634,18 @@ static int canaan_dsi_detach(struct mipi_dsi_host *host,
 {
 	struct canaan_dsi *dsi = host_to_canaan_dsi(host);
 
-	if (canaan_dsi_output_is_bridge(host->dev))
+	if (dsi->component_added &&
+	    (dsi->dual_output || canaan_dsi_output_is_bridge(host->dev))) {
 		component_del(host->dev, &canaan_dsi_ops);
-
+		dsi->component_added = false;
+	}
+	if (dsi->panel_device == device)
+		dsi->panel_device = NULL;
+	if (dsi->bridge_device == device)
+		dsi->bridge_device = NULL;
 	dsi->panel = NULL;
 	dsi->device = NULL;
 	dsi->bridge = NULL;
-
 	return 0;
 }
 
@@ -644,7 +688,8 @@ static ssize_t canaan_dsi_transfer(struct mipi_dsi_host *host,
 		return ret;
 
 	mutex_lock(&dsi->transfer_lock);
-	if (!dsi->transfer_ready) {
+	if (!dsi->transfer_ready ||
+	    (dsi->dual_output && dsi->device != dsi->panel_device)) {
 		ret = -EPIPE;
 		goto out;
 	}
@@ -711,79 +756,120 @@ static const struct mipi_dsi_host_ops canaan_dsi_host_ops = {
 	.transfer = canaan_dsi_transfer,
 };
 
+
+static int canaan_dsi_init_encoder(struct canaan_dsi *dsi,
+				 struct canaan_dsi_encoder *output,
+				 struct mipi_dsi_device *device, bool panel)
+{
+	int ret;
+
+	output->dsi = dsi;
+	output->device = device;
+	output->panel = panel;
+	drm_encoder_helper_add(&output->base, &canaan_dsi_enc_helper_funcs);
+	ret = drm_simple_encoder_init(dsi->drm, &output->base, DRM_MODE_ENCODER_DSI);
+	if (ret)
+		return ret;
+	output->base.possible_crtcs = BIT(0);
+	/* Each encoder may only clone itself: never drive both consumers. */
+	output->base.possible_clones = drm_encoder_mask(&output->base);
+	return 0;
+}
+
+/* GPIO23 is owned by touch. Read bridge HPD without claiming its IRQ and
+ * notify DRM promptly instead of waiting for the generic ten-second poll.
+ * Keep that generic poll as a fallback; emit events only on cable changes.
+ */
+static void canaan_dsi_hpd_work(struct work_struct *work)
+{
+	struct canaan_dsi *dsi = container_of(to_delayed_work(work),
+						struct canaan_dsi, hpd_work);
+	enum drm_connector_status status;
+
+	if (READ_ONCE(dsi->hpd_stopping))
+		return;
+	/* Binding precedes DRM registration and poll initialization. */
+	if (!READ_ONCE(dsi->drm->registered) ||
+	    !READ_ONCE(dsi->drm->mode_config.poll_enabled))
+		goto again;
+
+	status = drm_bridge_detect(dsi->bridge, &dsi->connector);
+	if (status != connector_status_unknown && status != dsi->hpd_status) {
+		drm_helper_hpd_irq_event(dsi->drm);
+		dsi->hpd_status = status;
+	}
+again:
+	if (!READ_ONCE(dsi->hpd_stopping))
+		schedule_delayed_work(&dsi->hpd_work, msecs_to_jiffies(250));
+}
+
 static int canaan_dsi_bind(struct device *dev, struct device *master,
 			   void *data)
 {
 	struct drm_device *drm = data;
 	struct canaan_dsi *dsi = dev_get_drvdata(dev);
+	struct drm_connector *bridge_connector;
+	struct drm_panel *unexpected = NULL;
 	int ret;
 
-	drm_encoder_helper_add(&dsi->encoder, &canaan_dsi_enc_helper_funcs);
-	ret = drm_simple_encoder_init(drm, &dsi->encoder, DRM_MODE_ENCODER_DSI);
-	if (ret) {
-		dev_err(dsi->dev, "Couldn't initialise the DSI encoder\n");
-		return ret;
-	}
-	dsi->encoder.possible_crtcs = BIT(0);
-
 	dsi->drm = drm;
-
-	ret = drm_of_find_panel_or_bridge(dsi->dev->of_node, 1, -1, &dsi->panel, &dsi->bridge);
-	if (!dsi->panel && !dsi->bridge)
+	ret = drm_of_find_panel_or_bridge(dev->of_node, 1,
+					dsi->dual_output ? 0 : -1,
+					&dsi->panel, &dsi->bridge);
+	if (ret)
 		return ret;
+	if (dsi->dual_output) {
+		ret = drm_of_find_panel_or_bridge(dev->of_node, 1, 1,
+						&unexpected, &dsi->bridge);
+		if (ret)
+			return ret;
+		if (!dsi->panel || !dsi->bridge || unexpected)
+			return -EINVAL;
+	}
 
 	if (dsi->panel) {
+		ret = canaan_dsi_init_encoder(dsi, &dsi->panel_encoder,
+					     dsi->panel_device, true);
+		if (ret)
+			return ret;
 		drm_connector_helper_add(&dsi->connector,
-					&canaan_dsi_connector_helper_funcs);
-		ret = drm_connector_init(dsi->drm, &dsi->connector,
-					&canaan_dsi_connector_funcs,
-					DRM_MODE_CONNECTOR_DSI);
-		if (ret) {
-			dev_err(dsi->dev, "Couldn't initialise the DSI connector\n");
-			goto err_cleanup_connector;
-		}
-
-		drm_connector_attach_encoder(&dsi->connector, &dsi->encoder);
+					 &canaan_dsi_connector_helper_funcs);
+		ret = drm_connector_init(drm, &dsi->connector,
+					 &canaan_dsi_connector_funcs, DRM_MODE_CONNECTOR_DSI);
+		if (ret)
+			return ret;
+		if (dsi->dual_output)
+			dsi->connector.polled = DRM_CONNECTOR_POLL_CONNECT |
+						DRM_CONNECTOR_POLL_DISCONNECT |
+						DRM_CONNECTOR_POLL_HPD;
+		ret = drm_connector_attach_encoder(&dsi->connector, &dsi->panel_encoder.base);
+		if (ret)
+			return ret;
 	}
-
 	if (dsi->bridge) {
-		struct drm_connector *bridge_connector;
-
-		ret = drm_bridge_attach(&dsi->encoder, dsi->bridge, NULL,
+		ret = canaan_dsi_init_encoder(dsi, &dsi->hdmi_encoder,
+					     dsi->bridge_device, false);
+		if (ret)
+			return ret;
+		ret = drm_bridge_attach(&dsi->hdmi_encoder.base, dsi->bridge, NULL,
 					DRM_BRIDGE_ATTACH_NO_CONNECTOR);
-		if (ret) {
-			dev_err(dsi->dev, "Couldn't attach the DSI bridge\n");
-			goto err_cleanup_connector;
-		}
-
-		/*
-		 * DRM_BRIDGE_ATTACH_NO_CONNECTOR above means exactly what it
-		 * says: the bridge chain attaches to the encoder but creates
-		 * no drm_connector, so nothing (modetest, Sway, KMS clients in
-		 * general) ever sees an HDMI-A-1. drm_bridge_connector_init()
-		 * is the generic helper for exactly this case -- it builds a
-		 * connector that walks the bridge chain for .detect/.get_modes
-		 * instead of a bridge-specific one.
-		 */
-		bridge_connector = drm_bridge_connector_init(dsi->drm, &dsi->encoder);
-		if (IS_ERR(bridge_connector)) {
-			ret = PTR_ERR(bridge_connector);
-			dev_err(dsi->dev, "Couldn't init the bridge connector\n");
-			goto err_cleanup_connector;
-		}
-
-		ret = drm_connector_attach_encoder(bridge_connector, &dsi->encoder);
-		if (ret) {
-			dev_err(dsi->dev, "Couldn't attach the bridge connector\n");
-			goto err_cleanup_connector;
-		}
+		if (ret)
+			return ret;
+		bridge_connector = drm_bridge_connector_init(drm, &dsi->hdmi_encoder.base);
+		if (IS_ERR(bridge_connector))
+			return PTR_ERR(bridge_connector);
+		if (dsi->dual_output)
+			bridge_connector->polled |= DRM_CONNECTOR_POLL_HPD;
+		ret = drm_connector_attach_encoder(bridge_connector, &dsi->hdmi_encoder.base);
+		if (ret)
+			return ret;
 	}
-
+	if (dsi->dual_output) {
+		dsi->hpd_status = connector_status_unknown;
+		WRITE_ONCE(dsi->hpd_stopping, false);
+		schedule_delayed_work(&dsi->hpd_work, msecs_to_jiffies(250));
+	}
 	return 0;
-
-err_cleanup_connector:
-	drm_encoder_cleanup(&dsi->encoder);
-	return ret;
 }
 
 static void canaan_dsi_unbind(struct device *dev, struct device *master,
@@ -791,6 +877,8 @@ static void canaan_dsi_unbind(struct device *dev, struct device *master,
 {
 	struct canaan_dsi *dsi = dev_get_drvdata(dev);
 
+	WRITE_ONCE(dsi->hpd_stopping, true);
+	cancel_delayed_work_sync(&dsi->hpd_work);
 	dsi->drm = NULL;
 }
 
@@ -817,9 +905,11 @@ static int canaan_dsi_probe(struct platform_device *pdev)
 		return -ENOMEM;
 	dev_set_drvdata(dev, dsi);
 	dsi->dev = dev;
+	dsi->dual_output = of_property_read_bool(dev->of_node, "canaan,dual-output");
 	dsi->host.ops = &canaan_dsi_host_ops;
 	dsi->host.dev = dev;
 	mutex_init(&dsi->transfer_lock);
+	INIT_DELAYED_WORK(&dsi->hpd_work, canaan_dsi_hpd_work);
 	dsi->stage1_handoff_pending =
 		of_property_read_bool(of_chosen, "canaan,stage1-splash");
 
@@ -838,7 +928,7 @@ static int canaan_dsi_probe(struct platform_device *pdev)
 		goto err_unprotect_clk;
 	}
 
-	if (canaan_dsi_output_is_bridge(dev))
+	if (dsi->dual_output || canaan_dsi_output_is_bridge(dev))
 		return 0;
 
 	ret = component_add(&pdev->dev, &canaan_dsi_ops);
@@ -847,6 +937,7 @@ static int canaan_dsi_probe(struct platform_device *pdev)
 		goto err_remove_dsi_host;
 	}
 
+	dsi->component_added = true;
 	return 0;
 
 err_remove_dsi_host:

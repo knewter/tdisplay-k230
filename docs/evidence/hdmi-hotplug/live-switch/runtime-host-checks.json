@@ -1,0 +1,65 @@
+{
+  "recorded_at": "2026-10-09T17:44:48.927433+00:00",
+  "evidence_class": "host build and compiled artifact inspection",
+  "source_base": "565823807fe10c201696fdba8f4856ac88839df2",
+  "source_sha256": {
+    "flake.nix": "eef10e7c4f6c82c525a45fceba7af7c603cf3beef9644b9ec011f5b40945e7f3",
+    "nix/dts/k230-tdisplay-mainline-drm-hotplug.dts": "6a9348e9e0635002a4ae585c211e94a2dc71e9b33c24054519b49f91b8babd3d",
+    "nix/patches/mainline/drm/canaan_dsi.c": "116e532cd0ea3b5b77714fee19b87ed7b4318f4adbd97c7b4e901677472c99ca",
+    "nix/patches/mainline/drm/canaan_dsi.h": "053c2a8c0065610489ff06fd2f68d696be107365d87b74e9f56170a0aeac388a",
+    "nix/patches/mainline/drm/lontium-lt9611-k230.c": "842ce9ad86ed77b0a9d656c6bee6f4891e7267d6b2e55ceee9f5c34872b5faa8",
+    "nix/shell.nix": "1c438d3f6f6719ef16476eb6b2421ab0f30ac894f3bd2239e1b5650ec71cfc09",
+    "nix/touch-trackpad-service.nix": "c55b79aeb8d40d9ac4407f2a80f1e28e75c92f6f76cf5d8d5cad1e8ab9003c13",
+    "nix/touch-trackpad/src/main.rs": "6990549a3c063c19913564869f3a1c86fca936d0b81a9b8815a044bf0a8f70da",
+    "nix/touch-trackpad/src/mode.rs": "022b1710c6361ab2e37ea3c11ae17af101e42b514de012635d117667689b9c3c",
+    "nix/touch-trackpad/src/shell_ipc.rs": "ab73dea7679bd1b22c3af77942bda56115909bc0b39219e0ce9557805fc71a43"
+  },
+  "kernel": {
+    "recorded_at": "2026-10-09T17:32:58.657652+00:00",
+    "kernel": "/nix/store/kb8kh7q73m6n10653sl41hd6pwafmqkj-linux-riscv64-unknown-linux-gnu-7.3.0-rc5",
+    "deriver": "/nix/store/wswvcv3bdiqa65h6qgrg297cgqshp22y-linux-riscv64-unknown-linux-gnu-7.3.0-rc5.drv",
+    "image_sha256": "d4955139c0e16e73fec7dc2e90482b1c360fea0f75cad452ff56dffe3de4d02c",
+    "image_bytes": 42745856,
+    "result": "PASS",
+    "evidence_class": "host full kernel build; no board result inferred"
+  },
+  "bundle": "/nix/store/mc6kr9fj7rpg53lchxpiz78khfzwya08-k230-coherent-shell-boot-files",
+  "bundle_command": "nix build .#kernelMainlineDrmShellHotplugBootFiles --max-jobs 1 --cores 16",
+  "bundle_result": "PASS",
+  "inspection": {
+    "command": "python3 tools/coherent-shell-boot-inspect.py <runtime-bundle>",
+    "result": "PASS",
+    "record": "runtime-bundle-inspection.json"
+  },
+  "graph": {
+    "command": "python3 docs/evidence/hdmi-hotplug/live-switch/inspect-hotplug-dtb.py --dtb <runtime-bundle>/k230-tdisplay.dtb --fdtget <runtime-bundle>/inspect-tools/fdtget",
+    "result": "PASS",
+    "record": "runtime-wrapped-dtb-inspection.json"
+  },
+  "fixtures": {
+    "command": "python3 tests/test_coherent_shell_boot_inspect.py --bundle <runtime-bundle>",
+    "passed": 15,
+    "result": "PASS"
+  },
+  "relay_tests": {
+    "command": "cargo test --locked --offline --manifest-path nix/touch-trackpad/Cargo.toml --target-dir <private-target>",
+    "unit_passed": 44,
+    "integration_passed": 2,
+    "result": "PASS"
+  },
+  "relay_clippy": {
+    "command": "cargo clippy --locked --offline --all-targets --manifest-path nix/touch-trackpad/Cargo.toml --target-dir <private-target>",
+    "result": "PASS"
+  },
+  "limits": [
+    "Host-only evidence: no visible handoff or real-finger result inferred.",
+    "The SD image was independently prepared with combined default wiring in a private source snapshot; repository defaults remain panel-only pending physical qualification.",
+    "Pre-existing missing-prototype compiler warnings and optional initrd libcrypto warnings remain outside this change."
+  ],
+  "private_log_sha256": {
+    "kernel-build.log": "06cc55dd276cc7209ce5ea8373daf78af54d9ca9c637d59dc71e638b0c639b74",
+    "runtime-relay-tests.actual.log": "91e12f0ab4769ca3edadf20d04f09c12f401bf21345b592b6ddcb306596dc022",
+    "runtime-relay-clippy.actual.log": "5724dee34678bbe80ca364b219fb36391f76c84f5410225fea87f1e77209949d",
+    "runtime-bundle-build.actual.log": "b212f88c7c5338f811d44623730d64a66ddf5fb6079f84ce727841873eb90433"
+  }
+}

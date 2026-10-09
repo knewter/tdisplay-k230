@@ -248,13 +248,22 @@ avoiding the vendor master's unsafe deferred-bind cleanup path.
 
 Two encoders share the one CRTC but prohibit cloning onto one another.
 The panel connector reports connected unless HDMI HPD is connected; the
-HDMI bridge connector reports HPD normally. Both use DRM polling. On a cable
+HDMI bridge connector reports HPD normally. A delayed worker reads bridge
+HPD every 250 ms and runs DRM hotplug detection on both connectors only when
+the cable state changes. Both connectors retain generic DRM polling as a
+fallback. GPIO23 remains owned by touch; no bridge interrupt is enabled. The
+worker starts after binding, waits for DRM registration/poll initialization,
+and is synchronously cancelled before component teardown. On a cable
 change, the ordinary DRM hotplug event lets the existing Sway session disable
 the old output and enable the other; the connectors and consumers remain
 registered throughout. This avoids live component teardown, graph rebinding,
 and transferring ownership of the shared reset/interrupt pins. The initial
-qualification bound is 30 seconds per transition (DRM polling plus output
-modesetting), measured against real cable actions rather than injected status. The bridge
+qualification ceiling remains 30 seconds per transition, measured against
+real cable actions rather than injected status. The operator confirmed both
+visible handoff directions and touch modes on the first generic-poll trial,
+but judged both directions too slow. The revised target is cable detection
+within one second and DRM output activation within three seconds; monitor
+video-lock time and visible operator timing remain separately recorded. The bridge
 also retains the read-only raw `hpd` attribute, letting the watcher measure
 raw HPD-to-DRM activation separately from the operator's visible transition
 report; cached DRM status is not treated as an immediate cable timestamp.
