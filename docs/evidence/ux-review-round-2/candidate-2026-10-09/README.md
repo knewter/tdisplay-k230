@@ -75,15 +75,16 @@ those older matrix routes are not demonstrated as separate current apps.
 These are native board states reached through injected route commands, not a
 new finger walkthrough. The operator's explicit current Home/All Apps/Settings
 acceptance is separately committed with the responsive closeout and reused for
-those checks only. Keyboard typing, two-app switching and media start/stop are
-awaiting the focused operator reply. Optical motion, readability, finger
+those checks only. The [operator reply](operator-report.json) now accepts the requested Terminal
+keyboard, app-switching and video functional journeys. It is separate from the
+injected captures and contains the exact question and reply. Optical motion, readability, finger
 tracking, keyboard-visible accessibility, refusal/error/denied recovery and
 cold-start timing remain UNVERIFIED where matching proof is absent.
 
 All findings were rechecked in the [candidate report](../../../research/handheld-ux/review-round-2/candidate-recheck.md).
-No baseline finding has P0/P1 severity. This closes the analysis's candidate
-identity/recheck tasks 3.1/3.2, while task 2.2's current journey walkthrough and
-4.2's final publication/archive remain open. Runtime implementation and its
+No baseline finding has P0/P1 severity. Candidate identity/recheck tasks 3.1/3.2 and current functional journey review
+2.2 are complete. The review explicitly retains unavailable states and the
+physical unknowns above. Final publication/archive is task 4.2. Runtime implementation and its
 physical/performance gates stay with their owners; this is no runtime release.
 
 Ownership: worktree `/home/jadams/tmp/k230-ux-close-final`, branch

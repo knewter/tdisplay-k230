@@ -2,8 +2,12 @@
 
 ### Requirement: The project SHALL provide a repeatable whole-product design critique
 
-<!-- UNVERIFIED: host visual/independent critique and current candidate recheck
-are committed, but the full current-source journey walkthrough remains open. -->
+*Grounding: identified console/native evidence and current operator functional
+walkthrough in `docs/evidence/ux-review-round-2/candidate-2026-10-09/README.md`;
+coverage, unavailable routes and physical unknowns are explicit in
+`docs/research/handheld-ux/review-round-2/journey-review.md`. Documentation review
+is complete; optical, accessibility and exceptional-state runtime claims remain
+UNVERIFIED where matching observations are absent.*
 
 The documentation SHALL expose a dated design and UX review spanning shell, launcher, cards, keyboard, terminal, media, Help, System, startup, and recovery. It SHALL assess visual consistency and complete user journeys using a reusable rubric. Each finding SHALL distinguish functional status, design quality, evidence confidence, and unobserved behavior, and identify the reviewed revision and installed or experimental artifact. Documentation owns the critique; runtime owners retain implementation responsibility.
 
@@ -34,8 +38,12 @@ The review SHALL provide at least three annotated current-versus-target comparis
 
 ### Requirement: A review round SHALL close with a candidate recheck and owned next work
 
-<!-- UNVERIFIED: independent critique, owner reconciliation and the identified
-current-candidate recheck are committed; full journey/final closure remains open. -->
+*Grounding: identified candidate/recheck evidence in
+`docs/evidence/ux-review-round-2/candidate-2026-10-09/README.md`; independent
+critique, four-finding reconciliation and owned priorities in
+`docs/research/handheld-ux/review-round-2/findings.md`, `candidate-recheck.md` and
+`recommendations.md`. Unimplemented and physically unverified runtime work
+retains its named owner and acceptance gate.*
 
 The review SHALL retain an independent critique, severity-ranked findings with separate confidence, and a recheck of P0/P1 findings against an identified integrated candidate. Each finding SHALL identify an existing owner or a bounded successor, an observable acceptance condition, dependencies, and whether it can proceed without the board. Unimplemented or physically unverified findings SHALL remain explicit. The report SHALL name the next three implementation priorities and ensure new priority proposals are validated and published on master.
 

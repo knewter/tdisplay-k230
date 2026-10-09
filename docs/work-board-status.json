@@ -477,14 +477,15 @@
       "lane": "in-progress",
       "source": "in-progress",
       "physical": "pending",
-      "next": "Complete the current keyboard, two-app Overview and media walkthrough, then review/publish/archive the analysis; candidate identity and findings recheck are committed.",
+      "next": "Publish and archive the completed analysis; runtime motion, accessibility and exceptional-state gates remain with existing owners.",
       "dependencies": [],
       "evidence": [
         "docs/evidence/ux-review-round-2/README.md",
-        "docs/evidence/ux-review-round-2/candidate-2026-10-09/README.md"
+        "docs/evidence/ux-review-round-2/candidate-2026-10-09/README.md",
+        "docs/evidence/ux-review-round-2/candidate-2026-10-09/operator-report.json"
       ],
-      "rationale": "Seven of nine tasks are complete: visual/independent host critique and the identified current native/console recheck. Full current journey execution and final closure remain open. Native/injected captures do not prove optical or real-finger motion.",
-      "reviewRevision": "bcb34f18",
+      "rationale": "Current candidate identity, all findings and operator-confirmed Home/Apps/Settings, Terminal keyboard, switching and video journeys are reviewed; unavailable states and physical unknowns remain explicit.",
+      "reviewRevision": "1e9d42bf1bc60108254daaea07f456a25711c0e8",
       "cover": {
         "path": "docs/research/handheld-ux/review-round-2/visuals/apps.svg",
         "caption": "Apps comparison: current host render and proposed refinement",

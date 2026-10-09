@@ -1,0 +1,23 @@
+{
+  "date": "2026-10-09",
+  "operator_statement": "terminal keyboard works. switching apps works. videos work",
+  "question_answered": [
+    "In Terminal, show the on-screen keyboard, type a few characters, then hide it.",
+    "Open two apps, switch between them through Overview, then return Home.",
+    "Play a video, stop it, then return Home."
+  ],
+  "accepted_checks": [
+    "Terminal keyboard functional journey",
+    "app switching functional journey",
+    "video functional journey"
+  ],
+  "candidate_identity_reference": "docs/evidence/ux-review-round-2/candidate-2026-10-09/console.json",
+  "runtime_boot_id": "4bf73b24-a16a-4786-96fb-f1288244d96f",
+  "identity_limit": "The latest serial capture identifies the candidate; the operator did not independently report an executable, boot ID or per-action timestamp.",
+  "evidence_class": "operator-reported physical functional walkthrough in the ongoing current-candidate session; no camera recording",
+  "limits": [
+    "No numeric latency, optical readability or finger-tracking measurement.",
+    "No complete exceptional-state, close/refusal, keyboard-visible accessibility or cold-start sequence.",
+    "Help/System are unavailable or unobserved as separate catalog apps; device controls are reviewed through Settings."
+  ]
+}

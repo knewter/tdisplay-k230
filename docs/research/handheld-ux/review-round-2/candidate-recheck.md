@@ -31,8 +31,10 @@ owners if a changed motion or reach behavior needs that proof.
 
 ## Remaining journey coverage and next work
 
-Task 2.2 remains open pending actual current keyboard show/type/hide, two-app
-Overview switch/Home, and media play/stop/Home observations. The captured
+The operator now confirms the requested current keyboard show/type/hide,
+two-app Overview switch/Home and media play/stop/Home functional journeys in
+[operator-report.json](../../../evidence/ux-review-round-2/candidate-2026-10-09/operator-report.json).
+Task 2.2 is complete as a journey review with explicitly retained unknowns. The captured
 catalog has no named Help/System entries, so the older matrix's separate routes
 are not claimed as walked. The actual current recovery destination is Home,
 with device controls exposed in Settings. Empty/stale/error/denied, refusal,

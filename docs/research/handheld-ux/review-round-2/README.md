@@ -26,3 +26,11 @@ candidate capture and physical review remain in task group 3.
 complete tasks 3.1/3.2. This later normal runtime is identified separately from
 the original baseline and older comparison sheets. Task 2.2's actual current
 journey walkthrough and 4.2's final review/publication/archive remain open.
+
+## Functional walkthrough accepted — 2026-10-09
+
+The operator confirmed Terminal keyboard, app switching and video functional
+journeys. The [current journey review](journey-review.md) records that bounded
+acceptance alongside Home/Apps/Settings and preserves unavailable routes and
+UNVERIFIED exceptional, accessibility, optical and motion states. This completes
+the analysis walkthrough; implementation owners keep their own evidence gates.

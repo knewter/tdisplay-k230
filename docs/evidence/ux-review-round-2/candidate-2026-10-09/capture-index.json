@@ -35,12 +35,12 @@
   "evidence_classes": [
     "native board screenshots after injected route commands",
     "sanitized physical serial identity observation",
-    "separately recorded operator Home/All Apps/Settings acceptance"
+    "separately recorded operator Home/All Apps/Settings acceptance",
+    "separate operator Terminal keyboard, app switching and video acceptance"
   ],
   "not_proved": [
     "camera/optical readability or motion",
     "real-finger tracking",
-    "current keyboard typing, two-app switch and media walkthrough (awaiting operator)",
     "normal-transform landscape",
     "cold-start timing"
   ]

@@ -70,3 +70,11 @@ The [sanitized console and native captures](candidate-2026-10-09/README.md)
 identify the later normal runtime and complete candidate/recheck tasks 3.1/3.2.
 The actual current journey walkthrough remains open. Historical host/browser
 publication above keeps its original evidence class and revision.
+
+## Operator walkthrough — 2026-10-09
+
+The [exact functional reply](candidate-2026-10-09/operator-report.json) confirms
+Terminal keyboard, app switching and video journeys requested in this current
+candidate session. Task 2.2 is complete as a review with explicit unknowns; this
+supersedes the pending walkthrough statement above, without changing historical
+evidence or accepting runtime optical/performance/exceptional-state gates.

@@ -35,11 +35,24 @@ physical journeys under the rubric.
 | --- | --- | --- |
 | Home and app discovery | Normal HDMI Home; operator confirms Home and All Apps icons activate the intended app. | Operator physical report plus matching native/configure identity. No discovery failure reported; optical label reading and overflow/search remain unverified. |
 | Settings | Operator confirms intended row activation. Native route opens loading, then loaded device controls in the later capture. | Separate operator target report and injected/native states. Paint/hit-target acceptance is bounded; output-picker and acoustic behavior are not newly accepted. |
-| Overview | Injected enter from Home produces the current one-Terminal-card image, then returns Home. | Current native visual evidence resolves the old image gap. Two-app physical switch/focus/return remains pending the operator walkthrough. |
-| Keyboard and terminal | Keyboard controls are visible in current Settings; Terminal is present in Overview. | Physical show/type/hide and focus are pending; no keyboard-visible composition or reach claim follows from those images. |
-| Media | Video is in the current catalog. | Actual current play/stop/Home journey pending; a catalog icon is not playback proof. |
+| Overview | Injected enter from Home produces the current one-Terminal-card image, then returns Home. | Current native visual evidence resolves the old image gap. The operator now confirms the requested two-app switch/Home functional journey; no multi-card motion measurement follows. |
+| Keyboard and terminal | Keyboard controls are visible in current Settings; Terminal is present in Overview. | The operator now confirms the requested show/type/hide Terminal journey. No new keyboard-visible composition, reach or accessibility measurement follows. |
+| Media | Video is in the current catalog. | The operator now confirms the requested play/stop/Home functional journey; the catalog image itself is not playback proof. |
 | Help/System | No named Help or System app appears in the captured 19-entry catalog. Device controls are in Settings. | Older matrix routes are unobserved as separate apps; no new launch or recovery failure is inferred. |
 | Startup, close/refusal, empty/stale/error/denied and accessibility | No focused new power cycle, close/refusal or complete exceptional-state sequence was performed. | Each stays UNVERIFIED with its runtime owner. These missing observations are not failures or completion of those owners’ gates. |
 
-Task 2.2 remains open for the requested current physical walkthrough. The
-candidate identity and all four findings have been rechecked for 3.1/3.2.
+The [operator report](../../../evidence/ux-review-round-2/candidate-2026-10-09/operator-report.json)
+records the exact response: “terminal keyboard works. switching apps works.
+videos work”, answering the three requested sequences. Together with the
+current Home/Apps/Settings report, this supplies the newly walked functional
+routes rather than counting injected commands as finger actions. Functional
+focus, keyboard activation and app/media recovery were reported working; no
+functional defect was reported in those checks. Visual composition and
+motion/readability judgments retain the evidence limits in the table.
+
+Task 2.2 is complete as a review with explicit unknowns. The actual available
+happy-path routes have operator observations, Help/System are unavailable or
+unobserved as separate apps, and cold startup, exceptional states, close/refusal
+and keyboard-visible accessibility remain UNVERIFIED with their existing
+runtime owners. This closes the analysis coverage map, not those runtime gates.
+Candidate identity and all four findings have been rechecked for 3.1/3.2.

@@ -15,7 +15,7 @@ Proof: `openspec validate the-handheld-gets-a-design-and-ux-review --strict` plu
 ## 2. Visual and journey critique (parallel host analysis)
 
 - [x] 2.1 Produce a visual consistency critique and at least three annotated current/target sheets covering Apps, cards, and keyboard/recovery, plus one transition storyboard under `review-round-2/`. Render and inspect all sheets; record the exact render invocation and review corrections in `visual-review.md`. Verify proposal labels, portrait geometry, readable annotations, and links to current evidence. Coordinator reviewed the rendered sheets and required revisions, then agreed on closure 2026-10-01; older card/keyboard sources and the missing latest deck image remain clearly labeled.
-- [ ] 2.2 Independently walk the baseline journeys and review discovery, focus, feedback, motion, keyboard occlusion, recovery, accessibility, and consistency in `journey-review.md`. Verify each issue names a reproducible action/state and evidence confidence, and each relevant keyboard-visible state is covered or explicitly unknown.
+- [x] 2.2 Independently walk the baseline journeys and review discovery, focus, feedback, motion, keyboard occlusion, recovery, accessibility, and consistency in `journey-review.md`. Verify each issue names a reproducible action/state and evidence confidence, and each relevant keyboard-visible state is covered or explicitly unknown.
 - [x] 2.3 Reconcile both critiques in `findings.md`, with stable issue IDs, severity, confidence, proposed correction, existing owner or successor, dependency, rough effort, and observable acceptance. Verify shared type/spacing/color/touch/motion recommendations are coherent and the independent reviewer has recorded agreement or remaining disagreements. Coordinator review and corrections are recorded in `findings.md` and `visual-review.md`; no disagreement remains on the four scoped findings, and physical impact stays unverified where applicable.
 
 Proof: `openspec validate the-handheld-gets-a-design-and-ux-review --strict` and `python3 scripts/build_site.py`, plus recorded visual inspection and independent critique. Site generation proves publication integrity, not usability; do not mark these tasks complete from validation alone.
@@ -59,3 +59,11 @@ reviews all four findings and preserves every optical/finger/runtime unknown.
 No finding had P0/P1 severity. Task 2.2 remains open for the focused current
 journey walkthrough, and 4.2 remains open for final publication/archive.
 This checkpoint adds no runtime implementation or blanket physical acceptance.
+
+**Functional walkthrough closure — 2026-10-09:** the operator answered the
+requested Terminal keyboard, two-app switch/Home and video play/stop/Home
+checks with “terminal keyboard works. switching apps works. videos work”.
+The exact question/reply is committed in the candidate operator report. Task
+2.2 is complete as analysis coverage with explicitly unavailable/unknown states;
+no unperformed runtime accessibility, exceptional-state, optical or motion proof
+is ticked. This supersedes the pending 2.2 checkpoint above.
