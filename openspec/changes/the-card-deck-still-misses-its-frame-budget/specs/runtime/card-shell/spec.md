@@ -2,7 +2,13 @@
 
 ### Requirement: Card interaction has an explicit measured budget decision
 
-<!-- Board measurements are recorded and FAIL the declared CPU and tracking budgets across more than ten rounds: docs/evidence/card-shell/board-cost/long-trace/README.md through docs/evidence/card-shell/scaled-cache-board/README.md. The tracking-presentation p95 (~57.47-57.49ms against a 33.334ms budget) is invariant across every tested CPU-side variable, suggesting a structural output-cadence cause rather than an addressable CPU cost. Carried into this successor per the parent's own requirement text. UNVERIFIED: an accepted budget decision. -->
+*Grounding: historical board cost/presentation measurements remain in
+`docs/evidence/card-shell/board-cost/long-trace/README.md` and later board
+cadence proof in `docs/evidence/card-shell/frame-budget/board-result-2026-09-28.md`.
+Explicit current-performance acceptance and exact operator permission are in
+`docs/evidence/card-shell/frame-budget/acceptance-2026-10-09/README.md`.
+The historical numerical misses are accepted as costs, not rewritten as
+budget passes or presented as new timings of the current candidate.*
 The card shell SHALL record input-to-visible-update latency, frame/update cost,
 and incremental memory use at the panel's native portrait mode on the default
 Pixman path. If a declared interaction budget is missed, the implementation
@@ -24,8 +30,8 @@ card-shell behavior.
 
 #### Scenario: A budget miss is explicitly accepted
 
-- **WHEN** the coordinator reviews a persistent, cadence-attributable budget
-  miss that no further CPU-side change addresses
+- **WHEN** the operator or coordinator reviews the recorded budget miss and
+  explicitly accepts the current observed card performance
 - **THEN** the decision to accept it is recorded in committed evidence, naming
-  the measured cadence and its cost to perceived smoothness, rather than the
-  requirement being silently marked passing
+  the historical measured cadence, its cost to perceived smoothness and
+  current-candidate measurement limits, while retaining the numerical miss

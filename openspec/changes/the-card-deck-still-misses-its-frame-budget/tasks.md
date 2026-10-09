@@ -72,20 +72,22 @@ measurement, decision and integration tasks below remain unchecked.
   This is a Build-stage CPU-cost reduction only; it does not by itself prove
   4.2's tracking-presentation p95 passes (see 4.2d below and `analysis.md`'s
   H1 on commit-path serialization) -- board proof required.
-- [ ] 4.2d Coordinator decision, informed by 4.2a-c and 4.2e above: accept
-  the measured, understood overrun-rate cost as (b) (with the distinction
-  from `analysis.md`'s decision table stated explicitly -- an overrun rate,
-  not a panel limit), authorize a separately-gated kernel change to attempt
-  commit pipelining as (c) pricing in the boot-panic risk above, or -- newly
-  possible given 4.2e's large host-side Build-cost reduction -- re-run the
-  board capture first to see whether the CPU-side win alone now closes the
-  gap before deciding on either (b) or a kernel change. Verify with
-  `python3 tools/card-shell-benchmark.py --board --output
-  docs/evidence/card-shell/pixman.json` plus
-  `docs/evidence/card-shell/frame-budget/board-commands.md`'s
-  `tools/measure-panel-refresh.sh` drag capture, against the `perf/deck-draw-less`
-  build (a new variable, unlike the ten-plus prior identical-result rounds
-  the parent's tasks.md lists).
+- [x] 4.2d Record the explicit performance decision, informed by 4.2a-c
+  and 4.2e: on 2026-10-09 the operator chose acceptance of the current
+  Overview performance and authorized closure/landing. Exact permission and
+  historical measured costs are retained in
+  `docs/evidence/card-shell/frame-budget/acceptance-2026-10-09/README.md`
+  and `operator-decision.json`. The historical 57.47–57.49 ms tracking
+  interval is render/commit overrun on a 19.16 ms vblank grid, not a panel
+  limit, and the declared numerical misses are not changed to passes. No
+  new benchmark/vblank capture or kernel optimization was performed.
+
+Proof of the selected acceptance path: review the exact operator permission,
+the identified current functional walkthrough and the existing board cost/
+vblank evidence cited in the committed decision. The previously proposed
+`tools/card-shell-benchmark.py --board` and `tools/measure-panel-refresh.sh`
+re-run belonged to the new-measurement/optimization path and were not run
+under this explicit acceptance.
 
 ## 5. Integration (unblocked once 4.2 resolves)
 
@@ -105,3 +107,7 @@ measurement, decision and integration tasks below remain unchecked.
   on `close/shell-umbrella`.
 - [ ] 6.2 Do not archive until 4.2 is resolved (fixed or explicitly accepted)
   and 5.1's non-fixture QEMU proof is committed.
+
+**Current closeout — 2026-10-09:** performance decision 4.2d is resolved by
+explicit operator acceptance. Integration 5.1 and final archive 6.2 remain
+open until their named build/non-fixture guest proof is committed.

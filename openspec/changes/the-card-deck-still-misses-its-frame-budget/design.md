@@ -67,3 +67,12 @@ The operator explicitly approved the functional parent's archive. This change
 now solely owns its original budget task 4.2 and dependent image/non-fixture
 QEMU task 5.1. Criteria and proof commands remain unchanged and unchecked.
 See `docs/evidence/proposal-closeout/2026-10-01/live-card-ui.md`. Functional acceptance is not budget acceptance.
+
+## Final decision — 2026-10-09
+
+The operator selects acceptance of the current Overview performance.
+`docs/evidence/card-shell/frame-budget/acceptance-2026-10-09/README.md`
+records the exact permission, historic numerical failures, their overrun
+mechanism and current-candidate identity limits. This supersedes the open
+decision and further measurement suggestion above. No kernel pipelining is
+selected. System/QEMU integration still needs its named host/guest proof.

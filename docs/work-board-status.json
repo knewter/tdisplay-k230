@@ -575,6 +575,18 @@
           "provenance": "Design mockup"
         }
       ]
+    },
+    "the-card-deck-still-misses-its-frame-budget": {
+      "lane": "in-progress",
+      "source": "in-progress",
+      "physical": "verified",
+      "dependencies": [],
+      "rationale": "The operator explicitly accepts current Overview performance. Historical numerical budget misses remain recorded; selected system build and non-fixture QEMU integration proof remain open.",
+      "next": "Complete selected board-system build and non-fixture QEMU guest smoke, then archive the accepted performance investigation.",
+      "reviewRevision": "427a15f306b641c4cbe18cd9a5d1d94b0167f43e",
+      "evidence": [
+        "docs/evidence/card-shell/frame-budget/acceptance-2026-10-09/README.md"
+      ]
     }
   }
 }

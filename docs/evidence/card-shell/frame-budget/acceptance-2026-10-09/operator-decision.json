@@ -1,0 +1,15 @@
+{
+  "date": "2026-10-09",
+  "operator_statement": "i mean i'm happy with the card overview's performance just close it on my permission and land it",
+  "decision": "Accept the current observed card Overview performance and close its performance investigation.",
+  "evidence_class": "explicit operator product acceptance, reusing existing physical performance measurements and current functional walkthrough",
+  "current_functional_report": "docs/evidence/ux-review-round-2/candidate-2026-10-09/operator-report.json",
+  "current_candidate_identity": "docs/evidence/ux-review-round-2/candidate-2026-10-09/console.json",
+  "historical_measurements": "docs/evidence/card-shell/frame-budget/board-result-2026-09-28.md",
+  "limits": [
+    "No new board benchmark, vblank capture or optical measurement was performed for this acceptance.",
+    "Historical tracking intervals and CPU-budget misses remain recorded failures on their original candidates; they are not new timings of the current mainline/HDMI system.",
+    "Acceptance resolves performance task 4.2d; system-build and non-fixture QEMU integration task 5.1 still requires its own proof.",
+    "No kernel commit-pipelining optimization is requested or applied."
+  ]
+}

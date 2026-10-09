@@ -97,3 +97,14 @@ Userspace performance investigation only (`nix/card-shell/`,
 turns out to be the issue, possibly kernel/DRM timing investigation on the
 panel driver (`display/panel`) -- scoped once (a) above is attempted, not
 predetermined here. No stage 1 change.
+
+## Accepted performance decision — 2026-10-09
+
+The operator explicitly accepts the current card Overview performance and
+authorizes closure and landing. The exact permission is retained in
+`docs/evidence/card-shell/frame-budget/acceptance-2026-10-09/README.md`.
+This selects option (b), retaining the historical overrun/CPU misses and
+the distinction between measured old candidates and current observed feel.
+A new benchmark is unnecessary for this chosen acceptance; no numeric pass
+is inferred. Remaining work is the selected system/QEMU integration proof
+and archive, not another performance or kernel experiment.
