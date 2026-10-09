@@ -49,5 +49,12 @@
     "yeah to the hdmi reboot and panel btw",
     "replug i mean go on"
   ],
-  "panel_touch_operator_report": "PENDING"
+  "panel_touch_operator_report": "UNVERIFIED: separate real-touch question unanswered; retained as part of the combined handoff input proof.",
+  "panel_operator_report": {
+    "verbatim": [
+      "yeah to the hdmi reboot and panel btw",
+      "replug i mean go on"
+    ],
+    "interpretation": "Operator corrected reboot to replug and affirmed panel; no explicit real-touch/navigation claim is made."
+  }
 }

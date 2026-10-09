@@ -63,8 +63,10 @@ and profile were preserved; this is not persistent installation proof.
 The [matching cable cycle](monitor-cable-cycle.json) records connected →
 disconnected at 16:31:01 UTC → connected at 16:31:09 UTC on the same boot,
 with DSI connected/enabled throughout. The operator clarified the action as
-"replug i mean go on". The explicit real-touch report remains pending; task
-4.1 stays open until that report. [The sysfs watcher](watch-cable.py) records
+"replug i mean go on". The operator also affirmed the panel. The task-4.1 driver/probe/cable gate
+is satisfied by this matching trial. A separate explicit real-touch report
+is still absent; no navigation or real-touch proof is inferred. Those
+physical input checks remain in the combined handoff trial. [The sysfs watcher](watch-cable.py) records
 DRM state and UTC/monotonic times independently of the operator report.
 A matching unchanged boot ID proves this observation did not reboot Linux.
 The operator's glass/touch report is recorded separately from those sysfs
@@ -72,7 +74,9 @@ observations. No photograph is required.
 
 ## Runtime display switching (tasks 4.2–4.4)
 
-Pending task 4.1's matching board proof. The [source preflight](source-preflight.md)
+Task 4.1's named driver/probe and actual cable gate now pass. The combined
+candidate implementation/build is in progress; visible switching and
+real-touch/trackpad transitions remain UNVERIFIED. The [source preflight](source-preflight.md)
 explains why a device-tree-only change cannot implement it. Cable detection
 alone does not prove that visible output or touch mode switches.
 

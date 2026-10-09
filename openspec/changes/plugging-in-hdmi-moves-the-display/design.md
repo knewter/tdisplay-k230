@@ -230,9 +230,9 @@ the operator.
 ## Runtime re-plan from the HPD findings (2026-10-09)
 
 The matching driver trial now establishes polling HPD alongside an enabled
-panel without rebinding DSI or acquiring shared GPIOs. The runtime source
-is prepared privately; applying it and running the combined board trial
-remain conditional on task 4.1's panel/touch physical report.
+panel without rebinding DSI or acquiring shared GPIOs. The operator affirmed replug and the panel, completing the named monitor
+probe/cable gate. The runtime source is now applied for the combined trial;
+real-touch/navigation proof remains separate and pending in task 4.3.
 The shipping target is automatic cable switching on mainline, preserving
 the accepted HDMI orientation and trackpad behavior; the parked Settings
 prototype is not a prerequisite. The remaining manual and landscape tasks

@@ -153,7 +153,7 @@ This group may end in "infeasible, recorded" rather than a working feature;
 design to completion under schedule pressure — record what was tried and
 why it did or did not work.
 
-- [ ] 4.1 Design and, if the group-1 probe (task 1.4) did not rule it out,
+- [x] 4.1 Design and, if the group-1 probe (task 1.4) did not rule it out,
       prototype a device tree where the LT9611 exists as a plain I2C
       client (able to probe and poll HPD without requesting or enabling
       its shared-GPIO23 interrupt) without being the `&dsi` `port@1`
@@ -172,8 +172,9 @@ why it did or did not work.
       probe. A DT-only standalone monitor is insufficient; see
       `docs/evidence/hdmi-hotplug/live-switch/source-preflight.md`. The matching volatile monitor boot and real
       unplug/replug now pass serial/sysfs checks on an unchanged boot ID,
-      with the panel connected/enabled throughout; the explicit panel-touch
-      operator report remains pending, so this task stays open. No live-switch
+      with the panel connected/enabled throughout and the operator affirming
+      the panel/replug. This completes the named monitor/probe gate; real
+      touch and visible handoff remain unproved in task 4.3. No live-switch
       result is claimed. The
       status-only prototype now exposes `/sys/bus/i2c/devices/*-003b/hpd`,
       masks the bridge's HPD IRQ sources and leaves all DSI/GPIO ownership
