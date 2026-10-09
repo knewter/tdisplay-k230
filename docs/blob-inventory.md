@@ -1669,6 +1669,10 @@ DATA  b7616d6dfc744893c4f52af15cdea1b4fe81f909fe251ea54ac1ced9563484c8  docs/evi
 DATA  e633d697f387c1d6d4fa7fb827be6bc5665ea54ab3e9e6f1b536724c94d01f10  docs/evidence/mainline-system-trial/physical-2026-10-03/ordinary-boot-panel.jpg
 DATA ab2199317d89f02e711c934b7a453373089c084e12b413e9d636c16bf68f7b38 docs/evidence/launcher-curation/drawer-native-2026-10-08.png
 DATA bbf09476cc92fa4efd0002fdf3efd415c4b2722deb0ed091d7096892f06f000f docs/evidence/mainline-sd-image/fresh-home.png
+DATA 6c8632fb3cc8f1871cdf90d06ee54b6841535bd7500fdb94b05869b1610187b1 docs/evidence/hdmi-mainline/fixed-native-home.png
+DATA cc2d10af36ae21000abaa1911dcbad1e225dda5d3c603cbde016f0cae4577fed docs/evidence/hdmi-mainline/fixed-native-terminal.png
+DATA 1193184ac0aba5f9e6b8bdc1aa270fc4db3f640ffe77a50a763bff560af2c868 docs/evidence/hdmi-mainline/live-mainline-hdmi.png
+DATA c30fbdbc85783130e8a4606df061767724d2199c07426fabf151349f713c0908 docs/evidence/hdmi-mainline/live-pointer-native.png
 ```
 
 `group:` rows stand for a directory whose members are enumerated by
@@ -2674,3 +2678,18 @@ the normal-return photo follows separately verified protected normal identity.
 | `docs/evidence/mainline-system-trial/physical-2026-10-03/ordinary-boot-panel.jpg` | 91919 | DATA | `e633d697f387c1d6d4fa7fb827be6bc5665ea54ab3e9e6f1b536724c94d01f10` |
 | `docs/evidence/launcher-curation/drawer-native-2026-10-08.png` | 68670 | DATA | `ab2199317d89f02e711c934b7a453373089c084e12b413e9d636c16bf68f7b38` |
 | `docs/evidence/mainline-sd-image/fresh-home.png` | 56268 | DATA | `bbf09476cc92fa4efd0002fdf3efd415c4b2722deb0ed091d7096892f06f000f` |
+
+### Mainline HDMI native captures, 2026-10-09
+
+Non-executable captures from the physical board's compositor, with source
+identities and commands in `docs/evidence/hdmi-mainline/README.md`. These are
+native screenshots, not monitor photographs or physical touch acceptance.
+The old-trial pointer position and fresh-trial Home selection used injected
+compositor commands, as the evidence records.
+
+| File | Bytes | Class | SHA256 |
+| --- | ---: | --- | --- |
+| `docs/evidence/hdmi-mainline/fixed-native-home.png` | 354298 | DATA | `6c8632fb3cc8f1871cdf90d06ee54b6841535bd7500fdb94b05869b1610187b1` |
+| `docs/evidence/hdmi-mainline/fixed-native-terminal.png` | 9681 | DATA | `cc2d10af36ae21000abaa1911dcbad1e225dda5d3c603cbde016f0cae4577fed` |
+| `docs/evidence/hdmi-mainline/live-mainline-hdmi.png` | 30025 | DATA | `1193184ac0aba5f9e6b8bdc1aa270fc4db3f640ffe77a50a763bff560af2c868` |
+| `docs/evidence/hdmi-mainline/live-pointer-native.png` | 28836 | DATA | `c30fbdbc85783130e8a4606df061767724d2199c07426fabf151349f713c0908` |

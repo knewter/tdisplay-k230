@@ -263,3 +263,15 @@ The original operator's "screen works" report applies to the old live
 workaround only. Task 7.3 remains unchecked; groups 3–5 and archive also remain
 open. The board is left on the corrected **volatile HDMI trial**; an ordinary
 reboot retains the protected panel selection.
+
+## Publishing follow-up
+
+The source/evidence checkpoint landed at `6c8d31a6`. Its
+[CI run](https://github.com/knewter/tdisplay-k230/actions/runs/37895411379)
+passed the test steps but rejected four PNGs missing from the binary inventory;
+Pages deployment was skipped. The continuation owns this failure. Exact
+per-file DATA rows and hashes were added to `docs/blob-inventory.md`, and
+`python3 tools/blob-scan.py --no-vendor` then passed. The
+[follow-up report](ci-inventory-followup.json) preserves the failed revision,
+log hash, correction and narrow validation. This bookkeeping correction does
+not change the board's running artifacts or finish the physical touch gate.

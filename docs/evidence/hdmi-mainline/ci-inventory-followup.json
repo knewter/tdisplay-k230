@@ -1,0 +1,14 @@
+{
+  "timestamp": "2026-10-09T06:52:53.222292+00:00",
+  "owner": "codex/hdmi-mainline-continue",
+  "failed_revision": "6c8d31a61827b1c1f903a7fa1f2720a70218e196",
+  "failed_run": "https://github.com/knewter/tdisplay-k230/actions/runs/37895411379",
+  "failure": "Four native PNG captures lacked binary inventory rows; test steps passed, Pages deployment was skipped.",
+  "correction": "Register exact per-file SHA256 hashes as DATA in docs/blob-inventory.md.",
+  "validation": {
+    "command": "python3 tools/blob-scan.py --no-vendor",
+    "exit_code": 0,
+    "result": "PASS"
+  },
+  "failed_log_sha256": "7d7b0d4bbc1fb60e68bb895d125e3edd93244a1082be5c0b2d301ec653dfbe3a"
+}
