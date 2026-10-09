@@ -213,6 +213,7 @@ The operator explicitly deferred precise latency measurement and accepts the
 automatic cable switching and real-touch navigation. Task 4.3 is complete for
 that named physical gate; sampled ≤1s/≤3s targets remain unmeasured, not passed.
 See [the closeout report](closeout-2026-10-09.md) for the exact statements and
-installed tuple. Historical sections above retain their chronology. Settings
-reboot and landscape remain open pending the explicit successor scope split;
-this report does not archive either unperformed physical sequence.
+installed tuple. Historical sections above retain their chronology. The operator subsequently dropped the obsolete Settings reboot scope and
+authorized landscape as a separately landed successor. See
+[the final scope decision](scope-decision-2026-10-09.md). Neither unperformed
+physical sequence is claimed as completed.

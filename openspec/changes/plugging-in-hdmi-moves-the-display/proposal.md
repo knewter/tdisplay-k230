@@ -1,58 +1,53 @@
 ## Why
 
-Plugging in HDMI now moves the shell to the monitor; unplugging returns it to
-the panel with direct touch, without rebooting. The operator accepted the
-faster cable cycle, portrait HDMI rotation, trackpad behavior and navigation
-on 2026-10-09. The same qualified bundle is the normal installed mainline
-system and default built SD image. The proposal records delivered automatic
-switching alongside the still-open Settings reboot and landscape scope.
+Plugging in HDMI moves the shell to the monitor; unplugging returns it to the
+panel and direct touch without rebooting. The operator accepted the faster
+cable cycle, portrait HDMI rotation, trackpad behavior and navigation on
+2026-10-09. The qualified tuple is installed normally and is the default built
+SD image. This change closes that delivered automatic behavior.
 
 ## What Changes
 
-- Add `display/hdmi`: bridge presence, shared-net constraints, separate
+- Add `display/hdmi`: bridge presence, shared wiring constraints, separate
   qualification/recovery trees and physically proved automatic cable switching.
-- Keep panel and LT9611 registered, with exclusive DRM outputs, 250 ms HPD
-  polling and generic polling fallback. Touch owns GPIO23/24 throughout;
-  shared interrupt drive type remains unknown and no bridge IRQ is enabled.
-- Select the accepted HDMI EDID-preferred 1280×800 mode, transform 90 and
+- Keep both DSI consumers registered, with exclusive outputs and 250 ms HPD
+  polling plus generic fallback. Touch retains sole GPIO23/24 ownership.
+- Retain the accepted monitor's 1280×800 preferred mode, transform 90 and
   touchscreen trackpad; restore panel mapping and direct touch on unplug.
-- Promote the physically accepted tuple to normal boot and `sdImage`, retaining
-  protected stage 1, selectors, rollback roots and qualification outputs.
-- The manual Settings reboot prototype remains parked at `58498320` and absent
-  from shipping source. Tasks 3.1–3.3 retain its distinct implementation and
-  forward/restore physical gates; automatic switching does not prove them.
-- Landscape tasks 5.1–5.4 remain open, reusing the responsive-shell proposal's
-  geometry implementation without treating portrait acceptance as landscape proof.
-- The operator explicitly deferred precise HPD latency measurement. Task 4.3
-  records acceptance of visible switching and navigation, not a sampled ≤1s/≤3s
-  result. Independent performance proposals retain their own requirements.
+- Promote the matching qualified tuple to normal boot and default `sdImage`,
+  preserving protected stage 1, selectors and rollback roots.
+- Drop the obsolete Settings reboot/self-revert requirement and tasks 3.1–3.3
+  at the operator's explicit direction. No reboot button is delivered or needed.
+- Transfer all landscape requirements/tasks 5.1–5.4 to the separately landed
+  `the-hdmi-shell-works-in-landscape` proposal. Its physical gate remains open.
+- Record precise HPD timing as explicitly deferred, without claiming ≤1s/≤3s
+  sampled targets passed. Independent performance proposals keep their gates.
 
-**Non-goals:** HDMI audio, CEC, camera/ISP, shared-IRQ experiments, a full
-landscape redesign, and precise sampled latency qualification in this closeout.
-No monitor photograph is required by the operator; actual observations and
-matching serial/sysfs identity remain the physical proof.
+**Non-goals:** HDMI audio, CEC, camera/ISP, shared IRQ experiments, landscape
+layout implementation and precise sampled latency qualification in this closeout.
+The operator waived a monitor photograph; actual observations and matching
+serial/sysfs identities are committed physical evidence.
 
 ## Capabilities
 
 ### New Capabilities
 
-- `display/hdmi`: LT9611 qualification/recovery and automatic switching,
-  with the unimplemented manual Settings switch explicitly retained for now.
+- `display/hdmi`: board-specific HDMI qualification/recovery and accepted
+  automatic cable switching without rebooting.
 
 ### Modified Capabilities
 
-- `display/touch`: shared GPIO23/24 constraints and sole touch ownership during
-  the accepted mainline HDMI arrangement.
+- `display/touch`: shared GPIO23/24 constraint and the existing virtual-trackpad
+  requirement updated to reflect physically accepted automatic panel return.
 
 ## Impact
 
-Kernel DSI/LT9611 drivers, combined and qualification device trees, Nix image
-wiring and the existing input relay implement automatic switching. Evidence
-lives in `docs/evidence/hdmi-mainline/` and
-`docs/evidence/hdmi-hotplug/live-switch/`. Implementation/default promotion is
-`6b4fe555645ac553914549fcd926d1f0902b65d1`; normal installed system is
+Kernel DSI/LT9611 drivers, device trees, Nix image wiring and the existing input
+relay implement this behavior. Implementation/default promotion landed at
+`6b4fe555645ac553914549fcd926d1f0902b65d1`. Evidence lives in
+`docs/evidence/hdmi-mainline/` and `docs/evidence/hdmi-hotplug/live-switch/`.
+Normal installed system is
 `/nix/store/yl3si5ak6yi709yg1fqsnwgq0zn4xfcs-nixos-system-nixos-26.11.20260919.20b1ddd`.
-Normal installation and ordinary autoboot are distinct from the volatile trial;
-no whole-image flash is claimed. No board action is required to reconcile these
-committed records. Archive remains gated on explicit scope preservation for
-manual Settings and landscape, with unresolved markers retained honestly.
+The volatile trial, normal installation/autoboot and built SD image remain
+separate evidence classes; no whole-image flash is claimed. This archive changes
+planning/spec/evidence only and requires no new board action.

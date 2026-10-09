@@ -103,7 +103,7 @@ now written and host-build-verified (tasks.md group 2: `nix build .#kernel`,
 `nix build .#deviceTreeHdmi`, and `nix build
 .#nixosConfigurations.k230.config.system.build.toplevel` with the default
 panel DTB unchanged all succeeded 2026-09-28) but have not been booted on
-the board (group 3). Host build confirms the patch applies and compiles and
+the board (historical vendor path). Host build confirms the patch applies and compiles and
 the DTB compiles with exactly one `&dsi` port@1 endpoint; it does not confirm
 the LT9611 driver actually probes or that a connector actually appears live. -->
 
@@ -111,8 +111,7 @@ the LT9611 driver actually probes or that a connector actually appears live. -->
 board-specific mainline HDMI tree passed a matching volatile boot, automatic
 connected status and 256-byte EDID, native shell/cursor captures, and the
 operator's acceptance. See `docs/evidence/hdmi-mainline/README.md`. The
-vendor kernel/tree pair above remains host-only; the Settings switch has
-its separate group-3 gate below.*
+vendor kernel/tree pair above remains host-only; the obsolete Settings reboot requirement is canceled by the operator.*
 
 #### Scenario: The HDMI DTB boots with a monitor attached
 
@@ -128,46 +127,14 @@ its separate group-3 gate below.*
   reports input events, and no LT9611-related kernel log line appears,
   since that DTB carries no LT9611 node
 
-### Requirement: The switch is manual, reboot-based, and self-reverting
+### Requirement: The cable selects the active display without a reboot
 
-A person SHALL be able to trigger a switch to HDMI from Settings, which
-reboots the board into the HDMI device tree; the board SHALL automatically
-revert to the panel device tree on the *next* boot after that, regardless
-of why that next boot happened, so a crash or an unrelated power cycle
-cannot leave the board silently stuck showing nothing on the panel.
-
-*Grounding: LILYGO's `ui_hdmi_test.c` implements exactly this pattern —
-`hdmi_boot_switch_thread()` (lines 312-343) writes a one-shot marker file
-naming the panel DTB before copying the HDMI DTB over the active boot file
-and rebooting; `ui_hdmi_test_restore_one_shot_boot()` (lines 279-300) runs
-early on every subsequent boot, and if the marker exists, restores the
-panel DTB and deletes the marker before continuing. Our own
-`nix/sd-image.nix:142-156` documents, from hardware observation, that
-U-Boot's `bootcmd` already runs a `k230_set_dtb` command reading a named
-selector text file (`force_dtb`, falling back to `hdmi_dtb`/`lcd_dtb`) —
-the same class of mechanism, already present and boot-tested on this
-board's stage 1, that this requirement's implementation reuses rather than
-inventing a new one.*
-
-<!-- UNVERIFIED: not yet implemented (tasks.md group 3) or observed on the
-board. -->
-
-#### Scenario: A person switches to HDMI and back
-
-- **WHEN** a person taps the HDMI switch in Settings, confirms it, and the
-  board reboots
-- **THEN** the board comes up on the HDMI device tree, and the next reboot
-  after that — triggered any way — comes up on the panel device tree again
-  with touch working, without the person having to do anything else to
-  restore it
-
-### Requirement: No-reboot hot-plug switching is a separately graded goal
-
-Automatically switching the active output when an HDMI cable is plugged or
-unplugged, without a reboot, SHALL be attempted and its outcome SHALL be
-recorded plainly — as working, on-hardware-proven behavior, or as a named
-infeasibility with its specific blocking cause — rather than left
-ambiguous or asserted without evidence.
+With the combined mainline device tree, the system SHALL switch the active
+output to HDMI when a monitor is plugged in and return to the panel on unplug,
+without a reboot. It SHALL preserve the accepted HDMI portrait rotation and
+trackpad input, and restore direct touch when the panel becomes active again.
+The separately qualified HDMI-only and panel-only boot trees remain available
+for recovery; their presence does not require a manual Settings reboot control.
 
 *Grounding: `docs/research/hdmi-hotplug.md` §5 names three concrete,
 schematic- and source-grounded blockers this goal must clear: the physical
@@ -220,11 +187,3 @@ timing is evidence for the 30s scenario ceiling, not those precise targets.*
 - **WHEN** the HDMI cable is then unplugged
 - **THEN** the visible output returns to the panel within 30 seconds and touch responds to
   direct input again, without a reboot
-
-#### Scenario: The goal proves infeasible
-
-- **WHEN** the blockers named above cannot be cleared within this change's
-  board time
-- **THEN** this requirement is restated against what was actually found,
-  naming the specific blocking cause, rather than left as an unresolved
-  `<!-- UNVERIFIED -->` marker with no explanation

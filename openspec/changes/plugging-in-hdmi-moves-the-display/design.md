@@ -325,3 +325,19 @@ named physical handoff/navigation gate is complete without claiming the
 sampled targets passed. See `docs/evidence/hdmi-hotplug/live-switch/closeout-2026-10-09.md`. Working no-reboot switching is recorded in task 4.4
 without converting those approximate observations into precise measurements.
 Manual switch and landscape tasks remain open; this change is not archived.
+
+## Final scope and closeout — 2026-10-09
+
+The preceding sections preserve the chronology of vendor, manual prototype,
+monitor and combined runtime decisions. The operator now drops the obsolete
+Settings reboot/self-revert scope because automatic switching works, and
+authorizes a separately landed landscape proposal. Earlier descriptions of
+manual/landscape tasks as open within this change are superseded by this
+explicit decision. The canceled prototype supplies no recovery guarantee.
+
+`the-hdmi-shell-works-in-landscape` preserves tasks 5.1–5.4 and their separate
+layout/physical gates, reusing the responsive implementation. It uses automatic
+exclusive-output switching rather than the canceled Settings path. Precise
+HPD timing remains deferred. This closes all 17 retained HDMI tasks against
+committed proof, without ticking canceled, transferred or unperformed checks.
+See `docs/evidence/hdmi-hotplug/live-switch/scope-decision-2026-10-09.md`.

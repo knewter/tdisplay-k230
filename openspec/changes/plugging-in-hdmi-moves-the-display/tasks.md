@@ -101,57 +101,20 @@ reads state only. This is the first work this change may run on hardware.
       `/nix/store/2hjv5ksw5fbhazi94hxymc91kqzjdz9c-nixos-system-nixos-26.11.20260919.20b1ddd`.
       Default DTB and boot path untouched.*
 
-## 3. Manual switch, reboot-based (board-gated)
+## 3. Manual reboot scope canceled — 2026-10-09
 
-- [ ] 3.1 Extend `nix/sd-image.nix` to place the alternate HDMI DTB
-      (from task 2.2) on the boot partition alongside the default panel
-      DTB, and add a NixOS-side tool (or extend `tools/push-file.py`)
-      that: remounts `/boot` read-write, writes a one-shot restore marker
-      naming the panel DTB, copies the HDMI DTB over the file the
-      `hdmi_dtb`/`force_dtb` U-Boot selector currently names, `sync`s, and
-      reboots — mirroring LILYGO's `ui_hdmi_test.c` mechanism cited in
-      `docs/research/hdmi-hotplug.md` §3. Add the matching early-boot
-      restore step (systemd unit or initrd hook) that checks for the
-      marker and reverts the selector to the panel DTB before the next
-      boot completes, deleting the marker. Verify with
-      `nix build .#nixosConfigurations.k230.config.system.build.toplevel`
-      and a host-side test of the marker-write/restore logic that does not
-      require the board.
-      *Shipping target: use the group-7 mainline kernel/DTBs and additionally
-      build `.#kernelMainlineDrmShellBootFiles`. Keep the vendor `k230`
-      toplevel build as a rollback regression check. The controller changes
-      `force_dtb` atomically instead of overwriting the panel payload; see
-      design's mainline implementation decision and recovery limits.*
-- [ ] 3.2 Add a Settings row that triggers the switch tool from 3.1,
-      including the "next boot: HDMI / AMOLED" status readout LILYGO's own
-      UI provides (`hdmi_find_connector()` scanning `/sys/class/drm`,
-      cited in `docs/research/hdmi-hotplug.md` §3), and a confirm step
-      before rebooting. Verify with `cargo test` /
-      `cargo clippy --all-targets` for `nix/rust-shell-client` and
-      `nix build .#handheld-shell-rust`.
-- [ ] 3.3 On the physical board, under the reserved lock: install the
-      built kernel/DTBs, trigger the Settings switch, confirm over the
-      console that the board reboots into the HDMI DTB and an
-      `HDMI-A-1` connector with a live monitor attached reports
-      `connected` in `/sys/class/drm/*/status`
-      (`flock -w 120 /tmp/k230-board.lock python3 tools/console.py /dev/ttyACM0 --wait=15 "cat /sys/class/drm/card*-HDMI-A-1/status"`),
-      then reboot again (any means — this proves the self-revert, not just
-      the forward switch) and confirm the panel is active again and touch
-      still works
-      (`python3 tools/console.py /dev/ttyACM0 --wait=15 "cat /sys/class/drm/card*-DSI-1/status"`
-      plus an `evtest` touch check per the existing touch evidence
-      pattern). Record the operator's observation of the external monitor
-      showing the shell and commit it with the console transcripts under
-      `docs/evidence/hdmi-hotplug/manual-switch/`. The operator explicitly
-      waived a monitor photograph on 2026-10-09; the existing accepted
-      group-7 HDMI trial does not prove this separate Settings sequence.
+The operator dropped original tasks 3.1–3.3 and the Settings reboot/self-revert
+requirement because automatic cable switching works. These tasks were not
+performed and are not marked complete. The parked prototype at `58498320` and
+unmerged draft at `6b0ad375` are historical, with no shipping requirement or
+physical recovery claim. See `docs/evidence/hdmi-hotplug/live-switch/scope-decision-2026-10-09.md`.
 
-## 4. Hot-plug automation without a reboot (board-gated, speculative)
+## 4. Hot-plug automation without a reboot (board-gated, physically accepted)
 
-This group may end in "infeasible, recorded" rather than a working feature;
-`design.md` decision 4 accepts that outcome. Do not force an unproven
-design to completion under schedule pressure — record what was tried and
-why it did or did not work.
+The staged monitor and combined trials passed their named host and physical
+gates. Their historical records retain the distinction between cable status,
+visible output, input modes and navigation acceptance. Precise timing was
+explicitly deferred by the operator, not measured or passed.
 
 - [x] 4.1 Design and, if the group-1 probe (task 1.4) did not rule it out,
       prototype a device tree where the LT9611 exists as a plain I2C
@@ -251,48 +214,18 @@ why it did or did not work.
       and default SD image now match that accepted candidate; persistent
       installation and ordinary autoboot pass in
       `docs/evidence/hdmi-hotplug/live-switch/normal-hotplug-install-serial.json`.
-      Precise sampled timing is explicitly deferred in 4.3; manual/landscape
-      requirements and unrelated UNVERIFIED markers remain unchanged.*
+      Precise sampled timing is explicitly deferred in 4.3; manual reboot scope is now canceled, landscape transfers to its successor,
+      and unrelated historical UNVERIFIED markers remain explicit.*
 
-## 5. Shell and card-shell landscape support
+## 5. Landscape scope transferred — 2026-10-09
 
-Coordinator cross-reference (2026-10-01):
-[`the-shell-adapts-to-output-resolution`](../the-shell-adapts-to-output-resolution/tasks.md)
-owns output configures, Drawer/Home column reflow, Settings transforms and matching
-hit-testing. Its host implementation and paired fixtures are recorded there;
-its task group 6 retains physical tap/density, Wi-Fi/theme geometry and dock
-follow-up. Use that work for 5.2/5.3 below rather than implementing it twice.
-These links do not complete this proposal's HDMI hardware or landscape gates.
-
-- [ ] 5.1 Add an `HDMI-A-1` output stanza to `nix/shell.nix`'s Sway config
-      (mode matching task 2.2's target, e.g. `1280x720`, `transform
-      normal`), alongside the existing `DSI-1` stanza, and decide (record
-      in `design.md` if it changes) whether both outputs are ever active
-      in the same Sway session or whether the reboot-based switch means
-      only one is ever present at a time in the near term. Verify with
-      `nix build .#nixosConfigurations.k230.config.system.build.toplevel`.
-- [ ] 5.2 Parameterize `nix/rust-shell-client/src/lib.rs`'s
-      `DESIGN_ASPECT` and the direct `568.0`/`1232.0` literals it and
-      `render.rs`/`wifi_ui.rs` use for coordinate scaling, so they derive
-      from the actual configured output geometry instead of a compiled-in
-      constant, without changing the existing portrait behavior when the
-      output really is `DSI-1` at `568x1232` (existing tests must keep
-      passing unchanged). Verify with `cargo test` and
-      `cargo clippy --all-targets` for `nix/rust-shell-client`.
-- [ ] 5.3 Make the home grid/navigation chrome
-      (`nix/rust-shell-client/src/home_grid.rs`, `navigation.rs`) not
-      visually broken (overlapping, off-screen, or unreachable elements) at
-      a landscape aspect ratio, without necessarily redesigning the layout
-      for landscape — "usable," not "redesigned," is the bar for this
-      change. Verify with new unit tests exercising the same functions at
-      a landscape geometry (e.g. `1280x720`) alongside the existing
-      `568x1232` cases, `cargo test`.
-- [ ] 5.4 On the physical board with an HDMI monitor attached (requires
-      a working HDMI boot), record the operator's observation of the home
-      screen and Settings rendering on the external monitor without visibly
-      broken layout. A monitor photograph is waived by the operator
-      (2026-10-09). Commit the report and matching native captures under
-      `docs/evidence/hdmi-hotplug/landscape/`.
+Original tasks 5.1–5.4 and their layout/physical requirements are preserved in
+`the-hdmi-shell-works-in-landscape`, landed as a separate proposal before this
+archive. Its implementation and real monitor gates remain unchecked. Shared
+geometry work continues to belong to `the-shell-adapts-to-output-resolution`.
+Task 5.1 now uses automatic switching and exclusive outputs rather than the
+canceled reboot path, retaining its original rollback build command and adding
+the shipping mainline bundle check. See the committed scope-decision report.
 
 ## 6. Proposal validation
 
@@ -302,7 +235,8 @@ These links do not complete this proposal's HDMI hardware or landscape gates.
       `openspec validate plugging-in-hdmi-moves-the-display --strict`.
       *2026-10-09: strict validation passed after recording the mainline
       live workaround. Group 7's HDMI trial is subsequently accepted;
-      hardware switching remains unchecked and UNVERIFIED.*
+      automatic switching is subsequently physically accepted under 4.3; historical
+      probe/vendor-only limitations retain their UNVERIFIED markers.*
 - [x] 6.2 Run `python3 scripts/render_work_board.py > /dev/null`, commit,
       and hand off to the coordinator for an early merge to `master` per
       AGENTS.md, independent of whether groups 3–5 have started — the
@@ -320,7 +254,8 @@ The board now boots mainline 7.3.0-rc5 by default
 and there `/sys/class/drm` shows only `card0-DSI-1`: no HDMI. The mainline DRM
 port already carries the K230 LT9611 driver (`nix/patches/mainline/drm/lontium-lt9611-k230.c`,
 `DRM_LONTIUM_LT9611=y`) and `drm_bridge_connector_init()` in `canaan_dsi.c`.
-Groups 3–5 above apply to mainline once these tasks land.
+The accepted automatic implementation runs on mainline. Landscape transfers
+to its separate successor; the manual Settings reboot scope is canceled.
 
 - [x] 7.1 Make the mainline LT9611 driver's reset GPIO and IRQ optional (HPD by connector polling without an IRQ), as vendor `nix/patches/lt9611-dsi-port-b.patch` does, because GPIO24/GPIO23 belong to the GT9895 touch. Proof: `nix build .#kernelMainlineDrm`.
 - [x] 7.2 Add `nix/dts/k230-tdisplay-mainline-drm-hdmi.dts` (LT9611 on `&i2c3` at 0x3b, DSI port@1 → LT9611 port@1 (Port B) → `hdmi-connector`, touch keeps GPIO24/23, no panel), a `dtsFile` parameter for `nix/device-tree-mainline-drm.nix`, and flake outputs `deviceTreeMainlineDrmHdmi` and `kernelMainlineDrmShellHdmiBootFiles` (the normal bundle with the HDMI DTB under `k230-tdisplay.dtb`). Proof: DTB builds and decompiles; host inspection of the bundle.
