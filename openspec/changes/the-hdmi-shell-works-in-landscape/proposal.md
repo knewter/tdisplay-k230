@@ -2,8 +2,8 @@
 
 The accepted HDMI shell uses portrait rotation. Its success does not establish
 usable Home, navigation and Settings in landscape. Preserve original HDMI
-tasks 5.1–5.4 explicitly so the automatic-switching proposal can close separately
-if the operator approves the split. Geometry work already belongs to
+tasks 5.1–5.4 explicitly under the operator-authorized scope split on 2026-10-09. The automatic
+switching proposal closes separately. Geometry work already belongs to
 `the-shell-adapts-to-output-resolution`; reuse it rather than create a competing
 implementation owner.
 
@@ -37,5 +37,5 @@ None.
 Future work owns the landscape Sway qualification profile, the remaining geometry
 and layout integration, and physical evidence. Shared responsive code/tasks
 remain owned by `the-shell-adapts-to-output-resolution`; this proposal owns their
-HDMI landscape integration gate. Automatic HDMI implementation at `6b4fe555`
-is a prerequisite, not landscape evidence. This proposal changes planning only.
+HDMI landscape integration gate. Automatic HDMI implementation at `6b4fe555`, accepted and recorded at
+`a55e5a55`, is a prerequisite, not landscape evidence. This proposal changes planning only.

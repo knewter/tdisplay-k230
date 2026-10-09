@@ -37,3 +37,17 @@ Original commands and separate board gate are retained in tasks. Worktree
 `/home/jadams/tmp/k230-hdmi-landscape-successor`, branch
 `proposal/hdmi-landscape-successor-2026-10-09`, base `ba5217ca`.
 Owned paths: only this proposal directory. No build slot or board reservation.
+
+## Accepted proposal and scope decision — 2026-10-09
+
+The operator directed: "we dont need a settings button to reboot into hdmi
+now that hot swap works and yeah we want landscape layout support as a new
+proposal and land hdmi". This proposal is authorized for landing as a plan.
+Original HDMI tasks 5.1–5.4 transfer here; task 5.1 explicitly uses the working
+automatic exclusive-output arrangement and retains its original rollback
+build command, adding the shipping mainline bundle proof. All original
+landscape layout and physical requirements remain open. No landscape source
+implementation, new board trial or installed profile is claimed.
+
+Proposal integration base is `a55e5a55838b150479bf97c43b7406eda7e04a05`; the
+original draft base was `ba5217ca`. Only this proposal directory is owned.

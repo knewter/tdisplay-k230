@@ -1,8 +1,9 @@
 ## Scope preservation
 
-Original HDMI tasks 5.1–5.4 are copied below with all proof commands retained.
-All remain unchecked. Split/archive approval is pending; the original proposal
-still owns this scope until the operator approves. Implement shared geometry
+Original HDMI tasks 5.1–5.4 are preserved below with their proof commands.
+All implementation/physical gates remain unchecked. The operator authorized
+this successor on 2026-10-09 and dropped the obsolete Settings reboot path.
+Task 5.1 now selects landscape through the working automatic arrangement. Implement shared geometry
 through `the-shell-adapts-to-output-resolution` and record its actual evidence,
 while retaining this proposal's separate physical landscape gate.
 
@@ -17,13 +18,14 @@ its task group 6 retains physical tap/density, Wi-Fi/theme geometry and dock
 follow-up. Use that work for 5.2/5.3 below rather than implementing it twice.
 These links do not complete this proposal's HDMI hardware or landscape gates.
 
-- [ ] 5.1 Add an `HDMI-A-1` output stanza to `nix/shell.nix`'s Sway config
-      (mode matching task 2.2's target, e.g. `1280x720`, `transform
-      normal`), alongside the existing `DSI-1` stanza, and decide (record
-      in `design.md` if it changes) whether both outputs are ever active
-      in the same Sway session or whether the reboot-based switch means
-      only one is ever present at a time in the near term. Verify with
-      `nix build .#nixosConfigurations.k230.config.system.build.toplevel`.
+- [ ] 5.1 Add a separately selected landscape `HDMI-A-1` qualification
+      profile to the Sway configuration (supported EDID mode, for example
+      `1280x720`, `transform normal`), preserving the accepted portrait default.
+      Record the combined runtime's one-CRTC, mutually exclusive outputs in
+      `design.md`; use automatic cable switching, without a reboot button.
+      Verify the legacy rollback configuration with `nix build
+      .#nixosConfigurations.k230.config.system.build.toplevel` and the shipping
+      mainline profile with `nix build .#kernelMainlineDrmShellBootFiles`.
 - [ ] 5.2 Parameterize `nix/rust-shell-client/src/lib.rs`'s
       `DESIGN_ASPECT` and the direct `568.0`/`1232.0` literals it and
       `render.rs`/`wifi_ui.rs` use for coordinate scaling, so they derive
