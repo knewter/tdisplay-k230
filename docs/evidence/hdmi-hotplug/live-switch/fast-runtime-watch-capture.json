@@ -1,0 +1,22 @@
+{
+  "boot_id": "cff529ad-6aa6-4a31-b9af-337bbc783521",
+  "events": [
+    {
+      "boot_id": "cff529ad-6aa6-4a31-b9af-337bbc783521",
+      "drm": {
+        "card0-DSI-1": {
+          "enabled": "disabled",
+          "status": "disconnected"
+        },
+        "card0-HDMI-A-1": {
+          "enabled": "enabled",
+          "status": "connected"
+        }
+      },
+      "hpd": "connected",
+      "monotonic_seconds": 316.959371565,
+      "system": "/nix/store/yl3si5ak6yi709yg1fqsnwgq0zn4xfcs-nixos-system-nixos-26.11.20260919.20b1ddd",
+      "utc": "2026-10-09T19:05:14.612351+00:00"
+    }
+  ]
+}

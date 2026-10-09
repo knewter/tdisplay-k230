@@ -1,0 +1,30 @@
+{
+  "recorded_at": "2026-10-09T19:38:47.761736+00:00",
+  "evidence_class": "host build and exact derivation/output identity",
+  "base_commit": "439c7729bcd602a9cc1bdc3fe5f2f79e8cc1b9cf",
+  "command": "nix build .#sdImage .#kernelMainlineDrmShellBootFiles --max-jobs 1 --cores 16 --no-link --json",
+  "result": "PASS",
+  "outputs": [
+    {
+      "drvPath": "/nix/store/4vzmdr1hm9j6d6crhjibcqrkswk7fhf8-k230-sd-image.img.drv",
+      "outputs": {
+        "out": "/nix/store/gw9p4yhc2yyp026bgmn635m26bhlrzhv-k230-sd-image.img"
+      }
+    },
+    {
+      "drvPath": "/nix/store/69m2mggfzk7k2wxmk6ckilj4xgvykpmj-k230-coherent-shell-boot-files.drv",
+      "outputs": {
+        "out": "/nix/store/jsqi00cgac7v773xi3r1zc6ppib3sc7p-k230-coherent-shell-boot-files"
+      }
+    }
+  ],
+  "flake_sha256": "423e32a5aef967d4986eca6898f05320cca879a770b8187e923894c40908b029",
+  "normal_bundle_equals_qualified_trial": true,
+  "default_image_equals_prepared_inspected_image": true,
+  "image_inspection": "fast-private-sd-image-inspection.json",
+  "qualification": "fast-runtime-qualification.json",
+  "limits": [
+    "Boot payload was already inspected byte for byte against this identical bundle; no duplicate inspection is inferred.",
+    "This builds the default SD image; the whole image is not physically flashed. Board normal boot is updated separately with the matching qualified bundle."
+  ]
+}

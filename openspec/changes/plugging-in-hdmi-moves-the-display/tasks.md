@@ -225,12 +225,28 @@ why it did or did not work.
       a monitor photograph on 2026-10-09; retain the distinction between
       console state and observed glass transitions. Commit under
       `docs/evidence/hdmi-hotplug/live-switch/`.
-- [ ] 4.4 Whether or not 4.1–4.3 succeed, record the outcome plainly in
+      *2026-10-09: physical fast switching is accepted (HDMI a couple of
+      seconds, panel almost instant), and the response "it works great land it"
+      confirms the requested real-touch navigation checks. Matching state
+      retains the trial boot ID, portrait rotation and virtual touchpad.
+      `fast-runtime-qualification.json` records the exact question context.
+      The bounded watcher captured no cable transitions: `fast-runtime-latency.json`
+      correctly returns INCOMPLETE_OR_SLOW with an empty transition list. This
+      task remains open for the separate sampled ≤1s/≤3s timing targets; no
+      failed measurement or precise latency is inferred from the empty watch.*
+- [x] 4.4 Whether or not 4.1–4.3 succeed, record the outcome plainly in
       `specs/display/hdmi/spec.md`'s no-reboot requirement: either resolve
       its `<!-- UNVERIFIED -->` marker against working board evidence, or
       restate it as a known-infeasible-with-current-architecture finding
       with the specific blocker named, so a future change does not have to
       rediscover it.
+      *2026-10-09: recorded working mainline no-reboot switching against the
+      accepted faster physical trial and exact qualification. The normal bundle
+      and default SD image now match that accepted candidate; persistent
+      installation and ordinary autoboot pass in
+      `docs/evidence/hdmi-hotplug/live-switch/normal-hotplug-install-serial.json`.
+      Precise sampled timing remains explicitly open in 4.3; manual/landscape
+      requirements and unrelated UNVERIFIED markers remain unchanged.*
 
 ## 5. Shell and card-shell landscape support
 

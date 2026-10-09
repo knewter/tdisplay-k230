@@ -1,0 +1,23 @@
+{
+  "recorded_at": "2026-10-09T19:41:02.508445+00:00",
+  "evidence_class": "host regression tests plus sanitized actual board preflight failure",
+  "failure": "FileNotFoundError: no activated /home/shell/.local/state/omarchy/current/active theme selection",
+  "failure_phase": "before installation journal and before boot payload replacement",
+  "observed_after_failure": {
+    "install_state": null,
+    "install_result": null,
+    "system": "/nix/store/yl3si5ak6yi709yg1fqsnwgq0zn4xfcs-nixos-system-nixos-26.11.20260919.20b1ddd",
+    "profile": "/nix/store/kp6ldmdx33lgjl55hzv3xba5a55ils48-nixos-system-nixos-26.11.20260919.20b1ddd"
+  },
+  "fix": "Record generation/report_sha256 as null for an absent theme selection; retain strict resolution for dangling selections.",
+  "command": "python3 tests/test_coherent_shell_board_install.py",
+  "result": "PASS",
+  "tests_passed": 10,
+  "test_log_sha256": "31dbcac8131bef8c7513f707b40977f3790c6c2cc2b467ae14075e8882fdcc20",
+  "installer_sha256": "017ba62108380b1b07d260803d3f5bcacb9e14e48646d6187392e8d89fd18462",
+  "board_upload": {
+    "remote": "/var/lib/k230/coherent-boot/yl3si5ak6yi709yg1fqsnwgq0zn4xfcs-hotplug/install.py",
+    "source_sha256": "017ba62108380b1b07d260803d3f5bcacb9e14e48646d6187392e8d89fd18462",
+    "status": "PASS"
+  }
+}

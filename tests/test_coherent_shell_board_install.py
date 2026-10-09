@@ -81,6 +81,26 @@ class BootInstall(unittest.TestCase):
             with self.subTest(field=field), self.assertRaises(ValueError):
                 install.validate_qualification(wrong, candidate)
 
+    def test_no_active_theme_is_a_valid_install_baseline(self):
+        with patch.object(install, 'Path', return_value=self.root / 'absent'):
+            self.assertEqual(install.appearance(),
+                             {'generation': None, 'report_sha256': None})
+
+    def test_active_theme_identity_is_preserved(self):
+        generation = self.root / 'generation-1'; generation.mkdir()
+        report = generation / 'report.json'; report.write_bytes(b'{}\n')
+        selection = self.root / 'active'; selection.symlink_to(generation)
+        with patch.object(install, 'Path', return_value=selection):
+            self.assertEqual(install.appearance(),
+                             {'generation': generation.name,
+                              'report_sha256': install.digest(report)})
+
+    def test_broken_theme_selection_still_blocks_installation(self):
+        selection = self.root / 'active'; selection.symlink_to(self.root / 'missing')
+        with patch.object(install, 'Path', return_value=selection):
+            with self.assertRaises(FileNotFoundError):
+                install.appearance()
+
 
 if __name__ == '__main__':
     unittest.main()

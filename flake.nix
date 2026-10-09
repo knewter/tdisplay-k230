@@ -840,7 +840,7 @@
         sdImage = mkBoardImageWith {
           cfg = self.nixosConfigurations.k230-mainline-drm-shell.config;
           kernel = self.nixosConfigurations.k230-mainline-drm-shell.config.boot.kernelPackages.kernel;
-          deviceTree = self.packages.${buildSystem}.mainlineDrmDeviceTreeNormalName;
+          deviceTree = self.packages.${buildSystem}.mainlineDrmHotplugDeviceTreeNormalName;
         };
         # Vendor-kernel Rust shell image, kept as a rollback and release target.
         sdImage-coherent = mkBoardImage self.nixosConfigurations.k230-coherent-shell.config
@@ -856,7 +856,7 @@
         kernelMainlineDrmShellBootFiles = pkgs.callPackage ./nix/coherent-shell-boot-files.nix {
           cfg = self.nixosConfigurations.k230-mainline-drm-shell.config;
           configuration = "k230-mainline-drm-shell";
-          deviceTree = self.packages.${buildSystem}.mainlineDrmDeviceTreeNormalName;
+          deviceTree = self.packages.${buildSystem}.mainlineDrmHotplugDeviceTreeNormalName;
         };
         kernelMainlineDrmShellHpdMonitorBootFiles = pkgs.callPackage ./nix/coherent-shell-boot-files.nix {
           cfg = self.nixosConfigurations.k230-mainline-drm-shell.config;

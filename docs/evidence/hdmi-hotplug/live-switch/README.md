@@ -126,3 +126,83 @@ source snapshot promotes only the two normal DT references; the normal and
 explicit trial bundle derivations match. Repository defaults remain
 panel-only pending qualification. This is host image inspection, not proof
 that the image was flashed.
+
+## Qualified normal boot and default image (2026-10-09)
+
+The operator's "it works great land it" responds to the requested cable and
+real-touch All Apps, bottom-handle Overview and Terminal → Home checks.
+[Qualification](fast-runtime-qualification.json) records that context and the
+exact running kernel, system, bundle and shell executable. The
+[matching state after acceptance](fast-runtime-qualified-state.json) retains
+the trial boot ID and the accepted HDMI rotation/virtual touchpad.
+No per-gesture trace or post-install glass observation is inferred.
+
+The [bounded watch capture](fast-runtime-watch-capture.json) contains only
+its initial state: no cable actions were captured while it ran. The
+[latency inspector](fast-runtime-latency.json) correctly returns
+`INCOMPLETE_OR_SLOW` with no transitions; that is absent timing evidence,
+not a measured slow transition. Task 4.3 remains open for the distinct
+≤1s HPD-to-connector and ≤3s HPD-to-enabled targets. Task 4.4 records working
+no-reboot switching against the physical reports and matching boot identity.
+
+`flake.nix` now selects the qualified combined tree for `sdImage` and
+`kernelMainlineDrmShellBootFiles`. [The actual default build](default-hotplug-image-check.json)
+passes and yields exactly the inspected prepared SD image and accepted
+trial bundle. This is host image proof; the whole image is not flashed.
+
+The first normal installer attempt stopped before any boot payload changed
+because it assumed an activated theme existed. The
+[fix and ten passing regression checks](install-no-active-theme-check.json)
+record no active theme explicitly while still rejecting dangling selections.
+The corrected installer is transferred with its recorded source hash.
+
+[Persistent installation and ordinary autoboot](normal-hotplug-install-serial.json)
+pass. The normal profile and running system both select
+`yl3si5ak6yi709yg1fqsnwgq0zn4xfcs`; booted kernel is the accepted
+`f3rnipvbc5vqam8kwdmn3wgcl5rbz9yx` Image. New boot ID
+`4bf73b24-a16a-4786-96fb-f1288244d96f` records the install reboot, distinct
+from the unchanged trial boot ID used for switching qualification. Shell,
+shell-ui and theme-helper are active. The Image used the checked root-backed
+replacement because boot-space constraints prevented an atomic rename;
+initrd, DTB and bootargs used atomic rename. Protected stage 1 and all three
+DT selectors remain byte-identical, previous root backups/profile GC roots
+are retained, and no active theme exists before or after installation.
+This is actual installed-bundle and ordinary serial boot proof, not a full
+SD-image flash or a separately observed post-install glass/gesture result.
+
+### Handoff
+
+Worktree `/home/jadams/tmp/k230-hdmi-continue`, branch
+`codex/hdmi-mainline-continue`, landing base
+`439c7729bcd602a9cc1bdc3fe5f2f79e8cc1b9cf`. Owned paths in this landing:
+`flake.nix`, `tools/coherent-shell-board-install.py`, its corresponding
+`tests/test_coherent_shell_board_install.py`, this evidence directory, and
+the HDMI change's design/tasks/HDMI delta. No build slot remains occupied;
+the board/serial reservation is released after the final read-only snapshot.
+
+Narrow proof: `nix build .#sdImage .#kernelMainlineDrmShellBootFiles
+--max-jobs 1 --cores 16 --no-link --json` PASS with identical qualified outputs;
+installer's ten host tests PASS. The actual board command was:
+
+```sh
+python3 tools/coherent-shell-board-boot.py --install \
+  --qualification /home/jadams/tmp/k230-hdmi-continue-private/fast-runtime-qualified.json \
+  --candidate /home/jadams/tmp/k230-hdmi-continue-private/fast-runtime-bundle \
+  --state /home/jadams/tmp/k230-hdmi-continue-private/fast-hotplug-stage/state.json \
+  --output /home/jadams/tmp/k230-hdmi-continue-private/fast-normal-install-retry
+```
+
+It passes ordinary autoboot. The [postboot read-only state](normal-hotplug-runtime-state.json)
+confirms the installed profile, HDMI output and input services. Strict
+OpenSpec validation and work-board rendering also pass. Review/merge/push
+and the matching CI/Pages deployment are checked during the landing.
+
+Remaining evidence: task 4.3's sampled timing targets remain open. A future
+operator can transfer `watch-cable.py` to the reserved board and run
+`python3 /run/k230-mainline-runtime-watch.py --seconds 900 --output
+/run/k230-runtime-events.jsonl`, unplug/replug once while it runs, collect
+the JSONL plus boot ID, and run `inspect-cable-latency.py` against the matching
+bundle. Physical visible timing and touch acceptance already belong to the
+operator reports. Post-install glass is not separately observed; whole-image
+flashing is not claimed. Manual switch and landscape gates remain open; no
+archive or silent scope split is performed.

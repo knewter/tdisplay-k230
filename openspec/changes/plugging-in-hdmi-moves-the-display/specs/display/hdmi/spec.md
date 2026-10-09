@@ -180,16 +180,21 @@ rather than adding live re-attachment.
 Touch retains both shared pins; their unknown electrical drive type is not
 used as an assumption for shared-IRQ operation.*
 
-<!-- UNVERIFIED: the first combined volatile trial has matching boot/sysfs
-identity and operator reports confirming HDMI/trackpad, unplug restoring
-panel/direct touch, and a successful replug. See
-docs/evidence/hdmi-hotplug/live-switch/runtime-first-operator-report.json.
-The operator judged both transitions too slow; no numerical latency bound
-was recorded. The revised 250 ms worker's timed board proof and normal boot
-installation remain open. This requirement is expected to resolve
-either to a working scenario below or to a recorded infeasibility finding
-per tasks.md task 4.4; it must not be archived with this marker simply
-removed without one of those two outcomes on file. -->
+*Observed 2026-10-09: the first combined trial established both visible
+switching directions with trackpad on HDMI and direct touch on return. The
+matching faster kernel trial was accepted by the operator: HDMI replug took
+"couple of seconds", panel return was "almost instant". A later "it works
+great land it" confirms the requested cable/navigation checks; the qualification
+records that question context rather than inventing per-gesture traces.
+Read-only state before and after acceptance retains boot ID
+`cff529ad-6aa6-4a31-b9af-337bbc783521`, enabled HDMI at the accepted portrait
+transform and virtual touchpad. See
+`docs/evidence/hdmi-hotplug/live-switch/fast-runtime-operator-report.json`,
+`fast-runtime-qualification.json` and `fast-runtime-qualified-state.json`.
+No-reboot switching works on this tested mainline arrangement. The separate
+sampled HPD-to-connector ≤1s and HPD-to-enabled ≤3s targets remain unmeasured:
+the bounded watcher captured no transitions. Operator-visible approximate
+timing is evidence for the 30s scenario ceiling, not those precise targets.*
 
 #### Scenario: A cable is plugged in while the panel is active
 

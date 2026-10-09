@@ -32,7 +32,10 @@ def digest(path):
 
 
 def appearance():
-    active = Path('/home/shell/.local/state/omarchy/current/active').resolve(strict=True)
+    selection = Path('/home/shell/.local/state/omarchy/current/active')
+    if not selection.exists() and not selection.is_symlink():
+        return dict(generation=None, report_sha256=None)
+    active = selection.resolve(strict=True)
     report = active / 'report.json'
     return dict(generation=active.name, report_sha256=digest(report) if report.exists() else None)
 

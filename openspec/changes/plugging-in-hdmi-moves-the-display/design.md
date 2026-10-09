@@ -303,3 +303,22 @@ qualification. Task 4.3 records actual panel→HDMI→panel observations,
 DRM/Sway state, input mode and unchanged boot ID. Task 4.4 resolves only
 against that evidence. Host build, injected input and native screen capture
 are recorded as their own evidence classes and do not complete those gates.
+
+## Accepted automatic path and default promotion (2026-10-09)
+
+The operator accepts the faster combined trial and confirms the requested
+real-touch checks with "it works great land it". Exact qualification and
+unchanged trial boot identity are recorded in
+`docs/evidence/hdmi-hotplug/live-switch/fast-runtime-qualification.json` and
+`fast-runtime-qualified-state.json`. The repository's normal mainline bundle
+and `sdImage` now use this combined tree and build to the same immutable
+bundle/image paths as the qualified trial and inspected prepared image.
+Normal installation retains the previous root backups and profile roots,
+preserves stage 1 and DT selectors, and observes ordinary autoboot separately.
+
+Visible HDMI timing is approximately a couple of seconds and panel return
+almost instant, per the operator. The bounded watcher did not overlap a
+cable action, so the separate sampled ≤1s/≤3s targets remain unmeasured and
+task 4.3 stays open. Working no-reboot switching is recorded in task 4.4
+without converting those approximate observations into precise measurements.
+Manual switch and landscape tasks remain open; this change is not archived.
