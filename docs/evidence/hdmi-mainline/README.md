@@ -167,7 +167,10 @@ checks are not substitutes for the full-kernel build required by task 7.1.
 The corrected HDMI DTB builds and decompiles. [DTB checks](fixed-dtb-check.json)
 record its hash and graph/reset checks; [reproduction command](check-dtb.py)
 checks reciprocal endpoints, one DSI output, no panel and touch ownership
-of GPIO24/23. The corrected bundle also passes inspection.
+of GPIO24/23. The corrected bundle also passes inspection. The default panel DTB builds
+and decompiles with its panel present and no LT9611. The extracted common
+controller body equals the original `94196f97` panel source except for the
+touch label; this is a host regression check, not a new panel boot.
 
 The continuation makes LT9611 wait for the I2C touch device to finish binding,
 using the board-local `lontium,shared-reset-owner` phandle and a managed device

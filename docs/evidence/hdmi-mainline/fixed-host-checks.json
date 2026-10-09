@@ -29,5 +29,16 @@
   "INPUT_UINPUT": "m",
   "DRM_DISPLAY_CONNECTOR": "y",
   "uinput_module": "/nix/store/bc3xlc7iv7v37r8x6f4ik3yy51jip58p-linux-riscv64-unknown-linux-gnu-7.3.0-rc5-modules/lib/modules/7.3.0-rc5/kernel/drivers/input/misc/uinput.ko.xz",
-  "physical_boot_verified": false
+  "physical_boot_verified": false,
+  "panel_regression_check": {
+    "timestamp": "2026-10-09T06:47:11.689622+00:00",
+    "command": "nix build .#deviceTreeMainlineDrm --no-link --print-out-paths --max-jobs 1 --cores 2",
+    "exit_code": 0,
+    "dtb": "/nix/store/jsycibhw57wl3hdjwx7p3x1w9wb9zilg-k230-tdisplay-mainline-drm.dtb/k230-tdisplay-mainline-drm.dtb",
+    "sha256": "ba6d32e74cabfaa9f48e4708b968037c99c151ae4b954e1b703bab9ddbf638c7",
+    "panel_present": true,
+    "hdmi_bridge_absent": true,
+    "shared_controller_body_matches_94196f97_except_touch_label": true,
+    "physical_boot_verified": false
+  }
 }
