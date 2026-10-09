@@ -3,12 +3,14 @@
 `tools/qemu-k230.sh --card-shell-smoke` runs the selected `k230-qemu`
 configuration under **system-mode** RISC-V QEMU and drives its guest serial
 console. It does not substitute the existing host/user-mode compositor suite.
-The ordinary tool invocation still boots its existing console image unchanged.
+The ordinary tool invocation boots the selected image, whose console remains
+available alongside the headless card service.
 
 The selected image must contain the `card-shell-smoke` service and
 `card-shell-guest-smoke` executable. Absent integration is an error before
-building, not a skipped/passing test. The current default QEMU image has no card
-shell integration, and task 5.1 therefore remains open.
+building, not a skipped/passing test. The selected QEMU image now imports that module by default. Task 5.1 still
+requires a successful selected-image guest run; importing the module alone
+is not runtime proof.
 
 An explicit fixture validates the tooling before default image integration:
 
@@ -17,8 +19,10 @@ tools/qemu-k230.sh --card-shell-smoke --fixture-image \
   --output /tmp/card-guest-smoke --timeout 900
 ```
 
-This extends only the QEMU configuration with `nix/qemu-card-shell-smoke.nix`,
-which packages the source-built card compositor, real SHM/XDG fixture client,
+The explicit fixture flag retains the older tooling-validation invocation.
+The selected QEMU configuration now already imports
+`nix/qemu-card-shell-smoke.nix`,
+which packages the source-built card compositor, real SHM/XDG test client,
 virtual keyboard helper and guest verifier. It creates an unprivileged
 headless Pixman service with a 568x1232 logical output. It does not edit or
 activate the normal shell service, modify the board configuration, or access
@@ -60,7 +64,7 @@ system-QEMU invocation and its output separately before claiming guest success.
 ## Remaining integration gate
 
 A fixture pass completes only the smoke tooling portion of card task 5.1. After
-its required board budgets pass, the coordinator still owns selection of the
+its board budgets pass or its recorded performance cost is explicitly accepted, the coordinator still owns selection of the
 reviewed component in the real system/QEMU configurations, a successful
 `nix build .#nixosConfigurations.k230.config.system.build.toplevel`, and the
 non-fixture `tools/qemu-k230.sh --card-shell-smoke` run. Keep task 5.1 unchecked
@@ -130,8 +134,20 @@ restart, all six named interaction assertions, and successful service teardown.
 The `--no-build` invocation used the already-realized matching artifacts from
 the preceding cross-build; it did not substitute a host or user-mode run.
 
-This completes the explicit fixture/tooling verification. The real board image
-and default QEMU configuration have not selected the component, and no physical
+This completes the explicit fixture/tooling verification. At source `50707c5e`, the real board image
+and default QEMU configuration had not selected the component, and no physical
 card interaction or performance budget is proved. Task 5.1 remains unchecked
 until its selected-image build and non-fixture run are also complete. The three
 recorded failures remain evidence of the corrections, not passing executions.
+
+## Selected configuration closeout — 2026-10-09
+
+The operator explicitly accepts current Overview performance. The board
+`k230` configuration now selects the card shell; `k230-bar-shell` preserves
+the former bar-session derivation exactly. The existing normal mainline
+configuration still evaluates to the accepted `yl3si5ak` system, so no newly
+installed board artifact or repeat physical test follows from this selection.
+The named board-system cross-build passed; its exact artifact and command are
+in `docs/evidence/card-shell/frame-budget/acceptance-2026-10-09/board-build.json`.
+The default selected `k230-qemu` imports the guest smoke service/module. A new
+non-fixture boot/run is still required before integration task 5.1 is complete.

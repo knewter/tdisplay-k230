@@ -39,3 +39,13 @@ Ownership: worktree `/home/jadams/tmp/k230-card-overview-close-final`, branch
 this change's planning/evidence, system/QEMU selection, smoke documentation
 and work-board status, plus the CLI-synced `runtime/card-shell` requirement.
 Builds use `/tmp/k230-nix-build.lock`; no board reservation is taken.
+
+## Selected board configuration build
+
+The [host build and selection record](board-build.json) and [build log](board-build.log)
+record a successful full `k230` system build with `coherentShell = true`.
+`k230-bar-shell` retains the former bar-system derivation exactly. The existing
+normal mainline configuration still evaluates to the accepted `yl3si5ak`
+closure, unchanged; no board activation or boot was performed. The selected
+QEMU configuration now includes its verifier, but the actual guest run is
+still pending at this source checkpoint.

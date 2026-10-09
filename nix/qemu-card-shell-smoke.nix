@@ -1,4 +1,5 @@
-# Explicit QEMU fixture only. Importing this does not select the board shell.
+# Selected QEMU card userspace and its guest verifier. This is headless/injected
+# integration proof; board shell selection is owned by the board configuration.
 { lib, pkgs, ... }:
 let
   cards = pkgs.callPackage ./card-shell.nix { swayUnwrapped = pkgs.sway-unwrapped; };
@@ -18,7 +19,7 @@ let
 in {
   # The observed guest reaches multi-user with /dev/console output, but its
   # ttyS0 device unit never activates, so serial-getty cannot start. Bind this
-  # explicit fixture's login to the existing kernel console instead.
+  # QEMU login to the existing kernel console instead.
   systemd.services.console-getty = {
     enable = true;
     wantedBy = [ "multi-user.target" ];
@@ -31,7 +32,7 @@ in {
   users.users.card-smoke = { isSystemUser = true; group = "card-smoke"; };
   environment.systemPackages = [ guest ];
   systemd.services.card-shell-smoke = {
-    description = "QEMU-only card shell userspace fixture";
+    description = "QEMU card shell userspace integration smoke";
     wantedBy = [ "multi-user.target" ];
     environment = {
       XDG_RUNTIME_DIR = "/run/card-shell-smoke";

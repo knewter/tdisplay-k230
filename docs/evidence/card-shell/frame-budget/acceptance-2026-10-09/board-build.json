@@ -1,0 +1,34 @@
+{
+  "board": "/nix/store/byrzisiskfv70lvlll0dmy8wvwpslsfl-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "boardCards": true,
+  "mainline": "/nix/store/yl3si5ak6yi709yg1fqsnwgq0zn4xfcs-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "qemuSmoke": true,
+  "rollback": "/nix/store/8lfjlmil4vjyz66icj6dwrrr0hs23gqp-nixos-system-nixos-26.11.20260919.20b1ddd.drv",
+  "evidence_class": "host cross-build and Nix selection evaluation; not board deployment",
+  "command": [
+    "flock",
+    "-n",
+    "/tmp/k230-nix-build.lock",
+    "nix",
+    "build",
+    ".#nixosConfigurations.k230.config.system.build.toplevel",
+    "--no-link",
+    "--print-out-paths",
+    "--max-jobs",
+    "1",
+    "--cores",
+    "8"
+  ],
+  "exit_code": 0,
+  "observed_completion_utc": "2026-10-09T22:48:31.723176+00:00",
+  "source_revision": "c36e2c1cbf1b66ffe98250ad634c1fd0c515b395",
+  "working_tree_source": "flake.nix selects coherentShell and imports the QEMU smoke module; those edits were present during the build.",
+  "flake_sha256": "5b8bdf1339abe3bb1b0d9085c33aefd9b565af69a1b636b7d6558a6027062708",
+  "original_bar_derivation_preserved": true,
+  "installed_mainline_candidate_unchanged": true,
+  "realized_toplevel": "/nix/store/byrzisiskfv70lvlll0dmy8wvwpslsfl-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "limits": [
+    "No new board boot or deployment; the previously accepted normal mainline system remains identical.",
+    "The selected QEMU smoke still requires a completed guest run."
+  ]
+}

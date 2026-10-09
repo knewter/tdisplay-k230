@@ -126,7 +126,7 @@
             ./nix/hardware.nix
             ./nix/shell.nix
             {
-              k230.shell = { enable = true; probes = true; debugLog = true; };
+              k230.shell = { enable = true; coherentShell = true; probes = true; debugLog = true; };
               # The logo is proven in U-Boot, but its Linux handoff currently
               # corrupts physical scanout. Keep the daily shell image usable
               # until both owners pass the recorded handoff test.
@@ -134,8 +134,12 @@
             }
           ];
         };
-        # Integrated userspace candidate. The original k230 configuration is
-        # the reproducible bar-session rollback while on-glass acceptance is pending.
+        # Preserve the original bar session as an explicit rollback after the
+        # operator accepted the card Overview's performance.
+        k230-bar-shell = self.nixosConfigurations.k230.extendModules {
+          modules = [ { k230.shell.coherentShell = nixpkgs.lib.mkForce false; } ];
+        };
+        # Existing integrated userspace alias, including the power-key service.
         k230-coherent-shell = self.nixosConfigurations.k230.extendModules {
           modules = [ { k230.shell.coherentShell = true; k230.shell.powerKeyTrial = true; } ];
         };
@@ -181,7 +185,7 @@
           ];
         };
         k230-qemu = nixpkgs.lib.nixosSystem {
-          modules = [ ./nix/k230.nix ./nix/qemu.nix ];
+          modules = [ ./nix/k230.nix ./nix/qemu.nix ./nix/qemu-card-shell-smoke.nix ];
         };
 
         # openspec/changes/the-board-runs-a-mainline-kernel, milestone 1.
