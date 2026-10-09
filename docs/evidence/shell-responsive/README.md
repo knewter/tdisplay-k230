@@ -129,3 +129,13 @@ responsive_pixel_identity` passes all four exact native-panel comparisons.
 exits successfully but reports style warnings (37 in the library-test target,
 including duplicates); this is not a warning-free check. The site build passes
 at that revision: 395 pages, 12,787,729 bytes, 46.57 seconds.
+
+
+## Physical closeout — 2026-10-09
+
+The retained fill and Home/All Apps/Settings target gates are complete under
+[the normal-runtime acceptance](board/acceptance-2026-10-09/README.md). That
+report combines a separately recorded operator confirmation with matching
+native/configure evidence; it does not change the host proof class above.
+Density, Wi-Fi/theme reflow and dock slot-count design remain open as landscape
+tasks 7.1–7.3 under the authorized scope transfer.

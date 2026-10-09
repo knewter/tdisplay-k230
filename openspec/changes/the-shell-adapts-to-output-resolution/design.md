@@ -239,3 +239,18 @@ accepted responsive requirement now describes grid column reflow and retains
 four dock slots; the successor owns whether/how that slot count changes.
 Physical fill and Home/Drawer/Settings target checks remain open as 6.1/6.2.
 This transfer does not prove those checks or authorize an archive without them.
+
+
+## Physical closeout — 2026-10-09
+
+The operator confirmed filled Home and correct Home/All Apps/Settings targets
+in HDMI mode. The matching native image and accepted 800×1280 configure records
+identify the existing normal hotplug system and Rust executable. Evidence is
+committed under `docs/evidence/shell-responsive/board/acceptance-2026-10-09/`.
+This completes retained physical tasks 6.1/6.2. The photograph waiver remains
+valid; no camera, normal-transform landscape or numeric latency claim is added.
+
+The delta also clarifies the existing keyboard-aspect guard: only a configure
+that fails the aspect guard without matching a known whole output is rejected.
+Aspect-preserving resizes remain accepted, as the unchanged source and tests
+require. This corrects overly broad prose without changing runtime behavior.

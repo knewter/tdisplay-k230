@@ -1,0 +1,25 @@
+{
+  "date": "2026-10-09",
+  "operator_statement": "home/all apps/settings worked fine. home fills the screen. all that stuff works on hdmi",
+  "question_answered": "On HDMI, Home fills the display without side bars and Home, All Apps and Settings targets each activate the intended item.",
+  "accepted_checks": [
+    "filled Home without side bars",
+    "correct Home app target",
+    "correct All Apps app target",
+    "correct Settings row target"
+  ],
+  "runtime_boot_id": "4bf73b24-a16a-4786-96fb-f1288244d96f",
+  "shell_executable": "/nix/store/q2rxmp980f9kxi962f29333z9pbixvbk-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0/bin/k230-shell-rust",
+  "hdmi_logical_geometry": [
+    800,
+    1280
+  ],
+  "input_arrangement": "accepted HDMI mode with the panel touchscreen acting as a touchpad",
+  "evidence_class": "operator-reported physical interaction and display observation; no camera recording",
+  "limits": [
+    "No monitor photograph (previously waived).",
+    "Native Home capture follows an injected Home command and does not independently prove touch.",
+    "No new precise latency, optical readability, arbitrary-EDID or normal-transform landscape qualification.",
+    "No new pinned-item drag/round-trip physical sequence."
+  ]
+}

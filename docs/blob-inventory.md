@@ -2715,3 +2715,12 @@ See `docs/evidence/hdmi-hotplug/manual-switch/host-render.json`.
 | `docs/evidence/hdmi-hotplug/manual-switch/host-settings-1920x1080.png` | 52805 | DATA | `5490312c11c4c5fdbb92a0f9745a83dce0c316c148cc78379ada559f180e09bf` |
 | `docs/evidence/hdmi-hotplug/manual-switch/host-settings-568x1232.png` | 46776 | DATA | `ce417f85b6a8de46d73fb7b4955524e3463106b90b7e0f09185618ec926aa98e` |
 | `docs/evidence/hdmi-hotplug/manual-switch/host-settings-800x1280.png` | 52509 | DATA | `7139fd4be7aecff236b5df281a2c0a8b62aaad8b8df96bd03a174572183bf3b6` |
+
+### Responsive HDMI acceptance (2026-10-09)
+
+Native Home capture from the accepted normal hotplug runtime; physical target
+acceptance is recorded separately in its evidence directory.
+
+| Path | Bytes | Class | SHA256 |
+| --- | ---: | --- | --- |
+| `docs/evidence/shell-responsive/board/acceptance-2026-10-09/home.png` | 359917 | DATA | `0938edbc429fe58e4ccc4f16e4f25e163b8a8c3664f8a298bed8b8c19bfc7f1d` |

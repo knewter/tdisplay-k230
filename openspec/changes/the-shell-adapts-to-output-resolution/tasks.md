@@ -88,9 +88,10 @@ records accepted 1080×1920 configures, native drawer captures and operator-conf
 dragging. The monitor photograph and tap-to-launch proof remain missing; the
 operator reports failed gestures with an app open and slow interaction. Injected
 board traces identify 90° software composition as a major cost (442 ms median
-frame build versus 15 ms unrotated). Tasks below remain open.
+frame build versus 15 ms unrotated). That dated checkpoint remains historical;
+2026-10-09 acceptance below uses the normal combined hotplug runtime.
 
-- [ ] 6.1 On the physical board with an HDMI monitor attached (requires
+- [x] 6.1 On the physical board with an HDMI monitor attached (requires
       the accepted automatic HDMI arrangement, or its separately qualified
       HDMI-only recovery boot), confirm the compositor
       actually offers this client a whole-output configure at the
@@ -100,7 +101,7 @@ frame build versus 15 ms unrotated). Tasks below remain open.
       a filled (not pillarboxed) Home screen with a matching native capture;
       the operator waived a monitor photograph on 2026-10-09. Commit
       under `docs/evidence/shell-responsive/board/`.
-- [ ] 6.2 On the same board session, confirm a real finger/stylus tap on a
+- [x] 6.2 On the same board session, confirm a real finger/stylus tap on a
       reflowed Drawer tile *and* a reflowed Home grid tile (task group 7)
       at the monitor's actual column count each launches the correct app,
       and that a Settings row tap lands correctly inside the new centered/
@@ -108,13 +109,23 @@ frame build versus 15 ms unrotated). Tasks below remain open.
       math; only the board proves a real touch controller and compositor
       agree with it end to end).
 
+Physical closeout — 2026-10-09: the operator explicitly accepts filled Home
+and correct Home/All Apps/Settings targets in the accepted HDMI arrangement.
+The matching native capture and numeric accepted configure records are in
+[the acceptance report](../../../docs/evidence/shell-responsive/board/acceptance-2026-10-09/README.md).
+No photograph is required under the prior waiver. Exact diagnostic command:
+`python3 docs/evidence/shell-responsive/board/acceptance-2026-10-09/capture-board.py
+--output /protected/private-responsive-capture`. This is native/serial evidence
+plus a separately recorded operator physical observation, not a camera recording.
+
 ### Scope transfer — 2026-10-09
 
 The operator authorized moving original tasks 6.3–6.5 to
 [`the-hdmi-shell-works-in-landscape`](../the-hdmi-shell-works-in-landscape/tasks.md),
 where they remain unchecked as 7.1–7.3. This preserves icon/text density,
 Wi-Fi/theme reflow and the dock slot-count decision without claiming any was
-performed. Tasks 6.1/6.2 remain physical gates here; this proposal stays open.
+performed. Tasks 6.1/6.2 are completed by the separate physical closeout above; the
+transferred tasks remain open in their successor.
 See [the committed scope decision](../../../docs/evidence/shell-responsive/scope-decision-2026-10-09.md).
 
 Scope proof: `openspec validate the-shell-adapts-to-output-resolution --strict`

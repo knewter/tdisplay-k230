@@ -2,20 +2,16 @@
 
 ### Requirement: The shell fills a whole non-panel output instead of letterboxing it
 
-*Grounding: `nix/rust-shell-client/src/main.rs`'s `is_whole_output` (reads
-`OutputState`, matches a configure's `(width, height)` against a known
-output's own `logical_size`) and `lib.rs`'s `configure_preserves_aspect`,
-both read for this change. `feat/hdmi-pillarbox` (commit `4c2eb57c`,
-2026-09-29) recorded a board log of a real whole-output configure this
-logic must handle: `pillarbox 1080x1920 -> 885x1920`, HDMI-A-1, Home and
-wallpaper drawn (that log is this requirement's evidence that the shell
-does receive such a configure on real hardware; it predates this change's
-own fix and describes the pillarboxed behavior being replaced). Whether the
-*reflowed* (non-pillarboxed) fill has itself been observed on the physical
-board or under QEMU is <!-- UNVERIFIED --> as of this change: the evidence
-committed with it (`docs/evidence/shell-responsive/`) is host-rendered
-through the production paint path with no Wayland connection, per that
-directory's own `README.md`.*
+*Grounding: the normal board's accepted `wallpaper-configure 800x1280`,
+`home-configure 800x1280` and `configure 800x1280`, matching native Home image
+and operator acceptance are recorded in
+`docs/evidence/shell-responsive/board/acceptance-2026-10-09/README.md` and
+`capture.json`. The system's actual logical HDMI geometry is 800×1280.
+`nix/rust-shell-client/src/main.rs` accepts a valid size when it preserves the
+existing aspect guard or matches a known whole output. Existing host fixtures
+cover other geometries. <!-- UNVERIFIED: physical normal-transform landscape,
+arbitrary EDID modes and keyboard-exclusive-zone behavior on HDMI were not
+newly qualified in this closeout. -->*
 
 When a Wayland layer-shell `configure` gives a surface exactly the size of
 a currently known output (an HDMI monitor at its own resolution, at any
@@ -23,10 +19,11 @@ aspect ratio, landscape or rotated portrait), the shell SHALL accept that
 size and paint its wallpaper, Home grid/dock, and Drawer/Shade/Settings/
 Power panel chrome to fill it completely, with no letterboxed or
 pillarboxed band of unpainted or differently-colored space. A configure
-that is not the size of any known output (in particular, a single-axis
-shrink such as an on-screen keyboard's exclusive zone) SHALL continue to be
-rejected exactly as before this requirement existed, leaving the surface at
-its last accepted geometry.
+that fails the existing aspect guard and is not the size of any known output
+(in particular, a single-axis shrink such as an on-screen keyboard's exclusive
+zone) SHALL continue to be rejected exactly as before this requirement existed,
+leaving the surface at its last accepted geometry. Aspect-preserving resizes
+SHALL retain their existing acceptance behavior.
 
 This requirement governs whether the *surface itself* is allowed to take
 the output's full size and whether what already reflows (the wallpaper
@@ -47,7 +44,8 @@ in `design.md`.
 #### Scenario: An on-screen keyboard's exclusive zone shrinks one axis
 
 - **WHEN** a `configure` reduces only the surface's height (or only its
-  width), to a size that does not match any known output's own logical size
+  width), beyond the existing aspect tolerance, to a size that does not match
+  any known output's own logical size
 - **THEN** the shell rejects that configure and keeps the surface at its
   last accepted geometry, exactly as it did before this requirement
 
@@ -66,10 +64,13 @@ host-side by `home_state.rs`'s `reflow_to_a_wider_column_count_never_loses_
 or_reorders_items`, `reflow_to_round_trips_4_then_8_then_back_to_4`,
 `reflow_to_is_a_no_op_when_columns_already_match`, `reflow_to_keeps_a_
 multi_span_widget_intact_as_one_item`, and `home_screen.rs`'s `sync_columns_
-reflows_to_a_wide_output_and_back_without_losing_items` -- all host unit
-tests, `<!-- UNVERIFIED -->` on the physical board or under QEMU: no test
-here drives a real touch/drag gesture against a reflowed grid, only the
-pure placement/geometry functions a real drag also calls.*
+reflows_to_a_wide_output_and_back_without_losing_items` -- host unit tests.
+The operator accepts the Home target on the real
+800×1280 HDMI arrangement in
+`docs/evidence/shell-responsive/board/acceptance-2026-10-09/operator-report.json`.
+<!-- UNVERIFIED: the wider-grid pinned-item drag, multi-span widget and
+round-trip placement guarantees remain host-tested; no new physical sequence
+exercises every placement state. -->*
 
 The Home screen's grid SHALL use more columns, proportional to the
 surface's own width (the same reflow the Drawer's grid already uses),
@@ -108,9 +109,11 @@ and_bounded_above`, `settings_content_transform_fills_the_panel_at_native_
 size`, and `service_ui.rs`'s `settings_row_taps_follow_the_scaled_centered_
 content_column_on_hdmi` (which maps a real touch point through the same
 transform `scene` paints with and confirms it still resolves to the
-correct row, and that a point past the row still misses). `<!-- UNVERIFIED
--->` on the physical board or under QEMU: no host render or test here
-opens a live Wayland connection or drives a real touch/drag gesture.*
+correct row, and that a point past the row still misses). The operator
+accepts the real Settings row target in the same HDMI arrangement, recorded in
+`docs/evidence/shell-responsive/board/acceptance-2026-10-09/operator-report.json`.
+<!-- UNVERIFIED: physical normal-transform landscape and optical typography/
+readability across arbitrary densities are not proved by these observations. -->*
 
 Settings' body content (the row cards, sliders, and Power section below the
 unscaled header strip) SHALL paint within a centered column no wider than

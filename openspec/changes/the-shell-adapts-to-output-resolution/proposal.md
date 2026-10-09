@@ -122,8 +122,8 @@ board-gated.
 - No change to any Nix derivation, device tree, kernel patch, or the SD
   image; `nix build .#handheld-shell-rust`-style closures are unaffected in
   shape, only in the Rust source they build from.
-- Real HDMI-attached board verification (does the compositor actually offer
-  this client a whole-output configure at the monitor's actual logical size, does
-  a person's finger land on the reflowed drawer tiles correctly) remains
-  open and board-gated, tracked in `tasks.md` and cross-referenced from
-  `the-hdmi-shell-works-in-landscape`'s own task 5.4.
+- Physical HDMI acceptance on 2026-10-09 completes the retained fill and
+  Home/Drawer/Settings target checks against the normal 800×1280 logical
+  runtime, with an operator report and matching native/configure evidence.
+  Normal-transform landscape, density, Wi-Fi/theme and dock follow-ups stay
+  with `the-hdmi-shell-works-in-landscape`; no new runtime work is claimed.
