@@ -1,0 +1,47 @@
+{
+  "source_revision": "1f1b4ef9c05c92c3e450ed5cd9abebd05d8d8ceb",
+  "captures": [
+    {
+      "image": "docs/evidence/ux-review-round-2/candidate-2026-10-09/overview.png",
+      "sha256": "83c8b4261beb9621eaaeed8c8e6c1d4fe25bb16abbad63de4234355d25e16de8",
+      "bytes": 128369,
+      "capture_utc": "2026-10-09T22:06:21.678517+00:00",
+      "viewed": true
+    },
+    {
+      "image": "docs/evidence/ux-review-round-2/candidate-2026-10-09/drawer.png",
+      "sha256": "2d009ee5c0b97bfc21e04592bd099b0f21643bafe660043ed9d0a3e7c418b286",
+      "bytes": 188988,
+      "capture_utc": "2026-10-09T22:06:57.383997+00:00",
+      "viewed": true
+    },
+    {
+      "image": "docs/evidence/ux-review-round-2/candidate-2026-10-09/settings-loading.png",
+      "sha256": "cabe8ccd9ea9e02dab94e4b12cd4a849b5f3c640ed33dd6d007694a4a2592830",
+      "bytes": 306836,
+      "capture_utc": "2026-10-09T22:08:04.398373+00:00",
+      "viewed": true
+    },
+    {
+      "image": "docs/evidence/ux-review-round-2/candidate-2026-10-09/settings.png",
+      "sha256": "28d54e2559cd392b108649241ea60bbdafb4d17ac8d653e84b0e7cee638aa931",
+      "bytes": 63999,
+      "capture_utc": "2026-10-09T22:10:19.320596+00:00",
+      "viewed": true
+    }
+  ],
+  "home": "docs/evidence/shell-responsive/board/acceptance-2026-10-09/home.png",
+  "privacy_review": "Inspected every image; no credentials, SSIDs, private addresses, command history or personal application content. Overview contains only the empty normal Terminal prompt.",
+  "evidence_classes": [
+    "native board screenshots after injected route commands",
+    "sanitized physical serial identity observation",
+    "separately recorded operator Home/All Apps/Settings acceptance"
+  ],
+  "not_proved": [
+    "camera/optical readability or motion",
+    "real-finger tracking",
+    "current keyboard typing, two-app switch and media walkthrough (awaiting operator)",
+    "normal-transform landscape",
+    "cold-start timing"
+  ]
+}

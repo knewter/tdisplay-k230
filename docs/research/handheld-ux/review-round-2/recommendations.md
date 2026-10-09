@@ -70,3 +70,14 @@ themes, colors, backgrounds or icons and do not duplicate GPU, card, recovery,
 or launcher implementation proposals. This list and the findings reflect the
 coordinator critique received 2026-10-01; group 3’s still-needed focused
 candidate review and task 4.2 publication remain open.
+
+
+## Current candidate update — 2026-10-09
+
+The [candidate recheck](candidate-recheck.md) now supplies current Overview,
+real 19-entry Apps and loaded Settings evidence from the identified normal
+mainline hotplug runtime, reusing the matching operator Home/Apps/Settings
+acceptance. This completes the capture/identity/recheck portion of priority 2.
+Its keyboard, two-app switch and media walkthrough remains pending; optical
+tracking, exceptional-state recovery and the other runtime owners remain open.
+The same three priority owners and optional clock/picker decisions stand.

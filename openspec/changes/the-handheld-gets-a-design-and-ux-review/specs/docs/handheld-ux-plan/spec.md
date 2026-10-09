@@ -2,7 +2,8 @@
 
 ### Requirement: The project SHALL provide a repeatable whole-product design critique
 
-<!-- UNVERIFIED: the second-round critique has not been performed. -->
+<!-- UNVERIFIED: host visual/independent critique and current candidate recheck
+are committed, but the full current-source journey walkthrough remains open. -->
 
 The documentation SHALL expose a dated design and UX review spanning shell, launcher, cards, keyboard, terminal, media, Help, System, startup, and recovery. It SHALL assess visual consistency and complete user journeys using a reusable rubric. Each finding SHALL distinguish functional status, design quality, evidence confidence, and unobserved behavior, and identify the reviewed revision and installed or experimental artifact. Documentation owns the critique; runtime owners retain implementation responsibility.
 
@@ -16,7 +17,10 @@ The documentation SHALL expose a dated design and UX review spanning shell, laun
 
 ### Requirement: Design recommendations SHALL include inspectable visual and interaction comparisons
 
-<!-- UNVERIFIED: new comparisons and their critique remain to be created. -->
+*Grounding: rendered comparison sheets and recorded coordinator inspection
+in `docs/research/handheld-ux/review-round-2/visual-review.md`; exact publication
+and browser evidence in `docs/evidence/ux-review-round-2/README.md`. These are
+reviewable design mockups, not device implementation or physical acceptance.*
 
 The review SHALL provide at least three annotated current-versus-target comparisons covering Apps, cards, and keyboard/recovery composition, plus a transition storyboard. It SHALL identify reference sources and observed interaction principles, including a concrete comparison with the intended webOS-inspired experience. Proposed layouts SHALL be marked as proposals, and recommendations SHALL explain user benefit, consistency with the shared visual/touch contract, and relevant performance constraints.
 
@@ -30,7 +34,8 @@ The review SHALL provide at least three annotated current-versus-target comparis
 
 ### Requirement: A review round SHALL close with a candidate recheck and owned next work
 
-<!-- UNVERIFIED: candidate recheck, independent critique, and successor reconciliation remain open. -->
+<!-- UNVERIFIED: independent critique, owner reconciliation and the identified
+current-candidate recheck are committed; full journey/final closure remains open. -->
 
 The review SHALL retain an independent critique, severity-ranked findings with separate confidence, and a recheck of P0/P1 findings against an identified integrated candidate. Each finding SHALL identify an existing owner or a bounded successor, an observable acceptance condition, dependencies, and whether it can proceed without the board. Unimplemented or physically unverified findings SHALL remain explicit. The report SHALL name the next three implementation priorities and ensure new priority proposals are validated and published on master.
 

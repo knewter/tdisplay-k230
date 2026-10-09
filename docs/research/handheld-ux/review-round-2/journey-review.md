@@ -20,3 +20,26 @@ serialized candidate recheck must identify the running candidate, capture the
 state natively, and use camera/finger evidence when the question concerns
 reach, readability, or tracking. This review’s scoped host work cannot close
 OpenSpec task 2.2’s current-journey execution requirement.
+
+
+## Current candidate observation — 2026-10-09
+
+See the [identified candidate](candidate-recheck.md). The operator explicitly
+accepts Home fill and correct Home/All Apps/Settings target activation on the
+normal `q2rxmp` HDMI arrangement. New native captures also show a 19-entry Apps
+catalog, one-Terminal-card Overview and loaded Settings after an initial loading
+state. Those route commands were injected and do not count as newly walked
+physical journeys under the rubric.
+
+| Current journey/state | Starting state and observed action/result | Evidence and remaining judgment |
+| --- | --- | --- |
+| Home and app discovery | Normal HDMI Home; operator confirms Home and All Apps icons activate the intended app. | Operator physical report plus matching native/configure identity. No discovery failure reported; optical label reading and overflow/search remain unverified. |
+| Settings | Operator confirms intended row activation. Native route opens loading, then loaded device controls in the later capture. | Separate operator target report and injected/native states. Paint/hit-target acceptance is bounded; output-picker and acoustic behavior are not newly accepted. |
+| Overview | Injected enter from Home produces the current one-Terminal-card image, then returns Home. | Current native visual evidence resolves the old image gap. Two-app physical switch/focus/return remains pending the operator walkthrough. |
+| Keyboard and terminal | Keyboard controls are visible in current Settings; Terminal is present in Overview. | Physical show/type/hide and focus are pending; no keyboard-visible composition or reach claim follows from those images. |
+| Media | Video is in the current catalog. | Actual current play/stop/Home journey pending; a catalog icon is not playback proof. |
+| Help/System | No named Help or System app appears in the captured 19-entry catalog. Device controls are in Settings. | Older matrix routes are unobserved as separate apps; no new launch or recovery failure is inferred. |
+| Startup, close/refusal, empty/stale/error/denied and accessibility | No focused new power cycle, close/refusal or complete exceptional-state sequence was performed. | Each stays UNVERIFIED with its runtime owner. These missing observations are not failures or completion of those owners’ gates. |
+
+Task 2.2 remains open for the requested current physical walkthrough. The
+candidate identity and all four findings have been rechecked for 3.1/3.2.

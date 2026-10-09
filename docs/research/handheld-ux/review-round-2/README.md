@@ -17,3 +17,12 @@ are in [findings](findings.md) and [recommendations](recommendations.md).
 The cards and keyboard sheets intentionally identify older source artifacts;
 they do not claim those pixels are the latest integrated candidate. Fresh
 candidate capture and physical review remain in task group 3.
+
+
+## Integrated recheck — 2026-10-09
+
+[Current candidate recheck](candidate-recheck.md) and its
+[console/native evidence](../../../evidence/ux-review-round-2/candidate-2026-10-09/README.md)
+complete tasks 3.1/3.2. This later normal runtime is identified separately from
+the original baseline and older comparison sheets. Task 2.2's actual current
+journey walkthrough and 4.2's final review/publication/archive remain open.

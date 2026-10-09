@@ -62,3 +62,11 @@ Design mockup labels, gallery dismissal, and the report opening as rendered
 Markdown in the document modal with return to the same card detail. No page
 errors occurred. This is host-browser publication proof, not K230 input or
 optical acceptance.
+
+
+## Current candidate checkpoint — 2026-10-09
+
+The [sanitized console and native captures](candidate-2026-10-09/README.md)
+identify the later normal runtime and complete candidate/recheck tasks 3.1/3.2.
+The actual current journey walkthrough remains open. Historical host/browser
+publication above keeps its original evidence class and revision.

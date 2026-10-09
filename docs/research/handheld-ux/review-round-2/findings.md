@@ -51,3 +51,13 @@ consumer consistency work. The final sheet corrections are recorded in
 and reconciliation are sufficient for tasks 2.1 and 2.3. No disagreement
 remains on the scope or severity of the four findings; all physical and
 unexercised journey limits remain explicit.
+
+
+## Candidate recheck — 2026-10-09
+
+[The current recheck](candidate-recheck.md) reviews all four findings on the
+identified normal runtime. No P0/P1 severity was assigned or newly established.
+UX2-02's missing current Overview image is resolved for the observed one-card
+state; UX2-04 now has a 19-entry installed-catalog capture. Clock/picker ideas
+remain optional, and no optical/motion/overflow assertion is added. Existing
+implementation and physical owners retain their gates.

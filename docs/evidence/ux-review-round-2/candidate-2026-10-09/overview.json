@@ -1,0 +1,153 @@
+{
+  "scene": "overview",
+  "units": {
+    "shell": {
+      "MainPID": 1022,
+      "ExecStart_executable": "/nix/store/gp9gv2nh0zf4bgryk8qp4dbprnfycya2-k230-card-shell/bin/sway",
+      "resolved_executable": "/nix/store/g7xzwwvr3x05mlmsab5jn5kn1sl41wjb-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway",
+      "sanitization": "ExecStart arguments omitted; executable path retained"
+    },
+    "shell-ui": {
+      "MainPID": 1044,
+      "ExecStart_executable": "/nix/store/fys5c84qf4z72wnhn87b46z7jvyj18l9-k230-shell-rust/bin/k230-shell-rust",
+      "resolved_executable": "/nix/store/q2rxmp980f9kxi962f29333z9pbixvbk-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0/bin/k230-shell-rust",
+      "sanitization": "ExecStart arguments omitted; executable path retained"
+    }
+  },
+  "loaded_pixman": [
+    "/nix/store/brhzfimak2r3c23lmn80y1g6ww6nmb1r-pixman-riscv64-unknown-linux-gnu-0.46.4/lib/libpixman-1.so.0.46.4"
+  ],
+  "compositor_opt_in_controls": {
+    "WLR_PIXMAN_QUARTER_TURN": "",
+    "WLR_PIXMAN_OUTPUT_TURN": ""
+  },
+  "runtime": {
+    "boot_id": "4bf73b24-a16a-4786-96fb-f1288244d96f",
+    "cmdline": "console=tty0 consoleblank=0 console=ttyS0,115200n8 root=fstab loglevel=4 lsm=landlock,yama,bpf loglevel=7 init=/nix/store/yl3si5ak6yi709yg1fqsnwgq0zn4xfcs-nixos-system-nixos-26.11.20260919.20b1ddd/init",
+    "drm": {
+      "card0-DSI-1": {
+        "enabled": "disabled",
+        "status": "disconnected"
+      },
+      "card0-HDMI-A-1": {
+        "enabled": "enabled",
+        "status": "connected"
+      }
+    },
+    "evidence_class": "serial/sysfs/compositor state; no physical glass or real-touch result inferred",
+    "hpd": "connected",
+    "kernel": "/nix/store/f3rnipvbc5vqam8kwdmn3wgcl5rbz9yx-linux-riscv64-unknown-linux-gnu-7.3.0-rc5/Image",
+    "monotonic_seconds": 8709.486496388,
+    "profile": "/nix/store/yl3si5ak6yi709yg1fqsnwgq0zn4xfcs-nixos-system-nixos-26.11.20260919.20b1ddd",
+    "relevant_inputs": [
+      {
+        "identifier": "1:1:K230_Virtual_Touchpad_(HDMI_mode)",
+        "name": "K230 Virtual Touchpad (HDMI mode)",
+        "product": 1,
+        "type": "touchpad",
+        "vendor": 1
+      },
+      {
+        "identifier": "0:0:Goodix_Berlin_Capacitive_TouchScreen",
+        "name": "Goodix Berlin Capacitive TouchScreen",
+        "product": 0,
+        "type": "touch",
+        "vendor": 0
+      },
+      {
+        "identifier": "0:0:K230_PMU_Power_Key",
+        "name": "K230 PMU Power Key",
+        "product": 0,
+        "type": "keyboard",
+        "vendor": 0
+      }
+    ],
+    "services": {
+      "k230-touch-trackpad": "active",
+      "shell": "active",
+      "shell-ui": "active"
+    },
+    "shell_executable": "/nix/store/q2rxmp980f9kxi962f29333z9pbixvbk-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0/bin/k230-shell-rust",
+    "sway_outputs": [
+      {
+        "active": true,
+        "current_mode": {
+          "height": 800,
+          "picture_aspect_ratio": "none",
+          "refresh": 59910,
+          "width": 1280
+        },
+        "name": "HDMI-A-1",
+        "rect": {
+          "height": 1280,
+          "width": 800,
+          "x": 0,
+          "y": 0
+        },
+        "scale": 1.0,
+        "transform": "90"
+      }
+    ],
+    "system": "/nix/store/yl3si5ak6yi709yg1fqsnwgq0zn4xfcs-nixos-system-nixos-26.11.20260919.20b1ddd",
+    "touch_device": "0-005d",
+    "touch_driver": "/sys/bus/i2c/drivers/goodix-berlin-i2c",
+    "utc": "2026-10-09T22:06:19.156181+00:00"
+  },
+  "compositor_pid": 1022,
+  "compositor_executable": "/nix/store/g7xzwwvr3x05mlmsab5jn5kn1sl41wjb-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway",
+  "configure_records": [
+    {
+      "surface_event": "wallpaper-configure",
+      "width": 800,
+      "height": 1280
+    },
+    {
+      "surface_event": "home-configure",
+      "width": 800,
+      "height": 1280
+    },
+    {
+      "surface_event": "configure",
+      "width": 800,
+      "height": 1280
+    }
+  ],
+  "capture_utc": "2026-10-09T22:06:21.678517+00:00",
+  "capture_commands": [
+    [
+      "runuser",
+      "-u",
+      "shell",
+      "--",
+      "env",
+      "SWAYSOCK=/run/shell/sway-ipc.sock",
+      "swaymsg",
+      "card_shell enter"
+    ],
+    [
+      "runuser",
+      "-u",
+      "shell",
+      "--",
+      "env",
+      "XDG_RUNTIME_DIR=/run/shell",
+      "WAYLAND_DISPLAY=wayland-1",
+      "grim",
+      "-c",
+      "/run/shell/ux-closeout-overview.png"
+    ],
+    [
+      "runuser",
+      "-u",
+      "shell",
+      "--",
+      "env",
+      "SWAYSOCK=/run/shell/sway-ipc.sock",
+      "swaymsg",
+      "card_shell home"
+    ]
+  ],
+  "sha256": "83c8b4261beb9621eaaeed8c8e6c1d4fe25bb16abbad63de4234355d25e16de8",
+  "bytes": 128369,
+  "evidence_class": "native board capture after injected route command; physical journeys recorded separately"
+}

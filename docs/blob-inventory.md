@@ -1682,6 +1682,11 @@ DATA 5490312c11c4c5fdbb92a0f9745a83dce0c316c148cc78379ada559f180e09bf docs/evide
 DATA ce417f85b6a8de46d73fb7b4955524e3463106b90b7e0f09185618ec926aa98e docs/evidence/hdmi-hotplug/manual-switch/host-settings-568x1232.png
 DATA 7139fd4be7aecff236b5df281a2c0a8b62aaad8b8df96bd03a174572183bf3b6 docs/evidence/hdmi-hotplug/manual-switch/host-settings-800x1280.png
 DATA 0938edbc429fe58e4ccc4f16e4f25e163b8a8c3664f8a298bed8b8c19bfc7f1d docs/evidence/shell-responsive/board/acceptance-2026-10-09/home.png
+# Current UX candidate native captures — 2026-10-09
+DATA 83c8b4261beb9621eaaeed8c8e6c1d4fe25bb16abbad63de4234355d25e16de8 docs/evidence/ux-review-round-2/candidate-2026-10-09/overview.png
+DATA 2d009ee5c0b97bfc21e04592bd099b0f21643bafe660043ed9d0a3e7c418b286 docs/evidence/ux-review-round-2/candidate-2026-10-09/drawer.png
+DATA cabe8ccd9ea9e02dab94e4b12cd4a849b5f3c640ed33dd6d007694a4a2592830 docs/evidence/ux-review-round-2/candidate-2026-10-09/settings-loading.png
+DATA 28d54e2559cd392b108649241ea60bbdafb4d17ac8d653e84b0e7cee638aa931 docs/evidence/ux-review-round-2/candidate-2026-10-09/settings.png
 ```
 
 `group:` rows stand for a directory whose members are enumerated by

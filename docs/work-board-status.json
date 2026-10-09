@@ -477,13 +477,15 @@
       "lane": "in-progress",
       "source": "in-progress",
       "physical": "pending",
-      "next": "Walk the remaining current-source journeys and perform the focused integrated-candidate recheck; the host report and annotated comparisons have landed.",
+      "next": "Complete the current keyboard, two-app Overview and media walkthrough, then review/publish/archive the analysis; candidate identity and findings recheck are committed.",
       "dependencies": [],
       "evidence": [
-        "docs/evidence/ux-review-round-2/README.md"
+        "docs/evidence/ux-review-round-2/README.md",
+        "docs/evidence/ux-review-round-2/candidate-2026-10-09/README.md",
+        "docs/research/handheld-ux/review-round-2/candidate-recheck.md"
       ],
-      "rationale": "Five host analysis tasks are complete with independent review. Proposed layouts remain design mockups; current-journey and integrated physical checks remain open.",
-      "reviewRevision": "9d7437b08b1c6429748af29b62b4f8a522ea8dd7",
+      "rationale": "Seven of nine tasks are complete: visual/independent host critique and the identified current native/console recheck. Full current journey execution and final closure remain open. Native/injected captures do not prove optical or real-finger motion.",
+      "reviewRevision": "1f1b4ef9",
       "cover": {
         "path": "docs/research/handheld-ux/review-round-2/visuals/apps.svg",
         "caption": "Apps comparison: current host render and proposed refinement",

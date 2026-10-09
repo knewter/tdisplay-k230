@@ -51,3 +51,14 @@ This makes the absent states reviewable instead of replacing them with
 illustrative screens. For source-specific actions and expected results, follow
 the linked row in the matrix; for what this review did and did not observe,
 see [`journey-review.md`](journey-review.md).
+
+
+## Later integrated candidate — 2026-10-09
+
+The original dated baseline remains above. The [candidate recheck](candidate-recheck.md)
+and [source/console/native evidence](../../../evidence/ux-review-round-2/candidate-2026-10-09/README.md)
+identify the later normal `yl3si5ak` / `q2rxmp` / `g7xzww` runtime separately.
+Current Home, 19-entry Apps, one-card Overview and initial/loaded Settings
+states are now observed natively at 800×1280 logical HDMI. The operator accepts
+current Home fill and Home/All Apps/Settings targets. These observations do not
+retroactively turn the older matrix or keyboard image into a new walkthrough.

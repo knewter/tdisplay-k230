@@ -27,8 +27,8 @@ theme-picker, power-key, and other current shell work lands, so the recheck
 runs against a more final integrated candidate — see `Status (2026-09-28)`
 in `proposal.md`.
 
-- [ ] 3.1 Reserve the board and record the integrated candidate identity with `flock /tmp/k230-board.lock python3 tools/console.py /dev/ttyACM0 --wait=3 'readlink -f /run/current-system; systemctl is-active shell.service; systemctl show shell.service -p MainPID -p ExecStart; readlink -f /proc/$(systemctl show shell.service -p MainPID --value)/exe'`. Record any separately launched experimental compositor's unit/PID, resolved executable, and package explicitly; the default system closure alone does not identify it. Commit a sanitized transcript and native screenshots with their exact capture commands. Verify the candidate is identified separately from baseline and opt-in packages; no reflash is required merely to conduct this review.
-- [ ] 3.2 Recheck each P0/P1 finding against that candidate and commit `candidate-recheck.md` with before/after evidence and remaining owners. Reuse unchanged accepted physical observations. If a changed behavior requires new optical/finger evidence, use `python3 tools/capture-feature.py ux-review-round-2 --provenance real-touch --duration 30 --description 'Focused design review of changed handheld flows' --output-dir docs/evidence/ux-review-round-2` during a coordinated operator session, inspect the footage, and record its actual limits. If unavailable, mark those claims UNVERIFIED and preserve the acceptance work with its runtime owner; do not silently waive it.
+- [x] 3.1 Reserve the board and record the integrated candidate identity with `flock /tmp/k230-board.lock python3 tools/console.py /dev/ttyACM0 --wait=3 'readlink -f /run/current-system; systemctl is-active shell.service; systemctl show shell.service -p MainPID -p ExecStart; readlink -f /proc/$(systemctl show shell.service -p MainPID --value)/exe'`. Record any separately launched experimental compositor's unit/PID, resolved executable, and package explicitly; the default system closure alone does not identify it. Commit a sanitized transcript and native screenshots with their exact capture commands. Verify the candidate is identified separately from baseline and opt-in packages; no reflash is required merely to conduct this review.
+- [x] 3.2 Recheck each P0/P1 finding against that candidate and commit `candidate-recheck.md` with before/after evidence and remaining owners. Reuse unchanged accepted physical observations. If a changed behavior requires new optical/finger evidence, use `python3 tools/capture-feature.py ux-review-round-2 --provenance real-touch --duration 30 --description 'Focused design review of changed handheld flows' --output-dir docs/evidence/ux-review-round-2` during a coordinated operator session, inspect the footage, and record its actual limits. If unavailable, mark those claims UNVERIFIED and preserve the acceptance work with its runtime owner; do not silently waive it.
 
 Proof: the recorded console command, committed native captures and reviewed recheck table; use the named camera command only for actual physical interaction. This is hardware observation with separately labelled injected/native/optical/finger evidence, not QEMU proof. Missing physical footage cannot establish readability or finger tracking.
 
@@ -47,3 +47,15 @@ three unchanged operator-accepted real-finger checks. Tasks 3.1–3.2 remain
 open for the focused integrated candidate/physical recheck. Task 4.2 remains
 open for reviewed publication, merge/push, exact-revision CI/Pages and the
 published URL. This change is not ready to archive.
+
+
+**Integrated candidate checkpoint — 2026-10-09:** tasks 3.1/3.2 are complete.
+The exact named console proof ran with pager/color controls to preserve complete
+identity fields; active unit/PID, service wrapper, actual compositor/Rust
+executables and loaded Pixman are identified independently. Four inspected
+native captures and their exact commands/hashes are committed under
+`docs/evidence/ux-review-round-2/candidate-2026-10-09/`; `candidate-recheck.md`
+reviews all four findings and preserves every optical/finger/runtime unknown.
+No finding had P0/P1 severity. Task 2.2 remains open for the focused current
+journey walkthrough, and 4.2 remains open for final publication/archive.
+This checkpoint adds no runtime implementation or blanket physical acceptance.
