@@ -2,7 +2,9 @@
 
 Recorded 2026-10-09T14:53:11.176690+00:00. Evidence class: local
 kernel source inspection only. No device tree was trial-booted and no physical
-plug/unplug transition was observed. The accepted HDMI trial remains running.
+plug/unplug transition was observed at this inspection. The accepted HDMI
+trial is prior evidence; the subsequent board preflight found the protected
+panel boot running (see panel-raw-hpd.json).
 
 The existing LT9611 driver cannot be made a standalone monitor merely by
 adding its I2C node to the panel device tree:

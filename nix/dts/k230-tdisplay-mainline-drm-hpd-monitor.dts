@@ -1,0 +1,40 @@
+// SPDX-License-Identifier: GPL-2.0 OR MIT
+// Opt-in display/touch companion to k230-tdisplay-mainline.dts.
+// This is compiled only for deviceTreeMainlineDrm; it does not change the
+// console-only mainline profile or any vendor/default DTB.
+
+#include <dt-bindings/gpio/gpio.h>
+#include <dt-bindings/interrupt-controller/irq.h>
+#include <dt-bindings/clock/canaan,k230-clk.h>
+#include <dt-bindings/reset/canaan,k230-rst.h>
+#include <dt-bindings/soc/canaan,k230_pm_domains.h>
+
+#include "k230-tdisplay-mainline.dts"
+
+#include "k230-tdisplay-mainline-drm-common.dtsi"
+
+#include "display-rm69a10-568x1232.dtsi"
+
+&gpio0 {
+	status = "okay";
+};
+
+&i2c3 {
+	status = "okay";
+};
+
+&lcd {
+	dsi_reset-gpios = <&gpio0_ports 22 GPIO_ACTIVE_HIGH>;
+	backlight_gpio-gpios = <&gpio0_ports 25 GPIO_ACTIVE_HIGH>;
+};
+
+// Qualification tree: the panel remains the sole DSI endpoint.
+&i2c3 {
+	lt9611: hdmi-monitor@3b {
+		compatible = "lontium,lt9611";
+		reg = <0x3b>;
+		lontium,shared-reset-owner = <&touch>;
+		lontium,hpd-monitor-only;
+		// No reset, IRQ or DSI ports: this client only exposes polled HPD.
+	};
+};
