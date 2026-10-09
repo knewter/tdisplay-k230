@@ -248,6 +248,19 @@
             })
           ];
         };
+        # HDMI keeps the daily mainline compositor, with the existing
+        # touchscreen-to-mouse relay enabled only for this alternate boot.
+        k230-mainline-drm-shell-hdmi = self.nixosConfigurations.k230-mainline-drm-shell.extendModules {
+          modules = [
+            ./nix/touch-trackpad-service.nix
+            ({ lib, ... }: {
+              k230.touchTrackpad.enable = true;
+              boot.kernelModules = lib.mkOverride 40 (
+                self.nixosConfigurations.k230-mainline-drm-shell.config.boot.kernelModules ++ [ "uinput" ]
+              );
+            })
+          ];
+        };
         # Getter-only autonomous UART observation; no existing variant changes.
         k230-mainline-uart-observer = self.nixosConfigurations.k230-mainline-drm-trial.extendModules {
           modules = [ ./nix/mainline-uart-observer/module.nix ];
@@ -846,8 +859,8 @@
         # The daily mainline bundle with the HDMI DTB under the filename stage 1
         # loads, for a volatile coherent trial boot on a monitor.
         kernelMainlineDrmShellHdmiBootFiles = pkgs.callPackage ./nix/coherent-shell-boot-files.nix {
-          cfg = self.nixosConfigurations.k230-mainline-drm-shell.config;
-          configuration = "k230-mainline-drm-shell";
+          cfg = self.nixosConfigurations.k230-mainline-drm-shell-hdmi.config;
+          configuration = "k230-mainline-drm-shell-hdmi";
           deviceTree = pkgs.runCommand "k230-mainline-drm-hdmi-dtb-normal-name" { } ''
             mkdir -p $out
             cp ${self.packages.${buildSystem}.deviceTreeMainlineDrmHdmi}/k230-tdisplay-mainline-drm-hdmi.dtb $out/k230-tdisplay.dtb

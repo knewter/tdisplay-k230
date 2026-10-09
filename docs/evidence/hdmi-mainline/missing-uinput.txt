@@ -1,0 +1,7 @@
+BEGIN_RELAY_ERROR
+RELAY_IMPORTED
+modprobe: FATAL: Module uinput not found in directory /run/booted-system/kernel-modules/lib/modules/7.3.0-rc5
+ls: cannot access '/dev/uinput': No such file or directory
+Unit k230-hdmi-trackpad-trial.service could not be found.
+
+END_RELAY_ERROR

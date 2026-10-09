@@ -1,0 +1,15 @@
+{
+  "evidence_class": "host cross-compiled object and external module; not full-kernel or fixed-bundle boot proof",
+  "source_base": "edd74d1626d03770e08e328320b18118ece24508",
+  "kernel_dev": "/nix/store/5psfka6qdgy7pqhxja1vicibs3gpccl0-linux-riscv64-unknown-linux-gnu-7.3.0-rc5-dev",
+  "lt9611_source_sha256": "9efcaeffc8483725de6caccb0b5b7625df9a31db75ae76e0c5442f71ca54408c",
+  "lt9611_object": "/nix/store/y4cw3nd1slqy3hcsyalbmvgmwivb5p4r-k230-lt9611-shared-reset-object-check-riscv64-unknown-linux-gnu",
+  "lt9611_compile_command": "nix build --impure --file ~/tmp/k230-hdmi-continue-private/lt9611-check.nix --max-jobs 1 --cores 2 -L",
+  "lt9611_result": "PASS",
+  "uinput_output": "/nix/store/sb83qywr6r3mkybsxighxhkq4gw1fd16-k230-uinput-live-trial-riscv64-unknown-linux-gnu",
+  "uinput_sha256": "8f0cb9ad9db19e422c6002b5c9e121f9f827f75ae8ed5a32f312fa4fa0dbdc26",
+  "uinput_compile_command": "nix build --impure --file ~/tmp/k230-hdmi-continue-private/uinput.nix --max-jobs 1 --cores 2 -L",
+  "uinput_result": "PASS",
+  "inspector_command": "python3 tests/test_coherent_shell_boot_inspect.py --bundle ~/tmp/k230-hdmi-bundle",
+  "inspector_result": "PASS: 15 tests"
+}

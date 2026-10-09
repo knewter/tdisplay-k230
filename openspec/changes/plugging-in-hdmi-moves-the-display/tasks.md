@@ -223,10 +223,13 @@ These links do not complete this proposal's HDMI hardware or landscape gates.
 
 ## 6. Proposal validation
 
-- [ ] 6.1 Validate this change and preserve every unresolved hardware
+- [x] 6.1 Validate this change and preserve every unresolved hardware
       requirement as `<!-- UNVERIFIED -->` until its named evidence exists;
       verify with
       `openspec validate plugging-in-hdmi-moves-the-display --strict`.
+      *2026-10-09: strict validation passed after recording the mainline
+      live workaround. Hardware switching and the new bundle's complete
+      boot/pointer proof remain unchecked and UNVERIFIED.*
 - [ ] 6.2 Run `python3 scripts/render_work_board.py > /dev/null`, commit,
       and hand off to the coordinator for an early merge to `master` per
       AGENTS.md, independent of whether groups 3–5 have started — the
@@ -245,3 +248,10 @@ Groups 3–5 above apply to mainline once these tasks land.
 - [ ] 7.1 Make the mainline LT9611 driver's reset GPIO and IRQ optional (HPD by connector polling without an IRQ), as vendor `nix/patches/lt9611-dsi-port-b.patch` does, because GPIO24/GPIO23 belong to the GT9895 touch. Proof: `nix build .#kernelMainlineDrm`.
 - [ ] 7.2 Add `nix/dts/k230-tdisplay-mainline-drm-hdmi.dts` (LT9611 on `&i2c3` at 0x3b, DSI port@1 → LT9611 port@1 (Port B) → `hdmi-connector`, touch keeps GPIO24/23, no panel), a `dtsFile` parameter for `nix/device-tree-mainline-drm.nix`, and flake outputs `deviceTreeMainlineDrmHdmi` and `kernelMainlineDrmShellHdmiBootFiles` (the normal bundle with the HDMI DTB under `k230-tdisplay.dtb`). Proof: DTB builds and decompiles; host inspection of the bundle.
 - [ ] 7.3 On the board with a monitor attached, stage and volatile-trial-boot the HDMI bundle with `tools/coherent-shell-board-boot.py` (a plain reboot returns to the panel). Record the `HDMI-A-1` connector, EDID mode, LT9611 probe and `hsfreqrange` messages, a native `grim` capture, and the operator's report of the picture and touch-as-trackpad. Tune `canaan,hsfreqrange` if the link fails. Proof: serial record and operator report in `docs/evidence/hdmi-mainline/`.
+      *2026-10-09 continuation: the original trial recovered HDMI after
+      re-enabling I2C access erased by touch's shared reset, then cycling
+      the output. Automatic HPD, a 256-byte EDID, native capture and the
+      operator's "screen works" report are recorded in
+      `docs/evidence/hdmi-mainline/README.md`. The new reset-ordering and
+      relay/uinput profile still need their matching build and board boot;
+      this partial live recovery does not complete 7.3.*

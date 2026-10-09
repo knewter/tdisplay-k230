@@ -39,7 +39,7 @@
 			clock-frequency = <400000>;
 			status = "okay";
 
-			touchscreen@5d {
+			touch: touchscreen@5d {
 				compatible = "goodix,gt9895", "goodix,gt9916";
 				reg = <0x5d>;
 				reset-gpios = <&gpio0_ports 24 GPIO_ACTIVE_LOW>;

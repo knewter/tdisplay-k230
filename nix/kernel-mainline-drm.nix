@@ -112,6 +112,9 @@ EOK
       # controller on mainline's DesignWare I2C driver.
       INPUT_TOUCHSCREEN = yes;
       TOUCHSCREEN_GOODIX_BERLIN_I2C = yes;
+      # The HDMI touchscreen relay creates a virtual mouse through uinput.
+      # The mainline trial otherwise has no /dev/uinput (board 2026-10-09).
+      INPUT_UINPUT = module;
       # For the LT9611 HDMI bridge path (canaan-dsi-bridge-connector.patch):
       # already-mainline, generic, I2C-attached bridge driver.
       DRM_LONTIUM_LT9611 = yes;

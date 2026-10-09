@@ -1,0 +1,44 @@
+BEGIN_TOUCH
+debug-shell.service                      linked          ignored
+shell-keyboard.service                   enabled         ignored
+shell-notifications.service              enabled         ignored
+shell-power-key.service                  enabled         ignored
+shell-session-bus.service                linked          ignored
+shell-ui.service                         enabled         ignored
+shell.service                            enabled         ignored
+ls: cannot access '/run/current-system/sw/bin/*trackpad*': No such file or directory
+
+I: Bus=0018 Vendor=0000 Product=0000 Version=0000
+N: Name="Goodix Berlin Capacitive TouchScreen"
+P: Phys=input/ts
+S: Sysfs=/devices/platform/soc/91408000.i2c/i2c-0/0-005d/input/input1
+U: Uniq=
+H: Handlers=mouse0 event1
+B: PROP=2
+B: EV=b
+B: KEY=400 0 0 0 0 0
+B: ABS=261800000000003
+
+Input device: wlr_virtual_keyboard_v1
+  Type: Keyboard
+  Identifier: 0:0:wlr_virtual_keyboard_v1
+  Product ID: 0
+  Vendor ID: 0
+  Active Keyboard Layout: wvkbd
+
+Input device: Goodix Berlin Capacitive TouchScreen
+  Type: Touch
+  Identifier: 0:0:Goodix_Berlin_Capacitive_TouchScreen
+  Product ID: 0
+  Vendor ID: 0
+  Libinput Send Events: disabled
+
+Input device: K230 PMU Power Key
+  Type: Keyboard
+  Identifier: 0:0:K230_PMU_Power_Key
+  Product ID: 0
+  Vendor ID: 0
+  Active Keyboard Layout: English (US)
+  Libinput Send Events: enabled
+
+END_TOUCH

@@ -41,6 +41,9 @@
 	lt9611: hdmi-bridge@3b {
 		compatible = "lontium,lt9611";
 		reg = <0x3b>;
+		// Touch's probe resets this chip too. Initialize the bridge only
+		// after that reset, and order suspend/remove after the bridge.
+		lontium,shared-reset-owner = <&touch>;
 		// No reset-gpios and no interrupt: GPIO24 (reset) and GPIO23 (INT)
 		// are single nets shared with the GT9895 touch, which owns them.
 		// The touch probe's reset also releases the LT9611; hotplug is

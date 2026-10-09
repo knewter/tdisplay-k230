@@ -1,0 +1,56 @@
+BEGIN_REGS
+0-003b  0-005d  91105000.pinctrl-canaan,pinctrl
+driver                   name     subsystem
+hdmi-audio-codec.0.auto  of_node  supplier:regulator:regulator.0
+modalias                 power    uevent
+plane[35]: plane-0
+	crtc=(null)
+	fb=0
+	crtc-pos=0x0+0+0
+	src-pos=0.000000x0.000000+0.000000+0.000000
+	rotation=1
+	normalized-zpos=0
+	color-encoding=ITU-R BT.601 YCbCr
+	color-range=YCbCr limited range
+	color_mgmt_changed=0
+	color-pipeline=0
+plane[37]: plane-1
+	crtc=canaan_crtc
+	fb=55
+		allocated by = sway
+		refcount=2
+		format=RG16 little-endian (0x36314752)
+		modifier=0x0
+		size=1920x1080
+		layers:
+			size[0]=1920x1080
+			pitch[0]=3840
+			offset[0]=0
+			obj[0]:
+				name=0
+				refcount=4
+				start=001003f5
+				size=4149248
+				imported=no
+				dma_addr=0x000000000a400000
+				vaddr=00000000435c0c50
+	crtc-pos=1920x1080+0+0
+	src-pos=1920.000000x1080.000000+0.000000+0.000000
+	rotation=1
+	normalized-zpos=0
+	color-encoding=ITU-R BT.601 YCbCr
+	color-range=YCbCr limited range
+	color_mgmt_changed=0
+	color-pipeline=0
+plane[39]: plane-2
+	crtc=(null)
+	fb=0
+	crtc-pos=0x0+0+0
+	src-pos=0.000000x0.000000+0.000000+0.000000
+	rotation=1
+[    4.826489] goodix-berlin-i2c 0-005d: supply avdd not found, using dummy regulator
+[    4.826719] goodix-berlin-i2c 0-005d: supply vddio not found, using dummy regulator
+[    4.976642] input: Goodix Berlin Capacitive TouchScreen as /devices/platform/soc/91408000.i2c/i2c-0/0-005d/input/input1
+/run/current-system/sw/bin/i2ctransfer
+/run/shell/wayland-1  /run/shell/wayland-1.lock
+END_REGS

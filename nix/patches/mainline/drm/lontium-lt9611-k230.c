@@ -1250,6 +1250,42 @@ static int lt9611_read_device_rev(struct lt9611 *lt9611)
 	return ret;
 }
 
+static int lt9611_wait_for_shared_reset_owner(struct device *dev)
+{
+	struct device_node *node;
+	struct i2c_client *owner;
+	struct device_link *link;
+	int ret = 0;
+
+	/*
+	 * On K230, the touch probe asserts the LT9611's shared reset too.
+	 * Wait until that probe finishes before enabling I2C or programming
+	 * the bridge. Otherwise the reset erases the setup after DRM binds
+	 * (including 0x80ee), but power_on still says it is initialized.
+	 */
+	node = of_parse_phandle(dev->of_node, "lontium,shared-reset-owner", 0);
+	if (!node)
+		return 0;
+
+	owner = of_find_i2c_device_by_node(node);
+	of_node_put(node);
+	if (!owner)
+		return -EPROBE_DEFER;
+
+	if (!device_is_bound(&owner->dev)) {
+		ret = -EPROBE_DEFER;
+	} else {
+		link = device_link_add(dev, &owner->dev, DL_FLAG_AUTOREMOVE_CONSUMER);
+		if (!link)
+			ret = -EINVAL;
+	}
+	put_device(&owner->dev);
+
+	if (ret)
+		return dev_err_probe(dev, ret, "waiting for shared reset owner\n");
+	return 0;
+}
+
 static int lt9611_probe(struct i2c_client *client)
 {
 	struct lt9611 *lt9611;
@@ -1260,6 +1296,10 @@ static int lt9611_probe(struct i2c_client *client)
 		dev_err(dev, "device doesn't support I2C\n");
 		return -ENODEV;
 	}
+
+	ret = lt9611_wait_for_shared_reset_owner(dev);
+	if (ret)
+		return ret;
 
 	lt9611 = devm_drm_bridge_alloc(dev, struct lt9611, bridge,
 				       &lt9611_bridge_funcs);

@@ -1,0 +1,52 @@
+BEGIN_HDMI
+Fri Oct  9 05:12:01 AM UTC 2026
+7.3.0-rc5
+/nix/store/6armjz2q35gdyv5l8vas4k9mk48nzzhq-nixos-system-nixos-26.11.20260919.20b1ddd
+/sys/class/drm/card0-HDMI-A-1
+connected
+1024x768
+800x600
+800x600
+848x480
+640x480
+0 /sys/class/drm/card0-HDMI-A-1/edid
+active
+active
+inactive
+Output HDMI-A-1 'Unknown Unknown Unknown' (focused)
+  Current mode: 1024x768 @ 60.004 Hz
+  Power: on
+  Position: 0,0
+  Scale factor: 1.000000
+  Scale filter: nearest
+  Subpixel hinting: unknown
+  Transform: 90
+  Workspace: 1
+  Max render time: off
+  Adaptive sync: unsupported
+  Allow tearing: no
+  HDR: unsupported
+  Available modes:
+    1024x768 @ 60.004 Hz
+    800x600 @ 60.317 Hz
+    800x600 @ 56.250 Hz
+    848x480 @ 60.000 Hz
+    640x480 @ 59.940 Hz
+
+[    2.366383] lt9611 0-003b: supply vdd not found, using dummy regulator
+[    2.366564] lt9611 0-003b: supply vcc not found, using dummy regulator
+[    2.531640] lt9611 0-003b: LT9611 revision: 0xe2
+[    2.539989] canaan-mipi-dsi 90850000.dsi: Attached device lt9611
+[    4.095746] canaan-mipi-dsi 90850000.dsi: DSI PHY: lane 891000 kbps, voc 0x7, hsfreqrange 0x96
+[    4.773795] lt9611 0-003b: video check: hactive_a=1920, hactive_b=0, vactive=1081, v_total=1125, h_total_sysclk=400
+[    4.845861] lt9611 0-003b: read edid failed: access not done
+[    4.851704] lt9611 0-003b: edid read failed
+[    4.873136] canaan-mipi-dsi 90850000.dsi: DSI PHY: lane 396000 kbps, voc 0x1f, hsfreqrange 0x96
+[    5.605865] lt9611 0-003b: video check: hactive_a=0, hactive_b=0, vactive=0, v_total=0, h_total_sysclk=0
+[  108.029116] lt9611 0-003b: read edid failed: access not done
+[  108.029486] lt9611 0-003b: edid read failed
+[  108.315044] lt9611 0-003b: read edid failed: access not done
+[  108.315417] lt9611 0-003b: edid read failed
+[  108.351511] canaan-mipi-dsi 90850000.dsi: DSI PHY: lane 396000 kbps, voc 0x1f, hsfreqrange 0x96
+[  109.010167] lt9611 0-003b: video check: hactive_a=0, hactive_b=0, vactive=0, v_total=0, h_total_sysclk=0
+END_HDMI

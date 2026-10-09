@@ -1,0 +1,16 @@
+BEGIN_RECOVER
+8004: 00
+8006: 00
+800a: 00
+800b: 00
+800d: 00
+8011: 00
+8101: 00
+8251: 00
+825e: 00
+8303: 00
+8282: 00
+8283: 00
+disconnected
+0 /sys/class/drm/card0-HDMI-A-1/edid
+END_RECOVER

@@ -1,0 +1,10 @@
+BEGIN_RAW
+0x17 0x02 0xe2
+0x00
+gpiochip0: 32 GPIOs, parent: platform/9140b000.gpio, 9140b000.gpio:
+ gpio-23  (                    |interrupt           ) in  hi IRQ
+ gpio-24  (                    |reset               ) out hi ACTIVE LOW
+
+gpiochip1: 32 GPIOs, parent: platform/9140c000.gpio, 9140c000.gpio:
+-r-------- 1 root root 0 Oct  8 23:57 /sys/kernel/debug/regmap/0-003b/registers
+END_RAW

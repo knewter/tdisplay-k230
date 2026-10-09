@@ -76,9 +76,11 @@ class BundleInspection(unittest.TestCase):
         self.assertFalse(result['persistent_boot_selection_changed'])
 
     def test_mainline_configuration_accepted(self):
-        self.identity['configuration'] = 'k230-mainline-drm-shell'
-        self.sums()
-        self.assertEqual(boot.inspect(self.bundle)['host_inspection'], 'PASS')
+        for configuration in ('k230-mainline-drm-shell', 'k230-mainline-drm-shell-hdmi'):
+            with self.subTest(configuration=configuration):
+                self.identity['configuration'] = configuration
+                self.sums()
+                self.assertEqual(boot.inspect(self.bundle)['host_inspection'], 'PASS')
 
     def test_unknown_configuration_rejected(self):
         self.identity['configuration'] = 'k230-console'

@@ -1,0 +1,15 @@
+BEGIN_ENABLED
+8300: 00
+8002: e2
+[ 1066.056031] canaan-mipi-dsi 90850000.dsi: DSI PHY: lane 891000 kbps, voc 0x7, hsfreqrange 0x96
+[ 1066.722949] lt9611 0-003b: video check: hactive_a=0, hactive_b=0, vactive=0, v_total=0, h_total_sysclk=0
+[ 1113.218628] canaan-mipi-dsi 90850000.dsi: DSI PHY: lane 891000 kbps, voc 0x7, hsfreqrange 0x96
+[ 1113.899435] lt9611 0-003b: video check: hactive_a=1920, hactive_b=0, vactive=1081, v_total=1125, h_total_sysclk=400
+825e: 0d
+connected
+256 /sys/class/drm/card0-HDMI-A-1/edid
+1920x1080
+1920x1080
+1920x1080
+1920x1080
+END_ENABLED

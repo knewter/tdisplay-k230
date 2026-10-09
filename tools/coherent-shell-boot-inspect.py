@@ -51,7 +51,8 @@ def inspect(bundle):
     identity = json.loads((bundle / 'identity.json').read_text())
     require(identity.get('schema') == 1, 'unsupported bundle schema')
     # The vendor-kernel daily shell, or the same shell on the mainline kernel.
-    require(identity.get('configuration') in ('k230-coherent-shell', 'k230-mainline-drm-shell'),
+    require(identity.get('configuration') in ('k230-coherent-shell', 'k230-mainline-drm-shell',
+                                             'k230-mainline-drm-shell-hdmi'),
             'unexpected configuration')
     sums = {}
     for line in (bundle / 'SHA256SUMS').read_text().splitlines():

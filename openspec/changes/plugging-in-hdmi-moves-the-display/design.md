@@ -125,6 +125,26 @@ decision 3 and `docs/research/hdmi-hotplug.md` §6). The kernel patch
 boot path, since it only executes when `dsi->bridge` is non-NULL, which
 never happens without an LT9611 DT node present.
 
+## Mainline reset ordering and mouse profile (2026-10-09)
+
+The first mainline HDMI trial initializes LT9611 before Goodix probes.
+Goodix then asserts their shared GPIO24 and erases the bridge's setup,
+including I2C access enable, while the bridge's cached `power_on` stays true.
+Restoring I2C access and cycling the output recovered a 256-byte EDID and a
+working monitor picture. See `docs/evidence/hdmi-mainline/README.md`.
+
+The kernel driver now defers LT9611 probe until its optional
+`lontium,shared-reset-owner` I2C device has finished binding and adds a
+managed consumer link. The HDMI DTB points that property at touch.
+Rejected: a fixed delay or another bridge-owned reset pulse; neither
+establishes reset ordering, and the second resets already-initialized touch.
+The new driver still needs a matching build and board trial.
+
+The Nix layer supplies a separate `k230-mainline-drm-shell-hdmi` profile
+with the existing touchscreen-to-touchpad service and `uinput` loaded.
+The original mainline HDMI bundle had neither service nor virtual-input
+module. The ordinary panel profile retains its direct-touch setup.
+
 ## Open Questions
 
 - Does U-Boot's own `k230_set_dtb`/`hdmi_dtb`/`lcd_dtb` fallback
