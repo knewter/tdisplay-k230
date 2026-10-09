@@ -35,7 +35,7 @@ Proof: the recorded console command, committed native captures and reviewed rech
 ## 4. Next work and publication (host planning)
 
 - [x] 4.1 Publish `recommendations.md` answering what works, what feels unfinished, the webOS-inspired gap, candidate improvements, and the next three priorities. Map every priority to an existing proposal or create full bounded successor artifacts; verify no duplicate card/GPU/launcher/recovery scope and list parallel paths and board dependencies. The three priorities route to existing picker-motion/theme, integrated card/keyboard recheck, and theme-consumer/Settings owners; no duplicate successor proposal was needed.
-- [ ] 4.2 Validate, review, merge, and push the report and all new priority proposals to master; update the site's status/evidence links without claiming unimplemented designs as shipped. Verify the exact commit in CI and Pages, then archive this analysis only when all its tasks and committed evidence are complete. Implementation successors may remain open.
+- [x] 4.2 Validate, review, merge, and push the report and all new priority proposals to master; update the site's status/evidence links without claiming unimplemented designs as shipped. Verify the exact commit in CI and Pages, then archive this analysis only when all its tasks and committed evidence are complete. Implementation successors may remain open.
 
 Proof: `openspec validate --all --strict`, `python3 scripts/build_site.py`, and `python3 tools/work-status.py`; inspect the exact-revision CI/Pages run with `gh run list --branch master --limit 5` and `gh run view <run-id>`. Record the deployed URL and revision in the handoff. This proves planning/publication, not completion of successor runtime features.
 
@@ -67,3 +67,13 @@ The exact question/reply is committed in the candidate operator report. Task
 2.2 is complete as analysis coverage with explicitly unavailable/unknown states;
 no unperformed runtime accessibility, exceptional-state, optical or motion proof
 is ticked. This supersedes the pending 2.2 checkpoint above.
+
+**Publication closure — 2026-10-09:** the full current report and operator
+walkthrough are merged/pushed at `817804758cae1801e9b57de3cda6969eccd15529`.
+Strict all-item validation passed; the full site build passed with 673 pages,
+17,883,724 bytes and 93.07 seconds. CI/Pages run 37999119193 passed, and the
+actual public work board returned HTTP 200 with that exact revision. The named
+work-status command completed with cached master/origin equal at the earlier
+`1e9d42bf` checkpoint; master was separately checked after publication. Final
+archive validation/publication follows as the same reviewed closeout. All nine
+analysis tasks are complete. No runtime successor gate is waived.

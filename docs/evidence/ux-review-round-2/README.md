@@ -78,3 +78,14 @@ Terminal keyboard, app switching and video journeys requested in this current
 candidate session. Task 2.2 is complete as a review with explicit unknowns; this
 supersedes the pending walkthrough statement above, without changing historical
 evidence or accepting runtime optical/performance/exceptional-state gates.
+
+## Completed report publication — 2026-10-09
+
+The current candidate and operator walkthrough landed at
+`817804758cae1801e9b57de3cda6969eccd15529`.
+[CI and Pages run 37999119193](https://github.com/knewter/tdisplay-k230/actions/runs/37999119193)
+passed build and deployment. The actual [public work board](https://knewter.github.io/tdisplay-k230/work/)
+returned HTTP 200 and that exact revision.
+[publication.json](candidate-2026-10-09/publication.json) records the check and
+its limits. All nine analysis tasks are complete; successor runtime evidence
+remains open. This supersedes the incomplete historical checkpoints above.

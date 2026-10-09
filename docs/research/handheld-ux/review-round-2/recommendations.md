@@ -78,6 +78,7 @@ The [candidate recheck](candidate-recheck.md) now supplies current Overview,
 real 19-entry Apps and loaded Settings evidence from the identified normal
 mainline hotplug runtime, reusing the matching operator Home/Apps/Settings
 acceptance. This completes the capture/identity/recheck portion of priority 2.
-Its keyboard, two-app switch and media walkthrough remains pending; optical
-tracking, exceptional-state recovery and the other runtime owners remain open.
+The operator also confirms Terminal keyboard, two-app switching and video
+functional journeys. Optical tracking, exceptional-state recovery, accessibility
+and the other runtime owners remain open.
 The same three priority owners and optional clock/picker decisions stand.

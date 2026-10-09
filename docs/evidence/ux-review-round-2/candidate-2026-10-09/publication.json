@@ -1,0 +1,11 @@
+{
+  "checked_utc": "2026-10-09T22:28:24.070592+00:00",
+  "revision": "817804758cae1801e9b57de3cda6969eccd15529",
+  "ci_run": 37999119193,
+  "ci_result": "success",
+  "deployment_job": "success",
+  "url": "https://knewter.github.io/tdisplay-k230/work/",
+  "http_status": 200,
+  "published_revision_matches": true,
+  "limits": "HTTP/source revision and work-card presence check; earlier gallery browser inspection retains its own dated provenance. No device behavior follows from publication."
+}

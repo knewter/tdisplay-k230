@@ -62,3 +62,7 @@ Current Home, 19-entry Apps, one-card Overview and initial/loaded Settings
 states are now observed natively at 800×1280 logical HDMI. The operator accepts
 current Home fill and Home/All Apps/Settings targets. These observations do not
 retroactively turn the older matrix or keyboard image into a new walkthrough.
+
+The later operator reply also accepts the requested Terminal keyboard, app
+switching and video functional journeys. The exact reply is retained with the
+current candidate, separately from old baseline evidence and native captures.
