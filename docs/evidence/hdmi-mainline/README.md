@@ -132,6 +132,14 @@ basic pointer/tap behavior, not the newer shell gesture integration. The
 corrected bundle builds the current relay. Physical cursor movement and tap
 acceptance must be recorded separately from this startup result.
 
+At `2026-10-09T05:36:40Z`, the newly built current-source relay
+`/nix/store/gy6r7r8pf8694pras6njlvgbpmjgg3n8-k230-touch-trackpad-riscv64-unknown-linux-gnu-0.1.0`
+replaced the older relay in transient service
+`k230-hdmi-trackpad-current-trial`. [Current startup](current-pointer-start.txt)
+records its active state, successful grab and enabled virtual touchpad, with
+no unknown-argument warning. The monitor remains automatically connected
+with a 256-byte EDID. This update does not reboot or change the profile.
+
 ## Source fix and remaining gates
 
 The reset-ordering LT9611 source cross-compiled as an object against the
