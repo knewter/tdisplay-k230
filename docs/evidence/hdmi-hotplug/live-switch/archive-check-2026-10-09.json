@@ -39,5 +39,6 @@
     "HDMI-only qualification remains a boot-time device-tree choice": "baf1ff143214768f6148bd13202e8bdb5c28c58950c91cb45171e072e459ade5",
     "The cable selects the active display without a reboot": "86aaba15ac2d7e513983cf6d0afeb631ff1499dae88d5b32c41062aeffd948aa"
   },
-  "limits": "No new board trial or latency measurement; historical UNVERIFIED markers retained."
+  "limits": "No new board trial or latency measurement; historical UNVERIFIED markers retained.",
+  "landscape_proposal_latest_revision": "6d6df06735d266ebadf8428e47494ac29352319f"
 }

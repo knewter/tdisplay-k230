@@ -59,3 +59,10 @@ Validation and sync proof will be recorded in `archive-check-2026-10-09.json`.
 The CLI, rather than manual main-spec edits, merges four HDMI requirements,
 adds the shared-pin touch requirement and updates the existing trackpad
 requirement while preserving the other touch requirements.
+
+Landscape proposal ownership: worktree
+`/home/jadams/tmp/k230-hdmi-landscape-successor`, branch
+`proposal/hdmi-landscape-successor-2026-10-09`, original base `ba5217ca`,
+integration base `a55e5a55`. Owned paths are only that proposal directory;
+no build or board reservation. Local worktree paths are kept in this evidence
+rather than the public planning document, satisfying site validation.

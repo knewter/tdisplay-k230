@@ -556,8 +556,8 @@
       }
     },
     "the-hdmi-shell-works-in-landscape": {
-      "lane": "planned",
-      "source": "not-started",
+      "lane": "in-progress",
+      "source": "in-progress",
       "physical": "pending",
       "next": "Qualify a landscape HDMI profile, finish geometry integration through the responsive-shell owner, then obtain separate Home/Settings monitor acceptance.",
       "dependencies": [
@@ -567,7 +567,7 @@
       "evidence": [
         "docs/evidence/hdmi-hotplug/live-switch/scope-decision-2026-10-09.md"
       ],
-      "rationale": "Operator-authorized successor preserves all four original landscape gates; portrait HDMI acceptance is not landscape proof. No implementation is claimed.",
+      "rationale": "Planning validation and proposal publication are complete; all four implementation/physical tasks remain open. Portrait HDMI acceptance is not landscape proof. No implementation is claimed.",
       "reviewRevision": "a9d355ad"
     }
   }

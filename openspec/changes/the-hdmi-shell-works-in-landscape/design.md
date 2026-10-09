@@ -33,10 +33,10 @@ is required. Do not infer landscape interaction from accepted portrait use.
 
 ## Validation and ownership
 
-Original commands and separate board gate are retained in tasks. Worktree
-`/home/jadams/tmp/k230-hdmi-landscape-successor`, branch
-`proposal/hdmi-landscape-successor-2026-10-09`, base `ba5217ca`.
-Owned paths: only this proposal directory. No build slot or board reservation.
+Original commands and separate board gate are retained in tasks. Branch
+`proposal/hdmi-landscape-successor-2026-10-09`, original base `ba5217ca`.
+Owned paths: only this proposal directory. Worktree ownership is recorded in
+the integration evidence; no build slot or board reservation is involved.
 
 ## Accepted proposal and scope decision — 2026-10-09
 
