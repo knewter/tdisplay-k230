@@ -232,3 +232,16 @@ These links do not complete this proposal's HDMI hardware or landscape gates.
       AGENTS.md, independent of whether groups 3–5 have started — the
       proposal and the research document are the reviewable deliverable at
       this point, not a private preface to the board work.
+
+## 7. Mainline kernel port (the board's default since 2026-10-08)
+
+The board now boots mainline 7.3.0-rc5 by default
+(`openspec/changes/archive/2026-10-08-the-board-boots-mainline-by-default/`),
+and there `/sys/class/drm` shows only `card0-DSI-1`: no HDMI. The mainline DRM
+port already carries the K230 LT9611 driver (`nix/patches/mainline/drm/lontium-lt9611-k230.c`,
+`DRM_LONTIUM_LT9611=y`) and `drm_bridge_connector_init()` in `canaan_dsi.c`.
+Groups 3–5 above apply to mainline once these tasks land.
+
+- [ ] 7.1 Make the mainline LT9611 driver's reset GPIO and IRQ optional (HPD by connector polling without an IRQ), as vendor `nix/patches/lt9611-dsi-port-b.patch` does, because GPIO24/GPIO23 belong to the GT9895 touch. Proof: `nix build .#kernelMainlineDrm`.
+- [ ] 7.2 Add `nix/dts/k230-tdisplay-mainline-drm-hdmi.dts` (LT9611 on `&i2c3` at 0x3b, DSI port@1 → LT9611 port@1 (Port B) → `hdmi-connector`, touch keeps GPIO24/23, no panel), a `dtsFile` parameter for `nix/device-tree-mainline-drm.nix`, and flake outputs `deviceTreeMainlineDrmHdmi` and `kernelMainlineDrmShellHdmiBootFiles` (the normal bundle with the HDMI DTB under `k230-tdisplay.dtb`). Proof: DTB builds and decompiles; host inspection of the bundle.
+- [ ] 7.3 On the board with a monitor attached, stage and volatile-trial-boot the HDMI bundle with `tools/coherent-shell-board-boot.py` (a plain reboot returns to the panel). Record the `HDMI-A-1` connector, EDID mode, LT9611 probe and `hsfreqrange` messages, a native `grim` capture, and the operator's report of the picture and touch-as-trackpad. Tune `canaan,hsfreqrange` if the link fails. Proof: serial record and operator report in `docs/evidence/hdmi-mainline/`.
