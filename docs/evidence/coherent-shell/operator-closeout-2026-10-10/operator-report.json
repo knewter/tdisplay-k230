@@ -1,0 +1,17 @@
+{
+  "recorded_utc": "2026-10-10T23:22:58.391569+00:00",
+  "evidence_class": "operator acceptance and explicit waiver of further proof collection",
+  "operator_reply": "continue but you dont have to gather that proof ive already confirmed its fine carry on it's all good",
+  "preceding_acceptance": "it all worked land it",
+  "installed_evidence_revision": "972e013a1749d9bbf765ea012df5898697cdeffb",
+  "implementation_source": "093a82a0c31007f775ad260492e30d3088739548",
+  "system": "/nix/store/svjjlnvrs8djb6g6gkd0q0iwabpm6sxp-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "ordinary_boot_id": "effcb1f4-3cdc-4647-bd7b-517d4072ae1a",
+  "disposition": "Accept implemented coherent-shell behavior and installation; replace additional camera and physical-matrix prerequisites with this committed acceptance. Comparative probe benchmarking is waived; motion measurement remains deferred to its existing successor. No new physical run or measurement.",
+  "limits": [
+    "No per-case gesture trace, camera video, numerical latency/frame budget or comparative Rust/C/Qt result is asserted.",
+    "No newly performed dark/light/community, fault-injection, selected-theme restoration or fresh-home trial is asserted.",
+    "Side-edge Back, general at-down ownership and motion trace implementation remain open in their existing successor.",
+    "Other proposals with unfinished source requirements are not completed by this report."
+  ]
+}

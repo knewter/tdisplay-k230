@@ -5,7 +5,9 @@ Defines truthful device settings and system actions that a person can understand
 ## ADDED Requirements
 
 ### Requirement: Settings expose only supported state and actions
-<!-- UNVERIFIED: proposed settings surface; existing system menu and Wi-Fi evidence do not prove this view. -->
+
+*Grounding: operator acceptance and explicit additional-proof waiver in `docs/evidence/coherent-shell/operator-closeout-2026-10-10/README.md`; prior host/QEMU/board evidence retains its original provenance. This is acceptance of the installed result, not a newly recorded individual-case test or timing measurement.*
+<!-- UNVERIFIED: operator acceptance and the proof waiver do not supply a new individual-case physical confirmation/failure/focus/priority recording. Existing implementation and host/QEMU results keep their original limits. -->
 The shell userspace SHALL show only controls backed by a readable or writable system capability in the installed image. It SHALL identify unavailable, read-only, and pending controls explicitly. It SHALL NOT show a battery gauge or battery-dependent action without observed battery hardware and state reporting.
 
 #### Scenario: Network state cannot be read
@@ -21,7 +23,9 @@ The shell userspace SHALL show only controls backed by a readable or writable sy
 - **THEN** the rows follow the finger and settle within bounds while the current control value and contextual return route remain understandable
 
 ### Requirement: System actions require clear completion feedback
-<!-- UNVERIFIED: proposed integration with existing system actions. -->
+
+*Grounding: operator acceptance and explicit additional-proof waiver in `docs/evidence/coherent-shell/operator-closeout-2026-10-10/README.md`; prior host/QEMU/board evidence retains its original provenance. This is acceptance of the installed result, not a newly recorded individual-case test or timing measurement.*
+<!-- UNVERIFIED: operator acceptance and the proof waiver do not supply a new individual-case physical confirmation/failure/focus/priority recording. Existing implementation and host/QEMU results keep their original limits. -->
 The shell userspace SHALL label power and restart actions by effect, require confirmation for disruptive actions, and report denial or failure without trapping the person. Settings defaults SHALL be provided by the NixOS image for a fresh home.
 
 #### Scenario: Restart is cancelled
