@@ -3097,8 +3097,9 @@ static bool input_motion(struct sway_seat *seat, int32_t id, double x, double y,
 	if (keyboard_gestures_enabled() &&
 		keyboard_apply_action(kg_motion(&shell.keyboard, id, x, y, event_ms)))
 		return true;
-	/* Reveal progress spans the actual Rust panel travel (drawer 81%, shade
-	 * 65%). The separate entry_distance is only a release decision threshold;
+	/* Match Rust navigation::panel_top's fixed 32px drawer inset; the
+	 * drawer travels height - 32, while the shade still travels 65%.
+	 * The separate entry_distance is only a release decision threshold;
 	 * using a shorter travel here amplifies movement under the finger. */
 	if (shell.drawer_gesture.contacts) {
 		card_shell_drawer_motion(&shell.drawer_gesture, id, x, y,
@@ -3106,7 +3107,7 @@ static bool input_motion(struct sway_seat *seat, int32_t id, double x, double y,
 		if (id == shell.drawer_gesture.owner && shell.reveal.active)
 			card_shell_reveal_update(&shell.reveal,
 				card_shell_reveal_progress(&shell.drawer_gesture, x, y,
-					shell.policy.config.height * .81, false));
+					fmax(1, shell.policy.config.height - 32), false));
 		return true;
 	}
 	if (shell.shade_gesture.contacts) {
