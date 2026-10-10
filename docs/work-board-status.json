@@ -17,7 +17,7 @@
       "lane": "in-progress",
       "source": "in-progress",
       "physical": "pending",
-      "next": "Complete accessibility task 1.5 and required physical/trace/polish gates. Tasks 4.1, 4.2 and 4.3 have fresh named integration proof; drawer tracking and live cancellation corrections still need board deployment.",
+      "next": "Deploy the combined reviewed client/compositor/helper candidate through the existing guarded qualification workflow, then complete the required physical/trace/polish gates. Accessibility task 1.5 and integration tasks 4.1\u20134.3 now have committed host/build proof.",
       "dependencies": [
         "2026-10-01-the-shell-manages-apps-as-cards",
         "the-shell-loads-omarchy-themes"
@@ -54,10 +54,11 @@
         "docs/evidence/boot-verification/coherent-ordinary-boot/README.md",
         "docs/evidence/coherent-shell/integration-gate-2026-10-10/README.md",
         "docs/evidence/coherent-shell/coordinated-scene-2026-10-10/README.md",
-        "docs/evidence/coherent-shell/interruption-gate-2026-10-10/README.md"
+        "docs/evidence/coherent-shell/interruption-gate-2026-10-10/README.md",
+        "docs/evidence/coherent-shell/navigation-aid-2026-10-10/README.md"
       ],
-      "rationale": "Source 5bb67db1 runs in matching normal system/profile p1a1hz after ordinary reboot. Services, Home captures and saved appearance hashes pass; the umbrella retains distinct accessibility, motion/trace and six-surface physical gates.",
-      "reviewRevision": "d2ce84f88c9c638590904e15ffaa8c466d16a46e",
+      "rationale": "Source 5bb67db1 remains the last identified ordinary-boot candidate. Help/navigation aid and the newer drawer tracking, cancellation, theme admission and deferred app-refresh corrections have host/build proof but need coordinated board deployment. Physical discovery, motion/trace and six-surface proof remain separate open gates.",
+      "reviewRevision": "9e4515ed32cc849bfcc56dbe60d02e877bee75a7",
       "cover": {
         "path": "docs/evidence/coherent-shell/refined-installed/drawer.png",
         "caption": "Installed app grid with real icons \u2014 touch acceptance pending",

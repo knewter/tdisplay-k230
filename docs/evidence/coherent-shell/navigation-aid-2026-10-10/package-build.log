@@ -1,0 +1,4 @@
+this derivation will be built:
+  /nix/store/fk3w6gym9vd1fnybdp3ppmiqqpsjf03m-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0.drv
+building '/nix/store/fk3w6gym9vd1fnybdp3ppmiqqpsjf03m-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0.drv'...
+/nix/store/z4j8bc7iwz9m7pap376zy0j0z16295lr-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0

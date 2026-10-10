@@ -75,8 +75,45 @@ The generation paths/hashes and final render command are also recorded in
 
 ## Build and remaining physical gate
 
-The exact coherent package-set cross-build and retained build-input proof are
-recorded after the component build. No board or serial port was reserved or
+Source `9e4515ed32cc849bfcc56dbe60d02e877bee75a7` cross-build passed, selecting the actual coherent
+configuration package set. [Package build](package-build.log) built exactly one
+Rust derivation and fetched no dependencies. Target: `/nix/store/z4j8bc7iwz9m7pap376zy0j0z16295lr-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0/bin/k230-shell-rust: ELF 64-bit LSB pie executable, UCB RISC-V, RVC, double-float ABI, version 1 (SYSV), dynamically linked, interpreter /nix/store/syg6xw4x296w82267qnvrd3nn0cp6j31-glibc-riscv64-unknown-linux-gnu-2.42-84/lib/ld-linux-riscv64-lp64d.so.1, for GNU/Linux 4.15.0, not stripped`.
+Output: `/nix/store/z4j8bc7iwz9m7pap376zy0j0z16295lr-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0`. [Repeat build plan](repeat-build.log) exits 0 with zero builds
+and zero fetches. No kernel, compositor, theme helper or image was rebuilt.
+
+```sh
+flock -n /tmp/k230-nix-build.lock nix build --impure --expr \
+  'let f = builtins.getFlake "git+file:///mnt/MediaVolume/home/jadams/src/gitlab.daringbit.com/josh/tdisplay-k230?rev=9e4515ed32cc849bfcc56dbe60d02e877bee75a7"; p = f.nixosConfigurations.k230-coherent-shell.pkgs; in p.callPackage (f.outPath + "/nix/rust-shell-client") {}' \
+  --out-link /home/jadams/.local/state/tdisplay-k230/retained-builds/coherent-help-2026-10-10/candidate \
+  --print-out-paths --max-jobs 1 --cores 2
+```
+
+[Retention](retention.json) records 10,405 valid store
+paths, adding 3 to the prior verified Foot farm.
+The durable candidate and `build-closure` GC roots preserve this output,
+recursive sources and currently realized declared dependency outputs. The
+link-farm uses explicit `builtins.storePath` references; every retained path
+passed `nix-store --check-validity`, and this output's actual GC roots include
+the new farm. Global GC policy remains unchanged (`keep-outputs=false`,
+`keep-derivations=true`). Source edits still invalidate the Rust package and
+can recompile its release crates; rooting dependency outputs cannot preserve
+Cargo intermediates inside a changed derivation.
+The exact [enumeration script](retain-inputs.py) and [store-reference recipe](retain.nix)
+are preserved; their paths describe this host's retained build directory.
+The graph read and retention commands were (enumeration/root creation ran
+after the client build completed):
+
+```sh
+nix derivation show --recursive /nix/store/fk3w6gym9vd1fnybdp3ppmiqqpsjf03m-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0.drv \
+  > /home/jadams/tmp/k230-help-derivations.json
+python3 /home/jadams/tmp/k230-help-retain.py
+flock -n /tmp/k230-nix-build.lock nix build --impure --expr \
+  'import /home/jadams/.local/state/tdisplay-k230/retained-builds/coherent-help-2026-10-10/retain.nix' \
+  --out-link /home/jadams/.local/state/tdisplay-k230/retained-builds/coherent-help-2026-10-10/build-closure \
+  --print-out-paths --max-jobs 1 --cores 2
+```
+
+No board or serial port was reserved or
 used for this work. A package build does not prove installation or discovery.
 Task 5.3 remains unchecked: after coordinated candidate deployment, an operator
 must open All Apps → Help → Navigation buttons, use the named routes and return,

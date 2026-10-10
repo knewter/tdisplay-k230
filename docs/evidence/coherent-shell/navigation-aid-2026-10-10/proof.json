@@ -35,5 +35,22 @@
     "light-help.png": "193bda0b9be35ad0a5f637c9324db54ae582299e86ead4660f63cec881debb26"
   },
   "board_used": false,
-  "board_installed": false
+  "board_installed": false,
+  "source_revision": "9e4515ed32cc849bfcc56dbe60d02e877bee75a7",
+  "repeat_build_exit_code": 0,
+  "repeat_build_planned_builds": 0,
+  "repeat_build_planned_fetches": 0,
+  "derivation": "/nix/store/fk3w6gym9vd1fnybdp3ppmiqqpsjf03m-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0.drv",
+  "output": "/nix/store/z4j8bc7iwz9m7pap376zy0j0z16295lr-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0",
+  "binary": "/nix/store/z4j8bc7iwz9m7pap376zy0j0z16295lr-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0/bin/k230-shell-rust",
+  "binary_sha256": "e280e1d2d38300f67c638d1fd1c7c62038af7e99bbcff7bd8b013f88e84ce862",
+  "binary_target": "/nix/store/z4j8bc7iwz9m7pap376zy0j0z16295lr-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0/bin/k230-shell-rust: ELF 64-bit LSB pie executable, UCB RISC-V, RVC, double-float ABI, version 1 (SYSV), dynamically linked, interpreter /nix/store/syg6xw4x296w82267qnvrd3nn0cp6j31-glibc-riscv64-unknown-linux-gnu-2.42-84/lib/ld-linux-riscv64-lp64d.so.1, for GNU/Linux 4.15.0, not stripped",
+  "immutable_source": "/nix/store/56841cqw55d7kclf3abrgf81z5s5gf0k-rust-shell-client",
+  "build_derived_from": "nixosConfigurations.k230-coherent-shell.pkgs.callPackage (f.outPath + \"/nix/rust-shell-client\") {}",
+  "gc_roots": [
+    "/home/jadams/.local/state/tdisplay-k230/retained-builds/coherent-help-2026-10-10/candidate -> /nix/store/z4j8bc7iwz9m7pap376zy0j0z16295lr-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0",
+    "/home/jadams/.local/state/tdisplay-k230/retained-builds/coherent-help-2026-10-10/build-closure -> /nix/store/sicx8zwaywmzr88xb9q6q0fqlaq1dpcq-tdisplay-k230-retained-coherent-help-build-inputs"
+  ],
+  "build_success_observed_utc": "2026-10-10T21:16:18.699734+00:00",
+  "build_finished_utc": "2026-10-10T21:12:29.456346+00:00"
 }
