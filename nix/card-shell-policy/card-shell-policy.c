@@ -354,8 +354,37 @@ bool cs_can_mirror(const struct cs_policy *p,uint64_t id) {
     size_t index=find(p,id);
     return p->mode!=CS_NORMAL && index<p->count && p->cards[index].content==CS_LIVE;
 }
-static struct cs_result multiple_contacts(struct cs_policy *p) {
-    struct cs_result r=cs_leave(p);
+struct cs_result cs_back(struct cs_policy *p,uint64_t time_ms) {
+    if (p->mode==CS_ENTERING) {
+        /* Do not reset the live rectangle to either endpoint. Back and a
+         * second contact end ownership, then settle the displayed transform
+         * back to its source without carrying an earlier throw velocity. */
+        if (p->contact || p->edge.tracking) {
+            p->blocked_until_up=true;p->blocked_contacts=1;
+        }
+        p->contact=false;p->pressed_id=0;p->edge.tracking=false;
+        p->entry_settling=false;p->entry_reversing=true;
+        p->entry_interrupted_hold=false;
+        p->entry_reverse_from=p->entry_progress;
+        p->entry_reverse_dx=p->entry_dx;
+        p->entry_reverse_anchor=p->entry_anchor_factor;
+        p->entry_settle_from=p->entry_progress;
+        p->entry_settle_dx=p->entry_dx;
+        p->entry_settle_anchor=p->entry_anchor_factor;
+        p->entry_target_id=0;p->entry_goal_progress=0;p->entry_release_dx=0;
+        p->entry_release_velocity_x=0;p->entry_release_velocity_progress=0;
+        p->entry_started_ms=time_ms;
+        return result(p,CS_REDRAW,true);
+    }
+    if (p->mode==CS_EXPANDING) {
+        p->expand_reversing=true;p->expand_reverse_from=p->expand_progress;
+        p->expand_started_ms=time_ms;p->expand_full_dwell=false;
+        return result(p,CS_REDRAW,true);
+    }
+    return cs_leave(p);
+}
+static struct cs_result multiple_contacts(struct cs_policy *p,uint64_t time_ms) {
+    struct cs_result r=cs_back(p,time_ms);
     p->message=CS_MESSAGE_CANCELLED;p->blocked_until_up=true;p->blocked_contacts=2;
     r.message=p->message;
     return r;
@@ -406,7 +435,7 @@ struct cs_result cs_down(struct cs_policy *p,int32_t contact_id,double x,double 
         p->blocked_until_up=true;p->blocked_contacts=1;
         return result(p,0,true);
     }
-    if (p->contact || p->edge.tracking) return multiple_contacts(p);
+    if (p->contact || p->edge.tracking) return multiple_contacts(p,time_ms);
     if (p->mode==CS_NORMAL || !contains(cs_content_rect(p),x,y)) {
         p->scroll_settling=false; /* the touch missed; the coast does not resume */
         return result(p,0,false);
@@ -817,7 +846,7 @@ struct cs_result cs_close_result(struct cs_policy *p,uint64_t id,bool refused) {
 }
 struct cs_result cs_edge_down(struct cs_policy *p,int32_t id,double x,double y,uint64_t time_ms) {
     if (p->blocked_until_up) return cs_down(p,id,x,y,time_ms);
-    if (p->edge.tracking || p->contact) return multiple_contacts(p);
+    if (p->edge.tracking || p->contact) return multiple_contacts(p,time_ms);
     if (p->mode!=CS_NORMAL || !contains(cs_content_rect(p),x,y)) return result(p,0,false);
     /* No global bottom edge while a keyboard reserves it: the persistent
      * button remains available; do not steal keys or invent a keyboard edge. */
@@ -930,6 +959,7 @@ bool cs_entry_set_geometry(struct cs_policy *p,double source_x,double source_y,
 	return true;
 }
 struct cs_result cs_entry_motion(struct cs_policy *p,int32_t id,double x,double y,uint64_t time_ms) {
+    if (p->blocked_until_up) return result(p,0,true);
     if (p->mode!=CS_ENTERING || !p->edge.tracking || p->edge.contact_id!=id)
         return result(p,0,false);
     if (!isfinite(x) || !isfinite(y) || time_ms<p->edge.time_ms) {
@@ -955,6 +985,7 @@ struct cs_result cs_entry_motion(struct cs_policy *p,int32_t id,double x,double 
 	return result(p,CS_REDRAW,true);
 }
 struct cs_result cs_entry_up_at(struct cs_policy *p,int32_t id,uint64_t time_ms) {
+	if (p->blocked_until_up) return cs_up(p,id,time_ms);
 	if (p->mode!=CS_ENTERING || !p->edge.tracking || p->edge.contact_id!=id)
 		return result(p,0,false);
 	p->edge.tracking=false;

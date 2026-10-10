@@ -27,7 +27,8 @@ from rust_service_surface_qemu import SETTINGS_FIXTURE
 
 
 SCENE_CASES = ("shrink-live", "drawer-rise", "shade-descend", "expand-live", "focus")
-CASES = ("live-gate", "private-no-icon", "close-refused") + SCENE_CASES
+INTERRUPTION_CASES = ("reverse", "retarget", "unmap", "refusal", "private-no-flash")
+CASES = ("live-gate", "private-no-icon", "close-refused") + SCENE_CASES + INTERRUPTION_CASES
 CLASS = "headless-qemu-user-native-wayland-injected-touch"
 
 
@@ -668,6 +669,236 @@ def focus(scene):
             "key_counts_after_return": {app: scene.record(app).get("key_presses", 0) for app in scene.apps}}
 
 
+def visible_app(scene, app, name):
+    scene.ipc(f'[app_id="{app}"] focus')
+    color = (32, 112, 176) if app.endswith("one") else (144, 48, 128)
+    image = scene.capture_when(name, lambda im: Scene.color_count(im, color) > 100)
+    Scene.assert_frame(image)
+    return Scene.color_box(image, color)
+
+
+def held_entry(scene, ident, y=900, x=284, name="entry-held"):
+    scene.command(f"test-touch down {ident} 284 1200")
+    scene.command(f"test-touch motion {ident} {x} {y}")
+    image = scene.capture_when(name, lambda im:
+                               (box := Scene.color_box(im)) and box[2] - box[0] < 500)
+    Scene.assert_frame(image)
+    assert scene.state()["mode"] == "4", "entry is not held"
+    return Scene.color_box(image)
+
+
+def recovery_frames(scene, name, mode, color=(32, 112, 176), forbidden=()):
+    samples = []
+    deadline = time.monotonic() + 10
+    while time.monotonic() < deadline:
+        image = scene.capture(f"{name}-{len(samples):02d}")
+        Scene.assert_frame(image)
+        for denied in forbidden:
+            assert Scene.color_count(image, denied) == 0, "retired/private source pixels returned"
+        box = Scene.color_box(image, color)
+        assert box, "recovery lost its reachable live source"
+        state = scene.state()
+        samples.append({"box": box, "mode": state["mode"],
+                        "selected_app_id": state["selected_app_id"]})
+        if state["mode"] == str(mode):
+            return samples
+    raise AssertionError(f"{name} did not settle in mode {mode}")
+
+
+def expanding_frame(scene, name, color=(32, 112, 176)):
+    deck = overview(scene)
+    small = Scene.color_box(deck, color)
+    assert small, "selected expansion source absent"
+    scene.tap(101, 284, 500)
+    image = scene.capture_when(name, lambda im:
+                               (box := Scene.color_box(im, color)) and
+                               small[2] - small[0] + 2 < box[2] - box[0] < 518)
+    Scene.assert_frame(image)
+    assert scene.state()["mode"] == "5", "unfinished expansion not observed"
+    return small, Scene.color_box(image, color)
+
+
+def reverse(scene):
+    full = Scene.color_box(public_app(scene))
+    held = held_entry(scene, 81)
+    scene.command("test-touch motion 81 284 1150")
+    image = scene.capture_when("reverse-finger", lambda im:
+                               (box := Scene.color_box(im)) and
+                               held[2] - held[0] + 20 < box[2] - box[0] < full[2] - full[0])
+    Scene.assert_frame(image)
+    reversed_box = Scene.color_box(image)
+    scene.command("test-touch up 81")
+    finger = recovery_frames(scene, "reverse-release", 0)
+    assert scene.focused() == "k230.card.one", "finger reversal activated another app"
+
+    held = held_entry(scene, 82, name="back-entry-held")
+    scene.command("back")
+    assert scene.state()["mode"] == "4", "Back reset entry to the full app instead of reversing"
+    back = recovery_frames(scene, "back-entry-reverse", 0)
+    assert any(held[2] - held[0] < s["box"][2] - s["box"][0] < full[2] - full[0]
+               for s in back), "Back entry reversal has no intermediate live geometry"
+    scene.command("test-touch motion 82 400 700")
+    scene.command("test-touch up 82")
+    assert scene.focused() == "k230.card.one", "Back leaked the canceled stream"
+
+    small, middle = expanding_frame(scene, "back-expand-middle")
+    scene.command("back")
+    assert scene.state()["mode"] == "5", "Back reset unfinished expansion instead of reversing"
+    expansion = recovery_frames(scene, "back-expand-reverse", 1)
+    assert expansion[-1]["box"][2] - expansion[-1]["box"][0] <= small[2] - small[0] + 2
+    assert scene.focused() == "k230.card.one", "expansion reversal lost original focus"
+    return {"finger_reversal_box": reversed_box, "finger_release_frames": finger,
+            "back_entry_frames": back, "expansion_interrupted_box": middle,
+            "back_expansion_frames": expansion, "owned_stream_drained": True}
+
+
+def retarget(scene):
+    full = Scene.color_box(public_app(scene))
+    held = held_entry(scene, 91, name="second-contact-held")
+    scene.command("test-touch down 92 350 650")
+    assert scene.state()["mode"] == "4", "second contact reset entry geometry"
+    second = recovery_frames(scene, "second-contact-reverse", 0)
+    assert any(held[2] - held[0] < s["box"][2] - s["box"][0] < full[2] - full[0]
+               for s in second), "second-contact reversal skipped intermediate geometry"
+    scene.command("test-touch motion 91 100 600")
+    scene.command("test-touch motion 92 350 300")
+    scene.command("test-touch up 92")
+    scene.command("test-touch up 91")
+    assert scene.focused() == "k230.card.one" and scene.mapped("k230.card.one")
+
+    # A new contact during expansion reverses the current live transform,
+    # rather than activating the card or resetting its start keyframe.
+    small, middle = expanding_frame(scene, "new-contact-middle")
+    scene.command("test-touch down 93 300 650")
+    assert scene.state()["mode"] == "5", "new contact skipped current expansion geometry"
+    contact = recovery_frames(scene, "new-contact-reverse", 1)
+    assert contact[-1]["box"][2] - contact[-1]["box"][0] <= small[2] - small[0] + 2
+    scene.command("test-touch motion 93 300 300")
+    scene.command("test-touch up 93")
+    assert scene.state()["mode"] == "1", "interrupting stream activated or closed a card"
+    scene.tap(94, 284, 500)
+    recovered = recovery_frames(scene, "retarget-expand-again", 0)
+    assert scene.focused() == "k230.card.one", "fresh contact failed after stream drain"
+    assert "K230_CARD_SHELL close-request" not in (scene.root / "sway.log").read_text()
+    return {"second_contact_frames": second, "new_contact_interrupted_box": middle,
+            "new_contact_frames": contact, "fresh_activation_frames": recovered,
+            "no_accidental_close": True, "fresh_stream_recovers": True}
+
+
+def unmap(scene):
+    public_app(scene)
+    scene.client_start("k230.card.two")
+    visible_app(scene, "k230.card.one", "unmap-origin")
+    held_entry(scene, 111, x=104, name="target-unmap-held")
+    scene.apps["k230.card.two"].terminate()
+    scene.apps["k230.card.two"].wait(timeout=10)
+    wait_for(lambda: not scene.mapped("k230.card.two"), "held neighbor actually unmaps")
+    target = scene.capture("target-unmap-remaining")
+    Scene.assert_frame(target)
+    assert Scene.color_count(target, (144, 48, 128)) == 0, "unmapped neighbor cache leaked"
+    scene.command("test-touch up 111")
+    target_frames = recovery_frames(scene, "target-unmap-recover", 0,
+                                    forbidden=((144, 48, 128), (72, 24, 64)))
+    assert scene.focused() == "k230.card.one", "vanished target substituted another app"
+
+    scene.client_start("k230.card.two")
+    visible_app(scene, "k230.card.one", "source-unmap-origin")
+    held_entry(scene, 112, x=104, name="source-unmap-held")
+    scene.apps["k230.card.one"].terminate()
+    scene.apps["k230.card.one"].wait(timeout=10)
+    wait_for(lambda: not scene.mapped("k230.card.one"), "entry source actually unmaps")
+    source_frames = recovery_frames(scene, "source-unmap-recover", 0,
+                                    (144, 48, 128), ((32, 112, 176), (16, 56, 88)))
+    scene.command("test-touch up 112")
+    assert scene.focused() == "k230.card.two", "source disappearance lost valid survivor focus"
+
+    scene.client_start("k230.card.one")
+    visible_app(scene, "k230.card.one", "expansion-unmap-origin")
+    overview(scene)
+    # The surviving two was mapped before the replacement one. Stable card
+    # ordering therefore puts the target to its left, not its right.
+    scene.command("previous")
+    wait_for(lambda: scene.state()["selected_app_id"] == "k230.card.two", "unmap expansion target selected")
+    small, middle = expanding_frame(scene, "expansion-unmap-middle", (144, 48, 128))
+    scene.apps["k230.card.two"].terminate()
+    scene.apps["k230.card.two"].wait(timeout=10)
+    wait_for(lambda: not scene.mapped("k230.card.two"), "unfinished expansion source actually unmaps")
+    expansion = recovery_frames(scene, "expansion-unmap-recover", 0,
+                                 forbidden=((144, 48, 128), (72, 24, 64)))
+    assert scene.focused() == "k230.card.one", "expansion exit focused a dead source"
+    assert "K230_CARD_SHELL close-request" not in (scene.root / "sway.log").read_text()
+    return {"target_exit_frames": target_frames, "entry_source_exit_frames": source_frames,
+            "expansion_source_box": middle, "expansion_exit_frames": expansion,
+            "no_retired_pixels": True, "valid_focus_recovered": True}
+
+
+def refusal(scene):
+    scene.client_start("k230.card.one", refuse=True)
+    visible_app(scene, "k230.card.one", "refusal-origin")
+    overview(scene)
+    stamp = int(time.monotonic() * 1000) & 0xffffffff
+    for command in (f"down 121 284 600 {stamp}",
+                    f"motion 121 284 450 {(stamp + 30) & 0xffffffff}",
+                    f"motion 121 284 280 {(stamp + 60) & 0xffffffff}",
+                    f"up 121 {(stamp + 70) & 0xffffffff}"):
+        scene.command("test-touch " + command)
+    log = lambda: (scene.root / "sway.log").read_text()
+    wait_for(lambda: log().count("K230_CARD_SHELL close-request") == 1, "one actual graceful close request")
+    assert scene.state()["mode"] == "3", "pending close scene absent"
+    pending = recovery_frames(scene, "refusal-pending", 1)
+    assert any(s["mode"] == "3" for s in pending), "pending refusal has no composed sample"
+    assert "message=6" in log(), "actual close timeout feedback missing"
+    assert scene.apps["k230.card.one"].poll() is None and scene.mapped("k230.card.one")
+    scene.command("back")
+    recovery_frames(scene, "refusal-app-return", 0)
+    assert scene.focused() == "k230.card.one"
+    scene.keyboard = Keyboard(scene.root / scene.env["WAYLAND_DISPLAY"])
+    keys = scene.record("k230.card.one").get("key_presses", 0)
+    scene.keyboard.press()
+    wait_for(lambda: scene.record("k230.card.one").get("key_presses", 0) > keys, "refused app receives key")
+    # A new accepted gesture remains possible after timeout recovery.
+    held_entry(scene, 122, name="refusal-fresh-entry")
+    scene.command("test-touch up 122")
+    recovery_frames(scene, "refusal-deck-return", 1)
+    return {"pending_and_timeout_frames": pending, "close_requests": 1,
+            "timeout_feedback": True, "app_retained": True,
+            "keyboard_recovered": True, "fresh_gesture_recovered": True}
+
+
+def private_no_flash(scene):
+    public_app(scene)
+    scene.client_start("k230.card.two")
+    visible_app(scene, "k230.card.one", "privacy-origin")
+    held_entry(scene, 131, x=104, name="privacy-public-neighbor")
+    public = scene.capture_when("privacy-public-control", lambda im:
+                                Scene.color_count(im, (144, 48, 128)) > 100)
+    public_count = Scene.color_count(public, (144, 48, 128))
+    scene.ipc('[app_id="k230.card.two"] mark --add k230_card_private')
+    samples = []
+    for number, (x, y) in enumerate(((104, 900), (54, 850), (154, 1000), (104, 900))):
+        scene.command(f"test-touch motion 131 {x} {y}")
+        image = scene.capture(f"privacy-transition-{number:02d}")
+        Scene.assert_frame(image)
+        assert Scene.color_count(image, (32, 112, 176)) > 100, "eligible source disappeared"
+        for color in ((144, 48, 128), (72, 24, 64), (0, 255, 255)):
+            assert Scene.color_count(image, color) == 0, "private neighbor flashed content or icon"
+        samples.append({"finger": [x, y], "mode": scene.state()["mode"], "private_content_pixels": 0, "private_icon_pixels": 0})
+    scene.command("test-touch motion 131 284 900")
+    scene.command("test-touch up 131")
+    recovery = recovery_frames(scene, "privacy-settle", 1,
+                                forbidden=((144, 48, 128), (72, 24, 64), (0, 255, 255)))
+    scene.command("next")
+    private = scene.capture_when("privacy-selected-placeholder", Scene.neutral_placeholder)
+    Scene.assert_frame(private)
+    assert scene.state()["selected_app_id"] == "k230.card.two", "private placeholder target changed"
+    for color in ((144, 48, 128), (72, 24, 64), (0, 255, 255)):
+        assert Scene.color_count(private, color) == 0, "private selected card leaked identity"
+    assert scene.mapped("k230.card.two"), "privacy hid the application by removing it"
+    return {"public_control_pixels": public_count, "held_transition_samples": samples,
+            "settle_frames": recovery, "visible_neutral_private_card": True,
+            "private_content_and_icon_absent": True, "application_retained": True}
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--case", action="append", choices=CASES, required=True)
@@ -676,7 +907,7 @@ def main():
     args = parser.parse_args()
     sway, client = binaries()
     rust = os.environ.get("K230_SHELL_RUST")
-    if any(case in SCENE_CASES for case in args.case):
+    if any(case in SCENE_CASES + INTERRUPTION_CASES for case in args.case):
         assert rust and Path(rust).is_file(), "set K230_SHELL_RUST to the selected cross-built executable"
     for path in (sway, client, args.qemu):
         assert Path(path).is_file(), f"required executable missing: {path}"
@@ -690,19 +921,21 @@ def main():
               "sway_sha256": hashlib.sha256(Path(sway).read_bytes()).hexdigest(),
               "client_sha256": hashlib.sha256(Path(client).read_bytes()).hexdigest(),
               "started_utc": datetime.now(timezone.utc).isoformat(), "cases": {}}
-    if any(case in SCENE_CASES for case in args.case):
+    if any(case in SCENE_CASES + INTERRUPTION_CASES for case in args.case):
         result.update(rust=rust, rust_sha256=hashlib.sha256(Path(rust).read_bytes()).hexdigest(),
                       service_inputs="synthetic status-only Settings and unavailable notification/audio services")
     try:
         for case in dict.fromkeys(args.case):
             scene = Scene(output / case, sway, client, args.qemu,
-                          rust if case in SCENE_CASES else None)
+                          rust if case in SCENE_CASES + INTERRUPTION_CASES else None)
             try:
                 scene.start()
                 proof = {"live-gate": live_gate, "private-no-icon": private_no_icon,
                          "close-refused": close_refused, "shrink-live": shrink_live,
                          "drawer-rise": drawer_rise, "shade-descend": shade_descend,
-                         "expand-live": expand_live, "focus": focus}[case](scene)
+                         "expand-live": expand_live, "focus": focus,
+                         "reverse": reverse, "retarget": retarget, "unmap": unmap,
+                         "refusal": refusal, "private-no-flash": private_no_flash}[case](scene)
                 result["cases"][case] = {"result": "PASS", **proof}
                 print(f"PASS {case}: {CLASS}", flush=True)
             finally:

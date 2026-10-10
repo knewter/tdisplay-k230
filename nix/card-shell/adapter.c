@@ -3738,7 +3738,7 @@ struct cmd_results *cmd_card_shell(int argc, char **argv) {
         struct cs_result r = cs_activate_selected(&shell.policy);
         handle_result(r); accepted = r.consumed;
     } else if (argc == 1 && strcmp(argv[0], "back") == 0) {
-		handle_result(cs_leave(&shell.policy));
+		handle_result(cs_back(&shell.policy, now_ms()));
 		accepted = true;
 	} else if (argc == 1 && strcmp(argv[0], "cancel") == 0)
 		accepted = card_shell_cancel(seat);

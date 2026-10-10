@@ -14,7 +14,7 @@ CASES = ('activate-selected enter-expand horizontal overview-geometry '
          'keyboard-geometry changed-ids many-cards reduced-motion invalid-events buttons stream-cancel stream-cancel-multitouch tracked-entry '
          'entry-geometry-rejects-undersized-source '
          'entry-settle-completes-despite-stuck-interrupt '
-         'two-axis-entry two-axis-conflicts direct-carousel app-switch-swipe tracked-expansion randomized').split()
+         'two-axis-entry two-axis-conflicts direct-carousel app-switch-swipe tracked-expansion back-keeps-visible-geometry randomized').split()
 
 
 class ProductPolicyTests(unittest.TestCase):

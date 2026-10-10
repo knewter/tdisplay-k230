@@ -667,9 +667,11 @@ static void two_axis_conflicts(void) {
     entry_geometry(&p);
     cs_entry_motion(&p,4,420,1220,410);
     assert(cs_down(&p,5,300,900,411).consumed);
-    assert(p.mode==CS_NORMAL && p.blocked_contacts==2 && !p.entry_order);
-    assert(cs_up(&p,4,412).consumed && cs_up(&p,5,413).consumed);
+    assert(p.mode==CS_ENTERING && p.entry_reversing && p.blocked_contacts==2);
+    assert(p.entry_dx==136); /* no reset at the second-contact boundary */
+    assert(cs_entry_up_at(&p,4,412).consumed && cs_entry_up_at(&p,5,413).consumed);
     assert(!p.blocked_until_up);
+    assert(cs_tick(&p,651).actions&CS_RESTORE && p.mode==CS_NORMAL && !p.entry_order);
 
     assert(cs_begin_entry(&p,10,284,1220,414,202).consumed);
     entry_geometry(&p);
@@ -1054,6 +1056,36 @@ static void tracked_expansion(void) {
     assert(cs_cancel(&q).consumed && q.expand_reversing);
     cs_finish(&q);
 }
+static void back_keeps_visible_geometry(void) {
+    for (int reduced=0;reduced<2;reduced++) {
+        struct cs_policy p=setup();
+        p.config.touch_first_motion=true;p.config.reduced_motion=reduced;
+        assert(cs_begin_entry(&p,1,284,1220,100,101).consumed);
+        entry_geometry(&p);
+        cs_entry_motion(&p,1,234,1100,150);
+        double progress=p.entry_progress,dx=p.entry_dx,anchor=p.entry_anchor_factor;
+        struct cs_result r=cs_back(&p,151);
+        assert((r.actions&CS_REDRAW) && !(r.actions&CS_RESTORE));
+        assert(p.mode==CS_ENTERING && p.entry_reversing && !p.edge.tracking);
+        assert(p.entry_progress==progress && p.entry_dx==dx && p.entry_anchor_factor==anchor);
+        assert(p.blocked_until_up && cs_entry_motion(&p,1,100,200,152).consumed);
+        assert(p.entry_progress==progress && p.entry_dx==dx);
+        assert(cs_entry_up_at(&p,1,153).consumed && !p.blocked_until_up);
+        cs_tick(&p,171);
+        assert(p.entry_progress<progress && p.entry_progress>0);
+        assert(cs_tick(&p,reduced?251:391).focus_id==101 && p.mode==CS_NORMAL);
+
+        cs_enter(&p,101);cs_activate_selected(&p);
+        cs_tick(&p,1000);cs_tick(&p,reduced?1030:1080);
+        assert(p.mode==CS_EXPANDING && p.expand_progress==.5);
+        r=cs_back(&p,1081);
+        assert((r.actions&CS_REDRAW) && !(r.actions&CS_RESTORE));
+        assert(p.expand_progress==.5 && p.expand_reverse_from==.5 && p.expand_reversing);
+        cs_tick(&p,1091);assert(p.expand_progress>0 && p.expand_progress<.5);
+        cs_tick(&p,1241);assert(p.mode==CS_DECK && p.expand_progress==0);
+        cs_finish(&p);
+    }
+}
 static void keyboard_and_geometry(void) {
     struct cs_policy p=setup();
     struct cs_config c=p.config;c.bottom_reserved=400;
@@ -1246,6 +1278,7 @@ int main(int argc,char **argv) {
         {"direct-carousel",direct_carousel},
         {"app-switch-swipe",app_switch_swipe},
         {"tracked-expansion",tracked_expansion},
+        {"back-keeps-visible-geometry",back_keeps_visible_geometry},
         {"keyboard-geometry",keyboard_and_geometry},{"changed-ids",changed_ids},
         {"many-cards",many_cards},{"reduced-motion",reduced_motion},{"invalid-events",invalid_events},
         {"buttons",buttons},{"stream-cancel",stream_cancel},
