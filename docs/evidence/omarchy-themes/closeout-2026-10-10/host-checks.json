@@ -1,0 +1,26 @@
+{
+  "source_revision": "645ea9162dba21096ca9a8fa28ba2a6aa22e7a77",
+  "evidence_class": "host-python-protocol-and-rendering-checks",
+  "checks": [
+    {
+      "command": "python3 tests/test_handheld_theme_trial.py",
+      "exit_code": 0,
+      "tests_passed": 22,
+      "log": "reboot-host-check.log",
+      "log_sha256": "2c4de58bf28a9ad38bc8433c12b4b801b971a3890166360a850d5f004d373cba",
+      "observed_completion_utc": "2026-10-10T07:11:10.569856+00:00"
+    },
+    {
+      "command": "python3 tests/test_handheld_theme_rendering.py",
+      "exit_code": 0,
+      "tests_passed": 7,
+      "log": "rendering-host-check.log",
+      "log_sha256": "d0cf4419be8a5722c3653db089fd29a10e56f575f866a171df69041baf1f54cc",
+      "observed_completion_utc": "2026-10-10T07:11:10.891426+00:00"
+    }
+  ],
+  "limits": [
+    "No board, reboot, panel, real touch, workload performance, new cross-build or deployment proof.",
+    "Planning-only reconciliation does not close a task."
+  ]
+}

@@ -65,7 +65,7 @@
       "lane": "in-progress",
       "source": "in-progress",
       "physical": "pending",
-      "next": "Finish token/control/font coverage and physical theme/background/reboot checks. The reboot protocol now passes 22 host tests; reconcile missing-source default recovery before its physical acceptance.",
+      "next": "Finish applicable token/control/font coverage, resolve the removed-source boot policy, then complete real-finger, static-background and reboot/fresh-home physical gates. Video belongs to the existing background successor.",
       "dependencies": [],
       "evidence": [
         "docs/evidence/omarchy-themes/helper-package.md",
@@ -89,10 +89,11 @@
         "docs/evidence/omarchy-themes/community-board/README.md",
         "docs/evidence/omarchy-themes/community-board-fixed/README.md",
         "docs/evidence/omarchy-themes/drawer-card-generation/README.md",
-        "docs/evidence/omarchy-themes/reboot-protocol/README.md"
+        "docs/evidence/omarchy-themes/reboot-protocol/README.md",
+        "docs/evidence/omarchy-themes/closeout-2026-10-10/README.md"
       ],
       "rationale": "Task 3.2 is complete with production host rendering and exact-pinned QEMU evidence; physical acceptance remains distinct. Fill/video backgrounds and Settings/notification scope live in named successors. Remaining coverage and board workload gates keep this parent open. A persistent begin/resume reboot protocol now preserves and restores normal theme state, rejects reused boot IDs and changed identities, and reports missing-source default failure honestly. No physical reboot or full fresh-home proof is added.",
-      "reviewRevision": "bb463703",
+      "reviewRevision": "645ea9162dba21096ca9a8fa28ba2a6aa22e7a77",
       "cover": {
         "path": "docs/evidence/omarchy-themes/community-board-fixed/community.png",
         "caption": "Unchanged community theme on the physical board \u2014 native capture, command-driven activation",

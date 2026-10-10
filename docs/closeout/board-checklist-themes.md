@@ -173,18 +173,24 @@ board comparison; see the task's own text for the exact operator interface
 3. **Pass for the static arm**: combined CPU, RSS, decode/presentation and
    card input/frame budgets recorded; covered-media pause and restoration
    observed.
-4. **Video arm stays blocked** until task 4.3 (video background decode)
-   lands in code — do not attempt it before that, and do not relabel a
-   fallback-only result as playback.
+4. **Video arm belongs to the existing successor**
+   `the-background-chooser-supports-fill-solid-and-video`, task 3.3, under
+   the authorized 2026-09-28 split. It remains unperformed there. This
+   parent owns the static physical arm; a static result never proves playback.
 5. Commit to `docs/evidence/omarchy-themes/background-workload-board/README.md`.
 
 ### Task 5.5 — `--workload reboot`
 
-Not board-ready yet: `tools/handheld-theme-trial.py` has no `--workload
-reboot` mode. Write and host-test it first (host-doable, not a board task);
-only then schedule board time for a normal reboot with console plus panel
-observation of remembered theme/wallpaper, fresh-home default and
-unavailable-source recovery.
+The `--workload reboot` begin/resume/recovery protocol exists and its 22
+host tests pass (2026-10-02 and again 2026-10-10). The exact operator
+procedure is in `docs/evidence/omarchy-themes/reboot-protocol/README.md`.
+Resolve the documented source-removal policy conflict first: the design
+retains a working generated copy, while the boot scenario currently requires
+the default. Then reserve the board for remembered theme/wallpaper, empty
+theme-state and source-removal boots, reviewed panel observations and normal
+restoration. A true fresh HOME still needs separate physical proof; an empty
+theme-state directory does not establish it. No reboot is performed by this
+checklist update.
 
 ---
 
