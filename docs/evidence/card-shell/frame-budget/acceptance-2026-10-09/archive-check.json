@@ -1,0 +1,39 @@
+{
+  "observed_check_utc": "2026-10-10T06:59:47.791112+00:00",
+  "archive_command": [
+    "openspec",
+    "archive",
+    "the-card-deck-still-misses-its-frame-budget",
+    "--yes",
+    "--json"
+  ],
+  "archive": "2026-10-10-the-card-deck-still-misses-its-frame-budget",
+  "capability": "runtime/card-shell",
+  "operation": "MODIFIED",
+  "tasks": {
+    "complete": 8,
+    "open": 0
+  },
+  "requirements": {
+    "total": 10,
+    "modified": "Card interaction has an explicit measured budget decision",
+    "modified_sha256": "2dd0c14a48474cd7c2601a2d0fcf672dbe4c9c128f5798d3f814c4ae4b4eac01",
+    "unchanged_sha256": {
+      "The card overview shows a webOS-style fan of 2-3 cards, each with a real icon and app name": "b6caa339bfa5bc31ab475650ce15b286210d2f0438e754f701fdf28f7780e308",
+      "The direct app switch keeps its geometry independent of the overview's card size": "374c6937e9163e95e4bdbb2d241e90392c714b81f87e9ddff98f65acd88eb8d4",
+      "Settings is not represented as a card in the overview": "14f8cf078852583d044a7dc8af233a90f085688388142bfa0116fbf93f92c293",
+      "Card eligibility, close, and deck-preview cost do not vary by app identity": "070a40ba48d3387089eb8c8013b9dd5520a7e5cae9e14d03ed51450bad664eba",
+      "Every card's small deck thumbnail stays live at a bounded cost": "5e967654ce713ee1901c25f300d0c3f77669459543435c1c2c5199b9ffba8c39",
+      "Card entry and recovery do not depend on the launcher": "3b613e459a6443e4977cab576c06ba61c37ab487c54b62b8ee4421c5573703ee",
+      "A person can manipulate a live application card deck": "9b43ef493af6b6f513e24a5126b23902ee5dfe6e4040942d1871afd5de6a6820",
+      "The card shell handles unavailable and private content safely": "79f1f1158aa60e482e92789d2f1a6abe836d05930f8a4901b1c7a274dcf27c44",
+      "An upward throw requests a recoverable close": "66b3224ce2ff7bd4bed75b802a6a3cef556358b6494a6e01c74fe33c7c32b65b"
+    }
+  },
+  "proof_source_revision": "a9011cfd70986c50a676c4e3d3cf180ef8f1d56d",
+  "limits": [
+    "Historical numerical performance misses remain recorded; current performance accepted by explicit operator permission.",
+    "No new board boot or fresh performance measurement; selected host build and actual QEMU guest evidence are separate.",
+    "Other card-shell UNVERIFIED markers and requirements are preserved."
+  ]
+}

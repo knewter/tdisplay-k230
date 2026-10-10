@@ -440,7 +440,7 @@
       "lane": "archived",
       "source": "archived",
       "physical": "verified",
-      "next": "Functional live-card UI accepted. Measured performance and full-image/non-fixture QEMU gates remain open in the-card-deck-still-misses-its-frame-budget.",
+      "next": "Functional live-card UI accepted. Performance acceptance and selected system/non-fixture QEMU integration gates are closed in 2026-10-10-the-card-deck-still-misses-its-frame-budget.",
       "dependencies": [],
       "evidence": [
         "docs/evidence/card-shell/tracked-motion-host.md",
@@ -576,14 +576,14 @@
         }
       ]
     },
-    "the-card-deck-still-misses-its-frame-budget": {
-      "lane": "in-progress",
-      "source": "in-progress",
+    "2026-10-10-the-card-deck-still-misses-its-frame-budget": {
+      "lane": "archived",
+      "source": "archived",
       "physical": "verified",
       "dependencies": [],
-      "rationale": "The operator explicitly accepts current Overview performance. Historical numerical budget misses remain recorded; selected system build and non-fixture QEMU integration proof remain open.",
-      "next": "Complete selected board-system build and non-fixture QEMU guest smoke, then archive the accepted performance investigation.",
-      "reviewRevision": "427a15f306b641c4cbe18cd9a5d1d94b0167f43e",
+      "rationale": "The operator explicitly accepts current Overview performance. Historical numerical misses remain recorded as accepted costs. The full selected board-system build and actual non-fixture QEMU guest proof passed; all eight tasks are complete.",
+      "next": "Closed with explicit performance acceptance and selected system/QEMU integration proof. No further performance optimization is selected.",
+      "reviewRevision": "a9011cfd70986c50a676c4e3d3cf180ef8f1d56d",
       "evidence": [
         "docs/evidence/card-shell/frame-budget/acceptance-2026-10-09/README.md"
       ]
