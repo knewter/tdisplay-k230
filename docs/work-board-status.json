@@ -17,7 +17,7 @@
       "lane": "in-progress",
       "source": "in-progress",
       "physical": "pending",
-      "next": "Complete remaining accessibility, coordinated-motion and six-surface glass polish gates; selected-system persistence and remembered appearance now pass.",
+      "next": "Complete the remaining cross-surface motion/interruption cases, accessibility and required physical/trace/polish gates. Task 4.1 now has fresh live/privacy/close/focus integration proof.",
       "dependencies": [
         "2026-10-01-the-shell-manages-apps-as-cards",
         "the-shell-loads-omarchy-themes"
@@ -51,10 +51,11 @@
         "docs/evidence/omarchy-themes/community-board-fixed/README.md",
         "docs/evidence/shell-polish/settings-volume-layout/README.md",
         "docs/evidence/shell-polish/settings-volume-layout/board/README.md",
-        "docs/evidence/boot-verification/coherent-ordinary-boot/README.md"
+        "docs/evidence/boot-verification/coherent-ordinary-boot/README.md",
+        "docs/evidence/coherent-shell/integration-gate-2026-10-10/README.md"
       ],
       "rationale": "Source 5bb67db1 runs in matching normal system/profile p1a1hz after ordinary reboot. Services, Home captures and saved appearance hashes pass; the umbrella retains distinct accessibility, motion/trace and six-surface physical gates.",
-      "reviewRevision": "e9f4148957cc81c84590c0ca57a33d5964858110",
+      "reviewRevision": "192ea36455e69f6acf31e198e7afbaf1493afedd",
       "cover": {
         "path": "docs/evidence/coherent-shell/refined-installed/drawer.png",
         "caption": "Installed app grid with real icons \u2014 touch acceptance pending",

@@ -1,0 +1,9 @@
+this derivation will be built:
+  /nix/store/67c3mixvlwazmzxr3zjj9g8llrv8fcq1-card-composition-probe-client-0.1.drv
+these 2 paths will be fetched (247.9 KiB download, 1.5 MiB unpacked):
+  /nix/store/4vv8w9x9ra7i5ibfi8snl0z5hasiczmy-wayland-1.26.0-dev
+  /nix/store/pw7j8z74jgccyvrgz187pxfd9c5y2wx9-wayland-protocols-1.49
+copying path '/nix/store/pw7j8z74jgccyvrgz187pxfd9c5y2wx9-wayland-protocols-1.49' from 'https://cache.nixos.org'...
+copying path '/nix/store/4vv8w9x9ra7i5ibfi8snl0z5hasiczmy-wayland-1.26.0-dev' from 'https://cache.nixos.org'...
+building '/nix/store/67c3mixvlwazmzxr3zjj9g8llrv8fcq1-card-composition-probe-client-0.1.drv'...
+/nix/store/yjb89ap4bq5vb29szdzkr5sv9lpw1sz6-card-composition-probe-client-0.1

@@ -1,0 +1,124 @@
+{
+  "source_revision": "192ea36455e69f6acf31e198e7afbaf1493afedd",
+  "working_tree_source": "Committed fixture, unchanged during the proof run; compositor and native client selected from the current pinned configuration graph.",
+  "command": [
+    "python3",
+    "tests/test_shell_motion.py",
+    "--case",
+    "live-gate",
+    "--case",
+    "private-no-icon",
+    "--case",
+    "close-refused",
+    "--output",
+    "/home/jadams/tmp/k230-coherent-motion-proof-2026-10-10"
+  ],
+  "environment": {
+    "CARD_SHELL_SWAY": "/nix/store/g7xzwwvr3x05mlmsab5jn5kn1sl41wjb-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway",
+    "CARD_SHELL_CLIENT": "/nix/store/yjb89ap4bq5vb29szdzkr5sv9lpw1sz6-card-composition-probe-client-0.1/bin/card-composition-probe-client"
+  },
+  "exit_code": 0,
+  "evidence_class": "headless-qemu-user-native-wayland-injected-touch",
+  "configuration_artifacts": {
+    "cards": "/nix/store/gp9gv2nh0zf4bgryk8qp4dbprnfycya2-k230-card-shell",
+    "client": "/nix/store/yjb89ap4bq5vb29szdzkr5sv9lpw1sz6-card-composition-probe-client-0.1",
+    "sway": "/nix/store/g7xzwwvr3x05mlmsab5jn5kn1sl41wjb-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway",
+    "client_binary": "/nix/store/yjb89ap4bq5vb29szdzkr5sv9lpw1sz6-card-composition-probe-client-0.1/bin/card-composition-probe-client"
+  },
+  "fixture_sha256": "a7723009f4b42c22f6b9c98026318f3cd4c430b1b069073d8061093cbbe6fe4f",
+  "captures": {
+    "live-held.png": {
+      "source_artifact": "live-gate/live-held.png",
+      "sha256": "71222c20cc4cf43e2e19ba9f127d476943de54fdb361aac4f2f89ad35bb5d4b8",
+      "bytes": 14254
+    },
+    "unavailable.png": {
+      "source_artifact": "live-gate/unavailable.png",
+      "sha256": "1596eb39f0075c6e2dfa20f75c3e31513a3d937a2360a67be2dfebc6f34169ae",
+      "bytes": 15058
+    },
+    "public-one.png": {
+      "source_artifact": "private-no-icon/k230.card.one-public.png",
+      "sha256": "f864663e2718f63ede79240898af5aea1fb26a1ed90febebd73f0e4c70d1f23d",
+      "bytes": 13959
+    },
+    "private-one.png": {
+      "source_artifact": "private-no-icon/k230.card.one-private.png",
+      "sha256": "d2e7e5d51bd74b33c29558581a0a216f1a1d240b40a5216d8e0cf8ba01d686da",
+      "bytes": 13898
+    },
+    "public-two.png": {
+      "source_artifact": "private-no-icon/k230.card.two-public.png",
+      "sha256": "2a13ea91fa102b75dee1b75bb8d6b9c068a68b8221c814373deedddec80af296",
+      "bytes": 14394
+    },
+    "private-two.png": {
+      "source_artifact": "private-no-icon/k230.card.two-private.png",
+      "sha256": "d2e7e5d51bd74b33c29558581a0a216f1a1d240b40a5216d8e0cf8ba01d686da",
+      "bytes": 13898
+    },
+    "close-recovered.png": {
+      "source_artifact": "close-refused/close-recovered.png",
+      "sha256": "93d6c07d5adbc1c7c857add6bcdfe992679c6510255f0fcc63b5c7abd8ff0a13",
+      "bytes": 16217
+    }
+  },
+  "negative_control": {
+    "command": [
+      "python3",
+      "/home/jadams/tmp/k230-coherent-motion-negative-2026-10-10/private-marker-omitted.py",
+      "--case",
+      "private-no-icon",
+      "--output",
+      "/home/jadams/tmp/k230-coherent-motion-negative-2026-10-10/run"
+    ],
+    "environment": {
+      "CARD_SHELL_SWAY": "/nix/store/g7xzwwvr3x05mlmsab5jn5kn1sl41wjb-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway",
+      "CARD_SHELL_CLIENT": "/nix/store/yjb89ap4bq5vb29szdzkr5sv9lpw1sz6-card-composition-probe-client-0.1/bin/card-composition-probe-client",
+      "PYTHONPATH": "/home/jadams/tmp/k230-coherent-closeout-2026-10-10/tests"
+    },
+    "mutation": "Only the private copy of the fixture replaces k230_card_private with an ignored fixture mark and shortens the poll timeout to 3 seconds. Product source and selected executable are unchanged.",
+    "script_sha256": "4a6ef81905575153ba8e56300be29e02b3de71e2ade14a2019d01ce6d1f11015",
+    "exit_code": 1,
+    "observed_failure": "timeout: k230.card.one-private",
+    "expected_failure": true,
+    "finished_utc": "2026-10-10T16:42:11.904270+00:00"
+  },
+  "limits": [
+    "QEMU user emulation of the RISC-V compositor with native x86_64 Wayland clients, injected touch and headless Pixman captures.",
+    "No system guest boot, board operation, physical touch, panel, optical timing, performance measurement or fresh UI deployment.",
+    "Only task 4.1 cases are implemented; requested cases for tasks 4.2/4.3 are rejected rather than skipped."
+  ],
+  "configuration_evaluation": {
+    "command": [
+      "nix",
+      "eval",
+      "--impure",
+      "--json",
+      "--expr",
+      "let f = builtins.getFlake \"/home/jadams/tmp/k230-coherent-closeout-2026-10-10\"; p = f.nixosConfigurations.k230.pkgs; h = import f.inputs.nixpkgs { system = builtins.currentSystem; }; in { cards = (p.callPackage (f.outPath + \"/nix/card-shell.nix\") { swayUnwrapped = p.sway-unwrapped; }).outPath; client = (h.callPackage (f.outPath + \"/nix/card-composition-probe-client\") {}).outPath; }"
+    ],
+    "exit_code": 0
+  },
+  "native_client_build": {
+    "command": [
+      "flock",
+      "-n",
+      "/tmp/k230-nix-build.lock",
+      "nix",
+      "build",
+      "--impure",
+      "--no-link",
+      "--print-out-paths",
+      "--max-jobs",
+      "1",
+      "--cores",
+      "2",
+      "--expr",
+      "let f = builtins.getFlake \"/home/jadams/tmp/k230-coherent-closeout-2026-10-10\"; p = import f.inputs.nixpkgs { system = builtins.currentSystem; }; in p.callPackage (f.outPath + \"/nix/card-composition-probe-client\") {}"
+    ],
+    "exit_code": 0,
+    "observed_completion_utc": "2026-10-10T16:38:02.696765+00:00",
+    "artifact": "/nix/store/yjb89ap4bq5vb29szdzkr5sv9lpw1sz6-card-composition-probe-client-0.1"
+  }
+}
