@@ -1727,6 +1727,16 @@ DATA  388e599604519b8cb1c2460eca20a263b9dd2bf242a39a07b0e82efe74906a0a  docs/evi
 DATA  b3e22611d1edb2af5ffd758c2a8611ff8a26e2904bac8ff8bb4fed15ffed0878  docs/evidence/coherent-shell/interruption-gate-2026-10-10/refusal-timeout.png
 DATA  8a86045ce2e93f57e1e03dca703b9eb9cc623d77b2d5bb792eaef2f8f6825c8e  docs/evidence/coherent-shell/interruption-gate-2026-10-10/second-contact-reverse.png
 DATA  d1bae5b45118c28913e28e0e12c5fa66e82203366920f5b378b14c65be52bb87  docs/evidence/coherent-shell/interruption-gate-2026-10-10/source-unmap-recovered.png
+# Deliberately opened Help/navigation aid host evidence — 2026-10-10
+DATA  b39cf837f2429aeac1c57e9a3da431f636d3d8cfcd1dad5d1bfef112d62666e9  docs/evidence/coherent-shell/navigation-aid-2026-10-10/dark-buttons-hdmi.png
+DATA  732d489086b9e9b71addf83951602b1df519057fa668717eb6b7124b676d7509  docs/evidence/coherent-shell/navigation-aid-2026-10-10/dark-buttons.png
+DATA  9a39433788953784ec03217f05c1db3b3aa11a370f014108aebfe1f7def99c15  docs/evidence/coherent-shell/navigation-aid-2026-10-10/dark-drawer.png
+DATA  dc51a79c53b67e1ead64c32b1ce4be9fb2908b8cdb6f632846b314b77cf4d190  docs/evidence/coherent-shell/navigation-aid-2026-10-10/dark-help.png
+DATA  be876d1bc6515c1e346450c8f8c0f0d5b477fcbbe7a51515c95e284ac753f244  docs/evidence/coherent-shell/navigation-aid-2026-10-10/drawer-568x1232.png
+DATA  55423d4699800eb9b55e3353e111039a6535fb040b81afd04637c0a2fb4bc4c0  docs/evidence/coherent-shell/navigation-aid-2026-10-10/light-buttons-hdmi.png
+DATA  923cfcc3bb698118306399317dd241a8dfa51435629007fff38903358d934791  docs/evidence/coherent-shell/navigation-aid-2026-10-10/light-buttons.png
+DATA  5e698163701ee1c86962c53a459b9e7aff68dc2d11fc8fa961887dadae099087  docs/evidence/coherent-shell/navigation-aid-2026-10-10/light-drawer.png
+DATA  193bda0b9be35ad0a5f637c9324db54ae582299e86ead4660f63cec881debb26  docs/evidence/coherent-shell/navigation-aid-2026-10-10/light-help.png
 ```
 
 `group:` rows stand for a directory whose members are enumerated by
@@ -2847,3 +2857,24 @@ Board installation and separate physical gates remain open.
 | `docs/evidence/coherent-shell/interruption-gate-2026-10-10/refusal-timeout.png` | 16316 | DATA | `b3e22611d1edb2af5ffd758c2a8611ff8a26e2904bac8ff8bb4fed15ffed0878` |
 | `docs/evidence/coherent-shell/interruption-gate-2026-10-10/second-contact-reverse.png` | 5483 | DATA | `8a86045ce2e93f57e1e03dca703b9eb9cc623d77b2d5bb792eaef2f8f6825c8e` |
 | `docs/evidence/coherent-shell/interruption-gate-2026-10-10/source-unmap-recovered.png` | 5783 | DATA | `d1bae5b45118c28913e28e0e12c5fa66e82203366920f5b378b14c65be52bb87` |
+
+
+## Help and navigation aid host evidence — 2026-10-10
+
+Generated Cairo/Pango host renders for coherent-shell task 1.5 use pinned dark
+and light appearances and nonsecret synthetic app names. These are DATA images,
+not board, camera or real-finger observations. Source, commands, input identities,
+reviewed drawer-reference change and limits are recorded in
+`docs/evidence/coherent-shell/navigation-aid-2026-10-10/README.md`.
+
+| Path | Bytes | Class | SHA256 |
+| --- | ---: | --- | --- |
+| `docs/evidence/coherent-shell/navigation-aid-2026-10-10/dark-buttons-hdmi.png` | 48798 | DATA | `b39cf837f2429aeac1c57e9a3da431f636d3d8cfcd1dad5d1bfef112d62666e9` |
+| `docs/evidence/coherent-shell/navigation-aid-2026-10-10/dark-buttons.png` | 40160 | DATA | `732d489086b9e9b71addf83951602b1df519057fa668717eb6b7124b676d7509` |
+| `docs/evidence/coherent-shell/navigation-aid-2026-10-10/dark-drawer.png` | 46441 | DATA | `9a39433788953784ec03217f05c1db3b3aa11a370f014108aebfe1f7def99c15` |
+| `docs/evidence/coherent-shell/navigation-aid-2026-10-10/dark-help.png` | 54543 | DATA | `dc51a79c53b67e1ead64c32b1ce4be9fb2908b8cdb6f632846b314b77cf4d190` |
+| `docs/evidence/coherent-shell/navigation-aid-2026-10-10/drawer-568x1232.png` | 44240 | DATA | `be876d1bc6515c1e346450c8f8c0f0d5b477fcbbe7a51515c95e284ac753f244` |
+| `docs/evidence/coherent-shell/navigation-aid-2026-10-10/light-buttons-hdmi.png` | 47361 | DATA | `55423d4699800eb9b55e3353e111039a6535fb040b81afd04637c0a2fb4bc4c0` |
+| `docs/evidence/coherent-shell/navigation-aid-2026-10-10/light-buttons.png` | 38894 | DATA | `923cfcc3bb698118306399317dd241a8dfa51435629007fff38903358d934791` |
+| `docs/evidence/coherent-shell/navigation-aid-2026-10-10/light-drawer.png` | 44721 | DATA | `5e698163701ee1c86962c53a459b9e7aff68dc2d11fc8fa961887dadae099087` |
+| `docs/evidence/coherent-shell/navigation-aid-2026-10-10/light-help.png` | 53454 | DATA | `193bda0b9be35ad0a5f637c9324db54ae582299e86ead4660f63cec881debb26` |
