@@ -13,11 +13,11 @@
       "rationale": "Additional-extension and emulation gates remain before the physical candidate sequence. Prior RVV evidence cannot certify all extensions.",
       "reviewRevision": "647c8d3e500d4accc3a87474e8fcab393980a799"
     },
-    "the-handheld-presents-a-coherent-shell": {
-      "lane": "in-progress",
-      "source": "in-progress",
-      "physical": "pending",
-      "next": "The combined mainline shell is accepted for the requested navigation/Help routes and installed persistently with verified ordinary boot. Complete the remaining named probe, camera/gesture/conflict and dark/light polish proof; motion measurement remains deferred by the user.",
+    "2026-10-10-the-handheld-presents-a-coherent-shell": {
+      "lane": "archived",
+      "source": "archived",
+      "physical": "verified",
+      "next": "Accepted installed shell is closed. Side-edge Back/general ownership and numerical motion tooling remain in the existing successor; other theme source requirements remain in their own proposals.",
       "dependencies": [
         "2026-10-01-the-shell-manages-apps-as-cards",
         "the-shell-loads-omarchy-themes"
@@ -56,13 +56,14 @@
         "docs/evidence/coherent-shell/coordinated-scene-2026-10-10/README.md",
         "docs/evidence/coherent-shell/interruption-gate-2026-10-10/README.md",
         "docs/evidence/coherent-shell/navigation-aid-2026-10-10/README.md",
-        "docs/evidence/coherent-shell/combined-board-candidate-2026-10-10/README.md"
+        "docs/evidence/coherent-shell/combined-board-candidate-2026-10-10/README.md",
+        "docs/evidence/coherent-shell/operator-closeout-2026-10-10/README.md"
       ],
-      "rationale": "Combined source 093a82a0 runs as exact system/profile svjjlnv after guarded installation and untouched ordinary reboot. Operator acceptance is bound to the tested candidate; all installed hashes, client/compositor/coherent-helper identity, service health and reviewed panel-native Help are committed. No active appearance generation was present. Broader required on-glass and trace/polish gates remain open; task 5.8 records its completed installation slice without ticking prerequisites.",
-      "reviewRevision": "cff9ec8f53ad7343fd8d219e30d10801239a5c10",
+      "rationale": "Operator accepted the exact installed combined system, then explicitly waived further proof gathering. Acceptance and original omitted verification requests are committed. Guarded installation, all boot hashes, exact runtime and untouched ordinary boot retain actual board evidence. Additional camera matrices, comparative probe results and timing budgets were not fabricated; missing observations retain UNVERIFIED markers. Archive reconciles the already accepted Overview \u2192 pinned Home \u2192 All apps topology and preserves the authorized implementation successors.",
+      "reviewRevision": "6619f6523b50b4e2fb49107d195b83654aa619bf",
       "cover": {
         "path": "docs/evidence/coherent-shell/refined-installed/drawer.png",
-        "caption": "Installed app grid with real icons \u2014 touch acceptance pending",
+        "caption": "Earlier native app-grid capture; installed coherent shell accepted by the operator",
         "provenance": "Board capture"
       }
     },

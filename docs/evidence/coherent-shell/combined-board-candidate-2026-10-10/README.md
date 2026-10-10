@@ -270,11 +270,11 @@ real-touch acceptance and from an unperformed postboot camera trial.
 ## Remaining proposal proof and recovery
 
 The combined shell fixes are now installed persistently on the daily mainline
-system and accepted for the requested navigation/Help routes. The umbrella
-remains **30/39**: task 5.8’s installation/ordinary-boot portion is now proven,
+system and accepted for the requested navigation/Help routes. At the installation handoff the umbrella
+remained **30/39**: task 5.8’s installation/ordinary-boot portion is now proven,
 but that task explicitly follows the required broader on-glass gates. Those
 named camera, probe, gesture/conflict, motion-trace and six-surface dark/light
-polish gates remain open. No task was ticked by substituting this narrower
+polish gates were still open at that handoff. No task was ticked by substituting this narrower
 operator report or native endpoint capture. No latency measurement was started.
 
 A plain reboot now selects the new system. To recover an interrupted boot,
@@ -301,3 +301,16 @@ commands were not executed during this successful installation; failed-write
 rollback, power-cut recovery and the physical fallback trial are not claimed.
 Board and serial reservations were released after the checks. The build slot
 was not needed for this landing; the existing 10,530-path retention farm remains.
+
+## Subsequent operator closeout
+
+After that installation handoff, the operator explicitly accepted the broader
+installed result and waived further proof gathering. The
+[committed acceptance/disposition](../operator-closeout-2026-10-10/README.md)
+supersedes the extra capture gates described above. The current tasks record
+acceptance, waived comparative experiments and deferred measurements; no
+unperformed camera or benchmark command is marked as executed. The coherent
+shell is archived after reconciling its contract with the already accepted
+Overview → pinned Home → All apps route. Side-edge Back, the general ownership
+arbiter and motion tracing remain open in their existing successor. The
+installation/runtime observations and limits in this report remain unchanged.

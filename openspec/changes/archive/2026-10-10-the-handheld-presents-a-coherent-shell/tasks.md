@@ -108,7 +108,7 @@ after an untouched ordinary reboot with matching Image/initrd/DTB/init selector.
 All three shell services are active, Home is visible in a reviewed native
 capture and panel photograph, and saved appearance generation/report hashes
 are unchanged. Proof:
-[`coherent-ordinary-boot`](../../../docs/evidence/boot-verification/coherent-ordinary-boot/README.md).
+[`coherent-ordinary-boot`](../../../../docs/evidence/boot-verification/coherent-ordinary-boot/README.md).
 This supersedes the runtime-only deployment note above, but does not tick 5.8:
 that task explicitly follows the required on-glass gates, several of which
 remain open in this umbrella. It also does not complete all-six-surface glass
