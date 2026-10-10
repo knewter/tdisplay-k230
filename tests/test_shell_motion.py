@@ -8,6 +8,7 @@ Only implemented cases are accepted; missing cases never silently pass.
 import argparse
 from datetime import datetime, timezone
 import hashlib
+import io
 import json
 import os
 from pathlib import Path
@@ -191,15 +192,15 @@ class Scene:
                     continue
         return rows[-1] if rows else {}
 
-    def capture(self, name, fast=False):
+    def capture(self, name):
         path = self.root / f"{name}.png"
-        subprocess.run(["grim"] + (["-l", "1"] if fast else []) + [str(path)],
+        subprocess.run(["grim", str(path)],
                        env=self.env, check=True, timeout=15)
         return Image.open(path).convert("RGB")
 
-    def capture_when(self, name, predicate, fast=False):
+    def capture_when(self, name, predicate):
         def ready():
-            image = self.capture(name, fast=fast)
+            image = self.capture(name)
             return image if predicate(image) else None
         return wait_for(ready, name)
 
@@ -712,19 +713,28 @@ def recovery_frames(scene, name, mode, color=(32, 112, 176), forbidden=(), expec
     raise AssertionError(f"{name} did not settle in mode {mode}")
 
 
-def expanding_frame(scene, name, color=(32, 112, 176)):
+def expanding_frame(scene, name, interrupt, color=(32, 112, 176)):
     deck = overview(scene)
     small = Scene.color_box(deck, color)
     assert small, "selected expansion source absent"
     scene.tap(101, 284, 500)
-    # Inspect one row before sending the interruption. Processing every pixel
-    # and then polling IPC can consume the whole 160ms animation even though
-    # the captured frame is intermediate. Full-frame analysis follows input.
-    def intermediate(im):
+    # Raw screencopy avoids PNG encoding/decoding inside the 160ms input
+    # window. Inspect one row, deliver the real interruption and query its
+    # state before encoding the same captured frame for the evidence file.
+    def ready():
+        raw = subprocess.run(["grim", "-t", "ppm", "-"], env=scene.env,
+                             stdout=subprocess.PIPE, check=True, timeout=15)
+        image = Image.open(io.BytesIO(raw.stdout)).convert("RGB")
         colors = (color, tuple(v // 2 for v in color))
-        xs = [x for x in range(568) if im.getpixel((x, 600)) in colors]
-        return xs and small[2] - small[0] + 2 < max(xs) - min(xs) + 1 < 518
-    return small, scene.capture_when(name, intermediate, fast=True)
+        xs = [x for x in range(568) if image.getpixel((x, 600)) in colors]
+        if not (xs and small[2] - small[0] + 2 < max(xs) - min(xs) + 1 < 518):
+            return None
+        interrupt()
+        state = scene.state()
+        image.save(scene.root / f"{name}.png")
+        return image, state
+    image, state = wait_for(ready, name)
+    return small, image, state
 
 
 def reverse(scene):
@@ -750,9 +760,9 @@ def reverse(scene):
     scene.command("test-touch up 82")
     assert scene.focused() == "k230.card.one", "Back leaked the canceled stream"
 
-    small, middle_image = expanding_frame(scene, "back-expand-middle")
-    scene.command("back")
-    assert scene.state()["mode"] == "5", "Back reset unfinished expansion instead of reversing"
+    small, middle_image, interrupted = expanding_frame(
+        scene, "back-expand-middle", lambda: scene.command("back"))
+    assert interrupted["mode"] == "5", "Back reset unfinished expansion instead of reversing"
     Scene.assert_frame(middle_image)
     middle = Scene.color_box(middle_image)
     expansion = recovery_frames(scene, "back-expand-reverse", 1,
@@ -780,9 +790,9 @@ def retarget(scene):
 
     # A new contact during expansion reverses the current live transform,
     # rather than activating the card or resetting its start keyframe.
-    small, middle_image = expanding_frame(scene, "new-contact-middle")
-    scene.command("test-touch down 93 300 650")
-    assert scene.state()["mode"] == "5", "new contact skipped current expansion geometry"
+    small, middle_image, interrupted = expanding_frame(
+        scene, "new-contact-middle", lambda: scene.command("test-touch down 93 300 650"))
+    assert interrupted["mode"] == "5", "new contact skipped current expansion geometry"
     Scene.assert_frame(middle_image)
     middle = Scene.color_box(middle_image)
     contact = recovery_frames(scene, "new-contact-reverse", 1,
@@ -834,8 +844,9 @@ def unmap(scene):
     # ordering therefore puts the target to its left, not its right.
     scene.command("previous")
     wait_for(lambda: scene.state()["selected_app_id"] == "k230.card.two", "unmap expansion target selected")
-    small, middle_image = expanding_frame(scene, "expansion-unmap-middle", (144, 48, 128))
-    scene.apps["k230.card.two"].terminate()
+    small, middle_image, interrupted = expanding_frame(
+        scene, "expansion-unmap-middle",
+        lambda: scene.apps["k230.card.two"].terminate(), (144, 48, 128))
     scene.apps["k230.card.two"].wait(timeout=10)
     Scene.assert_frame(middle_image)
     middle = Scene.color_box(middle_image, (144, 48, 128))
