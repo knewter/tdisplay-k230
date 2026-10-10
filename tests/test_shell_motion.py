@@ -367,7 +367,8 @@ def public_app(scene, app="k230.card.one"):
     scene.client_start(app)
     scene.ipc(f'[app_id="{app}"] focus')
     color = (32, 112, 176) if app.endswith("one") else (144, 48, 128)
-    return scene.capture_when("app", lambda im: Scene.color_count(im, color) > 100)
+    return scene.capture_when("app", lambda im: Scene.color_count(im, color) > 100
+                              and max(im.getpixel((40, 1231))) >= 12)
 
 
 def overview(scene):
@@ -377,23 +378,32 @@ def overview(scene):
                               (box := Scene.color_box(im)) and box[2] - box[0] < 500)
 
 
-def panel_edge(image, baseline, surface):
-    # Shade/Settings dim the task beneath them. Remove the observed dim
-    # factor before finding opaque panel pixels, so the backdrop cannot
-    # masquerade as a full-height sheet. x=40 avoids rounded corners and
-    # the deck's animated client stripe; y=1231 is always below these trays.
-    x = 40
+def panel_edge(image, baseline, surface, handle=None):
     if surface == "drawer":
+        # Home and Drawer can use the same brush. Track the drawer's own
+        # visible horizontal handle, learned from its actual settled frame,
+        # rather than confusing identical backgrounds with absence.
+        assert handle, "drawer reference not prepared"
+        color, offset = handle
         changed = [y for y in range(1232)
-                   if image.getpixel((x, y)) != baseline.getpixel((x, y))]
+                   if all(image.getpixel((x, y)) == color for x in (270, 284, 300))]
+        return min(changed) - offset if changed else None
     else:
+        # The tray and wallpaper can share a background color. Measure
+        # the edge over the contrasting live root instead. Its alternating
+        # blue/base-half bands share one dim factor; exclude only the
+        # known 48px binary-counter header. The child starts to the right.
+        x = 40
         bg, dim = baseline.getpixel((x, 1231)), image.getpixel((x, 1231))
         channel = max(range(3), key=lambda i: bg[i])
         assert bg[channel] >= 12, "invalid backdrop reference"
         factor = dim[channel] / bg[channel]
-        changed = [y for y in range(1232)
-                   if max(abs(v - b * factor) for v, b in
-                          zip(image.getpixel((x, y)), baseline.getpixel((x, y)))) > 6]
+        box = Scene.color_box(baseline)
+        assert box and box[0] < x < box[2], "missing live-root reference"
+        bands = ((32, 112, 176), (16, 56, 88))
+        changed = [y for y in range(box[1] + 48, box[3])
+                   if all(max(abs(v - b * factor) for v, b in
+                              zip(image.getpixel((x, y)), band)) > 6 for band in bands)]
     return (min(changed) if surface == "drawer" else max(changed) + 1) if changed else None
 
 
@@ -402,13 +412,15 @@ def await_panel(scene, name, baseline, surface, expected):
     observed = set()
     def ready(im):
         nonlocal last
-        last = panel_edge(im, baseline, surface)
+        last = panel_edge(im, baseline, surface, getattr(scene, "drawer_handle", None))
         observed.add(last)
         return last is not None and abs(last - expected) <= 2
     try:
         image = wait_for(lambda: (im if ready(im) else None)
                          if (im := scene.capture(name)) else None, name, 4)
     except AssertionError as error:
+        if not str(error).startswith("timeout:"):
+            raise
         raise AssertionError(f"{surface} edges {sorted(observed, key=str)}, expected {expected}±2") from error
     Scene.assert_frame(image)
     return image, last
@@ -419,6 +431,20 @@ def open_drawer(scene, ident=31):
     scene.command(f"test-touch motion {ident} 284 400")
     wait_for(lambda: scene.state().get("drawer_mapped") == "1", "drawer maps")
     scene.command(f"test-touch up {ident}")
+
+
+def prepare_drawer_reference(scene):
+    scene.route("drawer")
+    reference = scene.capture_when("drawer-reference", lambda im:
+                                    im.getpixel((284, 43)) != im.getpixel((284, 32)))
+    color = reference.getpixel((284, 43))
+    rows = [y for y in range(32, 54) if
+            all(reference.getpixel((x, y)) == color for x in (270, 284, 300))]
+    assert rows, "visible drawer handle missing from reference"
+    scene.drawer_handle = (color, min(rows) - 32)
+    unmaps = scene.rust_log().count(" unmap")
+    scene.route("hide")
+    wait_for(lambda: scene.rust_log().count(" unmap") > unmaps, "reference drawer hides")
 
 
 def overview_to_home(scene, ident=30):
@@ -455,8 +481,10 @@ def shrink_live(scene):
         assert scene.state()["mode"] == "4", "held entry settled before release"
         assert scene.focused() == "k230.card.one", "entry changed app focus"
         samples.append({"finger_y": y, "box": box})
-    frames = scene.record("k230.card.one")["frames"]
-    wait_for(lambda: scene.record("k230.card.one")["frames"] > frames, "live root during entry")
+    counters = ("frames", "callbacks", "child_frames", "child_callbacks")
+    before = {key: scene.record("k230.card.one")[key] for key in counters}
+    wait_for(lambda: all(scene.record("k230.card.one")[key] > value
+                         for key, value in before.items()), "live root and child during entry")
     held = scene.capture("shrink-held")
     Scene.assert_frame(held)
     assert Scene.color_box(held) == tuple(samples[-1]["box"]), "stationary entry drifted"
@@ -466,14 +494,17 @@ def shrink_live(scene):
     Scene.assert_frame(end)
     assert scene.mapped("k230.card.one"), "entry lost its source"
     return {"source_box": first, "held_samples": samples,
-            "live_root_advanced": True, "held_geometry_stable": True,
+            "live_counters_before": before,
+            "live_counters_after": {key: scene.record("k230.card.one")[key] for key in counters},
+            "live_root_and_child_advanced": True, "held_geometry_stable": True,
             "rounded_clip": True, "destination": "overview"}
 
 
 def drawer_rise(scene):
     public_app(scene)
-    deck = overview(scene)
+    overview(scene)
     baseline = overview_to_home(scene)
+    prepare_drawer_reference(scene)
     assert scene.mapped("k230.card.one"), "Home removed running app"
     scene.command("test-touch down 31 284 1200")
     samples = []
@@ -485,14 +516,15 @@ def drawer_rise(scene):
         assert "touch-down 31 " not in scene.rust_log(), "overlay stole the accepted stream"
         samples.append({"finger_y": y, "panel_top": actual})
     time.sleep(.15)
-    held, edge = await_panel(scene, "drawer-held", baseline, "drawer", 932)
+    _, edge = await_panel(scene, "drawer-held", baseline, "drawer", 932)
     scene.command("test-touch up 31")
     opened, end = await_panel(scene, "drawer-open", baseline, "drawer", 32)
-    assert opened.getpixel((284, 500)) != baseline.getpixel((284, 500)), "drawer failed z-order"
+    assert opened.getpixel((80, 150)) == (255, 255, 0) and baseline.getpixel((80, 150)) != (255, 255, 0), "drawer failed z-order"
     unmaps = scene.rust_log().count(" unmap")
     scene.route("hide")
     wait_for(lambda: scene.rust_log().count(" unmap") > unmaps, "drawer unmaps")
     recovered = scene.capture_when("drawer-restored", lambda im:
+                                   Scene.color_count(im, (255, 255, 0)) == 0 and
                                    im.getpixel((284, 500)) == baseline.getpixel((284, 500)))
     Scene.assert_frame(recovered)
     assert scene.state()["home_selected"] == "1" and scene.focused() is None, "drawer return lost Home"
@@ -597,8 +629,9 @@ def focus(scene):
     scene.command("enter")
     wait_for(lambda: scene.state()["mode"] == "1", "neighbor overview")
     baseline = overview_to_home(scene, 64)
+    prepare_drawer_reference(scene)
     open_drawer(scene, 62)
-    drawer, _ = await_panel(scene, "focus-drawer", baseline, "drawer", 32)
+    await_panel(scene, "focus-drawer", baseline, "drawer", 32)
     scene.tap(63, 284, 80)
     wait_for(lambda: "drawer-keyboard-focus-granted" in scene.rust_log(), "search owns keyboard focus")
     keys = {app: scene.record(app).get("key_presses", 0) for app in scene.apps}
@@ -609,6 +642,7 @@ def focus(scene):
                                                      im.crop((24, 55, 544, 110))).getbbox())
     Scene.assert_frame(typed)
     assert all(scene.record(app).get("key_presses", 0) == value for app, value in keys.items()), "search key leaked into app"
+    search_keys = {app: scene.record(app).get("key_presses", 0) for app in scene.apps}
     unmaps = scene.rust_log().count(" unmap")
     scene.route("hide")
     wait_for(lambda: scene.rust_log().count(" unmap") > unmaps, "search drawer hides")
@@ -618,13 +652,20 @@ def focus(scene):
     scene.tap(66, 216, 170)  # Public identity two, second catalog tile.
     wait_for(lambda: scene.focused() == "k230.card.two" and
              scene.state()["drawer_mapped"] == "0", "drawer activates existing chosen app")
+    restored = scene.capture_when("focus-app-restored", lambda im:
+                                   Scene.color_count(im, (144, 48, 128)) > 100 and
+                                   Scene.color_count(im, (32, 112, 176)) == 0)
+    Scene.assert_frame(restored)
+    assert scene.state()["home_selected"] == "0", "app activation left Home selected"
     scene.keyboard.press()
     wait_for(lambda: scene.record("k230.card.two").get("key_presses", 0) > keys["k230.card.two"], "keyboard returns to selected app")
     assert scene.record("k230.card.one").get("key_presses", 0) == keys["k230.card.one"], "return focused wrong app"
     return {"neighbor_focus_committed_after_expand": True,
             "expanded_app_received_key": True, "search_received_key": True,
             "search_key_not_delivered_to_apps": True, "search_returned_to_home": True,
-            "drawer_activated_existing_app": True, "selected_app_focus_recovered": True}
+            "drawer_activated_existing_app": True, "selected_app_focus_recovered": True,
+            "key_counts_during_search": search_keys,
+            "key_counts_after_return": {app: scene.record(app).get("key_presses", 0) for app in scene.apps}}
 
 
 def main():
