@@ -1,0 +1,50 @@
+{
+  "current": {
+    "icu": "/nix/store/45gzjd7d64wn7lpzm91fv5jhnahbwxf3-icu4c-riscv64-unknown-linux-gnu-78.3.drv",
+    "networkmanager": "/nix/store/wrkjwy6g7xnjk9fhfb76yp76d3didyxi-networkmanager-riscv64-unknown-linux-gnu-1.58.1.drv",
+    "systemd": "/nix/store/hrg87xdmvmibsh6mwh9i65mhy03i8887-systemd-riscv64-unknown-linux-gnu-261.2.drv",
+    "samba": "/nix/store/qs4sgady1i80ww2kmn5bcx53q753i8x9-samba-riscv64-unknown-linux-gnu-4.23.10.drv"
+  },
+  "previous": {
+    "icu": "/nix/store/45gzjd7d64wn7lpzm91fv5jhnahbwxf3-icu4c-riscv64-unknown-linux-gnu-78.3.drv",
+    "networkmanager": "/nix/store/wrkjwy6g7xnjk9fhfb76yp76d3didyxi-networkmanager-riscv64-unknown-linux-gnu-1.58.1.drv",
+    "systemd": "/nix/store/hrg87xdmvmibsh6mwh9i65mhy03i8887-systemd-riscv64-unknown-linux-gnu-261.2.drv",
+    "samba": "/nix/store/qs4sgady1i80ww2kmn5bcx53q753i8x9-samba-riscv64-unknown-linux-gnu-4.23.10.drv"
+  },
+  "same_derivations": {
+    "icu": true,
+    "networkmanager": true,
+    "systemd": true,
+    "samba": true
+  },
+  "observed_evaluation_utc": "2026-10-10T03:30:16.493737+00:00",
+  "previous_source_revision": "50707c5e04ba3fb5518386a8eeb8d4f4eef04960",
+  "current_source_revision": "489360ecc4fb2fe61c14bc457429b9d64d6b0f5e",
+  "flake_lock_identical": true,
+  "unchanged_kernel_output": "/nix/store/j6x14mc1bz3fh0ylya68qb9yj7qxjcdx-linux-riscv64-unknown-linux-gnu-6.18.52",
+  "method": "nix eval --impure --json: compare k230-qemu pkgs.icu.drvPath, pkgs.networkmanager.drvPath, and config.systemd.package.drvPath using current local flake and git+file historical source revision. Additional samba.drvPath comparison used the same current/historical configuration references.",
+  "limits": [
+    "Exact unchanged recipe identities establish no input invalidation for these sampled heavyweight dependencies.",
+    "The previous passing artifacts were absent at run start; available nix-gc.service journal had no entries identifying the collection. Specific deletion mechanism/operator is unverified.",
+    "Some changed shell/system recipes may legitimately produce new outputs; this sample does not claim every derivation is unchanged."
+  ],
+  "additional_samba_evaluation_utc": "2026-10-10T04:52:59.479203+00:00",
+  "additional_samba_commands": [
+    [
+      "nix",
+      "eval",
+      "--impure",
+      "--json",
+      "--expr",
+      "let f = builtins.getFlake \"/home/jadams/tmp/k230-card-overview-close-final\"; in f.nixosConfigurations.k230-qemu.pkgs.samba.drvPath"
+    ],
+    [
+      "nix",
+      "eval",
+      "--impure",
+      "--json",
+      "--expr",
+      "let f = builtins.getFlake \"git+file:///home/jadams/tmp/k230-card-overview-close-final?rev=50707c5e04ba3fb5518386a8eeb8d4f4eef04960\"; in f.nixosConfigurations.k230-qemu.pkgs.samba.drvPath"
+    ]
+  ]
+}

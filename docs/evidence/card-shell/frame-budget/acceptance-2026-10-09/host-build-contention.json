@@ -1,0 +1,21 @@
+{
+  "observed_utc": "2026-10-10T05:21:01.582846+00:00",
+  "evidence_class": "host-build-contention-snapshot",
+  "load_average": [
+    112.822265625,
+    120.48193359375,
+    113.72607421875
+  ],
+  "cpu_count": 32,
+  "io_pressure": "some avg10=3.65 avg60=5.61 avg300=9.82 total=69337774932\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=26790565452",
+  "store_available_bytes": 252983898112,
+  "limits": [
+    "Point-in-time shared-host observation; no identification or changes to other workloads.",
+    "This is host build context, not board or guest performance evidence."
+  ],
+  "command": [
+    "python3",
+    "-c",
+    "import os,json; from pathlib import Path; from datetime import datetime,timezone; v=os.statvfs(\"/nix/store\"); print(json.dumps({\"observed_utc\":datetime.now(timezone.utc).isoformat(),\"evidence_class\":\"host-build-contention-snapshot\",\"load_average\":os.getloadavg(),\"cpu_count\":os.cpu_count(),\"io_pressure\":Path(\"/proc/pressure/io\").read_text().strip(),\"store_available_bytes\":v.f_bavail*v.f_frsize,\"limits\":[\"Point-in-time shared-host observation; no identification or changes to other workloads.\",\"This is host build context, not board or guest performance evidence.\"]},indent=2))"
+  ]
+}

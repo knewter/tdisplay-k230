@@ -5,6 +5,7 @@ import importlib.util
 import json
 import os
 from pathlib import Path
+import re
 import socket
 import struct
 import subprocess
@@ -65,6 +66,12 @@ def main():
         return [n for n in nodes(ipc(kind=4)) if n.get('app_id') in ('k230.card.one', 'k230.card.two')]
     def focused():
         return next((n['app_id'] for n in apps() if n.get('focused')), None)
+    def second_card_settled():
+        scene = command('debug-scene')[0]['error']
+        offset = re.search(r'(?:^| )card_dx=([-0-9.]+)', scene)
+        assert offset, 'guest compositor must expose deck settlement'
+        return (' selected_app_id=k230.card.two ' in scene and
+                abs(float(offset[1])) < .5)
     def records(name):
         return [json.loads(line) for line in (runtime/(name+'.jsonl')).read_text().splitlines() if line.startswith('{')]
     def count(name, field):
@@ -93,7 +100,12 @@ def main():
         wait_for(lambda: all(count(name, field) > before[i][j]
                             for i, name in enumerate(('k230.card.one', 'k230.card.two'))
                             for j, field in enumerate(('frames', 'child_frames'))), 'live root and subsurface callbacks')
-        command('test-touch up 1')
+        # The partial drag keeps both live root/subsurface previews visible.
+        # Current 80%-width cards need more travel than this held 170px drag
+        # to select their neighbour on a slow release. Finish the stroke, then
+        # observe actual selection/settlement before tapping its centre.
+        command('test-touch motion 1 8 450'); command('test-touch up 1')
+        wait_for(second_card_settled, 'drag selects and settles second card')
         command('test-touch down 2 284 450'); command('test-touch up 2')
         wait_for(lambda: focused() == 'k230.card.two', 'expand restores app focus')
         keyboard.press(); wait_for(lambda: count('k230.card.two', 'key_presses') == 1, 'keyboard after expand')

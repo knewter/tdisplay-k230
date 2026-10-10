@@ -36,7 +36,7 @@ with exact commands, timestamps, identities and evidence limits.
 
 Ownership: worktree `/home/jadams/tmp/k230-card-overview-close-final`, branch
 `closeout/card-overview-accepted-2026-10-09`, base `427a15f3`. Owned paths are
-this change's planning/evidence, system/QEMU selection, smoke documentation
+this change's planning/evidence, system/QEMU selection, guest verifier, smoke documentation
 and work-board status, plus the CLI-synced `runtime/card-shell` requirement.
 Builds use `/tmp/k230-nix-build.lock`; no board reservation is taken.
 
@@ -49,3 +49,24 @@ normal mainline configuration still evaluates to the accepted `yl3si5ak`
 closure, unchanged; no board activation or boot was performed. The selected
 QEMU configuration now includes its verifier, but the actual guest run is
 still pending at this source checkpoint.
+
+
+## Build cache retention
+
+The [cache investigation and durable roots](build-retention.md) record unchanged
+sampled dependency recipes and protect the realized selected artifacts and
+build inputs against normal GC. The specific earlier deletion event remains
+unverified. This host-local retention does not change global GC policy.
+
+
+## First selected guest attempt
+
+The [first ordinary selected-image run](qemu/failed-selected-first/result.json)
+built and booted the image but failed `expand restores app focus`. Its
+[manifest](qemu/failed-selected-first/manifest.json) and [actual failure lines](qemu/failed-selected-first/failure.log)
+remain a failed integration attempt. The verifier held a 170-pixel drag while
+checking both live previews, then expected that slow release to select the
+neighbour. The original fixed-threshold policy supported that assumption;
+current nearest-card/coasting policy and 80%-width cards require more travel.
+The corrected verifier finishes the stroke and observes actual selection and
+settlement before tapping. A fresh selected guest pass remains required.

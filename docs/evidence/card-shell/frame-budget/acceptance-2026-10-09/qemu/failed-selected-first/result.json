@@ -1,0 +1,30 @@
+{
+  "status": "FAIL",
+  "exit_code": 1,
+  "image_kind": "selected-qemu-image",
+  "evidence_class": "qemu-system-guest-headless-injected",
+  "source_revision": "489360ecc4fb2fe61c14bc457429b9d64d6b0f5e",
+  "working_tree_limit": "Only the card spec delta was edited during this run; runtime/configuration/verifier sources matched the committed revision. The verifier was corrected after this failure.",
+  "observed_failure_utc": "2026-10-10T06:19:59.326729+00:00",
+  "host_command": [
+    "flock",
+    "-n",
+    "/tmp/k230-nix-build.lock",
+    "tools/qemu-k230.sh",
+    "--card-shell-smoke",
+    "--output",
+    "/home/jadams/tmp/k230-card-closeout-private/selected-qemu-run",
+    "--timeout",
+    "900"
+  ],
+  "failure": "timeout: expand restores app focus",
+  "complete_runtime_reports": 0,
+  "raw_serial_sha256": "44fcaeb4ea7803d2ee6f3aa178a4a8a2eb088ee613eb9bbdfaa00e3b450214d4",
+  "raw_serial_bytes": 71782,
+  "published_transcript": "Only the actual failing assertion and nonzero final smoke-status marker; terminal colour escapes removed. Raw transcript is retained privately.",
+  "limits": [
+    "The full image built and booted; this run did not pass integration task 5.1.",
+    "The old fixed-threshold paging policy accepted a held 170px drag. Current nearest-card/coasting policy needs a stroke past half the larger card pitch for a slow release; the corrected verifier completes the stroke and observes selection/settlement before tapping.",
+    "No board boot, real touch or fresh performance measurement."
+  ]
+}

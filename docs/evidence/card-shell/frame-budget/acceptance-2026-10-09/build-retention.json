@@ -1,0 +1,111 @@
+{
+  "roots": {
+    "kernel-out": "/nix/store/j6x14mc1bz3fh0ylya68qb9yj7qxjcdx-linux-riscv64-unknown-linux-gnu-6.18.52",
+    "kernel-dev": "/nix/store/sq6p2dphnx5jjlgivzlvcg10px864rir-linux-riscv64-unknown-linux-gnu-6.18.52-dev",
+    "kernel-modules": "/nix/store/adh51n6qn837na65nh90c1m38r537ynr-linux-riscv64-unknown-linux-gnu-6.18.52-modules",
+    "board-system": "/nix/store/byrzisiskfv70lvlll0dmy8wvwpslsfl-nixos-system-nixos-26.11.20260919.20b1ddd",
+    "mainline-normal": "/nix/store/yl3si5ak6yi709yg1fqsnwgq0zn4xfcs-nixos-system-nixos-26.11.20260919.20b1ddd",
+    "mainline-kernel-dev": "/nix/store/jaglwmcn2z00v7285nfxnk24kh5vlkzk-linux-riscv64-unknown-linux-gnu-7.3.0-rc5-dev",
+    "mainline-kernel-modules": "/nix/store/99h5b916hmfva41wn1i0whqcc078wj3r-linux-riscv64-unknown-linux-gnu-7.3.0-rc5-modules",
+    "mainline-kernel-out": "/nix/store/f3rnipvbc5vqam8kwdmn3wgcl5rbz9yx-linux-riscv64-unknown-linux-gnu-7.3.0-rc5",
+    "dependency-icu-dev": "/nix/store/wb3jfnafnrzm5rlbf6kf9kczarkgz5x7-icu4c-riscv64-unknown-linux-gnu-78.3-dev",
+    "dependency-icu-out": "/nix/store/bghnl4nqg6wgdlsg2amq1q036p8j3b2l-icu4c-riscv64-unknown-linux-gnu-78.3",
+    "dependency-systemd-out": "/nix/store/srwrq12f962d5prr382vvsq76nfvmm84-systemd-riscv64-unknown-linux-gnu-261.2",
+    "dependency-samba-dev": "/nix/store/nnqzlb18qpn9xy5cxlkq54s0mya3k6cq-samba-riscv64-unknown-linux-gnu-4.23.10-dev",
+    "dependency-samba-man": "/nix/store/iwaf7xq11lsn8dd3l08shg6jff0rscmx-samba-riscv64-unknown-linux-gnu-4.23.10-man",
+    "dependency-samba-out": "/nix/store/8zl6ydjqckhrb3zlchfiiwkrb31awdca-samba-riscv64-unknown-linux-gnu-4.23.10",
+    "dependency-systemd-debug": "/nix/store/wc4lm4ffcj7likpjyq9c11qkx8814gyl-systemd-riscv64-unknown-linux-gnu-261.2-debug",
+    "dependency-systemd-dev": "/nix/store/1vq2zi67jgh6bzzcf61r19gzx1y95bnk-systemd-riscv64-unknown-linux-gnu-261.2-dev",
+    "dependency-systemd-man": "/nix/store/nn4v440w15j45a4mi4pc5d3jzk81rf4i-systemd-riscv64-unknown-linux-gnu-261.2-man",
+    "dependency-networkmanager-dev": "/nix/store/6ncj0zwzr82r46v1wyr9nh712hgi5n7f-networkmanager-riscv64-unknown-linux-gnu-1.58.1-dev",
+    "dependency-networkmanager-devdoc": "/nix/store/n9vzfqpnfxwaa056wf3awjf3zza64ghh-networkmanager-riscv64-unknown-linux-gnu-1.58.1-devdoc",
+    "dependency-networkmanager-doc": "/nix/store/fnvq68wzw778lz9qbxl6rpzpcfykzlgn-networkmanager-riscv64-unknown-linux-gnu-1.58.1-doc",
+    "dependency-networkmanager-man": "/nix/store/ssbz34371jrs0s4f6i9mihnkzy0vx8i4-networkmanager-riscv64-unknown-linux-gnu-1.58.1-man",
+    "dependency-networkmanager-out": "/nix/store/w8hw3xz4bdnz31080zi0s9xwkaxgf0fz-networkmanager-riscv64-unknown-linux-gnu-1.58.1",
+    "selected-kernel": "/nix/store/j6x14mc1bz3fh0ylya68qb9yj7qxjcdx-linux-riscv64-unknown-linux-gnu-6.18.52",
+    "selected-initrd": "/nix/store/y19p5k6fl5gz3x2rxrq973mppryvrz9k-initrd",
+    "selected-toplevel": "/nix/store/m0d065z6akmic866g0i65c7g6mjxd11b-nixos-system-nixos-kexec-26.11.20260919.20b1ddd"
+  },
+  "purpose": "Explicit selected-artifact and build-input roots retain runtime libraries, development outputs, sources and host tools for reuse. The existing global GC policy is unchanged.",
+  "global_policy_changed": false,
+  "unrealized_mainline_outputs_not_rebuilt": [],
+  "observed_dependency_output_pinning_utc": "2026-10-10T05:10:50.506521+00:00",
+  "sampled_output_validity_at_pinning": {
+    "observed_utc": "2026-10-10T05:10:50.506521+00:00",
+    "command": [
+      "nix-store",
+      "--check-validity",
+      "<evaluated-output-path>"
+    ],
+    "valid": [
+      "dependency-icu-dev",
+      "dependency-icu-out",
+      "dependency-samba-dev",
+      "dependency-samba-man",
+      "dependency-samba-out",
+      "dependency-systemd-out"
+    ],
+    "invalid": [
+      "dependency-networkmanager-dev",
+      "dependency-networkmanager-devdoc",
+      "dependency-networkmanager-doc",
+      "dependency-networkmanager-man",
+      "dependency-networkmanager-out",
+      "dependency-systemd-debug",
+      "dependency-systemd-dev",
+      "dependency-systemd-man"
+    ],
+    "limit": "This is the observed intermediate realization state, not a historical GC deletion record. Systemd runtime output was valid while its other three outputs were invalid and its derivation was rebuilding."
+  },
+  "latest_dependency_output_pinning_utc": "2026-10-10T06:07:44.267017+00:00",
+  "unrealized_sampled_outputs_not_rebuilt": [],
+  "observed_selected_artifact_pinning_utc": "2026-10-10T06:09:54.699705+00:00",
+  "observed_completion_utc": "2026-10-10T06:24:04.034734+00:00",
+  "selected_artifacts": {
+    "kernel": "/nix/store/j6x14mc1bz3fh0ylya68qb9yj7qxjcdx-linux-riscv64-unknown-linux-gnu-6.18.52",
+    "initrd": "/nix/store/y19p5k6fl5gz3x2rxrq973mppryvrz9k-initrd",
+    "toplevel": "/nix/store/m0d065z6akmic866g0i65c7g6mjxd11b-nixos-system-nixos-kexec-26.11.20260919.20b1ddd",
+    "board-system": "/nix/store/byrzisiskfv70lvlll0dmy8wvwpslsfl-nixos-system-nixos-26.11.20260919.20b1ddd",
+    "mainline-normal": "/nix/store/yl3si5ak6yi709yg1fqsnwgq0zn4xfcs-nixos-system-nixos-26.11.20260919.20b1ddd"
+  },
+  "selected_derivations": [
+    "/nix/store/9xrwly06b2jk6jz6icrc52s4pmw0mwax-nixos-system-nixos-26.11.20260919.20b1ddd.drv",
+    "/nix/store/d8857fadd62d37bkrrw2qy9py1smr9ad-nixos-system-nixos-kexec-26.11.20260919.20b1ddd.drv",
+    "/nix/store/f32c1m1yc9r3vh2s3hdar0cpmxj65wjp-nixos-system-nixos-26.11.20260919.20b1ddd.drv",
+    "/nix/store/q2pfr7g99q8h9531jhfkhb440isjqa8m-linux-riscv64-unknown-linux-gnu-6.18.52.drv",
+    "/nix/store/yicfp6mpkjf5c3vp5g3xj8w2q8iyaqvn-initrd.drv"
+  ],
+  "build_dependency_paths_retained": 10218,
+  "not_realized_paths_omitted": 0,
+  "retained_paths_sha256": "a63cdbd6b746840dbdc2be6593b35c7d4023e3d2d1b4b014768450b7855f69eb",
+  "build_closure_root": "/home/jadams/.local/state/tdisplay-k230/retained-builds/card-overview-2026-10-09/build-closure",
+  "build_closure": "/nix/store/ra8g9i8hn9n5y2vdb7yzayqdwj5lwhdl-tdisplay-k230-retained-card-build-inputs",
+  "build_closure_command": [
+    "flock",
+    "-n",
+    "/tmp/k230-nix-build.lock",
+    "nix",
+    "build",
+    "--impure",
+    "--max-jobs",
+    "1",
+    "--cores",
+    "1",
+    "--out-link",
+    "/home/jadams/.local/state/tdisplay-k230/retained-builds/card-overview-2026-10-09/build-closure",
+    "--file",
+    "/home/jadams/.local/state/tdisplay-k230/retained-builds/card-overview-2026-10-09/retain.nix"
+  ],
+  "exit_code": 0,
+  "limits": [
+    "This is a host-local retention snapshot, not board deployment or guest verification.",
+    "New derivations after actual source/config/input changes may still need builds. Roots must remain for retention."
+  ],
+  "build_closure_gc_root_verified": true,
+  "build_closure_gc_root_query": [
+    "nix-store",
+    "--query",
+    "--roots",
+    "/nix/store/ra8g9i8hn9n5y2vdb7yzayqdwj5lwhdl-tdisplay-k230-retained-card-build-inputs"
+  ]
+}

@@ -24,9 +24,11 @@ card-shell behavior.
 
 - **WHEN** a measured card interaction exceeds its declared frame, input, or
   memory budget
-- **THEN** the result is recorded honestly, including whether the cause is a
-  CPU-side cost or the panel's own presentation cadence, and card-shell
-  behavior is not accepted as passing on unmet numbers
+- **THEN** the evidence records the workload and measured result, including
+  whether the cost is CPU/render/commit overrun or the panel cadence; every
+  accepted mitigation retains the required core card interactions, otherwise
+  work stays open or moves to an authorized successor, and unmet numbers
+  are not relabelled as passing
 
 #### Scenario: A budget miss is explicitly accepted
 
