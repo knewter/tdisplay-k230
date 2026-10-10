@@ -1,0 +1,25 @@
+{
+  "evidence_class": "qemu-system-guest-headless-injected",
+  "source_revision": "73a24c37b672548db4db72b93fcbf7209c35035e",
+  "working_tree_limit": "Runtime, configuration and guest-verifier sources match the committed source revision; no tracked source edits were made during this run.",
+  "host_command": [
+    "flock",
+    "-n",
+    "/tmp/k230-nix-build.lock",
+    "tools/qemu-k230.sh",
+    "--card-shell-smoke",
+    "--output",
+    "/home/jadams/tmp/k230-card-closeout-private/selected-qemu-run-retry",
+    "--timeout",
+    "900"
+  ],
+  "exit_code": 0,
+  "observed_completion_utc": "2026-10-10T06:53:29.500867+00:00",
+  "raw_serial_sha256": "1078f29884371e7678c3ab19aa6a077dd31943666dfd1140ae2f4530de76a1dc",
+  "raw_serial_bytes": 53157,
+  "published_transcript": "Only actual runtime report and successful teardown lines; known leading terminal-mode toggles removed. Raw transcript retained privately.",
+  "limits": [
+    "Selected QEMU system on virt with injected input; no board boot, native panel, real touch, optical capture or fresh performance measurement.",
+    "Current physical Overview performance is accepted by the separate explicit operator decision."
+  ]
+}

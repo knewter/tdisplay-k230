@@ -1,0 +1,66 @@
+{
+  "image_kind": "selected-qemu-image",
+  "artifacts": {
+    "kernel": "/nix/store/j6x14mc1bz3fh0ylya68qb9yj7qxjcdx-linux-riscv64-unknown-linux-gnu-6.18.52",
+    "initrd": "/nix/store/6c8m5vjdc23gv83rccgfraq6lnb6gdl2-initrd",
+    "toplevel": "/nix/store/lkjznag5j2p066ysp05jsxi3v6c004c4-nixos-system-nixos-kexec-26.11.20260919.20b1ddd"
+  },
+  "command": [
+    "qemu-system-riscv64",
+    "-machine",
+    "virt",
+    "-m",
+    "6G",
+    "-nographic",
+    "-kernel",
+    "/nix/store/j6x14mc1bz3fh0ylya68qb9yj7qxjcdx-linux-riscv64-unknown-linux-gnu-6.18.52/Image",
+    "-initrd",
+    "/nix/store/6c8m5vjdc23gv83rccgfraq6lnb6gdl2-initrd/initrd",
+    "-append",
+    "console=ttyS0,115200n8 nohibernate root=fstab loglevel=4 lsm=landlock,yama,bpf earlycon=sbi init=/nix/store/lkjznag5j2p066ysp05jsxi3v6c004c4-nixos-system-nixos-kexec-26.11.20260919.20b1ddd/init"
+  ],
+  "limits": [
+    "No board boot, panel, real touch, optical or performance acceptance.",
+    "Fixture mode does not satisfy default system-image integration."
+  ],
+  "status": "PASS",
+  "evidence_class": "qemu-system-guest-headless-injected",
+  "reports": [
+    {
+      "compositor": "/nix/store/xmdb38nl7vz489ibvirlxmi1n76as80m-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway",
+      "compositor_pid": 542,
+      "evidence_class": "qemu-system-guest-headless-injected",
+      "kernel": "6.18.52",
+      "machine": "riscv64",
+      "passed": [
+        "two-live-root-and-subsurface-clients",
+        "deck-drag-expand",
+        "keyboard-focus-return",
+        "close-refusal-timeout",
+        "graceful-close",
+        "cancel-back-recovery"
+      ],
+      "run_id": "8f49fa025e8d4c919c15b1243689c2e1",
+      "system_toplevel": "/nix/store/lkjznag5j2p066ysp05jsxi3v6c004c4-nixos-system-nixos-kexec-26.11.20260919.20b1ddd",
+      "uid": 999
+    },
+    {
+      "compositor": "/nix/store/xmdb38nl7vz489ibvirlxmi1n76as80m-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway",
+      "compositor_pid": 949,
+      "evidence_class": "qemu-system-guest-headless-injected",
+      "kernel": "6.18.52",
+      "machine": "riscv64",
+      "passed": [
+        "two-live-root-and-subsurface-clients",
+        "deck-drag-expand",
+        "keyboard-focus-return",
+        "close-refusal-timeout",
+        "graceful-close",
+        "cancel-back-recovery"
+      ],
+      "run_id": "8f49fa025e8d4c919c15b1243689c2e1-restart",
+      "system_toplevel": "/nix/store/lkjznag5j2p066ysp05jsxi3v6c004c4-nixos-system-nixos-kexec-26.11.20260919.20b1ddd",
+      "uid": 999
+    }
+  ]
+}

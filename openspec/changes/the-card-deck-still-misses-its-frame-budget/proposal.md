@@ -106,5 +106,7 @@ authorizes closure and landing. The exact permission is retained in
 This selects option (b), retaining the historical overrun/CPU misses and
 the distinction between measured old candidates and current observed feel.
 A new benchmark is unnecessary for this chosen acceptance; no numeric pass
-is inferred. Remaining work is the selected system/QEMU integration proof
-and archive, not another performance or kernel experiment.
+is inferred. The selected board-system host build and actual non-fixture QEMU
+guest integration subsequently passed, with their separate proof committed in
+the same evidence directory. All eight tasks are complete for archive; no
+further performance or kernel experiment is selected.

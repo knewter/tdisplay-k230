@@ -64,8 +64,9 @@ Board-gated from the outset. No host-only path closes this task.
 ## Ownership after functional archive (2026-10-01)
 
 The operator explicitly approved the functional parent's archive. This change
-now solely owns its original budget task 4.2 and dependent image/non-fixture
-QEMU task 5.1. Criteria and proof commands remain unchanged and unchecked.
+became the sole owner of its original budget task 4.2 and dependent
+image/non-fixture QEMU task 5.1. Their criteria and proof commands were retained;
+their subsequent completion is recorded in the final decision below.
 See `docs/evidence/proposal-closeout/2026-10-01/live-card-ui.md`. Functional acceptance is not budget acceptance.
 
 ## Final decision — 2026-10-09
@@ -75,4 +76,9 @@ The operator selects acceptance of the current Overview performance.
 records the exact permission, historic numerical failures, their overrun
 mechanism and current-candidate identity limits. This supersedes the open
 decision and further measurement suggestion above. No kernel pipelining is
-selected. System/QEMU integration still needs its named host/guest proof.
+selected. The full selected board-system host build and ordinary non-fixture
+QEMU guest run subsequently passed with committed artifact identities and two
+fresh six-check reports across service restart. These are host/guest evidence,
+not a newly installed board image or a numerical frame-budget pass. The original
+bar system remains available as `k230-bar-shell`, and the accepted normal
+mainline configuration retains its exact existing system closure.

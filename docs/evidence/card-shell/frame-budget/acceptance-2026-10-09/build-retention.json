@@ -23,8 +23,10 @@
     "dependency-networkmanager-man": "/nix/store/ssbz34371jrs0s4f6i9mihnkzy0vx8i4-networkmanager-riscv64-unknown-linux-gnu-1.58.1-man",
     "dependency-networkmanager-out": "/nix/store/w8hw3xz4bdnz31080zi0s9xwkaxgf0fz-networkmanager-riscv64-unknown-linux-gnu-1.58.1",
     "selected-kernel": "/nix/store/j6x14mc1bz3fh0ylya68qb9yj7qxjcdx-linux-riscv64-unknown-linux-gnu-6.18.52",
-    "selected-initrd": "/nix/store/y19p5k6fl5gz3x2rxrq973mppryvrz9k-initrd",
-    "selected-toplevel": "/nix/store/m0d065z6akmic866g0i65c7g6mjxd11b-nixos-system-nixos-kexec-26.11.20260919.20b1ddd"
+    "selected-initrd": "/nix/store/6c8m5vjdc23gv83rccgfraq6lnb6gdl2-initrd",
+    "selected-toplevel": "/nix/store/lkjznag5j2p066ysp05jsxi3v6c004c4-nixos-system-nixos-kexec-26.11.20260919.20b1ddd",
+    "selected-board-system": "/nix/store/byrzisiskfv70lvlll0dmy8wvwpslsfl-nixos-system-nixos-26.11.20260919.20b1ddd",
+    "selected-mainline-normal": "/nix/store/yl3si5ak6yi709yg1fqsnwgq0zn4xfcs-nixos-system-nixos-26.11.20260919.20b1ddd"
   },
   "purpose": "Explicit selected-artifact and build-input roots retain runtime libraries, development outputs, sources and host tools for reuse. The existing global GC policy is unchanged.",
   "global_policy_changed": false,
@@ -60,26 +62,26 @@
   "latest_dependency_output_pinning_utc": "2026-10-10T06:07:44.267017+00:00",
   "unrealized_sampled_outputs_not_rebuilt": [],
   "observed_selected_artifact_pinning_utc": "2026-10-10T06:09:54.699705+00:00",
-  "observed_completion_utc": "2026-10-10T06:24:04.034734+00:00",
+  "observed_completion_utc": "2026-10-10T06:56:13.144856+00:00",
   "selected_artifacts": {
     "kernel": "/nix/store/j6x14mc1bz3fh0ylya68qb9yj7qxjcdx-linux-riscv64-unknown-linux-gnu-6.18.52",
-    "initrd": "/nix/store/y19p5k6fl5gz3x2rxrq973mppryvrz9k-initrd",
-    "toplevel": "/nix/store/m0d065z6akmic866g0i65c7g6mjxd11b-nixos-system-nixos-kexec-26.11.20260919.20b1ddd",
+    "initrd": "/nix/store/6c8m5vjdc23gv83rccgfraq6lnb6gdl2-initrd",
+    "toplevel": "/nix/store/lkjznag5j2p066ysp05jsxi3v6c004c4-nixos-system-nixos-kexec-26.11.20260919.20b1ddd",
     "board-system": "/nix/store/byrzisiskfv70lvlll0dmy8wvwpslsfl-nixos-system-nixos-26.11.20260919.20b1ddd",
     "mainline-normal": "/nix/store/yl3si5ak6yi709yg1fqsnwgq0zn4xfcs-nixos-system-nixos-26.11.20260919.20b1ddd"
   },
   "selected_derivations": [
+    "/nix/store/78cbxvppd5vms811mzwpbrnykw8r11jc-nixos-system-nixos-kexec-26.11.20260919.20b1ddd.drv",
     "/nix/store/9xrwly06b2jk6jz6icrc52s4pmw0mwax-nixos-system-nixos-26.11.20260919.20b1ddd.drv",
-    "/nix/store/d8857fadd62d37bkrrw2qy9py1smr9ad-nixos-system-nixos-kexec-26.11.20260919.20b1ddd.drv",
+    "/nix/store/a1baxjd2rlj3rrwy47cwmnnh546s0gi7-initrd.drv",
     "/nix/store/f32c1m1yc9r3vh2s3hdar0cpmxj65wjp-nixos-system-nixos-26.11.20260919.20b1ddd.drv",
-    "/nix/store/q2pfr7g99q8h9531jhfkhb440isjqa8m-linux-riscv64-unknown-linux-gnu-6.18.52.drv",
-    "/nix/store/yicfp6mpkjf5c3vp5g3xj8w2q8iyaqvn-initrd.drv"
+    "/nix/store/q2pfr7g99q8h9531jhfkhb440isjqa8m-linux-riscv64-unknown-linux-gnu-6.18.52.drv"
   ],
   "build_dependency_paths_retained": 10218,
   "not_realized_paths_omitted": 0,
-  "retained_paths_sha256": "a63cdbd6b746840dbdc2be6593b35c7d4023e3d2d1b4b014768450b7855f69eb",
+  "retained_paths_sha256": "4729920dd419c768c3f25d6ff63699f0de01afa21f16eb0bf82779baadb215b4",
   "build_closure_root": "/home/jadams/.local/state/tdisplay-k230/retained-builds/card-overview-2026-10-09/build-closure",
-  "build_closure": "/nix/store/ra8g9i8hn9n5y2vdb7yzayqdwj5lwhdl-tdisplay-k230-retained-card-build-inputs",
+  "build_closure": "/nix/store/qkvxppn9mffixp9ljamwvacgm2r0k0sr-tdisplay-k230-retained-card-build-inputs",
   "build_closure_command": [
     "flock",
     "-n",
@@ -106,6 +108,6 @@
     "nix-store",
     "--query",
     "--roots",
-    "/nix/store/ra8g9i8hn9n5y2vdb7yzayqdwj5lwhdl-tdisplay-k230-retained-card-build-inputs"
+    "/nix/store/qkvxppn9mffixp9ljamwvacgm2r0k0sr-tdisplay-k230-retained-card-build-inputs"
   ]
 }

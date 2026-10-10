@@ -3,10 +3,10 @@ its dependent task 5.1). Task IDs keep the parent's numbering. Investigation was
 user 2026-09-28 ("frame budget go"); sole ownership of the unresolved budget
 and full-image/non-fixture QEMU gates was transferred here by explicit
 2026-10-01 functional-parent archive approval. See
-`docs/evidence/proposal-closeout/2026-10-01/live-card-ui.md`. All unchecked
-measurement, decision and integration tasks below remain unchecked.
+`docs/evidence/proposal-closeout/2026-10-01/live-card-ui.md`. The transferred decision and integration gates are completed below with their
+separate recorded evidence.
 
-## 4. Cost decision (board-gated throughout)
+## 4. Cost decision (recorded board costs and explicit operator acceptance)
 
 - [x] 4.2a Measure the panel's actual output/vblank cadence directly (not
   inferred from the advertised mode). Done 2026-09-28: hardware vblank is a
@@ -71,7 +71,8 @@ measurement, decision and integration tasks below remain unchecked.
   closure builds (`nixosConfigurations.k230-coherent-shell...toplevel`).
   This is a Build-stage CPU-cost reduction only; it does not by itself prove
   4.2's tracking-presentation p95 passes (see 4.2d below and `analysis.md`'s
-  H1 on commit-path serialization) -- board proof required.
+  H1 on commit-path serialization). A new numerical pass would require new
+  board proof; the current performance cost is explicitly accepted in 4.2d.
 - [x] 4.2d Record the explicit performance decision, informed by 4.2a-c
   and 4.2e: on 2026-10-09 the operator chose acceptance of the current
   Overview performance and authorized closure/landing. Exact permission and
@@ -91,23 +92,29 @@ under this explicit acceptance.
 
 ## 5. Integration (unblocked once 4.2 resolves)
 
-- [ ] 5.1 Select the card-shell component into the real system/QEMU
-  configuration, build `nix build
-  .#nixosConfigurations.k230.config.system.build.toplevel` with it integrated,
-  and run the non-fixture `tools/qemu-k230.sh --card-shell-smoke`. The fixture
-  mode and flag already exist and pass
-  (`docs/evidence/card-shell/qemu-fixture/passing/result.json`); this task is
-  otherwise ready and only blocked on 4.2's decision landing first, per
-  `docs/research/card-shell-qemu-smoke.md`'s own "Remaining integration gate."
+- [x] 5.1 Select the card-shell component into the real system/QEMU
+  configurations, build `nix build
+  .#nixosConfigurations.k230.config.system.build.toplevel`, and run the
+  non-fixture `tools/qemu-k230.sh --card-shell-smoke`. The full selected board
+  system built successfully. The default selected QEMU invocation (no fixture
+  or no-build flags) built and booted the guest; two fresh reports passed all
+  six interaction checks across a service restart and zero-status teardown.
+  Exact commands, artifact identities, timestamps and evidence limits are
+  committed in `docs/evidence/card-shell/frame-budget/acceptance-2026-10-09/`.
+  The original bar-system derivation is preserved as `k230-bar-shell`; the
+  existing normal mainline system is unchanged. No board image was installed.
 
 ## 6. Validation
 
 - [x] 6.1 Validate this change: `openspec validate
-  the-card-deck-still-misses-its-frame-budget --strict`. Passed 2026-09-28
-  on `close/shell-umbrella`.
-- [ ] 6.2 Do not archive until 4.2 is resolved (fixed or explicitly accepted)
-  and 5.1's non-fixture QEMU proof is committed.
+  the-card-deck-still-misses-its-frame-budget --strict`. Passed again on
+  `closeout/card-overview-accepted-2026-10-09` during this closeout.
+- [x] 6.2 Resolve 4.2 and commit 5.1's non-fixture QEMU proof before
+  archiving. The explicit operator acceptance resolves 4.2d; the selected
+  system build and fresh actual QEMU guest evidence are committed before the
+  archive command. Historical numerical misses remain recorded as accepted
+  costs, rather than changed to passes.
 
-**Current closeout — 2026-10-09:** performance decision 4.2d is resolved by
-explicit operator acceptance. Integration 5.1 and final archive 6.2 remain
-open until their named build/non-fixture guest proof is committed.
+**Current closeout:** all eight tasks are complete. The selected acceptance
+path and integration gates have their named proof; no new performance
+measurement, physical board boot or optimization is claimed.

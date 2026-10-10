@@ -29,10 +29,10 @@ and the known-risk commit-pipelining experiment are not needed for closure.
 Functional card behavior remains accepted separately; no behavior is removed
 to meet a benchmark.
 
-No new UART, camera or performance session ran for this decision. Task 5.1
-still requires a selected board-system build and the selected, non-fixture
-QEMU guest smoke before archive. Host and QEMU results will be retained here
-with exact commands, timestamps, identities and evidence limits.
+No new UART, camera or performance session ran for this decision. The separate
+selected board-system host build and selected, non-fixture QEMU guest smoke
+passed. Their exact commands, timestamps, identities and limits are retained
+below; neither supplies a fresh physical performance measurement.
 
 Ownership: worktree `/home/jadams/tmp/k230-card-overview-close-final`, branch
 `closeout/card-overview-accepted-2026-10-09`, base `427a15f3`. Owned paths are
@@ -46,9 +46,8 @@ The [host build and selection record](board-build.json) and [build log](board-bu
 record a successful full `k230` system build with `coherentShell = true`.
 `k230-bar-shell` retains the former bar-system derivation exactly. The existing
 normal mainline configuration still evaluates to the accepted `yl3si5ak`
-closure, unchanged; no board activation or boot was performed. The selected
-QEMU configuration now includes its verifier, but the actual guest run is
-still pending at this source checkpoint.
+closure, unchanged; no board activation or boot was performed. The QEMU-pending limit in the host-build record describes that earlier source
+checkpoint; the subsequent selected guest run passed as recorded below.
 
 
 ## Build cache retention
@@ -69,4 +68,23 @@ checking both live previews, then expected that slow release to select the
 neighbour. The original fixed-threshold policy supported that assumption;
 current nearest-card/coasting policy and 80%-width cards require more travel.
 The corrected verifier finishes the stroke and observes actual selection and
-settlement before tapping. A fresh selected guest pass remains required.
+settlement before tapping. At that checkpoint a fresh selected guest pass was
+required; the subsequent passing run is recorded below.
+
+
+## Selected QEMU guest integration
+
+The ordinary `tools/qemu-k230.sh --card-shell-smoke` invocation, without
+`--fixture-image` or `--no-build`, built and booted the selected `k230-qemu`
+image and returned zero. [Manifest](qemu/manifest.json), [result](qemu/result.json),
+[provenance](qemu/provenance.json) and [actual guest reports](qemu/guest-reports.log)
+retain the selected artifacts and two fresh runtime reports. Both report the
+same selected system and compositor executable, unprivileged UID and RISC-V
+guest, with different compositor PIDs after service restart. All six required
+interaction checks and service teardown passed.
+
+This is system-mode QEMU on `virt`, with headless Pixman output and injected
+input. It proves the selected Linux/userspace integration, not a new board
+boot, panel scanout, physical touch, optical latency or numerical frame-budget
+pass. Current physical Overview performance is accepted by the separate
+operator decision above. No new system was activated on the board.

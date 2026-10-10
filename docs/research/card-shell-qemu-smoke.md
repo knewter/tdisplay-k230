@@ -8,9 +8,9 @@ available alongside the headless card service.
 
 The selected image must contain the `card-shell-smoke` service and
 `card-shell-guest-smoke` executable. Absent integration is an error before
-building, not a skipped/passing test. The selected QEMU image now imports that module by default. Task 5.1 still
-requires a successful selected-image guest run; importing the module alone
-is not runtime proof.
+building, not a skipped/passing test. The selected QEMU image imports that
+module by default. Its successful selected-image guest run is recorded in the
+closeout section below; importing the module alone is not runtime proof.
 
 An explicit fixture validates the tooling before default image integration:
 
@@ -61,14 +61,15 @@ bash -n tools/qemu-k230.sh
 The protocol tests are host tests, not proof of a guest boot. Record the actual
 system-QEMU invocation and its output separately before claiming guest success.
 
-## Remaining integration gate
+## Integration gate and evidence limits
 
-A fixture pass completes only the smoke tooling portion of card task 5.1. After
-its board budgets pass or its recorded performance cost is explicitly accepted, the coordinator still owns selection of the
-reviewed component in the real system/QEMU configurations, a successful
+A fixture pass completes only the smoke tooling portion of card task 5.1.
+The full integration gate requires resolved performance budgets (passing or
+explicitly accepted), selection of the reviewed component in the real
+system/QEMU configurations, a successful
 `nix build .#nixosConfigurations.k230.config.system.build.toplevel`, and the
-non-fixture `tools/qemu-k230.sh --card-shell-smoke` run. Keep task 5.1 unchecked
-until those requirements are met. QEMU does not prove the K230 board boot chain,
+non-fixture `tools/qemu-k230.sh --card-shell-smoke` run. These gates passed in
+the selected-configuration closeout below. QEMU does not prove the K230 board boot chain,
 RGB565 panel scanout, real touch, optical latency, power or performance budgets.
 
 ## Source checkpoint status
@@ -136,8 +137,8 @@ the preceding cross-build; it did not substitute a host or user-mode run.
 
 This completes the explicit fixture/tooling verification. At source `50707c5e`, the real board image
 and default QEMU configuration had not selected the component, and no physical
-card interaction or performance budget is proved. Task 5.1 remains unchecked
-until its selected-image build and non-fixture run are also complete. The three
+card interaction or performance budget is proved. At that historical checkpoint, task 5.1 remained unchecked until its
+selected-image build and non-fixture run were also complete. The three
 recorded failures remain evidence of the corrections, not passing executions.
 
 ## Selected configuration closeout — 2026-10-09
@@ -149,5 +150,15 @@ configuration still evaluates to the accepted `yl3si5ak` system, so no newly
 installed board artifact or repeat physical test follows from this selection.
 The named board-system cross-build passed; its exact artifact and command are
 in `docs/evidence/card-shell/frame-budget/acceptance-2026-10-09/board-build.json`.
-The default selected `k230-qemu` imports the guest smoke service/module. A new
-non-fixture boot/run is still required before integration task 5.1 is complete.
+The default selected `k230-qemu` imports the guest smoke service/module. The
+ordinary `tools/qemu-k230.sh --card-shell-smoke` run, without fixture or
+no-build flags, subsequently built and booted that selected image and passed.
+Its [result](../evidence/card-shell/frame-budget/acceptance-2026-10-09/qemu/result.json),
+[provenance](../evidence/card-shell/frame-budget/acceptance-2026-10-09/qemu/provenance.json)
+and [actual report lines](../evidence/card-shell/frame-budget/acceptance-2026-10-09/qemu/guest-reports.log)
+record two fresh six-check reports, matching selected system/compositor
+identities, a changed compositor PID across restart, an unprivileged RISC-V
+guest and zero-status teardown. This completes integration task 5.1. It is
+headless system-mode QEMU with injected input, not a fresh physical board or
+numerical performance result. The three historical fixture failures remain
+failures, and the old passing fixture is not substituted for this selected run.
