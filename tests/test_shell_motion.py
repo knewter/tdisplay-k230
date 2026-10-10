@@ -191,14 +191,15 @@ class Scene:
                     continue
         return rows[-1] if rows else {}
 
-    def capture(self, name):
+    def capture(self, name, fast=False):
         path = self.root / f"{name}.png"
-        subprocess.run(["grim", str(path)], env=self.env, check=True, timeout=15)
+        subprocess.run(["grim"] + (["-l", "1"] if fast else []) + [str(path)],
+                       env=self.env, check=True, timeout=15)
         return Image.open(path).convert("RGB")
 
-    def capture_when(self, name, predicate):
+    def capture_when(self, name, predicate, fast=False):
         def ready():
-            image = self.capture(name)
+            image = self.capture(name, fast=fast)
             return image if predicate(image) else None
         return wait_for(ready, name)
 
@@ -723,7 +724,7 @@ def expanding_frame(scene, name, color=(32, 112, 176)):
         colors = (color, tuple(v // 2 for v in color))
         xs = [x for x in range(568) if im.getpixel((x, 600)) in colors]
         return xs and small[2] - small[0] + 2 < max(xs) - min(xs) + 1 < 518
-    return small, scene.capture_when(name, intermediate)
+    return small, scene.capture_when(name, intermediate, fast=True)
 
 
 def reverse(scene):
