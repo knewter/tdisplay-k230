@@ -91,7 +91,7 @@ pub fn handle_rect(width: u32, height: u32) -> (f64, f64, f64, f64) {
 pub fn search_field_rect(width: u32, height: u32) -> (f64, f64, f64, f64) {
     let x = SIDE_MARGIN;
     let y = panel_top(height) + 22.0;
-    let w = f64::from(width) - 2.0 * SIDE_MARGIN;
+    let w = f64::from(width) - 2.0 * SIDE_MARGIN - 88.0;
     let h = 48.0;
     (x, y, w, h)
 }
@@ -101,6 +101,16 @@ pub fn search_field_rect(width: u32, height: u32) -> (f64, f64, f64, f64) {
 /// handling).
 pub fn search_field_hit(point: (f64, f64), width: u32, height: u32) -> bool {
     let (x, y, w, h) = search_field_rect(width, height);
+    point.0 >= x && point.0 < x + w && point.1 >= y && point.1 < y + h
+}
+
+/// Deliberately opened Help, outside the app grid and search hit region.
+pub fn help_rect(width: u32, height: u32) -> (f64, f64, f64, f64) {
+    (f64::from(width) - SIDE_MARGIN - 80.0, panel_top(height) + 22.0, 80.0, 56.0)
+}
+
+pub fn help_hit(point: (f64, f64), width: u32, height: u32) -> bool {
+    let (x, y, w, h) = help_rect(width, height);
     point.0 >= x && point.0 < x + w && point.1 >= y && point.1 < y + h
 }
 

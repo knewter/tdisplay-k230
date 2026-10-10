@@ -1,0 +1,3 @@
+   Compiling k230-shell-rust v0.1.0 (/home/jadams/tmp/k230-coherent-closeout-2026-10-10/nix/rust-shell-client)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 2.01s
+     Running `/home/jadams/tmp/k230-admission-host-target/debug/examples/render_navigation_aid docs/evidence/coherent-shell/navigation-aid-2026-10-10 /home/jadams/tmp/k230-help-appearance/generations/dacf0af8c897e6c51fe922de /home/jadams/tmp/k230-help-appearance/generations/c448496d80fec3ae02a892bd`

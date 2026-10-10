@@ -112,7 +112,7 @@ fn tray_backdrop_alpha(progress: f64, target: f64) -> f64 {
 /// math -- black premultiplies to `(0, 0, 0, alpha)` at any alpha, so this
 /// is one straight byte-only pass, no allocation.
 fn apply_tray_backdrop(canvas: &mut [u8], route: Route, progress: f64) {
-    if !matches!(route, Route::Settings | Route::Shade | Route::Power) {
+    if !matches!(route, Route::Settings | Route::Shade | Route::Power | Route::Help) {
         return;
     }
     let alpha_byte = (tray_backdrop_alpha(progress, 0.35) * 255.0).round() as u8;
@@ -1643,7 +1643,7 @@ pub fn panel_travel_height(
         Route::Drawer => h - navigation::panel_top(height),
         Route::Settings => settings_panel_h(h, chooser, services, crate::density_scale(width, height)),
         Route::Power => power_panel_h(h, services),
-        Route::Hide => h,
+        Route::Help | Route::Hide => h,
     }
 }
 
@@ -1869,6 +1869,66 @@ fn paint_drawer_tile(
     );
 }
 
+fn paint_help(
+    cr: &Context,
+    theme: Option<&AppearanceSnapshot>,
+    width: u32,
+    height: u32,
+    services: Option<&ServiceView>,
+) {
+    let aid = services.is_some_and(|s| s.navigation_aid);
+    let style = visual_style(theme, "controls");
+    let (scale, x) = crate::help::transform(width, height);
+    let _ = cr.save();
+    cr.translate(x, 0.0);
+    cr.scale(scale, scale);
+    heading(
+        cr,
+        if aid { "Navigation buttons" } else { "Help" },
+        24.0,
+        32.0,
+        520.0,
+        32.0,
+        style.text,
+    );
+    text(
+        cr,
+        "These controls appear only while this view is open.",
+        24.0,
+        100.0,
+        520.0,
+        18.0,
+        style.muted,
+    );
+    if !aid {
+        for (i, (title, detail)) in crate::help::GUIDE.iter().enumerate() {
+            let y = 168.0 + i as f64 * 88.0;
+            text(cr, title, 24.0, y, 520.0, 22.0, style.text);
+            text(cr, detail, 24.0, y + 32.0, 520.0, 18.0, style.muted);
+        }
+    }
+    for (i, (action, label, detail)) in crate::help::buttons(aid).iter().enumerate() {
+        let (x, y, w, h) = crate::help::button_rect(aid, i);
+        service_card(cr, theme, "controls", x, y, w, h, false);
+        let pending =
+            *action == crate::help::Action::Home && services.is_some_and(|s| s.help_home_pending);
+        text(
+            cr,
+            if pending { "Opening Home…" } else { label },
+            x + 24.0,
+            y + 22.0,
+            w - 48.0,
+            26.0,
+            style.accent,
+        );
+        text(cr, detail, x + 24.0, y + 62.0, w - 48.0, 18.0, style.muted);
+    }
+    if let Some(message) = services.and_then(|s| s.message.as_deref()) {
+        text(cr, message, 24.0, 880.0, 520.0, 20.0, style.error);
+    }
+    let _ = cr.restore();
+}
+
 /// Renders the drawer's slim top handle, its pill-shaped search field, and
 /// a focused field caret. The normal keyboard is a separate wvkbd surface. Drawn
 /// directly every frame (cheap: a handful of small fixed-position shapes,
@@ -1886,6 +1946,9 @@ fn paint_drawer_chrome(
     color(cr, style.accent, 0.7);
     let _ = cr.fill();
 
+    let (hx, hy, hw, hh) = navigation::help_rect(width, height);
+    service_card(cr, theme, "launcher", hx, hy, hw, hh, false);
+    text(cr, "Help", hx + 12.0, hy + 16.0, hw - 24.0, 18.0, style.accent);
     let (sx, sy, sw, sh) = search_field_rect(width, height);
     rounded(cr, sx, sy, sw, sh, sh / 2.0);
     let _ = cr.save();
@@ -2114,12 +2177,12 @@ fn scene(
         Route::Drawer => "launcher",
         Route::Shade => "notifications",
         Route::Settings => "controls",
-        Route::Power => "controls",
+        Route::Power | Route::Help => "controls",
         Route::Hide => "launcher",
     };
     let style = visual_style(theme, section);
     let panel_brush = theme_brush(theme, section, "background").or_else(|| {
-        matches!(route, Route::Settings | Route::Power)
+        matches!(route, Route::Settings | Route::Power | Route::Help)
             .then(|| theme_brush(theme, "menu", "background"))
             .flatten()
     });
@@ -2147,9 +2210,10 @@ fn scene(
         Route::Shade => "Notifications",
         Route::Settings => "Settings",
         Route::Power => "Power",
+        Route::Help => "Help",
         Route::Hide => return,
     };
-    if !(route == Route::Settings
+    if route != Route::Help && !(route == Route::Settings
         && (chooser.is_some_and(|view| view.page != ThemePage::Controls)
             || services
                 .and_then(|s| s.wifi.as_ref())
@@ -2703,6 +2767,7 @@ fn scene(
             }
             let _ = cr.restore();
         }
+        Route::Help => paint_help(cr, theme, width, height, services),
         Route::Power => {
             text(
                 cr, "Choose what happens next", 28.0, 91.0, w - 56.0, 20.0, style.muted,

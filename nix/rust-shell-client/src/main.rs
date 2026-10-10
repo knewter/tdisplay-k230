@@ -1139,6 +1139,7 @@ struct ShellClient {
     keyboard_height_px: f64,
     keyboard_grip_height_px: f64,
     route: Route,
+    help_home_result: Option<Receiver<Result<(), String>>>,
     touch: TouchTrace,
     width: u32,
     height: u32,
@@ -2672,6 +2673,41 @@ impl ShellClient {
             PanelIntent::OpenSettings => {
                 self.show(qh, Route::Settings);
             }
+            PanelIntent::Help(action) => {
+                use k230_shell_rust::help::Action;
+                match action {
+                    Action::OpenAid | Action::Back if self.service_view.navigation_aid || action == Action::OpenAid => {
+                        self.help_home_result = None;
+                        self.service_view.help_home_pending = false;
+                        self.service_view.navigation_aid = action == Action::OpenAid;
+                        self.service_view.message = None;
+                        self.renderer.set_services(self.service_view.clone());
+                        self.dirty = true;
+                    }
+                    Action::Back | Action::Apps => { self.show(qh, Route::Drawer); }
+                    Action::Notifications => { self.show(qh, Route::Shade); }
+                    Action::Settings => {
+                        self.theme_view = ThemeView::default();
+                        self.renderer.set_theme_view(self.theme_view.clone());
+                        self.show(qh, Route::Settings);
+                    }
+                    Action::Home if self.help_home_result.is_none() => {
+                        let (sender, result) = mpsc::channel();
+                        let command = self.swaymsg.clone();
+                        self.help_home_result = Some(result);
+                        self.service_view.help_home_pending = true;
+                        self.service_view.message = None;
+                        self.renderer.set_services(self.service_view.clone());
+                        self.dirty = true;
+                        thread::spawn(move || {
+                            let outcome = command.as_deref().ok_or_else(|| "Home unavailable".to_string())
+                                .and_then(k230_shell_rust::help::request_home);
+                            let _ = sender.send(outcome);
+                        });
+                    }
+                    _ => {}
+                }
+            }
             PanelIntent::OpenWifi => {
                 let request = self.wifi_view.open();
                 self.submit_wifi(request);
@@ -3746,6 +3782,10 @@ impl ShellClient {
             self.renderer.set_services(self.service_view.clone());
         }
         if self.route != route {
+            self.help_home_result = None;
+            self.service_view.navigation_aid = false;
+            self.service_view.help_home_pending = false;
+            if route == Route::Help { self.service_view.message = None; }
             self.nav = DrawerNavigation::default();
             self.renderer.set_drawer_pressed(None);
             self.panel_start = None;
@@ -3775,7 +3815,7 @@ impl ShellClient {
         let now = self.started.elapsed().as_millis() as u64;
         if message.dismiss {
             let valid = self.layer.is_some() && match message.surface {
-                Route::Shade => matches!(self.route, Route::Shade | Route::Settings),
+                Route::Shade => matches!(self.route, Route::Shade | Route::Settings | Route::Help),
                 Route::Drawer => self.route == Route::Drawer,
                 _ => false,
             };
@@ -3908,6 +3948,9 @@ impl ShellClient {
     /// already-mapped layer alive, which is what avoids ever uncovering
     /// the previously active app between the drawer and the splash.
     fn reset_overlay_interaction(&mut self) {
+        self.help_home_result = None;
+        self.service_view.navigation_aid = false;
+        self.service_view.help_home_pending = false;
         self.app_menu=None;
         self.drawer_search = DrawerSearch::default();
         self.sync_drawer_search();
@@ -4619,7 +4662,7 @@ impl ShellClient {
                         && drawer_close_drag_zone(pos.1, self.height, self.nav.scroll);
                     self.panel_close_sample = Some((pos.1, time_ms));
                     self.panel_close_velocity = 0.0;
-                } else if matches!(self.route, Route::Shade | Route::Settings | Route::Power)
+                } else if matches!(self.route, Route::Shade | Route::Settings | Route::Power | Route::Help)
                     && self.input_ready
                 {
                     self.panel_start = Some((id, pos));
@@ -4917,6 +4960,14 @@ impl ShellClient {
                     self.panel_close_sample = None;
                     self.panel_close_velocity = 0.0;
                     self.dirty = true;
+                } else if start.is_some_and(|(_, start_pos)| {
+                    navigation::help_hit(start_pos, self.width, self.height)
+                        && navigation::help_hit(point, self.width, self.height)
+                        && (point.0 - start_pos.0).abs() <= 12.0
+                        && (point.1 - start_pos.1).abs() <= 12.0
+                }) {
+                    self.nav.cancel();
+                    self.show(qh, Route::Help);
                 } else if start.is_some_and(|(_, start_pos)| {
                     // The visible handle also works as a tap/click dismiss
                     // target; search immediately below keeps its own action.
@@ -5376,7 +5427,7 @@ impl ShellClient {
                         self.dirty = true;
                     }
                 }
-            } else if matches!(self.route, Route::Shade | Route::Settings | Route::Power)
+            } else if matches!(self.route, Route::Shade | Route::Settings | Route::Power | Route::Help)
                 && self.input_ready
                 && self.panel_start.is_some_and(|(start_id, _)| start_id == id)
                 && (self.panel_close.tracking() || self.panel_close_candidate)
@@ -6040,6 +6091,7 @@ fn serve() -> Result<(), String> {
             .filter(|value| *value > 0.0)
             .unwrap_or(400.0),
         route: Route::Drawer,
+        help_home_result: None,
         touch: TouchTrace::default(),
         width: 568,
         height: 1232,
@@ -6566,6 +6618,18 @@ fn serve() -> Result<(), String> {
                 let message=format!("app-menu-ready rows={} new-window={}", rows.len(),
                     rows.iter().any(|row|matches!(row.action,AppAction::NewWindow(_))));
                 menu.rows=rows;menu.ready=true;state.dirty=true;state.log(&message);
+            }
+        }
+        if let Some(result) = state.help_home_result.as_ref().and_then(|r| r.try_recv().ok()) {
+            state.help_home_result = None;
+            state.service_view.help_home_pending = false;
+            match result {
+                Ok(()) => state.hide(),
+                Err(error) => {
+                    state.service_view.message = Some(error);
+                    state.renderer.set_services(state.service_view.clone());
+                    state.dirty = true;
+                }
             }
         }
         for _ in 0..4 {

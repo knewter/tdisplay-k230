@@ -1,0 +1,576 @@
+   Compiling k230-shell-rust v0.1.0 (/home/jadams/tmp/k230-coherent-closeout-2026-10-10/nix/rust-shell-client)
+warning: variants `PowerRequest`, `PowerCancel`, `NotificationDismissAll`, and `NotificationAction` are never constructed
+   --> tests/../src/service_data.rs:354:5
+    |
+340 | pub enum ServiceRequest {
+    |          -------------- variants in this enum
+...
+354 |     PowerRequest(PowerAction),
+    |     ^^^^^^^^^^^^
+355 |     PowerConfirm(String),
+356 |     PowerCancel(String),
+    |     ^^^^^^^^^^^
+357 |     NotificationDismiss(u64),
+358 |     NotificationDismissAll,
+    |     ^^^^^^^^^^^^^^^^^^^^^^
+359 |     NotificationAction(u64),
+    |     ^^^^^^^^^^^^^^^^^^
+    |
+    = note: `ServiceRequest` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `k230-shell-rust` (test "service_data_module") generated 1 warning
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 9.53s
+     Running unittests src/lib.rs (/home/jadams/tmp/k230-admission-host-target/debug/deps/k230_shell_rust-1ffb034c166b92ba)
+
+running 433 tests
+test app_actions::tests::menu_cancel_and_drag_do_not_activate_rows ... ok
+test app_actions::tests::window_selection_uses_focus_history_and_never_matches_unknown_apps ... ok
+test app_actions::tests::private_windows_have_no_title_disclosure ... ok
+test catalog::tests::data_dirs_from_prefers_xdg_data_home_then_falls_back_to_home ... ok
+test app_watch::tests::ancestor_watch_points_cover_symlink_components_and_missing_tail ... ok
+test help::tests::aid_is_deliberate_and_routes_share_painted_geometry ... ok
+test catalog::tests::terminal_like_reads_the_terminal_flag_and_the_category ... ok
+test home_grid::tests::adjacent_remove_badges_do_not_overlap_each_other ... ok
+test home_grid::tests::dock_content_centers_a_larger_plate_with_no_label_allowance ... ok
+test home_grid::tests::columns_for_width_matches_the_reference_at_568_and_grows_for_hdmi ... ok
+test help::tests::drag_crossing_gap_or_nonfinite_touch_never_activates_a_route ... ok
+test home_grid::tests::dock_sits_below_the_grid_and_dots ... ok
+test home_grid::tests::dock_slots_are_touch_sized_and_distinct ... ok
+test home_grid::tests::done_and_remove_pills_clear_the_compositors_top_edge_gesture_band ... ok
+test home_grid::tests::done_and_remove_targets_sit_in_the_top_inset_and_do_not_overlap ... ok
+test home_grid::tests::folder_app_at_hits_only_the_requested_count_of_tiles ... ok
+test home_grid::tests::folder_mini_icons_stay_inside_the_plate_and_do_not_overlap ... ok
+test home_grid::tests::folder_overlay_card_sits_within_the_panel_and_above_the_dock ... ok
+test home_grid::tests::folder_overlay_rect_inset_shifts_the_card_up_but_not_past_the_top_band ... ok
+test home_grid::tests::four_columns_hit_only_painted_tiles ... ok
+test home_grid::tests::icon_sizes_are_in_the_finger_sized_band ... ok
+test home_grid::tests::one_page_plus_dock_matches_the_icon_cache_bound ... ok
+test home_grid::tests::picker_rows_are_distinct_finger_sized_and_bounded_by_count ... ok
+test home_grid::tests::remove_badge_sits_at_the_plates_own_corner_and_hit_radius_exceeds_visual_radius ... ok
+test home_grid::tests::rows_per_page_is_bounded_and_targets_five_at_the_reference_height ... ok
+test home_grid::tests::slot_at_respects_filled_bound ... ok
+test home_grid::tests::spanned_tile_rect_covers_every_cell_the_span_names_with_no_seam ... ok
+test home_grid::tests::tile_content_centers_the_plate_in_its_cell_not_at_the_top ... ok
+test home_grid::tests::wide_hdmi_grid_hits_every_reflowed_column_of_the_first_row ... ok
+test home_pager::tests::cancel_stops_any_animation ... ok
+test home_pager::tests::drag_moves_one_to_one_with_the_finger ... ok
+test home_pager::tests::fast_flick_coasts_then_settles_and_decays_over_time ... ok
+test home_pager::tests::held_finger_stops_a_coasting_pager_without_a_stray_flick ... ok
+test home_pager::tests::set_position_clamps_and_clears_velocity_and_settle ... ok
+test home_pager::tests::slow_release_settles_immediately_to_nearest ... ok
+test home_pager::tests::small_wobble_is_not_a_drag ... ok
+test home_screen::tests::a_folder_left_with_one_app_dissolves_into_it ... ok
+test home_screen::tests::a_keyboard_inset_shifts_the_folder_cards_own_hit_testing ... ok
+test home_screen::tests::a_plain_tap_on_a_folder_member_still_launches_it_without_holding ... ok
+test home_screen::tests::a_plain_tap_on_a_widget_preview_does_nothing ... ok
+test home_screen::tests::a_plain_tap_release_while_rearranging_does_not_persist ... ok
+test home_screen::tests::a_quick_horizontal_fling_mid_drag_pages_immediately_without_an_edge_dwell ... ok
+test home_screen::tests::a_widget_can_be_long_pressed_and_dragged_by_touching_any_of_its_cells ... ok
+test home_screen::tests::a_remove_badge_only_fires_while_rearranging ... ok
+test home_screen::tests::an_external_drag_dropped_into_the_dock_places_it_there ... ok
+test home_screen::tests::an_external_drag_dropped_onto_an_existing_app_creates_a_folder ... ok
+test home_screen::tests::an_external_drag_held_at_the_edge_switches_pages ... ok
+test home_screen::tests::already_rearranging_a_fresh_drag_moves_an_icon_without_a_second_long_press ... ok
+test home_screen::tests::an_external_drag_from_the_drawer_drops_onto_an_empty_cell ... ok
+test home_screen::tests::app_id_matches_falls_back_to_the_exec_hint ... ok
+test home_screen::tests::app_id_matches_the_stripped_entry_id_case_insensitively ... ok
+test home_screen::tests::cancelling_an_external_drag_leaves_the_layout_untouched ... ok
+test home_screen::tests::dock_tap_launches_the_dock_app ... ok
+test home_screen::tests::done_button_exits_rearrange_mode ... ok
+test home_screen::tests::drag_swaps_with_the_target_slot_instead_of_overwriting_when_it_holds_the_same_app_twice ... ok
+test home_screen::tests::drag_to_remove_target_unpins_without_uninstalling ... ok
+test home_screen::tests::dragging_a_member_out_of_an_open_folder_onto_home_removes_and_places_it ... ok
+test home_screen::tests::dragging_a_widget_across_the_edge_onto_an_incompatible_occupied_cell_lands_nearby_on_the_new_page ... ok
+test home_screen::tests::dragging_a_widget_over_another_widgets_full_span_shows_no_room ... ok
+test home_screen::tests::dragging_an_app_into_the_dock_places_it_there ... ok
+test home_screen::tests::dragging_an_app_onto_a_dock_folder_joins_it ... ok
+test home_screen::tests::dragging_an_app_onto_an_existing_folder_joins_it ... ok
+test home_screen::tests::dragging_an_existing_icon_across_the_edge_lands_on_the_new_page ... ok
+test home_screen::tests::dragging_before_long_press_fires_pages_instead ... ok
+test home_screen::tests::dragging_one_app_onto_another_on_home_creates_a_folder ... ok
+test home_screen::tests::dragging_the_last_two_members_leaves_a_dissolved_folder_behind ... ok
+test home_screen::tests::drop_target_tracks_the_slot_under_the_dragged_icon ... ok
+test home_screen::tests::tap_on_empty_space_while_rearranging_exits_mode ... ok
+test home_screen::tests::tapping_a_dock_icons_remove_badge_removes_it ... ok
+test home_screen::tests::edge_hold_at_the_last_page_creates_a_new_page_instead_of_stalling ... ok
+test home_screen::tests::tapping_a_folder_tile_opens_the_overlay_instead_of_launching ... ok
+test home_screen::tests::edge_hold_repeats_with_a_shorter_delay_than_the_first_turn ... ok
+test home_screen::tests::tapping_a_grid_icons_remove_badge_removes_it_without_dragging ... ok
+test home_screen::tests::tapping_an_app_inside_an_open_folder_launches_it_and_closes_the_overlay ... ok
+test home_screen::tests::find_running_con_id_uses_exec_hint_when_app_id_differs ... ok
+test home_screen::tests::tapping_outside_the_open_folder_card_closes_it_with_no_action ... ok
+test home_screen::tests::long_press_on_an_icon_enters_rearrange_and_starts_dragging_it ... ok
+test home_screen::tests::find_running_con_id_walks_nested_nodes_and_floating_nodes ... ok
+test home_screen::tests::tapping_the_folder_name_arms_rename_and_apply_persists_it ... ok
+test home_screen::tests::wallpaper_and_style_row_returns_the_action_and_closes_the_sheet ... ok
+test home_screen::tests::tapping_widgets_then_long_pressing_clock_drags_and_places_it ... ok
+test home_state::tests::a_widget_spilling_past_the_row_edge_does_not_fit ... ok
+test home_state::tests::a_widget_blocks_every_cell_of_its_span_from_a_second_placement ... ok
+test home_screen::tests::dragging_an_existing_icon_across_the_edge_onto_an_occupied_cell_lands_nearby_on_the_new_page ... ok
+test home_state::tests::add_blank_page_always_appends_even_when_the_last_page_has_room ... ok
+test home_state::tests::empty_trailing_pages_are_pruned_but_the_first_page_survives ... ok
+test home_state::tests::a_schema_1_file_migrates_to_plain_apps_on_load ... ok
+test home_state::tests::curated_defaults_skip_missing_categories_and_dedupe ... ok
+test home_screen::tests::releasing_a_folder_drag_back_onto_the_folders_own_icon_cancels ... ok
+test home_state::tests::corrupt_file_falls_back_to_seed_rather_than_crashing ... ok
+test home_screen::tests::releasing_right_at_the_edge_where_the_page_just_turned_still_commits_to_the_new_page ... ok
+test home_screen::tests::second_contact_cancels_the_first_without_a_stray_action ... ok
+test home_state::tests::pin_fills_first_free_slot_then_adds_a_page_when_full ... ok
+test home_screen::tests::tapping_outside_the_picker_card_closes_it ... ok
+test home_state::tests::anchor_at_resolves_any_covered_cell_to_the_widgets_own_anchor ... ok
+test home_state::tests::load_or_seed_persists_the_seed_so_a_second_boot_is_stable ... ok
+test home_state::tests::missing_entry_keeps_its_slot_on_load ... ok
+test home_state::tests::pin_is_a_no_op_for_an_already_pinned_app ... ok
+test home_state::tests::reflow_to_keeps_a_multi_span_widget_intact_as_one_item ... ok
+test home_state::tests::reflow_to_round_trips_4_then_8_then_back_to_4 ... ok
+test home_state::tests::remove_app_dissolves_a_two_app_folder_into_the_remaining_app ... ok
+test home_screen::tests::long_pressing_a_filled_icon_never_opens_the_picker ... ok
+test home_screen::tests::tap_on_an_icon_launches_it ... ok
+test home_screen::tests::home_settings_back_row_returns_to_the_menu ... ok
+test home_screen::tests::sync_columns_reflows_to_a_wide_output_and_back_without_losing_items ... ok
+test home_screen::tests::long_pressing_empty_home_space_opens_the_widget_picker_menu ... ok
+test home_state::tests::pin_is_a_no_op_for_an_app_already_inside_a_folder ... ok
+test home_screen::tests::edge_hold_does_not_switch_before_the_first_dwell_threshold ... ok
+test home_state::tests::seed_default_with_nothing_installed_is_still_a_clock_only_home ... ok
+test home_state::tests::state_path_prefers_xdg_then_home_then_none ... ok
+test home_state::tests::seed_default_fills_dock_before_grid_and_seeds_a_clock ... ok
+test home_state::tests::remove_app_clears_a_plain_cell_without_shifting_neighbors ... ok
+test home_state::tests::reflow_to_is_a_no_op_when_columns_already_match ... ok
+test home_state::tests::reflow_to_a_wider_column_count_never_loses_or_reorders_items ... ok
+test home_state::tests::remove_app_from_a_three_app_folder_keeps_it_a_folder ... ok
+test home_state::tests::the_four_clock_styles_have_their_documented_spans_and_are_all_pickable ... ok
+test home_state::tests::widgets_are_not_dock_eligible ... ok
+test home_state::tests::remove_slot_deletes_a_whole_folder_including_its_members ... ok
+test home_screen::tests::tap_on_empty_grid_space_does_nothing ... ok
+test home_widgets::battery::tests::a_full_battery_formats_distinctly_from_a_plain_percent ... ok
+test home_widgets::battery::tests::absent_formats_as_the_clean_no_battery_info_string ... ok
+test home_widgets::battery::tests::a_battery_entry_missing_capacity_is_unusable_and_falls_back_to_absent ... ok
+test home_widgets::clock::tests::format_date_reads_as_a_short_weekday_month_day_line ... ok
+test home_widgets::battery::tests::an_empty_power_supply_directory_reads_as_absent ... ok
+test home_widgets::clock::tests::format_time_is_zero_padded_24_hour ... ok
+test home_state::tests::save_then_load_round_trips_exactly ... ok
+test home_widgets::battery::tests::no_power_supply_directory_at_all_reads_as_absent ... ok
+test home_widgets::battery::tests::a_present_battery_reports_percent_and_status ... ok
+test home_widgets::clock::tests::ms_until_next_minute_counts_down_to_the_boundary ... ok
+test home_state::tests::would_fit_matches_fits_at_for_an_existing_page_and_always_allows_a_future_one ... ok
+test home_widgets::battery::tests::a_non_battery_supply_such_as_line_power_is_ignored ... ok
+test home_widgets::weather::tests::cache_path_prefers_xdg_then_home_then_none ... ok
+test home_widgets::weather::tests::should_fetch_is_true_once_the_refresh_interval_has_passed ... ok
+test home_widgets::clock::tests::now_local_returns_a_plausible_reading_on_this_host ... ok
+test home_widgets::weather::tests::should_fetch_is_true_with_no_cache_and_false_just_after_a_fetch ... ok
+test home_widgets::weather::tests::save_then_load_cache_round_trips ... ok
+test home_widgets::weather::tests::condition_glyph_buckets_common_wttr_vocabulary ... ok
+test icon::tests::names_and_bounds ... ok
+test navigation::tests::a_held_tile_release_with_no_ticking_now_resolves_to_nothing ... ok
+test home_widgets::weather::tests::display_for_distinguishes_fresh_stale_and_unavailable ... ok
+test navigation::tests::a_quick_tap_still_launches ... ok
+test navigation::tests::a_quick_tap_still_launches_even_though_it_could_still_be_ticked ... ok
+test navigation::tests::a_straight_downward_drag_from_the_top_still_dismisses ... ok
+test navigation::tests::columns_for_width_reflows_wider_hdmi_outputs_but_never_shrinks ... ok
+test home_widgets::weather::tests::parse_wttr_j1_caps_the_forecast_at_five_entries ... ok
+test icon::tests::comma_lists_reach_second_inherited_theme_and_later_directory ... ok
+test navigation::tests::drag_cancel_zone_is_the_drawers_own_top_chrome_band ... ok
+test navigation::tests::drag_follows_reverses_and_flick_stops_on_new_contact ... ok
+test navigation::tests::four_columns_hit_only_painted_tiles ... ok
+test navigation::tests::handle_rect_is_centered_above_the_search_field ... ok
+test navigation::tests::downward_dismiss_is_distinct_from_app_tap ... ok
+test home_widgets::weather::tests::parse_wttr_j1_rejects_anything_that_is_not_a_j1_body ... ok
+test home_widgets::weather::tests::parse_wttr_j1_forecast_starts_at_the_current_hour_and_spills_into_tomorrow ... ok
+test home_widgets::weather::tests::parse_wttr_j1_reads_current_conditions_high_low_and_location ... ok
+test navigation::tests::scrolling_away_from_the_top_then_reversing_never_closes_within_one_gesture ... ok
+test navigation::tests::search_field_hit_is_bounded_to_its_own_pill_and_above_the_grid ... ok
+test navigation::tests::take_long_press_drag_fires_once_at_the_threshold_and_consumes_the_contact ... ok
+test navigation::tests::wide_hdmi_output_hits_every_reflowed_column_of_the_first_row ... ok
+test navigation::tests::moving_past_slop_before_the_threshold_cancels_the_long_press_drag ... ok
+test navigation::tests::pressed_clears_on_drag_second_finger_and_cancel ... ok
+test pipewire_ipc::tests::a_captured_initial_dump_fixture_parses_into_one_sink_and_one_stream ... ok
+test pipewire_ipc::tests::a_removal_delta_drops_only_the_named_object ... ok
+test pipewire_ipc::tests::a_delta_that_only_touches_one_node_does_not_wipe_the_others ... ok
+test pipewire_ipc::tests::set_volume_command_clamps_out_of_range_linear_volume ... ok
+test pipewire_ipc::tests::set_volume_command_formats_a_scriptable_pw_cli_line ... ok
+test navigation::tests::wheel_bounds_and_touch_ownership ... ok
+test navigation::tests::scrolled_grid_maps_row_and_clips_bottom ... ok
+test pipewire_ipc::tests::expanded_row_lists_streams_before_sinks_and_bounds_the_index ... ok
+test pointer_input::axis_tests::smooth_and_wheel_units_are_not_added_twice ... ok
+test pointer_input::tests::a_different_surface_cannot_complete_the_click ... ok
+test pointer_input::tests::hover_and_secondary_buttons_never_activate ... ok
+test pipewire_ipc::tests::hardware_route_overrides_dsp_props_and_survives_device_only_updates ... ok
+test pipewire_ipc::tests::captured_fixtures_replayed_through_the_monitor_reader_track_mute_removal_and_the_default_sink ... ok
+test pipewire_ipc::tests::parse_dump_finds_the_default_sink_and_a_stream_with_its_app_metadata ... ok
+test pipewire_ipc::tests::parse_dump_marks_no_sink_default_when_metadata_names_something_else ... ok
+test pipewire_ipc::tests::parse_dump_reads_a_muted_sink_and_ignores_unknown_object_types ... ok
+test pointer_input::tests::leave_and_capability_loss_cancel_without_activation ... ok
+test pointer_input::tests::primary_press_drag_release_routes_once ... ok
+test protocol::tests::reverse_mid_drag_and_eof_after_finish ... ok
+test protocol::tests::strict_bounded_wire_and_stale_sequence ... ok
+test render::layout_tests::content_sized_panel_h_clamps_short_and_long_content ... ok
+test pipewire_ipc::tests::run_monitor_reader_delivers_a_snapshot_per_concatenated_dump ... ok
+test render::layout_tests::settings_confirm_layout_follows_whatever_precedes_it ... ok
+test render::layout_tests::settings_layout_cascades_from_the_row_rhythm ... ok
+test render::layout_tests::settings_row_y_uses_one_height_and_one_gap ... ok
+test render::layout_tests::settings_rows_bottom_is_the_last_row_end ... ok
+test protocol::tests::dismiss_tracks_reversal_and_restores_visible_panel_on_eof ... ok
+test protocol::tests::early_eof_and_cancel_settle_closed ... ok
+test render::tests::a_pending_only_theme_view_change_does_not_bump_content_generation ... ok
+test render::layout_tests::tray_backdrop_alpha_is_monotonic_in_progress ... ok
+test render::layout_tests::tray_backdrop_alpha_eases_in_and_out_around_the_midpoint ... ok
+test icon::tests::decode_admits_the_larger_splash_icon_size_but_still_bounds_it ... ok
+test render::layout_tests::tray_backdrop_alpha_is_zero_closed_and_target_open ... ok
+test home_widgets::weather::tests::refresh_keeps_the_existing_cache_when_the_fetch_binary_fails ... ok
+test render::tests::drawer_grid_cache_host_timing ... ignored
+test render::tests::content_generation_bumps_on_content_changes_but_not_on_appearance_changes ... ok
+test icon::tests::theme_inheritance_svg_decode_and_bounded_cache ... ok
+test pipewire_ipc::tests::parse_dump_rejects_non_array_and_oversized_input ... ok
+test render::tests::ease_out_cubic_starts_at_zero_ends_at_one_and_is_monotonic ... ok
+test pipewire_ipc::tests::writer_handle_delivers_commands_in_order_to_a_real_child_process ... ok
+test render::tests::drawer_grid_cache_rebuilds_only_when_its_own_key_changes ... ok
+test render::splash_render_tests::a_failed_launch_bakes_the_couldnt_open_message_distinctly ... ok
+test render::splash_render_tests::draw_splash_rejects_a_mismatched_canvas_size ... ok
+test render::tests::pending_thumbnails_do_not_by_themselves_report_a_change ... ok
+test render::tests::draw_drawer_reveal_shm_composites_a_faded_snapshot_and_the_cancel_band ... ok
+test render::splash_render_tests::draw_splash_backdrop_is_fully_opaque_even_before_the_icon_fades_in ... ok
+test render::tests::poll_theme_image_is_a_permanent_no_op_since_tap_to_apply ... ok
+test render::tests::picker_row_semantic_updates_keep_full_invalidation ... ok
+test render::tests::default_renderer_resolves_named_icon ... ok
+test render::tests::drawer_preserves_authored_gradient_and_alpha_without_an_opaque_mask ... ok
+test render::tests::authored_launcher_brush_changes_live_renderer_pixels ... ok
+test render::tests::pressed_home_cards_consume_authored_pressed_fill_without_selection ... ok
+test render::tests::quiet_control_respects_a_theme_authored_zero_fill ... ok
+test catalog::tests::no_display_and_hidden_entries_are_filtered ... ok
+test catalog::tests::first_directory_in_precedence_order_wins_for_a_shared_id ... ok
+test app_watch::tests::adding_and_removing_a_file_in_a_plain_mutable_dir_each_signal_a_rescan ... ok
+test render::splash_render_tests::ensure_splash_bake_only_rebuilds_on_a_key_change ... ok
+test render::tests::draw_hud_paints_nothing_while_hidden_and_the_pill_once_shown ... ok
+test render::tests::adopt_prerendered_overlay_is_a_cache_hit_with_the_candidates_own_pixels ... ok
+test catalog::tests::nested_desktop_file_id_replaces_slashes_with_dashes ... ok
+test app_actions::tests::desktop_actions_single_window_metadata_and_missing_entries_control_the_menu ... ok
+test catalog::tests::a_file_added_after_the_first_scan_appears_on_the_next_one ... ok
+test render::tests::drawer_uses_absolute_svg_app_icon ... ok
+test render::tests::prebuild_drawer_grid_warms_the_cache_and_is_a_no_op_once_fresh ... ok
+test render::tests::draw_hud_reflects_mute_state_in_different_pixels_than_unmuted ... ok
+test render::tests::notification_target_error_changes_visible_history_row ... ok
+test app_watch::tests::a_symlink_swap_like_nixos_switch_signals_a_rescan_and_the_new_app_appears ... ok
+test icon::tests::labels_are_cached_by_their_exact_key_and_bounded ... ok
+test render::tests::broker_preview_uses_its_named_app_icon ... ok
+test render::tests::close_drag_progress_shifts_the_panel_and_dims_the_backdrop_together ... ok
+test runtime_trace::tests::theme_picker_trace_span_is_noop_when_disabled ... ok
+test render::tests::draw_with_hud_composites_the_pill_on_top_of_the_live_settings_scene ... ok
+test runtime_trace::tests::theme_picker_trace_bounds_memory_and_reports_overflow ... ok
+test service_ui::tests::a_tap_on_the_backdrop_closes_but_a_tap_on_the_sheet_does_not ... ok
+test service_ui::tests::a_drag_on_the_shade_panel_closes_unless_it_would_scroll_the_list ... ok
+test service_ui::tests::close_drag_engaged_is_reversed_for_the_drawer ... ok
+test service_ui::tests::close_drag_engaged_needs_slop_and_vertical_dominance ... ok
+test service_ui::tests::close_drag_progress_is_monotonic_in_upward_travel ... ok
+test service_ui::tests::close_drag_progress_is_one_at_start_and_zero_at_full_travel ... ok
+test service_ui::tests::close_drag_progress_mirrors_direction_for_the_bottom_anchored_drawer ... ok
+test render::tests::pressed_grid_tile_has_a_visible_highlight_without_affecting_its_neighbor ... ok
+test service_ui::tests::close_drag_zone_is_the_top_band_and_the_backdrop_only ... ok
+test service_ui::tests::filter_app_indices_matches_case_insensitive_substrings ... ok
+test service_ui::tests::failed_action_exposes_backend_error_and_retry ... ok
+test service_ui::tests::normal_search_keys_correct_text_without_dismissing_the_drawer ... ok
+test service_ui::tests::drawer_search_key_focus_and_clear ... ok
+test service_ui::tests::keyboard_gesture_hint_requires_integrated_session_flag ... ok
+test service_ui::tests::close_drag_release_target_is_a_threshold_with_a_fling_override ... ok
+test service_ui::tests::drawer_close_candidate_is_disqualified_once_scroll_leaves_the_top ... ok
+test service_ui::tests::drawer_close_drag_zone_is_the_top_chrome_and_the_grid_only_at_top ... ok
+test render::tests::theme_font_and_spacing_adapt_with_touch_geometry_preserved ... ok
+test render::tests::finger_progress_reuses_shaped_scene ... ok
+test service_ui::tests::panel_close_tracks_settles_and_reports_closed_exactly_once ... ok
+test service_ui::tests::notification_release_settles_from_current_pixels_and_can_be_interrupted ... ok
+test service_ui::tests::search_viewport_reserves_the_system_keyboard_and_recovers_on_dismiss ... ok
+test service_ui::tests::power_sheet_requires_a_second_explicit_confirmation_tap ... ok
+test service_ui::tests::notification_scroll_coast_is_bounded_and_tap_stops_without_jump ... ok
+test service_ui::tests::settings_output_picker_hit_is_settings_only_and_needs_a_default_sink ... ok
+test service_ui::tests::notification_swipe_tracks_reversal_and_refuses_critical_or_changed_rows ... ok
+test service_ui::tests::panel_close_begin_settle_animates_a_non_drag_close_from_fully_open ... ok
+test service_ui::tests::panel_close_settle_to_open_never_reports_closed ... ok
+test service_ui::tests::power_needs_loaded_settings_and_token_confirmation ... ok
+test service_ui::tests::settings_row_taps_follow_the_scaled_centered_content_column_on_hdmi ... ok
+test service_ui::tests::slider_band_owns_its_row_and_is_excluded_from_the_close_drag_candidacy ... ok
+test slider::tests::drag_throttles_writes_but_the_caller_can_always_read_the_final_value_on_release ... ok
+test slider::tests::live_write_throttle_gates_to_about_25_writes_per_second ... ok
+test slider::tests::value_at_x_maps_the_full_track_and_inverts_x_at_value ... ok
+test slider::tests::track_bounds_stays_ordered_even_for_an_unreasonably_narrow_width ... ok
+test service_ui::tests::shade_and_settings_share_one_upward_dismiss_direction ... ok
+test slider::tests::clamp_percent_enforces_the_minimum_and_the_ceiling ... ok
+test splash::tests::already_running_never_needs_a_target_at_all ... ok
+test slider::tests::floor_zero_reaches_true_silence_unlike_the_brightness_floor ... ok
+test splash::tests::a_failed_splash_auto_dismisses_after_its_own_hold_but_not_before ... ok
+test splash::tests::fade_alpha_is_monotonic ... ok
+test service_ui::tests::volume_slider_band_owns_its_row_and_is_excluded_from_the_close_drag_candidacy ... ok
+test service_ui::tests::shade_and_settings_hits_are_bounded_and_cancel_scroll_taps ... ok
+test splash::tests::a_ppid_cycle_terminates_instead_of_looping ... ok
+test splash::tests::launch_order_matches_the_first_new_window_regardless_of_pid ... ok
+test splash::tests::fade_alpha_eases_from_zero_to_one_and_saturates ... ok
+test sway_ipc::tests::process_alive_reflects_the_current_process_and_a_bogus_pid ... ok
+test sway_ipc::tests::parent_pid_of_self_matches_libc_getppid ... ok
+test sway_ipc::tests::try_parse_frame_rejects_bad_magic_and_oversized_length ... ok
+test sway_ipc::tests::parse_window_event_reads_change_and_container_pid ... ok
+test sway_ipc::tests::try_parse_frame_waits_for_a_complete_header_then_payload ... ok
+test slider::tests::value_at_x_clamps_beyond_the_track_and_never_divides_by_zero ... ok
+test slider::tests::value_at_x_with_floor_matches_the_brightness_wrapper_at_the_brightness_floor ... ok
+test service_ui::tests::volume_icon_tap_zone_is_left_of_the_track_and_distinct_from_it ... ok
+test splash::tests::launch_to_mapped_matches_a_bounded_descendant_pid ... ok
+test splash::tests::launch_to_mapped_matches_exact_pid ... ok
+test splash::tests::launch_to_timeout_trips_at_exactly_ten_seconds ... ok
+test splash::tests::launch_to_mapped_dismisses_only_on_a_new_window_change ... ok
+test tests::configure_size_is_bounded ... ok
+test tests::reflow_columns_matches_base_at_design_width_and_only_grows ... ok
+test tests::density_scale_is_pixel_identical_at_native_and_bounded_above ... ok
+test tests::configure_preserves_aspect_accepts_uniform_resize_only ... ok
+test tests::buffer_release_gate ... ok
+test tests::frame_bytes_accepts_hdmi_whole_output_sizes ... ok
+test tests::settings_content_transform_fills_the_panel_at_native_size ... ok
+test tests::routes_are_exact_and_bounded ... ok
+test sway_ipc::tests::write_message_produces_the_documented_header_layout ... ok
+test theme_carousel::pointer_scroll_tests::wheel_browses_and_settles_without_a_touch_activation ... ok
+test slider::tests::drag_start_with_floor_lets_a_volume_style_drag_reach_zero ... ok
+test tests::touch_cancel_does_not_turn_into_tap ... ok
+test theme_carousel::tests::background_geometry_is_smaller_but_keeps_upstreams_ratios ... ok
+test theme_carousel::tests::pressed_shows_immediately_on_down_and_clears_on_drag_or_release ... ok
+test theme_carousel::tests::drag_tracks_rendered_pixels_in_both_rows_across_transitions_and_reversals ... ok
+test render::tests::drawer_close_drag_progress_shifts_the_panel_downward ... ok
+test theme_carousel::tests::release_preserves_screen_space_velocity_without_a_position_jump ... ok
+test theme_carousel::tests::release_after_hold_expires_velocity_even_without_more_motion_events ... ok
+test theme_carousel::tests::slow_release_settles_immediately_to_nearest ... ok
+test theme_carousel::tests::drag_clamps_at_both_ends ... ok
+test theme_carousel::tests::hit_test_prefers_the_slice_nearest_center_in_overlap ... ok
+test theme_carousel::tests::index_from_offset_rounds_to_nearest_and_clamps ... ok
+test theme_carousel::tests::skewed_hit_test_excludes_the_sheared_corner ... ok
+test theme_carousel::tests::set_index_stops_any_animation_in_progress ... ok
+test theme_carousel::tests::fast_flick_coasts_then_settles_and_decays_over_time ... ok
+test theme_carousel::tests::tap_on_centered_slice_confirms_tap_on_side_slice_only_recenters ... ok
+test render::tests::theme_picker_two_carousels_warm_without_continual_requeues ... ok
+test render::tests::a_theme_view_change_after_adopting_still_rebuilds_and_shows_pending ... ok
+test render::tests::scrolling_repaints_clipped_rows_but_keeps_chrome ... ok
+test render::tests::shade_backdrop_fades_full_screen_and_stays_put_at_partial_drag ... ok
+test render::tests::render_candidate_overlay_never_mutates_the_live_cache ... ok
+test render::tests::draw_hud_expanded_panel_is_taller_and_wider_than_the_collapsed_pill ... ok
+test theme_thumbnails::tests::disk_cache_dir_prefers_xdg_cache_home_then_falls_back_to_home_then_none ... ok
+test theme_thumbnails::tests::builtin_seed_dir_ignores_an_unset_or_empty_env_var ... ok
+test theme_thumbnails::tests::resident_pixel_budget_evicts_offscreen_surfaces_before_visible_ones ... ok
+test theme_thumbnails::tests::evict_until_removes_oldest_files_first_until_back_under_the_cap ... ok
+test theme_thumbnails::tests::disk_cache_round_trips_and_rejects_mismatched_geometry ... ok
+test theme_thumbnails::tests::resolve_persists_a_fresh_decode_to_the_runtime_disk_cache_for_next_time ... ok
+test theme_thumbnails::tests::resolve_finds_a_seed_thumbnail_for_a_staged_generation_copy_at_a_different_path ... ok
+test theme_thumbnails::tests::resolve_prefers_a_precomputed_seed_thumbnail_over_a_fresh_decode ... ok
+test theme_thumbnails::tests::moving_working_set_discards_stale_replies_and_protects_visible_residents ... ok
+test theme_ui::tests::a_pending_confirm_pauses_every_warm_up_until_its_own_reply_lands ... ok
+test theme_thumbnails::tests::resolve_prefers_a_seed_hit_over_a_runtime_cache_hit_when_both_exist ... ok
+test theme_ui::tests::a_failed_activate_rolls_back_with_a_visible_error_and_clears_pending ... ok
+test theme_ui::tests::a_single_theme_list_queues_no_neighbours ... ok
+test theme_thumbnails::tests::resolve_prefers_an_existing_runtime_cache_hit_over_a_fresh_decode ... ok
+test theme_ui::tests::applying_theme_index_ignores_a_pending_background_selection ... ok
+test theme_ui::tests::prepare_ahead_foreground_request_keeps_priority_after_motion ... ok
+test theme_ui::tests::a_list_reply_queues_both_neighbours_of_a_mid_list_active_theme ... ok
+test theme_ui::tests::background_apply_uses_the_selected_background_generation_and_waits_for_commit ... ok
+test theme_thumbnails::tests::working_set_admission_preserves_priority_and_bounds_count_and_bytes ... ok
+test theme_ui::tests::activation_cannot_be_cancelled_mid_transaction ... ok
+test theme_thumbnails::tests::failed_decode_is_cached_as_absent_rather_than_retried_forever ... ok
+test theme_ui::tests::app_reload_status_reaches_the_message_on_a_successful_activate ... ok
+test theme_ui::tests::leaving_the_list_page_resets_the_debounce_but_keeps_the_in_flight_slot_recognisable ... ok
+test theme_ui::tests::a_list_reply_queues_only_the_one_neighbour_at_each_end_of_the_list ... ok
+test theme_ui::tests::prepare_ahead_latest_center_gets_its_full_dwell_before_neighbors_resume ... ok
+test theme_ui::tests::prepare_ahead_motion_preserves_neighbors_and_expires_dwell ... ok
+test theme_ui::tests::prepare_ahead_skips_the_already_active_theme_and_a_stray_reply_never_reaches_accept ... ok
+test theme_ui::tests::a_dwell_driven_request_takes_priority_over_the_neighbour_queue ... ok
+test theme_ui::tests::prepare_ahead_waits_out_the_debounce_and_never_resends_for_the_same_index ... ok
+test theme_ui::tests::rapid_taps_across_themes_coalesce_onto_the_last_one ... ok
+test theme_ui::tests::record_known_generation_is_read_by_the_map_directly ... ok
+test theme_ui::tests::the_neighbour_queue_drains_when_nothing_is_dwell_driven ... ok
+test theme_ui::tests::prepare_ahead_reply_records_the_known_generation ... ok
+test theme_ui::tests::tap_background_on_the_already_selected_slice_is_a_silent_no_op ... ok
+test video_status::tests::fingerprint_is_stable_and_status_has_no_source_path ... ok
+test video_wallpaper::tests::bounded_real_decoder_emits_distinct_muted_frames_when_fixture_supplied ... ok
+test video_visibility::tests::freshness_boundary_expires_exactly_after_1500ms ... ok
+test theme_ui::tests::wallpaper_labels_are_readable_without_changing_opaque_selection ... ok
+test video_visibility::tests::missing_signal_keeps_wallpaper_visible ... ok
+test video_visibility::tests::rejects_partial_transparent_stale_and_wrong_geometry ... ok
+test volume::tests::external_nonzero_updates_the_level_and_mute_flag_directly ... ok
+test theme_ui::tests::tap_background_on_the_video_slice_sets_a_visible_error_and_sends_nothing ... ok
+test theme_ui::tests::tap_theme_on_a_cold_slice_previews_then_activates_and_switches_the_background_carousel ... ok
+test theme_ui::tests::tap_theme_on_the_already_active_slice_never_sends_an_activate ... ok
+test volume::tests::change_origin_only_the_own_slider_suppresses_the_hud ... ok
+test volume::tests::external_zero_reads_as_muted_not_a_silent_unmuted_slider ... ok
+test volume::tests::dragging_to_the_bottom_engages_mute_like_android ... ok
+test volume::tests::hud_geometry_widens_when_expanded_but_stays_anchored_to_the_right_edge ... ok
+test video_wallpaper::tests::source_and_output_bounds_precede_decoder ... ok
+test volume::tests::dragging_above_zero_clears_mute_and_sets_the_level ... ok
+test theme_ui::tests::prepare_ahead_inflight_completion_cannot_admit_during_motion ... ok
+test volume::tests::hud_collapse_forces_collapsed_and_keeps_visible ... ok
+test volume::tests::hud_hide_in_ms_counts_down_to_zero_and_never_goes_negative ... ok
+test volume::tests::hud_is_hidden_until_shown_and_autohides_after_its_window ... ok
+test volume::tests::hud_drag_is_owned_by_the_touch_that_started_it ... ok
+test volume::tests::hud_drag_to_clamps_the_position_fraction ... ok
+test volume::tests::hud_geometry_grows_by_one_row_per_expanded_item ... ok
+test volume::tests::hud_toggle_expand_flips_state_and_refreshes_the_timer ... ok
+test volume::tests::hud_geometry_hit_zones_are_disjoint_and_bounded_to_the_pill ... ok
+test volume::tests::hud_geometry_sits_on_the_right_edge_and_clamps_within_the_screen ... ok
+test volume::tests::hud_held_contact_keeps_the_control_visible_past_auto_hide ... ok
+test volume::tests::hud_visible_holds_for_about_two_and_a_half_seconds ... ok
+test volume::tests::icon_state_reads_muted_at_zero_percent_even_when_not_flagged_muted ... ok
+test volume::tests::icon_tap_toggles_mute_and_restores_the_remembered_level ... ok
+test volume::tests::volume_state_icon_state_reflects_displayed_percent_not_the_remembered_level ... ok
+test volume::tests::volume_state_default_is_a_plausible_unmuted_midpoint ... ok
+test wifi_settings::tests::later_cancel_keeps_earlier_queued_request_cancelled ... ok
+test wifi_ui::tests::closed_or_reopened_view_ignores_old_network_reply ... ok
+test volume::tests::percent_to_db_is_negative_infinity_at_silence_and_zero_at_full ... ok
+test wifi_settings::tests::reject_oversized_untrusted_and_secret_leaks ... ok
+test wifi_ui::tests::hit_uses_rendered_output_scale ... ok
+test volume::tests::linear_to_percent_clamps_out_of_range_input ... ok
+test wifi_ui::tests::key_event_intent_maps_control_keys_and_rejects_composed_text ... ok
+test volume::tests::percent_to_linear_is_cubic_not_linear ... ok
+test wifi_settings::tests::parse_scan_and_saved_with_fake_names ... ok
+test wifi_ui::tests::forget_is_explicit_and_does_not_expose_password ... ok
+test wifi_ui::tests::keyboard_masks_and_cancel_clears ... ok
+test wifi_ui::tests::open_network_connects_without_password_editor ... ok
+test wifi_ui::tests::status_after_save_updates_current_without_discarding_scan_rows ... ok
+test wifi_ui::tests::raised_keyboard_moves_cancel_connect_above_it ... ok
+test wifi_settings::tests::fake_broker_socket_carries_saved_selection_without_password ... ok
+test wifi_ui::tests::wants_keyboard_only_for_an_unsaved_wpa2_field ... ok
+test volume::tests::percent_to_linear_clamps_above_100 ... ok
+test wifi_settings::tests::connect_ack_is_parsed_without_echoing_password ... ok
+test wifi_ui::tests::scroll_does_not_select_and_back_is_reachable ... ok
+test wifi_ui::tests::release_must_stay_on_same_key_or_confirm_control ... ok
+test wifi_ui::tests::wifi_password_eye_preserves_input_focus_and_redacts_public_state ... ok
+test wifi_ui::tests::wifi_password_eye_resets_on_connect_and_saved_entry_never_reveals ... ok
+test render::tests::settings_power_rows_require_a_loaded_capability_snapshot ... ok
+test wifi_settings::tests::worker_queue_reports_busy_without_blocking_ui_thread ... ok
+test volume::tests::linear_to_percent_round_trips_percent_to_linear ... ok
+test render::tests::wifi_revealed_input_is_painted_outside_the_scene_cache_and_cleared_on_exit ... ok
+test theme_ui::tests::still_preview_reuses_the_generations_background_cache_instead_of_redecoding ... ok
+test theme_ui::tests::still_preview_worker_returns_output_crop_outside_dispatch ... ok
+test render::tests::pressed_and_activating_states_change_painted_pixels ... ok
+test render::tests::drawer_keeps_live_scene_above_opaque_panel ... ok
+test render::tests::notification_swipe_moves_only_a_dismissible_row_and_reverses ... ok
+test render::tests::list_and_background_rows_paint_their_own_thumbnail_once_decoded ... ok
+test render::tests::system_theme_swap_and_rollback_restore_settings_and_shade ... ok
+test tests::render_distinguishes_route_and_touch ... ok
+test theme_thumbnails::tests::decode_completes_and_is_cached_without_re_requesting ... ok
+test render::tests::system_theme_roles_reach_real_settings_and_shade_pixels ... ok
+test theme_thumbnails::tests::theme_and_background_ids_share_one_cache_without_colliding ... ok
+test render::tests::theme_list_preview_and_scroll_paint_distinct_handheld_scenes ... ok
+test theme_thumbnails::tests::expanded_and_slice_variants_of_the_same_id_are_cached_distinctly ... ok
+test sway_ipc::tests::watch_window_events_matches_a_pid_delivered_over_a_real_socket ... ok
+test render::tests::themed_surface_fixtures_keep_live_area_clear_and_use_authored_roles ... ok
+test render::tests::picker_row_repaint_matches_full_scene_for_motion_and_press ... ok
+test help::tests::home_request_uses_the_compositor_and_reports_failure_and_timeout ... ok
+test catalog::tests::catalog_is_bounded_and_stably_sorted ... ok
+
+test result: ok. 432 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 2.65s
+
+     Running unittests src/main.rs (/home/jadams/tmp/k230-admission-host-target/debug/deps/k230_shell_rust-7cdb96a3b82c449f)
+
+running 22 tests
+test route_tests::appearance_media_requires_a_configured_still_decoder ... ok
+test route_tests::buffered_progress_burst_coalesces_before_next_poll ... ok
+test route_tests::drawer_downward_drag_engages_only_from_an_eligible_zone_past_slop ... ok
+test route_tests::optimistic_apply_due_is_scoped_to_each_fresh_pending_id_for_a_rapid_double_apply ... ok
+test route_tests::prerendered_overlay_mismatch_reason_names_the_specific_field ... ok
+test route_tests::brightness_commit_suppresses_its_own_success_toast_but_not_a_failure ... ok
+test route_tests::may_reuse_optimistic_frame_only_for_a_commit_matching_exactly ... ok
+test route_tests::prerendered_overlay_matches_requires_every_field_to_agree ... ok
+test route_tests::optimistic_apply_skip_reason_names_the_specific_cause ... ok
+test route_tests::rollback_resolves_to_retained_previous_decoder_without_new_decode ... ok
+test route_tests::redraw_entry_never_gates_on_a_surfaces_own_outstanding_frame_callback ... ok
+test route_tests::drawer_live_close_drag_never_engages_after_a_mid_gesture_scroll_reversal ... ok
+test route_tests::optimistic_apply_fires_only_for_an_activate_matching_the_prepared_generation ... ok
+test route_tests::shade_and_settings_map_full_height_drawer_keeps_its_own_offset ... ok
+test route_tests::shade_upward_drag_engages_only_from_an_eligible_zone_past_slop ... ok
+test route_tests::speculative_theme_motion_waits_for_both_carousels_to_finish_moving ... ok
+test route_tests::splash_window_event_matches_by_pid_through_the_real_thin_wrapper ... ok
+test route_tests::split_stream_finish_and_premature_eof ... ok
+test route_tests::running_con_id_honors_startup_class_for_floating_apps ... ok
+test route_tests::sway_back_failure_blocks_launch_handoff ... ok
+test route_tests::launch_selected_captures_the_real_spawned_pid_with_no_glib_main_loop_running ... ok
+test route_tests::spawn_splash_watcher_ignores_events_with_no_swaysock_and_never_signals ... ok
+
+test result: ok. 22 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.52s
+
+     Running tests/appearance_module.rs (/home/jadams/tmp/k230-admission-host-target/debug/deps/appearance_module-c8f2cc38a45fdf90)
+
+running 14 tests
+test prepared_real_community_generation_loads_when_fixture_is_available ... ok
+test oversized_request_is_closed_without_event_or_state_change ... ok
+test fragmented_request_and_frozen_prepare_snapshot_do_not_reread_mutated_payload ... ok
+test fifo_payload_is_rejected_without_blocking ... ok
+test intermediate_background_symlink_escape_is_rejected ... ok
+test builtin_multi_stop_hyprland_gradient_palette_uses_first_stop_color ... ok
+test rollback_without_prepare_restores_prior_snapshot_and_acks_exact_generation ... ok
+test malformed_payload_and_foreign_generation_fail_without_mutating_active ... ok
+test restart_loads_selected_generation_and_bad_pointer_falls_back ... ok
+test community_hyprland_rgba_palette_prepares_without_relaxing_shell_colors ... ok
+test rollback_restores_state_after_commit_reply_is_lost ... ok
+test all_background_choices_and_brush_shape_are_retained ... ok
+test two_phase_ack_follows_typed_snapshot_adoption_and_rollback_is_idempotent ... ok
+test commit_ack_survives_bounded_render_delay_past_peer_deadline ... ok
+
+test result: ok. 14 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.21s
+
+     Running tests/background_decode_module.rs (/home/jadams/tmp/k230-admission-host-target/debug/deps/background_decode_module-380e7015442fb736)
+
+running 8 tests
+test wallpaper_cache_write_rejects_a_video_or_unsupported_destination ... ok
+test cache_reuses_frame_and_clear_retries_failure ... ok
+test source_output_format_and_symlink_bounds_fail_closed ... ok
+test wallpaper_cache_hit_bypasses_a_changed_source_and_a_mismatch_falls_back ... ok
+test crop_fit_center_and_cairo_byte_order ... ok
+test multiple_recent_candidates_stay_warm_without_evicting_each_other ... ok
+test importer_still_formats_decode_without_loader_plugins ... ok
+test decoded_dimension_edge_bound_rejects_small_compressed_file ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/responsive_pixel_identity.rs (/home/jadams/tmp/k230-admission-host-target/debug/deps/responsive_pixel_identity-0011745ad327d39f)
+
+running 4 tests
+test wallpaper_568x1232_matches_the_committed_evidence_exactly ... ok
+test settings_568x1232_matches_the_committed_evidence_exactly ... ok
+test drawer_568x1232_matches_the_committed_evidence_exactly ... ok
+test home_568x1232_matches_the_committed_evidence_exactly ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.33s
+
+     Running tests/service_data_module.rs (/home/jadams/tmp/k230-admission-host-target/debug/deps/service_data_module-a5b3eefab5830891)
+
+running 11 tests
+test broker_character_limits_accept_multibyte_unicode ... ok
+test history_keeps_private_preview_redaction_distinct_from_history ... ok
+test settings_preserves_capability_and_unavailable_states ... ok
+test history_rejects_focus_count_priority_and_unbounded_input ... ok
+test settings_rejects_invalid_schema_state_value_and_action ... ok
+test live_backlight_write_rejects_out_of_range_percent_and_missing_device ... ok
+test live_backlight_write_scales_percent_by_the_real_max_brightness ... ok
+test worker_rejects_an_out_of_range_live_brightness_write_without_shelling_out ... ok
+test worker_rejects_invalid_action_without_contacting_service ... ok
+test worker_coalesces_refresh_and_returns_settings_action_without_ui_block ... ok
+test worker_reads_private_notification_socket_and_times_out_slow_peer ... ok
+
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 5.01s
+
+     Running tests/system_theme_compatibility.rs (/home/jadams/tmp/k230-admission-host-target/debug/deps/system_theme_compatibility-b814861b69a3876e)
+
+running 1 test
+test adapted_system_roles_are_preserved_and_bounded_with_legacy_compatibility ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/theme_catalog_module.rs (/home/jadams/tmp/k230-admission-host-target/debug/deps/theme_catalog_module-eab0aaf06f8c263a)
+
+running 6 tests
+test a_working_helper_socket_answers_without_ever_running_the_subprocess ... ok
+test a_daemon_reported_error_is_returned_without_falling_back ... ok
+test a_missing_helper_socket_falls_back_to_the_subprocess ... ok
+test a_malformed_socket_reply_falls_back_to_the_subprocess ... ok
+test an_empty_helper_socket_path_disables_the_direct_path_entirely ... ok
+test deferred_app_refresh_is_accepted_from_socket_and_subprocess ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.06s
+
+   Doc-tests k230_shell_rust
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

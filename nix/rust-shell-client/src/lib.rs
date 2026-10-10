@@ -6,6 +6,7 @@ pub mod appearance;
 pub mod background_decode;
 pub mod catalog;
 pub mod evidence_render;
+pub mod help;
 pub mod home_grid;
 pub mod home_pager;
 pub mod home_screen;
@@ -39,6 +40,7 @@ pub enum Route {
     Shade,
     Settings,
     Power,
+    Help,
     Hide,
 }
 
@@ -49,6 +51,7 @@ impl Route {
             b"shade\n" => Some(Self::Shade),
             b"settings\n" => Some(Self::Settings),
             b"power\n" => Some(Self::Power),
+            b"help\n" => Some(Self::Help),
             b"hide\n" => Some(Self::Hide),
             _ => None,
         }
@@ -270,7 +273,7 @@ pub fn render_probe(canvas: &mut [u8], width: u32, height: u32, route: Route, to
                     Route::Drawer => (28, 49, 62),
                     Route::Shade => (47, 42, 69),
                     Route::Settings => (47, 61, 43),
-                    Route::Power => (47, 42, 69),
+                    Route::Power | Route::Help => (47, 42, 69),
                     Route::Hide => (0, 0, 0),
                 };
                 (tint.0 + band * 7, tint.1 + band * 7, tint.2 + band * 7, 255)
@@ -303,6 +306,7 @@ mod tests {
         assert_eq!(Route::parse(b"shade\n"), Some(Route::Shade));
         assert_eq!(Route::parse(b"settings\n"), Some(Route::Settings));
         assert_eq!(Route::parse(b"power\n"), Some(Route::Power));
+        assert_eq!(Route::parse(b"help\n"), Some(Route::Help));
         assert_eq!(Route::parse(b"drawer extra\n"), None);
         assert_eq!(Route::parse(b"drawer"), None);
     }

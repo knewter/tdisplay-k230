@@ -1,0 +1,39 @@
+{
+  "base_revision": "6adac5467ce152bbc7b043dac8067c6e67f3b005",
+  "host_test_passed": 498,
+  "host_test_ignored": 1,
+  "test_commands": [
+    "CARGO_TARGET_DIR=/home/jadams/tmp/k230-admission-host-target cargo test --offline --locked --manifest-path nix/rust-shell-client/Cargo.toml"
+  ],
+  "evidence_class": "host unit/integration checks and production Cairo/Pango renders",
+  "observed_utc": "2026-10-10T21:07:32Z",
+  "theme_inputs": {
+    "dark": {
+      "generation": "dacf0af8c897e6c51fe922de",
+      "generation_path": "/home/jadams/tmp/k230-help-appearance/generations/dacf0af8c897e6c51fe922de",
+      "appearance_sha256": "1dfc1b36eb1fb94adcd691dc23eb14f65bd3d454a624919d8d90a087577c4be1",
+      "theme": "catppuccin",
+      "source_sha256": "72e8f8f39a1209893b30b651fece6c1d1ce47ec643df9e596c7cd282ea97d4c6"
+    },
+    "light": {
+      "generation": "c448496d80fec3ae02a892bd",
+      "generation_path": "/home/jadams/tmp/k230-help-appearance/generations/c448496d80fec3ae02a892bd",
+      "appearance_sha256": "7cfde80abee8081b01fef64f222d2e913dbc7cb77ed75bf6e5537fbd5c8c6073",
+      "theme": "catppuccin-latte",
+      "source_sha256": "11ea23e5a4659b09ecda0658dd86921489d6f536b86ffa60af2f601912a70cdc"
+    }
+  },
+  "image_sha256": {
+    "dark-buttons-hdmi.png": "b39cf837f2429aeac1c57e9a3da431f636d3d8cfcd1dad5d1bfef112d62666e9",
+    "dark-buttons.png": "732d489086b9e9b71addf83951602b1df519057fa668717eb6b7124b676d7509",
+    "dark-drawer.png": "9a39433788953784ec03217f05c1db3b3aa11a370f014108aebfe1f7def99c15",
+    "dark-help.png": "dc51a79c53b67e1ead64c32b1ce4be9fb2908b8cdb6f632846b314b77cf4d190",
+    "drawer-568x1232.png": "be876d1bc6515c1e346450c8f8c0f0d5b477fcbbe7a51515c95e284ac753f244",
+    "light-buttons-hdmi.png": "55423d4699800eb9b55e3353e111039a6535fb040b81afd04637c0a2fb4bc4c0",
+    "light-buttons.png": "923cfcc3bb698118306399317dd241a8dfa51435629007fff38903358d934791",
+    "light-drawer.png": "5e698163701ee1c86962c53a459b9e7aff68dc2d11fc8fa961887dadae099087",
+    "light-help.png": "193bda0b9be35ad0a5f637c9324db54ae582299e86ead4660f63cec881debb26"
+  },
+  "board_used": false,
+  "board_installed": false
+}

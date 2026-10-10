@@ -41,6 +41,9 @@ pub struct ServiceView {
     pub wifi: Option<WifiPublic>,
     /// Set only by an image that includes the compositor keyboard gestures.
     pub keyboard_gesture_hint: bool,
+    /// Transient opt-in view, never a persistent navigation preference or bar.
+    pub navigation_aid: bool,
+    pub help_home_pending: bool,
     /// The PipeWire graph's own state (default sink, other sinks, and
     /// per-app streams), fed by `pipewire_ipc::spawn_monitor`'s background
     /// reader -- `None` until the first dump/monitor snapshot arrives, or
@@ -187,6 +190,7 @@ pub enum PanelIntent {
     Hide,
     OpenSettings,
     OpenWifi,
+    Help(crate::help::Action),
     Request(ServiceRequest),
     ScrollNotifications(f64),
 }
@@ -304,7 +308,7 @@ pub fn close_drag_engaged(route: Route, dx: f64, dy: f64) -> bool {
 /// nothing is hit-tested at or below `panel_travel` today), so a drag
 /// starting here can never race a list scroll or a Settings control.
 pub fn close_drag_zone(route: Route, y: f64, panel_travel: f64) -> bool {
-    matches!(route, Route::Shade | Route::Settings | Route::Power)
+    matches!(route, Route::Shade | Route::Settings | Route::Power | Route::Help)
         && (y < OVERLAY_DISMISS_ZONE_Y || y >= panel_travel)
 }
 
@@ -473,7 +477,7 @@ pub fn volume_icon_tap_zone(x: f64, width: f64) -> bool {
 /// backdrop below a Shade/Settings sheet: the sheet closes, as tapping
 /// outside a sheet does everywhere else.
 pub fn backdrop_tap(route: Route, start: (f64, f64), end: (f64, f64), panel_travel: f64) -> bool {
-    matches!(route, Route::Shade | Route::Settings | Route::Power)
+    matches!(route, Route::Shade | Route::Settings | Route::Power | Route::Help)
         && start.1 >= panel_travel
         && end.1 >= panel_travel
         && (end.0 - start.0).abs() <= 18.0
@@ -872,6 +876,8 @@ pub fn panel_intent(
             }
             None
         }
+        Route::Help => crate::help::hit(start, end, width, height, view.navigation_aid)
+            .map(PanelIntent::Help),
         Route::Power => {
             if dx.abs() > 18.0 || dy.abs() > 18.0 {
                 return None;
