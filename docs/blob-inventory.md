@@ -1348,6 +1348,13 @@ DATA 13b92f1aa8f676c535318a8b0143658763f43da0ac68dad91d4ca440b7ed277b  docs/evid
 DATA 21fac03a2ab67a15b2a1faa45f3dea6688aa2017facc1f57315f8706edf8474e  docs/evidence/keyboard-gestures/installed-preview/keyboard-shown.png
 DATA cd1abfa7fcd1ccdc3a70b8b0123f2729117b9eb21896f53576df1643f6d826fe  docs/evidence/keyboard-gestures/installed-preview/terminal-hidden.png
 DATA 3df8cda30a4e3d966bed5ac2ddd15ff73cd551a065ddeb75743a57b75d3ca645  docs/evidence/omarchy-themes/portrait-preview-host/preview.png
+DATA 93d6c07d5adbc1c7c857add6bcdfe992679c6510255f0fcc63b5c7abd8ff0a13  docs/evidence/coherent-shell/integration-gate-2026-10-10/close-recovered.png
+DATA 71222c20cc4cf43e2e19ba9f127d476943de54fdb361aac4f2f89ad35bb5d4b8  docs/evidence/coherent-shell/integration-gate-2026-10-10/live-held.png
+DATA d2e7e5d51bd74b33c29558581a0a216f1a1d240b40a5216d8e0cf8ba01d686da  docs/evidence/coherent-shell/integration-gate-2026-10-10/private-one.png
+DATA d2e7e5d51bd74b33c29558581a0a216f1a1d240b40a5216d8e0cf8ba01d686da  docs/evidence/coherent-shell/integration-gate-2026-10-10/private-two.png
+DATA f864663e2718f63ede79240898af5aea1fb26a1ed90febebd73f0e4c70d1f23d  docs/evidence/coherent-shell/integration-gate-2026-10-10/public-one.png
+DATA 2a13ea91fa102b75dee1b75bb8d6b9c068a68b8221c814373deedddec80af296  docs/evidence/coherent-shell/integration-gate-2026-10-10/public-two.png
+DATA 1596eb39f0075c6e2dfa20f75c3e31513a3d937a2360a67be2dfebc6f34169ae  docs/evidence/coherent-shell/integration-gate-2026-10-10/unavailable.png
 DATA 856747c4afd9f1a223a444dd1b76f1d6dc02e1ddfc9f45991cd00b175743d827  docs/evidence/coherent-shell/notification-history-motion-qemu/dismiss-after.png
 DATA d791cade02dfde4cc02756193e080d52ac007b7e141a54aa531b1173e63dc289  docs/evidence/coherent-shell/notification-history-motion-qemu/initial.png
 DATA 3a8d023504d8dc638c76a900081512cf36ddbaa2d7d334a6b7040e9cc61cb65e  docs/evidence/coherent-shell/notification-history-motion-qemu/scroll-coasting-next.png
@@ -2730,3 +2737,23 @@ acceptance is recorded separately in its evidence directory.
 | Path | Bytes | Class | SHA256 |
 | --- | ---: | --- | --- |
 | `docs/evidence/shell-responsive/board/acceptance-2026-10-09/home.png` | 359917 | DATA | `0938edbc429fe58e4ccc4f16e4f25e163b8a8c3664f8a298bed8b8c19bfc7f1d` |
+
+### Coherent-shell integration gate captures (2026-10-10)
+
+Non-executable headless Pixman captures of the selected RISC-V compositor
+under QEMU user emulation with native Wayland clients and injected touch.
+All content is synthetic fixture artwork. Commands, source revision, capture
+provenance and limits are in
+`docs/evidence/coherent-shell/integration-gate-2026-10-10/README.md`.
+These captures establish task 4.1 runtime behavior; physical panel and touch
+gates remain open.
+
+| Path | Bytes | Class | SHA256 |
+| --- | ---: | --- | --- |
+| `docs/evidence/coherent-shell/integration-gate-2026-10-10/close-recovered.png` | 16217 | DATA | `93d6c07d5adbc1c7c857add6bcdfe992679c6510255f0fcc63b5c7abd8ff0a13` |
+| `docs/evidence/coherent-shell/integration-gate-2026-10-10/live-held.png` | 14254 | DATA | `71222c20cc4cf43e2e19ba9f127d476943de54fdb361aac4f2f89ad35bb5d4b8` |
+| `docs/evidence/coherent-shell/integration-gate-2026-10-10/private-one.png` | 13898 | DATA | `d2e7e5d51bd74b33c29558581a0a216f1a1d240b40a5216d8e0cf8ba01d686da` |
+| `docs/evidence/coherent-shell/integration-gate-2026-10-10/private-two.png` | 13898 | DATA | `d2e7e5d51bd74b33c29558581a0a216f1a1d240b40a5216d8e0cf8ba01d686da` |
+| `docs/evidence/coherent-shell/integration-gate-2026-10-10/public-one.png` | 13959 | DATA | `f864663e2718f63ede79240898af5aea1fb26a1ed90febebd73f0e4c70d1f23d` |
+| `docs/evidence/coherent-shell/integration-gate-2026-10-10/public-two.png` | 14394 | DATA | `2a13ea91fa102b75dee1b75bb8d6b9c068a68b8221c814373deedddec80af296` |
+| `docs/evidence/coherent-shell/integration-gate-2026-10-10/unavailable.png` | 15058 | DATA | `1596eb39f0075c6e2dfa20f75c3e31513a3d937a2360a67be2dfebc6f34169ae` |

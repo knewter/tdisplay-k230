@@ -53,9 +53,10 @@ This root is cache retention, not board deployment proof.
 Worktree `/home/jadams/tmp/k230-coherent-closeout-2026-10-10`, branch
 `closeout/coherent-integration-2026-10-10`, base
 `03d57adbe0fad4b89a32ee3a865923168daf0fe7`. Owned paths: the named motion fixture,
-this evidence directory, the coherent-shell task record and its work-board
-override. The temporary native-helper build slot has been released; no board
-or serial reservation was taken.
+this evidence directory, its seven screenshot entries in `docs/blob-inventory.md`,
+the coherent-shell task record and its work-board override. The temporary
+native-helper build slot has been released; no board or serial reservation
+was taken.
 
 Evidence class: headless Pixman captures of a RISC-V Sway process under QEMU
 user emulation with native protocol clients and injected touch. It is neither
