@@ -119,23 +119,28 @@ produced them.
   non-daemon thread at process exit, so its total wall-clock time is
   unchanged). Verify with `python3 -m unittest tests.test_theme_catalog`
   (adds `test_activate_reports_keyboard_sync_as_deferred_but_it_still_completes`).
-- [ ] 3.3b Defer Foot recolour the same way. Not started -- `foot`'s own
-  recolour (`tools/app_appearance.py`) is folded into
-  `activate_generation()`'s own `app_sync` call (inside
-  `theme_transaction.py`, not `theme_catalog.py`), whose return value
-  (`app_appearance`'s `state`) is part of that function's existing,
-  tested, synchronous return contract; deferring it needs either
-  restructuring that contract or a second, separate deferred call, which
-  this task deliberately left alone given the risk of touching a
-  load-bearing two-phase-transaction return value under this task's
-  budget. In practice its OSC recolour is opt-in and scoped to a caller
-  invoked from within a Foot session (see `app_appearance.py`'s own doc),
-  which `k230-theme activate` is not, so the config-file write this path
-  actually does is small; still an open cost, not claimed fixed here.
+- [x] 3.3b Defer Foot recolour after acknowledged activation. The catalogue
+  opts into `activate_generation(..., defer_app_sync=True)` and reports
+  `app_appearance: {"state": "deferred"}`. Direct callers keep the synchronous
+  result. A non-daemon thread invokes the same guarded app adapter, including
+  its shared GTK keyfile, without changing prepare/commit/rollback. Late old
+  work refuses a newer generation; failures are logged without shell rollback.
+  The Rust consumer accepts the new status through both transports and retains
+  the normal applied message. Named host proof: `python3 -m unittest
+  tests.test_omarchy_theme_transaction tests.test_theme_catalog
+  tests.test_theme_helper_daemon tests.test_handheld_app_themes` (70 pass),
+  `cargo test --offline --manifest-path nix/rust-shell-client/Cargo.toml
+  --test theme_catalog_module` (6 pass), and `cargo test --offline
+  --manifest-path nix/rust-shell-client/Cargo.toml --lib theme_ui` (28 pass).
+  Package proof: `nix build .#handheld-shell-rust .#handheld-theme-command`
+  (both built). Committed proof and artifact identities:
+  `docs/evidence/theme-picker/foot-deferral-2026-10-10/README.md`.
+  No new board observation or latency claim; deploy the compatible helper and
+  Rust client together before qualifying that physical behavior.
 - [ ] 3.4 Re-run `tools/analyze-theme-swap-jank.py`'s tap-to-visible metric
   against the board once 3.1b/3.2/3.3 land, and report against the ~100 ms
-  target. Needs the reserved board; 3.1b/3.2/3.3a landed above, 3.3b is
-  the one remaining piece of "3.3" left open.
+  target. Needs the reserved board; 3.1b/3.2/3.3 now have source/package
+  proof. The named measurement remains unperformed and was deferred by the user.
 
 ## 4. The board number was not instant either: `prepare()`'s own cost
 

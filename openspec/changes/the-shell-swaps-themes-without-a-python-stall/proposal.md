@@ -73,6 +73,13 @@ have since landed in this same change:
   `keyboard_appearance.sync_and_restart` (the `wvkbd` restart) now runs on
   a background thread from `theme_catalog.py`'s `activate` handling, so
   `theme-helper.service`'s reply to the chooser no longer waits on it.
+- **Deferred Foot configuration update** (task 3.3b, implemented).
+  The catalogue explicitly requests `defer_app_sync=True` after the existing
+  two-phase commit and preference publication. Its `app_appearance` result is
+  `{"state": "deferred"}`; a non-daemon thread performs the existing app adapter
+  call, including its shared GTK keyfile, with the same active-generation guard.
+  Direct transaction callers retain the synchronous result. The helper can
+  reply before this update finishes; CLI fallback waits at interpreter exit.
 - **Skip a redundant re-prepare on an already-warm Apply** (task 6.3,
   done). `theme_transaction.activate_generation()` now remembers, per
   receiver, which generation it last successfully prepared, and skips
@@ -86,9 +93,9 @@ have since landed in this same change:
   user explicitly approved showing an already-prepared generation
   immediately, ahead of the durable commit, rather than continuing to trim
   the durable path's own remaining cost (a pointer swap, preference
-  write, and app-sync round trip that cannot itself be skipped without
-  risking correctness). This does not touch the two-phase protocol's own
-  acknowledgement contract -- see the next paragraph, revised from an
+  write, and then-synchronous app-sync round trip; task 3.3b later
+  defers only the app update after acknowledgement). This does not touch the
+  two-phase protocol's own acknowledgement contract -- see the next paragraph, revised from an
   earlier version of this proposal that read as ruling this out
   permanently, which is no longer accurate now that the user has approved
   it.
@@ -107,12 +114,6 @@ prepared has changed, not when that generation becomes durably active.
 
 Left open, and not claimed complete here:
 
-- **Deferred Foot recolour** (task 3.3b). Foot's OSC/config-file recolour
-  is folded into `activate_generation()`'s own `app_sync` call inside
-  `theme_transaction.py`, whose return value is part of that function's
-  existing, tested, synchronous contract; deferring it needs either
-  restructuring that contract or a second, separate deferred call, left
-  for a follow-up rather than risked here.
 - **Two-phase transaction ordering and acknowledgement contract.** Still
   unchanged, including by Optimistic Apply above: no requirement or code
   path here reorders prepare/commit/rollback or alters what a receiver's
@@ -136,8 +137,9 @@ Left open, and not claimed complete here:
   change's throttled-QEMU captures are directional estimates in the
   meantime (see `docs/evidence/omarchy-themes/theme-swap-jank/`).
 
-A successor change should pick up 3.3b; this one now covers the buffer-swap
-and prepare-ahead pieces end to end, still without the board's own number.
+Task 3.3b now has a bounded implementation within this change. The buffer-swap,
+prepare-ahead and deferred-update pieces still do not establish the board's own
+latency number.
 
 ## Capabilities
 

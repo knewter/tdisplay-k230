@@ -1,0 +1,73 @@
+{
+  "observed_utc": "2026-10-10T20:02:35.728713+00:00",
+  "selected_derivations": [
+    "/nix/store/6kf4bq8z7anrwp8ika92a6qvm04dd8ja-handheld-theme-command-0.1.drv",
+    "/nix/store/7ddhp8aa0bpdnrwsh9gy37g80giz3qvz-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0.drv"
+  ],
+  "prior_retained_paths": 10357,
+  "retained_paths": 10402,
+  "newly_retained_paths": 45,
+  "manifest_sha256": "c759af4cd2887807c1b0b07e0753f18f97f70b8ade2e29e0207e875d04dde8fd",
+  "graph_derivations": 2135,
+  "unrealized_outputs_omitted": 2156,
+  "enumeration": "Previous verified farm union recursive selected derivation sources and all currently realized declared outputs; nix-store --check-validity passed for every retained path.",
+  "global_policy_changed": false,
+  "root": "/home/jadams/.local/state/tdisplay-k230/retained-builds/theme-foot-2026-10-10/build-closure",
+  "farm": "/nix/store/vls4cdp3rbjz1asl9gyxmjckvx1w0m1c-tdisplay-k230-retained-theme-foot-build-inputs",
+  "root_checks": {
+    "rust": {
+      "path": "/nix/store/d187p77c4kilqbaakp2vzvy2c0smz973-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0",
+      "command": [
+        "nix-store",
+        "--query",
+        "--roots",
+        "/nix/store/d187p77c4kilqbaakp2vzvy2c0smz973-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0"
+      ],
+      "exit_code": 0,
+      "matching_roots": [
+        "/home/jadams/.local/state/tdisplay-k230/retained-builds/theme-foot-2026-10-10/build-closure -> /nix/store/vls4cdp3rbjz1asl9gyxmjckvx1w0m1c-tdisplay-k230-retained-theme-foot-build-inputs"
+      ]
+    },
+    "theme_command": {
+      "path": "/nix/store/nv2jwci4x38ip09yz2818wjm2rbbwcan-handheld-theme-command-0.1",
+      "command": [
+        "nix-store",
+        "--query",
+        "--roots",
+        "/nix/store/nv2jwci4x38ip09yz2818wjm2rbbwcan-handheld-theme-command-0.1"
+      ],
+      "exit_code": 0,
+      "matching_roots": [
+        "/home/jadams/.local/state/tdisplay-k230/retained-builds/theme-foot-2026-10-10/build-closure -> /nix/store/vls4cdp3rbjz1asl9gyxmjckvx1w0m1c-tdisplay-k230-retained-theme-foot-build-inputs"
+      ]
+    },
+    "native_rust": {
+      "path": "/nix/store/wps8n4jp6naj18w910iybcw1danv1wix-k230-shell-rust-0.1.0",
+      "command": [
+        "nix-store",
+        "--query",
+        "--roots",
+        "/nix/store/wps8n4jp6naj18w910iybcw1danv1wix-k230-shell-rust-0.1.0"
+      ],
+      "exit_code": 0,
+      "matching_roots": [
+        "/home/jadams/.local/state/tdisplay-k230/retained-builds/theme-foot-2026-10-10/build-closure -> /nix/store/vls4cdp3rbjz1asl9gyxmjckvx1w0m1c-tdisplay-k230-retained-theme-foot-build-inputs"
+      ]
+    },
+    "rust_vendor": {
+      "path": "/nix/store/m5albwanpvzl2r9lxavfd6zb4mc17s4c-cargo-vendor-dir",
+      "command": [
+        "nix-store",
+        "--query",
+        "--roots",
+        "/nix/store/m5albwanpvzl2r9lxavfd6zb4mc17s4c-cargo-vendor-dir"
+      ],
+      "exit_code": 0,
+      "matching_roots": [
+        "/home/jadams/.local/state/tdisplay-k230/retained-builds/theme-foot-2026-10-10/build-closure -> /nix/store/vls4cdp3rbjz1asl9gyxmjckvx1w0m1c-tdisplay-k230-retained-theme-foot-build-inputs"
+      ]
+    }
+  },
+  "verified": true,
+  "verified_utc": "2026-10-10T20:04:19.048473+00:00"
+}

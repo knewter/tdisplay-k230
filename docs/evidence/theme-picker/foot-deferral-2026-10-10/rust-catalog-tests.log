@@ -1,0 +1,13 @@
+   Compiling k230-shell-rust v0.1.0 (/home/jadams/tmp/k230-theme-admission-closeout-2026-10-10/nix/rust-shell-client)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 13.24s
+     Running tests/theme_catalog_module.rs (/home/jadams/tmp/k230-admission-host-target/debug/deps/theme_catalog_module-eab0aaf06f8c263a)
+
+running 6 tests
+test a_daemon_reported_error_is_returned_without_falling_back ... ok
+test a_working_helper_socket_answers_without_ever_running_the_subprocess ... ok
+test a_malformed_socket_reply_falls_back_to_the_subprocess ... ok
+test deferred_app_refresh_is_accepted_from_socket_and_subprocess ... ok
+test an_empty_helper_socket_path_disables_the_direct_path_entirely ... ok
+test a_missing_helper_socket_falls_back_to_the_subprocess ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.11s

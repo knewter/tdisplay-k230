@@ -1,7 +1,9 @@
 ## Layer
 
-Userspace: `tools/` (Python theme coordinator) and `nix/shell.nix`
-(systemd). No kernel, device tree, stage-1, or Rust/C shell change.
+Userspace: `tools/` (Python theme coordinator), `nix/shell.nix` (systemd),
+and the existing Rust/C picker work described below. Task 3.3b adds Rust
+reply-parser and chooser-status compatibility for deferred app updates.
+No kernel, device-tree or stage-1 changes.
 
 ## Design
 
@@ -43,7 +45,7 @@ Board evidence after task 6.3's skip-redundant-prepare fix still showed
 short of the user's original ~100 ms target. The remaining cost lives
 inside `activate_generation()`'s own durable work (the atomic pointer
 swap, missing-public-link creation, `fsync`, the wallpaper preference
-commit, and the app-sync round trip), none of which can be skipped or
+commit, and the then-synchronous app-sync round trip), none of which could be skipped or
 reordered without risking exactly the correctness this protocol exists
 for. Rather than continue trimming that durable path, the user approved
 showing the new appearance immediately when it is already safe to do so.
@@ -56,8 +58,8 @@ generation-identity match, palette/background integrity). Rendering that
 already-validated candidate early therefore risks nothing a real `prepare`
 ack would not already have accepted -- there is no new, less-trusted data
 path. What optimism cannot know in advance is whether the *durable* commit
-will actually land (a second receiver's commit can still fail, the app-sync
-step can still fail); that is why the optimistic render never touches a
+will actually land (a second receiver's commit or preference publication
+can still fail); that is why the optimistic render never touches a
 receiver's own `prepared`/`active` bookkeeping or the wire acknowledgement
 contract at all (see `nix/rust-shell-client/src/main.rs`'s
 `show_theme_optimistically` and `nix/card-shell/appearance.c`'s new `show`
@@ -112,6 +114,32 @@ the optimistic render is *stateless* with respect to the durable
 transaction (it reads `prepared`, renders, and is done), so there is
 nothing to reconcile if the two ever disagree -- the real commit/rollback
 event, unaware optimism ever ran, always wins.
+
+## Deferred app configuration update (task 3.3b, 2026-10-10)
+
+Keep `activate_generation()` synchronous by default so its direct callers keep
+`applied`, `superseded` and `failed` outcomes. The catalogue opts into
+`defer_app_sync=True`, receiving `{"state": "deferred"}` only after the original
+receiver acknowledgements, pointer publication, preference commit and lock
+release. Dispatch failure returns a separate app failure, never a shell rollback.
+
+A named non-daemon thread invokes the same adapter once. It re-acquires the
+activation lock and verifies the expected generation, so a delayed old update
+cannot replace a newer theme's app configuration. Its completion state and
+exception type go to the existing `THEME_TIMING app_deferred` syslog channel,
+without polluting the CLI JSON streams. The adapter writes Foot configurations
+and the shared GTK keyfile; this does not add OSC broadcasts to arbitrary PTYs.
+The existing terminal follower remains separate. A direct CLI/fallback process
+waits for this thread at interpreter exit, as it already does for keyboard sync.
+
+Rejected: changing every transaction caller to an asynchronous result, or
+passing a no-op adapter and reporting `applied` before any app update. The
+explicit opt-in preserves the existing synchronous contract and truthful result.
+Host tests block the adapter behind an event while the real helper socket
+answers activation and a following list request. Separate tests cover eventual
+Foot configs, stale-update refusal, adapter failure without shell rollback, and
+no dispatch after failed prepare, commit or preference publication. Physical
+latency and current-board installation remain separate gates.
 
 ## Rejected alternatives
 

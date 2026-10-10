@@ -1,0 +1,71 @@
+{
+  "observed_utc": "2026-10-10T20:04:25.821694+00:00",
+  "source_revision": "bcdb485080b43351ad9b9e28b873b6045467b539",
+  "base_revision": "ef5b3ae872534c2147b0953bbd47fa4a4821865e",
+  "branch": "closeout/theme-admission-2026-10-10",
+  "evidence_class": "host tests and Nix package construction; no new board observation",
+  "artifacts": {
+    "rust": {
+      "derivation": "/nix/store/7ddhp8aa0bpdnrwsh9gy37g80giz3qvz-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0.drv",
+      "output": "/nix/store/d187p77c4kilqbaakp2vzvy2c0smz973-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0"
+    },
+    "theme_command": {
+      "derivation": "/nix/store/6kf4bq8z7anrwp8ika92a6qvm04dd8ja-handheld-theme-command-0.1.drv",
+      "output": "/nix/store/nv2jwci4x38ip09yz2818wjm2rbbwcan-handheld-theme-command-0.1"
+    },
+    "native_rust": {
+      "derivation": "/nix/store/572j42744kxbfzcj83s371pgxnc0p824-k230-shell-rust-0.1.0.drv",
+      "output": "/nix/store/wps8n4jp6naj18w910iybcw1danv1wix-k230-shell-rust-0.1.0"
+    },
+    "bundled_default": {
+      "derivation": "/nix/store/rbfp93b1gz4mvl1sp6rf9bmp8vay65pq-handheld-theme-default-28ceaae7.drv",
+      "output": "/nix/store/y1klbalxsmrd4hgdv7xqgz46mi0v0vzi-handheld-theme-default-28ceaae7"
+    }
+  },
+  "logs": {
+    "python-tests.log": {
+      "raw_sha256": "a84d7bc167b0cce99893b264c1e0a4efdb7d51daa44cc5af9a871fd01b885f4d",
+      "saved_sha256": "a84d7bc167b0cce99893b264c1e0a4efdb7d51daa44cc5af9a871fd01b885f4d",
+      "source_mtime_utc": "2026-10-10T19:46:46.870505+00:00",
+      "normalization": "Trailing whitespace at file end only; an empty successful dry-run log remains empty."
+    },
+    "rust-catalog-tests.log": {
+      "raw_sha256": "f4ed9d50af2ee5c3c2e8138177e19188c299fe24fffd096a9bd9b878b6d015ff",
+      "saved_sha256": "5cd2fec3cf9e9f42bb79e3b3a38724584d4307f7de6e987f3ac6eb1c15991026",
+      "source_mtime_utc": "2026-10-10T19:50:23.467204+00:00",
+      "normalization": "Trailing whitespace at file end only; an empty successful dry-run log remains empty."
+    },
+    "rust-ui-tests.log": {
+      "raw_sha256": "dd687c319cc9887e53d9df7dae1e37daf03419c72965abd326b99a263b46c7b9",
+      "saved_sha256": "210e7367e2162fa7df7964e4a196f406432f1958b7e5bc41ca46d62deaf1cd66",
+      "source_mtime_utc": "2026-10-10T19:50:29.817312+00:00",
+      "normalization": "Trailing whitespace at file end only; an empty successful dry-run log remains empty."
+    },
+    "package-build.log": {
+      "raw_sha256": "fd9079871b2c5895b3a1f5aaf7c59fe71a1817392ecc63bfc447df5bd43dd183",
+      "saved_sha256": "fd9079871b2c5895b3a1f5aaf7c59fe71a1817392ecc63bfc447df5bd43dd183",
+      "source_mtime_utc": "2026-10-10T20:02:02.088051+00:00",
+      "normalization": "Trailing whitespace at file end only; an empty successful dry-run log remains empty."
+    },
+    "repeat-build.log": {
+      "raw_sha256": "bf9d8bf8f6fe0392c4d8d804653d457353e2c804abcaeea1f4165465f6d141b0",
+      "saved_sha256": "bf9d8bf8f6fe0392c4d8d804653d457353e2c804abcaeea1f4165465f6d141b0",
+      "source_mtime_utc": "2026-10-10T20:04:20.507390+00:00",
+      "normalization": "Trailing whitespace at file end only; an empty successful dry-run log remains empty."
+    }
+  },
+  "packaged_python_matches_source": true,
+  "both_rust_build_sources_match": true,
+  "python_tests": 70,
+  "rust_transport_tests": 6,
+  "rust_theme_state_tests": 28,
+  "repeat_build_derivations": 0,
+  "repeat_fetches": 0,
+  "board_deployed": false,
+  "source_hashes": {
+    "tools/theme_transaction.py": "bde31719232d0e7afcbac24b457eb92babf2d840142ba25dedf0a936e44eda4a",
+    "tools/theme_catalog.py": "26a564aa411be30713caf62990527c9be7042d1a124b283a8cc5f319fed46cdc",
+    "nix/rust-shell-client/src/theme_catalog.rs": "bea88bd1adf739a09861bbe17a435d0cdd92ca3f73d3d93becec435940d067f7",
+    "nix/rust-shell-client/src/theme_ui.rs": "a81c380f62610b82f5dd3029db7ecb4880df03407a53603ea558f48a0ef13a02"
+  }
+}
