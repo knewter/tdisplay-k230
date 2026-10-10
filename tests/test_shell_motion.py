@@ -192,8 +192,19 @@ def live_gate(scene):
     assert Scene.color_count(held, (144, 48, 128)) > 100, "neighbor app pixels absent"
     after = {app: {field: scene.record(app)[field] for field in fields} for app in scene.apps}
     scene.command("test-touch cancel")
+    scene.command("back")
+    scene.ipc('[app_id="k230.card.one"] focus')
+    scene.command("enter")
+    scene.ipc('[app_id="k230.card.one"] mark --add k230_card_unavailable')
+    scene.capture_when("unavailable", lambda im:
+                       Scene.color_count(im, (32, 112, 176)) == 0)
+    assert scene.apps["k230.card.one"].poll() is None, "unavailable source was removed"
+    scene.ipc('[app_id="k230.card.one"] unmark k230_card_unavailable')
+    scene.capture_when("available-again", lambda im:
+                       Scene.color_count(im, (32, 112, 176)) > 100)
     return {"before": {app: {field: row[field] for field in fields} for app, row in start.items()},
-            "after": after, "live_pixels_visible": True}
+            "after": after, "live_pixels_visible": True,
+            "unavailable_placeholder": True, "live_source_restored": True}
 
 
 def private_no_icon(scene):
@@ -252,8 +263,29 @@ def close_refused(scene):
     scene.keyboard.press()
     wait_for(lambda: scene.record(app).get("key_presses", 0) > keys,
              "keyboard reaches retained application")
+    # The same scene also verifies an accepting client's actual XDG close,
+    # unmap and focus return, rather than treating every close as a timeout.
+    accepting = scene.client_start("k230.card.two")
+    scene.command("enter")
+    scene.capture_when("accepting-client", lambda im:
+                       Scene.color_count(im, (144, 48, 128)) > 100)
+    requests = logs().count("K230_CARD_SHELL close-request")
+    stamp = int(time.monotonic() * 1000) & 0xffffffff
+    scene.command(f"test-touch down 8 284 600 {stamp}")
+    scene.command(f"test-touch motion 8 284 450 {(stamp + 30) & 0xffffffff}")
+    scene.command(f"test-touch motion 8 284 280 {(stamp + 60) & 0xffffffff}")
+    scene.command(f"test-touch up 8 {(stamp + 70) & 0xffffffff}")
+    wait_for(lambda: logs().count("K230_CARD_SHELL close-request") == requests + 1,
+             "one accepting close request")
+    wait_for(lambda: accepting.poll() == 0 and not scene.mapped("k230.card.two"),
+             "accepting app exits and unmaps gracefully")
+    assert proc.poll() is None, "closing another app removed the refusing app"
+    scene.command("back")
+    wait_for(lambda: scene.focused() == app, "surviving app regains focus")
     return {"close_requests": 1, "timeout_reported": True, "app_retained": True,
-            "focus_restored": True, "keyboard_delivered": True}
+            "focus_restored": True, "keyboard_delivered": True,
+            "accepting_close_requests": 1, "accepting_app_exited": True,
+            "survivor_focus_restored": True}
 
 
 def main():
