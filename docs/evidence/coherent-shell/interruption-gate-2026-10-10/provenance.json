@@ -1,0 +1,184 @@
+{
+  "source_revision": "d2ce84f88c9c638590904e15ffaa8c466d16a46e",
+  "product_build_source_revision": "1e23b97a7da90ed7b3d8dfedb553da96e47c7b6b",
+  "base_revision": "b156d47dc9f4c3d9b9e0d21a78d7f604276b471f",
+  "working_tree_source": "Committed fixture and product source unchanged during passing five-case run. Product source unchanged since build revision; copied store source hashes match input-comparison.json.",
+  "command": [
+    "python3",
+    "tests/test_shell_motion.py",
+    "--case",
+    "reverse",
+    "--case",
+    "retarget",
+    "--case",
+    "unmap",
+    "--case",
+    "refusal",
+    "--case",
+    "private-no-flash",
+    "--output",
+    "/home/jadams/tmp/k230-m43-proof3"
+  ],
+  "environment": {
+    "CARD_SHELL_SWAY": "/nix/store/awym9l5znn6599q37wnhnnch77ggghjh-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway",
+    "CARD_SHELL_CLIENT": "/nix/store/yjb89ap4bq5vb29szdzkr5sv9lpw1sz6-card-composition-probe-client-0.1/bin/card-composition-probe-client",
+    "K230_SHELL_RUST": "/nix/store/q2rxmp980f9kxi962f29333z9pbixvbk-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0/bin/k230-shell-rust"
+  },
+  "exit_code": 0,
+  "fixture_sha256": "16543a44edc0e7dd64be6694a23062ae6100fdf86369e75a8ac0dfcf066a3e8f",
+  "configuration_artifacts": {
+    "cards": "/nix/store/dicjv65r9b3gkmwhmdj2k11vzj6bnjsj-k230-card-shell",
+    "rust": "/nix/store/q2rxmp980f9kxi962f29333z9pbixvbk-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0"
+  },
+  "component_build_command": [
+    "flock",
+    "-n",
+    "/tmp/k230-nix-build.lock",
+    "nix",
+    "build",
+    "--impure",
+    "--no-link",
+    "--print-out-paths",
+    "--max-jobs",
+    "1",
+    "--cores",
+    "2",
+    "--expr",
+    "let f = builtins.getFlake \"/home/jadams/tmp/k230-coherent-closeout-2026-10-10\"; p = f.nixosConfigurations.k230.pkgs; in p.callPackage (f.outPath + \"/nix/card-shell.nix\") { swayUnwrapped = p.sway-unwrapped; }"
+  ],
+  "component_build_exit_code": 0,
+  "compatibility": {
+    "source_revision": "d5eb34e4a4f08a2fda26468a71097ee21c0eb320",
+    "command": [
+      "python3",
+      "tests/test_shell_motion.py",
+      "--case",
+      "live-gate",
+      "--case",
+      "private-no-icon",
+      "--case",
+      "close-refused",
+      "--case",
+      "shrink-live",
+      "--case",
+      "drawer-rise",
+      "--case",
+      "shade-descend",
+      "--case",
+      "expand-live",
+      "--case",
+      "focus",
+      "--output",
+      "/home/jadams/tmp/k230-m43-compat"
+    ],
+    "environment": {
+      "CARD_SHELL_SWAY": "/nix/store/awym9l5znn6599q37wnhnnch77ggghjh-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway",
+      "CARD_SHELL_CLIENT": "/nix/store/yjb89ap4bq5vb29szdzkr5sv9lpw1sz6-card-composition-probe-client-0.1/bin/card-composition-probe-client",
+      "K230_SHELL_RUST": "/nix/store/q2rxmp980f9kxi962f29333z9pbixvbk-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0/bin/k230-shell-rust"
+    },
+    "exit_code": 0,
+    "fixture_difference": "Final fixture replaces only task-4.3 expansion capture with raw PPM before interruption. The eight compatibility cases and default PNG capture are unchanged."
+  },
+  "policy_host_command": [
+    "python3",
+    "tests/test_card_shell_state.py"
+  ],
+  "policy_host_exit_code": 0,
+  "policy_host_cases": 38,
+  "old_controls": "old-controls.json",
+  "captures": {
+    "entry-held.png": {
+      "source_artifact": "reverse/entry-held.png",
+      "sha256": "298b3d4a631e79af2a7781e07346e8f994d965da6c578d5619a53a3a55905945",
+      "bytes": 5843
+    },
+    "finger-reverse.png": {
+      "source_artifact": "reverse/reverse-finger.png",
+      "sha256": "19a2b3247c4d649369d209ef8db7221e0a7b1ce8e0b71ef9cedca9397bb39764",
+      "bytes": 5084
+    },
+    "back-entry-held.png": {
+      "source_artifact": "reverse/back-entry-held.png",
+      "sha256": "e5c034b1ca848a75afc32f7f37e88d49df6079986e20dc23fa744c3726a0af30",
+      "bytes": 5913
+    },
+    "back-entry-reverse.png": {
+      "source_artifact": "reverse/back-entry-reverse-00.png",
+      "sha256": "83d4d2abb9f8dd0a3857365b7f748742d165edcb331220b175de3b9103d77375",
+      "bytes": 5931
+    },
+    "back-expand-middle.png": {
+      "source_artifact": "reverse/back-expand-middle.png",
+      "sha256": "5cc5752bd9f8c643f7fe9e07b1a77064a5526d25e01bcefb9266f4ff72dcccde",
+      "bytes": 5541
+    },
+    "back-expand-reverse.png": {
+      "source_artifact": "reverse/back-expand-reverse-00.png",
+      "sha256": "af1e532589fb73a6a499dcdce1055460dc60f5b644383a1b3603c9a0d9d9633b",
+      "bytes": 5524
+    },
+    "second-contact-reverse.png": {
+      "source_artifact": "retarget/second-contact-reverse-00.png",
+      "sha256": "8a86045ce2e93f57e1e03dca703b9eb9cc623d77b2d5bb792eaef2f8f6825c8e",
+      "bytes": 5483
+    },
+    "new-contact-middle.png": {
+      "source_artifact": "retarget/new-contact-middle.png",
+      "sha256": "0dd90de10d007f694e62dad536a4a727a418759a440fed8ac3c4a03f868301cf",
+      "bytes": 5525
+    },
+    "new-contact-reverse.png": {
+      "source_artifact": "retarget/new-contact-reverse-00.png",
+      "sha256": "7b0e552f4353e45388f53087dc13c4112a62f43afa1d65d9351499f9005c0e02",
+      "bytes": 5571
+    },
+    "source-unmap-recovered.png": {
+      "source_artifact": "unmap/source-unmap-recover-00.png",
+      "sha256": "d1bae5b45118c28913e28e0e12c5fa66e82203366920f5b378b14c65be52bb87",
+      "bytes": 5783
+    },
+    "expansion-unmap-middle.png": {
+      "source_artifact": "unmap/expansion-unmap-middle.png",
+      "sha256": "09d0b1beeb684359bc181bb597351a48164bae9b3c3d86bfd9efeda5dd2742c4",
+      "bytes": 6031
+    },
+    "expansion-unmap-recovered.png": {
+      "source_artifact": "unmap/expansion-unmap-recover-00.png",
+      "sha256": "5deb1e9485c678175369348ebef3d953cb58403ba35a726621523e07edb3b8ec",
+      "bytes": 5782
+    },
+    "refusal-pending.png": {
+      "source_artifact": "refusal/refusal-pending-00.png",
+      "sha256": "388e599604519b8cb1c2460eca20a263b9dd2bf242a39a07b0e82efe74906a0a",
+      "bytes": 16336
+    },
+    "refusal-timeout.png": {
+      "source_artifact": "refusal/refusal-pending-17.png",
+      "sha256": "b3e22611d1edb2af5ffd758c2a8611ff8a26e2904bac8ff8bb4fed15ffed0878",
+      "bytes": 16316
+    },
+    "privacy-public-control.png": {
+      "source_artifact": "private-no-flash/privacy-public-control.png",
+      "sha256": "1deb07b5d46be0a31537402f5361ee5c502f8eacda9e18b1f1f00ac1998c5638",
+      "bytes": 5976
+    },
+    "privacy-transition.png": {
+      "source_artifact": "private-no-flash/privacy-transition-00.png",
+      "sha256": "b2a1f9fd9d44da437eb3d8259818399947b26932ec27e417b964cb311940b14e",
+      "bytes": 5957
+    },
+    "privacy-placeholder.png": {
+      "source_artifact": "private-no-flash/privacy-selected-placeholder.png",
+      "sha256": "ef21f6b9ec3318a183a23afa3684831db45af1db9fa8a6cc49b828812ef2d8d7",
+      "bytes": 14376
+    }
+  },
+  "evidence_class": "headless-qemu-user-native-wayland-injected-touch",
+  "limits": [
+    "Actual headless Pixman frames of RISC-V Sway and Rust under QEMU user emulation, native Wayland clients, injected wlroots touch and keyboard.",
+    "Sampled captures do not prove every presented frame, physical-panel latency or real-finger feel.",
+    "Settings status is synthetic; notification/audio services unavailable. All capture content synthetic.",
+    "No board installation of this new compositor; operator report is separate and does not identify this artifact.",
+    "Existing Back command is fixed; new side-edge Back and motion-trace tooling remain in their accepted successor."
+  ]
+}

@@ -1,0 +1,13 @@
+Traceback (most recent call last):
+  File "/home/jadams/tmp/k230-coherent-closeout-2026-10-10/tests/test_shell_motion.py", line 974, in <module>
+    main()
+    ~~~~^^
+  File "/home/jadams/tmp/k230-coherent-closeout-2026-10-10/tests/test_shell_motion.py", line 950, in main
+    proof = {"live-gate": live_gate, "private-no-icon": private_no_icon,
+    ...<3 lines>...
+             "reverse": reverse, "retarget": retarget, "unmap": unmap,
+             "refusal": refusal, "private-no-flash": private_no_flash}[case](scene)
+  File "/home/jadams/tmp/k230-coherent-closeout-2026-10-10/tests/test_shell_motion.py", line 771, in retarget
+    assert scene.state()["mode"] == "4", "second contact reset entry geometry"
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: second contact reset entry geometry

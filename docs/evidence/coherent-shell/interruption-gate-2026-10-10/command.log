@@ -1,0 +1,5 @@
+PASS reverse: headless-qemu-user-native-wayland-injected-touch
+PASS retarget: headless-qemu-user-native-wayland-injected-touch
+PASS unmap: headless-qemu-user-native-wayland-injected-touch
+PASS refusal: headless-qemu-user-native-wayland-injected-touch
+PASS private-no-flash: headless-qemu-user-native-wayland-injected-touch

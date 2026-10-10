@@ -1,0 +1,568 @@
+{
+  "evidence_class": "headless-qemu-user-native-wayland-injected-touch",
+  "sway": "/nix/store/awym9l5znn6599q37wnhnnch77ggghjh-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway",
+  "client": "/nix/store/yjb89ap4bq5vb29szdzkr5sv9lpw1sz6-card-composition-probe-client-0.1/bin/card-composition-probe-client",
+  "sway_sha256": "957fd6e3fd29cb0ee71e9dc13156ff259a30e3889c9ebdbbd6159662326a5e69",
+  "client_sha256": "1933c7fefe0bc6173bab2a88393abba3409a61259fc5b3afa14ebc20ffc93ec6",
+  "started_utc": "2026-10-10T18:46:46.712232+00:00",
+  "cases": {
+    "reverse": {
+      "result": "PASS",
+      "finger_reversal_box": [
+        37,
+        57,
+        530,
+        1044
+      ],
+      "finger_release_frames": [
+        {
+          "box": [
+            37,
+            57,
+            530,
+            1044
+          ],
+          "mode": "4",
+          "selected_app_id": "k230.card.one"
+        },
+        {
+          "box": [
+            24,
+            48,
+            544,
+            1088
+          ],
+          "mode": "4",
+          "selected_app_id": "k230.card.one"
+        },
+        {
+          "box": [
+            24,
+            48,
+            544,
+            1088
+          ],
+          "mode": "4",
+          "selected_app_id": "k230.card.one"
+        },
+        {
+          "box": [
+            24,
+            48,
+            544,
+            1088
+          ],
+          "mode": "0",
+          "selected_app_id": "k230.card.one"
+        }
+      ],
+      "back_entry_frames": [
+        {
+          "box": [
+            94,
+            94,
+            475,
+            856
+          ],
+          "mode": "4",
+          "selected_app_id": "k230.card.one"
+        },
+        {
+          "box": [
+            27,
+            58,
+            542,
+            1088
+          ],
+          "mode": "4",
+          "selected_app_id": "k230.card.one"
+        },
+        {
+          "box": [
+            24,
+            49,
+            544,
+            1088
+          ],
+          "mode": "4",
+          "selected_app_id": "k230.card.one"
+        },
+        {
+          "box": [
+            24,
+            48,
+            544,
+            1088
+          ],
+          "mode": "0",
+          "selected_app_id": "k230.card.one"
+        }
+      ],
+      "expansion_interrupted_box": [
+        44,
+        141,
+        523,
+        1099
+      ],
+      "back_expansion_frames": [
+        {
+          "box": [
+            46,
+            147,
+            523,
+            1100
+          ],
+          "mode": "1",
+          "selected_app_id": "k230.card.one"
+        },
+        {
+          "box": [
+            57,
+            197,
+            511,
+            1106
+          ],
+          "mode": "1",
+          "selected_app_id": "k230.card.one"
+        }
+      ],
+      "owned_stream_drained": true
+    },
+    "retarget": {
+      "result": "PASS",
+      "second_contact_frames": [
+        {
+          "box": [
+            46,
+            88,
+            521,
+            1038
+          ],
+          "mode": "4",
+          "selected_app_id": "k230.card.one"
+        },
+        {
+          "box": [
+            26,
+            55,
+            543,
+            1089
+          ],
+          "mode": "4",
+          "selected_app_id": "k230.card.one"
+        },
+        {
+          "box": [
+            24,
+            48,
+            544,
+            1088
+          ],
+          "mode": "0",
+          "selected_app_id": "k230.card.one"
+        }
+      ],
+      "new_contact_interrupted_box": [
+        46,
+        148,
+        522,
+        1101
+      ],
+      "new_contact_frames": [
+        {
+          "box": [
+            47,
+            151,
+            522,
+            1100
+          ],
+          "mode": "1",
+          "selected_app_id": "k230.card.one"
+        },
+        {
+          "box": [
+            57,
+            197,
+            511,
+            1106
+          ],
+          "mode": "1",
+          "selected_app_id": "k230.card.one"
+        }
+      ],
+      "fresh_activation_frames": [
+        {
+          "box": [
+            57,
+            198,
+            511,
+            1106
+          ],
+          "mode": "5",
+          "selected_app_id": "k230.card.one"
+        },
+        {
+          "box": [
+            45,
+            144,
+            523,
+            1099
+          ],
+          "mode": "5",
+          "selected_app_id": "k230.card.one"
+        },
+        {
+          "box": [
+            24,
+            48,
+            544,
+            1088
+          ],
+          "mode": "0",
+          "selected_app_id": "k230.card.one"
+        }
+      ],
+      "no_accidental_close": true,
+      "fresh_stream_recovers": true
+    },
+    "unmap": {
+      "result": "PASS",
+      "target_exit_frames": [
+        {
+          "box": [
+            0,
+            95,
+            307,
+            877
+          ],
+          "mode": "4",
+          "selected_app_id": "k230.card.one"
+        },
+        {
+          "box": [
+            5,
+            64,
+            517,
+            1088
+          ],
+          "mode": "4",
+          "selected_app_id": "k230.card.one"
+        },
+        {
+          "box": [
+            23,
+            49,
+            543,
+            1088
+          ],
+          "mode": "0",
+          "selected_app_id": "k230.card.one"
+        }
+      ],
+      "entry_source_exit_frames": [
+        {
+          "box": [
+            24,
+            48,
+            544,
+            1088
+          ],
+          "mode": "0",
+          "selected_app_id": "k230.card.two"
+        }
+      ],
+      "expansion_source_box": [
+        45,
+        144,
+        523,
+        1100
+      ],
+      "expansion_exit_frames": [
+        {
+          "box": [
+            24,
+            48,
+            544,
+            1088
+          ],
+          "mode": "0",
+          "selected_app_id": "k230.card.one"
+        }
+      ],
+      "no_retired_pixels": true,
+      "valid_focus_recovered": true
+    },
+    "refusal": {
+      "result": "PASS",
+      "pending_and_timeout_frames": [
+        {
+          "box": [
+            57,
+            197,
+            511,
+            1106
+          ],
+          "mode": "3",
+          "selected_app_id": "k230.card.one"
+        },
+        {
+          "box": [
+            57,
+            197,
+            511,
+            1106
+          ],
+          "mode": "3",
+          "selected_app_id": "k230.card.one"
+        },
+        {
+          "box": [
+            57,
+            197,
+            511,
+            1106
+          ],
+          "mode": "3",
+          "selected_app_id": "k230.card.one"
+        },
+        {
+          "box": [
+            57,
+            197,
+            511,
+            1106
+          ],
+          "mode": "3",
+          "selected_app_id": "k230.card.one"
+        },
+        {
+          "box": [
+            57,
+            197,
+            511,
+            1106
+          ],
+          "mode": "3",
+          "selected_app_id": "k230.card.one"
+        },
+        {
+          "box": [
+            57,
+            197,
+            511,
+            1106
+          ],
+          "mode": "3",
+          "selected_app_id": "k230.card.one"
+        },
+        {
+          "box": [
+            57,
+            197,
+            511,
+            1106
+          ],
+          "mode": "3",
+          "selected_app_id": "k230.card.one"
+        },
+        {
+          "box": [
+            57,
+            197,
+            511,
+            1106
+          ],
+          "mode": "3",
+          "selected_app_id": "k230.card.one"
+        },
+        {
+          "box": [
+            57,
+            197,
+            511,
+            1106
+          ],
+          "mode": "3",
+          "selected_app_id": "k230.card.one"
+        },
+        {
+          "box": [
+            57,
+            197,
+            511,
+            1106
+          ],
+          "mode": "3",
+          "selected_app_id": "k230.card.one"
+        },
+        {
+          "box": [
+            57,
+            197,
+            511,
+            1106
+          ],
+          "mode": "3",
+          "selected_app_id": "k230.card.one"
+        },
+        {
+          "box": [
+            57,
+            197,
+            511,
+            1106
+          ],
+          "mode": "3",
+          "selected_app_id": "k230.card.one"
+        },
+        {
+          "box": [
+            57,
+            197,
+            511,
+            1106
+          ],
+          "mode": "3",
+          "selected_app_id": "k230.card.one"
+        },
+        {
+          "box": [
+            57,
+            197,
+            511,
+            1106
+          ],
+          "mode": "3",
+          "selected_app_id": "k230.card.one"
+        },
+        {
+          "box": [
+            57,
+            197,
+            511,
+            1106
+          ],
+          "mode": "3",
+          "selected_app_id": "k230.card.one"
+        },
+        {
+          "box": [
+            57,
+            197,
+            511,
+            1106
+          ],
+          "mode": "3",
+          "selected_app_id": "k230.card.one"
+        },
+        {
+          "box": [
+            57,
+            197,
+            511,
+            1106
+          ],
+          "mode": "3",
+          "selected_app_id": "k230.card.one"
+        },
+        {
+          "box": [
+            57,
+            197,
+            511,
+            1106
+          ],
+          "mode": "1",
+          "selected_app_id": "k230.card.one"
+        }
+      ],
+      "close_requests": 1,
+      "timeout_feedback": true,
+      "app_retained": true,
+      "keyboard_recovered": true,
+      "fresh_gesture_recovered": true
+    },
+    "private-no-flash": {
+      "result": "PASS",
+      "public_control_pixels": 60745,
+      "held_transition_samples": [
+        {
+          "finger": [
+            104,
+            900
+          ],
+          "mode": "4",
+          "private_content_pixels": 0,
+          "private_icon_pixels": 0
+        },
+        {
+          "finger": [
+            54,
+            850
+          ],
+          "mode": "4",
+          "private_content_pixels": 0,
+          "private_icon_pixels": 0
+        },
+        {
+          "finger": [
+            154,
+            1000
+          ],
+          "mode": "4",
+          "private_content_pixels": 0,
+          "private_icon_pixels": 0
+        },
+        {
+          "finger": [
+            104,
+            900
+          ],
+          "mode": "4",
+          "private_content_pixels": 0,
+          "private_icon_pixels": 0
+        }
+      ],
+      "settle_frames": [
+        {
+          "box": [
+            94,
+            94,
+            475,
+            856
+          ],
+          "mode": "4",
+          "selected_app_id": "k230.card.one"
+        },
+        {
+          "box": [
+            60,
+            181,
+            514,
+            1090
+          ],
+          "mode": "4",
+          "selected_app_id": "k230.card.one"
+        },
+        {
+          "box": [
+            57,
+            197,
+            511,
+            1106
+          ],
+          "mode": "1",
+          "selected_app_id": "k230.card.one"
+        }
+      ],
+      "visible_neutral_private_card": true,
+      "private_content_and_icon_absent": true,
+      "application_retained": true
+    }
+  },
+  "rust": "/nix/store/q2rxmp980f9kxi962f29333z9pbixvbk-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0/bin/k230-shell-rust",
+  "rust_sha256": "b99ebd94e74a5a48b6f9200cdb82ef66117cef6be5d39ef1b1b1ef1d9ed0829b",
+  "service_inputs": "synthetic status-only Settings and unavailable notification/audio services",
+  "result": "PASS",
+  "finished_utc": "2026-10-10T18:47:16.699717+00:00"
+}

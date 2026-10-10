@@ -1,0 +1,225 @@
+{
+  "evidence_class": "headless-qemu-user-native-wayland-injected-touch",
+  "sway": "/nix/store/awym9l5znn6599q37wnhnnch77ggghjh-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway",
+  "client": "/nix/store/yjb89ap4bq5vb29szdzkr5sv9lpw1sz6-card-composition-probe-client-0.1/bin/card-composition-probe-client",
+  "sway_sha256": "957fd6e3fd29cb0ee71e9dc13156ff259a30e3889c9ebdbbd6159662326a5e69",
+  "client_sha256": "1933c7fefe0bc6173bab2a88393abba3409a61259fc5b3afa14ebc20ffc93ec6",
+  "started_utc": "2026-10-10T18:39:33.728329+00:00",
+  "cases": {
+    "live-gate": {
+      "result": "PASS",
+      "before": {
+        "k230.card.one": {
+          "frames": 9,
+          "callbacks": 8,
+          "child_frames": 7,
+          "child_callbacks": 6
+        },
+        "k230.card.two": {
+          "frames": 5,
+          "callbacks": 4,
+          "child_frames": 4,
+          "child_callbacks": 3
+        }
+      },
+      "after": {
+        "k230.card.one": {
+          "frames": 28,
+          "callbacks": 27,
+          "child_frames": 26,
+          "child_callbacks": 25
+        },
+        "k230.card.two": {
+          "frames": 27,
+          "callbacks": 26,
+          "child_frames": 26,
+          "child_callbacks": 25
+        }
+      },
+      "live_pixels_visible": true,
+      "unavailable_placeholder": true,
+      "live_source_restored": true
+    },
+    "private-no-icon": {
+      "result": "PASS",
+      "public_icon_pixels": [
+        1296,
+        1296
+      ],
+      "private_icon_pixels": [
+        0,
+        0
+      ],
+      "private_content_pixels": [
+        0,
+        0
+      ],
+      "neutral_scenes_equal": true
+    },
+    "close-refused": {
+      "result": "PASS",
+      "close_requests": 1,
+      "timeout_reported": true,
+      "app_retained": true,
+      "focus_restored": true,
+      "keyboard_delivered": true,
+      "accepting_close_requests": 1,
+      "accepting_app_exited": true,
+      "survivor_focus_restored": true
+    },
+    "shrink-live": {
+      "result": "PASS",
+      "source_box": [
+        24,
+        48,
+        544,
+        1088
+      ],
+      "held_samples": [
+        {
+          "finger_y": 1100,
+          "box": [
+            51,
+            66,
+            518,
+            1000
+          ]
+        },
+        {
+          "finger_y": 1000,
+          "box": [
+            77,
+            83,
+            491,
+            911
+          ]
+        }
+      ],
+      "live_counters_before": {
+        "frames": 22,
+        "callbacks": 21,
+        "child_frames": 21,
+        "child_callbacks": 20
+      },
+      "live_counters_after": {
+        "frames": 71,
+        "callbacks": 70,
+        "child_frames": 70,
+        "child_callbacks": 69
+      },
+      "live_root_and_child_advanced": true,
+      "held_geometry_stable": true,
+      "rounded_clip": true,
+      "destination": "overview"
+    },
+    "drawer-rise": {
+      "result": "PASS",
+      "held_samples": [
+        {
+          "finger_y": 1100,
+          "panel_top": 1132
+        },
+        {
+          "finger_y": 900,
+          "panel_top": 932
+        }
+      ],
+      "held_top": 932,
+      "settled_top": 32,
+      "route": "overview -> pinned Home -> drawer -> pinned Home",
+      "underlying_home_stationary": true,
+      "overlay_on_top": true,
+      "accepted_stream_not_replayed": true,
+      "running_app_retained": true
+    },
+    "shade-descend": {
+      "result": "PASS",
+      "held_samples": [
+        {
+          "finger_y": 110,
+          "panel_bottom": 100
+        },
+        {
+          "finger_y": 310,
+          "panel_bottom": 300
+        }
+      ],
+      "held_bottom": 300,
+      "settled_bottom": 801,
+      "settings_bottom": 1014,
+      "settings_opened_by_touch": true,
+      "underlying_rect_preserved": true,
+      "prior_focus_recovered": true,
+      "settings_requests": "status only"
+    },
+    "expand-live": {
+      "result": "PASS",
+      "card_box": [
+        57,
+        197,
+        511,
+        1106
+      ],
+      "app_box": [
+        24,
+        48,
+        544,
+        1088
+      ],
+      "samples": [
+        {
+          "box": [
+            57,
+            198,
+            511,
+            1106
+          ],
+          "mode": "5"
+        },
+        {
+          "box": [
+            45,
+            145,
+            522,
+            1099
+          ],
+          "mode": "5"
+        },
+        {
+          "box": [
+            24,
+            48,
+            544,
+            1088
+          ],
+          "mode": "0"
+        }
+      ],
+      "intermediate_live_geometry": true,
+      "focus_restored": true
+    },
+    "focus": {
+      "result": "PASS",
+      "neighbor_focus_committed_after_expand": true,
+      "expanded_app_received_key": true,
+      "search_received_key": true,
+      "search_key_not_delivered_to_apps": true,
+      "search_returned_to_home": true,
+      "drawer_activated_existing_app": true,
+      "selected_app_focus_recovered": true,
+      "key_counts_during_search": {
+        "k230.card.one": 0,
+        "k230.card.two": 1
+      },
+      "key_counts_after_return": {
+        "k230.card.one": 0,
+        "k230.card.two": 2
+      }
+    }
+  },
+  "rust": "/nix/store/q2rxmp980f9kxi962f29333z9pbixvbk-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0/bin/k230-shell-rust",
+  "rust_sha256": "b99ebd94e74a5a48b6f9200cdb82ef66117cef6be5d39ef1b1b1ef1d9ed0829b",
+  "service_inputs": "synthetic status-only Settings and unavailable notification/audio services",
+  "result": "PASS",
+  "finished_utc": "2026-10-10T18:40:22.264495+00:00"
+}

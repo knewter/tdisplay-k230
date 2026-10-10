@@ -1,0 +1,27 @@
+{
+  "previous_sway_derivation": "/nix/store/a5z8k19xsgb572qppf6adcvxcl56s3mj-sway-unwrapped-riscv64-unknown-linux-gnu-1.12.drv",
+  "candidate_sway_derivation": "/nix/store/m6cwz90h4417p68yacghcgfmnmzg8sc8-sway-unwrapped-riscv64-unknown-linux-gnu-1.12.drv",
+  "build_inputs_equal": true,
+  "changed_source_inputs": [
+    "239nrcdpz2psfbwbb3fgxmhidp5z8xa3-card-shell-policy.c",
+    "2jdp9nyziv3c0dvv3a8hlcfzrda984k5-adapter.c",
+    "aicqpp31hqr4b1apnmh7sa5xjqp6xsq8-card-shell-policy.h",
+    "f9wzvm41kkcvqkapa10g6pbzwnysbrn7-adapter.c",
+    "q5i08yy1qcrqaakz7w2cqxwdg1qb5ach-card-shell-policy.c",
+    "qy9sac9z3xg6w6dkm6zasxq482p963al-card-shell-policy.h"
+  ],
+  "copied_sources_match_worktree": {
+    "nix/card-shell/adapter.c": {
+      "copied_store_source": "/nix/store/f9wzvm41kkcvqkapa10g6pbzwnysbrn7-adapter.c",
+      "sha256": "118dd42b2cc8ae0d36a671bfcb77970fc42dac06b2468a2ea39072ce67e36509"
+    },
+    "nix/card-shell-policy/card-shell-policy.c": {
+      "copied_store_source": "/nix/store/239nrcdpz2psfbwbb3fgxmhidp5z8xa3-card-shell-policy.c",
+      "sha256": "811dc35ea4f36b8fb023326c3d96bc4162781c20d2e58f28726c65039de51ff2"
+    },
+    "nix/card-shell-policy/card-shell-policy.h": {
+      "copied_store_source": "/nix/store/qy9sac9z3xg6w6dkm6zasxq482p963al-card-shell-policy.h",
+      "sha256": "4416217dd19060efade2116e531156f19c243e8e3097070d059ddd72f7824309"
+    }
+  }
+}

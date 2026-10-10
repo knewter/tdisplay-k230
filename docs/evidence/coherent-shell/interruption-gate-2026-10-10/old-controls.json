@@ -1,0 +1,74 @@
+[
+  {
+    "case": "reverse",
+    "source_revision": "844be7e0104639450a648e5d36fc28117a2c061e",
+    "fixture_sha256": "3ab568d6e4cf88c86f8e0f27674ad3baa800a66c2d4ae676bcf5b72e1f0c3304",
+    "command": [
+      "python3",
+      "tests/test_shell_motion.py",
+      "--case",
+      "reverse",
+      "--output",
+      "/home/jadams/tmp/k230-m43-controls/reverse"
+    ],
+    "environment": {
+      "CARD_SHELL_SWAY": "/nix/store/2djjlzlhwpcp0gqc4j4863nlh9alkf4a-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway",
+      "CARD_SHELL_CLIENT": "/nix/store/yjb89ap4bq5vb29szdzkr5sv9lpw1sz6-card-composition-probe-client-0.1/bin/card-composition-probe-client",
+      "K230_SHELL_RUST": "/nix/store/q2rxmp980f9kxi962f29333z9pbixvbk-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0/bin/k230-shell-rust"
+    },
+    "exit_code": 1,
+    "expected_failure": "Back reset entry to the full app instead of reversing",
+    "result": {
+      "evidence_class": "headless-qemu-user-native-wayland-injected-touch",
+      "sway": "/nix/store/2djjlzlhwpcp0gqc4j4863nlh9alkf4a-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway",
+      "client": "/nix/store/yjb89ap4bq5vb29szdzkr5sv9lpw1sz6-card-composition-probe-client-0.1/bin/card-composition-probe-client",
+      "sway_sha256": "a015dda21bfec6db871e1f8febb74a5695fe252e767c0ac8efc7697af7508774",
+      "client_sha256": "1933c7fefe0bc6173bab2a88393abba3409a61259fc5b3afa14ebc20ffc93ec6",
+      "started_utc": "2026-10-10T18:43:15.246856+00:00",
+      "cases": {},
+      "rust": "/nix/store/q2rxmp980f9kxi962f29333z9pbixvbk-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0/bin/k230-shell-rust",
+      "rust_sha256": "b99ebd94e74a5a48b6f9200cdb82ef66117cef6be5d39ef1b1b1ef1d9ed0829b",
+      "service_inputs": "synthetic status-only Settings and unavailable notification/audio services",
+      "result": "FAIL",
+      "failed_case": "reverse",
+      "failure_type": "AssertionError",
+      "finished_utc": "2026-10-10T18:43:29.040274+00:00"
+    }
+  },
+  {
+    "case": "retarget",
+    "source_revision": "844be7e0104639450a648e5d36fc28117a2c061e",
+    "fixture_sha256": "3ab568d6e4cf88c86f8e0f27674ad3baa800a66c2d4ae676bcf5b72e1f0c3304",
+    "command": [
+      "python3",
+      "tests/test_shell_motion.py",
+      "--case",
+      "retarget",
+      "--output",
+      "/home/jadams/tmp/k230-m43-controls/retarget"
+    ],
+    "environment": {
+      "CARD_SHELL_SWAY": "/nix/store/2djjlzlhwpcp0gqc4j4863nlh9alkf4a-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway",
+      "CARD_SHELL_CLIENT": "/nix/store/yjb89ap4bq5vb29szdzkr5sv9lpw1sz6-card-composition-probe-client-0.1/bin/card-composition-probe-client",
+      "K230_SHELL_RUST": "/nix/store/q2rxmp980f9kxi962f29333z9pbixvbk-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0/bin/k230-shell-rust"
+    },
+    "exit_code": 1,
+    "expected_failure": "second contact reset entry geometry",
+    "result": {
+      "evidence_class": "headless-qemu-user-native-wayland-injected-touch",
+      "sway": "/nix/store/2djjlzlhwpcp0gqc4j4863nlh9alkf4a-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway",
+      "client": "/nix/store/yjb89ap4bq5vb29szdzkr5sv9lpw1sz6-card-composition-probe-client-0.1/bin/card-composition-probe-client",
+      "sway_sha256": "a015dda21bfec6db871e1f8febb74a5695fe252e767c0ac8efc7697af7508774",
+      "client_sha256": "1933c7fefe0bc6173bab2a88393abba3409a61259fc5b3afa14ebc20ffc93ec6",
+      "started_utc": "2026-10-10T18:43:29.268189+00:00",
+      "cases": {},
+      "rust": "/nix/store/q2rxmp980f9kxi962f29333z9pbixvbk-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0/bin/k230-shell-rust",
+      "rust_sha256": "b99ebd94e74a5a48b6f9200cdb82ef66117cef6be5d39ef1b1b1ef1d9ed0829b",
+      "service_inputs": "synthetic status-only Settings and unavailable notification/audio services",
+      "result": "FAIL",
+      "failed_case": "retarget",
+      "failure_type": "AssertionError",
+      "finished_utc": "2026-10-10T18:43:42.240132+00:00"
+    }
+  }
+]

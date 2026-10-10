@@ -1,0 +1,8 @@
+PASS live-gate: headless-qemu-user-native-wayland-injected-touch
+PASS private-no-icon: headless-qemu-user-native-wayland-injected-touch
+PASS close-refused: headless-qemu-user-native-wayland-injected-touch
+PASS shrink-live: headless-qemu-user-native-wayland-injected-touch
+PASS drawer-rise: headless-qemu-user-native-wayland-injected-touch
+PASS shade-descend: headless-qemu-user-native-wayland-injected-touch
+PASS expand-live: headless-qemu-user-native-wayland-injected-touch
+PASS focus: headless-qemu-user-native-wayland-injected-touch

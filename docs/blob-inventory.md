@@ -1710,6 +1710,23 @@ DATA 83c8b4261beb9621eaaeed8c8e6c1d4fe25bb16abbad63de4234355d25e16de8 docs/evide
 DATA 2d009ee5c0b97bfc21e04592bd099b0f21643bafe660043ed9d0a3e7c418b286 docs/evidence/ux-review-round-2/candidate-2026-10-09/drawer.png
 DATA cabe8ccd9ea9e02dab94e4b12cd4a849b5f3c640ed33dd6d007694a4a2592830 docs/evidence/ux-review-round-2/candidate-2026-10-09/settings-loading.png
 DATA 28d54e2559cd392b108649241ea60bbdafb4d17ac8d653e84b0e7cee638aa931 docs/evidence/ux-review-round-2/candidate-2026-10-09/settings.png
+DATA  e5c034b1ca848a75afc32f7f37e88d49df6079986e20dc23fa744c3726a0af30  docs/evidence/coherent-shell/interruption-gate-2026-10-10/back-entry-held.png
+DATA  83d4d2abb9f8dd0a3857365b7f748742d165edcb331220b175de3b9103d77375  docs/evidence/coherent-shell/interruption-gate-2026-10-10/back-entry-reverse.png
+DATA  5cc5752bd9f8c643f7fe9e07b1a77064a5526d25e01bcefb9266f4ff72dcccde  docs/evidence/coherent-shell/interruption-gate-2026-10-10/back-expand-middle.png
+DATA  af1e532589fb73a6a499dcdce1055460dc60f5b644383a1b3603c9a0d9d9633b  docs/evidence/coherent-shell/interruption-gate-2026-10-10/back-expand-reverse.png
+DATA  298b3d4a631e79af2a7781e07346e8f994d965da6c578d5619a53a3a55905945  docs/evidence/coherent-shell/interruption-gate-2026-10-10/entry-held.png
+DATA  09d0b1beeb684359bc181bb597351a48164bae9b3c3d86bfd9efeda5dd2742c4  docs/evidence/coherent-shell/interruption-gate-2026-10-10/expansion-unmap-middle.png
+DATA  5deb1e9485c678175369348ebef3d953cb58403ba35a726621523e07edb3b8ec  docs/evidence/coherent-shell/interruption-gate-2026-10-10/expansion-unmap-recovered.png
+DATA  19a2b3247c4d649369d209ef8db7221e0a7b1ce8e0b71ef9cedca9397bb39764  docs/evidence/coherent-shell/interruption-gate-2026-10-10/finger-reverse.png
+DATA  0dd90de10d007f694e62dad536a4a727a418759a440fed8ac3c4a03f868301cf  docs/evidence/coherent-shell/interruption-gate-2026-10-10/new-contact-middle.png
+DATA  7b0e552f4353e45388f53087dc13c4112a62f43afa1d65d9351499f9005c0e02  docs/evidence/coherent-shell/interruption-gate-2026-10-10/new-contact-reverse.png
+DATA  ef21f6b9ec3318a183a23afa3684831db45af1db9fa8a6cc49b828812ef2d8d7  docs/evidence/coherent-shell/interruption-gate-2026-10-10/privacy-placeholder.png
+DATA  1deb07b5d46be0a31537402f5361ee5c502f8eacda9e18b1f1f00ac1998c5638  docs/evidence/coherent-shell/interruption-gate-2026-10-10/privacy-public-control.png
+DATA  b2a1f9fd9d44da437eb3d8259818399947b26932ec27e417b964cb311940b14e  docs/evidence/coherent-shell/interruption-gate-2026-10-10/privacy-transition.png
+DATA  388e599604519b8cb1c2460eca20a263b9dd2bf242a39a07b0e82efe74906a0a  docs/evidence/coherent-shell/interruption-gate-2026-10-10/refusal-pending.png
+DATA  b3e22611d1edb2af5ffd758c2a8611ff8a26e2904bac8ff8bb4fed15ffed0878  docs/evidence/coherent-shell/interruption-gate-2026-10-10/refusal-timeout.png
+DATA  8a86045ce2e93f57e1e03dca703b9eb9cc623d77b2d5bb792eaef2f8f6825c8e  docs/evidence/coherent-shell/interruption-gate-2026-10-10/second-contact-reverse.png
+DATA  d1bae5b45118c28913e28e0e12c5fa66e82203366920f5b378b14c65be52bb87  docs/evidence/coherent-shell/interruption-gate-2026-10-10/source-unmap-recovered.png
 ```
 
 `group:` rows stand for a directory whose members are enumerated by
@@ -2802,3 +2819,31 @@ panel/touch gates remain open.
 | `docs/evidence/coherent-shell/coordinated-scene-2026-10-10/shade-settings.png` | 42780 | DATA | `60aea246794323007d2d149bdbdd07df6f18fd897c362b87df6904ed5fa7410c` |
 | `docs/evidence/coherent-shell/coordinated-scene-2026-10-10/shrink-held.png` | 5697 | DATA | `b384d1c88c5b1ee3f33eb863b238d32db660baf70dc09cacdc6c121db1f4ab88` |
 | `docs/evidence/coherent-shell/coordinated-scene-2026-10-10/shrink-overview.png` | 13841 | DATA | `23048b7408a4d2855520da2efaffca1496620dd4929a13c4c56ff1f1bba1fe7f` |
+
+
+## Coherent shell live interruption evidence — 2026-10-10
+
+These synthetic headless captures record task 4.3 reversal, retarget, actual
+client exit, refused close and privacy during transitions. Provenance, commands
+and sampling limits are committed in `docs/evidence/coherent-shell/interruption-gate-2026-10-10/README.md`.
+Board installation and separate physical gates remain open.
+
+| Path | Bytes | Class | SHA256 |
+| --- | ---: | --- | --- |
+| `docs/evidence/coherent-shell/interruption-gate-2026-10-10/back-entry-held.png` | 5913 | DATA | `e5c034b1ca848a75afc32f7f37e88d49df6079986e20dc23fa744c3726a0af30` |
+| `docs/evidence/coherent-shell/interruption-gate-2026-10-10/back-entry-reverse.png` | 5931 | DATA | `83d4d2abb9f8dd0a3857365b7f748742d165edcb331220b175de3b9103d77375` |
+| `docs/evidence/coherent-shell/interruption-gate-2026-10-10/back-expand-middle.png` | 5541 | DATA | `5cc5752bd9f8c643f7fe9e07b1a77064a5526d25e01bcefb9266f4ff72dcccde` |
+| `docs/evidence/coherent-shell/interruption-gate-2026-10-10/back-expand-reverse.png` | 5524 | DATA | `af1e532589fb73a6a499dcdce1055460dc60f5b644383a1b3603c9a0d9d9633b` |
+| `docs/evidence/coherent-shell/interruption-gate-2026-10-10/entry-held.png` | 5843 | DATA | `298b3d4a631e79af2a7781e07346e8f994d965da6c578d5619a53a3a55905945` |
+| `docs/evidence/coherent-shell/interruption-gate-2026-10-10/expansion-unmap-middle.png` | 6031 | DATA | `09d0b1beeb684359bc181bb597351a48164bae9b3c3d86bfd9efeda5dd2742c4` |
+| `docs/evidence/coherent-shell/interruption-gate-2026-10-10/expansion-unmap-recovered.png` | 5782 | DATA | `5deb1e9485c678175369348ebef3d953cb58403ba35a726621523e07edb3b8ec` |
+| `docs/evidence/coherent-shell/interruption-gate-2026-10-10/finger-reverse.png` | 5084 | DATA | `19a2b3247c4d649369d209ef8db7221e0a7b1ce8e0b71ef9cedca9397bb39764` |
+| `docs/evidence/coherent-shell/interruption-gate-2026-10-10/new-contact-middle.png` | 5525 | DATA | `0dd90de10d007f694e62dad536a4a727a418759a440fed8ac3c4a03f868301cf` |
+| `docs/evidence/coherent-shell/interruption-gate-2026-10-10/new-contact-reverse.png` | 5571 | DATA | `7b0e552f4353e45388f53087dc13c4112a62f43afa1d65d9351499f9005c0e02` |
+| `docs/evidence/coherent-shell/interruption-gate-2026-10-10/privacy-placeholder.png` | 14376 | DATA | `ef21f6b9ec3318a183a23afa3684831db45af1db9fa8a6cc49b828812ef2d8d7` |
+| `docs/evidence/coherent-shell/interruption-gate-2026-10-10/privacy-public-control.png` | 5976 | DATA | `1deb07b5d46be0a31537402f5361ee5c502f8eacda9e18b1f1f00ac1998c5638` |
+| `docs/evidence/coherent-shell/interruption-gate-2026-10-10/privacy-transition.png` | 5957 | DATA | `b2a1f9fd9d44da437eb3d8259818399947b26932ec27e417b964cb311940b14e` |
+| `docs/evidence/coherent-shell/interruption-gate-2026-10-10/refusal-pending.png` | 16336 | DATA | `388e599604519b8cb1c2460eca20a263b9dd2bf242a39a07b0e82efe74906a0a` |
+| `docs/evidence/coherent-shell/interruption-gate-2026-10-10/refusal-timeout.png` | 16316 | DATA | `b3e22611d1edb2af5ffd758c2a8611ff8a26e2904bac8ff8bb4fed15ffed0878` |
+| `docs/evidence/coherent-shell/interruption-gate-2026-10-10/second-contact-reverse.png` | 5483 | DATA | `8a86045ce2e93f57e1e03dca703b9eb9cc623d77b2d5bb792eaef2f8f6825c8e` |
+| `docs/evidence/coherent-shell/interruption-gate-2026-10-10/source-unmap-recovered.png` | 5783 | DATA | `d1bae5b45118c28913e28e0e12c5fa66e82203366920f5b378b14c65be52bb87` |

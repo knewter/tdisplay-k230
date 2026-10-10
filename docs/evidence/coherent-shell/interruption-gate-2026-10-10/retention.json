@@ -1,0 +1,25 @@
+{
+  "observed_utc": "2026-10-10T18:38:44.448108+00:00",
+  "selected_derivation": "/nix/store/rwhnwzfdmgsm5kpfvaj629k2ck5ni6g0-k230-card-shell.drv",
+  "prior_retained_paths": 10253,
+  "retained_paths": 10266,
+  "newly_retained_paths": 13,
+  "retained_paths_sha256": "64c601269777e54d7c47efb8f23415a4d88450870bcce66dd1ffa2c1896df326",
+  "enumeration": "Prior verified all-output farm union recursive component derivation sources and all currently present declared outputs; every resulting path passed nix-store --check-validity before building the farm.",
+  "unrealized_outputs_omitted_count": 1374,
+  "global_policy_changed": false,
+  "build_closure_root": "/home/jadams/.local/state/tdisplay-k230/retained-builds/coherent-interruption-2026-10-10/build-closure",
+  "build_closure": "/nix/store/2zv5xn3k5bzpld6l48vhi96h7k8pmkrn-tdisplay-k230-retained-coherent-interruption-build-inputs",
+  "gc_root_query": {
+    "command": [
+      "nix-store",
+      "--query",
+      "--roots",
+      "/nix/store/awym9l5znn6599q37wnhnnch77ggghjh-sway-unwrapped-riscv64-unknown-linux-gnu-1.12"
+    ],
+    "matching_root": "/home/jadams/.local/state/tdisplay-k230/retained-builds/coherent-interruption-2026-10-10/build-closure",
+    "exit_code": 0
+  },
+  "verified_utc": "2026-10-10T18:42:40.446714+00:00",
+  "farm_build_exit_code": 0
+}
