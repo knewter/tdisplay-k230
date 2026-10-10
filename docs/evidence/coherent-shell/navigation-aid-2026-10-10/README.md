@@ -130,3 +130,17 @@ python3 tools/capture-feature.py coherent-gestures --provenance real-touch \
 The operator must reserve the board for both commands and inspect camera plus
 console evidence separately. Physical discovery/readability remains UNVERIFIED;
 earlier general app-navigation acceptance does not identify this new candidate.
+
+## Local site budget failure and owner
+
+Coordinator `/root` owns the [failed host site build](site-build-host.log):
+`python3 scripts/build_site.py` against committed source
+`70e3fecdbf94a14590a7a16aab92103ceb9d5565`, exit 2, 680 pages,
+18,138,424 bytes and 148.33 seconds against the unchanged 32 MiB / 120 second
+budgets. Content, inventory and built-site assertions passed; only elapsed time
+failed. Several unrelated Rust builds/emulators were concurrently active on this
+host; this is an observation, not a proved attribution of the overrun. No other
+operator's processes were stopped. The implementation and cross-build gate
+remain complete. The coordinator must inspect the resulting CI site build and
+exact published revision after landing; a local artifact is not Pages deployment
+proof, and the elapsed-time budget was not increased or bypassed.
