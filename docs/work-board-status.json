@@ -363,7 +363,7 @@
       "physical": "verified",
       "next": "Accepted and archived; no remaining Wi-Fi Settings work.",
       "dependencies": [
-        "the-handheld-presents-a-coherent-shell"
+        "2026-10-10-the-handheld-presents-a-coherent-shell"
       ],
       "evidence": [
         "docs/evidence/wifi-settings/README.md",

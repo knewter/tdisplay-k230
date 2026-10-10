@@ -85,3 +85,11 @@ Main specs are not hand-edited. Existing requirements and scenarios outside
 this delta are retained. CI and the actual published work/evidence pages are
 checked for the landed revision after push; publication results are reported
 in the final handoff rather than claimed in advance here.
+
+The first committed-tree site check at source `7ce6e866` exited 2 during the
+work-board data pass: the already-archived Wi-Fi Settings entry still named
+the coherent shell’s old active dependency key. Coordinator `/root` owns that
+failure and corrected only this directly affected dependency reference to the
+new archive key. The private host log is `$HOME/tmp/k230-acceptance-coherent-site.log`.
+No Astro build or hardware action was attempted in that failed check; the full
+site command is rerun against the corrected committed tree before publication.
