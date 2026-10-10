@@ -7270,33 +7270,48 @@ mod route_tests {
     #[test]
     fn speculative_theme_motion_waits_for_both_carousels_to_finish_moving() {
         for background in [false, true] {
-            let mut themes = Carousel::new(THEME_GEOMETRY);
-            let mut backgrounds = Carousel::new(BACKGROUND_GEOMETRY);
-            assert!(theme_prerender_at_rest(&themes, &backgrounds));
-            let active = if background {
-                &mut backgrounds
-            } else {
-                &mut themes
-            };
-            active.set_index(10);
-            active.down(7, (284.0, 400.0), 0);
-            assert!(!theme_prerender_at_rest(&themes, &backgrounds));
-            let active = if background {
-                &mut backgrounds
-            } else {
-                &mut themes
-            };
-            active.motion(7, (243.0, 400.0), 20, 40);
-            active.up(7, (243.0, 400.0), 21, 40, 284.0, 0.0);
-            assert!(!theme_prerender_at_rest(&themes, &backgrounds)); // released coast/settle
-            for _ in 0..1000 {
-                themes.tick(16, 40);
-                backgrounds.tick(16, 40);
-                if theme_prerender_at_rest(&themes, &backgrounds) {
-                    break;
+            for motion in ["held", "coasting", "settling"] {
+                let mut themes = Carousel::new(THEME_GEOMETRY);
+                let mut backgrounds = Carousel::new(BACKGROUND_GEOMETRY);
+                assert!(theme_prerender_at_rest(&themes, &backgrounds));
+                let active = if background { &mut backgrounds } else { &mut themes };
+                active.set_index(10);
+                match motion {
+                    "held" => active.down(7, (284.0, 400.0), 0),
+                    "coasting" => {
+                        active.down(7, (284.0, 400.0), 0);
+                        active.motion(7, (243.0, 400.0), 20, 40);
+                        active.up(7, (243.0, 400.0), 21, 40, 284.0, 0.0);
+                    }
+                    "settling" => { assert!(active.scroll_by(16.0, 40, true)); }
+                    _ => unreachable!(),
                 }
+                // Feed the actual row-motion decision through the production
+                // admission API, including an already-executing warm-up.
+                let mut view = ThemeView::default();
+                view.prepare_ahead_inflight = Some(42);
+                view.pending_neighbor_warms = [1, 3].into();
+                view.prepare_ahead_watch = Some(10);
+                view.prepare_ahead_elapsed_ms = 1000;
+                let at_rest = theme_prerender_at_rest(&themes, &backgrounds);
+                assert!(!at_rest, "{motion}, background={background}");
+                assert_eq!(view.poll_prepare_ahead_at_rest(1000, Some(10), at_rest), None);
+                assert_eq!(view.prepare_ahead_inflight, Some(42));
+                assert_eq!(view.pending_neighbor_warms, std::collections::VecDeque::from([1, 3]));
+                assert_eq!(view.prepare_ahead_watch, None);
+                assert_eq!(view.prepare_ahead_elapsed_ms, 0);
+                if motion == "held" {
+                    let active = if background { &mut backgrounds } else { &mut themes };
+                    active.cancel();
+                }
+                for _ in 0..1000 {
+                    themes.tick(16, 40);
+                    backgrounds.tick(16, 40);
+                    if theme_prerender_at_rest(&themes, &backgrounds) { break; }
+                }
+                assert!(theme_prerender_at_rest(&themes, &backgrounds),
+                        "{motion}, background={background} did not resume");
             }
-            assert!(theme_prerender_at_rest(&themes, &backgrounds));
         }
     }
 
