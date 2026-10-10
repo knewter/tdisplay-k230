@@ -158,6 +158,13 @@ class Scene:
         return sum(count for count, value in image.getcolors(image.width * image.height)
                    if value == color)
 
+    @staticmethod
+    def neutral_placeholder(image):
+        body = image.crop((150, 350, 410, 750))
+        colors = body.getcolors(body.width * body.height)
+        return (len(colors) == 1 and min(colors[0][1]) >= 8
+                and colors[0][1] != image.getpixel((10, 700)))
+
     def close(self):
         if self.keyboard:
             self.keyboard.close()
@@ -197,7 +204,8 @@ def live_gate(scene):
     scene.command("enter")
     scene.ipc('[app_id="k230.card.one"] mark --add k230_card_unavailable')
     scene.capture_when("unavailable", lambda im:
-                       Scene.color_count(im, (32, 112, 176)) == 0)
+                       Scene.color_count(im, (32, 112, 176)) == 0
+                       and Scene.neutral_placeholder(im))
     assert scene.apps["k230.card.one"].poll() is None, "unavailable source was removed"
     scene.ipc('[app_id="k230.card.one"] unmark k230_card_unavailable')
     scene.capture_when("available-again", lambda im:
@@ -222,7 +230,8 @@ def private_no_icon(scene):
         scene.ipc(f'[app_id="{app}"] mark --add k230_card_private')
         private = scene.capture_when(app + "-private", lambda im:
                                      Scene.color_count(im, icon_color) == 0
-                                     and Scene.color_count(im, content_color) == 0)
+                                     and Scene.color_count(im, content_color) == 0
+                                     and Scene.neutral_placeholder(im))
         private_frames.append(private)
         proc.terminate()
         proc.wait(timeout=10)
