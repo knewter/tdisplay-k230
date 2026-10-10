@@ -710,12 +710,14 @@ def expanding_frame(scene, name, color=(32, 112, 176)):
     small = Scene.color_box(deck, color)
     assert small, "selected expansion source absent"
     scene.tap(101, 284, 500)
-    image = scene.capture_when(name, lambda im:
-                               (box := Scene.color_box(im, color)) and
-                               small[2] - small[0] + 2 < box[2] - box[0] < 518)
-    Scene.assert_frame(image)
-    assert scene.state()["mode"] == "5", "unfinished expansion not observed"
-    return small, Scene.color_box(image, color)
+    # Inspect one row before sending the interruption. Processing every pixel
+    # and then polling IPC can consume the whole 160ms animation even though
+    # the captured frame is intermediate. Full-frame analysis follows input.
+    def intermediate(im):
+        colors = (color, tuple(v // 2 for v in color))
+        xs = [x for x in range(568) if im.getpixel((x, 600)) in colors]
+        return xs and small[2] - small[0] + 2 < max(xs) - min(xs) + 1 < 518
+    return small, scene.capture_when(name, intermediate)
 
 
 def reverse(scene):
@@ -741,9 +743,11 @@ def reverse(scene):
     scene.command("test-touch up 82")
     assert scene.focused() == "k230.card.one", "Back leaked the canceled stream"
 
-    small, middle = expanding_frame(scene, "back-expand-middle")
+    small, middle_image = expanding_frame(scene, "back-expand-middle")
     scene.command("back")
     assert scene.state()["mode"] == "5", "Back reset unfinished expansion instead of reversing"
+    Scene.assert_frame(middle_image)
+    middle = Scene.color_box(middle_image)
     expansion = recovery_frames(scene, "back-expand-reverse", 1)
     assert expansion[-1]["box"][2] - expansion[-1]["box"][0] <= small[2] - small[0] + 2
     assert scene.focused() == "k230.card.one", "expansion reversal lost original focus"
@@ -768,9 +772,11 @@ def retarget(scene):
 
     # A new contact during expansion reverses the current live transform,
     # rather than activating the card or resetting its start keyframe.
-    small, middle = expanding_frame(scene, "new-contact-middle")
+    small, middle_image = expanding_frame(scene, "new-contact-middle")
     scene.command("test-touch down 93 300 650")
     assert scene.state()["mode"] == "5", "new contact skipped current expansion geometry"
+    Scene.assert_frame(middle_image)
+    middle = Scene.color_box(middle_image)
     contact = recovery_frames(scene, "new-contact-reverse", 1)
     assert contact[-1]["box"][2] - contact[-1]["box"][0] <= small[2] - small[0] + 2
     scene.command("test-touch motion 93 300 300")
@@ -819,9 +825,11 @@ def unmap(scene):
     # ordering therefore puts the target to its left, not its right.
     scene.command("previous")
     wait_for(lambda: scene.state()["selected_app_id"] == "k230.card.two", "unmap expansion target selected")
-    small, middle = expanding_frame(scene, "expansion-unmap-middle", (144, 48, 128))
+    small, middle_image = expanding_frame(scene, "expansion-unmap-middle", (144, 48, 128))
     scene.apps["k230.card.two"].terminate()
     scene.apps["k230.card.two"].wait(timeout=10)
+    Scene.assert_frame(middle_image)
+    middle = Scene.color_box(middle_image, (144, 48, 128))
     wait_for(lambda: not scene.mapped("k230.card.two"), "unfinished expansion source actually unmaps")
     expansion = recovery_frames(scene, "expansion-unmap-recover", 0,
                                  forbidden=((144, 48, 128), (72, 24, 64)))
