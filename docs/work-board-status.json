@@ -17,7 +17,7 @@
       "lane": "in-progress",
       "source": "in-progress",
       "physical": "pending",
-      "next": "The combined mainline client/compositor/helper candidate is temporarily running on the board. Obtain its requested real-touch navigation/Help report, then complete the required camera/trace/polish and persistent ordinary-boot gates.",
+      "next": "The combined mainline shell is accepted for the requested navigation/Help routes and installed persistently with verified ordinary boot. Complete the remaining named probe, camera/gesture/conflict and dark/light polish proof; motion measurement remains deferred by the user.",
       "dependencies": [
         "2026-10-01-the-shell-manages-apps-as-cards",
         "the-shell-loads-omarchy-themes"
@@ -58,8 +58,8 @@
         "docs/evidence/coherent-shell/navigation-aid-2026-10-10/README.md",
         "docs/evidence/coherent-shell/combined-board-candidate-2026-10-10/README.md"
       ],
-      "rationale": "The read-only baseline identifies the accepted yl3si5 normal HDMI system/profile. Combined source 093a82a0 now has a matching inspected bundle and an exact temporary physical boot with native Help rendering; real-touch acceptance, camera/trace/polish and persistent ordinary boot for this candidate remain separate open gates.",
-      "reviewRevision": "093a82a0c31007f775ad260492e30d3088739548",
+      "rationale": "Combined source 093a82a0 runs as exact system/profile svjjlnv after guarded installation and untouched ordinary reboot. Operator acceptance is bound to the tested candidate; all installed hashes, client/compositor/coherent-helper identity, service health and reviewed panel-native Help are committed. No active appearance generation was present. Broader required on-glass and trace/polish gates remain open; task 5.8 records its completed installation slice without ticking prerequisites.",
+      "reviewRevision": "cff9ec8f53ad7343fd8d219e30d10801239a5c10",
       "cover": {
         "path": "docs/evidence/coherent-shell/refined-installed/drawer.png",
         "caption": "Installed app grid with real icons \u2014 touch acceptance pending",

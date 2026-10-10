@@ -1,0 +1,6 @@
+Command: flock -n /tmp/k230-board.lock python3 tools/console.py /dev/ttyACM0 --wait=5 'readlink -f /run/current-system; systemctl is-active shell shell-ui'
+Result: PASS; only exact system and service-state lines retained. Raw UART stays private.
+
+/nix/store/svjjlnvrs8djb6g6gkd0q0iwabpm6sxp-nixos-system-nixos-26.11.20260919.20b1ddd
+active
+active

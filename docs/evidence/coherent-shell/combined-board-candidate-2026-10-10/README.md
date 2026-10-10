@@ -182,30 +182,122 @@ The 800×1280 native image was visually reviewed: the guidance and both action
 labels are readable, fit the output, and reveal no private app or network
 information. Image bytes and SHA256 are in `runtime.json` and the blob inventory.
 This is native board rendering proof, not a camera or glass-legibility result.
-The serial and build reservations have been released; the candidate remains
-running for the requested real-touch navigation check.
+At the temporary-trial handoff, serial and build reservations were released
+and the candidate remained running for the requested real-touch navigation check.
 
-## Remaining operator gate and recovery
+## Operator acceptance of the temporary trial
 
-The coordinator requested the exact new candidate's Home → All Apps,
+The coordinator requested the exact new candidate’s Home → All Apps,
 Terminal → Home, Overview, and All Apps → Help → Navigation buttons →
-Home/Settings checks. An HDMI unplug/replug check was also requested if
-connected. **No response or real-finger acceptance has yet been obtained.**
-Older installed-system acceptance is not copied into a new qualification.
-The coherent-shell change remains **30/39** and all nine remaining named
-physical/trace/polish tasks are unchecked. No latency measurement was started.
+Home/Settings checks. The user replied **“it all worked land it”** while
+this candidate was still running. [operator-navigation.json](operator-navigation.json)
+records that contextual real-finger acceptance and authorization to install,
+bound to the trial’s exact bundle, system, shell executable and boot ID.
+[qualification-used.py](qualification-used.py) is the executed adapter: before
+writing the protected qualification it checked that the accepted boot was
+still running, the old profile remained selected and no installation journal
+existed. The installer’s unchanged validation contract requires exactly the
+three navigation checks; Help acceptance is a separate report field.
 
-A plain `reboot` returns to the preserved, accepted normal HDMI system.
-If the temporary boot becomes unusable, the existing protected-baseline path
-remains available to the reserved coordinator:
+The request included an optional HDMI unplug/replug check if connected.
+The broad reply is not expanded into an independently recorded cable cycle
+or timing claim. No camera, per-gesture trace, theme application or full
+notification/long-press/conflict matrix is inferred from that reply.
+
+At this temporary-trial phase, a plain reboot still returned to the previous
+normal system. The persistent installation and its recovery procedure are
+recorded below separately.
+
+## Persistent installation and ordinary boot
+
+After that new-candidate operator acceptance, the coordinator reserved the
+board/serial lock and ran the existing guarded installer and boot controller:
+
+```sh
+python3 docs/evidence/coherent-shell/combined-board-candidate-2026-10-10/qualification-used.py
+python3 tools/coherent-shell-board-boot.py \
+  --candidate /nix/store/hzz623hn3wxvr4b1536591pr5y5drnby-k230-coherent-shell-boot-files \
+  --state "$HOME/tmp/k230-coherent-combined-board-2026-10-10/state.json" \
+  --qualification docs/evidence/coherent-shell/combined-board-candidate-2026-10-10/operator-navigation.json \
+  --output "$HOME/tmp/k230-coherent-combined-board-2026-10-10/ordinary" --install
+python3 docs/evidence/coherent-shell/combined-board-candidate-2026-10-10/ordinary-runtime-check-used.py
+flock -n /tmp/k230-board.lock python3 tools/console.py /dev/ttyACM0 --wait=5 \
+  'readlink -f /run/current-system; systemctl is-active shell shell-ui'
+```
+
+All four invocations passed. [ordinary-serial-result.json](ordinary-serial-result.json)
+contains the installation journal and the untouched ordinary autoboot result.
+The Image and initrd were byte-identical and left unchanged. Only the wrapped
+DTB’s matching init selector and `bootargs.txt` were atomically replaced; stage
+1 and all three DT selectors were preserved. Each installed payload matches
+its inspected, built bundle hash. The persistent profile now selects the
+same `svjjlnv…` system as `/run/current-system` and the kernel’s `init=` argument.
+No full image flash or rebuild was performed. Protected root backups, the
+previous profile/init GC roots, and the candidate GC root remain available.
+The qualification SHA256 in the actual journal matches the committed report.
+
+The controller sent no key to interrupt autoboot and no candidate load command
+in this installation mode. Fresh ordinary boot ID:
+`effcb1f4-3cdc-4647-bd7b-517d4072ae1a`, distinct from the operator-tested temporary
+boot. Its serial-only `physical_navigation_verified: false` is retained:
+real-finger acceptance belongs to the operator report, not the controller.
+
+[ordinary-runtime.json](ordinary-runtime.json) independently checks the exact
+client/compositor/coherent helper together, four active services, system/profile,
+kernel, explicit init selector, all eight installed boot-file hashes and valid
+rollback roots after reboot. [ordinary-console.txt](ordinary-console.txt) retains
+only the whitelisted result of task 5.8’s named console command. Exact executed
+scripts are [inspect-ordinary-runtime.py](inspect-ordinary-runtime.py) and
+[ordinary-runtime-check-used.py](ordinary-runtime-check-used.py); raw UART and
+runtime transport addresses remain private.
+
+The installer’s saved-appearance probe reports no active generation/report
+before installation, after installation, or after reboot (`null` in each
+field). This verifies that state remained absent; it does not claim restoration
+of a user-selected appearance, a fresh-home trial or a theme apply transaction.
+The native default appearance rendered successfully after normal boot.
+
+![Native Help after ordinary boot on the panel](ordinary-help.png)
+
+The 568×1232 native Help capture was visually reviewed after reboot: all text
+and action labels fit and remain readable, with no private information visible.
+The active output was DSI-1 at its 568×1232 mode; no programmatic cable change
+was made. The script then hid Help and returned Home through the compositor.
+Capture SHA256 and size are in the runtime report and blob inventory.
+This is native board rendering proof, distinct from the operator’s pre-install
+real-touch acceptance and from an unperformed postboot camera trial.
+
+## Remaining proposal proof and recovery
+
+The combined shell fixes are now installed persistently on the daily mainline
+system and accepted for the requested navigation/Help routes. The umbrella
+remains **30/39**: task 5.8’s installation/ordinary-boot portion is now proven,
+but that task explicitly follows the required broader on-glass gates. Those
+named camera, probe, gesture/conflict, motion-trace and six-surface dark/light
+polish gates remain open. No task was ticked by substituting this narrower
+operator report or native endpoint capture. No latency measurement was started.
+
+A plain reboot now selects the new system. To recover an interrupted boot,
+reserve the serial port, stop at U-Boot, then load the retained root backup:
 
 ```sh
 python3 tools/coherent-shell-board-boot.py \
   --candidate /nix/store/hzz623hn3wxvr4b1536591pr5y5drnby-k230-coherent-shell-boot-files \
   --state "$HOME/tmp/k230-coherent-combined-board-2026-10-10/state.json" \
-  --output "$HOME/tmp/k230-coherent-combined-board-2026-10-10/baseline" --baseline
+  --output "$HOME/tmp/k230-coherent-combined-board-2026-10-10/recovery-baseline" --recover-baseline
 ```
 
-No persistent install, image flash, failed-write rollback, physical power-cut,
-six-surface dark/light camera proof or new finger gesture trace is claimed.
-Review/landing of this bounded evidence proceeds independently of those gates.
+That recovery boots the previous system temporarily. Under the reserved board
+console, restore its persistent files/profile with:
+
+```sh
+/nix/store/v189xydz6qkcd4cbkixcmv91w8hbc560-python3-riscv64-unknown-linux-gnu-3.14.7/bin/python3 -I \
+  /var/lib/k230/coherent-boot/svjjlnvrs8djb6g6gkd0q0iwabpm6sxp-20261010/install.py rollback \
+  /var/lib/k230/coherent-boot/svjjlnvrs8djb6g6gkd0q0iwabpm6sxp-20261010
+```
+
+Reboot and verify the restored ordinary system separately. These recovery
+commands were not executed during this successful installation; failed-write
+rollback, power-cut recovery and the physical fallback trial are not claimed.
+Board and serial reservations were released after the checks. The build slot
+was not needed for this landing; the existing 10,530-path retention farm remains.

@@ -1727,6 +1727,8 @@ DATA  388e599604519b8cb1c2460eca20a263b9dd2bf242a39a07b0e82efe74906a0a  docs/evi
 DATA  b3e22611d1edb2af5ffd758c2a8611ff8a26e2904bac8ff8bb4fed15ffed0878  docs/evidence/coherent-shell/interruption-gate-2026-10-10/refusal-timeout.png
 DATA  8a86045ce2e93f57e1e03dca703b9eb9cc623d77b2d5bb792eaef2f8f6825c8e  docs/evidence/coherent-shell/interruption-gate-2026-10-10/second-contact-reverse.png
 DATA  d1bae5b45118c28913e28e0e12c5fa66e82203366920f5b378b14c65be52bb87  docs/evidence/coherent-shell/interruption-gate-2026-10-10/source-unmap-recovered.png
+# Native Help after persistent ordinary panel boot — 2026-10-10
+DATA  2f81e737d0511f644884883876d82572fb67d86ccde475a54fe3bddeff3ad164  docs/evidence/coherent-shell/combined-board-candidate-2026-10-10/ordinary-help.png
 # Native Help on the volatile mainline HDMI candidate — 2026-10-10
 DATA  3fb102a889e56bb760935320dec9e14e546d1b79743cef05ba91a35a97a4e57f  docs/evidence/coherent-shell/combined-board-candidate-2026-10-10/help-native.png
 # Deliberately opened Help/navigation aid host evidence — 2026-10-10
@@ -2890,3 +2892,13 @@ or a real-finger test; exact boot/artifact identity and capture command are in
 | Path | Bytes | Class | SHA256 |
 | --- | ---: | --- | --- |
 | `docs/evidence/coherent-shell/combined-board-candidate-2026-10-10/help-native.png` | 69836 | DATA | `3fb102a889e56bb760935320dec9e14e546d1b79743cef05ba91a35a97a4e57f` |
+
+The ordinary-boot Help image is native `grim` output after a programmatic Help
+request on the reserved physical panel. It was reviewed for readable labels
+and private information, then the script returned Home. It is not a camera
+or real-finger capture; the exact installed bundle, fresh boot ID and command
+are recorded in the same combined-candidate evidence directory.
+
+| Path | Bytes | Class | SHA256 |
+| --- | ---: | --- | --- |
+| `docs/evidence/coherent-shell/combined-board-candidate-2026-10-10/ordinary-help.png` | 46665 | DATA | `2f81e737d0511f644884883876d82572fb67d86ccde475a54fe3bddeff3ad164` |
