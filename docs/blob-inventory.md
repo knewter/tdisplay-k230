@@ -1348,6 +1348,22 @@ DATA 13b92f1aa8f676c535318a8b0143658763f43da0ac68dad91d4ca440b7ed277b  docs/evid
 DATA 21fac03a2ab67a15b2a1faa45f3dea6688aa2017facc1f57315f8706edf8474e  docs/evidence/keyboard-gestures/installed-preview/keyboard-shown.png
 DATA cd1abfa7fcd1ccdc3a70b8b0123f2729117b9eb21896f53576df1643f6d826fe  docs/evidence/keyboard-gestures/installed-preview/terminal-hidden.png
 DATA 3df8cda30a4e3d966bed5ac2ddd15ff73cd551a065ddeb75743a57b75d3ca645  docs/evidence/omarchy-themes/portrait-preview-host/preview.png
+DATA ec84e64f2f63096b88fc1c03ddb63ca360ba93d72401a6764fe053d66e6d5bd0  docs/evidence/coherent-shell/coordinated-scene-2026-10-10/drawer-100.png
+DATA fea0f40dabd3aa4fd5bbadd4a7e95205d66c93a937bf9085477e1815f6cd45cf  docs/evidence/coherent-shell/coordinated-scene-2026-10-10/drawer-300.png
+DATA 4780410f54c3f47a02258d3bab73dc18acdfb993c40ae5ca1a348f1562759537  docs/evidence/coherent-shell/coordinated-scene-2026-10-10/drawer-open.png
+DATA 2ea7344df624378e1acea8a50a07e65463a88cf32d538a79542eb0c926f7ad46  docs/evidence/coherent-shell/coordinated-scene-2026-10-10/expand-01.png
+DATA 91e8033dd6d79142ec66fb0f3e8d4612d13c5942967d94c0ed06a4b20884d66e  docs/evidence/coherent-shell/coordinated-scene-2026-10-10/expand-restored.png
+DATA 98733d800ee9bed45d9010b5b4ec4615fa165f6fb7f806566863a95628753d63  docs/evidence/coherent-shell/coordinated-scene-2026-10-10/focus-app-restored.png
+DATA 8fa91114e4b65754f27d216a1b80b96c79a7ccb6e21ab7b6684efeb5ac98d42f  docs/evidence/coherent-shell/coordinated-scene-2026-10-10/focus-search-typed.png
+DATA 39468de49f9d3bf7349a8c1b05292f915908c934749ee8e0f55b0ae32f18494b  docs/evidence/coherent-shell/coordinated-scene-2026-10-10/home-held.png
+DATA 1c663bebb1df5efc2adb36c1f804b5a9ac60650154ea95046a0f2a7241c68ba3  docs/evidence/coherent-shell/coordinated-scene-2026-10-10/old-drawer-100.png
+DATA c8c53864d6dd325f0ff5d4151ae3d79e849f9b206dd5bb17c79a0c4bccb3a9ae  docs/evidence/coherent-shell/coordinated-scene-2026-10-10/shade-100.png
+DATA 6b7296b7e4613fca5c18bc66099dce27a24ea2ec4faad3b64bcb81bb082ffda6  docs/evidence/coherent-shell/coordinated-scene-2026-10-10/shade-300.png
+DATA fa6e0aad5a3f7a927ab57b3ddb14fb5501c85685cf1090d4e55776f8381827d8  docs/evidence/coherent-shell/coordinated-scene-2026-10-10/shade-open.png
+DATA 5885fdf7a509f577e21b5a318592c1ac3327778c4afa004d3e5824becdec50a0  docs/evidence/coherent-shell/coordinated-scene-2026-10-10/shade-restored.png
+DATA 60aea246794323007d2d149bdbdd07df6f18fd897c362b87df6904ed5fa7410c  docs/evidence/coherent-shell/coordinated-scene-2026-10-10/shade-settings.png
+DATA b384d1c88c5b1ee3f33eb863b238d32db660baf70dc09cacdc6c121db1f4ab88  docs/evidence/coherent-shell/coordinated-scene-2026-10-10/shrink-held.png
+DATA 23048b7408a4d2855520da2efaffca1496620dd4929a13c4c56ff1f1bba1fe7f  docs/evidence/coherent-shell/coordinated-scene-2026-10-10/shrink-overview.png
 DATA 93d6c07d5adbc1c7c857add6bcdfe992679c6510255f0fcc63b5c7abd8ff0a13  docs/evidence/coherent-shell/integration-gate-2026-10-10/close-recovered.png
 DATA 71222c20cc4cf43e2e19ba9f127d476943de54fdb361aac4f2f89ad35bb5d4b8  docs/evidence/coherent-shell/integration-gate-2026-10-10/live-held.png
 DATA d2e7e5d51bd74b33c29558581a0a216f1a1d240b40a5216d8e0cf8ba01d686da  docs/evidence/coherent-shell/integration-gate-2026-10-10/private-one.png
@@ -2757,3 +2773,32 @@ gates remain open.
 | `docs/evidence/coherent-shell/integration-gate-2026-10-10/public-one.png` | 13959 | DATA | `f864663e2718f63ede79240898af5aea1fb26a1ed90febebd73f0e4c70d1f23d` |
 | `docs/evidence/coherent-shell/integration-gate-2026-10-10/public-two.png` | 14394 | DATA | `2a13ea91fa102b75dee1b75bb8d6b9c068a68b8221c814373deedddec80af296` |
 | `docs/evidence/coherent-shell/integration-gate-2026-10-10/unavailable.png` | 15058 | DATA | `1596eb39f0075c6e2dfa20f75c3e31513a3d937a2360a67be2dfebc6f34169ae` |
+
+### Coordinated shell scene captures (2026-10-10)
+
+Non-executable headless Pixman captures from actual RISC-V Sway/Rust under
+QEMU user emulation, native Wayland clients and injected input. All content
+is synthetic. The old-compositor capture records the failing drawer regression
+control. Commands, source revisions, hashes and evidence limits are in
+`docs/evidence/coherent-shell/coordinated-scene-2026-10-10/README.md`.
+These establish task 4.2 runtime behavior; board deployment and physical
+panel/touch gates remain open.
+
+| Path | Bytes | Class | SHA256 |
+| --- | ---: | --- | --- |
+| `docs/evidence/coherent-shell/coordinated-scene-2026-10-10/drawer-100.png` | 9271 | DATA | `ec84e64f2f63096b88fc1c03ddb63ca360ba93d72401a6764fe053d66e6d5bd0` |
+| `docs/evidence/coherent-shell/coordinated-scene-2026-10-10/drawer-300.png` | 10187 | DATA | `fea0f40dabd3aa4fd5bbadd4a7e95205d66c93a937bf9085477e1815f6cd45cf` |
+| `docs/evidence/coherent-shell/coordinated-scene-2026-10-10/drawer-open.png` | 10187 | DATA | `4780410f54c3f47a02258d3bab73dc18acdfb993c40ae5ca1a348f1562759537` |
+| `docs/evidence/coherent-shell/coordinated-scene-2026-10-10/expand-01.png` | 5487 | DATA | `2ea7344df624378e1acea8a50a07e65463a88cf32d538a79542eb0c926f7ad46` |
+| `docs/evidence/coherent-shell/coordinated-scene-2026-10-10/expand-restored.png` | 5776 | DATA | `91e8033dd6d79142ec66fb0f3e8d4612d13c5942967d94c0ed06a4b20884d66e` |
+| `docs/evidence/coherent-shell/coordinated-scene-2026-10-10/focus-app-restored.png` | 5793 | DATA | `98733d800ee9bed45d9010b5b4ec4615fa165f6fb7f806566863a95628753d63` |
+| `docs/evidence/coherent-shell/coordinated-scene-2026-10-10/focus-search-typed.png` | 12216 | DATA | `8fa91114e4b65754f27d216a1b80b96c79a7ccb6e21ab7b6684efeb5ac98d42f` |
+| `docs/evidence/coherent-shell/coordinated-scene-2026-10-10/home-held.png` | 9495 | DATA | `39468de49f9d3bf7349a8c1b05292f915908c934749ee8e0f55b0ae32f18494b` |
+| `docs/evidence/coherent-shell/coordinated-scene-2026-10-10/old-drawer-100.png` | 9273 | DATA | `1c663bebb1df5efc2adb36c1f804b5a9ac60650154ea95046a0f2a7241c68ba3` |
+| `docs/evidence/coherent-shell/coordinated-scene-2026-10-10/shade-100.png` | 5784 | DATA | `c8c53864d6dd325f0ff5d4151ae3d79e849f9b206dd5bb17c79a0c4bccb3a9ae` |
+| `docs/evidence/coherent-shell/coordinated-scene-2026-10-10/shade-300.png` | 5637 | DATA | `6b7296b7e4613fca5c18bc66099dce27a24ea2ec4faad3b64bcb81bb082ffda6` |
+| `docs/evidence/coherent-shell/coordinated-scene-2026-10-10/shade-open.png` | 25305 | DATA | `fa6e0aad5a3f7a927ab57b3ddb14fb5501c85685cf1090d4e55776f8381827d8` |
+| `docs/evidence/coherent-shell/coordinated-scene-2026-10-10/shade-restored.png` | 5792 | DATA | `5885fdf7a509f577e21b5a318592c1ac3327778c4afa004d3e5824becdec50a0` |
+| `docs/evidence/coherent-shell/coordinated-scene-2026-10-10/shade-settings.png` | 42780 | DATA | `60aea246794323007d2d149bdbdd07df6f18fd897c362b87df6904ed5fa7410c` |
+| `docs/evidence/coherent-shell/coordinated-scene-2026-10-10/shrink-held.png` | 5697 | DATA | `b384d1c88c5b1ee3f33eb863b238d32db660baf70dc09cacdc6c121db1f4ab88` |
+| `docs/evidence/coherent-shell/coordinated-scene-2026-10-10/shrink-overview.png` | 13841 | DATA | `23048b7408a4d2855520da2efaffca1496620dd4929a13c4c56ff1f1bba1fe7f` |

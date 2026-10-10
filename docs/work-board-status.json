@@ -17,7 +17,7 @@
       "lane": "in-progress",
       "source": "in-progress",
       "physical": "pending",
-      "next": "Complete the remaining cross-surface motion/interruption cases, accessibility and required physical/trace/polish gates. Task 4.1 now has fresh live/privacy/close/focus integration proof.",
+      "next": "Complete task 4.3 interruption/retarget cases, accessibility and required physical/trace/polish gates. Tasks 4.1 and 4.2 have fresh named integration proof; the drawer tracking correction still needs board deployment.",
       "dependencies": [
         "2026-10-01-the-shell-manages-apps-as-cards",
         "the-shell-loads-omarchy-themes"
@@ -52,10 +52,11 @@
         "docs/evidence/shell-polish/settings-volume-layout/README.md",
         "docs/evidence/shell-polish/settings-volume-layout/board/README.md",
         "docs/evidence/boot-verification/coherent-ordinary-boot/README.md",
-        "docs/evidence/coherent-shell/integration-gate-2026-10-10/README.md"
+        "docs/evidence/coherent-shell/integration-gate-2026-10-10/README.md",
+        "docs/evidence/coherent-shell/coordinated-scene-2026-10-10/README.md"
       ],
       "rationale": "Source 5bb67db1 runs in matching normal system/profile p1a1hz after ordinary reboot. Services, Home captures and saved appearance hashes pass; the umbrella retains distinct accessibility, motion/trace and six-surface physical gates.",
-      "reviewRevision": "192ea36455e69f6acf31e198e7afbaf1493afedd",
+      "reviewRevision": "80193f1a017f75eb747a3b07532bc6c871692f0e",
       "cover": {
         "path": "docs/evidence/coherent-shell/refined-installed/drawer.png",
         "caption": "Installed app grid with real icons \u2014 touch acceptance pending",

@@ -1,0 +1,118 @@
+{
+  "observed_utc": "2026-10-10T17:49:40.049880+00:00",
+  "selected_derivations": [
+    "/nix/store/78cbxvppd5vms811mzwpbrnykw8r11jc-nixos-system-nixos-kexec-26.11.20260919.20b1ddd.drv",
+    "/nix/store/9xrwly06b2jk6jz6icrc52s4pmw0mwax-nixos-system-nixos-26.11.20260919.20b1ddd.drv",
+    "/nix/store/a1baxjd2rlj3rrwy47cwmnnh546s0gi7-initrd.drv",
+    "/nix/store/f32c1m1yc9r3vh2s3hdar0cpmxj65wjp-nixos-system-nixos-26.11.20260919.20b1ddd.drv",
+    "/nix/store/q2pfr7g99q8h9531jhfkhb440isjqa8m-linux-riscv64-unknown-linux-gnu-6.18.52.drv",
+    "/nix/store/36h0vyqx4v3xg9f7qks4hir4ck30cycq-k230-card-shell.drv"
+  ],
+  "enumeration": "nix derivation show --recursive; enumerate every declared output, including dev/devdoc/debug/bin siblings; intersect with nix path-info --all; retain prior paths and recursive derivation sources too",
+  "derivations_examined": 6475,
+  "declared_output_paths": 7047,
+  "realized_outputs_missing_from_prior_farm": 29,
+  "retained_paths": 10253,
+  "retained_paths_sha256": "580eb6b080ce29d91251e6ab2db2dbf8db0a4f5b4dd2b6bbd1445de4b14ea8a1",
+  "global_policy_changed": false,
+  "limits": [
+    "Only realized outputs are pinned; missing outputs are recorded, not rebuilt solely for pinning.",
+    "This audit establishes incomplete prior coverage, not a specific historical GC deletion event.",
+    "New derivations caused by input or source changes still require builds."
+  ],
+  "build_closure": "/nix/store/0a5ilkqbjx4nhpqsr84mj93lshnwgl7b-tdisplay-k230-retained-coherent-motion-build-inputs",
+  "build_closure_root": "/home/jadams/.local/state/tdisplay-k230/retained-builds/coherent-motion-2026-10-10/build-closure",
+  "build_closure_command": [
+    "flock",
+    "-n",
+    "/tmp/k230-nix-build.lock",
+    "nix",
+    "build",
+    "--impure",
+    "--max-jobs",
+    "1",
+    "--cores",
+    "1",
+    "--out-link",
+    "/home/jadams/.local/state/tdisplay-k230/retained-builds/coherent-motion-2026-10-10/build-closure",
+    "--file",
+    "/home/jadams/.local/state/tdisplay-k230/retained-builds/coherent-motion-2026-10-10/retain.nix"
+  ],
+  "build_closure_exit_code": 0,
+  "verified_utc": "2026-10-10T17:52:49.438493+00:00",
+  "sampled_gc_root_queries": {
+    "cairo-dev": {
+      "path": "/nix/store/9lvlsi106i3lwp8cbbqxbxspphnm8bwf-cairo-riscv64-unknown-linux-gnu-1.18.4-dev",
+      "command": [
+        "nix-store",
+        "--query",
+        "--roots",
+        "/nix/store/9lvlsi106i3lwp8cbbqxbxspphnm8bwf-cairo-riscv64-unknown-linux-gnu-1.18.4-dev"
+      ],
+      "matching_root": "/home/jadams/.local/state/tdisplay-k230/retained-builds/coherent-motion-2026-10-10/build-closure",
+      "exit_code": 0,
+      "root_observed": true
+    },
+    "harfbuzz-dev": {
+      "path": "/nix/store/s39xhbgzhid34nn7ikl230ps6y6r1pkw-harfbuzz-riscv64-unknown-linux-gnu-13.2.1-dev",
+      "command": [
+        "nix-store",
+        "--query",
+        "--roots",
+        "/nix/store/s39xhbgzhid34nn7ikl230ps6y6r1pkw-harfbuzz-riscv64-unknown-linux-gnu-13.2.1-dev"
+      ],
+      "matching_root": "/home/jadams/.local/state/tdisplay-k230/retained-builds/coherent-motion-2026-10-10/build-closure",
+      "exit_code": 0,
+      "root_observed": true
+    },
+    "pango-dev": {
+      "path": "/nix/store/k7jyhvjxjljvb1xp8y52ww9ar551czrn-pango-riscv64-unknown-linux-gnu-1.57.1-dev",
+      "command": [
+        "nix-store",
+        "--query",
+        "--roots",
+        "/nix/store/k7jyhvjxjljvb1xp8y52ww9ar551czrn-pango-riscv64-unknown-linux-gnu-1.57.1-dev"
+      ],
+      "matching_root": "/home/jadams/.local/state/tdisplay-k230/retained-builds/coherent-motion-2026-10-10/build-closure",
+      "exit_code": 0,
+      "root_observed": true
+    },
+    "sway": {
+      "path": "/nix/store/2djjlzlhwpcp0gqc4j4863nlh9alkf4a-sway-unwrapped-riscv64-unknown-linux-gnu-1.12",
+      "command": [
+        "nix-store",
+        "--query",
+        "--roots",
+        "/nix/store/2djjlzlhwpcp0gqc4j4863nlh9alkf4a-sway-unwrapped-riscv64-unknown-linux-gnu-1.12"
+      ],
+      "matching_root": "/home/jadams/.local/state/tdisplay-k230/retained-builds/coherent-motion-2026-10-10/build-closure",
+      "exit_code": 0,
+      "root_observed": true
+    }
+  },
+  "not_realized_output_paths_omitted_count": 4324,
+  "unrealized_paths_receipt": "Host-local retention.json lists each omitted output; no output is realized solely for pinning.",
+  "host_manifest": "/home/jadams/.local/state/tdisplay-k230/retained-builds/coherent-motion-2026-10-10/build-inputs.json",
+  "old_root_coverage": {
+    "cairo": {
+      "prior_farm_contains_drv": true,
+      "prior_farm_contains_runtime": true,
+      "prior_farm_contains_dev": false
+    },
+    "harfbuzz": {
+      "prior_farm_contains_drv": true,
+      "prior_farm_contains_runtime": true,
+      "prior_farm_contains_dev": false
+    },
+    "pango": {
+      "prior_farm_contains_drv": true,
+      "prior_farm_contains_runtime": true,
+      "prior_farm_contains_dev": false
+    }
+  },
+  "policy": {
+    "keep-outputs": false,
+    "keep-derivations": true,
+    "global_policy_changed": false
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "evidence_class": "headless-qemu-user-native-wayland-injected-touch",
+  "sway": "/nix/store/g7xzwwvr3x05mlmsab5jn5kn1sl41wjb-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway",
+  "client": "/nix/store/yjb89ap4bq5vb29szdzkr5sv9lpw1sz6-card-composition-probe-client-0.1/bin/card-composition-probe-client",
+  "sway_sha256": "3e12de25c17e22b02954466872a30cf7c11536801f53f5566d0cdf416acb7ebf",
+  "client_sha256": "1933c7fefe0bc6173bab2a88393abba3409a61259fc5b3afa14ebc20ffc93ec6",
+  "started_utc": "2026-10-10T17:38:28.739075+00:00",
+  "cases": {},
+  "rust": "/nix/store/q2rxmp980f9kxi962f29333z9pbixvbk-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0/bin/k230-shell-rust",
+  "rust_sha256": "b99ebd94e74a5a48b6f9200cdb82ef66117cef6be5d39ef1b1b1ef1d9ed0829b",
+  "service_inputs": "synthetic status-only Settings and unavailable notification/audio services",
+  "result": "FAIL",
+  "failed_case": "drawer-rise",
+  "failure_type": "AssertionError",
+  "finished_utc": "2026-10-10T17:38:57.269973+00:00"
+}

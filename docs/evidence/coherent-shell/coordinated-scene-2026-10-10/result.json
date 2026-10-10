@@ -1,0 +1,164 @@
+{
+  "evidence_class": "headless-qemu-user-native-wayland-injected-touch",
+  "sway": "/nix/store/2djjlzlhwpcp0gqc4j4863nlh9alkf4a-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway",
+  "client": "/nix/store/yjb89ap4bq5vb29szdzkr5sv9lpw1sz6-card-composition-probe-client-0.1/bin/card-composition-probe-client",
+  "sway_sha256": "a015dda21bfec6db871e1f8febb74a5695fe252e767c0ac8efc7697af7508774",
+  "client_sha256": "1933c7fefe0bc6173bab2a88393abba3409a61259fc5b3afa14ebc20ffc93ec6",
+  "started_utc": "2026-10-10T17:47:52.422963+00:00",
+  "cases": {
+    "shrink-live": {
+      "result": "PASS",
+      "source_box": [
+        24,
+        48,
+        544,
+        1088
+      ],
+      "held_samples": [
+        {
+          "finger_y": 1100,
+          "box": [
+            51,
+            66,
+            518,
+            1000
+          ]
+        },
+        {
+          "finger_y": 1000,
+          "box": [
+            77,
+            83,
+            491,
+            911
+          ]
+        }
+      ],
+      "live_counters_before": {
+        "frames": 17,
+        "callbacks": 16,
+        "child_frames": 16,
+        "child_callbacks": 15
+      },
+      "live_counters_after": {
+        "frames": 61,
+        "callbacks": 60,
+        "child_frames": 60,
+        "child_callbacks": 59
+      },
+      "live_root_and_child_advanced": true,
+      "held_geometry_stable": true,
+      "rounded_clip": true,
+      "destination": "overview"
+    },
+    "drawer-rise": {
+      "result": "PASS",
+      "held_samples": [
+        {
+          "finger_y": 1100,
+          "panel_top": 1132
+        },
+        {
+          "finger_y": 900,
+          "panel_top": 932
+        }
+      ],
+      "held_top": 932,
+      "settled_top": 32,
+      "route": "overview -> pinned Home -> drawer -> pinned Home",
+      "underlying_home_stationary": true,
+      "overlay_on_top": true,
+      "accepted_stream_not_replayed": true,
+      "running_app_retained": true
+    },
+    "shade-descend": {
+      "result": "PASS",
+      "held_samples": [
+        {
+          "finger_y": 110,
+          "panel_bottom": 100
+        },
+        {
+          "finger_y": 310,
+          "panel_bottom": 300
+        }
+      ],
+      "held_bottom": 300,
+      "settled_bottom": 801,
+      "settings_bottom": 1014,
+      "settings_opened_by_touch": true,
+      "underlying_rect_preserved": true,
+      "prior_focus_recovered": true,
+      "settings_requests": "status only"
+    },
+    "expand-live": {
+      "result": "PASS",
+      "card_box": [
+        57,
+        197,
+        511,
+        1106
+      ],
+      "app_box": [
+        24,
+        48,
+        544,
+        1088
+      ],
+      "samples": [
+        {
+          "box": [
+            57,
+            198,
+            511,
+            1106
+          ],
+          "mode": "5"
+        },
+        {
+          "box": [
+            45,
+            144,
+            523,
+            1099
+          ],
+          "mode": "5"
+        },
+        {
+          "box": [
+            24,
+            48,
+            544,
+            1088
+          ],
+          "mode": "0"
+        }
+      ],
+      "intermediate_live_geometry": true,
+      "focus_restored": true
+    },
+    "focus": {
+      "result": "PASS",
+      "neighbor_focus_committed_after_expand": true,
+      "expanded_app_received_key": true,
+      "search_received_key": true,
+      "search_key_not_delivered_to_apps": true,
+      "search_returned_to_home": true,
+      "drawer_activated_existing_app": true,
+      "selected_app_focus_recovered": true,
+      "key_counts_during_search": {
+        "k230.card.one": 0,
+        "k230.card.two": 1
+      },
+      "key_counts_after_return": {
+        "k230.card.one": 0,
+        "k230.card.two": 2
+      }
+    }
+  },
+  "rust": "/nix/store/q2rxmp980f9kxi962f29333z9pbixvbk-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0/bin/k230-shell-rust",
+  "rust_sha256": "b99ebd94e74a5a48b6f9200cdb82ef66117cef6be5d39ef1b1b1ef1d9ed0829b",
+  "service_inputs": "synthetic status-only Settings and unavailable notification/audio services",
+  "result": "PASS",
+  "finished_utc": "2026-10-10T17:48:49.701488+00:00"
+}

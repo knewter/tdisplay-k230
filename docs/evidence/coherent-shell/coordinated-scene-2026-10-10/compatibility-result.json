@@ -1,0 +1,73 @@
+{
+  "evidence_class": "headless-qemu-user-native-wayland-injected-touch",
+  "sway": "/nix/store/2djjlzlhwpcp0gqc4j4863nlh9alkf4a-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway",
+  "client": "/nix/store/yjb89ap4bq5vb29szdzkr5sv9lpw1sz6-card-composition-probe-client-0.1/bin/card-composition-probe-client",
+  "sway_sha256": "a015dda21bfec6db871e1f8febb74a5695fe252e767c0ac8efc7697af7508774",
+  "client_sha256": "1933c7fefe0bc6173bab2a88393abba3409a61259fc5b3afa14ebc20ffc93ec6",
+  "started_utc": "2026-10-10T17:48:06.946094+00:00",
+  "cases": {
+    "live-gate": {
+      "result": "PASS",
+      "before": {
+        "k230.card.one": {
+          "frames": 4,
+          "callbacks": 3,
+          "child_frames": 3,
+          "child_callbacks": 2
+        },
+        "k230.card.two": {
+          "frames": 5,
+          "callbacks": 4,
+          "child_frames": 4,
+          "child_callbacks": 3
+        }
+      },
+      "after": {
+        "k230.card.one": {
+          "frames": 11,
+          "callbacks": 10,
+          "child_frames": 10,
+          "child_callbacks": 9
+        },
+        "k230.card.two": {
+          "frames": 17,
+          "callbacks": 16,
+          "child_frames": 16,
+          "child_callbacks": 15
+        }
+      },
+      "live_pixels_visible": true,
+      "unavailable_placeholder": true,
+      "live_source_restored": true
+    },
+    "private-no-icon": {
+      "result": "PASS",
+      "public_icon_pixels": [
+        1296,
+        1296
+      ],
+      "private_icon_pixels": [
+        0,
+        0
+      ],
+      "private_content_pixels": [
+        0,
+        0
+      ],
+      "neutral_scenes_equal": true
+    },
+    "close-refused": {
+      "result": "PASS",
+      "close_requests": 1,
+      "timeout_reported": true,
+      "app_retained": true,
+      "focus_restored": true,
+      "keyboard_delivered": true,
+      "accepting_close_requests": 1,
+      "accepting_app_exited": true,
+      "survivor_focus_restored": true
+    }
+  },
+  "result": "PASS",
+  "finished_utc": "2026-10-10T17:48:32.451423+00:00"
+}

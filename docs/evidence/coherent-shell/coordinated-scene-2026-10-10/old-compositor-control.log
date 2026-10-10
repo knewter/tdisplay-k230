@@ -1,0 +1,25 @@
+Traceback (most recent call last):
+  File "/home/jadams/tmp/k230-coherent-closeout-2026-10-10/tests/test_shell_motion.py", line 419, in await_panel
+    image = wait_for(lambda: (im if ready(im) else None)
+                     if (im := scene.capture(name)) else None, name, 4)
+  File "/home/jadams/tmp/k230-coherent-closeout-2026-10-10/tests/test_shell_motion.py", line 41, in wait_for
+    raise AssertionError(f"timeout: {label}")
+AssertionError: timeout: drawer-100
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/jadams/tmp/k230-coherent-closeout-2026-10-10/tests/test_shell_motion.py", line 724, in <module>
+    main()
+    ~~~~^^
+  File "/home/jadams/tmp/k230-coherent-closeout-2026-10-10/tests/test_shell_motion.py", line 702, in main
+    proof = {"live-gate": live_gate, "private-no-icon": private_no_icon,
+             "close-refused": close_refused, "shrink-live": shrink_live,
+             "drawer-rise": drawer_rise, "shade-descend": shade_descend,
+             "expand-live": expand_live, "focus": focus}[case](scene)
+  File "/home/jadams/tmp/k230-coherent-closeout-2026-10-10/tests/test_shell_motion.py", line 514, in drawer_rise
+    image, actual = await_panel(scene, name, baseline, "drawer", edge)
+                    ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/jadams/tmp/k230-coherent-closeout-2026-10-10/tests/test_shell_motion.py", line 424, in await_panel
+    raise AssertionError(f"{surface} edges {sorted(observed, key=str)}, expected {expected}±2") from error
+AssertionError: drawer edges [1112], expected 1132±2

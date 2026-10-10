@@ -1,0 +1,172 @@
+{
+  "source_revision": "80193f1a017f75eb747a3b07532bc6c871692f0e",
+  "product_build_source_revision": "6b7fd98ca9150cc0dbd2534e786aed9ac95201bf",
+  "base_revision": "3b9d9ca28c192d3c9c069884c19506bb0dd4839d",
+  "working_tree_source": "Committed fixture and adapter unchanged during successful final run and failing old-compositor control. Build-source and fixture-source revisions have identical adapter bytes.",
+  "command": [
+    "python3",
+    "tests/test_shell_motion.py",
+    "--case",
+    "shrink-live",
+    "--case",
+    "drawer-rise",
+    "--case",
+    "shade-descend",
+    "--case",
+    "expand-live",
+    "--case",
+    "focus",
+    "--output",
+    "/home/jadams/tmp/k230-m42-final"
+  ],
+  "environment": {
+    "CARD_SHELL_SWAY": "/nix/store/2djjlzlhwpcp0gqc4j4863nlh9alkf4a-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway",
+    "CARD_SHELL_CLIENT": "/nix/store/yjb89ap4bq5vb29szdzkr5sv9lpw1sz6-card-composition-probe-client-0.1/bin/card-composition-probe-client",
+    "K230_SHELL_RUST": "/nix/store/q2rxmp980f9kxi962f29333z9pbixvbk-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0/bin/k230-shell-rust"
+  },
+  "exit_code": 0,
+  "fixture_sha256": "50638b2e73b312ee5863d48a3e957c29b283e1ecdea3783c6a078aef0abaa857",
+  "adapter_sha256": "458da96a9d55e313c0c59835becbdd00933ae6570db45cd891fb335fcbd9b2fa",
+  "configuration_artifacts": {
+    "cards": "/nix/store/gg7m8cqiixyi5mr7a3jcjz431np9a2na-k230-card-shell",
+    "rust": "/nix/store/q2rxmp980f9kxi962f29333z9pbixvbk-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0"
+  },
+  "component_build_command": [
+    "flock",
+    "-n",
+    "/tmp/k230-nix-build.lock",
+    "nix",
+    "build",
+    "--impure",
+    "--no-link",
+    "--print-out-paths",
+    "--max-jobs",
+    "1",
+    "--cores",
+    "2",
+    "--expr",
+    "let f = builtins.getFlake \"/home/jadams/tmp/k230-coherent-closeout-2026-10-10\"; p = f.nixosConfigurations.k230.pkgs; in p.callPackage (f.outPath + \"/nix/card-shell.nix\") { swayUnwrapped = p.sway-unwrapped; }"
+  ],
+  "component_build_exit_code": 0,
+  "captures": {
+    "shrink-held.png": {
+      "source_artifact": "shrink-live/shrink-held.png",
+      "sha256": "b384d1c88c5b1ee3f33eb863b238d32db660baf70dc09cacdc6c121db1f4ab88",
+      "bytes": 5697
+    },
+    "shrink-overview.png": {
+      "source_artifact": "shrink-live/shrink-overview.png",
+      "sha256": "23048b7408a4d2855520da2efaffca1496620dd4929a13c4c56ff1f1bba1fe7f",
+      "bytes": 13841
+    },
+    "home-held.png": {
+      "source_artifact": "drawer-rise/home-held.png",
+      "sha256": "39468de49f9d3bf7349a8c1b05292f915908c934749ee8e0f55b0ae32f18494b",
+      "bytes": 9495
+    },
+    "drawer-100.png": {
+      "source_artifact": "drawer-rise/drawer-100.png",
+      "sha256": "ec84e64f2f63096b88fc1c03ddb63ca360ba93d72401a6764fe053d66e6d5bd0",
+      "bytes": 9271
+    },
+    "drawer-300.png": {
+      "source_artifact": "drawer-rise/drawer-300.png",
+      "sha256": "fea0f40dabd3aa4fd5bbadd4a7e95205d66c93a937bf9085477e1815f6cd45cf",
+      "bytes": 10187
+    },
+    "drawer-open.png": {
+      "source_artifact": "drawer-rise/drawer-open.png",
+      "sha256": "4780410f54c3f47a02258d3bab73dc18acdfb993c40ae5ca1a348f1562759537",
+      "bytes": 10187
+    },
+    "shade-100.png": {
+      "source_artifact": "shade-descend/shade-100.png",
+      "sha256": "c8c53864d6dd325f0ff5d4151ae3d79e849f9b206dd5bb17c79a0c4bccb3a9ae",
+      "bytes": 5784
+    },
+    "shade-300.png": {
+      "source_artifact": "shade-descend/shade-300.png",
+      "sha256": "6b7296b7e4613fca5c18bc66099dce27a24ea2ec4faad3b64bcb81bb082ffda6",
+      "bytes": 5637
+    },
+    "shade-open.png": {
+      "source_artifact": "shade-descend/shade-open.png",
+      "sha256": "fa6e0aad5a3f7a927ab57b3ddb14fb5501c85685cf1090d4e55776f8381827d8",
+      "bytes": 25305
+    },
+    "shade-settings.png": {
+      "source_artifact": "shade-descend/shade-settings.png",
+      "sha256": "60aea246794323007d2d149bdbdd07df6f18fd897c362b87df6904ed5fa7410c",
+      "bytes": 42780
+    },
+    "shade-restored.png": {
+      "source_artifact": "shade-descend/shade-restored.png",
+      "sha256": "5885fdf7a509f577e21b5a318592c1ac3327778c4afa004d3e5824becdec50a0",
+      "bytes": 5792
+    },
+    "expand-01.png": {
+      "source_artifact": "expand-live/expand-01.png",
+      "sha256": "2ea7344df624378e1acea8a50a07e65463a88cf32d538a79542eb0c926f7ad46",
+      "bytes": 5487
+    },
+    "expand-restored.png": {
+      "source_artifact": "expand-live/expand-restored.png",
+      "sha256": "91e8033dd6d79142ec66fb0f3e8d4612d13c5942967d94c0ed06a4b20884d66e",
+      "bytes": 5776
+    },
+    "focus-search-typed.png": {
+      "source_artifact": "focus/focus-search-typed.png",
+      "sha256": "8fa91114e4b65754f27d216a1b80b96c79a7ccb6e21ab7b6684efeb5ac98d42f",
+      "bytes": 12216
+    },
+    "focus-app-restored.png": {
+      "source_artifact": "focus/focus-app-restored.png",
+      "sha256": "98733d800ee9bed45d9010b5b4ec4615fa165f6fb7f806566863a95628753d63",
+      "bytes": 5793
+    },
+    "old-drawer-100.png": {
+      "source_artifact": "/home/jadams/tmp/k230-m42-control/drawer-rise/drawer-100.png",
+      "sha256": "1c663bebb1df5efc2adb36c1f804b5a9ac60650154ea95046a0f2a7241c68ba3",
+      "bytes": 9273
+    }
+  },
+  "old_compositor_control": {
+    "source_revision": "80193f1a017f75eb747a3b07532bc6c871692f0e",
+    "command": [
+      "python3",
+      "tests/test_shell_motion.py",
+      "--case",
+      "drawer-rise",
+      "--output",
+      "/home/jadams/tmp/k230-m42-control"
+    ],
+    "environment": {
+      "CARD_SHELL_SWAY": "/nix/store/g7xzwwvr3x05mlmsab5jn5kn1sl41wjb-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway",
+      "CARD_SHELL_CLIENT": "/nix/store/yjb89ap4bq5vb29szdzkr5sv9lpw1sz6-card-composition-probe-client-0.1/bin/card-composition-probe-client",
+      "K230_SHELL_RUST": "/nix/store/q2rxmp980f9kxi962f29333z9pbixvbk-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0/bin/k230-shell-rust"
+    },
+    "exit_code": 1,
+    "expected_failure": "drawer edges [1112], expected 1132\u00b12",
+    "product_or_fixture_mutation": "Only the selected compositor executable changes; fixture, Rust executable and native client are identical."
+  },
+  "compatibility_command": [
+    "python3",
+    "tests/test_shell_motion.py",
+    "--case",
+    "live-gate",
+    "--case",
+    "private-no-icon",
+    "--case",
+    "close-refused",
+    "--output",
+    "/home/jadams/tmp/k230-m42-compat"
+  ],
+  "compatibility_exit_code": 0,
+  "evidence_class": "headless-qemu-user-native-wayland-injected-touch",
+  "limits": [
+    "Headless Pixman RISC-V Sway and Rust under QEMU user emulation, native Wayland probe, injected wlroots touch and virtual keyboard.",
+    "Synthetic Settings status fixture; only status queries observed; notification/audio services unavailable.",
+    "No system-mode guest boot, physical panel/finger, timing claim, or board deployment.",
+    "Interruption task 4.3 and remaining physical/accessibility/polish gates stay open."
+  ]
+}

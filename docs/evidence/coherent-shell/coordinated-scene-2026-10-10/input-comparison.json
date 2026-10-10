@@ -1,0 +1,14 @@
+{
+  "previous_sway_derivation": "/nix/store/apv9jxdkxn6bwdqir2bgsdslv4qvgymh-sway-unwrapped-riscv64-unknown-linux-gnu-1.12.drv",
+  "candidate_sway_derivation": "/nix/store/a5z8k19xsgb572qppf6adcvxcl56s3mj-sway-unwrapped-riscv64-unknown-linux-gnu-1.12.drv",
+  "build_inputs_equal": true,
+  "changed_source_inputs": [
+    "2jdp9nyziv3c0dvv3a8hlcfzrda984k5-adapter.c",
+    "imrq50sa73pxy8qhirydrib2hx74kh81-adapter.c"
+  ],
+  "prior_retention_omitted_unrealized_paths": 0,
+  "limits": [
+    "Specific GC event is unverified; missing component build outputs are observed directly.",
+    "No input or package-version invalidation was observed."
+  ]
+}
