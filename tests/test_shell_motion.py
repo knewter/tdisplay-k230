@@ -687,7 +687,7 @@ def held_entry(scene, ident, y=900, x=284, name="entry-held"):
     return Scene.color_box(image)
 
 
-def recovery_frames(scene, name, mode, color=(32, 112, 176), forbidden=()):
+def recovery_frames(scene, name, mode, color=(32, 112, 176), forbidden=(), expected_width=None):
     samples = []
     deadline = time.monotonic() + 10
     while time.monotonic() < deadline:
@@ -700,7 +700,13 @@ def recovery_frames(scene, name, mode, color=(32, 112, 176), forbidden=()):
         state = scene.state()
         samples.append({"box": box, "mode": state["mode"],
                         "selected_app_id": state["selected_app_id"]})
-        if state["mode"] == str(mode):
+        width = box[2] - box[0]
+        # IPC can already report the final mode while this screencopy was
+        # composed one frame earlier. Require the destination's actual pixels
+        # as well, rather than pairing a stale transform with the new mode.
+        final_pixels = (mode != 0 or width >= 518) and (
+            expected_width is None or abs(width - expected_width) <= 2)
+        if state["mode"] == str(mode) and final_pixels:
             return samples
     raise AssertionError(f"{name} did not settle in mode {mode}")
 
@@ -748,7 +754,8 @@ def reverse(scene):
     assert scene.state()["mode"] == "5", "Back reset unfinished expansion instead of reversing"
     Scene.assert_frame(middle_image)
     middle = Scene.color_box(middle_image)
-    expansion = recovery_frames(scene, "back-expand-reverse", 1)
+    expansion = recovery_frames(scene, "back-expand-reverse", 1,
+                                 expected_width=small[2] - small[0])
     assert expansion[-1]["box"][2] - expansion[-1]["box"][0] <= small[2] - small[0] + 2
     assert scene.focused() == "k230.card.one", "expansion reversal lost original focus"
     return {"finger_reversal_box": reversed_box, "finger_release_frames": finger,
@@ -777,7 +784,8 @@ def retarget(scene):
     assert scene.state()["mode"] == "5", "new contact skipped current expansion geometry"
     Scene.assert_frame(middle_image)
     middle = Scene.color_box(middle_image)
-    contact = recovery_frames(scene, "new-contact-reverse", 1)
+    contact = recovery_frames(scene, "new-contact-reverse", 1,
+                               expected_width=small[2] - small[0])
     assert contact[-1]["box"][2] - contact[-1]["box"][0] <= small[2] - small[0] + 2
     scene.command("test-touch motion 93 300 300")
     scene.command("test-touch up 93")
