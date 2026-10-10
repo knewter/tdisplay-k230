@@ -17,7 +17,7 @@
       "lane": "in-progress",
       "source": "in-progress",
       "physical": "pending",
-      "next": "Deploy the combined reviewed client/compositor/helper candidate through the existing guarded qualification workflow, then complete the required physical/trace/polish gates. Accessibility task 1.5 and integration tasks 4.1\u20134.3 now have committed host/build proof.",
+      "next": "The combined mainline client/compositor/helper candidate is temporarily running on the board. Obtain its requested real-touch navigation/Help report, then complete the required camera/trace/polish and persistent ordinary-boot gates.",
       "dependencies": [
         "2026-10-01-the-shell-manages-apps-as-cards",
         "the-shell-loads-omarchy-themes"
@@ -55,10 +55,11 @@
         "docs/evidence/coherent-shell/integration-gate-2026-10-10/README.md",
         "docs/evidence/coherent-shell/coordinated-scene-2026-10-10/README.md",
         "docs/evidence/coherent-shell/interruption-gate-2026-10-10/README.md",
-        "docs/evidence/coherent-shell/navigation-aid-2026-10-10/README.md"
+        "docs/evidence/coherent-shell/navigation-aid-2026-10-10/README.md",
+        "docs/evidence/coherent-shell/combined-board-candidate-2026-10-10/README.md"
       ],
-      "rationale": "Source 5bb67db1 remains the last identified ordinary-boot candidate. Help/navigation aid and the newer drawer tracking, cancellation, theme admission and deferred app-refresh corrections have host/build proof but need coordinated board deployment. Physical discovery, motion/trace and six-surface proof remain separate open gates.",
-      "reviewRevision": "9e4515ed32cc849bfcc56dbe60d02e877bee75a7",
+      "rationale": "The read-only baseline identifies the accepted yl3si5 normal HDMI system/profile. Combined source 093a82a0 now has a matching inspected bundle and an exact temporary physical boot with native Help rendering; real-touch acceptance, camera/trace/polish and persistent ordinary boot for this candidate remain separate open gates.",
+      "reviewRevision": "093a82a0c31007f775ad260492e30d3088739548",
       "cover": {
         "path": "docs/evidence/coherent-shell/refined-installed/drawer.png",
         "caption": "Installed app grid with real icons \u2014 touch acceptance pending",

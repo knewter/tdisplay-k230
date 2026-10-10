@@ -1,0 +1,60 @@
+{
+  "utc": "2026-10-10T22:23:48.764207+00:00",
+  "evidence_class": "physical-board serial identity and programmatic native Help capture; no real-finger or camera acceptance",
+  "candidate": "/nix/store/hzz623hn3wxvr4b1536591pr5y5drnby-k230-coherent-shell-boot-files",
+  "system": "/nix/store/svjjlnvrs8djb6g6gkd0q0iwabpm6sxp-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "profile": "/nix/store/yl3si5ak6yi709yg1fqsnwgq0zn4xfcs-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "boot_id": "0618821a-6879-46d2-8109-7f130c65888f",
+  "kernel": "/nix/store/f3rnipvbc5vqam8kwdmn3wgcl5rbz9yx-linux-riscv64-unknown-linux-gnu-7.3.0-rc5/Image",
+  "shell_executable": "/nix/store/z4j8bc7iwz9m7pap376zy0j0z16295lr-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0/bin/k230-shell-rust",
+  "sway_executable": "/nix/store/awym9l5znn6599q37wnhnnch77ggghjh-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway",
+  "theme_helper": "/nix/store/y76z6yndmg134z5fyp1p1j9lmlgcfkzf-handheld-theme-command-0.1",
+  "services": {
+    "shell": "active",
+    "shell-ui": "active",
+    "theme-helper": "active",
+    "k230-touch-trackpad": "active"
+  },
+  "normal_boot_files": {
+    "Image": "9d94102c65c8e4fd6b8880ef7b19b8bee5fa91c85596384319f0104bd89509cb",
+    "initrd.uimg": "4365953c65e834fa9a9d5027ff5b6f79d99cc61afa732d58b7162a09edd2428f",
+    "k230-tdisplay.dtb": "a2db17d7cbed7424ddec6f69925f0b9b914308b49b0f7a92f0b483bff6a65a14",
+    "bootargs.txt": "5986006963d38a7c32cadc190db1ef8a0c37470c4578a7b1a988552daaf03371",
+    "fw_jump_add_uboot_head.bin": "9627edbeea9b115d7040beea27cc61b23b6aca61cd502fd7760d7ee179f42c99",
+    "force_dtb": "175342c82dd1b437cdafb6bb01090e7ff73c2769515654c48b02c1e9f73440c6",
+    "lcd_dtb": "175342c82dd1b437cdafb6bb01090e7ff73c2769515654c48b02c1e9f73440c6",
+    "hdmi_dtb": "175342c82dd1b437cdafb6bb01090e7ff73c2769515654c48b02c1e9f73440c6"
+  },
+  "normal_profile_preserved": true,
+  "persistent_boot_selection_changed": false,
+  "sway_outputs": [
+    {
+      "name": "HDMI-A-1",
+      "active": true,
+      "current_mode": {
+        "width": 1280,
+        "height": 800,
+        "refresh": 59910,
+        "picture_aspect_ratio": "none"
+      },
+      "transform": "90",
+      "scale": 1.0,
+      "rect": {
+        "x": 0,
+        "y": 0,
+        "width": 800,
+        "height": 1280
+      }
+    }
+  ],
+  "help_capture": {
+    "sha256": "3fb102a889e56bb760935320dec9e14e546d1b79743cef05ba91a35a97a4e57f",
+    "bytes": 69836,
+    "width": 800,
+    "height": 1280,
+    "input": "programmatic help route request"
+  },
+  "home_restored_programmatically": true,
+  "operator_real_finger_accepted": false,
+  "result": "PASS"
+}
