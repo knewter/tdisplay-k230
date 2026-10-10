@@ -1,0 +1,28 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.06s
+     Running unittests src/main.rs (/home/jadams/tmp/k230-admission-host-target/debug/deps/k230_shell_rust-7cdb96a3b82c449f)
+
+running 22 tests
+test route_tests::brightness_commit_suppresses_its_own_success_toast_but_not_a_failure ... ok
+test route_tests::appearance_media_requires_a_configured_still_decoder ... ok
+test route_tests::drawer_downward_drag_engages_only_from_an_eligible_zone_past_slop ... ok
+test route_tests::may_reuse_optimistic_frame_only_for_a_commit_matching_exactly ... ok
+test route_tests::drawer_live_close_drag_never_engages_after_a_mid_gesture_scroll_reversal ... ok
+test route_tests::optimistic_apply_due_is_scoped_to_each_fresh_pending_id_for_a_rapid_double_apply ... ok
+test route_tests::optimistic_apply_fires_only_for_an_activate_matching_the_prepared_generation ... ok
+test route_tests::optimistic_apply_skip_reason_names_the_specific_cause ... ok
+test route_tests::prerendered_overlay_matches_requires_every_field_to_agree ... ok
+test route_tests::prerendered_overlay_mismatch_reason_names_the_specific_field ... ok
+test route_tests::redraw_entry_never_gates_on_a_surfaces_own_outstanding_frame_callback ... ok
+test route_tests::rollback_resolves_to_retained_previous_decoder_without_new_decode ... ok
+test route_tests::buffered_progress_burst_coalesces_before_next_poll ... ok
+test route_tests::shade_and_settings_map_full_height_drawer_keeps_its_own_offset ... ok
+test route_tests::shade_upward_drag_engages_only_from_an_eligible_zone_past_slop ... ok
+test route_tests::speculative_theme_motion_waits_for_both_carousels_to_finish_moving ... ok
+test route_tests::splash_window_event_matches_by_pid_through_the_real_thin_wrapper ... ok
+test route_tests::split_stream_finish_and_premature_eof ... ok
+test route_tests::sway_back_failure_blocks_launch_handoff ... ok
+test route_tests::running_con_id_honors_startup_class_for_floating_apps ... ok
+test route_tests::launch_selected_captures_the_real_spawned_pid_with_no_glib_main_loop_running ... ok
+test route_tests::spawn_splash_watcher_ignores_events_with_no_swaysock_and_never_signals ... ok
+
+test result: ok. 22 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.51s

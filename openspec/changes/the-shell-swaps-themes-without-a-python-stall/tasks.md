@@ -1162,7 +1162,7 @@ below is complete merely because that partial evidence or this plan landed.
   discontinuities. Narrow Rust proof: `cargo test --offline --manifest-path nix/rust-shell-client/Cargo.toml --lib theme_picker`.
   Compare instrumentation-on/off overhead on the board before interpreting
   detailed timings; no native screencopy runs inside the timing pass.
-- [ ] 13.3 Gate all new speculative dwell/neighbor request admission while
+- [x] 13.3 Gate all new speculative dwell/neighbor request admission while
   either carousel is held, coasting or settling. Preserve the bounded queue
   while paused, honor the latest settled center before neighbors, and resume
   only when both rows are at rest. Do not cancel or mislabel in-flight work:
@@ -1174,6 +1174,16 @@ below is complete merely because that partial evidence or this plan landed.
   resumption after settling, and foreground-request priority. Planned proof:
   `cargo test --offline --manifest-path nix/rust-shell-client/Cargo.toml --lib prepare_ahead`
   and `cargo test --offline --manifest-path nix/rust-shell-client/Cargo.toml --bin k230-shell-rust speculative_theme_motion`.
+  **Completed 2026-10-10:** the motion gate already landed in `f4bf213e` after
+  the historical audit below. Closed its remaining center-priority gap: queued
+  neighbors now wait for the latest settled center's full dwell. Both named
+  commands pass (7 preparation cases and a six-combination row-motion regression),
+  along with 28 theme-UI and 22 route checks; `nix build .#handheld-shell-rust`
+  passes under the sole build lock. A test-only old-source control fails at the
+  prematurely admitted neighbor. Commands, hashes, source/artifact identities,
+  host output, cross-build and verified extended retention are committed in
+  `docs/evidence/theme-picker/admission-closeout-2026-10-10/README.md`.
+  Host/cross-build only; tasks 13.1/13.2/13.4 and physical acceptance remain open.
 - [ ] 13.4 On the reserved board, compare the repaired baseline and the
   admission-gated candidate with the 13.1 workload in at least three matched
   pairs, alternating order. Record exact packages and process/cache history;

@@ -591,6 +591,20 @@
       "evidence": [
         "docs/evidence/card-shell/frame-budget/acceptance-2026-10-09/README.md"
       ]
+    },
+    "the-shell-swaps-themes-without-a-python-stall": {
+      "lane": "in-progress",
+      "source": "in-progress",
+      "physical": "pending",
+      "next": "Task 13.3 motion admission and settled-center priority have named host and cross-build proof. The new client needs board deployment; deferred Foot recolour, matched workload/attribution, current-candidate comparison and separate physical motion gates remain.",
+      "dependencies": [],
+      "evidence": [
+        "docs/evidence/theme-picker/admission-closeout-2026-10-10/README.md",
+        "docs/evidence/theme-picker/row-repaint/pair/README.md",
+        "docs/evidence/boot-verification/coherent-ordinary-boot/README.md"
+      ],
+      "rationale": "The motion gate from f4bf213e is reconciled with the stale task audit and its remaining center-priority gap is fixed. Host and package construction close task 13.3 only; previous installed-system and comparison identities do not qualify this new client.",
+      "reviewRevision": "91943f89587da3f1869c905c25f2039b7c17d370"
     }
   }
 }

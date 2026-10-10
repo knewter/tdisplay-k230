@@ -1,0 +1,73 @@
+{
+  "observed_utc": "2026-10-10T19:27:52.808973+00:00",
+  "selected_derivation": "/nix/store/pgjcylwpbm5b7mjxljspzph0721m7fy2-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0.drv",
+  "prior_retained_paths": 10266,
+  "retained_paths": 10357,
+  "newly_retained_paths": 91,
+  "retained_paths_sha256": "c269d20ed3d7d47a86bec3b360289f8c4c3ab9a7f58e89035381f005f553ea36",
+  "prior_farm_selected_vendor_coverage": false,
+  "selected_vendor": "/nix/store/m5albwanpvzl2r9lxavfd6zb4mc17s4c-cargo-vendor-dir",
+  "enumeration": "Prior verified farm union recursive selected Rust derivation sources and all currently realized declared outputs; batched nix-store --check-validity passed before farm construction.",
+  "unrealized_outputs_omitted_count": 1381,
+  "global_policy_changed": false,
+  "build_closure_root": "/home/jadams/.local/state/tdisplay-k230/retained-builds/theme-admission-2026-10-10/build-closure",
+  "build_closure": "/nix/store/hah7zjnjkqy9ng5smph49x7mv4dd6696-tdisplay-k230-retained-theme-admission-build-inputs",
+  "gc_root_queries": [
+    {
+      "command": [
+        "nix-store",
+        "--query",
+        "--roots",
+        "/nix/store/x69mg9sdfbk6m3m25gi80f2s083c7nwk-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0"
+      ],
+      "matching_root": "/home/jadams/.local/state/tdisplay-k230/retained-builds/theme-admission-2026-10-10/build-closure",
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "nix-store",
+        "--query",
+        "--roots",
+        "/nix/store/m5albwanpvzl2r9lxavfd6zb4mc17s4c-cargo-vendor-dir"
+      ],
+      "matching_root": "/home/jadams/.local/state/tdisplay-k230/retained-builds/theme-admission-2026-10-10/build-closure",
+      "exit_code": 0
+    }
+  ],
+  "farm_build_exit_code": 0,
+  "verified_utc": "2026-10-10T19:33:37.909293+00:00",
+  "entry_context": "Every JSON entry is mapped through builtins.storePath before linkFarm, registering the paths as actual Nix dependencies.",
+  "retention_expression_sha256": "634259873ca735ae19105cc22ac642b6b99216c16416693a2cd6ccc3a0d8816b",
+  "farm_build_command": [
+    "flock",
+    "-n",
+    "/tmp/k230-nix-build.lock",
+    "nix",
+    "build",
+    "--impure",
+    "--max-jobs",
+    "1",
+    "--cores",
+    "1",
+    "--out-link",
+    "/home/jadams/.local/state/tdisplay-k230/retained-builds/theme-admission-2026-10-10/build-closure",
+    "--file",
+    "/home/jadams/.local/state/tdisplay-k230/retained-builds/theme-admission-2026-10-10/retain.nix"
+  ],
+  "repeat_component_dry_run": {
+    "command": [
+      "nix",
+      "build",
+      ".#handheld-shell-rust",
+      "--dry-run",
+      "--no-link",
+      "--max-jobs",
+      "1",
+      "--cores",
+      "2"
+    ],
+    "exit_code": 0,
+    "builds_requested": 0,
+    "fetches_requested": 0
+  }
+}

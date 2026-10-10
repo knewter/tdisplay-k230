@@ -1,0 +1,14 @@
+   Compiling k230-shell-rust v0.1.0 (/home/jadams/tmp/k230-theme-admission-closeout-2026-10-10/nix/rust-shell-client)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 8.95s
+     Running unittests src/lib.rs (/home/jadams/tmp/k230-admission-host-target/debug/deps/k230_shell_rust-1ffb034c166b92ba)
+
+running 7 tests
+test theme_ui::tests::prepare_ahead_reply_records_the_known_generation ... ok
+test theme_ui::tests::prepare_ahead_skips_the_already_active_theme_and_a_stray_reply_never_reaches_accept ... ok
+test theme_ui::tests::prepare_ahead_waits_out_the_debounce_and_never_resends_for_the_same_index ... ok
+test theme_ui::tests::prepare_ahead_foreground_request_keeps_priority_after_motion ... ok
+test theme_ui::tests::prepare_ahead_inflight_completion_cannot_admit_during_motion ... ok
+test theme_ui::tests::prepare_ahead_latest_center_gets_its_full_dwell_before_neighbors_resume ... ok
+test theme_ui::tests::prepare_ahead_motion_preserves_neighbors_and_expires_dwell ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 423 filtered out; finished in 0.01s

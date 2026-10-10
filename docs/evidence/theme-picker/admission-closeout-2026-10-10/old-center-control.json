@@ -1,0 +1,20 @@
+{
+  "base_revision": "9c8f23218ddbb852d2bdd0535008f1faaffb186b",
+  "fixture": "base product source plus old-center-control.patch (only new regression test), before priority fix",
+  "source_sha256": "07112f21214240075322098d2b55037d3a3e143dcd6e78a12b96efa33a213fc2",
+  "command": [
+    "cargo",
+    "test",
+    "--offline",
+    "--manifest-path",
+    "nix/rust-shell-client/Cargo.toml",
+    "--lib",
+    "prepare_ahead_latest_center"
+  ],
+  "environment": {
+    "CARGO_TARGET_DIR": "/home/jadams/tmp/k230-admission-host-target"
+  },
+  "exit_code": 101,
+  "expected_failure": "queued neighbor index 2 is admitted during the newly settled center dwell; expected no request",
+  "patch_application": "git apply --unidiff-zero old-center-control.patch against the named base revision"
+}

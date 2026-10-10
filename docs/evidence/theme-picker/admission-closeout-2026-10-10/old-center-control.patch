@@ -1,0 +1,35 @@
+--- a/nix/rust-shell-client/src/theme_ui.rs
++++ b/nix/rust-shell-client/src/theme_ui.rs
+@@ -1597,0 +1598,32 @@
++    fn prepare_ahead_latest_center_gets_its_full_dwell_before_neighbors_resume() {
++        let mut view = ThemeView::default();
++        view.page = ThemePage::List;
++        load_list(&mut view, 7, Some(3));
++        let queued = view.pending_neighbor_warms.clone();
++        assert_eq!(queued.len(), 2);
++        // Changes of direction during motion never spend or grow this queue.
++        for center in [6, 1, 5, 2, 4].into_iter().cycle().take(200) {
++            assert_eq!(view.poll_prepare_ahead_at_rest(1000, Some(center), false), None);
++            assert_eq!(view.pending_neighbor_warms, queued);
++        }
++        // A neighbor must not occupy the single prepared slot while the
++        // newly settled center is still earning its 250ms dwell.
++        assert_eq!(view.poll_prepare_ahead_at_rest(100, Some(6), true), None);
++        assert_eq!(view.pending_neighbor_warms, queued);
++        // A different settled center restarts that dwell, even without a
++        // movement poll between the two observations.
++        assert_eq!(view.poll_prepare_ahead_at_rest(100, Some(0), true), None);
++        assert_eq!(view.poll_prepare_ahead_at_rest(100, Some(0), true), None);
++        let (index, request) = view.poll_prepare_ahead_at_rest(50, Some(0), true).unwrap();
++        assert_eq!(index, 0);
++        assert_eq!(view.pending_neighbor_warms, queued);
++        view.prepare_ahead_submitted(index, 42);
++        assert_eq!(view.poll_prepare_ahead_at_rest(1000, Some(0), true), None);
++        assert!(view.prepare_ahead_reply(&ThemeReply {
++            id: 42, request, result: Err("fixture completion".into()),
++        }));
++        // Once the chosen center has been handled, neighbors may resume.
++        assert_eq!(view.poll_prepare_ahead_at_rest(16, Some(0), true).unwrap().0, 2);
++    }
++
++    #[test]

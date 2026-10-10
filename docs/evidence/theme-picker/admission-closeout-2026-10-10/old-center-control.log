@@ -1,0 +1,24 @@
+   Compiling k230-shell-rust v0.1.0 (/home/jadams/tmp/k230-theme-admission-closeout-2026-10-10/nix/rust-shell-client)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 4.17s
+     Running unittests src/lib.rs (/home/jadams/tmp/k230-admission-host-target/debug/deps/k230_shell_rust-1ffb034c166b92ba)
+
+running 1 test
+test theme_ui::tests::prepare_ahead_latest_center_gets_its_full_dwell_before_neighbors_resume ... FAILED
+
+failures:
+
+---- theme_ui::tests::prepare_ahead_latest_center_gets_its_full_dwell_before_neighbors_resume stdout ----
+
+thread 'theme_ui::tests::prepare_ahead_latest_center_gets_its_full_dwell_before_neighbors_resume' (2715220) panicked at src/theme_ui.rs:1611:9:
+assertion `left == right` failed
+  left: Some((2, Preview { theme_id: "222222222222222222222222", background_id: None }))
+ right: None
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    theme_ui::tests::prepare_ahead_latest_center_gets_its_full_dwell_before_neighbors_resume
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 429 filtered out; finished in 0.00s
+
+error: test failed, to rerun pass `--lib`

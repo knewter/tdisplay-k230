@@ -1,0 +1,29 @@
+{
+  "base_revision": "9c8f23218ddbb852d2bdd0535008f1faaffb186b",
+  "source_revision": "91943f89587da3f1869c905c25f2039b7c17d370",
+  "candidate_derivation": "/nix/store/pgjcylwpbm5b7mjxljspzph0721m7fy2-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0.drv",
+  "copied_sources_match": {
+    "nix/rust-shell-client/src/theme_ui.rs": {
+      "copied_store_source": "/nix/store/h696gb37hiy7rg229irza7s0b9ld2pw5-rust-shell-client/src/theme_ui.rs",
+      "sha256": "da5c629d744c8c45b72d12e80887da93db3710b137e89a4e642d4bb22fa2d766"
+    },
+    "nix/rust-shell-client/src/main.rs": {
+      "copied_store_source": "/nix/store/h696gb37hiy7rg229irza7s0b9ld2pw5-rust-shell-client/src/main.rs",
+      "sha256": "ede3ef3d664008b6b5e1198f7f81d8c92b8caddf099d19765aa04e2d0896f51d"
+    },
+    "nix/rust-shell-client/Cargo.toml": {
+      "copied_store_source": "/nix/store/h696gb37hiy7rg229irza7s0b9ld2pw5-rust-shell-client/Cargo.toml",
+      "sha256": "adf3d185476197695d9d7e2c0bb77d829c1506aada0740d66acd2cb74511004f"
+    },
+    "nix/rust-shell-client/Cargo.lock": {
+      "copied_store_source": "/nix/store/h696gb37hiy7rg229irza7s0b9ld2pw5-rust-shell-client/Cargo.lock",
+      "sha256": "8e4264539239288653a7c093d95cbeeb0029a66f8be390f699f4384fd5e053cc"
+    }
+  },
+  "cargo_manifest_and_lock_changed_by_this_task": false,
+  "selected_vendor": "/nix/store/m5albwanpvzl2r9lxavfd6zb4mc17s4c-cargo-vendor-dir",
+  "prior_live_fixture_rust_derivation": "/nix/store/mrzkzjfdslxjwmqmqmlfzwagg0lsgyzc-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0.drv",
+  "prior_live_fixture_same_vendor_output": true,
+  "prior_retention_farm_covers_selected_vendor": false,
+  "limit": "Missing identical vendor output was outside the prior farm. This records coverage, not an observed historical GC deletion. The previous live-fixture Rust package is not the current system/package dependency graph."
+}

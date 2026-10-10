@@ -1,0 +1,117 @@
+{
+  "source_revision": "91943f89587da3f1869c905c25f2039b7c17d370",
+  "base_revision": "9c8f23218ddbb852d2bdd0535008f1faaffb186b",
+  "observed_utc": "2026-10-10T19:33:38.456216+00:00",
+  "commands": [
+    {
+      "command": [
+        "cargo",
+        "test",
+        "--offline",
+        "--manifest-path",
+        "nix/rust-shell-client/Cargo.toml",
+        "--lib",
+        "prepare_ahead"
+      ],
+      "environment": {
+        "CARGO_TARGET_DIR": "/home/jadams/tmp/k230-admission-host-target"
+      },
+      "exit_code": 0,
+      "passed": 7,
+      "log": "prepare-ahead-host.log",
+      "log_sha256": "666e6a4eceae2ae1e90b09dcd12e4811563150592ddc323c4976733c2dd28492",
+      "log_modified_utc": "2026-10-10T19:19:06.752774+00:00",
+      "raw_log_sha256": "5af412e00d25212c2780791e9609df00233285b8ff2513f656520ad780635ad9"
+    },
+    {
+      "command": [
+        "cargo",
+        "test",
+        "--offline",
+        "--manifest-path",
+        "nix/rust-shell-client/Cargo.toml",
+        "--bin",
+        "k230-shell-rust",
+        "speculative_theme_motion"
+      ],
+      "environment": {
+        "CARGO_TARGET_DIR": "/home/jadams/tmp/k230-admission-host-target"
+      },
+      "exit_code": 0,
+      "passed": 1,
+      "log": "speculative-motion-host.log",
+      "log_sha256": "6316815269f77772861ea3c8a8bfc9531145444b032198b8ed61c536642644d3",
+      "log_modified_utc": "2026-10-10T19:19:29.080731+00:00",
+      "raw_log_sha256": "e89cc0a97945c24291cc88905aad542c53ab4c7d5b8094641a4dcc578cb2e94e"
+    },
+    {
+      "command": [
+        "cargo",
+        "test",
+        "--offline",
+        "--manifest-path",
+        "nix/rust-shell-client/Cargo.toml",
+        "--lib",
+        "theme_ui"
+      ],
+      "environment": {
+        "CARGO_TARGET_DIR": "/home/jadams/tmp/k230-admission-host-target"
+      },
+      "exit_code": 0,
+      "passed": 28,
+      "log": "compatibility-theme-ui.log",
+      "log_sha256": "1e73ede990347a3612eb2e1eba22499f95e9b4101f8b3e6eaa6500dede94ede8",
+      "log_modified_utc": "2026-10-10T19:19:48.400178+00:00",
+      "raw_log_sha256": "47769c651992611d053b87ae20267209a73b805dc470ea98186be3271fe5071b"
+    },
+    {
+      "command": [
+        "cargo",
+        "test",
+        "--offline",
+        "--manifest-path",
+        "nix/rust-shell-client/Cargo.toml",
+        "--bin",
+        "k230-shell-rust",
+        "route_tests"
+      ],
+      "environment": {
+        "CARGO_TARGET_DIR": "/home/jadams/tmp/k230-admission-host-target"
+      },
+      "exit_code": 0,
+      "passed": 22,
+      "log": "compatibility-routes.log",
+      "log_sha256": "8438493ae1f96e31106f71e7fe363409df24f9279542b8ed5c2e892758526a6c",
+      "log_modified_utc": "2026-10-10T19:19:49.113195+00:00",
+      "raw_log_sha256": "6b923ebf2a38b13bb4b313aed6675cf4198d085b9b5a1de3b4fb6e816cd7e98a"
+    }
+  ],
+  "evidence_class": "native-x86_64-rust-unit-tests-and-riscv64-cross-package-build",
+  "component_build_command": [
+    "flock",
+    "-n",
+    "/tmp/k230-nix-build.lock",
+    "nix",
+    "build",
+    ".#handheld-shell-rust",
+    "--out-link",
+    "/home/jadams/.local/state/tdisplay-k230/retained-builds/theme-admission-2026-10-10/rust-client",
+    "--print-out-paths",
+    "--max-jobs",
+    "1",
+    "--cores",
+    "2"
+  ],
+  "component_build_exit_code": 0,
+  "installed_on_board": false,
+  "configuration_artifact": "/nix/store/x69mg9sdfbk6m3m25gi80f2s083c7nwk-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0",
+  "executable_sha256": "601470db28c5a2340ed4222c620074e103220a32b45b61d656c106bd05330335",
+  "old_control": "old-center-control.json",
+  "build_retention": "retention.json",
+  "limits": [
+    "Host row-state/input tests exercise production Carousel and ThemeView policy, not Wayland rendering or glass.",
+    "Cross-build proves package construction, not installation, runtime admission costs, frame cadence, warm swipe performance or physical acceptance.",
+    "Tasks 13.1, 13.2 and 13.4 remain open; no profiling, latency trial, camera capture or scope split performed."
+  ],
+  "log_normalization": "Trailing blank lines only removed from copied logs; raw private log hashes and original filesystem modification timestamps are retained."
+}

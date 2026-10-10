@@ -1,0 +1,8 @@
+   Compiling k230-shell-rust v0.1.0 (/home/jadams/tmp/k230-theme-admission-closeout-2026-10-10/nix/rust-shell-client)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 21.56s
+     Running unittests src/main.rs (/home/jadams/tmp/k230-admission-host-target/debug/deps/k230_shell_rust-7cdb96a3b82c449f)
+
+running 1 test
+test route_tests::speculative_theme_motion_waits_for_both_carousels_to_finish_moving ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 21 filtered out; finished in 0.00s
