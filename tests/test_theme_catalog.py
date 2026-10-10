@@ -67,8 +67,8 @@ class CatalogTests(unittest.TestCase):
         before = set(threading.enumerate())
         with redirect_stdout(out), redirect_stderr(err):
             status = catalog.main(prefix + list(args))
-        # A real CLI process waits for activate's deferred keyboard-sync
-        # thread at exit; this in-process call must join it explicitly, or
+        # A real CLI process waits for activate's deferred appearance
+        # threads at exit; this in-process call must join them explicitly, or
         # it can still be writing under state/ when the temporary directory
         # is removed.
         for thread in set(threading.enumerate()) - before:
@@ -302,7 +302,7 @@ class CatalogTests(unittest.TestCase):
         script = fake_pkill(0, log)
 
         def commit(generation, **kwargs):
-            activate_generation(generation, **kwargs, transport=lambda *_: None)
+            return activate_generation(generation, **kwargs, transport=lambda *_: None)
 
         with mock.patch.object(catalog, "activate_generation", side_effect=commit):
             status, result = self.run_cli(
@@ -310,6 +310,8 @@ class CatalogTests(unittest.TestCase):
                 keyboard_runtime_dir=runtime, pkill=script)
         self.assertEqual(status, 0, result)
         self.assertEqual(result["keyboard_appearance"], {"state": "deferred"})
+        self.assertEqual(result["app_appearance"], {"state": "deferred"})
+        self.assertTrue((self.state / "app-appearance/active/terminal-foot.ini").is_file())
         # The real, eventual outcome: a supervised keyboard's pkill was
         # actually invoked, and its colours were actually published --
         # proving the deferred thread's own work still ran to completion,

@@ -47,6 +47,7 @@ class HelperDaemonTests(unittest.TestCase):
             self.base / name for name in ("user", "builtins", "state", "runtime")
         )
         self.runtime.mkdir(mode=0o700)
+        self.initial_threads = set(threading.enumerate())
         self.socket_path = self.runtime / "theme-helper.sock"
         fixed = {
             "--tools": catalog.activation.HOST_TOOLS,
@@ -75,6 +76,8 @@ class HelperDaemonTests(unittest.TestCase):
     def _stop_daemon(self):
         self.stop.set()
         self.thread.join(timeout=2.0)
+        for thread in set(threading.enumerate()) - self.initial_threads:
+            thread.join(timeout=5.0)
 
     def client_args(self, *extra):
         return ["--helper-socket", str(self.socket_path),
@@ -127,7 +130,7 @@ class HelperDaemonTests(unittest.TestCase):
             phases.append(phase)
 
         def commit(generation, **kwargs):
-            activate_generation(generation, **kwargs, transport=transport)
+            return activate_generation(generation, **kwargs, transport=transport)
 
         with mock.patch.object(catalog, "activate_generation", side_effect=commit):
             status, result = self.run_via_daemon(
@@ -137,6 +140,55 @@ class HelperDaemonTests(unittest.TestCase):
         self.assertTrue(result["activated"])
         self.assertEqual(phases, ["prepare", "commit"])
         self.assertEqual((self.state / "active").resolve().name, generation)
+
+    def test_activate_reply_and_next_request_do_not_wait_for_app_refresh(self):
+        import app_appearance
+        theme(self.builtins / "night")
+        entry_id = self.run_via_daemon("list", "--json")[1]["themes"][0]["id"]
+        generation = self.run_via_daemon("preview", "--json", entry_id)[1]["generation"]
+        entered, release, completed = (threading.Event() for _ in range(3))
+        workers, phases = [], []
+        real_sync = app_appearance.sync
+
+        def slow_sync(root, *, expected_generation):
+            workers.append(threading.current_thread())
+            entered.set()
+            if not release.wait(5):
+                raise TimeoutError("test must release app refresh after receiving reply")
+            result = real_sync(root, expected_generation=expected_generation)
+            completed.set()
+            return result
+
+        def commit(candidate, **kwargs):
+            return activate_generation(candidate, **kwargs,
+                                       transport=lambda _endpoint, phase, _gen: phases.append(phase))
+
+        with mock.patch.object(app_appearance, "sync", side_effect=slow_sync), \
+                mock.patch.object(catalog, "activate_generation", side_effect=commit), \
+                mock.patch.object(client, "fallback", side_effect=AssertionError("daemon must answer")):
+            try:
+                status, result = self.run_via_daemon(
+                    "activate", "--json", entry_id, "--expected-generation", generation)
+                self.assertEqual(status, 0, result)
+                self.assertTrue(result["activated"])
+                self.assertEqual(result["app_appearance"], {"state": "deferred"})
+                self.assertTrue(entered.wait(2))
+                self.assertFalse(completed.is_set())
+                self.assertEqual(phases, ["prepare", "commit"])
+                self.assertEqual((self.state / "active").resolve().name, generation)
+                self.assertFalse(workers[0].daemon)
+                status, listing = self.run_via_daemon("list", "--json")
+                self.assertEqual(status, 0, listing)
+                self.assertEqual(listing["active"]["generation"], generation)
+                self.assertFalse(completed.is_set())
+            finally:
+                release.set()
+                for worker in workers:
+                    worker.join(timeout=5)
+            self.assertTrue(completed.is_set())
+        app_pointer = self.state / "app-appearance/active"
+        self.assertTrue((app_pointer / "terminal-foot.ini").is_file())
+        self.assertTrue((app_pointer / "monitor-foot.ini").is_file())
 
     def test_a_bad_request_never_wedges_the_daemon_for_the_next_one(self):
         with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as connection:

@@ -11,6 +11,7 @@ import os
 from pathlib import Path
 import socket
 import tempfile
+import threading
 import time
 
 import theme_timing
@@ -202,13 +203,16 @@ def prepare_only(generation: Path, *, state_root: Path, endpoint: Path,
 @runtime_trace.traced("theme_transaction_activate_generation")
 def activate_generation(generation: Path, *, state_root: Path, endpoint: Path,
                         transport=exchange, lock_timeout: float = 2.0,
-                        preference=None, app_sync=None,
+                        preference=None, app_sync=None, defer_app_sync: bool = False,
                         endpoints: tuple[Path, Path] | None = None) -> dict:
     """Publish one prepared generation only after phase-checked shell acks.
 
     The lock covers the whole transaction, including failure recovery. The
     future shell receiver must implement prepare/commit/rollback as one scene
     generation protocol; these host fakes do not prove that it does so.
+    App refresh remains synchronous by default. The catalogue opts into a
+    deferred result after the same acknowledgements and durable publication;
+    a non-daemon thread finishes refresh even in the CLI fallback process.
     """
     stopwatch = theme_timing.Stopwatch()
     state_root = state_root.resolve(strict=True)
@@ -333,14 +337,41 @@ def activate_generation(generation: Path, *, state_root: Path, endpoint: Path,
     # App refresh is a later phase. It must not convert an acknowledged shell
     # generation into a failed theme transaction or roll back the shell.
     # The adapter re-acquires this lock and refuses an outdated generation.
+    if defer_app_sync:
+        try:
+            threading.Thread(target=_deferred_app_sync,
+                             args=(state_root, generation.name, app_sync),
+                             name="k230-theme-app-sync", daemon=False).start()
+        except Exception as error:
+            return {"state": "failed", "error": "app-sync-dispatch-failed",
+                    "kind": type(error).__name__}
+        return {"state": "deferred"}
+    return _sync_app_appearance(state_root, generation.name, app_sync)
+
+
+def _sync_app_appearance(state_root: Path, generation_name: str, app_sync) -> dict:
     from app_appearance import AppAppearanceSuperseded, sync as default_app_sync
     if app_sync is None:
         app_sync = default_app_sync
     try:
-        app_sync(state_root, expected_generation=generation.name)
+        app_sync(state_root, expected_generation=generation_name)
     except AppAppearanceSuperseded:
         return {"state": "superseded", "error": "newer-generation-active"}
     except Exception as error:
         return {"state": "failed", "error": "app-sync-failed",
                 "kind": type(error).__name__}
-    return {"state": "applied", "generation": generation.name}
+    return {"state": "applied", "generation": generation_name}
+
+
+def _deferred_app_sync(state_root: Path, generation_name: str, app_sync) -> None:
+    stopwatch = theme_timing.Stopwatch()
+    try:
+        outcome = _sync_app_appearance(state_root, generation_name, app_sync)
+    except Exception as error:
+        outcome = {"state": "failed", "error": "app-sync-failed",
+                   "kind": type(error).__name__}
+    stopwatch.lap("sync")
+    # Use the existing syslog channel: stderr is the CLI's JSON error reply.
+    theme_timing.log("app_deferred", "activate", stopwatch,
+                     generation=generation_name[:12], state=outcome["state"],
+                     error=outcome.get("error", "-"), kind=outcome.get("kind", "-"))

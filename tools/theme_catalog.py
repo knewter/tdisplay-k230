@@ -405,7 +405,7 @@ def handle(args) -> tuple[dict, int]:
                                              explicit=args.background is not None)
                 result["app_appearance"] = activate_generation(
                     generation, state_root=args.state_root, endpoint=args.socket,
-                    preference=preference,
+                    preference=preference, defer_app_sync=True,
                     endpoints=(args.rust_socket, args.deck_socket)
                     if args.rust_socket is not None else None)
                 stopwatch.lap("activate_generation")

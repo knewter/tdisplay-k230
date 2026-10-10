@@ -8,7 +8,9 @@ from pathlib import Path
 import subprocess
 import sys
 import tempfile
+import threading
 import unittest
+from unittest import mock
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "tools"))
@@ -188,6 +190,76 @@ class AppAppearance(unittest.TestCase):
             with self.assertRaisesRegex(app.AppAppearanceSuperseded, "newer generation"):
                 app.sync(state, expected_generation=first.name)
             self.assertFalse((state / "app-appearance/active").exists())
+
+    def test_deferred_sync_cannot_overwrite_a_newer_theme(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            base = Path(temporary)
+            source, state, first = prepared(base)
+            (source / "colors.toml").write_text(COLORS.replace("#101820", "#202830"))
+            second, _ = theme_activate.prepare(
+                "test", source=source, state_root=state, user_themes=base / "missing",
+                builtins=None, tools=theme_activate.HOST_TOOLS)
+            entered, release = threading.Event(), threading.Event()
+            workers = []
+
+            def delayed_sync(root, *, expected_generation):
+                workers.append(threading.current_thread())
+                entered.set()
+                if not release.wait(5):
+                    raise TimeoutError("test release missing")
+                return app.sync(root, expected_generation=expected_generation)
+
+            with mock.patch.object(tx.theme_timing, "log") as log:
+                try:
+                    result = tx.activate_generation(
+                        first, state_root=state, endpoint=state / "unused.sock",
+                        transport=lambda *_: None, app_sync=delayed_sync, defer_app_sync=True)
+                    self.assertEqual(result, {"state": "deferred"})
+                    self.assertTrue(entered.wait(2))
+                    newer = tx.activate_generation(
+                        second, state_root=state, endpoint=state / "unused.sock",
+                        transport=lambda *_: None)
+                    self.assertEqual(newer["state"], "applied")
+                    app_target = (state / "app-appearance/active").resolve()
+                finally:
+                    release.set()
+                    for worker in workers:
+                        worker.join(timeout=5)
+                outcomes = [call.kwargs for call in log.call_args_list
+                            if call.args[0] == "app_deferred"]
+                self.assertEqual(len(outcomes), 1)
+                self.assertEqual(outcomes[0]["state"], "superseded")
+            self.assertEqual(tx._pointer(state), second)
+            self.assertEqual((state / "app-appearance/active").resolve(), app_target)
+            self.assertIn("background=202830", (app_target / "terminal-foot.ini").read_text())
+
+    def test_deferred_adapter_failure_is_logged_without_shell_rollback(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            _, state, generation = prepared(Path(temporary))
+            workers, phases = [], []
+            entered = threading.Event()
+
+            def fail_app(_root, *, expected_generation):
+                workers.append(threading.current_thread())
+                entered.set()
+                raise OSError("injected adapter failure")
+
+            with mock.patch.object(tx.theme_timing, "log") as log:
+                result = tx.activate_generation(
+                    generation, state_root=state, endpoint=state / "unused.sock",
+                    transport=lambda _endpoint, phase, _gen: phases.append(phase),
+                    app_sync=fail_app, defer_app_sync=True)
+                self.assertTrue(entered.wait(2))
+                for worker in workers:
+                    worker.join(timeout=5)
+                outcomes = [call.kwargs for call in log.call_args_list
+                            if call.args[0] == "app_deferred"]
+                self.assertEqual(len(outcomes), 1)
+                self.assertEqual(outcomes[0]["state"], "failed")
+                self.assertEqual(outcomes[0]["kind"], "OSError")
+            self.assertEqual(result, {"state": "deferred"})
+            self.assertEqual(tx._pointer(state), generation)
+            self.assertEqual(phases, ["prepare", "commit"])
 
 
 if __name__ == "__main__":

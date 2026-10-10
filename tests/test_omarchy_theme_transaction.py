@@ -25,6 +25,35 @@ def prepared(root, name):
 
 
 class ThemeTransaction(unittest.TestCase):
+    def test_failed_activation_never_dispatches_deferred_app_refresh(self):
+        for failure in ("prepare", "commit", "preference"):
+            with self.subTest(failure=failure), tempfile.TemporaryDirectory() as temp:
+                root = Path(temp)
+                old, candidate = prepared(root, "old"), prepared(root, "candidate")
+                (root / "active").symlink_to(old)
+                rust, deck = root / "rust.sock", root / "deck.sock"
+
+                def ack(endpoint, phase, _generation):
+                    if endpoint == deck and phase == failure:
+                        raise tx.TransactionError("injected receiver failure")
+
+                class Preference:
+                    def guard(self):
+                        pass
+                    def commit(self):
+                        if failure == "preference":
+                            raise OSError("injected preference failure")
+                    def rollback(self):
+                        pass
+
+                with mock.patch.object(tx.threading, "Thread") as worker:
+                    with self.assertRaises(tx.TransactionError):
+                        tx.activate_generation(
+                            candidate, state_root=root, endpoint=rust, endpoints=(rust, deck),
+                            transport=ack, preference=Preference(), defer_app_sync=True)
+                    worker.assert_not_called()
+                self.assertEqual(tx._pointer(root), old)
+
     def test_two_receivers_commit_before_app_sync(self):
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)
