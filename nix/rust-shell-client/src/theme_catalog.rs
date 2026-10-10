@@ -762,7 +762,7 @@ fn preview(value: &Value, request: &ThemeRequest) -> Result<ThemePreview, String
         None if !activated => None,
         Some(item) if activated => {
             let state = required_text(item.get("state"), 32)?;
-            if !matches!(state.as_str(), "applied" | "failed" | "superseded") {
+            if !matches!(state.as_str(), "applied" | "failed" | "superseded" | "deferred") {
                 return Err("invalid app appearance state".into());
             }
             Some(AppAppearance {

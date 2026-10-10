@@ -119,6 +119,41 @@ fn recv(worker: &ThemeWorker, id: u64) -> ThemeReply {
 }
 
 #[test]
+fn deferred_app_refresh_is_accepted_from_socket_and_subprocess() {
+    for via_socket in [true, false] {
+        let fixture = Fixture::new();
+        let socket_path = fixture.path("helper.sock");
+        let marker = fixture.path("subprocess-ran");
+        let theme_id = "a".repeat(24);
+        let generation = "b".repeat(24);
+        let body = json!({"schema": 1,
+            "theme": {"id": theme_id, "name": "fixture", "label": "Fixture", "origin": "user"},
+            "generation": generation,
+            "appearance_path": format!("/tmp/state/generations/{generation}/appearance.json"),
+            "palette": {"background": "#101820"}, "backgrounds": [],
+            "compatibility": {"applied": [], "unavailable": [], "unknown": []},
+            "activated": true, "app_appearance": {"state": "deferred"}});
+        let command = fake_command(&fixture, &marker, &body);
+        let server = via_socket.then(|| serve_one(socket_path.clone(), body, 0));
+        let worker = ThemeWorker::spawn(command, socket_path);
+        let id = worker.try_submit(ThemeRequest::Activate {
+            theme_id: theme_id.clone(), expected_generation: generation.clone(), background_id: None,
+        }).unwrap();
+        let reply = recv(&worker, id);
+        let ThemeResponse::Preview(preview) = reply.result.expect("deferred activation must succeed")
+            else { panic!("activation preview expected") };
+        assert!(preview.activated);
+        assert_eq!(preview.app_appearance.unwrap().state, "deferred");
+        if let Some(server) = server {
+            let request = server.join().unwrap();
+            assert_eq!(request["action"], "activate");
+            assert_eq!(request["expected_generation"], generation);
+        }
+        assert_eq!(marker.exists(), !via_socket);
+    }
+}
+
+#[test]
 fn a_working_helper_socket_answers_without_ever_running_the_subprocess() {
     let fixture = Fixture::new();
     let socket_path = fixture.path("helper.sock");

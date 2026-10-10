@@ -442,7 +442,7 @@ impl ThemeView {
                             background_id: Some(_), ..
                         }) { "Background applied to Home" } else { "Theme applied" };
                         Some(match preview.app_appearance.as_ref() {
-                            Some(app) if app.state != "applied" => {
+                            Some(app) if !matches!(app.state.as_str(), "applied" | "deferred") => {
                                 format!("{applied}; app reload {}", app.state)
                             }
                             _ => applied.into(),
@@ -1167,40 +1167,45 @@ mod tests {
 
     #[test]
     fn app_reload_status_reaches_the_message_on_a_successful_activate() {
-        let mut view = ThemeView {
-            page: ThemePage::List,
-            preview: Some(preview()),
-            desired: Some(Desired {
+        for (state, message) in [
+            ("failed", "Background applied to Home; app reload failed"),
+            ("deferred", "Background applied to Home"),
+        ] {
+            let mut view = ThemeView {
+                page: ThemePage::List,
+                preview: Some(preview()),
+                desired: Some(Desired {
+                    theme_id: id('a'),
+                    background_id: Some(id('d')),
+                    generation: Some(id('b')),
+                    already_active: false,
+                }),
+                ..ThemeView::default()
+            };
+            let request = ThemeRequest::Activate {
                 theme_id: id('a'),
+                expected_generation: id('b'),
                 background_id: Some(id('d')),
+            };
+            view.submitted(request.clone(), 2);
+            let mut applied = preview();
+            applied.activated = true;
+            applied.app_appearance = Some(AppAppearance {
+                state: state.into(),
                 generation: Some(id('b')),
-                already_active: false,
-            }),
-            ..ThemeView::default()
-        };
-        let request = ThemeRequest::Activate {
-            theme_id: id('a'),
-            expected_generation: id('b'),
-            background_id: Some(id('d')),
-        };
-        view.submitted(request.clone(), 2);
-        let mut applied = preview();
-        applied.activated = true;
-        applied.app_appearance = Some(AppAppearance {
-            state: "failed".into(),
-            generation: Some(id('b')),
-            error: Some("reload-failed".into()),
-            kind: None,
-        });
-        assert!(view.accept(ThemeReply {
-            id: 2,
-            request,
-            result: Ok(ThemeResponse::Preview(Box::new(applied))),
-        }));
-        assert_eq!(
-            view.message.as_deref(),
-            Some("Background applied to Home; app reload failed")
-        );
+                error: Some("reload-failed".into()),
+                kind: None,
+            });
+            assert!(view.accept(ThemeReply {
+                id: 2,
+                request,
+                result: Ok(ThemeResponse::Preview(Box::new(applied))),
+            }));
+            assert_eq!(
+                view.message.as_deref(),
+                Some(message)
+            );
+        }
     }
 
     #[test]
