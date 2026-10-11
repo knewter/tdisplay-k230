@@ -652,6 +652,18 @@ so that building stage 1 from source does not silently drop them from view.
 
 ```
 DATA 1b8409b74178fdc996d5cd617e7f042ae56e59a9b1ba20cd8306bd4640fbd42b docs/evidence/mainline-display/physical-2026-10-01/minimal-probe-recovery-2026-10-02/home.png
+DATA 035ef7a8d29ca62a7d93b46e8e711c33e3a7bd8bb81ee70a1e293cac55d3b2c2 docs/evidence/omarchy-themes/consumer-closeout-2026-10-10/app-menu-adapted.png
+DATA e87aa670e0f44d5df88f2557802510470e407f9e89cde9176c870225e4acd170 docs/evidence/omarchy-themes/consumer-closeout-2026-10-10/app-menu-baseline.png
+DATA e25bde2aeed303bb0f318292e527f6dc12752579d018309514a851c0236eab0b docs/evidence/omarchy-themes/consumer-closeout-2026-10-10/baseline.png
+DATA f3aba6dcba026149c1d0bee499c6d0bfe245286f3f3ce57667a6b69aeb6392c2 docs/evidence/omarchy-themes/consumer-closeout-2026-10-10/drawer-focus-adapted.png
+DATA fac3032e908aee0313637415c017bfa88ba034dee0e1cccacd2bec0026718f94 docs/evidence/omarchy-themes/consumer-closeout-2026-10-10/drawer-focus-baseline.png
+DATA 935c93768c4d7468484fd3b48ded32f2a28c93b8b6ad5735dbcba1824923beba docs/evidence/omarchy-themes/consumer-closeout-2026-10-10/font-spacing-adapted.png
+DATA 551ffc44f607dd64f172f050276ca858eaac39674c1e76b4b005549315e4d906 docs/evidence/omarchy-themes/consumer-closeout-2026-10-10/help-adapted.png
+DATA dc51a79c53b67e1ead64c32b1ce4be9fb2908b8cdb6f632846b314b77cf4d190 docs/evidence/omarchy-themes/consumer-closeout-2026-10-10/help-baseline.png
+DATA 2bae5e80ba30aa3686a1a8665b53b24294122db619f77632e50196544e663468 docs/evidence/omarchy-themes/consumer-closeout-2026-10-10/home-adapted.png
+DATA 0de7b275e7ffe891501352e5489041e2b9f1c2100fc0fbb0222c53d359bc0ed0 docs/evidence/omarchy-themes/consumer-closeout-2026-10-10/home-baseline.png
+DATA 623061d59c3f38531b61e47f418ccd5f2ae29990fb1a4af145e1e30f40a7889f docs/evidence/omarchy-themes/consumer-closeout-2026-10-10/settings-hover-adapted.png
+DATA 1250dd1a8b302938865b558775cf818d8f67f80d44484a7147469b4b338c213c docs/evidence/omarchy-themes/consumer-closeout-2026-10-10/settings-hover-baseline.png
 DATA e25bde2aeed303bb0f318292e527f6dc12752579d018309514a851c0236eab0b docs/evidence/omarchy-themes/font-spacing-adaptation/baseline.png
 DATA 2c971a30f7138e3ed0b0cfeb4538bbdf432e33ac65cc329225fc7b5af9d52a6f docs/evidence/omarchy-themes/font-spacing-adaptation/font-spacing-adapted.png
 DATA 6c932721f51eccfe719486e1474e411c6303c2a95bf1ea7c6240260f1b939669 docs/evidence/volume/closeout-2026-10-01/expanded-real-stream.jpg

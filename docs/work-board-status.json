@@ -71,7 +71,7 @@
       "lane": "in-progress",
       "source": "in-progress",
       "physical": "verified",
-      "next": "Finish actual theme consumer states and typography/spacing coverage (3.1), then publish the complete compatibility report (6.1) and archive (6.2). Further collection for implemented behavior is waived by the operator.",
+      "next": "Publish and inspect the complete compatibility report (6.1), then archive/sync (6.2). Applicable consumer implementation and host captures are complete; further physical collection is waived.",
       "dependencies": [],
       "evidence": [
         "docs/evidence/omarchy-themes/helper-package.md",
@@ -97,10 +97,12 @@
         "docs/evidence/omarchy-themes/drawer-card-generation/README.md",
         "docs/evidence/omarchy-themes/reboot-protocol/README.md",
         "docs/evidence/omarchy-themes/closeout-2026-10-10/README.md",
-        "docs/evidence/omarchy-themes/accepted-closeout-2026-10-10/README.md"
+        "docs/evidence/omarchy-themes/accepted-closeout-2026-10-10/README.md",
+        "docs/evidence/omarchy-themes/consumer-closeout-2026-10-10/README.md",
+        "docs/evidence/omarchy-themes/compatibility-closeout-2026-10-10.md"
       ],
-      "rationale": "Implemented behavior is accepted by the operator with explicit waiver of further proof collection; absent measurements and specific physical reboot/fresh-HOME cases remain UNVERIFIED. Reboot-v2 now validates the existing retained-generation policy and safe restoration. Actual consumer gaps keep this parent open. Existing Settings/notifications and background/video successors retain their scope.",
-      "reviewRevision": "38d370c1a7989b982e04cfd74799542cccd3424e",
+      "rationale": "Implemented theme behavior is accepted by the operator with explicit waiver of further proof collection. Applicable hover/focus, global Rust/C visual metrics and authored scrims are implemented and host-verified; all 102 fields have named consumers or explicit adaptations/omissions. Absent measurements and individual physical cases remain UNVERIFIED. Existing implementation successors retain their scope.",
+      "reviewRevision": "3a1a3e51",
       "cover": {
         "path": "docs/evidence/omarchy-themes/community-board-fixed/community.png",
         "caption": "Unchanged community theme on the physical board \u2014 native capture, command-driven activation",
