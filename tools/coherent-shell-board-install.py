@@ -41,12 +41,44 @@ def appearance():
 
 
 def validate_qualification(q, candidate):
-    require(q.get('evidence_class') == 'operator-real-finger-report', 'operator evidence missing')
     for field in ('system', 'kernel', 'bundle'):
         require(q.get(field) == candidate[field], 'qualified ' + field + ' differs')
     require(q.get('shell_executable', '').startswith('/nix/store/'), 'qualified shell identity missing')
-    require(q.get('checks') == {'home_to_all_apps': True, 'bottom_handle_to_overview': True,
-                               'terminal_open_and_return': True}, 'navigation not accepted')
+    if q.get('evidence_class') == 'operator-real-finger-report':
+        require(q.get('checks') == {'home_to_all_apps': True, 'bottom_handle_to_overview': True,
+                                   'terminal_open_and_return': True}, 'navigation not accepted')
+    elif q.get('evidence_class') == 'operator-authorized-userspace-update':
+        # Authorization is distinct from a new physical observation. Retain the
+        # exact candidate guards and restrict this route to unchanged boot code.
+        require('checks' not in q, 'userspace authorization cannot claim finger checks')
+        require(q.get('deployment_authorized') is True and
+                q.get('additional_physical_collection_waived') is True,
+                'explicit deployment authorization and waiver required')
+        require(isinstance(q.get('operator_instruction'), str) and
+                bool(q['operator_instruction'].strip()), 'operator instruction missing')
+        require(re.fullmatch('[0-9a-f]{40}', q.get('source_revision', '')) is not None,
+                'authorized source revision missing')
+        baseline = q.get('accepted_baseline', {})
+        require(re.fullmatch(r'/nix/store/[a-z0-9]{32}-nixos-system-[A-Za-z0-9._+-]+',
+                             baseline.get('system', '')) is not None,
+                'accepted baseline system missing')
+        require(baseline.get('kernel') == candidate['kernel'], 'userspace update changes kernel')
+        for name in ('Image', 'initrd.uimg'):
+            digest = baseline.get('boot_files', {}).get(name, '')
+            require(re.fullmatch('[0-9a-f]{64}', digest) is not None and
+                    digest == candidate.get('boot_files', {}).get(name, {}).get('sha256'),
+                    'userspace update changes ' + name)
+    else:
+        raise ValueError('operator evidence missing')
+
+
+def validate_install_baseline(q, state):
+    if q.get('evidence_class') == 'operator-authorized-userspace-update':
+        baseline = q['accepted_baseline']
+        require(baseline['system'] == state['normal_profile'], 'accepted baseline profile differs')
+        for name in ('Image', 'initrd.uimg'):
+            require(baseline['boot_files'][name] == state['normal_files'][name]['sha256'],
+                    'accepted baseline differs: ' + name)
 
 
 def save(path, value):
@@ -109,6 +141,7 @@ def install(stage, qualification):
     tool = importlib.util.module_from_spec(spec); spec.loader.exec_module(tool)
     state = tool.check(stage); candidate = state['candidate']
     q = json.loads(qualification.read_text()); validate_qualification(q, candidate)
+    validate_install_baseline(q, state)
     require(str(Path('/run/current-system').resolve()) == candidate['system'], 'candidate is not running')
     require(str(Path('/run/booted-system/kernel').resolve()) == candidate['kernel'], 'matching kernel is not booted')
     args = Path('/proc/cmdline').read_text().split()
@@ -120,6 +153,7 @@ def install(stage, qualification):
     journal = dict(phase='rollback-protected', system=candidate['system'],
                    normal_profile=state['normal_profile'], normal_boot_system=old_system,
                    before=state['normal_files'], appearance_before=appearance(), methods={},
+                   qualification_evidence_class=q['evidence_class'],
                    qualification_sha256=digest(qualification), started_epoch_s=time.time())
     save(stage / 'install-state.json', journal)
     try:

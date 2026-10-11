@@ -86,6 +86,54 @@ class BootInstall(unittest.TestCase):
             self.assertEqual(install.appearance(),
                              {'generation': None, 'report_sha256': None})
 
+    def userspace_update(self):
+        files = {'Image': 'a'*64, 'initrd.uimg': 'b'*64}
+        candidate = dict(system='/nix/store/'+'c'*32+'-nixos-system-candidate',
+                         kernel='/nix/store/kernel/Image', bundle='/nix/store/bundle',
+                         boot_files={name: {'sha256': value} for name, value in files.items()})
+        baseline = dict(system='/nix/store/'+'d'*32+'-nixos-system-accepted',
+                        kernel=candidate['kernel'], boot_files=files)
+        q = {field: candidate[field] for field in ('system', 'kernel', 'bundle')}
+        q.update(evidence_class='operator-authorized-userspace-update',
+                 shell_executable='/nix/store/shell/bin/shell',
+                 deployment_authorized=True, additional_physical_collection_waived=True,
+                 operator_instruction='continue', source_revision='e'*40,
+                 accepted_baseline=baseline)
+        state = dict(normal_profile=baseline['system'], normal_files=candidate['boot_files'])
+        return candidate, q, state
+
+    def test_userspace_authorization_is_distinct_from_finger_proof(self):
+        candidate, q, state = self.userspace_update()
+        install.validate_qualification(q, candidate)
+        install.validate_install_baseline(q, state)
+        for field, value in [('deployment_authorized', False),
+                             ('additional_physical_collection_waived', False),
+                             ('operator_instruction', ''), ('source_revision', 'unbound'),
+                             ('checks', {'home_to_all_apps': True})]:
+            wrong = copy.deepcopy(q); wrong[field] = value
+            with self.subTest(field=field), self.assertRaises(ValueError):
+                install.validate_qualification(wrong, candidate)
+
+    def test_userspace_waiver_cannot_authorize_changed_boot_code(self):
+        candidate, q, _ = self.userspace_update()
+        wrong = copy.deepcopy(q); wrong['accepted_baseline']['kernel'] = '/another/Image'
+        with self.assertRaisesRegex(ValueError, 'changes kernel'):
+            install.validate_qualification(wrong, candidate)
+        for name in ('Image', 'initrd.uimg'):
+            wrong = copy.deepcopy(q); wrong['accepted_baseline']['boot_files'][name] = 'f'*64
+            with self.subTest(name=name), self.assertRaisesRegex(ValueError, 'changes '+name):
+                install.validate_qualification(wrong, candidate)
+
+    def test_userspace_baseline_must_match_the_protected_board_state(self):
+        candidate, q, state = self.userspace_update()
+        wrong = copy.deepcopy(state); wrong['normal_profile'] = candidate['system']
+        with self.assertRaisesRegex(ValueError, 'baseline profile differs'):
+            install.validate_install_baseline(q, wrong)
+        for name in ('Image', 'initrd.uimg'):
+            wrong = copy.deepcopy(state); wrong['normal_files'][name]['sha256'] = 'f'*64
+            with self.subTest(name=name), self.assertRaisesRegex(ValueError, 'baseline differs'):
+                install.validate_install_baseline(q, wrong)
+
     def test_active_theme_identity_is_preserved(self):
         generation = self.root / 'generation-1'; generation.mkdir()
         report = generation / 'report.json'; report.write_bytes(b'{}\n')
