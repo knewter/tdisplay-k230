@@ -120,14 +120,37 @@ def exercise_actions(client, spawn, ipc, wait, tap, capture, route, dock, tile,
     assert log().count("app-menu-open") == baseline
     tap(*done())
     # Drawer-to-Home hold/drag is preserved too, including the chosen cell.
+    # The drawer hold first opens the app's menu; moving the same finger
+    # closes it and starts the drag (Android-style, operator choice
+    # 2026-10-11).
     route("drawer")
     time.sleep(.5)
     contact = hold_drag(drawer_tile(1), tile(3), hold_seconds=1.0)
     release(contact, *tile(3))
     wait(lambda: "k230-fixture-extra.desktop" in layout_path.read_text())
-    assert log().count("app-menu-open") == baseline
+    assert log().count("app-menu-open") == baseline + 1
     capture("home-actions-touch-placement.png")
     assert set(windows()) == before_ids
+
+    # Holding a drawer tile still and lifting leaves its menu open: the touch
+    # route to the window list. No drag to Home starts, and a tap outside
+    # dismisses it without launching or moving anything.
+    route("drawer")
+    time.sleep(.5)
+    ready = log().count("app-menu-ready")
+    drags = log().count("home-drag-begin")
+    before = layout_path.read_bytes()
+    dismissed = log().count("app-menu-dismiss")
+    contact = hold_drag(drawer_tile(3), drawer_tile(3), hold_seconds=1.0, steps=2)
+    release(contact, *drawer_tile(3))
+    wait(lambda: log().count("app-menu-ready") > ready)
+    time.sleep(.3)
+    capture("drawer-actions-touch-hold-menu.png")
+    assert log().count("home-drag-begin") == drags, "a still hold must not start the drag"
+    assert log().count("app-menu-dismiss") == dismissed, "lifting the held finger must leave the menu open"
+    tap(30, 150)
+    wait(lambda: log().count("app-menu-dismiss") > dismissed)
+    assert layout_path.read_bytes() == before and set(windows()) == before_ids
 
     # Clients launched by GIO are not tracked by the harness process list.
     for window in list(windows()):
@@ -138,6 +161,7 @@ def exercise_actions(client, spawn, ipc, wait, tap, capture, route, dock, tile,
         "desktop_new_window_creates_distinct_window",
         "primary_activation_prefers_recent_window",
         "menu_can_focus_specific_older_window",
+        "drawer_touch_hold_opens_menu_without_drag",
         "named_desktop_action_dispatches",
         "all_apps_primary_activation_shares_focus_policy",
         "outside_and_secondary_dismiss_preserve_layout_and_windows",

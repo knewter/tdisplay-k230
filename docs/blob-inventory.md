@@ -1753,6 +1753,7 @@ DATA  55423d4699800eb9b55e3353e111039a6535fb040b81afd04637c0a2fb4bc4c0  docs/evi
 DATA  923cfcc3bb698118306399317dd241a8dfa51435629007fff38903358d934791  docs/evidence/coherent-shell/navigation-aid-2026-10-10/light-buttons.png
 DATA  5e698163701ee1c86962c53a459b9e7aff68dc2d11fc8fa961887dadae099087  docs/evidence/coherent-shell/navigation-aid-2026-10-10/light-drawer.png
 DATA  193bda0b9be35ad0a5f637c9324db54ae582299e86ead4660f63cec881debb26  docs/evidence/coherent-shell/navigation-aid-2026-10-10/light-help.png
+DATA  4bc927d031126339723be556a533c0b2e7e37435d15bf55a5273771469712ae7  docs/evidence/recovery-routes/touch-app-menu-qemu-2026-10-11/drawer-actions-touch-hold-menu.png
 ```
 
 `group:` rows stand for a directory whose members are enumerated by
@@ -2914,3 +2915,12 @@ are recorded in the same combined-candidate evidence directory.
 | Path | Bytes | Class | SHA256 |
 | --- | ---: | --- | --- |
 | `docs/evidence/coherent-shell/combined-board-candidate-2026-10-10/ordinary-help.png` | 46665 | DATA | `2f81e737d0511f644884883876d82572fb67d86ccde475a54fe3bddeff3ad164` |
+
+The touch-hold app menu image is a headless QEMU screenshot from
+`tests/rust_home_screen_qemu.py --actions-only` with injected touches. It is
+not a board, camera or real-finger capture; the command and artifact
+identities are in `docs/evidence/recovery-routes/touch-app-menu-qemu-2026-10-11/README.md`.
+
+| Path | Bytes | Class | SHA256 |
+| --- | ---: | --- | --- |
+| `docs/evidence/recovery-routes/touch-app-menu-qemu-2026-10-11/drawer-actions-touch-hold-menu.png` | 76088 | DATA | `4bc927d031126339723be556a533c0b2e7e37435d15bf55a5273771469712ae7` |

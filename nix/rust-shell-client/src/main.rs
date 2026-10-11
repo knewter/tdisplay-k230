@@ -1166,6 +1166,11 @@ struct ShellClient {
     app_menu: Option<AppMenu>,
     app_menu_seq: u64,
     app_menu_point: (f64,f64),
+    /// The drawer finger that opened the app menu by holding still:
+    /// (touch id, filtered tile index, down point). Moving it past the hold
+    /// slop closes the menu and starts the drag to Home; lifting it leaves
+    /// the menu open.
+    app_menu_hold: Option<app_actions::MenuHold>,
     app_menu_sender: Sender<(u64, Vec<ActionRow>)>,
     app_menu_results: Receiver<(u64, Vec<ActionRow>)>,
     launching: bool,
@@ -3312,7 +3317,7 @@ impl ShellClient {
     fn open_app_menu(&mut self,qh:&QueueHandle<Self>,id:String,from_home:bool) {
         if self.launch_in_flight || self.drawer_home_drag.is_some() {return;}
         let Some(entry)=self.apps.iter().find(|a|a.id==id).cloned() else {return;};
-        if self.touch.id.is_some() || self.home_touch_id.is_some() {return;}
+        if self.app_menu_hold.is_none() && (self.touch.id.is_some() || self.home_touch_id.is_some()) {return;}
         self.app_menu_seq=self.app_menu_seq.wrapping_add(1);
         let serial=self.app_menu_seq;
         self.app_menu=Some(AppMenu::new(entry.clone(),from_home,serial));
@@ -3449,6 +3454,25 @@ impl ShellClient {
     /// is the search-filtered index `take_long_press_drag` resolved
     /// against (`navigation::tile_at`'s own domain), mapped back to the
     /// real catalog app exactly like `launch_drawer_app` does.
+    /// A drawer tile held still for `LONG_PRESS_MS` opens that app's menu
+    /// (window list, New Window, Add to Home) while the finger stays down;
+    /// `contact_motion` turns the hold into the drag to Home once it moves.
+    /// If the menu cannot open, the hold falls straight through to the drag.
+    fn hold_drawer_app_menu(&mut self, qh: &QueueHandle<Self>, touch_id: i32, display_index: usize, point: (f64, f64)) {
+        let id = self.drawer_filtered_apps().get(display_index)
+            .and_then(|&index| self.apps.get(index)).map(|app| app.id.clone());
+        if let Some(id) = id {
+            self.app_menu_hold = Some(app_actions::MenuHold { touch: touch_id, index: display_index, start: point });
+            self.open_app_menu(qh, id, false);
+            if self.app_menu.is_some() {
+                self.log("app-menu-hold");
+                return;
+            }
+            self.app_menu_hold = None;
+        }
+        self.begin_drawer_home_drag(touch_id, display_index, point);
+    }
+
     fn begin_drawer_home_drag(&mut self, touch_id: i32, display_index: usize, point: (f64, f64)) {
         let Some(&real_index) = self.drawer_filtered_apps().get(display_index) else {
             return;
@@ -4932,6 +4956,16 @@ impl ShellClient {
         time_ms: u32,
         id: i32,
     ) {
+        if self.app_menu_hold.is_some_and(|hold| hold.owns(id)) {
+            // Lifting the finger that opened the menu by holding still is
+            // not a menu tap: the menu stays open for the next touch.
+            self.app_menu_hold = None;
+            self.touch.up(id);
+            self.nav.cancel();
+            self.dirty = true;
+            self.draw(qh);
+            return;
+        }
         if let Some(menu)=self.app_menu.as_mut() {
             // Two-finger trackpad pans scroll the menu; releasing one must
             // never masquerade as a click on a menu action.
@@ -5321,6 +5355,19 @@ impl ShellClient {
         id: i32,
         pos: (f64, f64),
     ) {
+        if let Some(hold) = self.app_menu_hold {
+            match hold.motion(id, pos) {
+                Some(app_actions::HoldMotion::Holding) => return,
+                Some(app_actions::HoldMotion::Drag) => {
+                    // The held finger moved: the menu gives way to the drag
+                    // to Home, and this same motion falls through to drive it.
+                    self.app_menu_hold = None;
+                    self.close_app_menu(qh);
+                    self.begin_drawer_home_drag(id, hold.index, hold.start);
+                }
+                None => {}
+            }
+        }
         if let Some(menu)=self.app_menu.as_mut() {
             self.app_menu_point=pos;menu.motion(id,pos,self.width,self.height);
             self.dirty=true;self.draw(qh);return;
@@ -5656,6 +5703,10 @@ impl ShellClient {
         }
     }
     fn contact_cancel(&mut self, qh: &QueueHandle<Self>) {
+        if self.app_menu_hold.take().is_some() {
+            self.touch.cancel();
+            self.nav.cancel();
+        }
         if let Some(menu)=self.app_menu.as_mut() {menu.cancel();return;}
         if let Some(id) = self.hud_contact.take() { self.hud.end_drag(id); }
         self.hud_stream_drag = None;
@@ -6182,7 +6233,7 @@ fn serve() -> Result<(), String> {
         nav_tick: Instant::now(),
         launch_sender,
         launch_results,
-        app_menu:None,app_menu_seq:0,app_menu_point:(0.0,0.0),app_menu_sender,app_menu_results,
+        app_menu:None,app_menu_seq:0,app_menu_point:(0.0,0.0),app_menu_hold:None,app_menu_sender,app_menu_results,
         launching: false,
         launch_in_flight: false,
         launch_seq: 0,
@@ -6833,7 +6884,7 @@ fn serve() -> Result<(), String> {
                 state.nav.take_long_press_drag(elapsed, state.width, state.drawer_search.viewport_height(state.height), filtered)
             {
                 if let Some(id) = state.touch.id {
-                    state.begin_drawer_home_drag(id, display_index, point);
+                    state.hold_drawer_app_menu(&qh, id, display_index, point);
                 }
             }
         }

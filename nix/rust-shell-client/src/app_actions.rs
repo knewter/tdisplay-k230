@@ -190,6 +190,41 @@ pub fn rows(entry: &AppEntry, running: &[AppWindow], pinned: bool) -> Vec<Action
     result
 }
 
+/// The drawer finger that opened an app's menu by holding still. It still
+/// owns the touch: moving it past the hold slop turns the hold into the drag
+/// to Home (closing the menu); lifting it leaves the menu open.
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct MenuHold {
+    pub touch: i32,
+    /// Filtered drawer tile index, as `navigation::tile_at` resolved it.
+    pub index: usize,
+    pub start: (f64, f64),
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum HoldMotion {
+    /// Still within the slop: the menu stays up and ignores this motion.
+    Holding,
+    /// Moved: close the menu and start the drag to Home from `start`.
+    Drag,
+}
+
+impl MenuHold {
+    pub fn owns(&self, id: i32) -> bool {
+        self.touch == id
+    }
+    /// `None` for any other finger, which the menu handles normally.
+    pub fn motion(&self, id: i32, point: (f64, f64)) -> Option<HoldMotion> {
+        self.owns(id).then(|| {
+            if crate::navigation::beyond_hold_slop(self.start, point) {
+                HoldMotion::Drag
+            } else {
+                HoldMotion::Holding
+            }
+        })
+    }
+}
+
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum MenuOutcome {
     Action(AppAction),
@@ -324,6 +359,17 @@ mod tests {
             "Private window"
         );
     }
+    #[test]
+    fn a_held_finger_keeps_the_menu_until_it_moves_past_the_slop() {
+        let hold = MenuHold { touch: 4, index: 2, start: (100.0, 200.0) };
+        assert!(hold.owns(4) && !hold.owns(5));
+        assert_eq!(hold.motion(5, (400.0, 600.0)), None, "other fingers belong to the menu");
+        assert_eq!(hold.motion(4, (100.0, 200.0)), Some(HoldMotion::Holding));
+        assert_eq!(hold.motion(4, (111.0, 189.0)), Some(HoldMotion::Holding), "within 12px");
+        assert_eq!(hold.motion(4, (113.0, 200.0)), Some(HoldMotion::Drag));
+        assert_eq!(hold.motion(4, (100.0, 187.0)), Some(HoldMotion::Drag));
+    }
+
     #[test]
     fn menu_cancel_and_drag_do_not_activate_rows() {
         let mut menu = AppMenu::new(

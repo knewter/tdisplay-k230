@@ -185,6 +185,13 @@ pub const LONG_PRESS_MS: u32 = 500;
 /// `take_long_press_drag` is new.
 const LONG_PRESS_SLOP: f64 = 12.0;
 
+/// Whether a finger held since `start` has moved far enough to stop being a
+/// hold: the drawer's long-press menu gives way to the drag to Home here,
+/// using the same slop that separates a hold from a scroll.
+pub fn beyond_hold_slop(start: (f64, f64), point: (f64, f64)) -> bool {
+    (point.0 - start.0).abs() > LONG_PRESS_SLOP || (point.1 - start.1).abs() > LONG_PRESS_SLOP
+}
+
 #[derive(Clone, Copy, Debug)]
 struct Contact {
     id: i32,

@@ -1,0 +1,21 @@
+{
+  "result": "PASS",
+  "class": "headless-qemu-injected-touch-and-pointer",
+  "checks": {
+    "home_primary_focus_keeps_window_identity": true,
+    "desktop_new_window_creates_distinct_window": true,
+    "primary_activation_prefers_recent_window": true,
+    "menu_can_focus_specific_older_window": true,
+    "drawer_touch_hold_opens_menu_without_drag": true,
+    "named_desktop_action_dispatches": true,
+    "all_apps_primary_activation_shares_focus_policy": true,
+    "outside_and_secondary_dismiss_preserve_layout_and_windows": true,
+    "single_window_metadata_hides_unsupported_new_window": true,
+    "touch_hold_keeps_home_grab_and_placement": true,
+    "touch_hold_keeps_drawer_drag_to_home": true
+  },
+  "sway": "/nix/store/q96sk40q7j5v9f0ygxf2wx3yk7nzixqs-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway",
+  "rust": "/nix/store/17506zjlnfdmpvr272lrzf5cncif3f7b-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0/bin/k230-shell-rust",
+  "theme_bundle": "/nix/store/jc3fqhg3n3rq52gd0vgfyw2rxphl5hj8-handheld-theme-default-28ceaae7",
+  "icons": "/nix/store/in3nc21zx02xiz2rdp5bpq36719x3axd-handheld-theme-icons-25.10.3"
+}
