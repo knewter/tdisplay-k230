@@ -93,3 +93,11 @@ Public reports remain bounded and exclude private paths/source names. Physical
 observation and full fresh HOME remain explicitly UNVERIFIED. These checks
 prove the operator protocol and restoration logic, not pixels on glass or
 measured performance. The parent stays open for the actual source gaps.
+
+## Publication consistency
+
+The first live-site check found 18/21 on the work card, although OpenSpec
+correctly counted 22/25: the site counts top-level checkboxes and four older
+completed subtasks were indented. Those entries are now top-level with their
+identifiers and scope unchanged, so both projections include all 25 tasks.
+This formatting correction does not change implementation or test results.
