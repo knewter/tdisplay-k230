@@ -1547,6 +1547,11 @@ struct HomeSurface {
 }
 
 impl ShellClient {
+    fn clear_pointer_paint(&mut self) {
+        if self.renderer.set_pointer(None, false) { self.dirty = true; }
+        if self.renderer.set_pointer(None, true) { self.home_surface.dirty = true; }
+    }
+
     fn start_video(&self, key: VideoKey) -> Result<VideoPlayback, String> {
         let ffmpeg = self
             .video_ffmpeg
@@ -4517,6 +4522,7 @@ impl SeatHandler for ShellClient {
         cap: Capability,
     ) {
         if cap == Capability::Touch {
+            self.clear_pointer_paint();
             if self.pointer_contact.cancel().is_some() {
                 self.contact_cancel(qh);
             }
@@ -4538,6 +4544,7 @@ impl SeatHandler for ShellClient {
             self.log("touch-capability-lost");
         }
         if cap == Capability::Pointer {
+            self.clear_pointer_paint();
             if self.pointer_contact.cancel().is_some() {
                 self.contact_cancel(qh);
             }
@@ -4557,6 +4564,7 @@ impl SeatHandler for ShellClient {
         }
     }
     fn remove_seat(&mut self, _: &Connection, qh: &QueueHandle<Self>, _: wl_seat::WlSeat) {
+        self.clear_pointer_paint();
         if self.pointer_contact.cancel().is_some() {
             self.contact_cancel(qh);
         }
@@ -5600,6 +5608,7 @@ impl ShellClient {
         self.hud_stream_drag = None;
         self.hud_surface.dirty = true;
         self.trackpad_pan_start = None;
+        self.clear_pointer_paint();
         self.pointer_contact.cancel();
         self.touch.cancel();
         self.nav.cancel();
@@ -5639,6 +5648,7 @@ impl ShellClient {
 impl TouchHandler for ShellClient {
     fn down(&mut self, _: &Connection, qh: &QueueHandle<Self>, _: &wl_touch::WlTouch,
             _: u32, time_ms: u32, surface: wl_surface::WlSurface, id: i32, pos: (f64, f64)) {
+        self.clear_pointer_paint();
         if self.pointer_contact.cancel().is_some() {
             self.contact_cancel(qh);
         }
@@ -5724,6 +5734,15 @@ impl PointerHandler for ShellClient {
     fn pointer_frame(&mut self, _: &Connection, qh: &QueueHandle<Self>,
                      _: &wl_pointer::WlPointer, events: &[PointerEvent]) {
         for event in events {
+            let on_home = self.home_surface.layer.as_ref().is_some_and(|l| l.wl_surface() == &event.surface);
+            let on_overlay = self.layer.as_ref().is_some_and(|l| l.wl_surface() == &event.surface);
+            if on_home || on_overlay {
+                let point = if matches!(event.kind, PointerEventKind::Leave { .. }) { None }
+                            else { Some(event.position) };
+                if self.renderer.set_pointer(point, on_home) {
+                    if on_home { self.home_surface.dirty = true; } else { self.dirty = true; }
+                }
+            }
             if matches!(event.kind,PointerEventKind::Press {button:0x111,..}) {
                 if self.app_menu.is_some() {self.close_app_menu(qh);continue;}
                 let from_home=self.home_surface.layer.as_ref().is_some_and(|l|l.wl_surface()==&event.surface);

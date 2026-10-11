@@ -1,0 +1,70 @@
+{
+  "recorded_utc": "2026-10-11T01:59:20.568749+00:00",
+  "base_revision": "1d1dfab1a720b730549592b0d816769702a8fa74",
+  "source_sha256": {
+    "nix/rust-shell-client/src/render.rs": "e945a61a40a07d4b8dbe0c9bbe0397202a4e0bcdb1513bbe9fdd4a8fba90590e",
+    "nix/rust-shell-client/src/main.rs": "18cf27844c6791cdbee55a483a01de0487f16f6119792a84989c390d475ad0ed",
+    "nix/rust-shell-client/examples/render_theme_metrics_evidence.rs": "4a8d8d0852bad1d5c197355be95513f73999e74f5e89af579da58b567bc2d939",
+    "nix/card-shell/adapter.c": "1ae7c5c5ab614536aa3277ac17fb60d279eaa229ec3d88f5f752e1ffec6b92bb",
+    "nix/card-shell/appearance.c": "1a49ddda2ba5e4c82376442e17f5d16791f8cf262c9afb0fe33ed569a9b2dbec",
+    "nix/card-shell/appearance.h": "3febe9d94522616fbb3e06be421bfe4b6abc757535bf5ca25930deabc68cedad",
+    "tools/theme_tokens.py": "dc919a65e9325acc1943e2809cb4aa91207b229597fda05ec2d9affc95acd1dd",
+    "tools/theme_field_inventory.py": "c408d2f5dfd2d0bf5025613281c1183b36f41eef82099aadf1b46c99f9fcf0b7",
+    "tests/fixtures/card_appearance_receiver.c": "c7e927ff48208ad05a41f6eb39ef41208526d46869a82c298c77c121e0fc281c",
+    "tests/test_card_shell_appearance.py": "a018e64bd8f9c6e90b0929130496e3b4dfd0405f508d85fe6a554a0e5a3e3539",
+    "tests/test_handheld_theme_rendering.py": "05eed96d9f06ab7e960f784580b710df2add7660fe859264ce6e78212b145141"
+  },
+  "checks": [
+    {
+      "command": "cargo test --offline --manifest-path nix/rust-shell-client/Cargo.toml --lib",
+      "passed": 436,
+      "ignored": 1,
+      "log": "rust-lib.log"
+    },
+    {
+      "command": "cargo check --offline --manifest-path nix/rust-shell-client/Cargo.toml --all-targets",
+      "result": "PASS",
+      "log": "cargo-check.log"
+    },
+    {
+      "command": "python3 tests/test_card_shell_appearance.py",
+      "passed": 13,
+      "log": "card-receiver.log"
+    },
+    {
+      "command": "python3 tests/test_handheld_theme_rendering.py",
+      "passed": 7,
+      "log": "rendering.log"
+    },
+    {
+      "command": "python3 tests/test_omarchy_theme_activation.py",
+      "passed": 14,
+      "log": "activation.log"
+    },
+    {
+      "command": "python3 tests/test_omarchy_theme_transaction.py",
+      "passed": 27,
+      "log": "transaction.log"
+    }
+  ],
+  "capture_command": "cargo run --offline --manifest-path nix/rust-shell-client/Cargo.toml --example render_theme_metrics_evidence -- CAPTURE_DIR",
+  "capture_sha256": {
+    "app-menu-adapted.png": "035ef7a8d29ca62a7d93b46e8e711c33e3a7bd8bb81ee70a1e293cac55d3b2c2",
+    "app-menu-baseline.png": "e87aa670e0f44d5df88f2557802510470e407f9e89cde9176c870225e4acd170",
+    "baseline.png": "e25bde2aeed303bb0f318292e527f6dc12752579d018309514a851c0236eab0b",
+    "drawer-focus-adapted.png": "f3aba6dcba026149c1d0bee499c6d0bfe245286f3f3ce57667a6b69aeb6392c2",
+    "drawer-focus-baseline.png": "fac3032e908aee0313637415c017bfa88ba034dee0e1cccacd2bec0026718f94",
+    "font-spacing-adapted.png": "935c93768c4d7468484fd3b48ded32f2a28c93b8b6ad5735dbcba1824923beba",
+    "help-adapted.png": "551ffc44f607dd64f172f050276ca858eaac39674c1e76b4b005549315e4d906",
+    "help-baseline.png": "dc51a79c53b67e1ead64c32b1ce4be9fb2908b8cdb6f632846b314b77cf4d190",
+    "home-adapted.png": "2bae5e80ba30aa3686a1a8665b53b24294122db619f77632e50196544e663468",
+    "home-baseline.png": "0de7b275e7ffe891501352e5489041e2b9f1c2100fc0fbb0222c53d359bc0ed0",
+    "settings-hover-adapted.png": "623061d59c3f38531b61e47f418ccd5f2ae29990fb1a4af145e1e30f40a7889f",
+    "settings-hover-baseline.png": "1250dd1a8b302938865b558775cf818d8f67f80d44484a7147469b4b338c213c"
+  },
+  "evidence_class": "host Cairo/Pango rendering and host protocol tests; no new physical trial",
+  "limits": [
+    "New consumer cross-build, installation and deployment are recorded separately.",
+    "Additional physical recordings and latency collection waived; per-case physical measurements remain UNVERIFIED."
+  ]
+}

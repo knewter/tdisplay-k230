@@ -168,6 +168,38 @@ class AppearanceReceiver(unittest.TestCase):
         pointer.symlink_to(self.root / 'missing' / NEXT_ID)
         restart(f'APPLY {DEFAULT_ID} 1 1 0 -')
 
+    def activate_metrics(self, with_font, expected):
+        path = self.next / 'appearance.json'
+        data = json.loads(path.read_text())
+        data['sections']['font'] = {'base-size': {'kind': 'number', 'value': 15}}
+        data['sections']['spacing'] = {
+            'scale': {'kind': 'number', 'value': 1.1},
+            'scale-with-font': {'kind': 'boolean', 'value': with_font}}
+        path.write_text(json.dumps(data))
+        self.assertEqual(self.exchange('prepare', NEXT_ID, self.next,
+                                      previous_generation=None, previous_path=None)['status'], 'ok')
+        self.assertEqual(self.process.stdout.readline().strip(), f'PREPARE {NEXT_ID} 2 1 1 Yaru-blue')
+        self.assertEqual(self.exchange('commit', NEXT_ID, self.next)['status'], 'ok')
+        self.assertEqual(self.process.stdout.readline().strip(), f'APPLY {NEXT_ID} 2 1 1 Yaru-blue')
+        self.assertEqual(self.process.stdout.readline().strip(), expected)
+        self.assertEqual(self.exchange('rollback', None, None)['status'], 'ok')
+        self.assertEqual(self.process.stdout.readline().strip(), f'APPLY {DEFAULT_ID} 1 1 0 -')
+
+    def test_font_and_font_relative_spacing_are_bounded_and_restore(self):
+        self.activate_metrics(True, 'METRICS 1.250 1.250')
+
+    def test_font_relative_spacing_can_be_disabled_independently(self):
+        self.activate_metrics(False, 'METRICS 1.250 1.100')
+
+    def test_malformed_font_metric_is_not_acknowledged(self):
+        path = self.next / 'appearance.json'
+        data = json.loads(path.read_text())
+        data['sections']['font'] = {'base-size': {'kind': 'number', 'value': 'huge'}}
+        path.write_text(json.dumps(data))
+        self.assertEqual(self.exchange('prepare', NEXT_ID, self.next,
+                                      previous_generation=None, previous_path=None)['status'], 'error')
+        self.assertEqual(self.exchange('commit', NEXT_ID, self.next)['status'], 'error')
+
     def test_rgba_palette_is_accepted(self):
         report = self.next / 'report.json'
         data = json.loads(report.read_text())

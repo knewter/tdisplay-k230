@@ -7,7 +7,11 @@ use k230_shell_rust::{
     service_data::{
         unknown_volume_placeholder, Control, ControlState, ControlValue, SettingsSnapshot,
     },
-    service_ui::ServiceView,
+    service_ui::{DrawerSearch, ServiceView},
+    catalog::AppEntry,
+    app_actions::{ActionRow, AppAction, AppMenu},
+    home_screen::HomeScreen,
+    home_state::HomeLayout,
     Route,
 };
 use serde_json::Value;
@@ -87,22 +91,42 @@ fn snapshot(root: &PathBuf, adapted: bool) -> Result<AppearanceSnapshot, String>
         .ok_or_else(|| "fixture did not load".into())
 }
 
-fn render(path: PathBuf, theme: AppearanceSnapshot) -> Result<(), String> {
+fn render(path: PathBuf, theme: AppearanceSnapshot, route: Route, mode: &str) -> Result<(), String> {
     let mut cache = RendererCache::default();
     cache.set_appearance(Some(theme));
     cache.set_services(services());
+    if mode == "hover" { cache.set_pointer(Some((80.0, 220.0)), false); }
+    if mode == "focus" {
+        let mut search = DrawerSearch::default();
+        search.focus();
+        cache.set_drawer_search(search);
+    }
+    let apps: Vec<AppEntry> = ["Terminal", "Files", "Video", "Settings"].into_iter().map(|name| AppEntry {
+        id: format!("{name}.desktop"), name: name.into(), icon: None, path: PathBuf::new(),
+    }).collect();
     let mut pixels = vec![0; (W * H * 4) as usize];
+    if mode == "menu" {
+        let mut menu = AppMenu::new(apps[0].clone(), true, 1);
+        menu.ready = true;
+        menu.rows = vec![ActionRow { label: "Open".into(), action: AppAction::Activate },
+                         ActionRow { label: "New Window".into(), action: AppAction::NewWindow(None) }];
+        cache.draw_app_menu(&mut pixels, W, H, &menu)?;
+    } else if mode == "home" {
+        let home = HomeScreen::new(HomeLayout::seed(&apps, 4, 12), f64::from(W));
+        cache.draw_home(&mut pixels, W, H, &apps, &home)?;
+    } else {
     cache.draw(
         &mut pixels,
         RenderParams {
             width: W,
             height: H,
-            route: Route::Settings,
+            route,
             progress: 1.0,
             scroll: 0.0,
         },
-        &[],
+        &apps,
     )?;
+    }
     let frame =
         ImageSurface::create_for_data(pixels, Format::ARgb32, W as i32, H as i32, (W * 4) as i32)
             .map_err(|e| e.to_string())?;
@@ -129,11 +153,23 @@ fn main() -> Result<(), String> {
     let runtime = out.join("private-runtime");
     fs::create_dir(&runtime).map_err(|e| e.to_string())?;
     fs::set_permissions(&runtime, fs::Permissions::from_mode(0o700)).map_err(|e| e.to_string())?;
-    render(out.join("baseline.png"), snapshot(&runtime, false)?)?;
+    render(out.join("baseline.png"), snapshot(&runtime, false)?, Route::Settings, "idle")?;
     render(
         out.join("font-spacing-adapted.png"),
-        snapshot(&runtime, true)?,
+        snapshot(&runtime, true)?, Route::Settings, "idle",
     )?;
+    for (name, route, mode) in [
+        ("settings-hover", Route::Settings, "hover"),
+        ("drawer-focus", Route::Drawer, "focus"),
+        ("home", Route::Hide, "home"),
+        ("help", Route::Help, "idle"),
+        ("app-menu", Route::Hide, "menu"),
+    ] {
+        for adapted in [false, true] {
+            let label = if adapted { "adapted" } else { "baseline" };
+            render(out.join(format!("{name}-{label}.png")), snapshot(&runtime, adapted)?, route, mode)?;
+        }
+    }
     fs::remove_dir_all(runtime).map_err(|e| e.to_string())?;
     Ok(())
 }

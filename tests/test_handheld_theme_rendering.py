@@ -26,9 +26,9 @@ class ThemeTokenRendering(unittest.TestCase):
                         "new upstream fields must be classified before coverage is claimed")
         self.assertEqual(len({row["field"] for row in rows}), len(rows))
         self.assertIn({"field": "font.base-size", "status": "adapted",
-                       "owner": "Rust Settings labels scale design sizes by base-size (defaults to 12), clamped per label to 11–24px."}, rows)
+                       "owner": "Rust shell labels and C deck headers scale by base-size/12, bounded to 0.8–1.25; Settings role overrides retain 11–24px bounds."}, rows)
         self.assertTrue(any(row["field"] == "controls.focus-color" and
-                            row["status"] == "unavailable" for row in rows))
+                            row["status"] == "applied" for row in rows))
         self.assertIsNone(field_status("launcher", "backgroun"), "misspelled roles must not be accepted")
         self.assertIsNone(field_status("launcher", "new-role"), "new roles need explicit review")
         self.assertEqual(field_status("image-picker", "selected-border")[0], "unavailable")
@@ -131,7 +131,9 @@ class SystemSurfaceCoverage(unittest.TestCase):
                     self.assertEqual(len(found), 1, prefix)
                     self.assertTrue(any(row.startswith(prefix) for row in report[found[0]]))
             self.assertTrue(any(row.startswith("controls.hover-cursor-color:")
-                                for row in report["unavailable"]))
+                                for row in report["applied"]))
+            self.assertTrue(any(row.startswith("controls.focus-border-width:")
+                                for row in report["applied"]))
             self.assertTrue(any(row.startswith("notifications.border:")
                                 for row in report["unavailable"]))
             self.assertTrue(any(row.startswith("notifications.text:")

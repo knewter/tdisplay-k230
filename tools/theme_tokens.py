@@ -160,7 +160,10 @@ def compile_tokens(shell: dict) -> dict:
 # about intentionally omitted outlines and states with no interaction owner.
 SYSTEM_ROLES = {
     "controls": {"normal-color", "normal-fill-alpha", "selected-color",
-                 "selected-fill-alpha", "selected-border", "selected-border-width"},
+                 "selected-fill-alpha", "selected-border", "selected-border-width",
+                 "hover-cursor-color", "hover-cursor-fill-alpha", "hover-cursor-border",
+                 "hover-cursor-border-width", "hover-cursor-border-alpha",
+                 "focus-color", "focus-fill-alpha", "focus-border", "focus-border-width", "focus-border-alpha"},
     "notifications": {"background", "background-alpha", "text", "countdown"},
 }
 

@@ -1,0 +1,23 @@
+    Checking k230-shell-rust v0.1.0 (/home/jadams/tmp/k230-theme-closeout-2026-10-10/nix/rust-shell-client)
+warning: variants `PowerRequest`, `PowerCancel`, `NotificationDismissAll`, and `NotificationAction` are never constructed
+   --> tests/../src/service_data.rs:354:5
+    |
+340 | pub enum ServiceRequest {
+    |          -------------- variants in this enum
+...
+354 |     PowerRequest(PowerAction),
+    |     ^^^^^^^^^^^^
+355 |     PowerConfirm(String),
+356 |     PowerCancel(String),
+    |     ^^^^^^^^^^^
+357 |     NotificationDismiss(u64),
+358 |     NotificationDismissAll,
+    |     ^^^^^^^^^^^^^^^^^^^^^^
+359 |     NotificationAction(u64),
+    |     ^^^^^^^^^^^^^^^^^^
+    |
+    = note: `ServiceRequest` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `k230-shell-rust` (test "service_data_module") generated 1 warning
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 1.97s

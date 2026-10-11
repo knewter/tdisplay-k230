@@ -62,6 +62,35 @@ static bool number(json_object *object, const char *key, double *out) {
 	return isfinite(*out);
 }
 
+static bool metric(json_object *sections, const char *section_name,
+		const char *key, double *out) {
+	json_object *section = NULL, *token = NULL;
+	if (!json_object_object_get_ex(sections, section_name, &section)) return true;
+	if (json_object_get_type(section) != json_type_object) return false;
+	if (!json_object_object_get_ex(section, key, &token)) return true;
+	const char *kind = string(token, "kind");
+	return kind && !strcmp(kind, "number") && number(token, "value", out);
+}
+
+static bool metrics(json_object *sections, struct card_appearance *out) {
+	double base = 12, scale = 1;
+	bool with_font = true;
+	json_object *spacing = NULL, *token = NULL, *value = NULL;
+	if (!metric(sections, "font", "base-size", &base) ||
+			!metric(sections, "spacing", "scale", &scale)) return false;
+	if (json_object_object_get_ex(sections, "spacing", &spacing) &&
+			json_object_object_get_ex(spacing, "scale-with-font", &token)) {
+		const char *kind = string(token, "kind");
+		if (!kind || strcmp(kind, "boolean") ||
+				!json_object_object_get_ex(token, "value", &value) ||
+				json_object_get_type(value) != json_type_boolean) return false;
+		with_font = json_object_get_boolean(value);
+	}
+	out->font_scale = fmax(0.8, fmin(1.25, base / 12.0));
+	out->spacing_scale = fmax(0.8, fmin(1.25, scale * (with_font ? base / 12.0 : 1)));
+	return true;
+}
+
 static bool color(const char *value, uint32_t *result) {
 	if (!value || strlen(value) != 9 || value[0] != '#') return false;
 	uint32_t out = 0;
@@ -219,7 +248,7 @@ static bool load(const char *path, const char *id, bool allow_default,
 		next.canvas_authored = json_object_object_get_ex(sections, "card", &card_section) &&
 			json_object_get_type(card_section) == json_type_object &&
 			json_object_object_get_ex(card_section, "canvas", &canvas_token);
-		okay = authored(sections, "canvas", &next.canvas) &&
+		okay = metrics(sections, &next) && authored(sections, "canvas", &next.canvas) &&
 			authored(sections, "background", &next.card) &&
 			authored(sections, "selected-background", &next.selected) &&
 			authored_color(sections, "text", &next.text) &&

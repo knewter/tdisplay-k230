@@ -35,7 +35,56 @@ use crate::{
 };
 use cairo::{Context, Format, ImageSurface, LinearGradient, Operator};
 use pango::{Alignment, EllipsizeMode, FontDescription};
-use std::{fs::File, path::Path};
+use std::{fs::File, path::Path, rc::Rc};
+
+// Per-surface metrics keep independent renderers/candidate previews isolated.
+// Geometry and input coordinates stay fixed; only glyphs and visual insets scale.
+#[derive(Clone, Copy)]
+struct ThemeMetrics { font: f64, spacing: f64 }
+static THEME_METRICS: cairo::UserDataKey<ThemeMetrics> = cairo::UserDataKey::new();
+static HOVER_POINT: cairo::UserDataKey<(f64, f64)> = cairo::UserDataKey::new();
+
+fn theme_number(theme: Option<&AppearanceSnapshot>, section: &str, key: &str) -> Option<f64> {
+    match theme?.token(section, key)? {
+        AppearanceToken::Number(value) if value.is_finite() => Some(*value),
+        _ => None,
+    }
+}
+
+fn theme_spacing_scale(theme: Option<&AppearanceSnapshot>) -> f64 {
+    let with_font = !matches!(theme.and_then(|t| t.token("spacing", "scale-with-font")),
+                             Some(AppearanceToken::Boolean(false)));
+    let font = if with_font { theme_number(theme, "font", "base-size").unwrap_or(12.0) / 12.0 } else { 1.0 };
+    (theme_number(theme, "spacing", "scale").unwrap_or(1.0) * font).clamp(0.8, 1.25)
+}
+
+fn attach_theme_metrics(cr: &Context, theme: Option<&AppearanceSnapshot>) {
+    let _ = cr.target().set_user_data(&THEME_METRICS, Rc::new(ThemeMetrics {
+        font: (theme_number(theme, "font", "base-size").unwrap_or(12.0) / 12.0).clamp(0.8, 1.25),
+        spacing: theme_spacing_scale(theme),
+    }));
+}
+
+fn context_font_size(cr: &Context, design: f64) -> f64 {
+    (design * cr.target().user_data(&THEME_METRICS).map_or(1.0, |m| m.font)).max(design.min(11.0))
+}
+
+fn visual_inset(cr: &Context, design: f64) -> f64 {
+    design * cr.target().user_data(&THEME_METRICS).map_or(1.0, |m| m.spacing)
+}
+
+fn hovered(cr: &Context, x: f64, y: f64, w: f64, h: f64) -> bool {
+    cr.target().user_data(&HOVER_POINT).and_then(|point| cr.device_to_user(point.0, point.1).ok())
+        .is_some_and(|(px, py)| px >= x && px < x + w && py >= y && py < y + h)
+}
+
+fn paint_scrim(cr: &Context, theme: Option<&AppearanceSnapshot>, section: &str,
+               width: f64, height: f64, fallback: u32, alpha: f64) {
+    if !theme_brush(theme, section, "scrim").is_some_and(|b| fill_brush(cr, b, 0.0, 0.0, width, height)) {
+        color(cr, fallback, alpha);
+        let _ = cr.paint();
+    }
+}
 
 /// The one system font family used by every ordinary label this renderer
 /// draws. `nix/card-shell/render.h` names the same literal
@@ -168,12 +217,8 @@ fn theme_font_size(theme: Option<&AppearanceSnapshot>, role: &str, design: f64, 
 /// Theme spacing changes visual Settings row inset only, never the row's
 /// touch bounds. Keep the requested adaptation within handheld limits.
 fn theme_settings_row_padding(theme: Option<&AppearanceSnapshot>) -> f64 {
-    let number = |key| match theme?.token("spacing", key)? {
-        AppearanceToken::Number(value) if value.is_finite() => Some(*value),
-        _ => None,
-    };
-    let scale = number("scale").unwrap_or(1.0).clamp(0.8, 1.25);
-    (18.0 * scale).clamp(12.0, 36.0)
+    theme_number(theme, "spacing", "row-padding-x")
+        .unwrap_or(18.0 * theme_spacing_scale(theme)).clamp(12.0, 36.0)
 }
 
 fn fill_brush(cr: &Context, brush: &Brush, x: f64, y: f64, w: f64, h: f64) -> bool {
@@ -304,6 +349,12 @@ fn text_weight(
     rgb: u32,
     weight: pango::Weight,
 ) {
+    text_weight_resolved(cr, value, x, y, width, context_font_size(cr, size), rgb, weight);
+}
+
+#[allow(clippy::too_many_arguments)]
+fn text_weight_resolved(cr: &Context, value: &str, x: f64, y: f64, width: f64,
+                        size: f64, rgb: u32, weight: pango::Weight) {
     let layout = pangocairo::functions::create_layout(cr);
     let mut font = FontDescription::new();
     font.set_family(FONT_FAMILY);
@@ -311,10 +362,11 @@ fn text_weight(
     font.set_weight(weight);
     layout.set_font_description(Some(&font));
     layout.set_text(value);
-    layout.set_width((width * f64::from(pango::SCALE)) as i32);
+    let inset = visual_inset(cr, 4.0) - 4.0;
+    layout.set_width(((width - 2.0 * inset).max(1.0) * f64::from(pango::SCALE)) as i32);
     layout.set_ellipsize(EllipsizeMode::End);
     color(cr, rgb, 1.0);
-    cr.move_to(x, y);
+    cr.move_to(x + inset, y);
     pangocairo::functions::show_layout(cr, &layout);
 }
 
@@ -329,20 +381,16 @@ fn text(cr: &Context, value: &str, x: f64, y: f64, width: f64, size: f64, rgb: u
 /// synthesize this via partial emboldening rather than a true medium
 /// instance; that is an accepted, low-risk approximation given the image
 /// deliberately carries one font family (see `FONT_FAMILY`).
-fn medium(cr: &Context, value: &str, x: f64, y: f64, width: f64, size: f64, rgb: u32) {
-    text_weight(cr, value, x, y, width, size, rgb, pango::Weight::Medium);
-}
-
 fn themed_text(cr: &Context, theme: Option<&AppearanceSnapshot>, role: &str,
                value: &str, x: f64, y: f64, width: f64, size: f64,
                min: f64, max: f64, rgb: u32) {
-    text(cr, value, x, y, width, theme_font_size(theme, role, size, min, max), rgb);
+    text_weight_resolved(cr, value, x, y, width, theme_font_size(theme, role, size, min, max), rgb, pango::Weight::Normal);
 }
 
 fn themed_medium(cr: &Context, theme: Option<&AppearanceSnapshot>, role: &str,
                  value: &str, x: f64, y: f64, width: f64, size: f64,
                  min: f64, max: f64, rgb: u32) {
-    medium(cr, value, x, y, width, theme_font_size(theme, role, size, min, max), rgb);
+    text_weight_resolved(cr, value, x, y, width, theme_font_size(theme, role, size, min, max), rgb, pango::Weight::Medium);
 }
 
 fn heading(cr: &Context, value: &str, x: f64, y: f64, width: f64, size: f64, rgb: u32) {
@@ -434,7 +482,7 @@ fn centered_label(cr: &Context, value: &str, x: f64, y: f64, width: f64, size: f
     let layout = pangocairo::functions::create_layout(cr);
     let mut font = FontDescription::new();
     font.set_family(FONT_FAMILY);
-    font.set_absolute_size(size * f64::from(pango::SCALE));
+    font.set_absolute_size(context_font_size(cr, size) * f64::from(pango::SCALE));
     font.set_weight(pango::Weight::Bold);
     layout.set_font_description(Some(&font));
     layout.set_text(value);
@@ -515,6 +563,13 @@ fn service_card_state(
     selected: bool,
     pressed: bool,
 ) {
+    service_card_interaction(cr, theme, section, x, y, w, h, selected, pressed, false);
+}
+
+#[allow(clippy::too_many_arguments)]
+fn service_card_interaction(cr: &Context, theme: Option<&AppearanceSnapshot>, section: &str,
+                            x: f64, y: f64, w: f64, h: f64,
+                            selected: bool, pressed: bool, focused: bool) {
     let _ = cr.save();
     rounded(cr, x, y, w, h, 16.0);
     cr.clip();
@@ -532,12 +587,14 @@ fn service_card_state(
         color(cr, palette_rgb_or(theme, "background", 0x263946), 1.0);
         cr.paint().ok();
     }
+    let state = if focused { "focus" } else if hovered(cr, x, y, w, h) { "hover-cursor" }
+                else if selected { "selected" } else { "normal" };
     let tint = if pressed {
         "pressed-fill-alpha"
-    } else if selected {
-        "selected-fill-alpha"
     } else {
-        "normal-fill-alpha"
+        // These names are bounded renderer roles, never source-provided paths.
+        match state { "focus" => "focus-fill-alpha", "hover-cursor" => "hover-cursor-fill-alpha",
+                      "selected" => "selected-fill-alpha", _ => "normal-fill-alpha" }
     };
     let alpha = match theme.and_then(|snapshot| snapshot.token("controls", tint)) {
         Some(AppearanceToken::Number(value)) => value.clamp(0.0, 1.0),
@@ -553,7 +610,7 @@ fn service_card_state(
     };
     overlay_brush(
         cr,
-        theme_brush(theme, "controls", if selected { "selected-color" } else { "normal-color" })
+        theme_brush(theme, "controls", &format!("{state}-color"))
             .or_else(|| theme_brush(theme, "controls", "normal-color")),
         x,
         y,
@@ -564,14 +621,20 @@ fn service_card_state(
     );
     let _ = cr.restore();
 
-    // Ordinary surfaces are distinguished by their authored fill and spacing.
-    // Reserve an outline for a deliberately selected control, not every row.
-    if selected {
-        let widths = match theme.and_then(|s| s.token(section, "selected-border-width")) {
+    // Idle rims remain omitted; focus/hover/selection are transient or explicit.
+    paint_control_border(cr, theme, section, state, x, y, w, h);
+}
+
+#[allow(clippy::too_many_arguments)]
+fn paint_control_border(cr: &Context, theme: Option<&AppearanceSnapshot>, section: &str,
+                        state: &str, x: f64, y: f64, w: f64, h: f64) {
+    if state != "normal" {
+        let border_section = if state == "selected" { section } else { "controls" };
+        let widths = match theme.and_then(|s| s.token(border_section, &format!("{state}-border-width"))) {
             Some(AppearanceToken::Width(widths)) => *widths,
             _ => [1.5; 4],
         };
-        if let Some(border) = theme_brush(theme, section, "selected-border") {
+        if let Some(border) = theme_brush(theme, border_section, &format!("{state}-border")) {
             if let Some(gradient) = brush_gradient(border, x, y, w, h) {
                 let _ = cr.save();
                 rounded(cr, x, y, w, h, 16.0);
@@ -844,8 +907,15 @@ fn paint_carousel(
         // Dims a non-centered slice, fading out as it nears the centered
         // position -- upstream's `Util.alpha(root.dimColor, item.selected ?
         // 0 : 0.42)`, continuous here instead of a hard boolean.
-        color(cr, dim_color, 0.42 * slice.blend);
-        let _ = cr.paint();
+        if let Some(brush) = theme_brush(theme, "image-picker", "scrim") {
+            let _ = cr.push_group();
+            fill_brush(cr, brush, slice.x, slice.y, slice.width, slice.height);
+            let _ = cr.pop_group_to_source();
+            let _ = cr.paint_with_alpha(slice.blend);
+        } else {
+            color(cr, dim_color, 0.42 * slice.blend);
+            let _ = cr.paint();
+        }
         // A slice with no decoded thumbnail yet gets a spinner instead of a
         // silent flat fill, so a slow decode (goal: never a frozen-looking
         // UI) reads as "loading", not "missing" or "broken".
@@ -1338,7 +1408,7 @@ fn paint_wifi(
                         18.0,
                         style.muted,
                     );
-                    service_card(cr, theme, "controls", 24.0, 310.0, 520.0, 90.0, false);
+                    service_card_interaction(cr, theme, "controls", 24.0, 310.0, 520.0, 90.0, false, false, !view.use_saved);
                     let mask = "•".repeat(view.password_len.min(22));
                     text(
                         cr,
@@ -1767,6 +1837,7 @@ impl DrawerGridCache {
                 ImageSurface::create(Format::ARgb32, 1, 1).expect("1x1 fallback surface")
             });
             if let Ok(cr) = Context::new(&surface) {
+                attach_theme_metrics(&cr, theme);
                 // Passing `list_top(height)` as `tile_rect`'s own `scroll`
                 // cancels the header offset out of its `y` formula,
                 // leaving pure content-space row coordinates (row 0 at
@@ -1858,13 +1929,13 @@ fn paint_drawer_tile(
             style.text,
         );
     }
-    let label_y = icon_y + DRAWER_ICON_CARD + 6.0;
+    let label_y = icon_y + DRAWER_ICON_CARD + visual_inset(cr, 6.0);
     icons.paint_label(
         cr,
         &app.name,
         (x + 4.0, label_y),
         (cell_w - 8.0).max(1.0),
-        DRAWER_LABEL_SIZE,
+        theme_font_size(theme, "caption", DRAWER_LABEL_SIZE, 11.0, 18.0),
         brush_rgb(theme, "menu", "text", style.text),
     );
 }
@@ -1961,12 +2032,16 @@ fn paint_drawer_chrome(
     }
     let _ = cr.restore();
 
+    service_card_interaction(cr, theme, "launcher", sx, sy, sw, sh, false, false, search.focused);
+
     let label = if search.query.is_empty() {
         "Search apps"
     } else {
         search.query.as_str()
     };
-    let label_color = if search.query.is_empty() {
+    let label_color = if search.focused {
+        brush_rgb(theme, "controls", "focus-color", style.text)
+    } else if search.query.is_empty() {
         style.muted
     } else {
         style.text
@@ -1989,15 +2064,11 @@ fn paint_drawer_chrome(
         text(cr, label, tx, ty, available, 18.0, label_color);
         return;
     }
-    // Focus ring plus a steady insertion caret: never invisible during a blink.
-    rounded(cr, sx + 1.0, sy + 1.0, sw - 2.0, sh - 2.0, sh / 2.0);
-    color(cr, style.accent, 1.0);
-    cr.set_line_width(2.0);
-    let _ = cr.stroke();
+    // The focus brush/outline above belongs to the theme; keep the caret steady.
     let layout = pangocairo::functions::create_layout(cr);
     let mut font = FontDescription::new();
     font.set_family(FONT_FAMILY);
-    font.set_absolute_size(18.0 * f64::from(pango::SCALE));
+    font.set_absolute_size(context_font_size(cr, 18.0) * f64::from(pango::SCALE));
     layout.set_font_description(Some(&font));
     layout.set_single_paragraph_mode(true);
     layout.set_text(&search.query);
@@ -2085,6 +2156,22 @@ fn paint_drawer(
     }
     let _ = cr.restore();
 
+    if let Some(point) = cr.target().user_data(&HOVER_POINT).and_then(|p| cr.device_to_user(p.0, p.1).ok()) {
+        if let Some(index) = navigation::tile_at(point, width, search.viewport_height(height), matched.len(), scroll) {
+            let (x, y, tw, th) = tile_rect(width, height, index, scroll);
+            let _ = cr.save();
+            cr.rectangle(0.0, row_start, w, (bottom - row_start).max(0.0));
+            cr.clip();
+            let _ = cr.save();
+            rounded(cr, x, y, tw, th, 16.0);
+            cr.clip();
+            overlay_brush(cr, theme_brush(theme, "controls", "hover-cursor-color"), x, y, tw, th,
+                theme_number(theme, "controls", "hover-cursor-fill-alpha").unwrap_or(0.08).clamp(0.0, 1.0), style.accent);
+            let _ = cr.restore();
+            paint_control_border(cr, theme, "controls", "hover-cursor", x, y, tw, th);
+            let _ = cr.restore();
+        }
+    }
     if let Some(display_index) = pressed {
         // `pressed` is already a *display* (filtered) index -- the same
         // one `tile_rect`/`tile_at` use everywhere else -- so its position
@@ -2126,6 +2213,7 @@ fn scene(
     search: &DrawerSearch,
     grid_cache: &mut DrawerGridCache,
 ) {
+    attach_theme_metrics(cr, theme);
     let RenderParams {
         width,
         height,
@@ -2822,7 +2910,7 @@ fn shadowed_label(cr: &Context, value: &str, x: f64, y: f64, width: f64, size: f
     let layout = pangocairo::functions::create_layout(cr);
     let mut font = FontDescription::new();
     font.set_family(FONT_FAMILY);
-    font.set_absolute_size(size * f64::from(pango::SCALE));
+    font.set_absolute_size(context_font_size(cr, size) * f64::from(pango::SCALE));
     font.set_weight(pango::Weight::Medium);
     layout.set_font_description(Some(&font));
     layout.set_text(value);
@@ -2852,8 +2940,8 @@ fn paint_icon_plate(
 ) {
     let style = visual_style(theme, "launcher");
     cr.new_path();
-    if pressed {
-        service_card_state(cr, theme, "launcher", plate_x, plate_y, plate_size, plate_size, false, true);
+    if pressed || hovered(cr, plate_x, plate_y, plate_size, plate_size) {
+        service_card_state(cr, theme, "launcher", plate_x, plate_y, plate_size, plate_size, false, pressed);
     }
     let icon_x = plate_x + (plate_size - icon_size) / 2.0;
     let icon_y = plate_y + (plate_size - icon_size) / 2.0;
@@ -3064,7 +3152,7 @@ fn hero_glow(cr: &Context, value: &str, x: f64, y: f64, width: f64, size: f64, r
     let layout = pangocairo::functions::create_layout(cr);
     let mut font = FontDescription::new();
     font.set_family(font_family);
-    font.set_absolute_size(size * f64::from(pango::SCALE));
+    font.set_absolute_size(context_font_size(cr, size) * f64::from(pango::SCALE));
     font.set_weight(weight);
     layout.set_font_description(Some(&font));
     layout.set_text(value);
@@ -3090,7 +3178,7 @@ fn caption_glow(cr: &Context, value: &str, x: f64, y: f64, width: f64, size: f64
     let layout = pangocairo::functions::create_layout(cr);
     let mut font = FontDescription::new();
     font.set_family(FONT_FAMILY);
-    font.set_absolute_size(size * f64::from(pango::SCALE));
+    font.set_absolute_size(context_font_size(cr, size) * f64::from(pango::SCALE));
     font.set_weight(pango::Weight::Bold);
     layout.set_font_description(Some(&font));
     layout.set_text(tracked.trim_end());
@@ -3114,7 +3202,7 @@ fn centered_glow(cr: &Context, value: &str, x: f64, y: f64, width: f64, size: f6
     let layout = pangocairo::functions::create_layout(cr);
     let mut font = FontDescription::new();
     font.set_family(FONT_FAMILY);
-    font.set_absolute_size(size * f64::from(pango::SCALE));
+    font.set_absolute_size(context_font_size(cr, size) * f64::from(pango::SCALE));
     font.set_weight(pango::Weight::Bold);
     layout.set_font_description(Some(&font));
     layout.set_text(value);
@@ -3475,7 +3563,7 @@ fn draw_analog_clock(cr: &Context, cx: f64, cy: f64, radius: f64, hour: i32, min
 fn paint_widget_card(cr: &Context, style: &VisualStyle, kind: WidgetKind, rect: (f64, f64, f64, f64), home: &HomeScreen) {
     let (x, y, w, h) = rect;
     cr.new_path();
-    let pad = 22.0;
+    let pad = visual_inset(cr, 22.0);
     match kind {
         WidgetKind::Clock | WidgetKind::ClockMinimal | WidgetKind::ClockDotMatrix => {
             let (hour_text, minute_text, date_text) = match crate::home_widgets::clock::now_local() {
@@ -3612,11 +3700,13 @@ fn paint_open_folder(
     let Some(open) = home.open_folder.as_ref() else { return };
     let Some(HomeItem::Folder(folder)) = home.layout.get(open.slot) else { return };
     let style = visual_style(theme, "launcher");
-    cr.set_source_rgba(0.0, 0.0, 0.0, 0.5);
-    let _ = cr.paint();
+    paint_scrim(cr, theme, "launcher", f64::from(width), f64::from(height), 0, 0.5);
     let (cx, cy, cw, ch) = home_grid::folder_overlay_rect_inset(width, height, home.keyboard_inset);
     service_card(cr, theme, "launcher", cx, cy, cw, ch, false);
     let name_rect = home_grid::folder_name_rect_inset(width, height, home.keyboard_inset);
+    if open.editing_name {
+        service_card_interaction(cr, theme, "launcher", name_rect.0, name_rect.1, name_rect.2, name_rect.3, false, false, true);
+    }
     let display_name = if open.editing_name { open.name_buffer.as_str() } else { folder.name.as_str() };
     let shown_name = if display_name.is_empty() { " " } else { display_name };
     centered_label(cr, shown_name, name_rect.0, name_rect.1 + name_rect.3 / 2.0 - 14.0, name_rect.2, 26.0, style.accent);
@@ -3647,8 +3737,7 @@ fn paint_open_folder(
 fn paint_widget_picker(cr: &Context, width: u32, height: u32, theme: Option<&AppearanceSnapshot>, home: &HomeScreen) {
     let Some(picker) = home.widget_picker else { return };
     let style = visual_style(theme, "launcher");
-    cr.set_source_rgba(0.0, 0.0, 0.0, 0.5);
-    let _ = cr.paint();
+    paint_scrim(cr, theme, "launcher", f64::from(width), f64::from(height), 0, 0.5);
     let (cx, cy, cw, ch) = home_grid::picker_rect(width, height);
     service_card(cr, theme, "launcher", cx, cy, cw, ch, false);
     // Only the Widgets page's rows get a live-rendered preview thumbnail
@@ -3765,6 +3854,7 @@ pub fn paint_home(
     apps: &[AppEntry],
     icons: &mut IconCache,
 ) {
+    attach_theme_metrics(cr, theme);
     cr.set_operator(Operator::Source);
     cr.set_source_rgba(0.0, 0.0, 0.0, 0.0);
     let _ = cr.paint();
@@ -3986,7 +4076,7 @@ pub fn paint_home(
                     cr,
                     &label,
                     plate_x,
-                    plate_y + plate_size + 8.0,
+                    plate_y + plate_size + visual_inset(cr, 8.0),
                     plate_size,
                     15.0,
                     brush_rgb(theme, "launcher", "text", style.text),
@@ -4030,6 +4120,7 @@ pub fn draw_shm(
         &DrawerSearch::default(),
         &mut DrawerGridCache::default(),
         None,
+        None,
     )
 }
 
@@ -4048,6 +4139,7 @@ fn draw_shm_with_icons(
     pressed: Option<usize>,
     search: &DrawerSearch,
     grid_cache: &mut DrawerGridCache,
+    pointer: Option<(f64, f64)>,
     row_clip: Option<(f64, f64)>,
 ) -> Result<(), String> {
     let RenderParams { width, height, .. } = params;
@@ -4068,6 +4160,7 @@ fn draw_shm_with_icons(
     }
     .map_err(|error| error.to_string())?;
     let cr = Context::new(&surface).map_err(|error| error.to_string())?;
+    if let Some(point) = pointer { let _ = cr.target().set_user_data(&HOVER_POINT, Rc::new(point)); }
     if let Some((top, bottom)) = row_clip {
         cr.rectangle(0.0, top, f64::from(width), bottom - top);
         cr.clip();
@@ -4103,6 +4196,7 @@ fn draw_home_shm(
     icons: &mut IconCache,
     theme: Option<&AppearanceSnapshot>,
     home: &HomeScreen,
+    pointer: Option<(f64, f64)>,
 ) -> Result<(), String> {
     let stride = width.checked_mul(4).ok_or("invalid stride")?;
     if canvas.len() != usize::try_from(stride).unwrap_or(usize::MAX) * height as usize {
@@ -4119,6 +4213,7 @@ fn draw_home_shm(
     }
     .map_err(|error| error.to_string())?;
     let cr = Context::new(&surface).map_err(|error| error.to_string())?;
+    if let Some(point) = pointer { let _ = cr.target().set_user_data(&HOVER_POINT, Rc::new(point)); }
     paint_home(&cr, width, height, theme, home, apps, icons);
     drop(cr);
     surface.flush();
@@ -4178,6 +4273,8 @@ pub struct RendererCache {
     icons: IconCache,
     scroll: f64,
     pressed: Option<usize>,
+    pointer: Option<(f64, f64)>,
+    home_pointer: Option<(f64, f64)>,
     theme: Option<AppearanceSnapshot>,
     services: Option<ServiceView>,
     wifi_password_preview: Option<Secret>,
@@ -4344,6 +4441,17 @@ fn theme_picker_working_set(chooser: Option<&ThemeView>, viewport_width: u32) ->
 }
 
 impl RendererCache {
+    pub fn set_pointer(&mut self, point: Option<(f64, f64)>, home: bool) -> bool {
+        let point = point.filter(|(x, y)| x.is_finite() && y.is_finite());
+        let slot = if home { &mut self.home_pointer } else { &mut self.pointer };
+        if *slot == point { return false; }
+        *slot = point;
+        if !home {
+            self.content_generation = self.content_generation.wrapping_add(1);
+            self.invalidate();
+        }
+        true
+    }
     pub fn content_generation(&self) -> u64 {
         self.content_generation
     }
@@ -4627,6 +4735,7 @@ impl RendererCache {
             // its own doc) never actually renders `Route::Drawer` in
             // practice -- Optimistic Apply only pre-renders Settings.
             &mut DrawerGridCache::default(),
+            self.pointer,
             None,
         )?;
         // Matches `draw()`'s own post-shift backdrop pass exactly (same
@@ -4787,6 +4896,7 @@ impl RendererCache {
         width: f64,
         height: f64,
     ) {
+    attach_theme_metrics(cr, theme);
         if !hud.is_visible(now_ms) {
             return;
         }
@@ -4990,6 +5100,7 @@ impl RendererCache {
                 self.pressed,
                 &self.drawer_search,
                 &mut self.drawer_grid,
+                self.pointer,
                 None,
             )?;
             self.static_pixels = painted;
@@ -5007,7 +5118,7 @@ impl RendererCache {
                 apps, &mut self.icons, self.theme.as_ref(), self.services.as_ref(),
                 self.chooser.as_ref(), self.preview_surface.as_ref(), self.preview_error,
                 Some(&self.thumbnails), self.pressed, &self.drawer_search,
-                &mut self.drawer_grid, Some(picker_row_clip(self.picker_dirty_rows)),
+                &mut self.drawer_grid, self.pointer, Some(picker_row_clip(self.picker_dirty_rows)),
             )?;
             self.picker_dirty_rows = 0;
         }
@@ -5067,6 +5178,7 @@ impl RendererCache {
                 let cr = Context::new(&surface).map_err(|e| e.to_string())?;
                 cr.translate(0.0, f64::from(shift));
                 cr.scale(f64::from(width) / 568.0, f64::from(height) / 1232.0);
+                attach_theme_metrics(&cr, self.theme.as_ref());
                 let style = visual_style(self.theme.as_ref(), "controls");
                 text(&cr, preview.as_str(), 42.0, 337.0, 410.0, 25.0, style.text);
                 drop(cr); surface.flush();
@@ -5106,8 +5218,10 @@ impl RendererCache {
     pub fn draw_app_menu(&mut self,canvas:&mut [u8],width:u32,height:u32,menu:&crate::app_actions::AppMenu) -> Result<(),String> {
         let surface=ImageSurface::create(Format::ARgb32,width as i32,height as i32).map_err(|e|e.to_string())?;
         let cr=Context::new(&surface).map_err(|e|e.to_string())?;
-        color(&cr,0x000000,0.32);cr.paint().map_err(|e|e.to_string())?;
         let theme=self.theme.as_ref();
+        attach_theme_metrics(&cr, theme);
+        if let Some(point) = self.pointer { let _ = cr.target().set_user_data(&HOVER_POINT, Rc::new(point)); }
+        paint_scrim(&cr,theme,"menu",f64::from(width),f64::from(height),0,0.32);
         let style=visual_style(theme,"menu");
         let scale=crate::density_scale(width,height);
         let (x,y,w,h,row)=menu.geometry(width,height);
@@ -5146,7 +5260,7 @@ impl RendererCache {
         apps: &[AppEntry],
         home: &HomeScreen,
     ) -> Result<(), String> {
-        draw_home_shm(canvas, width, height, apps, &mut self.icons, self.theme.as_ref(), home)
+        draw_home_shm(canvas, width, height, apps, &mut self.icons, self.theme.as_ref(), home, self.home_pointer)
     }
 
     /// Renders the Drawer's own overlay surface while task 1's long-press-
@@ -5290,7 +5404,7 @@ fn draw_centered(cr: &Context, value: &str, y: f64, width: f64, size: f64, rgb: 
     let layout = pangocairo::functions::create_layout(cr);
     let mut font = FontDescription::new();
     font.set_family(FONT_FAMILY);
-    font.set_absolute_size(size * f64::from(pango::SCALE));
+    font.set_absolute_size(context_font_size(cr, size) * f64::from(pango::SCALE));
     layout.set_font_description(Some(&font));
     layout.set_text(value);
     layout.set_width((width * f64::from(pango::SCALE)) as i32);
@@ -5342,6 +5456,7 @@ fn build_splash_bake(
     }
     .map_err(|e| e.to_string())?;
     let cr = Context::new(&surface).map_err(|e| e.to_string())?;
+    attach_theme_metrics(&cr, theme);
     // Opaque on this very first paint -- the previously active app must
     // never show through, even for one frame, so unlike the icon/name
     // below this backdrop fill carries no fade of its own.
@@ -8130,6 +8245,104 @@ mod tests {
     }
 
     #[test]
+    fn theme_hover_focus_brushes_and_independent_border_widths_reach_pixels() {
+        let mut theme = fixture_theme("interaction", (32, 64, 96));
+        let brush = |rgb: &str, alpha| AppearanceToken::Brush(Brush {
+            stops: vec![BrushStop { offset: 0.0, argb: rgb.into() },
+                        BrushStop { offset: 1.0, argb: "#ffffffff".into() }],
+            angle_degrees: 45.0, alpha,
+        });
+        theme.sections.get_mut("controls").unwrap().extend([
+            ("hover-cursor-color".into(), brush("#ffff0000", 1.0)),
+            ("hover-cursor-fill-alpha".into(), AppearanceToken::Number(0.3)),
+            ("hover-cursor-border".into(), brush("#ff0000ff", 0.6)),
+            ("hover-cursor-border-width".into(), AppearanceToken::Width([1.0, 2.0, 3.0, 4.0])),
+            ("focus-color".into(), brush("#ff00ff00", 1.0)),
+            ("focus-fill-alpha".into(), AppearanceToken::Number(0.3)),
+            ("focus-border".into(), brush("#ff00ffff", 0.5)),
+            ("focus-border-width".into(), AppearanceToken::Width([4.0, 3.0, 2.0, 1.0])),
+        ]);
+        let paint = |theme: &AppearanceSnapshot, point, focus| {
+            let mut surface = ImageSurface::create(Format::ARgb32, 120, 80).unwrap();
+            let cr = Context::new(&surface).unwrap();
+            if let Some(point) = point { cr.target().set_user_data(&HOVER_POINT, Rc::new(point)).unwrap(); }
+            // Real render roots transform their reference layout; the pointer
+            // must be tested in that space rather than compared to raw pixels.
+            cr.translate(8.0, 4.0);
+            service_card_interaction(&cr, Some(theme), "controls", 0.0, 0.0, 104.0, 72.0, false, false, focus);
+            drop(cr);
+            let pixels = surface.data().unwrap().to_vec();
+            pixels
+        };
+        let idle = paint(&theme, None, false);
+        assert_eq!(idle, paint(&theme, Some((2.0, 2.0)), false), "outside hover must not change the card");
+        let hover = paint(&theme, Some((40.0, 40.0)), false);
+        let focus = paint(&theme, Some((40.0, 40.0)), true);
+        assert_ne!(idle, hover);
+        assert_ne!(hover, focus, "owned focus wins over hover");
+        theme.sections.get_mut("controls").unwrap().insert("hover-cursor-border-width".into(), AppearanceToken::Width([0.0; 4]));
+        assert_ne!(hover, paint(&theme, Some((40.0, 40.0)), false), "per-side state outlines must be painted");
+    }
+
+    #[test]
+    fn theme_base_font_reaches_non_settings_scenes_and_remains_isolated() {
+        let baseline = fixture_theme("metrics-baseline", (32, 64, 96));
+        let mut adapted = baseline.clone();
+        adapted.sections.insert("font".into(), BTreeMap::from([
+            ("base-size".into(), AppearanceToken::Number(15.0)),
+        ]));
+        adapted.sections.insert("spacing".into(), BTreeMap::from([
+            ("scale-with-font".into(), AppearanceToken::Boolean(false)),
+        ]));
+        let render = |theme: &AppearanceSnapshot, route| {
+            let mut cache = RendererCache::default();
+            cache.set_appearance(Some(theme.clone()));
+            let mut pixels = vec![0; 568 * 1232 * 4];
+            cache.draw(&mut pixels, RenderParams { width: 568, height: 1232, route, progress: 1.0, scroll: 0.0 }, &[]).unwrap();
+            pixels
+        };
+        for route in [Route::Drawer, Route::Shade, Route::Help, Route::Power] {
+            let old = render(&baseline, route);
+            assert_ne!(old, render(&adapted, route), "font.base-size must reach {route:?}");
+            assert_eq!(old, render(&baseline, route), "another renderer must not inherit an adapted surface's metrics");
+        }
+    }
+
+    #[test]
+    fn theme_hover_invalidates_candidate_cache_without_activating_or_changing_search() {
+        let mut cache = RendererCache::default();
+        let start = cache.content_generation();
+        assert!(cache.set_pointer(Some((40.0, 40.0)), false));
+        assert_ne!(start, cache.content_generation());
+        let changed = cache.content_generation();
+        assert!(!cache.set_pointer(Some((40.0, 40.0)), false));
+        assert_eq!(changed, cache.content_generation());
+        assert!(cache.set_pointer(Some((40.0, 40.0)), true));
+        assert_eq!(changed, cache.content_generation(), "Home hover does not invalidate an unrelated overlay candidate");
+        assert!(!cache.drawer_search.focused);
+        assert!(cache.chooser.is_none());
+        assert!(cache.set_pointer(Some((f64::NAN, 40.0)), false));
+        assert!(cache.pointer.is_none(), "invalid or removed pointer must clear hover");
+    }
+
+    #[test]
+    fn theme_scrim_preserves_gradient_and_authored_opacity() {
+        let mut theme = fixture_theme("scrim", (32, 64, 96));
+        theme.sections.insert("menu".into(), BTreeMap::from([("scrim".into(), AppearanceToken::Brush(Brush {
+            stops: vec![BrushStop { offset: 0.0, argb: "#ffff0000".into() },
+                        BrushStop { offset: 1.0, argb: "#ff0000ff".into() }],
+            angle_degrees: 0.0, alpha: 0.4,
+        }))]));
+        let mut surface = ImageSurface::create(Format::ARgb32, 100, 40).unwrap();
+        let cr = Context::new(&surface).unwrap();
+        paint_scrim(&cr, Some(&theme), "menu", 100.0, 40.0, 0, 0.32);
+        drop(cr);
+        let pixels = surface.data().unwrap();
+        assert!((100..=103).contains(&pixels[3]), "theme alpha must replace fixed fallback alpha");
+        assert_ne!(&pixels[0..3], &pixels[396..399], "gradient stops must survive scrim painting");
+    }
+
+    #[test]
     fn theme_font_and_spacing_adapt_with_touch_geometry_preserved() {
         let mut theme = fixture_theme("metrics", (32, 64, 96));
         theme.sections.insert("font".into(), BTreeMap::from([
@@ -8143,6 +8356,8 @@ mod tests {
         assert_eq!(theme_font_size(Some(&theme), "body", 19.0, 14.0, 24.0), 20.0);
         assert_eq!(theme_font_size(Some(&theme), "heading", 19.0, 16.0, 24.0), 23.75);
         assert_eq!(theme_font_size(None, "body", 19.0, 14.0, 24.0), 19.0);
+        assert_eq!(theme_settings_row_padding(Some(&theme)), 22.5);
+        theme.sections.get_mut("spacing").unwrap().insert("scale-with-font".into(), AppearanceToken::Boolean(false));
         assert_eq!(theme_settings_row_padding(Some(&theme)), 19.8);
         assert_eq!(theme_settings_row_padding(None), 18.0);
         assert_eq!(settings_row_y(1), 288.0, "theme spacing does not move touch rows");

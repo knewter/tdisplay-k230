@@ -22,6 +22,7 @@ struct card_appearance {
 	char generation[25];
 	struct card_brush canvas, card, selected;
 	uint32_t text, selected_text;
+	double font_scale, spacing_scale;
 	bool wallpaper, canvas_authored;
 	/* The active theme's own icon-theme name (report.json's top-level
 	 * "icon_theme" string, the same field

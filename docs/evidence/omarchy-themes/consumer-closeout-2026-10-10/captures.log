@@ -1,0 +1,3 @@
+   Compiling k230-shell-rust v0.1.0 (/home/jadams/tmp/k230-theme-closeout-2026-10-10/nix/rust-shell-client)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 5.13s
+     Running `/home/jadams/tmp/k230-theme-parent-inventory-cargo-target/debug/examples/render_theme_metrics_evidence /home/jadams/tmp/k230-theme-consumer-closeout-captures`

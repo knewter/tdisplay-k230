@@ -32,26 +32,22 @@ def field_status(section: str, key: str) -> tuple[str, str] | None:
     if section == "controls":
         applied = {"normal-fill-alpha", "selected-color", "selected-fill-alpha",
                    "selected-border", "selected-border-width", "selected-border-alpha",
-                   "pressed-fill-alpha"}
+                   "pressed-fill-alpha", "hover-cursor-color", "hover-cursor-fill-alpha",
+                   "hover-cursor-border", "hover-cursor-border-width", "hover-cursor-border-alpha",
+                   "focus-color", "focus-fill-alpha", "focus-border", "focus-border-width", "focus-border-alpha"}
         adapted = {"normal-color"}
         unavailable = {
             "normal-border": "Ordinary row rims are deliberately omitted.",
             "normal-border-width": "Ordinary row rims are deliberately omitted.",
             "normal-border-alpha": "Ordinary row rims are deliberately omitted.",
-            "hover-cursor-color": "No distinct hover/cursor state is owned by these touch controls.",
-            "hover-cursor-fill-alpha": "No distinct hover/cursor state is owned by these touch controls.",
-            "hover-cursor-border": "No distinct hover/cursor state is owned by these touch controls.",
-            "hover-cursor-border-width": "No distinct hover/cursor state is owned by these touch controls.",
-            "hover-cursor-border-alpha": "No distinct hover/cursor state is owned by these touch controls.",
-            "focus-color": "No keyboard-focus paint state is implemented for these rows.",
-            "focus-fill-alpha": "No keyboard-focus paint state is implemented for these rows.",
-            "focus-border": "No keyboard-focus paint state is implemented for these rows.",
-            "focus-border-width": "No keyboard-focus paint state is implemented for these rows.",
-            "focus-border-alpha": "No keyboard-focus paint state is implemented for these rows.",
             "selection-fill-alpha": "Text-selection paint belongs to the input client, not these cards.",
         }
         if key in applied:
-            owner = "Rust Home icon/folder transient press uses this fill without persistent selection." if key == "pressed-fill-alpha" else "Rust control-card renderer; selected outline alpha is folded into its brush."
+            owner = "Rust Home icon/folder transient press uses this fill without persistent selection." if key == "pressed-fill-alpha" else "Rust control-card renderer; state outlines retain gradients, alpha and per-side widths."
+            if key.startswith("hover-cursor-"):
+                owner = "Mouse hover on existing Home/drawer/control chrome; it never activates a control."
+            if key.startswith("focus-"):
+                owner = "Existing drawer search, Wi-Fi password and folder-rename fields own focused chrome."
             return "applied", owner
         if key in adapted:
             return "adapted", "Rust Settings labels use the first color stop; fills retain full brushes."
@@ -60,13 +56,13 @@ def field_status(section: str, key: str) -> tuple[str, str] | None:
         return None
     if section == "font":
         if key == "base-size":
-            return "adapted", "Rust Settings labels scale design sizes by base-size (defaults to 12), clamped per label to 11–24px."
+            return "adapted", "Rust shell labels and C deck headers scale by base-size/12, bounded to 0.8–1.25; Settings role overrides retain 11–24px bounds."
         return None
     if section == "spacing":
         if key == "scale":
-            return "adapted", "Settings row text inset uses the scale, clamped to 12–36px; row/tap geometry stays fixed."
+            return "adapted", "Shared visual text insets, Home/drawer label gaps, widget padding and C header icon gaps scale within 0.8–1.25; Settings padding is 12–36px. Hit/panel geometry stays fixed."
         if key == "scale-with-font":
-            return "unavailable", "Font-relative spacing is not implemented."
+            return "adapted", "When true (default), visual spacing multiplies scale by base-size/12 before the handheld bounds; false decouples font and spacing."
         return None
     if section == "notifications":
         statuses = {
@@ -85,8 +81,8 @@ def field_status(section: str, key: str) -> tuple[str, str] | None:
             "text": ("adapted", "Rust Home/drawer glyphs use the first brush stop."),
             "border": ("unavailable", "Home/drawer surfaces do not paint ordinary outlines."),
             "border-alpha": ("unavailable", "Home/drawer surfaces do not paint ordinary outlines."),
-            "scrim": ("unavailable", "No launcher scrim role is consumed."),
-            "scrim-alpha": ("unavailable", "No launcher scrim role is consumed."),
+            "scrim": ("applied", "Home folder and widget-picker scrim brush."),
+            "scrim-alpha": ("applied", "Home folder and widget-picker scrim brush."),
             "selected-background": ("unavailable", "No persistent selected Home card is painted."),
             "selected-background-alpha": ("unavailable", "No persistent selected Home card is painted."),
             "selected-text": ("adapted", "Rust Home/drawer accent glyphs use the first brush stop."),
@@ -101,8 +97,8 @@ def field_status(section: str, key: str) -> tuple[str, str] | None:
             "text": ("adapted", "Rust app-actions glyphs use the first brush stop."),
             "border": ("unavailable", "App-actions menu does not paint an ordinary outline."),
             "border-alpha": ("unavailable", "App-actions menu does not paint an ordinary outline."),
-            "scrim": ("unavailable", "App-actions scrim is a fixed client color."),
-            "scrim-alpha": ("unavailable", "App-actions scrim is a fixed client alpha."),
+            "scrim": ("applied", "App-actions overlay scrim brush."),
+            "scrim-alpha": ("applied", "Compiled into the app-actions scrim brush."),
             "selected-background": ("unavailable", "No selected app-action card is painted."),
             "selected-background-alpha": ("unavailable", "No selected app-action card is painted."),
             "selected-text": ("adapted", "Rust app-actions accent glyphs use the first brush stop."),
@@ -112,8 +108,8 @@ def field_status(section: str, key: str) -> tuple[str, str] | None:
         return statuses.get(key)
     if section == "image-picker":
         statuses = {
-            "scrim": ("unavailable", "Chooser slice dimming uses the palette background."),
-            "scrim-alpha": ("unavailable", "Chooser slice dimming uses a fixed alpha."),
+            "scrim": ("applied", "Chooser slice dimming consumes the image-picker scrim brush."),
+            "scrim-alpha": ("adapted", "Authored scrim alpha is multiplied by the existing per-slice blend; a centered slice is undimmed."),
             "text": ("adapted", "Chooser glyphs use the first brush stop."),
             "selected-border": ("unavailable", "Chooser carousel does not paint selection outlines."),
             "selected-border-alpha": ("unavailable", "Chooser carousel does not paint selection outlines."),
@@ -162,9 +158,11 @@ def render_markdown(template: Path = TEMPLATE) -> str:
         "The test `python3 tests/test_handheld_theme_rendering.py` checks that the",
         "inventory covers every active key and has no unknown classifications.",
         "Renderer unit tests verify the actual Rust Cairo/Pango path for the",
-        "implemented font adaptation and Home's momentary pressed fill. Hover/focus",
-        "states, theme-driven spacing outside Settings row text insets, absent surfaces, and",
-        "physical readability remain open; classifications above do not claim them.",
+        "hover/focus state, bounded font/spacing adaptation and Home's momentary pressed fill.",
+        "Idle outlines, text selection and absent surfaces are explicitly unavailable; they",
+        "are not new surfaces or interaction modes introduced by appearance import.",
+        "New physical recordings and numerical measurements are waived by the operator;",
+        "specific unobserved glass/boot cases and unmeasured costs remain UNVERIFIED.",
         "",
     ])
     return "\n".join(lines)

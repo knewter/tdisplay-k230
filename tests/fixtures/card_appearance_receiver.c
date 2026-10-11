@@ -12,6 +12,8 @@ static bool apply(const struct card_appearance *appearance, void *unused) {
 	printf("APPLY %s %zu %zu %d %s\n", appearance->generation,
 		appearance->card.count, appearance->selected.count, appearance->wallpaper,
 		appearance->icon_theme[0] ? appearance->icon_theme : "-");
+	if (appearance->font_scale != 1 || appearance->spacing_scale != 1)
+		printf("METRICS %.3f %.3f\n", appearance->font_scale, appearance->spacing_scale);
 	fflush(stdout);
 	return true;
 }

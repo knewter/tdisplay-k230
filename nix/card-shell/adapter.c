@@ -1213,13 +1213,24 @@ static bool sync_node(struct card *c, struct wlr_scene_node *node, int x, int y,
 	order_mirror(previous, copy);
 	return true;
 }
+static struct wlr_scene_buffer *themed_label(struct wlr_scene_tree *parent,
+		const char *text, int width, int height, int size, uint32_t argb) {
+	double scale = shell.appearance_enabled && shell.appearance.font_scale > 0 ? shell.appearance.font_scale : 1;
+	return card_label_color(parent, text, width, height, lround(size * scale), argb);
+}
+
+static int theme_gap(int size) {
+	double scale = shell.appearance_enabled && shell.appearance.spacing_scale > 0 ? shell.appearance.spacing_scale : 1;
+	return lround(size * scale);
+}
+
 static bool label_update(struct wlr_scene_tree *parent, struct wlr_scene_buffer **node,
 						 char **saved, const char *text, int width, int height, int size,
 						 uint32_t argb) {
 	if (*node && *saved && strcmp(*saved, text) == 0 && (*node)->buffer->width == width &&
 		(*node)->buffer->height == height)
 		return true;
-	struct wlr_scene_buffer *next = card_label_color(parent, text, width, height, size, argb);
+	struct wlr_scene_buffer *next = themed_label(parent, text, width, height, size, argb);
 	char *copy = strdup(text);
 	if (!next || !copy) {
 		if (next)
@@ -1545,8 +1556,8 @@ static bool sync_card(struct card *c, size_t index) {
 	int text_x = header_x;
 	int text_w = c->box_width;
 	if (show_icon) {
-		text_x += icon_size + 10;
-		text_w -= icon_size + 10;
+		text_x += icon_size + theme_gap(10);
+		text_w -= icon_size + theme_gap(10);
 	}
 	if (text_w < 0) text_w = 0;
 	int text_size = 20;
@@ -1627,7 +1638,7 @@ static bool button(struct wlr_scene_tree *parent, int x, int y, int width, const
 				   bool pressed) {
 	struct wlr_scene_rect *rect =
 		wlr_scene_rect_create(parent, width, 56, pressed ? card_color : selected_color);
-	struct wlr_scene_buffer *label = card_label_color(parent, text, width - 16, 48, 26,
+	struct wlr_scene_buffer *label = themed_label(parent, text, width - 16, 48, 26,
 		appearance_text(false));
 	if (!rect || !label)
 		return false;
@@ -1676,7 +1687,7 @@ static bool rebuild_chrome(void) {
 		 * entered the same way it always was. See
 		 * openspec/changes/the-shell-presents-a-pinned-home-screen/design.md
 		 * decision 2. */
-		struct wlr_scene_buffer *title = card_label_color(shell.chrome, "Overview", 176, 40, 24,
+		struct wlr_scene_buffer *title = themed_label(shell.chrome, "Overview", 176, 40, 24,
 			appearance_text(false));
 		if (!title) {
 			sway_log(SWAY_INFO, "K230_CARD_SHELL rebuild_chrome fail reason=title-failed");
@@ -1695,7 +1706,7 @@ static bool rebuild_chrome(void) {
 		}
 		/* This footer is now a tap/click target as well as a swipe origin.
 		 * Keep the existing muted treatment, with a readable action label. */
-		struct wlr_scene_buffer *cue = card_label_color(shell.chrome,
+		struct wlr_scene_buffer *cue = themed_label(shell.chrome,
 			"Home · tap or swipe up", cfg->width - 48, 28, 18, appearance_text_muted(false));
 		if (!cue) {
 			sway_log(SWAY_INFO, "K230_CARD_SHELL rebuild_chrome fail reason=cue-failed");
@@ -1712,7 +1723,7 @@ static bool rebuild_chrome(void) {
 	}
 	if (!shell.active)
 		return true;
-	struct wlr_scene_buffer *title = card_label_color(shell.chrome, "Cards", 250, 56, 42,
+	struct wlr_scene_buffer *title = themed_label(shell.chrome, "Cards", 250, 56, 42,
 		appearance_text(false));
 	if (!title) {
 		sway_log(SWAY_INFO, "K230_CARD_SHELL rebuild_chrome fail reason=title-failed");
