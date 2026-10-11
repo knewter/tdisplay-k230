@@ -1,3 +1,5 @@
+> **Superseded 2026-10-11.** This change targeted the Python/C touch-launcher, which the Rust coherent shell no longer launches. Unmet requirements move to `the-rust-shell-explains-stale-denied-and-ended-states`. Tasks below were not performed and are deliberately left unticked; specs are not synced.
+
 ## 1. Contract and fixtures
 - [ ] 1.1 Add shared state IDs/copy keys and visible recovery mapping without moving video/card lifecycle ownership. Verify with `python3 tests/test_launcher_navigation.py && python3 tests/test_window_catalog.py && python3 tests/test_video_session.py`.
 - [ ] 1.2 Add fixture cases for Home disclosure, loading, empty, stale, failed launch, denied action, Stop, EOF, and cancelled paths; assert no raw path/secret is rendered. Verify with the same three host tests.

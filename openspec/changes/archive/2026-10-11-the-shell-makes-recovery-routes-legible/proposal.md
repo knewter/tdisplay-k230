@@ -1,3 +1,5 @@
+> **Superseded 2026-10-11.** This change targeted the Python/C touch-launcher, which the Rust coherent shell no longer launches. Unmet requirements move to `the-rust-shell-explains-stale-denied-and-ended-states`. Tasks below were not performed and are deliberately left unticked; specs are not synced.
+
 ## Why
 Home recovery is explained only inside Help while the first persistent control says Windows. Error states also expose raw helper/GLib text inconsistently, making recovery less clear.
 ## What Changes
