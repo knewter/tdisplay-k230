@@ -1,0 +1,18 @@
+{
+  "observed_utc": "2026-10-11T02:46:19.019031+00:00",
+  "selected_derivation": "/nix/store/x35pqwy5lx727z8gkp3s4v3c8fbiwyzm-k230-coherent-shell-boot-files.drv",
+  "prior_retained_paths": 10549,
+  "retained_paths": 10627,
+  "newly_retained_paths": 78,
+  "direct_links": 79,
+  "prior_farm": "/nix/store/m4iajg79cdhy600miqg0rbb662mg4vir-tdisplay-k230-retained-theme-consumer-build-inputs",
+  "manifest_sha256": "7c052518a9278eb32517a142544233c7bc0ec604f367426750be8ff580cd6ed7",
+  "graph_derivations": 6028,
+  "unrealized_outputs_omitted": 6473,
+  "enumeration": "Previous verified farm union recursive selected derivation sources and all currently realized declared outputs. Every retained path passed nix-store --check-validity. Nested prior farm and new links use builtins.storePath context.",
+  "global_policy_changed": false,
+  "root": "/home/jadams/.local/state/tdisplay-k230/retained-builds/theme-install-2026-10-10/build-closure",
+  "retained_farm": "/nix/store/y0sd20y8v6xj41sqj29jdwja3nph7l4f-tdisplay-k230-retained-installed-theme-build-inputs",
+  "root_exists": true,
+  "root_requisites_verified": 10627
+}

@@ -575,7 +575,7 @@
       "lane": "archived",
       "source": "archived",
       "physical": "verified",
-      "next": "Accepted static-theme parent closed at 25/25. New consumer packages are cross-built; matching board installation remains separate. Background/video successor retains its scope.",
+      "next": "Accepted static-theme parent closed at 25/25. Matching consumers are installed and ordinary startup verified. Background/video successor retains its scope.",
       "dependencies": [],
       "evidence": [
         "docs/evidence/omarchy-themes/helper-package.md",
@@ -603,10 +603,11 @@
         "docs/evidence/omarchy-themes/closeout-2026-10-10/README.md",
         "docs/evidence/omarchy-themes/accepted-closeout-2026-10-10/README.md",
         "docs/evidence/omarchy-themes/consumer-closeout-2026-10-10/README.md",
-        "docs/evidence/omarchy-themes/compatibility-closeout-2026-10-10.md"
+        "docs/evidence/omarchy-themes/compatibility-closeout-2026-10-10.md",
+        "docs/evidence/omarchy-themes/installed-consumers-2026-10-10/README.md"
       ],
-      "rationale": "Applicable consumers are implemented with 497 passing host cases and six reviewed capture pairs; Rust/card-shell cross-builds passed without kernel rebuild. The complete 102-field/source/license compatibility report is published and exact-revision CI/Pages verified. Existing operator acceptance/waiver remains committed; unmeasured costs and individual physical cases retain UNVERIFIED. Archive preserves the Settings/notifications sibling and the independent background/video scope. Cross-build is not installation proof.",
-      "reviewRevision": "923c6a9708a23ddbb8cff4b577cf0741c68580aa",
+      "rationale": "Applicable consumers are implemented with 497 passing host cases and six reviewed capture pairs; Rust/card-shell cross-builds passed without kernel rebuild. The complete 102-field/source/license compatibility report is published and exact-revision CI/Pages verified. Existing operator acceptance/waiver remains committed; unmeasured costs and individual physical cases retain UNVERIFIED. Archive preserves the Settings/notifications sibling and the independent background/video scope. Cross-build is not installation proof. Subsequent same-kernel userspace deployment passed guarded installation and untouched ordinary boot with exact Rust/Sway/helper identities, four active services and active DSI output. No new finger/pixel observation is inferred.",
+      "reviewRevision": "abc947cbe7174f3ab9a2bfeb4de62f0c81d4bbb5",
       "cover": {
         "path": "docs/evidence/omarchy-themes/community-board-fixed/community.png",
         "caption": "Unchanged community theme on the physical board \u2014 native capture, command-driven activation",

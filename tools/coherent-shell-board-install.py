@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Install a touch-qualified coherent boot bundle, retaining root rollback.
+"""Install a qualified coherent boot bundle, retaining root rollback.
 
 Runs on the reserved board. It preserves stage 1 and DT selectors. The boot
 partition may require removing an old payload before its replacement fits;

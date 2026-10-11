@@ -98,3 +98,15 @@ then use the guarded stage/install workflow in
 It must bind any install qualification honestly to that new candidate. This is
 a separate deployment action, not a renewed request for waived recordings or a
 gate on the accepted parent archive.
+
+
+## Subsequent matching installation — 2026-10-10
+
+The pre-installation limitation above is superseded by the
+[completed matching deployment](../installed-consumers-2026-10-10/README.md).
+The matching bundle was built and installed with unchanged kernel/Image/initrd,
+root rollback retained, and actual untouched ordinary boot observed. Exact new
+Rust/Sway/helper identities, four active services and active panel output are
+committed there. The operator's standing collection waiver is recorded as
+userspace-update authorization, with no new finger or pixel claims. Existing
+**UNVERIFIED** individual physical cases and workload measurements remain.

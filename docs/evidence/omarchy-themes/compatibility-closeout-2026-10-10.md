@@ -72,3 +72,10 @@ recordings, new physical typography/spacing cases, and full fresh-HOME boot
 remain **UNVERIFIED**. These are waived collection, not unimplemented consumers.
 The source consumer work, cross-build and published revision are reported
 separately; a successful build alone is not board installation proof.
+
+
+The [subsequent matching deployment](installed-consumers-2026-10-10/README.md)
+now records the completed board installation and untouched ordinary startup of
+these consumers, with exact Rust/Sway/helper identities and active panel/services.
+It retains the existing physical-collection waiver and all limits above; no new
+individual typography/spacing observation or workload measurement is inferred.

@@ -1,0 +1,110 @@
+{
+  "phase": "installed",
+  "system": "/nix/store/925i44g1rmqyjcbz8hziyz3vvkx95waf-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "normal_profile": "/nix/store/svjjlnvrs8djb6g6gkd0q0iwabpm6sxp-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "normal_boot_system": "/nix/store/svjjlnvrs8djb6g6gkd0q0iwabpm6sxp-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "before": {
+    "Image": {
+      "bytes": 42745856,
+      "sha256": "9d94102c65c8e4fd6b8880ef7b19b8bee5fa91c85596384319f0104bd89509cb",
+      "crc32": "2a872808"
+    },
+    "initrd.uimg": {
+      "bytes": 27330502,
+      "sha256": "4365953c65e834fa9a9d5027ff5b6f79d99cc61afa732d58b7162a09edd2428f",
+      "crc32": "c5a9d6cc"
+    },
+    "k230-tdisplay.dtb": {
+      "bytes": 14538,
+      "sha256": "353ce13905c230af001afa4b1dc9bc2f722d15f9f71cf5627297bcbf64a60c90",
+      "crc32": "25f22c08"
+    },
+    "bootargs.txt": {
+      "bytes": 211,
+      "sha256": "8ce830d9221d95105d10f0a5c1baa4e87f1d7571da9a9ead05c0599c4bf12ecb",
+      "crc32": "79ecfb2f"
+    },
+    "fw_jump_add_uboot_head.bin": {
+      "bytes": 270808,
+      "sha256": "9627edbeea9b115d7040beea27cc61b23b6aca61cd502fd7760d7ee179f42c99",
+      "crc32": "99b89787"
+    },
+    "force_dtb": {
+      "bytes": 17,
+      "sha256": "175342c82dd1b437cdafb6bb01090e7ff73c2769515654c48b02c1e9f73440c6",
+      "crc32": "e80b1712"
+    },
+    "lcd_dtb": {
+      "bytes": 17,
+      "sha256": "175342c82dd1b437cdafb6bb01090e7ff73c2769515654c48b02c1e9f73440c6",
+      "crc32": "e80b1712"
+    },
+    "hdmi_dtb": {
+      "bytes": 17,
+      "sha256": "175342c82dd1b437cdafb6bb01090e7ff73c2769515654c48b02c1e9f73440c6",
+      "crc32": "e80b1712"
+    }
+  },
+  "appearance_before": {
+    "generation": null,
+    "report_sha256": null
+  },
+  "methods": {
+    "Image": "unchanged",
+    "initrd.uimg": "unchanged",
+    "k230-tdisplay.dtb": "atomic-rename",
+    "bootargs.txt": "atomic-rename"
+  },
+  "qualification_evidence_class": "operator-authorized-userspace-update",
+  "qualification_sha256": "da4efd53c4b9cc1374c17918cb0c17b2f280b1093e1ca3df62cc486dd530bec9",
+  "started_epoch_s": 1791686912.2000751,
+  "after": {
+    "Image": {
+      "bytes": 42745856,
+      "sha256": "9d94102c65c8e4fd6b8880ef7b19b8bee5fa91c85596384319f0104bd89509cb",
+      "crc32": "2a872808"
+    },
+    "initrd.uimg": {
+      "bytes": 27330502,
+      "sha256": "4365953c65e834fa9a9d5027ff5b6f79d99cc61afa732d58b7162a09edd2428f",
+      "crc32": "c5a9d6cc"
+    },
+    "k230-tdisplay.dtb": {
+      "bytes": 14538,
+      "sha256": "fcc2c901a361c3158226340ad9679385b80723194fcf5e312f7019a353c65042",
+      "crc32": "edf0ef2e"
+    },
+    "bootargs.txt": {
+      "bytes": 211,
+      "sha256": "c92ab01dc5496c761c11db038df9892d28bc5b0ef97e9920e5b6fd604be00067",
+      "crc32": "a5e5da66"
+    },
+    "fw_jump_add_uboot_head.bin": {
+      "bytes": 270808,
+      "sha256": "9627edbeea9b115d7040beea27cc61b23b6aca61cd502fd7760d7ee179f42c99",
+      "crc32": "99b89787"
+    },
+    "force_dtb": {
+      "bytes": 17,
+      "sha256": "175342c82dd1b437cdafb6bb01090e7ff73c2769515654c48b02c1e9f73440c6",
+      "crc32": "e80b1712"
+    },
+    "lcd_dtb": {
+      "bytes": 17,
+      "sha256": "175342c82dd1b437cdafb6bb01090e7ff73c2769515654c48b02c1e9f73440c6",
+      "crc32": "e80b1712"
+    },
+    "hdmi_dtb": {
+      "bytes": 17,
+      "sha256": "175342c82dd1b437cdafb6bb01090e7ff73c2769515654c48b02c1e9f73440c6",
+      "crc32": "e80b1712"
+    }
+  },
+  "profile_after": "/nix/store/925i44g1rmqyjcbz8hziyz3vvkx95waf-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "appearance_after": {
+    "generation": null,
+    "report_sha256": null
+  },
+  "result": "PASS",
+  "ordinary_boot_verified": false
+}

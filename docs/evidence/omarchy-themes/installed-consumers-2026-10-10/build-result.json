@@ -1,0 +1,25 @@
+{
+  "utc": "2026-10-11T02:42:37.305729+00:00",
+  "source_revision": "ddbe7204c5a64869fcb512c29fb1ef6ec6930095",
+  "installer_revision": "abc947cbe7174f3ab9a2bfeb4de62f0c81d4bbb5",
+  "command": "flock -n /tmp/k230-nix-build.lock nix build .#kernelMainlineDrmShellBootFiles --out-link RETAINED/candidate --print-out-paths --max-jobs 1 --cores 4",
+  "result": "PASS",
+  "bundle": "/nix/store/sxn7li6gqckkfvph9d16avswz5qxlbhl-k230-coherent-shell-boot-files",
+  "system": "/nix/store/925i44g1rmqyjcbz8hziyz3vvkx95waf-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "built_derivations": 35,
+  "kernel_unchanged": true,
+  "Image_and_initrd_byte_identical_to_accepted_baseline": true,
+  "consumers": {
+    "rust": "/nix/store/4liqvyyyybdlz2awcicw227f180iahwz-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0/bin/k230-shell-rust",
+    "sway": "/nix/store/q96sk40q7j5v9f0ygxf2wx3yk7nzixqs-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway",
+    "helper": "/nix/store/847yqlhcg3fl28m4zjbvfsgm4jkprxs4-handheld-theme-command-0.1",
+    "baseline_appearance": {
+      "generation": null,
+      "report_sha256": null
+    },
+    "baseline_preferences_sha256": null,
+    "source_revision": "ddbe7204c5a64869fcb512c29fb1ef6ec6930095",
+    "rust_launcher": "/nix/store/6hlampw9nxj23af9qqvk3fy2fpxndcpd-k230-shell-rust/bin/k230-shell-rust"
+  },
+  "limit": "Host construction/inspection is not installation proof."
+}

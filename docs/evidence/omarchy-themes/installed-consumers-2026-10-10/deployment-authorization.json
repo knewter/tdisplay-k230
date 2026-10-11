@@ -1,0 +1,24 @@
+{
+  "system": "/nix/store/925i44g1rmqyjcbz8hziyz3vvkx95waf-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "kernel": "/nix/store/f3rnipvbc5vqam8kwdmn3wgcl5rbz9yx-linux-riscv64-unknown-linux-gnu-7.3.0-rc5/Image",
+  "bundle": "/nix/store/sxn7li6gqckkfvph9d16avswz5qxlbhl-k230-coherent-shell-boot-files",
+  "evidence_class": "operator-authorized-userspace-update",
+  "shell_executable": "/nix/store/4liqvyyyybdlz2awcicw227f180iahwz-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0/bin/k230-shell-rust",
+  "boot_id": "35b1bd92-6ad1-4654-a8c9-d386561e9202",
+  "deployment_authorized": true,
+  "additional_physical_collection_waived": true,
+  "operator_instruction": "continue",
+  "prior_waiver": "continue but you dont have to gather that proof ive already confirmed its fine carry on it's all good",
+  "recorded_utc": "2026-10-11T02:47:51.255035+00:00",
+  "source_revision": "ddbe7204c5a64869fcb512c29fb1ef6ec6930095",
+  "accepted_baseline": {
+    "system": "/nix/store/svjjlnvrs8djb6g6gkd0q0iwabpm6sxp-nixos-system-nixos-26.11.20260919.20b1ddd",
+    "kernel": "/nix/store/f3rnipvbc5vqam8kwdmn3wgcl5rbz9yx-linux-riscv64-unknown-linux-gnu-7.3.0-rc5/Image",
+    "boot_files": {
+      "Image": "9d94102c65c8e4fd6b8880ef7b19b8bee5fa91c85596384319f0104bd89509cb",
+      "initrd.uimg": "4365953c65e834fa9a9d5027ff5b6f79d99cc61afa732d58b7162a09edd2428f"
+    }
+  },
+  "provenance": "Operator continuation of the explicitly identified deployment, using their standing waiver of additional physical collection. This authorizes a same-kernel userspace update and does not claim new finger observations.",
+  "limits": "No new gesture, cable cycle, pixel, timing, or individual typography/spacing physical observation is inferred."
+}
