@@ -10,7 +10,7 @@ Layer: userspace (Rust shell client, built as `.#handheld-shell-rust`). The cont
 - Raw paths, helper diagnostics, and secrets reach logs only.
 - Stale means the focused target vanished; the shell must not focus a different window silently. It gets its own splash status (`SplashStatus::Stale`, "That window has closed · Tap for Apps") that waits for a tap and opens Apps.
 - A message names the surface's own visible exit control: Settings' "Done", Power's "Cancel"; a retryable failure names Retry (tap the same control again).
-- Video ended-state copy is defined in the contract, but rendering it needs a decision on ownership. Either the session keeps its window open with the copy, or the shell observes the session's end. Task 1.3 tracks it.
+- Video ended states: the session keeps lifecycle ownership and only records why it ended. `nix/video-session.py` writes `k230-video-end.json` (owner-only, `{"schema":1,"reason":…}`) to its runtime directory: `stopped` for a Stop after a frame was shown, `cancelled` for one before, and `ended` for mpv's "Exiting... (End of file)". A window the person closed ("(Quit)"), a timeout or an error writes nothing. The shell polls the record every 500 ms, consumes it once and shows the state as a recovery splash ("Video ended · Tap for Apps", "Video stopped/cancelled · Tap to go back"). It does so only when no overlay or launch is on screen; otherwise it only logs `recovery-<id>`.
 
 ## Rejected
 - Modal error stack or global notification system: outside scope.

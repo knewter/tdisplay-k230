@@ -93,6 +93,53 @@ class VideoSessionTest(unittest.TestCase):
             self.assertEqual((root / "video.log").read_bytes(), b"")
             self.assertFalse(playlist.exists())
 
+    def end_reason(self, root):
+        path = root / "k230-video-end.json"
+        if not path.exists():
+            return None
+        self.assertEqual(stat.S_IMODE(path.stat().st_mode), 0o600)
+        data = json.loads(path.read_text())
+        self.assertEqual(set(data), {"schema", "reason"})
+        return data["reason"]
+
+    def test_end_of_file_records_ended_and_a_closed_window_records_nothing(self):
+        for body, expected in [
+            ("printf '%s\\n' 'V: 00:00:01' 'Exiting... (End of file)'\nexit 0\n", "ended"),
+            ("printf '%s\\n' 'V: 00:00:01' 'Exiting... (Quit)'\nexit 0\n", None),
+            ("exit 7\n", None),
+        ]:
+            with self.subTest(expected=expected), tempfile.TemporaryDirectory() as temp:
+                root = pathlib.Path(temp)
+                player = self.fake_player(root, body)
+                self.run_session(root, player, "run")
+                self.assertEqual(self.end_reason(root), expected)
+
+    def test_stop_records_stopped_after_a_frame_and_cancelled_before_one(self):
+        for body, expected in [
+            ("printf '%s\\n' 'V: 00:00:01'\nsleep 30\n", "stopped"),
+            ("sleep 30\n", "cancelled"),
+        ]:
+            with self.subTest(expected=expected), tempfile.TemporaryDirectory() as temp:
+                root = pathlib.Path(temp)
+                player = self.fake_player(root, body)
+                env = self.env(root, player, FAKE_ARGS=str(root / "args"))
+                process = subprocess.Popen(["bash", str(SCRIPT), "run"], env=env)
+                try:
+                    deadline = time.monotonic() + 5
+                    while time.monotonic() < deadline:
+                        args = root / "args"
+                        if (root / "video.pid").exists() and args.exists() and args.read_text().strip():
+                            break
+                        time.sleep(0.05)
+                    time.sleep(0.3)  # let the controller drain the first-frame line
+                    subprocess.run(["bash", str(SCRIPT), "stop"], env=env, check=True)
+                    process.wait(timeout=5)
+                finally:
+                    if process.poll() is None:
+                        process.kill()
+                        process.wait()
+                self.assertEqual(self.end_reason(root), expected)
+
     def test_mvx_is_opt_in_and_lists_software_fallback(self):
         with tempfile.TemporaryDirectory() as temp:
             root = pathlib.Path(temp)

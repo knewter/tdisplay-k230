@@ -9,6 +9,8 @@
 /// a surface whose own exit control already reads differently (Settings'
 /// "Done", Power's "Cancel") passes that label to [`RecoveryState::message`]
 /// so the copy names the control the person can actually see.
+use std::{fs, os::unix::fs::MetadataExt, path::Path};
+
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum RecoveryAction {
     Back,
@@ -100,6 +102,15 @@ impl RecoveryState {
         }
     }
 
+    /// The splash's second line: what a tap does.
+    pub fn tap_hint(self) -> String {
+        match self.action() {
+            RecoveryAction::Back => "Tap to go back".into(),
+            RecoveryAction::Home => "Tap to go Home".into(),
+            action => format!("Tap for {}", action.label()),
+        }
+    }
+
     /// `copy · label`, with `label` defaulting to the action's own wording.
     pub fn message(self, label: Option<&str>) -> String {
         format!("{} · {}", self.copy(), label.unwrap_or(self.action().label()))
@@ -110,6 +121,37 @@ impl RecoveryState {
 /// menu opening and the tap -- matched by the launch path to show
 /// [`RecoveryState::WindowStale`] instead of a generic launch failure.
 pub const STALE_WINDOW_ERROR: &str = "window is no longer available";
+
+/// Written by `nix/video-session.py` in its runtime directory when a
+/// session ends by Stop, end of file, or a cancelled start.
+pub const VIDEO_END_FILE: &str = "k230-video-end.json";
+
+pub fn video_end_state(reason: &str) -> Option<RecoveryState> {
+    match reason {
+        "stopped" => Some(RecoveryState::VideoStopped),
+        "ended" => Some(RecoveryState::VideoEnded),
+        "cancelled" => Some(RecoveryState::VideoCancelled),
+        _ => None,
+    }
+}
+
+/// Reads and removes the session's end record. Only a small regular file
+/// owned by this user is trusted; anything else is removed or left alone
+/// and reported as no state, so a malformed record never reaches the screen.
+pub fn take_video_end(runtime: &Path) -> Option<RecoveryState> {
+    let path = runtime.join(VIDEO_END_FILE);
+    let meta = fs::symlink_metadata(&path).ok()?;
+    if !meta.file_type().is_file() || meta.uid() != unsafe { libc::geteuid() } {
+        return None;
+    }
+    let bytes = if meta.len() <= 256 { fs::read(&path).ok() } else { None };
+    let _ = fs::remove_file(&path);
+    let value: serde_json::Value = serde_json::from_slice(&bytes?).ok()?;
+    if value.get("schema").and_then(serde_json::Value::as_u64) != Some(1) {
+        return None;
+    }
+    video_end_state(value.get("reason")?.as_str()?)
+}
 
 /// Maps a settings/notification helper error code to the state a person
 /// sees. Unknown codes are a failure, not a denial; the code itself is
@@ -190,6 +232,32 @@ mod tests {
         for code in ["target-unavailable", "stale-confirmation", "keyboard-unavailable", "x"] {
             assert_eq!(action_error_state(code), RecoveryState::ActionFailed);
         }
+    }
+
+    #[test]
+    fn video_end_record_maps_each_reason_once_and_rejects_the_rest() {
+        let root = std::env::temp_dir().join(format!("k230-video-end-{}", std::process::id()));
+        fs::create_dir_all(&root).unwrap();
+        let path = root.join(VIDEO_END_FILE);
+        for (reason, expected) in [
+            ("stopped", Some(RecoveryState::VideoStopped)),
+            ("ended", Some(RecoveryState::VideoEnded)),
+            ("cancelled", Some(RecoveryState::VideoCancelled)),
+            ("closed", None),
+        ] {
+            fs::write(&path, format!("{{\"schema\":1,\"reason\":\"{reason}\"}}\n")).unwrap();
+            assert_eq!(take_video_end(&root), expected, "{reason}");
+            assert!(!path.exists(), "the record is consumed");
+            assert_eq!(take_video_end(&root), None, "and shown only once");
+        }
+        fs::write(&path, "{\"schema\":2,\"reason\":\"ended\"}").unwrap();
+        assert_eq!(take_video_end(&root), None);
+        fs::write(&path, "x".repeat(300)).unwrap();
+        assert_eq!(take_video_end(&root), None);
+        assert!(!path.exists());
+        let _ = fs::remove_dir_all(&root);
+        assert_eq!(RecoveryState::VideoEnded.tap_hint(), "Tap for Apps");
+        assert_eq!(RecoveryState::VideoStopped.tap_hint(), "Tap to go back");
     }
 
     #[test]

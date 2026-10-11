@@ -5404,7 +5404,9 @@ fn splash_status_code(status: SplashStatus) -> u8 {
         SplashStatus::Pending => 0,
         SplashStatus::TimedOut => 1,
         SplashStatus::Failed => 2,
-        SplashStatus::Stale => 3,
+        SplashStatus::Recovery(state) => {
+            3 + crate::recovery::ALL.iter().position(|s| *s == state).unwrap_or(0) as u8
+        }
     }
 }
 
@@ -5482,13 +5484,13 @@ fn build_splash_bake(
     let (primary, primary_color) = match status {
         SplashStatus::Pending | SplashStatus::TimedOut => (name.to_string(), style.text),
         SplashStatus::Failed => (format!("Couldn't open {name}"), style.error),
-        SplashStatus::Stale => (RecoveryState::WindowStale.copy().to_string(), style.text),
+        SplashStatus::Recovery(state) => (state.copy().to_string(), style.text),
     };
     draw_centered(&cr, &primary, label_y, width as f64, 30.0, primary_color);
-    if status == SplashStatus::Stale {
+    if let SplashStatus::Recovery(state) = status {
         draw_centered(
             &cr,
-            &format!("Tap for {}", RecoveryState::WindowStale.action().label()),
+            &state.tap_hint(),
             label_y + 40.0,
             width as f64,
             18.0,
@@ -5647,8 +5649,28 @@ mod splash_render_tests {
         let mut failed: Option<SplashBake> = None;
         ensure_splash_bake(&mut failed, None, "Foot", 200, 200, SplashStatus::Failed).unwrap();
         let mut stale: Option<SplashBake> = None;
-        ensure_splash_bake(&mut stale, None, "Foot", 200, 200, SplashStatus::Stale).unwrap();
-        assert_ne!(failed.unwrap().pixels, stale.unwrap().pixels);
+        ensure_splash_bake(
+            &mut stale,
+            None,
+            "Foot",
+            200,
+            200,
+            SplashStatus::Recovery(crate::recovery::RecoveryState::WindowStale),
+        )
+        .unwrap();
+        let stale = stale.unwrap();
+        assert_ne!(failed.unwrap().pixels, stale.pixels);
+        let mut ended: Option<SplashBake> = None;
+        ensure_splash_bake(
+            &mut ended,
+            None,
+            "Video",
+            200,
+            200,
+            SplashStatus::Recovery(crate::recovery::RecoveryState::VideoEnded),
+        )
+        .unwrap();
+        assert_ne!(stale.pixels, ended.unwrap().pixels);
     }
 }
 

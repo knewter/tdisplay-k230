@@ -63,10 +63,11 @@ pub enum SplashStatus {
     /// "Couldn't open <Name>", dismissed automatically shortly after or by
     /// a tap.
     Failed,
-    /// The picked window closed before it could be focused
-    /// (`recovery::RecoveryState::WindowStale`): says so and stays up
-    /// until a tap, which goes to Apps -- never to some other window.
-    Stale,
+    /// A recovery state (a window that closed before it could be focused,
+    /// a video that ended, stopped or was cancelled): its copy and named
+    /// action stay up until a tap, which takes that action -- never focusing
+    /// some other window.
+    Recovery(crate::recovery::RecoveryState),
 }
 
 #[derive(Clone, Debug, PartialEq)]

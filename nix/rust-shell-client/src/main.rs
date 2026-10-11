@@ -1105,6 +1105,9 @@ struct ShellClient {
     video_status_runtime: PathBuf,
     video_cover_path: Option<PathBuf>,
     video_cover_last: Instant,
+    /// `nix/video-session.py`'s runtime directory, polled for its end record.
+    video_end_runtime: PathBuf,
+    video_end_last: Instant,
     video_covered: bool,
     touch_device: Option<wl_touch::WlTouch>,
     pointer_device: Option<wl_pointer::WlPointer>,
@@ -3394,6 +3397,29 @@ impl ShellClient {
     /// second tap before the first launch resolved supersedes it, and the
     /// old watcher must not later report a spurious match/failure for this
     /// new splash).
+    /// The video session ended by Stop, end of file or a cancelled start:
+    /// show that state's copy and named action over whatever the closed
+    /// video window uncovered. An overlay already in use (a launch, the
+    /// drawer, Settings) is never interrupted; the state is only logged.
+    fn show_video_end(&mut self, qh: &QueueHandle<Self>, end: RecoveryState) {
+        self.log(&format!("recovery-{}", end.id()));
+        if self.splash.is_some() || self.layer.is_some() {
+            return;
+        }
+        let entry = self.apps.iter().find(|app| app.id == "k230-video.desktop");
+        let name = entry.map_or_else(|| "Video".to_string(), |app| app.name.clone());
+        let icon = entry.and_then(|app| app.icon.clone());
+        if !self.start_splash(qh, name, icon) {
+            return;
+        }
+        if let Some(splash) = self.splash.as_mut() {
+            splash.set_status(SplashStatus::Recovery(end), Instant::now());
+        }
+        self.input_region_key = None;
+        self.dirty = true;
+        self.draw(qh);
+    }
+
     fn start_splash(&mut self, qh: &QueueHandle<Self>, name: String, icon: Option<String>) -> bool {
         if let Some(stop) = self.splash_watch_stop.take() {
             stop.store(true, Ordering::Relaxed);
@@ -3926,7 +3952,7 @@ impl ShellClient {
             // drops the layer).
             let dismissable = matches!(
                 splash.status,
-                SplashStatus::TimedOut | SplashStatus::Failed | SplashStatus::Stale
+                SplashStatus::TimedOut | SplashStatus::Failed | SplashStatus::Recovery(_)
             );
             let key = (Route::Hide, self.width, self.height, dismissable);
             if self.input_region_key == Some(key) {
@@ -4041,10 +4067,12 @@ impl ShellClient {
     /// back to whatever was already showing underneath (Home) otherwise.
     fn dismiss_splash(&mut self, qh: &QueueHandle<Self>) {
         self.stop_splash_watch();
-        let stale = self.splash.take().is_some_and(|splash| splash.status == SplashStatus::Stale);
+        let to_apps = self.splash.take().is_some_and(|splash| {
+            matches!(splash.status, SplashStatus::Recovery(state) if state.action() == RecoveryAction::Apps)
+        });
         let was_drawer_launch = self.launching;
         self.launching = false;
-        if was_drawer_launch || stale {
+        if was_drawer_launch || to_apps {
             self.show(qh, Route::Drawer);
         } else {
             self.hide();
@@ -6116,6 +6144,10 @@ fn serve() -> Result<(), String> {
             .unwrap_or_default(),
         video_cover_path: std::env::var_os("K230_WALLPAPER_COVER_PATH").map(PathBuf::from),
         video_cover_last: Instant::now() - Duration::from_secs(2),
+        video_end_runtime: std::env::var_os("K230_VIDEO_RUNTIME_DIR")
+            .map(PathBuf::from)
+            .unwrap_or_else(|| PathBuf::from("/run/shell")),
+        video_end_last: Instant::now(),
         video_covered: false,
         touch_device: None,
         pointer_device: None,
@@ -6418,6 +6450,12 @@ fn serve() -> Result<(), String> {
             };
             state.log("wallpaper-configure-timeout");
         }
+        if state.video_end_last.elapsed() >= Duration::from_millis(500) {
+            state.video_end_last = Instant::now();
+            if let Some(end) = recovery::take_video_end(&state.video_end_runtime) {
+                state.show_video_end(&qh, end);
+            }
+        }
         if state.video_cover_last.elapsed() >= Duration::from_millis(500) {
             state.video_cover_last = Instant::now();
             state.video_covered = state.video_cover_path.as_deref().is_some_and(|path| {
@@ -6714,7 +6752,7 @@ fn serve() -> Result<(), String> {
                     // A vanished window is not a failed launch: say so and
                     // offer Apps rather than focusing some other window.
                     let status = if error == recovery::STALE_WINDOW_ERROR {
-                        SplashStatus::Stale
+                        SplashStatus::Recovery(RecoveryState::WindowStale)
                     } else {
                         SplashStatus::Failed
                     };
@@ -6775,7 +6813,7 @@ fn serve() -> Result<(), String> {
                         state.dirty = true;
                     }
                 }
-                SplashStatus::TimedOut | SplashStatus::Stale => {}
+                SplashStatus::TimedOut | SplashStatus::Recovery(_) => {}
                 SplashStatus::Failed => {
                     if should_auto_dismiss_failed(status_since, now) {
                         state.dismiss_splash(&qh);

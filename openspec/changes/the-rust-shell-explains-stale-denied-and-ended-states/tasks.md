@@ -1,7 +1,7 @@
 ## 1. Contract and host tests
 - [x] 1.1 Add shared state IDs/copy keys and recovery mapping for loading, empty, stale, denied action, video Stop, EOF, cancelled in `nix/rust-shell-client`, without moving video/card lifecycle ownership. Host proof: `cargo test --manifest-path nix/rust-shell-client/Cargo.toml`.
 - [x] 1.2 Add test cases for each state asserting the named recovery action and that no raw path, GLib text, or secret is rendered. Host proof: `cargo test --manifest-path nix/rust-shell-client/Cargo.toml`.
-- [ ] 1.3 Render the video Stop, end-of-file and cancelled copy from `recovery::RecoveryState::{VideoStopped, VideoEnded, VideoCancelled}` on a surface the person sees when `nix/video-session.py` playback stops, ends or is cancelled. Today the terminal window closes and nothing is shown. Choose the owner first: the session keeps its window open with the copy, or the shell observes the session's end. Host proof: a test asserting each end reason produces its state's copy and action.
+- [x] 1.3 Render the video Stop, end-of-file and cancelled copy from `recovery::RecoveryState::{VideoStopped, VideoEnded, VideoCancelled}` when `nix/video-session.py` playback stops, ends or is cancelled. Owner decision: the session records the end reason (`k230-video-end.json`) and the shell shows it as a recovery splash. The session keeps lifecycle ownership. Host proof: `python3 -m pytest -q tests/test_video_session.py` (end reasons) and `cargo test --manifest-path nix/rust-shell-client/Cargo.toml` (record parsing, single consumption, splash bake).
 ## 2. Build
 - [x] 2.1 Build the client after builder coordination. Build proof (not board proof): `nix build .#handheld-shell-rust`.
 ## 3. Physical acceptance

@@ -7,6 +7,9 @@ RUNTIME = Path(os.environ.get('K230_VIDEO_RUNTIME_DIR', '/run/shell'))
 STATE = Path(os.environ.get('K230_VIDEO_PID_FILE', RUNTIME / 'k230-video.json'))
 LOCK = Path(os.environ.get('K230_VIDEO_LOCK_FILE', RUNTIME / 'k230-video.lock'))
 LOG = Path(os.environ.get('K230_VIDEO_LOG', RUNTIME / 'k230-video.log'))
+# Why the last session ended, for the shell's recovery copy (nix/rust-shell-client
+# src/recovery.rs reads and removes it). Only the reason word is written.
+END = RUNTIME / 'k230-video-end.json'
 PLAYER = os.environ.get('K230_VIDEO_PLAYER', 'mpv')
 DEADLINE = float(os.environ.get('K230_VIDEO_DEADLINE', '30'))
 UID = os.getuid()
@@ -115,12 +118,16 @@ class PlayerOutput:
     # is the one signal that tells them apart without any compositor-side
     # hook back to this controller.
     first_frame_marker = re.compile(rb"(?:^|[\r\n])\s*V:\s")
+    # mpv's own exit line for a stream that played to its end; a closed
+    # window reports "(Quit)" instead.
+    eof_marker = re.compile(rb"Exiting\.\.\. \(End of file\)")
 
     def __init__(self, stream, public_log=None):
         self.stream, self.public_log = stream, public_log
         self.tail = b''
         self.truncated_http = False
         self.first_frame_seen = False
+        self.eof_seen = False
         os.set_blocking(stream.fileno(), False)
 
     def feed(self, data):
@@ -130,6 +137,8 @@ class PlayerOutput:
                 self.truncated_http = True
         if self.first_frame_marker.search(joined):
             self.first_frame_seen = True
+        if self.eof_marker.search(joined):
+            self.eof_seen = True
         # Bound retained diagnostics; never print this content for runtime URLs.
         self.tail = joined[-512:]
 
@@ -160,6 +169,8 @@ class Session:
         self.cancel_deadline = None
         self.transport_failed = False
         self.first_frame_seen = False
+        self.eof_seen = False
+        self.rc = None
 
     def signal(self, _signum, _frame):
         self.cancelled = True
@@ -234,6 +245,7 @@ class Session:
             reap_children()
             if monitor is not None:
                 self.first_frame_seen = self.first_frame_seen or monitor.first_frame_seen
+                self.eof_seen = monitor.eof_seen
                 monitor.stream.close()
             if output is not None: output.close()
             try: self.socket.unlink()
@@ -280,8 +292,10 @@ class Session:
                 if os.environ.get('K230_VIDEO_TEST_FALLBACK_DELAY'):
                     time.sleep(float(os.environ['K230_VIDEO_TEST_FALLBACK_DELAY']))
                 rc, _ = self.run_once('software', source)
+            self.rc = rc
             return rc
         finally:
+            self.publish_end()
             if self.private_path is not None:
                 try: self.private_path.unlink()
                 except FileNotFoundError: pass
@@ -292,6 +306,32 @@ class Session:
                     if isinstance(state, dict) and state.get('controller') == os.getpid(): STATE.unlink()
             except (OSError, ValueError, TypeError): pass
             self.lock.close()
+
+
+    def end_reason(self):
+        """Stop/cancel come from a signal: after a frame was shown it is a
+        Stop, before it a cancelled start. A clean end-of-file is "ended". A
+        window the person closed, a timeout or an error gets no recovery copy
+        here (errors keep their own message)."""
+        if self.cancelled:
+            return 'stopped' if self.first_frame_seen else 'cancelled'
+        if self.rc == 0 and self.eof_seen and not self.transport_failed:
+            return 'ended'
+        return None
+
+    def publish_end(self):
+        reason = self.end_reason()
+        if reason is None:
+            return
+        temp = END.with_name(END.name + f'.{os.getpid()}.tmp')
+        try:
+            fd = os.open(temp, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW, 0o600)
+            with os.fdopen(fd, 'w') as out:
+                out.write(json.dumps({'schema': 1, 'reason': reason}) + '\n')
+            os.replace(temp, END)
+        except OSError:
+            try: temp.unlink()
+            except OSError: pass
 
 
 def stop():
