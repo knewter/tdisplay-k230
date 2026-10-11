@@ -1,6 +1,6 @@
 # Theme acceptance and retained-source recovery — 2026-10-10
 
-The parent change is **22/25 complete**. The operator accepted implemented
+At this acceptance checkpoint, the parent change was **22/25 complete**. The operator accepted implemented
 behavior and waived further proof collection. Tasks 5.3b, static 5.4 and 5.5
 now record that acceptance and disposition instead of claiming new physical
 trials. Actual theme consumer implementation (3.1), complete compatibility
@@ -101,3 +101,13 @@ correctly counted 22/25: the site counts top-level checkboxes and four older
 completed subtasks were indented. Those entries are now top-level with their
 identifiers and scope unchanged, so both projections include all 25 tasks.
 This formatting correction does not change implementation or test results.
+
+## Subsequent consumer and archive closeout
+
+The missing consumers were subsequently implemented and cross-built; the
+[complete compatibility report](../compatibility-closeout-2026-10-10.md) and
+[consumer record](../consumer-closeout-2026-10-10/README.md) record 497 passing
+host cases, reviewed captures and exact-revision publication. The parent is now
+archived at 25/25. This update does not change the operator statements or
+original waived requests preserved here, and does not turn the new cross-build
+into a claim of board installation or individual physical verification.

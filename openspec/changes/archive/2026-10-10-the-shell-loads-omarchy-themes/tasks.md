@@ -61,8 +61,8 @@ Proof: existing committed build/board evidence, `python3 tests/test_handheld_the
 
 ## 6. Publish evidence and close deliberately
 
-- [ ] 6.1 After 3.1 is implemented, publish the complete compatibility matrix, source/license attribution, existing feature captures and explicit limitations. Include the operator acceptance/waiver and retain UNVERIFIED for unmeasured costs and unobserved individual physical cases; no new camera or latency collection is required. Verify `python3 scripts/build_site.py` and inspect deployment for the exact landed revision. Missing consumer implementation still gates complete compatibility publication.
-- [ ] 6.2 After every source task and revised acceptance/disposition task is complete, validate, archive/sync, commit and push. Run `openspec validate --all --strict` and inspect exact-revision CI/Pages. Keep the parent open while 3.1 or 6.1 is incomplete. Existing Settings/notifications and background/video successors retain the requirements moved by the authorized 2026-09-28 split; they do not gate this parent.
+- [x] 6.1 After 3.1 is implemented, publish the complete compatibility matrix, source/license attribution, existing feature captures and explicit limitations. Include the operator acceptance/waiver and retain UNVERIFIED for unmeasured costs and unobserved individual physical cases; no new camera or latency collection is required. Verify `python3 scripts/build_site.py` and inspect deployment for the exact landed revision. Missing consumer implementation still gates complete compatibility publication.
+- [x] 6.2 After every source task and revised acceptance/disposition task is complete, validate, archive/sync, commit and push. Run `openspec validate --all --strict` and inspect exact-revision CI/Pages. Keep the parent open while 3.1 or 6.1 is incomplete. Existing Settings/notifications and background/video successors retain the requirements moved by the authorized 2026-09-28 split; they do not gate this parent.
 
 Proof: `openspec validate --all --strict` and `python3 scripts/build_site.py`, followed by exact-revision CI and published URL inspection. Planning publication alone is not a shipped capability.
 
@@ -84,18 +84,32 @@ branch by this commit. `docs/closeout/themes-audit.md` and
 `docs/closeout/board-checklist-themes.md` have the full per-task citations
 and the exact board/operator commands still needed.
 
-## Current closeout disposition — 2026-10-10
+## Final closeout disposition — 2026-10-10
 
-23 of 25 tasks are complete. The [operator acceptance and waiver](../../../docs/evidence/omarchy-themes/accepted-closeout-2026-10-10/README.md)
-replace additional collection for 5.3b, static 5.4 and the physical portion of
-5.5. Their exact previous requests are preserved in that evidence directory;
-no unperformed trial is recorded as executed. The reboot protocol now follows
-the existing retained-generation design and runtime, with host checks recorded
-there. Fresh-theme-state checks are still not full fresh-HOME physical proof.
+All 25 tasks are complete in this archive closeout. Applicable consumers are
+implemented with 497 passing host cases and six reviewed capture pairs;
+Rust/card-shell cross-builds passed without rebuilding the kernel.
+`docs/evidence/omarchy-themes/consumer-closeout-2026-10-10/README.md` records
+source/output identities and limits. The complete field/source/license report
+is `docs/evidence/omarchy-themes/compatibility-closeout-2026-10-10.md`.
 
-The two open tasks are 6.1 (complete compatibility publication) and 6.2
-(archive). Applicable consumer implementation is complete with the host proof
-in `docs/evidence/omarchy-themes/consumer-closeout-2026-10-10/`. Prior dated audits
-above describe earlier checkpoints, not current evidence gates. Existing
-Settings/notifications and background/video successors retain their own scope.
-The parent stays open pending compatibility publication and archive.
+Task 6.1's publication was verified at exact landed revision
+`923c6a9708a23ddbb8cff4b577cf0741c68580aa`: CI build and Pages deploy passed
+(run 38104005765), and the published work/report/consumer pages returned HTTP
+200 with matching revision/content. The receipt is committed in
+`docs/evidence/omarchy-themes/consumer-closeout-2026-10-10/publication.json`.
+Pre-archive `openspec validate --all --strict` passed all 53 items.
+Task 6.2 syncs the six ADDED requirements into existing `runtime/shell-themes`
+through `openspec archive`, preserving the sibling's Settings/notifications
+requirement and existing UNVERIFIED markers. The archive is committed/pushed
+and its exact final CI/Pages checked as part of this bounded closeout.
+
+The recorded operator acceptance/waiver replaces additional collection for
+5.3b, static 5.4 and individual physical 5.5 cases. Their previous requests
+remain committed; no unperformed trial is recorded as executed. Numerical
+static costs, individual finger recordings, physical typography/spacing and
+full fresh-HOME boot remain UNVERIFIED. Prior dated audits describe earlier
+checkpoints. Existing successors retain their own scope; the background/video
+proposal remains independent. The newly cross-built consumer packages are not
+newly installed on the board; matching bundle/stage/install is a separate
+deployment action, with its command documented in the consumer evidence.

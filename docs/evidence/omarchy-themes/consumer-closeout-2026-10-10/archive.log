@@ -1,0 +1,10 @@
+Task status: ✓ Complete
+
+Specs to update:
+  runtime/shell-themes: update
+⚠️  Warning: runtime/shell-themes - delta Purpose ignored; runtime/shell-themes already has one. Edit /home/jadams/tmp/k230-theme-closeout-2026-10-10/openspec/specs/runtime/shell-themes/spec.md directly to change it.
+Applying changes to openspec/specs/runtime/shell-themes/spec.md:
+  + 6 added
+Totals: + 6, ~ 0, - 0, → 0
+Specs updated successfully.
+Change 'the-shell-loads-omarchy-themes' archived as '2026-10-10-the-shell-loads-omarchy-themes'.

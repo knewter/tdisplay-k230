@@ -99,6 +99,8 @@ The system SHALL validate a new appearance before activation, coordinate its she
 <!-- UNVERIFIED -->
 The system SHALL classify every palette key, override and asset as applied, adapted, unavailable or unknown with a reason. Existing handheld surface omissions SHALL remain implementation gaps rather than full-compatibility claims. Absent surfaces, hardware and apps SHALL be distinguished from gaps. Completion MUST include unchanged-checkout host fixtures and an explicit disposition of physical screenshots, touch observations, performance measurements, reboot and recovery evidence. Existing device evidence and recorded operator acceptance MAY satisfy implemented-behavior acceptance when the operator explicitly waives additional collection. Waived recordings, unmeasured costs and unobserved individual boot cases MUST remain identified as UNVERIFIED; a waiver MUST NOT close missing consumer implementation.
 
+Evidence and limits: `docs/evidence/omarchy-themes/compatibility-closeout-2026-10-10.md`, `docs/evidence/omarchy-themes/consumer-closeout-2026-10-10/README.md` and `docs/evidence/omarchy-themes/accepted-closeout-2026-10-10/README.md` retain the field inventory, source/license attribution, distinct host/board classes and explicit waiver. Individual unobserved physical cases and unmeasured costs remain UNVERIFIED.
+
 #### Scenario: A theme targets absent desktop features
 - **WHEN** a theme includes lock assets, RGB keyboard data, desktop Lua or colors for an app absent from the image
 - **THEN** its source remains intact and the compatibility view explains those boundaries while showing which handheld appearance settings were applied

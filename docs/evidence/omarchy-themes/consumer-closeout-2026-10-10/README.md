@@ -83,7 +83,11 @@ The build slot is released. No board or serial reservation was taken.
 58.66 seconds, inside unchanged 32 MiB/120-second budgets. The
 [complete compatibility report](../compatibility-closeout-2026-10-10.md)
 retains source/license attribution, captures, layout adaptations and limits.
-Exact CI/Pages inspection follows publication in a separate receipt.
+[Publication receipt](publication.json) verifies HTTP 200 for the work board,
+compatibility report and consumer evidence at landed revision
+`923c6a9708a23ddbb8cff4b577cf0741c68580aa`.
+[CI run 38104005765](https://github.com/knewter/tdisplay-k230/actions/runs/38104005765)
+passed both build and Pages deployment.
 
 These new packages are cross-built, not newly installed on the board. The
 already installed accepted system is the separately recorded coherent-shell

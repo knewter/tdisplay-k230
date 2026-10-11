@@ -20,7 +20,7 @@
       "next": "Accepted installed shell is closed. Side-edge Back/general ownership and numerical motion tooling remain in the existing successor; other theme source requirements remain in their own proposals.",
       "dependencies": [
         "2026-10-01-the-shell-manages-apps-as-cards",
-        "the-shell-loads-omarchy-themes"
+        "2026-10-10-the-shell-loads-omarchy-themes"
       ],
       "evidence": [
         "docs/evidence/coherent-shell/drawer-route-host.md",
@@ -64,48 +64,6 @@
       "cover": {
         "path": "docs/evidence/coherent-shell/refined-installed/drawer.png",
         "caption": "Earlier native app-grid capture; installed coherent shell accepted by the operator",
-        "provenance": "Board capture"
-      }
-    },
-    "the-shell-loads-omarchy-themes": {
-      "lane": "in-progress",
-      "source": "in-progress",
-      "physical": "verified",
-      "next": "Publish and inspect the complete compatibility report (6.1), then archive/sync (6.2). Applicable consumer implementation and host captures are complete; further physical collection is waived.",
-      "dependencies": [],
-      "evidence": [
-        "docs/evidence/omarchy-themes/helper-package.md",
-        "docs/evidence/omarchy-themes/source-fixtures.md",
-        "docs/evidence/omarchy-themes/launcher-receiver.md",
-        "docs/evidence/omarchy-themes/persistent-default.md",
-        "docs/evidence/omarchy-themes/native-token-checkpoint.md",
-        "docs/evidence/omarchy-themes/catalog-host.md",
-        "docs/evidence/omarchy-themes/wallpaper-memory-host.md",
-        "docs/evidence/omarchy-themes/app-appearance-host.md",
-        "docs/evidence/omarchy-themes/rust-theme-catalog-bridge-host.md",
-        "docs/evidence/omarchy-themes/rust-chooser-host.md",
-        "docs/evidence/omarchy-themes/rust-chooser-qemu.md",
-        "docs/evidence/omarchy-themes/bundled-backgrounds-host.md",
-        "docs/evidence/omarchy-themes/bundled-icons.md",
-        "docs/evidence/omarchy-themes/theme-preview-host/README.md",
-        "docs/evidence/coherent-shell/rust-visual-themes-host/README.md",
-        "docs/evidence/coherent-shell/themed-installed/README.md",
-        "docs/evidence/coherent-shell/real-theme-paired-qemu/README.md",
-        "docs/evidence/omarchy-themes/board-switching/README.md",
-        "docs/evidence/omarchy-themes/community-board/README.md",
-        "docs/evidence/omarchy-themes/community-board-fixed/README.md",
-        "docs/evidence/omarchy-themes/drawer-card-generation/README.md",
-        "docs/evidence/omarchy-themes/reboot-protocol/README.md",
-        "docs/evidence/omarchy-themes/closeout-2026-10-10/README.md",
-        "docs/evidence/omarchy-themes/accepted-closeout-2026-10-10/README.md",
-        "docs/evidence/omarchy-themes/consumer-closeout-2026-10-10/README.md",
-        "docs/evidence/omarchy-themes/compatibility-closeout-2026-10-10.md"
-      ],
-      "rationale": "Implemented theme behavior is accepted by the operator with explicit waiver of further proof collection. Applicable hover/focus, global Rust/C visual metrics and authored scrims are implemented and host-verified; all 102 fields have named consumers or explicit adaptations/omissions. Absent measurements and individual physical cases remain UNVERIFIED. Existing implementation successors retain their scope.",
-      "reviewRevision": "3a1a3e51",
-      "cover": {
-        "path": "docs/evidence/omarchy-themes/community-board-fixed/community.png",
-        "caption": "Unchanged community theme on the physical board \u2014 native capture, command-driven activation",
         "provenance": "Board capture"
       }
     },
@@ -612,6 +570,48 @@
       ],
       "rationale": "The motion admission gap and deferred app update are closed with committed narrow proof. Rust accepts the deferred result through both transports. No new package was installed on the board; prior acceptance and installed-system identities do not qualify these artifacts.",
       "reviewRevision": "bcdb485080b43351ad9b9e28b873b6045467b539"
+    },
+    "2026-10-10-the-shell-loads-omarchy-themes": {
+      "lane": "archived",
+      "source": "archived",
+      "physical": "verified",
+      "next": "Accepted static-theme parent closed at 25/25. New consumer packages are cross-built; matching board installation remains separate. Background/video successor retains its scope.",
+      "dependencies": [],
+      "evidence": [
+        "docs/evidence/omarchy-themes/helper-package.md",
+        "docs/evidence/omarchy-themes/source-fixtures.md",
+        "docs/evidence/omarchy-themes/launcher-receiver.md",
+        "docs/evidence/omarchy-themes/persistent-default.md",
+        "docs/evidence/omarchy-themes/native-token-checkpoint.md",
+        "docs/evidence/omarchy-themes/catalog-host.md",
+        "docs/evidence/omarchy-themes/wallpaper-memory-host.md",
+        "docs/evidence/omarchy-themes/app-appearance-host.md",
+        "docs/evidence/omarchy-themes/rust-theme-catalog-bridge-host.md",
+        "docs/evidence/omarchy-themes/rust-chooser-host.md",
+        "docs/evidence/omarchy-themes/rust-chooser-qemu.md",
+        "docs/evidence/omarchy-themes/bundled-backgrounds-host.md",
+        "docs/evidence/omarchy-themes/bundled-icons.md",
+        "docs/evidence/omarchy-themes/theme-preview-host/README.md",
+        "docs/evidence/coherent-shell/rust-visual-themes-host/README.md",
+        "docs/evidence/coherent-shell/themed-installed/README.md",
+        "docs/evidence/coherent-shell/real-theme-paired-qemu/README.md",
+        "docs/evidence/omarchy-themes/board-switching/README.md",
+        "docs/evidence/omarchy-themes/community-board/README.md",
+        "docs/evidence/omarchy-themes/community-board-fixed/README.md",
+        "docs/evidence/omarchy-themes/drawer-card-generation/README.md",
+        "docs/evidence/omarchy-themes/reboot-protocol/README.md",
+        "docs/evidence/omarchy-themes/closeout-2026-10-10/README.md",
+        "docs/evidence/omarchy-themes/accepted-closeout-2026-10-10/README.md",
+        "docs/evidence/omarchy-themes/consumer-closeout-2026-10-10/README.md",
+        "docs/evidence/omarchy-themes/compatibility-closeout-2026-10-10.md"
+      ],
+      "rationale": "Applicable consumers are implemented with 497 passing host cases and six reviewed capture pairs; Rust/card-shell cross-builds passed without kernel rebuild. The complete 102-field/source/license compatibility report is published and exact-revision CI/Pages verified. Existing operator acceptance/waiver remains committed; unmeasured costs and individual physical cases retain UNVERIFIED. Archive preserves the Settings/notifications sibling and the independent background/video scope. Cross-build is not installation proof.",
+      "reviewRevision": "923c6a9708a23ddbb8cff4b577cf0741c68580aa",
+      "cover": {
+        "path": "docs/evidence/omarchy-themes/community-board-fixed/community.png",
+        "caption": "Unchanged community theme on the physical board \u2014 native capture, command-driven activation",
+        "provenance": "Board capture"
+      }
     }
   }
 }

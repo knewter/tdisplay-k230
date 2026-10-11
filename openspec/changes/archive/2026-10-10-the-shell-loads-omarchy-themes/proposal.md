@@ -33,5 +33,5 @@ Userspace theme loader and adapters, launcher icon resolution, card renderer tok
 The operator accepted implemented behavior and explicitly waived further proof
 collection. This closes the revised physical-evidence disposition tasks, with
 missing recordings, costs and individual boot cases still UNVERIFIED. It does
-not waive actual consumer implementation gaps. The [closeout record](../../../docs/evidence/omarchy-themes/accepted-closeout-2026-10-10/README.md)
+not waive actual consumer implementation gaps. The [closeout record](../../../../docs/evidence/omarchy-themes/accepted-closeout-2026-10-10/README.md)
 preserves the acceptance and superseded requests.

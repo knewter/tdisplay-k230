@@ -1,0 +1,29 @@
+{
+  "verified_utc": "2026-10-11T02:08:17.611814+00:00",
+  "revision": "923c6a9708a23ddbb8cff4b577cf0741c68580aa",
+  "ci_url": "https://github.com/knewter/tdisplay-k230/actions/runs/38104005765",
+  "mode": "active",
+  "checks": [
+    {
+      "role": "work",
+      "url": "https://knewter.github.io/tdisplay-k230/work/",
+      "http_status": 200,
+      "verified": true,
+      "body_sha256": "35f755ec3d339efbe1835f91303e802e1a5bfcba50c1c99e28fa50cee007fab2"
+    },
+    {
+      "role": "compatibility",
+      "url": "https://knewter.github.io/tdisplay-k230/evidence/docs-evidence-omarchy-themes-compatibility-closeout-2026-10-10-md/",
+      "http_status": 200,
+      "verified": true,
+      "body_sha256": "5edc39066b83dd44860937264790247ccd1c53e080e24b4c21634bec1fbb69c1"
+    },
+    {
+      "role": "consumers",
+      "url": "https://knewter.github.io/tdisplay-k230/evidence/docs-evidence-omarchy-themes-consumer-closeout-2026-10-10-readme-md/",
+      "http_status": 200,
+      "verified": true,
+      "body_sha256": "246261cee4503fe9915ca44f96bc6340afbe4e557c390a439d1c4209c3902bbb"
+    }
+  ]
+}

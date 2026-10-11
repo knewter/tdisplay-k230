@@ -1,5 +1,14 @@
 # Closeout audit: theme swap performance and Omarchy theme loading
 
+Current theme-parent disposition — 2026-10-10: `the-shell-loads-omarchy-themes`
+is archived at 25/25. The [complete compatibility report](../evidence/omarchy-themes/compatibility-closeout-2026-10-10.md)
+and [consumer closeout](../evidence/omarchy-themes/consumer-closeout-2026-10-10/README.md)
+supersede that parent's missing-consumer/publication gates below. Existing
+operator acceptance/waiver is committed; individual physical cases and numerical
+costs remain UNVERIFIED. New Rust/card-shell outputs are cross-built; matching
+board installation is a separate action. The background/video proposal retains
+its own scope. The following dated audit remains a historical checkpoint.
+
 2026-09-28. Codex, the prior owner of both changes below, is away for the
 week; this audit picks the work up per `AGENTS.md`'s "Close OpenSpec changes
 deliberately." Every task below was checked against the actual code, the

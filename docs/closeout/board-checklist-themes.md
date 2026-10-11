@@ -153,8 +153,12 @@ scope; accepting the static parent does not run a video trial.
 The reboot-v2 protocol keeps a valid cached generation and selected wallpaper
 when its source disappears; a fresh home without saved state uses the pinned
 default. Its host protocol checks do not constitute physical boot or full
-fresh-HOME proof. The parent remains open for task 3.1's actual consumer gaps,
-then complete compatibility publication and archive.
+fresh-HOME proof. The parent is now archived at 25/25: applicable consumer
+implementation and the complete report are recorded in
+[consumer closeout](../evidence/omarchy-themes/consumer-closeout-2026-10-10/README.md).
+The changed packages are cross-built; a matching board installation is separate
+and follows the command/workflow in that record. No waived recording is
+reintroduced as an acceptance gate.
 
 ---
 
