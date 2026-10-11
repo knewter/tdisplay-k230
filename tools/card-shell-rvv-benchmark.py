@@ -59,6 +59,14 @@ def environment():
     return result
 
 
+def touch_device(root=Path('/sys/class/input')):
+    # Event numbering differs by kernel (mainline registers the PMU key first).
+    found=[Path('/dev/input')/entry.name for entry in sorted(root.glob('event[0-9]*'))
+           if 'goodix' in (entry/'device/name').read_text().lower()]
+    if len(found)!=1:raise RuntimeError('expected exactly one Goodix touchscreen event device')
+    return str(found[0])
+
+
 def observe_runtime(system,runtime,policy,candidate):
     deadline=time.monotonic()+30
     while time.monotonic()<deadline:
@@ -129,7 +137,7 @@ def one_run(args,pair,policy,modules,boot_id):
     runtime.chmod(0o711)
     system=session_module.System();session=session_module.Session(runtime,system)
     plan={'package':candidate['card_package'],'normal_config':candidate['normal_config'],'client':candidate['client'],'source_revision':args.revision,
-          'duration':540,'source_device':'/dev/input/event0','pixman_policy':policy}
+          'duration':540,'source_device':touch_device(),'pixman_policy':policy}
     observation={'pair':pair,'policy':policy,'measurement_complete':False,'boot_id':boot_id,
                  'current_system':candidate['system'],'package':candidate['card_package'],'client_sha256':sha(candidate['client']),
                  'candidate_manifest_sha256':args.manifest_sha256,'kernel_image_sha256':candidate['sha256']['kernel_image'],

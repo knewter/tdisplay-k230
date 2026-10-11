@@ -77,7 +77,13 @@ class Probe(unittest.TestCase):
         with mock.patch.object(identity.os.path,'realpath',return_value=value['system']), \
              mock.patch.object(identity.Path,'read_bytes',return_value=b'LILYGO T-Display-K230\0'), \
              mock.patch.object(identity,'digest',side_effect=AssertionError('/boot/Image is the old persistent selection')):
-            identity.require_board(value)
+            self.assertEqual(identity.require_board(value),'LILYGO T-Display-K230')
+        with mock.patch.object(identity.os.path,'realpath',return_value=value['system']), \
+             mock.patch.object(identity.Path,'read_bytes',return_value=b'LILYGO T-Display-K230 (mainline)\0'):
+            self.assertEqual(identity.require_board(value),'LILYGO T-Display-K230 (mainline)')
+        with mock.patch.object(identity.os.path,'realpath',return_value=value['system']), \
+             mock.patch.object(identity.Path,'read_bytes',return_value=b'LILYGO T-Display-K230 (other)\0'):
+            with self.assertRaisesRegex(RuntimeError,'wrong physical board'):identity.require_board(value)
 
     def test_pixel_probe_loader_path_and_observed_library_are_bound(self):
         with tempfile.TemporaryDirectory() as directory:

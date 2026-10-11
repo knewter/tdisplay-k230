@@ -83,8 +83,7 @@ def measure(args, candidate):
                       'Kernel Image hash binds the system artifact, not the executing kernel in a one-time boot.',
                       'Declared integer RGB565/ARGB/XRGB cases only; no exhaustive Pixman or physical display claim.']}
     if args.probe:
-        identity.require_board(candidate)
-        model='LILYGO T-Display-K230'
+        model=identity.require_board(candidate)
         c=subprocess.run(['timeout','--kill-after=3s','15s',candidate['context_probe']],capture_output=True,text=True,timeout=22)
         context=json.loads(c.stdout)
         if c.returncode or context['status']!='PASS':raise RuntimeError('physical vector context gate did not pass')

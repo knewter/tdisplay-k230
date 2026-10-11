@@ -103,5 +103,14 @@ class PairedEvidence(unittest.TestCase):
         with self.assertRaises(RuntimeError):M.identity.require_mapped_library(maps.replace('candidate','old'),manifest)
         with self.assertRaises(RuntimeError):M.identity.require_mapped_library('',manifest)
 
+    def test_touch_device_is_found_by_name_not_event_number(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root=Path(directory)
+            for event,name in (('event0','K230 PMU Power Key'),('event1','Goodix Berlin Capacitive TouchScreen')):
+                (root/event/'device').mkdir(parents=True);(root/event/'device/name').write_text(name+'\n')
+            self.assertEqual(M.touch_device(root),'/dev/input/event1')
+            (root/'event2/device').mkdir(parents=True);(root/'event2/device/name').write_text('Goodix copy\n')
+            with self.assertRaises(RuntimeError):M.touch_device(root)
+
 
 if __name__=='__main__':unittest.main()

@@ -17,6 +17,8 @@ FILES = {'kernel_image': ('kernel', 'Image'), 'context_probe': ('context_probe',
          'client': ('client',), 'python': ('python',)}
 STORE = re.compile(r'/nix/store/[a-z0-9]{32}-[^/\s]+(?:/[^\s]*)?\Z')
 SHA = re.compile(r'[a-f0-9]{64}\Z')
+# Vendor and mainline device trees name the same physical board differently.
+BOARD_MODELS = (b'LILYGO T-Display-K230', b'LILYGO T-Display-K230 (mainline)')
 
 
 def file_for(manifest, key):
@@ -64,8 +66,10 @@ def load(path, *, expected_sha256=None):
 def require_board(manifest):
     if os.path.realpath('/run/current-system') != manifest['system']:
         raise RuntimeError('candidate system is not running')
-    if Path('/sys/firmware/devicetree/base/model').read_bytes().rstrip(b'\0') != b'LILYGO T-Display-K230':
+    model = Path('/sys/firmware/devicetree/base/model').read_bytes().rstrip(b'\0')
+    if model not in BOARD_MODELS:
         raise RuntimeError('wrong physical board')
+    return model.decode()
 
 
 def require_pixel_linkage(manifest):
