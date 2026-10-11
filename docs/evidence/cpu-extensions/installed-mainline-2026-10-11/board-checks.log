@@ -1,0 +1,22 @@
+OBS_UTC 2026-10-11T13:05:34Z
+OBS_SYSTEM /nix/store/925i44g1rmqyjcbz8hziyz3vvkx95waf-nixos-system-nixos-26.11.20260919.20b1ddd
+OBS_BOOTED /nix/store/925i44g1rmqyjcbz8hziyz3vvkx95waf-nixos-system-nixos-26.11.20260919.20b1ddd
+OBS_PROFILE /nix/store/925i44g1rmqyjcbz8hziyz3vvkx95waf-nixos-system-nixos-26.11.20260919.20b1ddd
+OBS_BOOT_ID 6371650b-c4c0-467f-8735-abf18ce205a9
+OBS_UNAME 7.3.0-rc5
+OBS_MODEL LILYGO T-Display-K230 (mainline)
+OBS_ISA isa		: rv64imafdcv_zicbom_zicbop_zicboz_zicntr_zicsr_zifencei_zihpm_zaamo_zalrsc_zfh_zfhmin_zca_zcd_zba_zbb_zbc_zbs_zve32f_zve32x_zve64d_zve64f_zve64x_zvfh_zvfhmin_svpbmt
+OBS_HWCAP AT_HWCAP:             0x20112d
+OBS_UNIT shell active
+OBS_UNIT shell-ui active
+OBS_UNIT theme-helper active
+OBS_UNIT seatd active
+OBS_WLAN_OPER up
+OBS_WLAN_CARRIER 1
+OBS_DEFAULT_ROUTE_DEV dev wlan0
+OBS_SHA 9de99882f4bf6bebaf6f19a11506bf90656b3b6792d9dbb81ee88130acaa1494  /nix/store/cnnvlgaclh0knh92q94ypzfxlcdyfxph-k230-c908-bitmanip-probe-riscv64-unknown-linux-gnu-0.1/bin/c908-bitmanip-probe
+OBS_SHA 9bfb3e868b7e475093cd4abe9daa3f5c40a46f5ba1312645c132e3bd55f2c614  /root/c908-card/rollback-route-check.py
+K230_BITMANIP_RESULT {"evidence_class":"runtime-probe-unclassified","startup_isa":"rv64gc","families":[{"extension":"zba","status":"PASS","cases":"PPPP","passed":4,"sigill":0,"wrong":0,"errors":0},{"extension":"zbb","status":"PASS","cases":"PPPP","passed":4,"sigill":0,"wrong":0,"errors":0},{"extension":"zbc","status":"PASS","cases":"PPPP","passed":4,"sigill":0,"wrong":0,"errors":0},{"extension":"zbs","status":"PASS","cases":"PPPP","passed":4,"sigill":0,"wrong":0,"errors":0}]}
+OBS_BITMANIP_RC 0
+K230_ROLLBACK_ROUTE {"backups": {"Image": true, "bootargs.txt": true, "force_dtb": true, "fw_jump_add_uboot_head.bin": true, "hdmi_dtb": true, "initrd.uimg": true, "k230-tdisplay.dtb": true, "lcd_dtb": true}, "boot_id": "6371650b-c4c0-467f-8735-abf18ce205a9", "current_system": "/nix/store/925i44g1rmqyjcbz8hziyz3vvkx95waf-nixos-system-nixos-26.11.20260919.20b1ddd", "normal_profile_recorded": "/nix/store/svjjlnvrs8djb6g6gkd0q0iwabpm6sxp-nixos-system-nixos-26.11.20260919.20b1ddd", "profile": "/nix/store/925i44g1rmqyjcbz8hziyz3vvkx95waf-nixos-system-nixos-26.11.20260919.20b1ddd", "protected": {"force_dtb": true, "fw_jump_add_uboot_head.bin": true, "hdmi_dtb": true, "lcd_dtb": true}, "roots": {"rollback-init-root": {"target": "/nix/store/svjjlnvrs8djb6g6gkd0q0iwabpm6sxp-nixos-system-nixos-26.11.20260919.20b1ddd", "valid": true}, "rollback-profile-root": {"target": "/nix/store/svjjlnvrs8djb6g6gkd0q0iwabpm6sxp-nixos-system-nixos-26.11.20260919.20b1ddd", "valid": true}}, "stage": "/var/lib/k230/coherent-boot/925i44g1rmqyjcbz8hziyz3vvkx95waf-20261010", "status": "PASS"}
+OBS_ROLLBACK_RC 0

@@ -1,0 +1,40 @@
+{
+  "source_revision": "3b08b46cdaa4c199e14e6444bfbc8cca5df738ba",
+  "repeats": 3,
+  "sequence": [
+    [
+      1,
+      "no-rvv"
+    ],
+    [
+      1,
+      "auto"
+    ],
+    [
+      2,
+      "auto"
+    ],
+    [
+      2,
+      "no-rvv"
+    ],
+    [
+      3,
+      "no-rvv"
+    ],
+    [
+      3,
+      "auto"
+    ]
+  ],
+  "system": "/nix/store/925i44g1rmqyjcbz8hziyz3vvkx95waf-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "kernel": "/nix/store/f3rnipvbc5vqam8kwdmn3wgcl5rbz9yx-linux-riscv64-unknown-linux-gnu-7.3.0-rc5",
+  "package": "/nix/store/k43xlyyjcq9jl5da47gbgzgkfzb13zw4-k230-card-shell",
+  "config": "/nix/store/mnbkhl30kqzm5bfp84qz39kc7w4bn200-k230-sway.conf",
+  "client": "/nix/store/z31hh776z0s4q9pgqn6bsd69al3xkqbn-card-composition-probe-client-riscv64-unknown-linux-gnu-0.1/bin/card-composition-probe-client",
+  "candidate_manifest_sha256": "b76f8e0618d54aa184486eeab50d16f63fffd637cfa6ece252f4e99e81942b26",
+  "kernel_identity_limit": "kernel/Image hash binds the bootspec artifact; one-time boot preserves /boot/Image, so reconcile the separate load record and boot ID for running-kernel provenance",
+  "workload": "unchanged card-shell-acceptance.py: one/two live cards, 24 drags each, thirteen interaction checks",
+  "capture_provenance": "injected-touch; native captures remain private and unreviewed",
+  "default_image_changed": false
+}

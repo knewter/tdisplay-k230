@@ -1,0 +1,23 @@
+{
+  "card_package": "/nix/store/k43xlyyjcq9jl5da47gbgzgkfzb13zw4-k230-card-shell",
+  "client": "/nix/store/z31hh776z0s4q9pgqn6bsd69al3xkqbn-card-composition-probe-client-riscv64-unknown-linux-gnu-0.1/bin/card-composition-probe-client",
+  "context_probe": "/nix/store/4gn2z5fi5szrnflhzjsr1kq3f1b39wqx-k230-rvv-context-probe-riscv64-unknown-linux-gnu-0.1/bin/k230-rvv-context-probe",
+  "kernel": "/nix/store/f3rnipvbc5vqam8kwdmn3wgcl5rbz9yx-linux-riscv64-unknown-linux-gnu-7.3.0-rc5",
+  "normal_config": "/nix/store/mnbkhl30kqzm5bfp84qz39kc7w4bn200-k230-sway.conf",
+  "pixel_probe": "/nix/store/1sc1733sagi7ifx4bxw4dz0yg3hw3amj-k230-pixman-rvv-pixel-probe-riscv64-unknown-linux-gnu-0.1",
+  "pixman_library": "/nix/store/brhzfimak2r3c23lmn80y1g6ww6nmb1r-pixman-riscv64-unknown-linux-gnu-0.46.4/lib/libpixman-1.so.0.46.4",
+  "python": "/nix/store/v189xydz6qkcd4cbkixcmv91w8hbc560-python3-riscv64-unknown-linux-gnu-3.14.7/bin/python3",
+  "schema": "k230-rvv-candidate-v1",
+  "sha256": {
+    "client": "c9d669e33013d854c96e051e30fdb38cc2c469836f6a541efc7fe93e20f57538",
+    "context_probe": "a51339302c0530f7a57a18cc029e42163b6a73732aef1f43234bb1c48889fdba",
+    "kernel_image": "9d94102c65c8e4fd6b8880ef7b19b8bee5fa91c85596384319f0104bd89509cb",
+    "normal_config": "dac3f442d3b6628ea5aef0ba5ab91fe52e7fd2fa0fdb7b0a7a03f148b9419fd8",
+    "pixel_probe": "406402f6454cd7991d3a58808b1a01a9504fb8f9a919ffd1f978ae76d463cf90",
+    "pixman_library": "983f88f4f8628824022644297993aa367963288c6d8a61c87ccbac47fa9beb56",
+    "python": "1293edd8ac1160830868f80e7010494ac5e07385b9085bdf0e8327dc25cb7cbb",
+    "sway_executable": "6e8f80d4d08071970d5d8ceee836dc25ec65a19f3a170b96538fd0889a148281"
+  },
+  "sway_executable": "/nix/store/q96sk40q7j5v9f0ygxf2wx3yk7nzixqs-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway",
+  "system": "/nix/store/925i44g1rmqyjcbz8hziyz3vvkx95waf-nixos-system-nixos-26.11.20260919.20b1ddd"
+}

@@ -1,0 +1,205 @@
+{
+  "schema": 1,
+  "status": "FAILED",
+  "evidence_class": "board-injected",
+  "provenance": "injected-touch",
+  "created_at": "2026-10-11T12:59:29.528568+00:00",
+  "package_store_path": "/nix/store/k43xlyyjcq9jl5da47gbgzgkfzb13zw4-k230-card-shell",
+  "source_revision": "3b08b46cdaa4c199e14e6444bfbc8cca5df738ba",
+  "cases": [
+    {
+      "capture": "normal.png",
+      "sha256": "2643861b6a05a68d0ca13aa26f55c89f2f44d1ea2e19fafa32b7f20712cf90ad",
+      "status": "CAPTURED_REQUIRES_VISUAL_REVIEW",
+      "monotonic_ns": 36497630936045
+    },
+    {
+      "case": "live-root-and-child-1-one",
+      "status": "OBSERVED",
+      "monotonic_ns": 36502843901833
+    },
+    {
+      "capture": "one-live.png",
+      "sha256": "7b2784f71b4dce75649c61b8ff4917ab55492ef216916d6cdf9b3f4b6b691a67",
+      "status": "CAPTURED_REQUIRES_VISUAL_REVIEW",
+      "monotonic_ns": 36503340612264
+    },
+    {
+      "case": "live-root-and-child-2-one",
+      "status": "OBSERVED",
+      "monotonic_ns": 36526264593717
+    },
+    {
+      "case": "live-root-and-child-2-two",
+      "status": "OBSERVED",
+      "monotonic_ns": 36526595234818
+    },
+    {
+      "capture": "two-live.png",
+      "sha256": "4280014a194a96faf5d558f38c3dc4d8bb0e479e840fd808ecf24aceb591a281",
+      "status": "CAPTURED_REQUIRES_VISUAL_REVIEW",
+      "monotonic_ns": 36527206464428
+    },
+    {
+      "capture": "during-drag.png",
+      "sha256": "575b33b6bb4a6c10fe8bcc389006fae83c4b66a7fe45e4b0f38a9d54b6cb0200",
+      "status": "CAPTURED_REQUIRES_VISUAL_REVIEW",
+      "monotonic_ns": 36528610630106
+    },
+    {
+      "capture": "expanded.png",
+      "sha256": "33393955dd4586d5c2eb2d71a5acdf22b03203b1b2f2e2cd299fa5a5c81b662a",
+      "status": "CAPTURED_REQUIRES_VISUAL_REVIEW",
+      "monotonic_ns": 36542907231942
+    },
+    {
+      "case": "actual-rgb565-pixman-session",
+      "status": "OBSERVED",
+      "monotonic_ns": 36547131399163
+    },
+    {
+      "capture": "private.png",
+      "sha256": "1345847bf180d9600f839dcfcf3c3ff6693985ee92673d3cba3dad1d25ad0c96",
+      "status": "CAPTURED_REQUIRES_VISUAL_REVIEW",
+      "monotonic_ns": 36549532974034
+    },
+    {
+      "capture": "unavailable.png",
+      "sha256": "36ee46e1d061dfd75fbd449653d680230c80ddad5a1cae5c1c0f84881e4697eb",
+      "status": "CAPTURED_REQUIRES_VISUAL_REVIEW",
+      "monotonic_ns": 36550295802797
+    },
+    {
+      "capture": "closing.png",
+      "sha256": "e1083a4b59acf5dfed88142ce3c891e1682880be3bf02e778249b7c3b37b543a",
+      "status": "CAPTURED_REQUIRES_VISUAL_REVIEW",
+      "monotonic_ns": 36559602683696
+    },
+    {
+      "case": "upward-throw-close-request",
+      "status": "OBSERVED",
+      "monotonic_ns": 36559618638620
+    },
+    {
+      "case": "client-explicit-refusal",
+      "status": "OBSERVED",
+      "monotonic_ns": 36559636781291
+    },
+    {
+      "capture": "close-timeout.png",
+      "sha256": "acc0b25254eb24a78589b28cc75f13956c23f3ff8cec98cda7a8252c96f1bc84",
+      "status": "CAPTURED_REQUIRES_VISUAL_REVIEW",
+      "monotonic_ns": 36561949519539
+    },
+    {
+      "case": "separate-timeout-card-retained",
+      "status": "OBSERVED",
+      "monotonic_ns": 36563217079162
+    },
+    {
+      "case": "accepted-close-source-exits",
+      "status": "OBSERVED",
+      "monotonic_ns": 36566465096401
+    },
+    {
+      "capture": "close-exit.png",
+      "sha256": "1379e4ea9917915794a2dbb38d92d91be54a17db62ab75f1a9327b421b070e05",
+      "status": "CAPTURED_REQUIRES_VISUAL_REVIEW",
+      "monotonic_ns": 36566963160350
+    },
+    {
+      "capture": "cards-back.png",
+      "sha256": "f658b60694ff668ad678b601d27196e10d906f30e0bfc7f61e83758bd5d941ec",
+      "status": "CAPTURED_REQUIRES_VISUAL_REVIEW",
+      "monotonic_ns": 36568965178447
+    },
+    {
+      "capture": "apps.png",
+      "sha256": "15c4a75e7e2c602d25fe0afdfbc27a7778a7aa8dbfbcc7fb7b5b02358f8c4bef",
+      "status": "CAPTURED_REQUIRES_VISUAL_REVIEW",
+      "monotonic_ns": 36570908818322
+    },
+    {
+      "capture": "help.png",
+      "sha256": "15c4a75e7e2c602d25fe0afdfbc27a7778a7aa8dbfbcc7fb7b5b02358f8c4bef",
+      "status": "CAPTURED_REQUIRES_VISUAL_REVIEW",
+      "monotonic_ns": 36572723570810
+    },
+    {
+      "capture": "help-back.png",
+      "sha256": "15c4a75e7e2c602d25fe0afdfbc27a7778a7aa8dbfbcc7fb7b5b02358f8c4bef",
+      "status": "CAPTURED_REQUIRES_VISUAL_REVIEW",
+      "monotonic_ns": 36574539123859
+    },
+    {
+      "case": "terminal-route",
+      "status": "FAILED",
+      "monotonic_ns": 36591226123064
+    },
+    {
+      "capture": "terminal.png",
+      "sha256": "15c4a75e7e2c602d25fe0afdfbc27a7778a7aa8dbfbcc7fb7b5b02358f8c4bef",
+      "status": "CAPTURED_REQUIRES_VISUAL_REVIEW",
+      "monotonic_ns": 36591453953613
+    },
+    {
+      "case": "monitor-route",
+      "status": "FAILED",
+      "monotonic_ns": 36609722879732
+    },
+    {
+      "capture": "monitor.png",
+      "sha256": "15c4a75e7e2c602d25fe0afdfbc27a7778a7aa8dbfbcc7fb7b5b02358f8c4bef",
+      "status": "CAPTURED_REQUIRES_VISUAL_REVIEW",
+      "monotonic_ns": 36609950914384
+    },
+    {
+      "capture": "windows.png",
+      "sha256": "15c4a75e7e2c602d25fe0afdfbc27a7778a7aa8dbfbcc7fb7b5b02358f8c4bef",
+      "status": "CAPTURED_REQUIRES_VISUAL_REVIEW",
+      "monotonic_ns": 36613350434523
+    },
+    {
+      "case": "windows-home-route",
+      "status": "FAILED",
+      "monotonic_ns": 36630026485513
+    },
+    {
+      "capture": "home.png",
+      "sha256": "15c4a75e7e2c602d25fe0afdfbc27a7778a7aa8dbfbcc7fb7b5b02358f8c4bef",
+      "status": "CAPTURED_REQUIRES_VISUAL_REVIEW",
+      "monotonic_ns": 36630255837565
+    },
+    {
+      "capture": "keyboard.png",
+      "sha256": "15c4a75e7e2c602d25fe0afdfbc27a7778a7aa8dbfbcc7fb7b5b02358f8c4bef",
+      "status": "CAPTURED_REQUIRES_VISUAL_REVIEW",
+      "monotonic_ns": 36632073940995
+    },
+    {
+      "case": "keyboard-reserves-content",
+      "status": "FAILED",
+      "monotonic_ns": 36632077639982
+    },
+    {
+      "capture": "system.png",
+      "sha256": "15c4a75e7e2c602d25fe0afdfbc27a7778a7aa8dbfbcc7fb7b5b02358f8c4bef",
+      "status": "CAPTURED_REQUIRES_VISUAL_REVIEW",
+      "monotonic_ns": 36637066648301
+    },
+    {
+      "capture": "system-back.png",
+      "sha256": "15c4a75e7e2c602d25fe0afdfbc27a7778a7aa8dbfbcc7fb7b5b02358f8c4bef",
+      "status": "CAPTURED_REQUIRES_VISUAL_REVIEW",
+      "monotonic_ns": 36638883934257
+    },
+    {
+      "case": "normal-controls-recover-focus",
+      "status": "FAILED",
+      "monotonic_ns": 36638888451985
+    }
+  ],
+  "physical_touch": "UNVERIFIED",
+  "optical_latency": "UNVERIFIED",
+  "visual_privacy_and_control_review": "REQUIRED"
+}

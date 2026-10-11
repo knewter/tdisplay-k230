@@ -79,3 +79,18 @@ Svpbmt, and the sample emitted `cpop`. This establishes assembler/compiler
 syntax only. In particular it does **not** resolve the physical report's
 omission of Zbc and Zicbop, privilege policy, or the absence of an actual
 targeted library path for most of these extensions.
+
+## Mainline ordinary system addendum, 2026-10-11
+
+The ordinary system is now `k230-mainline-drm-shell` (mainline 7.3.0-rc5). Its
+running `/proc/cpuinfo` reports
+`rv64imafdcv_zicbom_zicbop_zicboz_zicntr_zicsr_zifencei_zihpm_zaamo_zalrsc_zfh_zfhmin_zca_zcd_zba_zbb_zbc_zbs_zve32f_zve32x_zve64d_zve64f_zve64x_zvfh_zvfhmin_svpbmt`.
+That now includes `zbc` and `zicbop`, which the vendor report omitted.
+`/proc/config.gz` has `RISCV_ISA_V=y`, `V_PREEMPTIVE`, `ZBA`/`ZBB`/`ZBC`/`ZBKB`,
+`ZICBOM`/`ZICBOZ`/`ZICBOP`, `ZAWRS` and `SVPBMT`. The bitmanip probe executed
+Zba/Zbb/Zbc/Zbs correctly on that boot (4/4 each, no SIGILL). Vector context and
+192 pixel cases passed. See
+[installed-mainline-2026-10-11](installed-mainline-2026-10-11/README.md).
+The table's decisions stand: vectors are used only through the runtime-gated
+Pixman path. No other extension is added to ordinary userspace codegen, and
+the per-extension benefit and default use remain **UNVERIFIED**.

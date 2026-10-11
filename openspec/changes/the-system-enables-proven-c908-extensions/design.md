@@ -26,3 +26,8 @@ See proposal.md. The pinned vendor `k230.dtsi` declares `rv64imafdcv_zba_zbb_zbc
 ## Migration Plan
 
 Land the scope first. Build a complete candidate image and preserve its exact store paths. Stage it as a one-time selection with root watchdog/recovery; do not overwrite the known persistent entry or protected credentials. After physical checks and a separately recorded recovery boot, select the proved normal image. Revert by selecting the preserved prior closure if any check fails.
+
+### Retarget addendum, 2026-10-11
+
+The mainline migration and the theme deployment made `k230-mainline-drm-shell` the persistent system before this plan's staging ran. That system has a mainline 7.3.0-rc5 kernel with `RISCV_ISA_V=y`, Zb*/Zicbo*/Svpbmt enabled, and this change's RVV Pixman overlay. That deployment already used a one-time candidate boot, preserved rollback roots and verified ordinary autoboot. The remaining gates therefore run on the installed system: identities, vector context, pixels and paired card workloads. QEMU boots the exact candidate kernel with the vector probe, not a full image. By operator decision the rollback route is checked read-only, not drilled. The vendor-kernel `.#toplevel` remains buildable but is no longer the ordinary image.
+
