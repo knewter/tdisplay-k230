@@ -1,0 +1,7 @@
+these 6 derivations will be built:
+  /nix/store/q3dy5zr6cgb65fs5yckwh29wxq6qd82y-sway-unwrapped-riscv64-unknown-linux-gnu-1.12.drv
+  /nix/store/r06fwhzngp4bnp9213lkgskqpaaxxpn1-sway.drv
+  /nix/store/hj13m67wap2whi26j8zni6bfbl290pi8-sway-1.12.drv
+  /nix/store/z87nh9f07n356v9z2ahqa4aqzx3wq9jl-card-shell.drv
+  /nix/store/lwn8cxnxx714axr15k51vkiv1laxy9bz-k230-card-shell.drv
+  /nix/store/ychwwasm1a1q60rhpxrmp9s8fwzwycpk-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0.drv

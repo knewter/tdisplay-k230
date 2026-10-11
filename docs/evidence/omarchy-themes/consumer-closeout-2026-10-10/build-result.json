@@ -1,0 +1,21 @@
+{
+  "recorded_utc": "2026-10-11T02:03:31.553096+00:00",
+  "source_revision": "3a1a3e51d78f8a642677d28918fb018cad3de971",
+  "command": "flock -n /tmp/k230-nix-build.lock nix build .#handheld-shell-rust .#card-shell --no-link --print-out-paths --max-jobs 1 --cores 4",
+  "result": "PASS",
+  "outputs": [
+    "/nix/store/mwnlygwnhkiq9zb4vvqz5zbfmhmi21zw-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0",
+    "/nix/store/k43xlyyjcq9jl5da47gbgzgkfzb13zw4-k230-card-shell"
+  ],
+  "selected_derivations": [
+    "/nix/store/ychwwasm1a1q60rhpxrmp9s8fwzwycpk-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0.drv",
+    "/nix/store/lwn8cxnxx714axr15k51vkiv1laxy9bz-k230-card-shell.drv"
+  ],
+  "built_derivations": 6,
+  "kernel_rebuilt": false,
+  "unchanged_graphics_dependencies_rebuilt": false,
+  "retention": "Selected outputs and derivation requisites, nested with the prior verified combined-system build-input farm. Every path validated before constructing the new GC-root farm.",
+  "direct_retained_paths": 2716,
+  "remaining_deployment": "The changed consumer packages have not been installed on the board. Existing accepted installed-system evidence is retained separately; individual new physical consumer cases are UNVERIFIED and additional collection is waived.",
+  "retention_farm": "/nix/store/m4iajg79cdhy600miqg0rbb662mg4vir-tdisplay-k230-retained-theme-consumer-build-inputs"
+}
