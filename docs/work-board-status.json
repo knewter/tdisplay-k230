@@ -612,7 +612,8 @@
         "docs/evidence/cpu-extensions/README.md",
         "docs/evidence/cpu-extensions/installed-mainline-2026-10-11/README.md"
       ],
-      "rationale": "Operator restated the change against k230-mainline-drm-shell on 2026-10-11; all restated tasks have committed evidence."
+      "rationale": "Operator restated the change against k230-mainline-drm-shell on 2026-10-11; all restated tasks have committed evidence.",
+      "reviewRevision": "cefa90fbd3d26e596e8e30c6ac6e050bed06b7dc"
     }
   }
 }
