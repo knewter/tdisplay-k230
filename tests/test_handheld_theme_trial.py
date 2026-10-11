@@ -343,30 +343,77 @@ class RebootTrialTests(Fixture):
         self.assertIsNone(trial.read_preferences(self.state)[0])
         self.assertEqual(self.next_boot()["next_phase"], "unavailable-source")
         self.assertFalse(self.source.exists())
-        # Model the required default policy at startup; this is not the
-        # currently implemented retained-generation behavior.
-        _swap_pointer(self.state, None)
+        self.assertEqual(_pointer(self.state).name, "2" * 24)
         result = self.next_boot()
         self.assertEqual(result["trial"], "completed-needs-operator-review")
         self.assertEqual([r["gate"] for r in result["arms"]], ["state-check-passed"] * 3)
         self.assertEqual(len({r["boot_id"] for r in result["boots"]}), 4)
         self.assertEqual(result["physical_observation"], "UNVERIFIED")
         self.assertEqual(result["fresh_home"], "UNVERIFIED")
+        self.assertEqual(result["arms"][-1]["observed"], result["arms"][0]["observed"])
         self.assert_restored()
         public = (self.out / "result.json").read_text()
         for secret in (str(self.source), str(self.state), "trial-fixture", "private unchanged"):
             self.assertNotIn(secret, public)
 
-    def test_retained_generation_is_failure_and_restores_normal_state_and_fixture(self):
+    def test_default_reset_is_failure_and_restores_normal_state_and_fixture(self):
         self.start()
         self.next_boot()
         self.next_boot()
+        _swap_pointer(self.state, None)
         with self.assertRaisesRegex(RuntimeError, "reboot trial failed"):
             self.next_boot()
         result = json.loads((self.out / "result.json").read_text())
         self.assertEqual(result["failure_stage"], "unavailable-source")
-        self.assertEqual(result["arms"][-1]["gate"], "failed-default-required")
+        self.assertEqual(result["arms"][-1]["gate"], "failed-retained-generation-required")
         self.assertEqual(result["restoration"], "passed")
+        self.assert_restored()
+
+    def test_removed_source_wallpaper_mutation_fails_and_restores(self):
+        self.start()
+        self.next_boot()
+        self.next_boot()
+        report = _pointer(self.state) / "report.json"
+        data = json.loads(report.read_text())
+        data["selected_background"] = "backgrounds/changed.webp"
+        data["backgrounds"] = ["backgrounds/changed.webp"]
+        report.write_text(json.dumps(data))
+        with self.assertRaisesRegex(RuntimeError, "reboot trial failed"):
+            self.next_boot()
+        self.assert_restored()
+
+    def test_removed_source_catalog_generation_mismatch_fails_and_restores(self):
+        self.start()
+        self.next_boot()
+        self.next_boot()
+        runner = self.runner()
+        actual_call = self.reboot_call
+
+        def broken_call(argv):
+            value = actual_call(argv)
+            if "list" in argv:
+                value["active"]["generation"] = "f" * 24
+            return value
+
+        runner.call = broken_call
+        self.boot_number += 1
+        with self.assertRaisesRegex(RuntimeError, "reboot trial failed"):
+            runner.run_step(self.out, self.private, "resume")
+        self.assert_restored()
+
+    def test_old_protocol_refuses_resume_without_mutation_but_can_restore(self):
+        self.start()
+        path = self.private / "reboot.json"
+        record = json.loads(path.read_text())
+        record["protocol"] = "reboot-v1"
+        path.write_text(json.dumps(record))
+        before = self.state_bytes()
+        checkpoint = path.read_bytes()
+        with self.assertRaisesRegex(RuntimeError, "old reboot protocol"):
+            self.next_boot()
+        self.assertEqual(self.state_bytes(), before)
+        self.assertEqual(path.read_bytes(), checkpoint)
+        self.runner().recover(self.private)
         self.assert_restored()
 
     def test_same_boot_refuses_without_changes_and_can_later_resume(self):

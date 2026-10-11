@@ -143,54 +143,18 @@ board comparison; see the task's own text for the exact operator interface
 
 ## `the-shell-loads-omarchy-themes`
 
-### Task 5.3b — real-finger chooser/gesture video, cancel behavior
+Tasks 5.3b, static 5.4 and 5.5 have a recorded operator acceptance and explicit
+waiver of additional collection. No board action is needed for those revised
+tasks. The [closeout disposition](../evidence/omarchy-themes/accepted-closeout-2026-10-10/README.md)
+preserves their original camera, static-budget and reboot requests and records
+which results remain UNVERIFIED. The video successor retains its own workload
+scope; accepting the static parent does not run a video trial.
 
-1. Operator, board, **real finger**: open the chooser; browse the theme
-   carousel by real swipe; tap to apply a bundled dark theme, then a
-   bundled light theme, then the unchanged community theme already proved
-   in 5.3a; specifically exercise whatever cancel-equivalent exists today
-   (per the sibling change's task 10 redesign, there is no longer a
-   separate Apply/Cancel step — confirm what "cancel" means now, e.g.
-   swiping away before dwell-driven prepare-ahead completes, and record
-   that finding).
-2. Record on video (phone camera or equivalent) the finger actually
-   touching the glass, framed to also show the panel.
-3. `SWAYSOCK=/run/shell/sway-ipc.sock WAYLAND_DISPLAY=wayland-1 XDG_RUNTIME_DIR=/run/shell grim` a still for each of the three themes.
-4. **Pass**: video shows a real finger driving the carousel and applying
-   all three theme classes; stills confirm the applied result matches.
-5. Commit video + stills to
-   `docs/evidence/omarchy-themes/board-switching/real-finger-2026-MM-DD.md`
-   (new file; do not overwrite the existing injected-input README).
-
-### Task 5.4 — `--workload backgrounds` on the actual board
-
-1. Coordinator: confirm `tools/handheld-theme-trial.py --workload backgrounds`
-   is available on the installed image (host tests already pass; this is
-   the first board run).
-2. Coordinator: `flock -w 120 /tmp/k230-board.lock python3 tools/console.py /dev/ttyACM0 --wait=30 'python3 /run/shell/theme-trial-tools/handheld-theme-trial.py --candidate-manifest /run/shell/theme-candidate.json --output /run/shell/theme-evidence-bg --workload backgrounds'`
-   (paths follow the same pattern as the committed
-   `docs/evidence/omarchy-themes/board-switching/README.md` invocation).
-3. **Pass for the static arm**: combined CPU, RSS, decode/presentation and
-   card input/frame budgets recorded; covered-media pause and restoration
-   observed.
-4. **Video arm belongs to the existing successor**
-   `the-background-chooser-supports-fill-solid-and-video`, task 3.3, under
-   the authorized 2026-09-28 split. It remains unperformed there. This
-   parent owns the static physical arm; a static result never proves playback.
-5. Commit to `docs/evidence/omarchy-themes/background-workload-board/README.md`.
-
-### Task 5.5 — `--workload reboot`
-
-The `--workload reboot` begin/resume/recovery protocol exists and its 22
-host tests pass (2026-10-02 and again 2026-10-10). The exact operator
-procedure is in `docs/evidence/omarchy-themes/reboot-protocol/README.md`.
-Resolve the documented source-removal policy conflict first: the design
-retains a working generated copy, while the boot scenario currently requires
-the default. Then reserve the board for remembered theme/wallpaper, empty
-theme-state and source-removal boots, reviewed panel observations and normal
-restoration. A true fresh HOME still needs separate physical proof; an empty
-theme-state directory does not establish it. No reboot is performed by this
-checklist update.
+The reboot-v2 protocol keeps a valid cached generation and selected wallpaper
+when its source disappears; a fresh home without saved state uses the pinned
+default. Its host protocol checks do not constitute physical boot or full
+fresh-HOME proof. The parent remains open for task 3.1's actual consumer gaps,
+then complete compatibility publication and archive.
 
 ---
 

@@ -538,7 +538,7 @@ class RebootTrial(Trial):
 
     def load(self) -> dict:
         record = private_record(self.private / "reboot.json")
-        if (record.get("protocol") != "reboot-v1"
+        if (record.get("protocol") not in ("reboot-v1", "reboot-v2")
                 or record.get("manifest_sha256") != manifest_identity(self.m)):
             raise RuntimeError("reboot candidate identity mismatch")
         return record
@@ -623,7 +623,7 @@ class RebootTrial(Trial):
                         "missing_links": [p.name for p in _public_links(self.state)],
                         "app_appearance": str(previous_app) if previous_app else None}
             save_private(private / "recovery.json", snapshot)
-            record = {"protocol": "reboot-v1", "manifest_sha256": manifest_identity(self.m),
+            record = {"protocol": "reboot-v2", "manifest_sha256": manifest_identity(self.m),
                       "boot_id": boot, "pending": "preparation", "restoration": "pending"}
             self.checkpoint(record)
             public = {"schema": 1, "source_revision": self.m["source_revision"],
@@ -635,6 +635,8 @@ class RebootTrial(Trial):
                       "limits": "Theme-state reset is not a full fresh home; native captures need panel and console review."}
         elif phase == "resume":
             record = self.load()
+            if record["protocol"] != "reboot-v2":
+                raise RuntimeError("old reboot protocol requires recovery before a new trial")
             if record["restoration"] != "pending" or record["pending"] not in (
                     "remembered", "fresh-theme-state", "unavailable-source"):
                 raise RuntimeError("reboot trial is not awaiting a boot")
@@ -712,10 +714,11 @@ class RebootTrial(Trial):
                 else:
                     public["arms"].append({"role": stage, "observed": observed,
                                            "capture": self.capture(stage, private), "gate": "pending"})
-                    if (self.source.exists() or listing.get("active", {}).get("id") is not None
-                            or observed["generation"] is not None):
-                        public["arms"][-1]["gate"] = "failed-default-required"
-                        raise RuntimeError("unavailable source did not recover to pinned default")
+                    if (self.source.exists() or listing["active"]["id"] is not None
+                            or listing["active"]["generation"] != record["expected"]["generation"]
+                            or observed != record["expected"]):
+                        public["arms"][-1]["gate"] = "failed-retained-generation-required"
+                        raise RuntimeError("unavailable source did not retain the selected generation and wallpaper")
                     public["arms"][-1]["gate"] = "state-check-passed"
                     self.recover(private)
                     public["restoration"] = "passed"

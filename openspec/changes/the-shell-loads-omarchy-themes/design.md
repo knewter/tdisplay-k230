@@ -10,7 +10,7 @@ See proposal.md for motivation and `docs/research/omarchy-quattro-theme-compatib
 
 ## Decisions
 
-1. **Read-only source plus derived generations.** Accept a theme directory or collection member. Nix fetches pinned defaults with content hashes; user clones remain ordinary checkouts. Resolve each source into a validated immutable generation in a private cache and publish it atomically. Cache identity includes actual input hashes, compatibility version, image decode policy and icon dependencies; Git HEAD alone misses local edits. Updates never perform implicit Git pulls. Retain the last working generation independently of a removed clone. Reject path escapes and executable directives as inputs, without deleting files. No plugin hooks run. A converted native theme format was rejected because it creates a fork the user must maintain.
+1. **Read-only source plus derived generations.** Accept a theme directory or collection member. Nix fetches pinned defaults with content hashes; user clones remain ordinary checkouts. Resolve each source into a validated immutable generation in a private cache and publish it atomically. Cache identity includes actual input hashes, compatibility version, image decode policy and icon dependencies; Git HEAD alone misses local edits. Updates never perform implicit Git pulls. Retain the last working generation and selected wallpaper independently of a removed clone, including at boot. A fresh home without a valid saved generation uses the packaged default; removing only the source does not reset a valid cached selection. Reject path escapes and executable directives as inputs, without deleting files. No plugin hooks run. A converted native theme format was rejected because it creates a fork the user must maintain.
 
 2. **Reuse Omarchy's working mechanism.** Package pinned `omarchy-theme-color`, `omarchy-theme-set-templates`, `omarchy-theme-colors-from-alacritty`, `omarchy-theme-osc`, and relevant appearance templates with their license. Keep `omarchy-theme-set NAME`, `~/.config/omarchy/themes/NAME`, and `~/.local/state/omarchy/current/{theme,theme.name,background}` as compatible entry points. A small coordinator derived from upstream `omarchy-theme-set` handles our source selection and validated activation; a shell bridge consumes its `shell applyTheme` and `background themeTransition` payloads. Replace the desktop-specific post-theme command list with installed-client adapters. Upstream's headless mode can generate files but skips live shell/app updates, so it is not the runtime solution by itself. Pin Bash/coreutils/awk/sed/util-linux dependencies through Nix. Do not package the entire Omarchy desktop or fake every unsupported command with success stubs. A separately invented palette/template parser was rejected in favor of using their tested implementation.
 
@@ -38,3 +38,17 @@ See proposal.md for motivation and `docs/research/omarchy-quattro-theme-compatib
 ## Migration Plan
 
 Land the planning artifacts first. Implement loader/fixtures, then shared adapters and static backgrounds in independent task groups coordinated with sibling shell owners. Add a declaratively pinned default behind an opt-in trial. Complete video-background measurement separately. Reserve the board for exact-generation captures, real touch, reboot persistence and failure recovery; retain the normal session as rollback. Enable the default only after these gates. Archive only with all implementation and physical tasks complete; a host fixture pass cannot certify the device.
+
+## Current closeout policy — 2026-10-10
+
+The reboot-v2 operator protocol enforces decision 1 instead of requiring a
+reset when the source disappears. It binds the retained generation, wallpaper
+fingerprint and preference bytes, and requires a catalog with no source id
+and the same generation. Old reboot-v1 checkpoints remain recoverable but
+cannot resume under the changed acceptance policy. No runtime receiver change
+or firmware rebuild is required.
+
+The operator's explicit proof waiver replaces further collection for already
+implemented behavior, not missing source work. Record the disposition and
+retain UNVERIFIED markers for absent measurements and specific physical trials.
+Consumer coverage and complete compatibility publication still gate archive.

@@ -87,13 +87,17 @@ The system SHALL validate a new appearance before activation, coordinate its she
 - **THEN** the prior colors, icons and background are restored and the existing app session remains usable
 
 #### Scenario: Boot with no saved preferences
-- **WHEN** the image boots with a fresh home or an unavailable user theme source
+- **WHEN** the image boots with a fresh home and no valid saved theme generation
 - **THEN** it displays the declared default theme and exposes a usable chooser and recovery route
+
+#### Scenario: Boot after a selected source is removed
+- **WHEN** the selected user theme source is unavailable but its saved generation remains valid
+- **THEN** the system retains that generation and its selected wallpaper, exposes a usable chooser and recovery route, and does not require the source checkout to restore the appearance
 
 ### Requirement: Compatibility and physical completion are explicit
 
 <!-- UNVERIFIED -->
-The system SHALL classify every palette key, override and asset as applied, adapted, unavailable or unknown with a reason. Existing handheld surface omissions SHALL remain implementation gaps rather than full-compatibility claims. Absent surfaces, hardware and apps SHALL be distinguished from gaps. Completion MUST include unchanged-checkout host fixtures and separate physical screenshots, touch observations, performance measurements, reboot and recovery evidence.
+The system SHALL classify every palette key, override and asset as applied, adapted, unavailable or unknown with a reason. Existing handheld surface omissions SHALL remain implementation gaps rather than full-compatibility claims. Absent surfaces, hardware and apps SHALL be distinguished from gaps. Completion MUST include unchanged-checkout host fixtures and an explicit disposition of physical screenshots, touch observations, performance measurements, reboot and recovery evidence. Existing device evidence and recorded operator acceptance MAY satisfy implemented-behavior acceptance when the operator explicitly waives additional collection. Waived recordings, unmeasured costs and unobserved individual boot cases MUST remain identified as UNVERIFIED; a waiver MUST NOT close missing consumer implementation.
 
 #### Scenario: A theme targets absent desktop features
 - **WHEN** a theme includes lock assets, RGB keyboard data, desktop Lua or colors for an app absent from the image

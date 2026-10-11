@@ -1,0 +1,66 @@
+{
+  "schema": 1,
+  "base_revision": "38d370c1a7989b982e04cfd74799542cccd3424e",
+  "evidence_class": "host-only",
+  "board_reserved": false,
+  "build_slot_reserved": false,
+  "source_sha256": {
+    "tools/handheld-theme-trial.py": "fb98869e3e051f889652040c1aee66ee4edd060f2902c5f6e1e0307ed70fc64d",
+    "tests/test_handheld_theme_trial.py": "3e9b5180b617306ed9fe9adae0561c7dc25192563ebb2494567573df749aee0c"
+  },
+  "checks": [
+    {
+      "command": [
+        "python3",
+        "tests/test_handheld_theme_trial.py"
+      ],
+      "started_utc": "2026-10-11T01:24:29.298349+00:00",
+      "finished_utc": "2026-10-11T01:24:29.662699+00:00",
+      "exit_code": 0,
+      "log": "theme-trial.txt"
+    },
+    {
+      "command": [
+        "python3",
+        "tests/test_handheld_theme_rendering.py"
+      ],
+      "started_utc": "2026-10-11T01:24:29.662736+00:00",
+      "finished_utc": "2026-10-11T01:24:30.204573+00:00",
+      "exit_code": 0,
+      "log": "theme-rendering.txt"
+    },
+    {
+      "command": [
+        "python3",
+        "tests/test_omarchy_theme_activation.py"
+      ],
+      "started_utc": "2026-10-11T01:24:30.204594+00:00",
+      "finished_utc": "2026-10-11T01:24:34.536275+00:00",
+      "exit_code": 0,
+      "log": "theme-activation.txt"
+    },
+    {
+      "command": [
+        "openspec",
+        "validate",
+        "--all",
+        "--strict"
+      ],
+      "started_utc": "2026-10-11T01:24:34.536298+00:00",
+      "finished_utc": "2026-10-11T01:24:35.451644+00:00",
+      "exit_code": 0,
+      "log": "openspec-all.txt"
+    },
+    {
+      "command": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "started_utc": "2026-10-11T01:24:35.451666+00:00",
+      "finished_utc": "2026-10-11T01:24:35.464741+00:00",
+      "exit_code": 0,
+      "log": "diff.txt"
+    }
+  ]
+}

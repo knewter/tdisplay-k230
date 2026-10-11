@@ -1,0 +1,17 @@
+{
+  "schema": 1,
+  "recorded_date": "2026-10-10",
+  "source": "User messages in the project session",
+  "reports": [
+    "it all worked land it",
+    "continue but you dont have to gather that proof ive already confirmed its fine carry on it's all good"
+  ],
+  "acceptance": "Implemented behavior accepted; further physical evidence collection waived.",
+  "limits": [
+    "No new real-finger video or per-theme cancel recording.",
+    "No new static CPU/RSS/decode/card-budget measurement.",
+    "No new physical reboot, console/panel or true fresh-HOME trial.",
+    "Specific unobserved results remain UNVERIFIED.",
+    "Actual missing theme consumer implementation remains open."
+  ]
+}

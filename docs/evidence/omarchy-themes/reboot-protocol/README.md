@@ -1,5 +1,11 @@
 # Reboot protocol: host proof and remaining board gate
 
+> Historical reboot-v1 record. The [2026-10-10 correction and acceptance](../accepted-closeout-2026-10-10/README.md)
+> supersede its missing-source default gate and additional physical collection
+> requests. Reboot-v2 retains a valid cached selection; v1 checkpoints can be
+> recovered but require a new trial to resume. Results below describe v1 only.
+
+
 2026-10-02. Base `c5254075e531487af82841b3ae76582e5535f0fb`; source and
 narrow tests are committed with this record. [host-check.txt](host-check.txt)
 records timestamps, exact commands and results: `python3

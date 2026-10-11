@@ -1,5 +1,11 @@
 # Theme closeout audit — 2026-10-10
 
+> Earlier planning checkpoint. The [subsequent acceptance and correction](../accepted-closeout-2026-10-10/README.md)
+> bring the parent to 22/25: 5.3b, static 5.4 and 5.5 are closed by revised
+> acceptance/disposition tasks. Source-removal policy is aligned with the
+> retained-cache design. No new physical workload or measurements were obtained.
+
+
 The theme parent is 19/25 complete and remains open. [Actual host checks](host-checks.json)
 record the named reboot-protocol suite (22 passed) and rendering suite
 (7 passed), with logs, timestamps and source identity. This is host proof;

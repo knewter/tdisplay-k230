@@ -8,7 +8,7 @@ A person cannot currently clone an Omarchy theme and use its complete appearance
 - Reuse pinned upstream palette, template, and terminal color helpers and the established theme-swap interface, adding a small Nix/Sway shell adapter instead of creating a competing theme format or resolver.
 - Read the current Quattro palette, legacy aliases, derived colors, full shell and section overrides, gradients, alpha, borders, control states, typography, spacing, icon-theme choice, and background assets through a shared compatibility layer.
 - Apply one theme generation across cards, drawer, chooser, keyboard, and installed app appearance adapters; the authorized Settings/notifications successor owns those adapters. Preserve the handheld's webOS-inspired navigation and touch target constraints.
-- Offer touch previews and selection for themes and all their background choices; remember each theme's wallpaper and retain a recoverable default. Bounded video playback, user overlays and additional fit modes belong to the already authorized successor `the-background-chooser-supports-fill-solid-and-video`; this change retains still-image crop selection and memory.
+- Offer touch previews and selection for themes and all their background choices; remember each theme's wallpaper, retain valid cached selections when a source disappears, and provide a pinned default for fresh homes. Bounded video playback, user overlays and additional fit modes belong to the already authorized successor `the-background-chooser-supports-fill-solid-and-video`; this change retains still-image crop selection and memory.
 - Keep source repositories read-only. Generate adapters and caches elsewhere, refresh after upstream updates, and package pinned defaults declaratively in Nix for fresh homes.
 - Report every consumed, adapted, unavailable, or unknown setting. Full support for our corresponding surfaces is the acceptance target; a palette-only importer or silent omission does not satisfy it.
 
@@ -27,3 +27,11 @@ None. This adds appearance behavior without changing the existing shell navigati
 ## Impact
 
 Userspace theme loader and adapters, launcher icon resolution, card renderer tokens, settings/notification clients, keyboard/app configuration, wallpaper lifecycle, Nix defaults, and later feature evidence. The pinned upstream survey is in `docs/research/omarchy-quattro-theme-compatibility.md`. Parser, fixture, rendering, and failure tests can run on the host; cross-builds use the existing sole build slot. Readability, touch selection, motion cost, reboot persistence, and recovery require the reserved physical board. This proposal ships no theme implementation and proves no board behavior.
+
+## Current acceptance disposition — 2026-10-10
+
+The operator accepted implemented behavior and explicitly waived further proof
+collection. This closes the revised physical-evidence disposition tasks, with
+missing recordings, costs and individual boot cases still UNVERIFIED. It does
+not waive actual consumer implementation gaps. The [closeout record](../../../docs/evidence/omarchy-themes/accepted-closeout-2026-10-10/README.md)
+preserves the acceptance and superseded requests.
