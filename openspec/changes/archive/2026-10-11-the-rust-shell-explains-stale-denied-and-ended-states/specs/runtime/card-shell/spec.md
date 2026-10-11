@@ -1,6 +1,6 @@
 ## ADDED Requirements
 ### Requirement: Window-list states SHALL name a recovery action
-<!-- UNVERIFIED: no Rust-shell implementation or board observation yet. -->
+<!-- UNVERIFIED: implemented and host-tested (cargo test, tests/test_video_session.py) and installed on the board 2026-10-11 (docs/evidence/recovery-routes/installed-2026-10-11/); no glass observation of this state. Real-finger capture is task 3.1 of the-shell-proves-recovery-states-by-touch. -->
 The card shell SHALL show short person-facing copy and a visible Back, Apps, or Home action while the window list is loading, empty, or stale. It SHALL NOT render raw filesystem paths, helper diagnostics, or secrets in that copy.
 
 #### Scenario: The window list is empty or stale
