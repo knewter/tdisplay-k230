@@ -276,7 +276,6 @@ remains gated by separate source/build and physical runtime evidence
 - **THEN** the answer reports those host results and leaves board probe,
   display power, panel illumination, and touch behavior unverified
 
-
 ### Requirement: The optional mainline trial owns an explicit restart recovery boundary
 
 The optional DRM mainline kernel SHALL provide a documented restart mechanism
@@ -370,7 +369,6 @@ accounting and n_tty lock/flush paths as cited in group 5f's design.*
 - **WHEN** optional source/object/kernel/bundle/protocol checks pass
 - **THEN** physical output/receipt/return remain UNVERIFIED and task 5b.5 stays open
 
-
 ### Requirement: Optional progress breadcrumbs keep worker and wakeup evidence distinct
 
 The project MAY provide a separately selected finite reporter variant for the
@@ -418,7 +416,6 @@ of the original reporter, not this new physical comparison.*
 - **THEN** the controller preserves private raw evidence and incomplete/unknown
   status without repairing text, another stimulus or a candidate reboot
 - **AND** root, deliberate touch and independent recovery gates remain open
-
 
 ### Requirement: Optional post-sample breadcrumbs separate return from wakeup evidence
 
@@ -470,7 +467,6 @@ next boundary, not committed proof of the new diagnostic or a fault.*
 - **AND** there is no further stimulus/reboot or inferred ordinary-root/touch,
   firmware-return or automatic-recovery result
 
-
 *Subsequent actual [PostSample packet](../../../../docs/evidence/mainline-uart-progress-post-sample/physical-2026-10-03/README.md)
 records matched args/Bash/worker-entry only, one stimulus and no receipt/samples/
 new points in180.0975s. It does not prove reaching either new point or entry-call
@@ -512,7 +508,6 @@ record variable reporter progress and firmware output dependencies, not causatio
 - **THEN** preserve each missing fact as unknown, including observer/output limits
 - **AND** send no further candidate input or reboot and require separate recovery
 
-
 ### Requirement: Optional same-image zero-stimulus comparison keeps receive untested
 
 The controller MAY provide an explicit Memory-only no-stimulus comparison. It
@@ -545,7 +540,6 @@ is a distinct controller intervention using existing immutable artifacts.*
 - **WHEN** passive capture times out or records malformed/missing output
 - **THEN** preserve unknown facts and send no additional candidate bytes
 - **AND** require independently qualified normal recovery or operator reset
-
 
 ### Requirement: Optional polling comparison changes only qualified idle policy
 
@@ -580,7 +574,6 @@ The already-built setup is host evidence; runtime polling and usable boot are un
 - **WHEN** output is absent, malformed or capture fails
 - **THEN** preserve unknown progress and send no additional candidate bytes
 - **AND** require independent protected recovery or operator reset
-
 
 ### Requirement: Separate observer output through the registered Linux console
 
@@ -627,7 +620,6 @@ The registered backend is observed; future UMK output and useful mainline boot a
 - **THEN** preserve unknown scheduling/timeout/output facts with no further input
 - **AND** require independent protected recovery or operator reset
 
-
 ### Requirement: Optional same-image comparison disables tickless activation only
 
 The controller MAY offer a typed MemoryPrintk nohz-off comparison. It SHALL
@@ -665,7 +657,6 @@ The compiled option is grounded; new output and usable mainline boot are unverif
 - **WHEN** output is absent, malformed or capture fails
 - **THEN** preserve unknown facts without sending candidate bytes
 - **AND** require independent protected recovery or a new operator reset
-
 
 ### Requirement: Fixed autonomous PID1 comparison remains constrained and passive
 
@@ -710,7 +701,6 @@ Native parser execution and autonomous board records remain unverified.*
 - **THEN** keep unknown facts and send no candidate bytes
 - **AND** require independent protected recovery or a NEW operator reset
 
-
 ### Requirement: Fixed ordinary-init manager logging comparison
 
 The system trial controller SHALL offer typed begin-only `--initrd-debug-logging`
@@ -743,7 +733,6 @@ and [selected archive/pinned systemd source](../../../../docs/research/mainline-
 - **THEN** preserve the complete private log without candidate input or fallback
 - **AND** require independent protected recovery or a NEW operator reset
 
-
 ### Requirement: Fixed info-level ordinary-init console comparison
 
 The system trial controller SHALL offer typed begin-only `--initrd-info-logging`,
@@ -772,7 +761,6 @@ and [bounded child/source analysis](../../../../docs/research/mainline-initrd-in
 - **WHEN** qualified login or I/O completion remains unknown
 - **THEN** preserve private facts without candidate input or fallback
 - **AND** require independent protected recovery or a NEW operator reset
-
 
 ### Requirement: Fixed info-level ordinary-init kmsg comparison
 
@@ -805,7 +793,6 @@ and [selected-source backend audit](../../../../docs/research/mainline-initrd-in
 - **THEN** keep complete private output without candidate input or fallback trial
 - **AND** require independent protected recovery or a NEW operator reset
 
-
 ### Requirement: The ordinary baseline is repeated before another boot intervention
 
 The operator SHALL be able to repeat one unchanged quiet p2 ordinary policy
@@ -836,7 +823,6 @@ and [read archive/source control plan](../../../../docs/research/mainline-ordina
 - **WHEN** qualified startup/readiness or I/O remains unknown
 - **THEN** preserve the temporal difference without compensating changes/input
 - **AND** require independent protected recovery or a NEW reset
-
 
 ### Requirement: Selected ramdisk init exec return is observable with a bounded optional probe
 
@@ -1010,3 +996,49 @@ filename stage 1 loads, with stage 1 unchanged.
 - **WHEN** the image is flashed to a card and the board is powered on
 - **THEN** the serial console reports kernel 7.3.0-rc5 and the shell services become active
 *Grounding: observed on hardware 2026-10-08 (`docs/evidence/mainline-sd-image/README.md`): flashed over U-Boot ums, first power-on reached login on 7.3.0-rc5 with the three shell services active and no failed units.*
+
+### Requirement: The ordinary system exposes proven vector execution with a scalar fallback
+
+*Grounding: `docs/evidence/card-shell/kernel-rvv/board-trial/README.md` records physical hwprobe V, representative signal/scheduling preservation and normal recovery; `docs/evidence/card-shell/pixman-rvv/pixel-trial/README.md` records 192 exact physical pixel comparisons and RVV callback execution. `docs/evidence/cpu-extensions/installed-mainline-2026-10-11/README.md` records the installed mainline ordinary system's identities, physical vector context, 192 equal pixel cases, mapped RVV Pixman and its scalar control. These do not prove complete ISA coverage or card acceptance.*
+
+The system SHALL include a matching vector-capable kernel, modules, initrd and userspace renderer in its ordinary image. The renderer SHALL require the running kernel's vector capability before executing vector instructions and SHALL retain scalar fallback and a runtime disable control. The system SHALL record exact artifact and runtime identities; a processor name, device-tree string, host build or emulated run SHALL NOT replace physical default-image proof.
+
+#### Scenario: A person starts the ordinary system on the board
+- **WHEN** the ordinary image boots and reports vector capability
+- **THEN** representative vector state preservation and exact declared pixel cases are observed on the physical board
+- **AND** the recorded renderer identity shows runtime-gated vector dispatch
+
+#### Scenario: Vector capability is unavailable
+- **WHEN** the kernel does not report usable vectors or the operator disables vector dispatch
+- **THEN** the renderer uses its scalar path without requiring vector execution
+- **AND** that fallback remains visible in the recorded result
+
+### Requirement: Extension enablement follows an auditable evidence boundary
+
+*Partial grounding: the pinned vendor `arch/riscv/boot/dts/canaan/k230.dtsi` lists base, vector, bit-manipulation, cache-block and supervisor extensions; `docs/evidence/card-shell/kernel-rvv/board-trial/boot1-selected.log` reports base `acdfimv` on this board. `docs/evidence/cpu-extensions/README.md` records the inventory and decisions, and `docs/evidence/cpu-extensions/installed-mainline-2026-10-11/README.md` records physical Zba/Zbb/Zbc/Zbs single-opcode execution on the mainline system. Safe default use of every listed extension remains <!-- UNVERIFIED -->.*
+
+The system SHALL inventory useful CPU extensions named by its pinned device tree and relevant firmware, kernel, toolchain and library support. Each enabled non-baseline userspace instruction path SHALL have a supported execution environment, an appropriate runtime gate or explicit hardware restriction, and representative physical verification. The inventory SHALL explain exclusions and distinguish standard userspace instructions from privileged features, hints, and vendor-specific or version-dependent instructions. Unknown support SHALL remain explicitly unverified rather than trigger a global ISA build flag.
+
+#### Scenario: Someone reviews an extension proposed for the ordinary image
+- **WHEN** an extension is proposed for a kernel, toolchain or library path
+- **THEN** its source declaration, execution privilege, runtime evidence, enablement layer and exclusion or inclusion reason are recorded
+
+#### Scenario: An extension is not yet physically grounded
+- **WHEN** source or emulation evidence exists without safe physical execution evidence
+- **THEN** the inventory marks that extension unverified for default userspace use
+- **AND** the ordinary image does not require it to boot
+
+### Requirement: Default vector deployment retains a recovery route and honest workload results
+
+*Grounding: `docs/evidence/cpu-extensions/installed-mainline-2026-10-11/README.md` records the installed mainline ordinary system's physical pixel/context proof, paired card workloads and a read-only check of its preserved rollback route. `docs/evidence/omarchy-themes/installed-consumers-2026-10-10/README.md` records how that system became persistent: one-time candidate boot, rollback roots and verified ordinary autoboot. A physical return to the earlier image was not exercised for this change (operator decision, 2026-10-11) and remains <!-- UNVERIFIED -->.*
+
+The system SHALL reach a persistent vector-capable image only through a deployment that preserves a known-good rollback selection and protected boot data. It SHALL record representative console, shell, network and card workload results on the installed image without relaxing existing card budgets or calling an unproved speedup accepted. The preserved rollback route SHALL be checked and recorded on the board.
+
+#### Scenario: The vector image is evaluated
+- **WHEN** the vector-capable ordinary image runs on the physical board
+- **THEN** its exact artifacts, observed boot and representative workloads are recorded
+- **AND** any failing budget or interaction remains visible
+
+#### Scenario: The vector image must be abandoned
+- **WHEN** the operator needs to return to the preserved earlier selection
+- **THEN** the rollback roots, staged boot-file backups and protected boot hashes it depends on have been recorded as intact

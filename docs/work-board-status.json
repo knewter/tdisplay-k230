@@ -1,18 +1,6 @@
 {
   "schema": 1,
   "overrides": {
-    "the-system-enables-proven-c908-extensions": {
-      "lane": "in-progress",
-      "source": "in-progress",
-      "physical": "pending",
-      "next": "Complete additional-extension targeting and matching candidate emulation, then exact-image vector, pixel, card, recovery and persistent-boot proof.",
-      "dependencies": [],
-      "evidence": [
-        "docs/evidence/cpu-extensions/normal-image-build/README.md"
-      ],
-      "rationale": "Additional-extension and emulation gates remain before the physical candidate sequence. Prior RVV evidence cannot certify all extensions.",
-      "reviewRevision": "647c8d3e500d4accc3a87474e8fcab393980a799"
-    },
     "2026-10-10-the-handheld-presents-a-coherent-shell": {
       "lane": "archived",
       "source": "archived",
@@ -613,6 +601,18 @@
         "caption": "Unchanged community theme on the physical board \u2014 native capture, command-driven activation",
         "provenance": "Board capture"
       }
+    },
+    "2026-10-11-the-system-enables-proven-c908-extensions": {
+      "lane": "archived",
+      "source": "archived",
+      "physical": "verified",
+      "next": "Closed. Vectors run through runtime-gated Pixman on the installed mainline ordinary system; card budgets still fail unchanged and no extension beyond V is used by default. A physical return to the earlier image was not exercised (read-only route check only).",
+      "dependencies": [],
+      "evidence": [
+        "docs/evidence/cpu-extensions/README.md",
+        "docs/evidence/cpu-extensions/installed-mainline-2026-10-11/README.md"
+      ],
+      "rationale": "Operator restated the change against k230-mainline-drm-shell on 2026-10-11; all restated tasks have committed evidence."
     }
   }
 }
