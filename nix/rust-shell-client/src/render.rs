@@ -21,6 +21,7 @@ use crate::{
     },
     slider,
     volume::{self, Hud},
+    recovery::RecoveryState,
     splash::SplashStatus,
     theme_carousel,
     theme_catalog::BackgroundKind,
@@ -5230,12 +5231,18 @@ impl RendererCache {
             self.icons.paint(&cr,icon,(44.0*scale) as i32,x+20.0*scale,y+16.0*scale);
         }
         heading(&cr,&menu.entry.name,x+80.0*scale,y+18.0*scale,w-100.0*scale,22.0*scale,style.text);
-        text(&cr,"App actions",x+80.0*scale,y+45.0*scale,w-100.0*scale,14.0*scale,style.muted);
+        let subtitle=match menu.window_state() {
+            Some(RecoveryState::WindowsEmpty)=>format!("App actions · {}",RecoveryState::WindowsEmpty.copy()),
+            _=>"App actions".to_string(),
+        };
+        text(&cr,&subtitle,x+80.0*scale,y+45.0*scale,w-100.0*scale,14.0*scale,style.muted);
         let top=y+78.0*scale;
         cr.save().map_err(|e|e.to_string())?;
         cr.rectangle(x,top,w,(h-90.0*scale).max(0.0));cr.clip();
         if menu.rows.is_empty() {
-            text(&cr,if menu.ready {"App actions unavailable"}else{"Loading app actions…"},x+24.0*scale,top+16.0*scale,w-48.0*scale,18.0*scale,style.muted);
+            let copy=if menu.ready {"App actions unavailable"}else{RecoveryState::WindowsLoading.copy()};
+            text(&cr,copy,x+24.0*scale,top+16.0*scale,w-48.0*scale,18.0*scale,style.muted);
+            text(&cr,crate::recovery::RecoveryAction::Back.label(),x+24.0*scale,top+16.0*scale+row,w-48.0*scale,20.0*scale,style.accent);
         }
         for (index,action) in menu.rows.iter().enumerate() {
             let at=top+index as f64*row-menu.scroll;
@@ -5397,6 +5404,7 @@ fn splash_status_code(status: SplashStatus) -> u8 {
         SplashStatus::Pending => 0,
         SplashStatus::TimedOut => 1,
         SplashStatus::Failed => 2,
+        SplashStatus::Stale => 3,
     }
 }
 
@@ -5474,8 +5482,19 @@ fn build_splash_bake(
     let (primary, primary_color) = match status {
         SplashStatus::Pending | SplashStatus::TimedOut => (name.to_string(), style.text),
         SplashStatus::Failed => (format!("Couldn't open {name}"), style.error),
+        SplashStatus::Stale => (RecoveryState::WindowStale.copy().to_string(), style.text),
     };
     draw_centered(&cr, &primary, label_y, width as f64, 30.0, primary_color);
+    if status == SplashStatus::Stale {
+        draw_centered(
+            &cr,
+            &format!("Tap for {}", RecoveryState::WindowStale.action().label()),
+            label_y + 40.0,
+            width as f64,
+            18.0,
+            style.accent,
+        );
+    }
     if status == SplashStatus::TimedOut {
         draw_centered(
             &cr,
@@ -5621,6 +5640,15 @@ mod splash_render_tests {
         let mut failed: Option<SplashBake> = None;
         ensure_splash_bake(&mut failed, None, "Foot", 200, 200, SplashStatus::Failed).unwrap();
         assert_ne!(pending.unwrap().pixels, failed.unwrap().pixels);
+    }
+
+    #[test]
+    fn a_stale_window_bakes_its_own_message_not_the_launch_failure() {
+        let mut failed: Option<SplashBake> = None;
+        ensure_splash_bake(&mut failed, None, "Foot", 200, 200, SplashStatus::Failed).unwrap();
+        let mut stale: Option<SplashBake> = None;
+        ensure_splash_bake(&mut stale, None, "Foot", 200, 200, SplashStatus::Stale).unwrap();
+        assert_ne!(failed.unwrap().pixels, stale.unwrap().pixels);
     }
 }
 

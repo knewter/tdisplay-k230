@@ -17,6 +17,7 @@ pub mod navigation;
 pub mod pipewire_ipc;
 pub mod pointer_input;
 pub mod protocol;
+pub mod recovery;
 pub mod render;
 pub mod service_data;
 pub mod service_ui;

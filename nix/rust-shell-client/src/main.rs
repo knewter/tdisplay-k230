@@ -16,6 +16,7 @@ use k230_shell_rust::{
     pipewire_ipc,
     pointer_input::{self, PointerContact, POINTER_CONTACT_ID},
     protocol::{Phase, RevealMessage, RevealState, MAX_LINE},
+    recovery::{self, RecoveryAction, RecoveryState},
     released_slot,
     render::{export_png, panel_travel_height, RenderParams, RendererCache, SplashParams},
     service_data::{ControlState, ControlValue, ServiceReply, ServiceRequest, ServiceResponse, ServiceWorker},
@@ -1027,7 +1028,7 @@ fn run_app_action(id:&str,path:Option<&std::path::Path>,swaymsg:&std::path::Path
     if action==AppAction::Activate {return focus_or_launch(id,path,swaymsg);}
     if let AppAction::Window(con_id)=action {
         let tree=app_tree().ok_or("window list unavailable")?;
-        if !app_actions::entry_windows(&tree,id,path).iter().any(|w|w.id==con_id) {return Err("window is no longer available".into());}
+        if !app_actions::entry_windows(&tree,id,path).iter().any(|w|w.id==con_id) {return Err(recovery::STALE_WINDOW_ERROR.into());}
         swaymsg_back(swaymsg)?;
         focus_con(con_id,swaymsg)?;
         return Ok(LaunchOutcome::Focused);
@@ -1490,6 +1491,16 @@ fn prerendered_overlay_mismatch_reason(
         Some("content-changed")
     } else {
         None
+    }
+}
+
+/// The visible control that leaves the panel a service message appears on:
+/// Power's "Cancel" and Settings' "Done" header, otherwise plain Back.
+fn service_exit_label(route: Route) -> &'static str {
+    match route {
+        Route::Power => "Cancel",
+        Route::Settings => "Done",
+        _ => RecoveryAction::Back.label(),
     }
 }
 
@@ -2550,7 +2561,9 @@ impl ShellClient {
 
     fn submit_service(&mut self, request: ServiceRequest) -> bool {
         if let Err(error) = self.services.try_submit(request) {
-            self.service_view.message = Some(error.into());
+            self.log(&format!("service-submit-failed {error}"));
+            self.service_view.message =
+                Some(RecoveryState::ActionFailed.message(Some(service_exit_label(self.route))));
             self.renderer.set_services(self.service_view.clone());
             self.dirty = true;
             return false;
@@ -2595,8 +2608,15 @@ impl ShellClient {
                 self.service_view.notification_error = None;
             }
             Ok(ServiceResponse::Action(outcome)) => {
+                if let Some(code) = outcome.error.as_deref() {
+                    self.log(&format!(
+                        "service-action-{} {code}",
+                        recovery::action_error_state(code).id()
+                    ));
+                }
                 if !suppresses_action_message(&reply.request, outcome.error.as_deref()) {
-                    self.service_view.message = Some(action_message(&outcome));
+                    self.service_view.message =
+                        Some(action_message(&outcome, service_exit_label(self.route)));
                 }
                 self.service_view.confirmation = if outcome.state == "confirmation" {
                     match (
@@ -2643,9 +2663,11 @@ impl ShellClient {
                     self.service_view.notification_error = Some(error);
                 }
                 _ => {
+                    self.log(&format!("service-outcome-unavailable {error}"));
                     self.service_view.confirmation = None;
-                    self.service_view.message =
-                        Some(format!("Service outcome unavailable: {error}"));
+                    self.service_view.message = Some(
+                        RecoveryState::ActionFailed.message(Some(service_exit_label(self.route))),
+                    );
                 }
             },
         }
@@ -3902,7 +3924,10 @@ impl ShellClient {
             // because that path always has `self.layer.is_none()` by then
             // (`hide()` clears `input_region_key` in the same call that
             // drops the layer).
-            let dismissable = matches!(splash.status, SplashStatus::TimedOut | SplashStatus::Failed);
+            let dismissable = matches!(
+                splash.status,
+                SplashStatus::TimedOut | SplashStatus::Failed | SplashStatus::Stale
+            );
             let key = (Route::Hide, self.width, self.height, dismissable);
             if self.input_region_key == Some(key) {
                 return;
@@ -4016,10 +4041,10 @@ impl ShellClient {
     /// back to whatever was already showing underneath (Home) otherwise.
     fn dismiss_splash(&mut self, qh: &QueueHandle<Self>) {
         self.stop_splash_watch();
-        self.splash = None;
+        let stale = self.splash.take().is_some_and(|splash| splash.status == SplashStatus::Stale);
         let was_drawer_launch = self.launching;
         self.launching = false;
-        if was_drawer_launch {
+        if was_drawer_launch || stale {
             self.show(qh, Route::Drawer);
         } else {
             self.hide();
@@ -6686,8 +6711,15 @@ fn serve() -> Result<(), String> {
                 }
                 Err(error) => {
                     state.log(&format!("app-launch-failed {error}"));
+                    // A vanished window is not a failed launch: say so and
+                    // offer Apps rather than focusing some other window.
+                    let status = if error == recovery::STALE_WINDOW_ERROR {
+                        SplashStatus::Stale
+                    } else {
+                        SplashStatus::Failed
+                    };
                     if let Some(splash) = state.splash.as_mut() {
-                        splash.set_status(SplashStatus::Failed, Instant::now());
+                        splash.set_status(status, Instant::now());
                         state.dirty = true;
                     } else {
                         // Same stale-splash situation as above, on the
@@ -6743,7 +6775,7 @@ fn serve() -> Result<(), String> {
                         state.dirty = true;
                     }
                 }
-                SplashStatus::TimedOut => {}
+                SplashStatus::TimedOut | SplashStatus::Stale => {}
                 SplashStatus::Failed => {
                     if should_auto_dismiss_failed(status_since, now) {
                         state.dismiss_splash(&qh);

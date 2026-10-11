@@ -1,5 +1,6 @@
 //! Desktop-entry app actions shared by Home, dock and All apps.
 //! Touch hold remains the existing icon grab. Only secondary click opens this UI.
+use crate::recovery::RecoveryState;
 use crate::{catalog::AppEntry, home_screen::app_id_matches};
 use gio::prelude::*;
 use serde_json::Value;
@@ -222,7 +223,9 @@ impl AppMenu {
         let scale = crate::density_scale(width, height);
         let w = (440.0 * scale).min(f64::from(width) - 32.0);
         let row = 56.0 * scale;
-        let h = (90.0 * scale + self.rows.len().max(1) as f64 * row).min(f64::from(height) - 64.0);
+        // An empty list still shows its state line and the Back row.
+        let rows = if self.rows.is_empty() { 2 } else { self.rows.len() };
+        let h = (90.0 * scale + rows as f64 * row).min(f64::from(height) - 64.0);
         (
             (f64::from(width) - w) / 2.0,
             (f64::from(height) - h) / 2.0,
@@ -263,6 +266,10 @@ impl AppMenu {
         if point.0 < x || point.0 >= x + w || point.1 < top || point.1 >= y + h - 12.0 {
             return MenuOutcome::Dismiss;
         }
+        // Loading or unavailable: the list area is the visible Back.
+        if self.rows.is_empty() {
+            return MenuOutcome::Dismiss;
+        }
         self.rows
             .get(((point.1 - top + self.scroll) / row).floor() as usize)
             .map_or(MenuOutcome::Consumed, |r| {
@@ -271,6 +278,19 @@ impl AppMenu {
     }
     pub fn cancel(&mut self) {
         self.contact = None;
+    }
+    /// The window-list state this menu is in, if it needs explaining: still
+    /// loading, or loaded with no open window to pick.
+    pub fn window_state(&self) -> Option<RecoveryState> {
+        if !self.ready {
+            Some(RecoveryState::WindowsLoading)
+        } else if !self.rows.is_empty()
+            && !self.rows.iter().any(|row| matches!(row.action, AppAction::Window(_)))
+        {
+            Some(RecoveryState::WindowsEmpty)
+        } else {
+            None
+        }
     }
     pub fn dragging(&self) -> bool {
         self.contact.is_some()
@@ -335,6 +355,40 @@ mod tests {
             menu.up(1, point, 568, 1232),
             MenuOutcome::Action(AppAction::Activate)
         );
+    }
+    #[test]
+    fn window_list_states_name_back_or_apps_and_never_focus_another_window() {
+        let entry = AppEntry {
+            id: "a".into(),
+            name: "App".into(),
+            icon: None,
+            path: "/missing".into(),
+        };
+        let mut menu = AppMenu::new(entry, true, 1);
+        assert_eq!(menu.window_state(), Some(RecoveryState::WindowsLoading));
+        assert_eq!(RecoveryState::WindowsLoading.action().label(), "Back");
+        // While loading, a tap on the list area is the visible Back.
+        let (x, y, _, _, _) = menu.geometry(568, 1232);
+        let point = (x + 30.0, y + 100.0);
+        menu.down(1, point);
+        assert_eq!(menu.up(1, point, 568, 1232), MenuOutcome::Dismiss);
+        menu.ready = true;
+        menu.rows = vec![ActionRow {
+            label: "Open".into(),
+            action: AppAction::Activate,
+        }];
+        assert_eq!(menu.window_state(), Some(RecoveryState::WindowsEmpty));
+        assert_eq!(RecoveryState::WindowsEmpty.action().label(), "Apps");
+        menu.rows.push(ActionRow {
+            label: "Window".into(),
+            action: AppAction::Window(7),
+        });
+        assert_eq!(menu.window_state(), None);
+        // The stale-window error the launch path matches is not raw output.
+        assert!(crate::recovery::person_safe(RecoveryState::WindowStale.copy()));
+        assert!(!RecoveryState::WindowStale
+            .message(None)
+            .contains(crate::recovery::STALE_WINDOW_ERROR));
     }
     #[test]
     fn desktop_actions_single_window_metadata_and_missing_entries_control_the_menu() {

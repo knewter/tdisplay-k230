@@ -63,6 +63,10 @@ pub enum SplashStatus {
     /// "Couldn't open <Name>", dismissed automatically shortly after or by
     /// a tap.
     Failed,
+    /// The picked window closed before it could be focused
+    /// (`recovery::RecoveryState::WindowStale`): says so and stays up
+    /// until a tap, which goes to Apps -- never to some other window.
+    Stale,
 }
 
 #[derive(Clone, Debug, PartialEq)]

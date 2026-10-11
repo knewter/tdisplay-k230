@@ -84,17 +84,19 @@ impl ServiceView {
     }
 }
 
-pub fn action_message(outcome: &ActionOutcome) -> String {
-    let explanation = outcome
-        .error
-        .as_deref()
-        .or(outcome.label.as_deref())
-        .unwrap_or(&outcome.state);
-    if outcome.retry {
-        format!("{explanation} · try again")
-    } else {
-        explanation.into()
+/// A failed outcome's helper code stays in the log; the person sees the
+/// recovery copy and `exit`, the surface's own visible way back.
+pub fn action_message(outcome: &ActionOutcome, exit: &str) -> String {
+    if let Some(code) = outcome.error.as_deref() {
+        let state = crate::recovery::action_error_state(code);
+        let label = if outcome.retry {
+            crate::recovery::RecoveryAction::Retry.label()
+        } else {
+            exit
+        };
+        return state.message(Some(label));
     }
+    outcome.label.clone().unwrap_or_else(|| outcome.state.clone())
 }
 
 /// The drawer's own search field state: a plain query string and whether
@@ -2025,7 +2027,7 @@ mod tests {
     }
 
     #[test]
-    fn failed_action_exposes_backend_error_and_retry() {
+    fn failed_action_hides_backend_code_and_names_recovery() {
         let outcome = ActionOutcome {
             state: "failed".into(),
             error: Some("target-unavailable".into()),
@@ -2038,7 +2040,15 @@ mod tests {
             retry: true,
             remaining: None,
         };
-        assert_eq!(action_message(&outcome), "target-unavailable · try again");
+        assert_eq!(action_message(&outcome, "Done"), "That didn't work · Retry");
+        let denied = ActionOutcome {
+            error: Some("action-denied".into()),
+            retry: false,
+            ..outcome
+        };
+        let message = action_message(&denied, "Cancel");
+        assert_eq!(message, "That action isn't allowed · Cancel");
+        assert!(crate::recovery::person_safe(&message));
     }
 
     #[test]
