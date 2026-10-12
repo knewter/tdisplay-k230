@@ -1,7 +1,7 @@
 # Apply of an already-warm generation: skip the redundant prepare
 
 Implements OpenSpec tasks 6.1-6.5 from
-`openspec/changes/the-shell-swaps-themes-without-a-python-stall/tasks.md`,
+`openspec/changes/archive/2026-10-12-the-shell-swaps-themes-without-a-python-stall/tasks.md`,
 against the coordinator's board run in
 `docs/evidence/omarchy-themes/instant-theme-swap/board-chooser-2026-09-25.md`
 (system `phj9y4fggpb177b0hgaawbh510chhwil`, `master` `f4f75998`). This is a

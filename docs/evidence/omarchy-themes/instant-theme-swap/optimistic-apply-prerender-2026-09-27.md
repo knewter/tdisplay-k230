@@ -1,7 +1,7 @@
 # Optimistic Apply: pre-render at prepare time, reuse the durable commit's own frame
 
 Implements OpenSpec task 8 from
-`openspec/changes/the-shell-swaps-themes-without-a-python-stall/tasks.md`,
+`openspec/changes/archive/2026-10-12-the-shell-swaps-themes-without-a-python-stall/tasks.md`,
 against the coordinator's board re-run of the occlusion fix
 (`docs/evidence/omarchy-themes/instant-theme-swap/
 optimistic-apply-occlusion-fix-2026-09-27.md`). This is a **host-only**

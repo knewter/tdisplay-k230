@@ -1,7 +1,7 @@
 # Optimistic Apply: splitting the footer so a pre-render can actually match
 
 Implements OpenSpec task 9 from
-`openspec/changes/the-shell-swaps-themes-without-a-python-stall/tasks.md`,
+`openspec/changes/archive/2026-10-12-the-shell-swaps-themes-without-a-python-stall/tasks.md`,
 fixing the coordinator's board re-run of task 8's pre-render
 (`docs/evidence/omarchy-themes/instant-theme-swap/
 optimistic-apply-prerender-2026-09-27.md`). This is a **host-only**

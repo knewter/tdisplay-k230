@@ -1,7 +1,7 @@
 # Tap-to-apply: no separate Preview page, no Apply/Cancel step
 
 Implements OpenSpec task 10 from
-`openspec/changes/the-shell-swaps-themes-without-a-python-stall/tasks.md`.
+`openspec/changes/archive/2026-10-12-the-shell-swaps-themes-without-a-python-stall/tasks.md`.
 User decision (2026-09-25, verbatim): "i don't really think we need an
 'apply' window for themes at all. tap theme in the theme picker, apply
 immediately, so i can compare them easily." Also folds in a second

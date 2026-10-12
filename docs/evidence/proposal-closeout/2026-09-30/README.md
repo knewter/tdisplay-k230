@@ -144,7 +144,7 @@ Hold a small implementation set until this queue closes. Eight proposals have no
 | [plugging-in-hdmi-moves-the-display](../../../../openspec/changes/plugging-in-hdmi-moves-the-display/tasks.md) | 8/21 | Remaining implementation and/or proof |
 | [the-handheld-evaluates-qtquick-and-quickshell](../../../../openspec/changes/the-handheld-evaluates-qtquick-and-quickshell/tasks.md) | 0/13 | No checked tasks |
 | [the-handheld-presents-a-coherent-shell](../../../../openspec/changes/the-handheld-presents-a-coherent-shell/tasks.md) | 22/35 | Remaining implementation and/or proof |
-| [the-shell-swaps-themes-without-a-python-stall](../../../../openspec/changes/the-shell-swaps-themes-without-a-python-stall/tasks.md) | 61/74 | Remaining implementation and/or proof |
+| [the-shell-swaps-themes-without-a-python-stall](../../../../openspec/changes/archive/2026-10-12-the-shell-swaps-themes-without-a-python-stall/tasks.md) | 61/74 | Remaining implementation and/or proof |
 | [the-small-core-runs-as-a-coprocessor](../../../../openspec/changes/the-small-core-runs-as-a-coprocessor/tasks.md) | 1/15 | Remaining implementation and/or proof |
 
 ## Exact gates preserved by the proposed split

@@ -79,7 +79,7 @@ in-process path (never a second subprocess) when the daemon is not
 reachable.
 
 Full detail, rejected alternatives, and the requirement this adds are in
-`openspec/changes/the-shell-swaps-themes-without-a-python-stall/`.
+`openspec/changes/archive/2026-10-12-the-shell-swaps-themes-without-a-python-stall/`.
 
 ### Host + QEMU numbers (directional, not the board's own number)
 

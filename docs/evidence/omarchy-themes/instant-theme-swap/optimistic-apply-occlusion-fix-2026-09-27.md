@@ -1,7 +1,7 @@
 # Optimistic Apply: the overlay's own frame_pending gate, and the ~300 ms gap
 
 Implements OpenSpec tasks 7.6-7.8 from
-`openspec/changes/the-shell-swaps-themes-without-a-python-stall/tasks.md`,
+`openspec/changes/archive/2026-10-12-the-shell-swaps-themes-without-a-python-stall/tasks.md`,
 addressing the coordinator's board re-run of the neighbour-warm-race fix
 (`docs/evidence/omarchy-themes/instant-theme-swap/
 optimistic-apply-neighbor-race-fix-2026-09-26.md`). This is a **host-only**

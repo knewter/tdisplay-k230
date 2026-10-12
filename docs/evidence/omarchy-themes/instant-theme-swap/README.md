@@ -1,7 +1,7 @@
 # Instant theme swap: buffer-swap commit, chooser prepare-ahead, deferred wvkbd
 
 Implements OpenSpec tasks 3.1b, 3.2, and 3.3a from
-`openspec/changes/the-shell-swaps-themes-without-a-python-stall/tasks.md`,
+`openspec/changes/archive/2026-10-12-the-shell-swaps-themes-without-a-python-stall/tasks.md`,
 against the user's stated target: the new theme visible within about 100 ms
 of the Apply tap, touch and animation never stalling. This is a **host +
 headless-QEMU-under-`qemu-riscv64-static`** result: no board, glass, or

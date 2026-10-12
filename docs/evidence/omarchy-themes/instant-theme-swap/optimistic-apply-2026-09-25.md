@@ -1,7 +1,7 @@
 # Optimistic Apply: show an already-prepared theme ahead of the durable commit
 
 Implements OpenSpec task 7 from
-`openspec/changes/the-shell-swaps-themes-without-a-python-stall/tasks.md`,
+`openspec/changes/archive/2026-10-12-the-shell-swaps-themes-without-a-python-stall/tasks.md`,
 against the user's explicit approval (2026-09-25 coordinator message: "The
 user has explicitly approved the optimistic theme apply") of the design the
 change's `design.md` records in full. This is a **host-only** result: no

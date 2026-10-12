@@ -1,7 +1,7 @@
 # Optimistic Apply missed its own show: a neighbour-warm race
 
 Implements OpenSpec tasks 7.4-7.5 from
-`openspec/changes/the-shell-swaps-themes-without-a-python-stall/tasks.md`,
+`openspec/changes/archive/2026-10-12-the-shell-swaps-themes-without-a-python-stall/tasks.md`,
 fixing a bug the coordinator's board run found in the Optimistic Apply work
 (`docs/evidence/omarchy-themes/instant-theme-swap/optimistic-apply-2026-09-25.md`).
 This is a **host-only** result: no board, glass, or real-finger
