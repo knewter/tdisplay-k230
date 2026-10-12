@@ -1765,6 +1765,7 @@ DATA  03df501db91377f9ba381c07dccf9b0000a1d358a717696e4d3de953f05a8e77  docs/evi
 DATA  a74cd1ddb6b77674c23ef6255a09cd09a90bdc471fda3ae8ef6d5cf495bb2ba3  docs/evidence/theme-picker/board-session-2026-10-12b/18.3/position-curves.png
 DATA  ca4d7726de8bd0b39760a5b4a10858f0fa12e9ad0b80d360ff397f413385015d  docs/evidence/theme-picker/board-session-2026-10-12b/18.3/velocity-curves.png
 DATA  f299986e3fcee4497bc64680d1e0d8ef8f1ccff26efc18a3af8976a22a4cd0a9  docs/evidence/theme-picker/board-session-2026-10-12b/install/installed-picker-native.png
+DATA  99b2ce3c66e9f30ba473638d6cf0e33c0e2e33cd1035f48782c536e7959af99b  docs/evidence/theme-picker/board-session-2026-10-12b/install-2/installed-home-after-apply-native.png
 DATA  57ac5ab689645e6836f75f06c27b01c3aaf261909ccd5e2d8652b4c2fea84c2b  docs/evidence/theme-picker/board-session-2026-10-12/10.7-6.6/panel-bottom-full-resolution.png
 DATA  7e131b309e4159af7095a885c20504b1f96f6eb3eb3acba0d2517a40e44e8d8e  docs/evidence/theme-picker/board-session-2026-10-12/10.7-6.6/picker-dark-light-dark.png
 DATA  dc35b46841c36e893c0e2486b323f09af3c68d33c293da7eb8be802d716a8afc  docs/evidence/theme-picker/board-session-2026-10-12/13.4/browse-base.mp4
@@ -2967,6 +2968,7 @@ hashes and the exact triggers are in `docs/evidence/recovery-routes/touch-captur
 | `docs/evidence/theme-picker/board-session-2026-10-12b/18.3/position-curves.png` | 134564 | DATA | `a74cd1ddb6b77674c23ef6255a09cd09a90bdc471fda3ae8ef6d5cf495bb2ba3` |
 | `docs/evidence/theme-picker/board-session-2026-10-12b/18.3/velocity-curves.png` | 143987 | DATA | `ca4d7726de8bd0b39760a5b4a10858f0fa12e9ad0b80d360ff397f413385015d` |
 | `docs/evidence/theme-picker/board-session-2026-10-12b/install/installed-picker-native.png` | 93629 | DATA | `f299986e3fcee4497bc64680d1e0d8ef8f1ccff26efc18a3af8976a22a4cd0a9` |
+| `docs/evidence/theme-picker/board-session-2026-10-12b/install-2/installed-home-after-apply-native.png` | 78798 | DATA | `99b2ce3c66e9f30ba473638d6cf0e33c0e2e33cd1035f48782c536e7959af99b` |
 | `docs/evidence/theme-picker/board-session-2026-10-12/10.7-6.6/panel-bottom-full-resolution.png` | 21535 | DATA | `57ac5ab689645e6836f75f06c27b01c3aaf261909ccd5e2d8652b4c2fea84c2b` |
 | `docs/evidence/theme-picker/board-session-2026-10-12/10.7-6.6/picker-dark-light-dark.png` | 219129 | DATA | `7e131b309e4159af7095a885c20504b1f96f6eb3eb3acba0d2517a40e44e8d8e` |
 | `docs/evidence/theme-picker/board-session-2026-10-12/13.4/browse-base.mp4` | 84386 | DATA | `dc35b46841c36e893c0e2486b323f09af3c68d33c293da7eb8be802d716a8afc` |

@@ -1,0 +1,49 @@
+13:49:38.313155 rust-shell 9900ms touch-down 0 x y
+13:49:38.395737 rust-shell 9982ms touch-up 0
+13:49:38.773562 THEME_TIMING handle list discover=227.2ms selected=116.8ms total=344.1ms id=- outcome=ok
+13:49:38.774831 THEME_TIMING helperd list parse=16.5ms lock_wait=0.0ms handle=345.7ms total=362.5ms id=- outcome=ok
+13:49:38.784632 rust-shell 10370ms theme-command list - path=socket ms=375
+13:49:42.606015 rust-shell 14193ms appearance-prepare-accepted
+13:49:42.631036 THEME_TIMING handle preview discover=3.0ms prepare_entry=3722.1ms prepare_only_warmup=49.4ms total=3774.6ms id=catppuccin outcome=ok
+13:49:42.631289 THEME_TIMING helperd preview parse=13.8ms lock_wait=0.0ms handle=3774.8ms total=3788.8ms id=catppuccin outcome=ok
+13:49:42.634409 rust-shell 14227ms theme-command preview catppuccin path=socket ms=3796
+13:49:44.926653 rust-shell 16514ms appearance-prepare-accepted
+13:49:44.960736 THEME_TIMING handle preview discover=3.6ms prepare_entry=2180.5ms prepare_only_warmup=57.1ms total=2241.3ms id=catppuccin-latte outcome=ok
+13:49:44.960956 THEME_TIMING helperd preview parse=5.4ms lock_wait=0.0ms handle=2241.4ms total=2246.9ms id=catppuccin-latte outcome=ok
+13:49:44.965179 rust-shell 16558ms theme-command preview catppuccin-latte path=socket ms=2253
+13:49:54.583943 rust-shell 26171ms touch-down 0 x y
+13:49:55.584442 rust-shell 27170ms touch-up 0
+13:49:55.950167 rust-shell 27537ms optimistic-apply prerendered generation=gen-light-4
+13:49:55.954252 rust-shell 27541ms picker-memory cards_kib=2028 masks_kib=52 scratch_kib=1500 thumbnails_kib=7343 heap_in_use_kib=25680 heap_free_kib=4311 heap_free_after_trim_kib=4183 mmap_kib=13524
+13:49:59.365566 rust-shell 30952ms touch-down 0 x y
+13:49:59.447775 rust-shell 31034ms touch-up 0
+13:49:59.479440 rust-shell 31062ms optimistic-apply shown ms=28.0 prerendered=true
+13:49:59.479440 rust-shell 31062ms optimistic-apply stage entry_ms=5.3 checks_ms=0.0 adopt_ms=3.7 wallpaper_ms=4.1 overlay_ms=13.4 flush_ms=1.4
+13:49:59.515464 rust-shell 31103ms picker-memory cards_kib=2028 masks_kib=52 scratch_kib=1500 thumbnails_kib=7343 heap_in_use_kib=22582 heap_free_kib=7281 heap_free_after_trim_kib=4545 mmap_kib=13524
+13:49:59.677140 rust-shell 31263ms appearance-commit-accepted reused=optimistic
+13:49:59.739974 THEME_TIMING activate_generation gen-light-4 lock_wait=10.9ms guard=26.6ms prepare_phase=0.2ms swap_pointer=22.9ms commit_phase=91.3ms total=152.0ms warm=2 targets=2
+13:49:59.758156 THEME_TIMING handle activate discover=11.3ms prepare_entry=87.2ms activate_generation=183.2ms keyboard_deferred_dispatch=7.2ms total=289.0ms id=catppuccin-latte outcome=ok
+13:49:59.758490 THEME_TIMING helperd activate parse=14.8ms lock_wait=0.0ms handle=289.3ms total=304.1ms id=catppuccin-latte outcome=ok
+13:49:59.762428 rust-shell 31355ms theme-command activate catppuccin-latte path=socket ms=313
+13:49:59.817907 THEME_TIMING app_deferred activate sync=73.3ms total=73.4ms generation=gen-light-4 state=applied error=- kind=-
+13:49:59.960544 THEME_TIMING keyboard_deferred activate sync_and_restart=204.7ms total=204.8ms generation=gen-light-4 state=applied
+13:50:04.844995 rust-shell 36432ms touch-down 0 x y
+13:50:05.091274 rust-shell 36676ms touch-up 0
+13:50:05.578602 rust-shell 37166ms picker-memory cards_kib=1982 masks_kib=52 scratch_kib=1500 thumbnails_kib=8305 heap_in_use_kib=23670 heap_free_kib=6897 heap_free_after_trim_kib=6769 mmap_kib=13524
+13:50:05.853907 rust-shell 37441ms appearance-prepare-accepted
+13:50:05.887046 THEME_TIMING handle preview discover=1.3ms prepare_entry=16.8ms prepare_only_warmup=48.8ms total=67.0ms id=catppuccin outcome=ok
+13:50:05.887291 THEME_TIMING helperd preview parse=2.2ms lock_wait=0.0ms handle=67.2ms total=69.5ms id=catppuccin outcome=ok
+13:50:05.890981 rust-shell 37484ms theme-command preview catppuccin path=socket ms=73
+13:50:05.986611 rust-shell 37574ms optimistic-apply prerendered generation=gen-dark-4
+13:50:09.432535 rust-shell 41019ms touch-down 0 x y
+13:50:09.515285 rust-shell 41102ms touch-up 0
+13:50:09.559416 rust-shell 41144ms optimistic-apply shown ms=42.2 prerendered=true
+13:50:09.559416 rust-shell 41144ms optimistic-apply stage entry_ms=5.5 checks_ms=0.0 adopt_ms=7.1 wallpaper_ms=15.9 overlay_ms=13.6 flush_ms=0.0
+13:50:09.600457 rust-shell 41183ms picker-memory cards_kib=1964 masks_kib=52 scratch_kib=1500 thumbnails_kib=8305 heap_in_use_kib=23687 heap_free_kib=6752 heap_free_after_trim_kib=4016 mmap_kib=13524
+13:50:09.750481 rust-shell 41336ms appearance-commit-accepted reused=optimistic
+13:50:09.804941 THEME_TIMING activate_generation gen-dark-4 lock_wait=12.0ms guard=26.2ms prepare_phase=0.2ms swap_pointer=24.5ms commit_phase=85.7ms total=148.7ms warm=2 targets=2
+13:50:09.820967 THEME_TIMING handle activate discover=6.8ms prepare_entry=91.9ms activate_generation=178.0ms keyboard_deferred_dispatch=9.6ms total=286.4ms id=catppuccin outcome=ok
+13:50:09.821293 THEME_TIMING helperd activate parse=12.9ms lock_wait=0.0ms handle=286.7ms total=299.7ms id=catppuccin outcome=ok
+13:50:09.830986 rust-shell 41420ms theme-command activate catppuccin path=socket ms=309
+13:50:09.865190 THEME_TIMING app_deferred activate sync=56.8ms total=56.9ms generation=gen-dark-4 state=applied error=- kind=-
+13:50:09.977961 THEME_TIMING keyboard_deferred activate sync_and_restart=162.3ms total=162.4ms generation=gen-dark-4 state=applied

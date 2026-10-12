@@ -468,7 +468,10 @@ for 5.4 is the board run quoted above.
   150 ms: `activate_generation` 167-179 ms (`commit_phase` 105-116 ms, shell
   commit exchange 37-53 ms), round trip 333-342 ms. Whether "end to end" means
   the visible apply or the helper's durable activation is for the coordinator
-  to decide; until then the task stays open.
+  to decide; until then the task stays open. Installed as system `298a2bf6`
+  (README, "Install of candidate 8"); one installed apply trial: shown 28.0
+  and 42.2 ms, `activate_generation` 152.0 and 148.7 ms, round trip 313 and
+  309 ms.
 
 Proof for 6.1-6.5: the tests named above, all passing on this host; proof
 for 6.6 is the reserved board, not run here.

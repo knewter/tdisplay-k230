@@ -1,0 +1,24 @@
+{
+  "system": "/nix/store/298a2bf6sqpc82ngdryxgg3xmr9fg9f7-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "kernel": "/nix/store/f3rnipvbc5vqam8kwdmn3wgcl5rbz9yx-linux-riscv64-unknown-linux-gnu-7.3.0-rc5/Image",
+  "bundle": "/nix/store/amvl5qymc5vgq3b9y1r659c9lf96gyzx-k230-coherent-shell-boot-files",
+  "evidence_class": "operator-authorized-userspace-update",
+  "shell_executable": "/nix/store/hl4bca4gi4m0wmhwas1i1zl8n360m744-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0/bin/k230-shell-rust",
+  "boot_id": "c9d1793e-d426-48f5-ba44-047753333b25",
+  "deployment_authorized": true,
+  "additional_physical_collection_waived": true,
+  "operator_instruction": "\"yeah it's fast go\" (2026-10-12), continuing \"what more do you need from me just test stuff that doesn't need me as far as you can then lmk what you need\" (2026-10-12)",
+  "prior_waiver": "continue but you dont have to gather that proof ive already confirmed its fine carry on it's all good",
+  "recorded_utc": "2026-10-12T18:40:11.402791+00:00",
+  "source_revision": "56a7b94ec4d85cdc12db31e13dbb32b13671bc50",
+  "accepted_baseline": {
+    "system": "/nix/store/fm8gk6xica4h7ni3fp6wgya3lmfxfzjr-nixos-system-nixos-26.11.20260919.20b1ddd",
+    "kernel": "/nix/store/f3rnipvbc5vqam8kwdmn3wgcl5rbz9yx-linux-riscv64-unknown-linux-gnu-7.3.0-rc5/Image",
+    "boot_files": {
+      "Image": "9d94102c65c8e4fd6b8880ef7b19b8bee5fa91c85596384319f0104bd89509cb",
+      "initrd.uimg": "4365953c65e834fa9a9d5027ff5b6f79d99cc61afa732d58b7162a09edd2428f"
+    }
+  },
+  "provenance": "Operator instruction to keep the warm theme apply fast and carry the board work without them (2026-10-12, perf/theme-row-memory-trace 56a7b94e: optimistic theme shown before the picker redraw, reused optimistic commit acknowledged before the Home repaint), with the standing waiver of additional install-time physical collection. Same-kernel userspace update; claims no finger observation.",
+  "limits": "No new gesture, cable cycle, pixel, timing, or individual typography/spacing physical observation is inferred."
+}

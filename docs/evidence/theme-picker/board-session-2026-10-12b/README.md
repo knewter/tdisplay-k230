@@ -269,10 +269,53 @@ that ordinary boot at about 17:16. Settings was opened and Themes was tapped by 
 current theme, its neighbours as side slices, and the Backgrounds row loaded. No finger observation was made on the
 installed boot.
 
+## Install of candidate 8
+
+| Identity | Value |
+| --- | --- |
+| Bundle | `/nix/store/amvl5qymc5vgq3b9y1r659c9lf96gyzx-k230-coherent-shell-boot-files` |
+| System | `/nix/store/298a2bf6sqpc82ngdryxgg3xmr9fg9f7-nixos-system-nixos-26.11.20260919.20b1ddd` |
+| Rust shell ELF | `/nix/store/hl4bca4gi4m0wmhwas1i1zl8n360m744-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0/bin/k230-shell-rust` |
+| Theme helper | `/nix/store/2m37rx16riv3mjxvajfvjakncs9gszkb-handheld-theme-command-0.1` (changed only because it names the Rust ELF) |
+| Source | `56a7b94e` |
+| Kernel, `Image`, `initrd.uimg` | unchanged |
+| Baseline | candidate 4 install `fm8gk6xi…` (above) |
+
+The same installer recipes ran from a new run directory with the paths, baseline, bundle already on the board, and saved
+appearance changed ([install-2/](install-2/), `*-used.py`, [install-2/expected-runtime.json](install-2/expected-runtime.json)).
+Every step passed:
+
+1. **Preflight:** boot `34d77814-…`, 18:35:00 UTC ([install-2/preflight.json](install-2/preflight.json)).
+2. **Stage:** ([install-2/stage.log](install-2/stage.log), [install-2/transfer.json](install-2/transfer.json),
+   [install-2/staged-state.json](install-2/staged-state.json), [install-2/host-inspection.json](install-2/host-inspection.json)).
+3. **Candidate boot:** ([install-2/candidate-boot.json](install-2/candidate-boot.json)); runtime check on boot
+   `c9d1793e-…` at 18:40:10 UTC ([install-2/candidate-runtime.json](install-2/candidate-runtime.json)).
+4. **Qualification:** ([install-2/deployment-authorization.json](install-2/deployment-authorization.json)).
+5. **Install and ordinary autoboot:** ([install-2/ordinary-boot.json](install-2/ordinary-boot.json)); runtime check on
+   boot `94fd02a1-…` at 18:43:21 UTC ([install-2/ordinary-runtime.json](install-2/ordinary-runtime.json)).
+
+On that ordinary boot the apply trial ([tools/apply_trial.sh](tools/apply_trial.sh), no drop-in, injected taps) ran once
+([install-2/journal-installed-apply.txt](install-2/journal-installed-apply.txt),
+[install-2/marks-installed-apply.txt](install-2/marks-installed-apply.txt)):
+
+| Installed | Light | Dark |
+| --- | ---: | ---: |
+| `optimistic-apply shown ms` | 28.0 | 42.2 |
+| `prerendered` | true | true |
+| `activate_generation` total; `commit_phase`, ms | 152.0; 91.3 | 148.7; 85.7 |
+| `theme-command activate` round trip, ms | 313 | 309 |
+
+A floating terminal covered Home during the trial, so Home drew no frame while covered. Moving the terminal to the sway
+scratchpad drew one (`K230_HOME_FRAME ms=203`), and
+[install-2/installed-home-after-apply-native.png](install-2/installed-home-after-apply-native.png) (native
+`grim -s 0.5`, about 18:51 UTC) shows Home in the applied dark `catppuccin` theme. The terminal was then shown again.
+No finger observation was made on the installed boot.
+
 ## Board state afterwards
 
+- Installed system `298a2bf6…` with Rust `hl4bca4g…`.
 - The virtual touch device unit `k230-theme-session-input` stops by its own `RuntimeMaxSec`.
-- The gcroots `k230-session-b-candidate{,2,3,4}` pin the swapped ELFs. `k230-theme-baseline-8cik` and
+- The gcroots `k230-session-b-candidate{,2,3,4,5,6,7,8}` pin the swapped ELFs. `k230-theme-baseline-8cik` and
   `k230-theme-motion-si9vd` remain from the first session.
 - The saved theme is the dark `catppuccin` generation applied by the last apply trial. The operator said any theme is
   fine.
