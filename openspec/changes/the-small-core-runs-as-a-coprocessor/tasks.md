@@ -90,7 +90,7 @@
   answered correctly, a resent sequence number ignored, heartbeat independent:
   `docs/evidence/second-core/qemu-standalone-cpu0.md`
   (`tools/small-core-qemu-probe.py`).
-- [ ] 3.3 **BOARD-GATED. AUTHORIZATION-REQUIRED.** Load the
+- [x] 3.3 **BOARD-GATED. AUTHORIZATION-REQUIRED.** Load the
   inspected payload via the pinned `boot_baremetal 0` sequence exactly as
   the heartbeat runbook already does, write at least three distinct request
   values from the U-Boot prompt, and read back three correct, freshly
@@ -99,8 +99,15 @@
   named in task 2.1 (no disposable card). Verify with a timestamped board
   transcript committed under `docs/evidence/second-core/` (physical CPU0
   execution proof; any hang, static response, or wrong echo fails this task).
-  Procedure, expected cells and payload hash/CRC: `docs/evidence/second-core/echo-runbook.md`
-  (still unperformed).
+  Procedure, expected cells and payload hash/CRC: `docs/evidence/second-core/echo-runbook.md`.
+  DONE 2026-10-12 (physical board, serial transcripts; operator "Yes, go"):
+  four distinct requests answered correctly by CPU0 (`11111112/eeeeeeee`,
+  `deadbef0/21524110`, `00000000/00000000`, `12345679/edcba987`), each line
+  read once after its request, never-requested line's `rsp_seq` 0, counters
+  `served=4 last_seq=4`, CPU1 prompt alive, Linux restored. Required the
+  `--evict` cache workaround (U-Boot has no `dcache` command; without it
+  release 2 was 0/4, inconclusive). Evidence:
+  `docs/evidence/second-core/echo-physical-2026-10-12/README.md`.
 
 ## 4. Reserved memory and a read-only remoteproc driver skeleton
 

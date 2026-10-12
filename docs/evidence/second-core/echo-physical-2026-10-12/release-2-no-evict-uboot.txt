@@ -1,0 +1,222 @@
+# tools/small-core-echo-session.py, 2026-10-12: release 2: no cache eviction (inconclusive)
+# Sanitized excerpt of a private host-clock-stamped transcript: ANSI removed,
+# addresses replaced, Linux shutdown/boot output omitted.
+
+[   0.001] --- small-core echo session start (release) ---
+[   0.401] --- sending: reboot ---
+[... Linux shutdown omitted ...]
+U-Boot SPL 2022.10 (Oct 03 2022 - 19:25:32 +0000)
+lpddr4 2660
+imge: uboot load to 0  compress =1  src 15000254 len=5e138 
+imge: uboot load to 0  compress =1  src 15000254 len=bae28  
+
+
+U-Boot 2022.10 (Oct 03 2022 - 19:25:32 +0000)
+
+CPU:   rv64imafdcvsu
+Model: kendryte k230 canmv v3
+DRAM:  1 GiB
+Core:  27 devices, 15 uclasses, devicetree: embed
+MMC:   mmc0@91580000: 0, mmc1@91581000: 1
+Loading Environment from MMC... OK
+In:    serial@91400000
+Out:   serial@91400000
+Err:   serial@91400000
+Net:   No ethernet found.
+2799104 bytes read in 118 ms (22.6 MiB/s)
+RM69A10 direct XRGB8888 logo.xrgb full-screen OSD4
+Hit any key to stop autoboot:  1  0
+K230#                                       
+K230# 
+K230# [  12.584] --- sending: version ---
+version
+U-Boot 2022.10 (Oct 03 2022 - 19:25:32 +0000)
+
+riscv64-unknown-linux-gnu-gcc (GCC) 15.3.0
+GNU ld (GNU Binutils) 2.46
+K230# 
+U-Boot 2022.10 (Oct 03 2022 - 19:25:32 +0000)
+
+riscv64-unknown-linux-gnu-gcc (GCC) 15.3.0
+GNU ld (GNU Binutils) 2.46
+K230# [  13.236] --- sending: help boot_baremetal ---
+help boot_baremetal
+boot_baremetal - boot_baremetal
+
+Usage:
+boot_baremetal 
+ boot_baremetal cpu addr size
+
+K230# 
+boot_baremetal - boot_baremetal
+
+Usage:
+boot_baremetal 
+ boot_baremetal cpu addr size
+
+K230# [  13.888] --- sending: help dcache ---
+help dcache
+Unknown command 'dcache' - try 'help' without arguments for list of all known commands
+
+K230# 
+Unknown command 'dcache' - try 'help' without arguments for list of all known commands
+
+K230# [  14.540] --- sending: dcache ---
+dcache
+Unknown command 'dcache' - try 'help'
+K230# 
+Unknown command 'dcache' - try 'help'
+K230# [  15.141] --- dcache state: command 'dcache' - try 'help' K230# Unknown command 'dcache' - try 'help' K230#  ---
+[  15.192] --- sending: bdinfo ---
+bdinfo
+boot_params = 0x0000000000000000
+DRAM bank   = 0x0000000000000000
+-> start    = 0x0000000000000000
+-> size     = 0x0000000040000000
+flashstart  = 0x0000000000000000
+flashsize   = 0x0000000000000000
+flashoffset = 0x0000000000000000
+baudrate    = 115200 bps
+relocaddr   = 0x000000003ff39000
+reloc off   = 0x000000003ff39000
+Build       = 64-bit
+current eth = unknown
+ethaddr     = (not set)
+IP addr     = <addr>
+fdt_blob    = 0x0000000000098f70
+new_fdt     = 0x0000000000000000
+fdt_size    = 0x0000000000000000
+lmb_dump_all:
+ memory.cnt  = 0x1
+ memory[0]	[0x0-0x3fffffff], 0x40000000 bytes flags: 0
+ reserved.cnt  = 0x1
+ reserved[0]	[0x3fb35920-0x3fffffff], 0x004ca6e0 bytes flags: 0
+devicetree  = embed
+malloc 3fb37000---3ff39000---3fb43000
+sp:        3fb36970 ,3fb36970 3fb3b140 
+K230# 
+boot_params = 0x0000000000000000
+DRAM bank   = 0x0000000000000000
+-> start    = 0x0000000000000000
+-> size     = 0x0000000040000000
+flashstart  = 0x0000000000000000
+flashsize   = 0x0000000000000000
+flashoffset = 0x0000000000000000
+baudrate    = 115200 bps
+relocaddr   = 0x000000003ff39000
+reloc off   = 0x000000003ff39000
+Build       = 64-bit
+current eth = unknown
+ethaddr     = (not set)
+IP addr     = <addr>
+fdt_blob    = 0x0000000000098f70
+new_fdt     = 0x0000000000000000
+fdt_size    = 0x0000000000000000
+lmb_dump_all:
+ memory.cnt  = 0x1
+ memory[0]	[0x0-0x3fffffff], 0x40000000 bytes flags: 0
+ reserved.cnt  = 0x1
+ reserved[0]	[0x3fb35920-0x3fffffff], 0x004ca6e0 bytes flags: 0
+devicetree  = embed
+malloc 3fb37000---3ff39000---3fb43000
+sp:        3fb36970 ,3fb36970 3fb3b340 
+K230# [  15.944] --- sending: ext4load mmc 1:1 0x7000000 /small-core-echo.bin ---
+ext4load mmc 1:1 0x7000000 /small-core-echo.bin
+224 bytes read in 1 ms (218.8 KiB/s)
+K230# 
+K230# [  16.595] --- sending: printenv fileaddr filesize ---
+printenv fileaddr filesize
+fileaddr=7000000
+filesize=e0
+K230# 
+fileaddr=7000000
+filesize=e0
+K230# [  17.247] --- sending: crc32 0x7000000 0xe0 ---
+crc32 0x7000000 0xe0
+crc32 for 07000000 ... 070000df ==> 7492e46f
+K230# 
+crc32 for 07000000 ... 070000df ==> 7492e46f
+K230# [  17.849] --- pre-release checks PASS ---
+[  17.849] --- releasing physical CPU0 ---
+[  17.899] --- sending: boot_baremetal 0 0x7000000 0x5000 ---
+boot_baremetal 0 0x7000000 0x5000
+boot_cpu = 0 boot_address = 0x7000000 boot_size=0x5000
+K230# 
+boot_cpu = 0 boot_address = 0x7000000 boot_size=0x5000
+K230# [  19.553] --- sending: md.l 0x7002040 12 ---
+md.l 0x7002040 12
+07002040: 00000000 00000000 00000000 00000000  ................
+07002050: 0094112f 80000000 4f484345 00000000  /.......ECHO....
+07002060: 00000000 4aac4129 0437f800 ffffffd6  ....)A.J..7.....
+07002070: 00000000 00000000 00000000 00000000  ................
+07002080: 00060006 ffffff80                    ........
+K230# [  20.156] --- status: heartbeat=0 mhartid=0x0 misa=0x800000000094112f magic=0x4f484345 served=0 last_seq=0 ---
+[  20.206] --- sending: mw.l 0x7002004 0x11111111 1 ---
+mw.l 0x7002004 0x11111111 1
+K230# 
+K230# [  20.858] --- sending: mw.l 0x7002000 0x1 1 ---
+mw.l 0x7002000 0x1 1
+K230# 
+K230# [  22.509] --- sending: md.l 0x7002140 4 ---
+md.l 0x7002140 4
+07002140: 00000000 ffffff80 07002148 ffffffd6  ........H!......
+K230# [  26.162] --- sending: md.l 0x7002140 4 ---
+md.l 0x7002140 4
+07002140: 00000000 ffffff80 07002148 ffffffd6  ........H!......
+K230# [  26.764] --- request seq=1 value=0x11111111: got ['00000000', 'ffffff80', '07002148', 'ffffffd6'] want ['00000001', '11111112', 'eeeeeeee', '00000001'] -> WRONG ---
+[  26.814] --- sending: mw.l 0x7002004 0xdeadbeef 1 ---
+mw.l 0x7002004 0xdeadbeef 1
+K230# 
+K230# [  27.468] --- sending: mw.l 0x7002000 0x2 1 ---
+mw.l 0x7002000 0x2 1
+K230# 
+K230# [  29.120] --- sending: md.l 0x7002180 4 ---
+md.l 0x7002180 4
+07002180: 00000000 00000002 00000000 00000000  ................
+K230# [  32.772] --- sending: md.l 0x7002180 4 ---
+md.l 0x7002180 4
+07002180: 00000000 00000002 00000000 00000000  ................
+K230# [  33.374] --- request seq=2 value=0xdeadbeef: got ['00000000', '00000002', '00000000', '00000000'] want ['00000002', 'deadbef0', '21524110', '00000002'] -> WRONG ---
+[  33.424] --- sending: mw.l 0x7002004 0xffffffff 1 ---
+mw.l 0x7002004 0xffffffff 1
+K230# 
+K230# [  34.076] --- sending: mw.l 0x7002000 0x3 1 ---
+mw.l 0x7002000 0x3 1
+K230# 
+K230# [  35.729] --- sending: md.l 0x70021c0 4 ---
+md.l 0x70021c0 4
+070021c0: 00000000 00000000 00000000 00000000  ................
+K230# [  39.381] --- sending: md.l 0x70021c0 4 ---
+md.l 0x70021c0 4
+070021c0: 00000000 00000000 00000000 00000000  ................
+K230# [  39.982] --- request seq=3 value=0xffffffff: got ['00000000', '00000000', '00000000', '00000000'] want ['00000003', '00000000', '00000000', '00000003'] -> WRONG ---
+[  40.033] --- sending: mw.l 0x7002004 0x12345678 1 ---
+mw.l 0x7002004 0x12345678 1
+K230# 
+K230# [  40.685] --- sending: mw.l 0x7002000 0x4 1 ---
+mw.l 0x7002000 0x4 1
+K230# 
+K230# [  42.339] --- sending: md.l 0x7002200 4 ---
+md.l 0x7002200 4
+07002200: 00000000 ffffff80 07002208 ffffffd6  ........."......
+K230# [  45.991] --- sending: md.l 0x7002200 4 ---
+md.l 0x7002200 4
+07002200: 00000000 ffffff80 07002208 ffffffd6  ........."......
+K230# [  46.593] --- request seq=4 value=0x12345678: got ['00000000', 'ffffff80', '07002208', 'ffffffd6'] want ['00000004', '12345679', 'edcba987', '00000004'] -> WRONG ---
+[  46.644] --- sending: md.l 0x7002240 4 ---
+md.l 0x7002240 4
+07002240: 00000000 00000002 00000000 00000000  ................
+K230# [  47.296] --- sending: md.l 0x7002058 3 ---
+md.l 0x7002058 3
+07002058: 4f484345 00000000 00000000           ECHO........
+K230# [  47.948] --- sending: echo CPU1_UBOOT_PROMPT_ALIVE ---
+echo CPU1_UBOOT_PROMPT_ALIVE
+CPU1_UBOOT_PROMPT_ALIVE
+K230# 
+CPU1_UBOOT_PROMPT_ALIVE
+K230# [  48.549] --- negative control line 5: [0, 2, 0, 0] -> WRONG; counters [1330135877, 0, 0] -> WRONG ---
+[  48.549] --- ECHO VERDICT: FAIL status=OK responses=0/4 prompt=alive ---
+[  48.600] --- sending: reset ---
+[... U-Boot SPL/Linux boot after reset omitted ...]
+[ 114.539] --- Linux login prompt is back ---
+[ 114.540] --- session end, status 2 ---

@@ -1,6 +1,6 @@
 # Physical CPU0 echo/ping runbook (board task 3.3)
 
-**Proposed procedure; nothing below has been run on the board.** It follows
+**Run on 2026-10-12: PASS with the `--evict` cache workaround ([echo-physical-2026-10-12/README.md](echo-physical-2026-10-12/README.md)).** It follows
 [heartbeat-runbook.md](heartbeat-runbook.md), which was run on 2026-10-12
 ([heartbeat-physical-2026-10-12/README.md](heartbeat-physical-2026-10-12/README.md)).
 The operator needs `/dev/ttyACM0` (under `flock -n /tmp/k230-board.lock`) and
@@ -56,8 +56,10 @@ DRAM, and a cached read may hide CPU0's write. Mitigations in this
 procedure: each request has its own response line (first read of every line
 happens after it is written), and U-Boot's data cache is checked and, if on,
 turned off before use. The vendor `boot_baremetal` also flushes the image
-range. `dcache` is present in the vendor U-Boot binary's strings, but the
-exact command syntax is not confirmed; run `help dcache` first. If no
+range. On 2026-10-12 this U-Boot had **no** `dcache` command; reading 32 MiB
+of unrelated DRAM (`crc32 0x10000000 0x2000000`) after each request write
+and before each read evicts CPU1's caches and was required for a result
+(`tools/small-core-echo-session.py --evict`). Earlier text: if no
 cache-control command exists, record that and treat a wrong or missing
 response as inconclusive, not as a CPU0 failure.
 
@@ -159,7 +161,8 @@ response as inconclusive, not as a CPU0 failure.
    echo CPU1_UBOOT_PROMPT_ALIVE
    ```
 
-   The control line must read all zeros (never requested). The status cells
+   The control line's first word (`rsp_seq`) must read `00000000` (never
+   answered); its other words are not initialized by the payload. The status cells
    at `0x7002058` must read `4f484345 00000004 00000004` (`magic`, `served`,
    `last_seq`).
 
@@ -176,7 +179,7 @@ response as inconclusive, not as a CPU0 failure.
 ## Pass and fail
 
 - **Pass**: step 3 checks match; step 4 identity/magic cells match; all four
-  step 5 lines match exactly; the control line is zero; the prompt stays
+  step 5 lines match exactly; the control line's `rsp_seq` is zero; the prompt stays
   alive; Linux restores. The transcript with timestamps goes under
   `docs/evidence/second-core/`, with raw console lines carrying IP
   addresses kept private (as for the heartbeat).

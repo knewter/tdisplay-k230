@@ -1,0 +1,10 @@
+# tools/small-core-echo-session.py --release, 2026-10-12: attempt 1
+# Session notes only. It started right after the dry run's Linux login
+# prompt; no U-Boot output appears in the private transcript (cause not
+# established), the session then found Linux and stopped. No U-Boot command
+# and no release ran.
+
+[   0.000] --- small-core echo session start (release) ---
+[   0.403] --- sending: reboot ---
+[  42.504] --- no K230# prompt; checking for Linux ---
+[  82.011] --- session end, status 2 ---
