@@ -856,113 +856,190 @@ struct CardKey {
 }
 
 /// Bounded cache of rendered carousel cards and their outline masks. Only
-/// cards at a row's two rest sizes are kept: a card growing or shrinking
-/// through a swipe has a new size on almost every frame, so keeping those
-/// would only churn the cache up to its cap.
+/// cards at a row's two rest sizes are kept, least recently drawn first out:
+/// a card growing or shrinking through a swipe has a new size on almost
+/// every frame, so it is drawn through two reused scratch surfaces instead
+/// of allocating its own. Everything is released, and freed heap returned to
+/// the system, once a scene is built without the picker.
 #[derive(Default)]
 struct CardSprites {
-    cards: std::collections::HashMap<CardKey, ImageSurface>,
+    cards: std::collections::HashMap<CardKey, (ImageSurface, u64)>,
     masks: std::collections::HashMap<(i32, i32, i32), ImageSurface>,
+    scratch: Option<(ImageSurface, ImageSurface)>,
     bytes: usize,
+    clock: u64,
+    painted: bool,
 }
 
-const CARD_SPRITE_MAX_BYTES: usize = 8 << 20;
+/// About two rows' worth of visible rest-size cards.
+const CARD_SPRITE_MAX_BYTES: usize = 4 << 20;
 
 thread_local! {
     static CARD_SPRITES: std::cell::RefCell<CardSprites> = std::cell::RefCell::new(CardSprites::default());
 }
 
+/// Called before a scene is built; releases the cards if that scene drew no
+/// carousel (see `CardSprites`).
+fn card_sprites_scene<T>(build: impl FnOnce() -> T) -> T {
+    CARD_SPRITES.with(|sprites| sprites.borrow_mut().painted = false);
+    let result = build();
+    CARD_SPRITES.with(|sprites| {
+        let mut sprites = sprites.borrow_mut();
+        if !sprites.painted && (sprites.bytes != 0 || sprites.scratch.is_some() || !sprites.masks.is_empty()) {
+            *sprites = CardSprites::default();
+            // SAFETY: glibc's malloc_trim only releases free heap pages.
+            unsafe { libc::malloc_trim(0) };
+        }
+    });
+    result
+}
+
 impl CardSprites {
-    fn card(
+    /// Paints one card's content (its image scaled into a plain rectangle,
+    /// then the scrim) into `target` at its origin.
+    #[allow(clippy::too_many_arguments)]
+    fn paint_content(
+        target: &ImageSurface,
+        key: &CardKey,
+        image: Option<&ImageSurface>,
+        scrim: Option<&Brush>,
+        dim_color: u32,
+        fallback: u32,
+    ) -> Option<()> {
+        let (w, h) = (key.width, key.height);
+        let cr = Context::new(target).ok()?;
+        cr.rectangle(0.0, 0.0, f64::from(w), f64::from(h));
+        cr.clip();
+        match image {
+            Some(image) => {
+                let pattern = SurfacePattern::create(image);
+                pattern.set_matrix(Matrix::new(
+                    f64::from(image.width()) / f64::from(w), 0.0, 0.0,
+                    f64::from(image.height()) / f64::from(h), 0.0, 0.0,
+                ));
+                pattern.set_filter(Filter::Bilinear);
+                pattern.set_extend(cairo::Extend::Pad);
+                cr.set_source(&pattern).ok()?;
+            }
+            None => color(&cr, fallback, 1.0),
+        }
+        cr.set_operator(Operator::Source);
+        cr.paint().ok()?;
+        cr.set_operator(Operator::Over);
+        // Dims a non-centered slice, fading out as it nears the centered
+        // position -- upstream's `Util.alpha(root.dimColor, item.selected ?
+        // 0 : 0.42)`, continuous here instead of a hard boolean.
+        let blend = f64::from(key.blend) / 32.0;
+        if blend > 0.0 {
+            if let Some(brush) = scrim {
+                let _ = cr.push_group();
+                fill_brush(&cr, brush, 0.0, 0.0, f64::from(w), f64::from(h));
+                let _ = cr.pop_group_to_source();
+                let _ = cr.paint_with_alpha(blend);
+            } else {
+                color(&cr, dim_color, 0.42 * blend);
+                let _ = cr.paint();
+            }
+        }
+        Some(())
+    }
+
+    /// Fills the skewed rounded outline into `target` (A8) at its origin,
+    /// clearing the rest of the `w` x `h` box.
+    fn paint_mask(target: &ImageSurface, w: i32, h: i32, skew16: i32) -> Option<()> {
+        let cr = Context::new(target).ok()?;
+        let skew = f64::from(skew16) / 16.0;
+        let (w, h) = (f64::from(w), f64::from(h));
+        cr.rectangle(0.0, 0.0, w, h);
+        cr.clip();
+        cr.set_operator(Operator::Clear);
+        cr.paint().ok()?;
+        cr.set_operator(Operator::Over);
+        rounded_skewed(&cr, 0.0, 0.0, skew, w, 0.0, w - skew, h, 14.0);
+        cr.set_source_rgba(0.0, 0.0, 0.0, 1.0);
+        cr.fill().ok()?;
+        Some(())
+    }
+
+    /// Draws one card onto `cr` with its top-left corner at the whole-pixel
+    /// point (`x`, `y`).
+    #[allow(clippy::too_many_arguments)]
+    fn draw(
         &mut self,
+        cr: &Context,
         key: CardKey,
         keep: bool,
         image: Option<&ImageSurface>,
         scrim: Option<&Brush>,
         dim_color: u32,
         fallback: u32,
-    ) -> Option<ImageSurface> {
-        if let Some(sprite) = self.cards.get(&key) {
-            return Some(sprite.clone());
-        }
+        (x, y): (f64, f64),
+    ) -> Option<()> {
+        self.painted = true;
+        self.clock += 1;
+        let clock = self.clock;
         let (w, h) = (key.width, key.height);
-        let content = ImageSurface::create(Format::ARgb32, w, h).ok()?;
-        {
-            let cr = Context::new(&content).ok()?;
-            match image {
-                Some(image) => {
-                    let pattern = SurfacePattern::create(image);
-                    pattern.set_matrix(Matrix::new(
-                        f64::from(image.width()) / f64::from(w), 0.0, 0.0,
-                        f64::from(image.height()) / f64::from(h), 0.0, 0.0,
-                    ));
-                    pattern.set_filter(Filter::Bilinear);
-                    pattern.set_extend(cairo::Extend::Pad);
-                    cr.set_source(&pattern).ok()?;
-                }
-                None => color(&cr, fallback, 1.0),
-            }
-            cr.set_operator(Operator::Source);
-            cr.paint().ok()?;
-            cr.set_operator(Operator::Over);
-            // Dims a non-centered slice, fading out as it nears the centered
-            // position -- upstream's `Util.alpha(root.dimColor, item.selected ?
-            // 0 : 0.42)`, continuous here instead of a hard boolean.
-            let blend = f64::from(key.blend) / 32.0;
-            if blend > 0.0 {
-                if let Some(brush) = scrim {
-                    let _ = cr.push_group();
-                    fill_brush(&cr, brush, 0.0, 0.0, f64::from(w), f64::from(h));
-                    let _ = cr.pop_group_to_source();
-                    let _ = cr.paint_with_alpha(blend);
-                } else {
-                    color(&cr, dim_color, 0.42 * blend);
-                    let _ = cr.paint();
-                }
-            }
+        if let Some((sprite, used)) = self.cards.get_mut(&key) {
+            *used = clock;
+            cr.set_source_surface(&*sprite, x, y).ok()?;
+            return cr.paint().ok();
         }
-        let mask = self.mask(w, h, key.skew, keep)?;
+        if !keep {
+            let fits = |s: &ImageSurface| s.width() >= w && s.height() >= h;
+            if !self.scratch.as_ref().is_some_and(|(c, m)| fits(c) && fits(m)) {
+                let (sw, sh) = self.scratch.as_ref().map_or((0, 0), |(c, _)| (c.width(), c.height()));
+                let (sw, sh) = (sw.max(w), sh.max(h));
+                self.scratch = Some((
+                    ImageSurface::create(Format::ARgb32, sw, sh).ok()?,
+                    ImageSurface::create(Format::A8, sw, sh).ok()?,
+                ));
+            }
+            let (content, mask) = self.scratch.as_ref()?;
+            Self::paint_content(content, &key, image, scrim, dim_color, fallback)?;
+            Self::paint_mask(mask, w, h, key.skew)?;
+            content.flush();
+            mask.flush();
+            let _ = cr.save();
+            cr.rectangle(x, y, f64::from(w), f64::from(h));
+            cr.clip();
+            cr.set_source_surface(content, x, y).ok()?;
+            let result = cr.mask_surface(mask, x, y).ok();
+            let _ = cr.restore();
+            return result;
+        }
+        let content = ImageSurface::create(Format::ARgb32, w, h).ok()?;
+        Self::paint_content(&content, &key, image, scrim, dim_color, fallback)?;
+        let mask = match self.masks.get(&(w, h, key.skew)) {
+            Some(mask) => mask.clone(),
+            None => {
+                let mask = ImageSurface::create(Format::A8, w, h).ok()?;
+                Self::paint_mask(&mask, w, h, key.skew)?;
+                mask.flush();
+                if self.masks.len() >= 8 {
+                    self.masks.clear();
+                }
+                self.masks.insert((w, h, key.skew), mask.clone());
+                mask
+            }
+        };
         let sprite = ImageSurface::create(Format::ARgb32, w, h).ok()?;
         {
-            let cr = Context::new(&sprite).ok()?;
-            cr.set_source_surface(&content, 0.0, 0.0).ok()?;
-            cr.mask_surface(&mask, 0.0, 0.0).ok()?;
+            let sprite_cr = Context::new(&sprite).ok()?;
+            sprite_cr.set_source_surface(&content, 0.0, 0.0).ok()?;
+            sprite_cr.mask_surface(&mask, 0.0, 0.0).ok()?;
         }
         sprite.flush();
-        if !keep {
-            return Some(sprite);
-        }
         let size = (w as usize) * (h as usize) * 4;
-        if self.bytes + size > CARD_SPRITE_MAX_BYTES {
-            self.cards.clear();
-            self.bytes = 0;
+        while self.bytes + size > CARD_SPRITE_MAX_BYTES && !self.cards.is_empty() {
+            let oldest = self.cards.iter().min_by_key(|(_, (_, used))| *used).map(|(k, _)| k.clone())?;
+            if let Some((old, _)) = self.cards.remove(&oldest) {
+                self.bytes -= (old.width() as usize) * (old.height() as usize) * 4;
+            }
         }
         self.bytes += size;
-        self.cards.insert(key, sprite.clone());
-        Some(sprite)
-    }
-
-    fn mask(&mut self, w: i32, h: i32, skew16: i32, keep: bool) -> Option<ImageSurface> {
-        if let Some(mask) = self.masks.get(&(w, h, skew16)) {
-            return Some(mask.clone());
-        }
-        if keep && self.masks.len() >= 16 {
-            self.masks.clear();
-        }
-        let mask = ImageSurface::create(Format::A8, w, h).ok()?;
-        {
-            let cr = Context::new(&mask).ok()?;
-            let skew = f64::from(skew16) / 16.0;
-            let (w, h) = (f64::from(w), f64::from(h));
-            rounded_skewed(&cr, 0.0, 0.0, skew, w, 0.0, w - skew, h, 14.0);
-            cr.set_source_rgba(0.0, 0.0, 0.0, 1.0);
-            cr.fill().ok()?;
-        }
-        mask.flush();
-        if keep {
-            self.masks.insert((w, h, skew16), mask.clone());
-        }
-        Some(mask)
+        self.cards.insert(key, (sprite.clone(), clock));
+        cr.set_source_surface(&sprite, x, y).ok()?;
+        cr.paint().ok()
     }
 }
 
@@ -1035,12 +1112,7 @@ fn paint_carousel(
         let keep = at_rest(geometry.expanded_w, geometry.expanded_h)
             || at_rest(geometry.slice_w, geometry.slice_h);
         CARD_SPRITES.with(|sprites| {
-            let mut sprites = sprites.borrow_mut();
-            if let Some(sprite) = sprites.card(key, keep, image, scrim, dim_color, fallback) {
-                if cr.set_source_surface(&sprite, sx, sy).is_ok() {
-                    let _ = cr.paint();
-                }
-            }
+            sprites.borrow_mut().draw(cr, key, keep, image, scrim, dim_color, fallback, (sx, sy));
         });
         // A slice with no decoded thumbnail yet gets a spinner instead of a
         // silent flat fill, so a slow decode (goal: never a frozen-looking
@@ -4432,6 +4504,9 @@ pub struct RendererCache {
     /// something this render actually depends on changed underneath it,
     /// and the pre-render must be treated as stale.
     content_generation: u64,
+    /// Which input last bumped `content_generation`, for the
+    /// `optimistic-apply shown ... reason=content-changed` log line.
+    content_source: &'static str,
     /// Value-based fingerprint of the chooser inputs `theme_view_cache_key_
     /// differs` tracks (page, list, preview, quantised positions, pressed
     /// rows), folded into `content_generation()`. A counter cannot tell a
@@ -4612,9 +4687,13 @@ impl RendererCache {
         *slot = point;
         if !home {
             self.content_generation = self.content_generation.wrapping_add(1);
+            self.content_source = "set_pointer";
             self.invalidate();
         }
         true
+    }
+    pub fn content_source(&self) -> &'static str {
+        self.content_source
     }
     pub fn content_generation(&self) -> u64 {
         self.content_generation.wrapping_mul(0x9E37_79B9_7F4A_7C15) ^ self.chooser_key
@@ -4655,7 +4734,11 @@ impl RendererCache {
                 self.chooser_static_key =
                     stable_hash(&format!("{:?}|{:?}|{:?}", view.page, view.list, view.preview));
             }
-            self.chooser_key = chooser_fingerprint(self.chooser_static_key, &view);
+            let key = chooser_fingerprint(self.chooser_static_key, &view);
+            if key != self.chooser_key {
+                self.chooser_key = key;
+                self.content_source = "set_theme_view";
+            }
         }
         let rows = self.chooser.as_ref().and_then(|old| picker_row_changes(old, &view));
         self.chooser = Some(view);
@@ -4731,6 +4814,7 @@ impl RendererCache {
         }
         if changed {
             self.content_generation = self.content_generation.wrapping_add(1);
+            self.content_source = "poll_theme_image";
         }
         changed
     }
@@ -4742,6 +4826,7 @@ impl RendererCache {
         let changed = self.thumbnails.poll();
         if changed {
             self.content_generation = self.content_generation.wrapping_add(1);
+            self.content_source = "poll_theme_thumbnails";
             // Thumbnails are painted only inside the chooser's two rows, so
             // a completion mid-swipe repaints those rows rather than paying
             // a full scene rebuild.
@@ -4786,12 +4871,14 @@ impl RendererCache {
         }
         self.services = Some(services);
         self.content_generation = self.content_generation.wrapping_add(1);
+        self.content_source = "set_services";
         self.invalidate();
     }
     pub fn set_drawer_pressed(&mut self, pressed: Option<usize>) -> bool {
         if self.pressed != pressed {
             self.pressed = pressed;
             self.content_generation = self.content_generation.wrapping_add(1);
+            self.content_source = "set_drawer_pressed";
             self.invalidate();
             return true;
         }
@@ -4805,6 +4892,7 @@ impl RendererCache {
         if self.drawer_search != search {
             self.drawer_search = search;
             self.content_generation = self.content_generation.wrapping_add(1);
+            self.content_source = "set_drawer_search";
             self.invalidate();
             return true;
         }
@@ -5264,7 +5352,7 @@ impl RendererCache {
         {
             let _profile = crate::runtime_trace::Span::new("scene_rebuild");
             let mut painted = vec![0; size];
-            draw_shm_with_icons(
+            card_sprites_scene(|| draw_shm_with_icons(
                 &mut painted,
                 RenderParams {
                     progress: 1.0,
@@ -5283,7 +5371,7 @@ impl RendererCache {
                 &mut self.drawer_grid,
                 self.pointer,
                 None,
-            )?;
+            ))?;
             self.static_pixels = painted;
             self.width = width;
             self.height = height;
@@ -6800,6 +6888,60 @@ mod tests {
                 assert!(rest.contains(&(w, h)), "kept a transient mask {w}x{h}");
             }
         });
+    }
+
+    #[test]
+    fn card_sprites_are_released_once_a_scene_is_built_without_the_picker() {
+        let mut view = theme_picker_two_row_fixture();
+        view.theme_position = 3.4;
+        let mut renderer = picker_row_test_renderer(&view);
+        let params = RenderParams { width: 568, height: 1232, route: Route::Settings,
+            progress: 1.0, scroll: 0.0 };
+        let mut pixels = vec![0; 568 * 1232 * 4];
+        renderer.draw(&mut pixels, params, &[]).unwrap();
+        CARD_SPRITES.with(|sprites| {
+            let sprites = sprites.borrow();
+            assert!(sprites.bytes > 0 && sprites.scratch.is_some());
+        });
+        renderer.draw(&mut pixels, RenderParams { route: Route::Shade, ..params }, &[]).unwrap();
+        CARD_SPRITES.with(|sprites| {
+            let sprites = sprites.borrow();
+            assert!(sprites.cards.is_empty() && sprites.masks.is_empty() && sprites.scratch.is_none());
+            assert_eq!(sprites.bytes, 0);
+        });
+    }
+
+    #[test]
+    fn a_card_drawn_through_scratch_matches_its_cached_sprite() {
+        let image = ImageSurface::create(Format::ARgb32, 96, 128).unwrap();
+        {
+            let cr = Context::new(&image).unwrap();
+            let gradient = LinearGradient::new(0.0, 0.0, 96.0, 128.0);
+            gradient.add_color_stop_rgb(0.0, 0.9, 0.2, 0.1);
+            gradient.add_color_stop_rgb(1.0, 0.1, 0.3, 0.8);
+            cr.set_source(&gradient).unwrap();
+            cr.paint().unwrap();
+        }
+        let key = CardKey { id: "t".into(), variant: "slice", image: 1, width: 61, height: 233,
+            skew: 18 * 16, blend: 20, look: String::new() };
+        let draw = |keep: bool| {
+            let target = ImageSurface::create(Format::ARgb32, 100, 260).unwrap();
+            {
+                let cr = Context::new(&target).unwrap();
+                cr.set_source_rgb(0.1, 0.1, 0.1);
+                cr.paint().unwrap();
+                let mut sprites = CardSprites::default();
+                sprites.draw(&cr, key.clone(), keep, Some(&image), None, 0x101010, 0, (7.0, 9.0)).unwrap();
+                assert_eq!(sprites.cards.is_empty(), !keep);
+            }
+            target.flush();
+            let mut target = target;
+            let bytes = target.data().unwrap().to_vec();
+            bytes
+        };
+        let (cached, scratch) = (draw(true), draw(false));
+        let worst = cached.iter().zip(&scratch).map(|(a, b)| a.abs_diff(*b)).max().unwrap();
+        assert!(worst <= 1, "scratch and cached cards differ by {worst}");
     }
 
     #[test]

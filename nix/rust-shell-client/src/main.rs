@@ -2190,8 +2190,9 @@ impl ShellClient {
             // reconstruction each time (board evidence, 2026-09-28).
             match mismatch_reason {
                 Some(reason) => self.log(&format!(
-                    "optimistic-apply shown ms={:.1} prerendered=false reason={reason}",
-                    elapsed_ms()
+                    "optimistic-apply shown ms={:.1} prerendered=false reason={reason} content_source={}",
+                    elapsed_ms(),
+                    self.renderer.content_source()
                 )),
                 None => self.log(&format!(
                     "optimistic-apply shown ms={:.1} prerendered=true",
