@@ -204,14 +204,21 @@ const MIN_COAST_VELOCITY: f64 = 0.35;
 const DECAY_PER_16MS: f64 = 0.88;
 /// A touch that never moved more than this many pixels is a tap, not a drag.
 const TAP_SLOP: f64 = 8.0;
-/// Settle duration scales with distance, like `service_ui.rs`'s
-/// `NotificationSwipeSettle` (`(distance * 0.4).clamp(120.0, 240.0)` there,
-/// in pixels; here in index-units, so the per-unit factor and clamp differ,
-/// but the shape of the rule -- and the elapsed-accumulator `tick`, rather
-/// than an absolute clock, so this never has to agree with Wayland's touch
-/// timestamp domain -- is the same one every settle in this shell uses).
-fn settle_duration_ms(distance: f64) -> u32 {
-    (distance.abs() * 90.0).clamp(140.0, 260.0) as u32
+/// Centering is a critically damped spring in reference-card pixels
+/// (task 18.2): it starts from the release or coast velocity, so speed never
+/// jumps, and it is evaluated in closed form from the full elapsed time, so
+/// 8 ms and 200 ms frame cadences trace the same wall-clock trajectory. At
+/// this stiffness the card is within 5% of its slot after about 215 ms; a
+/// tunable candidate, not an Apple-prescribed value (design.md, task 18.1).
+const SETTLE_OMEGA: f64 = 22.0;
+/// Below both of these the spring snaps exactly onto its slot.
+const SETTLE_REST_PX: f64 = 0.25;
+const SETTLE_REST_PX_PER_SEC: f64 = 4.0;
+
+/// `DECAY_PER_16MS` as a continuous rate, so coasting can be integrated
+/// exactly over any elapsed time instead of in clamped 16 ms steps.
+fn coast_decay_per_sec() -> f64 {
+    -DECAY_PER_16MS.ln() * 1000.0 / 16.0
 }
 
 /// One slice's on-screen placement, in absolute panel pixels, ready to
@@ -365,12 +372,29 @@ struct Contact {
     cancelled: bool,
 }
 
+/// A critically damped approach to `target`, in the reference card's
+/// pixel space: `offset`/`velocity` are its displacement from the target
+/// card center and its speed when the settle began, `elapsed` seconds ago.
 #[derive(Clone, Copy, Debug)]
 struct Settle {
-    from: f64,
+    reference: f64,
     target: f64,
-    elapsed_ms: u32,
-    duration_ms: u32,
+    target_center: f64,
+    offset: f64,
+    velocity: f64,
+    elapsed: f64,
+}
+
+impl Settle {
+    /// Displacement and velocity `elapsed` seconds after the start.
+    fn state(&self) -> (f64, f64) {
+        let b = self.velocity + SETTLE_OMEGA * self.offset;
+        let decay = (-SETTLE_OMEGA * self.elapsed).exp();
+        (
+            (self.offset + b * self.elapsed) * decay,
+            (self.velocity - SETTLE_OMEGA * b * self.elapsed) * decay,
+        )
+    }
 }
 
 /// What a completed touch on the carousel means. Mirrors upstream's
@@ -403,6 +427,11 @@ pub struct Carousel {
     coast_reference: f64,
     contact: Option<Contact>,
     settle: Option<Settle>,
+    /// The next `tick` is the first since a release, tap or wheel stop
+    /// started motion. Its `elapsed` predates that start (the event loop
+    /// measures from its previous iteration, which may be a long hold), so
+    /// it counts as zero rather than jumping the card forward.
+    motion_started: bool,
 }
 
 impl Carousel {
@@ -414,6 +443,7 @@ impl Carousel {
             coast_reference: 0.0,
             contact: None,
             settle: None,
+            motion_started: false,
         }
     }
 
@@ -566,10 +596,11 @@ impl Carousel {
             0.0
         };
         self.coast_reference = contact.start_position.round();
-        if velocity.abs() < MIN_COAST_VELOCITY * self.geometry.center_pitch() {
-            self.start_settle(self.position.round());
+        if velocity.abs() < self.coast_threshold() {
+            self.settle_with_velocity(velocity, count);
         } else {
             self.velocity = velocity;
+            self.motion_started = true;
         }
         Some(CarouselOutcome::Consumed)
     }
@@ -579,61 +610,121 @@ impl Carousel {
         self.velocity = 0.0;
     }
 
+    fn coast_threshold(&self) -> f64 {
+        MIN_COAST_VELOCITY * self.geometry.center_pitch()
+    }
+
+    /// Settle onto an explicit slot (a tapped side slice, a wheel stop)
+    /// from rest.
     fn start_settle(&mut self, target: f64) {
-        let duration_ms = settle_duration_ms(target - self.position);
-        self.settle = Some(Settle {
-            from: self.position,
-            target,
-            elapsed_ms: 0,
-            duration_ms,
-        });
+        self.begin_settle(target, target, 0.0);
+    }
+
+    /// Settle while keeping `velocity` (reference-card px/sec). The slot is
+    /// the nearest one to where that velocity would carry the card, moved
+    /// one slot further along the motion if the spring would otherwise
+    /// have to overshoot to reach it, so the approach stays monotonic.
+    fn settle_with_velocity(&mut self, velocity: f64, count: usize) {
+        let max_index = count.saturating_sub(1) as f64;
+        let reference = self.coast_reference;
+        let center = self.geometry.reference_center(self.position, reference);
+        let projected = center + velocity / SETTLE_OMEGA;
+        let mut target = self.geometry.position_at_center(projected, reference).round().clamp(0.0, max_index);
+        if velocity != 0.0
+            && (self.geometry.reference_center(target, reference) - projected) * velocity.signum() < 0.0
+        {
+            // Card centers move right as the index falls.
+            target = (target - velocity.signum()).clamp(0.0, max_index);
+        }
+        self.begin_settle(target, reference, velocity);
+    }
+
+    fn begin_settle(&mut self, target: f64, reference: f64, velocity: f64) {
+        let target_center = self.geometry.reference_center(target, reference);
+        let offset = self.geometry.reference_center(self.position, reference) - target_center;
+        // Only a catalogue end can leave the card heading for its slot faster
+        // than a critically damped spring can stop without crossing it; stop
+        // at the bound rather than bounce past it.
+        let velocity = if velocity * offset < 0.0 && velocity.abs() > SETTLE_OMEGA * offset.abs() {
+            -SETTLE_OMEGA * offset
+        } else {
+            velocity
+        };
+        self.settle = Some(Settle { reference, target, target_center, offset, velocity, elapsed: 0.0 });
         self.velocity = 0.0;
+        self.motion_started = true;
     }
 
     /// Advances momentum decay or a settle-to-nearest animation. Returns
     /// whether a repaint is needed. `elapsed_ms` is however long it has been
-    /// since the caller's last `tick`/frame -- an accumulator, like
-    /// `service_ui::NotificationSwipeSettle::tick`, never an absolute
-    /// clock, so this never has to agree with any other subsystem's time
-    /// domain (the Wayland touch timestamps `down`/`motion`/`up` receive
-    /// included).
+    /// since the caller's last `tick`/frame -- an accumulator, never an
+    /// absolute clock, so this never has to agree with any other subsystem's
+    /// time domain (the Wayland touch timestamps `down`/`motion`/`up` receive
+    /// included). The whole interval is used: coasting and settling are
+    /// solved in closed form, and the coast-to-settle handover and catalogue
+    /// ends are found exactly inside the interval, so irregular frame
+    /// cadences do not stretch or reshape the motion.
     pub fn tick(&mut self, elapsed_ms: u32, count: usize) -> bool {
-        if self.contact.is_some() || count == 0 {
+        if self.contact.is_some() || count == 0 || !self.is_animating() {
             return false;
+        }
+        let mut remaining = if std::mem::take(&mut self.motion_started) {
+            0.0
+        } else {
+            f64::from(elapsed_ms) / 1000.0
+        };
+        let max_index = count.saturating_sub(1) as f64;
+        if self.velocity != 0.0 && self.settle.is_none() {
+            remaining = self.coast(remaining, max_index, count);
         }
         if let Some(settle) = self.settle.as_mut() {
-            settle.elapsed_ms = settle.elapsed_ms.saturating_add(elapsed_ms.min(48));
-            let t = (f64::from(settle.elapsed_ms) / f64::from(settle.duration_ms)).min(1.0);
-            let eased = 1.0 - (1.0 - t).powi(3); // ease-out cubic, matching NotificationSwipeSettle
-            self.position = settle.from + (settle.target - settle.from) * eased;
-            if t >= 1.0 {
-                self.position = settle.target;
+            settle.elapsed += remaining;
+            let (offset, velocity) = settle.state();
+            let (target, reference, target_center) = (settle.target, settle.reference, settle.target_center);
+            if offset.abs() < SETTLE_REST_PX && velocity.abs() < SETTLE_REST_PX_PER_SEC {
+                self.position = target;
                 self.settle = None;
+            } else {
+                self.position = self.geometry.position_at_center(target_center + offset, reference).clamp(0.0, max_index);
             }
-            return true;
         }
-        if self.velocity == 0.0 || elapsed_ms == 0 {
-            return false;
+        true
+    }
+
+    /// Coasts for up to `dt` seconds of exponential decay, stopping early at
+    /// the instant the velocity falls to the settle threshold or the card
+    /// reaches a catalogue end, where it hands over to the spring. Returns
+    /// the time left for that settle.
+    fn coast(&mut self, dt: f64, max_index: f64, count: usize) -> f64 {
+        let k = coast_decay_per_sec();
+        let v = self.velocity;
+        let reference = self.coast_reference;
+        let center = self.geometry.reference_center(self.position, reference);
+        let threshold = self.coast_threshold();
+        let to_threshold = if v.abs() > threshold { (v.abs() / threshold).ln() / k } else { 0.0 };
+        // Card centers move right (positive velocity) toward index 0.
+        let bound = if v > 0.0 { 0.0 } else { max_index };
+        let to_bound_px = self.geometry.reference_center(bound, reference) - center;
+        let reach = to_bound_px * k / v; // fraction of the remaining coast distance
+        let to_bound = if (0.0..1.0).contains(&reach) { -(1.0 - reach).ln() / k } else { f64::INFINITY };
+        let step = dt.min(to_threshold).min(to_bound);
+        let decay = (-k * step).exp();
+        let moved = center + v * (1.0 - decay) / k;
+        self.position = self.geometry.position_at_center(moved, reference).clamp(0.0, max_index);
+        let velocity = v * decay;
+        if step >= to_bound {
+            self.position = bound;
+            self.velocity = 0.0;
+            self.begin_settle(bound, reference, velocity);
+            self.motion_started = false;
+        } else if step >= to_threshold {
+            self.velocity = 0.0;
+            self.settle_with_velocity(velocity, count);
+            self.motion_started = false;
+        } else {
+            self.velocity = velocity;
         }
-        let elapsed = elapsed_ms.min(50);
-        let max_index = count.saturating_sub(1) as f64;
-        let old = self.position;
-        let center = self.geometry.reference_center(self.position, self.coast_reference);
-        let next = self.geometry.position_at_center(
-            center + self.velocity * f64::from(elapsed) / 1000.0,
-            self.coast_reference,
-        );
-        self.velocity *= DECAY_PER_16MS.powf(f64::from(elapsed) / 16.0);
-        if next <= 0.0 || next >= max_index {
-            self.position = next.clamp(0.0, max_index);
-            self.start_settle(self.position.round());
-            return true;
-        }
-        self.position = next;
-        if self.velocity.abs() < MIN_COAST_VELOCITY * self.geometry.center_pitch() {
-            self.start_settle(self.position.round());
-        }
-        (self.position - old).abs() >= 0.001 || self.settle.is_some()
+        dt - step
     }
 }
 
@@ -710,8 +801,16 @@ mod tests {
             let before = rendered_center(&geometry, carousel.position(), 10);
             carousel.up(1, (264.0, 600.0), 21, 30, 284.0, 200.0);
             assert_eq!(rendered_center(&geometry, carousel.position(), 10), before);
+            // The first tick's interval predates the release: no jump.
+            assert!(carousel.tick(16, 30));
+            assert_eq!(rendered_center(&geometry, carousel.position(), 10), before);
+            // Then the release speed (20 px in 20 ms, leftward) decays
+            // exactly: the next 16 ms covers v(1 - e^-kt)/k, under 16 px.
             carousel.tick(16, 30);
-            assert!((rendered_center(&geometry, carousel.position(), 10) - before + 16.0).abs() < 1e-6);
+            let k = coast_decay_per_sec();
+            let expected = -1000.0 * (1.0 - (-k * 0.016).exp()) / k;
+            let moved = rendered_center(&geometry, carousel.position(), 10) - before;
+            assert!((moved - expected).abs() < 1e-6, "moved={moved} expected={expected}");
         }
     }
 
@@ -865,13 +964,8 @@ mod tests {
     fn set_index_stops_any_animation_in_progress() {
         let mut carousel = Carousel::new(THEME_GEOMETRY);
         carousel.set_index(0);
+        carousel.start_settle(3.0);
         carousel.velocity = 5.0;
-        carousel.settle = Some(Settle {
-            from: 0.0,
-            target: 3.0,
-            elapsed_ms: 0,
-            duration_ms: 200,
-        });
         carousel.set_index(7);
         assert!(!carousel.is_animating());
         assert_eq!(carousel.index(22), 7);
@@ -961,5 +1055,184 @@ mod pointer_scroll_tests {
         carousel.scroll_by(10000.0, 5, true);
         assert_eq!(carousel.position(), 4.0);
         assert!(!carousel.scroll_by(f64::INFINITY, 5, true));
+    }
+}
+
+/// Task 18.2: release motion uses the whole elapsed time and hands its
+/// velocity to an interruptible, monotonic centering spring.
+#[cfg(test)]
+mod motion_tests {
+    use super::*;
+
+    const COUNT: usize = 30;
+
+    /// A one-segment drag released `dt_ms` after it started, then the
+    /// first (zero-length) tick that release causes.
+    fn released(geometry: CarouselGeometry, start: usize, dx: f64, dt_ms: u32) -> Carousel {
+        let mut carousel = Carousel::new(geometry);
+        carousel.set_index(start);
+        carousel.down(1, (284.0, 600.0), 0);
+        carousel.motion(1, (284.0 + dx, 600.0), dt_ms, COUNT);
+        carousel.up(1, (284.0 + dx, 600.0), dt_ms + 1, COUNT, 284.0, 200.0);
+        carousel.tick(500, COUNT);
+        carousel
+    }
+
+    fn center(carousel: &Carousel, reference: usize) -> f64 {
+        carousel.geometry.reference_center(carousel.position(), reference as f64)
+    }
+
+    /// Reference-card centers after each tick of `cadence_ms`, keyed by wall
+    /// time since the release.
+    fn trajectory(mut carousel: Carousel, reference: usize, cadence_ms: u32) -> Vec<(u32, f64)> {
+        let mut samples = vec![(0, center(&carousel, reference))];
+        let mut now = 0;
+        while carousel.is_animating() && now < 5000 {
+            carousel.tick(cadence_ms, COUNT);
+            now += cadence_ms;
+            samples.push((now, center(&carousel, reference)));
+        }
+        assert!(!carousel.is_animating(), "motion must come to rest");
+        assert_eq!(carousel.position().fract(), 0.0, "rest is a whole slot");
+        samples
+    }
+
+    // (start index, finger dx, drag ms): fast flicks both ways, a moderate
+    // coast, a release just above and one below the coast threshold, and
+    // flicks into both catalogue ends.
+    const RELEASES: [(usize, f64, u32); 7] = [
+        (12, -60.0, 20),
+        (12, 60.0, 20),
+        (12, -24.0, 20),
+        (12, -20.0, 100),
+        (12, -12.0, 400),
+        (1, 80.0, 20),
+        (28, -80.0, 20),
+    ];
+
+    #[test]
+    fn frame_cadence_does_not_change_the_wall_clock_trajectory() {
+        for geometry in [THEME_GEOMETRY, BACKGROUND_GEOMETRY] {
+            for (start, dx, dt) in RELEASES {
+                let reference = trajectory(released(geometry, start, dx, dt), start, 1);
+                let rest = reference.last().unwrap().1;
+                for cadence in [8, 16, 33, 100, 200] {
+                    let samples = trajectory(released(geometry, start, dx, dt), start, cadence);
+                    assert_eq!(samples.last().unwrap().1, rest, "{start} {dx} {dt} @{cadence}ms rests elsewhere");
+                    for (t, x) in samples {
+                        let expected = reference.get(t as usize).map_or(rest, |sample| sample.1);
+                        // Exact up to the spring's final snap onto its slot.
+                        assert!((x - expected).abs() <= SETTLE_REST_PX + 1e-6,
+                            "{start} {dx} {dt} @{cadence}ms t={t}: {x} vs {expected}");
+                    }
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn releases_approach_their_slot_without_reversing_or_leaving_the_catalogue() {
+        for geometry in [THEME_GEOMETRY, BACKGROUND_GEOMETRY] {
+            for (start, dx, dt) in RELEASES {
+                let carousel = released(geometry, start, dx, dt);
+                let speed = dx.signum();
+                let samples = trajectory(carousel, start, 1);
+                for pair in samples.windows(2) {
+                    assert!((pair[1].1 - pair[0].1) * speed >= -1e-9,
+                        "{start} {dx} {dt}: reversed at t={}", pair[1].0);
+                }
+                let low = geometry.reference_center((COUNT - 1) as f64, start as f64);
+                let high = geometry.reference_center(0.0, start as f64);
+                assert!(samples.iter().all(|&(_, x)| x >= low - 1e-9 && x <= high + 1e-9));
+            }
+        }
+    }
+
+    #[test]
+    fn coasting_hands_its_exact_velocity_to_the_settle() {
+        for geometry in [THEME_GEOMETRY, BACKGROUND_GEOMETRY] {
+            for dx in [-60.0, 60.0, -24.0] {
+                let mut carousel = released(geometry, 12, dx, 20);
+                assert!(carousel.velocity != 0.0 && carousel.settle.is_none(), "{dx} should coast");
+                let threshold = carousel.coast_threshold();
+                while carousel.settle.is_none() {
+                    carousel.tick(7, COUNT);
+                }
+                let settle = carousel.settle.unwrap();
+                assert!((settle.velocity.abs() - threshold).abs() < 1e-6, "{dx}: {}", settle.velocity);
+                assert_eq!(settle.velocity.signum(), dx.signum());
+            }
+        }
+    }
+
+    #[test]
+    fn a_slow_release_keeps_its_small_velocity_and_a_hold_keeps_none() {
+        for geometry in [THEME_GEOMETRY, BACKGROUND_GEOMETRY] {
+            let carousel = released(geometry, 12, -12.0, 400);
+            let settle = carousel.settle.expect("below the coast threshold settles at once");
+            assert!((settle.velocity + 30.0).abs() < 1e-6, "12 px over 400 ms");
+            // Stale: the finger held still past the age limit before lifting.
+            let mut held = Carousel::new(geometry);
+            held.set_index(12);
+            held.down(1, (284.0, 600.0), 0);
+            held.motion(1, (184.0, 600.0), 16, COUNT);
+            held.up(1, (184.0, 600.0), 2016, COUNT, 284.0, 200.0);
+            assert_eq!(held.settle.unwrap().velocity, 0.0);
+        }
+    }
+
+    #[test]
+    fn a_reversal_releases_in_the_direction_of_the_last_movement() {
+        for geometry in [THEME_GEOMETRY, BACKGROUND_GEOMETRY] {
+            let mut carousel = Carousel::new(geometry);
+            carousel.set_index(12);
+            carousel.down(1, (284.0, 600.0), 0);
+            carousel.motion(1, (224.0, 600.0), 20, COUNT);
+            carousel.motion(1, (254.0, 600.0), 40, COUNT);
+            let at_release = carousel.position();
+            carousel.up(1, (254.0, 600.0), 41, COUNT, 284.0, 200.0);
+            assert!(carousel.velocity > 0.0, "the card follows the finger's last, rightward segment");
+            let samples = trajectory(carousel, 12, 16);
+            assert!(samples.windows(2).all(|pair| pair[1].1 >= pair[0].1 - 1e-9));
+            assert!(samples.last().unwrap().1 >= geometry.reference_center(at_release, 12.0));
+        }
+    }
+
+    #[test]
+    fn a_long_hold_does_not_jump_the_first_frame_after_release() {
+        for geometry in [THEME_GEOMETRY, BACKGROUND_GEOMETRY] {
+            let mut carousel = Carousel::new(geometry);
+            carousel.set_index(12);
+            carousel.down(1, (284.0, 600.0), 0);
+            carousel.motion(1, (184.0, 600.0), 16, COUNT);
+            carousel.up(1, (184.0, 600.0), 2016, COUNT, 284.0, 200.0);
+            let held = carousel.position();
+            assert!(carousel.tick(2000, COUNT));
+            assert_eq!(carousel.position(), held, "the hold's 2 s is not settle time");
+            carousel.tick(16, COUNT);
+            assert!(carousel.is_animating() && carousel.position() != held);
+        }
+    }
+
+    #[test]
+    fn a_new_touch_catches_the_card_where_it_is_drawn() {
+        for geometry in [THEME_GEOMETRY, BACKGROUND_GEOMETRY] {
+            for frames in [3, 40] {
+                let mut carousel = released(geometry, 12, -60.0, 20);
+                for _ in 0..frames {
+                    carousel.tick(16, COUNT);
+                }
+                assert!(carousel.is_animating());
+                let shown = carousel.position();
+                carousel.down(2, (300.0, 600.0), 900);
+                assert_eq!(carousel.position(), shown);
+                assert!(!carousel.tick(16, COUNT), "a held finger stops the motion");
+                assert_eq!(carousel.position(), shown);
+                let reference = shown.round() as usize;
+                let before = center(&carousel, reference);
+                carousel.motion(2, (310.0, 600.0), 916, COUNT);
+                assert!((center(&carousel, reference) - before - 10.0).abs() < 1e-6);
+            }
+        }
     }
 }

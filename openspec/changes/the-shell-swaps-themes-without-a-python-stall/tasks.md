@@ -39,13 +39,16 @@ and the `nix build` above.
   its surrounding events, tap-to-visible latency against a configurable
   target, and per-process CPU. Verify with `python3
   tools/analyze-theme-swap-jank.py --self-test`.
-- [ ] 2.3 Run the capture tool on the reserved board across a
+- [x] 2.3 MOVED, NOT PERFORMED HERE: Run the capture tool on the reserved board across a
   representative swap (a bundled dark theme, a bundled light theme, and one
   community theme with a still background), before and after this change's
   `theme-helper.service` lands on an installed system. Record
   `docs/evidence/omarchy-themes/theme-swap-jank/README.md` with the exact
   `journalctl`/board commands and both reports. **Needs the reserved
   board; not run by this change.**
+  Moved 2026-10-12 on the operator-authorized scope split: carried verbatim
+  into the successor change `the-theme-swap-is-profiled-on-the-board`
+  (task 1.1). Not performed here; no result is claimed.
 
 Proof for 2.1/2.2: the two tools' own `--self-test`. Proof for 2.3: the
 committed before/after JSON reports and the exact board commands that
@@ -137,10 +140,13 @@ produced them.
   `docs/evidence/theme-picker/foot-deferral-2026-10-10/README.md`.
   No new board observation or latency claim; deploy the compatible helper and
   Rust client together before qualifying that physical behavior.
-- [ ] 3.4 Re-run `tools/analyze-theme-swap-jank.py`'s tap-to-visible metric
+- [x] 3.4 MOVED, NOT PERFORMED HERE: Re-run `tools/analyze-theme-swap-jank.py`'s tap-to-visible metric
   against the board once 3.1b/3.2/3.3 land, and report against the ~100 ms
   target. Needs the reserved board; 3.1b/3.2/3.3 now have source/package
   proof. The named measurement remains unperformed and was deferred by the user.
+  Moved 2026-10-12 on the operator-authorized scope split: carried verbatim
+  into the successor change `the-theme-swap-is-profiled-on-the-board`
+  (task 1.2). Not performed here; no result is claimed.
 
 ## 4. The board number was not instant either: `prepare()`'s own cost
 
@@ -1261,16 +1267,22 @@ real-finger acceptance remains open.
   malformed records, overflow and clock mismatch with
   `python3 -m unittest discover -s tests -p 'test_runtime_trace*.py'` and
   `cargo test --offline --manifest-path nix/rust-shell-client/Cargo.toml --lib theme_picker`.
-- [ ] 15.2 Extend verified coverage through compositor render/commit/present
+- [x] 15.2 MOVED, NOT PERFORMED HERE: Extend verified coverage through compositor render/commit/present
   and scheduling; probe perf/kernel support and capture a bounded CPU stack
   profile with matching symbols. Produce a CPU flamegraph separately from
   the span timeline, or document the precise unsupported sampling/unwinding
   gate. Do not label elapsed spans CPU samples.
-- [ ] 15.3 On the reserved board, capture matching picker runs with tracing
+  Moved 2026-10-12 on the operator-authorized scope split: carried verbatim
+  into the successor change `the-theme-swap-is-profiled-on-the-board`
+  (task 2.1). Not performed here; no result is claimed.
+- [x] 15.3 MOVED, NOT PERFORMED HERE: On the reserved board, capture matching picker runs with tracing
   disabled/enabled and sampling separately. Publish reviewed timeline,
   frame-stall report and supported flamegraphs with runtime identities,
   commands, coverage gaps and observer cost. Use the same tools for at least
   one other interaction; host tests alone leave this physical gate open.
+  Moved 2026-10-12 on the operator-authorized scope split: carried verbatim
+  into the successor change `the-theme-swap-is-profiled-on-the-board`
+  (task 2.2). Not performed here; no result is claimed.
 
 Task 15.1 proof: the two named host commands pass (9 Python and 3 Rust
 tests), plus 19 binary route tests and 54 helper/catalog/transaction tests.
@@ -1345,10 +1357,20 @@ Caller and observer limits remain open; the user still reports jank.
   record what they actually prescribe, local time-clamp/velocity discontinuities
   and the user's partial improvement report. Proof: source paths and primary
   reference URLs in design.md plus `openspec validate the-shell-swaps-themes-without-a-python-stall --strict`.
-- [ ] 18.2 Implement full-elapsed-time release motion and velocity-continuous,
+- [x] 18.2 Implement full-elapsed-time release motion and velocity-continuous,
   interruptible centering. Compare trajectories across 8/16/33/100/200 ms ticks,
   slow/flick releases, stale velocity, reversals and end bounds for both rows
   with `cargo test --offline --manifest-path nix/rust-shell-client/Cargo.toml --lib theme_carousel`.
+  **Completed 2026-10-12 (host only):** release motion now integrates the
+  full elapsed time in closed form (exponential coast, k = -ln(0.88)/16 ms).
+  Hand-over times inside a tick are exact for both the coast threshold and
+  the catalogue bounds. The coast passes its exact velocity to a critically
+  damped (omega = 22/s) settle, and a new touch catches the drawn position.
+  The named command passes 21 tests. They cover 8/16/33/100/200 ms cadences
+  against a 1 ms reference, seven slow/flick/bound releases, a stale hold,
+  a reversal, a long hold followed by release, and interruption. Geometry
+  is shared by both rows. The board trial (18.3) and finger acceptance (18.4)
+  remain open.
 - [ ] 18.3 Build and run a guarded board trial only after the row-render cost
   comparison, retaining a matching baseline. Publish position/velocity plots
   and injected tests; install only a qualified motion candidate.
