@@ -1,0 +1,24 @@
+{
+  "system": "/nix/store/zvxmd93gnn6n3vpk1mdxgajqnb8h1gkm-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "kernel": "/nix/store/f3rnipvbc5vqam8kwdmn3wgcl5rbz9yx-linux-riscv64-unknown-linux-gnu-7.3.0-rc5/Image",
+  "bundle": "/nix/store/rmm45d7wpic7npaslga3di4bmv9j5381-k230-coherent-shell-boot-files",
+  "evidence_class": "operator-authorized-userspace-update",
+  "shell_executable": "/nix/store/ybpnyqmcn672n7x45nx9ybzprljgdhfg-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0/bin/k230-shell-rust",
+  "boot_id": "8b66fed0-c2e6-4356-9a25-3438a7abbccc",
+  "deployment_authorized": true,
+  "additional_physical_collection_waived": true,
+  "operator_instruction": "\"let's start with 3 (after ssh is on there)\" and the 2026-10-12 choice \"Split, then finish\": one build and install, then one SSH-driven board session",
+  "prior_waiver": "continue but you dont have to gather that proof ive already confirmed its fine carry on it's all good",
+  "recorded_utc": "2026-10-12T05:31:00.885881+00:00",
+  "source_revision": "faae7298bdbe0d96eae89ee56964886da942f782",
+  "accepted_baseline": {
+    "system": "/nix/store/c6qjs04ysgdm2v39hxkz6ciac94djknm-nixos-system-nixos-26.11.20260919.20b1ddd",
+    "kernel": "/nix/store/f3rnipvbc5vqam8kwdmn3wgcl5rbz9yx-linux-riscv64-unknown-linux-gnu-7.3.0-rc5/Image",
+    "boot_files": {
+      "Image": "9d94102c65c8e4fd6b8880ef7b19b8bee5fa91c85596384319f0104bd89509cb",
+      "initrd.uimg": "4365953c65e834fa9a9d5027ff5b6f79d99cc61afa732d58b7162a09edd2428f"
+    }
+  },
+  "provenance": "Operator-authorized theme closeout (2026-10-12, master faae7298): install the combined picker motion (task 18.2) and profiling build (tasks 13.1/13.2) before one SSH-driven board session, with the standing waiver of additional install-time physical collection. This authorizes a same-kernel userspace update and claims no finger observation or performance result; the matched board comparisons are separate steps.",
+  "limits": "No new gesture, cable cycle, pixel, timing, or individual typography/spacing physical observation is inferred."
+}
