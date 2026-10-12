@@ -2,6 +2,7 @@
 import copy
 import importlib.util
 import json
+import re
 import tempfile
 import unittest
 from pathlib import Path
@@ -338,6 +339,290 @@ class CompareTests(unittest.TestCase):
         raw["plan_rows_reviewed"] = False
         result = tpp.compare_reports(a, tpp.reduce_raw(raw))
         self.assertFalse(result["comparable"])
+
+
+# ---------------------------------------------------- 13.2 cost attribution
+
+def with_threads(raw, mutate=None):
+    """Add per-thread samples: ui has a main and a worker thread, helper one."""
+    raw = copy.deepcopy(raw)
+    raw["thread_sampling"] = True
+    for i, sample in enumerate(raw["samples"]):
+        ui = sample["units"]["shell-ui.service"]
+        ui["threads_pid"], ui["threads_dropped"] = 77, 0
+        ui["threads"] = {"77": {"comm": "k230-shell-rus", "state": "R", "ticks": 10 * i, "start_ticks": 1077},
+                         "90": {"comm": "thumb-worker", "state": "S", "ticks": 4 * i, "start_ticks": 1200}}
+        helper = sample["units"]["theme-helper.service"]
+        helper["threads_pid"], helper["threads_dropped"] = 79, 0
+        helper["threads"] = {"79": {"comm": "python3", "state": "S", "ticks": 2 * i, "start_ticks": 1079}}
+    if mutate:
+        mutate(raw)
+    return raw
+
+
+def trace_for(raw, pid=77, **overrides):
+    """Rust recorder report whose clock overlaps the synthetic capture."""
+    swipe = next(p for p in raw["phases"] if p["kind"] == "swipe-theme")
+    a = swipe["start_monotonic_s"]
+    us = lambda t: int(t * 1e6)
+    trace = {
+        "schema": 1, "clock": "CLOCK_MONOTONIC", "trace_id": "0" * 32, "pid": pid, "capacity": 65536,
+        "deadline_us": us(300), "finished_us": us(300), "dropped": 0, "counters_only": False,
+        "phase_log": [{"t_us": us(a + 0.1), "phase": "held"}, {"t_us": us(a + 0.6), "phase": "moving"},
+                      {"t_us": us(a + 1.4), "phase": "rest"}],
+        "phase_log_dropped": 0,
+        "counters": [
+            {"kind": "scene_rebuild", "phase": "held", "count": 4, "wall_us": 40000, "cpu_us": 30000, "max_wall_us": 12000},
+            {"kind": "scene_rebuild", "phase": "rest", "count": 1, "wall_us": 9000, "cpu_us": 9000, "max_wall_us": 9000},
+            {"kind": "speculative_admission", "phase": "rest", "count": 2, "wall_us": 0, "cpu_us": 0, "max_wall_us": 0}],
+        "events": [
+            # nested pair wholly inside the swipe phase
+            {"span_id": 1, "parent_span_id": 0, "kind": "render_total", "start_us": us(a + 0.2), "end_us": us(a + 0.3), "cpu_us": 80000, "tid": 77, "data": [0] * 6},
+            {"span_id": 2, "parent_span_id": 1, "kind": "scene_rebuild", "start_us": us(a + 0.21), "end_us": us(a + 0.25), "cpu_us": 40000, "tid": 77, "data": [0] * 6},
+            # a span straddling the end of the phase: split by wall overlap
+            {"span_id": 3, "parent_span_id": 0, "kind": "thumbnail_decode", "start_us": us(swipe["end_monotonic_s"] - 0.05),
+             "end_us": us(swipe["end_monotonic_s"] + 0.15), "cpu_us": 100000, "tid": 90, "data": [0] * 6},
+            {"span_id": 0, "parent_span_id": 0, "kind": "speculative_admission", "start_us": us(a + 0.3), "end_us": us(a + 0.3), "cpu_us": 0, "tid": 77, "data": [1, 0, 0, 0, 0, 0]},
+            {"span_id": 0, "parent_span_id": 0, "kind": "draw_begin", "start_us": us(a + 0.3), "end_us": us(a + 0.3), "cpu_us": 0, "tid": 77, "data": [0] * 6}],
+    }
+    trace.update(overrides)
+    return trace
+
+
+def phase_named(report, name):
+    return next(p for p in report["phases"] if p["name"] == name)
+
+
+class StatParsingTests(unittest.TestCase):
+    def test_comm_with_spaces_and_parens_is_split_at_the_last_paren(self):
+        tail = " ".join(["S"] + ["0"] * 10 + ["7", "5"] + ["0"] * 6 + ["4242", "0", "0"])
+        got = tpp.parse_task_stat(f"77 (my (odd) name) {tail}")
+        self.assertEqual((got["ticks"], got["start_ticks"], got["state"]), (12, 4242, "S"))
+        self.assertEqual(got["comm"], "other")  # not allowlisted: never published verbatim
+        self.assertEqual(tpp.parse_task_stat(f"77 (k230-shell) {tail}")["comm"], "k230-shell")
+        with self.assertRaises(ValueError):
+            tpp.parse_task_stat("77 (x) S 1 2")
+
+    def test_instrumentation_mode_comes_from_the_process_environment(self):
+        self.assertEqual(tpp.instrumentation_from_environ(b"A=1\0HOME=/x\0"), "off")
+        self.assertEqual(tpp.instrumentation_from_environ(b"K230_TRACE_PATH=/run/x.json\0"), "trace")
+        self.assertEqual(tpp.instrumentation_from_environ(
+            b"K230_TRACE_PATH=/run/x.json\0K230_TRACE_COUNTERS_ONLY=1\0"), "counters")
+        self.assertEqual(tpp.instrumentation_from_environ(b"K230_TRACE_COUNTERS_ONLY=1\0"), "off")
+
+    def test_counter_names_match_the_rust_recorder(self):
+        source = (ROOT / "nix/rust-shell-client/src/runtime_trace.rs").read_text()
+        block = re.search(r"pub const COUNTED: \[&str; (\d+)\] = \[(.*?)\];", source, re.S)
+        names = tuple(re.findall(r'"([a-z_]+)"', block[2]))
+        self.assertEqual(names, tpp.COUNTED)
+        self.assertEqual(int(block[1]), len(names))
+        phases = re.search(r"pub const PHASES: \[&str; \d+\] = \[(.*?)\];", source)
+        self.assertEqual(tuple(re.findall(r'"([a-z]+)"', phases[1])), tpp.GESTURE_PHASES)
+
+    def test_plan_and_preconditions_gate_instrumentation(self):
+        plan = good_plan()
+        plan["instrumentation"] = "bogus"
+        self.assertTrue(any("instrumentation" in e for e in tpp.validate_plan(plan)))
+        plan = good_plan()
+        plan["instrumentation"] = "trace"
+        plan["attribution"] = True
+        self.assertEqual(tpp.validate_plan(plan), [])
+        obs = {"theme_count": 23, "background_count": 5, "generation_sha256": tpp.digest(GEN_PATH),
+               "selected_theme_sha256": tpp.digest(THEME_ID),
+               "exes": {"shell-ui.service": RUST, "shell.service": SWAY, "theme-helper.service": PY}}
+        self.assertTrue(any("instrumentation" in f for f in tpp.precondition_failures(plan, dict(obs, instrumentation="off"))))
+        self.assertTrue(any("instrumentation" in f for f in tpp.precondition_failures(plan, dict(obs, instrumentation=None))))
+        self.assertEqual(tpp.precondition_failures(plan, dict(obs, instrumentation="trace")), [])
+
+
+class ThreadAttributionTests(unittest.TestCase):
+    def test_off_by_default_reports_carry_no_attribution(self):
+        report = tpp.reduce_raw(build_raw())
+        self.assertEqual(report["instrumentation"], "off")
+        self.assertFalse(report["thread_sampling"])
+        self.assertTrue(all("attribution" not in p for p in report["phases"]))
+
+    def test_cpu_is_thread_seconds_distinct_from_wall_and_includes_cgroup(self):
+        report = tpp.reduce_raw(with_threads(build_raw()))
+        self.assertTrue(report["comparable_inputs_valid"], report["failures"])
+        ui = phase_named(report, "theme-swipe-0")["attribution"]["shell-ui.service"]
+        # 10 ticks per 0.5 s sample at 100 Hz = 0.1 s CPU / 0.5 s wall = 20 percent
+        self.assertAlmostEqual(ui["threads_cpu"]["k230-shell-rus"]["cpu_percent"], 20.0, places=1)
+        self.assertAlmostEqual(ui["threads_cpu"]["thumb-worker"]["cpu_percent"], 8.0, places=1)
+        self.assertGreater(ui["wall_s"], 0)
+        self.assertIn("cgroup_cpu_percent", phase_named(report, "theme-swipe-0")["attribution"]["theme-helper.service"])
+        self.assertTrue(report["thread_sampling"])
+
+    def test_thread_discontinuities_are_counted_not_summed(self):
+        def mutate(raw):
+            for i, s in enumerate(raw["samples"]):
+                threads = s["units"]["shell-ui.service"]["threads"]
+                if i >= 20:   # tid 90 is reused by a new thread (new start identity)
+                    threads["90"] = {"comm": "thumb-worker", "state": "S", "ticks": 3, "start_ticks": 9999}
+                if i == 25:   # main thread counter goes backwards
+                    threads["77"]["ticks"] = 0
+                if i == 30:   # a thread appears and vanishes
+                    threads["91"] = {"comm": "short-lived", "state": "S", "ticks": 7, "start_ticks": 5000}
+                s["units"]["theme-helper.service"]["cgroup_cpu"]["usage_usec"] = (
+                    s["units"]["theme-helper.service"]["cgroup_cpu"]["usage_usec"] if i < 22 else 1000 * (i - 22))
+        raw = with_threads(build_raw(), mutate)
+        phases = {p["name"]: p for p in raw["phases"]}
+        by_time = lambda t: next(n for n, p in phases.items() if p["start_monotonic_s"] <= t <= p["end_monotonic_s"])
+        notes = {}
+        for i in (20, 25, 30):
+            report_phase = phase_named(tpp.reduce_raw(raw), by_time(100 + i * 0.5))
+            notes[i] = report_phase["attribution"]["shell-ui.service"]["notes"]
+        self.assertIn("identity_changes", notes[20])
+        self.assertIn("counter_discontinuities", notes[25])
+        self.assertIn("threads_started", notes[30])
+        cg = [phase_named(tpp.reduce_raw(raw), by_time(100 + i * 0.5))["attribution"]["theme-helper.service"]["cgroup_discontinuities"]
+              for i in (22,)]
+        self.assertEqual(cg, [1])
+
+    def test_pid_discontinuity_and_missing_thread_data_fail_the_run(self):
+        def pid(raw):
+            raw["samples"][40]["units"]["shell-ui.service"]["threads_pid"] = 4242
+        report = tpp.reduce_raw(with_threads(build_raw(), pid))
+        self.assertFalse(report["comparable_inputs_valid"])
+        self.assertTrue(any("PID discontinuity" in f for f in report["failures"]))
+
+        def missing(raw):
+            del raw["samples"][10]["units"]["theme-helper.service"]["threads"]
+        report = tpp.reduce_raw(with_threads(build_raw(), missing))
+        self.assertTrue(any("without thread data" in f for f in report["failures"]))
+
+    def test_sampling_is_bounded(self):
+        def many(raw):
+            raw["samples"] = raw["samples"] * (tpp.MAX_ATTRIBUTION_SAMPLES // len(raw["samples"]) + 2)
+        report = tpp.reduce_raw(with_threads(build_raw(), many))
+        self.assertTrue(any("sample bound" in f for f in report["failures"]))
+
+
+class RustCounterTests(unittest.TestCase):
+    def reduce(self, raw=None, trace=None, mode="trace"):
+        raw = raw or build_raw()
+        raw["instrumentation"] = mode
+        return tpp.reduce_raw(raw, trace if trace is not None else trace_for(raw))
+
+    def test_counters_correlate_with_harness_and_gesture_phases(self):
+        report = self.reduce()
+        self.assertTrue(report["comparable_inputs_valid"], report["failures"])
+        counters = report["rust_counters"]
+        self.assertTrue(counters["events_complete"])
+        held = counters["by_gesture_phase"]["held"]["scene_rebuild"]
+        self.assertEqual((held["count"], held["wall_ms"], held["cpu_ms"]), (4, 40.0, 30.0))
+        self.assertEqual(counters["by_gesture_phase"]["rest"]["speculative_admission"]["count"], 2)
+        swipe = next(p for p in counters["phases"] if p["name"] == "theme-swipe-0")
+        # held 0.5 s, moving 0.8 s, then rest
+        self.assertAlmostEqual(swipe["gesture_phase_s"]["held"], 0.5, places=3)
+        self.assertAlmostEqual(swipe["gesture_phase_s"]["moving"], 0.8, places=3)
+        self.assertNotIn("draw_begin", swipe["counters"])  # only fixed counted names
+        self.assertEqual(swipe["counters"]["speculative_admission"]["count"], 1)
+
+    def test_overlapping_spans_stay_inclusive_and_boundary_spans_are_split(self):
+        report = self.reduce()
+        swipe = next(p for p in report["rust_counters"]["phases"] if p["name"] == "theme-swipe-0")
+        rows = swipe["counters"]
+        self.assertAlmostEqual(rows["render_total"]["wall_ms"], 100.0, places=2)
+        self.assertAlmostEqual(rows["scene_rebuild"]["wall_ms"], 40.0, places=2)  # nested; never summed into the parent
+        # decode straddles the end: 0.05 of 0.20 s inside this phase -> 25% of 100 ms CPU
+        self.assertAlmostEqual(rows["thumbnail_decode"]["wall_ms"], 50.0, places=2)
+        self.assertAlmostEqual(rows["thumbnail_decode"]["cpu_ms"], 25.0, places=2)
+
+    def test_dropped_or_counters_only_traces_keep_totals_but_not_phase_counters(self):
+        raw = build_raw()
+        for overrides in ({"dropped": 3}, {"counters_only": True, "events": []}):
+            report = self.reduce(raw=copy.deepcopy(raw), trace=trace_for(raw, **overrides),
+                                 mode="counters" if overrides.get("counters_only") else "trace")
+            counters = report["rust_counters"]
+            self.assertFalse(counters["events_complete"])
+            self.assertTrue(all("counters" not in p for p in counters["phases"]))
+            self.assertIn("scene_rebuild", counters["by_gesture_phase"]["held"])
+
+    def test_pid_and_clock_discontinuities_fail_the_run(self):
+        raw = build_raw()
+        cases = {
+            "different PID": trace_for(raw, pid=4242),
+            "backwards": trace_for(raw, phase_log=[{"t_us": 200_000_000, "phase": "held"}, {"t_us": 150_000_000, "phase": "rest"}]),
+            "does not overlap": trace_for(raw, phase_log=[{"t_us": 9_000_000_000, "phase": "held"}]),
+            "malformed": trace_for(raw, counters=[{"kind": "request_body_dump", "phase": "rest", "count": 1,
+                                                   "wall_us": 1, "cpu_us": 1, "max_wall_us": 1}]),
+            "unexpected counter": trace_for(raw, counters=[{"kind": "scene_rebuild", "phase": "rest", "count": 0,
+                                                           "wall_us": 5, "cpu_us": 0, "max_wall_us": 5}]),
+        }
+        for word, trace in cases.items():
+            report = self.reduce(raw=copy.deepcopy(raw), trace=trace)
+            self.assertFalse(report["comparable_inputs_valid"], word)
+            self.assertTrue(any(word in f for f in report["failures"]), (word, report["failures"]))
+        bad = self.reduce(raw=copy.deepcopy(raw), trace={"schema": 2})
+        self.assertFalse(bad["comparable_inputs_valid"])
+
+    def test_instrumentation_and_trace_must_agree(self):
+        raw = build_raw()
+        raw["instrumentation"] = "trace"
+        self.assertFalse(tpp.reduce_raw(raw)["comparable_inputs_valid"])
+        raw["instrumentation"] = "off"
+        report = tpp.reduce_raw(raw, trace_for(raw))
+        self.assertTrue(any("instrumentation off" in f for f in report["failures"]))
+
+    def test_public_report_has_only_fixed_names(self):
+        report = self.reduce()
+        text = json.dumps(report["rust_counters"])
+        for secret in ("PRIVATE", "/home/"):
+            self.assertNotIn(secret, text)
+        kinds = set(re.findall(r'"(speculative_\w+|thumbnail_\w+|scene_rebuild|render_total)"', text))
+        self.assertLessEqual(kinds, set(tpp.COUNTED))
+
+
+class OverheadTests(unittest.TestCase):
+    def pair(self):
+        off = tpp.reduce_raw(with_threads(build_raw()))
+        raw = with_threads(build_raw())
+        raw["instrumentation"] = "trace"
+        on = tpp.reduce_raw(raw, trace_for(raw))
+        return off, on
+
+    def test_matched_off_on_pair_reports_cpu_rss_and_gap_deltas(self):
+        off, on = self.pair()
+        result = tpp.overhead_pair(off, on)
+        self.assertTrue(result["comparable"], result["mismatches"])
+        swipe = phase_named(result, "theme-swipe-0")
+        self.assertIn("delta", swipe["shell-ui.service"]["process_cpu_percent"])
+        self.assertIn("delta", swipe["commit_gap_p95_ms"])
+        self.assertEqual(result["instrumentation"], "trace")
+
+    def test_pair_is_refused_unless_otherwise_identical(self):
+        off, on = self.pair()
+        self.assertFalse(tpp.overhead_pair(on, off)["comparable"])      # wrong order
+        self.assertFalse(tpp.overhead_pair(off, off)["comparable"])     # no ON side
+        other = copy.deepcopy(on)
+        other["rust_exe"] = RUST2
+        self.assertTrue(any("same build" in m for m in tpp.overhead_pair(off, other)["mismatches"]))
+        other = copy.deepcopy(on)
+        other["thread_sampling"] = False
+        self.assertFalse(tpp.overhead_pair(off, other)["comparable"])
+        other = copy.deepcopy(on)
+        other["comparable_inputs_valid"] = False
+        self.assertFalse(tpp.overhead_pair(off, other)["comparable"])
+
+    def test_regular_compare_refuses_mixed_instrumentation(self):
+        off, on = self.pair()
+        self.assertTrue(any("instrumentation differs" in m for m in tpp.compare_reports(off, on)["mismatches"]))
+
+    def test_cli_overhead_round_trip(self):
+        off, on = self.pair()
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp = Path(tmp)
+            (tmp / "off.json").write_text(json.dumps(off))
+            (tmp / "on.json").write_text(json.dumps(on))
+            self.assertEqual(tpp.main(["overhead", str(tmp / "off.json"), str(tmp / "on.json")]), 0)
+            self.assertEqual(tpp.main(["overhead", str(tmp / "on.json"), str(tmp / "off.json")]), 1)
+            raw = build_raw()
+            raw["instrumentation"] = "trace"
+            (tmp / "r.json").write_text(json.dumps(raw))
+            (tmp / "t.json").write_text(json.dumps(trace_for(raw)))
+            self.assertEqual(tpp.main(["reduce", str(tmp / "r.json"), "--output", str(tmp / "o.json"),
+                                       "--rust-trace", str(tmp / "t.json")]), 0)
 
 
 class CliTests(unittest.TestCase):

@@ -82,3 +82,36 @@ The remaining work and physical evidence gates are tasks 13 and 15 of
 First physical trace: [picker timeline](evidence/theme-picker/runtime-trace/README.md).
 First physical CPU sample and stack-quality limits:
 [picker CPU profile](evidence/theme-picker/cpu-profile/README.md).
+
+## Cost attribution counters (task 13.2)
+
+The same recorder keeps fixed-size counters, independent of the event ring, so
+totals stay exact after the ring overflows. A fixed table of 17 names (scene
+rebuild, render total, row repaint, overlay draw, thumbnail request,
+completion, poll, cache read, hash, resolve and decode, appearance prepare,
+helper RPC, theme request, speculative admission, speculative completion and
+overlay pre-render) is bucketed by three gesture phases reported by the shell
+loop: `rest`, `held` and `moving` (coasting and settling are not separated).
+Each cell holds count, wall microseconds, thread CPU microseconds and the
+maximum wall time; names are constants, so nothing request-derived is a key.
+Span times are inclusive of nested spans, so kinds must not be summed. Phase
+changes go to a 1,024-entry log with a drop count. Reports add `counters`,
+`phase_log`, `phase_log_dropped` and `counters_only` (schema stays 1).
+
+Modes, selected only by the service environment (default is off):
+
+| mode     | environment                                              |
+|----------|----------------------------------------------------------|
+| off      | none of the `K230_TRACE_*` variables                     |
+| counters | `K230_TRACE_PATH` + `K230_TRACE_COUNTERS_ONLY=1`         |
+| trace    | `K230_TRACE_PATH` (event ring plus counters)             |
+
+`tools/theme-picker-profile.py` (plan keys `instrumentation` and
+`attribution`) verifies the mode from the Rust process environment, samples
+per-thread CPU with start-time identity, RSS and helper cgroup CPU, and
+`reduce --rust-trace FILE` correlates counters with the monotonic harness
+phases. Counter, PID and thread-identity discontinuities are counted and
+excluded, never summed. `overhead OFF.json ON.json` compares an
+instrumentation-off report with an on report of an otherwise identical run;
+interpret detailed timings only after that observer cost is known. Do not run
+native screencopy inside the timing pass.

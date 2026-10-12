@@ -1170,7 +1170,7 @@ below is complete merely because that partial evidence or this plan landed.
   process-cold verification, idle/callback/wallpaper events excluded from swipe
   gaps, private-field allowlisting, and comparison gating. Board `capture` and
   the physical comparison remain task 13.4.
-- [ ] 13.2 Add bounded, opt-in cost attribution to that harness and the
+- [x] 13.2 Add bounded, opt-in cost attribution to that harness and the
   Rust/helper paths. Sample per-thread CPU/start identity and process RSS,
   plus helper cgroup CPU so subprocess work is not hidden by daemon-only
   measurements. Count/time live scene rebuilds, thumbnail request/completion
@@ -1182,6 +1182,21 @@ below is complete merely because that partial evidence or this plan landed.
   discontinuities. Narrow Rust proof: `cargo test --offline --manifest-path nix/rust-shell-client/Cargo.toml --lib theme_picker`.
   Compare instrumentation-on/off overhead on the board before interpreting
   detailed timings; no native screencopy runs inside the timing pass.
+  **Host/source part done 2026-10-12:** `nix/rust-shell-client/src/runtime_trace.rs`
+  keeps fixed-name counters (count, wall, thread CPU, max wall) for 17 kinds
+  bucketed by `rest`/`held`/`moving` gesture phase with a bounded phase log,
+  still default-off (`K230_TRACE_PATH`; `K230_TRACE_COUNTERS_ONLY=1` drops the
+  event ring); `main.rs`/`theme_thumbnails.rs` add speculative completion and
+  thumbnail request/completion counts. `tools/theme-picker-profile.py` adds
+  opt-in per-thread CPU with start-time identity, RSS, helper cgroup CPU,
+  verified instrumentation mode, `reduce --rust-trace` and an `overhead OFF ON`
+  comparison; 19 new host fixtures cover overlapping phases and
+  counter/PID/thread-identity discontinuities. Proved: `cargo test --offline
+  --manifest-path nix/rust-shell-client/Cargo.toml --lib theme_picker` and
+  `python3 -m unittest discover -s tests -p test_theme_picker_profile.py`
+  (50 tests). NOT proved: the on/off overhead comparison on the board, which
+  is the first step of task 13.4's session; no board number or detailed timing
+  is claimed here. Operator notes are in `docs/runtime-tracing.md`.
 - [x] 13.3 Gate all new speculative dwell/neighbor request admission while
   either carousel is held, coasting or settling. Preserve the bounded queue
   while paused, honor the latest settled center before neighbors, and resume
@@ -1217,7 +1232,9 @@ below is complete merely because that partial evidence or this plan landed.
   `python3 /run/theme-picker-profile.py capture --plan /run/picker-plan.json --output /run/picker-profile.json`;
   the private plan supplies the verified device, runtime identities and row
   preconditions, and each run uses a unique output. Commit sanitized results,
-  exact invocation and observer-cost limits. If warm swipes or memory regress,
+  exact invocation and observer-cost limits. Run the 13.2 instrumentation
+  off/on overhead pair (`overhead OFF ON`, same build, same workload, no
+  native screencopy) first; interpret detailed counters only if it is small. If warm swipes or memory regress,
   or repaint still dominates, document the next measured correction and keep
   11.3 open; a host regression or scheduling fix alone does not close it.
 

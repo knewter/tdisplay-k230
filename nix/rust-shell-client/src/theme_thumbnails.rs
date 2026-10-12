@@ -579,6 +579,7 @@ impl ThemeThumbnailCache {
             return;
         }
         if self.worker.requests.try_send(key).is_ok() {
+            crate::runtime_trace::event("thumbnail_request", [0; 6]);
             self.in_flight.insert(cache_key);
             #[cfg(test)]
             {
@@ -594,6 +595,7 @@ impl ThemeThumbnailCache {
         while let Ok(reply) = self.worker.replies.try_recv() {
             let cache_key = reply.key.cache_key();
             self.in_flight.remove(&cache_key);
+            crate::runtime_trace::event("thumbnail_completion", [0; 6]);
             if self
                 .working_set
                 .as_ref()

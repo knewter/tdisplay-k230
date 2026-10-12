@@ -1073,6 +1073,7 @@ struct ShellClient {
     trace_feedback: Vec<(wp_presentation_feedback::WpPresentationFeedback, u64)>,
     trace_frame: u64,
     trace_input: u64,
+    trace_held: bool,
     layer_shell: LayerShell,
     registry_state: RegistryState,
     seat_state: SeatState,
@@ -1945,6 +1946,7 @@ impl ShellClient {
         // generation (if any) is still worth remembering -- see
         // `ThemeView::record_known_generation`'s own doc.
         if self.theme_view.prepare_ahead_reply(&reply) {
+            runtime_trace::event("speculative_completion", [reply.id, u64::from(reply.result.is_ok()), 0, 0, 0, 0]);
             if let Ok(ThemeResponse::Preview(preview)) = &reply.result {
                 self.theme_view
                     .record_known_generation(&preview.theme.id, &preview.generation);
@@ -4120,6 +4122,11 @@ impl ShellClient {
     fn trace_picker_input(&mut self, kind: &'static str, time_ms: u32, id: i32) {
         if runtime_trace::active() && self.coalesce_theme_motion() {
             self.trace_input += 1;
+            match kind {
+                "input_down" => self.trace_held = true,
+                "input_up" => self.trace_held = false,
+                _ => {}
+            }
             runtime_trace::event(kind, [self.trace_input, u64::from(time_ms), id as u64, 0, 0, 0]);
         }
     }
@@ -6153,7 +6160,7 @@ fn serve() -> Result<(), String> {
     let home = HomeScreen::new(home_layout, 568.0);
     let mut state = ShellClient {
         presentation: runtime_trace::active().then(|| PresentationTimeState::bind(&globals, &qh)),
-        trace_feedback: Vec::new(), trace_frame: 0, trace_input: 0,
+        trace_feedback: Vec::new(), trace_frame: 0, trace_input: 0, trace_held: false,
         compositor,
         layer_shell,
         registry_state: RegistryState::new(&globals),
@@ -6338,6 +6345,11 @@ fn serve() -> Result<(), String> {
     state.log("ready-idle");
     loop {
         if let Err(error) = runtime_trace::finish_if_due() { state.log(&format!("trace-write-failed {error}")); }
+        if runtime_trace::active() {
+            runtime_trace::set_phase(if state.trace_held { runtime_trace::PHASE_HELD }
+                else if state.theme_carousel.is_animating() || state.background_carousel.is_animating() { runtime_trace::PHASE_MOVING }
+                else { runtime_trace::PHASE_REST });
+        }
         let _loop_profile = runtime_trace::Span::new("event_loop_work");
         {
             let _dispatch_profile = runtime_trace::Span::new("wayland_dispatch");

@@ -17,9 +17,20 @@ Subcommands (standard library only, so `capture` runs on the board):
 This is the 13.1 workload from docs/evidence/theme-picker/working-set/capture.py
 (preserved unchanged there), restructured around a plan and hard gates. It
 never infers disk-cold state and never deletes user caches. Injected input is
-not physical-finger proof, and commit gaps are not presentation FPS. Cost
-attribution (spans, per-thread CPU) belongs to the opt-in recorder of task 13.2
-and is deliberately absent here.
+not physical-finger proof, and commit gaps are not presentation FPS.
+
+Cost attribution (task 13.2) is opt-in and bounded. A plan may set
+`"attribution": true` (per-thread CPU with start-time identity, process RSS and
+helper cgroup CPU in every sample) and `"instrumentation"` = off | counters |
+trace, which is VERIFIED against the Rust process environment at preflight:
+
+  off       no K230_TRACE_PATH (default)
+  counters  K230_TRACE_PATH + K230_TRACE_COUNTERS_ONLY=1 (no event ring)
+  trace     K230_TRACE_PATH (event ring + counters)
+
+  reduce RAW --output REPORT [--rust-trace FILE]   adds correlated counters
+  overhead OFF ON               host: instrumentation-on/off observer cost, only
+                                for otherwise identical, comparable reports
 """
 import argparse
 import collections
@@ -52,7 +63,22 @@ SHA_RE = re.compile(r"[0-9a-f]{64}")
 
 # Fields that must be identical for two reports to be comparable, except any
 # the caller explicitly lets vary (the runtime under test).
+INSTRUMENTATION = ("off", "counters", "trace")
+# Fixed counter names and gesture phases; pinned to runtime_trace.rs by a test.
+COUNTED = ("scene_rebuild", "render_total", "picker_row_repaint", "overlay_draw",
+           "thumbnail_request", "thumbnail_completion", "thumbnail_poll", "thumbnail_read_cache",
+           "thumbnail_hash", "thumbnail_resolve", "thumbnail_decode",
+           "appearance_prepare", "theme_helper_rpc", "theme_request",
+           "speculative_admission", "speculative_completion", "overlay_prerender")
+GESTURE_PHASES = ("rest", "held", "moving")
+THREAD_COMM_RE = re.compile(r"[A-Za-z0-9_.:-]{1,15}")
+MAX_THREADS = 64            # per unit per sample; extra threads are counted, not stored
+MAX_ATTRIBUTION_SAMPLES = 2000
+MAX_TRACE_BYTES = 32 * 1024 * 1024
+ATTRIBUTION_UNITS = ("shell-ui.service", "theme-helper.service")
+
 MATCH_FIELDS = (
+    "instrumentation", "thread_sampling",
     "kernel_release", "geometry", "background_playback", "catalog",
     "selected_theme_sha256", "generation_sha256", "workload_sha256",
     "openings", "compositor_exe", "helper_exe",
@@ -125,6 +151,9 @@ def validate_plan(plan) -> list[str]:
     if isinstance(geometry, dict) and (geometry.get("width"), geometry.get("height")) != PANEL:
         errors.append(f"geometry must match the native panel {PANEL[0]}x{PANEL[1]} the injector drives")
     need(plan.get("background_playback") in PLAYBACK, "background_playback must be one of " + "/".join(PLAYBACK))
+    need(plan.get("instrumentation", "off") in INSTRUMENTATION,
+         "instrumentation must be one of " + "/".join(INSTRUMENTATION))
+    need(isinstance(plan.get("attribution", False), bool), "attribution must be a boolean")
     need(plan.get("first_opening") in ("first-observed", "process-cold"),
          "first_opening must be first-observed or process-cold")
     need(isinstance(plan.get("max_process_age_s", 600), (int, float)), "max_process_age_s must be a number")
@@ -234,6 +263,8 @@ def precondition_failures(plan: dict, observed: dict) -> list[str]:
             failures.append(f"{unit} executable differs from plan")
     if observed.get("generation_sha256") != expect["generation_sha256"]:
         failures.append("active generation differs from plan")
+    if observed.get("instrumentation", "off") != plan.get("instrumentation", "off"):
+        failures.append("Rust instrumentation mode differs from plan")
     if observed.get("selected_theme_sha256") not in (None, digest(plan["selected_theme_id"])):
         failures.append("selected theme differs from plan")
     return failures
@@ -291,13 +322,14 @@ def _p95(values):
     return ordered[min(len(ordered) - 1, int(0.95 * len(ordered)))]
 
 
-def reduce_raw(raw: dict) -> dict:
-    """Allowlisted public report from a private capture. Raises on malformed input."""
+def reduce_raw(raw: dict, rust_trace: dict | None = None) -> dict:
+    """Allowlisted public report from a private capture. Raises on malformed input.
+    `rust_trace` is the optional Rust recorder report (task 13.2)."""
     if raw.get("schema") != RAW_SCHEMA:
         raise ValueError("not a raw picker profile capture")
     identities = raw["identities"]
     ui_pid = int(identities["shell-ui.service"]["pid"])
-    failures = list(raw.get("precondition_failures", []))
+    failures = list(raw.get("precondition_failures", [])) + attribution_failures(raw)
     parsed, commands = [], []
     foreign, previous_rust_ms = 0, -1
     for event in raw.get("events", []):
@@ -361,6 +393,9 @@ def reduce_raw(raw: dict) -> dict:
                     "cgroup_cpu_percent": round(100 * (y["cgroup_cpu"]["usage_usec"] - x["cgroup_cpu"]["usage_usec"]) / 1e6 / dt, 3),
                     "rss_first_bytes": x["rss_bytes"], "rss_last_bytes": y["rss_bytes"],
                     "rss_peak_bytes": max(s["units"][unit]["rss_bytes"] for s in rows)}
+        attribution = reduce_attribution(raw, phase, rows)
+        if attribution:
+            out["attribution"] = attribution
         events = [e for e in parsed if a <= e["monotonic_s"] <= b]
         out["events"] = dict(collections.Counter(e["kind"] for e in events))
         commits = [e["rust_ms"] for e in events if e["kind"] == "commit"]
@@ -381,7 +416,16 @@ def reduce_raw(raw: dict) -> dict:
             failures.append(f"no completed {kind} phase")
     obs = raw["observed"]
     exes = obs["exes"]
-    return {
+    rust_counters = None
+    if rust_trace is not None:
+        rust_counters = reduce_rust_trace(rust_trace, ui_pid=ui_pid, phases=raw["phases"],
+                                          start_s=raw["start_monotonic_s"], end_s=raw["end_monotonic_s"])
+        failures.extend("rust trace: " + f for f in rust_counters["failures"])
+        if raw.get("instrumentation", "off") == "off":
+            failures.append("rust trace supplied for a capture with instrumentation off")
+    elif raw.get("instrumentation", "off") != "off":
+        failures.append("instrumentation was on but no Rust trace was supplied")
+    report = {
         "schema": REPORT_SCHEMA,
         "label": raw["label"] if raw["label"] in ("baseline", "candidate", "trial") else "trial",
         "comparable_inputs_valid": not failures,
@@ -417,9 +461,16 @@ def reduce_raw(raw: dict) -> dict:
             "idle intervals, frame callbacks and wallpaper commits are never mixed into them.",
             "Swipe windows include the settling period after injection.",
             "CPU samples are about 0.5 s apart; short phases have partial coverage.",
-            "No span or per-thread attribution (task 13.2); no native media during this pass.",
+            "Span/counter attribution exists only where `rust_counters` is present; no native media during this pass.",
         ],
     }
+    report["instrumentation"] = raw.get("instrumentation", "off")
+    report["thread_sampling"] = bool(raw.get("thread_sampling", False))
+    if rust_counters is not None:
+        report["rust_counters"] = rust_counters
+    report["comparable_inputs_valid"] = not failures
+    report["failures"] = sorted(set(failures))
+    return report
 
 
 # ------------------------------------------------------------- comparison
@@ -463,6 +514,255 @@ def compare_reports(a: dict, b: dict, vary: tuple = DEFAULT_VARY) -> dict:
             entry["rust_cpu_percent"] = {"a": ua["process_cpu_percent"], "b": ub["process_cpu_percent"]}
             entry["rust_rss_last_bytes"] = {"a": ua["rss_last_bytes"], "b": ub["rss_last_bytes"]}
         result["phases"].append(entry)
+    return result
+
+
+# ------------------------------------------- cost attribution (task 13.2)
+
+def instrumentation_from_environ(environ: bytes) -> str:
+    """Classify the Rust process's recorder mode from /proc/PID/environ bytes."""
+    names = {}
+    for item in environ.split(b"\0"):
+        key, sep, value = item.partition(b"=")
+        if sep:
+            names[key] = value
+    if b"K230_TRACE_PATH" not in names:
+        return "off"
+    return "counters" if names.get(b"K230_TRACE_COUNTERS_ONLY") == b"1" else "trace"
+
+
+def parse_task_stat(text: str) -> dict:
+    """One /proc/PID/task/TID/stat line -> comm, state, CPU ticks, start ticks.
+    `comm` may contain spaces and parentheses, so split at the LAST ')'."""
+    head, sep, tail = text.rpartition(")")
+    comm = head.partition("(")[2]
+    fields = tail.split()
+    if not sep or len(fields) < 20:
+        raise ValueError("malformed task stat")
+    return {"comm": comm if THREAD_COMM_RE.fullmatch(comm) else "other", "state": fields[0],
+            "ticks": int(fields[11]) + int(fields[12]), "start_ticks": int(fields[19])}
+
+
+def read_threads(pid: int, limit: int = MAX_THREADS):
+    """Bounded per-thread sample: {tid: stat}, number of threads not stored."""
+    threads, dropped = {}, 0
+    for entry in sorted(os.listdir(f"/proc/{pid}/task"), key=int):
+        try:
+            stat = parse_task_stat((Path(f"/proc/{pid}/task/{entry}/stat")).read_text())
+        except (OSError, ValueError):
+            continue  # exited between listing and reading
+        if len(threads) < limit:
+            threads[entry] = stat
+        else:
+            dropped += 1
+    return threads, dropped
+
+
+def _delta_series(rows: list, ticks_per_second: int):
+    """Pairwise per-thread CPU deltas across consecutive samples of ONE unit.
+
+    Same tid + same start_ticks: delta. Smaller counter: discontinuity, delta
+    excluded. Same tid with a new start_ticks: tid reuse, a new thread (its CPU
+    since start is attributed, the old one is counted as exited). Thread seen
+    first time: new (CPU since start attributed). Vanished: counted as exited;
+    its last interval is unobservable and is not guessed."""
+    cpu_s, notes = collections.defaultdict(float), collections.Counter()
+    for prev, cur in zip(rows, rows[1:]):
+        for tid, now in cur["threads"].items():
+            before = prev["threads"].get(tid)
+            if before is not None and before["start_ticks"] == now["start_ticks"]:
+                if now["ticks"] < before["ticks"]:
+                    notes["counter_discontinuities"] += 1
+                    continue
+                cpu_s[now["comm"]] += (now["ticks"] - before["ticks"]) / ticks_per_second
+            else:
+                if before is not None:
+                    notes["identity_changes"] += 1
+                notes["threads_started"] += 1
+                cpu_s[now["comm"]] += now["ticks"] / ticks_per_second
+        notes["threads_exited"] += sum(
+            1 for tid in prev["threads"] if tid not in cur["threads"])
+        notes["threads_unstored"] += cur.get("threads_dropped", 0)
+    return cpu_s, notes
+
+
+def reduce_attribution(raw: dict, phase: dict, rows: list) -> dict | None:
+    """Per-phase thread/RSS/cgroup attribution from raw samples, or None when the
+    capture did not sample threads. CPU time is thread CPU seconds; `wall_s` is
+    the sampled wall interval, so a percentage is CPU/wall and can exceed 100."""
+    if not raw.get("thread_sampling"):
+        return None
+    ticks = raw["clock_ticks_per_second"]
+    out = {}
+    for unit in ATTRIBUTION_UNITS:
+        series = [{"threads": r["units"][unit].get("threads", {}),
+                   "threads_dropped": r["units"][unit].get("threads_dropped", 0),
+                   "pid": r["units"][unit].get("threads_pid"),
+                   "monotonic_s": r["monotonic_s"], "u": r["units"][unit]} for r in rows]
+        if len(series) < 2:
+            continue
+        wall = series[-1]["monotonic_s"] - series[0]["monotonic_s"]
+        cpu_s, notes = _delta_series(series, ticks)
+        cg = [r["u"]["cgroup_cpu"]["usage_usec"] for r in series]
+        cg_notes = sum(1 for a, b in zip(cg, cg[1:]) if b < a)
+        cg_s = sum(b - a for a, b in zip(cg, cg[1:]) if b >= a) / 1e6
+        out[unit] = {
+            "wall_s": round(wall, 4),
+            "threads_cpu": {comm: {"cpu_s": round(v, 4), "cpu_percent": round(100 * v / wall, 3)}
+                            for comm, v in sorted(cpu_s.items())},
+            "threads_cpu_total_s": round(sum(cpu_s.values()), 4),
+            "cgroup_cpu_s": round(cg_s, 4), "cgroup_cpu_percent": round(100 * cg_s / wall, 3),
+            "cgroup_discontinuities": cg_notes,
+            "rss_peak_bytes": max(r["u"]["rss_bytes"] for r in series),
+            "notes": dict(notes)}
+    return out or None
+
+
+def attribution_failures(raw: dict) -> list[str]:
+    """Run-level failures: sampling gaps, PID discontinuity, unbounded sampling."""
+    if not raw.get("thread_sampling"):
+        return []
+    failures = []
+    if len(raw["samples"]) > MAX_ATTRIBUTION_SAMPLES:
+        failures.append("thread sampling exceeded its sample bound")
+    for unit in ATTRIBUTION_UNITS:
+        pid = int(raw["identities"][unit]["pid"])
+        for sample in raw["samples"]:
+            values = sample["units"].get(unit, {})
+            if "threads" not in values:
+                failures.append(f"{unit}: sample without thread data")
+                break
+            if values.get("threads_pid") not in (None, pid):
+                failures.append(f"{unit}: thread PID discontinuity")
+                break
+    return failures
+
+
+def _overlap(a0, a1, b0, b1):
+    return max(0.0, min(a1, b1) - max(a0, b0))
+
+
+def reduce_rust_trace(trace: dict, *, ui_pid: int, phases: list, start_s: float, end_s: float) -> dict:
+    """Correlate the Rust recorder's counters with harness and gesture phases.
+
+    Counters (always exact, however many events overflowed) are totals per
+    gesture phase. Per-harness-phase figures need the event ring and are only
+    produced when it is complete. Span times are inclusive of nested spans, so
+    kinds must not be summed. Wall time and thread CPU time are separate."""
+    failures = []
+    if not isinstance(trace, dict) or trace.get("schema") != 1 or trace.get("clock") != "CLOCK_MONOTONIC":
+        return {"valid": False, "failures": ["not a monotonic Rust trace report"]}
+    if trace.get("pid") != ui_pid:
+        failures.append("Rust trace is from a different PID")
+    counters_only = bool(trace.get("counters_only", False))
+    by_gesture = {}
+    for c in trace.get("counters", []):
+        if (c.get("kind") not in COUNTED or c.get("phase") not in GESTURE_PHASES
+                or not all(isinstance(c.get(k), int) and c[k] >= 0 for k in ("count", "wall_us", "cpu_us", "max_wall_us"))
+                or (c["count"] == 0 and (c["wall_us"] or c["cpu_us"]))):
+            failures.append("malformed or unexpected counter")
+            continue
+        by_gesture.setdefault(c["phase"], {})[c["kind"]] = {
+            "count": c["count"], "wall_ms": round(c["wall_us"] / 1000, 3),
+            "cpu_ms": round(c["cpu_us"] / 1000, 3), "max_wall_ms": round(c["max_wall_us"] / 1000, 3)}
+    log = trace.get("phase_log", [])
+    times = [e.get("t_us") for e in log]
+    if (any(not isinstance(t, int) for t in times) or times != sorted(times)
+            or any(e.get("phase") not in GESTURE_PHASES for e in log)):
+        failures.append("phase log malformed or clock went backwards")
+        log = []
+    if log and not (start_s - 1 <= log[0]["t_us"] / 1e6 and log[-1]["t_us"] / 1e6 <= end_s + 1):
+        failures.append("Rust trace clock does not overlap the capture window")
+    # gesture phase intervals: rest until the first logged change
+    intervals, prev_t, prev_phase = [], start_s, "rest"
+    for e in log:
+        t = e["t_us"] / 1e6
+        intervals.append((prev_t, t, prev_phase))
+        prev_t, prev_phase = t, e["phase"]
+    intervals.append((prev_t, end_s, prev_phase))
+    out_phases = []
+    events = trace.get("events", [])
+    complete = (not counters_only) and trace.get("dropped", 0) == 0 and bool(events)
+    for phase in phases:
+        if "end_monotonic_s" not in phase:
+            continue
+        a, b = phase["start_monotonic_s"], phase["end_monotonic_s"]
+        entry = {"name": phase["name"], "kind": phase["kind"],
+                 "gesture_phase_s": {g: round(sum(_overlap(a, b, i0, i1) for i0, i1, g2 in intervals if g2 == g), 4)
+                                     for g in GESTURE_PHASES}}
+        if complete:
+            kinds = {}
+            for e in events:
+                kind = e.get("kind")
+                if kind not in COUNTED:
+                    continue
+                s0, s1 = e["start_us"] / 1e6, e["end_us"] / 1e6
+                row = kinds.setdefault(kind, {"count": 0, "wall_ms": 0.0, "cpu_ms": 0.0})
+                if a <= s0 < b:
+                    row["count"] += 1
+                if s1 > s0:
+                    share = _overlap(a, b, s0, s1) / (s1 - s0)  # span straddling a boundary is split by wall overlap
+                    row["wall_ms"] += share * (s1 - s0) * 1000
+                    row["cpu_ms"] += share * e["cpu_us"] / 1000
+            entry["counters"] = {k: {"count": v["count"], "wall_ms": round(v["wall_ms"], 3), "cpu_ms": round(v["cpu_ms"], 3)}
+                                 for k, v in sorted(kinds.items()) if v["count"] or v["wall_ms"]}
+        out_phases.append(entry)
+    return {"valid": not failures, "failures": sorted(set(failures)), "counters_only": counters_only,
+            "events_complete": complete, "events_dropped": trace.get("dropped", 0),
+            "phase_log_dropped": trace.get("phase_log_dropped", 0),
+            "by_gesture_phase": by_gesture, "phases": out_phases,
+            "limits": ["Span wall/CPU are inclusive of nested spans; do not sum kinds.",
+                       "Thread CPU is per recording thread; helper subprocess CPU is in the cgroup figures.",
+                       "Coasting and settling share the `moving` gesture phase.",
+                       "Per-harness-phase counters need a complete event ring (trace mode, no drops)."]}
+
+
+def overhead_pair(off: dict, on: dict) -> dict:
+    """Observer cost of the recorder: OFF versus ON reports of otherwise identical
+    runs. Refuses to compare anything else; deltas are measurements of one pair,
+    not statistics, and detailed timings should not be interpreted until the
+    overhead is known to be small."""
+    mismatches = []
+    for report, tag in ((off, "OFF"), (on, "ON")):
+        if report.get("schema") != REPORT_SCHEMA:
+            mismatches.append(f"{tag}: not a profile report")
+        elif not report.get("comparable_inputs_valid"):
+            mismatches.append(f"{tag}: report has failed gates")
+    if not mismatches:
+        if off.get("instrumentation") != "off":
+            mismatches.append("first report must have instrumentation off")
+        if on.get("instrumentation") not in ("counters", "trace"):
+            mismatches.append("second report must have instrumentation counters or trace")
+        for field in MATCH_FIELDS:
+            if field != "instrumentation" and off.get(field) != on.get(field):
+                mismatches.append(f"{field} differs")
+        for field in ("rust_exe", "current_system", "booted_system"):
+            if off.get(field) != on.get(field):
+                mismatches.append(f"{field} differs (overhead needs the same build)")
+        if [p["name"] for p in off["phases"]] != [p["name"] for p in on["phases"]]:
+            mismatches.append("completed phase lists differ")
+    result = {"schema": COMPARISON_SCHEMA, "kind": "instrumentation-overhead", "comparable": not mismatches,
+              "mismatches": sorted(set(mismatches)), "phases": []}
+    if mismatches:
+        return result
+    result["instrumentation"] = on["instrumentation"]
+    for left, right in zip(off["phases"], on["phases"]):
+        entry = {"name": left["name"], "kind": left["kind"]}
+        if "units" in left and "units" in right:
+            for unit in ATTRIBUTION_UNITS:
+                a, b = left["units"][unit], right["units"][unit]
+                entry[unit] = {"process_cpu_percent": {"off": a["process_cpu_percent"], "on": b["process_cpu_percent"],
+                                                       "delta": round(b["process_cpu_percent"] - a["process_cpu_percent"], 3)},
+                               "cgroup_cpu_percent": {"off": a["cgroup_cpu_percent"], "on": b["cgroup_cpu_percent"],
+                                                      "delta": round(b["cgroup_cpu_percent"] - a["cgroup_cpu_percent"], 3)},
+                               "rss_peak_bytes": {"off": a["rss_peak_bytes"], "on": b["rss_peak_bytes"],
+                                                  "delta": b["rss_peak_bytes"] - a["rss_peak_bytes"]}}
+        if left["kind"].startswith("swipe") and left.get("commit_gap_p95_ms") is not None and right.get("commit_gap_p95_ms") is not None:
+            entry["commit_gap_p95_ms"] = {"off": left["commit_gap_p95_ms"], "on": right["commit_gap_p95_ms"],
+                                          "delta": right["commit_gap_p95_ms"] - left["commit_gap_p95_ms"]}
+        result["phases"].append(entry)
+    result["limits"] = ["One OFF/ON pair is a measurement, not a distribution; repeat before trusting small deltas.",
+                        "Both runs must use the same injected workload and no native screencopy."]
     return result
 
 
@@ -548,6 +848,11 @@ def observe(plan: dict, identities: dict) -> dict:
     observed = {"exes": {u: i["exe"] for u, i in identities.items()},
                 "generation_sha256": digest(generation)}
     try:
+        observed["instrumentation"] = instrumentation_from_environ(
+            Path(f"/proc/{identities['shell-ui.service']['pid']}/environ").read_bytes())
+    except OSError:
+        observed["instrumentation"] = None  # unreadable: the precondition gate refuses it
+    try:
         report = json.loads((Path(generation) / "report.json").read_text())
         observed["background_count"] = len(report["backgrounds"])
     except (OSError, ValueError, KeyError):
@@ -613,6 +918,8 @@ def capture(plan: dict, output: Path) -> int:
     raw = {"schema": RAW_SCHEMA, "label": plan["label"], "workload": plan["workload"],
            "geometry": plan["geometry"], "background_playback": plan["background_playback"],
            "selected_theme_id": plan["selected_theme_id"],
+           "instrumentation": plan.get("instrumentation", "off"),
+           "thread_sampling": bool(plan.get("attribution", False)),
            "plan_rows_reviewed": all(r["visually_reviewed"] and r["resolved"] for r in plan["rows"].values()),
            "clock_ticks_per_second": os.sysconf("SC_CLK_TCK"),
            "booted_system": str(Path("/run/booted-system").resolve()),
@@ -637,7 +944,12 @@ def capture(plan: dict, output: Path) -> int:
             values = proc_stat(identity["pid"])
             cpu = Path("/sys/fs/cgroup" + identity["cgroup"]) / "cpu.stat"
             values["cgroup_cpu"] = {k: int(v) for k, v in (line.split() for line in cpu.read_text().splitlines())}
+            if plan.get("attribution") and unit in ATTRIBUTION_UNITS:
+                values["threads_pid"] = identity["pid"]
+                values["threads"], values["threads_dropped"] = read_threads(identity["pid"])
             row["units"][unit] = values
+        if len(raw["samples"]) >= MAX_ATTRIBUTION_SAMPLES:
+            raise RuntimeError("sample bound reached; workload too long for bounded telemetry")
         raw["samples"].append(row)
         check_sample(identities, row, gen_sha)
 
@@ -715,6 +1027,11 @@ def main(argv=None) -> int:
     p = sub.add_parser("reduce")
     p.add_argument("raw", type=Path)
     p.add_argument("--output", type=Path, required=True)
+    p.add_argument("--rust-trace", type=Path, default=None,
+                   help="Rust recorder report for this capture (required when instrumentation was on)")
+    p = sub.add_parser("overhead")
+    p.add_argument("off", type=Path)
+    p.add_argument("on", type=Path)
     p = sub.add_parser("compare")
     p.add_argument("a", type=Path)
     p.add_argument("b", type=Path)
@@ -736,10 +1053,19 @@ def main(argv=None) -> int:
         if args.command == "reduce":
             if args.output.exists():
                 raise RuntimeError("refusing to overwrite evidence")
-            report = reduce_raw(json.loads(args.raw.read_text()))
+            trace = None
+            if args.rust_trace is not None:
+                if args.rust_trace.stat().st_size > MAX_TRACE_BYTES:
+                    raise RuntimeError("Rust trace exceeds the telemetry size bound")
+                trace = json.loads(args.rust_trace.read_text())
+            report = reduce_raw(json.loads(args.raw.read_text()), trace)
             args.output.write_text(json.dumps(report, indent=2) + "\n")
             print(("OK " if report["comparable_inputs_valid"] else "GATES_FAILED ") + str(args.output))
             return 0 if report["comparable_inputs_valid"] else 1
+        if args.command == "overhead":
+            result = overhead_pair(json.loads(args.off.read_text()), json.loads(args.on.read_text()))
+            print(json.dumps(result, indent=2))
+            return 0 if result["comparable"] else 1
         vary = tuple(args.vary) if args.vary else DEFAULT_VARY
         result = compare_reports(json.loads(args.a.read_text()), json.loads(args.b.read_text()), vary)
         print(json.dumps(result, indent=2))
