@@ -855,7 +855,10 @@ struct CardKey {
     look: String,
 }
 
-/// Bounded cache of rendered carousel cards and their outline masks.
+/// Bounded cache of rendered carousel cards and their outline masks. Only
+/// cards at a row's two rest sizes are kept: a card growing or shrinking
+/// through a swipe has a new size on almost every frame, so keeping those
+/// would only churn the cache up to its cap.
 #[derive(Default)]
 struct CardSprites {
     cards: std::collections::HashMap<CardKey, ImageSurface>,
@@ -863,7 +866,7 @@ struct CardSprites {
     bytes: usize,
 }
 
-const CARD_SPRITE_MAX_BYTES: usize = 24 << 20;
+const CARD_SPRITE_MAX_BYTES: usize = 8 << 20;
 
 thread_local! {
     static CARD_SPRITES: std::cell::RefCell<CardSprites> = std::cell::RefCell::new(CardSprites::default());
@@ -873,6 +876,7 @@ impl CardSprites {
     fn card(
         &mut self,
         key: CardKey,
+        keep: bool,
         image: Option<&ImageSurface>,
         scrim: Option<&Brush>,
         dim_color: u32,
@@ -917,7 +921,7 @@ impl CardSprites {
                 }
             }
         }
-        let mask = self.mask(w, h, key.skew)?;
+        let mask = self.mask(w, h, key.skew, keep)?;
         let sprite = ImageSurface::create(Format::ARgb32, w, h).ok()?;
         {
             let cr = Context::new(&sprite).ok()?;
@@ -925,6 +929,9 @@ impl CardSprites {
             cr.mask_surface(&mask, 0.0, 0.0).ok()?;
         }
         sprite.flush();
+        if !keep {
+            return Some(sprite);
+        }
         let size = (w as usize) * (h as usize) * 4;
         if self.bytes + size > CARD_SPRITE_MAX_BYTES {
             self.cards.clear();
@@ -935,11 +942,11 @@ impl CardSprites {
         Some(sprite)
     }
 
-    fn mask(&mut self, w: i32, h: i32, skew16: i32) -> Option<ImageSurface> {
+    fn mask(&mut self, w: i32, h: i32, skew16: i32, keep: bool) -> Option<ImageSurface> {
         if let Some(mask) = self.masks.get(&(w, h, skew16)) {
             return Some(mask.clone());
         }
-        if self.masks.len() >= 256 {
+        if keep && self.masks.len() >= 16 {
             self.masks.clear();
         }
         let mask = ImageSurface::create(Format::A8, w, h).ok()?;
@@ -952,7 +959,9 @@ impl CardSprites {
             cr.fill().ok()?;
         }
         mask.flush();
-        self.masks.insert((w, h, skew16), mask.clone());
+        if keep {
+            self.masks.insert((w, h, skew16), mask.clone());
+        }
         Some(mask)
     }
 }
@@ -1022,9 +1031,12 @@ fn paint_carousel(
             blend: (slice.blend.clamp(0.0, 1.0) * 32.0).round() as u8,
             look: format!("{scrim:?}/{dim_color}/{fallback}"),
         };
+        let at_rest = |w: f64, h: f64| (sw, sh) == (w.round() as i32, h.round() as i32);
+        let keep = at_rest(geometry.expanded_w, geometry.expanded_h)
+            || at_rest(geometry.slice_w, geometry.slice_h);
         CARD_SPRITES.with(|sprites| {
             let mut sprites = sprites.borrow_mut();
-            if let Some(sprite) = sprites.card(key, image, scrim, dim_color, fallback) {
+            if let Some(sprite) = sprites.card(key, keep, image, scrim, dim_color, fallback) {
                 if cr.set_source_surface(&sprite, sx, sy).is_ok() {
                     let _ = cr.paint();
                 }
@@ -6715,6 +6727,39 @@ mod tests {
                 .fold(f64::INFINITY, f64::min);
             eprintln!("{label}: {best:.2} ms/frame thread CPU, best of 7");
         }
+    }
+
+    #[test]
+    fn card_sprites_keep_only_rest_sizes_through_a_swipe() {
+        let mut view = theme_picker_two_row_fixture();
+        view.theme_position = 20.0;
+        view.background_position = 20.0;
+        let mut renderer = picker_row_test_renderer(&view);
+        let params = RenderParams { width: 568, height: 1232, route: Route::Settings,
+            progress: 1.0, scroll: 0.0 };
+        let mut pixels = vec![0; 568 * 1232 * 4];
+        for frame in 0..120 {
+            view.theme_position = 20.0 + f64::from(frame) / 17.0;
+            view.background_position = 20.0 - f64::from(frame) / 13.0;
+            renderer.set_theme_view(view.clone());
+            renderer.draw(&mut pixels, params, &[]).unwrap();
+        }
+        let rest: Vec<(i32, i32)> = [theme_carousel::THEME_GEOMETRY, theme_carousel::BACKGROUND_GEOMETRY]
+            .iter()
+            .flat_map(|g| [(g.expanded_w, g.expanded_h), (g.slice_w, g.slice_h)])
+            .map(|(w, h)| (w.round() as i32, h.round() as i32))
+            .collect();
+        CARD_SPRITES.with(|sprites| {
+            let sprites = sprites.borrow();
+            assert!(!sprites.cards.is_empty());
+            assert!(sprites.bytes <= CARD_SPRITE_MAX_BYTES);
+            for key in sprites.cards.keys() {
+                assert!(rest.contains(&(key.width, key.height)), "kept a transient card {key:?}");
+            }
+            for &(w, h, _) in sprites.masks.keys() {
+                assert!(rest.contains(&(w, h)), "kept a transient mask {w}x{h}");
+            }
+        });
     }
 
     #[test]

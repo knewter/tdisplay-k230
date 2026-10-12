@@ -459,6 +459,23 @@ impl Carousel {
         self.position
     }
 
+    /// Position, velocity (reference-card px/sec, finger direction) and
+    /// motion phase for one bounded trace record per frame. The phase is
+    /// 0 at rest, 1 under a finger, 2 coasting, 3 settling. Velocity is the
+    /// coast or spring velocity; under a finger it is 0, since the card
+    /// follows the touch directly.
+    pub fn trace_state(&self) -> (f64, f64, u64) {
+        if self.contact.is_some() {
+            (self.position, 0.0, 1)
+        } else if let Some(settle) = &self.settle {
+            (self.position, settle.state().1, 3)
+        } else if self.velocity != 0.0 {
+            (self.position, self.velocity, 2)
+        } else {
+            (self.position, 0.0, 0)
+        }
+    }
+
     /// The committed/nearest index, clamped to a possibly-changed `count`.
     pub fn index(&self, count: usize) -> usize {
         if count == 0 {
@@ -789,6 +806,29 @@ mod tests {
                 assert_eq!(carousel.settle.unwrap().target, held.round());
             }
         }
+    }
+
+    #[test]
+    fn trace_state_reports_each_motion_phase_with_its_velocity() {
+        let mut carousel = Carousel::new(THEME_GEOMETRY);
+        carousel.set_index(10);
+        assert_eq!(carousel.trace_state(), (10.0, 0.0, 0));
+        carousel.down(1, (284.0, 600.0), 0);
+        carousel.motion(1, (184.0, 600.0), 20, 30);
+        assert_eq!(carousel.trace_state(), (carousel.position(), 0.0, 1));
+        carousel.up(1, (184.0, 600.0), 21, 30, 284.0, 200.0);
+        let (_, velocity, phase) = carousel.trace_state();
+        assert_eq!(phase, 2);
+        assert!(velocity < 0.0, "a leftward fling reports leftward velocity");
+        let mut ticks = 0;
+        while carousel.trace_state().2 == 2 && ticks < 1000 {
+            carousel.tick(16, 30);
+            ticks += 1;
+        }
+        assert_eq!(carousel.trace_state().2, 3, "the coast hands over to the settle");
+        while carousel.tick(16, 30) {}
+        let (position, velocity, phase) = carousel.trace_state();
+        assert_eq!((position.fract(), velocity, phase), (0.0, 0.0, 0));
     }
 
     #[test]

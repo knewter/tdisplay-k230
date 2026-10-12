@@ -4321,6 +4321,15 @@ impl ShellClient {
         }
         layer.commit();
         if tracing { runtime_trace::event("commit", [self.trace_frame, self.trace_input, 0, 0, 0, 0]); }
+        if tracing && self.route == Route::Settings {
+            // One carousel record per committed frame: each row's position
+            // and velocity as f64 bits, and both motion phases packed as
+            // theme * 4 + background.
+            let (theme, theme_velocity, theme_phase) = self.theme_carousel.trace_state();
+            let (background, background_velocity, background_phase) = self.background_carousel.trace_state();
+            runtime_trace::event("carousel", [self.trace_frame, theme.to_bits(), theme_velocity.to_bits(),
+                background.to_bits(), background_velocity.to_bits(), theme_phase * 4 + background_phase]);
+        }
         self.frame_pending = true;
         self.dirty = false;
         self.log("commit");
