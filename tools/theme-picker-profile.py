@@ -57,6 +57,7 @@ PANEL = (568, 1232)
 PLAYBACK = ("none", "static", "playing", "paused")
 PHASE_KINDS = ("baseline", "open", "swipe-theme", "swipe-background", "idle", "back")
 IDLE_WINDOW_S = 15
+CLOCK_JITTER_MS = 250       # cross-thread journal reordering tolerated before a clock regression is a restart
 STORE_RE = re.compile(r"/nix/store/[a-z0-9]{32}-[A-Za-z0-9+._?=-]+(?:/[A-Za-z0-9+._?=/~-]+)?")
 PHASE_NAME_RE = re.compile(r"[a-z][a-z0-9-]{0,39}")
 SHA_RE = re.compile(r"[0-9a-f]{64}")
@@ -342,9 +343,12 @@ def reduce_raw(raw: dict, rust_trace: dict | None = None) -> dict:
             continue
         rust_ms, kind, command = got
         if ui:
-            if rust_ms < previous_rust_ms:
+            # Lines from different threads reach the journal a few ms out of order; a restart
+            # resets the elapsed clock (and changes the PID, caught above), so only a real
+            # regression counts.
+            if rust_ms + CLOCK_JITTER_MS < previous_rust_ms:
                 failures.append("Rust elapsed clock went backwards (process restart)")
-            previous_rust_ms = rust_ms
+            previous_rust_ms = max(previous_rust_ms, rust_ms)
         if command:
             commands.append(command)
         else:

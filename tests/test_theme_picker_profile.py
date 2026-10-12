@@ -240,6 +240,14 @@ class ReducerTests(unittest.TestCase):
         report = tpp.reduce_raw(raw)
         self.assertTrue(any("went backwards" in f for f in report["failures"]))
 
+    def test_small_cross_thread_journal_reordering_is_not_a_restart(self):
+        raw = build_raw()
+        top = max(int(e["message"].split()[1][:-2]) for e in raw["events"] if e["unit"] == "shell-ui.service")
+        raw["events"].append({"monotonic_us": 400_000_000, "unit": "shell-ui.service", "pid": 77,
+                              "message": f"rust-shell {top - 7}ms frame-done"})
+        report = tpp.reduce_raw(raw)
+        self.assertFalse(any("went backwards" in f for f in report["failures"]))
+
     def test_generation_change_and_activation_fail(self):
         self.assertFalse(tpp.reduce_raw(build_raw(gen_ok=False))["comparable_inputs_valid"])
         report = tpp.reduce_raw(build_raw(activate=True))
