@@ -1,0 +1,6 @@
+## 1. Configuration
+- [x] 1.1 Enable key-only OpenSSH in `nix/k230.nix` with the dedicated key from `nix/keys/k230-operator.pub`. Host proof: `nix eval --json .#nixosConfigurations.k230-mainline-drm-shell.config.services.openssh.settings` shows root key-only login with password and keyboard-interactive login off, and `nix eval .#nixosConfigurations.k230-mainline-drm-shell.config.networking.firewall.allowedTCPPorts` includes 22. Passed 2026-10-11: `PermitRootLogin = "prohibit-password"`; `PasswordAuthentication`, `KbdInteractiveAuthentication` and `PermitEmptyPasswords` all `false`; firewall `[ 22 ]`; the root key file reads the committed `ssh-ed25519` key.
+## 2. Build
+- [ ] 2.1 Build after builder coordination. Build proof (not board proof): `nix build .#kernelMainlineDrmShellBootFiles`.
+## 3. Board
+- [ ] 3.1 Deploy through the coherent installer and, after an ordinary autoboot, log in with `ssh -i ~/.ssh/k230_board_ed25519 root@<board>` (address kept private). Also show that a password-only attempt is refused (`ssh -o PubkeyAuthentication=no -o PreferredAuthentications=password,keyboard-interactive root@<board>` fails). Hardware proof.

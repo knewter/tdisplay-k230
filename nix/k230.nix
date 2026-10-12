@@ -39,6 +39,22 @@
   services.getty.autologinUser = lib.mkDefault "root";
   users.users.root.password = "";
 
+  # Network login next to the console (system/console). Root's empty console
+  # password above must never work over the network: key-only, one dedicated
+  # operator key, password, keyboard-interactive and empty-password login off.
+  # Host keys are generated on the device at first start.
+  services.openssh = {
+    enable = true;
+    openFirewall = true;
+    settings = {
+      PermitRootLogin = "prohibit-password";
+      PasswordAuthentication = false;
+      KbdInteractiveAuthentication = false;
+      PermitEmptyPasswords = false;
+    };
+  };
+  users.users.root.openssh.authorizedKeys.keyFiles = [ ./keys/k230-operator.pub ];
+
   # No graphical stack. The panel is a later change
   # (the-screen-comes-up-under-linux) and nothing here should pull one in.
   documentation.enable = false;
