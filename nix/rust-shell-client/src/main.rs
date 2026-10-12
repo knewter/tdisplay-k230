@@ -2049,6 +2049,9 @@ impl ShellClient {
         tapped_at: Instant,
     ) {
         let elapsed_ms = || tapped_at.elapsed().as_secs_f64() * 1000.0;
+        // Tap-up to here: the rest of that dispatch, then the Activate submit.
+        let entry_ms = elapsed_ms();
+        let checks_start = Instant::now();
         if self.appearance_pending {
             self.log(&format!(
                 "optimistic-apply skipped reason=commit-draw-in-flight ms={:.1}",
@@ -2101,6 +2104,7 @@ impl ShellClient {
         // else the render depended on) unchanged since it was computed;
         // any mismatch falls back to `set_appearance`'s own ordinary
         // rebuild, exactly as if no pre-render had ever run.
+        let checks_ms = checks_start.elapsed().as_secs_f64() * 1000.0;
         let content_generation = self.renderer.content_generation();
         let stored = self.prerendered_overlay.take();
         let stored_parts = stored.as_ref().map(|candidate| candidate.content_parts.clone());
@@ -2206,7 +2210,7 @@ impl ShellClient {
                 )),
             }
             self.log(&format!(
-                "optimistic-apply stage adopt_ms={adopt_ms:.1} wallpaper_ms={wallpaper_ms:.1} overlay_ms={overlay_ms:.1} flush_ms={flush_ms:.1}"
+                "optimistic-apply stage entry_ms={entry_ms:.1} checks_ms={checks_ms:.1} adopt_ms={adopt_ms:.1} wallpaper_ms={wallpaper_ms:.1} overlay_ms={overlay_ms:.1} flush_ms={flush_ms:.1}"
             ));
         }
     }
