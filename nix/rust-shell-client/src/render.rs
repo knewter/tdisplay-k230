@@ -34,7 +34,7 @@ use crate::{
     wifi_ui::{all_networks, entry_buttons_rect, Page as WifiPage, WifiPublic},
     Route,
 };
-use cairo::{Context, Format, ImageSurface, LinearGradient, Operator};
+use cairo::{Context, Filter, Format, ImageSurface, LinearGradient, Matrix, Operator, SurfacePattern};
 use pango::{Alignment, EllipsizeMode, FontDescription};
 use std::{fs::File, path::Path, rc::Rc};
 
@@ -877,50 +877,57 @@ fn paint_carousel(
                 bottom_left, bottom_right, slice.height, 14.0);
 
         };
-        let _ = cr.save();
-        parallelogram(cr);
-        cr.clip();
-        // A slice nearer the centered position blends toward the wide
-        // "Expanded" crop; a distant one uses the narrow "Slice" crop. See
-        // `theme_thumbnails.rs` for why only these two are ever decoded.
+        // Fill the slice's own outline with its image and then its scrim,
+        // rather than clipping and painting. On the board an anti-aliased
+        // clip turns every paint into a full-area mask composite, and
+        // Cairo's default GOOD filter convolves every scaled pixel. Together
+        // those dominated a moving row's repaint. At rest both slice sizes
+        // match their decoded thumbnails, so the bilinear filter only
+        // applies while a slice is resizing.
         let variant = if slice.blend < 0.5 {
             Variant::Expanded
         } else {
             Variant::Slice
         };
-        let image = thumbnails.and_then(|cache| cache.get(id, variant));
-        if let Some(image) = image {
-            let iw = f64::from(image.width());
-            let ih = f64::from(image.height());
-            if iw > 0.0 && ih > 0.0 {
-                let _ = cr.save();
-                cr.translate(slice.x, slice.y);
-                cr.scale(slice.width / iw, slice.height / ih);
-                if cr.set_source_surface(image, 0.0, 0.0).is_ok() {
-                    let _ = cr.paint();
-                }
-                let _ = cr.restore();
+        let image = thumbnails
+            .and_then(|cache| cache.get(id, variant))
+            .filter(|image| image.width() > 0 && image.height() > 0);
+        let _ = cr.save();
+        parallelogram(cr);
+        match image.map(SurfacePattern::create) {
+            Some(pattern) => {
+                let image = image.expect("pattern implies image");
+                let sx = f64::from(image.width()) / slice.width;
+                let sy = f64::from(image.height()) / slice.height;
+                pattern.set_matrix(Matrix::new(sx, 0.0, 0.0, sy, -slice.x * sx, -slice.y * sy));
+                pattern.set_filter(Filter::Bilinear);
+                let _ = cr.set_source(&pattern);
             }
-        } else {
-            color(cr, palette_rgb_or(theme, "background", 0x1b2830), 1.0);
-            let _ = cr.paint();
+            None => color(cr, palette_rgb_or(theme, "background", 0x1b2830), 1.0),
         }
+        let _ = cr.fill_preserve();
         // Dims a non-centered slice, fading out as it nears the centered
         // position -- upstream's `Util.alpha(root.dimColor, item.selected ?
         // 0 : 0.42)`, continuous here instead of a hard boolean.
-        if let Some(brush) = theme_brush(theme, "image-picker", "scrim") {
-            let _ = cr.push_group();
-            fill_brush(cr, brush, slice.x, slice.y, slice.width, slice.height);
-            let _ = cr.pop_group_to_source();
-            let _ = cr.paint_with_alpha(slice.blend);
-        } else {
-            color(cr, dim_color, 0.42 * slice.blend);
-            let _ = cr.paint();
+        if slice.blend > 0.0 {
+            if let Some(brush) = theme_brush(theme, "image-picker", "scrim") {
+                cr.clip_preserve();
+                let _ = cr.push_group();
+                fill_brush(cr, brush, slice.x, slice.y, slice.width, slice.height);
+                let _ = cr.pop_group_to_source();
+                let _ = cr.paint_with_alpha(slice.blend);
+            } else {
+                color(cr, dim_color, 0.42 * slice.blend);
+                let _ = cr.fill_preserve();
+            }
         }
+        cr.new_path();
         // A slice with no decoded thumbnail yet gets a spinner instead of a
         // silent flat fill, so a slow decode (goal: never a frozen-looking
         // UI) reads as "loading", not "missing" or "broken".
         if image.is_none() {
+            parallelogram(cr);
+            cr.clip();
             spinner(
                 cr,
                 slice.x + slice.width / 2.0,
@@ -930,7 +937,7 @@ fn paint_carousel(
                 style.accent,
             );
         }
-        let _ = cr.restore(); // drop the clip
+        let _ = cr.restore();
 
         if slice.index == centered {
             rounded(cr, slice.x + slice.width / 2.0 - 18.0,
@@ -4346,13 +4353,15 @@ fn picker_row_changes(old: &ThemeView, new: &ThemeView) -> Option<u8> {
         || old.list != new.list || old.preview != new.preview
         || old.pending != new.pending || old.pending_id != new.pending_id
         || old.error != new.error || old.message != new.message
-        || old.pulse_phase != new.pulse_phase
         || old.desired != new.desired
     {
         return None;
     }
-    let theme = old.theme_position != new.theme_position || old.theme_pressed != new.theme_pressed;
-    let background = old.background_position != new.background_position
+    // The loading-spinner pulse is painted only inside the two rows.
+    let pulse = old.pulse_phase != new.pulse_phase;
+    let theme = pulse || old.theme_position != new.theme_position || old.theme_pressed != new.theme_pressed;
+    let background = pulse
+        || old.background_position != new.background_position
         || old.background_pressed != new.background_pressed;
     Some(u8::from(theme) | (u8::from(background) << 1))
 }
@@ -4572,7 +4581,17 @@ impl RendererCache {
         let changed = self.thumbnails.poll();
         if changed {
             self.content_generation = self.content_generation.wrapping_add(1);
-            self.invalidate();
+            // Thumbnails are painted only inside the chooser's two rows, so
+            // a completion mid-swipe repaints those rows rather than paying
+            // a full scene rebuild.
+            if self.route == Some(Route::Settings)
+                && !self.static_pixels.is_empty()
+                && self.chooser.as_ref().is_some_and(|view| view.page == ThemePage::List)
+            {
+                self.picker_dirty_rows |= 3;
+            } else {
+                self.invalidate();
+            }
         }
         for key in requested {
             self.thumbnails.request(key);
@@ -5124,13 +5143,16 @@ impl RendererCache {
             self.picker_dirty_rows = 0;
         }
         let _profile_copy = crate::runtime_trace::Span::new("canvas_copy");
-        canvas.fill(0);
         let panel_height =
             panel_travel_height(route, width, height, self.chooser.as_ref(), self.services.as_ref());
         let hidden = 1.0 - progress.clamp(0.0, 1.0);
         let shift =
             (hidden * panel_height).round() as i32 * if route == Route::Drawer { 1 } else { -1 };
         let row_bytes = width as usize * 4;
+        // Only a sliding panel leaves rows the copy below does not cover.
+        if shift != 0 {
+            canvas.fill(0);
+        }
         for source_y in 0..height as i32 {
             let target_y = source_y + shift;
             if target_y < 0 || target_y >= height as i32 {
@@ -6551,6 +6573,41 @@ mod tests {
         renderer
     }
 
+    /// Host timing of a theme-row swipe (`cargo test ... -- --ignored --nocapture
+    /// theme_row_swipe_cost`). Relative costs only; the board is far slower.
+    #[test]
+    #[ignore]
+    fn theme_row_swipe_cost() {
+        let mut view = theme_picker_two_row_fixture();
+        view.theme_position = 20.0;
+        view.background_position = 20.0;
+        let mut renderer = picker_row_test_renderer(&view);
+        let params = RenderParams { width: 568, height: 1232, route: Route::Settings,
+            progress: 1.0, scroll: 0.0 };
+        let mut pixels = vec![0; 568 * 1232 * 4];
+        renderer.draw(&mut pixels, params, &[]).unwrap();
+        let cpu_ms = || {
+            let mut now = libc::timespec { tv_sec: 0, tv_nsec: 0 };
+            unsafe { libc::clock_gettime(libc::CLOCK_THREAD_CPUTIME_ID, &mut now) };
+            now.tv_sec as f64 * 1000.0 + now.tv_nsec as f64 / 1e6
+        };
+        for (label, moving) in [("theme", true), ("rest", false)] {
+            let frames = 60;
+            let best = (0..7)
+                .map(|_| {
+                    let begin = cpu_ms();
+                    for frame in 0..frames {
+                        view.theme_position = if moving { 20.0 + frame as f64 / 20.0 } else { 23.0 };
+                        renderer.set_theme_view(view.clone());
+                        renderer.draw(&mut pixels, params, &[]).unwrap();
+                    }
+                    (cpu_ms() - begin) / frames as f64
+                })
+                .fold(f64::INFINITY, f64::min);
+            eprintln!("{label}: {best:.2} ms/frame thread CPU, best of 7");
+        }
+    }
+
     #[test]
     fn picker_row_repaint_matches_full_scene_for_motion_and_press() {
         let mut view = theme_picker_two_row_fixture();
@@ -6602,9 +6659,43 @@ mod tests {
     }
 
     #[test]
+    fn thumbnail_arrival_and_spinner_pulse_repaint_rows_without_a_rebuild() {
+        let mut view = theme_picker_two_row_fixture();
+        view.list.as_mut().unwrap().themes.truncate(4);
+        view.preview.as_mut().unwrap().backgrounds.truncate(4);
+        view.theme_position = 1.25;
+        view.background_position = 1.0;
+        let params = RenderParams { width: 568, height: 1232, route: Route::Settings,
+            progress: 1.0, scroll: 0.0 };
+        let (thumbnails, incoming, complete) = ThemeThumbnailCache::fixture();
+        let mut partial = RendererCache { thumbnails, ..RendererCache::default() };
+        partial.set_theme_view(view.clone());
+        let mut actual = vec![0; 568 * 1232 * 4];
+        partial.draw(&mut actual, params, &[]).unwrap();
+        let rebuilds = partial.rebuild_count();
+        // Spinners show for the missing thumbnails; a pulse tick repaints rows only.
+        view.pulse_phase = 0.5;
+        partial.set_theme_view(view.clone());
+        partial.draw(&mut actual, params, &[]).unwrap();
+        // Thumbnails then arrive while the row is between slots.
+        for _ in 0..100 {
+            for key in incoming.try_iter() { complete(key); }
+            partial.draw(&mut actual, params, &[]).unwrap();
+            if !partial.theme_thumbnails_pending(568) { break; }
+        }
+        assert!(!partial.theme_thumbnails_pending(568));
+        assert_eq!(partial.rebuild_count(), rebuilds, "neither change may rebuild the scene");
+        let mut full = picker_row_test_renderer(&view);
+        let mut expected = actual.clone();
+        full.invalidate();
+        full.draw(&mut expected, params, &[]).unwrap();
+        assert!(actual == expected, "row repaint must match a full scene");
+    }
+
+    #[test]
     fn picker_row_semantic_updates_keep_full_invalidation() {
         let original = theme_picker_two_row_fixture();
-        for change in 0..8 {
+        for change in 0..7 {
             let mut view = original.clone();
             match change {
                 0 => view.page = ThemePage::Controls,
@@ -6612,8 +6703,7 @@ mod tests {
                 2 => view.preview.as_mut().unwrap().backgrounds[20].selected = false,
                 3 => view.message = Some("Background applied".into()),
                 4 => view.error = Some("Failed".into()),
-                5 => view.pulse_phase = 0.5,
-                6 => view.pending_id = Some(42),
+                5 => view.pending_id = Some(42),
                 _ => view.pending = Some(crate::theme_catalog::ThemeRequest::List),
             }
             assert_eq!(picker_row_changes(&original, &view), None);
@@ -6621,6 +6711,9 @@ mod tests {
         let mut unchanged = original.clone();
         unchanged.prepare_ahead_elapsed_ms += 1;
         assert_eq!(picker_row_changes(&original, &unchanged), Some(0));
+        let mut pulsed = original.clone();
+        pulsed.pulse_phase = 0.5;
+        assert_eq!(picker_row_changes(&original, &pulsed), Some(3), "the spinner pulse repaints only the rows");
     }
 
     #[test]
