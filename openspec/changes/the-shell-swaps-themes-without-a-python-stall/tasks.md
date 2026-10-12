@@ -1321,7 +1321,7 @@ already-written code -- keep the whole group open.
   reversal, stop/hold/release and both rows. Record input-to-commit timing
   separately from geometry and preserve saved generation. Capture native
   evidence separately from timing, then install the qualified build.
-- [ ] 14.4 Obtain operator real-finger acceptance that both rows follow the
+- [x] 14.4 Obtain operator real-finger acceptance that both rows follow the
   finger without exaggerated travel or a backlog after it stops. Retain this
   gate if only host or injected evidence exists. This does not by itself
   complete the matched performance and memory comparison in task 11.3/13.
@@ -1336,8 +1336,11 @@ already-written code -- keep the whole group open.
   rose from about 51 to 91, and no full rebuilds occurred mid-swipe
   (`docs/evidence/theme-picker/row-sprites-2026-10-12/README.md`). After
   using it on the panel, the operator wrote "it's good to go land it". That
-  accepts the feel for landing. Kept open until the operator confirms both
-  rows track without exaggerated travel or backlog.
+  accepts the feel for landing. **Accepted 2026-10-12** on installed system
+  `rav09qp6…` (Rust `b0yyyda8…`): asked whether both rows follow the finger
+  without exaggerated travel or a backlog after it stops, the operator replied
+  "14.4 they do, is good". This acceptance does not cover task 18.4's curve
+  properties or the 11.3/13 comparison.
 
 Task 14.1 host proof: the exact `--lib theme_carousel` command passed 13
 geometry/physics tests, including rendered-center tracking for both rows,
