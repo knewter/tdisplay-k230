@@ -2,12 +2,18 @@
 /*
  * Canaan K230 CPU0 (the small C908 core) as a remote processor.
  *
- * READ-ONLY SKELETON (openspec/changes/the-small-core-runs-as-a-coprocessor
- * task 4.2). It binds the node, takes the CPU0 reset line, maps the boot
- * vector register and the firmware carveout, and reports what it can read.
- * It performs no reset, vector or power write: .start and .stop refuse, the
- * remoteproc sysfs files are read-only and auto-boot is off. Starting CPU0
- * from Linux is task 5.1 (vector write, then reset_control_reset()).
+ * Start path (openspec/changes/the-small-core-runs-as-a-coprocessor task
+ * 5.1). remoteproc's standard "start" loads the firmware image as a raw
+ * binary at the base of the no-map carveout (it is linked to run there;
+ * tools/small-core-echo.ld), writes that base to the CPU0 boot vector and
+ * pulses the CPU0 reset with reset_control_reset(). Nothing else is written:
+ * no power register and no other reset line. .stop still refuses, because
+ * RST_CPU0 has no held reset (task 5.2). Auto-boot stays off; userspace
+ * picks the firmware through the standard sysfs files.
+ *
+ * Until a mailbox exists, the cpu0_echo attribute exercises the echo
+ * payload's slot page by polling: writing a value posts one request and
+ * waits (bounded) for its response; reading reports the last exchange.
  *
  * Binding (docs/evidence/second-core/mainline-reset-binding-decision.md):
  *
@@ -39,9 +45,13 @@
  * this driver.
  */
 
+#include <linux/delay.h>
+#include <linux/firmware.h>
 #include <linux/io.h>
+#include <linux/ktime.h>
 #include <linux/mod_devicetable.h>
 #include <linux/module.h>
+#include <linux/mutex.h>
 #include <linux/of.h>
 #include <linux/of_reserved_mem.h>
 #include <linux/platform_device.h>
@@ -53,8 +63,14 @@
 
 /* Echo/heartbeat slot page, carveout + 0x2000 (tools/small-core-echo.S). */
 #define K230_SLOT_OFFSET	0x2000
+#define K230_SLOT_SIZE		0x1000
+#define K230_SLOT_REQ_SEQ	0x00
+#define K230_SLOT_REQ_VALUE	0x04
 #define K230_SLOT_MAGIC		0x58
+#define K230_SLOT_SERVED	0x5c
+#define K230_SLOT_RSP(seq)	(0x100 + 0x40 * ((seq) & 7))
 #define K230_ECHO_MAGIC		0x4f484345
+#define K230_ECHO_TIMEOUT_US	100000
 
 struct k230_cpu0_rproc {
 	struct device *dev;
@@ -63,20 +79,69 @@ struct k230_cpu0_rproc {
 	void *carveout;
 	struct resource carveout_res;
 	int reset_status;
+	struct mutex echo_lock;		/* one request in flight */
+	u32 echo_seq;
+	char echo_last[160];
 };
+
+static u32 *k230_slot(struct k230_cpu0_rproc *priv, unsigned int off)
+{
+	return priv->carveout + K230_SLOT_OFFSET + off;
+}
+
+/*
+ * Copy the raw image to the carveout base and clear the slot page, so a
+ * magic word seen later was written by this boot of CPU0. The mapping is
+ * MEMREMAP_WC (non-cacheable through Svpbmt), and the region is no-map, so
+ * CPU1 holds no cached alias of it.
+ */
+static int k230_cpu0_rproc_load(struct rproc *rproc, const struct firmware *fw)
+{
+	struct k230_cpu0_rproc *priv = rproc->priv;
+
+	if (fw->size > K230_SLOT_OFFSET) {
+		dev_err(&rproc->dev, "image is %zu bytes; the slot page starts at 0x%x\n",
+			fw->size, K230_SLOT_OFFSET);
+		return -EFBIG;
+	}
+	memcpy(priv->carveout, fw->data, fw->size);
+	memset(priv->carveout + fw->size, 0, K230_SLOT_OFFSET + K230_SLOT_SIZE - fw->size);
+	wmb();
+	priv->echo_seq = 0;
+	return 0;
+}
 
 static int k230_cpu0_rproc_start(struct rproc *rproc)
 {
-	dev_warn(&rproc->dev, "read-only skeleton: CPU0 start not implemented\n");
-	return -EOPNOTSUPP;
+	struct k230_cpu0_rproc *priv = rproc->priv;
+	u64 entry = priv->carveout_res.start;
+	int ret;
+
+	if (upper_32_bits(entry))
+		return -ERANGE;
+
+	writel(lower_32_bits(entry), priv->vector);
+	if (readl(priv->vector) != lower_32_bits(entry)) {
+		dev_err(&rproc->dev, "boot vector did not take 0x%08llx\n", entry);
+		return -EIO;
+	}
+	ret = reset_control_reset(priv->reset);
+	if (ret) {
+		dev_err(&rproc->dev, "CPU0 reset pulse failed: %d\n", ret);
+		return ret;
+	}
+	dev_info(&rproc->dev, "CPU0 released at 0x%08llx\n", entry);
+	return 0;
 }
 
 static int k230_cpu0_rproc_stop(struct rproc *rproc)
 {
+	/* No held reset on RST_CPU0; a cooperative park is task 5.2. */
 	return -EOPNOTSUPP;
 }
 
 static const struct rproc_ops k230_cpu0_rproc_ops = {
+	.load = k230_cpu0_rproc_load,
 	.start = k230_cpu0_rproc_start,
 	.stop = k230_cpu0_rproc_stop,
 };
@@ -106,17 +171,88 @@ static ssize_t cpu0_status_show(struct device *dev, struct device_attribute *att
 {
 	struct k230_cpu0_rproc *priv = dev_get_drvdata(dev);
 	u32 vector = readl(priv->vector);
-	u32 magic = READ_ONCE(*(u32 *)(priv->carveout + K230_SLOT_OFFSET + K230_SLOT_MAGIC));
+	u32 magic = READ_ONCE(*k230_slot(priv, K230_SLOT_MAGIC));
 
 	return sysfs_emit(buf,
-			  "boot_vector 0x%08x\nreset_status %d\ncarveout %pR\nslot_magic 0x%08x%s\n",
+			  "boot_vector 0x%08x\nreset_status %d\ncarveout %pR\nslot_magic 0x%08x%s\nserved %u\n",
 			  vector, priv->reset_status, &priv->carveout_res, magic,
-			  magic == K230_ECHO_MAGIC ? " (echo payload)" : "");
+			  magic == K230_ECHO_MAGIC ? " (echo payload)" : "",
+			  READ_ONCE(*k230_slot(priv, K230_SLOT_SERVED)));
 }
 static DEVICE_ATTR_RO(cpu0_status);
 
+/* Post one echo request and poll its response line; see tools/small-core-echo.S. */
+static ssize_t cpu0_echo_store(struct device *dev, struct device_attribute *attr,
+			       const char *buf, size_t count)
+{
+	struct k230_cpu0_rproc *priv = dev_get_drvdata(dev);
+	u32 value, seq, rsp_seq = 0, rsp_value, rsp_inv, rsp_served;
+	ktime_t t0;
+	s64 us;
+	int ret;
+
+	ret = kstrtou32(buf, 0, &value);
+	if (ret)
+		return ret;
+
+	mutex_lock(&priv->echo_lock);
+	if (READ_ONCE(*k230_slot(priv, K230_SLOT_MAGIC)) != K230_ECHO_MAGIC) {
+		ret = -ENODEV;
+		goto out;
+	}
+	seq = ++priv->echo_seq;
+	if (!seq)
+		seq = ++priv->echo_seq;
+
+	WRITE_ONCE(*k230_slot(priv, K230_SLOT_REQ_VALUE), value);
+	wmb();
+	t0 = ktime_get();
+	WRITE_ONCE(*k230_slot(priv, K230_SLOT_REQ_SEQ), seq);
+	wmb();
+
+	do {
+		rsp_seq = READ_ONCE(*k230_slot(priv, K230_SLOT_RSP(seq)));
+		us = ktime_us_delta(ktime_get(), t0);
+		if (rsp_seq == seq)
+			break;
+		usleep_range(10, 50);
+	} while (us < K230_ECHO_TIMEOUT_US);
+
+	if (rsp_seq != seq) {
+		snprintf(priv->echo_last, sizeof(priv->echo_last),
+			 "seq %u value 0x%08x TIMEOUT after %lld us (rsp_seq %u)\n",
+			 seq, value, us, rsp_seq);
+		ret = -ETIMEDOUT;
+		goto out;
+	}
+	rmb();
+	rsp_value = READ_ONCE(*k230_slot(priv, K230_SLOT_RSP(seq) + 4));
+	rsp_inv = READ_ONCE(*k230_slot(priv, K230_SLOT_RSP(seq) + 8));
+	rsp_served = READ_ONCE(*k230_slot(priv, K230_SLOT_RSP(seq) + 12));
+	ret = (rsp_value == value + 1 && rsp_inv == ~value) ? 0 : -EIO;
+	snprintf(priv->echo_last, sizeof(priv->echo_last),
+		 "seq %u value 0x%08x rsp 0x%08x inv 0x%08x served %u latency_us %lld %s\n",
+		 seq, value, rsp_value, rsp_inv, rsp_served, us, ret ? "MISMATCH" : "OK");
+out:
+	mutex_unlock(&priv->echo_lock);
+	return ret ? ret : count;
+}
+
+static ssize_t cpu0_echo_show(struct device *dev, struct device_attribute *attr, char *buf)
+{
+	struct k230_cpu0_rproc *priv = dev_get_drvdata(dev);
+	ssize_t n;
+
+	mutex_lock(&priv->echo_lock);
+	n = sysfs_emit(buf, "%s", priv->echo_last[0] ? priv->echo_last : "none\n");
+	mutex_unlock(&priv->echo_lock);
+	return n;
+}
+static DEVICE_ATTR_RW(cpu0_echo);
+
 static struct attribute *k230_cpu0_rproc_attrs[] = {
 	&dev_attr_cpu0_status.attr,
+	&dev_attr_cpu0_echo.attr,
 	NULL
 };
 ATTRIBUTE_GROUPS(k230_cpu0_rproc);
@@ -136,17 +272,17 @@ static int k230_cpu0_rproc_probe(struct platform_device *pdev)
 	if (!rproc)
 		return -ENOMEM;
 	rproc->auto_boot = false;
-	rproc->sysfs_read_only = true;
 
 	priv = rproc->priv;
 	priv->dev = dev;
+	mutex_init(&priv->echo_lock);
 	platform_set_drvdata(pdev, priv);
 
 	priv->reset = devm_reset_control_get_exclusive(dev, NULL);
 	if (IS_ERR(priv->reset))
 		return dev_err_probe(dev, PTR_ERR(priv->reset), "cannot get CPU0 reset\n");
 
-	/* Read-only query; reset-k230.c registers no .status, so expect an error. */
+	/* reset-k230.c registers no .status, so expect an error here. */
 	priv->reset_status = reset_control_status(priv->reset);
 
 	priv->vector = devm_platform_ioremap_resource(pdev, 0);
@@ -165,7 +301,7 @@ static int k230_cpu0_rproc_probe(struct platform_device *pdev)
 	if (ret)
 		return dev_err_probe(dev, ret, "rproc_add failed\n");
 
-	dev_info(dev, "CPU0 read-only: vector 0x%08x, reset status %d, carveout %pR\n",
+	dev_info(dev, "CPU0: vector 0x%08x, reset status %d, carveout %pR\n",
 		 readl(priv->vector), priv->reset_status, &priv->carveout_res);
 	return 0;
 }
@@ -186,5 +322,5 @@ static struct platform_driver k230_cpu0_rproc_driver = {
 };
 module_platform_driver(k230_cpu0_rproc_driver);
 
-MODULE_DESCRIPTION("Canaan K230 CPU0 remoteproc (read-only skeleton)");
+MODULE_DESCRIPTION("Canaan K230 CPU0 remoteproc");
 MODULE_LICENSE("GPL");

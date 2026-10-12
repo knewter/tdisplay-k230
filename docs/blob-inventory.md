@@ -1788,6 +1788,7 @@ DATA  40fbecd977357ed567f28d5253c5d502454fb0422a05c3be7cc4f02891123a6d  docs/evi
 DATA  2c11206efc4b2a5bb0ec471f0ca738e1e3c8fb52e2d8d899d3b4b37c9765ef33  docs/evidence/mainline-boot-splash/board/splash-at-idle-kernel-prompt.jpg
 DATA  b7e0c5fa9b1f9cb9e327d310bbeef5c05df6ea15c4103c3e6708a09b125cc463  docs/evidence/mainline-boot-splash/board/splash-at-uboot-before-kernel.jpg
 DATA  dc38dac11ae7f6129c9433fe43db56dbfdc01fd2e0d3c7fdc101e14fa129e43b  docs/evidence/mainline-boot-splash/board/unreserved-kernel-tear-film2-strip.jpg
+DATA  a6a8591d874042351b5785b57b87277c1af63eeb007045ebb220960a896a03e8  docs/evidence/second-core/linux-start-2026-10-12/cpu0-start.png
 ```
 
 `group:` rows stand for a directory whose members are enumerated by
@@ -3008,3 +3009,13 @@ commands, timings and limits are in
 | `docs/evidence/mainline-boot-splash/board/splash-at-idle-kernel-prompt.jpg` | 119995 | DATA | `2c11206efc4b2a5bb0ec471f0ca738e1e3c8fb52e2d8d899d3b4b37c9765ef33` |
 | `docs/evidence/mainline-boot-splash/board/splash-at-uboot-before-kernel.jpg` | 119671 | DATA | `b7e0c5fa9b1f9cb9e327d310bbeef5c05df6ea15c4103c3e6708a09b125cc463` |
 | `docs/evidence/mainline-boot-splash/board/unreserved-kernel-tear-film2-strip.jpg` | 68373 | DATA | `dc38dac11ae7f6129c9433fe43db56dbfdc01fd2e0d3c7fdc101e14fa129e43b` |
+
+### CPU0 Linux-start board session capture, 2026-10-12
+
+Non-executable `grim` capture of the compositor output taken while CPU0 ran
+the echo payload under Linux (coprocessor task 5.1). Command and limits are
+in `docs/evidence/second-core/linux-start-2026-10-12/README.md`.
+
+| File | Bytes | Class | SHA256 |
+| --- | ---: | --- | --- |
+| `docs/evidence/second-core/linux-start-2026-10-12/cpu0-start.png` | 7734 | DATA | `a6a8591d874042351b5785b57b87277c1af63eeb007045ebb220960a896a03e8` |

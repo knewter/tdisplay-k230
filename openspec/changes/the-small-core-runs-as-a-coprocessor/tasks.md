@@ -147,7 +147,7 @@
   passes. Evidence: `docs/evidence/second-core/remoteproc-skeleton-build.md`.
 ## 5. Linux-driven runtime start/stop of CPU0
 
-- [ ] 5.1 **BLOCKED on 3.3, 4.2. BOARD-GATED. AUTHORIZATION-REQUIRED.**
+- [x] 5.1 **BOARD-GATED. AUTHORIZATION-REQUIRED.**
   Extend the driver from 4.2 to perform the actual release sequence
   (reset-vector write at `sysctl_boot+0x100`, then
   `reset_control_deassert()` on the CPU0 line) with the echo firmware from
@@ -158,7 +158,19 @@
   fallback routes named in task 2.1 (no disposable card). Verify with a
   board console transcript and Linux dmesg/sysfs capture committed under
   `docs/evidence/second-core/` (physical Linux-coexistence proof).
-- [ ] 5.2 **BLOCKED on 5.1.** Extend the same driver's stop path
+  DONE 2026-10-12 (physical board, one serial session plus a native `grim`
+  capture; operator "yeah go for it"; one-off boot of the trial kernel/DT,
+  installed default unchanged and restored): `echo start` on
+  `remoteproc0` loaded `small-core-echo.bin` (224 bytes), wrote
+  `0x07000000` to the vector and pulsed `RST_CPU0` with
+  `reset_control_reset()` (the binding decision supersedes `deassert`:
+  CPU0 has only a pulse). 1010 of 1010 requests answered correctly through
+  the driver's `cpu0_echo` attribute (latency 66-264 us, poll-granular),
+  with systemd `running`, `shell`/`seatd` active, sway IPC answering and a
+  `grim` frame captured after the start and again after a 45 s hold. No camera; the Svpbmt NC mapping
+  is inferred from config, not inspected. Evidence:
+  `docs/evidence/second-core/linux-start-2026-10-12/README.md`.
+- [ ] 5.2 Extend the same driver's stop path
   (`reset_control_assert()` on the CPU0 line only) and prove CPU0 parks
   again without a board reset, with Linux still running and the shell still
   responsive throughout. Verify with the same transcript style as 5.1,

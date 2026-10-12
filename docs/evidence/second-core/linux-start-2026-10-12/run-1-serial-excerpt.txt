@@ -1,0 +1,303 @@
+# K230 coprocessor task 5.1 board session run-1, 2026-10-12 (excerpt).
+# Source: tools/cpu0-linux-start-session.py transcript; escape/OSC sequences
+# removed (they carried terminal titles and systemd session identifiers);
+# sections cut only at the marked boundaries, text inside them unchanged.
+
+########################################################################
+# U-Boot: loads, CRC checks and bootm (host-stamped notes)
+########################################################################
+[  12.600] --- sending: version ---
+version
+U-Boot 2022.10 (Oct 03 2022 - 19:25:32 +0000)
+
+riscv64-unknown-linux-gnu-gcc (GCC) 15.3.0
+GNU ld (GNU Binutils) 2.46
+K230# 
+U-Boot 2022.10 (Oct 03 2022 - 19:25:32 +0000)
+
+riscv64-unknown-linux-gnu-gcc (GCC) 15.3.0
+GNU ld (GNU Binutils) 2.46
+K230# [  13.255] --- sending: ext4load mmc 1:2 0x7000000 /var/lib/k230/coherent-boot/kc3iyr4cnjlswa87kkpi81qgc1is6hli-20261012f/bootargs.txt ---
+ext4load mmc 1:2 0x7000000 /var/lib/k230/coherent-boot/kc3iyr4cnjlswa87kkpi81qgc1is6hli-20261012f/bootargs.txt
+198 bytes read in 5 ms (38.1 KiB/s)
+K230# 
+K230# [  13.913] --- sending: crc32 0x7000000 0xc6 ---
+crc32 0x7000000 0xc6
+crc32 for 07000000 ... 070000c5 ==> 762be152
+K230# 
+crc32 for 07000000 ... 070000c5 ==> 762be152
+K230# [  14.577] --- sending: ext4load mmc 1:2 0x200000 /var/lib/k230/cpu0-trial/Image ---
+ext4load mmc 1:2 0x200000 /var/lib/k230/cpu0-trial/Image
+42748416 bytes read in 1772 ms (23 MiB/s)
+K230# 
+K230# [  16.938] --- sending: crc32 0x200000 0x28c4a00 ---
+crc32 0x200000 0x28c4a00
+crc32 for 00200000 ... 02ac49ff ==> cbfe8fd7
+K230# 
+crc32 for 00200000 ... 02ac49ff ==> cbfe8fd7
+K230# [  18.109] --- sending: ext4load mmc 1:2 0x8400000 /var/lib/k230/cpu0-trial/k230-tdisplay-mainline-drm-hotplug-cpu0.dtb ---
+ext4load mmc 1:2 0x8400000 /var/lib/k230/cpu0-trial/k230-tdisplay-mainline-drm-hotplug-cpu0.dtb
+14910 bytes read in 5 ms (2.8 MiB/s)
+K230# 
+K230# [  18.766] --- sending: crc32 0x8400000 0x3a3e ---
+crc32 0x8400000 0x3a3e
+crc32 for 08400000 ... 08403a3d ==> 8ecd8d13
+K230# 
+crc32 for 08400000 ... 08403a3d ==> 8ecd8d13
+K230# [  19.457] --- sending: ext4load mmc 1:2 0x9000000 /var/lib/k230/coherent-boot/kc3iyr4cnjlswa87kkpi81qgc1is6hli-20261012f/initrd.uimg ---
+ext4load mmc 1:2 0x9000000 /var/lib/k230/coherent-boot/kc3iyr4cnjlswa87kkpi81qgc1is6hli-20261012f/initrd.uimg
+27330502 bytes read in 1137 ms (22.9 MiB/s)
+K230# 
+K230# [  21.216] --- sending: crc32 0x9000000 0x1a107c6 ---
+crc32 0x9000000 0x1a107c6
+crc32 for 09000000 ... 0aa107c5 ==> c5a9d6cc
+K230# 
+crc32 for 09000000 ... 0aa107c5 ==> c5a9d6cc
+K230# [  22.181] --- sending: ext4load mmc 1:2 0x8000000 /var/lib/k230/coherent-boot/kc3iyr4cnjlswa87kkpi81qgc1is6hli-20261012f/backup/fw_jump_add_uboot_head.bin ---
+ext4load mmc 1:2 0x8000000 /var/lib/k230/coherent-boot/kc3iyr4cnjlswa87kkpi81qgc1is6hli-20261012f/backup/fw_jump_add_uboot_head.bin
+270808 bytes read in 17 ms (15.2 MiB/s)
+K230# 
+K230# [  22.841] --- sending: crc32 0x8000000 0x421d8 ---
+crc32 0x8000000 0x421d8
+crc32 for 08000000 ... 080421d7 ==> 99b89787
+K230# 
+crc32 for 08000000 ... 080421d7 ==> 99b89787
+K230# [  23.492] --- sending: env import -t 0x7000000 0xc6 ---
+env import -t 0x7000000 0xc6
+K230# 
+K230# [  24.145] --- sending: printenv bootargs ---
+printenv bootargs
+bootargs=consoleblank=0 console=ttyS0,115200n8 root=fstab loglevel=4 lsm=landlock,yama,bpf loglevel=7 init=/nix/store/kc3iyr4cnjlswa87kkpi81qgc1is6hli-nixos-system-nixos-26.11.20260919.20b1ddd/init
+K230# 
+bootargs=consoleblank=0 console=ttyS0,115200n8 root=fstab loglevel=4 lsm=landlock,yama,bpf loglevel=7 init=/nix/store/kc3iyr4cnjlswa87kkpi81qgc1is6hli-nixos-system-nixos-26.11.20260919.20b1ddd/init
+K230# [  24.796] --- sending: bootm 0x8000000 0x9000000 0x8400000 ---
+bootm 0x8000000 0x9000000 0x8400000
+## Booting kernel from Legacy Image at 08000000 ...
+   Image Name:   linux
+   Created:      2023-11-14  22:13:20 UTC
+   Image Type:   RISC-V Linux Kernel Image (uncompressed)
+   Data Size:    270744 Bytes = 264.4 KiB
+   Load Address: 00000000
+   Entry Point:  00000000
+   Verifying Checksum ... OK
+## Loading init Ramdisk from Legacy Image at 09000000 ...
+   Image Name:   initrd
+   Created:      1980-01-01   0:00:00 UTC
+   Image Type:   RISC-V Linux RAMDisk Image (uncompressed)
+   Data Size:    27330438 Bytes = 26.1 MiB
+   Load Address: 00000000
+   Entry Point:  00000000
+   Verifying Checksum ... OK
+## Flattened Device Tree blob at 08400000
+   Booting using the fdt blob at 0x8400000
+   Loading Kernel Image
+   Loading Ramdisk to 3e125000, end 3fb35786 ... OK
+   Loading Device Tree to 000000000a0f9000, end 000000000a0ffa3d ... OK
+g_bootmod = 3, bootargs=consoleblank=0 console=ttyS0,115200n8 root=fstab loglevel=4 lsm=landlock,yama,bpf loglevel=7 init=/nix/store/kc3iyr4cnjlswa87kkpi81qgc1is6hli-nixos-system-nixos-26.11.20260919.20b1ddd/init
+
+Starting kernel ...
+
+########################################################################
+# Linux: first shell poll after the serial autologin
+########################################################################
+[ 100.152] --- sending: systemctl is-active shell; echo SHELL_POLL_DONE ---
+systemctl is-active shell; echo SHELL_POLL_DONE
+
+active
+SHELL_POLL_DONE
+
+
+[root@nixos:~]#
+
+########################################################################
+# Linux: pre-start, module load, start, echo, post-start, hold, post-hold
+########################################################################
+[ 232.698] --- sending: echo K230_CPU0_PRE_BEGIN; uname -a; cat /proc/cmdline; systemctl is-system-running; systemctl is-active shell seatd; dmesg | grep -iE "cpu0|remoteproc|reserved mem"; ls /sys/class/remoteproc/; sha256sum /boot/small-core-echo.bin /var/lib/k230/cpu0-trial/k230_cpu0_rproc.ko.xz; runuser -u shell -- env SWAYSOCK=/run/shell/sway-ipc.sock WAYLAND_DISPLAY=wayland-1 XDG_RUNTIME_DIR=/run/shell swaymsg -t get_version | head -3; echo K230_CPU0_PRE_END ---
+echo K230_CPU0_PRE_BEGIN; uname -a; cat /proc/cmdline; systemctl is-system-running; systemctl is-active shell seatd; dmesg | grep -iE "cpu0|remoteproc|reserved mem"; ls /sys/class/remoteproc/; sha256sum /boot/small-core-echo.bin /var/lib/k230/cpu0-trial/k230_cpu0_rproc.ko.xz; runuser -u shell -- env SWAYSOCK=/run/shell/sway-ipc.sock WAYLAND_DISPLAY=wayland-1 XDG_RUNTIME_DIR=/run/shell swaymsg -t get_version | head -3; echo K230_CPU0_PRE_END
+
+K230_CPU0_PRE_BEGIN
+Linux nixos 7.3.0-rc5 #1-NixOS SMP PREEMPT Tue Jan  1 00:00:00 UTC 1980 riscv64 GNU/Linux
+consoleblank=0 console=ttyS0,115200n8 root=fstab loglevel=4 lsm=landlock,yama,bpf loglevel=7 init=/nix/store/kc3iyr4cnjlswa87kkpi81qgc1is6hli-nixos-system-nixos-26.11.20260919.20b1ddd/init
+running
+active
+active
+[    0.000000] OF: reserved mem: 0x0000000000000000..0x000000000003ffff (256 KiB) nomap non-reusable mmode_resv1@0
+[    0.000000] OF: reserved mem: 0x0000000000040000..0x000000000005ffff (128 KiB) nomap non-reusable mmode_resv0@40000
+[    0.000000] OF: reserved mem: 0x0000000010000000..0x00000000103fffff (4096 KiB) nomap non-reusable framebuffer@10000000
+[    0.000000] OF: reserved mem: 0x0000000007000000..0x00000000070fffff (1024 KiB) nomap non-reusable cpu0-firmware@7000000
+[    0.203675] cpu0: scalar unaligned word access speed is 6.32x byte access speed (fast)
+2ec68316e7d66a9380701c2011cd02c663ef945826afb30736c44b42017e46cc  /boot/small-core-echo.bin
+f7c3a94d03cdb8967bbd0169e175cf1ac24b425c71345d79f9aaa6e16c880225  /var/lib/k230/cpu0-trial/k230_cpu0_rproc.ko.xz
+{
+  "human_readable": "1.12",
+  "variant": "sway",
+K230_CPU0_PRE_END
+
+
+[root@nixos:~]# 
+
+
+
+[root@nixos:~]# [ 233.134] --- sending: echo K230_CPU0_LOAD_BEGIN; insmod /var/lib/k230/cpu0-trial/k230_cpu0_rproc.ko.xz; echo insmod_rc=$?; D=$(ls -d /sys/bus/platform/drivers/k230-cpu0-rproc/*.remoteproc); R=$(ls -d $D/remoteproc/remoteproc*); echo D=$D R=$R; cat $R/name $R/state $R/firmware; cat $D/cpu0_status; echo 0x5a5a5a5a > $D/cpu0_echo; echo prestart_echo_rc=$?; echo "ECHO_RESULT prestart $(cat $D/cpu0_echo)"; dmesg | grep -iE "k230-cpu0|remoteproc" | tail -5; echo K230_CPU0_LOAD_END ---
+echo K230_CPU0_LOAD_BEGIN; insmod /var/lib/k230/cpu0-trial/k230_cpu0_rproc.ko.xz; echo insmod_rc=$?; D=$(ls -d /sys/bus/platform/drivers/k230-cpu0-rproc/*.remoteproc); R=$(ls -d $D/remoteproc/remoteproc*); echo D=$D R=$R; cat $R/name $R/state $R/firmware; cat $D/cpu0_status; echo 0x5a5a5a5a > $D/cpu0_echo; echo prestart_echo_rc=$?; echo "ECHO_RESULT prestart $(cat $D/cpu0_echo)"; dmesg | grep -iE "k230-cpu0|remoteproc" | tail -5; echo K230_CPU0_LOAD_END
+
+K230_CPU0_LOAD_BEGIN
+insmod_rc=0
+D=/sys/bus/platform/drivers/k230-cpu0-rproc/91102100.remoteproc R=/sys/bus/platform/drivers/k230-cpu0-rproc/91102100.remoteproc/remoteproc/remoteproc0
+k230-cpu0
+offline
+rproc-k230-cpu0-fw
+boot_vector 0x91200000
+reset_status -524
+carveout [mem 0x07000000-0x070fffff]
+slot_magic 0x00000000
+served 0
+-bash: echo: write error: No such device
+prestart_echo_rc=1
+ECHO_RESULT prestart none
+[  207.517887] remoteproc remoteproc0: k230-cpu0 is available
+[  207.520286] k230-cpu0-rproc 91102100.remoteproc: CPU0: vector 0x91200000, reset status -524, carveout [mem 0x07000000-0x070fffff]
+K230_CPU0_LOAD_END
+[ 233.571] --- sending: echo K230_CPU0_START_BEGIN; D=$(ls -d /sys/bus/platform/drivers/k230-cpu0-rproc/*.remoteproc); R=$(ls -d $D/remoteproc/remoteproc*); echo -n /boot > /sys/module/firmware_class/parameters/path; echo small-core-echo.bin > $R/firmware; cat $R/firmware; date +%s.%N; echo start > $R/state; echo start_rc=$?; cat $R/state; cat $D/cpu0_status; for v in 0x00000000 0x12345678 0xfffffffe 0xffffffff 0xdeadbeef 0x00000001 0x80000000 0x7fffffff; do echo $v > $D/cpu0_echo; echo "ECHO_RESULT rc=$? $(cat $D/cpu0_echo)"; done; i=0; ok=0; while [ $i -lt 1000 ]; do echo $i > $D/cpu0_echo && ok=$((ok+1)); i=$((i+1)); done; echo "ECHO_BULK ok=$ok of 1000 last: $(cat $D/cpu0_echo)"; cat $D/cpu0_status; dmesg | grep -iE "k230-cpu0|remoteproc|firmware" | tail -10; echo K230_CPU0_START_END ---
+
+
+[root@nixos:~]# 
+
+
+
+[root@nixos:~]# echo K230_CPU0_START_BEGIN; D=$(ls -d /sys/bus/platform/drivers/k230-cpu0-rproc/*.remoteproc); R=$(ls -d $D/remoteproc/remoteproc*); echo -n /boot > /sys/module/firmware_class/parameters/path; echo small-core-echo.bin > $R/firmware; cat $R/firmware; date +%s.%N; echo start > $R/state; echo start_rc=$?; cat $R/state; cat $D/cpu0_status; for v in 0x00000000 0x12345678 0xfffffffe 0xffffffff 0xdeadbeef 0x00000001 0x80000000 0x7fffffff; do echo $v > $D/cpu0_echo; echo "ECHO_RESULT rc=$? $(cat $D/cpu0_echo)"; done; i=0; ok=0; while [ $i -lt 1000 ]; do echo $i > $D/cpu0_echo && ok=$((ok+1)); i=$((i+1)); done; echo "ECHO_BULK ok=$ok of 1000 last: $(cat $D/cpu0_echo)"; cat $D/cpu0_status; dmesg | grep -iE "k230-cpu0|remoteproc|firmware" | tail -10; echo K230_CPU0_START_END
+
+K230_CPU0_START_BEGIN
+small-core-echo.bin
+1791847240.472688444
+start_rc=0
+running
+boot_vector 0x07000000
+reset_status -524
+carveout [mem 0x07000000-0x070fffff]
+slot_magic 0x4f484345 (echo payload)
+served 0
+ECHO_RESULT rc=0 seq 1 value 0x00000000 rsp 0x00000001 inv 0xffffffff served 1 latency_us 80 OK
+ECHO_RESULT rc=0 seq 2 value 0x12345678 rsp 0x12345679 inv 0xedcba987 served 2 latency_us 85 OK
+ECHO_RESULT rc=0 seq 3 value 0xfffffffe rsp 0xffffffff inv 0x00000001 served 3 latency_us 66 OK
+ECHO_RESULT rc=0 seq 4 value 0xffffffff rsp 0x00000000 inv 0x00000000 served 4 latency_us 82 OK
+ECHO_RESULT rc=0 seq 5 value 0xdeadbeef rsp 0xdeadbef0 inv 0x21524110 served 5 latency_us 80 OK
+ECHO_RESULT rc=0 seq 6 value 0x00000001 rsp 0x00000002 inv 0xfffffffe served 6 latency_us 87 OK
+ECHO_RESULT rc=0 seq 7 value 0x80000000 rsp 0x80000001 inv 0x7fffffff served 7 latency_us 76 OK
+ECHO_RESULT rc=0 seq 8 value 0x7fffffff rsp 0x80000000 inv 0x80000000 served 8 latency_us 89 OK
+ECHO_BULK ok=1000 of 1000 last: seq 1008 value 0x000003e7 rsp 0x000003e8 inv 0xfffffc18 served 1008 latency_us 87 OK
+boot_vector 0x07000000
+reset_status -524
+carveout [mem 0x07000000-0x070fffff]
+slot_magic 0x4f484345 (echo payload)
+served 1008
+[    0.000000] OF: reserved mem: 0x0000000007000000..0x00000000070fffff (1024 KiB) nomap non-reusable cpu0-firmware@7000000
+[    1.916998] riscv-pmu-sbi: 16 firmware and 18 hardware counters
+[   24.851954] systemd[1]: Clear Stale Hibernate Storage Info skipped, unmet condition check ConditionPathExists=/sys/firmware/efi/efivars/HibernateLocation-8cf2644b-4b0b-428f-9387-6d876050dc67
+[  207.517887] remoteproc remoteproc0: k230-cpu0 is available
+[  207.520286] k230-cpu0-rproc 91102100.remoteproc: CPU0: vector 0x91200000, reset status -524, carveout [mem 0x07000000-0x070fffff]
+[  208.058358] remoteproc remoteproc0: powering up k230-cpu0
+[  208.058478] remoteproc remoteproc0: Booting fw image small-core-echo.bin, size 224
+[  208.058593] remoteproc remoteproc0: CPU0 released at 0x07000000
+[  208.058602] remoteproc remoteproc0: remote processor k230-cpu0 is now up
+K230_CPU0_START_END
+
+
+[root@nixos:~]# 
+
+
+
+[root@nixos:~]# [ 234.538] --- sending: echo K230_CPU0_POST_BEGIN; D=$(ls -d /sys/bus/platform/drivers/k230-cpu0-rproc/*.remoteproc); R=$(ls -d $D/remoteproc/remoteproc*); cat $R/state; systemctl is-system-running; systemctl is-active shell seatd; runuser -u shell -- env SWAYSOCK=/run/shell/sway-ipc.sock WAYLAND_DISPLAY=wayland-1 XDG_RUNTIME_DIR=/run/shell swaymsg -t get_version | head -3; runuser -u shell -- env SWAYSOCK=/run/shell/sway-ipc.sock WAYLAND_DISPLAY=wayland-1 XDG_RUNTIME_DIR=/run/shell grim /run/shell/cpu0-start.png; echo grim_rc=$?; sha256sum /run/shell/cpu0-start.png; echo 0xa5a5a5a5 > $D/cpu0_echo; echo "ECHO_RESULT post $(cat $D/cpu0_echo)"; cat $D/cpu0_status; uptime; dmesg --level=err,warn | tail -15; echo K230_CPU0_POST_END ---
+echo K230_CPU0_POST_BEGIN; D=$(ls -d /sys/bus/platform/drivers/k230-cpu0-rproc/*.remoteproc); R=$(ls -d $D/remoteproc/remoteproc*); cat $R/state; systemctl is-system-running; systemctl is-active shell seatd; runuser -u shell -- env SWAYSOCK=/run/shell/sway-ipc.sock WAYLAND_DISPLAY=wayland-1 XDG_RUNTIME_DIR=/run/shell swaymsg -t get_version | head -3; runuser -u shell -- env SWAYSOCK=/run/shell/sway-ipc.sock WAYLAND_DISPLAY=wayland-1 XDG_RUNTIME_DIR=/run/shell grim /run/shell/cpu0-start.png; echo grim_rc=$?; sha256sum /run/shell/cpu0-start.png; echo 0xa5a5a5a5 > $D/cpu0_echo; echo "ECHO_RESULT post $(cat $D/cpu0_echo)"; cat $D/cpu0_status; uptime; dmesg --level=err,warn | tail -15; echo K230_CPU0_POST_END
+
+K230_CPU0_POST_BEGIN
+running
+running
+active
+active
+{
+  "human_readable": "1.12",
+  "variant": "sway",
+grim_rc=0
+a6a8591d874042351b5785b57b87277c1af63eeb007045ebb220960a896a03e8  /run/shell/cpu0-start.png
+ECHO_RESULT post seq 1009 value 0xa5a5a5a5 rsp 0xa5a5a5a6 inv 0x5a5a5a5a served 1009 latency_us 264 OK
+boot_vector 0x07000000
+reset_status -524
+carveout [mem 0x07000000-0x070fffff]
+slot_magic 0x4f484345 (echo payload)
+served 1009
+ 18:20:41  up   0:03,  1 user,  load average: 0.55, 0.87, 0.40
+[    1.508841] dwc2 91500000.usb: supply vusb_a not found, using dummy regulator
+[    1.627513] dwc2 91540000.usb: supply vusb_d not found, using dummy regulator
+[    1.627875] dwc2 91540000.usb: supply vusb_a not found, using dummy regulator
+[    1.971616] sdhci-dwcmshc-kendryte 91580000.sdhci0: card claims to support voltages below defined range
+[    2.424794] goodix-berlin-i2c 0-005d: supply avdd not found, using dummy regulator
+[    2.424943] goodix-berlin-i2c 0-005d: supply vddio not found, using dummy regulator
+[    2.581088] lt9611 0-003b: supply vdd not found, using dummy regulator
+[    2.581222] lt9611 0-003b: supply vcc not found, using dummy regulator
+[    2.766805] canaan-drm display-subsystem: [drm] [PLANE:37:plane-1] pixel format with alpha exposed but blend mode not setup. Please fix.
+[    2.766825] canaan-drm display-subsystem: [drm] [PLANE:39:plane-2] pixel format with alpha exposed but blend mode not setup. Please fix.
+[    2.766831] canaan-drm display-subsystem: [drm] [PLANE:41:plane-3] pixel format with alpha exposed but blend mode not setup. Please fix.
+[    2.766837] canaan-drm display-subsystem: [drm] [PLANE:43:plane-4] pixel format with alpha exposed but blend mode not setup. Please fix.
+[    2.854592] workqueue: work func k230_pmu_pwrkey_runtime_check_work enqueued on deprecated workqueue. Use system_{percpu|dfl}_wq instead.
+[   25.067711] Kernel module BTF mismatch detected, BTF debug info may be unavailable for some modules
+[   28.678003] 8189fs: loading out-of-tree module taints kernel.
+K230_CPU0_POST_END
+
+
+[root@nixos:~]# 
+
+
+
+[root@nixos:~]# [ 235.299] --- AT_CPU0_HOLD ---
+[ 280.388] --- sending: echo K230_CPU0_POST_BEGIN; D=$(ls -d /sys/bus/platform/drivers/k230-cpu0-rproc/*.remoteproc); R=$(ls -d $D/remoteproc/remoteproc*); cat $R/state; systemctl is-system-running; systemctl is-active shell seatd; runuser -u shell -- env SWAYSOCK=/run/shell/sway-ipc.sock WAYLAND_DISPLAY=wayland-1 XDG_RUNTIME_DIR=/run/shell swaymsg -t get_version | head -3; runuser -u shell -- env SWAYSOCK=/run/shell/sway-ipc.sock WAYLAND_DISPLAY=wayland-1 XDG_RUNTIME_DIR=/run/shell grim /run/shell/cpu0-start.png; echo grim_rc=$?; sha256sum /run/shell/cpu0-start.png; echo 0xa5a5a5a5 > $D/cpu0_echo; echo "ECHO_RESULT post $(cat $D/cpu0_echo)"; cat $D/cpu0_status; uptime; dmesg --level=err,warn | tail -15; echo K230_CPU0_POST_END ---
+echo K230_CPU0_POST_BEGIN; D=$(ls -d /sys/bus/platform/drivers/k230-cpu0-rproc/*.remoteproc); R=$(ls -d $D/remoteproc/remoteproc*); cat $R/state; systemctl is-system-running; systemctl is-active shell seatd; runuser -u shell -- env SWAYSOCK=/run/shell/sway-ipc.sock WAYLAND_DISPLAY=wayland-1 XDG_RUNTIME_DIR=/run/shell swaymsg -t get_version | head -3; runuser -u shell -- env SWAYSOCK=/run/shell/sway-ipc.sock WAYLAND_DISPLAY=wayland-1 XDG_RUNTIME_DIR=/run/shell grim /run/shell/cpu0-start.png; echo grim_rc=$?; sha256sum /run/shell/cpu0-start.png; echo 0xa5a5a5a5 > $D/cpu0_echo; echo "ECHO_RESULT post $(cat $D/cpu0_echo)"; cat $D/cpu0_status; uptime; dmesg --level=err,warn | tail -15; echo K230_CPU0_POST_END
+
+K230_CPU0_POST_BEGIN
+running
+running
+active
+active
+{
+  "human_readable": "1.12",
+  "variant": "sway",
+grim_rc=0
+a6a8591d874042351b5785b57b87277c1af63eeb007045ebb220960a896a03e8  /run/shell/cpu0-start.png
+ECHO_RESULT post seq 1010 value 0xa5a5a5a5 rsp 0xa5a5a5a6 inv 0x5a5a5a5a served 1010 latency_us 86 OK
+boot_vector 0x07000000
+reset_status -524
+carveout [mem 0x07000000-0x070fffff]
+slot_magic 0x4f484345 (echo payload)
+served 1010
+ 18:21:27  up   0:03,  1 user,  load average: 0.26, 0.74, 0.38
+[    1.508841] dwc2 91500000.usb: supply vusb_a not found, using dummy regulator
+[    1.627513] dwc2 91540000.usb: supply vusb_d not found, using dummy regulator
+[    1.627875] dwc2 91540000.usb: supply vusb_a not found, using dummy regulator
+[    1.971616] sdhci-dwcmshc-kendryte 91580000.sdhci0: card claims to support voltages below defined range
+[    2.424794] goodix-berlin-i2c 0-005d: supply avdd not found, using dummy regulator
+[    2.424943] goodix-berlin-i2c 0-005d: supply vddio not found, using dummy regulator
+[    2.581088] lt9611 0-003b: supply vdd not found, using dummy regulator
+[    2.581222] lt9611 0-003b: supply vcc not found, using dummy regulator
+[    2.766805] canaan-drm display-subsystem: [drm] [PLANE:37:plane-1] pixel format with alpha exposed but blend mode not setup. Please fix.
+[    2.766825] canaan-drm display-subsystem: [drm] [PLANE:39:plane-2] pixel format with alpha exposed but blend mode not setup. Please fix.
+[    2.766831] canaan-drm display-subsystem: [drm] [PLANE:41:plane-3] pixel format with alpha exposed but blend mode not setup. Please fix.
+[    2.766837] canaan-drm display-subsystem: [drm] [PLANE:43:plane-4] pixel format with alpha exposed but blend mode not setup. Please fix.
+[    2.854592] workqueue: work func k230_pmu_pwrkey_runtime_check_work enqueued on deprecated workqueue. Use system_{percpu|dfl}_wq instead.
+[   25.067711] Kernel module BTF mismatch detected, BTF debug info may be unavailable for some modules
+[   28.678003] 8189fs: loading out-of-tree module taints kernel.
+K230_CPU0_POST_END
+
+
+[root@nixos:~]# 
+
+
+
+[root@nixos:~]#
+
+########################################################################
+# Return to the installed default
+########################################################################
+[ 281.147] --- sending: reboot ---
+reboot
+...
+[ 355.775] --- session end, Linux back ---

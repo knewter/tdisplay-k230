@@ -84,3 +84,9 @@ lacks the interrupt-group wiring, lock semantics and CPU0 routing
 stays the polled slot page until a firmware speaks virtio/rpmsg; then a
 poll-mode (`txdone_poll`) mailbox controller attaches through `.kick`
 (design.md Decisions 1 and 5), replaceable by the hardware mailbox later.
+
+## Successor
+
+Task 5.1 extended this driver to load and start CPU0; its board run and the
+new module hash are in `linux-start-2026-10-12/README.md`. The module hash
+above is the read-only skeleton's.

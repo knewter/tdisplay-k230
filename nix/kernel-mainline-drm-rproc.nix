@@ -1,9 +1,9 @@
-# openspec/changes/the-small-core-runs-as-a-coprocessor task 4.2: the daily
-# mainline DRM kernel plus CONFIG_REMOTEPROC and the read-only CPU0
-# remoteproc skeleton (nix/patches/mainline/k230_cpu0_rproc.c) as a module.
+# openspec/changes/the-small-core-runs-as-a-coprocessor tasks 4.2 and 5.1: the daily
+# mainline DRM kernel plus CONFIG_REMOTEPROC and the CPU0
+# remoteproc driver (nix/patches/mainline/k230_cpu0_rproc.c) as a module.
 # A SEPARATE derivation: the daily kernel (nix/kernel-mainline-drm.nix) and
-# every configured system are unchanged. Cross-build proof only; nothing
-# boots this kernel until a board task does.
+# every configured system are unchanged. Only a one-shot board trial boots
+# this kernel (docs/evidence/second-core/linux-start-2026-10-12/).
 #
 # The rproc layer wraps the base kernel's buildLinux and the DRM derivation
 # is applied on top of it, so this is exactly kernel-mainline-drm.nix's
@@ -20,13 +20,13 @@ import ./kernel-mainline-drm.nix {
         cp ${./patches/mainline/k230_cpu0_rproc.c} drivers/remoteproc/k230_cpu0_rproc.c
         grep -q '^endmenu$' drivers/remoteproc/Kconfig
         sed -i '0,/^endif # REMOTEPROC$/s//config K230_CPU0_REMOTEPROC\
-	tristate "Canaan K230 CPU0 remoteproc (read-only skeleton)"\
+	tristate "Canaan K230 CPU0 remoteproc"\
 	depends on ARCH_CANAAN || COMPILE_TEST\
 	depends on RESET_CONTROLLER\
 	help\
-	  Binds the K230 small core (CPU0) as a remote processor and\
-	  reports its boot vector and firmware carveout. It never starts,\
-	  stops or resets CPU0.\
+	  Binds the K230 small core (CPU0) as a remote processor. Starting\
+	  it loads a raw image into the firmware carveout, writes the boot\
+	  vector and pulses the CPU0 reset. Stop is not supported.\
 \
 endif # REMOTEPROC/' drivers/remoteproc/Kconfig
         grep -q '^config K230_CPU0_REMOTEPROC$' drivers/remoteproc/Kconfig
