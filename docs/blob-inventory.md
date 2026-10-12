@@ -1760,6 +1760,18 @@ DATA  eaf032fdc191224528a5c91d2fbcf3377d730a752047f4bf1c44738e1e273f02  docs/evi
 DATA  f0a3a6dd1be3da1aac8cd966bbbffb84a6284567d5de684cb5ccf837f1f61a7e  docs/evidence/recovery-routes/touch-capture-2026-10-11/video-stopped.mp4
 DATA  b5506ce563292b714551bb6a35de3e378b088ed60651fa05a6265281b1d7675f  docs/evidence/recovery-routes/touch-capture-2026-10-11/settings-denied-native.png
 DATA  f078407d50b5b949a6ee29f6f41e649f0ad74a0c3b1cc263c099073f9ca98181  docs/evidence/theme-picker/combined-install-2026-10-12/home-after-install-native.png
+DATA  57ac5ab689645e6836f75f06c27b01c3aaf261909ccd5e2d8652b4c2fea84c2b  docs/evidence/theme-picker/board-session-2026-10-12/10.7-6.6/panel-bottom-full-resolution.png
+DATA  7e131b309e4159af7095a885c20504b1f96f6eb3eb3acba0d2517a40e44e8d8e  docs/evidence/theme-picker/board-session-2026-10-12/10.7-6.6/picker-dark-light-dark.png
+DATA  dc35b46841c36e893c0e2486b323f09af3c68d33c293da7eb8be802d716a8afc  docs/evidence/theme-picker/board-session-2026-10-12/13.4/browse-base.mp4
+DATA  95e2e17c3924071e0c90b13d2a9dab4451b7c0743a081bd9f6693a05b0526fa0  docs/evidence/theme-picker/board-session-2026-10-12/13.4/browse-cand.mp4
+DATA  5deada975fa50bf93d7a953937843fc4deca474fba7efd4d37163460a1705013  docs/evidence/theme-picker/board-session-2026-10-12/13.4/vis/baseline-open-theme-background.png
+DATA  e55929ec58bc52e2f8d959894ff55174b1596eec86f76d9175179b3e1ad53619  docs/evidence/theme-picker/board-session-2026-10-12/13.4/vis/candidate-open-theme-background.png
+DATA  d29948d090aa47dbe99fd62e54b7ec2dc089c5197548eba3a37079060b838d54  docs/evidence/theme-picker/board-session-2026-10-12/18.3/gesture-release-to-rest.png
+DATA  7e44fb5c7a4443aefcd3be11549af1d26815501a5f98f0248dd4af75d91eefe6  docs/evidence/theme-picker/board-session-2026-10-12/18.3/gesture-timelines.png
+DATA  2b5b76d5e25b4fe5f35398c06fc339b2863468a1376245f5846418783d30c115  docs/evidence/theme-picker/board-session-2026-10-12/18.3/labels-ca-bg.png
+DATA  7997913ea7ddfc13ba865c7614052838da147851b0e3fe9f4623c66923d006a9  docs/evidence/theme-picker/board-session-2026-10-12/18.3/labels-ca-theme.png
+DATA  7884f1bbaf1cab44ef5a91856f97c98ada66d5db3eea8d2632725083d6c28924  docs/evidence/theme-picker/board-session-2026-10-12/18.3/labels-mo-bg.png
+DATA  854cacdba026a85315abcc61b565ddebc3293fc50009c7c5b2640ab17c069726  docs/evidence/theme-picker/board-session-2026-10-12/18.3/labels-mo-theme.png
 DATA  379ebd25d4a0f224c33d2651d7aaeb134fa7258b625503b12e1e4a2d3e2f5cc5  docs/evidence/recovery-routes/touch-capture-2026-10-11/stale-splash-camera-zoom.jpg
 ```
 
@@ -2945,4 +2957,16 @@ hashes and the exact triggers are in `docs/evidence/recovery-routes/touch-captur
 | `docs/evidence/recovery-routes/touch-capture-2026-10-11/video-stopped.mp4` | 115156 | DATA | `f0a3a6dd1be3da1aac8cd966bbbffb84a6284567d5de684cb5ccf837f1f61a7e` |
 | `docs/evidence/recovery-routes/touch-capture-2026-10-11/settings-denied-native.png` | 36652 | DATA | `b5506ce563292b714551bb6a35de3e378b088ed60651fa05a6265281b1d7675f` |
 | `docs/evidence/theme-picker/combined-install-2026-10-12/home-after-install-native.png` | 5322 | DATA | `f078407d50b5b949a6ee29f6f41e649f0ad74a0c3b1cc263c099073f9ca98181` |
+| `docs/evidence/theme-picker/board-session-2026-10-12/10.7-6.6/panel-bottom-full-resolution.png` | 21535 | DATA | `57ac5ab689645e6836f75f06c27b01c3aaf261909ccd5e2d8652b4c2fea84c2b` |
+| `docs/evidence/theme-picker/board-session-2026-10-12/10.7-6.6/picker-dark-light-dark.png` | 219129 | DATA | `7e131b309e4159af7095a885c20504b1f96f6eb3eb3acba0d2517a40e44e8d8e` |
+| `docs/evidence/theme-picker/board-session-2026-10-12/13.4/browse-base.mp4` | 84386 | DATA | `dc35b46841c36e893c0e2486b323f09af3c68d33c293da7eb8be802d716a8afc` |
+| `docs/evidence/theme-picker/board-session-2026-10-12/13.4/browse-cand.mp4` | 73352 | DATA | `95e2e17c3924071e0c90b13d2a9dab4451b7c0743a081bd9f6693a05b0526fa0` |
+| `docs/evidence/theme-picker/board-session-2026-10-12/13.4/vis/baseline-open-theme-background.png` | 163330 | DATA | `5deada975fa50bf93d7a953937843fc4deca474fba7efd4d37163460a1705013` |
+| `docs/evidence/theme-picker/board-session-2026-10-12/13.4/vis/candidate-open-theme-background.png` | 154304 | DATA | `e55929ec58bc52e2f8d959894ff55174b1596eec86f76d9175179b3e1ad53619` |
+| `docs/evidence/theme-picker/board-session-2026-10-12/18.3/gesture-release-to-rest.png` | 28764 | DATA | `d29948d090aa47dbe99fd62e54b7ec2dc089c5197548eba3a37079060b838d54` |
+| `docs/evidence/theme-picker/board-session-2026-10-12/18.3/gesture-timelines.png` | 95125 | DATA | `7e44fb5c7a4443aefcd3be11549af1d26815501a5f98f0248dd4af75d91eefe6` |
+| `docs/evidence/theme-picker/board-session-2026-10-12/18.3/labels-ca-bg.png` | 41832 | DATA | `2b5b76d5e25b4fe5f35398c06fc339b2863468a1376245f5846418783d30c115` |
+| `docs/evidence/theme-picker/board-session-2026-10-12/18.3/labels-ca-theme.png` | 63945 | DATA | `7997913ea7ddfc13ba865c7614052838da147851b0e3fe9f4623c66923d006a9` |
+| `docs/evidence/theme-picker/board-session-2026-10-12/18.3/labels-mo-bg.png` | 37737 | DATA | `7884f1bbaf1cab44ef5a91856f97c98ada66d5db3eea8d2632725083d6c28924` |
+| `docs/evidence/theme-picker/board-session-2026-10-12/18.3/labels-mo-theme.png` | 65152 | DATA | `854cacdba026a85315abcc61b565ddebc3293fc50009c7c5b2640ab17c069726` |
 | `docs/evidence/recovery-routes/touch-capture-2026-10-11/stale-splash-camera-zoom.jpg` | 15353 | DATA | `379ebd25d4a0f224c33d2651d7aaeb134fa7258b625503b12e1e4a2d3e2f5cc5` |

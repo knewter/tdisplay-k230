@@ -1,0 +1,929 @@
+{
+  "schema": "k230-theme-picker-profile-comparison-v1",
+  "kind": "instrumentation-overhead",
+  "comparable": true,
+  "mismatches": [],
+  "phases": [
+    {
+      "name": "settings-baseline",
+      "kind": "baseline",
+      "shell-ui.service": {
+        "process_cpu_percent": {
+          "off": 0.0,
+          "on": 0.972,
+          "delta": 0.972
+        },
+        "cgroup_cpu_percent": {
+          "off": 0.173,
+          "on": 0.196,
+          "delta": 0.023
+        },
+        "rss_peak_bytes": {
+          "off": 53805056,
+          "on": 53608448,
+          "delta": -196608
+        }
+      },
+      "theme-helper.service": {
+        "process_cpu_percent": {
+          "off": 0.0,
+          "on": 0.0,
+          "delta": 0.0
+        },
+        "cgroup_cpu_percent": {
+          "off": 0.049,
+          "on": 0.046,
+          "delta": -0.003
+        },
+        "rss_peak_bytes": {
+          "off": 24268800,
+          "on": 24285184,
+          "delta": 16384
+        }
+      }
+    },
+    {
+      "name": "first-open",
+      "kind": "open",
+      "shell-ui.service": {
+        "process_cpu_percent": {
+          "off": 4.48,
+          "on": 4.908,
+          "delta": 0.428
+        },
+        "cgroup_cpu_percent": {
+          "off": 4.383,
+          "on": 4.986,
+          "delta": 0.603
+        },
+        "rss_peak_bytes": {
+          "off": 69361664,
+          "on": 69169152,
+          "delta": -192512
+        }
+      },
+      "theme-helper.service": {
+        "process_cpu_percent": {
+          "off": 2.444,
+          "on": 2.454,
+          "delta": 0.01
+        },
+        "cgroup_cpu_percent": {
+          "off": 2.452,
+          "on": 2.461,
+          "delta": 0.009
+        },
+        "rss_peak_bytes": {
+          "off": 25055232,
+          "on": 25071616,
+          "delta": 16384
+        }
+      }
+    },
+    {
+      "name": "theme-swipe-0",
+      "kind": "swipe-theme",
+      "shell-ui.service": {
+        "process_cpu_percent": {
+          "off": 78.987,
+          "on": 72.23,
+          "delta": -6.757
+        },
+        "cgroup_cpu_percent": {
+          "off": 80.069,
+          "on": 72.055,
+          "delta": -8.014
+        },
+        "rss_peak_bytes": {
+          "off": 63848448,
+          "on": 70742016,
+          "delta": 6893568
+        }
+      },
+      "theme-helper.service": {
+        "process_cpu_percent": {
+          "off": 0.0,
+          "on": 0.0,
+          "delta": 0.0
+        },
+        "cgroup_cpu_percent": {
+          "off": 0.036,
+          "on": 0.054,
+          "delta": 0.018
+        },
+        "rss_peak_bytes": {
+          "off": 25055232,
+          "on": 25071616,
+          "delta": 16384
+        }
+      },
+      "commit_gap_p95_ms": {
+        "off": 189,
+        "on": 195,
+        "delta": 6
+      }
+    },
+    {
+      "name": "theme-swipe-1",
+      "kind": "swipe-theme",
+      "shell-ui.service": {
+        "process_cpu_percent": {
+          "off": 40.934,
+          "on": 42.62,
+          "delta": 1.686
+        },
+        "cgroup_cpu_percent": {
+          "off": 40.524,
+          "on": 43.134,
+          "delta": 2.61
+        },
+        "rss_peak_bytes": {
+          "off": 67387392,
+          "on": 72175616,
+          "delta": 4788224
+        }
+      },
+      "theme-helper.service": {
+        "process_cpu_percent": {
+          "off": 0.0,
+          "on": 0.0,
+          "delta": 0.0
+        },
+        "cgroup_cpu_percent": {
+          "off": 41.899,
+          "on": 41.975,
+          "delta": 0.076
+        },
+        "rss_peak_bytes": {
+          "off": 25317376,
+          "on": 25202688,
+          "delta": -114688
+        }
+      },
+      "commit_gap_p95_ms": {
+        "off": 343,
+        "on": 324,
+        "delta": -19
+      }
+    },
+    {
+      "name": "theme-swipe-2",
+      "kind": "swipe-theme",
+      "shell-ui.service": {
+        "process_cpu_percent": {
+          "off": 49.031,
+          "on": 45.529,
+          "delta": -3.502
+        },
+        "cgroup_cpu_percent": {
+          "off": 49.108,
+          "on": 45.551,
+          "delta": -3.557
+        },
+        "rss_peak_bytes": {
+          "off": 77479936,
+          "on": 80302080,
+          "delta": 2822144
+        }
+      },
+      "theme-helper.service": {
+        "process_cpu_percent": {
+          "off": 4.457,
+          "on": 4.464,
+          "delta": 0.007
+        },
+        "cgroup_cpu_percent": {
+          "off": 35.318,
+          "on": 39.065,
+          "delta": 3.747
+        },
+        "rss_peak_bytes": {
+          "off": 25317376,
+          "on": 25202688,
+          "delta": -114688
+        }
+      },
+      "commit_gap_p95_ms": {
+        "off": 366,
+        "on": 303,
+        "delta": -63
+      }
+    },
+    {
+      "name": "theme-swipe-3",
+      "kind": "swipe-theme",
+      "shell-ui.service": {
+        "process_cpu_percent": {
+          "off": 39.912,
+          "on": 35.783,
+          "delta": -4.129
+        },
+        "cgroup_cpu_percent": {
+          "off": 40.034,
+          "on": 37.36,
+          "delta": -2.674
+        },
+        "rss_peak_bytes": {
+          "off": 78921728,
+          "on": 80302080,
+          "delta": 1380352
+        }
+      },
+      "theme-helper.service": {
+        "process_cpu_percent": {
+          "off": 0.0,
+          "on": 0.0,
+          "delta": 0.0
+        },
+        "cgroup_cpu_percent": {
+          "off": 39.041,
+          "on": 37.961,
+          "delta": -1.08
+        },
+        "rss_peak_bytes": {
+          "off": 25317376,
+          "on": 25202688,
+          "delta": -114688
+        }
+      },
+      "commit_gap_p95_ms": {
+        "off": 314,
+        "on": 265,
+        "delta": -49
+      }
+    },
+    {
+      "name": "theme-swipe-4",
+      "kind": "swipe-theme",
+      "shell-ui.service": {
+        "process_cpu_percent": {
+          "off": 67.988,
+          "on": 67.41,
+          "delta": -0.578
+        },
+        "cgroup_cpu_percent": {
+          "off": 68.543,
+          "on": 67.179,
+          "delta": -1.364
+        },
+        "rss_peak_bytes": {
+          "off": 81805312,
+          "on": 83054592,
+          "delta": 1249280
+        }
+      },
+      "theme-helper.service": {
+        "process_cpu_percent": {
+          "off": 1.813,
+          "on": 1.798,
+          "delta": -0.015
+        },
+        "cgroup_cpu_percent": {
+          "off": 8.693,
+          "on": 9.288,
+          "delta": 0.595
+        },
+        "rss_peak_bytes": {
+          "off": 25317376,
+          "on": 25202688,
+          "delta": -114688
+        }
+      },
+      "commit_gap_p95_ms": {
+        "off": 310,
+        "on": 188,
+        "delta": -122
+      }
+    },
+    {
+      "name": "theme-swipe-5",
+      "kind": "swipe-theme",
+      "shell-ui.service": {
+        "process_cpu_percent": {
+          "off": 15.01,
+          "on": 81.358,
+          "delta": 66.348
+        },
+        "cgroup_cpu_percent": {
+          "off": 15.723,
+          "on": 81.031,
+          "delta": 65.308
+        },
+        "rss_peak_bytes": {
+          "off": 84688896,
+          "on": 85938176,
+          "delta": 1249280
+        }
+      },
+      "theme-helper.service": {
+        "process_cpu_percent": {
+          "off": 0.0,
+          "on": 0.0,
+          "delta": 0.0
+        },
+        "cgroup_cpu_percent": {
+          "off": 0.039,
+          "on": 0.07,
+          "delta": 0.031
+        },
+        "rss_peak_bytes": {
+          "off": 25317376,
+          "on": 25202688,
+          "delta": -114688
+        }
+      },
+      "commit_gap_p95_ms": {
+        "off": 159,
+        "on": 168,
+        "delta": 9
+      }
+    },
+    {
+      "name": "background-swipe-0",
+      "kind": "swipe-background",
+      "shell-ui.service": {
+        "process_cpu_percent": {
+          "off": 23.359,
+          "on": 20.376,
+          "delta": -2.983
+        },
+        "cgroup_cpu_percent": {
+          "off": 23.089,
+          "on": 20.677,
+          "delta": -2.412
+        },
+        "rss_peak_bytes": {
+          "off": 84688896,
+          "on": 85938176,
+          "delta": 1249280
+        }
+      },
+      "theme-helper.service": {
+        "process_cpu_percent": {
+          "off": 0.0,
+          "on": 1.772,
+          "delta": 1.772
+        },
+        "cgroup_cpu_percent": {
+          "off": 0.048,
+          "on": 55.315,
+          "delta": 55.267
+        },
+        "rss_peak_bytes": {
+          "off": 25317376,
+          "on": 25202688,
+          "delta": -114688
+        }
+      },
+      "commit_gap_p95_ms": {
+        "off": 95,
+        "on": 194,
+        "delta": 99
+      }
+    },
+    {
+      "name": "background-swipe-1",
+      "kind": "swipe-background",
+      "shell-ui.service": {
+        "process_cpu_percent": {
+          "off": 3.835,
+          "on": 4.62,
+          "delta": 0.785
+        },
+        "cgroup_cpu_percent": {
+          "off": 4.561,
+          "on": 4.614,
+          "delta": 0.053
+        },
+        "rss_peak_bytes": {
+          "off": 84688896,
+          "on": 85938176,
+          "delta": 1249280
+        }
+      },
+      "theme-helper.service": {
+        "process_cpu_percent": {
+          "off": 0.0,
+          "on": 0.0,
+          "delta": 0.0
+        },
+        "cgroup_cpu_percent": {
+          "off": 0.05,
+          "on": 76.968,
+          "delta": 76.918
+        },
+        "rss_peak_bytes": {
+          "off": 25317376,
+          "on": 25202688,
+          "delta": -114688
+        }
+      },
+      "commit_gap_p95_ms": {
+        "off": 125,
+        "on": 96,
+        "delta": -29
+      }
+    },
+    {
+      "name": "background-swipe-2",
+      "kind": "swipe-background",
+      "shell-ui.service": {
+        "process_cpu_percent": {
+          "off": 11.044,
+          "on": 23.245,
+          "delta": 12.201
+        },
+        "cgroup_cpu_percent": {
+          "off": 11.042,
+          "on": 23.027,
+          "delta": 11.985
+        },
+        "rss_peak_bytes": {
+          "off": 84688896,
+          "on": 88690688,
+          "delta": 4001792
+        }
+      },
+      "theme-helper.service": {
+        "process_cpu_percent": {
+          "off": 0.0,
+          "on": 1.788,
+          "delta": 1.788
+        },
+        "cgroup_cpu_percent": {
+          "off": 0.062,
+          "on": 10.426,
+          "delta": 10.364
+        },
+        "rss_peak_bytes": {
+          "off": 25317376,
+          "on": 25202688,
+          "delta": -114688
+        }
+      },
+      "commit_gap_p95_ms": {
+        "off": 72,
+        "on": 151,
+        "delta": 79
+      }
+    },
+    {
+      "name": "background-swipe-3",
+      "kind": "swipe-background",
+      "shell-ui.service": {
+        "process_cpu_percent": {
+          "off": 5.794,
+          "on": 12.41,
+          "delta": 6.616
+        },
+        "cgroup_cpu_percent": {
+          "off": 6.577,
+          "on": 12.573,
+          "delta": 5.996
+        },
+        "rss_peak_bytes": {
+          "off": 84688896,
+          "on": 88690688,
+          "delta": 4001792
+        }
+      },
+      "theme-helper.service": {
+        "process_cpu_percent": {
+          "off": 0.0,
+          "on": 0.0,
+          "delta": 0.0
+        },
+        "cgroup_cpu_percent": {
+          "off": 0.05,
+          "on": 0.048,
+          "delta": -0.002
+        },
+        "rss_peak_bytes": {
+          "off": 25317376,
+          "on": 25202688,
+          "delta": -114688
+        }
+      },
+      "commit_gap_p95_ms": {
+        "off": 124,
+        "on": 125,
+        "delta": 1
+      }
+    },
+    {
+      "name": "idle-first",
+      "kind": "idle",
+      "shell-ui.service": {
+        "process_cpu_percent": {
+          "off": 0.555,
+          "on": 0.625,
+          "delta": 0.07
+        },
+        "cgroup_cpu_percent": {
+          "off": 0.503,
+          "on": 0.661,
+          "delta": 0.158
+        },
+        "rss_peak_bytes": {
+          "off": 84688896,
+          "on": 88690688,
+          "delta": 4001792
+        }
+      },
+      "theme-helper.service": {
+        "process_cpu_percent": {
+          "off": 0.069,
+          "on": 0.069,
+          "delta": 0.0
+        },
+        "cgroup_cpu_percent": {
+          "off": 0.049,
+          "on": 0.047,
+          "delta": -0.002
+        },
+        "rss_peak_bytes": {
+          "off": 25317376,
+          "on": 25202688,
+          "delta": -114688
+        }
+      }
+    },
+    {
+      "name": "back",
+      "kind": "back",
+      "shell-ui.service": {
+        "process_cpu_percent": {
+          "off": 0.0,
+          "on": 0.0,
+          "delta": 0.0
+        },
+        "cgroup_cpu_percent": {
+          "off": 0.122,
+          "on": 0.226,
+          "delta": 0.104
+        },
+        "rss_peak_bytes": {
+          "off": 84688896,
+          "on": 88690688,
+          "delta": 4001792
+        }
+      },
+      "theme-helper.service": {
+        "process_cpu_percent": {
+          "off": 0.0,
+          "on": 0.0,
+          "delta": 0.0
+        },
+        "cgroup_cpu_percent": {
+          "off": 0.036,
+          "on": 0.037,
+          "delta": 0.001
+        },
+        "rss_peak_bytes": {
+          "off": 25317376,
+          "on": 25202688,
+          "delta": -114688
+        }
+      }
+    },
+    {
+      "name": "warm-open",
+      "kind": "open",
+      "shell-ui.service": {
+        "process_cpu_percent": {
+          "off": 2.788,
+          "on": 1.715,
+          "delta": -1.073
+        },
+        "cgroup_cpu_percent": {
+          "off": 2.813,
+          "on": 1.941,
+          "delta": -0.872
+        },
+        "rss_peak_bytes": {
+          "off": 84819968,
+          "on": 88690688,
+          "delta": 3870720
+        }
+      },
+      "theme-helper.service": {
+        "process_cpu_percent": {
+          "off": 1.501,
+          "on": 1.072,
+          "delta": -0.429
+        },
+        "cgroup_cpu_percent": {
+          "off": 1.658,
+          "on": 0.936,
+          "delta": -0.722
+        },
+        "rss_peak_bytes": {
+          "off": 25317376,
+          "on": 25202688,
+          "delta": -114688
+        }
+      }
+    },
+    {
+      "name": "warm-theme-swipe-0",
+      "kind": "swipe-theme",
+      "shell-ui.service": {
+        "process_cpu_percent": {
+          "off": 75.13,
+          "on": 57.064,
+          "delta": -18.066
+        },
+        "cgroup_cpu_percent": {
+          "off": 74.948,
+          "on": 57.606,
+          "delta": -17.342
+        },
+        "rss_peak_bytes": {
+          "off": 85082112,
+          "on": 88690688,
+          "delta": 3608576
+        }
+      },
+      "theme-helper.service": {
+        "process_cpu_percent": {
+          "off": 0.0,
+          "on": 5.613,
+          "delta": 5.613
+        },
+        "cgroup_cpu_percent": {
+          "off": 0.048,
+          "on": 15.272,
+          "delta": 15.224
+        },
+        "rss_peak_bytes": {
+          "off": 25317376,
+          "on": 25202688,
+          "delta": -114688
+        }
+      },
+      "commit_gap_p95_ms": {
+        "off": 188,
+        "on": 181,
+        "delta": -7
+      }
+    },
+    {
+      "name": "warm-theme-swipe-1",
+      "kind": "swipe-theme",
+      "shell-ui.service": {
+        "process_cpu_percent": {
+          "off": 41.352,
+          "on": 41.558,
+          "delta": 0.206
+        },
+        "cgroup_cpu_percent": {
+          "off": 40.835,
+          "on": 41.689,
+          "delta": 0.854
+        },
+        "rss_peak_bytes": {
+          "off": 85082112,
+          "on": 88690688,
+          "delta": 3608576
+        }
+      },
+      "theme-helper.service": {
+        "process_cpu_percent": {
+          "off": 1.798,
+          "on": 0.0,
+          "delta": -1.798
+        },
+        "cgroup_cpu_percent": {
+          "off": 45.847,
+          "on": 43.179,
+          "delta": -2.668
+        },
+        "rss_peak_bytes": {
+          "off": 25710592,
+          "on": 25202688,
+          "delta": -507904
+        }
+      },
+      "commit_gap_p95_ms": {
+        "off": 250,
+        "on": 334,
+        "delta": 84
+      }
+    },
+    {
+      "name": "warm-theme-swipe-2",
+      "kind": "swipe-theme",
+      "shell-ui.service": {
+        "process_cpu_percent": {
+          "off": 41.088,
+          "on": 44.797,
+          "delta": 3.709
+        },
+        "cgroup_cpu_percent": {
+          "off": 40.613,
+          "on": 45.886,
+          "delta": 5.273
+        },
+        "rss_peak_bytes": {
+          "off": 85082112,
+          "on": 88821760,
+          "delta": 3739648
+        }
+      },
+      "theme-helper.service": {
+        "process_cpu_percent": {
+          "off": 4.466,
+          "on": 3.513,
+          "delta": -0.953
+        },
+        "cgroup_cpu_percent": {
+          "off": 41.259,
+          "on": 40.126,
+          "delta": -1.133
+        },
+        "rss_peak_bytes": {
+          "off": 25710592,
+          "on": 25202688,
+          "delta": -507904
+        }
+      },
+      "commit_gap_p95_ms": {
+        "off": 272,
+        "on": 322,
+        "delta": 50
+      }
+    },
+    {
+      "name": "warm-theme-swipe-3",
+      "kind": "swipe-theme",
+      "shell-ui.service": {
+        "process_cpu_percent": {
+          "off": 41.887,
+          "on": 41.529,
+          "delta": -0.358
+        },
+        "cgroup_cpu_percent": {
+          "off": 40.775,
+          "on": 40.925,
+          "delta": 0.15
+        },
+        "rss_peak_bytes": {
+          "off": 85082112,
+          "on": 88821760,
+          "delta": 3739648
+        }
+      },
+      "theme-helper.service": {
+        "process_cpu_percent": {
+          "off": 0.0,
+          "on": 0.0,
+          "delta": 0.0
+        },
+        "cgroup_cpu_percent": {
+          "off": 41.086,
+          "on": 42.105,
+          "delta": 1.019
+        },
+        "rss_peak_bytes": {
+          "off": 25710592,
+          "on": 25202688,
+          "delta": -507904
+        }
+      },
+      "commit_gap_p95_ms": {
+        "off": 310,
+        "on": 235,
+        "delta": -75
+      }
+    },
+    {
+      "name": "warm-theme-swipe-4",
+      "kind": "swipe-theme",
+      "shell-ui.service": {
+        "process_cpu_percent": {
+          "off": 62.608,
+          "on": 70.729,
+          "delta": 8.121
+        },
+        "cgroup_cpu_percent": {
+          "off": 62.619,
+          "on": 71.864,
+          "delta": 9.245
+        },
+        "rss_peak_bytes": {
+          "off": 87834624,
+          "on": 88944640,
+          "delta": 1110016
+        }
+      },
+      "theme-helper.service": {
+        "process_cpu_percent": {
+          "off": 1.764,
+          "on": 1.814,
+          "delta": 0.05
+        },
+        "cgroup_cpu_percent": {
+          "off": 15.691,
+          "on": 2.54,
+          "delta": -13.151
+        },
+        "rss_peak_bytes": {
+          "off": 25710592,
+          "on": 25202688,
+          "delta": -507904
+        }
+      },
+      "commit_gap_p95_ms": {
+        "off": 227,
+        "on": 180,
+        "delta": -47
+      }
+    },
+    {
+      "name": "warm-theme-swipe-5",
+      "kind": "swipe-theme",
+      "shell-ui.service": {
+        "process_cpu_percent": {
+          "off": 49.088,
+          "on": 80.852,
+          "delta": 31.764
+        },
+        "cgroup_cpu_percent": {
+          "off": 50.199,
+          "on": 80.255,
+          "delta": 30.056
+        },
+        "rss_peak_bytes": {
+          "off": 87834624,
+          "on": 88944640,
+          "delta": 1110016
+        }
+      },
+      "theme-helper.service": {
+        "process_cpu_percent": {
+          "off": 0.0,
+          "on": 0.0,
+          "delta": 0.0
+        },
+        "cgroup_cpu_percent": {
+          "off": 0.041,
+          "on": 0.058,
+          "delta": 0.017
+        },
+        "rss_peak_bytes": {
+          "off": 24670208,
+          "on": 25202688,
+          "delta": 532480
+        }
+      },
+      "commit_gap_p95_ms": {
+        "off": 124,
+        "on": 129,
+        "delta": 5
+      }
+    },
+    {
+      "name": "idle-warm",
+      "kind": "idle",
+      "shell-ui.service": {
+        "process_cpu_percent": {
+          "off": 0.536,
+          "on": 0.555,
+          "delta": 0.019
+        },
+        "cgroup_cpu_percent": {
+          "off": 0.503,
+          "on": 0.548,
+          "delta": 0.045
+        },
+        "rss_peak_bytes": {
+          "off": 87834624,
+          "on": 88944640,
+          "delta": 1110016
+        }
+      },
+      "theme-helper.service": {
+        "process_cpu_percent": {
+          "off": 0.067,
+          "on": 0.069,
+          "delta": 0.002
+        },
+        "cgroup_cpu_percent": {
+          "off": 0.049,
+          "on": 0.05,
+          "delta": 0.001
+        },
+        "rss_peak_bytes": {
+          "off": 24670208,
+          "on": 25202688,
+          "delta": 532480
+        }
+      }
+    }
+  ],
+  "instrumentation": "counters",
+  "limits": [
+    "One OFF/ON pair is a measurement, not a distribution; repeat before trusting small deltas.",
+    "Both runs must use the same injected workload and no native screencopy."
+  ]
+}

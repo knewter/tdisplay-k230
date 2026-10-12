@@ -1,0 +1,3303 @@
+{
+ "runs": {
+  "tr-p1-base": {
+   "theme_warm_gap_median_ms": 140,
+   "theme_warm_gap_p95_ms": 177,
+   "theme_cold_gap_median_ms": 138.0,
+   "theme_cold_gap_p95_ms": 179,
+   "background_gap_median_ms": 88,
+   "background_gap_p95_ms": 163,
+   "theme_warm_commits": 59,
+   "background_commits": 29,
+   "theme_warm_rust_cpu_percent": 77.39,
+   "theme_cold_rust_cpu_percent": 80.37,
+   "background_rust_cpu_percent": 43.94,
+   "idle_rust_cpu_percent": 0.58,
+   "idle_commits": 0,
+   "theme_warm_helper_cgroup_cpu_percent": 0.06,
+   "theme_cold_helper_cgroup_cpu_percent": 0.05,
+   "rss_first_mib": 50.93,
+   "rss_last_mib": 89.3,
+   "rss_growth_mib": 38.37,
+   "rss_peak_mib": 89.3,
+   "helper_rss_last_mib": 24.01,
+   "preview_requests": 5,
+   "overlay_prerender_completions": 4,
+   "overlay_prerender_completions_touch_held": 0,
+   "generation_unchanged": true,
+   "gates_failed": [],
+   "trace_events": 6597,
+   "trace_dropped": 0,
+   "theme_cold_presented_gap_median_ms": 140.6,
+   "theme_cold_presented_gap_p95_ms": 247.7,
+   "theme_cold_render_total_count": 61,
+   "theme_cold_render_total_wall_ms_sum": 8077.7,
+   "theme_cold_render_total_wall_ms_median": 133.21,
+   "theme_cold_render_total_cpu_ms_sum": 6245.9,
+   "theme_cold_render_total_cpu_ms_off_main_thread": 0.0,
+   "theme_cold_scene_rebuild_count": 61,
+   "theme_cold_scene_rebuild_wall_ms_sum": 7823.3,
+   "theme_cold_scene_rebuild_wall_ms_median": 129.49,
+   "theme_cold_scene_rebuild_cpu_ms_sum": 6048.5,
+   "theme_cold_scene_rebuild_cpu_ms_off_main_thread": 0.0,
+   "theme_cold_overlay_draw_count": 61,
+   "theme_cold_overlay_draw_wall_ms_sum": 8119.1,
+   "theme_cold_overlay_draw_wall_ms_median": 133.74,
+   "theme_cold_overlay_draw_cpu_ms_sum": 6263.8,
+   "theme_cold_overlay_draw_cpu_ms_off_main_thread": 0.0,
+   "theme_cold_thumbnail_hash_count": 28,
+   "theme_cold_thumbnail_hash_wall_ms_sum": 893.1,
+   "theme_cold_thumbnail_hash_wall_ms_median": 27.95,
+   "theme_cold_thumbnail_hash_cpu_ms_sum": 360.7,
+   "theme_cold_thumbnail_hash_cpu_ms_off_main_thread": 360.7,
+   "theme_cold_thumbnail_resolve_count": 28,
+   "theme_cold_thumbnail_resolve_wall_ms_sum": 1024.4,
+   "theme_cold_thumbnail_resolve_wall_ms_median": 34.3,
+   "theme_cold_thumbnail_resolve_cpu_ms_sum": 399.2,
+   "theme_cold_thumbnail_resolve_cpu_ms_off_main_thread": 399.2,
+   "theme_cold_thumbnail_read_cache_count": 28,
+   "theme_cold_thumbnail_read_cache_wall_ms_sum": 88.9,
+   "theme_cold_thumbnail_read_cache_wall_ms_median": 1.48,
+   "theme_cold_thumbnail_read_cache_cpu_ms_sum": 36.5,
+   "theme_cold_thumbnail_read_cache_cpu_ms_off_main_thread": 36.5,
+   "theme_warm_presented_gap_median_ms": 140.2,
+   "theme_warm_presented_gap_p95_ms": 186.2,
+   "theme_warm_render_total_count": 59,
+   "theme_warm_render_total_wall_ms_sum": 7419.9,
+   "theme_warm_render_total_wall_ms_median": 133.25,
+   "theme_warm_render_total_cpu_ms_sum": 5782.6,
+   "theme_warm_render_total_cpu_ms_off_main_thread": 0.0,
+   "theme_warm_scene_rebuild_count": 59,
+   "theme_warm_scene_rebuild_wall_ms_sum": 7184.6,
+   "theme_warm_scene_rebuild_wall_ms_median": 129.62,
+   "theme_warm_scene_rebuild_cpu_ms_sum": 5599.7,
+   "theme_warm_scene_rebuild_cpu_ms_off_main_thread": 0.0,
+   "theme_warm_overlay_draw_count": 59,
+   "theme_warm_overlay_draw_wall_ms_sum": 7461.7,
+   "theme_warm_overlay_draw_wall_ms_median": 133.47,
+   "theme_warm_overlay_draw_cpu_ms_sum": 5796.9,
+   "theme_warm_overlay_draw_cpu_ms_off_main_thread": 0.0,
+   "theme_warm_thumbnail_hash_count": 30,
+   "theme_warm_thumbnail_hash_wall_ms_sum": 900.1,
+   "theme_warm_thumbnail_hash_wall_ms_median": 26.4,
+   "theme_warm_thumbnail_hash_cpu_ms_sum": 360.0,
+   "theme_warm_thumbnail_hash_cpu_ms_off_main_thread": 360.0,
+   "theme_warm_thumbnail_resolve_count": 30,
+   "theme_warm_thumbnail_resolve_wall_ms_sum": 1009.3,
+   "theme_warm_thumbnail_resolve_wall_ms_median": 29.84,
+   "theme_warm_thumbnail_resolve_cpu_ms_sum": 393.7,
+   "theme_warm_thumbnail_resolve_cpu_ms_off_main_thread": 393.7,
+   "theme_warm_thumbnail_read_cache_count": 30,
+   "theme_warm_thumbnail_read_cache_wall_ms_sum": 71.2,
+   "theme_warm_thumbnail_read_cache_wall_ms_median": 1.59,
+   "theme_warm_thumbnail_read_cache_cpu_ms_sum": 31.6,
+   "theme_warm_thumbnail_read_cache_cpu_ms_off_main_thread": 31.6,
+   "background_presented_gap_median_ms": 84.0,
+   "background_presented_gap_p95_ms": 227.7,
+   "background_render_total_count": 28,
+   "background_render_total_wall_ms_sum": 2270.6,
+   "background_render_total_wall_ms_median": 76.87,
+   "background_render_total_cpu_ms_sum": 1809.0,
+   "background_render_total_cpu_ms_off_main_thread": 0.0,
+   "background_scene_rebuild_count": 28,
+   "background_scene_rebuild_wall_ms_sum": 2151.9,
+   "background_scene_rebuild_wall_ms_median": 72.84,
+   "background_scene_rebuild_cpu_ms_sum": 1722.2,
+   "background_scene_rebuild_cpu_ms_off_main_thread": 0.0,
+   "background_overlay_draw_count": 28,
+   "background_overlay_draw_wall_ms_sum": 2284.9,
+   "background_overlay_draw_wall_ms_median": 77.65,
+   "background_overlay_draw_cpu_ms_sum": 1815.7,
+   "background_overlay_draw_cpu_ms_off_main_thread": 0.0,
+   "background_overlay_prerender_count": 4,
+   "background_overlay_prerender_wall_ms_sum": 314.2,
+   "background_overlay_prerender_wall_ms_median": 80.46,
+   "background_overlay_prerender_cpu_ms_sum": 231.1,
+   "background_overlay_prerender_cpu_ms_off_main_thread": 0.0,
+   "background_appearance_prepare_count": 1,
+   "background_appearance_prepare_wall_ms_sum": 59.2,
+   "background_appearance_prepare_wall_ms_median": 59.18,
+   "background_appearance_prepare_cpu_ms_sum": 9.5,
+   "background_appearance_prepare_cpu_ms_off_main_thread": 0.0,
+   "speculative": {
+    "admissions_total": 3,
+    "admissions_inside_touch": 1,
+    "admissions_inside_swipe_window": 1,
+    "completions_total": 0,
+    "completions_inside_touch": 0,
+    "completions_inside_swipe_window": 0
+   }
+  },
+  "tr-p1-cand": {
+   "theme_warm_gap_median_ms": 110,
+   "theme_warm_gap_p95_ms": 172,
+   "theme_cold_gap_median_ms": 121,
+   "theme_cold_gap_p95_ms": 181,
+   "background_gap_median_ms": 39,
+   "background_gap_p95_ms": 90,
+   "theme_warm_commits": 59,
+   "background_commits": 61,
+   "theme_warm_rust_cpu_percent": 73.0,
+   "theme_cold_rust_cpu_percent": 69.7,
+   "background_rust_cpu_percent": 13.47,
+   "idle_rust_cpu_percent": 0.64,
+   "idle_commits": 0,
+   "theme_warm_helper_cgroup_cpu_percent": 0.2,
+   "theme_cold_helper_cgroup_cpu_percent": 1.05,
+   "rss_first_mib": 50.87,
+   "rss_last_mib": 84.12,
+   "rss_growth_mib": 33.25,
+   "rss_peak_mib": 86.77,
+   "helper_rss_last_mib": 23.35,
+   "preview_requests": 15,
+   "overlay_prerender_completions": 7,
+   "overlay_prerender_completions_touch_held": 0,
+   "generation_unchanged": true,
+   "gates_failed": [],
+   "trace_events": 7771,
+   "trace_dropped": 0,
+   "theme_cold_presented_gap_median_ms": 106.3,
+   "theme_cold_presented_gap_p95_ms": 199.4,
+   "theme_cold_render_total_count": 61,
+   "theme_cold_render_total_wall_ms_sum": 5848.2,
+   "theme_cold_render_total_wall_ms_median": 101.02,
+   "theme_cold_render_total_cpu_ms_sum": 4550.3,
+   "theme_cold_render_total_cpu_ms_off_main_thread": 0.0,
+   "theme_cold_scene_rebuild_count": 19,
+   "theme_cold_scene_rebuild_wall_ms_sum": 2404.4,
+   "theme_cold_scene_rebuild_wall_ms_median": 124.38,
+   "theme_cold_scene_rebuild_cpu_ms_sum": 1777.4,
+   "theme_cold_scene_rebuild_cpu_ms_off_main_thread": 0.0,
+   "theme_cold_picker_row_repaint_count": 35,
+   "theme_cold_picker_row_repaint_wall_ms_sum": 3211.7,
+   "theme_cold_picker_row_repaint_wall_ms_median": 97.39,
+   "theme_cold_picker_row_repaint_cpu_ms_sum": 2592.3,
+   "theme_cold_picker_row_repaint_cpu_ms_off_main_thread": 0.0,
+   "theme_cold_overlay_draw_count": 61,
+   "theme_cold_overlay_draw_wall_ms_sum": 5898.9,
+   "theme_cold_overlay_draw_wall_ms_median": 101.89,
+   "theme_cold_overlay_draw_cpu_ms_sum": 4567.9,
+   "theme_cold_overlay_draw_cpu_ms_off_main_thread": 0.0,
+   "theme_cold_overlay_prerender_count": 4,
+   "theme_cold_overlay_prerender_wall_ms_sum": 320.0,
+   "theme_cold_overlay_prerender_wall_ms_median": 83.58,
+   "theme_cold_overlay_prerender_cpu_ms_sum": 248.0,
+   "theme_cold_overlay_prerender_cpu_ms_off_main_thread": 0.0,
+   "theme_cold_appearance_prepare_count": 5,
+   "theme_cold_appearance_prepare_wall_ms_sum": 38.1,
+   "theme_cold_appearance_prepare_wall_ms_median": 9.69,
+   "theme_cold_appearance_prepare_cpu_ms_sum": 27.6,
+   "theme_cold_appearance_prepare_cpu_ms_off_main_thread": 0.0,
+   "theme_cold_thumbnail_hash_count": 26,
+   "theme_cold_thumbnail_hash_wall_ms_sum": 783.3,
+   "theme_cold_thumbnail_hash_wall_ms_median": 25.62,
+   "theme_cold_thumbnail_hash_cpu_ms_sum": 337.1,
+   "theme_cold_thumbnail_hash_cpu_ms_off_main_thread": 337.1,
+   "theme_cold_thumbnail_resolve_count": 26,
+   "theme_cold_thumbnail_resolve_wall_ms_sum": 897.6,
+   "theme_cold_thumbnail_resolve_wall_ms_median": 29.92,
+   "theme_cold_thumbnail_resolve_cpu_ms_sum": 374.7,
+   "theme_cold_thumbnail_resolve_cpu_ms_off_main_thread": 374.7,
+   "theme_cold_thumbnail_read_cache_count": 26,
+   "theme_cold_thumbnail_read_cache_wall_ms_sum": 69.7,
+   "theme_cold_thumbnail_read_cache_wall_ms_median": 1.01,
+   "theme_cold_thumbnail_read_cache_cpu_ms_sum": 35.3,
+   "theme_cold_thumbnail_read_cache_cpu_ms_off_main_thread": 35.3,
+   "theme_warm_presented_gap_median_ms": 105.2,
+   "theme_warm_presented_gap_p95_ms": 165.9,
+   "theme_warm_render_total_count": 59,
+   "theme_warm_render_total_wall_ms_sum": 5823.3,
+   "theme_warm_render_total_wall_ms_median": 98.62,
+   "theme_warm_render_total_cpu_ms_sum": 4765.1,
+   "theme_warm_render_total_cpu_ms_off_main_thread": 0.0,
+   "theme_warm_scene_rebuild_count": 8,
+   "theme_warm_scene_rebuild_wall_ms_sum": 1040.2,
+   "theme_warm_scene_rebuild_wall_ms_median": 133.69,
+   "theme_warm_scene_rebuild_cpu_ms_sum": 782.0,
+   "theme_warm_scene_rebuild_cpu_ms_off_main_thread": 0.0,
+   "theme_warm_picker_row_repaint_count": 51,
+   "theme_warm_picker_row_repaint_wall_ms_sum": 4587.0,
+   "theme_warm_picker_row_repaint_wall_ms_median": 92.76,
+   "theme_warm_picker_row_repaint_cpu_ms_sum": 3820.2,
+   "theme_warm_picker_row_repaint_cpu_ms_off_main_thread": 0.0,
+   "theme_warm_overlay_draw_count": 59,
+   "theme_warm_overlay_draw_wall_ms_sum": 5860.4,
+   "theme_warm_overlay_draw_wall_ms_median": 99.01,
+   "theme_warm_overlay_draw_cpu_ms_sum": 4779.1,
+   "theme_warm_overlay_draw_cpu_ms_off_main_thread": 0.0,
+   "theme_warm_overlay_prerender_count": 3,
+   "theme_warm_overlay_prerender_wall_ms_sum": 258.9,
+   "theme_warm_overlay_prerender_wall_ms_median": 86.04,
+   "theme_warm_overlay_prerender_cpu_ms_sum": 183.5,
+   "theme_warm_overlay_prerender_cpu_ms_off_main_thread": 0.0,
+   "theme_warm_appearance_prepare_count": 6,
+   "theme_warm_appearance_prepare_wall_ms_sum": 70.9,
+   "theme_warm_appearance_prepare_wall_ms_median": 8.1,
+   "theme_warm_appearance_prepare_cpu_ms_sum": 30.1,
+   "theme_warm_appearance_prepare_cpu_ms_off_main_thread": 0.0,
+   "theme_warm_thumbnail_hash_count": 10,
+   "theme_warm_thumbnail_hash_wall_ms_sum": 259.1,
+   "theme_warm_thumbnail_hash_wall_ms_median": 23.3,
+   "theme_warm_thumbnail_hash_cpu_ms_sum": 105.2,
+   "theme_warm_thumbnail_hash_cpu_ms_off_main_thread": 105.2,
+   "theme_warm_thumbnail_resolve_count": 10,
+   "theme_warm_thumbnail_resolve_wall_ms_sum": 281.2,
+   "theme_warm_thumbnail_resolve_wall_ms_median": 26.32,
+   "theme_warm_thumbnail_resolve_cpu_ms_sum": 112.6,
+   "theme_warm_thumbnail_resolve_cpu_ms_off_main_thread": 112.6,
+   "theme_warm_thumbnail_read_cache_count": 10,
+   "theme_warm_thumbnail_read_cache_wall_ms_sum": 11.2,
+   "theme_warm_thumbnail_read_cache_wall_ms_median": 0.88,
+   "theme_warm_thumbnail_read_cache_cpu_ms_sum": 6.7,
+   "theme_warm_thumbnail_read_cache_cpu_ms_off_main_thread": 6.7,
+   "background_presented_gap_median_ms": 38.3,
+   "background_presented_gap_p95_ms": 119.3,
+   "background_render_total_count": 61,
+   "background_render_total_wall_ms_sum": 1016.5,
+   "background_render_total_wall_ms_median": 3.19,
+   "background_render_total_cpu_ms_sum": 788.1,
+   "background_render_total_cpu_ms_off_main_thread": 0.0,
+   "background_picker_row_repaint_count": 19,
+   "background_picker_row_repaint_wall_ms_sum": 807.1,
+   "background_picker_row_repaint_wall_ms_median": 40.27,
+   "background_picker_row_repaint_cpu_ms_sum": 619.1,
+   "background_picker_row_repaint_cpu_ms_off_main_thread": 0.0,
+   "background_overlay_draw_count": 61,
+   "background_overlay_draw_wall_ms_sum": 1049.1,
+   "background_overlay_draw_wall_ms_median": 3.86,
+   "background_overlay_draw_cpu_ms_sum": 802.9,
+   "background_overlay_draw_cpu_ms_off_main_thread": 0.0,
+   "speculative": {
+    "admissions_total": 13,
+    "admissions_inside_touch": 0,
+    "admissions_inside_swipe_window": 11,
+    "completions_total": 13,
+    "completions_inside_touch": 7,
+    "completions_inside_swipe_window": 10,
+    "admissions_by_gesture_phase": {
+     "rest": 13,
+     "held": 0,
+     "moving": 0
+    },
+    "completions_by_gesture_phase": {
+     "rest": 12,
+     "held": 1,
+     "moving": 0
+    }
+   },
+   "gesture_phase_counters": {
+    "rest": {
+     "scene_rebuild": {
+      "count": 12,
+      "wall_ms": 877.597,
+      "cpu_ms": 426.491,
+      "max_wall_ms": 119.585
+     },
+     "render_total": {
+      "count": 31,
+      "wall_ms": 1823.785,
+      "cpu_ms": 1154.565,
+      "max_wall_ms": 131.479
+     },
+     "picker_row_repaint": {
+      "count": 16,
+      "wall_ms": 802.69,
+      "cpu_ms": 639.797,
+      "max_wall_ms": 76.416
+     },
+     "thumbnail_request": {
+      "count": 14,
+      "wall_ms": 0.0,
+      "cpu_ms": 0.0,
+      "max_wall_ms": 0.0
+     },
+     "thumbnail_hash": {
+      "count": 14,
+      "wall_ms": 369.143,
+      "cpu_ms": 115.622,
+      "max_wall_ms": 62.765
+     },
+     "thumbnail_resolve": {
+      "count": 14,
+      "wall_ms": 415.83,
+      "cpu_ms": 130.887,
+      "max_wall_ms": 64.084
+     },
+     "appearance_prepare": {
+      "count": 14,
+      "wall_ms": 159.166,
+      "cpu_ms": 82.256,
+      "max_wall_ms": 27.668
+     },
+     "speculative_admission": {
+      "count": 13,
+      "wall_ms": 0.0,
+      "cpu_ms": 0.0,
+      "max_wall_ms": 0.0
+     },
+     "speculative_completion": {
+      "count": 12,
+      "wall_ms": 0.0,
+      "cpu_ms": 0.0,
+      "max_wall_ms": 0.0
+     },
+     "overlay_prerender": {
+      "count": 7,
+      "wall_ms": 578.919,
+      "cpu_ms": 431.478,
+      "max_wall_ms": 88.442
+     }
+    },
+    "held": {
+     "scene_rebuild": {
+      "count": 4,
+      "wall_ms": 384.375,
+      "cpu_ms": 312.998,
+      "max_wall_ms": 124.382
+     },
+     "render_total": {
+      "count": 42,
+      "wall_ms": 3495.053,
+      "cpu_ms": 2918.441,
+      "max_wall_ms": 135.412
+     },
+     "picker_row_repaint": {
+      "count": 36,
+      "wall_ms": 2957.366,
+      "cpu_ms": 2482.777,
+      "max_wall_ms": 132.777
+     },
+     "thumbnail_request": {
+      "count": 8,
+      "wall_ms": 0.0,
+      "cpu_ms": 0.0,
+      "max_wall_ms": 0.0
+     },
+     "thumbnail_hash": {
+      "count": 8,
+      "wall_ms": 213.703,
+      "cpu_ms": 97.888,
+      "max_wall_ms": 34.127
+     },
+     "thumbnail_resolve": {
+      "count": 8,
+      "wall_ms": 240.815,
+      "cpu_ms": 107.985,
+      "max_wall_ms": 40.49
+     },
+     "appearance_prepare": {
+      "count": 1,
+      "wall_ms": 9.819,
+      "cpu_ms": 4.069,
+      "max_wall_ms": 9.819
+     },
+     "speculative_completion": {
+      "count": 1,
+      "wall_ms": 0.0,
+      "cpu_ms": 0.0,
+      "max_wall_ms": 0.0
+     }
+    },
+    "moving": {
+     "scene_rebuild": {
+      "count": 23,
+      "wall_ms": 2998.85,
+      "cpu_ms": 2202.974,
+      "max_wall_ms": 186.658
+     },
+     "render_total": {
+      "count": 121,
+      "wall_ms": 8256.877,
+      "cpu_ms": 6450.205,
+      "max_wall_ms": 190.217
+     },
+     "picker_row_repaint": {
+      "count": 53,
+      "wall_ms": 4845.75,
+      "cpu_ms": 3909.116,
+      "max_wall_ms": 140.578
+     },
+     "thumbnail_request": {
+      "count": 28,
+      "wall_ms": 0.0,
+      "cpu_ms": 0.0,
+      "max_wall_ms": 0.0
+     },
+     "thumbnail_hash": {
+      "count": 28,
+      "wall_ms": 828.731,
+      "cpu_ms": 344.399,
+      "max_wall_ms": 60.425
+     },
+     "thumbnail_resolve": {
+      "count": 28,
+      "wall_ms": 937.982,
+      "cpu_ms": 379.286,
+      "max_wall_ms": 60.76
+     }
+    }
+   }
+  },
+  "tr-p2-base": {
+   "theme_warm_gap_median_ms": 133.5,
+   "theme_warm_gap_p95_ms": 160,
+   "theme_cold_gap_median_ms": 143.0,
+   "theme_cold_gap_p95_ms": 171,
+   "background_gap_median_ms": 72.5,
+   "background_gap_p95_ms": 108,
+   "theme_warm_commits": 64,
+   "background_commits": 30,
+   "theme_warm_rust_cpu_percent": 80.54,
+   "theme_cold_rust_cpu_percent": 79.72,
+   "background_rust_cpu_percent": 27.03,
+   "idle_rust_cpu_percent": 0.85,
+   "idle_commits": 2,
+   "theme_warm_helper_cgroup_cpu_percent": 0.05,
+   "theme_cold_helper_cgroup_cpu_percent": 0.05,
+   "rss_first_mib": 50.86,
+   "rss_last_mib": 75.6,
+   "rss_growth_mib": 24.75,
+   "rss_peak_mib": 75.6,
+   "helper_rss_last_mib": 23.89,
+   "preview_requests": 4,
+   "overlay_prerender_completions": 0,
+   "overlay_prerender_completions_touch_held": 0,
+   "generation_unchanged": true,
+   "gates_failed": [],
+   "trace_events": 6590,
+   "trace_dropped": 0,
+   "theme_cold_presented_gap_median_ms": 140.8,
+   "theme_cold_presented_gap_p95_ms": 290.6,
+   "theme_cold_render_total_count": 60,
+   "theme_cold_render_total_wall_ms_sum": 7830.2,
+   "theme_cold_render_total_wall_ms_median": 134.11,
+   "theme_cold_render_total_cpu_ms_sum": 6051.6,
+   "theme_cold_render_total_cpu_ms_off_main_thread": 0.0,
+   "theme_cold_scene_rebuild_count": 60,
+   "theme_cold_scene_rebuild_wall_ms_sum": 7585.8,
+   "theme_cold_scene_rebuild_wall_ms_median": 130.63,
+   "theme_cold_scene_rebuild_cpu_ms_sum": 5857.9,
+   "theme_cold_scene_rebuild_cpu_ms_off_main_thread": 0.0,
+   "theme_cold_overlay_draw_count": 60,
+   "theme_cold_overlay_draw_wall_ms_sum": 7871.1,
+   "theme_cold_overlay_draw_wall_ms_median": 134.83,
+   "theme_cold_overlay_draw_cpu_ms_sum": 6069.0,
+   "theme_cold_overlay_draw_cpu_ms_off_main_thread": 0.0,
+   "theme_cold_thumbnail_hash_count": 22,
+   "theme_cold_thumbnail_hash_wall_ms_sum": 765.5,
+   "theme_cold_thumbnail_hash_wall_ms_median": 28.44,
+   "theme_cold_thumbnail_hash_cpu_ms_sum": 302.6,
+   "theme_cold_thumbnail_hash_cpu_ms_off_main_thread": 302.6,
+   "theme_cold_thumbnail_resolve_count": 22,
+   "theme_cold_thumbnail_resolve_wall_ms_sum": 858.7,
+   "theme_cold_thumbnail_resolve_wall_ms_median": 35.14,
+   "theme_cold_thumbnail_resolve_cpu_ms_sum": 335.5,
+   "theme_cold_thumbnail_resolve_cpu_ms_off_main_thread": 335.5,
+   "theme_cold_thumbnail_read_cache_count": 22,
+   "theme_cold_thumbnail_read_cache_wall_ms_sum": 79.4,
+   "theme_cold_thumbnail_read_cache_wall_ms_median": 1.18,
+   "theme_cold_thumbnail_read_cache_cpu_ms_sum": 31.5,
+   "theme_cold_thumbnail_read_cache_cpu_ms_off_main_thread": 31.5,
+   "theme_warm_presented_gap_median_ms": 127.0,
+   "theme_warm_presented_gap_p95_ms": 159.9,
+   "theme_warm_render_total_count": 65,
+   "theme_warm_render_total_wall_ms_sum": 8128.2,
+   "theme_warm_render_total_wall_ms_median": 124.76,
+   "theme_warm_render_total_cpu_ms_sum": 6602.7,
+   "theme_warm_render_total_cpu_ms_off_main_thread": 0.0,
+   "theme_warm_scene_rebuild_count": 65,
+   "theme_warm_scene_rebuild_wall_ms_sum": 7876.6,
+   "theme_warm_scene_rebuild_wall_ms_median": 120.84,
+   "theme_warm_scene_rebuild_cpu_ms_sum": 6404.1,
+   "theme_warm_scene_rebuild_cpu_ms_off_main_thread": 0.0,
+   "theme_warm_overlay_draw_count": 65,
+   "theme_warm_overlay_draw_wall_ms_sum": 8178.9,
+   "theme_warm_overlay_draw_wall_ms_median": 124.93,
+   "theme_warm_overlay_draw_cpu_ms_sum": 6619.0,
+   "theme_warm_overlay_draw_cpu_ms_off_main_thread": 0.0,
+   "theme_warm_thumbnail_hash_count": 4,
+   "theme_warm_thumbnail_hash_wall_ms_sum": 95.5,
+   "theme_warm_thumbnail_hash_wall_ms_median": 22.3,
+   "theme_warm_thumbnail_hash_cpu_ms_sum": 37.3,
+   "theme_warm_thumbnail_hash_cpu_ms_off_main_thread": 37.3,
+   "theme_warm_thumbnail_resolve_count": 4,
+   "theme_warm_thumbnail_resolve_wall_ms_sum": 116.3,
+   "theme_warm_thumbnail_resolve_wall_ms_median": 25.96,
+   "theme_warm_thumbnail_resolve_cpu_ms_sum": 41.9,
+   "theme_warm_thumbnail_resolve_cpu_ms_off_main_thread": 41.9,
+   "theme_warm_thumbnail_read_cache_count": 4,
+   "theme_warm_thumbnail_read_cache_wall_ms_sum": 12.0,
+   "theme_warm_thumbnail_read_cache_wall_ms_median": 1.46,
+   "theme_warm_thumbnail_read_cache_cpu_ms_sum": 4.4,
+   "theme_warm_thumbnail_read_cache_cpu_ms_off_main_thread": 4.4,
+   "background_presented_gap_median_ms": 65.6,
+   "background_presented_gap_p95_ms": 137.9,
+   "background_render_total_count": 30,
+   "background_render_total_wall_ms_sum": 1888.7,
+   "background_render_total_wall_ms_median": 61.84,
+   "background_render_total_cpu_ms_sum": 1531.5,
+   "background_render_total_cpu_ms_off_main_thread": 0.0,
+   "background_scene_rebuild_count": 30,
+   "background_scene_rebuild_wall_ms_sum": 1782.3,
+   "background_scene_rebuild_wall_ms_median": 58.68,
+   "background_scene_rebuild_cpu_ms_sum": 1440.7,
+   "background_scene_rebuild_cpu_ms_off_main_thread": 0.0,
+   "background_overlay_draw_count": 30,
+   "background_overlay_draw_wall_ms_sum": 1904.3,
+   "background_overlay_draw_wall_ms_median": 62.03,
+   "background_overlay_draw_cpu_ms_sum": 1538.6,
+   "background_overlay_draw_cpu_ms_off_main_thread": 0.0,
+   "speculative": {
+    "admissions_total": 2,
+    "admissions_inside_touch": 0,
+    "admissions_inside_swipe_window": 0,
+    "completions_total": 0,
+    "completions_inside_touch": 0,
+    "completions_inside_swipe_window": 0
+   }
+  },
+  "tr-p2-cand": {
+   "theme_warm_gap_median_ms": 114.0,
+   "theme_warm_gap_p95_ms": 175,
+   "theme_cold_gap_median_ms": 181,
+   "theme_cold_gap_p95_ms": 299,
+   "background_gap_median_ms": 38,
+   "background_gap_p95_ms": 90,
+   "theme_warm_commits": 60,
+   "background_commits": 61,
+   "theme_warm_rust_cpu_percent": 66.52,
+   "theme_cold_rust_cpu_percent": 55.37,
+   "background_rust_cpu_percent": 20.16,
+   "idle_rust_cpu_percent": 0.59,
+   "idle_commits": 0,
+   "theme_warm_helper_cgroup_cpu_percent": 2.11,
+   "theme_cold_helper_cgroup_cpu_percent": 24.48,
+   "rss_first_mib": 51.04,
+   "rss_last_mib": 88.92,
+   "rss_growth_mib": 37.88,
+   "rss_peak_mib": 88.92,
+   "helper_rss_last_mib": 24.09,
+   "preview_requests": 12,
+   "overlay_prerender_completions": 10,
+   "overlay_prerender_completions_touch_held": 0,
+   "generation_unchanged": true,
+   "gates_failed": [],
+   "trace_events": 7529,
+   "trace_dropped": 0,
+   "theme_cold_presented_gap_median_ms": 163.8,
+   "theme_cold_presented_gap_p95_ms": 293.6,
+   "theme_cold_render_total_count": 43,
+   "theme_cold_render_total_wall_ms_sum": 7123.2,
+   "theme_cold_render_total_wall_ms_median": 158.32,
+   "theme_cold_render_total_cpu_ms_sum": 3653.7,
+   "theme_cold_render_total_cpu_ms_off_main_thread": 0.0,
+   "theme_cold_scene_rebuild_count": 20,
+   "theme_cold_scene_rebuild_wall_ms_sum": 3178.5,
+   "theme_cold_scene_rebuild_wall_ms_median": 143.04,
+   "theme_cold_scene_rebuild_cpu_ms_sum": 1783.4,
+   "theme_cold_scene_rebuild_cpu_ms_off_main_thread": 0.0,
+   "theme_cold_picker_row_repaint_count": 23,
+   "theme_cold_picker_row_repaint_wall_ms_sum": 3683.3,
+   "theme_cold_picker_row_repaint_wall_ms_median": 182.93,
+   "theme_cold_picker_row_repaint_cpu_ms_sum": 1736.5,
+   "theme_cold_picker_row_repaint_cpu_ms_off_main_thread": 0.0,
+   "theme_cold_overlay_draw_count": 43,
+   "theme_cold_overlay_draw_wall_ms_sum": 7170.7,
+   "theme_cold_overlay_draw_wall_ms_median": 158.51,
+   "theme_cold_overlay_draw_cpu_ms_sum": 3667.4,
+   "theme_cold_overlay_draw_cpu_ms_off_main_thread": 0.0,
+   "theme_cold_overlay_prerender_count": 1,
+   "theme_cold_overlay_prerender_wall_ms_sum": 162.0,
+   "theme_cold_overlay_prerender_wall_ms_median": 161.96,
+   "theme_cold_overlay_prerender_cpu_ms_sum": 64.7,
+   "theme_cold_overlay_prerender_cpu_ms_off_main_thread": 0.0,
+   "theme_cold_appearance_prepare_count": 3,
+   "theme_cold_appearance_prepare_wall_ms_sum": 44.3,
+   "theme_cold_appearance_prepare_wall_ms_median": 14.86,
+   "theme_cold_appearance_prepare_cpu_ms_sum": 26.3,
+   "theme_cold_appearance_prepare_cpu_ms_off_main_thread": 0.0,
+   "theme_cold_thumbnail_hash_count": 40,
+   "theme_cold_thumbnail_hash_wall_ms_sum": 1437.1,
+   "theme_cold_thumbnail_hash_wall_ms_median": 32.49,
+   "theme_cold_thumbnail_hash_cpu_ms_sum": 509.7,
+   "theme_cold_thumbnail_hash_cpu_ms_off_main_thread": 509.7,
+   "theme_cold_thumbnail_resolve_count": 40,
+   "theme_cold_thumbnail_resolve_wall_ms_sum": 1616.9,
+   "theme_cold_thumbnail_resolve_wall_ms_median": 35.46,
+   "theme_cold_thumbnail_resolve_cpu_ms_sum": 561.3,
+   "theme_cold_thumbnail_resolve_cpu_ms_off_main_thread": 561.3,
+   "theme_cold_thumbnail_read_cache_count": 40,
+   "theme_cold_thumbnail_read_cache_wall_ms_sum": 155.2,
+   "theme_cold_thumbnail_read_cache_wall_ms_median": 2.23,
+   "theme_cold_thumbnail_read_cache_cpu_ms_sum": 49.0,
+   "theme_cold_thumbnail_read_cache_cpu_ms_off_main_thread": 49.0,
+   "theme_warm_presented_gap_median_ms": 105.3,
+   "theme_warm_presented_gap_p95_ms": 178.0,
+   "theme_warm_render_total_count": 60,
+   "theme_warm_render_total_wall_ms_sum": 5366.7,
+   "theme_warm_render_total_wall_ms_median": 96.91,
+   "theme_warm_render_total_cpu_ms_sum": 4257.0,
+   "theme_warm_render_total_cpu_ms_off_main_thread": 0.0,
+   "theme_warm_scene_rebuild_count": 16,
+   "theme_warm_scene_rebuild_wall_ms_sum": 2002.3,
+   "theme_warm_scene_rebuild_wall_ms_median": 123.81,
+   "theme_warm_scene_rebuild_cpu_ms_sum": 1502.3,
+   "theme_warm_scene_rebuild_cpu_ms_off_main_thread": 0.0,
+   "theme_warm_picker_row_repaint_count": 36,
+   "theme_warm_picker_row_repaint_wall_ms_sum": 3158.3,
+   "theme_warm_picker_row_repaint_wall_ms_median": 93.22,
+   "theme_warm_picker_row_repaint_cpu_ms_sum": 2588.4,
+   "theme_warm_picker_row_repaint_cpu_ms_off_main_thread": 0.0,
+   "theme_warm_overlay_draw_count": 60,
+   "theme_warm_overlay_draw_wall_ms_sum": 5398.8,
+   "theme_warm_overlay_draw_wall_ms_median": 97.47,
+   "theme_warm_overlay_draw_cpu_ms_sum": 4271.5,
+   "theme_warm_overlay_draw_cpu_ms_off_main_thread": 0.0,
+   "theme_warm_overlay_prerender_count": 5,
+   "theme_warm_overlay_prerender_wall_ms_sum": 384.0,
+   "theme_warm_overlay_prerender_wall_ms_median": 65.42,
+   "theme_warm_overlay_prerender_cpu_ms_sum": 308.7,
+   "theme_warm_overlay_prerender_cpu_ms_off_main_thread": 0.0,
+   "theme_warm_appearance_prepare_count": 5,
+   "theme_warm_appearance_prepare_wall_ms_sum": 53.6,
+   "theme_warm_appearance_prepare_wall_ms_median": 9.86,
+   "theme_warm_appearance_prepare_cpu_ms_sum": 35.0,
+   "theme_warm_appearance_prepare_cpu_ms_off_main_thread": 0.0,
+   "theme_warm_thumbnail_hash_count": 20,
+   "theme_warm_thumbnail_hash_wall_ms_sum": 655.8,
+   "theme_warm_thumbnail_hash_wall_ms_median": 30.14,
+   "theme_warm_thumbnail_hash_cpu_ms_sum": 263.6,
+   "theme_warm_thumbnail_hash_cpu_ms_off_main_thread": 263.6,
+   "theme_warm_thumbnail_resolve_count": 20,
+   "theme_warm_thumbnail_resolve_wall_ms_sum": 690.3,
+   "theme_warm_thumbnail_resolve_wall_ms_median": 32.19,
+   "theme_warm_thumbnail_resolve_cpu_ms_sum": 278.1,
+   "theme_warm_thumbnail_resolve_cpu_ms_off_main_thread": 278.1,
+   "theme_warm_thumbnail_read_cache_count": 20,
+   "theme_warm_thumbnail_read_cache_wall_ms_sum": 26.5,
+   "theme_warm_thumbnail_read_cache_wall_ms_median": 1.12,
+   "theme_warm_thumbnail_read_cache_cpu_ms_sum": 13.1,
+   "theme_warm_thumbnail_read_cache_cpu_ms_off_main_thread": 13.1,
+   "background_presented_gap_median_ms": 38.3,
+   "background_presented_gap_p95_ms": 102.8,
+   "background_render_total_count": 61,
+   "background_render_total_wall_ms_sum": 926.0,
+   "background_render_total_wall_ms_median": 3.14,
+   "background_render_total_cpu_ms_sum": 742.4,
+   "background_render_total_cpu_ms_off_main_thread": 0.0,
+   "background_picker_row_repaint_count": 18,
+   "background_picker_row_repaint_wall_ms_sum": 723.4,
+   "background_picker_row_repaint_wall_ms_median": 39.64,
+   "background_picker_row_repaint_cpu_ms_sum": 574.0,
+   "background_picker_row_repaint_cpu_ms_off_main_thread": 0.0,
+   "background_overlay_draw_count": 61,
+   "background_overlay_draw_wall_ms_sum": 955.4,
+   "background_overlay_draw_wall_ms_median": 3.65,
+   "background_overlay_draw_cpu_ms_sum": 757.8,
+   "background_overlay_draw_cpu_ms_off_main_thread": 0.0,
+   "background_overlay_prerender_count": 4,
+   "background_overlay_prerender_wall_ms_sum": 318.8,
+   "background_overlay_prerender_wall_ms_median": 79.63,
+   "background_overlay_prerender_cpu_ms_sum": 246.9,
+   "background_overlay_prerender_cpu_ms_off_main_thread": 0.0,
+   "speculative": {
+    "admissions_total": 10,
+    "admissions_inside_touch": 0,
+    "admissions_inside_swipe_window": 8,
+    "completions_total": 10,
+    "completions_inside_touch": 2,
+    "completions_inside_swipe_window": 8,
+    "admissions_by_gesture_phase": {
+     "rest": 10,
+     "held": 0,
+     "moving": 0
+    },
+    "completions_by_gesture_phase": {
+     "rest": 8,
+     "held": 1,
+     "moving": 1
+    }
+   },
+   "gesture_phase_counters": {
+    "rest": {
+     "scene_rebuild": {
+      "count": 11,
+      "wall_ms": 811.404,
+      "cpu_ms": 386.425,
+      "max_wall_ms": 120.268
+     },
+     "render_total": {
+      "count": 30,
+      "wall_ms": 1744.184,
+      "cpu_ms": 1060.969,
+      "max_wall_ms": 130.062
+     },
+     "picker_row_repaint": {
+      "count": 15,
+      "wall_ms": 793.965,
+      "cpu_ms": 588.912,
+      "max_wall_ms": 110.845
+     },
+     "thumbnail_request": {
+      "count": 14,
+      "wall_ms": 0.0,
+      "cpu_ms": 0.0,
+      "max_wall_ms": 0.0
+     },
+     "thumbnail_hash": {
+      "count": 14,
+      "wall_ms": 364.047,
+      "cpu_ms": 115.271,
+      "max_wall_ms": 60.29
+     },
+     "thumbnail_resolve": {
+      "count": 14,
+      "wall_ms": 417.014,
+      "cpu_ms": 130.689,
+      "max_wall_ms": 62.77
+     },
+     "appearance_prepare": {
+      "count": 10,
+      "wall_ms": 115.837,
+      "cpu_ms": 68.214,
+      "max_wall_ms": 20.273
+     },
+     "speculative_admission": {
+      "count": 10,
+      "wall_ms": 0.0,
+      "cpu_ms": 0.0,
+      "max_wall_ms": 0.0
+     },
+     "speculative_completion": {
+      "count": 8,
+      "wall_ms": 0.0,
+      "cpu_ms": 0.0,
+      "max_wall_ms": 0.0
+     },
+     "overlay_prerender": {
+      "count": 5,
+      "wall_ms": 383.978,
+      "cpu_ms": 308.71,
+      "max_wall_ms": 104.858
+     }
+    },
+    "held": {
+     "scene_rebuild": {
+      "count": 4,
+      "wall_ms": 362.581,
+      "cpu_ms": 289.757,
+      "max_wall_ms": 119.281
+     },
+     "render_total": {
+      "count": 36,
+      "wall_ms": 3584.49,
+      "cpu_ms": 2453.068,
+      "max_wall_ms": 256.917
+     },
+     "picker_row_repaint": {
+      "count": 30,
+      "wall_ms": 3064.567,
+      "cpu_ms": 2056.017,
+      "max_wall_ms": 249.677
+     },
+     "thumbnail_request": {
+      "count": 12,
+      "wall_ms": 0.0,
+      "cpu_ms": 0.0,
+      "max_wall_ms": 0.0
+     },
+     "thumbnail_hash": {
+      "count": 12,
+      "wall_ms": 422.372,
+      "cpu_ms": 164.79,
+      "max_wall_ms": 58.09
+     },
+     "thumbnail_resolve": {
+      "count": 12,
+      "wall_ms": 465.652,
+      "cpu_ms": 178.187,
+      "max_wall_ms": 63.38
+     },
+     "appearance_prepare": {
+      "count": 1,
+      "wall_ms": 14.857,
+      "cpu_ms": 8.78,
+      "max_wall_ms": 14.857
+     },
+     "speculative_completion": {
+      "count": 1,
+      "wall_ms": 0.0,
+      "cpu_ms": 0.0,
+      "max_wall_ms": 0.0
+     }
+    },
+    "moving": {
+     "scene_rebuild": {
+      "count": 33,
+      "wall_ms": 4836.114,
+      "cpu_ms": 3012.54,
+      "max_wall_ms": 286.431
+     },
+     "render_total": {
+      "count": 111,
+      "wall_ms": 8983.712,
+      "cpu_ms": 5578.932,
+      "max_wall_ms": 293.272
+     },
+     "picker_row_repaint": {
+      "count": 32,
+      "wall_ms": 3706.505,
+      "cpu_ms": 2253.953,
+      "max_wall_ms": 252.325
+     },
+     "thumbnail_request": {
+      "count": 48,
+      "wall_ms": 0.0,
+      "cpu_ms": 0.0,
+      "max_wall_ms": 0.0
+     },
+     "thumbnail_hash": {
+      "count": 48,
+      "wall_ms": 1670.551,
+      "cpu_ms": 608.469,
+      "max_wall_ms": 101.502
+     },
+     "thumbnail_resolve": {
+      "count": 48,
+      "wall_ms": 1841.583,
+      "cpu_ms": 661.244,
+      "max_wall_ms": 111.161
+     },
+     "appearance_prepare": {
+      "count": 1,
+      "wall_ms": 18.264,
+      "cpu_ms": 8.137,
+      "max_wall_ms": 18.264
+     },
+     "speculative_completion": {
+      "count": 1,
+      "wall_ms": 0.0,
+      "cpu_ms": 0.0,
+      "max_wall_ms": 0.0
+     },
+     "overlay_prerender": {
+      "count": 5,
+      "wall_ms": 480.735,
+      "cpu_ms": 311.636,
+      "max_wall_ms": 161.956
+     }
+    }
+   }
+  },
+  "tr-p3-base": {
+   "theme_warm_gap_median_ms": 135,
+   "theme_warm_gap_p95_ms": 164,
+   "theme_cold_gap_median_ms": 134,
+   "theme_cold_gap_p95_ms": 190,
+   "background_gap_median_ms": 70.5,
+   "background_gap_p95_ms": 114,
+   "theme_warm_commits": 65,
+   "background_commits": 30,
+   "theme_warm_rust_cpu_percent": 81.57,
+   "theme_cold_rust_cpu_percent": 77.43,
+   "background_rust_cpu_percent": 26.49,
+   "idle_rust_cpu_percent": 0.55,
+   "idle_commits": 0,
+   "theme_warm_helper_cgroup_cpu_percent": 0.05,
+   "theme_cold_helper_cgroup_cpu_percent": 0.05,
+   "rss_first_mib": 51.17,
+   "rss_last_mib": 76.35,
+   "rss_growth_mib": 25.18,
+   "rss_peak_mib": 76.35,
+   "helper_rss_last_mib": 24.02,
+   "preview_requests": 4,
+   "overlay_prerender_completions": 0,
+   "overlay_prerender_completions_touch_held": 0,
+   "generation_unchanged": true,
+   "gates_failed": [],
+   "trace_events": 6628,
+   "trace_dropped": 0,
+   "theme_cold_presented_gap_median_ms": 136.6,
+   "theme_cold_presented_gap_p95_ms": 196.5,
+   "theme_cold_render_total_count": 61,
+   "theme_cold_render_total_wall_ms_sum": 7904.3,
+   "theme_cold_render_total_wall_ms_median": 127.44,
+   "theme_cold_render_total_cpu_ms_sum": 5946.0,
+   "theme_cold_render_total_cpu_ms_off_main_thread": 0.0,
+   "theme_cold_scene_rebuild_count": 61,
+   "theme_cold_scene_rebuild_wall_ms_sum": 7638.6,
+   "theme_cold_scene_rebuild_wall_ms_median": 123.29,
+   "theme_cold_scene_rebuild_cpu_ms_sum": 5748.7,
+   "theme_cold_scene_rebuild_cpu_ms_off_main_thread": 0.0,
+   "theme_cold_overlay_draw_count": 61,
+   "theme_cold_overlay_draw_wall_ms_sum": 7942.1,
+   "theme_cold_overlay_draw_wall_ms_median": 127.63,
+   "theme_cold_overlay_draw_cpu_ms_sum": 5962.8,
+   "theme_cold_overlay_draw_cpu_ms_off_main_thread": 0.0,
+   "theme_cold_thumbnail_hash_count": 26,
+   "theme_cold_thumbnail_hash_wall_ms_sum": 869.2,
+   "theme_cold_thumbnail_hash_wall_ms_median": 30.81,
+   "theme_cold_thumbnail_hash_cpu_ms_sum": 338.6,
+   "theme_cold_thumbnail_hash_cpu_ms_off_main_thread": 338.6,
+   "theme_cold_thumbnail_resolve_count": 26,
+   "theme_cold_thumbnail_resolve_wall_ms_sum": 974.7,
+   "theme_cold_thumbnail_resolve_wall_ms_median": 33.92,
+   "theme_cold_thumbnail_resolve_cpu_ms_sum": 375.3,
+   "theme_cold_thumbnail_resolve_cpu_ms_off_main_thread": 375.3,
+   "theme_cold_thumbnail_read_cache_count": 26,
+   "theme_cold_thumbnail_read_cache_wall_ms_sum": 85.2,
+   "theme_cold_thumbnail_read_cache_wall_ms_median": 2.2,
+   "theme_cold_thumbnail_read_cache_cpu_ms_sum": 34.9,
+   "theme_cold_thumbnail_read_cache_cpu_ms_off_main_thread": 34.9,
+   "theme_warm_presented_gap_median_ms": 133.6,
+   "theme_warm_presented_gap_p95_ms": 162.7,
+   "theme_warm_render_total_count": 65,
+   "theme_warm_render_total_wall_ms_sum": 8023.6,
+   "theme_warm_render_total_wall_ms_median": 128.6,
+   "theme_warm_render_total_cpu_ms_sum": 6429.9,
+   "theme_warm_render_total_cpu_ms_off_main_thread": 0.0,
+   "theme_warm_scene_rebuild_count": 65,
+   "theme_warm_scene_rebuild_wall_ms_sum": 7780.2,
+   "theme_warm_scene_rebuild_wall_ms_median": 121.55,
+   "theme_warm_scene_rebuild_cpu_ms_sum": 6230.5,
+   "theme_warm_scene_rebuild_cpu_ms_off_main_thread": 0.0,
+   "theme_warm_overlay_draw_count": 65,
+   "theme_warm_overlay_draw_wall_ms_sum": 8059.4,
+   "theme_warm_overlay_draw_wall_ms_median": 129.08,
+   "theme_warm_overlay_draw_cpu_ms_sum": 6445.3,
+   "theme_warm_overlay_draw_cpu_ms_off_main_thread": 0.0,
+   "theme_warm_thumbnail_hash_count": 10,
+   "theme_warm_thumbnail_hash_wall_ms_sum": 325.5,
+   "theme_warm_thumbnail_hash_wall_ms_median": 31.14,
+   "theme_warm_thumbnail_hash_cpu_ms_sum": 112.3,
+   "theme_warm_thumbnail_hash_cpu_ms_off_main_thread": 112.3,
+   "theme_warm_thumbnail_resolve_count": 10,
+   "theme_warm_thumbnail_resolve_wall_ms_sum": 346.2,
+   "theme_warm_thumbnail_resolve_wall_ms_median": 33.77,
+   "theme_warm_thumbnail_resolve_cpu_ms_sum": 119.6,
+   "theme_warm_thumbnail_resolve_cpu_ms_off_main_thread": 119.6,
+   "theme_warm_thumbnail_read_cache_count": 10,
+   "theme_warm_thumbnail_read_cache_wall_ms_sum": 20.0,
+   "theme_warm_thumbnail_read_cache_wall_ms_median": 1.44,
+   "theme_warm_thumbnail_read_cache_cpu_ms_sum": 6.8,
+   "theme_warm_thumbnail_read_cache_cpu_ms_off_main_thread": 6.8,
+   "background_presented_gap_median_ms": 65.8,
+   "background_presented_gap_p95_ms": 142.8,
+   "background_render_total_count": 30,
+   "background_render_total_wall_ms_sum": 1851.2,
+   "background_render_total_wall_ms_median": 60.42,
+   "background_render_total_cpu_ms_sum": 1520.9,
+   "background_render_total_cpu_ms_off_main_thread": 0.0,
+   "background_scene_rebuild_count": 30,
+   "background_scene_rebuild_wall_ms_sum": 1728.3,
+   "background_scene_rebuild_wall_ms_median": 55.33,
+   "background_scene_rebuild_cpu_ms_sum": 1429.7,
+   "background_scene_rebuild_cpu_ms_off_main_thread": 0.0,
+   "background_overlay_draw_count": 30,
+   "background_overlay_draw_wall_ms_sum": 1867.2,
+   "background_overlay_draw_wall_ms_median": 60.76,
+   "background_overlay_draw_cpu_ms_sum": 1527.9,
+   "background_overlay_draw_cpu_ms_off_main_thread": 0.0,
+   "speculative": {
+    "admissions_total": 2,
+    "admissions_inside_touch": 0,
+    "admissions_inside_swipe_window": 0,
+    "completions_total": 0,
+    "completions_inside_touch": 0,
+    "completions_inside_swipe_window": 0
+   }
+  },
+  "tr-p3-cand": {
+   "theme_warm_gap_median_ms": 126,
+   "theme_warm_gap_p95_ms": 165,
+   "theme_cold_gap_median_ms": 123.0,
+   "theme_cold_gap_p95_ms": 181,
+   "background_gap_median_ms": 38.5,
+   "background_gap_p95_ms": 86,
+   "theme_warm_commits": 55,
+   "background_commits": 60,
+   "theme_warm_rust_cpu_percent": 68.36,
+   "theme_cold_rust_cpu_percent": 68.57,
+   "background_rust_cpu_percent": 14.73,
+   "idle_rust_cpu_percent": 0.57,
+   "idle_commits": 0,
+   "theme_warm_helper_cgroup_cpu_percent": 2.91,
+   "theme_cold_helper_cgroup_cpu_percent": 1.01,
+   "rss_first_mib": 51.05,
+   "rss_last_mib": 87.01,
+   "rss_growth_mib": 35.96,
+   "rss_peak_mib": 87.01,
+   "helper_rss_last_mib": 24.27,
+   "preview_requests": 15,
+   "overlay_prerender_completions": 5,
+   "overlay_prerender_completions_touch_held": 0,
+   "generation_unchanged": true,
+   "gates_failed": [],
+   "trace_events": 7784,
+   "trace_dropped": 0,
+   "theme_cold_presented_gap_median_ms": 117.2,
+   "theme_cold_presented_gap_p95_ms": 183.4,
+   "theme_cold_render_total_count": 60,
+   "theme_cold_render_total_wall_ms_sum": 5867.5,
+   "theme_cold_render_total_wall_ms_median": 105.86,
+   "theme_cold_render_total_cpu_ms_sum": 4485.7,
+   "theme_cold_render_total_cpu_ms_off_main_thread": 0.0,
+   "theme_cold_scene_rebuild_count": 19,
+   "theme_cold_scene_rebuild_wall_ms_sum": 2566.4,
+   "theme_cold_scene_rebuild_wall_ms_median": 133.0,
+   "theme_cold_scene_rebuild_cpu_ms_sum": 1865.0,
+   "theme_cold_scene_rebuild_cpu_ms_off_main_thread": 0.0,
+   "theme_cold_picker_row_repaint_count": 34,
+   "theme_cold_picker_row_repaint_wall_ms_sum": 3073.8,
+   "theme_cold_picker_row_repaint_wall_ms_median": 97.8,
+   "theme_cold_picker_row_repaint_cpu_ms_sum": 2442.1,
+   "theme_cold_picker_row_repaint_cpu_ms_off_main_thread": 0.0,
+   "theme_cold_overlay_draw_count": 60,
+   "theme_cold_overlay_draw_wall_ms_sum": 5912.2,
+   "theme_cold_overlay_draw_wall_ms_median": 106.79,
+   "theme_cold_overlay_draw_cpu_ms_sum": 4504.0,
+   "theme_cold_overlay_draw_cpu_ms_off_main_thread": 0.0,
+   "theme_cold_overlay_prerender_count": 1,
+   "theme_cold_overlay_prerender_wall_ms_sum": 90.4,
+   "theme_cold_overlay_prerender_wall_ms_median": 90.38,
+   "theme_cold_overlay_prerender_cpu_ms_sum": 65.6,
+   "theme_cold_overlay_prerender_cpu_ms_off_main_thread": 0.0,
+   "theme_cold_appearance_prepare_count": 5,
+   "theme_cold_appearance_prepare_wall_ms_sum": 64.2,
+   "theme_cold_appearance_prepare_wall_ms_median": 11.11,
+   "theme_cold_appearance_prepare_cpu_ms_sum": 37.4,
+   "theme_cold_appearance_prepare_cpu_ms_off_main_thread": 0.0,
+   "theme_cold_thumbnail_hash_count": 30,
+   "theme_cold_thumbnail_hash_wall_ms_sum": 898.3,
+   "theme_cold_thumbnail_hash_wall_ms_median": 27.2,
+   "theme_cold_thumbnail_hash_cpu_ms_sum": 376.3,
+   "theme_cold_thumbnail_hash_cpu_ms_off_main_thread": 376.3,
+   "theme_cold_thumbnail_resolve_count": 30,
+   "theme_cold_thumbnail_resolve_wall_ms_sum": 1010.7,
+   "theme_cold_thumbnail_resolve_wall_ms_median": 30.85,
+   "theme_cold_thumbnail_resolve_cpu_ms_sum": 416.0,
+   "theme_cold_thumbnail_resolve_cpu_ms_off_main_thread": 416.0,
+   "theme_cold_thumbnail_read_cache_count": 30,
+   "theme_cold_thumbnail_read_cache_wall_ms_sum": 86.2,
+   "theme_cold_thumbnail_read_cache_wall_ms_median": 1.67,
+   "theme_cold_thumbnail_read_cache_cpu_ms_sum": 37.5,
+   "theme_cold_thumbnail_read_cache_cpu_ms_off_main_thread": 37.5,
+   "theme_warm_presented_gap_median_ms": 122.6,
+   "theme_warm_presented_gap_p95_ms": 164.9,
+   "theme_warm_render_total_count": 55,
+   "theme_warm_render_total_wall_ms_sum": 5659.5,
+   "theme_warm_render_total_wall_ms_median": 104.3,
+   "theme_warm_render_total_cpu_ms_sum": 4639.5,
+   "theme_warm_render_total_cpu_ms_off_main_thread": 0.0,
+   "theme_warm_scene_rebuild_count": 17,
+   "theme_warm_scene_rebuild_wall_ms_sum": 2215.2,
+   "theme_warm_scene_rebuild_wall_ms_median": 134.66,
+   "theme_warm_scene_rebuild_cpu_ms_sum": 1715.1,
+   "theme_warm_scene_rebuild_cpu_ms_off_main_thread": 0.0,
+   "theme_warm_picker_row_repaint_count": 38,
+   "theme_warm_picker_row_repaint_wall_ms_sum": 3257.3,
+   "theme_warm_picker_row_repaint_wall_ms_median": 88.06,
+   "theme_warm_picker_row_repaint_cpu_ms_sum": 2771.0,
+   "theme_warm_picker_row_repaint_cpu_ms_off_main_thread": 0.0,
+   "theme_warm_overlay_draw_count": 55,
+   "theme_warm_overlay_draw_wall_ms_sum": 5694.9,
+   "theme_warm_overlay_draw_wall_ms_median": 104.65,
+   "theme_warm_overlay_draw_cpu_ms_sum": 4652.6,
+   "theme_warm_overlay_draw_cpu_ms_off_main_thread": 0.0,
+   "theme_warm_overlay_prerender_count": 4,
+   "theme_warm_overlay_prerender_wall_ms_sum": 353.0,
+   "theme_warm_overlay_prerender_wall_ms_median": 87.59,
+   "theme_warm_overlay_prerender_cpu_ms_sum": 251.0,
+   "theme_warm_overlay_prerender_cpu_ms_off_main_thread": 0.0,
+   "theme_warm_appearance_prepare_count": 6,
+   "theme_warm_appearance_prepare_wall_ms_sum": 27.4,
+   "theme_warm_appearance_prepare_wall_ms_median": 4.37,
+   "theme_warm_appearance_prepare_cpu_ms_sum": 21.8,
+   "theme_warm_appearance_prepare_cpu_ms_off_main_thread": 0.0,
+   "theme_warm_thumbnail_hash_count": 20,
+   "theme_warm_thumbnail_hash_wall_ms_sum": 528.3,
+   "theme_warm_thumbnail_hash_wall_ms_median": 25.33,
+   "theme_warm_thumbnail_hash_cpu_ms_sum": 219.4,
+   "theme_warm_thumbnail_hash_cpu_ms_off_main_thread": 219.4,
+   "theme_warm_thumbnail_resolve_count": 20,
+   "theme_warm_thumbnail_resolve_wall_ms_sum": 567.4,
+   "theme_warm_thumbnail_resolve_wall_ms_median": 28.17,
+   "theme_warm_thumbnail_resolve_cpu_ms_sum": 234.0,
+   "theme_warm_thumbnail_resolve_cpu_ms_off_main_thread": 234.0,
+   "theme_warm_thumbnail_read_cache_count": 20,
+   "theme_warm_thumbnail_read_cache_wall_ms_sum": 21.9,
+   "theme_warm_thumbnail_read_cache_wall_ms_median": 0.62,
+   "theme_warm_thumbnail_read_cache_cpu_ms_sum": 13.1,
+   "theme_warm_thumbnail_read_cache_cpu_ms_off_main_thread": 13.1,
+   "background_presented_gap_median_ms": 38.3,
+   "background_presented_gap_p95_ms": 115.0,
+   "background_render_total_count": 60,
+   "background_render_total_wall_ms_sum": 998.1,
+   "background_render_total_wall_ms_median": 3.23,
+   "background_render_total_cpu_ms_sum": 791.7,
+   "background_render_total_cpu_ms_off_main_thread": 0.0,
+   "background_picker_row_repaint_count": 19,
+   "background_picker_row_repaint_wall_ms_sum": 793.0,
+   "background_picker_row_repaint_wall_ms_median": 38.08,
+   "background_picker_row_repaint_cpu_ms_sum": 623.1,
+   "background_picker_row_repaint_cpu_ms_off_main_thread": 0.0,
+   "background_overlay_draw_count": 60,
+   "background_overlay_draw_wall_ms_sum": 1025.1,
+   "background_overlay_draw_wall_ms_median": 3.68,
+   "background_overlay_draw_cpu_ms_sum": 806.5,
+   "background_overlay_draw_cpu_ms_off_main_thread": 0.0,
+   "speculative": {
+    "admissions_total": 13,
+    "admissions_inside_touch": 0,
+    "admissions_inside_swipe_window": 11,
+    "completions_total": 13,
+    "completions_inside_touch": 7,
+    "completions_inside_swipe_window": 11,
+    "admissions_by_gesture_phase": {
+     "rest": 13,
+     "held": 0,
+     "moving": 0
+    },
+    "completions_by_gesture_phase": {
+     "rest": 13,
+     "held": 0,
+     "moving": 0
+    }
+   },
+   "gesture_phase_counters": {
+    "rest": {
+     "scene_rebuild": {
+      "count": 12,
+      "wall_ms": 899.296,
+      "cpu_ms": 434.973,
+      "max_wall_ms": 127.302
+     },
+     "render_total": {
+      "count": 33,
+      "wall_ms": 1876.445,
+      "cpu_ms": 1210.605,
+      "max_wall_ms": 134.869
+     },
+     "picker_row_repaint": {
+      "count": 17,
+      "wall_ms": 836.484,
+      "cpu_ms": 681.618,
+      "max_wall_ms": 75.262
+     },
+     "thumbnail_request": {
+      "count": 14,
+      "wall_ms": 0.0,
+      "cpu_ms": 0.0,
+      "max_wall_ms": 0.0
+     },
+     "thumbnail_hash": {
+      "count": 14,
+      "wall_ms": 373.582,
+      "cpu_ms": 115.81,
+      "max_wall_ms": 63.904
+     },
+     "thumbnail_resolve": {
+      "count": 14,
+      "wall_ms": 428.326,
+      "cpu_ms": 131.169,
+      "max_wall_ms": 64.163
+     },
+     "appearance_prepare": {
+      "count": 15,
+      "wall_ms": 154.172,
+      "cpu_ms": 83.894,
+      "max_wall_ms": 24.627
+     },
+     "speculative_admission": {
+      "count": 13,
+      "wall_ms": 0.0,
+      "cpu_ms": 0.0,
+      "max_wall_ms": 0.0
+     },
+     "speculative_completion": {
+      "count": 13,
+      "wall_ms": 0.0,
+      "cpu_ms": 0.0,
+      "max_wall_ms": 0.0
+     },
+     "overlay_prerender": {
+      "count": 5,
+      "wall_ms": 443.422,
+      "cpu_ms": 316.571,
+      "max_wall_ms": 91.086
+     }
+    },
+    "held": {
+     "scene_rebuild": {
+      "count": 3,
+      "wall_ms": 261.454,
+      "cpu_ms": 210.408,
+      "max_wall_ms": 123.231
+     },
+     "render_total": {
+      "count": 39,
+      "wall_ms": 3233.592,
+      "cpu_ms": 2685.749,
+      "max_wall_ms": 135.527
+     },
+     "picker_row_repaint": {
+      "count": 34,
+      "wall_ms": 2815.378,
+      "cpu_ms": 2359.722,
+      "max_wall_ms": 132.722
+     },
+     "thumbnail_request": {
+      "count": 10,
+      "wall_ms": 0.0,
+      "cpu_ms": 0.0,
+      "max_wall_ms": 0.0
+     },
+     "thumbnail_hash": {
+      "count": 10,
+      "wall_ms": 260.122,
+      "cpu_ms": 109.633,
+      "max_wall_ms": 34.418
+     },
+     "thumbnail_resolve": {
+      "count": 10,
+      "wall_ms": 299.078,
+      "cpu_ms": 121.755,
+      "max_wall_ms": 41.804
+     }
+    },
+    "moving": {
+     "scene_rebuild": {
+      "count": 33,
+      "wall_ms": 4474.514,
+      "cpu_ms": 3325.222,
+      "max_wall_ms": 184.439
+     },
+     "render_total": {
+      "count": 116,
+      "wall_ms": 8335.836,
+      "cpu_ms": 6447.861,
+      "max_wall_ms": 187.159
+     },
+     "picker_row_repaint": {
+      "count": 40,
+      "wall_ms": 3472.25,
+      "cpu_ms": 2794.83,
+      "max_wall_ms": 138.814
+     },
+     "thumbnail_request": {
+      "count": 40,
+      "wall_ms": 0.0,
+      "cpu_ms": 0.0,
+      "max_wall_ms": 0.0
+     },
+     "thumbnail_hash": {
+      "count": 40,
+      "wall_ms": 1166.486,
+      "cpu_ms": 486.061,
+      "max_wall_ms": 60.078
+     },
+     "thumbnail_resolve": {
+      "count": 40,
+      "wall_ms": 1278.94,
+      "cpu_ms": 528.162,
+      "max_wall_ms": 63.184
+     }
+    }
+   }
+  },
+  "of-p1-base": {
+   "theme_warm_gap_median_ms": 137.5,
+   "theme_warm_gap_p95_ms": 183,
+   "theme_cold_gap_median_ms": 143,
+   "theme_cold_gap_p95_ms": 177,
+   "background_gap_median_ms": 80.5,
+   "background_gap_p95_ms": 142,
+   "theme_warm_commits": 60,
+   "background_commits": 30,
+   "theme_warm_rust_cpu_percent": 77.77,
+   "theme_cold_rust_cpu_percent": 80.96,
+   "background_rust_cpu_percent": 35.1,
+   "idle_rust_cpu_percent": 0.49,
+   "idle_commits": 0,
+   "theme_warm_helper_cgroup_cpu_percent": 0.06,
+   "theme_cold_helper_cgroup_cpu_percent": 0.05,
+   "rss_first_mib": 51.19,
+   "rss_last_mib": 78.79,
+   "rss_growth_mib": 27.59,
+   "rss_peak_mib": 78.79,
+   "helper_rss_last_mib": 23.89,
+   "preview_requests": 4,
+   "overlay_prerender_completions": 4,
+   "overlay_prerender_completions_touch_held": 0,
+   "generation_unchanged": true,
+   "gates_failed": []
+  },
+  "of-p1-cand": {
+   "theme_warm_gap_median_ms": 108,
+   "theme_warm_gap_p95_ms": 160,
+   "theme_cold_gap_median_ms": 118.0,
+   "theme_cold_gap_p95_ms": 168,
+   "background_gap_median_ms": 39,
+   "background_gap_p95_ms": 95,
+   "theme_warm_commits": 67,
+   "background_commits": 59,
+   "theme_warm_rust_cpu_percent": 63.03,
+   "theme_cold_rust_cpu_percent": 60.78,
+   "background_rust_cpu_percent": 9.81,
+   "idle_rust_cpu_percent": 0.49,
+   "idle_commits": 0,
+   "theme_warm_helper_cgroup_cpu_percent": 1.01,
+   "theme_cold_helper_cgroup_cpu_percent": 2.13,
+   "rss_first_mib": 51.05,
+   "rss_last_mib": 85.97,
+   "rss_growth_mib": 34.93,
+   "rss_peak_mib": 85.97,
+   "helper_rss_last_mib": 23.98,
+   "preview_requests": 14,
+   "overlay_prerender_completions": 6,
+   "overlay_prerender_completions_touch_held": 0,
+   "generation_unchanged": true,
+   "gates_failed": []
+  },
+  "of-p2-base": {
+   "theme_warm_gap_median_ms": 135.0,
+   "theme_warm_gap_p95_ms": 173,
+   "theme_cold_gap_median_ms": 143,
+   "theme_cold_gap_p95_ms": 175,
+   "background_gap_median_ms": 93,
+   "background_gap_p95_ms": 154,
+   "theme_warm_commits": 62,
+   "background_commits": 31,
+   "theme_warm_rust_cpu_percent": 79.42,
+   "theme_cold_rust_cpu_percent": 80.98,
+   "background_rust_cpu_percent": 44.42,
+   "idle_rust_cpu_percent": 0.56,
+   "idle_commits": 0,
+   "theme_warm_helper_cgroup_cpu_percent": 0.06,
+   "theme_cold_helper_cgroup_cpu_percent": 0.06,
+   "rss_first_mib": 50.81,
+   "rss_last_mib": 80.65,
+   "rss_growth_mib": 29.84,
+   "rss_peak_mib": 80.65,
+   "helper_rss_last_mib": 24.11,
+   "preview_requests": 5,
+   "overlay_prerender_completions": 4,
+   "overlay_prerender_completions_touch_held": 0,
+   "generation_unchanged": true,
+   "gates_failed": []
+  },
+  "of-p2-cand": {
+   "theme_warm_gap_median_ms": 117,
+   "theme_warm_gap_p95_ms": 177,
+   "theme_cold_gap_median_ms": 123.5,
+   "theme_cold_gap_p95_ms": 184,
+   "background_gap_median_ms": 39.0,
+   "background_gap_p95_ms": 90,
+   "theme_warm_commits": 61,
+   "background_commits": 58,
+   "theme_warm_rust_cpu_percent": 68.88,
+   "theme_cold_rust_cpu_percent": 72.77,
+   "background_rust_cpu_percent": 18.1,
+   "idle_rust_cpu_percent": 0.52,
+   "idle_commits": 0,
+   "theme_warm_helper_cgroup_cpu_percent": 1.67,
+   "theme_cold_helper_cgroup_cpu_percent": 1.65,
+   "rss_first_mib": 51.33,
+   "rss_last_mib": 88.14,
+   "rss_growth_mib": 36.81,
+   "rss_peak_mib": 88.14,
+   "helper_rss_last_mib": 23.97,
+   "preview_requests": 15,
+   "overlay_prerender_completions": 9,
+   "overlay_prerender_completions_touch_held": 0,
+   "generation_unchanged": true,
+   "gates_failed": []
+  },
+  "of-p3-base": {
+   "theme_warm_gap_median_ms": 141.0,
+   "theme_warm_gap_p95_ms": 165,
+   "theme_cold_gap_median_ms": 140.5,
+   "theme_cold_gap_p95_ms": 181,
+   "background_gap_median_ms": 87,
+   "background_gap_p95_ms": 155,
+   "theme_warm_commits": 60,
+   "background_commits": 31,
+   "theme_warm_rust_cpu_percent": 80.52,
+   "theme_cold_rust_cpu_percent": 80.15,
+   "background_rust_cpu_percent": 43.87,
+   "idle_rust_cpu_percent": 0.59,
+   "idle_commits": 3,
+   "theme_warm_helper_cgroup_cpu_percent": 0.06,
+   "theme_cold_helper_cgroup_cpu_percent": 0.05,
+   "rss_first_mib": 50.95,
+   "rss_last_mib": 82.54,
+   "rss_growth_mib": 31.59,
+   "rss_peak_mib": 82.54,
+   "helper_rss_last_mib": 24.03,
+   "preview_requests": 5,
+   "overlay_prerender_completions": 4,
+   "overlay_prerender_completions_touch_held": 0,
+   "generation_unchanged": true,
+   "gates_failed": []
+  },
+  "of-p3-cand": {
+   "theme_warm_gap_median_ms": 114,
+   "theme_warm_gap_p95_ms": 141,
+   "theme_cold_gap_median_ms": 121,
+   "theme_cold_gap_p95_ms": 182,
+   "background_gap_median_ms": 38.5,
+   "background_gap_p95_ms": 89,
+   "theme_warm_commits": 63,
+   "background_commits": 60,
+   "theme_warm_rust_cpu_percent": 75.15,
+   "theme_cold_rust_cpu_percent": 63.69,
+   "background_rust_cpu_percent": 11.01,
+   "idle_rust_cpu_percent": 0.55,
+   "idle_commits": 0,
+   "theme_warm_helper_cgroup_cpu_percent": 0.71,
+   "theme_cold_helper_cgroup_cpu_percent": 0.85,
+   "rss_first_mib": 51.36,
+   "rss_last_mib": 86.69,
+   "rss_growth_mib": 35.33,
+   "rss_peak_mib": 86.69,
+   "helper_rss_last_mib": 24.03,
+   "preview_requests": 14,
+   "overlay_prerender_completions": 7,
+   "overlay_prerender_completions_touch_held": 0,
+   "generation_unchanged": true,
+   "gates_failed": []
+  }
+ },
+ "pairs": {
+  "tr-p1": {
+   "theme_warm_gap_median_ms": -30,
+   "theme_warm_gap_p95_ms": -5,
+   "theme_cold_gap_median_ms": -17.0,
+   "theme_cold_gap_p95_ms": 2,
+   "background_gap_median_ms": -49,
+   "background_gap_p95_ms": -73,
+   "theme_warm_commits": 0,
+   "background_commits": 32,
+   "theme_warm_rust_cpu_percent": -4.39,
+   "theme_cold_rust_cpu_percent": -10.67,
+   "background_rust_cpu_percent": -30.47,
+   "idle_rust_cpu_percent": 0.06,
+   "idle_commits": 0,
+   "theme_warm_helper_cgroup_cpu_percent": 0.14,
+   "theme_cold_helper_cgroup_cpu_percent": 1.0,
+   "rss_first_mib": -0.06,
+   "rss_last_mib": -5.18,
+   "rss_growth_mib": -5.12,
+   "rss_peak_mib": -2.53,
+   "helper_rss_last_mib": -0.66,
+   "preview_requests": 10,
+   "overlay_prerender_completions": 3,
+   "overlay_prerender_completions_touch_held": 0,
+   "trace_events": 1174,
+   "trace_dropped": 0,
+   "theme_cold_presented_gap_median_ms": -34.3,
+   "theme_cold_presented_gap_p95_ms": -48.3,
+   "theme_cold_render_total_count": 0,
+   "theme_cold_render_total_wall_ms_sum": -2229.5,
+   "theme_cold_render_total_wall_ms_median": -32.19,
+   "theme_cold_render_total_cpu_ms_sum": -1695.6,
+   "theme_cold_render_total_cpu_ms_off_main_thread": 0.0,
+   "theme_cold_scene_rebuild_count": -42,
+   "theme_cold_scene_rebuild_wall_ms_sum": -5418.9,
+   "theme_cold_scene_rebuild_wall_ms_median": -5.11,
+   "theme_cold_scene_rebuild_cpu_ms_sum": -4271.1,
+   "theme_cold_scene_rebuild_cpu_ms_off_main_thread": 0.0,
+   "theme_cold_overlay_draw_count": 0,
+   "theme_cold_overlay_draw_wall_ms_sum": -2220.2,
+   "theme_cold_overlay_draw_wall_ms_median": -31.85,
+   "theme_cold_overlay_draw_cpu_ms_sum": -1695.9,
+   "theme_cold_overlay_draw_cpu_ms_off_main_thread": 0.0,
+   "theme_cold_thumbnail_hash_count": -2,
+   "theme_cold_thumbnail_hash_wall_ms_sum": -109.8,
+   "theme_cold_thumbnail_hash_wall_ms_median": -2.33,
+   "theme_cold_thumbnail_hash_cpu_ms_sum": -23.6,
+   "theme_cold_thumbnail_hash_cpu_ms_off_main_thread": -23.6,
+   "theme_cold_thumbnail_resolve_count": -2,
+   "theme_cold_thumbnail_resolve_wall_ms_sum": -126.8,
+   "theme_cold_thumbnail_resolve_wall_ms_median": -4.38,
+   "theme_cold_thumbnail_resolve_cpu_ms_sum": -24.5,
+   "theme_cold_thumbnail_resolve_cpu_ms_off_main_thread": -24.5,
+   "theme_cold_thumbnail_read_cache_count": -2,
+   "theme_cold_thumbnail_read_cache_wall_ms_sum": -19.2,
+   "theme_cold_thumbnail_read_cache_wall_ms_median": -0.47,
+   "theme_cold_thumbnail_read_cache_cpu_ms_sum": -1.2,
+   "theme_cold_thumbnail_read_cache_cpu_ms_off_main_thread": -1.2,
+   "theme_warm_presented_gap_median_ms": -35.0,
+   "theme_warm_presented_gap_p95_ms": -20.3,
+   "theme_warm_render_total_count": 0,
+   "theme_warm_render_total_wall_ms_sum": -1596.6,
+   "theme_warm_render_total_wall_ms_median": -34.63,
+   "theme_warm_render_total_cpu_ms_sum": -1017.5,
+   "theme_warm_render_total_cpu_ms_off_main_thread": 0.0,
+   "theme_warm_scene_rebuild_count": -51,
+   "theme_warm_scene_rebuild_wall_ms_sum": -6144.4,
+   "theme_warm_scene_rebuild_wall_ms_median": 4.07,
+   "theme_warm_scene_rebuild_cpu_ms_sum": -4817.7,
+   "theme_warm_scene_rebuild_cpu_ms_off_main_thread": 0.0,
+   "theme_warm_overlay_draw_count": 0,
+   "theme_warm_overlay_draw_wall_ms_sum": -1601.3,
+   "theme_warm_overlay_draw_wall_ms_median": -34.46,
+   "theme_warm_overlay_draw_cpu_ms_sum": -1017.8,
+   "theme_warm_overlay_draw_cpu_ms_off_main_thread": 0.0,
+   "theme_warm_thumbnail_hash_count": -20,
+   "theme_warm_thumbnail_hash_wall_ms_sum": -641.0,
+   "theme_warm_thumbnail_hash_wall_ms_median": -3.1,
+   "theme_warm_thumbnail_hash_cpu_ms_sum": -254.8,
+   "theme_warm_thumbnail_hash_cpu_ms_off_main_thread": -254.8,
+   "theme_warm_thumbnail_resolve_count": -20,
+   "theme_warm_thumbnail_resolve_wall_ms_sum": -728.1,
+   "theme_warm_thumbnail_resolve_wall_ms_median": -3.52,
+   "theme_warm_thumbnail_resolve_cpu_ms_sum": -281.1,
+   "theme_warm_thumbnail_resolve_cpu_ms_off_main_thread": -281.1,
+   "theme_warm_thumbnail_read_cache_count": -20,
+   "theme_warm_thumbnail_read_cache_wall_ms_sum": -60.0,
+   "theme_warm_thumbnail_read_cache_wall_ms_median": -0.71,
+   "theme_warm_thumbnail_read_cache_cpu_ms_sum": -24.9,
+   "theme_warm_thumbnail_read_cache_cpu_ms_off_main_thread": -24.9,
+   "background_presented_gap_median_ms": -45.7,
+   "background_presented_gap_p95_ms": -108.4,
+   "background_render_total_count": 33,
+   "background_render_total_wall_ms_sum": -1254.1,
+   "background_render_total_wall_ms_median": -73.68,
+   "background_render_total_cpu_ms_sum": -1020.9,
+   "background_render_total_cpu_ms_off_main_thread": 0.0,
+   "background_overlay_draw_count": 33,
+   "background_overlay_draw_wall_ms_sum": -1235.8,
+   "background_overlay_draw_wall_ms_median": -73.79,
+   "background_overlay_draw_cpu_ms_sum": -1012.8,
+   "background_overlay_draw_cpu_ms_off_main_thread": 0.0
+  },
+  "tr-p2": {
+   "theme_warm_gap_median_ms": -19.5,
+   "theme_warm_gap_p95_ms": 15,
+   "theme_cold_gap_median_ms": 38.0,
+   "theme_cold_gap_p95_ms": 128,
+   "background_gap_median_ms": -34.5,
+   "background_gap_p95_ms": -18,
+   "theme_warm_commits": -4,
+   "background_commits": 31,
+   "theme_warm_rust_cpu_percent": -14.02,
+   "theme_cold_rust_cpu_percent": -24.35,
+   "background_rust_cpu_percent": -6.87,
+   "idle_rust_cpu_percent": -0.26,
+   "idle_commits": -2,
+   "theme_warm_helper_cgroup_cpu_percent": 2.06,
+   "theme_cold_helper_cgroup_cpu_percent": 24.43,
+   "rss_first_mib": 0.18,
+   "rss_last_mib": 13.32,
+   "rss_growth_mib": 13.13,
+   "rss_peak_mib": 13.32,
+   "helper_rss_last_mib": 0.2,
+   "preview_requests": 8,
+   "overlay_prerender_completions": 10,
+   "overlay_prerender_completions_touch_held": 0,
+   "trace_events": 939,
+   "trace_dropped": 0,
+   "theme_cold_presented_gap_median_ms": 23.0,
+   "theme_cold_presented_gap_p95_ms": 3.0,
+   "theme_cold_render_total_count": -17,
+   "theme_cold_render_total_wall_ms_sum": -707.0,
+   "theme_cold_render_total_wall_ms_median": 24.21,
+   "theme_cold_render_total_cpu_ms_sum": -2397.9,
+   "theme_cold_render_total_cpu_ms_off_main_thread": 0.0,
+   "theme_cold_scene_rebuild_count": -40,
+   "theme_cold_scene_rebuild_wall_ms_sum": -4407.3,
+   "theme_cold_scene_rebuild_wall_ms_median": 12.41,
+   "theme_cold_scene_rebuild_cpu_ms_sum": -4074.5,
+   "theme_cold_scene_rebuild_cpu_ms_off_main_thread": 0.0,
+   "theme_cold_overlay_draw_count": -17,
+   "theme_cold_overlay_draw_wall_ms_sum": -700.4,
+   "theme_cold_overlay_draw_wall_ms_median": 23.68,
+   "theme_cold_overlay_draw_cpu_ms_sum": -2401.6,
+   "theme_cold_overlay_draw_cpu_ms_off_main_thread": 0.0,
+   "theme_cold_thumbnail_hash_count": 18,
+   "theme_cold_thumbnail_hash_wall_ms_sum": 671.6,
+   "theme_cold_thumbnail_hash_wall_ms_median": 4.05,
+   "theme_cold_thumbnail_hash_cpu_ms_sum": 207.1,
+   "theme_cold_thumbnail_hash_cpu_ms_off_main_thread": 207.1,
+   "theme_cold_thumbnail_resolve_count": 18,
+   "theme_cold_thumbnail_resolve_wall_ms_sum": 758.2,
+   "theme_cold_thumbnail_resolve_wall_ms_median": 0.32,
+   "theme_cold_thumbnail_resolve_cpu_ms_sum": 225.8,
+   "theme_cold_thumbnail_resolve_cpu_ms_off_main_thread": 225.8,
+   "theme_cold_thumbnail_read_cache_count": 18,
+   "theme_cold_thumbnail_read_cache_wall_ms_sum": 75.8,
+   "theme_cold_thumbnail_read_cache_wall_ms_median": 1.05,
+   "theme_cold_thumbnail_read_cache_cpu_ms_sum": 17.5,
+   "theme_cold_thumbnail_read_cache_cpu_ms_off_main_thread": 17.5,
+   "theme_warm_presented_gap_median_ms": -21.7,
+   "theme_warm_presented_gap_p95_ms": 18.1,
+   "theme_warm_render_total_count": -5,
+   "theme_warm_render_total_wall_ms_sum": -2761.5,
+   "theme_warm_render_total_wall_ms_median": -27.85,
+   "theme_warm_render_total_cpu_ms_sum": -2345.7,
+   "theme_warm_render_total_cpu_ms_off_main_thread": 0.0,
+   "theme_warm_scene_rebuild_count": -49,
+   "theme_warm_scene_rebuild_wall_ms_sum": -5874.3,
+   "theme_warm_scene_rebuild_wall_ms_median": 2.97,
+   "theme_warm_scene_rebuild_cpu_ms_sum": -4901.8,
+   "theme_warm_scene_rebuild_cpu_ms_off_main_thread": 0.0,
+   "theme_warm_overlay_draw_count": -5,
+   "theme_warm_overlay_draw_wall_ms_sum": -2780.1,
+   "theme_warm_overlay_draw_wall_ms_median": -27.46,
+   "theme_warm_overlay_draw_cpu_ms_sum": -2347.5,
+   "theme_warm_overlay_draw_cpu_ms_off_main_thread": 0.0,
+   "theme_warm_thumbnail_hash_count": 16,
+   "theme_warm_thumbnail_hash_wall_ms_sum": 560.3,
+   "theme_warm_thumbnail_hash_wall_ms_median": 7.84,
+   "theme_warm_thumbnail_hash_cpu_ms_sum": 226.3,
+   "theme_warm_thumbnail_hash_cpu_ms_off_main_thread": 226.3,
+   "theme_warm_thumbnail_resolve_count": 16,
+   "theme_warm_thumbnail_resolve_wall_ms_sum": 574.0,
+   "theme_warm_thumbnail_resolve_wall_ms_median": 6.23,
+   "theme_warm_thumbnail_resolve_cpu_ms_sum": 236.2,
+   "theme_warm_thumbnail_resolve_cpu_ms_off_main_thread": 236.2,
+   "theme_warm_thumbnail_read_cache_count": 16,
+   "theme_warm_thumbnail_read_cache_wall_ms_sum": 14.5,
+   "theme_warm_thumbnail_read_cache_wall_ms_median": -0.34,
+   "theme_warm_thumbnail_read_cache_cpu_ms_sum": 8.7,
+   "theme_warm_thumbnail_read_cache_cpu_ms_off_main_thread": 8.7,
+   "background_presented_gap_median_ms": -27.3,
+   "background_presented_gap_p95_ms": -35.1,
+   "background_render_total_count": 31,
+   "background_render_total_wall_ms_sum": -962.7,
+   "background_render_total_wall_ms_median": -58.7,
+   "background_render_total_cpu_ms_sum": -789.1,
+   "background_render_total_cpu_ms_off_main_thread": 0.0,
+   "background_overlay_draw_count": 31,
+   "background_overlay_draw_wall_ms_sum": -948.9,
+   "background_overlay_draw_wall_ms_median": -58.38,
+   "background_overlay_draw_cpu_ms_sum": -780.8,
+   "background_overlay_draw_cpu_ms_off_main_thread": 0.0
+  },
+  "tr-p3": {
+   "theme_warm_gap_median_ms": -9,
+   "theme_warm_gap_p95_ms": 1,
+   "theme_cold_gap_median_ms": -11.0,
+   "theme_cold_gap_p95_ms": -9,
+   "background_gap_median_ms": -32.0,
+   "background_gap_p95_ms": -28,
+   "theme_warm_commits": -10,
+   "background_commits": 30,
+   "theme_warm_rust_cpu_percent": -13.21,
+   "theme_cold_rust_cpu_percent": -8.86,
+   "background_rust_cpu_percent": -11.76,
+   "idle_rust_cpu_percent": 0.02,
+   "idle_commits": 0,
+   "theme_warm_helper_cgroup_cpu_percent": 2.86,
+   "theme_cold_helper_cgroup_cpu_percent": 0.96,
+   "rss_first_mib": -0.12,
+   "rss_last_mib": 10.66,
+   "rss_growth_mib": 10.78,
+   "rss_peak_mib": 10.66,
+   "helper_rss_last_mib": 0.25,
+   "preview_requests": 11,
+   "overlay_prerender_completions": 5,
+   "overlay_prerender_completions_touch_held": 0,
+   "trace_events": 1156,
+   "trace_dropped": 0,
+   "theme_cold_presented_gap_median_ms": -19.4,
+   "theme_cold_presented_gap_p95_ms": -13.1,
+   "theme_cold_render_total_count": -1,
+   "theme_cold_render_total_wall_ms_sum": -2036.8,
+   "theme_cold_render_total_wall_ms_median": -21.58,
+   "theme_cold_render_total_cpu_ms_sum": -1460.3,
+   "theme_cold_render_total_cpu_ms_off_main_thread": 0.0,
+   "theme_cold_scene_rebuild_count": -42,
+   "theme_cold_scene_rebuild_wall_ms_sum": -5072.2,
+   "theme_cold_scene_rebuild_wall_ms_median": 9.71,
+   "theme_cold_scene_rebuild_cpu_ms_sum": -3883.7,
+   "theme_cold_scene_rebuild_cpu_ms_off_main_thread": 0.0,
+   "theme_cold_overlay_draw_count": -1,
+   "theme_cold_overlay_draw_wall_ms_sum": -2029.9,
+   "theme_cold_overlay_draw_wall_ms_median": -20.84,
+   "theme_cold_overlay_draw_cpu_ms_sum": -1458.8,
+   "theme_cold_overlay_draw_cpu_ms_off_main_thread": 0.0,
+   "theme_cold_thumbnail_hash_count": 4,
+   "theme_cold_thumbnail_hash_wall_ms_sum": 29.1,
+   "theme_cold_thumbnail_hash_wall_ms_median": -3.61,
+   "theme_cold_thumbnail_hash_cpu_ms_sum": 37.7,
+   "theme_cold_thumbnail_hash_cpu_ms_off_main_thread": 37.7,
+   "theme_cold_thumbnail_resolve_count": 4,
+   "theme_cold_thumbnail_resolve_wall_ms_sum": 36.0,
+   "theme_cold_thumbnail_resolve_wall_ms_median": -3.07,
+   "theme_cold_thumbnail_resolve_cpu_ms_sum": 40.7,
+   "theme_cold_thumbnail_resolve_cpu_ms_off_main_thread": 40.7,
+   "theme_cold_thumbnail_read_cache_count": 4,
+   "theme_cold_thumbnail_read_cache_wall_ms_sum": 1.0,
+   "theme_cold_thumbnail_read_cache_wall_ms_median": -0.53,
+   "theme_cold_thumbnail_read_cache_cpu_ms_sum": 2.6,
+   "theme_cold_thumbnail_read_cache_cpu_ms_off_main_thread": 2.6,
+   "theme_warm_presented_gap_median_ms": -11.0,
+   "theme_warm_presented_gap_p95_ms": 2.2,
+   "theme_warm_render_total_count": -10,
+   "theme_warm_render_total_wall_ms_sum": -2364.1,
+   "theme_warm_render_total_wall_ms_median": -24.3,
+   "theme_warm_render_total_cpu_ms_sum": -1790.4,
+   "theme_warm_render_total_cpu_ms_off_main_thread": 0.0,
+   "theme_warm_scene_rebuild_count": -48,
+   "theme_warm_scene_rebuild_wall_ms_sum": -5565.0,
+   "theme_warm_scene_rebuild_wall_ms_median": 13.11,
+   "theme_warm_scene_rebuild_cpu_ms_sum": -4515.4,
+   "theme_warm_scene_rebuild_cpu_ms_off_main_thread": 0.0,
+   "theme_warm_overlay_draw_count": -10,
+   "theme_warm_overlay_draw_wall_ms_sum": -2364.5,
+   "theme_warm_overlay_draw_wall_ms_median": -24.43,
+   "theme_warm_overlay_draw_cpu_ms_sum": -1792.7,
+   "theme_warm_overlay_draw_cpu_ms_off_main_thread": 0.0,
+   "theme_warm_thumbnail_hash_count": 10,
+   "theme_warm_thumbnail_hash_wall_ms_sum": 202.8,
+   "theme_warm_thumbnail_hash_wall_ms_median": -5.81,
+   "theme_warm_thumbnail_hash_cpu_ms_sum": 107.1,
+   "theme_warm_thumbnail_hash_cpu_ms_off_main_thread": 107.1,
+   "theme_warm_thumbnail_resolve_count": 10,
+   "theme_warm_thumbnail_resolve_wall_ms_sum": 221.2,
+   "theme_warm_thumbnail_resolve_wall_ms_median": -5.6,
+   "theme_warm_thumbnail_resolve_cpu_ms_sum": 114.4,
+   "theme_warm_thumbnail_resolve_cpu_ms_off_main_thread": 114.4,
+   "theme_warm_thumbnail_read_cache_count": 10,
+   "theme_warm_thumbnail_read_cache_wall_ms_sum": 1.9,
+   "theme_warm_thumbnail_read_cache_wall_ms_median": -0.82,
+   "theme_warm_thumbnail_read_cache_cpu_ms_sum": 6.3,
+   "theme_warm_thumbnail_read_cache_cpu_ms_off_main_thread": 6.3,
+   "background_presented_gap_median_ms": -27.5,
+   "background_presented_gap_p95_ms": -27.8,
+   "background_render_total_count": 30,
+   "background_render_total_wall_ms_sum": -853.1,
+   "background_render_total_wall_ms_median": -57.19,
+   "background_render_total_cpu_ms_sum": -729.2,
+   "background_render_total_cpu_ms_off_main_thread": 0.0,
+   "background_overlay_draw_count": 30,
+   "background_overlay_draw_wall_ms_sum": -842.1,
+   "background_overlay_draw_wall_ms_median": -57.08,
+   "background_overlay_draw_cpu_ms_sum": -721.4,
+   "background_overlay_draw_cpu_ms_off_main_thread": 0.0
+  },
+  "of-p1": {
+   "theme_warm_gap_median_ms": -29.5,
+   "theme_warm_gap_p95_ms": -23,
+   "theme_cold_gap_median_ms": -25.0,
+   "theme_cold_gap_p95_ms": -9,
+   "background_gap_median_ms": -41.5,
+   "background_gap_p95_ms": -47,
+   "theme_warm_commits": 7,
+   "background_commits": 29,
+   "theme_warm_rust_cpu_percent": -14.74,
+   "theme_cold_rust_cpu_percent": -20.18,
+   "background_rust_cpu_percent": -25.29,
+   "idle_rust_cpu_percent": 0.0,
+   "idle_commits": 0,
+   "theme_warm_helper_cgroup_cpu_percent": 0.95,
+   "theme_cold_helper_cgroup_cpu_percent": 2.08,
+   "rss_first_mib": -0.14,
+   "rss_last_mib": 7.18,
+   "rss_growth_mib": 7.34,
+   "rss_peak_mib": 7.18,
+   "helper_rss_last_mib": 0.09,
+   "preview_requests": 10,
+   "overlay_prerender_completions": 2,
+   "overlay_prerender_completions_touch_held": 0
+  },
+  "of-p2": {
+   "theme_warm_gap_median_ms": -18.0,
+   "theme_warm_gap_p95_ms": 4,
+   "theme_cold_gap_median_ms": -19.5,
+   "theme_cold_gap_p95_ms": 9,
+   "background_gap_median_ms": -54.0,
+   "background_gap_p95_ms": -64,
+   "theme_warm_commits": -1,
+   "background_commits": 27,
+   "theme_warm_rust_cpu_percent": -10.54,
+   "theme_cold_rust_cpu_percent": -8.21,
+   "background_rust_cpu_percent": -26.32,
+   "idle_rust_cpu_percent": -0.04,
+   "idle_commits": 0,
+   "theme_warm_helper_cgroup_cpu_percent": 1.61,
+   "theme_cold_helper_cgroup_cpu_percent": 1.59,
+   "rss_first_mib": 0.52,
+   "rss_last_mib": 7.49,
+   "rss_growth_mib": 6.97,
+   "rss_peak_mib": 7.49,
+   "helper_rss_last_mib": -0.14,
+   "preview_requests": 10,
+   "overlay_prerender_completions": 5,
+   "overlay_prerender_completions_touch_held": 0
+  },
+  "of-p3": {
+   "theme_warm_gap_median_ms": -27.0,
+   "theme_warm_gap_p95_ms": -24,
+   "theme_cold_gap_median_ms": -19.5,
+   "theme_cold_gap_p95_ms": 1,
+   "background_gap_median_ms": -48.5,
+   "background_gap_p95_ms": -66,
+   "theme_warm_commits": 3,
+   "background_commits": 29,
+   "theme_warm_rust_cpu_percent": -5.37,
+   "theme_cold_rust_cpu_percent": -16.46,
+   "background_rust_cpu_percent": -32.86,
+   "idle_rust_cpu_percent": -0.04,
+   "idle_commits": -3,
+   "theme_warm_helper_cgroup_cpu_percent": 0.65,
+   "theme_cold_helper_cgroup_cpu_percent": 0.8,
+   "rss_first_mib": 0.41,
+   "rss_last_mib": 4.15,
+   "rss_growth_mib": 3.74,
+   "rss_peak_mib": 4.15,
+   "helper_rss_last_mib": 0.0,
+   "preview_requests": 9,
+   "overlay_prerender_completions": 3,
+   "overlay_prerender_completions_touch_held": 0
+  }
+ },
+ "median_over_pairs": {
+  "tr": {
+   "theme_warm_gap_median_ms": {
+    "base": 135,
+    "cand": 114.0,
+    "delta_of_medians": -21.0,
+    "pair_deltas": [
+     -30,
+     -19.5,
+     -9
+    ]
+   },
+   "theme_warm_gap_p95_ms": {
+    "base": 164,
+    "cand": 172,
+    "delta_of_medians": 8,
+    "pair_deltas": [
+     -5,
+     15,
+     1
+    ]
+   },
+   "theme_cold_gap_median_ms": {
+    "base": 138.0,
+    "cand": 123.0,
+    "delta_of_medians": -15.0,
+    "pair_deltas": [
+     -17.0,
+     38.0,
+     -11.0
+    ]
+   },
+   "theme_cold_gap_p95_ms": {
+    "base": 179,
+    "cand": 181,
+    "delta_of_medians": 2,
+    "pair_deltas": [
+     2,
+     128,
+     -9
+    ]
+   },
+   "background_gap_median_ms": {
+    "base": 72.5,
+    "cand": 38.5,
+    "delta_of_medians": -34.0,
+    "pair_deltas": [
+     -49,
+     -34.5,
+     -32.0
+    ]
+   },
+   "background_gap_p95_ms": {
+    "base": 114,
+    "cand": 90,
+    "delta_of_medians": -24,
+    "pair_deltas": [
+     -73,
+     -18,
+     -28
+    ]
+   },
+   "theme_warm_commits": {
+    "base": 64,
+    "cand": 59,
+    "delta_of_medians": -5,
+    "pair_deltas": [
+     0,
+     -4,
+     -10
+    ]
+   },
+   "background_commits": {
+    "base": 30,
+    "cand": 61,
+    "delta_of_medians": 31,
+    "pair_deltas": [
+     32,
+     31,
+     30
+    ]
+   },
+   "theme_warm_rust_cpu_percent": {
+    "base": 80.54,
+    "cand": 68.36,
+    "delta_of_medians": -12.18,
+    "pair_deltas": [
+     -4.39,
+     -14.02,
+     -13.21
+    ]
+   },
+   "theme_cold_rust_cpu_percent": {
+    "base": 79.72,
+    "cand": 68.57,
+    "delta_of_medians": -11.15,
+    "pair_deltas": [
+     -10.67,
+     -24.35,
+     -8.86
+    ]
+   },
+   "background_rust_cpu_percent": {
+    "base": 27.03,
+    "cand": 14.73,
+    "delta_of_medians": -12.3,
+    "pair_deltas": [
+     -30.47,
+     -6.87,
+     -11.76
+    ]
+   },
+   "idle_rust_cpu_percent": {
+    "base": 0.58,
+    "cand": 0.59,
+    "delta_of_medians": 0.01,
+    "pair_deltas": [
+     0.06,
+     -0.26,
+     0.02
+    ]
+   },
+   "idle_commits": {
+    "base": 0,
+    "cand": 0,
+    "delta_of_medians": 0,
+    "pair_deltas": [
+     0,
+     -2,
+     0
+    ]
+   },
+   "theme_warm_helper_cgroup_cpu_percent": {
+    "base": 0.05,
+    "cand": 2.11,
+    "delta_of_medians": 2.06,
+    "pair_deltas": [
+     0.14,
+     2.06,
+     2.86
+    ]
+   },
+   "theme_cold_helper_cgroup_cpu_percent": {
+    "base": 0.05,
+    "cand": 1.05,
+    "delta_of_medians": 1.0,
+    "pair_deltas": [
+     1.0,
+     24.43,
+     0.96
+    ]
+   },
+   "rss_first_mib": {
+    "base": 50.93,
+    "cand": 51.04,
+    "delta_of_medians": 0.11,
+    "pair_deltas": [
+     -0.06,
+     0.18,
+     -0.12
+    ]
+   },
+   "rss_last_mib": {
+    "base": 76.35,
+    "cand": 87.01,
+    "delta_of_medians": 10.66,
+    "pair_deltas": [
+     -5.18,
+     13.32,
+     10.66
+    ]
+   },
+   "rss_growth_mib": {
+    "base": 25.18,
+    "cand": 35.96,
+    "delta_of_medians": 10.78,
+    "pair_deltas": [
+     -5.12,
+     13.13,
+     10.78
+    ]
+   },
+   "rss_peak_mib": {
+    "base": 76.35,
+    "cand": 87.01,
+    "delta_of_medians": 10.66,
+    "pair_deltas": [
+     -2.53,
+     13.32,
+     10.66
+    ]
+   },
+   "helper_rss_last_mib": {
+    "base": 24.01,
+    "cand": 24.09,
+    "delta_of_medians": 0.08,
+    "pair_deltas": [
+     -0.66,
+     0.2,
+     0.25
+    ]
+   },
+   "preview_requests": {
+    "base": 4,
+    "cand": 15,
+    "delta_of_medians": 11,
+    "pair_deltas": [
+     10,
+     8,
+     11
+    ]
+   },
+   "overlay_prerender_completions": {
+    "base": 0,
+    "cand": 7,
+    "delta_of_medians": 7,
+    "pair_deltas": [
+     3,
+     10,
+     5
+    ]
+   },
+   "overlay_prerender_completions_touch_held": {
+    "base": 0,
+    "cand": 0,
+    "delta_of_medians": 0,
+    "pair_deltas": [
+     0,
+     0,
+     0
+    ]
+   },
+   "trace_events": {
+    "base": 6597,
+    "cand": 7771,
+    "delta_of_medians": 1174,
+    "pair_deltas": [
+     1174,
+     939,
+     1156
+    ]
+   },
+   "trace_dropped": {
+    "base": 0,
+    "cand": 0,
+    "delta_of_medians": 0,
+    "pair_deltas": [
+     0,
+     0,
+     0
+    ]
+   },
+   "theme_cold_presented_gap_median_ms": {
+    "base": 140.6,
+    "cand": 117.2,
+    "delta_of_medians": -23.4,
+    "pair_deltas": [
+     -34.3,
+     23.0,
+     -19.4
+    ]
+   },
+   "theme_cold_presented_gap_p95_ms": {
+    "base": 247.7,
+    "cand": 199.4,
+    "delta_of_medians": -48.3,
+    "pair_deltas": [
+     -48.3,
+     3.0,
+     -13.1
+    ]
+   },
+   "theme_cold_render_total_count": {
+    "base": 61,
+    "cand": 60,
+    "delta_of_medians": -1,
+    "pair_deltas": [
+     0,
+     -17,
+     -1
+    ]
+   },
+   "theme_cold_render_total_wall_ms_sum": {
+    "base": 7904.3,
+    "cand": 5867.5,
+    "delta_of_medians": -2036.8,
+    "pair_deltas": [
+     -2229.5,
+     -707.0,
+     -2036.8
+    ]
+   },
+   "theme_cold_render_total_wall_ms_median": {
+    "base": 133.21,
+    "cand": 105.86,
+    "delta_of_medians": -27.35,
+    "pair_deltas": [
+     -32.19,
+     24.21,
+     -21.58
+    ]
+   },
+   "theme_cold_render_total_cpu_ms_sum": {
+    "base": 6051.6,
+    "cand": 4485.7,
+    "delta_of_medians": -1565.9,
+    "pair_deltas": [
+     -1695.6,
+     -2397.9,
+     -1460.3
+    ]
+   },
+   "theme_cold_render_total_cpu_ms_off_main_thread": {
+    "base": 0.0,
+    "cand": 0.0,
+    "delta_of_medians": 0.0,
+    "pair_deltas": [
+     0.0,
+     0.0,
+     0.0
+    ]
+   },
+   "theme_cold_scene_rebuild_count": {
+    "base": 61,
+    "cand": 19,
+    "delta_of_medians": -42,
+    "pair_deltas": [
+     -42,
+     -40,
+     -42
+    ]
+   },
+   "theme_cold_scene_rebuild_wall_ms_sum": {
+    "base": 7638.6,
+    "cand": 2566.4,
+    "delta_of_medians": -5072.2,
+    "pair_deltas": [
+     -5418.9,
+     -4407.3,
+     -5072.2
+    ]
+   },
+   "theme_cold_scene_rebuild_wall_ms_median": {
+    "base": 129.49,
+    "cand": 133.0,
+    "delta_of_medians": 3.51,
+    "pair_deltas": [
+     -5.11,
+     12.41,
+     9.71
+    ]
+   },
+   "theme_cold_scene_rebuild_cpu_ms_sum": {
+    "base": 5857.9,
+    "cand": 1783.4,
+    "delta_of_medians": -4074.5,
+    "pair_deltas": [
+     -4271.1,
+     -4074.5,
+     -3883.7
+    ]
+   },
+   "theme_cold_scene_rebuild_cpu_ms_off_main_thread": {
+    "base": 0.0,
+    "cand": 0.0,
+    "delta_of_medians": 0.0,
+    "pair_deltas": [
+     0.0,
+     0.0,
+     0.0
+    ]
+   },
+   "theme_cold_overlay_draw_count": {
+    "base": 61,
+    "cand": 60,
+    "delta_of_medians": -1,
+    "pair_deltas": [
+     0,
+     -17,
+     -1
+    ]
+   },
+   "theme_cold_overlay_draw_wall_ms_sum": {
+    "base": 7942.1,
+    "cand": 5912.2,
+    "delta_of_medians": -2029.9,
+    "pair_deltas": [
+     -2220.2,
+     -700.4,
+     -2029.9
+    ]
+   },
+   "theme_cold_overlay_draw_wall_ms_median": {
+    "base": 133.74,
+    "cand": 106.79,
+    "delta_of_medians": -26.95,
+    "pair_deltas": [
+     -31.85,
+     23.68,
+     -20.84
+    ]
+   },
+   "theme_cold_overlay_draw_cpu_ms_sum": {
+    "base": 6069.0,
+    "cand": 4504.0,
+    "delta_of_medians": -1565.0,
+    "pair_deltas": [
+     -1695.9,
+     -2401.6,
+     -1458.8
+    ]
+   },
+   "theme_cold_overlay_draw_cpu_ms_off_main_thread": {
+    "base": 0.0,
+    "cand": 0.0,
+    "delta_of_medians": 0.0,
+    "pair_deltas": [
+     0.0,
+     0.0,
+     0.0
+    ]
+   },
+   "theme_cold_thumbnail_hash_count": {
+    "base": 26,
+    "cand": 30,
+    "delta_of_medians": 4,
+    "pair_deltas": [
+     -2,
+     18,
+     4
+    ]
+   },
+   "theme_cold_thumbnail_hash_wall_ms_sum": {
+    "base": 869.2,
+    "cand": 898.3,
+    "delta_of_medians": 29.1,
+    "pair_deltas": [
+     -109.8,
+     671.6,
+     29.1
+    ]
+   },
+   "theme_cold_thumbnail_hash_wall_ms_median": {
+    "base": 28.44,
+    "cand": 27.2,
+    "delta_of_medians": -1.24,
+    "pair_deltas": [
+     -2.33,
+     4.05,
+     -3.61
+    ]
+   },
+   "theme_cold_thumbnail_hash_cpu_ms_sum": {
+    "base": 338.6,
+    "cand": 376.3,
+    "delta_of_medians": 37.7,
+    "pair_deltas": [
+     -23.6,
+     207.1,
+     37.7
+    ]
+   },
+   "theme_cold_thumbnail_hash_cpu_ms_off_main_thread": {
+    "base": 338.6,
+    "cand": 376.3,
+    "delta_of_medians": 37.7,
+    "pair_deltas": [
+     -23.6,
+     207.1,
+     37.7
+    ]
+   },
+   "theme_cold_thumbnail_resolve_count": {
+    "base": 26,
+    "cand": 30,
+    "delta_of_medians": 4,
+    "pair_deltas": [
+     -2,
+     18,
+     4
+    ]
+   },
+   "theme_cold_thumbnail_resolve_wall_ms_sum": {
+    "base": 974.7,
+    "cand": 1010.7,
+    "delta_of_medians": 36.0,
+    "pair_deltas": [
+     -126.8,
+     758.2,
+     36.0
+    ]
+   },
+   "theme_cold_thumbnail_resolve_wall_ms_median": {
+    "base": 34.3,
+    "cand": 30.85,
+    "delta_of_medians": -3.45,
+    "pair_deltas": [
+     -4.38,
+     0.32,
+     -3.07
+    ]
+   },
+   "theme_cold_thumbnail_resolve_cpu_ms_sum": {
+    "base": 375.3,
+    "cand": 416.0,
+    "delta_of_medians": 40.7,
+    "pair_deltas": [
+     -24.5,
+     225.8,
+     40.7
+    ]
+   },
+   "theme_cold_thumbnail_resolve_cpu_ms_off_main_thread": {
+    "base": 375.3,
+    "cand": 416.0,
+    "delta_of_medians": 40.7,
+    "pair_deltas": [
+     -24.5,
+     225.8,
+     40.7
+    ]
+   },
+   "theme_cold_thumbnail_read_cache_count": {
+    "base": 26,
+    "cand": 30,
+    "delta_of_medians": 4,
+    "pair_deltas": [
+     -2,
+     18,
+     4
+    ]
+   },
+   "theme_cold_thumbnail_read_cache_wall_ms_sum": {
+    "base": 85.2,
+    "cand": 86.2,
+    "delta_of_medians": 1.0,
+    "pair_deltas": [
+     -19.2,
+     75.8,
+     1.0
+    ]
+   },
+   "theme_cold_thumbnail_read_cache_wall_ms_median": {
+    "base": 1.48,
+    "cand": 1.67,
+    "delta_of_medians": 0.19,
+    "pair_deltas": [
+     -0.47,
+     1.05,
+     -0.53
+    ]
+   },
+   "theme_cold_thumbnail_read_cache_cpu_ms_sum": {
+    "base": 34.9,
+    "cand": 37.5,
+    "delta_of_medians": 2.6,
+    "pair_deltas": [
+     -1.2,
+     17.5,
+     2.6
+    ]
+   },
+   "theme_cold_thumbnail_read_cache_cpu_ms_off_main_thread": {
+    "base": 34.9,
+    "cand": 37.5,
+    "delta_of_medians": 2.6,
+    "pair_deltas": [
+     -1.2,
+     17.5,
+     2.6
+    ]
+   },
+   "theme_warm_presented_gap_median_ms": {
+    "base": 133.6,
+    "cand": 105.3,
+    "delta_of_medians": -28.3,
+    "pair_deltas": [
+     -35.0,
+     -21.7,
+     -11.0
+    ]
+   },
+   "theme_warm_presented_gap_p95_ms": {
+    "base": 162.7,
+    "cand": 165.9,
+    "delta_of_medians": 3.2,
+    "pair_deltas": [
+     -20.3,
+     18.1,
+     2.2
+    ]
+   },
+   "theme_warm_render_total_count": {
+    "base": 65,
+    "cand": 59,
+    "delta_of_medians": -6,
+    "pair_deltas": [
+     0,
+     -5,
+     -10
+    ]
+   },
+   "theme_warm_render_total_wall_ms_sum": {
+    "base": 8023.6,
+    "cand": 5659.5,
+    "delta_of_medians": -2364.1,
+    "pair_deltas": [
+     -1596.6,
+     -2761.5,
+     -2364.1
+    ]
+   },
+   "theme_warm_render_total_wall_ms_median": {
+    "base": 128.6,
+    "cand": 98.62,
+    "delta_of_medians": -29.98,
+    "pair_deltas": [
+     -34.63,
+     -27.85,
+     -24.3
+    ]
+   },
+   "theme_warm_render_total_cpu_ms_sum": {
+    "base": 6429.9,
+    "cand": 4639.5,
+    "delta_of_medians": -1790.4,
+    "pair_deltas": [
+     -1017.5,
+     -2345.7,
+     -1790.4
+    ]
+   },
+   "theme_warm_render_total_cpu_ms_off_main_thread": {
+    "base": 0.0,
+    "cand": 0.0,
+    "delta_of_medians": 0.0,
+    "pair_deltas": [
+     0.0,
+     0.0,
+     0.0
+    ]
+   },
+   "theme_warm_scene_rebuild_count": {
+    "base": 65,
+    "cand": 16,
+    "delta_of_medians": -49,
+    "pair_deltas": [
+     -51,
+     -49,
+     -48
+    ]
+   },
+   "theme_warm_scene_rebuild_wall_ms_sum": {
+    "base": 7780.2,
+    "cand": 2002.3,
+    "delta_of_medians": -5777.9,
+    "pair_deltas": [
+     -6144.4,
+     -5874.3,
+     -5565.0
+    ]
+   },
+   "theme_warm_scene_rebuild_wall_ms_median": {
+    "base": 121.55,
+    "cand": 133.69,
+    "delta_of_medians": 12.14,
+    "pair_deltas": [
+     4.07,
+     2.97,
+     13.11
+    ]
+   },
+   "theme_warm_scene_rebuild_cpu_ms_sum": {
+    "base": 6230.5,
+    "cand": 1502.3,
+    "delta_of_medians": -4728.2,
+    "pair_deltas": [
+     -4817.7,
+     -4901.8,
+     -4515.4
+    ]
+   },
+   "theme_warm_scene_rebuild_cpu_ms_off_main_thread": {
+    "base": 0.0,
+    "cand": 0.0,
+    "delta_of_medians": 0.0,
+    "pair_deltas": [
+     0.0,
+     0.0,
+     0.0
+    ]
+   },
+   "theme_warm_overlay_draw_count": {
+    "base": 65,
+    "cand": 59,
+    "delta_of_medians": -6,
+    "pair_deltas": [
+     0,
+     -5,
+     -10
+    ]
+   },
+   "theme_warm_overlay_draw_wall_ms_sum": {
+    "base": 8059.4,
+    "cand": 5694.9,
+    "delta_of_medians": -2364.5,
+    "pair_deltas": [
+     -1601.3,
+     -2780.1,
+     -2364.5
+    ]
+   },
+   "theme_warm_overlay_draw_wall_ms_median": {
+    "base": 129.08,
+    "cand": 99.01,
+    "delta_of_medians": -30.07,
+    "pair_deltas": [
+     -34.46,
+     -27.46,
+     -24.43
+    ]
+   },
+   "theme_warm_overlay_draw_cpu_ms_sum": {
+    "base": 6445.3,
+    "cand": 4652.6,
+    "delta_of_medians": -1792.7,
+    "pair_deltas": [
+     -1017.8,
+     -2347.5,
+     -1792.7
+    ]
+   },
+   "theme_warm_overlay_draw_cpu_ms_off_main_thread": {
+    "base": 0.0,
+    "cand": 0.0,
+    "delta_of_medians": 0.0,
+    "pair_deltas": [
+     0.0,
+     0.0,
+     0.0
+    ]
+   },
+   "theme_warm_thumbnail_hash_count": {
+    "base": 10,
+    "cand": 20,
+    "delta_of_medians": 10,
+    "pair_deltas": [
+     -20,
+     16,
+     10
+    ]
+   },
+   "theme_warm_thumbnail_hash_wall_ms_sum": {
+    "base": 325.5,
+    "cand": 528.3,
+    "delta_of_medians": 202.8,
+    "pair_deltas": [
+     -641.0,
+     560.3,
+     202.8
+    ]
+   },
+   "theme_warm_thumbnail_hash_wall_ms_median": {
+    "base": 26.4,
+    "cand": 25.33,
+    "delta_of_medians": -1.07,
+    "pair_deltas": [
+     -3.1,
+     7.84,
+     -5.81
+    ]
+   },
+   "theme_warm_thumbnail_hash_cpu_ms_sum": {
+    "base": 112.3,
+    "cand": 219.4,
+    "delta_of_medians": 107.1,
+    "pair_deltas": [
+     -254.8,
+     226.3,
+     107.1
+    ]
+   },
+   "theme_warm_thumbnail_hash_cpu_ms_off_main_thread": {
+    "base": 112.3,
+    "cand": 219.4,
+    "delta_of_medians": 107.1,
+    "pair_deltas": [
+     -254.8,
+     226.3,
+     107.1
+    ]
+   },
+   "theme_warm_thumbnail_resolve_count": {
+    "base": 10,
+    "cand": 20,
+    "delta_of_medians": 10,
+    "pair_deltas": [
+     -20,
+     16,
+     10
+    ]
+   },
+   "theme_warm_thumbnail_resolve_wall_ms_sum": {
+    "base": 346.2,
+    "cand": 567.4,
+    "delta_of_medians": 221.2,
+    "pair_deltas": [
+     -728.1,
+     574.0,
+     221.2
+    ]
+   },
+   "theme_warm_thumbnail_resolve_wall_ms_median": {
+    "base": 29.84,
+    "cand": 28.17,
+    "delta_of_medians": -1.67,
+    "pair_deltas": [
+     -3.52,
+     6.23,
+     -5.6
+    ]
+   },
+   "theme_warm_thumbnail_resolve_cpu_ms_sum": {
+    "base": 119.6,
+    "cand": 234.0,
+    "delta_of_medians": 114.4,
+    "pair_deltas": [
+     -281.1,
+     236.2,
+     114.4
+    ]
+   },
+   "theme_warm_thumbnail_resolve_cpu_ms_off_main_thread": {
+    "base": 119.6,
+    "cand": 234.0,
+    "delta_of_medians": 114.4,
+    "pair_deltas": [
+     -281.1,
+     236.2,
+     114.4
+    ]
+   },
+   "theme_warm_thumbnail_read_cache_count": {
+    "base": 10,
+    "cand": 20,
+    "delta_of_medians": 10,
+    "pair_deltas": [
+     -20,
+     16,
+     10
+    ]
+   },
+   "theme_warm_thumbnail_read_cache_wall_ms_sum": {
+    "base": 20.0,
+    "cand": 21.9,
+    "delta_of_medians": 1.9,
+    "pair_deltas": [
+     -60.0,
+     14.5,
+     1.9
+    ]
+   },
+   "theme_warm_thumbnail_read_cache_wall_ms_median": {
+    "base": 1.46,
+    "cand": 0.88,
+    "delta_of_medians": -0.58,
+    "pair_deltas": [
+     -0.71,
+     -0.34,
+     -0.82
+    ]
+   },
+   "theme_warm_thumbnail_read_cache_cpu_ms_sum": {
+    "base": 6.8,
+    "cand": 13.1,
+    "delta_of_medians": 6.3,
+    "pair_deltas": [
+     -24.9,
+     8.7,
+     6.3
+    ]
+   },
+   "theme_warm_thumbnail_read_cache_cpu_ms_off_main_thread": {
+    "base": 6.8,
+    "cand": 13.1,
+    "delta_of_medians": 6.3,
+    "pair_deltas": [
+     -24.9,
+     8.7,
+     6.3
+    ]
+   },
+   "background_presented_gap_median_ms": {
+    "base": 65.8,
+    "cand": 38.3,
+    "delta_of_medians": -27.5,
+    "pair_deltas": [
+     -45.7,
+     -27.3,
+     -27.5
+    ]
+   },
+   "background_presented_gap_p95_ms": {
+    "base": 142.8,
+    "cand": 115.0,
+    "delta_of_medians": -27.8,
+    "pair_deltas": [
+     -108.4,
+     -35.1,
+     -27.8
+    ]
+   },
+   "background_render_total_count": {
+    "base": 30,
+    "cand": 61,
+    "delta_of_medians": 31,
+    "pair_deltas": [
+     33,
+     31,
+     30
+    ]
+   },
+   "background_render_total_wall_ms_sum": {
+    "base": 1888.7,
+    "cand": 998.1,
+    "delta_of_medians": -890.6,
+    "pair_deltas": [
+     -1254.1,
+     -962.7,
+     -853.1
+    ]
+   },
+   "background_render_total_wall_ms_median": {
+    "base": 61.84,
+    "cand": 3.19,
+    "delta_of_medians": -58.65,
+    "pair_deltas": [
+     -73.68,
+     -58.7,
+     -57.19
+    ]
+   },
+   "background_render_total_cpu_ms_sum": {
+    "base": 1531.5,
+    "cand": 788.1,
+    "delta_of_medians": -743.4,
+    "pair_deltas": [
+     -1020.9,
+     -789.1,
+     -729.2
+    ]
+   },
+   "background_render_total_cpu_ms_off_main_thread": {
+    "base": 0.0,
+    "cand": 0.0,
+    "delta_of_medians": 0.0,
+    "pair_deltas": [
+     0.0,
+     0.0,
+     0.0
+    ]
+   },
+   "background_scene_rebuild_count": {
+    "base": 30,
+    "delta_of_medians": null,
+    "pair_deltas": null
+   },
+   "background_scene_rebuild_wall_ms_sum": {
+    "base": 1782.3,
+    "delta_of_medians": null,
+    "pair_deltas": null
+   },
+   "background_scene_rebuild_wall_ms_median": {
+    "base": 58.68,
+    "delta_of_medians": null,
+    "pair_deltas": null
+   },
+   "background_scene_rebuild_cpu_ms_sum": {
+    "base": 1440.7,
+    "delta_of_medians": null,
+    "pair_deltas": null
+   },
+   "background_scene_rebuild_cpu_ms_off_main_thread": {
+    "base": 0.0,
+    "delta_of_medians": null,
+    "pair_deltas": null
+   },
+   "background_overlay_draw_count": {
+    "base": 30,
+    "cand": 61,
+    "delta_of_medians": 31,
+    "pair_deltas": [
+     33,
+     31,
+     30
+    ]
+   },
+   "background_overlay_draw_wall_ms_sum": {
+    "base": 1904.3,
+    "cand": 1025.1,
+    "delta_of_medians": -879.2,
+    "pair_deltas": [
+     -1235.8,
+     -948.9,
+     -842.1
+    ]
+   },
+   "background_overlay_draw_wall_ms_median": {
+    "base": 62.03,
+    "cand": 3.68,
+    "delta_of_medians": -58.35,
+    "pair_deltas": [
+     -73.79,
+     -58.38,
+     -57.08
+    ]
+   },
+   "background_overlay_draw_cpu_ms_sum": {
+    "base": 1538.6,
+    "cand": 802.9,
+    "delta_of_medians": -735.7,
+    "pair_deltas": [
+     -1012.8,
+     -780.8,
+     -721.4
+    ]
+   },
+   "background_overlay_draw_cpu_ms_off_main_thread": {
+    "base": 0.0,
+    "cand": 0.0,
+    "delta_of_medians": 0.0,
+    "pair_deltas": [
+     0.0,
+     0.0,
+     0.0
+    ]
+   },
+   "theme_cold_picker_row_repaint_count": {
+    "cand": 34,
+    "delta_of_medians": null,
+    "pair_deltas": null
+   },
+   "theme_cold_picker_row_repaint_wall_ms_sum": {
+    "cand": 3211.7,
+    "delta_of_medians": null,
+    "pair_deltas": null
+   },
+   "theme_cold_picker_row_repaint_wall_ms_median": {
+    "cand": 97.8,
+    "delta_of_medians": null,
+    "pair_deltas": null
+   },
+   "theme_cold_picker_row_repaint_cpu_ms_sum": {
+    "cand": 2442.1,
+    "delta_of_medians": null,
+    "pair_deltas": null
+   },
+   "theme_cold_picker_row_repaint_cpu_ms_off_main_thread": {
+    "cand": 0.0,
+    "delta_of_medians": null,
+    "pair_deltas": null
+   },
+   "theme_cold_overlay_prerender_count": {
+    "cand": 1,
+    "delta_of_medians": null,
+    "pair_deltas": null
+   },
+   "theme_cold_overlay_prerender_wall_ms_sum": {
+    "cand": 162.0,
+    "delta_of_medians": null,
+    "pair_deltas": null
+   },
+   "theme_cold_overlay_prerender_wall_ms_median": {
+    "cand": 90.38,
+    "delta_of_medians": null,
+    "pair_deltas": null
+   },
+   "theme_cold_overlay_prerender_cpu_ms_sum": {
+    "cand": 65.6,
+    "delta_of_medians": null,
+    "pair_deltas": null
+   },
+   "theme_cold_overlay_prerender_cpu_ms_off_main_thread": {
+    "cand": 0.0,
+    "delta_of_medians": null,
+    "pair_deltas": null
+   },
+   "theme_cold_appearance_prepare_count": {
+    "cand": 5,
+    "delta_of_medians": null,
+    "pair_deltas": null
+   },
+   "theme_cold_appearance_prepare_wall_ms_sum": {
+    "cand": 44.3,
+    "delta_of_medians": null,
+    "pair_deltas": null
+   },
+   "theme_cold_appearance_prepare_wall_ms_median": {
+    "cand": 11.11,
+    "delta_of_medians": null,
+    "pair_deltas": null
+   },
+   "theme_cold_appearance_prepare_cpu_ms_sum": {
+    "cand": 27.6,
+    "delta_of_medians": null,
+    "pair_deltas": null
+   },
+   "theme_cold_appearance_prepare_cpu_ms_off_main_thread": {
+    "cand": 0.0,
+    "delta_of_medians": null,
+    "pair_deltas": null
+   },
+   "theme_warm_picker_row_repaint_count": {
+    "cand": 38,
+    "delta_of_medians": null,
+    "pair_deltas": null
+   },
+   "theme_warm_picker_row_repaint_wall_ms_sum": {
+    "cand": 3257.3,
+    "delta_of_medians": null,
+    "pair_deltas": null
+   },
+   "theme_warm_picker_row_repaint_wall_ms_median": {
+    "cand": 92.76,
+    "delta_of_medians": null,
+    "pair_deltas": null
+   },
+   "theme_warm_picker_row_repaint_cpu_ms_sum": {
+    "cand": 2771.0,
+    "delta_of_medians": null,
+    "pair_deltas": null
+   },
+   "theme_warm_picker_row_repaint_cpu_ms_off_main_thread": {
+    "cand": 0.0,
+    "delta_of_medians": null,
+    "pair_deltas": null
+   },
+   "theme_warm_overlay_prerender_count": {
+    "cand": 4,
+    "delta_of_medians": null,
+    "pair_deltas": null
+   },
+   "theme_warm_overlay_prerender_wall_ms_sum": {
+    "cand": 353.0,
+    "delta_of_medians": null,
+    "pair_deltas": null
+   },
+   "theme_warm_overlay_prerender_wall_ms_median": {
+    "cand": 86.04,
+    "delta_of_medians": null,
+    "pair_deltas": null
+   },
+   "theme_warm_overlay_prerender_cpu_ms_sum": {
+    "cand": 251.0,
+    "delta_of_medians": null,
+    "pair_deltas": null
+   },
+   "theme_warm_overlay_prerender_cpu_ms_off_main_thread": {
+    "cand": 0.0,
+    "delta_of_medians": null,
+    "pair_deltas": null
+   },
+   "theme_warm_appearance_prepare_count": {
+    "cand": 6,
+    "delta_of_medians": null,
+    "pair_deltas": null
+   },
+   "theme_warm_appearance_prepare_wall_ms_sum": {
+    "cand": 53.6,
+    "delta_of_medians": null,
+    "pair_deltas": null
+   },
+   "theme_warm_appearance_prepare_wall_ms_median": {
+    "cand": 8.1,
+    "delta_of_medians": null,
+    "pair_deltas": null
+   },
+   "theme_warm_appearance_prepare_cpu_ms_sum": {
+    "cand": 30.1,
+    "delta_of_medians": null,
+    "pair_deltas": null
+   },
+   "theme_warm_appearance_prepare_cpu_ms_off_main_thread": {
+    "cand": 0.0,
+    "delta_of_medians": null,
+    "pair_deltas": null
+   },
+   "background_picker_row_repaint_count": {
+    "cand": 19,
+    "delta_of_medians": null,
+    "pair_deltas": null
+   },
+   "background_picker_row_repaint_wall_ms_sum": {
+    "cand": 793.0,
+    "delta_of_medians": null,
+    "pair_deltas": null
+   },
+   "background_picker_row_repaint_wall_ms_median": {
+    "cand": 39.64,
+    "delta_of_medians": null,
+    "pair_deltas": null
+   },
+   "background_picker_row_repaint_cpu_ms_sum": {
+    "cand": 619.1,
+    "delta_of_medians": null,
+    "pair_deltas": null
+   },
+   "background_picker_row_repaint_cpu_ms_off_main_thread": {
+    "cand": 0.0,
+    "delta_of_medians": null,
+    "pair_deltas": null
+   }
+  },
+  "of": {
+   "theme_warm_gap_median_ms": {
+    "base": 137.5,
+    "cand": 114,
+    "delta_of_medians": -23.5,
+    "pair_deltas": [
+     -29.5,
+     -18.0,
+     -27.0
+    ]
+   },
+   "theme_warm_gap_p95_ms": {
+    "base": 173,
+    "cand": 160,
+    "delta_of_medians": -13,
+    "pair_deltas": [
+     -23,
+     4,
+     -24
+    ]
+   },
+   "theme_cold_gap_median_ms": {
+    "base": 143,
+    "cand": 121,
+    "delta_of_medians": -22,
+    "pair_deltas": [
+     -25.0,
+     -19.5,
+     -19.5
+    ]
+   },
+   "theme_cold_gap_p95_ms": {
+    "base": 177,
+    "cand": 182,
+    "delta_of_medians": 5,
+    "pair_deltas": [
+     -9,
+     9,
+     1
+    ]
+   },
+   "background_gap_median_ms": {
+    "base": 87,
+    "cand": 39,
+    "delta_of_medians": -48,
+    "pair_deltas": [
+     -41.5,
+     -54.0,
+     -48.5
+    ]
+   },
+   "background_gap_p95_ms": {
+    "base": 154,
+    "cand": 90,
+    "delta_of_medians": -64,
+    "pair_deltas": [
+     -47,
+     -64,
+     -66
+    ]
+   },
+   "theme_warm_commits": {
+    "base": 60,
+    "cand": 63,
+    "delta_of_medians": 3,
+    "pair_deltas": [
+     7,
+     -1,
+     3
+    ]
+   },
+   "background_commits": {
+    "base": 31,
+    "cand": 59,
+    "delta_of_medians": 28,
+    "pair_deltas": [
+     29,
+     27,
+     29
+    ]
+   },
+   "theme_warm_rust_cpu_percent": {
+    "base": 79.42,
+    "cand": 68.88,
+    "delta_of_medians": -10.54,
+    "pair_deltas": [
+     -14.74,
+     -10.54,
+     -5.37
+    ]
+   },
+   "theme_cold_rust_cpu_percent": {
+    "base": 80.96,
+    "cand": 63.69,
+    "delta_of_medians": -17.27,
+    "pair_deltas": [
+     -20.18,
+     -8.21,
+     -16.46
+    ]
+   },
+   "background_rust_cpu_percent": {
+    "base": 43.87,
+    "cand": 11.01,
+    "delta_of_medians": -32.86,
+    "pair_deltas": [
+     -25.29,
+     -26.32,
+     -32.86
+    ]
+   },
+   "idle_rust_cpu_percent": {
+    "base": 0.56,
+    "cand": 0.52,
+    "delta_of_medians": -0.04,
+    "pair_deltas": [
+     0.0,
+     -0.04,
+     -0.04
+    ]
+   },
+   "idle_commits": {
+    "base": 0,
+    "cand": 0,
+    "delta_of_medians": 0,
+    "pair_deltas": [
+     0,
+     0,
+     -3
+    ]
+   },
+   "theme_warm_helper_cgroup_cpu_percent": {
+    "base": 0.06,
+    "cand": 1.01,
+    "delta_of_medians": 0.95,
+    "pair_deltas": [
+     0.95,
+     1.61,
+     0.65
+    ]
+   },
+   "theme_cold_helper_cgroup_cpu_percent": {
+    "base": 0.05,
+    "cand": 1.65,
+    "delta_of_medians": 1.6,
+    "pair_deltas": [
+     2.08,
+     1.59,
+     0.8
+    ]
+   },
+   "rss_first_mib": {
+    "base": 50.95,
+    "cand": 51.33,
+    "delta_of_medians": 0.38,
+    "pair_deltas": [
+     -0.14,
+     0.52,
+     0.41
+    ]
+   },
+   "rss_last_mib": {
+    "base": 80.65,
+    "cand": 86.69,
+    "delta_of_medians": 6.04,
+    "pair_deltas": [
+     7.18,
+     7.49,
+     4.15
+    ]
+   },
+   "rss_growth_mib": {
+    "base": 29.84,
+    "cand": 35.33,
+    "delta_of_medians": 5.49,
+    "pair_deltas": [
+     7.34,
+     6.97,
+     3.74
+    ]
+   },
+   "rss_peak_mib": {
+    "base": 80.65,
+    "cand": 86.69,
+    "delta_of_medians": 6.04,
+    "pair_deltas": [
+     7.18,
+     7.49,
+     4.15
+    ]
+   },
+   "helper_rss_last_mib": {
+    "base": 24.03,
+    "cand": 23.98,
+    "delta_of_medians": -0.05,
+    "pair_deltas": [
+     0.09,
+     -0.14,
+     0.0
+    ]
+   },
+   "preview_requests": {
+    "base": 5,
+    "cand": 14,
+    "delta_of_medians": 9,
+    "pair_deltas": [
+     10,
+     10,
+     9
+    ]
+   },
+   "overlay_prerender_completions": {
+    "base": 4,
+    "cand": 7,
+    "delta_of_medians": 3,
+    "pair_deltas": [
+     2,
+     5,
+     3
+    ]
+   },
+   "overlay_prerender_completions_touch_held": {
+    "base": 0,
+    "cand": 0,
+    "delta_of_medians": 0,
+    "pair_deltas": [
+     0,
+     0,
+     0
+    ]
+   }
+  }
+ }
+}

@@ -1,0 +1,2682 @@
+{
+  "schema": "k230-theme-picker-profile-report-v1",
+  "label": "candidate",
+  "comparable_inputs_valid": true,
+  "failures": [],
+  "provenance": "injected verified virtual touchscreen; no physical-finger or presentation-FPS claim",
+  "openings": [
+    "process-cold",
+    "warm"
+  ],
+  "opening_notes": "process-cold is journal/age verified only; disk-cold is never inferred and user caches are not cleared",
+  "catalog": {
+    "theme_count": 22,
+    "background_count": 4,
+    "rows_visually_reviewed": true
+  },
+  "geometry": {
+    "width": 568,
+    "height": 1232
+  },
+  "background_playback": "static",
+  "selected_theme_sha256": "4b0c88043a192f903756be0d6d2a5d66fc3e575e0cf21f6fcf2d72089f826ff6",
+  "generation_sha256": "854779f9f41c94fdc0e02a5376184f5441cc17a8b40f99e345801d67ed183ed4",
+  "generation_unchanged": true,
+  "generation_samples": 135,
+  "workload_sha256": "f1eafd4132f0940b1bb4b7bf53dd71bcebf5243befe180e25d7536dda47e3a85",
+  "kernel_release": "7.3.0-rc5",
+  "booted_system": "/nix/store/zvxmd93gnn6n3vpk1mdxgajqnb8h1gkm-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "current_system": "/nix/store/zvxmd93gnn6n3vpk1mdxgajqnb8h1gkm-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "rust_exe": "/nix/store/ybpnyqmcn672n7x45nx9ybzprljgdhfg-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0/bin/k230-shell-rust",
+  "compositor_exe": "/nix/store/q96sk40q7j5v9f0ygxf2wx3yk7nzixqs-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway",
+  "helper_exe": "/nix/store/v189xydz6qkcd4cbkixcmv91w8hbc560-python3-riscv64-unknown-linux-gnu-3.14.7/bin/python3.14",
+  "runtime": {
+    "shell-ui.service": {
+      "pid": 2453,
+      "start_ticks": 111361
+    },
+    "shell.service": {
+      "pid": 1035,
+      "start_ticks": 6358
+    },
+    "theme-helper.service": {
+      "pid": 2458,
+      "start_ticks": 111411
+    }
+  },
+  "duration_s": 70.8482,
+  "event_counts": {
+    "touch-down": 19,
+    "touch-up": 19,
+    "commit": 153,
+    "frame-done": 153,
+    "touch-move": 320,
+    "prerender-completed": 4
+  },
+  "speculative_prerender_completions": 4,
+  "speculative_completions_while_touch_held": 0,
+  "theme_commands": [
+    {
+      "action": "list",
+      "transport": "socket",
+      "duration_ms": 113
+    },
+    {
+      "action": "preview",
+      "transport": "socket",
+      "duration_ms": 378
+    },
+    {
+      "action": "preview",
+      "transport": "socket",
+      "duration_ms": 256
+    },
+    {
+      "action": "preview",
+      "transport": "socket",
+      "duration_ms": 5051
+    },
+    {
+      "action": "preview",
+      "transport": "socket",
+      "duration_ms": 3880
+    },
+    {
+      "action": "list",
+      "transport": "socket",
+      "duration_ms": 22
+    },
+    {
+      "action": "preview",
+      "transport": "socket",
+      "duration_ms": 148
+    },
+    {
+      "action": "preview",
+      "transport": "socket",
+      "duration_ms": 128
+    },
+    {
+      "action": "preview",
+      "transport": "socket",
+      "duration_ms": 4948
+    }
+  ],
+  "phases": [
+    {
+      "name": "settings-baseline",
+      "kind": "baseline",
+      "opening": null,
+      "duration_s": 2.0002,
+      "sample_count": 3,
+      "sampled_s": 1.0293,
+      "units": {
+        "shell-ui.service": {
+          "process_cpu_percent": 0.972,
+          "cgroup_cpu_percent": 0.196,
+          "rss_first_bytes": 53608448,
+          "rss_last_bytes": 53608448,
+          "rss_peak_bytes": 53608448
+        },
+        "shell.service": {
+          "process_cpu_percent": 0.972,
+          "cgroup_cpu_percent": 1.344,
+          "rss_first_bytes": 32436224,
+          "rss_last_bytes": 32436224,
+          "rss_peak_bytes": 32436224
+        },
+        "theme-helper.service": {
+          "process_cpu_percent": 0.0,
+          "cgroup_cpu_percent": 0.046,
+          "rss_first_bytes": 24285184,
+          "rss_last_bytes": 24285184,
+          "rss_peak_bytes": 24285184
+        }
+      },
+      "attribution": {
+        "shell-ui.service": {
+          "wall_s": 1.0293,
+          "threads_cpu": {
+            "gmain": {
+              "cpu_s": 0.0,
+              "cpu_percent": 0.0
+            },
+            "k230-shell-rust": {
+              "cpu_s": 0.0,
+              "cpu_percent": 0.0
+            },
+            "other": {
+              "cpu_s": 0.0,
+              "cpu_percent": 0.0
+            }
+          },
+          "threads_cpu_total_s": 0.0,
+          "cgroup_cpu_s": 0.002,
+          "cgroup_cpu_percent": 0.196,
+          "cgroup_discontinuities": 0,
+          "rss_peak_bytes": 53608448,
+          "notes": {
+            "threads_exited": 0,
+            "threads_unstored": 0
+          }
+        },
+        "theme-helper.service": {
+          "wall_s": 1.0293,
+          "threads_cpu": {
+            "python3": {
+              "cpu_s": 0.0,
+              "cpu_percent": 0.0
+            }
+          },
+          "threads_cpu_total_s": 0.0,
+          "cgroup_cpu_s": 0.0005,
+          "cgroup_cpu_percent": 0.046,
+          "cgroup_discontinuities": 0,
+          "rss_peak_bytes": 24285184,
+          "notes": {
+            "threads_exited": 0,
+            "threads_unstored": 0
+          }
+        }
+      },
+      "events": {}
+    },
+    {
+      "name": "first-open",
+      "kind": "open",
+      "opening": "process-cold",
+      "duration_s": 10.0843,
+      "sample_count": 20,
+      "injection_duration_ms": 84.063,
+      "sampled_s": 9.7804,
+      "units": {
+        "shell-ui.service": {
+          "process_cpu_percent": 4.908,
+          "cgroup_cpu_percent": 4.986,
+          "rss_first_bytes": 53608448,
+          "rss_last_bytes": 69169152,
+          "rss_peak_bytes": 69169152
+        },
+        "shell.service": {
+          "process_cpu_percent": 1.943,
+          "cgroup_cpu_percent": 2.427,
+          "rss_first_bytes": 32436224,
+          "rss_last_bytes": 32436224,
+          "rss_peak_bytes": 32436224
+        },
+        "theme-helper.service": {
+          "process_cpu_percent": 2.454,
+          "cgroup_cpu_percent": 2.461,
+          "rss_first_bytes": 24285184,
+          "rss_last_bytes": 25071616,
+          "rss_peak_bytes": 25071616
+        }
+      },
+      "attribution": {
+        "shell-ui.service": {
+          "wall_s": 9.7804,
+          "threads_cpu": {
+            "gmain": {
+              "cpu_s": 0.0,
+              "cpu_percent": 0.0
+            },
+            "k230-shell-rust": {
+              "cpu_s": 0.48,
+              "cpu_percent": 4.908
+            },
+            "other": {
+              "cpu_s": 0.0,
+              "cpu_percent": 0.0
+            }
+          },
+          "threads_cpu_total_s": 0.48,
+          "cgroup_cpu_s": 0.4877,
+          "cgroup_cpu_percent": 4.986,
+          "cgroup_discontinuities": 0,
+          "rss_peak_bytes": 69169152,
+          "notes": {
+            "threads_exited": 0,
+            "threads_unstored": 0
+          }
+        },
+        "theme-helper.service": {
+          "wall_s": 9.7804,
+          "threads_cpu": {
+            "python3": {
+              "cpu_s": 0.01,
+              "cpu_percent": 0.102
+            }
+          },
+          "threads_cpu_total_s": 0.01,
+          "cgroup_cpu_s": 0.2407,
+          "cgroup_cpu_percent": 2.461,
+          "cgroup_discontinuities": 0,
+          "rss_peak_bytes": 25071616,
+          "notes": {
+            "threads_exited": 0,
+            "threads_unstored": 0
+          }
+        }
+      },
+      "events": {
+        "touch-down": 1,
+        "touch-up": 1,
+        "commit": 7,
+        "frame-done": 7
+      }
+    },
+    {
+      "name": "theme-swipe-0",
+      "kind": "swipe-theme",
+      "opening": null,
+      "duration_s": 1.4034,
+      "sample_count": 3,
+      "injection_duration_ms": 203.132,
+      "sampled_s": 1.0799,
+      "units": {
+        "shell-ui.service": {
+          "process_cpu_percent": 72.23,
+          "cgroup_cpu_percent": 72.055,
+          "rss_first_bytes": 70742016,
+          "rss_last_bytes": 70078464,
+          "rss_peak_bytes": 70742016
+        },
+        "shell.service": {
+          "process_cpu_percent": 11.112,
+          "cgroup_cpu_percent": 12.103,
+          "rss_first_bytes": 32436224,
+          "rss_last_bytes": 35246080,
+          "rss_peak_bytes": 35246080
+        },
+        "theme-helper.service": {
+          "process_cpu_percent": 0.0,
+          "cgroup_cpu_percent": 0.054,
+          "rss_first_bytes": 25071616,
+          "rss_last_bytes": 25071616,
+          "rss_peak_bytes": 25071616
+        }
+      },
+      "attribution": {
+        "shell-ui.service": {
+          "wall_s": 1.0799,
+          "threads_cpu": {
+            "gmain": {
+              "cpu_s": 0.0,
+              "cpu_percent": 0.0
+            },
+            "k230-shell-rust": {
+              "cpu_s": 0.77,
+              "cpu_percent": 71.304
+            },
+            "other": {
+              "cpu_s": 0.0,
+              "cpu_percent": 0.0
+            }
+          },
+          "threads_cpu_total_s": 0.77,
+          "cgroup_cpu_s": 0.7781,
+          "cgroup_cpu_percent": 72.055,
+          "cgroup_discontinuities": 0,
+          "rss_peak_bytes": 70742016,
+          "notes": {
+            "threads_exited": 0,
+            "threads_unstored": 0
+          }
+        },
+        "theme-helper.service": {
+          "wall_s": 1.0799,
+          "threads_cpu": {
+            "python3": {
+              "cpu_s": 0.0,
+              "cpu_percent": 0.0
+            }
+          },
+          "threads_cpu_total_s": 0.0,
+          "cgroup_cpu_s": 0.0006,
+          "cgroup_cpu_percent": 0.054,
+          "cgroup_discontinuities": 0,
+          "rss_peak_bytes": 25071616,
+          "notes": {
+            "threads_exited": 0,
+            "threads_unstored": 0
+          }
+        }
+      },
+      "events": {
+        "touch-down": 1,
+        "commit": 10,
+        "touch-move": 20,
+        "frame-done": 10,
+        "touch-up": 1
+      },
+      "commit_gaps_ms": [
+        96,
+        168,
+        127,
+        102,
+        148,
+        195,
+        166,
+        126,
+        65
+      ],
+      "commit_gap_median_ms": 127,
+      "commit_gap_p95_ms": 195,
+      "commit_gap_max_ms": 195
+    },
+    {
+      "name": "theme-swipe-1",
+      "kind": "swipe-theme",
+      "opening": null,
+      "duration_s": 1.405,
+      "sample_count": 2,
+      "injection_duration_ms": 204.733,
+      "sampled_s": 0.5631,
+      "units": {
+        "shell-ui.service": {
+          "process_cpu_percent": 42.62,
+          "cgroup_cpu_percent": 43.134,
+          "rss_first_bytes": 71258112,
+          "rss_last_bytes": 72175616,
+          "rss_peak_bytes": 72175616
+        },
+        "shell.service": {
+          "process_cpu_percent": 5.328,
+          "cgroup_cpu_percent": 6.118,
+          "rss_first_bytes": 35246080,
+          "rss_last_bytes": 35246080,
+          "rss_peak_bytes": 35246080
+        },
+        "theme-helper.service": {
+          "process_cpu_percent": 0.0,
+          "cgroup_cpu_percent": 41.975,
+          "rss_first_bytes": 25202688,
+          "rss_last_bytes": 25202688,
+          "rss_peak_bytes": 25202688
+        }
+      },
+      "attribution": {
+        "shell-ui.service": {
+          "wall_s": 0.5631,
+          "threads_cpu": {
+            "gmain": {
+              "cpu_s": 0.0,
+              "cpu_percent": 0.0
+            },
+            "k230-shell-rust": {
+              "cpu_s": 0.23,
+              "cpu_percent": 40.845
+            },
+            "other": {
+              "cpu_s": 0.0,
+              "cpu_percent": 0.0
+            }
+          },
+          "threads_cpu_total_s": 0.23,
+          "cgroup_cpu_s": 0.2429,
+          "cgroup_cpu_percent": 43.134,
+          "cgroup_discontinuities": 0,
+          "rss_peak_bytes": 72175616,
+          "notes": {
+            "threads_exited": 0,
+            "threads_unstored": 0
+          }
+        },
+        "theme-helper.service": {
+          "wall_s": 0.5631,
+          "threads_cpu": {
+            "other": {
+              "cpu_s": 0.0,
+              "cpu_percent": 0.0
+            },
+            "python3": {
+              "cpu_s": 0.0,
+              "cpu_percent": 0.0
+            }
+          },
+          "threads_cpu_total_s": 0.0,
+          "cgroup_cpu_s": 0.2364,
+          "cgroup_cpu_percent": 41.975,
+          "cgroup_discontinuities": 0,
+          "rss_peak_bytes": 25202688,
+          "notes": {
+            "threads_exited": 0,
+            "threads_unstored": 0
+          }
+        }
+      },
+      "events": {
+        "touch-down": 1,
+        "commit": 5,
+        "touch-move": 20,
+        "frame-done": 4,
+        "touch-up": 1
+      },
+      "commit_gaps_ms": [
+        299,
+        253,
+        277,
+        324
+      ],
+      "commit_gap_median_ms": 288.0,
+      "commit_gap_p95_ms": 324,
+      "commit_gap_max_ms": 324
+    },
+    {
+      "name": "theme-swipe-2",
+      "kind": "swipe-theme",
+      "opening": null,
+      "duration_s": 1.4149,
+      "sample_count": 3,
+      "injection_duration_ms": 213.067,
+      "sampled_s": 1.1202,
+      "units": {
+        "shell-ui.service": {
+          "process_cpu_percent": 45.529,
+          "cgroup_cpu_percent": 45.551,
+          "rss_first_bytes": 75714560,
+          "rss_last_bytes": 80302080,
+          "rss_peak_bytes": 80302080
+        },
+        "shell.service": {
+          "process_cpu_percent": 6.249,
+          "cgroup_cpu_percent": 6.461,
+          "rss_first_bytes": 35246080,
+          "rss_last_bytes": 35246080,
+          "rss_peak_bytes": 35246080
+        },
+        "theme-helper.service": {
+          "process_cpu_percent": 4.464,
+          "cgroup_cpu_percent": 39.065,
+          "rss_first_bytes": 25202688,
+          "rss_last_bytes": 25202688,
+          "rss_peak_bytes": 25202688
+        }
+      },
+      "attribution": {
+        "shell-ui.service": {
+          "wall_s": 1.1202,
+          "threads_cpu": {
+            "gmain": {
+              "cpu_s": 0.0,
+              "cpu_percent": 0.0
+            },
+            "k230-shell-rust": {
+              "cpu_s": 0.52,
+              "cpu_percent": 46.421
+            },
+            "other": {
+              "cpu_s": 0.0,
+              "cpu_percent": 0.0
+            }
+          },
+          "threads_cpu_total_s": 0.52,
+          "cgroup_cpu_s": 0.5103,
+          "cgroup_cpu_percent": 45.551,
+          "cgroup_discontinuities": 0,
+          "rss_peak_bytes": 80302080,
+          "notes": {
+            "threads_exited": 0,
+            "threads_unstored": 0
+          }
+        },
+        "theme-helper.service": {
+          "wall_s": 1.1202,
+          "threads_cpu": {
+            "other": {
+              "cpu_s": 0.05,
+              "cpu_percent": 4.464
+            },
+            "python3": {
+              "cpu_s": 0.0,
+              "cpu_percent": 0.0
+            }
+          },
+          "threads_cpu_total_s": 0.05,
+          "cgroup_cpu_s": 0.4376,
+          "cgroup_cpu_percent": 39.065,
+          "cgroup_discontinuities": 0,
+          "rss_peak_bytes": 25202688,
+          "notes": {
+            "threads_exited": 0,
+            "threads_unstored": 0
+          }
+        }
+      },
+      "events": {
+        "commit": 5,
+        "frame-done": 5,
+        "touch-down": 1,
+        "touch-move": 20,
+        "touch-up": 1
+      },
+      "commit_gaps_ms": [
+        303,
+        272,
+        271,
+        295
+      ],
+      "commit_gap_median_ms": 283.5,
+      "commit_gap_p95_ms": 303,
+      "commit_gap_max_ms": 303
+    },
+    {
+      "name": "theme-swipe-3",
+      "kind": "swipe-theme",
+      "opening": null,
+      "duration_s": 1.4138,
+      "sample_count": 2,
+      "injection_duration_ms": 212.97,
+      "sampled_s": 0.5589,
+      "units": {
+        "shell-ui.service": {
+          "process_cpu_percent": 35.783,
+          "cgroup_cpu_percent": 37.36,
+          "rss_first_bytes": 80302080,
+          "rss_last_bytes": 80302080,
+          "rss_peak_bytes": 80302080
+        },
+        "shell.service": {
+          "process_cpu_percent": 5.367,
+          "cgroup_cpu_percent": 6.218,
+          "rss_first_bytes": 35246080,
+          "rss_last_bytes": 35246080,
+          "rss_peak_bytes": 35246080
+        },
+        "theme-helper.service": {
+          "process_cpu_percent": 0.0,
+          "cgroup_cpu_percent": 37.961,
+          "rss_first_bytes": 25202688,
+          "rss_last_bytes": 25202688,
+          "rss_peak_bytes": 25202688
+        }
+      },
+      "attribution": {
+        "shell-ui.service": {
+          "wall_s": 0.5589,
+          "threads_cpu": {
+            "gmain": {
+              "cpu_s": 0.0,
+              "cpu_percent": 0.0
+            },
+            "k230-shell-rust": {
+              "cpu_s": 0.21,
+              "cpu_percent": 37.572
+            },
+            "other": {
+              "cpu_s": 0.0,
+              "cpu_percent": 0.0
+            }
+          },
+          "threads_cpu_total_s": 0.21,
+          "cgroup_cpu_s": 0.2088,
+          "cgroup_cpu_percent": 37.36,
+          "cgroup_discontinuities": 0,
+          "rss_peak_bytes": 80302080,
+          "notes": {
+            "threads_exited": 0,
+            "threads_unstored": 0
+          }
+        },
+        "theme-helper.service": {
+          "wall_s": 0.5589,
+          "threads_cpu": {
+            "other": {
+              "cpu_s": 0.0,
+              "cpu_percent": 0.0
+            },
+            "python3": {
+              "cpu_s": 0.0,
+              "cpu_percent": 0.0
+            }
+          },
+          "threads_cpu_total_s": 0.0,
+          "cgroup_cpu_s": 0.2122,
+          "cgroup_cpu_percent": 37.961,
+          "cgroup_discontinuities": 0,
+          "rss_peak_bytes": 25202688,
+          "notes": {
+            "threads_exited": 0,
+            "threads_unstored": 0
+          }
+        }
+      },
+      "events": {
+        "commit": 6,
+        "frame-done": 6,
+        "touch-down": 1,
+        "touch-move": 20,
+        "touch-up": 1
+      },
+      "commit_gaps_ms": [
+        259,
+        265,
+        259,
+        210,
+        205
+      ],
+      "commit_gap_median_ms": 259,
+      "commit_gap_p95_ms": 265,
+      "commit_gap_max_ms": 265
+    },
+    {
+      "name": "theme-swipe-4",
+      "kind": "swipe-theme",
+      "opening": null,
+      "duration_s": 1.411,
+      "sample_count": 3,
+      "injection_duration_ms": 210.721,
+      "sampled_s": 1.1126,
+      "units": {
+        "shell-ui.service": {
+          "process_cpu_percent": 67.41,
+          "cgroup_cpu_percent": 67.179,
+          "rss_first_bytes": 80302080,
+          "rss_last_bytes": 83054592,
+          "rss_peak_bytes": 83054592
+        },
+        "shell.service": {
+          "process_cpu_percent": 13.482,
+          "cgroup_cpu_percent": 13.324,
+          "rss_first_bytes": 35246080,
+          "rss_last_bytes": 35246080,
+          "rss_peak_bytes": 35246080
+        },
+        "theme-helper.service": {
+          "process_cpu_percent": 1.798,
+          "cgroup_cpu_percent": 9.288,
+          "rss_first_bytes": 25202688,
+          "rss_last_bytes": 25202688,
+          "rss_peak_bytes": 25202688
+        }
+      },
+      "attribution": {
+        "shell-ui.service": {
+          "wall_s": 1.1126,
+          "threads_cpu": {
+            "gmain": {
+              "cpu_s": 0.0,
+              "cpu_percent": 0.0
+            },
+            "k230-shell-rust": {
+              "cpu_s": 0.75,
+              "cpu_percent": 67.41
+            },
+            "other": {
+              "cpu_s": 0.0,
+              "cpu_percent": 0.0
+            }
+          },
+          "threads_cpu_total_s": 0.75,
+          "cgroup_cpu_s": 0.7474,
+          "cgroup_cpu_percent": 67.179,
+          "cgroup_discontinuities": 0,
+          "rss_peak_bytes": 83054592,
+          "notes": {
+            "threads_exited": 0,
+            "threads_unstored": 0
+          }
+        },
+        "theme-helper.service": {
+          "wall_s": 1.1126,
+          "threads_cpu": {
+            "other": {
+              "cpu_s": 0.02,
+              "cpu_percent": 1.798
+            },
+            "python3": {
+              "cpu_s": 0.0,
+              "cpu_percent": 0.0
+            }
+          },
+          "threads_cpu_total_s": 0.02,
+          "cgroup_cpu_s": 0.1033,
+          "cgroup_cpu_percent": 9.288,
+          "cgroup_discontinuities": 0,
+          "rss_peak_bytes": 25202688,
+          "notes": {
+            "threads_exited": 1,
+            "threads_unstored": 0
+          }
+        }
+      },
+      "events": {
+        "commit": 10,
+        "frame-done": 11,
+        "touch-down": 1,
+        "touch-move": 20,
+        "touch-up": 1,
+        "prerender-completed": 1
+      },
+      "commit_gaps_ms": [
+        162,
+        188,
+        108,
+        146,
+        159,
+        100,
+        110,
+        106,
+        64
+      ],
+      "commit_gap_median_ms": 110,
+      "commit_gap_p95_ms": 188,
+      "commit_gap_max_ms": 188
+    },
+    {
+      "name": "theme-swipe-5",
+      "kind": "swipe-theme",
+      "opening": null,
+      "duration_s": 1.4048,
+      "sample_count": 2,
+      "injection_duration_ms": 204.14,
+      "sampled_s": 0.5408,
+      "units": {
+        "shell-ui.service": {
+          "process_cpu_percent": 81.358,
+          "cgroup_cpu_percent": 81.031,
+          "rss_first_bytes": 83054592,
+          "rss_last_bytes": 85938176,
+          "rss_peak_bytes": 85938176
+        },
+        "shell.service": {
+          "process_cpu_percent": 9.245,
+          "cgroup_cpu_percent": 10.843,
+          "rss_first_bytes": 35246080,
+          "rss_last_bytes": 35246080,
+          "rss_peak_bytes": 35246080
+        },
+        "theme-helper.service": {
+          "process_cpu_percent": 0.0,
+          "cgroup_cpu_percent": 0.07,
+          "rss_first_bytes": 25202688,
+          "rss_last_bytes": 25202688,
+          "rss_peak_bytes": 25202688
+        }
+      },
+      "attribution": {
+        "shell-ui.service": {
+          "wall_s": 0.5408,
+          "threads_cpu": {
+            "gmain": {
+              "cpu_s": 0.0,
+              "cpu_percent": 0.0
+            },
+            "k230-shell-rust": {
+              "cpu_s": 0.44,
+              "cpu_percent": 81.358
+            },
+            "other": {
+              "cpu_s": 0.0,
+              "cpu_percent": 0.0
+            }
+          },
+          "threads_cpu_total_s": 0.44,
+          "cgroup_cpu_s": 0.4382,
+          "cgroup_cpu_percent": 81.031,
+          "cgroup_discontinuities": 0,
+          "rss_peak_bytes": 85938176,
+          "notes": {
+            "threads_exited": 0,
+            "threads_unstored": 0
+          }
+        },
+        "theme-helper.service": {
+          "wall_s": 0.5408,
+          "threads_cpu": {
+            "python3": {
+              "cpu_s": 0.0,
+              "cpu_percent": 0.0
+            }
+          },
+          "threads_cpu_total_s": 0.0,
+          "cgroup_cpu_s": 0.0004,
+          "cgroup_cpu_percent": 0.07,
+          "cgroup_discontinuities": 0,
+          "rss_peak_bytes": 25202688,
+          "notes": {
+            "threads_exited": 0,
+            "threads_unstored": 0
+          }
+        }
+      },
+      "events": {
+        "touch-down": 1,
+        "commit": 10,
+        "touch-move": 20,
+        "frame-done": 10,
+        "touch-up": 1
+      },
+      "commit_gaps_ms": [
+        115,
+        117,
+        112,
+        114,
+        168,
+        136,
+        155,
+        125,
+        66
+      ],
+      "commit_gap_median_ms": 117,
+      "commit_gap_p95_ms": 168,
+      "commit_gap_max_ms": 168
+    },
+    {
+      "name": "background-swipe-0",
+      "kind": "swipe-background",
+      "opening": null,
+      "duration_s": 1.4071,
+      "sample_count": 3,
+      "injection_duration_ms": 206.786,
+      "sampled_s": 1.1288,
+      "units": {
+        "shell-ui.service": {
+          "process_cpu_percent": 20.376,
+          "cgroup_cpu_percent": 20.677,
+          "rss_first_bytes": 85938176,
+          "rss_last_bytes": 85938176,
+          "rss_peak_bytes": 85938176
+        },
+        "shell.service": {
+          "process_cpu_percent": 11.517,
+          "cgroup_cpu_percent": 12.056,
+          "rss_first_bytes": 35246080,
+          "rss_last_bytes": 35246080,
+          "rss_peak_bytes": 35246080
+        },
+        "theme-helper.service": {
+          "process_cpu_percent": 1.772,
+          "cgroup_cpu_percent": 55.315,
+          "rss_first_bytes": 25202688,
+          "rss_last_bytes": 25202688,
+          "rss_peak_bytes": 25202688
+        }
+      },
+      "attribution": {
+        "shell-ui.service": {
+          "wall_s": 1.1288,
+          "threads_cpu": {
+            "gmain": {
+              "cpu_s": 0.0,
+              "cpu_percent": 0.0
+            },
+            "k230-shell-rust": {
+              "cpu_s": 0.24,
+              "cpu_percent": 21.262
+            },
+            "other": {
+              "cpu_s": 0.0,
+              "cpu_percent": 0.0
+            }
+          },
+          "threads_cpu_total_s": 0.24,
+          "cgroup_cpu_s": 0.2334,
+          "cgroup_cpu_percent": 20.677,
+          "cgroup_discontinuities": 0,
+          "rss_peak_bytes": 85938176,
+          "notes": {
+            "threads_exited": 0,
+            "threads_unstored": 0
+          }
+        },
+        "theme-helper.service": {
+          "wall_s": 1.1288,
+          "threads_cpu": {
+            "other": {
+              "cpu_s": 0.01,
+              "cpu_percent": 0.886
+            },
+            "python3": {
+              "cpu_s": 0.0,
+              "cpu_percent": 0.0
+            }
+          },
+          "threads_cpu_total_s": 0.01,
+          "cgroup_cpu_s": 0.6244,
+          "cgroup_cpu_percent": 55.315,
+          "cgroup_discontinuities": 0,
+          "rss_peak_bytes": 25202688,
+          "notes": {
+            "threads_exited": 0,
+            "threads_unstored": 0
+          }
+        }
+      },
+      "events": {
+        "touch-down": 1,
+        "commit": 11,
+        "touch-move": 20,
+        "frame-done": 11,
+        "touch-up": 1
+      },
+      "commit_gaps_ms": [
+        194,
+        136,
+        132,
+        87,
+        20,
+        48,
+        13,
+        46,
+        59,
+        42
+      ],
+      "commit_gap_median_ms": 53.5,
+      "commit_gap_p95_ms": 194,
+      "commit_gap_max_ms": 194
+    },
+    {
+      "name": "background-swipe-1",
+      "kind": "swipe-background",
+      "opening": null,
+      "duration_s": 1.4125,
+      "sample_count": 3,
+      "injection_duration_ms": 207.396,
+      "sampled_s": 1.0821,
+      "units": {
+        "shell-ui.service": {
+          "process_cpu_percent": 4.62,
+          "cgroup_cpu_percent": 4.614,
+          "rss_first_bytes": 85938176,
+          "rss_last_bytes": 85938176,
+          "rss_peak_bytes": 85938176
+        },
+        "shell.service": {
+          "process_cpu_percent": 9.241,
+          "cgroup_cpu_percent": 9.304,
+          "rss_first_bytes": 35246080,
+          "rss_last_bytes": 35246080,
+          "rss_peak_bytes": 35246080
+        },
+        "theme-helper.service": {
+          "process_cpu_percent": 0.0,
+          "cgroup_cpu_percent": 76.968,
+          "rss_first_bytes": 25202688,
+          "rss_last_bytes": 25202688,
+          "rss_peak_bytes": 25202688
+        }
+      },
+      "attribution": {
+        "shell-ui.service": {
+          "wall_s": 1.0821,
+          "threads_cpu": {
+            "gmain": {
+              "cpu_s": 0.0,
+              "cpu_percent": 0.0
+            },
+            "k230-shell-rust": {
+              "cpu_s": 0.05,
+              "cpu_percent": 4.62
+            },
+            "other": {
+              "cpu_s": 0.0,
+              "cpu_percent": 0.0
+            }
+          },
+          "threads_cpu_total_s": 0.05,
+          "cgroup_cpu_s": 0.0499,
+          "cgroup_cpu_percent": 4.614,
+          "cgroup_discontinuities": 0,
+          "rss_peak_bytes": 85938176,
+          "notes": {
+            "threads_exited": 0,
+            "threads_unstored": 0
+          }
+        },
+        "theme-helper.service": {
+          "wall_s": 1.0821,
+          "threads_cpu": {
+            "other": {
+              "cpu_s": 0.0,
+              "cpu_percent": 0.0
+            },
+            "python3": {
+              "cpu_s": 0.0,
+              "cpu_percent": 0.0
+            }
+          },
+          "threads_cpu_total_s": 0.0,
+          "cgroup_cpu_s": 0.8329,
+          "cgroup_cpu_percent": 76.968,
+          "cgroup_discontinuities": 0,
+          "rss_peak_bytes": 25202688,
+          "notes": {
+            "threads_exited": 0,
+            "threads_unstored": 0
+          }
+        }
+      },
+      "events": {
+        "touch-down": 1,
+        "commit": 13,
+        "touch-move": 20,
+        "frame-done": 13,
+        "touch-up": 1
+      },
+      "commit_gaps_ms": [
+        96,
+        46,
+        53,
+        26,
+        72,
+        40,
+        12,
+        57,
+        42,
+        17,
+        56,
+        57
+      ],
+      "commit_gap_median_ms": 49.5,
+      "commit_gap_p95_ms": 96,
+      "commit_gap_max_ms": 96
+    },
+    {
+      "name": "background-swipe-2",
+      "kind": "swipe-background",
+      "opening": null,
+      "duration_s": 1.4098,
+      "sample_count": 2,
+      "injection_duration_ms": 209.623,
+      "sampled_s": 0.5593,
+      "units": {
+        "shell-ui.service": {
+          "process_cpu_percent": 23.245,
+          "cgroup_cpu_percent": 23.027,
+          "rss_first_bytes": 85938176,
+          "rss_last_bytes": 88690688,
+          "rss_peak_bytes": 88690688
+        },
+        "shell.service": {
+          "process_cpu_percent": 16.093,
+          "cgroup_cpu_percent": 14.534,
+          "rss_first_bytes": 35246080,
+          "rss_last_bytes": 35246080,
+          "rss_peak_bytes": 35246080
+        },
+        "theme-helper.service": {
+          "process_cpu_percent": 1.788,
+          "cgroup_cpu_percent": 10.426,
+          "rss_first_bytes": 25202688,
+          "rss_last_bytes": 25202688,
+          "rss_peak_bytes": 25202688
+        }
+      },
+      "attribution": {
+        "shell-ui.service": {
+          "wall_s": 0.5593,
+          "threads_cpu": {
+            "gmain": {
+              "cpu_s": 0.0,
+              "cpu_percent": 0.0
+            },
+            "k230-shell-rust": {
+              "cpu_s": 0.13,
+              "cpu_percent": 23.245
+            },
+            "other": {
+              "cpu_s": 0.0,
+              "cpu_percent": 0.0
+            }
+          },
+          "threads_cpu_total_s": 0.13,
+          "cgroup_cpu_s": 0.1288,
+          "cgroup_cpu_percent": 23.027,
+          "cgroup_discontinuities": 0,
+          "rss_peak_bytes": 88690688,
+          "notes": {
+            "threads_exited": 0,
+            "threads_unstored": 0
+          }
+        },
+        "theme-helper.service": {
+          "wall_s": 0.5593,
+          "threads_cpu": {
+            "python3": {
+              "cpu_s": 0.0,
+              "cpu_percent": 0.0
+            }
+          },
+          "threads_cpu_total_s": 0.0,
+          "cgroup_cpu_s": 0.0583,
+          "cgroup_cpu_percent": 10.426,
+          "cgroup_discontinuities": 0,
+          "rss_peak_bytes": 25202688,
+          "notes": {
+            "threads_exited": 1,
+            "threads_unstored": 0
+          }
+        }
+      },
+      "events": {
+        "touch-down": 1,
+        "commit": 11,
+        "touch-move": 20,
+        "frame-done": 11,
+        "touch-up": 1,
+        "prerender-completed": 1
+      },
+      "commit_gaps_ms": [
+        151,
+        146,
+        137,
+        91,
+        14,
+        32,
+        20,
+        50,
+        38,
+        38
+      ],
+      "commit_gap_median_ms": 44.0,
+      "commit_gap_p95_ms": 151,
+      "commit_gap_max_ms": 151
+    },
+    {
+      "name": "background-swipe-3",
+      "kind": "swipe-background",
+      "opening": null,
+      "duration_s": 1.4053,
+      "sample_count": 3,
+      "injection_duration_ms": 205.11,
+      "sampled_s": 1.0476,
+      "units": {
+        "shell-ui.service": {
+          "process_cpu_percent": 12.41,
+          "cgroup_cpu_percent": 12.573,
+          "rss_first_bytes": 88690688,
+          "rss_last_bytes": 88690688,
+          "rss_peak_bytes": 88690688
+        },
+        "shell.service": {
+          "process_cpu_percent": 15.273,
+          "cgroup_cpu_percent": 14.699,
+          "rss_first_bytes": 35246080,
+          "rss_last_bytes": 35246080,
+          "rss_peak_bytes": 35246080
+        },
+        "theme-helper.service": {
+          "process_cpu_percent": 0.0,
+          "cgroup_cpu_percent": 0.048,
+          "rss_first_bytes": 25202688,
+          "rss_last_bytes": 25202688,
+          "rss_peak_bytes": 25202688
+        }
+      },
+      "attribution": {
+        "shell-ui.service": {
+          "wall_s": 1.0476,
+          "threads_cpu": {
+            "gmain": {
+              "cpu_s": 0.0,
+              "cpu_percent": 0.0
+            },
+            "k230-shell-rust": {
+              "cpu_s": 0.13,
+              "cpu_percent": 12.41
+            },
+            "other": {
+              "cpu_s": 0.0,
+              "cpu_percent": 0.0
+            }
+          },
+          "threads_cpu_total_s": 0.13,
+          "cgroup_cpu_s": 0.1317,
+          "cgroup_cpu_percent": 12.573,
+          "cgroup_discontinuities": 0,
+          "rss_peak_bytes": 88690688,
+          "notes": {
+            "threads_exited": 0,
+            "threads_unstored": 0
+          }
+        },
+        "theme-helper.service": {
+          "wall_s": 1.0476,
+          "threads_cpu": {
+            "python3": {
+              "cpu_s": 0.0,
+              "cpu_percent": 0.0
+            }
+          },
+          "threads_cpu_total_s": 0.0,
+          "cgroup_cpu_s": 0.0005,
+          "cgroup_cpu_percent": 0.048,
+          "cgroup_discontinuities": 0,
+          "rss_peak_bytes": 25202688,
+          "notes": {
+            "threads_exited": 0,
+            "threads_unstored": 0
+          }
+        }
+      },
+      "events": {
+        "touch-down": 1,
+        "commit": 14,
+        "touch-move": 20,
+        "frame-done": 14,
+        "touch-up": 1,
+        "prerender-completed": 1
+      },
+      "commit_gaps_ms": [
+        53,
+        125,
+        38,
+        7,
+        39,
+        38,
+        38,
+        38,
+        39,
+        38,
+        38,
+        39,
+        90
+      ],
+      "commit_gap_median_ms": 38,
+      "commit_gap_p95_ms": 125,
+      "commit_gap_max_ms": 125
+    },
+    {
+      "name": "idle-first",
+      "kind": "idle",
+      "opening": null,
+      "duration_s": 15.0002,
+      "sample_count": 29,
+      "sampled_s": 14.4092,
+      "units": {
+        "shell-ui.service": {
+          "process_cpu_percent": 0.625,
+          "cgroup_cpu_percent": 0.661,
+          "rss_first_bytes": 88690688,
+          "rss_last_bytes": 88690688,
+          "rss_peak_bytes": 88690688
+        },
+        "shell.service": {
+          "process_cpu_percent": 0.902,
+          "cgroup_cpu_percent": 1.27,
+          "rss_first_bytes": 35246080,
+          "rss_last_bytes": 35246080,
+          "rss_peak_bytes": 35246080
+        },
+        "theme-helper.service": {
+          "process_cpu_percent": 0.069,
+          "cgroup_cpu_percent": 0.047,
+          "rss_first_bytes": 25202688,
+          "rss_last_bytes": 25202688,
+          "rss_peak_bytes": 25202688
+        }
+      },
+      "attribution": {
+        "shell-ui.service": {
+          "wall_s": 14.4092,
+          "threads_cpu": {
+            "gmain": {
+              "cpu_s": 0.0,
+              "cpu_percent": 0.0
+            },
+            "k230-shell-rust": {
+              "cpu_s": 0.09,
+              "cpu_percent": 0.625
+            },
+            "other": {
+              "cpu_s": 0.0,
+              "cpu_percent": 0.0
+            }
+          },
+          "threads_cpu_total_s": 0.09,
+          "cgroup_cpu_s": 0.0953,
+          "cgroup_cpu_percent": 0.661,
+          "cgroup_discontinuities": 0,
+          "rss_peak_bytes": 88690688,
+          "notes": {
+            "threads_exited": 0,
+            "threads_unstored": 0
+          }
+        },
+        "theme-helper.service": {
+          "wall_s": 14.4092,
+          "threads_cpu": {
+            "python3": {
+              "cpu_s": 0.02,
+              "cpu_percent": 0.139
+            }
+          },
+          "threads_cpu_total_s": 0.02,
+          "cgroup_cpu_s": 0.0067,
+          "cgroup_cpu_percent": 0.047,
+          "cgroup_discontinuities": 0,
+          "rss_peak_bytes": 25202688,
+          "notes": {
+            "threads_exited": 0,
+            "threads_unstored": 0
+          }
+        }
+      },
+      "events": {},
+      "idle_commit_count": 0
+    },
+    {
+      "name": "back",
+      "kind": "back",
+      "opening": null,
+      "duration_s": 1.0839,
+      "sample_count": 2,
+      "injection_duration_ms": 83.69,
+      "sampled_s": 0.5147,
+      "units": {
+        "shell-ui.service": {
+          "process_cpu_percent": 0.0,
+          "cgroup_cpu_percent": 0.226,
+          "rss_first_bytes": 88690688,
+          "rss_last_bytes": 88690688,
+          "rss_peak_bytes": 88690688
+        },
+        "shell.service": {
+          "process_cpu_percent": 1.943,
+          "cgroup_cpu_percent": 1.534,
+          "rss_first_bytes": 35246080,
+          "rss_last_bytes": 35246080,
+          "rss_peak_bytes": 35246080
+        },
+        "theme-helper.service": {
+          "process_cpu_percent": 0.0,
+          "cgroup_cpu_percent": 0.037,
+          "rss_first_bytes": 25202688,
+          "rss_last_bytes": 25202688,
+          "rss_peak_bytes": 25202688
+        }
+      },
+      "attribution": {
+        "shell-ui.service": {
+          "wall_s": 0.5147,
+          "threads_cpu": {
+            "gmain": {
+              "cpu_s": 0.0,
+              "cpu_percent": 0.0
+            },
+            "k230-shell-rust": {
+              "cpu_s": 0.0,
+              "cpu_percent": 0.0
+            },
+            "other": {
+              "cpu_s": 0.0,
+              "cpu_percent": 0.0
+            }
+          },
+          "threads_cpu_total_s": 0.0,
+          "cgroup_cpu_s": 0.0012,
+          "cgroup_cpu_percent": 0.226,
+          "cgroup_discontinuities": 0,
+          "rss_peak_bytes": 88690688,
+          "notes": {
+            "threads_exited": 0,
+            "threads_unstored": 0
+          }
+        },
+        "theme-helper.service": {
+          "wall_s": 0.5147,
+          "threads_cpu": {
+            "python3": {
+              "cpu_s": 0.0,
+              "cpu_percent": 0.0
+            }
+          },
+          "threads_cpu_total_s": 0.0,
+          "cgroup_cpu_s": 0.0002,
+          "cgroup_cpu_percent": 0.037,
+          "cgroup_discontinuities": 0,
+          "rss_peak_bytes": 25202688,
+          "notes": {
+            "threads_exited": 0,
+            "threads_unstored": 0
+          }
+        }
+      },
+      "events": {
+        "touch-down": 1,
+        "touch-up": 1,
+        "commit": 1,
+        "frame-done": 1
+      }
+    },
+    {
+      "name": "warm-open",
+      "kind": "open",
+      "opening": "warm",
+      "duration_s": 5.0841,
+      "sample_count": 10,
+      "injection_duration_ms": 83.813,
+      "sampled_s": 4.6645,
+      "units": {
+        "shell-ui.service": {
+          "process_cpu_percent": 1.715,
+          "cgroup_cpu_percent": 1.941,
+          "rss_first_bytes": 88690688,
+          "rss_last_bytes": 88690688,
+          "rss_peak_bytes": 88690688
+        },
+        "shell.service": {
+          "process_cpu_percent": 1.501,
+          "cgroup_cpu_percent": 1.869,
+          "rss_first_bytes": 35246080,
+          "rss_last_bytes": 35246080,
+          "rss_peak_bytes": 35246080
+        },
+        "theme-helper.service": {
+          "process_cpu_percent": 1.072,
+          "cgroup_cpu_percent": 0.936,
+          "rss_first_bytes": 25202688,
+          "rss_last_bytes": 25202688,
+          "rss_peak_bytes": 25202688
+        }
+      },
+      "attribution": {
+        "shell-ui.service": {
+          "wall_s": 4.6645,
+          "threads_cpu": {
+            "gmain": {
+              "cpu_s": 0.0,
+              "cpu_percent": 0.0
+            },
+            "k230-shell-rust": {
+              "cpu_s": 0.1,
+              "cpu_percent": 2.144
+            },
+            "other": {
+              "cpu_s": 0.0,
+              "cpu_percent": 0.0
+            }
+          },
+          "threads_cpu_total_s": 0.1,
+          "cgroup_cpu_s": 0.0905,
+          "cgroup_cpu_percent": 1.941,
+          "cgroup_discontinuities": 0,
+          "rss_peak_bytes": 88690688,
+          "notes": {
+            "threads_exited": 0,
+            "threads_unstored": 0
+          }
+        },
+        "theme-helper.service": {
+          "wall_s": 4.6645,
+          "threads_cpu": {
+            "python3": {
+              "cpu_s": 0.0,
+              "cpu_percent": 0.0
+            }
+          },
+          "threads_cpu_total_s": 0.0,
+          "cgroup_cpu_s": 0.0437,
+          "cgroup_cpu_percent": 0.936,
+          "cgroup_discontinuities": 0,
+          "rss_peak_bytes": 25202688,
+          "notes": {
+            "threads_exited": 1,
+            "threads_unstored": 0
+          }
+        }
+      },
+      "events": {
+        "touch-down": 1,
+        "touch-up": 1,
+        "commit": 3,
+        "frame-done": 3
+      }
+    },
+    {
+      "name": "warm-theme-swipe-0",
+      "kind": "swipe-theme",
+      "opening": null,
+      "duration_s": 1.4062,
+      "sample_count": 3,
+      "injection_duration_ms": 204.462,
+      "sampled_s": 1.069,
+      "units": {
+        "shell-ui.service": {
+          "process_cpu_percent": 57.064,
+          "cgroup_cpu_percent": 57.606,
+          "rss_first_bytes": 88690688,
+          "rss_last_bytes": 88690688,
+          "rss_peak_bytes": 88690688
+        },
+        "shell.service": {
+          "process_cpu_percent": 10.29,
+          "cgroup_cpu_percent": 10.489,
+          "rss_first_bytes": 35246080,
+          "rss_last_bytes": 35246080,
+          "rss_peak_bytes": 35246080
+        },
+        "theme-helper.service": {
+          "process_cpu_percent": 5.613,
+          "cgroup_cpu_percent": 15.272,
+          "rss_first_bytes": 25202688,
+          "rss_last_bytes": 25202688,
+          "rss_peak_bytes": 25202688
+        }
+      },
+      "attribution": {
+        "shell-ui.service": {
+          "wall_s": 1.069,
+          "threads_cpu": {
+            "gmain": {
+              "cpu_s": 0.0,
+              "cpu_percent": 0.0
+            },
+            "k230-shell-rust": {
+              "cpu_s": 0.61,
+              "cpu_percent": 57.064
+            },
+            "other": {
+              "cpu_s": 0.0,
+              "cpu_percent": 0.0
+            }
+          },
+          "threads_cpu_total_s": 0.61,
+          "cgroup_cpu_s": 0.6158,
+          "cgroup_cpu_percent": 57.606,
+          "cgroup_discontinuities": 0,
+          "rss_peak_bytes": 88690688,
+          "notes": {
+            "threads_exited": 0,
+            "threads_unstored": 0
+          }
+        },
+        "theme-helper.service": {
+          "wall_s": 1.069,
+          "threads_cpu": {
+            "other": {
+              "cpu_s": 0.05,
+              "cpu_percent": 4.677
+            },
+            "python3": {
+              "cpu_s": 0.0,
+              "cpu_percent": 0.0
+            }
+          },
+          "threads_cpu_total_s": 0.05,
+          "cgroup_cpu_s": 0.1633,
+          "cgroup_cpu_percent": 15.272,
+          "cgroup_discontinuities": 0,
+          "rss_peak_bytes": 25202688,
+          "notes": {
+            "threads_exited": 0,
+            "threads_unstored": 0,
+            "threads_started": 1
+          }
+        }
+      },
+      "events": {
+        "touch-down": 1,
+        "commit": 10,
+        "touch-move": 20,
+        "frame-done": 10,
+        "touch-up": 1
+      },
+      "commit_gaps_ms": [
+        97,
+        102,
+        111,
+        102,
+        123,
+        181,
+        158,
+        125,
+        69
+      ],
+      "commit_gap_median_ms": 111,
+      "commit_gap_p95_ms": 181,
+      "commit_gap_max_ms": 181
+    },
+    {
+      "name": "warm-theme-swipe-1",
+      "kind": "swipe-theme",
+      "opening": null,
+      "duration_s": 1.4266,
+      "sample_count": 2,
+      "injection_duration_ms": 225.021,
+      "sampled_s": 0.5534,
+      "units": {
+        "shell-ui.service": {
+          "process_cpu_percent": 41.558,
+          "cgroup_cpu_percent": 41.689,
+          "rss_first_bytes": 88690688,
+          "rss_last_bytes": 88690688,
+          "rss_peak_bytes": 88690688
+        },
+        "shell.service": {
+          "process_cpu_percent": 5.421,
+          "cgroup_cpu_percent": 6.196,
+          "rss_first_bytes": 35246080,
+          "rss_last_bytes": 35246080,
+          "rss_peak_bytes": 35246080
+        },
+        "theme-helper.service": {
+          "process_cpu_percent": 0.0,
+          "cgroup_cpu_percent": 43.179,
+          "rss_first_bytes": 25202688,
+          "rss_last_bytes": 25202688,
+          "rss_peak_bytes": 25202688
+        }
+      },
+      "attribution": {
+        "shell-ui.service": {
+          "wall_s": 0.5534,
+          "threads_cpu": {
+            "gmain": {
+              "cpu_s": 0.0,
+              "cpu_percent": 0.0
+            },
+            "k230-shell-rust": {
+              "cpu_s": 0.23,
+              "cpu_percent": 41.558
+            },
+            "other": {
+              "cpu_s": 0.0,
+              "cpu_percent": 0.0
+            }
+          },
+          "threads_cpu_total_s": 0.23,
+          "cgroup_cpu_s": 0.2307,
+          "cgroup_cpu_percent": 41.689,
+          "cgroup_discontinuities": 0,
+          "rss_peak_bytes": 88690688,
+          "notes": {
+            "threads_exited": 0,
+            "threads_unstored": 0
+          }
+        },
+        "theme-helper.service": {
+          "wall_s": 0.5534,
+          "threads_cpu": {
+            "other": {
+              "cpu_s": 0.0,
+              "cpu_percent": 0.0
+            },
+            "python3": {
+              "cpu_s": 0.0,
+              "cpu_percent": 0.0
+            }
+          },
+          "threads_cpu_total_s": 0.0,
+          "cgroup_cpu_s": 0.239,
+          "cgroup_cpu_percent": 43.179,
+          "cgroup_discontinuities": 0,
+          "rss_peak_bytes": 25202688,
+          "notes": {
+            "threads_exited": 0,
+            "threads_unstored": 0
+          }
+        }
+      },
+      "events": {
+        "touch-down": 1,
+        "commit": 5,
+        "touch-move": 20,
+        "frame-done": 4,
+        "touch-up": 1
+      },
+      "commit_gaps_ms": [
+        334,
+        296,
+        236,
+        313
+      ],
+      "commit_gap_median_ms": 304.5,
+      "commit_gap_p95_ms": 334,
+      "commit_gap_max_ms": 334
+    },
+    {
+      "name": "warm-theme-swipe-2",
+      "kind": "swipe-theme",
+      "opening": null,
+      "duration_s": 1.4151,
+      "sample_count": 3,
+      "injection_duration_ms": 209.952,
+      "sampled_s": 1.1385,
+      "units": {
+        "shell-ui.service": {
+          "process_cpu_percent": 44.797,
+          "cgroup_cpu_percent": 45.886,
+          "rss_first_bytes": 88821760,
+          "rss_last_bytes": 88821760,
+          "rss_peak_bytes": 88821760
+        },
+        "shell.service": {
+          "process_cpu_percent": 6.149,
+          "cgroup_cpu_percent": 6.364,
+          "rss_first_bytes": 35246080,
+          "rss_last_bytes": 35246080,
+          "rss_peak_bytes": 35246080
+        },
+        "theme-helper.service": {
+          "process_cpu_percent": 3.513,
+          "cgroup_cpu_percent": 40.126,
+          "rss_first_bytes": 25202688,
+          "rss_last_bytes": 25202688,
+          "rss_peak_bytes": 25202688
+        }
+      },
+      "attribution": {
+        "shell-ui.service": {
+          "wall_s": 1.1385,
+          "threads_cpu": {
+            "gmain": {
+              "cpu_s": 0.0,
+              "cpu_percent": 0.0
+            },
+            "k230-shell-rust": {
+              "cpu_s": 0.52,
+              "cpu_percent": 45.675
+            },
+            "other": {
+              "cpu_s": 0.0,
+              "cpu_percent": 0.0
+            }
+          },
+          "threads_cpu_total_s": 0.52,
+          "cgroup_cpu_s": 0.5224,
+          "cgroup_cpu_percent": 45.886,
+          "cgroup_discontinuities": 0,
+          "rss_peak_bytes": 88821760,
+          "notes": {
+            "threads_exited": 0,
+            "threads_unstored": 0
+          }
+        },
+        "theme-helper.service": {
+          "wall_s": 1.1385,
+          "threads_cpu": {
+            "other": {
+              "cpu_s": 0.04,
+              "cpu_percent": 3.513
+            },
+            "python3": {
+              "cpu_s": 0.0,
+              "cpu_percent": 0.0
+            }
+          },
+          "threads_cpu_total_s": 0.04,
+          "cgroup_cpu_s": 0.4568,
+          "cgroup_cpu_percent": 40.126,
+          "cgroup_discontinuities": 0,
+          "rss_peak_bytes": 25202688,
+          "notes": {
+            "threads_exited": 0,
+            "threads_unstored": 0
+          }
+        }
+      },
+      "events": {
+        "commit": 5,
+        "frame-done": 5,
+        "touch-down": 1,
+        "touch-move": 20,
+        "touch-up": 1
+      },
+      "commit_gaps_ms": [
+        280,
+        322,
+        281,
+        258
+      ],
+      "commit_gap_median_ms": 280.5,
+      "commit_gap_p95_ms": 322,
+      "commit_gap_max_ms": 322
+    },
+    {
+      "name": "warm-theme-swipe-3",
+      "kind": "swipe-theme",
+      "opening": null,
+      "duration_s": 1.4407,
+      "sample_count": 2,
+      "injection_duration_ms": 240.468,
+      "sampled_s": 0.5538,
+      "units": {
+        "shell-ui.service": {
+          "process_cpu_percent": 41.529,
+          "cgroup_cpu_percent": 40.925,
+          "rss_first_bytes": 88821760,
+          "rss_last_bytes": 88821760,
+          "rss_peak_bytes": 88821760
+        },
+        "shell.service": {
+          "process_cpu_percent": 5.417,
+          "cgroup_cpu_percent": 6.192,
+          "rss_first_bytes": 35246080,
+          "rss_last_bytes": 35246080,
+          "rss_peak_bytes": 35246080
+        },
+        "theme-helper.service": {
+          "process_cpu_percent": 0.0,
+          "cgroup_cpu_percent": 42.105,
+          "rss_first_bytes": 25202688,
+          "rss_last_bytes": 25202688,
+          "rss_peak_bytes": 25202688
+        }
+      },
+      "attribution": {
+        "shell-ui.service": {
+          "wall_s": 0.5538,
+          "threads_cpu": {
+            "gmain": {
+              "cpu_s": 0.0,
+              "cpu_percent": 0.0
+            },
+            "k230-shell-rust": {
+              "cpu_s": 0.22,
+              "cpu_percent": 39.723
+            },
+            "other": {
+              "cpu_s": 0.0,
+              "cpu_percent": 0.0
+            }
+          },
+          "threads_cpu_total_s": 0.22,
+          "cgroup_cpu_s": 0.2267,
+          "cgroup_cpu_percent": 40.925,
+          "cgroup_discontinuities": 0,
+          "rss_peak_bytes": 88821760,
+          "notes": {
+            "threads_exited": 0,
+            "threads_unstored": 0
+          }
+        },
+        "theme-helper.service": {
+          "wall_s": 0.5538,
+          "threads_cpu": {
+            "other": {
+              "cpu_s": 0.0,
+              "cpu_percent": 0.0
+            },
+            "python3": {
+              "cpu_s": 0.0,
+              "cpu_percent": 0.0
+            }
+          },
+          "threads_cpu_total_s": 0.0,
+          "cgroup_cpu_s": 0.2332,
+          "cgroup_cpu_percent": 42.105,
+          "cgroup_discontinuities": 0,
+          "rss_peak_bytes": 25202688,
+          "notes": {
+            "threads_exited": 0,
+            "threads_unstored": 0
+          }
+        }
+      },
+      "events": {
+        "commit": 7,
+        "frame-done": 8,
+        "touch-down": 1,
+        "touch-move": 20,
+        "touch-up": 1
+      },
+      "commit_gaps_ms": [
+        139,
+        235,
+        221,
+        227,
+        216,
+        123
+      ],
+      "commit_gap_median_ms": 218.5,
+      "commit_gap_p95_ms": 235,
+      "commit_gap_max_ms": 235
+    },
+    {
+      "name": "warm-theme-swipe-4",
+      "kind": "swipe-theme",
+      "opening": null,
+      "duration_s": 1.4102,
+      "sample_count": 3,
+      "injection_duration_ms": 209.113,
+      "sampled_s": 1.1028,
+      "units": {
+        "shell-ui.service": {
+          "process_cpu_percent": 70.729,
+          "cgroup_cpu_percent": 71.864,
+          "rss_first_bytes": 88821760,
+          "rss_last_bytes": 88944640,
+          "rss_peak_bytes": 88944640
+        },
+        "shell.service": {
+          "process_cpu_percent": 11.788,
+          "cgroup_cpu_percent": 12.065,
+          "rss_first_bytes": 35246080,
+          "rss_last_bytes": 35246080,
+          "rss_peak_bytes": 35246080
+        },
+        "theme-helper.service": {
+          "process_cpu_percent": 1.814,
+          "cgroup_cpu_percent": 2.54,
+          "rss_first_bytes": 25202688,
+          "rss_last_bytes": 25202688,
+          "rss_peak_bytes": 25202688
+        }
+      },
+      "attribution": {
+        "shell-ui.service": {
+          "wall_s": 1.1028,
+          "threads_cpu": {
+            "gmain": {
+              "cpu_s": 0.0,
+              "cpu_percent": 0.0
+            },
+            "k230-shell-rust": {
+              "cpu_s": 0.79,
+              "cpu_percent": 71.636
+            },
+            "other": {
+              "cpu_s": 0.0,
+              "cpu_percent": 0.0
+            }
+          },
+          "threads_cpu_total_s": 0.79,
+          "cgroup_cpu_s": 0.7925,
+          "cgroup_cpu_percent": 71.864,
+          "cgroup_discontinuities": 0,
+          "rss_peak_bytes": 88944640,
+          "notes": {
+            "threads_exited": 0,
+            "threads_unstored": 0
+          }
+        },
+        "theme-helper.service": {
+          "wall_s": 1.1028,
+          "threads_cpu": {
+            "python3": {
+              "cpu_s": 0.01,
+              "cpu_percent": 0.907
+            }
+          },
+          "threads_cpu_total_s": 0.01,
+          "cgroup_cpu_s": 0.028,
+          "cgroup_cpu_percent": 2.54,
+          "cgroup_discontinuities": 0,
+          "rss_peak_bytes": 25202688,
+          "notes": {
+            "threads_exited": 1,
+            "threads_unstored": 0
+          }
+        }
+      },
+      "events": {
+        "touch-down": 1,
+        "commit": 9,
+        "touch-move": 20,
+        "frame-done": 9,
+        "touch-up": 1,
+        "prerender-completed": 1
+      },
+      "commit_gaps_ms": [
+        177,
+        131,
+        166,
+        168,
+        180,
+        107,
+        105,
+        65
+      ],
+      "commit_gap_median_ms": 148.5,
+      "commit_gap_p95_ms": 180,
+      "commit_gap_max_ms": 180
+    },
+    {
+      "name": "warm-theme-swipe-5",
+      "kind": "swipe-theme",
+      "opening": null,
+      "duration_s": 1.4044,
+      "sample_count": 2,
+      "injection_duration_ms": 204.179,
+      "sampled_s": 0.5318,
+      "units": {
+        "shell-ui.service": {
+          "process_cpu_percent": 80.852,
+          "cgroup_cpu_percent": 80.255,
+          "rss_first_bytes": 88944640,
+          "rss_last_bytes": 88944640,
+          "rss_peak_bytes": 88944640
+        },
+        "shell.service": {
+          "process_cpu_percent": 15.042,
+          "cgroup_cpu_percent": 14.847,
+          "rss_first_bytes": 35246080,
+          "rss_last_bytes": 35246080,
+          "rss_peak_bytes": 35246080
+        },
+        "theme-helper.service": {
+          "process_cpu_percent": 0.0,
+          "cgroup_cpu_percent": 0.058,
+          "rss_first_bytes": 25202688,
+          "rss_last_bytes": 25202688,
+          "rss_peak_bytes": 25202688
+        }
+      },
+      "attribution": {
+        "shell-ui.service": {
+          "wall_s": 0.5318,
+          "threads_cpu": {
+            "gmain": {
+              "cpu_s": 0.0,
+              "cpu_percent": 0.0
+            },
+            "k230-shell-rust": {
+              "cpu_s": 0.42,
+              "cpu_percent": 78.972
+            },
+            "other": {
+              "cpu_s": 0.0,
+              "cpu_percent": 0.0
+            }
+          },
+          "threads_cpu_total_s": 0.42,
+          "cgroup_cpu_s": 0.4268,
+          "cgroup_cpu_percent": 80.255,
+          "cgroup_discontinuities": 0,
+          "rss_peak_bytes": 88944640,
+          "notes": {
+            "threads_exited": 0,
+            "threads_unstored": 0
+          }
+        },
+        "theme-helper.service": {
+          "wall_s": 0.5318,
+          "threads_cpu": {
+            "python3": {
+              "cpu_s": 0.0,
+              "cpu_percent": 0.0
+            }
+          },
+          "threads_cpu_total_s": 0.0,
+          "cgroup_cpu_s": 0.0003,
+          "cgroup_cpu_percent": 0.058,
+          "cgroup_discontinuities": 0,
+          "rss_peak_bytes": 25202688,
+          "notes": {
+            "threads_exited": 0,
+            "threads_unstored": 0
+          }
+        }
+      },
+      "events": {
+        "touch-down": 1,
+        "commit": 11,
+        "touch-move": 20,
+        "frame-done": 11,
+        "touch-up": 1
+      },
+      "commit_gaps_ms": [
+        112,
+        118,
+        106,
+        124,
+        129,
+        112,
+        114,
+        84,
+        99,
+        50
+      ],
+      "commit_gap_median_ms": 112.0,
+      "commit_gap_p95_ms": 129,
+      "commit_gap_max_ms": 129
+    },
+    {
+      "name": "idle-warm",
+      "kind": "idle",
+      "opening": null,
+      "duration_s": 15.0002,
+      "sample_count": 29,
+      "sampled_s": 14.4083,
+      "units": {
+        "shell-ui.service": {
+          "process_cpu_percent": 0.555,
+          "cgroup_cpu_percent": 0.548,
+          "rss_first_bytes": 88944640,
+          "rss_last_bytes": 88944640,
+          "rss_peak_bytes": 88944640
+        },
+        "shell.service": {
+          "process_cpu_percent": 0.972,
+          "cgroup_cpu_percent": 1.268,
+          "rss_first_bytes": 35246080,
+          "rss_last_bytes": 35246080,
+          "rss_peak_bytes": 35246080
+        },
+        "theme-helper.service": {
+          "process_cpu_percent": 0.069,
+          "cgroup_cpu_percent": 0.05,
+          "rss_first_bytes": 25202688,
+          "rss_last_bytes": 25202688,
+          "rss_peak_bytes": 25202688
+        }
+      },
+      "attribution": {
+        "shell-ui.service": {
+          "wall_s": 14.4083,
+          "threads_cpu": {
+            "gmain": {
+              "cpu_s": 0.0,
+              "cpu_percent": 0.0
+            },
+            "k230-shell-rust": {
+              "cpu_s": 0.08,
+              "cpu_percent": 0.555
+            },
+            "other": {
+              "cpu_s": 0.0,
+              "cpu_percent": 0.0
+            }
+          },
+          "threads_cpu_total_s": 0.08,
+          "cgroup_cpu_s": 0.0789,
+          "cgroup_cpu_percent": 0.548,
+          "cgroup_discontinuities": 0,
+          "rss_peak_bytes": 88944640,
+          "notes": {
+            "threads_exited": 0,
+            "threads_unstored": 0
+          }
+        },
+        "theme-helper.service": {
+          "wall_s": 14.4083,
+          "threads_cpu": {
+            "python3": {
+              "cpu_s": 0.01,
+              "cpu_percent": 0.069
+            }
+          },
+          "threads_cpu_total_s": 0.01,
+          "cgroup_cpu_s": 0.0072,
+          "cgroup_cpu_percent": 0.05,
+          "cgroup_discontinuities": 0,
+          "rss_peak_bytes": 25202688,
+          "notes": {
+            "threads_exited": 0,
+            "threads_unstored": 0
+          }
+        }
+      },
+      "events": {},
+      "idle_commit_count": 0
+    }
+  ],
+  "limits": [
+    "Commit gaps use Rust elapsed timestamps of `commit` events inside one swipe phase; idle intervals, frame callbacks and wallpaper commits are never mixed into them.",
+    "Swipe windows include the settling period after injection.",
+    "CPU samples are about 0.5 s apart; short phases have partial coverage.",
+    "Span/counter attribution exists only where `rust_counters` is present; no native media during this pass."
+  ],
+  "instrumentation": "counters",
+  "thread_sampling": true,
+  "rust_counters": {
+    "valid": true,
+    "failures": [],
+    "counters_only": true,
+    "events_complete": false,
+    "events_dropped": 0,
+    "phase_log_dropped": 0,
+    "by_gesture_phase": {
+      "rest": {
+        "scene_rebuild": {
+          "count": 12,
+          "wall_ms": 835.502,
+          "cpu_ms": 424.237,
+          "max_wall_ms": 124.898
+        },
+        "render_total": {
+          "count": 30,
+          "wall_ms": 2034.692,
+          "cpu_ms": 1022.983,
+          "max_wall_ms": 157.275
+        },
+        "picker_row_repaint": {
+          "count": 13,
+          "wall_ms": 1007.252,
+          "cpu_ms": 512.689,
+          "max_wall_ms": 150.494
+        },
+        "overlay_draw": {
+          "count": 30,
+          "wall_ms": 2046.61,
+          "cpu_ms": 1029.513,
+          "max_wall_ms": 157.464
+        },
+        "thumbnail_request": {
+          "count": 14,
+          "wall_ms": 0.0,
+          "cpu_ms": 0.0,
+          "max_wall_ms": 0.0
+        },
+        "thumbnail_completion": {
+          "count": 14,
+          "wall_ms": 0.0,
+          "cpu_ms": 0.0,
+          "max_wall_ms": 0.0
+        },
+        "thumbnail_poll": {
+          "count": 966,
+          "wall_ms": 180.602,
+          "cpu_ms": 156.655,
+          "max_wall_ms": 3.821
+        },
+        "thumbnail_read_cache": {
+          "count": 14,
+          "wall_ms": 57.321,
+          "cpu_ms": 15.442,
+          "max_wall_ms": 11.748
+        },
+        "thumbnail_hash": {
+          "count": 14,
+          "wall_ms": 358.266,
+          "cpu_ms": 115.301,
+          "max_wall_ms": 63.02
+        },
+        "thumbnail_resolve": {
+          "count": 14,
+          "wall_ms": 427.721,
+          "cpu_ms": 131.557,
+          "max_wall_ms": 65.82
+        },
+        "appearance_prepare": {
+          "count": 5,
+          "wall_ms": 40.82,
+          "cpu_ms": 18.446,
+          "max_wall_ms": 19.79
+        },
+        "theme_helper_rpc": {
+          "count": 7,
+          "wall_ms": 4928.317,
+          "cpu_ms": 5.643,
+          "max_wall_ms": 3880.6
+        },
+        "theme_request": {
+          "count": 7,
+          "wall_ms": 4942.877,
+          "cpu_ms": 8.973,
+          "max_wall_ms": 3882.126
+        },
+        "speculative_admission": {
+          "count": 5,
+          "wall_ms": 0.0,
+          "cpu_ms": 0.0,
+          "max_wall_ms": 0.0
+        },
+        "speculative_completion": {
+          "count": 3,
+          "wall_ms": 0.0,
+          "cpu_ms": 0.0,
+          "max_wall_ms": 0.0
+        },
+        "overlay_prerender": {
+          "count": 1,
+          "wall_ms": 64.223,
+          "cpu_ms": 61.461,
+          "max_wall_ms": 64.223
+        }
+      },
+      "held": {
+        "scene_rebuild": {
+          "count": 5,
+          "wall_ms": 795.587,
+          "cpu_ms": 404.848,
+          "max_wall_ms": 280.784
+        },
+        "render_total": {
+          "count": 31,
+          "wall_ms": 3832.358,
+          "cpu_ms": 2156.703,
+          "max_wall_ms": 288.557
+        },
+        "picker_row_repaint": {
+          "count": 24,
+          "wall_ms": 2857.999,
+          "cpu_ms": 1657.632,
+          "max_wall_ms": 250.421
+        },
+        "overlay_draw": {
+          "count": 31,
+          "wall_ms": 3863.885,
+          "cpu_ms": 2166.466,
+          "max_wall_ms": 288.76
+        },
+        "thumbnail_request": {
+          "count": 8,
+          "wall_ms": 0.0,
+          "cpu_ms": 0.0,
+          "max_wall_ms": 0.0
+        },
+        "thumbnail_completion": {
+          "count": 8,
+          "wall_ms": 0.0,
+          "cpu_ms": 0.0,
+          "max_wall_ms": 0.0
+        },
+        "thumbnail_poll": {
+          "count": 97,
+          "wall_ms": 61.613,
+          "cpu_ms": 21.77,
+          "max_wall_ms": 3.802
+        },
+        "thumbnail_read_cache": {
+          "count": 8,
+          "wall_ms": 33.006,
+          "cpu_ms": 10.532,
+          "max_wall_ms": 9.265
+        },
+        "thumbnail_hash": {
+          "count": 8,
+          "wall_ms": 322.609,
+          "cpu_ms": 92.682,
+          "max_wall_ms": 55.505
+        },
+        "thumbnail_resolve": {
+          "count": 8,
+          "wall_ms": 357.166,
+          "cpu_ms": 103.771,
+          "max_wall_ms": 64.026
+        }
+      },
+      "moving": {
+        "scene_rebuild": {
+          "count": 28,
+          "wall_ms": 5914.807,
+          "cpu_ms": 2748.603,
+          "max_wall_ms": 319.532
+        },
+        "render_total": {
+          "count": 95,
+          "wall_ms": 10875.275,
+          "cpu_ms": 5657.42,
+          "max_wall_ms": 327.294
+        },
+        "picker_row_repaint": {
+          "count": 38,
+          "wall_ms": 4434.529,
+          "cpu_ms": 2637.195,
+          "max_wall_ms": 242.947
+        },
+        "overlay_draw": {
+          "count": 96,
+          "wall_ms": 10933.599,
+          "cpu_ms": 5679.444,
+          "max_wall_ms": 329.511
+        },
+        "thumbnail_request": {
+          "count": 48,
+          "wall_ms": 0.0,
+          "cpu_ms": 0.0,
+          "max_wall_ms": 0.0
+        },
+        "thumbnail_completion": {
+          "count": 48,
+          "wall_ms": 0.0,
+          "cpu_ms": 0.0,
+          "max_wall_ms": 0.0
+        },
+        "thumbnail_poll": {
+          "count": 244,
+          "wall_ms": 136.46,
+          "cpu_ms": 54.584,
+          "max_wall_ms": 6.631
+        },
+        "thumbnail_read_cache": {
+          "count": 48,
+          "wall_ms": 275.867,
+          "cpu_ms": 53.907,
+          "max_wall_ms": 69.655
+        },
+        "thumbnail_hash": {
+          "count": 48,
+          "wall_ms": 1984.73,
+          "cpu_ms": 617.191,
+          "max_wall_ms": 121.031
+        },
+        "thumbnail_resolve": {
+          "count": 48,
+          "wall_ms": 2291.633,
+          "cpu_ms": 674.334,
+          "max_wall_ms": 127.058
+        },
+        "appearance_prepare": {
+          "count": 2,
+          "wall_ms": 35.834,
+          "cpu_ms": 17.336,
+          "max_wall_ms": 18.245
+        },
+        "theme_helper_rpc": {
+          "count": 2,
+          "wall_ms": 10000.415,
+          "cpu_ms": 1.796,
+          "max_wall_ms": 5051.684
+        },
+        "theme_request": {
+          "count": 2,
+          "wall_ms": 10004.844,
+          "cpu_ms": 2.726,
+          "max_wall_ms": 5054.021
+        },
+        "speculative_completion": {
+          "count": 2,
+          "wall_ms": 0.0,
+          "cpu_ms": 0.0,
+          "max_wall_ms": 0.0
+        },
+        "overlay_prerender": {
+          "count": 3,
+          "wall_ms": 234.278,
+          "cpu_ms": 185.812,
+          "max_wall_ms": 91.002
+        }
+      }
+    },
+    "phases": [
+      {
+        "name": "settings-baseline",
+        "kind": "baseline",
+        "gesture_phase_s": {
+          "rest": 2.0002,
+          "held": 0.0,
+          "moving": 0.0
+        }
+      },
+      {
+        "name": "first-open",
+        "kind": "open",
+        "gesture_phase_s": {
+          "rest": 10.0843,
+          "held": 0.0,
+          "moving": 0.0
+        }
+      },
+      {
+        "name": "theme-swipe-0",
+        "kind": "swipe-theme",
+        "gesture_phase_s": {
+          "rest": 0.2109,
+          "held": 0.3922,
+          "moving": 0.8002
+        }
+      },
+      {
+        "name": "theme-swipe-1",
+        "kind": "swipe-theme",
+        "gesture_phase_s": {
+          "rest": 0.1016,
+          "held": 0.5572,
+          "moving": 0.7461
+        }
+      },
+      {
+        "name": "theme-swipe-2",
+        "kind": "swipe-theme",
+        "gesture_phase_s": {
+          "rest": 0.0,
+          "held": 0.2599,
+          "moving": 1.1549
+        }
+      },
+      {
+        "name": "theme-swipe-3",
+        "kind": "swipe-theme",
+        "gesture_phase_s": {
+          "rest": 0.0,
+          "held": 0.2405,
+          "moving": 1.1733
+        }
+      },
+      {
+        "name": "theme-swipe-4",
+        "kind": "swipe-theme",
+        "gesture_phase_s": {
+          "rest": 0.2545,
+          "held": 0.1826,
+          "moving": 0.9739
+        }
+      },
+      {
+        "name": "theme-swipe-5",
+        "kind": "swipe-theme",
+        "gesture_phase_s": {
+          "rest": 0.2984,
+          "held": 0.3426,
+          "moving": 0.7637
+        }
+      },
+      {
+        "name": "background-swipe-0",
+        "kind": "swipe-background",
+        "gesture_phase_s": {
+          "rest": 0.6428,
+          "held": 0.3351,
+          "moving": 0.4293
+        }
+      },
+      {
+        "name": "background-swipe-1",
+        "kind": "swipe-background",
+        "gesture_phase_s": {
+          "rest": 0.8511,
+          "held": 0.1407,
+          "moving": 0.4206
+        }
+      },
+      {
+        "name": "background-swipe-2",
+        "kind": "swipe-background",
+        "gesture_phase_s": {
+          "rest": 0.7014,
+          "held": 0.2962,
+          "moving": 0.4122
+        }
+      },
+      {
+        "name": "background-swipe-3",
+        "kind": "swipe-background",
+        "gesture_phase_s": {
+          "rest": 0.7922,
+          "held": 0.1937,
+          "moving": 0.4195
+        }
+      },
+      {
+        "name": "idle-first",
+        "kind": "idle",
+        "gesture_phase_s": {
+          "rest": 15.0002,
+          "held": 0.0,
+          "moving": 0.0
+        }
+      },
+      {
+        "name": "back",
+        "kind": "back",
+        "gesture_phase_s": {
+          "rest": 1.0464,
+          "held": 0.0375,
+          "moving": 0.0
+        }
+      },
+      {
+        "name": "warm-open",
+        "kind": "open",
+        "gesture_phase_s": {
+          "rest": 5.0841,
+          "held": 0.0,
+          "moving": 0.0
+        }
+      },
+      {
+        "name": "warm-theme-swipe-0",
+        "kind": "swipe-theme",
+        "gesture_phase_s": {
+          "rest": 0.3376,
+          "held": 0.3096,
+          "moving": 0.7591
+        }
+      },
+      {
+        "name": "warm-theme-swipe-1",
+        "kind": "swipe-theme",
+        "gesture_phase_s": {
+          "rest": 0.1661,
+          "held": 0.6311,
+          "moving": 0.6295
+        }
+      },
+      {
+        "name": "warm-theme-swipe-2",
+        "kind": "swipe-theme",
+        "gesture_phase_s": {
+          "rest": 0.0,
+          "held": 0.0,
+          "moving": 1.4151
+        }
+      },
+      {
+        "name": "warm-theme-swipe-3",
+        "kind": "swipe-theme",
+        "gesture_phase_s": {
+          "rest": 0.2781,
+          "held": 0.2179,
+          "moving": 0.9447
+        }
+      },
+      {
+        "name": "warm-theme-swipe-4",
+        "kind": "swipe-theme",
+        "gesture_phase_s": {
+          "rest": 0.2328,
+          "held": 0.3109,
+          "moving": 0.8665
+        }
+      },
+      {
+        "name": "warm-theme-swipe-5",
+        "kind": "swipe-theme",
+        "gesture_phase_s": {
+          "rest": 0.3569,
+          "held": 0.3359,
+          "moving": 0.7116
+        }
+      },
+      {
+        "name": "idle-warm",
+        "kind": "idle",
+        "gesture_phase_s": {
+          "rest": 15.0002,
+          "held": 0.0,
+          "moving": 0.0
+        }
+      }
+    ],
+    "limits": [
+      "Span wall/CPU are inclusive of nested spans; do not sum kinds.",
+      "Thread CPU is per recording thread; helper subprocess CPU is in the cgroup figures.",
+      "Coasting and settling share the `moving` gesture phase.",
+      "Per-harness-phase counters need a complete event ring (trace mode, no drops)."
+    ]
+  }
+}

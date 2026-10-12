@@ -1,0 +1,2526 @@
+[
+ {
+  "run": "ov-trace",
+  "events": 7207,
+  "dropped": 0,
+  "counters_only": false,
+  "groups": {
+   "theme_cold": {
+    "phases": 6,
+    "window_s": 8.453,
+    "spans": {
+     "scene_rebuild": {
+      "count": 18,
+      "wall_ms_sum": 2764.0,
+      "wall_ms_median": 139.59,
+      "wall_ms_max": 286.2,
+      "cpu_ms_sum": 1765.9,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "picker_row_repaint": {
+      "count": 29,
+      "wall_ms_sum": 3511.1,
+      "wall_ms_median": 111.05,
+      "wall_ms_max": 277.9,
+      "cpu_ms_sum": 2149.3,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "overlay_draw": {
+      "count": 51,
+      "wall_ms_sum": 6584.4,
+      "wall_ms_median": 124.94,
+      "wall_ms_max": 296.6,
+      "cpu_ms_sum": 4085.1,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "render_total": {
+      "count": 51,
+      "wall_ms_sum": 6543.4,
+      "wall_ms_median": 124.15,
+      "wall_ms_max": 296.4,
+      "cpu_ms_sum": 4070.2,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "thumbnail_request": {
+      "count": 26,
+      "wall_ms_sum": 0.0,
+      "wall_ms_median": 0.0,
+      "wall_ms_max": 0.0,
+      "cpu_ms_sum": 0.0,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "thumbnail_hash": {
+      "count": 26,
+      "wall_ms_sum": 880.5,
+      "wall_ms_median": 30.68,
+      "wall_ms_max": 71.3,
+      "cpu_ms_sum": 338.4,
+      "cpu_ms_off_main_thread": 338.4
+     },
+     "thumbnail_resolve": {
+      "count": 26,
+      "wall_ms_sum": 986.8,
+      "wall_ms_median": 36.08,
+      "wall_ms_max": 77.3,
+      "cpu_ms_sum": 375.2,
+      "cpu_ms_off_main_thread": 375.2
+     },
+     "thumbnail_read_cache": {
+      "count": 26,
+      "wall_ms_sum": 73.0,
+      "wall_ms_median": 1.52,
+      "wall_ms_max": 10.5,
+      "cpu_ms_sum": 34.8,
+      "cpu_ms_off_main_thread": 34.8
+     },
+     "appearance_prepare": {
+      "count": 3,
+      "wall_ms_sum": 41.9,
+      "wall_ms_median": 15.56,
+      "wall_ms_max": 16.4,
+      "cpu_ms_sum": 26.0,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "theme_helper_rpc": {
+      "count": 4,
+      "wall_ms_sum": 4499.8,
+      "wall_ms_median": 129.69,
+      "wall_ms_max": 4129.3,
+      "cpu_ms_sum": 3.3,
+      "cpu_ms_off_main_thread": 3.3
+     },
+     "overlay_prerender": {
+      "count": 1,
+      "wall_ms_sum": 68.2,
+      "wall_ms_median": 68.18,
+      "wall_ms_max": 68.2,
+      "cpu_ms_sum": 62.5,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "speculative_admission": {
+      "count": 4,
+      "wall_ms_sum": 0.0,
+      "wall_ms_median": 0.0,
+      "wall_ms_max": 0.0,
+      "cpu_ms_sum": 0.0,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "speculative_completion": {
+      "count": 3,
+      "wall_ms_sum": 0.0,
+      "wall_ms_median": 0.0,
+      "wall_ms_max": 0.0,
+      "cpu_ms_sum": 0.0,
+      "cpu_ms_off_main_thread": 0.0
+     }
+    },
+    "presented_gaps": {
+     "count": 43,
+     "median_ms": 128.9,
+     "p95_ms": 249.8
+    }
+   },
+   "theme_warm": {
+    "phases": 6,
+    "window_s": 8.454,
+    "spans": {
+     "scene_rebuild": {
+      "count": 11,
+      "wall_ms_sum": 2027.0,
+      "wall_ms_median": 152.2,
+      "wall_ms_max": 289.3,
+      "cpu_ms_sum": 1069.0,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "picker_row_repaint": {
+      "count": 38,
+      "wall_ms_sum": 4843.9,
+      "wall_ms_median": 110.44,
+      "wall_ms_max": 254.1,
+      "cpu_ms_sum": 2874.2,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "overlay_draw": {
+      "count": 49,
+      "wall_ms_sum": 7142.1,
+      "wall_ms_median": 121.78,
+      "wall_ms_max": 300.0,
+      "cpu_ms_sum": 4093.3,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "render_total": {
+      "count": 49,
+      "wall_ms_sum": 7110.3,
+      "wall_ms_median": 121.46,
+      "wall_ms_max": 296.8,
+      "cpu_ms_sum": 4081.3,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "thumbnail_request": {
+      "count": 16,
+      "wall_ms_sum": 0.0,
+      "wall_ms_median": 0.0,
+      "wall_ms_max": 0.0,
+      "cpu_ms_sum": 0.0,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "thumbnail_hash": {
+      "count": 16,
+      "wall_ms_sum": 503.8,
+      "wall_ms_median": 31.5,
+      "wall_ms_max": 49.3,
+      "cpu_ms_sum": 164.7,
+      "cpu_ms_off_main_thread": 164.7
+     },
+     "thumbnail_resolve": {
+      "count": 16,
+      "wall_ms_sum": 559.4,
+      "wall_ms_median": 35.66,
+      "wall_ms_max": 52.8,
+      "cpu_ms_sum": 178.8,
+      "cpu_ms_off_main_thread": 178.8
+     },
+     "thumbnail_read_cache": {
+      "count": 16,
+      "wall_ms_sum": 47.6,
+      "wall_ms_median": 2.31,
+      "wall_ms_max": 11.3,
+      "cpu_ms_sum": 13.1,
+      "cpu_ms_off_main_thread": 13.1
+     },
+     "appearance_prepare": {
+      "count": 2,
+      "wall_ms_sum": 57.9,
+      "wall_ms_median": 28.97,
+      "wall_ms_max": 55.6,
+      "cpu_ms_sum": 11.1,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "theme_helper_rpc": {
+      "count": 3,
+      "wall_ms_sum": 5435.3,
+      "wall_ms_median": 200.16,
+      "wall_ms_max": 5145.4,
+      "cpu_ms_sum": 2.6,
+      "cpu_ms_off_main_thread": 2.6
+     },
+     "overlay_prerender": {
+      "count": 1,
+      "wall_ms_sum": 89.5,
+      "wall_ms_median": 89.52,
+      "wall_ms_max": 89.5,
+      "cpu_ms_sum": 62.8,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "speculative_admission": {
+      "count": 3,
+      "wall_ms_sum": 0.0,
+      "wall_ms_median": 0.0,
+      "wall_ms_max": 0.0,
+      "cpu_ms_sum": 0.0,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "speculative_completion": {
+      "count": 2,
+      "wall_ms_sum": 0.0,
+      "wall_ms_median": 0.0,
+      "wall_ms_max": 0.0,
+      "cpu_ms_sum": 0.0,
+      "cpu_ms_off_main_thread": 0.0
+     }
+    },
+    "presented_gaps": {
+     "count": 41,
+     "median_ms": 125.6,
+     "p95_ms": 254.2
+    }
+   },
+   "background": {
+    "phases": 4,
+    "window_s": 5.623,
+    "spans": {
+     "picker_row_repaint": {
+      "count": 17,
+      "wall_ms_sum": 1053.4,
+      "wall_ms_median": 51.09,
+      "wall_ms_max": 139.5,
+      "cpu_ms_sum": 577.4,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "overlay_draw": {
+      "count": 55,
+      "wall_ms_sum": 1306.3,
+      "wall_ms_median": 3.94,
+      "wall_ms_max": 146.1,
+      "cpu_ms_sum": 741.4,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "render_total": {
+      "count": 55,
+      "wall_ms_sum": 1278.0,
+      "wall_ms_median": 3.33,
+      "wall_ms_max": 145.9,
+      "cpu_ms_sum": 728.2,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "appearance_prepare": {
+      "count": 1,
+      "wall_ms_sum": 10.2,
+      "wall_ms_median": 10.19,
+      "wall_ms_max": 10.2,
+      "cpu_ms_sum": 8.8,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "speculative_completion": {
+      "count": 1,
+      "wall_ms_sum": 0.0,
+      "wall_ms_median": 0.0,
+      "wall_ms_max": 0.0,
+      "cpu_ms_sum": 0.0,
+      "cpu_ms_off_main_thread": 0.0
+     }
+    },
+    "presented_gaps": {
+     "count": 44,
+     "median_ms": 38.4,
+     "p95_ms": 134.2
+    }
+   },
+   "idle": {
+    "phases": 2,
+    "window_s": 30.0,
+    "spans": {
+     "picker_row_repaint": {
+      "count": 1,
+      "wall_ms_sum": 101.7,
+      "wall_ms_median": 101.68,
+      "wall_ms_max": 101.7,
+      "cpu_ms_sum": 44.4,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "overlay_draw": {
+      "count": 1,
+      "wall_ms_sum": 111.5,
+      "wall_ms_median": 111.52,
+      "wall_ms_max": 111.5,
+      "cpu_ms_sum": 47.6,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "render_total": {
+      "count": 1,
+      "wall_ms_sum": 111.3,
+      "wall_ms_median": 111.29,
+      "wall_ms_max": 111.3,
+      "cpu_ms_sum": 47.4,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "appearance_prepare": {
+      "count": 2,
+      "wall_ms_sum": 21.6,
+      "wall_ms_median": 10.79,
+      "wall_ms_max": 11.3,
+      "cpu_ms_sum": 12.1,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "theme_helper_rpc": {
+      "count": 1,
+      "wall_ms_sum": 99.7,
+      "wall_ms_median": 99.75,
+      "wall_ms_max": 99.7,
+      "cpu_ms_sum": 0.8,
+      "cpu_ms_off_main_thread": 0.8
+     },
+     "overlay_prerender": {
+      "count": 1,
+      "wall_ms_sum": 96.8,
+      "wall_ms_median": 96.75,
+      "wall_ms_max": 96.8,
+      "cpu_ms_sum": 63.6,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "speculative_admission": {
+      "count": 1,
+      "wall_ms_sum": 0.0,
+      "wall_ms_median": 0.0,
+      "wall_ms_max": 0.0,
+      "cpu_ms_sum": 0.0,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "speculative_completion": {
+      "count": 2,
+      "wall_ms_sum": 0.0,
+      "wall_ms_median": 0.0,
+      "wall_ms_max": 0.0,
+      "cpu_ms_sum": 0.0,
+      "cpu_ms_off_main_thread": 0.0
+     }
+    },
+    "presented_gaps": {
+     "count": 2,
+     "median_ms": 80.2,
+     "p95_ms": 114.3
+    }
+   },
+   "open": {
+    "phases": 2,
+    "window_s": 15.168,
+    "spans": {
+     "scene_rebuild": {
+      "count": 10,
+      "wall_ms_sum": 742.9,
+      "wall_ms_median": 74.55,
+      "wall_ms_max": 121.0,
+      "cpu_ms_sum": 358.7,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "overlay_draw": {
+      "count": 10,
+      "wall_ms_sum": 801.1,
+      "wall_ms_median": 79.26,
+      "wall_ms_max": 132.3,
+      "cpu_ms_sum": 388.4,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "render_total": {
+      "count": 10,
+      "wall_ms_sum": 796.6,
+      "wall_ms_median": 78.4,
+      "wall_ms_max": 132.2,
+      "cpu_ms_sum": 386.2,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "thumbnail_request": {
+      "count": 14,
+      "wall_ms_sum": 0.0,
+      "wall_ms_median": 0.0,
+      "wall_ms_max": 0.0,
+      "cpu_ms_sum": 0.0,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "thumbnail_hash": {
+      "count": 14,
+      "wall_ms_sum": 367.5,
+      "wall_ms_median": 26.98,
+      "wall_ms_max": 63.2,
+      "cpu_ms_sum": 116.1,
+      "cpu_ms_off_main_thread": 116.1
+     },
+     "thumbnail_resolve": {
+      "count": 14,
+      "wall_ms_sum": 428.1,
+      "wall_ms_median": 31.97,
+      "wall_ms_max": 66.5,
+      "cpu_ms_sum": 132.4,
+      "cpu_ms_off_main_thread": 132.4
+     },
+     "thumbnail_read_cache": {
+      "count": 14,
+      "wall_ms_sum": 51.4,
+      "wall_ms_median": 1.98,
+      "wall_ms_max": 12.1,
+      "cpu_ms_sum": 15.4,
+      "cpu_ms_off_main_thread": 15.4
+     },
+     "appearance_prepare": {
+      "count": 4,
+      "wall_ms_sum": 67.0,
+      "wall_ms_median": 19.94,
+      "wall_ms_max": 22.5,
+      "cpu_ms_sum": 29.0,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "theme_helper_rpc": {
+      "count": 6,
+      "wall_ms_sum": 1050.7,
+      "wall_ms_median": 141.58,
+      "wall_ms_max": 393.6,
+      "cpu_ms_sum": 4.9,
+      "cpu_ms_off_main_thread": 4.9
+     },
+     "speculative_admission": {
+      "count": 2,
+      "wall_ms_sum": 0.0,
+      "wall_ms_median": 0.0,
+      "wall_ms_max": 0.0,
+      "cpu_ms_sum": 0.0,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "speculative_completion": {
+      "count": 2,
+      "wall_ms_sum": 0.0,
+      "wall_ms_median": 0.0,
+      "wall_ms_max": 0.0,
+      "cpu_ms_sum": 0.0,
+      "cpu_ms_off_main_thread": 0.0
+     }
+    },
+    "presented_gaps": {
+     "count": 8,
+     "median_ms": 119.2,
+     "p95_ms": 301.1
+    }
+   }
+  },
+  "speculative": {
+   "admissions_total": 10,
+   "admissions_inside_touch": 0,
+   "admissions_inside_swipe_window": 7,
+   "completions_total": 10,
+   "completions_inside_touch": 4,
+   "completions_inside_swipe_window": 6,
+   "admissions_by_gesture_phase": {
+    "rest": 10,
+    "held": 0,
+    "moving": 0
+   },
+   "completions_by_gesture_phase": {
+    "rest": 10,
+    "held": 0,
+    "moving": 0
+   }
+  }
+ },
+ {
+  "run": "tr-p1-base",
+  "events": 6597,
+  "dropped": 0,
+  "counters_only": null,
+  "groups": {
+   "theme_cold": {
+    "phases": 6,
+    "window_s": 8.45,
+    "spans": {
+     "scene_rebuild": {
+      "count": 61,
+      "wall_ms_sum": 7823.3,
+      "wall_ms_median": 129.49,
+      "wall_ms_max": 197.8,
+      "cpu_ms_sum": 6048.5,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "overlay_draw": {
+      "count": 61,
+      "wall_ms_sum": 8119.1,
+      "wall_ms_median": 133.74,
+      "wall_ms_max": 201.2,
+      "cpu_ms_sum": 6263.8,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "render_total": {
+      "count": 61,
+      "wall_ms_sum": 8077.7,
+      "wall_ms_median": 133.21,
+      "wall_ms_max": 201.0,
+      "cpu_ms_sum": 6245.9,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "thumbnail_hash": {
+      "count": 28,
+      "wall_ms_sum": 893.1,
+      "wall_ms_median": 27.95,
+      "wall_ms_max": 64.1,
+      "cpu_ms_sum": 360.7,
+      "cpu_ms_off_main_thread": 360.7
+     },
+     "thumbnail_resolve": {
+      "count": 28,
+      "wall_ms_sum": 1024.4,
+      "wall_ms_median": 34.3,
+      "wall_ms_max": 71.1,
+      "cpu_ms_sum": 399.2,
+      "cpu_ms_off_main_thread": 399.2
+     },
+     "thumbnail_read_cache": {
+      "count": 28,
+      "wall_ms_sum": 88.9,
+      "wall_ms_median": 1.48,
+      "wall_ms_max": 12.8,
+      "cpu_ms_sum": 36.5,
+      "cpu_ms_off_main_thread": 36.5
+     }
+    },
+    "presented_gaps": {
+     "count": 53,
+     "median_ms": 140.6,
+     "p95_ms": 247.7
+    }
+   },
+   "theme_warm": {
+    "phases": 6,
+    "window_s": 8.445,
+    "spans": {
+     "scene_rebuild": {
+      "count": 59,
+      "wall_ms_sum": 7184.6,
+      "wall_ms_median": 129.62,
+      "wall_ms_max": 178.8,
+      "cpu_ms_sum": 5599.7,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "overlay_draw": {
+      "count": 59,
+      "wall_ms_sum": 7461.7,
+      "wall_ms_median": 133.47,
+      "wall_ms_max": 182.0,
+      "cpu_ms_sum": 5796.9,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "render_total": {
+      "count": 59,
+      "wall_ms_sum": 7419.9,
+      "wall_ms_median": 133.25,
+      "wall_ms_max": 181.8,
+      "cpu_ms_sum": 5782.6,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "thumbnail_hash": {
+      "count": 30,
+      "wall_ms_sum": 900.1,
+      "wall_ms_median": 26.4,
+      "wall_ms_max": 71.0,
+      "cpu_ms_sum": 360.0,
+      "cpu_ms_off_main_thread": 360.0
+     },
+     "thumbnail_resolve": {
+      "count": 30,
+      "wall_ms_sum": 1009.3,
+      "wall_ms_median": 29.84,
+      "wall_ms_max": 75.2,
+      "cpu_ms_sum": 393.7,
+      "cpu_ms_off_main_thread": 393.7
+     },
+     "thumbnail_read_cache": {
+      "count": 30,
+      "wall_ms_sum": 71.2,
+      "wall_ms_median": 1.59,
+      "wall_ms_max": 7.8,
+      "cpu_ms_sum": 31.6,
+      "cpu_ms_off_main_thread": 31.6
+     }
+    },
+    "presented_gaps": {
+     "count": 53,
+     "median_ms": 140.2,
+     "p95_ms": 186.2
+    }
+   },
+   "background": {
+    "phases": 4,
+    "window_s": 5.626,
+    "spans": {
+     "scene_rebuild": {
+      "count": 28,
+      "wall_ms_sum": 2151.9,
+      "wall_ms_median": 72.84,
+      "wall_ms_max": 143.6,
+      "cpu_ms_sum": 1722.2,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "overlay_draw": {
+      "count": 28,
+      "wall_ms_sum": 2284.9,
+      "wall_ms_median": 77.65,
+      "wall_ms_max": 146.8,
+      "cpu_ms_sum": 1815.7,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "render_total": {
+      "count": 28,
+      "wall_ms_sum": 2270.6,
+      "wall_ms_median": 76.87,
+      "wall_ms_max": 146.6,
+      "cpu_ms_sum": 1809.0,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "appearance_prepare": {
+      "count": 1,
+      "wall_ms_sum": 59.2,
+      "wall_ms_median": 59.18,
+      "wall_ms_max": 59.2,
+      "cpu_ms_sum": 9.5,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "theme_helper_rpc": {
+      "count": 1,
+      "wall_ms_sum": 418.3,
+      "wall_ms_median": 418.31,
+      "wall_ms_max": 418.3,
+      "cpu_ms_sum": 0.8,
+      "cpu_ms_off_main_thread": 0.8
+     },
+     "overlay_prerender": {
+      "count": 4,
+      "wall_ms_sum": 314.2,
+      "wall_ms_median": 80.46,
+      "wall_ms_max": 90.2,
+      "cpu_ms_sum": 231.1,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "speculative_admission": {
+      "count": 1,
+      "wall_ms_sum": 0.0,
+      "wall_ms_median": 0.0,
+      "wall_ms_max": 0.0,
+      "cpu_ms_sum": 0.0,
+      "cpu_ms_off_main_thread": 0.0
+     }
+    },
+    "presented_gaps": {
+     "count": 26,
+     "median_ms": 84.0,
+     "p95_ms": 227.7
+    }
+   },
+   "idle": {
+    "phases": 2,
+    "window_s": 30.002,
+    "spans": {}
+   },
+   "open": {
+    "phases": 2,
+    "window_s": 15.169,
+    "spans": {
+     "scene_rebuild": {
+      "count": 11,
+      "wall_ms_sum": 850.8,
+      "wall_ms_median": 74.91,
+      "wall_ms_max": 113.9,
+      "cpu_ms_sum": 363.6,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "overlay_draw": {
+      "count": 11,
+      "wall_ms_sum": 914.0,
+      "wall_ms_median": 82.51,
+      "wall_ms_max": 125.9,
+      "cpu_ms_sum": 398.5,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "render_total": {
+      "count": 11,
+      "wall_ms_sum": 910.8,
+      "wall_ms_median": 82.33,
+      "wall_ms_max": 125.7,
+      "cpu_ms_sum": 396.4,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "thumbnail_hash": {
+      "count": 25,
+      "wall_ms_sum": 691.3,
+      "wall_ms_median": 27.43,
+      "wall_ms_max": 67.2,
+      "cpu_ms_sum": 217.8,
+      "cpu_ms_off_main_thread": 217.8
+     },
+     "thumbnail_resolve": {
+      "count": 25,
+      "wall_ms_sum": 773.0,
+      "wall_ms_median": 30.4,
+      "wall_ms_max": 67.7,
+      "cpu_ms_sum": 242.7,
+      "cpu_ms_off_main_thread": 242.7
+     },
+     "thumbnail_read_cache": {
+      "count": 25,
+      "wall_ms_sum": 69.8,
+      "wall_ms_median": 1.06,
+      "wall_ms_max": 12.6,
+      "cpu_ms_sum": 23.3,
+      "cpu_ms_off_main_thread": 23.3
+     },
+     "appearance_prepare": {
+      "count": 4,
+      "wall_ms_sum": 23.7,
+      "wall_ms_median": 2.42,
+      "wall_ms_max": 18.2,
+      "cpu_ms_sum": 10.2,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "theme_helper_rpc": {
+      "count": 6,
+      "wall_ms_sum": 1199.3,
+      "wall_ms_median": 220.34,
+      "wall_ms_max": 380.8,
+      "cpu_ms_sum": 4.9,
+      "cpu_ms_off_main_thread": 4.9
+     },
+     "speculative_admission": {
+      "count": 2,
+      "wall_ms_sum": 0.0,
+      "wall_ms_median": 0.0,
+      "wall_ms_max": 0.0,
+      "cpu_ms_sum": 0.0,
+      "cpu_ms_off_main_thread": 0.0
+     }
+    },
+    "presented_gaps": {
+     "count": 9,
+     "median_ms": 98.5,
+     "p95_ms": 294.9
+    }
+   }
+  },
+  "speculative": {
+   "admissions_total": 3,
+   "admissions_inside_touch": 1,
+   "admissions_inside_swipe_window": 1,
+   "completions_total": 0,
+   "completions_inside_touch": 0,
+   "completions_inside_swipe_window": 0
+  }
+ },
+ {
+  "run": "tr-p1-cand",
+  "events": 7771,
+  "dropped": 0,
+  "counters_only": false,
+  "groups": {
+   "theme_cold": {
+    "phases": 6,
+    "window_s": 8.433,
+    "spans": {
+     "scene_rebuild": {
+      "count": 19,
+      "wall_ms_sum": 2404.4,
+      "wall_ms_median": 124.38,
+      "wall_ms_max": 186.7,
+      "cpu_ms_sum": 1777.4,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "picker_row_repaint": {
+      "count": 35,
+      "wall_ms_sum": 3211.7,
+      "wall_ms_median": 97.39,
+      "wall_ms_max": 140.6,
+      "cpu_ms_sum": 2592.3,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "overlay_draw": {
+      "count": 61,
+      "wall_ms_sum": 5898.9,
+      "wall_ms_median": 101.89,
+      "wall_ms_max": 190.4,
+      "cpu_ms_sum": 4567.9,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "render_total": {
+      "count": 61,
+      "wall_ms_sum": 5848.2,
+      "wall_ms_median": 101.02,
+      "wall_ms_max": 190.2,
+      "cpu_ms_sum": 4550.3,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "thumbnail_request": {
+      "count": 26,
+      "wall_ms_sum": 0.0,
+      "wall_ms_median": 0.0,
+      "wall_ms_max": 0.0,
+      "cpu_ms_sum": 0.0,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "thumbnail_hash": {
+      "count": 26,
+      "wall_ms_sum": 783.3,
+      "wall_ms_median": 25.62,
+      "wall_ms_max": 60.4,
+      "cpu_ms_sum": 337.1,
+      "cpu_ms_off_main_thread": 337.1
+     },
+     "thumbnail_resolve": {
+      "count": 26,
+      "wall_ms_sum": 897.6,
+      "wall_ms_median": 29.92,
+      "wall_ms_max": 60.8,
+      "cpu_ms_sum": 374.7,
+      "cpu_ms_off_main_thread": 374.7
+     },
+     "thumbnail_read_cache": {
+      "count": 26,
+      "wall_ms_sum": 69.7,
+      "wall_ms_median": 1.01,
+      "wall_ms_max": 9.3,
+      "cpu_ms_sum": 35.3,
+      "cpu_ms_off_main_thread": 35.3
+     },
+     "appearance_prepare": {
+      "count": 5,
+      "wall_ms_sum": 38.1,
+      "wall_ms_median": 9.69,
+      "wall_ms_max": 13.7,
+      "cpu_ms_sum": 27.6,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "theme_helper_rpc": {
+      "count": 5,
+      "wall_ms_sum": 535.2,
+      "wall_ms_median": 109.78,
+      "wall_ms_max": 142.5,
+      "cpu_ms_sum": 4.3,
+      "cpu_ms_off_main_thread": 4.3
+     },
+     "overlay_prerender": {
+      "count": 4,
+      "wall_ms_sum": 320.0,
+      "wall_ms_median": 83.58,
+      "wall_ms_max": 86.9,
+      "cpu_ms_sum": 248.0,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "speculative_admission": {
+      "count": 5,
+      "wall_ms_sum": 0.0,
+      "wall_ms_median": 0.0,
+      "wall_ms_max": 0.0,
+      "cpu_ms_sum": 0.0,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "speculative_completion": {
+      "count": 5,
+      "wall_ms_sum": 0.0,
+      "wall_ms_median": 0.0,
+      "wall_ms_max": 0.0,
+      "cpu_ms_sum": 0.0,
+      "cpu_ms_off_main_thread": 0.0
+     }
+    },
+    "presented_gaps": {
+     "count": 53,
+     "median_ms": 106.3,
+     "p95_ms": 199.4
+    }
+   },
+   "theme_warm": {
+    "phases": 6,
+    "window_s": 8.445,
+    "spans": {
+     "scene_rebuild": {
+      "count": 8,
+      "wall_ms_sum": 1040.2,
+      "wall_ms_median": 133.69,
+      "wall_ms_max": 164.8,
+      "cpu_ms_sum": 782.0,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "picker_row_repaint": {
+      "count": 51,
+      "wall_ms_sum": 4587.0,
+      "wall_ms_median": 92.76,
+      "wall_ms_max": 134.9,
+      "cpu_ms_sum": 3820.2,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "overlay_draw": {
+      "count": 59,
+      "wall_ms_sum": 5860.4,
+      "wall_ms_median": 99.01,
+      "wall_ms_max": 168.6,
+      "cpu_ms_sum": 4779.1,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "render_total": {
+      "count": 59,
+      "wall_ms_sum": 5823.3,
+      "wall_ms_median": 98.62,
+      "wall_ms_max": 168.4,
+      "cpu_ms_sum": 4765.1,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "thumbnail_request": {
+      "count": 10,
+      "wall_ms_sum": 0.0,
+      "wall_ms_median": 0.0,
+      "wall_ms_max": 0.0,
+      "cpu_ms_sum": 0.0,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "thumbnail_hash": {
+      "count": 10,
+      "wall_ms_sum": 259.1,
+      "wall_ms_median": 23.3,
+      "wall_ms_max": 46.7,
+      "cpu_ms_sum": 105.2,
+      "cpu_ms_off_main_thread": 105.2
+     },
+     "thumbnail_resolve": {
+      "count": 10,
+      "wall_ms_sum": 281.2,
+      "wall_ms_median": 26.32,
+      "wall_ms_max": 49.4,
+      "cpu_ms_sum": 112.6,
+      "cpu_ms_off_main_thread": 112.6
+     },
+     "thumbnail_read_cache": {
+      "count": 10,
+      "wall_ms_sum": 11.2,
+      "wall_ms_median": 0.88,
+      "wall_ms_max": 2.7,
+      "cpu_ms_sum": 6.7,
+      "cpu_ms_off_main_thread": 6.7
+     },
+     "appearance_prepare": {
+      "count": 6,
+      "wall_ms_sum": 70.9,
+      "wall_ms_median": 8.1,
+      "wall_ms_max": 27.7,
+      "cpu_ms_sum": 30.1,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "theme_helper_rpc": {
+      "count": 6,
+      "wall_ms_sum": 801.1,
+      "wall_ms_median": 105.73,
+      "wall_ms_max": 272.5,
+      "cpu_ms_sum": 4.9,
+      "cpu_ms_off_main_thread": 4.9
+     },
+     "overlay_prerender": {
+      "count": 3,
+      "wall_ms_sum": 258.9,
+      "wall_ms_median": 86.04,
+      "wall_ms_max": 88.4,
+      "cpu_ms_sum": 183.5,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "speculative_admission": {
+      "count": 6,
+      "wall_ms_sum": 0.0,
+      "wall_ms_median": 0.0,
+      "wall_ms_max": 0.0,
+      "cpu_ms_sum": 0.0,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "speculative_completion": {
+      "count": 5,
+      "wall_ms_sum": 0.0,
+      "wall_ms_median": 0.0,
+      "wall_ms_max": 0.0,
+      "cpu_ms_sum": 0.0,
+      "cpu_ms_off_main_thread": 0.0
+     }
+    },
+    "presented_gaps": {
+     "count": 53,
+     "median_ms": 105.2,
+     "p95_ms": 165.9
+    }
+   },
+   "background": {
+    "phases": 4,
+    "window_s": 5.621,
+    "spans": {
+     "picker_row_repaint": {
+      "count": 19,
+      "wall_ms_sum": 807.1,
+      "wall_ms_median": 40.27,
+      "wall_ms_max": 60.4,
+      "cpu_ms_sum": 619.1,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "overlay_draw": {
+      "count": 61,
+      "wall_ms_sum": 1049.1,
+      "wall_ms_median": 3.86,
+      "wall_ms_max": 66.8,
+      "cpu_ms_sum": 802.9,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "render_total": {
+      "count": 61,
+      "wall_ms_sum": 1016.5,
+      "wall_ms_median": 3.19,
+      "wall_ms_max": 64.1,
+      "cpu_ms_sum": 788.1,
+      "cpu_ms_off_main_thread": 0.0
+     }
+    },
+    "presented_gaps": {
+     "count": 52,
+     "median_ms": 38.3,
+     "p95_ms": 119.3
+    }
+   },
+   "idle": {
+    "phases": 2,
+    "window_s": 30.001,
+    "spans": {
+     "speculative_completion": {
+      "count": 1,
+      "wall_ms_sum": 0.0,
+      "wall_ms_median": 0.0,
+      "wall_ms_max": 0.0,
+      "cpu_ms_sum": 0.0,
+      "cpu_ms_off_main_thread": 0.0
+     }
+    }
+   },
+   "open": {
+    "phases": 2,
+    "window_s": 15.169,
+    "spans": {
+     "scene_rebuild": {
+      "count": 9,
+      "wall_ms_sum": 696.7,
+      "wall_ms_median": 71.5,
+      "wall_ms_max": 119.6,
+      "cpu_ms_sum": 308.8,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "overlay_draw": {
+      "count": 9,
+      "wall_ms_sum": 749.1,
+      "wall_ms_median": 79.63,
+      "wall_ms_max": 131.7,
+      "cpu_ms_sum": 335.4,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "render_total": {
+      "count": 9,
+      "wall_ms_sum": 743.3,
+      "wall_ms_median": 78.45,
+      "wall_ms_max": 131.5,
+      "cpu_ms_sum": 333.2,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "thumbnail_request": {
+      "count": 14,
+      "wall_ms_sum": 0.0,
+      "wall_ms_median": 0.0,
+      "wall_ms_max": 0.0,
+      "cpu_ms_sum": 0.0,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "thumbnail_hash": {
+      "count": 14,
+      "wall_ms_sum": 369.1,
+      "wall_ms_median": 28.23,
+      "wall_ms_max": 62.8,
+      "cpu_ms_sum": 115.6,
+      "cpu_ms_off_main_thread": 115.6
+     },
+     "thumbnail_resolve": {
+      "count": 14,
+      "wall_ms_sum": 415.8,
+      "wall_ms_median": 29.47,
+      "wall_ms_max": 64.1,
+      "cpu_ms_sum": 130.9,
+      "cpu_ms_off_main_thread": 130.9
+     },
+     "thumbnail_read_cache": {
+      "count": 14,
+      "wall_ms_sum": 35.8,
+      "wall_ms_median": 0.36,
+      "wall_ms_max": 10.0,
+      "cpu_ms_sum": 14.3,
+      "cpu_ms_off_main_thread": 14.3
+     },
+     "appearance_prepare": {
+      "count": 4,
+      "wall_ms_sum": 60.1,
+      "wall_ms_median": 18.91,
+      "wall_ms_max": 20.9,
+      "cpu_ms_sum": 28.6,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "theme_helper_rpc": {
+      "count": 6,
+      "wall_ms_sum": 1079.0,
+      "wall_ms_median": 154.27,
+      "wall_ms_max": 399.3,
+      "cpu_ms_sum": 4.8,
+      "cpu_ms_off_main_thread": 4.8
+     },
+     "speculative_admission": {
+      "count": 2,
+      "wall_ms_sum": 0.0,
+      "wall_ms_median": 0.0,
+      "wall_ms_max": 0.0,
+      "cpu_ms_sum": 0.0,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "speculative_completion": {
+      "count": 2,
+      "wall_ms_sum": 0.0,
+      "wall_ms_median": 0.0,
+      "wall_ms_max": 0.0,
+      "cpu_ms_sum": 0.0,
+      "cpu_ms_off_main_thread": 0.0
+     }
+    },
+    "presented_gaps": {
+     "count": 7,
+     "median_ms": 106.6,
+     "p95_ms": 295.8
+    }
+   }
+  },
+  "speculative": {
+   "admissions_total": 13,
+   "admissions_inside_touch": 0,
+   "admissions_inside_swipe_window": 11,
+   "completions_total": 13,
+   "completions_inside_touch": 7,
+   "completions_inside_swipe_window": 10,
+   "admissions_by_gesture_phase": {
+    "rest": 13,
+    "held": 0,
+    "moving": 0
+   },
+   "completions_by_gesture_phase": {
+    "rest": 12,
+    "held": 1,
+    "moving": 0
+   }
+  }
+ },
+ {
+  "run": "tr-p2-cand",
+  "events": 7529,
+  "dropped": 0,
+  "counters_only": false,
+  "groups": {
+   "theme_cold": {
+    "phases": 6,
+    "window_s": 8.462,
+    "spans": {
+     "scene_rebuild": {
+      "count": 20,
+      "wall_ms_sum": 3178.5,
+      "wall_ms_median": 143.04,
+      "wall_ms_max": 286.4,
+      "cpu_ms_sum": 1783.4,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "picker_row_repaint": {
+      "count": 23,
+      "wall_ms_sum": 3683.3,
+      "wall_ms_median": 182.93,
+      "wall_ms_max": 252.3,
+      "cpu_ms_sum": 1736.5,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "overlay_draw": {
+      "count": 43,
+      "wall_ms_sum": 7170.7,
+      "wall_ms_median": 158.51,
+      "wall_ms_max": 293.5,
+      "cpu_ms_sum": 3667.4,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "render_total": {
+      "count": 43,
+      "wall_ms_sum": 7123.2,
+      "wall_ms_median": 158.32,
+      "wall_ms_max": 293.3,
+      "cpu_ms_sum": 3653.7,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "thumbnail_request": {
+      "count": 40,
+      "wall_ms_sum": 0.0,
+      "wall_ms_median": 0.0,
+      "wall_ms_max": 0.0,
+      "cpu_ms_sum": 0.0,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "thumbnail_hash": {
+      "count": 40,
+      "wall_ms_sum": 1437.1,
+      "wall_ms_median": 32.49,
+      "wall_ms_max": 101.5,
+      "cpu_ms_sum": 509.7,
+      "cpu_ms_off_main_thread": 509.7
+     },
+     "thumbnail_resolve": {
+      "count": 40,
+      "wall_ms_sum": 1616.9,
+      "wall_ms_median": 35.46,
+      "wall_ms_max": 111.2,
+      "cpu_ms_sum": 561.3,
+      "cpu_ms_off_main_thread": 561.3
+     },
+     "thumbnail_read_cache": {
+      "count": 40,
+      "wall_ms_sum": 155.2,
+      "wall_ms_median": 2.23,
+      "wall_ms_max": 19.7,
+      "cpu_ms_sum": 49.0,
+      "cpu_ms_off_main_thread": 49.0
+     },
+     "appearance_prepare": {
+      "count": 3,
+      "wall_ms_sum": 44.3,
+      "wall_ms_median": 14.86,
+      "wall_ms_max": 18.3,
+      "cpu_ms_sum": 26.3,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "theme_helper_rpc": {
+      "count": 3,
+      "wall_ms_sum": 5754.8,
+      "wall_ms_median": 233.54,
+      "wall_ms_max": 5428.2,
+      "cpu_ms_sum": 2.6,
+      "cpu_ms_off_main_thread": 2.6
+     },
+     "overlay_prerender": {
+      "count": 1,
+      "wall_ms_sum": 162.0,
+      "wall_ms_median": 161.96,
+      "wall_ms_max": 162.0,
+      "cpu_ms_sum": 64.7,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "speculative_admission": {
+      "count": 3,
+      "wall_ms_sum": 0.0,
+      "wall_ms_median": 0.0,
+      "wall_ms_max": 0.0,
+      "cpu_ms_sum": 0.0,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "speculative_completion": {
+      "count": 2,
+      "wall_ms_sum": 0.0,
+      "wall_ms_median": 0.0,
+      "wall_ms_max": 0.0,
+      "cpu_ms_sum": 0.0,
+      "cpu_ms_off_main_thread": 0.0
+     }
+    },
+    "presented_gaps": {
+     "count": 37,
+     "median_ms": 163.8,
+     "p95_ms": 293.6
+    }
+   },
+   "theme_warm": {
+    "phases": 6,
+    "window_s": 8.432,
+    "spans": {
+     "scene_rebuild": {
+      "count": 16,
+      "wall_ms_sum": 2002.3,
+      "wall_ms_median": 123.81,
+      "wall_ms_max": 176.1,
+      "cpu_ms_sum": 1502.3,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "picker_row_repaint": {
+      "count": 36,
+      "wall_ms_sum": 3158.3,
+      "wall_ms_median": 93.22,
+      "wall_ms_max": 147.7,
+      "cpu_ms_sum": 2588.4,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "overlay_draw": {
+      "count": 60,
+      "wall_ms_sum": 5398.8,
+      "wall_ms_median": 97.47,
+      "wall_ms_max": 180.6,
+      "cpu_ms_sum": 4271.5,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "render_total": {
+      "count": 60,
+      "wall_ms_sum": 5366.7,
+      "wall_ms_median": 96.91,
+      "wall_ms_max": 179.6,
+      "cpu_ms_sum": 4257.0,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "thumbnail_request": {
+      "count": 20,
+      "wall_ms_sum": 0.0,
+      "wall_ms_median": 0.0,
+      "wall_ms_max": 0.0,
+      "cpu_ms_sum": 0.0,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "thumbnail_hash": {
+      "count": 20,
+      "wall_ms_sum": 655.8,
+      "wall_ms_median": 30.14,
+      "wall_ms_max": 58.1,
+      "cpu_ms_sum": 263.6,
+      "cpu_ms_off_main_thread": 263.6
+     },
+     "thumbnail_resolve": {
+      "count": 20,
+      "wall_ms_sum": 690.3,
+      "wall_ms_median": 32.19,
+      "wall_ms_max": 63.4,
+      "cpu_ms_sum": 278.1,
+      "cpu_ms_off_main_thread": 278.1
+     },
+     "thumbnail_read_cache": {
+      "count": 20,
+      "wall_ms_sum": 26.5,
+      "wall_ms_median": 1.12,
+      "wall_ms_max": 4.5,
+      "cpu_ms_sum": 13.1,
+      "cpu_ms_off_main_thread": 13.1
+     },
+     "appearance_prepare": {
+      "count": 5,
+      "wall_ms_sum": 53.6,
+      "wall_ms_median": 9.86,
+      "wall_ms_max": 17.6,
+      "cpu_ms_sum": 35.0,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "theme_helper_rpc": {
+      "count": 5,
+      "wall_ms_sum": 565.4,
+      "wall_ms_median": 117.77,
+      "wall_ms_max": 148.3,
+      "cpu_ms_sum": 4.1,
+      "cpu_ms_off_main_thread": 4.1
+     },
+     "overlay_prerender": {
+      "count": 5,
+      "wall_ms_sum": 384.0,
+      "wall_ms_median": 65.42,
+      "wall_ms_max": 104.9,
+      "cpu_ms_sum": 308.7,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "speculative_admission": {
+      "count": 5,
+      "wall_ms_sum": 0.0,
+      "wall_ms_median": 0.0,
+      "wall_ms_max": 0.0,
+      "cpu_ms_sum": 0.0,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "speculative_completion": {
+      "count": 5,
+      "wall_ms_sum": 0.0,
+      "wall_ms_median": 0.0,
+      "wall_ms_max": 0.0,
+      "cpu_ms_sum": 0.0,
+      "cpu_ms_off_main_thread": 0.0
+     }
+    },
+    "presented_gaps": {
+     "count": 53,
+     "median_ms": 105.3,
+     "p95_ms": 178.0
+    }
+   },
+   "background": {
+    "phases": 4,
+    "window_s": 5.621,
+    "spans": {
+     "picker_row_repaint": {
+      "count": 18,
+      "wall_ms_sum": 723.4,
+      "wall_ms_median": 39.64,
+      "wall_ms_max": 64.0,
+      "cpu_ms_sum": 574.0,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "overlay_draw": {
+      "count": 61,
+      "wall_ms_sum": 955.4,
+      "wall_ms_median": 3.65,
+      "wall_ms_max": 68.1,
+      "cpu_ms_sum": 757.8,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "render_total": {
+      "count": 61,
+      "wall_ms_sum": 926.0,
+      "wall_ms_median": 3.14,
+      "wall_ms_max": 67.1,
+      "cpu_ms_sum": 742.4,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "overlay_prerender": {
+      "count": 4,
+      "wall_ms_sum": 318.8,
+      "wall_ms_median": 79.63,
+      "wall_ms_max": 95.4,
+      "cpu_ms_sum": 246.9,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "speculative_completion": {
+      "count": 1,
+      "wall_ms_sum": 0.0,
+      "wall_ms_median": 0.0,
+      "wall_ms_max": 0.0,
+      "cpu_ms_sum": 0.0,
+      "cpu_ms_off_main_thread": 0.0
+     }
+    },
+    "presented_gaps": {
+     "count": 51,
+     "median_ms": 38.3,
+     "p95_ms": 102.8
+    }
+   },
+   "idle": {
+    "phases": 2,
+    "window_s": 30.0,
+    "spans": {}
+   },
+   "open": {
+    "phases": 2,
+    "window_s": 15.167,
+    "spans": {
+     "scene_rebuild": {
+      "count": 9,
+      "wall_ms_sum": 711.8,
+      "wall_ms_median": 77.77,
+      "wall_ms_max": 120.3,
+      "cpu_ms_sum": 328.3,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "overlay_draw": {
+      "count": 9,
+      "wall_ms_sum": 765.1,
+      "wall_ms_median": 81.95,
+      "wall_ms_max": 131.4,
+      "cpu_ms_sum": 355.0,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "render_total": {
+      "count": 9,
+      "wall_ms_sum": 758.9,
+      "wall_ms_median": 80.94,
+      "wall_ms_max": 130.1,
+      "cpu_ms_sum": 352.9,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "thumbnail_request": {
+      "count": 14,
+      "wall_ms_sum": 0.0,
+      "wall_ms_median": 0.0,
+      "wall_ms_max": 0.0,
+      "cpu_ms_sum": 0.0,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "thumbnail_hash": {
+      "count": 14,
+      "wall_ms_sum": 364.0,
+      "wall_ms_median": 26.94,
+      "wall_ms_max": 60.3,
+      "cpu_ms_sum": 115.3,
+      "cpu_ms_off_main_thread": 115.3
+     },
+     "thumbnail_resolve": {
+      "count": 14,
+      "wall_ms_sum": 417.0,
+      "wall_ms_median": 30.27,
+      "wall_ms_max": 62.8,
+      "cpu_ms_sum": 130.7,
+      "cpu_ms_off_main_thread": 130.7
+     },
+     "thumbnail_read_cache": {
+      "count": 14,
+      "wall_ms_sum": 44.2,
+      "wall_ms_median": 1.89,
+      "wall_ms_max": 12.0,
+      "cpu_ms_sum": 14.4,
+      "cpu_ms_off_main_thread": 14.4
+     },
+     "appearance_prepare": {
+      "count": 4,
+      "wall_ms_sum": 51.1,
+      "wall_ms_median": 15.14,
+      "wall_ms_max": 20.3,
+      "cpu_ms_sum": 23.8,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "theme_helper_rpc": {
+      "count": 6,
+      "wall_ms_sum": 1062.5,
+      "wall_ms_median": 142.75,
+      "wall_ms_max": 403.3,
+      "cpu_ms_sum": 4.9,
+      "cpu_ms_off_main_thread": 4.9
+     },
+     "speculative_admission": {
+      "count": 2,
+      "wall_ms_sum": 0.0,
+      "wall_ms_median": 0.0,
+      "wall_ms_max": 0.0,
+      "cpu_ms_sum": 0.0,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "speculative_completion": {
+      "count": 2,
+      "wall_ms_sum": 0.0,
+      "wall_ms_median": 0.0,
+      "wall_ms_max": 0.0,
+      "cpu_ms_sum": 0.0,
+      "cpu_ms_off_main_thread": 0.0
+     }
+    },
+    "presented_gaps": {
+     "count": 7,
+     "median_ms": 91.8,
+     "p95_ms": 294.5
+    }
+   }
+  },
+  "speculative": {
+   "admissions_total": 10,
+   "admissions_inside_touch": 0,
+   "admissions_inside_swipe_window": 8,
+   "completions_total": 10,
+   "completions_inside_touch": 2,
+   "completions_inside_swipe_window": 8,
+   "admissions_by_gesture_phase": {
+    "rest": 10,
+    "held": 0,
+    "moving": 0
+   },
+   "completions_by_gesture_phase": {
+    "rest": 8,
+    "held": 1,
+    "moving": 1
+   }
+  }
+ },
+ {
+  "run": "tr-p2-base",
+  "events": 6590,
+  "dropped": 0,
+  "counters_only": null,
+  "groups": {
+   "theme_cold": {
+    "phases": 6,
+    "window_s": 8.452,
+    "spans": {
+     "scene_rebuild": {
+      "count": 60,
+      "wall_ms_sum": 7585.8,
+      "wall_ms_median": 130.63,
+      "wall_ms_max": 168.9,
+      "cpu_ms_sum": 5857.9,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "overlay_draw": {
+      "count": 60,
+      "wall_ms_sum": 7871.1,
+      "wall_ms_median": 134.83,
+      "wall_ms_max": 175.1,
+      "cpu_ms_sum": 6069.0,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "render_total": {
+      "count": 60,
+      "wall_ms_sum": 7830.2,
+      "wall_ms_median": 134.11,
+      "wall_ms_max": 175.0,
+      "cpu_ms_sum": 6051.6,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "thumbnail_hash": {
+      "count": 22,
+      "wall_ms_sum": 765.5,
+      "wall_ms_median": 28.44,
+      "wall_ms_max": 65.3,
+      "cpu_ms_sum": 302.6,
+      "cpu_ms_off_main_thread": 302.6
+     },
+     "thumbnail_resolve": {
+      "count": 22,
+      "wall_ms_sum": 858.7,
+      "wall_ms_median": 35.14,
+      "wall_ms_max": 72.1,
+      "cpu_ms_sum": 335.5,
+      "cpu_ms_off_main_thread": 335.5
+     },
+     "thumbnail_read_cache": {
+      "count": 22,
+      "wall_ms_sum": 79.4,
+      "wall_ms_median": 1.18,
+      "wall_ms_max": 12.3,
+      "cpu_ms_sum": 31.5,
+      "cpu_ms_off_main_thread": 31.5
+     }
+    },
+    "presented_gaps": {
+     "count": 54,
+     "median_ms": 140.8,
+     "p95_ms": 290.6
+    }
+   },
+   "theme_warm": {
+    "phases": 6,
+    "window_s": 8.457,
+    "spans": {
+     "scene_rebuild": {
+      "count": 65,
+      "wall_ms_sum": 7876.6,
+      "wall_ms_median": 120.84,
+      "wall_ms_max": 161.5,
+      "cpu_ms_sum": 6404.1,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "overlay_draw": {
+      "count": 65,
+      "wall_ms_sum": 8178.9,
+      "wall_ms_median": 124.93,
+      "wall_ms_max": 166.0,
+      "cpu_ms_sum": 6619.0,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "render_total": {
+      "count": 65,
+      "wall_ms_sum": 8128.2,
+      "wall_ms_median": 124.76,
+      "wall_ms_max": 164.9,
+      "cpu_ms_sum": 6602.7,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "thumbnail_hash": {
+      "count": 4,
+      "wall_ms_sum": 95.5,
+      "wall_ms_median": 22.3,
+      "wall_ms_max": 31.1,
+      "cpu_ms_sum": 37.3,
+      "cpu_ms_off_main_thread": 37.3
+     },
+     "thumbnail_resolve": {
+      "count": 4,
+      "wall_ms_sum": 116.3,
+      "wall_ms_median": 25.96,
+      "wall_ms_max": 39.9,
+      "cpu_ms_sum": 41.9,
+      "cpu_ms_off_main_thread": 41.9
+     },
+     "thumbnail_read_cache": {
+      "count": 4,
+      "wall_ms_sum": 12.0,
+      "wall_ms_median": 1.46,
+      "wall_ms_max": 8.8,
+      "cpu_ms_sum": 4.4,
+      "cpu_ms_off_main_thread": 4.4
+     }
+    },
+    "presented_gaps": {
+     "count": 57,
+     "median_ms": 127.0,
+     "p95_ms": 159.9
+    }
+   },
+   "background": {
+    "phases": 4,
+    "window_s": 5.623,
+    "spans": {
+     "scene_rebuild": {
+      "count": 30,
+      "wall_ms_sum": 1782.3,
+      "wall_ms_median": 58.68,
+      "wall_ms_max": 87.2,
+      "cpu_ms_sum": 1440.7,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "overlay_draw": {
+      "count": 30,
+      "wall_ms_sum": 1904.3,
+      "wall_ms_median": 62.03,
+      "wall_ms_max": 90.6,
+      "cpu_ms_sum": 1538.6,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "render_total": {
+      "count": 30,
+      "wall_ms_sum": 1888.7,
+      "wall_ms_median": 61.84,
+      "wall_ms_max": 90.4,
+      "cpu_ms_sum": 1531.5,
+      "cpu_ms_off_main_thread": 0.0
+     }
+    },
+    "presented_gaps": {
+     "count": 26,
+     "median_ms": 65.6,
+     "p95_ms": 137.9
+    }
+   },
+   "idle": {
+    "phases": 2,
+    "window_s": 30.0,
+    "spans": {
+     "scene_rebuild": {
+      "count": 1,
+      "wall_ms_sum": 57.8,
+      "wall_ms_median": 57.83,
+      "wall_ms_max": 57.8,
+      "cpu_ms_sum": 42.5,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "overlay_draw": {
+      "count": 1,
+      "wall_ms_sum": 61.0,
+      "wall_ms_median": 61.05,
+      "wall_ms_max": 61.0,
+      "cpu_ms_sum": 45.6,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "render_total": {
+      "count": 1,
+      "wall_ms_sum": 60.7,
+      "wall_ms_median": 60.73,
+      "wall_ms_max": 60.7,
+      "cpu_ms_sum": 45.4,
+      "cpu_ms_off_main_thread": 0.0
+     }
+    },
+    "presented_gaps": {
+     "count": 2,
+     "median_ms": 42.1,
+     "p95_ms": 67.7
+    }
+   },
+   "open": {
+    "phases": 2,
+    "window_s": 15.168,
+    "spans": {
+     "scene_rebuild": {
+      "count": 9,
+      "wall_ms_sum": 657.0,
+      "wall_ms_median": 74.66,
+      "wall_ms_max": 112.8,
+      "cpu_ms_sum": 287.3,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "overlay_draw": {
+      "count": 9,
+      "wall_ms_sum": 720.7,
+      "wall_ms_median": 81.91,
+      "wall_ms_max": 123.5,
+      "cpu_ms_sum": 316.2,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "render_total": {
+      "count": 9,
+      "wall_ms_sum": 716.5,
+      "wall_ms_median": 81.75,
+      "wall_ms_max": 121.7,
+      "cpu_ms_sum": 314.3,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "thumbnail_hash": {
+      "count": 14,
+      "wall_ms_sum": 362.1,
+      "wall_ms_median": 26.98,
+      "wall_ms_max": 64.4,
+      "cpu_ms_sum": 115.1,
+      "cpu_ms_off_main_thread": 115.1
+     },
+     "thumbnail_resolve": {
+      "count": 14,
+      "wall_ms_sum": 410.4,
+      "wall_ms_median": 29.89,
+      "wall_ms_max": 64.6,
+      "cpu_ms_sum": 129.8,
+      "cpu_ms_off_main_thread": 129.8
+     },
+     "thumbnail_read_cache": {
+      "count": 14,
+      "wall_ms_sum": 33.2,
+      "wall_ms_median": 0.43,
+      "wall_ms_max": 10.1,
+      "cpu_ms_sum": 13.9,
+      "cpu_ms_off_main_thread": 13.9
+     },
+     "appearance_prepare": {
+      "count": 4,
+      "wall_ms_sum": 24.4,
+      "wall_ms_median": 3.3,
+      "wall_ms_max": 16.3,
+      "cpu_ms_sum": 10.9,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "theme_helper_rpc": {
+      "count": 6,
+      "wall_ms_sum": 987.9,
+      "wall_ms_median": 134.18,
+      "wall_ms_max": 365.2,
+      "cpu_ms_sum": 5.0,
+      "cpu_ms_off_main_thread": 5.0
+     },
+     "speculative_admission": {
+      "count": 2,
+      "wall_ms_sum": 0.0,
+      "wall_ms_median": 0.0,
+      "wall_ms_max": 0.0,
+      "cpu_ms_sum": 0.0,
+      "cpu_ms_off_main_thread": 0.0
+     }
+    },
+    "presented_gaps": {
+     "count": 7,
+     "median_ms": 95.4,
+     "p95_ms": 291.7
+    }
+   }
+  },
+  "speculative": {
+   "admissions_total": 2,
+   "admissions_inside_touch": 0,
+   "admissions_inside_swipe_window": 0,
+   "completions_total": 0,
+   "completions_inside_touch": 0,
+   "completions_inside_swipe_window": 0
+  }
+ },
+ {
+  "run": "tr-p3-base",
+  "events": 6628,
+  "dropped": 0,
+  "counters_only": null,
+  "groups": {
+   "theme_cold": {
+    "phases": 6,
+    "window_s": 8.461,
+    "spans": {
+     "scene_rebuild": {
+      "count": 61,
+      "wall_ms_sum": 7638.6,
+      "wall_ms_median": 123.29,
+      "wall_ms_max": 237.7,
+      "cpu_ms_sum": 5748.7,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "overlay_draw": {
+      "count": 61,
+      "wall_ms_sum": 7942.1,
+      "wall_ms_median": 127.63,
+      "wall_ms_max": 242.1,
+      "cpu_ms_sum": 5962.8,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "render_total": {
+      "count": 61,
+      "wall_ms_sum": 7904.3,
+      "wall_ms_median": 127.44,
+      "wall_ms_max": 241.9,
+      "cpu_ms_sum": 5946.0,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "thumbnail_hash": {
+      "count": 26,
+      "wall_ms_sum": 869.2,
+      "wall_ms_median": 30.81,
+      "wall_ms_max": 71.6,
+      "cpu_ms_sum": 338.6,
+      "cpu_ms_off_main_thread": 338.6
+     },
+     "thumbnail_resolve": {
+      "count": 26,
+      "wall_ms_sum": 974.7,
+      "wall_ms_median": 33.92,
+      "wall_ms_max": 77.8,
+      "cpu_ms_sum": 375.3,
+      "cpu_ms_off_main_thread": 375.3
+     },
+     "thumbnail_read_cache": {
+      "count": 26,
+      "wall_ms_sum": 85.2,
+      "wall_ms_median": 2.2,
+      "wall_ms_max": 12.4,
+      "cpu_ms_sum": 34.9,
+      "cpu_ms_off_main_thread": 34.9
+     }
+    },
+    "presented_gaps": {
+     "count": 55,
+     "median_ms": 136.6,
+     "p95_ms": 196.5
+    }
+   },
+   "theme_warm": {
+    "phases": 6,
+    "window_s": 8.475,
+    "spans": {
+     "scene_rebuild": {
+      "count": 65,
+      "wall_ms_sum": 7780.2,
+      "wall_ms_median": 121.55,
+      "wall_ms_max": 171.4,
+      "cpu_ms_sum": 6230.5,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "overlay_draw": {
+      "count": 65,
+      "wall_ms_sum": 8059.4,
+      "wall_ms_median": 129.08,
+      "wall_ms_max": 176.2,
+      "cpu_ms_sum": 6445.3,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "render_total": {
+      "count": 65,
+      "wall_ms_sum": 8023.6,
+      "wall_ms_median": 128.6,
+      "wall_ms_max": 175.2,
+      "cpu_ms_sum": 6429.9,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "thumbnail_hash": {
+      "count": 10,
+      "wall_ms_sum": 325.5,
+      "wall_ms_median": 31.14,
+      "wall_ms_max": 57.9,
+      "cpu_ms_sum": 112.3,
+      "cpu_ms_off_main_thread": 112.3
+     },
+     "thumbnail_resolve": {
+      "count": 10,
+      "wall_ms_sum": 346.2,
+      "wall_ms_median": 33.77,
+      "wall_ms_max": 62.7,
+      "cpu_ms_sum": 119.6,
+      "cpu_ms_off_main_thread": 119.6
+     },
+     "thumbnail_read_cache": {
+      "count": 10,
+      "wall_ms_sum": 20.0,
+      "wall_ms_median": 1.44,
+      "wall_ms_max": 5.9,
+      "cpu_ms_sum": 6.8,
+      "cpu_ms_off_main_thread": 6.8
+     }
+    },
+    "presented_gaps": {
+     "count": 58,
+     "median_ms": 133.6,
+     "p95_ms": 162.7
+    }
+   },
+   "background": {
+    "phases": 4,
+    "window_s": 5.621,
+    "spans": {
+     "scene_rebuild": {
+      "count": 30,
+      "wall_ms_sum": 1728.3,
+      "wall_ms_median": 55.33,
+      "wall_ms_max": 85.6,
+      "cpu_ms_sum": 1429.7,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "overlay_draw": {
+      "count": 30,
+      "wall_ms_sum": 1867.2,
+      "wall_ms_median": 60.76,
+      "wall_ms_max": 88.7,
+      "cpu_ms_sum": 1527.9,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "render_total": {
+      "count": 30,
+      "wall_ms_sum": 1851.2,
+      "wall_ms_median": 60.42,
+      "wall_ms_max": 88.5,
+      "cpu_ms_sum": 1520.9,
+      "cpu_ms_off_main_thread": 0.0
+     }
+    },
+    "presented_gaps": {
+     "count": 26,
+     "median_ms": 65.8,
+     "p95_ms": 142.8
+    }
+   },
+   "idle": {
+    "phases": 2,
+    "window_s": 30.0,
+    "spans": {}
+   },
+   "open": {
+    "phases": 2,
+    "window_s": 15.168,
+    "spans": {
+     "scene_rebuild": {
+      "count": 9,
+      "wall_ms_sum": 658.7,
+      "wall_ms_median": 74.13,
+      "wall_ms_max": 111.9,
+      "cpu_ms_sum": 292.2,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "overlay_draw": {
+      "count": 9,
+      "wall_ms_sum": 717.1,
+      "wall_ms_median": 78.49,
+      "wall_ms_max": 121.8,
+      "cpu_ms_sum": 322.1,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "render_total": {
+      "count": 9,
+      "wall_ms_sum": 713.8,
+      "wall_ms_median": 78.31,
+      "wall_ms_max": 121.6,
+      "cpu_ms_sum": 320.2,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "thumbnail_hash": {
+      "count": 14,
+      "wall_ms_sum": 357.2,
+      "wall_ms_median": 23.09,
+      "wall_ms_max": 63.8,
+      "cpu_ms_sum": 114.7,
+      "cpu_ms_off_main_thread": 114.7
+     },
+     "thumbnail_resolve": {
+      "count": 14,
+      "wall_ms_sum": 408.2,
+      "wall_ms_median": 28.09,
+      "wall_ms_max": 64.1,
+      "cpu_ms_sum": 129.3,
+      "cpu_ms_off_main_thread": 129.3
+     },
+     "thumbnail_read_cache": {
+      "count": 14,
+      "wall_ms_sum": 27.8,
+      "wall_ms_median": 0.41,
+      "wall_ms_max": 10.1,
+      "cpu_ms_sum": 13.8,
+      "cpu_ms_off_main_thread": 13.8
+     },
+     "appearance_prepare": {
+      "count": 4,
+      "wall_ms_sum": 30.6,
+      "wall_ms_median": 3.97,
+      "wall_ms_max": 20.3,
+      "cpu_ms_sum": 11.2,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "theme_helper_rpc": {
+      "count": 6,
+      "wall_ms_sum": 1023.6,
+      "wall_ms_median": 127.31,
+      "wall_ms_max": 397.9,
+      "cpu_ms_sum": 4.9,
+      "cpu_ms_off_main_thread": 4.9
+     },
+     "speculative_admission": {
+      "count": 2,
+      "wall_ms_sum": 0.0,
+      "wall_ms_median": 0.0,
+      "wall_ms_max": 0.0,
+      "cpu_ms_sum": 0.0,
+      "cpu_ms_off_main_thread": 0.0
+     }
+    },
+    "presented_gaps": {
+     "count": 7,
+     "median_ms": 114.7,
+     "p95_ms": 345.9
+    }
+   }
+  },
+  "speculative": {
+   "admissions_total": 2,
+   "admissions_inside_touch": 0,
+   "admissions_inside_swipe_window": 0,
+   "completions_total": 0,
+   "completions_inside_touch": 0,
+   "completions_inside_swipe_window": 0
+  }
+ },
+ {
+  "run": "tr-p3-cand",
+  "events": 7784,
+  "dropped": 0,
+  "counters_only": false,
+  "groups": {
+   "theme_cold": {
+    "phases": 6,
+    "window_s": 8.444,
+    "spans": {
+     "scene_rebuild": {
+      "count": 19,
+      "wall_ms_sum": 2566.4,
+      "wall_ms_median": 133.0,
+      "wall_ms_max": 184.4,
+      "cpu_ms_sum": 1865.0,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "picker_row_repaint": {
+      "count": 34,
+      "wall_ms_sum": 3073.8,
+      "wall_ms_median": 97.8,
+      "wall_ms_max": 138.8,
+      "cpu_ms_sum": 2442.1,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "overlay_draw": {
+      "count": 60,
+      "wall_ms_sum": 5912.2,
+      "wall_ms_median": 106.79,
+      "wall_ms_max": 188.3,
+      "cpu_ms_sum": 4504.0,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "render_total": {
+      "count": 60,
+      "wall_ms_sum": 5867.5,
+      "wall_ms_median": 105.86,
+      "wall_ms_max": 187.2,
+      "cpu_ms_sum": 4485.7,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "thumbnail_request": {
+      "count": 30,
+      "wall_ms_sum": 0.0,
+      "wall_ms_median": 0.0,
+      "wall_ms_max": 0.0,
+      "cpu_ms_sum": 0.0,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "thumbnail_hash": {
+      "count": 30,
+      "wall_ms_sum": 898.3,
+      "wall_ms_median": 27.2,
+      "wall_ms_max": 60.1,
+      "cpu_ms_sum": 376.3,
+      "cpu_ms_off_main_thread": 376.3
+     },
+     "thumbnail_resolve": {
+      "count": 30,
+      "wall_ms_sum": 1010.7,
+      "wall_ms_median": 30.85,
+      "wall_ms_max": 63.2,
+      "cpu_ms_sum": 416.0,
+      "cpu_ms_off_main_thread": 416.0
+     },
+     "thumbnail_read_cache": {
+      "count": 30,
+      "wall_ms_sum": 86.2,
+      "wall_ms_median": 1.67,
+      "wall_ms_max": 11.0,
+      "cpu_ms_sum": 37.5,
+      "cpu_ms_off_main_thread": 37.5
+     },
+     "appearance_prepare": {
+      "count": 5,
+      "wall_ms_sum": 64.2,
+      "wall_ms_median": 11.11,
+      "wall_ms_max": 20.5,
+      "cpu_ms_sum": 37.4,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "theme_helper_rpc": {
+      "count": 5,
+      "wall_ms_sum": 600.8,
+      "wall_ms_median": 121.31,
+      "wall_ms_max": 152.2,
+      "cpu_ms_sum": 4.3,
+      "cpu_ms_off_main_thread": 4.3
+     },
+     "overlay_prerender": {
+      "count": 1,
+      "wall_ms_sum": 90.4,
+      "wall_ms_median": 90.38,
+      "wall_ms_max": 90.4,
+      "cpu_ms_sum": 65.6,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "speculative_admission": {
+      "count": 5,
+      "wall_ms_sum": 0.0,
+      "wall_ms_median": 0.0,
+      "wall_ms_max": 0.0,
+      "cpu_ms_sum": 0.0,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "speculative_completion": {
+      "count": 5,
+      "wall_ms_sum": 0.0,
+      "wall_ms_median": 0.0,
+      "wall_ms_max": 0.0,
+      "cpu_ms_sum": 0.0,
+      "cpu_ms_off_main_thread": 0.0
+     }
+    },
+    "presented_gaps": {
+     "count": 52,
+     "median_ms": 117.2,
+     "p95_ms": 183.4
+    }
+   },
+   "theme_warm": {
+    "phases": 6,
+    "window_s": 8.454,
+    "spans": {
+     "scene_rebuild": {
+      "count": 17,
+      "wall_ms_sum": 2215.2,
+      "wall_ms_median": 134.66,
+      "wall_ms_max": 166.4,
+      "cpu_ms_sum": 1715.1,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "picker_row_repaint": {
+      "count": 38,
+      "wall_ms_sum": 3257.3,
+      "wall_ms_median": 88.06,
+      "wall_ms_max": 133.4,
+      "cpu_ms_sum": 2771.0,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "overlay_draw": {
+      "count": 55,
+      "wall_ms_sum": 5694.9,
+      "wall_ms_median": 104.65,
+      "wall_ms_max": 171.6,
+      "cpu_ms_sum": 4652.6,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "render_total": {
+      "count": 55,
+      "wall_ms_sum": 5659.5,
+      "wall_ms_median": 104.3,
+      "wall_ms_max": 171.2,
+      "cpu_ms_sum": 4639.5,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "thumbnail_request": {
+      "count": 20,
+      "wall_ms_sum": 0.0,
+      "wall_ms_median": 0.0,
+      "wall_ms_max": 0.0,
+      "cpu_ms_sum": 0.0,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "thumbnail_hash": {
+      "count": 20,
+      "wall_ms_sum": 528.3,
+      "wall_ms_median": 25.33,
+      "wall_ms_max": 44.6,
+      "cpu_ms_sum": 219.4,
+      "cpu_ms_off_main_thread": 219.4
+     },
+     "thumbnail_resolve": {
+      "count": 20,
+      "wall_ms_sum": 567.4,
+      "wall_ms_median": 28.17,
+      "wall_ms_max": 50.0,
+      "cpu_ms_sum": 234.0,
+      "cpu_ms_off_main_thread": 234.0
+     },
+     "thumbnail_read_cache": {
+      "count": 20,
+      "wall_ms_sum": 21.9,
+      "wall_ms_median": 0.62,
+      "wall_ms_max": 4.2,
+      "cpu_ms_sum": 13.1,
+      "cpu_ms_off_main_thread": 13.1
+     },
+     "appearance_prepare": {
+      "count": 6,
+      "wall_ms_sum": 27.4,
+      "wall_ms_median": 4.37,
+      "wall_ms_max": 8.9,
+      "cpu_ms_sum": 21.8,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "theme_helper_rpc": {
+      "count": 6,
+      "wall_ms_sum": 683.9,
+      "wall_ms_median": 97.23,
+      "wall_ms_max": 188.2,
+      "cpu_ms_sum": 5.1,
+      "cpu_ms_off_main_thread": 5.1
+     },
+     "overlay_prerender": {
+      "count": 4,
+      "wall_ms_sum": 353.0,
+      "wall_ms_median": 87.59,
+      "wall_ms_max": 91.1,
+      "cpu_ms_sum": 251.0,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "speculative_admission": {
+      "count": 6,
+      "wall_ms_sum": 0.0,
+      "wall_ms_median": 0.0,
+      "wall_ms_max": 0.0,
+      "cpu_ms_sum": 0.0,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "speculative_completion": {
+      "count": 6,
+      "wall_ms_sum": 0.0,
+      "wall_ms_median": 0.0,
+      "wall_ms_max": 0.0,
+      "cpu_ms_sum": 0.0,
+      "cpu_ms_off_main_thread": 0.0
+     }
+    },
+    "presented_gaps": {
+     "count": 49,
+     "median_ms": 122.6,
+     "p95_ms": 164.9
+    }
+   },
+   "background": {
+    "phases": 4,
+    "window_s": 5.618,
+    "spans": {
+     "picker_row_repaint": {
+      "count": 19,
+      "wall_ms_sum": 793.0,
+      "wall_ms_median": 38.08,
+      "wall_ms_max": 63.0,
+      "cpu_ms_sum": 623.1,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "overlay_draw": {
+      "count": 60,
+      "wall_ms_sum": 1025.1,
+      "wall_ms_median": 3.68,
+      "wall_ms_max": 71.2,
+      "cpu_ms_sum": 806.5,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "render_total": {
+      "count": 60,
+      "wall_ms_sum": 998.1,
+      "wall_ms_median": 3.23,
+      "wall_ms_max": 69.3,
+      "cpu_ms_sum": 791.7,
+      "cpu_ms_off_main_thread": 0.0
+     }
+    },
+    "presented_gaps": {
+     "count": 51,
+     "median_ms": 38.3,
+     "p95_ms": 115.0
+    }
+   },
+   "idle": {
+    "phases": 2,
+    "window_s": 30.0,
+    "spans": {}
+   },
+   "open": {
+    "phases": 2,
+    "window_s": 15.169,
+    "spans": {
+     "scene_rebuild": {
+      "count": 9,
+      "wall_ms_sum": 739.6,
+      "wall_ms_median": 77.39,
+      "wall_ms_max": 127.3,
+      "cpu_ms_sum": 317.1,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "overlay_draw": {
+      "count": 9,
+      "wall_ms_sum": 787.0,
+      "wall_ms_median": 84.11,
+      "wall_ms_max": 135.0,
+      "cpu_ms_sum": 343.6,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "render_total": {
+      "count": 9,
+      "wall_ms_sum": 785.1,
+      "wall_ms_median": 83.97,
+      "wall_ms_max": 134.9,
+      "cpu_ms_sum": 341.9,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "thumbnail_request": {
+      "count": 14,
+      "wall_ms_sum": 0.0,
+      "wall_ms_median": 0.0,
+      "wall_ms_max": 0.0,
+      "cpu_ms_sum": 0.0,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "thumbnail_hash": {
+      "count": 14,
+      "wall_ms_sum": 373.6,
+      "wall_ms_median": 28.09,
+      "wall_ms_max": 63.9,
+      "cpu_ms_sum": 115.8,
+      "cpu_ms_off_main_thread": 115.8
+     },
+     "thumbnail_resolve": {
+      "count": 14,
+      "wall_ms_sum": 428.3,
+      "wall_ms_median": 32.24,
+      "wall_ms_max": 64.2,
+      "cpu_ms_sum": 131.2,
+      "cpu_ms_off_main_thread": 131.2
+     },
+     "thumbnail_read_cache": {
+      "count": 14,
+      "wall_ms_sum": 44.6,
+      "wall_ms_median": 2.18,
+      "wall_ms_max": 11.1,
+      "cpu_ms_sum": 14.5,
+      "cpu_ms_off_main_thread": 14.5
+     },
+     "appearance_prepare": {
+      "count": 4,
+      "wall_ms_sum": 62.7,
+      "wall_ms_median": 16.69,
+      "wall_ms_max": 24.6,
+      "cpu_ms_sum": 24.7,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "theme_helper_rpc": {
+      "count": 6,
+      "wall_ms_sum": 1108.7,
+      "wall_ms_median": 154.68,
+      "wall_ms_max": 412.8,
+      "cpu_ms_sum": 4.9,
+      "cpu_ms_off_main_thread": 4.9
+     },
+     "speculative_admission": {
+      "count": 2,
+      "wall_ms_sum": 0.0,
+      "wall_ms_median": 0.0,
+      "wall_ms_max": 0.0,
+      "cpu_ms_sum": 0.0,
+      "cpu_ms_off_main_thread": 0.0
+     },
+     "speculative_completion": {
+      "count": 2,
+      "wall_ms_sum": 0.0,
+      "wall_ms_median": 0.0,
+      "wall_ms_max": 0.0,
+      "cpu_ms_sum": 0.0,
+      "cpu_ms_off_main_thread": 0.0
+     }
+    },
+    "presented_gaps": {
+     "count": 7,
+     "median_ms": 110.6,
+     "p95_ms": 362.0
+    }
+   }
+  },
+  "speculative": {
+   "admissions_total": 13,
+   "admissions_inside_touch": 0,
+   "admissions_inside_swipe_window": 11,
+   "completions_total": 13,
+   "completions_inside_touch": 7,
+   "completions_inside_swipe_window": 11,
+   "admissions_by_gesture_phase": {
+    "rest": 13,
+    "held": 0,
+    "moving": 0
+   },
+   "completions_by_gesture_phase": {
+    "rest": 13,
+    "held": 0,
+    "moving": 0
+   }
+  }
+ }
+]
