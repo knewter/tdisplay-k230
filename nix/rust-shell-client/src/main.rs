@@ -40,7 +40,8 @@ use k230_shell_rust::{
     theme_carousel::{Carousel, CarouselOutcome, BACKGROUND_GEOMETRY, THEME_GEOMETRY},
     theme_catalog::{ThemeReply, ThemeRequest, ThemeResponse, ThemeWorker},
     theme_ui::{
-        ThemeIntent, ThemePage, ThemeView, BACKGROUND_CAROUSEL_TOP, THEME_CAROUSEL_TOP,
+        default_theme_name, ThemeIntent, ThemePage, ThemeView, BACKGROUND_CAROUSEL_TOP,
+        THEME_CAROUSEL_TOP,
     },
     video_status::{self, VideoStatus},
     video_visibility,
@@ -6257,7 +6258,11 @@ fn serve() -> Result<(), String> {
         wifi_origin_scroll: 0.0,
         wifi_dragged: false,
         themes,
-        theme_view: ThemeView::default(),
+        theme_view: ThemeView {
+            default_theme_name: std::env::var_os("K230_THEME_DEFAULT_GENERATION")
+                .and_then(|generation| default_theme_name(std::path::Path::new(&generation))),
+            ..ThemeView::default()
+        },
         theme_carousel: Carousel::new(THEME_GEOMETRY),
         background_carousel: Carousel::new(BACKGROUND_GEOMETRY),
         panel_start: None,

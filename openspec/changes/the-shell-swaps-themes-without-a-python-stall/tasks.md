@@ -1501,3 +1501,26 @@ do not infer it from the normal reboot or unchanged appearance. The evidence
 inventory and source comparison are recorded in
 `docs/evidence/theme-picker/closeout-2026-10-01/README.md`. Tasks 14.4 (real
 finger), 10.7 (picker panel/tap timing), and wider 13/15 gates remain separate.
+
+## 19. Load backgrounds on a board with no durable theme choice
+
+The 2026-10-12 board session found the Backgrounds row stuck on "Loading
+backgrounds" whenever `k230-theme list` reports `active: null`, the normal
+state of a board that has never applied a theme (`docs/evidence/theme-picker/board-session-2026-10-12/README.md`).
+The chooser only requested detail for a reported active theme, so no
+request was ever sent.
+
+- [x] 19.1 With no durable choice, centre the chooser on the packaged default
+  theme (the built-in entry named by `K230_THEME_DEFAULT_GENERATION`'s
+  `report.json` source; the first slice when it is unknown) and load its
+  backgrounds without marking it "Current theme". Tapping it applies it
+  durably. Proof: `cargo test --offline --manifest-path nix/rust-shell-client/Cargo.toml --lib theme_ui`.
+  **Done 2026-10-12 (host only):** 33 tests pass, including five new
+  regressions: default centred and its backgrounds loaded, unknown default
+  falls back to the first slice, a user theme sharing the name is not used,
+  a tap applies durably, and the report parser. The full suite passes
+  except the existing `drawer_568x1232_matches_the_committed_evidence_exactly`.
+- [ ] 19.2 On the board with no durable pointer, open Settings → Themes and
+  capture the picker natively after it settles. The Backgrounds row must show
+  the default theme's backgrounds, and `k230-theme list` must still report
+  `active: null`.

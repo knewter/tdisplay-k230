@@ -13,7 +13,7 @@
 
 use crate::background_decode::{BackgroundCache, FitMode};
 use crate::theme_catalog::{
-    BackgroundKind, ThemeList, ThemePreview, ThemeReply, ThemeRequest, ThemeResponse,
+    BackgroundKind, ThemeList, ThemeOrigin, ThemePreview, ThemeReply, ThemeRequest, ThemeResponse,
 };
 use std::{
     collections::{HashMap, VecDeque},
@@ -137,6 +137,11 @@ pub struct Desired {
 pub struct ThemeView {
     pub page: ThemePage,
     pub list: Option<ThemeList>,
+    /// Name of the packaged default theme (`catppuccin` today), read from
+    /// `K230_THEME_DEFAULT_GENERATION`'s own `report.json`. A board with no
+    /// durable theme choice yet shows this theme, so the chooser loads its
+    /// backgrounds instead of waiting for an active theme that does not exist.
+    pub default_theme_name: Option<String>,
     /// The *active* theme's own detail (palette/backgrounds) -- what the
     /// background carousel below the theme carousel is drawn from. Kept
     /// stable while a candidate is merely being applied (optimistically
@@ -231,11 +236,25 @@ pub struct ThemeView {
 /// look at a theme is very likely already warmed by the time they tap it.
 const PREPARE_AHEAD_DEBOUNCE_MS: u32 = 220;
 
+/// The packaged default theme's name: the last segment of its generation
+/// report's `source` (`omacom/omarchy@<rev>/themes/catppuccin`). `None` when
+/// the report is missing, oversized or not of that shape.
+pub fn default_theme_name(generation: &std::path::Path) -> Option<String> {
+    let bytes = std::fs::read(generation.join("report.json")).ok()?;
+    if bytes.len() > 1 << 20 {
+        return None;
+    }
+    let report: serde_json::Value = serde_json::from_slice(&bytes).ok()?;
+    let (_, name) = report.get("source")?.as_str()?.rsplit_once("/themes/")?;
+    (!name.is_empty() && !name.contains('/')).then(|| name.to_owned())
+}
+
 impl Default for ThemeView {
     fn default() -> Self {
         Self {
             page: ThemePage::Controls,
             list: None,
+            default_theme_name: None,
             preview: None,
             pending: None,
             pending_id: None,
@@ -390,11 +409,26 @@ impl ThemeView {
             Ok(ThemeResponse::List(list)) => {
                 // Center the theme carousel on the currently active theme,
                 // like Quattro's own picker opening on `selectedImage`.
-                let active_index = list
-                    .themes
-                    .iter()
-                    .position(|entry| Some(entry.id.as_str()) == list.active.id.as_deref())
-                    .unwrap_or(0);
+                // With no durable choice yet, the shell shows the packaged
+                // default theme: centre on it and load its backgrounds as
+                // if it were active (the first slice when it is unknown).
+                // It is not marked "Current theme", and tapping it applies
+                // it durably.
+                let shown_index = match list.active.id.as_deref() {
+                    Some(active_id) => list.themes.iter().position(|entry| entry.id == active_id),
+                    None => Some(
+                        self.default_theme_name
+                            .as_deref()
+                            .and_then(|name| {
+                                list.themes.iter().position(|entry| {
+                                    entry.origin == ThemeOrigin::Builtin && entry.name == name
+                                })
+                            })
+                            .unwrap_or(0),
+                    )
+                    .filter(|&index| index < list.themes.len()),
+                };
+                let active_index = shown_index.unwrap_or(0);
                 self.theme_position = active_index as f64;
                 // Queue the active theme's immediate neighbours for an
                 // unconditional warm-up (see `pending_neighbor_warms`'s own
@@ -412,9 +446,14 @@ impl ThemeView {
                 // Load the active theme's own detail (backgrounds, for the
                 // background carousel) right away, exactly like a re-tap
                 // of it would -- see `Desired::already_active`'s own doc.
-                if let Some(active_id) = list.active.id.clone() {
+                let shown_id = list
+                    .active
+                    .id
+                    .clone()
+                    .or_else(|| shown_index.map(|index| list.themes[index].id.clone()));
+                if let Some(shown_id) = shown_id {
                     self.desired = Some(Desired {
-                        theme_id: active_id,
+                        theme_id: shown_id,
                         background_id: None,
                         generation: None,
                         already_active: true,
@@ -1462,6 +1501,93 @@ mod tests {
             result: Err("irrelevant".into()),
         };
         assert!(view.prepare_ahead_reply(&reply));
+    }
+
+    fn accept_list(view: &mut ThemeView, list: ThemeList) {
+        view.submitted(ThemeRequest::List, 1);
+        assert!(view.accept(ThemeReply {
+            id: 1,
+            request: ThemeRequest::List,
+            result: Ok(ThemeResponse::List(list)),
+        }));
+    }
+
+    #[test]
+    fn without_a_durable_theme_the_chooser_loads_the_packaged_defaults_backgrounds() {
+        let mut list = theme_list_of(3, None);
+        list.themes[2].name = "catppuccin".into();
+        let default_id = list.themes[2].id.clone();
+        let mut view = ThemeView {
+            page: ThemePage::List,
+            default_theme_name: Some("catppuccin".into()),
+            ..ThemeView::default()
+        };
+        accept_list(&mut view, list);
+
+        assert_eq!(view.theme_position, 2.0);
+        assert_eq!(view.list.as_ref().unwrap().active.id, None, "the default is not claimed as durably active");
+        let request = view.advance().expect("the default theme's detail is requested");
+        assert_eq!(request, ThemeRequest::Preview { theme_id: default_id.clone(), background_id: None });
+        view.submitted(request.clone(), 2);
+        let mut reply = preview();
+        reply.theme.id = default_id;
+        assert!(view.accept(ThemeReply { id: 2, request, result: Ok(ThemeResponse::Preview(Box::new(reply))) }));
+        assert!(view.preview.as_ref().is_some_and(|preview| !preview.backgrounds.is_empty()));
+        assert_eq!(view.advance(), None);
+    }
+
+    #[test]
+    fn without_a_durable_theme_or_a_known_default_the_first_slice_loads() {
+        let mut view = ThemeView { page: ThemePage::List, ..ThemeView::default() };
+        let list = theme_list_of(3, None);
+        let first = list.themes[0].id.clone();
+        accept_list(&mut view, list);
+        assert_eq!(view.theme_position, 0.0);
+        assert_eq!(view.advance(), Some(ThemeRequest::Preview { theme_id: first, background_id: None }));
+    }
+
+    #[test]
+    fn a_user_theme_sharing_the_defaults_name_is_not_taken_for_it() {
+        let mut list = theme_list_of(3, None);
+        list.themes[1].name = "catppuccin".into();
+        list.themes[1].origin = ThemeOrigin::User;
+        let mut view = ThemeView {
+            page: ThemePage::List,
+            default_theme_name: Some("catppuccin".into()),
+            ..ThemeView::default()
+        };
+        accept_list(&mut view, list);
+        assert_eq!(view.theme_position, 0.0);
+    }
+
+    #[test]
+    fn tapping_the_shown_default_applies_it_durably() {
+        let mut list = theme_list_of(3, None);
+        list.themes[0].name = "catppuccin".into();
+        let mut view = ThemeView {
+            page: ThemePage::List,
+            default_theme_name: Some("catppuccin".into()),
+            ..ThemeView::default()
+        };
+        accept_list(&mut view, list);
+        view.tap_theme(0);
+        assert!(view.desired.as_ref().is_some_and(|desired| !desired.already_active));
+    }
+
+    #[test]
+    fn the_default_theme_name_comes_from_its_generation_report() {
+        let dir = std::env::temp_dir().join(format!("k230-default-theme-{}", std::process::id()));
+        std::fs::create_dir_all(&dir).unwrap();
+        std::fs::write(
+            dir.join("report.json"),
+            br#"{"source": "omacom/omarchy@28ceaae70ebac3a0edcc21f2faa77a90dc6d404c/themes/catppuccin"}"#,
+        )
+        .unwrap();
+        assert_eq!(default_theme_name(&dir).as_deref(), Some("catppuccin"));
+        std::fs::write(dir.join("report.json"), br#"{"source": "elsewhere"}"#).unwrap();
+        assert_eq!(default_theme_name(&dir), None);
+        std::fs::remove_dir_all(&dir).unwrap();
+        assert_eq!(default_theme_name(&dir), None);
     }
 
     #[test]
