@@ -1,3 +1,7 @@
+## Status
+
+Withdrawn by the operator, 2026-10-12 (after being offered this change as the next to land): "can we just close it or at least dont give me a before this is all fine i dont want to spend time on it". None of the measurements below was performed for this change, and none is claimed. The tasks stay unticked. No requirement from this change enters `openspec/specs/`; it was archived with `--skip-specs`. The closest existing board figures are the parent's warm apply trials in `docs/evidence/theme-picker/board-session-2026-10-12b/README.md` (tap-up to shown frame 27.5-42.2 ms, injected taps). They were not produced by `tools/analyze-theme-swap-jank.py` and do not stand in for tasks 1.1-2.2.
+
 ## Why
 
 `the-shell-swaps-themes-without-a-python-stall` built the persistent theme
