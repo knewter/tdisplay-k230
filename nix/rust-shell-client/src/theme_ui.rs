@@ -398,6 +398,11 @@ impl ThemeView {
         match reply.result {
             Err(error) => {
                 if matches_desired {
+                    if let ThemeRequest::Activate { theme_id, background_id: None, .. } = &reply.request {
+                        // The generation we activated against may be stale;
+                        // force the next tap through a fresh Preview.
+                        self.known_generations.remove(theme_id);
+                    }
                     self.error = Some(error);
                     self.desired = None;
                 }
@@ -552,10 +557,21 @@ impl ThemeView {
         let list = self.list.as_ref()?;
         let theme = list.themes.get(index)?;
         let already_active = list.active.id.as_deref() == Some(theme.id.as_str());
+        // Browse-time warm-ups already learned this theme's generation
+        // (`known_generations`) and left it prepared in both receivers. The
+        // `Preview` step of a tap exists only to learn that generation, and
+        // re-running it costs a second helper prepare (255-288 ms, board
+        // evidence 2026-10-12) before the optimistic frame; go straight to
+        // `Activate`. The helper re-derives the generation and rejects the
+        // request ("theme changed since preview") if the cached value is
+        // stale, in which case `accept` evicts it and the next tap previews.
+        let known = (!already_active)
+            .then(|| self.known_generations.get(&theme.id).cloned())
+            .flatten();
         self.desired = Some(Desired {
             theme_id: theme.id.clone(),
             background_id: None,
-            generation: None,
+            generation: known,
             already_active,
         });
         self.error = None;
@@ -968,6 +984,93 @@ mod tests {
         // The original theme must now activate again rather than being treated as current.
         view.tap_theme(0).unwrap();
         assert!(!view.desired.as_ref().unwrap().already_active);
+    }
+
+    #[test]
+    fn tap_theme_on_a_warmed_slice_skips_the_preview_and_activates_directly() {
+        // Task 6.6 (board 2026-10-12): a tap on a theme the browse-time warm
+        // already prepared used to send a second `Preview` (255-288 ms, a
+        // second `appearance-prepare-accepted`) before the `Activate`.
+        let mut view = ThemeView::default();
+        load_list(&mut view, 3, Some(0));
+        let settle = view.advance().expect("active theme detail loads itself");
+        view.submitted(settle.clone(), 50);
+        assert!(view.accept(ThemeReply {
+            id: 50,
+            request: settle,
+            result: Ok(ThemeResponse::Preview(Box::new(preview()))),
+        }));
+        let target_id = view.list.as_ref().unwrap().themes[1].id.clone();
+        view.record_known_generation(&target_id, &id('e'));
+
+        let request = view.tap_theme(1).expect("index 1 exists");
+        assert_eq!(
+            request,
+            ThemeRequest::Activate {
+                theme_id: target_id.clone(),
+                expected_generation: id('e'),
+                background_id: None,
+            },
+            "a warmed theme goes straight to Activate"
+        );
+        view.submitted(request.clone(), 2);
+        assert_eq!(view.applying_theme_index(), Some(1));
+
+        let mut activated = preview();
+        activated.theme.id = target_id.clone();
+        activated.generation = id('e');
+        activated.activated = true;
+        assert!(view.accept(ThemeReply {
+            id: 2,
+            request,
+            result: Ok(ThemeResponse::Preview(Box::new(activated))),
+        }));
+        assert_eq!(view.message.as_deref(), Some("Theme applied"));
+        assert_eq!(view.advance(), None);
+        assert_eq!(view.list.as_ref().unwrap().active.id.as_deref(), Some(target_id.as_str()));
+    }
+
+    #[test]
+    fn a_rejected_direct_activate_evicts_the_known_generation_so_the_next_tap_previews() {
+        let mut view = ThemeView::default();
+        load_list(&mut view, 3, Some(0));
+        let settle = view.advance().expect("active theme detail loads itself");
+        view.submitted(settle.clone(), 50);
+        assert!(view.accept(ThemeReply {
+            id: 50,
+            request: settle,
+            result: Ok(ThemeResponse::Preview(Box::new(preview()))),
+        }));
+        let target_id = view.list.as_ref().unwrap().themes[1].id.clone();
+        view.record_known_generation(&target_id, &id('e'));
+
+        let request = view.tap_theme(1).unwrap();
+        assert!(matches!(request, ThemeRequest::Activate { .. }));
+        view.submitted(request.clone(), 2);
+        assert!(view.accept(ThemeReply {
+            id: 2,
+            request,
+            result: Err("theme changed since preview; preview it again".into()),
+        }));
+        assert!(view.error.is_some());
+        assert!(!view.known_generations.contains_key(&target_id));
+        assert_eq!(
+            view.tap_theme(1),
+            Some(ThemeRequest::Preview { theme_id: target_id, background_id: None }),
+            "the retry learns a fresh generation"
+        );
+    }
+
+    #[test]
+    fn tap_theme_on_the_active_slice_ignores_a_known_generation() {
+        let mut view = ThemeView::default();
+        load_list(&mut view, 3, Some(0));
+        let active_id = view.list.as_ref().unwrap().active.id.clone().unwrap();
+        view.record_known_generation(&active_id, &id('e'));
+        assert_eq!(
+            view.tap_theme(0),
+            Some(ThemeRequest::Preview { theme_id: active_id, background_id: None })
+        );
     }
 
     #[test]

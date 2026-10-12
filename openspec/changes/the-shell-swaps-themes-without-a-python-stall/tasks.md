@@ -428,6 +428,27 @@ for 5.4 is the board run quoted above.
   **passed**: the second theme previewed 231 to 241 ms about 0.3 s after the first
   (380 ms), not a fresh ~4 s (process-cold, not disk-cold). Next measured correction:
   skip or make idempotent the tap-time `preview` for a generation already held.
+  **Host proof for that correction (branch `perf/theme-tap-apply`; the board check remains open):**
+  `ThemeView::tap_theme` now seeds `Desired::generation` from `known_generations`
+  (learned by the browse-time warm) for a non-active theme, so the tap sends
+  `Activate` directly with no `preview` and no second `appearance-prepare-accepted`;
+  a rejected direct `Activate` evicts the cached generation so the retry previews.
+  Separately, `RendererCache::content_generation()` no longer counts chooser
+  changes with a bump-per-change counter (the tap's own press/release toggled
+  `theme_pressed` twice and made the browse-time pre-render read
+  `content-changed` although the view had returned to the identical state); it
+  now folds in a value fingerprint of the compared chooser fields, so a
+  reverted view matches again while a real change still does not. Host tests:
+  `cargo test --offline --lib theme_ui` (36 passed, incl.
+  `tap_theme_on_a_warmed_slice_skips_the_preview_and_activates_directly`,
+  `a_rejected_direct_activate_evicts_the_known_generation_so_the_next_tap_previews`,
+  `tap_theme_on_the_active_slice_ignores_a_known_generation`) and
+  `cargo test --offline --lib render::tests` (incl.
+  `a_pressed_wash_that_came_and_went_leaves_content_generation_unchanged`).
+  No host test shows `prerendered=true` on glass; the board must re-run the
+  10.7/6.6 trial and show no tap-time `preview`, `prerendered=true`, and the
+  new tap-to-shown time. The `content-changed` cause is inferred from code
+  (UNVERIFIED on the board).
 
 Proof for 6.1-6.5: the tests named above, all passing on this host; proof
 for 6.6 is the reserved board, not run here.

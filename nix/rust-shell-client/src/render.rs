@@ -4432,6 +4432,18 @@ pub struct RendererCache {
     /// something this render actually depends on changed underneath it,
     /// and the pre-render must be treated as stale.
     content_generation: u64,
+    /// Value-based fingerprint of the chooser inputs `theme_view_cache_key_
+    /// differs` tracks (page, list, preview, quantised positions, pressed
+    /// rows), folded into `content_generation()`. A counter cannot tell a
+    /// pressed wash that came and went from a real change: the tap's own
+    /// down/up pair bumped it twice and made the browse-time pre-render read
+    /// `content-changed` although the view had returned to the identical
+    /// state (board 2026-10-12, task 6.6). A fingerprint returns to its old
+    /// value when the view does.
+    chooser_key: u64,
+    /// The list/preview/page part of `chooser_key`, recomputed only when
+    /// those fields change so per-frame position updates stay cheap.
+    chooser_static_key: u64,
     /// The Drawer's own live search field state -- set by `ShellClient`
     /// through `set_drawer_search`, read by `paint_drawer` every frame.
     drawer_search: DrawerSearch,
@@ -4465,6 +4477,27 @@ fn theme_view_cache_key_differs(old: &ThemeView, new: &ThemeView) -> bool {
         || (old.background_position - new.background_position).abs() >= 0.25
         || old.theme_pressed != new.theme_pressed
         || old.background_pressed != new.background_pressed
+}
+
+fn stable_hash(text: &str) -> u64 {
+    use std::hash::Hasher;
+    let mut hasher = std::collections::hash_map::DefaultHasher::new();
+    hasher.write(text.as_bytes());
+    hasher.finish()
+}
+
+/// Fingerprint of exactly the fields `theme_view_cache_key_differs` compares;
+/// positions are quantised to the same quarter-step tolerance. Equal views
+/// (by that function's standard) give equal fingerprints.
+fn chooser_fingerprint(static_key: u64, view: &ThemeView) -> u64 {
+    let quantise = |position: f64| (position * 4.0).round() as i64;
+    stable_hash(&format!(
+        "{static_key}|{}|{}|{:?}|{:?}",
+        quantise(view.theme_position),
+        quantise(view.background_position),
+        view.theme_pressed,
+        view.background_pressed
+    ))
 }
 
 /// Some(mask) only when every rendered input other than row geometry is equal.
@@ -4584,7 +4617,7 @@ impl RendererCache {
         true
     }
     pub fn content_generation(&self) -> u64 {
-        self.content_generation
+        self.content_generation.wrapping_mul(0x9E37_79B9_7F4A_7C15) ^ self.chooser_key
     }
 
     /// Paints the launch splash into `canvas`: the cached, name/geometry/
@@ -4615,7 +4648,14 @@ impl RendererCache {
             .as_ref()
             .is_none_or(|old| theme_view_cache_key_differs(old, &view))
         {
-            self.content_generation = self.content_generation.wrapping_add(1);
+            let static_changed = self.chooser.as_ref().is_none_or(|old| {
+                old.page != view.page || old.list != view.list || old.preview != view.preview
+            });
+            if static_changed {
+                self.chooser_static_key =
+                    stable_hash(&format!("{:?}|{:?}|{:?}", view.page, view.list, view.preview));
+            }
+            self.chooser_key = chooser_fingerprint(self.chooser_static_key, &view);
         }
         let rows = self.chooser.as_ref().and_then(|old| picker_row_changes(old, &view));
         self.chooser = Some(view);
@@ -8334,6 +8374,48 @@ mod tests {
             activated: false,
             app_appearance: None,
         }
+    }
+
+    #[test]
+    fn a_pressed_wash_that_came_and_went_leaves_content_generation_unchanged() {
+        // Board 2026-10-12 (task 6.6): the tap's own down/up pair toggled
+        // `theme_pressed` Some then None. A bump-per-change counter read
+        // that as `content-changed` and discarded the browse-time
+        // pre-render even though the chooser had returned to the identical
+        // view. The fingerprint must return to its old value, while a
+        // real difference (pressed held, new preview, moved carousel) must not.
+        let mut renderer = RendererCache::default();
+        let view = ThemeView {
+            page: ThemePage::List,
+            preview: Some(fixture_preview("aaaaaaaaaaaaaaaaaaaaaaaa")),
+            ..ThemeView::default()
+        };
+        renderer.set_theme_view(view.clone());
+        let at_rest = renderer.content_generation();
+
+        let mut pressed = view.clone();
+        pressed.theme_pressed = Some(1);
+        renderer.set_theme_view(pressed);
+        assert_ne!(renderer.content_generation(), at_rest, "a held press is different content");
+
+        let mut moved = view.clone();
+        moved.theme_position = 2.0;
+        renderer.set_theme_view(moved);
+        assert_ne!(renderer.content_generation(), at_rest);
+
+        renderer.set_theme_view(view.clone());
+        assert_eq!(renderer.content_generation(), at_rest, "released press: identical view, identical content");
+
+        let mut different = view.clone();
+        different.preview = Some(fixture_preview("bbbbbbbbbbbbbbbbbbbbbbbb"));
+        renderer.set_theme_view(different);
+        assert_ne!(renderer.content_generation(), at_rest);
+        renderer.set_theme_view(view);
+        assert_eq!(renderer.content_generation(), at_rest);
+
+        // Other inputs still bump irreversibly.
+        renderer.set_services(ServiceView::default());
+        assert_ne!(renderer.content_generation(), at_rest);
     }
 
     #[test]
