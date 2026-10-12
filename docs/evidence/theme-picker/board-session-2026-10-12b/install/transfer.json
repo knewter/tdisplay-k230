@@ -1,0 +1,12 @@
+{
+  "bundle": "/nix/store/1dkw87zfhgfygnmv9qxdrbcqy2xqzxfg-k230-coherent-shell-boot-files",
+  "on_board": "/nix/store/60azv75vjpgcshjwh9kdhz12h4r9i8d0-k230-coherent-shell-boot-files",
+  "delta_paths": 30,
+  "sha256": {
+    "manifest.json": "73d89b20daf7aa876765a870828013b268c02c6e803353736e70301199f38650",
+    "stage.py": "1ea4b198d32f5b57b6f3919e76e092824cd7aeca369bf4abfa237c9771e5cf72",
+    "install.py": "859977a5fa64c2fe966f1007078878704c8d65619426a7ba20a71dab6131d995",
+    "delta.nar.xz": "10f68b548b72ce3acafcf10acf979febe94fb2dc584f9046b572a32993a064f7"
+  },
+  "stage": "/var/lib/k230/coherent-boot/fm8gk6xica4h7ni3fp6wgya3lmfxfzjr-20261012d"
+}

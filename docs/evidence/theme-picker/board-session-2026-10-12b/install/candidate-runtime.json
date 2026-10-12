@@ -1,0 +1,59 @@
+{
+  "utc": "2026-10-12T17:12:19.670094+00:00",
+  "result": "PASS",
+  "evidence_class": "physical-board serial identity/service/output checks; no new finger or pixel observation",
+  "mode": "candidate",
+  "bundle": "/nix/store/1dkw87zfhgfygnmv9qxdrbcqy2xqzxfg-k230-coherent-shell-boot-files",
+  "system": "/nix/store/fm8gk6xica4h7ni3fp6wgya3lmfxfzjr-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "profile": "/nix/store/rav09qp6dwsnbjd2jrbcs595g9ayn3xf-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "kernel": "/nix/store/f3rnipvbc5vqam8kwdmn3wgcl5rbz9yx-linux-riscv64-unknown-linux-gnu-7.3.0-rc5/Image",
+  "boot_id": "dd17a5e9-0f19-417c-927d-d5ad11b14002",
+  "shell_executable": "/nix/store/3m65ag9zlzffdd86ajjfq7si96cj46y1-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0/bin/k230-shell-rust",
+  "sway_executable": "/nix/store/q96sk40q7j5v9f0ygxf2wx3yk7nzixqs-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway",
+  "theme_helper": "/nix/store/b25i4z0yh0r8x76157y7zhj22pcwg8xd-handheld-theme-command-0.1",
+  "services": {
+    "shell": "active",
+    "shell-ui": "active",
+    "theme-helper": "active",
+    "k230-touch-trackpad": "active"
+  },
+  "normal_boot_files": {
+    "Image": "9d94102c65c8e4fd6b8880ef7b19b8bee5fa91c85596384319f0104bd89509cb",
+    "initrd.uimg": "4365953c65e834fa9a9d5027ff5b6f79d99cc61afa732d58b7162a09edd2428f",
+    "k230-tdisplay.dtb": "f59f14842b4bb15c47a55cd4e0296e4972edb3df73ff2b61f970e33497adbdfe",
+    "bootargs.txt": "85efb05183803997892390a3549cb52cba13b3a4f136640decbcb2f40ec27c1c",
+    "fw_jump_add_uboot_head.bin": "9627edbeea9b115d7040beea27cc61b23b6aca61cd502fd7760d7ee179f42c99",
+    "force_dtb": "175342c82dd1b437cdafb6bb01090e7ff73c2769515654c48b02c1e9f73440c6",
+    "lcd_dtb": "175342c82dd1b437cdafb6bb01090e7ff73c2769515654c48b02c1e9f73440c6",
+    "hdmi_dtb": "175342c82dd1b437cdafb6bb01090e7ff73c2769515654c48b02c1e9f73440c6"
+  },
+  "appearance": {
+    "generation": "2135c502caa948984bb20d14",
+    "report_sha256": "0f5c9dbaa60adab4632c66bcae32cfafaf94c51cb6f4d95a8218f46cd11e46f7"
+  },
+  "background_preferences_sha256": null,
+  "appearance_preserved": true,
+  "rollback_roots_valid": true,
+  "sway_outputs": [
+    {
+      "name": "DSI-1",
+      "active": true,
+      "current_mode": {
+        "width": 568,
+        "height": 1232,
+        "refresh": 52190,
+        "picture_aspect_ratio": "none"
+      },
+      "transform": "normal",
+      "scale": 1.0,
+      "rect": {
+        "x": 0,
+        "y": 0,
+        "width": 568,
+        "height": 1232
+      }
+    }
+  ],
+  "operator_real_finger_observed": false,
+  "additional_physical_collection_waived": true
+}

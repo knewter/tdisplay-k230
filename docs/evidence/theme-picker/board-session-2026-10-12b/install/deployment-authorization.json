@@ -1,0 +1,24 @@
+{
+  "system": "/nix/store/fm8gk6xica4h7ni3fp6wgya3lmfxfzjr-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "kernel": "/nix/store/f3rnipvbc5vqam8kwdmn3wgcl5rbz9yx-linux-riscv64-unknown-linux-gnu-7.3.0-rc5/Image",
+  "bundle": "/nix/store/1dkw87zfhgfygnmv9qxdrbcqy2xqzxfg-k230-coherent-shell-boot-files",
+  "evidence_class": "operator-authorized-userspace-update",
+  "shell_executable": "/nix/store/3m65ag9zlzffdd86ajjfq7si96cj46y1-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0/bin/k230-shell-rust",
+  "boot_id": "dd17a5e9-0f19-417c-927d-d5ad11b14002",
+  "deployment_authorized": true,
+  "additional_physical_collection_waived": true,
+  "operator_instruction": "\"what more do you need from me just test stuff that doesn't need me as far as you can then lmk what you need\" (2026-10-12)",
+  "prior_waiver": "continue but you dont have to gather that proof ive already confirmed its fine carry on it's all good",
+  "recorded_utc": "2026-10-12T17:12:20.760489+00:00",
+  "source_revision": "e93b5a23094e08f5473e110053a1099d8bf1d2f1",
+  "accepted_baseline": {
+    "system": "/nix/store/rav09qp6dwsnbjd2jrbcs595g9ayn3xf-nixos-system-nixos-26.11.20260919.20b1ddd",
+    "kernel": "/nix/store/f3rnipvbc5vqam8kwdmn3wgcl5rbz9yx-linux-riscv64-unknown-linux-gnu-7.3.0-rc5/Image",
+    "boot_files": {
+      "Image": "9d94102c65c8e4fd6b8880ef7b19b8bee5fa91c85596384319f0104bd89509cb",
+      "initrd.uimg": "4365953c65e834fa9a9d5027ff5b6f79d99cc61afa732d58b7162a09edd2428f"
+    }
+  },
+  "provenance": "Operator instruction to carry the remaining theme-picker board work as far as possible without them (2026-10-12, perf/theme-row-memory-trace e93b5a23: bounded slice sprite cache with release and trim, per-frame carousel trace, warm tap-apply without a preview and with a reusable pre-render), with the standing waiver of additional install-time physical collection. Same-kernel userspace update; claims no finger observation.",
+  "limits": "No new gesture, cable cycle, pixel, timing, or individual typography/spacing physical observation is inferred."
+}

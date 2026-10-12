@@ -449,6 +449,16 @@ for 5.4 is the board run quoted above.
   10.7/6.6 trial and show no tap-time `preview`, `prerendered=true`, and the
   new tap-to-shown time. The `content-changed` cause is inferred from code
   (UNVERIFIED on the board).
+  **Board re-run 2026-10-12 (b), task stays open** (`docs/evidence/theme-picker/board-session-2026-10-12b/README.md`, "Task 6.6"; candidate
+  `3m65ag9z`, source `e93b5a23`, two cold-process trials, injected taps): no tap-time
+  `preview` and no second `appearance-prepare-accepted` follow a tap. The
+  browse-time pre-render is reused (`prerendered=true`, 4 of 4) after a second
+  correction: the chooser fingerprint was recomputed only when the per-update
+  cache-key check fired, so a settle in sub-quarter-item steps left it on a
+  mid-settle position. Tap-up to shown frame fell from 510-570 ms to 151-190 ms.
+  It is still **not under 150 ms**: `activate_generation` is 140-174 ms, of which
+  `commit_phase` is 72-109 ms and `swap_pointer` 26-33 ms, and the activate round
+  trip is 280-326 ms.
 
 Proof for 6.1-6.5: the tests named above, all passing on this host; proof
 for 6.6 is the reserved board, not run here.
@@ -1117,7 +1127,7 @@ motion; neither is yet a measured explanation of this board report.
 - [x] 11.2 Gate speculative overlay pre-render while either carousel is
   dragging/coasting/settling, with a test proving it resumes at rest. Proof:
   `cargo test --offline --manifest-path nix/rust-shell-client/Cargo.toml --bin k230-shell-rust theme_prerender`.
-- [ ] 11.3 On the reserved board after kernel work, record the exact Rust
+- [x] 11.3 On the reserved board after kernel work, record the exact Rust
   store path and catalog/background counts; compare cold/warm chooser opening,
   swiping across several themes and back without applying, and 15 seconds
   idle. Capture native video plus touch/frame journal timing and Rust/helper
@@ -1144,6 +1154,18 @@ motion; neither is yet a measured explanation of this board report.
   pairs, warm-swipe p95 did not improve, and repaint still dominates. Checking this
   box needs the memory increase explained or removed and the next correction named
   under 13.4 measured.
+  **2026-10-12 (b) board result** (`docs/evidence/theme-picker/board-session-2026-10-12b/README.md`, "Task 11.3"; candidate `3m65ag9z` against the
+  same repaired baseline `8cik`, three recorder-off pairs in alternating order, all
+  gates passed): warm theme commit gap median 140 to 63 ms and p95 173 to 89 ms,
+  background 84 to 38 ms, warm commits 59 to 97, Rust CPU in warm theme swipes 79 to
+  57%, idle unchanged. Memory: end-of-warm-idle RSS median +2.0 MiB (pairs +2.0, -2.3,
+  +11.0; the +11 pair is a low baseline run, the candidate ends at 80-87 MiB in all
+  three), and with the picker closed the candidate is below the baseline. The board's
+  `picker-memory` log attributes the open-picker difference to the 2.0 MiB card cache
+  and 1.5 MiB scratch surfaces, released when the picker closes. The 13.4 corrections
+  are measured: row-local thumbnail damage, the cached slice repaint, and the RSS
+  attribution.
+  Installed as system `fm8gk6xi…` (ordinary boot `34d77814`).
 
 Host proof for 11.1–11.2 (2026-09-26): `--lib theme_picker` passed 1
 regression; `--lib theme_thumbnails` passed 16 tests; the additional narrow
@@ -1499,7 +1521,7 @@ Caller and observer limits remain open; the user still reports jank.
   a reversal, a long hold followed by release, and interruption. Geometry
   is shared by both rows. The board trial (18.3) and finger acceptance (18.4)
   remain open.
-- [ ] 18.3 Build and run a guarded board trial only after the row-render cost
+- [x] 18.3 Build and run a guarded board trial only after the row-render cost
   comparison, retaining a matching baseline. Publish position/velocity plots
   and injected tests; install only a qualified motion candidate.
   **Run 2026-10-12, task stays open.** Guarded trial of motion baseline `si9vd`
@@ -1513,6 +1535,15 @@ Caller and observer limits remain open; the user still reports jank.
   per gesture (`docs/evidence/theme-picker/board-session-2026-10-12/README.md`, section "Task 18.3"). Closing needs a bounded
   per-frame position/velocity record in the Rust trace (not added in this session) and
   the matching curves.
+  **Curves published 2026-10-12 (b)** (`docs/evidence/theme-picker/board-session-2026-10-12b/README.md`, "Task 18.3"): the shell now records one
+  `carousel` trace event per committed frame (position, velocity and motion phase of
+  both rows). Four trace-mode runs of the same five injected programs, two repetitions
+  each, on candidate `3m65ag9z`, with generation and identities unchanged and no events
+  dropped. Board-committed position and velocity curves for all 40 gestures are in
+  `18.3/position-curves.png` and `18.3/velocity-curves.png`: monotonic approach and no
+  overshoot in every gesture, and repeatable final items.
+  The measured candidate was installed through the guarded coherent installer
+  (system `fm8gk6xi…`); baselines `si9vd` and `8cik` stay pinned on the board.
 - [ ] 18.4 Obtain user finger feedback on direct tracking, flick distance, final
   settling and interruption in both rows. A report of improvement alone is
   not acceptance of the curves. Keep this open if only injected tests exist.

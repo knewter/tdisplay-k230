@@ -1,0 +1,498 @@
+{
+  "schema": "k230-theme-picker-profile-comparison-v1",
+  "comparable": true,
+  "mismatches": [],
+  "varied": [
+    "rust_exe",
+    "current_system",
+    "booted_system"
+  ],
+  "phases": [
+    {
+      "name": "settings-baseline",
+      "kind": "baseline",
+      "opening": null,
+      "rust_cpu_percent": {
+        "a": 0.0,
+        "b": 0.0
+      },
+      "rust_rss_last_bytes": {
+        "a": 53538816,
+        "b": 53821440
+      }
+    },
+    {
+      "name": "first-open",
+      "kind": "open",
+      "opening": "process-cold",
+      "rust_cpu_percent": {
+        "a": 4.275,
+        "b": 3.667
+      },
+      "rust_rss_last_bytes": {
+        "a": 69103616,
+        "b": 73482240
+      }
+    },
+    {
+      "name": "theme-swipe-0",
+      "kind": "swipe-theme",
+      "opening": null,
+      "commit_gap_median_ms": {
+        "a": 146.5,
+        "b": 54
+      },
+      "commit_gap_p95_ms": {
+        "a": 174,
+        "b": 97
+      },
+      "commit_gap_max_ms": {
+        "a": 174,
+        "b": 97
+      },
+      "rust_cpu_percent": {
+        "a": 79.833,
+        "b": 49.376
+      },
+      "rust_rss_last_bytes": {
+        "a": 66912256,
+        "b": 76156928
+      }
+    },
+    {
+      "name": "theme-swipe-1",
+      "kind": "swipe-theme",
+      "opening": null,
+      "commit_gap_median_ms": {
+        "a": 147,
+        "b": 57
+      },
+      "commit_gap_p95_ms": {
+        "a": 191,
+        "b": 110
+      },
+      "commit_gap_max_ms": {
+        "a": 191,
+        "b": 110
+      },
+      "rust_cpu_percent": {
+        "a": 77.297,
+        "b": 63.23
+      },
+      "rust_rss_last_bytes": {
+        "a": 70189056,
+        "b": 83759104
+      }
+    },
+    {
+      "name": "theme-swipe-2",
+      "kind": "swipe-theme",
+      "opening": null,
+      "commit_gap_median_ms": {
+        "a": 164.0,
+        "b": 57.0
+      },
+      "commit_gap_p95_ms": {
+        "a": 176,
+        "b": 85
+      },
+      "commit_gap_max_ms": {
+        "a": 176,
+        "b": 85
+      },
+      "rust_cpu_percent": {
+        "a": 81.451,
+        "b": 57.084
+      },
+      "rust_rss_last_bytes": {
+        "a": 77398016,
+        "b": 92540928
+      }
+    },
+    {
+      "name": "theme-swipe-3",
+      "kind": "swipe-theme",
+      "opening": null,
+      "commit_gap_median_ms": {
+        "a": 128.5,
+        "b": 51.5
+      },
+      "commit_gap_p95_ms": {
+        "a": 145,
+        "b": 81
+      },
+      "commit_gap_max_ms": {
+        "a": 145,
+        "b": 81
+      },
+      "rust_cpu_percent": {
+        "a": 82.458,
+        "b": 61.793
+      },
+      "rust_rss_last_bytes": {
+        "a": 77529088,
+        "b": 93220864
+      }
+    },
+    {
+      "name": "theme-swipe-4",
+      "kind": "swipe-theme",
+      "opening": null,
+      "commit_gap_median_ms": {
+        "a": 125.5,
+        "b": 50.0
+      },
+      "commit_gap_p95_ms": {
+        "a": 143,
+        "b": 76
+      },
+      "commit_gap_max_ms": {
+        "a": 143,
+        "b": 76
+      },
+      "rust_cpu_percent": {
+        "a": 79.152,
+        "b": 59.177
+      },
+      "rust_rss_last_bytes": {
+        "a": 77529088,
+        "b": 95973376
+      }
+    },
+    {
+      "name": "theme-swipe-5",
+      "kind": "swipe-theme",
+      "opening": null,
+      "commit_gap_median_ms": {
+        "a": 95.0,
+        "b": 53
+      },
+      "commit_gap_p95_ms": {
+        "a": 147,
+        "b": 73
+      },
+      "commit_gap_max_ms": {
+        "a": 147,
+        "b": 73
+      },
+      "rust_cpu_percent": {
+        "a": 45.58,
+        "b": 50.607
+      },
+      "rust_rss_last_bytes": {
+        "a": 77529088,
+        "b": 97263616
+      }
+    },
+    {
+      "name": "background-swipe-0",
+      "kind": "swipe-background",
+      "opening": null,
+      "commit_gap_median_ms": {
+        "a": 80.5,
+        "b": 38.0
+      },
+      "commit_gap_p95_ms": {
+        "a": 101,
+        "b": 54
+      },
+      "commit_gap_max_ms": {
+        "a": 101,
+        "b": 54
+      },
+      "rust_cpu_percent": {
+        "a": 41.392,
+        "b": 13.143
+      },
+      "rust_rss_last_bytes": {
+        "a": 77529088,
+        "b": 97394688
+      }
+    },
+    {
+      "name": "background-swipe-1",
+      "kind": "swipe-background",
+      "opening": null,
+      "commit_gap_median_ms": {
+        "a": 65.5,
+        "b": 38.0
+      },
+      "commit_gap_p95_ms": {
+        "a": 100,
+        "b": 126
+      },
+      "commit_gap_max_ms": {
+        "a": 100,
+        "b": 126
+      },
+      "rust_cpu_percent": {
+        "a": 29.619,
+        "b": 12.142
+      },
+      "rust_rss_last_bytes": {
+        "a": 77529088,
+        "b": 97394688
+      }
+    },
+    {
+      "name": "background-swipe-2",
+      "kind": "swipe-background",
+      "opening": null,
+      "commit_gap_median_ms": {
+        "a": 71.5,
+        "b": 38
+      },
+      "commit_gap_p95_ms": {
+        "a": 107,
+        "b": 56
+      },
+      "commit_gap_max_ms": {
+        "a": 107,
+        "b": 56
+      },
+      "rust_cpu_percent": {
+        "a": 35.327,
+        "b": 14.992
+      },
+      "rust_rss_last_bytes": {
+        "a": 77529088,
+        "b": 97394688
+      }
+    },
+    {
+      "name": "background-swipe-3",
+      "kind": "swipe-background",
+      "opening": null,
+      "commit_gap_median_ms": {
+        "a": 68.5,
+        "b": 38
+      },
+      "commit_gap_p95_ms": {
+        "a": 122,
+        "b": 146
+      },
+      "commit_gap_max_ms": {
+        "a": 122,
+        "b": 146
+      },
+      "rust_cpu_percent": {
+        "a": 13.322,
+        "b": 11.454
+      },
+      "rust_rss_last_bytes": {
+        "a": 77529088,
+        "b": 97394688
+      }
+    },
+    {
+      "name": "idle-first",
+      "kind": "idle",
+      "opening": null,
+      "idle_commit_count": {
+        "a": 0,
+        "b": 0
+      },
+      "rust_cpu_percent": {
+        "a": 0.486,
+        "b": 0.469
+      },
+      "rust_rss_last_bytes": {
+        "a": 77529088,
+        "b": 97394688
+      }
+    },
+    {
+      "name": "back",
+      "kind": "back",
+      "opening": null,
+      "rust_cpu_percent": {
+        "a": 0.0,
+        "b": 1.943
+      },
+      "rust_rss_last_bytes": {
+        "a": 77529088,
+        "b": 84537344
+      }
+    },
+    {
+      "name": "warm-open",
+      "kind": "open",
+      "opening": "warm",
+      "rust_cpu_percent": {
+        "a": 1.287,
+        "b": 0.43
+      },
+      "rust_rss_last_bytes": {
+        "a": 77529088,
+        "b": 94158848
+      }
+    },
+    {
+      "name": "warm-theme-swipe-0",
+      "kind": "swipe-theme",
+      "opening": null,
+      "commit_gap_median_ms": {
+        "a": 143,
+        "b": 54
+      },
+      "commit_gap_p95_ms": {
+        "a": 158,
+        "b": 92
+      },
+      "commit_gap_max_ms": {
+        "a": 158,
+        "b": 92
+      },
+      "rust_cpu_percent": {
+        "a": 81.913,
+        "b": 61.971
+      },
+      "rust_rss_last_bytes": {
+        "a": 77529088,
+        "b": 96911360
+      }
+    },
+    {
+      "name": "warm-theme-swipe-1",
+      "kind": "swipe-theme",
+      "opening": null,
+      "commit_gap_median_ms": {
+        "a": 148,
+        "b": 52.5
+      },
+      "commit_gap_p95_ms": {
+        "a": 175,
+        "b": 87
+      },
+      "commit_gap_max_ms": {
+        "a": 175,
+        "b": 87
+      },
+      "rust_cpu_percent": {
+        "a": 80.126,
+        "b": 53.045
+      },
+      "rust_rss_last_bytes": {
+        "a": 79233024,
+        "b": 97304576
+      }
+    },
+    {
+      "name": "warm-theme-swipe-2",
+      "kind": "swipe-theme",
+      "opening": null,
+      "commit_gap_median_ms": {
+        "a": 144.0,
+        "b": 111.5
+      },
+      "commit_gap_p95_ms": {
+        "a": 174,
+        "b": 157
+      },
+      "commit_gap_max_ms": {
+        "a": 174,
+        "b": 157
+      },
+      "rust_cpu_percent": {
+        "a": 83.272,
+        "b": 43.748
+      },
+      "rust_rss_last_bytes": {
+        "a": 79626240,
+        "b": 97697792
+      }
+    },
+    {
+      "name": "warm-theme-swipe-3",
+      "kind": "swipe-theme",
+      "opening": null,
+      "commit_gap_median_ms": {
+        "a": 141,
+        "b": 108
+      },
+      "commit_gap_p95_ms": {
+        "a": 164,
+        "b": 158
+      },
+      "commit_gap_max_ms": {
+        "a": 164,
+        "b": 158
+      },
+      "rust_cpu_percent": {
+        "a": 80.016,
+        "b": 31.904
+      },
+      "rust_rss_last_bytes": {
+        "a": 79626240,
+        "b": 98222080
+      }
+    },
+    {
+      "name": "warm-theme-swipe-4",
+      "kind": "swipe-theme",
+      "opening": null,
+      "commit_gap_median_ms": {
+        "a": 132.5,
+        "b": 97
+      },
+      "commit_gap_p95_ms": {
+        "a": 177,
+        "b": 142
+      },
+      "commit_gap_max_ms": {
+        "a": 177,
+        "b": 142
+      },
+      "rust_cpu_percent": {
+        "a": 80.873,
+        "b": 35.593
+      },
+      "rust_rss_last_bytes": {
+        "a": 79626240,
+        "b": 98222080
+      }
+    },
+    {
+      "name": "warm-theme-swipe-5",
+      "kind": "swipe-theme",
+      "opening": null,
+      "commit_gap_median_ms": {
+        "a": 142,
+        "b": 53.0
+      },
+      "commit_gap_p95_ms": {
+        "a": 169,
+        "b": 120
+      },
+      "commit_gap_max_ms": {
+        "a": 169,
+        "b": 120
+      },
+      "rust_cpu_percent": {
+        "a": 81.17,
+        "b": 53.976
+      },
+      "rust_rss_last_bytes": {
+        "a": 79626240,
+        "b": 95838208
+      }
+    },
+    {
+      "name": "idle-warm",
+      "kind": "idle",
+      "opening": null,
+      "idle_commit_count": {
+        "a": 3,
+        "b": 4
+      },
+      "rust_cpu_percent": {
+        "a": 2.079,
+        "b": 0.555
+      },
+      "rust_rss_last_bytes": {
+        "a": 82509824,
+        "b": 98721792
+      }
+    }
+  ]
+}

@@ -1,0 +1,477 @@
+{
+ "runs": {
+  "of-p1-base": {
+   "theme_warm_gap_median_ms": 144,
+   "theme_warm_gap_p95_ms": 173,
+   "theme_cold_gap_median_ms": 144,
+   "theme_cold_gap_p95_ms": 184,
+   "background_gap_median_ms": 88,
+   "background_gap_p95_ms": 134,
+   "theme_warm_commits": 59,
+   "background_commits": 31,
+   "theme_warm_rust_cpu_percent": 80.7,
+   "theme_cold_rust_cpu_percent": 80.91,
+   "background_rust_cpu_percent": 46.02,
+   "idle_rust_cpu_percent": 0.99,
+   "idle_commits": 3,
+   "theme_warm_helper_cgroup_cpu_percent": 0.05,
+   "theme_cold_helper_cgroup_cpu_percent": 0.05,
+   "rss_first_mib": 51.07,
+   "rss_last_mib": 82.48,
+   "rss_growth_mib": 31.4,
+   "rss_peak_mib": 82.48,
+   "helper_rss_last_mib": 24.04,
+   "preview_requests": 6,
+   "overlay_prerender_completions": 5,
+   "overlay_prerender_completions_touch_held": 0,
+   "generation_unchanged": true,
+   "gates_failed": []
+  },
+  "of-p1-cand": {
+   "theme_warm_gap_median_ms": 63.0,
+   "theme_warm_gap_p95_ms": 89,
+   "theme_cold_gap_median_ms": 66,
+   "theme_cold_gap_p95_ms": 104,
+   "background_gap_median_ms": 38.0,
+   "background_gap_p95_ms": 63,
+   "theme_warm_commits": 98,
+   "background_commits": 64,
+   "theme_warm_rust_cpu_percent": 59.57,
+   "theme_cold_rust_cpu_percent": 52.36,
+   "background_rust_cpu_percent": 9.22,
+   "idle_rust_cpu_percent": 0.51,
+   "idle_commits": 0,
+   "theme_warm_helper_cgroup_cpu_percent": 2.83,
+   "theme_cold_helper_cgroup_cpu_percent": 2.55,
+   "rss_first_mib": 51.43,
+   "rss_last_mib": 84.47,
+   "rss_growth_mib": 33.04,
+   "rss_peak_mib": 87.38,
+   "helper_rss_last_mib": 23.39,
+   "preview_requests": 15,
+   "overlay_prerender_completions": 8,
+   "overlay_prerender_completions_touch_held": 0,
+   "generation_unchanged": true,
+   "gates_failed": []
+  },
+  "of-p2-base": {
+   "theme_warm_gap_median_ms": 140,
+   "theme_warm_gap_p95_ms": 182,
+   "theme_cold_gap_median_ms": 144,
+   "theme_cold_gap_p95_ms": 176,
+   "background_gap_median_ms": 84.0,
+   "background_gap_p95_ms": 133,
+   "theme_warm_commits": 57,
+   "background_commits": 30,
+   "theme_warm_rust_cpu_percent": 74.42,
+   "theme_cold_rust_cpu_percent": 81.28,
+   "background_rust_cpu_percent": 46.76,
+   "idle_rust_cpu_percent": 0.48,
+   "idle_commits": 0,
+   "theme_warm_helper_cgroup_cpu_percent": 0.05,
+   "theme_cold_helper_cgroup_cpu_percent": 0.05,
+   "rss_first_mib": 50.94,
+   "rss_last_mib": 82.53,
+   "rss_growth_mib": 31.59,
+   "rss_peak_mib": 82.53,
+   "helper_rss_last_mib": 24.02,
+   "preview_requests": 5,
+   "overlay_prerender_completions": 4,
+   "overlay_prerender_completions_touch_held": 0,
+   "generation_unchanged": true,
+   "gates_failed": []
+  },
+  "of-p2-cand": {
+   "theme_warm_gap_median_ms": 61,
+   "theme_warm_gap_p95_ms": 83,
+   "theme_cold_gap_median_ms": 81.0,
+   "theme_cold_gap_p95_ms": 154,
+   "background_gap_median_ms": 38,
+   "background_gap_p95_ms": 54,
+   "theme_warm_commits": 97,
+   "background_commits": 65,
+   "theme_warm_rust_cpu_percent": 52.68,
+   "theme_cold_rust_cpu_percent": 45.5,
+   "background_rust_cpu_percent": 9.24,
+   "idle_rust_cpu_percent": 0.49,
+   "idle_commits": 0,
+   "theme_warm_helper_cgroup_cpu_percent": 2.13,
+   "theme_cold_helper_cgroup_cpu_percent": 21.27,
+   "rss_first_mib": 51.43,
+   "rss_last_mib": 80.22,
+   "rss_growth_mib": 28.79,
+   "rss_peak_mib": 86.41,
+   "helper_rss_last_mib": 24.21,
+   "preview_requests": 12,
+   "overlay_prerender_completions": 5,
+   "overlay_prerender_completions_touch_held": 0,
+   "generation_unchanged": true,
+   "gates_failed": []
+  },
+  "of-p3-base": {
+   "theme_warm_gap_median_ms": 132.5,
+   "theme_warm_gap_p95_ms": 163,
+   "theme_cold_gap_median_ms": 134,
+   "theme_cold_gap_p95_ms": 179,
+   "background_gap_median_ms": 70.5,
+   "background_gap_p95_ms": 118,
+   "theme_warm_commits": 62,
+   "background_commits": 32,
+   "theme_warm_rust_cpu_percent": 79.04,
+   "theme_cold_rust_cpu_percent": 67.76,
+   "background_rust_cpu_percent": 26.49,
+   "idle_rust_cpu_percent": 0.48,
+   "idle_commits": 0,
+   "theme_warm_helper_cgroup_cpu_percent": 0.05,
+   "theme_cold_helper_cgroup_cpu_percent": 0.05,
+   "rss_first_mib": 51.16,
+   "rss_last_mib": 75.54,
+   "rss_growth_mib": 24.38,
+   "rss_peak_mib": 75.54,
+   "helper_rss_last_mib": 24.03,
+   "preview_requests": 4,
+   "overlay_prerender_completions": 0,
+   "overlay_prerender_completions_touch_held": 0,
+   "generation_unchanged": true,
+   "gates_failed": []
+  },
+  "of-p3-cand": {
+   "theme_warm_gap_median_ms": 67,
+   "theme_warm_gap_p95_ms": 98,
+   "theme_cold_gap_median_ms": 67,
+   "theme_cold_gap_p95_ms": 98,
+   "background_gap_median_ms": 38.0,
+   "background_gap_p95_ms": 64,
+   "theme_warm_commits": 91,
+   "background_commits": 64,
+   "theme_warm_rust_cpu_percent": 56.98,
+   "theme_cold_rust_cpu_percent": 58.41,
+   "background_rust_cpu_percent": 10.7,
+   "idle_rust_cpu_percent": 0.54,
+   "idle_commits": 0,
+   "theme_warm_helper_cgroup_cpu_percent": 4.04,
+   "theme_cold_helper_cgroup_cpu_percent": 2.0,
+   "rss_first_mib": 51.28,
+   "rss_last_mib": 86.55,
+   "rss_growth_mib": 35.27,
+   "rss_peak_mib": 88.77,
+   "helper_rss_last_mib": 23.37,
+   "preview_requests": 16,
+   "overlay_prerender_completions": 11,
+   "overlay_prerender_completions_touch_held": 0,
+   "generation_unchanged": true,
+   "gates_failed": []
+  }
+ },
+ "pairs": {
+  "of-p1": {
+   "theme_warm_gap_median_ms": -81.0,
+   "theme_warm_gap_p95_ms": -84,
+   "theme_cold_gap_median_ms": -78,
+   "theme_cold_gap_p95_ms": -80,
+   "background_gap_median_ms": -50.0,
+   "background_gap_p95_ms": -71,
+   "theme_warm_commits": 39,
+   "background_commits": 33,
+   "theme_warm_rust_cpu_percent": -21.13,
+   "theme_cold_rust_cpu_percent": -28.55,
+   "background_rust_cpu_percent": -36.8,
+   "idle_rust_cpu_percent": -0.48,
+   "idle_commits": -3,
+   "theme_warm_helper_cgroup_cpu_percent": 2.78,
+   "theme_cold_helper_cgroup_cpu_percent": 2.5,
+   "rss_first_mib": 0.36,
+   "rss_last_mib": 1.99,
+   "rss_growth_mib": 1.64,
+   "rss_peak_mib": 4.9,
+   "helper_rss_last_mib": -0.65,
+   "preview_requests": 9,
+   "overlay_prerender_completions": 3,
+   "overlay_prerender_completions_touch_held": 0
+  },
+  "of-p2": {
+   "theme_warm_gap_median_ms": -79,
+   "theme_warm_gap_p95_ms": -99,
+   "theme_cold_gap_median_ms": -63.0,
+   "theme_cold_gap_p95_ms": -22,
+   "background_gap_median_ms": -46.0,
+   "background_gap_p95_ms": -79,
+   "theme_warm_commits": 40,
+   "background_commits": 35,
+   "theme_warm_rust_cpu_percent": -21.74,
+   "theme_cold_rust_cpu_percent": -35.78,
+   "background_rust_cpu_percent": -37.52,
+   "idle_rust_cpu_percent": 0.01,
+   "idle_commits": 0,
+   "theme_warm_helper_cgroup_cpu_percent": 2.08,
+   "theme_cold_helper_cgroup_cpu_percent": 21.22,
+   "rss_first_mib": 0.49,
+   "rss_last_mib": -2.31,
+   "rss_growth_mib": -2.8,
+   "rss_peak_mib": 3.88,
+   "helper_rss_last_mib": 0.19,
+   "preview_requests": 7,
+   "overlay_prerender_completions": 1,
+   "overlay_prerender_completions_touch_held": 0
+  },
+  "of-p3": {
+   "theme_warm_gap_median_ms": -65.5,
+   "theme_warm_gap_p95_ms": -65,
+   "theme_cold_gap_median_ms": -67,
+   "theme_cold_gap_p95_ms": -81,
+   "background_gap_median_ms": -32.5,
+   "background_gap_p95_ms": -54,
+   "theme_warm_commits": 29,
+   "background_commits": 32,
+   "theme_warm_rust_cpu_percent": -22.06,
+   "theme_cold_rust_cpu_percent": -9.35,
+   "background_rust_cpu_percent": -15.79,
+   "idle_rust_cpu_percent": 0.06,
+   "idle_commits": 0,
+   "theme_warm_helper_cgroup_cpu_percent": 3.99,
+   "theme_cold_helper_cgroup_cpu_percent": 1.95,
+   "rss_first_mib": 0.12,
+   "rss_last_mib": 11.01,
+   "rss_growth_mib": 10.89,
+   "rss_peak_mib": 13.23,
+   "helper_rss_last_mib": -0.66,
+   "preview_requests": 12,
+   "overlay_prerender_completions": 11,
+   "overlay_prerender_completions_touch_held": 0
+  }
+ },
+ "median_over_pairs": {
+  "of": {
+   "theme_warm_gap_median_ms": {
+    "base": 140,
+    "cand": 63.0,
+    "delta_of_medians": -77.0,
+    "pair_deltas": [
+     -81.0,
+     -79,
+     -65.5
+    ]
+   },
+   "theme_warm_gap_p95_ms": {
+    "base": 173,
+    "cand": 89,
+    "delta_of_medians": -84,
+    "pair_deltas": [
+     -84,
+     -99,
+     -65
+    ]
+   },
+   "theme_cold_gap_median_ms": {
+    "base": 144,
+    "cand": 67,
+    "delta_of_medians": -77,
+    "pair_deltas": [
+     -78,
+     -63.0,
+     -67
+    ]
+   },
+   "theme_cold_gap_p95_ms": {
+    "base": 179,
+    "cand": 104,
+    "delta_of_medians": -75,
+    "pair_deltas": [
+     -80,
+     -22,
+     -81
+    ]
+   },
+   "background_gap_median_ms": {
+    "base": 84.0,
+    "cand": 38,
+    "delta_of_medians": -46.0,
+    "pair_deltas": [
+     -50.0,
+     -46.0,
+     -32.5
+    ]
+   },
+   "background_gap_p95_ms": {
+    "base": 133,
+    "cand": 63,
+    "delta_of_medians": -70,
+    "pair_deltas": [
+     -71,
+     -79,
+     -54
+    ]
+   },
+   "theme_warm_commits": {
+    "base": 59,
+    "cand": 97,
+    "delta_of_medians": 38,
+    "pair_deltas": [
+     39,
+     40,
+     29
+    ]
+   },
+   "background_commits": {
+    "base": 31,
+    "cand": 64,
+    "delta_of_medians": 33,
+    "pair_deltas": [
+     33,
+     35,
+     32
+    ]
+   },
+   "theme_warm_rust_cpu_percent": {
+    "base": 79.04,
+    "cand": 56.98,
+    "delta_of_medians": -22.06,
+    "pair_deltas": [
+     -21.13,
+     -21.74,
+     -22.06
+    ]
+   },
+   "theme_cold_rust_cpu_percent": {
+    "base": 80.91,
+    "cand": 52.36,
+    "delta_of_medians": -28.55,
+    "pair_deltas": [
+     -28.55,
+     -35.78,
+     -9.35
+    ]
+   },
+   "background_rust_cpu_percent": {
+    "base": 46.02,
+    "cand": 9.24,
+    "delta_of_medians": -36.78,
+    "pair_deltas": [
+     -36.8,
+     -37.52,
+     -15.79
+    ]
+   },
+   "idle_rust_cpu_percent": {
+    "base": 0.48,
+    "cand": 0.51,
+    "delta_of_medians": 0.03,
+    "pair_deltas": [
+     -0.48,
+     0.01,
+     0.06
+    ]
+   },
+   "idle_commits": {
+    "base": 0,
+    "cand": 0,
+    "delta_of_medians": 0,
+    "pair_deltas": [
+     -3,
+     0,
+     0
+    ]
+   },
+   "theme_warm_helper_cgroup_cpu_percent": {
+    "base": 0.05,
+    "cand": 2.83,
+    "delta_of_medians": 2.78,
+    "pair_deltas": [
+     2.78,
+     2.08,
+     3.99
+    ]
+   },
+   "theme_cold_helper_cgroup_cpu_percent": {
+    "base": 0.05,
+    "cand": 2.55,
+    "delta_of_medians": 2.5,
+    "pair_deltas": [
+     2.5,
+     21.22,
+     1.95
+    ]
+   },
+   "rss_first_mib": {
+    "base": 51.07,
+    "cand": 51.43,
+    "delta_of_medians": 0.36,
+    "pair_deltas": [
+     0.36,
+     0.49,
+     0.12
+    ]
+   },
+   "rss_last_mib": {
+    "base": 82.48,
+    "cand": 84.47,
+    "delta_of_medians": 1.99,
+    "pair_deltas": [
+     1.99,
+     -2.31,
+     11.01
+    ]
+   },
+   "rss_growth_mib": {
+    "base": 31.4,
+    "cand": 33.04,
+    "delta_of_medians": 1.64,
+    "pair_deltas": [
+     1.64,
+     -2.8,
+     10.89
+    ]
+   },
+   "rss_peak_mib": {
+    "base": 82.48,
+    "cand": 87.38,
+    "delta_of_medians": 4.9,
+    "pair_deltas": [
+     4.9,
+     3.88,
+     13.23
+    ]
+   },
+   "helper_rss_last_mib": {
+    "base": 24.03,
+    "cand": 23.39,
+    "delta_of_medians": -0.64,
+    "pair_deltas": [
+     -0.65,
+     0.19,
+     -0.66
+    ]
+   },
+   "preview_requests": {
+    "base": 5,
+    "cand": 15,
+    "delta_of_medians": 10,
+    "pair_deltas": [
+     9,
+     7,
+     12
+    ]
+   },
+   "overlay_prerender_completions": {
+    "base": 4,
+    "cand": 8,
+    "delta_of_medians": 4,
+    "pair_deltas": [
+     3,
+     1,
+     11
+    ]
+   },
+   "overlay_prerender_completions_touch_held": {
+    "base": 0,
+    "cand": 0,
+    "delta_of_medians": 0,
+    "pair_deltas": [
+     0,
+     0,
+     0
+    ]
+   }
+  }
+ }
+}
