@@ -1,0 +1,89 @@
+{
+  "candidate": {
+    "bootargs": "console=tty0 consoleblank=0 console=ttyS0,115200n8 root=fstab loglevel=4 lsm=landlock,yama,bpf loglevel=7 init=/nix/store/rav09qp6dwsnbjd2jrbcs595g9ayn3xf-nixos-system-nixos-26.11.20260919.20b1ddd/init",
+    "configuration": "k230-mainline-drm-shell",
+    "device_tree": "/nix/store/bql9mkg3r0lviidsf16415asz32xq117-k230-mainline-drm-hotplug-dtb-normal-name/k230-tdisplay.dtb",
+    "kernel": "/nix/store/f3rnipvbc5vqam8kwdmn3wgcl5rbz9yx-linux-riscv64-unknown-linux-gnu-7.3.0-rc5/Image",
+    "schema": 1,
+    "system": "/nix/store/rav09qp6dwsnbjd2jrbcs595g9ayn3xf-nixos-system-nixos-26.11.20260919.20b1ddd",
+    "bundle": "/nix/store/60azv75vjpgcshjwh9kdhz12h4r9i8d0-k230-coherent-shell-boot-files",
+    "initrd": "/nix/store/jn68zkrph3hvlw0cavvkw4v0mzmrzwsm-initrd-linux-riscv64-unknown-linux-gnu-7.3.0-rc5/initrd",
+    "closure_paths": 1170,
+    "boot_files": {
+      "Image": {
+        "bytes": 42745856,
+        "sha256": "9d94102c65c8e4fd6b8880ef7b19b8bee5fa91c85596384319f0104bd89509cb",
+        "crc32": "2a872808"
+      },
+      "initrd.uimg": {
+        "bytes": 27330502,
+        "sha256": "4365953c65e834fa9a9d5027ff5b6f79d99cc61afa732d58b7162a09edd2428f",
+        "crc32": "c5a9d6cc"
+      },
+      "bootargs.txt": {
+        "bytes": 211,
+        "sha256": "85efb05183803997892390a3549cb52cba13b3a4f136640decbcb2f40ec27c1c",
+        "crc32": "ddbc35c4"
+      },
+      "k230-tdisplay.dtb": {
+        "bytes": 14538,
+        "sha256": "f59f14842b4bb15c47a55cd4e0296e4972edb3df73ff2b61f970e33497adbdfe",
+        "crc32": "747a4084"
+      }
+    },
+    "Image_matches_selected_kernel": true,
+    "initrd_payload_matches_system": true,
+    "uimage_crc_valid": true,
+    "bootargs_select_matching_system": true,
+    "DTB_matches_selected_board_tree": true,
+    "host_inspection": "PASS",
+    "physical_boot_verified": false,
+    "persistent_boot_selection_changed": false
+  },
+  "normal_profile": "/nix/store/cwfx0amrcgxb0ni7pdpq2ij4rr8yz7bh-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "normal_files": {
+    "Image": {
+      "bytes": 42745856,
+      "sha256": "9d94102c65c8e4fd6b8880ef7b19b8bee5fa91c85596384319f0104bd89509cb",
+      "crc32": "2a872808"
+    },
+    "initrd.uimg": {
+      "bytes": 27330502,
+      "sha256": "4365953c65e834fa9a9d5027ff5b6f79d99cc61afa732d58b7162a09edd2428f",
+      "crc32": "c5a9d6cc"
+    },
+    "k230-tdisplay.dtb": {
+      "bytes": 14538,
+      "sha256": "3450b61a2a43f74de33400f6e09662acdd31bfeae09a10a75c934c94953ebb97",
+      "crc32": "d79302b0"
+    },
+    "bootargs.txt": {
+      "bytes": 211,
+      "sha256": "c62ea40112b33ef476e0509e13091e02ce091dafc891f4ae39900ae9a16d43f9",
+      "crc32": "516ed101"
+    },
+    "fw_jump_add_uboot_head.bin": {
+      "bytes": 270808,
+      "sha256": "9627edbeea9b115d7040beea27cc61b23b6aca61cd502fd7760d7ee179f42c99",
+      "crc32": "99b89787"
+    },
+    "force_dtb": {
+      "bytes": 17,
+      "sha256": "175342c82dd1b437cdafb6bb01090e7ff73c2769515654c48b02c1e9f73440c6",
+      "crc32": "e80b1712"
+    },
+    "lcd_dtb": {
+      "bytes": 17,
+      "sha256": "175342c82dd1b437cdafb6bb01090e7ff73c2769515654c48b02c1e9f73440c6",
+      "crc32": "e80b1712"
+    },
+    "hdmi_dtb": {
+      "bytes": 17,
+      "sha256": "175342c82dd1b437cdafb6bb01090e7ff73c2769515654c48b02c1e9f73440c6",
+      "crc32": "e80b1712"
+    }
+  },
+  "initial_boot_id": "a563b9fb-4193-4100-b03e-5c33b9aebb1a",
+  "stage": "/var/lib/k230/coherent-boot/rav09qp6dwsnbjd2jrbcs595g9ayn3xf-20261012c",
+  "persistent_boot_selection_changed": false
+}

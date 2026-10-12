@@ -1,0 +1,32 @@
+{
+  "utc": "2026-10-12T14:37:47.930065+00:00",
+  "system": "/nix/store/cwfx0amrcgxb0ni7pdpq2ij4rr8yz7bh-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "profile": "/nix/store/cwfx0amrcgxb0ni7pdpq2ij4rr8yz7bh-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "kernel": "/nix/store/f3rnipvbc5vqam8kwdmn3wgcl5rbz9yx-linux-riscv64-unknown-linux-gnu-7.3.0-rc5/Image",
+  "boot_id": "a563b9fb-4193-4100-b03e-5c33b9aebb1a",
+  "services": {
+    "shell": "active",
+    "shell-ui": "active",
+    "theme-helper": "active",
+    "k230-touch-trackpad": "active"
+  },
+  "shell_executable": "/nix/store/k2z9z61khs97ks3m2sm2ymhrisk13h5m-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0/bin/k230-shell-rust",
+  "sway_executable": "/nix/store/q96sk40q7j5v9f0ygxf2wx3yk7nzixqs-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway",
+  "normal_boot_files": {
+    "Image": "9d94102c65c8e4fd6b8880ef7b19b8bee5fa91c85596384319f0104bd89509cb",
+    "initrd.uimg": "4365953c65e834fa9a9d5027ff5b6f79d99cc61afa732d58b7162a09edd2428f",
+    "k230-tdisplay.dtb": "3450b61a2a43f74de33400f6e09662acdd31bfeae09a10a75c934c94953ebb97",
+    "bootargs.txt": "c62ea40112b33ef476e0509e13091e02ce091dafc891f4ae39900ae9a16d43f9",
+    "fw_jump_add_uboot_head.bin": "9627edbeea9b115d7040beea27cc61b23b6aca61cd502fd7760d7ee179f42c99",
+    "force_dtb": "175342c82dd1b437cdafb6bb01090e7ff73c2769515654c48b02c1e9f73440c6",
+    "lcd_dtb": "175342c82dd1b437cdafb6bb01090e7ff73c2769515654c48b02c1e9f73440c6",
+    "hdmi_dtb": "175342c82dd1b437cdafb6bb01090e7ff73c2769515654c48b02c1e9f73440c6"
+  },
+  "appearance": {
+    "generation": "95c1b7bc96aa99762934e06f",
+    "report_sha256": "89fc22ae961eb6e812f2a431bbefd16318cfaec3b24702027eddc5bd33195c51"
+  },
+  "background_preferences_sha256": null,
+  "root_free_bytes": 49702207488,
+  "evidence_class": "read-only physical-board serial identity; no new finger observation"
+}

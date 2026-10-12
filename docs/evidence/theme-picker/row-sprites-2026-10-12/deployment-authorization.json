@@ -1,0 +1,24 @@
+{
+  "system": "/nix/store/rav09qp6dwsnbjd2jrbcs595g9ayn3xf-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "kernel": "/nix/store/f3rnipvbc5vqam8kwdmn3wgcl5rbz9yx-linux-riscv64-unknown-linux-gnu-7.3.0-rc5/Image",
+  "bundle": "/nix/store/60azv75vjpgcshjwh9kdhz12h4r9i8d0-k230-coherent-shell-boot-files",
+  "evidence_class": "operator-authorized-userspace-update",
+  "shell_executable": "/nix/store/b0yyyda8l7nqix1jb95kbmhh9s5mqnj0-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0/bin/k230-shell-rust",
+  "boot_id": "777f5a20-af0b-4466-9a6d-4b5370c6340e",
+  "deployment_authorized": true,
+  "additional_physical_collection_waived": true,
+  "operator_instruction": "\"it's good to go land it\" (2026-10-12, after trying the sprite build on the panel)",
+  "prior_waiver": "continue but you dont have to gather that proof ive already confirmed its fine carry on it's all good",
+  "recorded_utc": "2026-10-12T14:42:41.303225+00:00",
+  "source_revision": "4d17b3c592272dd094cf189c9b6af01c0c2381c0",
+  "accepted_baseline": {
+    "system": "/nix/store/cwfx0amrcgxb0ni7pdpq2ij4rr8yz7bh-nixos-system-nixos-26.11.20260919.20b1ddd",
+    "kernel": "/nix/store/f3rnipvbc5vqam8kwdmn3wgcl5rbz9yx-linux-riscv64-unknown-linux-gnu-7.3.0-rc5/Image",
+    "boot_files": {
+      "Image": "9d94102c65c8e4fd6b8880ef7b19b8bee5fa91c85596384319f0104bd89509cb",
+      "initrd.uimg": "4365953c65e834fa9a9d5027ff5b6f79d99cc61afa732d58b7162a09edd2428f"
+    }
+  },
+  "provenance": "Operator instruction to land the theme-row sprite repaint after trying it on the panel (2026-10-12, perf/theme-row-paint 4d17b3c5), with the standing waiver of additional install-time physical collection. This authorizes a same-kernel userspace update; it is not by itself the curve acceptance of task 18.4.",
+  "limits": "No new gesture, cable cycle, pixel, timing, or individual typography/spacing physical observation is inferred."
+}

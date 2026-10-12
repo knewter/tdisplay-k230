@@ -1330,6 +1330,14 @@ already-written code -- keep the whole group open.
   shouldn't be". Not accepted. This matches the board session's measured theme-row repaint
   (about 93 ms per frame) and the full scene rebuilds during motion
   (`docs/evidence/theme-picker/board-session-2026-10-12/README.md`).
+  **Sprite repaint, 2026-10-12** (`4d17b3c5`, Rust `b0yyyda8…`): with
+  injected theme-row swipes, the moving-phase row repaint fell from about
+  80 ms CPU / 100 ms wall to 30 ms / 43 ms. Frames during the same swipes
+  rose from about 51 to 91, and no full rebuilds occurred mid-swipe
+  (`docs/evidence/theme-picker/row-sprites-2026-10-12/README.md`). After
+  using it on the panel, the operator wrote "it's good to go land it". That
+  accepts the feel for landing. Kept open until the operator confirms both
+  rows track without exaggerated travel or backlog.
 
 Task 14.1 host proof: the exact `--lib theme_carousel` command passed 13
 geometry/physics tests, including rendered-center tracking for both rows,
