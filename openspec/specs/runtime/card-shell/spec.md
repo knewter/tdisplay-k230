@@ -390,7 +390,8 @@ card-shell behavior.
   current-candidate measurement limits, while retaining the numerical miss
 
 ### Requirement: Window-list states SHALL name a recovery action
-<!-- UNVERIFIED: implemented and host-tested (cargo test, tests/test_video_session.py) and installed on the board 2026-10-11 (docs/evidence/recovery-routes/installed-2026-10-11/); no glass observation of this state. Real-finger capture is task 3.1 of the-shell-proves-recovery-states-by-touch. -->
+<!-- UNVERIFIED: the loading state was not observed on glass. -->
+*Grounding: `docs/evidence/recovery-routes/touch-capture-2026-10-11/README.md` (2026-10-11): real-finger touch holds opened the empty list (Files) and a list whose window was then closed over serial; tapping that row showed "That window has closed" on camera, and a tap went to Apps.*
 The card shell SHALL show short person-facing copy and a visible Back, Apps, or Home action while the window list is loading, empty, or stale. It SHALL NOT render raw filesystem paths, helper diagnostics, or secrets in that copy.
 
 #### Scenario: The window list is empty or stale
@@ -400,3 +401,12 @@ The card shell SHALL show short person-facing copy and a visible Back, Apps, or 
 #### Scenario: The window list is loading
 - **WHEN** the list has not yet been received
 - **THEN** the surface says it is loading and offers Back
+
+### Requirement: A person can open an app's window list by touch
+<!-- UNVERIFIED: the loading state was not observed on glass; empty and stale were. -->
+*Grounding: `docs/evidence/recovery-routes/touch-capture-2026-10-11/README.md` (2026-10-11): on the installed build, holding a drawer tile still opened its menu (shell log `app-menu-hold` then `app-menu-ready`, no `home-drag-begin`) under a real finger, and the menu stayed open after lift. The touch route is the drawer hold; Home's long press still enters rearrange mode.*
+The shell SHALL offer a touch route to an app's window list that does not start the drawer's drag to Home. The list's loading, empty and stale states SHALL then be reachable with a finger.
+
+#### Scenario: A person opens the window list with a finger
+- **WHEN** a person uses the documented touch route on an app in the drawer or on Home
+- **THEN** that app's menu opens with its window list, and no drag to Home starts

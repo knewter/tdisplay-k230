@@ -186,6 +186,12 @@ Ordinary gzip.
 **Proven substitutable, byte for byte.** Compressing the SDK's own
 `u-boot.bin` (693 576 bytes) with both:
 
+DATA  a3ae45784cee598cd059ad936fe21e25e74b8410ddfbe506674a2c2a0206ad97  docs/evidence/recovery-routes/touch-capture-2026-10-11/window-list.mp4
+DATA  e4cb7a888f92d37b8145d5751d516dd4bbdd2d98fe4fe21a0f90937d225b6da7  docs/evidence/recovery-routes/touch-capture-2026-10-11/brightness-denied.mp4
+DATA  eaf032fdc191224528a5c91d2fbcf3377d730a752047f4bf1c44738e1e273f02  docs/evidence/recovery-routes/touch-capture-2026-10-11/video-cancelled.mp4
+DATA  f0a3a6dd1be3da1aac8cd966bbbffb84a6284567d5de684cb5ccf837f1f61a7e  docs/evidence/recovery-routes/touch-capture-2026-10-11/video-stopped.mp4
+DATA  b5506ce563292b714551bb6a35de3e378b088ed60651fa05a6265281b1d7675f  docs/evidence/recovery-routes/touch-capture-2026-10-11/settings-denied-native.png
+DATA  379ebd25d4a0f224c33d2651d7aaeb134fa7258b625503b12e1e4a2d3e2f5cc5  docs/evidence/recovery-routes/touch-capture-2026-10-11/stale-splash-camera-zoom.jpg
 ```
 $ ./k230_priv_gzip -n8 -f -k u-boot.bin      # vendor binary
 $ gzip -n -8 -f -k u-boot.bin                # nixpkgs gzip 1.14
@@ -2924,3 +2930,17 @@ identities are in `docs/evidence/recovery-routes/touch-app-menu-qemu-2026-10-11/
 | Path | Bytes | Class | SHA256 |
 | --- | ---: | --- | --- |
 | `docs/evidence/recovery-routes/touch-app-menu-qemu-2026-10-11/drawer-actions-touch-hold-menu.png` | 76088 | DATA | `4bc927d031126339723be556a533c0b2e7e37435d15bf55a5273771469712ae7` |
+
+The recovery-routes touch capture holds trimmed, downscaled bench-camera
+clips (real-finger input; serial/SSH-triggered setup) and one native `grim`
+screenshot of the Settings denial. Raw clips stay private on the host; their
+hashes and the exact triggers are in `docs/evidence/recovery-routes/touch-capture-2026-10-11/README.md`.
+
+| Path | Bytes | Class | SHA256 |
+| --- | ---: | --- | --- |
+| `docs/evidence/recovery-routes/touch-capture-2026-10-11/window-list.mp4` | 512512 | DATA | `a3ae45784cee598cd059ad936fe21e25e74b8410ddfbe506674a2c2a0206ad97` |
+| `docs/evidence/recovery-routes/touch-capture-2026-10-11/brightness-denied.mp4` | 113533 | DATA | `e4cb7a888f92d37b8145d5751d516dd4bbdd2d98fe4fe21a0f90937d225b6da7` |
+| `docs/evidence/recovery-routes/touch-capture-2026-10-11/video-cancelled.mp4` | 234786 | DATA | `eaf032fdc191224528a5c91d2fbcf3377d730a752047f4bf1c44738e1e273f02` |
+| `docs/evidence/recovery-routes/touch-capture-2026-10-11/video-stopped.mp4` | 115156 | DATA | `f0a3a6dd1be3da1aac8cd966bbbffb84a6284567d5de684cb5ccf837f1f61a7e` |
+| `docs/evidence/recovery-routes/touch-capture-2026-10-11/settings-denied-native.png` | 36652 | DATA | `b5506ce563292b714551bb6a35de3e378b088ed60651fa05a6265281b1d7675f` |
+| `docs/evidence/recovery-routes/touch-capture-2026-10-11/stale-splash-camera-zoom.jpg` | 15353 | DATA | `379ebd25d4a0f224c33d2651d7aaeb134fa7258b625503b12e1e4a2d3e2f5cc5` |

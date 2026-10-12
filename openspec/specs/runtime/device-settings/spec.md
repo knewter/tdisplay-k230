@@ -34,7 +34,7 @@ The shell userspace SHALL label power and restart actions by effect, require con
 - **THEN** Settings returns to the shade or prior scene with prior focus and no restart request
 
 ### Requirement: A denied system action SHALL explain itself
-<!-- UNVERIFIED: implemented and host-tested (cargo test, tests/test_video_session.py) and installed on the board 2026-10-11 (docs/evidence/recovery-routes/installed-2026-10-11/); no glass observation of this state. Real-finger capture is task 3.1 of the-shell-proves-recovery-states-by-touch. -->
+*Grounding: `docs/evidence/recovery-routes/touch-capture-2026-10-11/README.md` (2026-10-11): a real-finger brightness drag after the backlight was made read-only over serial; the shell logged `brightness-denied`, and a native `grim` capture shows "That action isn't allowed · Done" under Settings' Done header.*
 When a system action is refused, the shell SHALL show short person-facing copy and a visible Back or Retry action, and SHALL NOT render raw paths, helper output, or secrets.
 
 #### Scenario: An action is denied

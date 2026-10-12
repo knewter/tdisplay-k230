@@ -68,7 +68,8 @@ physical output evidence.
 - **THEN** the report labels it video-only and leaves audio usability unverified
 
 ### Requirement: Ended video states SHALL name a recovery action
-<!-- UNVERIFIED: implemented and host-tested (cargo test, tests/test_video_session.py) and installed on the board 2026-10-11 (docs/evidence/recovery-routes/installed-2026-10-11/); no glass observation of this state. Real-finger capture is task 3.1 of the-shell-proves-recovery-states-by-touch. -->
+<!-- UNVERIFIED: the stopped and cancelled copy is logged (`recovery-video-stopped`, `recovery-video-cancelled`) and filmed during real-finger sessions, but glare leaves the wording illegible on camera; the operator reported it worked. The ended state (end of file) was not observed on glass. -->
+*Grounding: `docs/evidence/recovery-routes/touch-capture-2026-10-11/README.md` (2026-10-11).*
 After video Stop, end-of-file, or cancellation, the shell SHALL show short copy for that state and a visible Back, Apps, or Home action, without raw paths or diagnostics.
 
 #### Scenario: Playback reaches end of file
