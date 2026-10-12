@@ -1443,6 +1443,8 @@ struct PrerenderedOverlay {
     width: u32,
     height: u32,
     content_generation: u64,
+    /// `RendererCache::content_parts` when this was computed.
+    content_parts: String,
     pixels: Vec<u8>,
 }
 
@@ -2099,6 +2101,7 @@ impl ShellClient {
         // rebuild, exactly as if no pre-render had ever run.
         let content_generation = self.renderer.content_generation();
         let stored = self.prerendered_overlay.take();
+        let stored_parts = stored.as_ref().map(|candidate| candidate.content_parts.clone());
         let mismatch_reason = if self.route != Route::Settings {
             Some("not-on-settings-route")
         } else {
@@ -2190,9 +2193,10 @@ impl ShellClient {
             // reconstruction each time (board evidence, 2026-09-28).
             match mismatch_reason {
                 Some(reason) => self.log(&format!(
-                    "optimistic-apply shown ms={:.1} prerendered=false reason={reason} content_source={}",
+                    "optimistic-apply shown ms={:.1} prerendered=false reason={reason} was=[{}] now=[{}]",
                     elapsed_ms(),
-                    self.renderer.content_source()
+                    stored_parts.as_deref().unwrap_or("-"),
+                    self.renderer.content_parts()
                 )),
                 None => self.log(&format!(
                     "optimistic-apply shown ms={:.1} prerendered=true",
@@ -7251,6 +7255,7 @@ fn serve() -> Result<(), String> {
                                 width: state.width,
                                 height: state.height,
                                 content_generation,
+                                content_parts: state.renderer.content_parts(),
                                 pixels,
                             });
                             state.log(&format!(
@@ -7945,6 +7950,7 @@ mod route_tests {
             width: 568,
             height: 1232,
             content_generation: 3,
+            content_parts: String::new(),
             pixels: Vec::new(),
         };
         assert!(prerendered_overlay_matches(
@@ -8015,6 +8021,7 @@ mod route_tests {
             width: 568,
             height: 1232,
             content_generation: 3,
+            content_parts: String::new(),
             pixels: Vec::new(),
         };
         assert_eq!(

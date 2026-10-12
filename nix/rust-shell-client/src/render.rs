@@ -4692,8 +4692,20 @@ impl RendererCache {
         }
         true
     }
-    pub fn content_source(&self) -> &'static str {
-        self.content_source
+    /// What `content_generation()` is made of, for the optimistic-apply
+    /// mismatch log: the bump counter, the input that last bumped it, and
+    /// the chooser inputs the fingerprint covers (quantised positions,
+    /// pressed rows, a hash of the list/preview/page).
+    pub fn content_parts(&self) -> String {
+        let (theme, background, theme_pressed, background_pressed) = self.chooser.as_ref().map_or(
+            (0, 0, None, None),
+            |view| ((view.theme_position * 4.0).round() as i64, (view.background_position * 4.0).round() as i64,
+                view.theme_pressed, view.background_pressed),
+        );
+        format!(
+            "counter={}/{} chooser={:016x}/{theme}/{background}/{theme_pressed:?}/{background_pressed:?}",
+            self.content_generation, self.content_source, self.chooser_static_key
+        )
     }
     pub fn content_generation(&self) -> u64 {
         self.content_generation.wrapping_mul(0x9E37_79B9_7F4A_7C15) ^ self.chooser_key
@@ -4734,11 +4746,7 @@ impl RendererCache {
                 self.chooser_static_key =
                     stable_hash(&format!("{:?}|{:?}|{:?}", view.page, view.list, view.preview));
             }
-            let key = chooser_fingerprint(self.chooser_static_key, &view);
-            if key != self.chooser_key {
-                self.chooser_key = key;
-                self.content_source = "set_theme_view";
-            }
+            self.chooser_key = chooser_fingerprint(self.chooser_static_key, &view);
         }
         let rows = self.chooser.as_ref().and_then(|old| picker_row_changes(old, &view));
         self.chooser = Some(view);
