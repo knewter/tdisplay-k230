@@ -444,3 +444,83 @@ second CPU node under this generic OpenSBI's current scratch/HSM indexing.
 A safe virtual-ID scheme or other supported two-hart mapping, CPU0
 interrupt/timer routing, and the shared cached-memory/atomic contract
 remain open before any Linux SMP attempt.
+
+## TRM mailbox register map (task 1.1, 2026-10-12)
+
+**Result: the TRM publishes a mailbox register map. It is in TRM section
+2.9 "Mailbox", not section 2.4.** Section 2.4 is "Interrupt System"
+(PDF page 104); earlier text here and in
+`openspec/changes/the-small-core-runs-as-a-coprocessor/` that attributed the
+mailbox to "section 2.4" meant only the interrupt table, which names the
+mailbox interrupt sources. The map below is read from the primary document;
+nothing is inferred from `th1520-mailbox.c`.
+
+Source: K230 Technical Reference Manual v0.3.1 (2024-11-18), the URL linked
+above, downloaded 2026-10-12 (SHA-256
+`4a18fdbd1cd25c5a33ca4d54b78c95e0e338305bceb17397133370fa10c1e5f0`) and
+text-extracted with `pdftotext -layout`. The PDF is not stored in the repo or
+the Nix store (the repo keeps no vendor documents); PDF page numbers below are
+physical page indexes of that file. Section 2.9 starts at PDF page 172; the
+register descriptions run through page 185.
+
+- Base: `0x9110_4000`, 4 KiB, block name `mailbox` in the SoC address map
+  (TRM section 1 address table). Lives inside SYSCTL; APB 3.0, 32-bit
+  registers, clocked by `mailbox_pclk` (100 MHz). Clock gate: `mailbox_pclk_enable`, bit 4 of the CMU register at offset
+  0x50 (PDF page 55; `docs/research/k230-clock-gates-vendor-vs-mainline.md:109`
+  lists the same `0x50/4`). Reset: bit 17 `mailbox_reset` in the RMU
+  `SOC_CTL_RST_CTL` register (PDF page 18, reset value 0x1). Mainline
+  `reset-k230.c` already names this as `RST_MAILBOX` (offset 0x20, bit 17,
+  software-done type); no mainline K230 mailbox driver or DT node exists
+  (`grep -i mailbox k230.dtsi` in the mainline tree finds none).
+- Function (2.9.1): hardware interlock (mutex) registers for CPU0/CPU1
+  hand-shake and shared-storage arbitration, mutual interrupts, and some
+  submodule configuration/status registers.
+- Four interrupt-group register sets (groups 0-3), each ten 32-bit registers
+  (five per direction); group 0 in full, groups 1-3 repeat it at the offsets
+  below:
+
+  | Offset | Register | Meaning |
+  | --- | --- | --- |
+  | 0x0000 | CPU2DSP_INT_EN0 | cpu0_sys to cpu1_sys enable. bits 31:16 `intr_raw_en`; bit 1 `intr_soft_rst` clears all counts (both directions); bit 0 `intr_en` |
+  | 0x0004 | CPU2DSP_INT_SET0 | write-only; writing N (0..15) adds 1 to interrupt count N |
+  | 0x0008 | CPU2DSP_INT_CLEAR0 | write-only; writing N subtracts 1 from count N |
+  | 0x000C | CPU2DSP_INT_STATUS0 | read-only; 2-bit count for each of 16 sources (bits 1:0 = source 0 ... 31:30 = source 15) |
+  | 0x0010 | CPU2DSP_INT_ERR0 | read-only; 31:16 overflow flags (count already 3), 15:0 underflow flags |
+  | 0x0014 | DSP2CPU_INT_EN0 | cpu1_sys to cpu0_sys, same fields |
+  | 0x0018 | DSP2CPU_INT_SET0 | same as above |
+  | 0x001C | DSP2CPU_INT_CLEAR0 | same as above |
+  | 0x0020 | DSP2CPU_INT_STATUS0 | same as above |
+  | 0x0024 | DSP2CPU_INT_ERR0 | same as above |
+  | 0x0028-0x009C | `*_INT_*1`, `*2`, `*3` | groups 1-3, same layout, each group is 0x28 bytes (CPU2DSP block at 0x28/0x50/0x78, DSP2CPU block at 0x3C/0x64/0x8C) |
+  | 0x00A0-0x029C | MAILBOX0..MAILBOX127 | 128 interlock registers; bit 0 `Lock` (1 locked, 0 not), RW, reset 0 |
+  | 0x02A0-0x02F8 | UART_LP_REQ_*, QOS_CTRL0-4, NOC_WR_BUFFERABLE_CTRL, DDR_*, MIPI_TX_BISTON, SSI_SLEEP, PVDET_*, OTP_HS_MSC_SEL, DDRC_SELFREF_TYPE, CODEC_AD2DA_LOOP, TIMER_EN | unrelated SYSCTL configuration registers that share the block; a mailbox driver must not touch them |
+
+- Interrupt sources (TRM section 2.4 table, PDF page 104 onward):
+  `MB_CPU12CPU0_0` = bit 93, `MB_CPU12CPU0_1` = bit 94, `MB_CPU02CPU1_0` = bit
+  95, `MB_CPU02CPU1_1` = bit 96. Only two interrupt lines exist per direction
+  although four register groups are listed; which groups drive which line is
+  **not stated** in the sections read.
+
+**What this does not establish (kept UNVERIFIED):**
+
+- Which register group maps to which of the two interrupt lines per
+  direction; whether the `intr_raw_en` bits gate individual sources and how
+  `intr_en` composes with them (the TRM text is a machine-translation with
+  several truncated cells).
+- Whether the lock registers are test-and-set on read or a plain RW bit; the
+  TRM only says "1: locked, 0: not locked" (2.9.1 says hardware mutual
+  exclusion but gives no read-to-acquire semantics). No driver may rely on a
+  guess.
+- That CPU0 firmware can take the interrupt: CPU0's PLIC wiring and the
+  mailbox line routing to it are not in this document. The cache/coherency
+  situation of the interlock registers is moot (device registers), but the
+  shared data buffers remain under the non-coherent contract in design.md
+  Decision 3.
+- Nothing here was exercised on the board. A mailbox driver or firmware that
+  touches these registers needs its own task and board proof; the change
+  keeps using a polled shared-memory slot until then.
+
+Cross-check, naming only: `drivers/mailbox/th1520-mailbox.c` also has
+per-direction status/set/clear groups, but the K230 counters (two bits per
+source, 16 sources) and the 128 interlock registers are K230's own and are
+not borrowed from it.

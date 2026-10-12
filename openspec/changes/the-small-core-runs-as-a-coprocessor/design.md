@@ -76,6 +76,24 @@ a second usable pattern if a full `remoteproc` load/boot lifecycle turns out
 to be unnecessary for a firmware image Linux never actually loads from disk
 in the first version (see Decision 5).
 
+**Mainline update (2026-10-12): the binding text below is superseded.** The
+daily kernel is mainline v7.3-rc5 (`nix/kernel-mainline-src.nix`), not the
+vendor 6.6 tree. On mainline the controller is `rst: reset-controller@91101000`,
+`compatible = "canaan,k230-rst"`, `#reset-cells = <1>`, consumed as
+`resets = <&rst RST_CPU0>` (`canaan,k230-rst.h`); the vendor four-cell form,
+`sysctl_reset`, `canaan-k230-reset.h` and the `K230_RESET_*` macros named in
+the next bullets do not exist there. `reset-k230.c` supports only `.reset` (a
+pulse) for `RST_CPU0`; `assert`/`deassert` return `-EOPNOTSUPP`, and the TRM's
+`cpu0_reset_req` is a self-clearing W1T bit, so there is no held reset to
+assert. Start is therefore vector write plus `reset_control_reset()`; stop is
+an open task 5.2 question. There is no `sysctl_boot` node; the vector register
+`0x91102100` lies outside the `sysclk` window (`0x91102000`+`0x40`) and is
+mapped privately by the new node's own `reg`. `RST_CPU1` is the core Linux runs
+on and must never be requested. Full citations:
+`docs/evidence/second-core/mainline-reset-binding-decision.md`. The vendor-tree
+analysis below is kept as the origin of the register facts and still describes
+the vendor kernel the shipped image boots.
+
 **Reset control and the vector registers.** The TRM- and source-grounded
 register facts already collected in
 `docs/research/second-core-feasibility.md` and
@@ -150,18 +168,20 @@ present in the pinned kernel, which this driver should use instead of a raw
   https://openamp.readthedocs.io/en/v2025.10.0/lopper/specification/source/chapter5-remoteproc.html) —
   a firmware image only needs to embed that table once it actually speaks
   virtio/rpmsg, which step zero (Decision 5) deliberately defers.
-- **Mailbox: absent, and its register layout is unread.** No `mailbox`
-  driver or DT node exists for K230 anywhere in the pinned kernel (verified
-  above). `docs/research/second-core-feasibility.md`'s TRM review only
-  reports that "the interrupt table lists distinct mailbox sources in both
-  CPU0-to-CPU1 and CPU1-to-CPU0 directions" (TRM section 2.4) — it does not
-  record a register map, and none has been transcribed into this project's
-  evidence. Writing a real K230 mailbox driver is therefore blocked on a
-  TRM-reading task this change does not do. `th1520-mailbox.c` in this same
-  tree is the nearest architectural cousin (status/clear/mask registers, a
-  per-channel data-register window, a "generate remote IRQ" register) but is
-  a different IP block on a different SoC and must not be assumed to match
-  K230's layout.
+- **Mailbox: no driver, but the TRM does publish a register map.** No
+  `mailbox` driver or DT node exists for K230 in the pinned kernels
+  (verified above; mainline also has only the reset-controller's `RST_MAILBOX`
+  entry). The earlier text of this design said the layout was unread and
+  placed it in TRM section 2.4; section 2.4 is the interrupt table, and the
+  mailbox is **section 2.9**, base `0x9110_4000`.
+  `docs/research/second-core-feasibility.md` ("TRM mailbox register map")
+  now records the map: four interrupt-count groups per direction
+  (`SET`/`CLEAR`/`STATUS`/`ERR`/`EN`), 128 one-bit interlock registers at
+  `0xA0`-`0x29C`, and the interrupt sources `MB_CPU12CPU0_0/1` (93, 94) and
+  `MB_CPU02CPU1_0/1` (95, 96). The group-to-interrupt-line mapping, the lock
+  acquire semantics and CPU0-side PLIC routing remain UNVERIFIED, so no
+  mailbox driver or firmware is written against it by this change.
+  `th1520-mailbox.c` is a naming cross-check only.
 
 Because of that gap, this design avoids a hardware-mailbox dependency for
 the steps it actually proposes (Decisions 5-6): Linux's own mailbox
@@ -245,10 +265,11 @@ reimaging (Task 2 below) — an AMP release writes the exact same
 fallback routes already cover a hung or misbehaving board.
 
 **Resetting a crashed coprocessor without rebooting Linux.** Because CPU0's
-reset-controller line (`K230_RESET_CPU0_REG_OFFSET`, offset `0x4`) is
-independent of CPU1's (offset `0xc`) in the same RMU block (TRM section
-2.1.4), a Linux-side `reset_control_assert()`/`deassert()` cycle on the CPU0
-line alone should not touch CPU1/Linux execution. This is a reasonable
+reset-controller line (`RST_CPU0`, RMU offset `0x4`) is
+independent of CPU1's (`RST_CPU1`, offset `0xc`) in the same RMU block (TRM
+section 2.1.4), a Linux-side `reset_control_reset()` pulse on the CPU0 line
+alone (the only operation mainline supports for it; see the mainline update
+in Decision 1) should not touch CPU1/Linux execution. This is a reasonable
 inference from the register map, **not yet a board-proved claim**: the TRM's
 CPU power-flow text also requires "a completed NOC low-power handshake
 before a power transition" (section 2.3.3), which this design has not
@@ -290,6 +311,13 @@ heartbeat already uses, instead of a monotonic counter:
   itself does not commit to the full virtio/rpmsg stack — it only proves the
   memory/cache contract and the release/observe/recover loop end to end with
   two-way traffic instead of the heartbeat's one-way counter.
+- Implemented 2026-10-12 as `tools/small-core-echo.{S,ld}`: slot page at
+  `PAYLOAD_BASE + 0x2000`, a request line, per-sequence response lines
+  indexed by `req_seq & 7`, a status line with a separate slow heartbeat, a
+  `fence` plus `l2cache.ciall` before every request read and after every
+  write, and no long delay in the poll loop (the heartbeat's uncached
+  ~2.5 s delay would otherwise be the response latency). Layout and limits
+  are in the `.S` header and `docs/evidence/second-core/echo-runbook.md`.
 
 This is deliberately the smallest possible extension of already-proved work,
 matching this project's evidence-first discipline: prove the mechanism
@@ -327,7 +355,7 @@ acceptance-before-performance rule).
 | Step | Host build | QEMU | Board trace |
 | --- | --- | --- | --- |
 | 1. Recovery route | — | — | Waived 2026-09-28 (operator decision, see Section 4): fallback is the proven U-Boot one-shot/`ums`/reimaging routes, on the normal card, not a rehearsed external-reader restore |
-| 2. Step-zero echo/ping firmware | Required: disassembly/footprint/no-V check, extending `tools/test-small-core-heartbeat.sh`'s method | Possibly available: QEMU's `k230` machine models exactly one core described as "the little core (c908)" — the same role as CPU0 — which may make a standalone, Linux-free boot of this firmware a real QEMU proof; **unverified**, a task must confirm whether this project's QEMU invocation can target that machine without Linux before this is relied on | Required: `boot_baremetal 0` release and readback, with explicit authorization at the time and a fallback recovery route confirmed |
+| 2. Step-zero echo/ping firmware | Required: disassembly/footprint/no-V check, extending `tools/test-small-core-heartbeat.sh`'s method | Available, 2026-10-12: `-M k230 -bios none -device loader,file=BIN,addr=0x7000000,cpu-num=0` runs a standalone image on the single modeled C908 hart (no `-kernel`; direct boot demands OpenSBI and a DTB). The poll/echo state machine is exercised there by `tools/small-core-qemu-probe.py`; transcript in `docs/evidence/second-core/qemu-standalone-cpu0.md`. The model has no cache behavior and no CPU release, so it proves logic only | Required: `boot_baremetal 0` release and readback, with explicit authorization at the time and a fallback recovery route confirmed |
 | 3. Reserved memory + read-only driver skeleton | Required: `nix build .#deviceTree`; kernel module builds | Not applicable (no execution claim) | Not applicable |
 | 4. Linux-driven CPU0 start/stop | Required: driver builds against the pinned kernel | Not applicable (QEMU's k230 machine does not model RMU/reset-control registers or per-core release) | Required: release, echo round-trip, and stop-without-reboot, with explicit authorization at the time and a fallback recovery route confirmed |
 | 5. Watchdog detection | Required: host fixture for the fault-record format | Not applicable | Required: a deliberately frozen liveness counter is detected and recorded, then read back after a manual recovery |
@@ -345,8 +373,9 @@ with no peripheral claim at all, and only once confirmed.
   `canaan,k230-sysctl-reset` binding instead of a second raw `ioremap` of
   the same physical registers (Decision 1).
 - **A mailbox driver is written against a guessed K230 register layout** →
-  this design defers any real mailbox driver until TRM section 2.4 is
-  transcribed into project evidence, and uses a poll-mode software mailbox
+  this design defers any real mailbox driver until the open questions in the
+  TRM section 2.9 map (group-to-line routing, lock semantics, CPU0 PLIC
+  wiring) are answered on the board, and uses a poll-mode software mailbox
   in the interim (Decision 1, Decision 5).
 - **CPU0 reset-controller independence from CPU1 is assumed, not proved** →
   Task 5.3 tests it directly before any recovery claim is trusted beyond a

@@ -6,9 +6,11 @@
 against each prerequisite; `docs/research/second-core-feasibility.md` traces
 the pinned firmware/kernel and vendor AMP sources. `design.md` in
 `the-small-core-runs-as-a-coprocessor` traces the pinned kernel's absence of
-a K230 remoteproc/mailbox driver, the existing `canaan,k230-sysctl-reset`
-reset-controller binding, and the TRM's undocumented mailbox register
-layout.*
+a K230 remoteproc/mailbox driver, the reset-controller binding (mainline
+`canaan,k230-rst`; the vendor `canaan,k230-sysctl-reset` form was superseded,
+see `docs/evidence/second-core/mainline-reset-binding-decision.md`), and the
+TRM section 2.9 mailbox register map with its unresolved routing and lock
+semantics.*
 
 Before a later change may release a second core for **Linux SMP**, it SHALL
 have source- or board-grounded evidence for the second hart ID and
@@ -24,20 +26,27 @@ document in hand supplies a second per-core identity signal to fix it.
 A separate **AMP (coprocessor) path** SHALL instead:
 
 - Use a Linux-side driver that requests CPU0's reset-controller line through
-  the existing `canaan,k230-sysctl-reset` binding
-  (`drivers/reset/reset-k230.c`, `include/dt-bindings/reset/canaan-k230-reset.h`
-  `K230_RESET_CPU0_*`) rather than a redundant raw MMIO mapping of the same
-  physical registers, and perform the CPU0 vector-register write at the
-  address the pinned `boot_baremetal` sequence already uses
-  (`arch/riscv/cpu/k230/cpu.c:125-160`, `sysctl_boot@91102000` offset
-  `0x100`).
+  the existing mainline `canaan,k230-rst` binding
+  (`resets = <&rst RST_CPU0>`, `drivers/reset/reset-k230.c`,
+  `include/dt-bindings/reset/canaan,k230-rst.h`) rather than a redundant raw
+  MMIO mapping of the same registers. CPU0 supports only `.reset` (a pulse)
+  there, so a start is the CPU0 vector write at `0x91102100` (the address the
+  pinned `boot_baremetal` sequence already uses,
+  `arch/riscv/cpu/k230/cpu.c:125-160`) followed by `reset_control_reset()`.
+  The vector register is mapped privately from the driver's own DT `reg`,
+  and the driver SHALL never request `RST_CPU1`. A stop mechanism is not
+  fixed by this requirement; it is decided under the stop task. (The vendor
+  tree's `canaan,k230-sysctl-reset` four-cell binding and
+  `K230_RESET_CPU0_*` macros named in the original text do not exist on the
+  mainline kernel and are superseded.)
 - Reserve its firmware image and any shared ring in a `no-map`
   `reserved-memory` device-tree node, following the existing splash
   framebuffer precedent (`nix/dts/k230-tdisplay.dts:47-57`), and map that
   region non-cacheably on the Linux side rather than sharing a cacheable
   page between CPU0 and Linux.
-- Not depend on a K230 hardware mailbox driver until its register layout
-  (TRM section 2.4) has been read into this project's evidence; a
+- Not depend on a K230 hardware mailbox driver until the TRM section 2.9
+  register map (recorded in `docs/research/second-core-feasibility.md`) has
+  its interrupt routing and lock semantics confirmed on the board; a
   poll-mode software doorbell in the same non-cacheable region MAY stand in
   for it.
 - Not claim ownership of any peripheral bus (I2C, SPI, or otherwise) already
