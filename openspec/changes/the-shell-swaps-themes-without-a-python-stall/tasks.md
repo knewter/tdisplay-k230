@@ -1325,6 +1325,11 @@ already-written code -- keep the whole group open.
   finger without exaggerated travel or a backlog after it stops. Retain this
   gate if only host or injected evidence exists. This does not by itself
   complete the matched performance and memory comparison in task 11.3/13.
+  **Operator real-finger report, 2026-10-12** on installed system `cwfx0amr…`
+  (Rust `k2z9z61k…`): "it's really janky moving between theme cards and it
+  shouldn't be". Not accepted. This matches the board session's measured theme-row repaint
+  (about 93 ms per frame) and the full scene rebuilds during motion
+  (`docs/evidence/theme-picker/board-session-2026-10-12/README.md`).
 
 Task 14.1 host proof: the exact `--lib theme_carousel` command passed 13
 geometry/physics tests, including rendered-center tracking for both rows,
