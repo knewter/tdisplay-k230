@@ -1760,6 +1760,7 @@ DATA  eaf032fdc191224528a5c91d2fbcf3377d730a752047f4bf1c44738e1e273f02  docs/evi
 DATA  f0a3a6dd1be3da1aac8cd966bbbffb84a6284567d5de684cb5ccf837f1f61a7e  docs/evidence/recovery-routes/touch-capture-2026-10-11/video-stopped.mp4
 DATA  b5506ce563292b714551bb6a35de3e378b088ed60651fa05a6265281b1d7675f  docs/evidence/recovery-routes/touch-capture-2026-10-11/settings-denied-native.png
 DATA  f078407d50b5b949a6ee29f6f41e649f0ad74a0c3b1cc263c099073f9ca98181  docs/evidence/theme-picker/combined-install-2026-10-12/home-after-install-native.png
+DATA  d5e9e45aaffb221acc1a7a56d9951d8176a4d8e37e5b4c2340c096959c473efc  docs/evidence/theme-picker/default-backgrounds-2026-10-12/themes-without-saved-choice-native.png
 DATA  57ac5ab689645e6836f75f06c27b01c3aaf261909ccd5e2d8652b4c2fea84c2b  docs/evidence/theme-picker/board-session-2026-10-12/10.7-6.6/panel-bottom-full-resolution.png
 DATA  7e131b309e4159af7095a885c20504b1f96f6eb3eb3acba0d2517a40e44e8d8e  docs/evidence/theme-picker/board-session-2026-10-12/10.7-6.6/picker-dark-light-dark.png
 DATA  dc35b46841c36e893c0e2486b323f09af3c68d33c293da7eb8be802d716a8afc  docs/evidence/theme-picker/board-session-2026-10-12/13.4/browse-base.mp4
@@ -2957,6 +2958,7 @@ hashes and the exact triggers are in `docs/evidence/recovery-routes/touch-captur
 | `docs/evidence/recovery-routes/touch-capture-2026-10-11/video-stopped.mp4` | 115156 | DATA | `f0a3a6dd1be3da1aac8cd966bbbffb84a6284567d5de684cb5ccf837f1f61a7e` |
 | `docs/evidence/recovery-routes/touch-capture-2026-10-11/settings-denied-native.png` | 36652 | DATA | `b5506ce563292b714551bb6a35de3e378b088ed60651fa05a6265281b1d7675f` |
 | `docs/evidence/theme-picker/combined-install-2026-10-12/home-after-install-native.png` | 5322 | DATA | `f078407d50b5b949a6ee29f6f41e649f0ad74a0c3b1cc263c099073f9ca98181` |
+| `docs/evidence/theme-picker/default-backgrounds-2026-10-12/themes-without-saved-choice-native.png` | 93172 | DATA | `d5e9e45aaffb221acc1a7a56d9951d8176a4d8e37e5b4c2340c096959c473efc` |
 | `docs/evidence/theme-picker/board-session-2026-10-12/10.7-6.6/panel-bottom-full-resolution.png` | 21535 | DATA | `57ac5ab689645e6836f75f06c27b01c3aaf261909ccd5e2d8652b4c2fea84c2b` |
 | `docs/evidence/theme-picker/board-session-2026-10-12/10.7-6.6/picker-dark-light-dark.png` | 219129 | DATA | `7e131b309e4159af7095a885c20504b1f96f6eb3eb3acba0d2517a40e44e8d8e` |
 | `docs/evidence/theme-picker/board-session-2026-10-12/13.4/browse-base.mp4` | 84386 | DATA | `dc35b46841c36e893c0e2486b323f09af3c68d33c293da7eb8be802d716a8afc` |

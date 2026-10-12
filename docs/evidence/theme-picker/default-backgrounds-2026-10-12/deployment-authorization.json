@@ -1,0 +1,24 @@
+{
+  "system": "/nix/store/cwfx0amrcgxb0ni7pdpq2ij4rr8yz7bh-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "kernel": "/nix/store/f3rnipvbc5vqam8kwdmn3wgcl5rbz9yx-linux-riscv64-unknown-linux-gnu-7.3.0-rc5/Image",
+  "bundle": "/nix/store/8h1986l9ywg5g73mjjssm5zgg9iy6xcs-k230-coherent-shell-boot-files",
+  "evidence_class": "operator-authorized-userspace-update",
+  "shell_executable": "/nix/store/k2z9z61khs97ks3m2sm2ymhrisk13h5m-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0/bin/k230-shell-rust",
+  "boot_id": "8909583b-7c50-4a56-b85a-91c805847f14",
+  "deployment_authorized": true,
+  "additional_physical_collection_waived": true,
+  "operator_instruction": "\"fix the backgrounds bug first then i'll test\" (2026-10-12)",
+  "prior_waiver": "continue but you dont have to gather that proof ive already confirmed its fine carry on it's all good",
+  "recorded_utc": "2026-10-12T07:49:37.689517+00:00",
+  "source_revision": "1cc7ebe1c91dc3339f9c3dd2f1abec4b283dd582",
+  "accepted_baseline": {
+    "system": "/nix/store/zvxmd93gnn6n3vpk1mdxgajqnb8h1gkm-nixos-system-nixos-26.11.20260919.20b1ddd",
+    "kernel": "/nix/store/f3rnipvbc5vqam8kwdmn3wgcl5rbz9yx-linux-riscv64-unknown-linux-gnu-7.3.0-rc5/Image",
+    "boot_files": {
+      "Image": "9d94102c65c8e4fd6b8880ef7b19b8bee5fa91c85596384319f0104bd89509cb",
+      "initrd.uimg": "4365953c65e834fa9a9d5027ff5b6f79d99cc61afa732d58b7162a09edd2428f"
+    }
+  },
+  "provenance": "Operator instruction to fix the stuck Backgrounds row before their finger test (2026-10-12, master 1cc7ebe1, task 19.1), with the standing waiver of additional install-time physical collection. This authorizes a same-kernel userspace update and claims no finger observation; the native picker check (task 19.2) is a separate step.",
+  "limits": "No new gesture, cable cycle, pixel, timing, or individual typography/spacing physical observation is inferred."
+}

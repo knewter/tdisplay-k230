@@ -1520,7 +1520,13 @@ request was ever sent.
   falls back to the first slice, a user theme sharing the name is not used,
   a tap applies durably, and the report parser. The full suite passes
   except the existing `drawer_568x1232_matches_the_committed_evidence_exactly`.
-- [ ] 19.2 On the board with no durable pointer, open Settings → Themes and
+- [x] 19.2 On the board with no durable pointer, open Settings → Themes and
   capture the picker natively after it settles. The Backgrounds row must show
   the default theme's backgrounds, and `k230-theme list` must still report
   `active: null`.
+  **Done 2026-10-12 (injected tap, native capture):** installed system
+  `cwfx0amr…` (Rust `k2z9z61k…`), ordinary boot `a563b9fb`. The picker centred
+  on built-in `catppuccin`, and Backgrounds showed Totoro instead of "Loading
+  backgrounds". `k230-theme list` still reported `active: null`. Evidence:
+  `docs/evidence/theme-picker/default-backgrounds-2026-10-12/README.md`.
+  No finger observation.
