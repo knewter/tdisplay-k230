@@ -1940,6 +1940,15 @@ impl ShellClient {
         self.theme_dirty();
     }
 
+    /// A fresh Activate is waiting for the main loop's optimistic check,
+    /// which follows this dispatch. Drawing the picker first would put a
+    /// whole picker frame (100-190 ms on the board) between the tap and
+    /// the applied theme; the loop draws anything still dirty afterwards.
+    fn optimistic_apply_imminent(&self) -> bool {
+        matches!(self.theme_view.pending, Some(ThemeRequest::Activate { .. }))
+            && optimistic_apply_due(self.theme_optimistic_shown_for, self.theme_view.pending_id)
+    }
+
     fn theme_reply(&mut self, reply: ThemeReply) {
         // Task 3.2: a warm-up call issued by `poll_prepare_ahead` reuses the
         // ordinary `Preview` request/reply shape but was never registered
@@ -2987,6 +2996,17 @@ impl ShellClient {
 
     fn draw_home(&mut self, qh: &QueueHandle<Self>) -> bool {
         if !self.home_surface.configured || self.home_surface.frame_pending {
+            return false;
+        }
+        // Home sits under the Settings sheet while an optimistic theme waits
+        // for its durable commit. Repainting it then (336 ms on the board)
+        // held the commit acknowledgement; it stays dirty and repaints once
+        // the commit or rollback arrives, or after two seconds regardless.
+        if self.optimistic_active.is_some()
+            && self
+                .theme_apply_tapped_at
+                .is_some_and(|tapped| tapped.elapsed() < Duration::from_secs(2))
+        {
             return false;
         }
         let (width, height) = (self.home_surface.width, self.home_surface.height);
@@ -4415,7 +4435,11 @@ impl CompositorHandler for ShellClient {
         self.frame_pending = false;
         self.log("frame-done");
         runtime_trace::event("frame_callback", [0; 6]);
-        if self.dirty && !self.appearance_pending && !self.coalesce_theme_motion() {
+        if self.dirty
+            && !self.appearance_pending
+            && !self.coalesce_theme_motion()
+            && !self.optimistic_apply_imminent()
+        {
             self.draw(qh);
         }
     }
@@ -5371,7 +5395,7 @@ impl ShellClient {
                     }
                 }
             }
-            if self.dirty {
+            if self.dirty && !self.optimistic_apply_imminent() {
                 self.draw(qh);
             }
         }
@@ -6726,7 +6750,15 @@ fn serve() -> Result<(), String> {
                         );
                         state.optimistic_active = None;
                         if reuse_optimistic {
-                            pending_appearance = Some((event, Instant::now(), previous, true));
+                            // Already drawn and flushed by Optimistic Apply:
+                            // ack now, before this tick's Home repaint, so
+                            // the helper's commit never waits on it.
+                            state.adopt_committed_video_state(event.snapshot.as_ref());
+                            state.appearance_pending = false;
+                            state.log("appearance-commit-accepted reused=optimistic");
+                            if let Err(error) = appearance.respond(event, true) {
+                                state.log(&format!("appearance-ack-failed {error}"));
+                            }
                         } else {
                             let geometry = state
                                 .wallpaper

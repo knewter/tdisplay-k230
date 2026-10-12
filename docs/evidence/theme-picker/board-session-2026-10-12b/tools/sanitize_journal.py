@@ -10,7 +10,11 @@ import re
 import sys
 
 IDS = {"972f1bd5258532d1bb3125fd": "catppuccin", "10db74a93cd95c1d02dd1371": "catppuccin-latte",
-       "e662802bdec2": "gen-light", "2135c502caa9": "gen-dark"}
+       "e662802bdec2": "gen-light", "2135c502caa9": "gen-dark",
+       # Generations rebuilt for the draw-deferral trial (6.6, candidate 2jgydicg).
+       "60b0419888230e4512065a1e": "gen-light-2", "60b041988823": "gen-light-2",
+       "d8b266d1ef7ab3ff6af865f2": "gen-dark-2", "d8b266d1ef7a": "gen-dark-2",
+       "7b1d1d6a013b": "gen-light-3", "81534397d917f2be61765fa3": "catppuccin-latte-id-trial-1"}
 KEEP = re.compile(r"rust-shell \d+ms (touch-(down|up) |theme-command |appearance-(prepare|commit)-accepted|optimistic-apply |picker-memory )|THEME_TIMING (activate_generation|handle (list|preview|activate)|helperd (list|preview|activate)|app_deferred|keyboard_deferred)")
 # `journalctl -o short-iso-precise`; the swapped shell runs as `wrapper`.
 LINE = re.compile(r"^\S+T(\d\d:\d\d:\d\d\.\d+)\S* \S+ (wrapper|k230-shell-rust|k230-theme-timing)\[\d+\]: (.*)$")

@@ -200,6 +200,46 @@ In this session:
 
 The cold-open neighbour check passed in the first session and was not repeated.
 
+### Follow-up: what the tap waited on
+
+Same trial, same recipe ([tools/apply-swap.sh](tools/apply-swap.sh) with the candidate path changed), two cold-process
+trials per candidate, injected taps. Candidates 5–8 add the `entry_ms`/`checks_ms` stage fields; source is the
+`perf/theme-row-memory-trace` branch after `89f8b25e`.
+
+1. **Candidate 5 (`7rfw6yc2`, timing only).** `entry_ms`, from the Activate submit to the optimistic check, was
+   106–193 ms of the 140–235 ms shown time. The touch-up handler ends with a synchronous picker `draw` (the pending
+   and pressed state), which ran before the loop reached the optimistic check. Journals are in the private run
+   directory only.
+2. **Candidate 6 (`2jgydicg`).** The touch-up handler and the overlay frame callback skip that draw while a fresh
+   Activate awaits the optimistic check; the loop draws anything still dirty afterwards. Tap-up to shown frame:
+   **27.8–31.1 ms**, `entry_ms` 3.4–6.1, `prerendered=true` 4 of 4
+   ([6.6/candidate-6/](6.6/candidate-6/)). The helper's commit then waited longer: the shell spent 336 ms repainting the
+   hidden Home layer (`K230_HOME_FRAME ms=336`) before acknowledging. Shell commit exchange 165–232 ms,
+   `commit_phase` 215–238 ms, activate round trip 459–476 ms.
+3. **Candidate 7 (`bgdk0j87`).** Defers the Home repaint while an optimistic frame awaits its commit (cap 2 s). The
+   commit event clears that state on arrival, and the loop still repainted Home before reaching the deferred ack:
+   shell commit exchange 214–232 ms, `commit_phase` 281–301 ms. Private run directory only.
+4. **Candidate 8 (`hl4bca4g`).** Also acknowledges a reused optimistic commit as soon as the event arrives, before that
+   tick's Home repaint ([6.6/candidate-8/](6.6/candidate-8/)):
+
+| Candidate 8 | Light (t1 / t2) | Dark (t1 / t2) |
+| --- | ---: | ---: |
+| `optimistic-apply shown ms` | 27.5 / 28.8 | 29.2 / 34.2 |
+| `prerendered` | true / true | true / true |
+| shell commit exchange, ms | 48.1 / 52.6 | 37.2 / 42.9 |
+| `activate_generation` total; `commit_phase`, ms | 179.1 / 174.9; 110.5 / 115.9 | 166.5 / 170.6; 105.1 / 105.7 |
+| `theme-command activate` round trip, ms | 338 / 339 | 333 / 342 |
+
+Home repaints 350 ms after the ack (`K230_HOME_FRAME ms=347–355`), off the commit path. Every apply changed the active
+theme link (`ACTIVE_*` in [6.6/candidate-8/marks.txt](6.6/candidate-8/marks.txt)). Native grim captures of the picker
+after each apply (trial 2 of candidates 6 and 8, viewed, not committed) show the applied theme's chrome and
+"Current theme" on the applied item.
+
+The visible apply is now well under 150 ms. The durable activation, measured by the helper, is not:
+`activate_generation` is 167–179 ms, and `prepare_entry` (82–101 ms) plus `commit_phase` put the round trip at
+333–342 ms. The commit exchange with the card process (32–35 ms) and `swap_pointer` (23–39 ms) remain inside
+`commit_phase`. Neither the injected taps nor these journals are a finger-on-glass measurement.
+
 ## Install
 
 | Identity | Value |

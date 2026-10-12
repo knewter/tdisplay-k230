@@ -1,0 +1,29 @@
+=== TRIAL 1 2026-10-12T18:17:57.641Z
+ACTIVE_BEFORE 1e892ba5706d3a1f
+MARK restart 2026-10-12T18:17:57.781Z mono=3888.15
+MARK open 2026-10-12T18:18:07.901Z mono=3898.27
+MARK open-settled 2026-10-12T18:18:23.697Z mono=3914.07
+MARK browsed-light 2026-10-12T18:18:28.297Z mono=3918.67
+MARK tap-apply-light 2026-10-12T18:18:28.940Z mono=3919.31
+MARK applied-light 2026-10-12T18:18:33.763Z mono=3924.13
+ACTIVE_LIGHT 955557c4c30534be
+MARK browsed-dark 2026-10-12T18:18:38.361Z mono=3928.73
+MARK tap-apply-dark 2026-10-12T18:18:39.026Z mono=3929.40
+MARK applied-dark 2026-10-12T18:18:43.839Z mono=3934.21
+ACTIVE_AFTER 1e892ba5706d3a1f
+RUST_EXE /nix/store/hl4bca4gi4m0wmhwas1i1zl8n360m744-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0/bin/k230-shell-rust
+=== TRIAL 2 2026-10-12T18:18:47.696Z
+ACTIVE_BEFORE 1e892ba5706d3a1f
+MARK restart 2026-10-12T18:18:47.839Z mono=3938.21
+MARK open 2026-10-12T18:18:57.986Z mono=3948.36
+MARK open-settled 2026-10-12T18:19:13.795Z mono=3964.17
+MARK browsed-light 2026-10-12T18:19:18.375Z mono=3968.75
+MARK tap-apply-light 2026-10-12T18:19:19.013Z mono=3969.38
+MARK applied-light 2026-10-12T18:19:23.830Z mono=3974.20
+ACTIVE_LIGHT 955557c4c30534be
+MARK browsed-dark 2026-10-12T18:19:28.444Z mono=3978.82
+MARK tap-apply-dark 2026-10-12T18:19:29.103Z mono=3979.47
+MARK applied-dark 2026-10-12T18:19:34.005Z mono=3984.38
+ACTIVE_AFTER 1e892ba5706d3a1f
+RUST_EXE /nix/store/hl4bca4gi4m0wmhwas1i1zl8n360m744-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0/bin/k230-shell-rust
+RESTORED /nix/store/3m65ag9zlzffdd86ajjfq7si96cj46y1-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0/bin/k230-shell-rust

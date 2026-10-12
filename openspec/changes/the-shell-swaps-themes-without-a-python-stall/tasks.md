@@ -459,6 +459,16 @@ for 5.4 is the board run quoted above.
   It is still **not under 150 ms**: `activate_generation` is 140-174 ms, of which
   `commit_phase` is 72-109 ms and `swap_pointer` 26-33 ms, and the activate round
   trip is 280-326 ms.
+  **Follow-up 2026-10-12 (b), task stays open** (same README, "Follow-up: what
+  the tap waited on"; candidate `hl4bca4g`, two cold-process trials, injected
+  taps): the touch-up handler no longer draws the picker before the optimistic
+  check, Home's repaint waits for the commit, and a reused optimistic commit is
+  acknowledged on arrival. Tap-up to the shown frame is **27.5-34.2 ms**
+  (`prerendered=true`, 4 of 4). The durable activation is still not under
+  150 ms: `activate_generation` 167-179 ms (`commit_phase` 105-116 ms, shell
+  commit exchange 37-53 ms), round trip 333-342 ms. Whether "end to end" means
+  the visible apply or the helper's durable activation is for the coordinator
+  to decide; until then the task stays open.
 
 Proof for 6.1-6.5: the tests named above, all passing on this host; proof
 for 6.6 is the reserved board, not run here.
@@ -1547,6 +1557,10 @@ Caller and observer limits remain open; the user still reports jank.
 - [ ] 18.4 Obtain user finger feedback on direct tracking, flick distance, final
   settling and interruption in both rows. A report of improvement alone is
   not acceptance of the curves. Keep this open if only injected tests exist.
+  **Operator report 2026-10-12** on installed system `fm8gk6xi…` (Rust `3m65ag9z…`),
+  after being asked about tracking, flick distance, settling and interruption on
+  both rows: "yeah it's fast go". This is a report of improvement, not an answer
+  on the four properties, so the task stays open.
 
 Task 17.2 source/build and the first task 17.3 injected pair: `docs/evidence/theme-picker/row-repaint/pair/README.md`. Task 17.3 remains open for combined-source installation and deployment; real-finger acceptance is separate.
 
