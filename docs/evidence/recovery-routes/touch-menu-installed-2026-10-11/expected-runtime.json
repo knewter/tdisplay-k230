@@ -1,0 +1,12 @@
+{
+  "rust": "/nix/store/si9vd9hhdcb8kzppfsfq9id8kaqhnmwk-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0/bin/k230-shell-rust",
+  "sway": "/nix/store/q96sk40q7j5v9f0ygxf2wx3yk7nzixqs-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway",
+  "helper": "/nix/store/y4yb89bs6fvp250vqkbknxsi85kd64lj-handheld-theme-command-0.1",
+  "baseline_appearance": {
+    "generation": null,
+    "report_sha256": null
+  },
+  "baseline_preferences_sha256": null,
+  "source_revision": "383d45247e6ac56a11504e4bda7837aee930a9e0",
+  "rust_launcher": "/nix/store/f8z7sjpx3ihwcyl23nzn4gjkkmq3v618-k230-shell-rust/bin/k230-shell-rust"
+}

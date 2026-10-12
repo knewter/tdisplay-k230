@@ -1,0 +1,24 @@
+{
+  "system": "/nix/store/7s8pl7pvdc9npqry1c6dzblk8k16x002-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "kernel": "/nix/store/f3rnipvbc5vqam8kwdmn3wgcl5rbz9yx-linux-riscv64-unknown-linux-gnu-7.3.0-rc5/Image",
+  "bundle": "/nix/store/hns0czzx7j27qy4wpzbpl3104535dx51-k230-coherent-shell-boot-files",
+  "evidence_class": "operator-authorized-userspace-update",
+  "shell_executable": "/nix/store/si9vd9hhdcb8kzppfsfq9id8kaqhnmwk-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0/bin/k230-shell-rust",
+  "boot_id": "561f5e4b-1123-4bd8-8ecc-d701ee221245",
+  "deployment_authorized": true,
+  "additional_physical_collection_waived": true,
+  "operator_instruction": "go",
+  "prior_waiver": "continue but you dont have to gather that proof ive already confirmed its fine carry on it's all good",
+  "recorded_utc": "2026-10-12T00:28:22.626935+00:00",
+  "source_revision": "383d45247e6ac56a11504e4bda7837aee930a9e0",
+  "accepted_baseline": {
+    "system": "/nix/store/hamn9j9y78xhy8r6j833kxg5gg9msm82-nixos-system-nixos-26.11.20260919.20b1ddd",
+    "kernel": "/nix/store/f3rnipvbc5vqam8kwdmn3wgcl5rbz9yx-linux-riscv64-unknown-linux-gnu-7.3.0-rc5/Image",
+    "boot_files": {
+      "Image": "9d94102c65c8e4fd6b8880ef7b19b8bee5fa91c85596384319f0104bd89509cb",
+      "initrd.uimg": "4365953c65e834fa9a9d5027ff5b6f79d99cc61afa732d58b7162a09edd2428f"
+    }
+  },
+  "provenance": "Operator instruction (\"go\", in reply to a request to say go when at the board) to deploy the touch app-menu build (master 383d4524), with their standing waiver of additional install-time physical collection. This authorizes a same-kernel userspace update and claims no finger observation; the real-finger capture (the-shell-proves-recovery-states-by-touch task 3.1) is a separate, later step.",
+  "limits": "No new gesture, cable cycle, pixel, timing, or individual typography/spacing physical observation is inferred."
+}
