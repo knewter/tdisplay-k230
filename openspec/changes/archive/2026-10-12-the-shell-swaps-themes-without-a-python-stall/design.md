@@ -233,7 +233,7 @@ generation before using its swipe/memory measurements as comparable evidence.
 
 ## Measure remaining swipe cost and admit speculative work only at rest
 
-The [paired browsing observation](../../../docs/evidence/theme-picker/working-set/README.md)
+The [paired browsing observation](../../../../docs/evidence/theme-picker/working-set/README.md)
 proved that speculative overlay completions during held touch fell from five
 to zero, but did not prove smoother warm browsing: warm commit-gap median
 was 125 ms before and 132 ms after, and maxima were 258/285 ms. Both idle

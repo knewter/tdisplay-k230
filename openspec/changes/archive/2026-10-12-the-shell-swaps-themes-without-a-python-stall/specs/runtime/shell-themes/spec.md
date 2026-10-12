@@ -20,6 +20,8 @@
      injected physical-board Home captures:
      docs/evidence/theme-picker/background-selection/README.md. -->
 
+*Grounding: user decision of 2026-09-25 (comment above); `nix/rust-shell-client/src/theme_ui.rs` and its unit tests; board apply trials on installed system `298a2bf6` in `docs/evidence/theme-picker/board-session-2026-10-12b/README.md` ("Task 6.6" and "Install of candidate 8"): a centre tap activates directly, with no preview request. Operator acceptance 2026-10-12: "it's great now i tried it all it's good". Taps in those trials were injected.*
+
 The theme chooser SHALL present the theme carousel and the active theme's
 own background carousel on one page, with no separate preview page and no
 Apply/Cancel footer. A tap on a carousel's own already-centred slice SHALL
@@ -87,6 +89,8 @@ stale, superseded activations ever building up or later firing.
      docs/evidence/omarchy-themes/theme-swap-jank/README.md and
      tests/test_theme_helper_daemon.py for this requirement's own proof. -->
 
+*Grounding: `docs/evidence/omarchy-themes/background-decode-cache-qemu/README.md` for the removed cost; `docs/evidence/omarchy-themes/theme-swap-jank/README.md` and `tests/test_theme_helper_daemon.py`; board journals in `docs/evidence/theme-picker/board-session-2026-10-12b/README.md` show each Apply handled by the resident `helperd` (`THEME_TIMING helperd activate`).*
+
 When the persistent theme helper (`theme-helper.service`) is running, a
 `k230-theme preview` or `k230-theme activate` invocation SHALL NOT import
 the theme-activation module chain (`theme_activate`, `theme_transaction`,
@@ -128,6 +132,8 @@ timeout.
      both read; tests/background_decode_module.rs and
      tests/test_card_shell_appearance.py for this requirement's own proof. -->
 
+*Grounding: `tests/background_decode_module.rs` and `tests/test_card_shell_appearance.py`; board journals in `docs/evidence/theme-picker/board-session-2026-10-12b/README.md` show `activate_generation ... prepare_phase=0.1-3.9ms warm=2 targets=2` and `appearance-commit-accepted reused=optimistic`.*
+
 Each of the two appearance receivers (the Rust chooser/wallpaper client and
 the Sway/card-shell compositor) SHALL retain, in memory, the decoded
 wallpaper or built gradient for at least the most recently prepared
@@ -166,6 +172,8 @@ changes what is rendered, only whether that work is repeated.
      prepare_ahead_submitted/prepare_ahead_reply) and main.rs's per-tick
      carousel-settle hook, both read; theme_ui.rs's own unit tests for this
      requirement's proof. -->
+
+*Grounding: `nix/rust-shell-client/src/theme_ui.rs` unit tests; board cold-open neighbour check in `docs/evidence/theme-picker/board-session-2026-10-12/README.md` (second theme warm about 0.3 s after the first, not a fresh ~4 s preview).*
 
 While the Themes list page is open and its carousel is at rest (no drag,
 coast, or settle animation in progress) on one theme for a short, bounded
@@ -214,6 +222,8 @@ itself cause a warm-up request.
      since-removed separate Apply button; the mechanism this requirement
      describes -- what the receiver does once that tap's own `activate`
      request is dispatched -- is unchanged by that later decision. -->
+
+*Grounding: user decision of 2026-09-25 (comment above); board apply trials in `docs/evidence/theme-picker/board-session-2026-10-12b/README.md`: tap-up to shown frame 27.5-42.2 ms with `prerendered=true`, ahead of a durable activation of 149-179 ms, including one trial on installed system `298a2bf6`. Operator acceptance 2026-10-12: "it's great now i tried it all it's good". Taps were injected.*
 
 When an Apply tap's target generation is already the Rust receiver's own
 `prepare`d snapshot, the chooser SHALL render that appearance -- the
@@ -305,6 +315,8 @@ docs/evidence/theme-picker/board-session-2026-10-12b/ (11.3). Operator
 real-finger acceptance: "14.4 they do, is good" (2026-10-12), and "it's great
 now i tried it all it's good" on installed system 298a2bf6 (2026-10-12). -->
 
+*Grounding: injected board pairs and sprite repaint in `docs/evidence/theme-picker/row-sprites-2026-10-12/README.md` and `docs/evidence/theme-picker/board-session-2026-10-12b/README.md`; operator real-finger acceptance 2026-10-12 ("14.4 they do, is good"; "it's great now i tried it all it's good" on installed system `298a2bf6`). No camera recording was taken.*
+
 While a person holds and drags either picker row, the reference preview card's
 horizontal center SHALL track their horizontal displacement in surface pixels,
 subject only to catalog end bounds. Momentum SHALL start only after release;
@@ -332,6 +344,8 @@ for 40 injected gestures (docs/evidence/theme-picker/board-session-2026-10-12b/
 Operator real-finger acceptance of tracking, flick distance, settling and
 interruption on both rows: "it's great now i tried it all it's good" on
 installed system 298a2bf6 (2026-10-12). No camera recording was taken. -->
+
+*Grounding: board per-frame position and velocity curves for 40 injected gestures in `docs/evidence/theme-picker/board-session-2026-10-12b/README.md` (task 18.3: monotonic approach, no overshoot, repeatable final items); operator real-finger acceptance of tracking, flick distance, settling and interruption on both rows, 2026-10-12, on installed system `298a2bf6`. No camera recording was taken.*
 
 Both picker rows SHALL use actual elapsed time for release motion and SHALL
 carry screen-space release velocity continuously into centering. A new contact
