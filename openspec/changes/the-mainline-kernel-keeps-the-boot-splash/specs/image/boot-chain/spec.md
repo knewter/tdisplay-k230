@@ -7,15 +7,16 @@ buffer's address range from the kernel's allocator, with the address and size
 taken from the same flake constant that configures stage 1's splash symbol, so
 that a stage 1 image survives until a display client replaces it.
 
-*Grounding: the vendor tree `nix/dts/k230-tdisplay.dts` carries a
-`reserved-memory` framebuffer node (task 3.5 of the archived
-`the-screen-lights-before-linux`); the mainline trees under
-`nix/dts/k230-tdisplay-mainline-drm*.dts*` carry none (read 2026-10-12).*
-
-<!-- UNVERIFIED in full: no reservation exists in the mainline tree yet, and
- no boot has shown the buffer surviving to a display client on the mainline
- kernel. Proven by tasks 1.1 and 2.1 to 2.4 of
- the-mainline-kernel-keeps-the-boot-splash. -->
+*Grounding: `nix/dts/k230-tdisplay-mainline-drm-common.dtsi` carries
+`framebuffer@10000000` (`0x400000`, `no-map`) from the flake's splash
+constants (task 1.1, `docs/evidence/mainline-boot-splash/README.md`). On the
+board (`docs/evidence/mainline-boot-splash/board/README.md`, 2026-10-12, warm
+reboots): the kernel logs `reserved mem: 0x10000000..0x103fffff nomap
+framebuffer@10000000`, an idle kernel with no DRM client keeps the logo on the
+glass for a 90 s hold, and two filmed boots show the logo until the
+compositor's first frame. Transient 1-4-frame scanout glitches during early
+userspace (same README) recover without leaving a changed image; their cause
+is open as task 4.1.*
 
 #### Scenario: The compiled device tree is inspected
 

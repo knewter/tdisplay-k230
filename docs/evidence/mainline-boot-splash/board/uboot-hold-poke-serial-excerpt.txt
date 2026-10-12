@@ -1,0 +1,57 @@
+# tools/splash-uboot-session.py hold --seconds 15 --poke ..., 2026-10-12 (film3)
+# Excerpt: reboot to the reset command; ANSI and addresses removed.
+
+[   0.402] --- sending: reboot ---
+[... Linux shutdown omitted ...]
+U-Boot SPL 2022.10 (Oct 03 2022 - 19:25:32 +0000)
+lpddr4 2660
+imge: uboot load to 0  compress =1  src 15000254 len=5e138 
+imge: uboot load to 0  compress =1  src 15000254 len=bae28  
+
+U-Boot 2022.10 (Oct 03 2022 - 19:25:32 +0000)
+
+CPU:   rv64imafdcvsu
+Model: kendryte k230 canmv v3
+DRAM:  1 GiB
+Core:  27 devices, 15 uclasses, devicetree: embed
+MMC:   mmc0@91580000: 0, mmc1@91581000: 1
+Loading Environment from MMC... OK
+In:    serial@91400000
+Out:   serial@91400000
+Err:   serial@91400000
+Net:   No ethernet found.
+2799104 bytes read in 117 ms (22.8 MiB/s)
+RM69A10 direct XRGB8888 logo.xrgb full-screen OSD4
+Hit any key to stop autoboot:  1  0
+K230#                                         
+K230# 
+K230# [  12.648] --- sending: version ---
+version
+U-Boot 2022.10 (Oct 03 2022 - 19:25:32 +0000)
+
+riscv64-unknown-linux-gnu-gcc (GCC) 15.3.0
+GNU ld (GNU Binutils) 2.46
+K230# 
+U-Boot 2022.10 (Oct 03 2022 - 19:25:32 +0000)
+
+riscv64-unknown-linux-gnu-gcc (GCC) 15.3.0
+GNU ld (GNU Binutils) 2.46
+K230# [  12.749] --- AT_UBOOT_PROMPT ---
+[  27.872] --- sending: md.l 0x10000000 4 ---
+md.l 0x10000000 4
+10000000: ff000000 ff000000 ff000000 ff000000  ................
+K230# [  27.973] --- POKED ---
+[  38.284] --- sending: mw.l 0x10000000 0xffffffff 0x1bbc0 ---
+mw.l 0x10000000 0xffffffff 0x1bbc0
+K230# 
+K230# [  38.385] --- POKED ---
+[  48.705] --- sending: md.l 0x10000000 4 ---
+md.l 0x10000000 4
+10000000: ffffffff ffffffff ffffffff ffffffff  ................
+K230# [  48.806] --- POKED ---
+[  59.133] --- sending: echo UBOOT_PROMPT_STILL_ALIVE ---
+echo UBOOT_PROMPT_STILL_ALIVE
+UBOOT_PROMPT_STILL_ALIVE
+K230# 
+UBOOT_PROMPT_STILL_ALIVE
+K230# [  59.287] --- sending: reset ---

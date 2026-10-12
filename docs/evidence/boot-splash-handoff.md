@@ -275,3 +275,22 @@ not triggered by this result. This is a same-card warm-boot
 experiment, not the outstanding second-card or complete power-on procedure.
 The saved boot arguments were restored before the display experiment, and a
 normal reboot removed the temporary units and returned automatic shell startup.
+
+## Mainline kernel handoff on the board, 2026-10-12
+
+`the-mainline-kernel-keeps-the-boot-splash` tasks 2.3 and 2.4, recorded in
+`docs/evidence/mainline-boot-splash/board/README.md` (warm reboots, not
+power-on, by operator decision):
+
+- 2.3 idle kernel (shell, seatd and `k230-drm-splash` masked for one boot):
+  `canaan,stage1-splash` in `/proc/device-tree/chosen`, "stage 1 splash:
+  leaving fbdev unset", no panel prepare line, `ls /dev/fb0` fails, no
+  `/dev/dri` holder (`mainline-boot-splash/board/idle-kernel-serial-excerpt.txt`);
+  logo on the glass at the prompt
+  (`mainline-boot-splash/board/splash-at-idle-kernel-prompt.jpg`).
+- 2.4 frame timings: film1 logo 16.37-80.93 s, compositor first frame
+  80.97 s; film7 (installed default autoboot) logo 42.43-121.93 s,
+  compositor 121.97 s; no frame between, and the Linux splash owner's
+  takeover does not change the image. Every splash boot also showed 1-4-frame
+  scanout glitches of the logo in early userspace (not dark frames); cause
+  open as task 4.1.

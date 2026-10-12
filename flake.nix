@@ -251,16 +251,18 @@
               ];
               boot.kernelModules = nixpkgs.lib.mkForce [ "8189fs" "uinput" ];
               k230.touchTrackpad.enable = true;
+              # The boot splash, not the panel console, on the mainline
+              # daily system: the-mainline-kernel-keeps-the-boot-splash
+              # gates 2.1-2.4 passed on this tree (docs/evidence/
+              # mainline-boot-splash/board/). The vendor-kernel `k230` keeps
+              # its explicit `true`; its handoff was never re-proven.
+              k230.panelConsole = nixpkgs.lib.mkForce false;
             })
           ];
         };
-        # openspec/changes/the-mainline-kernel-keeps-the-boot-splash task 1.3:
-        # the daily mainline shell with the boot splash instead of the panel
-        # console (logo.xrgb on /boot, no console=tty0). Not the default; the
-        # default flips only after the hardware gates (task 3.1).
-        k230-mainline-drm-shell-splash = self.nixosConfigurations.k230-mainline-drm-shell.extendModules {
-          modules = [ { k230.panelConsole = nixpkgs.lib.mkForce false; } ];
-        };
+        # The name the splash trial was built and installed under (task 1.3);
+        # since task 3.1 it is the daily system itself.
+        k230-mainline-drm-shell-splash = self.nixosConfigurations.k230-mainline-drm-shell;
         # Retain the HDMI-only rollback trial profile; the daily system now
         # restores direct touch on the panel and relays touch on active HDMI.
         k230-mainline-drm-shell-hdmi = self.nixosConfigurations.k230-mainline-drm-shell.extendModules { };
@@ -853,8 +855,7 @@
           kernel = self.nixosConfigurations.k230-mainline-drm-shell.config.boot.kernelPackages.kernel;
           deviceTree = self.packages.${buildSystem}.mainlineDrmHotplugDeviceTreeNormalName;
         };
-        # The same image with k230.panelConsole = false (task 1.3 of
-        # the-mainline-kernel-keeps-the-boot-splash). Laptop build only.
+        # Task 1.3's splash image; since task 3.1 the same as sdImage.
         sdImage-mainline-splash = mkBoardImageWith {
           cfg = self.nixosConfigurations.k230-mainline-drm-shell-splash.config;
           kernel = self.nixosConfigurations.k230-mainline-drm-shell-splash.config.boot.kernelPackages.kernel;
@@ -881,6 +882,7 @@
         kernelMainlineDrmShellBootFiles = pkgs.callPackage ./nix/coherent-shell-boot-files.nix {
           cfg = self.nixosConfigurations.k230-mainline-drm-shell.config;
           configuration = "k230-mainline-drm-shell";
+          splashImage = if self.nixosConfigurations.k230-mainline-drm-shell.config.k230.panelConsole then null else bootSplashImage;
           deviceTree = self.packages.${buildSystem}.mainlineDrmHotplugDeviceTreeNormalName;
         };
         kernelMainlineDrmShellHpdMonitorBootFiles = pkgs.callPackage ./nix/coherent-shell-boot-files.nix {

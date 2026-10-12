@@ -102,3 +102,26 @@ subsequent daily shell images omit `logo.xrgb`. This carries the observed
 no-logo workaround into reproducible image builds. The splash package and
 runtime handoff work remain available for an explicit experimental build;
 changing the default back requires physical handoff evidence.
+
+## Mainline splash on the board, 2026-10-12
+
+`the-mainline-kernel-keeps-the-boot-splash` tasks 2.1 and 2.2, recorded in
+`docs/evidence/mainline-boot-splash/board/README.md` (warm reboots, in place
+on the board's one card, by operator decision):
+
+- 2.1: `mainline-boot-splash/board/splash-at-uboot-before-kernel.jpg`, taken
+  8 s before `bootm`/`Starting kernel` in
+  `mainline-boot-splash/board/idle-kernel-serial-excerpt.txt`.
+- 2.2 measurement (U-Boot target at `K230#`, `{3, 97, 0x17, 0x87}`, camera
+  px, unregistered as the 0x87 rows were):
+
+| | U-Boot target | static control | 0x87 run 2 |
+| --- | --- | --- | --- |
+| motion std | 0.01 px | 0.02 px | 0.02 px |
+| span | 0.10 px | 0.15 px | 0.09 px |
+| frame-to-frame max | 0.06 px | 0.14 px | 0.04 px |
+| brightness range | 100..100% | 99..102% | 100..100% |
+
+The daily mainline system now defaults to the splash
+(`k230-mainline-drm-shell` sets `k230.panelConsole = false`); the vendor-kernel
+`k230` configuration keeps the explicit `true` described above.

@@ -1,0 +1,24 @@
+{
+  "system": "/nix/store/kc3iyr4cnjlswa87kkpi81qgc1is6hli-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "kernel": "/nix/store/f3rnipvbc5vqam8kwdmn3wgcl5rbz9yx-linux-riscv64-unknown-linux-gnu-7.3.0-rc5/Image",
+  "bundle": "/nix/store/kjlnrxv8vdk92lh84w2bkd1v0mx456hy-k230-coherent-shell-boot-files",
+  "evidence_class": "operator-authorized-userspace-update",
+  "shell_executable": "/nix/store/hl4bca4gi4m0wmhwas1i1zl8n360m744-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0/bin/k230-shell-rust",
+  "boot_id": "34be0207-1b60-4833-baea-b1d2ea81dd5f",
+  "deployment_authorized": true,
+  "additional_physical_collection_waived": true,
+  "operator_instruction": "\"i want the boot flash and the second core bring up\" / \"boot splash i mean\" (2026-10-12); in-place install answered \"In place is fine\"; warm-reboot film answered \"Warm reboot is enough\"",
+  "prior_waiver": "None for physical evidence: the splash gates 2.1-2.4 were collected on camera (docs/evidence/mainline-boot-splash/board/).",
+  "recorded_utc": "2026-10-12T21:00:17.776985+00:00",
+  "source_revision": "a03999c3815a5aac6a9da2ad2fef1ba921b435dd",
+  "accepted_baseline": {
+    "system": "/nix/store/298a2bf6sqpc82ngdryxgg3xmr9fg9f7-nixos-system-nixos-26.11.20260919.20b1ddd",
+    "kernel": "/nix/store/f3rnipvbc5vqam8kwdmn3wgcl5rbz9yx-linux-riscv64-unknown-linux-gnu-7.3.0-rc5/Image",
+    "boot_files": {
+      "Image": "9d94102c65c8e4fd6b8880ef7b19b8bee5fa91c85596384319f0104bd89509cb",
+      "initrd.uimg": "4365953c65e834fa9a9d5027ff5b6f79d99cc61afa732d58b7162a09edd2428f"
+    }
+  },
+  "provenance": "Mainline boot-splash variant (k230-mainline-drm-shell-splash, impl/mainline-splash-2026-10-12 a03999c3): same Image and initrd as the accepted baseline; device tree gains the 0x10000000/0x400000 no-map splash reservation, bootargs drop console=tty0, and logo.xrgb is already on /boot. Installed because U-Boot now lights logo.xrgb and the unreserved ordinary kernel was filmed tearing it (2026-10-12).",
+  "limits": "Serial, SSH and camera evidence only; no finger observation is claimed."
+}

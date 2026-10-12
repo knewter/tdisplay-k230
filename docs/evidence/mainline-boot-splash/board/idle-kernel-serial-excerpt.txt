@@ -1,0 +1,163 @@
+# tools/splash-uboot-session.py idle, 2026-10-12, board k230 (warm reboot)
+# Excerpt: U-Boot portion up to Starting kernel, then the two check blocks
+# (at the prompt, and after the 90 s hold). Linux boot lines between are omitted
+# (private log retained off-repo); ANSI and addresses removed.
+
+[   0.401] --- sending: reboot ---
+[... Linux shutdown omitted ...]
+U-Boot SPL 2022.10 (Oct 03 2022 - 19:25:32 +0000)
+lpddr4 2660
+imge: uboot load to 0  compress =1  src 15000254 len=5e138 
+imge: uboot load to 0  compress =1  src 15000254 len=bae28  
+
+U-Boot 2022.10 (Oct 03 2022 - 19:25:32 +0000)
+
+CPU:   rv64imafdcvsu
+Model: kendryte k230 canmv v3
+DRAM:  1 GiB
+Core:  27 devices, 15 uclasses, devicetree: embed
+MMC:   mmc0@91580000: 0, mmc1@91581000: 1
+Loading Environment from MMC... OK
+In:    serial@91400000
+Out:   serial@91400000
+Err:   serial@91400000
+Net:   No ethernet found.
+2799104 bytes read in 118 ms (22.6 MiB/s)
+RM69A10 direct XRGB8888 logo.xrgb full-screen OSD4
+Hit any key to stop autoboot:  1  0
+K230#                                       
+K230# 
+K230# [  12.620] --- sending: version ---
+version
+U-Boot 2022.10 (Oct 03 2022 - 19:25:32 +0000)
+
+riscv64-unknown-linux-gnu-gcc (GCC) 15.3.0
+GNU ld (GNU Binutils) 2.46
+K230# 
+U-Boot 2022.10 (Oct 03 2022 - 19:25:32 +0000)
+
+riscv64-unknown-linux-gnu-gcc (GCC) 15.3.0
+GNU ld (GNU Binutils) 2.46
+K230# [  13.276] --- sending: ext4load mmc 1:2 0x7000000 /var/lib/k230/coherent-boot/kc3iyr4cnjlswa87kkpi81qgc1is6hli-20261012f/bootargs.txt ---
+ext4load mmc 1:2 0x7000000 /var/lib/k230/coherent-boot/kc3iyr4cnjlswa87kkpi81qgc1is6hli-20261012f/bootargs.txt
+198 bytes read in 5 ms (38.1 KiB/s)
+K230# 
+K230# [  13.938] --- sending: crc32 0x7000000 0xc6 ---
+crc32 0x7000000 0xc6
+crc32 for 07000000 ... 070000c5 ==> 762be152
+K230# 
+crc32 for 07000000 ... 070000c5 ==> 762be152
+K230# [  14.735] --- sending: ext4load mmc 1:2 0x200000 /var/lib/k230/coherent-boot/kc3iyr4cnjlswa87kkpi81qgc1is6hli-20261012f/Image ---
+ext4load mmc 1:2 0x200000 /var/lib/k230/coherent-boot/kc3iyr4cnjlswa87kkpi81qgc1is6hli-20261012f/Image
+42745856 bytes read in 1773 ms (23 MiB/s)
+K230# 
+K230# [  17.098] --- sending: crc32 0x200000 0x28c4000 ---
+crc32 0x200000 0x28c4000
+crc32 for 00200000 ... 02ac3fff ==> 2a872808
+K230# 
+crc32 for 00200000 ... 02ac3fff ==> 2a872808
+K230# [  18.276] --- sending: ext4load mmc 1:2 0x8400000 /var/lib/k230/coherent-boot/kc3iyr4cnjlswa87kkpi81qgc1is6hli-20261012f/k230-tdisplay.dtb ---
+ext4load mmc 1:2 0x8400000 /var/lib/k230/coherent-boot/kc3iyr4cnjlswa87kkpi81qgc1is6hli-20261012f/k230-tdisplay.dtb
+14760 bytes read in 6 ms (2.3 MiB/s)
+K230# 
+K230# [  18.934] --- sending: crc32 0x8400000 0x39a8 ---
+crc32 0x8400000 0x39a8
+crc32 for 08400000 ... 084039a7 ==> 29542e75
+K230# 
+crc32 for 08400000 ... 084039a7 ==> 29542e75
+K230# [  19.595] --- sending: ext4load mmc 1:2 0x9000000 /var/lib/k230/coherent-boot/kc3iyr4cnjlswa87kkpi81qgc1is6hli-20261012f/initrd.uimg ---
+ext4load mmc 1:2 0x9000000 /var/lib/k230/coherent-boot/kc3iyr4cnjlswa87kkpi81qgc1is6hli-20261012f/initrd.uimg
+27330502 bytes read in 1136 ms (22.9 MiB/s)
+K230# 
+K230# [  21.355] --- sending: crc32 0x9000000 0x1a107c6 ---
+crc32 0x9000000 0x1a107c6
+crc32 for 09000000 ... 0aa107c5 ==> c5a9d6cc
+K230# 
+crc32 for 09000000 ... 0aa107c5 ==> c5a9d6cc
+K230# [  22.332] --- sending: ext4load mmc 1:2 0x8000000 /var/lib/k230/coherent-boot/kc3iyr4cnjlswa87kkpi81qgc1is6hli-20261012f/backup/fw_jump_add_uboot_head.bin ---
+ext4load mmc 1:2 0x8000000 /var/lib/k230/coherent-boot/kc3iyr4cnjlswa87kkpi81qgc1is6hli-20261012f/backup/fw_jump_add_uboot_head.bin
+270808 bytes read in 17 ms (15.2 MiB/s)
+K230# 
+K230# [  22.992] --- sending: crc32 0x8000000 0x421d8 ---
+crc32 0x8000000 0x421d8
+crc32 for 08000000 ... 080421d7 ==> 99b89787
+K230# 
+crc32 for 08000000 ... 080421d7 ==> 99b89787
+K230# [  23.644] --- sending: env import -t 0x7000000 0xc6 ---
+env import -t 0x7000000 0xc6
+K230# 
+K230# [  24.296] --- sending: printenv bootargs ---
+printenv bootargs
+bootargs=consoleblank=0 console=ttyS0,115200n8 root=fstab loglevel=4 lsm=landlock,yama,bpf loglevel=7 init=/nix/store/kc3iyr4cnjlswa87kkpi81qgc1is6hli-nixos-system-nixos-26.11.20260919.20b1ddd/init
+K230# 
+bootargs=consoleblank=0 console=ttyS0,115200n8 root=fstab loglevel=4 lsm=landlock,yama,bpf loglevel=7 init=/nix/store/kc3iyr4cnjlswa87kkpi81qgc1is6hli-nixos-system-nixos-26.11.20260919.20b1ddd/init
+K230# [  24.948] --- sending: setenv bootargs "${bootargs} systemd.mask=shell.service systemd.mask=seatd.service systemd.mask=k230-drm-splash.service" ---
+setenv bootargs "${bootargs} systemd.mask=shell.service systemd.mask=seatd.service systemd.mask=k230-drm-splash.service"
+K230# 
+K230# [  25.608] --- sending: printenv bootargs ---
+printenv bootargs
+bootargs=consoleblank=0 console=ttyS0,115200n8 root=fstab loglevel=4 lsm=landlock,yama,bpf loglevel=7 init=/nix/store/kc3iyr4cnjlswa87kkpi81qgc1is6hli-nixos-system-nixos-26.11.20260919.20b1ddd/init systemd.mask=shell.service systemd.mask=seatd.service systemd.mask=k230-drm-splash.service
+K230# 
+bootargs=consoleblank=0 console=ttyS0,115200n8 root=fstab loglevel=4 lsm=landlock,yama,bpf loglevel=7 init=/nix/store/kc3iyr4cnjlswa87kkpi81qgc1is6hli-nixos-system-nixos-26.11.20260919.20b1ddd/init systemd.mask=shell.service systemd.mask=seatd.service systemd.mask=k230-drm-splash.service
+K230# [  26.260] --- sending: bootm 0x8000000 0x9000000 0x8400000 ---
+bootm 0x8000000 0x9000000 0x8400000
+## Booting kernel from Legacy Image at 08000000 ...
+   Image Name:   linux
+   Created:      2023-11-14  22:13:20 UTC
+   Image Type:   RISC-V Linux Kernel Image (uncompressed)
+   Data Size:    270744 Bytes = 264.4 KiB
+   Load Address: 00000000
+   Entry Point:  00000000
+   Verifying Checksum ... OK
+## Loading init Ramdisk from Legacy Image at 09000000 ...
+   Image Name:   initrd
+   Created:      1980-01-01   0:00:00 UTC
+   Image Type:   RISC-V Linux RAMDisk Image (uncompressed)
+   Data Size:    27330438 Bytes = 26.1 MiB
+   Load Address: 00000000
+   Entry Point:  00000000
+   Verifying Checksum ... OK
+## Flattened Device Tree blob at 08400000
+   Booting using the fdt blob at 0x8400000
+   Loading Kernel Image
+   Loading Ramdisk to 3e125000, end 3fb35786 ... OK
+   Loading Device Tree to 000000000a0f9000, end 000000000a0ff9a7 ... OK
+g_bootmod = 3, bootargs=consoleblank=0 console=ttyS0,115200n8 root=fstab loglevel=4 lsm=landlock,yama,bpf loglevel=7 init=/nix/store/kc3iyr4cnjlswa87kkpi81qgc1is6hli-nixos-system-nixos-26.11.20260919.20b1ddd/init systemd.mask=shell.service systemd.mask=seatd.service systemd.mask=k230-drm-splash.service
+
+Starting kernel ...
+[... Linux boot omitted ...]
+
+[  98.722] --- sending: echo K230_IDLE_BEGIN; cat /proc/cmdline; ls /proc/device-tree/chosen/; test -e /proc/device-tree/chosen/canaan,stage1-splash && echo FLAG_PRESENT; ls /dev/fb0; ls /dev/dri; systemctl is-active shell seatd; for p in /proc/[0-9]*; do ls -l $p/fd 2>/dev/null | grep -q /dev/dri && echo "DRM_CLIENT $(cat $p/comm) ${p#/proc/}"; done; echo DRM_CLIENTS_LISTED; systemctl is-active k230-drm-splash; dmesg | grep -E "stage 1 splash|canaan_panel|canaan-panel|fbcon|reserved mem: .*framebuffer"; echo K230_IDLE_END ---
+echo K230_IDLE_BEGIN; cat /proc/cmdline; ls /proc/device-tree/chosen/; test -e /proc/device-tree/chosen/canaan,stage1-splash && echo FLAG_PRESENT; ls /dev/fb0; ls /dev/dri; systemctl is-active shell seatd; for p in /proc/[0-9]*; do ls -l $p/fd 2>/dev/null | grep -q /dev/dri && echo "DRM_CLIENT $(cat $p/comm) ${p#/proc/}"; done; echo DRM_CLIENTS_LISTED; systemctl is-active k230-drm-splash; dmesg | grep -E "stage 1 splash|canaan_panel|canaan-panel|fbcon|reserved mem: .*framebuffer"; echo K230_IDLE_END
+K230_IDLE_BEGIN
+consoleblank=0 console=ttyS0,115200n8 root=fstab loglevel=4 lsm=landlock,yama,bpf loglevel=7 init=/nix/store/kc3iyr4cnjlswa87kkpi81qgc1is6hli-nixos-system-nixos-26.11.20260919.20b1ddd/init systemd.mask=shell.service systemd.mask=seatd.service systemd.mask=k230-drm-splash.service
+bootargs              linux,initrd-end    name         u-boot,version
+canaan,stage1-splash  linux,initrd-start  stdout-path
+FLAG_PRESENT
+ls: cannot access '/dev/fb0': No such file or directory
+by-path  card0
+inactive
+inactive
+DRM_CLIENTS_LISTED
+inactive
+[    0.000000] OF: reserved mem: 0x0000000010000000..0x00000000103fffff (4096 KiB) nomap non-reusable framebuffer@10000000
+[    2.812261] canaan-drm display-subsystem: [drm:canaan_drm_bind] stage 1 splash: leaving fbdev unset
+K230_IDLE_END
+
+[ 192.709] --- sending: echo K230_IDLE_BEGIN; cat /proc/cmdline; ls /proc/device-tree/chosen/; test -e /proc/device-tree/chosen/canaan,stage1-splash && echo FLAG_PRESENT; ls /dev/fb0; ls /dev/dri; systemctl is-active shell seatd; for p in /proc/[0-9]*; do ls -l $p/fd 2>/dev/null | grep -q /dev/dri && echo "DRM_CLIENT $(cat $p/comm) ${p#/proc/}"; done; echo DRM_CLIENTS_LISTED; systemctl is-active k230-drm-splash; dmesg | grep -E "stage 1 splash|canaan_panel|canaan-panel|fbcon|reserved mem: .*framebuffer"; echo K230_IDLE_END ---
+echo K230_IDLE_BEGIN; cat /proc/cmdline; ls /proc/device-tree/chosen/; test -e /proc/device-tree/chosen/canaan,stage1-splash && echo FLAG_PRESENT; ls /dev/fb0; ls /dev/dri; systemctl is-active shell seatd; for p in /proc/[0-9]*; do ls -l $p/fd 2>/dev/null | grep -q /dev/dri && echo "DRM_CLIENT $(cat $p/comm) ${p#/proc/}"; done; echo DRM_CLIENTS_LISTED; systemctl is-active k230-drm-splash; dmesg | grep -E "stage 1 splash|canaan_panel|canaan-panel|fbcon|reserved mem: .*framebuffer"; echo K230_IDLE_END
+K230_IDLE_BEGIN
+consoleblank=0 console=ttyS0,115200n8 root=fstab loglevel=4 lsm=landlock,yama,bpf loglevel=7 init=/nix/store/kc3iyr4cnjlswa87kkpi81qgc1is6hli-nixos-system-nixos-26.11.20260919.20b1ddd/init systemd.mask=shell.service systemd.mask=seatd.service systemd.mask=k230-drm-splash.service
+bootargs              linux,initrd-end    name         u-boot,version
+canaan,stage1-splash  linux,initrd-start  stdout-path
+FLAG_PRESENT
+ls: cannot access '/dev/fb0': No such file or directory
+by-path  card0
+inactive
+inactive
+DRM_CLIENTS_LISTED
+inactive
+[    0.000000] OF: reserved mem: 0x0000000010000000..0x00000000103fffff (4096 KiB) nomap non-reusable framebuffer@10000000
+[    2.812261] canaan-drm display-subsystem: [drm:canaan_drm_bind] stage 1 splash: leaving fbdev unset
+K230_IDLE_END
+[ 268.740] --- session end, Linux back ---

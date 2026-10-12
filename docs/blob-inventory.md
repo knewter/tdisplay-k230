@@ -1779,6 +1779,15 @@ DATA  7997913ea7ddfc13ba865c7614052838da147851b0e3fe9f4623c66923d006a9  docs/evi
 DATA  7884f1bbaf1cab44ef5a91856f97c98ada66d5db3eea8d2632725083d6c28924  docs/evidence/theme-picker/board-session-2026-10-12/18.3/labels-mo-bg.png
 DATA  854cacdba026a85315abcc61b565ddebc3293fc50009c7c5b2640ab17c069726  docs/evidence/theme-picker/board-session-2026-10-12/18.3/labels-mo-theme.png
 DATA  379ebd25d4a0f224c33d2651d7aaeb134fa7258b625503b12e1e4a2d3e2f5cc5  docs/evidence/recovery-routes/touch-capture-2026-10-11/stale-splash-camera-zoom.jpg
+# Mainline boot splash board trial camera stills, 2026-10-12
+DATA  d848b4231cde223d49f29d2392cc9e5aa0f53a696604921b1038f5ed1f8dea1e  docs/evidence/mainline-boot-splash/board/aruco-target-at-uboot-prompt.jpg
+DATA  1d9e4f9fb666eb675f387c8c20790548f8a3f35bafbd429a27ac051975c2ead1  docs/evidence/mainline-boot-splash/board/fb-poke-after.jpg
+DATA  498f1bc8d346615497735748e413f8981f1798384ad741a281a3f5e22f4e2d75  docs/evidence/mainline-boot-splash/board/fb-poke-before.jpg
+DATA  4dd87701a7449f6e5e2bc62c4a20b313c2501a8c060ca167f7fc96ceeb971c97  docs/evidence/mainline-boot-splash/board/handoff-film1-strip.jpg
+DATA  40fbecd977357ed567f28d5253c5d502454fb0422a05c3be7cc4f02891123a6d  docs/evidence/mainline-boot-splash/board/handoff-film7-strip.jpg
+DATA  2c11206efc4b2a5bb0ec471f0ca738e1e3c8fb52e2d8d899d3b4b37c9765ef33  docs/evidence/mainline-boot-splash/board/splash-at-idle-kernel-prompt.jpg
+DATA  b7e0c5fa9b1f9cb9e327d310bbeef5c05df6ea15c4103c3e6708a09b125cc463  docs/evidence/mainline-boot-splash/board/splash-at-uboot-before-kernel.jpg
+DATA  dc38dac11ae7f6129c9433fe43db56dbfdc01fd2e0d3c7fdc101e14fa129e43b  docs/evidence/mainline-boot-splash/board/unreserved-kernel-tear-film2-strip.jpg
 ```
 
 `group:` rows stand for a directory whose members are enumerated by
@@ -2982,3 +2991,20 @@ hashes and the exact triggers are in `docs/evidence/recovery-routes/touch-captur
 | `docs/evidence/theme-picker/board-session-2026-10-12/18.3/labels-mo-bg.png` | 37737 | DATA | `7884f1bbaf1cab44ef5a91856f97c98ada66d5db3eea8d2632725083d6c28924` |
 | `docs/evidence/theme-picker/board-session-2026-10-12/18.3/labels-mo-theme.png` | 65152 | DATA | `854cacdba026a85315abcc61b565ddebc3293fc50009c7c5b2640ab17c069726` |
 | `docs/evidence/recovery-routes/touch-capture-2026-10-11/stale-splash-camera-zoom.jpg` | 15353 | DATA | `379ebd25d4a0f224c33d2651d7aaeb134fa7258b625503b12e1e4a2d3e2f5cc5` |
+
+### Mainline boot splash board trial camera stills, 2026-10-12
+
+Non-executable frames from the bench webcam films of warm reboots. Capture
+commands, timings and limits are in
+`docs/evidence/mainline-boot-splash/board/README.md`.
+
+| File | Bytes | Class | SHA256 |
+| --- | ---: | --- | --- |
+| `docs/evidence/mainline-boot-splash/board/aruco-target-at-uboot-prompt.jpg` | 126512 | DATA | `d848b4231cde223d49f29d2392cc9e5aa0f53a696604921b1038f5ed1f8dea1e` |
+| `docs/evidence/mainline-boot-splash/board/fb-poke-after.jpg` | 125609 | DATA | `1d9e4f9fb666eb675f387c8c20790548f8a3f35bafbd429a27ac051975c2ead1` |
+| `docs/evidence/mainline-boot-splash/board/fb-poke-before.jpg` | 125833 | DATA | `498f1bc8d346615497735748e413f8981f1798384ad741a281a3f5e22f4e2d75` |
+| `docs/evidence/mainline-boot-splash/board/handoff-film1-strip.jpg` | 67892 | DATA | `4dd87701a7449f6e5e2bc62c4a20b313c2501a8c060ca167f7fc96ceeb971c97` |
+| `docs/evidence/mainline-boot-splash/board/handoff-film7-strip.jpg` | 66991 | DATA | `40fbecd977357ed567f28d5253c5d502454fb0422a05c3be7cc4f02891123a6d` |
+| `docs/evidence/mainline-boot-splash/board/splash-at-idle-kernel-prompt.jpg` | 119995 | DATA | `2c11206efc4b2a5bb0ec471f0ca738e1e3c8fb52e2d8d899d3b4b37c9765ef33` |
+| `docs/evidence/mainline-boot-splash/board/splash-at-uboot-before-kernel.jpg` | 119671 | DATA | `b7e0c5fa9b1f9cb9e327d310bbeef5c05df6ea15c4103c3e6708a09b125cc463` |
+| `docs/evidence/mainline-boot-splash/board/unreserved-kernel-tear-film2-strip.jpg` | 68373 | DATA | `dc38dac11ae7f6129c9433fe43db56dbfdc01fd2e0d3c7fdc101e14fa129e43b` |
