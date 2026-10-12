@@ -254,6 +254,13 @@
             })
           ];
         };
+        # openspec/changes/the-mainline-kernel-keeps-the-boot-splash task 1.3:
+        # the daily mainline shell with the boot splash instead of the panel
+        # console (logo.xrgb on /boot, no console=tty0). Not the default; the
+        # default flips only after the hardware gates (task 3.1).
+        k230-mainline-drm-shell-splash = self.nixosConfigurations.k230-mainline-drm-shell.extendModules {
+          modules = [ { k230.panelConsole = nixpkgs.lib.mkForce false; } ];
+        };
         # Retain the HDMI-only rollback trial profile; the daily system now
         # restores direct touch on the panel and relays touch on active HDMI.
         k230-mainline-drm-shell-hdmi = self.nixosConfigurations.k230-mainline-drm-shell.extendModules { };
@@ -844,6 +851,20 @@
         sdImage = mkBoardImageWith {
           cfg = self.nixosConfigurations.k230-mainline-drm-shell.config;
           kernel = self.nixosConfigurations.k230-mainline-drm-shell.config.boot.kernelPackages.kernel;
+          deviceTree = self.packages.${buildSystem}.mainlineDrmHotplugDeviceTreeNormalName;
+        };
+        # The same image with k230.panelConsole = false (task 1.3 of
+        # the-mainline-kernel-keeps-the-boot-splash). Laptop build only.
+        sdImage-mainline-splash = mkBoardImageWith {
+          cfg = self.nixosConfigurations.k230-mainline-drm-shell-splash.config;
+          kernel = self.nixosConfigurations.k230-mainline-drm-shell-splash.config.boot.kernelPackages.kernel;
+          deviceTree = self.packages.${buildSystem}.mainlineDrmHotplugDeviceTreeNormalName;
+        };
+        # Matching in-place boot update for the splash variant.
+        kernelMainlineDrmShellSplashBootFiles = pkgs.callPackage ./nix/coherent-shell-boot-files.nix {
+          cfg = self.nixosConfigurations.k230-mainline-drm-shell-splash.config;
+          configuration = "k230-mainline-drm-shell-splash";
+          splashImage = bootSplashImage;
           deviceTree = self.packages.${buildSystem}.mainlineDrmHotplugDeviceTreeNormalName;
         };
         # Vendor-kernel Rust shell image, kept as a rollback and release target.

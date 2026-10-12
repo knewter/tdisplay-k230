@@ -1,0 +1,25 @@
+{
+  "image": "/nix/store/ad30vws162xhr00x747xxilpjbga7qk1-k230-sd-image.img",
+  "bytes": 5434544128,
+  "sha256": "6193ccb98ac34723b843a010d49866cff10a555b66e66bf39a38de41d7f6f348",
+  "partitionOffsetBytes": 4194304,
+  "partitionLengthBytes": 117440512,
+  "partitionType": "83",
+  "listing": "      2   40755 (2)      0      0    1024 31-Dec-1979 18:00 .\n      2   40755 (2)      0      0    1024 31-Dec-1979 18:00 ..\n     11   40700 (2)      0      0   12288 31-Dec-1979 18:00 lost+found\n     13  100555 (1)      0      0   42745856 31-Dec-1979 18:00 Image\n     14  100644 (1)      0      0     198 31-Dec-1979 18:00 bootargs.txt\n     15  100644 (1)      0      0      17 31-Dec-1979 18:00 force_dtb\n     16  100444 (1)      0      0   270808 31-Dec-1979 18:00 fw_jump_add_uboot_head.bin\n     17  100644 (1)      0      0      17 31-Dec-1979 18:00 hdmi_dtb\n     18  100644 (1)      0      0   27330502 31-Dec-1979 18:00 initrd.uimg\n     19  100644 (1)      0      0   14760 31-Dec-1979 18:00 k230-tdisplay.dtb\n     20  100644 (1)      0      0      17 31-Dec-1979 18:00 lcd_dtb\n     21  100444 (1)      0      0   2799104 31-Dec-1979 18:00 logo.xrgb\n\ndebugfs 1.47.4 (6-Mar-2025)\n",
+  "bootargs": "bootargs=consoleblank=0 console=ttyS0,115200n8 root=fstab loglevel=4 lsm=landlock,yama,bpf loglevel=7 init=/nix/store/kc3iyr4cnjlswa87kkpi81qgc1is6hli-nixos-system-nixos-26.11.20260919.20b1ddd/init\ndebugfs 1.47.4 (6-Mar-2025)\n",
+  "logoStat": "Inode: 21   Type: regular    Mode:  0444   Flags: 0x80000\nGeneration: 0    Version: 0x00000000:00000000\nUser:     0   Group:     0   Project:     0   Size: 2799104\nFile ACL: 0\nLinks: 1   Blockcount: 5468\nFragment:  Address: 0    Number: 0    Size: 0\n ctime: 0x12cea600:00000000 -- Mon Dec 31 18:00:00 1979\n atime: 0x12cea600:00000000 -- Mon Dec 31 18:00:00 1979\n mtime: 0x12cea600:00000000 -- Mon Dec 31 18:00:00 1979\ncrtime: 0x12cea600:00000000 -- Mon Dec 31 18:00:00 1979\nSize of extra inode fields: 32\nInode checksum: 0x49c49c4f\nEXTENTS:\n(0-2100):71628-73728, (2101-2733):73987-74619\ndebugfs 1.47.4 (6-Mar-2025)\n",
+  "logoBytes": 2799104,
+  "logoSha256": "6c7a36086297597b359657ab53925ee0725e5201461484d543cbd950f5baa3af",
+  "dtbReservedMemory": {
+    "nodes": [
+      "framebuffer@10000000"
+    ],
+    "reg": "0 10000000 0 400000",
+    "properties": [
+      "reg",
+      "no-map",
+      "phandle"
+    ]
+  },
+  "result": "PASS: boot partition carries logo.xrgb (2799104 bytes), bootargs omit console=tty0, DTB reserves 0x10000000+0x400000 no-map"
+}

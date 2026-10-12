@@ -5,6 +5,7 @@
 , kernelMainlineSrc
 , dtbName ? "k230-tdisplay-mainline-drm.dtb"
 , dtsFile ? ./dts/k230-tdisplay-mainline-drm.dts
+, bootSplashConfig ? import ./boot-splash.nix
 }:
 
 runCommandCC dtbName
@@ -28,6 +29,9 @@ runCommandCC dtbName
       -I ${./patches/mainline/include} \
       -I ${kernelMainlineSrc}/scripts/dtc/include-prefixes \
       -undef -D__DTS__ \
+      -DK230_SPLASH_FRAMEBUFFER_ADDRESS=${bootSplashConfig.framebufferAddress} \
+      -DK230_SPLASH_FRAMEBUFFER_SIZE=${bootSplashConfig.framebufferSize} \
+      -DK230_SPLASH_FRAMEBUFFER_UNIT_ADDRESS=${bootSplashConfig.framebufferUnitAddress} \
       -x assembler-with-cpp \
       -o k230-tdisplay-mainline-drm.dts.pre k230-tdisplay-mainline-drm.dts
 

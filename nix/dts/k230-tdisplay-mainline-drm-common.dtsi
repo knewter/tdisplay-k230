@@ -16,6 +16,26 @@
 // still require physical probe evidence.
 
 / {
+	// Stage 1 scans this XRGB buffer until Linux owns the panel. The values
+	// come from nix/boot-splash.nix through nix/device-tree-mainline-drm.nix's
+	// preprocessor definitions, shared with U-Boot's Kconfig fragment and with
+	// the vendor tree (nix/dts/k230-tdisplay.dts). Without this node the
+	// kernel may allocate over the buffer. openspec/changes/
+	// the-mainline-kernel-keeps-the-boot-splash task 1.1.
+	reserved-memory {
+		#address-cells = <2>;
+		#size-cells = <2>;
+		ranges;
+
+		splash_framebuffer: framebuffer@K230_SPLASH_FRAMEBUFFER_UNIT_ADDRESS {
+			reg = <0x0 K230_SPLASH_FRAMEBUFFER_ADDRESS
+			       0x0 K230_SPLASH_FRAMEBUFFER_SIZE>;
+			no-map;
+		};
+	};
+};
+
+/ {
 	soc {
 		// Vendor genpd controller; available only with the DRM kernel port.
 		sysctl_power: power-controller@91103000 {

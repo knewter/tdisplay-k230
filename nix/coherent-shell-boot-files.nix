@@ -1,7 +1,9 @@
 # Normal boot files for exactly one evaluated coherent-shell configuration.
 # No image assembly, board mutation, or stage-1 replacement happens here.
 { lib, runCommand, dtc, ubootTools, closureInfo, cfg, deviceTree
-, configuration ? "k230-coherent-shell" }:
+, configuration ? "k230-coherent-shell"
+# Optional boot-splash derivation (carries logo.xrgb); null leaves it out.
+, splashImage ? null }:
 let
   system = cfg.system.build.toplevel;
   kernel = cfg.boot.kernelPackages.kernel;
@@ -26,7 +28,10 @@ runCommand "k230-coherent-shell-boot-files" {
   chmod +w $out/k230-tdisplay.dtb
   fdtput -t s $out/k230-tdisplay.dtb /chosen bootargs ${lib.escapeShellArg bootargs}
   printf 'bootargs=%s\n' ${lib.escapeShellArg bootargs} > $out/bootargs.txt
-  mkimage -A riscv -O linux -T ramdisk -C none -n initrd \
+  ${lib.optionalString (splashImage != null) ''
+  cp ${splashImage}/logo.xrgb $out/logo.xrgb
+  test "$(stat -c %s $out/logo.xrgb)" -eq 2799104
+  ''}mkimage -A riscv -O linux -T ramdisk -C none -n initrd \
     -d ${system}/initrd $out/initrd.uimg
   printf '%s\n' ${lib.escapeShellArg identity} > $out/identity.json
   ln -s ${system} $out/system
@@ -37,5 +42,5 @@ runCommand "k230-coherent-shell-boot-files" {
   ln -s ${dtc}/bin/fdtput $out/inspect-tools/fdtput
   cd $out
   sha256sum Image k230-tdisplay.dtb initrd.uimg bootargs.txt \
-    identity.json store-paths registration > SHA256SUMS
+    ${lib.optionalString (splashImage != null) "logo.xrgb "}identity.json store-paths registration > SHA256SUMS
 ''

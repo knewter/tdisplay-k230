@@ -245,3 +245,47 @@ Sway scene seed addresses the measured empty first compositor frame.
 programming is the correct handoff, or a supported DRM handoff replaces this
 one-shot vendor-driver experiment.  Do not retain it merely because the
 stage-1 flag is present.
+
+## Mainline kernel: stage-1 splash handoff (already ported; no new patch)
+
+Laptop evidence only (source reading and a build; no board). Task 1.2 of
+`the-mainline-kernel-keeps-the-boot-splash`. The vendor sed patches above do
+not apply to the mainline tree; the mainline panel/DRM sources under
+`nix/patches/mainline/drm/` already carry the same behaviour, so no driver was
+changed. Each row names the file, the flag, the log string, and when to drop it.
+
+| Behaviour | File and lines | Log string | Drop when |
+|---|---|---|---|
+| Flag read: `/chosen/canaan,stage1-splash` (set by `nix/patches/uboot-k230/0005-k230-stage1-splash-readiness.patch`) | `panel-canaan-universal.c:458`, `canaan_dsi.c:913-914`, `canaan_vo.c:835-836`, `canaan_drv.c:277` | none | stage 1 stops owning a pre-kernel panel image |
+| Panel reset line requested `GPIOD_ASIS` on a flagged boot; normal boot keeps `GPIOD_OUT_LOW` and the reset pulses | `panel-canaan-universal.c:460-466` | none | same |
+| First `prepare()` returns before reset pulses and DCS init when DSI preserved the mode; one-shot | `panel-canaan-universal.c:139-143` | `canaan_panel_prepare: left as stage 1 set it` | same |
+| Mode mismatch or disable before first enable: flag cleared, full init, reset pin driven by `gpiod_direction_output` on the ordinary path | `panel-canaan-universal.c:183-186`, `:251-254`, `:166-176` | `stage 1 splash: mode mismatch; reinitializing panel`, `stage 1 splash: panel disabled before handoff; reinitializing later` | same |
+| DSI first enable skipped only when the adjusted mode equals the U-Boot mode | `canaan_dsi.c:412-451`, `:492-496` | `stage 1 splash: preserving DSI to first plane update`, `stage 1 splash: DSI mode differs; reinitializing`, `stage 1 splash: DSI disabled before handoff; reinitializing later` | same |
+| VO first enable writes only the vblank timing value when the mode matches | `canaan_vo.c:654-683`, `:701-703` | `stage 1 splash: preserving VO to first plane update`, `stage 1 splash: VO mode differs; reinitializing`, `stage 1 splash: VO disabled before handoff; reinitializing later` | same |
+| No fbdev/DRM client set up over the logo on a flagged boot | `canaan_drv.c:277-281` (`drm_client_setup_with_fourcc()` is in the `else`) | `stage 1 splash: leaving fbdev unset` | a handoff that adopts the running display state without a client modeset, with hardware evidence for splash and no-splash boots |
+
+Fbdev-client question (is a client created by another route?). In the pinned
+source (`/nix/store/4jrzy64mg619y75lgrlihz78darglas6-linux-mainline-k230-drm-src`),
+`drivers/gpu/drm/clients/drm_client_setup.c` is the only place the in-kernel
+clients (fbdev, DRM log) are registered, and its doc comment states drivers
+call it after `drm_dev_register()`; `drm_drv.c` and `drm_probe_helper.c` do
+not call it. Within `nix/patches/mainline/` the only `drm_client_setup*`
+caller is `canaan_drv.c:280`. The configuration is `CONFIG_DRM_FBDEV_EMULATION=y`,
+`CONFIG_DRM_CLIENT_DEFAULT_FBDEV=y`, `CONFIG_FRAMEBUFFER_CONSOLE=y`, `CONFIG_VT=y`
+(the kernel `.config` is the `.configfile` of the kernel below), so the fbdev
+client exists in the image but is only instantiated by that skipped call; there
+is no DRM-log client (`DRM_CLIENT_LOG` absent). `CONFIG_FB_EFI=y` needs an EFI
+framebuffer which this boot path does not provide. Source reading cannot
+exclude a registration from a driver outside this tree, so whether `/dev/fb0`
+is really absent and the panel really stays lit is hardware gate 2.3.
+
+Build proof: `flock /tmp/k230-nix-build.lock nix build
+.#nixosConfigurations.k230-mainline-drm-shell.config.boot.kernelPackages.kernel
+--max-jobs 1 --cores 4` produced
+`/nix/store/f3rnipvbc5vqam8kwdmn3wgcl5rbz9yx-linux-riscv64-unknown-linux-gnu-7.3.0-rc5`,
+the kernel `.#sdImage` and the splash variant both use (the `panelConsole`
+option does not change the kernel derivation).
+
+**Drop when:** the vendor and mainline panel paths are unified, or a kernel
+bump removes the driver; re-check `canaan_drv.c:277-281` and the
+`drm_client_setup` callers on every kernel bump.
