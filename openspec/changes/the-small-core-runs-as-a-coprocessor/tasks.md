@@ -111,14 +111,19 @@
 
 ## 4. Reserved memory and a read-only remoteproc driver skeleton
 
-- [ ] 4.1 Add a `reserved-memory`/`no-map` node for the CPU0 firmware image
+- [x] 4.1 Add a `reserved-memory`/`no-map` node for the CPU0 firmware image
   and its shared ring to the experimental device tree, sized and placed to
   avoid the live 1 GiB DRAM window's existing framebuffer reservation and
   to formally reserve the heartbeat/echo scratch range from ordinary Linux
   allocation, following the precedent at `nix/dts/k230-tdisplay.dts:47-57`.
   Verify with `nix build .#deviceTree` and a decompiled `reserved-memory`
   node check (DT build proof, not board).
-- [ ] 4.2 (Mainline binding per `docs/evidence/second-core/mainline-reset-binding-decision.md`: `&rst`/`RST_CPU0`, own `reg` for `0x91102100`, needs `CONFIG_REMOTEPROC`.) Write a minimal K230 remoteproc driver skeleton: it binds to a new
+  DONE 2026-10-12 (DT build proof): on the mainline tree, not the vendor
+  `.#deviceTree` (per the binding decision): opt-in
+  `.#deviceTreeMainlineDrmHotplugCpu0` carries `cpu0-firmware@7000000`
+  (1 MiB, `no-map`) and `remoteproc@91102100`; decompiled and checked; the
+  daily tree's derivation is unchanged. Evidence: `docs/evidence/second-core/remoteproc-skeleton-build.md`.
+- [x] 4.2 (Mainline binding per `docs/evidence/second-core/mainline-reset-binding-decision.md`: `&rst`/`RST_CPU0`, own `reg` for `0x91102100`, needs `CONFIG_REMOTEPROC`.) Write a minimal K230 remoteproc driver skeleton: it binds to a new
   DT node, requests the CPU0 line from `&sysctl_reset` via
   `devm_reset_control_get_exclusive()`, maps the reserved region from task
   4.1, and exposes read-only status (whether the reset-controller reports
@@ -126,13 +131,20 @@
   interface. It performs **no** reset, vector, or power write in this task.
   Verify with a kernel module build against the pinned kernel tree and a
   host-side `checkpatch.pl`/build-log proof (cross-build proof, not board).
-- [ ] 4.3 Cite, in the driver's kernel-doc or a comment, why no mailbox
+  DONE 2026-10-12 (cross-build proof): `nix/patches/mainline/k230_cpu0_rproc.c`
+  built in-tree as a module by `.#kernelMainlineDrmRproc` (daily kernel plus
+  `CONFIG_REMOTEPROC`); checkpatch `--strict` clean; refuses any reset but
+  `RST_CPU0`; links no reset write. Reset "held" status is reported as
+  `reset_control_status()`'s code (reset-k230.c has no `.status`). Evidence: `docs/evidence/second-core/remoteproc-skeleton-build.md`.
+- [x] 4.3 Cite, in the driver's kernel-doc or a comment, why no mailbox
   hardware is used yet (task 1.1's TRM gap) and how the poll-mode
   `txdone_poll` mailbox path is expected to attach once a firmware image
   actually speaks virtio/rpmsg (design.md Decision 1/5). Verify with
   `openspec validate the-small-core-runs-as-a-coprocessor --strict`
   (document-consistency proof).
 
+  DONE 2026-10-12: the driver's header comment; `openspec validate --strict`
+  passes. Evidence: `docs/evidence/second-core/remoteproc-skeleton-build.md`.
 ## 5. Linux-driven runtime start/stop of CPU0
 
 - [ ] 5.1 **BLOCKED on 3.3, 4.2. BOARD-GATED. AUTHORIZATION-REQUIRED.**

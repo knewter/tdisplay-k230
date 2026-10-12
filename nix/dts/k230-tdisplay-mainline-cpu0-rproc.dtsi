@@ -1,0 +1,35 @@
+// SPDX-License-Identifier: GPL-2.0 OR MIT
+/*
+ * CPU0 (the small C908) as a remote processor: openspec/changes/
+ * the-small-core-runs-as-a-coprocessor tasks 4.1 and 4.2. Included only by
+ * k230-tdisplay-mainline-drm-hotplug-cpu0.dts; the daily tree does not
+ * carry it until a board task proves it.
+ *
+ * Carveout: 1 MiB at 0x07000000, the window the heartbeat and echo payloads
+ * already ran in from U-Boot (docs/evidence/second-core/). Image at +0,
+ * slot page at +0x2000. Nothing in the boot chain lives there once the
+ * kernel runs (U-Boot loads bootargs.txt at 0x7000000 only before bootm),
+ * and it is disjoint from the splash framebuffer at 0x10000000.
+ *
+ * Binding (docs/evidence/second-core/mainline-reset-binding-decision.md):
+ * RST_CPU0 only, never RST_CPU1 (the core Linux runs on); the boot vector
+ * register 0x91102100 is mapped privately, outside the sysclk window.
+ */
+
+/ {
+	reserved-memory {
+		cpu0_firmware: cpu0-firmware@7000000 {
+			reg = <0x0 0x07000000 0x0 0x100000>;
+			no-map;
+		};
+	};
+
+	soc {
+		cpu0_rproc: remoteproc@91102100 {
+			compatible = "canaan,k230-cpu0-rproc";
+			reg = <0x0 0x91102100 0x0 0x4>;
+			resets = <&rst RST_CPU0>;
+			memory-region = <&cpu0_firmware>;
+		};
+	};
+};

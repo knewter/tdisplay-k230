@@ -6,6 +6,10 @@
 , dtbName ? "k230-tdisplay-mainline-drm.dtb"
 , dtsFile ? ./dts/k230-tdisplay-mainline-drm.dts
 , bootSplashConfig ? import ./boot-splash.nix
+# Extra files copied next to the dts by basename, for variants whose dts
+# includes another dts or a dtsi (the CPU0 remoteproc trial). Empty by
+# default, and then the build script is byte-identical to before.
+, extraIncludes ? [ ]
 }:
 
 runCommandCC dtbName
@@ -23,7 +27,8 @@ runCommandCC dtbName
     cp --no-preserve=mode ${./dts/k230-tdisplay-mainline.dts} k230-tdisplay-mainline.dts
     cp --no-preserve=mode ${dtsFile} k230-tdisplay-mainline-drm.dts
     cp --no-preserve=mode ${./dts/k230-tdisplay-mainline-drm-common.dtsi} k230-tdisplay-mainline-drm-common.dtsi
-    cp --no-preserve=mode ${./dts/display-rm69a10-568x1232.dtsi} display-rm69a10-568x1232.dtsi
+    cp --no-preserve=mode ${./dts/display-rm69a10-568x1232.dtsi} display-rm69a10-568x1232.dtsi${builtins.concatStringsSep "" (map (f: "
+    cp --no-preserve=mode ${f} ${baseNameOf f}") extraIncludes)}
 
     $CC -E -nostdinc \
       -I ${./patches/mainline/include} \

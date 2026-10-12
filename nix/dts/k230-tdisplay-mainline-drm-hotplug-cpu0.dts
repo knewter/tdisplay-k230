@@ -1,0 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0 OR MIT
+/*
+ * The daily hotplug tree plus the CPU0 remoteproc carveout and node
+ * (k230-tdisplay-mainline-cpu0-rproc.dtsi). Opt-in trial tree only.
+ */
+#include "k230-tdisplay-mainline-drm-hotplug.dts"
+#include "k230-tdisplay-mainline-cpu0-rproc.dtsi"

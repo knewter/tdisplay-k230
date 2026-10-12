@@ -585,6 +585,15 @@
             inherit (pkgsCross) buildLinux;
           };
         };
+        # openspec/changes/the-small-core-runs-as-a-coprocessor task 4.2: the
+        # DRM kernel plus REMOTEPROC and the read-only CPU0 skeleton module.
+        #   nix build .#kernelMainlineDrmRproc
+        kernelMainlineDrmRproc = import ./nix/kernel-mainline-drm-rproc.nix {
+          kernelMainline = pkgsCross.callPackage ./nix/kernel-mainline.nix {
+            inherit (pkgsCross) buildLinux;
+          };
+          inherit (pkgsCross) applyPatches lib;
+        };
         # Matching opt-in DTB/boot bundle for the display candidate. This
         # bundle only collects Image + DTB for manual U-Boot testing; it has
         # no initrd/rootfs and is not part of any configured system/image.
@@ -607,6 +616,18 @@
           inherit kernelMainlineSrc;
           dtbName = "k230-tdisplay-mainline-drm-hotplug.dtb";
           dtsFile = ./nix/dts/k230-tdisplay-mainline-drm-hotplug.dts;
+        };
+        # openspec/changes/the-small-core-runs-as-a-coprocessor task 4.1: the
+        # daily hotplug tree plus the CPU0 carveout and remoteproc node.
+        # Opt-in; no configured system uses it.
+        deviceTreeMainlineDrmHotplugCpu0 = pkgs.callPackage ./nix/device-tree-mainline-drm.nix {
+          inherit kernelMainlineSrc;
+          dtbName = "k230-tdisplay-mainline-drm-hotplug-cpu0.dtb";
+          dtsFile = ./nix/dts/k230-tdisplay-mainline-drm-hotplug-cpu0.dts;
+          extraIncludes = [
+            ./nix/dts/k230-tdisplay-mainline-drm-hotplug.dts
+            ./nix/dts/k230-tdisplay-mainline-cpu0-rproc.dtsi
+          ];
         };
         kernelMainlineDrmBootFiles = pkgs.runCommand "k230-mainline-drm-boot-files" { } ''
           mkdir -p $out
