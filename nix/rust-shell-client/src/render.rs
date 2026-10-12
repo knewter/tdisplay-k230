@@ -871,8 +871,8 @@ struct CardSprites {
     painted: bool,
 }
 
-/// About two rows' worth of visible rest-size cards.
-const CARD_SPRITE_MAX_BYTES: usize = 4 << 20;
+/// About two rows' worth of visible collapsed slices.
+const CARD_SPRITE_MAX_BYTES: usize = 2 << 20;
 
 thread_local! {
     static CARD_SPRITES: std::cell::RefCell<CardSprites> = std::cell::RefCell::new(CardSprites::default());
@@ -892,6 +892,31 @@ fn card_sprites_scene<T>(build: impl FnOnce() -> T) -> T {
         }
     });
     result
+}
+
+/// Returns freed heap to the system and reports, for the `picker-memory`
+/// log line, what the picker's caches hold and what the allocator keeps.
+pub fn trim_and_report_picker_memory(thumbnail_bytes: usize) -> String {
+    let (cards, masks, scratch) = CARD_SPRITES.with(|sprites| {
+        let sprites = sprites.borrow();
+        let area = |s: &ImageSurface| (s.stride() as usize) * (s.height() as usize);
+        (
+            sprites.bytes,
+            sprites.masks.values().map(area).sum::<usize>(),
+            sprites.scratch.as_ref().map_or(0, |(c, m)| area(c) + area(m)),
+        )
+    });
+    // SAFETY: plain glibc calls with no pointers.
+    let before = unsafe { libc::mallinfo2() };
+    unsafe { libc::malloc_trim(0) };
+    let after = unsafe { libc::mallinfo2() };
+    let kib = |bytes: usize| bytes / 1024;
+    format!(
+        "cards_kib={} masks_kib={} scratch_kib={} thumbnails_kib={} heap_in_use_kib={} heap_free_kib={} \
+         heap_free_after_trim_kib={} mmap_kib={}",
+        kib(cards), kib(masks), kib(scratch), kib(thumbnail_bytes), kib(after.uordblks),
+        kib(before.fordblks), kib(after.fordblks), kib(after.hblkhd)
+    )
 }
 
 impl CardSprites {
@@ -1108,9 +1133,10 @@ fn paint_carousel(
             blend: (slice.blend.clamp(0.0, 1.0) * 32.0).round() as u8,
             look: format!("{scrim:?}/{dim_color}/{fallback}"),
         };
-        let at_rest = |w: f64, h: f64| (sw, sh) == (w.round() as i32, h.round() as i32);
-        let keep = at_rest(geometry.expanded_w, geometry.expanded_h)
-            || at_rest(geometry.slice_w, geometry.slice_h);
+        // Only collapsed side slices are kept: they are most of a row and
+        // small. The centred card is the one that changes size as soon as a
+        // swipe starts, so a kept copy of it would rarely be drawn again.
+        let keep = (sw, sh) == (geometry.slice_w.round() as i32, geometry.slice_h.round() as i32);
         CARD_SPRITES.with(|sprites| {
             sprites.borrow_mut().draw(cr, key, keep, image, scrim, dim_color, fallback, (sx, sy));
         });
@@ -4707,6 +4733,10 @@ impl RendererCache {
             self.content_generation, self.content_source, self.chooser_static_key
         )
     }
+    /// See `trim_and_report_picker_memory`.
+    pub fn picker_memory_report(&self) -> String {
+        trim_and_report_picker_memory(self.thumbnails.resident_bytes())
+    }
     pub fn content_generation(&self) -> u64 {
         self.content_generation.wrapping_mul(0x9E37_79B9_7F4A_7C15) ^ self.chooser_key
     }
@@ -4734,20 +4764,20 @@ impl RendererCache {
     }
 
     pub fn set_theme_view(&mut self, view: ThemeView) {
-        if self
-            .chooser
-            .as_ref()
-            .is_none_or(|old| theme_view_cache_key_differs(old, &view))
-        {
-            let static_changed = self.chooser.as_ref().is_none_or(|old| {
-                old.page != view.page || old.list != view.list || old.preview != view.preview
-            });
-            if static_changed {
-                self.chooser_static_key =
-                    stable_hash(&format!("{:?}|{:?}|{:?}", view.page, view.list, view.preview));
-            }
-            self.chooser_key = chooser_fingerprint(self.chooser_static_key, &view);
+        // Recomputed on every update, not only when
+        // `theme_view_cache_key_differs` fires: that compares each update
+        // with the previous one, so a settle moving in steps under its
+        // quarter-item tolerance would leave the fingerprint on a mid-settle
+        // position (board 2026-10-12: the browse-time pre-render then read
+        // `content-changed` at every tap).
+        let static_changed = self.chooser.as_ref().is_none_or(|old| {
+            old.page != view.page || old.list != view.list || old.preview != view.preview
+        });
+        if static_changed {
+            self.chooser_static_key =
+                stable_hash(&format!("{:?}|{:?}|{:?}", view.page, view.list, view.preview));
         }
+        self.chooser_key = chooser_fingerprint(self.chooser_static_key, &view);
         let rows = self.chooser.as_ref().and_then(|old| picker_row_changes(old, &view));
         self.chooser = Some(view);
         if self.route == Some(Route::Settings) && !self.static_pixels.is_empty() {
@@ -8524,6 +8554,38 @@ mod tests {
             activated: false,
             app_appearance: None,
         }
+    }
+
+    #[test]
+    fn content_generation_follows_a_settle_made_of_small_steps() {
+        let mut renderer = RendererCache::default();
+        let mut view = ThemeView {
+            page: ThemePage::List,
+            preview: Some(fixture_preview("aaaaaaaaaaaaaaaaaaaaaaaa")),
+            theme_position: 2.0,
+            ..ThemeView::default()
+        };
+        renderer.set_theme_view(view.clone());
+        let at_two = renderer.content_generation();
+        // A settle from 0.6 to 1.0 in steps far under the quarter-item
+        // tolerance, then the view at rest on item 1.
+        view.theme_position = 0.6;
+        renderer.set_theme_view(view.clone());
+        for step in 1..=20 {
+            view.theme_position = 0.6 + 0.02 * f64::from(step);
+            renderer.set_theme_view(view.clone());
+        }
+        let settled = renderer.content_generation();
+        assert_ne!(settled, at_two);
+        let mut fresh = RendererCache::default();
+        fresh.set_theme_view(view.clone());
+        assert_eq!(settled, fresh.content_generation(), "a settled view must fingerprint as itself");
+        // A tap's press and release then leave it unchanged.
+        view.theme_pressed = Some(1);
+        renderer.set_theme_view(view.clone());
+        view.theme_pressed = None;
+        renderer.set_theme_view(view);
+        assert_eq!(renderer.content_generation(), settled);
     }
 
     #[test]

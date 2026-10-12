@@ -1073,6 +1073,8 @@ struct ShellClient {
     presentation: Option<PresentationTimeState>,
     trace_feedback: Vec<(wp_presentation_feedback::WpPresentationFeedback, u64)>,
     trace_frame: u64,
+    /// Whether a picker carousel was moving at the last loop iteration.
+    picker_was_moving: bool,
     trace_input: u64,
     trace_held: bool,
     layer_shell: LayerShell,
@@ -6175,7 +6177,7 @@ fn serve() -> Result<(), String> {
     let home = HomeScreen::new(home_layout, 568.0);
     let mut state = ShellClient {
         presentation: runtime_trace::active().then(|| PresentationTimeState::bind(&globals, &qh)),
-        trace_feedback: Vec::new(), trace_frame: 0, trace_input: 0, trace_held: false,
+        trace_feedback: Vec::new(), trace_frame: 0, picker_was_moving: false, trace_input: 0, trace_held: false,
         compositor,
         layer_shell,
         registry_state: RegistryState::new(&globals),
@@ -6368,6 +6370,16 @@ fn serve() -> Result<(), String> {
             runtime_trace::set_phase(if state.trace_held { runtime_trace::PHASE_HELD }
                 else if state.theme_carousel.is_animating() || state.background_carousel.is_animating() { runtime_trace::PHASE_MOVING }
                 else { runtime_trace::PHASE_REST });
+        }
+        // When a picker gesture comes to rest, hand freed heap back to the
+        // system (a swipe frees large transient buffers glibc would
+        // otherwise keep) and log what the picker holds.
+        let picker_moving = state.route == Route::Settings
+            && state.theme_view.page == ThemePage::List
+            && (state.theme_carousel.is_animating() || state.background_carousel.is_animating());
+        if std::mem::replace(&mut state.picker_was_moving, picker_moving) && !picker_moving {
+            let report = state.renderer.picker_memory_report();
+            state.log(&format!("picker-memory {report}"));
         }
         let _loop_profile = runtime_trace::Span::new("event_loop_work");
         {
