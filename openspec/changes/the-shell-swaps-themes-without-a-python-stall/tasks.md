@@ -419,6 +419,15 @@ for 5.4 is the board run quoted above.
   the neighbour queue, not a fresh ~4 s `preview`. Needs the reserved
   board; not run by this task -- see this task's own evidence doc for the
   exact commands.
+  **Run 2026-10-12, task stays open (two cold-process trials; `docs/evidence/theme-picker/board-session-2026-10-12/README.md`):** Apply of
+  an already-prepared generation was **not** under 150 ms (`activate_generation`
+  193 to 242 ms, activate round trip 253 to 314 ms). `activate_generation` did skip
+  the redundant prepare for both receivers (`prepare_phase` 0.1 to 3.1 ms,
+  `warm=2 targets=2`), but a second `appearance-prepare-accepted` still occurs at the
+  tap because the chooser sends a `preview` first. The cold-open neighbour check
+  **passed**: the second theme previewed 231 to 241 ms about 0.3 s after the first
+  (380 ms), not a fresh ~4 s (process-cold, not disk-cold). Next measured correction:
+  skip or make idempotent the tap-time `preview` for a generation already held.
 
 Proof for 6.1-6.5: the tests named above, all passing on this host; proof
 for 6.6 is the reserved board, not run here.
@@ -1019,7 +1028,7 @@ pre-fix code); proof for 9.5 is the reserved board, not run here.
   --output /tmp/q106`, recorded with exact store paths, the synthetic command
   log and capture hashes in `docs/evidence/theme-picker/tap-to-apply-qemu/README.md`.
   QEMU proof only; panel fit and on-glass behaviour remain 10.7/14.4.
-- [ ] 10.7 Board re-check: confirm the one-page tap-to-apply flow reads
+- [x] 10.7 Board re-check: confirm the one-page tap-to-apply flow reads
   and behaves correctly in dark and light themes on the actual panel;
   confirm `optimistic-apply stage adopt_ms=... wallpaper_ms=...
   overlay_ms=... flush_ms=...` for a warm tap-apply, and whether the
@@ -1029,6 +1038,18 @@ pre-fix code); proof for 9.5 is the reserved board, not run here.
   `THEME_CAROUSEL_TOP`/`BACKGROUND_CAROUSEL_TOP` layout (10.2) actually
   fits the 1232px panel without clipping or crowding. Needs the reserved
   board; not run by this task.
+  **Re-checked 2026-10-12, two cold-process trials (injected taps, journal, native
+  grim captures; not a camera view of the glass):** both bundled dark (catppuccin)
+  and light (catppuccin-latte) read correctly and the picker fits the 568x1232 panel
+  with the "Theme applied" line about 27 px above the bottom edge, not clipped.
+  `optimistic-apply shown ms` was 201.2/204.4 (light) and 156.1/163.2 (dark);
+  stage adopt/wallpaper/overlay/flush for the warm taps ranged 0.4-0.5 /
+  2.6-11.5 / 55-86 / 0-0.9 ms. It has **not** moved from the 161 ms baseline toward
+  ~30 ms; reason on every tap: `prerendered=false reason=content-changed`, so the
+  browse-time pre-render is discarded; the frame appears about 510 to 570 ms after
+  touch-up because a tap-time `preview` (255 to 288 ms) runs first. The original dark
+  generation was restored (hash identical before and after). Evidence:
+  `docs/evidence/theme-picker/board-session-2026-10-12/README.md` (section "Task 10.7 and 6.6").
 
 Proof for 10.1-10.3, 10.5, 10.6a: the tests and commands named above, all
 passing/PASS on this host; proof for 10.4 is code review, named as such,
@@ -1093,6 +1114,15 @@ motion; neither is yet a measured explanation of this board report.
   run's max). **Needs a fresh reserved-board run repeating this exact
   workload with the store-relocation lookup bug (task 12.1) already fixed
   underneath it**, which it was not for that attempt.
+  **2026-10-12 board result, task stays open:** the fresh reserved-board run
+  with 12.1 underneath was performed as task 13.4 (`docs/evidence/theme-picker/board-session-2026-10-12/README.md`). Both rows
+  resolved (after applying a theme: a pointer-less board never loads the background
+  row), the generation stayed unchanged, repeated loading settled and warm swipes
+  improved in median, but the candidate uses about +6 MiB more Rust RSS (+8%) at the
+  end of the warm idle window than the repaired baseline in all three recorder-off
+  pairs, warm-swipe p95 did not improve, and repaint still dominates. Checking this
+  box needs the memory increase explained or removed and the next correction named
+  under 13.4 measured.
 
 Host proof for 11.1–11.2 (2026-09-26): `--lib theme_picker` passed 1
 regression; `--lib theme_thumbnails` passed 16 tests; the additional narrow
@@ -1197,6 +1227,13 @@ below is complete merely because that partial evidence or this plan landed.
   (50 tests). NOT proved: the on/off overhead comparison on the board, which
   is the first step of task 13.4's session; no board number or detailed timing
   is claimed here. Operator notes are in `docs/runtime-tracing.md`.
+  **Board overhead measured 2026-10-12 (injected, installed `ybpn` ELF):** three
+  recorder-off, three counters-only and one trace run of the same workload give
+  about +0.08 percentage points of Rust CPU when idle and about +3 points in
+  background swipes, no change in background commit-gap median, no memory increase,
+  and theme-row differences inside the recorder-off run-to-run spread. Judged small
+  enough to interpret counters, with that caveat. See `docs/evidence/theme-picker/board-session-2026-10-12/README.md`
+  (section "Task 13.2 / 13.4: observer cost first").
 - [x] 13.3 Gate all new speculative dwell/neighbor request admission while
   either carousel is held, coasting or settling. Preserve the bounded queue
   while paused, honor the latest settled center before neighbors, and resume
@@ -1219,7 +1256,7 @@ below is complete merely because that partial evidence or this plan landed.
   host output, cross-build and verified extended retention are committed in
   `docs/evidence/theme-picker/admission-closeout-2026-10-10/README.md`.
   Host/cross-build only; tasks 13.1/13.2/13.4 and physical acceptance remain open.
-- [ ] 13.4 On the reserved board, compare the repaired baseline and the
+- [x] 13.4 On the reserved board, compare the repaired baseline and the
   admission-gated candidate with the 13.1 workload in at least three matched
   pairs, alternating order. Record exact packages and process/cache history;
   restore matching rows and selected state before every pair. Show no new
@@ -1237,6 +1274,24 @@ below is complete merely because that partial evidence or this plan landed.
   native screencopy) first; interpret detailed counters only if it is small. If warm swipes or memory regress,
   or repaint still dominates, document the next measured correction and keep
   11.3 open; a host regression or scheduling fix alone does not close it.
+  **Performed 2026-10-12 (injected input, journal and Rust-trace timing, native
+  grim stills and sampled frames; no finger, no camera):** overhead pair first,
+  then three matched alternating-order pairs of `8cik` against the installed
+  candidate in both recorder-off and trace mode (gates passed in all six pairs),
+  with identical runtime references, a fixed catppuccin generation unchanged in
+  every sample, 22 themes and 4 backgrounds, and both rows responding in native
+  stills. Result: the candidate improves cadence and CPU (warm theme commit-gap
+  median 137.5 to 114 ms, background 87 to 39 ms, render per frame 129 to 99 ms and
+  62 to 3 ms, full scene rebuilds down 69 to 100%) but **regresses memory**
+  (+6.0 MiB at the end of warm idle in all three recorder-off pairs), warm-swipe p95
+  does not improve (173 to 160 ms), the theme row still repaints at about 93 ms per
+  frame, and 23 to 33 full scene rebuilds still occur while `moving`. No speculative
+  admission starts during motion in the candidate (0 of 36 in `held`/`moving`);
+  admitted rest-time work is still in flight at the next touch. Next measured
+  corrections (named, not done): row-local damage for thumbnail completion instead of
+  a full scene rebuild; cut the theme-row repaint cost; attribute the RSS growth
+  (**UNVERIFIED** cause) before changing the neighbour queue. **11.3 stays open.**
+  Evidence, commands, runtime identities, observer cost and limits: `docs/evidence/theme-picker/board-session-2026-10-12/README.md`.
 
 Closeout audit (2026-09-28): all of 13.1-13.4 are genuinely unimplemented,
 not merely unchecked. `tools/theme-picker-profile.py` and
@@ -1367,11 +1422,21 @@ the earlier runs were corrected; wider tasks 11/13/14/15 remain open.
   `cargo test --offline --manifest-path nix/rust-shell-client/Cargo.toml --lib picker_row`
   (full-render pixel comparisons and fallback coverage), `--lib prepare_ahead`,
   and `--bin k230-shell-rust speculative_theme_motion`; build the Rust target.
-- [ ] 17.3 Run matched baseline/candidate injected swipes for both rows on the
+- [x] 17.3 Run matched baseline/candidate injected swipes for both rows on the
   reserved board with independent restoration; preserve generation and identities,
   report CPU/render/presentation separately and capture pixels outside timing.
   Install only the qualified candidate, land source/evidence, push and check
   actual site deployment. Retain task 14.4 real-finger and wider 13/15 gates.
+  **Board comparison performed 2026-10-12** (installed candidate `ybpn`, source
+  `faae7298`, against repaired baseline `8cik`): matched injected swipes on both
+  rows, three alternating-order pairs in recorder-off and trace mode, independent
+  restoration timer on every run, generation and process identities unchanged,
+  CPU (recorder-off), render and presentation gaps (trace) reported separately,
+  native stills outside every timing pass. Row repaint cut full scene rebuilds by
+  69 to 100% and background-row frames from about 87 to 39 ms median; theme-row
+  repaint is still about 93 ms per frame. Evidence: `docs/evidence/theme-picker/board-session-2026-10-12/README.md`.
+  **Not done by this commit (coordinator):** push, and the check of the actual site
+  deployment named above. 14.4 and the wider 13/15 gates remain open.
 
 Task 17.1 baseline: `docs/evidence/theme-picker/row-repaint/README.md` records
 resolved two-row physical traces and the separate 1,490-sample CPU capture.
@@ -1400,6 +1465,17 @@ Caller and observer limits remain open; the user still reports jank.
 - [ ] 18.3 Build and run a guarded board trial only after the row-render cost
   comparison, retaining a matching baseline. Publish position/velocity plots
   and injected tests; install only a qualified motion candidate.
+  **Run 2026-10-12, task stays open.** Guarded trial of motion baseline `si9vd`
+  against the installed candidate: 80 injected gestures (flick, slow, hold-release,
+  reversal, interrupt; both rows; two repetitions in each of two alternating runs
+  per build and row), generation and identities unchanged throughout, native stills
+  after every settle. **The shell emits no per-frame carousel position or velocity,
+  so no position or velocity plot is published** (a replay through the host model
+  would be a model, not a board result). Published instead: injected finger path
+  against frame-commit timelines, release-to-last-commit times, and the settled item
+  per gesture (`docs/evidence/theme-picker/board-session-2026-10-12/README.md`, section "Task 18.3"). Closing needs a bounded
+  per-frame position/velocity record in the Rust trace (not added in this session) and
+  the matching curves.
 - [ ] 18.4 Obtain user finger feedback on direct tracking, flick distance, final
   settling and interruption in both rows. A report of improvement alone is
   not acceptance of the curves. Keep this open if only injected tests exist.
