@@ -1,0 +1,7 @@
+Traceback (most recent call last):
+  File "/home/jadams/tmp/k230-ssh-deploy-2026-10-11/tools/coherent-shell-board-boot.py", line 185, in <module>
+    main()
+    ~~~~^^
+  File "/home/jadams/tmp/k230-ssh-deploy-2026-10-11/tools/coherent-shell-board-boot.py", line 170, in main
+    raise RuntimeError('candidate shell services are not active')
+RuntimeError: candidate shell services are not active

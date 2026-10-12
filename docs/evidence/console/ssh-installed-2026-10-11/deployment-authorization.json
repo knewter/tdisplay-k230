@@ -1,0 +1,24 @@
+{
+  "system": "/nix/store/c6qjs04ysgdm2v39hxkz6ciac94djknm-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "kernel": "/nix/store/f3rnipvbc5vqam8kwdmn3wgcl5rbz9yx-linux-riscv64-unknown-linux-gnu-7.3.0-rc5/Image",
+  "bundle": "/nix/store/66ij9hh2gczfh7qcnk40lrw8x16x8irv-k230-coherent-shell-boot-files",
+  "evidence_class": "operator-authorized-userspace-update",
+  "shell_executable": "/nix/store/si9vd9hhdcb8kzppfsfq9id8kaqhnmwk-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0/bin/k230-shell-rust",
+  "boot_id": "b7fbb19b-8897-4823-9c26-9aceadd7036a",
+  "deployment_authorized": true,
+  "additional_physical_collection_waived": true,
+  "operator_instruction": "\"yeah do that\" (enable SSH in the next build), then \"what about 2 and 3 let's start with 3 (after ssh is on there)\"",
+  "prior_waiver": "continue but you dont have to gather that proof ive already confirmed its fine carry on it's all good",
+  "recorded_utc": "2026-10-12T04:41:36.622949+00:00",
+  "source_revision": "d156ca32a74e17ffd6df4879edc9384c7ec59c7e",
+  "accepted_baseline": {
+    "system": "/nix/store/7s8pl7pvdc9npqry1c6dzblk8k16x002-nixos-system-nixos-26.11.20260919.20b1ddd",
+    "kernel": "/nix/store/f3rnipvbc5vqam8kwdmn3wgcl5rbz9yx-linux-riscv64-unknown-linux-gnu-7.3.0-rc5/Image",
+    "boot_files": {
+      "Image": "9d94102c65c8e4fd6b8880ef7b19b8bee5fa91c85596384319f0104bd89509cb",
+      "initrd.uimg": "4365953c65e834fa9a9d5027ff5b6f79d99cc61afa732d58b7162a09edd2428f"
+    }
+  },
+  "provenance": "Operator instruction to enable SSH in the next build and to put it on the board before the next change (master d156ca32), with their standing waiver of additional install-time physical collection. This authorizes a same-kernel userspace update and claims no finger observation; the SSH login check (the-board-accepts-key-only-ssh task 3.1) is a separate step.",
+  "limits": "No new gesture, cable cycle, pixel, timing, or individual typography/spacing physical observation is inferred."
+}
