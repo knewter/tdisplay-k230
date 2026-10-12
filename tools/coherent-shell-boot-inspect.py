@@ -11,6 +11,9 @@ import zlib
 
 FILES = ('Image', 'k230-tdisplay.dtb', 'initrd.uimg', 'bootargs.txt',
          'identity.json', 'store-paths', 'registration')
+# A splash-variant bundle also carries U-Boot's boot logo; it must be the
+# exact size stage 1 accepts (nix/sd-image.nix, 0004-rm69a10-logo-port.patch).
+OPTIONAL_FILES = {'logo.xrgb': 2799104}
 LIMITS = {'Image': 64 * 1024**2, 'initrd.uimg': 64 * 1024**2,
           'bootargs.txt': 4096, 'k230-tdisplay.dtb': 1024**2}
 
@@ -52,14 +55,20 @@ def inspect(bundle):
     require(identity.get('schema') == 1, 'unsupported bundle schema')
     # The vendor-kernel daily shell, or the same shell on the mainline kernel.
     require(identity.get('configuration') in ('k230-coherent-shell', 'k230-mainline-drm-shell',
-                                             'k230-mainline-drm-shell-hdmi'),
+                                             'k230-mainline-drm-shell-hdmi',
+                                             'k230-mainline-drm-shell-splash'),
             'unexpected configuration')
     sums = {}
     for line in (bundle / 'SHA256SUMS').read_text().splitlines():
         digest, name = line.split('  ', 1)
-        require(name in FILES and name not in sums, 'unexpected/duplicate checksum entry')
+        require((name in FILES or name in OPTIONAL_FILES) and name not in sums,
+                'unexpected/duplicate checksum entry')
         sums[name] = digest
-    require(set(sums) == set(FILES), 'incomplete checksum inventory')
+    require(set(FILES) <= set(sums), 'incomplete checksum inventory')
+    for name, size in OPTIONAL_FILES.items():
+        require((name in sums) == (bundle / name).exists(), f'unlisted or missing {name}')
+        if name in sums:
+            require((bundle / name).stat().st_size == size, f'unexpected size: {name}')
     for name, digest in sums.items():
         require(file_identity(bundle / name)['sha256'] == digest,
                 f'checksum mismatch: {name}')

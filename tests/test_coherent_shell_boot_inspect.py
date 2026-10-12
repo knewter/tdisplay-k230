@@ -59,10 +59,11 @@ class BundleInspection(unittest.TestCase):
         (self.bundle / 'registration').write_text(''.join(f'{p}\nsha256:fixture\n1\n\n0\n' for p in paths))
         self.sums()
 
-    def sums(self):
+    def sums(self, extra=()):
         (self.bundle / 'identity.json').write_text(json.dumps(self.identity) + '\n')
         (self.bundle / 'SHA256SUMS').write_text(''.join(
-            f'{hashlib.sha256((self.bundle / n).read_bytes()).hexdigest()}  {n}\n' for n in boot.FILES))
+            f'{hashlib.sha256((self.bundle / n).read_bytes()).hexdigest()}  {n}\n'
+            for n in (*boot.FILES, *extra)))
 
     def rejected(self, message):
         self.sums()  # Exercise payload/identity validation independently of checksums.
@@ -81,6 +82,24 @@ class BundleInspection(unittest.TestCase):
                 self.identity['configuration'] = configuration
                 self.sums()
                 self.assertEqual(boot.inspect(self.bundle)['host_inspection'], 'PASS')
+
+    def test_splash_bundle_with_logo_accepted(self):
+        self.identity['configuration'] = 'k230-mainline-drm-shell-splash'
+        (self.bundle / 'logo.xrgb').write_bytes(bytes(2799104))
+        self.sums(extra=('logo.xrgb',))
+        self.assertEqual(boot.inspect(self.bundle)['host_inspection'], 'PASS')
+
+    def test_wrong_size_logo_rejected(self):
+        (self.bundle / 'logo.xrgb').write_bytes(bytes(1024))
+        self.sums(extra=('logo.xrgb',))
+        with self.assertRaisesRegex(ValueError, 'unexpected size: logo.xrgb'):
+            boot.inspect(self.bundle)
+
+    def test_unlisted_logo_rejected(self):
+        (self.bundle / 'logo.xrgb').write_bytes(bytes(2799104))
+        self.sums()
+        with self.assertRaisesRegex(ValueError, 'unlisted or missing logo.xrgb'):
+            boot.inspect(self.bundle)
 
     def test_unknown_configuration_rejected(self):
         self.identity['configuration'] = 'k230-console'
