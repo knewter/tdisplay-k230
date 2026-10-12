@@ -59,21 +59,26 @@ frame and no tearing. Mechanism is not established; the untested
 hypothesis is that `35 00` SET_TEAR_ON is issued but nothing consumes
 TE. See `docs/evidence/flicker-after-headroom-revert.md`.*
 
-*A separate real-finger report -- a band about 50 px tall along the panel's
-bottom edge flickering only during bottom-edge app-switch gestures and in
-the card overview -- was traced with a board scene/render/present
-diagnostic (`docs/evidence/card-shell/bottom-band-flicker/max-render-time-fix.md`)
-to a defect below composition: scene and DRM present timing stayed clean
-while consecutive camera frames showed the band cycling between correct,
-stale-dark and black. Deferring the VO's register commit to vblank did not
-change it and was withdrawn (`kernel-patch-boot-panic.md`). Setting Sway's
-`max_render_time 8` on DSI-1 removed it on real glass
-(`max-render-time-fix.md`) and on the patch-free kernel under injected
-gestures (`kernel-patch-boot-panic.md`). The mechanism is inferred, not
-measured.*
+*The roll was subsequently stopped by the DSI PHY calibration band:
+`canaan,hsfreqrange = <0x87>` in the device tree,
+`docs/evidence/dsi-hsfreqrange-hardcoded.md`.*
 
-The system SHALL present the panel as a working framebuffer at 568x1232, and
-what is written to that framebuffer SHALL appear on the screen.
+The system SHALL present the panel as a display device at 568x1232 through
+DRM, and what the system draws on it SHALL appear on the screen. The
+framebuffer console on the panel — `/dev/fb0` and `console=tty0` — SHALL
+remain available as a configuration, and SHALL be the configuration used
+when the panel path is being debugged; it is no longer what a boot shows by
+default, because `display/boot-splash` puts a splash there and the console's
+takeover is what would clear it.
+
+*Why this changed: the fbdev emulation is the thing that performs the first
+modeset during boot, from the output poll worker onto a zeroed buffer
+(`drm_fbdev_generic.c:89-98`, and the trace in
+`docs/evidence/dsi-phy-hang.md`). A splash that survives the kernel cannot
+coexist with it, so it becomes the debugging configuration rather than the
+default. Nothing about the DRM device, the mode, or the plane formats
+changes; `modetest -s 48:568x1232@AR24` set a mode on this panel before the
+fbdev fix was ever applied (`docs/evidence/kernel-patches.md`).*
 
 **A framebuffer device existing is not evidence.** This SHALL be grounded by a
 photograph of the physical screen, because a pipeline that reports success and
@@ -83,6 +88,11 @@ Wi-Fi driver reported `start ap successs!` while transmitting nothing.
 #### Scenario: The system boots with the panel configured
 
 - **WHEN** the board boots
+- **THEN** a DRM device with a 568x1232 mode is present, and a photograph shows the panel displaying what the boot's owner drew — the splash by default, the console when that configuration is selected
+
+#### Scenario: The panel console is configured
+
+- **WHEN** the system is built with the panel console selected
 - **THEN** a framebuffer at 568x1232 is present, and a photograph shows the console on the screen
 
 #### Scenario: Something is written to the framebuffer

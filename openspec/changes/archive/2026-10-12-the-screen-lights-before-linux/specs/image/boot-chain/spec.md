@@ -24,7 +24,9 @@ the `k230_canmv_v3_defconfig` this project builds.*
  docs/evidence/splash-uboot-motion/README.md record this project's source-built
  stage 1 displaying its asset before Starting kernel, including a held U-Boot
  prompt. These are USB-attached warm-reset trials. The specified second-card
- and power-on acceptance procedure remains open. -->
+ and power-on acceptance procedure moved 2026-10-11 to
+ `the-mainline-kernel-keeps-the-boot-splash`, together with the mainline device
+ tree reservation this requirement needs on the board's current kernel. -->
 
 #### Scenario: The boot partition is inspected
 

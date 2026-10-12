@@ -1,10 +1,11 @@
-## Purpose
+# display/boot-splash Specification
 
+## Purpose
 Defines what the panel shows from the moment the board is powered until the
 system draws its first frame, which stage of the boot owns each part of that,
 and how a lit panel is handed from one stage to the next without going dark.
 
-## ADDED Requirements
+## Requirements
 
 ### Requirement: The panel lights during stage 1 and shows a known image
 
@@ -43,8 +44,9 @@ configuration this project builds does not enable any of it.*
 <!-- UNVERIFIED in full: docs/evidence/boot-splash.md and
  docs/evidence/splash-uboot-motion/README.md record this project's source-built
  U-Boot displaying the asset on glass while stopped at K230#, before Starting
- kernel. The required second-card power-on procedure remains open; these
- recordings are USB-attached, serial-initiated warm resets. -->
+ kernel. The required second-card power-on procedure was not performed in
+ this change (moved 2026-10-11 to `the-mainline-kernel-keeps-the-boot-splash`, task 3.6);
+ these recordings are USB-attached, serial-initiated warm resets. -->
 
 #### Scenario: The board is powered on
 
@@ -80,7 +82,8 @@ and is why it works for them.*
  The target registration attempt in docs/evidence/splash-uboot-motion/README.md
  failed, so a calibrated U-Boot motion result remains open. A comparison must
  use matching measurement units and rig geometry, not equate panel rows with
- the historical raw-camera-pixel table. -->
+ the historical raw-camera-pixel table. Task 3.7 moved 2026-10-11 to
+ `the-mainline-kernel-keeps-the-boot-splash`. -->
 
 #### Scenario: The splash is measured
 
@@ -134,7 +137,9 @@ written.*
  captured dark frame around first-owner startup or shell takeover. The matching
  kernel journal records the prepare skip. Those trials also exercise
  missing-logo initialization and later display off/on. They do not complete
- the separate second-card and power-on acceptance procedure. Keep the
+ the separate second-card and power-on acceptance procedure, which moved
+ 2026-10-11 (task 4.3) to `the-mainline-kernel-keeps-the-boot-splash`, and which
+ has not been run on the mainline kernel the board now uses. Keep the
  first-modeset fallback decision tied to the physical recording. -->
 
 #### Scenario: The kernel boots behind a splash
@@ -175,8 +180,9 @@ this change does not implement animation during that initial interval.*
 <!-- UNVERIFIED in full: docs/evidence/splash-initial-scene-ready/README.md
  and its camera audit record warm-boot samples without an observed dark frame
  around the corrected handoff, plus physical keyboard show/hide and display
- off/on. Task 5.4 still requires the complete power-on recording and frame
- timings. Camera samples do not prove uninterrupted electrical scanout. -->
+ off/on. Task 5.4 (the complete power-on recording and frame timings) moved
+ 2026-10-11 to `the-mainline-kernel-keeps-the-boot-splash`. Camera samples do not
+ prove uninterrupted electrical scanout. -->
 
 #### Scenario: A complete boot is filmed
 
@@ -211,7 +217,10 @@ next panel regression harder to see, not easier.*
  confirms that effective choice. Splash-enabled image builds and missing-logo
  console evidence exist. docs/evidence/splash-option-acceptance/README.md
  now records paired toplevel evaluations and current console-image inspection.
- The final effective default promotion in task 6.1 remains open. -->
+ Task 6.1's host proof was re-run 2026-10-12 on the mainline image
+ (docs/evidence/splash-close-sdimage/README.md): the `panelConsole = true`
+ boot partition has no `logo.xrgb`. The daily configuration still selects
+ true; building and flashing a `false` image is a task of `the-mainline-kernel-keeps-the-boot-splash`. -->
 
 #### Scenario: The default configuration boots
 
