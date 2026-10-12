@@ -396,7 +396,7 @@ pub enum Variant {
 }
 
 impl Variant {
-    fn tag(self) -> &'static str {
+    pub(crate) fn tag(self) -> &'static str {
         match self {
             Variant::Expanded => "expanded",
             Variant::Slice => "slice",

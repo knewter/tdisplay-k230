@@ -841,6 +841,122 @@ fn rounded_skewed(cr: &Context, x: f64, y: f64, tl: f64, tr: f64, bl: f64, br: f
     cr.close_path();
 }
 
+/// Identity of one rendered carousel card: its thumbnail, whole-pixel size,
+/// outline, scrim level and theme colours.
+#[derive(Clone, Debug, Eq, Hash, PartialEq)]
+struct CardKey {
+    id: String,
+    variant: &'static str,
+    image: usize,
+    width: i32,
+    height: i32,
+    skew: i32,
+    blend: u8,
+    look: String,
+}
+
+/// Bounded cache of rendered carousel cards and their outline masks.
+#[derive(Default)]
+struct CardSprites {
+    cards: std::collections::HashMap<CardKey, ImageSurface>,
+    masks: std::collections::HashMap<(i32, i32, i32), ImageSurface>,
+    bytes: usize,
+}
+
+const CARD_SPRITE_MAX_BYTES: usize = 24 << 20;
+
+thread_local! {
+    static CARD_SPRITES: std::cell::RefCell<CardSprites> = std::cell::RefCell::new(CardSprites::default());
+}
+
+impl CardSprites {
+    fn card(
+        &mut self,
+        key: CardKey,
+        image: Option<&ImageSurface>,
+        scrim: Option<&Brush>,
+        dim_color: u32,
+        fallback: u32,
+    ) -> Option<ImageSurface> {
+        if let Some(sprite) = self.cards.get(&key) {
+            return Some(sprite.clone());
+        }
+        let (w, h) = (key.width, key.height);
+        let content = ImageSurface::create(Format::ARgb32, w, h).ok()?;
+        {
+            let cr = Context::new(&content).ok()?;
+            match image {
+                Some(image) => {
+                    let pattern = SurfacePattern::create(image);
+                    pattern.set_matrix(Matrix::new(
+                        f64::from(image.width()) / f64::from(w), 0.0, 0.0,
+                        f64::from(image.height()) / f64::from(h), 0.0, 0.0,
+                    ));
+                    pattern.set_filter(Filter::Bilinear);
+                    pattern.set_extend(cairo::Extend::Pad);
+                    cr.set_source(&pattern).ok()?;
+                }
+                None => color(&cr, fallback, 1.0),
+            }
+            cr.set_operator(Operator::Source);
+            cr.paint().ok()?;
+            cr.set_operator(Operator::Over);
+            // Dims a non-centered slice, fading out as it nears the centered
+            // position -- upstream's `Util.alpha(root.dimColor, item.selected ?
+            // 0 : 0.42)`, continuous here instead of a hard boolean.
+            let blend = f64::from(key.blend) / 32.0;
+            if blend > 0.0 {
+                if let Some(brush) = scrim {
+                    let _ = cr.push_group();
+                    fill_brush(&cr, brush, 0.0, 0.0, f64::from(w), f64::from(h));
+                    let _ = cr.pop_group_to_source();
+                    let _ = cr.paint_with_alpha(blend);
+                } else {
+                    color(&cr, dim_color, 0.42 * blend);
+                    let _ = cr.paint();
+                }
+            }
+        }
+        let mask = self.mask(w, h, key.skew)?;
+        let sprite = ImageSurface::create(Format::ARgb32, w, h).ok()?;
+        {
+            let cr = Context::new(&sprite).ok()?;
+            cr.set_source_surface(&content, 0.0, 0.0).ok()?;
+            cr.mask_surface(&mask, 0.0, 0.0).ok()?;
+        }
+        sprite.flush();
+        let size = (w as usize) * (h as usize) * 4;
+        if self.bytes + size > CARD_SPRITE_MAX_BYTES {
+            self.cards.clear();
+            self.bytes = 0;
+        }
+        self.bytes += size;
+        self.cards.insert(key, sprite.clone());
+        Some(sprite)
+    }
+
+    fn mask(&mut self, w: i32, h: i32, skew16: i32) -> Option<ImageSurface> {
+        if let Some(mask) = self.masks.get(&(w, h, skew16)) {
+            return Some(mask.clone());
+        }
+        if self.masks.len() >= 256 {
+            self.masks.clear();
+        }
+        let mask = ImageSurface::create(Format::A8, w, h).ok()?;
+        {
+            let cr = Context::new(&mask).ok()?;
+            let skew = f64::from(skew16) / 16.0;
+            let (w, h) = (f64::from(w), f64::from(h));
+            rounded_skewed(&cr, 0.0, 0.0, skew, w, 0.0, w - skew, h, 14.0);
+            cr.set_source_rgba(0.0, 0.0, 0.0, 1.0);
+            cr.fill().ok()?;
+        }
+        mask.flush();
+        self.masks.insert((w, h, skew16), mask.clone());
+        Some(mask)
+    }
+}
+
 fn paint_carousel(
     cr: &Context,
     theme: Option<&AppearanceSnapshot>,
@@ -877,13 +993,13 @@ fn paint_carousel(
                 bottom_left, bottom_right, slice.height, 14.0);
 
         };
-        // Fill the slice's own outline with its image and then its scrim,
-        // rather than clipping and painting. On the board an anti-aliased
-        // clip turns every paint into a full-area mask composite, and
-        // Cairo's default GOOD filter convolves every scaled pixel. Together
-        // those dominated a moving row's repaint. At rest both slice sizes
-        // match their decoded thumbnails, so the bilinear filter only
-        // applies while a slice is resizing.
+        // A slice is drawn as a cached sprite: its image scaled into a plain
+        // rectangle, scrimmed, then cut to the skewed outline by an alpha
+        // mask, and blitted at a whole-pixel offset. Each step stays on a
+        // pixman fast path. Filling the anti-aliased outline with a scaled
+        // image directly falls back to the general per-span compositor,
+        // which spent most of a moving row's frame in memset on the board.
+        // A slice at rest size is a cache hit and costs one copy.
         let variant = if slice.blend < 0.5 {
             Variant::Expanded
         } else {
@@ -892,40 +1008,33 @@ fn paint_carousel(
         let image = thumbnails
             .and_then(|cache| cache.get(id, variant))
             .filter(|image| image.width() > 0 && image.height() > 0);
-        let _ = cr.save();
-        parallelogram(cr);
-        match image.map(SurfacePattern::create) {
-            Some(pattern) => {
-                let image = image.expect("pattern implies image");
-                let sx = f64::from(image.width()) / slice.width;
-                let sy = f64::from(image.height()) / slice.height;
-                pattern.set_matrix(Matrix::new(sx, 0.0, 0.0, sy, -slice.x * sx, -slice.y * sy));
-                pattern.set_filter(Filter::Bilinear);
-                let _ = cr.set_source(&pattern);
+        let (sx, sy) = (slice.x.round(), slice.y.round());
+        let (sw, sh) = (slice.width.round().max(1.0) as i32, slice.height.round().max(1.0) as i32);
+        let scrim = theme_brush(theme, "image-picker", "scrim");
+        let fallback = palette_rgb_or(theme, "background", 0x1b2830);
+        let key = CardKey {
+            id: (*id).to_owned(),
+            variant: variant.tag(),
+            image: image.map_or(0, |image| image.to_raw_none() as usize),
+            width: sw,
+            height: sh,
+            skew: (skew * 16.0).round() as i32,
+            blend: (slice.blend.clamp(0.0, 1.0) * 32.0).round() as u8,
+            look: format!("{scrim:?}/{dim_color}/{fallback}"),
+        };
+        CARD_SPRITES.with(|sprites| {
+            let mut sprites = sprites.borrow_mut();
+            if let Some(sprite) = sprites.card(key, image, scrim, dim_color, fallback) {
+                if cr.set_source_surface(&sprite, sx, sy).is_ok() {
+                    let _ = cr.paint();
+                }
             }
-            None => color(cr, palette_rgb_or(theme, "background", 0x1b2830), 1.0),
-        }
-        let _ = cr.fill_preserve();
-        // Dims a non-centered slice, fading out as it nears the centered
-        // position -- upstream's `Util.alpha(root.dimColor, item.selected ?
-        // 0 : 0.42)`, continuous here instead of a hard boolean.
-        if slice.blend > 0.0 {
-            if let Some(brush) = theme_brush(theme, "image-picker", "scrim") {
-                cr.clip_preserve();
-                let _ = cr.push_group();
-                fill_brush(cr, brush, slice.x, slice.y, slice.width, slice.height);
-                let _ = cr.pop_group_to_source();
-                let _ = cr.paint_with_alpha(slice.blend);
-            } else {
-                color(cr, dim_color, 0.42 * slice.blend);
-                let _ = cr.fill_preserve();
-            }
-        }
-        cr.new_path();
+        });
         // A slice with no decoded thumbnail yet gets a spinner instead of a
         // silent flat fill, so a slow decode (goal: never a frozen-looking
         // UI) reads as "loading", not "missing" or "broken".
         if image.is_none() {
+            let _ = cr.save();
             parallelogram(cr);
             cr.clip();
             spinner(
@@ -936,8 +1045,8 @@ fn paint_carousel(
                 pulse_phase,
                 style.accent,
             );
+            let _ = cr.restore();
         }
-        let _ = cr.restore();
 
         if slice.index == centered {
             rounded(cr, slice.x + slice.width / 2.0 - 18.0,
