@@ -299,9 +299,11 @@ settles its display correctly regardless of whether this arrives.
 
 ### Requirement: Picker drags follow the finger before release
 
-<!-- UNVERIFIED: operator reports exaggerated, laggy travel on the installed
-11y992kp system. Source uses collapsed-slot pitch and synchronous motion draws;
-task group 14 requires rendered-geometry, queued-input and board proof. -->
+<!-- Grounding: task group 14. Injected board pairs and the sprite repaint
+are in docs/evidence/theme-picker/row-sprites-2026-10-12/ and
+docs/evidence/theme-picker/board-session-2026-10-12b/ (11.3). Operator
+real-finger acceptance: "14.4 they do, is good" (2026-10-12), and "it's great
+now i tried it all it's good" on installed system 298a2bf6 (2026-10-12). -->
 
 While a person holds and drags either picker row, the reference preview card's
 horizontal center SHALL track their horizontal displacement in surface pixels,
@@ -324,8 +326,12 @@ coalesced to its latest position before the next eligible motion repaint.
 
 ### Requirement: Picker release motion is continuous and interruptible
 
-<!-- UNVERIFIED: new motion tuning; source audit identifies elapsed-time clamps
-and a velocity-discontinuous coast/settle handoff. Task group 18 requires proof. -->
+<!-- Grounding: task group 18. Board per-frame position and velocity curves
+for 40 injected gestures (docs/evidence/theme-picker/board-session-2026-10-12b/
+18.3/) show monotonic approach, no overshoot and repeatable final items.
+Operator real-finger acceptance of tracking, flick distance, settling and
+interruption on both rows: "it's great now i tried it all it's good" on
+installed system 298a2bf6 (2026-10-12). No camera recording was taken. -->
 
 Both picker rows SHALL use actual elapsed time for release motion and SHALL
 carry screen-space release velocity continuously into centering. A new contact

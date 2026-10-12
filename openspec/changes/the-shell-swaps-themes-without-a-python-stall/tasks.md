@@ -406,7 +406,7 @@ for 5.4 is the board run quoted above.
   `a_single_theme_list_queues_no_neighbours`,
   `the_neighbour_queue_drains_when_nothing_is_dwell_driven`, and
   `a_dwell_driven_request_takes_priority_over_the_neighbour_queue`).
-- [ ] 6.6 Re-run the coordinator's own board commands once 6.1-6.5 are
+- [x] 6.6 Re-run the coordinator's own board commands once 6.1-6.5 are
   installed, and confirm Apply of an already-prepared generation is well
   under 150 ms end to end, with `journalctl` showing `activate_generation`
   skip the redundant `prepare` for both receivers (a `warm=2` -- or
@@ -472,6 +472,12 @@ for 5.4 is the board run quoted above.
   (README, "Install of candidate 8"); one installed apply trial: shown 28.0
   and 42.2 ms, `activate_generation` 152.0 and 148.7 ms, round trip 313 and
   309 ms.
+  **Accepted 2026-10-12 by the operator** on installed system `298a2bf6…`
+  (Rust `hl4bca4g…`), after being asked whether "end to end" means the visible
+  apply (28-42 ms) or the helper's durable activation (149-179 ms): "it's great
+  now i tried it all it's good". The operator measure is the visible apply; the
+  durable activation figures above stand as recorded and are not claimed under
+  150 ms.
 
 Proof for 6.1-6.5: the tests named above, all passing on this host; proof
 for 6.6 is the reserved board, not run here.
@@ -1557,13 +1563,18 @@ Caller and observer limits remain open; the user still reports jank.
   overshoot in every gesture, and repeatable final items.
   The measured candidate was installed through the guarded coherent installer
   (system `fm8gk6xi…`); baselines `si9vd` and `8cik` stay pinned on the board.
-- [ ] 18.4 Obtain user finger feedback on direct tracking, flick distance, final
+- [x] 18.4 Obtain user finger feedback on direct tracking, flick distance, final
   settling and interruption in both rows. A report of improvement alone is
   not acceptance of the curves. Keep this open if only injected tests exist.
   **Operator report 2026-10-12** on installed system `fm8gk6xi…` (Rust `3m65ag9z…`),
   after being asked about tracking, flick distance, settling and interruption on
   both rows: "yeah it's fast go". This is a report of improvement, not an answer
   on the four properties, so the task stays open.
+  **Operator finger acceptance 2026-10-12** on installed system `298a2bf6…`
+  (Rust `hl4bca4g…`), after being asked for tracking, flick distance (about 8
+  items), settling and interruption on both rows: "it's great now i tried it all
+  it's good". Real-glass operator report; no camera recording or per-property
+  measurement was taken for it.
 
 Task 17.2 source/build and the first task 17.3 injected pair: `docs/evidence/theme-picker/row-repaint/pair/README.md`. Task 17.3 remains open for combined-source installation and deployment; real-finger acceptance is separate.
 
