@@ -1,0 +1,174 @@
+# release-1: tools/small-core-heartbeat-session.py transcript excerpt (U-Boot banner to the reset command).
+# Session notes (host-relative seconds):
+#   [   0.001] --- small-core heartbeat session start (release) ---
+#   [   0.401] --- sending: reboot ---
+#   [  12.598] --- sending: version ---
+#   [  12.749] --- sending: help boot_baremetal ---
+#   [  12.901] --- sending: bdinfo ---
+#   [  13.052] --- sending: printenv mmc_boot_dev_num ---
+#   [  13.203] --- sending: ext4load mmc 1:1 0x7000000 /small-core-heartbeat.bin ---
+#   [  13.354] --- sending: printenv fileaddr filesize ---
+#   [  13.505] --- sending: crc32 0x7000000 0x50 ---
+#   [  13.606] --- pre-release checks PASS ---
+#   [  13.606] --- releasing physical CPU0 ---
+#   [  13.656] --- sending: boot_baremetal 0 0x7000000 0x5000 ---
+#   [  15.008] --- sending: md.l 0x7002000 6 ---
+#   [  15.109] --- page 0x7002000: counter=1 ---
+#   [  16.359] --- sending: md.l 0x7003000 2 ---
+#   [  16.462] --- page 0x7003000: counter=1 ---
+#   [  17.713] --- sending: md.l 0x7004000 2 ---
+#   [  17.814] --- page 0x7004000: counter=2 ---
+#   [  17.867] --- sending: echo CPU1_UBOOT_PROMPT_ALIVE ---
+#   [  17.968] --- HEARTBEAT VERDICT: FAIL counters=[1, 1, 2] prompt=alive ---
+#   [  18.018] --- sending: reset ---
+#   [  83.551] --- Linux login prompt is back ---
+#   [  83.551] --- session end, status 2 ---
+# Excerpt (ANSI codes and the U-Boot IP address line removed; console echo duplicates kept):
+
+U-Boot 2022.10 (Oct 03 2022 - 19:25:32 +0000)
+
+CPU:   rv64imafdcvsu
+Model: kendryte k230 canmv v3
+DRAM:  1 GiB
+Core:  27 devices, 15 uclasses, devicetree: embed
+MMC:   mmc0@91580000: 0, mmc1@91581000: 1
+Loading Environment from MMC... OK
+In:    serial@91400000
+Out:   serial@91400000
+Err:   serial@91400000
+Net:   No ethernet found.
+Card did not respond to voltage select! : -110
+mmc_init: -95, time 30
+** Bad device specification mmc 0 **
+Couldn't find partition mmc 0:1
+logo.xrgb unavailable or unsafe, skip U-Boot logo
+Hit any key to stop autoboot:  1  0 
+K230#                                     
+K230# 
+K230# [  12.598] --- sending: version ---
+version
+U-Boot 2022.10 (Oct 03 2022 - 19:25:32 +0000)
+
+riscv64-unknown-linux-gnu-gcc (GCC) 15.3.0
+GNU ld (GNU Binutils) 2.46
+K230# 
+U-Boot 2022.10 (Oct 03 2022 - 19:25:32 +0000)
+
+riscv64-unknown-linux-gnu-gcc (GCC) 15.3.0
+GNU ld (GNU Binutils) 2.46
+K230# [  12.749] --- sending: help boot_baremetal ---
+help boot_baremetal
+boot_baremetal - boot_baremetal
+
+Usage:
+boot_baremetal 
+ boot_baremetal cpu addr size
+
+K230# 
+boot_baremetal - boot_baremetal
+
+Usage:
+boot_baremetal 
+ boot_baremetal cpu addr size
+
+K230# [  12.901] --- sending: bdinfo ---
+bdinfo
+boot_params = 0x0000000000000000
+DRAM bank   = 0x0000000000000000
+-> start    = 0x0000000000000000
+-> size     = 0x0000000040000000
+flashstart  = 0x0000000000000000
+flashsize   = 0x0000000000000000
+flashoffset = 0x0000000000000000
+baudrate    = 115200 bps
+relocaddr   = 0x000000003ff39000
+reloc off   = 0x000000003ff39000
+Build       = 64-bit
+current eth = unknown
+ethaddr     = (not set)
+IP addr     = <redacted>
+fdt_blob    = 0x0000000000098f70
+new_fdt     = 0x0000000000000000
+fdt_size    = 0x0000000000000000
+lmb_dump_all:
+ memory.cnt  = 0x1
+ memory[0]	[0x0-0x3fffffff], 0x40000000 bytes flags: 0
+ reserved.cnt  = 0x1
+ reserved[0]	[0x3fb35920-0x3fffffff], 0x004ca6e0 bytes flags: 0
+devicetree  = embed
+malloc 3fb37000---3ff39000---3fb43000
+sp:        3fb36970 ,3fb36970 3fb3b640 
+K230# 
+boot_params = 0x0000000000000000
+DRAM bank   = 0x0000000000000000
+-> start    = 0x0000000000000000
+-> size     = 0x0000000040000000
+flashstart  = 0x0000000000000000
+flashsize   = 0x00000000000[  13.052] --- sending: printenv mmc_boot_dev_num ---
+00000
+flashoffset = 0x0000000000000000
+baudrate    = 115200 bps
+relocaddr   = 0x000000003ff39000
+reloc off   = 0x000000003ff39000
+Build       = 64-bit
+current eth = unknown
+ethaddr     = (not set)
+IP addr     = <redacted>
+fdt_blob    = 0x0000000000098f70
+new_fdt     = 0x0000000000000000
+fdt_size    = 0x0000000000000000
+lmb_dump_all:
+ memory.cnt  = 0x1
+ memory[0]	[0x0-0x3fffffff], 0x40000000 bytes flags: 0
+ reserved.cnt  = 0x1
+ reserved[0]	[0x3fb35920-0x3fffffff], 0x004ca6e0 bytes flags: 0
+devicetree  = embed
+malloc 3fb37000---3ff39000---3fb43000
+sp:        3fb36970 ,3fb36970 3fb3b880 
+K230# printenv mmc_boot_dev_num
+mmc_boot_dev_num=1
+K230# 
+mmc_boot_dev_num=1
+K230# [  13.203] --- sending: ext4load mmc 1:1 0x7000000 /small-core-heartbeat.bin ---
+ext4load mmc 1:1 0x7000000 /small-core-heartbeat.bin
+80 bytes read in 1 ms (78.1 KiB/s)
+K230# 
+K230# [  13.354] --- sending: printenv fileaddr filesize ---
+printenv fileaddr filesize
+fileaddr=7000000
+filesize=50
+K230# 
+fileaddr=7000000
+filesize=50
+K230# [  13.505] --- sending: crc32 0x7000000 0x50 ---
+crc32 0x7000000 0x50
+crc32 for 07000000 ... 0700004f ==> 3db6c1eb
+K230# 
+crc32 for 07000000 ... 0700004f ==> 3db6c1eb
+K230# [  13.606] --- pre-release checks PASS ---
+[  13.606] --- releasing physical CPU0 ---
+[  13.656] --- sending: boot_baremetal 0 0x7000000 0x5000 ---
+boot_baremetal 0 0x7000000 0x5000
+boot_cpu = 0 boot_address = 0x7000000 boot_size=0x5000
+K230# 
+boot_cpu = 0 boot_address = 0x7000000 boot_size=0x5000
+K230# [  15.008] --- sending: md.l 0x7002000 6 ---
+md.l 0x7002000 6
+07002000: 00000001 00000000 00000000 00000000  ................
+07002010: 0094112f 80000000                    /.......
+K230# [  15.109] --- page 0x7002000: counter=1 ---
+[  16.359] --- sending: md.l 0x7003000 2 ---
+md.l 0x7003000 2
+07003000: 00000001 00000000                    ........
+K230# [  16.462] --- page 0x7003000: counter=1 ---
+[  17.713] --- sending: md.l 0x7004000 2 ---
+md.l 0x7004000 2
+07004000: 00000002 00000000                    ........
+K230# [  17.814] --- page 0x7004000: counter=2 ---
+[  17.867] --- sending: echo CPU1_UBOOT_PROMPT_ALIVE ---
+echo CPU1_UBOOT_PROMPT_ALIVE
+CPU1_UBOOT_PROMPT_ALIVE
+K230# 
+CPU1_UBOOT_PROMPT_ALIVE
+K230# [  17.968] --- HEARTBEAT VERDICT: FAIL counters=[1, 1, 2] prompt=alive ---
+[  18.018] --- 

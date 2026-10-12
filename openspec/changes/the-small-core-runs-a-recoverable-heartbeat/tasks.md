@@ -57,7 +57,7 @@ user confirms otherwise.
   `ums`/flash reimaging, on the normal card. This whole change remains
   suspended in favor of the AMP successor (see the note at the top of this
   file); this task is not being run here.
-- [ ] 3.2 **BOARD-GATED.** Load the inspected payload on the
+- [x] 3.2 **BOARD-GATED.** Load the inspected payload on the
   normal card, run the source-grounded `boot_baremetal 0` sequence, and
   observe at least three increasing output values while the CPU1 U-Boot
   prompt responds; then restore normal boot and record Linux CPU masks.
@@ -65,6 +65,15 @@ user confirms otherwise.
   disposable card). Verify with the exact U-Boot command and timestamped
   board transcript committed under `docs/evidence/second-core/` (physical
   CPU0 execution proof; any hang or static output fails this task).
+  **Performed 2026-10-12 on the normal card**, after the operator chose
+  "Yes, go" for releasing CPU0 once the payload was ready
+  (`docs/evidence/second-core/heartbeat-physical-2026-10-12/README.md`).
+  `boot_baremetal 0 0x7000000 0x5000` after a passing `bdinfo`/size/CRC
+  check. The first release, read 1.2 s apart, gave 1, 1, 2 and **failed**. The
+  second, read 5 s apart (the runbook asks for at least 1 s), gave 2, 4, 6
+  with the CPU1 prompt alive, plus `mhartid=0x0` and
+  `misa=0x800000000094112f` written by the payload. Linux was restored by
+  `reset`: `online=0`, `nproc` 1, system `298a2bf6…`. Serial transcript only.
 
 ## 4. Coexistence with the Linux handheld
 
