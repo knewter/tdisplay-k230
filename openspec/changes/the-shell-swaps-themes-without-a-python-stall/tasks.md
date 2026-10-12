@@ -1146,7 +1146,7 @@ held-touch pre-rendering stopped, but warm swipe improvement was not proved,
 and the second capture lacked the active background row. None of the tasks
 below is complete merely because that partial evidence or this plan landed.
 
-- [ ] 13.1 Establish a matched-content profiling harness after task 12.2.
+- [x] 13.1 Establish a matched-content profiling harness after task 12.2.
   Move the bounded browse workload into `tools/theme-picker-profile.py`
   with host fixtures in `tests/test_theme_picker_profile.py`; preserve the
   historical capture unchanged. Require resolved/visually reviewed theme and
@@ -1161,6 +1161,15 @@ below is complete merely because that partial evidence or this plan landed.
   changes, and must not count idle intervals or callback/commit mixtures as
   swipe frame gaps. Keep only allowlisted public fields and hashed private
   generation identities.
+  **Done 2026-10-11:** `tools/theme-picker-profile.py` (stdlib only; subcommands
+  `validate`, `preflight`, `capture`, `reduce`, `compare`) and
+  `tests/test_theme_picker_profile.py` landed. `python3 -m unittest discover -s tests -p test_theme_picker_profile.py`
+  passes 31 tests (host fixtures only; no board, injected event or camera evidence).
+  Fixtures cover missing/unreviewed rows, store-identity and generation
+  mismatches, PID reuse, Rust-clock restarts, generation change, activation,
+  process-cold verification, idle/callback/wallpaper events excluded from swipe
+  gaps, private-field allowlisting, and comparison gating. Board `capture` and
+  the physical comparison remain task 13.4.
 - [ ] 13.2 Add bounded, opt-in cost attribution to that harness and the
   Rust/helper paths. Sample per-thread CPU/start identity and process RSS,
   plus helper cgroup CPU so subprocess work is not hidden by daemon-only
