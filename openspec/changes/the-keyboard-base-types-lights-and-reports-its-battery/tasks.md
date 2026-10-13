@@ -71,7 +71,7 @@ host or QEMU result never ticks a board task.
   compiles it, and `tests/test_keyboard_base_xkb.py` drives libxkbcommon:
   every Shift symbol, Caps capitals, the digit row and the Fn layer pass;
   changing one symbol makes it fail.
-- [ ] 3.3 Add the `nxp,pca9555` node at the probed address and the three
+- [x] 3.3 Add the `nxp,pca9555` node at the probed address and the three
   `gpio-leds`. Enable `GPIO_PCA953X` and `LEDS_GPIO`.
   Proof (**host**): `nix build .#kernelMainlineDrm`.
 - [ ] 3.4 Install on the board. Record:
@@ -97,13 +97,22 @@ host or QEMU result never ticks a board task.
 
 ## 5. Battery and charger (kernel, device tree)
 
-- [ ] 5.1 Write the forward-port patch adding BQ27220 to `bq27xxx`. It is
+- [x] 5.1 Write the forward-port patch adding BQ27220 to `bq27xxx`. It is
   read-only, with no data-memory writes. Enable `BATTERY_BQ27XXX_I2C`.
   Proof (**host**): `nix build .#kernelMainlineDrm`.
 - [ ] 5.2 Add the `ti,bq25896` node with the 1.2 register values and
   `CHARGER_BQ25890`. Document any field the driver would rewrite. Proof
   (**host**): `nix build .#deviceTreeMainlineDrm` and a reviewed
   field-by-field table in `docs/evidence/keyboard-base/charger/`.
+- [ ] 5.2a Find the BQ25896 INT line. `bq25890_charger` will not bind
+  without an interrupt (`No irq resource found`), and neither LILYGO's code
+  nor its pin map names where INT goes; the XL9555's INT is equally
+  unknown. Until this is found, 5.2 adds no charger node. When it binds,
+  use `linux,skip-reset` and `linux,read-back-settings`, so the driver reads
+  the charge parameters instead of writing them. It still writes
+  CHG_CONFIG=1 and WATCHDOG=0 (both already set) and CONV_RATE. Proof
+  (**board-read**): the line identified on the board, with the method
+  recorded.
 - [ ] 5.3 On the board, record:
   - `power_supply` `capacity`, `status`, `voltage_now` and `current_now`;
   - the charger's `online` value, cable in and cable out;
@@ -111,13 +120,14 @@ host or QEMU result never ticks a board task.
     named fields.
 
   Proof (**board-read**): the logs in `docs/evidence/keyboard-base/charger/`.
-- [ ] 5.4 If 1.2 found a DRV2605, add its node and `INPUT_DRV260X_HAPTICS`,
+- [x] 5.4 If 1.2 found a DRV2605, add its node and `INPUT_DRV260X_HAPTICS`,
   and record its input device appearing (**board-read**). Otherwise record
-  "not fitted" and close the task.
+  "not fitted" and close the task. Not fitted: 0x5A did not answer
+  (`docs/evidence/keyboard-base/probe/`).
 
 ## 6. Shell use (Nix, Rust shell client)
 
-- [ ] 6.1 Add the `k230-keyboard-base` user service. It reads evdev without
+- [x] 6.1 Add the `k230-keyboard-base` user service. It reads evdev without
   grabbing it and handles:
   - hiding wvkbd;
   - the backlight following typing, with the idle timeout and panel-off;

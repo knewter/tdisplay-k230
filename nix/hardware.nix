@@ -300,6 +300,9 @@ in
   # openspec/changes/the-panel-brightness-is-adjustable/design.md decision 7.
   services.udev.extraRules = ''
     SUBSYSTEM=="backlight", ACTION=="add", RUN+="${pkgs.coreutils}/bin/chgrp shell /sys/class/backlight/%k/brightness", RUN+="${pkgs.coreutils}/bin/chmod g+w /sys/class/backlight/%k/brightness"
+    # Keyboard base LEDs the shell's keyboard-base service drives (Caps Lock
+    # and the key backlight); the same narrow per-attribute grant.
+    SUBSYSTEM=="leds", ACTION=="add", KERNEL=="k230:green:capslock|k230::kbd_backlight", RUN+="${pkgs.coreutils}/bin/chgrp shell /sys/class/leds/%k/brightness", RUN+="${pkgs.coreutils}/bin/chmod g+w /sys/class/leds/%k/brightness"
   '';
 
   # --- the-handheld-talks-bluetooth ---------------------------------------

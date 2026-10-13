@@ -16,6 +16,7 @@ let
   cfg = config.k230.shell;
   hdmiTouchCalibration = import ./hdmi-touch-calibration.nix cfg.hdmiTransform;
   powerKeyd = pkgs.callPackage ./power-keyd.nix { };
+  keyboardBased = pkgs.callPackage ./keyboard-base.nix { };
 
   # One additional display face for Home's Clock widget only
   # (`home-widget-design`, board-review round 2: "find dope clock widgets" --
@@ -1564,6 +1565,30 @@ in
         ExecStart = "${powerKeyd}/bin/k230-power-keyd --swaymsg ${sway}/bin/swaymsg";
         Restart = "on-failure";
         RestartSec = 1;
+        UMask = "0077";
+      };
+    };
+
+    # Keyboard base companion (openspec/changes/
+    # the-keyboard-base-types-lights-and-reports-its-battery, task 6.1):
+    # reads the base's keypad without grabbing it to hide the on-screen
+    # keyboard, run the key backlight and light Caps Lock. Without the base
+    # it only rechecks for the device every 10 s.
+    systemd.services.shell-keyboard-base = lib.mkIf cfg.coherentShell {
+      description = "Keyboard base backlight, Caps Lock LED and on-screen keyboard hiding";
+      wantedBy = [ "shell.service" ];
+      bindsTo = [ "shell.service" ];
+      partOf = [ "shell.service" ];
+      after = [ "shell.service" ];
+      environment.XDG_RUNTIME_DIR = "/run/shell";
+      environment.SWAYSOCK = "/run/shell/sway-ipc.sock";
+      serviceConfig = {
+        Type = "exec";
+        User = "shell";
+        Group = "shell";
+        ExecStart = "${keyboardBased}/bin/k230-keyboard-based --swaymsg ${sway}/bin/swaymsg --osk-signal ${keyboardGestureSignal}/bin/k230-keyboard-gesture-signal";
+        Restart = "on-failure";
+        RestartSec = 2;
         UMask = "0077";
       };
     };

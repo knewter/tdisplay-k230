@@ -164,6 +164,8 @@ buildLinux (args // {
       # Restart handler in the reset controller; without it `reboot` stops
       # at "Restarting system".
       ./patches/mainline/k230-restart.patch
+      # Keyboard base fuel gauge: a read-only BQ27220 entry in bq27xxx.
+      ./patches/mainline/bq27xxx-bq27220.patch
     ];
 
     postPatch = ''
@@ -524,6 +526,10 @@ config SND_SOC_K230_INNO\
     # drivers its later groups bind. Modules, so a board without the base
     # loads none of them.
     KEYBOARD_TCA8418 = module;
+    # The base defconfig leaves the LED subsystem off entirely; without
+    # NEW_LEDS and LEDS_CLASS, LEDS_GPIO is silently dropped.
+    NEW_LEDS = yes;
+    LEDS_CLASS = yes;
     LEDS_GPIO = module;
     CHARGER_BQ25890 = module;
     BATTERY_BQ27XXX = module;
