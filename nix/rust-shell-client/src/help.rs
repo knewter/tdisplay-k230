@@ -61,19 +61,67 @@ pub fn buttons(aid: bool) -> &'static [(Action, &'static str, &'static str)] {
 /// A centered column, sized to fit both panel and supported HDMI outputs.
 /// Even the smallest accepted output keeps buttons at least 56px high.
 pub fn transform(width: u32, height: u32) -> (f64, f64) {
+    if wide(width, height) {
+        let scale = (f64::from(width) / WIDE_WIDTH)
+            .min(f64::from(height) / WIDE_HEIGHT)
+            .clamp(0.5, 2.0);
+        return (scale, (f64::from(width) - WIDE_WIDTH * scale) / 2.0);
+    }
     let scale = (f64::from(width) / 568.0)
         .min(f64::from(height) / 1100.0)
         .clamp(0.5, 2.0);
     (scale, (f64::from(width) - 568.0 * scale) / 2.0)
 }
 
-pub fn button_rect(aid: bool, index: usize) -> (f64, f64, f64, f64) {
+/// Two 568-unit columns side by side, 600 units tall.
+const WIDE_WIDTH: f64 = 1136.0;
+const WIDE_HEIGHT: f64 = 600.0;
+/// Where a wide layout's buttons start in either column.
+const WIDE_BUTTON_TOP: f64 = 168.0;
+/// Buttons that fit in the wide layout's left column under the aid's
+/// heading; the rest continue at the top of the right column.
+const WIDE_AID_LEFT: usize = 3;
+
+/// The landscape panel (1232x568) would shrink the single column to about
+/// half size, with 7px body text. An output that wide and that short gets
+/// two columns instead -- the guide on the left and the buttons on the
+/// right -- at nearly full size. The portrait panel and the HDMI outputs
+/// keep the single column.
+pub fn wide(width: u32, height: u32) -> bool {
+    let column_scale = (f64::from(width) / 568.0).min(f64::from(height) / 1100.0);
+    column_scale < 0.75 && f64::from(width) >= 1.6 * f64::from(height)
+}
+
+/// A button's rect in the design units `transform` scales.
+pub fn button_rect(width: u32, height: u32, aid: bool, index: usize) -> (f64, f64, f64, f64) {
+    if wide(width, height) {
+        let (column, row) = match (aid, index < WIDE_AID_LEFT) {
+            (true, true) => (0.0, index),
+            (true, false) => (1.0, index - WIDE_AID_LEFT),
+            (false, _) => (1.0, index),
+        };
+        return (
+            column * 568.0 + 24.0,
+            WIDE_BUTTON_TOP + row as f64 * 128.0,
+            520.0,
+            112.0,
+        );
+    }
     (
         24.0,
         if aid { 192.0 } else { 640.0 } + index as f64 * 128.0,
         520.0,
         112.0,
     )
+}
+
+/// Where Help's status message paints, in design units.
+pub fn message_origin(width: u32, height: u32) -> (f64, f64) {
+    if wide(width, height) {
+        (568.0 + 24.0, 440.0)
+    } else {
+        (24.0, 880.0)
+    }
 }
 
 fn contains(point: (f64, f64), rect: (f64, f64, f64, f64)) -> bool {
@@ -102,7 +150,7 @@ pub fn hit(
         .iter()
         .enumerate()
         .find_map(|(i, (action, _, _))| {
-            let rect = button_rect(aid, i);
+            let rect = button_rect(width, height, aid, i);
             (contains(local(start), rect) && contains(local(end), rect)).then_some(*action)
         })
 }
@@ -140,17 +188,21 @@ mod tests {
     use crate::navigation;
     #[test]
     fn aid_is_deliberate_and_routes_share_painted_geometry() {
-        for (w, h) in [(300, 600), (568, 1232), (1920, 1080), (1080, 1920)] {
+        assert!(wide(1232, 568) && !wide(568, 1232) && !wide(1920, 1080) && !wide(1080, 1920));
+        for (w, h) in [(300, 600), (568, 1232), (1920, 1080), (1080, 1920), (1232, 568)] {
             let (scale, offset) = transform(w, h);
             for aid in [false, true] {
                 for (i, (action, _, _)) in buttons(aid).iter().enumerate() {
-                    let (x, y, width, height) = button_rect(aid, i);
+                    let (x, y, width, height) = button_rect(w, h, aid, i);
                     let center = (
                         offset + (x + width / 2.0) * scale,
                         (y + height / 2.0) * scale,
                     );
                     assert_eq!(hit(center, center, w, h, aid), Some(*action));
                     assert!(height * scale >= 56.0);
+                    if wide(w, h) {
+                        assert!(scale >= 0.9, "the landscape Help stays near full size: {scale}");
+                    }
                     assert!((y + height) * scale <= f64::from(h));
                     assert!(
                         offset + x * scale >= 0.0 && offset + (x + width) * scale <= f64::from(w)

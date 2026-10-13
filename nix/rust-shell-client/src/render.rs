@@ -1932,7 +1932,7 @@ pub fn panel_travel_height(
 ) -> f64 {
     let h = f64::from(height);
     match route {
-        Route::Shade => h * 0.65,
+        Route::Shade => crate::service_ui::shade_panel_height(height),
         // Fills nearly the whole screen from its own small top inset
         // (`navigation::panel_top`), not the old ~19%-of-height band --
         // `docs/design/app-drawer-review.md` §2: "filling the screen from
@@ -2206,7 +2206,7 @@ fn paint_help(
         }
     }
     for (i, (action, label, detail)) in crate::help::buttons(aid).iter().enumerate() {
-        let (x, y, w, h) = crate::help::button_rect(aid, i);
+        let (x, y, w, h) = crate::help::button_rect(width, height, aid, i);
         service_card(cr, theme, "controls", x, y, w, h, false);
         let pending =
             *action == crate::help::Action::Home && services.is_some_and(|s| s.help_home_pending);
@@ -2222,7 +2222,8 @@ fn paint_help(
         text(cr, detail, x + 24.0, y + 62.0, w - 48.0, 18.0, style.muted);
     }
     if let Some(message) = services.and_then(|s| s.message.as_deref()) {
-        text(cr, message, 24.0, 880.0, 520.0, 20.0, style.error);
+        let (mx, my) = crate::help::message_origin(width, height);
+        text(cr, message, mx, my, 520.0, 20.0, style.error);
     }
     let _ = cr.restore();
 }
@@ -2470,7 +2471,7 @@ fn scene(
     // than always filling the remaining screen height regardless of how
     // little is on them (finding P0-2).
     let panel_h = match route {
-        Route::Shade => h * 0.65,
+        Route::Shade => crate::service_ui::shade_panel_height(height),
         Route::Settings => settings_panel_h(h - panel_y, chooser, services, crate::density_scale(width, height)),
         Route::Power => power_panel_h(h - panel_y, services),
         _ => h - panel_y,

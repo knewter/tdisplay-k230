@@ -210,6 +210,16 @@ pub enum PanelIntent {
 /// slider already established) -- from `342.0` to `418.0`.
 pub const NOTIFICATION_TOP: f64 = 418.0;
 pub const NOTIFICATION_ROW: f64 = 116.0;
+
+/// The Shade sheet's height: 65% of the output, as on the portrait panel,
+/// but never so short that the notification list (which starts at the
+/// fixed `NOTIFICATION_TOP`) has no row of its own -- the landscape panel's
+/// 568px height would otherwise end the sheet above the list. Capped at
+/// the output's own height.
+pub fn shade_panel_height(height: u32) -> f64 {
+    let h = f64::from(height);
+    (h * 0.65).max((NOTIFICATION_TOP + NOTIFICATION_ROW + 24.0).min(h))
+}
 /// The Shade's own slider band -- starts below the "Dismiss all" tap
 /// zone (`116.0..190.0`, `panel_intent`'s own Shade arm) so the two never
 /// overlap, and is at least `slider::TOUCH_TARGET_PX` tall.
@@ -738,12 +748,12 @@ impl NotificationSwipeSettle {
 }
 
 pub fn notification_max_scroll(count: usize, height: u32) -> f64 {
-    let bottom = f64::from(height) * 0.65 - 24.0;
+    let bottom = shade_panel_height(height) - 24.0;
     (NOTIFICATION_TOP + count as f64 * NOTIFICATION_ROW - bottom).max(0.0)
 }
 
 fn notification_index(y: f64, height: u32, view: &ServiceView) -> Option<usize> {
-    if y < NOTIFICATION_TOP || y >= f64::from(height) * 0.65 - 24.0 {
+    if y < NOTIFICATION_TOP || y >= shade_panel_height(height) - 24.0 {
         return None;
     }
     let index =
@@ -805,7 +815,7 @@ pub fn notification_swipe_hit(
         return false;
     }
     let y = NOTIFICATION_TOP + swipe.row_index as f64 * NOTIFICATION_ROW - view.notification_scroll;
-    let bottom = f64::from(height) * 0.65 - 24.0;
+    let bottom = shade_panel_height(height) - 24.0;
     pos.1 >= y.max(NOTIFICATION_TOP)
         && pos.1 < (y + NOTIFICATION_ROW - 8.0).min(bottom)
         && pos.0 >= 24.0 + swipe.offset
@@ -994,6 +1004,14 @@ mod tests {
     use crate::pipewire_ipc::Sink;
     use crate::service_data::{Control, ControlValue, NotificationEvent, Priority};
     use std::path::PathBuf;
+
+    #[test]
+    fn the_landscape_shade_reaches_its_first_notification_row() {
+        assert_eq!(shade_panel_height(1232), 1232.0 * 0.65, "portrait is unchanged");
+        let h = shade_panel_height(568);
+        assert!(h <= 568.0);
+        assert!(h - 24.0 >= NOTIFICATION_TOP + NOTIFICATION_ROW, "one whole row fits: {h}");
+    }
 
     fn app(name: &str) -> AppEntry {
         AppEntry {

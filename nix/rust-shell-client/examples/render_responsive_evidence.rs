@@ -46,6 +46,9 @@ fn main() {
         evidence_render::render_wallpaper(&out_dir.join(format!("wallpaper-{label}.png")), width, height);
         evidence_render::render_route(&out_dir.join(format!("drawer-{label}.png")), width, height, Route::Drawer, &apps);
         evidence_render::render_route(&out_dir.join(format!("settings-{label}.png")), width, height, Route::Settings, &apps);
+        evidence_render::render_route(&out_dir.join(format!("shade-{label}.png")), width, height, Route::Shade, &apps);
+        evidence_render::render_route(&out_dir.join(format!("power-{label}.png")), width, height, Route::Power, &apps);
+        evidence_render::render_route(&out_dir.join(format!("help-{label}.png")), width, height, Route::Help, &apps);
         eprintln!("rendered {label}");
     }
 }
