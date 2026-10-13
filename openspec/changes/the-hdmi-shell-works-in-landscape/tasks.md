@@ -141,6 +141,10 @@ complete them here against the panel's 1232×568 geometry as well as HDMI.
       Home capture (`board/installed-home.png`). Open: the per-surface native
       captures and camera frame again on the installed image, after the
       operator's glass pass.
+      Drawer/shade jank on the installed image was the compositor's
+      per-layer software rotation (3.5 fps vs portrait's 10.4 fps); the
+      landscape profile now uses the rotate-once renderer (8.7 fps) and is
+      reinstalled (`rotation-performance.md`; operator: "plenty fast now").
 - [ ] 8.6 Operator real-glass check in the keyboard case: open Drawer, shade,
       Settings and an app, type on the keyboard, return Home. Record the
       operator's observation (physical: real glass). Hardware gate.

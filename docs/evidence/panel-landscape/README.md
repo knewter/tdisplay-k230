@@ -94,6 +94,19 @@ repository's own SD image, so only two boot files changed. Rollback: restore
 the two `*.portrait-20261013` files and the saved profile link, then reboot.
 From U-Boot, use `ums 0 mmc 1` and do the same from the host.
 
+## Reinstalled with the rotate-once renderer — 2026-10-13 ~10:40 CDT
+
+`rotation-performance.md` explains the drawer jank and its fix. The landscape
+profile now runs the patched wlroots with `WLR_PIXMAN_OUTPUT_TURN=1`. The
+same two-file install as above put bundle `gb7wd950…` (system `xr7d1339…`)
+in place. Only the `init=` path in the DTB's `chosen/bootargs` and in
+`bootargs.txt` changed; `Image` and `initrd.uimg` are identical. After an
+ordinary reboot: booted, current and profile system `xr7d1339…`;
+`touchscreen-size-x` 1080; `WLR_PIXMAN_OUTPUT_TURN=1` in sway's environment;
+no `/run` drop-ins; services active; `running`. Native capture:
+`board/installed-home-output-turn.png`. The operator: "ok yeah it's plenty
+fast now".
+
 ## Not established here
 
 The 1080 width on the first board, the remaining real-glass checks

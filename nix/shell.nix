@@ -51,8 +51,17 @@ let
   swayBase = pkgs.sway.override { enableXWayland = false; };
   cardShell = pkgs.callPackage ./card-shell.nix {
     swayUnwrapped = pkgs.sway-unwrapped;
-    quarterTurnTrial = cfg.hdmiQuarterTurnTrial;
+    # The landscape panel needs the patched wlroots for its rotate-once
+    # renderer (WLR_PIXMAN_OUTPUT_TURN below); the same build carries the
+    # HDMI quarter-turn trial.
+    quarterTurnTrial = cfg.hdmiQuarterTurnTrial || panelOutputTurn;
   };
+  # Stock Pixman rotates every layer of every frame on a rotated output.
+  # On the landscape panel that held the drawer and shade animations at
+  # ~3.5 fps; composing the logical frame and rotating it once ran them at
+  # ~8.7 fps against portrait's ~10.4 (docs/evidence/panel-landscape/
+  # rotation-performance.md).
+  panelOutputTurn = cfg.coherentShell && cfg.panelTransform != "normal";
   # nixpkgs' stock `pipewire` builds every optional backend on by default:
   # Bluetooth (bluez plus the LC3/LDAC/aptX codec libraries), Vulkan,
   # X11 (which also drags in libcanberra/libmysofa), RAOP/AirPlay,
@@ -1595,9 +1604,12 @@ in
         # A fixed IPC socket so `swaymsg` from the serial console needs no
         # discovery (sway/ipc-server.c honours SWAYSOCK when it is set).
         SWAYSOCK = "/run/shell/sway-ipc.sock";
-      } // lib.optionalAttrs (cfg.coherentShell && cfg.hdmiQuarterTurnTrial) {
+      } // lib.optionalAttrs (cfg.coherentShell && cfg.hdmiQuarterTurnTrial && !panelOutputTurn) {
         WLR_PIXMAN_QUARTER_TURN = "1";
         WLR_PIXMAN_OUTPUT_TURN = "0";
+      } // lib.optionalAttrs panelOutputTurn {
+        WLR_PIXMAN_QUARTER_TURN = "0";
+        WLR_PIXMAN_OUTPUT_TURN = "1";
       } // lib.optionalAttrs cfg.vgliteAccessTrial {
         K230_VGLITE_BROKER = "/run/k230-vglite-broker.sock";
         K230_VGLITE_ALLOW_UNPROVEN_CACHE = "1";
