@@ -83,7 +83,7 @@ everything else on the base that Linux can use:
 ## Impact
 
 - **Kernel:**
-  - Kconfig for `KEYBOARD_TCA8418`, `GPIO_PCA953X`, `I2C_GPIO`,
+  - Kconfig for `KEYBOARD_TCA8418`, `GPIO_PCA953X`,
     `CHARGER_BQ25890`, `BATTERY_BQ27XXX_I2C`, `INPUT_DRV260X_HAPTICS`,
     `LEDS_GPIO` and `LEDS_PWM`.
   - A forward-port patch adding BQ27220 to `bq27xxx`.

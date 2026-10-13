@@ -112,29 +112,36 @@ choices below depend on its answers, and the vendor issue
 a guess could cost a boot.
 
 The probe:
-- reads the IOMUX words for IO2, IO28, IO29, IO42, IO43, IO46, IO47, IO50,
-  IO51 and IO52 through `/dev/mem`, read-only;
-- runs `i2cdetect -r` on an `i2c-gpio` bus created at runtime, or, failing
-  that, the vendor's bit-bang sequence driven through `gpioset`/`gpioget`;
-- reads only identity and status registers.
+- reads the mux of IO2, IO28, IO29, IO42, IO43, IO46, IO47, IO50, IO51 and
+  IO52 from pinctrl debugfs. The kernel's pinctrl driver owns the IOMUX
+  region, so `/dev/mem` reads of it are refused;
+- samples IO42, IO43 and IO52 only when they are already inputs;
+- runs `i2cdetect -r` on the hardware I2C4 bus (Decision 2);
+- reads only identity, status and configuration registers.
 
 It writes nothing to any chip.
 
-### 2. Bus: `i2c-gpio` on IO46/IO47 (device tree)
+### 2. Bus: hardware I2C4 on IO46/IO47 (device tree)
 
-A device-tree `i2c-gpio` node with SCL on `gpio1 14` (IO46) and SDA on
-`gpio1 15` (IO47), both open-drain. This is what the vendor actually does.
+The DesignWare controller at `0x91409000` (I2C4), with IO46 and IO47 muxed to
+function 3 (IIC4_SCL/IIC4_SDA) by the Linux pinctrl node, at 100 kHz. It costs
+no CPU per bit and uses the kernel's ordinary I2C client drivers. On
+2026-10-13 it answered at 0x20, 0x34, 0x38, 0x55 and 0x6B
+(`docs/evidence/keyboard-base/probe/`). LILYGO's RT-Smart keyboard driver
+(`keyboard_ext.c`) also uses IIC4 on these pads.
 
-The hardware controller, function 3 on those pads, is tried once in the probe
-group. If it ACKs at 100 kHz, it is preferred, because it costs no CPU per
-bit. The decision is recorded in evidence either way.
+Earlier attempts on this unit saw every address NACK on both the hardware
+controller and a GPIO bit-bang bus. The cause was a protective film still
+over the base's pogo pins, not the bus, so those runs say nothing about
+either bus.
 
 **Rejected:**
+- `i2c-gpio` bit-banging on `gpio1 14`/`15`, as LILYGO's Linux UI does. It
+  costs CPU on the one Linux core and needs `I2C_GPIO`, which is not built.
+  It stays the fallback if the hardware controller misbehaves under load.
 - `/dev/mem` IOMUX pokes from userspace, as the vendor does. They need root,
   race any kernel owner of the pads, and leave the pads in whatever state a
   crash left them.
-- Assuming the hardware controller works. The vendor's own code deliberately
-  avoids it.
 
 ### 3. Pins: Linux pinctrl, not stage 1 (device tree)
 
@@ -289,9 +296,6 @@ Stage 1 owns nothing new.
   XL9555, the vendor issue's power or enable question becomes the next task,
   and the battery groups proceed on their own. The groups are deliberately
   independent.
-- **Bit-bang CPU cost** on the one Linux core. Keypad traffic is
-  interrupt-driven and small, and gauge polling is slow. The probe records the
-  CPU cost of a key burst.
 - **The pinctrl node** could disturb pads it does not name. The console check
   in group 2 guards this.
 - **Low-battery shutdown** is destructive if the gauge reads wrongly.

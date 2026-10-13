@@ -135,3 +135,70 @@
 		status = "okay";
 	};
 };
+
+// Keyboard base I2C (openspec/changes/
+// the-keyboard-base-types-lights-and-reports-its-battery). LILYGO's
+// HARDWARE_PINMAP.md puts the base's charger, gauge, keypad and expander on
+// IO46/IO47; machine_fpioa.c gives function 3 = IIC4_SCL/IIC4_SDA there.
+// Stage 1 (vendor k230_canmv_v3p0.dts) leaves both pads as GPIO, so Linux
+// muxes them here. The controller range, IRQ 25 and 400 kHz default follow
+// the vendor DTB's i2c@91409000; the base runs at the 100 kHz LILYGO
+// documents. Pad settings match LILYGO sensor_aht20_iomux_value(3) (0x19d1).
+&pinctrl {
+	i2c4_pins: i2c4-pins {
+		// Stage 1 also muxes IO7/IO8 to IIC4 (function 2). Release them so
+		// only one pad pair drives the controller. UNVERIFIED: whether the
+		// duplicate mux matters; the NACKs first seen here were recorded
+		// with the base's protective film still over the pogo pins.
+		i2c4-io7-io8-release-cfg {
+			pinmux = <K230_PINMUX(7, 0)>, <K230_PINMUX(8, 0)>;
+			power-source = <K230_MSC_3V3>;
+			input-enable;
+			bias-pull-down;
+		};
+
+		i2c4-scl-cfg {
+			pinmux = <K230_PINMUX(46, 3)>;
+			slew-rate = <0>;
+			drive-strength = <8>;
+			power-source = <K230_MSC_3V3>;
+			input-enable;
+			output-enable;
+			bias-pull-up;
+			input-schmitt-enable;
+		};
+
+		i2c4-sda-cfg {
+			pinmux = <K230_PINMUX(47, 3)>;
+			slew-rate = <0>;
+			drive-strength = <8>;
+			power-source = <K230_MSC_3V3>;
+			input-enable;
+			output-enable;
+			bias-pull-up;
+			input-schmitt-enable;
+		};
+	};
+};
+
+/ {
+	soc {
+		i2c4: i2c@91409000 {
+			compatible = "snps,designware-i2c";
+			reg = <0x0 0x91409000 0x0 0x1000>;
+			interrupts = <25 IRQ_TYPE_LEVEL_HIGH>;
+			#address-cells = <1>;
+			#size-cells = <0>;
+			clocks = <&sysclk K230_LS_I2C4_RATE>,
+				 <&sysclk K230_LS_I2C4_APB_GATE>;
+			clock-names = "ref", "pclk";
+			// Stage 1 releases only i2c3 from reset; the DesignWare driver
+			// deasserts a named reset at probe.
+			resets = <&rst RST_I2C4>;
+			clock-frequency = <100000>;
+			pinctrl-names = "default";
+			pinctrl-0 = <&i2c4_pins>;
+			status = "okay";
+		};
+	};
+};

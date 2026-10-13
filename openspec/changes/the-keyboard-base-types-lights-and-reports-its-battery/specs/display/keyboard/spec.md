@@ -6,7 +6,7 @@ Make the keyboard base's physical keys, Caps Lock light and key backlight usable
 
 ### Requirement: The system finds the keyboard base without writing to it
 
-<!-- UNVERIFIED: no Linux-side probe of the base has been run on this board. LILYGO `ui_hardware.c` (tree 4a87c53c) probes 0x6B, 0x55, 0x34 and 0x20-0x27 over a GPIO46/47 bit-banged bus; LILYGO issue T-Display-K230_canmv_rt#11 reports the TCA8418 and XL9555 not acknowledging under Linux. -->
+<!-- Grounded for the attached case: tools/keyboard-base-probe.sh on 2026-10-13 found 0x20, 0x34, 0x38, 0x55 and 0x6B on hardware I2C4 (IO46/IO47) with reads only (docs/evidence/keyboard-base/probe/). UNVERIFIED: the base-absent scenario has not been booted. -->
 The system SHALL establish which keyboard-base chips answer, at which I2C address and over which bus, by a read-only probe recorded before any driver is bound to them. The probe SHALL NOT write a register of any keyboard-base chip. The system owns this requirement; stage 1 is unchanged.
 
 #### Scenario: The base is attached

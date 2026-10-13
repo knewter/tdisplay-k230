@@ -5,20 +5,22 @@ host or QEMU result never ticks a board task.
 
 ## 1. Read-only probe (board)
 
-- [ ] 1.1 Write `tools/keyboard-base-probe.sh`:
-  - it reads the IOMUX words for IO2, IO28/29, IO42/43, IO46/47, IO50/51 and
-    IO52 read-only;
-  - it records the GPIO levels of IO42/IO43;
-  - it scans the base's bus with `i2cdetect -r -y` on a runtime `i2c-gpio`
-    instance on IO46/47 (SCL `gpio1 14`, SDA `gpio1 15`);
+- [x] 1.1 Write `tools/keyboard-base-probe.sh`:
+  - it reads the mux of IO2, IO28/29, IO42/43, IO46/47, IO50/51 and IO52 from
+    pinctrl debugfs (the pinctrl driver owns the IOMUX, so `/dev/mem` is
+    refused);
+  - it samples IO42, IO43 and IO52 only when they are already inputs;
+  - it scans the base's bus with `i2cdetect -r -y` on hardware I2C4
+    (IO46/47, function 3; design Decision 2);
   - it reads only identity, status and configuration registers: BQ25896
-    0x00–0x14, BQ27220 0x06–0x3C standard commands, TCA8418 CFG 0x01, XL9555
-    input/config, DRV2605 status;
+    0x00–0x14 except the fault register 0x0C, which clears on read; BQ27220
+    0x06–0x3C standard commands; TCA8418 CFG 0x01–0x03; XL9555 0x00–0x07;
+    DRV2605 status;
   - it makes no register writes, which the script asserts.
 
   Proof (**host**): `bash -n tools/keyboard-base-probe.sh` and a review of the
   write-free command list.
-- [ ] 1.2 Run the probe on the board with the base attached, holding
+- [x] 1.2 Run the probe on the board with the base attached, holding
   `flock /tmp/k230-board.lock`, and commit the output to
   `docs/evidence/keyboard-base/probe/`. Record:
   - which addresses answer;
@@ -29,19 +31,18 @@ host or QEMU result never ticks a board task.
   - whether DRV2605 is fitted.
 
   Proof (**board-read**): the committed probe log.
-- [ ] 1.3 If the TCA8418 or XL9555 does not answer, try the hardware
+- [x] 1.3 If the TCA8418 or XL9555 does not answer, try the hardware
   controller on function 3 once and record the result. Then open the
   enable/power question as an explicit task here, before group 3. The battery
   groups proceed independently. Proof (**board-read**): the committed result.
+  Both answered on the hardware controller itself, so no enable task opens.
 
 ## 2. Pins and bus (device tree, kernel)
 
 - [ ] 2.1 Add the `canaan,k230-pinctrl` node and states for IO42, IO43, IO46,
-  IO47 and IO52 only, plus the chosen bus node (`i2c-gpio`, or the hardware
-  controller per 1.3), to `nix/dts/k230-tdisplay-mainline-drm-common.dtsi`.
-  Enable `I2C_GPIO` in the mainline DRM kernel config.
-  Proof (**host**): `nix build .#deviceTreeMainlineDrm` and
-  `nix build .#kernelMainlineDrm`.
+  IO47 and IO52 only, plus the hardware I2C4 node (design Decision 2), to
+  `nix/dts/k230-tdisplay-mainline-drm-common.dtsi`.
+  Proof (**host**): `nix build .#deviceTreeMainlineDrm`.
 - [ ] 2.2 Push the DTB with `tools/push-file.py --src <dtb> --dest /boot/k230-tdisplay.dtb --reboot`.
   Record that the console on `/dev/ttyACM0` still logs in, that the panel and
   touch work, and that `i2cdetect -y <bus>` lists the 1.2 addresses.
