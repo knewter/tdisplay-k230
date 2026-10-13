@@ -14,7 +14,7 @@ with `<redacted>` and the redaction is noted:
 
 ## 1. Read-only probe (board)
 
-- [ ] 1.1 Write `tools/nrf9151-probe.sh`. It records IO2's level and the IOMUX
+- [x] 1.1 Write `tools/nrf9151-probe.sh`. It records IO2's level and the IOMUX
   words for IO2/IO28/IO29/IO50/IO51, then drives IO2 high. For the probe
   only, it switches IO28/29 to UART3 through a runtime path, recorded in the
   script. It then sends only queries:
@@ -26,7 +26,10 @@ with `<redacted>` and the redaction is noted:
 
   It prints how long the firmware takes after power-on to issue its own
   network attach. Proof (**host**): `bash -n` plus a review that the script
-  writes no non-volatile modem setting.
+  writes no non-volatile modem setting. The device tree (2.1) already muxes UART3, so
+  the script reads the mux instead of switching it. It ends in `AT+CFUN=4`
+  rather than `AT+CFUN=0`, which stores network context to flash on the
+  nRF91. Board run: `docs/evidence/nrf9151/probe/`.
 - [ ] 1.2 Run it on the board, holding `flock /tmp/k230-board.lock`, and
   commit the redacted output to `docs/evidence/nrf9151/probe/`. Also commit
   the operator's notes on the fitted antennas and SIM, with a **camera** frame

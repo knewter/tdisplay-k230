@@ -1,0 +1,131 @@
+#!/usr/bin/env bash
+# Read-only probe of the keyboard base's nRF9151 (openspec/changes/
+# the-nrf9151-gives-the-handheld-cellular-sms-and-location, task 1.1).
+#
+# Run on the board as root while nothing else holds /dev/ttyS3; on the host
+# hold `flock /tmp/k230-board.lock`.
+#
+#   bash nrf9151-probe.sh > probe.log 2>&1
+#
+# UART3 is already on IO28/IO29 through the device tree (task 2.1 landed
+# first), so no runtime pin switching is needed; the probe records the mux
+# from pinctrl debugfs instead.
+#
+# It sends only queries plus volatile power-state changes:
+#   AT, AT+CGMR, AT#XSMVER / AT#XSLMVER, AT+CFUN?,
+#   AT+CFUN=1, AT%XSIM?, AT+CPIN?, AT+CEREG?, AT+COPS?, AT+CESQ,
+#   AT+CFUN=4.
+# It ends in flight mode (CFUN=4), not CFUN=0: on the nRF91 CFUN=0 stores
+# the modem's network context to flash, and this probe writes nothing
+# non-volatile. Then the enable line is driven low.
+#
+# Before raising the enable line it sends one AT with the line low, to show
+# whether the modem is unpowered there.
+#
+# Output is redacted as it is written:
+#   +CEREG  keeps only the registration status, not the area or cell IDs;
+#   +COPS   keeps mode, format and access technology, not the operator;
+#   +CGSN, +CIMI, %XICCID, +CNUM are never sent.
+set -u
+
+TTY=/dev/ttyS3
+LINE=nrf9151-enable
+dbg=/sys/kernel/debug
+LOG=$(mktemp)
+STOP=$(mktemp -u)
+t0=$(date +%s%N)
+
+ms() { echo $(( ($(date +%s%N) - t0) / 1000000 )); }
+
+redact() {
+	sed -u -E \
+		-e 's/(< \+CEREG: [0-9]+,[0-9]+),.*/\1,<redacted>/' \
+		-e 's/(< \+CEREG: [0-9]+),".*/\1,<redacted>/' \
+		-e 's/(< \+COPS: [0-9]+,[0-9]+),"[^"]*"(.*)/\1,"<redacted>"\2/'
+}
+
+echo "# nrf9151-probe $(date -u +%Y-%m-%dT%H:%M:%SZ) kernel $(uname -r)"
+
+mountpoint -q "$dbg" || mount -t debugfs debugfs "$dbg"
+echo
+echo "## pin muxing (pinctrl debugfs)"
+for pin in 2 28 29 50 51; do
+	grep -h "^pin $pin (IO$pin)" "$dbg"/pinctrl/*/pinmux-pins
+done
+echo
+echo "## enable line before the probe"
+gpioinfo "$LINE" 2>&1
+
+if ls -l /proc/[0-9]*/fd 2>/dev/null | grep -q " -> $TTY\$"; then
+	echo "refusing: $TTY is open by another process" >&2
+	exit 1
+fi
+
+stty -F "$TTY" 115200 raw -echo -crtscts
+exec 3<>"$TTY"
+
+# Every received line, with milliseconds since the probe started. Both
+# writers append, so neither overwrites the other.
+(
+	while [ ! -e "$STOP" ]; do
+		if IFS= read -r -t 1 line <&3; then
+			line=${line%$'\r'}
+			[ -n "$line" ] && printf '%6s ms < %s\n' "$(ms)" "$line"
+		fi
+	done
+) | redact >> "$LOG" &
+reader=$!
+
+send() { # command, seconds to wait
+	printf '%6s ms > %s\n' "$(ms)" "$1" >> "$LOG"
+	printf '%s\r\n' "$1" >&3
+	sleep "$2"
+}
+
+echo
+echo "## enable low: does the modem answer?"
+gpioset -t0 "$LINE=0"
+sleep 1
+send AT 2
+
+echo "## enable high at $(ms) ms" >> "$LOG"
+setsid gpioset "$LINE=1" &
+holder=$!
+sleep 6
+
+send AT 1
+send AT+CGMR 1
+send 'AT#XSMVER' 1
+send 'AT#XSLMVER' 1
+send 'AT+CFUN?' 1
+send AT+CFUN=1 3
+send 'AT%XSIM?' 1
+send 'AT+CPIN?' 1
+send 'AT+CEREG?' 1
+send 'AT+COPS?' 2
+send AT+CESQ 1
+# Watch for the firmware's own attach URCs before leaving.
+sleep 20
+send AT+CFUN=4 3
+
+kill "$holder" 2>/dev/null
+wait "$holder" 2>/dev/null
+gpioset -t0 "$LINE=0"
+echo "## enable low at $(ms) ms" >> "$LOG"
+sleep 1
+touch "$STOP"
+wait "$reader" 2>/dev/null
+rm -f "$STOP"
+exec 3<&-
+
+echo
+echo "## exchange (ms since start; > sent, < received)"
+cat "$LOG"
+rm -f "$LOG"
+echo
+echo "## enable line after the probe"
+gpioinfo "$LINE" 2>&1
+echo
+echo "## first +CEREG URC after enable (firmware's own attach), if any"
+echo "(see the exchange above; the probe sends nothing that requests an attach before AT+CFUN=1)"
+echo "# end"

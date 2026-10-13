@@ -1,0 +1,60 @@
+# nrf9151-probe 2026-10-13T23:55:37Z kernel 7.3.0-rc5
+
+## pin muxing (pinctrl debugfs)
+pin 2 (IO2): device 91403000.serial function nrf9151-en-pins group nrf9151-en-cfg
+pin 28 (IO28): device 91403000.serial function uart3-nrf-pins group uart3-txd-cfg
+pin 29 (IO29): device 91403000.serial function uart3-nrf-pins group uart3-rxd-cfg
+pin 50 (IO50): device 91403000.serial function uart3-nrf-pins group uart3-io50-io51-release-cfg
+pin 51 (IO51): device 91403000.serial function uart3-nrf-pins group uart3-io50-io51-release-cfg
+
+## enable line before the probe
+gpiochip0 2	"nrf9151-enable"	input
+
+## enable low: does the modem answer?
+
+## exchange (ms since start; > sent, < received)
+  1529 ms > AT
+## enable high at 3569 ms
+  5162 ms < Ready
+  5473 ms < +CEREG: 90
+  9634 ms > AT
+  9673 ms < OK
+ 10683 ms > AT+CGMR
+ 10726 ms < mfw_nrf91x1_2.0.3
+ 10743 ms < OK
+ 11736 ms > AT#XSMVER
+ 11776 ms < ERROR
+ 12785 ms > AT#XSLMVER
+ 12826 ms < #XSLMVER: "2.9.0","2.9.0-cellular-a52f6a06a9e4"
+ 12845 ms < OK
+ 13842 ms > AT+CFUN?
+ 13884 ms < +CFUN: 1
+ 13902 ms < OK
+ 14893 ms > AT+CFUN=1
+ 14934 ms < OK
+ 15171 ms < +CEREG: 90
+ 17947 ms > AT%XSIM?
+ 17988 ms < %XSIM: 0,9
+ 18006 ms < OK
+ 18995 ms > AT+CPIN?
+ 19036 ms < ERROR
+ 20046 ms > AT+CEREG?
+ 20086 ms < +CEREG: 5,90
+ 20104 ms < OK
+ 21094 ms > AT+COPS?
+ 21135 ms < +COPS: 0
+ 21153 ms < OK
+ 23147 ms > AT+CESQ
+ 23191 ms < +CESQ: 99,99,255,255,255,255
+ 23211 ms < OK
+ 44226 ms > AT+CFUN=4
+ 44267 ms < OK
+ 44285 ms < +CEREG: 0
+## enable low at 47331 ms
+
+## enable line after the probe
+gpiochip0 2	"nrf9151-enable"	output
+
+## first +CEREG URC after enable (firmware's own attach), if any
+(see the exchange above; the probe sends nothing that requests an attach before AT+CFUN=1)
+# end
