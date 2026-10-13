@@ -37,7 +37,7 @@ with `<redacted>` and the redaction is noted:
 
 ## 2. Device tree (device tree)
 
-- [ ] 2.1 Add the IO28/29 UART3, IO50/51 GPIO-input and IO2 GPIO states to the
+- [x] 2.1 Add the IO28/29 UART3, IO50/51 GPIO-input and IO2 GPIO states to the
   shared pinctrl node, enable `&uart3`, and name IO2's line `nrf9151-enable`.
   Proof (**host**): `nix build .#deviceTreeMainlineDrm`.
 - [ ] 2.2 Push the DTB with

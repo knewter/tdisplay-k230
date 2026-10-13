@@ -202,3 +202,69 @@
 		};
 	};
 };
+
+// nRF9151 on the keyboard base (openspec/changes/
+// the-nrf9151-gives-the-handheld-cellular-sms-and-location). IO2 enables its
+// 3.3 V supply (LILYGO rt_sample_display.cpp, "nRF9151 enable 3.3v");
+// stage 1 leaves IO2 on JTAG_TCK with output disabled, so it is muxed to
+// GPIO here and left for the modem service to drive. UART3 moves from
+// IO50/IO51, where stage 1 puts it, to IO28/IO29 function 2 (LILYGO patch
+// 0061); IO50/IO51 are released as inputs so only one pad pair feeds RXD.
+&pinctrl {
+	uart3_nrf_pins: uart3-nrf-pins {
+		uart3-txd-cfg {
+			pinmux = <K230_PINMUX(28, 2)>;
+			drive-strength = <4>;
+			power-source = <K230_MSC_3V3>;
+			output-enable;
+			bias-disable;
+		};
+
+		uart3-rxd-cfg {
+			pinmux = <K230_PINMUX(29, 2)>;
+			power-source = <K230_MSC_3V3>;
+			input-enable;
+			bias-pull-up;
+		};
+
+		uart3-io50-io51-release-cfg {
+			pinmux = <K230_PINMUX(50, 0)>, <K230_PINMUX(51, 0)>;
+			power-source = <K230_MSC_3V3>;
+			input-enable;
+			bias-pull-down;
+		};
+	};
+
+	nrf9151_en_pins: nrf9151-en-pins {
+		nrf9151-en-cfg {
+			pinmux = <K230_PINMUX(2, 0)>;
+			drive-strength = <8>;
+			power-source = <K230_MSC_3V3>;
+			output-enable;
+			input-enable;
+			bias-disable;
+		};
+	};
+};
+
+/ {
+	aliases {
+		serial3 = &uart3;
+	};
+};
+
+&uart3 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&uart3_nrf_pins>, <&nrf9151_en_pins>;
+	status = "okay";
+};
+
+// Named so the modem service finds the enable line by name
+// (gpioset nrf9151-enable=1, libgpiod 2) rather than by offset.
+&gpio0_ports {
+	gpio-line-names =
+		"", "", "nrf9151-enable", "", "", "", "", "",
+		"", "", "", "", "", "", "", "",
+		"", "", "", "", "", "", "", "",
+		"", "", "", "", "", "", "", "";
+};
