@@ -1,0 +1,153 @@
+Evidence classes are named per task: **host** (build or unit test), **QEMU**,
+**board-read** (a command on the running board), **injected** (synthetic
+evdev), **camera**, and **operator** (a person at the real keys or glass). A
+host or QEMU result never ticks a board task.
+
+## 1. Read-only probe (board)
+
+- [ ] 1.1 Write `tools/keyboard-base-probe.sh`:
+  - it reads the IOMUX words for IO2, IO28/29, IO42/43, IO46/47, IO50/51 and
+    IO52 read-only;
+  - it records the GPIO levels of IO42/IO43;
+  - it scans the base's bus with `i2cdetect -r -y` on a runtime `i2c-gpio`
+    instance on IO46/47 (SCL `gpio1 14`, SDA `gpio1 15`);
+  - it reads only identity, status and configuration registers: BQ25896
+    0x00–0x14, BQ27220 0x06–0x3C standard commands, TCA8418 CFG 0x01, XL9555
+    input/config, DRV2605 status;
+  - it makes no register writes, which the script asserts.
+
+  Proof (**host**): `bash -n tools/keyboard-base-probe.sh` and a review of the
+  write-free command list.
+- [ ] 1.2 Run the probe on the board with the base attached, holding
+  `flock /tmp/k230-board.lock`, and commit the output to
+  `docs/evidence/keyboard-base/probe/`. Record:
+  - which addresses answer;
+  - IO43's level;
+  - the charger's live charge-current, regulation-voltage, termination and
+    precharge fields;
+  - the gauge's design capacity;
+  - whether DRV2605 is fitted.
+
+  Proof (**board-read**): the committed probe log.
+- [ ] 1.3 If the TCA8418 or XL9555 does not answer, try the hardware
+  controller on function 3 once and record the result. Then open the
+  enable/power question as an explicit task here, before group 3. The battery
+  groups proceed independently. Proof (**board-read**): the committed result.
+
+## 2. Pins and bus (device tree, kernel)
+
+- [ ] 2.1 Add the `canaan,k230-pinctrl` node and states for IO42, IO43, IO46,
+  IO47 and IO52 only, plus the chosen bus node (`i2c-gpio`, or the hardware
+  controller per 1.3), to `nix/dts/k230-tdisplay-mainline-drm-common.dtsi`.
+  Enable `I2C_GPIO` in the mainline DRM kernel config.
+  Proof (**host**): `nix build .#deviceTreeMainlineDrm` and
+  `nix build .#kernelMainlineDrm`.
+- [ ] 2.2 Push the DTB with `tools/push-file.py --src <dtb> --dest /boot/k230-tdisplay.dtb --reboot`.
+  Record that the console on `/dev/ttyACM0` still logs in, that the panel and
+  touch work, and that `i2cdetect -y <bus>` lists the 1.2 addresses.
+  Proof (**board-read**): the console log and `i2cdetect` output in
+  `docs/evidence/keyboard-base/bus/`.
+
+## 3. Keys and Caps Lock (kernel, device tree, Nix)
+
+- [ ] 3.1 Generate the 7×10 `linux,keymap` from the vendor code table:
+  - legends map to ordinary key codes;
+  - FN and FN-R are `KEY_RIGHTALT`;
+  - LILYGO is `KEY_LEFTMETA`;
+  - MIC is `KEY_MICMUTE`.
+
+  Add the `ti,tca8418` node, the IO43 `gpio-hog` at the level 1.2 observed,
+  and `KEYBOARD_TCA8418`. Proof (**host**): a generator unit test that
+  round-trips all 68 vendor codes, then `nix build .#deviceTreeMainlineDrm`.
+- [ ] 3.2 Add the `k230-base` xkb symbols file, with the vendor Shift table and
+  the Fn layer, and the Sway input stanza for the base only. Proof (**host**):
+  `xkbcli compile-keymap` with the layout, plus a test asserting each vendor
+  Shift symbol, with its result.
+- [ ] 3.3 Add the `nxp,pca9555` node at the probed address and the three
+  `gpio-leds`. Enable `GPIO_PCA953X` and `LEDS_GPIO`.
+  Proof (**host**): `nix build .#kernelMainlineDrm`.
+- [ ] 3.4 Install on the board. Record:
+  - `evtest` on the base's device for every key (**board-read**, with an
+    operator pressing);
+  - `ls -la` typed into foot, shown in a native `grim` capture and a camera
+    frame (**operator** + **camera**);
+  - a Shift-punctuation line;
+  - Caps Lock with its LED lit in a camera frame.
+
+  Store all of it in `docs/evidence/keyboard-base/keys/`.
+
+## 4. Key backlight (device tree, then kernel)
+
+- [ ] 4.1 Add IO52 as a `gpio-leds` `k230::kbd_backlight`. Proof (**host**):
+  `nix build .#deviceTreeMainlineDrm`. Then (**camera**) a frame with it on
+  and a frame with it off, written through sysfs, in
+  `docs/evidence/keyboard-base/backlight/`.
+- [ ] 4.2 Port the vendor K230 PWM driver and switch IO52 to PWM4 with a
+  `pwm-leds` entry of the same name. Proof (**host**):
+  `nix build .#kernelMainlineDrm`. Then (**camera**) three distinct
+  brightness levels.
+
+## 5. Battery and charger (kernel, device tree)
+
+- [ ] 5.1 Write the forward-port patch adding BQ27220 to `bq27xxx`. It is
+  read-only, with no data-memory writes. Enable `BATTERY_BQ27XXX_I2C`.
+  Proof (**host**): `nix build .#kernelMainlineDrm`.
+- [ ] 5.2 Add the `ti,bq25896` node with the 1.2 register values and
+  `CHARGER_BQ25890`. Document any field the driver would rewrite. Proof
+  (**host**): `nix build .#deviceTreeMainlineDrm` and a reviewed
+  field-by-field table in `docs/evidence/keyboard-base/charger/`.
+- [ ] 5.3 On the board, record:
+  - `power_supply` `capacity`, `status`, `voltage_now` and `current_now`;
+  - the charger's `online` value, cable in and cable out;
+  - the charger registers before and after binding, unchanged except for the
+    named fields.
+
+  Proof (**board-read**): the logs in `docs/evidence/keyboard-base/charger/`.
+- [ ] 5.4 If 1.2 found a DRV2605, add its node and `INPUT_DRV260X_HAPTICS`,
+  and record its input device appearing (**board-read**). Otherwise record
+  "not fitted" and close the task.
+
+## 6. Shell use (Nix, Rust shell client)
+
+- [ ] 6.1 Add the `k230-keyboard-base` user service. It reads evdev without
+  grabbing it and handles:
+  - hiding wvkbd;
+  - the backlight following typing, with the idle timeout and panel-off;
+  - the Caps Lock LED from xkb state.
+
+  Proof (**host**): unit tests with a fake evdev stream, and
+  `nix build` of its derivation.
+- [ ] 6.2 Add the Sway bindings:
+  - Super for the drawer;
+  - Super+Tab for the overview;
+  - Fn+LILYGO for a `grim` screenshot;
+  - Esc as back only when nothing has focus.
+
+  Proof (**host**):
+  `nix build .#nixosConfigurations.k230-mainline-drm-shell-landscape.config.system.build.toplevel`.
+- [ ] 6.3 Add the battery to the shade, and the keyboard backlight control to
+  Settings, persisted under `/var/lib/k230`. Both are hidden when their device
+  is absent. Proof (**host**): `cargo test` in `nix/rust-shell-client`, plus
+  host renders with and without a fake `power_supply`/LED tree.
+- [ ] 6.4 Add the `k230-battery-policy` service and its Nix options. Proof
+  (**host**): state-machine tests covering 15%/5% once each, two readings at
+  3%, the countdown, a cancel on charge, and disabled.
+- [ ] 6.5 On the board, record:
+  - a key press hiding the on-screen keyboard, and the LILYGO-key launch flow
+    (**operator** + **camera**);
+  - the shade's battery and the Settings control, in native captures;
+  - Home's Battery widget leaving its "no battery info" state.
+
+  Store all of it in `docs/evidence/keyboard-base/shell/`.
+- [ ] 6.6 Exercise the low-battery policy on the board with the thresholds
+  raised temporarily through a `/run` override, so a real discharge crosses
+  them. Record the notifications, the countdown, the cable cancel, and one
+  clean shutdown in the journal.
+  Proof (**board-read** + **camera**): `docs/evidence/keyboard-base/battery-policy/`.
+
+## 7. Close
+
+- [ ] 7.1 Run `openspec validate the-keyboard-base-types-lights-and-reports-its-battery --strict`
+  and `python3 tools/blob-scan.py --no-vendor`. Merge, push, and check CI and
+  the published spec pages. Archive only when every task above has its named
+  proof committed.

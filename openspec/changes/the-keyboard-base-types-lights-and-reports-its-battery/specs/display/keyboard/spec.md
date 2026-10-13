@@ -1,0 +1,60 @@
+## Purpose
+
+Make the keyboard base's physical keys, Caps Lock light and key backlight usable from Linux and the shell, with a layout that matches the printed legends.
+
+## ADDED Requirements
+
+### Requirement: The system finds the keyboard base without writing to it
+
+<!-- UNVERIFIED: no Linux-side probe of the base has been run on this board. LILYGO `ui_hardware.c` (tree 4a87c53c) probes 0x6B, 0x55, 0x34 and 0x20-0x27 over a GPIO46/47 bit-banged bus; LILYGO issue T-Display-K230_canmv_rt#11 reports the TCA8418 and XL9555 not acknowledging under Linux. -->
+The system SHALL establish which keyboard-base chips answer, at which I2C address and over which bus, by a read-only probe recorded before any driver is bound to them. The probe SHALL NOT write a register of any keyboard-base chip. The system owns this requirement; stage 1 is unchanged.
+
+#### Scenario: The base is attached
+
+- **WHEN** an operator runs the recorded probe command on a board clipped into the keyboard base
+- **THEN** the evidence lists each answering address and the bus used, and no chip register was written
+
+#### Scenario: The base is absent
+
+- **WHEN** the same image boots on a board without the keyboard base
+- **THEN** the system and shell start normally and report no keyboard base, with no repeated bus errors on the console
+
+### Requirement: The base's keys type into the focused application
+
+<!-- UNVERIFIED: the key-code-to-legend table and the Shift-symbol table come from LILYGO `ui_hardware.c` `tca8418_key_name()` and `extension_keyboard_shift_symbol_for_code()`; no key has been observed under Linux. -->
+Pressing a key on the base SHALL deliver the character or action printed on it to the focused application through the shell's normal keyboard path. Shift SHALL produce the symbol the vendor layout assigns to that key. Holding a key SHALL repeat it. A USB or Bluetooth keyboard attached at the same time SHALL keep its own layout.
+
+#### Scenario: Typing a command
+
+- **WHEN** a person types `ls -la` on the base into the terminal and presses Enter
+- **THEN** the command runs and its output appears on the panel, in a native capture and a camera frame
+
+#### Scenario: Punctuation on Shift
+
+- **WHEN** a person types Shift with a letter key whose vendor Shift symbol is punctuation
+- **THEN** that punctuation character, not an uppercase letter, appears in the focused application
+
+#### Scenario: Caps Lock
+
+- **WHEN** a person presses Caps then types letters
+- **THEN** the letters are uppercase and the Caps Lock LED is lit, and pressing Caps again turns both off
+
+### Requirement: The key backlight is a controllable light
+
+<!-- UNVERIFIED: the backlight pad (IO52, PWM4 on the vendor kernel) comes from LILYGO `HARDWARE_PINMAP.md` and `ui_hardware.c`; our kernel has no K230 PWM driver, so the first stage is on/off only. -->
+The system SHALL expose the key backlight as a Linux LED device named with the `kbd_backlight` suffix. The shell SHALL turn it on when a key is pressed, turn it off after a configurable idle period without key presses, and keep it off while the panel is off. A person SHALL be able to choose its level, or turn it off entirely, in Settings. Until a PWM driver exists, the only levels SHALL be on and off.
+
+#### Scenario: Typing in the dark
+
+- **WHEN** the backlight setting is on and a person presses a key
+- **THEN** the key legends light within one press, as a camera frame shows
+
+#### Scenario: Idle
+
+- **WHEN** no key is pressed for the configured idle period
+- **THEN** the key backlight turns off, and the next key press turns it on again
+
+#### Scenario: The panel goes off
+
+- **WHEN** the panel is turned off
+- **THEN** the key backlight is off until the panel is on again and a key is pressed
