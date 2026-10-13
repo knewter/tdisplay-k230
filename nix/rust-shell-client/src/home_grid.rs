@@ -89,6 +89,38 @@ pub const DOCK_PLATE_SIZE: f64 = DOCK_ICON_SIZE + DOCK_PLATE_PAD * 2.0;
 const DOCK_VPAD: f64 = 24.0;
 const DOCK_HEIGHT: f64 = DOCK_PLATE_SIZE + DOCK_VPAD * 2.0;
 
+/// The landscape panel (1232x568, `k230.shell.panelTransform = "270"`)
+/// leaves 254px between the grid top and the dots at the regular pitch --
+/// one row, which strands every 2-row widget. A panel that short is
+/// "compact": the dock band's padding and the vertical gap between rows
+/// tighten so two rows fit with the icon plate and label at full size.
+/// Every taller output (the portrait panel and the HDMI sizes) keeps the
+/// regular geometry exactly.
+const COMPACT_DOCK_VPAD: f64 = 8.0;
+const COMPACT_ROW_GAP: f64 = 6.0;
+
+fn compact(height: u32) -> bool {
+    f64::from(height) - DOCK_HEIGHT - DOTS_HEIGHT - GRID_TOP < 2.0 * ROW_HEIGHT
+}
+
+fn dock_height(height: u32) -> f64 {
+    if compact(height) {
+        DOCK_PLATE_SIZE + COMPACT_DOCK_VPAD * 2.0
+    } else {
+        DOCK_HEIGHT
+    }
+}
+
+/// Vertical pitch of one grid row and the gap left below each tile.
+fn row_metrics(height: u32) -> (f64, f64) {
+    if compact(height) {
+        let available = (grid_bottom(height) - GRID_TOP).max(0.0);
+        ((available / 2.0).min(ROW_HEIGHT), COMPACT_ROW_GAP)
+    } else {
+        (ROW_HEIGHT, TILE_GAP)
+    }
+}
+
 /// Visual radius of the small "remove" badge rearrange mode draws at each
 /// filled icon's top-left corner (iOS/webOS's jiggle-mode affordance).
 pub const REMOVE_BADGE_RADIUS: f64 = 13.0;
@@ -102,7 +134,7 @@ pub fn grid_top(_height: u32) -> f64 {
 }
 
 pub fn dock_top(height: u32) -> f64 {
-    f64::from(height) - DOCK_HEIGHT
+    f64::from(height) - dock_height(height)
 }
 
 pub fn dots_center_y(height: u32) -> f64 {
@@ -120,7 +152,8 @@ fn grid_bottom(height: u32) -> f64 {
 /// exactly `ROWS` (5); see this module's top doc comment for why 5.
 pub fn rows_per_page(height: u32) -> usize {
     let available = (grid_bottom(height) - GRID_TOP).max(0.0);
-    ((available / ROW_HEIGHT).floor() as usize).max(1)
+    let (pitch, _) = row_metrics(height);
+    ((available / pitch).floor() as usize).max(1)
 }
 
 /// How many grid columns fit `width`: `crate::reflow_columns` at scale
@@ -164,11 +197,12 @@ pub fn tile_rect(width: u32, height: u32, slot: usize, columns: usize) -> (f64, 
     let w = tile_width(width, columns);
     let column = slot % columns;
     let row = slot / columns;
+    let (pitch, gap) = row_metrics(height);
     (
         SIDE_MARGIN + column as f64 * (w + TILE_GAP),
-        grid_top(height) + row as f64 * ROW_HEIGHT,
+        grid_top(height) + row as f64 * pitch,
         w,
-        ROW_HEIGHT - TILE_GAP,
+        pitch - gap,
     )
 }
 
@@ -250,7 +284,7 @@ pub fn dock_rect(width: u32, height: u32, slot: usize) -> (f64, f64, f64, f64) {
         SIDE_MARGIN + slot as f64 * (w + TILE_GAP),
         dock_top(height),
         w,
-        DOCK_HEIGHT,
+        dock_height(height),
     )
 }
 
@@ -382,7 +416,7 @@ pub fn folder_overlay_rect_inset(width: u32, height: u32, keyboard_inset: f64) -
     let x = SIDE_MARGIN * 1.5;
     let y = GRID_TOP;
     let w = f64::from(width) - 2.0 * x;
-    let h = f64::from(height) - y - DOCK_HEIGHT - DOTS_HEIGHT;
+    let h = f64::from(height) - y - dock_height(height) - DOTS_HEIGHT;
     let shifted_y = (y - keyboard_inset.max(0.0)).max(PILL_TOP);
     (x, shifted_y, w, h)
 }
@@ -406,17 +440,18 @@ pub fn folder_name_rect_inset(width: u32, height: u32, keyboard_inset: f64) -> (
     folder_name_rect_of(folder_overlay_rect_inset(width, height, keyboard_inset))
 }
 
-fn folder_app_rect_of(card: (f64, f64, f64, f64), index: usize) -> (f64, f64, f64, f64) {
+fn folder_app_rect_of(card: (f64, f64, f64, f64), index: usize, height: u32) -> (f64, f64, f64, f64) {
     let (card_x, card_y, card_w, _) = card;
+    let (pitch, gap) = row_metrics(height);
     let grid_top = card_y + FOLDER_NAME_HEIGHT + 12.0;
     let column = index % COLUMNS;
     let row = index / COLUMNS;
     let w = ((card_w - 2.0 * TILE_GAP) / COLUMNS as f64 - TILE_GAP).max(0.0);
     (
         card_x + TILE_GAP + column as f64 * (w + TILE_GAP),
-        grid_top + row as f64 * ROW_HEIGHT,
+        grid_top + row as f64 * pitch,
         w,
-        ROW_HEIGHT - TILE_GAP,
+        pitch - gap,
     )
 }
 
@@ -424,12 +459,12 @@ fn folder_app_rect_of(card: (f64, f64, f64, f64), index: usize) -> (f64, f64, f6
 /// label -- same `COLUMNS` density as the Home grid, but scoped to the
 /// card's own width/height rather than the full panel.
 pub fn folder_app_rect(width: u32, height: u32, index: usize) -> (f64, f64, f64, f64) {
-    folder_app_rect_of(folder_overlay_rect(width, height), index)
+    folder_app_rect_of(folder_overlay_rect(width, height), index, height)
 }
 
 /// [`folder_app_rect`], within the keyboard-shifted card.
 pub fn folder_app_rect_inset(width: u32, height: u32, index: usize, keyboard_inset: f64) -> (f64, f64, f64, f64) {
-    folder_app_rect_of(folder_overlay_rect_inset(width, height, keyboard_inset), index)
+    folder_app_rect_of(folder_overlay_rect_inset(width, height, keyboard_inset), index, height)
 }
 
 /// Which app tile, if any, inside an open folder's grid `point` lands on,
@@ -552,6 +587,20 @@ mod tests {
         assert_eq!(rows_per_page(1232), 5, "one page + dock should total 24 icons, see top doc comment");
         assert_eq!(apps_per_page(568, 1232), COLUMNS * 5);
         assert!(rows_per_page(50) >= 1, "a degenerate panel still has one row");
+    }
+
+    #[test]
+    fn the_landscape_panel_gets_two_full_size_rows() {
+        assert!(!compact(1232) && !compact(1024) && !compact(1080));
+        assert!(compact(568));
+        assert_eq!(rows_per_page(568), 2, "a 2-row widget fits a landscape page");
+        let content = ICON_PLATE_SIZE + ICON_LABEL_GAP + LABEL_HEIGHT;
+        let (_, y0, _, h) = tile_rect(1232, 568, 0, 9);
+        let (_, y1, _, _) = tile_rect(1232, 568, 9, 9);
+        assert!(h >= content, "plate and label fit the tile: {h} < {content}");
+        assert!(y1 + h <= grid_bottom(568) + 0.001, "the second row clears the dots");
+        assert!(y0 >= GRID_TOP);
+        assert!(apps_per_page(1232, 568) + DOCK_SLOTS <= 24, "page plus dock stays inside the icon cache");
     }
 
     #[test]

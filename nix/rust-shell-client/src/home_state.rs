@@ -509,6 +509,18 @@ impl HomeLayout {
                 self.pages[page][index] = Some(item);
                 return HomeSlot::Grid { page, slot: index };
             }
+            // An item that does not fit even an empty page (a 2-row widget
+            // on the landscape panel's one-row page) would otherwise add
+            // empty pages forever. Grow that page to hold its footprint so
+            // the item is kept, rather than lost or looped on.
+            if self.pages[page].iter().all(Option::is_none) {
+                let columns = self.columns.max(1);
+                let (_, rows) = item.span();
+                let row = &mut self.pages[page];
+                row.resize(row.len().max(columns * rows.max(1)), None);
+                self.pages[page][0] = Some(item);
+                return HomeSlot::Grid { page, slot: 0 };
+            }
             page += 1;
             if page > self.pages.len() {
                 // Defensive bound: `first_fit` against a freshly-grown empty
@@ -872,6 +884,23 @@ mod tests {
         let before = layout.clone();
         layout.reflow_to(home_grid::COLUMNS, 20);
         assert_eq!(layout, before, "reflowing to the already-current column count changes nothing");
+    }
+
+    #[test]
+    fn place_first_fit_terminates_when_a_widget_is_taller_than_a_page() {
+        // The landscape panel (1232x568) has 9 columns but one row per
+        // page; a 2-row widget used to make `place_first_fit` add empty
+        // pages forever (board, 2026-10-13: shell-ui OOM-killed right
+        // after `home-configure 1232x568`).
+        let mut layout = HomeLayout { dock: vec![None; 4], ..HomeLayout::default() };
+        layout.place_first_fit(HomeItem::Widget { widget: WidgetKind::Clock }, 20);
+        layout.place_first_fit(HomeItem::app("a.desktop"), 20);
+        let before = flattened_order(&layout);
+        layout.reflow_to(9, 9);
+        assert_eq!(flattened_order(&layout), before, "nothing is lost or reordered");
+        assert!(layout.pages.len() <= 2, "no runaway pages: {}", layout.pages.len());
+        layout.reflow_to(home_grid::COLUMNS, 20);
+        assert_eq!(flattened_order(&layout), before, "and the panel's own layout comes back");
     }
 
     #[test]

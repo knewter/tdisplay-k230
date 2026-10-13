@@ -34,11 +34,12 @@ fn main() {
     // stay pixel-identical across a future re-run of this same harness:
     // that is what "pixel-identical to today" means for a headless,
     // no-Wayland capture like this one.
-    let sizes: [(&str, u32, u32); 4] = [
+    let sizes: [(&str, u32, u32); 5] = [
         ("568x1232", 568, 1232),
         ("768x1024", 768, 1024),
         ("1080x1920", 1080, 1920),
         ("1920x1080", 1920, 1080),
+        ("1232x568", 1232, 568),
     ];
     for (label, width, height) in sizes {
         evidence_render::render_home(&out_dir.join(format!("home-{label}.png")), width, height, &apps);
