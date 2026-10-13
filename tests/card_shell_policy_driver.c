@@ -1256,10 +1256,30 @@ static void randomized(void) {
     }
     cs_finish(&p);
 }
+static void landscape_panel_config(void) {
+    /* The landscape panel (1232x568) used to fail valid_config: an 80%-tall
+     * card did not fit between the title and the footer, so the card shell
+     * never initialized. The card now shrinks to fit, keeping its aspect. */
+    for (int touch_first=0; touch_first<2; touch_first++) {
+        struct cs_config c=cs_default_config(1232,568);
+        if (touch_first) { c.top_reserved=0; cs_fit_card(&c); }
+        struct cs_policy p;
+        assert(cs_init(&p,&c));
+        assert(c.card_height<.8*568 && c.card_height>=200);
+        assert(fabs(c.card_width/c.card_height-1232.0/568.0)<1e-9);
+        assert(c.card_top_offset>=58);
+        cs_finish(&p);
+    }
+    /* Portrait keeps its exact pre-existing geometry. */
+    struct cs_config portrait=cs_default_config(568,1232);
+    assert(portrait.card_width==.8*568 && portrait.card_height==.8*1232);
+    assert(portrait.card_top_offset==((1232.0-56-70-56)-(.8*1232+14.0+44.0))/2+14.0+44.0);
+}
 int main(int argc,char **argv) {
     struct {const char *name;void (*run)(void);} cases[]={
         {"activate-selected",activate_selected},{"enter-expand",enter_expand},{"horizontal",horizontal},
         {"overview-geometry",overview_geometry},
+        {"landscape-panel-config",landscape_panel_config},
         {"scroll-fling-multi-card",scroll_fling_multi_card},
         {"scroll-slow-release-snaps-nearest",scroll_slow_release_snaps_nearest},
         {"scroll-catch-mid-coast",scroll_catch_mid_coast},

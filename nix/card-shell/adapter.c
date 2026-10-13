@@ -2637,9 +2637,9 @@ static void prepare_impl(struct sway_output *output) {
 	 * adapter.c's own header-drawing constants in sync_card by hand, the
 	 * same "duplicated constant, commented" pattern as the fractions
 	 * above. */
-	double band = cfg.height - cfg.top_reserved - cfg.bottom_reserved -
-				   cfg.title_height - cfg.footer_height;
-	cfg.card_top_offset = (band - (cfg.card_height + 14.0 + 44.0)) / 2 + 14.0 + 44.0;
+	/* cs_fit_card also shrinks the card on an output too short for it
+	 * (the landscape panel), which valid_config would otherwise reject. */
+	cs_fit_card(&cfg);
 	cfg.reduced_motion = getenv("SWAY_K230_CARD_REDUCED_MOTION") &&
 						 strcmp(getenv("SWAY_K230_CARD_REDUCED_MOTION"), "1") == 0;
 	cfg.touch_first_motion = touch_first();

@@ -40,7 +40,7 @@ static bool valid_config(const struct cs_config *c) {
 #define CS_CARD_HEADER_H 44.0
 #define CS_CARD_HEADER_GAP 14.0
 struct cs_config cs_default_config(double width,double height) {
-    return (struct cs_config){.width=width,.height=height,.top_reserved=56,
+    struct cs_config c=(struct cs_config){.width=width,.height=height,.top_reserved=56,
         .inset=24,.gap=10,
         /* Trimmed from 100 to 70 (docs/design/shell-polish-review-2026-09.md
          * §6/§11): the only way to fit an Android-recents-sized, phone-
@@ -79,6 +79,26 @@ struct cs_config cs_default_config(double width,double height) {
          * See docs/evidence/card-shell/app-switch-swipe/ for the derivation. */
         .entry_select_fraction=.3,.entry_flick_speed=.4,
         .throw_distance=120,.throw_speed=.4,.close_timeout_ms=1500};
+    cs_fit_card(&c);
+    return c;
+}
+void cs_fit_card(struct cs_config *c) {
+    /* The overview card is 80% of the output on both axes. A short output
+     * (the landscape panel at 1232x568) has no room for that between the
+     * title and the footer, valid_config rejects it, and the whole card
+     * shell -- overview, bottom-edge drawer swipe, keyboard chord -- stays
+     * off. Shrink the card to the band it has, keeping the output's own
+     * aspect ratio, and re-centre it. Portrait 568x1232 has room and keeps
+     * its exact geometry. */
+    double band=c->height-c->top_reserved-c->bottom_reserved-
+        c->title_height-c->footer_height;
+    double header=CS_CARD_HEADER_GAP+CS_CARD_HEADER_H;
+    double fit=fmin(band-2*c->inset,band-header);
+    if (c->card_height>fit && fit>0 && c->height>0) {
+        c->card_height=fit;
+        c->card_width=fit*c->width/c->height;
+    }
+    c->card_top_offset=fmax(0,(band-(c->card_height+header))/2+header);
 }
 bool cs_init(struct cs_policy *p,const struct cs_config *config) {
     if (!p || !valid_config(config)) return false;

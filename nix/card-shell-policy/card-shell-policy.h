@@ -181,6 +181,9 @@ struct cs_policy {
 /* Defaults are provisional product constants, not measured hardware claims.
  * Recompute card dimensions after changing keyboard reservation. */
 struct cs_config cs_default_config(double width, double height);
+/* Shrinks the overview card to fit an output too short for the default
+ * 80% card, then re-centres it. Call after changing reserved space. */
+void cs_fit_card(struct cs_config *config);
 bool cs_init(struct cs_policy *policy, const struct cs_config *config);
 void cs_finish(struct cs_policy *policy);
 /* Copies a complete caller snapshot. Any count is accepted subject to allocation.
