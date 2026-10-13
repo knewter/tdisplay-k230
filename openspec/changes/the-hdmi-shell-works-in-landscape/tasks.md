@@ -85,16 +85,25 @@ should do it here (you can ignore hdmi i am sure it will be fine we can test
 it at the end tho)". Tasks 5.2, 5.3 and 7.1–7.3 are the shared layout work;
 complete them here against the panel's 1232×568 geometry as well as HDMI.
 
-- [ ] 8.1 Add a `k230.shell.panelTransform` option (`normal`, default, or
+- [x] 8.1 Add a `k230.shell.panelTransform` option (`normal`, default, or
       `270`) driving the `output DSI-1` line, and a landscape panel system
       plus its boot files and SD image as separate flake outputs. The default
       system's toplevel derivation SHALL be unchanged. Verify with `nix eval`
       of the default toplevel drvPath against `master` and `nix build` of the
       landscape boot files.
+      Done 2026-10-13 in `0804c0aa`: the default toplevel drv was
+      `lhdphdj84vyngfcflhvkpdxny2dxljz5…` on both `master` and the change, and
+      `.#kernelMainlineDrmShellLandscapeBootFiles` and `.#sdImage-landscape`
+      built. Later shell and device-tree fixes on this branch change the
+      default system deliberately.
 - [ ] 8.2 Make `shell-ui` accept a whole-output configure whose output size
       is learned late or changes at runtime (rotation), instead of rejecting
       it and drawing nothing, while still rejecting a keyboard exclusive-zone
       squish. Verify with new unit tests and `cargo test`.
+      Partial 2026-10-13: `frame_bytes` now accepts a 568 px tall frame (the
+      board logged `home-configure-rejected` before), with
+      `frame_bytes_accepts_the_landscape_panel`. Open: a size change at runtime
+      (`update_output` is still empty).
 - [ ] 8.3 Lay out wallpaper, Home and dock, Drawer, shade, Settings
       (including Wi-Fi and the theme chooser), notifications, the power sheet
       and the on-screen keyboard at 1232×568 without overlapping, off-screen or
@@ -102,16 +111,40 @@ complete them here against the panel's 1232×568 geometry as well as HDMI.
       responsive host renders. The native 568×1232 renders SHALL stay
       byte-identical. Verify with `cargo test`, `cargo clippy --all-targets`
       and reviewed 1232×568 host renders.
-- [ ] 8.4 Make touch and the edge gestures (drawer, shade, overview) follow
+      Partial 2026-10-13: Home (two compact rows, so 2-row widgets fit; also
+      fixed the unbounded page growth that OOM-killed `shell-ui`), Shade
+      (the sheet keeps one notification row) and Help (two columns). Host
+      renders add 1232×568 plus Shade, Power and Help; every portrait and HDMI
+      render is byte-identical to `0804c0aa`. `cargo test` 473 passed; clippy
+      reports 65 warnings, the same as the base. Reviewed: Home, Drawer,
+      Settings, Shade, Power, Help, keyboard. Open: Wi-Fi pages, the theme
+      chooser, the folder overlay, and notifications with real items.
+- [x] 8.4 Make touch and the edge gestures (drawer, shade, overview) follow
       the rotated panel edges. Verify on the board with injected touch events
       (evidence class: injected) and record which gestures were exercised.
+      Done 2026-10-13 (injected, non-persistent trial system; see
+      `docs/evidence/panel-landscape/README.md`). Exercised: bottom-edge
+      swipe on Home → Drawer, bottom-edge swipe from the Drawer → card
+      overview, top-edge pull → Shade, taps on the drawer search field and the
+      landscape keyboard. This needed `cs_fit_card`: the card shell never
+      started at 1232×568. The operator's finger then showed the
+      GT9895's X range is 1080, not 1024 (`touch-range.md`). The device-tree
+      correction is committed; its booted proof belongs to 8.5.
 - [ ] 8.5 Boot the landscape profile on the second board. Record native
       `grim` captures of each surface in 8.3 and a camera photograph from the
       keyboard side under `docs/evidence/panel-landscape/` (physical: native
       capture plus camera).
+      Partial 2026-10-13: native captures and one camera frame are committed,
+      but from a `switch-to-configuration test` trial, not a booted landscape
+      image, and without the new device tree. Open: boot the installed image
+      and confirm the 1080 touch range with no calibration matrix.
 - [ ] 8.6 Operator real-glass check in the keyboard case: open Drawer, shade,
       Settings and an app, type on the keyboard, return Home. Record the
       operator's observation (physical: real glass). Hardware gate.
+      Partial 2026-10-13: the operator's finger opened the Drawer and Shade
+      from Home and, after the live X calibration, the card overview ("it
+      works now"). Settings, an app, typing and the return to Home have not
+      been reported yet.
 - [ ] 8.7 With the landscape profile, connect HDMI and confirm the existing
       HDMI behavior (output, transform, touchpad relay) is unchanged. Record
       the observation and a native capture (physical). Hardware gate; may run
