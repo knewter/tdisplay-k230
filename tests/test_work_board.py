@@ -324,7 +324,10 @@ class RealRepository(unittest.TestCase):
         status = work.parse_status((ROOT / work.STATUS_PATH).read_text())
         data = work.snapshot(work.SourceTree(ROOT, True), status, "test UTC")
         self.assertGreaterEqual(len(data["items"]), 20)
-        self.assertTrue(any(i["lane"] == "verification" for i in data["items"]))
+        # Which lanes are occupied is board data, not structure: the last
+        # verification item was archived in 998aad8b.
+        self.assertTrue(all(i["lane"] in work.LANES for i in data["items"]))
+        self.assertEqual(sum(l["count"] for l in data["lanes"]), len(data["items"]))
         self.assertTrue(all(i["proposal"].startswith("openspec/changes/") for i in data["items"]))
 
     def test_every_current_openspec_checkbox_is_counted(self) -> None:
