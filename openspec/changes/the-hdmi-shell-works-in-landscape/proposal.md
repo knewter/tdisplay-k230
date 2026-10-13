@@ -24,6 +24,16 @@ landscape qualification requires the single board/serial reservation. The
 operator waived a monitor photograph, while observations and native captures
 remain required.
 
+## Panel landscape for the keyboard case (added 2026-10-13)
+
+The operator asked that, in the keyboard case, the panel be rotated 90 degrees
+counterclockwise and that this change's layout work be done for it. Add a
+build-time panel orientation (portrait stays the default), a landscape panel
+profile, configure handling for a whole output whose size changes, 1232×568
+layouts for every shell surface, rotated touch and gestures, and physical
+proof on the second board, with an HDMI regression check at the end
+(tasks 8.1–8.7).
+
 ## Capabilities
 
 ### New Capabilities
@@ -32,7 +42,8 @@ None.
 
 ### Modified Capabilities
 
-- `runtime/shell`: add the explicit minimum usable HDMI landscape requirement.
+- `runtime/shell`: add the explicit minimum usable HDMI landscape requirement,
+  and a selectable landscape orientation for the built-in panel.
 
 ## Impact
 

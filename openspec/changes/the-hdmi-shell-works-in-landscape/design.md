@@ -75,3 +75,22 @@ for the normal 800×1280 portrait-HDMI arrangement and committed in
 responsive change supplies the shared implementation and this bounded proof;
 all seven implementation/physical tasks here remain open. No portrait
 observation closes this proposal’s separate normal-transform landscape gate.
+
+## Panel landscape decision — 2026-10-13
+
+Operator: "in this configuration the board should really be rotated 90 degrees
+counterclockwise ... we should do it here (you can ignore hdmi ... we can test
+it at the end tho)". Camera frames from the bench (the camera sits at the
+device's top edge, opposite the person at the keyboard) fixed the direction:
+a runtime `transform 90` put the terminal upright for the camera and upside
+down for the typist; `transform 270` is upright from the keyboard side.
+
+The orientation is a build-time option, as `hdmiTransform` already is, with
+portrait kept as the default because accepted portrait defaults change only
+on explicit instruction. A board in the keyboard case runs the landscape
+profile. A runtime toggle in Settings is not part of this change.
+
+The shared layout work (5.2, 5.3, 7.1–7.3) is done once, against actual output
+geometry, so it serves both 1232×568 on the panel and HDMI landscape. The
+panel's 568×1232 portrait renders stay byte-identical, guarded by the existing
+pixel-identity test.

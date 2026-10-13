@@ -76,6 +76,51 @@ The operator authorized moving the responsive proposal’s original tasks
       implementation) using the archived responsive 6.1/6.2 evidence and once this
       proposal’s landscape 5.4 evidence is in hand to verify against.
 
+## 8. Panel landscape for the keyboard case — 2026-10-13
+
+Operator, 2026-10-13, with the second board in its keyboard case on the bench:
+"notice that in this configuration the board should really be rotated 90
+degrees counterclockwise we already had the 'make that layout work' card we
+should do it here (you can ignore hdmi i am sure it will be fine we can test
+it at the end tho)". Tasks 5.2, 5.3 and 7.1–7.3 are the shared layout work;
+complete them here against the panel's 1232×568 geometry as well as HDMI.
+
+- [ ] 8.1 Add a `k230.shell.panelTransform` option (`normal`, default, or
+      `270`) driving the `output DSI-1` line, and a landscape panel system
+      plus its boot files and SD image as separate flake outputs. The default
+      system's toplevel derivation SHALL be unchanged. Verify with `nix eval`
+      of the default toplevel drvPath against `master` and `nix build` of the
+      landscape boot files.
+- [ ] 8.2 Make `shell-ui` accept a whole-output configure whose output size
+      is learned late or changes at runtime (rotation), instead of rejecting
+      it and drawing nothing, while still rejecting a keyboard exclusive-zone
+      squish. Verify with new unit tests and `cargo test`.
+- [ ] 8.3 Lay out wallpaper, Home and dock, Drawer, shade, Settings
+      (including Wi-Fi and the theme chooser), notifications, the power sheet
+      and the on-screen keyboard at 1232×568 without overlapping, off-screen or
+      unreachable controls, with hit-testing matching. Add 1232×568 to the
+      responsive host renders. The native 568×1232 renders SHALL stay
+      byte-identical. Verify with `cargo test`, `cargo clippy --all-targets`
+      and reviewed 1232×568 host renders.
+- [ ] 8.4 Make touch and the edge gestures (drawer, shade, overview) follow
+      the rotated panel edges. Verify on the board with injected touch events
+      (evidence class: injected) and record which gestures were exercised.
+- [ ] 8.5 Boot the landscape profile on the second board. Record native
+      `grim` captures of each surface in 8.3 and a camera photograph from the
+      keyboard side under `docs/evidence/panel-landscape/` (physical: native
+      capture plus camera).
+- [ ] 8.6 Operator real-glass check in the keyboard case: open Drawer, shade,
+      Settings and an app, type on the keyboard, return Home. Record the
+      operator's observation (physical: real glass). Hardware gate.
+- [ ] 8.7 With the landscape profile, connect HDMI and confirm the existing
+      HDMI behavior (output, transform, touchpad relay) is unchanged. Record
+      the observation and a native capture (physical). Hardware gate; may run
+      last, per the operator.
+
+The stage-1 boot splash logo stays portrait in this change (U-Boot draws it
+before any compositor); a landscape splash image is out of scope unless the
+operator asks for it.
+
 Host implementation proof: `cargo test --offline --manifest-path
 nix/rust-shell-client/Cargo.toml` and `cargo clippy --all-targets --manifest-path
 nix/rust-shell-client/Cargo.toml`, plus reviewed native-portrait and HDMI host

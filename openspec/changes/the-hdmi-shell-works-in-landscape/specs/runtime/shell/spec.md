@@ -29,3 +29,44 @@ Portrait HDMI acceptance is not landscape evidence. -->
 
 - **WHEN** the active output returns to the 568×1232 panel
 - **THEN** the established portrait rendering and input behavior remain intact
+
+### Requirement: The panel shell works in landscape with the keyboard case
+
+The system SHALL offer a build-time panel orientation for the built-in
+568×1232 DSI panel. Portrait (`transform normal`) SHALL remain the default.
+A landscape profile SHALL rotate the panel output 90 degrees counterclockwise
+as seen by a person typing on the attached keyboard case (Sway
+`transform 270`), giving a 1232×568 logical output. In that profile the
+shell's own surfaces (wallpaper, Home and dock, Drawer, shade, Settings
+including Wi-Fi and the theme chooser, the on-screen keyboard, notifications
+and the power sheet) SHALL accept the whole-output configure, lay out without
+overlapping, off-screen or unreachable controls, and hit-test against the
+same rotated geometry. Touch input SHALL map to the rotated output, and the
+edge gestures SHALL follow the rotated edges. The HDMI output behavior SHALL
+be unchanged by the panel orientation.
+
+<!-- UNVERIFIED: operator request 2026-10-13 with camera observation of the
+keyboard-case bench; tasks 8.1–8.7 and their named proof are open. A runtime
+`swaymsg output DSI-1 transform 270` trial on the second board on 2026-10-13
+showed the terminal correctly oriented, but shell-ui rejected the 1232×568
+home and wallpaper configures after a restart (`home-configure-rejected`). -->
+
+#### Scenario: A person uses the shell in the keyboard case
+
+- **WHEN** the board runs the landscape panel profile in the keyboard case
+- **THEN** text reads upright from the keyboard side, and Home, Drawer,
+  shade, Settings and the power sheet are fully visible and respond where
+  they are drawn
+
+#### Scenario: The default panel profile stays portrait
+
+- **WHEN** a board runs the default profile
+- **THEN** the panel stays 568×1232 portrait with the established rendering
+  and input behavior
+
+#### Scenario: HDMI still works from the landscape profile
+
+- **WHEN** an HDMI monitor is connected to a board running the landscape panel
+  profile
+- **THEN** the HDMI output, its transform and its touchpad relay behave as
+  in the portrait profile
