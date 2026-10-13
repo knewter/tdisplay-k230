@@ -1,0 +1,127 @@
+Input driver version is 1.0.1
+Input device ID: bus 0x18 vendor 0x1 product 0x1 version 0x1
+Input device name: "tca8418"
+Supported events:
+  Event type 0 (EV_SYN)
+  Event type 1 (EV_KEY)
+    Event code 1 (KEY_ESC)
+    Event code 2 (KEY_1)
+    Event code 3 (KEY_2)
+    Event code 4 (KEY_3)
+    Event code 5 (KEY_4)
+    Event code 6 (KEY_5)
+    Event code 7 (KEY_6)
+    Event code 8 (KEY_7)
+    Event code 9 (KEY_8)
+    Event code 10 (KEY_9)
+    Event code 11 (KEY_0)
+    Event code 14 (KEY_BACKSPACE)
+    Event code 15 (KEY_TAB)
+    Event code 16 (KEY_Q)
+    Event code 17 (KEY_W)
+    Event code 18 (KEY_E)
+    Event code 19 (KEY_R)
+    Event code 20 (KEY_T)
+    Event code 21 (KEY_Y)
+    Event code 22 (KEY_U)
+    Event code 23 (KEY_I)
+    Event code 24 (KEY_O)
+    Event code 25 (KEY_P)
+    Event code 28 (KEY_ENTER)
+    Event code 29 (KEY_LEFTCTRL)
+    Event code 30 (KEY_A)
+    Event code 31 (KEY_S)
+    Event code 32 (KEY_D)
+    Event code 33 (KEY_F)
+    Event code 34 (KEY_G)
+    Event code 35 (KEY_H)
+    Event code 36 (KEY_J)
+    Event code 37 (KEY_K)
+    Event code 38 (KEY_L)
+    Event code 42 (KEY_LEFTSHIFT)
+    Event code 44 (KEY_Z)
+    Event code 45 (KEY_X)
+    Event code 46 (KEY_C)
+    Event code 47 (KEY_V)
+    Event code 48 (KEY_B)
+    Event code 49 (KEY_N)
+    Event code 50 (KEY_M)
+    Event code 56 (KEY_LEFTALT)
+    Event code 57 (KEY_SPACE)
+    Event code 58 (KEY_CAPSLOCK)
+    Event code 59 (KEY_F1)
+    Event code 60 (KEY_F2)
+    Event code 61 (KEY_F3)
+    Event code 62 (KEY_F4)
+    Event code 63 (KEY_F5)
+    Event code 64 (KEY_F6)
+    Event code 65 (KEY_F7)
+    Event code 66 (KEY_F8)
+    Event code 67 (KEY_F9)
+    Event code 68 (KEY_F10)
+    Event code 87 (KEY_F11)
+    Event code 100 (KEY_RIGHTALT)
+    Event code 103 (KEY_UP)
+    Event code 105 (KEY_LEFT)
+    Event code 106 (KEY_RIGHT)
+    Event code 108 (KEY_DOWN)
+    Event code 125 (KEY_LEFTMETA)
+    Event code 248 (KEY_MICMUTE)
+  Event type 4 (EV_MSC)
+    Event code 4 (MSC_SCAN)
+Key repeat handling:
+  Repeat type 20 (EV_REP)
+    Repeat code 0 (REP_DELAY)
+      Value    250
+    Repeat code 1 (REP_PERIOD)
+      Value     33
+Properties:
+Testing ... (interrupt to exit)
+Event: time 1791926178.450936, type 4 (EV_MSC), code 4 (MSC_SCAN), value 35
+Event: time 1791926178.450936, type 1 (EV_KEY), code 34 (KEY_G), value 1
+Event: time 1791926178.450936, -------------- SYN_REPORT ------------
+Event: time 1791926178.638386, type 4 (EV_MSC), code 4 (MSC_SCAN), value 35
+Event: time 1791926178.638386, type 1 (EV_KEY), code 34 (KEY_G), value 0
+Event: time 1791926178.638386, -------------- SYN_REPORT ------------
+Event: time 1791926178.720407, type 4 (EV_MSC), code 4 (MSC_SCAN), value 35
+Event: time 1791926178.720407, type 1 (EV_KEY), code 34 (KEY_G), value 1
+Event: time 1791926178.720407, -------------- SYN_REPORT ------------
+Event: time 1791926178.837610, type 4 (EV_MSC), code 4 (MSC_SCAN), value 35
+Event: time 1791926178.837610, type 1 (EV_KEY), code 34 (KEY_G), value 0
+Event: time 1791926178.837610, -------------- SYN_REPORT ------------
+Event: time 1791926178.905356, type 4 (EV_MSC), code 4 (MSC_SCAN), value 35
+Event: time 1791926178.905356, type 1 (EV_KEY), code 34 (KEY_G), value 1
+Event: time 1791926178.905356, -------------- SYN_REPORT ------------
+Event: time 1791926179.022564, type 4 (EV_MSC), code 4 (MSC_SCAN), value 35
+Event: time 1791926179.022564, type 1 (EV_KEY), code 34 (KEY_G), value 0
+Event: time 1791926179.022564, -------------- SYN_REPORT ------------
+Event: time 1791926179.096840, type 4 (EV_MSC), code 4 (MSC_SCAN), value 35
+Event: time 1791926179.096840, type 1 (EV_KEY), code 34 (KEY_G), value 1
+Event: time 1791926179.096840, -------------- SYN_REPORT ------------
+Event: time 1791926179.190620, type 4 (EV_MSC), code 4 (MSC_SCAN), value 35
+Event: time 1791926179.190620, type 1 (EV_KEY), code 34 (KEY_G), value 0
+Event: time 1791926179.190620, -------------- SYN_REPORT ------------
+Event: time 1791926181.680687, type 4 (EV_MSC), code 4 (MSC_SCAN), value 40
+Event: time 1791926181.680687, type 1 (EV_KEY), code 14 (KEY_BACKSPACE), value 1
+Event: time 1791926181.680687, -------------- SYN_REPORT ------------
+Event: time 1791926181.821232, type 4 (EV_MSC), code 4 (MSC_SCAN), value 40
+Event: time 1791926181.821232, type 1 (EV_KEY), code 14 (KEY_BACKSPACE), value 0
+Event: time 1791926181.821232, -------------- SYN_REPORT ------------
+Event: time 1791926182.119957, type 4 (EV_MSC), code 4 (MSC_SCAN), value 40
+Event: time 1791926182.119957, type 1 (EV_KEY), code 14 (KEY_BACKSPACE), value 1
+Event: time 1791926182.119957, -------------- SYN_REPORT ------------
+Event: time 1791926182.237139, type 4 (EV_MSC), code 4 (MSC_SCAN), value 40
+Event: time 1791926182.237139, type 1 (EV_KEY), code 14 (KEY_BACKSPACE), value 0
+Event: time 1791926182.237139, -------------- SYN_REPORT ------------
+Event: time 1791926182.372210, type 4 (EV_MSC), code 4 (MSC_SCAN), value 40
+Event: time 1791926182.372210, type 1 (EV_KEY), code 14 (KEY_BACKSPACE), value 1
+Event: time 1791926182.372210, -------------- SYN_REPORT ------------
+Event: time 1791926182.606601, type 4 (EV_MSC), code 4 (MSC_SCAN), value 40
+Event: time 1791926182.606601, type 1 (EV_KEY), code 14 (KEY_BACKSPACE), value 0
+Event: time 1791926182.606601, -------------- SYN_REPORT ------------
+Event: time 1791926182.722020, type 4 (EV_MSC), code 4 (MSC_SCAN), value 40
+Event: time 1791926182.722020, type 1 (EV_KEY), code 14 (KEY_BACKSPACE), value 1
+Event: time 1791926182.722020, -------------- SYN_REPORT ------------
+Event: time 1791926182.886070, type 4 (EV_MSC), code 4 (MSC_SCAN), value 40
+Event: time 1791926182.886070, type 1 (EV_KEY), code 14 (KEY_BACKSPACE), value 0
+Event: time 1791926182.886070, -------------- SYN_REPORT ------------
