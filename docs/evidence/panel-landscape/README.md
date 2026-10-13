@@ -68,7 +68,33 @@ drawer upright from the keyboard side. It shows orientation only, not touch.
 3. The touch controller's X range is 0..1079, not 0..1023; see
    `touch-range.md`.
 
+## Installed on the second board — 2026-10-13 09:40 CDT
+
+Bundle `.#kernelMainlineDrmShellLandscapeBootFiles` at `839cba2d`
+(`48v1rj39…-k230-coherent-shell-boot-files`, system `06biwlw7…`). It
+differs from the installed portrait boot partition only in
+`k230-tdisplay.dtb` (sha256 `98beefab…`, `touchscreen-size-x` 0x438) and
+`bootargs.txt` (sha256 `722b85e4…`, `init=` the landscape system). `Image`
+and `initrd.uimg` are byte-identical. Both files were copied as `.new`,
+hash-checked, and renamed into place. The previous pair is kept as
+`*.portrait-20261013` on `/boot` and in
+`/var/lib/k230/boot-backup-20261013-portrait/` with the previous profile
+link. The profile was then set to the landscape system, followed by `sync`
+and an ordinary `systemctl reboot` with no U-Boot input.
+
+After boot (serial log kept privately, plus SSH): 7.3.0-rc5; profile, booted
+and current system all `06biwlw7…`; the device tree reports
+`touchscreen-size-x` 1080; no calibration matrix and no trace drop-in;
+`shell`, `shell-ui` and `theme-helper` active; `running` with no failed
+units; `k230-shell-rust` RSS 105 MB. `board/installed-home.png` is the
+native capture.
+
+This is not the coherent-shell install tool. The board already ran this
+repository's own SD image, so only two boot files changed. Rollback: restore
+the two `*.portrait-20261013` files and the saved profile link, then reboot.
+From U-Boot, use `ums 0 mmc 1` and do the same from the host.
+
 ## Not established here
 
-The installed (non-trial) landscape image, the new device tree's 1080 width
-on either board, and HDMI (task 8.7).
+The 1080 width on the first board, the remaining real-glass checks
+(task 8.6) and HDMI (task 8.7).

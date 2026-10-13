@@ -136,8 +136,11 @@ complete them here against the panel's 1232×568 geometry as well as HDMI.
       capture plus camera).
       Partial 2026-10-13: native captures and one camera frame are committed,
       but from a `switch-to-configuration test` trial, not a booted landscape
-      image, and without the new device tree. Open: boot the installed image
-      and confirm the 1080 touch range with no calibration matrix.
+      image, and without the new device tree. Installed and booted at 09:40
+      CDT: device tree 1080, no calibration matrix, services active, native
+      Home capture (`board/installed-home.png`). Open: the per-surface native
+      captures and camera frame again on the installed image, after the
+      operator's glass pass.
 - [ ] 8.6 Operator real-glass check in the keyboard case: open Drawer, shade,
       Settings and an app, type on the keyboard, return Home. Record the
       operator's observation (physical: real glass). Hardware gate.
