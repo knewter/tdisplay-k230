@@ -7,7 +7,10 @@ receives every key. On key presses it:
 - hides the on-screen keyboard (wvkbd) if it is shown;
 - turns the key backlight on, and off again after an idle timeout or while
   the panel is off;
-- tracks Caps Lock and lights its LED.
+- tracks Caps Lock and lights its LED;
+- with --escape-back, treats Esc as the shell's back action when no app has
+  focus. Sway still delivers Esc to a focused app, because nothing is
+  grabbed or bound.
 
 Caps Lock follows xkb's own rule for the Caps_Lock keysym: each press
 toggles the lock. Sway starts with the lock off and so does this process,
@@ -25,6 +28,7 @@ import subprocess
 import time
 
 EV_KEY = 1
+KEY_ESC = 1
 KEY_CAPSLOCK = 58
 INPUT_EVENT = struct.Struct("llHHi")  # riscv64: timeval, type, code, value
 NAME = "tca8418"
@@ -35,11 +39,12 @@ class Policy:
     """Pure key/time policy; actions go through the injected callbacks."""
 
     def __init__(self, set_capslock, set_backlight, hide_osk, panel_on,
-                 idle_seconds=30.0):
+                 idle_seconds=30.0, escape=None):
         self.set_capslock = set_capslock
         self.set_backlight = set_backlight
         self.hide_osk = hide_osk
         self.panel_on = panel_on
+        self.escape = escape
         self.idle_seconds = idle_seconds
         self.caps = False
         self.backlight = False
@@ -60,6 +65,8 @@ class Policy:
         if code == KEY_CAPSLOCK:
             self.caps = not self.caps
             self.set_capslock(self.caps)
+        elif code == KEY_ESC and self.escape:
+            self.escape()
         self._backlight(self.panel_on())
 
     def tick(self, now):
@@ -68,6 +75,14 @@ class Policy:
         idle = self.last_key is None or now - self.last_key >= self.idle_seconds
         if idle or not self.panel_on():
             self._backlight(False)
+
+
+def app_focused(node):
+    """True when the focused Sway node is an application window."""
+    if node.get("focused"):
+        return node.get("type") in ("con", "floating_con") and bool(node.get("pid"))
+    return any(app_focused(child) for key in ("nodes", "floating_nodes")
+               for child in node.get(key, []))
 
 
 def find_device(name=NAME):
@@ -102,6 +117,16 @@ class Session:
         if shown:
             subprocess.run([self.osk_signal, "hide"], check=False)
 
+    def back_if_unfocused(self):
+        try:
+            out = subprocess.run([self.swaymsg, "-t", "get_tree", "-r"],
+                                 capture_output=True, text=True, timeout=2).stdout
+            tree = json.loads(out)
+        except (OSError, ValueError, subprocess.SubprocessError):
+            return
+        if not app_focused(tree):
+            subprocess.run([self.swaymsg, "card_shell", "back"], capture_output=True, check=False)
+
     def panel_on(self, now=None):
         # Sway is asked at most every 2 s; DSI-1 off means the panel is dark.
         now = time.monotonic() if now is None else now
@@ -123,7 +148,8 @@ def run(args):
     session = Session(args.swaymsg, args.osk_signal, os.environ.get("XDG_RUNTIME_DIR", "/run/shell"))
     policy = Policy(lambda on: write_led(args.capslock_led, on),
                     lambda on: write_led(args.backlight_led, on),
-                    session.hide_osk, session.panel_on, args.idle_seconds)
+                    session.hide_osk, session.panel_on, args.idle_seconds,
+                    session.back_if_unfocused if args.escape_back else None)
     while True:
         dev = find_device()
         if dev is None:
@@ -156,6 +182,7 @@ def main():
     ap.add_argument("--capslock-led", default="k230:green:capslock")
     ap.add_argument("--backlight-led", default="k230::kbd_backlight")
     ap.add_argument("--idle-seconds", type=float, default=30.0)
+    ap.add_argument("--escape-back", action="store_true")
     args = ap.parse_args()
     logging.basicConfig(level=logging.INFO, format="%(name)s: %(message)s")
     run(args)

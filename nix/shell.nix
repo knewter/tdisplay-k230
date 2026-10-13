@@ -17,6 +17,13 @@ let
   hdmiTouchCalibration = import ./hdmi-touch-calibration.nix cfg.hdmiTransform;
   powerKeyd = pkgs.callPackage ./power-keyd.nix { };
   keyboardBased = pkgs.callPackage ./keyboard-base.nix { };
+  # Fn+LILYGO on the keyboard base: a full-output screenshot into
+  # ~/Pictures, named by time.
+  keyboardBaseScreenshot = pkgs.writeShellScript "k230-keyboard-base-screenshot" ''
+    dir="$HOME/Pictures"
+    ${pkgs.coreutils}/bin/mkdir -p "$dir"
+    exec ${pkgs.grim}/bin/grim "$dir/screenshot-$(${pkgs.coreutils}/bin/date +%Y%m%d-%H%M%S).png"
+  '';
 
   # One additional display face for Home's Clock widget only
   # (`home-widget-design`, board-review round 2: "find dope clock widgets" --
@@ -859,14 +866,25 @@ let
       # Whether any input this board has actually emits these keysyms is
       # unverified from source alone: `docs/research/board-capability-
       # inventory.md` documents no dedicated volume buttons on the main
-      # board, and the optional keyboard/nRF9151 base's TCA8418 matrix has
-      # no keymap landed in this repo yet that would produce them. These
+      # board, and the keyboard base's TCA8418 keymap
+      # (tools/keyboard-base-keymap.py) has no volume keys either. These
       # bindings are cheap (three `bindsym` lines Sway never fires without a
       # matching key event) and correct for any USB/Bluetooth keyboard that
       # does send them; they claim nothing about this board's own keys.
       bindsym XF86AudioRaiseVolume exec ${wireplumberLean}/bin/wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%+ -l 1.0
       bindsym XF86AudioLowerVolume exec ${wireplumberLean}/bin/wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-
       bindsym XF86AudioMute exec ${wireplumberLean}/bin/wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle
+
+      # Keyboard base shell keys (openspec/changes/
+      # the-keyboard-base-types-lights-and-reports-its-battery, task 6.2),
+      # for the base's own device only. LILYGO is Super_L: alone it opens
+      # the drawer on release; with Tab it opens the card overview. Fn is
+      # Right Alt, so ISO_Level3_Shift (Mod5); Fn+LILYGO saves a screenshot
+      # as LILYGO's firmware does. Esc-as-back lives in the keyboard-base
+      # service, because a Sway binding would take Esc away from apps.
+      bindsym --input-device=1:1:tca8418 --release Super_L exec ${rustShell}/bin/k230-shell-rust --surface drawer
+      bindsym --input-device=1:1:tca8418 Mod4+Tab card_shell enter
+      bindsym --input-device=1:1:tca8418 Mod5+Super_L exec ${keyboardBaseScreenshot}
     ''}
 
     ${lib.optionalString cfg.coherentShell ''
@@ -1586,7 +1604,7 @@ in
         Type = "exec";
         User = "shell";
         Group = "shell";
-        ExecStart = "${keyboardBased}/bin/k230-keyboard-based --swaymsg ${sway}/bin/swaymsg --osk-signal ${keyboardGestureSignal}/bin/k230-keyboard-gesture-signal";
+        ExecStart = "${keyboardBased}/bin/k230-keyboard-based --swaymsg ${sway}/bin/swaymsg --osk-signal ${keyboardGestureSignal}/bin/k230-keyboard-gesture-signal --escape-back";
         Restart = "on-failure";
         RestartSec = 2;
         UMask = "0077";

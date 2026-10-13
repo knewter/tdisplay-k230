@@ -138,7 +138,7 @@ host or QEMU result never ticks a board task.
 
   Proof (**host**): unit tests with a fake evdev stream, and
   `nix build` of its derivation.
-- [ ] 6.2 Add the Sway bindings:
+- [x] 6.2 Add the Sway bindings:
   - Super for the drawer;
   - Super+Tab for the overview;
   - Fn+LILYGO for a `grim` screenshot;
@@ -146,6 +146,10 @@ host or QEMU result never ticks a board task.
 
   Proof (**host**):
   `nix build .#nixosConfigurations.k230-mainline-drm-shell-landscape.config.system.build.toplevel`.
+  Built as part of `.#kernelMainlineDrmShellLandscapeBootFiles` (system
+  `w3isqi2b…`). Esc-as-back is in the keyboard-base service rather than a
+  Sway binding, because a binding would take Esc from focused apps. It
+  calls `card_shell back` only when no app has focus, with unit tests.
 - [ ] 6.3 Add the battery to the shade, and the keyboard backlight control to
   Settings, persisted under `/var/lib/k230`. Both are hidden when their device
   is absent. Proof (**host**): `cargo test` in `nix/rust-shell-client`, plus

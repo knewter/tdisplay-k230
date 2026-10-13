@@ -65,6 +65,23 @@ class KeyboardBasePolicy(unittest.TestCase):
         p.key(KEY_A, 1, 0.0); p.key(KEY_A, 0, 0.1); p.key(KEY_A, 2, 0.2)
         self.assertEqual(f.hidden, 1)
 
+    def test_escape_calls_back_only_when_enabled(self):
+        f = Fake(); backs = []
+        p = kbd.Policy(f.caps.append, f.light.append, f.hide, lambda: True, 30, lambda: backs.append(1))
+        p.key(kbd.KEY_ESC, 1, 0.0); p.key(kbd.KEY_ESC, 0, 0.1); p.key(kbd.KEY_ESC, 2, 0.2)
+        self.assertEqual(backs, [1])
+        q = f.policy()
+        q.key(kbd.KEY_ESC, 1, 0.0)  # no escape callback: nothing to call
+
+    def test_app_focus_detection(self):
+        workspace = {"type": "workspace", "focused": True, "nodes": []}
+        self.assertFalse(kbd.app_focused({"nodes": [{"nodes": [workspace]}]}))
+        app = {"type": "con", "focused": True, "pid": 42}
+        tree = {"nodes": [{"nodes": [{"type": "workspace", "nodes": [app]}]}]}
+        self.assertTrue(kbd.app_focused(tree))
+        floating = {"type": "floating_con", "focused": True, "pid": 7}
+        self.assertTrue(kbd.app_focused({"nodes": [{"type": "workspace", "floating_nodes": [floating]}]}))
+
     def test_event_record_layout(self):
         self.assertEqual(kbd.INPUT_EVENT.size, 24)
 
