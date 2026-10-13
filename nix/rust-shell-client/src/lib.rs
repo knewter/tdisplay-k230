@@ -66,8 +66,12 @@ pub fn frame_bytes(width: u32, height: u32) -> Option<usize> {
     // 1080x1920 rotated portrait) instead of being pillarboxed down to a
     // design-aspect column (see `configure_preserves_aspect`'s doc and
     // `main.rs`'s `is_whole_output`). 2048 stays a real, if generous,
-    // sanity bound -- nothing this shell targets exceeds it.
-    if !(300..=2048).contains(&width) || !(600..=2048).contains(&height) {
+    // sanity bound -- nothing this shell targets exceeds it. The lower
+    // height bound matches the width's 300 since the panel's landscape
+    // profile (`k230.shell.panelTransform = "270"`) is only 568 tall; the
+    // old 600 rejected every 1232x568 configure and Home drew nothing
+    // (board, 2026-10-13: `home-configure-rejected`).
+    if !(300..=2048).contains(&width) || !(300..=2048).contains(&height) {
         return None;
     }
     usize::try_from(width)
@@ -321,6 +325,16 @@ mod tests {
         assert_eq!(frame_bytes(768, 1024), Some(3_145_728));
         assert_eq!(frame_bytes(1080, 1920), Some(8_294_400));
         assert_eq!(frame_bytes(1920, 1080), Some(8_294_400));
+    }
+
+    #[test]
+    fn frame_bytes_accepts_the_landscape_panel() {
+        // The built-in panel turned by `transform 270`.
+        assert_eq!(frame_bytes(1232, 568), Some(2_799_104));
+        assert_eq!(frame_bytes(1232, 299), None);
+        let mut geometry = (568, 1232);
+        assert_eq!(configure_size(&mut geometry, 1232, 568), Some(true));
+        assert_eq!(geometry, (1232, 568));
     }
 
     #[test]

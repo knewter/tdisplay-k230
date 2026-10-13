@@ -796,7 +796,7 @@ let
   # device's udev ID_PATH. Whether the heuristic would have fired is
   # recorded in docs/evidence/shell-session.txt.
   swayConfig = pkgs.writeText "k230-sway.conf" ''
-    output DSI-1 mode 568x1232 transform normal scale 1 render_bit_depth 6 max_render_time 8
+    output DSI-1 mode 568x1232 transform ${cfg.panelTransform} scale 1 render_bit_depth 6 max_render_time 8
     input type:touch map_to_output DSI-1
     input type:touch calibration_matrix 1 0 0 0 1 0
 
@@ -940,6 +940,18 @@ in
       '';
     };
 
+    panelTransform = lib.mkOption {
+      type = lib.types.enum [ "normal" "270" ];
+      default = "normal";
+      description = ''
+        Sway transform for the built-in DSI-1 panel. "normal" is the
+        568x1232 portrait design. "270" turns the picture 90 degrees
+        counterclockwise as seen from the keyboard case, a 1232x568
+        landscape output (openspec/changes/the-hdmi-shell-works-in-landscape
+        task 8.1). Touch follows through map_to_output.
+      '';
+    };
+
     debugLog = lib.mkOption {
       type = lib.types.bool;
       default = false;
@@ -1041,7 +1053,10 @@ in
 
     keyboardHeight = lib.mkOption {
       type = lib.types.int;
-      default = 400;
+      # 400 of the portrait panel's 1232 px; the landscape panel is only 568
+      # tall, where 400 would leave 168 px of page above the keyboard.
+      default = if cfg.panelTransform == "normal" then 400 else 240;
+      defaultText = lib.literalExpression ''if panelTransform == "normal" then 400 else 240'';
       description = "Height of the on-screen keyboard in pixels.";
     };
 
@@ -1112,6 +1127,12 @@ in
       "text/x-markdown" = [ "k230-editor.desktop" ];
     };
     assertions = [
+      {
+        # The Sway scene seed is a fixed 568x1232 buffer; it would come out
+        # turned and clipped on the landscape panel.
+        assertion = !(cfg.initialSplash && cfg.panelTransform != "normal");
+        message = "k230.shell.initialSplash requires k230.shell.panelTransform = \"normal\".";
+      }
       {
         assertion = !cfg.coherentShell || !(cfg.initialSplash || cfg.frameTiming || cfg.vgliteAccessTrial);
         message = "The coherent shell uses its card compositor; run renderer/splash diagnostics in their separate configurations.";
