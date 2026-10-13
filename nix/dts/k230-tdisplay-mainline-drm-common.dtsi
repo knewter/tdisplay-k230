@@ -65,7 +65,12 @@
 				reset-gpios = <&gpio0_ports 24 GPIO_ACTIVE_LOW>;
 				interrupt-parent = <&gpio0_ports>;
 				interrupts = <23 IRQ_TYPE_LEVEL_LOW>;
-				touchscreen-size-x = <1024>;
+				/* The controller reports X 0..1079: a finger at the
+				 * long edge hit raw 1079 on the second board
+				 * (docs/evidence/panel-landscape/touch-range.md), and
+				 * LILYGO's own tree gives panel-max-x 1060. 1024 lost
+				 * the last 5% of the glass past the panel edge. */
+				touchscreen-size-x = <1080>;
 				touchscreen-size-y = <2400>;
 			};
 		};

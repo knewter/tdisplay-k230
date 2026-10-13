@@ -9,7 +9,7 @@
 # recorded with this script is labelled "injected" in docs/evidence.
 #
 # The virtual device is created from the real controller's description
-# (evemu-describe /dev/input/event0), so it reports the same 1024x2400 grid
+# (evemu-describe of the real controller), so it reports the same grid
 # the GT9895 does and libinput scales it to the panel exactly as it does
 # the real device. Panel pixels are converted here with the same factors.
 #
@@ -20,9 +20,13 @@
 set -e
 DEV=$1; X=$2; Y=$3; X2=${4:-}; Y2=${5:-}
 [ -n "$Y" ] || { echo "usage: $0 DEV X Y [X2 Y2]" >&2; exit 2; }
-# panel -> digitizer: 1024/568 and 2400/1232 (touch-reports.md ranges)
-dx() { echo $(( $1 * 1024 / 568 )); }
-dy() { echo $(( $1 * 2400 / 1232 )); }
+# panel -> digitizer, scaled by the device's own advertised grid (1080x2400
+# since docs/evidence/panel-landscape/touch-range.md; 1024x2400 before)
+GX=$(evemu-describe "$DEV" | awk '$1 == "A:" && $2 == "35" { print $4 + 1 }')
+GY=$(evemu-describe "$DEV" | awk '$1 == "A:" && $2 == "36" { print $4 + 1 }')
+[ -n "$GX" ] && [ -n "$GY" ] || { echo "no MT axes on $DEV" >&2; exit 2; }
+dx() { echo $(( $1 * GX / 568 )); }
+dy() { echo $(( $1 * GY / 1232 )); }
 ev() { evemu-event "$DEV" --type "$1" --code "$2" --value "$3"; }
 syn() { evemu-event "$DEV" --type EV_SYN --code SYN_REPORT --value 0; }
 

@@ -237,7 +237,12 @@
 		// and caveman99's Linux port. The panel is 568x1232, so the
 		// sensor grid is roughly 1.8x the pixel grid in both axes --
 		// same orientation, hence no swapped-x-y or inverted-* here.
-		touchscreen-size-x = <1024>;
+		/* The controller reports X 0..1079: a finger at the
+		 * long edge hit raw 1079 on the second board
+		 * (docs/evidence/panel-landscape/touch-range.md), and
+		 * LILYGO's own tree gives panel-max-x 1060. 1024 lost
+		 * the last 5% of the glass past the panel edge. */
+		touchscreen-size-x = <1080>;
 		touchscreen-size-y = <2400>;
 	};
 };
