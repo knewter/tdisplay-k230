@@ -809,6 +809,15 @@ let
     input type:touch map_to_output DSI-1
     input type:touch calibration_matrix 1 0 0 0 1 0
 
+    # The keyboard base's TCA8418 keypad (vendor:product:name from
+    # tca8418_keypad.c) gets the layout that matches its printed legends;
+    # any other keyboard keeps `us`. nix/keyboard-base/k230-base.xkb.
+    input "1:1:tca8418" {
+      xkb_file ${./keyboard-base/k230-base.xkb}
+      repeat_delay 400
+      repeat_rate 25
+    }
+
     # The HDMI relay is a touchpad: let libinput turn taps into clicks.
     input "1:1:K230_Virtual_Touchpad_(HDMI_mode)" {
       natural_scroll enabled

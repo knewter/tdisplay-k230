@@ -518,6 +518,17 @@ config SND_SOC_K230_INNO\
     INPUT_MISC = yes;
     INPUT_K230_PMU_PWRKEY = yes;
 
+    # Keyboard base (openspec/changes/
+    # the-keyboard-base-types-lights-and-reports-its-battery): the TCA8418
+    # keypad on I2C4 (task 3.1), and the expander, LED, charger and gauge
+    # drivers its later groups bind. Modules, so a board without the base
+    # loads none of them.
+    KEYBOARD_TCA8418 = module;
+    LEDS_GPIO = module;
+    CHARGER_BQ25890 = module;
+    BATTERY_BQ27XXX = module;
+    BATTERY_BQ27XXX_I2C = module;
+
     # Thermal (task 7.1): THERMAL/THERMAL_OF are already on in the base
     # defconfig; named explicitly anyway, same as RESET_K230 above.
     THERMAL = yes;

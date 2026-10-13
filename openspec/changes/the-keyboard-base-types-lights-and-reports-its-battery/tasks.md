@@ -51,7 +51,7 @@ host or QEMU result never ticks a board task.
 
 ## 3. Keys and Caps Lock (kernel, device tree, Nix)
 
-- [ ] 3.1 Generate the 7×10 `linux,keymap` from the vendor code table:
+- [x] 3.1 Generate the 7×10 `linux,keymap` from the vendor code table:
   - legends map to ordinary key codes;
   - FN and FN-R are `KEY_RIGHTALT`;
   - LILYGO is `KEY_LEFTMETA`;
@@ -59,11 +59,18 @@ host or QEMU result never ticks a board task.
 
   Add the `ti,tca8418` node, the IO43 `gpio-hog` at the level 1.2 observed,
   and `KEYBOARD_TCA8418`. Proof (**host**): a generator unit test that
-  round-trips all 68 vendor codes, then `nix build .#deviceTreeMainlineDrm`.
-- [ ] 3.2 Add the `k230-base` xkb symbols file, with the vendor Shift table and
+  round-trips every vendor code (the table names 65 of codes 1–68; 4, 30 and
+  31 are unused), then `nix build .#deviceTreeMainlineDrm`. Done with
+  `tools/keyboard-base-keymap.py` and `tests/test_keyboard_base_keymap.py`.
+- [x] 3.2 Add the `k230-base` xkb symbols file, with the vendor Shift table and
   the Fn layer, and the Sway input stanza for the base only. Proof (**host**):
   `xkbcli compile-keymap` with the layout, plus a test asserting each vendor
   Shift symbol, with its result.
+  Done as a complete keymap, `nix/keyboard-base/k230-base.xkb`, loaded with
+  Sway's `xkb_file` for `1:1:tca8418`. `xkbcli compile-keymap --keymap` (1.13.2)
+  compiles it, and `tests/test_keyboard_base_xkb.py` drives libxkbcommon:
+  every Shift symbol, Caps capitals, the digit row and the Fn layer pass;
+  changing one symbol makes it fail.
 - [ ] 3.3 Add the `nxp,pca9555` node at the probed address and the three
   `gpio-leds`. Enable `GPIO_PCA953X` and `LEDS_GPIO`.
   Proof (**host**): `nix build .#kernelMainlineDrm`.

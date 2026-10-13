@@ -1,0 +1,82 @@
+// Keymap for the LILYGO keyboard base (keyboard-base task 3.2). Sway loads it
+// with `xkb_file` for the base's own input device only, so other keyboards
+// keep `us`.
+//
+// The base prints a symbol above most letters and has no punctuation keys of
+// its own. LILYGO's firmware (ui_hardware.c,
+// extension_keyboard_shift_symbol_for_code, tree 4a87c53c) gives that symbol
+// on Shift and the capital only through Caps Lock. That is reproduced here
+// with the K230_BASE_LETTER type:
+//
+// - level 1: lowercase;
+// - level 2 (Caps Lock): capital;
+// - level 3 (Shift, with or without Caps Lock): the printed symbol.
+//
+// Z, X, C and V print no symbol and keep ordinary Shift/Caps behaviour. The
+// digit row's Shift symbols are the same as `us`.
+//
+// FN and FN-R reach xkb as Right Alt, which level3(ralt_switch) makes
+// ISO_Level3_Shift. Fn + Up/Down/Left/Right gives PgUp/PgDn/Home/End, and
+// Fn + DEL (Backspace) gives Insert.
+
+xkb_keymap {
+	xkb_keycodes { include "evdev+aliases(qwerty)" };
+
+	xkb_types {
+		include "complete"
+
+		type "K230_BASE_LETTER" {
+			modifiers = Shift + Lock;
+			map[None] = Level1;
+			map[Lock] = Level2;
+			map[Shift] = Level3;
+			map[Shift + Lock] = Level3;
+			level_name[Level1] = "Base";
+			level_name[Level2] = "Caps";
+			level_name[Level3] = "Printed symbol";
+		};
+
+		type "K230_BASE_FN" {
+			modifiers = LevelThree;
+			map[None] = Level1;
+			map[LevelThree] = Level2;
+			level_name[Level1] = "Base";
+			level_name[Level2] = "Fn";
+		};
+	};
+
+	xkb_compat { include "complete" };
+
+	xkb_symbols {
+		include "pc+us+inet(evdev)+level3(ralt_switch)"
+
+		key <AD01> { type = "K230_BASE_LETTER", [ q, Q, grave ] };
+		key <AD02> { type = "K230_BASE_LETTER", [ w, W, asciitilde ] };
+		key <AD03> { type = "K230_BASE_LETTER", [ e, E, minus ] };
+		key <AD04> { type = "K230_BASE_LETTER", [ r, R, plus ] };
+		key <AD05> { type = "K230_BASE_LETTER", [ t, T, equal ] };
+		key <AD06> { type = "K230_BASE_LETTER", [ y, Y, backslash ] };
+		key <AD07> { type = "K230_BASE_LETTER", [ u, U, bar ] };
+		key <AD08> { type = "K230_BASE_LETTER", [ i, I, semicolon ] };
+		key <AD09> { type = "K230_BASE_LETTER", [ o, O, colon ] };
+		key <AD10> { type = "K230_BASE_LETTER", [ p, P, quotedbl ] };
+		key <AC01> { type = "K230_BASE_LETTER", [ a, A, asciitilde ] };
+		key <AC02> { type = "K230_BASE_LETTER", [ s, S, bracketleft ] };
+		key <AC03> { type = "K230_BASE_LETTER", [ d, D, bracketright ] };
+		key <AC04> { type = "K230_BASE_LETTER", [ f, F, braceleft ] };
+		key <AC05> { type = "K230_BASE_LETTER", [ g, G, braceright ] };
+		key <AC06> { type = "K230_BASE_LETTER", [ h, H, comma ] };
+		key <AC07> { type = "K230_BASE_LETTER", [ j, J, grave ] };
+		key <AC08> { type = "K230_BASE_LETTER", [ k, K, slash ] };
+		key <AC09> { type = "K230_BASE_LETTER", [ l, L, question ] };
+		key <AB05> { type = "K230_BASE_LETTER", [ b, B, period ] };
+		key <AB06> { type = "K230_BASE_LETTER", [ n, N, less ] };
+		key <AB07> { type = "K230_BASE_LETTER", [ m, M, greater ] };
+
+		key <UP>   { type = "K230_BASE_FN", [ Up, Prior ] };
+		key <DOWN> { type = "K230_BASE_FN", [ Down, Next ] };
+		key <LEFT> { type = "K230_BASE_FN", [ Left, Home ] };
+		key <RGHT> { type = "K230_BASE_FN", [ Right, End ] };
+		key <BKSP> { type = "K230_BASE_FN", [ BackSpace, Insert ] };
+	};
+};
