@@ -154,9 +154,12 @@ host or QEMU result never ticks a board task.
   Settings, persisted under `/var/lib/k230`. Both are hidden when their device
   is absent. Proof (**host**): `cargo test` in `nix/rust-shell-client`, plus
   host renders with and without a fake `power_supply`/LED tree.
-- [ ] 6.4 Add the `k230-battery-policy` service and its Nix options. Proof
+- [x] 6.4 Add the `k230-battery-policy` service and its Nix options. Proof
   (**host**): state-machine tests covering 15%/5% once each, two readings at
-  3%, the countdown, a cancel on charge, and disabled.
+  3%, the countdown, a cancel on charge, and disabled. `tests/test_battery_policy.py`
+  (7 tests, including the `/run/k230-battery-policy.json` override used by
+  6.6); options `k230.shell.batteryPolicy.*`. Installed on the board as
+  system `iw5x7hn5…`, where the service is active with 15/5/3.
 - [ ] 6.5 On the board, record:
   - a key press hiding the on-screen keyboard, and the LILYGO-key launch flow
     (**operator** + **camera**);

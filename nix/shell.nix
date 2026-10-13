@@ -1036,6 +1036,32 @@ in
       '';
     };
 
+    batteryPolicy = {
+      enable = lib.mkOption {
+        type = lib.types.bool;
+        default = true;
+        description = ''
+          Warn at low charge and power off cleanly before the keyboard
+          base's cell runs flat. Without a battery the service only rechecks.
+        '';
+      };
+      warnPercent = lib.mkOption {
+        type = lib.types.ints.between 1 100;
+        default = 15;
+        description = "Charge at which one low-battery notification is raised.";
+      };
+      urgentPercent = lib.mkOption {
+        type = lib.types.ints.between 1 100;
+        default = 5;
+        description = "Charge at which one very-low-battery notification is raised.";
+      };
+      shutdownPercent = lib.mkOption {
+        type = lib.types.ints.between 1 100;
+        default = 3;
+        description = "Charge at which, on two readings, a 60 s poweroff countdown starts.";
+      };
+    };
+
     powerKeyTrial = lib.mkOption {
       type = lib.types.bool;
       default = false;
@@ -1608,6 +1634,25 @@ in
         Restart = "on-failure";
         RestartSec = 2;
         UMask = "0077";
+      };
+    };
+
+    # Low-battery policy (keyboard-base task 6.4). Root, so the notification
+    # center labels it "System" and it may request a clean poweroff.
+    systemd.services.k230-battery-policy = lib.mkIf (cfg.coherentShell && cfg.batteryPolicy.enable) {
+      description = "Low-battery warnings and clean shutdown";
+      wantedBy = [ "multi-user.target" ];
+      after = [ "shell-notifications.service" ];
+      serviceConfig = {
+        ExecStart = lib.concatStringsSep " " [
+          "${pkgs.python3}/bin/python3 ${./keyboard-base/battery_policy.py}"
+          "--warn ${toString cfg.batteryPolicy.warnPercent}"
+          "--urgent ${toString cfg.batteryPolicy.urgentPercent}"
+          "--shutdown ${toString cfg.batteryPolicy.shutdownPercent}"
+          "--poweroff '${config.systemd.package}/bin/systemctl poweroff'"
+        ];
+        Restart = "on-failure";
+        RestartSec = 5;
       };
     };
 
