@@ -74,6 +74,8 @@ host or QEMU result never ticks a board task.
 - [x] 3.3 Add the `nxp,pca9555` node at the probed address and the three
   `gpio-leds`. Enable `GPIO_PCA953X` and `LEDS_GPIO`.
   Proof (**host**): `nix build .#kernelMainlineDrm`.
+  Board-read (no camera): the LEDs register and switch their lines, in
+  `docs/evidence/keyboard-base/leds/`.
 - [ ] 3.4 Install on the board. Record:
   - `evtest` on the base's device for every key (**board-read**, with an
     operator pressing);
@@ -89,7 +91,8 @@ host or QEMU result never ticks a board task.
 - [ ] 4.1 Add IO52 as a `gpio-leds` `k230::kbd_backlight`. Proof (**host**):
   `nix build .#deviceTreeMainlineDrm`. Then (**camera**) a frame with it on
   and a frame with it off, written through sysfs, in
-  `docs/evidence/keyboard-base/backlight/`.
+  `docs/evidence/keyboard-base/backlight/`. The line itself switches
+  (`docs/evidence/keyboard-base/leds/`, board-read); the camera frames remain.
 - [ ] 4.2 Port the vendor K230 PWM driver and switch IO52 to PWM4 with a
   `pwm-leds` entry of the same name. Proof (**host**):
   `nix build .#kernelMainlineDrm`. Then (**camera**) three distinct
