@@ -126,5 +126,37 @@ tap action, one long network name, no theme thumbnails). `host/shade-1232x568.pn
 was regenerated for the new shade layout. These are host renders: they prove
 the paint and its hit rectangles, not the board's glass. The same example
 also writes 568x1232 renders; those are not committed, but are byte-identical
-to the base's (`6aa0795d`). Native `grim` captures of these surfaces are still
-owed (task 8.5).
+to the base's (`6aa0795d`). Native captures of these surfaces follow.
+
+## Native captures on the installed image (2026-10-14 04:57–05:00 UTC)
+
+System `9lp7f072…` (this branch plus the charger commit), booted, rotate-once
+renderer. Each file is a native `grim` at 1232x568, taken as user `shell`.
+Surfaces were opened with `k230-shell-rust --surface <name>` unless the name
+says `injected` (an `evemu-event` tap written to the touchscreen's event node;
+a software proxy, not a finger).
+
+| File | Surface | How opened |
+| --- | --- | --- |
+| `board/installed-terminal-app.png` | foot terminal, focused app | already open |
+| `board/installed-drawer.png` | Drawer | CLI |
+| `board/installed-settings.png` | Settings, three columns | CLI |
+| `board/installed-power.png` | power sheet | CLI |
+| `board/installed-help.png` | Help, two columns | CLI |
+| `board/installed-shade-notifications.png` | shade with four notifications from `k230-notifications emit` | CLI |
+| `board/installed-wifi-injected.png` | Settings → Wi-Fi, two columns | injected tap on the Wi-Fi row |
+| `board/installed-wifi-network-injected.png` | saved-network page | injected tap on the network row |
+| `board/installed-theme-chooser-injected.png` | Settings → Themes, chooser and backgrounds side by side | injected tap on `Themes ›`, captured 12 s later once thumbnails loaded |
+
+The two Wi-Fi captures had the connected network's name painted over
+(`[name removed]`) before commit; everything else is as captured.
+
+Reviewed: nothing overlaps or leaves the output; every control named in task
+8.3 is on screen. The theme chooser shows a spinner over the first card for
+the first seconds while backgrounds load; the earlier 2 s capture shows it and
+was not kept. Home itself is `board/installed-home.png` and
+`board/installed-home-output-turn.png` above.
+
+Still owed for task 8.5: the folder overlay and on-screen keyboard as native
+captures on the installed image, and a camera frame from the keyboard side
+(the bench webcam currently sits at glass level and cannot read the panel).

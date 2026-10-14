@@ -1,0 +1,18 @@
+2026-10-14T05:01:07Z before chg_online=1 chg_status=Full reg00=0x7f gauge_status=Full gauge_uA=0 gauge_uV=4201000 cap=100
+wrote online=0 rc=0
+2026-10-14T05:01:13Z hiz chg_online=0 chg_status=Discharging reg00=0xff gauge_status=Discharging gauge_uA=-394000 gauge_uV=4121000 cap=100
+2026-10-14T05:01:18Z hiz chg_online=0 chg_status=Discharging reg00=0xff gauge_status=Discharging gauge_uA=-398000 gauge_uV=4118000 cap=100
+2026-10-14T05:01:23Z hiz chg_online=0 chg_status=Discharging reg00=0xff gauge_status=Discharging gauge_uA=-397000 gauge_uV=4114000 cap=100
+2026-10-14T05:01:28Z hiz chg_online=0 chg_status=Discharging reg00=0xff gauge_status=Discharging gauge_uA=-396000 gauge_uV=4109000 cap=100
+2026-10-14T05:01:33Z hiz chg_online=0 chg_status=Discharging reg00=0xff gauge_status=Discharging gauge_uA=-417000 gauge_uV=4107000 cap=100
+2026-10-14T05:01:38Z hiz chg_online=0 chg_status=Discharging reg00=0xff gauge_status=Discharging gauge_uA=-413000 gauge_uV=4093000 cap=100
+2026-10-14T05:01:43Z hiz chg_online=0 chg_status=Discharging reg00=0xff gauge_status=Discharging gauge_uA=-398000 gauge_uV=4100000 cap=100
+2026-10-14T05:01:49Z hiz chg_online=0 chg_status=Discharging reg00=0xff gauge_status=Discharging gauge_uA=-397000 gauge_uV=4098000 cap=100
+2026-10-14T05:01:54Z hiz chg_online=0 chg_status=Discharging reg00=0xff gauge_status=Discharging gauge_uA=-401000 gauge_uV=4096000 cap=100
+wrote online=1 rc=0
+2026-10-14T05:01:59Z restored chg_online=1 chg_status=Charging reg00=0x7f gauge_status=Charging gauge_uA=574000 gauge_uV=4284000 cap=100
+2026-10-14T05:02:04Z restored chg_online=1 chg_status=Charging reg00=0x7f gauge_status=Charging gauge_uA=532000 gauge_uV=4284000 cap=100
+2026-10-14T05:02:09Z restored chg_online=1 chg_status=Charging reg00=0x7f gauge_status=Charging gauge_uA=458000 gauge_uV=4285000 cap=100
+2026-10-14T05:02:14Z restored chg_online=1 chg_status=Charging reg00=0x7f gauge_status=Charging gauge_uA=432000 gauge_uV=4285000 cap=100
+2026-10-14T05:02:20Z restored chg_online=1 chg_status=Charging reg00=0x7f gauge_status=Charging gauge_uA=413000 gauge_uV=4286000 cap=100
+2026-10-14T05:02:25Z restored chg_online=1 chg_status=Charging reg00=0x7f gauge_status=Charging gauge_uA=396000 gauge_uV=4286000 cap=100

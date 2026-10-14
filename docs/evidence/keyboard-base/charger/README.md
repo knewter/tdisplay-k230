@@ -13,12 +13,11 @@ matches the probe's raw registers.
 
 ## Not yet covered
 
-- **Discharging reading:** none was taken with the cable out.
-- **Charger:** the `ti,bq25896` node is not added, because the driver
-  needs the charger's INT line, whose wiring is unknown (task 5.2a). So
-  there is no `online` value and no before/after register record yet.
+- **Charger `online` with the cable physically out.** The unplug below
+  predates the charger node, and the Hi-Z run further down sets `online=0`
+  from software. A real cable-out `online=0` is still owed (task 5.3).
 
-## Unplug and replug (2026-10-14 22:17–22:32 CDT)
+## Unplug and replug (2026-10-13 22:17–22:32 CDT)
 
 Evidence class: **board-read** (operator unplugged and replugged USB-C on
 request). `unplug-replug-2026-10-14.log` samples the gauge's `power_supply`
@@ -54,3 +53,66 @@ the mux of unclaimed pads is not shown here. The XL9555 has no interrupt
 output wired either, so a charger INT routed to an expander input could not
 be caught by polling a 256 µs pulse. Result: INT reaches no GPIO-muxed K230
 line. The charger driver therefore polls (`bq25890-poll-without-irq.patch`).
+
+## The charger node (task 5.2)
+
+`nix/dts/k230-tdisplay-mainline-drm-common.dtsi` adds `charger@6b`,
+`compatible = "ti,bq25896"`, with `linux,skip-reset` and
+`linux,read-back-settings`. The driver therefore reads the charge parameters
+from the chip; the `ti,*` values are still required by the binding and are set
+to what the registers already hold, so nothing changes if read-back is ever
+dropped. Host proof: `nix build .#deviceTreeMainlineDrm` (2026-10-14, built
+`k230-tdisplay-mainline-drm.dtb`; `dtc` shows the node).
+
+Decoded from the probe's registers (`../probe/probe-2026-10-13T193545Z.log`)
+against the BQ25896 datasheet:
+
+| Register | Value | Field | Decoded | Node property / driver |
+| --- | --- | --- | --- | --- |
+| REG00 | 0x7f | EN_HIZ, EN_ILIM, IINLIM | 0, 1, 3250 mA | read back (`input_current_limit` 3250000) |
+| REG02 | 0x11 | CONV_RATE, ICO_EN, AUTO_DPDM | 0, 1, 1 | **driver writes CONV_RATE=1** (continuous ADC) |
+| REG03 | 0x1a | OTG_CONFIG, CHG_CONFIG, SYS_MIN | 0, 1, 3500 mV | `ti,minimum-sys-voltage` 3500000; driver writes CHG_CONFIG=1 (already 1) |
+| REG04 | 0x0b | ICHG | 704 mA | `ti,charge-current` 704000 |
+| REG05 | 0x13 | IPRECHG, ITERM | 128 mA, 256 mA | `ti,precharge-current` 128000, `ti,termination-current` 256000 |
+| REG06 | 0x72 | VREG, BATLOWV, VRECHG | 4288 mV, 3.0 V, 100 mV | `ti,battery-regulation-voltage` 4288000 |
+| REG07 | 0x8d | EN_TERM, WATCHDOG, EN_TIMER, CHG_TIMER | 1, disabled, 1, 12 h | driver writes WATCHDOG=0 (already 0) |
+| REG08 | 0x03 | BAT_COMP, VCLAMP, TREG | 0, 0, 120 °C | `ti,thermal-regulation-threshold` 120 |
+| REG0A | 0x73 | BOOSTV, BOOST_LIM | 4998 mV, 1.4 A | `ti,boost-voltage` 4998000, `ti,boost-max-current` 1400000 |
+
+## Bound on the board (tasks 5.2, 5.2a, 5.3; board-read)
+
+System `9lp7f072…` (kernel 7.3.0-rc5, `bq25890-poll-without-irq.patch` and
+`bq27xxx-bq27220-status.patch`). `dmesg`: `bq25890-charger 1-006b: no
+interrupt; polling every 2000 ms`. `registers-bound-2026-10-14.log`
+(05:02:48 UTC, `i2cget -f`, read-only) against the probe:
+
+- REG02 0x11 → 0x51: CONV_RATE, the one field named above. No other
+  configuration register (0x00–0x0A, 0x0D, 0x14) changed.
+- REG0B and 0x0E–0x13 are status and ADC readings and move with the
+  charge state (REG0B 0x56 here: fast charging, power good).
+
+`bq25890-charger-0` reports type USB, `online` 1, BQ25896, constant charge
+current 704000, voltage 4288000, input limit 3250000.
+
+`devmem` is installed on this image (`STRICT_DEVMEM`, `IO_STRICT_DEVMEM`
+off, `I2C_CHARDEV`). Reading the IOMUX block at `0x91105000 + 4 * pin`
+returned 0x800019d1 for all 64 pads, so it does not reveal the pad mux either;
+the 5.2a limit stands.
+
+## Charger Hi-Z: gauge status follows the current (2026-10-14; board-read)
+
+`hiz-2026-10-14.log`, 05:01:07–05:02:25 UTC. Writing `0` to the charger's
+`online` sets EN_HIZ (REG00 0x7f → 0xff): the input is disconnected and the
+battery carries the system, as with the cable out, but from software. Writing
+`1` clears it. Sampled every 5 s:
+
+| Phase | Charger | Gauge |
+| --- | --- | --- |
+| before | online 1, Full | `Full`, 0 mA, 4.201 V, 100 % |
+| Hi-Z, 45 s | online 0, Discharging | `Discharging`, -394 to -417 mA, 4.121 → 4.096 V |
+| restored, 30 s | online 1, Charging | `Charging`, +574 mA tapering to +396 mA, 4.284 V |
+
+Before `bq27xxx-bq27220-status.patch` the gauge said `Full` in both
+directions (unplug log above). This run used Hi-Z, not a pulled cable, so it
+proves the status mapping and the charger's `online` reporting, not the
+cable-out `online` reading.

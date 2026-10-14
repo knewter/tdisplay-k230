@@ -103,10 +103,15 @@ host or QEMU result never ticks a board task.
 - [x] 5.1 Write the forward-port patch adding BQ27220 to `bq27xxx`. It is
   read-only, with no data-memory writes. Enable `BATTERY_BQ27XXX_I2C`.
   Proof (**host**): `nix build .#kernelMainlineDrm`.
-- [ ] 5.2 Add the `ti,bq25896` node with the 1.2 register values and
+- [x] 5.2 Add the `ti,bq25896` node with the 1.2 register values and
   `CHARGER_BQ25890`. Document any field the driver would rewrite. Proof
   (**host**): `nix build .#deviceTreeMainlineDrm` and a reviewed
   field-by-field table in `docs/evidence/keyboard-base/charger/`.
+  Done 2026-10-14: `charger@6b` with `linux,skip-reset` and
+  `linux,read-back-settings`, every `ti,*` value equal to the register it
+  names; `nix build .#deviceTreeMainlineDrm` built. The table and the one
+  rewritten field (REG02 CONV_RATE) are in the charger README. On the board
+  only REG02 changed on bind.
 - [ ] 5.2a Find the BQ25896 INT line. `bq25890_charger` will not bind
   without an interrupt (`No irq resource found`), and neither LILYGO's code
   nor its pin map names where INT goes; the XL9555's INT is equally
@@ -116,6 +121,14 @@ host or QEMU result never ticks a board task.
   CHG_CONFIG=1 and WATCHDOG=0 (both already set) and CONV_RATE. Proof
   (**board-read**): the line identified on the board, with the method
   recorded.
+  Partial 2026-10-14: not identified. INT reaches no GPIO-muxed K230 line:
+  `gpiomon -e both` on every unclaimed line of both GPIO chips during a
+  USB-C unplug and replug saw no edge, and LILYGO's pin map names no INT.
+  Pads muxed away from GPIO are not covered (the IOMUX readout is a
+  placeholder). The charger no longer needs it to bind:
+  `bq25890-poll-without-irq.patch` polls the IRQ handler every 2 s when no
+  interrupt is given, and the board logs `no interrupt; polling every 2000 ms`.
+  Closing this without the line needs the operator's scope decision.
 - [ ] 5.3 On the board, record:
   - `power_supply` `capacity`, `status`, `voltage_now` and `current_now`;
   - the charger's `online` value, cable in and cable out;
@@ -123,6 +136,12 @@ host or QEMU result never ticks a board task.
     named fields.
 
   Proof (**board-read**): the logs in `docs/evidence/keyboard-base/charger/`.
+  Partial 2026-10-14: gauge capacity, status, voltage and current on USB, on
+  battery (cable out, about -405 mA) and in charger Hi-Z (`Discharging`, then
+  `Charging` once restored); charger `online` 1 with the cable in and 0 in
+  Hi-Z; registers before and after bind, only REG02 CONV_RATE changed. Open:
+  the charger's `online` with the cable physically out (the unplug predates
+  the charger node).
 - [x] 5.4 If 1.2 found a DRV2605, add its node and `INPUT_DRV260X_HAPTICS`,
   and record its input device appearing (**board-read**). Otherwise record
   "not fitted" and close the task. Not fitted: 0x5A did not answer
