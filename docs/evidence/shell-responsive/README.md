@@ -139,3 +139,15 @@ report combines a separately recorded operator confirmation with matching
 native/configure evidence; it does not change the host proof class above.
 Density, Wi-Fi/theme reflow and dock slot-count design remain open as landscape
 tasks 7.1–7.3 under the authorized scope transfer.
+
+## 2026-10-14: drawer-568x1232.png regenerated
+
+`drawer_568x1232_matches_the_committed_evidence_exactly` had failed since
+`3a1a3e51` ("Complete applicable handheld theme consumers and host
+coverage", 2026-10-10), found with `git bisect` on that test. That commit
+deliberately draws the drawer's search field as a themed service card
+(`service_card_interaction`), which changes 61152 bytes of this render (the
+search field only, bbox (24, 54)-(456, 102)), and did not refresh this PNG.
+It is regenerated with
+`cargo run --example render_responsive_evidence -- <dir>`; the other
+renders here are unchanged.

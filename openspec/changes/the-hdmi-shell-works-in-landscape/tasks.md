@@ -120,7 +120,7 @@ complete them here against the panel's 1232×568 geometry as well as HDMI.
       in `main.rs` (`apply_configure`, `retry_rejected_configures`) is
       compile-checked and covered only through that decision function; a
       rotation on the board (8.5) remains the observation of it.
-- [ ] 8.3 Lay out wallpaper, Home and dock, Drawer, shade, Settings
+- [x] 8.3 Lay out wallpaper, Home and dock, Drawer, shade, Settings
       (including Wi-Fi and the theme chooser), notifications, the power sheet
       and the on-screen keyboard at 1232×568 without overlapping, off-screen or
       unreachable controls, with hit-testing matching. Add 1232×568 to the
@@ -187,6 +187,13 @@ complete them here against the panel's 1232×568 geometry as well as HDMI.
       chooser, the folder overlay and the shade with notifications belong to
       8.5; folder renaming under the 240 px keyboard hides the member tiles
       (the card cannot rise above the top band).
+      Done 2026-10-14: the drawer failure was a stale PNG. `git bisect` on
+      that test found `3a1a3e51`, which deliberately themed the drawer's
+      search field and did not refresh `docs/evidence/shell-responsive/
+      drawer-568x1232.png`; it is regenerated (README there). `cargo test
+      --no-fail-fast`: 573 passed, 0 failed. With every listed surface laid
+      out and reviewed at 1232×568 on the host, 8.3's own verification is
+      met; the native captures and the folder-rename limit stay with 8.5.
 - [x] 8.4 Make touch and the edge gestures (drawer, shade, overview) follow
       the rotated panel edges. Verify on the board with injected touch events
       (evidence class: injected) and record which gestures were exercised.
