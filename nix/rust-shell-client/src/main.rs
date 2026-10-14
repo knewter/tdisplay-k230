@@ -11,7 +11,7 @@ use k230_shell_rust::{
     configure_preserves_aspect, configure_size, frame_bytes, runtime_trace,
     home_grid, home_state,
     home_screen::{HomeAction, HomeScreen},
-    home_widgets,
+    home_widgets, keyboard_base,
     navigation::{self, DrawerAction, DrawerNavigation},
     pipewire_ipc,
     pointer_input::{self, PointerContact, POINTER_CONTACT_ID},
@@ -2270,6 +2270,24 @@ impl ShellClient {
         self.video_candidate = None;
     }
 
+    /// Re-reads the keyboard base's battery and key backlight preference for
+    /// the shade and Settings; both vanish from the view when the device does.
+    fn refresh_keyboard_base(&mut self) {
+        let (battery, key_backlight) = keyboard_base::read_view_state(
+            Path::new("/sys/class/power_supply"),
+            Path::new(keyboard_base::LED_ROOT),
+            &keyboard_base::preference_path(),
+        );
+        if battery != self.service_view.battery || key_backlight != self.service_view.key_backlight {
+            self.service_view.battery = battery;
+            self.service_view.key_backlight = key_backlight;
+            self.renderer.set_services(self.service_view.clone());
+            if matches!(self.route, Route::Shade | Route::Settings) {
+                self.dirty = true;
+            }
+        }
+    }
+
     fn refresh_route(&mut self, route: Route) {
         match route {
             // The Shade now carries the same brightness slider the
@@ -2279,10 +2297,12 @@ impl ShellClient {
             // alone -- so an external change (or the other sheet's own
             // drag) shows here as well (task: "sync the value").
             Route::Shade => {
+                self.refresh_keyboard_base();
                 self.submit_service(ServiceRequest::RefreshNotifications);
                 self.submit_service(ServiceRequest::RefreshSettings);
             }
             Route::Settings | Route::Power => {
+                self.refresh_keyboard_base();
                 self.submit_service(ServiceRequest::RefreshSettings);
             }
             _ => {}
@@ -2769,6 +2789,22 @@ impl ShellClient {
             PanelIntent::OpenWifi => {
                 let request = self.wifi_view.open();
                 self.submit_wifi(request);
+            }
+            PanelIntent::ToggleKeyBacklight => {
+                if let Some(on) = self.service_view.key_backlight {
+                    match keyboard_base::write_preference(&keyboard_base::preference_path(), !on) {
+                        Ok(()) => self.service_view.key_backlight = Some(!on),
+                        Err(error) => {
+                            self.log(&format!("key-backlight-preference-failed {error}"));
+                            self.service_view.message = Some(
+                                RecoveryState::ActionFailed
+                                    .message(Some(service_exit_label(self.route))),
+                            );
+                        }
+                    }
+                    self.renderer.set_services(self.service_view.clone());
+                    self.dirty = true;
+                }
             }
             PanelIntent::Request(request) => {
                 let accepted = self.submit_service(request.clone());
@@ -3659,6 +3695,7 @@ impl ShellClient {
             .is_none_or(|last| now.duration_since(last) >= home_widgets::battery::POLL_INTERVAL);
         if battery_due {
             self.battery_polled_at = Some(now);
+            self.refresh_keyboard_base();
             let state = home_widgets::battery::read_state(Path::new("/sys/class/power_supply"));
             if state != self.home.battery {
                 self.home.battery = state;

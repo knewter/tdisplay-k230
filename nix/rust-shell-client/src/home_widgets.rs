@@ -29,11 +29,12 @@ pub mod battery {
     /// dependency this crate does not otherwise pull in.
     pub const POLL_INTERVAL: Duration = Duration::from_secs(30);
 
-    #[derive(Clone, Debug, PartialEq, Eq)]
+    #[derive(Clone, Debug, Default, PartialEq, Eq)]
     pub enum BatteryState {
         /// No `power_supply` class device of type `Battery` exists at all --
         /// this board's current, real, everyday state (task: "there's
         /// currently NO battery device").
+        #[default]
         Absent,
         /// `capacity` (0-100) and `status` (e.g. "Charging"/"Discharging"/
         /// "Full"/"Not charging"/"Unknown") as the kernel reports them,

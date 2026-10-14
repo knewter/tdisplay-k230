@@ -413,6 +413,10 @@ pub const SETTINGS_ROW_GAP: f64 = 16.0;
 /// own doc already describes.
 pub const SETTINGS_ROW_COUNT: u32 = 5;
 pub const SETTINGS_POWER_CARD_H: f64 = 70.0;
+/// The keyboard base's Key backlight row, after Motion; present only while
+/// the base's LED exists (`ServiceView::key_backlight`), so the Power section
+/// below it moves down one row only then.
+pub const SETTINGS_KEY_BACKLIGHT_ROW: u32 = 5;
 
 pub fn settings_row_y(index: u32) -> f64 {
     SETTINGS_ROW_FIRST_Y + f64::from(index) * (SETTINGS_ROW_H + SETTINGS_ROW_GAP)
@@ -439,8 +443,8 @@ pub struct SettingsLayout {
     pub poweroff_bottom: f64,
 }
 
-pub fn settings_layout() -> SettingsLayout {
-    let rows_bottom = settings_rows_bottom(SETTINGS_ROW_COUNT);
+pub fn settings_layout(key_backlight: bool) -> SettingsLayout {
+    let rows_bottom = settings_rows_bottom(SETTINGS_ROW_COUNT + u32::from(key_backlight));
     let power_heading_y = rows_bottom + 22.0;
     let reboot_y = power_heading_y + 28.0;
     let poweroff_y = reboot_y + SETTINGS_POWER_CARD_H + SETTINGS_ROW_GAP;
@@ -1834,7 +1838,7 @@ fn settings_content_bottom(services: Option<&ServiceView>) -> f64 {
     if view.settings.is_none() {
         return EMPTY_BOTTOM;
     }
-    let mut bottom = settings_layout().poweroff_bottom;
+    let mut bottom = settings_layout(view.key_backlight.is_some()).poweroff_bottom;
     if view.confirmation.is_some() {
         bottom = settings_confirm_layout(bottom).bottom;
     }
@@ -2550,6 +2554,21 @@ fn scene(
                 15.0,
                 style.muted,
             );
+            // The keyboard base's battery, on the hint line's right; nothing
+            // at all when no `Battery` supply exists.
+            if let Some(view) = services {
+                if view.battery != crate::home_widgets::battery::BatteryState::Absent {
+                    text(
+                        cr,
+                        &crate::home_widgets::battery::format(&view.battery),
+                        w - 220.0,
+                        86.0,
+                        196.0,
+                        15.0,
+                        style.text,
+                    );
+                }
+            }
             let items = services.and_then(|view| view.notifications.as_ref());
             let count = items.map_or(0, |snapshot| snapshot.count);
             text(
@@ -2974,6 +2993,14 @@ fn scene(
                         style.muted,
                     );
                 }
+                // Key backlight row (keyboard base): only while its LED exists.
+                if let Some(on) = services.and_then(|view| view.key_backlight) {
+                    let y = settings_row_y(SETTINGS_KEY_BACKLIGHT_ROW);
+                    service_card(cr, theme, "controls", 24.0, y, w - 48.0, SETTINGS_ROW_H, false);
+                    themed_medium(cr, theme, "body", "Key backlight", row_text_x, y + 15.0, row_text_width, 17.0, 14.0, 22.0, style.text);
+                    themed_text(cr, theme, "body", if on { "On" } else { "Off" }, row_text_x, y + 43.0, row_text_width, 19.0, 14.0, 24.0, style.text);
+                    themed_text(cr, theme, "caption", "Lights the keys while typing", row_text_x, y + 76.0, row_text_width, 14.0, 11.0, 18.0, style.muted);
+                }
             } else {
                 text(
                     cr,
@@ -2990,7 +3017,7 @@ fn scene(
             // Power heading/actions and the confirm dialog are positioned
             // relative to the row rhythm above (finding P0-4), not as
             // independent literals that stay correct only by coincidence.
-            let layout = settings_layout();
+            let layout = settings_layout(services.is_some_and(|view| view.key_backlight.is_some()));
             if services.and_then(|view| view.settings.as_ref()).is_some() {
                 text(
                     cr,
@@ -6009,7 +6036,9 @@ mod layout_tests {
         // values: the Volume row (task: "in Settings") added a fifth
         // settings row, cascading every value below it down by one row's
         // rhythm, same as `NOTIFICATION_TOP`'s own shift for the shade.
-        let layout = settings_layout();
+        let with_keys = settings_layout(true);
+        assert_eq!(with_keys.power_heading_y, 798.0 + 126.0);
+        let layout = settings_layout(false);
         assert_eq!(layout.power_heading_y, 798.0);
         assert_eq!(layout.reboot_y, 826.0);
         assert_eq!(layout.poweroff_y, 912.0);
@@ -7502,6 +7531,60 @@ mod tests {
         // list down once more, from 342 to 418) -- 431+76=507.
         let region = (507 * 568 * 4)..(527 * 568 * 4);
         assert!(normal[region.clone()] != failed[region]);
+    }
+
+    fn draw_view(route: Route, view: ServiceView) -> Vec<u8> {
+        let mut renderer = RendererCache::default();
+        renderer.set_services(view);
+        let mut frame = vec![0u8; 568 * 1232 * 4];
+        renderer
+            .draw(
+                &mut frame,
+                RenderParams { width: 568, height: 1232, route, progress: 1.0, scroll: 0.0 },
+                &[],
+            )
+            .unwrap();
+        frame
+    }
+
+    fn rows(frame: &[u8], top: usize, bottom: usize) -> &[u8] {
+        &frame[top * 568 * 4..bottom * 568 * 4]
+    }
+
+    #[test]
+    fn the_shade_shows_a_battery_line_only_when_a_battery_exists() {
+        use crate::home_widgets::battery::BatteryState;
+        let none = draw_view(Route::Shade, ServiceView::default());
+        let battery = |percent, status: &str| ServiceView {
+            battery: BatteryState::Present { percent, status: status.into() },
+            ..ServiceView::default()
+        };
+        let discharging = draw_view(Route::Shade, battery(64, "Discharging"));
+        let charging = draw_view(Route::Shade, battery(64, "Charging"));
+        // The battery text sits on the hint line (y 80..105); nothing else moves.
+        assert_ne!(rows(&none, 80, 105), rows(&discharging, 80, 105));
+        assert_ne!(rows(&discharging, 80, 105), rows(&charging, 80, 105), "charging mark");
+        assert_eq!(rows(&none, 0, 80), rows(&discharging, 0, 80));
+        assert_eq!(rows(&none, 105, 1232), rows(&discharging, 105, 1232));
+        let absent = ServiceView { battery: BatteryState::Absent, ..ServiceView::default() };
+        assert_eq!(none, draw_view(Route::Shade, absent), "Absent paints no battery element");
+    }
+
+    #[test]
+    fn settings_shows_the_key_backlight_row_only_when_the_led_exists() {
+        let view = |key_backlight| ServiceView {
+            settings: Some(crate::evidence_render::fixture_settings()),
+            key_backlight,
+            ..ServiceView::default()
+        };
+        let top = settings_row_y(SETTINGS_KEY_BACKLIGHT_ROW) as usize;
+        let row = (top, top + SETTINGS_ROW_H as usize);
+        let absent = draw_view(Route::Settings, view(None));
+        let on = draw_view(Route::Settings, view(Some(true)));
+        let off = draw_view(Route::Settings, view(Some(false)));
+        assert_ne!(rows(&absent, row.0, row.1), rows(&on, row.0, row.1));
+        assert_ne!(rows(&on, row.0, row.1), rows(&off, row.0, row.1), "On differs from Off");
+        assert_eq!(rows(&absent, 0, row.0), rows(&on, 0, row.0), "rows above are untouched");
     }
 
     fn audio_view_with_one_sink(percent: u8, muted: bool) -> ServiceView {

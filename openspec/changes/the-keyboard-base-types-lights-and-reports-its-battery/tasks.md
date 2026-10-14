@@ -150,10 +150,21 @@ host or QEMU result never ticks a board task.
   `w3isqi2b…`). Esc-as-back is in the keyboard-base service rather than a
   Sway binding, because a binding would take Esc from focused apps. It
   calls `card_shell back` only when no app has focus, with unit tests.
-- [ ] 6.3 Add the battery to the shade, and the keyboard backlight control to
+- [x] 6.3 Add the battery to the shade, and the keyboard backlight control to
   Settings, persisted under `/var/lib/k230`. Both are hidden when their device
   is absent. Proof (**host**): `cargo test` in `nix/rust-shell-client`, plus
   host renders with and without a fake `power_supply`/LED tree.
+  The shade reuses `home_widgets::battery`; Settings' "Key backlight" row is an
+  on/off preference that `keyboard_based.py` re-reads, so Off keeps the keys
+  dark. The preference is `/var/lib/k230-keyboard-base/key-backlight`, a
+  shell-owned directory beside `/var/lib/k230` (a child of the root-only 0700
+  directory would be unreachable to the `shell` user). Tests:
+  `keyboard_base::tests`, `render::tests::the_shade_shows_a_battery_line_only_when_a_battery_exists`,
+  `render::tests::settings_shows_the_key_backlight_row_only_when_the_led_exists`,
+  `service_ui::tests::the_key_backlight_row_is_tappable_only_when_the_led_exists`,
+  and `tests/test_keyboard_based.py` (preference off keeps the LED dark). Host
+  renders: `docs/evidence/keyboard-base/shell/host-renders/`. Not glass or board
+  evidence; 6.5 records that.
 - [x] 6.4 Add the `k230-battery-policy` service and its Nix options. Proof
   (**host**): state-machine tests covering 15%/5% once each, two readings at
   3%, the countdown, a cancel on charge, and disabled. `tests/test_battery_policy.py`

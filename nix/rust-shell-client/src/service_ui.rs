@@ -4,10 +4,11 @@
 use crate::{
     catalog::AppEntry,
     navigation::{self, list_top, GRID_BOTTOM_INSET},
+    home_widgets::battery::BatteryState,
     pipewire_ipc::GraphSnapshot,
     render::{
         settings_confirm_layout, settings_layout, settings_row_y, POWER_BUTTON_H, POWER_CANCEL_Y,
-        POWER_CONFIRM_Y, POWER_OFF_Y, POWER_REBOOT_Y, SETTINGS_POWER_CARD_H, SETTINGS_ROW_H,
+        POWER_CONFIRM_Y, POWER_OFF_Y, POWER_REBOOT_Y, SETTINGS_KEY_BACKLIGHT_ROW, SETTINGS_POWER_CARD_H, SETTINGS_ROW_H,
     },
     service_data::{
         ActionOutcome, ControlState, NotificationSnapshot, PowerAction, Priority, ServiceRequest,
@@ -57,6 +58,12 @@ pub struct ServiceView {
     /// nothing (mirrors `settings_error`'s own role for the k230-settings
     /// path).
     pub audio_error: Option<String>,
+    /// The keyboard base's fuel gauge for the shade; `Absent` hides the
+    /// battery text entirely (`keyboard_base`, `home_widgets::battery`).
+    pub battery: BatteryState,
+    /// `Some(preference)` only while the base's key backlight LED exists;
+    /// `None` hides Settings' Key backlight row and its tap.
+    pub key_backlight: Option<bool>,
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -194,6 +201,9 @@ pub enum PanelIntent {
     OpenWifi,
     Help(crate::help::Action),
     Request(ServiceRequest),
+    /// Flip the key backlight preference (a local file write, not a
+    /// `k230-settings` request; see `keyboard_base`).
+    ToggleKeyBacklight,
     ScrollNotifications(f64),
 }
 
@@ -948,7 +958,7 @@ pub fn panel_intent(
                 if Instant::now() >= confirm.expires_at {
                     return None;
                 }
-                let card_y = settings_confirm_layout(settings_layout().poweroff_bottom).card_y;
+                let card_y = settings_confirm_layout(settings_layout(view.key_backlight.is_some()).poweroff_bottom).card_y;
                 if (card_y..card_y + 110.0).contains(&end.1) {
                     return Some(PanelIntent::Request(if end.0 < w / 2.0 {
                         ServiceRequest::PowerCancel(confirm.token.clone())
@@ -962,7 +972,7 @@ pub fn panel_intent(
             // These ranges mirror the row rhythm `render.rs` paints the
             // Settings screen with (finding P0-4); call the same helpers
             // rather than repeating its literals, so the two cannot drift.
-            let layout = settings_layout();
+            let layout = settings_layout(view.key_backlight.is_some());
             if (settings_row_y(0)..settings_row_y(0) + 110.0).contains(&end.1) {
                 return Some(PanelIntent::OpenWifi);
             }
@@ -977,6 +987,13 @@ pub fn panel_intent(
                 && settings.keyboard.state == ControlState::Action
             {
                 return Some(PanelIntent::Request(ServiceRequest::KeyboardToggle));
+            }
+            if view.key_backlight.is_some()
+                && (settings_row_y(SETTINGS_KEY_BACKLIGHT_ROW)
+                    ..settings_row_y(SETTINGS_KEY_BACKLIGHT_ROW) + 110.0)
+                    .contains(&end.1)
+            {
+                return Some(PanelIntent::ToggleKeyBacklight);
             }
             if (layout.reboot_y..layout.reboot_y + SETTINGS_POWER_CARD_H).contains(&end.1)
                 && view.settings.is_some()
@@ -1612,6 +1629,21 @@ mod tests {
             1232,
             &unavailable
         ));
+    }
+
+    #[test]
+    fn the_key_backlight_row_is_tappable_only_when_the_led_exists() {
+        let view = |key_backlight| ServiceView {
+            settings: Some(crate::evidence_render::fixture_settings()),
+            key_backlight,
+            ..ServiceView::default()
+        };
+        let tap = (200.0, settings_row_y(SETTINGS_KEY_BACKLIGHT_ROW) + 20.0);
+        assert_eq!(
+            panel_intent(Route::Settings, tap, tap, 568, 1232, &view(Some(true))),
+            Some(PanelIntent::ToggleKeyBacklight)
+        );
+        assert_eq!(panel_intent(Route::Settings, tap, tap, 568, 1232, &view(None)), None);
     }
 
     #[test]

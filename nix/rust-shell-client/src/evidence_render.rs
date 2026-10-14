@@ -113,3 +113,57 @@ pub fn render_wallpaper(path: &Path, width: u32, height: u32) {
 pub fn render_route(path: &Path, width: u32, height: u32, route: Route, apps: &[AppEntry]) {
     render::export_png(path, width, height, route, apps).unwrap();
 }
+
+/// Renders `route` with the given service data through the same
+/// `RendererCache::draw` path the live client uses (unlike [`render_route`],
+/// which has no service data), so the shade and Settings show the battery and
+/// Key backlight rows exactly when `view` carries them.
+pub fn render_route_with_services(
+    path: &Path,
+    width: u32,
+    height: u32,
+    route: Route,
+    view: crate::service_ui::ServiceView,
+) {
+    let mut renderer = RendererCache::default();
+    renderer.set_services(view);
+    let mut canvas = vec![0u8; (width as usize) * (height as usize) * 4];
+    renderer
+        .draw(
+            &mut canvas,
+            render::RenderParams { width, height, route, progress: 1.0, scroll: 0.0 },
+            &[],
+        )
+        .unwrap();
+    let surface = unsafe {
+        ImageSurface::create_for_data_unsafe(
+            canvas.as_mut_ptr(),
+            Format::ARgb32,
+            width as i32,
+            height as i32,
+            (width * 4) as i32,
+        )
+    }
+    .unwrap();
+    let mut file = std::fs::File::create(path).unwrap();
+    surface.write_to_png(&mut file).unwrap();
+}
+
+/// A loaded Settings snapshot with every row readable, for fixtures.
+pub fn fixture_settings() -> crate::service_data::SettingsSnapshot {
+    use crate::service_data::{Control, ControlState, ControlValue, SettingsSnapshot};
+    let control = |state, value, label: &str, detail: Option<&str>| Control {
+        state,
+        value,
+        label: label.into(),
+        detail: detail.map(Into::into),
+        action: None,
+    };
+    SettingsSnapshot {
+        network: control(ControlState::Action, None, "Wi-Fi", None),
+        brightness: control(ControlState::Writable, Some(ControlValue::Percent(60)), "Brightness", None),
+        keyboard: control(ControlState::Action, None, "On-screen keyboard", None),
+        motion: control(ControlState::ReadOnly, Some(ControlValue::Text("Full".into())), "Motion", None),
+        volume: crate::service_data::unknown_volume_placeholder(),
+    }
+}

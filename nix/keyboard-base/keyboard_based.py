@@ -6,7 +6,8 @@ receives every key. On key presses it:
 
 - hides the on-screen keyboard (wvkbd) if it is shown;
 - turns the key backlight on, and off again after an idle timeout or while
-  the panel is off;
+  the panel is off, and keeps it off while the Settings preference
+  (keyboard-base task 6.3) is off;
 - tracks Caps Lock and lights its LED;
 - with --escape-back, treats Esc as the shell's back action when no app has
   focus. Sway still delivers Esc to a focused app, because nothing is
@@ -39,12 +40,13 @@ class Policy:
     """Pure key/time policy; actions go through the injected callbacks."""
 
     def __init__(self, set_capslock, set_backlight, hide_osk, panel_on,
-                 idle_seconds=30.0, escape=None):
+                 idle_seconds=30.0, escape=None, backlight_enabled=None):
         self.set_capslock = set_capslock
         self.set_backlight = set_backlight
         self.hide_osk = hide_osk
         self.panel_on = panel_on
         self.escape = escape
+        self.backlight_enabled = backlight_enabled or (lambda: True)
         self.idle_seconds = idle_seconds
         self.caps = False
         self.backlight = False
@@ -67,13 +69,13 @@ class Policy:
             self.set_capslock(self.caps)
         elif code == KEY_ESC and self.escape:
             self.escape()
-        self._backlight(self.panel_on())
+        self._backlight(self.panel_on() and self.backlight_enabled())
 
     def tick(self, now):
         if not self.backlight:
             return
         idle = self.last_key is None or now - self.last_key >= self.idle_seconds
-        if idle or not self.panel_on():
+        if idle or not self.panel_on() or not self.backlight_enabled():
             self._backlight(False)
 
 
@@ -90,6 +92,18 @@ def find_device(name=NAME):
         if Path(path).read_text().strip() == name:
             return "/dev/input/" + path.split("/")[4]
     return None
+
+
+def backlight_preference(path):
+    """The Settings "Key backlight" choice; on unless the file says off.
+
+    Re-read on each use so a change in Settings applies at the next key press
+    or tick. The file is written by the shell client (`keyboard_base.rs`).
+    """
+    try:
+        return Path(path).read_text().strip() not in ("off", "0")
+    except OSError:
+        return True
 
 
 def write_led(name, on):
@@ -149,7 +163,8 @@ def run(args):
     policy = Policy(lambda on: write_led(args.capslock_led, on),
                     lambda on: write_led(args.backlight_led, on),
                     session.hide_osk, session.panel_on, args.idle_seconds,
-                    session.back_if_unfocused if args.escape_back else None)
+                    session.back_if_unfocused if args.escape_back else None,
+                    lambda: backlight_preference(args.backlight_pref))
     while True:
         dev = find_device()
         if dev is None:
@@ -181,6 +196,7 @@ def main():
     ap.add_argument("--osk-signal", default="k230-keyboard-gesture-signal")
     ap.add_argument("--capslock-led", default="k230:green:capslock")
     ap.add_argument("--backlight-led", default="k230::kbd_backlight")
+    ap.add_argument("--backlight-pref", default="/var/lib/k230-keyboard-base/key-backlight")
     ap.add_argument("--idle-seconds", type=float, default=30.0)
     ap.add_argument("--escape-back", action="store_true")
     args = ap.parse_args()

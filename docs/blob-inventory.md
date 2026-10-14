@@ -1790,6 +1790,14 @@ DATA  2c11206efc4b2a5bb0ec471f0ca738e1e3c8fb52e2d8d899d3b4b37c9765ef33  docs/evi
 DATA  b7e0c5fa9b1f9cb9e327d310bbeef5c05df6ea15c4103c3e6708a09b125cc463  docs/evidence/mainline-boot-splash/board/splash-at-uboot-before-kernel.jpg
 DATA  dc38dac11ae7f6129c9433fe43db56dbfdc01fd2e0d3c7fdc101e14fa129e43b  docs/evidence/mainline-boot-splash/board/unreserved-kernel-tear-film2-strip.jpg
 DATA  a6a8591d874042351b5785b57b87277c1af63eeb007045ebb220960a896a03e8  docs/evidence/second-core/linux-start-2026-10-12/cpu0-start.png
+DATA  aab13f607c4b3619325d2576befeedb078728927ef11e9445b1be12708915914  docs/evidence/keyboard-base/shell/host-renders/settings-with-base-1232x568.png
+DATA  12a205cf394df45ba3ef48e4418e4939928e7f0b9cdf199d90d33416fb5f649c  docs/evidence/keyboard-base/shell/host-renders/settings-with-base-568x1232.png
+DATA  aab13f607c4b3619325d2576befeedb078728927ef11e9445b1be12708915914  docs/evidence/keyboard-base/shell/host-renders/settings-without-base-1232x568.png
+DATA  8bf60ecef682bbd3096389c6fd385dd5bae0442ec0e8ff4ace14ac32a94abd9d  docs/evidence/keyboard-base/shell/host-renders/settings-without-base-568x1232.png
+DATA  9cbcf6aa00bfedb2b91a9119292ba3574126b8a956f8c4cc104b08d4f601422d  docs/evidence/keyboard-base/shell/host-renders/shade-with-base-1232x568.png
+DATA  f5b353a2e56808b422a389db46e05ba66942f180dfeac519812dc334d2e58711  docs/evidence/keyboard-base/shell/host-renders/shade-with-base-568x1232.png
+DATA  6e9cff6ab9efd7e6a2042b086e076dc65421ca2295ca6e529e2db7d66c301e11  docs/evidence/keyboard-base/shell/host-renders/shade-without-base-1232x568.png
+DATA  f3689f64b1d76d8cddaa38b41448d23af3191c499a3b84cbeee3ac123e5a4dc5  docs/evidence/keyboard-base/shell/host-renders/shade-without-base-568x1232.png
 ```
 
 `group:` rows stand for a directory whose members are enumerated by
@@ -3020,3 +3028,20 @@ in `docs/evidence/second-core/linux-start-2026-10-12/README.md`.
 | File | Bytes | Class | SHA256 |
 | --- | ---: | --- | --- |
 | `docs/evidence/second-core/linux-start-2026-10-12/cpu0-start.png` | 7734 | DATA | `a6a8591d874042351b5785b57b87277c1af63eeb007045ebb220960a896a03e8` |
+
+## Keyboard base shell host renders
+
+Host renders (Cairo, no compositor, no board) of the shade's battery line and
+Settings' Key backlight row, with and without a fake `power_supply`/LED tree.
+Command and limits: `docs/evidence/keyboard-base/shell/host-renders/README.md`.
+
+| Path | Bytes | Class | SHA-256 |
+| --- | ---: | --- | --- |
+| `docs/evidence/keyboard-base/shell/host-renders/settings-with-base-1232x568.png` | 26995 | DATA | `aab13f607c4b3619325d2576befeedb078728927ef11e9445b1be12708915914` |
+| `docs/evidence/keyboard-base/shell/host-renders/settings-with-base-568x1232.png` | 50463 | DATA | `12a205cf394df45ba3ef48e4418e4939928e7f0b9cdf199d90d33416fb5f649c` |
+| `docs/evidence/keyboard-base/shell/host-renders/settings-without-base-1232x568.png` | 26995 | DATA | `aab13f607c4b3619325d2576befeedb078728927ef11e9445b1be12708915914` |
+| `docs/evidence/keyboard-base/shell/host-renders/settings-without-base-568x1232.png` | 44523 | DATA | `8bf60ecef682bbd3096389c6fd385dd5bae0442ec0e8ff4ace14ac32a94abd9d` |
+| `docs/evidence/keyboard-base/shell/host-renders/shade-with-base-1232x568.png` | 24947 | DATA | `9cbcf6aa00bfedb2b91a9119292ba3574126b8a956f8c4cc104b08d4f601422d` |
+| `docs/evidence/keyboard-base/shell/host-renders/shade-with-base-568x1232.png` | 25853 | DATA | `f5b353a2e56808b422a389db46e05ba66942f180dfeac519812dc334d2e58711` |
+| `docs/evidence/keyboard-base/shell/host-renders/shade-without-base-1232x568.png` | 22805 | DATA | `6e9cff6ab9efd7e6a2042b086e076dc65421ca2295ca6e529e2db7d66c301e11` |
+| `docs/evidence/keyboard-base/shell/host-renders/shade-without-base-568x1232.png` | 23670 | DATA | `f3689f64b1d76d8cddaa38b41448d23af3191c499a3b84cbeee3ac123e5a4dc5` |

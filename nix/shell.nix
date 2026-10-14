@@ -1260,6 +1260,13 @@ in
     };
 
     users.groups.shell = { };
+
+    # The shell's Settings preferences for the keyboard base (the key
+    # backlight choice that shell-keyboard-base reads). A sibling of
+    # /var/lib/k230, not a child: that directory is root-only 0700 because it
+    # guards the Wi-Fi credential, so the unprivileged shell user could not
+    # traverse a subdirectory of it.
+    systemd.tmpfiles.rules = [ "d /var/lib/k230-keyboard-base 0700 shell shell -" ];
     users.users.shell = {
       isNormalUser = true;
       uid = 1000;

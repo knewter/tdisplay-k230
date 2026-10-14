@@ -60,6 +60,30 @@ class KeyboardBasePolicy(unittest.TestCase):
         p.tick(2.0)
         self.assertEqual(f.light, [False, True, False])
 
+    def test_backlight_stays_off_while_the_preference_is_off(self):
+        f = Fake(); enabled = [False]
+        p = kbd.Policy(f.caps.append, f.light.append, f.hide, lambda: True, 30, None,
+                       lambda: enabled[0])
+        p.key(KEY_A, 1, 0.0)
+        self.assertEqual(f.light, [False])  # typing does not light the keys
+        self.assertEqual(f.hidden, 1)       # but the other key handling still runs
+        enabled[0] = True
+        p.key(KEY_A, 1, 1.0)
+        self.assertEqual(f.light, [False, True])
+        enabled[0] = False
+        p.tick(2.0)                         # turned off in Settings mid-typing
+        self.assertEqual(f.light, [False, True, False])
+
+    def test_preference_file_reads_on_unless_it_says_off(self):
+        import tempfile
+        with tempfile.TemporaryDirectory() as d:
+            path = Path(d) / "key-backlight"
+            self.assertTrue(kbd.backlight_preference(path))  # missing: default on
+            path.write_text("off\n")
+            self.assertFalse(kbd.backlight_preference(path))
+            path.write_text("on\n")
+            self.assertTrue(kbd.backlight_preference(path))
+
     def test_every_press_hides_the_on_screen_keyboard(self):
         f = Fake(); p = f.policy()
         p.key(KEY_A, 1, 0.0); p.key(KEY_A, 0, 0.1); p.key(KEY_A, 2, 0.2)
