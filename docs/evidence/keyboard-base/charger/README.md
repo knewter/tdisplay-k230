@@ -13,9 +13,7 @@ matches the probe's raw registers.
 
 ## Not yet covered
 
-- **Charger `online` with the cable physically out.** The unplug below
-  predates the charger node, and the Hi-Z run further down sets `online=0`
-  from software. A real cable-out `online=0` is still owed (task 5.3).
+Nothing for task 5.3; the cable-out `online` reading is at the end.
 
 ## Unplug and replug (2026-10-13 22:17–22:32 CDT)
 
@@ -116,3 +114,13 @@ Before `bq27xxx-bq27220-status.patch` the gauge said `Full` in both
 directions (unplug log above). This run used Hi-Z, not a pulled cable, so it
 proves the status mapping and the charger's `online` reporting, not the
 cable-out `online` reading.
+
+## Cable out with the charger bound (2026-10-14; board-read)
+
+`cable-out-2026-10-14.log`, 05:11:14–05:11:19 UTC, system `9lp7f072…`. The
+operator pulled USB-C and reported it; the samples were read over SSH
+afterwards.
+
+- Charger: `online` 0, `Discharging`; REG00 0x7f (EN_HIZ clear, so this is
+  the cable, not Hi-Z), REG0B 0x02 (no input), REG11 0x00 (no VBUS).
+- Gauge: `Discharging`, -394 to -491 mA, 4.118 → 4.093 V, 100 %.

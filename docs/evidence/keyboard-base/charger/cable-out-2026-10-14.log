@@ -1,0 +1,3 @@
+2026-10-14T05:11:14Z chg_online=0 chg_status=Discharging reg00=0x7f reg0b=0x02 reg11=0x00 gauge_status=Discharging gauge_uA=-394000 gauge_uV=4118000 cap=100
+2026-10-14T05:11:16Z chg_online=0 chg_status=Discharging reg00=0x7f reg0b=0x02 reg11=0x00 gauge_status=Discharging gauge_uA=-491000 gauge_uV=4094000 cap=100
+2026-10-14T05:11:19Z chg_online=0 chg_status=Discharging reg00=0x7f reg0b=0x02 reg11=0x00 gauge_status=Discharging gauge_uA=-437000 gauge_uV=4093000 cap=100

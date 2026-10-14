@@ -129,7 +129,7 @@ host or QEMU result never ticks a board task.
   `bq25890-poll-without-irq.patch` polls the IRQ handler every 2 s when no
   interrupt is given, and the board logs `no interrupt; polling every 2000 ms`.
   Closing this without the line needs the operator's scope decision.
-- [ ] 5.3 On the board, record:
+- [x] 5.3 On the board, record:
   - `power_supply` `capacity`, `status`, `voltage_now` and `current_now`;
   - the charger's `online` value, cable in and cable out;
   - the charger registers before and after binding, unchanged except for the
@@ -139,9 +139,10 @@ host or QEMU result never ticks a board task.
   Partial 2026-10-14: gauge capacity, status, voltage and current on USB, on
   battery (cable out, about -405 mA) and in charger Hi-Z (`Discharging`, then
   `Charging` once restored); charger `online` 1 with the cable in and 0 in
-  Hi-Z; registers before and after bind, only REG02 CONV_RATE changed. Open:
-  the charger's `online` with the cable physically out (the unplug predates
-  the charger node).
+  Hi-Z; registers before and after bind, only REG02 CONV_RATE changed.
+  Done 2026-10-14: with the cable physically out (operator), the charger read
+  `online` 0, `Discharging`, no VBUS, EN_HIZ clear; the gauge `Discharging`
+  at about -400 mA (`cable-out-2026-10-14.log`).
 - [x] 5.4 If 1.2 found a DRV2605, add its node and `INPUT_DRV260X_HAPTICS`,
   and record its input device appearing (**board-read**). Otherwise record
   "not fitted" and close the task. Not fitted: 0x5A did not answer
