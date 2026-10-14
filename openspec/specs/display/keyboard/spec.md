@@ -7,7 +7,9 @@ Make the keyboard base's physical keys, Caps Lock light and key backlight usable
 
 ### Requirement: The system finds the keyboard base without writing to it
 
-<!-- Grounded for the attached case: tools/keyboard-base-probe.sh on 2026-10-13 found 0x20, 0x34, 0x38, 0x55 and 0x6B on hardware I2C4 (IO46/IO47) with reads only (docs/evidence/keyboard-base/probe/). UNVERIFIED: the base-absent scenario has not been booted. -->
+<!-- UNVERIFIED: the base-absent scenario has not been booted. -->
+*Grounding: Grounded for the attached case: tools/keyboard-base-probe.sh on 2026-10-13 found 0x20, 0x34, 0x38, 0x55 and 0x6B on hardware I2C4 (IO46/IO47) with reads only (docs/evidence/keyboard-base/probe/).*
+
 The system SHALL establish which keyboard-base chips answer, at which I2C address and over which bus, by a read-only probe recorded before any driver is bound to them. The probe SHALL NOT write a register of any keyboard-base chip. The system owns this requirement; stage 1 is unchanged.
 
 #### Scenario: The base is attached
@@ -22,7 +24,8 @@ The system SHALL establish which keyboard-base chips answer, at which I2C addres
 
 ### Requirement: The base's keys type into the focused application
 
-<!-- The legend and Shift tables come from LILYGO `ui_hardware.c` `tca8418_key_name()` and `extension_keyboard_shift_symbol_for_code()`. Board-read evtest and evemu recordings, and the operator typing on the base 2026-10-13/14 (docs/evidence/keyboard-base/keys/); the operator waived a per-key recording. -->
+*Grounding: The legend and Shift tables come from LILYGO `ui_hardware.c` `tca8418_key_name()` and `extension_keyboard_shift_symbol_for_code()`. Board-read evtest and evemu recordings, and the operator typing on the base 2026-10-13/14 (docs/evidence/keyboard-base/keys/); the operator waived a per-key recording.*
+
 Pressing a key on the base SHALL deliver the character or action printed on it to the focused application through the shell's normal keyboard path. Shift SHALL produce the symbol the vendor layout assigns to that key. Holding a key SHALL repeat it. A USB or Bluetooth keyboard attached at the same time SHALL keep its own layout.
 
 #### Scenario: Typing a command
@@ -42,7 +45,8 @@ Pressing a key on the base SHALL deliver the character or action printed on it t
 
 ### Requirement: The key backlight is a controllable light
 
-<!-- IO52/PWM4 comes from LILYGO `HARDWARE_PINMAP.md` and `ui_hardware.c`. Board 2026-10-14: the ported K230 PWM driver dims it; the operator saw the levels dim and 0 go dark (docs/evidence/keyboard-base/backlight/). -->
+*Grounding: IO52/PWM4 comes from LILYGO `HARDWARE_PINMAP.md` and `ui_hardware.c`. Board 2026-10-14: the ported K230 PWM driver dims it; the operator saw the levels dim and 0 go dark (docs/evidence/keyboard-base/backlight/).*
+
 The system SHALL expose the key backlight as a Linux LED device named with the `kbd_backlight` suffix. The shell SHALL turn it on when a key is pressed, turn it off after a configurable idle period without key presses, and keep it off while the panel is off. A person SHALL be able to choose its level, or turn it off entirely, in Settings. Without a PWM driver the only levels SHALL be on and off; with the K230 PWM driver the LED SHALL dim.
 
 #### Scenario: Typing in the dark
