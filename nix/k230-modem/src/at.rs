@@ -23,6 +23,12 @@ pub fn redact_command(cmd: &str) -> String {
 /// their status but lose the tracking area and cell id (a coarse location),
 /// and identity answers (IMEI, IMSI, ICCID, own number) are withheld.
 pub fn redact_line(l: &str) -> String {
+    // An echo the engine did not recognise as its own (case or spacing
+    // differs) must not carry a PIN or number into the log either.
+    let echo = redact_command(l.trim_start());
+    if echo != l.trim_start() {
+        return echo;
+    }
     if let Some(r) = l.strip_prefix("+CEREG:") {
         let f = split_fields(r);
         // `<n>,<stat>,...` (read form, numeric second field) or `<stat>,...`.
@@ -207,6 +213,8 @@ mod tests {
         assert_eq!(redact_command("at+cpin=\"4829\",\"0000\""), "at+cpin=<redacted>");
         assert_eq!(redact_command("AT+CMGS=\"+15555550100\""), "AT+CMGS=<redacted>");
         assert_eq!(redact_command("AT+CPIN?"), "AT+CPIN?");
+        // An echo that differs from what was sent is still redacted.
+        assert_eq!(redact_line(" at+cpin=\"4829\""), "at+cpin=<redacted>");
     }
 
     #[test]

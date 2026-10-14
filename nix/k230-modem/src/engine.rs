@@ -262,7 +262,7 @@ impl Modem {
             }
             return true;
         }
-        self.log(&format!("< {}", redact_line(&l)));
+        self.log(&format!("< {}", redact_line(l)));
         if let Some(r) = l.strip_prefix("+CEREG:") {
             self.on_cereg(r);
         } else if let Some(r) = l.strip_prefix("+COPS:") {
@@ -624,6 +624,8 @@ impl Modem {
         let t = self.timeouts.short;
         let r = self.exec(&cmd, t);
         drop(cmd);
+        // `last_sent` is only for echo matching; keep no copy of the PIN.
+        self.last_sent.clear();
         match &r {
             Ok(_) => self.state.last_error = None,
             Err(AtError::Cme(c)) if c == "16" => self.state.last_error = Some("pin_rejected".into()),
@@ -643,7 +645,14 @@ impl Modem {
     pub fn send_sms(&mut self, number: &str, body: &str) -> Result<(), AtError> {
         let t = self.timeouts.short;
         self.send_cmd(&format!("AT+CMGS=\"{number}\""))?;
-        self.collect(t, true)?;
+        if let Err(e) = self.collect(t, true) {
+            // No prompt in time: the modem may still be waiting for a body
+            // and would swallow the next commands. Esc cancels the entry.
+            if e == AtError::Timeout {
+                let _ = self.link.send(&[0x1b]);
+            }
+            return Err(e);
+        }
         let mut payload = body.as_bytes().to_vec();
         payload.push(0x1a);
         self.link.send(&payload)?;

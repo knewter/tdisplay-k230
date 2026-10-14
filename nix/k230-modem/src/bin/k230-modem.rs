@@ -149,7 +149,10 @@ impl App {
             return;
         }
         if !self.gate.permit(Instant::now()) {
+            // Try again when the gate opens, not every 5 s: a dead modem
+            // would otherwise log this line twelve times a minute.
             eprintln!("k230-modem: recovery suppressed (one per minute)");
+            self.next_recover_try = Instant::now() + Duration::from_secs(60);
             return;
         }
         eprintln!("k230-modem: power-cycling the modem after: {why}");

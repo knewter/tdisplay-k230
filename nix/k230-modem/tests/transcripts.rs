@@ -266,6 +266,19 @@ fn a_timeout_is_an_error_and_counts_toward_recovery() {
 }
 
 #[test]
+fn an_sms_prompt_that_never_comes_is_cancelled_with_esc() {
+    // Left alone, a modem still waiting for a body would swallow the next
+    // commands as message text.
+    let mut r = rig("
+> AT+CMGS=\"+15555550100\"
+!
+>> ^[
+");
+    assert_eq!(r.modem.send_sms("+15555550100", "hi"), Err(AtError::Timeout));
+    assert!(r.h.script_done());
+}
+
+#[test]
 fn power_on_that_never_answers_cuts_the_power_again() {
     // No Ready, and three silent probes.
     let mut r = rig("
@@ -472,7 +485,7 @@ fn turning_location_off_stops_gnss_and_powers_down() {
 
 #[test]
 fn unexpected_ready_while_on_flags_a_restart() {
-    let t = format!("{POWER_ON}");
+    let t = POWER_ON.to_string();
     let mut r = rig(&t);
     r.modem.power_on().unwrap();
     r.h.push_rx("Ready");

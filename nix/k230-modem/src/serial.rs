@@ -20,7 +20,7 @@ fn cvt(r: libc::c_int) -> io::Result<libc::c_int> {
 }
 
 fn wait(fd: RawFd, events: i16, timeout: Duration) -> io::Result<bool> {
-    let ms = timeout.as_millis().min(i32::MAX as u128) as i32 + i32::from(timeout.subsec_nanos() % 1_000_000 != 0);
+    let ms = timeout.as_millis().min(i32::MAX as u128) as i32 + i32::from(!timeout.subsec_nanos().is_multiple_of(1_000_000));
     let mut p = libc::pollfd { fd, events, revents: 0 };
     // SAFETY: p is a valid pollfd for one descriptor.
     let n = unsafe { libc::poll(&mut p, 1, ms) };
