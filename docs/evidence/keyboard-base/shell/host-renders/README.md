@@ -24,7 +24,9 @@ The example builds two temporary trees and reads them with
 | `settings-with-base-*` | a Key backlight row ("On", "Lights the keys while typing") before Power |
 | `settings-without-base-*` | no Key backlight row; Power section one row higher |
 
-Each exists at `568x1232` (portrait) and `1232x568` (landscape). The Settings
+Each exists at `568x1232` (portrait) and `1232x568` (landscape). The two landscape Settings renders are byte-identical:
+at 1232x568 the Key backlight row falls below the panel edge, as it does on
+the board (`../board/README.md`), so only the portrait pair shows the row. The Settings
 data is a fixture (`evidence_render::fixture_settings`), the Volume row reads
 "No audio device found" because no PipeWire graph is attached, and the grey
 band under the panel is the empty area below the sheet.

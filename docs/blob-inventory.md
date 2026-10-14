@@ -1798,6 +1798,9 @@ DATA  9cbcf6aa00bfedb2b91a9119292ba3574126b8a956f8c4cc104b08d4f601422d  docs/evi
 DATA  f5b353a2e56808b422a389db46e05ba66942f180dfeac519812dc334d2e58711  docs/evidence/keyboard-base/shell/host-renders/shade-with-base-568x1232.png
 DATA  6e9cff6ab9efd7e6a2042b086e076dc65421ca2295ca6e529e2db7d66c301e11  docs/evidence/keyboard-base/shell/host-renders/shade-without-base-1232x568.png
 DATA  f3689f64b1d76d8cddaa38b41448d23af3191c499a3b84cbeee3ac123e5a4dc5  docs/evidence/keyboard-base/shell/host-renders/shade-without-base-568x1232.png
+DATA  6c17a39b1e712ed00ad8bfd58a1b25898683ea60b202dadd98a0445fb4c28ac8  docs/evidence/keyboard-base/shell/board/settings-landscape-drag-injected.png
+DATA  6c17a39b1e712ed00ad8bfd58a1b25898683ea60b202dadd98a0445fb4c28ac8  docs/evidence/keyboard-base/shell/board/settings-landscape-grim.png
+DATA  b41da29af5be0df5d36eba405099ca982ca77038b201c19221cb770800f13f0b  docs/evidence/keyboard-base/shell/board/shade-landscape-grim.png
 ```
 
 `group:` rows stand for a directory whose members are enumerated by
@@ -3045,3 +3048,6 @@ Command and limits: `docs/evidence/keyboard-base/shell/host-renders/README.md`.
 | `docs/evidence/keyboard-base/shell/host-renders/shade-with-base-568x1232.png` | 25853 | DATA | `f5b353a2e56808b422a389db46e05ba66942f180dfeac519812dc334d2e58711` |
 | `docs/evidence/keyboard-base/shell/host-renders/shade-without-base-1232x568.png` | 22805 | DATA | `6e9cff6ab9efd7e6a2042b086e076dc65421ca2295ca6e529e2db7d66c301e11` |
 | `docs/evidence/keyboard-base/shell/host-renders/shade-without-base-568x1232.png` | 23670 | DATA | `f3689f64b1d76d8cddaa38b41448d23af3191c499a3b84cbeee3ac123e5a4dc5` |
+| `docs/evidence/keyboard-base/shell/board/settings-landscape-drag-injected.png` | 22145 | DATA | `6c17a39b1e712ed00ad8bfd58a1b25898683ea60b202dadd98a0445fb4c28ac8` |
+| `docs/evidence/keyboard-base/shell/board/settings-landscape-grim.png` | 22145 | DATA | `6c17a39b1e712ed00ad8bfd58a1b25898683ea60b202dadd98a0445fb4c28ac8` |
+| `docs/evidence/keyboard-base/shell/board/shade-landscape-grim.png` | 18440 | DATA | `b41da29af5be0df5d36eba405099ca982ca77038b201c19221cb770800f13f0b` |

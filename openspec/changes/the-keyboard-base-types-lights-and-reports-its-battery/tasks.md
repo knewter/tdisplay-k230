@@ -165,6 +165,11 @@ host or QEMU result never ticks a board task.
   and `tests/test_keyboard_based.py` (preference off keeps the LED dark). Host
   renders: `docs/evidence/keyboard-base/shell/host-renders/`. Not glass or board
   evidence; 6.5 records that.
+  Board (**board-read**, native `grim`, 2026-10-14): the landscape shade shows
+  "100% - Full" from the real gauge, in
+  `docs/evidence/keyboard-base/shell/board/`. In landscape the Key backlight row
+  sits below the panel edge and Settings does not scroll (injected drag); that
+  predates this task and is tracked by landscape task 8.3.
 - [x] 6.4 Add the `k230-battery-policy` service and its Nix options. Proof
   (**host**): state-machine tests covering 15%/5% once each, two readings at
   3%, the countdown, a cancel on charge, and disabled. `tests/test_battery_policy.py`
@@ -178,6 +183,10 @@ host or QEMU result never ticks a board task.
   - Home's Battery widget leaving its "no battery info" state.
 
   Store all of it in `docs/evidence/keyboard-base/shell/`.
+  Partial 2026-10-14: the shade's battery line, native capture in
+  `docs/evidence/keyboard-base/shell/board/`. Open: the Settings row on the
+  board (unreachable in landscape until landscape task 8.3), the key press
+  hiding the on-screen keyboard, the LILYGO-key flow, and Home's widget.
 - [ ] 6.6 Exercise the low-battery policy on the board with the thresholds
   raised temporarily through a `/run` override, so a real discharge crosses
   them. Record the notifications, the countdown, the cable cancel, and one
