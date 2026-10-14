@@ -220,6 +220,8 @@ host or QEMU result never ticks a board task.
   `off` then `on`) in `docs/evidence/keyboard-base/shell/board/`. The operator
   reports LILYGO opens the drawer. Open: camera frames, the key press hiding
   the on-screen keyboard, and Home's widget.
+  2026-10-14: Home's Battery widget reads 100 % on the board (native
+  capture `home-battery-widget.png`, widget added to a test layout).
 - [ ] 6.6 Exercise the low-battery policy on the board with the thresholds
   raised temporarily through a `/run` override, so a real discharge crosses
   them. Record the notifications, the countdown, the cable cancel, and one

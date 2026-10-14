@@ -157,9 +157,8 @@ the first seconds while backgrounds load; the earlier 2 s capture shows it and
 was not kept. Home itself is `board/installed-home.png` and
 `board/installed-home-output-turn.png` above.
 
-Still owed for task 8.5: the folder overlay and on-screen keyboard as native
-captures on the installed image, and a camera frame from the keyboard side
-(the bench webcam currently sits at glass level and cannot read the panel).
+Still owed for task 8.5: a camera frame from the keyboard side (the bench
+webcam currently sits at glass level and cannot read the panel).
 
 ## Operator real-glass pass (task 8.6), 2026-10-14
 
@@ -168,3 +167,29 @@ on the keyboard base and return Home by finger (Drawer, Shade and the card
 overview were already reported 2026-10-13), the operator reported: "real
 finger check worked fine". Evidence class: operator report, real glass; no
 camera frame.
+
+## Folder, Home widgets and the on-screen keyboard (2026-10-14 05:20–05:32 UTC)
+
+For these captures `~shell/.local/state/k230-shell/home.json` was backed up
+and given a five-game folder and a Battery widget, then restored afterwards.
+
+- `board/installed-home-folder-battery-widget.png` (system `9lp7f072…`,
+  05:26 UTC): Home with Clock, Video, the `Games` folder and Battery (100 %).
+- `board/installed-folder-open-injected.png`: the folder opened by an
+  injected tap; five members in one row of the wide overlay.
+- `board/installed-keyboard-before-fix-injected.png`: Drawer search focused
+  by an injected tap. The keyboard is 120 px tall, but the drawer stops its
+  grid ~200 px above it. The cause: wvkbd was started with `-H 240` only.
+  `-H` is its portrait height; on an output wider than tall it uses `-L`,
+  which defaulted to 120, while the shell and the compositor reserve
+  `keyboardHeight` (240) plus the 56 px grip. The faint folder behind the
+  translucent drawer is from the previous capture.
+- `board/installed-keyboard-injected.png` (system `s53ywx90…`, 05:32 UTC):
+  after `nix/shell.nix` passes `-L` with the same value. wvkbd runs as
+  `wvkbd-mobintl -H 240 -L 240`, the keyboard and its grip fill exactly the
+  reserved band, and the drawer grid ends at the grip.
+
+The same change gives a landscape HDMI monitor under the portrait profile a
+keyboard of `keyboardHeight` (400) instead of 120, matching what the shell
+and compositor already reserved there; that is not yet seen on a monitor
+(task 8.7).

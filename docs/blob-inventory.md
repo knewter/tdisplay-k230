@@ -1597,7 +1597,7 @@ DATA b5c553f6b0d419371460c005b7aaaff96ffce504794591f336e113fb3f688b5e docs/evide
 DATA group:20-files docs/evidence/shell-polish/{before,after}/*.png matched production host paints with real pinned dark/light appearances, synthetic services, and no board claim
 DATA group:2-files docs/evidence/theme-picker/row-repaint/pair/*.png native scale-0.6 board captures after injected-input timing; not real-finger acceptance
 DATA group:16-files docs/evidence/shell-responsive/*.png host renders (render_responsive_evidence example) of Home/Drawer/Settings/wallpaper at 568x1232, 768x1024, 1080x1920 and 1920x1080 for the-shell-adapts-to-output-resolution
-DATA group:36-files docs/evidence/panel-landscape/**/*.{png,jpg} landscape panel: host renders (Wi-Fi pages, theme chooser, open folder, shade with notifications), native board captures (CLI-opened and injected-touch, trial and installed image), one bench camera frame; not real-finger acceptance
+DATA group:40-files docs/evidence/panel-landscape/**/*.{png,jpg} landscape panel: host renders (Wi-Fi pages, theme chooser, open folder, shade with notifications), native board captures (CLI-opened and injected-touch, trial and installed image), one bench camera frame; not real-finger acceptance
 
 DATA 3972517849acf787538122127db17d5a4875a82a53cdba427ee25d5d16629af4 docs/evidence/the-touchscreen-becomes-an-hdmi-trackpad/board/pointer-drawer.jpg
 DATA 94c4c7ee5068f9a2eadc959ca4c4110eef3b6c64960b990f8768e05487708322 docs/evidence/the-touchscreen-becomes-an-hdmi-trackpad/board/pointer-calculator.jpg
@@ -1808,6 +1808,7 @@ DATA  6c17a39b1e712ed00ad8bfd58a1b25898683ea60b202dadd98a0445fb4c28ac8  docs/evi
 DATA  b41da29af5be0df5d36eba405099ca982ca77038b201c19221cb770800f13f0b  docs/evidence/keyboard-base/shell/board/shade-landscape-grim.png
 DATA  58829059cff1e99ef81e09d252af7c7203d0957336c79c764d56f90eda1dd9a5  docs/evidence/keyboard-base/shell/board/settings-key-backlight-off-injected.png
 DATA  6e52317412dd88c019d15fa08558b59ce63bf68c5b7656d206ba1179c7f48a91  docs/evidence/keyboard-base/shell/board/settings-three-column-grim.png
+DATA  35392bb82d2662916a720b29ebeb5594de6d1490e040f07686ad69b8aab7a726  docs/evidence/keyboard-base/shell/board/home-battery-widget.png
 ```
 
 `group:` rows stand for a directory whose members are enumerated by
@@ -3060,6 +3061,7 @@ Command and limits: `docs/evidence/keyboard-base/shell/host-renders/README.md`.
 | `docs/evidence/keyboard-base/shell/board/shade-landscape-grim.png` | 18440 | DATA | `b41da29af5be0df5d36eba405099ca982ca77038b201c19221cb770800f13f0b` |
 | `docs/evidence/keyboard-base/shell/board/settings-key-backlight-off-injected.png` | 41533 | DATA | `58829059cff1e99ef81e09d252af7c7203d0957336c79c764d56f90eda1dd9a5` |
 | `docs/evidence/keyboard-base/shell/board/settings-three-column-grim.png` | 41476 | DATA | `6e52317412dd88c019d15fa08558b59ce63bf68c5b7656d206ba1179c7f48a91` |
+| `docs/evidence/keyboard-base/shell/board/home-battery-widget.png` | 309123 | DATA | `35392bb82d2662916a720b29ebeb5594de6d1490e040f07686ad69b8aab7a726` |
 | `docs/evidence/coherent-shell/notification-preview/banner-trusted-1232x568.png` | 27362 | DATA | `1858054405c18a6f9236793779eec16d900195d2ca0846814d8fb0a218037eb5` |
 | `docs/evidence/coherent-shell/notification-preview/banner-trusted-568x1232.png` | 44988 | DATA | `d30df0ee7fb7c7ae12264847173b10afbd83e0d6d41b7611c4cfa6f71f325980` |
 | `docs/evidence/coherent-shell/notification-preview/banner-unknown-1232x568.png` | 27324 | DATA | `b86059e9249f9018bbff16dba9557df0e59eba09b741fda9b61218d31d967ca2` |

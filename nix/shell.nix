@@ -774,7 +774,12 @@ let
         if [ -f "$visible_marker" ] && [ "$(cat "$visible_marker")" = show ]; then
           hidden_flag=()
         fi
+        # -L as well as -H: wvkbd picks -L whenever the output is wider than
+        # tall (the landscape panel, a landscape HDMI monitor) and otherwise
+        # falls back to its own 120 px, while the shell and the compositor
+        # reserve keyboardHeight (+ the grip) on every output.
         exec ${pkgs.wvkbd}/bin/wvkbd-mobintl -H ${toString cfg.keyboardHeight} \
+          -L ${toString cfg.keyboardHeight} \
           "''${hidden_flag[@]}" "''${color_args[@]}"
       fi
       ${pkgs.coreutils}/bin/sleep 0.1
@@ -962,7 +967,7 @@ let
 
     # ${toString cfg.keyboardHeight} px: with ten keys across 568 px each key is
     # ~57 px (4.4 mm) wide; rows of ~80 px are what a fingertip needs.
-    ${lib.optionalString (!cfg.coherentShell) "exec ${pkgs.wvkbd}/bin/wvkbd-mobintl -H ${toString cfg.keyboardHeight} --hidden"}
+    ${lib.optionalString (!cfg.coherentShell) "exec ${pkgs.wvkbd}/bin/wvkbd-mobintl -H ${toString cfg.keyboardHeight} -L ${toString cfg.keyboardHeight} --hidden"}
     exec ${themedFoot}/bin/k230-foot terminal
   '';
 in

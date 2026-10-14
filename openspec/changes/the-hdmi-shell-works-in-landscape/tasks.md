@@ -223,9 +223,12 @@ complete them here against the panel's 1232×568 geometry as well as HDMI.
       2026-10-14, installed image `9lp7f072…`: native captures of the
       Drawer, Settings, power sheet, Help, shade with four notifications,
       Wi-Fi, a saved network and the theme chooser (the last three opened by
-      injected taps), plus a focused terminal (`board/installed-*.png`). Open:
-      the folder overlay and on-screen keyboard on the installed image, and
-      the camera frame.
+      injected taps), plus a focused terminal (`board/installed-*.png`).
+      Then Home with a folder and the Battery widget, the open folder, and
+      the on-screen keyboard over Drawer search, which exposed and now
+      verifies a fix: wvkbd's landscape height (`-L`) was unset, so a 120 px
+      keyboard sat under a 296 px reservation (system `s53ywx90…`). Open: the
+      camera frame.
 - [x] 8.6 Operator real-glass check in the keyboard case: open Drawer, shade,
       Settings and an app, type on the keyboard, return Home. Record the
       operator's observation (physical: real glass). Hardware gate.
