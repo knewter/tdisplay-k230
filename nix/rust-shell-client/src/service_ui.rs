@@ -230,6 +230,62 @@ pub fn shade_panel_height(height: u32) -> f64 {
     let h = f64::from(height);
     (h * 0.65).max((NOTIFICATION_TOP + NOTIFICATION_ROW + 24.0).min(h))
 }
+/// Width of the wide Shade's left column (header, sliders); the notification
+/// list takes the rest of the landscape panel.
+pub const SHADE_WIDE_CONTROLS_W: f64 = 480.0;
+/// Top and bottom margins of the wide Shade's list, which now has the whole
+/// panel height to itself.
+pub const SHADE_WIDE_LIST_TOP: f64 = 24.0;
+
+/// Where the Shade's pieces sit. Portrait and HDMI outputs keep the single
+/// column (the controls over the list, which starts at `NOTIFICATION_TOP`);
+/// the landscape panel (`help::wide`) puts the controls in a left column and
+/// the notification list beside them at its full height, so several rows are
+/// reachable. `render.rs` paints and every hit-test reads from this one
+/// struct, so a tap and its paint cannot drift apart.
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct ShadeLayout {
+    pub wide: bool,
+    /// Width of the header and slider column (the whole panel when not wide).
+    pub controls_w: f64,
+    /// Screen x of the list's own origin; its cards sit 24 px inside it.
+    pub list_x: f64,
+    pub list_w: f64,
+    pub list_top: f64,
+    pub list_bottom: f64,
+}
+
+pub fn shade_layout(width: u32, height: u32) -> ShadeLayout {
+    let w = f64::from(width);
+    if crate::help::wide(width, height) {
+        ShadeLayout {
+            wide: true,
+            controls_w: SHADE_WIDE_CONTROLS_W,
+            list_x: SHADE_WIDE_CONTROLS_W,
+            list_w: w - SHADE_WIDE_CONTROLS_W,
+            list_top: SHADE_WIDE_LIST_TOP,
+            list_bottom: shade_panel_height(height) - 24.0,
+        }
+    } else {
+        ShadeLayout {
+            wide: false,
+            controls_w: w,
+            list_x: 0.0,
+            list_w: w,
+            list_top: NOTIFICATION_TOP,
+            list_bottom: shade_panel_height(height) - 24.0,
+        }
+    }
+}
+
+impl ShadeLayout {
+    /// Whether a touch at `pos` starts on the notification list's own region
+    /// (below its top and, when wide, right of the controls column).
+    pub fn in_list(&self, pos: (f64, f64)) -> bool {
+        pos.1 >= self.list_top && pos.0 >= self.list_x
+    }
+}
+
 /// The Shade's own slider band -- starts below the "Dismiss all" tap
 /// zone (`116.0..190.0`, `panel_intent`'s own Shade arm) so the two never
 /// overlap, and is at least `slider::TOUCH_TARGET_PX` tall.
@@ -395,8 +451,10 @@ pub fn drawer_close_candidate_after_scroll(candidate: bool, scroll: f64) -> bool
 /// may close the sheet. Anywhere on the panel qualifies, except on the
 /// notification list while it can still scroll further up: there the drag
 /// keeps scrolling the list, as it does today.
-pub fn shade_panel_close_zone(y: f64, height: u32, view: &ServiceView) -> bool {
-    if slider_band(Route::Shade, y, view) || volume_slider_band(Route::Shade, y, view) {
+pub fn shade_panel_close_zone(pos: (f64, f64), width: u32, height: u32, view: &ServiceView) -> bool {
+    let y = pos.1;
+    let in_controls = settings_slider_column_hit(Route::Shade, width, height, pos.0);
+    if in_controls && (slider_band(Route::Shade, y, view) || volume_slider_band(Route::Shade, y, view)) {
         // Owned entirely by the brightness or volume slider (task: "a
         // horizontal drag on the slider must not start a close drag") --
         // regardless of which way the touch actually moves, matching
@@ -404,11 +462,11 @@ pub fn shade_panel_close_zone(y: f64, height: u32, view: &ServiceView) -> bool {
         // band" rule.
         return false;
     }
-    if notification_index(y, height, view).is_none() {
+    if notification_index(pos, width, height, view).is_none() {
         return true;
     }
     let count = view.notifications.as_ref().map_or(0, |items| items.events.len());
-    view.notification_scroll >= notification_max_scroll(count, height) - 0.5
+    view.notification_scroll >= notification_max_scroll(count, width, height) - 0.5
 }
 
 /// Which routes' touches at `y` land on the shared brightness slider (the
@@ -757,17 +815,18 @@ impl NotificationSwipeSettle {
     }
 }
 
-pub fn notification_max_scroll(count: usize, height: u32) -> f64 {
-    let bottom = shade_panel_height(height) - 24.0;
-    (NOTIFICATION_TOP + count as f64 * NOTIFICATION_ROW - bottom).max(0.0)
+pub fn notification_max_scroll(count: usize, width: u32, height: u32) -> f64 {
+    let layout = shade_layout(width, height);
+    (layout.list_top + count as f64 * NOTIFICATION_ROW - layout.list_bottom).max(0.0)
 }
 
-fn notification_index(y: f64, height: u32, view: &ServiceView) -> Option<usize> {
-    if y < NOTIFICATION_TOP || y >= shade_panel_height(height) - 24.0 {
+fn notification_index(pos: (f64, f64), width: u32, height: u32, view: &ServiceView) -> Option<usize> {
+    let layout = shade_layout(width, height);
+    if pos.1 < layout.list_top || pos.1 >= layout.list_bottom || pos.0 < layout.list_x {
         return None;
     }
     let index =
-        ((y - NOTIFICATION_TOP + view.notification_scroll) / NOTIFICATION_ROW).floor() as usize;
+        ((pos.1 - layout.list_top + view.notification_scroll) / NOTIFICATION_ROW).floor() as usize;
     (index < view.notifications.as_ref()?.events.len()).then_some(index)
 }
 
@@ -780,7 +839,8 @@ pub fn notification_swipe_start(
 ) -> Option<NotificationSwipe> {
     let dx = current.0 - start.0;
     let dy = current.1 - start.1;
-    if start.0 < 24.0
+    let layout = shade_layout(width, height);
+    if start.0 < layout.list_x + 24.0
         || start.0 >= f64::from(width) - 24.0
         || dx.abs() <= SWIPE_START
         || dx.abs() <= dy.abs()
@@ -788,11 +848,11 @@ pub fn notification_swipe_start(
         return None;
     }
     let row_y =
-        (start.1 - NOTIFICATION_TOP + view.notification_scroll).rem_euclid(NOTIFICATION_ROW);
+        (start.1 - layout.list_top + view.notification_scroll).rem_euclid(NOTIFICATION_ROW);
     if row_y >= NOTIFICATION_ROW - 8.0 {
         return None;
     }
-    let row_index = notification_index(start.1, height, view)?;
+    let row_index = notification_index(start, width, height, view)?;
     let event = &view.notifications.as_ref()?.events[row_index];
     (event.dismissible && event.priority != Priority::Critical).then_some(NotificationSwipe {
         event_id: event.id,
@@ -824,11 +884,11 @@ pub fn notification_swipe_hit(
     if !notification_swipe_valid(view, swipe) {
         return false;
     }
-    let y = NOTIFICATION_TOP + swipe.row_index as f64 * NOTIFICATION_ROW - view.notification_scroll;
-    let bottom = shade_panel_height(height) - 24.0;
-    pos.1 >= y.max(NOTIFICATION_TOP)
-        && pos.1 < (y + NOTIFICATION_ROW - 8.0).min(bottom)
-        && pos.0 >= 24.0 + swipe.offset
+    let layout = shade_layout(width, height);
+    let y = layout.list_top + swipe.row_index as f64 * NOTIFICATION_ROW - view.notification_scroll;
+    pos.1 >= y.max(layout.list_top)
+        && pos.1 < (y + NOTIFICATION_ROW - 8.0).min(layout.list_bottom)
+        && pos.0 >= layout.list_x + 24.0 + swipe.offset
         && pos.0 < f64::from(width) - 24.0 + swipe.offset
 }
 
@@ -881,6 +941,8 @@ pub fn settings_wide_design_point(point: (f64, f64), key_backlight: bool) -> Opt
 pub fn settings_slider_frame(route: Route, width: u32, height: u32) -> (f64, f64) {
     if route == Route::Settings && crate::settings_wide(width, height) {
         (crate::SETTINGS_WIDE_ORIGIN_X, crate::SETTINGS_WIDE_COL_W)
+    } else if route == Route::Shade {
+        (0.0, shade_layout(width, height).controls_w)
     } else {
         (0.0, f64::from(width))
     }
@@ -890,9 +952,13 @@ pub fn settings_slider_frame(route: Route, width: u32, height: u32) -> (f64, f64
 /// volume row at all: always, except in the wide layout, where only column 0
 /// holds them (the same y band in columns 1 and 2 is Keyboard/Motion rows).
 pub fn settings_slider_column_hit(route: Route, width: u32, height: u32, x: f64) -> bool {
-    route != Route::Settings
-        || !crate::settings_wide(width, height)
-        || settings_wide_column(x) == 0
+    match route {
+        Route::Settings => !crate::settings_wide(width, height) || settings_wide_column(x) == 0,
+        // The wide Shade keeps its sliders in the left column; the same y
+        // band on the right is the notification list.
+        Route::Shade => x < shade_layout(width, height).controls_w,
+        _ => true,
+    }
 }
 
 /// Returns an intent only after the caller has paired a single real contact.
@@ -909,10 +975,13 @@ pub fn panel_intent(
     let w = f64::from(width);
     match route {
         Route::Shade => {
-            if start.1 < OVERLAY_DISMISS_ZONE_Y && dy < OVERLAY_DISMISS_DY {
+            let layout = shade_layout(width, height);
+            // The wide Shade's list starts at the panel's top, beside the
+            // controls: an upward drag there scrolls the list, not Hide.
+            if start.1 < OVERLAY_DISMISS_ZONE_Y && dy < OVERLAY_DISMISS_DY && !layout.in_list(start) {
                 return Some(PanelIntent::Hide);
             }
-            if let Some(index) = notification_index(start.1, height, view) {
+            if let Some(index) = notification_index(start, width, height, view) {
                 let event = &view.notifications.as_ref()?.events[index];
                 if dy.abs() > 22.0 {
                     return Some(PanelIntent::ScrollNotifications(-dy));
@@ -936,11 +1005,12 @@ pub fn panel_intent(
             if dx.abs() > 18.0 || dy.abs() > 18.0 {
                 return None;
             }
-            if end.1 < 112.0 && end.0 > w - 180.0 {
+            if end.1 < 112.0 && end.0 > layout.controls_w - 180.0 && end.0 < layout.controls_w {
                 return Some(PanelIntent::OpenSettings);
             }
             if (116.0..190.0).contains(&end.1)
-                && end.0 > w - 180.0
+                && end.0 > layout.controls_w - 180.0
+                && end.0 < layout.controls_w
                 && view
                     .notifications
                     .as_ref()
@@ -1475,8 +1545,8 @@ mod tests {
         };
         let empty = ServiceView::default();
         // Header, quick controls and an empty list area all close.
-        assert!(shade_panel_close_zone(60.0, 1232, &empty));
-        assert!(shade_panel_close_zone(452.0, 1232, &empty));
+        assert!(shade_panel_close_zone((300.0, 60.0), 568, 1232, &empty));
+        assert!(shade_panel_close_zone((300.0, 452.0), 568, 1232, &empty));
         // One notification: the list cannot scroll, so its row closes too.
         let one = ServiceView {
             notifications: Some(NotificationSnapshot {
@@ -1486,7 +1556,7 @@ mod tests {
             }),
             ..ServiceView::default()
         };
-        assert!(shade_panel_close_zone(452.0, 1232, &one));
+        assert!(shade_panel_close_zone((300.0, 452.0), 568, 1232, &one));
         // A long list that can still scroll keeps the drag as a scroll...
         let mut long = ServiceView {
             notifications: Some(NotificationSnapshot {
@@ -1496,13 +1566,13 @@ mod tests {
             }),
             ..ServiceView::default()
         };
-        assert!(!shade_panel_close_zone(452.0, 1232, &long));
+        assert!(!shade_panel_close_zone((300.0, 452.0), 568, 1232, &long));
         // ...until it is scrolled to its end.
-        long.notification_scroll = notification_max_scroll(8, 1232);
-        assert!(shade_panel_close_zone(452.0, 1232, &long));
+        long.notification_scroll = notification_max_scroll(8, 568, 1232);
+        assert!(shade_panel_close_zone((300.0, 452.0), 568, 1232, &long));
         // The header above the list always closes.
         long.notification_scroll = 0.0;
-        assert!(shade_panel_close_zone(60.0, 1232, &long));
+        assert!(shade_panel_close_zone((300.0, 60.0), 568, 1232, &long));
     }
 
     fn writable_volume_view() -> ServiceView {
@@ -1539,13 +1609,13 @@ mod tests {
             &view
         ));
         assert!(volume_slider_band(Route::Shade, SHADE_VOLUME_TOP + 10.0, &view));
-        assert!(!shade_panel_close_zone(SHADE_VOLUME_TOP + 10.0, 1232, &view));
+        assert!(!shade_panel_close_zone((300.0, SHADE_VOLUME_TOP + 10.0), 568, 1232, &view));
         // The brightness band just above it is also still excluded, with
         // both sliders present at once.
-        assert!(!shade_panel_close_zone(SHADE_SLIDER_TOP + 10.0, 1232, &view));
+        assert!(!shade_panel_close_zone((300.0, SHADE_SLIDER_TOP + 10.0), 568, 1232, &view));
         let below = SHADE_VOLUME_TOP + SHADE_VOLUME_H + 40.0;
         assert!(!volume_slider_band(Route::Shade, below, &view));
-        assert!(shade_panel_close_zone(below, 1232, &view));
+        assert!(shade_panel_close_zone((300.0, below), 568, 1232, &view));
         // No default sink reported yet: the band must not steal gestures
         // from the placeholder text `render.rs` draws there instead.
         let unavailable = writable_brightness_view();
@@ -1554,9 +1624,7 @@ mod tests {
             SHADE_VOLUME_TOP + 10.0,
             &unavailable
         ));
-        assert!(shade_panel_close_zone(
-            SHADE_VOLUME_TOP + 10.0,
-            1232,
+        assert!(shade_panel_close_zone((300.0, SHADE_VOLUME_TOP + 10.0), 568, 1232,
             &unavailable
         ));
     }
@@ -1668,22 +1736,20 @@ mod tests {
         // zone` (a drag starting here, horizontal or not, never becomes
         // a close drag)...
         assert!(slider_band(Route::Shade, SHADE_SLIDER_TOP + 10.0, &view));
-        assert!(!shade_panel_close_zone(SHADE_SLIDER_TOP + 10.0, 1232, &view));
+        assert!(!shade_panel_close_zone((300.0, SHADE_SLIDER_TOP + 10.0), 568, 1232, &view));
         // ...while a drag starting just below it, on the ordinary
         // backdrop/list, is untouched and still closes exactly as
         // before.
         let below = SHADE_SLIDER_TOP + SHADE_SLIDER_H + 40.0;
         assert!(!slider_band(Route::Shade, below, &view));
-        assert!(shade_panel_close_zone(below, 1232, &view));
+        assert!(shade_panel_close_zone((300.0, below), 568, 1232, &view));
         assert!(close_drag_engaged(Route::Shade, 4.0, -CLOSE_DRAG_SLOP));
         // When brightness is not writable, no slider is drawn there
         // (`render.rs`), so the band must not silently steal gestures
         // from whatever plain text sits in its place instead.
         let unavailable = ServiceView::default();
         assert!(!slider_band(Route::Shade, SHADE_SLIDER_TOP + 10.0, &unavailable));
-        assert!(shade_panel_close_zone(
-            SHADE_SLIDER_TOP + 10.0,
-            1232,
+        assert!(shade_panel_close_zone((300.0, SHADE_SLIDER_TOP + 10.0), 568, 1232,
             &unavailable
         ));
     }
@@ -2312,4 +2378,141 @@ mod tests {
         assert!(!backdrop_tap(Route::Drawer, (284.0, 1000.0), (284.0, 1000.0), travel));
     }
 
+
+    fn wide_shade_view(count: usize, with_audio: bool) -> ServiceView {
+        ServiceView {
+            settings: Some(crate::evidence_render::fixture_settings()),
+            notifications: Some(crate::service_data::NotificationSnapshot {
+                count,
+                events: crate::evidence_render::fixture_notification_events(count),
+                preview: None,
+            }),
+            audio: with_audio.then(|| crate::pipewire_ipc::GraphSnapshot {
+                sinks: vec![crate::pipewire_ipc::Sink {
+                    id: 1,
+                    name: "speaker".into(),
+                    description: "Speaker".into(),
+                    linear_volume: 0.5,
+                    muted: false,
+                    is_default: true,
+                    route: None,
+                }],
+                streams: vec![],
+            }),
+            ..ServiceView::default()
+        }
+    }
+
+    #[test]
+    fn the_wide_shade_puts_controls_left_and_a_full_height_list_right() {
+        let wide = shade_layout(1232, 568);
+        assert!(wide.wide);
+        assert!(wide.controls_w <= wide.list_x, "controls do not run under the list");
+        assert!(wide.list_x + wide.list_w <= 1232.0);
+        assert!(wide.list_top >= 0.0 && wide.list_bottom <= 568.0);
+        assert!(
+            wide.list_bottom - wide.list_top >= 3.0 * NOTIFICATION_ROW,
+            "at least three rows are visible at once"
+        );
+        // The sliders sit entirely in the left column.
+        assert!(SHADE_VOLUME_TOP + SHADE_VOLUME_H <= wide.list_bottom);
+        // Portrait and HDMI outputs keep the single column exactly.
+        for (w, h) in [(568, 1232), (768, 1024), (1080, 1920), (1920, 1080)] {
+            let layout = shade_layout(w, h);
+            assert!(!layout.wide);
+            assert_eq!((layout.list_x, layout.list_top, layout.controls_w), (0.0, NOTIFICATION_TOP, f64::from(w)));
+        }
+    }
+
+    #[test]
+    fn every_wide_shade_control_is_inside_the_panel_and_taps_at_its_centre() {
+        let layout = shade_layout(1232, 568);
+        let view = wide_shade_view(6, true);
+        // Settings and Dismiss all, in the header column.
+        for (name, point, expected) in [
+            ("settings", (layout.controls_w - 80.0, 50.0), PanelIntent::OpenSettings),
+            (
+                "dismiss-all",
+                (layout.controls_w - 100.0, 150.0),
+                PanelIntent::Request(ServiceRequest::NotificationDismissAll),
+            ),
+        ] {
+            assert!(point.0 < layout.controls_w && point.1 < 568.0, "{name} on the panel");
+            assert_eq!(panel_intent(Route::Shade, point, point, 1232, 568, &view), Some(expected), "{name}");
+        }
+        // Both sliders own their bands, only in the left column; the same
+        // y on the list side is a notification row, not a slider.
+        for top in [SHADE_SLIDER_TOP, SHADE_VOLUME_TOP] {
+            let y = top + 20.0;
+            assert!(settings_slider_column_hit(Route::Shade, 1232, 568, 200.0));
+            assert!(!settings_slider_column_hit(Route::Shade, 1232, 568, layout.list_x + 100.0));
+            assert!(!shade_panel_close_zone((200.0, y), 1232, 568, &view), "slider at y {y} owns its gesture");
+            assert!(
+                notification_index((layout.list_x + 100.0, y), 1232, 568, &view).is_some(),
+                "the list is reachable at the sliders' y"
+            );
+        }
+        assert_eq!(settings_slider_frame(Route::Shade, 1232, 568), (0.0, layout.controls_w));
+        // Each visible notification row: its card rect is inside the panel
+        // and a tap at its centre activates that row's event.
+        let events = &view.notifications.as_ref().unwrap().events;
+        let mut seen = 0;
+        for (index, event) in events.iter().enumerate() {
+            let top = layout.list_top + index as f64 * NOTIFICATION_ROW;
+            let card = (layout.list_x + 24.0, top, layout.list_w - 48.0, NOTIFICATION_ROW - 8.0);
+            if card.1 + card.3 > layout.list_bottom {
+                continue;
+            }
+            seen += 1;
+            assert!(card.0 >= layout.controls_w && card.0 + card.2 <= 1232.0 && card.1 >= 0.0 && card.1 + card.3 <= 568.0);
+            let tap = (card.0 + card.2 / 2.0, card.1 + card.3 / 2.0);
+            let intent = panel_intent(Route::Shade, tap, tap, 1232, 568, &view);
+            let expected = event
+                .action_available
+                .then_some(PanelIntent::Request(ServiceRequest::NotificationAction(event.id)));
+            assert_eq!(intent, expected, "tap at the centre of row {index}");
+        }
+        assert!(seen >= 3, "several rows are visible without scrolling: {seen}");
+    }
+
+    #[test]
+    fn the_wide_shade_scrolls_to_its_last_notification_and_swipes_dismiss_inside_the_list() {
+        let layout = shade_layout(1232, 568);
+        let mut view = wide_shade_view(6, false);
+        let max = notification_max_scroll(6, 1232, 568);
+        assert!(max > 0.0, "six rows overflow the list");
+        view.notification_scroll = max;
+        // The last row now ends at the list's bottom: reachable.
+        let last_top = layout.list_top + 5.0 * NOTIFICATION_ROW - max;
+        assert!(last_top >= layout.list_top && last_top + NOTIFICATION_ROW - 8.0 <= layout.list_bottom + 1.0);
+        let tap = (layout.list_x + layout.list_w / 2.0, last_top + 40.0);
+        assert_eq!(notification_index(tap, 1232, 568, &view), Some(5));
+        // A horizontal drag that starts in the list dismisses a dismissible
+        // row; the same drag in the controls column starts no swipe.
+        view.notification_scroll = 0.0;
+        let row = (layout.list_x + 200.0, layout.list_top + 30.0);
+        let swipe = notification_swipe_start(row, (row.0 + 60.0, row.1 + 2.0), 1232, 568, &view);
+        assert!(swipe.is_some(), "swipe starts on the first (dismissible) row");
+        let left = (200.0, layout.list_top + 30.0);
+        assert!(notification_swipe_start(left, (left.0 + 60.0, left.1), 1232, 568, &view).is_none());
+        let hit = notification_swipe_hit(&view, swipe.as_ref().unwrap(), (row.0 + 60.0, row.1), 1232, 568);
+        assert!(hit);
+        // An upward drag that starts in the list near the top scrolls it; it
+        // does not hide the Shade.
+        let start = (layout.list_x + 200.0, 150.0);
+        let end = (start.0, start.1 - 120.0);
+        assert!(!matches!(
+            panel_intent(Route::Shade, start, end, 1232, 568, &view),
+            Some(PanelIntent::Hide)
+        ));
+        // In the controls column the same drag still hides it.
+        let start = (200.0, 150.0);
+        assert_eq!(
+            panel_intent(Route::Shade, start, (start.0, start.1 - 120.0), 1232, 568, &view),
+            Some(PanelIntent::Hide)
+        );
+        // Closing from the left column is allowed; from the list only at its end.
+        assert!(shade_panel_close_zone((200.0, 400.0), 1232, 568, &view));
+        assert!(!shade_panel_close_zone((layout.list_x + 100.0, 300.0), 1232, 568, &view));
+    }
 }

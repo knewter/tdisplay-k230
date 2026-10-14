@@ -15,7 +15,7 @@ use crate::{
     pipewire_ipc::GraphSnapshot,
     service_data::{Control, ControlState, ControlValue, Priority},
     service_ui::{
-        filter_app_indices, DrawerSearch, ServiceView, NOTIFICATION_ROW, NOTIFICATION_TOP,
+        filter_app_indices, DrawerSearch, ServiceView, NOTIFICATION_ROW,
         SETTINGS_OUTPUT_DETAIL_Y, SETTINGS_VOLUME_ROW, SHADE_SLIDER_H, SHADE_SLIDER_TOP,
         SHADE_VOLUME_H, SHADE_VOLUME_TOP,
     },
@@ -28,10 +28,10 @@ use crate::{
     theme_thumbnails::{bounded_working_set, ThemeThumbnailCache, ThumbnailKey, Variant},
     theme_ui::{
         background_display_label, ThemeImageKey, ThemeImageWorker, ThemePage, ThemeView,
-        BACKGROUND_CAROUSEL_TOP, THEME_CAROUSEL_TOP,
+        BACKGROUND_CAROUSEL_TOP,
     },
     wifi_settings::{Secret, Security},
-    wifi_ui::{all_networks, entry_buttons_rect, Page as WifiPage, WifiPublic},
+    wifi_ui::{all_networks, Page as WifiPage, WifiPublic},
     Route,
 };
 use cairo::{Context, Filter, Format, ImageSurface, LinearGradient, Matrix, Operator, SurfacePattern};
@@ -1240,14 +1240,25 @@ fn paint_theme_chooser(
     pulse_phase: f64,
 ) {
     let style = visual_style(theme, "image-picker");
+    // Stacked on the portrait panel, side by side on the landscape one;
+    // `theme_ui::chooser_layout` is what `main.rs` hit-tests with too.
+    let lay = crate::theme_ui::chooser_layout(w as u32, h as u32);
+    // The wide layout keeps each carousel's slices inside its own half.
+    let column_clip = |cr: &Context, cols: (f64, f64)| {
+        let _ = cr.save();
+        if lay.wide {
+            cr.rectangle(cols.0, 0.0, cols.1 - cols.0, h);
+            cr.clip();
+        }
+    };
     if let Some(brush) = theme_brush(theme, "image-picker", "background") {
         let _ = fill_brush(cr, brush, 0.0, 0.0, w, h);
     }
     // Upstream's `dimColor: Color.background` -- tints unselected carousel
     // slices, not the panel's own background wash above.
     let dim_color = palette_rgb_or(theme, "background", 0x0b1216);
-    text(cr, "‹ Settings", 28.0, 42.0, 185.0, 22.0, style.accent);
-    text(cr, "Close", w - 115.0, 42.0, 90.0, 21.0, style.accent);
+    text(cr, "‹ Settings", 28.0, lay.header_y, 185.0, 22.0, style.accent);
+    text(cr, "Close", w - 115.0, lay.header_y, 90.0, 21.0, style.accent);
     if view.page != ThemePage::List {
         return;
     }
@@ -1261,19 +1272,19 @@ fn paint_theme_chooser(
     // applies immediately (`Carousel::up`'s own `Confirm`-only-when-
     // centred rule; see `theme_ui::ThemeView::tap_theme`/`tap_background`);
     // dragging only ever recentres.
-    heading(cr, "Themes", 28.0, 84.0, w - 56.0, 26.0, style.text);
+    heading(cr, "Themes", lay.themes_heading.0, lay.themes_heading.1, lay.theme_text.1, 26.0, style.text);
     text(
         cr,
         "Drag to browse · tap the centre to apply",
-        28.0,
-        112.0,
-        w - 56.0,
+        lay.themes_hint.0,
+        lay.themes_hint.1,
+        lay.theme_text.1 - (lay.themes_hint.0 - lay.theme_text.0),
         16.0,
         style.muted,
     );
     match &view.list {
         Some(list) if !list.themes.is_empty() => {
-            let center_x = w / 2.0;
+            let center_x = lay.theme_cx;
             let ids: Vec<&str> = list.themes.iter().map(|t| t.id.as_str()).collect();
             let centered = view
                 .theme_position
@@ -1292,25 +1303,27 @@ fn paint_theme_chooser(
             // `show_theme_optimistically`'s own doc for why the pre-
             // rendered frame -- computed with nothing pending -- is
             // exactly right for that moment, not stale).
+            column_clip(cr, lay.theme_cols);
             paint_carousel(
                 cr,
                 theme,
                 dim_color,
                 style,
                 thumbnails,
-                &theme_carousel::THEME_GEOMETRY,
+                &lay.theme_geometry,
                 view.theme_position,
                 &ids,
                 center_x,
-                THEME_CAROUSEL_TOP,
+                lay.theme_top,
                 view.theme_pressed,
                 view.applying_theme_index(),
                 pulse_phase,
             );
+            let _ = cr.restore();
             let entry = &list.themes[centered];
             let is_current = list.active.id.as_deref() == Some(entry.id.as_str());
-            let label_y = THEME_CAROUSEL_TOP + theme_carousel::THEME_GEOMETRY.expanded_h + 12.0;
-            heading(cr, &entry.label, 28.0, label_y, w - 56.0, 24.0, style.text);
+            let label_y = lay.theme_top + lay.theme_geometry.expanded_h + 12.0;
+            heading(cr, &entry.label, lay.theme_text.0, label_y, lay.theme_text.1, 24.0, style.text);
             let status = if is_current {
                 "Current theme"
             } else {
@@ -1319,15 +1332,15 @@ fn paint_theme_chooser(
                     crate::theme_catalog::ThemeOrigin::User => "User theme",
                 }
             };
-            text(cr, status, 28.0, label_y + 26.0, w - 56.0, 16.0, style.muted);
+            text(cr, status, lay.theme_text.0, label_y + 26.0, lay.theme_text.1, 16.0, style.muted);
         }
         Some(_) => {
             text(
                 cr,
                 "No themes available",
-                28.0,
-                THEME_CAROUSEL_TOP + 22.0,
-                w - 56.0,
+                lay.theme_text.0,
+                lay.theme_top + 22.0,
+                lay.theme_text.1,
                 20.0,
                 style.muted,
             );
@@ -1336,9 +1349,9 @@ fn paint_theme_chooser(
             text(
                 cr,
                 "Loading themes",
-                28.0,
-                THEME_CAROUSEL_TOP + 22.0,
-                w - 56.0,
+                lay.theme_text.0,
+                lay.theme_top + 22.0,
+                lay.theme_text.1,
                 20.0,
                 style.muted,
             );
@@ -1352,9 +1365,9 @@ fn paint_theme_chooser(
     heading(
         cr,
         "Backgrounds",
-        28.0,
-        BACKGROUND_CAROUSEL_TOP - 30.0,
-        w - 56.0,
+        lay.backgrounds_heading.0,
+        lay.backgrounds_heading.1,
+        lay.background_text.1,
         22.0,
         style.text,
     );
@@ -1368,41 +1381,41 @@ fn paint_theme_chooser(
         Some(("Applied to Home", style.accent))
     } else { None };
     if let Some((message, color)) = background_feedback {
-        text(cr, message, w / 2.0, BACKGROUND_CAROUSEL_TOP - 30.0,
-            w / 2.0 - 28.0, 20.0, color);
+        text(cr, message, lay.feedback.0, lay.feedback.1, lay.feedback.2, 20.0, color);
     }
     match view.preview.as_ref() {
         Some(preview) if !preview.backgrounds.is_empty() => {
-            let center_x = w / 2.0;
+            let center_x = lay.background_cx;
             let ids: Vec<&str> = preview.backgrounds.iter().map(|b| b.id.as_str()).collect();
             let centered = view
                 .background_position
                 .round()
                 .clamp(0.0, (preview.backgrounds.len() - 1) as f64) as usize;
+            column_clip(cr, lay.background_cols);
             paint_carousel(
                 cr,
                 theme,
                 dim_color,
                 style,
                 thumbnails,
-                &theme_carousel::BACKGROUND_GEOMETRY,
+                &lay.background_geometry,
                 view.background_position,
                 &ids,
                 center_x,
-                BACKGROUND_CAROUSEL_TOP,
+                lay.background_top,
                 view.background_pressed,
                 view.applying_background_index(),
                 pulse_phase,
             );
+            let _ = cr.restore();
             let background = &preview.backgrounds[centered];
-            let label_y =
-                BACKGROUND_CAROUSEL_TOP + theme_carousel::BACKGROUND_GEOMETRY.expanded_h + 12.0;
+            let label_y = lay.background_top + lay.background_geometry.expanded_h + 12.0;
             heading(
                 cr,
                 &background_display_label(&background.label),
-                28.0,
+                lay.background_text.0,
                 label_y,
-                w - 56.0,
+                lay.background_text.1,
                 24.0,
                 style.text,
             );
@@ -1418,9 +1431,9 @@ fn paint_theme_chooser(
             text(
                 cr,
                 status,
-                28.0,
+                lay.background_text.0,
                 label_y + 26.0,
-                w - 56.0,
+                lay.background_text.1,
                 16.0,
                 if background.kind == BackgroundKind::Video {
                     style.error
@@ -1433,9 +1446,9 @@ fn paint_theme_chooser(
             text(
                 cr,
                 "No backgrounds available",
-                28.0,
-                BACKGROUND_CAROUSEL_TOP + 22.0,
-                w - 56.0,
+                lay.background_text.0,
+                lay.background_top + 22.0,
+                lay.background_text.1,
                 20.0,
                 style.muted,
             );
@@ -1444,9 +1457,9 @@ fn paint_theme_chooser(
             text(
                 cr,
                 "Loading backgrounds",
-                28.0,
-                BACKGROUND_CAROUSEL_TOP + 22.0,
-                w - 56.0,
+                lay.background_text.0,
+                lay.background_top + 22.0,
+                lay.background_text.1,
                 20.0,
                 style.muted,
             );
@@ -1465,15 +1478,14 @@ fn paint_theme_chooser(
     // looks done, so a stale "nothing pending" snapshot baked into that
     // one frame is correct, not stale (board evidence, 2026-09-28, in
     // this task's own evidence doc).
-    let message_y = (BACKGROUND_CAROUSEL_TOP + theme_carousel::BACKGROUND_GEOMETRY.expanded_h
-        + 64.0)
-        .min(h - 30.0);
+    let message_y = lay.message_y;
+    let (mx, mw) = lay.background_text;
     if let Some(error) = &view.error {
-        text(cr, error, 28.0, message_y, w - 56.0, 17.0, style.error);
+        text(cr, error, mx, message_y, mw, 17.0, style.error);
     } else if view.pending.is_some() {
-        text(cr, "Preparing…", 28.0, message_y, w - 56.0, 18.0, style.muted);
+        text(cr, "Preparing…", mx, message_y, mw, 18.0, style.muted);
     } else if let Some(message) = &view.message {
-        text(cr, message, 28.0, message_y, w - 56.0, 17.0, style.muted);
+        text(cr, message, mx, message_y, mw, 17.0, style.muted);
     }
 }
 
@@ -1518,10 +1530,17 @@ fn paint_wifi(
     width: f64,
     height: f64,
 ) {
-    // Touch coordinates and artwork share a 568×1232 reference layout.
+    // Portrait: touch coordinates and artwork share a 568x1232 reference
+    // layout scaled to the surface. The landscape panel paints its own
+    // two-column layout in real pixels. `wifi_ui::layout` holds every rect
+    // both this paint and `wifi_ui::hit` read.
+    let lay = wifi_layout(view, width, height);
     let _ = cr.save();
-    cr.scale(width / 568.0, height / 1232.0);
+    if !lay.wide {
+        cr.scale(width / 568.0, height / 1232.0);
+    }
     let style = visual_style(theme, "controls");
+    let (bx, by, bw, bs) = lay.back_text;
     text(
         cr,
         if view.page == WifiPage::List {
@@ -1529,23 +1548,26 @@ fn paint_wifi(
         } else {
             "‹ Networks"
         },
-        28.0,
-        45.0,
-        180.0,
-        23.0,
+        bx,
+        by,
+        bw,
+        bs,
         style.accent,
     );
-    heading(cr, "Wi-Fi", 28.0, 105.0, 360.0, 38.0, style.text);
+    let (tx, ty, tw, ts) = lay.title;
+    heading(cr, "Wi-Fi", tx, ty, tw, ts, style.text);
     match view.page {
         WifiPage::Closed => {}
         WifiPage::List => {
-            text(cr, "Refresh", 420.0, 45.0, 125.0, 22.0, style.accent);
-            service_card(cr, theme, "controls", 24.0, 150.0, 520.0, 116.0, false);
+            let (rx, ry, rw, rs) = lay.refresh_text;
+            text(cr, "Refresh", rx, ry, rw, rs, style.accent);
+            let (cx, cy, cw, ch) = lay.current_card;
+            service_card(cr, theme, "controls", cx, cy, cw, ch, false);
             text(
                 cr,
                 "Current connection",
-                42.0,
-                168.0,
+                cx + 18.0,
+                cy + 18.0,
                 470.0,
                 16.0,
                 style.muted,
@@ -1556,8 +1578,8 @@ fn paint_wifi(
                     .as_ref()
                     .and_then(|s| s.current.as_deref())
                     .unwrap_or("Not connected"),
-                42.0,
-                199.0,
+                cx + 18.0,
+                cy + 49.0,
                 460.0,
                 24.0,
                 style.text,
@@ -1566,33 +1588,28 @@ fn paint_wifi(
             text(
                 cr,
                 &format!("{saved} saved  ·  tap a network to connect"),
-                42.0,
-                235.0,
+                cx + 18.0,
+                cy + 85.0,
                 470.0,
                 15.0,
                 style.muted,
             );
-            text(
-                cr,
-                "Saved and nearby",
-                28.0,
-                304.0,
-                480.0,
-                19.0,
-                style.muted,
-            );
+            let (lx, ly, lw, ls) = lay.list_label;
+            text(cr, "Saved and nearby", lx, ly, lw, ls, style.muted);
             let _ = cr.save();
-            cr.rectangle(20.0, 338.0, 528.0, 814.0);
+            let (kx, ky, kw, kh) = lay.list_clip;
+            cr.rectangle(kx, ky, kw, kh);
             cr.clip();
+            let top = lay.list_view.1;
             if let Some(snapshot) = &view.snapshot {
                 let rows = all_networks(snapshot);
                 for (index, item) in rows.iter().enumerate() {
-                    let y = 338.0 + index as f64 * 88.0 - view.scroll;
-                    if !(-88.0..1152.0).contains(&y) {
+                    let y = top + index as f64 * 88.0 - view.scroll;
+                    if !(lay.row_cull.0..lay.row_cull.1).contains(&y) {
                         continue;
                     }
-                    service_card(cr, theme, "controls", 24.0, y, 520.0, 78.0, false);
-                    text(cr, &item.ssid, 42.0, y + 13.0, 350.0, 21.0, style.text);
+                    service_card(cr, theme, "controls", lay.row_x, y, lay.row_w, 78.0, false);
+                    text(cr, &item.ssid, lay.row_x + 18.0, y + 13.0, lay.row_w - 170.0, 21.0, style.text);
                     let status = if snapshot.current.as_ref() == Some(&item.ssid) {
                         "Connected"
                     } else if snapshot.saved.iter().any(|saved| saved.ssid == item.ssid) {
@@ -1604,37 +1621,24 @@ fn paint_wifi(
                             Security::Unsupported => "Unsupported",
                         }
                     };
-                    text(cr, status, 42.0, y + 45.0, 430.0, 16.0, style.muted);
-                    text(cr, "›", 492.0, y + 22.0, 30.0, 25.0, style.accent);
+                    text(cr, status, lay.row_x + 18.0, y + 45.0, lay.row_w - 90.0, 16.0, style.muted);
+                    text(cr, "›", lay.row_x + lay.row_w - 52.0, y + 22.0, 30.0, 25.0, style.accent);
                 }
                 if rows.is_empty() && !view.pending {
-                    text(
-                        cr,
-                        "No networks found. Tap Refresh.",
-                        42.0,
-                        370.0,
-                        470.0,
-                        21.0,
-                        style.muted,
-                    );
+                    let (ex, ey, ew) = lay.list_empty;
+                    text(cr, "No networks found. Tap Refresh.", ex, ey, ew, 21.0, style.muted);
                 }
             } else {
-                text(
-                    cr,
-                    "Scanning nearby networks…",
-                    42.0,
-                    370.0,
-                    470.0,
-                    21.0,
-                    style.muted,
-                );
+                let (ex, ey, ew) = lay.list_empty;
+                text(cr, "Scanning nearby networks…", ex, ey, ew, 21.0, style.muted);
             }
             let _ = cr.restore();
         }
         WifiPage::Entry => {
             if let Some(selected) = &view.selected {
-                service_card(cr, theme, "controls", 24.0, 150.0, 520.0, 108.0, true);
-                text(cr, &selected.ssid, 42.0, 172.0, 470.0, 25.0, style.text);
+                let (nx, ny, nw, nh) = lay.net_card;
+                service_card(cr, theme, "controls", nx, ny, nw, nh, true);
+                text(cr, &selected.ssid, nx + 18.0, ny + lay.net_name_dy, nw - 50.0, 25.0, style.text);
                 text(
                     cr,
                     match selected.security {
@@ -1643,9 +1647,9 @@ fn paint_wifi(
                         Security::Wpa2Psk => "WPA2-Personal · password required",
                         Security::Unsupported => "Unsupported",
                     },
-                    42.0,
-                    214.0,
-                    470.0,
+                    nx + 18.0,
+                    ny + lay.net_sub_dy,
+                    nw - 50.0,
                     17.0,
                     style.muted,
                 );
@@ -1657,13 +1661,14 @@ fn paint_wifi(
                         } else {
                             "Password"
                         },
-                        28.0,
-                        281.0,
+                        lay.pw_label.0,
+                        lay.pw_label.1,
                         500.0,
                         18.0,
                         style.muted,
                     );
-                    service_card_interaction(cr, theme, "controls", 24.0, 310.0, 520.0, 90.0, false, false, !view.use_saved);
+                    let (fx, fy, fw, fh) = lay.field;
+                    service_card_interaction(cr, theme, "controls", fx, fy, fw, fh, false, false, !view.use_saved);
                     let mask = "•".repeat(view.password_len.min(22));
                     text(
                         cr,
@@ -1676,64 +1681,51 @@ fn paint_wifi(
                         } else {
                             &mask
                         },
-                        42.0,
-                        337.0,
+                        fx + 18.0,
+                        fy + lay.field_text_dy,
                         if view.use_saved { 464.0 } else { 410.0 },
                         25.0,
                         style.text,
                     );
                     if !view.use_saved {
                         // Eye target is 72x74 reference pixels, above the keyboard.
+                        let (ex, ey) = lay.eye_center;
                         color(cr, style.accent, 1.0);
                         cr.set_line_width(2.5);
-                        cr.move_to(486.0, 350.0);
-                        cr.curve_to(494.0, 337.0, 514.0, 337.0, 522.0, 350.0);
-                        cr.curve_to(514.0, 363.0, 494.0, 363.0, 486.0, 350.0);
+                        cr.move_to(ex - 18.0, ey);
+                        cr.curve_to(ex - 10.0, ey - 13.0, ex + 10.0, ey - 13.0, ex + 18.0, ey);
+                        cr.curve_to(ex + 10.0, ey + 13.0, ex - 10.0, ey + 13.0, ex - 18.0, ey);
                         let _ = cr.stroke();
-                        cr.arc(504.0, 350.0, 5.0, 0.0, std::f64::consts::TAU);
+                        cr.arc(ex, ey, 5.0, 0.0, std::f64::consts::TAU);
                         let _ = cr.stroke();
                         if !view.password_visible {
-                            cr.move_to(486.0, 368.0); cr.line_to(522.0, 332.0);
+                            cr.move_to(ex - 18.0, ey + 18.0); cr.line_to(ex + 18.0, ey - 18.0);
                             let _ = cr.stroke();
                         }
                         text(
                             cr,
                             &format!("{} / 63", view.password_len),
-                            445.0,
-                            369.0,
+                            lay.counter.0,
+                            lay.counter.1,
                             75.0,
                             15.0,
                             style.muted,
                         );
                     }
                 }
-                if view
+                let show_saved_buttons = view
                     .snapshot
                     .as_ref()
-                    .is_some_and(|s| s.saved.iter().any(|n| n.ssid == selected.ssid))
-                {
+                    .is_some_and(|s| s.saved.iter().any(|n| n.ssid == selected.ssid));
+                if show_saved_buttons {
                     if view.use_saved && selected.security == Security::Wpa2Psk {
-                        service_card(cr, theme, "controls", 24.0, 414.0, 250.0, 62.0, false);
-                        text(
-                            cr,
-                            "Change password…",
-                            42.0,
-                            432.0,
-                            225.0,
-                            18.0,
-                            style.accent,
-                        );
+                        let (x, y, w, h) = lay.saved_change;
+                        service_card(cr, theme, "controls", x, y, w, h, false);
+                        text(cr, "Change password…", x + 18.0, y + 18.0, w - 25.0, 18.0, style.accent);
                     }
-                    service_card(cr, theme, "controls", 294.0, 414.0, 250.0, 62.0, false);
-                    text(
-                        cr,
-                        "Forget network…",
-                        314.0,
-                        432.0,
-                        215.0,
-                        18.0,
-                        style.error,
-                    );
+                    let (x, y, w, h) = lay.saved_forget;
+                    service_card(cr, theme, "controls", x, y, w, h, false);
+                    text(cr, "Forget network…", x + 20.0, y + 18.0, w - 35.0, 18.0, style.error);
                 }
                 // A rejected password used to sit as a single line of colored
                 // text between the numeric row and the Cancel/Connect
@@ -1743,17 +1735,17 @@ fn paint_wifi(
                 // refers to instead.
                 if selected.security == Security::Wpa2Psk && !view.use_saved {
                     if let Some(message) = entry_error_message(view) {
-                        let show_saved_buttons = view.snapshot.as_ref().is_some_and(|s| {
-                            s.saved.iter().any(|n| n.ssid == selected.ssid)
-                        });
-                        let banner_y = if show_saved_buttons { 486.0 } else { 408.0 };
-                        service_card(cr, theme, "controls", 24.0, banner_y, 520.0, 64.0, false);
-                        rounded(cr, 24.75, banner_y + 0.75, 518.5, 62.5, 15.25);
+                        let banner_y = if show_saved_buttons { lay.banner_saved_y } else { lay.banner_unsaved_y };
+                        let (bw, bh, mw) = lay.banner;
+                        let bx = lay.buttons.0 .0;
+                        let pad = (bh - 64.0) / 2.0;
+                        service_card(cr, theme, "controls", bx, banner_y, bw, bh, false);
+                        rounded(cr, bx + 0.75, banner_y + 0.75, bw - 1.5, bh - 1.5, 15.25);
                         cr.set_line_width(1.5);
                         color(cr, style.error, 0.85);
                         let _ = cr.stroke();
-                        text(cr, "!", 40.0, banner_y + 17.0, 30.0, 28.0, style.error);
-                        text(cr, message, 78.0, banner_y + 21.0, 448.0, 19.0, style.error);
+                        text(cr, "!", bx + 16.0, banner_y + 17.0 + pad, 30.0, 28.0, style.error);
+                        text(cr, message, bx + 54.0, banner_y + 21.0 + pad, mw, 19.0, style.error);
                     }
                 }
             }
@@ -1761,46 +1753,49 @@ fn paint_wifi(
             // the system keyboard (wvkbd) like every other text field in the
             // shell, instead of drawing its own keys here -- see
             // openspec/changes/the-handheld-configures-wifi-from-settings.
-            // `entry_buttons_rect` keeps Cancel/Connect above whatever
-            // height of the screen the raised keyboard currently reserves
+            // `lay.buttons` keeps Cancel/Connect above whatever height of
+            // the screen the raised keyboard currently reserves
             // (`view.keyboard_inset`), matching `wifi_ui::target`'s own hit
             // region exactly.
-            let (button_top, _) = entry_buttons_rect(view.keyboard_inset);
-            service_card(cr, theme, "controls", 24.0, button_top, 250.0, 88.0, false);
-            service_card(cr, theme, "controls", 294.0, button_top, 250.0, 88.0, true);
-            text(cr, "Cancel", 90.0, button_top + 27.0, 145.0, 25.0, style.muted);
-            text(cr, "Connect", 351.0, button_top + 27.0, 145.0, 25.0, style.accent);
+            let (cancel, connect) = lay.buttons;
+            service_card(cr, theme, "controls", cancel.0, cancel.1, cancel.2, cancel.3, false);
+            service_card(cr, theme, "controls", connect.0, connect.1, connect.2, connect.3, true);
+            text(cr, "Cancel", cancel.0 + lay.button_text_dx.0, cancel.1 + lay.button_text_dy, 145.0, 25.0, style.muted);
+            text(cr, "Connect", connect.0 + lay.button_text_dx.1, connect.1 + lay.button_text_dy, 145.0, 25.0, style.accent);
         }
         WifiPage::Connecting => {
-            service_card(cr, theme, "controls", 24.0, 220.0, 520.0, 210.0, true);
-            text(cr, "Connecting…", 42.0, 260.0, 460.0, 31.0, style.text);
+            let (x, y, w, h) = lay.connecting_card;
+            service_card(cr, theme, "controls", x, y, w, h, true);
+            text(cr, "Connecting…", x + 18.0, y + lay.connecting_title_dy, 460.0, 31.0, style.text);
             text(
                 cr,
                 "Checking association, then saving for reconnect",
-                42.0,
-                324.0,
+                x + 18.0,
+                y + lay.connecting_sub_dy,
                 460.0,
                 19.0,
                 style.muted,
             );
-            service_card(cr, theme, "controls", 24.0, 1010.0, 520.0, 110.0, false);
+            let (cx, cy, cw, ch) = lay.connecting_cancel;
+            service_card(cr, theme, "controls", cx, cy, cw, ch, false);
             text(
                 cr,
                 "Cancel connection",
-                135.0,
-                1047.0,
+                cx + lay.connecting_cancel_text.0,
+                cy + lay.connecting_cancel_text.1,
                 310.0,
                 25.0,
                 style.accent,
             );
         }
         WifiPage::ForgetConfirm => {
-            service_card(cr, theme, "controls", 24.0, 230.0, 520.0, 210.0, true);
+            let (x, y, w, h) = lay.forget_card;
+            service_card(cr, theme, "controls", x, y, w, h, true);
             text(
                 cr,
                 "Forget saved network?",
-                42.0,
-                270.0,
+                x + 18.0,
+                y + lay.forget_title_dy,
                 470.0,
                 27.0,
                 style.text,
@@ -1808,16 +1803,18 @@ fn paint_wifi(
             text(
                 cr,
                 "It will not reconnect automatically.",
-                42.0,
-                326.0,
+                x + 18.0,
+                y + lay.forget_sub_dy,
                 470.0,
                 19.0,
                 style.muted,
             );
-            service_card(cr, theme, "controls", 24.0, 850.0, 250.0, 110.0, false);
-            service_card(cr, theme, "controls", 294.0, 850.0, 250.0, 110.0, true);
-            text(cr, "Keep", 101.0, 886.0, 140.0, 25.0, style.muted);
-            text(cr, "Forget", 360.0, 886.0, 140.0, 25.0, style.error);
+            let (kx, ky, kw, kh) = lay.forget_keep;
+            let (fx, fy, fw, fh) = lay.forget_confirm;
+            service_card(cr, theme, "controls", kx, ky, kw, kh, false);
+            service_card(cr, theme, "controls", fx, fy, fw, fh, true);
+            text(cr, "Keep", kx + lay.forget_text_dx.0, ky + lay.forget_text_dy, 140.0, 25.0, style.muted);
+            text(cr, "Forget", fx + lay.forget_text_dx.1, fy + lay.forget_text_dy, 140.0, 25.0, style.error);
         }
     }
     // The Entry page's rejected-password case already got its own elevated
@@ -1826,14 +1823,14 @@ fn paint_wifi(
     let already_shown = view.page == WifiPage::Entry && entry_error_message(view).is_some();
     if !already_shown {
         if let Some(message) = &view.message {
-            let y = match view.page {
-                WifiPage::List => 1163.0,
-                // Anchored to the (possibly keyboard-raised) button row
-                // rather than a fixed offset, so this never ends up
-                // beneath the system keyboard -- see `entry_buttons_rect`.
-                WifiPage::Entry => entry_buttons_rect(view.keyboard_inset).0 - 100.0,
-                WifiPage::Connecting | WifiPage::ForgetConfirm => 480.0,
-                WifiPage::Closed => 0.0,
+            // Anchored to the (possibly keyboard-raised) button row on the
+            // Entry page, rather than a fixed offset, so this never ends up
+            // beneath the system keyboard.
+            let at = match view.page {
+                WifiPage::List => Some(lay.list_message),
+                WifiPage::Entry => Some(lay.entry_message),
+                WifiPage::Connecting | WifiPage::ForgetConfirm => Some(lay.status_message),
+                WifiPage::Closed => None,
             };
             let color = if view.pending
                 || message.starts_with("Saved")
@@ -1843,12 +1840,18 @@ fn paint_wifi(
             } else {
                 style.error
             };
-            if y > 0.0 {
-                text(cr, message, 30.0, y, 506.0, 18.0, color);
+            if let Some((mx, my)) = at {
+                text(cr, message, mx, my, if lay.wide { 540.0 } else { 506.0 }, 18.0, color);
             }
         }
     }
     let _ = cr.restore();
+}
+
+/// The Wi-Fi layout for a `width`x`height` surface and the view's keyboard
+/// inset.
+fn wifi_layout(view: &WifiPublic, width: f64, height: f64) -> crate::wifi_ui::Layout {
+    crate::wifi_ui::layout(crate::wifi_ui::wide(width as u32, height as u32), view.keyboard_inset)
 }
 
 /// Where the Settings screen's own content (rows, Power section, and any
@@ -1926,6 +1929,11 @@ fn settings_panel_h(
     wide: bool,
 ) -> f64 {
     let min_panel_h = 420.0 * content_scale;
+    if wide {
+        // The landscape panel's Settings controls, Wi-Fi pages and theme
+        // chooser all lay out against the whole short panel.
+        return available_h;
+    }
     if let Some(view) = services
         .and_then(|s| s.wifi.as_ref())
         .filter(|v| v.page != WifiPage::Closed)
@@ -1938,10 +1946,6 @@ fn settings_panel_h(
             available_h,
             min_panel_h,
         );
-    }
-    if wide {
-        // Three columns of controls fill the short landscape panel.
-        return available_h;
     }
     content_sized_panel_h(settings_content_bottom(services) * content_scale, available_h, min_panel_h)
 }
@@ -2573,13 +2577,20 @@ fn scene(
     match route {
         Route::Drawer => {}
         Route::Shade => {
-            text(cr, "Settings", w - 150.0, 46.0, 126.0, 20.0, style.accent);
+            // The wide (landscape) Shade keeps its header and sliders in a
+            // left column and gives the notification list the rest at its
+            // full height (`service_ui::shade_layout`, which the hit-tests
+            // read too). Portrait: `hw == w` and the list sits at
+            // `NOTIFICATION_TOP`, exactly as before.
+            let shade = crate::service_ui::shade_layout(width, height);
+            let hw = shade.controls_w;
+            text(cr, "Settings", hw - 150.0, 46.0, 126.0, 20.0, style.accent);
             text(
                 cr,
                 "Swipe up above the list to close",
                 28.0,
                 86.0,
-                w - 56.0,
+                hw - 56.0,
                 15.0,
                 style.muted,
             );
@@ -2590,8 +2601,8 @@ fn scene(
                     text(
                         cr,
                         &crate::home_widgets::battery::format(&view.battery),
-                        w - 220.0,
-                        86.0,
+                        hw - 220.0,
+                        if shade.wide { 112.0 } else { 86.0 },
                         196.0,
                         15.0,
                         style.text,
@@ -2612,7 +2623,7 @@ fn scene(
                 .as_str(),
                 28.0,
                 112.0,
-                w - 220.0,
+                hw - 220.0,
                 19.0,
                 style.muted,
             );
@@ -2620,7 +2631,7 @@ fn scene(
                 text(
                     cr,
                     "Dismiss all",
-                    w - 166.0,
+                    hw - 166.0,
                     143.0,
                     140.0,
                     17.0,
@@ -2638,7 +2649,7 @@ fn scene(
                     paint_slider(
                         cr,
                         style,
-                        w,
+                        hw,
                         SHADE_SLIDER_TOP + SHADE_SLIDER_H / 2.0,
                         &settings.brightness,
                     );
@@ -2654,7 +2665,7 @@ fn scene(
                 paint_volume_slider(
                     cr,
                     style,
-                    w,
+                    hw,
                     SHADE_VOLUME_TOP + SHADE_VOLUME_H / 2.0,
                     volume::linear_to_percent(sink.linear_volume),
                     sink.muted,
@@ -2668,6 +2679,16 @@ fn scene(
             // objects; here, show the tile only when there is no history to
             // display it alongside.
             let show_preview = items.is_none() || count == 0;
+            // Wide: the empty-state tile sits at the top of the list column
+            // (the left column's volume slider occupies y 266..322).
+            let (px, pw, py) = if shade.wide {
+                (shade.list_x, shade.list_w, shade.list_top)
+            } else {
+                (0.0, w, 262.0)
+            };
+            let _ = cr.save();
+            cr.translate(px, py - 262.0);
+            let w = pw;
             if show_preview {
                 service_card(
                     cr,
@@ -2728,29 +2749,33 @@ fn scene(
                     text(cr, empty, 42.0, 287.0, w - 84.0, 20.0, style.muted);
                 }
             }
+            let _ = cr.restore();
+            let w = shade.list_w;
+            let list_top = shade.list_top;
+            let list_bottom = shade.list_bottom;
+            // The wide list column starts with the empty-state tile, so its
+            // loading/error line goes beneath that instead of on top of it.
+            let status_y = list_top + 14.0 + if shade.wide && show_preview { 86.0 } else { 0.0 };
+            let _ = cr.save();
+            cr.translate(shade.list_x, 0.0);
             if let Some(error) = services.and_then(|view| view.notification_error.as_deref()) {
                 text(
                     cr,
                     error,
                     28.0,
-                    NOTIFICATION_TOP + 14.0,
+                    status_y,
                     w - 56.0,
                     18.0,
                     style.error,
                 );
             } else if let Some(items) = items {
                 let _ = cr.save();
-                cr.rectangle(
-                    0.0,
-                    NOTIFICATION_TOP,
-                    w,
-                    (panel_h - NOTIFICATION_TOP - 24.0).max(0.0),
-                );
+                cr.rectangle(0.0, list_top, w, (list_bottom - list_top).max(0.0));
                 cr.clip();
                 let offset = services.map_or(0.0, |view| view.notification_scroll);
                 for (index, event) in items.events.iter().enumerate() {
-                    let y = NOTIFICATION_TOP + index as f64 * NOTIFICATION_ROW - offset;
-                    if y + NOTIFICATION_ROW < NOTIFICATION_TOP || y >= panel_h - 24.0 {
+                    let y = list_top + index as f64 * NOTIFICATION_ROW - offset;
+                    if y + NOTIFICATION_ROW < list_top || y >= list_bottom {
                         continue;
                     }
                     let drag = services
@@ -2844,12 +2869,14 @@ fn scene(
                     cr,
                     "Loading notifications",
                     28.0,
-                    NOTIFICATION_TOP + 14.0,
+                    status_y,
                     w - 56.0,
                     19.0,
                     style.muted,
                 );
             }
+            let _ = cr.restore();
+            let w = hw;
             if let Some(message) = services.and_then(|view| view.message.as_deref()) {
                 service_card(
                     cr,
@@ -4699,12 +4726,13 @@ fn picker_row_changes(old: &ThemeView, new: &ThemeView) -> Option<u8> {
 }
 
 /// Integer device-space bands enclose outlines and both row labels.
-fn picker_row_clip(mask: u8) -> (f64, f64) {
-    let top = if mask & 1 != 0 { THEME_CAROUSEL_TOP - 4.0 } else { BACKGROUND_CAROUSEL_TOP - 4.0 };
+fn picker_row_clip(mask: u8, width: u32, height: u32) -> (f64, f64) {
+    let lay = crate::theme_ui::chooser_layout(width, height);
+    let top = if mask & 1 != 0 { lay.theme_top - 4.0 } else { lay.background_top - 4.0 };
     let bottom = if mask & 2 != 0 {
-        BACKGROUND_CAROUSEL_TOP + theme_carousel::BACKGROUND_GEOMETRY.expanded_h + 60.0
+        lay.background_top + lay.background_geometry.expanded_h + 60.0
     } else {
-        THEME_CAROUSEL_TOP + theme_carousel::THEME_GEOMETRY.expanded_h + 60.0
+        lay.theme_top + lay.theme_geometry.expanded_h + 60.0
     };
     (top.floor(), bottom.ceil())
 }
@@ -4712,25 +4740,26 @@ fn picker_row_clip(mask: u8) -> (f64, f64) {
 /// Layout still includes distant slices for painting/hit-testing. Decoding only
 /// needs slices whose bounds reach the viewport, across BOTH carousel rows.
 /// Rank them together so the two centers reach the bounded worker queue first.
-fn theme_picker_working_set(chooser: Option<&ThemeView>, viewport_width: u32) -> Vec<ThumbnailKey> {
+fn theme_picker_working_set(chooser: Option<&ThemeView>, viewport_width: u32, viewport_height: u32) -> Vec<ThumbnailKey> {
     let Some(chooser) = chooser.filter(|view| view.page == ThemePage::List) else {
         return Vec::new();
     };
     if viewport_width == 0 {
         return Vec::new();
     }
-    let width = f64::from(viewport_width);
+    let lay = crate::theme_ui::chooser_layout(viewport_width, viewport_height);
     let mut requested = Vec::new();
     fn add<'a>(
         requested: &mut Vec<(f64, ThumbnailKey)>,
         geometry: &theme_carousel::CarouselGeometry,
         position: f64,
         count: usize,
-        width: f64,
+        center_x: f64,
+        cols: (f64, f64),
         row: impl Fn(usize) -> Option<(&'a str, &'a std::path::Path)>,
     ) {
-        for slice in theme_carousel::visible_slices(geometry, position, count, width / 2.0, 0.0) {
-            if slice.x >= width || slice.x + slice.width <= 0.0 {
+        for slice in theme_carousel::visible_slices(geometry, position, count, center_x, 0.0) {
+            if slice.x >= cols.1 || slice.x + slice.width <= cols.0 {
                 continue;
             }
             let Some((id, path)) = row(slice.index) else {
@@ -4754,10 +4783,11 @@ fn theme_picker_working_set(chooser: Option<&ThemeView>, viewport_width: u32) ->
     if let Some(list) = chooser.list.as_ref() {
         add(
             &mut requested,
-            &theme_carousel::THEME_GEOMETRY,
+            &lay.theme_geometry,
             chooser.theme_position,
             list.themes.len(),
-            width,
+            lay.theme_cx,
+            lay.theme_cols,
             |index| {
                 let entry = list.themes.get(index)?;
                 Some((&entry.id, entry.preview_path.as_deref()?))
@@ -4767,10 +4797,11 @@ fn theme_picker_working_set(chooser: Option<&ThemeView>, viewport_width: u32) ->
     if let Some(preview) = chooser.preview.as_ref() {
         add(
             &mut requested,
-            &theme_carousel::BACKGROUND_GEOMETRY,
+            &lay.background_geometry,
             chooser.background_position,
             preview.backgrounds.len(),
-            width,
+            lay.background_cx,
+            lay.background_cols,
             |index| {
                 let entry = preview.backgrounds.get(index)?;
                 (entry.kind == BackgroundKind::Image)
@@ -4936,7 +4967,7 @@ impl RendererCache {
     /// Request exactly the admitted visible working set shared by both rows.
     pub fn poll_theme_thumbnails(&mut self, viewport_width: u32) -> bool {
         let _profile = crate::runtime_trace::Span::new("thumbnail_poll");
-        let requested = theme_picker_working_set(self.chooser.as_ref(), viewport_width);
+        let requested = theme_picker_working_set(self.chooser.as_ref(), viewport_width, self.height);
         self.thumbnails.set_working_set(&requested);
         let changed = self.thumbnails.poll();
         if changed {
@@ -4963,7 +4994,7 @@ impl RendererCache {
     /// Offscreen/deferred entries must not keep polling and repainting spinners
     /// forever. Use the identical admitted set as the request path.
     pub fn theme_thumbnails_pending(&self, viewport_width: u32) -> bool {
-        theme_picker_working_set(self.chooser.as_ref(), viewport_width)
+        theme_picker_working_set(self.chooser.as_ref(), viewport_width, self.height)
             .iter().any(|key| !self.thumbnails.is_resolved(&key.id, key.variant))
     }
 
@@ -5562,7 +5593,7 @@ impl RendererCache {
                 apps, &mut self.icons, self.theme.as_ref(), self.services.as_ref(),
                 self.chooser.as_ref(), self.preview_surface.as_ref(), self.preview_error,
                 Some(&self.thumbnails), self.pressed, &self.drawer_search,
-                &mut self.drawer_grid, self.pointer, Some(picker_row_clip(self.picker_dirty_rows)),
+                &mut self.drawer_grid, self.pointer, Some(picker_row_clip(self.picker_dirty_rows, width, height)),
             )?;
             self.picker_dirty_rows = 0;
         }
@@ -5624,10 +5655,13 @@ impl RendererCache {
                 ) }.map_err(|e| e.to_string())?;
                 let cr = Context::new(&surface).map_err(|e| e.to_string())?;
                 cr.translate(0.0, f64::from(shift));
-                cr.scale(f64::from(width) / 568.0, f64::from(height) / 1232.0);
+                let lay = crate::wifi_ui::layout(crate::wifi_ui::wide(width, height), 0.0);
+                if !lay.wide {
+                    cr.scale(f64::from(width) / 568.0, f64::from(height) / 1232.0);
+                }
                 attach_theme_metrics(&cr, self.theme.as_ref());
                 let style = visual_style(self.theme.as_ref(), "controls");
-                text(&cr, preview.as_str(), 42.0, 337.0, 410.0, 25.0, style.text);
+                text(&cr, preview.as_str(), lay.field.0 + 18.0, lay.field.1 + lay.field_text_dy, 410.0, 25.0, style.text);
                 drop(cr); surface.flush();
             }
         }
@@ -7258,7 +7292,7 @@ mod tests {
             ..RendererCache::default()
         };
         renderer.set_theme_view(view.clone());
-        let expected = theme_picker_working_set(Some(&view), 568);
+        let expected = theme_picker_working_set(Some(&view), 568, 1232);
         assert_eq!(expected.len(), 24); // five hero slices + seven background slices
         assert_eq!(expected[0].id, "theme-20");
         assert_eq!(expected[2].id, "background-20"); // both centers claim first queue slots

@@ -8,7 +8,7 @@ use k230_shell_rust::{
     appearance::{AppearanceEvent, AppearancePhase, AppearanceReceiver, AppearanceSnapshot},
     background_decode::{BackgroundCache, FitMode},
     catalog::{applications_dirs, scan_apps, AppEntry},
-    configure_preserves_aspect, configure_size, frame_bytes, runtime_trace,
+    configure_acceptable, configure_size, ConfigureSurface, RejectedConfigures, frame_bytes, runtime_trace,
     home_grid, home_state,
     home_screen::{HomeAction, HomeScreen},
     home_widgets, keyboard_base,
@@ -43,8 +43,7 @@ use k230_shell_rust::{
     theme_carousel::{Carousel, CarouselOutcome, BACKGROUND_GEOMETRY, THEME_GEOMETRY},
     theme_catalog::{ThemeReply, ThemeRequest, ThemeResponse, ThemeWorker},
     theme_ui::{
-        default_theme_name, ThemeIntent, ThemePage, ThemeView, BACKGROUND_CAROUSEL_TOP,
-        THEME_CAROUSEL_TOP,
+        chooser_layout, default_theme_name, ThemeIntent, ThemePage, ThemeView,
     },
     video_status::{self, VideoStatus},
     video_visibility,
@@ -1084,6 +1083,7 @@ struct ShellClient {
     registry_state: RegistryState,
     seat_state: SeatState,
     output_state: OutputState,
+    rejected_configures: RejectedConfigures,
     shm: Shm,
     pool: SlotPool,
     buffers: Vec<Buffer>,
@@ -1899,12 +1899,22 @@ impl ShellClient {
     /// -- shows the same-frame highlight goal 1 asks for. Called after
     /// every touch event that can change either carousel's contact (down,
     /// motion, up, cancel); a no-op (no redraw) when nothing changed.
+    /// Gives both carousels the geometry the chooser's layout uses at the
+    /// current surface size (the landscape panel's is smaller and sits side by side).
+    fn sync_carousel_geometry(&mut self) {
+        let lay = chooser_layout(self.width, self.height);
+        self.theme_carousel.set_geometry(lay.theme_geometry);
+        self.background_carousel.set_geometry(lay.background_geometry);
+        self.theme_view.theme_position = self.theme_carousel.position();
+        self.theme_view.background_position = self.background_carousel.position();
+    }
+
     fn sync_theme_pressed(&mut self) {
-        let center_x = f64::from(self.width) / 2.0;
+        let lay = chooser_layout(self.width, self.height);
         let want = (self.theme_view.page == ThemePage::List)
             .then(|| {
                 let count = self.theme_view.list.as_ref().map_or(0, |l| l.themes.len());
-                self.theme_carousel.pressed(count, center_x, THEME_CAROUSEL_TOP)
+                self.theme_carousel.pressed(count, lay.theme_cx, lay.theme_top)
             })
             .flatten();
         if self.theme_view.theme_pressed != want {
@@ -1916,7 +1926,7 @@ impl ShellClient {
     /// Same as `sync_theme_pressed`, for the active theme's own background
     /// carousel, below the theme carousel on this same List page.
     fn sync_background_pressed(&mut self) {
-        let center_x = f64::from(self.width) / 2.0;
+        let lay = chooser_layout(self.width, self.height);
         let want = (self.theme_view.page == ThemePage::List)
             .then(|| {
                 let count = self
@@ -1925,7 +1935,7 @@ impl ShellClient {
                     .as_ref()
                     .map_or(0, |p| p.backgrounds.len());
                 self.background_carousel
-                    .pressed(count, center_x, BACKGROUND_CAROUSEL_TOP)
+                    .pressed(count, lay.background_cx, lay.background_top)
             })
             .flatten();
         if self.theme_view.background_pressed != want {
@@ -2677,6 +2687,7 @@ impl ShellClient {
                         .notification_scroll
                         .min(notification_max_scroll(
                             notifications.events.len(),
+                            self.width,
                             self.height,
                         ));
                 self.service_view.notifications = Some(notifications);
@@ -2843,7 +2854,7 @@ impl ShellClient {
                     .notifications
                     .as_ref()
                     .map_or(0.0, |snapshot| {
-                        notification_max_scroll(snapshot.events.len(), self.height)
+                        notification_max_scroll(snapshot.events.len(), self.width, self.height)
                     });
                 self.service_view.notification_scroll =
                     (self.service_view.notification_scroll + delta).clamp(0.0, max);
@@ -2874,7 +2885,7 @@ impl ShellClient {
             .notifications
             .as_ref()
             .map_or(0.0, |snapshot| {
-                notification_max_scroll(snapshot.events.len(), self.height)
+                notification_max_scroll(snapshot.events.len(), self.width, self.height)
             });
         let mut changed = self.notification_coast.tick(
             &mut self.service_view.notification_scroll,
@@ -3930,13 +3941,87 @@ impl ShellClient {
     /// design-aspect column: the operator did not want an HDMI monitor
     /// letterboxed, they wanted the shell to fill it. See
     /// `openspec/changes/the-shell-adapts-to-output-resolution/design.md`.
-    fn is_whole_output(&self, width: u32, height: u32) -> bool {
-        self.output_state.outputs().any(|output| {
-            self.output_state
-                .info(&output)
-                .and_then(|info| info.logical_size)
-                .is_some_and(|(w, h)| (w, h) == (width as i32, height as i32))
-        })
+    fn output_sizes(&self) -> Vec<(i32, i32)> {
+        self.output_state
+            .outputs()
+            .filter_map(|output| self.output_state.info(&output).and_then(|info| info.logical_size))
+            .collect()
+    }
+
+    /// Applies one full-panel surface's configure, or remembers it as
+    /// refused so `update_output` can retry once the output's size is known
+    /// (or has changed, when the panel rotates).
+    fn apply_configure(&mut self, qh: &QueueHandle<Self>, surface: ConfigureSurface, width: u32, height: u32) {
+        let acceptable = configure_acceptable(&self.output_sizes(), width, height);
+        match surface {
+            ConfigureSurface::Wallpaper => {
+                let mut geometry = (self.wallpaper.width, self.wallpaper.height);
+                if configure_size(&mut geometry, width, height).is_none() || !acceptable {
+                    self.rejected_configures.remember(surface, (width, height));
+                    self.log("wallpaper-configure-rejected");
+                    return;
+                }
+                self.rejected_configures.clear(surface);
+                if (self.wallpaper.width, self.wallpaper.height) != geometry {
+                    self.video_active = None;
+                    self.video_candidate = None;
+                    self.video_previous = None;
+                    self.video_display = None;
+                    self.video_start_attempted = false;
+                }
+                (self.wallpaper.width, self.wallpaper.height) = geometry;
+                self.wallpaper.configured = true;
+                self.wallpaper.dirty = true;
+                self.wallpaper.map_started = None;
+                self.log(&format!("wallpaper-configure {width}x{height}"));
+                self.draw_wallpaper(qh);
+            }
+            ConfigureSurface::Home => {
+                let mut geometry = (self.home_surface.width, self.home_surface.height);
+                if configure_size(&mut geometry, width, height).is_none() || !acceptable {
+                    self.rejected_configures.remember(surface, (width, height));
+                    self.log("home-configure-rejected");
+                    return;
+                }
+                self.rejected_configures.clear(surface);
+                let page_width_changed = (self.home_surface.width, self.home_surface.height) != geometry;
+                (self.home_surface.width, self.home_surface.height) = geometry;
+                self.home_surface.configured = true;
+                self.home_surface.dirty = true;
+                if page_width_changed {
+                    self.home.pager.set_page_width(f64::from(geometry.0));
+                }
+                self.log(&format!("home-configure {width}x{height}"));
+                self.draw_home(qh);
+            }
+            ConfigureSurface::Overlay => {
+                let mut geometry = (self.width, self.height);
+                if configure_size(&mut geometry, width, height).is_none() || !acceptable {
+                    self.rejected_configures.remember(surface, (width, height));
+                    self.log("configure-rejected");
+                    return;
+                }
+                self.rejected_configures.clear(surface);
+                (self.width, self.height) = geometry;
+                self.wifi_view.set_surface(self.width, self.height);
+                self.sync_carousel_geometry();
+                self.configured = true;
+                self.dirty = true;
+                self.log(&format!("configure {width}x{height}"));
+                self.draw(qh);
+            }
+        }
+    }
+
+    /// Re-offers every refused configure that the current output sizes now
+    /// make acceptable. A squish stays refused, so this cannot undo the
+    /// exclusive-zone guard.
+    fn retry_rejected_configures(&mut self, qh: &QueueHandle<Self>) {
+        let outputs = self.output_sizes();
+        for (surface, (width, height)) in self.rejected_configures.take_acceptable(&outputs) {
+            self.log(&format!("configure-retried-after-output-update {width}x{height}"));
+            self.apply_configure(qh, surface, width, height);
+        }
     }
 
     fn ensure_layer(&mut self, qh: &QueueHandle<Self>) -> bool {
@@ -4631,8 +4716,14 @@ impl OutputHandler for ShellClient {
     fn output_state(&mut self) -> &mut OutputState {
         &mut self.output_state
     }
-    fn new_output(&mut self, _: &Connection, _: &QueueHandle<Self>, _: wl_output::WlOutput) {}
-    fn update_output(&mut self, _: &Connection, _: &QueueHandle<Self>, _: wl_output::WlOutput) {}
+    fn new_output(&mut self, _: &Connection, qh: &QueueHandle<Self>, _: wl_output::WlOutput) {
+        self.retry_rejected_configures(qh);
+    }
+    fn update_output(&mut self, _: &Connection, qh: &QueueHandle<Self>, _: wl_output::WlOutput) {
+        // The output's logical size can arrive after the surface's first
+        // configure, or change when the panel rotates.
+        self.retry_rejected_configures(qh);
+    }
     fn output_destroyed(&mut self, _: &Connection, _: &QueueHandle<Self>, _: wl_output::WlOutput) {}
 }
 
@@ -4711,26 +4802,7 @@ impl LayerShellHandler for ShellClient {
             .as_ref()
             .is_some_and(|wallpaper| wallpaper.wl_surface() == layer.wl_surface())
         {
-            let mut geometry = (self.wallpaper.width, self.wallpaper.height);
-            if configure_size(&mut geometry, width, height).is_none()
-                || !(configure_preserves_aspect(width, height) || self.is_whole_output(width, height))
-            {
-                self.log("wallpaper-configure-rejected");
-                return;
-            }
-            if (self.wallpaper.width, self.wallpaper.height) != geometry {
-                self.video_active = None;
-                self.video_candidate = None;
-                self.video_previous = None;
-                self.video_display = None;
-                self.video_start_attempted = false;
-            }
-            (self.wallpaper.width, self.wallpaper.height) = geometry;
-            self.wallpaper.configured = true;
-            self.wallpaper.dirty = true;
-            self.wallpaper.map_started = None;
-            self.log(&format!("wallpaper-configure {width}x{height}"));
-            self.draw_wallpaper(qh);
+            self.apply_configure(qh, ConfigureSurface::Wallpaper, width, height);
             return;
         }
         if self
@@ -4739,36 +4811,10 @@ impl LayerShellHandler for ShellClient {
             .as_ref()
             .is_some_and(|home| home.wl_surface() == layer.wl_surface())
         {
-            let mut geometry = (self.home_surface.width, self.home_surface.height);
-            if configure_size(&mut geometry, width, height).is_none()
-                || !(configure_preserves_aspect(width, height) || self.is_whole_output(width, height))
-            {
-                self.log("home-configure-rejected");
-                return;
-            }
-            let page_width_changed = (self.home_surface.width, self.home_surface.height) != geometry;
-            (self.home_surface.width, self.home_surface.height) = geometry;
-            self.home_surface.configured = true;
-            self.home_surface.dirty = true;
-            if page_width_changed {
-                self.home.pager.set_page_width(f64::from(geometry.0));
-            }
-            self.log(&format!("home-configure {width}x{height}"));
-            self.draw_home(qh);
+            self.apply_configure(qh, ConfigureSurface::Home, width, height);
             return;
         }
-        let mut geometry = (self.width, self.height);
-        if configure_size(&mut geometry, width, height).is_none()
-            || !(configure_preserves_aspect(width, height) || self.is_whole_output(width, height))
-        {
-            self.log("configure-rejected");
-            return;
-        }
-        (self.width, self.height) = geometry;
-        self.configured = true;
-        self.dirty = true;
-        self.log(&format!("configure {width}x{height}"));
-        self.draw(qh);
+        self.apply_configure(qh, ConfigureSurface::Overlay, width, height);
     }
 }
 
@@ -4964,8 +5010,9 @@ impl ShellClient {
                     self.panel_start = Some((id, pos));
                     self.panel_origin_scroll = self.service_view.notification_scroll;
                     let stopped_coast = self.notification_coast.stop();
+                    let shade = k230_shell_rust::service_ui::shade_layout(self.width, self.height);
                     self.panel_scrolled = self.route == Route::Shade
-                        && pos.1 >= k230_shell_rust::service_ui::NOTIFICATION_TOP
+                        && shade.in_list(pos)
                         && stopped_coast;
                     self.panel_scroll_dragged = false;
                     self.panel_scroll_sample = Some((pos.1, time_ms));
@@ -4980,9 +5027,13 @@ impl ShellClient {
                     // elsewhere), and none of this races an already-
                     // animating close from an earlier gesture.
                     self.panel_close_candidate = !self.panel_close.active()
-                        && (close_drag_zone(self.route, pos.1, self.panel_travel())
+                        && ((close_drag_zone(self.route, pos.1, self.panel_travel())
+                            && !(self.route == Route::Shade
+                                && shade.wide
+                                && shade.in_list(pos)
+                                && pos.1 < self.panel_travel()))
                             || (self.route == Route::Shade
-                                && shade_panel_close_zone(pos.1, self.height, &self.service_view)));
+                                && shade_panel_close_zone(pos, self.width, self.height, &self.service_view)));
                     self.panel_close_sample = Some((pos.1, time_ms));
                     self.panel_close_velocity = 0.0;
                     // Brightness slider (task: "brightness should be a
@@ -5100,15 +5151,11 @@ impl ShellClient {
                         // armed independently by its own band, rather than
                         // by which page is showing.
                         if self.theme_view.page == ThemePage::List {
-                            if (THEME_CAROUSEL_TOP..THEME_CAROUSEL_TOP + THEME_GEOMETRY.expanded_h)
-                                .contains(&pos.1)
-                            {
+                            let lay = chooser_layout(self.width, self.height);
+                            if lay.in_theme_band(pos) {
                                 self.theme_carousel.down(id, pos, time_ms);
                                 self.sync_theme_pressed();
-                            } else if (BACKGROUND_CAROUSEL_TOP
-                                ..BACKGROUND_CAROUSEL_TOP + BACKGROUND_GEOMETRY.expanded_h)
-                                .contains(&pos.1)
-                            {
+                            } else if lay.in_background_band(pos) {
                                 self.background_carousel.down(id, pos, time_ms);
                                 self.sync_background_pressed();
                             }
@@ -5451,7 +5498,7 @@ impl ShellClient {
                                     }
                                 }
                             } else {
-                                let center_x = f64::from(self.width) / 2.0;
+                                let lay = chooser_layout(self.width, self.height);
                                 // Task: tap-to-apply (2026-09-25): both
                                 // carousels live on the one List page now.
                                 // `Carousel::up` returns `None` for a
@@ -5475,8 +5522,8 @@ impl ShellClient {
                                             point,
                                             time_ms,
                                             theme_count,
-                                            center_x,
-                                            THEME_CAROUSEL_TOP,
+                                            lay.theme_cx,
+                                            lay.theme_top,
                                         );
                                         if outcome.is_some() {
                                             (outcome, false)
@@ -5491,8 +5538,8 @@ impl ShellClient {
                                                 point,
                                                 time_ms,
                                                 background_count,
-                                                center_x,
-                                                BACKGROUND_CAROUSEL_TOP,
+                                                lay.background_cx,
+                                                lay.background_top,
                                             );
                                             (outcome, true)
                                         }
@@ -5858,7 +5905,7 @@ impl ShellClient {
                     if start_id == id
                         && self.service_view.notification_swipe.is_none()
                         && !self.panel_swipe_owned
-                        && start.1 >= k230_shell_rust::service_ui::NOTIFICATION_TOP
+                        && k230_shell_rust::service_ui::shade_layout(self.width, self.height).in_list(start)
                         && dy.abs() > 22.0
                     {
                         let max = self
@@ -5866,7 +5913,7 @@ impl ShellClient {
                             .notifications
                             .as_ref()
                             .map_or(0.0, |snapshot| {
-                                notification_max_scroll(snapshot.events.len(), self.height)
+                                notification_max_scroll(snapshot.events.len(), self.width, self.height)
                             });
                         let next = (self.panel_origin_scroll - dy).clamp(0.0, max);
                         if (next - self.service_view.notification_scroll).abs() >= 1.0 {
@@ -5891,9 +5938,15 @@ impl ShellClient {
                 && self.wifi_view.page == WifiPage::List
             {
                 if let Some((start_id, start)) = self.panel_start {
-                    let scale_y = 1232.0 / f64::from(self.height.max(1));
+                    let (scale_x, scale_y) = wifi_ui::layout_scale(self.width, self.height);
                     let dy = (pos.1 - start.1) * scale_y;
-                    if start_id == id && start.1 * scale_y >= 338.0 && dy.abs() > 18.0 {
+                    let lay = wifi_ui::layout(wifi_ui::wide(self.width, self.height), 0.0);
+                    let in_list = if lay.wide {
+                        wifi_ui::list_contains(&lay, start.0 * scale_x, start.1 * scale_y)
+                    } else {
+                        start.1 * scale_y >= lay.list_view.1
+                    };
+                    if start_id == id && in_list && dy.abs() > 18.0 {
                         self.wifi_dragged = true;
                         let previous = self.wifi_view.scroll;
                         self.wifi_view.scroll = self.wifi_origin_scroll;
@@ -6040,25 +6093,26 @@ impl ShellClient {
             Route::Shade => {
                 self.notification_coast.stop();
                 let max = self.service_view.notifications.as_ref().map_or(0.0,
-                    |snapshot| notification_max_scroll(snapshot.events.len(), self.height));
+                    |snapshot| notification_max_scroll(snapshot.events.len(), self.width, self.height));
                 let old = self.service_view.notification_scroll;
                 self.service_view.notification_scroll = (old + dy).clamp(0.0, max);
                 changed = old != self.service_view.notification_scroll;
                 if changed { self.renderer.set_services(self.service_view.clone()); }
             }
             Route::Settings if self.wifi_view.page != WifiPage::Closed => {
-                self.wifi_view.scroll(dy * 1232.0 / f64::from(self.height.max(1)));
+                self.wifi_view.scroll(dy * wifi_ui::layout_scale(self.width, self.height).1);
                 self.wifi_dirty(); changed = dy != 0.0;
             }
             Route::Settings if self.theme_view.page == ThemePage::List => {
                 let delta = if dx != 0.0 { dx } else { dy };
                 let settle = horizontal.stop || vertical.stop || horizontal.value120 != 0 ||
                     vertical.value120 != 0 || horizontal.discrete != 0 || vertical.discrete != 0;
-                if (THEME_CAROUSEL_TOP..THEME_CAROUSEL_TOP + THEME_GEOMETRY.expanded_h).contains(&event.position.1) {
+                let lay = chooser_layout(self.width, self.height);
+                if lay.in_theme_band(event.position) {
                     let count = self.theme_view.list.as_ref().map_or(0, |l| l.themes.len());
                     changed = self.theme_carousel.scroll_by(delta, count, settle);
                     self.theme_view.theme_position = self.theme_carousel.position();
-                } else if (BACKGROUND_CAROUSEL_TOP..BACKGROUND_CAROUSEL_TOP + BACKGROUND_GEOMETRY.expanded_h).contains(&event.position.1) {
+                } else if lay.in_background_band(event.position) {
                     let count = self.theme_view.preview.as_ref().map_or(0, |p| p.backgrounds.len());
                     changed = self.background_carousel.scroll_by(delta, count, settle);
                     self.theme_view.background_position = self.background_carousel.position();
@@ -6396,6 +6450,7 @@ fn serve() -> Result<(), String> {
         registry_state: RegistryState::new(&globals),
         seat_state: SeatState::new(&globals, &qh),
         output_state: OutputState::new(&globals, &qh),
+        rejected_configures: RejectedConfigures::default(),
         shm,
         pool,
         buffers: Vec::new(),

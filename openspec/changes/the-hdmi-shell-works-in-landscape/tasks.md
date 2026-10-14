@@ -96,7 +96,7 @@ complete them here against the panel's 1232×568 geometry as well as HDMI.
       `.#kernelMainlineDrmShellLandscapeBootFiles` and `.#sdImage-landscape`
       built. Later shell and device-tree fixes on this branch change the
       default system deliberately.
-- [ ] 8.2 Make `shell-ui` accept a whole-output configure whose output size
+- [x] 8.2 Make `shell-ui` accept a whole-output configure whose output size
       is learned late or changes at runtime (rotation), instead of rejecting
       it and drawing nothing, while still rejecting a keyboard exclusive-zone
       squish. Verify with new unit tests and `cargo test`.
@@ -104,6 +104,22 @@ complete them here against the panel's 1232×568 geometry as well as HDMI.
       board logged `home-configure-rejected` before), with
       `frame_bytes_accepts_the_landscape_panel`. Open: a size change at runtime
       (`update_output` is still empty).
+      Done 2026-10-14 (host unit tests; no Wayland or board run): the
+      accept/refuse decision is now a pure function,
+      `configure_acceptable(outputs, w, h)` (a bounded size that keeps the
+      design aspect or equals a known output; a keyboard exclusive-zone
+      squish is neither), and a configure that is refused is remembered per
+      surface (`RejectedConfigures`). `new_output` and `update_output` now
+      re-offer every remembered configure that the current output sizes make
+      acceptable, so a size learned after the first configure, or changed by a
+      rotation, lays the surface out instead of leaving it undrawn; a squish
+      stays refused. New tests in `lib.rs`:
+      `a_late_output_size_accepts_the_whole_output_configure`,
+      `a_runtime_rotation_re_lays_out_in_both_directions` and
+      `a_keyboard_exclusive_zone_squish_is_still_refused`. The Wayland wiring
+      in `main.rs` (`apply_configure`, `retry_rejected_configures`) is
+      compile-checked and covered only through that decision function; a
+      rotation on the board (8.5) remains the observation of it.
 - [ ] 8.3 Lay out wallpaper, Home and dock, Drawer, shade, Settings
       (including Wi-Fi and the theme chooser), notifications, the power sheet
       and the on-screen keyboard at 1232×568 without overlapping, off-screen or
@@ -133,6 +149,44 @@ complete them here against the panel's 1232×568 geometry as well as HDMI.
       `settings-key-backlight-off-injected.png` in
       `docs/evidence/keyboard-base/shell/board/`). The Wi-Fi and theme
       sub-pages are untouched.
+      Partial 2026-10-14 (host evidence only): the remaining listed surfaces
+      now lay out at 1232×568. Wi-Fi (list, entry with and without the
+      240 px keyboard, rejected-password banner, saved network, open
+      network, connecting, forget confirmation) was painted through a
+      non-uniform 568×1232 scale, which squashed every glyph; it now has a
+      two-column real-pixel layout (`wifi_ui::layout`, read by both the paint
+      and `wifi_ui::hit`). The theme chooser stacked two carousels that need
+      about 1230 px; it now sits side by side with a smaller theme carousel
+      (`theme_ui::chooser_layout`, `THEME_GEOMETRY_WIDE`), each carousel
+      clipped and hit-tested to its own half. The open folder shows eight
+      member tiles per row in two rows (16 members, as many as the portrait
+      card holds) in a card that starts below the compositor's top band
+      (`home_grid::folder_columns`). The shade keeps its header and both
+      sliders in a left column and gives the notification list the full
+      panel height beside them, so four rows are visible at once
+      (`service_ui::shade_layout`); swipe-to-dismiss, scroll, close-drag
+      zones, Dismiss all and Settings read the same layout. New tests assert
+      every control's rect lies inside 1232×568, its tap at the centre hits
+      it, and rects do not overlap
+      (`every_wide_wifi_*`, `the_wide_connecting_and_forget_*`,
+      `the_wide_chooser_*`, `a_tap_at_the_centre_of_each_wide_carousel_*`,
+      `the_wide_folder_overlay_*`, `every_wide_shade_control_*`,
+      `the_wide_shade_scrolls_*`). Host renders are committed in
+      `docs/evidence/panel-landscape/host/` (`render_landscape_surfaces`
+      example; the shade renders there and in
+      `docs/evidence/keyboard-base/shell/host-renders/` were regenerated, the
+      only renders that changed). Every other 1232×568, portrait and HDMI
+      render, and all 568×1232 renders of the new surfaces, are
+      byte-identical to `6aa0795d`. `cargo test`: 572 passed (558 at the
+      base) and 1 failed, the same
+      `responsive_pixel_identity::drawer_568x1232_matches_the_committed_evidence_exactly`
+      that fails on the base, which this change does not touch; clippy: 65
+      warnings, identical to the base. Left open: this task stays unticked
+      because its `cargo test` verification is not clean on the base's own
+      failure, and because the native `grim` captures of Wi-Fi, the theme
+      chooser, the folder overlay and the shade with notifications belong to
+      8.5; folder renaming under the 240 px keyboard hides the member tiles
+      (the card cannot rise above the top band).
 - [x] 8.4 Make touch and the edge gestures (drawer, shade, overview) follow
       the rotated panel edges. Verify on the board with injected touch events
       (evidence class: injected) and record which gestures were exercised.

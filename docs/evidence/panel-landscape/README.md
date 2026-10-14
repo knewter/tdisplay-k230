@@ -111,3 +111,20 @@ fast now".
 
 The 1080 width on the first board, the remaining real-glass checks
 (task 8.6) and HDMI (task 8.7).
+
+## Host renders of the remaining 8.3 surfaces (2026-10-14)
+
+`host/` also holds 1232x568 host renders of the Wi-Fi pages, the theme
+chooser, the open-folder overlay and the shade with several notifications
+(`wifi-*`, `theme-chooser`, `folder-*`, `shade-*-notifications`), written by
+
+    cargo run --offline --example render_landscape_surfaces -- <out-dir>
+
+in `nix/rust-shell-client`, with fixture data from `evidence_render`
+(long and short notification text, a critical row, rows with and without a
+tap action, one long network name, no theme thumbnails). `host/shade-1232x568.png`
+was regenerated for the new shade layout. These are host renders: they prove
+the paint and its hit rectangles, not the board's glass. The same example
+also writes 568x1232 renders; those are not committed, but are byte-identical
+to the base's (`6aa0795d`). Native `grim` captures of these surfaces are still
+owed (task 8.5).

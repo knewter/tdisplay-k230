@@ -1597,7 +1597,7 @@ DATA b5c553f6b0d419371460c005b7aaaff96ffce504794591f336e113fb3f688b5e docs/evide
 DATA group:20-files docs/evidence/shell-polish/{before,after}/*.png matched production host paints with real pinned dark/light appearances, synthetic services, and no board claim
 DATA group:2-files docs/evidence/theme-picker/row-repaint/pair/*.png native scale-0.6 board captures after injected-input timing; not real-finger acceptance
 DATA group:16-files docs/evidence/shell-responsive/*.png host renders (render_responsive_evidence example) of Home/Drawer/Settings/wallpaper at 568x1232, 768x1024, 1080x1920 and 1920x1080 for the-shell-adapts-to-output-resolution
-DATA group:14-files docs/evidence/panel-landscape/**/*.{png,jpg} landscape panel: host renders, native board captures (CLI-opened and injected-touch), one bench camera frame; not real-finger acceptance
+DATA group:27-files docs/evidence/panel-landscape/**/*.{png,jpg} landscape panel: host renders (Wi-Fi pages, theme chooser, open folder, shade with notifications), native board captures (CLI-opened and injected-touch), one bench camera frame; not real-finger acceptance
 
 DATA 3972517849acf787538122127db17d5a4875a82a53cdba427ee25d5d16629af4 docs/evidence/the-touchscreen-becomes-an-hdmi-trackpad/board/pointer-drawer.jpg
 DATA 94c4c7ee5068f9a2eadc959ca4c4110eef3b6c64960b990f8768e05487708322 docs/evidence/the-touchscreen-becomes-an-hdmi-trackpad/board/pointer-calculator.jpg
@@ -1799,9 +1799,9 @@ DATA  710701d621e73e64738594c5c02396f504f99775c149069c1dda63891f435971  docs/evi
 DATA  12a205cf394df45ba3ef48e4418e4939928e7f0b9cdf199d90d33416fb5f649c  docs/evidence/keyboard-base/shell/host-renders/settings-with-base-568x1232.png
 DATA  297e1020fe8fee839a7cc438ad0188e9854570ed3f6dd0972e099624b62db857  docs/evidence/keyboard-base/shell/host-renders/settings-without-base-1232x568.png
 DATA  8bf60ecef682bbd3096389c6fd385dd5bae0442ec0e8ff4ace14ac32a94abd9d  docs/evidence/keyboard-base/shell/host-renders/settings-without-base-568x1232.png
-DATA  9cbcf6aa00bfedb2b91a9119292ba3574126b8a956f8c4cc104b08d4f601422d  docs/evidence/keyboard-base/shell/host-renders/shade-with-base-1232x568.png
+DATA  2b291140f4b245f798056e3464f81c7e7b2842f366b312e53052326aba43e79a  docs/evidence/keyboard-base/shell/host-renders/shade-with-base-1232x568.png
 DATA  f5b353a2e56808b422a389db46e05ba66942f180dfeac519812dc334d2e58711  docs/evidence/keyboard-base/shell/host-renders/shade-with-base-568x1232.png
-DATA  6e9cff6ab9efd7e6a2042b086e076dc65421ca2295ca6e529e2db7d66c301e11  docs/evidence/keyboard-base/shell/host-renders/shade-without-base-1232x568.png
+DATA  6200cdc038df4f5cfcf74422c60f13be70a32444e9221637f93e4af3157df22d  docs/evidence/keyboard-base/shell/host-renders/shade-without-base-1232x568.png
 DATA  f3689f64b1d76d8cddaa38b41448d23af3191c499a3b84cbeee3ac123e5a4dc5  docs/evidence/keyboard-base/shell/host-renders/shade-without-base-568x1232.png
 DATA  6c17a39b1e712ed00ad8bfd58a1b25898683ea60b202dadd98a0445fb4c28ac8  docs/evidence/keyboard-base/shell/board/settings-landscape-drag-injected.png
 DATA  6c17a39b1e712ed00ad8bfd58a1b25898683ea60b202dadd98a0445fb4c28ac8  docs/evidence/keyboard-base/shell/board/settings-landscape-grim.png
@@ -3051,9 +3051,9 @@ Command and limits: `docs/evidence/keyboard-base/shell/host-renders/README.md`.
 | `docs/evidence/keyboard-base/shell/host-renders/settings-with-base-568x1232.png` | 50463 | DATA | `12a205cf394df45ba3ef48e4418e4939928e7f0b9cdf199d90d33416fb5f649c` |
 | `docs/evidence/keyboard-base/shell/host-renders/settings-without-base-1232x568.png` | 38040 | DATA | `297e1020fe8fee839a7cc438ad0188e9854570ed3f6dd0972e099624b62db857` |
 | `docs/evidence/keyboard-base/shell/host-renders/settings-without-base-568x1232.png` | 44523 | DATA | `8bf60ecef682bbd3096389c6fd385dd5bae0442ec0e8ff4ace14ac32a94abd9d` |
-| `docs/evidence/keyboard-base/shell/host-renders/shade-with-base-1232x568.png` | 24947 | DATA | `9cbcf6aa00bfedb2b91a9119292ba3574126b8a956f8c4cc104b08d4f601422d` |
+| `docs/evidence/keyboard-base/shell/host-renders/shade-with-base-1232x568.png` | 24852 | DATA | `2b291140f4b245f798056e3464f81c7e7b2842f366b312e53052326aba43e79a` |
 | `docs/evidence/keyboard-base/shell/host-renders/shade-with-base-568x1232.png` | 25853 | DATA | `f5b353a2e56808b422a389db46e05ba66942f180dfeac519812dc334d2e58711` |
-| `docs/evidence/keyboard-base/shell/host-renders/shade-without-base-1232x568.png` | 22805 | DATA | `6e9cff6ab9efd7e6a2042b086e076dc65421ca2295ca6e529e2db7d66c301e11` |
+| `docs/evidence/keyboard-base/shell/host-renders/shade-without-base-1232x568.png` | 22596 | DATA | `6200cdc038df4f5cfcf74422c60f13be70a32444e9221637f93e4af3157df22d` |
 | `docs/evidence/keyboard-base/shell/host-renders/shade-without-base-568x1232.png` | 23670 | DATA | `f3689f64b1d76d8cddaa38b41448d23af3191c499a3b84cbeee3ac123e5a4dc5` |
 | `docs/evidence/keyboard-base/shell/board/settings-landscape-drag-injected.png` | 22145 | DATA | `6c17a39b1e712ed00ad8bfd58a1b25898683ea60b202dadd98a0445fb4c28ac8` |
 | `docs/evidence/keyboard-base/shell/board/settings-landscape-grim.png` | 22145 | DATA | `6c17a39b1e712ed00ad8bfd58a1b25898683ea60b202dadd98a0445fb4c28ac8` |

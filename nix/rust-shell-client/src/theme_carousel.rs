@@ -184,6 +184,20 @@ pub const BACKGROUND_GEOMETRY: CarouselGeometry = CarouselGeometry {
     spacing: -16.0,    // 420 * -30/768 = -16.41, rounded.
 };
 
+/// The landscape panel's theme carousel: `THEME_GEOMETRY`'s own ratios
+/// (3:4 portrait crop; `slice_w`, `slice_h`, `skew` and `spacing` as the
+/// same fractions of `expanded_w`/`expanded_h`) scaled down so the carousel,
+/// its two-line label and the header fit the 568 px panel's height beside the
+/// background carousel.
+pub const THEME_GEOMETRY_WIDE: CarouselGeometry = CarouselGeometry {
+    expanded_w: 294.0,
+    expanded_h: 392.0,
+    slice_w: 42.0,  // 294 * 108/768 = 41.3, rounded.
+    slice_h: 356.0, // 392 * 432/475 = 356.5, rounded.
+    skew: 11.0,     // 294 * 28/768 = 10.7, rounded.
+    spacing: -12.0, // 294 * -30/768 = -11.5, rounded.
+};
+
 /// How many slices either side of the centered position are laid out and
 /// hit-tested at all. Upstream's own `nearby` cutoff is 16, sized for a
 /// desktop monitor; ours is smaller because this screen is much narrower
@@ -445,6 +459,20 @@ impl Carousel {
             settle: None,
             motion_started: false,
         }
+    }
+
+    /// Adopts `geometry` (the output's size changed, so the chooser's
+    /// carousels were re-laid out), dropping any touch or motion in flight
+    /// and snapping to the nearest item. A no-op when it is already in use.
+    pub fn set_geometry(&mut self, geometry: CarouselGeometry) {
+        if self.geometry == geometry {
+            return;
+        }
+        self.geometry = geometry;
+        self.position = self.position.round();
+        self.velocity = 0.0;
+        self.contact = None;
+        self.settle = None;
     }
 
     /// Jump to `index` with no animation -- used when a page opens fresh.

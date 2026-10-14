@@ -64,6 +64,9 @@ pub struct WifiView {
     pub use_saved: bool,
     pub pending: Option<(u64, Kind)>,
     keyboard_inset: f64,
+    /// Height of the network list's viewport, in the layout's own units
+    /// (814 in the portrait artwork); the landscape panel's list is shorter.
+    list_visible: f64,
 }
 impl Default for WifiView {
     fn default() -> Self {
@@ -78,10 +81,17 @@ impl Default for WifiView {
             use_saved: false,
             pending: None,
             keyboard_inset: 0.0,
+            list_visible: 814.0,
         }
     }
 }
 impl WifiView {
+    /// Sizes the list's scroll range to the layout in use for a
+    /// `width`x`height` surface (`layout`'s own `list_view`).
+    pub fn set_surface(&mut self, width: u32, height: u32) {
+        self.list_visible = layout(wide(width, height), 0.0).list_view.3;
+        self.scroll(0.0);
+    }
     pub fn public(&self) -> WifiPublic {
         WifiPublic {
             page: self.page,
@@ -314,7 +324,7 @@ impl WifiView {
             return;
         }
         let count = self.snapshot.as_ref().map_or(0, |s| all_networks(s).len());
-        let visible = 814.0;
+        let visible = self.list_visible;
         let max = (count as f64 * 88.0 - visible).max(0.0);
         self.scroll = (self.scroll + delta).clamp(0.0, max);
     }
@@ -329,6 +339,203 @@ impl WifiView {
 pub fn entry_buttons_rect(keyboard_inset: f64) -> (f64, f64) {
     let bottom = 1208.0 - keyboard_inset;
     (bottom - 88.0, bottom)
+}
+
+/// `(x, y, width, height)`.
+pub type Rect = (f64, f64, f64, f64);
+
+fn contains(rect: Rect, x: f64, y: f64) -> bool {
+    x >= rect.0 && x < rect.0 + rect.2 && y >= rect.1 && y < rect.1 + rect.3
+}
+
+/// Whether `(x, y)`, in the layout's own units, is inside the network list.
+pub fn list_contains(lay: &Layout, x: f64, y: f64) -> bool {
+    contains(lay.list_view, x, y)
+}
+
+/// Whether the Wi-Fi pages use the landscape layout: the same predicate as
+/// Help and Settings (`help::wide`), so the landscape surfaces switch
+/// together. Everything else keeps the 568x1232 artwork's own layout.
+pub fn wide(width: u32, height: u32) -> bool {
+    crate::help::wide(width, height)
+}
+
+/// The factor taking a real touch/paint coordinate to the units `Layout` is
+/// written in: the 568x1232 artwork scales to the surface, the wide layout
+/// is in real pixels.
+pub fn layout_scale(width: u32, height: u32) -> (f64, f64) {
+    if wide(width, height) {
+        (1.0, 1.0)
+    } else {
+        (568.0 / f64::from(width.max(1)), 1232.0 / f64::from(height.max(1)))
+    }
+}
+
+/// Every Wi-Fi page rect that is both painted and hit-tested, in one place.
+/// The portrait values are the 568x1232 artwork's own literals (they must
+/// not move: the native render stays byte-identical); the wide values lay
+/// the same pages out in two columns on the short landscape panel. Text
+/// positions are relative to their card so both layouts share the paint code.
+#[derive(Clone, Copy, Debug)]
+pub struct Layout {
+    pub wide: bool,
+    /// "‹ Settings" / "‹ Networks" and the page title: `(x, y, width, size)`.
+    pub back_text: (f64, f64, f64, f64),
+    pub title: (f64, f64, f64, f64),
+    /// Tap region of the back link: `x < .0 && y < .1`.
+    pub back_hit: (f64, f64),
+    pub refresh_text: (f64, f64, f64, f64),
+    pub refresh_hit: Rect,
+    // List page.
+    pub current_card: Rect,
+    pub list_label: (f64, f64, f64, f64),
+    /// The scrolling list's viewport (clip and tap region both).
+    pub list_view: Rect,
+    pub list_clip: Rect,
+    pub row_x: f64,
+    pub row_w: f64,
+    pub row_cull: (f64, f64),
+    pub list_empty: (f64, f64, f64),
+    pub list_message: (f64, f64),
+    // Entry page.
+    pub net_card: Rect,
+    pub net_name_dy: f64,
+    pub net_sub_dy: f64,
+    pub pw_label: (f64, f64),
+    pub field: Rect,
+    pub field_text_dy: f64,
+    pub eye_hit: Rect,
+    pub eye_center: (f64, f64),
+    pub counter: (f64, f64),
+    pub saved_change: Rect,
+    pub saved_forget: Rect,
+    pub banner_saved_y: f64,
+    pub banner_unsaved_y: f64,
+    pub banner: (f64, f64, f64),
+    pub buttons: (Rect, Rect),
+    pub button_text_dx: (f64, f64),
+    pub button_text_dy: f64,
+    pub entry_message: (f64, f64),
+    // Connecting page.
+    pub connecting_card: Rect,
+    pub connecting_title_dy: f64,
+    pub connecting_sub_dy: f64,
+    pub connecting_cancel: Rect,
+    pub connecting_cancel_text: (f64, f64),
+    // Forget confirmation.
+    pub forget_card: Rect,
+    pub forget_title_dy: f64,
+    pub forget_sub_dy: f64,
+    pub forget_keep: Rect,
+    pub forget_confirm: Rect,
+    pub forget_text_dx: (f64, f64),
+    pub forget_text_dy: f64,
+    pub status_message: (f64, f64),
+}
+
+pub fn layout(wide: bool, keyboard_inset: f64) -> Layout {
+    if wide {
+        let bottom = 568.0 - 24.0 - keyboard_inset;
+        let top = bottom - 72.0;
+        Layout {
+            wide,
+            back_text: (28.0, 14.0, 180.0, 22.0),
+            title: (28.0, 44.0, 360.0, 30.0),
+            back_hit: (200.0, 84.0),
+            refresh_text: (1086.0, 22.0, 120.0, 22.0),
+            refresh_hit: (1040.0, 0.0, 192.0, 64.0),
+            current_card: (24.0, 92.0, 520.0, 116.0),
+            list_label: (604.0, 22.0, 440.0, 19.0),
+            list_view: (600.0, 64.0, 608.0, 480.0),
+            list_clip: (596.0, 64.0, 616.0, 480.0),
+            row_x: 600.0,
+            row_w: 608.0,
+            row_cull: (64.0 - 88.0, 544.0),
+            list_empty: (622.0, 90.0, 560.0),
+            list_message: (30.0, 224.0),
+            net_card: (24.0, 92.0, 520.0, 84.0),
+            net_name_dy: 10.0,
+            net_sub_dy: 50.0,
+            pw_label: (28.0, 186.0),
+            field: (24.0, 210.0, 520.0, 78.0),
+            field_text_dy: 22.0,
+            eye_hit: (468.0, 210.0, 72.0, 78.0),
+            eye_center: (504.0, 244.0),
+            counter: (445.0, 264.0),
+            saved_change: (600.0, 92.0, 296.0, 62.0),
+            saved_forget: (912.0, 92.0, 296.0, 62.0),
+            banner_saved_y: 166.0,
+            banner_unsaved_y: 92.0,
+            banner: (608.0, 52.0, 600.0),
+            buttons: ((600.0, top, 296.0, 72.0), (912.0, top, 296.0, 72.0)),
+            button_text_dx: (74.0, 74.0),
+            button_text_dy: 22.0,
+            entry_message: (604.0, top - 34.0),
+            connecting_card: (24.0, 92.0, 520.0, 170.0),
+            connecting_title_dy: 28.0,
+            connecting_sub_dy: 90.0,
+            connecting_cancel: (600.0, 92.0, 608.0, 100.0),
+            connecting_cancel_text: (170.0, 34.0),
+            forget_card: (24.0, 92.0, 520.0, 170.0),
+            forget_title_dy: 28.0,
+            forget_sub_dy: 90.0,
+            forget_keep: (600.0, 92.0, 296.0, 100.0),
+            forget_confirm: (912.0, 92.0, 296.0, 100.0),
+            forget_text_dx: (110.0, 106.0),
+            forget_text_dy: 34.0,
+            status_message: (30.0, 282.0),
+        }
+    } else {
+        let (top, _) = entry_buttons_rect(keyboard_inset);
+        Layout {
+            wide,
+            back_text: (28.0, 45.0, 180.0, 23.0),
+            title: (28.0, 105.0, 360.0, 38.0),
+            back_hit: (150.0, 104.0),
+            refresh_text: (420.0, 45.0, 125.0, 22.0),
+            refresh_hit: (418.0, 0.0, 150.0, 104.0),
+            current_card: (24.0, 150.0, 520.0, 116.0),
+            list_label: (28.0, 304.0, 480.0, 19.0),
+            list_view: (24.0, 338.0, 520.0, 814.0),
+            list_clip: (20.0, 338.0, 528.0, 814.0),
+            row_x: 24.0,
+            row_w: 520.0,
+            row_cull: (-88.0, 1152.0),
+            list_empty: (42.0, 370.0, 470.0),
+            list_message: (30.0, 1163.0),
+            net_card: (24.0, 150.0, 520.0, 108.0),
+            net_name_dy: 22.0,
+            net_sub_dy: 64.0,
+            pw_label: (28.0, 281.0),
+            field: (24.0, 310.0, 520.0, 90.0),
+            field_text_dy: 27.0,
+            eye_hit: (468.0, 314.0, 72.0, 74.0),
+            eye_center: (504.0, 350.0),
+            counter: (445.0, 369.0),
+            saved_change: (24.0, 414.0, 250.0, 62.0),
+            saved_forget: (294.0, 414.0, 250.0, 62.0),
+            banner_saved_y: 486.0,
+            banner_unsaved_y: 408.0,
+            banner: (520.0, 64.0, 448.0),
+            buttons: ((24.0, top, 250.0, 88.0), (294.0, top, 250.0, 88.0)),
+            button_text_dx: (66.0, 57.0),
+            button_text_dy: 27.0,
+            entry_message: (30.0, top - 100.0),
+            connecting_card: (24.0, 220.0, 520.0, 210.0),
+            connecting_title_dy: 40.0,
+            connecting_sub_dy: 104.0,
+            connecting_cancel: (24.0, 1010.0, 520.0, 110.0),
+            connecting_cancel_text: (111.0, 37.0),
+            forget_card: (24.0, 230.0, 520.0, 210.0),
+            forget_title_dy: 40.0,
+            forget_sub_dy: 96.0,
+            forget_keep: (24.0, 850.0, 250.0, 110.0),
+            forget_confirm: (294.0, 850.0, 250.0, 110.0),
+            forget_text_dx: (77.0, 66.0),
+            forget_text_dy: 36.0,
+            status_message: (30.0, 480.0),
+        }
+    }
 }
 
 pub fn all_networks(snapshot: &Snapshot) -> Vec<Network> {
@@ -418,58 +625,59 @@ pub fn hit(
     if width == 0 || height == 0 {
         return None;
     }
-    // Artwork is authored at 568×1232, while Wayland supplies output pixels.
-    let scale = |point: (f64, f64)| {
-        (
-            point.0 * 568.0 / f64::from(width),
-            point.1 * 1232.0 / f64::from(height),
-        )
-    };
+    let lay = layout(wide(width, height), view.keyboard_inset);
+    // Portrait artwork is authored at 568x1232 while Wayland supplies output
+    // pixels; the wide layout is in real pixels.
+    let (sx, sy) = layout_scale(width, height);
+    let scale = |point: (f64, f64)| (point.0 * sx, point.1 * sy);
     let start = scale(start);
     let (x, y) = scale(end);
     let dy = y - start.1;
     if view.page == Page::Closed {
         return None;
     }
-    if view.page == Page::List && start.1 >= 338.0 && dy.abs() > 20.0 {
+    let scroll_start = if lay.wide {
+        contains(lay.list_view, start.0, start.1)
+    } else {
+        start.1 >= lay.list_view.1
+    };
+    if view.page == Page::List && scroll_start && dy.abs() > 20.0 {
         return Some(Intent::Scroll(-dy));
     }
     if (x - start.0).abs() > 18.0 || dy.abs() > 18.0 {
         return None;
     }
-    let down = target(view, start.0, start.1);
-    let up = target(view, x, y);
+    let down = target(view, &lay, start.0, start.1);
+    let up = target(view, &lay, x, y);
     (down == up).then_some(up).flatten()
 }
 
-fn target(view: &WifiPublic, x: f64, y: f64) -> Option<Intent> {
-    if y < 104.0 && x < 150.0 {
+fn target(view: &WifiPublic, lay: &Layout, x: f64, y: f64) -> Option<Intent> {
+    if y < lay.back_hit.1 && x < lay.back_hit.0 {
         return Some(Intent::Back);
     }
     if view.page == Page::List {
-        if y < 104.0 && x > 418.0 {
+        if contains(lay.refresh_hit, x, y) {
             return Some(Intent::Refresh);
         }
-        if (338.0..1152.0).contains(&y) && (24.0..544.0).contains(&x) {
-            let index = ((y - 338.0 + view.scroll) / 88.0).floor() as usize;
+        if contains(lay.list_view, x, y) {
+            let index = ((y - lay.list_view.1 + view.scroll) / 88.0).floor() as usize;
             let count = view.snapshot.as_ref().map_or(0, |s| all_networks(s).len());
             return (index < count).then_some(Intent::Select(index));
         }
     }
     if view.page == Page::Connecting {
-        if (1010.0..1120.0).contains(&y) && (24.0..544.0).contains(&x) {
+        if contains(lay.connecting_cancel, x, y) {
             return Some(Intent::CancelPending);
         }
         return None;
     }
     if view.page == Page::ForgetConfirm {
-        if (850.0..960.0).contains(&y) {
-            if (24.0..274.0).contains(&x) {
-                return Some(Intent::ForgetCancel);
-            }
-            if (294.0..544.0).contains(&x) {
-                return Some(Intent::ForgetConfirm);
-            }
+        if contains(lay.forget_keep, x, y) {
+            return Some(Intent::ForgetCancel);
+        }
+        if contains(lay.forget_confirm, x, y) {
+            return Some(Intent::ForgetConfirm);
         }
         return None;
     }
@@ -478,17 +686,15 @@ fn target(view: &WifiPublic, x: f64, y: f64) -> Option<Intent> {
     }
     if !view.use_saved && !view.pending
         && view.selected.as_ref().is_some_and(|n| n.security == Security::Wpa2Psk)
-        && (468.0..540.0).contains(&x) && (314.0..388.0).contains(&y) {
+        && contains(lay.eye_hit, x, y) {
         return Some(Intent::TogglePassword);
     }
-    let (button_top, button_bottom) = entry_buttons_rect(view.keyboard_inset);
-    if (button_top..button_bottom).contains(&y) {
-        if (24.0..274.0).contains(&x) {
-            return Some(Intent::Back);
-        }
-        if (294.0..544.0).contains(&x) {
-            return Some(Intent::Connect);
-        }
+    let (cancel, connect) = lay.buttons;
+    if contains(cancel, x, y) {
+        return Some(Intent::Back);
+    }
+    if contains(connect, x, y) {
+        return Some(Intent::Connect);
     }
     let is_saved = view.selected.as_ref().is_some_and(|selected| {
         view.snapshot.as_ref().is_some_and(|snapshot| {
@@ -498,8 +704,8 @@ fn target(view: &WifiPublic, x: f64, y: f64) -> Option<Intent> {
                 .any(|saved| saved.ssid == selected.ssid)
         })
     });
-    if (414.0..476.0).contains(&y) && is_saved {
-        if (24.0..274.0).contains(&x)
+    if is_saved {
+        if contains(lay.saved_change, x, y)
             && view.use_saved
             && view
                 .selected
@@ -508,7 +714,7 @@ fn target(view: &WifiPublic, x: f64, y: f64) -> Option<Intent> {
         {
             return Some(Intent::EditPassword);
         }
-        if (294.0..544.0).contains(&x) {
+        if contains(lay.saved_forget, x, y) {
             return Some(Intent::Forget);
         }
     }
@@ -539,7 +745,7 @@ mod tests {
         view.toggle_password();
         assert_eq!(view.password_preview(), Some("sample-pass"));
         assert!(!format!("{:?}", view.public()).contains("sample-pass"));
-        assert_eq!(target(&view.public(), 504.0, 350.0), Some(Intent::TogglePassword));
+        assert_eq!(target(&view.public(), &layout(false, 0.0), 504.0, 350.0), Some(Intent::TogglePassword));
         view.key(Intent::Backspace);
         assert_eq!(view.password_preview(), Some("sample-pas"));
         view.toggle_password();
@@ -564,7 +770,7 @@ mod tests {
         assert!(!view.public().password_visible);
         view.use_saved = true; view.toggle_password();
         assert!(view.password_preview().is_none());
-        assert_ne!(target(&view.public(),504.0,350.0), Some(Intent::TogglePassword));
+        assert_ne!(target(&view.public(), &layout(false, 0.0), 504.0, 350.0), Some(Intent::TogglePassword));
         view.close();
         assert_eq!(view.public().password_len, 0);
     }
@@ -819,5 +1025,175 @@ mod tests {
             Some(WifiRequest::Forget { .. })
         ));
         assert!(!format!("{:?}", view.public()).contains("examplepass"));
+    }
+
+    const LONG: &str = "A Rather Long Network Name For The Neighbours Upstairs";
+
+    fn inside_panel(name: &str, rect: Rect, keyboard_top: f64) {
+        let (x, y, w, h) = rect;
+        assert!(
+            x >= 0.0 && y >= 0.0 && x + w <= 1232.0 && y + h <= keyboard_top,
+            "{name} ({x},{y},{w},{h}) leaves 1232x{keyboard_top}"
+        );
+    }
+
+    fn disjoint(items: &[(&str, Rect)]) {
+        for (i, a) in items.iter().enumerate() {
+            for b in &items[i + 1..] {
+                let ((ax, ay, aw, ah), (bx, by, bw, bh)) = (a.1, b.1);
+                assert!(
+                    ax + aw <= bx || bx + bw <= ax || ay + ah <= by || by + bh <= ay,
+                    "{} overlaps {}",
+                    a.0,
+                    b.0
+                );
+            }
+        }
+    }
+
+    fn centre(rect: Rect) -> (f64, f64) {
+        (rect.0 + rect.2 / 2.0, rect.1 + rect.3 / 2.0)
+    }
+
+    fn tap(view: &WifiPublic, point: (f64, f64)) -> Option<Intent> {
+        hit(view, point, point, 1232, 568)
+    }
+
+    fn fixture(page: Page, selected: Option<&str>, use_saved: bool, inset: f64) -> WifiPublic {
+        crate::evidence_render::fixture_wifi(page, selected, use_saved, inset, None)
+    }
+
+    #[test]
+    fn the_portrait_wifi_layout_keeps_the_artworks_literals() {
+        assert!(!wide(568, 1232) && !wide(1080, 1920) && !wide(1920, 1080));
+        let lay = layout(false, 0.0);
+        assert_eq!(lay.buttons, ((24.0, 1120.0, 250.0, 88.0), (294.0, 1120.0, 250.0, 88.0)));
+        assert_eq!(lay.list_view, (24.0, 338.0, 520.0, 814.0));
+        assert_eq!(layout(false, 440.0).buttons.0 .1, entry_buttons_rect(440.0).0);
+        assert_eq!(layout_scale(568, 1232), (1.0, 1.0));
+    }
+
+    #[test]
+    fn every_wide_wifi_list_control_is_inside_the_panel_and_taps_at_its_centre() {
+        let view = fixture(Page::List, None, false, 0.0);
+        let lay = layout(true, 0.0);
+        let items = [
+            ("current", lay.current_card),
+            ("list", lay.list_view),
+            ("refresh", lay.refresh_hit),
+            ("back", (0.0, 0.0, lay.back_hit.0, lay.back_hit.1)),
+        ];
+        for (name, rect) in items {
+            inside_panel(name, rect, 568.0);
+        }
+        inside_panel("list clip", lay.list_clip, 568.0);
+        disjoint(&items[1..]);
+        assert_eq!(tap(&view, centre(items[3].1)), Some(Intent::Back));
+        assert_eq!(tap(&view, centre(lay.refresh_hit)), Some(Intent::Refresh));
+        // Every row that is fully inside the viewport is hit at its centre,
+        // and each row's painted card lies inside the panel.
+        let rows = all_networks(view.snapshot.as_ref().unwrap()).len();
+        let mut reachable = 0;
+        for index in 0..rows {
+            let card = (lay.row_x, lay.list_view.1 + index as f64 * 88.0, lay.row_w, 78.0);
+            if card.1 + card.3 > lay.list_view.1 + lay.list_view.3 {
+                continue;
+            }
+            inside_panel("row", card, 568.0);
+            assert_eq!(tap(&view, centre(card)), Some(Intent::Select(index)), "row {index}");
+            reachable += 1;
+        }
+        assert!(reachable >= 5, "several networks reachable without scrolling: {reachable}");
+        // The rest are reached by scrolling the list: a vertical drag inside it.
+        let drag = hit(&view, (900.0, 400.0), (900.0, 300.0), 1232, 568);
+        assert_eq!(drag, Some(Intent::Scroll(100.0)));
+        let mut state = WifiView { snapshot: view.snapshot.clone(), page: Page::List, ..WifiView::default() };
+        state.set_surface(1232, 568);
+        state.scroll(10_000.0);
+        let last_top = lay.list_view.1 + (rows - 1) as f64 * 88.0 - state.scroll;
+        assert!(last_top + 78.0 <= lay.list_view.1 + lay.list_view.3 + 1.0, "the last row scrolls fully into view");
+        let scrolled = WifiPublic { scroll: state.scroll, ..view.clone() };
+        assert_eq!(
+            tap(&scrolled, (900.0, last_top + 39.0)),
+            Some(Intent::Select(rows - 1)),
+            "tap on the last row after scrolling"
+        );
+    }
+
+    #[test]
+    fn every_wide_wifi_entry_control_is_inside_the_panel_clear_of_the_keyboard() {
+        // The landscape keyboard is 240 px; the page keeps clear of it.
+        for inset in [0.0, 240.0] {
+            let keyboard_top = 568.0 - inset;
+            let view = fixture(Page::Entry, Some(LONG), false, inset);
+            let lay = layout(true, inset);
+            let (cancel, connect) = lay.buttons;
+            let items = [
+                ("network", lay.net_card),
+                ("field", lay.field),
+                ("saved-change", lay.saved_change),
+                ("saved-forget", lay.saved_forget),
+                ("cancel", cancel),
+                ("connect", connect),
+            ];
+            for (name, rect) in &items {
+                inside_panel(name, *rect, keyboard_top);
+            }
+            // Left column (network, field) and right column (everything else).
+            disjoint(&items);
+            assert_eq!(tap(&view, centre(cancel)), Some(Intent::Back));
+            assert_eq!(tap(&view, centre(connect)), Some(Intent::Connect));
+            assert_eq!(tap(&view, centre(lay.eye_hit)), Some(Intent::TogglePassword));
+            inside_panel("eye", lay.eye_hit, keyboard_top);
+            // The rejected-password banner sits between the saved buttons
+            // and the Cancel/Connect row without touching either.
+            let (bw, bh, _) = lay.banner;
+            for banner_y in [lay.banner_saved_y, lay.banner_unsaved_y] {
+                let banner = (cancel.0, banner_y, bw, bh);
+                inside_panel("banner", banner, keyboard_top);
+                if banner_y == lay.banner_saved_y {
+                    disjoint(&[("banner", banner), ("saved-forget", lay.saved_forget), ("saved-change", lay.saved_change)]);
+                }
+                disjoint(&[("banner", banner), ("cancel", cancel), ("connect", connect)]);
+            }
+            // The info line above the buttons stays on the panel too.
+            assert!(lay.entry_message.1 + 18.0 <= cancel.1 && lay.entry_message.1 >= 0.0);
+        }
+        // A saved network: Change password and Forget are reachable.
+        let saved = fixture(Page::Entry, Some("Home Network"), true, 0.0);
+        let lay = layout(true, 0.0);
+        assert_eq!(tap(&saved, centre(lay.saved_change)), Some(Intent::EditPassword));
+        assert_eq!(tap(&saved, centre(lay.saved_forget)), Some(Intent::Forget));
+        // An open network has no eye and no password field to hit.
+        let open = fixture(Page::Entry, Some("Guest (open)"), false, 0.0);
+        assert_eq!(tap(&open, centre(lay.eye_hit)), None);
+    }
+
+    #[test]
+    fn the_wide_connecting_and_forget_pages_are_inside_the_panel_and_reachable() {
+        let lay = layout(true, 0.0);
+        let connecting = fixture(Page::Connecting, Some(LONG), false, 0.0);
+        let items = [("card", lay.connecting_card), ("cancel", lay.connecting_cancel)];
+        for (name, rect) in items {
+            inside_panel(name, rect, 568.0);
+        }
+        disjoint(&items);
+        assert_eq!(tap(&connecting, centre(lay.connecting_cancel)), Some(Intent::CancelPending));
+        let forget = fixture(Page::ForgetConfirm, Some("Home Network"), true, 0.0);
+        let items = [("card", lay.forget_card), ("keep", lay.forget_keep), ("forget", lay.forget_confirm)];
+        for (name, rect) in items {
+            inside_panel(name, rect, 568.0);
+        }
+        disjoint(&items);
+        assert_eq!(tap(&forget, centre(lay.forget_keep)), Some(Intent::ForgetCancel));
+        assert_eq!(tap(&forget, centre(lay.forget_confirm)), Some(Intent::ForgetConfirm));
+        // The status line under the cards is on the panel and clear of them.
+        assert!(lay.status_message.1 + 18.0 <= 568.0);
+        assert!(lay.status_message.1 >= lay.connecting_card.1 + lay.connecting_card.3);
+        // The back link works on every page.
+        for page in [Page::Entry, Page::Connecting, Page::ForgetConfirm] {
+            let view = fixture(page, Some(LONG), false, 0.0);
+            assert_eq!(tap(&view, (60.0, 40.0)), Some(Intent::Back), "{page:?}");
+        }
     }
 }

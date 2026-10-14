@@ -308,6 +308,116 @@ pub const THEME_CAROUSEL_TOP: f64 = 132.0;
 pub const BACKGROUND_CAROUSEL_TOP: f64 =
     THEME_CAROUSEL_TOP + crate::theme_carousel::THEME_GEOMETRY.expanded_h + 100.0;
 
+/// Where the theme chooser's pieces sit. The portrait panel and the HDMI
+/// outputs keep the stacked layout (the theme carousel over the backgrounds
+/// carousel); the landscape panel (`help::wide`) puts them side by side, each
+/// in its own half of the output, so both carousels and their labels fit the
+/// 568 px height. `render.rs` paints and `main.rs` hit-tests from this one
+/// struct, so a touch and its paint cannot drift apart.
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct ChooserLayout {
+    pub wide: bool,
+    pub theme_geometry: crate::theme_carousel::CarouselGeometry,
+    pub background_geometry: crate::theme_carousel::CarouselGeometry,
+    pub theme_top: f64,
+    pub background_top: f64,
+    pub theme_cx: f64,
+    pub background_cx: f64,
+    /// Horizontal extent each carousel is clipped and hit-tested to.
+    pub theme_cols: (f64, f64),
+    pub background_cols: (f64, f64),
+    /// Left edge and width of the text above and below each carousel.
+    pub theme_text: (f64, f64),
+    pub background_text: (f64, f64),
+    /// Y of the header's "‹ Settings" and "Close", and how far down a touch
+    /// still counts as the header.
+    pub header_y: f64,
+    pub header_hit_h: f64,
+    /// "Themes" heading, its hint line, and the "Backgrounds" heading:
+    /// `(x, y)` each (the hint's width is the theme column's).
+    pub themes_heading: (f64, f64),
+    pub themes_hint: (f64, f64),
+    pub backgrounds_heading: (f64, f64),
+    /// Where the background carousel's "Applying…" feedback sits and how wide it may be.
+    pub feedback: (f64, f64, f64),
+    /// Y of the single pending/error/message line at the bottom of the
+    /// background column.
+    pub message_y: f64,
+}
+
+pub fn chooser_layout(width: u32, height: u32) -> ChooserLayout {
+    let w = f64::from(width);
+    if width > 0 && height > 0 && crate::help::wide(width, height) {
+        let half = w / 2.0;
+        let top = 100.0;
+        let bg_h = crate::theme_carousel::BACKGROUND_GEOMETRY.expanded_h;
+        ChooserLayout {
+            wide: true,
+            theme_geometry: crate::theme_carousel::THEME_GEOMETRY_WIDE,
+            background_geometry: crate::theme_carousel::BACKGROUND_GEOMETRY,
+            theme_top: top,
+            background_top: top,
+            theme_cx: half / 2.0,
+            background_cx: half + half / 2.0,
+            theme_cols: (0.0, half),
+            background_cols: (half, w),
+            theme_text: (28.0, half - 56.0),
+            background_text: (half + 28.0, half - 56.0),
+            header_y: 14.0,
+            header_hit_h: 48.0,
+            themes_heading: (28.0, 48.0),
+            themes_hint: (150.0, 54.0),
+            backgrounds_heading: (half + 28.0, 48.0),
+            feedback: (half + 190.0, 50.0, half - 218.0),
+            message_y: (top + bg_h + 64.0).min(f64::from(height) - 30.0),
+        }
+    } else {
+        let center = w / 2.0;
+        let message_y = (BACKGROUND_CAROUSEL_TOP
+            + crate::theme_carousel::BACKGROUND_GEOMETRY.expanded_h
+            + 64.0)
+            .min(f64::from(height) - 30.0);
+        ChooserLayout {
+            wide: false,
+            theme_geometry: crate::theme_carousel::THEME_GEOMETRY,
+            background_geometry: crate::theme_carousel::BACKGROUND_GEOMETRY,
+            theme_top: THEME_CAROUSEL_TOP,
+            background_top: BACKGROUND_CAROUSEL_TOP,
+            theme_cx: center,
+            background_cx: center,
+            theme_cols: (0.0, w),
+            background_cols: (0.0, w),
+            theme_text: (28.0, w - 56.0),
+            background_text: (28.0, w - 56.0),
+            header_y: 42.0,
+            header_hit_h: 104.0,
+            themes_heading: (28.0, 84.0),
+            themes_hint: (28.0, 112.0),
+            backgrounds_heading: (28.0, BACKGROUND_CAROUSEL_TOP - 30.0),
+            feedback: (center, BACKGROUND_CAROUSEL_TOP - 30.0, center - 28.0),
+            message_y,
+        }
+    }
+}
+
+impl ChooserLayout {
+    /// Whether a touch at `pos` lands in the theme carousel's band.
+    pub fn in_theme_band(&self, pos: (f64, f64)) -> bool {
+        pos.0 >= self.theme_cols.0
+            && pos.0 < self.theme_cols.1
+            && pos.1 >= self.theme_top
+            && pos.1 < self.theme_top + self.theme_geometry.expanded_h
+    }
+
+    /// Same, for the background carousel's band.
+    pub fn in_background_band(&self, pos: (f64, f64)) -> bool {
+        pos.0 >= self.background_cols.0
+            && pos.0 < self.background_cols.1
+            && pos.1 >= self.background_top
+            && pos.1 < self.background_top + self.background_geometry.expanded_h
+    }
+}
+
 fn request_target(request: &ThemeRequest) -> Option<(&str, Option<&str>)> {
     match request {
         ThemeRequest::Preview {
@@ -780,8 +890,9 @@ impl ThemeView {
     /// now -- `theme_carousel::Carousel::up` resolves those touches
     /// directly (see `main.rs`), returning `CarouselOutcome::Consumed` for
     /// anything that should not fall through to here.
-    pub fn hit(&self, start: (f64, f64), end: (f64, f64), width: u32, _height: u32) -> Option<ThemeIntent> {
+    pub fn hit(&self, start: (f64, f64), end: (f64, f64), width: u32, height: u32) -> Option<ThemeIntent> {
         let w = f64::from(width);
+        let header_h = chooser_layout(width, height).header_hit_h;
         let dx = end.0 - start.0;
         let dy = end.1 - start.1;
         if dx.abs() > 18.0 || dy.abs() > 18.0 {
@@ -795,7 +906,7 @@ impl ThemeView {
                 ((104.0..162.0).contains(&end.1) && end.0 > w - 185.0).then_some(ThemeIntent::Open)
             }
             ThemePage::List => {
-                if end.1 < 104.0 {
+                if end.1 < header_h {
                     return if end.0 < 190.0 {
                         Some(ThemeIntent::Back)
                     } else if end.0 > w - 150.0 {
@@ -1918,5 +2029,62 @@ mod tests {
             assert_eq!(view.pending_neighbor_warms, queued);
             assert_eq!(view.pending_id, Some(99));
         }
+    }
+
+    #[test]
+    fn the_portrait_chooser_layout_keeps_the_stacked_constants() {
+        for (w, h) in [(568, 1232), (768, 1024), (1080, 1920), (1920, 1080), (0, 0)] {
+            let lay = chooser_layout(w, h);
+            assert!(!lay.wide, "{w}x{h}");
+            assert_eq!(
+                (lay.theme_top, lay.background_top, lay.header_hit_h),
+                (THEME_CAROUSEL_TOP, BACKGROUND_CAROUSEL_TOP, 104.0)
+            );
+            assert_eq!(lay.theme_geometry, crate::theme_carousel::THEME_GEOMETRY);
+            assert_eq!(lay.theme_cx, f64::from(w) / 2.0);
+        }
+    }
+
+    #[test]
+    fn the_wide_chooser_fits_both_carousels_and_their_labels_on_the_landscape_panel() {
+        let lay = chooser_layout(1232, 568);
+        assert!(lay.wide);
+        // The two carousels are in disjoint halves, inside the panel.
+        assert!(lay.theme_cols.1 <= lay.background_cols.0 && lay.background_cols.1 <= 1232.0);
+        for (name, cx, cols, geometry, top, text) in [
+            ("themes", lay.theme_cx, lay.theme_cols, lay.theme_geometry, lay.theme_top, lay.theme_text),
+            ("backgrounds", lay.background_cx, lay.background_cols, lay.background_geometry, lay.background_top, lay.background_text),
+        ] {
+            assert!(cx - geometry.expanded_w / 2.0 >= cols.0 && cx + geometry.expanded_w / 2.0 <= cols.1, "{name} centred card in its half");
+            assert!(top >= lay.themes_heading.1 + 26.0, "{name} starts below its heading");
+            // The label (12 px gap, 24 px name, 26 px offset 16 px status) ends on the panel.
+            assert!(top + geometry.expanded_h + 12.0 + 26.0 + 16.0 <= 568.0, "{name} label ends at {}", top + geometry.expanded_h + 54.0);
+            assert!(text.0 >= cols.0 && text.0 + text.1 <= cols.1, "{name} text inside its half");
+        }
+        assert!(lay.message_y + 18.0 <= 568.0);
+        assert!(lay.message_y >= lay.background_top + lay.background_geometry.expanded_h + 12.0 + 26.0 + 16.0, "message below the background label");
+        // Header: back and Close are above both carousels.
+        assert!(lay.header_y + 22.0 <= lay.themes_heading.1 && lay.header_hit_h <= lay.theme_top);
+    }
+
+    #[test]
+    fn a_tap_at_the_centre_of_each_wide_carousel_reaches_its_own_centred_slice() {
+        use crate::theme_carousel::hit_test;
+        let lay = chooser_layout(1232, 568);
+        let theme = (lay.theme_cx, lay.theme_top + lay.theme_geometry.expanded_h / 2.0);
+        let background = (lay.background_cx, lay.background_top + lay.background_geometry.expanded_h / 2.0);
+        assert!(lay.in_theme_band(theme) && !lay.in_background_band(theme));
+        assert!(lay.in_background_band(background) && !lay.in_theme_band(background));
+        assert_eq!(hit_test(&lay.theme_geometry, theme, 2.0, 7, lay.theme_cx, lay.theme_top), Some(2));
+        assert_eq!(hit_test(&lay.background_geometry, background, 3.0, 5, lay.background_cx, lay.background_top), Some(3));
+        // A touch between the halves belongs to neither carousel, and a
+        // theme-side slice never answers a touch in the background half.
+        let seam = (616.0, lay.theme_top + 50.0);
+        assert!(!(lay.in_theme_band(seam) && lay.in_background_band(seam)));
+        // Header taps: back on the left, Close on the right, only above the carousels.
+        let view = ThemeView { page: ThemePage::List, ..ThemeView::default() };
+        assert_eq!(view.hit((60.0, 30.0), (60.0, 30.0), 1232, 568), Some(ThemeIntent::Back));
+        assert_eq!(view.hit((1180.0, 30.0), (1180.0, 30.0), 1232, 568), Some(ThemeIntent::Close));
+        assert_eq!(view.hit((60.0, 70.0), (60.0, 70.0), 1232, 568), None);
     }
 }

@@ -91,6 +91,73 @@ pub fn configure_size(current: &mut (u32, u32), width: u32, height: u32) -> Opti
     Some(changed)
 }
 
+/// Which full-panel surface a configure is for; a rejected configure is
+/// remembered per surface so it can be retried when the output size arrives.
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub enum ConfigureSurface {
+    Wallpaper,
+    Home,
+    Overlay,
+}
+
+/// Whether `(width, height)` equals one of the compositor's known logical
+/// output sizes.
+pub fn is_whole_output_size(outputs: &[(i32, i32)], width: u32, height: u32) -> bool {
+    outputs.iter().any(|&(w, h)| (w, h) == (width as i32, height as i32))
+}
+
+/// The whole-output configure decision, free of Wayland state: a bounded
+/// size that either keeps the design aspect or is exactly some known output
+/// (rotated panel, HDMI monitor). A keyboard exclusive-zone squish is
+/// smaller than its output on one axis, so it is never accepted.
+pub fn configure_acceptable(outputs: &[(i32, i32)], width: u32, height: u32) -> bool {
+    frame_bytes(width, height).is_some()
+        && (configure_preserves_aspect(width, height) || is_whole_output_size(outputs, width, height))
+}
+
+/// The last configure each full-panel surface was refused. The output's own
+/// size can be learned after the surface's first configure (or change at
+/// runtime when the panel rotates), so an update to the output re-offers
+/// these rather than leaving the surface unconfigured and drawing nothing.
+#[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
+pub struct RejectedConfigures {
+    slots: [Option<(u32, u32)>; 3],
+}
+
+impl RejectedConfigures {
+    fn slot(surface: ConfigureSurface) -> usize {
+        match surface {
+            ConfigureSurface::Wallpaper => 0,
+            ConfigureSurface::Home => 1,
+            ConfigureSurface::Overlay => 2,
+        }
+    }
+
+    pub fn remember(&mut self, surface: ConfigureSurface, size: (u32, u32)) {
+        self.slots[Self::slot(surface)] = Some(size);
+    }
+
+    pub fn clear(&mut self, surface: ConfigureSurface) {
+        self.slots[Self::slot(surface)] = None;
+    }
+
+    /// Takes every remembered configure that `outputs` now makes acceptable.
+    /// Ones that are still unacceptable stay remembered.
+    pub fn take_acceptable(&mut self, outputs: &[(i32, i32)]) -> Vec<(ConfigureSurface, (u32, u32))> {
+        let mut ready = Vec::new();
+        for surface in [ConfigureSurface::Wallpaper, ConfigureSurface::Home, ConfigureSurface::Overlay] {
+            let slot = Self::slot(surface);
+            if let Some((w, h)) = self.slots[slot] {
+                if configure_acceptable(outputs, w, h) {
+                    self.slots[slot] = None;
+                    ready.push((surface, (w, h)));
+                }
+            }
+        }
+        ready
+    }
+}
+
 /// The 568x1232 design aspect ratio every full-panel layer surface
 /// (wallpaper, home, the drawer/shade/settings overlay -- all three
 /// `LayerShellHandler::configure` branches) is authored against, and every
@@ -349,6 +416,55 @@ mod tests {
         assert_eq!(frame_bytes(768, 1024), Some(3_145_728));
         assert_eq!(frame_bytes(1080, 1920), Some(8_294_400));
         assert_eq!(frame_bytes(1920, 1080), Some(8_294_400));
+    }
+
+    #[test]
+    fn a_late_output_size_accepts_the_whole_output_configure() {
+        // The configure arrives before the output's logical size is known.
+        let mut rejected = RejectedConfigures::default();
+        assert!(!configure_acceptable(&[], 1232, 568), "unknown output: refused, not drawn");
+        rejected.remember(ConfigureSurface::Home, (1232, 568));
+        assert!(rejected.take_acceptable(&[]).is_empty());
+        // The output update then reports 1232x568: the refused configure is re-offered.
+        assert!(configure_acceptable(&[(1232, 568)], 1232, 568));
+        assert_eq!(
+            rejected.take_acceptable(&[(1232, 568)]),
+            vec![(ConfigureSurface::Home, (1232, 568))]
+        );
+        assert!(rejected.take_acceptable(&[(1232, 568)]).is_empty(), "taken once");
+    }
+
+    #[test]
+    fn a_runtime_rotation_re_lays_out_in_both_directions() {
+        // Portrait panel rotated to landscape, then back.
+        assert!(configure_acceptable(&[(568, 1232)], 568, 1232));
+        assert!(configure_acceptable(&[(1232, 568)], 1232, 568));
+        assert!(configure_acceptable(&[(568, 1232)], 568, 1232));
+        let mut geometry = (568, 1232);
+        assert_eq!(configure_size(&mut geometry, 1232, 568), Some(true));
+        assert_eq!(configure_size(&mut geometry, 1232, 568), Some(false));
+        assert_eq!(configure_size(&mut geometry, 568, 1232), Some(true));
+        // A configure that raced the output update is retried by it.
+        let mut rejected = RejectedConfigures::default();
+        rejected.remember(ConfigureSurface::Overlay, (568, 1232));
+        rejected.remember(ConfigureSurface::Wallpaper, (1232, 568));
+        assert!(!configure_acceptable(&[(1080, 1920)], 1232, 568));
+        let ready = rejected.take_acceptable(&[(1232, 568)]);
+        assert!(ready.contains(&(ConfigureSurface::Wallpaper, (1232, 568))));
+        assert!(ready.contains(&(ConfigureSurface::Overlay, (568, 1232))), "design aspect is always fine");
+    }
+
+    #[test]
+    fn a_keyboard_exclusive_zone_squish_is_still_refused() {
+        // 240 px keyboard taken out of the landscape and the portrait panels.
+        let outputs = [(1232, 568)];
+        assert!(!configure_acceptable(&outputs, 1232, 328));
+        assert!(!configure_acceptable(&[(568, 1232)], 568, 775));
+        // And a squish never gets re-offered into acceptance by an output update.
+        let mut rejected = RejectedConfigures::default();
+        rejected.remember(ConfigureSurface::Overlay, (1232, 328));
+        assert!(rejected.take_acceptable(&outputs).is_empty());
+        assert!(!configure_acceptable(&outputs, 1232, 200), "below the bound");
     }
 
     #[test]

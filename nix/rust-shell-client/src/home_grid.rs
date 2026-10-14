@@ -414,9 +414,16 @@ pub fn folder_overlay_rect(width: u32, height: u32) -> (f64, f64, f64, f64) {
 /// band. `keyboard_inset` of `0.0` is exactly [`folder_overlay_rect`].
 pub fn folder_overlay_rect_inset(width: u32, height: u32, keyboard_inset: f64) -> (f64, f64, f64, f64) {
     let x = SIDE_MARGIN * 1.5;
-    let y = GRID_TOP;
+    // On the landscape panel the card starts just below the compositor's
+    // top-edge band instead of at the grid: the dim Home behind it needs no
+    // room, and two rows of full-size tiles need the height (see
+    // `folder_columns`).
+    let y = if folder_wide(width, height) { PILL_TOP } else { GRID_TOP };
     let w = f64::from(width) - 2.0 * x;
     let h = f64::from(height) - y - dock_height(height) - DOTS_HEIGHT;
+    // The wide card is already at the top band, so a keyboard inset cannot
+    // lift it; the name field stays reachable above the keyboard and the
+    // member tiles are covered only while renaming.
     let shifted_y = (y - keyboard_inset.max(0.0)).max(PILL_TOP);
     (x, shifted_y, w, h)
 }
@@ -440,13 +447,27 @@ pub fn folder_name_rect_inset(width: u32, height: u32, keyboard_inset: f64) -> (
     folder_name_rect_of(folder_overlay_rect_inset(width, height, keyboard_inset))
 }
 
-fn folder_app_rect_of(card: (f64, f64, f64, f64), index: usize, height: u32) -> (f64, f64, f64, f64) {
+/// Whether the open-folder overlay uses the landscape layout (the same
+/// predicate as Help, Settings and the Shade).
+pub fn folder_wide(width: u32, height: u32) -> bool {
+    crate::help::wide(width, height)
+}
+
+/// Member tiles per row in an open folder: the Home grid's `COLUMNS` on the
+/// portrait panel, eight across the landscape card so its two rows hold as
+/// many members as the portrait card's rows do.
+pub fn folder_columns(width: u32, height: u32) -> usize {
+    if folder_wide(width, height) { 8 } else { COLUMNS }
+}
+
+fn folder_app_rect_of(card: (f64, f64, f64, f64), index: usize, width: u32, height: u32) -> (f64, f64, f64, f64) {
     let (card_x, card_y, card_w, _) = card;
     let (pitch, gap) = row_metrics(height);
     let grid_top = card_y + FOLDER_NAME_HEIGHT + 12.0;
-    let column = index % COLUMNS;
-    let row = index / COLUMNS;
-    let w = ((card_w - 2.0 * TILE_GAP) / COLUMNS as f64 - TILE_GAP).max(0.0);
+    let columns = folder_columns(width, height);
+    let column = index % columns;
+    let row = index / columns;
+    let w = ((card_w - 2.0 * TILE_GAP) / columns as f64 - TILE_GAP).max(0.0);
     (
         card_x + TILE_GAP + column as f64 * (w + TILE_GAP),
         grid_top + row as f64 * pitch,
@@ -459,12 +480,12 @@ fn folder_app_rect_of(card: (f64, f64, f64, f64), index: usize, height: u32) -> 
 /// label -- same `COLUMNS` density as the Home grid, but scoped to the
 /// card's own width/height rather than the full panel.
 pub fn folder_app_rect(width: u32, height: u32, index: usize) -> (f64, f64, f64, f64) {
-    folder_app_rect_of(folder_overlay_rect(width, height), index, height)
+    folder_app_rect_of(folder_overlay_rect(width, height), index, width, height)
 }
 
 /// [`folder_app_rect`], within the keyboard-shifted card.
 pub fn folder_app_rect_inset(width: u32, height: u32, index: usize, keyboard_inset: f64) -> (f64, f64, f64, f64) {
-    folder_app_rect_of(folder_overlay_rect_inset(width, height, keyboard_inset), index, height)
+    folder_app_rect_of(folder_overlay_rect_inset(width, height, keyboard_inset), index, width, height)
 }
 
 /// Which app tile, if any, inside an open folder's grid `point` lands on,
@@ -777,5 +798,43 @@ mod tests {
         let dy = y1 - y0;
         let distance = (dx * dx + dy * dy).sqrt();
         assert!(distance > 2.0 * REMOVE_BADGE_HIT_RADIUS, "neighboring badges must not overlap");
+    }
+
+    #[test]
+    fn the_wide_folder_overlay_holds_sixteen_members_inside_the_landscape_panel() {
+        assert_eq!(folder_columns(568, 1232), COLUMNS, "portrait keeps four columns");
+        assert_eq!(folder_overlay_rect(568, 1232).1, GRID_TOP, "portrait card is unchanged");
+        let (cx, cy, cw, ch) = folder_overlay_rect(1232, 568);
+        assert!(cx >= 0.0 && cy >= EDGE_BAND && cx + cw <= 1232.0 && cy + ch <= dock_top(568));
+        assert_eq!(folder_columns(1232, 568), 8);
+        let name = folder_name_rect(1232, 568);
+        assert!(name.1 >= EDGE_BAND && name.1 + name.3 <= cy + ch);
+        let mut rects = Vec::new();
+        for index in 0..16 {
+            let (x, y, w, h) = folder_app_rect(1232, 568, index);
+            assert!(
+                x >= cx && y >= name.1 + name.3 && x + w <= cx + cw && y + h <= cy + ch,
+                "member {index} ({x},{y},{w},{h}) leaves the card ({cx},{cy},{cw},{ch})"
+            );
+            assert!(x + w <= 1232.0 && y + h <= 568.0);
+            // The tile holds the plate and its label.
+            assert!(h >= ICON_PLATE_SIZE + ICON_LABEL_GAP + LABEL_HEIGHT - 1.0, "member {index} fits its content");
+            assert_eq!(
+                folder_app_at((x + w / 2.0, y + h / 2.0), 1232, 568, 16, 0.0),
+                Some(index),
+                "a tap at the centre of member {index}"
+            );
+            rects.push((x, y, w, h));
+        }
+        for (i, a) in rects.iter().enumerate() {
+            for b in &rects[i + 1..] {
+                assert!(
+                    a.0 + a.2 <= b.0 || b.0 + b.2 <= a.0 || a.1 + a.3 <= b.1 || b.1 + b.3 <= a.1,
+                    "member tiles overlap"
+                );
+            }
+        }
+        // The renaming keyboard cannot lift the card above the top band.
+        assert_eq!(folder_overlay_rect_inset(1232, 568, 240.0), folder_overlay_rect(1232, 568));
     }
 }
