@@ -150,6 +150,15 @@ host or QEMU result never ticks a board task.
   `w3isqi2b…`). Esc-as-back is in the keyboard-base service rather than a
   Sway binding, because a binding would take Esc from focused apps. It
   calls `card_shell back` only when no app has focus, with unit tests.
+  Board follow-up 2026-10-14 (**operator** + **board-read**): LILYGO opens
+  the drawer. Of five real LILYGO+Tab presses, two reported Shift 23–46 ms
+  before Tab, so Sway saw Super+Shift+Tab and the terminal got it; the
+  overview binding now also takes Super+Shift+Tab. Fn+LILYGO "did nothing"
+  because the screenshot gave no sign; it now blinks the key backlight and
+  adds a "Screenshot saved" notification. No Fn (`KEY_RIGHTALT`) event has
+  yet been recorded from the real keypad. Recording:
+  `docs/evidence/keyboard-base/keys/shortcuts-evemu-record-2026-10-14T0112Z.txt`
+  and `shortcuts-sway-bindings-2026-10-14T0112Z.json`.
 - [x] 6.3 Add the battery to the shade, and the keyboard backlight control to
   Settings, persisted under `/var/lib/k230`. Both are hidden when their device
   is absent. Proof (**host**): `cargo test` in `nix/rust-shell-client`, plus

@@ -22,7 +22,20 @@ let
   keyboardBaseScreenshot = pkgs.writeShellScript "k230-keyboard-base-screenshot" ''
     dir="$HOME/Pictures"
     ${pkgs.coreutils}/bin/mkdir -p "$dir"
-    exec ${pkgs.grim}/bin/grim "$dir/screenshot-$(${pkgs.coreutils}/bin/date +%Y%m%d-%H%M%S).png"
+    name="screenshot-$(${pkgs.coreutils}/bin/date +%Y%m%d-%H%M%S).png"
+    # The shell has no notification toast, so a double blink of the key
+    # backlight is the instant sign the key worked (restored afterwards), and
+    # the shade's history names the file (the shell user is an unknown sender).
+    if ${pkgs.grim}/bin/grim "$dir/$name"; then
+      led=/sys/class/leds/k230::kbd_backlight/brightness
+      if [ -w "$led" ]; then
+        was=$(${pkgs.coreutils}/bin/cat "$led")
+        for v in 1 0 1 0; do echo "$v" > "$led"; ${pkgs.coreutils}/bin/sleep 0.12; done
+        echo "$was" > "$led"
+      fi
+      ${notificationCommand}/bin/k230-notifications emit --summary "Screenshot saved" \
+        --body "Pictures/$name" --tag screenshot >/dev/null 2>&1 || :
+    fi
   '';
 
   # One additional display face for Home's Clock widget only
@@ -884,6 +897,8 @@ let
       # service, because a Sway binding would take Esc away from apps.
       bindsym --input-device=1:1:tca8418 --release Super_L exec ${rustShell}/bin/k230-shell-rust --surface drawer
       bindsym --input-device=1:1:tca8418 Mod4+Tab card_shell enter
+      # Shift sits between Tab and LILYGO; a brushed Shift still means overview.
+      bindsym --input-device=1:1:tca8418 Mod4+Shift+Tab card_shell enter
       bindsym --input-device=1:1:tca8418 Mod5+Super_L exec ${keyboardBaseScreenshot}
     ''}
 

@@ -45,3 +45,16 @@ These are not covered by this evidence:
 - `ls -la` in foot, as a native `grim` capture and a camera frame;
 - a Shift-punctuation line;
 - Caps Lock with its LED, which needs task 3.3.
+
+## Shortcut recording (2026-10-14 01:12–01:17 UTC)
+
+`shortcuts-evemu-record-2026-10-14T0112Z.txt` is `evemu-record` on the real
+`tca8418` device while the operator pressed LILYGO+Tab five times and was asked
+for Fn+LILYGO; `shortcuts-sway-bindings-2026-10-14T0112Z.json` is
+`swaymsg -t subscribe -m '["binding"]'` over the same window (**board-read**).
+
+- Presses 1–3: Tab arrived with only LILYGO held (Shift, if any, in the same
+  report after it), and `card_shell enter` fired three times.
+- Presses 4–5: Shift arrived 23 ms and 46 ms before Tab, so the modifiers were
+  Super+Shift and no binding matched.
+- No `KEY_RIGHTALT` (Fn) event appears anywhere in the recording.

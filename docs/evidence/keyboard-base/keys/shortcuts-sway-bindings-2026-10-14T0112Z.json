@@ -1,0 +1,5 @@
+{ "change": "run", "binding": { "command": "card_shell enter", "event_state_mask": [ "Mod4" ], "input_codes": [ ], "input_code": 0, "symbols": [ "Tab" ], "symbol": "Tab", "input_type": "keyboard" } }
+{ "change": "run", "binding": { "command": "card_shell enter", "event_state_mask": [ "Mod4" ], "input_codes": [ ], "input_code": 0, "symbols": [ "Tab" ], "symbol": "Tab", "input_type": "keyboard" } }
+{ "change": "run", "binding": { "command": "card_shell enter", "event_state_mask": [ "Mod4" ], "input_codes": [ ], "input_code": 0, "symbols": [ "Tab" ], "symbol": "Tab", "input_type": "keyboard" } }
+
+Session terminated, killing shell... ...killed.
