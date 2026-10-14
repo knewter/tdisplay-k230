@@ -15,6 +15,9 @@
 - [ ] 3.1 Add the Rust shell `power` route with themed sheet, large touch targets, dismiss/Cancel, Power off and Restart; verify `cargo test` in `nix/rust-shell-client` and `nix build .#handheld-shell-rust`.
 - [x] 3.2 Route a held physical key to that sheet and use the existing bounded Settings power request path for a second confirmation; verify host tests cover hold-open, duplicate suppression, cancel, outside dismissal, denied action and no command before confirmation.
 - [ ] 3.3 Verify the integrated NixOS closure with `nix build .#nixosConfigurations.k230-coherent-shell.config.system.build.toplevel`, then record real-button/glass proof of hold → sheet → Cancel and hold → named confirmation without execution under `docs/evidence/power-key/sheet/`.
+  Partial 2026-10-14 (operator, real button, landscape image): "holding
+  power opens the menu". Not yet reported: Cancel, and the named
+  confirmation without executing it.
 - [ ] 3.4 With an explicit physical trial, verify confirmed Restart and Power off independently, including return on power-on; capture serial/camera evidence and any recovery limitation. Keep this task open until both are observed.
   Operator decision 2026-10-14 ("we want the power-off code back"): the
   mainline driver now restores the vendor's system-off callback

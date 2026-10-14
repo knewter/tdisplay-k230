@@ -129,6 +129,12 @@ host or QEMU result never ticks a board task.
   `bq25890-poll-without-irq.patch` polls the IRQ handler every 2 s when no
   interrupt is given, and the board logs `no interrupt; polling every 2000 ms`.
   Closing this without the line needs the operator's scope decision.
+  Public-source search 2026-10-14 (operator asked; `docs/evidence/
+  keyboard-base/charger/int-line-search.md`): no keyboard-base schematic is
+  published, LILYGO's pin map names no INT for the BQ25896 or XL9555, and
+  LILYGO's own launcher polls the charger over I2C every 30 s. Finding the
+  net now needs a continuity probe of BQ25896 pin 1 on the base PCB, or
+  LILYGO's schematic.
 - [x] 5.3 On the board, record:
   - `power_supply` `capacity`, `status`, `voltage_now` and `current_now`;
   - the charger's `online` value, cable in and cable out;
@@ -222,7 +228,9 @@ host or QEMU result never ticks a board task.
   the on-screen keyboard, and Home's widget.
   2026-10-14: Home's Battery widget reads 100 % on the board (native
   capture `home-battery-widget.png`, widget added to a test layout).
-- [ ] 6.6 Exercise the low-battery policy on the board with the thresholds
+  Camera frames waived by the operator (Operator, 2026-10-14: "waive the camera pics".). Still open: a key
+  press hiding the on-screen keyboard.
+- [x] 6.6 Exercise the low-battery policy on the board with the thresholds
   raised temporarily through a `/run` override, so a real discharge crosses
   them. Record the notifications, the countdown, the cable cancel, and one
   clean shutdown in the journal.
@@ -241,8 +249,8 @@ host or QEMU result never ticks a board task.
   Rerun 02:18–02:31 CDT on that kernel: same notifications, countdown and
   cancel, then the policy's poweroff cut power (operator: "it went fully
   dark"); the power key started it again, charger reconnected by the test's
-  cleanup. Native capture of the countdown in the shade. Open: the camera
-  frame this task names (none taken; the webcam cannot see the panel).
+  cleanup. Native capture of the countdown in the shade. The camera frame
+  this task names is waived by the operator (Operator, 2026-10-14: "waive the camera pics".).
 
 ## 7. Close
 

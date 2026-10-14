@@ -205,7 +205,7 @@ complete them here against the panel's 1232×568 geometry as well as HDMI.
       started at 1232×568. The operator's finger then showed the
       GT9895's X range is 1080, not 1024 (`touch-range.md`). The device-tree
       correction is committed; its booted proof belongs to 8.5.
-- [ ] 8.5 Boot the landscape profile on the second board. Record native
+- [x] 8.5 Boot the landscape profile on the second board. Record native
       `grim` captures of each surface in 8.3 and a camera photograph from the
       keyboard side under `docs/evidence/panel-landscape/` (physical: native
       capture plus camera).
@@ -229,6 +229,9 @@ complete them here against the panel's 1232×568 geometry as well as HDMI.
       verifies a fix: wvkbd's landscape height (`-L`) was unset, so a 120 px
       keyboard sat under a 296 px reservation (system `s53ywx90…`). Open: the
       camera frame.
+      Done 2026-10-14: native captures of every 8.3 surface on the installed
+      image are committed. The camera photograph is waived by the operator
+      (Operator, 2026-10-14: "waive the camera pics".); the bench webcam could not see the panel.
 - [x] 8.6 Operator real-glass check in the keyboard case: open Drawer, shade,
       Settings and an app, type on the keyboard, return Home. Record the
       operator's observation (physical: real glass). Hardware gate.
