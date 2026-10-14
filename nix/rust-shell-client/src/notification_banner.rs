@@ -64,6 +64,16 @@ pub fn banner_text(preview: &NotificationPreview) -> (String, String) {
     (clean(&preview.source, GENERIC_SOURCE), clean(&preview.summary, GENERIC_SUMMARY))
 }
 
+/// Bounded size check for the banner's own surface. `lib::frame_bytes` is for
+/// panel-sized surfaces (300..=2048 on both axes) and rejects a 64 px banner,
+/// which is why the first board run never drew one.
+pub fn frame_bytes(width: u32, height: u32) -> Option<usize> {
+    if !(1..=2048).contains(&width) || !(1..=256).contains(&height) {
+        return None;
+    }
+    usize::try_from(width).ok()?.checked_mul(usize::try_from(height).ok()?)?.checked_mul(4)
+}
+
 /// Whether the banner should be on screen: a preview exists, the shade (which
 /// lists it) is not open, and the operator has not already tapped this one.
 pub fn visible(preview: Option<&NotificationPreview>, shade_open: bool, tapped: Option<u64>) -> bool {
@@ -77,6 +87,14 @@ mod tests {
 
     fn preview(source: &str, summary: &str) -> NotificationPreview {
         NotificationPreview { id: 7, source: source.into(), icon: None, summary: summary.into(), priority: Priority::Ordinary, ongoing: false }
+    }
+
+    #[test]
+    fn banner_sized_surfaces_pass_the_banner_bound_but_not_the_panel_bound() {
+        assert_eq!(frame_bytes(544, 64), Some(544 * 64 * 4));
+        assert_eq!(frame_bytes(640, 64), Some(640 * 64 * 4));
+        assert!(crate::frame_bytes(544, 64).is_none());
+        assert!(frame_bytes(0, 64).is_none() && frame_bytes(640, 257).is_none());
     }
 
     #[test]

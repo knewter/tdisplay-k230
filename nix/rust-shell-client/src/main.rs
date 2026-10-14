@@ -3035,7 +3035,7 @@ impl ShellClient {
         if !self.banner_surface.configured || self.banner_surface.frame_pending { return false; }
         let Some(preview) = self.banner_preview.clone() else { return false; };
         let (width, height) = (self.banner_surface.width, self.banner_surface.height);
-        let Some(size) = frame_bytes(width, height) else { return false; };
+        let Some(size) = notification_banner::frame_bytes(width, height) else { return false; };
         let stride = (width * 4) as i32;
         self.banner_surface.buffers.retain(|b| b.stride() == stride && b.height() == height as i32);
         let available: Vec<bool> = self.banner_surface.buffers.iter().map(|b| b.canvas(&mut self.pool).is_some()).collect();
@@ -4686,9 +4686,14 @@ impl LayerShellHandler for ShellClient {
     ) {
         let (width, height) = configure.new_size;
         if self.banner_surface.layer.as_ref().is_some_and(|l| l.wl_surface() == layer.wl_surface()) {
-            let mut geometry = (self.banner_surface.width, self.banner_surface.height);
-            if configure_size(&mut geometry, width, height).is_none() { return; }
-            (self.banner_surface.width, self.banner_surface.height) = geometry;
+            // A zero axis means "client's choice": use the requested size.
+            let (want_w, want_h, _) = notification_banner::surface_size(f64::from(self.width), f64::from(self.height));
+            let (width, height) = (if width == 0 { want_w } else { width }, if height == 0 { want_h } else { height });
+            if notification_banner::frame_bytes(width, height).is_none() {
+                self.log(&format!("notification-banner-configure-rejected {width}x{height}")); return;
+            }
+            (self.banner_surface.width, self.banner_surface.height) = (width, height);
+            self.log(&format!("notification-banner-configure {width}x{height}"));
             self.banner_surface.configured = true; self.banner_surface.dirty = true;
             self.draw_banner(qh); return;
         }
