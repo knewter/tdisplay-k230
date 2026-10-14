@@ -18,6 +18,7 @@ mod devsearch;
 mod event;
 mod gestures;
 mod mode;
+mod orient;
 mod relay;
 mod shell_ipc;
 mod touchdev;
@@ -78,6 +79,9 @@ struct Args {
     /// side-effect-free bench trace.
     log_events: bool,
     shell_socket: Option<PathBuf>,
+    /// How the board is held, from the panel's Sway transform
+    /// (`--panel-transform=normal|270`); the trackpad follows it.
+    orientation: orient::Orientation,
 }
 
 fn parse_args() -> Args {
@@ -88,6 +92,7 @@ fn parse_args() -> Args {
         dry_run: false,
         log_events: false,
         shell_socket: None,
+        orientation: orient::Orientation::Normal,
     };
     for arg in std::env::args().skip(1) {
         if let Some(v) = arg.strip_prefix("--drm-root=") {
@@ -96,6 +101,11 @@ fn parse_args() -> Args {
             args.device_override = Some(PathBuf::from(v));
         } else if let Some(v) = arg.strip_prefix("--shell-socket=") {
             args.shell_socket = Some(PathBuf::from(v));
+        } else if let Some(v) = arg.strip_prefix("--panel-transform=") {
+            match orient::Orientation::from_panel_transform(v) {
+                Some(o) => args.orientation = o,
+                None => eprintln!("k230-touch-trackpad: unknown --panel-transform={v}, keeping normal"),
+            }
         } else if arg == "--dry-run" {
             args.dry_run = true;
         } else if arg == "--log-events" {
@@ -143,6 +153,9 @@ struct TrackpadSession {
     touch: touchdev::TouchDevice,
     virt: Option<VirtualTouchpad>,
     relay: Relay,
+    orientation: orient::Orientation,
+    /// The touchscreen's own ranges, before `orientation` turns them.
+    native: uinput::AbsRanges,
     gate: Option<gestures::Gate>,
     shell: Option<shell_ipc::Shell>,
     log_events: bool,
@@ -154,9 +167,11 @@ impl TrackpadSession {
         dry_run: bool,
         log_events: bool,
         socket: Option<&PathBuf>,
+        orientation: orient::Orientation,
     ) -> std::io::Result<Self> {
         let touch = touchdev::TouchDevice::open(device_path)?;
-        let ranges = touch.read_ranges()?;
+        let native = touch.read_ranges()?;
+        let ranges = orientation.ranges(native);
         // Validate/sanitize (uinput::axis_plan) before grabbing anything:
         // a rejected axis plan means this returns Err without ever taking
         // EVIOCGRAB, so a misconfigured board is left in plain direct-touch
@@ -171,8 +186,9 @@ impl TrackpadSession {
             Some(VirtualTouchpad::create(VIRTUAL_DEVICE_NAME, &ranges)?)
         };
         eprintln!(
-            "k230-touch-trackpad: entered trackpad mode, grabbed {} (x {}..{} y {}..{}), axes: {}",
+            "k230-touch-trackpad: entered trackpad mode, grabbed {} ({:?}; x {}..{} y {}..{}), axes: {}",
             device_path.display(),
+            orientation,
             ranges.position_x.minimum,
             ranges.position_x.maximum,
             ranges.position_y.minimum,
@@ -187,7 +203,8 @@ impl TrackpadSession {
         let gate = socket.map(|_| {
             let mut gate = gestures::Gate::new(ranges);
             if let Ok(positions) = touch.slot_positions() {
-                gate.prime(&positions);
+                let held: Vec<_> = positions.into_iter().map(|p| orientation.point(&native, p)).collect();
+                gate.prime(&held);
             }
             gate
         });
@@ -195,6 +212,8 @@ impl TrackpadSession {
             touch,
             virt,
             relay: Relay::new(),
+            orientation,
+            native,
             log_events,
             gate,
             shell: socket.map(|path| shell_ipc::Shell::new(path.clone())),
@@ -217,6 +236,7 @@ impl TrackpadSession {
             }
             Err(e) => return Err(e),
         };
+        let ev = self.orientation.event(&self.native, ev);
         if self.log_events {
             eprintln!(
                 "k230-touch-trackpad: in  type={} code={} value={}",
@@ -344,7 +364,7 @@ fn run(args: Args) {
 
         match (mode, &mut session) {
             (Mode::Trackpad, None) => match find_touchscreen(&args.device_override) {
-                Some(path) => match TrackpadSession::start(&path, args.dry_run, args.log_events, args.shell_socket.as_ref()) {
+                Some(path) => match TrackpadSession::start(&path, args.dry_run, args.log_events, args.shell_socket.as_ref(), args.orientation) {
                     Ok(s) => {
                         session = Some(s);
                         start_failures = 0;

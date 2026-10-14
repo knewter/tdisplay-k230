@@ -27,7 +27,8 @@ in
       wantedBy = [ "multi-user.target" ];
       serviceConfig = {
         Type = "simple";
-        ExecStart = "${lib.getExe package} --shell-socket=/run/shell/sway-ipc.sock";
+        # The trackpad follows how the board is held: the panel's transform.
+        ExecStart = "${lib.getExe package} --shell-socket=/run/shell/sway-ipc.sock --panel-transform=${config.k230.shell.panelTransform or "normal"}";
         Restart = "always";
         RestartSec = 2;
         TimeoutStopSec = 2;
