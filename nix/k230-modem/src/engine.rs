@@ -3,7 +3,7 @@
 //! design Decision 3.
 
 use crate::at::{
-    final_result, redact_command, split_fields, unquote, AtError, Final, Secret,
+    final_result, redact_command, redact_line, split_fields, unquote, AtError, Final, Secret,
 };
 use crate::nmea;
 use crate::sms::{parse_udh, Assembler, Sms};
@@ -150,7 +150,7 @@ impl Modem {
         let shown = redact_command(cmd);
         self.log(&format!("> {shown}"));
         self.last_sent = cmd.to_string();
-        self.link.send(format!("{cmd}\r").as_bytes())?;
+        self.link.send(format!("{cmd}\r\n").as_bytes())?;
         Ok(())
     }
 
@@ -172,7 +172,7 @@ impl Modem {
                         return Ok(resp);
                     }
                     if let Some(f) = final_result(&l) {
-                        self.log(&format!("< {l}"));
+                        self.log(&format!("< {}", redact_line(&l)));
                         self.state.present = true;
                         return match f {
                             Final::Ok => Ok(resp),
@@ -262,7 +262,7 @@ impl Modem {
             }
             return true;
         }
-        self.log(&format!("< {l}"));
+        self.log(&format!("< {}", redact_line(&l)));
         if let Some(r) = l.strip_prefix("+CEREG:") {
             self.on_cereg(r);
         } else if let Some(r) = l.strip_prefix("+COPS:") {

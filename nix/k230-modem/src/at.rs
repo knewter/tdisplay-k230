@@ -19,6 +19,33 @@ pub fn redact_command(cmd: &str) -> String {
     cmd.to_string()
 }
 
+/// A received line as it may appear in a log. Registration reports keep
+/// their status but lose the tracking area and cell id (a coarse location),
+/// and identity answers (IMEI, IMSI, ICCID, own number) are withheld.
+pub fn redact_line(l: &str) -> String {
+    if let Some(r) = l.strip_prefix("+CEREG:") {
+        let f = split_fields(r);
+        // `<n>,<stat>,...` (read form, numeric second field) or `<stat>,...`.
+        let read_form = f.get(1).map(|s| !s.is_empty() && s.parse::<u32>().is_ok()).unwrap_or(false);
+        let keep = if read_form { 2 } else { 1 };
+        if f.len() > keep {
+            return format!("+CEREG: {},{REDACTED}", f[..keep].join(","));
+        }
+        return l.to_string();
+    }
+    let upper = l.to_ascii_uppercase();
+    for p in ["+CNUM:", "%XICCID:", "+CGSN:", "+CIMI:", "%XMONITOR:", "%NCELLMEAS:"] {
+        if upper.starts_with(p) {
+            return format!("{}{REDACTED}", &l[..p.len()]);
+        }
+    }
+    let t = l.trim();
+    if t.len() >= 10 && t.bytes().all(|b| b.is_ascii_digit()) {
+        return REDACTED.to_string();
+    }
+    l.to_string()
+}
+
 /// A secret (a SIM PIN). It has no Display and no serde impls, and its Debug
 /// prints a placeholder, so formatting it by accident cannot leak it.
 pub struct Secret(String);
@@ -161,6 +188,18 @@ impl LineBuf {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn redacts_cell_location_and_identities_from_received_lines() {
+        assert_eq!(redact_line("+CEREG: 5,1,\"0A1B\",\"01C2D3E4\",7"), "+CEREG: 5,1,<redacted>");
+        assert_eq!(redact_line("+CEREG: 1,\"0A1B\",\"01C2D3E4\",7"), "+CEREG: 1,<redacted>");
+        assert_eq!(redact_line("+CEREG: 5,4"), "+CEREG: 5,4");
+        assert_eq!(redact_line("+CEREG: 90"), "+CEREG: 90");
+        assert_eq!(redact_line("351234567890123"), REDACTED);
+        assert_eq!(redact_line("%XICCID: 8901234567890123456"), "%XICCID:<redacted>");
+        assert_eq!(redact_line("OK"), "OK");
+        assert_eq!(redact_line("+COPS: 0"), "+COPS: 0");
+    }
 
     #[test]
     fn redacts_pin_number_and_leaves_queries() {

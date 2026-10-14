@@ -84,8 +84,8 @@ pub fn from_transcript(text: &str) -> (ScriptLink, FakeEnable, Handle) {
 impl Link for ScriptLink {
     fn send(&mut self, data: &[u8]) -> io::Result<()> {
         let mut i = self.0 .0.borrow_mut();
-        let shown = if data.last() == Some(&b'\r') {
-            String::from_utf8_lossy(&data[..data.len() - 1]).into_owned()
+        let shown = if data.ends_with(b"\r\n") {
+            String::from_utf8_lossy(&data[..data.len() - 2]).into_owned()
         } else {
             let t = String::from_utf8_lossy(data).replace('\u{1a}', "^Z").replace('\u{1b}', "^[");
             format!("raw:{t}")

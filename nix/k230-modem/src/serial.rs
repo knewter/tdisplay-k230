@@ -51,7 +51,13 @@ impl SerialLink {
         t.c_cflag &= !(libc::CRTSCTS | libc::CSTOPB | libc::PARENB);
         t.c_cc[libc::VMIN] = 0;
         t.c_cc[libc::VTIME] = 0;
-        cvt(unsafe { libc::cfsetspeed(&mut t, libc::B115200) })?;
+        // glibc 2.42 takes speed_t as the plain baud rate, so the libc
+        // crate's legacy B115200 (0o010002) would set 4098 baud; older glibc
+        // rejects a plain number. Try the number first, then the constant.
+        // SAFETY: t is an initialised termios.
+        if unsafe { libc::cfsetspeed(&mut t, 115_200) } != 0 {
+            cvt(unsafe { libc::cfsetspeed(&mut t, libc::B115200) })?;
+        }
         cvt(unsafe { libc::tcsetattr(raw, libc::TCSANOW, &t) })?;
         cvt(unsafe { libc::tcflush(raw, libc::TCIOFLUSH) })?;
         Ok(SerialLink { fd, buf: LineBuf::default() })
