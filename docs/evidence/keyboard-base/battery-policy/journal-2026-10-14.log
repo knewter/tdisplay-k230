@@ -1,0 +1,34 @@
+2026-10-14T00:37:07-05:00 nixos python3[552]: k230-battery-policy: Battery low: 100% remaining.
+2026-10-14T00:37:23-05:00 nixos systemd[1]: Stopping [systemd-run] /run/current-system/sw/bin/sh /var/tmp/policy-test.sh...
+2026-10-14T00:37:23-05:00 nixos systemd[1]: k230-policy-test.service: Deactivated successfully.
+2026-10-14T00:37:23-05:00 nixos systemd[1]: Stopped [systemd-run] /run/current-system/sw/bin/sh /var/tmp/policy-test.sh.
+2026-10-14T00:37:23-05:00 nixos systemd[1]: k230-policy-test.service: Consumed 16.257s CPU time over 28.142s wall clock time, 2M memory peak.
+2026-10-14T00:37:58-05:00 nixos systemd[1]: Started [systemd-run] /run/current-system/sw/bin/sh /var/tmp/policy-test.sh.
+2026-10-14T00:38:07-05:00 nixos python3[552]: k230-battery-policy: Battery low: 100% remaining.
+2026-10-14T00:42:37-05:00 nixos python3[552]: k230-battery-policy: Battery very low: 99% remaining.
+2026-10-14T00:47:07-05:00 nixos python3[552]: k230-battery-policy: Battery critically low: Shutting down in 60 seconds. Connect a charger to cancel.
+2026-10-14T00:47:22-05:00 nixos python3[552]: k230-battery-policy: Charging: Shutdown cancelled.
+2026-10-14T00:48:52-05:00 nixos python3[552]: k230-battery-policy: Battery critically low: Shutting down in 60 seconds. Connect a charger to cancel.
+2026-10-14T00:49:52-05:00 nixos systemd-logind[593]: poweroff requested from client PID 6191 ('systemctl') (unit k230-battery-policy.service)...
+2026-10-14T00:49:52-05:00 nixos systemd-logind[593]: The system will power off now!
+2026-10-14T00:49:52-05:00 nixos systemd-logind[593]: System is powering down.
+2026-10-14T00:49:53-05:00 nixos systemd[1]: Stopping [systemd-run] /run/current-system/sw/bin/sh /var/tmp/policy-test.sh...
+2026-10-14T00:49:53-05:00 nixos systemd[1]: k230-battery-policy.service: Deactivated successfully.
+2026-10-14T00:49:53-05:00 nixos systemd[1]: k230-battery-policy.service: Consumed 1.075s CPU time over 18min 23.546s wall clock time, 11.6M memory peak, 700K read from disk.
+2026-10-14T00:49:54-05:00 nixos systemd[1]: k230-policy-test.service: Deactivated successfully.
+2026-10-14T00:49:54-05:00 nixos systemd[1]: Stopped [systemd-run] /run/current-system/sw/bin/sh /var/tmp/policy-test.sh.
+2026-10-14T00:49:54-05:00 nixos systemd[1]: k230-policy-test.service: Consumed 9.787s CPU time over 11min 55.382s wall clock time, 3.9M memory peak, 84K written to disk.
+2026-10-14T00:49:54-05:00 nixos systemd[916]: Reached target Shutdown.
+2026-10-14T00:49:54-05:00 nixos systemd[916]: Reached target Exit the Session.
+2026-10-14T00:49:55-05:00 nixos make-initrd-ng[6247]: /etc/initrd-release -> /nix/store/1nknlaywz4xhrnz17amn8q8k2nkavz94-etc-os-release
+2026-10-14T00:49:55-05:00 nixos make-initrd-ng[6247]: /etc/os-release -> /nix/store/1nknlaywz4xhrnz17amn8q8k2nkavz94-etc-os-release
+2026-10-14T00:49:55-05:00 nixos make-initrd-ng[6247]: /shutdown -> /nix/store/srwrq12f962d5prr382vvsq76nfvmm84-systemd-riscv64-unknown-linux-gnu-261.2/lib/systemd/systemd-shutdown
+2026-10-14T00:49:56-05:00 nixos make-initrd-ng[6247]: Warning: Couldn't satisfy dependency libcrypt.so.1 for "/nix/store/srwrq12f962d5prr382vvsq76nfvmm84-systemd-riscv64-unknown-linux-gnu-261.2/lib/systemd/libsystemd-shared-261.so"
+2026-10-14T00:49:56-05:00 nixos make-initrd-ng[6247]: Warning: Couldn't satisfy dependency libcrypt.so.1.1 for "/nix/store/srwrq12f962d5prr382vvsq76nfvmm84-systemd-riscv64-unknown-linux-gnu-261.2/lib/systemd/libsystemd-shared-261.so"
+2026-10-14T00:49:58-05:00 nixos systemd[1]: Reached target Unmount All Filesystems.
+2026-10-14T00:49:58-05:00 nixos systemd[1]: Reached target System Shutdown.
+2026-10-14T00:49:58-05:00 nixos systemd[1]: Reached target Late Shutdown Services.
+2026-10-14T00:49:58-05:00 nixos systemd[1]: systemd-poweroff.service: Deactivated successfully.
+2026-10-14T00:49:58-05:00 nixos systemd[1]: Reached target System Power Off.
+2026-10-14T00:49:58-05:00 nixos systemd-shutdown[1]: Syncing filesystems and block devices.
+2026-10-14T00:49:59-05:00 nixos systemd-shutdown[1]: Sending SIGTERM to remaining processes...

@@ -227,6 +227,15 @@ host or QEMU result never ticks a board task.
   them. Record the notifications, the countdown, the cable cancel, and one
   clean shutdown in the journal.
   Proof (**board-read** + **camera**): `docs/evidence/keyboard-base/battery-policy/`.
+  Partial 2026-10-14 (board-read): with a `/run` override of 100/99/98 % and
+  the charger in Hi-Z for a real ~400 mA discharge, the journal records the
+  low and very-low notifications, the critical countdown, a cancel when the
+  charger came back, a second countdown and logind's orderly poweroff through
+  `systemd-shutdown`. The board then halted with the panel lit instead of
+  powering off: no SBI SRST and no PMU power-off handler, so a shutdown on
+  battery keeps draining it. Open: a real power-off (power-key task 3.4's
+  handler), then one clean shutdown that actually removes power, and the
+  camera frame.
 
 ## 7. Close
 
