@@ -45,3 +45,12 @@ lights it that way (0xF7). IO52 goes high for the backlight.
 - **Visibility:** whether either LED lights is **UNVERIFIED**; task 4.1
   needs camera frames.
 - **Backlight polarity:** IO52's active-high polarity is an assumption.
+
+## Operator report (2026-10-13)
+
+After installing system `w3isqi2b…`, the operator typed on the base and
+reported in chat: "caps toggle works fine. backlight works fine." Evidence
+class **operator**. It confirms Caps Lock lighting its LED and the key
+backlight following typing on the real hardware, including the IO52
+polarity. No camera frame accompanies it, so the **camera** proofs named in
+tasks 3.4 and 4.1 are still open.
