@@ -2006,6 +2006,20 @@ pub const POWER_OFF_Y: f64 = 218.0;
 pub const POWER_CANCEL_Y: f64 = 304.0;
 pub const POWER_CONFIRM_Y: f64 = 432.0;
 pub const POWER_BUTTON_H: f64 = 68.0;
+/// The gap between the confirmation's Cancel and action buttons.
+pub const POWER_CONFIRM_GAP: f64 = 16.0;
+/// The confirmation's buttons take taps this far beyond their painted
+/// edges: on the board, real Confirm taps landed a few pixels below the
+/// bar (2026-10-14), and nothing else sits below it on the sheet.
+pub const POWER_CONFIRM_SLOP: f64 = 30.0;
+
+/// The confirmation's action button names what it does.
+pub fn power_confirm_label(action: crate::service_data::PowerAction) -> &'static str {
+    match action {
+        crate::service_data::PowerAction::Reboot => "Restart",
+        crate::service_data::PowerAction::Poweroff => "Power off",
+    }
+}
 
 fn power_panel_h(available_h: f64, services: Option<&ServiceView>) -> f64 {
     let natural: f64 = if services.is_some_and(|view| view.confirmation.is_some()) {
@@ -3223,20 +3237,26 @@ fn scene(
             }
             if let Some(confirm) = services.and_then(|view| view.confirmation.as_ref()) {
                 text(cr, &confirm.label, 28.0, 401.0, w - 56.0, 19.0, style.text);
-                service_card(
-                    cr, theme, "controls", 24.0, POWER_CONFIRM_Y,
-                    w - 48.0, POWER_BUTTON_H, true,
-                );
+                // Two separate buttons, split at the middle the way
+                // `service_ui::panel_intent` hit-tests them: Cancel on the
+                // left, the named action on the right.
+                let button_w = (w - 48.0 - POWER_CONFIRM_GAP) / 2.0;
+                let action_x = 24.0 + button_w + POWER_CONFIRM_GAP;
+                service_card(cr, theme, "controls", 24.0, POWER_CONFIRM_Y, button_w, POWER_BUTTON_H, false);
+                service_card(cr, theme, "controls", action_x, POWER_CONFIRM_Y, button_w, POWER_BUTTON_H, true);
+                text(cr, "Cancel", 44.0, POWER_CONFIRM_Y + 19.0, button_w - 40.0, 24.0, style.text);
                 text(
-                    cr, "Cancel", 44.0, POWER_CONFIRM_Y + 19.0,
-                    w / 2.0 - 44.0, 22.0, style.muted,
-                );
-                text(
-                    cr, "Confirm", w / 2.0 + 20.0, POWER_CONFIRM_Y + 19.0,
-                    w / 2.0 - 44.0, 22.0, style.error,
+                    cr, power_confirm_label(confirm.action), action_x + 20.0, POWER_CONFIRM_Y + 19.0,
+                    button_w - 40.0, 24.0, style.error,
                 );
             }
-            if let Some(message) = services.and_then(|view| view.message.as_deref()) {
+            // The confirmation's own question is already painted above its
+            // buttons; the service reply repeats it as the message.
+            let confirm_label = services.and_then(|view| view.confirmation.as_ref()).map(|c| c.label.as_str());
+            if let Some(message) = services
+                .and_then(|view| view.message.as_deref())
+                .filter(|message| Some(*message) != confirm_label)
+            {
                 let y = if services.is_some_and(|view| view.confirmation.is_some()) {
                     507.0
                 } else {

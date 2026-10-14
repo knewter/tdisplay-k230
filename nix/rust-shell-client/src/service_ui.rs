@@ -8,7 +8,7 @@ use crate::{
     pipewire_ipc::GraphSnapshot,
     render::{
         settings_confirm_layout, settings_layout, settings_row_y, POWER_BUTTON_H, POWER_CANCEL_Y,
-        POWER_CONFIRM_Y, POWER_OFF_Y, POWER_REBOOT_Y, SETTINGS_KEY_BACKLIGHT_ROW, SETTINGS_POWER_CARD_H, SETTINGS_ROW_H,
+        POWER_CONFIRM_SLOP, POWER_CONFIRM_Y, POWER_OFF_Y, POWER_REBOOT_Y, SETTINGS_KEY_BACKLIGHT_ROW, SETTINGS_POWER_CARD_H, SETTINGS_ROW_H,
     },
     service_data::{
         ActionOutcome, ControlState, NotificationSnapshot, PowerAction, Priority, ServiceRequest,
@@ -1081,6 +1081,11 @@ pub fn panel_intent(
         Route::Help => crate::help::hit(start, end, width, height, view.navigation_aid)
             .map(PanelIntent::Help),
         Route::Power => {
+            // An upward swipe closes the sheet, as on the Shade and
+            // Settings; nothing on it scrolls.
+            if dy < OVERLAY_DISMISS_DY && dx.abs() < dy.abs() {
+                return Some(PanelIntent::Hide);
+            }
             if dx.abs() > 18.0 || dy.abs() > 18.0 {
                 return None;
             }
@@ -1088,7 +1093,8 @@ pub fn panel_intent(
                 if Instant::now() >= confirm.expires_at {
                     return None;
                 }
-                if (POWER_CONFIRM_Y..POWER_CONFIRM_Y + POWER_BUTTON_H).contains(&end.1) {
+                let band = POWER_CONFIRM_Y - POWER_CONFIRM_SLOP / 2.0..POWER_CONFIRM_Y + POWER_BUTTON_H + POWER_CONFIRM_SLOP;
+                if band.contains(&end.1) {
                     return Some(PanelIntent::Request(if end.0 < w / 2.0 {
                         ServiceRequest::PowerCancel(confirm.token.clone())
                     } else {
@@ -1871,6 +1877,46 @@ mod tests {
     /// Every Settings item's painted rect on the 1232x568 panel, in real
     /// pixels: the wide layout's per-column offset applied to the design
     /// rows, exactly as `render.rs` paints them.
+    #[test]
+    fn the_power_sheet_confirmation_is_two_buttons_with_room_below_and_swipes_away() {
+        // On the landscape board, 2026-10-14: the first real Confirm taps
+        // landed at y=505..507, just under the old 432..500 band, and a
+        // swipe up the sheet did nothing.
+        let mut view = ServiceView {
+            confirmation: Some(Confirmation {
+                token: "t".into(),
+                action: PowerAction::Reboot,
+                label: "Restart device?".into(),
+                expires_at: Instant::now() + std::time::Duration::from_secs(30),
+            }),
+            ..ServiceView::default()
+        };
+        let tap = |x: f64, y: f64, view: &ServiceView| panel_intent(Route::Power, (x, y), (x, y), 1232, 568, view);
+        for y in [432.0, 486.5, 505.4, 507.5, 525.0] {
+            assert_eq!(
+                tap(685.8, y, &view),
+                Some(PanelIntent::Request(ServiceRequest::PowerConfirm("t".into()))),
+                "Confirm at y={y}"
+            );
+            assert_eq!(
+                tap(51.8, y, &view),
+                Some(PanelIntent::Request(ServiceRequest::PowerCancel("t".into()))),
+                "Cancel at y={y}"
+            );
+        }
+        // The board's own swipe, from the Cancel row nearly to the top.
+        assert_eq!(panel_intent(Route::Power, (524.1, 328.2), (457.9, 5.8), 1232, 568, &view), Some(PanelIntent::Hide));
+        view.confirmation = None;
+        assert_eq!(panel_intent(Route::Power, (524.1, 328.2), (457.9, 5.8), 1232, 568, &view), Some(PanelIntent::Hide));
+        // A short wobble is still a tap on the row it started on.
+        assert_eq!(
+            panel_intent(Route::Power, (100.0, 160.0), (104.0, 150.0), 1232, 568, &view),
+            Some(PanelIntent::Request(ServiceRequest::PowerRequest(PowerAction::Reboot)))
+        );
+        assert_eq!(crate::render::power_confirm_label(PowerAction::Reboot), "Restart");
+        assert_eq!(crate::render::power_confirm_label(PowerAction::Poweroff), "Power off");
+    }
+
     fn wide_settings_items(key_backlight: bool) -> Vec<(&'static str, Rect)> {
         use crate::render::{settings_row_column, settings_wide_offset, SETTINGS_POWER_CARD_H};
         let layout = settings_layout(key_backlight);

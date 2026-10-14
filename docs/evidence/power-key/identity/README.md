@@ -31,3 +31,14 @@ GPIO line. These sources ground the candidate software path for INT0.
 board marking has not been checked. The candidate PMU kernel cannot change
 SW1's reset behavior or serve as evidence that the bottom-button reset was
 fixed. The intended software control is the separate INT0 button.
+
+## Operator identification, 2026-10-14
+
+On the landscape image, with the board in the keyboard case and the keyboard
+toward the operator, the button the operator pressed is at the **top right**.
+Each press logged `k230-pmu-pwrkey 91000000.pmu-pwrkey: INT0 press` and
+`INT0 release` in the kernel journal, and arrived as `KEY_POWER` on the input
+device named "K230 PMU Power Key" (`/devices/platform/soc/91000000.pmu-pwrkey`).
+The board did not reset (boot ID unchanged; see `../mainline-events/`). So the
+top-right button is SW2, PMU INT0, the switch Linux can intercept. SW1 (RSTN)
+was not pressed.
