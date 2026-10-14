@@ -132,6 +132,22 @@ class WriteLed(unittest.TestCase):
             kbd.write_led("k230::kbd_backlight", False, root)
             self.assertEqual((pwm / "brightness").read_text(), "0")
 
+    def test_levels_scale_the_pwm_backlight_and_keep_a_gpio_led_lit(self):
+        import tempfile
+        with tempfile.TemporaryDirectory() as root:
+            pwm = self.led(root, "pwm", 255)
+            gpio = self.led(root, "gpio", 1)
+            pref = Path(root) / "key-backlight"
+            for text, expected in [("low\n", "20"), ("medium\n", "76"),
+                                   ("high\n", "255"), ("on\n", "255")]:
+                pref.write_text(text)
+                level = kbd.backlight_level(pref)
+                kbd.write_led("pwm", True, root, level)
+                kbd.write_led("gpio", True, root, level)
+                self.assertEqual((pwm / "brightness").read_text(), expected, text)
+                self.assertEqual((gpio / "brightness").read_text(), "1", text)
+            self.assertEqual(kbd.backlight_level(Path(root) / "missing"), 1.0)
+
     def test_missing_max_brightness_falls_back_to_one(self):
         import tempfile
         with tempfile.TemporaryDirectory() as root:

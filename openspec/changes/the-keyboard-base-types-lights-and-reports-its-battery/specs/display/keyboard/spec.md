@@ -21,7 +21,7 @@ The system SHALL establish which keyboard-base chips answer, at which I2C addres
 
 ### Requirement: The base's keys type into the focused application
 
-<!-- UNVERIFIED: the key-code-to-legend table and the Shift-symbol table come from LILYGO `ui_hardware.c` `tca8418_key_name()` and `extension_keyboard_shift_symbol_for_code()`; no key has been observed under Linux. -->
+<!-- The legend and Shift tables come from LILYGO `ui_hardware.c` `tca8418_key_name()` and `extension_keyboard_shift_symbol_for_code()`. Board-read evtest and evemu recordings, and the operator typing on the base 2026-10-13/14 (docs/evidence/keyboard-base/keys/); the operator waived a per-key recording. -->
 Pressing a key on the base SHALL deliver the character or action printed on it to the focused application through the shell's normal keyboard path. Shift SHALL produce the symbol the vendor layout assigns to that key. Holding a key SHALL repeat it. A USB or Bluetooth keyboard attached at the same time SHALL keep its own layout.
 
 #### Scenario: Typing a command
@@ -41,8 +41,8 @@ Pressing a key on the base SHALL deliver the character or action printed on it t
 
 ### Requirement: The key backlight is a controllable light
 
-<!-- UNVERIFIED: the backlight pad (IO52, PWM4 on the vendor kernel) comes from LILYGO `HARDWARE_PINMAP.md` and `ui_hardware.c`; our kernel has no K230 PWM driver, so the first stage is on/off only. -->
-The system SHALL expose the key backlight as a Linux LED device named with the `kbd_backlight` suffix. The shell SHALL turn it on when a key is pressed, turn it off after a configurable idle period without key presses, and keep it off while the panel is off. A person SHALL be able to choose its level, or turn it off entirely, in Settings. Until a PWM driver exists, the only levels SHALL be on and off.
+<!-- IO52/PWM4 comes from LILYGO `HARDWARE_PINMAP.md` and `ui_hardware.c`. Board 2026-10-14: the ported K230 PWM driver dims it; the operator saw the levels dim and 0 go dark (docs/evidence/keyboard-base/backlight/). -->
+The system SHALL expose the key backlight as a Linux LED device named with the `kbd_backlight` suffix. The shell SHALL turn it on when a key is pressed, turn it off after a configurable idle period without key presses, and keep it off while the panel is off. A person SHALL be able to choose its level, or turn it off entirely, in Settings. Without a PWM driver the only levels SHALL be on and off; with the K230 PWM driver the LED SHALL dim.
 
 #### Scenario: Typing in the dark
 

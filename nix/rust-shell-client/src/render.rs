@@ -3066,12 +3066,12 @@ fn scene(
                 }
                 let _ = cr.restore();
                 // Key backlight row (keyboard base): only while its LED exists.
-                if let Some(on) = services.and_then(|view| view.key_backlight) {
+                if let Some(level) = services.and_then(|view| view.key_backlight) {
                     place(settings_row_column(SETTINGS_KEY_BACKLIGHT_ROW));
                     let y = settings_row_y(SETTINGS_KEY_BACKLIGHT_ROW);
                     service_card(cr, theme, "controls", 24.0, y, w - 48.0, SETTINGS_ROW_H, false);
                     themed_medium(cr, theme, "body", "Key backlight", row_text_x, y + 15.0, row_text_width, 17.0, 14.0, 22.0, style.text);
-                    themed_text(cr, theme, "body", if on { "On" } else { "Off" }, row_text_x, y + 43.0, row_text_width, 19.0, 14.0, 24.0, style.text);
+                    themed_text(cr, theme, "body", level.label(), row_text_x, y + 43.0, row_text_width, 19.0, 14.0, 24.0, style.text);
                     themed_text(cr, theme, "caption", "Lights the keys while typing", row_text_x, y + 76.0, row_text_width, 14.0, 11.0, 18.0, style.muted);
                     let _ = cr.restore();
                 }
@@ -7723,10 +7723,13 @@ mod tests {
         let top = settings_row_y(SETTINGS_KEY_BACKLIGHT_ROW) as usize;
         let row = (top, top + SETTINGS_ROW_H as usize);
         let absent = draw_view(Route::Settings, view(None));
-        let on = draw_view(Route::Settings, view(Some(true)));
-        let off = draw_view(Route::Settings, view(Some(false)));
+        use crate::keyboard_base::KeyBacklight;
+        let on = draw_view(Route::Settings, view(Some(KeyBacklight::High)));
+        let off = draw_view(Route::Settings, view(Some(KeyBacklight::Off)));
+        let low = draw_view(Route::Settings, view(Some(KeyBacklight::Low)));
         assert_ne!(rows(&absent, row.0, row.1), rows(&on, row.0, row.1));
-        assert_ne!(rows(&on, row.0, row.1), rows(&off, row.0, row.1), "On differs from Off");
+        assert_ne!(rows(&on, row.0, row.1), rows(&off, row.0, row.1), "High differs from Off");
+        assert_ne!(rows(&on, row.0, row.1), rows(&low, row.0, row.1), "High differs from Low");
         assert_eq!(rows(&absent, 0, row.0), rows(&on, 0, row.0), "rows above are untouched");
     }
 

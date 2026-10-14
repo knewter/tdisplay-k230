@@ -63,7 +63,7 @@ pub struct ServiceView {
     pub battery: BatteryState,
     /// `Some(preference)` only while the base's key backlight LED exists;
     /// `None` hides Settings' Key backlight row and its tap.
-    pub key_backlight: Option<bool>,
+    pub key_backlight: Option<crate::keyboard_base::KeyBacklight>,
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -1805,7 +1805,7 @@ mod tests {
         };
         let tap = (200.0, settings_row_y(SETTINGS_KEY_BACKLIGHT_ROW) + 20.0);
         assert_eq!(
-            panel_intent(Route::Settings, tap, tap, 568, 1232, &view(Some(true))),
+            panel_intent(Route::Settings, tap, tap, 568, 1232, &view(Some(crate::keyboard_base::KeyBacklight::High))),
             Some(PanelIntent::ToggleKeyBacklight)
         );
         assert_eq!(panel_intent(Route::Settings, tap, tap, 568, 1232, &view(None)), None);
@@ -1848,7 +1848,7 @@ mod tests {
         for key_backlight in [false, true] {
             let view = ServiceView {
                 settings: Some(crate::evidence_render::fixture_settings()),
-                key_backlight: key_backlight.then_some(false),
+                key_backlight: key_backlight.then_some(crate::keyboard_base::KeyBacklight::Off),
                 ..ServiceView::default()
             };
             let items = wide_settings_items(key_backlight);
@@ -1907,7 +1907,7 @@ mod tests {
         for key_backlight in [false, true] {
             let view = ServiceView {
                 settings: Some(crate::evidence_render::fixture_settings()),
-                key_backlight: key_backlight.then_some(false),
+                key_backlight: key_backlight.then_some(crate::keyboard_base::KeyBacklight::Off),
                 confirmation: Some(Confirmation {
                     token: "t".into(),
                     action: PowerAction::Reboot,

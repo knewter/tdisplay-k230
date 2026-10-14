@@ -14,14 +14,14 @@ The example builds two temporary trees and reads them with
 `keyboard_base::read_view_state`, the reader the live client uses:
 
 - `with`: `power_supply/bq27220-0` (type `Battery`, capacity 64, status
-  `Charging`) and `leds/k230::kbd_backlight`, no preference file (default on).
+  `Charging`) and `leds/k230::kbd_backlight`, no preference file (default High).
 - `without`: an empty `power_supply` class and no LED.
 
 | Files | Shows |
 | --- | --- |
 | `shade-with-base-*` | "64% - Charging" on the shade's hint line |
 | `shade-without-base-*` | no battery element |
-| `settings-with-base-*` | a Key backlight row ("On", "Lights the keys while typing") before Power |
+| `settings-with-base-*` | a Key backlight row ("High", "Lights the keys while typing"; a tap steps High, Medium, Low, Off) before Power |
 | `settings-without-base-*` | no Key backlight row; Power section one row higher |
 
 Each exists at `568x1232` (portrait) and `1232x568` (landscape). At 1232x568 Settings lays its

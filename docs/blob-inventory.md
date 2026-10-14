@@ -1798,8 +1798,8 @@ DATA  2c11206efc4b2a5bb0ec471f0ca738e1e3c8fb52e2d8d899d3b4b37c9765ef33  docs/evi
 DATA  b7e0c5fa9b1f9cb9e327d310bbeef5c05df6ea15c4103c3e6708a09b125cc463  docs/evidence/mainline-boot-splash/board/splash-at-uboot-before-kernel.jpg
 DATA  dc38dac11ae7f6129c9433fe43db56dbfdc01fd2e0d3c7fdc101e14fa129e43b  docs/evidence/mainline-boot-splash/board/unreserved-kernel-tear-film2-strip.jpg
 DATA  a6a8591d874042351b5785b57b87277c1af63eeb007045ebb220960a896a03e8  docs/evidence/second-core/linux-start-2026-10-12/cpu0-start.png
-DATA  710701d621e73e64738594c5c02396f504f99775c149069c1dda63891f435971  docs/evidence/keyboard-base/shell/host-renders/settings-with-base-1232x568.png
-DATA  12a205cf394df45ba3ef48e4418e4939928e7f0b9cdf199d90d33416fb5f649c  docs/evidence/keyboard-base/shell/host-renders/settings-with-base-568x1232.png
+DATA  b2e83b8cd0f04948f6aca3e7ec6718ee3a10153ebaae1182f486e09d78a5f066  docs/evidence/keyboard-base/shell/host-renders/settings-with-base-1232x568.png
+DATA  4a6a1cea3d9a5d0913068f1eb022c6b5fdaef723337ca7becc78799aa1f66663  docs/evidence/keyboard-base/shell/host-renders/settings-with-base-568x1232.png
 DATA  297e1020fe8fee839a7cc438ad0188e9854570ed3f6dd0972e099624b62db857  docs/evidence/keyboard-base/shell/host-renders/settings-without-base-1232x568.png
 DATA  8bf60ecef682bbd3096389c6fd385dd5bae0442ec0e8ff4ace14ac32a94abd9d  docs/evidence/keyboard-base/shell/host-renders/settings-without-base-568x1232.png
 DATA  2b291140f4b245f798056e3464f81c7e7b2842f366b312e53052326aba43e79a  docs/evidence/keyboard-base/shell/host-renders/shade-with-base-1232x568.png
@@ -3054,8 +3054,8 @@ Command and limits: `docs/evidence/keyboard-base/shell/host-renders/README.md`.
 
 | Path | Bytes | Class | SHA-256 |
 | --- | ---: | --- | --- |
-| `docs/evidence/keyboard-base/shell/host-renders/settings-with-base-1232x568.png` | 42838 | DATA | `710701d621e73e64738594c5c02396f504f99775c149069c1dda63891f435971` |
-| `docs/evidence/keyboard-base/shell/host-renders/settings-with-base-568x1232.png` | 50463 | DATA | `12a205cf394df45ba3ef48e4418e4939928e7f0b9cdf199d90d33416fb5f649c` |
+| `docs/evidence/keyboard-base/shell/host-renders/settings-with-base-1232x568.png` | 42920 | DATA | `b2e83b8cd0f04948f6aca3e7ec6718ee3a10153ebaae1182f486e09d78a5f066` |
+| `docs/evidence/keyboard-base/shell/host-renders/settings-with-base-568x1232.png` | 50550 | DATA | `4a6a1cea3d9a5d0913068f1eb022c6b5fdaef723337ca7becc78799aa1f66663` |
 | `docs/evidence/keyboard-base/shell/host-renders/settings-without-base-1232x568.png` | 38040 | DATA | `297e1020fe8fee839a7cc438ad0188e9854570ed3f6dd0972e099624b62db857` |
 | `docs/evidence/keyboard-base/shell/host-renders/settings-without-base-568x1232.png` | 44523 | DATA | `8bf60ecef682bbd3096389c6fd385dd5bae0442ec0e8ff4ace14ac32a94abd9d` |
 | `docs/evidence/keyboard-base/shell/host-renders/shade-with-base-1232x568.png` | 24852 | DATA | `2b291140f4b245f798056e3464f81c7e7b2842f366b312e53052326aba43e79a` |

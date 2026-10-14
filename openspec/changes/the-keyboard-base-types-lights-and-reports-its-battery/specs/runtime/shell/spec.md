@@ -2,7 +2,7 @@
 
 ### Requirement: The shell gets out of the way of a hardware keyboard
 
-<!-- UNVERIFIED: depends on the keyboard base's keys reaching Linux, which has not been observed. -->
+<!-- Operator 2026-10-14: "pressing a key hides the osk"; the base's keys reach Linux (docs/evidence/keyboard-base/keys/). -->
 When a person types on the keyboard base while the on-screen keyboard is shown, the shell SHALL hide the on-screen keyboard without losing the typed key. The on-screen keyboard SHALL stay available through its usual gesture. The shell SHALL NOT grab the base's input device away from Sway.
 
 #### Scenario: Switching from glass to keys
@@ -12,7 +12,7 @@ When a person types on the keyboard base while the on-screen keyboard is shown, 
 
 ### Requirement: Shell navigation works from the base's keys
 
-<!-- UNVERIFIED: depends on the keyboard base's keys reaching Linux. The LILYGO and Fn keys and the vendor's Fn+LILYGO screenshot come from LILYGO `ui_hardware.c`. -->
+<!-- Operator and board-read 2026-10-14: LILYGO opens the drawer, LILYGO+Tab the overview, Fn+LILYGO saves a screenshot (docs/evidence/keyboard-base/keys/README.md). The key roles come from LILYGO `ui_hardware.c`. -->
 The LILYGO key SHALL open the app drawer. LILYGO with Tab SHALL open the card overview. Fn with LILYGO SHALL take a screenshot of the panel. Esc SHALL perform the shell's back action when no application has keyboard focus, and SHALL reach the application unchanged otherwise.
 
 #### Scenario: Launching an app without touching the glass
@@ -27,7 +27,7 @@ The LILYGO key SHALL open the app drawer. LILYGO with Tab SHALL open the card ov
 
 ### Requirement: The shade shows battery state when a battery exists
 
-<!-- UNVERIFIED: no battery has been observed under Linux on this board. -->
+<!-- Board native capture 2026-10-14: the shade shows the real gauge's "100% - Full" (docs/evidence/keyboard-base/shell/board/). -->
 When a battery `power_supply` device exists, the shade SHALL show its charge percentage and whether it is charging, updated within 60 seconds of a change. When none exists, the shade SHALL show no battery element at all.
 
 #### Scenario: Battery present

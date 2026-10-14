@@ -2845,9 +2845,10 @@ impl ShellClient {
                 self.submit_wifi(request);
             }
             PanelIntent::ToggleKeyBacklight => {
-                if let Some(on) = self.service_view.key_backlight {
-                    match keyboard_base::write_preference(&keyboard_base::preference_path(), !on) {
-                        Ok(()) => self.service_view.key_backlight = Some(!on),
+                if let Some(level) = self.service_view.key_backlight {
+                    let next = level.next();
+                    match keyboard_base::write_preference(&keyboard_base::preference_path(), next) {
+                        Ok(()) => self.service_view.key_backlight = Some(next),
                         Err(error) => {
                             self.log(&format!("key-backlight-preference-failed {error}"));
                             self.service_view.message = Some(

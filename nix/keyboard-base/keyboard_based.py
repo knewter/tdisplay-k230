@@ -106,18 +106,33 @@ def backlight_preference(path):
         return True
 
 
-def led_on_value(led_dir):
-    """The LED's `max_brightness`: 1 for a GPIO LED, 255 for the PWM backlight."""
+# Settings' Key backlight levels (`keyboard_base.rs`), as a share of the
+# LED's `max_brightness`. "on" is the pre-PWM value and means high.
+BACKLIGHT_LEVELS = {"low": 0.08, "medium": 0.3, "high": 1.0, "on": 1.0}
+
+
+def backlight_level(path):
+    """The share of full brightness the keys light to while typing."""
     try:
-        return max(1, int((Path(led_dir) / "max_brightness").read_text()))
+        return BACKLIGHT_LEVELS.get(Path(path).read_text().strip(), 1.0)
+    except OSError:
+        return 1.0
+
+
+def led_on_value(led_dir, level=1.0):
+    """`level` of the LED's `max_brightness` (1 for a GPIO LED, 255 for the
+    PWM backlight), never below 1 so a lit level stays lit."""
+    try:
+        full = max(1, int((Path(led_dir) / "max_brightness").read_text()))
     except (OSError, ValueError):
-        return 1
+        full = 1
+    return max(1, round(full * level))
 
 
-def write_led(name, on, leds_root="/sys/class/leds"):
+def write_led(name, on, leds_root="/sys/class/leds", level=1.0):
     led_dir = Path(leds_root) / name
     try:
-        (led_dir / "brightness").write_text(str(led_on_value(led_dir)) if on else "0")
+        (led_dir / "brightness").write_text(str(led_on_value(led_dir, level)) if on else "0")
     except OSError as exc:
         LOG.warning("cannot set %s: %s", name, exc)
 
@@ -169,7 +184,8 @@ class Session:
 def run(args):
     session = Session(args.swaymsg, args.osk_signal, os.environ.get("XDG_RUNTIME_DIR", "/run/shell"))
     policy = Policy(lambda on: write_led(args.capslock_led, on),
-                    lambda on: write_led(args.backlight_led, on),
+                    lambda on: write_led(args.backlight_led, on,
+                                         level=backlight_level(args.backlight_pref)),
                     session.hide_osk, session.panel_on, args.idle_seconds,
                     session.back_if_unfocused if args.escape_back else None,
                     lambda: backlight_preference(args.backlight_pref))
