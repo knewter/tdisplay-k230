@@ -74,6 +74,25 @@ class KeyboardBasePolicy(unittest.TestCase):
         p.tick(2.0)                         # turned off in Settings mid-typing
         self.assertEqual(f.light, [False, True, False])
 
+    def test_a_level_change_previews_at_once_then_idles_off(self):
+        f = Fake(); enabled = [True]
+        p = kbd.Policy(f.caps.append, f.light.append, f.hide, lambda: True, 30, None,
+                       lambda: enabled[0], preview_seconds=3)
+        p.preference_changed("high", 0.0)     # first read: no preview
+        self.assertEqual(f.light, [False])
+        p.preference_changed("low", 1.0)      # dragged in Settings: lit now
+        self.assertEqual(f.light, [False, True])
+        p.preference_changed("medium", 2.0)   # already lit: rewritten at the new level
+        self.assertEqual(f.light, [False, True, True])
+        p.preference_changed("medium", 2.5)   # unchanged: nothing written
+        p.tick(4.9)
+        self.assertEqual(f.light, [False, True, True])
+        p.tick(5.0)                           # preview over, no typing: dark
+        self.assertEqual(f.light, [False, True, True, False])
+        enabled[0] = False
+        p.preference_changed("off", 6.0)      # off never lights
+        self.assertEqual(f.light, [False, True, True, False])
+
     def test_preference_file_reads_on_unless_it_says_off(self):
         import tempfile
         with tempfile.TemporaryDirectory() as d:

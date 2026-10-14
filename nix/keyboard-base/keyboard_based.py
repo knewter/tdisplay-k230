@@ -8,6 +8,8 @@ receives every key. On key presses it:
 - turns the key backlight on, and off again after an idle timeout or while
   the panel is off, and keeps it off while the Settings preference
   (keyboard-base task 6.3) is off;
+- when the Settings level changes, lights the keys at the new level for a
+  short preview, so dragging the slider shows each level as it is chosen;
 - tracks Caps Lock and lights its LED;
 - with --escape-back, treats Esc as the shell's back action when no app has
   focus. Sway still delivers Esc to a focused app, because nothing is
@@ -40,7 +42,8 @@ class Policy:
     """Pure key/time policy; actions go through the injected callbacks."""
 
     def __init__(self, set_capslock, set_backlight, hide_osk, panel_on,
-                 idle_seconds=30.0, escape=None, backlight_enabled=None):
+                 idle_seconds=30.0, escape=None, backlight_enabled=None,
+                 preview_seconds=3.0):
         self.set_capslock = set_capslock
         self.set_backlight = set_backlight
         self.hide_osk = hide_osk
@@ -48,9 +51,12 @@ class Policy:
         self.escape = escape
         self.backlight_enabled = backlight_enabled or (lambda: True)
         self.idle_seconds = idle_seconds
+        self.preview_seconds = preview_seconds
         self.caps = False
         self.backlight = False
         self.last_key = None
+        self.preview_until = None
+        self.preference = None
         set_capslock(False)
         set_backlight(False)
 
@@ -71,11 +77,28 @@ class Policy:
             self.escape()
         self._backlight(self.panel_on() and self.backlight_enabled())
 
+    def preference_changed(self, preference, now):
+        """Settings' stored choice, polled; a change after the first read
+        relights the keys at the new level for `preview_seconds`."""
+        first = self.preference is None
+        if preference == self.preference:
+            return
+        self.preference = preference
+        if first:
+            return
+        if not (self.panel_on() and self.backlight_enabled()):
+            self._backlight(False)
+            return
+        self.preview_until = now + self.preview_seconds
+        self.backlight = True
+        self.set_backlight(True)  # rewrite even when lit: the level changed
+
     def tick(self, now):
         if not self.backlight:
             return
         idle = self.last_key is None or now - self.last_key >= self.idle_seconds
-        if idle or not self.panel_on() or not self.backlight_enabled():
+        previewing = self.preview_until is not None and now < self.preview_until
+        if (idle and not previewing) or not self.panel_on() or not self.backlight_enabled():
             self._backlight(False)
 
 
@@ -97,8 +120,8 @@ def find_device(name=NAME):
 def backlight_preference(path):
     """The Settings "Key backlight" choice; on unless the file says off.
 
-    Re-read on each use so a change in Settings applies at the next key press
-    or tick. The file is written by the shell client (`keyboard_base.rs`).
+    Re-read on each use, and polled by `run`, so a change in Settings applies
+    at once. The file is written by the shell client (`keyboard_base.rs`).
     """
     try:
         return Path(path).read_text().strip() not in ("off", "0")
@@ -127,6 +150,14 @@ def led_on_value(led_dir, level=1.0):
     except (OSError, ValueError):
         full = 1
     return max(1, round(full * level))
+
+
+def read_preference(path):
+    """The raw stored choice, or None while the file is missing."""
+    try:
+        return Path(path).read_text().strip()
+    except OSError:
+        return None
 
 
 def write_led(name, on, leds_root="/sys/class/leds", level=1.0):
@@ -201,13 +232,16 @@ def run(args):
                 sel = selectors.DefaultSelector()
                 sel.register(f, selectors.EVENT_READ)
                 while True:
-                    if sel.select(timeout=1.0):
+                    # 0.2 s: the Settings slider's preview should feel live
+                    if sel.select(timeout=0.2):
                         data = f.read(INPUT_EVENT.size * 64)
                         for off in range(0, len(data) - INPUT_EVENT.size + 1, INPUT_EVENT.size):
                             _, _, etype, code, value = INPUT_EVENT.unpack_from(data, off)
                             if etype == EV_KEY:
                                 policy.key(code, value, time.monotonic())
-                    policy.tick(time.monotonic())
+                    now = time.monotonic()
+                    policy.preference_changed(read_preference(args.backlight_pref), now)
+                    policy.tick(now)
         except OSError as exc:
             LOG.info("device gone: %s", exc)
             policy.tick(float("inf"))

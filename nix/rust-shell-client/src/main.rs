@@ -2377,10 +2377,13 @@ impl ShellClient {
             self.service_view.key_backlight = Some(level);
             self.renderer.set_services(self.service_view.clone());
             self.dirty = true;
+            // Stored at each detent, not on release: `keyboard_based.py`
+            // polls the file and lights the keys at the new level live.
+            self.commit_key_backlight();
         }
     }
 
-    /// Stores the slider's level for `keyboard_based.py`, which re-reads it.
+    /// Stores the slider's level for `keyboard_based.py`, which polls it.
     fn commit_key_backlight(&mut self) {
         let Some(level) = self.service_view.key_backlight else {
             return;
