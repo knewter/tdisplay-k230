@@ -21,7 +21,7 @@ The example builds two temporary trees and reads them with
 | --- | --- |
 | `shade-with-base-*` | "64% - Charging" on the shade's hint line |
 | `shade-without-base-*` | no battery element |
-| `settings-with-base-*` | a Key backlight row ("High", "Lights the keys while typing"; a tap steps High, Medium, Low, Off) before Power |
+| `settings-with-base-*` | a Key backlight row: the level ("High") over a four-detent slider (Off, Low, Medium, High) before Power |
 | `settings-without-base-*` | no Key backlight row; Power section one row higher |
 
 Each exists at `568x1232` (portrait) and `1232x568` (landscape). At 1232x568 Settings lays its

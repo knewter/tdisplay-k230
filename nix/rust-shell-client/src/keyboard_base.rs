@@ -22,8 +22,7 @@ pub const BACKLIGHT_LED: &str = "k230::kbd_backlight";
 pub const PREFERENCE_DIR: &str = "/var/lib/k230-keyboard-base";
 pub const PREFERENCE_FILE: &str = "key-backlight";
 
-/// Settings' Key backlight level. A tap steps High, Medium, Low, Off and
-/// round to High again.
+/// Settings' Key backlight level, chosen on a four-detent slider.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum KeyBacklight {
     Off,
@@ -61,12 +60,23 @@ impl KeyBacklight {
         }
     }
 
-    pub fn next(self) -> Self {
+    /// Position on the Settings slider: 0 (Off) to 3 (High).
+    pub fn index(self) -> u8 {
         match self {
-            Self::High => Self::Medium,
-            Self::Medium => Self::Low,
-            Self::Low => Self::Off,
-            Self::Off => Self::High,
+            Self::Off => 0,
+            Self::Low => 1,
+            Self::Medium => 2,
+            Self::High => 3,
+        }
+    }
+
+    /// The level at slider detent `index`; past 3 is High.
+    pub fn from_index(index: u8) -> Self {
+        match index {
+            0 => Self::Off,
+            1 => Self::Low,
+            2 => Self::Medium,
+            _ => Self::High,
         }
     }
 }
@@ -172,17 +182,11 @@ mod tests {
     }
 
     #[test]
-    fn a_tap_steps_down_through_the_levels_and_wraps_to_high() {
-        let mut level = KeyBacklight::High;
-        let mut seen = Vec::new();
-        for _ in 0..4 {
-            level = level.next();
-            seen.push(level);
+    fn slider_detents_round_trip_through_the_levels() {
+        for index in 0..4 {
+            assert_eq!(KeyBacklight::from_index(index).index(), index);
         }
-        assert_eq!(
-            seen,
-            [KeyBacklight::Medium, KeyBacklight::Low, KeyBacklight::Off, KeyBacklight::High]
-        );
+        assert_eq!(KeyBacklight::from_index(9), KeyBacklight::High);
     }
 
     #[test]

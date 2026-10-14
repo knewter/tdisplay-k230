@@ -203,7 +203,6 @@ pub enum PanelIntent {
     Request(ServiceRequest),
     /// Flip the key backlight preference (a local file write, not a
     /// `k230-settings` request; see `keyboard_base`).
-    ToggleKeyBacklight,
     ScrollNotifications(f64),
 }
 
@@ -963,6 +962,50 @@ pub fn settings_slider_frame(route: Route, width: u32, height: u32) -> (f64, f64
     }
 }
 
+/// The screen x origin and width of the Key backlight row's slider: the
+/// whole panel normally, the middle column when wide (`settings_row_column`).
+pub fn key_backlight_slider_frame(width: u32, height: u32) -> (f64, f64) {
+    if crate::settings_wide(width, height) {
+        let column = crate::render::settings_row_column(SETTINGS_KEY_BACKLIGHT_ROW) as f64;
+        (
+            crate::SETTINGS_WIDE_ORIGIN_X + column * crate::SETTINGS_WIDE_COL_PITCH,
+            crate::SETTINGS_WIDE_COL_W,
+        )
+    } else {
+        (0.0, f64::from(width))
+    }
+}
+
+/// Whether a touch at screen `pos` on the Settings page lands on the Key
+/// backlight row, which then belongs to its slider for the whole gesture.
+/// Only while the base's LED exists (`render.rs` draws no row otherwise).
+pub fn key_backlight_slider_hit(pos: (f64, f64), width: u32, height: u32, view: &ServiceView) -> bool {
+    if view.key_backlight.is_none() {
+        return false;
+    }
+    let (x, w) = key_backlight_slider_frame(width, height);
+    let y = if crate::settings_wide(width, height) {
+        if !(x..x + w).contains(&pos.0) {
+            return false;
+        }
+        let column = crate::render::settings_row_column(SETTINGS_KEY_BACKLIGHT_ROW);
+        pos.1 - crate::render::settings_wide_offset(column, true).1
+    } else {
+        pos.1
+    };
+    let top = settings_row_y(SETTINGS_KEY_BACKLIGHT_ROW);
+    (top..top + SETTINGS_ROW_H).contains(&y)
+}
+
+/// The level under screen `x` on the Key backlight slider: the track
+/// (`slider::track_bounds`, the same as every slider here) split into four
+/// detents, Off at the left end and High at the right.
+pub fn key_backlight_level_at(x: f64, frame_x: f64, frame_w: f64) -> crate::keyboard_base::KeyBacklight {
+    let (left, right) = slider::track_bounds(frame_w);
+    let fraction = ((x - frame_x - left) / (right - left)).clamp(0.0, 1.0);
+    crate::keyboard_base::KeyBacklight::from_index((fraction * 3.0).round() as u8)
+}
+
 /// Whether a Settings touch at screen `x` can reach the sliders and the
 /// volume row at all: always, except in the wide layout, where only column 0
 /// holds them (the same y band in columns 1 and 2 is Keyboard/Motion rows).
@@ -1130,13 +1173,9 @@ pub fn panel_intent(
             {
                 return Some(PanelIntent::Request(ServiceRequest::KeyboardToggle));
             }
-            if view.key_backlight.is_some()
-                && (settings_row_y(SETTINGS_KEY_BACKLIGHT_ROW)
-                    ..settings_row_y(SETTINGS_KEY_BACKLIGHT_ROW) + 110.0)
-                    .contains(&end.1)
-            {
-                return Some(PanelIntent::ToggleKeyBacklight);
-            }
+            // The Key backlight row belongs to its slider
+            // (`key_backlight_slider_hit`), armed in `main.rs` like the
+            // brightness and volume sliders.
             if (layout.reboot_y..layout.reboot_y + SETTINGS_POWER_CARD_H).contains(&end.1)
                 && view.settings.is_some()
             {
@@ -1797,18 +1836,34 @@ mod tests {
     }
 
     #[test]
-    fn the_key_backlight_row_is_tappable_only_when_the_led_exists() {
+    fn the_key_backlight_slider_owns_its_row_only_when_the_led_exists() {
         let view = |key_backlight| ServiceView {
             settings: Some(crate::evidence_render::fixture_settings()),
             key_backlight,
             ..ServiceView::default()
         };
         let tap = (200.0, settings_row_y(SETTINGS_KEY_BACKLIGHT_ROW) + 20.0);
-        assert_eq!(
-            panel_intent(Route::Settings, tap, tap, 568, 1232, &view(Some(crate::keyboard_base::KeyBacklight::High))),
-            Some(PanelIntent::ToggleKeyBacklight)
-        );
-        assert_eq!(panel_intent(Route::Settings, tap, tap, 568, 1232, &view(None)), None);
+        let high = view(Some(crate::keyboard_base::KeyBacklight::High));
+        assert!(key_backlight_slider_hit(tap, 568, 1232, &high));
+        assert!(!key_backlight_slider_hit(tap, 568, 1232, &view(None)));
+        // The slider owns the row, so a tap there is not a release intent.
+        assert_eq!(panel_intent(Route::Settings, tap, tap, 568, 1232, &high), None);
+    }
+
+    #[test]
+    fn the_key_backlight_slider_snaps_to_four_levels_along_its_track() {
+        use crate::keyboard_base::KeyBacklight;
+        for (width, height) in [(568, 1232), (1232, 568)] {
+            let (x, w) = key_backlight_slider_frame(width, height);
+            let (left, right) = slider::track_bounds(w);
+            let at = |f: f64| key_backlight_level_at(x + left + f * (right - left), x, w);
+            assert_eq!(at(-0.5), KeyBacklight::Off, "{width}x{height} before the track");
+            assert_eq!(at(0.0), KeyBacklight::Off);
+            assert_eq!(at(0.3), KeyBacklight::Low);
+            assert_eq!(at(0.7), KeyBacklight::Medium);
+            assert_eq!(at(1.0), KeyBacklight::High);
+            assert_eq!(at(1.5), KeyBacklight::High, "{width}x{height} past the track");
+        }
     }
 
     type Rect = (f64, f64, f64, f64);
@@ -1877,13 +1932,20 @@ mod tests {
                 let expected = match *name {
                     "wifi" => Some(PanelIntent::OpenWifi),
                     "keyboard" => Some(PanelIntent::Request(ServiceRequest::KeyboardToggle)),
-                    "key-backlight" => Some(PanelIntent::ToggleKeyBacklight),
                     "reboot" => Some(PanelIntent::Request(ServiceRequest::PowerRequest(PowerAction::Reboot))),
                     "poweroff" => Some(PanelIntent::Request(ServiceRequest::PowerRequest(PowerAction::Poweroff))),
-                    // The sliders own their rows' touches and Motion is read only.
+                    // The sliders (Key backlight's too) own their rows' touches
+                // and Motion is read only.
                     _ => None,
                 };
                 assert_eq!(intent, expected, "tap at the centre of {name} (key backlight {key_backlight})");
+            }
+            if key_backlight {
+                let row = items.iter().find(|i| i.0 == "key-backlight").unwrap().1;
+                let centre = (row.0 + row.2 / 2.0, row.1 + row.3 / 2.0);
+                assert!(key_backlight_slider_hit(centre, 1232, 568, &view));
+                // The same y in the first column is Volume, not this slider.
+                assert!(!key_backlight_slider_hit((100.0, centre.1), 1232, 568, &view));
             }
             // The slider rows are owned by the sliders only inside column 0.
             let brightness = items.iter().find(|i| i.0 == "brightness").unwrap().1;

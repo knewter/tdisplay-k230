@@ -25,7 +25,8 @@ use k230_shell_rust::{
     service_ui::{
         action_message, backdrop_tap, close_drag_engaged, close_drag_progress,
         close_drag_release_target, close_drag_zone, drawer_close_candidate_after_scroll,
-        drawer_close_drag_zone, filter_app_indices, shade_panel_close_zone,
+        drawer_close_drag_zone, filter_app_indices, key_backlight_level_at,
+        key_backlight_slider_frame, key_backlight_slider_hit, shade_panel_close_zone,
         notification_max_scroll, notification_swipe_hit, notification_swipe_offset,
         notification_swipe_release, notification_swipe_start, notification_swipe_valid,
         panel_intent, settings_output_picker_hit, settings_slider_column_hit, settings_slider_frame,
@@ -1257,6 +1258,10 @@ struct ShellClient {
     /// floor`, not `start`) -- true silence is a reachable drag position,
     /// unlike the backlight.
     volume_drag: Option<slider::Drag>,
+    /// The touch that went down on Settings' Key backlight row
+    /// (`key_backlight_slider_hit`): the thumb follows it between the four
+    /// levels, and the level is written to the preference file on release.
+    key_backlight_drag: Option<i32>,
     /// The touch id, if any, that went down inside `volume_icon_tap_zone`
     /// (the speaker glyph's own hit box, left of the track `volume_drag`
     /// owns) -- distinct from `volume_drag` because a touch here must
@@ -2300,6 +2305,12 @@ impl ShellClient {
             Path::new(keyboard_base::LED_ROOT),
             &keyboard_base::preference_path(),
         );
+        // A drag in progress owns the shown level until its release writes it.
+        let key_backlight = if self.key_backlight_drag.is_some() {
+            self.service_view.key_backlight
+        } else {
+            key_backlight
+        };
         if battery != self.service_view.battery || key_backlight != self.service_view.key_backlight {
             self.service_view.battery = battery;
             self.service_view.key_backlight = key_backlight;
@@ -2354,6 +2365,35 @@ impl ShellClient {
     /// `apply_brightness_preview`) so the slider repaints on every touch
     /// sample, and never itself raises the HUD -- the drag/tap is already
     /// its own on-screen feedback (`volume::ChangeOrigin::OwnSlider`).
+    /// Moves the Key backlight slider's thumb to the level under screen
+    /// `x`, repainting only when the level changes.
+    fn preview_key_backlight(&mut self, x: f64) {
+        if self.service_view.key_backlight.is_none() {
+            return;
+        }
+        let (frame_x, frame_w) = key_backlight_slider_frame(self.width, self.height);
+        let level = key_backlight_level_at(x, frame_x, frame_w);
+        if self.service_view.key_backlight != Some(level) {
+            self.service_view.key_backlight = Some(level);
+            self.renderer.set_services(self.service_view.clone());
+            self.dirty = true;
+        }
+    }
+
+    /// Stores the slider's level for `keyboard_based.py`, which re-reads it.
+    fn commit_key_backlight(&mut self) {
+        let Some(level) = self.service_view.key_backlight else {
+            return;
+        };
+        if let Err(error) = keyboard_base::write_preference(&keyboard_base::preference_path(), level) {
+            self.log(&format!("key-backlight-preference-failed {error}"));
+            self.service_view.message =
+                Some(RecoveryState::ActionFailed.message(Some(service_exit_label(self.route))));
+            self.renderer.set_services(self.service_view.clone());
+            self.dirty = true;
+        }
+    }
+
     fn apply_volume_preview(&mut self, percent: u8) {
         self.volume_state.set_from_drag(percent);
         self.sync_volume_control();
@@ -2843,23 +2883,6 @@ impl ShellClient {
             PanelIntent::OpenWifi => {
                 let request = self.wifi_view.open();
                 self.submit_wifi(request);
-            }
-            PanelIntent::ToggleKeyBacklight => {
-                if let Some(level) = self.service_view.key_backlight {
-                    let next = level.next();
-                    match keyboard_base::write_preference(&keyboard_base::preference_path(), next) {
-                        Ok(()) => self.service_view.key_backlight = Some(next),
-                        Err(error) => {
-                            self.log(&format!("key-backlight-preference-failed {error}"));
-                            self.service_view.message = Some(
-                                RecoveryState::ActionFailed
-                                    .message(Some(service_exit_label(self.route))),
-                            );
-                        }
-                    }
-                    self.renderer.set_services(self.service_view.clone());
-                    self.dirty = true;
-                }
             }
             PanelIntent::Request(request) => {
                 let accepted = self.submit_service(request.clone());
@@ -5140,6 +5163,18 @@ impl ShellClient {
                     } else {
                         None
                     };
+                    // Key backlight: a four-detent slider in its own row
+                    // (the middle column when wide); the thumb jumps to the
+                    // touch and the level is written on release.
+                    self.key_backlight_drag = if self.route == Route::Settings
+                        && on_settings_capabilities_page
+                        && key_backlight_slider_hit(pos, self.width, self.height, &self.service_view)
+                    {
+                        self.preview_key_backlight(pos.0);
+                        Some(id)
+                    } else {
+                        None
+                    };
                     if self.route == Route::Shade {
                         if let (Some(_), Some(swipe)) = (
                             self.notification_settle,
@@ -5186,6 +5221,7 @@ impl ShellClient {
                 self.log("touch-second-cancel");
                 self.brightness_drag = None;
                 self.volume_drag = None;
+                self.key_backlight_drag = None;
                 self.volume_icon_touch = None;
                 self.output_picker_touch = None;
                 if self.drawer_home_drag.take().is_some() {
@@ -5482,6 +5518,10 @@ impl ShellClient {
                             let value = drag.value_at(point.0);
                             self.apply_volume_preview(value);
                             self.commit_volume(value, self.volume_state.is_muted());
+                        } else if self.key_backlight_drag == Some(start_id) {
+                            self.key_backlight_drag = None;
+                            self.preview_key_backlight(point.0);
+                            self.commit_key_backlight();
                         } else if self.volume_icon_touch == Some(start_id) {
                             // The speaker glyph never armed a drag (see the
                             // `down` arm's own doc); any release of this
@@ -5746,6 +5786,8 @@ impl ShellClient {
                     }
                     self.volume_drag = Some(drag);
                 }
+            } else if self.key_backlight_drag == Some(id) {
+                self.preview_key_backlight(pos.0);
             } else if self.route == Route::Drawer && self.input_ready {
                 if self.drawer_home_drag == Some(id) {
                     // Task 1's live drag: this touch is bound to
@@ -6037,6 +6079,7 @@ impl ShellClient {
         self.panel_close_velocity = 0.0;
         self.brightness_drag = None;
         self.volume_drag = None;
+        self.key_backlight_drag = None;
         if let Some(owner) = self.hud.drag_owner() {
             self.hud.end_drag(owner);
         }
@@ -6591,6 +6634,7 @@ fn serve() -> Result<(), String> {
         brightness_drag: None,
         drawer_frame_log_at: None,
         volume_drag: None,
+        key_backlight_drag: None,
         volume_icon_touch: None,
         output_picker_touch: None,
         volume_state: volume::VolumeState::default(),

@@ -2,8 +2,8 @@
 
 ### Requirement: Settings offers a keyboard backlight control only when the base has one
 
-<!-- Board 2026-10-14: Settings shows the Key backlight row on the base and an injected tap toggles it (docs/evidence/keyboard-base/shell/board/); host renders show it hidden without the LED and showing the level with it. The PWM LED has 255 steps (docs/evidence/keyboard-base/backlight/); the levels are 8 %, 30 % and 100 % of it in `keyboard_based.py`. -->
-When a `kbd_backlight` LED device exists, Settings SHALL offer a keyboard backlight control: an on/off switch while the device has one brightness step, and a choice of levels once it has more (Off, Low, Medium and High; each tap steps to the next). The choice SHALL persist across reboots in system state, not in a home directory. When no such device exists, Settings SHALL NOT show the control.
+<!-- Board 2026-10-14: Settings shows the Key backlight row on the base and an injected tap toggles it (docs/evidence/keyboard-base/shell/board/); host renders show it hidden without the LED and, with it, a four-detent slider (Off, Low, Medium, High). The PWM LED has 255 steps (docs/evidence/keyboard-base/backlight/); Low, Medium and High are 8 %, 30 % and 100 % of it in `keyboard_based.py`. -->
+When a `kbd_backlight` LED device exists, Settings SHALL offer a keyboard backlight control: an on/off switch while the device has one brightness step, and a level slider once it has more. The choice SHALL persist across reboots in system state, not in a home directory. When no such device exists, Settings SHALL NOT show the control.
 
 #### Scenario: Turning the key backlight off
 

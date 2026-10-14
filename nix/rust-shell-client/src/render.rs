@@ -776,6 +776,26 @@ fn paint_slider(cr: &Context, style: VisualStyle, w: f64, center_y: f64, control
     paint_slider_track(cr, style, w, center_y, percent);
 }
 
+/// A slider with `steps + 1` detents (the Key backlight's Off, Low, Medium
+/// and High): the shared track and thumb at detent `index`, a dot on every
+/// other detent, and the brightness slider's sun glyphs at the ends. Touch
+/// maps through the same `slider::track_bounds`
+/// (`service_ui::key_backlight_level_at`).
+fn paint_level_slider(cr: &Context, style: VisualStyle, w: f64, center_y: f64, index: u8, steps: u8) {
+    let (left, right) = slider::track_bounds(w);
+    paint_sun(cr, left - 30.0, center_y, 11.0, style.muted, 0.8);
+    paint_sun(cr, right + 30.0, center_y, 15.0, style.accent, 1.0);
+    let percent = (f64::from(index.min(steps)) * 100.0 / f64::from(steps)).round() as u8;
+    paint_slider_track(cr, style, w, center_y, percent);
+    for detent in (0..=steps).filter(|&d| d != index) {
+        let x = left + f64::from(detent) / f64::from(steps) * (right - left);
+        cr.new_sub_path();
+        cr.arc(x, center_y, 3.5, 0.0, std::f64::consts::TAU);
+        color(cr, style.text, 0.6);
+        let _ = cr.fill();
+    }
+}
+
 /// A cheap vector speaker glyph for the volume slider's own left end,
 /// which doubles as the mute toggle (task: "a speaker icon that toggles
 /// mute when tapped", `service_ui::volume_icon_tap_zone` owns the hit
@@ -3072,7 +3092,7 @@ fn scene(
                     service_card(cr, theme, "controls", 24.0, y, w - 48.0, SETTINGS_ROW_H, false);
                     themed_medium(cr, theme, "body", "Key backlight", row_text_x, y + 15.0, row_text_width, 17.0, 14.0, 22.0, style.text);
                     themed_text(cr, theme, "body", level.label(), row_text_x, y + 43.0, row_text_width, 19.0, 14.0, 24.0, style.text);
-                    themed_text(cr, theme, "caption", "Lights the keys while typing", row_text_x, y + 76.0, row_text_width, 14.0, 11.0, 18.0, style.muted);
+                    paint_level_slider(cr, style, w, y + 86.0, level.index(), 3);
                     let _ = cr.restore();
                 }
             } else {
