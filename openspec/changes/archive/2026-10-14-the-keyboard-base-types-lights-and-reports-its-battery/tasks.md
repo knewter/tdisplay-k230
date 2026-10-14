@@ -281,7 +281,12 @@ host or QEMU result never ticks a board task.
 
 ## 7. Close
 
-- [ ] 7.1 Run `openspec validate the-keyboard-base-types-lights-and-reports-its-battery --strict`
+- [x] 7.1 Run `openspec validate the-keyboard-base-types-lights-and-reports-its-battery --strict`
   and `python3 tools/blob-scan.py --no-vendor`. Merge, push, and check CI and
   the published spec pages. Archive only when every task above has its named
   proof committed.
+  Done 2026-10-14: validate --strict and blob-scan pass at 9ba70f63; master
+  pushed, Spec site run 38623895514 built and deployed, and the published
+  backlight evidence page carries the live-slider record. Every task above has
+  its proof committed; the charger cold start and base-absent boot keep their
+  UNVERIFIED grounding markers in the specs.
