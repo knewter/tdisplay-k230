@@ -13,9 +13,10 @@ use crate::uinput::AbsRanges;
 pub enum Orientation {
     /// The panel's native portrait frame (`transform normal`).
     Normal,
-    /// `transform 270`, the keyboard case: the board is turned 90 degrees
-    /// counterclockwise, so the glass's native top edge is on the left and
-    /// its native right edge is at the top.
+    /// `transform 270`, the keyboard case: the glass's native top edge is
+    /// on the right as the board is held and its native left edge is at the
+    /// top. (Board, 2026-10-14: the opposite turn moved the pointer down for
+    /// an upward swipe and right for a leftward one.)
     Turned270,
 }
 
@@ -44,12 +45,12 @@ impl Orientation {
         if self == Orientation::Normal || ev.type_ != EV_ABS {
             return ev;
         }
-        let x = native.position_x;
+        let y = native.position_y;
         match ev.code {
-            // Held x runs along the glass's native y (top to bottom).
-            ABS_MT_POSITION_Y => InputEvent { code: ABS_MT_POSITION_X, ..ev },
-            // Held y runs from the native right edge back to the left.
-            ABS_MT_POSITION_X => InputEvent { code: ABS_MT_POSITION_Y, value: x.minimum + x.maximum - ev.value, ..ev },
+            // Held x runs from the glass's native bottom edge to its top.
+            ABS_MT_POSITION_Y => InputEvent { code: ABS_MT_POSITION_X, value: y.minimum + y.maximum - ev.value, ..ev },
+            // Held y runs along the native x (left edge at the top).
+            ABS_MT_POSITION_X => InputEvent { code: ABS_MT_POSITION_Y, ..ev },
             _ => ev,
         }
     }
@@ -58,7 +59,7 @@ impl Orientation {
     pub fn point(self, native: &AbsRanges, (x, y): (i32, i32)) -> (i32, i32) {
         match self {
             Orientation::Normal => (x, y),
-            Orientation::Turned270 => (y, native.position_x.minimum + native.position_x.maximum - x),
+            Orientation::Turned270 => (native.position_y.minimum + native.position_y.maximum - y, x),
         }
     }
 }
@@ -97,14 +98,14 @@ mod tests {
         let r = o.ranges(n);
         assert_eq!((r.position_x.maximum, r.position_y.maximum), (2399, 1079));
         assert_eq!((r.position_x.resolution, r.position_y.resolution), (27, 26));
-        // Native top-right corner (x max, y 0) is the held top-left.
-        assert_eq!(o.point(&n, (1079, 0)), (0, 0));
-        // Native bottom-left (x 0, y max) is the held bottom-right.
-        assert_eq!(o.point(&n, (0, 2399)), (2399, 1079));
-        // A finger moving down the native glass moves right as held.
-        assert_eq!(o.event(&n, abs(ABS_MT_POSITION_Y, 500)), abs(ABS_MT_POSITION_X, 500));
-        // A finger moving toward the native left edge moves down as held.
-        assert_eq!(o.event(&n, abs(ABS_MT_POSITION_X, 100)), abs(ABS_MT_POSITION_Y, 979));
+        // Native bottom-left corner (x 0, y max) is the held top-left.
+        assert_eq!(o.point(&n, (0, 2399)), (0, 0));
+        // Native top-right (x max, y 0) is the held bottom-right.
+        assert_eq!(o.point(&n, (1079, 0)), (2399, 1079));
+        // A finger moving up the native glass (y falling) moves right as held.
+        assert_eq!(o.event(&n, abs(ABS_MT_POSITION_Y, 500)), abs(ABS_MT_POSITION_X, 1899));
+        // A finger moving toward the native right edge moves down as held.
+        assert_eq!(o.event(&n, abs(ABS_MT_POSITION_X, 100)), abs(ABS_MT_POSITION_Y, 100));
         // Everything else is untouched, timestamps included.
         let slot = abs(ABS_MT_SLOT, 2);
         assert_eq!(o.event(&n, slot), slot);
