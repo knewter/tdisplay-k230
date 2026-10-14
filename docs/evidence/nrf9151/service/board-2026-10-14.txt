@@ -1,0 +1,87 @@
+# k230-modem service on the board (nRF9151 task 3.3)
+# system /nix/store/gcgvaz29zb5wk4d1sm8kygcrz13dpkk2-nixos-system-nixos-26.11.20260919.20b1ddd
+# ttyS3 speed 115200
+
+## 2026-10-14T00:57:48Z after a fresh boot
+active
+ gpio-2 (nrf9151-enable |k230-modem ) out lo 
+{"schema":1,"updated":1791939425,"power":"off","present":false,"cellular":false,"location":false,"sim":"unknown","pin_attempts":null,"registration":"unknown","operator":null,"rat":null,"rsrp":null,"bars":0,"gnss":"off","modem_firmware":null,"slm_version":null,"sms_count":0,"last_error":null}
+
+## 2026-10-14T00:57:48Z k230-modemctl power on (as shell)
+rc=0
+
+## 2026-10-14T00:57:53Z k230-modemctl status (as shell)
+{"schema":1,"updated":1791939474,"power":"on","present":true,"cellular":true,"location":false,"sim":"absent","pin_attempts":null,"registration":"sim_failure","operator":null,"rat":null,"rsrp":null,"bars":0,"gnss":"off","modem_firmware":"mfw_nrf91x1_2.0.3","slm_version":"2.9.0","sms_count":0,"last_error":"sms_unavailable"}
+rc=0
+ gpio-2 (nrf9151-enable |k230-modem ) out hi 
+
+## 2026-10-14T00:57:54Z a second opener (uid nobody, gid dialout)
+crw-rw---- 1 root dialout 4, 67 Oct 13 19:57 /dev/ttyS3
+sh: line 1: /dev/ttyS3: Device or resource busy
+rc=1
+
+## 2026-10-14T00:57:54Z k230-modemctl power off (as shell)
+rc=0
+ gpio-2 (nrf9151-enable |k230-modem ) out lo 
+{"schema":1,"updated":1791939478,"power":"off","present":true,"cellular":false,"location":false,"sim":"unknown","pin_attempts":null,"registration":"unknown","operator":null,"rat":null,"rsrp":null,"bars":0,"gnss":"off","modem_firmware":"mfw_nrf91x1_2.0.3","slm_version":"2.9.0","sms_count":0,"last_error":"sms_unavailable"}
+
+## journal (k230-modem, this boot)
+2026-10-13T19:57:04-05:00 systemd[1]: Started nRF9151 modem service (power, SIM, SMS, GNSS).
+2026-10-13T19:57:05-05:00 k230-modem[525]: k230-modem: started; modem off (cellular=false location=false)
+2026-10-13T19:57:48-05:00 k230-modem[525]: k230-modem: control: cellular=true location=false
+2026-10-13T19:57:49-05:00 k230-modem[525]: k230-modem: < Ready
+2026-10-13T19:57:49-05:00 k230-modem[525]: k230-modem: > AT
+2026-10-13T19:57:49-05:00 k230-modem[525]: k230-modem: < OK
+2026-10-13T19:57:49-05:00 k230-modem[525]: k230-modem: > AT+CFUN?
+2026-10-13T19:57:49-05:00 k230-modem[525]: k230-modem: < +CFUN: 0
+2026-10-13T19:57:49-05:00 k230-modem[525]: k230-modem: < OK
+2026-10-13T19:57:49-05:00 k230-modem[525]: k230-modem: > AT+CGMR
+2026-10-13T19:57:49-05:00 k230-modem[525]: k230-modem: < mfw_nrf91x1_2.0.3
+2026-10-13T19:57:49-05:00 k230-modem[525]: k230-modem: < OK
+2026-10-13T19:57:49-05:00 k230-modem[525]: k230-modem: > AT#XSLMVER
+2026-10-13T19:57:49-05:00 k230-modem[525]: k230-modem: < #XSLMVER: "2.9.0","2.9.0-cellular-a52f6a06a9e4"
+2026-10-13T19:57:49-05:00 k230-modem[525]: k230-modem: < OK
+2026-10-13T19:57:49-05:00 k230-modem[525]: k230-modem: > AT+CFUN=1
+2026-10-13T19:57:49-05:00 k230-modem[525]: k230-modem: < OK
+2026-10-13T19:57:49-05:00 k230-modem[525]: k230-modem: > AT+CMGF=1
+2026-10-13T19:57:49-05:00 k230-modem[525]: k230-modem: < +CMS ERROR: 302
+2026-10-13T19:57:49-05:00 k230-modem[525]: k230-modem: > AT+CSDH=1
+2026-10-13T19:57:49-05:00 k230-modem[525]: k230-modem: < ERROR
+2026-10-13T19:57:49-05:00 k230-modem[525]: k230-modem: > AT+CNMI=2,2,0,0,0
+2026-10-13T19:57:49-05:00 k230-modem[525]: k230-modem: < +CMS ERROR: 302
+2026-10-13T19:57:49-05:00 k230-modem[525]: k230-modem: > AT+CEREG=5
+2026-10-13T19:57:49-05:00 k230-modem[525]: k230-modem: < OK
+2026-10-13T19:57:49-05:00 k230-modem[525]: k230-modem: > AT%XSIM?
+2026-10-13T19:57:49-05:00 k230-modem[525]: k230-modem: < %XSIM: 0
+2026-10-13T19:57:49-05:00 k230-modem[525]: k230-modem: < OK
+2026-10-13T19:57:49-05:00 k230-modem[525]: k230-modem: > AT+CPIN?
+2026-10-13T19:57:49-05:00 k230-modem[525]: k230-modem: < ERROR
+2026-10-13T19:57:49-05:00 k230-modem[525]: k230-modem: > AT+CEREG?
+2026-10-13T19:57:49-05:00 k230-modem[525]: k230-modem: < +CEREG: 5,4
+2026-10-13T19:57:49-05:00 k230-modem[525]: k230-modem: < OK
+2026-10-13T19:57:49-05:00 k230-modem[525]: k230-modem: > AT+COPS?
+2026-10-13T19:57:49-05:00 k230-modem[525]: k230-modem: < +COPS: 0
+2026-10-13T19:57:49-05:00 k230-modem[525]: k230-modem: < OK
+2026-10-13T19:57:49-05:00 k230-modem[525]: k230-modem: > AT+CESQ
+2026-10-13T19:57:49-05:00 k230-modem[525]: k230-modem: < +CESQ: 99,99,255,255,255,255
+2026-10-13T19:57:49-05:00 k230-modem[525]: k230-modem: < OK
+2026-10-13T19:57:50-05:00 k230-modem[525]: k230-modem: < +CEREG: 90
+2026-10-13T19:57:50-05:00 k230-modem[525]: k230-modem: > AT%XSIM?
+2026-10-13T19:57:50-05:00 k230-modem[525]: k230-modem: < %XSIM: 0,9
+2026-10-13T19:57:50-05:00 k230-modem[525]: k230-modem: < OK
+2026-10-13T19:57:50-05:00 k230-modem[525]: k230-modem: > AT+CPIN?
+2026-10-13T19:57:50-05:00 k230-modem[525]: k230-modem: < ERROR
+2026-10-13T19:57:50-05:00 k230-modem[525]: k230-modem: > AT+CEREG?
+2026-10-13T19:57:50-05:00 k230-modem[525]: k230-modem: < +CEREG: 5,90
+2026-10-13T19:57:50-05:00 k230-modem[525]: k230-modem: < OK
+2026-10-13T19:57:50-05:00 k230-modem[525]: k230-modem: > AT+COPS?
+2026-10-13T19:57:50-05:00 k230-modem[525]: k230-modem: < +COPS: 0
+2026-10-13T19:57:50-05:00 k230-modem[525]: k230-modem: < OK
+2026-10-13T19:57:50-05:00 k230-modem[525]: k230-modem: > AT+CESQ
+2026-10-13T19:57:50-05:00 k230-modem[525]: k230-modem: < +CESQ: 99,99,255,255,255,255
+2026-10-13T19:57:50-05:00 k230-modem[525]: k230-modem: < OK
+2026-10-13T19:57:54-05:00 k230-modem[525]: k230-modem: control: status
+2026-10-13T19:57:54-05:00 k230-modem[525]: k230-modem: control: cellular=false location=false
+2026-10-13T19:57:54-05:00 k230-modem[525]: k230-modem: > AT+CFUN=0
+2026-10-13T19:57:54-05:00 k230-modem[525]: k230-modem: < OK
+2026-10-13T19:57:58-05:00 k230-modem[525]: k230-modem: control: status

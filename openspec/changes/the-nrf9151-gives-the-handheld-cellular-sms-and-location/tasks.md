@@ -84,7 +84,7 @@ with `<redacted>` and the redaction is noted:
   Done (host): `nix/modem.nix` (option `k230.modem.enable`, default on; the
   modem stays off until Cellular or Location is turned on). The landscape
   toplevel builds.
-- [ ] 3.3 Install on the board. Record:
+- [x] 3.3 Install on the board. Record:
   - after a fresh boot: enable low and state `off` (**board-read**);
   - `k230-modemctl power on`, then `status` without a SIM or with one, per
     1.2 (**board-read**);
@@ -92,6 +92,10 @@ with `<redacted>` and the redaction is noted:
   - a second process refused `/dev/ttyS3` (**board-read**).
 
   Proof: `docs/evidence/nrf9151/service/`.
+  Done 2026-10-14 without a SIM: enable `out lo` and `power: off` after boot;
+  `power on` gave `Ready` in 1 s and `sim: absent`; `power off` returned
+  `out lo`; an unprivileged `dialout` opener got `EBUSY`. The first image set
+  4098 baud (glibc 2.42 `speed_t`), fixed in the same branch; see the README.
 
 ## 4. Cellular status, PIN and SMS (board, radio)
 
