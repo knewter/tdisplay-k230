@@ -2033,7 +2033,7 @@ mod tests {
 
     #[test]
     fn the_portrait_chooser_layout_keeps_the_stacked_constants() {
-        for (w, h) in [(568, 1232), (768, 1024), (1080, 1920), (1920, 1080), (0, 0)] {
+        for (w, h) in [(568, 1232), (768, 1024), (1080, 1920), (1280, 1024), (0, 0)] {
             let lay = chooser_layout(w, h);
             assert!(!lay.wide, "{w}x{h}");
             assert_eq!(

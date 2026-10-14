@@ -568,15 +568,21 @@ mod tests {
         // of_the_first_row`: the Home grid's own `tile_rect`/`slot_at` must
         // stay in lockstep at a column count the reference 4 was never
         // authored for.
-        let width = 1920u32;
-        let height = 1080u32;
-        let columns = columns_for_width(width);
-        assert!(columns > COLUMNS);
-        for slot in 0..columns {
-            let (x, y, w, h) = tile_rect(width, height, slot, columns);
-            assert!(w > 0.0 && h > 0.0);
-            assert!(x + w <= f64::from(width), "tile {slot} must stay on-panel");
-            assert_eq!(slot_at((x + w / 2.0, y + h / 2.0), width, height, columns, columns), Some(slot));
+        // Landscape HDMI monitors too (the-hdmi-shell-works-in-landscape
+        // 5.3): 1280x800 and 720p, two rows deep.
+        for (width, height) in [(1920u32, 1080u32), (1280, 800), (1280, 720)] {
+            let columns = columns_for_width(width);
+            assert!(columns > COLUMNS);
+            for slot in 0..2 * columns {
+                let (x, y, w, h) = tile_rect(width, height, slot, columns);
+                assert!(w > 0.0 && h > 0.0);
+                assert!(x >= 0.0 && x + w <= f64::from(width), "tile {slot} must stay on-panel at {width}x{height}");
+                assert!(y >= 0.0 && y + h <= f64::from(height), "tile {slot} must stay on-panel at {width}x{height}");
+                assert_eq!(
+                    slot_at((x + w / 2.0, y + h / 2.0), width, height, 2 * columns, columns),
+                    Some(slot)
+                );
+            }
         }
     }
 

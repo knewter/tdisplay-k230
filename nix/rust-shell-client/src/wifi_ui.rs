@@ -1065,7 +1065,7 @@ mod tests {
 
     #[test]
     fn the_portrait_wifi_layout_keeps_the_artworks_literals() {
-        assert!(!wide(568, 1232) && !wide(1080, 1920) && !wide(1920, 1080));
+        assert!(!wide(568, 1232) && !wide(1080, 1920) && !wide(1280, 1024));
         let lay = layout(false, 0.0);
         assert_eq!(lay.buttons, ((24.0, 1120.0, 250.0, 88.0), (294.0, 1120.0, 250.0, 88.0)));
         assert_eq!(lay.list_view, (24.0, 338.0, 520.0, 814.0));

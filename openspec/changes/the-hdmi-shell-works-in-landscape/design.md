@@ -90,6 +90,22 @@ portrait kept as the default because accepted portrait defaults change only
 on explicit instruction. A board in the keyboard case runs the landscape
 profile. A runtime toggle in Settings is not part of this change.
 
+Landscape HDMI (task 5.1, 2026-10-14) is the flake output
+`k230-mainline-drm-shell-landscape-hdmi` (boot files
+`kernelMainlineDrmShellLandscapeHdmiBootFiles`): the landscape panel profile
+with `k230.shell.hdmiTransform = "normal"`. Sway takes the monitor's
+EDID-preferred mode, so no mode is assumed (the operator's monitor offers
+1280×800). The display controller has one CRTC, so the panel and HDMI are
+mutually exclusive outputs: plugging the cable moves the session to HDMI-A-1
+and unplugging returns it to DSI-1, with no reboot and no Settings button.
+While HDMI is active the glass is a trackpad, so the touch calibration matrix
+for `normal` is the identity.
+
+The shell's landscape layout (`help::wide`) applies to every output at least
+1.6 times as wide as it is tall. Before 5.2/5.3 it also required a short
+output, so a 1920×1080 monitor fell back to the portrait pages, stretched
+non-uniformly, with Settings running off the bottom.
+
 The shared layout work (5.2, 5.3, 7.1–7.3) is done once, against actual output
 geometry, so it serves both 1232×568 on the panel and HDMI landscape. The
 panel's 568×1232 portrait renders stay byte-identical, guarded by the existing

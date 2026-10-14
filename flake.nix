@@ -269,6 +269,13 @@
         k230-mainline-drm-shell-landscape = self.nixosConfigurations.k230-mainline-drm-shell.extendModules {
           modules = [ { k230.shell.panelTransform = "270"; } ];
         };
+        # The landscape panel profile with a landscape HDMI monitor
+        # (the-hdmi-shell-works-in-landscape task 5.1): HDMI-A-1 at its
+        # EDID-preferred mode, transform normal. The daily system keeps the
+        # accepted portrait monitor (transform 90).
+        k230-mainline-drm-shell-landscape-hdmi = self.nixosConfigurations.k230-mainline-drm-shell-landscape.extendModules {
+          modules = [ { k230.shell.hdmiTransform = "normal"; } ];
+        };
         # Retain the HDMI-only rollback trial profile; the daily system now
         # restores direct touch on the panel and relays touch on active HDMI.
         k230-mainline-drm-shell-hdmi = self.nixosConfigurations.k230-mainline-drm-shell.extendModules { };
@@ -924,6 +931,13 @@
           cfg = self.nixosConfigurations.k230-mainline-drm-shell-landscape.config;
           configuration = "k230-mainline-drm-shell-landscape";
           splashImage = if self.nixosConfigurations.k230-mainline-drm-shell-landscape.config.k230.panelConsole then null else bootSplashImage;
+          deviceTree = self.packages.${buildSystem}.mainlineDrmHotplugDeviceTreeNormalName;
+        };
+        # Landscape panel and landscape HDMI monitor (task 5.1).
+        kernelMainlineDrmShellLandscapeHdmiBootFiles = pkgs.callPackage ./nix/coherent-shell-boot-files.nix {
+          cfg = self.nixosConfigurations.k230-mainline-drm-shell-landscape-hdmi.config;
+          configuration = "k230-mainline-drm-shell-landscape-hdmi";
+          splashImage = if self.nixosConfigurations.k230-mainline-drm-shell-landscape-hdmi.config.k230.panelConsole then null else bootSplashImage;
           deviceTree = self.packages.${buildSystem}.mainlineDrmHotplugDeviceTreeNormalName;
         };
         kernelMainlineDrmShellHpdMonitorBootFiles = pkgs.callPackage ./nix/coherent-shell-boot-files.nix {

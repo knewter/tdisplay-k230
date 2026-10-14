@@ -516,11 +516,12 @@ mod tests {
         // is exactly the panel, unchanged from before this transform
         // existed.
         assert_eq!(settings_content_transform(568, 1232), (1.0, 0.0));
-        // A wide landscape output gets a centered, still-568-wide column
-        // rather than stretching edge to edge.
-        let (scale, x) = settings_content_transform(1920, 1080);
+        // A landscape output too short to scale the column up (a 5:4
+        // monitor; 16:9 and 16:10 take the wide layout instead) gets a
+        // centered, still-568-wide column rather than stretching edge to edge.
+        let (scale, x) = settings_content_transform(1280, 1024);
         assert_eq!(scale, 1.0);
-        assert!((x - (1920.0 - 568.0) / 2.0).abs() < 1e-9);
+        assert!((x - (1280.0 - 568.0) / 2.0).abs() < 1e-9);
         // A tall, denser output scales the column up (bigger content) and
         // still centers whatever width that scaled column occupies.
         let (scale, x) = settings_content_transform(1080, 1920);

@@ -83,13 +83,15 @@ const WIDE_BUTTON_TOP: f64 = 168.0;
 const WIDE_AID_LEFT: usize = 3;
 
 /// The landscape panel (1232x568) would shrink the single column to about
-/// half size, with 7px body text. An output that wide and that short gets
-/// two columns instead -- the guide on the left and the buttons on the
-/// right -- at nearly full size. The portrait panel and the HDMI outputs
-/// keep the single column.
+/// half size, with 7px body text. An output at least 1.6 times as wide as
+/// it is tall gets two columns instead -- the guide on the left and the
+/// buttons on the right -- at nearly full size. That includes landscape
+/// HDMI monitors (16:10 and 16:9, 1280x800 up to 1920x1080): the portrait
+/// pages stretch non-uniformly there and Settings runs off the bottom
+/// (the-hdmi-shell-works-in-landscape 5.2/5.3). The portrait panel and a
+/// portrait HDMI monitor keep the single column.
 pub fn wide(width: u32, height: u32) -> bool {
-    let column_scale = (f64::from(width) / 568.0).min(f64::from(height) / 1100.0);
-    column_scale < 0.75 && f64::from(width) >= 1.6 * f64::from(height)
+    height > 0 && f64::from(width) >= 1.6 * f64::from(height)
 }
 
 /// A button's rect in the design units `transform` scales.
@@ -188,8 +190,10 @@ mod tests {
     use crate::navigation;
     #[test]
     fn aid_is_deliberate_and_routes_share_painted_geometry() {
-        assert!(wide(1232, 568) && !wide(568, 1232) && !wide(1920, 1080) && !wide(1080, 1920));
-        for (w, h) in [(300, 600), (568, 1232), (1920, 1080), (1080, 1920), (1232, 568)] {
+        // Landscape HDMI monitors take the wide layout too; a 5:4 one does not.
+        assert!(wide(1232, 568) && wide(1920, 1080) && wide(1280, 800) && wide(1280, 720));
+        assert!(!wide(568, 1232) && !wide(1080, 1920) && !wide(1280, 1024));
+        for (w, h) in [(300, 600), (568, 1232), (1920, 1080), (1080, 1920), (1232, 568), (1280, 800), (1280, 1024)] {
             let (scale, offset) = transform(w, h);
             for aid in [false, true] {
                 for (i, (action, _, _)) in buttons(aid).iter().enumerate() {

@@ -2468,7 +2468,7 @@ mod tests {
             ..ServiceView::default()
         };
         let design_point = (60.0, 856.0);
-        for (width, height) in [(1920u32, 1080u32), (1080u32, 1920u32)] {
+        for (width, height) in [(1280u32, 1024u32), (1080u32, 1920u32)] {
             let (scale, x) = crate::settings_content_transform(width, height);
             let real_point = (design_point.0 * scale + x, design_point.1 * scale);
             assert_eq!(
@@ -2566,8 +2566,8 @@ mod tests {
         );
         // The sliders sit entirely in the left column.
         assert!(SHADE_VOLUME_TOP + SHADE_VOLUME_H <= wide.list_bottom);
-        // Portrait and HDMI outputs keep the single column exactly.
-        for (w, h) in [(568, 1232), (768, 1024), (1080, 1920), (1920, 1080)] {
+        // Portrait outputs and a 5:4 monitor keep the single column exactly.
+        for (w, h) in [(568, 1232), (768, 1024), (1080, 1920), (1280, 1024)] {
             let layout = shade_layout(w, h);
             assert!(!layout.wide);
             assert_eq!((layout.list_x, layout.list_top, layout.controls_w), (0.0, NOTIFICATION_TOP, f64::from(w)));

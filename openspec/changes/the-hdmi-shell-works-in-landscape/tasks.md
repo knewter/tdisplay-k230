@@ -27,7 +27,7 @@ These links do not complete this proposal's HDMI hardware or landscape gates.
       Verify the legacy rollback configuration with `nix build
       .#nixosConfigurations.k230.config.system.build.toplevel` and the shipping
       mainline profile with `nix build .#kernelMainlineDrmShellBootFiles`.
-- [ ] 5.2 Parameterize `nix/rust-shell-client/src/lib.rs`'s
+- [x] 5.2 Parameterize `nix/rust-shell-client/src/lib.rs`'s
       `DESIGN_ASPECT` and the direct `568.0`/`1232.0` literals it and
       `render.rs`/`wifi_ui.rs` use for coordinate scaling, so they derive
       from the actual configured output geometry instead of a compiled-in
@@ -35,7 +35,18 @@ These links do not complete this proposal's HDMI hardware or landscape gates.
       output really is `DSI-1` at `568x1232` (existing tests must keep
       passing unchanged). Verify with `cargo test` and
       `cargo clippy --all-targets` for `nix/rust-shell-client`.
-- [ ] 5.3 Make the home grid/navigation chrome
+      Done 2026-10-14 (host): layout is chosen from the configured output's
+      own size. `help::wide` (shared by Settings, Wi-Fi, themes, the shade,
+      folders and Help) now selects the real-pixel landscape layout for every
+      output at least 1.6x as wide as tall; before, a 1920x1080 monitor fell
+      back to the 568x1232 artwork scaled non-uniformly. The 568/1232
+      literals remain only as the portrait artwork's reference size, scaled
+      to the actual surface, and `DESIGN_ASPECT` only guards against a
+      keyboard exclusive-zone squish. Portrait tests pass unchanged; six
+      tests that pinned 1920x1080 as portrait now use 1280x1024 for the
+      centred-column case. `cargo test` 510 + 22 pass; clippy adds no
+      warnings. Renders: `docs/evidence/hdmi-hotplug/landscape/host-renders/`.
+- [x] 5.3 Make the home grid/navigation chrome
       (`nix/rust-shell-client/src/home_grid.rs`, `navigation.rs`) not
       visually broken (overlapping, off-screen, or unreachable elements) at
       a landscape aspect ratio, without necessarily redesigning the layout
@@ -43,6 +54,12 @@ These links do not complete this proposal's HDMI hardware or landscape gates.
       change. Verify with new unit tests exercising the same functions at
       a landscape geometry (e.g. `1280x720`) alongside the existing
       `568x1232` cases, `cargo test`.
+      Done 2026-10-14 (host): Home's grid and the Drawer tests now run at
+      1280x800 and 1280x720 as well as 1920x1080, every tile on-screen and
+      hit-testing to itself; host renders of Home, Drawer, Settings, Wi-Fi,
+      themes, the shade, a folder, Power and Help at 1280x800 and 1920x1080
+      show nothing overlapping, off-screen or unreachable
+      (`docs/evidence/hdmi-hotplug/landscape/host-renders/`).
 - [ ] 5.4 On the physical board with an HDMI monitor attached (requires
       a working HDMI boot), record the operator's observation of the home
       screen and Settings rendering on the external monitor without visibly

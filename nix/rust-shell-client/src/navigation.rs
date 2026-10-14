@@ -521,20 +521,23 @@ mod tests {
     fn wide_hdmi_output_hits_every_reflowed_column_of_the_first_row() {
         // 1920x1080 landscape HDMI: `columns_for_width(1920)` columns
         // reflow into the same first row instead of 4 wide, sparse tiles.
-        let width = 1920u32;
-        let height = 1080u32;
-        let columns = columns_for_width(width);
-        assert!(columns > COLUMNS, "a wide output must gain columns, not just wider tiles");
-        let mut nav = DrawerNavigation::default();
-        for index in 0..columns {
-            let (x, y, w, h) = tile_rect(width, height, index, 0.0);
-            assert!(w > 0.0 && h > 0.0);
-            assert!(x + w <= f64::from(width), "tile {index} must stay on-panel");
-            assert!(nav.down(1, (x + w / 2.0, y + h / 2.0), 10));
-            assert_eq!(
-                nav.up(1, (x + w / 2.0, y + h / 2.0), 30, width, height, columns),
-                Some(DrawerAction::Launch(index))
-            );
+        // Landscape HDMI monitors too (the-hdmi-shell-works-in-landscape
+        // 5.3): 1280x800 and 720p.
+        for (width, height) in [(1920u32, 1080u32), (1280, 800), (1280, 720)] {
+            let columns = columns_for_width(width);
+            assert!(columns > COLUMNS, "a wide output must gain columns, not just wider tiles");
+            let mut nav = DrawerNavigation::default();
+            for index in 0..columns {
+                let (x, y, w, h) = tile_rect(width, height, index, 0.0);
+                assert!(w > 0.0 && h > 0.0);
+                assert!(x >= 0.0 && x + w <= f64::from(width), "tile {index} must stay on-panel at {width}x{height}");
+                assert!(y + h <= f64::from(height), "tile {index} must stay on-panel at {width}x{height}");
+                assert!(nav.down(1, (x + w / 2.0, y + h / 2.0), 10));
+                assert_eq!(
+                    nav.up(1, (x + w / 2.0, y + h / 2.0), 30, width, height, columns),
+                    Some(DrawerAction::Launch(index))
+                );
+            }
         }
     }
 

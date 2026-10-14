@@ -1,7 +1,8 @@
 //! Host renders of the remaining landscape (task 8.3) surfaces: the Wi-Fi
 //! pages, the theme chooser, the open-folder overlay and the shade with real
-//! notification rows, at the landscape panel (1232x568) and, for comparison,
-//! the native portrait panel (568x1232).
+//! notification rows, at the landscape panel (1232x568), the native portrait
+//! panel (568x1232) for comparison, and landscape HDMI monitors (1280x800,
+//! 1280x720, 1920x1080; the-hdmi-shell-works-in-landscape 5.3).
 //!
 //! `cargo run --example render_landscape_surfaces -- <out-dir>` writes
 //! `<surface>-<WxH>.png`. Host render only: it proves paint and layout, not
@@ -27,7 +28,7 @@ fn main() {
     let out = PathBuf::from(env::args().nth(1).expect("usage: render_landscape_surfaces <out-dir>"));
     std::fs::create_dir_all(&out).unwrap();
     let apps = synthetic_apps(30);
-    for (w, h) in [(1232u32, 568u32), (568, 1232)] {
+    for (w, h) in [(1232u32, 568u32), (568, 1232), (1280, 800), (1280, 720), (1920, 1080)] {
         // The on-screen keyboard's default height on each panel.
         let keyboard = if w > h { 240.0 } else { 440.0 };
         let wifi = |page, selected: Option<&str>, use_saved, inset, message: Option<&str>| ServiceView {

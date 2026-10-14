@@ -1722,6 +1722,26 @@ DATA ce417f85b6a8de46d73fb7b4955524e3463106b90b7e0f09185618ec926aa98e docs/evide
 DATA 7139fd4be7aecff236b5df281a2c0a8b62aaad8b8df96bd03a174572183bf3b6 docs/evidence/hdmi-hotplug/manual-switch/host-settings-800x1280.png
 DATA ccbde505048655fa68d53a8719b9fc0081c36bc65175053d6c4f9773dee3a448 docs/evidence/hdmi-hotplug/landscape/hdmi-plugged-grim.png
 DATA 8c53f15f85acc02f9ec7a5746e0edb40e0e24f76e0116cbff55f5f64787e2d7d docs/evidence/hdmi-hotplug/landscape/panel-after-unplug-grim.png
+DATA 8751565df5b1e63c87b9ea5a219306acdb6b6a8b3e9ccc75e185dd2cac5c313c docs/evidence/hdmi-hotplug/landscape/host-renders/drawer-1280x800.png
+DATA 0a74244d895e2fec50725501a172a7bf480e6ab66413fa5f78600d818d7056a5 docs/evidence/hdmi-hotplug/landscape/host-renders/drawer-1920x1080.png
+DATA 343ac491a42bbd1c908ba3c18709052ba877216ebee89fa7b3bd2efb0b5d60ae docs/evidence/hdmi-hotplug/landscape/host-renders/folder-9-1280x800.png
+DATA be707130ee63e5f173d4f0773eb69cbda52902ab9797ff70c01abc5e2b5bf805 docs/evidence/hdmi-hotplug/landscape/host-renders/folder-9-1920x1080.png
+DATA e2ba3efb1c87ee88676ff749e8c4dfbcff5ddcddd98c86ce081a0399e21b3f20 docs/evidence/hdmi-hotplug/landscape/host-renders/help-1280x800.png
+DATA 7045157b5371d1b8cdf736f431e306b0496faee2ebe476aae761766d2e9c3ad0 docs/evidence/hdmi-hotplug/landscape/host-renders/help-1920x1080.png
+DATA f45596248a932840e6078564d77d588bb61c2746c3c4557af81d8e51cc681e01 docs/evidence/hdmi-hotplug/landscape/host-renders/home-1280x800.png
+DATA 0ca331a217bdac0a5661b18d31c65cdfc60e4bf841b070fc63a3503c9af8d489 docs/evidence/hdmi-hotplug/landscape/host-renders/home-1920x1080.png
+DATA 5f05afaa389d467e4da022aa89b0e28954f5c5781560e0266f4033069aeccd35 docs/evidence/hdmi-hotplug/landscape/host-renders/power-1280x800.png
+DATA 809be86682262ef7aa5a9a10ad16b738c2cc2cba3a177b73705c3ee50967ff24 docs/evidence/hdmi-hotplug/landscape/host-renders/power-1920x1080.png
+DATA 467f4bc7cecc80febbcbb90ade203ea1fd0f147fe7ce76429449dfdb1551a489 docs/evidence/hdmi-hotplug/landscape/host-renders/settings-with-base-1280x800.png
+DATA 1daa524fb299d72e539fe30e89a885e9ba1560b591a81d06d6477628b726a121 docs/evidence/hdmi-hotplug/landscape/host-renders/settings-with-base-1920x1080.png
+DATA 14cab0c1cdb7a05d3e53c9102458283e95bebfd93f8c04f257e1e695476b1101 docs/evidence/hdmi-hotplug/landscape/host-renders/shade-4-notifications-1280x800.png
+DATA efd77f7f6efd13ca4611cad029513ab067e438808422d59e918fb8027adc0bd8 docs/evidence/hdmi-hotplug/landscape/host-renders/shade-4-notifications-1920x1080.png
+DATA e40919972c198c05d6ca6be10bdc15655cb9d0caab1154c34736f13f7d0fd63d docs/evidence/hdmi-hotplug/landscape/host-renders/theme-chooser-1280x800.png
+DATA 50711fa4810c7df0137c97eeaa1f63e03e98bedbf15fb4bd280b0c3d58121e3e docs/evidence/hdmi-hotplug/landscape/host-renders/theme-chooser-1920x1080.png
+DATA 3f35ec0b8fb115a14e45a9ef968592c2f14d0d5c79a6126909aece1537ab892b docs/evidence/hdmi-hotplug/landscape/host-renders/wifi-entry-password-1280x800.png
+DATA cd5c5d4814aaca240e997b7cdda4dc5ae30ebb2651a2addcea4aee309068ada2 docs/evidence/hdmi-hotplug/landscape/host-renders/wifi-entry-password-1920x1080.png
+DATA cfb96550e14595c1cc6ff249cfb25620d789ad0a02e10947c30adad0f6f9139b docs/evidence/hdmi-hotplug/landscape/host-renders/wifi-list-1280x800.png
+DATA e66227f34bdb80eb23e88dc0a624591af9b738fc038f9b12a6d26fd389332dcc docs/evidence/hdmi-hotplug/landscape/host-renders/wifi-list-1920x1080.png
 DATA 0938edbc429fe58e4ccc4f16e4f25e163b8a8c3664f8a298bed8b8c19bfc7f1d docs/evidence/shell-responsive/board/acceptance-2026-10-09/home.png
 # Current UX candidate native captures — 2026-10-09
 DATA 83c8b4261beb9621eaaeed8c8e6c1d4fe25bb16abbad63de4234355d25e16de8 docs/evidence/ux-review-round-2/candidate-2026-10-09/overview.png
@@ -2856,6 +2876,26 @@ See `docs/evidence/hdmi-hotplug/manual-switch/host-render.json`.
 | `docs/evidence/hdmi-hotplug/manual-switch/host-settings-800x1280.png` | 52509 | DATA | `7139fd4be7aecff236b5df281a2c0a8b62aaad8b8df96bd03a174572183bf3b6` |
 | `docs/evidence/hdmi-hotplug/landscape/hdmi-plugged-grim.png` | 9570 | DATA | `ccbde505048655fa68d53a8719b9fc0081c36bc65175053d6c4f9773dee3a448` |
 | `docs/evidence/hdmi-hotplug/landscape/panel-after-unplug-grim.png` | 6428 | DATA | `8c53f15f85acc02f9ec7a5746e0edb40e0e24f76e0116cbff55f5f64787e2d7d` |
+| `docs/evidence/hdmi-hotplug/landscape/host-renders/drawer-1280x800.png` | 95606 | DATA | `8751565df5b1e63c87b9ea5a219306acdb6b6a8b3e9ccc75e185dd2cac5c313c` |
+| `docs/evidence/hdmi-hotplug/landscape/host-renders/drawer-1920x1080.png` | 72295 | DATA | `0a74244d895e2fec50725501a172a7bf480e6ab66413fa5f78600d818d7056a5` |
+| `docs/evidence/hdmi-hotplug/landscape/host-renders/folder-9-1280x800.png` | 22684 | DATA | `343ac491a42bbd1c908ba3c18709052ba877216ebee89fa7b3bd2efb0b5d60ae` |
+| `docs/evidence/hdmi-hotplug/landscape/host-renders/folder-9-1920x1080.png` | 26963 | DATA | `be707130ee63e5f173d4f0773eb69cbda52902ab9797ff70c01abc5e2b5bf805` |
+| `docs/evidence/hdmi-hotplug/landscape/host-renders/help-1280x800.png` | 67309 | DATA | `e2ba3efb1c87ee88676ff749e8c4dfbcff5ddcddd98c86ce081a0399e21b3f20` |
+| `docs/evidence/hdmi-hotplug/landscape/host-renders/help-1920x1080.png` | 106752 | DATA | `7045157b5371d1b8cdf736f431e306b0496faee2ebe476aae761766d2e9c3ad0` |
+| `docs/evidence/hdmi-hotplug/landscape/host-renders/home-1280x800.png` | 32407 | DATA | `f45596248a932840e6078564d77d588bb61c2746c3c4557af81d8e51cc681e01` |
+| `docs/evidence/hdmi-hotplug/landscape/host-renders/home-1920x1080.png` | 47407 | DATA | `0ca331a217bdac0a5661b18d31c65cdfc60e4bf841b070fc63a3503c9af8d489` |
+| `docs/evidence/hdmi-hotplug/landscape/host-renders/power-1280x800.png` | 20611 | DATA | `5f05afaa389d467e4da022aa89b0e28954f5c5781560e0266f4033069aeccd35` |
+| `docs/evidence/hdmi-hotplug/landscape/host-renders/power-1920x1080.png` | 24938 | DATA | `809be86682262ef7aa5a9a10ad16b738c2cc2cba3a177b73705c3ee50967ff24` |
+| `docs/evidence/hdmi-hotplug/landscape/host-renders/settings-with-base-1280x800.png` | 45816 | DATA | `467f4bc7cecc80febbcbb90ade203ea1fd0f147fe7ce76429449dfdb1551a489` |
+| `docs/evidence/hdmi-hotplug/landscape/host-renders/settings-with-base-1920x1080.png` | 50360 | DATA | `1daa524fb299d72e539fe30e89a885e9ba1560b591a81d06d6477628b726a121` |
+| `docs/evidence/hdmi-hotplug/landscape/host-renders/shade-4-notifications-1280x800.png` | 63018 | DATA | `14cab0c1cdb7a05d3e53c9102458283e95bebfd93f8c04f257e1e695476b1101` |
+| `docs/evidence/hdmi-hotplug/landscape/host-renders/shade-4-notifications-1920x1080.png` | 71163 | DATA | `efd77f7f6efd13ca4611cad029513ab067e438808422d59e918fb8027adc0bd8` |
+| `docs/evidence/hdmi-hotplug/landscape/host-renders/theme-chooser-1280x800.png` | 37784 | DATA | `e40919972c198c05d6ca6be10bdc15655cb9d0caab1154c34736f13f7d0fd63d` |
+| `docs/evidence/hdmi-hotplug/landscape/host-renders/theme-chooser-1920x1080.png` | 42631 | DATA | `50711fa4810c7df0137c97eeaa1f63e03e98bedbf15fb4bd280b0c3d58121e3e` |
+| `docs/evidence/hdmi-hotplug/landscape/host-renders/wifi-entry-password-1280x800.png` | 29753 | DATA | `3f35ec0b8fb115a14e45a9ef968592c2f14d0d5c79a6126909aece1537ab892b` |
+| `docs/evidence/hdmi-hotplug/landscape/host-renders/wifi-entry-password-1920x1080.png` | 33731 | DATA | `cd5c5d4814aaca240e997b7cdda4dc5ae30ebb2651a2addcea4aee309068ada2` |
+| `docs/evidence/hdmi-hotplug/landscape/host-renders/wifi-list-1280x800.png` | 47394 | DATA | `cfb96550e14595c1cc6ff249cfb25620d789ad0a02e10947c30adad0f6f9139b` |
+| `docs/evidence/hdmi-hotplug/landscape/host-renders/wifi-list-1920x1080.png` | 52063 | DATA | `e66227f34bdb80eb23e88dc0a624591af9b738fc038f9b12a6d26fd389332dcc` |
 
 ### Responsive HDMI acceptance (2026-10-09)
 
