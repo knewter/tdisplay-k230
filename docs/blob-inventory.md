@@ -1808,6 +1808,7 @@ DATA  6c17a39b1e712ed00ad8bfd58a1b25898683ea60b202dadd98a0445fb4c28ac8  docs/evi
 DATA  b41da29af5be0df5d36eba405099ca982ca77038b201c19221cb770800f13f0b  docs/evidence/keyboard-base/shell/board/shade-landscape-grim.png
 DATA  58829059cff1e99ef81e09d252af7c7203d0957336c79c764d56f90eda1dd9a5  docs/evidence/keyboard-base/shell/board/settings-key-backlight-off-injected.png
 DATA  6e52317412dd88c019d15fa08558b59ce63bf68c5b7656d206ba1179c7f48a91  docs/evidence/keyboard-base/shell/board/settings-three-column-grim.png
+DATA  0b84ded661718cd1b9306ef2327c4a4218f6e4e85143c244526130f1bf5457d3  docs/evidence/keyboard-base/battery-policy/shade-countdown-grim.png
 DATA  35392bb82d2662916a720b29ebeb5594de6d1490e040f07686ad69b8aab7a726  docs/evidence/keyboard-base/shell/board/home-battery-widget.png
 ```
 
@@ -3061,6 +3062,7 @@ Command and limits: `docs/evidence/keyboard-base/shell/host-renders/README.md`.
 | `docs/evidence/keyboard-base/shell/board/shade-landscape-grim.png` | 18440 | DATA | `b41da29af5be0df5d36eba405099ca982ca77038b201c19221cb770800f13f0b` |
 | `docs/evidence/keyboard-base/shell/board/settings-key-backlight-off-injected.png` | 41533 | DATA | `58829059cff1e99ef81e09d252af7c7203d0957336c79c764d56f90eda1dd9a5` |
 | `docs/evidence/keyboard-base/shell/board/settings-three-column-grim.png` | 41476 | DATA | `6e52317412dd88c019d15fa08558b59ce63bf68c5b7656d206ba1179c7f48a91` |
+| `docs/evidence/keyboard-base/battery-policy/shade-countdown-grim.png` | 23403 | DATA | `0b84ded661718cd1b9306ef2327c4a4218f6e4e85143c244526130f1bf5457d3` |
 | `docs/evidence/keyboard-base/shell/board/home-battery-widget.png` | 309123 | DATA | `35392bb82d2662916a720b29ebeb5594de6d1490e040f07686ad69b8aab7a726` |
 | `docs/evidence/coherent-shell/notification-preview/banner-trusted-1232x568.png` | 27362 | DATA | `1858054405c18a6f9236793779eec16d900195d2ca0846814d8fb0a218037eb5` |
 | `docs/evidence/coherent-shell/notification-preview/banner-trusted-568x1232.png` | 44988 | DATA | `d30df0ee7fb7c7ae12264847173b10afbd83e0d6d41b7611c4cfa6f71f325980` |

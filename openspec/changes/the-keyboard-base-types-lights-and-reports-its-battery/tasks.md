@@ -238,7 +238,11 @@ host or QEMU result never ticks a board task.
   camera frame.
   2026-10-14: the PMU power-off handler is restored and the same
   `systemctl poweroff` now removes power (`docs/evidence/power-key/power-off/`).
-  Still open: a policy-driven shutdown on that kernel, and the camera frame.
+  Rerun 02:18–02:31 CDT on that kernel: same notifications, countdown and
+  cancel, then the policy's poweroff cut power (operator: "it went fully
+  dark"); the power key started it again, charger reconnected by the test's
+  cleanup. Native capture of the countdown in the shade. Open: the camera
+  frame this task names (none taken; the webcam cannot see the panel).
 
 ## 7. Close
 

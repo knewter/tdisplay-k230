@@ -1,0 +1,27 @@
+2026-10-14T02:18:12-05:00 nixos systemd[1]: Started [systemd-run] /run/current-system/sw/bin/sh /var/tmp/policy-test.sh.
+2026-10-14T02:18:33-05:00 nixos python3[563]: k230-battery-policy: Battery low: 100% remaining.
+2026-10-14T02:22:33-05:00 nixos python3[563]: k230-battery-policy: Battery very low: 99% remaining.
+2026-10-14T02:27:03-05:00 nixos python3[563]: k230-battery-policy: Battery critically low: Shutting down in 60 seconds. Connect a charger to cancel.
+2026-10-14T02:27:28-05:00 nixos python3[563]: k230-battery-policy: Charging: Shutdown cancelled.
+2026-10-14T02:28:28-05:00 nixos python3[563]: k230-battery-policy: Battery critically low: Shutting down in 60 seconds. Connect a charger to cancel.
+2026-10-14T02:29:28-05:00 nixos systemd-logind[598]: poweroff requested from client PID 4985 ('systemctl') (unit k230-battery-policy.service)...
+2026-10-14T02:29:28-05:00 nixos systemd-logind[598]: System is powering down.
+2026-10-14T02:29:29-05:00 nixos systemd[1]: Stopping [systemd-run] /run/current-system/sw/bin/sh /var/tmp/policy-test.sh...
+2026-10-14T02:29:29-05:00 nixos systemd[1]: k230-battery-policy.service: Deactivated successfully.
+2026-10-14T02:29:29-05:00 nixos systemd[1]: k230-battery-policy.service: Consumed 1.084s CPU time over 19min 33.723s wall clock time, 11.3M memory peak, 492K read from disk.
+2026-10-14T02:29:31-05:00 nixos systemd[1]: k230-policy-test.service: Deactivated successfully.
+2026-10-14T02:29:31-05:00 nixos systemd[1]: Stopped [systemd-run] /run/current-system/sw/bin/sh /var/tmp/policy-test.sh.
+2026-10-14T02:29:31-05:00 nixos systemd[1]: k230-policy-test.service: Consumed 9.931s CPU time over 11min 19.111s wall clock time, 5.5M memory peak, 1.1M read from disk, 128K written to disk.
+2026-10-14T02:29:32-05:00 nixos make-initrd-ng[5045]: /etc/initrd-release -> /nix/store/1nknlaywz4xhrnz17amn8q8k2nkavz94-etc-os-release
+2026-10-14T02:29:32-05:00 nixos make-initrd-ng[5045]: /etc/os-release -> /nix/store/1nknlaywz4xhrnz17amn8q8k2nkavz94-etc-os-release
+2026-10-14T02:29:32-05:00 nixos make-initrd-ng[5045]: /shutdown -> /nix/store/srwrq12f962d5prr382vvsq76nfvmm84-systemd-riscv64-unknown-linux-gnu-261.2/lib/systemd/systemd-shutdown
+2026-10-14T02:29:32-05:00 nixos make-initrd-ng[5045]: Warning: Couldn't satisfy dependency libcrypt.so.1 for "/nix/store/srwrq12f962d5prr382vvsq76nfvmm84-systemd-riscv64-unknown-linux-gnu-261.2/lib/systemd/libsystemd-shared-261.so"
+2026-10-14T02:29:32-05:00 nixos make-initrd-ng[5045]: Warning: Couldn't satisfy dependency libcrypt.so.1.1 for "/nix/store/srwrq12f962d5prr382vvsq76nfvmm84-systemd-riscv64-unknown-linux-gnu-261.2/lib/systemd/libsystemd-shared-261.so"
+2026-10-14T02:29:34-05:00 nixos systemd[1]: systemd-poweroff.service: Deactivated successfully.
+2026-10-14T02:29:34-05:00 nixos systemd[1]: Finished System Power Off.
+2026-10-14T02:29:34-05:00 nixos systemd[1]: Reached target System Power Off.
+2026-10-14T02:29:34-05:00 nixos systemd-shutdown[1]: Syncing filesystems and block devices.
+2026-10-14T02:29:35-05:00 nixos systemd-shutdown[1]: Sending SIGTERM to remaining processes...
+--- next boot
+ -1 02f225ac3e25434ca850c7f441ce8a0f Wed 2026-10-14 02:09:15 CDT Wed 2026-10-14 02:29:35 CDT
+  0 e6b8a26789eb4054b9c67d9e270842cc Wed 2026-10-14 02:30:14 CDT Wed 2026-10-14 02:40:23 CDT

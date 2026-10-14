@@ -57,3 +57,44 @@ Also found: the charger's Hi-Z survived the halt and the reset (REG00 0xff,
 hand. The test's last-moment "reconnect the charger" hook was put in
 `/run/systemd/system-shutdown/`, which systemd-shutdown does not read, so it
 never ran.
+
+## Rerun on the power-off kernel (2026-10-14 02:18–02:31 CDT)
+
+System `9m683dbp…`, with the PMU power-off handler restored
+(`../../power-key/power-off/README.md`). Same method and override as above.
+Two fixes to the test itself: the charger is reconnected by the transient
+unit's `ExecStopPost` (it ran when shutdown stopped the unit), and the
+capture directory is world-writable so `grim` as `shell` can write.
+`policy-test.sh` here is the script as run.
+
+`journal-poweroff-2026-10-14.log`, `samples-poweroff-2026-10-14.log`:
+
+| Time (CDT) | Event |
+| --- | --- |
+| 02:18:12 | charger Hi-Z, gauge -413 mA, 100 % |
+| 02:18:33 | `Battery low: 100% remaining.` |
+| 02:22:33 | `Battery very low: 99% remaining.` |
+| 02:27:03 | `Battery critically low: Shutting down in 60 seconds.` |
+| 02:27:24–28 | charger back on; `Charging: Shutdown cancelled.` |
+| 02:27:55 | charger Hi-Z again |
+| 02:28:28 | `Battery critically low: Shutting down in 60 seconds.` |
+| 02:29:28 | logind: `poweroff requested … (unit k230-battery-policy.service)` |
+| 02:29:34–35 | `Finished System Power Off`; `systemd-shutdown`: sync, SIGTERM |
+| 02:30:14 | next boot, after the operator held the power key |
+
+Operator: "it went fully dark. i powered it back on". After boot the
+charger read `online` 1, REG00 0x7f, `Charging`, and the override file was
+gone: the cleanup ran before power was cut.
+
+`shade-countdown-grim.png` is a native capture of the shade three seconds
+into the first countdown: one System notification, "Battery critically low /
+Shutting down in 60 seconds. Connect a charger to cancel.", battery line 98 %.
+The script's second capture, 3 s after "Shutdown cancelled", was
+byte-identical: an open shade read notification history only when it opened,
+so the tag replacement never reached it. Reproduced afterwards with
+`k230-notifications emit` (center history held "Charging", shade still showed
+the countdown 13 s later) and fixed separately (shade adopts the banner
+poll's history while open).
+
+Evidence classes: board-read (journal, sysfs, native capture) and operator
+report of the power cut. No camera frame.
