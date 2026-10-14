@@ -39,15 +39,22 @@ host or QEMU result never ticks a board task.
 
 ## 2. Pins and bus (device tree, kernel)
 
-- [ ] 2.1 Add the `canaan,k230-pinctrl` node and states for IO42, IO43, IO46,
+- [x] 2.1 Add the `canaan,k230-pinctrl` node and states for IO42, IO43, IO46,
   IO47 and IO52 only, plus the hardware I2C4 node (design Decision 2), to
   `nix/dts/k230-tdisplay-mainline-drm-common.dtsi`.
   Proof (**host**): `nix build .#deviceTreeMainlineDrm`.
-- [ ] 2.2 Push the DTB with `tools/push-file.py --src <dtb> --dest /boot/k230-tdisplay.dtb --reboot`.
+  Done: the pinctrl states and the `i2c@91409000` node are in the dtsi.
+  `nix build .#deviceTreeMainlineDrm` built on 2026-10-14
+  (`y4j8bwc0…-k230-tdisplay-mainline-drm.dtb`).
+- [x] 2.2 Push the DTB with `tools/push-file.py --src <dtb> --dest /boot/k230-tdisplay.dtb --reboot`.
   Record that the console on `/dev/ttyACM0` still logs in, that the panel and
   touch work, and that `i2cdetect -y <bus>` lists the 1.2 addresses.
   Proof (**board-read**): the console log and `i2cdetect` output in
   `docs/evidence/keyboard-base/bus/`.
+  Done 2026-10-14 (**board-read**): installed through the boot bundles, not
+  `push-file.py`. The serial getty is active, the panel is connected, touch
+  and the keypad take interrupts, and `i2cdetect -y -r 1` lists 0x20, 0x34,
+  0x55, 0x6b (bound) and 0x38 (`docs/evidence/keyboard-base/bus/README.md`).
 
 ## 3. Keys and Caps Lock (kernel, device tree, Nix)
 
@@ -76,7 +83,7 @@ host or QEMU result never ticks a board task.
   Proof (**host**): `nix build .#kernelMainlineDrm`.
   Board-read (no camera): the LEDs register and switch their lines, in
   `docs/evidence/keyboard-base/leds/`.
-- [ ] 3.4 Install on the board. Record:
+- [x] 3.4 Install on the board. Record:
   - `evtest` on the base's device for every key (**board-read**, with an
     operator pressing);
   - `ls -la` typed into foot, shown in a native `grim` capture and a camera
@@ -85,14 +92,22 @@ host or QEMU result never ticks a board task.
   - Caps Lock with its LED lit in a camera frame.
 
   Store all of it in `docs/evidence/keyboard-base/keys/`.
+  Partial evidence: `evtest-2026-10-13T211125Z.log` and the evemu recordings
+  in `keys/` (board-read), and the operator typing on the base throughout
+  6.2. Closed by the operator: "keyboard seems good to me dont worry about
+  recording" and "waive the camera pics" (2026-10-14). There is no
+  `ls -la` capture, Shift line or Caps Lock frame.
 
 ## 4. Key backlight (device tree, then kernel)
 
-- [ ] 4.1 Add IO52 as a `gpio-leds` `k230::kbd_backlight`. Proof (**host**):
+- [x] 4.1 Add IO52 as a `gpio-leds` `k230::kbd_backlight`. Proof (**host**):
   `nix build .#deviceTreeMainlineDrm`. Then (**camera**) a frame with it on
   and a frame with it off, written through sysfs, in
   `docs/evidence/keyboard-base/backlight/`. The line itself switches
   (`docs/evidence/keyboard-base/leds/`, board-read); the camera frames remain.
+  Closed 2026-10-14: the line switches (board-read), Settings' Key backlight
+  row toggles the LED (injected tap), and the operator waived the camera
+  frames ("waive the camera pics").
 - [ ] 4.2 Port the vendor K230 PWM driver and switch IO52 to PWM4 with a
   `pwm-leds` entry of the same name. Proof (**host**):
   `nix build .#kernelMainlineDrm`. Then (**camera**) three distinct
@@ -112,7 +127,7 @@ host or QEMU result never ticks a board task.
   names; `nix build .#deviceTreeMainlineDrm` built. The table and the one
   rewritten field (REG02 CONV_RATE) are in the charger README. On the board
   only REG02 changed on bind.
-- [ ] 5.2a Find the BQ25896 INT line. `bq25890_charger` will not bind
+- [x] 5.2a Find the BQ25896 INT line. `bq25890_charger` will not bind
   without an interrupt (`No irq resource found`), and neither LILYGO's code
   nor its pin map names where INT goes; the XL9555's INT is equally
   unknown. Until this is found, 5.2 adds no charger node. When it binds,
@@ -135,6 +150,10 @@ host or QEMU result never ticks a board task.
   LILYGO's own launcher polls the charger over I2C every 30 s. Finding the
   net now needs a continuity probe of BQ25896 pin 1 on the base PCB, or
   LILYGO's schematic.
+  Closed by operator scope decision 2026-10-14, with the line still
+  unidentified: "yeah close charger interrupt line do what lilygo does i
+  guess". The charger stays on polling: LILYGO polls over I2C every 30 s, and
+  this kernel polls every 2 s. Nothing here claims the line was found.
 - [x] 5.3 On the board, record:
   - `power_supply` `capacity`, `status`, `voltage_now` and `current_now`;
   - the charger's `online` value, cable in and cable out;
@@ -214,7 +233,7 @@ host or QEMU result never ticks a board task.
   (7 tests, including the `/run/k230-battery-policy.json` override used by
   6.6); options `k230.shell.batteryPolicy.*`. Installed on the board as
   system `iw5x7hn5…`, where the service is active with 15/5/3.
-- [ ] 6.5 On the board, record:
+- [x] 6.5 On the board, record:
   - a key press hiding the on-screen keyboard, and the LILYGO-key launch flow
     (**operator** + **camera**);
   - the shade's battery and the Settings control, in native captures;
@@ -230,6 +249,8 @@ host or QEMU result never ticks a board task.
   capture `home-battery-widget.png`, widget added to a test layout).
   Camera frames waived by the operator (Operator, 2026-10-14: "waive the camera pics".). Still open: a key
   press hiding the on-screen keyboard.
+  Done 2026-10-14: the operator reports "pressing a key hides the osk"
+  (**operator**; camera waived).
 - [x] 6.6 Exercise the low-battery policy on the board with the thresholds
   raised temporarily through a `/run` override, so a real discharge crosses
   them. Record the notifications, the countdown, the cable cancel, and one
