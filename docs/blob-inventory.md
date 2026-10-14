@@ -1800,6 +1800,7 @@ DATA  dc38dac11ae7f6129c9433fe43db56dbfdc01fd2e0d3c7fdc101e14fa129e43b  docs/evi
 DATA  a6a8591d874042351b5785b57b87277c1af63eeb007045ebb220960a896a03e8  docs/evidence/second-core/linux-start-2026-10-12/cpu0-start.png
 DATA  e618055416a78cf92d162d4ab6fcdcc24da5d0349e19af82886d7d9e48e45cd9  docs/evidence/keyboard-base/shell/host-renders/settings-with-base-1232x568.png
 DATA  104cc64446e119ada93a262fb8cd42c4edfbb71351fe1240e23af9608bc4dfef  docs/evidence/keyboard-base/shell/host-renders/settings-with-base-568x1232.png
+DATA  289e8fdf6ef299338eef4531648a680f111e86022a96e7320bd720b00eb3dfac  docs/evidence/keyboard-base/backlight/settings-slider-board-grim.png
 DATA  297e1020fe8fee839a7cc438ad0188e9854570ed3f6dd0972e099624b62db857  docs/evidence/keyboard-base/shell/host-renders/settings-without-base-1232x568.png
 DATA  8bf60ecef682bbd3096389c6fd385dd5bae0442ec0e8ff4ace14ac32a94abd9d  docs/evidence/keyboard-base/shell/host-renders/settings-without-base-568x1232.png
 DATA  2b291140f4b245f798056e3464f81c7e7b2842f366b312e53052326aba43e79a  docs/evidence/keyboard-base/shell/host-renders/shade-with-base-1232x568.png
@@ -3054,6 +3055,7 @@ Command and limits: `docs/evidence/keyboard-base/shell/host-renders/README.md`.
 
 | Path | Bytes | Class | SHA-256 |
 | --- | ---: | --- | --- |
+| `docs/evidence/keyboard-base/backlight/settings-slider-board-grim.png` | 41683 | DATA | `289e8fdf6ef299338eef4531648a680f111e86022a96e7320bd720b00eb3dfac` |
 | `docs/evidence/keyboard-base/shell/host-renders/settings-with-base-1232x568.png` | 43848 | DATA | `e618055416a78cf92d162d4ab6fcdcc24da5d0349e19af82886d7d9e48e45cd9` |
 | `docs/evidence/keyboard-base/shell/host-renders/settings-with-base-568x1232.png` | 51515 | DATA | `104cc64446e119ada93a262fb8cd42c4edfbb71351fe1240e23af9608bc4dfef` |
 | `docs/evidence/keyboard-base/shell/host-renders/settings-without-base-1232x568.png` | 38040 | DATA | `297e1020fe8fee839a7cc438ad0188e9854570ed3f6dd0972e099624b62db857` |

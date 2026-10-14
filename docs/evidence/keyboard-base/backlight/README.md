@@ -37,3 +37,24 @@ four seconds each, for six rounds. It ran twice. Operator, 2026-10-14: "it dims
 fine, off is dark". This confirms the NORMAL-polarity reading of the
 comparator in `nix/patches/mainline/pwm-k230.c`: the output is high while the
 counter is >= pwmcmpN.
+
+## Settings slider, live (board, 2026-10-14)
+
+Settings stores the Key backlight level at each slider detent, and
+`keyboard_based.py` polls the file every 0.2 s and lights the keys at a new
+level for a 3 s preview. Board read, preference written over SSH, LED
+brightness read 0.5 s after each write:
+
+```
+pref=medium led=0
+low -> 20
+medium -> 76
+high -> 255
+after preview -> 0
+```
+
+Operator, 2026-10-14, dragging the slider on the glass: "works live now".
+
+`settings-slider-board-grim.png` is a native grim capture of the landscape
+Settings page at 2026-10-14T14:27:03-05:00, the slider at High with its four
+detents.
