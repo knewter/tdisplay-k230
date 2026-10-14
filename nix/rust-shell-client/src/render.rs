@@ -5258,6 +5258,66 @@ impl RendererCache {
         Ok(())
     }
 
+    /// Paints the notification banner (`notification_banner`) onto a canvas
+    /// that is exactly the banner's own surface. Text comes only from the
+    /// broker's already-filtered preview.
+    pub fn draw_notification_banner(
+        &mut self,
+        canvas: &mut [u8],
+        width: u32,
+        height: u32,
+        preview: &crate::service_data::NotificationPreview,
+    ) -> Result<(), String> {
+        let size = usize::try_from(width)
+            .ok()
+            .and_then(|w| w.checked_mul(height as usize))
+            .and_then(|pixels| pixels.checked_mul(4))
+            .ok_or("invalid banner canvas geometry")?;
+        if canvas.len() != size {
+            return Err("invalid banner canvas length".into());
+        }
+        canvas.fill(0);
+        let surface = unsafe {
+            ImageSurface::create_for_data_unsafe(
+                canvas.as_mut_ptr(),
+                Format::ARgb32,
+                width as i32,
+                height as i32,
+                (width * 4) as i32,
+            )
+        }
+        .map_err(|e| e.to_string())?;
+        let cr = Context::new(&surface).map_err(|e| e.to_string())?;
+        let theme = self.theme.as_ref();
+        attach_theme_metrics(&cr, theme);
+        let style = visual_style(theme, "controls");
+        let (w, h) = (f64::from(width), f64::from(height));
+        let (source, summary) = crate::notification_banner::banner_text(preview);
+        rounded(&cr, 0.0, 0.0, w, h, 18.0);
+        color(&cr, palette_rgb_or(theme, "background", 0x1e1e2e), 0.96);
+        let _ = cr.fill();
+        rounded(&cr, 0.5, 0.5, w - 1.0, h - 1.0, 18.0);
+        color(&cr, style.muted, 0.45);
+        cr.set_line_width(1.0);
+        let _ = cr.stroke();
+        let painted = preview
+            .icon
+            .as_deref()
+            .is_some_and(|icon| self.icons.paint(&cr, icon, 36, 14.0, (h - 36.0) / 2.0));
+        if !painted {
+            cr.new_sub_path();
+            cr.arc(32.0, h / 2.0, 8.0, 0.0, std::f64::consts::TAU);
+            color(&cr, style.accent, 1.0);
+            let _ = cr.fill();
+        }
+        let left = 62.0;
+        text(&cr, &source, left, 9.0, w - left - 14.0, 14.0, style.muted);
+        text(&cr, &summary, left, 29.0, w - left - 14.0, 19.0, style.text);
+        drop(cr);
+        surface.flush();
+        Ok(())
+    }
+
     /// The HUD's own pixels (backdrop pill, speaker glyph, fill bar,
     /// expand affordance, and -- expanded -- one row per stream/sink),
     /// painted directly onto `cr`. Takes every input explicitly (no

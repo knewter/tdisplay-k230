@@ -15,6 +15,7 @@ pub mod home_widgets;
 pub mod icon;
 pub mod keyboard_base;
 pub mod navigation;
+pub mod notification_banner;
 pub mod pipewire_ipc;
 pub mod pointer_input;
 pub mod protocol;

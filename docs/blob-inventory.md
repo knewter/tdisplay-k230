@@ -1754,6 +1754,10 @@ DATA  55423d4699800eb9b55e3353e111039a6535fb040b81afd04637c0a2fb4bc4c0  docs/evi
 DATA  923cfcc3bb698118306399317dd241a8dfa51435629007fff38903358d934791  docs/evidence/coherent-shell/navigation-aid-2026-10-10/light-buttons.png
 DATA  5e698163701ee1c86962c53a459b9e7aff68dc2d11fc8fa961887dadae099087  docs/evidence/coherent-shell/navigation-aid-2026-10-10/light-drawer.png
 DATA  193bda0b9be35ad0a5f637c9324db54ae582299e86ead4660f63cec881debb26  docs/evidence/coherent-shell/navigation-aid-2026-10-10/light-help.png
+DATA 1858054405c18a6f9236793779eec16d900195d2ca0846814d8fb0a218037eb5  docs/evidence/coherent-shell/notification-preview/banner-trusted-1232x568.png
+DATA d30df0ee7fb7c7ae12264847173b10afbd83e0d6d41b7611c4cfa6f71f325980  docs/evidence/coherent-shell/notification-preview/banner-trusted-568x1232.png
+DATA b86059e9249f9018bbff16dba9557df0e59eba09b741fda9b61218d31d967ca2  docs/evidence/coherent-shell/notification-preview/banner-unknown-1232x568.png
+DATA 89ec298b9ce93940f7d923f2f60b606477c39f7c2385c85beb4f7669bbb4d648  docs/evidence/coherent-shell/notification-preview/banner-unknown-568x1232.png
 DATA  4bc927d031126339723be556a533c0b2e7e37435d15bf55a5273771469712ae7  docs/evidence/recovery-routes/touch-app-menu-qemu-2026-10-11/drawer-actions-touch-hold-menu.png
 DATA  a3ae45784cee598cd059ad936fe21e25e74b8410ddfbe506674a2c2a0206ad97  docs/evidence/recovery-routes/touch-capture-2026-10-11/window-list.mp4
 DATA  e4cb7a888f92d37b8145d5751d516dd4bbdd2d98fe4fe21a0f90937d225b6da7  docs/evidence/recovery-routes/touch-capture-2026-10-11/brightness-denied.mp4
@@ -3055,3 +3059,7 @@ Command and limits: `docs/evidence/keyboard-base/shell/host-renders/README.md`.
 | `docs/evidence/keyboard-base/shell/board/shade-landscape-grim.png` | 18440 | DATA | `b41da29af5be0df5d36eba405099ca982ca77038b201c19221cb770800f13f0b` |
 | `docs/evidence/keyboard-base/shell/board/settings-key-backlight-off-injected.png` | 41533 | DATA | `58829059cff1e99ef81e09d252af7c7203d0957336c79c764d56f90eda1dd9a5` |
 | `docs/evidence/keyboard-base/shell/board/settings-three-column-grim.png` | 41476 | DATA | `6e52317412dd88c019d15fa08558b59ce63bf68c5b7656d206ba1179c7f48a91` |
+| `docs/evidence/coherent-shell/notification-preview/banner-trusted-1232x568.png` | 27362 | DATA | `1858054405c18a6f9236793779eec16d900195d2ca0846814d8fb0a218037eb5` |
+| `docs/evidence/coherent-shell/notification-preview/banner-trusted-568x1232.png` | 44988 | DATA | `d30df0ee7fb7c7ae12264847173b10afbd83e0d6d41b7611c4cfa6f71f325980` |
+| `docs/evidence/coherent-shell/notification-preview/banner-unknown-1232x568.png` | 27324 | DATA | `b86059e9249f9018bbff16dba9557df0e59eba09b741fda9b61218d31d967ca2` |
+| `docs/evidence/coherent-shell/notification-preview/banner-unknown-568x1232.png` | 44957 | DATA | `89ec298b9ce93940f7d923f2f60b606477c39f7c2385c85beb4f7669bbb4d648` |

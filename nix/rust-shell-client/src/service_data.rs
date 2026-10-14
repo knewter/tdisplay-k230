@@ -340,6 +340,9 @@ pub enum PowerAction {
 pub enum ServiceRequest {
     RefreshSettings,
     RefreshNotifications,
+    /// Background read of the same history operation, used only for the
+    /// banner's `preview`; its reply never touches the shade's scroll state.
+    PreviewPoll,
     Brightness(u8),
     /// A throttled, fire-and-forget scrub write from a live slider drag
     /// (task: "brightness should be a slider"). Unlike `Brightness`,
@@ -486,7 +489,7 @@ fn execute(
             parse_settings(&settings_command(settings, &["status"])?)
                 .map(|snapshot| ServiceResponse::Settings(Box::new(snapshot)))
         }
-        ServiceRequest::RefreshNotifications => parse_history(&notification_request(
+        ServiceRequest::RefreshNotifications | ServiceRequest::PreviewPoll => parse_history(&notification_request(
             socket,
             json!({"operation":"history"}),
         )?)

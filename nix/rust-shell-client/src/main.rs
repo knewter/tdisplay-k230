@@ -13,6 +13,8 @@ use k230_shell_rust::{
     home_screen::{HomeAction, HomeScreen},
     home_widgets, keyboard_base,
     navigation::{self, DrawerAction, DrawerNavigation},
+    notification_banner,
+    service_data,
     pipewire_ipc,
     pointer_input::{self, PointerContact, POINTER_CONTACT_ID},
     protocol::{Phase, RevealMessage, RevealState, MAX_LINE},
@@ -1290,6 +1292,15 @@ struct ShellClient {
     hud_last_visible: bool,
     hud_surface: HomeSurface,
     hud_contact: Option<i32>,
+    /// Notification banner: latest broker preview, its overlay surface, the
+    /// touch that went down on it, and the preview id already tapped open.
+    banner_preview: Option<service_data::NotificationPreview>,
+    banner_surface: HomeSurface,
+    banner_contact: Option<(i32, (f64, f64))>,
+    banner_tapped: Option<u64>,
+    banner_poll_inflight: bool,
+    banner_moved: bool,
+    banner_next_poll: Instant,
     hud_stream_drag: Option<HudStreamDrag>,
     /// The default sink's PipeWire node id, as last reported by `service_
     /// view.audio` -- `None` until the first snapshot names one. Every
@@ -2634,6 +2645,18 @@ impl ShellClient {
             // drag itself already triggered.
             return;
         }
+        if let ServiceRequest::PreviewPoll = reply.request {
+            self.banner_poll_inflight = false;
+            let next = match reply.result {
+                Ok(ServiceResponse::Notifications(snapshot)) => snapshot.preview,
+                _ => None,
+            };
+            if next != self.banner_preview {
+                self.banner_preview = next;
+                self.banner_surface.dirty = true;
+            }
+            return;
+        }
         let dismiss_id = if let ServiceRequest::NotificationDismiss(id) = &reply.request {
             Some(*id)
         } else {
@@ -2963,6 +2986,79 @@ impl ShellClient {
         self.hud_surface.frame_pending = true;
         self.hud_surface.dirty = false;
         self.log("volume-hud-commit");
+        true
+    }
+
+    /// Polls the broker for its preview (slowly when idle, faster while one
+    /// is showing so its end is noticed) and maps or unmaps the banner.
+    fn sync_banner(&mut self, qh: &QueueHandle<Self>) {
+        let now = Instant::now();
+        if !self.banner_poll_inflight && now >= self.banner_next_poll {
+            if self.services.try_submit(ServiceRequest::PreviewPoll).is_ok() {
+                self.banner_poll_inflight = true;
+            }
+            self.banner_next_poll = now
+                + Duration::from_millis(if self.banner_preview.is_some() { 500 } else { 1000 });
+        }
+        if self.banner_preview.is_none() { self.banner_tapped = None; }
+        let visible = notification_banner::visible(
+            self.banner_preview.as_ref(),
+            self.route == Route::Shade,
+            self.banner_tapped,
+        );
+        if !visible {
+            if self.banner_surface.layer.is_some() {
+                self.banner_surface = HomeSurface::default();
+                self.banner_contact = None;
+                self.log("notification-banner-unmap");
+            }
+            return;
+        }
+        if self.banner_surface.layer.is_none() {
+            let (w, h, top) = notification_banner::surface_size(f64::from(self.width), f64::from(self.height));
+            let surface = self.compositor.create_surface(qh);
+            let layer = self.layer_shell.create_layer_surface(qh, surface, Layer::Overlay, Some("k230-notification-banner"), None);
+            layer.set_anchor(Anchor::TOP);
+            layer.set_size(w, h);
+            layer.set_margin(top, 0, 0, 0);
+            layer.set_exclusive_zone(-1);
+            layer.set_keyboard_interactivity(KeyboardInteractivity::None);
+            layer.commit();
+            self.banner_surface.layer = Some(layer);
+            self.banner_surface.dirty = true;
+            self.log("notification-banner-map-request");
+        }
+        if self.banner_surface.dirty && !self.banner_surface.frame_pending { self.draw_banner(qh); }
+    }
+
+    fn draw_banner(&mut self, qh: &QueueHandle<Self>) -> bool {
+        if !self.banner_surface.configured || self.banner_surface.frame_pending { return false; }
+        let Some(preview) = self.banner_preview.clone() else { return false; };
+        let (width, height) = (self.banner_surface.width, self.banner_surface.height);
+        let Some(size) = frame_bytes(width, height) else { return false; };
+        let stride = (width * 4) as i32;
+        self.banner_surface.buffers.retain(|b| b.stride() == stride && b.height() == height as i32);
+        let available: Vec<bool> = self.banner_surface.buffers.iter().map(|b| b.canvas(&mut self.pool).is_some()).collect();
+        let (index, canvas) = if let Some(index) = released_slot(&available) {
+            (index, self.banner_surface.buffers[index].canvas(&mut self.pool).expect("released banner slot"))
+        } else {
+            if self.banner_surface.buffers.len() >= 3 { return false; }
+            let Ok((buffer, canvas)) = self.pool.create_buffer(width as i32, height as i32, stride, wl_shm::Format::Argb8888) else { return false; };
+            if canvas.len() != size { return false; }
+            self.banner_surface.buffers.push(buffer);
+            (self.banner_surface.buffers.len() - 1, canvas)
+        };
+        if let Err(error) = self.renderer.draw_notification_banner(canvas, width, height, &preview) {
+            self.log(&format!("notification-banner-render-failed {error}")); return false;
+        }
+        let Some(layer) = self.banner_surface.layer.as_ref() else { return false; };
+        layer.wl_surface().damage_buffer(0, 0, width as i32, height as i32);
+        layer.wl_surface().frame(qh, layer.wl_surface().clone());
+        if self.banner_surface.buffers[index].attach_to(layer.wl_surface()).is_err() { return false; }
+        layer.commit();
+        self.banner_surface.frame_pending = true;
+        self.banner_surface.dirty = false;
+        self.log("notification-banner-commit");
         true
     }
 
@@ -4430,6 +4526,11 @@ impl CompositorHandler for ShellClient {
         surface: &wl_surface::WlSurface,
         _: u32,
     ) {
+        if self.banner_surface.layer.as_ref().is_some_and(|l| l.wl_surface() == surface) {
+            self.banner_surface.frame_pending = false;
+            if self.banner_surface.dirty { self.draw_banner(qh); }
+            return;
+        }
         if self.hud_surface.layer.as_ref().is_some_and(|l| l.wl_surface() == surface) {
             self.hud_surface.frame_pending = false;
             if self.hud_surface.dirty { self.draw_volume_hud(qh); }
@@ -4537,6 +4638,9 @@ impl OutputHandler for ShellClient {
 
 impl LayerShellHandler for ShellClient {
     fn closed(&mut self, _: &Connection, _: &QueueHandle<Self>, layer: &LayerSurface) {
+        if self.banner_surface.layer.as_ref().is_some_and(|l| l.wl_surface() == layer.wl_surface()) {
+            self.banner_surface = HomeSurface::default(); self.banner_contact = None; return;
+        }
         if self.hud_surface.layer.as_ref().is_some_and(|l| l.wl_surface() == layer.wl_surface()) {
             self.hud_surface = HomeSurface::default(); self.hud_contact = None; return;
         }
@@ -4581,6 +4685,13 @@ impl LayerShellHandler for ShellClient {
         _: u32,
     ) {
         let (width, height) = configure.new_size;
+        if self.banner_surface.layer.as_ref().is_some_and(|l| l.wl_surface() == layer.wl_surface()) {
+            let mut geometry = (self.banner_surface.width, self.banner_surface.height);
+            if configure_size(&mut geometry, width, height).is_none() { return; }
+            (self.banner_surface.width, self.banner_surface.height) = geometry;
+            self.banner_surface.configured = true; self.banner_surface.dirty = true;
+            self.draw_banner(qh); return;
+        }
         if self.hud_surface.layer.as_ref().is_some_and(|l| l.wl_surface() == layer.wl_surface()) {
             let mut geometry = (self.hud_surface.width, self.hud_surface.height);
             if configure_size(&mut geometry, width, height).is_none() { return; }
@@ -4774,6 +4885,11 @@ impl ShellClient {
         if let Some(menu)=self.app_menu.as_mut() {
             self.app_menu_point=pos;
             if menu.dragging() {menu.cancel();} else {menu.down(id,pos);}
+            return;
+        }
+        if self.banner_surface.layer.as_ref().is_some_and(|l| l.wl_surface() == &surface) {
+            let local = notification_banner::local_geometry(f64::from(self.width), f64::from(self.height));
+            if self.banner_contact.is_none() && local.contains(pos.0, pos.1) { self.banner_contact = Some((id, pos)); }
             return;
         }
         if self.hud_surface.layer.as_ref().is_some_and(|l| l.wl_surface() == &surface) {
@@ -5078,6 +5194,16 @@ impl ShellClient {
             let outcome=menu.up(id,self.app_menu_point,self.width,self.height);
             match outcome {MenuOutcome::Action(action)=>self.app_menu_action(qh,action),
                 MenuOutcome::Dismiss=>self.close_app_menu(qh),MenuOutcome::Consumed=>{self.dirty=true;self.draw(qh);}}
+            return;
+        }
+        if self.banner_contact.is_some_and(|(held, _)| held == id) {
+            let moved = self.banner_contact.take().is_some_and(|(_, _)| self.banner_moved);
+            self.banner_moved = false;
+            if !moved {
+                if let Some(preview) = &self.banner_preview { self.banner_tapped = Some(preview.id); }
+                self.log("notification-banner-tap");
+                self.show(qh, Route::Shade);
+            }
             return;
         }
         if self.hud_contact == Some(id) {
@@ -5473,6 +5599,11 @@ impl ShellClient {
             self.dirty=true;self.draw(qh);return;
         }
 
+        if let Some((held, start)) = self.banner_contact.filter(|(held, _)| *held == id) {
+            let _ = held;
+            if (pos.0 - start.0).hypot(pos.1 - start.1) > 22.0 { self.banner_moved = true; }
+            return;
+        }
         if self.hud_contact == Some(id) {
             self.touch.motion(id, pos);
             if self.hud_stream_drag.as_ref().is_some_and(|drag| drag.touch == id) {
@@ -5808,6 +5939,7 @@ impl ShellClient {
             self.nav.cancel();
         }
         if let Some(menu)=self.app_menu.as_mut() {menu.cancel();return;}
+        self.banner_contact = None; self.banner_moved = false;
         if let Some(id) = self.hud_contact.take() { self.hud.end_drag(id); }
         self.hud_stream_drag = None;
         self.hud_surface.dirty = true;
@@ -6386,6 +6518,13 @@ fn serve() -> Result<(), String> {
         hud_last_visible: false,
         hud_surface: HomeSurface::default(),
         hud_contact: None,
+        banner_preview: None,
+        banner_surface: HomeSurface::default(),
+        banner_contact: None,
+        banner_tapped: None,
+        banner_poll_inflight: false,
+        banner_moved: false,
+        banner_next_poll: Instant::now(),
         hud_stream_drag: None,
         default_sink_id: None,
         volume_echo_until_ms: None,
@@ -6558,6 +6697,7 @@ fn serve() -> Result<(), String> {
         }
         state.hud_last_visible = hud_now_visible;
         state.sync_hud_surface(&qh, hud_now_visible);
+        state.sync_banner(&qh);
         state.maybe_rescan_catalog(&candidates);
         if state.renderer.poll_theme_image(state.width, state.height) {
             state.dirty = true;
