@@ -76,3 +76,12 @@ with foot focused, by rebinding Mod4+Tab at runtime with `swaymsg`:
 So Sway ran the `--input-device` binding and still delivered the key. The
 chord bindings are now global; the operator's earlier presses had left five
 `;10;9~` (Super+Shift+Tab) and one `;9;9~` in the terminal.
+
+## Fn and the fixed overview chord (2026-10-14 ~02:40 UTC)
+
+`fn-evemu-record-2026-10-14T0237Z.txt` and `fn-sway-bindings-2026-10-14T0237Z.json`
+(**board-read**, real keypad, operator presses): Fn alone three times arrives
+as `KEY_RIGHTALT` press/release; Fn held with Up gives `KEY_UP` inside the
+`KEY_RIGHTALT` press; one LILYGO+Tab gives a single `card_shell enter` binding
+event with the global bindings. Whether the terminal stayed clean after this
+real press is not recorded; the injected check above showed nothing reached it.
