@@ -160,3 +160,11 @@ was not kept. Home itself is `board/installed-home.png` and
 Still owed for task 8.5: the folder overlay and on-screen keyboard as native
 captures on the installed image, and a camera frame from the keyboard side
 (the bench webcam currently sits at glass level and cannot read the panel).
+
+## Operator real-glass pass (task 8.6), 2026-10-14
+
+On the installed image `9lp7f072…`, asked to open Settings and an app, type
+on the keyboard base and return Home by finger (Drawer, Shade and the card
+overview were already reported 2026-10-13), the operator reported: "real
+finger check worked fine". Evidence class: operator report, real glass; no
+camera frame.

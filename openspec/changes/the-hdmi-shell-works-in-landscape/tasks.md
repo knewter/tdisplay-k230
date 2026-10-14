@@ -226,13 +226,17 @@ complete them here against the panel's 1232×568 geometry as well as HDMI.
       injected taps), plus a focused terminal (`board/installed-*.png`). Open:
       the folder overlay and on-screen keyboard on the installed image, and
       the camera frame.
-- [ ] 8.6 Operator real-glass check in the keyboard case: open Drawer, shade,
+- [x] 8.6 Operator real-glass check in the keyboard case: open Drawer, shade,
       Settings and an app, type on the keyboard, return Home. Record the
       operator's observation (physical: real glass). Hardware gate.
       Partial 2026-10-13: the operator's finger opened the Drawer and Shade
       from Home and, after the live X calibration, the card overview ("it
       works now"). Settings, an app, typing and the return to Home have not
       been reported yet.
+      Done 2026-10-14 (~05:12 UTC), installed image `9lp7f072…`: after being
+      asked to open Settings and an app, type on the keyboard and return
+      Home with a real finger, the operator reported "real finger check
+      worked fine". Operator report only; no camera frame of it.
 - [ ] 8.7 With the landscape profile, connect HDMI and confirm the existing
       HDMI behavior (output, transform, touchpad relay) is unchanged. Record
       the observation and a native capture (physical). Hardware gate; may run
