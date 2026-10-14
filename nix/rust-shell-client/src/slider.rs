@@ -126,6 +126,20 @@ impl Drag {
         Self::start_with_floor(id, width, MIN_PERCENT)
     }
 
+    /// A slider whose design column starts at screen `origin_x` and is
+    /// `width` wide (the wide Settings layout's first column), rather than
+    /// the whole panel. `start_with_floor` is the `origin_x == 0` case.
+    pub fn start_at(id: i32, origin_x: f64, width: f64, floor: u8) -> Self {
+        let (left, right) = track_bounds(width);
+        Self {
+            id,
+            left: origin_x + left,
+            right: origin_x + right,
+            floor,
+            last_sent_ms: None,
+        }
+    }
+
     /// Same as `start`, but for a slider whose floor is not the
     /// brightness floor -- the volume slider's is `0` (silence is a real
     /// value; muting is tracked separately in `volume.rs`).

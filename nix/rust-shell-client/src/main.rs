@@ -26,7 +26,8 @@ use k230_shell_rust::{
         drawer_close_drag_zone, filter_app_indices, shade_panel_close_zone,
         notification_max_scroll, notification_swipe_hit, notification_swipe_offset,
         notification_swipe_release, notification_swipe_start, notification_swipe_valid,
-        panel_intent, settings_output_picker_hit, slider_band, volume_icon_tap_zone,
+        panel_intent, settings_output_picker_hit, settings_slider_column_hit, settings_slider_frame,
+        slider_band, volume_icon_tap_zone,
         volume_slider_band, Confirmation, DrawerSearch, NotificationCoast, NotificationSwipeSettle,
         PanelClose, PanelIntent, ServiceView, SWIPE_VERTICAL_CANCEL,
     },
@@ -4878,10 +4879,18 @@ impl ShellClient {
                     let on_settings_capabilities_page = self.route != Route::Settings
                         || (self.wifi_view.page == WifiPage::Closed
                             && self.theme_view.page == ThemePage::Controls);
+                    // The wide (landscape) Settings page keeps its sliders in
+                    // the first column; the track is that column's, not the
+                    // panel's, and the other columns' rows share the y band.
+                    let (slider_x, slider_w) =
+                        settings_slider_frame(self.route, self.width, self.height);
+                    let in_slider_column =
+                        settings_slider_column_hit(self.route, self.width, self.height, pos.0);
                     self.brightness_drag = if on_settings_capabilities_page
+                        && in_slider_column
                         && slider_band(self.route, pos.1, &self.service_view)
                     {
-                        let mut drag = slider::Drag::start(id, f64::from(self.width));
+                        let mut drag = slider::Drag::start_at(id, slider_x, slider_w, slider::MIN_PERCENT);
                         let value = drag.value_at(pos.0);
                         self.apply_brightness_preview(value);
                         if drag.should_write(time_ms) {
@@ -4905,6 +4914,7 @@ impl ShellClient {
                     // be shadowed by the drag/icon zones sharing the same
                     // row's Y band.
                     self.output_picker_touch = if on_settings_capabilities_page
+                        && in_slider_column
                         && settings_output_picker_hit(pos.1, self.route, &self.service_view)
                     {
                         Some(id)
@@ -4913,6 +4923,7 @@ impl ShellClient {
                     };
                     let volume_row_touched = self.output_picker_touch.is_none()
                         && on_settings_capabilities_page
+                        && in_slider_column
                         && volume_slider_band(self.route, pos.1, &self.service_view);
                     // The speaker glyph shares the volume row's own Y band
                     // but must never arm a drag (`volume_icon_tap_zone` is
@@ -4921,13 +4932,13 @@ impl ShellClient {
                     // floor) -- checked first so the drag arm below only
                     // ever sees a touch that actually landed on the track.
                     self.volume_icon_touch =
-                        if volume_row_touched && volume_icon_tap_zone(pos.0, f64::from(self.width)) {
+                        if volume_row_touched && volume_icon_tap_zone(pos.0 - slider_x, slider_w) {
                             Some(id)
                         } else {
                             None
                         };
                     self.volume_drag = if volume_row_touched && self.volume_icon_touch.is_none() {
-                        let mut drag = slider::Drag::start_with_floor(id, f64::from(self.width), 0);
+                        let mut drag = slider::Drag::start_at(id, slider_x, slider_w, 0);
                         let value = drag.value_at(pos.0);
                         self.apply_volume_preview(value);
                         if drag.should_write(time_ms) {

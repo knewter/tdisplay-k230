@@ -456,6 +456,30 @@ pub fn settings_layout(key_backlight: bool) -> SettingsLayout {
     }
 }
 
+/// Which wide-layout column a capability row belongs to: Wi-Fi, Brightness
+/// and Volume on the left (column 0), Keyboard, Motion and Key backlight in
+/// the middle (column 1). The Power section is column 2.
+pub fn settings_row_column(row: u32) -> usize {
+    usize::from(row >= 3)
+}
+
+/// Where the wide (landscape) layout moves `column`'s items relative to
+/// their single-column design position: `(dx, dy)` added to the design x/y.
+/// Column 1's rows slide up to the top of the row area and column 2's Power
+/// heading takes the first row's y, so each column reads as its own stack
+/// starting at `SETTINGS_ROW_FIRST_Y`. `render` paints through this offset
+/// and `service_ui::panel_intent` subtracts the same one, so a tap and its
+/// paint cannot drift apart.
+pub fn settings_wide_offset(column: usize, key_backlight: bool) -> (f64, f64) {
+    let dx = crate::SETTINGS_WIDE_ORIGIN_X + column as f64 * crate::SETTINGS_WIDE_COL_PITCH;
+    let dy = match column {
+        0 => 0.0,
+        1 => SETTINGS_ROW_FIRST_Y - settings_row_y(3),
+        _ => SETTINGS_ROW_FIRST_Y - settings_layout(key_backlight).power_heading_y,
+    };
+    (dx, dy)
+}
+
 #[derive(Clone, Copy)]
 pub struct SettingsConfirmLayout {
     pub label_y: f64,
@@ -1899,6 +1923,7 @@ fn settings_panel_h(
     chooser: Option<&ThemeView>,
     services: Option<&ServiceView>,
     content_scale: f64,
+    wide: bool,
 ) -> f64 {
     let min_panel_h = 420.0 * content_scale;
     if let Some(view) = services
@@ -1913,6 +1938,10 @@ fn settings_panel_h(
             available_h,
             min_panel_h,
         );
+    }
+    if wide {
+        // Three columns of controls fill the short landscape panel.
+        return available_h;
     }
     content_sized_panel_h(settings_content_bottom(services) * content_scale, available_h, min_panel_h)
 }
@@ -1942,7 +1971,7 @@ pub fn panel_travel_height(
         // `docs/design/app-drawer-review.md` §2: "filling the screen from
         // the top inset, with no black band above it."
         Route::Drawer => h - navigation::panel_top(height),
-        Route::Settings => settings_panel_h(h, chooser, services, crate::density_scale(width, height)),
+        Route::Settings => settings_panel_h(h, chooser, services, crate::density_scale(width, height), crate::settings_wide(width, height)),
         Route::Power => power_panel_h(h, services),
         Route::Help | Route::Hide => h,
     }
@@ -2476,7 +2505,7 @@ fn scene(
     // little is on them (finding P0-2).
     let panel_h = match route {
         Route::Shade => crate::service_ui::shade_panel_height(height),
-        Route::Settings => settings_panel_h(h - panel_y, chooser, services, crate::density_scale(width, height)),
+        Route::Settings => settings_panel_h(h - panel_y, chooser, services, crate::density_scale(width, height), crate::settings_wide(width, height)),
         Route::Power => power_panel_h(h - panel_y, services),
         _ => h - panel_y,
     };
@@ -2886,7 +2915,17 @@ fn scene(
             let _ = cr.save();
             cr.translate(content_x, 0.0);
             cr.scale(content_scale, content_scale);
-            let w = crate::DESIGN_WIDTH;
+            let wide = crate::settings_wide(width, height);
+            let key_backlight_row = services.is_some_and(|view| view.key_backlight.is_some());
+            // The wide layout paints each item through its column's offset.
+            let place = |column: usize| {
+                let _ = cr.save();
+                if wide {
+                    let (dx, dy) = settings_wide_offset(column, key_backlight_row);
+                    cr.translate(dx, dy);
+                }
+            };
+            let w = if wide { crate::SETTINGS_WIDE_COL_W } else { crate::DESIGN_WIDTH };
             let row_padding = theme_settings_row_padding(theme);
             let row_text_x = 24.0 + row_padding;
             let row_text_width = w - 48.0 - row_padding * 2.0;
@@ -2902,6 +2941,7 @@ fn scene(
                     (3, "Keyboard", &settings.keyboard),
                     (4, "Motion", &settings.motion),
                 ] {
+                    place(settings_row_column(row));
                     let y = settings_row_y(row);
                     service_card(cr, theme, "controls", 24.0, y, w - 48.0, SETTINGS_ROW_H, false);
                     themed_medium(cr, theme, "body", name, row_text_x, y + 15.0, row_text_width, 17.0, 14.0, 22.0, style.text);
@@ -2943,6 +2983,7 @@ fn scene(
                     } else if let Some(detail) = &control.detail {
                         themed_text(cr, theme, "caption", detail, row_text_x, y + 76.0, row_text_width, 14.0, 11.0, 18.0, style.muted);
                     }
+                    let _ = cr.restore();
                 }
                 if settings.brightness.state == ControlState::Writable {
                     // Material-3-style slider (task: "brightness should
@@ -2950,13 +2991,16 @@ fn scene(
                     // touch target is the whole row (`slider_band` in
                     // `service_ui.rs` mirrors this same row rhythm), well
                     // past the "at least about 56 px tall" ask.
+                    place(0);
                     paint_slider(cr, style, w, settings_row_y(1) + 86.0, &settings.brightness);
+                    let _ = cr.restore();
                 }
                 // Volume row (task: "in Settings"): row 2, directly after
                 // Brightness. The device name doubles as the entry point
                 // into the device picker -- one picker UI (the HUD's own
                 // expanded panel), not two (design.md's "one picker, two
                 // entry points").
+                place(settings_row_column(SETTINGS_VOLUME_ROW));
                 let volume_y = settings_row_y(SETTINGS_VOLUME_ROW);
                 service_card(cr, theme, "controls", 24.0, volume_y, w - 48.0, SETTINGS_ROW_H, false);
                 themed_medium(cr, theme, "body", "Volume", row_text_x, volume_y + 15.0, row_text_width, 17.0, 14.0, 22.0, style.text);
@@ -2993,13 +3037,16 @@ fn scene(
                         style.muted,
                     );
                 }
+                let _ = cr.restore();
                 // Key backlight row (keyboard base): only while its LED exists.
                 if let Some(on) = services.and_then(|view| view.key_backlight) {
+                    place(settings_row_column(SETTINGS_KEY_BACKLIGHT_ROW));
                     let y = settings_row_y(SETTINGS_KEY_BACKLIGHT_ROW);
                     service_card(cr, theme, "controls", 24.0, y, w - 48.0, SETTINGS_ROW_H, false);
                     themed_medium(cr, theme, "body", "Key backlight", row_text_x, y + 15.0, row_text_width, 17.0, 14.0, 22.0, style.text);
                     themed_text(cr, theme, "body", if on { "On" } else { "Off" }, row_text_x, y + 43.0, row_text_width, 19.0, 14.0, 24.0, style.text);
                     themed_text(cr, theme, "caption", "Lights the keys while typing", row_text_x, y + 76.0, row_text_width, 14.0, 11.0, 18.0, style.muted);
+                    let _ = cr.restore();
                 }
             } else {
                 text(
@@ -3017,7 +3064,8 @@ fn scene(
             // Power heading/actions and the confirm dialog are positioned
             // relative to the row rhythm above (finding P0-4), not as
             // independent literals that stay correct only by coincidence.
-            let layout = settings_layout(services.is_some_and(|view| view.key_backlight.is_some()));
+            let layout = settings_layout(key_backlight_row);
+            place(2);
             if services.and_then(|view| view.settings.as_ref()).is_some() {
                 text(
                     cr,
@@ -3108,6 +3156,7 @@ fn scene(
                     });
                 text(cr, message, 28.0, after + 14.0, w - 56.0, 17.0, style.muted);
             }
+            let _ = cr.restore();
             let _ = cr.restore();
         }
         Route::Help => paint_help(cr, theme, width, height, services),

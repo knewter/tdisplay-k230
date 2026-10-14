@@ -843,6 +843,58 @@ pub fn notification_swipe_release(
     .then_some(ServiceRequest::NotificationDismiss(swipe.event_id))
 }
 
+/// Which wide-layout column (0..=2) a Settings touch at screen `x` falls in:
+/// the nearest column, split at the middle of the gutter between cards.
+pub fn settings_wide_column(x: f64) -> usize {
+    let first_gutter = crate::SETTINGS_WIDE_ORIGIN_X + crate::SETTINGS_WIDE_COL_W - 12.0;
+    let index = ((x - first_gutter) / crate::SETTINGS_WIDE_COL_PITCH).floor() + 1.0;
+    index.clamp(0.0, 2.0) as usize
+}
+
+/// Maps a real touch point on the wide (landscape) Settings page back to the
+/// single-column design space every row/Power check below is written in, by
+/// undoing the same `render::settings_wide_offset` the paint applies. `None`
+/// when the point lies outside every item of its column (above the first
+/// row, or below the last), so a column's offset can never make a tap land
+/// on a row that belongs to another column.
+pub fn settings_wide_design_point(point: (f64, f64), key_backlight: bool) -> Option<(f64, f64)> {
+    let column = settings_wide_column(point.0);
+    let (dx, dy) = crate::render::settings_wide_offset(column, key_backlight);
+    let design = (point.0 - dx, point.1 - dy);
+    // Slack of half a row gap above each column's first item.
+    let first = |top: f64| top - crate::render::SETTINGS_ROW_GAP / 2.0;
+    let last_row = if key_backlight { SETTINGS_KEY_BACKLIGHT_ROW } else { 4 };
+    let in_column = match column {
+        0 => design.1 >= first(settings_row_y(0)) && design.1 < first(settings_row_y(3)),
+        1 => {
+            design.1 >= first(settings_row_y(3))
+                && design.1 < settings_row_y(last_row) + SETTINGS_ROW_H + crate::render::SETTINGS_ROW_GAP / 2.0
+        }
+        _ => design.1 >= first(settings_layout(key_backlight).power_heading_y),
+    };
+    in_column.then_some(design)
+}
+
+/// The screen x origin and design width the Settings sliders (brightness and
+/// volume, both in the wide layout's first column) are laid out against:
+/// the whole panel normally, the first column when wide.
+pub fn settings_slider_frame(route: Route, width: u32, height: u32) -> (f64, f64) {
+    if route == Route::Settings && crate::settings_wide(width, height) {
+        (crate::SETTINGS_WIDE_ORIGIN_X, crate::SETTINGS_WIDE_COL_W)
+    } else {
+        (0.0, f64::from(width))
+    }
+}
+
+/// Whether a Settings touch at screen `x` can reach the sliders and the
+/// volume row at all: always, except in the wide layout, where only column 0
+/// holds them (the same y band in columns 1 and 2 is Keyboard/Motion rows).
+pub fn settings_slider_column_hit(route: Route, width: u32, height: u32, x: f64) -> bool {
+    route != Route::Settings
+        || !crate::settings_wide(width, height)
+        || settings_wide_column(x) == 0
+}
+
 /// Returns an intent only after the caller has paired a single real contact.
 pub fn panel_intent(
     route: Route,
@@ -951,9 +1003,14 @@ pub fn panel_intent(
             // drift apart. The "Done" check above stays in real coordinates
             // on purpose: that text paints outside the scaled column, in
             // the shared, unscaled header strip every other route uses too.
+            let wide = crate::settings_wide(width, height);
             let (content_scale, content_x) = crate::settings_content_transform(width, height);
-            let end = ((end.0 - content_x) / content_scale, end.1 / content_scale);
-            let w = crate::DESIGN_WIDTH;
+            let end = if wide {
+                settings_wide_design_point(end, view.key_backlight.is_some())?
+            } else {
+                ((end.0 - content_x) / content_scale, end.1 / content_scale)
+            };
+            let w = if wide { crate::SETTINGS_WIDE_COL_W } else { crate::DESIGN_WIDTH };
             if let Some(confirm) = &view.confirmation {
                 if Instant::now() >= confirm.expires_at {
                     return None;
@@ -983,7 +1040,7 @@ pub fn panel_intent(
             // only classification. A tap landing there without ever
             // arming a drag (brightness unavailable, say) simply falls
             // through to `None` below, same as any other dead zone.
-            if (settings_row_y(2)..settings_row_y(2) + 110.0).contains(&end.1)
+            if (settings_row_y(3)..settings_row_y(3) + 110.0).contains(&end.1)
                 && settings.keyboard.state == ControlState::Action
             {
                 return Some(PanelIntent::Request(ServiceRequest::KeyboardToggle));
@@ -1644,6 +1701,145 @@ mod tests {
             Some(PanelIntent::ToggleKeyBacklight)
         );
         assert_eq!(panel_intent(Route::Settings, tap, tap, 568, 1232, &view(None)), None);
+    }
+
+    type Rect = (f64, f64, f64, f64);
+
+    /// Every Settings item's painted rect on the 1232x568 panel, in real
+    /// pixels: the wide layout's per-column offset applied to the design
+    /// rows, exactly as `render.rs` paints them.
+    fn wide_settings_items(key_backlight: bool) -> Vec<(&'static str, Rect)> {
+        use crate::render::{settings_row_column, settings_wide_offset, SETTINGS_POWER_CARD_H};
+        let layout = settings_layout(key_backlight);
+        let mut items = vec![
+            ("wifi", 0, settings_row_y(0), SETTINGS_ROW_H),
+            ("brightness", 1, settings_row_y(1), SETTINGS_ROW_H),
+            ("volume", 2, settings_row_y(SETTINGS_VOLUME_ROW), SETTINGS_ROW_H),
+            ("keyboard", 3, settings_row_y(3), SETTINGS_ROW_H),
+            ("motion", 4, settings_row_y(4), SETTINGS_ROW_H),
+        ];
+        if key_backlight {
+            items.push(("key-backlight", SETTINGS_KEY_BACKLIGHT_ROW, settings_row_y(SETTINGS_KEY_BACKLIGHT_ROW), SETTINGS_ROW_H));
+        }
+        let mut out: Vec<_> = items
+            .into_iter()
+            .map(|(name, row, y, h)| {
+                let (dx, dy) = settings_wide_offset(settings_row_column(row), key_backlight);
+                (name, (dx + 24.0, y + dy, crate::SETTINGS_WIDE_COL_W - 48.0, h))
+            })
+            .collect();
+        let (dx, dy) = settings_wide_offset(2, key_backlight);
+        for (name, y) in [("reboot", layout.reboot_y), ("poweroff", layout.poweroff_y)] {
+            out.push((name, (dx + 24.0, y + dy, crate::SETTINGS_WIDE_COL_W - 48.0, SETTINGS_POWER_CARD_H)));
+        }
+        out
+    }
+
+    #[test]
+    fn every_wide_settings_row_is_inside_the_landscape_panel_and_taps_at_its_centre() {
+        for key_backlight in [false, true] {
+            let view = ServiceView {
+                settings: Some(crate::evidence_render::fixture_settings()),
+                key_backlight: key_backlight.then_some(false),
+                ..ServiceView::default()
+            };
+            let items = wide_settings_items(key_backlight);
+            assert_eq!(items.len(), if key_backlight { 8 } else { 7 });
+            for (name, (x, y, w, h)) in &items {
+                assert!(
+                    *x >= 0.0 && *y >= 0.0 && x + w <= 1232.0 && y + h <= 568.0,
+                    "{name} ({x},{y},{w},{h}) leaves 1232x568 (key backlight {key_backlight})"
+                );
+            }
+            for (i, a) in items.iter().enumerate() {
+                for b in &items[i + 1..] {
+                    let (ax, ay, aw, ah) = a.1;
+                    let (bx, by, bw, bh) = b.1;
+                    assert!(
+                        ax + aw <= bx || bx + bw <= ax || ay + ah <= by || by + bh <= ay,
+                        "{} overlaps {}",
+                        a.0,
+                        b.0
+                    );
+                }
+            }
+            for (name, (x, y, w, h)) in &items {
+                let tap = (x + w / 2.0, y + h / 2.0);
+                let intent = panel_intent(Route::Settings, tap, tap, 1232, 568, &view);
+                let expected = match *name {
+                    "wifi" => Some(PanelIntent::OpenWifi),
+                    "keyboard" => Some(PanelIntent::Request(ServiceRequest::KeyboardToggle)),
+                    "key-backlight" => Some(PanelIntent::ToggleKeyBacklight),
+                    "reboot" => Some(PanelIntent::Request(ServiceRequest::PowerRequest(PowerAction::Reboot))),
+                    "poweroff" => Some(PanelIntent::Request(ServiceRequest::PowerRequest(PowerAction::Poweroff))),
+                    // The sliders own their rows' touches and Motion is read only.
+                    _ => None,
+                };
+                assert_eq!(intent, expected, "tap at the centre of {name} (key backlight {key_backlight})");
+            }
+            // The slider rows are owned by the sliders only inside column 0.
+            let brightness = items.iter().find(|i| i.0 == "brightness").unwrap().1;
+            let motion = items.iter().find(|i| i.0 == "motion").unwrap().1;
+            let band_y = brightness.1 + 10.0;
+            assert!(slider_band(Route::Settings, band_y, &writable_brightness_view()));
+            assert!(settings_slider_column_hit(Route::Settings, 1232, 568, brightness.0 + 40.0));
+            assert!(!settings_slider_column_hit(Route::Settings, 1232, 568, motion.0 + 40.0));
+            assert!(settings_slider_column_hit(Route::Settings, 568, 1232, 400.0));
+            // Dead space above a column's first row, or below its last,
+            // never reaches another column's row.
+            for x in [200.0, 600.0, 1000.0] {
+                let tap = (x, 60.0 + 100.0);
+                assert_eq!(panel_intent(Route::Settings, tap, tap, 1232, 568, &view), None);
+            }
+        }
+    }
+
+    #[test]
+    fn the_wide_power_confirmation_sits_in_the_third_column_inside_the_panel() {
+        for key_backlight in [false, true] {
+            let view = ServiceView {
+                settings: Some(crate::evidence_render::fixture_settings()),
+                key_backlight: key_backlight.then_some(false),
+                confirmation: Some(Confirmation {
+                    token: "t".into(),
+                    action: PowerAction::Reboot,
+                    label: "Reboot now?".into(),
+                    expires_at: Instant::now() + std::time::Duration::from_secs(30),
+                }),
+                message: Some("Tap Confirm to reboot".into()),
+                ..ServiceView::default()
+            };
+            let layout = settings_layout(key_backlight);
+            let confirm = settings_confirm_layout(layout.poweroff_bottom);
+            let (dx, dy) = crate::render::settings_wide_offset(2, key_backlight);
+            let (top, bottom) = (confirm.card_y + dy, confirm.bottom + dy);
+            // The message line below the card (17 px text) stays on the panel too.
+            assert!(bottom + 14.0 + 17.0 <= 568.0, "confirm + message end at {}", bottom + 31.0);
+            let y = (top + bottom) / 2.0;
+            let cancel = (dx + 60.0, y);
+            let ok = (dx + crate::SETTINGS_WIDE_COL_W - 60.0, y);
+            assert_eq!(
+                panel_intent(Route::Settings, cancel, cancel, 1232, 568, &view),
+                Some(PanelIntent::Request(ServiceRequest::PowerCancel("t".into())))
+            );
+            assert_eq!(
+                panel_intent(Route::Settings, ok, ok, 1232, 568, &view),
+                Some(PanelIntent::Request(ServiceRequest::PowerConfirm("t".into())))
+            );
+        }
+    }
+
+    #[test]
+    fn the_portrait_keyboard_row_taps_toggle_the_keyboard() {
+        let view = ServiceView {
+            settings: Some(crate::evidence_render::fixture_settings()),
+            ..ServiceView::default()
+        };
+        let tap = (200.0, settings_row_y(3) + 20.0);
+        assert_eq!(
+            panel_intent(Route::Settings, tap, tap, 568, 1232, &view),
+            Some(PanelIntent::Request(ServiceRequest::KeyboardToggle))
+        );
     }
 
     #[test]

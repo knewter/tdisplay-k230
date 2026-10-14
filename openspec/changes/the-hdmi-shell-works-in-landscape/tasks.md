@@ -119,6 +119,18 @@ complete them here against the panel's 1232×568 geometry as well as HDMI.
       reports 65 warnings, the same as the base. Reviewed: Home, Drawer,
       Settings, Shade, Power, Help, keyboard. Open: Wi-Fi pages, the theme
       chooser, the folder overlay, and notifications with real items.
+      Partial 2026-10-13 (Settings controls, host evidence only): at 1232×568
+      Settings now lays its rows out in three columns (Wi-Fi, Brightness,
+      Volume; Keyboard, Motion, Key backlight; Power with its confirmation),
+      so Keyboard, Motion, Key backlight and the Power rows fit on the panel
+      with no scroll. Taps and slider drags map through the same per-column
+      offset as the paint (new unit tests: every row's rect lies inside
+      1232×568, a tap at each row's centre hits that row, with and without the
+      Key backlight row). Portrait and HDMI renders are unchanged. Also fixed
+      the Keyboard row's hit band, which pointed at the Volume row. Not yet
+      shown on the board: the Settings captures in
+      `docs/evidence/keyboard-base/shell/board/` still need a redeploy and a
+      new `grim` capture, and the Wi-Fi and theme sub-pages are untouched.
 - [x] 8.4 Make touch and the edge gestures (drawer, shade, overview) follow
       the rotated panel edges. Verify on the board with injected touch events
       (evidence class: injected) and record which gestures were exercised.

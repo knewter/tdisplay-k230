@@ -190,6 +190,23 @@ pub fn reflow_columns(width: u32, scale: f64, base_columns: usize) -> usize {
     (scaled as usize).max(base_columns)
 }
 
+/// Whether Settings lays its controls out in three side-by-side columns
+/// (the landscape panel, 1232x568) instead of one centred column that would
+/// run far below the short panel's edge. Same predicate as Help's two-column
+/// layout (`help::wide`), so the landscape surfaces switch together; the
+/// portrait panel and the HDMI outputs keep the single column.
+pub fn settings_wide(width: u32, height: u32) -> bool {
+    help::wide(width, height)
+}
+
+/// The wide Settings columns: each is a 424-unit design column (cards 376
+/// wide, as the single column's `w - 48`) placed `SETTINGS_WIDE_COL_PITCH`
+/// apart from `SETTINGS_WIDE_ORIGIN_X`, which leaves 28 px at either edge
+/// and a 24 px gutter between cards.
+pub const SETTINGS_WIDE_COL_W: f64 = 424.0;
+pub const SETTINGS_WIDE_ORIGIN_X: f64 = 4.0;
+pub const SETTINGS_WIDE_COL_PITCH: f64 = 400.0;
+
 /// Settings' own centered content column: `(scale, x_offset)`, both design
 /// units against the surface's real `(width, height)`. `scale` is `density_
 /// scale`'s own value (so Settings' rows/text genuinely get bigger on a
@@ -200,6 +217,11 @@ pub fn reflow_columns(width: u32, scale: f64, base_columns: usize) -> usize {
 /// never recompute the transform independently in one without the other,
 /// or a tap and its paint drift apart.
 pub fn settings_content_transform(width: u32, height: u32) -> (f64, f64) {
+    if settings_wide(width, height) {
+        // The wide layout places each of its three columns itself
+        // (`render::settings_wide_offset`); there is no single column to centre.
+        return (1.0, 0.0);
+    }
     let scale = density_scale(width, height);
     let content_w = (DESIGN_WIDTH * scale).min(f64::from(width));
     let x = (f64::from(width) - content_w) / 2.0;
