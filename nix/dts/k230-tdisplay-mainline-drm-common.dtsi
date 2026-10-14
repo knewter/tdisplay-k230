@@ -331,6 +331,27 @@
 				compatible = "ti,bq27220";
 				reg = <0x55>;
 			};
+
+			// BQ25896 charger (tasks 5.2, 5.2a). INT reaches no SoC GPIO,
+			// so there is no interrupts property and the patched driver
+			// polls. skip-reset and read-back-settings keep the charge
+			// parameters the chip already holds; the values below are those
+			// same register values (docs/evidence/keyboard-base/charger/),
+			// for the binding only.
+			charger@6b {
+				compatible = "ti,bq25896";
+				reg = <0x6b>;
+				linux,skip-reset;
+				linux,read-back-settings;
+				ti,battery-regulation-voltage = <4288000>;
+				ti,charge-current = <704000>;
+				ti,termination-current = <256000>;
+				ti,precharge-current = <128000>;
+				ti,minimum-sys-voltage = <3500000>;
+				ti,boost-voltage = <4998000>;
+				ti,boost-max-current = <1400000>;
+				ti,thermal-regulation-threshold = <120>;
+			};
 		};
 	};
 };

@@ -1,0 +1,137 @@
+Poll the BQ25890-family charger when it has no interrupt (keyboard-base task 5.2a).
+
+The LILYGO keyboard base wires the BQ25896's INT to no SoC GPIO: watching
+every free K230 GPIO line with gpiomon across a USB-C unplug and replug saw
+no edge (docs/evidence/keyboard-base/charger/). Mainline bq25890_charger
+refuses to bind without an IRQ. With no interrupt and no bq25890_irq GPIO,
+run the interrupt handler from a 2 s delayed work instead. The work is
+cancelled before the power_supply unregisters and across suspend.
+
+--- a/drivers/power/supply/bq25890_charger.c
++++ b/drivers/power/supply/bq25890_charger.c
+@@ -117,6 +117,8 @@
+ 	struct notifier_block usb_nb;
+ 	struct work_struct usb_work;
+ 	struct delayed_work pump_express_work;
++	struct delayed_work poll_work;
++	bool polled;
+ 	unsigned long usb_event;
+ 
+ 	struct regmap *rmap;
+@@ -870,6 +872,29 @@
+ 	return ret;
+ }
+ 
++/*
++ * Boards that do not wire INT to the SoC (the LILYGO T-Display K230 keyboard
++ * base) get the interrupt handler run from a timer instead.
++ */
++#define BQ25890_POLL_INTERVAL_MS	2000
++
++static void bq25890_poll_work(struct work_struct *data)
++{
++	struct bq25890_device *bq =
++		container_of(data, struct bq25890_device, poll_work.work);
++
++	bq25890_irq_handler_thread(0, bq);
++	queue_delayed_work(system_power_efficient_wq, &bq->poll_work,
++			   msecs_to_jiffies(BQ25890_POLL_INTERVAL_MS));
++}
++
++static void bq25890_stop_polling(void *data)
++{
++	struct bq25890_device *bq = data;
++
++	cancel_delayed_work_sync(&bq->poll_work);
++}
++
+ static int bq25890_chip_reset(struct bq25890_device *bq)
+ {
+ 	int ret;
+@@ -1330,10 +1355,12 @@
+ {
+ 	struct gpio_desc *irq;
+ 
+-	irq = devm_gpiod_get(bq->dev, BQ25890_IRQ_PIN, GPIOD_IN);
++	irq = devm_gpiod_get_optional(bq->dev, BQ25890_IRQ_PIN, GPIOD_IN);
+ 	if (IS_ERR(irq))
+ 		return dev_err_probe(bq->dev, PTR_ERR(irq),
+ 				     "Could not probe irq pin.\n");
++	if (!irq)
++		return 0;
+ 
+ 	return gpiod_to_irq(irq);
+ }
+@@ -1475,6 +1502,7 @@
+ 
+ 	mutex_init(&bq->lock);
+ 	INIT_DELAYED_WORK(&bq->pump_express_work, bq25890_pump_express_work);
++	INIT_DELAYED_WORK(&bq->poll_work, bq25890_poll_work);
+ 
+ 	bq->rmap = devm_regmap_init_i2c(client, &bq25890_regmap_config);
+ 	if (IS_ERR(bq->rmap))
+@@ -1507,9 +1535,13 @@
+ 	if (client->irq <= 0)
+ 		client->irq = bq25890_irq_probe(bq);
+ 
+-	if (client->irq < 0) {
+-		dev_err(dev, "No irq resource found.\n");
++	if (client->irq < 0)
+ 		return client->irq;
++
++	if (client->irq == 0) {
++		bq->polled = true;
++		dev_info(dev, "no interrupt; polling every %d ms\n",
++			 BQ25890_POLL_INTERVAL_MS);
+ 	}
+ 
+ 	/* OTG reporting */
+@@ -1531,12 +1563,20 @@
+ 	if (ret < 0)
+ 		return dev_err_probe(dev, ret, "registering power supply\n");
+ 
+-	ret = devm_request_threaded_irq(dev, client->irq, NULL,
+-					bq25890_irq_handler_thread,
+-					IRQF_TRIGGER_FALLING | IRQF_ONESHOT,
+-					BQ25890_IRQ_PIN, bq);
+-	if (ret)
+-		return ret;
++	if (bq->polled) {
++		/* Added after the power_supply, so it is cancelled first. */
++		ret = devm_add_action_or_reset(dev, bq25890_stop_polling, bq);
++		if (ret)
++			return ret;
++		queue_delayed_work(system_power_efficient_wq, &bq->poll_work, 0);
++	} else {
++		ret = devm_request_threaded_irq(dev, client->irq, NULL,
++						bq25890_irq_handler_thread,
++						IRQF_TRIGGER_FALLING | IRQF_ONESHOT,
++						BQ25890_IRQ_PIN, bq);
++		if (ret)
++			return ret;
++	}
+ 
+ 	if (!IS_ERR_OR_NULL(bq->usb_phy)) {
+ 		INIT_WORK(&bq->usb_work, bq25890_usb_work);
+@@ -1589,6 +1629,9 @@
+ {
+ 	struct bq25890_device *bq = dev_get_drvdata(dev);
+ 
++	if (bq->polled)
++		cancel_delayed_work_sync(&bq->poll_work);
++
+ 	/*
+ 	 * If charger is removed, while in suspend, make sure ADC is diabled
+ 	 * since it consumes slightly more power.
+@@ -1620,6 +1663,11 @@
+ unlock:
+ 	mutex_unlock(&bq->lock);
+ 
++	/* Keep polling even if this read failed; the next one may not. */
++	if (bq->polled)
++		queue_delayed_work(system_power_efficient_wq, &bq->poll_work,
++				   msecs_to_jiffies(BQ25890_POLL_INTERVAL_MS));
++
+ 	return ret;
+ }
+ #endif

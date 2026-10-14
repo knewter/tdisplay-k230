@@ -1,0 +1,29 @@
+Report the BQ27220's status from its current (keyboard-base task 5.3).
+
+The BQ27220 keeps FC (BatteryStatus bit 9) set after charge termination
+until the state of charge falls below its clear threshold. bq27xxx checks FC
+first, so the base's battery read Full at -410 mA and at +720 mA on the
+board (docs/evidence/keyboard-base/charger/). For the BQ27220 only, a
+nonzero current decides Charging or Discharging; FC still gives Full at
+zero current.
+
+--- a/drivers/power/supply/bq27xxx_battery.c
++++ b/drivers/power/supply/bq27xxx_battery.c
+@@ -1951,7 +1951,16 @@
+ 		val_curr->intval = curr;
+ 
+ 	if (val_status) {
+-		if (bq27xxx_battery_is_full(di, flags))
++		/*
++		 * The BQ27220 keeps FC set after termination until its charge
++		 * falls below a clear threshold, so FC alone reads Full while
++		 * the pack discharges or tops up. Trust the current's sign.
++		 */
++		if (di->chip == BQ27220 && curr != 0)
++			val_status->intval = curr > 0 ?
++				POWER_SUPPLY_STATUS_CHARGING :
++				POWER_SUPPLY_STATUS_DISCHARGING;
++		else if (bq27xxx_battery_is_full(di, flags))
+ 			val_status->intval = POWER_SUPPLY_STATUS_FULL;
+ 		else if (curr > 0)
+ 			val_status->intval = POWER_SUPPLY_STATUS_CHARGING;

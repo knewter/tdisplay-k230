@@ -194,6 +194,13 @@ in
     alsa-utils
     libgpiod
     k230SpeakerTest
+
+    # Hardware poking (operator request 2026-10-14): devmem for MMIO
+    # registers, without putting busybox's other applets ahead of coreutils.
+    (pkgs.runCommand "k230-devmem" { } ''
+      mkdir -p $out/bin
+      ln -s ${pkgs.busybox}/bin/busybox $out/bin/devmem
+    '')
   ];
 
   # A root operator may place a protected wpa_supplicant configuration at

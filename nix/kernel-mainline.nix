@@ -166,6 +166,10 @@ buildLinux (args // {
       ./patches/mainline/k230-restart.patch
       # Keyboard base fuel gauge: a read-only BQ27220 entry in bq27xxx.
       ./patches/mainline/bq27xxx-bq27220.patch
+      # Its status from the current's sign, not the sticky FC flag.
+      ./patches/mainline/bq27xxx-bq27220-status.patch
+      # Keyboard base charger: its INT reaches no SoC GPIO, so poll it.
+      ./patches/mainline/bq25890-poll-without-irq.patch
     ];
 
     postPatch = ''
@@ -534,6 +538,14 @@ config SND_SOC_K230_INNO\
     CHARGER_BQ25890 = module;
     BATTERY_BQ27XXX = module;
     BATTERY_BQ27XXX_I2C = module;
+
+    # Hardware poking on the board (operator request 2026-10-14): /dev/mem
+    # for devmem on MMIO, including regions a driver has claimed. RAM stays
+    # protected by STRICT_DEVMEM.
+    DEVMEM = yes;
+    STRICT_DEVMEM = yes;
+    IO_STRICT_DEVMEM = no;
+    I2C_CHARDEV = yes;
 
     # Thermal (task 7.1): THERMAL/THERMAL_OF are already on in the base
     # defconfig; named explicitly anyway, same as RESET_K230 above.
