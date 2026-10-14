@@ -247,6 +247,13 @@ complete them here against the panel's 1232×568 geometry as well as HDMI.
       HDMI behavior (output, transform, touchpad relay) is unchanged. Record
       the observation and a native capture (physical). Hardware gate; may run
       last, per the operator.
+      Partial 2026-10-14: the first cable plug crashed Sway. The kernel reported
+      `DSI-1` disconnected, and the card shell's `restore()` committed a
+      transaction against the half-destroyed output (NULL `scene_output`).
+      Fixed in `nix/card-shell/adapter.c`. On the board, a forced
+      `card0-DSI-1/status off` during the overview no longer crashes Sway
+      (injected, sysfs; `docs/evidence/hdmi-hotplug/landscape/teardown-crash.md`).
+      Open: HDMI output itself, which is not observed yet.
 
 The stage-1 boot splash logo stays portrait in this change (U-Boot draws it
 before any compositor); a landscape splash image is out of scope unless the

@@ -143,6 +143,14 @@ static struct {
 	struct wl_list cards;
 	struct cs_policy policy;
 	bool initialized, active, preparing, injecting;
+	/* Set while the shell's output is torn down from inside Sway's
+	 * output_disable(): restore() must not commit a transaction then. Sway
+	 * has already cleared that output's scene_output but not yet removed it
+	 * from root->outputs, so arrange_root() would pass NULL to
+	 * wlr_scene_output_set_position() (a segfault when HDMI hotplug
+	 * disconnected DSI-1, 2026-10-14). Sway commits after it has evacuated
+	 * the output's workspaces. */
+	bool output_teardown;
 	bool pointer_owned, pointer_cancelled, pointer_dispatch;
 	struct sway_seat *pointer_seat;
 	double pointer_scroll, pointer_x, pointer_y;
@@ -1910,7 +1918,8 @@ static void restore(struct cs_result result) {
 			seat_set_focus(shell.seat, NULL);
 		} else if (shell.output && shell.output->current.active_workspace)
 			seat_set_focus_workspace(shell.seat, shell.output->current.active_workspace);
-		transaction_commit_dirty();
+		if (!shell.output_teardown)
+			transaction_commit_dirty();
 	}
 	if (shell.seat) {
 		wl_list_remove(&shell.seat_destroy.link);
@@ -2086,7 +2095,9 @@ static void handle_output_destroy(struct wl_listener *l, void *data) {
 	card_shell_reveal_abort(&shell.reveal);
 	cs_stream_cancel(&shell.policy);
 	shell.button_down = false;
+	shell.output_teardown = true;
 	handle_result(cs_leave(&shell.policy));
+	shell.output_teardown = false;
 	wl_list_remove(&shell.output_destroy.link);
 	card_bench_stop();
 	shell.output = NULL;
