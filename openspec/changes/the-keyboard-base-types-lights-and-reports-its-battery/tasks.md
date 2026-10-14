@@ -183,10 +183,11 @@ host or QEMU result never ticks a board task.
   - Home's Battery widget leaving its "no battery info" state.
 
   Store all of it in `docs/evidence/keyboard-base/shell/`.
-  Partial 2026-10-14: the shade's battery line, native capture in
-  `docs/evidence/keyboard-base/shell/board/`. Open: the Settings row on the
-  board (unreachable in landscape until landscape task 8.3), the key press
-  hiding the on-screen keyboard, the LILYGO-key flow, and Home's widget.
+  Partial 2026-10-14: the shade's battery line and the Settings Key backlight
+  row (native captures; the row toggled by injected taps, preference file
+  `off` then `on`) in `docs/evidence/keyboard-base/shell/board/`. The operator
+  reports LILYGO opens the drawer. Open: camera frames, the key press hiding
+  the on-screen keyboard, and Home's widget.
 - [ ] 6.6 Exercise the low-battery policy on the board with the thresholds
   raised temporarily through a `/run` override, so a real discharge crosses
   them. Record the notifications, the countdown, the cable cancel, and one

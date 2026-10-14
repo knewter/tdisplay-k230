@@ -1801,6 +1801,8 @@ DATA  f3689f64b1d76d8cddaa38b41448d23af3191c499a3b84cbeee3ac123e5a4dc5  docs/evi
 DATA  6c17a39b1e712ed00ad8bfd58a1b25898683ea60b202dadd98a0445fb4c28ac8  docs/evidence/keyboard-base/shell/board/settings-landscape-drag-injected.png
 DATA  6c17a39b1e712ed00ad8bfd58a1b25898683ea60b202dadd98a0445fb4c28ac8  docs/evidence/keyboard-base/shell/board/settings-landscape-grim.png
 DATA  b41da29af5be0df5d36eba405099ca982ca77038b201c19221cb770800f13f0b  docs/evidence/keyboard-base/shell/board/shade-landscape-grim.png
+DATA  58829059cff1e99ef81e09d252af7c7203d0957336c79c764d56f90eda1dd9a5  docs/evidence/keyboard-base/shell/board/settings-key-backlight-off-injected.png
+DATA  6e52317412dd88c019d15fa08558b59ce63bf68c5b7656d206ba1179c7f48a91  docs/evidence/keyboard-base/shell/board/settings-three-column-grim.png
 ```
 
 `group:` rows stand for a directory whose members are enumerated by
@@ -3051,3 +3053,5 @@ Command and limits: `docs/evidence/keyboard-base/shell/host-renders/README.md`.
 | `docs/evidence/keyboard-base/shell/board/settings-landscape-drag-injected.png` | 22145 | DATA | `6c17a39b1e712ed00ad8bfd58a1b25898683ea60b202dadd98a0445fb4c28ac8` |
 | `docs/evidence/keyboard-base/shell/board/settings-landscape-grim.png` | 22145 | DATA | `6c17a39b1e712ed00ad8bfd58a1b25898683ea60b202dadd98a0445fb4c28ac8` |
 | `docs/evidence/keyboard-base/shell/board/shade-landscape-grim.png` | 18440 | DATA | `b41da29af5be0df5d36eba405099ca982ca77038b201c19221cb770800f13f0b` |
+| `docs/evidence/keyboard-base/shell/board/settings-key-backlight-off-injected.png` | 41533 | DATA | `58829059cff1e99ef81e09d252af7c7203d0957336c79c764d56f90eda1dd9a5` |
+| `docs/evidence/keyboard-base/shell/board/settings-three-column-grim.png` | 41476 | DATA | `6e52317412dd88c019d15fa08558b59ce63bf68c5b7656d206ba1179c7f48a91` |

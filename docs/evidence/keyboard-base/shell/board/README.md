@@ -34,3 +34,18 @@ Limits:
   only by the portrait host render.
 - No glass touch, no camera (the bench camera is disconnected), and no
   operator check of the Key backlight preference turning the LED off.
+
+## Three-column Settings (2026-10-14 01:19–01:20 UTC)
+
+System `wlsjixr5xqqygrdvawpgjbnv8ng66ziz-nixos-system-nixos-26.11.20260919.20b1ddd`,
+built from "Lay Settings out in three columns at 1232x568" on `933946da`.
+
+| File | Class | Shows |
+| --- | --- | --- |
+| `settings-three-column-grim.png` | board, native `grim` | every Settings row on the 568 px panel: Wi-Fi, Brightness, Volume; Keyboard, Motion, Key backlight; Reboot…, Power off… |
+| `settings-key-backlight-off-injected.png` | board, **injected** | after one injected tap at landscape (615, 468), i.e. panel (468, 617): the row reads "Off" |
+
+The preference file `/var/lib/k230-keyboard-base/key-backlight` was absent
+before (default on), read `off` after the first injected tap and `on` after
+the second. This is the touch path from libinput onward, not the glass, and
+not a camera view of the LED staying dark while typing.

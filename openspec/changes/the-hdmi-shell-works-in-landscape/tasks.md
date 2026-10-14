@@ -127,10 +127,12 @@ complete them here against the panel's 1232×568 geometry as well as HDMI.
       offset as the paint (new unit tests: every row's rect lies inside
       1232×568, a tap at each row's centre hits that row, with and without the
       Key backlight row). Portrait and HDMI renders are unchanged. Also fixed
-      the Keyboard row's hit band, which pointed at the Volume row. Not yet
-      shown on the board: the Settings captures in
-      `docs/evidence/keyboard-base/shell/board/` still need a redeploy and a
-      new `grim` capture, and the Wi-Fi and theme sub-pages are untouched.
+      the Keyboard row's hit band, which pointed at the Volume row. On the
+      board 2026-10-14: a native `grim` shows all three columns, and an
+      injected tap toggled Key backlight (`settings-three-column-grim.png`,
+      `settings-key-backlight-off-injected.png` in
+      `docs/evidence/keyboard-base/shell/board/`). The Wi-Fi and theme
+      sub-pages are untouched.
 - [x] 8.4 Make touch and the edge gestures (drawer, shade, overview) follow
       the rotated panel edges. Verify on the board with injected touch events
       (evidence class: injected) and record which gestures were exercised.
