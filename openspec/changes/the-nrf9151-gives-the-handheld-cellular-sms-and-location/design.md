@@ -26,8 +26,11 @@ Sources read for this design:
 - There is no RTS/CTS, DTR or RI. There is no interrupt or wake line.
 
 **Firmware.**
-- Nordic Serial LTE Modem from NCS v3.4.0, LILYGO profile `serial_modem_k230`,
-  modem firmware `mfw_nrf91x1_2.0.4`. Its configuration:
+- Nordic Serial LTE Modem from NCS v3.4.0, LILYGO profile `serial_modem_k230`.
+  The vendor source names modem firmware `mfw_nrf91x1_2.0.4`; the unit
+  probed on 2026-10-13 reports `mfw_nrf91x1_2.0.3` (`AT+CGMR`) under Serial
+  LTE Modem 2.9.0 (`AT#XSLMVER`; `AT#XSMVER` answers `ERROR`). See
+  `docs/evidence/nrf9151/probe/`. Its configuration:
 
   | Setting | Value |
   | --- | --- |
@@ -222,5 +225,5 @@ No position is written to disk by the service.
 - IO2's level before Linux takes it: U-Boot's default, pulled or floating.
 - Which antennas are fitted (LTE, GNSS, any LNA). Whether a SIM is present, and
   which kind.
-- Exact firmware and modem-firmware versions on this unit (`AT+CGMR`,
-  `AT#XSMVER` or equivalent).
+- ~~Exact firmware and modem-firmware versions on this unit~~ Answered by the
+  probe: modem firmware 2.0.3, Serial LTE Modem 2.9.0.

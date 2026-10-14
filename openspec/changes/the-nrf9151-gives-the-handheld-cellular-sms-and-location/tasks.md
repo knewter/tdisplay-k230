@@ -55,7 +55,7 @@ with `<redacted>` and the redaction is noted:
 
 ## 3. The modem service (userspace, Nix)
 
-- [ ] 3.1 Write `k230-modem` and `k230-modemctl` in Rust, covering:
+- [x] 3.1 Write `k230-modem` and `k230-modemctl` in Rust, covering:
   - the AT state machine, with timeouts and URC parsing;
   - the atomic `state.json`;
   - the control socket;
@@ -69,11 +69,21 @@ with `<redacted>` and the redaction is noted:
   transcripts include no SIM, PIN-required, a wrong PIN, registered, a
   timeout, an inbound `+CMT`, a multi-part SMS, and an NMEA burst. A test
   asserts that the PIN never appears in any log or state output.
-- [ ] 3.2 Add the NixOS module: the service, its group, `/var/lib/k230/modem`,
+
+  Done (host): `nix/k230-modem/` with `cargo test --offline` (37 tests;
+  `tests/transcripts.rs`). Only the no-SIM transcript is recorded (the board
+  probe log); the others are synthetic, from the Nordic SLM and 3GPP
+  27.007/27.005 formats, and say so in the file. Text-mode SMS and the
+  `#XGNSSNMEA:` payload quoting stay UNVERIFIED until the board runs them.
+- [x] 3.2 Add the NixOS module: the service, its group, `/var/lib/k230/modem`,
   `gpsd` started on demand against the pty, and a udev rule tagging `ttyS3`
   `ID_MM_DEVICE_IGNORE`. Defaults are Cellular off and Location off. Proof
   (**host**):
   `nix build .#nixosConfigurations.k230-mainline-drm-shell-landscape.config.system.build.toplevel`.
+
+  Done (host): `nix/modem.nix` (option `k230.modem.enable`, default on; the
+  modem stays off until Cellular or Location is turned on). The landscape
+  toplevel builds.
 - [ ] 3.3 Install on the board. Record:
   - after a fresh boot: enable low and state `off` (**board-read**);
   - `k230-modemctl power on`, then `status` without a SIM or with one, per

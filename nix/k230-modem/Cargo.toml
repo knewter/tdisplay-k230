@@ -1,0 +1,23 @@
+[package]
+name = "k230-modem"
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+description = "K230 handheld nRF9151 modem service and control client"
+
+[lib]
+name = "k230_modem"
+path = "src/lib.rs"
+
+[[bin]]
+name = "k230-modem"
+path = "src/bin/k230-modem.rs"
+
+[[bin]]
+name = "k230-modemctl"
+path = "src/bin/k230-modemctl.rs"
+
+[dependencies]
+libc = "=0.2.175"
+serde = { version = "=1.0.228", features = ["derive"] }
+serde_json = "=1.0.149"

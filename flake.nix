@@ -124,6 +124,7 @@
           modules = [
             ./nix/k230.nix
             ./nix/hardware.nix
+            ./nix/modem.nix
             ./nix/shell.nix
             {
               k230.shell = { enable = true; coherentShell = true; probes = true; debugLog = true; };
@@ -180,7 +181,7 @@
         k230-console = nixpkgs.lib.nixosSystem {
           specialArgs = { inherit (self) k230Kernel; inherit bootSplashImage omawrite; };
           modules = [
-            ./nix/k230.nix ./nix/hardware.nix ./nix/shell.nix
+            ./nix/k230.nix ./nix/hardware.nix ./nix/modem.nix ./nix/shell.nix
             { k230.panelConsole = true; }
           ];
         };
@@ -440,6 +441,8 @@
         # NixOS configuration by default; see nix/touch-trackpad-service.nix.
         handheld-touch-trackpad = pkgsCross.callPackage ./nix/touch-trackpad { };
         power-keyd = pkgsCross.callPackage ./nix/power-keyd.nix { };
+        # nRF9151 modem service and control client (nix/modem.nix).
+        k230-modem = pkgsCross.callPackage ./nix/k230-modem { };
         # Bounded diagnostic sampler, outside the normal image closure.
         runtime-perf = pkgsCross.callPackage ./nix/runtime-perf.nix { };
         # Opt-in command only; no normal service/default selection until the
