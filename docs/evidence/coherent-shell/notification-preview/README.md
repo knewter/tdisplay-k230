@@ -42,3 +42,22 @@ Limits: no tap on glass (tap-to-shade is unit-tested only), no camera frame,
 the banner is 544 px wide in landscape (the portrait width) rather than the
 640 px the host render used, and an unknown sender such as the keyboard-base
 screenshot helper only ever shows "New notification".
+
+## An open shade follows new and replaced notifications (2026-10-14)
+
+Found during keyboard-base 6.6: with the shade open, the battery policy's
+"Charging / Shutdown cancelled." replaced its "Battery critically low"
+countdown by tag in the notification center, but the shade kept showing the
+countdown (`../../keyboard-base/battery-policy/README.md`). The shade read
+history only when it opened. Now, while the shade is open, the history the
+banner's `PreviewPoll` already fetches (every 0.5–1 s) replaces the shade's
+rows when they differ, except while a dismiss waits for its own refresh
+(`service_ui::shade_adopts_poll`, unit test
+`an_open_shade_adopts_a_same_id_replacement_but_not_during_a_dismiss`).
+
+Board (system `89i68zkm…`, native `grim`): `shade-tag-replacement-test.sh`
+emits a critical "Battery critically low" as root (System), opens the shade,
+emits "Charging / Shutdown cancelled." with the same tag, and captures 3 s
+later. `shade-open-tag-replacement-grim.png` shows the replacement. On the
+previous system the same script's capture 13 s later still showed the
+countdown.

@@ -815,6 +815,21 @@ impl NotificationSwipeSettle {
     }
 }
 
+/// Whether an open shade should take the history a banner `PreviewPoll`
+/// brought back. The shade otherwise reads history only when it opens, so a
+/// notification that arrives, or replaces another by tag, while it is open
+/// (the battery policy's "Shutdown cancelled" over its countdown) stayed
+/// stale. Not while a dismiss waits for its own refresh, so the row it
+/// removed optimistically does not come back.
+pub fn shade_adopts_poll(
+    shade_open: bool,
+    dismiss_pending: bool,
+    shown: Option<&NotificationSnapshot>,
+    polled: &NotificationSnapshot,
+) -> bool {
+    shade_open && !dismiss_pending && shown.is_none_or(|shown| shown.events != polled.events)
+}
+
 pub fn notification_max_scroll(count: usize, width: u32, height: u32) -> f64 {
     let layout = shade_layout(width, height);
     (layout.list_top + count as f64 * NOTIFICATION_ROW - layout.list_bottom).max(0.0)
@@ -1527,6 +1542,33 @@ mod tests {
         );
         close.tick(160);
         assert!(close.take_settled_closed());
+    }
+
+    #[test]
+    fn an_open_shade_adopts_a_same_id_replacement_but_not_during_a_dismiss() {
+        let snapshot = |summary: &str| NotificationSnapshot {
+            count: 1,
+            events: vec![NotificationEvent {
+                id: 1,
+                source: "System".into(),
+                icon: None,
+                summary: summary.into(),
+                body: String::new(),
+                priority: Priority::Ordinary,
+                timestamp: 0,
+                error: None,
+                dismissible: true,
+                action_available: false,
+            }],
+            preview: None,
+        };
+        let shown = snapshot("Battery critically low");
+        let polled = snapshot("Charging");
+        assert!(shade_adopts_poll(true, false, Some(&shown), &polled));
+        assert!(shade_adopts_poll(true, false, None, &polled));
+        assert!(!shade_adopts_poll(true, false, Some(&polled), &polled), "unchanged rows are not re-applied");
+        assert!(!shade_adopts_poll(false, false, Some(&shown), &polled), "a closed shade refreshes when it opens");
+        assert!(!shade_adopts_poll(true, true, Some(&shown), &polled), "a pending dismiss keeps its row removed");
     }
 
     #[test]

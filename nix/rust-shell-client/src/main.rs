@@ -2658,7 +2658,26 @@ impl ShellClient {
         if let ServiceRequest::PreviewPoll = reply.request {
             self.banner_poll_inflight = false;
             let next = match reply.result {
-                Ok(ServiceResponse::Notifications(snapshot)) => snapshot.preview,
+                Ok(ServiceResponse::Notifications(snapshot)) => {
+                    let preview = snapshot.preview.clone();
+                    if k230_shell_rust::service_ui::shade_adopts_poll(
+                        self.route == Route::Shade,
+                        self.notification_wait.is_some(),
+                        self.service_view.notifications.as_ref(),
+                        &snapshot,
+                    ) {
+                        self.service_view.notification_scroll =
+                            self.service_view.notification_scroll.min(notification_max_scroll(
+                                snapshot.events.len(),
+                                self.width,
+                                self.height,
+                            ));
+                        self.service_view.notifications = Some(snapshot);
+                        self.renderer.set_services(self.service_view.clone());
+                        self.dirty = true;
+                    }
+                    preview
+                }
                 _ => None,
             };
             if next != self.banner_preview {
