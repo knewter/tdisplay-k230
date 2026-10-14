@@ -42,6 +42,15 @@
  * to falling-edge detection until the key is released. Only input edges
  * are reported to Linux; userspace owns all display and destructive power
  * policy, including long-hold confirmation.
+ *
+ * Power-off: the vendor driver's system-off callback is restored
+ * (keyboard-base 6.6 found that without it `systemctl poweroff` only halts,
+ * leaving the board powered and draining the battery; the SBI firmware has
+ * no SRST extension). It is the same register sequence as patch 0064's
+ * k230_pmu_pwrkey_power_off(): arm the key's long press as the only wake
+ * source, mark a normal power-down in PMU_STATUS, then pulse both PMU
+ * system-control outputs. The vendor's automatic orderly_poweroff() on a
+ * 5 s hold stays out; the shell's power sheet owns that decision.
  */
 
 #include <linux/bits.h>
@@ -55,6 +64,7 @@
 #include <linux/module.h>
 #include <linux/of.h>
 #include <linux/platform_device.h>
+#include <linux/reboot.h>
 #include <linux/slab.h>
 #include <linux/spinlock.h>
 #include <linux/workqueue.h>
@@ -118,6 +128,7 @@
 #define PMU_PWRKEY_LONG_PRESS_TICKS		96000U
 #define PMU_PWRKEY_DEBOUNCE_TICKS		256U
 #define PMU_RUNTIME_CHECK_MS			1000U
+#define PMU_STATUS_NORMAL_PD			2U
 
 struct k230_pmu_pwrkey {
 	struct device *dev;
@@ -128,6 +139,7 @@ struct k230_pmu_pwrkey {
 	struct delayed_work runtime_check_work;
 	spinlock_t lock;
 	bool pressed;
+	bool powering_off;
 	unsigned int keycode;
 };
 
@@ -311,13 +323,21 @@ static void k230_pmu_pwrkey_runtime_check_work(struct work_struct *work)
 	struct k230_pmu_pwrkey *pwrkey =
 		container_of(dwork, struct k230_pmu_pwrkey,
 			     runtime_check_work);
-
+	unsigned long flags;
+	bool powering_off;
 	u32 ctl0;
 	u32 ctl1;
 	u32 cpu_route;
 	u32 detect_en;
 	u32 detect_typ;
 	u32 raw_status;
+
+	/* Do not "repair" the wake-source routing the power-off path set. */
+	spin_lock_irqsave(&pwrkey->lock, flags);
+	powering_off = pwrkey->powering_off;
+	spin_unlock_irqrestore(&pwrkey->lock, flags);
+	if (powering_off)
+		return;
 
 	ctl0 = k230_pmu_readl(pwrkey, PMU_INT0_TO_CTL_REGISTER);
 	ctl1 = k230_pmu_readl(pwrkey, PMU_INT1_TO_CTL_REGISTER);
@@ -452,6 +472,56 @@ static void k230_pmu_pwrkey_hw_init(struct k230_pmu_pwrkey *pwrkey)
 	pwrkey->pressed = false;
 }
 
+static void
+k230_pmu_pwrkey_prepare_wakeup_sources(struct k230_pmu_pwrkey *pwrkey)
+{
+	u32 val;
+
+	val = k230_pmu_readl(pwrkey, PMU_INT0_TO_CTL_REGISTER);
+	val &= ~PMU_CPU_IRQ_MASK;
+	val |= PMU_IRQ_KEY_LONG;
+	k230_pmu_writel(pwrkey, val, PMU_INT0_TO_CTL_REGISTER);
+
+	val = k230_pmu_readl(pwrkey, PMU_INT1_TO_CTL_REGISTER);
+	val &= ~PMU_CPU_IRQ_MASK;
+	val |= PMU_IRQ_KEY_LONG;
+	k230_pmu_writel(pwrkey, val, PMU_INT1_TO_CTL_REGISTER);
+
+	val = k230_pmu_readl(pwrkey, PMU_INT_DETECT_EN);
+	val &= ~PMU_DET_SOURCE_MASK;
+	val |= PMU_DET_KEY_LONG;
+	k230_pmu_writel(pwrkey, val, PMU_INT_DETECT_EN);
+}
+
+static int k230_pmu_pwrkey_power_off(struct sys_off_data *data)
+{
+	struct k230_pmu_pwrkey *pwrkey = data->cb_data;
+	unsigned long flags;
+
+	spin_lock_irqsave(&pwrkey->lock, flags);
+	pwrkey->powering_off = true;
+	spin_unlock_irqrestore(&pwrkey->lock, flags);
+
+	cancel_delayed_work(&pwrkey->runtime_check_work);
+
+	dev_emerg(pwrkey->dev,
+		  "PMU poweroff: enabling INT0 long-press wake and cutting power\n");
+
+	k230_pmu_pwrkey_ensure_access(pwrkey);
+	k230_pmu_pwrkey_prepare_wakeup_sources(pwrkey);
+	k230_pmu_writel(pwrkey, PMU_STATUS_NORMAL_PD, PMU_STATUS);
+	k230_pmu_writel(pwrkey, PMU_SYSCTRL_TO_CTRL_1_REG_O |
+			PMU_SYSCTRL_TO_CTRL_0_REG_O, PMU_SYSCTRL_REG);
+	k230_pmu_writel(pwrkey, PMU_CLR_KEY_LONG | PMU_CLR_KEY_SHUTDOWN |
+			PMU_CLR_KEY_SHORT | PMU_CLR_KEY_EDGE,
+			PMU_INT_DETECT_CLR);
+	k230_pmu_writel(pwrkey, 0, PMU_SYSCTRL_REG);
+
+	mdelay(1000);
+	dev_emerg(pwrkey->dev, "PMU poweroff did not complete\n");
+	return NOTIFY_DONE;
+}
+
 static int k230_pmu_pwrkey_probe(struct platform_device *pdev)
 {
 	struct k230_pmu_pwrkey *pwrkey;
@@ -534,6 +604,13 @@ static int k230_pmu_pwrkey_probe(struct platform_device *pdev)
 			       dev_name(&pdev->dev), pwrkey);
 	if (ret)
 		return ret;
+
+	ret = devm_register_power_off_handler(&pdev->dev,
+					      k230_pmu_pwrkey_power_off,
+					      pwrkey);
+	if (ret)
+		dev_warn(&pdev->dev,
+			 "failed to register PMU poweroff handler: %d\n", ret);
 
 	device_init_wakeup(&pdev->dev, true);
 	mod_delayed_work(system_wq, &pwrkey->runtime_check_work,
