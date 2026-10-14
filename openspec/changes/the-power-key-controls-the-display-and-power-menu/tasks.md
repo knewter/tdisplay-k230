@@ -24,6 +24,11 @@
   1.2 decided. Reason: keyboard-base 6.6 showed `systemctl poweroff` only
   halted with the board powered (no SBI SRST), draining the battery.
   Power-on afterwards is by a ~3 s hold of the power key (96000 PMU ticks).
+  Partial 2026-10-14 (`docs/evidence/power-key/power-off/`): with the handler,
+  `systemctl poweroff` cut power (operator: "it shut off this time") and a
+  ~3 s power-key hold started the board again with USB-C still connected; a
+  reboot returned on its own (board-read). Open: Restart and Power off
+  confirmed from the shell's sheet, with serial or camera evidence.
 
 ## 4. Reconcile and publish
 

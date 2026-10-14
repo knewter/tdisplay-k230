@@ -236,6 +236,9 @@ host or QEMU result never ticks a board task.
   battery keeps draining it. Open: a real power-off (power-key task 3.4's
   handler), then one clean shutdown that actually removes power, and the
   camera frame.
+  2026-10-14: the PMU power-off handler is restored and the same
+  `systemctl poweroff` now removes power (`docs/evidence/power-key/power-off/`).
+  Still open: a policy-driven shutdown on that kernel, and the camera frame.
 
 ## 7. Close
 
