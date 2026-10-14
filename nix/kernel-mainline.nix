@@ -305,6 +305,26 @@ config INPUT_K230_PMU_PWRKEY\
       echo 'obj-$(CONFIG_INPUT_K230_PMU_PWRKEY) += k230-pmu-pwrkey.o' >> drivers/input/misc/Makefile
       grep -q 'CONFIG_INPUT_K230_PMU_PWRKEY.*k230-pmu-pwrkey.o' drivers/input/misc/Makefile
 
+      # --- PWM: drivers/pwm/pwm-k230.c ----------------------------------
+      #
+      # Keyboard-base task 4.2: forward-ported from the pinned VENDOR tree's
+      # drivers/pwm/pwm-k230.c for the key backlight on IO52 (PWM4). See
+      # nix/patches/mainline/pwm-k230.c's header for the API, prescale and
+      # polarity changes.
+      cp ${./patches/mainline/pwm-k230.c} drivers/pwm/pwm-k230.c
+      grep -q '^config PWM_SIFIVE$' drivers/pwm/Kconfig
+      sed -i '/^config PWM_SIFIVE$/i\
+config PWM_K230\
+\ttristate "Canaan K230 PWM support"\
+\tdepends on OF\
+\tdepends on ARCH_CANAAN || COMPILE_TEST\
+\thelp\
+\t  The three-channel PWM blocks of the Canaan K230 SoC.\
+' drivers/pwm/Kconfig
+      grep -q '^config PWM_K230$' drivers/pwm/Kconfig
+      echo 'obj-$(CONFIG_PWM_K230)		+= pwm-k230.o' >> drivers/pwm/Makefile
+      grep -q 'CONFIG_PWM_K230.*pwm-k230.o' drivers/pwm/Makefile
+
       # --- Thermal: drivers/thermal/canaan_thermal.c --------------------
       #
       # Forward-ported from the pinned VENDOR tree's own
@@ -535,6 +555,12 @@ config SND_SOC_K230_INNO\
     NEW_LEDS = yes;
     LEDS_CLASS = yes;
     LEDS_GPIO = module;
+    # Key backlight dimming (task 4.2): the ported K230 PWM driver and
+    # pwm-leds. Built in, so IO52 is not left floating between the pinctrl
+    # switch to PWM4 and a module load.
+    PWM = yes;
+    PWM_K230 = yes;
+    LEDS_PWM = yes;
     CHARGER_BQ25890 = module;
     BATTERY_BQ27XXX = module;
     BATTERY_BQ27XXX_I2C = module;

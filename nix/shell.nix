@@ -30,7 +30,8 @@ let
       led=/sys/class/leds/k230::kbd_backlight/brightness
       if [ -w "$led" ]; then
         was=$(${pkgs.coreutils}/bin/cat "$led")
-        for v in 1 0 1 0; do echo "$v" > "$led"; ${pkgs.coreutils}/bin/sleep 0.12; done
+        full=$(${pkgs.coreutils}/bin/cat "''${led%/brightness}/max_brightness" 2>/dev/null || echo 1)
+        for v in "$full" 0 "$full" 0; do echo "$v" > "$led"; ${pkgs.coreutils}/bin/sleep 0.12; done
         echo "$was" > "$led"
       fi
       ${notificationCommand}/bin/k230-notifications emit --summary "Screenshot saved" \

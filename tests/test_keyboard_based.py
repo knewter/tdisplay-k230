@@ -110,5 +110,35 @@ class KeyboardBasePolicy(unittest.TestCase):
         self.assertEqual(kbd.INPUT_EVENT.size, 24)
 
 
+
+class WriteLed(unittest.TestCase):
+    def led(self, root, name, max_brightness):
+        d = Path(root) / name
+        d.mkdir()
+        (d / "brightness").write_text("0")
+        if max_brightness is not None:
+            (d / "max_brightness").write_text(f"{max_brightness}\n")
+        return d
+
+    def test_on_writes_max_brightness_and_off_writes_zero(self):
+        import tempfile
+        with tempfile.TemporaryDirectory() as root:
+            pwm = self.led(root, "k230::kbd_backlight", 255)
+            gpio = self.led(root, "k230:green:capslock", 1)
+            kbd.write_led("k230::kbd_backlight", True, root)
+            kbd.write_led("k230:green:capslock", True, root)
+            self.assertEqual((pwm / "brightness").read_text(), "255")
+            self.assertEqual((gpio / "brightness").read_text(), "1")
+            kbd.write_led("k230::kbd_backlight", False, root)
+            self.assertEqual((pwm / "brightness").read_text(), "0")
+
+    def test_missing_max_brightness_falls_back_to_one(self):
+        import tempfile
+        with tempfile.TemporaryDirectory() as root:
+            d = self.led(root, "x", None)
+            kbd.write_led("x", True, root)
+            self.assertEqual((d / "brightness").read_text(), "1")
+
+
 if __name__ == "__main__":
     unittest.main()

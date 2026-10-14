@@ -168,11 +168,11 @@
 		};
 	};
 
-	// Key backlight (task 4.1): IO52 as a GPIO output. LILYGO drives it as
-	// PWM4 (function 2) under RT-Smart; on/off comes first.
+	// Key backlight (task 4.2): IO52 as PWM4 (function 2, IOMUX 0x1191 in
+	// LILYGO's RT-Smart code), the second PWM block's channel 1.
 	kbd_backlight_pins: kbd-backlight-pins {
 		kbd-backlight-cfg {
-			pinmux = <K230_PINMUX(52, 0)>;
+			pinmux = <K230_PINMUX(52, 2)>;
 			drive-strength = <4>;
 			power-source = <K230_MSC_3V3>;
 			output-enable;
@@ -218,6 +218,17 @@
 
 / {
 	soc {
+		// PWM3-5 (vendor k230.dtsi pwm1@9140a040). Both blocks share the LS
+		// PWM APB gate and reset; pwm0 is not used on this board.
+		pwm1: pwm@9140a040 {
+			compatible = "canaan,k230-pwm";
+			reg = <0x0 0x9140a040 0x0 0x40>;
+			clocks = <&sysclk K230_LS_PWM_APB_GATE>;
+			resets = <&rst RST_PWM_APB>;
+			#pwm-cells = <3>;
+			status = "okay";
+		};
+
 		i2c4: i2c@91409000 {
 			compatible = "snps,designware-i2c";
 			reg = <0x0 0x91409000 0x0 0x1000>;
@@ -437,13 +448,11 @@
 // Keyboard base LEDs. P0.3-P0.5 of the XL9555 are active low: LILYGO's
 // RT-Smart driver writes 0xF7 to light Caps Lock (P0.3) and its Linux UI
 // writes 0 to light each one (keyboard_ext.c, ui_hardware.c xl9555_set_led).
-// IO52 is the key backlight; its polarity is UNVERIFIED until a camera
-// frame shows it lit (task 4.1).
+// IO52, the key backlight, is a pwm-leds entry below (task 4.2); the
+// operator saw it light as an active-high GPIO (task 4.1).
 / {
 	keyboard-base-leds {
 		compatible = "gpio-leds";
-		pinctrl-names = "default";
-		pinctrl-0 = <&kbd_backlight_pins>;
 
 		led-capslock {
 			label = "k230:green:capslock";
@@ -463,9 +472,20 @@
 			default-state = "off";
 		};
 
+	};
+
+	// 20 kHz, above hearing. NORMAL polarity assumes the driver's reading of
+	// the comparator (pwm-k230.c header, UNVERIFIED); if brightness 0 lights
+	// the keys, PWM_POLARITY_INVERTED here flips it without a kernel change.
+	keyboard-base-backlight {
+		compatible = "pwm-leds";
+		pinctrl-names = "default";
+		pinctrl-0 = <&kbd_backlight_pins>;
+
 		led-kbd-backlight {
 			label = "k230::kbd_backlight";
-			gpios = <&gpio1_ports 20 GPIO_ACTIVE_HIGH>;
+			pwms = <&pwm1 1 50000 0>;
+			max-brightness = <255>;
 			default-state = "off";
 		};
 	};

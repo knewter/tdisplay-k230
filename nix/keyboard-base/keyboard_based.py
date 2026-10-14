@@ -106,10 +106,18 @@ def backlight_preference(path):
         return True
 
 
-def write_led(name, on):
-    path = Path("/sys/class/leds") / name / "brightness"
+def led_on_value(led_dir):
+    """The LED's `max_brightness`: 1 for a GPIO LED, 255 for the PWM backlight."""
     try:
-        path.write_text("1" if on else "0")
+        return max(1, int((Path(led_dir) / "max_brightness").read_text()))
+    except (OSError, ValueError):
+        return 1
+
+
+def write_led(name, on, leds_root="/sys/class/leds"):
+    led_dir = Path(leds_root) / name
+    try:
+        (led_dir / "brightness").write_text(str(led_on_value(led_dir)) if on else "0")
     except OSError as exc:
         LOG.warning("cannot set %s: %s", name, exc)
 
