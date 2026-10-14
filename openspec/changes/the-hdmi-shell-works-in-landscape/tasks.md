@@ -243,7 +243,7 @@ complete them here against the panel's 1232×568 geometry as well as HDMI.
       asked to open Settings and an app, type on the keyboard and return
       Home with a real finger, the operator reported "real finger check
       worked fine". Operator report only; no camera frame of it.
-- [ ] 8.7 With the landscape profile, connect HDMI and confirm the existing
+- [x] 8.7 With the landscape profile, connect HDMI and confirm the existing
       HDMI behavior (output, transform, touchpad relay) is unchanged. Record
       the observation and a native capture (physical). Hardware gate; may run
       last, per the operator.
@@ -253,7 +253,12 @@ complete them here against the panel's 1232×568 geometry as well as HDMI.
       Fixed in `nix/card-shell/adapter.c`. On the board, a forced
       `card0-DSI-1/status off` during the overview no longer crashes Sway
       (injected, sysfs; `docs/evidence/hdmi-hotplug/landscape/teardown-crash.md`).
-      Open: HDMI output itself, which is not observed yet.
+      Done 2026-10-14 on the fixed build (physical: operator plus native
+      capture). Plugging in moved the shell to `HDMI-A-1` at 1280x800,
+      transform 90, as before, and the HDMI touchpad relay appeared. Unplugging
+      brought `DSI-1` back at transform 270. Sway kept the same PID.
+      Operator: "yeah it's good to go". Captures and log are in the same
+      evidence file.
 
 The stage-1 boot splash logo stays portrait in this change (U-Boot draws it
 before any compositor); a landscape splash image is out of scope unless the

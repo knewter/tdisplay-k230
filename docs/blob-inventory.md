@@ -1717,6 +1717,8 @@ DATA 19ba27a947777a66004ad7eac0900d0abb4c8e90325c35dacb4e6716fad585e6 docs/evide
 DATA 5490312c11c4c5fdbb92a0f9745a83dce0c316c148cc78379ada559f180e09bf docs/evidence/hdmi-hotplug/manual-switch/host-settings-1920x1080.png
 DATA ce417f85b6a8de46d73fb7b4955524e3463106b90b7e0f09185618ec926aa98e docs/evidence/hdmi-hotplug/manual-switch/host-settings-568x1232.png
 DATA 7139fd4be7aecff236b5df281a2c0a8b62aaad8b8df96bd03a174572183bf3b6 docs/evidence/hdmi-hotplug/manual-switch/host-settings-800x1280.png
+DATA ccbde505048655fa68d53a8719b9fc0081c36bc65175053d6c4f9773dee3a448 docs/evidence/hdmi-hotplug/landscape/hdmi-plugged-grim.png
+DATA 8c53f15f85acc02f9ec7a5746e0edb40e0e24f76e0116cbff55f5f64787e2d7d docs/evidence/hdmi-hotplug/landscape/panel-after-unplug-grim.png
 DATA 0938edbc429fe58e4ccc4f16e4f25e163b8a8c3664f8a298bed8b8c19bfc7f1d docs/evidence/shell-responsive/board/acceptance-2026-10-09/home.png
 # Current UX candidate native captures — 2026-10-09
 DATA 83c8b4261beb9621eaaeed8c8e6c1d4fe25bb16abbad63de4234355d25e16de8 docs/evidence/ux-review-round-2/candidate-2026-10-09/overview.png
@@ -2845,6 +2847,8 @@ See `docs/evidence/hdmi-hotplug/manual-switch/host-render.json`.
 | `docs/evidence/hdmi-hotplug/manual-switch/host-settings-1920x1080.png` | 52805 | DATA | `5490312c11c4c5fdbb92a0f9745a83dce0c316c148cc78379ada559f180e09bf` |
 | `docs/evidence/hdmi-hotplug/manual-switch/host-settings-568x1232.png` | 46776 | DATA | `ce417f85b6a8de46d73fb7b4955524e3463106b90b7e0f09185618ec926aa98e` |
 | `docs/evidence/hdmi-hotplug/manual-switch/host-settings-800x1280.png` | 52509 | DATA | `7139fd4be7aecff236b5df281a2c0a8b62aaad8b8df96bd03a174572183bf3b6` |
+| `docs/evidence/hdmi-hotplug/landscape/hdmi-plugged-grim.png` | 9570 | DATA | `ccbde505048655fa68d53a8719b9fc0081c36bc65175053d6c4f9773dee3a448` |
+| `docs/evidence/hdmi-hotplug/landscape/panel-after-unplug-grim.png` | 6428 | DATA | `8c53f15f85acc02f9ec7a5746e0edb40e0e24f76e0116cbff55f5f64787e2d7d` |
 
 ### Responsive HDMI acceptance (2026-10-09)
 
