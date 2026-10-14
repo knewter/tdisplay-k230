@@ -21,3 +21,24 @@ Limits: no Wayland connection, compositor stacking, touch, keyboard focus,
 over-an-app stacking (`Layer::Overlay`, `KeyboardInteractivity::None`)
 is UNVERIFIED until a native `grim` capture on the board while the terminal is
 focused, e.g. after a keyboard-base screenshot that emits "Screenshot saved".
+
+## Board (2026-10-14, **board-read**, native `grim`)
+
+First board, landscape profile, system
+`kwd0jxwwwmc5rsszqz4z4v02hwhsgy97-nixos-system-nixos-26.11.20260919.20b1ddd`.
+With the terminal focused, as root:
+`runuser -u shell -- k230-notifications emit --summary "Banner test" --tag t3`
+(an unknown sender), then `grim` 1.5 s later:
+`board-banner-over-terminal-grim.png` shows the generic "New notification"
+banner over the terminal. The shell-ui journal logged
+`notification-banner-map-request`, `configure 544x64`, `commit`, and
+`unmap` 4.5 s later.
+
+The first board image drew nothing: the banner's 64 px height failed the
+full-panel size check in `lib::frame_bytes`, so configure and draw bailed out
+after `map-request`. The banner now has its own bound.
+
+Limits: no tap on glass (tap-to-shade is unit-tested only), no camera frame,
+the banner is 544 px wide in landscape (the portrait width) rather than the
+640 px the host render used, and an unknown sender such as the keyboard-base
+screenshot helper only ever shows "New notification".

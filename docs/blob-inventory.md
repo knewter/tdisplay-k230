@@ -1758,6 +1758,7 @@ DATA 1858054405c18a6f9236793779eec16d900195d2ca0846814d8fb0a218037eb5  docs/evid
 DATA d30df0ee7fb7c7ae12264847173b10afbd83e0d6d41b7611c4cfa6f71f325980  docs/evidence/coherent-shell/notification-preview/banner-trusted-568x1232.png
 DATA b86059e9249f9018bbff16dba9557df0e59eba09b741fda9b61218d31d967ca2  docs/evidence/coherent-shell/notification-preview/banner-unknown-1232x568.png
 DATA 89ec298b9ce93940f7d923f2f60b606477c39f7c2385c85beb4f7669bbb4d648  docs/evidence/coherent-shell/notification-preview/banner-unknown-568x1232.png
+DATA  658ff706daf01c54667144e023b8a4568e3079736668d1a210e726104fadb887  docs/evidence/coherent-shell/notification-preview/board-banner-over-terminal-grim.png
 DATA  4bc927d031126339723be556a533c0b2e7e37435d15bf55a5273771469712ae7  docs/evidence/recovery-routes/touch-app-menu-qemu-2026-10-11/drawer-actions-touch-hold-menu.png
 DATA  a3ae45784cee598cd059ad936fe21e25e74b8410ddfbe506674a2c2a0206ad97  docs/evidence/recovery-routes/touch-capture-2026-10-11/window-list.mp4
 DATA  e4cb7a888f92d37b8145d5751d516dd4bbdd2d98fe4fe21a0f90937d225b6da7  docs/evidence/recovery-routes/touch-capture-2026-10-11/brightness-denied.mp4
@@ -3063,3 +3064,4 @@ Command and limits: `docs/evidence/keyboard-base/shell/host-renders/README.md`.
 | `docs/evidence/coherent-shell/notification-preview/banner-trusted-568x1232.png` | 44988 | DATA | `d30df0ee7fb7c7ae12264847173b10afbd83e0d6d41b7611c4cfa6f71f325980` |
 | `docs/evidence/coherent-shell/notification-preview/banner-unknown-1232x568.png` | 27324 | DATA | `b86059e9249f9018bbff16dba9557df0e59eba09b741fda9b61218d31d967ca2` |
 | `docs/evidence/coherent-shell/notification-preview/banner-unknown-568x1232.png` | 44957 | DATA | `89ec298b9ce93940f7d923f2f60b606477c39f7c2385c85beb4f7669bbb4d648` |
+| `docs/evidence/coherent-shell/notification-preview/board-banner-over-terminal-grim.png` | 11121 | DATA | `658ff706daf01c54667144e023b8a4568e3079736668d1a210e726104fadb887` |
