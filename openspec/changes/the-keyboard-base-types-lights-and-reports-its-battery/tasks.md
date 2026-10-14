@@ -156,7 +156,10 @@ host or QEMU result never ticks a board task.
   overview binding now also takes Super+Shift+Tab. Fn+LILYGO "did nothing"
   because the screenshot gave no sign; it now blinks the key backlight and
   adds a "Screenshot saved" notification. No Fn (`KEY_RIGHTALT`) event has
-  yet been recorded from the real keypad. Recording:
+  yet been recorded from the real keypad. The operator then saw the overview
+  open but Tab also reach the terminal: Sway delivers the key for an
+  `--input-device` binding, so the chord bindings are now global (injected
+  experiment in the keys README). Recording:
   `docs/evidence/keyboard-base/keys/shortcuts-evemu-record-2026-10-14T0112Z.txt`
   and `shortcuts-sway-bindings-2026-10-14T0112Z.json`.
 - [x] 6.3 Add the battery to the shade, and the keyboard backlight control to

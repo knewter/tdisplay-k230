@@ -896,10 +896,15 @@ let
       # as LILYGO's firmware does. Esc-as-back lives in the keyboard-base
       # service, because a Sway binding would take Esc away from apps.
       bindsym --input-device=1:1:tca8418 --release Super_L exec ${rustShell}/bin/k230-shell-rust --surface drawer
-      bindsym --input-device=1:1:tca8418 Mod4+Tab card_shell enter
+      # No --input-device on these: on the board Sway ran an --input-device
+      # binding and still sent the key to the focused app (the terminal got
+      # Super+Tab), while the same binding without it consumed the key
+      # (docs/evidence/keyboard-base/keys/README.md). No other keyboard is
+      # attached normally, and these chords mean the same on any keyboard.
+      bindsym Mod4+Tab card_shell enter
       # Shift sits between Tab and LILYGO; a brushed Shift still means overview.
-      bindsym --input-device=1:1:tca8418 Mod4+Shift+Tab card_shell enter
-      bindsym --input-device=1:1:tca8418 Mod5+Super_L exec ${keyboardBaseScreenshot}
+      bindsym Mod4+Shift+Tab card_shell enter
+      bindsym Mod5+Super_L exec ${keyboardBaseScreenshot}
     ''}
 
     ${lib.optionalString cfg.coherentShell ''

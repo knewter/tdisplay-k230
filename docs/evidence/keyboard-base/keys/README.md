@@ -58,3 +58,21 @@ for Fn+LILYGO; `shortcuts-sway-bindings-2026-10-14T0112Z.json` is
 - Presses 4–5: Shift arrived 23 ms and 46 ms before Tab, so the modifiers were
   Super+Shift and no binding matched.
 - No `KEY_RIGHTALT` (Fn) event appears anywhere in the recording.
+
+## Why the overview chord leaked Tab (2026-10-14 ~02:10 UTC, **injected**)
+
+After the Super+Shift+Tab binding landed, the operator reported that LILYGO+Tab
+opened the overview but also sent Tab to the terminal. Reproduced with an
+`evemu-device` clone of the `tca8418` keypad (same `1:1:tca8418` identifier),
+with foot focused, by rebinding Mod4+Tab at runtime with `swaymsg`:
+
+| Binding | Terminal after LILYGO+Tab |
+| --- | --- |
+| `bindsym --input-device=1:1:tca8418 Mod4+Tab nop` | received `CSI 27;9;9~` (Super+Tab) |
+| `bindsym --input-device=1:1:tca8418 Mod4+Tab exec true` | received `CSI 27;9;9~` |
+| `bindsym Mod4+Tab nop` (no `--input-device`) | nothing |
+| `bindsym Mod4+Tab card_shell enter` and `Mod4+Shift+Tab card_shell enter` | overview opened; nothing |
+
+So Sway ran the `--input-device` binding and still delivered the key. The
+chord bindings are now global; the operator's earlier presses had left five
+`;10;9~` (Super+Shift+Tab) and one `;9;9~` in the terminal.
