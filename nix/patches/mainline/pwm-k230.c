@@ -41,7 +41,8 @@
  *      vendor mapping. Disabled drives the inactive level for the state's
  *      polarity. If the board shows the opposite sense, the device tree's
  *      PWM flags select the other mapping without a kernel change.
- *      UNVERIFIED until an LED on the K230 is observed under it.
+ *      Board-verified 2026-10-14 on the key backlight: brightness 0 is
+ *      dark and the levels dim (docs/evidence/keyboard-base/backlight/).
  *   4. The three channels share pwmcmp0 (the period). A second user may
  *      only request the period already programmed.
  *   5. An optional shared reset (RST_PWM_APB) is deasserted at probe; the

@@ -474,9 +474,8 @@
 
 	};
 
-	// 20 kHz, above hearing. NORMAL polarity assumes the driver's reading of
-	// the comparator (pwm-k230.c header, UNVERIFIED); if brightness 0 lights
-	// the keys, PWM_POLARITY_INVERTED here flips it without a kernel change.
+	// 20 kHz, above hearing. NORMAL polarity: on the board brightness 0 is
+	// dark and the levels dim (docs/evidence/keyboard-base/backlight/).
 	keyboard-base-backlight {
 		compatible = "pwm-leds";
 		pinctrl-names = "default";

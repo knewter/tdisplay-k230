@@ -108,10 +108,16 @@ host or QEMU result never ticks a board task.
   Closed 2026-10-14: the line switches (board-read), Settings' Key backlight
   row toggles the LED (injected tap), and the operator waived the camera
   frames ("waive the camera pics").
-- [ ] 4.2 Port the vendor K230 PWM driver and switch IO52 to PWM4 with a
+- [x] 4.2 Port the vendor K230 PWM driver and switch IO52 to PWM4 with a
   `pwm-leds` entry of the same name. Proof (**host**):
   `nix build .#kernelMainlineDrm`. Then (**camera**) three distinct
   brightness levels.
+  Done 2026-10-14: `nix/patches/mainline/pwm-k230.c` (forward-port with
+  prescale, disabled-output and polarity fixes), `pwm@9140a040`, and IO52 on
+  function 2 as a 0–255 `pwm-leds` at 20 kHz. Built as part of
+  `.#kernelMainlineDrmShellLandscapeBootFiles`. On the board (**board-read**),
+  the PWM registers track 255, 128, 32, 4 and 0. **Operator**, camera waived:
+  "it dims fine, off is dark" (`docs/evidence/keyboard-base/backlight/`).
 
 ## 5. Battery and charger (kernel, device tree)
 
