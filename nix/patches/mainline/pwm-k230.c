@@ -23,7 +23,7 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * openspec/changes/the-keyboard-base-types-lights-and-reports-its-battery
+ * openspec/changes/archive/2026-10-14-the-keyboard-base-types-lights-and-reports-its-battery
  * task 4.2 forward-port, from ruyisdk/linux-xuantie-kernel's
  * drivers/pwm/pwm-k230.c (the pinned vendor tree). Changes from the vendor
  * original:
