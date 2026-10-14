@@ -19,7 +19,7 @@ its completed tasks 6.1/6.2 record accepted portrait-HDMI fill and targets. This
 tasks 7.1–7.3 own density, Wi-Fi/theme geometry and dock follow-ups. Use that work for 5.2/5.3 below rather than implementing it twice.
 These links do not complete this proposal's HDMI hardware or landscape gates.
 
-- [ ] 5.1 Add a separately selected landscape `HDMI-A-1` qualification
+- [x] 5.1 Add a separately selected landscape `HDMI-A-1` qualification
       profile to the Sway configuration (supported EDID mode, for example
       `1280x720`, `transform normal`), preserving the accepted portrait default.
       Record the combined runtime's one-CRTC, mutually exclusive outputs in
@@ -27,6 +27,17 @@ These links do not complete this proposal's HDMI hardware or landscape gates.
       Verify the legacy rollback configuration with `nix build
       .#nixosConfigurations.k230.config.system.build.toplevel` and the shipping
       mainline profile with `nix build .#kernelMainlineDrmShellBootFiles`.
+      Done 2026-10-14 (host): `k230-mainline-drm-shell-landscape-hdmi` and
+      its boot files `kernelMainlineDrmShellLandscapeHdmiBootFiles`
+      (landscape panel, `hdmiTransform = "normal"`, EDID-preferred mode); the
+      one-CRTC exclusive outputs and automatic cable switching are recorded in
+      `design.md`. At master `339fb0f6` these built:
+      `.#nixosConfigurations.k230.config.system.build.toplevel`
+      (`hpab8g78…`), `.#kernelMainlineDrmShellBootFiles` (`8xvklh2x…`) and
+      `.#kernelMainlineDrmShellLandscapeHdmiBootFiles` (`4zml1kip…`). The
+      landscape-HDMI system (`gs1daqsn…`) is installed on the board, its Sway
+      config reading `output HDMI-A-1 transform normal` and calibration
+      `1 0 0 0 1 0`.
 - [x] 5.2 Parameterize `nix/rust-shell-client/src/lib.rs`'s
       `DESIGN_ASPECT` and the direct `568.0`/`1232.0` literals it and
       `render.rs`/`wifi_ui.rs` use for coordinate scaling, so they derive

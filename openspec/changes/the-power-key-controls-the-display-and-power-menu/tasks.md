@@ -26,7 +26,12 @@
 
 ## 3. Power sheet and confirmation
 
-- [ ] 3.1 Add the Rust shell `power` route with themed sheet, large touch targets, dismiss/Cancel, Power off and Restart; verify `cargo test` in `nix/rust-shell-client` and `nix build .#handheld-shell-rust`.
+- [x] 3.1 Add the Rust shell `power` route with themed sheet, large touch targets, dismiss/Cancel, Power off and Restart; verify `cargo test` in `nix/rust-shell-client` and `nix build .#handheld-shell-rust`.
+  Done 2026-10-14 (host): the `power` route paints the themed sheet with
+  68 px Restart…, Power off… and Cancel rows, and a named two-button
+  confirmation; `cargo test` passes (511 + 22) and `nix build
+  .#handheld-shell-rust` built at master `339fb0f6` (`jj55fw9i…`). Board
+  captures: `docs/evidence/power-key/sheet/`.
 - [x] 3.2 Route a held physical key to that sheet and use the existing bounded Settings power request path for a second confirmation; verify host tests cover hold-open, duplicate suppression, cancel, outside dismissal, denied action and no command before confirmation.
 - [ ] 3.3 Verify the integrated NixOS closure with `nix build .#nixosConfigurations.k230-coherent-shell.config.system.build.toplevel`, then record real-button/glass proof of hold → sheet → Cancel and hold → named confirmation without execution under `docs/evidence/power-key/sheet/`.
   Partial 2026-10-14 (operator + native captures,
