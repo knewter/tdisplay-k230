@@ -10,7 +10,7 @@
 use k230_shell_rust::{
     evidence_render::{
         fixture_notification_events, fixture_settings, fixture_theme_view, fixture_wifi,
-        render_home_with_open_folder, render_route_with_views, synthetic_apps,
+        render_home_with_open_folder, render_home_with_widget_picker, render_route_with_views, synthetic_apps,
     },
     pipewire_ipc::{GraphSnapshot, Sink},
     service_data::NotificationSnapshot,
@@ -56,6 +56,8 @@ fn main() {
             ServiceView { settings: Some(fixture_settings()), ..ServiceView::default() },
             Some(fixture_theme_view(7)),
         );
+        render_home_with_widget_picker(&out.join(format!("widget-picker-{w}x{h}.png")), w, h, &apps, true);
+        render_home_with_widget_picker(&out.join(format!("home-menu-{w}x{h}.png")), w, h, &apps, false);
         for members in [3usize, 9] {
             render_home_with_open_folder(&out.join(format!("folder-{members}-{w}x{h}.png")), w, h, &apps, members);
         }

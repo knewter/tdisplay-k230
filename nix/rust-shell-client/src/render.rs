@@ -4259,9 +4259,12 @@ fn paint_widget_picker(cr: &Context, width: u32, height: u32, theme: Option<&App
             (x, w)
         };
         let label_color = if title.starts_with('<') { style.muted } else { style.accent };
-        centered_label(cr, &title, label_x, y + 12.0, label_w, 22.0, label_color);
+        // Rows shrink to fit the card (`home_grid::picker_row_rect`); the
+        // labels scale with them from the full 92 px row.
+        let k = (h / 92.0).clamp(0.6, 1.0);
+        centered_label(cr, &title, label_x, y + 12.0 * k, label_w, 22.0 * k, label_color);
         if !subtitle.is_empty() {
-            shadowed_label(cr, &subtitle, label_x, y + h - 30.0, label_w, 14.0, brush_rgb(theme, "launcher", "text", style.text));
+            shadowed_label(cr, &subtitle, label_x, y + h - 30.0 * k, label_w, (14.0 * k).max(11.0), brush_rgb(theme, "launcher", "text", style.text));
         }
     }
 }

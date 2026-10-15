@@ -893,6 +893,24 @@ impl HomeScreen {
             WidgetPickerPage::Widgets | WidgetPickerPage::HomeSettings => {
                 if row == 0 {
                     self.widget_picker = Some(WidgetPicker { page: WidgetPickerPage::Menu });
+                } else if picker.page == WidgetPickerPage::Widgets {
+                    // A tap (or click) on a widget row places it at the first
+                    // free spot it fits on the page in view, else on the first
+                    // page with room; holding the row still drags it instead.
+                    let kind = *WidgetKind::ALL.get(row - 1)?;
+                    let item = HomeItem::Widget { widget: kind };
+                    let apps_per_page = home_grid::apps_per_page(width, height);
+                    let page = self.pager.page(self.page_count());
+                    match self.layout.first_fit(page, &item, apps_per_page) {
+                        Some(slot) => {
+                            self.layout.place(HomeSlot::Grid { page, slot }, item, apps_per_page, false);
+                        }
+                        None => {
+                            self.layout.place_first_fit(item, apps_per_page);
+                        }
+                    }
+                    self.widget_picker = None;
+                    return Some(HomeAction::LayoutChanged);
                 }
             }
         }
@@ -2236,15 +2254,36 @@ mod tests {
     }
 
     #[test]
-    fn a_plain_tap_on_a_widget_preview_does_nothing() {
+    fn a_plain_tap_on_a_widget_preview_places_it_and_closes_the_sheet() {
         let mut screen = screen_with(&[None; 4]);
         screen.widget_picker = Some(WidgetPicker { page: WidgetPickerPage::Widgets });
-        let clock_row = home_grid::picker_row_rect(WIDTH, HEIGHT, 1);
-        let point = (clock_row.0 + clock_row.2 / 2.0, clock_row.1 + clock_row.3 / 2.0);
+        let battery = 1 + WidgetKind::ALL.iter().position(|k| *k == WidgetKind::Battery).unwrap();
+        let row = home_grid::picker_row_rect(WIDTH, HEIGHT, battery);
+        let point = (row.0 + row.2 / 2.0, row.1 + row.3 / 2.0);
         screen.down(1, point, 0, WIDTH, HEIGHT);
-        assert_eq!(screen.up(1, point, 20, WIDTH, HEIGHT), None);
-        assert!(!screen.layout.pages[0].iter().any(|cell| matches!(cell, Some(HomeItem::Widget { .. }))));
-        assert_eq!(screen.widget_picker, Some(WidgetPicker { page: WidgetPickerPage::Widgets }), "still on the same page");
+        assert_eq!(screen.up(1, point, 20, WIDTH, HEIGHT), Some(HomeAction::LayoutChanged));
+        assert!(screen.widget_picker.is_none(), "the sheet closes");
+        let placed: Vec<_> = screen.layout.pages.iter().flatten()
+            .filter(|cell| matches!(cell, Some(HomeItem::Widget { widget: WidgetKind::Battery }))).collect();
+        assert_eq!(placed.len(), 1, "exactly one battery widget was placed");
+        assert!(screen.drag.is_none() && !screen.rearranging);
+    }
+
+    #[test]
+    fn a_tap_on_a_widget_row_works_on_landscape_surfaces_too() {
+        for (width, height) in [(1280u32, 800u32), (1232, 568)] {
+            let mut screen = screen_with(&[None; 4]);
+            screen.sync_columns(width, height);
+            screen.widget_picker = Some(WidgetPicker { page: WidgetPickerPage::Widgets });
+            let last = WidgetKind::ALL.len();
+            let row = home_grid::picker_row_rect(width, height, last);
+            let point = (row.0 + row.2 / 2.0, row.1 + row.3 / 2.0);
+            screen.down(1, point, 0, width, height);
+            assert_eq!(screen.up(1, point, 20, width, height), Some(HomeAction::LayoutChanged), "{width}x{height}");
+            let kind = WidgetKind::ALL[last - 1];
+            assert!(screen.layout.pages.iter().flatten()
+                .any(|cell| matches!(cell, Some(HomeItem::Widget { widget }) if *widget == kind)), "{width}x{height}");
+        }
     }
 
     #[test]

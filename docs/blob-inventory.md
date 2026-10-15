@@ -1457,6 +1457,11 @@ DATA 04b3e7b09e714e92b292e6fd7280de077fa7219f7b9a96610675da48381ee844 docs/evide
 DATA 6bc49a1c8f55b302c36e19fa8c3e6114d64435e45eac8c28f698bec86e985245 docs/evidence/home-screen/qemu/home-dark-back-to-page1.png
 DATA 99a601a1dded8325da3ce9d01a88f9e914ed40e527ca5ca6742d181abbb60b30 docs/evidence/home-screen/qemu/home-dark-badge-removed.png
 DATA 3c6358d4b6a8bf6f6bc2fc6ab1c728aa4f3f693e245e0bbcc3e7507f4a95dfe4 docs/evidence/home-screen/qemu/home-dark-drawer.png
+DATA 955d4295d8e6dcf08c9f64aaa7b04fcc07731db5741c6c02897e88f9f4052fb0 docs/evidence/home-screen/widget-picker-fit/host/widget-picker-1232x568.png
+DATA 555d78d07462a33db598cc5b87c97ebf3215997c7bfc38dd1243fd16fb691b1d docs/evidence/home-screen/widget-picker-fit/host/widget-picker-1280x800.png
+DATA ff0b9adbacf9a19192e1941f9e4b5311b93f4259e3976c40d6c24639d50e87ab docs/evidence/home-screen/widget-picker-fit/host/widget-picker-1920x1080.png
+DATA 9962b8045bfecbea7ff7f5bd93fa6ee49eaae7a43f55352359dc6c1f0dab0090 docs/evidence/home-screen/widget-picker-fit/host/widget-picker-568x1232.png
+DATA ae87503b0e4edd6675c49e979b1d28d1eb44e964591546b0e23729bdd1a6b29e docs/evidence/home-screen/widget-picker-fit/board/before-widget-rows-past-the-card-1280x800-grim.png
 DATA 21c2a5a523ec831a47c10fc3416aab22597abbffb2954e316fc637d587a0433d docs/evidence/home-screen/qemu/home-dark-drop-target.png
 DATA 64b1bc4899bb7e4ee4dd5af7a4adace1a2344ef4dd85e7e6cb3b9756468ec77f docs/evidence/home-screen/qemu/home-dark-mid-swipe.png
 DATA 6bc49a1c8f55b302c36e19fa8c3e6114d64435e45eac8c28f698bec86e985245 docs/evidence/home-screen/qemu/home-dark-page1.png
@@ -2644,6 +2649,11 @@ real-finger acceptance remains open.
 | `docs/evidence/home-screen/navigation/home.png` | 26108 | DATA | `5b54afe2fa2681fe89d0c3486bf9704bd621bd4d5da156aa36b5ba9bff274b20` |
 | `docs/evidence/home-screen/navigation/overview.png` | 16283 | DATA | `a02ac5e799c080f640123979e7c31e853ab3328870edb803c9bd2c1b659538d4` |
 | `docs/evidence/home-screen/navigation/restored-terminal.png` | 8833 | DATA | `d52107ed6f51f9434beea6012fbbd0248f366fceea6d9bf38c71f7c46481c50c` |
+| `docs/evidence/home-screen/widget-picker-fit/host/widget-picker-1232x568.png` | 41194 | DATA | `955d4295d8e6dcf08c9f64aaa7b04fcc07731db5741c6c02897e88f9f4052fb0` |
+| `docs/evidence/home-screen/widget-picker-fit/host/widget-picker-1280x800.png` | 57802 | DATA | `555d78d07462a33db598cc5b87c97ebf3215997c7bfc38dd1243fd16fb691b1d` |
+| `docs/evidence/home-screen/widget-picker-fit/host/widget-picker-1920x1080.png` | 69905 | DATA | `ff0b9adbacf9a19192e1941f9e4b5311b93f4259e3976c40d6c24639d50e87ab` |
+| `docs/evidence/home-screen/widget-picker-fit/host/widget-picker-568x1232.png` | 61959 | DATA | `9962b8045bfecbea7ff7f5bd93fa6ee49eaae7a43f55352359dc6c1f0dab0090` |
+| `docs/evidence/home-screen/widget-picker-fit/board/before-widget-rows-past-the-card-1280x800-grim.png` | 147834 | DATA | `ae87503b0e4edd6675c49e979b1d28d1eb44e964591546b0e23729bdd1a6b29e` |
 
 ### Omawrite host and physical-board runtime — 2026-09-27
 

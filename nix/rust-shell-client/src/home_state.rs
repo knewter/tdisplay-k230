@@ -93,12 +93,12 @@ impl WidgetKind {
     /// row list and this enum's own variants can never drift out of step.
     pub fn picker_subtitle(self) -> &'static str {
         match self {
-            WidgetKind::Clock => "4x2, heavy stacked hour/minute - hold to drag onto Home",
-            WidgetKind::ClockMinimal => "4x2, one thin line - hold to drag onto Home",
-            WidgetKind::ClockAnalog => "2x2, drawn clock face - hold to drag onto Home",
-            WidgetKind::ClockDotMatrix => "4x2, procedural dot-matrix readout - hold to drag onto Home",
-            WidgetKind::Battery => "2x2 - hold to drag onto Home",
-            WidgetKind::Weather => "2x2 - hold to drag onto Home",
+            WidgetKind::Clock => "4x2, heavy stacked hour/minute - tap to add, hold to drag",
+            WidgetKind::ClockMinimal => "4x2, one thin line - tap to add, hold to drag",
+            WidgetKind::ClockAnalog => "2x2, drawn clock face - tap to add, hold to drag",
+            WidgetKind::ClockDotMatrix => "4x2, procedural dot-matrix readout - tap to add, hold to drag",
+            WidgetKind::Battery => "2x2 - tap to add, hold to drag",
+            WidgetKind::Weather => "2x2 - tap to add, hold to drag",
         }
     }
 }

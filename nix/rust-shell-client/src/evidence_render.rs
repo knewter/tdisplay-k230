@@ -367,3 +367,28 @@ pub fn render_home_with_open_folder(path: &Path, width: u32, height: u32, apps: 
     let mut file = std::fs::File::create(path).unwrap();
     composited.write_to_png(&mut file).unwrap();
 }
+
+/// Home with the widget picker open on `widgets` (the Widgets page) or the
+/// Menu page, over a flat backdrop -- the picker's row geometry at a size.
+pub fn render_home_with_widget_picker(path: &Path, width: u32, height: u32, apps: &[AppEntry], widgets: bool) {
+    use crate::home_screen::{WidgetPicker, WidgetPickerPage};
+    let mut home = HomeScreen::new(seed_layout(apps, width, height), f64::from(width));
+    home.sync_columns(width, height);
+    home.widget_picker = Some(WidgetPicker { page: if widgets { WidgetPickerPage::Widgets } else { WidgetPickerPage::Menu } });
+    let content = ImageSurface::create(Format::ARgb32, width as i32, height as i32).unwrap();
+    {
+        let cr = Context::new(&content).unwrap();
+        let mut icons = IconCache::new();
+        render::paint_home(&cr, width, height, None, &home, apps, &mut icons);
+    }
+    let composited = ImageSurface::create(Format::ARgb32, width as i32, height as i32).unwrap();
+    {
+        let cr = Context::new(&composited).unwrap();
+        cr.set_source_rgb(0x1e as f64 / 255.0, 0x1e as f64 / 255.0, 0x2e as f64 / 255.0);
+        cr.paint().unwrap();
+        cr.set_source_surface(&content, 0.0, 0.0).unwrap();
+        cr.paint().unwrap();
+    }
+    let mut file = std::fs::File::create(path).unwrap();
+    composited.write_to_png(&mut file).unwrap();
+}

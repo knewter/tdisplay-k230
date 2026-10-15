@@ -515,21 +515,61 @@ pub fn picker_rect(width: u32, height: u32) -> (f64, f64, f64, f64) {
     folder_overlay_rect(width, height)
 }
 
-/// One row's height in the picker sheet, for both its menu and its widget-
-/// preview list -- both are just "up to 4 rows in a card", so one row
-/// geometry serves either page.
+/// The picker card's row geometry. Rows are the full card width at up to
+/// 92 px tall; when the longest page (the Widgets page: Back plus one row
+/// per `WidgetKind`) cannot fit the card's height in one column, the rows
+/// split into two columns, and the row height shrinks to fit (not below
+/// `PICKER_MIN_ROW_HEIGHT`). Every page uses the same geometry, so every
+/// row of every page stays inside the card, which is where a press counts
+/// as on the sheet rather than as a dismiss.
 const PICKER_ROW_HEIGHT: f64 = 92.0;
+const PICKER_MIN_ROW_HEIGHT: f64 = 56.0;
 const PICKER_ROW_GAP: f64 = 14.0;
 const PICKER_TOP_PAD: f64 = 20.0;
+const PICKER_COLUMN_GAP: f64 = 16.0;
+
+/// Rows on the picker's longest page.
+pub fn picker_max_rows() -> usize {
+    crate::home_state::WidgetKind::ALL.len() + 1
+}
+
+/// `(columns, rows per column, row height, gap)` for the picker card.
+fn picker_grid(width: u32, height: u32) -> (usize, usize, f64, f64) {
+    let (_, _, w, h) = picker_rect(width, height);
+    let rows = picker_max_rows();
+    let fit = |per_column: usize| {
+        let gaps = per_column.saturating_sub(1) as f64;
+        let mut gap = PICKER_ROW_GAP;
+        let mut row = (h - 2.0 * PICKER_TOP_PAD - gaps * gap) / per_column as f64;
+        if row < PICKER_MIN_ROW_HEIGHT {
+            gap = 8.0;
+            row = (h - 2.0 * PICKER_TOP_PAD - gaps * gap) / per_column as f64;
+        }
+        (row.min(PICKER_ROW_HEIGHT), gap)
+    };
+    let (row, gap) = fit(rows);
+    // Two columns only where the card is wide enough for two readable rows.
+    if row >= PICKER_ROW_HEIGHT * 0.85 || w < 2.0 * 360.0 + PICKER_COLUMN_GAP + 32.0 {
+        return (1, rows, row.max(PICKER_MIN_ROW_HEIGHT.min(row)), gap);
+    }
+    let per_column = rows.div_ceil(2);
+    let (row, gap) = fit(per_column);
+    (2, per_column, row, gap)
+}
 
 /// The `index`-th row's rect within the picker card.
 pub fn picker_row_rect(width: u32, height: u32, index: usize) -> (f64, f64, f64, f64) {
     let (x, y, w, _) = picker_rect(width, height);
+    let (columns, per_column, row_h, gap) = picker_grid(width, height);
+    let inner_w = w - 32.0;
+    let col_w = (inner_w - (columns - 1) as f64 * PICKER_COLUMN_GAP) / columns as f64;
+    let column = (index / per_column).min(columns - 1);
+    let row = index - column * per_column;
     (
-        x + 16.0,
-        y + PICKER_TOP_PAD + index as f64 * (PICKER_ROW_HEIGHT + PICKER_ROW_GAP),
-        w - 32.0,
-        PICKER_ROW_HEIGHT,
+        x + 16.0 + column as f64 * (col_w + PICKER_COLUMN_GAP),
+        y + PICKER_TOP_PAD + row as f64 * (row_h + gap),
+        col_w,
+        row_h,
     )
 }
 
@@ -761,6 +801,22 @@ mod tests {
         let (x0, y0, w0, h0) = picker_row_rect(568, 1232, 0);
         assert!((y + h / 2.0) > y0 + h0, "rows do not overlap");
         let _ = (x0, w0);
+    }
+
+    #[test]
+    fn every_picker_row_sits_inside_the_card_at_every_surface() {
+        for (width, height) in [(568u32, 1232u32), (1232, 568), (1280, 800), (1280, 720), (1920, 1080)] {
+            let (cx, cy, cw, ch) = picker_rect(width, height);
+            let rows = picker_max_rows();
+            for index in 0..rows {
+                let (x, y, w, h) = picker_row_rect(width, height, index);
+                assert!(x >= cx && y >= cy && x + w <= cx + cw + 0.01 && y + h <= cy + ch + 0.01,
+                    "{width}x{height} row {index} {:?} outside card {:?}", (x, y, w, h), (cx, cy, cw, ch));
+                assert!(h >= 40.0 && w >= 200.0, "{width}x{height} row {index} too small: {w}x{h}");
+                let centre = (x + w / 2.0, y + h / 2.0);
+                assert_eq!(picker_row_at(centre, width, height, rows), Some(index));
+            }
+        }
     }
 
     #[test]
