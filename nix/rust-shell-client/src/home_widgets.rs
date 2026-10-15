@@ -711,6 +711,278 @@ pub mod battery {
             assert_eq!(poll_interval(false), Duration::from_secs(30));
         }
     }
+
+    /// The charge-over-time record behind the Battery - Details graph: one
+    /// `<unix seconds> <percent> <c|d>` line per sample in
+    /// `$XDG_STATE_HOME/k230-shell/battery-history`, appended about once a
+    /// minute (and on a charging change) whether or not the widget is
+    /// placed, kept to the last day, and rewritten through a temp file and a
+    /// rename once it has grown to twice that.
+    pub mod history {
+        use std::io::Write;
+        use std::path::{Path, PathBuf};
+
+        /// How far back the widget graphs.
+        pub const WINDOW_S: i64 = 12 * 3600;
+        /// How far back the file keeps.
+        pub const KEEP_S: i64 = 24 * 3600;
+        pub const SAMPLE_EVERY_S: i64 = 60;
+        /// A longer silence than this (the shell was not running) breaks the line.
+        pub const GAP_S: i64 = 300;
+        const MAX_FILE_BYTES: u64 = 1 << 20;
+
+        #[derive(Clone, Copy, Debug, PartialEq, Eq)]
+        pub struct Sample {
+            pub at: i64,
+            pub percent: u8,
+            pub charging: bool,
+        }
+
+        /// What the widget paints: the samples in the window ending at `now`.
+        #[derive(Clone, Debug, Default, PartialEq, Eq)]
+        pub struct View {
+            pub now: i64,
+            pub samples: Vec<Sample>,
+        }
+
+        impl View {
+            /// Runs of samples with no silence longer than [`GAP_S`]; each run
+            /// is drawn as one line.
+            pub fn runs(&self) -> Vec<&[Sample]> {
+                let mut runs = Vec::new();
+                let mut start = 0;
+                for i in 1..=self.samples.len() {
+                    if i == self.samples.len() || self.samples[i].at - self.samples[i - 1].at > GAP_S {
+                        runs.push(&self.samples[start..i]);
+                        start = i;
+                    }
+                }
+                runs.retain(|run| !run.is_empty());
+                runs
+            }
+        }
+
+        /// `battery-history` beside `home.json`.
+        pub fn path() -> Option<PathBuf> {
+            crate::home_state::state_path().and_then(|p| p.parent().map(|dir| dir.join("battery-history")))
+        }
+
+        pub fn now_unix() -> i64 {
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .map(|d| d.as_secs() as i64)
+                .unwrap_or(0)
+        }
+
+        fn format_line(sample: &Sample) -> String {
+            format!("{} {} {}\n", sample.at, sample.percent, if sample.charging { 'c' } else { 'd' })
+        }
+
+        /// Parses the file's lines, skipping any that do not parse, are dated
+        /// after `now` (a clock step) or are older than [`KEEP_S`]; sorted by
+        /// time.
+        pub fn parse(raw: &str, now: i64) -> Vec<Sample> {
+            let mut samples: Vec<Sample> = raw
+                .lines()
+                .filter_map(|line| {
+                    let mut parts = line.split_whitespace();
+                    let at = parts.next()?.parse::<i64>().ok()?;
+                    let percent = parts.next()?.parse::<u8>().ok().filter(|p| *p <= 100)?;
+                    let charging = match parts.next()? {
+                        "c" => true,
+                        "d" => false,
+                        _ => return None,
+                    };
+                    parts.next().is_none().then_some(Sample { at, percent, charging })
+                })
+                .filter(|s| s.at <= now && now - s.at <= KEEP_S)
+                .collect();
+            samples.sort_by_key(|s| s.at);
+            samples
+        }
+
+        #[derive(Debug, Default)]
+        pub struct History {
+            path: Option<PathBuf>,
+            samples: Vec<Sample>,
+            lines_in_file: usize,
+        }
+
+        impl History {
+            /// Loads and prunes `path` (rewriting it when anything was
+            /// dropped); a missing or unreadable file starts empty.
+            pub fn load(path: Option<PathBuf>, now: i64) -> Self {
+                let raw = path
+                    .as_deref()
+                    .filter(|p| std::fs::metadata(p).is_ok_and(|m| m.is_file() && m.len() <= MAX_FILE_BYTES))
+                    .and_then(|p| std::fs::read_to_string(p).ok())
+                    .unwrap_or_default();
+                let lines = raw.lines().count();
+                let mut history = History { path, samples: parse(&raw, now), lines_in_file: lines };
+                if lines != history.samples.len() {
+                    history.rewrite();
+                }
+                history
+            }
+
+            /// Adds a reading if a minute has passed since the last sample or
+            /// the charging state changed. Returns whether it was recorded.
+            pub fn record(&mut self, now: i64, percent: u8, charging: bool) -> bool {
+                if let Some(last) = self.samples.last() {
+                    let elapsed = now - last.at;
+                    // A clock stepped backwards: drop what is now "future".
+                    if elapsed < 0 {
+                        self.samples.retain(|s| s.at <= now);
+                        self.rewrite();
+                    } else if elapsed < SAMPLE_EVERY_S && last.charging == charging {
+                        return false;
+                    }
+                }
+                let sample = Sample { at: now, percent: percent.min(100), charging };
+                self.samples.push(sample);
+                self.samples.retain(|s| now - s.at <= KEEP_S);
+                if self.lines_in_file + 1 > 2 * (KEEP_S / SAMPLE_EVERY_S) as usize {
+                    self.rewrite();
+                } else {
+                    self.append(&sample);
+                }
+                true
+            }
+
+            pub fn view(&self, now: i64) -> View {
+                View { now, samples: self.samples.iter().copied().filter(|s| now - s.at <= WINDOW_S).collect() }
+            }
+
+            fn append(&mut self, sample: &Sample) {
+                let Some(path) = self.path.as_deref() else { return };
+                if let Some(parent) = path.parent() {
+                    let _ = std::fs::create_dir_all(parent);
+                }
+                let ok = std::fs::OpenOptions::new()
+                    .create(true)
+                    .append(true)
+                    .open(path)
+                    .and_then(|mut file| file.write_all(format_line(sample).as_bytes()))
+                    .is_ok();
+                if ok {
+                    self.lines_in_file += 1;
+                }
+            }
+
+            fn rewrite(&mut self) {
+                let Some(path) = self.path.clone() else { return };
+                if write_atomically(&path, &self.samples).is_ok() {
+                    self.lines_in_file = self.samples.len();
+                }
+            }
+        }
+
+        fn write_atomically(path: &Path, samples: &[Sample]) -> std::io::Result<()> {
+            let parent = path.parent().ok_or_else(|| std::io::Error::other("no parent directory"))?;
+            std::fs::create_dir_all(parent)?;
+            let temp = parent.join(format!(".battery-history.tmp.{}", std::process::id()));
+            {
+                let mut file = std::fs::File::create(&temp)?;
+                for sample in samples {
+                    file.write_all(format_line(sample).as_bytes())?;
+                }
+                file.sync_all()?;
+            }
+            std::fs::rename(&temp, path)
+        }
+
+        #[cfg(test)]
+        mod tests {
+            use super::*;
+
+            fn temp_file(tag: &str) -> PathBuf {
+                let dir = std::env::temp_dir().join(format!("k230-battery-history-{tag}-{}", std::process::id()));
+                let _ = std::fs::remove_dir_all(&dir);
+                dir.join("battery-history")
+            }
+
+            #[test]
+            fn parse_skips_bad_future_and_stale_lines_and_sorts() {
+                let now = 100_000;
+                let raw = "99000 50 d\nnot a line\n98000 60 c\n100500 40 d\n1 90 d\n99500 101 d\n99600 55 x\n99700 55 d extra\n";
+                let samples = parse(raw, now);
+                assert_eq!(
+                    samples,
+                    vec![
+                        Sample { at: 98000, percent: 60, charging: true },
+                        Sample { at: 99000, percent: 50, charging: false },
+                    ]
+                );
+            }
+
+            #[test]
+            fn records_once_a_minute_or_on_a_charging_change_and_survives_a_reload() {
+                let path = temp_file("record");
+                let mut history = History::load(Some(path.clone()), 1000);
+                assert!(history.record(1000, 80, false));
+                assert!(!history.record(1030, 80, false), "under a minute, same state");
+                assert!(history.record(1040, 80, true), "charging change records at once");
+                assert!(history.record(1100, 81, true));
+                let reloaded = History::load(Some(path.clone()), 1200);
+                assert_eq!(reloaded.view(1200).samples.len(), 3);
+                assert_eq!(reloaded.view(1200).samples[2], Sample { at: 1100, percent: 81, charging: true });
+                std::fs::remove_dir_all(path.parent().unwrap()).unwrap();
+            }
+
+            #[test]
+            fn load_prunes_the_file_to_the_last_day() {
+                let path = temp_file("prune");
+                std::fs::create_dir_all(path.parent().unwrap()).unwrap();
+                let now = 10 * KEEP_S;
+                std::fs::write(&path, format!("{} 10 d\ngarbage\n{} 20 d\n", now - KEEP_S - 1, now - 10)).unwrap();
+                let history = History::load(Some(path.clone()), now);
+                assert_eq!(history.view(now).samples.len(), 1);
+                assert_eq!(std::fs::read_to_string(&path).unwrap(), format!("{} 20 d\n", now - 10));
+                std::fs::remove_dir_all(path.parent().unwrap()).unwrap();
+            }
+
+            #[test]
+            fn the_file_is_rewritten_once_it_reaches_twice_its_budget() {
+                let path = temp_file("cap");
+                let mut history = History::load(Some(path.clone()), 0);
+                let budget = (KEEP_S / SAMPLE_EVERY_S) as i64;
+                for i in 0..(3 * budget) {
+                    assert!(history.record(i * SAMPLE_EVERY_S, 50, false));
+                }
+                let lines = std::fs::read_to_string(&path).unwrap().lines().count() as i64;
+                assert!(lines <= 2 * budget, "{lines} lines");
+                std::fs::remove_dir_all(path.parent().unwrap()).unwrap();
+            }
+
+            #[test]
+            fn a_clock_stepped_backwards_drops_future_samples() {
+                let mut history = History::load(None, 0);
+                assert!(history.record(5000, 50, false));
+                assert!(history.record(5060, 49, false));
+                assert!(history.record(2000, 48, false));
+                assert_eq!(history.view(2000).samples, vec![Sample { at: 2000, percent: 48, charging: false }]);
+            }
+
+            #[test]
+            fn the_view_is_the_last_twelve_hours_split_at_gaps() {
+                let mut history = History::load(None, 0);
+                let start = 100_000;
+                for i in 0..5 {
+                    history.record(start + i * 60, 90 - i as u8, false);
+                }
+                // The shell was off for ten minutes.
+                for i in 0..3 {
+                    history.record(start + 900 + i * 60, 70 + i as u8, true);
+                }
+                let view = history.view(start + 1200);
+                let runs = view.runs();
+                assert_eq!(runs.len(), 2);
+                assert_eq!(runs[0].len(), 5);
+                assert_eq!(runs[1].len(), 3);
+                assert!(history.view(start + WINDOW_S + 2000).samples.is_empty());
+            }
+        }
+    }
 }
 
 pub mod clock {

@@ -197,6 +197,10 @@ pub struct HomeScreen {
     /// (`DetailsState::quantized`); refreshed on the faster 10 s poll only
     /// while such a widget is placed.
     pub battery_details: DetailsState,
+    /// The last 12 hours of recorded charge the Battery - Details widget
+    /// graphs (`home_widgets::battery::history`), replaced only when the
+    /// shell records a new sample.
+    pub battery_history: crate::home_widgets::battery::history::View,
     /// Live weather-widget content (`home_widgets::weather`), updated by
     /// the caller from its own cache/fetch cadence; defaults to
     /// `Unavailable` until the first cache read/fetch completes.
@@ -293,6 +297,7 @@ impl HomeScreen {
             keyboard_inset: 0.0,
             battery: BatteryState::Absent,
             battery_details: DetailsState::Absent,
+            battery_history: Default::default(),
             weather: WeatherDisplay::Unavailable,
             contact: None,
             edge_held_ms: 0,

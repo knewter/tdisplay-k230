@@ -4035,6 +4035,88 @@ fn detail_glow(cr: &Context, value: &str, x: f64, y: f64, width: f64, size: f64,
     pangocairo::functions::show_layout(cr, &layout);
 }
 
+/// The Battery - Details charge graph: the last 12 hours of recorded
+/// percentage from 0 to 100, filled under the line, charging stretches in
+/// the accent colour, and a break wherever the shell recorded nothing for
+/// more than five minutes.
+fn paint_charge_graph(cr: &Context, style: &VisualStyle, view: &crate::home_widgets::battery::history::View, rect: (f64, f64, f64, f64), caption_size: f64) {
+    use crate::home_widgets::battery::history::WINDOW_S;
+    let (gx, gy, gw, gh) = rect;
+    let plot_h = gh - caption_size * 1.5;
+    let bottom = gy + plot_h;
+    let start = view.now - WINDOW_S;
+    let px = |at: i64| gx + (at - start) as f64 / WINDOW_S as f64 * gw;
+    let py = |percent: u8| bottom - f64::from(percent) / 100.0 * plot_h;
+
+    cr.save().ok();
+    cr.set_line_width(1.0);
+    for level in [0u8, 50, 100] {
+        cr.new_path();
+        cr.move_to(gx, py(level).round() + 0.5);
+        cr.line_to(gx + gw, py(level).round() + 0.5);
+        color(cr, style.muted, if level == 0 { 0.45 } else { 0.22 });
+        let _ = cr.stroke();
+    }
+    cr.set_line_join(cairo::LineJoin::Round);
+    cr.set_line_cap(cairo::LineCap::Round);
+    for run in view.runs() {
+        if run.len() == 1 {
+            let only = run[0];
+            cr.new_path();
+            cr.arc(px(only.at), py(only.percent), 2.5, 0.0, std::f64::consts::TAU);
+            color(cr, if only.charging { style.accent } else { style.text }, 1.0);
+            let _ = cr.fill();
+            continue;
+        }
+        // Stretches of one style: a segment takes the style of its later
+        // sample, so a charge starts where the plug went in.
+        let mut stretches: Vec<(bool, &[crate::home_widgets::battery::history::Sample])> = Vec::new();
+        let mut from = 0;
+        for i in 1..run.len() {
+            if i + 1 == run.len() || run[i + 1].charging != run[i].charging {
+                stretches.push((run[i].charging, &run[from..=i]));
+                from = i;
+            }
+        }
+        for (charging, stretch) in &stretches {
+            cr.new_path();
+            cr.move_to(px(stretch[0].at), bottom);
+            for sample in stretch.iter() {
+                cr.line_to(px(sample.at), py(sample.percent));
+            }
+            cr.line_to(px(stretch[stretch.len() - 1].at), bottom);
+            cr.close_path();
+            color(cr, if *charging { style.accent } else { style.text }, 0.16);
+            let _ = cr.fill();
+        }
+        cr.new_path();
+        cr.move_to(px(run[0].at), py(run[0].percent));
+        for sample in &run[1..] {
+            cr.line_to(px(sample.at), py(sample.percent));
+        }
+        color(cr, glow_for(style.text), 0.5);
+        cr.set_line_width(5.0);
+        let _ = cr.stroke();
+        cr.set_line_width(2.5);
+        for (charging, stretch) in &stretches {
+            cr.new_path();
+            cr.move_to(px(stretch[0].at), py(stretch[0].percent));
+            for sample in &stretch[1..] {
+                cr.line_to(px(sample.at), py(sample.percent));
+            }
+            color(cr, if *charging { style.accent } else { style.text }, 1.0);
+            let _ = cr.stroke();
+        }
+    }
+    cr.restore().ok();
+    let caption_y = bottom + caption_size * 0.35;
+    detail_glow(cr, "12 h ago", gx, caption_y, gw / 2.0, caption_size, style.muted, pango::Weight::Normal, pango::Alignment::Left);
+    detail_glow(cr, "now", gx + gw / 2.0, caption_y, gw / 2.0, caption_size, style.muted, pango::Weight::Normal, pango::Alignment::Right);
+    if view.samples.len() < 2 {
+        detail_glow(cr, "Recording charge", gx, gy + plot_h * 0.38, gw, caption_size, style.muted, pango::Weight::Normal, pango::Alignment::Center);
+    }
+}
+
 /// The Battery - Details widget (4x2): a ring with the percentage and the
 /// state/time beside it, a two-row grid of the gauge's metrics (absent ones
 /// are skipped and the rest reflow), and the charger/input line beneath.
@@ -4051,9 +4133,20 @@ fn paint_battery_details(cr: &Context, style: &VisualStyle, rect: (f64, f64, f64
         caption_glow(cr, "No battery info", x + pad, y + h * 0.62, w - pad * 2.0, 13.0, style.text, true);
         return;
     };
+    // The bottom of the widget is the charge graph; everything else lays
+    // out in the rest.
+    let graph_h = h * 0.27;
+    let h = h - graph_h;
     let size = |h_frac: f64, w_frac: f64, floor: f64| (h * h_frac).min(w * w_frac).max(floor);
     let left = x + pad;
     let inner_w = w - pad * 2.0;
+    paint_charge_graph(
+        cr,
+        style,
+        &home.battery_history,
+        (left, y + h, inner_w, graph_h - pad * 0.4),
+        size(0.048, 0.026, 10.0),
+    );
 
     // Hero: ring + percentage, then state and time to its right.
     let radius = (h * 0.17).min(w * 0.105);

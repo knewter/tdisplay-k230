@@ -1403,6 +1403,7 @@ struct ShellClient {
     /// Whether a Battery - Details widget was on Home at the last tick, so
     /// placing one triggers an immediate read instead of waiting a period.
     battery_details_placed: bool,
+    battery_history: home_widgets::battery::history::History,
     /// A weather fetch this client kicked off on a background thread
     /// (`home_widgets::weather::refresh` shells out to `curl`, which must
     /// never block this process's single manual poll loop); polled
@@ -3867,6 +3868,17 @@ impl ShellClient {
             self.battery_polled_at = Some(now);
             self.refresh_keyboard_base();
             let state = home_widgets::battery::read_state(Path::new("/sys/class/power_supply"));
+            // Record the charge for the details graph whether or not that
+            // widget is placed, so a newly placed one already has history.
+            if let home_widgets::battery::BatteryState::Present { percent, .. } = &state {
+                let now_unix = home_widgets::battery::history::now_unix();
+                if self.battery_history.record(now_unix, *percent, state.is_charging()) || newly_placed {
+                    self.home.battery_history = self.battery_history.view(now_unix);
+                    if details_placed {
+                        self.home_mark_dirty();
+                    }
+                }
+            }
             if state != self.home.battery {
                 self.home.battery = state;
                 self.home_mark_dirty();
@@ -6724,6 +6736,10 @@ fn serve() -> Result<(), String> {
         drawer_drag_reveal: None,
         battery_polled_at: None,
         battery_details_placed: false,
+        battery_history: home_widgets::battery::history::History::load(
+            home_widgets::battery::history::path(),
+            home_widgets::battery::history::now_unix(),
+        ),
         weather_pending: None,
         weather_checked_at: None,
         clock_next_tick: None,
