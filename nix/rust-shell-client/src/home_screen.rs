@@ -518,6 +518,21 @@ impl HomeScreen {
         match self.layout.get(slot)? {HomeItem::App {id}=>Some(id.clone()),_=>None}
     }
 
+    /// Secondary click on empty Home space: opens the same Home menu a long
+    /// press there opens (`empty_slot_at_down` in `down`), under the same
+    /// conditions. Returns whether it opened.
+    pub fn open_menu_at(&mut self, point: (f64, f64), width: u32, height: u32) -> bool {
+        if self.widget_picker.is_some() || self.rearranging || self.open_folder.is_some()
+            || self.drag.is_some() || self.contact.is_some() {
+            return false;
+        }
+        if self.filled_slot_at(point, width, height).is_some() || self.slot_at(point, width, height).is_none() {
+            return false;
+        }
+        self.widget_picker = Some(WidgetPicker { page: WidgetPickerPage::Menu });
+        true
+    }
+
     /// Which filled slot's remove badge (if any) `point` lands in, while
     /// rearranging -- checked across every anchored item on the current
     /// page plus the dock, since a badge sits at a plate's corner, outside
@@ -2151,6 +2166,16 @@ mod tests {
         let point = tile_center_for_test(2); // unfilled
         long_press(&mut screen, point);
         assert_eq!(screen.widget_picker, Some(WidgetPicker { page: WidgetPickerPage::Menu }));
+    }
+
+    #[test]
+    fn secondary_click_on_empty_home_space_opens_the_menu_but_not_on_an_icon() {
+        let mut screen = screen_with(&[None; 4]);
+        assert!(!screen.open_menu_at(tile_center_for_test(0), WIDTH, HEIGHT), "an app keeps its own app menu");
+        assert!(screen.widget_picker.is_none());
+        assert!(screen.open_menu_at(tile_center_for_test(2), WIDTH, HEIGHT));
+        assert_eq!(screen.widget_picker, Some(WidgetPicker { page: WidgetPickerPage::Menu }));
+        assert!(!screen.open_menu_at(tile_center_for_test(3), WIDTH, HEIGHT), "already open");
     }
 
     #[test]
