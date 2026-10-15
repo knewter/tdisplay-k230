@@ -4015,6 +4015,120 @@ fn draw_analog_clock(cr: &Context, cx: f64, cy: f64, radius: f64, hour: i32, min
     let _ = cr.restore();
 }
 
+/// One haloed text run with explicit alignment and end-ellipsis, for the
+/// Battery - Details widget (mixed-case values, unlike [`caption_glow`]).
+#[allow(clippy::too_many_arguments)]
+fn detail_glow(cr: &Context, value: &str, x: f64, y: f64, width: f64, size: f64, rgb: u32, weight: pango::Weight, align: pango::Alignment) {
+    let layout = pangocairo::functions::create_layout(cr);
+    let mut font = FontDescription::new();
+    font.set_family(FONT_FAMILY);
+    font.set_absolute_size(context_font_size(cr, size) * f64::from(pango::SCALE));
+    font.set_weight(weight);
+    layout.set_font_description(Some(&font));
+    layout.set_text(value);
+    layout.set_width((width * f64::from(pango::SCALE)) as i32);
+    layout.set_ellipsize(EllipsizeMode::End);
+    layout.set_alignment(align);
+    draw_layout_halo(cr, &layout, x, y, glow_for(rgb), 2.0, 8, 0.35);
+    color(cr, rgb, 1.0);
+    cr.move_to(x, y);
+    pangocairo::functions::show_layout(cr, &layout);
+}
+
+/// The Battery - Details widget (4x2): a ring with the percentage and the
+/// state/time beside it, a two-row grid of the gauge's metrics (absent ones
+/// are skipped and the rest reflow), and the charger/input line beneath.
+/// Sizes derive from both the rect's height and width so the same code reads
+/// on the portrait panel, wide surfaces and the square picker preview.
+fn paint_battery_details(cr: &Context, style: &VisualStyle, rect: (f64, f64, f64, f64), home: &HomeScreen, pad: f64) {
+    use crate::home_widgets::battery::DetailsState;
+    let (x, y, w, h) = rect;
+    let DetailsState::Present(details) = &home.battery_details else {
+        caption_glow(cr, "Battery", x + pad, y + pad * 0.7, w - pad * 2.0, 13.0, style.text, false);
+        let glyph_w = (w * 0.16).min(h * 0.4);
+        let glyph_h = glyph_w * 0.52;
+        draw_battery_outline(cr, x + (w - glyph_w) / 2.0, y + h * 0.32, glyph_w, glyph_h, style.text);
+        caption_glow(cr, "No battery info", x + pad, y + h * 0.62, w - pad * 2.0, 13.0, style.text, true);
+        return;
+    };
+    let size = |h_frac: f64, w_frac: f64, floor: f64| (h * h_frac).min(w * w_frac).max(floor);
+    let left = x + pad;
+    let inner_w = w - pad * 2.0;
+
+    // Hero: ring + percentage, then state and time to its right.
+    let radius = (h * 0.17).min(w * 0.105);
+    let state_size = size(0.10, 0.06, 12.0);
+    let time_size = size(0.08, 0.048, 11.0);
+    let label_size = size(0.048, 0.026, 10.0);
+    let value_size = size(0.082, 0.039, 12.0);
+    let line_size = size(0.06, 0.034, 11.0);
+    let row_h = label_size * 1.35 + value_size * 1.3;
+    // Hero, two grid rows and the input line, evenly spaced in the rect.
+    let blocks_h = radius * 2.2 + row_h * 2.0 + line_size * 1.3;
+    let gap = ((h - blocks_h) / 4.0).max(0.0);
+    let ring_cx = left + radius + radius * 0.2;
+    let ring_cy = y + gap + radius * 1.1;
+    draw_battery_ring(cr, ring_cx, ring_cy, radius, details.percent, style);
+    ring_percent_label(cr, &format!("{}%", details.percent), ring_cx, ring_cy, radius, style.text);
+    if details.is_charging() {
+        let badge_r = radius * 0.34;
+        let (bx, by) = (ring_cx + radius * 0.74, ring_cy - radius * 0.74);
+        draw_soft_backdrop(cr, bx, by, badge_r * 1.5, glow_for(style.accent), 0.20);
+        cr.new_path();
+        cr.arc(bx, by, badge_r, 0.0, std::f64::consts::TAU);
+        color(cr, style.accent, 0.95);
+        let _ = cr.fill();
+        draw_bolt(cr, bx, by, badge_r * 1.25, glow_for(style.accent));
+    }
+    let text_x = ring_cx + radius * 1.45;
+    let text_w = (x + w - pad - text_x).max(10.0);
+    let hero_h = state_size * 1.25 + time_size * 1.3;
+    let mut ty = ring_cy - hero_h / 2.0;
+    detail_glow(cr, &details.state_label(), text_x, ty, text_w, state_size, style.text, pango::Weight::Bold, pango::Alignment::Left);
+    ty += state_size * 1.25;
+    if let Some(time) = details.time_label() {
+        detail_glow(cr, &time, text_x, ty, text_w, time_size, style.accent, pango::Weight::Bold, pango::Alignment::Left);
+    }
+
+    // Grid: label over value, four columns, at most two rows.
+    let mut cells: Vec<(&str, String, usize)> = Vec::new();
+    let mut push = |label: &'static str, value: Option<String>, span: usize| {
+        if let Some(value) = value {
+            cells.push((label, value, span));
+        }
+    };
+    push("Current", details.current_label(), 1);
+    push("Power", details.power_label(), 1);
+    push("Voltage", details.voltage_label(), 1);
+    push("Temp", details.temperature_label(), 1);
+    push("Charge", details.charge_label(), 2);
+    push("Health", details.health_label(), 1);
+    push("Cycles", details.cycles_label(), 1);
+    let col_w = inner_w / 4.0;
+    let grid_y = ring_cy + radius * 1.1 + gap;
+    let (mut col, mut row) = (0usize, 0usize);
+    for (label, value, span) in cells {
+        if col + span > 4 {
+            col = 0;
+            row += 1;
+        }
+        if row >= 2 {
+            break;
+        }
+        let cx = left + col as f64 * col_w;
+        let cy = grid_y + row as f64 * row_h;
+        let cell_w = col_w * span as f64 - pad * 0.3;
+        caption_glow(cr, label, cx, cy, cell_w, label_size, style.muted, false);
+        detail_glow(cr, &value, cx, cy + label_size * 1.35, cell_w, value_size, style.text, pango::Weight::Bold, pango::Alignment::Left);
+        col += span;
+    }
+
+    // Input line.
+    if let Some(line) = details.input_label() {
+        detail_glow(cr, &line, left, grid_y + row_h * 2.0 + gap, inner_w, line_size, style.accent, pango::Weight::Normal, pango::Alignment::Left);
+    }
+}
+
 /// Paints a widget's whole content, straight on the wallpaper -- no card,
 /// no surface fill, no border (board review, round 2: "the widgets don't
 /// have to have a background like they do"); legibility instead comes from
@@ -4104,6 +4218,7 @@ fn paint_widget_card(cr: &Context, style: &VisualStyle, kind: WidgetKind, rect: 
                 }
             }
         }
+        WidgetKind::BatteryDetails => paint_battery_details(cr, style, rect, home, pad),
         WidgetKind::Weather => {
             let (glyph, temp_c, location, high_c, low_c, forecast): (String, Option<i32>, String, Option<i32>, Option<i32>, Vec<crate::home_widgets::weather::ForecastEntry>) =
                 match &home.weather {

@@ -53,6 +53,11 @@ pub enum WidgetKind {
     ClockDotMatrix,
     Battery,
     Weather,
+    /// "Battery - Details": a 4x2 readout of the gauge and charger
+    /// (percent, state, time, current, power, voltage, charge, health,
+    /// cycles, temperature, input). Appended last so every earlier tag
+    /// keeps its serialized name.
+    BatteryDetails,
 }
 
 impl WidgetKind {
@@ -63,18 +68,19 @@ impl WidgetKind {
     /// each at one of its listed acceptable spans.
     pub fn span(self) -> (usize, usize) {
         match self {
-            WidgetKind::Clock | WidgetKind::ClockMinimal | WidgetKind::ClockDotMatrix => (4, 2),
+            WidgetKind::Clock | WidgetKind::ClockMinimal | WidgetKind::ClockDotMatrix | WidgetKind::BatteryDetails => (4, 2),
             WidgetKind::ClockAnalog | WidgetKind::Battery | WidgetKind::Weather => (2, 2),
         }
     }
 
-    pub const ALL: [WidgetKind; 6] = [
+    pub const ALL: [WidgetKind; 7] = [
         WidgetKind::Clock,
         WidgetKind::ClockMinimal,
         WidgetKind::ClockAnalog,
         WidgetKind::ClockDotMatrix,
         WidgetKind::Battery,
         WidgetKind::Weather,
+        WidgetKind::BatteryDetails,
     ];
 
     pub fn label(self) -> &'static str {
@@ -85,6 +91,7 @@ impl WidgetKind {
             WidgetKind::ClockDotMatrix => "Clock - Dot Matrix",
             WidgetKind::Battery => "Battery",
             WidgetKind::Weather => "Weather",
+            WidgetKind::BatteryDetails => "Battery - Details",
         }
     }
 
@@ -99,6 +106,7 @@ impl WidgetKind {
             WidgetKind::ClockDotMatrix => "4x2, procedural dot-matrix readout - tap to add, hold to drag",
             WidgetKind::Battery => "2x2 - tap to add, hold to drag",
             WidgetKind::Weather => "2x2 - tap to add, hold to drag",
+            WidgetKind::BatteryDetails => "4x2, charge, power, health - tap to add, hold to drag",
         }
     }
 }
@@ -327,6 +335,15 @@ impl HomeLayout {
 
     /// Number of pages, always at least 1 so a fresh/empty Home still has a
     /// page to show.
+    /// Whether any grid page holds a widget of this kind (the widget is
+    /// never dock-eligible).
+    pub fn has_widget(&self, kind: WidgetKind) -> bool {
+        self.pages
+            .iter()
+            .flatten()
+            .any(|cell| matches!(cell, Some(HomeItem::Widget { widget }) if *widget == kind))
+    }
+
     pub fn page_count(&self) -> usize {
         self.pages.len().max(1)
     }
@@ -1220,6 +1237,44 @@ mod tests {
     }
 
     #[test]
+    fn battery_details_is_a_4x2_widget_with_its_own_serialized_tag() {
+        assert_eq!(WidgetKind::BatteryDetails.span(), (4, 2));
+        assert_eq!(WidgetKind::BatteryDetails.label(), "Battery - Details");
+        assert!(WidgetKind::ALL.contains(&WidgetKind::BatteryDetails));
+        assert_eq!(serde_json::to_string(&WidgetKind::BatteryDetails).unwrap(), "\"battery_details\"");
+        assert_eq!(serde_json::to_string(&WidgetKind::Battery).unwrap(), "\"battery\"");
+        let tags: std::collections::HashSet<String> =
+            WidgetKind::ALL.iter().map(|kind| serde_json::to_string(kind).unwrap()).collect();
+        assert_eq!(tags.len(), WidgetKind::ALL.len());
+    }
+
+    #[test]
+    fn battery_details_places_in_a_four_wide_row_and_round_trips_in_a_layout() {
+        let mut layout = HomeLayout::empty(4);
+        assert!(!layout.has_widget(WidgetKind::BatteryDetails));
+        assert!(layout.place(HomeSlot::Grid { page: 0, slot: 0 }, HomeItem::Widget { widget: WidgetKind::BatteryDetails }, 8, false));
+        assert!(!layout.place(HomeSlot::Grid { page: 0, slot: 2 }, HomeItem::Widget { widget: WidgetKind::BatteryDetails }, 8, false));
+        assert!(layout.has_widget(WidgetKind::BatteryDetails));
+        assert!(!layout.has_widget(WidgetKind::Battery));
+        let json = serde_json::to_vec(&layout).unwrap();
+        let back: HomeLayout = serde_json::from_slice(&json).unwrap();
+        assert_eq!(back, layout);
+    }
+
+    #[test]
+    fn an_older_save_with_the_existing_battery_widget_still_loads() {
+        // The Battery tag is unchanged, so a file written with it (the
+        // layout shape this module has always written) loads as before.
+        let mut layout = HomeLayout::empty(1);
+        layout.place(HomeSlot::Grid { page: 0, slot: 0 }, HomeItem::Widget { widget: WidgetKind::Battery }, 8, false);
+        let text = serde_json::to_string(&layout).unwrap();
+        assert!(text.contains("\"battery\"") && !text.contains("battery_details"));
+        let back: HomeLayout = serde_json::from_str(&text).unwrap();
+        assert!(back.has_widget(WidgetKind::Battery));
+        assert!(!back.has_widget(WidgetKind::BatteryDetails));
+    }
+
+    #[test]
     fn widgets_are_not_dock_eligible() {
         let mut layout = HomeLayout::empty(4);
         assert!(!layout.place(HomeSlot::Dock { slot: 0 }, HomeItem::Widget { widget: WidgetKind::Battery }, 4, false));
@@ -1232,7 +1287,7 @@ mod tests {
         assert_eq!(WidgetKind::ClockMinimal.span(), (4, 2));
         assert_eq!(WidgetKind::ClockAnalog.span(), (2, 2));
         assert_eq!(WidgetKind::ClockDotMatrix.span(), (4, 2));
-        assert_eq!(WidgetKind::ALL.len(), 6);
+        assert_eq!(WidgetKind::ALL.len(), 7);
         assert!(WidgetKind::ALL.contains(&WidgetKind::ClockMinimal));
         assert!(WidgetKind::ALL.contains(&WidgetKind::ClockAnalog));
         assert!(WidgetKind::ALL.contains(&WidgetKind::ClockDotMatrix));

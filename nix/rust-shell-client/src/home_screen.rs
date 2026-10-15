@@ -16,7 +16,10 @@
 use crate::home_grid::{self, HomeSlot};
 use crate::home_pager::{HomePager, LONG_PRESS_MS, TAP_SLOP};
 use crate::home_state::{FolderData, HomeItem, HomeLayout, WidgetKind};
-use crate::home_widgets::{battery::BatteryState, weather::WeatherDisplay};
+use crate::home_widgets::{
+    battery::{BatteryState, DetailsState},
+    weather::WeatherDisplay,
+};
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum HomeAction {
@@ -189,6 +192,11 @@ pub struct HomeScreen {
     /// actual current state, so a fresh `HomeScreen` never shows a stale
     /// placeholder before the first poll runs.
     pub battery: BatteryState,
+    /// Richer gauge/charger snapshot for the Battery - Details widget,
+    /// stored already rounded to the displayed precision
+    /// (`DetailsState::quantized`); refreshed on the faster 10 s poll only
+    /// while such a widget is placed.
+    pub battery_details: DetailsState,
     /// Live weather-widget content (`home_widgets::weather`), updated by
     /// the caller from its own cache/fetch cadence; defaults to
     /// `Unavailable` until the first cache read/fetch completes.
@@ -284,6 +292,7 @@ impl HomeScreen {
             widget_picker: None,
             keyboard_inset: 0.0,
             battery: BatteryState::Absent,
+            battery_details: DetailsState::Absent,
             weather: WeatherDisplay::Unavailable,
             contact: None,
             edge_held_ms: 0,

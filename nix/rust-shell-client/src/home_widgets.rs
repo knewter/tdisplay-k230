@@ -101,6 +101,393 @@ pub mod battery {
         BatteryState::Absent
     }
 
+    // ---- Battery - Details -------------------------------------------------
+
+    /// Poll period while a Battery - Details widget is placed on Home.
+    pub const DETAILS_POLL_INTERVAL: Duration = Duration::from_secs(10);
+
+    /// The poll period to use: the faster one only while a details widget is
+    /// on Home (any page), otherwise the ordinary [`POLL_INTERVAL`].
+    pub fn poll_interval(details_widget_placed: bool) -> Duration {
+        if details_widget_placed {
+            DETAILS_POLL_INTERVAL
+        } else {
+            POLL_INTERVAL
+        }
+    }
+
+    /// The charger / input-power side (any non-Battery supply), every field
+    /// optional because drivers expose different subsets.
+    #[derive(Clone, Debug, Default, PartialEq, Eq)]
+    pub struct Input {
+        /// `ONLINE`: whether input power is present.
+        pub online: Option<bool>,
+        /// Supply `TYPE` as the kernel names it ("USB", "Mains", "USB_C"...).
+        pub kind: Option<String>,
+        pub charge_type: Option<String>,
+        pub health: Option<String>,
+        pub input_limit_ua: Option<i64>,
+        pub charge_current_ua: Option<i64>,
+        pub charge_voltage_uv: Option<i64>,
+    }
+
+    /// Everything the battery's gauge exposes, all in kernel units (uV, uA,
+    /// uW, uAh, tenths of a degree C, seconds), each optional but the
+    /// percentage.
+    #[derive(Clone, Debug, Default, PartialEq, Eq)]
+    pub struct Details {
+        pub percent: u8,
+        pub status: String,
+        pub health: Option<String>,
+        pub time_to_full_s: Option<i64>,
+        pub time_to_empty_s: Option<i64>,
+        /// Signed: positive charging, negative discharging (gauge convention).
+        pub current_ua: Option<i64>,
+        pub power_uw: Option<i64>,
+        pub voltage_uv: Option<i64>,
+        pub charge_now_uah: Option<i64>,
+        pub charge_full_uah: Option<i64>,
+        pub charge_design_uah: Option<i64>,
+        pub cycles: Option<i64>,
+        pub temp_deci_c: Option<i64>,
+        pub input: Option<Input>,
+    }
+
+    #[derive(Clone, Debug, Default, PartialEq, Eq)]
+    pub enum DetailsState {
+        #[default]
+        Absent,
+        Present(Box<Details>),
+    }
+
+    type Uevent<'a> = std::collections::HashMap<&'a str, &'a str>;
+
+    fn uevent_map(raw: &str) -> Uevent<'_> {
+        raw.lines()
+            .filter_map(|line| line.split_once('='))
+            .map(|(key, value)| (key.strip_prefix("POWER_SUPPLY_").unwrap_or(key), value.trim()))
+            .collect()
+    }
+
+    fn num(map: &Uevent, key: &str) -> Option<i64> {
+        map.get(key)?.parse().ok()
+    }
+
+    fn text(map: &Uevent, key: &str) -> Option<String> {
+        map.get(key).filter(|value| !value.is_empty()).map(|value| (*value).to_string())
+    }
+
+    fn details_from_uevent(map: &Uevent) -> Option<Details> {
+        if map.get("TYPE") != Some(&"Battery") {
+            return None;
+        }
+        let percent: u8 = map.get("CAPACITY")?.parse().ok()?;
+        // The kernel reports an unknown time as a huge or non-positive value.
+        let seconds = |key: &str| num(map, key).filter(|value| *value > 0 && *value < 0xffff);
+        Some(Details {
+            percent: percent.min(100),
+            status: text(map, "STATUS").unwrap_or_else(|| "Unknown".to_string()),
+            health: text(map, "HEALTH"),
+            time_to_full_s: seconds("TIME_TO_FULL_NOW"),
+            time_to_empty_s: seconds("TIME_TO_EMPTY_NOW"),
+            current_ua: num(map, "CURRENT_NOW"),
+            power_uw: num(map, "POWER_AVG").or_else(|| num(map, "POWER_NOW")),
+            voltage_uv: num(map, "VOLTAGE_NOW"),
+            charge_now_uah: num(map, "CHARGE_NOW"),
+            charge_full_uah: num(map, "CHARGE_FULL").filter(|value| *value > 0),
+            charge_design_uah: num(map, "CHARGE_FULL_DESIGN").filter(|value| *value > 0),
+            cycles: num(map, "CYCLE_COUNT"),
+            temp_deci_c: num(map, "TEMP"),
+            input: None,
+        })
+    }
+
+    fn input_from_uevent(map: &Uevent) -> Option<Input> {
+        let kind = map.get("TYPE")?;
+        if *kind == "Battery" {
+            return None;
+        }
+        Some(Input {
+            online: num(map, "ONLINE").map(|value| value != 0),
+            kind: Some((*kind).to_string()),
+            charge_type: text(map, "CHARGE_TYPE").filter(|value| value != "N/A"),
+            health: text(map, "HEALTH"),
+            input_limit_ua: num(map, "INPUT_CURRENT_LIMIT"),
+            charge_current_ua: num(map, "CONSTANT_CHARGE_CURRENT"),
+            charge_voltage_uv: num(map, "CONSTANT_CHARGE_VOLTAGE"),
+        })
+    }
+
+    /// Scans `power_supply_root` once, reading each supply's single `uevent`
+    /// file: the first (sorted) `Battery` becomes the details, and the best
+    /// other supply (one that is online, else the first) its input side.
+    pub fn read_details(power_supply_root: &Path) -> DetailsState {
+        let Ok(entries) = std::fs::read_dir(power_supply_root) else {
+            return DetailsState::Absent;
+        };
+        let mut paths: Vec<PathBuf> = entries.filter_map(|entry| entry.ok().map(|entry| entry.path())).collect();
+        paths.sort();
+        let mut battery: Option<Details> = None;
+        let mut input: Option<Input> = None;
+        for path in paths {
+            let Ok(raw) = std::fs::read_to_string(path.join("uevent")) else {
+                continue;
+            };
+            let map = uevent_map(&raw);
+            if battery.is_none() {
+                if let Some(found) = details_from_uevent(&map) {
+                    battery = Some(found);
+                    continue;
+                }
+            }
+            if let Some(found) = input_from_uevent(&map) {
+                let better = match &input {
+                    None => true,
+                    Some(current) => current.online != Some(true) && found.online == Some(true),
+                };
+                if better {
+                    input = Some(found);
+                }
+            }
+        }
+        match battery {
+            Some(mut details) => {
+                details.input = input;
+                DetailsState::Present(Box::new(details))
+            }
+            None => DetailsState::Absent,
+        }
+    }
+
+    fn round_to(value: i64, step: i64) -> i64 {
+        let half = step / 2;
+        if value >= 0 {
+            (value + half) / step * step
+        } else {
+            -((-value + half) / step * step)
+        }
+    }
+
+    impl DetailsState {
+        /// The same snapshot rounded to what the widget displays, so two
+        /// snapshots that paint identically compare equal and Home repaints
+        /// only on a visible change.
+        pub fn quantized(&self) -> DetailsState {
+            match self {
+                DetailsState::Absent => DetailsState::Absent,
+                DetailsState::Present(details) => DetailsState::Present(Box::new(details.quantized())),
+            }
+        }
+    }
+
+    impl Details {
+        pub fn quantized(&self) -> Details {
+            let mut out = self.clone();
+            out.current_ua = out.current_ua.map(|v| round_to(v, 10_000));
+            out.power_uw = out.power_uw.map(|v| round_to(v, 100_000));
+            out.voltage_uv = out.voltage_uv.map(|v| round_to(v, 10_000));
+            out.charge_now_uah = out.charge_now_uah.map(|v| round_to(v, 1_000));
+            out.charge_full_uah = out.charge_full_uah.map(|v| round_to(v, 1_000));
+            out.charge_design_uah = out.charge_design_uah.map(|v| round_to(v, 1_000));
+            out.time_to_full_s = out.time_to_full_s.map(|v| round_to(v, 60));
+            out.time_to_empty_s = out.time_to_empty_s.map(|v| round_to(v, 60));
+            if let Some(input) = out.input.as_mut() {
+                input.input_limit_ua = input.input_limit_ua.map(|v| round_to(v, 10_000));
+                input.charge_current_ua = input.charge_current_ua.map(|v| round_to(v, 10_000));
+                input.charge_voltage_uv = input.charge_voltage_uv.map(|v| round_to(v, 10_000));
+            }
+            out
+        }
+
+        pub fn is_charging(&self) -> bool {
+            self.status.eq_ignore_ascii_case("charging")
+        }
+
+        pub fn is_discharging(&self) -> bool {
+            self.status.eq_ignore_ascii_case("discharging")
+        }
+
+        /// The state word, with the charge type while charging
+        /// ("Charging - Fast"). `Not charging`/`Full` pass through.
+        pub fn state_label(&self) -> String {
+            if self.is_charging() {
+                if let Some(kind) = self.input.as_ref().and_then(|input| input.charge_type.as_deref()) {
+                    if !kind.eq_ignore_ascii_case("none") && !kind.eq_ignore_ascii_case("unknown") {
+                        return format!("Charging - {kind}");
+                    }
+                }
+            }
+            self.status.clone()
+        }
+
+        /// "2 h 16 m to full" / "45 m left", from whichever time the gauge
+        /// reports for the current direction.
+        pub fn time_label(&self) -> Option<String> {
+            let (seconds, suffix) = if self.is_discharging() {
+                (self.time_to_empty_s?, "left")
+            } else if self.is_charging() {
+                (self.time_to_full_s?, "to full")
+            } else {
+                return None;
+            };
+            Some(format!("{} {suffix}", format_duration(seconds)))
+        }
+
+        /// Signed battery current, "+600 mA" / "\u{2212}412 mA".
+        pub fn current_label(&self) -> Option<String> {
+            self.current_ua.map(|ua| format_signed_ma(round_to(ua, 10_000)))
+        }
+
+        /// Power in watts, signed like the current when known; the gauge's
+        /// `POWER_AVG`, else volts times amps.
+        pub fn power_label(&self) -> Option<String> {
+            let magnitude = match self.power_uw {
+                Some(power) => power.abs(),
+                None => {
+                    let (volts, amps) = (self.voltage_uv?, self.current_ua?);
+                    ((i128::from(volts) * i128::from(amps.abs())) / 1_000_000) as i64
+                }
+            };
+            let negative = match self.current_ua {
+                Some(ua) => ua < 0,
+                None => self.power_uw.is_some_and(|power| power < 0),
+            };
+            Some(format_watts(round_to(magnitude, 100_000), negative))
+        }
+
+        pub fn voltage_label(&self) -> Option<String> {
+            self.voltage_uv.map(|uv| format!("{:.2} V", round_to(uv, 10_000) as f64 / 1_000_000.0))
+        }
+
+        pub fn temperature_label(&self) -> Option<String> {
+            self.temp_deci_c.map(format_temperature)
+        }
+
+        /// "1627 / 3000 mAh" (stored over full); just the known figure
+        /// when only one is.
+        pub fn charge_label(&self) -> Option<String> {
+            let mah = |ua: i64| round_to(ua, 1_000) / 1_000;
+            match (self.charge_now_uah, self.charge_full_uah) {
+                (Some(now), Some(full)) => Some(format!("{} / {} mAh", mah(now), mah(full))),
+                (Some(now), None) => Some(format!("{} mAh", mah(now))),
+                (None, Some(full)) => Some(format!("{} mAh full", mah(full))),
+                (None, None) => None,
+            }
+        }
+
+        /// Full charge over design charge, whole percent (capped at 100).
+        pub fn health_percent(&self) -> Option<u32> {
+            let (full, design) = (self.charge_full_uah?, self.charge_design_uah?);
+            if design <= 0 {
+                return None;
+            }
+            Some(((full as f64 / design as f64 * 100.0).round() as i64).clamp(0, 100) as u32)
+        }
+
+        pub fn health_label(&self) -> Option<String> {
+            self.health_percent().map(|percent| format!("{percent}%"))
+        }
+
+        pub fn cycles_label(&self) -> Option<String> {
+            self.cycles.map(|count| count.to_string())
+        }
+
+        /// The input line: where power comes from, then limit and targets.
+        /// E.g. "USB power - limit 3.25 A - 2.05 A @ 4.21 V".
+        pub fn input_label(&self) -> Option<String> {
+            let mut parts: Vec<String> = Vec::new();
+            match &self.input {
+                Some(input) => {
+                    match input.online {
+                        Some(true) => parts.push(source_label(input.kind.as_deref())),
+                        Some(false) => parts.push("On battery".to_string()),
+                        None => {}
+                    }
+                    if input.online != Some(false) {
+                        if let Some(limit) = input.input_limit_ua {
+                            parts.push(format!("limit {}", format_amps(limit)));
+                        }
+                        let volts = |uv: i64| format!("{:.2} V", round_to(uv, 10_000) as f64 / 1_000_000.0);
+                        match (input.charge_current_ua, input.charge_voltage_uv) {
+                            (Some(amps), Some(uv)) => parts.push(format!("{} @ {}", format_amps(amps), volts(uv))),
+                            (Some(amps), None) => parts.push(format!("{} target", format_amps(amps))),
+                            (None, Some(uv)) => parts.push(format!("{} target", volts(uv))),
+                            (None, None) => {}
+                        }
+                    }
+                    if let Some(health) = input.health.as_deref() {
+                        if !health.eq_ignore_ascii_case("good") && !health.eq_ignore_ascii_case("unknown") {
+                            parts.push(format!("charger {}", health.to_lowercase()));
+                        }
+                    }
+                }
+                None => {
+                    if self.is_discharging() {
+                        parts.push("On battery".to_string());
+                    }
+                }
+            }
+            if parts.is_empty() {
+                None
+            } else {
+                Some(parts.join(" - "))
+            }
+        }
+    }
+
+    fn source_label(kind: Option<&str>) -> String {
+        match kind {
+            Some("USB_C") => "USB-C power".to_string(),
+            Some(kind) if kind.starts_with("USB") => "USB power".to_string(),
+            Some("Mains") => "AC power".to_string(),
+            Some("Wireless") => "Wireless power".to_string(),
+            _ => "External power".to_string(),
+        }
+    }
+
+    pub fn format_duration(seconds: i64) -> String {
+        let minutes = (seconds.max(0) + 30) / 60;
+        if minutes >= 60 {
+            format!("{} h {} m", minutes / 60, minutes % 60)
+        } else {
+            format!("{minutes} m")
+        }
+    }
+
+    fn format_signed_ma(microamps: i64) -> String {
+        let ma = microamps / 1_000;
+        match ma {
+            0 => "0 mA".to_string(),
+            value if value > 0 => format!("+{value} mA"),
+            value => format!("\u{2212}{} mA", -value),
+        }
+    }
+
+    fn format_watts(microwatts: i64, negative: bool) -> String {
+        let tenths = microwatts / 100_000;
+        let sign = if tenths == 0 {
+            ""
+        } else if negative {
+            "\u{2212}"
+        } else {
+            "+"
+        };
+        format!("{sign}{}.{} W", tenths / 10, tenths % 10)
+    }
+
+    fn format_amps(microamps: i64) -> String {
+        if microamps >= 1_000_000 {
+            format!("{:.2} A", microamps as f64 / 1_000_000.0)
+        } else {
+            format!("{} mA", microamps / 1_000)
+        }
+    }
+
+    fn format_temperature(deci_c: i64) -> String {
+        let sign = if deci_c < 0 { "\u{2212}" } else { "" };
+        format!("{sign}{}.{} \u{b0}C", deci_c.abs() / 10, deci_c.abs() % 10)
+    }
+
     #[cfg(test)]
     mod tests {
         use super::*;
@@ -178,6 +565,150 @@ pub mod battery {
             // No `capacity` file written -- some drivers expose it late.
             assert_eq!(read_state(&dir), BatteryState::Absent);
             std::fs::remove_dir_all(&dir).unwrap();
+        }
+    }
+
+    #[cfg(test)]
+    mod details_tests {
+        use super::*;
+
+        const GAUGE_CHARGING: &str = "POWER_SUPPLY_NAME=bq27220-0\nPOWER_SUPPLY_TYPE=Battery\nPOWER_SUPPLY_STATUS=Charging\nPOWER_SUPPLY_HEALTH=Good\nPOWER_SUPPLY_PRESENT=1\nPOWER_SUPPLY_TECHNOLOGY=Li-ion\nPOWER_SUPPLY_CYCLE_COUNT=0\nPOWER_SUPPLY_VOLTAGE_NOW=4202000\nPOWER_SUPPLY_CURRENT_NOW=600000\nPOWER_SUPPLY_POWER_AVG=2540000\nPOWER_SUPPLY_CHARGE_FULL_DESIGN=3000000\nPOWER_SUPPLY_CHARGE_FULL=3000000\nPOWER_SUPPLY_CHARGE_NOW=1627000\nPOWER_SUPPLY_CAPACITY=55\nPOWER_SUPPLY_CAPACITY_LEVEL=Normal\nPOWER_SUPPLY_TEMP=381\nPOWER_SUPPLY_TIME_TO_FULL_NOW=8160\nPOWER_SUPPLY_MANUFACTURER=Texas Instruments\n";
+        const CHARGER_ONLINE: &str = "POWER_SUPPLY_NAME=bq25890-charger-0\nPOWER_SUPPLY_TYPE=USB\nPOWER_SUPPLY_STATUS=Charging\nPOWER_SUPPLY_CHARGE_TYPE=Fast\nPOWER_SUPPLY_HEALTH=Good\nPOWER_SUPPLY_ONLINE=1\nPOWER_SUPPLY_VOLTAGE_NOW=4204000\nPOWER_SUPPLY_CURRENT_NOW=-550000\nPOWER_SUPPLY_CONSTANT_CHARGE_CURRENT=2048000\nPOWER_SUPPLY_CONSTANT_CHARGE_VOLTAGE=4208000\nPOWER_SUPPLY_INPUT_CURRENT_LIMIT=3250000\nPOWER_SUPPLY_TEMP=380\nPOWER_SUPPLY_MODEL_NAME=BQ25896\n";
+        const GAUGE_DISCHARGING: &str = "POWER_SUPPLY_TYPE=Battery\nPOWER_SUPPLY_STATUS=Discharging\nPOWER_SUPPLY_VOLTAGE_NOW=3890000\nPOWER_SUPPLY_CURRENT_NOW=-412000\nPOWER_SUPPLY_CAPACITY=71\nPOWER_SUPPLY_TIME_TO_EMPTY_NOW=2700\nPOWER_SUPPLY_CHARGE_FULL=2850000\nPOWER_SUPPLY_CHARGE_FULL_DESIGN=3000000\nPOWER_SUPPLY_CHARGE_NOW=2000000\nPOWER_SUPPLY_CYCLE_COUNT=12\nPOWER_SUPPLY_TEMP=-25\n";
+        const CHARGER_OFFLINE: &str = "POWER_SUPPLY_TYPE=USB\nPOWER_SUPPLY_ONLINE=0\nPOWER_SUPPLY_HEALTH=Good\n";
+
+        fn root(tag: &str, supplies: &[(&str, &str)]) -> PathBuf {
+            let dir = std::env::temp_dir().join(format!(
+                "k230-details-{tag}-{}-{}",
+                std::process::id(),
+                std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_nanos()
+            ));
+            for (name, uevent) in supplies {
+                std::fs::create_dir_all(dir.join(name)).unwrap();
+                std::fs::write(dir.join(name).join("uevent"), uevent).unwrap();
+            }
+            std::fs::create_dir_all(&dir).unwrap();
+            dir
+        }
+
+        fn present(state: DetailsState) -> Details {
+            match state {
+                DetailsState::Present(details) => *details,
+                DetailsState::Absent => panic!("expected a battery"),
+            }
+        }
+
+        #[test]
+        fn the_charging_board_fixture_parses_every_metric() {
+            let dir = root("charging", &[("bq25890-charger-0", CHARGER_ONLINE), ("bq27220-0", GAUGE_CHARGING)]);
+            let d = present(read_details(&dir));
+            assert_eq!(d.percent, 55);
+            assert_eq!(d.state_label(), "Charging - Fast");
+            assert_eq!(d.time_label().as_deref(), Some("2 h 16 m to full"));
+            assert_eq!(d.current_label().as_deref(), Some("+600 mA"));
+            assert_eq!(d.power_label().as_deref(), Some("+2.5 W"));
+            assert_eq!(d.voltage_label().as_deref(), Some("4.20 V"));
+            assert_eq!(d.charge_label().as_deref(), Some("1627 / 3000 mAh"));
+            assert_eq!(d.health_label().as_deref(), Some("100%"));
+            assert_eq!(d.cycles_label().as_deref(), Some("0"));
+            assert_eq!(d.temperature_label().as_deref(), Some("38.1 \u{b0}C"));
+            assert_eq!(d.input_label().as_deref(), Some("USB power - limit 3.25 A - 2.05 A @ 4.21 V"));
+            std::fs::remove_dir_all(&dir).unwrap();
+        }
+
+        #[test]
+        fn a_discharging_gauge_shows_negative_current_and_time_left() {
+            let dir = root("discharging", &[("bq25890-charger-0", CHARGER_OFFLINE), ("bq27220-0", GAUGE_DISCHARGING)]);
+            let d = present(read_details(&dir));
+            assert_eq!(d.state_label(), "Discharging");
+            assert_eq!(d.time_label().as_deref(), Some("45 m left"));
+            assert_eq!(d.current_label().as_deref(), Some("\u{2212}410 mA"));
+            // No POWER_AVG: volts times amps, signed like the current.
+            assert_eq!(d.power_label().as_deref(), Some("\u{2212}1.6 W"));
+            assert_eq!(d.health_label().as_deref(), Some("95%"));
+            assert_eq!(d.cycles_label().as_deref(), Some("12"));
+            assert_eq!(d.temperature_label().as_deref(), Some("\u{2212}2.5 \u{b0}C"));
+            assert_eq!(d.input_label().as_deref(), Some("On battery"));
+            std::fs::remove_dir_all(&dir).unwrap();
+        }
+
+        #[test]
+        fn missing_attributes_are_simply_omitted() {
+            let dir = root("sparse", &[("BAT0", "POWER_SUPPLY_TYPE=Battery\nPOWER_SUPPLY_CAPACITY=40\n")]);
+            let d = present(read_details(&dir));
+            assert_eq!(d.percent, 40);
+            assert_eq!(d.status, "Unknown");
+            for label in [d.time_label(), d.current_label(), d.power_label(), d.voltage_label(), d.charge_label(), d.health_label(), d.cycles_label(), d.temperature_label(), d.input_label()] {
+                assert_eq!(label, None);
+            }
+            std::fs::remove_dir_all(&dir).unwrap();
+        }
+
+        #[test]
+        fn a_discharging_battery_with_no_charger_supply_still_says_on_battery() {
+            let dir = root("nocharger", &[("bq27220-0", GAUGE_DISCHARGING)]);
+            assert_eq!(present(read_details(&dir)).input_label().as_deref(), Some("On battery"));
+            std::fs::remove_dir_all(&dir).unwrap();
+        }
+
+        #[test]
+        fn no_battery_or_no_root_is_absent() {
+            let dir = root("none", &[("ucs1", CHARGER_ONLINE)]);
+            assert_eq!(read_details(&dir), DetailsState::Absent);
+            assert_eq!(read_details(&dir.join("missing")), DetailsState::Absent);
+            std::fs::remove_dir_all(&dir).unwrap();
+        }
+
+        #[test]
+        fn an_online_supply_wins_over_an_offline_one_and_bad_charger_health_shows() {
+            let sick = CHARGER_ONLINE.replace("HEALTH=Good", "HEALTH=Overheat");
+            let dir = root("pick", &[("a-offline", CHARGER_OFFLINE), ("b-online", &sick), ("gauge", GAUGE_CHARGING)]);
+            let label = present(read_details(&dir)).input_label().unwrap();
+            assert!(label.starts_with("USB power"), "{label}");
+            assert!(label.ends_with("charger overheat"), "{label}");
+            std::fs::remove_dir_all(&dir).unwrap();
+        }
+
+        #[test]
+        fn durations_and_signs_format_as_displayed() {
+            assert_eq!(format_duration(8160), "2 h 16 m");
+            assert_eq!(format_duration(2700), "45 m");
+            assert_eq!(format_duration(3600), "1 h 0 m");
+            assert_eq!(format_signed_ma(-412_000), "\u{2212}412 mA");
+            assert_eq!(format_signed_ma(0), "0 mA");
+            assert_eq!(format_amps(500_000), "500 mA");
+            assert_eq!(format_amps(3_250_000), "3.25 A");
+        }
+
+        #[test]
+        fn unknown_gauge_times_are_dropped() {
+            let raw = GAUGE_CHARGING.replace("TIME_TO_FULL_NOW=8160", "TIME_TO_FULL_NOW=65535");
+            let dir = root("badtime", &[("g", &raw)]);
+            assert_eq!(present(read_details(&dir)).time_label(), None);
+            std::fs::remove_dir_all(&dir).unwrap();
+        }
+
+        #[test]
+        fn noise_below_the_displayed_precision_quantizes_equal() {
+            let dir = root("quant", &[("g", GAUGE_CHARGING)]);
+            let a = read_details(&dir);
+            let noisy = GAUGE_CHARGING.replace("CURRENT_NOW=600000", "CURRENT_NOW=603000").replace("VOLTAGE_NOW=4202000", "VOLTAGE_NOW=4204000").replace("TIME_TO_FULL_NOW=8160", "TIME_TO_FULL_NOW=8140");
+            let dir2 = root("quant2", &[("g", &noisy)]);
+            let b = read_details(&dir2);
+            assert_ne!(a, b);
+            assert_eq!(a.quantized(), b.quantized());
+            let moved = GAUGE_CHARGING.replace("CAPACITY=55", "CAPACITY=56");
+            let dir3 = root("quant3", &[("g", &moved)]);
+            assert_ne!(a.quantized(), read_details(&dir3).quantized());
+            for d in [dir, dir2, dir3] {
+                std::fs::remove_dir_all(&d).unwrap();
+            }
+        }
+
+        #[test]
+        fn polling_is_faster_only_while_a_details_widget_is_placed() {
+            assert_eq!(poll_interval(true), Duration::from_secs(10));
+            assert_eq!(poll_interval(false), Duration::from_secs(30));
         }
     }
 }

@@ -1400,6 +1400,9 @@ struct ShellClient {
     /// POLL_INTERVAL`) -- cheap synchronous `/sys` reads, safe to run
     /// directly on this thread, unlike weather's own network fetch.
     battery_polled_at: Option<Instant>,
+    /// Whether a Battery - Details widget was on Home at the last tick, so
+    /// placing one triggers an immediate read instead of waiting a period.
+    battery_details_placed: bool,
     /// A weather fetch this client kicked off on a background thread
     /// (`home_widgets::weather::refresh` shells out to `curl`, which must
     /// never block this process's single manual poll loop); polled
@@ -3853,9 +3856,13 @@ impl ShellClient {
     /// clock schedules its own next once-a-minute, minute-aligned wake
     /// rather than redrawing every frame.
     fn tick_home_widgets(&mut self, now: Instant) {
-        let battery_due = self
+        let details_placed = self.home.layout.has_widget(home_state::WidgetKind::BatteryDetails);
+        let newly_placed = details_placed && !self.battery_details_placed;
+        self.battery_details_placed = details_placed;
+        let battery_due = newly_placed
+            || self
             .battery_polled_at
-            .is_none_or(|last| now.duration_since(last) >= home_widgets::battery::POLL_INTERVAL);
+            .is_none_or(|last| now.duration_since(last) >= home_widgets::battery::poll_interval(details_placed));
         if battery_due {
             self.battery_polled_at = Some(now);
             self.refresh_keyboard_base();
@@ -3863,6 +3870,19 @@ impl ShellClient {
             if state != self.home.battery {
                 self.home.battery = state;
                 self.home_mark_dirty();
+            }
+            // Only the placed Battery - Details widget needs the rich read;
+            // repaint just when a displayed (rounded) value changed.
+            let details = if details_placed {
+                home_widgets::battery::read_details(Path::new("/sys/class/power_supply")).quantized()
+            } else {
+                home_widgets::battery::DetailsState::Absent
+            };
+            if details != self.home.battery_details {
+                self.home.battery_details = details;
+                if details_placed {
+                    self.home_mark_dirty();
+                }
             }
         }
 
@@ -6703,6 +6723,7 @@ fn serve() -> Result<(), String> {
         drawer_home_drag: None,
         drawer_drag_reveal: None,
         battery_polled_at: None,
+        battery_details_placed: false,
         weather_pending: None,
         weather_checked_at: None,
         clock_next_tick: None,
