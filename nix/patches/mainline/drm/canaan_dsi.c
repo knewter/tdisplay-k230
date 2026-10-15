@@ -418,6 +418,31 @@ static bool canaan_dsi_stage1_mode_matches(const struct drm_display_mode *mode)
 		mode->vsync_end == 1252 && mode->vtotal == 1268;
 }
 
+/*
+ * The first output after boot is HDMI while the panel still shows the
+ * stage 1 splash with its backlight on. Nothing in DRM ever enabled the
+ * panel, so take it through prepare (kept as stage 1 left it) and
+ * unprepare, which drops its backlight and reset lines. A later DSI-1
+ * enable then runs the panel's full reset and init sequence.
+ */
+static void canaan_dsi_stage1_release_panel(struct canaan_dsi *dsi)
+{
+	if (!dsi->panel || !dsi->panel_device)
+		return;
+	mutex_lock(&dsi->transfer_lock);
+	dsi->device = dsi->panel_device;
+	dsi->transfer_ready = true;
+	mutex_unlock(&dsi->transfer_lock);
+	dsi->stage1_handoff_active = true;
+	drm_panel_prepare(dsi->panel);
+	dsi->stage1_handoff_active = false;
+	mutex_lock(&dsi->transfer_lock);
+	dsi->transfer_ready = false;
+	mutex_unlock(&dsi->transfer_lock);
+	drm_panel_unprepare(dsi->panel);
+	dev_info(dsi->dev, "stage 1 splash: HDMI first; panel switched off\n");
+}
+
 static void canaan_dsi_encoder_enable(struct drm_encoder *encoder)
 {
 	struct canaan_dsi_encoder *output =
@@ -449,6 +474,8 @@ static void canaan_dsi_encoder_enable(struct drm_encoder *encoder)
 			return;
 		}
 		dev_warn(dsi->dev, "stage 1 splash: DSI mode differs; reinitializing\n");
+		if (!output->panel)
+			canaan_dsi_stage1_release_panel(dsi);
 	}
 
 	mutex_lock(&dsi->transfer_lock);
@@ -794,7 +821,12 @@ static void canaan_dsi_hpd_work(struct work_struct *work)
 		goto again;
 
 	status = drm_bridge_detect(dsi->bridge, &dsi->connector);
+	if (status == connector_status_unknown)
+		dev_warn_ratelimited(dsi->dev, "HDMI HPD: bridge status unreadable\n");
 	if (status != connector_status_unknown && status != dsi->hpd_status) {
+		dev_info(dsi->dev, "HDMI HPD: %s\n",
+			 status == connector_status_connected ?
+			 "connected" : "disconnected");
 		drm_helper_hpd_irq_event(dsi->drm);
 		dsi->hpd_status = status;
 	}
