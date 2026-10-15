@@ -1745,6 +1745,16 @@ DATA cfb96550e14595c1cc6ff249cfb25620d789ad0a02e10947c30adad0f6f9139b docs/evide
 DATA e66227f34bdb80eb23e88dc0a624591af9b738fc038f9b12a6d26fd389332dcc docs/evidence/hdmi-hotplug/landscape/host-renders/wifi-list-1920x1080.png
 DATA 4f9b1ccace0647bd8c3f0ba72a72734b937b1b29b474976bb74ebffc26dcfcca docs/evidence/hdmi-hotplug/landscape/board/home-hdmi-grim.png
 DATA 7372b8293e14bfffa47d05c68097ad2ad9a38d520296f7d520566f157b5deac7 docs/evidence/hdmi-hotplug/landscape/board/settings-hdmi-grim.png
+DATA 9159a4f4c5d3100624614443d41fd5b093b0ef163f3d20e30b07daa0ee05001a docs/evidence/hdmi-hotplug/landscape/wide-reflow/theme-chooser-1232x568.png
+DATA 84b6d97127f8ceb1e70f4c3b85cf1994b3fe4637f8372f88afa93364713fbffe docs/evidence/hdmi-hotplug/landscape/wide-reflow/theme-chooser-1280x800.png
+DATA 3b6245127cef76666a1bb2f9a087aaf775b080e1f7f1a473b69bf18888a5112e docs/evidence/hdmi-hotplug/landscape/wide-reflow/theme-chooser-1920x1080.png
+DATA dbcf4e69ccb55819790044eee32ab81094b6773f9f2b7987e667c7ba80642216 docs/evidence/hdmi-hotplug/landscape/wide-reflow/wifi-entry-password-1280x800.png
+DATA 72af6843161ef7f354866d72a281a46e8497397f64b44d1cd69a4750b43c14e9 docs/evidence/hdmi-hotplug/landscape/wide-reflow/wifi-entry-password-1920x1080.png
+DATA 6ed36c0bee95582a91d5c228597ab54138c7b2b0d24004d59e98ec408708b3a2 docs/evidence/hdmi-hotplug/landscape/wide-reflow/wifi-entry-saved-1280x800.png
+DATA 32f507d9192f4fd49b870800b1cb0ab4faf5fc9228f65745538e8d9740127ac8 docs/evidence/hdmi-hotplug/landscape/wide-reflow/wifi-forget-1920x1080.png
+DATA 8b0f1bfa6b50fd0ae6fd1db609decbc22e800a8ceac84f746e01bae6f4e46f61 docs/evidence/hdmi-hotplug/landscape/wide-reflow/wifi-list-1232x568.png
+DATA f08588cb20f272da51d3e69f941e5130a1d040e13b5b7f8b0d36e74cd58585c2 docs/evidence/hdmi-hotplug/landscape/wide-reflow/wifi-list-1280x800.png
+DATA 95178d12ade837cc1fda9a03e7a58bbed213230e845e0a64eb79e4185fe1c65b docs/evidence/hdmi-hotplug/landscape/wide-reflow/wifi-list-1920x1080.png
 DATA 0938edbc429fe58e4ccc4f16e4f25e163b8a8c3664f8a298bed8b8c19bfc7f1d docs/evidence/shell-responsive/board/acceptance-2026-10-09/home.png
 # Current UX candidate native captures — 2026-10-09
 DATA 83c8b4261beb9621eaaeed8c8e6c1d4fe25bb16abbad63de4234355d25e16de8 docs/evidence/ux-review-round-2/candidate-2026-10-09/overview.png
@@ -2902,6 +2912,16 @@ See `docs/evidence/hdmi-hotplug/manual-switch/host-render.json`.
 | `docs/evidence/hdmi-hotplug/landscape/host-renders/wifi-list-1920x1080.png` | 52063 | DATA | `e66227f34bdb80eb23e88dc0a624591af9b738fc038f9b12a6d26fd389332dcc` |
 | `docs/evidence/hdmi-hotplug/landscape/board/home-hdmi-grim.png` | 35829 | DATA | `4f9b1ccace0647bd8c3f0ba72a72734b937b1b29b474976bb74ebffc26dcfcca` |
 | `docs/evidence/hdmi-hotplug/landscape/board/settings-hdmi-grim.png` | 52202 | DATA | `7372b8293e14bfffa47d05c68097ad2ad9a38d520296f7d520566f157b5deac7` |
+| `docs/evidence/hdmi-hotplug/landscape/wide-reflow/theme-chooser-1232x568.png` | 36434 | DATA | `9159a4f4c5d3100624614443d41fd5b093b0ef163f3d20e30b07daa0ee05001a` |
+| `docs/evidence/hdmi-hotplug/landscape/wide-reflow/theme-chooser-1280x800.png` | 40866 | DATA | `84b6d97127f8ceb1e70f4c3b85cf1994b3fe4637f8372f88afa93364713fbffe` |
+| `docs/evidence/hdmi-hotplug/landscape/wide-reflow/theme-chooser-1920x1080.png` | 48014 | DATA | `3b6245127cef76666a1bb2f9a087aaf775b080e1f7f1a473b69bf18888a5112e` |
+| `docs/evidence/hdmi-hotplug/landscape/wide-reflow/wifi-entry-password-1280x800.png` | 29678 | DATA | `dbcf4e69ccb55819790044eee32ab81094b6773f9f2b7987e667c7ba80642216` |
+| `docs/evidence/hdmi-hotplug/landscape/wide-reflow/wifi-entry-password-1920x1080.png` | 35630 | DATA | `72af6843161ef7f354866d72a281a46e8497397f64b44d1cd69a4750b43c14e9` |
+| `docs/evidence/hdmi-hotplug/landscape/wide-reflow/wifi-entry-saved-1280x800.png` | 35623 | DATA | `6ed36c0bee95582a91d5c228597ab54138c7b2b0d24004d59e98ec408708b3a2` |
+| `docs/evidence/hdmi-hotplug/landscape/wide-reflow/wifi-forget-1920x1080.png` | 26445 | DATA | `32f507d9192f4fd49b870800b1cb0ab4faf5fc9228f65745538e8d9740127ac8` |
+| `docs/evidence/hdmi-hotplug/landscape/wide-reflow/wifi-list-1232x568.png` | 45437 | DATA | `8b0f1bfa6b50fd0ae6fd1db609decbc22e800a8ceac84f746e01bae6f4e46f61` |
+| `docs/evidence/hdmi-hotplug/landscape/wide-reflow/wifi-list-1280x800.png` | 54184 | DATA | `f08588cb20f272da51d3e69f941e5130a1d040e13b5b7f8b0d36e74cd58585c2` |
+| `docs/evidence/hdmi-hotplug/landscape/wide-reflow/wifi-list-1920x1080.png` | 60658 | DATA | `95178d12ade837cc1fda9a03e7a58bbed213230e845e0a64eb79e4185fe1c65b` |
 
 ### Responsive HDMI acceptance (2026-10-09)
 

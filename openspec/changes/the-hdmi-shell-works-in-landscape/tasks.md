@@ -117,6 +117,10 @@ done):
 - 7.2: "Real wide reflow" -- redesign the Wi-Fi pages and the theme chooser
   for wide screens (e.g. list beside detail, theme cards in a grid) instead of
   the non-uniform stretch.
+- 7.2 progress 2026-10-15 (host only, not ticked): Wi-Fi's wide pages take
+  their columns from the surface and the chooser shows two grids of cards on
+  every wide surface (`docs/evidence/hdmi-hotplug/landscape/wide-reflow/`).
+  Open: the operator's look and a tap on a grid card on the board.
 - 7.3: "More slots when wide" -- the dock grows past 4 slots on wide screens;
   the extra slots stay empty until apps are pinned.
 
