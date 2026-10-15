@@ -49,6 +49,10 @@ gone". It is now in `nix/shell.nix`'s `output HDMI-A-1` line.
 - Screencopy (`grim`) cannot show this band because it reads the composed
   frame, not the scan-out.
 - As on the panel, a rendered frame can add up to 8 ms of latency.
-- The build carrying the config line has not yet been booted. That needs
-  a deploy, and `swaymsg -t get_outputs` must then show `max_render_time`
-  8 without the runtime command.
+
+**The config line on the board.** The build carrying it, system
+`/nix/store/wyxsfdsy2m835dy2fgw4f7q9ndjr7xhz-nixos-system-nixos-26.11.20260919.20b1ddd`,
+was booted at 15:27 CDT. `swaymsg -t get_outputs` showed HDMI-A-1 active
+with `max_render_time` 8. The sway journal for that boot has no runtime
+`output HDMI-A-1 max_render_time` command, so the value comes from the
+config.
