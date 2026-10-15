@@ -46,6 +46,16 @@ message line, each card's centre applying that card, a drag applying
 nothing, Back and Close still working). `cargo test`: 513 + 22 + 14 + 8 + 4 +
 11 + 1 + 6 pass.
 
-Limits: no board or monitor observation yet. The grid has no scrolling: with
+## On the board (2026-10-15)
+
+Evidence class: **operator report** on the HDMI monitor (1280x800), test
+system `7n025h1fvw5nxkmja2y0j5zk4adazf50` (this change plus a kernel test).
+The operator: "it works and it feels pretty good", and reported a dark band
+over the dock on Home. That band was the HDMI render timing, not this change;
+it is fixed separately (`docs/evidence/card-shell/bottom-band-flicker/hdmi.md`).
+The shell does not log chooser taps, so no record shows which card was
+tapped or what it applied.
+
+Limits: no frame capture on the board. The grid has no scrolling: with
 many user themes its cards shrink (the test holds 12 at 80 px or more), and a
 much longer list would need a scrolling grid.

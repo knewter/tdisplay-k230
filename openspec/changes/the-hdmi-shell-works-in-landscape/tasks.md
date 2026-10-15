@@ -121,6 +121,9 @@ done):
   their columns from the surface and the chooser shows two grids of cards on
   every wide surface (`docs/evidence/hdmi-hotplug/landscape/wide-reflow/`).
   Open: the operator's look and a tap on a grid card on the board.
+  Board 2026-10-15 (system `7n025h1f…`, HDMI 1280x800): the operator said
+  "it works and it feels pretty good"; the shell log records no grid tap, so
+  the tap stays open.
 - 7.3: "More slots when wide" -- the dock grows past 4 slots on wide screens;
   the extra slots stay empty until apps are pinned.
 
