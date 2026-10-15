@@ -33,7 +33,7 @@
   .#handheld-shell-rust` built at master `339fb0f6` (`jj55fw9i…`). Board
   captures: `docs/evidence/power-key/sheet/`.
 - [x] 3.2 Route a held physical key to that sheet and use the existing bounded Settings power request path for a second confirmation; verify host tests cover hold-open, duplicate suppression, cancel, outside dismissal, denied action and no command before confirmation.
-- [ ] 3.3 Verify the integrated NixOS closure with `nix build .#nixosConfigurations.k230-coherent-shell.config.system.build.toplevel`, then record real-button/glass proof of hold → sheet → Cancel and hold → named confirmation without execution under `docs/evidence/power-key/sheet/`.
+- [x] 3.3 Verify the integrated NixOS closure with `nix build .#nixosConfigurations.k230-coherent-shell.config.system.build.toplevel`, then record real-button/glass proof of hold → sheet → Cancel and hold → named confirmation without execution under `docs/evidence/power-key/sheet/`.
   Partial 2026-10-14 (operator + native captures,
   `docs/evidence/power-key/sheet/`): hold opened the sheet, Cancel closed it,
   and Restart… showed the named confirmation with nothing run (boot ID
@@ -41,6 +41,14 @@
   the sheet not closing on a swipe; the revised sheet (two named buttons,
   larger tap area, swipe to close) has host tests only. Open: the revised
   sheet on the board, and the named `k230-coherent-shell` toplevel build.
+  Done 2026-10-14/15 (board journal + native capture + operator,
+  `docs/evidence/power-key/sheet/`): on boot `7c8f203e…` a 1.15 s hold opened
+  the revised sheet, Restart… showed "Restart device?" with separate Cancel
+  and Restart buttons (`revised-restart-confirmation-grim.png`), a tap at
+  y=498.6 on Cancel cancelled it, and the boot ran on (operator: "it works
+  go"). `nix build .#nixosConfigurations.k230-coherent-shell.config.system.build.toplevel`
+  built `0m0wgs1p…` at `339fb0f6` and `4n1simq4…` at `c1a4ed6d`. Limit: the
+  hold → sheet → Cancel step on the sheet itself is the 16:38 trial.
 - [x] 3.4 With an explicit physical trial, verify confirmed Restart and Power off independently, including return on power-on; capture serial/camera evidence and any recovery limitation. Keep this task open until both are observed.
   Operator decision 2026-10-14 ("we want the power-off code back"): the
   mainline driver now restores the vendor's system-off callback
@@ -64,4 +72,8 @@
 
 ## 4. Reconcile and publish
 
-- [ ] 4.1 Run `openspec validate the-power-key-controls-the-display-and-power-menu --strict`, commit the physical evidence with exact commands and limits, and archive only when every task and named proof above is complete. Verify merged `master`, pushed revision, CI and the published capability page.
+- [x] 4.1 Run `openspec validate the-power-key-controls-the-display-and-power-menu --strict`, commit the physical evidence with exact commands and limits, and archive only when every task and named proof above is complete. Verify merged `master`, pushed revision, CI and the published capability page.
+  Done 2026-10-15: `openspec validate --strict` passed, the evidence above is
+  committed with its commands and limits, and the change is archived with
+  every task complete. Merge, push, CI and the published page are checked
+  after the push of this commit.

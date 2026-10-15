@@ -127,7 +127,7 @@ Hold a small implementation set until this queue closes. Eight proposals have no
 | [the-shell-adapts-to-output-resolution](../../../../openspec/changes/the-shell-adapts-to-output-resolution/tasks.md) | 16/22 | Remaining implementation and/or proof |
 | [the-shell-gets-side-edge-back-and-motion-trace](../../../../openspec/changes/the-shell-gets-side-edge-back-and-motion-trace/tasks.md) | 1/7 | Remaining implementation and/or proof |
 | [the-system-enables-proven-c908-extensions](../../../../openspec/changes/the-system-enables-proven-c908-extensions/tasks.md) | 5/11 | Remaining implementation and/or proof |
-| [the-power-key-controls-the-display-and-power-menu](../../../../openspec/changes/the-power-key-controls-the-display-and-power-menu/tasks.md) | 4/11 | Remaining implementation and/or proof |
+| [the-power-key-controls-the-display-and-power-menu](../../../../openspec/changes/archive/2026-10-15-the-power-key-controls-the-display-and-power-menu/tasks.md) | 4/11 | Remaining implementation and/or proof |
 | [the-screen-lights-before-linux](../../../../openspec/changes/the-screen-lights-before-linux/tasks.md) | 20/27 | Remaining implementation and/or proof |
 | [the-touchscreen-becomes-an-hdmi-trackpad](../../../../openspec/changes/the-touchscreen-becomes-an-hdmi-trackpad/tasks.md) | 26/33 | Remaining implementation and/or proof |
 | [the-handheld-controls-volume](../../../../openspec/changes/the-handheld-controls-volume/tasks.md) | 19/27 | Remaining implementation and/or proof |
