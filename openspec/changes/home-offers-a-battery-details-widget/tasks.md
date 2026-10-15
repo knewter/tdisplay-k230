@@ -21,4 +21,8 @@
 
 - [ ] 3.1 The operator places the widget on Home on the board and confirms the
       displayed values against `/sys/class/power_supply`. Evidence class:
-      board observation. Not performed; keep open until recorded.
+      board observation. Progress 2026-10-15: placed by injected click,
+      page turned by the operator's swipe, grim values match sysfs for the
+      full/idle/unplugged state
+      (`docs/evidence/battery-details-widget/board/README.md`). Open until
+      the operator places it with a physical click.

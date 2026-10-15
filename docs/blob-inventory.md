@@ -1819,6 +1819,8 @@ DATA  1168261a0da7bdf63f4159a1f88c4ba69e19ae14d03861000fdd7b7172b52ea1  docs/evi
 DATA  020462acd02e38f9e85e5145a19da89f1084a6003eaf6cc4494a5357ed0110e9  docs/evidence/battery-details-widget/host/no-battery-1920x1080.png
 DATA  a03c125e64c86fec1b327dba56c78254508ab60af71e55efeac3b43b16cb96ca  docs/evidence/battery-details-widget/host/no-battery-568x1232.png
 DATA  e954fab750d4099ee4d7120197cda001f7692b4c1add50c2a35e465360a721d8  docs/evidence/battery-details-widget/host/picker-568x1232.png
+DATA 7734298d1350e5de05032c5196b9bd43beddb97fd92002b8fbe4176d69438416 docs/evidence/battery-details-widget/board/home-page2-battery-details-1280x800-grim.png
+DATA e359c679fef4cd256b634ba0f50b538a0d9137699b92535b7a9bfb42cbd4d21a docs/evidence/battery-details-widget/board/picker-widgets-page-1280x800-grim.png
 DATA  4bc927d031126339723be556a533c0b2e7e37435d15bf55a5273771469712ae7  docs/evidence/recovery-routes/touch-app-menu-qemu-2026-10-11/drawer-actions-touch-hold-menu.png
 DATA  a3ae45784cee598cd059ad936fe21e25e74b8410ddfbe506674a2c2a0206ad97  docs/evidence/recovery-routes/touch-capture-2026-10-11/window-list.mp4
 DATA  e4cb7a888f92d37b8145d5751d516dd4bbdd2d98fe4fe21a0f90937d225b6da7  docs/evidence/recovery-routes/touch-capture-2026-10-11/brightness-denied.mp4
@@ -3199,3 +3201,5 @@ Command and limits: `docs/evidence/battery-details-widget/host/README.md`.
 | `docs/evidence/battery-details-widget/host/no-battery-1920x1080.png` | 29678 | DATA | `020462acd02e38f9e85e5145a19da89f1084a6003eaf6cc4494a5357ed0110e9` |
 | `docs/evidence/battery-details-widget/host/no-battery-568x1232.png` | 23043 | DATA | `a03c125e64c86fec1b327dba56c78254508ab60af71e55efeac3b43b16cb96ca` |
 | `docs/evidence/battery-details-widget/host/picker-568x1232.png` | 74351 | DATA | `e954fab750d4099ee4d7120197cda001f7692b4c1add50c2a35e465360a721d8` |
+| `docs/evidence/battery-details-widget/board/home-page2-battery-details-1280x800-grim.png` | 806885 | DATA | `7734298d1350e5de05032c5196b9bd43beddb97fd92002b8fbe4176d69438416` |
+| `docs/evidence/battery-details-widget/board/picker-widgets-page-1280x800-grim.png` | 234139 | DATA | `e359c679fef4cd256b634ba0f50b538a0d9137699b92535b7a9bfb42cbd4d21a` |
