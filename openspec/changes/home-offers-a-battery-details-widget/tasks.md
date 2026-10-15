@@ -12,8 +12,10 @@
       1280x800 to `docs/evidence/battery-details-widget/host/` with a README;
       inspect the images; register the PNGs in `docs/blob-inventory.md` and run
       `python3 tools/blob-scan.py --no-vendor`. Evidence class: host render.
-- [ ] 2.2 Build the bundle: `nix build .#kernelMainlineDrmShellLandscapeHdmiBootFiles`.
-      Evidence class: host build.
+- [x] 2.2 Build the bundle: `nix build .#kernelMainlineDrmShellLandscapeHdmiBootFiles`.
+      Evidence class: host build. Done 2026-10-15 at 51b290ff: store path
+      `/nix/store/zyavn9qqw40hz4zj4ychk451l20anr2v-k230-coherent-shell-boot-files`
+      (a build, not a flash or board observation).
 
 ## 3. Board
 
