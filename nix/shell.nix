@@ -857,7 +857,13 @@ let
     # the automatic relay restores direct panel mapping on disconnect.
     # Compensate for the monitor transform on raw absolute touch. While
     # HDMI scanout is enabled, the relay instead emits touchpad events.
-    output HDMI-A-1 transform ${cfg.hdmiTransform} bg #000000 solid_color
+    #
+    # max_render_time 8 is the DSI-1 bottom-band fix above, applied to HDMI:
+    # without it, Home's hover repaints (every pointer motion) flickered a
+    # dark band over the dock and the strip above it, which grim never saw.
+    # Operator-verified at runtime on 2026-10-15
+    # (docs/evidence/card-shell/bottom-band-flicker/hdmi.md).
+    output HDMI-A-1 transform ${cfg.hdmiTransform} bg #000000 solid_color max_render_time 8
     exec_always ${pkgs.writeShellScript "k230-touch-follow-output" ''
       # swaymsg from the session's own PATH: the running sway's client.
       if swaymsg -t get_outputs -r | ${pkgs.jq}/bin/jq -e 'any(.[]; .name == "HDMI-A-1" and .active)' >/dev/null; then
