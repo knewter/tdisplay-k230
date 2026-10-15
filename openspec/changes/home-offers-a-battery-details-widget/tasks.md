@@ -1,6 +1,6 @@
 ## 1. Implementation
 
-- [ ] 1.1 Add a details snapshot and `uevent` parser to `home_widgets::battery`,
+- [x] 1.1 Add a details snapshot and `uevent` parser to `home_widgets::battery`,
       keeping `BatteryState`, `read_state` and `format` unchanged; add the
       `BatteryDetails` widget kind (4x2, new serialized tag), its picker entry,
       painting, and the 10 s / 30 s poll choice with change-gated repaint.
@@ -8,7 +8,7 @@
 
 ## 2. Host evidence
 
-- [ ] 2.1 Render charging, discharging and no-battery at 568x1232, 1232x568 and
+- [x] 2.1 Render charging, discharging and no-battery at 568x1232, 1232x568 and
       1280x800 to `docs/evidence/battery-details-widget/host/` with a README;
       inspect the images; register the PNGs in `docs/blob-inventory.md` and run
       `python3 tools/blob-scan.py --no-vendor`. Evidence class: host render.

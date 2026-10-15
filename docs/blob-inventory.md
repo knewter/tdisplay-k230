@@ -1806,6 +1806,19 @@ DATA b86059e9249f9018bbff16dba9557df0e59eba09b741fda9b61218d31d967ca2  docs/evid
 DATA 89ec298b9ce93940f7d923f2f60b606477c39f7c2385c85beb4f7669bbb4d648  docs/evidence/coherent-shell/notification-preview/banner-unknown-568x1232.png
 DATA  658ff706daf01c54667144e023b8a4568e3079736668d1a210e726104fadb887  docs/evidence/coherent-shell/notification-preview/board-banner-over-terminal-grim.png
 DATA  a114b385868a612bec62da7f9db8a6fe9fa6b438e63683078f4cec6b0764c738  docs/evidence/coherent-shell/notification-preview/shade-open-tag-replacement-grim.png
+DATA  89fb5e30e2319141d86165b5d2cf341a200cd28cfb524d01ea14343e3bfcb2de  docs/evidence/battery-details-widget/host/charging-1232x568.png
+DATA  3e592c07b4052e7ba5337ee314ab7455402b0216f810f85b707a9e6cbde9f03c  docs/evidence/battery-details-widget/host/charging-1280x800.png
+DATA  7da2af5ea9c40498b74d8308fcead6242a76bf8fb2bcbcfea1fb069da8d9de4c  docs/evidence/battery-details-widget/host/charging-1920x1080.png
+DATA  60b7996a8c7278f843b10265c1ddf9f51ee7faa7c7beda7590a2d38037a85b03  docs/evidence/battery-details-widget/host/charging-568x1232.png
+DATA  0fae56c2b143e1e698f0faa6c8be231f1a91fb266a32784845cf2ab563bdbb23  docs/evidence/battery-details-widget/host/discharging-1232x568.png
+DATA  8199e0d4c040ba068b2977ffde96598caee1b1c8de8018b49a1e9464c81eaf75  docs/evidence/battery-details-widget/host/discharging-1280x800.png
+DATA  28dfa0fa0b1f92082a6f28fae3750cb413706b0d130f5896da6a008c090402e0  docs/evidence/battery-details-widget/host/discharging-1920x1080.png
+DATA  dbc9d9af23a4a61f023d824faf62c130267d06db5bb4edee2ae2e82b7ca9978f  docs/evidence/battery-details-widget/host/discharging-568x1232.png
+DATA  b3f33ed0528e88aa17841a8557006bce65b2e96394e05ad11b33ca3961945ec3  docs/evidence/battery-details-widget/host/no-battery-1232x568.png
+DATA  1168261a0da7bdf63f4159a1f88c4ba69e19ae14d03861000fdd7b7172b52ea1  docs/evidence/battery-details-widget/host/no-battery-1280x800.png
+DATA  020462acd02e38f9e85e5145a19da89f1084a6003eaf6cc4494a5357ed0110e9  docs/evidence/battery-details-widget/host/no-battery-1920x1080.png
+DATA  a03c125e64c86fec1b327dba56c78254508ab60af71e55efeac3b43b16cb96ca  docs/evidence/battery-details-widget/host/no-battery-568x1232.png
+DATA  e954fab750d4099ee4d7120197cda001f7692b4c1add50c2a35e465360a721d8  docs/evidence/battery-details-widget/host/picker-568x1232.png
 DATA  4bc927d031126339723be556a533c0b2e7e37435d15bf55a5273771469712ae7  docs/evidence/recovery-routes/touch-app-menu-qemu-2026-10-11/drawer-actions-touch-hold-menu.png
 DATA  a3ae45784cee598cd059ad936fe21e25e74b8410ddfbe506674a2c2a0206ad97  docs/evidence/recovery-routes/touch-capture-2026-10-11/window-list.mp4
 DATA  e4cb7a888f92d37b8145d5751d516dd4bbdd2d98fe4fe21a0f90937d225b6da7  docs/evidence/recovery-routes/touch-capture-2026-10-11/brightness-denied.mp4
@@ -3165,3 +3178,24 @@ Command and limits: `docs/evidence/keyboard-base/shell/host-renders/README.md`.
 | `docs/evidence/coherent-shell/notification-preview/banner-unknown-568x1232.png` | 44957 | DATA | `89ec298b9ce93940f7d923f2f60b606477c39f7c2385c85beb4f7669bbb4d648` |
 | `docs/evidence/coherent-shell/notification-preview/board-banner-over-terminal-grim.png` | 11121 | DATA | `658ff706daf01c54667144e023b8a4568e3079736668d1a210e726104fadb887` |
 | `docs/evidence/coherent-shell/notification-preview/shade-open-tag-replacement-grim.png` | 22668 | DATA | `a114b385868a612bec62da7f9db8a6fe9fa6b438e63683078f4cec6b0764c738` |
+
+## Battery - Details widget host renders, 2026-10-15
+
+Host renders of the Home Battery - Details widget from fixture `uevent` text.
+Command and limits: `docs/evidence/battery-details-widget/host/README.md`.
+
+| Path | Bytes | Class | SHA-256 |
+| --- | ---: | --- | --- |
+| `docs/evidence/battery-details-widget/host/charging-1232x568.png` | 69909 | DATA | `89fb5e30e2319141d86165b5d2cf341a200cd28cfb524d01ea14343e3bfcb2de` |
+| `docs/evidence/battery-details-widget/host/charging-1280x800.png` | 81385 | DATA | `3e592c07b4052e7ba5337ee314ab7455402b0216f810f85b707a9e6cbde9f03c` |
+| `docs/evidence/battery-details-widget/host/charging-1920x1080.png` | 88296 | DATA | `7da2af5ea9c40498b74d8308fcead6242a76bf8fb2bcbcfea1fb069da8d9de4c` |
+| `docs/evidence/battery-details-widget/host/charging-568x1232.png` | 70990 | DATA | `60b7996a8c7278f843b10265c1ddf9f51ee7faa7c7beda7590a2d38037a85b03` |
+| `docs/evidence/battery-details-widget/host/discharging-1232x568.png` | 61318 | DATA | `0fae56c2b143e1e698f0faa6c8be231f1a91fb266a32784845cf2ab563bdbb23` |
+| `docs/evidence/battery-details-widget/host/discharging-1280x800.png` | 72381 | DATA | `8199e0d4c040ba068b2977ffde96598caee1b1c8de8018b49a1e9464c81eaf75` |
+| `docs/evidence/battery-details-widget/host/discharging-1920x1080.png` | 77541 | DATA | `28dfa0fa0b1f92082a6f28fae3750cb413706b0d130f5896da6a008c090402e0` |
+| `docs/evidence/battery-details-widget/host/discharging-568x1232.png` | 62705 | DATA | `dbc9d9af23a4a61f023d824faf62c130267d06db5bb4edee2ae2e82b7ca9978f` |
+| `docs/evidence/battery-details-widget/host/no-battery-1232x568.png` | 19941 | DATA | `b3f33ed0528e88aa17841a8557006bce65b2e96394e05ad11b33ca3961945ec3` |
+| `docs/evidence/battery-details-widget/host/no-battery-1280x800.png` | 24960 | DATA | `1168261a0da7bdf63f4159a1f88c4ba69e19ae14d03861000fdd7b7172b52ea1` |
+| `docs/evidence/battery-details-widget/host/no-battery-1920x1080.png` | 29678 | DATA | `020462acd02e38f9e85e5145a19da89f1084a6003eaf6cc4494a5357ed0110e9` |
+| `docs/evidence/battery-details-widget/host/no-battery-568x1232.png` | 23043 | DATA | `a03c125e64c86fec1b327dba56c78254508ab60af71e55efeac3b43b16cb96ca` |
+| `docs/evidence/battery-details-widget/host/picker-568x1232.png` | 74351 | DATA | `e954fab750d4099ee4d7120197cda001f7692b4c1add50c2a35e465360a721d8` |
