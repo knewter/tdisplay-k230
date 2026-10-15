@@ -30,3 +30,5 @@ Rejected: copying the vendor patch unchanged (its hold powers off), mapping `KEY
 ## Migration Plan
 
 Publish this proposal first. Build and inspect the input-only kernel candidate; then deploy to the reserved board using the repository's guarded `/boot` update or the saved-image flash path. Prove physical events before enabling policy. Deploy helper and shell route from the image, verify short/long behavior, then record actual glass and serial evidence. Restore the saved coherent image if PMU boot or display recovery fails. Archive only after every named physical gate passes.
+
+The short-press route names `output * power off/on`, not `DSI-1`. With HDMI connected the panel is absent from Sway (one CRTC), and the `DSI-1` form stored "off" for it: on 2026-10-14 a press at 23:16:08 followed by an HDMI unplug at 23:16:11 brought the panel back dark. The wildcard acts on the display in effect and keeps the dark state across a hotplug, so the next press wakes whichever display is present.

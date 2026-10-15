@@ -69,6 +69,14 @@ class KeyPolicyTests(unittest.TestCase):
         actions("short")
         self.assertEqual(events, [("output", False), ("output", True)])
 
+    def test_power_follows_the_display_in_effect_not_only_the_panel(self):
+        actions = MODULE.Actions("swaymsg", "/run/test.sock", "/run/shell.sock")
+        completed = MODULE.subprocess.CompletedProcess([], 0, stdout='[{"success":true}]')
+        with patch.object(MODULE.subprocess, "run", return_value=completed) as run:
+            self.assertTrue(actions.output(False))
+        self.assertEqual(run.call_args.args[0][-4:], ["output", "*", "power", "off"])
+        self.assertTrue(actions.dark)
+
     def test_failed_display_command_keeps_known_state(self):
         actions = MODULE.Actions("swaymsg", "/run/test.sock", "/run/shell.sock")
         with patch.object(MODULE.subprocess, "run", side_effect=OSError("unavailable")):

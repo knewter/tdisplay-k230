@@ -77,7 +77,10 @@ class Actions:
         self.dark = False
 
     def output(self, on):
-        cmd = [self.swaymsg, "-s", self.sway_socket, "-r", "output", "DSI-1", "power", "on" if on else "off"]
+        # The display in effect: the panel, or HDMI while it holds the one
+        # CRTC. Naming DSI-1 there stored "off" for the absent panel, which
+        # then came back dark when HDMI was unplugged.
+        cmd = [self.swaymsg, "-s", self.sway_socket, "-r", "output", "*", "power", "on" if on else "off"]
         try:
             result = subprocess.run(cmd, check=True, capture_output=True, text=True, timeout=5)
             reply = json.loads(result.stdout)
