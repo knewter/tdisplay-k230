@@ -746,6 +746,15 @@ pub mod battery {
         }
 
         impl View {
+            /// The graph's time span: the recorded history rounded up to whole
+            /// hours, at least one hour and at most [`WINDOW_S`], so a short
+            /// history fills the graph instead of being a sliver at its edge.
+            pub fn span_s(&self) -> i64 {
+                let recorded = self.samples.first().map_or(0, |first| self.now - first.at);
+                let hours = (recorded + 3599) / 3600;
+                (hours * 3600).clamp(3600, WINDOW_S)
+            }
+
             /// Runs of samples with no silence longer than [`GAP_S`]; each run
             /// is drawn as one line.
             pub fn runs(&self) -> Vec<&[Sample]> {
@@ -980,6 +989,19 @@ pub mod battery {
                 assert_eq!(runs[0].len(), 5);
                 assert_eq!(runs[1].len(), 3);
                 assert!(history.view(start + WINDOW_S + 2000).samples.is_empty());
+            }
+
+            #[test]
+            fn the_span_fits_the_history_in_whole_hours_between_one_and_twelve() {
+                let view = |first_ago: Option<i64>| View {
+                    now: 100_000,
+                    samples: first_ago.map(|ago| Sample { at: 100_000 - ago, percent: 50, charging: false }).into_iter().collect(),
+                };
+                assert_eq!(view(None).span_s(), 3600);
+                assert_eq!(view(Some(900)).span_s(), 3600);
+                assert_eq!(view(Some(3601)).span_s(), 7200);
+                assert_eq!(view(Some(5 * 3600)).span_s(), 5 * 3600);
+                assert_eq!(view(Some(WINDOW_S)).span_s(), WINDOW_S);
             }
         }
     }

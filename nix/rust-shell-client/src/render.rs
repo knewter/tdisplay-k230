@@ -4040,21 +4040,26 @@ fn detail_glow(cr: &Context, value: &str, x: f64, y: f64, width: f64, size: f64,
 /// the accent colour, and a break wherever the shell recorded nothing for
 /// more than five minutes.
 fn paint_charge_graph(cr: &Context, style: &VisualStyle, view: &crate::home_widgets::battery::history::View, rect: (f64, f64, f64, f64), caption_size: f64) {
-    use crate::home_widgets::battery::history::WINDOW_S;
     let (gx, gy, gw, gh) = rect;
     let plot_h = gh - caption_size * 1.5;
     let bottom = gy + plot_h;
-    let start = view.now - WINDOW_S;
-    let px = |at: i64| gx + (at - start) as f64 / WINDOW_S as f64 * gw;
+    let span = view.span_s();
+    let start = view.now - span;
+    let px = |at: i64| gx + (at - start) as f64 / span as f64 * gw;
     let py = |percent: u8| bottom - f64::from(percent) / 100.0 * plot_h;
 
     cr.save().ok();
     cr.set_line_width(1.0);
+    // A soft panel behind the plot keeps it legible on a busy wallpaper.
+    cr.new_path();
+    cr.rectangle(gx, gy, gw, plot_h);
+    color(cr, glow_for(style.text), 0.35);
+    let _ = cr.fill();
     for level in [0u8, 50, 100] {
         cr.new_path();
         cr.move_to(gx, py(level).round() + 0.5);
         cr.line_to(gx + gw, py(level).round() + 0.5);
-        color(cr, style.muted, if level == 0 { 0.45 } else { 0.22 });
+        color(cr, style.muted, if level == 0 { 0.7 } else { 0.4 });
         let _ = cr.stroke();
     }
     cr.set_line_join(cairo::LineJoin::Round);
@@ -4110,7 +4115,7 @@ fn paint_charge_graph(cr: &Context, style: &VisualStyle, view: &crate::home_widg
     }
     cr.restore().ok();
     let caption_y = bottom + caption_size * 0.35;
-    detail_glow(cr, "12 h ago", gx, caption_y, gw / 2.0, caption_size, style.muted, pango::Weight::Normal, pango::Alignment::Left);
+    detail_glow(cr, &format!("{} h ago", span / 3600), gx, caption_y, gw / 2.0, caption_size, style.muted, pango::Weight::Normal, pango::Alignment::Left);
     detail_glow(cr, "now", gx + gw / 2.0, caption_y, gw / 2.0, caption_size, style.muted, pango::Weight::Normal, pango::Alignment::Right);
     if view.samples.len() < 2 {
         detail_glow(cr, "Recording charge", gx, gy + plot_h * 0.38, gw, caption_size, style.muted, pango::Weight::Normal, pango::Alignment::Center);
