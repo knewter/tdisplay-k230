@@ -1742,6 +1742,8 @@ DATA 3f35ec0b8fb115a14e45a9ef968592c2f14d0d5c79a6126909aece1537ab892b docs/evide
 DATA cd5c5d4814aaca240e997b7cdda4dc5ae30ebb2651a2addcea4aee309068ada2 docs/evidence/hdmi-hotplug/landscape/host-renders/wifi-entry-password-1920x1080.png
 DATA cfb96550e14595c1cc6ff249cfb25620d789ad0a02e10947c30adad0f6f9139b docs/evidence/hdmi-hotplug/landscape/host-renders/wifi-list-1280x800.png
 DATA e66227f34bdb80eb23e88dc0a624591af9b738fc038f9b12a6d26fd389332dcc docs/evidence/hdmi-hotplug/landscape/host-renders/wifi-list-1920x1080.png
+DATA 4f9b1ccace0647bd8c3f0ba72a72734b937b1b29b474976bb74ebffc26dcfcca docs/evidence/hdmi-hotplug/landscape/board/home-hdmi-grim.png
+DATA 7372b8293e14bfffa47d05c68097ad2ad9a38d520296f7d520566f157b5deac7 docs/evidence/hdmi-hotplug/landscape/board/settings-hdmi-grim.png
 DATA 0938edbc429fe58e4ccc4f16e4f25e163b8a8c3664f8a298bed8b8c19bfc7f1d docs/evidence/shell-responsive/board/acceptance-2026-10-09/home.png
 # Current UX candidate native captures — 2026-10-09
 DATA 83c8b4261beb9621eaaeed8c8e6c1d4fe25bb16abbad63de4234355d25e16de8 docs/evidence/ux-review-round-2/candidate-2026-10-09/overview.png
@@ -2896,6 +2898,8 @@ See `docs/evidence/hdmi-hotplug/manual-switch/host-render.json`.
 | `docs/evidence/hdmi-hotplug/landscape/host-renders/wifi-entry-password-1920x1080.png` | 33731 | DATA | `cd5c5d4814aaca240e997b7cdda4dc5ae30ebb2651a2addcea4aee309068ada2` |
 | `docs/evidence/hdmi-hotplug/landscape/host-renders/wifi-list-1280x800.png` | 47394 | DATA | `cfb96550e14595c1cc6ff249cfb25620d789ad0a02e10947c30adad0f6f9139b` |
 | `docs/evidence/hdmi-hotplug/landscape/host-renders/wifi-list-1920x1080.png` | 52063 | DATA | `e66227f34bdb80eb23e88dc0a624591af9b738fc038f9b12a6d26fd389332dcc` |
+| `docs/evidence/hdmi-hotplug/landscape/board/home-hdmi-grim.png` | 35829 | DATA | `4f9b1ccace0647bd8c3f0ba72a72734b937b1b29b474976bb74ebffc26dcfcca` |
+| `docs/evidence/hdmi-hotplug/landscape/board/settings-hdmi-grim.png` | 52202 | DATA | `7372b8293e14bfffa47d05c68097ad2ad9a38d520296f7d520566f157b5deac7` |
 
 ### Responsive HDMI acceptance (2026-10-09)
 

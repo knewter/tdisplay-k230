@@ -60,12 +60,17 @@ These links do not complete this proposal's HDMI hardware or landscape gates.
       themes, the shade, a folder, Power and Help at 1280x800 and 1920x1080
       show nothing overlapping, off-screen or unreachable
       (`docs/evidence/hdmi-hotplug/landscape/host-renders/`).
-- [ ] 5.4 On the physical board with an HDMI monitor attached (requires
+- [x] 5.4 On the physical board with an HDMI monitor attached (requires
       a working HDMI boot), record the operator's observation of the home
       screen and Settings rendering on the external monitor without visibly
       broken layout. A monitor photograph is waived by the operator
       (2026-10-09). Commit the report and matching native captures under
       `docs/evidence/hdmi-hotplug/landscape/`.
+      Done 2026-10-14 (board grim + operator): `grim -o HDMI-A-1` captures of
+      Settings and Home at 1280x800 on master `6e963323`, and the operator's
+      "Both look right" for the monitor
+      (`docs/evidence/hdmi-hotplug/landscape/board/`). Routes were opened over
+      the shell socket, not by touch; no monitor photograph (waived).
 
 ## 6. Planning validation
 
@@ -92,6 +97,17 @@ The operator authorized moving the responsive proposal’s original tasks
       (`DOCK_SLOTS`, deliberately left fixed at 4 by the responsive
       implementation) using the archived responsive 6.1/6.2 evidence and once this
       proposal’s landscape 5.4 evidence is in hand to verify against.
+
+Operator design answers, 2026-10-14 (still to implement and verify; none is
+done):
+
+- 7.1: "Keep panel size, more columns" -- no density scale; icons and text
+  stay the panel's native size and the extra width only adds columns.
+- 7.2: "Real wide reflow" -- redesign the Wi-Fi pages and the theme chooser
+  for wide screens (e.g. list beside detail, theme cards in a grid) instead of
+  the non-uniform stretch.
+- 7.3: "More slots when wide" -- the dock grows past 4 slots on wide screens;
+  the extra slots stay empty until apps are pinned.
 
 ## 8. Panel landscape for the keyboard case — 2026-10-13
 
