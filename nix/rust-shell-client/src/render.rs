@@ -1871,7 +1871,7 @@ fn paint_wifi(
 /// The Wi-Fi layout for a `width`x`height` surface and the view's keyboard
 /// inset.
 fn wifi_layout(view: &WifiPublic, width: f64, height: f64) -> crate::wifi_ui::Layout {
-    crate::wifi_ui::layout(crate::wifi_ui::wide(width as u32, height as u32), view.keyboard_inset)
+    crate::wifi_ui::layout_for(width as u32, height as u32, view.keyboard_inset)
 }
 
 /// Where the Settings screen's own content (rows, Power section, and any
@@ -5695,7 +5695,7 @@ impl RendererCache {
                 ) }.map_err(|e| e.to_string())?;
                 let cr = Context::new(&surface).map_err(|e| e.to_string())?;
                 cr.translate(0.0, f64::from(shift));
-                let lay = crate::wifi_ui::layout(crate::wifi_ui::wide(width, height), 0.0);
+                let lay = crate::wifi_ui::layout_for(width, height, 0.0);
                 if !lay.wide {
                     cr.scale(f64::from(width) / 568.0, f64::from(height) / 1232.0);
                 }

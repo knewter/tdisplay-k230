@@ -89,7 +89,7 @@ impl WifiView {
     /// Sizes the list's scroll range to the layout in use for a
     /// `width`x`height` surface (`layout`'s own `list_view`).
     pub fn set_surface(&mut self, width: u32, height: u32) {
-        self.list_visible = layout(wide(width, height), 0.0).list_view.3;
+        self.list_visible = layout_for(width, height, 0.0).list_view.3;
         self.scroll(0.0);
     }
     pub fn public(&self) -> WifiPublic {
@@ -433,58 +433,84 @@ pub struct Layout {
     pub status_message: (f64, f64),
 }
 
+/// The layout for a real surface: the portrait artwork, or the wide layout
+/// sized to the surface itself (the landscape panel or an HDMI monitor).
+pub fn layout_for(width: u32, height: u32, keyboard_inset: f64) -> Layout {
+    if wide(width, height) {
+        wide_layout(f64::from(width), f64::from(height), keyboard_inset)
+    } else {
+        layout(false, keyboard_inset)
+    }
+}
+
+/// Two columns that grow with the surface: the left (status, password)
+/// keeps 520/1184 of the content width, the right (the list and the page's
+/// buttons) takes the rest, and the list runs to the bottom edge. At the
+/// landscape panel's 1232x568 every value is the panel's own literal.
+fn wide_layout(w: f64, h: f64, keyboard_inset: f64) -> Layout {
+    let s = (w - 48.0) / 1184.0;
+    let lw = 520.0 * s;
+    let rx = 24.0 + lw + 56.0 * s;
+    let rw = w - 24.0 - rx;
+    let half = (rw - 16.0) / 2.0;
+    let second = rx + half + 16.0;
+    let list_h = h - 88.0;
+    let bottom = h - 24.0 - keyboard_inset;
+    let top = bottom - 72.0;
+    Layout {
+        wide: true,
+        back_text: (28.0, 14.0, 180.0, 22.0),
+        title: (28.0, 44.0, 360.0, 30.0),
+        back_hit: (200.0, 84.0),
+        refresh_text: (w - 146.0, 22.0, 120.0, 22.0),
+        refresh_hit: (w - 192.0, 0.0, 192.0, 64.0),
+        current_card: (24.0, 92.0, lw, 116.0),
+        list_label: (rx + 4.0, 22.0, rw - 168.0, 19.0),
+        list_view: (rx, 64.0, rw, list_h),
+        list_clip: (rx - 4.0, 64.0, rw + 8.0, list_h),
+        row_x: rx,
+        row_w: rw,
+        row_cull: (64.0 - 88.0, 64.0 + list_h),
+        list_empty: (rx + 22.0, 90.0, rw - 48.0),
+        list_message: (30.0, 224.0),
+        net_card: (24.0, 92.0, lw, 84.0),
+        net_name_dy: 10.0,
+        net_sub_dy: 50.0,
+        pw_label: (28.0, 186.0),
+        field: (24.0, 210.0, lw, 78.0),
+        field_text_dy: 22.0,
+        eye_hit: (lw - 52.0, 210.0, 72.0, 78.0),
+        eye_center: (lw - 16.0, 244.0),
+        counter: (lw - 75.0, 264.0),
+        saved_change: (rx, 92.0, half, 62.0),
+        saved_forget: (second, 92.0, half, 62.0),
+        banner_saved_y: 166.0,
+        banner_unsaved_y: 92.0,
+        banner: (rw, 52.0, rw - 8.0),
+        buttons: ((rx, top, half, 72.0), (second, top, half, 72.0)),
+        button_text_dx: (half / 2.0 - 74.0, half / 2.0 - 74.0),
+        button_text_dy: 22.0,
+        entry_message: (rx + 4.0, top - 34.0),
+        connecting_card: (24.0, 92.0, lw, 170.0),
+        connecting_title_dy: 28.0,
+        connecting_sub_dy: 90.0,
+        connecting_cancel: (rx, 92.0, rw, 100.0),
+        connecting_cancel_text: (rw / 2.0 - 134.0, 34.0),
+        forget_card: (24.0, 92.0, lw, 170.0),
+        forget_title_dy: 28.0,
+        forget_sub_dy: 90.0,
+        forget_keep: (rx, 92.0, half, 100.0),
+        forget_confirm: (second, 92.0, half, 100.0),
+        forget_text_dx: (half / 2.0 - 38.0, half / 2.0 - 42.0),
+        forget_text_dy: 34.0,
+        status_message: (30.0, 282.0),
+    }
+}
+
+/// `layout(true, …)` is the wide layout at the landscape panel's own size.
 pub fn layout(wide: bool, keyboard_inset: f64) -> Layout {
     if wide {
-        let bottom = 568.0 - 24.0 - keyboard_inset;
-        let top = bottom - 72.0;
-        Layout {
-            wide,
-            back_text: (28.0, 14.0, 180.0, 22.0),
-            title: (28.0, 44.0, 360.0, 30.0),
-            back_hit: (200.0, 84.0),
-            refresh_text: (1086.0, 22.0, 120.0, 22.0),
-            refresh_hit: (1040.0, 0.0, 192.0, 64.0),
-            current_card: (24.0, 92.0, 520.0, 116.0),
-            list_label: (604.0, 22.0, 440.0, 19.0),
-            list_view: (600.0, 64.0, 608.0, 480.0),
-            list_clip: (596.0, 64.0, 616.0, 480.0),
-            row_x: 600.0,
-            row_w: 608.0,
-            row_cull: (64.0 - 88.0, 544.0),
-            list_empty: (622.0, 90.0, 560.0),
-            list_message: (30.0, 224.0),
-            net_card: (24.0, 92.0, 520.0, 84.0),
-            net_name_dy: 10.0,
-            net_sub_dy: 50.0,
-            pw_label: (28.0, 186.0),
-            field: (24.0, 210.0, 520.0, 78.0),
-            field_text_dy: 22.0,
-            eye_hit: (468.0, 210.0, 72.0, 78.0),
-            eye_center: (504.0, 244.0),
-            counter: (445.0, 264.0),
-            saved_change: (600.0, 92.0, 296.0, 62.0),
-            saved_forget: (912.0, 92.0, 296.0, 62.0),
-            banner_saved_y: 166.0,
-            banner_unsaved_y: 92.0,
-            banner: (608.0, 52.0, 600.0),
-            buttons: ((600.0, top, 296.0, 72.0), (912.0, top, 296.0, 72.0)),
-            button_text_dx: (74.0, 74.0),
-            button_text_dy: 22.0,
-            entry_message: (604.0, top - 34.0),
-            connecting_card: (24.0, 92.0, 520.0, 170.0),
-            connecting_title_dy: 28.0,
-            connecting_sub_dy: 90.0,
-            connecting_cancel: (600.0, 92.0, 608.0, 100.0),
-            connecting_cancel_text: (170.0, 34.0),
-            forget_card: (24.0, 92.0, 520.0, 170.0),
-            forget_title_dy: 28.0,
-            forget_sub_dy: 90.0,
-            forget_keep: (600.0, 92.0, 296.0, 100.0),
-            forget_confirm: (912.0, 92.0, 296.0, 100.0),
-            forget_text_dx: (110.0, 106.0),
-            forget_text_dy: 34.0,
-            status_message: (30.0, 282.0),
-        }
+        wide_layout(1232.0, 568.0, keyboard_inset)
     } else {
         let (top, _) = entry_buttons_rect(keyboard_inset);
         Layout {
@@ -625,7 +651,7 @@ pub fn hit(
     if width == 0 || height == 0 {
         return None;
     }
-    let lay = layout(wide(width, height), view.keyboard_inset);
+    let lay = layout_for(width, height, view.keyboard_inset);
     // Portrait artwork is authored at 568x1232 while Wayland supplies output
     // pixels; the wide layout is in real pixels.
     let (sx, sy) = layout_scale(width, height);
@@ -1167,6 +1193,47 @@ mod tests {
         // An open network has no eye and no password field to hit.
         let open = fixture(Page::Entry, Some("Guest (open)"), false, 0.0);
         assert_eq!(tap(&open, centre(lay.eye_hit)), None);
+    }
+
+    #[test]
+    fn the_wide_wifi_layout_keeps_the_panel_literals_and_fills_a_monitor() {
+        // The landscape panel's board-proven numbers are unchanged.
+        let panel = layout_for(1232, 568, 0.0);
+        assert_eq!(panel.current_card, (24.0, 92.0, 520.0, 116.0));
+        assert_eq!(panel.list_view, (600.0, 64.0, 608.0, 480.0));
+        assert_eq!(panel.buttons, ((600.0, 472.0, 296.0, 72.0), (912.0, 472.0, 296.0, 72.0)));
+        assert_eq!((panel.refresh_text.0, panel.eye_hit.0, panel.counter.0), (1086.0, 468.0, 445.0));
+        assert_eq!((panel.banner, panel.button_text_dx, panel.forget_text_dx), ((608.0, 52.0, 600.0), (74.0, 74.0), (110.0, 106.0)));
+        assert_eq!(panel.connecting_cancel_text.0, 170.0);
+        // A monitor: two columns across the whole width, the list to the
+        // bottom edge, every control on the surface and reachable.
+        for (w, h) in [(1280u32, 800u32), (1920, 1080), (1280, 720)] {
+            let (fw, fh) = (f64::from(w), f64::from(h));
+            let lay = layout_for(w, h, 0.0);
+            assert!(lay.wide);
+            let on = |name: &str, (x, y, rw, rh): Rect| {
+                assert!(x >= 0.0 && y >= 0.0 && x + rw <= fw && y + rh <= fh, "{name} ({x},{y},{rw},{rh}) leaves {w}x{h}");
+            };
+            assert_eq!(lay.list_view.0 + lay.list_view.2, fw - 24.0, "{w}x{h} list to the right margin");
+            assert_eq!(lay.list_view.1 + lay.list_view.3, fh - 24.0, "{w}x{h} list to the bottom margin");
+            assert!(lay.current_card.0 + lay.current_card.2 < lay.list_view.0, "{w}x{h} columns apart");
+            let (cancel, connect) = lay.buttons;
+            for (name, rect) in [("list", lay.list_view), ("current", lay.current_card), ("field", lay.field), ("eye", lay.eye_hit),
+                ("cancel", cancel), ("connect", connect), ("refresh", lay.refresh_hit), ("change", lay.saved_change),
+                ("forget", lay.saved_forget), ("keep", lay.forget_keep), ("confirm", lay.forget_confirm), ("abort", lay.connecting_cancel)] {
+                on(name, rect);
+            }
+            assert!(lay.eye_hit.0 + lay.eye_hit.2 <= lay.field.0 + lay.field.2 + 1e-9, "{w}x{h} eye inside the field");
+            let list = fixture(Page::List, None, false, 0.0);
+            let rows = all_networks(list.snapshot.as_ref().unwrap()).len();
+            let last = (lay.row_x + lay.row_w / 2.0, lay.list_view.1 + (rows - 1) as f64 * 88.0 + 39.0);
+            assert!(last.1 < lay.list_view.1 + lay.list_view.3, "{w}x{h}: every fixture network fits without scrolling");
+            assert_eq!(hit(&list, last, last, w, h), Some(Intent::Select(rows - 1)), "{w}x{h} last row");
+            let entry = fixture(Page::Entry, Some(LONG), false, 0.0);
+            assert_eq!(hit(&entry, centre(connect), centre(connect), w, h), Some(Intent::Connect), "{w}x{h}");
+            assert_eq!(hit(&entry, centre(cancel), centre(cancel), w, h), Some(Intent::Back), "{w}x{h}");
+            assert_eq!(hit(&entry, centre(lay.eye_hit), centre(lay.eye_hit), w, h), Some(Intent::TogglePassword), "{w}x{h}");
+        }
     }
 
     #[test]

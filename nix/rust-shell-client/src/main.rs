@@ -6005,7 +6005,7 @@ impl ShellClient {
                 if let Some((start_id, start)) = self.panel_start {
                     let (scale_x, scale_y) = wifi_ui::layout_scale(self.width, self.height);
                     let dy = (pos.1 - start.1) * scale_y;
-                    let lay = wifi_ui::layout(wifi_ui::wide(self.width, self.height), 0.0);
+                    let lay = wifi_ui::layout_for(self.width, self.height, 0.0);
                     let in_list = if lay.wide {
                         wifi_ui::list_contains(&lay, start.0 * scale_x, start.1 * scale_y)
                     } else {
