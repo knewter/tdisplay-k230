@@ -7,6 +7,10 @@
       `home_screen::tests::secondary_click_on_empty_home_space_opens_the_menu_but_not_on_an_icon`
       (`cd nix/rust-shell-client && cargo test --lib`, 514 passed,
       2026-10-15).
-- [ ] 1.2 Board: on the HDMI trackpad, a two-finger click on empty Home
+- [x] 1.2 Board: on the HDMI trackpad, a two-finger click on empty Home
       space opens the Home menu and a two-finger click on an app still opens
-      its app menu (operator report).
+      its app menu (operator report). 2026-10-15, system
+      `/nix/store/acmin041a4hb7nglym6h1lcm66sp3wyh-nixos-system-nixos-26.11.20260919.20b1ddd`
+      (bundle `6cchn05l…`, HDMI 1280x800, tap_button_map lrm). The operator
+      tried both and said "both work". Evidence class: operator report, no
+      capture.

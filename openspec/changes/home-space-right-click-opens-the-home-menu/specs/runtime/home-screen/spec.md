@@ -3,8 +3,9 @@
 ### Requirement: Secondary click on empty Home space opens the Home menu
 
 *Grounding: host test
-`home_screen::tests::secondary_click_on_empty_home_space_opens_the_menu_but_not_on_an_icon`.*
-<!-- UNVERIFIED: no board observation yet (task 1.2). -->
+`home_screen::tests::secondary_click_on_empty_home_space_opens_the_menu_but_not_on_an_icon`;
+operator report on the HDMI trackpad, 2026-10-15, system `acmin041…`
+(`openspec/changes/archive/2026-10-15-home-space-right-click-opens-the-home-menu/tasks.md` 1.2).*
 
 A secondary click on an empty, addressable Home cell SHALL open the same
 Home menu that a long press on that space opens, under the same conditions.
