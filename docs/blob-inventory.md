@@ -1462,6 +1462,8 @@ DATA 555d78d07462a33db598cc5b87c97ebf3215997c7bfc38dd1243fd16fb691b1d docs/evide
 DATA ff0b9adbacf9a19192e1941f9e4b5311b93f4259e3976c40d6c24639d50e87ab docs/evidence/home-screen/widget-picker-fit/host/widget-picker-1920x1080.png
 DATA 9962b8045bfecbea7ff7f5bd93fa6ee49eaae7a43f55352359dc6c1f0dab0090 docs/evidence/home-screen/widget-picker-fit/host/widget-picker-568x1232.png
 DATA ae87503b0e4edd6675c49e979b1d28d1eb44e964591546b0e23729bdd1a6b29e docs/evidence/home-screen/widget-picker-fit/board/before-widget-rows-past-the-card-1280x800-grim.png
+DATA e037e9aa99953431e37c96db60382a1550c2363e9e0989976cdca1073d75a2e3 docs/evidence/home-screen/widget-picker-fit/board/after-weather-row-click-1280x800-grim.png
+DATA b8986ee027cb26e13b15cec247018664869958698bd6c6f2ca300adfdcaf9360 docs/evidence/home-screen/widget-picker-fit/board/after-widgets-page-1280x800-grim.png
 DATA 21c2a5a523ec831a47c10fc3416aab22597abbffb2954e316fc637d587a0433d docs/evidence/home-screen/qemu/home-dark-drop-target.png
 DATA 64b1bc4899bb7e4ee4dd5af7a4adace1a2344ef4dd85e7e6cb3b9756468ec77f docs/evidence/home-screen/qemu/home-dark-mid-swipe.png
 DATA 6bc49a1c8f55b302c36e19fa8c3e6114d64435e45eac8c28f698bec86e985245 docs/evidence/home-screen/qemu/home-dark-page1.png
@@ -2654,6 +2656,8 @@ real-finger acceptance remains open.
 | `docs/evidence/home-screen/widget-picker-fit/host/widget-picker-1920x1080.png` | 69905 | DATA | `ff0b9adbacf9a19192e1941f9e4b5311b93f4259e3976c40d6c24639d50e87ab` |
 | `docs/evidence/home-screen/widget-picker-fit/host/widget-picker-568x1232.png` | 61959 | DATA | `9962b8045bfecbea7ff7f5bd93fa6ee49eaae7a43f55352359dc6c1f0dab0090` |
 | `docs/evidence/home-screen/widget-picker-fit/board/before-widget-rows-past-the-card-1280x800-grim.png` | 147834 | DATA | `ae87503b0e4edd6675c49e979b1d28d1eb44e964591546b0e23729bdd1a6b29e` |
+| `docs/evidence/home-screen/widget-picker-fit/board/after-weather-row-click-1280x800-grim.png` | 807377 | DATA | `e037e9aa99953431e37c96db60382a1550c2363e9e0989976cdca1073d75a2e3` |
+| `docs/evidence/home-screen/widget-picker-fit/board/after-widgets-page-1280x800-grim.png` | 237930 | DATA | `b8986ee027cb26e13b15cec247018664869958698bd6c6f2ca300adfdcaf9360` |
 
 ### Omawrite host and physical-board runtime — 2026-09-27
 

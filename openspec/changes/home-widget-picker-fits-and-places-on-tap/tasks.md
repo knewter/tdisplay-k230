@@ -10,3 +10,7 @@
       (`cargo test --lib`, 516 passed, 2026-10-15).
 - [ ] 1.3 Board: on the HDMI monitor, every Widgets-page row is inside the
       card, and a click on the Battery row places a Battery widget on Home.
+      Injected-pointer evidence on system `hfmjszha…` (2026-10-15 16:57,
+      `docs/evidence/home-screen/widget-picker-fit/README.md`): the rows fit
+      and a click on Weather placed it. Still open: the operator's own click
+      on the physical trackpad.

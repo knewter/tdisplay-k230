@@ -37,3 +37,25 @@ it fits.
 
 Evidence class: host render, which proves layout only. The board check is
 task 1.3.
+
+## The fix on the board (injected pointer)
+
+The system was
+`/nix/store/hfmjszha3b3xmlv483yq9hvnpg6gfm81-nixos-system-nixos-26.11.20260919.20b1ddd`
+(bundle `zmwaj1j5…`), on HDMI at 1280x800, at 16:57 CDT on 2026-10-15.
+Evidence class: **injected pointer events** (`swaymsg seat - cursor
+set/press/release`) plus native `grim` captures. This is not a physical
+trackpad.
+
+- `board/after-widgets-page-1280x800-grim.png` was taken after a
+  right-click at (1100, 450) and a click on Widgets. The seven rows sit in
+  two columns inside the card, each subtitled "tap to add, hold to drag".
+- `board/after-weather-row-click-1280x800-grim.png` was taken after one
+  click on the Weather row at (940, 330), which had been past the card
+  before the fix. The sheet closed and a Weather widget appeared in the
+  free space to the right of the Battery widget.
+- The shell logged `pointer-down`, `pointer-up`, `home-layout-changed`.
+- `home.json` now lists `clock`, `battery`, `weather`.
+
+A right-click below the grid's last row (y = 520 or 560 at 1280x800) opens
+nothing. That is the existing empty-cell rule, not a defect.
