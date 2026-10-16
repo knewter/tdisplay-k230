@@ -1829,6 +1829,7 @@ DATA d4af3b4854df0ae0d7cd904c4546bd9673d518f163d696a6adef5aa5ac7ecc30 docs/evide
 DATA ecadad5cc7bb0f213f2b8a491582a27c91c5a56ca00ccb4e1097e98e644cfae5 docs/evidence/battery-details-widget/history/fresh-1280x800.png
 DATA 1a658f6118544201ef42abcd7b8343d4a6e1b69fac925a218f44823e7e252220 docs/evidence/battery-details-widget/history/fresh-1920x1080.png
 DATA 672fe3c7ee2c05b7cc1b009f379e510f2e8426600b2a681c190fdf3bed0c22b7 docs/evidence/battery-details-widget/history/fresh-568x1232.png
+DATA fb49616a25f887cd0f983c825729929cce2b99775c691bea78c1e37aa7dc6447 docs/evidence/battery-details-widget/history/board/page2-graph-1280x800-grim.png
 DATA  4bc927d031126339723be556a533c0b2e7e37435d15bf55a5273771469712ae7  docs/evidence/recovery-routes/touch-app-menu-qemu-2026-10-11/drawer-actions-touch-hold-menu.png
 DATA  a3ae45784cee598cd059ad936fe21e25e74b8410ddfbe506674a2c2a0206ad97  docs/evidence/recovery-routes/touch-capture-2026-10-11/window-list.mp4
 DATA  e4cb7a888f92d37b8145d5751d516dd4bbdd2d98fe4fe21a0f90937d225b6da7  docs/evidence/recovery-routes/touch-capture-2026-10-11/brightness-denied.mp4
@@ -3219,3 +3220,4 @@ Command and limits: `docs/evidence/battery-details-widget/host/README.md`.
 | `docs/evidence/battery-details-widget/history/fresh-1280x800.png` | 72851 | DATA | `ecadad5cc7bb0f213f2b8a491582a27c91c5a56ca00ccb4e1097e98e644cfae5` |
 | `docs/evidence/battery-details-widget/history/fresh-1920x1080.png` | 77618 | DATA | `1a658f6118544201ef42abcd7b8343d4a6e1b69fac925a218f44823e7e252220` |
 | `docs/evidence/battery-details-widget/history/fresh-568x1232.png` | 61673 | DATA | `672fe3c7ee2c05b7cc1b009f379e510f2e8426600b2a681c190fdf3bed0c22b7` |
+| `docs/evidence/battery-details-widget/history/board/page2-graph-1280x800-grim.png` | 808698 | DATA | `fb49616a25f887cd0f983c825729929cce2b99775c691bea78c1e37aa7dc6447` |

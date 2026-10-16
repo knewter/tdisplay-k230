@@ -17,8 +17,11 @@
 
 ## 3. Board
 
-- [ ] 3.1 Deploy and capture the widget's graph after the board has run unplugged
+- [x] 3.1 Deploy and capture the widget's graph after the board has run unplugged
       for a while; check the history file against the graph. Evidence class:
-      board grim.
+      board grim. Done 2026-10-15 19:30 CDT:
+      `docs/evidence/battery-details-widget/history/board/README.md`
+      (discharge, the gauge's 88 -> 7 recalibration, a power-off gap; no
+      charging span yet).
 - [ ] 3.2 The operator confirms the graph on the glass. Evidence class: operator
       observation.
