@@ -23,5 +23,6 @@
       `docs/evidence/battery-details-widget/history/board/README.md`
       (discharge, the gauge's 88 -> 7 recalibration, a power-off gap; no
       charging span yet).
-- [ ] 3.2 The operator confirms the graph on the glass. Evidence class: operator
-      observation.
+- [x] 3.2 The operator confirms the graph on the glass. Evidence class: operator
+      observation. Done 2026-10-15 about 19:50 CDT: the operator, viewing
+      page 2 on HDMI, said "graph looks fine".
