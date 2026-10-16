@@ -809,7 +809,11 @@ impl HomeScreen {
                 }
             }
         } else if self.drag.is_none() {
-            if !self.rearranging {
+            // Rearrange mode pages through `page_switch`, not the pager,
+            // but removing the last item on the final page still has to
+            // bring the pager back onto a page that exists.
+            if !self.rearranging
+                || (self.page_switch.is_none() && (self.pager.off_page(self.page_count()) || self.pager.is_animating())) {
                 redraw |= self.pager.tick(elapsed_ms, self.page_count());
             }
             if let Some(contact) = self.contact.as_mut() {
@@ -1302,6 +1306,7 @@ impl HomeScreen {
     /// Wayland event.
     pub fn is_animating(&self) -> bool {
         self.pager.is_animating() || (self.drag.is_some() && self.edge_side != 0) || self.page_switch.is_some()
+            || (self.page_switch.is_none() && self.pager.off_page(self.page_count()))
     }
 
     /// Which slot, if any, should show an immediate "pressed" highlight:
@@ -1515,6 +1520,49 @@ mod tests {
         assert_eq!(screen.up(-1, corner, 40, 1280, 800), Some(HomeAction::LayoutChanged));
         assert!(screen.layout.get(clock).is_none());
         assert!(screen.layout.get(HomeSlot::Grid { page: 0, slot: 4 }).is_some(), "the app beside it stays");
+    }
+
+    #[test]
+    fn a_widget_on_the_second_page_can_be_removed_with_its_badge() {
+        let mut screen = board_layout_1280x800();
+        screen.pager.set_page(1);
+        assert!(screen.rearrange_at((300.0, 300.0), 1280, 800));
+        let slot = HomeSlot::Grid { page: 1, slot: 0 };
+        let corner = screen.badge_corner(slot, 1280, 800, 9);
+        screen.down(-1, corner, 0, 1280, 800);
+        assert_eq!(screen.up(-1, corner, 40, 1280, 800), Some(HomeAction::LayoutChanged));
+        assert!(screen.layout.get(slot).is_none());
+    }
+
+    #[test]
+    fn a_long_pressed_widget_on_the_second_page_can_be_removed_with_its_badge() {
+        let mut screen = board_layout_1280x800();
+        screen.pager.set_page(1);
+        screen.down(-1, (300.0, 300.0), 0, 1280, 800);
+        for _ in 0..100 { screen.tick(16); }
+        assert!(screen.rearranging);
+        let _ = screen.up(-1, (300.0, 300.0), 1700, 1280, 800);
+        let slot = HomeSlot::Grid { page: 1, slot: 0 };
+        let corner = screen.badge_corner(slot, 1280, 800, 9);
+        screen.down(-1, corner, 2000, 1280, 800);
+        assert_eq!(screen.up(-1, corner, 2040, 1280, 800), Some(HomeAction::LayoutChanged));
+        assert!(screen.layout.get(slot).is_none());
+    }
+
+    #[test]
+    fn removing_the_only_widget_on_the_last_page_returns_to_a_page_that_exists() {
+        let mut screen = board_layout_1280x800();
+        screen.pager.set_page(1);
+        assert!(screen.rearrange_at((300.0, 300.0), 1280, 800));
+        let corner = screen.badge_corner(HomeSlot::Grid { page: 1, slot: 0 }, 1280, 800, 9);
+        screen.down(-1, corner, 0, 1280, 800);
+        assert_eq!(screen.up(-1, corner, 40, 1280, 800), Some(HomeAction::LayoutChanged));
+        assert_eq!(screen.page_count(), 1);
+        assert!(screen.is_animating(), "the pager must move off the vanished page");
+        for _ in 0..100 {
+            screen.tick(16);
+        }
+        assert_eq!(screen.pager.position(), 0.0);
     }
 
     #[test]

@@ -205,10 +205,26 @@ impl HomePager {
 
     /// Cancels any in-progress drag without starting a settle -- used when
     /// a second contact lands or the touch is otherwise invalidated.
+    /// Abandons a touch (for example a trackpad pan the compositor turned
+    /// into a cancel). A drag already under way settles to the nearest
+    /// page rather than freezing between two, where painting and hit
+    /// testing (`page`, which rounds) would disagree.
     pub fn cancel(&mut self) {
         self.drag_start = None;
         self.dragged = false;
         self.velocity = 0.0;
+        if self.settle.is_none() && self.position.fract() != 0.0 {
+            self.start_settle(self.position.round());
+        }
+    }
+
+    /// At rest, but not on a whole page that exists: left between two
+    /// pages, or past the last one after the page count shrank (the last
+    /// item on the final page was removed).
+    pub fn off_page(&self, count: usize) -> bool {
+        let max_page = count.saturating_sub(1) as f64;
+        self.drag_start.is_none() && self.velocity == 0.0 && self.settle.is_none()
+            && (self.position.fract() != 0.0 || self.position > max_page)
     }
 
     fn start_settle(&mut self, target: f64) {
@@ -230,6 +246,10 @@ impl HomePager {
     pub fn tick(&mut self, elapsed_ms: u32, count: usize) -> bool {
         if self.drag_start.is_some() || count == 0 {
             return false;
+        }
+        if self.off_page(count) {
+            let max_page = count.saturating_sub(1) as f64;
+            self.start_settle(self.position.round().clamp(0.0, max_page));
         }
         if let Some(settle) = self.settle.as_mut() {
             settle.elapsed_ms = settle.elapsed_ms.saturating_add(elapsed_ms.min(48));
@@ -278,6 +298,33 @@ mod tests {
         assert!((pager.position() - 2.0).abs() < 1e-6);
         pager.motion((300.0 + PAGE_WIDTH * 2.0, 600.0), 32, 3);
         assert_eq!(pager.position(), 0.0, "clamped at the first page");
+    }
+
+    #[test]
+    fn a_cancelled_drag_settles_to_a_whole_page() {
+        let mut pager = HomePager::new(PAGE_WIDTH);
+        pager.down((500.0, 600.0), 0);
+        pager.motion((500.0 - PAGE_WIDTH * 0.44, 600.0), 16, 2);
+        assert!(pager.dragging());
+        pager.cancel();
+        assert!(pager.is_animating(), "a cancel must not freeze between pages");
+        for _ in 0..100 {
+            pager.tick(16, 2);
+        }
+        assert_eq!(pager.position(), 0.0);
+    }
+
+    #[test]
+    fn losing_the_last_page_settles_back_onto_one_that_exists() {
+        let mut pager = HomePager::new(PAGE_WIDTH);
+        pager.set_page(1);
+        assert!(!pager.off_page(2));
+        assert!(pager.off_page(1));
+        for _ in 0..100 {
+            pager.tick(16, 1);
+        }
+        assert_eq!(pager.position(), 0.0);
+        assert!(!pager.off_page(1));
     }
 
     #[test]
