@@ -9,8 +9,8 @@ use crate::{
     home_widgets::weather::WeatherDisplay,
     icon::IconCache,
     navigation::{
-        self, list_top, panel_top, search_field_rect, tile_rect, COLUMNS,
-        GRID_BOTTOM_INSET, ROW_HEIGHT,
+        self, list_top, panel_top, search_field_rect, tile_rect,
+        GRID_BOTTOM_INSET,
     },
     pipewire_ipc::GraphSnapshot,
     service_data::{Control, ControlState, ControlValue, Priority},
@@ -24,11 +24,11 @@ use crate::{
     recovery::RecoveryState,
     splash::SplashStatus,
     theme_carousel,
-    theme_catalog::BackgroundKind,
+    theme_catalog::{BackgroundKind, TEXT_SCALE_VALUES},
     theme_thumbnails::{bounded_working_set, ThemeThumbnailCache, ThumbnailKey, Variant},
     theme_ui::{
-        background_display_label, vision_card_span, ThemeImageKey, ThemeImageWorker, ThemePage,
-        ThemeView, BACKGROUND_CAROUSEL_TOP, VISION_CARD_GAP, VISION_CARD_H, VISION_CARD_TOP,
+        background_display_label, vision_layout, ThemeImageKey, ThemeImageWorker, ThemePage,
+        ThemeView, BACKGROUND_CAROUSEL_TOP,
     },
     wifi_settings::{Secret, Security},
     wifi_ui::{all_networks, Page as WifiPage, WifiPublic},
@@ -71,10 +71,18 @@ fn attach_theme_metrics(cr: &Context, theme: Option<&AppearanceSnapshot>) {
 }
 
 /// The person's vision text step (`accessibility.text-scale`, written by
-/// `tools/theme_vision.py`): 1.0 or 1.25, applied after the theme's own
+/// `tools/theme_vision.py`): 1.0 to 2.0, applied after the theme's own
 /// sizing so a theme cannot clamp it away.
 fn vision_text_scale(theme: Option<&AppearanceSnapshot>) -> f64 {
-    theme_number(theme, "accessibility", "text-scale").unwrap_or(1.0).clamp(1.0, 1.25)
+    theme_number(theme, "accessibility", "text-scale").unwrap_or(1.0).clamp(1.0, 2.0)
+}
+
+/// True when the person has chosen a larger text step or high contrast,
+/// which makes the drawer and Shade sheets opaque.
+fn vision_adjusted(theme: Option<&AppearanceSnapshot>) -> bool {
+    vision_text_scale(theme) > 1.0
+        || matches!(theme.and_then(|t| t.token("accessibility", "high-contrast")),
+                    Some(AppearanceToken::Boolean(true)))
 }
 
 fn context_font_size(cr: &Context, design: f64) -> f64 {
@@ -1351,33 +1359,57 @@ fn paint_vision(cr: &Context, w: f64, h: f64, view: &ThemeView, theme: Option<&A
     text(cr, "Applies to every theme", note_x, title_y + 9.0, w - note_x - 28.0, 17.0, style.muted);
     let pending = view.vision_pending();
     let shown = pending.unwrap_or(&view.vision);
-    let cards = [
-        ("Larger text", shown.large_text(), pending.is_some_and(|p| p.text_scale != view.vision.text_scale)),
-        ("High contrast", shown.high_contrast(), pending.is_some_and(|p| p.contrast != view.vision.contrast)),
-    ];
-    let (x, cw) = vision_card_span(w);
-    for (index, (label, on, applying)) in cards.into_iter().enumerate() {
-        let y = VISION_CARD_TOP + index as f64 * (VISION_CARD_H + VISION_CARD_GAP);
-        service_card(cr, theme, "controls", x, y + 4.0, cw, VISION_CARD_H - 8.0, on);
-        let ink = if view.vision_loaded { style.text } else { style.muted };
-        themed_medium(cr, theme, "body", label, x + 20.0, y + 19.0, cw - 40.0, 17.0, 14.0, 22.0, ink);
-        let value = if !view.vision_loaded {
-            "Loading…"
+    // Laid out for the size the screen is drawn at now (the saved step),
+    // the same call `ThemeView::hit` makes.
+    let lay = vision_layout(w, view.vision.text_scale_value());
+    let ink = if view.vision_loaded { style.text } else { style.muted };
+    let state = |applying: bool, value: &str| -> String {
+        if !view.vision_loaded {
+            "Loading…".into()
         } else if applying {
-            "Applying…"
-        } else if on {
-            "On"
+            "Applying…".into()
         } else {
-            "Off"
-        };
-        let value_ink = if on && view.vision_loaded { style.accent } else { ink };
-        themed_text(cr, theme, "body", value, x + 20.0, y + 47.0, cw - 40.0, 19.0, 14.0, 24.0, value_ink);
+            value.into()
+        }
+    };
+
+    // Text size: one card with the four steps as segments.
+    let (x, y, cw, ch) = lay.text_card;
+    service_card(cr, theme, "controls", x, y, cw, ch, false);
+    let text_applying = pending.is_some_and(|p| p.text_scale != view.vision.text_scale);
+    let step = shown.text_step();
+    let heading_value = state(text_applying, &format!("{}%", (TEXT_SCALE_VALUES[step] * 100.0).round()));
+    text_weight(cr, "Text size", x + 20.0, y + 18.0, cw * 0.6, 17.0, ink, pango::Weight::Medium);
+    let value_w = text_advance(cr, &heading_value, 17.0, pango::Weight::Medium);
+    text_weight(cr, &heading_value, x + cw - 20.0 - value_w, y + 18.0, value_w + 2.0, 17.0,
+                if view.vision_loaded { style.accent } else { ink }, pango::Weight::Medium);
+    for (index, (sx, sy, sw, sh)) in lay.segments.into_iter().enumerate() {
+        let selected = index == step && view.vision_loaded;
+        service_card(cr, theme, "controls", sx, sy, sw, sh, selected);
+        let label = format!("{}%", (TEXT_SCALE_VALUES[index] * 100.0).round());
+        let size = 18.0;
+        let lw = text_advance(cr, &label, size, pango::Weight::Bold);
+        let drawn = context_font_size(cr, size);
+        text_weight(cr, &label, sx + (sw - lw) / 2.0, sy + (sh - drawn * 1.2) / 2.0, lw + 2.0, size,
+                    if selected { style.accent } else { ink }, pango::Weight::Bold);
     }
-    let status_y = VISION_CARD_TOP + 2.0 * (VISION_CARD_H + VISION_CARD_GAP) + 8.0;
+
+    // High contrast: one on/off card.
+    let (x, y, cw, ch) = lay.contrast_card;
+    let on = shown.high_contrast();
+    service_card(cr, theme, "controls", x, y, cw, ch, on);
+    text_weight(cr, "High contrast", x + 20.0, y + 18.0, cw - 40.0, 17.0, ink, pango::Weight::Medium);
+    let contrast_applying = pending.is_some_and(|p| p.contrast != view.vision.contrast);
+    let value = state(contrast_applying, if on { "On" } else { "Off" });
+    let label_h = (17.0 * lay.scale * 1.35).ceil();
+    text(cr, &value, x + 20.0, y + 18.0 + label_h + 6.0, cw - 40.0, 19.0,
+         if on && view.vision_loaded { style.accent } else { ink });
+
+    let (sx, sw) = (lay.text_card.0, lay.contrast_card.0 + lay.contrast_card.2 - lay.text_card.0);
     if let Some(error) = view.error.as_deref() {
-        text(cr, error, x, status_y, cw, 18.0, style.error);
+        text(cr, error, sx, lay.status_y, sw, 18.0, style.error);
     } else if let Some(message) = view.message.as_deref() {
-        text(cr, message, x, status_y, cw, 18.0, style.muted);
+        text(cr, message, sx, lay.status_y, sw, 18.0, style.muted);
     }
 }
 
@@ -2108,7 +2140,9 @@ fn theme_chooser_content_bottom(view: &ThemeView) -> f64 {
         ThemePage::List => {
             BACKGROUND_CAROUSEL_TOP + theme_carousel::BACKGROUND_GEOMETRY.expanded_h + 100.0
         }
-        ThemePage::Vision => VISION_CARD_TOP + 2.0 * (VISION_CARD_H + VISION_CARD_GAP) + 80.0,
+        // Only the portrait sheet is content-sized (`settings_panel_h`), and
+        // there the Vision cards stack whatever the exact width.
+        ThemePage::Vision => vision_layout(0.0, view.vision.text_scale_value()).bottom,
         ThemePage::Controls => f64::MAX,
     }
 }
@@ -2309,8 +2343,9 @@ impl DrawerGridCache {
                 && key.apps.iter().zip(content.apps.iter()).all(|(a, b)| a == *b)
         });
         if !fresh {
-            let rows = content.apps.len().div_ceil(COLUMNS).max(1);
-            let content_height = (rows as f64 * ROW_HEIGHT).max(1.0);
+            let columns = navigation::columns_for_width(width).max(1);
+            let rows = content.apps.len().div_ceil(columns).max(1);
+            let content_height = (rows as f64 * navigation::drawer_metrics().row_height).max(1.0);
             let surface = ImageSurface::create(
                 Format::ARgb32,
                 (width.max(1)) as i32,
@@ -2364,12 +2399,15 @@ fn paint_drawer_tile(
     app: &AppEntry,
 ) {
     let style = visual_style(theme, "launcher");
-    let icon_x = x + (cell_w - DRAWER_ICON_CARD) / 2.0;
+    let metrics = navigation::drawer_metrics();
+    let icon_size = metrics.icon;
+    let icon_card = f64::from(icon_size);
+    let icon_x = x + (cell_w - icon_card) / 2.0;
     let icon_y = y + 8.0;
     let mut painted = app
         .icon
         .as_deref()
-        .is_some_and(|icon| icons.paint(cr, icon, DRAWER_ICON_SIZE, icon_x, icon_y));
+        .is_some_and(|icon| icons.paint(cr, icon, icon_size, icon_x, icon_y));
     // Board finding (2026-09-27): `Icon=mpv` (Video) and `Icon=foot`
     // (Terminal) name real applications the bundled Yaru-based theme does
     // not cover at all -- not a harness gap, a genuine resolution miss.
@@ -2378,7 +2416,7 @@ fn paint_drawer_tile(
     // (`catalog::terminal_like`) gets one more try against a generic
     // icon name real desktop themes do cover.
     if !painted && terminal_like(&app.path) {
-        painted = icons.paint(cr, "utilities-terminal", DRAWER_ICON_SIZE, icon_x, icon_y);
+        painted = icons.paint(cr, "utilities-terminal", icon_size, icon_x, icon_y);
     }
     if !painted {
         // A tonal-container circle, not a faint tint: a low-alpha accent
@@ -2389,7 +2427,8 @@ fn paint_drawer_tile(
         // contrasting colour on top (`style.text`, not the accent again --
         // accent-on-accent would fight the very contrast a tonal
         // container needs).
-        let radius = DRAWER_ICON_CARD / 2.0;
+        let radius = icon_card / 2.0;
+        let initial_size = (24.0 * icon_card / 64.0).round();
         let cx = icon_x + radius;
         let cy = icon_y + radius;
         cr.new_sub_path();
@@ -2406,20 +2445,24 @@ fn paint_drawer_tile(
         icons.paint_label(
             cr,
             &initial,
-            (icon_x, icon_y + (DRAWER_ICON_CARD - 24.0) / 2.0),
-            DRAWER_ICON_CARD,
-            24.0,
+            (icon_x, icon_y + (icon_card - initial_size) / 2.0),
+            icon_card,
+            initial_size,
             style.text,
         );
     }
-    let label_y = icon_y + DRAWER_ICON_CARD + visual_inset(cr, 6.0);
-    icons.paint_label(
+    let label_y = icon_y + icon_card + visual_inset(cr, 6.0);
+    // At a larger vision step a name wraps onto a second line rather than
+    // ellipsizing; the 100% drawer keeps its single line.
+    let lines = if crate::layout_text_scale() > 1.0 { 2 } else { 1 };
+    icons.paint_label_lines(
         cr,
         &app.name,
         (x + 4.0, label_y),
         (cell_w - 8.0).max(1.0),
         theme_font_size(theme, "caption", DRAWER_LABEL_SIZE, 11.0, 18.0),
         brush_rgb(theme, "menu", "text", style.text),
+        lines,
     );
 }
 
@@ -2503,7 +2546,8 @@ fn paint_drawer_chrome(
 
     let (hx, hy, hw, hh) = navigation::help_rect(width, height);
     service_card(cr, theme, "launcher", hx, hy, hw, hh, false);
-    text(cr, "Help", hx + 12.0, hy + 16.0, hw - 24.0, 18.0, style.accent);
+    let help_size = context_font_size(cr, 18.0);
+    text(cr, "Help", hx + 12.0, hy + (hh - help_size * 1.2) / 2.0, hw - 24.0, 18.0, style.accent);
     let (sx, sy, sw, sh) = search_field_rect(width, height);
     rounded(cr, sx, sy, sw, sh, sh / 2.0);
     let _ = cr.save();
@@ -2542,7 +2586,7 @@ fn paint_drawer_chrome(
     let _ = cr.stroke();
     let _ = cr.restore();
     let tx = sx + 54.0;
-    let ty = sy + sh / 2.0 - 9.0;
+    let ty = sy + (sh - context_font_size(cr, 18.0) * 1.2) / 2.0;
     let available = sw - 76.0;
     if !search.focused {
         text(cr, label, tx, ty, available, 18.0, label_color);
@@ -2609,6 +2653,12 @@ fn paint_drawer(
     let _ = cr.save();
     rounded_top(cr, 0.0, panel_y, w, h - panel_y, radius);
     cr.clip();
+    if vision_adjusted(theme) {
+        // A translucent sheet lets the wallpaper fight larger text; a vision
+        // choice puts the drawer on a solid palette background first.
+        color(cr, palette_rgb_or(theme, "background", 0x1e1e2e), 1.0);
+        let _ = cr.paint();
+    }
     if !theme_brush(theme, "launcher", "background")
         .is_some_and(|brush| fill_brush(cr, brush, 0.0, panel_y, w, h - panel_y))
     {
@@ -2661,11 +2711,13 @@ fn paint_drawer(
         // one `tile_rect`/`tile_at` use everywhere else -- so its position
         // is just this call, no re-mapping through `matched` needed.
         let (x, y, tile_w, _) = tile_rect(width, height, display_index, clamped_scroll);
-        if y + ROW_HEIGHT > row_start && y < bottom {
+        let metrics = navigation::drawer_metrics();
+        let card = f64::from(metrics.icon);
+        if y + metrics.row_height > row_start && y < bottom {
             let cx = x + tile_w / 2.0;
-            let cy = y + 8.0 + DRAWER_ICON_CARD / 2.0;
+            let cy = y + 8.0 + card / 2.0;
             cr.new_sub_path();
-            cr.arc(cx, cy, DRAWER_ICON_CARD / 2.0 + 8.0, 0.0, 2.0 * std::f64::consts::PI);
+            cr.arc(cx, cy, card / 2.0 + 8.0, 0.0, 2.0 * std::f64::consts::PI);
             color(cr, style.accent, 0.22);
             let _ = cr.fill();
         }
@@ -5550,6 +5602,7 @@ impl RendererCache {
     pub fn set_appearance(&mut self, theme: Option<AppearanceSnapshot>) {
         let name = icon_theme_name_for(theme.as_ref());
         self.icons.set_theme(&name);
+        crate::set_layout_text_scale(vision_text_scale(theme.as_ref()));
         self.theme = theme;
         self.invalidate();
     }
@@ -9647,7 +9700,7 @@ mod tests {
         let baseline = fixture_theme("vision-baseline", (32, 64, 96));
         let mut large = baseline.clone();
         large.sections.insert("accessibility".into(), BTreeMap::from([
-            ("text-scale".into(), AppearanceToken::Number(1.25)),
+            ("text-scale".into(), AppearanceToken::Number(2.0)),
             ("high-contrast".into(), AppearanceToken::Boolean(false)),
         ]));
         let mut huge = baseline.clone();
@@ -9665,11 +9718,11 @@ mod tests {
             let old = render(&baseline, route);
             let bigger = render(&large, route);
             assert_ne!(old, bigger, "accessibility.text-scale must reach {route:?}");
-            assert_eq!(bigger, render(&huge, route), "the vision step is bounded at 1.25 on {route:?}");
+            assert_eq!(bigger, render(&huge, route), "the vision step is bounded at 2.0 on {route:?}");
         }
         // Themed labels (role-sized, then clamped) still get the step.
         assert_eq!(theme_font_size(Some(&baseline), "body", 18.0, 14.0, 18.0), 18.0);
-        assert_eq!(theme_font_size(Some(&large), "body", 18.0, 14.0, 18.0), 22.5);
+        assert_eq!(theme_font_size(Some(&large), "body", 18.0, 14.0, 18.0), 36.0);
     }
 
     #[test]

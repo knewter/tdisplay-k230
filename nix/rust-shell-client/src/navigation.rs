@@ -24,7 +24,45 @@ pub const COLUMNS: usize = 4;
 /// geometry and the matching `tile_at` hit-test, both of which call this on
 /// every use.
 pub fn columns_for_width(width: u32) -> usize {
-    crate::reflow_columns(width, 1.0, COLUMNS)
+    let scale = crate::layout_text_scale();
+    if scale <= 1.0 {
+        return crate::reflow_columns(width, 1.0, COLUMNS);
+    }
+    // A larger text step needs wider tiles, so fewer of them fit: the
+    // 112 px reference tile grows with the text.
+    let tile = REFERENCE_TILE_W * scale;
+    let fit = ((f64::from(width) - 2.0 * SIDE_MARGIN + TILE_GAP) / (tile + TILE_GAP)).floor();
+    (fit as usize).max(1)
+}
+
+/// The drawer tile's reference width at the 100% text step.
+const REFERENCE_TILE_W: f64 = 112.0;
+
+/// The drawer tile's icon, label and row pitch at the current text step.
+/// At 100% this is the original 64 px icon in a 110 px row; larger steps
+/// grow the icon toward the 99 px (48 dp) tap floor and make room for a
+/// two-line label at the larger size.
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct DrawerMetrics {
+    pub icon: i32,
+    /// The label's design size before the theme and the vision step.
+    pub label_design: f64,
+    /// The label's drawn size, for layout (design x step).
+    pub label_px: f64,
+    pub row_height: f64,
+}
+
+pub fn drawer_metrics() -> DrawerMetrics {
+    let s = crate::layout_text_scale();
+    let label_design = 14.0;
+    if s <= 1.0 {
+        return DrawerMetrics { icon: 64, label_design, label_px: label_design, row_height: ROW_HEIGHT };
+    }
+    let icon = (64.0 * s).min(99.0).round();
+    let label_px = label_design * s;
+    // icon top inset, icon, gap, two label lines, breathing room.
+    let row_height = (8.0 + icon + 6.0 + 2.0 * (label_px * 1.25) + 14.0).ceil().max(ROW_HEIGHT);
+    DrawerMetrics { icon: icon as i32, label_design, label_px, row_height }
 }
 /// The cell's full vertical pitch: an icon, a small gap, a single-line
 /// label, and the row's own share of vertical breathing room -- see
@@ -59,7 +97,23 @@ pub fn panel_top(_height: u32) -> f64 {
 const TOP_CHROME_HEIGHT: f64 = 86.0;
 
 pub fn list_top(height: u32) -> f64 {
-    panel_top(height) + TOP_CHROME_HEIGHT
+    panel_top(height) + top_chrome_height()
+}
+
+/// The top chrome grows with the search pill at larger text steps.
+fn top_chrome_height() -> f64 {
+    TOP_CHROME_HEIGHT + (search_field_height() - 48.0)
+}
+
+fn search_field_height() -> f64 {
+    let s = crate::layout_text_scale();
+    if s <= 1.0 { 48.0 } else { (18.0 * s * 1.35 + 20.0).ceil().max(48.0) }
+}
+
+/// Help's width: room for its label at the current text step.
+fn help_width() -> f64 {
+    let s = crate::layout_text_scale();
+    if s <= 1.0 { 80.0 } else { (80.0 * s).ceil() }
 }
 
 /// The drawer-drag's Cancel target (task 1: "A Cancel target at the top,
@@ -91,8 +145,8 @@ pub fn handle_rect(width: u32, height: u32) -> (f64, f64, f64, f64) {
 pub fn search_field_rect(width: u32, height: u32) -> (f64, f64, f64, f64) {
     let x = SIDE_MARGIN;
     let y = panel_top(height) + 22.0;
-    let w = f64::from(width) - 2.0 * SIDE_MARGIN - 88.0;
-    let h = 48.0;
+    let w = f64::from(width) - 2.0 * SIDE_MARGIN - help_width() - 8.0;
+    let h = search_field_height();
     (x, y, w, h)
 }
 
@@ -106,7 +160,8 @@ pub fn search_field_hit(point: (f64, f64), width: u32, height: u32) -> bool {
 
 /// Deliberately opened Help, outside the app grid and search hit region.
 pub fn help_rect(width: u32, height: u32) -> (f64, f64, f64, f64) {
-    (f64::from(width) - SIDE_MARGIN - 80.0, panel_top(height) + 22.0, 80.0, 56.0)
+    let w = help_width();
+    (f64::from(width) - SIDE_MARGIN - w, panel_top(height) + 22.0, w, search_field_height() + 8.0)
 }
 
 pub fn help_hit(point: (f64, f64), width: u32, height: u32) -> bool {
@@ -121,11 +176,12 @@ pub fn tile_rect(width: u32, height: u32, index: usize, scroll: f64) -> (f64, f6
         .max(0.0);
     let column = index % columns;
     let row = index / columns;
+    let pitch = drawer_metrics().row_height;
     (
         SIDE_MARGIN + column as f64 * (tile_width + TILE_GAP),
-        list_top(height) + row as f64 * ROW_HEIGHT - scroll,
+        list_top(height) + row as f64 * pitch - scroll,
         tile_width,
-        TILE_HEIGHT,
+        pitch,
     )
 }
 
@@ -148,7 +204,7 @@ pub fn tile_at(
         return None;
     }
     let columns = columns_for_width(width);
-    let row = (content_y / ROW_HEIGHT).floor() as usize;
+    let row = (content_y / drawer_metrics().row_height).floor() as usize;
     let first = row.saturating_mul(columns);
     for index in first..first.saturating_add(columns).min(apps) {
         let (x, y, w, h) = tile_rect(width, height, index, scroll);
@@ -162,7 +218,7 @@ pub fn tile_at(
 fn max_scroll(width: u32, height: u32, apps: usize) -> f64 {
     let viewport = (f64::from(height) - GRID_BOTTOM_INSET - list_top(height)).max(0.0);
     let grid_rows = apps.div_ceil(columns_for_width(width));
-    (grid_rows as f64 * ROW_HEIGHT - TILE_GAP - viewport).max(0.0)
+    (grid_rows as f64 * drawer_metrics().row_height - TILE_GAP - viewport).max(0.0)
 }
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
@@ -661,6 +717,41 @@ mod tests {
             nav.up(1, point, LONG_PRESS_MS - 1, 568, 1232, 7),
             Some(DrawerAction::Launch(2))
         );
+    }
+
+    #[test]
+    fn the_largest_text_step_reflows_the_drawer_without_overlap_or_tiny_targets() {
+        // Thread-local: this test's thread alone sees the 200% step.
+        crate::set_layout_text_scale(2.0);
+        for (width, height) in [(568u32, 1232u32), (1232, 568)] {
+            let metrics = drawer_metrics();
+            assert!(metrics.icon >= 99, "icon {} px is under the 48 dp floor", metrics.icon);
+            let columns = columns_for_width(width);
+            assert!(columns >= 1);
+            let (sx, sy, sw, sh) = search_field_rect(width, height);
+            let (hx, hy, hw, hh) = help_rect(width, height);
+            assert!(sx + sw <= hx, "search pill runs under Help at {width}x{height}");
+            assert!(sh >= 48.0 + 20.0 && hh >= 56.0 && hw >= 160.0);
+            assert!(list_top(height) >= hy + hh && list_top(height) >= sy + sh);
+            let mut previous: Option<(f64, f64, f64, f64)> = None;
+            for index in 0..8 {
+                let (x, y, w, h) = tile_rect(width, height, index, 0.0);
+                assert!(w >= 224.0, "a {w} px tile cannot hold a 200% label");
+                assert!(x >= 0.0 && x + w <= f64::from(width));
+                assert!(h >= 8.0 + f64::from(metrics.icon) + 6.0 + 2.0 * metrics.label_px * 1.25);
+                if let Some((px, py, pw, ph)) = previous {
+                    let disjoint = x >= px + pw || py + ph <= y;
+                    assert!(disjoint, "tile {index} overlaps its predecessor at {width}x{height}");
+                }
+                if y + h / 2.0 < f64::from(height) - GRID_BOTTOM_INSET {
+                    assert_eq!(tile_at((x + w / 2.0, y + h / 2.0), width, height, 8, 0.0), Some(index));
+                }
+                previous = Some((x, y, w, h));
+            }
+        }
+        crate::set_layout_text_scale(1.0);
+        assert_eq!(drawer_metrics().row_height, ROW_HEIGHT, "the 100% drawer is unchanged");
+        assert_eq!(columns_for_width(568), crate::reflow_columns(568, 1.0, COLUMNS));
     }
 
     #[test]

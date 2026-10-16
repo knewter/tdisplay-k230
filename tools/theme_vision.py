@@ -1,5 +1,5 @@
-"""Vision-accessibility preference: a larger text step and a high-contrast
-palette, applied to every theme generation.
+"""Vision-accessibility preference: a text-size step (100-200%) and a
+high-contrast palette, applied to every theme generation.
 
 The choice lives beside the theme state (`<state-root>/vision.json`) and is
 baked into each prepared generation: the high-contrast palette replaces the
@@ -17,7 +17,10 @@ import tempfile
 
 FILENAME = "vision.json"
 MAX_BYTES = 4096
-TEXT_SCALES = {"default": 1.0, "large": 1.25}
+#: Text-size steps. 200% is WCAG 1.4.4's resize target; on this 331 ppi
+#: panel the design body size (17-18 px) is about 8.5 sp, so 160% is roughly a
+#: phone's default body text. "large" keeps its name and is now 130%.
+TEXT_SCALES = {"default": 1.0, "large": 1.3, "larger": 1.6, "largest": 2.0}
 CONTRASTS = ("standard", "high")
 DEFAULT = {"text_scale": "default", "contrast": "standard"}
 

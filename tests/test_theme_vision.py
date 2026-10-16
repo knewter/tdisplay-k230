@@ -70,9 +70,16 @@ class VisionPreference(unittest.TestCase):
         self.assertIn('hairline="#abcdef"', text)
         self.assertIn('mode="dark"', text)
 
+    def test_the_four_text_steps_reach_two_hundred_percent(self):
+        self.assertEqual(theme_vision.TEXT_SCALES,
+                         {"default": 1.0, "large": 1.3, "larger": 1.6, "largest": 2.0})
+        for name, value in theme_vision.TEXT_SCALES.items():
+            choice = {"text_scale": name, "contrast": "standard"}
+            self.assertEqual(theme_vision.tokens(choice)["text-scale"]["value"], value)
+
     def test_tokens_carry_the_text_step_and_contrast_for_both_renderers(self):
         self.assertEqual(theme_vision.tokens(LARGE), {
-            "text-scale": {"kind": "number", "value": 1.25},
+            "text-scale": {"kind": "number", "value": 1.3},
             "high-contrast": {"kind": "boolean", "value": False},
         })
         self.assertEqual(theme_vision.tokens(HIGH)["high-contrast"]["value"], True)
@@ -107,7 +114,7 @@ class VisionGeneration(unittest.TestCase):
         large, report = self.prepare()
         self.assertNotEqual(before, large)
         self.assertEqual(report["vision"], LARGE)
-        self.assertEqual(self.sections(large)["accessibility"]["text-scale"]["value"], 1.25)
+        self.assertEqual(self.sections(large)["accessibility"]["text-scale"]["value"], 1.3)
         self.assertEqual(report["palette"]["background"], self.prepare()[1]["palette"]["background"])
         self.assertEqual(self.prepare()[0], large)
 

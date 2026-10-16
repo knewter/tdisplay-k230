@@ -387,7 +387,28 @@ impl IconCache {
         size: f64,
         rgb: u32,
     ) -> bool {
-        let key = format!("{:.0}x{:.0}:{rgb:06x}:{value}", width.max(1.0), size);
+        self.paint_label_lines(cr, value, pos, width, size, rgb, 1)
+    }
+
+    /// `paint_label` that may wrap onto up to `lines` lines (word, then
+    /// character breaks) before ellipsizing the last one.
+    #[allow(clippy::too_many_arguments)]
+    pub fn paint_label_lines(
+        &mut self,
+        cr: &Context,
+        value: &str,
+        pos: (f64, f64),
+        width: f64,
+        size: f64,
+        rgb: u32,
+        lines: u32,
+    ) -> bool {
+        let lines = lines.max(1);
+        let key = if lines == 1 {
+            format!("{:.0}x{:.0}:{rgb:06x}:{value}", width.max(1.0), size)
+        } else {
+            format!("{:.0}x{:.0}x{lines}:{rgb:06x}:{value}", width.max(1.0), size)
+        };
         if let Some(index) = self.labels.iter().position(|(entry, _)| entry == &key) {
             let item = self.labels.remove(index);
             self.labels.push(item);
@@ -395,7 +416,7 @@ impl IconCache {
             if self.labels.len() == LABEL_CACHE_LIMIT {
                 self.labels.remove(0);
             }
-            self.labels.push((key, render_label(value, width, size, rgb)));
+            self.labels.push((key, render_label(value, width, size, rgb, lines)));
         }
         let Some((_, surface)) = self.labels.last() else {
             return false;
@@ -410,12 +431,12 @@ impl IconCache {
 /// failure -- matching `decode`'s own "absent surface reads as absent,
 /// never as a panic" convention -- is simply an invisible label, not a
 /// crash.
-fn render_label(value: &str, width: f64, size: f64, rgb: u32) -> ImageSurface {
+fn render_label(value: &str, width: f64, size: f64, rgb: u32, lines: u32) -> ImageSurface {
     let w = (width.max(1.0)).ceil() as i32;
     // A single bold line at `size` never exceeds this height even counting
     // ascenders/descenders; generous rather than exact since any overflow
     // would simply clip rather than corrupt neighboring pixels.
-    let h = (size * 1.6).max(1.0).ceil() as i32;
+    let h = (size * (1.6 + 1.25 * f64::from(lines.saturating_sub(1)))).max(1.0).ceil() as i32;
     let fallback = || ImageSurface::create(Format::ARgb32, 1, 1).expect("1x1 fallback surface");
     let surface = ImageSurface::create(Format::ARgb32, w, h).unwrap_or_else(|_| fallback());
     if let Ok(cr) = Context::new(&surface) {
@@ -429,6 +450,10 @@ fn render_label(value: &str, width: f64, size: f64, rgb: u32) -> ImageSurface {
         layout.set_width((width * f64::from(pango::SCALE)) as i32);
         layout.set_alignment(pango::Alignment::Center);
         layout.set_ellipsize(EllipsizeMode::End);
+        if lines > 1 {
+            layout.set_wrap(pango::WrapMode::WordChar);
+            layout.set_height(-(lines as i32));
+        }
         color(&cr, rgb, 1.0);
         cr.move_to(0.0, 0.0);
         pangocairo::functions::show_layout(&cr, &layout);

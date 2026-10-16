@@ -121,24 +121,63 @@ pub enum ThemePage {
     Vision,
 }
 
-/// Which Vision page card a tap toggled.
+/// What a Vision page tap chose: one of the four text-size steps
+/// (`theme_catalog::TEXT_SCALE_NAMES` index), or the contrast card.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum VisionToggle {
-    TextSize,
+    TextSize(usize),
     Contrast,
 }
 
-/// Top of the first Vision card; each card is `VISION_CARD_H` tall (the
-/// 99 px tap floor) with `VISION_CARD_GAP` between them.
-pub const VISION_CARD_TOP: f64 = 150.0;
-pub const VISION_CARD_H: f64 = 99.0;
-pub const VISION_CARD_GAP: f64 = 16.0;
 /// The Vision cards keep a readable column on a wide output.
 pub const VISION_CARD_MAX_W: f64 = 520.0;
+/// The 48 dp tap floor on this panel (2.07 px per dp).
+pub const VISION_TAP_MIN: f64 = 99.0;
 
-/// The x span of the Vision cards for an output `width` px wide.
-pub fn vision_card_span(width: f64) -> (f64, f64) {
-    (24.0, (width - 48.0).min(VISION_CARD_MAX_W))
+/// Where the Vision page puts its cards at text size `scale` (1.0-2.0).
+/// Drawing and hit-testing both read this, so they cannot disagree, and
+/// every height grows with the text so nothing clips at 200%.
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct VisionLayout {
+    pub scale: f64,
+    /// The "Text size" card and its four step segments.
+    pub text_card: (f64, f64, f64, f64),
+    pub segments: [(f64, f64, f64, f64); 4],
+    /// The "High contrast" card.
+    pub contrast_card: (f64, f64, f64, f64),
+    /// Baseline top of the status line under the cards.
+    pub status_y: f64,
+    /// The bottom of everything the page draws.
+    pub bottom: f64,
+}
+
+/// The Vision page layout for an output `width` px wide at text `scale`.
+/// Side by side when two cards fit (landscape panel, HDMI); stacked in
+/// portrait.
+pub fn vision_layout(width: f64, scale: f64) -> VisionLayout {
+    let s = scale.clamp(1.0, 2.0);
+    let line = |size: f64| (size * s * 1.35).ceil();
+    let top = (110.0 + 40.0 * s).round();
+    let cw = (width - 48.0).min(VISION_CARD_MAX_W);
+    let side_by_side = width >= 2.0 * cw + 72.0;
+    let label_h = line(17.0);
+    let seg_h = (line(18.0) + 40.0).max(VISION_TAP_MIN);
+    let text_h = 18.0 + label_h + 12.0 + seg_h + 14.0;
+    let contrast_h = (18.0 + label_h + 6.0 + line(19.0) + 18.0).max(VISION_TAP_MIN);
+    let text_card = (24.0, top, cw, text_h);
+    let contrast_card = if side_by_side {
+        (24.0 + cw + 24.0, top, cw, contrast_h)
+    } else {
+        (24.0, top + text_h + 16.0, cw, contrast_h)
+    };
+    let pad = 12.0;
+    let gap = 8.0;
+    let seg_w = (cw - 2.0 * pad - 3.0 * gap) / 4.0;
+    let seg_y = top + 18.0 + label_h + 12.0;
+    let segments = std::array::from_fn(|i| (24.0 + pad + i as f64 * (seg_w + gap), seg_y, seg_w, seg_h));
+    let cards_bottom = (text_card.1 + text_card.3).max(contrast_card.1 + contrast_card.3);
+    let status_y = cards_bottom + 12.0;
+    VisionLayout { scale: s, text_card, segments, contrast_card, status_y, bottom: status_y + line(18.0) + 24.0 }
 }
 
 /// The theme (and, once a theme is active, which of its own backgrounds)
@@ -626,17 +665,22 @@ impl ThemeView {
         ThemeRequest::List
     }
 
-    /// The request for a Vision card tap: the saved choice with that one
-    /// option flipped. Nothing while another request is in flight or before
-    /// the saved choice is known.
+    /// The request for a Vision tap: the saved choice with that text step
+    /// chosen or the contrast flipped. Nothing while another request is in
+    /// flight, before the saved choice is known, or when the step tapped is
+    /// already the saved one.
     pub fn toggle_vision(&mut self, toggle: VisionToggle) -> Option<ThemeRequest> {
         if self.pending.is_some() || !self.vision_loaded {
             return None;
         }
         let mut next = self.vision.clone();
         match toggle {
-            VisionToggle::TextSize => {
-                next.text_scale = if next.large_text() { "default" } else { "large" }.into()
+            VisionToggle::TextSize(step) => {
+                let name = *crate::theme_catalog::TEXT_SCALE_NAMES.get(step)?;
+                if name == next.text_scale {
+                    return None; // Already the saved step: nothing to apply.
+                }
+                next.text_scale = name.into()
             }
             VisionToggle::Contrast => {
                 next.contrast = if next.high_contrast() { "standard" } else { "high" }.into()
@@ -1235,18 +1279,18 @@ impl ThemeView {
                         None
                     };
                 }
-                let (x, cw) = vision_card_span(w);
-                if !(x..x + cw).contains(&end.0) {
-                    return None;
+                let lay = vision_layout(w, self.vision.text_scale_value());
+                let inside = |(x, y, rw, rh): (f64, f64, f64, f64), p: (f64, f64)| {
+                    (x..x + rw).contains(&p.0) && (y..y + rh).contains(&p.1)
+                };
+                // A step counts only when the touch starts and ends on it.
+                if let Some(step) = (0..4).find(|&i| inside(lay.segments[i], start) && inside(lay.segments[i], end)) {
+                    return Some(ThemeIntent::Vision(VisionToggle::TextSize(step)));
                 }
-                [VisionToggle::TextSize, VisionToggle::Contrast]
-                    .into_iter()
-                    .enumerate()
-                    .find(|(index, _)| {
-                        let top = VISION_CARD_TOP + *index as f64 * (VISION_CARD_H + VISION_CARD_GAP);
-                        (top..top + VISION_CARD_H).contains(&end.1)
-                    })
-                    .map(|(_, toggle)| ThemeIntent::Vision(toggle))
+                if inside(lay.contrast_card, end) {
+                    return Some(ThemeIntent::Vision(VisionToggle::Contrast));
+                }
+                None
             }
             ThemePage::List => {
                 let lay = self.layout(width, height);
@@ -1768,32 +1812,75 @@ mod tests {
         let mut view = ThemeView::default();
         open_vision_page(&mut view, None);
         assert!(!view.vision_loaded);
-        assert!(view.toggle_vision(VisionToggle::TextSize).is_none());
+        assert!(view.toggle_vision(VisionToggle::TextSize(3)).is_none());
+    }
+
+    fn centre((x, y, w, h): (f64, f64, f64, f64)) -> (f64, f64) {
+        (x + w / 2.0, y + h / 2.0)
     }
 
     #[test]
-    fn each_vision_card_flips_only_its_own_option_and_applies_once() {
+    fn the_vision_layout_never_clips_and_keeps_the_tap_floor_at_every_step() {
+        for (w, h) in [(568.0, 1232.0), (1232.0, 568.0), (1280.0, 800.0)] {
+            for scale in crate::theme_catalog::TEXT_SCALE_VALUES {
+                let lay = vision_layout(w, scale);
+                let rects = lay.segments.iter().copied().chain([lay.text_card, lay.contrast_card]);
+                for (x, y, rw, rh) in rects {
+                    assert!(x >= 0.0 && x + rw <= w, "{w}x{h} at {scale}: inside the width");
+                    assert!(rh >= VISION_TAP_MIN, "{w}x{h} at {scale}: 48 dp tap floor");
+                    assert!(y + rh <= h, "{w}x{h} at {scale}: inside the height");
+                }
+                // A segment holds its "200%" label (DejaVu Sans Bold is under
+                // 0.7 em per glyph) and its line.
+                let (_, _, sw, sh) = lay.segments[0];
+                assert!(sw >= 4.0 * 0.7 * 18.0 * scale, "{w}x{h} at {scale}: segment width {sw}");
+                assert!(sh >= 18.0 * scale * 1.35, "{w}x{h} at {scale}: segment height");
+                // Segments sit inside the text card and do not overlap.
+                let (tx, ty, tw, th) = lay.text_card;
+                for pair in lay.segments.windows(2) {
+                    assert!(pair[0].0 + pair[0].2 <= pair[1].0);
+                }
+                for (x, y, rw, rh) in lay.segments {
+                    assert!(x >= tx && x + rw <= tx + tw && y >= ty && y + rh <= ty + th);
+                }
+                assert!(lay.bottom <= h, "{w}x{h} at {scale}: page fits ({})", lay.bottom);
+            }
+        }
+        // The landscape panel puts the two cards side by side, portrait stacks them.
+        assert_eq!(vision_layout(1232.0, 2.0).contrast_card.1, vision_layout(1232.0, 2.0).text_card.1);
+        assert!(vision_layout(568.0, 2.0).contrast_card.1 > vision_layout(568.0, 2.0).text_card.1);
+    }
+
+    #[test]
+    fn each_text_step_and_the_contrast_card_send_one_request() {
         let mut view = ThemeView::default();
         open_vision_page(&mut view, Some(VisionChoice::default()));
         let (w, h) = (568u32, 1232u32);
-        let card = |index: f64| VISION_CARD_TOP + index * (VISION_CARD_H + VISION_CARD_GAP) + 50.0;
-        let tap = |view: &ThemeView, y: f64| view.hit((200.0, y), (200.0, y), w, h);
-        assert_eq!(tap(&view, card(0.0)), Some(ThemeIntent::Vision(VisionToggle::TextSize)));
-        assert_eq!(tap(&view, card(1.0)), Some(ThemeIntent::Vision(VisionToggle::Contrast)));
-        // The gap between the cards and the space below them are dead.
-        assert_eq!(tap(&view, VISION_CARD_TOP + VISION_CARD_H + 4.0), None);
-        assert_eq!(tap(&view, card(2.0)), None);
+        let lay = vision_layout(w as f64, 1.0);
+        let tap = |view: &ThemeView, p: (f64, f64)| view.hit(p, p, w, h);
+        for step in 0..4 {
+            assert_eq!(tap(&view, centre(lay.segments[step])),
+                       Some(ThemeIntent::Vision(VisionToggle::TextSize(step))));
+        }
+        assert_eq!(tap(&view, centre(lay.contrast_card)), Some(ThemeIntent::Vision(VisionToggle::Contrast)));
+        // A drag from one step to another chooses neither.
+        let (a, b) = (centre(lay.segments[0]), centre(lay.segments[2]));
+        assert_eq!(view.hit(a, b, w, h), None);
+        // Below the cards is dead.
+        assert_eq!(tap(&view, (200.0, lay.bottom + 10.0)), None);
+        // The saved step is not re-applied.
+        assert!(view.toggle_vision(VisionToggle::TextSize(0)).is_none());
+        assert!(view.toggle_vision(VisionToggle::TextSize(4)).is_none());
 
-        let request = view.toggle_vision(VisionToggle::Contrast).unwrap();
+        let request = view.toggle_vision(VisionToggle::TextSize(3)).unwrap();
         assert_eq!(request, ThemeRequest::Vision(VisionChoice {
-            text_scale: "default".into(), contrast: "high".into(),
+            text_scale: "largest".into(), contrast: "standard".into(),
         }));
         assert!(request.is_activation());
         view.submitted(request.clone(), 2);
-        // In flight: no second request, and the page cannot be left.
-        assert!(view.toggle_vision(VisionToggle::TextSize).is_none());
-        assert_eq!(tap(&view, card(0.0)), None);
-        assert_eq!(view.vision_pending().map(|c| c.contrast.as_str()), Some("high"));
+        // In flight: no second request, and the page cannot be tapped.
+        assert!(view.toggle_vision(VisionToggle::Contrast).is_none());
+        assert_eq!(view.vision_pending().map(|c| c.text_scale.as_str()), Some("largest"));
         view.known_generations.insert(id('a'), id('b'));
         let ThemeRequest::Vision(choice) = request.clone() else { unreachable!() };
         assert!(view.accept(ThemeReply {
@@ -1801,14 +1888,16 @@ mod tests {
             request,
             result: Ok(ThemeResponse::Vision { choice, activated: true }),
         }));
-        assert!(view.vision.high_contrast());
-        assert!(!view.vision.large_text());
+        assert_eq!(view.vision.text_step(), 3);
+        assert_eq!(view.vision.text_scale_value(), 2.0);
         assert_eq!(view.message.as_deref(), Some("Applied to every theme"));
         // Every generation identity changed with the choice.
         assert!(view.known_generations.is_empty());
-        // The next tap starts from the saved choice.
-        assert_eq!(view.toggle_vision(VisionToggle::TextSize), Some(ThemeRequest::Vision(VisionChoice {
-            text_scale: "large".into(), contrast: "high".into(),
+        // Hit-testing now follows the 200% layout.
+        let big = vision_layout(w as f64, 2.0);
+        assert_eq!(tap(&view, centre(big.contrast_card)), Some(ThemeIntent::Vision(VisionToggle::Contrast)));
+        assert_eq!(view.toggle_vision(VisionToggle::Contrast), Some(ThemeRequest::Vision(VisionChoice {
+            text_scale: "largest".into(), contrast: "high".into(),
         })));
     }
 
@@ -1816,7 +1905,7 @@ mod tests {
     fn a_failed_vision_change_keeps_the_saved_choice_and_says_why() {
         let mut view = ThemeView::default();
         open_vision_page(&mut view, Some(VisionChoice::default()));
-        let request = view.toggle_vision(VisionToggle::TextSize).unwrap();
+        let request = view.toggle_vision(VisionToggle::TextSize(2)).unwrap();
         view.submitted(request.clone(), 2);
         assert!(view.accept(ThemeReply { id: 2, request, result: Err("theme command failed".into()) }));
         assert_eq!(view.vision, VisionChoice::default());
@@ -1828,12 +1917,12 @@ mod tests {
     fn a_vision_choice_saved_with_no_active_theme_says_when_it_applies() {
         let mut view = ThemeView::default();
         open_vision_page(&mut view, Some(VisionChoice::default()));
-        let request = view.toggle_vision(VisionToggle::TextSize).unwrap();
+        let request = view.toggle_vision(VisionToggle::TextSize(1)).unwrap();
         view.submitted(request.clone(), 2);
         let ThemeRequest::Vision(choice) = request.clone() else { unreachable!() };
         view.accept(ThemeReply { id: 2, request, result: Ok(ThemeResponse::Vision { choice, activated: false }) });
         assert_eq!(view.message.as_deref(), Some("Saved; applies with the next theme"));
-        assert!(view.vision.large_text());
+        assert_eq!(view.vision.text_scale, "large");
     }
 
     #[test]

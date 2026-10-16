@@ -48,11 +48,13 @@ const HELPER_RESPONSE_LIMIT: usize = RESPONSE_LIMIT + 4096;
 pub const FIT_NAMES: [&str; 5] = ["crop", "fit", "center", "fill", "solid"];
 
 /// `tools/theme_vision.py`'s `TEXT_SCALES` keys and `CONTRASTS`.
-pub const TEXT_SCALE_NAMES: [&str; 2] = ["default", "large"];
+pub const TEXT_SCALE_NAMES: [&str; 4] = ["default", "large", "larger", "largest"];
+/// The text size each `TEXT_SCALE_NAMES` step applies (100% to 200%).
+pub const TEXT_SCALE_VALUES: [f64; 4] = [1.0, 1.3, 1.6, 2.0];
 pub const CONTRAST_NAMES: [&str; 2] = ["standard", "high"];
 
 /// The person's vision preference (`<state-root>/vision.json`), applied to
-/// every theme generation: a larger text step and a high-contrast palette.
+/// every theme generation: a text-size step and a high-contrast palette.
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct VisionChoice {
     pub text_scale: String,
@@ -66,8 +68,14 @@ impl Default for VisionChoice {
 }
 
 impl VisionChoice {
-    pub fn large_text(&self) -> bool {
-        self.text_scale == "large"
+    /// The index of the text-size step in `TEXT_SCALE_NAMES` (0 = 100%).
+    pub fn text_step(&self) -> usize {
+        TEXT_SCALE_NAMES.iter().position(|name| *name == self.text_scale).unwrap_or(0)
+    }
+
+    /// The text size this choice applies, 1.0 to 2.0.
+    pub fn text_scale_value(&self) -> f64 {
+        TEXT_SCALE_VALUES[self.text_step()]
     }
 
     pub fn high_contrast(&self) -> bool {

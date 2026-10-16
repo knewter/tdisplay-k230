@@ -196,12 +196,13 @@ class AppearanceReceiver(unittest.TestCase):
         self.activate_metrics(False, 'METRICS 1.250 1.100')
 
     def test_vision_text_scale_multiplies_the_theme_font_but_not_spacing(self):
-        # theme_vision.py's "large" step on a 12 px theme: text grows,
+        # theme_vision.py's 160% step on a 12 px theme: text grows,
         # insets keep the theme's own spacing.
-        self.activate_metrics(True, 'METRICS 1.250 1.100', base=12, text_scale=1.25)
+        self.activate_metrics(True, 'METRICS 1.600 1.100', base=12, text_scale=1.6)
 
     def test_vision_text_scale_is_bounded(self):
-        self.activate_metrics(True, 'METRICS 1.250 1.100', base=12, text_scale=9)
+        # 200% is the largest step (WCAG 1.4.4).
+        self.activate_metrics(True, 'METRICS 2.000 1.100', base=12, text_scale=9)
 
     def test_malformed_font_metric_is_not_acknowledged(self):
         path = self.next / 'appearance.json'

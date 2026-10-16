@@ -238,6 +238,22 @@ pub fn density_scale(width: u32, height: u32) -> f64 {
     scale.clamp(1.0, 2.0)
 }
 
+thread_local! {
+    static LAYOUT_TEXT_SCALE: std::cell::Cell<f64> = const { std::cell::Cell::new(1.0) };
+}
+
+/// The vision text step (1.0-2.0) the shell's layouts reflow for. Set from
+/// the active appearance (`RendererCache::set_appearance`), on the same
+/// thread that paints and hit-tests, so drawing and touch use one geometry.
+pub fn layout_text_scale() -> f64 {
+    LAYOUT_TEXT_SCALE.with(|scale| scale.get())
+}
+
+pub fn set_layout_text_scale(scale: f64) {
+    let scale = if scale.is_finite() { scale.clamp(1.0, 2.0) } else { 1.0 };
+    LAYOUT_TEXT_SCALE.with(|cell| cell.set(scale));
+}
+
 /// How many `base_columns`-pitch columns (as authored at `DESIGN_WIDTH`,
 /// `scale` `1.0`) fit `width` at a given `scale`, rounded to the nearest
 /// whole column and never fewer than `base_columns` -- a configure this

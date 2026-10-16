@@ -89,7 +89,8 @@ static bool metrics(json_object *sections, struct card_appearance *out) {
 				json_object_get_type(value) != json_type_boolean) return false;
 		with_font = json_object_get_boolean(value);
 	}
-	out->font_scale = fmax(0.8, fmin(1.25, base / 12.0)) * fmax(1.0, fmin(1.25, text_scale));
+	/* The vision text step reaches 200% (tools/theme_vision.py). */
+	out->font_scale = fmax(0.8, fmin(1.25, base / 12.0)) * fmax(1.0, fmin(2.0, text_scale));
 	out->spacing_scale = fmax(0.8, fmin(1.25, scale * (with_font ? base / 12.0 : 1)));
 	return true;
 }

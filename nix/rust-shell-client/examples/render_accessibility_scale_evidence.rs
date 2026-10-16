@@ -1,6 +1,6 @@
 //! Host renders for the vision option (task C.3): the same screens drawn
-//! from three real generations that `tools/theme_activate.py` prepared from
-//! one theme with the default choice, larger text and high contrast.
+//! from real generations that `tools/theme_activate.py` prepared from one
+//! theme at each text step, and with high contrast.
 //!
 //! usage: render_accessibility_scale_evidence <out-dir> <generations-root>
 //!        <name>=<generation-id>...
@@ -54,7 +54,7 @@ fn render(path: PathBuf, theme: &AppearanceSnapshot, vision: &VisionChoice, w: u
             ..ThemeView::default()
         });
     }
-    let apps: Vec<AppEntry> = ["Terminal", "Files", "Video", "Settings", "Notes", "Monitor"]
+    let apps: Vec<AppEntry> = ["Terminal", "Files", "Video Player", "Settings", "Text Editor", "System Monitor", "Calculator", "Image Viewer"]
         .into_iter()
         .map(|name| AppEntry { id: format!("{name}.desktop"), name: name.into(), icon: None, path: PathBuf::new() })
         .collect();
@@ -84,11 +84,13 @@ fn main() {
     for pair in args {
         let (name, id) = pair.split_once('=').expect("name=generation");
         let theme = snapshot(&root, &sockets, name, id);
+        // `<step>` or `<step>-high`, where step is a TEXT_SCALE_NAMES entry.
+        let step = name.split('-').next().unwrap_or("default");
         let vision = VisionChoice {
-            text_scale: if name.contains("large") { "large" } else { "default" }.into(),
-            contrast: if name.contains("high") { "high" } else { "standard" }.into(),
+            text_scale: step.into(),
+            contrast: if name.ends_with("high") { "high" } else { "standard" }.into(),
         };
-        for (w, h) in [(568u32, 1232u32), (1280, 800)] {
+        for (w, h) in [(568u32, 1232u32), (1232, 568)] {
             for page in ["settings", "vision", "shade", "drawer"] {
                 render(out.join(format!("{name}-{page}-{w}x{h}.png")), &theme, &vision, w, h, page);
             }
