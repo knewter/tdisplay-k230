@@ -4191,11 +4191,22 @@ fn draw_dot_matrix_glyph(cr: &Context, rows: &[&str], cols: usize, x0: f64, y0: 
     let glow = glow_for(rgb);
     for (row_index, row) in rows.iter().enumerate() {
         for (col_index, ch) in row.chars().enumerate() {
-            if col_index >= cols || ch != '1' {
+            if col_index >= cols {
                 continue;
             }
             let cx = x0 + (col_index as f64 + 0.5) * pitch;
             let cy = y0 + (row_index as f64 + 0.5) * pitch;
+            if ch != '1' {
+                // The unlit dots of a digit stay faintly visible, so the
+                // block reads as a lamp grid rather than floating dots.
+                if cols == 5 {
+                    cr.new_path();
+                    cr.arc(cx, cy, radius * 0.5, 0.0, std::f64::consts::TAU);
+                    color(cr, rgb, 0.16);
+                    let _ = cr.fill();
+                }
+                continue;
+            }
             draw_soft_backdrop(cr, cx, cy, radius * 1.9, glow, 0.16);
             cr.new_path();
             cr.arc(cx, cy, radius, 0.0, std::f64::consts::TAU);
@@ -4206,16 +4217,16 @@ fn draw_dot_matrix_glyph(cr: &Context, rows: &[&str], cols: usize, x0: f64, y0: 
 }
 
 /// Draws `"HH"`/`"MM"` as a Nothing-OS-style dot-matrix readout, centered
-/// within `(x, y, w, h)`: digits in `digit_rgb`, the colon in `accent_rgb`
-/// (task: "Use theme colours tastefully: an accent for one element and the
-/// foreground for the rest").
+/// within `(x, y, w, h)`: the hour and colon in `digit_rgb`, the minute in
+/// `accent_rgb` (task: "Use theme colours tastefully: an accent for one
+/// element and the foreground for the rest").
 #[allow(clippy::too_many_arguments)]
 fn draw_dot_matrix_time(cr: &Context, hour_text: &str, minute_text: &str, x: f64, y: f64, w: f64, h: f64, digit_rgb: u32, accent_rgb: u32) {
     let chars: Vec<(char, usize, u32)> = hour_text
         .chars()
         .map(|ch| (ch, 5, digit_rgb))
-        .chain(std::iter::once((':', 2, accent_rgb)))
-        .chain(minute_text.chars().map(|ch| (ch, 5, digit_rgb)))
+        .chain(std::iter::once((':', 2, digit_rgb)))
+        .chain(minute_text.chars().map(|ch| (ch, 5, accent_rgb)))
         .collect();
     let gap_cols = 1.0;
     let total_cols: f64 =
@@ -4423,8 +4434,11 @@ fn ring_percent_label(cr: &Context, value: &str, cx: f64, cy: f64, radius: f64, 
     centered_glow(cr, value, cx - width / 2.0, cy - drawn * 0.42, width, size, rgb);
 }
 
-/// The Clock widget's date line at 100% text: about 12.5 dp on the panel.
-const CLOCK_DATE_MIN: f64 = 26.0;
+/// The Clock widget's date line at 100% text: about 15.5 dp on the panel.
+/// Sentence case in Inter Semibold has a smaller footprint than the old
+/// tracked capitals (the operator said the clock text was too small), so the
+/// floor rises from 26 to 32 px.
+const CLOCK_DATE_MIN: f64 = 32.0;
 
 /// Where a Clock widget's date line goes in a card `w` x `h`.
 struct ClockDate {
@@ -4434,27 +4448,84 @@ struct ClockDate {
     top: f64,
     /// How much the time above shrinks to clear it (1.0 = untouched).
     time_scale: f64,
-    /// Whether the letters keep their thin-space tracking.
-    tracking: bool,
+}
+
+/// The date as one neutral Inter line: "Fri, Oct 16", not capitals with
+/// thin-space tracking. The accent belongs to the minute.
+fn clock_date_layout(cr: &Context, value: &str, size: f64) -> pango::Layout {
+    let layout = pangocairo::functions::create_layout(cr);
+    let mut font = FontDescription::new();
+    font.set_family(CLOCK_FONT_FAMILY);
+    font.set_absolute_size(context_font_size(cr, size) * f64::from(pango::SCALE));
+    font.set_weight(pango::Weight::Semibold);
+    layout.set_font_description(Some(&font));
+    layout.set_text(value);
+    layout
+}
+
+/// Centered, haloed like every other glyph drawn on the wallpaper.
+fn clock_date_glow(cr: &Context, value: &str, x: f64, y: f64, width: f64, size: f64, rgb: u32) {
+    let layout = clock_date_layout(cr, value, size);
+    layout.set_width((width * f64::from(pango::SCALE)) as i32);
+    layout.set_alignment(pango::Alignment::Center);
+    draw_layout_halo(cr, &layout, x, y, glow_for(rgb), 2.0, 8, 0.35);
+    color(cr, rgb, 1.0);
+    cr.move_to(x, y);
+    pangocairo::functions::show_layout(cr, &layout);
 }
 
 /// `default_top` is the style's original date position as a fraction of
 /// `h`. The date grows with the Vision text step, which the rest of the
 /// widget ignores, and fits the card's width with the shell's 4% margin.
-/// It drops its letter tracking before it shrinks.
 fn clock_date_metrics(cr: &Context, date: &str, w: f64, h: f64, default_top: f64) -> ClockDate {
     let room = (w - 2.0 * visual_inset(cr, 22.0)).max(1.0) * 0.96;
     let wanted = CLOCK_DATE_MIN * crate::layout_text_scale();
-    let measure = |tracking: bool| {
-        let (_, logical) = caption_layout(cr, date, wanted, tracking).pixel_extents();
-        (f64::from(logical.width()), f64::from(logical.height()))
-    };
-    let tracked = measure(true);
-    let tracking = tracked.0 <= room;
-    let (advance, height) = if tracking { tracked } else { measure(false) };
+    let (_, logical) = clock_date_layout(cr, date, wanted).pixel_extents();
+    let (advance, height) = (f64::from(logical.width()), f64::from(logical.height()));
     let fit = if advance > room { room / advance } else { 1.0 };
     let top = (h * default_top).min(h - height * fit - h * 0.04);
-    ClockDate { size: wanted * fit, top, time_scale: (top / (h * default_top)).min(1.0), tracking }
+    ClockDate { size: wanted * fit, top, time_scale: (top / (h * default_top)).min(1.0) }
+}
+
+/// The Bubble clock's two stacked lines in a card `w` x `h`, scaled by `k`
+/// (see [`ClockDate::time_scale`]): font size, the two line tops relative to
+/// the card, and the baseline of the second line (about 1 em below its top).
+/// The lines sit closer than their boxes (pitch 0.92 em) so both numerals
+/// read as one mass.
+fn bubble_lines(w: f64, h: f64, k: f64) -> (f64, f64, f64, f64) {
+    let size = (h * 0.38 * k).min(w * 0.46);
+    let first = h * 0.05 * k;
+    let second = first + size * 0.92;
+    (size, first, second, second + size)
+}
+
+/// A run of differently coloured pieces of one line (`HH`, `:`, `MM`),
+/// centered as a whole in `[x, x+width]`, each piece haloed like
+/// [`hero_glow`].
+#[allow(clippy::too_many_arguments)]
+fn hero_glow_run(cr: &Context, parts: &[(&str, u32, f64)], x: f64, y: f64, width: f64, size: f64, weight: pango::Weight, font_family: &str) {
+    let layouts: Vec<pango::Layout> = parts
+        .iter()
+        .map(|(text, _, _)| {
+            let layout = pangocairo::functions::create_layout(cr);
+            let mut font = FontDescription::new();
+            font.set_family(font_family);
+            font.set_absolute_size(context_font_size(cr, size) * f64::from(pango::SCALE));
+            font.set_weight(weight);
+            layout.set_font_description(Some(&font));
+            layout.set_text(text);
+            layout
+        })
+        .collect();
+    let total: f64 = layouts.iter().map(|l| f64::from(l.pixel_size().0)).sum();
+    let mut cursor = x + (width - total) / 2.0;
+    for (layout, (_, rgb, alpha)) in layouts.iter().zip(parts) {
+        draw_layout_halo(cr, layout, cursor, y, glow_for(*rgb), (size * 0.05).max(2.0), 8, 0.30 * alpha);
+        color(cr, *rgb, *alpha);
+        cr.move_to(cursor, y);
+        pangocairo::functions::show_layout(cr, layout);
+        cursor += f64::from(layout.pixel_size().0);
+    }
 }
 
 fn ring_label_size(cr: &Context, value: &str, size: f64, radius: f64) -> f64 {
@@ -4811,22 +4882,27 @@ fn paint_widget_card_content(cr: &Context, style: &VisualStyle, kind: WidgetKind
             // The date is sized first; the time takes what is left above it.
             let date = clock_date_metrics(cr, &date_text, w, h, 0.84);
             let k = date.time_scale;
+            // One rule for every style: the hour is the foreground colour
+            // and the minute, the part that changes, carries the accent.
             match kind {
                 WidgetKind::Clock => {
-                    // "Bubble": Pixel's heavy two-line lock clock -- both
-                    // lines the same very heavy weight and the same color,
-                    // centered, so the pair reads as one mass
-                    // (`docs/design/clock-widget-research.md` #1/#7).
-                    let line_size = h * 0.30 * k;
-                    hero_glow(cr, &hour_text, x, y + h * 0.05 * k, w, line_size, style.text, pango::Weight::Heavy, true, CLOCK_FONT_FAMILY);
-                    hero_glow(cr, &minute_text, x, y + h * 0.39 * k, w, line_size, style.text, pango::Weight::Heavy, true, CLOCK_FONT_FAMILY);
+                    // "Bubble": Pixel's heavy two-line lock clock, tightened
+                    // into one mass (`docs/design/clock-widget-research.md`
+                    // #1/#7), the hour in the text colour over the minute in
+                    // the accent.
+                    let (line_size, first, second, _) = bubble_lines(w, h, k);
+                    hero_glow(cr, &hour_text, x, y + first, w, line_size, style.text, pango::Weight::Heavy, true, CLOCK_FONT_FAMILY);
+                    hero_glow(cr, &minute_text, x, y + second, w, line_size, style.accent, pango::Weight::Heavy, true, CLOCK_FONT_FAMILY);
                 }
                 WidgetKind::ClockMinimal => {
-                    // "Thin": a real thin weight, not a shrunk bold
-                    // (research #2/#9/#12).
-                    let time_text = format!("{hour_text}:{minute_text}");
-                    let line_size = h * 0.32 * k;
-                    hero_glow(cr, &time_text, x, y + h * 0.34 * k, w, line_size, style.text, pango::Weight::Thin, true, CLOCK_FONT_FAMILY);
+                    // "Thin": a real light weight, not a shrunk bold
+                    // (research #2/#9/#12); the colon is a quiet separator.
+                    let line_size = (h * 0.32 * k).min(w * 0.30);
+                    hero_glow_run(
+                        cr,
+                        &[(hour_text.as_str(), style.text, 1.0), (":", style.text, 0.6), (minute_text.as_str(), style.accent, 1.0)],
+                        x, y + h * 0.34 * k, w, line_size, pango::Weight::Light, CLOCK_FONT_FAMILY,
+                    );
                 }
                 WidgetKind::ClockDotMatrix => {
                     // "Dot matrix": Nothing OS's Ndot (research #4), drawn
@@ -4835,7 +4911,7 @@ fn paint_widget_card_content(cr: &Context, style: &VisualStyle, kind: WidgetKind
                 }
                 _ => unreachable!("matched above"),
             }
-            caption_glow_tracked(cr, &date_text, x + pad, y + date.top, w - pad * 2.0, date.size, style.accent, true, date.tracking);
+            clock_date_glow(cr, &date_text, x + pad, y + date.top, w - pad * 2.0, date.size, style.text);
         }
         WidgetKind::ClockAnalog => {
             let (hour, minute, date_text) = match crate::home_widgets::clock::now_local() {
@@ -4848,7 +4924,7 @@ fn paint_widget_card_content(cr: &Context, style: &VisualStyle, kind: WidgetKind
             let cy = y + h * 0.42 * k;
             let radius = (w / 2.0 - pad).min(h * 0.34 * k);
             draw_analog_clock(cr, cx, cy, radius, hour, minute, style);
-            caption_glow_tracked(cr, &date_text, x + pad, y + date.top, w - pad * 2.0, date.size, style.accent, true, date.tracking);
+            clock_date_glow(cr, &date_text, x + pad, y + date.top, w - pad * 2.0, date.size, style.text);
         }
         WidgetKind::Battery => {
             caption_glow(cr, "Battery", x + pad, y + pad * 0.7, w - pad * 2.0, 13.0, style.text, false);
@@ -7208,15 +7284,15 @@ mod tests {
             let mut last = 0.0;
             for &step in &[1.0, 1.3, 1.6, 2.0] {
                 crate::set_layout_text_scale(step);
-                let ClockDate { size, top, time_scale: k, tracking } = clock_date_metrics(&cr, date, w, h, 0.84);
-                let layout = caption_layout(&cr, date, size, tracking);
+                let ClockDate { size, top, time_scale: k } = clock_date_metrics(&cr, date, w, h, 0.84);
+                let layout = clock_date_layout(&cr, date, size);
                 let (_, logical) = layout.pixel_extents();
                 let room = w - 2.0 * visual_inset(&cr, 22.0);
                 assert!(f64::from(logical.width()) <= room, "{w}x{h} at {step}: date {} wider than {room}", logical.width());
                 assert!(top + f64::from(logical.height()) <= h, "{w}x{h} at {step}: date runs off the card");
                 assert!(size >= last - 0.5, "{w}x{h} at {step}: date shrank from {last} to {size}");
-                // The Bubble minute line ends at 0.39 + 0.30 of the time box.
-                assert!(h * (0.39 + 0.30 * 1.2) * k <= top + 1.0, "{w}x{h} at {step}: time overlaps the date");
+                let (_, _, _, bubble_bottom) = bubble_lines(w, h, k);
+                assert!(bubble_bottom <= top + 1.0, "{w}x{h} at {step}: time overlaps the date");
                 if w >= 250.0 && step == 1.0 {
                     assert!(size >= CLOCK_DATE_MIN, "{w}x{h}: date {size} under the floor");
                 }

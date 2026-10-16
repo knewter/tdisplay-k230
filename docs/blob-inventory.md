@@ -1645,6 +1645,11 @@ DATA 1e872a35ff03d6ad526fe06fe990f583c9ab240519e53b1b02e8d8e7ca238797 docs/evide
 DATA b828078184dd6dca6e529a1b06025c3305fea75b483ddfc30044e5c9d3d8ac18 docs/evidence/the-shell-is-navigable-with-a-mouse/after-calculator-click.jpg
 DATA 64da29b4e8a6d62346bab76b1c9424bf10abf0a5809f1a49f9524cccbaa2df4f docs/evidence/card-shell/overview-home-bleed-through/board-2026-09-30/overview-native.jpg
 DATA a76ca87ac3d0823659559f297258be51f2719e8d95efbcb10186a3f68f17040a docs/evidence/card-shell/overview-home-bleed-through/board-2026-09-30/overview-panel.jpg
+DATA 4fa62684019d7645bdd6a432367b0e24ad791e113db75fd3da0ebd1b70639c1c docs/evidence/clock-restyle/host-100-before-after.png
+DATA ee2ee568349d2934b8b8c6950b9278d9b0f41203f6b71ced033796e4bcbc8974 docs/evidence/clock-restyle/host-130-before-after.png
+DATA a030cb1e75d983468dc23384351c0c4c411dac03ff5db25022e8f62bf3cf37c2 docs/evidence/clock-restyle/host-160-before-after.png
+DATA e590ff3c14c7c08eeba6acc7ec745eb5f63e4e0b0ad46a88ecdad3d0903069ad docs/evidence/clock-restyle/host-200-before-after.png
+DATA 9e258d5a07a483381d428302c67f39a9d8a799d94461e51d1ea4a86604f27f22 docs/evidence/clock-restyle/host-200-high-before-after.png
 DATA eb97830d3b2c407b8a1a9559f4547c5faf30a528c36085c065ede0d2971e5eb6 docs/evidence/coherent-shell/accessibility-scale/board/01-settings.png
 DATA 067bdb088d7d3b137a2586058819ab40830bef98aab4bf2daca440413794e7a6 docs/evidence/coherent-shell/accessibility-scale/board/02-vision-default.png
 DATA 1052f94fa56517b0116ce10500455c31e71e37504080bdea57fe91a6eff8d4f1 docs/evidence/coherent-shell/accessibility-scale/board/03-large.png
@@ -2334,6 +2339,11 @@ limits are in the adjacent README. They are not physical-panel captures.
 
 | File | Bytes | Kind | SHA256 |
 | --- | ---: | --- | --- |
+| `docs/evidence/clock-restyle/host-100-before-after.png` | 177156 | DATA | `4fa62684019d7645bdd6a432367b0e24ad791e113db75fd3da0ebd1b70639c1c` |
+| `docs/evidence/clock-restyle/host-130-before-after.png` | 199104 | DATA | `ee2ee568349d2934b8b8c6950b9278d9b0f41203f6b71ced033796e4bcbc8974` |
+| `docs/evidence/clock-restyle/host-160-before-after.png` | 196462 | DATA | `a030cb1e75d983468dc23384351c0c4c411dac03ff5db25022e8f62bf3cf37c2` |
+| `docs/evidence/clock-restyle/host-200-before-after.png` | 217616 | DATA | `e590ff3c14c7c08eeba6acc7ec745eb5f63e4e0b0ad46a88ecdad3d0903069ad` |
+| `docs/evidence/clock-restyle/host-200-high-before-after.png` | 214678 | DATA | `9e258d5a07a483381d428302c67f39a9d8a799d94461e51d1ea4a86604f27f22` |
 | `docs/evidence/coherent-shell/accessibility-scale/board/01-settings.png` | 53914 | DATA | `eb97830d3b2c407b8a1a9559f4547c5faf30a528c36085c065ede0d2971e5eb6` |
 | `docs/evidence/coherent-shell/accessibility-scale/board/02-vision-default.png` | 18953 | DATA | `067bdb088d7d3b137a2586058819ab40830bef98aab4bf2daca440413794e7a6` |
 | `docs/evidence/coherent-shell/accessibility-scale/board/03-large.png` | 26944 | DATA | `1052f94fa56517b0116ce10500455c31e71e37504080bdea57fe91a6eff8d4f1` |
