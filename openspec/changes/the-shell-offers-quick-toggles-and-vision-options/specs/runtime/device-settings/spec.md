@@ -15,22 +15,48 @@ route controls as a swipe-gesture alternative, not a text-scale or contrast
 accommodation; this requirement is additive to, not a restatement of, that
 one. -->
 
-Settings SHALL offer a person a choice of at least two text-scale steps
-(the current default and one larger step) and a high-contrast palette
-variant, independent of the theme currently active and independent of the
-existing reduced-motion toggle. The chosen scale and contrast variant SHALL
-apply consistently to both the Rust-rendered surfaces (Home, drawer, shade,
-Settings) and the C-rendered card deck and its labels, using the same
-shared theme-token mechanism that already carries per-theme colors across
-that boundary, so a person does not get a larger Settings but an unchanged
-card header. The choice SHALL persist across restarts the same way the
-active theme choice already does.
+*Grounding (2026-10-16): the first implementation offered one larger step
+(1.25x). On the panel (568x1232 at 4.1", about 331 ppi, 2.07 px per dp) the
+default body text is 17-18 px (about 8.5 sp) and drawer labels are 14 px
+(about 6.8 sp), roughly half of common phone defaults. The 1.25x step left the
+drawer illegible to the operator: "the drawer is not particularly legible at
+'large' text", with labels ellipsized ("Same G…") over a translucent drawer
+that shows the Home clock and wallpaper through it
+(`docs/evidence/coherent-shell/accessibility-scale/board/11-panel-drawer.png`).*
 
-#### Scenario: A person chooses the larger text scale
+Settings SHALL offer a person four text-size steps, 100%, 130%, 160% and 200%
+of the shell's design size, and a high-contrast palette variant. Both choices
+are independent of the theme currently active and of the existing
+reduced-motion toggle. The 200% step follows WCAG 1.4.4 (resize text). At
+every step, text SHALL reflow rather than be cut off: drawer labels wrap to
+at most two lines and the drawer uses fewer columns, and Settings and Shade
+cards grow to fit their text. A label is ellipsized only when it would
+exceed two lines at the chosen size. With any vision option other than the
+defaults, the drawer and Shade SHALL draw their text over an opaque surface,
+not a translucent one that shows Home through it, and app icons and their
+tap targets SHALL grow with the step up to at least 48 dp (99 px on this
+panel).
 
-- **WHEN** a person selects the larger text-scale step in Settings
+The chosen scale and contrast variant SHALL apply consistently to both the
+Rust-rendered surfaces (Home, drawer, shade, Settings) and the C-rendered card
+deck and its labels, using the same shared theme-token mechanism that already
+carries per-theme colors across that boundary, so a person does not get a
+larger Settings but an unchanged card header. The choice SHALL persist across
+restarts the same way the active theme choice already does.
+
+#### Scenario: A person chooses a larger text size
+
+- **WHEN** a person selects the 130%, 160% or 200% text-size step in Settings
 - **THEN** text on Home, the drawer, the shade, Settings, and card headers
-  all render at the larger scale, not only the Settings screen itself
+  all render at that size, not only the Settings screen itself
+
+#### Scenario: The largest step keeps every drawer label readable
+
+- **WHEN** the 200% step is active and the drawer is open on the panel in
+  either orientation
+- **THEN** every app label is shown whole on at most two lines over an opaque
+  surface, with no label crossing a neighbouring tile and no icon or tap
+  target smaller than 99 px
 
 #### Scenario: A person chooses the high-contrast variant
 
