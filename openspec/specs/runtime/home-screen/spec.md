@@ -605,9 +605,12 @@ on an app icon SHALL continue to open that app's menu.
 ### Requirement: Battery - Details graphs the charge over the last 12 hours
 
 *Grounding: requested by the operator on 2026-10-15 after the widget showed
-live discharge figures on the board. Host renders and board captures are
-<!-- UNVERIFIED --> until recorded under
-`docs/evidence/battery-details-widget/history/`.*
+live discharge figures on the board. Host renders
+(`docs/evidence/battery-details-widget/history/README.md`), a board grim with
+the recorded history file showing a discharge, a gauge recalibration and a
+power-off gap (`docs/evidence/battery-details-widget/history/board/README.md`),
+and the operator's look on HDMI ("graph looks fine", 2026-10-15). A charging
+stretch is seen in a later board grim, but no capture of it is committed.*
 
 The shell SHALL record the battery percentage and whether the battery was
 charging about once a minute while it runs, and immediately when the charging
