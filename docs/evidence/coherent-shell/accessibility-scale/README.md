@@ -112,3 +112,20 @@ or a real-finger interaction. The output was HDMI at 1280x800.
   open.
 - With larger text, the two-line hint in Settings' Keyboard card sits on the
   card's bottom edge (`board/05-both-settings.png`).
+
+## Panel captures (2026-10-16, DSI-1 1232x568 landscape)
+
+Evidence class: native `grim` captures of the panel output, after the operator
+unplugged HDMI and turned on Larger text on the device
+(`helperd vision … outcome=ok` at 12:19:58). These are compositor frames, not
+camera photographs of the glass.
+
+| File | What it shows |
+|---|---|
+| `board/09-panel-home-ring-overflow.png` | Home at the larger step: the battery ring's "100%" crossed the ring. |
+| `board/10-panel-shade.png` | The Shade at the larger step. |
+| `board/11-panel-drawer.png` | The drawer at the larger step. Long names (Files (N…, Same G…) ellipsize. |
+| `board/12-panel-home-ring-fitted.png` | The same Home after commit `91a60bfb` (`ring_label_size` shrinks only that label to fit inside the ring). Deployed live as `b6wn851s…-nixos-system-…`. |
+
+The operator's own look at the glass, and their judgement of legibility, are
+still needed for C.4.

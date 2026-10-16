@@ -1653,6 +1653,10 @@ DATA 8561484aa92a536a8f8e77b2af098c6e7652ce0d208ab757b0e4e3636825435b docs/evide
 DATA cc1ff616181a6d33ad9c18698d485ef00d7cdd4eed46753110efcb254866ee76 docs/evidence/coherent-shell/accessibility-scale/board/06-reboot-shade.png
 DATA 8f4271009116c7434853a184bd2abed64268f5c1f906004a1d49a56a1237876e docs/evidence/coherent-shell/accessibility-scale/board/07-reboot-vision.png
 DATA a78135472bc20453af4e66d04d2f763213c9af1957e9d77cf8537cba28d5d2e9 docs/evidence/coherent-shell/accessibility-scale/board/08-restored.png
+DATA de500f127e58fc24ef83bd2edfe1900261d6a860bb783220edebebe3f5d44b78 docs/evidence/coherent-shell/accessibility-scale/board/09-panel-home-ring-overflow.png
+DATA aa00afa77299964895e68c6109bc7a25e917f0ef1b570620adbe0b36710bc9dc docs/evidence/coherent-shell/accessibility-scale/board/10-panel-shade.png
+DATA ad27f354a55b2b54eded7af38c6789f81a1a4f63e875f01ee94346e610070ed1 docs/evidence/coherent-shell/accessibility-scale/board/11-panel-drawer.png
+DATA 791fcff532c7c076224578d631b6587bbe1450ef8be4c3a129863d27fcedd180 docs/evidence/coherent-shell/accessibility-scale/board/12-panel-home-ring-fitted.png
 DATA bb12d1dff29516d0ccdda0d6dc101d4c1ea689c16e8bff8196a17601d71c63dc docs/evidence/coherent-shell/accessibility-scale/host/default-drawer-568x1232.png
 DATA 9ff798c8d1dbd81ec456a4e4dc7b2a60b868068372520fbd17b7c17c677a6099 docs/evidence/coherent-shell/accessibility-scale/host/default-settings-1280x800.png
 DATA aec4b6cd890a30a32fdb64d8198b5ea0ba768ca332e2409855c72ffaefbe0219 docs/evidence/coherent-shell/accessibility-scale/host/default-shade-568x1232.png
@@ -2304,6 +2308,10 @@ limits are in the adjacent README. They are not physical-panel captures.
 | `docs/evidence/coherent-shell/accessibility-scale/board/06-reboot-shade.png` | 101199 | DATA | `cc1ff616181a6d33ad9c18698d485ef00d7cdd4eed46753110efcb254866ee76` |
 | `docs/evidence/coherent-shell/accessibility-scale/board/07-reboot-vision.png` | 20059 | DATA | `8f4271009116c7434853a184bd2abed64268f5c1f906004a1d49a56a1237876e` |
 | `docs/evidence/coherent-shell/accessibility-scale/board/08-restored.png` | 22641 | DATA | `a78135472bc20453af4e66d04d2f763213c9af1957e9d77cf8537cba28d5d2e9` |
+| `docs/evidence/coherent-shell/accessibility-scale/board/09-panel-home-ring-overflow.png` | 324165 | DATA | `de500f127e58fc24ef83bd2edfe1900261d6a860bb783220edebebe3f5d44b78` |
+| `docs/evidence/coherent-shell/accessibility-scale/board/10-panel-shade.png` | 28458 | DATA | `aa00afa77299964895e68c6109bc7a25e917f0ef1b570620adbe0b36710bc9dc` |
+| `docs/evidence/coherent-shell/accessibility-scale/board/11-panel-drawer.png` | 110542 | DATA | `ad27f354a55b2b54eded7af38c6789f81a1a4f63e875f01ee94346e610070ed1` |
+| `docs/evidence/coherent-shell/accessibility-scale/board/12-panel-home-ring-fitted.png` | 322335 | DATA | `791fcff532c7c076224578d631b6587bbe1450ef8be4c3a129863d27fcedd180` |
 | `docs/evidence/coherent-shell/accessibility-scale/host/default-drawer-568x1232.png` | 19931 | DATA | `bb12d1dff29516d0ccdda0d6dc101d4c1ea689c16e8bff8196a17601d71c63dc` |
 | `docs/evidence/coherent-shell/accessibility-scale/host/default-settings-1280x800.png` | 39569 | DATA | `9ff798c8d1dbd81ec456a4e4dc7b2a60b868068372520fbd17b7c17c677a6099` |
 | `docs/evidence/coherent-shell/accessibility-scale/host/default-shade-568x1232.png` | 41866 | DATA | `aec4b6cd890a30a32fdb64d8198b5ea0ba768ca332e2409855c72ffaefbe0219` |

@@ -82,7 +82,9 @@ authorization only removes the blocker on starting them.
   Progress 2026-10-16 (board, injected taps + grim, HDMI): toggles apply and
   the choice persists across a soft reboot; see
   `docs/evidence/coherent-shell/accessibility-scale/README.md`. Real-panel
-  legibility (glass/camera) is still unrecorded.
+  legibility (glass/camera) is still unrecorded. Panel `grim` captures on
+  DSI-1 found the battery ring's percentage overflowing at the larger step;
+  fixed by `91a60bfb` and re-captured (same README).
 
 ## D. Shared spec/evidence
 
