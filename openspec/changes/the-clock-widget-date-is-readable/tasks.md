@@ -18,3 +18,6 @@
 
 - [ ] 2.1 Native `grim` captures of Home at 100% and 200% on the landscape
   panel, and the operator's judgement that the date is readable on glass.
+  Progress 2026-10-16: native captures at 100%, 160% and 200% committed
+  (`docs/evidence/home-widgets/clock-date/board-panel-*-home.png`). The
+  operator's judgement on glass is still needed.

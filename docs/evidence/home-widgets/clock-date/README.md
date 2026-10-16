@@ -40,8 +40,29 @@ line for every Clock style:
 | `host-landscape-steps.png` | Home at 1232x568, top-left 640x460, in a 2x2 grid: 100%, 130% (top), 160%, 200% (bottom). |
 | `host-portrait-steps.png` | Home at 568x1232, top 568x520, left to right: 100%, 130%, 160%, 200%. |
 
+## Board captures (2026-10-16, DSI-1 1232x568 landscape)
+
+The system was `/nix/store/dpa9cyfa2yxsjppc21pxmk46rjqv6j17-nixos-system-…`,
+built from `a7656dfa`. It was deployed live with
+`switch-to-configuration test`. The text step was set with
+`k230-theme vision --text-scale <step> --contrast standard` (the same theme
+helper path the Vision page uses), and `k230-theme list` confirmed each step.
+Each frame is a native `grim` capture.
+
+Evidence class: native captures under a command-set step. There was no touch
+input and no judgement on glass.
+
+| File | Step |
+|---|---|
+| `board-panel-100-home.png` | 100%. The date is the same size as the tracked "CURRENT" captions of the battery widget, or larger. |
+| `board-panel-160-home.png` | 160%. |
+| `board-panel-200-home.png` | 200%. The tracking is dropped and the date fills the card's width. The time is slightly smaller. |
+
+Compare `docs/evidence/coherent-shell/accessibility-scale/board/14-panel-200-home.png`,
+where the date was 17 px at 200%. Afterwards the board was left at 160%.
+
 ## Limits
 
 - Only the Bubble style appears in these renders. The Thin, dot-matrix and
   analog styles use the same metrics but were not rendered.
-- These are host renders. Board captures and the operator's look are task 2.1.
+- The operator has not yet judged the date on glass (task 2.1).
