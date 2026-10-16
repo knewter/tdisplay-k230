@@ -10,11 +10,15 @@
 # console by hand, which is the point -- see the board test plan in
 # docs/evidence/max98357a-speaker.md.
 #
-# UNVERIFIED: the `gpioset --mode=signal ... &` / `kill` pairing assumes
-# libgpiod v2 CLI semantics (request the line, hold it until signaled,
-# release on exit). This has not been run on the board. If the installed
-# gpioset rejects --mode=signal, run `gpioset --help` on the board and
-# adjust; the fallback note is printed by this script's own error path.
+# libgpiod 2.x CLI (the board has v2.2.4): `gpioset -c <chip> <offset>=<v>`
+# requests the line and holds it until the process exits, so the script
+# backgrounds it and kills it to release; `gpioinfo -c <chip> <offset>`
+# reads one line. The 1.x `--mode=signal` and `gpioinfo <chip>` forms fail
+# on v2 (`docs/evidence/max98357a-speaker/board-2026-10-01.md`).
+#
+# `amixer` always names card 0 (`-c 0`): the default ALSA device is
+# PipeWire's plugin, which has no mixer controls ("Control default open
+# error: Host is down" on the board).
 { writeShellScriptBin, alsa-utils, libgpiod }:
 
 writeShellScriptBin "k230-speaker-test" ''
@@ -53,14 +57,13 @@ writeShellScriptBin "k230-speaker-test" ''
 
   amp_set() {
     # $1 = active|inactive
-    "$GPIOSET" --mode=signal --chip="$AMP_CHIP" "$AMP_OFFSET=$1" &
+    "$GPIOSET" --chip="$AMP_CHIP" --consumer=k230-speaker-test "$AMP_OFFSET=$1" &
     AMP_HOLD_PID=$!
     # Give the request a moment to land before anything depends on it.
     sleep 0.2
     if ! kill -0 "$AMP_HOLD_PID" 2>/dev/null; then
       echo "k230-speaker-test: gpioset exited immediately; the line may" >&2
-      echo "  already be busy, or this libgpiod build may not accept" >&2
-      echo "  --mode=signal. Run 'gpioset --help' on the board and compare." >&2
+      echo "  already be busy (see 'gpioinfo -c $AMP_CHIP $AMP_OFFSET')." >&2
       AMP_HOLD_PID=""
       return 1
     fi
@@ -79,7 +82,7 @@ writeShellScriptBin "k230-speaker-test" ''
     # $1 = 0|1. Absent on an unpatched kernel -- report rather than fail
     # silently, since that is exactly the "DT/kernel change not installed
     # to /boot yet" failure mode.
-    if ! "$AMIXER" -q cset name="$ROUTE_CONTROL" "$1" 2>/dev/null; then
+    if ! "$AMIXER" -c 0 -q cset name="$ROUTE_CONTROL" "$1" 2>/dev/null; then
       echo "k230-speaker-test: no '$ROUTE_CONTROL' ALSA control." >&2
       echo "  This means the running kernel does not carry" >&2
       echo "  canaan-audio-external-i2s-switch.patch yet -- a DT/kernel" >&2
@@ -98,11 +101,14 @@ writeShellScriptBin "k230-speaker-test" ''
     "$APLAY" -l 2>&1
     echo
     echo "== amixer controls =="
-    "$AMIXER" controls 2>&1
+    "$AMIXER" -c 0 controls 2>&1
+    echo
+    echo "== $ROUTE_CONTROL =="
+    "$AMIXER" -c 0 cget name="$ROUTE_CONTROL" 2>&1
     echo
     echo "== $AMP_CHIP line $AMP_OFFSET (MAX98357A SDMODE) =="
     "$GPIODETECT" 2>&1 | grep -q "$AMP_CHIP" \
-      && "$GPIOINFO" "$AMP_CHIP" 2>&1 | sed -n "1p;$((AMP_OFFSET + 2))p" \
+      && "$GPIOINFO" -c "$AMP_CHIP" "$AMP_OFFSET" 2>&1 \
       || echo "$AMP_CHIP not found by gpiodetect"
     echo
     echo "== dmesg (audio-related) =="

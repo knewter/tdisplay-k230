@@ -33,6 +33,7 @@ Proof: `nix build .#deviceTree` -- done, host-only. This proves the DTB compiles
 - [x] 4.2a Build the closure: `nix build .#nixosConfigurations.k230-coherent-shell.config.system.build.toplevel --max-jobs 1 --cores 6 --no-link --print-out-paths` -> `/nix/store/lfq1j4rb9a1pmbqy3q56vh26j9054hqa-nixos-system-nixos-26.11.20260919.20b1ddd`. `k230-speaker-test.drv` and `alsa-utils`/`libgpiod` both built as part of `.#sdImage-coherent`.
 - [ ] 4.2b Board proof: `k230-speaker-test status` on the board.
       2026-10-01 run (console transcript): it exited 0, but its `gpioinfo gpiochip1` failed under libgpiod 2.2.4 (`cannot find line 'gpiochip1'`) and `amixer controls` errored. Still open: switch the script to libgpiod 2.x syntax and re-run (`docs/evidence/max98357a-speaker/board-2026-10-01.md`).
+      2026-10-16: the script now uses the libgpiod 2 forms and `amixer -c 0`, checked by hand on the board (`board-2026-10-16-libgpiod2.md`). Still open: the installed script's `status` run.
 
 Proof for 4.1/4.2a: the toplevel closure and SD image build, and the script package builds -- done, host-only. Proof for 4.2b is a board task -- the script's `gpioset --mode=signal` usage is explicitly UNVERIFIED against the flake's actual pinned `libgpiod` version (design.md), so the first board run is also the first real test of that assumption.
 
