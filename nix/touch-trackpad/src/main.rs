@@ -357,6 +357,9 @@ fn run(args: Args) {
                 "k230-touch-trackpad: mode -> {mode:?} (panel connected: {})",
                 mode::panel_connected(&args.drm_root)
             );
+            if last_mode == Some(Mode::Trackpad) && mode == Mode::DirectTouch {
+                direct_mapping.wake_display();
+            }
             last_mode = Some(mode);
             start_failures = 0;
             direct_mapping.clear();

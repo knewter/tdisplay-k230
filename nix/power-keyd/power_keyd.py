@@ -94,6 +94,21 @@ class Actions:
         self.dark = not on
         return True
 
+    def sync(self):
+        # Something else may have changed display power since this daemon
+        # last did (the touch relay lights the panel when HDMI is
+        # unplugged), so toggle from Sway's state, not only the cached one.
+        cmd = [self.swaymsg, "-s", self.sway_socket, "-r", "-t", "get_outputs"]
+        try:
+            result = subprocess.run(cmd, check=True, capture_output=True, text=True, timeout=5)
+            active = [item for item in json.loads(result.stdout)
+                      if isinstance(item, dict) and item.get("active") is True]
+        except (OSError, subprocess.SubprocessError, ValueError, TypeError) as exc:
+            LOG.warning("display power state unavailable: %s", exc)
+            return
+        if active:
+            self.dark = not any(item.get("power") is True for item in active)
+
     def show_sheet(self):
         try:
             with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as client:
@@ -106,6 +121,7 @@ class Actions:
             LOG.warning("power sheet unavailable: %s", exc)
 
     def __call__(self, action):
+        self.sync()
         if action == "short":
             self.output(self.dark)
         elif action == "hold":

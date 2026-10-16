@@ -226,13 +226,23 @@ fn connect(path: &PathBuf) -> io::Result<UnixStream> {
 /// Restore absolute touch after releasing the HDMI relay. Remember the
 /// socket identity so a compositor restart restores mapping again, while
 /// an unchanged session incurs only a stat rather than repeated IPC.
+///
+/// After an HDMI unplug the panel must also light, even if the power key
+/// had blanked the display: Sway stores power for `output *`, so the panel
+/// would otherwise come back with the stored "off" and the person sees
+/// nothing to tell them the unplug worked.
 #[derive(Default)]
 pub struct DirectTouchMapping {
     restored: Option<(u64, u64)>,
+    wake: bool,
 }
 impl DirectTouchMapping {
     pub fn clear(&mut self) {
         self.restored = None;
+    }
+    /// Power the display on with the next mapping (HDMI just left).
+    pub fn wake_display(&mut self) {
+        self.wake = true;
     }
     pub fn restore(&mut self, path: &PathBuf) -> io::Result<()> {
         let meta = std::fs::symlink_metadata(path)?;
@@ -241,10 +251,11 @@ impl DirectTouchMapping {
             return Ok(());
         }
         let mut stream = connect(path)?;
-        for text in [
+        let wake = self.wake.then_some("output * power on");
+        for text in wake.into_iter().chain([
             "input type:touch map_to_output DSI-1",
             "input type:touch calibration_matrix 1 0 0 0 1 0",
-        ] {
+        ]) {
             if !command(&mut stream, text)? {
                 return Err(io::Error::other("Direct touch mapping rejected"));
             }
@@ -254,7 +265,11 @@ impl DirectTouchMapping {
             return Err(io::Error::other("Shell socket changed during mapping"));
         }
         self.restored = Some(identity);
-        eprintln!("k230-touch-trackpad: mapped direct touch to DSI-1");
+        self.wake = false;
+        eprintln!(
+            "k230-touch-trackpad: mapped direct touch to DSI-1{}",
+            if wake.is_some() { " and powered the display on" } else { "" }
+        );
         Ok(())
     }
 }
@@ -448,6 +463,24 @@ mod tests {
             assert_eq!(read_command(&mut stream, true), "input type:touch map_to_output DSI-1");
             assert_eq!(read_command(&mut stream, true), "input type:touch calibration_matrix 1 0 0 0 1 0");
         });
+        assert!(mapping.restore(&path).is_ok());
+        server.join().unwrap();
+        // An HDMI unplug also powers the display on, once.
+        mapping.clear();
+        mapping.wake_display();
+        std::fs::remove_file(&path).unwrap();
+        let unplugged = UnixListener::bind(&path).unwrap();
+        let server = std::thread::spawn(move || {
+            let (mut stream, _) = unplugged.accept().unwrap();
+            assert_eq!(read_command(&mut stream, true), "output * power on");
+            assert_eq!(read_command(&mut stream, true), "input type:touch map_to_output DSI-1");
+            assert_eq!(read_command(&mut stream, true), "input type:touch calibration_matrix 1 0 0 0 1 0");
+            let (mut again, _) = unplugged.accept().unwrap();
+            assert_eq!(read_command(&mut again, true), "input type:touch map_to_output DSI-1");
+            assert_eq!(read_command(&mut again, true), "input type:touch calibration_matrix 1 0 0 0 1 0");
+        });
+        assert!(mapping.restore(&path).is_ok());
+        mapping.clear();
         assert!(mapping.restore(&path).is_ok());
         server.join().unwrap();
         drop(listener);

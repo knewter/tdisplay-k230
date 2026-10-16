@@ -97,6 +97,26 @@ class KeyPolicyTests(unittest.TestCase):
             self.assertFalse(actions.output(False))
         self.assertFalse(actions.dark)
 
+    def test_a_display_lit_elsewhere_is_turned_off_by_the_next_short_press(self):
+        actions = MODULE.Actions("swaymsg", "/run/test.sock", "/run/shell.sock")
+        actions.dark = True  # This daemon blanked it; then HDMI was unplugged.
+        outputs = MODULE.subprocess.CompletedProcess(
+            [], 0, stdout='[{"name":"DSI-1","active":true,"power":true}]')
+        done = MODULE.subprocess.CompletedProcess([], 0, stdout='[{"success":true}]')
+        with patch.object(MODULE.subprocess, "run", side_effect=[outputs, done]) as run:
+            actions("short")
+        self.assertEqual(run.call_args.args[0][-4:], ["output", "*", "power", "off"])
+        self.assertTrue(actions.dark)
+
+    def test_unreadable_or_outputless_state_keeps_the_cached_one(self):
+        actions = MODULE.Actions("swaymsg", "/run/test.sock", "/run/shell.sock")
+        actions.dark = True
+        for reply in ("not json", "[]", '[{"name":"HDMI-A-1","active":false,"power":true}]'):
+            with patch.object(MODULE.subprocess, "run",
+                              return_value=MODULE.subprocess.CompletedProcess([], 0, stdout=reply)):
+                actions.sync()
+            self.assertTrue(actions.dark)
+
 
 if __name__ == "__main__":
     unittest.main()
