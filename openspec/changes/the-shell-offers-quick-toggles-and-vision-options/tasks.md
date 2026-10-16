@@ -50,11 +50,13 @@ authorization only removes the blocker on starting them.
 
 ## C. Vision accessibility option (host, Rust client + shared theme tokens)
 
-- [ ] C.1 Add a text-scale/high-contrast preference to Settings' state
+- [x] C.1 Add a text-scale/high-contrast preference to Settings' state
   (`service_data.rs`) and persistence (following the existing theme-choice
   persistence mechanism). Verify with
   `cargo test --manifest-path nix/rust-shell-client/Cargo.toml --locked`.
-- [ ] C.2 Thread the chosen scale/contrast through the shared theme-token
+  Done 2026-10-16 (host): `tools/theme_vision.py` stores `vision.json` with the
+  theme state; see `docs/evidence/coherent-shell/accessibility-scale/README.md`.
+- [x] C.2 Thread the chosen scale/contrast through the shared theme-token
   pipeline so both `render.rs` (Home/drawer/shade/Settings) and
   `nix/card-shell/render.c` (card headers) apply it consistently; this is
   the same cross-renderer boundary `webos-polish-review.md` P1-1 already
@@ -63,10 +65,14 @@ authorization only removes the blocker on starting them.
   Verify with `cargo test --manifest-path nix/rust-shell-client/Cargo.toml
   --locked` and `nix build .#card-shell --max-jobs 1 --cores 4 --no-link
   --print-out-paths`.
-- [ ] C.3 Add a Settings UI control to choose the scale/contrast, with a
+  Done 2026-10-16 (host): `sections.accessibility` in every generation; Rust
+  and card-shell both scale by `text-scale`; high contrast rewrites the palette.
+- [x] C.3 Add a Settings UI control to choose the scale/contrast, with a
   host render comparison (default vs. larger text vs. high contrast)
   committed to `docs/evidence/coherent-shell/accessibility-scale/`. Verify
   with the C.1/C.2 commands plus the new screenshots.
+  Done 2026-10-16 (host): Settings "Vision ›" page; renders in
+  `docs/evidence/coherent-shell/accessibility-scale/host/`.
 - [ ] C.4 On a reserved board, confirm the choice persists across a reboot
   and is legibly larger/higher-contrast on the real panel. Operator command:
   `python3 tools/capture-feature.py accessibility-scale --provenance

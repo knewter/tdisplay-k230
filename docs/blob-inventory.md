@@ -1645,6 +1645,18 @@ DATA 1e872a35ff03d6ad526fe06fe990f583c9ab240519e53b1b02e8d8e7ca238797 docs/evide
 DATA b828078184dd6dca6e529a1b06025c3305fea75b483ddfc30044e5c9d3d8ac18 docs/evidence/the-shell-is-navigable-with-a-mouse/after-calculator-click.jpg
 DATA 64da29b4e8a6d62346bab76b1c9424bf10abf0a5809f1a49f9524cccbaa2df4f docs/evidence/card-shell/overview-home-bleed-through/board-2026-09-30/overview-native.jpg
 DATA a76ca87ac3d0823659559f297258be51f2719e8d95efbcb10186a3f68f17040a docs/evidence/card-shell/overview-home-bleed-through/board-2026-09-30/overview-panel.jpg
+DATA bb12d1dff29516d0ccdda0d6dc101d4c1ea689c16e8bff8196a17601d71c63dc docs/evidence/coherent-shell/accessibility-scale/host/default-drawer-568x1232.png
+DATA 9ff798c8d1dbd81ec456a4e4dc7b2a60b868068372520fbd17b7c17c677a6099 docs/evidence/coherent-shell/accessibility-scale/host/default-settings-1280x800.png
+DATA aec4b6cd890a30a32fdb64d8198b5ea0ba768ca332e2409855c72ffaefbe0219 docs/evidence/coherent-shell/accessibility-scale/host/default-shade-568x1232.png
+DATA eb0966f9e06fb2fd729e399a95be0dc88b3bbde15b3c64ae3c9a6e9ef3aa6216 docs/evidence/coherent-shell/accessibility-scale/host/default-vision-1280x800.png
+DATA 1c9722b94ae0ceb7794a06261355753f47fcf5af839c9ff50eb7cc03fb366747 docs/evidence/coherent-shell/accessibility-scale/host/high-drawer-568x1232.png
+DATA d59baab1b86d73dc76ee757b6b2e1a736192b30dc712cee7a69708199ad08b4e docs/evidence/coherent-shell/accessibility-scale/host/high-settings-1280x800.png
+DATA f7d7e549d62de45b1b966f6dfb6e37018eafc19f3a2beca5aab06ac99daa4b59 docs/evidence/coherent-shell/accessibility-scale/host/high-shade-568x1232.png
+DATA 20799378b0b226aa7d6e7c4b86b017b4bddbfb2bfec6fee8a77d439df21b2f85 docs/evidence/coherent-shell/accessibility-scale/host/high-vision-1280x800.png
+DATA cecaba3362fcf98c497ba5003e6d9b06567300c382f392588f64c48b5c44eb2f docs/evidence/coherent-shell/accessibility-scale/host/large-drawer-568x1232.png
+DATA 8c12a940d3d9f450e6242a11b351c7f67b4562851035d6f97781a3f85be17854 docs/evidence/coherent-shell/accessibility-scale/host/large-settings-1280x800.png
+DATA 7a80080d9cc38fa489186c9cf36c783b260053bfae53d386608db32ca76b67b2 docs/evidence/coherent-shell/accessibility-scale/host/large-shade-568x1232.png
+DATA f9aa254f793aea91f9d252f9b7eca5ac74e55b2398b7dfb500d22c598f536f27 docs/evidence/coherent-shell/accessibility-scale/host/large-vision-1280x800.png
 DATA ab692d4cf10500b1f737e07eedaa293c4019a690f6eaefddd3403187c81e9efd docs/evidence/coherent-shell/shade-quick-toggles/board/1-shade-open-1280x800.png
 DATA 607b5d2fa0da79866348880d213226bfa14bc8a7fb67167ef70a585a5aa1e77d docs/evidence/coherent-shell/shade-quick-toggles/board/2-kbd-on-1280x800.png
 DATA 00a780185adb986b07179cadca333d913ae74e17bac542dc3afffa174cdd4a1c docs/evidence/coherent-shell/shade-quick-toggles/board/3-kbd-off-1280x800.png
@@ -2276,6 +2288,18 @@ limits are in the adjacent README. They are not physical-panel captures.
 
 | File | Bytes | Kind | SHA256 |
 | --- | ---: | --- | --- |
+| `docs/evidence/coherent-shell/accessibility-scale/host/default-drawer-568x1232.png` | 19931 | DATA | `bb12d1dff29516d0ccdda0d6dc101d4c1ea689c16e8bff8196a17601d71c63dc` |
+| `docs/evidence/coherent-shell/accessibility-scale/host/default-settings-1280x800.png` | 39569 | DATA | `9ff798c8d1dbd81ec456a4e4dc7b2a60b868068372520fbd17b7c17c677a6099` |
+| `docs/evidence/coherent-shell/accessibility-scale/host/default-shade-568x1232.png` | 41866 | DATA | `aec4b6cd890a30a32fdb64d8198b5ea0ba768ca332e2409855c72ffaefbe0219` |
+| `docs/evidence/coherent-shell/accessibility-scale/host/default-vision-1280x800.png` | 22104 | DATA | `eb0966f9e06fb2fd729e399a95be0dc88b3bbde15b3c64ae3c9a6e9ef3aa6216` |
+| `docs/evidence/coherent-shell/accessibility-scale/host/high-drawer-568x1232.png` | 19599 | DATA | `1c9722b94ae0ceb7794a06261355753f47fcf5af839c9ff50eb7cc03fb366747` |
+| `docs/evidence/coherent-shell/accessibility-scale/host/high-settings-1280x800.png` | 36483 | DATA | `d59baab1b86d73dc76ee757b6b2e1a736192b30dc712cee7a69708199ad08b4e` |
+| `docs/evidence/coherent-shell/accessibility-scale/host/high-shade-568x1232.png` | 38484 | DATA | `f7d7e549d62de45b1b966f6dfb6e37018eafc19f3a2beca5aab06ac99daa4b59` |
+| `docs/evidence/coherent-shell/accessibility-scale/host/high-vision-1280x800.png` | 19398 | DATA | `20799378b0b226aa7d6e7c4b86b017b4bddbfb2bfec6fee8a77d439df21b2f85` |
+| `docs/evidence/coherent-shell/accessibility-scale/host/large-drawer-568x1232.png` | 21713 | DATA | `cecaba3362fcf98c497ba5003e6d9b06567300c382f392588f64c48b5c44eb2f` |
+| `docs/evidence/coherent-shell/accessibility-scale/host/large-settings-1280x800.png` | 46948 | DATA | `8c12a940d3d9f450e6242a11b351c7f67b4562851035d6f97781a3f85be17854` |
+| `docs/evidence/coherent-shell/accessibility-scale/host/large-shade-568x1232.png` | 50762 | DATA | `7a80080d9cc38fa489186c9cf36c783b260053bfae53d386608db32ca76b67b2` |
+| `docs/evidence/coherent-shell/accessibility-scale/host/large-vision-1280x800.png` | 26679 | DATA | `f9aa254f793aea91f9d252f9b7eca5ac74e55b2398b7dfb500d22c598f536f27` |
 | `docs/evidence/coherent-shell/rust-drawer-interaction-qemu/deck.png` | 18508 | DATA | `30d05a39baba44a579c70f369bcb1140b822178c726a689003777cf159048b73` |
 | `docs/evidence/coherent-shell/rust-drawer-interaction-qemu/drawer-dismissed.png` | 18538 | DATA | `13fcd64a52e3fbc23c0ce7df2846c7da48bec1637d77c47bb876816f8517aab5` |
 | `docs/evidence/coherent-shell/rust-drawer-interaction-qemu/drawer-open.png` | 69645 | DATA | `6d38dbebddb6015d7019ebce7360a2540664717838cf413ed490f7cd2828718f` |
