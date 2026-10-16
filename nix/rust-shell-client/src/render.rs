@@ -16,7 +16,7 @@ use crate::{
     service_data::{Control, ControlState, ControlValue, Priority},
     service_ui::{
         filter_app_indices, DrawerSearch, ServiceView,
-        SETTINGS_OUTPUT_DETAIL_Y, SETTINGS_VOLUME_ROW, SHADE_SLIDER_H, SHADE_SLIDER_TOP,
+        SETTINGS_VOLUME_ROW, SHADE_SLIDER_H, SHADE_SLIDER_TOP,
         SHADE_TOGGLE_H, SHADE_TOGGLE_TOP, SHADE_VOLUME_H, SHADE_VOLUME_TOP,
     },
     slider,
@@ -421,6 +421,30 @@ fn themed_text(cr: &Context, theme: Option<&AppearanceSnapshot>, role: &str,
     text_weight_resolved(cr, value, x, y, width, theme_font_size(theme, role, size, min, max), rgb, pango::Weight::Normal);
 }
 
+/// `themed_text` that, at a larger vision step, shrinks a line that would
+/// ellipsize in a narrow column until it fits -- never below its 100% size.
+#[allow(clippy::too_many_arguments)]
+fn themed_text_fit(cr: &Context, theme: Option<&AppearanceSnapshot>, role: &str,
+                   value: &str, x: f64, y: f64, width: f64, size: f64,
+                   min: f64, max: f64, rgb: u32) {
+    let resolved = theme_font_size(theme, role, size, min, max);
+    let scale = crate::layout_text_scale();
+    let size = if scale > 1.0 {
+        let layout = pangocairo::functions::create_layout(cr);
+        let mut font = FontDescription::new();
+        font.set_family(FONT_FAMILY);
+        font.set_absolute_size(resolved * f64::from(pango::SCALE));
+        layout.set_font_description(Some(&font));
+        layout.set_text(value);
+        let advance = f64::from(layout.pixel_size().0);
+        let room = width - 8.0;
+        if advance > room { (resolved * room / advance).max(resolved / scale) } else { resolved }
+    } else {
+        resolved
+    };
+    text_weight_resolved(cr, value, x, y, width, size, rgb, pango::Weight::Normal);
+}
+
 fn themed_medium(cr: &Context, theme: Option<&AppearanceSnapshot>, role: &str,
                  value: &str, x: f64, y: f64, width: f64, size: f64,
                  min: f64, max: f64, rgb: u32) {
@@ -452,16 +476,133 @@ pub const SETTINGS_POWER_CARD_H: f64 = 70.0;
 pub const SETTINGS_KEY_BACKLIGHT_ROW: u32 = 5;
 
 pub fn settings_row_y(index: u32) -> f64 {
-    SETTINGS_ROW_FIRST_Y + f64::from(index) * (SETTINGS_ROW_H + SETTINGS_ROW_GAP)
+    if crate::layout_text_scale() <= 1.0 {
+        return SETTINGS_ROW_FIRST_Y + f64::from(index) * (SETTINGS_ROW_H + SETTINGS_ROW_GAP);
+    }
+    (0..index).fold(settings_first_y(), |y, row| y + settings_row_h(row) + SETTINGS_ROW_GAP)
+}
+
+/// Line height of `design`-sized text at the current vision step.
+fn vision_line(design: f64) -> f64 {
+    design * crate::layout_text_scale() * 1.25
+}
+
+/// Capability row `row`'s height. 100% keeps the uniform `SETTINGS_ROW_H`;
+/// a larger vision step gives each row room for its own lines (label,
+/// value, one caption or two for Keyboard's gesture hint) and, for the
+/// slider rows, a full slider band beneath them.
+pub fn settings_row_h(row: u32) -> f64 {
+    if crate::layout_text_scale() <= 1.0 {
+        return SETTINGS_ROW_H;
+    }
+    let body = 15.0 + vision_line(17.0) + 2.0 + vision_line(19.0);
+    let slider = 8.0 + 56.0 + 6.0;
+    let h = match row {
+        1 | SETTINGS_KEY_BACKLIGHT_ROW => body + slider,
+        crate::service_ui::SETTINGS_VOLUME_ROW => 15.0 + vision_line(19.0) + 2.0 + vision_line(14.0) + slider,
+        3 => body + 4.0 + 2.0 * vision_line(14.0) + 12.0,
+        _ => body + 4.0 + vision_line(14.0) + 12.0,
+    };
+    h.ceil().max(SETTINGS_ROW_H)
+}
+
+/// Inside a row at a larger step: where the label, value and caption lines
+/// start and where the slider's centre sits, measured from the row's top.
+/// 100% returns the original offsets (15, 43, 76 and 86).
+pub fn settings_row_lines(row: u32) -> (f64, f64, f64, f64) {
+    if crate::layout_text_scale() <= 1.0 {
+        return (15.0, 43.0, 76.0, 86.0);
+    }
+    let value = 15.0 + vision_line(17.0) + 2.0;
+    let caption = value + vision_line(19.0) + 4.0;
+    let slider = settings_row_h(row) - 6.0 - 28.0;
+    (15.0, value, caption, slider)
+}
+
+/// The Settings header's tap bands and text rows. At 100% these are the
+/// original literals (Done at the top right, the Vision and Themes links on
+/// the "Device controls" line, rows from `SETTINGS_ROW_FIRST_Y`). A larger
+/// vision step gives the links their own row with bands sized for the
+/// larger text, puts "Device controls" under them, and starts the rows
+/// below that. Paint and every hit-test read this one struct.
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct SettingsHeader {
+    /// Done's band: x from `done_x` to the right edge, y above `done_bottom`.
+    pub done_x: f64,
+    pub done_bottom: f64,
+    /// The links' shared y band and each link's x range.
+    pub links_y: (f64, f64),
+    pub vision_x: (f64, f64),
+    pub themes_x: (f64, f64),
+    /// Where the "Device controls" eyebrow line starts.
+    pub eyebrow_y: f64,
+    /// The first capability row's top.
+    pub first_y: f64,
+}
+
+/// A conservative width for `chars` characters of `design`-sized text at
+/// the current step, for hit bands that are computed without a context.
+fn estimated_text_w(chars: usize, design: f64) -> f64 {
+    chars as f64 * design * crate::layout_text_scale() * 0.62
+}
+
+pub fn settings_header(width: f64) -> SettingsHeader {
+    let s = crate::layout_text_scale();
+    if s <= 1.0 {
+        return SettingsHeader {
+            done_x: width - 150.0,
+            done_bottom: 108.0,
+            links_y: (104.0, 162.0),
+            vision_x: (width - 310.0, width - 185.0),
+            themes_x: (width - 185.0, width),
+            eyebrow_y: 112.0,
+            first_y: SETTINGS_ROW_FIRST_Y,
+        };
+    }
+    let done_w = (estimated_text_w(4, 20.0) + 48.0).max(150.0);
+    let done_bottom = (16.0 + vision_line(32.0) + 8.0).max(108.0);
+    let links_h = (vision_line(20.0) + 16.0).max(58.0);
+    let themes_w = estimated_text_w(8, 20.0) + 48.0;
+    let vision_w = estimated_text_w(8, 20.0) + 24.0;
+    let eyebrow_y = done_bottom + links_h + 4.0;
+    SettingsHeader {
+        done_x: width - done_w,
+        done_bottom,
+        links_y: (done_bottom, done_bottom + links_h),
+        vision_x: (width - themes_w - vision_w, width - themes_w),
+        themes_x: (width - themes_w, width),
+        eyebrow_y,
+        first_y: (eyebrow_y + vision_line(19.0) + 12.0).ceil(),
+    }
+}
+
+/// The first row's top in the content column's design space.
+pub fn settings_first_y() -> f64 {
+    settings_header(crate::DESIGN_WIDTH).first_y
+}
+
+/// The Volume row's output line, from the row's top: between the heading
+/// and the slider.
+pub fn settings_output_detail_y() -> f64 {
+    if crate::layout_text_scale() <= 1.0 {
+        crate::service_ui::SETTINGS_OUTPUT_DETAIL_Y
+    } else {
+        15.0 + vision_line(19.0) + 2.0
+    }
+}
+
+/// The Power section's card height: 70 px, or room for its larger label.
+pub fn settings_power_card_h() -> f64 {
+    (vision_line(23.0) + 24.0).ceil().max(SETTINGS_POWER_CARD_H)
 }
 
 /// The bottom edge of `count` stacked settings rows, i.e. where any content
 /// that follows the row list (the Power section) should begin.
 pub fn settings_rows_bottom(count: u32) -> f64 {
     if count == 0 {
-        return SETTINGS_ROW_FIRST_Y;
+        return settings_first_y();
     }
-    settings_row_y(count - 1) + SETTINGS_ROW_H
+    settings_row_y(count - 1) + settings_row_h(count - 1)
 }
 
 /// The Power section and, when present, the power confirmation dialog are
@@ -479,13 +620,13 @@ pub struct SettingsLayout {
 pub fn settings_layout(key_backlight: bool) -> SettingsLayout {
     let rows_bottom = settings_rows_bottom(SETTINGS_ROW_COUNT + u32::from(key_backlight));
     let power_heading_y = rows_bottom + 22.0;
-    let reboot_y = power_heading_y + 28.0;
-    let poweroff_y = reboot_y + SETTINGS_POWER_CARD_H + SETTINGS_ROW_GAP;
+    let reboot_y = power_heading_y + (vision_line(19.0) + 4.0).max(28.0);
+    let poweroff_y = reboot_y + settings_power_card_h() + SETTINGS_ROW_GAP;
     SettingsLayout {
         power_heading_y,
         reboot_y,
         poweroff_y,
-        poweroff_bottom: poweroff_y + SETTINGS_POWER_CARD_H,
+        poweroff_bottom: poweroff_y + settings_power_card_h(),
     }
 }
 
@@ -507,8 +648,8 @@ pub fn settings_wide_offset(column: usize, key_backlight: bool) -> (f64, f64) {
     let dx = crate::SETTINGS_WIDE_ORIGIN_X + column as f64 * crate::SETTINGS_WIDE_COL_PITCH;
     let dy = match column {
         0 => 0.0,
-        1 => SETTINGS_ROW_FIRST_Y - settings_row_y(3),
-        _ => SETTINGS_ROW_FIRST_Y - settings_layout(key_backlight).power_heading_y,
+        1 => settings_first_y() - settings_row_y(3),
+        _ => settings_first_y() - settings_layout(key_backlight).power_heading_y,
     };
     (dx, dy)
 }
@@ -524,7 +665,7 @@ pub struct SettingsConfirmLayout {
 /// precedes it (the Power section's bottom edge).
 pub fn settings_confirm_layout(after: f64) -> SettingsConfirmLayout {
     let label_y = after + 14.0;
-    let card_y = label_y + 28.0;
+    let card_y = label_y + (vision_line(19.0) + 4.0).max(28.0);
     SettingsConfirmLayout {
         label_y,
         card_y,
@@ -1351,12 +1492,16 @@ fn paint_vision(cr: &Context, w: f64, h: f64, view: &ThemeView, theme: Option<&A
     // The same header and title rows as the theme chooser, which is also
     // where `ThemeView::hit` looks for Back and Close.
     let lay = crate::theme_ui::chooser_layout(w as u32, h as u32);
-    text(cr, "‹ Settings", 28.0, lay.header_y, 185.0, 22.0, style.accent);
-    text(cr, "Close", w - 115.0, lay.header_y, 90.0, 21.0, style.accent);
-    let title_y = lay.themes_heading.1;
+    let header_bottom = paint_chooser_header(cr, style, w, h);
+    let title_y = lay.themes_heading.1.max(header_bottom + 4.0);
     heading(cr, "Vision", 28.0, title_y, w - 56.0, 26.0, style.text);
-    let note_x = 28.0 + text_advance(cr, "Vision", 26.0, pango::Weight::Bold) + 20.0;
-    text(cr, "Applies to every theme", note_x, title_y + 9.0, w - note_x - 28.0, 17.0, style.muted);
+    if crate::layout_text_scale() > 1.0 {
+        // The note gets its own line rather than ellipsizing beside the title.
+        text(cr, "Applies to every theme", 28.0, title_y + vision_line(26.0) + 2.0, w - 56.0, 17.0, style.muted);
+    } else {
+        let note_x = 28.0 + text_advance(cr, "Vision", 26.0, pango::Weight::Bold) + 20.0;
+        text(cr, "Applies to every theme", note_x, title_y + 9.0, w - note_x - 28.0, 17.0, style.muted);
+    }
     let pending = view.vision_pending();
     let shown = pending.unwrap_or(&view.vision);
     // Laid out for the size the screen is drawn at now (the saved step),
@@ -1450,8 +1595,7 @@ fn paint_theme_chooser(
     // Upstream's `dimColor: Color.background` -- tints unselected carousel
     // slices, not the panel's own background wash above.
     let dim_color = palette_rgb_or(theme, "background", 0x0b1216);
-    text(cr, "‹ Settings", 28.0, lay.header_y, 185.0, 22.0, style.accent);
-    text(cr, "Close", w - 115.0, lay.header_y, 90.0, 21.0, style.accent);
+    paint_chooser_header(cr, style, w, h);
     if view.page != ThemePage::List {
         return;
     }
@@ -2093,7 +2237,7 @@ fn wifi_layout(view: &WifiPublic, width: f64, height: f64) -> crate::wifi_ui::La
 /// Where the Settings screen's own content (rows, Power section, and any
 /// confirm dialog or message) naturally ends, feeding `content_sized_panel_h`
 /// (finding P0-2) instead of always filling the screen.
-fn settings_content_bottom(services: Option<&ServiceView>) -> f64 {
+pub fn settings_content_bottom(services: Option<&ServiceView>) -> f64 {
     const EMPTY_BOTTOM: f64 = 177.0 + 20.0 + 24.0;
     let Some(view) = services else {
         return EMPTY_BOTTOM;
@@ -2664,7 +2808,12 @@ fn paint_shade_header_reflowed(
             hint_room -= battery_w + 12.0;
         }
     }
-    text(cr, "Swipe up above the list to close", 28.0, hint_y, hint_room, 15.0, style.muted);
+    // Secondary lines shrink to fit before they ellipsize, never below
+    // their 100% size.
+    let floor = |size: f64| size / crate::layout_text_scale();
+    let hint = "Swipe up above the list to close";
+    let hint_size = fit(hint, 15.0, hint_room, pango::Weight::Normal).max(floor(15.0));
+    text(cr, hint, 28.0, hint_y, hint_room, hint_size, style.muted);
 
     let count_y = (hint_y + line(15.0) + 2.0).max(SHADE_SETTINGS_BOTTOM + 4.0);
     let mut count_room = hw - 56.0;
@@ -2676,7 +2825,57 @@ fn paint_shade_header_reflowed(
         count_room -= dismiss_w + 16.0;
     }
     let label = if count == 1 { "1 notification".to_string() } else { format!("{count} notifications") };
-    text(cr, &label, 28.0, count_y, count_room, 19.0, style.muted);
+    let count_size = fit(&label, 19.0, count_room, pango::Weight::Normal).max(floor(19.0));
+    text(cr, &label, 28.0, count_y, count_room, count_size, style.muted);
+}
+
+/// The Settings header at a larger vision step (`settings_header`): the
+/// title fits beside Done, the Vision and Themes links get their own row,
+/// and "Device controls" sits beneath them.
+fn paint_settings_header_reflowed(cr: &Context, theme: Option<&AppearanceSnapshot>, style: VisualStyle, w: f64) {
+    let head = settings_header(w);
+    let fit = |value: &str, size: f64, room: f64, weight| {
+        let advance = text_advance(cr, value, size, weight);
+        if advance > room { size * room / advance } else { size }
+    };
+    let title_room = head.done_x - 28.0 - 8.0;
+    let title_size = fit("Settings", 32.0, title_room, pango::Weight::Bold);
+    heading(cr, "Settings", 28.0, 16.0, title_room, title_size, style.text);
+    let line_mid = 16.0 + vision_line(32.0) / 2.0;
+    let link = |label: &str, (x0, x1): (f64, f64), y_mid: f64| {
+        let room = x1 - x0 - 24.0;
+        let size = fit(label, 20.0, room, pango::Weight::Normal);
+        let advance = text_advance(cr, label, size, pango::Weight::Normal) + 2.0;
+        text(cr, label, x1 - 24.0 - advance, y_mid - vision_line(size) / 2.0, advance, size, style.accent);
+    };
+    link("Done", (head.done_x, w), line_mid);
+    let links_mid = (head.links_y.0 + head.links_y.1) / 2.0;
+    link("Vision ›", head.vision_x, links_mid);
+    link("Themes ›", head.themes_x, links_mid);
+    themed_medium(cr, theme, "heading", "Device controls", 28.0, head.eyebrow_y, w - 56.0, 19.0, 16.0, 24.0, style.muted);
+}
+
+/// The theme chooser's and Vision page's Back and Close links, inside
+/// `theme_ui::chooser_header_bands`; returns the header line's bottom.
+fn paint_chooser_header(cr: &Context, style: VisualStyle, w: f64, h: f64) -> f64 {
+    let lay = crate::theme_ui::chooser_layout(w as u32, h as u32);
+    if crate::layout_text_scale() <= 1.0 {
+        text(cr, "‹ Settings", 28.0, lay.header_y, 185.0, 22.0, style.accent);
+        text(cr, "Close", w - 115.0, lay.header_y, 90.0, 21.0, style.accent);
+        return lay.header_y + 22.0 * 1.25;
+    }
+    let (_, back_right, close_left) = crate::theme_ui::chooser_header_bands(w as u32, h as u32);
+    let fit = |value: &str, size: f64, room: f64| {
+        let advance = text_advance(cr, value, size, pango::Weight::Normal);
+        if advance > room { size * room / advance } else { size }
+    };
+    let back_size = fit("‹ Settings", 22.0, back_right - 28.0 - 8.0);
+    text(cr, "‹ Settings", 28.0, lay.header_y, back_right - 28.0, back_size, style.accent);
+    let close_room = w - 24.0 - close_left - 8.0;
+    let close_size = fit("Close", 21.0, close_room);
+    let close_w = text_advance(cr, "Close", close_size, pango::Weight::Normal) + 2.0;
+    text(cr, "Close", w - 24.0 - close_w, lay.header_y, close_w, close_size, style.accent);
+    lay.header_y + vision_line(back_size.max(close_size))
 }
 
 fn paint_drawer(
@@ -2903,7 +3102,7 @@ fn scene(
             || services
                 .and_then(|s| s.wifi.as_ref())
                 .is_some_and(|view| view.page != WifiPage::Closed)))
-        && !(route == Route::Shade && crate::layout_text_scale() > 1.0)
+        && !(matches!(route, Route::Shade | Route::Settings) && crate::layout_text_scale() > 1.0)
     {
         heading(cr, title, 28.0, panel_y + 32.0, w - 180.0, 32.0, style.text);
     }
@@ -3303,10 +3502,14 @@ fn scene(
                 );
                 return;
             }
-            text(cr, "Done", w - 114.0, 46.0, 90.0, 20.0, style.accent);
-            themed_medium(cr, theme, "heading", "Device controls", 28.0, 112.0, w - 56.0, 19.0, 16.0, 24.0, style.muted);
-            text(cr, "Themes ›", w - 164.0, 113.0, 140.0, 20.0, style.accent);
-            text(cr, "Vision ›", w - 290.0, 113.0, 110.0, 20.0, style.accent);
+            if crate::layout_text_scale() > 1.0 {
+                paint_settings_header_reflowed(cr, theme, style, w);
+            } else {
+                text(cr, "Done", w - 114.0, 46.0, 90.0, 20.0, style.accent);
+                themed_medium(cr, theme, "heading", "Device controls", 28.0, 112.0, w - 56.0, 19.0, 16.0, 24.0, style.muted);
+                text(cr, "Themes ›", w - 164.0, 113.0, 140.0, 20.0, style.accent);
+                text(cr, "Vision ›", w - 290.0, 113.0, 110.0, 20.0, style.accent);
+            }
             // The row cards/sliders/Power section below are Settings' own
             // scrollable body, not header chrome -- centered and scaled by
             // `crate::settings_content_transform` (the same `(scale, x)`
@@ -3323,7 +3526,14 @@ fn scene(
             // position, not a rewrite of the literals themselves.
             let (content_scale, content_x) = crate::settings_content_transform(width, height);
             let _ = cr.save();
-            cr.translate(content_x, 0.0);
+            // At a larger vision step the body scrolls under the fixed
+            // header (`service_ui::settings_max_scroll`).
+            let body_top = crate::service_ui::settings_body_top(width, height);
+            if body_top > 0.0 {
+                cr.rectangle(0.0, body_top, w, f64::from(height));
+                cr.clip();
+            }
+            cr.translate(content_x, -services.map_or(0.0, |view| view.settings_scroll));
             cr.scale(content_scale, content_scale);
             let wide = crate::settings_wide(width, height);
             let key_backlight_row = services.is_some_and(|view| view.key_backlight.is_some());
@@ -3339,6 +3549,7 @@ fn scene(
             let row_padding = theme_settings_row_padding(theme);
             let row_text_x = 24.0 + row_padding;
             let row_text_width = w - 48.0 - row_padding * 2.0;
+            let lifted = crate::layout_text_scale() > 1.0;
             if let Some(settings) = services.and_then(|view| view.settings.as_ref()) {
                 // Row numbers are explicit, not a plain `enumerate()`,
                 // because row 2 (Volume) is painted separately below --
@@ -3353,13 +3564,14 @@ fn scene(
                 ] {
                     place(settings_row_column(row));
                     let y = settings_row_y(row);
-                    service_card(cr, theme, "controls", 24.0, y, w - 48.0, SETTINGS_ROW_H, false);
-                    themed_medium(cr, theme, "body", name, row_text_x, y + 15.0, row_text_width, 17.0, 14.0, 22.0, style.text);
-                    themed_text(
+                    let (label_dy, value_dy, caption_dy, _) = settings_row_lines(row);
+                    service_card(cr, theme, "controls", 24.0, y, w - 48.0, settings_row_h(row), false);
+                    themed_medium(cr, theme, "body", name, row_text_x, y + label_dy, row_text_width, 17.0, 14.0, 22.0, style.text);
+                    themed_text_fit(
                         cr, theme, "body",
                         &control_text(control),
                         row_text_x,
-                        y + 43.0,
+                        y + value_dy,
                         row_text_width,
                         19.0,
                         14.0,
@@ -3372,7 +3584,7 @@ fn scene(
                             cr, theme, "caption",
                             "Two fingers up at bottom to show;",
                             row_text_x,
-                            y + 72.0,
+                            if lifted { y + caption_dy } else { y + 72.0 },
                             row_text_width,
                             14.0,
                             11.0,
@@ -3383,7 +3595,7 @@ fn scene(
                             cr, theme, "caption",
                             "drag the handle down to hide.",
                             row_text_x,
-                            y + 89.0,
+                            if lifted { y + caption_dy + vision_line(14.0) } else { y + 89.0 },
                             row_text_width,
                             14.0,
                             11.0,
@@ -3391,7 +3603,7 @@ fn scene(
                             style.muted,
                         );
                     } else if let Some(detail) = &control.detail {
-                        themed_text(cr, theme, "caption", detail, row_text_x, y + 76.0, row_text_width, 14.0, 11.0, 18.0, style.muted);
+                        themed_text(cr, theme, "caption", detail, row_text_x, y + caption_dy, row_text_width, 14.0, 11.0, 18.0, style.muted);
                     }
                     let _ = cr.restore();
                 }
@@ -3402,7 +3614,7 @@ fn scene(
                     // `service_ui.rs` mirrors this same row rhythm), well
                     // past the "at least about 56 px tall" ask.
                     place(0);
-                    paint_slider(cr, style, w, settings_row_y(1) + 86.0, &settings.brightness);
+                    paint_slider(cr, style, w, settings_row_y(1) + settings_row_lines(1).3, &settings.brightness);
                     let _ = cr.restore();
                 }
                 // Volume row (task: "in Settings"): row 2, directly after
@@ -3412,7 +3624,8 @@ fn scene(
                 // entry points").
                 place(settings_row_column(SETTINGS_VOLUME_ROW));
                 let volume_y = settings_row_y(SETTINGS_VOLUME_ROW);
-                service_card(cr, theme, "controls", 24.0, volume_y, w - 48.0, SETTINGS_ROW_H, false);
+                let volume_lines = settings_row_lines(SETTINGS_VOLUME_ROW);
+                service_card(cr, theme, "controls", 24.0, volume_y, w - 48.0, settings_row_h(SETTINGS_VOLUME_ROW), false);
                 themed_medium(cr, theme, "body", "Volume", row_text_x, volume_y + 15.0, row_text_width, 17.0, 14.0, 22.0, style.text);
                 if let Some(sink) = default_sink(services.and_then(|view| view.audio.as_ref())) {
                     let percent = volume::linear_to_percent(sink.linear_volume);
@@ -3426,14 +3639,14 @@ fn scene(
                         cr, theme, "caption",
                         &format!("{} · tap to change output", sink.description),
                         row_text_x,
-                        volume_y + SETTINGS_OUTPUT_DETAIL_Y,
+                        volume_y + settings_output_detail_y(),
                         row_text_width,
                         14.0,
                         11.0,
                         18.0,
                         style.muted,
                     );
-                    paint_volume_slider(cr, style, w, volume_y + 86.0, percent, sink.muted);
+                    paint_volume_slider(cr, style, w, volume_y + volume_lines.3, percent, sink.muted);
                 } else {
                     text(
                         cr,
@@ -3441,7 +3654,7 @@ fn scene(
                             .and_then(|view| view.audio_error.as_deref())
                             .unwrap_or("No audio device found"),
                         42.0,
-                        volume_y + 43.0,
+                        volume_y + volume_lines.1,
                         w - 90.0,
                         19.0,
                         style.muted,
@@ -3452,10 +3665,11 @@ fn scene(
                 if let Some(level) = services.and_then(|view| view.key_backlight) {
                     place(settings_row_column(SETTINGS_KEY_BACKLIGHT_ROW));
                     let y = settings_row_y(SETTINGS_KEY_BACKLIGHT_ROW);
-                    service_card(cr, theme, "controls", 24.0, y, w - 48.0, SETTINGS_ROW_H, false);
-                    themed_medium(cr, theme, "body", "Key backlight", row_text_x, y + 15.0, row_text_width, 17.0, 14.0, 22.0, style.text);
-                    themed_text(cr, theme, "body", level.label(), row_text_x, y + 43.0, row_text_width, 19.0, 14.0, 24.0, style.text);
-                    paint_level_slider(cr, style, w, y + 86.0, level.index(), 3);
+                    let lines = settings_row_lines(SETTINGS_KEY_BACKLIGHT_ROW);
+                    service_card(cr, theme, "controls", 24.0, y, w - 48.0, settings_row_h(SETTINGS_KEY_BACKLIGHT_ROW), false);
+                    themed_medium(cr, theme, "body", "Key backlight", row_text_x, y + lines.0, row_text_width, 17.0, 14.0, 22.0, style.text);
+                    themed_text(cr, theme, "body", level.label(), row_text_x, y + lines.1, row_text_width, 19.0, 14.0, 24.0, style.text);
+                    paint_level_slider(cr, style, w, y + lines.3, level.index(), 3);
                     let _ = cr.restore();
                 }
             } else {
@@ -3475,6 +3689,7 @@ fn scene(
             // relative to the row rhythm above (finding P0-4), not as
             // independent literals that stay correct only by coincidence.
             let layout = settings_layout(key_backlight_row);
+            let power_label_dy = if lifted { (settings_power_card_h() - vision_line(23.0)) / 2.0 } else { 20.0 };
             place(2);
             if services.and_then(|view| view.settings.as_ref()).is_some() {
                 text(
@@ -3493,14 +3708,14 @@ fn scene(
                     24.0,
                     layout.reboot_y,
                     w - 48.0,
-                    SETTINGS_POWER_CARD_H,
+                    settings_power_card_h(),
                     false,
                 );
                 text(
                     cr,
                     "Reboot…",
                     42.0,
-                    layout.reboot_y + 20.0,
+                    layout.reboot_y + power_label_dy,
                     w - 84.0,
                     23.0,
                     style.text,
@@ -3512,14 +3727,14 @@ fn scene(
                     24.0,
                     layout.poweroff_y,
                     w - 48.0,
-                    SETTINGS_POWER_CARD_H,
+                    settings_power_card_h(),
                     false,
                 );
                 text(
                     cr,
                     "Power off…",
                     42.0,
-                    layout.poweroff_y + 20.0,
+                    layout.poweroff_y + power_label_dy,
                     w - 84.0,
                     23.0,
                     style.text,

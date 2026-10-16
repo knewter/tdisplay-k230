@@ -157,8 +157,10 @@ pub struct VisionLayout {
 pub fn vision_layout(width: f64, scale: f64) -> VisionLayout {
     let s = scale.clamp(1.0, 2.0);
     let line = |size: f64| (size * s * 1.35).ceil();
-    let top = (110.0 + 40.0 * s).round();
-    let cw = (width - 48.0).min(VISION_CARD_MAX_W).max(0.0);
+    // A larger step also gives "Applies to every theme" its own line under
+    // the title, so the cards start lower still.
+    let top = if s <= 1.0 { 150.0 } else { (110.0 + 75.0 * s).round() };
+    let cw = (width - 48.0).clamp(0.0, VISION_CARD_MAX_W);
     // `width` 0 asks for the stacked (portrait) column without a width.
     let side_by_side = cw > 0.0 && width >= 2.0 * cw + 72.0;
     let label_h = line(17.0);
@@ -546,6 +548,24 @@ impl ThemeView {
             self.preview.as_ref().map_or(0, |p| p.backgrounds.len()),
         )
     }
+}
+
+/// The chooser header's Back and Close bands: `(height, back_right,
+/// close_left)`. 100% keeps Back left of 190 px and Close right of `w - 150`;
+/// a larger vision step widens both for the larger text, each at most 60%
+/// of the width, and makes the band at least as tall as its line.
+pub fn chooser_header_bands(width: u32, height: u32) -> (f64, f64, f64) {
+    let w = f64::from(width);
+    let lay = chooser_layout(width, height);
+    let s = crate::layout_text_scale();
+    if s <= 1.0 {
+        return (lay.header_hit_h, 190.0, w - 150.0);
+    }
+    let em = |chars: f64, design: f64| chars * design * s * 0.62;
+    let h = lay.header_hit_h.max(lay.header_y + 22.0 * s * 1.25 + 8.0);
+    let back_right = (28.0 + em(10.0, 22.0) + 16.0).max(190.0).min(w * 0.6);
+    let close_left = (w - em(5.0, 21.0) - 48.0).min(w - 150.0).max(w * 0.6);
+    (h, back_right, close_left)
 }
 
 pub fn chooser_layout(width: u32, height: u32) -> ChooserLayout {
@@ -1249,7 +1269,7 @@ impl ThemeView {
     /// anything that should not fall through to here.
     pub fn hit(&self, start: (f64, f64), end: (f64, f64), width: u32, height: u32) -> Option<ThemeIntent> {
         let w = f64::from(width);
-        let header_h = chooser_layout(width, height).header_hit_h;
+        let (header_h, back_right, close_left) = chooser_header_bands(width, height);
         let dx = end.0 - start.0;
         let dy = end.1 - start.1;
         if dx.abs() > 18.0 || dy.abs() > 18.0 {
@@ -1260,11 +1280,12 @@ impl ThemeView {
         }
         match self.page {
             ThemePage::Controls => {
-                if !(104.0..162.0).contains(&end.1) {
+                let header = crate::render::settings_header(w);
+                if !(header.links_y.0..header.links_y.1).contains(&end.1) {
                     None
-                } else if end.0 > w - 185.0 {
+                } else if end.0 > header.themes_x.0 {
                     Some(ThemeIntent::Open)
-                } else if end.0 > w - 310.0 {
+                } else if end.0 > header.vision_x.0 {
                     Some(ThemeIntent::OpenVision)
                 } else {
                     None
@@ -1272,9 +1293,9 @@ impl ThemeView {
             }
             ThemePage::Vision => {
                 if end.1 < header_h {
-                    return if end.0 < 190.0 {
+                    return if end.0 < back_right {
                         Some(ThemeIntent::Back)
-                    } else if end.0 > w - 150.0 {
+                    } else if end.0 > close_left {
                         Some(ThemeIntent::Close)
                     } else {
                         None
@@ -1316,9 +1337,9 @@ impl ThemeView {
                     return Some(ThemeIntent::Fit);
                 }
                 if end.1 < header_h {
-                    return if end.0 < 190.0 {
+                    return if end.0 < back_right {
                         Some(ThemeIntent::Back)
-                    } else if end.0 > w - 150.0 {
+                    } else if end.0 > close_left {
                         Some(ThemeIntent::Close)
                     } else {
                         None

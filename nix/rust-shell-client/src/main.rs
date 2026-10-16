@@ -27,7 +27,7 @@ use k230_shell_rust::{
         close_drag_release_target, close_drag_zone, drawer_close_candidate_after_scroll,
         drawer_close_drag_zone, filter_app_indices, key_backlight_level_at,
         key_backlight_slider_frame, key_backlight_slider_hit, shade_panel_close_zone,
-        notification_max_scroll, notification_swipe_hit, notification_swipe_offset,
+        notification_max_scroll, settings_body_top, settings_max_scroll, notification_swipe_hit, notification_swipe_offset,
         notification_swipe_release, notification_swipe_start, notification_swipe_valid,
         panel_intent, settings_output_picker_hit, settings_slider_column_hit, settings_slider_frame,
         slider_band, volume_icon_tap_zone,
@@ -4489,6 +4489,7 @@ impl ShellClient {
 
     fn hide(&mut self) {
         self.reset_overlay_interaction();
+        self.service_view.settings_scroll = 0.0;
         self.stop_splash_watch();
         self.splash = None;
         self.layer.take();
@@ -5139,7 +5140,11 @@ impl ShellClient {
                     && self.input_ready
                 {
                     self.panel_start = Some((id, pos));
-                    self.panel_origin_scroll = self.service_view.notification_scroll;
+                    self.panel_origin_scroll = if self.route == Route::Settings {
+                        self.service_view.settings_scroll
+                    } else {
+                        self.service_view.notification_scroll
+                    };
                     let stopped_coast = self.notification_coast.stop();
                     let shade = k230_shell_rust::service_ui::shade_layout(self.width, self.height);
                     self.panel_scrolled = self.route == Route::Shade
@@ -6089,6 +6094,31 @@ impl ShellClient {
                             }
                         }
                         self.panel_scroll_sample = Some((pos.1, time_ms));
+                    }
+                }
+            } else if self.route == Route::Settings
+                && self.input_ready
+                && self.wifi_view.page == WifiPage::Closed
+                && self.theme_view.page == ThemePage::Controls
+                && settings_max_scroll(self.width, self.height, &self.service_view) > 0.0
+            {
+                // A larger vision step makes the rows taller than the panel;
+                // a vertical drag on the body scrolls it under the header.
+                // Slider rows never get here: their drags armed above.
+                if let Some((start_id, start)) = self.panel_start {
+                    let dy = pos.1 - start.1;
+                    if start_id == id
+                        && start.1 >= settings_body_top(self.width, self.height)
+                        && dy.abs() > 22.0
+                    {
+                        let max = settings_max_scroll(self.width, self.height, &self.service_view);
+                        let next = (self.panel_origin_scroll - dy).clamp(0.0, max);
+                        if (next - self.service_view.settings_scroll).abs() >= 1.0 {
+                            self.service_view.settings_scroll = next;
+                            self.renderer.set_services(self.service_view.clone());
+                            self.dirty = true;
+                        }
+                        self.panel_scrolled = true;
                     }
                 }
             } else if self.route == Route::Settings

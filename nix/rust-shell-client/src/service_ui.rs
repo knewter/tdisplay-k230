@@ -8,7 +8,8 @@ use crate::{
     pipewire_ipc::GraphSnapshot,
     render::{
         settings_confirm_layout, settings_layout, settings_row_y, POWER_BUTTON_H, POWER_CANCEL_Y,
-        POWER_CONFIRM_SLOP, POWER_CONFIRM_Y, POWER_OFF_Y, POWER_REBOOT_Y, SETTINGS_KEY_BACKLIGHT_ROW, SETTINGS_POWER_CARD_H, SETTINGS_ROW_H,
+        POWER_CONFIRM_SLOP, POWER_CONFIRM_Y, POWER_OFF_Y, POWER_REBOOT_Y, SETTINGS_KEY_BACKLIGHT_ROW,
+        settings_power_card_h, settings_row_h,
     },
     service_data::{
         ActionOutcome, ControlState, NotificationSnapshot, PowerAction, Priority, ServiceRequest,
@@ -37,6 +38,9 @@ pub struct ServiceView {
     pub message: Option<String>,
     pub confirmation: Option<Confirmation>,
     pub notification_scroll: f64,
+    /// How far the Settings body has scrolled under its header; nonzero only
+    /// when a larger vision step makes the rows taller than the panel.
+    pub settings_scroll: f64,
     /// Active, single-contact history drag. Never used for a critical row.
     pub notification_swipe: Option<NotificationSwipe>,
     pub wifi: Option<WifiPublic>,
@@ -524,7 +528,10 @@ pub fn slider_band(route: Route, y: f64, view: &ServiceView) -> bool {
         return false;
     }
     match route {
-        Route::Settings => (settings_row_y(1)..settings_row_y(1) + SETTINGS_ROW_H).contains(&y),
+        Route::Settings => {
+            let y = y + view.settings_scroll;
+            (settings_row_y(1)..settings_row_y(1) + settings_row_h(1)).contains(&y)
+        }
         Route::Shade => (SHADE_SLIDER_TOP..SHADE_SLIDER_TOP + SHADE_SLIDER_H).contains(&y),
         _ => false,
     }
@@ -546,7 +553,7 @@ pub fn volume_slider_band(route: Route, y: f64, view: &ServiceView) -> bool {
     match route {
         Route::Settings => {
             let top = settings_row_y(SETTINGS_VOLUME_ROW);
-            (top..top + SETTINGS_ROW_H).contains(&y)
+            (top..top + settings_row_h(SETTINGS_VOLUME_ROW)).contains(&(y + view.settings_scroll))
         }
         Route::Shade => (SHADE_VOLUME_TOP..SHADE_VOLUME_TOP + SHADE_VOLUME_H).contains(&y),
         _ => false,
@@ -574,8 +581,9 @@ pub fn settings_output_picker_hit(y: f64, route: Route, view: &ServiceView) -> b
     }
     // The detail occupies the middle line. Keep its tap band clear of the
     // heading above and the slider thumb (center +86, radius 16) below.
-    let top = settings_row_y(SETTINGS_VOLUME_ROW) + SETTINGS_OUTPUT_DETAIL_Y - 9.0;
-    (top..top + 36.0).contains(&y)
+    let top = settings_row_y(SETTINGS_VOLUME_ROW) + crate::render::settings_output_detail_y() - 9.0;
+    let band = (crate::render::settings_row_lines(SETTINGS_VOLUME_ROW).2 - crate::render::settings_output_detail_y() + 9.0).max(36.0);
+    (top..top + band).contains(&(y + view.settings_scroll))
 }
 
 /// The speaker glyph at the volume slider's own left end doubles as the
@@ -867,6 +875,46 @@ pub fn shade_adopts_poll(
     shade_open && !dismiss_pending && shown.is_none_or(|shown| shown.events != polled.events)
 }
 
+/// Where the scrolling Settings body starts on screen: just under the
+/// header's last line.
+pub fn settings_body_top(width: u32, height: u32) -> f64 {
+    let (scale, _) = crate::settings_content_transform(width, height);
+    if crate::layout_text_scale() <= 1.0 {
+        return 0.0;
+    }
+    (crate::render::settings_first_y() - 8.0) * scale
+}
+
+/// How far the Settings body can scroll: its content bottom against the
+/// screen. Zero whenever the rows already fit, as they do at 100%.
+pub fn settings_max_scroll(width: u32, height: u32, view: &ServiceView) -> f64 {
+    if crate::layout_text_scale() <= 1.0 {
+        return 0.0;
+    }
+    let (scale, _) = crate::settings_content_transform(width, height);
+    let key_backlight = view.key_backlight.is_some();
+    let bottom = if crate::settings_wide(width, height) {
+        (0..3)
+            .map(|column| {
+                let dy = crate::render::settings_wide_offset(column, key_backlight).1;
+                let end = match column {
+                    0 => settings_row_y(SETTINGS_VOLUME_ROW) + settings_row_h(SETTINGS_VOLUME_ROW),
+                    1 => {
+                        let last = if key_backlight { SETTINGS_KEY_BACKLIGHT_ROW } else { 4 };
+                        settings_row_y(last) + settings_row_h(last)
+                    }
+                    _ => crate::render::settings_content_bottom(Some(view)) - 32.0,
+                };
+                end + dy
+            })
+            .fold(0.0, f64::max)
+            + 24.0
+    } else {
+        crate::render::settings_content_bottom(Some(view))
+    };
+    (bottom * scale - f64::from(height)).max(0.0)
+}
+
 pub fn notification_max_scroll(count: usize, width: u32, height: u32) -> f64 {
     let layout = shade_layout(width, height);
     (layout.list_top + count as f64 * notification_row() - layout.list_bottom).max(0.0)
@@ -980,7 +1028,7 @@ pub fn settings_wide_design_point(point: (f64, f64), key_backlight: bool) -> Opt
         0 => design.1 >= first(settings_row_y(0)) && design.1 < first(settings_row_y(3)),
         1 => {
             design.1 >= first(settings_row_y(3))
-                && design.1 < settings_row_y(last_row) + SETTINGS_ROW_H + crate::render::SETTINGS_ROW_GAP / 2.0
+                && design.1 < settings_row_y(last_row) + settings_row_h(last_row) + crate::render::SETTINGS_ROW_GAP / 2.0
         }
         _ => design.1 >= first(settings_layout(key_backlight).power_heading_y),
     };
@@ -1030,9 +1078,9 @@ pub fn key_backlight_slider_hit(pos: (f64, f64), width: u32, height: u32, view: 
         pos.1 - crate::render::settings_wide_offset(column, true).1
     } else {
         pos.1
-    };
+    } + view.settings_scroll;
     let top = settings_row_y(SETTINGS_KEY_BACKLIGHT_ROW);
-    (top..top + SETTINGS_ROW_H).contains(&y)
+    (top..top + settings_row_h(SETTINGS_KEY_BACKLIGHT_ROW)).contains(&y)
 }
 
 /// The level under screen `x` on the Key backlight slider: the track
@@ -1171,7 +1219,8 @@ pub fn panel_intent(
             if dx.abs() > 18.0 || dy.abs() > 18.0 {
                 return None;
             }
-            if end.1 < 108.0 && end.0 > w - 150.0 {
+            let header = crate::render::settings_header(w);
+            if end.1 < header.done_bottom && end.0 > header.done_x {
                 return Some(PanelIntent::Hide);
             }
             // Everything below (the confirm dialog, the row/Power taps) is
@@ -1185,6 +1234,12 @@ pub fn panel_intent(
             // the shared, unscaled header strip every other route uses too.
             let wide = crate::settings_wide(width, height);
             let (content_scale, content_x) = crate::settings_content_transform(width, height);
+            // The body scrolls under the fixed header at a larger vision
+            // step (`settings_max_scroll`); a touch above it is header.
+            if end.1 < settings_body_top(width, height) {
+                return None;
+            }
+            let end = (end.0, end.1 + view.settings_scroll);
             let end = if wide {
                 settings_wide_design_point(end, view.key_backlight.is_some())?
             } else {
@@ -1210,7 +1265,7 @@ pub fn panel_intent(
             // Settings screen with (finding P0-4); call the same helpers
             // rather than repeating its literals, so the two cannot drift.
             let layout = settings_layout(view.key_backlight.is_some());
-            if (settings_row_y(0)..settings_row_y(0) + 110.0).contains(&end.1) {
+            if (settings_row_y(0)..settings_row_y(0) + settings_row_h(0)).contains(&end.1) {
                 return Some(PanelIntent::OpenWifi);
             }
             // Brightness (row 1) is no longer a tap-classified stepper --
@@ -1220,7 +1275,7 @@ pub fn panel_intent(
             // only classification. A tap landing there without ever
             // arming a drag (brightness unavailable, say) simply falls
             // through to `None` below, same as any other dead zone.
-            if (settings_row_y(3)..settings_row_y(3) + 110.0).contains(&end.1)
+            if (settings_row_y(3)..settings_row_y(3) + settings_row_h(3)).contains(&end.1)
                 && settings.keyboard.state == ControlState::Action
             {
                 return Some(PanelIntent::Request(ServiceRequest::KeyboardToggle));
@@ -1228,14 +1283,14 @@ pub fn panel_intent(
             // The Key backlight row belongs to its slider
             // (`key_backlight_slider_hit`), armed in `main.rs` like the
             // brightness and volume sliders.
-            if (layout.reboot_y..layout.reboot_y + SETTINGS_POWER_CARD_H).contains(&end.1)
+            if (layout.reboot_y..layout.reboot_y + settings_power_card_h()).contains(&end.1)
                 && view.settings.is_some()
             {
                 return Some(PanelIntent::Request(ServiceRequest::PowerRequest(
                     PowerAction::Reboot,
                 )));
             }
-            if (layout.poweroff_y..layout.poweroff_y + SETTINGS_POWER_CARD_H).contains(&end.1)
+            if (layout.poweroff_y..layout.poweroff_y + settings_power_card_h()).contains(&end.1)
                 && view.settings.is_some()
             {
                 return Some(PanelIntent::Request(ServiceRequest::PowerRequest(
@@ -1251,6 +1306,7 @@ pub fn panel_intent(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::render::{SETTINGS_POWER_CARD_H, SETTINGS_ROW_H};
     use crate::pipewire_ipc::Sink;
     use crate::service_data::{Control, ControlValue, NotificationEvent, Priority};
     use std::path::PathBuf;
@@ -2200,6 +2256,47 @@ mod tests {
         }
         // The Settings entry keeps its band right above it.
         assert_eq!(panel_intent(Route::Shade, (500.0, 100.0), (500.0, 100.0), 568, 1232, &view), Some(PanelIntent::OpenSettings));
+    }
+
+    #[test]
+    fn the_largest_text_step_scrolls_settings_and_keeps_every_row_reachable() {
+        crate::set_layout_text_scale(2.0);
+        let mut view = ServiceView {
+            settings: Some(crate::evidence_render::fixture_settings()),
+            ..ServiceView::default()
+        };
+        for (width, height) in [(568u32, 1232u32), (1232, 568)] {
+            view.settings_scroll = 0.0;
+            let max = settings_max_scroll(width, height, &view);
+            assert!(max > 0.0, "200% rows overflow {width}x{height} and must scroll");
+            // Rows stack without overlap, each at least the tap floor.
+            for row in 0..SETTINGS_KEY_BACKLIGHT_ROW {
+                assert!(settings_row_h(row) >= SHADE_TAP_MIN);
+                assert!(settings_row_y(row) + settings_row_h(row) < settings_row_y(row + 1));
+            }
+            // The header bands do not overlap and the rows start below them.
+            let head = crate::render::settings_header(f64::from(width));
+            assert!(head.vision_x.1 <= head.themes_x.0 && head.vision_x.0 >= 0.0);
+            assert!(head.links_y.0 >= head.done_bottom && head.first_y > head.links_y.1);
+            assert!(settings_body_top(width, height) >= head.links_y.1);
+            if width == 568 {
+                // Scrolled to the end, Power off is tappable where it is drawn.
+                view.settings_scroll = max;
+                let layout = settings_layout(false);
+                let y = layout.poweroff_y + settings_power_card_h() / 2.0 - max;
+                assert!(y < f64::from(height) && y > settings_body_top(width, height));
+                assert_eq!(
+                    panel_intent(Route::Settings, (200.0, y), (200.0, y), width, height, &view),
+                    Some(PanelIntent::Request(ServiceRequest::PowerRequest(PowerAction::Poweroff)))
+                );
+                // A tap on the header strip never reaches a scrolled row.
+                let header_y = settings_body_top(width, height) - 4.0;
+                assert_eq!(panel_intent(Route::Settings, (60.0, header_y), (60.0, header_y), width, height, &view), None);
+            }
+        }
+        crate::set_layout_text_scale(1.0);
+        assert_eq!(settings_max_scroll(568, 1232, &view), 0.0, "100% still fits");
+        assert_eq!(crate::render::settings_header(568.0).first_y, crate::render::SETTINGS_ROW_FIRST_Y);
     }
 
     #[test]
