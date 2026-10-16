@@ -4043,7 +4043,17 @@ fn draw_battery_ring(cr: &Context, cx: f64, cy: f64, radius: f64, percent: u8, s
 fn ring_percent_label(cr: &Context, value: &str, cx: f64, cy: f64, radius: f64, rgb: u32) {
     let size = (radius * 0.68).max(13.0);
     let width = radius * 1.9;
-    centered_glow(cr, value, cx - width / 2.0, cy - size * 0.42, width, size, rgb);
+    // Larger text (the vision step) or a large theme font must still fit
+    // inside the ring: shrink this one label rather than cross the stroke.
+    let size = ring_label_size(cr, value, size, radius);
+    let drawn = context_font_size(cr, size);
+    centered_glow(cr, value, cx - width / 2.0, cy - drawn * 0.42, width, size, rgb);
+}
+
+fn ring_label_size(cr: &Context, value: &str, size: f64, radius: f64) -> f64 {
+    let inside = radius * 1.5;
+    let advance = text_advance(cr, value, size, pango::Weight::Bold);
+    if advance > inside { size * inside / advance } else { size }
 }
 
 /// A muted outline battery glyph (rounded body plus a small terminal nub),
@@ -9660,6 +9670,20 @@ mod tests {
         // Themed labels (role-sized, then clamped) still get the step.
         assert_eq!(theme_font_size(Some(&baseline), "body", 18.0, 14.0, 18.0), 18.0);
         assert_eq!(theme_font_size(Some(&large), "body", 18.0, 14.0, 18.0), 22.5);
+    }
+
+    #[test]
+    fn the_battery_ring_percentage_stays_inside_the_ring_at_the_larger_text_step() {
+        let surface = ImageSurface::create(Format::ARgb32, 8, 8).unwrap();
+        let _ = surface.set_user_data(&THEME_METRICS, std::rc::Rc::new(ThemeMetrics { font: 1.25, spacing: 1.0 }));
+        let cr = Context::new(&surface).unwrap();
+        for radius in [24.0, 40.0, 60.0] {
+            let design = (radius * 0.68f64).max(13.0);
+            assert!(text_advance(&cr, "100%", design, pango::Weight::Bold) > radius * 1.5,
+                    "the unfitted label overflows at r={radius}");
+            let size = ring_label_size(&cr, "100%", design, radius);
+            assert!(text_advance(&cr, "100%", size, pango::Weight::Bold) <= radius * 1.5 + 1.0, "r={radius}");
+        }
     }
 
     #[test]
