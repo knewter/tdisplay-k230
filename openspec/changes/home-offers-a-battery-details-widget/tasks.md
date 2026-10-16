@@ -19,10 +19,14 @@
 
 ## 3. Board
 
-- [ ] 3.1 The operator places the widget on Home on the board and confirms the
+- [x] 3.1 The operator places the widget on Home on the board and confirms the
       displayed values against `/sys/class/power_supply`. Evidence class:
       board observation. Progress 2026-10-15: placed by injected click,
       page turned by the operator's swipe, grim values match sysfs for the
       full/idle/unplugged state
       (`docs/evidence/battery-details-widget/board/README.md`). Open until
       the operator places it with a physical click.
+      Done 2026-10-15: the operator placed Battery - Details from the picker with
+      the physical trackpad at 22:48 and accepted the widget ("graph looks
+      fine", "works ship") (`docs/evidence/home-screen/operator-trackpad-2026-10-15.md`). Values versus sysfs: board README above.
+

@@ -13,5 +13,8 @@
       (300, 300) on the widget enters rearrange mode. Capture it with grim.
       Evidence class: injected pointer + grim. Done 2026-10-15 on the Clock
       widget (same gaps): `docs/evidence/home-screen/widget-hit-area/README.md`.
-- [ ] 2.2 The operator moves or removes a widget with the trackpad on HDMI.
+- [x] 2.2 The operator moves or removes a widget with the trackpad on HDMI.
       Evidence class: operator observation.
+      Done 2026-10-15: operator verdict "works ship"; physical badge removals
+      logged at 22:14 (`docs/evidence/home-screen/operator-trackpad-2026-10-15.md`).
+

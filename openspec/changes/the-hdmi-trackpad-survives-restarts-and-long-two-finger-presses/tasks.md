@@ -21,5 +21,8 @@
       shell path. Evidence class: injected raw touch + shell log.
       Done 2026-10-15:
       `docs/evidence/display-touch/trackpad-restart-and-long-press/README.md`.
-- [ ] 2.2 The operator swipes between Home pages and right-clicks a widget with
+- [x] 2.2 The operator swipes between Home pages and right-clicks a widget with
       a two-finger press on the trackpad. Evidence class: operator observation.
+      Done 2026-10-15: operator verdict "works ship"; swipes and a two-finger
+      right-click on a widget logged at 23:47 (`docs/evidence/home-screen/operator-trackpad-2026-10-15.md`).
+

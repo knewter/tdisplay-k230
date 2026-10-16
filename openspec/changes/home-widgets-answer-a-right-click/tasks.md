@@ -20,5 +20,8 @@
       (`docs/evidence/home-screen/widget-right-click/README.md`); right-click
       and a badge click removing a widget on page 2
       (`docs/evidence/home-screen/page-settle/README.md`).
-- [ ] 2.2 The operator right-clicks a widget on the trackpad, then moves or
+- [x] 2.2 The operator right-clicks a widget on the trackpad, then moves or
       removes it. Evidence class: operator observation.
+      Done 2026-10-15: operator verdict "works ship"; physical right-click on a
+      widget logged at 23:47 and badge removals at 22:14 (`docs/evidence/home-screen/operator-trackpad-2026-10-15.md`).
+
