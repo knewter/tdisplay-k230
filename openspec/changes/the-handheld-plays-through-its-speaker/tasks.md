@@ -31,16 +31,18 @@ Proof: `nix build .#deviceTree` -- done, host-only. This proves the DTB compiles
 
 - [x] 4.1 Add `nix/k230-speaker-test.nix` (`status`/`internal`/`external` subcommands) and install it plus `alsa-utils`/`libgpiod` in `nix/hardware.nix`'s `environment.systemPackages`, each with a recorded reason per that file's existing convention.
 - [x] 4.2a Build the closure: `nix build .#nixosConfigurations.k230-coherent-shell.config.system.build.toplevel --max-jobs 1 --cores 6 --no-link --print-out-paths` -> `/nix/store/lfq1j4rb9a1pmbqy3q56vh26j9054hqa-nixos-system-nixos-26.11.20260919.20b1ddd`. `k230-speaker-test.drv` and `alsa-utils`/`libgpiod` both built as part of `.#sdImage-coherent`.
-- [ ] 4.2b Board proof: `k230-speaker-test status` on the board.
+- [x] 4.2b Board proof: `k230-speaker-test status` on the board.
       2026-10-01 run (console transcript): it exited 0, but its `gpioinfo gpiochip1` failed under libgpiod 2.2.4 (`cannot find line 'gpiochip1'`) and `amixer controls` errored. Still open: switch the script to libgpiod 2.x syntax and re-run (`docs/evidence/max98357a-speaker/board-2026-10-01.md`).
       2026-10-16: the script now uses the libgpiod 2 forms and `amixer -c 0`, checked by hand on the board (`board-2026-10-16-libgpiod2.md`). Still open: the installed script's `status` run.
+      2026-10-16 15:28 UTC: the installed script's `status` exited 0 and printed the cards, the route control (`off`) and SDMODE line 2 with no errors (`docs/evidence/max98357a-speaker/board-2026-10-16-installed-status.md`).
 
 Proof for 4.1/4.2a: the toplevel closure and SD image build, and the script package builds -- done, host-only. Proof for 4.2b is a board task -- the script's `gpioset --mode=signal` usage is explicitly UNVERIFIED against the flake's actual pinned `libgpiod` version (design.md), so the first board run is also the first real test of that assumption.
 
 ## 5. Board verification (all open; this proposal claims none of them)
 
 - [ ] 5.1 Install the built `Image`/`k230-tdisplay.dtb` to `/boot` and reboot (a DT/kernel change does not take effect from a system activation alone). Record `cat /proc/asound/cards`, `dmesg | grep -iE 'max98357|i2s|inno|asoc'`, `aplay -l`.
-- [ ] 5.2 Run `k230-speaker-test status` and `gpioinfo gpiochip1` to confirm the named GPIO lines and the presence (or absence) of the "External I2S Output Switch" control.
+- [x] 5.2 Run `k230-speaker-test status` and `gpioinfo gpiochip1` to confirm the named GPIO lines and the presence (or absence) of the "External I2S Output Switch" control.
+      2026-10-16: present; the installed `status` (which runs `gpioinfo -c gpiochip1 2`) shows SDMODE line 2 as an output and the control as `off` (`board-2026-10-16-installed-status.md`). The line is unnamed in the mainline DT; it is identified by offset.
 - [ ] 5.3 Run `k230-speaker-test internal` and have the operator confirm audibly whether the Inno line-out/headphone path still works exactly as before this change (regression check -- this change must not break it).
 - [ ] 5.4 Run `k230-speaker-test external` and have the operator listen for the MAX98357A speaker, or record with a microphone near the board if no operator is present (per `docs/evidence/use-the-camera-not-the-user.md`-style discipline: do not infer a hardware result from a host-only check). Record which of the three failure modes below was observed, if any.
 - [ ] 5.5 Determine and record whether the nRF52840 audio/sensor add-on board is physically attached to this hardware at all. Absent it, tasks 5.4's success criterion cannot be met regardless of software correctness, and that is the expected, honest outcome to record -- not a bug in this change.
