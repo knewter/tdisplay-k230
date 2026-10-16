@@ -1645,6 +1645,14 @@ DATA 1e872a35ff03d6ad526fe06fe990f583c9ab240519e53b1b02e8d8e7ca238797 docs/evide
 DATA b828078184dd6dca6e529a1b06025c3305fea75b483ddfc30044e5c9d3d8ac18 docs/evidence/the-shell-is-navigable-with-a-mouse/after-calculator-click.jpg
 DATA 64da29b4e8a6d62346bab76b1c9424bf10abf0a5809f1a49f9524cccbaa2df4f docs/evidence/card-shell/overview-home-bleed-through/board-2026-09-30/overview-native.jpg
 DATA a76ca87ac3d0823659559f297258be51f2719e8d95efbcb10186a3f68f17040a docs/evidence/card-shell/overview-home-bleed-through/board-2026-09-30/overview-panel.jpg
+DATA eb97830d3b2c407b8a1a9559f4547c5faf30a528c36085c065ede0d2971e5eb6 docs/evidence/coherent-shell/accessibility-scale/board/01-settings.png
+DATA 067bdb088d7d3b137a2586058819ab40830bef98aab4bf2daca440413794e7a6 docs/evidence/coherent-shell/accessibility-scale/board/02-vision-default.png
+DATA 1052f94fa56517b0116ce10500455c31e71e37504080bdea57fe91a6eff8d4f1 docs/evidence/coherent-shell/accessibility-scale/board/03-large.png
+DATA cff3cb07a0352355135064f7bf06cab6bce6205543e5a887a463009c5d256634 docs/evidence/coherent-shell/accessibility-scale/board/04-both.png
+DATA 8561484aa92a536a8f8e77b2af098c6e7652ce0d208ab757b0e4e3636825435b docs/evidence/coherent-shell/accessibility-scale/board/05-both-settings.png
+DATA cc1ff616181a6d33ad9c18698d485ef00d7cdd4eed46753110efcb254866ee76 docs/evidence/coherent-shell/accessibility-scale/board/06-reboot-shade.png
+DATA 8f4271009116c7434853a184bd2abed64268f5c1f906004a1d49a56a1237876e docs/evidence/coherent-shell/accessibility-scale/board/07-reboot-vision.png
+DATA a78135472bc20453af4e66d04d2f763213c9af1957e9d77cf8537cba28d5d2e9 docs/evidence/coherent-shell/accessibility-scale/board/08-restored.png
 DATA bb12d1dff29516d0ccdda0d6dc101d4c1ea689c16e8bff8196a17601d71c63dc docs/evidence/coherent-shell/accessibility-scale/host/default-drawer-568x1232.png
 DATA 9ff798c8d1dbd81ec456a4e4dc7b2a60b868068372520fbd17b7c17c677a6099 docs/evidence/coherent-shell/accessibility-scale/host/default-settings-1280x800.png
 DATA aec4b6cd890a30a32fdb64d8198b5ea0ba768ca332e2409855c72ffaefbe0219 docs/evidence/coherent-shell/accessibility-scale/host/default-shade-568x1232.png
@@ -2288,6 +2296,14 @@ limits are in the adjacent README. They are not physical-panel captures.
 
 | File | Bytes | Kind | SHA256 |
 | --- | ---: | --- | --- |
+| `docs/evidence/coherent-shell/accessibility-scale/board/01-settings.png` | 53914 | DATA | `eb97830d3b2c407b8a1a9559f4547c5faf30a528c36085c065ede0d2971e5eb6` |
+| `docs/evidence/coherent-shell/accessibility-scale/board/02-vision-default.png` | 18953 | DATA | `067bdb088d7d3b137a2586058819ab40830bef98aab4bf2daca440413794e7a6` |
+| `docs/evidence/coherent-shell/accessibility-scale/board/03-large.png` | 26944 | DATA | `1052f94fa56517b0116ce10500455c31e71e37504080bdea57fe91a6eff8d4f1` |
+| `docs/evidence/coherent-shell/accessibility-scale/board/04-both.png` | 24154 | DATA | `cff3cb07a0352355135064f7bf06cab6bce6205543e5a887a463009c5d256634` |
+| `docs/evidence/coherent-shell/accessibility-scale/board/05-both-settings.png` | 59433 | DATA | `8561484aa92a536a8f8e77b2af098c6e7652ce0d208ab757b0e4e3636825435b` |
+| `docs/evidence/coherent-shell/accessibility-scale/board/06-reboot-shade.png` | 101199 | DATA | `cc1ff616181a6d33ad9c18698d485ef00d7cdd4eed46753110efcb254866ee76` |
+| `docs/evidence/coherent-shell/accessibility-scale/board/07-reboot-vision.png` | 20059 | DATA | `8f4271009116c7434853a184bd2abed64268f5c1f906004a1d49a56a1237876e` |
+| `docs/evidence/coherent-shell/accessibility-scale/board/08-restored.png` | 22641 | DATA | `a78135472bc20453af4e66d04d2f763213c9af1957e9d77cf8537cba28d5d2e9` |
 | `docs/evidence/coherent-shell/accessibility-scale/host/default-drawer-568x1232.png` | 19931 | DATA | `bb12d1dff29516d0ccdda0d6dc101d4c1ea689c16e8bff8196a17601d71c63dc` |
 | `docs/evidence/coherent-shell/accessibility-scale/host/default-settings-1280x800.png` | 39569 | DATA | `9ff798c8d1dbd81ec456a4e4dc7b2a60b868068372520fbd17b7c17c677a6099` |
 | `docs/evidence/coherent-shell/accessibility-scale/host/default-shade-568x1232.png` | 41866 | DATA | `aec4b6cd890a30a32fdb64d8198b5ea0ba768ca332e2409855c72ffaefbe0219` |

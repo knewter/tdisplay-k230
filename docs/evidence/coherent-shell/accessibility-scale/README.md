@@ -77,3 +77,38 @@ backdrop, not the shell.
   foreground. It is light grey on black, not pure white.
 - Persistence across a reboot, and legibility on the real panel (C.4), are
   not shown here.
+
+## Board evidence by injected input (2026-10-16, task C.4 progress)
+
+Evidence class: native `grim` captures from the board's compositor, with taps
+injected through `uinput`, plus a soft reboot. These are not a camera recording
+or a real-finger interaction. The output was HDMI at 1280x800.
+
+- Image: `kernelMainlineDrmShellLandscapeHdmiBootFiles` built from branch
+  `vision-scale` commit `bc14b524`. It was installed live with
+  `switch-to-configuration test` and set as the system profile, so the reboot
+  booted the same system
+  (`z42i9i3wq012i8jdglwxbxy88d3im4km-nixos-system-…`).
+- `k230-theme list` reported the default choice
+  (`text_scale: default`, `contrast: standard`).
+
+| File | What it shows |
+|---|---|
+| `board/01-settings.png` | Settings with "Vision ›" beside "Themes ›" (default). |
+| `board/02-vision-default.png` | Vision page after the tap, both Off. |
+| `board/03-large.png` | After tapping Larger text: On, text larger, "Applied to every theme". The helper log shows `handle vision … outcome=ok`, and `vision.json` read `large`/`standard`. |
+| `board/04-both.png` | After tapping High contrast: black background, white and yellow text. `vision.json` read `large`/`high`. |
+| `board/05-both-settings.png` | Settings with both on. |
+| `board/06-reboot-shade.png` | After `systemctl reboot` (16:51:17Z → ssh back 16:52:52Z): the Shade still draws large and high contrast. `vision.json` still read `large`/`high`. |
+| `board/07-reboot-vision.png` | Vision page after the reboot, both On. |
+| `board/08-restored.png` | Both toggled Off by tap; `vision.json` back to `default`/`standard`. |
+
+### Limits
+
+- C.4 also asks for legibility on the real panel, with the operator's
+  `capture-feature.py … --provenance real-touch` run. This run used the HDMI
+  output and injected taps. It shows that the choice persists across a reboot
+  and redraws the shell. It is not a glass or camera observation, so C.4 stays
+  open.
+- With larger text, the two-line hint in Settings' Keyboard card sits on the
+  card's bottom edge (`board/05-both-settings.png`).

@@ -79,6 +79,10 @@ authorization only removes the blocker on starting them.
   real-touch --duration 30 --description 'Text-scale and high-contrast
   option on glass' --output-dir docs/evidence/coherent-shell/accessibility-scale`.
   Keep open until committed.
+  Progress 2026-10-16 (board, injected taps + grim, HDMI): toggles apply and
+  the choice persists across a soft reboot; see
+  `docs/evidence/coherent-shell/accessibility-scale/README.md`. Real-panel
+  legibility (glass/camera) is still unrecorded.
 
 ## D. Shared spec/evidence
 
