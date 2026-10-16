@@ -6,7 +6,6 @@ use crate::uinput::AbsRanges;
 const SLOTS: usize = 16;
 const MAX_BUFFER: usize = 1024;
 const PAIR_MS: u64 = 45;
-const DECIDE_MS: u64 = 250;
 
 #[derive(Clone, Copy, Debug)]
 pub struct Begin {
@@ -104,9 +103,14 @@ impl Gate {
             Some(self.flush())
         }
     }
+    /// Only a lone contact times out to libinput. A still multi-finger
+    /// contact stays buffered until it moves, pinches or lifts: flushed at
+    /// the lift, libinput sees it as a tap however long it was held, so a
+    /// long two-finger press is a right-click rather than a touch that
+    /// passed libinput's tap timeout while it waited here.
     pub fn expire(&mut self, now: u64) -> Option<Action> {
-        if let State::Candidate { since, fingers, .. } = self.state {
-            if now.saturating_sub(since) >= if fingers == 1 { PAIR_MS } else { DECIDE_MS } {
+        if let State::Candidate { since, fingers: 1, .. } = self.state {
+            if now.saturating_sub(since) >= PAIR_MS {
                 return Some(self.flush());
             }
         }
@@ -250,7 +254,7 @@ impl Gate {
                     dy,
                 }));
             }
-            if now.saturating_sub(since) >= if fingers == 1 { PAIR_MS } else { DECIDE_MS } {
+            if fingers == 1 && now.saturating_sub(since) >= PAIR_MS {
                 return Some(self.flush());
             }
         }
@@ -398,9 +402,6 @@ mod tests {
     fn pair_timeout_and_staggered_lift_never_leave_a_click() {
         let mut g = gate();
         frame(&mut g, 0, &[(0, 1, 400, 1000), (1, 2, 600, 1000)]);
-        assert!(matches!(g.expire(250), Some(Action::Pass(_))));
-        let mut g = gate();
-        frame(&mut g, 0, &[(0, 1, 400, 1000), (1, 2, 600, 1000)]);
         frame(&mut g, 50, &[(0, 1, 500, 1000), (1, 2, 700, 1000)]);
         g.acknowledge(true);
         assert!(matches!(
@@ -413,6 +414,20 @@ mod tests {
             frame(&mut g, 90, &[(0, 3, 520, 1000)]),
             Some(Action::Pass(_))
         ));
+    }
+    #[test]
+    fn a_long_still_two_finger_press_reaches_libinput_only_at_the_lift() {
+        let mut g = gate();
+        frame(&mut g, 0, &[(0, 1, 400, 1000), (1, 2, 600, 1000)]);
+        for t in [250, 600, 1200] {
+            assert!(g.expire(t).is_none(), "a still pair is held, not timed out, at {t} ms");
+            assert!(frame(&mut g, t, &[(0, 1, 401, 1000), (1, 2, 601, 1000)]).is_none());
+        }
+        let Some(Action::Pass(events)) = frame(&mut g, 1300, &[(0, -1, 0, 0), (1, -1, 0, 0)]) else {
+            panic!("the lift passes the whole press through at once")
+        };
+        assert!(events.iter().any(|e| e.code == ABS_MT_TRACKING_ID && e.value == -1));
+        assert!(!g.pending());
     }
     #[test]
     fn unchanged_axes_survive_restart_and_new_contact() {

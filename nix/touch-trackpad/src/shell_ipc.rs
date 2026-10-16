@@ -333,19 +333,26 @@ fn run(path: PathBuf, box_: Mailbox) {
         }
         match control {
             Some(Control::Begin(seq, begin, ack)) => {
-                if socket.is_none() {
-                    socket = connect(&path).ok();
+                let text = format!(
+                    "card_shell trackpad begin {seq} {} {:.6} {:.6} {:.6} {:.6} {}",
+                    begin.fingers, begin.x, begin.y, begin.dx, begin.dy, begin.start_ms
+                );
+                let mut accepted = false;
+                // A socket kept from before a compositor restart fails on
+                // first use; reconnect once rather than losing this gesture.
+                for attempt in 0..2 {
+                    if socket.is_none() {
+                        socket = connect(&path).ok();
+                    }
+                    match socket.as_mut().map(|s| checked_command(s, &text)) {
+                        Some(Ok(ok)) => {
+                            accepted = ok;
+                            break;
+                        }
+                        Some(Err(_)) if attempt == 0 => socket = None,
+                        _ => break,
+                    }
                 }
-                let accepted = socket.as_mut().is_some_and(|s| {
-                    checked_command(
-                        s,
-                        &format!(
-                            "card_shell trackpad begin {seq} {} {:.6} {:.6} {:.6} {:.6} {}",
-                            begin.fingers, begin.x, begin.y, begin.dx, begin.dy, begin.start_ms
-                        ),
-                    )
-                    .unwrap_or(false)
-                });
                 if accepted {
                     active = seq;
                     last = (0.0, 0.0, monotonic_ms() as u32);
@@ -531,6 +538,60 @@ mod tests {
         drop(shell);
         controller.join().unwrap();
         std::fs::remove_dir_all(path).unwrap();
+    }
+
+    #[test]
+    fn a_compositor_restart_does_not_lose_the_next_gesture() {
+        use std::os::unix::{fs::PermissionsExt, net::UnixListener};
+        let directory = std::env::temp_dir().join(format!(
+            "k230-trackpad-restart-{}-{}", std::process::id(), monotonic_ms()
+        ));
+        std::fs::create_dir(&directory).unwrap();
+        std::fs::set_permissions(&directory, std::fs::Permissions::from_mode(0o700)).unwrap();
+        let path = directory.join("sway.sock");
+        let serve = |listener: UnixListener, commands: usize| {
+            std::thread::spawn(move || {
+                let (mut stream, _) = listener.accept().unwrap();
+                stream.set_read_timeout(Some(Duration::from_secs(2))).unwrap();
+                let mut seen = Vec::new();
+                for _ in 0..commands {
+                    let mut head = [0; 14];
+                    stream.read_exact(&mut head).unwrap();
+                    let mut body = vec![0; u32::from_ne_bytes(head[6..10].try_into().unwrap()) as usize];
+                    stream.read_exact(&mut body).unwrap();
+                    seen.push(String::from_utf8(body).unwrap());
+                    let reply = b"[{\"success\":true}]";
+                    let mut frame = b"i3-ipc".to_vec();
+                    frame.extend((reply.len() as u32).to_ne_bytes());
+                    frame.extend(0u32.to_ne_bytes());
+                    frame.extend(reply);
+                    stream.write_all(&frame).unwrap();
+                }
+                seen
+            })
+        };
+        let begin = || Begin {
+            fingers: 2,
+            start_ms: monotonic_ms() as u32,
+            time_ms: monotonic_ms() as u32,
+            x: 0.5,
+            y: 0.5,
+            dx: -0.02,
+            dy: 0.,
+        };
+        let first = serve(UnixListener::bind(&path).unwrap(), 2);
+        let mut shell = Shell::new(path.clone());
+        assert!(shell.begin(begin()));
+        shell.end(false, monotonic_ms() as u32);
+        assert_eq!(first.join().unwrap().len(), 2);
+        // The compositor restarts: the old connection is gone and a new
+        // listener takes the same path.
+        std::fs::remove_file(&path).unwrap();
+        let second = serve(UnixListener::bind(&path).unwrap(), 1);
+        assert!(shell.begin(begin()), "the first gesture after a restart must still begin");
+        assert!(second.join().unwrap()[0].starts_with("card_shell trackpad begin "));
+        drop(shell);
+        std::fs::remove_dir_all(directory).unwrap();
     }
 
     #[test]
