@@ -46,4 +46,35 @@ Evidence class: host renders and unit tests.
   and unavailable, at 0 and 4 notifications, on the portrait panel, the
   landscape panel and HDMI.
 
-Board check (B.4): see below once it has been run.
+## Board check (B.4), 2026-10-16
+
+Evidence class: **injected events** on the board's HDMI output (1280x800),
+captured with `grim` on the board. No finger touched glass and no camera was
+used. The user asked for synthetic injection instead of operator taps ("you
+can surely inject synthetic events bud don't ask me to prove shit"). The
+DSI panel orientation was not exercised.
+
+- System: `/nix/store/6sh592wyhyca55hwk8ck4n6sgmrl189z-nixos-system-nixos-26.11.20260919.20b1ddd`,
+  live-deployed from `shade-quick-toggles` at `65ee0201`.
+- Shade opened with the compositor trackpad command
+  (`card_shell trackpad`, normalized pan 0.5,0.03 → +0.6 over 450 ms).
+- Taps sent as a uinput pointer click at (240, 411), the keyboard card's
+  centre.
+
+| Capture | What it shows |
+| --- | --- |
+| `board/1-shade-open-1280x800.png` | Shade open, wvkbd running: the card reads "Toggle keyboard" in full ink. |
+| `board/2-kbd-on-1280x800.png` | After one tap: the keyboard is shown and the Shade stays open. No "requested" message card appears. |
+| `board/3-kbd-off-1280x800.png` | After a second tap: the keyboard is hidden and the Shade is still open. |
+| `board/4-kbd-unavail-1280x800.png` | `systemctl stop shell-keyboard` (no `wvkbd-mobintl` process), then the Shade was closed and reopened so it re-read `k230-settings status`, which now returns `keyboard.state = "unavailable"`. The card reads "Unavailable" in muted ink. |
+| `board/5-kbd-unavail-tapped-1280x800.png` | The same card tapped: only the pointer hover outline appears. No keyboard and no message. |
+
+The keyboard service was started again afterwards.
+
+The first deploy of this branch (`caa12145`) exposed two defects, both fixed
+in `65ee0201` before these captures:
+- The toggle's bare `requested` outcome was painted as a red message card.
+- The unavailable card echoed the helper's label "Toggle keyboard", because
+  the helper keeps that label in both states.
+
+The host renders above now use the helper's real label.

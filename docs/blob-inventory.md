@@ -1620,6 +1620,11 @@ DATA 1e872a35ff03d6ad526fe06fe990f583c9ab240519e53b1b02e8d8e7ca238797 docs/evide
 DATA b828078184dd6dca6e529a1b06025c3305fea75b483ddfc30044e5c9d3d8ac18 docs/evidence/the-shell-is-navigable-with-a-mouse/after-calculator-click.jpg
 DATA 64da29b4e8a6d62346bab76b1c9424bf10abf0a5809f1a49f9524cccbaa2df4f docs/evidence/card-shell/overview-home-bleed-through/board-2026-09-30/overview-native.jpg
 DATA a76ca87ac3d0823659559f297258be51f2719e8d95efbcb10186a3f68f17040a docs/evidence/card-shell/overview-home-bleed-through/board-2026-09-30/overview-panel.jpg
+DATA ab692d4cf10500b1f737e07eedaa293c4019a690f6eaefddd3403187c81e9efd docs/evidence/coherent-shell/shade-quick-toggles/board/1-shade-open-1280x800.png
+DATA 607b5d2fa0da79866348880d213226bfa14bc8a7fb67167ef70a585a5aa1e77d docs/evidence/coherent-shell/shade-quick-toggles/board/2-kbd-on-1280x800.png
+DATA 00a780185adb986b07179cadca333d913ae74e17bac542dc3afffa174cdd4a1c docs/evidence/coherent-shell/shade-quick-toggles/board/3-kbd-off-1280x800.png
+DATA 5dfd00e95b0a2caa969b26e0c9122d43078ec45a17aff770330c0e00531c6920 docs/evidence/coherent-shell/shade-quick-toggles/board/4-kbd-unavail-1280x800.png
+DATA dbd0c23161743e4fa646959d59e735417504bf8467e50aae56038ed595847ba6 docs/evidence/coherent-shell/shade-quick-toggles/board/5-kbd-unavail-tapped-1280x800.png
 DATA f09c700423f41faa8ad3ad498bc8eca54ae42c5b44f8f0e45fa8c33e9bfcfaf1 docs/evidence/coherent-shell/shade-quick-toggles/host/shade-0-keyboard-available-568x1232.png
 DATA d7b177631a6cd72159e9f2496f5ba15cb1dc96a4dbd00cd87c185fce22c811c0 docs/evidence/coherent-shell/shade-quick-toggles/host/shade-0-keyboard-unavailable-1232x568.png
 DATA 077089feb942b867b69e5b70f6701b0bee46ddbee07005d27fad8df49c32ccad docs/evidence/coherent-shell/shade-quick-toggles/host/shade-4-keyboard-available-1232x568.png
@@ -2357,6 +2362,11 @@ shared pre-touch frame both are compared against).
 
 | File | Bytes | Kind | SHA256 |
 | --- | ---: | --- | --- |
+| `docs/evidence/coherent-shell/shade-quick-toggles/board/1-shade-open-1280x800.png` | 101182 | DATA | `ab692d4cf10500b1f737e07eedaa293c4019a690f6eaefddd3403187c81e9efd` |
+| `docs/evidence/coherent-shell/shade-quick-toggles/board/2-kbd-on-1280x800.png` | 43732 | DATA | `607b5d2fa0da79866348880d213226bfa14bc8a7fb67167ef70a585a5aa1e77d` |
+| `docs/evidence/coherent-shell/shade-quick-toggles/board/3-kbd-off-1280x800.png` | 101750 | DATA | `00a780185adb986b07179cadca333d913ae74e17bac542dc3afffa174cdd4a1c` |
+| `docs/evidence/coherent-shell/shade-quick-toggles/board/4-kbd-unavail-1280x800.png` | 97515 | DATA | `5dfd00e95b0a2caa969b26e0c9122d43078ec45a17aff770330c0e00531c6920` |
+| `docs/evidence/coherent-shell/shade-quick-toggles/board/5-kbd-unavail-tapped-1280x800.png` | 100829 | DATA | `dbd0c23161743e4fa646959d59e735417504bf8467e50aae56038ed595847ba6` |
 | `docs/evidence/coherent-shell/shade-quick-toggles/host/shade-0-keyboard-available-568x1232.png` | 31940 | DATA | `f09c700423f41faa8ad3ad498bc8eca54ae42c5b44f8f0e45fa8c33e9bfcfaf1` |
 | `docs/evidence/coherent-shell/shade-quick-toggles/host/shade-0-keyboard-unavailable-1232x568.png` | 26850 | DATA | `d7b177631a6cd72159e9f2496f5ba15cb1dc96a4dbd00cd87c185fce22c811c0` |
 | `docs/evidence/coherent-shell/shade-quick-toggles/host/shade-4-keyboard-available-1232x568.png` | 59874 | DATA | `077089feb942b867b69e5b70f6701b0bee46ddbee07005d27fad8df49c32ccad` |
