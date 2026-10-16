@@ -16,12 +16,21 @@ phase=initialization
 cleanup_test() {
   result=$?
   kill "${unrelated_pid:-}" "${owned_pid:-}" 2>/dev/null || true
-  rm -rf "$test_root"
   if test "$result" -ne 0; then
     echo "synthetic Wi-Fi runtime-secret test failed during $phase (exit $result)" >&2
+    # The phase alone did not identify the failing assertion in CI
+    # (docs/evidence/wifi-runtime-secret/ci-fixture-race.md); name it.
+    echo "failing command: ${failed_at:-unknown}" >&2
+    if test -s "$test_root/completion.trace"; then
+      echo "last completion trace (synthetic paths only):" >&2
+      tail -n 12 "$test_root/completion.trace" >&2
+    fi
   fi
+  rm -rf "$test_root"
 }
 trap cleanup_test EXIT
+set -E
+trap 'failed_at="line $LINENO: $BASH_COMMAND"' ERR
 # A fixed PID such as 999999 can exist on a busy CI host. Select a decimal
 # PID outside the kernel's allowed range for the exited-daemon fixture.
 dead_pid=$(( $(< /proc/sys/kernel/pid_max) + 1 ))
@@ -95,7 +104,7 @@ wait_for_exec() {
 }
 
 run_completion() {
-  extract_block 3 | sed "s|/run/|$test_root/run/|g" | bash
+  extract_block 3 | sed "s|/run/|$test_root/run/|g" | bash -x 2>"$test_root/completion.trace"
 }
 
 runtime_dir="$test_root/run"
