@@ -16,5 +16,9 @@
       widget enters rearrange mode showing widget badges; a scripted click on
       a widget's badge removes it. Capture with grim.
       Evidence class: injected pointer + grim.
+      Progress 2026-10-15: right-click recorded
+      (`docs/evidence/home-screen/widget-right-click/README.md`); the scripted
+      badge click is still to do. The log there shows removals made with the
+      physical trackpad first.
 - [ ] 2.2 The operator right-clicks a widget on the trackpad, then moves or
       removes it. Evidence class: operator observation.
