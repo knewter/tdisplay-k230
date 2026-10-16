@@ -8,9 +8,9 @@
 When the compositor has restarted since the last two-finger gesture, the
 trackpad relay SHALL reconnect and still deliver the next qualified two-finger
 gesture rather than drop it. A multi-finger contact that stays still SHALL
-reach libinput only when it moves, changes spread or contact count, or lifts,
-so a still two-finger press of any duration is recognized as a two-finger tap
-(secondary click).
+reach libinput only when it moves, changes spread or contact count, or lifts.
+A still press that lifts SHALL be presented to libinput as a tap, so a still
+two-finger press of any duration is a secondary click.
 
 #### Scenario: First swipe after a shell deployment
 

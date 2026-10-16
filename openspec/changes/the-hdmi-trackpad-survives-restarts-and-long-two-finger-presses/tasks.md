@@ -5,7 +5,8 @@
       `a_compositor_restart_does_not_lose_the_next_gesture`: it fails without
       the retry and passes with it.
 - [x] 1.2 Hold a still multi-finger candidate until it moves, pinches or
-      lifts (`Gate::expire`, `Gate::push`). Host test
+      lifts (`Gate::expire`, `Gate::push`), and present it as a 40 ms tap
+      ending at the lift. Host test
       `a_long_still_two_finger_press_reaches_libinput_only_at_the_lift`.
       Proof (host): `cd nix/touch-trackpad && cargo test` -- 49 and 2 tests
       pass.

@@ -6,6 +6,9 @@ use crate::uinput::AbsRanges;
 const SLOTS: usize = 16;
 const MAX_BUFFER: usize = 1024;
 const PAIR_MS: u64 = 45;
+/// How long a lifted still multi-finger press is presented to libinput as
+/// having lasted: well inside its tap timeout.
+const TAP_PRESENTED_US: i64 = 40_000;
 
 #[derive(Clone, Copy, Debug)]
 pub struct Begin {
@@ -176,6 +179,20 @@ impl Gate {
             });
         }
         if count == 0 {
+            if let State::Candidate { fingers, .. } = self.state {
+                if fingers > 1 {
+                    // libinput measures a tap with the source timestamps,
+                    // which uinput keeps. Present a still multi-finger
+                    // press as a tap ending now, however long it was held,
+                    // so a long two-finger press is a secondary click.
+                    let lift = ev.tv_sec * 1_000_000 + ev.tv_usec;
+                    let pressed = lift - TAP_PRESENTED_US;
+                    for e in &mut self.buffer {
+                        e.tv_sec = pressed.div_euclid(1_000_000);
+                        e.tv_usec = pressed.rem_euclid(1_000_000);
+                    }
+                }
+            }
             let action = self.flush();
             self.state = State::Idle;
             return Some(action);
@@ -428,6 +445,11 @@ mod tests {
         };
         assert!(events.iter().any(|e| e.code == ABS_MT_TRACKING_ID && e.value == -1));
         assert!(!g.pending());
+        // libinput reads these source times: the press must look like a tap.
+        let reports: Vec<i64> = events.iter().filter(|e| e.is_syn_report())
+            .map(|e| e.tv_sec * 1_000_000 + e.tv_usec).collect();
+        assert_eq!(*reports.last().unwrap(), 1_300_000, "the lift keeps its own time");
+        assert!(reports[..reports.len() - 1].iter().all(|&t| t == 1_300_000 - TAP_PRESENTED_US));
     }
     #[test]
     fn unchanged_axes_survive_restart_and_new_contact() {
