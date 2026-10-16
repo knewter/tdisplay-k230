@@ -9,8 +9,9 @@
 
 ## 2. Board
 
-- [ ] 2.1 On HDMI, a scripted long press (`tools/board-pointer.py`) at
+- [x] 2.1 On HDMI, a scripted long press (`tools/board-pointer.py`) at
       (300, 300) on the widget enters rearrange mode. Capture it with grim.
-      Evidence class: injected pointer + grim.
+      Evidence class: injected pointer + grim. Done 2026-10-15 on the Clock
+      widget (same gaps): `docs/evidence/home-screen/widget-hit-area/README.md`.
 - [ ] 2.2 The operator moves or removes a widget with the trackpad on HDMI.
       Evidence class: operator observation.

@@ -1692,6 +1692,7 @@ DATA  f96bbf535aa2e78a5b09781c996c7ad4d2359dca838d15ccc28b9c195225a87d  docs/evi
 DATA  5fdcbf526530d7d11e5a0f658f69a09b8957c3d6ce1923b30b1b21bf533f48b2  docs/evidence/home-screen/app-actions/qemu/home-actions-right-click.png
 DATA  27a43617fdf643598ab4a2a946ba8a1d10c0604f39585bc526f3974e9dfca302  docs/evidence/home-screen/app-actions/qemu/home-actions-touch-grab.png
 DATA  ac2be7a175f501ea58ee7fb25fd7a8ecbe60a11b271050ead68ab105dd722454  docs/evidence/home-screen/app-actions/qemu/home-actions-touch-placement.png
+DATA 1a3859a823e401a64123eb793af2c764025fbcbbfecc7f4784a8dd6c64a18430 docs/evidence/home-screen/widget-hit-area/long-press-in-clock-gap-1280x800-grim.png
 DATA f7d82ddaed45d073d32865f61180c6a2a4a3e9ddfa14c5b767f129a5d35a3b06 docs/evidence/shell-polish/settings-volume-layout/dark-settings.png
 DATA f51202b93578dbf965c365c3174a9eb11d24522d4965c0f0707b7be63db47d3f docs/evidence/shell-polish/settings-volume-layout/light-settings.png
 DATA 4877486f4942ae363c0651664294e0c78fbfafa52a588071fa2b4eb5a04ec61f docs/evidence/shell-polish/settings-volume-layout/board/output-picker.png
@@ -2682,6 +2683,7 @@ real-finger acceptance remains open.
 | `docs/evidence/home-screen/widget-picker-fit/board/before-widget-rows-past-the-card-1280x800-grim.png` | 147834 | DATA | `ae87503b0e4edd6675c49e979b1d28d1eb44e964591546b0e23729bdd1a6b29e` |
 | `docs/evidence/home-screen/widget-picker-fit/board/after-weather-row-click-1280x800-grim.png` | 807377 | DATA | `e037e9aa99953431e37c96db60382a1550c2363e9e0989976cdca1073d75a2e3` |
 | `docs/evidence/home-screen/widget-picker-fit/board/after-widgets-page-1280x800-grim.png` | 237930 | DATA | `b8986ee027cb26e13b15cec247018664869958698bd6c6f2ca300adfdcaf9360` |
+| `docs/evidence/home-screen/widget-hit-area/long-press-in-clock-gap-1280x800-grim.png` | 810838 | DATA | `1a3859a823e401a64123eb793af2c764025fbcbbfecc7f4784a8dd6c64a18430` |
 
 ### Omawrite host and physical-board runtime — 2026-09-27
 
