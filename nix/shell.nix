@@ -863,7 +863,11 @@ let
     # dark band over the dock and the strip above it, which grim never saw.
     # Operator-verified at runtime on 2026-10-15
     # (docs/evidence/card-shell/bottom-band-flicker/hdmi.md).
-    output HDMI-A-1 transform ${cfg.hdmiTransform} bg #000000 solid_color max_render_time 8
+    #
+    # 1280x800 is the size the HDMI shell was accepted and tuned at. With
+    # CMA, 1920x1080 also allocates, and Sway would otherwise pick it as the
+    # monitor's preferred mode (the-hdmi-monitor-lights-on-every-plug).
+    output HDMI-A-1 mode 1280x800 transform ${cfg.hdmiTransform} bg #000000 solid_color max_render_time 8
     exec_always ${pkgs.writeShellScript "k230-touch-follow-output" ''
       # swaymsg from the session's own PATH: the running sway's client.
       if swaymsg -t get_outputs -r | ${pkgs.jq}/bin/jq -e 'any(.[]; .name == "HDMI-A-1" and .active)' >/dev/null; then

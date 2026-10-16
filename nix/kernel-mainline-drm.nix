@@ -122,6 +122,14 @@ EOK
       # generic display-connector bridge it defers forever ("failed to parse
       # device tree", board 2026-10-08). The vendor k230_defconfig sets it.
       DRM_DISPLAY_CONNECTOR = yes;
+      # Scanout buffers must be physically contiguous. Without CMA they come
+      # from the page allocator: 4 MiB at most, and only while memory is
+      # unfragmented, so after hours of uptime an HDMI plug found no 1280x800
+      # buffer and the monitor stayed dark (board 2026-10-16,
+      # the-hdmi-monitor-lights-on-every-plug).
+      CMA = yes;
+      DMA_CMA = yes;
+      CMA_SIZE_MBYTES = freeform "64";
     });
   });
 })
