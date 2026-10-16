@@ -1,6 +1,6 @@
 ## 1. Date line
 
-- [ ] 1.1 Size the Clock widget's date line (every style) from a 26 px floor
+- [x] 1.1 Size the Clock widget's date line (every style) from a 26 px floor
   times the Vision text step. Fit it to the cell width with a 4% margin, and
   move the time digits up or shrink them so they never overlap it. Verify
   with `cargo test --offline --manifest-path nix/rust-shell-client/Cargo.toml
@@ -8,8 +8,11 @@
   vertical clearance at 100%, 130%, 160% and 200%) and with
   `tests/responsive_pixel_identity.rs`, which must still pass outside the
   Clock widget.
-- [ ] 1.2 Host renders of Home at all four steps, committed under
+  Done 2026-10-16 (host): both passed; see
+  `docs/evidence/home-widgets/clock-date/README.md`.
+- [x] 1.2 Host renders of Home at all four steps, committed under
   `docs/evidence/home-widgets/clock-date/`.
+  Done 2026-10-16 (host): Bubble style, both orientations.
 
 ## 2. Board
 

@@ -1740,6 +1740,8 @@ DATA 828040b58ad7ad46924fc18d4bf5afad2ddf703037b7323a2ebf0d4a5bea7c22 docs/evide
 DATA c32798981358a1dab29599d3437dd7d9ef0643a55d13f2fb28f65d327c9186d4 docs/evidence/home-widgets-folders/closeout-2026-10-01/qemu/home-dark-folder-renamed.png
 DATA 1f13d06090c24cc8eec0535f2ba2930e33f2e03263599eb589160e022c0982b2 docs/evidence/home-widgets-folders/closeout-2026-10-01/qemu/home-dark-picker-widgets.png
 DATA 032f6ab6426c97cdb08ecdb95a32b2c27ed32b848c50d0a747ffa83a91190a4a docs/evidence/home-widgets-folders/closeout-2026-10-01/qemu/home-light-page2.png
+DATA cbd3efe5b9aca037e04fec956d8cfe4ede3dfaeef71538588201185891bceec8 docs/evidence/home-widgets/clock-date/host-landscape-steps.png
+DATA ab1ccf5557d0dd75dcce28795ba670ea2c855a75b471ddb544bb7dbe98b34c79 docs/evidence/home-widgets/clock-date/host-portrait-steps.png
 DATA 0ca9d2b169c3e0612a920c08333a610112cd480324c26fc7a30769d6402841eb docs/evidence/home-widget-design/closeout-2026-10-01/qemu/home-fluid-analog-dot-matrix-weather.png
 DATA ba630cbadc8406ed9cc8aed992b3bee046be68bbb48a3a6d0b5a4411d831b79f docs/evidence/home-widget-design/closeout-2026-10-01/qemu/home-fluid-clock-bubble.png
 DATA ef30699ebb39259b995f81a6b3a266b0b7410965975d81b39143428a665d702a docs/evidence/home-widget-design/closeout-2026-10-01/qemu/home-fluid-clock-thin-fling.png
@@ -3063,6 +3065,8 @@ Native board captures, camera photograph and headless QEMU screenshots; commands
 | `docs/evidence/home-widgets-folders/closeout-2026-10-01/qemu/home-dark-clock-widget-placed.png` | 183960 | DATA | `3fb3ce1e8b330e3fd455a2caf53aea7b67b07baed43260c4f31626948110172a` |
 | `docs/evidence/home-widgets-folders/closeout-2026-10-01/qemu/home-dark-after-restart.png` | 182811 | DATA | `bbe2a1db5210ff7da9a821583e2232e4e27f884adaa0ab550def78f4598b88f6` |
 | `docs/evidence/home-widgets-folders/closeout-2026-10-01/qemu/home-light-page2.png` | 70711 | DATA | `032f6ab6426c97cdb08ecdb95a32b2c27ed32b848c50d0a747ffa83a91190a4a` |
+| `docs/evidence/home-widgets/clock-date/host-landscape-steps.png` | 113976 | DATA | `cbd3efe5b9aca037e04fec956d8cfe4ede3dfaeef71538588201185891bceec8` |
+| `docs/evidence/home-widgets/clock-date/host-portrait-steps.png` | 81672 | DATA | `ab1ccf5557d0dd75dcce28795ba670ea2c855a75b471ddb544bb7dbe98b34c79` |
 | `docs/evidence/home-widget-design/closeout-2026-10-01/qemu/home-fluid-analog-dot-matrix-weather.png` | 233227 | DATA | `0ca9d2b169c3e0612a920c08333a610112cd480324c26fc7a30769d6402841eb` |
 | `docs/evidence/home-widget-design/closeout-2026-10-01/qemu/home-fluid-clock-bubble.png` | 191856 | DATA | `ba630cbadc8406ed9cc8aed992b3bee046be68bbb48a3a6d0b5a4411d831b79f` |
 | `docs/evidence/home-widget-design/closeout-2026-10-01/qemu/home-fluid-clock-thin-fling.png` | 206714 | DATA | `ef30699ebb39259b995f81a6b3a266b0b7410965975d81b39143428a665d702a` |
