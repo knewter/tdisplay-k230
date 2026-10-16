@@ -647,3 +647,190 @@ shown as gaps rather than joined.
 
 - **WHEN** the history has fewer than two samples in the window
 - **THEN** the widget shows its other metrics without a graph line
+
+### Requirement: A multi-cell widget responds anywhere inside its painted area
+
+*Grounding: reproduced on the host from the board's saved layout at 1280x800
+(`HomeScreen::filled_slot_at` regression test). On HDMI, a scripted long press
+in a cell gap inside the Clock entered rearrange mode
+(`docs/evidence/home-screen/widget-hit-area/README.md`, injected pointer +
+grim). The operator removed widgets with the physical trackpad and accepted
+the result (`docs/evidence/home-screen/operator-trackpad-2026-10-15.md`).*
+
+A press, long press or secondary click anywhere inside the rectangle where Home
+paints a multi-cell widget SHALL resolve to that widget, including points that
+fall in the gaps between the widget's grid cells. Single-cell icons SHALL keep
+their tile-only hit area, so the gaps between separate icons stay inert.
+
+#### Scenario: Long press in a gap inside a widget
+
+- **WHEN** the operator presses and holds at a point inside a 4x2 widget's
+  painted area that lies in the gap between two of its cells
+- **THEN** Home enters rearrange mode and picks up that widget
+
+#### Scenario: Gap between two icons
+
+- **WHEN** the operator taps the gap between two separate app icons
+- **THEN** no icon opens
+
+### Requirement: Home widgets can be moved and removed with a mouse
+
+*Grounding: host tests in `home_screen`. On HDMI, scripted right-clicks
+entered rearrange mode with widget badges on page 1 and page 2, and a scripted
+badge click removed a widget
+(`docs/evidence/home-screen/widget-right-click/README.md`,
+`docs/evidence/home-screen/page-settle/README.md`). The operator right-clicked
+a widget on the physical trackpad and accepted the feature (`docs/evidence/home-screen/operator-trackpad-2026-10-15.md`).*
+
+A secondary click on a Home widget SHALL enter rearrange mode without picking
+the widget up and without opening any menu. It SHALL NOT do so while the Home
+menu or a folder is open, while already rearranging, or while a drag or touch
+contact is active. In rearrange mode every widget SHALL show a remove badge at
+its top-left corner, and a click on that badge SHALL remove the widget. A
+press and drag on a widget in rearrange mode SHALL move it, as for icons.
+
+#### Scenario: Right-click a widget
+
+- **WHEN** a person right-clicks (for example, a two-finger trackpad click) on
+  a Home widget
+- **THEN** Home enters rearrange mode and nothing is picked up or removed
+
+#### Scenario: Remove a widget with its badge
+
+- **WHEN** Home is in rearrange mode and a person clicks a widget's remove
+  badge
+- **THEN** that widget is removed from Home
+
+#### Scenario: Move a widget with the mouse
+
+- **WHEN** Home is in rearrange mode and a person presses on a widget and
+  drags it to another free area
+- **THEN** the widget moves there
+
+### Requirement: Home always comes to rest on a whole page that exists
+
+*Grounding: host tests in `home_pager` and `home_screen`. On HDMI, removing
+the only page-2 widget returned Home to page 1
+(`docs/evidence/home-screen/page-settle/README.md`, injected pointer + grim).
+The operator swiped between pages on the physical trackpad and accepted the
+result (`docs/evidence/home-screen/operator-trackpad-2026-10-15.md`). The operator's own page-2 removal is covered by that verdict
+only, not by the log.*
+
+When a page drag ends without a release, for example a two-finger trackpad pan
+the shell cancels, Home SHALL settle to the nearest page rather than stop
+between two. When the number of pages shrinks so that the page in view no
+longer exists, Home SHALL settle onto the last page that does, including in
+rearrange mode. At rest, what Home paints and where a press lands SHALL
+always refer to the same page.
+
+#### Scenario: Cancelled trackpad pan
+
+- **WHEN** a two-finger trackpad pan moves Home partway between pages and the
+  shell cancels it
+- **THEN** Home settles to the nearest page, and a press on a widget shown
+  there acts on that widget
+
+#### Scenario: Last page emptied
+
+- **WHEN** the only item on the last page is removed
+- **THEN** Home settles onto the previous page and its page dots reflect the
+  new count
+
+### Requirement: Home offers a 4x2 Battery - Details widget showing the gauge and charger metrics
+
+*Grounding: the attributes come from the board's `bq27220-0` fuel gauge and
+`bq25890-charger-0` charger as read from sysfs on 2026-10-15 while charging
+over USB-C (`docs/evidence/keyboard-base/charger/README.md` records the gauge's
+sign convention, about +600 to +700 mA charging and -400 mA discharging, and
+the charger's registers). Layout legibility is a host render
+(`docs/evidence/battery-details-widget/host/README.md`). Appearance and values
+on the board were matched against sysfs in grim captures
+(`docs/evidence/battery-details-widget/board/README.md`). The operator placed
+the widget from the picker with the physical trackpad and accepted it
+(`docs/evidence/home-screen/operator-trackpad-2026-10-15.md`).*
+
+Home SHALL offer a "Battery - Details" widget occupying 4 columns by 2 rows,
+drawn by the shell and placeable on any grid page like the other widgets. It
+SHALL show the battery percentage prominently with the state word (Charging,
+Discharging, Full or Not charging) and, while charging, the charge type; the
+time to full or time to empty when the gauge reports it; battery current in
+milliamps with its sign (positive charging, negative discharging) and power in
+watts; battery voltage; stored charge against full charge in milliamp-hours;
+health as full charge over design charge; cycle count; battery temperature in
+degrees Celsius; and a charger line stating whether input power is online, the
+input current limit, the charge current and voltage targets, and the charger's
+health when it is not Good. The shell SHALL find the battery and charger by
+their `power_supply` type and parse one `uevent` per supply; any attribute that
+is missing SHALL be omitted rather than shown as zero or a placeholder. When no
+battery supply exists the widget SHALL show the same "No battery info" state as
+the Battery widget. The existing Battery widget and previously saved layouts
+SHALL be unaffected.
+
+#### Scenario: Charging with a fast charge
+
+- **WHEN** the gauge reports Charging, 55 percent, +600 mA, 4.20 V, 1627 of
+  3000 mAh and a time to full of 8160 s
+- **THEN** the widget shows the percentage, "Charging" with the charge type,
+  "2 h 16 m to full", "+600 mA", the power in watts, "4.20 V",
+  "1627 / 3000 mAh", health 100 percent and the temperature
+
+#### Scenario: Discharging
+
+- **WHEN** the gauge reports Discharging with a negative current and a time to
+  empty
+- **THEN** the widget shows the negative current with its minus sign and the
+  time as "left", and the charger line reads "On battery"
+
+#### Scenario: Attributes are missing
+
+- **WHEN** a supply omits attributes such as cycle count or temperature
+- **THEN** only those metrics are left out and the rest still render
+
+#### Scenario: No battery
+
+- **WHEN** no supply of type Battery exists
+- **THEN** the widget shows "No battery info"
+
+#### Scenario: Faster refresh only while the widget is on Home
+
+- **WHEN** a Battery - Details widget is placed on any Home page
+- **THEN** the battery is re-read about every 10 seconds and Home repaints
+  only when a displayed value changes; with no such widget the poll stays at
+  about 30 seconds
+
+#### Scenario: Older layouts still load
+
+- **WHEN** a layout saved before this widget existed is loaded
+- **THEN** it loads unchanged
+
+### Requirement: The widget picker fits its card and places a widget on tap
+
+*Grounding: host tests
+`home_grid::tests::every_picker_row_sits_inside_the_card_at_every_surface`,
+`home_screen::tests::a_plain_tap_on_a_widget_preview_places_it_and_closes_the_sheet`,
+`home_screen::tests::a_tap_on_a_widget_row_works_on_landscape_surfaces_too`;
+host renders `docs/evidence/home-screen/widget-picker-fit/host/`; the board
+capture of the defect is
+`docs/evidence/home-screen/widget-picker-fit/board/before-widget-rows-past-the-card-1280x800-grim.png`.*
+On HDMI, the rows fit the card and a scripted click placed Weather
+(`docs/evidence/home-screen/widget-picker-fit/README.md`). The operator's
+physical clicks placed Battery - Details and Weather (`docs/evidence/home-screen/operator-trackpad-2026-10-15.md`); the plain
+Battery row was not the one clicked.
+
+Every row of every widget-picker page SHALL lie inside the picker card at
+every supported surface size, using two columns and shorter rows where one
+column does not fit. A tap or click on a widget row SHALL place that widget
+at the first free spot it fits on the page in view, else on the first page
+with room, close the sheet and save the layout. A press-and-hold on the row
+SHALL still drag the widget instead.
+
+#### Scenario: Landscape picker rows are pressable
+
+- **WHEN** a person opens the Widgets page on a landscape surface and presses
+  its last row
+- **THEN** the press lands on that row inside the card, not outside it
+
+#### Scenario: Tap adds a widget
+
+- **WHEN** a person taps or clicks the Battery row
+- **THEN** a Battery widget appears on Home and the sheet closes

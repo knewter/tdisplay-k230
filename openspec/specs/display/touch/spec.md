@@ -217,3 +217,31 @@ That matching trial and the operator's acceptance are recorded in
   interrupt trigger type against both consumers' existing requirements, not
   only against the LT9611 in isolation, since the pins are shared hardware,
   not independently configurable per node
+
+### Requirement: HDMI trackpad gestures survive a compositor restart and long presses
+
+*Grounding: host tests in `nix/touch-trackpad`. On the board, raw touches
+from a fake panel, run through a second instance of the installed daemon,
+paged Home on the first swipe after a sway restart. Long two-finger presses
+right-clicked widgets on both pages
+(`docs/evidence/display-touch/trackpad-restart-and-long-press/README.md`). The
+operator swiped and right-clicked widgets on the physical trackpad and
+accepted the result (`docs/evidence/home-screen/operator-trackpad-2026-10-15.md`).*
+
+When the compositor has restarted since the last two-finger gesture, the
+trackpad relay SHALL reconnect and still deliver the next qualified two-finger
+gesture rather than drop it. A multi-finger contact that stays still SHALL
+reach libinput only when it moves, changes spread or contact count, or lifts.
+A still press that lifts SHALL be presented to libinput as a tap, so a still
+two-finger press of any duration is a secondary click.
+
+#### Scenario: First swipe after a shell deployment
+
+- **WHEN** sway has restarted and the operator makes a two-finger swipe on Home
+- **THEN** the swipe is delivered to the shell and Home pages
+
+#### Scenario: Long two-finger press
+
+- **WHEN** the operator holds two still fingers on the trackpad for about a
+  second and lifts them
+- **THEN** a secondary click is delivered at the cursor
