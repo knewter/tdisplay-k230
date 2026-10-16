@@ -369,5 +369,161 @@ class ThemePreparation(unittest.TestCase):
                              on_disk["unavailable"])
 
 
+
+class UserOverlays(unittest.TestCase):
+    """A person's own background files, staged beside a theme's bundled ones."""
+
+    def setUp(self):
+        temporary = tempfile.TemporaryDirectory()
+        self.addCleanup(temporary.cleanup)
+        self.base = Path(temporary.name)
+        self.theme, self.state = self.base / "theme", self.base / "state"
+        self.overlays = self.base / "my-backgrounds"
+        source(self.theme)
+        self.overlays.mkdir()
+
+    def prepare(self, background=None, overlays="default"):
+        return activation.prepare(
+            "theme", source=self.theme, state_root=self.state,
+            user_themes=self.state / "no-user-themes", builtins=None,
+            tools=activation.HOST_TOOLS, background_choice=background,
+            overlays=self.overlays if overlays == "default" else overlays)
+
+    def test_overlays_are_listed_staged_and_selectable_beside_the_themes_own(self):
+        (self.overlays / "family.png").write_bytes(b"my own still")
+        (self.overlays / "loop.webm").write_bytes(b"my own video")
+        generation, report = self.prepare()
+        self.assertEqual(report["backgrounds"], [
+            "backgrounds/portrait.png", "backgrounds/user-family.png",
+            "backgrounds/user-loop.webm"])
+        # The theme's own default stays the default; overlays do not replace it.
+        self.assertEqual(report["selected_background"], "backgrounds/portrait.png")
+        staged = generation / "theme/backgrounds"
+        self.assertEqual((staged / "user-family.png").read_bytes(), b"my own still")
+        self.assertEqual((staged / "portrait.png").read_bytes(), b"not decoded during prepare")
+        chosen, chosen_report = self.prepare("backgrounds/user-family.png")
+        self.assertNotEqual(chosen, generation)
+        self.assertEqual(chosen_report["selected_background"], "backgrounds/user-family.png")
+        self.assertEqual((chosen / "background").readlink().as_posix(),
+                         "theme/backgrounds/user-family.png")
+        self.assertEqual(json.loads((chosen / "appearance.json").read_text())["background"],
+                         "background")
+        video, _ = self.prepare("backgrounds/user-loop.webm")
+        self.assertIsNone(json.loads((video / "appearance.json").read_text())["background"])
+
+    def test_overlays_live_outside_the_themes_hashed_tree(self):
+        before = activation.source_digest(self.theme)
+        (self.overlays / "family.png").write_bytes(b"my own still")
+        generation, report = self.prepare()
+        self.assertEqual(report["source_sha256"], before)
+        self.assertEqual(activation.source_digest(self.theme), before)
+        self.assertEqual(sorted(path.name for path in (self.theme / "backgrounds").iterdir()),
+                         ["portrait.png"])
+        # No overlays configured: the same theme prepares to its old identity.
+        plain, plain_report = self.prepare(overlays=None)
+        self.assertNotEqual(plain, generation)
+        self.assertEqual(plain_report["backgrounds"], ["backgrounds/portrait.png"])
+        empty = self.base / "empty"
+        empty.mkdir()
+        same, _ = self.prepare(overlays=empty)
+        self.assertEqual(same, plain)
+        missing, _ = self.prepare(overlays=self.base / "does-not-exist")
+        self.assertEqual(missing, plain)
+
+    def test_editing_or_adding_an_overlay_makes_a_new_generation(self):
+        path = self.overlays / "family.png"
+        path.write_bytes(b"one")
+        first, _ = self.prepare("backgrounds/user-family.png")
+        again, _ = self.prepare("backgrounds/user-family.png")
+        self.assertEqual(again, first)
+        path.write_bytes(b"two, longer")
+        second, _ = self.prepare("backgrounds/user-family.png")
+        self.assertNotEqual(second, first)
+        self.assertEqual((second / "theme/backgrounds/user-family.png").read_bytes(),
+                         b"two, longer")
+        (self.overlays / "other.jpg").write_bytes(b"x")
+        third, report = self.prepare("backgrounds/user-family.png")
+        self.assertNotEqual(third, second)
+        self.assertIn("backgrounds/user-other.jpg", report["backgrounds"])
+
+    def test_unsupported_unsafe_oversized_and_linked_overlays_are_rejected_not_fatal(self):
+        (self.overlays / "ok.png").write_bytes(b"ok")
+        (self.overlays / "notes.txt").write_bytes(b"x")
+        (self.overlays / "anim.svg").write_bytes(b"x")
+        (self.overlays / "has space.png").write_bytes(b"x")
+        (self.overlays / "link.png").symlink_to(self.base / "theme/colors.toml")
+        (self.overlays / "subdir.png").mkdir()
+        with (self.overlays / "huge.mp4").open("wb") as stream:
+            stream.truncate(activation.MAX_ASSET + 1)
+        generation, report = self.prepare()
+        self.assertEqual(report["backgrounds"],
+                         ["backgrounds/portrait.png", "backgrounds/user-ok.png"])
+        for expected in ("overlay notes.txt: unsupported suffix",
+                         "overlay anim.svg: unsupported suffix",
+                         "overlay has space.png: unsafe file name",
+                         "overlay link.png: not a regular file",
+                         "overlay subdir.png: not a regular file",
+                         "overlay huge.mp4: exceeds size bound"):
+            self.assertIn(expected, report["unknown"])
+        self.assertEqual(sorted(path.name for path in (generation / "theme/backgrounds").iterdir()),
+                         ["portrait.png", "user-ok.png"])
+        # A rejected file cannot be selected.
+        for name in ("backgrounds/user-link.png", "backgrounds/user-huge.mp4",
+                     "backgrounds/user-notes.txt", "../elsewhere.png"):
+            with self.assertRaisesRegex(activation.ThemeError, "not a staged theme asset"):
+                self.prepare(name)
+
+    def test_overlay_count_and_total_bounds_and_name_collisions(self):
+        for index in range(activation.MAX_OVERLAYS + 2):
+            (self.overlays / f"p{index:03}.png").write_bytes(b"x")
+        _, report = self.prepare()
+        staged = [item for item in report["backgrounds"] if "/user-" in item]
+        self.assertEqual(len(staged), activation.MAX_OVERLAYS)
+        self.assertEqual(sum("too many overlays" in item for item in report["unknown"]), 2)
+        # The total bound counts file sizes, not files.
+        for path in self.overlays.iterdir():
+            path.unlink()
+        with mock.patch.object(activation, "MAX_OVERLAY_TOTAL", 10):
+            (self.overlays / "a.png").write_bytes(b"123456")
+            (self.overlays / "b.png").write_bytes(b"123456")
+            _, report = self.prepare()
+        self.assertIn("backgrounds/user-a.png", report["backgrounds"])
+        self.assertNotIn("backgrounds/user-b.png", report["backgrounds"])
+        self.assertIn("overlay b.png: overlays exceed total bound", report["unknown"])
+        # A theme asset that already has the staged name wins.
+        (self.theme / "backgrounds" / "user-a.png").write_bytes(b"theme's own")
+        for path in self.overlays.iterdir():
+            path.unlink()
+        (self.overlays / "a.png").write_bytes(b"mine")
+        generation, report = self.prepare()
+        self.assertEqual(report["backgrounds"].count("backgrounds/user-a.png"), 1)
+        self.assertIn("overlay a.png: name collides with a theme background", report["unknown"])
+        self.assertEqual((generation / "theme/backgrounds/user-a.png").read_bytes(), b"theme's own")
+
+    def test_a_symlinked_overlay_directory_is_ignored(self):
+        (self.overlays / "ok.png").write_bytes(b"ok")
+        link = self.base / "linked"
+        link.symlink_to(self.overlays)
+        _, report = self.prepare(overlays=link)
+        self.assertEqual(report["backgrounds"], ["backgrounds/portrait.png"])
+
+    def test_the_remembered_overlay_choice_survives_and_reports_when_removed(self):
+        import theme_preferences as preferences
+        (self.overlays / "family.png").write_bytes(b"mine")
+        generation, report = self.prepare("backgrounds/user-family.png")
+        intent = preferences.SelectionIntent(self.state, Path(report["source"]),
+                                             report["selected_background"],
+                                             report["backgrounds"], True)
+        intent.guard()
+        intent.commit()
+        again, remembered = self.prepare()
+        self.assertEqual((again, remembered["selected_background"]),
+                         (generation, "backgrounds/user-family.png"))
+        (self.overlays / "family.png").unlink()
+        fallback, report = self.prepare()
+        self.assertEqual(report["selected_background"], "backgrounds/portrait.png")
+        self.assertIn("remembered background removed; using theme default", report["unavailable"])
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -5,8 +5,9 @@
 <!-- UNVERIFIED -->
 The system SHALL support `crop`, `fit`, `center`, `fill`, and `solid`
 background placement modes, selectable the same way the existing modes
-already are. `fill` SHALL scale to cover the panel and crop excess with no
-letterbox. `solid` SHALL show a plain fill color drawn from the active
+already are. `fill` SHALL stretch the image to exactly cover the panel, ignoring its
+aspect ratio, with no letterbox and no crop (`crop` is the
+aspect-preserving cover). `solid` SHALL show a plain fill color drawn from the active
 generation's resolved background/base palette role for a theme that ships
 no background asset. A person SHALL be able to choose a background image
 from outside the active theme's own asset set, bounded the same way an
@@ -16,8 +17,8 @@ escape).
 #### Scenario: Fill mode covers the panel without letterboxing
 - **WHEN** a person selects `fill` for a background whose aspect ratio does
   not match the panel
-- **THEN** the image scales to cover the panel and excess is cropped, with
-  no visible letterbox
+- **THEN** the image is stretched to cover the whole panel, with no visible
+  letterbox and nothing cropped away
 
 #### Scenario: Solid mode with no background asset
 - **WHEN** a theme ships no background asset and a person selects `solid`

@@ -21,7 +21,7 @@ import threading
 
 import theme_activate as activation
 from theme_transaction import TransactionError, _pointer, activate_generation, prepare_only
-from theme_preferences import SelectionIntent
+from theme_preferences import FIT_MODES, SelectionIntent
 import keyboard_appearance
 import theme_timing
 
@@ -261,12 +261,15 @@ def choose(entries: list[Entry], theme_id: str) -> Entry:
 @runtime_trace.traced("theme_catalog_prepare_entry")
 def prepare_entry(entry: Entry, *, state_root: Path, tools: Path,
                   background_id: str | None = None,
-                  wallpaper_cache_tool: Path | None = None) -> tuple[Path, dict]:
+                  wallpaper_cache_tool: Path | None = None,
+                  fit: str | None = None,
+                  overlays: Path | None = None) -> tuple[Path, dict]:
     def prepare(background=None):
         return activation.prepare(entry.name, source=entry.source, state_root=state_root,
                                   user_themes=entry.source.parent, builtins=None,
                                   tools=tools, background_choice=background,
-                                  wallpaper_cache_tool=wallpaper_cache_tool)
+                                  wallpaper_cache_tool=wallpaper_cache_tool,
+                                  fit_mode=fit, overlays=overlays)
 
     generation, report = prepare()
     if background_id is not None:
@@ -310,6 +313,9 @@ def build_parser() -> argparse.ArgumentParser:
                         help="k230-shell-rust binary, for precomputing a panel-sized wallpaper cache")
     parser.add_argument("--user-themes", type=Path, default=Path.home() / ".config/omarchy/themes")
     parser.add_argument("--builtins", type=Path)
+    parser.add_argument("--overlays", type=Path,
+                        default=Path.home() / ".config/omarchy/backgrounds",
+                        help="directory of the person's own background images/videos")
     parser.add_argument("--state-root", type=Path, default=Path.home() / ".local/state/omarchy/current")
     parser.add_argument("--socket", type=Path, default=Path("/run/shell/appearance.sock"))
     parser.add_argument("--rust-socket", type=Path)
@@ -324,6 +330,8 @@ def build_parser() -> argparse.ArgumentParser:
         command.add_argument("id")
         command.add_argument("--json", action="store_true")
         command.add_argument("--background", help="opaque background ID from preview")
+        command.add_argument("--fit", choices=FIT_MODES,
+                             help="background placement (crop, fit, center, fill, solid)")
         if action == "activate":
             command.add_argument("--expected-generation", required=True,
                                  help="generation reviewed in preview; reject changed sources")
@@ -377,7 +385,8 @@ def handle(args) -> tuple[dict, int]:
             entry = choose(entries, args.id)
             generation, report = prepare_entry(entry, state_root=args.state_root,
                                                tools=args.tools, background_id=args.background,
-                                               wallpaper_cache_tool=args.wallpaper_cache_tool)
+                                               wallpaper_cache_tool=args.wallpaper_cache_tool,
+                                               fit=args.fit, overlays=args.overlays)
             stopwatch.lap("prepare_entry")
             result = preview(entry, generation, report)
             if args.action == "preview" and args.rust_socket is not None:
@@ -402,7 +411,9 @@ def handle(args) -> tuple[dict, int]:
                     raise activation.ThemeError("theme changed since preview; preview it again")
                 preference = SelectionIntent(args.state_root.resolve(), Path(report["source"]),
                                              report["selected_background"], report["backgrounds"],
-                                             explicit=args.background is not None)
+                                             explicit=args.background is not None
+                                             or args.fit is not None,
+                                             fit=args.fit)
                 result["app_appearance"] = activate_generation(
                     generation, state_root=args.state_root, endpoint=args.socket,
                     preference=preference, defer_app_sync=True,

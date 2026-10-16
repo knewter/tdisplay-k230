@@ -268,3 +268,61 @@ fn an_empty_helper_socket_path_disables_the_direct_path_entirely() {
     assert!(marker.exists());
     assert!(matches!(reply.result, Ok(ThemeResponse::List(_))));
 }
+
+#[test]
+fn a_fit_change_sends_fit_through_the_helper_in_both_steps_and_rejects_unknown_modes() {
+    let theme_id = "a".repeat(24);
+    let generation = "b".repeat(24);
+    for (expected, action, activated) in [
+        (None, "preview", false),
+        (Some(generation.clone()), "activate", true),
+    ] {
+        let fixture = Fixture::new();
+        let socket_path = fixture.path("helper.sock");
+        let marker = fixture.path("subprocess-ran");
+        let mut body = json!({"schema": 1,
+            "theme": {"id": theme_id, "name": "fixture", "label": "Fixture", "origin": "user"},
+            "generation": generation,
+            "appearance_path": format!("/tmp/state/generations/{generation}/appearance.json"),
+            "palette": {"background": "#101820"}, "backgrounds": [],
+            "compatibility": {"applied": [], "unavailable": [], "unknown": []},
+            "activated": activated});
+        if activated {
+            body["app_appearance"] = json!({"state": "deferred"});
+        }
+        let command = fake_command(&fixture, &marker, &body);
+        let server = serve_one(socket_path.clone(), body, 0);
+        let worker = ThemeWorker::spawn(command, socket_path);
+        let id = worker
+            .try_submit(ThemeRequest::Fit {
+                theme_id: theme_id.clone(),
+                expected_generation: expected.clone(),
+                fit: "fill".into(),
+            })
+            .unwrap();
+        let reply = recv(&worker, id);
+        let ThemeResponse::Preview(preview) = reply.result.expect("fit step must succeed")
+            else { panic!("preview expected") };
+        assert_eq!(preview.activated, activated);
+        let request = server.join().unwrap();
+        assert_eq!(request["action"], action);
+        assert_eq!(request["fit"], "fill");
+        assert_eq!(request["background"], Value::Null);
+        assert_eq!(request.get("expected_generation").and_then(Value::as_str),
+                   expected.as_deref());
+        assert!(!marker.exists());
+    }
+    // An unknown mode never reaches the helper.
+    let fixture = Fixture::new();
+    let marker = fixture.path("subprocess-ran");
+    let command = fake_command(&fixture, &marker, &list_body());
+    let worker = ThemeWorker::spawn(command, fixture.path("none.sock"));
+    assert!(worker
+        .try_submit(ThemeRequest::Fit {
+            theme_id,
+            expected_generation: None,
+            fit: "stretch".into(),
+        })
+        .is_err());
+    assert!(!marker.exists());
+}

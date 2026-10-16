@@ -42,6 +42,11 @@ const COMMAND_DEADLINE: Duration = Duration::from_secs(20);
 const HELPER_SOCKET_TIMEOUT: Duration = Duration::from_secs(10);
 const HELPER_RESPONSE_LIMIT: usize = RESPONSE_LIMIT + 4096;
 
+/// `background_decode::FitMode::NAMES`, repeated because this module is also
+/// built standalone (`tests/theme_catalog_module.rs`); `theme_ui`'s tests pin
+/// the two lists together.
+pub const FIT_NAMES: [&str; 5] = ["crop", "fit", "center", "fill", "solid"];
+
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum ThemeRequest {
     List,
@@ -54,6 +59,30 @@ pub enum ThemeRequest {
         expected_generation: String,
         background_id: Option<String>,
     },
+    /// Re-place the active theme's current background with another fit mode
+    /// (`background_decode::FitMode::NAMES`). The fit is part of the
+    /// generation identity, so, like a background change, it is previewed
+    /// first (`expected_generation: None`) and then activated against the
+    /// generation that preview returned.
+    Fit {
+        theme_id: String,
+        expected_generation: Option<String>,
+        fit: String,
+    },
+}
+
+impl ThemeRequest {
+    /// True for the durable step of a request (a real `activate`).
+    pub fn is_activation(&self) -> bool {
+        matches!(
+            self,
+            ThemeRequest::Activate { .. }
+                | ThemeRequest::Fit {
+                    expected_generation: Some(_),
+                    ..
+                }
+        )
+    }
 }
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
@@ -250,6 +279,15 @@ fn valid_request(request: &ThemeRequest) -> bool {
                 && identity(expected_generation)
                 && background_id.as_deref().is_none_or(identity)
         }
+        ThemeRequest::Fit {
+            theme_id,
+            expected_generation,
+            fit,
+        } => {
+            identity(theme_id)
+                && expected_generation.as_deref().is_none_or(identity)
+                && FIT_NAMES.contains(&fit.as_str())
+        }
     }
 }
 
@@ -276,6 +314,22 @@ fn helper_request(request: &ThemeRequest) -> Value {
             "id": theme_id,
             "background": background_id,
             "expected_generation": expected_generation,
+        }),
+        ThemeRequest::Fit {
+            theme_id,
+            expected_generation: None,
+            fit,
+        } => json!({"action": "preview", "id": theme_id, "background": null, "fit": fit}),
+        ThemeRequest::Fit {
+            theme_id,
+            expected_generation: Some(expected_generation),
+            fit,
+        } => json!({
+            "action": "activate",
+            "id": theme_id,
+            "background": null,
+            "expected_generation": expected_generation,
+            "fit": fit,
         }),
     }
 }
@@ -406,6 +460,19 @@ fn execute(
             if let Some(id) = background_id {
                 args.extend(["--background", id]);
             }
+        }
+        ThemeRequest::Fit {
+            theme_id,
+            expected_generation,
+            fit,
+        } => {
+            match expected_generation {
+                Some(generation) => {
+                    args.extend(["activate", theme_id, "--expected-generation", generation])
+                }
+                None => args.extend(["preview", theme_id]),
+            }
+            args.extend(["--fit", fit]);
         }
     }
     let call_name = args.first().copied().unwrap_or("-");
@@ -671,6 +738,11 @@ fn preview(value: &Value, request: &ThemeRequest) -> Result<ThemePreview, String
             Some(expected_generation.as_str()),
             background_id.as_deref(),
         ),
+        ThemeRequest::Fit {
+            theme_id,
+            expected_generation,
+            ..
+        } => (theme_id, expected_generation.as_deref(), None),
         ThemeRequest::List => return Err("wrong theme response".into()),
     };
     if theme.id != *requested {
@@ -755,7 +827,7 @@ fn preview(value: &Value, request: &ThemeRequest) -> Result<ThemePreview, String
         .get("activated")
         .and_then(Value::as_bool)
         .ok_or("missing activation state")?;
-    if activated != matches!(request, ThemeRequest::Activate { .. }) {
+    if activated != request.is_activation() {
         return Err("unexpected theme activation state".into());
     }
     let app_appearance = match value.get("app_appearance") {

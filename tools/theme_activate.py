@@ -15,6 +15,7 @@ import os
 from pathlib import Path
 import re
 import shutil
+import stat
 import socket
 import subprocess
 import sys
@@ -22,7 +23,8 @@ import tempfile
 import tomllib
 
 from theme_sources import source_dir, source_digest, source_fingerprint
-from theme_preferences import SelectionIntent, choice as remembered_choice
+from theme_preferences import (DEFAULT_FIT, FIT_MODES, SelectionIntent,
+                               choice as remembered_choice, fit as remembered_fit)
 from theme_tokens import system_surface_coverage, TokenError, compile_tokens
 from theme_transaction import TransactionError, activate_generation
 import keyboard_appearance
@@ -39,6 +41,15 @@ VIDEOS = {".mp4", ".m4v", ".mov", ".webm", ".mkv", ".avi"}
 MAX_CONFIG = 2 * 1024 * 1024
 MAX_ASSET = 256 * 1024 * 1024
 MAX_TOTAL = 512 * 1024 * 1024
+# A person's own background images (user overlays) are staged into a
+# generation beside the theme's bundled choices, under these bounds. They are
+# a flat directory outside every theme, so they are never part of a theme's
+# content-hashed tree (see `overlay_digest` for how they still change a
+# generation's identity).
+OVERLAY_PREFIX = "user-"
+OVERLAY_NAME = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]{0,119}\Z")
+MAX_OVERLAYS = 32
+MAX_OVERLAY_TOTAL = MAX_TOTAL // 2
 # The panel is a fixed 568x1232 portrait AMOLED (see AGENTS.md); the Rust
 # shell always decodes a still wallpaper to exactly this size with a Crop
 # fit (background_decode.rs). A generation's wallpaper cache is therefore
@@ -144,7 +155,75 @@ def build_wallpaper_cache(wallpaper_cache_tool: Path, background_path: Path, wor
         pass
 
 
-def background_listing(theme: Path) -> list[str]:
+def scan_overlays(overlays: Path | None, taken: set[str]) -> tuple[list[tuple[str, Path, int, int]], list[str]]:
+    """The user-overlay files that may be staged, and why the rest may not.
+
+    Returns `(accepted, rejected)`. `accepted` is `(asset, path, size,
+    mtime_ns)` per file, `asset` being the `backgrounds/user-NAME` name the
+    staged copy gets; `rejected` is human-readable report lines. A bad
+    overlay is rejected, never fatal: a person's stray file must not make a
+    theme unusable. Rejected: symlinks and non-regular files, unsupported
+    suffixes (`STILLS | VIDEOS`, the same sets a theme's own assets use),
+    names outside `OVERLAY_NAME`, files over `MAX_ASSET`, anything past
+    `MAX_OVERLAYS` files or `MAX_OVERLAY_TOTAL` bytes, and a name that
+    collides with one of the theme's own assets (`taken`; the theme wins).
+    Reads directory metadata only, never file content.
+    """
+    accepted: list[tuple[str, Path, int, int]] = []
+    rejected: list[str] = []
+    if overlays is None or overlays.is_symlink() or not overlays.is_dir():
+        return accepted, rejected
+    total = 0
+    for entry in sorted(overlays.iterdir(), key=lambda item: item.name):
+        label = f"overlay {entry.name}"
+        try:
+            metadata = entry.lstat()
+        except OSError:
+            continue
+        if not stat.S_ISREG(metadata.st_mode):
+            rejected.append(f"{label}: not a regular file")
+        elif entry.suffix.lower() not in STILLS | VIDEOS:
+            rejected.append(f"{label}: unsupported suffix")
+        elif not OVERLAY_NAME.fullmatch(entry.name):
+            rejected.append(f"{label}: unsafe file name")
+        elif metadata.st_size > MAX_ASSET:
+            rejected.append(f"{label}: exceeds size bound")
+        elif f"backgrounds/{OVERLAY_PREFIX}{entry.name}" in taken:
+            rejected.append(f"{label}: name collides with a theme background")
+        elif len(accepted) >= MAX_OVERLAYS:
+            rejected.append(f"{label}: too many overlays")
+        elif total + metadata.st_size > MAX_OVERLAY_TOTAL:
+            rejected.append(f"{label}: overlays exceed total bound")
+        else:
+            total += metadata.st_size
+            accepted.append((f"backgrounds/{OVERLAY_PREFIX}{entry.name}", entry,
+                             metadata.st_size, metadata.st_mtime_ns))
+    return accepted, rejected
+
+
+def overlay_fingerprint(accepted: list[tuple[str, Path, int, int]]) -> str | None:
+    """Identity contribution of the staged overlays (None when there are
+    none, so a generation without overlays keeps its pre-overlay identity).
+    A stat-only fingerprint (name, size, mtime) like `source_fingerprint`:
+    an edited or replaced overlay makes a new generation instead of
+    silently reusing a stale staged copy."""
+    if not accepted:
+        return None
+    return hashlib.sha256(json.dumps(
+        [[asset, size, mtime] for asset, _path, size, mtime in accepted]).encode()).hexdigest()
+
+
+def theme_background_names(theme: Path) -> list[str]:
+    directory = theme / "backgrounds"
+    if not directory.is_dir():
+        return []
+    return sorted(
+        f"backgrounds/{asset.name}" for asset in directory.iterdir()
+        if asset.suffix.lower() in STILLS | VIDEOS
+    )
+
+
+def background_listing(theme: Path, overlays: Path | None = None) -> list[str]:
     """The theme's background asset *names* only (a directory listing, no
     file content read) -- exactly the `report["backgrounds"]` value
     `prepare()`'s staging loop below would build from copying every asset,
@@ -157,13 +236,8 @@ def background_listing(theme: Path) -> list[str]:
     any symlink, so nothing under `theme` -- `backgrounds/` included -- can
     be a symlink by the time this runs.
     """
-    directory = theme / "backgrounds"
-    if not directory.is_dir():
-        return []
-    return sorted(
-        f"backgrounds/{asset.name}" for asset in directory.iterdir()
-        if asset.suffix.lower() in STILLS | VIDEOS
-    )
+    own = theme_background_names(theme)
+    return own + [asset for asset, *_ in scan_overlays(overlays, set(own))[0]]
 
 
 def select_background(backgrounds: list[str], background_choice: str | None,
@@ -186,13 +260,19 @@ def select_background(backgrounds: list[str], background_choice: str | None,
 
 
 def generation_identity(*, source_hash: str, source_path: str, helper_hash: str,
-                        adapter_hash: str, name: str, selected_background: str | None) -> str:
-    return hashlib.sha256(
-        json.dumps({"source": source_hash, "source_path": source_path,
-                    "helpers": helper_hash, "adapter": adapter_hash,
-                    "name": name, "selected_background": selected_background,
-                    "version": 1}, sort_keys=True).encode()
-    ).hexdigest()[:24]
+                        adapter_hash: str, name: str, selected_background: str | None,
+                        fit_mode: str = DEFAULT_FIT, overlays: str | None = None) -> str:
+    identity = {"source": source_hash, "source_path": source_path,
+                "helpers": helper_hash, "adapter": adapter_hash,
+                "name": name, "selected_background": selected_background,
+                "version": 1}
+    # Added only when they differ from "none", so every generation prepared
+    # without a fit choice or overlays keeps the identity it already had.
+    if fit_mode != DEFAULT_FIT:
+        identity["fit_mode"] = fit_mode
+    if overlays is not None:
+        identity["overlays"] = overlays
+    return hashlib.sha256(json.dumps(identity, sort_keys=True).encode()).hexdigest()[:24]
 
 
 #: Per-process cache of `source_digest(tools)`, keyed by the tools
@@ -256,10 +336,16 @@ def theme_digest(theme: Path) -> str:
 def prepare(name: str, *, source: Path | None, state_root: Path,
             user_themes: Path, builtins: Path | None, tools: Path,
             background_choice: str | None = None,
-            wallpaper_cache_tool: Path | None = None) -> tuple[Path, dict]:
+            wallpaper_cache_tool: Path | None = None,
+            fit_mode: str | None = None,
+            overlays: Path | None = None) -> tuple[Path, dict]:
     name = normalize_name(name)
     root, theme = choose_source(name, source, user_themes, builtins)
     remembered = remembered_choice(state_root, theme) if background_choice is None else None
+    if fit_mode is not None and fit_mode not in FIT_MODES:
+        raise ThemeError("unknown background fit mode")
+    if fit_mode is None:
+        fit_mode = remembered_fit(state_root, theme)
     stopwatch = theme_timing.Stopwatch()
     source_hash = theme_digest(theme)
     stopwatch.lap("source_hash")
@@ -278,19 +364,23 @@ def prepare(name: str, *, source: Path | None, state_root: Path,
     # after (board evidence: an already-prepared catppuccin/-latte still
     # took 3.95-4.26 s per `preview`/`activate` before this change, because
     # that check used to run only at the very end of this function).
-    backgrounds = background_listing(theme)
+    own_backgrounds = theme_background_names(theme)
+    overlay_accepted, overlay_rejected = scan_overlays(overlays, set(own_backgrounds))
+    backgrounds = own_backgrounds + [asset for asset, *_ in overlay_accepted]
     selected_background, remembered_missing = select_background(
         backgrounds, background_choice, remembered)
     stopwatch.lap("background_listing")
     generation_id = generation_identity(
         source_hash=source_hash, source_path=str(theme), helper_hash=helper_hash,
-        adapter_hash=adapter_hash, name=name, selected_background=selected_background)
+        adapter_hash=adapter_hash, name=name, selected_background=selected_background,
+        fit_mode=fit_mode, overlays=overlay_fingerprint(overlay_accepted))
     destination = generations / generation_id
     if destination.exists():
         existing = json.loads((destination / "report.json").read_text())
         if (existing["source_sha256"] != source_hash or existing["name"] != name
                 or existing["source"] != str(theme)
                 or existing.get("selected_background") != selected_background
+                or existing.get("fit_mode", DEFAULT_FIT) != fit_mode
                 or existing["helper_sha256"] != helper_hash
                 or existing["adapter_sha256"] != adapter_hash):
             raise ThemeError("generation identity collision")
@@ -314,7 +404,7 @@ def prepare(name: str, *, source: Path | None, state_root: Path,
                   "helper_sha256": helper_hash, "adapter_sha256": adapter_hash,
                   "name": name, "applied": [], "adapted": [], "unavailable": [], "unknown": [],
                   "backgrounds": [], "selected_background": None,
-                  "icon_theme": None}
+                  "fit_mode": fit_mode, "icon_theme": None}
         total = 0
         allowed = {"colors.toml", "shell.toml", "icons.theme", "foot.ini", "alacritty.toml"}
         for entry in sorted(theme.iterdir()):
@@ -353,6 +443,12 @@ def prepare(name: str, *, source: Path | None, state_root: Path,
                 report["unknown"].append(f"{entry.name}: not an appearance input")
             if total > MAX_TOTAL:
                 raise ThemeError("theme exceeds total staging bound")
+        for asset, path, _size, _mtime in overlay_accepted:
+            total += checked_copy(path, staged / asset, limit=MAX_ASSET)
+            report["backgrounds"].append(asset)
+        if total > MAX_TOTAL:
+            raise ThemeError("theme exceeds total staging bound")
+        report["unknown"].extend(overlay_rejected)
         if not (staged / "colors.toml").is_file():
             raise ThemeError("theme has no usable palette")
         # `selected_background`/`remembered_missing` were already resolved
@@ -439,6 +535,7 @@ def prepare(name: str, *, source: Path | None, state_root: Path,
             if (existing["source_sha256"] != source_hash or existing["name"] != name
                     or existing["source"] != str(theme)
                     or existing.get("selected_background") != report["selected_background"]
+                    or existing.get("fit_mode", DEFAULT_FIT) != fit_mode
                     or existing["helper_sha256"] != helper_hash
                     or existing["adapter_sha256"] != adapter_hash):
                 raise ThemeError("generation identity collision")
@@ -455,7 +552,10 @@ def prepare(name: str, *, source: Path | None, state_root: Path,
             result = reuse_existing()
             theme_timing.log("prepare", name, stopwatch, generation=generation_id[:12], cache="race")
             return result
-        if wallpaper_cache_tool is not None and tokens["background"] == "background":
+        # The cache is the Crop decode (`write_wallpaper_cache`); another fit
+        # mode would only ever miss it, so do not pay to build it.
+        if (wallpaper_cache_tool is not None and tokens["background"] == "background"
+                and fit_mode == DEFAULT_FIT):
             build_wallpaper_cache(wallpaper_cache_tool, staged / report["selected_background"], work)
         stopwatch.lap("wallpaper_cache")
         try:
@@ -488,6 +588,10 @@ def main():
     parser.add_argument("--wallpaper-cache-tool", type=Path,
                         help="k230-shell-rust binary, for precomputing a panel-sized wallpaper cache")
     parser.add_argument("--background", help="exact source-relative backgrounds/NAME in this theme")
+    parser.add_argument("--fit", choices=FIT_MODES,
+                        help="background placement; remembered per theme source (default: crop)")
+    parser.add_argument("--overlays", type=Path, default=Path.home() / ".config/omarchy/backgrounds",
+                        help="directory of the person's own background images/videos")
     mode = parser.add_mutually_exclusive_group(required=True)
     mode.add_argument("--prepare-only", action="store_true")
     mode.add_argument("--activate", action="store_true")
@@ -506,13 +610,15 @@ def main():
     destination, report = prepare(args.name, source=args.source, state_root=args.state_root,
                                   user_themes=args.user_themes, builtins=args.builtins, tools=args.tools,
                                   background_choice=args.background,
-                                  wallpaper_cache_tool=args.wallpaper_cache_tool)
+                                  wallpaper_cache_tool=args.wallpaper_cache_tool,
+                                  fit_mode=args.fit, overlays=args.overlays)
     app_status = None
     keyboard_status = None
     if args.activate:
         preference = SelectionIntent(args.state_root.resolve(), Path(report["source"]),
                                      report["selected_background"], report["backgrounds"],
-                                     explicit=args.background is not None)
+                                     explicit=args.background is not None or args.fit is not None,
+                                     fit=args.fit)
         app_status = activate_generation(destination, state_root=args.state_root, endpoint=args.socket,
                                          preference=preference,
                                          endpoints=(args.rust_socket, args.deck_socket)

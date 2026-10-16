@@ -39,6 +39,10 @@ pub struct ThemeImageKey {
     pub generation_root: PathBuf,
     pub width: u32,
     pub height: u32,
+    /// How the still is placed. The chooser's own previews are `Crop`; the
+    /// generation's `background.cache` only matches `Crop`, so another mode
+    /// is a cache miss and a full decode, never a wrong picture.
+    pub fit: FitMode,
 }
 
 pub struct ThemeImageReply {
@@ -64,7 +68,7 @@ impl Default for ThemeImageWorker {
                         Some(key.generation_root.as_path()),
                         key.width,
                         key.height,
-                        FitMode::Crop,
+                        key.fit,
                     )
                     .map(<[u8]>::to_vec);
                 if outgoing.send(ThemeImageReply { key, pixels }).is_err() {
@@ -226,6 +230,29 @@ pub struct ThemeView {
     /// read or set it directly; use `tap_theme`/`tap_background`/
     /// `advance`/`accept` instead.
     pub desired: Option<Desired>,
+    /// The fit mode (`background_decode::FitMode::NAMES`) of the active
+    /// generation, read from its `report.json` each time a preview settles.
+    /// Shown on the "Backgrounds" heading; tapping the heading cycles it.
+    pub fit: String,
+    /// A fit change in progress: the requested name and, once its preview
+    /// step has returned, the generation to activate. Independent of
+    /// `desired` (a theme or background tap clears it).
+    pub fit_wanted: Option<(String, Option<String>)>,
+}
+
+/// The `fit_mode` recorded in the generation directory that holds
+/// `appearance_path` (`crop` when absent, unreadable or unrecognised).
+fn generation_fit(appearance_path: &std::path::Path) -> String {
+    let name = appearance_path
+        .parent()
+        .and_then(|root| std::fs::read(root.join("report.json")).ok())
+        .filter(|bytes| bytes.len() <= 1 << 20)
+        .and_then(|bytes| serde_json::from_slice::<serde_json::Value>(&bytes).ok())
+        .and_then(|report| report.get("fit_mode")?.as_str().map(str::to_owned));
+    match name {
+        Some(name) if FitMode::NAMES.contains(&name.as_str()) => name,
+        _ => "crop".into(),
+    }
 }
 
 /// How long a theme must stay the carousel's centred item, with the
@@ -272,6 +299,8 @@ impl Default for ThemeView {
             pending_neighbor_warms: VecDeque::new(),
             known_generations: HashMap::new(),
             desired: None,
+            fit: "crop".into(),
+            fit_wanted: None,
         }
     }
 }
@@ -289,6 +318,9 @@ pub enum ThemeIntent {
     /// Same, for the background carousel: apply that background of the
     /// active theme now.
     Background(usize),
+    /// Tap on the "Backgrounds" heading: cycle the active background's fit
+    /// mode (crop, fit, center, fill, solid).
+    Fit,
 }
 
 /// Top of the theme carousel band (below the "Themes" heading/subtext).
@@ -531,7 +563,7 @@ fn request_target(request: &ThemeRequest) -> Option<(&str, Option<&str>)> {
             background_id,
             ..
         } => Some((theme_id.as_str(), background_id.as_deref())),
-        ThemeRequest::List => None,
+        ThemeRequest::List | ThemeRequest::Fit { .. } => None,
     }
 }
 
@@ -565,12 +597,13 @@ impl ThemeView {
     }
 
     pub fn back(&mut self) -> Option<ThemeRequest> {
-        if matches!(self.pending, Some(ThemeRequest::Activate { .. })) {
+        if self.pending.as_ref().is_some_and(ThemeRequest::is_activation) {
             return None; // A durable activation cannot be cancelled after dispatch.
         }
         self.pending = None; // A late reply must not reopen a dismissed view.
         self.pending_id = None;
         self.desired = None;
+        self.fit_wanted = None;
         self.error = None;
         self.message = None;
         self.theme_pressed = None;
@@ -602,6 +635,10 @@ impl ThemeView {
         }
         self.pending = None;
         self.pending_id = None;
+        if let ThemeRequest::Fit { fit, .. } = &reply.request {
+            self.accept_fit(fit, reply.result);
+            return true;
+        }
         let matches_desired = request_target(&reply.request).is_some_and(|(theme_id, background_id)| {
             self.desired
                 .as_ref()
@@ -711,6 +748,7 @@ impl ThemeView {
                         .iter()
                         .position(|row| row.selected)
                         .unwrap_or(0) as f64;
+                    self.fit = generation_fit(&preview.appearance_path);
                     self.preview = Some(*preview);
                     self.desired = None;
                     self.error = None;
@@ -742,6 +780,14 @@ impl ThemeView {
     pub fn advance(&mut self) -> Option<ThemeRequest> {
         if self.pending.is_some() {
             return None;
+        }
+        if let Some((fit, generation)) = self.fit_wanted.as_ref() {
+            let theme_id = self.preview.as_ref()?.theme.id.clone();
+            return Some(ThemeRequest::Fit {
+                theme_id,
+                expected_generation: generation.clone(),
+                fit: fit.clone(),
+            });
         }
         let desired = self.desired.as_ref()?;
         if desired.already_active && desired.generation.is_some() {
@@ -780,6 +826,7 @@ impl ThemeView {
         let known = (!already_active)
             .then(|| self.known_generations.get(&theme.id).cloned())
             .flatten();
+        self.fit_wanted = None;
         self.desired = Some(Desired {
             theme_id: theme.id.clone(),
             background_id: None,
@@ -806,6 +853,7 @@ impl ThemeView {
         if background.selected {
             return None; // already the active background: nothing to do
         }
+        self.fit_wanted = None;
         self.desired = Some(Desired {
             theme_id: preview.theme.id.clone(),
             background_id: Some(background.id.clone()),
@@ -814,6 +862,62 @@ impl ThemeView {
         });
         self.error = None;
         self.advance()
+    }
+
+    /// Tapping the "Backgrounds" heading: ask for the active background in
+    /// the next fit mode. Returns the first step (a `Preview`; `advance`
+    /// supplies the `Activate` once its generation is known). Nothing
+    /// happens while another request is in flight or before the active
+    /// theme's detail has loaded.
+    pub fn cycle_fit(&mut self) -> Option<ThemeRequest> {
+        if self.pending.is_some() {
+            return None;
+        }
+        self.preview.as_ref()?;
+        self.fit_wanted = Some((FitMode::next_name(&self.fit).to_owned(), None));
+        self.desired = None;
+        self.error = None;
+        self.advance()
+    }
+
+    /// The reply to a `ThemeRequest::Fit`: the preview step records the
+    /// generation to activate; the activation settles the new fit.
+    fn accept_fit(&mut self, fit: &str, result: Result<ThemeResponse, String>) {
+        let wanted = self.fit_wanted.as_ref().is_some_and(|(name, _)| name == fit);
+        match result {
+            Err(error) => {
+                if wanted {
+                    self.fit_wanted = None;
+                    self.error = Some(error);
+                }
+            }
+            Ok(ThemeResponse::Preview(preview)) if wanted && preview.activated => {
+                if let Some(list) = self.list.as_mut() {
+                    list.active.id = Some(preview.theme.id.clone());
+                    list.active.generation = Some(preview.generation.clone());
+                }
+                // The generation identity changed with the fit: a cached
+                // pre-fit generation for this theme would be rejected.
+                self.known_generations.remove(&preview.theme.id);
+                self.message = Some(format!("Background fit: {fit}"));
+                self.fit = fit.to_owned();
+                self.background_position = preview
+                    .backgrounds
+                    .iter()
+                    .position(|row| row.selected)
+                    .unwrap_or(0) as f64;
+                self.preview = Some(*preview);
+                self.fit_wanted = None;
+                self.error = None;
+            }
+            Ok(ThemeResponse::Preview(preview)) if wanted => {
+                if let Some((_, generation)) = self.fit_wanted.as_mut() {
+                    *generation = Some(preview.generation.clone());
+                }
+                self.error = None;
+            }
+            Ok(_) => {}
+        }
     }
 
     /// Task 3.2: called once per tick while the theme carousel is shown.
@@ -1000,7 +1104,7 @@ impl ThemeView {
         if dx.abs() > 18.0 || dy.abs() > 18.0 {
             return None;
         }
-        if matches!(self.pending, Some(ThemeRequest::Activate { .. })) {
+        if self.pending.as_ref().is_some_and(ThemeRequest::is_activation) {
             return None;
         }
         match self.page {
@@ -1015,6 +1119,19 @@ impl ThemeView {
                 }
                 if let Some(index) = same(lay.background_grid) {
                     return Some(ThemeIntent::Background(index));
+                }
+                // The "Backgrounds" heading (and the fit mode it names).
+                let (hx, hy) = lay.backgrounds_heading;
+                if end.0 >= hx
+                    && end.0 < hx + 260.0
+                    && end.1 >= hy - 6.0
+                    && end.1 < hy + 34.0
+                    && start.0 >= hx
+                    && start.0 < hx + 260.0
+                    && start.1 >= hy - 6.0
+                    && start.1 < hy + 34.0
+                {
+                    return Some(ThemeIntent::Fit);
                 }
                 if end.1 < header_h {
                     return if end.0 < 190.0 {
@@ -1375,6 +1492,116 @@ mod tests {
     }
 
     #[test]
+    fn fit_names_agree_across_the_standalone_catalog_module() {
+        assert_eq!(crate::theme_catalog::FIT_NAMES, FitMode::NAMES);
+    }
+
+    #[test]
+    fn tapping_the_backgrounds_heading_is_the_fit_intent_and_only_there() {
+        let view = ThemeView {
+            page: ThemePage::List,
+            ..ThemeView::default()
+        };
+        let (w, h) = (568, 1232);
+        let (hx, hy) = chooser_layout(w, h).backgrounds_heading;
+        let tap = |x: f64, y: f64| view.hit((x, y), (x, y), w, h);
+        assert_eq!(tap(hx + 20.0, hy + 10.0), Some(ThemeIntent::Fit));
+        assert_eq!(tap(hx + 400.0, hy + 10.0), None);
+        assert_eq!(tap(hx + 20.0, hy + 80.0), None);
+    }
+
+    #[test]
+    fn cycling_fit_previews_then_activates_the_new_generation_and_settles_it() {
+        let mut view = ThemeView {
+            page: ThemePage::List,
+            preview: Some(preview()),
+            ..ThemeView::default()
+        };
+        assert_eq!(view.fit, "crop");
+        let request = view.cycle_fit().unwrap();
+        assert_eq!(request, ThemeRequest::Fit {
+            theme_id: id('a'), expected_generation: None, fit: "fit".into(),
+        });
+        // One at a time: nothing further while that request is in flight.
+        view.submitted(request.clone(), 1);
+        assert!(view.cycle_fit().is_none());
+        let mut candidate = preview();
+        candidate.generation = id('f'); // The fit is part of the generation identity.
+        view.accept(ThemeReply { id: 1, request,
+            result: Ok(ThemeResponse::Preview(Box::new(candidate.clone()))) });
+        assert_eq!(view.preview.as_ref().unwrap().generation, id('b'));
+        assert_eq!(view.fit, "crop"); // Not settled until the durable step.
+        let activate = view.advance().unwrap();
+        assert_eq!(activate, ThemeRequest::Fit {
+            theme_id: id('a'), expected_generation: Some(id('f')), fit: "fit".into(),
+        });
+        assert!(activate.is_activation());
+        view.submitted(activate.clone(), 2);
+        candidate.activated = true;
+        view.known_generations.insert(id('a'), id('b'));
+        view.accept(ThemeReply { id: 2, request: activate,
+            result: Ok(ThemeResponse::Preview(Box::new(candidate))) });
+        assert_eq!(view.fit, "fit");
+        assert_eq!(view.preview.as_ref().unwrap().generation, id('f'));
+        assert_eq!(view.message.as_deref(), Some("Background fit: fit"));
+        assert!(!view.known_generations.contains_key(&id('a')));
+        assert!(view.advance().is_none());
+        // The next tap continues the cycle from the settled mode.
+        assert!(matches!(view.cycle_fit(), Some(ThemeRequest::Fit { fit, .. }) if fit == "center"));
+    }
+
+    #[test]
+    fn a_failed_fit_change_keeps_the_old_fit_and_reports_the_error() {
+        let mut view = ThemeView {
+            page: ThemePage::List,
+            preview: Some(preview()),
+            fit: "fill".into(),
+            ..ThemeView::default()
+        };
+        let request = view.cycle_fit().unwrap();
+        assert!(matches!(&request, ThemeRequest::Fit { fit, .. } if fit == "solid"));
+        view.submitted(request.clone(), 1);
+        view.accept(ThemeReply { id: 1, request, result: Err("helper failed".into()) });
+        assert_eq!(view.fit, "fill");
+        assert_eq!(view.error.as_deref(), Some("helper failed"));
+        assert!(view.advance().is_none());
+    }
+
+    #[test]
+    fn a_theme_or_background_tap_supersedes_a_pending_fit_change() {
+        let mut view = ThemeView {
+            page: ThemePage::List,
+            preview: Some(preview_with_an_unselected_still()),
+            list: Some(theme_list(Some(0))),
+            ..ThemeView::default()
+        };
+        view.cycle_fit().unwrap();
+        assert!(view.fit_wanted.is_some());
+        view.tap_background(2).unwrap();
+        assert!(view.fit_wanted.is_none());
+        assert!(view.desired.is_some());
+    }
+
+    #[test]
+    fn the_fit_mode_is_read_from_the_generation_report() {
+        let root = std::env::temp_dir().join(format!("k230-fit-{}", std::process::id()));
+        std::fs::create_dir_all(&root).unwrap();
+        let appearance = root.join("appearance.json");
+        assert_eq!(generation_fit(&appearance), "crop"); // no report at all
+        for (body, want) in [
+            (r#"{"fit_mode":"fill"}"#, "fill"),
+            (r#"{"fit_mode":"solid"}"#, "solid"),
+            (r#"{"fit_mode":"bogus"}"#, "crop"),
+            (r#"{}"#, "crop"),
+            ("not json", "crop"),
+        ] {
+            std::fs::write(root.join("report.json"), body).unwrap();
+            assert_eq!(generation_fit(&appearance), want, "{body}");
+        }
+        let _ = std::fs::remove_dir_all(&root);
+    }
+
+    #[test]
     fn tap_background_on_the_video_slice_sets_a_visible_error_and_sends_nothing() {
         let mut view = ThemeView {
             page: ThemePage::List,
@@ -1642,6 +1869,7 @@ mod tests {
         });
         image.save(&path).unwrap();
         let key = ThemeImageKey {
+            fit: FitMode::Crop,
             generation: "fixture-generation".into(),
             path: path.canonicalize().unwrap(),
             generation_root: std::env::temp_dir(),
@@ -1685,6 +1913,7 @@ mod tests {
 
         let worker = ThemeImageWorker::default();
         let key = ThemeImageKey {
+            fit: FitMode::Crop,
             generation: "fixture-generation-cache-reuse".into(),
             path: source_path,
             generation_root: generation_root.clone(),

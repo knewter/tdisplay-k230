@@ -80,6 +80,7 @@ def build_light_parser() -> argparse.ArgumentParser:
     parser.add_argument("--wallpaper-cache-tool", type=Path)
     parser.add_argument("--user-themes", type=Path)
     parser.add_argument("--builtins", type=Path)
+    parser.add_argument("--overlays", type=Path)
     parser.add_argument("--state-root", type=Path)
     parser.add_argument("--socket", type=Path)
     parser.add_argument("--rust-socket", type=Path)
@@ -96,6 +97,7 @@ def build_light_parser() -> argparse.ArgumentParser:
         command.add_argument("id")
         command.add_argument("--json", action="store_true")
         command.add_argument("--background")
+        command.add_argument("--fit")
         if action == "activate":
             command.add_argument("--expected-generation")
     return parser
@@ -106,6 +108,8 @@ def as_request(args: argparse.Namespace) -> dict:
     if args.action != "list":
         request["id"] = args.id
         request["background"] = args.background
+        if args.fit is not None:
+            request["fit"] = args.fit
         if args.action == "activate":
             request["expected_generation"] = args.expected_generation
     return request

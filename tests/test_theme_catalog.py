@@ -59,6 +59,7 @@ class CatalogTests(unittest.TestCase):
     def run_cli(self, *args, keyboard_runtime_dir=None, pkill=None):
         out, err = io.StringIO(), io.StringIO()
         prefix = ["--user-themes", str(self.user), "--builtins", str(self.builtins),
+                  "--overlays", str(self.base / "no-overlays"),
                   "--state-root", str(self.state), "--socket", str(self.base / "missing.sock")]
         if keyboard_runtime_dir is not None:
             prefix += ["--keyboard-runtime-dir", str(keyboard_runtime_dir)]
@@ -444,6 +445,33 @@ class CatalogTests(unittest.TestCase):
                               side_effect=AssertionError("should not be called")):
             status, _ = self.run_cli("preview", entry.id)
         self.assertEqual(status, 0)
+
+
+    def test_fit_choice_changes_the_generation_and_is_carried_into_the_preference(self):
+        theme(self.user / "night")
+        entry = self.entries()[0]
+        _, plain = self.run_cli("preview", entry.id)
+        status, fill = self.run_cli("preview", entry.id, "--fit", "fill")
+        self.assertEqual(status, 0, fill)
+        self.assertNotEqual(plain["generation"], fill["generation"])
+        report = json.loads((self.state / "generations" / fill["generation"] / "report.json").read_text())
+        self.assertEqual(report["fit_mode"], "fill")
+        with self.assertRaises(SystemExit), redirect_stderr(io.StringIO()):
+            catalog.main(["--user-themes", str(self.user), "--state-root", str(self.state),
+                          "preview", entry.id, "--fit", "stretch"])
+        with mock.patch.object(catalog, "activate_generation") as activate:
+            activate.return_value = {"state": "applied"}
+            status, result = self.run_cli("activate", entry.id, "--fit", "fill",
+                                          "--expected-generation", fill["generation"])
+        self.assertEqual(status, 0, result)
+        preference = activate.call_args.kwargs["preference"]
+        self.assertEqual(preference.fit, "fill")
+        self.assertTrue(preference.explicit)
+        # Without --fit the preference leaves the remembered placement alone.
+        with mock.patch.object(catalog, "activate_generation") as activate:
+            activate.return_value = {"state": "applied"}
+            self.run_cli("activate", entry.id, "--expected-generation", plain["generation"])
+        self.assertIsNone(activate.call_args.kwargs["preference"].fit)
 
 
 if __name__ == "__main__":

@@ -81,9 +81,54 @@ None — additive. Existing generations with no recorded fit-mode choice
 default to today's behavior (`Crop`), so nothing already committed changes
 appearance.
 
-## Open Questions
+## Resolved Questions
 
-- Does "Solid" need its own color picker, or does it always derive from the
-  active theme's own resolved background/accent role? Left to task group 1
-  below to decide against what a person actually expects, rather than
-  assumed here.
+- **Does "Solid" need its own color picker?** No (decided 2026-10-16, task
+  1.3). `Solid` always paints the active generation's resolved `background`
+  palette role -- the same role `RendererCache::draw_wallpaper` already uses
+  as a theme's base colour -- so a dark theme gets its dark base and a light
+  theme its light base with nothing for a person to configure, it needs no
+  new persisted value (the generation's `report.json` already carries the
+  palette), and it works for a theme that ships no background asset at all.
+  `background_decode::FitMode::Solid` takes a resolved RGBA colour; the shell
+  resolves it in `appearance::generation_wallpaper_fit`. Rejected: an
+  explicit per-person colour (a picker plus a new stored, validated colour
+  for a case the palette already answers; it can be added later as another
+  `FitMode` argument without changing the stored fit name) and the `accent`
+  role (reads as a highlight, not a backdrop; poor contrast under icons).
+
+## Implementation notes (host work, 2026-10-16)
+
+- **`Fill` is a stretch, not a cover-crop.** The proposal and this document
+  define `Fill` as aspect-distorting and `Crop` as the aspect-preserving
+  cover; the spec delta's first draft described `fill` as cover-and-crop,
+  which is `crop`. The delta now says what `Fill` does here (stretch, no
+  crop, no letterbox).
+- **The fit mode is remembered per theme source**, beside the remembered
+  background, in `background-selections.json` as an optional `fits` table
+  keyed the same way (`crop`, the default, is never stored; version stays 1
+  and files written before this change read as `crop`). It is not keyed per
+  individual background image: the existing store has one entry per source
+  and the chooser applies one placement to the active background.
+- **The mode is part of the generation identity** (a generation stages the
+  decode inputs and its `report.json`), added to the identity hash only when
+  it is not `crop`, so every existing generation keeps its identity. The
+  wallpaper `background.cache` is the `Crop` decode, so it is only built for
+  `crop`; another mode is a cache miss and a full decode. The shell reads
+  `fit_mode` from the generation's `report.json` (absent means `crop`).
+- **Chooser control:** tapping the "Backgrounds" heading cycles the active
+  background's fit (crop, fit, center, fill, solid) and the heading names the
+  current mode. It sends `ThemeRequest::Fit`, a preview-then-activate pair
+  like a background change, through the existing helper protocol
+  (`--fit`/`"fit"`).
+- **User overlays** (task 2.1) live in a flat directory outside every theme
+  (`~/.config/omarchy/backgrounds`, `--overlays` to override), are staged
+  into the generation as `backgrounds/user-<name>` so the existing selection,
+  preference and Rust loader paths accept them unchanged, and are bounded:
+  regular files only (no symlinks), `STILLS | VIDEOS` suffixes, a safe file
+  name, each at most `MAX_ASSET`, at most 32 files and `MAX_TOTAL / 2` bytes
+  together. A bad overlay is a line in the report's `unknown` list, never a
+  failed activation; a name that collides with a theme's own asset loses to
+  the theme. They stay out of the theme's content-hashed tree; the staged set
+  enters the generation identity as a stat-only fingerprint (name, size,
+  mtime), added only when overlays exist.

@@ -1360,6 +1360,16 @@ DATA 13b92f1aa8f676c535318a8b0143658763f43da0ac68dad91d4ca440b7ed277b  docs/evid
 DATA 21fac03a2ab67a15b2a1faa45f3dea6688aa2017facc1f57315f8706edf8474e  docs/evidence/keyboard-gestures/installed-preview/keyboard-shown.png
 DATA cd1abfa7fcd1ccdc3a70b8b0123f2729117b9eb21896f53576df1643f6d826fe  docs/evidence/keyboard-gestures/installed-preview/terminal-hidden.png
 DATA 3df8cda30a4e3d966bed5ac2ddd15ff73cd551a065ddeb75743a57b75d3ca645  docs/evidence/omarchy-themes/portrait-preview-host/preview.png
+DATA c161b1bffe2cda61a86d35158caebf2d88e7791a16f1dc4394113a8d91650ac8  docs/evidence/omarchy-themes/background-fit-modes-host/dark-catppuccin-center-284x616.png
+DATA 9d1f40b0512e74d6f37a55875c3a68588f1105305c66299cf31dd2939c458c46  docs/evidence/omarchy-themes/background-fit-modes-host/dark-catppuccin-crop-284x616.png
+DATA 485ff1a1ffcf84207e1a74173303c78bbd277bb77aa7dbfc02ea3e2f726ca2fd  docs/evidence/omarchy-themes/background-fit-modes-host/dark-catppuccin-fill-284x616.png
+DATA a6335ab79253de2ac2a040d3be03c69745f86011cafbe3f27fae9cce4edfe666  docs/evidence/omarchy-themes/background-fit-modes-host/dark-catppuccin-fit-284x616.png
+DATA 66f0984c785b5403a61c76e2fdaf796a25e7bbf8f0cf14126f0301edd41c8213  docs/evidence/omarchy-themes/background-fit-modes-host/dark-catppuccin-solid-284x616.png
+DATA 23635218049dbdca1b4d493bec892daf44a027540c88519c545bfb4c57948cc0  docs/evidence/omarchy-themes/background-fit-modes-host/light-catppuccin-latte-center-284x616.png
+DATA 6e3de80a94cf9196d2e6c5a5abcb03ba873062bb8e6ecb21afca95a6a6e1c3e2  docs/evidence/omarchy-themes/background-fit-modes-host/light-catppuccin-latte-crop-284x616.png
+DATA 9a87d376703dd3ff65675744ec5ee9d6e290cfb56651c8fcf5992b4cf52938a8  docs/evidence/omarchy-themes/background-fit-modes-host/light-catppuccin-latte-fill-284x616.png
+DATA a614fd07d14cc7cc2b971491063a1b67e236cc88123168f15c253560f19d9e1c  docs/evidence/omarchy-themes/background-fit-modes-host/light-catppuccin-latte-fit-284x616.png
+DATA e93c88cc87a33a2f8ca7fff624fcd9457f4c8746800f645d10aa9d7d2080e92b  docs/evidence/omarchy-themes/background-fit-modes-host/light-catppuccin-latte-solid-284x616.png
 DATA ec84e64f2f63096b88fc1c03ddb63ca360ba93d72401a6764fe053d66e6d5bd0  docs/evidence/coherent-shell/coordinated-scene-2026-10-10/drawer-100.png
 DATA fea0f40dabd3aa4fd5bbadd4a7e95205d66c93a937bf9085477e1815f6cd45cf  docs/evidence/coherent-shell/coordinated-scene-2026-10-10/drawer-300.png
 DATA 4780410f54c3f47a02258d3bab73dc18acdfb993c40ae5ca1a348f1562759537  docs/evidence/coherent-shell/coordinated-scene-2026-10-10/drawer-open.png
@@ -2559,6 +2569,16 @@ These DATA screenshots are host-rendered fixtures of the one-page tap-to-apply c
 | --- | ---: | --- | --- |
 | `docs/evidence/omarchy-themes/instant-theme-swap/tap-to-apply-host/themes-dark.png` | 38562 | DATA | `a078dc50d948af4d6f87fb575a1f7ebefa25edfc39725ad8888b0a3311b810b1` |
 | `docs/evidence/omarchy-themes/instant-theme-swap/tap-to-apply-host/themes-latte.png` | 38356 | DATA | `e1ceaff1e53e62ee75362838ed2cc644f76c452583e02b1f07053c69d134b92c` |
+| `docs/evidence/omarchy-themes/background-fit-modes-host/dark-catppuccin-center-284x616.png` | 74738 | DATA | `c161b1bffe2cda61a86d35158caebf2d88e7791a16f1dc4394113a8d91650ac8` |
+| `docs/evidence/omarchy-themes/background-fit-modes-host/dark-catppuccin-crop-284x616.png` | 82230 | DATA | `9d1f40b0512e74d6f37a55875c3a68588f1105305c66299cf31dd2939c458c46` |
+| `docs/evidence/omarchy-themes/background-fit-modes-host/dark-catppuccin-fill-284x616.png` | 145945 | DATA | `485ff1a1ffcf84207e1a74173303c78bbd277bb77aa7dbfc02ea3e2f726ca2fd` |
+| `docs/evidence/omarchy-themes/background-fit-modes-host/dark-catppuccin-fit-284x616.png` | 39927 | DATA | `a6335ab79253de2ac2a040d3be03c69745f86011cafbe3f27fae9cce4edfe666` |
+| `docs/evidence/omarchy-themes/background-fit-modes-host/dark-catppuccin-solid-284x616.png` | 5126 | DATA | `66f0984c785b5403a61c76e2fdaf796a25e7bbf8f0cf14126f0301edd41c8213` |
+| `docs/evidence/omarchy-themes/background-fit-modes-host/light-catppuccin-latte-center-284x616.png` | 19970 | DATA | `23635218049dbdca1b4d493bec892daf44a027540c88519c545bfb4c57948cc0` |
+| `docs/evidence/omarchy-themes/background-fit-modes-host/light-catppuccin-latte-crop-284x616.png` | 43731 | DATA | `6e3de80a94cf9196d2e6c5a5abcb03ba873062bb8e6ecb21afca95a6a6e1c3e2` |
+| `docs/evidence/omarchy-themes/background-fit-modes-host/light-catppuccin-latte-fill-284x616.png` | 71298 | DATA | `9a87d376703dd3ff65675744ec5ee9d6e290cfb56651c8fcf5992b4cf52938a8` |
+| `docs/evidence/omarchy-themes/background-fit-modes-host/light-catppuccin-latte-fit-284x616.png` | 43352 | DATA | `a614fd07d14cc7cc2b971491063a1b67e236cc88123168f15c253560f19d9e1c` |
+| `docs/evidence/omarchy-themes/background-fit-modes-host/light-catppuccin-latte-solid-284x616.png` | 5125 | DATA | `e93c88cc87a33a2f8ca7fff624fcd9457f4c8746800f645d10aa9d7d2080e92b` |
 
 ### Bottom-band flicker before/after max_render_time: webcam frame sheets
 

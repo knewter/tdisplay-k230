@@ -242,7 +242,13 @@ fn appearance_renderable(
     };
     let (width, height) = geometry.ok_or("wallpaper output is not configured")?;
     cache
-        .render(still, Some(snapshot.path.as_path()), width, height, FitMode::Crop)
+        .render(
+            still,
+            Some(snapshot.path.as_path()),
+            width,
+            height,
+            k230_shell_rust::appearance::generation_wallpaper_fit(&snapshot.path),
+        )
         .map(|_| ())
 }
 
@@ -2070,6 +2076,13 @@ impl ShellClient {
                     self.theme_dirty();
                 }
             }
+            ThemeIntent::Fit => {
+                if let Some(request) = self.theme_view.cycle_fit() {
+                    self.submit_theme(request);
+                } else {
+                    self.theme_dirty();
+                }
+            }
         }
     }
 
@@ -3296,6 +3309,23 @@ impl ShellClient {
         true
     }
 
+    /// The still source and placement the wallpaper layer should draw, if any.
+    /// `solid` never opens its source, so it also covers a generation whose
+    /// theme ships no background asset (a placeholder path keys the cache).
+    fn wallpaper_source<'a>(
+        path: &'a Option<PathBuf>,
+        root: &Option<PathBuf>,
+    ) -> Option<(&'a Path, FitMode)> {
+        let fit = root
+            .as_deref()
+            .map_or(FitMode::Crop, k230_shell_rust::appearance::generation_wallpaper_fit);
+        match path.as_deref() {
+            Some(path) => Some((path, fit)),
+            None if matches!(fit, FitMode::Solid(_)) => Some((Path::new("/solid"), fit)),
+            None => None,
+        }
+    }
+
     fn draw_wallpaper(&mut self, qh: &QueueHandle<Self>) -> bool {
         // Do not gate drawing on the wallpaper's own outstanding frame
         // callback. The wallpaper sits on the background layer, which an
@@ -3384,14 +3414,14 @@ impl ShellClient {
                 canvas.copy_from_slice(pixels);
                 Ok(())
             }
-        } else if let Some(path) = self.wallpaper_path.as_deref() {
+        } else if let Some((path, fit)) = Self::wallpaper_source(&self.wallpaper_path, &self.wallpaper_generation_root) {
             self.background_cache
                 .render(
                     path,
                     self.wallpaper_generation_root.as_deref(),
                     width,
                     height,
-                    FitMode::Crop,
+                    fit,
                 )
                 .and_then(|pixels| {
                     if pixels.len() != canvas.len() {

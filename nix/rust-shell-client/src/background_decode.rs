@@ -53,6 +53,8 @@ fn mode_tag(mode: FitMode) -> u8 {
         FitMode::Crop => 0,
         FitMode::Fit => 1,
         FitMode::Center => 2,
+        FitMode::Fill => 3,
+        FitMode::Solid(_) => 4,
     }
 }
 
@@ -155,6 +157,48 @@ pub enum FitMode {
     Crop,
     Fit,
     Center,
+    /// Stretch the source to exactly cover the canvas, ignoring its aspect
+    /// ratio (no letterbox, no crop). Distinct from `Crop`, which preserves
+    /// the aspect ratio and trims the excess.
+    Fill,
+    /// A flat RGBA colour; the source image is never opened or decoded. The
+    /// caller resolves the colour (the shell uses the active generation's
+    /// `background` palette role -- see `AppearanceSnapshot::wallpaper_fit`).
+    Solid([u8; 4]),
+}
+
+impl FitMode {
+    /// The persisted / on-the-wire names, in the order the chooser cycles.
+    pub const NAMES: [&'static str; 5] = ["crop", "fit", "center", "fill", "solid"];
+
+    pub fn name(self) -> &'static str {
+        match self {
+            FitMode::Crop => "crop",
+            FitMode::Fit => "fit",
+            FitMode::Center => "center",
+            FitMode::Fill => "fill",
+            FitMode::Solid(_) => "solid",
+        }
+    }
+
+    /// Parse a persisted name. `solid` takes the colour the caller resolved
+    /// for it; the other modes ignore `solid`.
+    pub fn parse(name: &str, solid: [u8; 4]) -> Option<FitMode> {
+        Some(match name {
+            "crop" => FitMode::Crop,
+            "fit" => FitMode::Fit,
+            "center" => FitMode::Center,
+            "fill" => FitMode::Fill,
+            "solid" => FitMode::Solid(solid),
+            _ => return None,
+        })
+    }
+
+    /// The mode after this one in `NAMES` order, wrapping.
+    pub fn next_name(current: &str) -> &'static str {
+        let index = Self::NAMES.iter().position(|name| *name == current);
+        Self::NAMES[index.map_or(0, |index| (index + 1) % Self::NAMES.len())]
+    }
 }
 
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -350,10 +394,20 @@ fn decode(path: &Path) -> Result<RgbaImage, String> {
 fn place(source: &RgbaImage, width: u32, height: u32, mode: FitMode) -> Result<RgbaImage, String> {
     let (source_width, source_height) = source.dimensions();
     let mut canvas = RgbaImage::new(width, height);
+    let base = match mode {
+        FitMode::Solid(rgba) => rgba,
+        _ => [0, 0, 0, 255],
+    };
     for pixel in canvas.pixels_mut() {
-        *pixel = image::Rgba([0, 0, 0, 255]);
+        *pixel = image::Rgba(base);
     }
     let (scaled, x, y) = match mode {
+        FitMode::Solid(_) => return Ok(canvas),
+        FitMode::Fill => (
+            imageops::resize(source, width, height, FilterType::Triangle),
+            0,
+            0,
+        ),
         FitMode::Crop => {
             let (crop_width, crop_height) = if u64::from(source_width) * u64::from(height)
                 > u64::from(source_height) * u64::from(width)
@@ -419,8 +473,13 @@ fn place(source: &RgbaImage, width: u32, height: u32, mode: FitMode) -> Result<R
 
 fn render_uncached(path: &Path, width: u32, height: u32, mode: FitMode) -> Result<Vec<u8>, String> {
     let output_len = output_pixels(width, height)?;
-    let source = decode(path)?;
-    let placed = place(&source, width, height, mode)?;
+    let placed = if matches!(mode, FitMode::Solid(_)) {
+        // A flat colour never opens the source: it must keep working when the
+        // theme ships no background asset, or the chosen one is gone.
+        place(&RgbaImage::new(1, 1), width, height, mode)?
+    } else {
+        place(&decode(path)?, width, height, mode)?
+    };
     let mut output = Vec::with_capacity(output_len);
     for rgba in placed.pixels() {
         let alpha = u16::from(rgba[3]);

@@ -253,3 +253,77 @@ fn multiple_recent_candidates_stay_warm_without_evicting_each_other() {
     );
     assert_eq!(cache.len(), 4, "still bounded after two more hits");
 }
+
+#[test]
+fn fill_stretches_without_letterbox_or_crop_and_differs_from_crop() {
+    let fixture = Fixture::new();
+    let path = fixture.path("wide.png");
+    // 4x2: left half red, right half blue. Every row identical.
+    let mut source = RgbaImage::new(4, 2);
+    for (x, _, color) in source.enumerate_pixels_mut() {
+        *color = if x < 2 { Rgba([255, 0, 0, 255]) } else { Rgba([0, 0, 255, 255]) };
+    }
+    save(&path, source);
+    let mut cache = BackgroundCache::new();
+    for (width, height) in [(2usize, 8usize), (8, 2), (6, 6)] {
+        let fill = cache
+            .render(&path, None, width as u32, height as u32, FitMode::Fill)
+            .unwrap()
+            .to_vec();
+        assert_eq!(fill.len(), width * height * 4);
+        // No letterbox: every pixel is opaque source colour, never the black base.
+        for y in 0..height {
+            for x in 0..width {
+                let p = pixel(&fill, width, x, y);
+                assert_eq!(p[3], 255);
+                assert!(p[0] != 0 || p[2] != 0, "black pixel at {x},{y} in {width}x{height}");
+            }
+        }
+        // Aspect distorted, not cropped: red (BGRA R=2) on the left, blue on the right.
+        assert!(pixel(&fill, width, 0, 0)[2] > pixel(&fill, width, 0, 0)[0]);
+        assert!(pixel(&fill, width, width - 1, height - 1)[0] > pixel(&fill, width, width - 1, height - 1)[2]);
+    }
+    let crop = cache.render(&path, None, 2, 8, FitMode::Crop).unwrap().to_vec();
+    let fill = cache.render(&path, None, 2, 8, FitMode::Fill).unwrap().to_vec();
+    assert_ne!(crop, fill);
+    // Fill into the source's own size is the identity (modulo byte order).
+    let same = cache.render(&path, None, 4, 2, FitMode::Fill).unwrap().to_vec();
+    assert_eq!(pixel(&same, 4, 0, 0), &[0, 0, 255, 255]);
+    assert_eq!(pixel(&same, 4, 3, 1), &[255, 0, 0, 255]);
+}
+
+#[test]
+fn solid_paints_one_colour_and_never_opens_the_source() {
+    let fixture = Fixture::new();
+    let mut cache = BackgroundCache::new();
+    // A missing source is irrelevant to Solid.
+    let missing = fixture.path("no-such-file.png");
+    for (width, height) in [(1u32, 1u32), (4, 4), (3, 7), (568, 1232)] {
+        let solid = cache
+            .render(&missing, None, width, height, FitMode::Solid([0x30, 0x20, 0x10, 255]))
+            .unwrap()
+            .to_vec();
+        assert_eq!(solid.len(), (width * height * 4) as usize);
+        // Cairo byte order: B, G, R, A.
+        assert!(solid.chunks_exact(4).all(|p| p == [0x10, 0x20, 0x30, 255]));
+    }
+    // Geometry bounds still apply.
+    assert!(cache.render(&missing, None, 2049, 2, FitMode::Solid([0, 0, 0, 255])).is_err());
+    // Different colours are different cache keys.
+    let a = cache.render(&missing, None, 2, 2, FitMode::Solid([1, 2, 3, 255])).unwrap().to_vec();
+    let b = cache.render(&missing, None, 2, 2, FitMode::Solid([9, 8, 7, 255])).unwrap().to_vec();
+    assert_ne!(a, b);
+}
+
+#[test]
+fn fit_mode_names_round_trip_and_cycle() {
+    for name in FitMode::NAMES {
+        assert_eq!(FitMode::parse(name, [1, 2, 3, 255]).unwrap().name(), name);
+    }
+    assert_eq!(FitMode::parse("solid", [1, 2, 3, 255]), Some(FitMode::Solid([1, 2, 3, 255])));
+    assert_eq!(FitMode::parse("stretch", [0; 4]), None);
+    assert_eq!(FitMode::default(), FitMode::Crop);
+    assert_eq!(FitMode::next_name("crop"), "fit");
+    assert_eq!(FitMode::next_name("solid"), "crop");
+    assert_eq!(FitMode::next_name("bogus"), "crop");
+}

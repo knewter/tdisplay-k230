@@ -1463,9 +1463,12 @@ fn paint_theme_chooser(
     // theme is currently, durably active, not whatever the theme carousel
     // above happens to be centred on mid-browse; it updates only once a
     // tapped theme's own activation actually settles.
+    // Tapping this heading cycles the background's fit mode
+    // (`ThemeIntent::Fit`); the current mode is named after the title.
+    let backgrounds_title = format!("Backgrounds · {}", view.fit);
     heading(
         cr,
-        "Backgrounds",
+        &backgrounds_title,
         lay.backgrounds_heading.0,
         lay.backgrounds_heading.1,
         lay.background_text.1,

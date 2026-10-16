@@ -75,6 +75,11 @@ def request_argv(fixed_argv: list[str], request: dict) -> list[str]:
             if not isinstance(background, str):
                 raise ValueError("invalid background")
             argv += ["--background", background]
+        fit = request.get("fit")
+        if fit is not None:
+            if not isinstance(fit, str):
+                raise ValueError("invalid fit")
+            argv += ["--fit", fit]
         if action == "activate":
             expected = request.get("expected_generation")
             if not isinstance(expected, str) or not expected:
@@ -246,6 +251,7 @@ def main(argv=None) -> int:
     parser.add_argument("--wallpaper-cache-tool", type=Path)
     parser.add_argument("--user-themes", type=Path, default=Path.home() / ".config/omarchy/themes")
     parser.add_argument("--builtins", type=Path)
+    parser.add_argument("--overlays", type=Path, default=Path.home() / ".config/omarchy/backgrounds")
     parser.add_argument("--state-root", type=Path, default=Path.home() / ".local/state/omarchy/current")
     parser.add_argument("--socket", type=Path, default=Path("/run/shell/appearance.sock"))
     parser.add_argument("--rust-socket", type=Path)
@@ -260,6 +266,7 @@ def main(argv=None) -> int:
         "--wallpaper-cache-tool": args.wallpaper_cache_tool,
         "--user-themes": args.user_themes,
         "--builtins": args.builtins,
+        "--overlays": args.overlays,
         "--state-root": args.state_root,
         "--socket": args.socket,
         "--rust-socket": args.rust_socket,

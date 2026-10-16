@@ -811,3 +811,34 @@ fn commit_ack_survives_bounded_render_delay_past_peer_deadline() {
     assert_eq!(reply["status"], "ok");
     assert_eq!(reply["generation"], id);
 }
+
+#[test]
+fn generation_wallpaper_fit_reads_the_report_and_solid_takes_the_background_role() {
+    use k230_shell_rust::background_decode::FitMode;
+    let root = std::env::temp_dir().join(format!("k230-fit-report-{}", std::process::id()));
+    fs::create_dir_all(&root).unwrap();
+    assert_eq!(appearance::generation_wallpaper_fit(&root), FitMode::Crop); // no report
+    let report = |fit: Option<&str>| {
+        let mut value = json!({"palette": {"background": "#102030"}});
+        if let Some(fit) = fit {
+            value["fit_mode"] = json!(fit);
+        }
+        fs::write(root.join("report.json"), value.to_string()).unwrap();
+    };
+    report(None);
+    assert_eq!(appearance::generation_wallpaper_fit(&root), FitMode::Crop);
+    for (name, want) in [
+        ("crop", FitMode::Crop),
+        ("fit", FitMode::Fit),
+        ("center", FitMode::Center),
+        ("fill", FitMode::Fill),
+        ("solid", FitMode::Solid([0x10, 0x20, 0x30, 255])),
+        ("stretch", FitMode::Crop),
+    ] {
+        report(Some(name));
+        assert_eq!(appearance::generation_wallpaper_fit(&root), want, "{name}");
+    }
+    fs::write(root.join("report.json"), "{not json").unwrap();
+    assert_eq!(appearance::generation_wallpaper_fit(&root), FitMode::Crop);
+    let _ = fs::remove_dir_all(&root);
+}

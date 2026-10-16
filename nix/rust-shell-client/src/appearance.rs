@@ -156,6 +156,33 @@ fn hex_argb(value: &str) -> bool {
     value.len() == 9 && value.starts_with('#') && value[1..].bytes().all(|b| b.is_ascii_hexdigit())
 }
 
+/// How the generation at `root` wants its wallpaper placed: the `fit_mode`
+/// its `report.json` records (`tools/theme_activate.py`; absent in a
+/// generation prepared before fit modes existed, which is `crop`). `solid`
+/// takes its colour from that same report's resolved `background` palette
+/// role -- the decision recorded in the fill/solid change's `design.md`. Any
+/// unreadable or unrecognised report is the old behaviour, `crop`.
+pub fn generation_wallpaper_fit(root: &Path) -> crate::background_decode::FitMode {
+    use crate::background_decode::FitMode;
+    let Ok(report) = bounded_json(&root.join("report.json"), MAX_REPORT) else {
+        return FitMode::Crop;
+    };
+    let solid = report
+        .get("palette")
+        .and_then(|palette| palette.get("background"))
+        .and_then(Value::as_str)
+        .and_then(|value| palette_value("background", value).ok())
+        .and_then(|value| match value {
+            PaletteValue::Color(color) => Some([color.red, color.green, color.blue, color.alpha]),
+            _ => None,
+        });
+    report
+        .get("fit_mode")
+        .and_then(Value::as_str)
+        .and_then(|name| FitMode::parse(name, solid.unwrap_or([0, 0, 0, 255])))
+        .unwrap_or_default()
+}
+
 fn palette_value(key: &str, value: &str) -> Result<PaletteValue, String> {
     if key == "mode" || key == "theme_type" {
         return match value {
