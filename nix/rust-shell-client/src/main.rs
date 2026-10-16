@@ -6269,6 +6269,10 @@ impl PointerHandler for ShellClient {
                         .and_then(|index|filtered.get(index)).and_then(|index|self.apps.get(*index)).map(|a|a.id.clone())
                 } else {None};
                 if let Some(id)=id {self.open_app_menu(qh,id,from_home);}
+                else if from_home && self.home.rearrange_at(event.position,self.home_surface.width,self.home_surface.height) {
+                    self.log("home-widget-secondary-click");
+                    self.home_mark_dirty();
+                }
                 else if from_home && self.home.open_menu_at(event.position,self.home_surface.width,self.home_surface.height) {
                     self.log("home-menu-secondary-click");
                     self.home_mark_dirty();

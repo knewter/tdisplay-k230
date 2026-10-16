@@ -581,9 +581,39 @@ impl HomeScreen {
         candidates
             .filter(|slot| self.layout.get(*slot).is_some())
             .find(|slot| {
-                let corner = home_grid::plate_top_left(width, height, *slot, columns);
+                let corner = self.badge_corner(*slot, width, height, columns);
                 home_grid::hits_circle(point, corner, home_grid::REMOVE_BADGE_HIT_RADIUS)
             })
+    }
+
+    /// Where a filled slot's remove badge sits in rearrange mode: an icon's
+    /// plate corner, or just inside a widget's painted top-left corner.
+    /// `badge_at` and `render.rs` both read it, so the badge is hit where
+    /// it is drawn.
+    pub fn badge_corner(&self, slot: HomeSlot, width: u32, height: u32, columns: usize) -> (f64, f64) {
+        if let (HomeSlot::Grid { slot: anchor, .. }, Some(HomeItem::Widget { widget })) = (slot, self.layout.get(slot)) {
+            let (x, y, _, _) = home_grid::spanned_tile_rect(width, height, anchor, widget.span(), columns);
+            let inset = home_grid::REMOVE_BADGE_RADIUS + 4.0;
+            return (x + inset, y + inset);
+        }
+        home_grid::plate_top_left(width, height, slot, columns)
+    }
+
+    /// Secondary click on a widget: enters rearrange mode without picking
+    /// anything up, so a mouse user can then drag the widget or click its
+    /// remove badge. Refuses under the same conditions as `open_menu_at`.
+    /// Returns whether rearrange mode was entered.
+    pub fn rearrange_at(&mut self, point: (f64, f64), width: u32, height: u32) -> bool {
+        if self.widget_picker.is_some() || self.rearranging || self.open_folder.is_some()
+            || self.drag.is_some() || self.contact.is_some() {
+            return false;
+        }
+        let Some(slot) = self.filled_slot_at(point, width, height) else { return false };
+        if !matches!(self.layout.get(slot), Some(HomeItem::Widget { .. })) {
+            return false;
+        }
+        self.rearranging = true;
+        true
     }
 
     /// Sets the on-screen keyboard's reserved height, in this panel's own
@@ -1449,6 +1479,50 @@ mod tests {
         }
         assert!(screen.rearranging);
         assert!(matches!(screen.drag, Some((DragSource::Existing(HomeSlot::Grid { page: 1, slot: 0 }), _))));
+    }
+
+    fn board_layout_1280x800() -> HomeScreen {
+        let raw = r#"{"schema":2,"pages":[[{"kind":"widget","widget":"clock"},null,null,null,{"kind":"app","id":"k230-video.desktop"},{"kind":"widget","widget":"battery"},null,{"kind":"widget","widget":"weather"},null,null,null,null,null,null,null,null,null,null],[{"kind":"widget","widget":"battery_details"},null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null]],"dock":[null,null,null,null],"columns":9}"#;
+        HomeScreen::new(serde_json::from_str(raw).unwrap(), 1280.0)
+    }
+
+    #[test]
+    fn a_right_click_on_a_widget_enters_rearrange_without_picking_it_up() {
+        let mut screen = board_layout_1280x800();
+        let app = home_grid::tile_rect(1280, 800, 4, 9);
+        let app_center = (app.0 + app.2 / 2.0, app.1 + app.3 / 2.0);
+        assert!(!screen.rearrange_at(app_center, 1280, 800), "an app keeps its own app menu");
+        let empty = home_grid::tile_rect(1280, 800, 13, 9);
+        assert!(!screen.rearrange_at((empty.0 + empty.2 / 2.0, empty.1 + empty.3 / 2.0), 1280, 800),
+            "empty space keeps the Home menu");
+        assert!(!screen.rearranging);
+        assert!(screen.rearrange_at((300.0, 300.0), 1280, 800), "inside the Clock, even in a cell gap");
+        assert!(screen.rearranging);
+        assert!(screen.drag.is_none() && screen.contact.is_none());
+        assert!(!screen.rearrange_at((300.0, 300.0), 1280, 800), "already rearranging");
+    }
+
+    #[test]
+    fn clicking_a_widgets_remove_badge_removes_it() {
+        let mut screen = board_layout_1280x800();
+        assert!(screen.rearrange_at((300.0, 300.0), 1280, 800));
+        let clock = HomeSlot::Grid { page: 0, slot: 0 };
+        let corner = screen.badge_corner(clock, 1280, 800, 9);
+        let (x, y, _, _) = home_grid::spanned_tile_rect(1280, 800, 0, (4, 2), 9);
+        assert!(corner.0 > x && corner.1 > y, "the badge sits inside the widget's corner");
+        screen.down(-1, corner, 0, 1280, 800);
+        assert!(screen.drag.is_none(), "a badge press never drags");
+        assert_eq!(screen.up(-1, corner, 40, 1280, 800), Some(HomeAction::LayoutChanged));
+        assert!(screen.layout.get(clock).is_none());
+        assert!(screen.layout.get(HomeSlot::Grid { page: 0, slot: 4 }).is_some(), "the app beside it stays");
+    }
+
+    #[test]
+    fn after_a_right_click_a_widget_can_be_dragged_to_a_free_area() {
+        let mut screen = board_layout_1280x800();
+        assert!(screen.rearrange_at((300.0, 300.0), 1280, 800));
+        screen.down(-1, (300.0, 300.0), 0, 1280, 800);
+        assert!(matches!(screen.drag, Some((DragSource::Existing(HomeSlot::Grid { page: 0, slot: 0 }), _))));
     }
 
     #[test]

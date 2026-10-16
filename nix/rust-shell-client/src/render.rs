@@ -4595,6 +4595,9 @@ pub fn paint_home(
                 if let HomeItem::Widget { widget } = item {
                     let rect = home_grid::spanned_tile_rect(width, height, slot, widget.span(), columns);
                     paint_widget_card(cr, &style, *widget, rect, home);
+                    if home.rearranging {
+                        paint_remove_badge(cr, theme, home.badge_corner(this_slot, width, height, columns));
+                    }
                     continue;
                 }
                 let content = home_grid::tile_content(width, height, slot, columns);
