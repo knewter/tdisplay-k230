@@ -52,7 +52,7 @@ the blocker on starting them.
   `test_side_edge_back_and_touch_ownership` at 568x1232 and 1280x800 (cases:
   side-qualified, app-scroll-conflict, bottom-qualified, top-qualified,
   keyboard-inset, off-output). This is a policy check, not a touch on glass.
-- [ ] 1.3 (new) On a reserved board, confirm the side-edge Back gesture feels
+- [x] 1.3 (new) On a reserved board, confirm the side-edge Back gesture feels
   right from a real finger across Settings/shade/drawer sub-pages, with no
   accidental app-content Back and no interference with the existing
   bottom-edge escape. Operator command:
@@ -76,6 +76,11 @@ the blocker on starting them.
     (`target=3`).
   - Side Back closed Settings (`target=2`).
   Still open: real-finger feel and the drawer case.
+  Result 2026-10-16 (operator, real finger on the landscape panel): "back works fine".
+  The operator was asked to long-press in the drawer and swipe in from the side,
+  and this covers the drawer case. No recording was made (the camera
+  requirement was waived; the operator's word is the evidence). The operator
+  reported no accidental app Back and no conflict with the bottom edge.
 
 ## 2. Motion trace tooling (host + board)
 

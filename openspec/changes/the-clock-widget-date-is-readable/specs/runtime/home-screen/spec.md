@@ -2,7 +2,12 @@
 
 ### Requirement: The Clock widget's date is readable at every text step
 
-<!-- UNVERIFIED -->
+*Grounding (2026-10-16): `clock_date_is_readable_at_every_text_step` checks
+four card sizes at four steps. Native panel captures at 100%, 160% and 200%
+are in `docs/evidence/home-widgets/clock-date/` and
+`docs/evidence/clock-restyle/`. The operator judged the restyled clock on
+glass: "clock lookgs good" (sic). In the restyle the date is drawn at 32 px or
+more.*
 
 Every Clock widget style SHALL draw its date line at no less than 26 px on
 the panel at the 100% text step. The size SHALL grow in proportion to the

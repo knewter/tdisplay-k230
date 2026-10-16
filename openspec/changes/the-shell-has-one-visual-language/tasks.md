@@ -61,3 +61,6 @@
 - [ ] 5.2 The operator's judgement on glass that the Clock and each restyled
   surface are readable and that the accent marks what is live. Board class;
   this task stays open until the operator has looked.
+  Progress 2026-10-16: the operator looked at the restyled Clock on glass
+  (retro-82, 160%) and said "clock lookgs good". The other surfaces are not
+  restyled yet, so this stays open for them.
