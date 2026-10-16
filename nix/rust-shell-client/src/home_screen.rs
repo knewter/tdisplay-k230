@@ -520,6 +520,26 @@ impl HomeScreen {
     /// resolves to that widget, not to whichever raw cell the finger
     /// happened to land on (`home_state::HomeLayout::anchor_at`).
     fn filled_slot_at(&self, point: (f64, f64), width: u32, height: u32) -> Option<HomeSlot> {
+        // A multi-cell widget is painted across the gaps between its cells,
+        // so it is hit anywhere in that painted rect, not only on the cells'
+        // own tiles (on HDMI a press on the widget's middle often lands in
+        // a gap). Single icons keep their tile-only hit area.
+        if home_grid::dock_slot_at(point, width, height).is_none() {
+            let page = self.pager.page(self.page_count());
+            let columns = self.layout.columns;
+            if let Some(row) = self.layout.pages.get(page) {
+                for (anchor, cell) in row.iter().enumerate() {
+                    let Some(item) = cell else { continue };
+                    if item.span() == (1, 1) {
+                        continue;
+                    }
+                    let (x, y, w, h) = home_grid::spanned_tile_rect(width, height, anchor, item.span(), columns);
+                    if point.0 >= x && point.0 < x + w && point.1 >= y && point.1 < y + h {
+                        return Some(HomeSlot::Grid { page, slot: anchor });
+                    }
+                }
+            }
+        }
         let raw = self.slot_at(point, width, height)?;
         self.layout.anchor_at(raw).map(|(anchor, _)| anchor)
     }
@@ -1409,6 +1429,26 @@ mod tests {
         let point = tile_center_for_test(2); // unfilled slot
         screen.down(1, point, 0, WIDTH, HEIGHT);
         assert_eq!(screen.up(1, point, 20, WIDTH, HEIGHT), None);
+    }
+
+    #[test]
+    fn a_long_press_in_the_gap_inside_a_widget_still_picks_it_up() {
+        // The board's layout at 1280x800: (300, 300) is inside the Battery -
+        // Details widget's painted rect on page 2 but in both a column and a
+        // row gap between its cells.
+        let raw = r#"{"schema":2,"pages":[[{"kind":"widget","widget":"clock"},null,null,null,{"kind":"app","id":"k230-video.desktop"},{"kind":"widget","widget":"battery"},null,{"kind":"widget","widget":"weather"},null,null,null,null,null,null,null,null,null,null],[{"kind":"widget","widget":"battery_details"},null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null]],"dock":[null,null,null,null],"columns":9}"#;
+        let layout: HomeLayout = serde_json::from_str(raw).unwrap();
+        let mut screen = HomeScreen::new(layout, 1280.0);
+        screen.pager.set_page(1);
+        let point = (300.0, 300.0);
+        assert_eq!(home_grid::slot_at(point, 1280, 800, 18, 9), None, "the point is in a cell gap");
+        assert_eq!(screen.filled_slot_at(point, 1280, 800), Some(HomeSlot::Grid { page: 1, slot: 0 }));
+        screen.down(-1, point, 0, 1280, 800);
+        for _ in 0..100 {
+            screen.tick(16);
+        }
+        assert!(screen.rearranging);
+        assert!(matches!(screen.drag, Some((DragSource::Existing(HomeSlot::Grid { page: 1, slot: 0 }), _))));
     }
 
     #[test]
