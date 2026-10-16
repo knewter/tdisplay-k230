@@ -475,21 +475,23 @@
         "provenance": "Board capture"
       }
     },
-    "the-hdmi-shell-works-in-landscape": {
-      "lane": "in-progress",
-      "source": "in-progress",
-      "physical": "pending",
-      "next": "Qualify a landscape HDMI profile, integrate existing responsive geometry, complete density/Wi-Fi/theme/dock follow-ups, then obtain separate physical landscape acceptance.",
+    "2026-10-16-the-hdmi-shell-works-in-landscape": {
+      "lane": "archived",
+      "source": "archived",
+      "physical": "verified",
+      "next": "Closed. Landscape HDMI and the keyboard-case landscape panel both work; Home and Drawer keep native icon size with more columns, Wi-Fi and the theme chooser reflow, and the dock grows to six slots on wide screens. The dock shrink path and the 1232x568 dock are host-only.",
       "dependencies": [
         "2026-10-09-plugging-in-hdmi-moves-the-display",
         "2026-10-09-the-shell-adapts-to-output-resolution"
       ],
       "evidence": [
-        "docs/evidence/hdmi-hotplug/live-switch/scope-decision-2026-10-09.md",
-        "docs/evidence/shell-responsive/scope-decision-2026-10-09.md"
+        "docs/evidence/panel-landscape/README.md",
+        "docs/evidence/hdmi-hotplug/landscape/teardown-crash.md",
+        "docs/evidence/hdmi-hotplug/landscape/wide-reflow/README.md",
+        "docs/evidence/hdmi-hotplug/landscape/wide-dock/README.md"
       ],
-      "rationale": "Planning is published; seven implementation/physical tasks remain open, including three operator-authorized responsive follow-ups. Portrait HDMI acceptance is not landscape proof.",
-      "reviewRevision": "67b6c55a"
+      "rationale": "Every task has committed board, operator or host evidence. The operator accepted the landscape panel (\"real finger check worked fine\"), HDMI from it (\"yeah it's good to go\") and themes on HDMI (\"themes worked in landscape hdmi fine\"). The dock was verified with injected pointer events and native captures.",
+      "reviewRevision": "92fd436c"
     },
     "2026-10-09-the-handheld-gets-a-design-and-ux-review": {
       "lane": "archived",
