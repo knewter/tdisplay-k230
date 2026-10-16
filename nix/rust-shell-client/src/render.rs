@@ -17,7 +17,7 @@ use crate::{
     service_ui::{
         filter_app_indices, DrawerSearch, ServiceView, NOTIFICATION_ROW,
         SETTINGS_OUTPUT_DETAIL_Y, SETTINGS_VOLUME_ROW, SHADE_SLIDER_H, SHADE_SLIDER_TOP,
-        SHADE_VOLUME_H, SHADE_VOLUME_TOP,
+        SHADE_TOGGLE_H, SHADE_TOGGLE_TOP, SHADE_VOLUME_H, SHADE_VOLUME_TOP,
     },
     slider,
     volume::{self, Hud},
@@ -2802,6 +2802,18 @@ fn scene(
                     sink.muted,
                 );
             }
+            // The keyboard quick toggle: Settings' Keyboard row, in the
+            // shade. Same `control_text` and the same muted treatment when
+            // the capability is not an action (`panel_intent` gates the tap
+            // on the same `ControlState`).
+            if let Some(settings) = services.and_then(|view| view.settings.as_ref()) {
+                let keyboard = &settings.keyboard;
+                let y = SHADE_TOGGLE_TOP + 4.0;
+                service_card(cr, theme, "controls", 24.0, y, hw - 48.0, SHADE_TOGGLE_H - 8.0, false);
+                let ink = if keyboard.state == ControlState::Action { style.text } else { style.muted };
+                themed_medium(cr, theme, "body", "Keyboard", 44.0, y + 15.0, hw - 88.0, 17.0, 14.0, 22.0, ink);
+                themed_text(cr, theme, "body", &control_text(keyboard), 44.0, y + 43.0, hw - 88.0, 19.0, 14.0, 24.0, ink);
+            }
             // The preview tile repeated whatever the top history row already
             // shows -- identical text for one notification, or a
             // contentless "No active preview" sitting directly above a full
@@ -2815,7 +2827,7 @@ fn scene(
             let (px, pw, py) = if shade.wide {
                 (shade.list_x, shade.list_w, shade.list_top)
             } else {
-                (0.0, w, 262.0)
+                (0.0, w, shade.list_top)
             };
             let _ = cr.save();
             cr.translate(px, py - 262.0);
@@ -8055,8 +8067,9 @@ mod tests {
         // Rows shifted +76 again along with `NOTIFICATION_TOP` itself
         // (task: "volume slider in the shade under the brightness
         // slider" -- room for the second header slider pushed the whole
-        // list down once more, from 342 to 418) -- 431+76=507.
-        let region = (507 * 568 * 4)..(527 * 568 * 4);
+        // list down once more, from 342 to 418) -- 431+76=507; the keyboard
+        // quick toggle moved it again, from 418 to 480 -- 507+62=569.
+        let region = (569 * 568 * 4)..(589 * 568 * 4);
         assert!(normal[region.clone()] != failed[region]);
     }
 
@@ -8598,7 +8611,9 @@ mod tests {
         // Row shifted +76 along with the preview card itself -- room for
         // the brightness slider now sits above it (task: "brightness
         // should be a slider").
-        let pixel = (296 * 568 + 59) * 4;
+        // The empty-state tile now sits where the list starts
+        // (`NOTIFICATION_TOP`, 480) instead of at 262: 296-262+480 = 514.
+        let pixel = (514 * 568 + 59) * 4;
         assert!(
             frame[pixel + 2] > 160,
             "preview app icon red channel absent"

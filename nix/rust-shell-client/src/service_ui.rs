@@ -217,7 +217,11 @@ pub enum PanelIntent {
 /// brightness slider") pushed everything below it down by another 76px
 /// (`SHADE_SLIDER_H` + a 20px gap, the exact rhythm brightness's own
 /// slider already established) -- from `342.0` to `418.0`.
-pub const NOTIFICATION_TOP: f64 = 418.0;
+/// The quick-toggle row (keyboard show/hide) and the 99 px tap floor
+/// (`SHADE_TAP_MIN`) moved everything below "Dismiss all" down again: the
+/// list now starts under the toggle band (`SHADE_TOGGLE_TOP` +
+/// `SHADE_TOGGLE_H`) with a 19px gap -- from `418.0` to `480.0`.
+pub const NOTIFICATION_TOP: f64 = SHADE_TOGGLE_TOP + SHADE_TOGGLE_H + 19.0;
 pub const NOTIFICATION_ROW: f64 = 116.0;
 
 /// The Shade sheet's height: 65% of the output, as on the portrait panel,
@@ -285,16 +289,33 @@ impl ShadeLayout {
     }
 }
 
+/// The shell's tap floor on this panel: 48dp at ~2.07 px/dp is ~99 logical
+/// px (`docs/design/shell-ux-critique.md` §7). Every Shade *tap* target's
+/// hit band is at least this tall; the sliders are drag bands and keep
+/// `slider::TOUCH_TARGET_PX`.
+pub const SHADE_TAP_MIN: f64 = 99.0;
+/// The Settings entry's band: everything above "Dismiss all" at the
+/// header's right.
+pub const SHADE_SETTINGS_BOTTOM: f64 = 112.0;
+/// "Dismiss all"'s band, directly under the Settings entry and
+/// `SHADE_TAP_MIN` tall (it was `116.0..190.0`, 74 px).
+pub const SHADE_DISMISS_TOP: f64 = SHADE_SETTINGS_BOTTOM;
+pub const SHADE_DISMISS_BOTTOM: f64 = SHADE_DISMISS_TOP + SHADE_TAP_MIN;
 /// The Shade's own slider band -- starts below the "Dismiss all" tap
-/// zone (`116.0..190.0`, `panel_intent`'s own Shade arm) so the two never
+/// zone (`SHADE_DISMISS_TOP..SHADE_DISMISS_BOTTOM`) so the two never
 /// overlap, and is at least `slider::TOUCH_TARGET_PX` tall.
-pub const SHADE_SLIDER_TOP: f64 = 190.0;
+pub const SHADE_SLIDER_TOP: f64 = SHADE_DISMISS_BOTTOM + 3.0;
 pub const SHADE_SLIDER_H: f64 = 56.0;
 /// The volume slider's own band, directly under the brightness slider
 /// with the same 20px gap `NOTIFICATION_TOP`'s own shift already
 /// accounts for.
 pub const SHADE_VOLUME_TOP: f64 = SHADE_SLIDER_TOP + SHADE_SLIDER_H + 20.0;
 pub const SHADE_VOLUME_H: f64 = 56.0;
+/// The keyboard quick toggle's band, under the volume slider: the same
+/// `KeyboardToggle` request and `ControlState` gate as Settings' Keyboard
+/// row, so the two cannot disagree.
+pub const SHADE_TOGGLE_TOP: f64 = SHADE_VOLUME_TOP + SHADE_VOLUME_H + 16.0;
+pub const SHADE_TOGGLE_H: f64 = SHADE_TAP_MIN;
 /// The Settings row index the volume slider paints/hit-tests at --
 /// directly after Brightness (row 1), before Keyboard/Motion, which both
 /// shift down one row (`render.rs`'s own `SETTINGS_ROW_COUNT` bump).
@@ -1063,10 +1084,18 @@ pub fn panel_intent(
             if dx.abs() > 18.0 || dy.abs() > 18.0 {
                 return None;
             }
-            if end.1 < 112.0 && end.0 > layout.controls_w - 180.0 && end.0 < layout.controls_w {
+            if end.1 < SHADE_SETTINGS_BOTTOM && end.0 > layout.controls_w - 180.0 && end.0 < layout.controls_w {
                 return Some(PanelIntent::OpenSettings);
             }
-            if (116.0..190.0).contains(&end.1)
+            if (SHADE_TOGGLE_TOP..SHADE_TOGGLE_TOP + SHADE_TOGGLE_H).contains(&end.1)
+                && end.0 >= 24.0
+                && end.0 < layout.controls_w - 24.0
+            {
+                let keyboard = &view.settings.as_ref()?.keyboard;
+                return (keyboard.state == ControlState::Action)
+                    .then_some(PanelIntent::Request(ServiceRequest::KeyboardToggle));
+            }
+            if (SHADE_DISMISS_TOP..SHADE_DISMISS_BOTTOM).contains(&end.1)
                 && end.0 > layout.controls_w - 180.0
                 && end.0 < layout.controls_w
                 && view
@@ -1214,7 +1243,10 @@ mod tests {
         assert_eq!(shade_panel_height(1232), 1232.0 * 0.65, "portrait is unchanged");
         let h = shade_panel_height(568);
         assert!(h <= 568.0);
-        assert!(h - 24.0 >= NOTIFICATION_TOP + NOTIFICATION_ROW, "one whole row fits: {h}");
+        // The wide Shade's list sits beside the controls from the top.
+        let layout = shade_layout(1232, 568);
+        assert!(layout.list_bottom >= layout.list_top + NOTIFICATION_ROW, "one whole row fits: {h}");
+        assert!(SHADE_TOGGLE_TOP + SHADE_TOGGLE_H <= h, "the controls column holds the quick toggle");
     }
 
     fn app(name: &str) -> AppEntry {
@@ -1633,7 +1665,7 @@ mod tests {
         let empty = ServiceView::default();
         // Header, quick controls and an empty list area all close.
         assert!(shade_panel_close_zone((300.0, 60.0), 568, 1232, &empty));
-        assert!(shade_panel_close_zone((300.0, 452.0), 568, 1232, &empty));
+        assert!(shade_panel_close_zone((300.0, 514.0), 568, 1232, &empty));
         // One notification: the list cannot scroll, so its row closes too.
         let one = ServiceView {
             notifications: Some(NotificationSnapshot {
@@ -1643,7 +1675,7 @@ mod tests {
             }),
             ..ServiceView::default()
         };
-        assert!(shade_panel_close_zone((300.0, 452.0), 568, 1232, &one));
+        assert!(shade_panel_close_zone((300.0, 514.0), 568, 1232, &one));
         // A long list that can still scroll keeps the drag as a scroll...
         let mut long = ServiceView {
             notifications: Some(NotificationSnapshot {
@@ -1653,10 +1685,10 @@ mod tests {
             }),
             ..ServiceView::default()
         };
-        assert!(!shade_panel_close_zone((300.0, 452.0), 568, 1232, &long));
+        assert!(!shade_panel_close_zone((300.0, 514.0), 568, 1232, &long));
         // ...until it is scrolled to its end.
         long.notification_scroll = notification_max_scroll(8, 568, 1232);
-        assert!(shade_panel_close_zone((300.0, 452.0), 568, 1232, &long));
+        assert!(shade_panel_close_zone((300.0, 514.0), 568, 1232, &long));
         // The header above the list always closes.
         long.notification_scroll = 0.0;
         assert!(shade_panel_close_zone((300.0, 60.0), 568, 1232, &long));
@@ -2058,6 +2090,101 @@ mod tests {
         );
     }
 
+    fn shade_view_with_keyboard(state: ControlState, notifications: usize) -> ServiceView {
+        let control = |state| Control { state, value: None, label: "Available".into(), detail: None, action: None };
+        ServiceView {
+            settings: Some(SettingsSnapshot {
+                network: control(ControlState::ReadOnly),
+                brightness: control(ControlState::ReadOnly),
+                keyboard: control(state),
+                motion: control(ControlState::ReadOnly),
+                volume: control(ControlState::ReadOnly),
+            }),
+            notifications: Some(NotificationSnapshot {
+                count: notifications,
+                events: (1..=notifications as u64)
+                    .map(|id| NotificationEvent {
+                        id,
+                        source: "System".into(),
+                        icon: None,
+                        summary: "Message".into(),
+                        body: "Body".into(),
+                        priority: Priority::Ordinary,
+                        timestamp: 0,
+                        error: None,
+                        dismissible: true,
+                        action_available: true,
+                    })
+                    .collect(),
+                preview: None,
+            }),
+            ..ServiceView::default()
+        }
+    }
+
+    #[test]
+    fn the_shade_keyboard_toggle_sends_the_settings_request_only_when_available() {
+        for (w, h) in [(568, 1232), (1232, 568), (1280, 800)] {
+            let controls_w = shade_layout(w, h).controls_w;
+            let tap = (controls_w / 2.0, SHADE_TOGGLE_TOP + SHADE_TOGGLE_H / 2.0);
+            let action = shade_view_with_keyboard(ControlState::Action, 1);
+            assert_eq!(
+                panel_intent(Route::Shade, tap, tap, w, h, &action),
+                Some(PanelIntent::Request(ServiceRequest::KeyboardToggle)),
+                "{w}x{h}"
+            );
+            // Unavailable or read-only: the same gate as the Settings row,
+            // so the tap does nothing rather than send a request.
+            for state in [ControlState::Unavailable, ControlState::ReadOnly] {
+                let view = shade_view_with_keyboard(state, 1);
+                assert_eq!(panel_intent(Route::Shade, tap, tap, w, h, &view), None, "{w}x{h} {state:?}");
+            }
+            // Both edges of the band still hit; just outside does not.
+            for y in [SHADE_TOGGLE_TOP, SHADE_TOGGLE_TOP + SHADE_TOGGLE_H - 0.5] {
+                assert!(panel_intent(Route::Shade, (tap.0, y), (tap.0, y), w, h, &action).is_some());
+            }
+        }
+    }
+
+    #[test]
+    fn every_shade_tap_band_meets_the_floor_without_overlap() {
+        // Settings entry, Dismiss all and the keyboard toggle are the
+        // Shade's tap targets; notification rows are NOTIFICATION_ROW tall.
+        let bands = [
+            ("settings", 0.0, SHADE_SETTINGS_BOTTOM),
+            ("dismiss all", SHADE_DISMISS_TOP, SHADE_DISMISS_BOTTOM),
+            ("keyboard", SHADE_TOGGLE_TOP, SHADE_TOGGLE_TOP + SHADE_TOGGLE_H),
+        ];
+        for (name, top, bottom) in bands {
+            assert!(bottom - top >= SHADE_TAP_MIN, "{name}: {} px", bottom - top);
+        }
+        assert!(NOTIFICATION_ROW >= SHADE_TAP_MIN);
+        // Ordered top to bottom with the drag bands, never overlapping.
+        let all = [
+            (0.0, SHADE_SETTINGS_BOTTOM),
+            (SHADE_DISMISS_TOP, SHADE_DISMISS_BOTTOM),
+            (SHADE_SLIDER_TOP, SHADE_SLIDER_TOP + SHADE_SLIDER_H),
+            (SHADE_VOLUME_TOP, SHADE_VOLUME_TOP + SHADE_VOLUME_H),
+            (SHADE_TOGGLE_TOP, SHADE_TOGGLE_TOP + SHADE_TOGGLE_H),
+            (NOTIFICATION_TOP, NOTIFICATION_TOP + NOTIFICATION_ROW),
+        ];
+        for pair in all.windows(2) {
+            assert!(pair[0].1 <= pair[1].0, "{:?} overlaps {:?}", pair[0], pair[1]);
+        }
+        // "Dismiss all" now fires across its whole 99 px band, including
+        // the 22 px above and 21 px below the old 116..190 zone.
+        let view = shade_view_with_keyboard(ControlState::Action, 2);
+        for y in [SHADE_DISMISS_TOP + 1.0, 150.0, 200.0, SHADE_DISMISS_BOTTOM - 1.0] {
+            assert_eq!(
+                panel_intent(Route::Shade, (500.0, y), (500.0, y), 568, 1232, &view),
+                Some(PanelIntent::Request(ServiceRequest::NotificationDismissAll)),
+                "y {y}"
+            );
+        }
+        // The Settings entry keeps its band right above it.
+        assert_eq!(panel_intent(Route::Shade, (500.0, 100.0), (500.0, 100.0), 568, 1232, &view), Some(PanelIntent::OpenSettings));
+    }
+
     #[test]
     fn shade_and_settings_hits_are_bounded_and_cancel_scroll_taps() {
         let view = ServiceView {
@@ -2082,8 +2209,8 @@ mod tests {
         assert_eq!(
             panel_intent(
                 Route::Shade,
-                (300.0, 452.0),
-                (400.0, 457.0),
+                (300.0, 514.0),
+                (400.0, 519.0),
                 568,
                 1232,
                 &view
@@ -2091,15 +2218,15 @@ mod tests {
             None // release alone cannot dismiss without a tracked drag
         );
         assert_eq!(
-            notification_swipe_start((300.0, 452.0), (400.0, 457.0), 568, 1232, &view)
+            notification_swipe_start((300.0, 514.0), (400.0, 519.0), 568, 1232, &view)
                 .map(|swipe| swipe.event_id),
             Some(7),
         );
         assert_eq!(
             panel_intent(
                 Route::Shade,
-                (300.0, 452.0),
-                (300.0, 542.0),
+                (300.0, 514.0),
+                (300.0, 604.0),
                 568,
                 1232,
                 &view
@@ -2109,8 +2236,8 @@ mod tests {
         assert_eq!(
             panel_intent(
                 Route::Shade,
-                (300.0, 452.0),
-                (300.0, 452.0),
+                (300.0, 514.0),
+                (300.0, 514.0),
                 568,
                 1232,
                 &view
@@ -2219,9 +2346,9 @@ mod tests {
             }),
             ..ServiceView::default()
         };
-        let start = (300.0, 452.0);
+        let start = (300.0, 514.0);
         assert_eq!(
-            notification_swipe_start(start, (320.0, 457.0), 568, 1232, &view)
+            notification_swipe_start(start, (320.0, 519.0), 568, 1232, &view)
                 .map(|swipe| swipe.event_id),
             Some(7),
         );
@@ -2255,7 +2382,7 @@ mod tests {
         );
         view.notifications.as_mut().unwrap().events[0].dismissible = false;
         assert_eq!(
-            notification_swipe_start(start, (400.0, 452.0), 568, 1232, &view),
+            notification_swipe_start(start, (400.0, 514.0), 568, 1232, &view),
             None
         );
         assert!(!notification_swipe_valid(&view, &swipe));
@@ -2263,7 +2390,7 @@ mod tests {
         view.notifications.as_mut().unwrap().events[0].dismissible = true;
         view.notifications.as_mut().unwrap().events[0].priority = Priority::Critical;
         assert_eq!(
-            notification_swipe_start(start, (400.0, 452.0), 568, 1232, &view),
+            notification_swipe_start(start, (400.0, 514.0), 568, 1232, &view),
             None
         );
         assert_eq!(notification_swipe_release(&view, &swipe, 0.0), None);

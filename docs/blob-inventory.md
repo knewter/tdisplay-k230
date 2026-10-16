@@ -1620,6 +1620,12 @@ DATA 1e872a35ff03d6ad526fe06fe990f583c9ab240519e53b1b02e8d8e7ca238797 docs/evide
 DATA b828078184dd6dca6e529a1b06025c3305fea75b483ddfc30044e5c9d3d8ac18 docs/evidence/the-shell-is-navigable-with-a-mouse/after-calculator-click.jpg
 DATA 64da29b4e8a6d62346bab76b1c9424bf10abf0a5809f1a49f9524cccbaa2df4f docs/evidence/card-shell/overview-home-bleed-through/board-2026-09-30/overview-native.jpg
 DATA a76ca87ac3d0823659559f297258be51f2719e8d95efbcb10186a3f68f17040a docs/evidence/card-shell/overview-home-bleed-through/board-2026-09-30/overview-panel.jpg
+DATA 1863897b7fa0f2e226bed522e8062a9447b42d449f7b939436f3772a039ce58b docs/evidence/coherent-shell/shade-quick-toggles/host/shade-0-keyboard-available-568x1232.png
+DATA d7b177631a6cd72159e9f2496f5ba15cb1dc96a4dbd00cd87c185fce22c811c0 docs/evidence/coherent-shell/shade-quick-toggles/host/shade-0-keyboard-unavailable-1232x568.png
+DATA 374037008f01412c0abee2fdd984bf87e33f82a08dba3d264ec3f395668411d4 docs/evidence/coherent-shell/shade-quick-toggles/host/shade-4-keyboard-available-1232x568.png
+DATA 9abde9a3f02ce0597a0430c6ec5612bba527223d77891c4ee8d70b77e44782e2 docs/evidence/coherent-shell/shade-quick-toggles/host/shade-4-keyboard-available-1280x800.png
+DATA 32634de1fa668c61f9ccb9bcada77646899f262c113a77a6a884add999c8b0c2 docs/evidence/coherent-shell/shade-quick-toggles/host/shade-4-keyboard-available-568x1232.png
+DATA 2b7f1d9461d73fe5bef505bba781a69a26b01d933188282340df0fceae44b06a docs/evidence/coherent-shell/shade-quick-toggles/host/shade-4-keyboard-unavailable-568x1232.png
 DATA a5002406911c3ae20a410d989c6e1ad0a31e46f32062eaec14414873e46d37d2 docs/evidence/hdmi-hotplug/panel-recovery-2026-09-30/native-panel.jpg
 DATA f2ac6301f82eba7310bbe777bd01d05562a8a3eed7a567e5ebae8bdc53f53121 docs/evidence/the-shell-is-navigable-with-a-mouse/edge-controls-board/files-before.jpg
 DATA c9c05b81fb3d12e81f2b5f61135846d7779f4246d1fbda106e2ed5653cc165f5 docs/evidence/the-shell-is-navigable-with-a-mouse/edge-controls-board/files-header-menu.jpg
@@ -2351,6 +2357,12 @@ shared pre-touch frame both are compared against).
 
 | File | Bytes | Kind | SHA256 |
 | --- | ---: | --- | --- |
+| `docs/evidence/coherent-shell/shade-quick-toggles/host/shade-0-keyboard-available-568x1232.png` | 32642 | DATA | `1863897b7fa0f2e226bed522e8062a9447b42d449f7b939436f3772a039ce58b` |
+| `docs/evidence/coherent-shell/shade-quick-toggles/host/shade-0-keyboard-unavailable-1232x568.png` | 26850 | DATA | `d7b177631a6cd72159e9f2496f5ba15cb1dc96a4dbd00cd87c185fce22c811c0` |
+| `docs/evidence/coherent-shell/shade-quick-toggles/host/shade-4-keyboard-available-1232x568.png` | 60640 | DATA | `374037008f01412c0abee2fdd984bf87e33f82a08dba3d264ec3f395668411d4` |
+| `docs/evidence/coherent-shell/shade-quick-toggles/host/shade-4-keyboard-available-1280x800.png` | 69199 | DATA | `9abde9a3f02ce0597a0430c6ec5612bba527223d77891c4ee8d70b77e44782e2` |
+| `docs/evidence/coherent-shell/shade-quick-toggles/host/shade-4-keyboard-available-568x1232.png` | 55661 | DATA | `32634de1fa668c61f9ccb9bcada77646899f262c113a77a6a884add999c8b0c2` |
+| `docs/evidence/coherent-shell/shade-quick-toggles/host/shade-4-keyboard-unavailable-568x1232.png` | 53575 | DATA | `2b7f1d9461d73fe5bef505bba781a69a26b01d933188282340df0fceae44b06a` |
 | `docs/evidence/coherent-shell/two-axis-qemu/regression-after-fix-up.png` | 5478 | DATA | `4eb5fe1db653b5681ffa848471dedfe8b53e543ec317ab1a6eb27d57f6eb187b` |
 | `docs/evidence/coherent-shell/two-axis-qemu/regression-before-fix-up.png` | 5492 | DATA | `42310d94fd4f97d91f585c923824b9271e7a64bdab086d0e90361e9c987b5bce` |
 | `docs/evidence/coherent-shell/two-axis-qemu/regression-origin.png` | 4877 | DATA | `8d4260d119614cceb872d1f6636340cdaf770fa0a640eceb57aa226684e70cd3` |
