@@ -12,7 +12,7 @@ while retaining this proposal's separate physical landscape gate.
 
 
 Coordinator cross-reference (2026-10-01):
-[`the-shell-adapts-to-output-resolution`](../archive/2026-10-09-the-shell-adapts-to-output-resolution/tasks.md)
+[`the-shell-adapts-to-output-resolution`](../2026-10-09-the-shell-adapts-to-output-resolution/tasks.md)
 owns output configures, Drawer/Home column reflow, Settings transforms and matching
 hit-testing. Its host implementation and paired fixtures are recorded there;
 its completed tasks 6.1/6.2 record accepted portrait-HDMI fill and targets. This proposal’s

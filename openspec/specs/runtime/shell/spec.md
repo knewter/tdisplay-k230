@@ -1326,7 +1326,7 @@ the icon budget that keeps a full page plus its dock resident; the extra slots
 stay empty until apps are pinned, and returning to a narrower output SHALL NOT
 hide a pinned item.
 
-<!-- Grounding (2026-10-16): Home and Drawer columns reflow at native size
+*Grounding (2026-10-16): Home and Drawer columns reflow at native size
 (`home_grid::columns_for_width`, `ICON_SIZE` 80), verified by host tests and
 board `grim` captures at 1280x800. The Wi-Fi and chooser reflow is in
 `docs/evidence/hdmi-hotplug/landscape/wide-reflow/`; operator on the HDMI
@@ -1334,7 +1334,7 @@ monitor: "themes worked in landscape hdmi fine" (operator report). The dock
 rule (`home_grid::dock_slots`, `HomeLayout::fit_dock`) has host tests and
 renders, plus board evidence, in
 `docs/evidence/hdmi-hotplug/landscape/wide-dock/`. Landscape HDMI tasks
-5.1–5.4 are complete with board evidence. -->
+5.1–5.4 are complete with board evidence.*
 
 #### Scenario: A person uses Home and Settings on a landscape monitor
 
@@ -1362,14 +1362,14 @@ same rotated geometry. Touch input SHALL map to the rotated output, and the
 edge gestures SHALL follow the rotated edges. The HDMI output behavior SHALL
 be unchanged by the panel orientation.
 
-<!-- Grounding (2026-10-14): tasks 8.1–8.7 on the second board's installed
+*Grounding (2026-10-14): tasks 8.1–8.7 on the second board's installed
 landscape image. The evidence is native `grim` captures of every listed surface,
 injected edge gestures, and the operator's real-finger check ("real finger
 check worked fine"). HDMI plug and unplug from the landscape profile was checked
 by the operator ("yeah it's good to go") with native captures. The camera
 photograph was waived by the operator. See
 `docs/evidence/panel-landscape/` and
-`docs/evidence/hdmi-hotplug/landscape/teardown-crash.md`. -->
+`docs/evidence/hdmi-hotplug/landscape/teardown-crash.md`.*
 
 #### Scenario: A person uses the shell in the keyboard case
 

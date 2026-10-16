@@ -121,7 +121,7 @@ plus a separately recorded operator physical observation, not a camera recording
 ### Scope transfer — 2026-10-09
 
 The operator authorized moving original tasks 6.3–6.5 to
-[`the-hdmi-shell-works-in-landscape`](../../the-hdmi-shell-works-in-landscape/tasks.md),
+[`the-hdmi-shell-works-in-landscape`](../2026-10-16-the-hdmi-shell-works-in-landscape/tasks.md),
 where they remain unchecked as 7.1–7.3. This preserves icon/text density,
 Wi-Fi/theme reflow and the dock slot-count decision without claiming any was
 performed. Tasks 6.1/6.2 are completed by the separate physical closeout above; the
