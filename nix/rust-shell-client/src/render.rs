@@ -438,7 +438,7 @@ fn themed_text_fit(cr: &Context, theme: Option<&AppearanceSnapshot>, role: &str,
         layout.set_text(value);
         let advance = f64::from(layout.pixel_size().0);
         let room = width - 8.0;
-        if advance > room { (resolved * room / advance).max(resolved / scale) } else { resolved }
+        if advance > room * 0.96 { (resolved * room * 0.96 / advance).max(resolved / scale) } else { resolved }
     } else {
         resolved
     };
@@ -2787,7 +2787,7 @@ fn paint_shade_header_reflowed(
     let line = |size: f64| context_font_size(cr, size) * 1.25;
     let fit = |value: &str, size: f64, room: f64, weight| {
         let advance = text_advance(cr, value, size, weight);
-        if advance > room { size * room / advance } else { size }
+        if advance > room * 0.96 { size * room * 0.96 / advance } else { size }
     };
     let link_room = shade_link_w(hw) - 24.0;
     let settings_size = fit("Settings", 20.0, link_room, pango::Weight::Normal);
@@ -2838,7 +2838,7 @@ fn paint_settings_header_reflowed(cr: &Context, theme: Option<&AppearanceSnapsho
     let head = settings_header(w);
     let fit = |value: &str, size: f64, room: f64, weight| {
         let advance = text_advance(cr, value, size, weight);
-        if advance > room { size * room / advance } else { size }
+        if advance > room * 0.96 { size * room * 0.96 / advance } else { size }
     };
     let title_room = head.done_x - 28.0 - 8.0;
     let title_size = fit("Settings", 32.0, title_room, pango::Weight::Bold);
@@ -2869,7 +2869,7 @@ fn paint_chooser_header(cr: &Context, style: VisualStyle, w: f64, h: f64) -> f64
     let (_, back_right, close_left) = crate::theme_ui::chooser_header_bands(w as u32, h as u32);
     let fit = |value: &str, size: f64, room: f64| {
         let advance = text_advance(cr, value, size, pango::Weight::Normal);
-        if advance > room { size * room / advance } else { size }
+        if advance > room * 0.96 { size * room * 0.96 / advance } else { size }
     };
     let back_size = fit("‹ Settings", 22.0, back_right - 28.0 - 8.0);
     text(cr, "‹ Settings", 28.0, lay.header_y, back_right - 28.0, back_size, style.accent);
@@ -3582,7 +3582,7 @@ fn scene(
                     );
                     if name == "Keyboard" && services.is_some_and(|view| view.keyboard_gesture_hint)
                     {
-                        themed_text(
+                        themed_text_fit(
                             cr, theme, "caption",
                             "Two fingers up at bottom to show;",
                             row_text_x,
@@ -3593,7 +3593,7 @@ fn scene(
                             18.0,
                             style.muted,
                         );
-                        themed_text(
+                        themed_text_fit(
                             cr, theme, "caption",
                             "drag the handle down to hide.",
                             row_text_x,
@@ -3605,7 +3605,7 @@ fn scene(
                             style.muted,
                         );
                     } else if let Some(detail) = &control.detail {
-                        themed_text(cr, theme, "caption", detail, row_text_x, y + caption_dy, row_text_width, 14.0, 11.0, 18.0, style.muted);
+                        themed_text_fit(cr, theme, "caption", detail, row_text_x, y + caption_dy, row_text_width, 14.0, 11.0, 18.0, style.muted);
                     }
                     let _ = cr.restore();
                 }
