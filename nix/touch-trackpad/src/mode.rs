@@ -56,6 +56,35 @@ pub fn detect_mode(drm_root: &Path) -> Mode {
     Mode::DirectTouch
 }
 
+/// True if `drm_root` has an HDMI connector whose cable reports `connected`,
+/// whether or not scanout is enabled. Blanking the monitor with the power
+/// key disables scanout (so the mode falls back to `DirectTouch`) but leaves
+/// this true; only a real unplug makes it false.
+pub fn hdmi_connected(drm_root: &Path) -> bool {
+    let Ok(entries) = fs::read_dir(drm_root) else {
+        return false;
+    };
+    entries.flatten().any(|entry| {
+        entry.file_name().to_string_lossy().contains(HDMI_MARKER)
+            && connector_status(&entry.path()).as_deref() == Some("connected")
+    })
+}
+
+/// Reports the moment an HDMI cable is unplugged: a `connected` reading
+/// followed by a not-`connected` one. The first reading never counts, so a
+/// relay restart does not mistake an absent monitor for an unplug.
+#[derive(Default)]
+pub struct UnplugWatch {
+    last: Option<bool>,
+}
+impl UnplugWatch {
+    pub fn unplugged(&mut self, connected: bool) -> bool {
+        let edge = self.last == Some(true) && !connected;
+        self.last = Some(connected);
+        edge
+    }
+}
+
 /// True if `drm_root` has a panel connector (`DSI`/`eDP`) reporting
 /// `connected`. Not used to choose the mode (an HDMI `connected` status
 /// selects trackpad only after HDMI scanout is enabled) -- exposed for diagnostics
@@ -164,6 +193,23 @@ mod tests {
         fs::write(hdmi.join("status"), "connected\n").unwrap();
         fs::remove_file(hdmi.join("enabled")).unwrap();
         assert_eq!(detect_mode(dir.path()), Mode::DirectTouch);
+    }
+
+    #[test]
+    fn only_a_real_unplug_counts_not_a_blanked_monitor() {
+        let dir = fixture(&[("card0-DSI-1", "connected"), ("card0-HDMI-A-1", "connected")]);
+        let hdmi = dir.path().join("card0-HDMI-A-1");
+        let mut watch = UnplugWatch::default();
+        assert!(!watch.unplugged(hdmi_connected(dir.path())));
+        // The power key blanks the monitor: scanout off, cable still in.
+        fs::write(hdmi.join("enabled"), "disabled\n").unwrap();
+        assert_eq!(detect_mode(dir.path()), Mode::DirectTouch);
+        assert!(!watch.unplugged(hdmi_connected(dir.path())));
+        fs::write(hdmi.join("status"), "disconnected\n").unwrap();
+        assert!(watch.unplugged(hdmi_connected(dir.path())));
+        assert!(!watch.unplugged(hdmi_connected(dir.path())), "once per unplug");
+        let mut fresh = UnplugWatch::default();
+        assert!(!fresh.unplugged(false), "a restart with no monitor is not an unplug");
     }
 
     #[test]

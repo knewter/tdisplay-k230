@@ -341,6 +341,7 @@ fn run(args: Args) {
     let mut session: Option<TrackpadSession> = None;
     let mut last_mode: Option<Mode> = None;
     let mut direct_mapping = shell_ipc::DirectTouchMapping::default();
+    let mut unplug_watch = mode::UnplugWatch::default();
     // A start failure (e.g. axis_plan rejecting a degenerate range) will
     // keep failing identically every poll until the underlying hardware
     // state changes, so back off the retry log/attempt rate rather than
@@ -352,14 +353,19 @@ fn run(args: Args) {
             .force_mode
             .unwrap_or_else(|| mode::detect_mode(&args.drm_root));
 
+        // Light the panel when the cable is pulled, even if the power key
+        // had blanked the display. Leaving trackpad mode alone is not an
+        // unplug: blanking the monitor disables HDMI scanout too.
+        if args.force_mode.is_none() && unplug_watch.unplugged(mode::hdmi_connected(&args.drm_root)) {
+            direct_mapping.wake_display();
+            direct_mapping.clear();
+        }
+
         if last_mode != Some(mode) {
             eprintln!(
                 "k230-touch-trackpad: mode -> {mode:?} (panel connected: {})",
                 mode::panel_connected(&args.drm_root)
             );
-            if last_mode == Some(Mode::Trackpad) && mode == Mode::DirectTouch {
-                direct_mapping.wake_display();
-            }
             last_mode = Some(mode);
             start_failures = 0;
             direct_mapping.clear();
