@@ -18,11 +18,31 @@ the blocker on starting them.
   side-edge dismiss order (sheet, then Settings/shade/drawer, then keyboard),
   no synthesized Back keypress reaching app content, and no interference with
   the existing bottom-edge escape.
-- [ ] 1.2 (parent 4.4) Define touch ownership for bottom Home/drawer, top
+  Progress 2026-10-16 (host only, branch `side-edge-back`): `adapter.c` now
+  claims a side band as a weak `EDGE_BACK` origin and fires a release-decided
+  inward swipe through `side_back_fire()` (overlay: `card_shell_launch_surface
+  ("hide")`; keyboard: `keyboard_signal("hide")`; no seat key event).
+  `python3 tests/test_card_shell_route.py` (4/4) pins the dismiss order, the
+  recognizer and the no-key-synthesis check, and `nix build .#card-shell`
+  compiles the adapter. **Still open:** the long-press sheet lives on the Rust
+  Home surface, which reports nothing to the compositor, so `sheet_open()` is a
+  stub returning false and the sheet step of the order is not reachable on a
+  device. It needs a Home-surface signal plus a Rust route; keep this task
+  open until that exists. <!-- UNVERIFIED: sheet dismissal by side Back -->
+- [x] 1.2 (parent 4.4) Define touch ownership for bottom Home/drawer, top
   shade, side Back, keyboard, deck and app content; test app scroll/text
   selection and keyboard conflict before enabling edges. Verify with the same
   fixture as 1.1 plus cases for app-scroll-conflict, bottom-qualified,
   top-qualified, side-qualified, and keyboard-inset.
+  Done 2026-10-16, host fixture only: `card_shell_touch_owner()` in
+  `nix/card-shell/route.c` is the one touch-down decision (keyboard hit, then
+  bottom Home, top shade, qualified side Back, deck, app) and `input_down`
+  asks it before beginning a side-Back origin; the existing bottom and top
+  branches keep their code paths and the fixture pins that the arbiter agrees
+  with them. `python3 tests/test_card_shell_route.py` passed 4/4 including
+  `test_side_edge_back_and_touch_ownership` at 568x1232 and 1280x800 (cases:
+  side-qualified, app-scroll-conflict, bottom-qualified, top-qualified,
+  keyboard-inset, off-output). This is a policy check, not a touch on glass.
 - [ ] 1.3 (new) On a reserved board, confirm the side-edge Back gesture feels
   right from a real finger across Settings/shade/drawer sub-pages, with no
   accidental app-content Back and no interference with the existing
@@ -34,13 +54,23 @@ the blocker on starting them.
 
 ## 2. Motion trace tooling (host + board)
 
-- [ ] 2.1 (parent 4.5) Build `tools/shell-motion-trace.py` (touch->scene
+- [x] 2.1 (parent 4.5) Build `tools/shell-motion-trace.py` (touch->scene
   damage->commit->frame-done->output-presented trace IDs, reduced-motion
   parity, process CPU/memory sampling, declared board p95/p99 budgets) and
   `tests/test_shell_motion.py`. Verify with
   `python3 tools/shell-motion-trace.py --self-test` and
   `python3 tests/test_shell_motion.py --case trace-order --case reduced-motion`
   (host trace schema, not panel presentation).
+  Done 2026-10-16, host only: both commands passed
+  (`tools/shell-motion-trace.py --self-test` printed `self-test PASS`;
+  `tests/test_shell_motion.py --case trace-order --case reduced-motion` printed
+  `PASS` for each). Budgets are declared in the tool: input-to-present p95 at
+  two and p99 at three nominal 52.19 Hz output intervals, the same bounds for
+  frame interval, zero blank frames, and 64 MiB RSS growth; CPU is sampled and
+  reported with no budget. The card-shell console already emits only input,
+  submit (commit) and present rows, so `--log` reports `scene_damage` and
+  `frame_done` as unobserved; emitting them with trace IDs is compositor work
+  that task 2.2 depends on. <!-- UNVERIFIED: no budget has been measured on the board -->
 - [ ] 2.2 (new) Under a board reservation, run
   `python3 tools/shell-motion-trace.py --board --output
   docs/evidence/coherent-shell/motion.json`, correlating input->scene

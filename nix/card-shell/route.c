@@ -63,6 +63,91 @@ void card_shell_drawer_cancel(struct card_shell_drawer_gesture *gesture) {
 	gesture->armed = false;
 }
 
+int card_shell_side_direction(double x, double width, double band) {
+	if (!isfinite(x) || !isfinite(width) || !isfinite(band) || band <= 0 ||
+		x < 0 || x >= width)
+		return 0;
+	return x < band ? 1 : x >= width - band ? -1 : 0;
+}
+
+bool card_shell_side_inward(int direction, double x0, double y0, double x, double y) {
+	if (!direction || !isfinite(x0) || !isfinite(y0) || !isfinite(x) || !isfinite(y))
+		return false;
+	double inward = direction * (x - x0);
+	return inward > 0 && inward > fabs(y - y0);
+}
+
+void card_shell_side_down(struct card_shell_side_gesture *gesture,
+		int32_t id, double x, double y, int direction) {
+	if (gesture->contacts) {
+		if (gesture->contacts < UINT_MAX)
+			gesture->contacts++;
+		card_shell_side_cancel(gesture);
+		return;
+	}
+	*gesture = (struct card_shell_side_gesture){
+		.contacts = 1, .owner = id, .direction = direction, .x = x, .y = y,
+	};
+}
+
+void card_shell_side_motion(struct card_shell_side_gesture *gesture,
+		int32_t id, double x, double y, double distance) {
+	if (gesture->contacts && !gesture->cancelled && id == gesture->owner)
+		gesture->armed = card_shell_side_inward(gesture->direction, gesture->x, gesture->y, x, y) &&
+			gesture->direction * (x - gesture->x) >= distance;
+}
+
+bool card_shell_side_up(struct card_shell_side_gesture *gesture, int32_t id) {
+	if (!gesture->contacts)
+		return false;
+	bool back = gesture->contacts == 1 && id == gesture->owner &&
+		gesture->armed && !gesture->cancelled;
+	gesture->contacts--;
+	if (!gesture->contacts)
+		memset(gesture, 0, sizeof(*gesture));
+	return back;
+}
+
+void card_shell_side_cancel(struct card_shell_side_gesture *gesture) {
+	gesture->cancelled = true;
+	gesture->armed = false;
+}
+
+enum card_shell_back_target card_shell_back_target(bool sheet, bool overlay, bool keyboard) {
+	return sheet ? CARD_BACK_SHEET : overlay ? CARD_BACK_OVERLAY :
+		keyboard ? CARD_BACK_KEYBOARD : CARD_BACK_NONE;
+}
+
+enum card_shell_owner card_shell_touch_owner(const struct card_shell_ownership *t) {
+	if (!isfinite(t->x) || !isfinite(t->y) || t->x < 0 || t->y < 0 ||
+		t->x >= t->width || t->y >= t->height)
+		return CARD_OWNER_APP;
+	if (t->keyboard_hit)
+		return CARD_OWNER_KEYBOARD;
+	if (t->bottom_reserved <= 0 && t->y >= t->height - t->edge_band)
+		return CARD_OWNER_HOME;
+	/* A mapped overlay keeps its own top-edge Close/Back controls. */
+	if (t->y < t->edge_band)
+		return t->overlay ? CARD_OWNER_APP : CARD_OWNER_SHADE;
+	/* The corners above belong to Home and the shade, so a side band only
+	 * claims the span between them, and only when Back has a target. */
+	if (card_shell_side_direction(t->x, t->width, t->edge_band) &&
+		card_shell_back_target(t->sheet, t->overlay, t->keyboard_shown) != CARD_BACK_NONE)
+		return CARD_OWNER_BACK;
+	return t->deck ? CARD_OWNER_DECK : CARD_OWNER_APP;
+}
+
+const char *card_shell_owner_name(enum card_shell_owner owner) {
+	switch (owner) {
+	case CARD_OWNER_KEYBOARD: return "keyboard";
+	case CARD_OWNER_HOME: return "home";
+	case CARD_OWNER_SHADE: return "shade";
+	case CARD_OWNER_BACK: return "back";
+	case CARD_OWNER_DECK: return "deck";
+	default: return "app";
+	}
+}
+
 static uint64_t route_ms(void) {
 	struct timespec now;
 	clock_gettime(CLOCK_MONOTONIC, &now);

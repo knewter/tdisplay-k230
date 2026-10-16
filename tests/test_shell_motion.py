@@ -29,7 +29,9 @@ from rust_service_surface_qemu import SETTINGS_FIXTURE
 
 SCENE_CASES = ("shrink-live", "drawer-rise", "shade-descend", "expand-live", "focus")
 INTERRUPTION_CASES = ("reverse", "retarget", "unmap", "refusal", "private-no-flash")
-CASES = ("live-gate", "private-no-icon", "close-refused") + SCENE_CASES + INTERRUPTION_CASES
+# Host-only cases check tools/shell-motion-trace.py's schema; no compositor runs.
+HOST_CASES = ("trace-order", "reduced-motion")
+CASES = ("live-gate", "private-no-icon", "close-refused") + SCENE_CASES + INTERRUPTION_CASES + HOST_CASES
 CLASS = "headless-qemu-user-native-wayland-injected-touch"
 
 
@@ -927,12 +929,113 @@ def private_no_flash(scene):
             "private_content_and_icon_absent": True, "application_retained": True}
 
 
+def trace_tool():
+    import importlib.util
+    spec = importlib.util.spec_from_file_location("shell_motion_trace", ROOT / "tools/shell-motion-trace.py")
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+    return module
+
+
+def must_reject(tool, rows, text):
+    try:
+        tool.analyze(rows)
+    except tool.InvalidTrace as error:
+        assert text in str(error), f"expected {text!r}, got {error}"
+        return
+    raise AssertionError(f"accepted a trace that should fail with {text!r}")
+
+
+def stage_row(rows, trace_id, stage):
+    return next(r for r in rows if r["event"] == "stage" and r["trace_id"] == trace_id and r["stage"] == stage)
+
+
+def trace_order():
+    """One touch keeps its ID through every stage, in order; gaps never pass."""
+    tool = trace_tool()
+    rows = tool.synthetic("order")
+    run = tool.analyze(rows)["order"]
+    assert run["status"] == "PASS" and run["stages_unobserved"] == [], run
+    assert run["stages_observed"] == list(tool.STAGES)
+    one = sorted((r for r in rows if r["event"] == "stage" and r["trace_id"] == "order-0"), key=lambda r: r["t_ns"])
+    assert [r["stage"] for r in one] == list(tool.STAGES)
+    # Timestamps may not run backwards between stages of one trace.
+    swapped = [dict(r) for r in rows]
+    stage_row(swapped, "order-3", "commit")["t_ns"] = 0
+    must_reject(tool, swapped, "regress")
+    # A repeated stage, a presented trace that skipped a stage, and an ID that
+    # changes gesture are each refused rather than averaged away.
+    must_reject(tool, rows + [dict(stage_row(rows, "order-1", "commit"))], "duplicate stage")
+    skipped = [r for r in rows if r is not stage_row(rows, "order-5", "frame_done")]
+    must_reject(tool, skipped, "skips a required stage")
+    other = [dict(r) for r in rows]
+    stage_row(other, "order-7", "present")["gesture_id"] = 2
+    must_reject(tool, other, "changes gesture")
+    # An unpresented trace leaves the run INCOMPLETE; it is never a pass.
+    lost = [r for r in rows if r not in (stage_row(rows, "order-9", "frame_done"), stage_row(rows, "order-9", "present"))]
+    assert tool.analyze(lost)["order"]["status"] == "INCOMPLETE"
+    # A missed budget is named with its measured value, not rounded into a pass.
+    slow = tool.analyze(tool.synthetic("slow", latency_ms=60.0))
+    sentences = tool.failures(slow)
+    assert any("input_to_present_ms p95 measured 60.000" in line for line in sentences), sentences
+    assert slow["slow"]["status"] == "FAIL"
+    blank = tool.analyze(tool.synthetic("blank", blank_every=10))["blank"]
+    assert blank["metrics"]["blank_frames"]["status"] == "FAIL", blank["metrics"]["blank_frames"]
+    # The console-log adapter keeps what card-shell emits and reports the rest unobserved.
+    log = "\n".join([
+        "K230_CARD_BENCH v=1 run=7 event=session t_ns=1 clock=monotonic backend=drm renderer=pixman"
+        " width=568 height=1232 output_format=XRGB8888 input=injected cards=2",
+        "K230_CARD_BENCH v=1 run=7 event=input input_id=1 gesture_id=1 kind=motion t_ns=100 source=injected",
+        "K230_CARD_BENCH v=1 run=7 event=submit input_id=1 frame_id=9 t_ns=5000100 update_cpu_ns=1 final=0",
+        "K230_CARD_BENCH v=1 run=7 event=present frame_id=9 t_ns=15000100 presented=1 clock=monotonic",
+    ]).encode()
+    logged = tool.analyze(tool.rows_from_log(log), tool.LOG_STAGES)["7"]
+    assert logged["stages_observed"] == ["input", "commit", "present"], logged
+    assert logged["stages_unobserved"] == ["scene_damage", "frame_done"]
+    return {"stages": list(tool.STAGES), "budgets": tool.BUDGETS,
+            "claim": "host trace schema only; no panel presentation"}
+
+
+def reduced_motion():
+    """Reduced motion keeps every trace stage and shortens only the settle."""
+    tool = trace_tool()
+    full, reduced = tool.synthetic("full"), tool.synthetic("reduced", "reduced")
+    parity = tool.reduced_motion_parity(full, reduced)
+    assert parity["reduced_settle_p50_ms"] < parity["full_settle_p50_ms"], parity
+    assert parity["stages"] == [list(tool.STAGES)], parity
+    for rows, text in ((tool.synthetic("fewer", "reduced", stages=tool.LOG_STAGES), "changed the trace stages"),
+                       (tool.synthetic("same", "full"), "full run and a reduced run"),
+                       # Reduced motion that settles no faster has not reduced anything.
+                       (tool.synthetic("late", "reduced", latency_ms=180.0), "not shorter")):
+        try:
+            tool.reduced_motion_parity(full, rows)
+        except tool.InvalidTrace as error:
+            assert text in str(error), f"expected {text!r}, got {error}"
+        else:
+            raise AssertionError(f"parity accepted a run that should fail with {text!r}")
+    return {"full_settle_p50_ms": parity["full_settle_p50_ms"],
+            "reduced_settle_p50_ms": parity["reduced_settle_p50_ms"],
+            "claim": "host trace schema only; no panel presentation"}
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--case", action="append", choices=CASES, required=True)
     parser.add_argument("--output", type=Path)
     parser.add_argument("--qemu", default="/usr/bin/qemu-riscv64-static")
     args = parser.parse_args()
+    host = {"trace-order": trace_order, "reduced-motion": reduced_motion}
+    if all(case in HOST_CASES for case in args.case):
+        for case in dict.fromkeys(args.case):
+            proof = host[case]()
+            print(f"PASS {case}: host trace schema, not panel presentation", flush=True)
+            if args.output:
+                args.output.mkdir(parents=True, exist_ok=True)
+                (args.output / f"{case}.json").write_text(json.dumps(proof, indent=2, sort_keys=True) + "\n")
+        return
+    if any(case in HOST_CASES for case in args.case):
+        parser.error("host trace cases cannot be mixed with compositor cases")
     sway, client = binaries()
     rust = os.environ.get("K230_SHELL_RUST")
     if any(case in SCENE_CASES + INTERRUPTION_CASES for case in args.case):

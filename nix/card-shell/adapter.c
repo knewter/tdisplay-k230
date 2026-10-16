@@ -52,7 +52,7 @@ extern char **environ;
 #define CARD_AXIS_ID (INT32_MAX - 1)
 #define CARD_TRACKPAD_ID (INT32_MAX - 2)
 #define CARD_TRACKPAD_SECOND_ID (INT32_MAX - 3)
-enum edge_intent { EDGE_SHADE, EDGE_OVERLAY, EDGE_HOME };
+enum edge_intent { EDGE_SHADE, EDGE_OVERLAY, EDGE_HOME, EDGE_BACK };
 /* An edge is a possible gesture origin, not an unconditional input grab.
  * Keep a weak target until motion resolves intent. Taps never map/hide layers. */
 static struct {
@@ -219,6 +219,8 @@ static struct {
 	bool overlay_escaping;
 	struct card_shell_drawer_gesture drawer_gesture;
 	struct card_shell_drawer_gesture shade_gesture;
+	/* A claimed side-edge Back swipe: see input_down's EDGE_BACK branch. */
+	struct card_shell_side_gesture side_back;
 	struct card_shell_reveal_stream reveal;
 	struct kg_policy keyboard;
 	struct wlr_scene_rect *keyboard_grip, *keyboard_grip_line;
@@ -2380,6 +2382,7 @@ static bool keyboard_apply_action(unsigned action) {
 		card_shell_reveal_cancel(&shell.reveal);
 		memset(&shell.drawer_gesture, 0, sizeof(shell.drawer_gesture));
 		memset(&shell.shade_gesture, 0, sizeof(shell.shade_gesture));
+		memset(&shell.side_back, 0, sizeof(shell.side_back));
 		handle_result(cs_stream_cancel(&shell.policy));
 	}
 	if ((action & KG_SHOW) && !keyboard_signal("show")) {
@@ -2864,6 +2867,33 @@ static void edge_client_up(uint64_t time) {
 }
 static bool edge_replaying;
 static bool input_down(struct sway_seat *seat, int32_t id, double x, double y, uint64_t event_ms);
+/* The long-press sheet lives on the Rust Home surface, which does not report
+ * it to the compositor yet, so side Back cannot see or dismiss it here.
+ * UNVERIFIED: the sheet step needs a Home-surface signal and a Rust route. */
+static bool sheet_open(void) { return false; }
+static enum card_shell_back_target back_target(void) {
+	return card_shell_back_target(sheet_open(), drawer_mapped(),
+		keyboard_layer(shell.output) != NULL);
+}
+/* Dismiss the topmost shell context. Every branch talks to the shell client
+ * that owns the context; none writes a key event into the seat, so an
+ * application never sees a Back, Escape or Alt-Left from this gesture. */
+static void side_back_fire(void) {
+	enum card_shell_back_target target = back_target();
+	sway_log(SWAY_INFO, "K230_CARD_SHELL side-back target=%d", target);
+	switch (target) {
+	case CARD_BACK_OVERLAY:
+		if (!card_shell_launch_surface("hide"))
+			sway_log(SWAY_INFO, "K230_CARD_SHELL overlay hide helper unavailable");
+		break;
+	case CARD_BACK_KEYBOARD:
+		if (!keyboard_signal("hide"))
+			sway_log(SWAY_INFO, "K230_KEYBOARD hide helper unavailable");
+		break;
+	default:
+		break;
+	}
+}
 static int hit_button(double x, double y) {
 	if (touch_first())
 		return 0;
@@ -2903,6 +2933,10 @@ static bool input_down(struct sway_seat *seat, int32_t id, double x, double y, u
 			shell.policy.mode == CS_DRAGGING,
 			launcher_mapped() || drawer_mapped() || popup_at(x, y));
 		if (keyboard_apply_action(action)) return true;
+	}
+	if (shell.side_back.contacts) {
+		card_shell_side_down(&shell.side_back, id, x, y, 0);
+		return true;
 	}
 	if (edge.active) {
 		if (edge.contacts < UINT_MAX) edge.contacts++;
@@ -2947,6 +2981,22 @@ static bool input_down(struct sway_seat *seat, int32_t id, double x, double y, u
 		if (!drawer_mapped() && !launcher_mapped() && y >= 0 &&
 			y < shell.policy.config.edge_band) {
 			edge_begin(seat, id, x, y, event_ms, EDGE_SHADE);
+			return true;
+		}
+		/* Side Back is a possible origin like the edges above: the touch is
+		 * held as a weak target and reaches the overlay or app unchanged
+		 * unless its first real motion is an inward swipe. */
+		struct card_shell_ownership touch = {
+			.x = x, .y = y, .width = shell.policy.config.width,
+			.height = shell.policy.config.height,
+			.edge_band = shell.policy.config.edge_band,
+			.bottom_reserved = shell.policy.config.bottom_reserved,
+			.keyboard_hit = key, .deck = shell.active,
+			.sheet = sheet_open(), .overlay = drawer_mapped(),
+			.keyboard_shown = keyboard_layer(shell.output) != NULL,
+		};
+		if (card_shell_touch_owner(&touch) == CARD_OWNER_BACK) {
+			edge_begin(seat, id, x, y, event_ms, EDGE_BACK);
 			return true;
 		}
 	}
@@ -3092,6 +3142,20 @@ static bool input_motion(struct sway_seat *seat, int32_t id, double x, double y,
 		double dx = x - edge.x, dy = y - edge.y;
 		if (hypot(dx, dy) <= shell.policy.config.tap_slop && !edge.moved) return true;
 		edge.moved = true;
+		if (edge.intent == EDGE_BACK) {
+			int direction = card_shell_side_direction(edge.x, shell.policy.config.width,
+				shell.policy.config.edge_band);
+			if (edge.forwarded || !card_shell_side_inward(direction, edge.x, edge.y, x, y)) {
+				edge_client_motion(x, y, event_ms);
+				return true;
+			}
+			/* Nothing was forwarded yet, so the client never saw this touch. */
+			double origin_x = edge.x, origin_y = edge.y;
+			edge_reset(false);
+			card_shell_side_down(&shell.side_back, id, origin_x, origin_y, direction);
+			card_shell_side_motion(&shell.side_back, id, x, y, shell.policy.config.entry_distance);
+			return true;
+		}
 		bool gesture = edge.intent == EDGE_SHADE ? dy > fabs(dx) :
 			edge.intent == EDGE_HOME ? -dy > fabs(dx) : -dy > 0 || fabs(dx) > fabs(dy);
 		if (edge.forwarded || !gesture) {
@@ -3105,6 +3169,10 @@ static bool input_motion(struct sway_seat *seat, int32_t id, double x, double y,
 		bool owned = input_down(seat, id, origin_x, origin_y, origin_time);
 		edge_replaying = false;
 		if (owned) return input_motion(seat, id, x + shell.output->lx, y + shell.output->ly, event_ms);
+		return true;
+	}
+	if (shell.side_back.contacts) {
+		card_shell_side_motion(&shell.side_back, id, x, y, shell.policy.config.entry_distance);
 		return true;
 	}
 	if (shell.home_gesture.contacts) {
@@ -3170,6 +3238,10 @@ static bool input_up(struct sway_seat *seat, int32_t id, uint64_t event_ms) {
 			edge_reset(false);
 			if (home) enter(seat);
 		}
+		return true;
+	}
+	if (shell.side_back.contacts) {
+		if (card_shell_side_up(&shell.side_back, id)) side_back_fire();
 		return true;
 	}
 	if (shell.home_gesture.contacts) {
@@ -3377,12 +3449,14 @@ bool card_shell_cancel(struct sway_seat *seat) {
 	if (keyboard_cancel & KG_HIDE) keyboard_signal("hide");
 	if (keyboard_cancel & KG_DIRTY) keyboard_refresh();
 	bool consumed = edge_owned || shell.button_down || shell.drawer_gesture.contacts || shell.shade_gesture.contacts ||
+			shell.side_back.contacts ||
 			keyboard_cancel != KG_NONE || keyboard_owned ||
 			shell.policy.contact || shell.policy.edge.tracking ||
 					shell.policy.blocked_until_up || shell.policy.mode == CS_EXPANDING ||
 					shell.policy.mode == CS_ENTERING;
 	memset(&shell.drawer_gesture, 0, sizeof(shell.drawer_gesture));
 	memset(&shell.shade_gesture, 0, sizeof(shell.shade_gesture));
+	memset(&shell.side_back, 0, sizeof(shell.side_back));
 	shell.button_down = false;
 	shell.pressed_button = 0;
 	shell.overlay_escaping = false;
@@ -3591,7 +3665,7 @@ static bool trackpad_command(struct sway_seat *seat, int argc, char **argv) {
             !trackpad_number(argv[8], &stamp) || stamp > UINT32_MAX ||
             seq <= shell.trackpad_seq || shell.trackpad_owned || shell.axis_owned ||
             shell.pointer_owned || shell.policy.contact || shell.policy.edge.tracking ||
-            shell.home_gesture.contacts || shell.drawer_gesture.contacts || shell.shade_gesture.contacts ||
+            shell.home_gesture.contacts || shell.drawer_gesture.contacts || shell.shade_gesture.contacts || shell.side_back.contacts ||
             wlr_seat_touch_num_points(seat->wlr_seat)) return false;
         uint64_t source_ms = event_time_ms((uint32_t)stamp);
         if (source_ms + 1000 < now_ms() || source_ms > now_ms() + 1000) return false;

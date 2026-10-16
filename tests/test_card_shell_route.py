@@ -66,6 +66,139 @@ int main(void) {
                             "-lm", "-o", str(binary)], check=True)
             subprocess.run([str(binary)], check=True)
 
+    def test_side_edge_back_and_touch_ownership(self):
+        with tempfile.TemporaryDirectory(prefix="card-route-side-") as directory:
+            path = Path(directory)
+            (path / "sway").mkdir()
+            (path / "sway/card_shell_route.h").write_bytes(
+                (ROOT / "nix/card-shell/route.h").read_bytes())
+            source = path / "side.c"
+            source.write_text(r'''
+#include <assert.h>
+#include <math.h>
+#include <string.h>
+#include "sway/card_shell_route.h"
+/* 568x1232 is the panel; 1280x800 the HDMI landscape output. */
+static struct card_shell_ownership at(double w, double h, double x, double y) {
+    return (struct card_shell_ownership){.x=x,.y=y,.width=w,.height=h,.edge_band=48};
+}
+int main(void) {
+    const double sizes[][2] = {{568,1232},{1280,800}};
+    for (unsigned i=0; i<2; i++) {
+        double w=sizes[i][0], h=sizes[i][1], mid=h/2;
+        struct card_shell_ownership t;
+        /* Dismiss order: sheet, then Settings/shade/drawer, then keyboard. */
+        assert(card_shell_back_target(true,true,true)==CARD_BACK_SHEET);
+        assert(card_shell_back_target(false,true,true)==CARD_BACK_OVERLAY);
+        assert(card_shell_back_target(false,false,true)==CARD_BACK_KEYBOARD);
+        assert(card_shell_back_target(false,false,false)==CARD_BACK_NONE);
+        /* side-qualified: both edges, with a context to dismiss. */
+        t=at(w,h,10,mid); t.overlay=true;
+        assert(card_shell_touch_owner(&t)==CARD_OWNER_BACK);
+        t=at(w,h,w-10,mid); t.keyboard_shown=true;
+        assert(card_shell_touch_owner(&t)==CARD_OWNER_BACK);
+        t=at(w,h,10,mid); t.sheet=true;
+        assert(card_shell_touch_owner(&t)==CARD_OWNER_BACK);
+        /* app-scroll-conflict: no context, or outside the band, stays with the app. */
+        t=at(w,h,10,mid);
+        assert(card_shell_touch_owner(&t)==CARD_OWNER_APP);
+        t.deck=true;
+        assert(card_shell_touch_owner(&t)==CARD_OWNER_DECK);
+        t=at(w,h,w/2,mid); t.overlay=true; t.keyboard_shown=true;
+        assert(card_shell_touch_owner(&t)==CARD_OWNER_APP);
+        t=at(w,h,48,mid); t.overlay=true;      /* first pixel outside the band */
+        assert(card_shell_touch_owner(&t)==CARD_OWNER_APP);
+        t=at(w,h,w-49,mid); t.overlay=true;
+        assert(card_shell_touch_owner(&t)==CARD_OWNER_APP);
+        /* bottom-qualified and top-qualified corners are not side Back. */
+        t=at(w,h,10,h-10); t.overlay=true;
+        assert(card_shell_touch_owner(&t)==CARD_OWNER_HOME);
+        t=at(w,h,10,10);
+        assert(card_shell_touch_owner(&t)==CARD_OWNER_SHADE);
+        t=at(w,h,10,10); t.overlay=true;       /* the overlay keeps its own top controls */
+        assert(card_shell_touch_owner(&t)==CARD_OWNER_APP);
+        t=at(w,h,10,h-10); t.bottom_reserved=120;
+        assert(card_shell_touch_owner(&t)!=CARD_OWNER_HOME);
+        /* keyboard-inset: the keyboard wins in its reserved area. */
+        t=at(w,h,10,h-100); t.overlay=true; t.keyboard_shown=true; t.keyboard_hit=true;
+        assert(card_shell_touch_owner(&t)==CARD_OWNER_KEYBOARD);
+        t=at(w,h,w/2,h-10); t.keyboard_hit=true;
+        assert(card_shell_touch_owner(&t)==CARD_OWNER_KEYBOARD);
+        /* Off-output and nonfinite touches never claim an edge. */
+        t=at(w,h,-1,mid); t.overlay=true;
+        assert(card_shell_touch_owner(&t)==CARD_OWNER_APP);
+        t=at(w,h,NAN,mid); t.overlay=true;
+        assert(card_shell_touch_owner(&t)==CARD_OWNER_APP);
+        t=at(w,h,w,mid); t.overlay=true;
+        assert(card_shell_touch_owner(&t)==CARD_OWNER_APP);
+        assert(card_shell_side_direction(0,w,48)==1);
+        assert(card_shell_side_direction(w-1,w,48)==-1);
+        assert(card_shell_side_direction(w/2,w,48)==0);
+        assert(!strcmp(card_shell_owner_name(CARD_OWNER_BACK),"back"));
+        assert(!strcmp(card_shell_owner_name(CARD_OWNER_APP),"app"));
+
+        /* The recognizer: inward only, past the distance, release decides. */
+        struct card_shell_side_gesture g={0};
+        card_shell_side_down(&g,4,10,mid,1);
+        card_shell_side_motion(&g,4,60,mid+5,72);
+        assert(!card_shell_side_up(&g,4));                 /* short of 72 px */
+        card_shell_side_down(&g,4,10,mid,1);
+        card_shell_side_motion(&g,4,100,mid+10,72);
+        assert(card_shell_side_up(&g,4));                  /* left edge inward */
+        card_shell_side_down(&g,4,w-10,mid,-1);
+        card_shell_side_motion(&g,4,w-100,mid,72);
+        assert(card_shell_side_up(&g,4));                  /* right edge inward */
+        card_shell_side_down(&g,4,10,mid,1);
+        card_shell_side_motion(&g,4,-40,mid,72);
+        assert(!card_shell_side_up(&g,4));                 /* outward */
+        card_shell_side_down(&g,4,10,mid,1);
+        card_shell_side_motion(&g,4,60,mid+200,72);
+        assert(!card_shell_side_up(&g,4));                 /* vertical scroll */
+        card_shell_side_down(&g,4,10,mid,1);
+        card_shell_side_motion(&g,4,100,mid,72);
+        card_shell_side_motion(&g,4,30,mid,72);
+        assert(!card_shell_side_up(&g,4));                 /* reversal */
+        card_shell_side_down(&g,4,10,mid,1);
+        card_shell_side_motion(&g,4,100,mid,72);
+        card_shell_side_down(&g,5,300,mid,0);
+        assert(!card_shell_side_up(&g,5));
+        assert(!card_shell_side_up(&g,4));                 /* second contact cancels */
+        card_shell_side_down(&g,4,10,mid,1);
+        card_shell_side_motion(&g,4,100,mid,72);
+        card_shell_side_cancel(&g);
+        assert(!card_shell_side_up(&g,4));
+        assert(card_shell_side_inward(1,10,mid,50,mid+10));
+        assert(!card_shell_side_inward(1,10,mid,50,mid+80));
+        assert(!card_shell_side_inward(-1,w-10,mid,w-5,mid));
+        assert(!card_shell_side_inward(0,10,mid,50,mid));
+        assert(!card_shell_side_inward(1,10,mid,NAN,mid));
+    }
+    return 0;
+}
+''')
+            binary = path / "side"
+            subprocess.run([os.environ.get("CC", "cc"), "-std=gnu11", "-Wall",
+                            "-Wextra", "-Werror", "-I" + str(path), str(source),
+                            str(ROOT / "nix/card-shell/route.c"), "-lm",
+                            "-o", str(binary)], check=True)
+            subprocess.run([str(binary)], check=True)
+
+    def test_side_edge_back_in_adapter_never_synthesizes_a_key(self):
+        text = (ROOT / "nix/card-shell/adapter.c").read_text()
+        start = text.index("static void side_back_fire(void)")
+        body = text[start:text.index("\n}\n", start)]
+        # Only the shell clients are asked to dismiss; nothing reaches the seat.
+        self.assertIn('card_shell_launch_surface("hide")', body)
+        self.assertIn('keyboard_signal("hide")', body)
+        for forbidden in ("wlr_seat_keyboard", "KEY_", "XKB_KEY", "wlr_seat_touch", "wlr_seat_pointer"):
+            self.assertNotIn(forbidden, body)
+        # The bottom-edge escape keeps its own recognizer and still sends "hide".
+        escape = text[text.index("bool bottom_edge ="):]
+        self.assertIn("shell.overlay_escaping = true", escape[:2500])
+        self.assertIn("EDGE_OVERLAY", text)
+        # Side Back is one more weak edge origin, claimed only by the arbiter.
+        self.assertIn("card_shell_touch_owner(&touch) == CARD_OWNER_BACK", text)
+
     def test_gesture_and_trusted_helper(self):
         with tempfile.TemporaryDirectory(prefix="card-route-") as directory:
             path = Path(directory)

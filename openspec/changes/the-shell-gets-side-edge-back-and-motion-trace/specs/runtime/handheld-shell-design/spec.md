@@ -2,7 +2,7 @@
 
 ### Requirement: A qualified side edge dismisses shell surfaces without touching app content
 
-<!-- UNVERIFIED: side-edge contextual Back is not implemented; only the different bottom-edge overlay-escape fix (the-shell-behaves-as-one-coherent-system slice E) has landed. -->
+<!-- UNVERIFIED: side-edge contextual Back is implemented in nix/card-shell/adapter.c and checked on the host only (tests/test_card_shell_route.py); no board or glass observation exists, and the long-press sheet step is not wired. -->
 An inward touch gesture from a qualified side edge SHALL dismiss the topmost
 shell context in order: an open long-press context sheet; then Settings,
 shade, or drawer; then the on-screen keyboard when it owns input focus. The
@@ -25,7 +25,7 @@ swipes reaching the overview or switching apps from a mapped overlay.
 
 ### Requirement: One arbiter owns every touch at down
 
-<!-- UNVERIFIED: general touch-ownership arbitration across bottom/top/side/keyboard/deck/app-content is not implemented as a single decision point. -->
+<!-- UNVERIFIED: card_shell_touch_owner() in nix/card-shell/route.c decides side Back and is checked on the host only; the existing bottom and top branches in adapter.c still run their own code, and nothing was observed on the board. -->
 A single compositor-side arbiter SHALL decide, at touch-down, which of bottom
 Home/drawer, top shade, side Back, keyboard, deck, or app content owns a
 contact, using measured hit regions. Ordinary app scrolling and text selection
@@ -45,7 +45,7 @@ region in its reserved lower area SHALL win over a Home/drawer gesture there.
 
 ### Requirement: Shell motion is measured against declared budgets
 
-<!-- UNVERIFIED: tools/shell-motion-trace.py and tests/test_shell_motion.py do not exist; no budget has been measured under this schema. -->
+<!-- UNVERIFIED: tools/shell-motion-trace.py and its host cases exist; no budget has been measured on the board, and the compositor does not yet emit scene_damage or frame_done rows. -->
 The shell SHALL produce a touch-to-scene-damage, damage-to-commit,
 commit-to-frame-done, and frame-done-to-output-presented trace with stable
 IDs correlating one accepted touch through to panel presentation, plus
