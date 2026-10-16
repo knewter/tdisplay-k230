@@ -652,6 +652,21 @@ so that building stage 1 from source does not silently drop them from view.
 
 ```
 DATA 1b8409b74178fdc996d5cd617e7f042ae56e59a9b1ba20cd8306bd4640fbd42b docs/evidence/mainline-display/physical-2026-10-01/minimal-probe-recovery-2026-10-02/home.png
+DATA 09218a4f2d904716a63418e0ebc38cfc2d055350ffab11032bd0d65bb81531ad docs/evidence/omarchy-themes/background-fit-modes-board/chooser-heading-tap-fit-1280x720.png
+DATA f5905b8474ee17347b47c5c10095b943e9c57a47bf9dd292ea306c99105cd4d1 docs/evidence/omarchy-themes/background-fit-modes-board/chooser-status-overlap-before-fix-1280x800.png
+DATA ac3676b1a60096e88123ab3277054e999692f03b8697648009f4e984c9af5343 docs/evidence/omarchy-themes/background-fit-modes-board/dark-retro-82-center-1280x720.png
+DATA 58b186e46e68486485a3d4ad80bc5a662a2a28aa201c6d49f12d4db44cf31663 docs/evidence/omarchy-themes/background-fit-modes-board/dark-retro-82-crop-1280x720.png
+DATA cfe77480071057630b90959f93fb44c86604770c00b147d9c7a1487a6dd84e24 docs/evidence/omarchy-themes/background-fit-modes-board/dark-retro-82-fill-1280x720.png
+DATA 0ece7fa2d055ee2280e571296feda685718121e5bdbd59c68e305fd40ae794ba docs/evidence/omarchy-themes/background-fit-modes-board/dark-retro-82-fit-1280x720.png
+DATA 5381a73cd0ce1546f95ab5cd6ef593d9a7e7a241cdaeeb003636bc61903a89cd docs/evidence/omarchy-themes/background-fit-modes-board/dark-retro-82-fit-after-restart-1280x800.png
+DATA 38b60ddf4765ade9f10446893749aa659a246e89b3175a4b61c5587f8fdabb9c docs/evidence/omarchy-themes/background-fit-modes-board/dark-retro-82-solid-1280x720.png
+DATA 76e95966c4019a03ccc3cc96696469840f4105108d5ebf65413d0df68d7a05e4 docs/evidence/omarchy-themes/background-fit-modes-board/light-catppuccin-latte-center-1280x800.png
+DATA 39e8fbfb80737619e0bfb4bf936f15110130caaf06ce880f3173936778230647 docs/evidence/omarchy-themes/background-fit-modes-board/light-catppuccin-latte-crop-1280x800.png
+DATA 573350f46079dcc3a805887d3aea0d690f22169dbf42b192216098921cb815cf docs/evidence/omarchy-themes/background-fit-modes-board/light-catppuccin-latte-fill-1280x800.png
+DATA 3c5a18862d13d995e8a516eee806faa4e3507dff4961e57d9faea618037872be docs/evidence/omarchy-themes/background-fit-modes-board/light-catppuccin-latte-fit-1280x800.png
+DATA 19b3bf9816093b2c87c747b14c75fb9368a13b9cebf2f99e9c7608f262fca03f docs/evidence/omarchy-themes/background-fit-modes-board/light-catppuccin-latte-solid-1280x800.png
+DATA ef9ef4431135292a7384a81178ec6f230ad203e5b90394d4139e706ce7681d23 docs/evidence/omarchy-themes/background-fit-modes-board/overlay-chooser-1280x800.png
+DATA 45bd142c99c8c0f702dedcb97e98aa4c4ad78ded4bba9067f18dd535b69853fe docs/evidence/omarchy-themes/background-fit-modes-board/overlay-home-after-restart-1280x800.png
 DATA 035ef7a8d29ca62a7d93b46e8e711c33e3a7bd8bb81ee70a1e293cac55d3b2c2 docs/evidence/omarchy-themes/consumer-closeout-2026-10-10/app-menu-adapted.png
 DATA e87aa670e0f44d5df88f2557802510470e407f9e89cde9176c870225e4acd170 docs/evidence/omarchy-themes/consumer-closeout-2026-10-10/app-menu-baseline.png
 DATA e25bde2aeed303bb0f318292e527f6dc12752579d018309514a851c0236eab0b docs/evidence/omarchy-themes/consumer-closeout-2026-10-10/baseline.png
@@ -1641,6 +1656,9 @@ DATA 077089feb942b867b69e5b70f6701b0bee46ddbee07005d27fad8df49c32ccad docs/evide
 DATA f6ed9b1cabf3b12a43d6be2f834e7b3706cc25f9bc11f1608fe231dbca6da57e docs/evidence/coherent-shell/shade-quick-toggles/host/shade-4-keyboard-available-1280x800.png
 DATA 0795a42e09634432b9b5ce3b612f0a705a69283a45c9c81a3493ce5d07e9dfc3 docs/evidence/coherent-shell/shade-quick-toggles/host/shade-4-keyboard-available-568x1232.png
 DATA 2b7f1d9461d73fe5bef505bba781a69a26b01d933188282340df0fceae44b06a docs/evidence/coherent-shell/shade-quick-toggles/host/shade-4-keyboard-unavailable-568x1232.png
+DATA a923f91bc32054b92985b36ac490cc876a587938193b3ee31664d8e98fa0fdb5 docs/evidence/coherent-shell/side-edge-back/1-shade-open-1280x720.png
+DATA 2d181a2927d4edbdf3a2ea92c87f049fb307940b4d5ebeb4c76a26d53e62869d docs/evidence/coherent-shell/side-edge-back/2-after-left-side-back-1280x720.png
+DATA 82d010631988c5b7e6ddf21c414f01bfed772d95b7cb30dfc8b79be32ca06f17 docs/evidence/coherent-shell/side-edge-back/3-keyboard-shown-swipe-not-claimed-1280x720.png
 DATA a5002406911c3ae20a410d989c6e1ad0a31e46f32062eaec14414873e46d37d2 docs/evidence/hdmi-hotplug/panel-recovery-2026-09-30/native-panel.jpg
 DATA f2ac6301f82eba7310bbe777bd01d05562a8a3eed7a567e5ebae8bdc53f53121 docs/evidence/the-shell-is-navigable-with-a-mouse/edge-controls-board/files-before.jpg
 DATA c9c05b81fb3d12e81f2b5f61135846d7779f4246d1fbda106e2ed5653cc165f5 docs/evidence/the-shell-is-navigable-with-a-mouse/edge-controls-board/files-header-menu.jpg
@@ -2383,6 +2401,9 @@ shared pre-touch frame both are compared against).
 | `docs/evidence/coherent-shell/shade-quick-toggles/host/shade-4-keyboard-available-1280x800.png` | 68528 | DATA | `f6ed9b1cabf3b12a43d6be2f834e7b3706cc25f9bc11f1608fe231dbca6da57e` |
 | `docs/evidence/coherent-shell/shade-quick-toggles/host/shade-4-keyboard-available-568x1232.png` | 54900 | DATA | `0795a42e09634432b9b5ce3b612f0a705a69283a45c9c81a3493ce5d07e9dfc3` |
 | `docs/evidence/coherent-shell/shade-quick-toggles/host/shade-4-keyboard-unavailable-568x1232.png` | 53575 | DATA | `2b7f1d9461d73fe5bef505bba781a69a26b01d933188282340df0fceae44b06a` |
+| `docs/evidence/coherent-shell/side-edge-back/1-shade-open-1280x720.png` | 53761 | DATA | `a923f91bc32054b92985b36ac490cc876a587938193b3ee31664d8e98fa0fdb5` |
+| `docs/evidence/coherent-shell/side-edge-back/2-after-left-side-back-1280x720.png` | 707535 | DATA | `2d181a2927d4edbdf3a2ea92c87f049fb307940b4d5ebeb4c76a26d53e62869d` |
+| `docs/evidence/coherent-shell/side-edge-back/3-keyboard-shown-swipe-not-claimed-1280x720.png` | 32476 | DATA | `82d010631988c5b7e6ddf21c414f01bfed772d95b7cb30dfc8b79be32ca06f17` |
 | `docs/evidence/coherent-shell/two-axis-qemu/regression-after-fix-up.png` | 5478 | DATA | `4eb5fe1db653b5681ffa848471dedfe8b53e543ec317ab1a6eb27d57f6eb187b` |
 | `docs/evidence/coherent-shell/two-axis-qemu/regression-before-fix-up.png` | 5492 | DATA | `42310d94fd4f97d91f585c923824b9271e7a64bdab086d0e90361e9c987b5bce` |
 | `docs/evidence/coherent-shell/two-axis-qemu/regression-origin.png` | 4877 | DATA | `8d4260d119614cceb872d1f6636340cdaf770fa0a640eceb57aa226684e70cd3` |
@@ -2569,6 +2590,21 @@ These DATA screenshots are host-rendered fixtures of the one-page tap-to-apply c
 | --- | ---: | --- | --- |
 | `docs/evidence/omarchy-themes/instant-theme-swap/tap-to-apply-host/themes-dark.png` | 38562 | DATA | `a078dc50d948af4d6f87fb575a1f7ebefa25edfc39725ad8888b0a3311b810b1` |
 | `docs/evidence/omarchy-themes/instant-theme-swap/tap-to-apply-host/themes-latte.png` | 38356 | DATA | `e1ceaff1e53e62ee75362838ed2cc644f76c452583e02b1f07053c69d134b92c` |
+| `docs/evidence/omarchy-themes/background-fit-modes-board/chooser-heading-tap-fit-1280x720.png` | 487886 | DATA | `09218a4f2d904716a63418e0ebc38cfc2d055350ffab11032bd0d65bb81531ad` |
+| `docs/evidence/omarchy-themes/background-fit-modes-board/chooser-status-overlap-before-fix-1280x800.png` | 525913 | DATA | `f5905b8474ee17347b47c5c10095b943e9c57a47bf9dd292ea306c99105cd4d1` |
+| `docs/evidence/omarchy-themes/background-fit-modes-board/dark-retro-82-center-1280x720.png` | 669944 | DATA | `ac3676b1a60096e88123ab3277054e999692f03b8697648009f4e984c9af5343` |
+| `docs/evidence/omarchy-themes/background-fit-modes-board/dark-retro-82-crop-1280x720.png` | 704983 | DATA | `58b186e46e68486485a3d4ad80bc5a662a2a28aa201c6d49f12d4db44cf31663` |
+| `docs/evidence/omarchy-themes/background-fit-modes-board/dark-retro-82-fill-1280x720.png` | 695134 | DATA | `cfe77480071057630b90959f93fb44c86604770c00b147d9c7a1487a6dd84e24` |
+| `docs/evidence/omarchy-themes/background-fit-modes-board/dark-retro-82-fit-1280x720.png` | 624876 | DATA | `0ece7fa2d055ee2280e571296feda685718121e5bdbd59c68e305fd40ae794ba` |
+| `docs/evidence/omarchy-themes/background-fit-modes-board/dark-retro-82-fit-after-restart-1280x800.png` | 745120 | DATA | `5381a73cd0ce1546f95ab5cd6ef593d9a7e7a241cdaeeb003636bc61903a89cd` |
+| `docs/evidence/omarchy-themes/background-fit-modes-board/dark-retro-82-solid-1280x720.png` | 80953 | DATA | `38b60ddf4765ade9f10446893749aa659a246e89b3175a4b61c5587f8fdabb9c` |
+| `docs/evidence/omarchy-themes/background-fit-modes-board/light-catppuccin-latte-center-1280x800.png` | 168270 | DATA | `76e95966c4019a03ccc3cc96696469840f4105108d5ebf65413d0df68d7a05e4` |
+| `docs/evidence/omarchy-themes/background-fit-modes-board/light-catppuccin-latte-crop-1280x800.png` | 195001 | DATA | `39e8fbfb80737619e0bfb4bf936f15110130caaf06ce880f3173936778230647` |
+| `docs/evidence/omarchy-themes/background-fit-modes-board/light-catppuccin-latte-fill-1280x800.png` | 202004 | DATA | `573350f46079dcc3a805887d3aea0d690f22169dbf42b192216098921cb815cf` |
+| `docs/evidence/omarchy-themes/background-fit-modes-board/light-catppuccin-latte-fit-1280x800.png` | 202560 | DATA | `3c5a18862d13d995e8a516eee806faa4e3507dff4961e57d9faea618037872be` |
+| `docs/evidence/omarchy-themes/background-fit-modes-board/light-catppuccin-latte-solid-1280x800.png` | 70398 | DATA | `19b3bf9816093b2c87c747b14c75fb9368a13b9cebf2f99e9c7608f262fca03f` |
+| `docs/evidence/omarchy-themes/background-fit-modes-board/overlay-chooser-1280x800.png` | 519960 | DATA | `ef9ef4431135292a7384a81178ec6f230ad203e5b90394d4139e706ce7681d23` |
+| `docs/evidence/omarchy-themes/background-fit-modes-board/overlay-home-after-restart-1280x800.png` | 210287 | DATA | `45bd142c99c8c0f702dedcb97e98aa4c4ad78ded4bba9067f18dd535b69853fe` |
 | `docs/evidence/omarchy-themes/background-fit-modes-host/dark-catppuccin-center-284x616.png` | 74738 | DATA | `c161b1bffe2cda61a86d35158caebf2d88e7791a16f1dc4394113a8d91650ac8` |
 | `docs/evidence/omarchy-themes/background-fit-modes-host/dark-catppuccin-crop-284x616.png` | 82230 | DATA | `9d1f40b0512e74d6f37a55875c3a68588f1105305c66299cf31dd2939c458c46` |
 | `docs/evidence/omarchy-themes/background-fit-modes-host/dark-catppuccin-fill-284x616.png` | 145945 | DATA | `485ff1a1ffcf84207e1a74173303c78bbd277bb77aa7dbfc02ea3e2f726ca2fd` |

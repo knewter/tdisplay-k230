@@ -51,6 +51,16 @@ the blocker on starting them.
   --duration 30 --description 'Side-edge contextual Back on glass'
   --output-dir docs/evidence/coherent-shell/side-edge-back`. Keep open until
   committed.
+  Progress 2026-10-16, **injected mouse on HDMI**, not real touch
+  (`docs/evidence/coherent-shell/side-edge-back/board-2026-10-16-injected.md`):
+  - Left and right inward swipes closed an open Shade (`target=2`).
+  - Plain Home, a 30 px swipe, an outward swipe, the top corner and a
+    fullscreen app were all left alone.
+  - With the keyboard shown, the pointer path never reaches the edge block;
+    the top-edge Shade pull fails the same way, so this predates side Back.
+    The keyboard target is therefore unproven on the board.
+  Still open: real-finger feel, the keyboard step, and the drawer and
+  Settings sub-pages.
 
 ## 2. Motion trace tooling (host + board)
 

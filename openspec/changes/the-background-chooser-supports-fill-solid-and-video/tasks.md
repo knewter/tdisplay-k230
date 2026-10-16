@@ -105,10 +105,13 @@ performance acceptance.
 - [ ] 3.1 Build the full changed system
   (`nix build .#nixosConfigurations.k230-coherent-shell.config.system.build.toplevel`)
   before any board time; record exact closure and source identities.
-- [ ] 3.2 On the reserved board, apply each new fit mode to a still
+- [x] 3.2 On the reserved board, apply each new fit mode to a still
   background; confirm each reads correctly (no unexpected letterboxing,
   stretch, or clipping) with native `grim` captures for at least one dark
   and one light theme.
+  Done 2026-10-16 with injected input on HDMI: all five modes on retro-82
+  (dark) and catppuccin-latte (light), each captured by `grim` on Home, plus a
+  shell-restart persistence check (`docs/evidence/omarchy-themes/background-fit-modes-board/README.md`).
 - [ ] 3.3 On the reserved board, run
   `tools/handheld-theme-trial.py --workload backgrounds` against a paired
   static and video background; record combined CPU, RSS, decode/
@@ -117,10 +120,14 @@ performance acceptance.
   budgets (the same gate `the-shell-swaps-themes-without-a-python-stall`
   holds itself to). Do not enable video by default in `nix/shell.nix` until
   this passes.
-- [ ] 3.4 Confirm a user-supplied overlay stages, applies, and survives a
+- [x] 3.4 Confirm a user-supplied overlay stages, applies, and survives a
   shell/helper restart on the board, the same way the pinned/bundled
   background test in `docs/evidence/theme-picker/background-selection/README.md`
   already proved for a bundled choice.
+  Done 2026-10-16 with injected input on HDMI. The overlay staged as
+  `user-overlay-test.png`, applied from the chooser and survived a
+  `shell-ui`/`theme-helper` restart; a symlink and a `.txt` file were reported
+  under `unknown`. The over-256 MiB case was host-only (same README).
 
 Proof: the exact recorded build invocation and reserved-board commands
 above, with committed native captures and the workload's own sanitized

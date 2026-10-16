@@ -1,0 +1,41 @@
+# Side-edge Back on the board by injected pointer, 2026-10-16
+
+Evidence class: **injected events** on HDMI (a uinput mouse through
+`/tmp/bp.py`, i.e. `tools/board-pointer.py`) with `grim` captures and the
+compositor's own `K230_CARD_SHELL side-back target=N` log lines. This is not
+real touch, so the "feels right from a real finger" judgement that task 1.3
+asks for is still open.
+
+- System: `/nix/store/m1c3jq413s8acils9y6jrpdk02xq5lmz-nixos-system-nixos-26.11.20260919.20b1ddd`,
+  live-deployed from `integ-1016` at `f082393a`, which includes this change's
+  `ec1bf497`. It landed rebased as `3a912936`.
+- Output: HDMI-A-1 at 1280x720.
+
+The mouse button path enters the same `input_down` recognizer as touch
+(`card_shell_pointer_button` → `input_down(CARD_POINTER_ID, …)`).
+
+| Case | Injected swipe (px) | Log | Result |
+| --- | --- | --- | --- |
+| Shade open, left edge, inward | (10,360)→(160,364), 300 ms | `side-back target=2` | Shade closed (`1-shade-open…`, `2-after-left-side-back…`) |
+| Shade open, right edge, inward | (1275,520)→(1120,522) | `side-back target=2` | Shade closed |
+| Plain Home, left edge, inward | (10,300)→(160,305) | none | Home unchanged |
+| Shade open, 30 px inward | (10,520)→(40,520) | none | Shade stays open |
+| Shade open, right edge, outward | (1240,520)→(1279,520) | none | Shade stays open |
+| Shade open, top-left corner, inward | (10,10)→(160,14) | none | Shade stays open (top band belongs to the Shade) |
+| Fullscreen terminal (no shell context) | (10,300)→(160,305) | none | Terminal unchanged; no stray keystroke at the prompt |
+
+## Not covered: keyboard target
+
+With wvkbd shown, the injected mouse swipe was not claimed. The touch reached
+the Shade under it: a left-edge swipe at y=300 dragged the Shade's volume
+slider to zero, and it was dragged back to its earlier position afterwards
+(`3-keyboard-shown-swipe-not-claimed…`). The same happens to the existing
+top-edge Shade pull from Home while the keyboard is shown. So this predates
+side Back: with the keyboard visible, `input_down` returns before the
+touch-first edge block for the pointer path. The cause was not isolated; the
+two failures were tracked to `input_down` returning false, and wvkbd maps two
+layer surfaces, not an xdg popup.
+
+The keyboard step of the dismiss order (`target=3`) therefore has host-fixture
+proof only. It needs a real touch on the panel, or a pointer-path fix, before
+task 1.3 can close.
