@@ -2276,19 +2276,51 @@ static bool ensure_ui(struct sway_output *output) {
 /* XDG/IME popups are a separate Sway root layer, not a view descendant.
  * Until that boundary has complete composition support, return to normal
  * before rendering any popup above a scaled or private card. */
-static bool visible_popup_node(struct wlr_scene_node *node) {
+/* wvkbd keeps one xdg popup mapped for as long as it is shown: its key
+ * preview surface, sized to the keyboard's width and twice its height and
+ * anchored from one keyboard height above it (wvkbd main.c,
+ * xdg_positioner_set_anchor_rect(0, -h, w, 2h)). That surface is part of
+ * the keyboard, not a menu, so it must not count as an open popup; while it
+ * did, every touch-first edge (bottom Home, Shade, side Back) was skipped
+ * whenever the keyboard was up. */
+static bool keyboard_popup_box(struct wlr_box *box) {
+	struct sway_layer_surface *layer = keyboard_layer(shell.output);
+	int lx, ly;
+	if (!layer || !wlr_scene_node_coords(&layer->scene->tree->node, &lx, &ly)) return false;
+	struct wlr_surface *surface = layer->layer_surface->surface;
+	*box = (struct wlr_box){.x = lx, .y = ly - surface->current.height,
+		.width = surface->current.width, .height = surface->current.height * 2};
+	return box->width > 0 && box->height > 0;
+}
+static bool visible_popup_node(struct wlr_scene_node *node, const struct wlr_box *keyboard) {
 	if (!node->enabled)
 		return false;
-	if (node->type == WLR_SCENE_NODE_BUFFER)
-		return wlr_scene_buffer_from_node(node)->buffer != NULL;
+	if (node->type == WLR_SCENE_NODE_BUFFER) {
+		struct wlr_scene_buffer *buffer = wlr_scene_buffer_from_node(node);
+		if (!buffer->buffer) return false;
+		int x, y;
+		if (keyboard && wlr_scene_node_coords(node, &x, &y)) {
+			struct wlr_box own = {.x = x, .y = y,
+				.width = buffer->dst_width > 0 ? buffer->dst_width : buffer->buffer->width,
+				.height = buffer->dst_height > 0 ? buffer->dst_height : buffer->buffer->height};
+			struct wlr_box both;
+			if (wlr_box_intersection(&both, &own, keyboard) && wlr_box_equal(&both, &own))
+				return false;
+		}
+		return true;
+	}
 	if (node->type == WLR_SCENE_NODE_TREE) {
 		struct wlr_scene_node *child;
 		struct wlr_scene_tree *tree = wlr_scene_tree_from_node(node);
-		wl_list_for_each(child, &tree->children, link) if (visible_popup_node(child)) return true;
+		wl_list_for_each(child, &tree->children, link) if (visible_popup_node(child, keyboard)) return true;
 	}
 	return false;
 }
-static bool popup_mapped(void) { return visible_popup_node(&root->layers.popup->node); }
+static bool popup_mapped(void) {
+	struct wlr_box keyboard;
+	return visible_popup_node(&root->layers.popup->node,
+		keyboard_popup_box(&keyboard) ? &keyboard : NULL);
+}
 static bool popup_at(double x, double y) {
 	/* A keyboard's own text popup may be mapped elsewhere on the output.
 	 * Preserve popup ownership only at the contact, including over the grip. */
