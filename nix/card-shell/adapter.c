@@ -2899,9 +2899,11 @@ static void edge_client_up(uint64_t time) {
 }
 static bool edge_replaying;
 static bool input_down(struct sway_seat *seat, int32_t id, double x, double y, uint64_t event_ms);
-/* The long-press sheet lives on the Rust Home surface, which does not report
- * it to the compositor yet, so side Back cannot see or dismiss it here.
- * UNVERIFIED: the sheet step needs a Home-surface signal and a Rust route. */
+/* The long-press app menu (the "sheet") is drawn on the Rust client's
+ * k230-shell-drawer layer, so drawer_mapped() is already true while it is
+ * open. The client orders sheet before route itself when side Back sends
+ * "back" (Route::Back), so the compositor never needs a separate sheet
+ * state and this stays false. */
 static bool sheet_open(void) { return false; }
 static enum card_shell_back_target back_target(void) {
 	return card_shell_back_target(sheet_open(), drawer_mapped(),
@@ -2915,8 +2917,11 @@ static void side_back_fire(void) {
 	sway_log(SWAY_INFO, "K230_CARD_SHELL side-back target=%d", target);
 	switch (target) {
 	case CARD_BACK_OVERLAY:
-		if (!card_shell_launch_surface("hide"))
-			sway_log(SWAY_INFO, "K230_CARD_SHELL overlay hide helper unavailable");
+		/* The long-press app menu is drawn on the Rust overlay layer, so
+		 * it counts as mapped here; "back" lets the client close that
+		 * menu before the route under it. */
+		if (!card_shell_launch_surface("back"))
+			sway_log(SWAY_INFO, "K230_CARD_SHELL overlay back helper unavailable");
 		break;
 	case CARD_BACK_KEYBOARD:
 		if (!keyboard_signal("hide"))

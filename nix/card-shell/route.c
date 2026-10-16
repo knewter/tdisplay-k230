@@ -355,9 +355,14 @@ bool card_shell_launch_surface(const char *surface) {
 	 * its sub-pages) is currently mapped, the same way
 	 * `k230-shell-rust --surface hide` already does from the command line;
 	 * Route::Hide already exists in the Rust client (nix/rust-shell-client/
-	 * src/lib.rs), this only exposes it to this helper. */
+	 * src/lib.rs), this only exposes it to this helper.
+	 *
+	 * "back" is side-edge Back's request. The Rust client closes a
+	 * long-press app menu first if one is open, and otherwise hides the
+	 * overlay as "hide" does. */
 	if (!surface || (strcmp(surface, "drawer") != 0 && strcmp(surface, "shade") != 0
-			&& strcmp(surface, "home") != 0 && strcmp(surface, "hide") != 0))
+			&& strcmp(surface, "home") != 0 && strcmp(surface, "hide") != 0
+			&& strcmp(surface, "back") != 0))
 		return false;
 	const char *path = getenv("SWAY_K230_CARD_SURFACE_HELPER");
 	if (!path)

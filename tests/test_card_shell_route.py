@@ -188,7 +188,9 @@ int main(void) {
         start = text.index("static void side_back_fire(void)")
         body = text[start:text.index("\n}\n", start)]
         # Only the shell clients are asked to dismiss; nothing reaches the seat.
-        self.assertIn('card_shell_launch_surface("hide")', body)
+        # The overlay step sends "back" so the Rust client can close a
+        # long-press app menu before the route under it.
+        self.assertIn('card_shell_launch_surface("back")', body)
         self.assertIn('keyboard_signal("hide")', body)
         for forbidden in ("wlr_seat_keyboard", "KEY_", "XKB_KEY", "wlr_seat_touch", "wlr_seat_pointer"):
             self.assertNotIn(forbidden, body)
@@ -253,6 +255,7 @@ int main(int argc, char **argv) {
     /* The helper runs asynchronously; each route records its own argv. */
     assert(card_shell_launch_surface("hide"));
     assert(card_shell_launch_surface("shade"));
+    assert(card_shell_launch_surface("back"));
     return 0;
 }
 ''')
@@ -269,7 +272,7 @@ int main(int argc, char **argv) {
             subprocess.run([str(binary), str(helper)], check=True,
                            env={**os.environ, "CARD_ROUTE_CAPTURE": str(capture)})
             deadline = time.monotonic() + 2
-            expected = {route: ["--surface", route] for route in ("hide", "shade")}
+            expected = {route: ["--surface", route] for route in ("hide", "shade", "back")}
             def results():
                 return {route: Path(str(capture) + "." + route).read_text().splitlines()
                         if Path(str(capture) + "." + route).exists() else [] for route in expected}

@@ -587,7 +587,7 @@ fn connect_bounded(path: &std::path::Path, deadline: Instant) -> Result<UnixStre
 fn request(route: &str) -> Result<(), String> {
     let path = socket_path()?;
     let bytes = format!("{route}\n");
-    if Route::parse(bytes.as_bytes()).is_none() {
+    if Route::parse(bytes.as_bytes()).is_none() && bytes.as_bytes() != BACK_LINE {
         return Err("unsupported route".into());
     }
     let deadline = Instant::now() + Duration::from_millis(500);
@@ -627,8 +627,13 @@ struct Peer {
     progress_stream: bool,
 }
 
+/// Side-edge Back's request line (`--surface back`), kept apart from
+/// `Route` because it is a dismiss step, not a place to show.
+const BACK_LINE: &[u8] = b"back\n";
+
 enum Received {
     Route(Route, UnixStream),
+    Back(UnixStream),
     Reveal(RevealMessage),
     Abort,
 }
@@ -785,6 +790,10 @@ impl RouteServer {
         if let Some(route) = Route::parse(&line) {
             let peer = self.peer.take().expect("in-flight peer");
             return Some(Received::Route(route, peer.stream));
+        }
+        if line == BACK_LINE {
+            let peer = self.peer.take().expect("in-flight peer");
+            return Some(Received::Back(peer.stream));
         }
         if let Some(message) = RevealMessage::parse(&line) {
             peer.progress_stream = true;
@@ -4216,6 +4225,18 @@ impl ShellClient {
         self.panel_close
             .begin_settle(1.0, 0.0, now, self.reduced_motion);
         self.dirty = true;
+    }
+
+    /// Side-edge Back. The long-press menu is the topmost shell context, so
+    /// Back closes it alone and leaves the drawer (or Home) under it;
+    /// otherwise it hides the overlay like `Route::Hide`.
+    fn back(&mut self, qh: &QueueHandle<Self>) -> bool {
+        if self.app_menu.is_some() {
+            self.app_menu_hold = None;
+            self.close_app_menu(qh);
+            return true;
+        }
+        self.show(qh, Route::Hide)
     }
 
     fn show(&mut self, qh: &QueueHandle<Self>, route: Route) -> bool {
@@ -7882,6 +7903,15 @@ fn serve() -> Result<(), String> {
             drain_routes(
                 || routes.receive(),
                 |record| match record {
+                    Received::Back(mut peer) => {
+                        let done = state.back(&qh);
+                        let reply: &[u8] = if done && queue.flush().is_ok() {
+                            b"OK\n"
+                        } else {
+                            b"ERR\n"
+                        };
+                        let _ = peer.write_all(reply);
+                    }
                     Received::Route(route, mut peer) => {
                         let mapped = state.show(&qh, route);
                         let reply: &[u8] = if mapped && queue.flush().is_ok() {
@@ -8824,6 +8854,34 @@ printf '%s\n' '{"type":"root","floating_nodes":[{"type":"floating_con","app_id":
         assert_eq!(message.phase, Phase::Finish);
         drop(client);
         assert!(server.peer.is_none());
+        drop(server);
+        fs::remove_dir_all(runtime).unwrap();
+    }
+
+    #[test]
+    fn side_back_line_is_its_own_request_not_a_route() {
+        assert_eq!(Route::parse(BACK_LINE), None);
+        let runtime = std::env::temp_dir().join(format!(
+            "k230-shell-back-{}-{}",
+            std::process::id(),
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .unwrap()
+                .as_nanos()
+        ));
+        fs::DirBuilder::new().mode(0o700).create(&runtime).unwrap();
+        let path = runtime.join(SOCKET_NAME);
+        let mut server = RouteServer::new(path.clone()).unwrap();
+        let mut client = UnixStream::connect(&path).unwrap();
+        server.accept();
+        client.write_all(BACK_LINE).unwrap();
+        assert!(matches!(server.receive(), Some(Received::Back(_))));
+        assert!(server.peer.is_none());
+        let mut client = UnixStream::connect(&path).unwrap();
+        server.accept();
+        client.write_all(b"back extra\n").unwrap();
+        assert!(!matches!(server.receive(), Some(Received::Back(_))));
+        drop(client);
         drop(server);
         fs::remove_dir_all(runtime).unwrap();
     }
