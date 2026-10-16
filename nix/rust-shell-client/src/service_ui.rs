@@ -224,6 +224,17 @@ pub enum PanelIntent {
 pub const NOTIFICATION_TOP: f64 = SHADE_TOGGLE_TOP + SHADE_TOGGLE_H + 19.0;
 pub const NOTIFICATION_ROW: f64 = 116.0;
 
+/// A notification row's pitch at the current vision text step: the 100%
+/// `NOTIFICATION_ROW`, or room for its source, summary and body lines at a
+/// larger step so they stack instead of overlapping.
+pub fn notification_row() -> f64 {
+    let s = crate::layout_text_scale();
+    if s <= 1.0 {
+        return NOTIFICATION_ROW;
+    }
+    (13.0 + (16.0 + 21.0 + 15.0) * s * 1.25 + 8.0 + 14.0 + 8.0).ceil().max(NOTIFICATION_ROW)
+}
+
 /// The Shade sheet's height: 65% of the output, as on the portrait panel,
 /// but never so short that the notification list (which starts at the
 /// fixed `NOTIFICATION_TOP`) has no row of its own -- the landscape panel's
@@ -231,7 +242,7 @@ pub const NOTIFICATION_ROW: f64 = 116.0;
 /// the output's own height.
 pub fn shade_panel_height(height: u32) -> f64 {
     let h = f64::from(height);
-    (h * 0.65).max((NOTIFICATION_TOP + NOTIFICATION_ROW + 24.0).min(h))
+    (h * 0.65).max((NOTIFICATION_TOP + notification_row() + 24.0).min(h))
 }
 /// Width of the wide Shade's left column (header, sliders); the notification
 /// list takes the rest of the landscape panel.
@@ -297,6 +308,12 @@ pub const SHADE_TAP_MIN: f64 = 99.0;
 /// The Settings entry's band: everything above "Dismiss all" at the
 /// header's right.
 pub const SHADE_SETTINGS_BOTTOM: f64 = 112.0;
+/// Width of the Settings and "Dismiss all" bands at the header's right:
+/// 180 px at 100%, wider at a larger vision step so the larger link text
+/// stays inside its own target, never more than half the column.
+pub fn shade_link_w(controls_w: f64) -> f64 {
+    (180.0 * crate::layout_text_scale()).min(controls_w * 0.5).max(180.0)
+}
 /// "Dismiss all"'s band, directly under the Settings entry and
 /// `SHADE_TAP_MIN` tall (it was `116.0..190.0`, 74 px).
 pub const SHADE_DISMISS_TOP: f64 = SHADE_SETTINGS_BOTTOM;
@@ -852,7 +869,7 @@ pub fn shade_adopts_poll(
 
 pub fn notification_max_scroll(count: usize, width: u32, height: u32) -> f64 {
     let layout = shade_layout(width, height);
-    (layout.list_top + count as f64 * NOTIFICATION_ROW - layout.list_bottom).max(0.0)
+    (layout.list_top + count as f64 * notification_row() - layout.list_bottom).max(0.0)
 }
 
 fn notification_index(pos: (f64, f64), width: u32, height: u32, view: &ServiceView) -> Option<usize> {
@@ -861,7 +878,7 @@ fn notification_index(pos: (f64, f64), width: u32, height: u32, view: &ServiceVi
         return None;
     }
     let index =
-        ((pos.1 - layout.list_top + view.notification_scroll) / NOTIFICATION_ROW).floor() as usize;
+        ((pos.1 - layout.list_top + view.notification_scroll) / notification_row()).floor() as usize;
     (index < view.notifications.as_ref()?.events.len()).then_some(index)
 }
 
@@ -883,8 +900,8 @@ pub fn notification_swipe_start(
         return None;
     }
     let row_y =
-        (start.1 - layout.list_top + view.notification_scroll).rem_euclid(NOTIFICATION_ROW);
-    if row_y >= NOTIFICATION_ROW - 8.0 {
+        (start.1 - layout.list_top + view.notification_scroll).rem_euclid(notification_row());
+    if row_y >= notification_row() - 8.0 {
         return None;
     }
     let row_index = notification_index(start, width, height, view)?;
@@ -920,9 +937,9 @@ pub fn notification_swipe_hit(
         return false;
     }
     let layout = shade_layout(width, height);
-    let y = layout.list_top + swipe.row_index as f64 * NOTIFICATION_ROW - view.notification_scroll;
+    let y = layout.list_top + swipe.row_index as f64 * notification_row() - view.notification_scroll;
     pos.1 >= y.max(layout.list_top)
-        && pos.1 < (y + NOTIFICATION_ROW - 8.0).min(layout.list_bottom)
+        && pos.1 < (y + notification_row() - 8.0).min(layout.list_bottom)
         && pos.0 >= layout.list_x + 24.0 + swipe.offset
         && pos.0 < f64::from(width) - 24.0 + swipe.offset
 }
@@ -1084,7 +1101,7 @@ pub fn panel_intent(
             if dx.abs() > 18.0 || dy.abs() > 18.0 {
                 return None;
             }
-            if end.1 < SHADE_SETTINGS_BOTTOM && end.0 > layout.controls_w - 180.0 && end.0 < layout.controls_w {
+            if end.1 < SHADE_SETTINGS_BOTTOM && end.0 > layout.controls_w - shade_link_w(layout.controls_w) && end.0 < layout.controls_w {
                 return Some(PanelIntent::OpenSettings);
             }
             if (SHADE_TOGGLE_TOP..SHADE_TOGGLE_TOP + SHADE_TOGGLE_H).contains(&end.1)
@@ -1096,7 +1113,7 @@ pub fn panel_intent(
                     .then_some(PanelIntent::Request(ServiceRequest::KeyboardToggle));
             }
             if (SHADE_DISMISS_TOP..SHADE_DISMISS_BOTTOM).contains(&end.1)
-                && end.0 > layout.controls_w - 180.0
+                && end.0 > layout.controls_w - shade_link_w(layout.controls_w)
                 && end.0 < layout.controls_w
                 && view
                     .notifications
@@ -2183,6 +2200,23 @@ mod tests {
         }
         // The Settings entry keeps its band right above it.
         assert_eq!(panel_intent(Route::Shade, (500.0, 100.0), (500.0, 100.0), 568, 1232, &view), Some(PanelIntent::OpenSettings));
+    }
+
+    #[test]
+    fn the_largest_text_step_grows_notification_rows_and_header_links() {
+        crate::set_layout_text_scale(2.0);
+        // Source, summary and body at 200%, stacked with their gaps, fit
+        // inside the card (row minus its 8 px gutter).
+        let lines = 13.0 + (16.0 + 21.0 + 15.0) * 2.0 * 1.25 + 8.0;
+        assert!(notification_row() - 8.0 >= lines);
+        for width in [568.0, SHADE_WIDE_CONTROLS_W] {
+            assert_eq!(shade_link_w(width), 360.0_f64.min(width * 0.5));
+        }
+        let layout = shade_layout(568, 1232);
+        assert!(layout.list_bottom - layout.list_top >= notification_row(), "one whole row fits");
+        crate::set_layout_text_scale(1.0);
+        assert_eq!(notification_row(), NOTIFICATION_ROW);
+        assert_eq!(shade_link_w(568.0), 180.0);
     }
 
     #[test]

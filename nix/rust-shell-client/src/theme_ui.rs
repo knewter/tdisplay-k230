@@ -158,8 +158,9 @@ pub fn vision_layout(width: f64, scale: f64) -> VisionLayout {
     let s = scale.clamp(1.0, 2.0);
     let line = |size: f64| (size * s * 1.35).ceil();
     let top = (110.0 + 40.0 * s).round();
-    let cw = (width - 48.0).min(VISION_CARD_MAX_W);
-    let side_by_side = width >= 2.0 * cw + 72.0;
+    let cw = (width - 48.0).min(VISION_CARD_MAX_W).max(0.0);
+    // `width` 0 asks for the stacked (portrait) column without a width.
+    let side_by_side = cw > 0.0 && width >= 2.0 * cw + 72.0;
     let label_h = line(17.0);
     let seg_h = (line(18.0) + 40.0).max(VISION_TAP_MIN);
     let text_h = 18.0 + label_h + 12.0 + seg_h + 14.0;

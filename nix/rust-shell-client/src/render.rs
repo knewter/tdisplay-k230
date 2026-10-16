@@ -15,7 +15,7 @@ use crate::{
     pipewire_ipc::GraphSnapshot,
     service_data::{Control, ControlState, ControlValue, Priority},
     service_ui::{
-        filter_app_indices, DrawerSearch, ServiceView, NOTIFICATION_ROW,
+        filter_app_indices, DrawerSearch, ServiceView,
         SETTINGS_OUTPUT_DETAIL_Y, SETTINGS_VOLUME_ROW, SHADE_SLIDER_H, SHADE_SLIDER_TOP,
         SHADE_TOGGLE_H, SHADE_TOGGLE_TOP, SHADE_VOLUME_H, SHADE_VOLUME_TOP,
     },
@@ -2624,6 +2624,61 @@ fn paint_drawer_chrome(
 /// blitting one slice of `DrawerGridCache` rather than repainting every
 /// tile -- see that struct's own doc.
 #[allow(clippy::too_many_arguments)]
+/// The Shade header at a larger vision step: the title shrinks only as far
+/// as it must to sit beside the Settings link, and the hint, count and
+/// "Dismiss all" lines stack by their drawn height instead of the 100%
+/// literals, so nothing overlaps or ellipsizes. Each link stays inside its
+/// `service_ui::shade_link_w` band.
+fn paint_shade_header_reflowed(
+    cr: &Context,
+    style: VisualStyle,
+    services: Option<&ServiceView>,
+    panel_y: f64,
+    hw: f64,
+    count: usize,
+) {
+    use crate::service_ui::{shade_link_w, SHADE_SETTINGS_BOTTOM};
+    let line = |size: f64| context_font_size(cr, size) * 1.25;
+    let fit = |value: &str, size: f64, room: f64, weight| {
+        let advance = text_advance(cr, value, size, weight);
+        if advance > room { size * room / advance } else { size }
+    };
+    let link_room = shade_link_w(hw) - 24.0;
+    let settings_size = fit("Settings", 20.0, link_room, pango::Weight::Normal);
+    let settings_w = text_advance(cr, "Settings", settings_size, pango::Weight::Normal) + 2.0;
+    let title_room = hw - 28.0 - settings_w - 24.0 - 16.0;
+    let title_size = fit("Notifications", 32.0, title_room, pango::Weight::Bold);
+    let title_y = panel_y + 16.0;
+    let title_h = line(title_size);
+    heading(cr, "Notifications", 28.0, title_y, title_room, title_size, style.text);
+    let settings_y = title_y + (title_h - line(settings_size)) / 2.0;
+    text(cr, "Settings", hw - 24.0 - settings_w, settings_y, settings_w, settings_size, style.accent);
+
+    let hint_y = title_y + title_h + 2.0;
+    let mut hint_room = hw - 56.0;
+    if let Some(view) = services {
+        if view.battery != crate::home_widgets::battery::BatteryState::Absent {
+            let label = crate::home_widgets::battery::format(&view.battery);
+            let battery_w = text_advance(cr, &label, 15.0, pango::Weight::Normal) + 2.0;
+            text(cr, &label, hw - 24.0 - battery_w, hint_y, battery_w, 15.0, style.text);
+            hint_room -= battery_w + 12.0;
+        }
+    }
+    text(cr, "Swipe up above the list to close", 28.0, hint_y, hint_room, 15.0, style.muted);
+
+    let count_y = (hint_y + line(15.0) + 2.0).max(SHADE_SETTINGS_BOTTOM + 4.0);
+    let mut count_room = hw - 56.0;
+    if count > 0 {
+        let dismiss_size = fit("Dismiss all", 17.0, link_room, pango::Weight::Normal);
+        let dismiss_w = text_advance(cr, "Dismiss all", dismiss_size, pango::Weight::Normal) + 2.0;
+        let dismiss_y = count_y + (line(19.0) - line(dismiss_size)) / 2.0;
+        text(cr, "Dismiss all", hw - 24.0 - dismiss_w, dismiss_y, dismiss_w, dismiss_size, style.accent);
+        count_room -= dismiss_w + 16.0;
+    }
+    let label = if count == 1 { "1 notification".to_string() } else { format!("{count} notifications") };
+    text(cr, &label, 28.0, count_y, count_room, 19.0, style.muted);
+}
+
 fn paint_drawer(
     cr: &Context,
     width: u32,
@@ -2810,6 +2865,12 @@ fn scene(
             .then(|| theme_brush(theme, "menu", "background"))
             .flatten()
     });
+    if vision_adjusted(theme) {
+        // As on the drawer: an opaque sheet under a vision choice.
+        color(cr, palette_rgb_or(theme, "background", 0x1e1e2e), 1.0);
+        cr.rectangle(0.0, panel_y, w, panel_h);
+        let _ = cr.fill();
+    }
     if !panel_brush.is_some_and(|brush| fill_brush(cr, brush, 0.0, panel_y, w, panel_h)) {
         color(cr, palette_rgb_or(theme, "background", 0x1e1e2e), 1.0);
         cr.rectangle(0.0, panel_y, w, panel_h);
@@ -2842,6 +2903,7 @@ fn scene(
             || services
                 .and_then(|s| s.wifi.as_ref())
                 .is_some_and(|view| view.page != WifiPage::Closed)))
+        && !(route == Route::Shade && crate::layout_text_scale() > 1.0)
     {
         heading(cr, title, 28.0, panel_y + 32.0, w - 180.0, 32.0, style.text);
     }
@@ -2855,60 +2917,65 @@ fn scene(
             // `NOTIFICATION_TOP`, exactly as before.
             let shade = crate::service_ui::shade_layout(width, height);
             let hw = shade.controls_w;
-            text(cr, "Settings", hw - 150.0, 46.0, 126.0, 20.0, style.accent);
-            text(
-                cr,
-                "Swipe up above the list to close",
-                28.0,
-                86.0,
-                hw - 56.0,
-                15.0,
-                style.muted,
-            );
-            // The keyboard base's battery, on the hint line's right; nothing
-            // at all when no `Battery` supply exists.
-            if let Some(view) = services {
-                if view.battery != crate::home_widgets::battery::BatteryState::Absent {
+            let items = services.and_then(|view| view.notifications.as_ref());
+            let count = items.map_or(0, |snapshot| snapshot.count);
+            if crate::layout_text_scale() > 1.0 {
+                paint_shade_header_reflowed(cr, style, services, panel_y, hw, count);
+            } else {
+                text(cr, "Settings", hw - 150.0, 46.0, 126.0, 20.0, style.accent);
+                text(
+                    cr,
+                    "Swipe up above the list to close",
+                    28.0,
+                    86.0,
+                    hw - 56.0,
+                    15.0,
+                    style.muted,
+                );
+                // The keyboard base's battery, on the hint line's right; nothing
+                // at all when no `Battery` supply exists.
+                if let Some(view) = services {
+                    if view.battery != crate::home_widgets::battery::BatteryState::Absent {
+                        text(
+                            cr,
+                            &crate::home_widgets::battery::format(&view.battery),
+                            hw - 220.0,
+                            if shade.wide { 112.0 } else { 86.0 },
+                            196.0,
+                            15.0,
+                            style.text,
+                        );
+                    }
+                }
+                text(
+                    cr,
+                    // Singular form (finding P1-4): "1 notifications" read as a
+                    // bug on the one screen where the number is always visible.
+                    if count == 1 {
+                        "1 notification".to_string()
+                    } else {
+                        format!("{count} notifications")
+                    }
+                    .as_str(),
+                    28.0,
+                    112.0,
+                    hw - 220.0,
+                    19.0,
+                    style.muted,
+                );
+                if count > 0 {
                     text(
                         cr,
-                        &crate::home_widgets::battery::format(&view.battery),
-                        hw - 220.0,
-                        if shade.wide { 112.0 } else { 86.0 },
-                        196.0,
-                        15.0,
-                        style.text,
+                        "Dismiss all",
+                        hw - 166.0,
+                        143.0,
+                        140.0,
+                        17.0,
+                        style.accent,
                     );
                 }
             }
-            let items = services.and_then(|view| view.notifications.as_ref());
-            let count = items.map_or(0, |snapshot| snapshot.count);
-            text(
-                cr,
-                // Singular form (finding P1-4): "1 notifications" read as a
-                // bug on the one screen where the number is always visible.
-                if count == 1 {
-                    "1 notification".to_string()
-                } else {
-                    format!("{count} notifications")
-                }
-                .as_str(),
-                28.0,
-                112.0,
-                hw - 220.0,
-                19.0,
-                style.muted,
-            );
-            if count > 0 {
-                text(
-                    cr,
-                    "Dismiss all",
-                    hw - 166.0,
-                    143.0,
-                    140.0,
-                    17.0,
-                    style.accent,
-                );
-            }
+
             // The shared brightness slider (task: "brightness should be a
             // slider" -- Android puts one at the top of its own quick
             // settings shade; `docs/design/shell-polish-review-2026-09.md`
@@ -2955,8 +3022,18 @@ fn scene(
                 // The helper keeps the label "Toggle keyboard" in both states,
                 // so the unavailable card says so instead of echoing it.
                 let detail = if available { control_text(keyboard) } else { "Unavailable".into() };
-                themed_medium(cr, theme, "body", "Keyboard", 44.0, y + 15.0, hw - 88.0, 17.0, 14.0, 22.0, ink);
-                themed_text(cr, theme, "body", &detail, 44.0, y + 43.0, hw - 88.0, 19.0, 14.0, 24.0, ink);
+                // A larger vision step centres the two lines by their drawn
+                // height; 100% keeps the original offsets.
+                let (label_y, detail_y) = if crate::layout_text_scale() > 1.0 {
+                    let label_h = theme_font_size(theme, "body", 17.0, 14.0, 22.0) * 1.2;
+                    let detail_h = theme_font_size(theme, "body", 19.0, 14.0, 24.0) * 1.2;
+                    let top = y + ((SHADE_TOGGLE_H - 8.0) - label_h - detail_h) / 2.0;
+                    (top, top + label_h)
+                } else {
+                    (y + 15.0, y + 43.0)
+                };
+                themed_medium(cr, theme, "body", "Keyboard", 44.0, label_y, hw - 88.0, 17.0, 14.0, 22.0, ink);
+                themed_text(cr, theme, "body", &detail, 44.0, detail_y, hw - 88.0, 19.0, 14.0, 24.0, ink);
             }
             // The preview tile repeated whatever the top history row already
             // shows -- identical text for one notification, or a
@@ -3060,9 +3137,10 @@ fn scene(
                 cr.rectangle(0.0, list_top, w, (list_bottom - list_top).max(0.0));
                 cr.clip();
                 let offset = services.map_or(0.0, |view| view.notification_scroll);
+                let row = crate::service_ui::notification_row();
                 for (index, event) in items.events.iter().enumerate() {
-                    let y = list_top + index as f64 * NOTIFICATION_ROW - offset;
-                    if y + NOTIFICATION_ROW < list_top || y >= list_bottom {
+                    let y = list_top + index as f64 * row - offset;
+                    if y + row < list_top || y >= list_bottom {
                         continue;
                     }
                     let drag = services
@@ -3085,6 +3163,19 @@ fn scene(
                             style.error,
                         );
                     }
+                    // Larger vision steps stack the lines by their drawn
+                    // height and widen the initial's column; 100% keeps the
+                    // original positions.
+                    let lift = crate::layout_text_scale();
+                    let text_x = 56.0 + 36.0 * lift;
+                    let line_y = if lift <= 1.0 {
+                        [y + 13.0, y + 39.0, y + 71.0, y + 90.0]
+                    } else {
+                        let source = y + 13.0;
+                        let summary = source + context_font_size(cr, 16.0) * 1.25 + 4.0;
+                        let body = summary + context_font_size(cr, 21.0) * 1.25 + 4.0;
+                        [source, summary, body, body + context_font_size(cr, 15.0) * 1.25]
+                    };
                     let _ = cr.save();
                     cr.translate(drag, 0.0);
                     service_card(
@@ -3094,7 +3185,7 @@ fn scene(
                         24.0,
                         y,
                         w - 48.0,
-                        NOTIFICATION_ROW - 8.0,
+                        row - 8.0,
                         false,
                     );
                     let painted = event
@@ -3113,7 +3204,7 @@ fn scene(
                                 .to_string(),
                             48.0,
                             y + 19.0,
-                            36.0,
+                            36.0 * lift,
                             22.0,
                             style.text,
                         );
@@ -3121,32 +3212,32 @@ fn scene(
                     text(
                         cr,
                         &event.source,
-                        92.0,
-                        y + 13.0,
-                        w - 132.0,
+                        text_x,
+                        line_y[0],
+                        w - text_x - 40.0,
                         16.0,
                         style.accent,
                     );
                     text(
                         cr,
                         &event.summary,
-                        92.0,
-                        y + 39.0,
-                        w - 132.0,
+                        text_x,
+                        line_y[1],
+                        w - text_x - 40.0,
                         21.0,
                         style.text,
                     );
                     text(
                         cr,
                         &event.body,
-                        92.0,
-                        y + 71.0,
-                        w - 132.0,
+                        text_x,
+                        line_y[2],
+                        w - text_x - 40.0,
                         15.0,
                         style.muted,
                     );
                     if let Some(error) = &event.error {
-                        text(cr, error, 92.0, y + 90.0, w - 132.0, 14.0, style.error);
+                        text(cr, error, text_x, line_y[3], w - text_x - 40.0, 14.0, style.error);
                     }
                     let _ = cr.restore();
                 }
