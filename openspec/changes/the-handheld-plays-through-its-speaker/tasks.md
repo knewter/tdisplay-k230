@@ -15,7 +15,8 @@ Proof: `docs/evidence/max98357a-speaker.md`, citing file paths and, where applic
 
 - [x] 2.1 Add `nix/patches/canaan-audio-external-i2s-switch.patch` (ported from LILYGO's 0059) and wire it into `nix/kernel.nix`'s patch list with a comment explaining provenance and why it applies unmodified.
 - [x] 2.2a Build the kernel: `nix build .#kernel --max-jobs 1 --cores 6 --no-link --print-out-paths` -> `/nix/store/ix67lsrfp2y1d6dcb4q5mg1b2aa6snhl-linux-riscv64-unknown-linux-gnu-6.6.36-xuantie`. Host cross-build proof only; does not prove the module binds on hardware.
-- [ ] 2.2b Board proof: `dmesg | grep -iE 'canaan-k230-snd-inno|External I2S'` on the board after a `/boot` install and reboot.
+- [x] 2.2b Board proof: `dmesg | grep -iE 'canaan-k230-snd-inno|External I2S'` on the board after a `/boot` install and reboot.
+      Done from the 2026-10-01 boot-verification console transcript: `canaan-k230-snd-inno sound: External I2S output disabled by default` at 5.3 s, and the control reads `off` (`docs/evidence/max98357a-speaker/board-2026-10-01.md`).
 
 Proof for 2.1/2.2a: the patch applies (`patch -p1 --dry-run` verified against the unpacked pinned source during development) and `nix build .#kernel` succeeds -- done, host-only. Proof for 2.2b is a board task: a QEMU boot does not model this SoC's audio peripheral (`.skills/k230-spec-change/SKILL.md`'s QEMU-proof table), so only a board `dmesg` capture proves the module bound with the new control present.
 
@@ -31,6 +32,7 @@ Proof: `nix build .#deviceTree` -- done, host-only. This proves the DTB compiles
 - [x] 4.1 Add `nix/k230-speaker-test.nix` (`status`/`internal`/`external` subcommands) and install it plus `alsa-utils`/`libgpiod` in `nix/hardware.nix`'s `environment.systemPackages`, each with a recorded reason per that file's existing convention.
 - [x] 4.2a Build the closure: `nix build .#nixosConfigurations.k230-coherent-shell.config.system.build.toplevel --max-jobs 1 --cores 6 --no-link --print-out-paths` -> `/nix/store/lfq1j4rb9a1pmbqy3q56vh26j9054hqa-nixos-system-nixos-26.11.20260919.20b1ddd`. `k230-speaker-test.drv` and `alsa-utils`/`libgpiod` both built as part of `.#sdImage-coherent`.
 - [ ] 4.2b Board proof: `k230-speaker-test status` on the board.
+      2026-10-01 run (console transcript): it exited 0, but its `gpioinfo gpiochip1` failed under libgpiod 2.2.4 (`cannot find line 'gpiochip1'`) and `amixer controls` errored. Still open: switch the script to libgpiod 2.x syntax and re-run (`docs/evidence/max98357a-speaker/board-2026-10-01.md`).
 
 Proof for 4.1/4.2a: the toplevel closure and SD image build, and the script package builds -- done, host-only. Proof for 4.2b is a board task -- the script's `gpioset --mode=signal` usage is explicitly UNVERIFIED against the flake's actual pinned `libgpiod` version (design.md), so the first board run is also the first real test of that assumption.
 
