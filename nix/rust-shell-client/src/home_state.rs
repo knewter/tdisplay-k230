@@ -333,6 +333,26 @@ impl HomeLayout {
         }
     }
 
+    /// Sizes the dock to `slots` (`home_grid::dock_slots`): a wider surface
+    /// adds empty slots at the end; a narrower one never hides a pinned item.
+    /// An item past the new end moves into the first empty slot that stays,
+    /// or, with none left, onto the grid (`place_first_fit`), so every item
+    /// stays visible. A no-op when the length already matches.
+    pub fn fit_dock(&mut self, slots: usize, apps_per_page: usize) {
+        if self.dock.len() <= slots {
+            self.dock.resize(slots, None);
+            return;
+        }
+        let overflow: Vec<HomeItem> = self.dock.split_off(slots).into_iter().flatten().collect();
+        for item in overflow {
+            if let Some(cell) = self.dock.iter_mut().find(|cell| cell.is_none()) {
+                *cell = Some(item);
+            } else {
+                self.place_first_fit(item, apps_per_page);
+            }
+        }
+    }
+
     /// Number of pages, always at least 1 so a fresh/empty Home still has a
     /// page to show.
     /// Whether any grid page holds a widget of this kind (the widget is
@@ -892,6 +912,23 @@ mod tests {
         // alone, since a naive reflow could preserve order while still
         // scattering items across extra empty pages.
         assert_eq!(layout.pages, original.pages);
+    }
+
+    #[test]
+    fn fit_dock_grows_empty_and_shrinks_without_hiding_an_item() {
+        let app = |id: &str| Some(HomeItem::app(id));
+        let mut layout = HomeLayout { dock: vec![app("a"), None, app("c"), None], ..HomeLayout::default() };
+        layout.fit_dock(6, 20);
+        assert_eq!(layout.dock, vec![app("a"), None, app("c"), None, None, None]);
+        layout.dock[4] = app("e");
+        layout.dock[5] = app("f");
+        layout.fit_dock(4, 20);
+        assert_eq!(layout.dock, vec![app("a"), app("e"), app("c"), app("f")], "overflow fills the empty slots");
+        layout.fit_dock(6, 20);
+        layout.dock[4] = app("g");
+        layout.fit_dock(4, 20);
+        assert_eq!(layout.dock.len(), 4);
+        assert!(layout.pages.iter().flatten().any(|cell| *cell == app("g")), "a full dock spills onto the grid");
     }
 
     #[test]

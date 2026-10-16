@@ -329,6 +329,7 @@ impl HomeScreen {
         let columns = home_grid::columns_for_width(width);
         let apps_per_page = home_grid::apps_per_page(width, height);
         self.layout.reflow_to(columns, apps_per_page);
+        self.layout.fit_dock(home_grid::dock_slots(width, height), apps_per_page);
     }
 
     /// Clears every piece of cross-page-drag tracking state -- called at the
@@ -576,7 +577,7 @@ impl HomeScreen {
         let apps_per_page = home_grid::apps_per_page(width, height);
         let candidates = (0..apps_per_page)
             .map(|slot| HomeSlot::Grid { page, slot })
-            .chain((0..home_grid::DOCK_SLOTS).map(|slot| HomeSlot::Dock { slot }));
+            .chain((0..home_grid::dock_slots(width, height)).map(|slot| HomeSlot::Dock { slot }));
         let columns = self.layout.columns;
         candidates
             .filter(|slot| self.layout.get(*slot).is_some())

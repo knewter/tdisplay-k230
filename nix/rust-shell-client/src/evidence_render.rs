@@ -41,7 +41,7 @@ pub fn synthetic_apps(count: usize) -> Vec<AppEntry> {
         .collect()
 }
 
-/// Fills the dock with the first `home_grid::DOCK_SLOTS` apps and the grid
+/// Fills the dock with the first `home_grid::dock_slots` apps and the grid
 /// pages with the rest, via the same `HomeLayout::place`/`place_first_fit`
 /// primitives a real drag uses -- unlike `home_state::seed_default`, which
 /// only auto-pins a small curated list of well-known real desktop-entry
@@ -51,11 +51,11 @@ pub fn seed_layout(apps: &[AppEntry], width: u32, height: u32) -> HomeLayout {
     let apps_per_page = home_grid::apps_per_page(width, height);
     let mut layout = HomeLayout {
         columns: home_grid::columns_for_width(width),
-        dock: vec![None; home_grid::DOCK_SLOTS],
+        dock: vec![None; home_grid::dock_slots(width, height)],
         ..HomeLayout::default()
     };
     let mut iter = apps.iter();
-    for slot in 0..home_grid::DOCK_SLOTS {
+    for slot in 0..home_grid::dock_slots(width, height) {
         let Some(app) = iter.next() else { break };
         layout.set(HomeSlot::Dock { slot }, Some(HomeItem::app(app.id.clone())), apps_per_page);
     }
@@ -337,7 +337,7 @@ pub fn render_home_with_open_folder(path: &Path, width: u32, height: u32, apps: 
     let apps_per_page = home_grid::apps_per_page(width, height);
     let mut layout = HomeLayout {
         columns: home_grid::columns_for_width(width),
-        dock: vec![None; home_grid::DOCK_SLOTS],
+        dock: vec![None; home_grid::dock_slots(width, height)],
         ..HomeLayout::default()
     };
     let (folder_apps, rest) = apps.split_at(members.min(apps.len()));

@@ -1758,6 +1758,8 @@ DATA cfb96550e14595c1cc6ff249cfb25620d789ad0a02e10947c30adad0f6f9139b docs/evide
 DATA e66227f34bdb80eb23e88dc0a624591af9b738fc038f9b12a6d26fd389332dcc docs/evidence/hdmi-hotplug/landscape/host-renders/wifi-list-1920x1080.png
 DATA 4f9b1ccace0647bd8c3f0ba72a72734b937b1b29b474976bb74ebffc26dcfcca docs/evidence/hdmi-hotplug/landscape/board/home-hdmi-grim.png
 DATA 7372b8293e14bfffa47d05c68097ad2ad9a38d520296f7d520566f157b5deac7 docs/evidence/hdmi-hotplug/landscape/board/settings-hdmi-grim.png
+DATA 0c2812db3da2b2039cfd41bff317c05d4af90ef45012b944bfa8af19e1cabbc8 docs/evidence/hdmi-hotplug/landscape/wide-dock/home-1232x568.png
+DATA 7b7cec0fa311bf9096cbc49cfa82581640fc7591cb81a0704b474ddca61c96d3 docs/evidence/hdmi-hotplug/landscape/wide-dock/home-1280x800.png
 DATA 9159a4f4c5d3100624614443d41fd5b093b0ef163f3d20e30b07daa0ee05001a docs/evidence/hdmi-hotplug/landscape/wide-reflow/theme-chooser-1232x568.png
 DATA 84b6d97127f8ceb1e70f4c3b85cf1994b3fe4637f8372f88afa93364713fbffe docs/evidence/hdmi-hotplug/landscape/wide-reflow/theme-chooser-1280x800.png
 DATA 3b6245127cef76666a1bb2f9a087aaf775b080e1f7f1a473b69bf18888a5112e docs/evidence/hdmi-hotplug/landscape/wide-reflow/theme-chooser-1920x1080.png
@@ -2965,6 +2967,8 @@ See `docs/evidence/hdmi-hotplug/manual-switch/host-render.json`.
 | `docs/evidence/hdmi-hotplug/landscape/host-renders/wifi-list-1920x1080.png` | 52063 | DATA | `e66227f34bdb80eb23e88dc0a624591af9b738fc038f9b12a6d26fd389332dcc` |
 | `docs/evidence/hdmi-hotplug/landscape/board/home-hdmi-grim.png` | 35829 | DATA | `4f9b1ccace0647bd8c3f0ba72a72734b937b1b29b474976bb74ebffc26dcfcca` |
 | `docs/evidence/hdmi-hotplug/landscape/board/settings-hdmi-grim.png` | 52202 | DATA | `7372b8293e14bfffa47d05c68097ad2ad9a38d520296f7d520566f157b5deac7` |
+| `docs/evidence/hdmi-hotplug/landscape/wide-dock/home-1232x568.png` | 21485 | DATA | `0c2812db3da2b2039cfd41bff317c05d4af90ef45012b944bfa8af19e1cabbc8` |
+| `docs/evidence/hdmi-hotplug/landscape/wide-dock/home-1280x800.png` | 31903 | DATA | `7b7cec0fa311bf9096cbc49cfa82581640fc7591cb81a0704b474ddca61c96d3` |
 | `docs/evidence/hdmi-hotplug/landscape/wide-reflow/theme-chooser-1232x568.png` | 36434 | DATA | `9159a4f4c5d3100624614443d41fd5b093b0ef163f3d20e30b07daa0ee05001a` |
 | `docs/evidence/hdmi-hotplug/landscape/wide-reflow/theme-chooser-1280x800.png` | 40866 | DATA | `84b6d97127f8ceb1e70f4c3b85cf1994b3fe4637f8372f88afa93364713fbffe` |
 | `docs/evidence/hdmi-hotplug/landscape/wide-reflow/theme-chooser-1920x1080.png` | 48014 | DATA | `3b6245127cef76666a1bb2f9a087aaf775b080e1f7f1a473b69bf18888a5112e` |

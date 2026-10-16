@@ -4682,7 +4682,7 @@ pub fn paint_home(
         f64::from(height) - home_grid::dock_top(height) - 18.0,
     );
     service_card(cr, theme, "launcher", dock_band.0, dock_band.1, dock_band.2, dock_band.3, false);
-    for slot in 0..home_grid::DOCK_SLOTS {
+    for slot in 0..home_grid::dock_slots(width, height) {
         let Some(item) = home.layout.dock.get(slot).and_then(Option::as_ref) else {
             continue;
         };

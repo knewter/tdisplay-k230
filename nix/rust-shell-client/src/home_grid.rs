@@ -175,6 +175,21 @@ pub fn apps_per_page(width: u32, height: u32) -> usize {
     columns_for_width(width) * rows_per_page(height)
 }
 
+/// Icons `icon.rs::CACHE_LIMIT` keeps resident: one full Home page plus
+/// its dock should fit, so a wider dock may only take what the page leaves.
+const ICON_BUDGET: usize = 24;
+
+/// How many dock slots `width`x`height` shows: [`DOCK_SLOTS`] (4) on the
+/// portrait panel, and more on a wide surface (operator, 2026-10-14: "More
+/// slots when wide"), one per grid column but never more than the page
+/// leaves of the icon budget -- 6 at 1280x800 and 1232x568. Never fewer
+/// than [`DOCK_SLOTS`]: an output whose page alone already exceeds the
+/// budget (1920x1080) keeps the panel's 4 rather than losing slots.
+pub fn dock_slots(width: u32, height: u32) -> usize {
+    let room = ICON_BUDGET.saturating_sub(apps_per_page(width, height));
+    columns_for_width(width).min(room).max(DOCK_SLOTS)
+}
+
 fn tile_width(width: u32, columns: usize) -> f64 {
     let columns = columns.max(1);
     ((f64::from(width) - 2.0 * SIDE_MARGIN - (columns - 1) as f64 * TILE_GAP) / columns as f64)
@@ -269,17 +284,16 @@ pub fn slot_at(point: (f64, f64), width: u32, height: u32, filled: usize, column
     None
 }
 
-fn dock_slot_width(width: u32) -> f64 {
-    ((f64::from(width) - 2.0 * SIDE_MARGIN - (DOCK_SLOTS - 1) as f64 * TILE_GAP)
-        / DOCK_SLOTS as f64)
-        .max(0.0)
+fn dock_slot_width(width: u32, slots: usize) -> f64 {
+    let slots = slots.max(1);
+    ((f64::from(width) - 2.0 * SIDE_MARGIN - (slots - 1) as f64 * TILE_GAP) / slots as f64).max(0.0)
 }
 
 /// A dock slot's outer cell, spanning the dock band's full height -- unlike
 /// the grid, a dock icon has no label, so [`dock_content`]'s plate centers
 /// directly within this rect with no separate label allowance.
 pub fn dock_rect(width: u32, height: u32, slot: usize) -> (f64, f64, f64, f64) {
-    let w = dock_slot_width(width);
+    let w = dock_slot_width(width, dock_slots(width, height));
     (
         SIDE_MARGIN + slot as f64 * (w + TILE_GAP),
         dock_top(height),
@@ -312,7 +326,7 @@ pub fn dock_slot_at(point: (f64, f64), width: u32, height: u32) -> Option<usize>
     if !point.0.is_finite() || !point.1.is_finite() {
         return None;
     }
-    for slot in 0..DOCK_SLOTS {
+    for slot in 0..dock_slots(width, height) {
         let (x, y, w, h) = dock_rect(width, height, slot);
         if point.0 >= x && point.0 < x + w && point.1 >= y && point.1 < y + h {
             return Some(slot);
@@ -667,7 +681,7 @@ mod tests {
         assert!(h >= content, "plate and label fit the tile: {h} < {content}");
         assert!(y1 + h <= grid_bottom(568) + 0.001, "the second row clears the dots");
         assert!(y0 >= GRID_TOP);
-        assert!(apps_per_page(1232, 568) + DOCK_SLOTS <= 24, "page plus dock stays inside the icon cache");
+        assert!(apps_per_page(1232, 568) + dock_slots(1232, 568) <= 24, "page plus dock stays inside the icon cache");
     }
 
     #[test]
@@ -676,6 +690,26 @@ mod tests {
         // plus a full dock (DOCK_SLOTS) must never exceed it, or a full
         // Home page would evict and re-decode an icon every frame.
         assert_eq!(apps_per_page(568, 1232) + DOCK_SLOTS, 24);
+    }
+
+    #[test]
+    fn a_wide_dock_grows_within_the_icon_budget() {
+        assert_eq!(dock_slots(568, 1232), DOCK_SLOTS, "the portrait panel keeps its 4");
+        assert_eq!(dock_slots(1280, 800), 6);
+        assert_eq!(dock_slots(1232, 568), 6);
+        assert_eq!(dock_slots(1920, 1080), DOCK_SLOTS, "never fewer than the panel's 4");
+        for (w, h) in [(1280, 800), (1232, 568)] {
+            assert!(apps_per_page(w, h) + dock_slots(w, h) <= 24);
+            let mut right = 0.0;
+            for slot in 0..dock_slots(w, h) {
+                let (x, y, cw, ch) = dock_rect(w, h, slot);
+                assert!(x >= right && cw >= 56.0 && ch >= 56.0, "{w}x{h} slot {slot} overlaps or is too small");
+                assert!(x + cw <= f64::from(w), "{w}x{h} slot {slot} runs off the edge");
+                assert!(dock_content(w, h, slot).plate_size <= cw);
+                assert_eq!(dock_slot_at((x + cw / 2.0, y + ch / 2.0), w, h), Some(slot));
+                right = x + cw;
+            }
+        }
     }
 
     #[test]
