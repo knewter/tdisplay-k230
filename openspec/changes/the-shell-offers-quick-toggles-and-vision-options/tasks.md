@@ -112,6 +112,9 @@ authorization only removes the blocker on starting them.
 - [ ] C.8 Board: at 160% and 200% on the landscape panel, native `grim`
   captures of Home, drawer, Shade, Settings and Vision, and the operator's
   legibility judgement on glass. Closes C.4 if accepted.
+  Progress 2026-10-16: captures at both steps (injected input, native `grim`)
+  are in `docs/evidence/coherent-shell/accessibility-scale/board/13`–`23`.
+  The operator's judgement on glass is still needed.
 
 ## D. Shared spec/evidence
 

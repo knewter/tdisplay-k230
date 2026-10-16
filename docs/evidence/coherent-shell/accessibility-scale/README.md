@@ -230,3 +230,44 @@ size:
 - The Home deck, the card shell and app windows are outside this change.
   Only the battery ring was fitted, in `91a60bfb`.
 - None of this has been seen on the panel yet. That is C.8.
+
+## Panel captures of the redesign (2026-10-16, task C.8 progress)
+
+The board ran `/nix/store/sbn9x5qi1a3qlrd6sh0npjnxwiqyd70y-nixos-system-…`,
+built from integration branch `integ-cma-popup` at `0c438090`. That branch
+contains `8799961c` (Home widgets) and the fit-margin commit on this branch.
+It was deployed live with `switch-to-configuration test`.
+
+Method: the step was chosen by injected taps on the Vision page
+(`tools/board-pointer.py`). Each surface was opened with the shell socket
+route command. Each frame is a native `grim` capture of DSI-1 at 1232x568.
+After each change the theme helper logged `outcome=ok`, and
+`k230-theme list` read `larger`/`standard` or `largest`/`standard`.
+
+Evidence class: injected input and native captures. These are not
+real-finger interaction and not a judgement on glass.
+
+| File | What it shows |
+|---|---|
+| `board/13-panel-200-home-before-widget-fix.png` | Home at 200% before `8799961c`: the clock overlaps and the battery stats truncate. |
+| `board/14-panel-200-home.png` | Home at 200% after the fix. The widgets keep their cell-proportional text, and the battery grid uses two columns. |
+| `board/15-panel-200-drawer.png` | Drawer at 200%. |
+| `board/16-panel-200-shade.png` | Shade at 200%. |
+| `board/17-panel-200-settings.png` | Settings at 200%, unscrolled. |
+| `board/18-panel-200-vision.png` | Vision page at 200%. |
+| `board/19-panel-160-home.png` | Home at 160%. |
+| `board/20-panel-160-drawer.png` | Drawer at 160%. |
+| `board/21-panel-160-shade.png` | Shade at 160%. The title "Notifications" is whole; before the 4% fit margin it ellipsized to "Notificatio…". |
+| `board/22-panel-160-settings.png` | Settings at 160%. The keyboard hint caption fits. |
+| `board/23-panel-160-vision.png` | Vision page at 160%. |
+
+After the capture, the board was set back to `largest`/`standard`.
+
+### Limits
+
+- Home widgets do not grow with the step. They keep the text sizes they have
+  at 100%, scaled only by their cell.
+- At 200% the Shade's title and its "Swipe up…" caption shrink to fit beside
+  the Settings link and the battery label. In `16-panel-200-shade.png` they
+  are smaller than the rest of the Shade.
+- No operator has judged legibility on glass. C.8 stays open for that.
