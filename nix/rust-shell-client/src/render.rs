@@ -4636,9 +4636,16 @@ fn paint_battery_details(cr: &Context, style: &VisualStyle, rect: (f64, f64, f64
     let radius = (h * 0.17).min(w * 0.105);
     let state_size = size(0.10, 0.06, 12.0);
     let time_size = size(0.08, 0.048, 11.0);
-    let label_size = size(0.048, 0.026, 10.0);
-    let value_size = size(0.082, 0.039, 12.0);
     let line_size = size(0.06, 0.034, 11.0);
+    // A larger vision step enlarges the grid's labels and values as far as
+    // two rows still fit, and halves the columns so each value has room;
+    // the hero and graph keep their cell-proportional sizes.
+    let unit_row_h = size(0.048, 0.026, 10.0) * 1.35 + size(0.082, 0.039, 12.0) * 1.3;
+    let grid_room = (h - radius * 2.2 - line_size * 1.3) / (unit_row_h * 2.0);
+    let grid_scale = crate::layout_text_scale().min(grid_room).max(1.0);
+    let columns = if grid_scale > 1.2 { 2 } else { 4 };
+    let label_size = size(0.048, 0.026, 10.0) * grid_scale;
+    let value_size = size(0.082, 0.039, 12.0) * grid_scale;
     let row_h = label_size * 1.35 + value_size * 1.3;
     // Hero, two grid rows and the input line, evenly spaced in the rect.
     let blocks_h = radius * 2.2 + row_h * 2.0 + line_size * 1.3;
@@ -4667,7 +4674,8 @@ fn paint_battery_details(cr: &Context, style: &VisualStyle, rect: (f64, f64, f64
         detail_glow(cr, &time, text_x, ty, text_w, time_size, style.accent, pango::Weight::Bold, pango::Alignment::Left);
     }
 
-    // Grid: label over value, four columns, at most two rows.
+    // Grid: label over value, four columns (two at a larger vision step),
+    // at most two rows.
     let mut cells: Vec<(&str, String, usize)> = Vec::new();
     let mut push = |label: &'static str, value: Option<String>, span: usize| {
         if let Some(value) = value {
@@ -4681,11 +4689,14 @@ fn paint_battery_details(cr: &Context, style: &VisualStyle, rect: (f64, f64, f64
     push("Charge", details.charge_label(), 2);
     push("Health", details.health_label(), 1);
     push("Cycles", details.cycles_label(), 1);
-    let col_w = inner_w / 4.0;
+    let col_w = inner_w / columns as f64;
     let grid_y = ring_cy + radius * 1.1 + gap;
     let (mut col, mut row) = (0usize, 0usize);
     for (label, value, span) in cells {
-        if col + span > 4 {
+        if span > columns {
+            continue;
+        }
+        if col + span > columns {
             col = 0;
             row += 1;
         }
@@ -4720,6 +4731,27 @@ fn paint_battery_details(cr: &Context, style: &VisualStyle, rect: (f64, f64, f64
 /// HomeScreen`'s own docs on those fields cover the caching/throttling;
 /// this function only ever reads their current value.
 fn paint_widget_card(cr: &Context, style: &VisualStyle, kind: WidgetKind, rect: (f64, f64, f64, f64), home: &HomeScreen) {
+    // A widget sizes its text to its own cell (the clock's digits are 30% of
+    // its height), so the vision step must not multiply that again: at 200%
+    // the digits overlapped and the battery grid truncated (board, panel
+    // 1232x568, 2026-10-16). Widgets reflow for the step themselves instead
+    // (`paint_battery_details`' grid).
+    let target = cr.target();
+    let saved = target.user_data(&THEME_METRICS);
+    let vision = crate::layout_text_scale();
+    if let Some(metrics) = saved.as_ref().filter(|_| vision > 1.0) {
+        let _ = target.set_user_data(&THEME_METRICS, Rc::new(ThemeMetrics {
+            font: metrics.font / vision,
+            spacing: metrics.spacing,
+        }));
+    }
+    paint_widget_card_content(cr, style, kind, rect, home);
+    if let Some(metrics) = saved {
+        let _ = target.set_user_data(&THEME_METRICS, metrics);
+    }
+}
+
+fn paint_widget_card_content(cr: &Context, style: &VisualStyle, kind: WidgetKind, rect: (f64, f64, f64, f64), home: &HomeScreen) {
     let (x, y, w, h) = rect;
     cr.new_path();
     let pad = visual_inset(cr, 22.0);

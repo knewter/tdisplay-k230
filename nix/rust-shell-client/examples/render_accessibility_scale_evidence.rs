@@ -9,11 +9,16 @@ use k230_shell_rust::{
     appearance::{AppearanceReceiver, AppearanceSnapshot},
     catalog::AppEntry,
     evidence_render::{fixture_notification_events, fixture_settings},
-    render::{RenderParams, RendererCache},
+    render::{self, RenderParams, RendererCache},
     service_data::NotificationSnapshot,
     service_ui::ServiceView,
     theme_catalog::VisionChoice,
     theme_ui::{ThemePage, ThemeView},
+    home_grid::{self, HomeSlot},
+    home_screen::HomeScreen,
+    home_state::{HomeItem, HomeLayout, WidgetKind},
+    home_widgets::battery::read_details,
+    icon::IconCache,
     Route,
 };
 use std::{env, fs, os::unix::fs::PermissionsExt, path::PathBuf};
@@ -73,6 +78,47 @@ fn render(path: PathBuf, theme: &AppearanceSnapshot, vision: &VisionChoice, w: u
     target.write_to_png(&mut fs::File::create(path).unwrap()).unwrap();
 }
 
+/// The board's own gauge text from 2026-10-15, as in
+/// `render_battery_details_evidence`.
+const GAUGE: &str = "POWER_SUPPLY_TYPE=Battery\nPOWER_SUPPLY_STATUS=Full\nPOWER_SUPPLY_HEALTH=Good\nPOWER_SUPPLY_PRESENT=1\nPOWER_SUPPLY_CYCLE_COUNT=0\nPOWER_SUPPLY_VOLTAGE_NOW=4030000\nPOWER_SUPPLY_CURRENT_NOW=0\nPOWER_SUPPLY_POWER_AVG=0\nPOWER_SUPPLY_CHARGE_FULL_DESIGN=3000000\nPOWER_SUPPLY_CHARGE_FULL=2872000\nPOWER_SUPPLY_CHARGE_NOW=2872000\nPOWER_SUPPLY_CAPACITY=100\nPOWER_SUPPLY_TEMP=322\n";
+
+/// Home with the Bubble clock and the battery details widget, as on the
+/// operator's panel.
+fn render_home(path: PathBuf, theme: &AppearanceSnapshot, w: u32, h: u32) {
+    // `RendererCache::set_appearance` sets the layout step; do the same.
+    let mut cache = RendererCache::default();
+    cache.set_appearance(Some(theme.clone()));
+    let dir = env::temp_dir().join(format!("k230-a11y-gauge-{}", std::process::id()));
+    fs::create_dir_all(dir.join("bq27220-0")).unwrap();
+    fs::write(dir.join("bq27220-0").join("uevent"), GAUGE).unwrap();
+    let details = read_details(&dir).quantized();
+    let _ = fs::remove_dir_all(&dir);
+    let per_page = home_grid::apps_per_page(w, h);
+    let mut layout = HomeLayout {
+        columns: home_grid::columns_for_width(w),
+        dock: vec![None; home_grid::DOCK_SLOTS],
+        ..HomeLayout::default()
+    };
+    layout.place(HomeSlot::Grid { page: 0, slot: 0 }, HomeItem::Widget { widget: WidgetKind::Clock }, per_page, false);
+    layout.place_first_fit(HomeItem::Widget { widget: WidgetKind::BatteryDetails }, per_page);
+    let mut home = HomeScreen::new(layout, f64::from(w));
+    home.battery_details = details;
+    let target = ImageSurface::create(Format::ARgb32, w as i32, h as i32).unwrap();
+    {
+        let cr = Context::new(&target).unwrap();
+        cr.set_source_rgb(0.12, 0.3, 0.3);
+        cr.paint().unwrap();
+        let content = ImageSurface::create(Format::ARgb32, w as i32, h as i32).unwrap();
+        {
+            let cc = Context::new(&content).unwrap();
+            render::paint_home(&cc, w, h, Some(theme), &home, &[], &mut IconCache::new());
+        }
+        cr.set_source_surface(&content, 0.0, 0.0).unwrap();
+        cr.paint().unwrap();
+    }
+    target.write_to_png(&mut fs::File::create(path).unwrap()).unwrap();
+}
+
 fn main() {
     let mut args = env::args().skip(1);
     let out = PathBuf::from(args.next().expect("out dir"));
@@ -94,6 +140,7 @@ fn main() {
             for page in ["settings", "vision", "shade", "drawer"] {
                 render(out.join(format!("{name}-{page}-{w}x{h}.png")), &theme, &vision, w, h, page);
             }
+            render_home(out.join(format!("{name}-home-{w}x{h}.png")), &theme, w, h);
         }
         println!("rendered {name}");
     }
