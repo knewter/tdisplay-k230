@@ -8,16 +8,25 @@ while preserving the existing portrait panel behavior. The shell SHALL derive
 coordinate scaling from actual configured output geometry. Reuse the responsive
 shell capability's implementation without replacing its existing task owner.
 
-Home and Drawer icon/text density SHALL have an actual-output sizing policy
-beyond column-count reflow, while preserving native portrait behavior. Wi-Fi
-and the theme chooser SHALL use a real reflow or uniform centered scale.
-The dock’s slot-count/reflow policy SHALL be explicitly decided and qualified
-against the corresponding physical layout and input evidence. These transferred
-requirements remain UNVERIFIED until tasks 7.1–7.3 and their named proof pass.
+Home and Drawer SHALL keep the panel's native icon and text size on every
+output, and a wider output SHALL add grid columns instead of enlarging icons
+(operator decision 2026-10-14: "Keep panel size, more columns"). Wi-Fi and
+the theme chooser SHALL use a real wide reflow (columns taken from the
+surface, theme cards in a grid) instead of a non-uniform stretch. On a wide
+output the dock SHALL offer more than four slots, one per grid column, within
+the icon budget that keeps a full page plus its dock resident; the extra slots
+stay empty until apps are pinned, and returning to a narrower output SHALL NOT
+hide a pinned item.
 
-<!-- UNVERIFIED: host responsive fixtures exist, but the original HDMI
-landscape tasks 5.1–5.4 and separate physical Home/Settings proof remain open.
-Portrait HDMI acceptance is not landscape evidence. -->
+<!-- Grounding (2026-10-16): Home and Drawer columns reflow at native size
+(`home_grid::columns_for_width`, `ICON_SIZE` 80), verified by host tests and
+board `grim` captures at 1280x800. The Wi-Fi and chooser reflow is in
+`docs/evidence/hdmi-hotplug/landscape/wide-reflow/`; operator on the HDMI
+monitor: "themes worked in landscape hdmi fine" (operator report). The dock
+rule (`home_grid::dock_slots`, `HomeLayout::fit_dock`) has host tests and
+renders, plus board evidence, in
+`docs/evidence/hdmi-hotplug/landscape/wide-dock/`. Landscape HDMI tasks
+5.1–5.4 are complete with board evidence. -->
 
 #### Scenario: A person uses Home and Settings on a landscape monitor
 
@@ -45,11 +54,14 @@ same rotated geometry. Touch input SHALL map to the rotated output, and the
 edge gestures SHALL follow the rotated edges. The HDMI output behavior SHALL
 be unchanged by the panel orientation.
 
-<!-- UNVERIFIED: operator request 2026-10-13 with camera observation of the
-keyboard-case bench; tasks 8.1–8.7 and their named proof are open. A runtime
-`swaymsg output DSI-1 transform 270` trial on the second board on 2026-10-13
-showed the terminal correctly oriented, but shell-ui rejected the 1232×568
-home and wallpaper configures after a restart (`home-configure-rejected`). -->
+<!-- Grounding (2026-10-14): tasks 8.1–8.7 on the second board's installed
+landscape image. The evidence is native `grim` captures of every listed surface,
+injected edge gestures, and the operator's real-finger check ("real finger
+check worked fine"). HDMI plug and unplug from the landscape profile was checked
+by the operator ("yeah it's good to go") with native captures. The camera
+photograph was waived by the operator. See
+`docs/evidence/panel-landscape/` and
+`docs/evidence/hdmi-hotplug/landscape/teardown-crash.md`. -->
 
 #### Scenario: A person uses the shell in the keyboard case
 

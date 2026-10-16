@@ -59,3 +59,10 @@ tapped or what it applied.
 Limits: no frame capture on the board. The grid has no scrolling: with
 many user themes its cards shrink (the test holds 12 at 80 px or more), and a
 much longer list would need a scrolling grid.
+
+## Operator, 2026-10-16
+
+After using the theme chooser on the HDMI monitor, the operator said: "themes
+worked in landscape hdmi fine". Evidence class: operator report (real glass).
+This closes task 7.2's open tap item. No shell log records the card that was
+tapped.

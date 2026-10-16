@@ -43,3 +43,38 @@ target, 0 failures. The new tests are:
 The older wide Home renders under `shell-responsive/`,
 `hdmi-hotplug/landscape/host-renders/` and `panel-landscape/host/` record the
 4-slot dock as it was before this change, and are left as history.
+
+## On the board (2026-10-16, ~00:44–00:48 CDT)
+
+Evidence class: **injected pointer events plus native `grim` captures**. No
+real glass and no camera. Build `3f6eca48`
+(`.#kernelMainlineDrmShellLandscapeHdmiBootFiles`), system
+`zqy2i8w0h672f69jw7843w1l0mqz4wv5`, deployed live with
+`switch-to-configuration test` and the boot profile set. HDMI-A-1 at
+1280x800. Pointer input is `tools/board-pointer.py`, a uinput mouse.
+
+1. `board-six-slots-1280x800-grim.png`: after the deploy, Home's dock shows
+   six slots. The user's four pinned apps fill slots 1–4, and slots 5–6 are
+   empty, as the operator asked.
+2. A long press on the Video app in the grid, then a drag to the sixth slot
+   (`hold 640 190 900`, 12 moves to 1162,720, `up`). The shell logged
+   `home-layout-changed`. The saved `home.json` dock then read
+   `[foot, Nautilus, editor, htop, null, k230-video]`: six entries, persisted.
+   `board-video-dropped-in-slot-6-1280x800-grim.png` shows the result while
+   still in rearrange mode.
+3. `click 1194 80` (Done), then `click 1162 720` on the sixth slot. The shell
+   logged `app-launch-requested` and `app-launch-mapped`, so the new slot's
+   hit area launches its app. `board-video-in-slot-6-1280x800-grim.png` shows
+   Home with Video in slot 6, out of rearrange mode, before the launch.
+4. Cleanup: the Video window was closed, and Video was dragged back to its
+   grid cell. `home.json` again matches the operator's layout (Video in grid
+   slot 4, slots 5–6 empty).
+
+Limits:
+
+- Shrinking the dock (unplugging HDMI back to the portrait panel) with an
+  item in slot 5 or 6 was not exercised on the board; it is covered only by
+  `fit_dock_grows_empty_and_shrinks_without_hiding_an_item`.
+- The 1232x568 landscape panel dock is host-render evidence only.
+- The first drag-back attempt did not take: the press landed in rearrange
+  mode without a drag. A second attempt with a 1.2 s hold worked.

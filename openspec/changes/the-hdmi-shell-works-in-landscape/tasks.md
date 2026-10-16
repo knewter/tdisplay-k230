@@ -95,19 +95,31 @@ Planning validation passed 2026-10-09. Implementation and physical proof remain 
 The operator authorized moving the responsive proposal’s original tasks
 6.3–6.5 here. These remain unperformed, with their requirements retained.
 
-- [ ] 7.1 Design and implement a real icon/text density scale for the Home
+- [x] 7.1 Design and implement a real icon/text density scale for the Home
       grid and the Drawer (the responsive proposal’s density non-goal):
       today only their column counts reflow with `crate::reflow_columns`;
       `ICON_SIZE`/`ROW_HEIGHT`/tile margins stay the panel's own native
       pixel size at every surface size, unlike Settings' content column.
-- [ ] 7.2 Design and implement a real reflow (or a uniform, centered scale)
+- [x] 7.2 Design and implement a real reflow (or a uniform, centered scale)
       for `paint_wifi`'s and the theme chooser's existing non-uniform
       `cr.scale(width/568.0, height/1232.0)`, which this change's Settings
       content transform deliberately excludes and leaves as-is.
-- [ ] 7.3 Design whether/how Home's dock should reflow its own slot count
+- [x] 7.3 Design whether/how Home's dock should reflow its own slot count
       (`DOCK_SLOTS`, deliberately left fixed at 4 by the responsive
       implementation) using the archived responsive 6.1/6.2 evidence and once this
       proposal’s landscape 5.4 evidence is in hand to verify against.
+      Done 2026-10-16 (`docs/evidence/hdmi-hotplug/landscape/wide-dock/`).
+      The dock gets one slot per grid column, capped at what the icon budget
+      leaves after one full page, and never fewer than 4
+      (`home_grid::dock_slots`): 4 on the portrait panel, and 6 at 1280x800
+      and 1232x568. `HomeLayout::fit_dock` adds empty slots when the surface
+      widens. When it narrows, items move into free slots or onto the grid,
+      so no pinned item is hidden. Host: `cargo test` passed (547 lib tests
+      plus all integration targets, 0 failed), and the portrait Home render
+      is byte-identical. Board (injected pointer plus native `grim`, HDMI
+      1280x800, system `zqy2i8w0…`): six slots shown, Video dragged into
+      slot 6 and persisted, and a click on slot 6 launched it. The shrink
+      path and the 1232x568 dock are host-only.
 
 Operator design answers, 2026-10-14 (still to implement and verify; none is
 done):
@@ -126,6 +138,27 @@ done):
   the tap stays open.
 - 7.3: "More slots when wide" -- the dock grows past 4 slots on wide screens;
   the extra slots stay empty until apps are pinned.
+
+Closure, 2026-10-16:
+
+- 7.1 done by the operator's decision, with no density scale. Home's
+  `ICON_SIZE` (80) and `ROW_HEIGHT` are fixed constants, and only the column
+  count follows the surface (`home_grid::columns_for_width`, and
+  `navigation::columns_for_width` for the Drawer). Host tests
+  `columns_for_width_matches_the_reference_at_568_and_grows_for_hdmi` and
+  `icon_sizes_are_in_the_finger_sized_band` cover it. A board native `grim`
+  at 1280x800 shows Home's Video icon at the panel's size, with the 9-column
+  layout `"columns":9` in the saved `home.json`
+  (`docs/evidence/hdmi-hotplug/landscape/wide-dock/board-six-slots-1280x800-grim.png`).
+  The Drawer at that size is host-only: an injected bottom-edge mouse swipe
+  does not open it on HDMI.
+  The 1232x568 host renders are in `docs/evidence/panel-landscape/host/`. The
+  spec delta now states the decision instead of a density scale.
+- 7.2 done. The open item was the operator's look and a tap on a grid card.
+  The operator, 2026-10-16, after using the theme chooser on the HDMI monitor:
+  "themes worked in landscape hdmi fine" (operator report on real glass; the
+  shell still does not log which card was tapped).
+- 7.3 done; see the task text below for its evidence.
 
 ## 8. Panel landscape for the keyboard case — 2026-10-13
 
