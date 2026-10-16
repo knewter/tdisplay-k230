@@ -102,9 +102,12 @@ performance acceptance.
 
 ## 3. Prove it on the actual handheld
 
-- [ ] 3.1 Build the full changed system
+- [x] 3.1 Build the full changed system
   (`nix build .#nixosConfigurations.k230-coherent-shell.config.system.build.toplevel`)
   before any board time; record exact closure and source identities.
+  Done 2026-10-16 (host build, after the board runs): master `64481159` →
+  `zjdyp4mv…-nixos-system-…`, 1183 paths; see
+  `docs/evidence/omarchy-themes/background-fit-modes-board/full-closure-2026-10-16.md`.
 - [x] 3.2 On the reserved board, apply each new fit mode to a still
   background; confirm each reads correctly (no unexpected letterboxing,
   stretch, or clipping) with native `grim` captures for at least one dark
