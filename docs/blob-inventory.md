@@ -1691,6 +1691,12 @@ DATA 2b7f1d9461d73fe5bef505bba781a69a26b01d933188282340df0fceae44b06a docs/evide
 DATA a923f91bc32054b92985b36ac490cc876a587938193b3ee31664d8e98fa0fdb5 docs/evidence/coherent-shell/side-edge-back/1-shade-open-1280x720.png
 DATA 2d181a2927d4edbdf3a2ea92c87f049fb307940b4d5ebeb4c76a26d53e62869d docs/evidence/coherent-shell/side-edge-back/2-after-left-side-back-1280x720.png
 DATA 82d010631988c5b7e6ddf21c414f01bfed772d95b7cb30dfc8b79be32ca06f17 docs/evidence/coherent-shell/side-edge-back/3-keyboard-shown-swipe-not-claimed-1280x720.png
+DATA 90159f4d0e109d3bcea7e43475192eb2a70d5c5f3f97ab000210753c9b23ef6f docs/evidence/coherent-shell/side-edge-back/4-panel-keyboard-shown-1232x568.png
+DATA 3f1c2a9d463503c376fa0b6745719017f5c33883a2f950dbdebef61a686cb2c6 docs/evidence/coherent-shell/side-edge-back/5-panel-keyboard-top-pull-opens-shade-1232x568.png
+DATA 90159f4d0e109d3bcea7e43475192eb2a70d5c5f3f97ab000210753c9b23ef6f docs/evidence/coherent-shell/side-edge-back/6-panel-side-back-closes-shade-keyboard-stays-1232x568.png
+DATA 94c9f0e9c72180df1285874d58e1e8a078b52db25d77a4fb69e2d813621265b8 docs/evidence/coherent-shell/side-edge-back/7-panel-side-back-dismisses-keyboard-1232x568.png
+DATA 05c42a66e1b7e442162994f261e40d0a19cb8f0ba2ba48b149680869c7bdb903 docs/evidence/coherent-shell/side-edge-back/8-panel-settings-1232x568.png
+DATA 5c8a10703c36ec7fe5be5eeb103f943ab5c778e38b2149179124e24baa652609 docs/evidence/coherent-shell/side-edge-back/9-panel-settings-side-back-1232x568.png
 DATA a5002406911c3ae20a410d989c6e1ad0a31e46f32062eaec14414873e46d37d2 docs/evidence/hdmi-hotplug/panel-recovery-2026-09-30/native-panel.jpg
 DATA f2ac6301f82eba7310bbe777bd01d05562a8a3eed7a567e5ebae8bdc53f53121 docs/evidence/the-shell-is-navigable-with-a-mouse/edge-controls-board/files-before.jpg
 DATA c9c05b81fb3d12e81f2b5f61135846d7779f4246d1fbda106e2ed5653cc165f5 docs/evidence/the-shell-is-navigable-with-a-mouse/edge-controls-board/files-header-menu.jpg
@@ -2468,6 +2474,12 @@ shared pre-touch frame both are compared against).
 | `docs/evidence/coherent-shell/side-edge-back/1-shade-open-1280x720.png` | 53761 | DATA | `a923f91bc32054b92985b36ac490cc876a587938193b3ee31664d8e98fa0fdb5` |
 | `docs/evidence/coherent-shell/side-edge-back/2-after-left-side-back-1280x720.png` | 707535 | DATA | `2d181a2927d4edbdf3a2ea92c87f049fb307940b4d5ebeb4c76a26d53e62869d` |
 | `docs/evidence/coherent-shell/side-edge-back/3-keyboard-shown-swipe-not-claimed-1280x720.png` | 32476 | DATA | `82d010631988c5b7e6ddf21c414f01bfed772d95b7cb30dfc8b79be32ca06f17` |
+| `docs/evidence/coherent-shell/side-edge-back/4-panel-keyboard-shown-1232x568.png` | 156587 | DATA | `90159f4d0e109d3bcea7e43475192eb2a70d5c5f3f97ab000210753c9b23ef6f` |
+| `docs/evidence/coherent-shell/side-edge-back/5-panel-keyboard-top-pull-opens-shade-1232x568.png` | 28281 | DATA | `3f1c2a9d463503c376fa0b6745719017f5c33883a2f950dbdebef61a686cb2c6` |
+| `docs/evidence/coherent-shell/side-edge-back/6-panel-side-back-closes-shade-keyboard-stays-1232x568.png` | 156587 | DATA | `90159f4d0e109d3bcea7e43475192eb2a70d5c5f3f97ab000210753c9b23ef6f` |
+| `docs/evidence/coherent-shell/side-edge-back/7-panel-side-back-dismisses-keyboard-1232x568.png` | 322069 | DATA | `94c9f0e9c72180df1285874d58e1e8a078b52db25d77a4fb69e2d813621265b8` |
+| `docs/evidence/coherent-shell/side-edge-back/8-panel-settings-1232x568.png` | 50169 | DATA | `05c42a66e1b7e442162994f261e40d0a19cb8f0ba2ba48b149680869c7bdb903` |
+| `docs/evidence/coherent-shell/side-edge-back/9-panel-settings-side-back-1232x568.png` | 321109 | DATA | `5c8a10703c36ec7fe5be5eeb103f943ab5c778e38b2149179124e24baa652609` |
 | `docs/evidence/coherent-shell/two-axis-qemu/regression-after-fix-up.png` | 5478 | DATA | `4eb5fe1db653b5681ffa848471dedfe8b53e543ec317ab1a6eb27d57f6eb187b` |
 | `docs/evidence/coherent-shell/two-axis-qemu/regression-before-fix-up.png` | 5492 | DATA | `42310d94fd4f97d91f585c923824b9271e7a64bdab086d0e90361e9c987b5bce` |
 | `docs/evidence/coherent-shell/two-axis-qemu/regression-origin.png` | 4877 | DATA | `8d4260d119614cceb872d1f6636340cdaf770fa0a640eceb57aa226684e70cd3` |

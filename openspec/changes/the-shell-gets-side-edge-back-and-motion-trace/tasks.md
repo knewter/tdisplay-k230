@@ -59,8 +59,14 @@ the blocker on starting them.
   - With the keyboard shown, the pointer path never reaches the edge block;
     the top-edge Shade pull fails the same way, so this predates side Back.
     The keyboard target is therefore unproven on the board.
-  Still open: real-finger feel, the keyboard step, and the drawer and
-  Settings sub-pages.
+  Progress 2026-10-16 (later), **injected mouse on the panel**, after the
+  keyboard-popup fix `b3c44dd0` (same evidence file, "Keyboard target after
+  the popup fix"):
+  - With the keyboard shown, a top-edge pull opened the Shade.
+  - Side Back closed the Shade (`target=2`), then dismissed the keyboard
+    (`target=3`).
+  - Side Back closed Settings (`target=2`).
+  Still open: real-finger feel and the drawer case.
 
 ## 2. Motion trace tooling (host + board)
 

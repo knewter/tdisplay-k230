@@ -39,3 +39,36 @@ layer surfaces, not an xdg popup.
 The keyboard step of the dismiss order (`target=3`) therefore has host-fixture
 proof only. It needs a real touch on the panel, or a pointer-path fix, before
 task 1.3 can close.
+
+## Keyboard target after the popup fix (2026-10-16, panel)
+
+Evidence class: **injected events** on the panel (DSI-1, 1232x568
+landscape, HDMI unplugged): a uinput mouse through `/tmp/bp.py`
+(`tools/board-pointer.py`), `grim` captures, and the compositor's
+`K230_CARD_SHELL side-back target=N` lines. This is not real touch.
+
+The cause of the failure above was wvkbd 0.20's key-preview `xdg_popup`.
+wvkbd keeps it mapped while the keyboard is shown, so the card shell
+treated it as an open menu and skipped every touch-first edge. Commit
+`b3c44dd0` (rebased from `630fa3f2`) ignores a popup that lies inside the
+keyboard's own rectangle extended upward by its height.
+
+- System: `/nix/store/6mmvyyasczi0xsgw9hx2bhx6vrlycr07-nixos-system-nixos-26.11.20260919.20b1ddd`.
+  It was built from integration branch `integ-cma-popup` at `84b8b993`,
+  which contains this fix, the 64 MiB CMA change and the vision redesign.
+  It was installed and soft-rebooted at 15:41.
+- The keyboard was shown with `SIGUSR2` to the supervised wvkbd.
+
+| Step | Injected swipe (px) | Log | Result | Capture |
+| --- | --- | --- | --- | --- |
+| Keyboard shown on Home | — | — | Keyboard up | `4-panel-keyboard-shown-1232x568.png` |
+| Top-edge pull | (400,2)→(400,300), 400 ms | — | Shade opened over the keyboard | `5-panel-keyboard-top-pull-opens-shade-1232x568.png` |
+| Left edge, inward | (3,200)→(160,204), 300 ms | `side-back target=2` | Shade closed, keyboard still shown | `6-panel-side-back-closes-shade-keyboard-stays-1232x568.png` |
+| Left edge, inward again | (3,200)→(160,204), 300 ms | `side-back target=3` | Keyboard dismissed | `7-panel-side-back-dismisses-keyboard-1232x568.png` |
+| Settings opened (Shade, then "Settings") | (400,2)→(400,300); tap (402,40) | — | Settings (at the board's saved vision step) | `8-panel-settings-1232x568.png` |
+| Left edge, inward | (3,300)→(160,304), 300 ms | `side-back target=2` | Settings closed to Home | `9-panel-settings-side-back-1232x568.png` |
+
+So the dismiss order (sheet, then keyboard) holds on the board for the
+pointer path. Injected pointer swipes from the bottom edge and the dock did
+not open the drawer, so the drawer case is not covered here. Real-finger
+feel stays open.
