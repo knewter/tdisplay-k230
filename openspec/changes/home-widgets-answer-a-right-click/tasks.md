@@ -12,13 +12,13 @@
 
 ## 2. Board
 
-- [ ] 2.1 On HDMI, a scripted right-click (`tools/board-pointer.py`) on a
+- [x] 2.1 On HDMI, a scripted right-click (`tools/board-pointer.py`) on a
       widget enters rearrange mode showing widget badges; a scripted click on
       a widget's badge removes it. Capture with grim.
       Evidence class: injected pointer + grim.
-      Progress 2026-10-15: right-click recorded
-      (`docs/evidence/home-screen/widget-right-click/README.md`); the scripted
-      badge click is still to do. The log there shows removals made with the
-      physical trackpad first.
+      Done 2026-10-15: right-click on page 1
+      (`docs/evidence/home-screen/widget-right-click/README.md`); right-click
+      and a badge click removing a widget on page 2
+      (`docs/evidence/home-screen/page-settle/README.md`).
 - [ ] 2.2 The operator right-clicks a widget on the trackpad, then moves or
       removes it. Evidence class: operator observation.

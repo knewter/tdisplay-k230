@@ -11,8 +11,9 @@
 
 ## 2. Board
 
-- [ ] 2.1 On HDMI, remove the only widget on the last page and capture with
+- [x] 2.1 On HDMI, remove the only widget on the last page and capture with
       grim that Home returns to the previous page with its page dots.
-      Evidence class: injected pointer + grim.
+      Evidence class: injected pointer + grim. Done 2026-10-15:
+      `docs/evidence/home-screen/page-settle/README.md`.
 - [ ] 2.2 The operator pages to page 2 with a two-finger trackpad swipe and
       removes or moves a widget there. Evidence class: operator observation.

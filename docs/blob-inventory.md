@@ -1694,6 +1694,9 @@ DATA  27a43617fdf643598ab4a2a946ba8a1d10c0604f39585bc526f3974e9dfca302  docs/evi
 DATA  ac2be7a175f501ea58ee7fb25fd7a8ecbe60a11b271050ead68ab105dd722454  docs/evidence/home-screen/app-actions/qemu/home-actions-touch-placement.png
 DATA 1a3859a823e401a64123eb793af2c764025fbcbbfecc7f4784a8dd6c64a18430 docs/evidence/home-screen/widget-hit-area/long-press-in-clock-gap-1280x800-grim.png
 DATA 97b7d126f407e0b8ac292b935fc6e65ec4ab7c41bd17159c31a83a9d1dc91068 docs/evidence/home-screen/widget-right-click/right-click-clock-rearrange-1280x800-grim.png
+DATA ef0a2f4190a3912f9fe60b5e8255be09ce09be200a4c204cf47b86eec1bedcc8 docs/evidence/home-screen/page-settle/page2-right-click-1280x800-grim.png
+DATA 144823739da80239aa5460a0f0168345a2a3106d6596b9429ee1c8421816b254 docs/evidence/home-screen/page-settle/before-fix-blank-vanished-page-1280x800-grim.png
+DATA 6a8a491c6605b7539979ffebb43c8968eeaadf73e0b1455598685dcbfcf453bd docs/evidence/home-screen/page-settle/after-removing-last-page-widget-1280x800-grim.png
 DATA f7d82ddaed45d073d32865f61180c6a2a4a3e9ddfa14c5b767f129a5d35a3b06 docs/evidence/shell-polish/settings-volume-layout/dark-settings.png
 DATA f51202b93578dbf965c365c3174a9eb11d24522d4965c0f0707b7be63db47d3f docs/evidence/shell-polish/settings-volume-layout/light-settings.png
 DATA 4877486f4942ae363c0651664294e0c78fbfafa52a588071fa2b4eb5a04ec61f docs/evidence/shell-polish/settings-volume-layout/board/output-picker.png
@@ -2686,6 +2689,9 @@ real-finger acceptance remains open.
 | `docs/evidence/home-screen/widget-picker-fit/board/after-widgets-page-1280x800-grim.png` | 237930 | DATA | `b8986ee027cb26e13b15cec247018664869958698bd6c6f2ca300adfdcaf9360` |
 | `docs/evidence/home-screen/widget-hit-area/long-press-in-clock-gap-1280x800-grim.png` | 810838 | DATA | `1a3859a823e401a64123eb793af2c764025fbcbbfecc7f4784a8dd6c64a18430` |
 | `docs/evidence/home-screen/widget-right-click/right-click-clock-rearrange-1280x800-grim.png` | 806296 | DATA | `97b7d126f407e0b8ac292b935fc6e65ec4ab7c41bd17159c31a83a9d1dc91068` |
+| `docs/evidence/home-screen/page-settle/page2-right-click-1280x800-grim.png` | 818636 | DATA | `ef0a2f4190a3912f9fe60b5e8255be09ce09be200a4c204cf47b86eec1bedcc8` |
+| `docs/evidence/home-screen/page-settle/before-fix-blank-vanished-page-1280x800-grim.png` | 762170 | DATA | `144823739da80239aa5460a0f0168345a2a3106d6596b9429ee1c8421816b254` |
+| `docs/evidence/home-screen/page-settle/after-removing-last-page-widget-1280x800-grim.png` | 778835 | DATA | `6a8a491c6605b7539979ffebb43c8968eeaadf73e0b1455598685dcbfcf453bd` |
 
 ### Omawrite host and physical-board runtime — 2026-09-27
 
