@@ -62,3 +62,24 @@ because they were rendered a minute apart.
 
 Landscape only. Flat backdrops, not the wallpaper. No light theme. The
 Bubble clock in the card is a 2-column cell; wider cells were not rendered.
+
+## Board captures (2026-10-16, DSI-1 1232x568 landscape)
+
+The system was `/nix/store/5vj9z6z0ims1svg437qncsv7y2p5hw2z-nixos-system-…`,
+built from integration commit `e71dabce`. That is this restyle plus the
+side-edge Back menu fix, which touches only `main.rs` and the card shell. It
+was deployed live by the coordinator. The text step was set with
+`k230-theme vision --text-scale <step> --contrast standard`. The theme was
+retro-82 with its vinyl wallpaper. Each frame is a native `grim` capture.
+
+Evidence class: native captures. No judgement on glass yet.
+
+| File | Step |
+|---|---|
+| `board-panel-100-home.png` | 100% |
+| `board-panel-160-home.png` | 160% |
+| `board-panel-200-home.png` | 200% |
+
+On this theme the hour is cream and the minute is retro-82's orange accent.
+Both have the dark halo over the teal and orange vinyl. The date is one cream
+line that grows with the step.

@@ -1645,6 +1645,9 @@ DATA 1e872a35ff03d6ad526fe06fe990f583c9ab240519e53b1b02e8d8e7ca238797 docs/evide
 DATA b828078184dd6dca6e529a1b06025c3305fea75b483ddfc30044e5c9d3d8ac18 docs/evidence/the-shell-is-navigable-with-a-mouse/after-calculator-click.jpg
 DATA 64da29b4e8a6d62346bab76b1c9424bf10abf0a5809f1a49f9524cccbaa2df4f docs/evidence/card-shell/overview-home-bleed-through/board-2026-09-30/overview-native.jpg
 DATA a76ca87ac3d0823659559f297258be51f2719e8d95efbcb10186a3f68f17040a docs/evidence/card-shell/overview-home-bleed-through/board-2026-09-30/overview-panel.jpg
+DATA 10397318a531c607f6291ba17ea983bc7b0d32f27ad5e07d964dc269d236b505 docs/evidence/clock-restyle/board-panel-100-home.png
+DATA 34b645eed7ca5d4eda9062d1f56db2c689ed07b3e084097a28ecaf39e376fd05 docs/evidence/clock-restyle/board-panel-160-home.png
+DATA 1922e250fcd30619bd99cd9c3a3aaa55ca4e4b66f011a335268d1fcf277d47e9 docs/evidence/clock-restyle/board-panel-200-home.png
 DATA 4fa62684019d7645bdd6a432367b0e24ad791e113db75fd3da0ebd1b70639c1c docs/evidence/clock-restyle/host-100-before-after.png
 DATA ee2ee568349d2934b8b8c6950b9278d9b0f41203f6b71ced033796e4bcbc8974 docs/evidence/clock-restyle/host-130-before-after.png
 DATA a030cb1e75d983468dc23384351c0c4c411dac03ff5db25022e8f62bf3cf37c2 docs/evidence/clock-restyle/host-160-before-after.png
@@ -2339,6 +2342,9 @@ limits are in the adjacent README. They are not physical-panel captures.
 
 | File | Bytes | Kind | SHA256 |
 | --- | ---: | --- | --- |
+| `docs/evidence/clock-restyle/board-panel-100-home.png` | 318107 | DATA | `10397318a531c607f6291ba17ea983bc7b0d32f27ad5e07d964dc269d236b505` |
+| `docs/evidence/clock-restyle/board-panel-160-home.png` | 316731 | DATA | `34b645eed7ca5d4eda9062d1f56db2c689ed07b3e084097a28ecaf39e376fd05` |
+| `docs/evidence/clock-restyle/board-panel-200-home.png` | 317949 | DATA | `1922e250fcd30619bd99cd9c3a3aaa55ca4e4b66f011a335268d1fcf277d47e9` |
 | `docs/evidence/clock-restyle/host-100-before-after.png` | 177156 | DATA | `4fa62684019d7645bdd6a432367b0e24ad791e113db75fd3da0ebd1b70639c1c` |
 | `docs/evidence/clock-restyle/host-130-before-after.png` | 199104 | DATA | `ee2ee568349d2934b8b8c6950b9278d9b0f41203f6b71ced033796e4bcbc8974` |
 | `docs/evidence/clock-restyle/host-160-before-after.png` | 196462 | DATA | `a030cb1e75d983468dc23384351c0c4c411dac03ff5db25022e8f62bf3cf37c2` |

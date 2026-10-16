@@ -55,6 +55,9 @@
 - [ ] 5.1 Native `grim` captures of Home, the drawer, the Shade, Settings and
   the Vision page at 100% and 200% on the landscape panel, with the vinyl
   wallpaper, after the coordinator deploys the closure. Board class.
+  Progress 2026-10-16: Home (the restyled Clock) at 100%, 160% and 200% is
+  in `docs/evidence/clock-restyle/board-panel-*-home.png`. The other
+  surfaces are not restyled yet, so they were not captured.
 - [ ] 5.2 The operator's judgement on glass that the Clock and each restyled
   surface are readable and that the accent marks what is live. Board class;
   this task stays open until the operator has looked.
