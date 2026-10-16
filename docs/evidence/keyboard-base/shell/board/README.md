@@ -29,7 +29,7 @@ Limits:
 - In landscape, Settings cannot reach Motion, Key backlight or the Power rows,
   and does not scroll. That predates this change (Motion and Power were
   already below the edge) and belongs to the landscape change's task 8.3
-  (`openspec/changes/the-hdmi-shell-works-in-landscape`). The Key backlight
+  (`openspec/changes/archive/2026-10-16-the-hdmi-shell-works-in-landscape`). The Key backlight
   row is therefore not yet shown or tapped on the board; its paint is proven
   only by the portrait host render.
 - No glass touch, no camera (the bench camera is disconnected), and no
