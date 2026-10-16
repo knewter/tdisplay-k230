@@ -129,3 +129,104 @@ camera photographs of the glass.
 
 The operator's own look at the glass, and their judgement of legibility, are
 still needed for C.4.
+
+## Redesign: four steps and reflow (2026-10-16, tasks C.5–C.7)
+
+The operator found the drawer "not particularly legible" at the old Large step
+(125%) and judged a two-way normal/large choice too coarse. The redesign
+offers four steps: 100, 130, 160 and 200%. An existing `large` choice maps
+to 130%. Each surface reflows at a larger step instead of clipping.
+
+Measured against the panel (568x1232 at 4.1", about 2.07 px per dp), the
+100% body text of 17–18 px is about 8.5 sp. At 200% it reaches about 17 sp.
+Tap targets stay at or above 99 px (48 dp).
+
+- **Steps (C.5).** `tools/theme_vision.py` `TEXT_SCALES` holds `default`,
+  `large`, `larger` and `largest` (1.0, 1.3, 1.6 and 2.0). The helper's
+  `--text-scale` choices come from that table. The Rust and `appearance.c`
+  bounds are raised to 2.0. The Vision page shows the four steps as one
+  segmented control, plus a High contrast card.
+- **Drawer (C.6).** At a larger step:
+  - The minimum tile width is 112 px times the step, so the drawer uses fewer
+    columns: 2 in portrait and 4 in landscape at 200%.
+  - Icons grow toward 99 px.
+  - Names wrap onto two lines before they ellipsize.
+  - The search pill and Help grow to fit their text.
+  - The sheet is opaque whenever a vision option is set.
+  - At 100% the drawer is pixel-identical: `tests/responsive_pixel_identity.rs`
+    passes.
+- **Shade, Settings and Vision (C.7).**
+  - **Shade header.** Lines stack by their drawn height. The Settings and
+    "Dismiss all" bands widen with the text, up to half the column.
+    Notification rows grow to hold three lines.
+  - **Settings rows.** Each row gets the height its lines need, plus a full
+    slider band on slider rows.
+  - **Settings header.** The Vision and Themes links get their own row, with
+    tap bands sized for the text.
+  - **Settings scroll.** At 200% the rows are taller than the screen, so the
+    Settings body scrolls under a fixed header. A drag on a slider row still
+    belongs to the slider.
+  - **Chooser and Vision headers.** Back and Close widen to fit the text.
+  - **Fitting secondary lines.** Values and secondary lines shrink to fit
+    before they ellipsize, but never below their 100% size.
+
+### Host evidence
+
+Evidence class: host renders and unit tests. The board and glass checks are
+task C.8.
+
+- `cargo test --offline --manifest-path nix/rust-shell-client/Cargo.toml
+  --no-fail-fast`: 568 lib tests passed (2 ignored), and all integration
+  targets passed, including `responsive_pixel_identity`.
+  - `navigation::the_largest_text_step_reflows_the_drawer_without_overlap_or_tiny_targets`
+    checks that, at 200% in both orientations, tiles do not overlap, icons are
+    at least 99 px and the search pill clears Help.
+  - `icon::drawer_names_wrap_without_ellipsizing_at_the_largest_text_step`
+    checks that no fixture name is ellipsized.
+  - `service_ui::the_largest_text_step_scrolls_settings_and_keeps_every_row_reachable`
+    checks each row's text height against its card. It also checks that a
+    tap on Power off after scrolling reaches it.
+  - `service_ui::the_largest_text_step_grows_notification_rows_and_header_links`
+    checks the Shade.
+  - `theme_ui::the_vision_layout_never_clips_and_keeps_the_tap_floor_at_every_step`
+    checks the Vision page.
+- `PYTHONPATH=tests:tools python3 -m unittest` over the `tests/test_theme*.py`
+  suites and `tests.test_card_shell_appearance`: OK.
+
+The five generations were prepared as described above, from
+`nix/handheld-theme-default/catppuccin`, with `theme_vision.save` before each
+prepare:
+
+| Name | Choice | Generation |
+|---|---|---|
+| default | default / standard | `5c64a4c1de62429c468041bc` |
+| large | 130% / standard | `af7b32bfc4793dfe05c678e7` |
+| larger | 160% / standard | `bcc10b3fb39a95aa3c43ea80` |
+| largest | 200% / standard | `0fc1fc47cd7b409f46f67425` |
+| largest-high | 200% / high | `c1792d0524753badee55226d` |
+
+`render_accessibility_scale_evidence` was run with those five names. It drew
+40 frames: each name for the drawer, Shade, Settings and Vision, at 568x1232
+and 1232x568. The fixture app names include two-word names ("System Monitor",
+"Image Viewer").
+
+Each file in `steps/` puts the five frames of one surface and orientation
+side by side (portrait) or stacked (landscape), in the table's order, at half
+size:
+
+| File | Surface |
+|---|---|
+| `steps/drawer-portrait.png`, `steps/drawer-landscape.png` | Drawer |
+| `steps/shade-portrait.png`, `steps/shade-landscape.png` | Shade |
+| `steps/settings-portrait.png`, `steps/settings-landscape.png` | Settings, unscrolled (at 200% the Power section is below the fold and is reached by scrolling) |
+| `steps/vision-portrait.png`, `steps/vision-landscape.png` | Vision page |
+
+### Limits
+
+- At 200%, a notification's summary and body each stay on one line, so long
+  ones still ellipsize, as the body already did at 100%.
+- In landscape at 200%, Settings needs a scroll to reach the lower rows of
+  each column.
+- The Home deck, the card shell and app windows are outside this change.
+  Only the battery ring was fitted, in `91a60bfb`.
+- None of this has been seen on the panel yet. That is C.8.

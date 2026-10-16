@@ -2690,8 +2690,10 @@ fn paint_drawer_chrome(
 
     let (hx, hy, hw, hh) = navigation::help_rect(width, height);
     service_card(cr, theme, "launcher", hx, hy, hw, hh, false);
-    let help_size = context_font_size(cr, 18.0);
-    text(cr, "Help", hx + 12.0, hy + (hh - help_size * 1.2) / 2.0, hw - 24.0, 18.0, style.accent);
+    // A larger vision step centres the larger label; 100% keeps its offset.
+    let lifted = crate::layout_text_scale() > 1.0;
+    let help_y = if lifted { hy + (hh - context_font_size(cr, 18.0) * 1.2) / 2.0 } else { hy + 16.0 };
+    text(cr, "Help", hx + 12.0, help_y, hw - 24.0, 18.0, style.accent);
     let (sx, sy, sw, sh) = search_field_rect(width, height);
     rounded(cr, sx, sy, sw, sh, sh / 2.0);
     let _ = cr.save();
@@ -2730,7 +2732,7 @@ fn paint_drawer_chrome(
     let _ = cr.stroke();
     let _ = cr.restore();
     let tx = sx + 54.0;
-    let ty = sy + (sh - context_font_size(cr, 18.0) * 1.2) / 2.0;
+    let ty = if lifted { sy + (sh - context_font_size(cr, 18.0) * 1.2) / 2.0 } else { sy + sh / 2.0 - 9.0 };
     let available = sw - 76.0;
     if !search.focused {
         text(cr, label, tx, ty, available, 18.0, label_color);

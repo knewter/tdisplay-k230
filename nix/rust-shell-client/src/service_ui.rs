@@ -2269,6 +2269,20 @@ mod tests {
             view.settings_scroll = 0.0;
             let max = settings_max_scroll(width, height, &view);
             assert!(max > 0.0, "200% rows overflow {width}x{height} and must scroll");
+            // Each row's text lines (at 200%: line height = size x 2 x 1.25)
+            // end inside its card, above the slider band where it has one.
+            let line = |size: f64| size * 2.0 * 1.25;
+            for row in [0, 3, 4] {
+                let (_, value, caption, _) = crate::render::settings_row_lines(row);
+                let captions = if row == 3 { 2.0 } else { 1.0 };
+                assert!(value + line(19.0) <= caption);
+                assert!(caption + captions * line(14.0) <= settings_row_h(row), "row {row} clips");
+            }
+            for row in [1, SETTINGS_KEY_BACKLIGHT_ROW] {
+                let (_, value, _, slider) = crate::render::settings_row_lines(row);
+                assert!(value + line(19.0) <= slider - 28.0 + 4.0, "row {row} text runs into its slider");
+                assert!(slider + 28.0 <= settings_row_h(row));
+            }
             // Rows stack without overlap, each at least the tap floor.
             for row in 0..SETTINGS_KEY_BACKLIGHT_ROW {
                 assert!(settings_row_h(row) >= SHADE_TAP_MIN);

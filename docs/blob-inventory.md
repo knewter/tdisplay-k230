@@ -1669,6 +1669,14 @@ DATA cecaba3362fcf98c497ba5003e6d9b06567300c382f392588f64c48b5c44eb2f docs/evide
 DATA 8c12a940d3d9f450e6242a11b351c7f67b4562851035d6f97781a3f85be17854 docs/evidence/coherent-shell/accessibility-scale/host/large-settings-1280x800.png
 DATA 7a80080d9cc38fa489186c9cf36c783b260053bfae53d386608db32ca76b67b2 docs/evidence/coherent-shell/accessibility-scale/host/large-shade-568x1232.png
 DATA f9aa254f793aea91f9d252f9b7eca5ac74e55b2398b7dfb500d22c598f536f27 docs/evidence/coherent-shell/accessibility-scale/host/large-vision-1280x800.png
+DATA b57527ed8b935caa251d4a3c3d03415d2e2d3cb93ebbce4a5b1d2c428eb47080 docs/evidence/coherent-shell/accessibility-scale/steps/drawer-landscape.png
+DATA 41d8d67c9106929727b05681ef330e9714424d6c889e29265416ad7745521f57 docs/evidence/coherent-shell/accessibility-scale/steps/drawer-portrait.png
+DATA ec16c90d82f9148aa3149b9a9a3373763ef6ad2d2e88dcf2a6d90654add5e027 docs/evidence/coherent-shell/accessibility-scale/steps/settings-landscape.png
+DATA 074a5e48c842ac24a4451bbc8dc593bd55bd1618c239c5388913dd8259d6c3d8 docs/evidence/coherent-shell/accessibility-scale/steps/settings-portrait.png
+DATA fc002a81567f1145d64fd114b4a4ea51688f9a5aaacbf2985c8e31985953a29a docs/evidence/coherent-shell/accessibility-scale/steps/shade-landscape.png
+DATA 552fd356cd0127033d99cf14d0c39ed47193592aaae4881a836059a5189b46db docs/evidence/coherent-shell/accessibility-scale/steps/shade-portrait.png
+DATA cdfa8107560a13eef7f41cf821f258cd14ba4e7a5e3eab3f8b8ac8a66e97caef docs/evidence/coherent-shell/accessibility-scale/steps/vision-landscape.png
+DATA f389d7bff4f2709452e977f790ab05dd75ca34d4687ddb0e7abbcf4e0408c508 docs/evidence/coherent-shell/accessibility-scale/steps/vision-portrait.png
 DATA ab692d4cf10500b1f737e07eedaa293c4019a690f6eaefddd3403187c81e9efd docs/evidence/coherent-shell/shade-quick-toggles/board/1-shade-open-1280x800.png
 DATA 607b5d2fa0da79866348880d213226bfa14bc8a7fb67167ef70a585a5aa1e77d docs/evidence/coherent-shell/shade-quick-toggles/board/2-kbd-on-1280x800.png
 DATA 00a780185adb986b07179cadca333d913ae74e17bac542dc3afffa174cdd4a1c docs/evidence/coherent-shell/shade-quick-toggles/board/3-kbd-off-1280x800.png
@@ -2324,6 +2332,14 @@ limits are in the adjacent README. They are not physical-panel captures.
 | `docs/evidence/coherent-shell/accessibility-scale/host/large-settings-1280x800.png` | 46948 | DATA | `8c12a940d3d9f450e6242a11b351c7f67b4562851035d6f97781a3f85be17854` |
 | `docs/evidence/coherent-shell/accessibility-scale/host/large-shade-568x1232.png` | 50762 | DATA | `7a80080d9cc38fa489186c9cf36c783b260053bfae53d386608db32ca76b67b2` |
 | `docs/evidence/coherent-shell/accessibility-scale/host/large-vision-1280x800.png` | 26679 | DATA | `f9aa254f793aea91f9d252f9b7eca5ac74e55b2398b7dfb500d22c598f536f27` |
+| `docs/evidence/coherent-shell/accessibility-scale/steps/drawer-landscape.png` | 154897 | DATA | `b57527ed8b935caa251d4a3c3d03415d2e2d3cb93ebbce4a5b1d2c428eb47080` |
+| `docs/evidence/coherent-shell/accessibility-scale/steps/drawer-portrait.png` | 158362 | DATA | `41d8d67c9106929727b05681ef330e9714424d6c889e29265416ad7745521f57` |
+| `docs/evidence/coherent-shell/accessibility-scale/steps/settings-landscape.png` | 200757 | DATA | `ec16c90d82f9148aa3149b9a9a3373763ef6ad2d2e88dcf2a6d90654add5e027` |
+| `docs/evidence/coherent-shell/accessibility-scale/steps/settings-portrait.png` | 216646 | DATA | `074a5e48c842ac24a4451bbc8dc593bd55bd1618c239c5388913dd8259d6c3d8` |
+| `docs/evidence/coherent-shell/accessibility-scale/steps/shade-landscape.png` | 253785 | DATA | `fc002a81567f1145d64fd114b4a4ea51688f9a5aaacbf2985c8e31985953a29a` |
+| `docs/evidence/coherent-shell/accessibility-scale/steps/shade-portrait.png` | 232360 | DATA | `552fd356cd0127033d99cf14d0c39ed47193592aaae4881a836059a5189b46db` |
+| `docs/evidence/coherent-shell/accessibility-scale/steps/vision-landscape.png` | 142581 | DATA | `cdfa8107560a13eef7f41cf821f258cd14ba4e7a5e3eab3f8b8ac8a66e97caef` |
+| `docs/evidence/coherent-shell/accessibility-scale/steps/vision-portrait.png` | 145361 | DATA | `f389d7bff4f2709452e977f790ab05dd75ca34d4687ddb0e7abbcf4e0408c508` |
 | `docs/evidence/coherent-shell/rust-drawer-interaction-qemu/deck.png` | 18508 | DATA | `30d05a39baba44a579c70f369bcb1140b822178c726a689003777cf159048b73` |
 | `docs/evidence/coherent-shell/rust-drawer-interaction-qemu/drawer-dismissed.png` | 18538 | DATA | `13fcd64a52e3fbc23c0ce7df2846c7da48bec1637d77c47bb876816f8517aab5` |
 | `docs/evidence/coherent-shell/rust-drawer-interaction-qemu/drawer-open.png` | 69645 | DATA | `6d38dbebddb6015d7019ebce7360a2540664717838cf413ed490f7cd2828718f` |

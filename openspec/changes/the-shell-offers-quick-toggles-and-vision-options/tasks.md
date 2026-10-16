@@ -89,23 +89,26 @@ authorization only removes the blocker on starting them.
   enough.** "the drawer is not particularly legible at 'large' text but also i
   think 'normal and large' is a pretty shitty accessibility option anyway".
   This task stays open for the redesign in C.5–C.8.
-- [ ] C.5 Replace the two-way text choice with four steps (100/130/160/200%)
+- [x] C.5 Replace the two-way text choice with four steps (100/130/160/200%)
   end to end: `tools/theme_vision.py` (`TEXT_SCALES`), the helper protocol
   and Rust `VisionChoice`, `vision_text_scale` (bound raised to 2.0),
   `appearance.c` (its bound too), and the Vision page as a stepped control.
   An existing `large` choice maps to 130%. Verify with the theme Python
   suites and `cargo test --offline --manifest-path
   nix/rust-shell-client/Cargo.toml`.
-- [ ] C.6 Drawer reflow: tile width, icon size and column count derive from
+  Done 2026-10-16 on `vision-steps`; see `docs/evidence/coherent-shell/accessibility-scale/README.md` § Redesign.
+- [x] C.6 Drawer reflow: tile width, icon size and column count derive from
   the step, labels wrap to two lines before ellipsizing, and the drawer sheet
   is opaque whenever a vision option is set. Verify with a host test that, at
   200% in 568x1232 and 1232x568, no label is ellipsized for the fixture app
   names, tiles do not overlap, and every icon and tap target is at least
   99 px.
-- [ ] C.7 Settings, Vision and Shade cards grow with their text, so nothing
+  Done 2026-10-16 (host); tests named in the evidence README.
+- [x] C.7 Settings, Vision and Shade cards grow with their text, so nothing
   clips at 200%. Verify with host renders at all four steps in both
   orientations, committed to `docs/evidence/coherent-shell/accessibility-scale/`,
   and a test that measures text height against card height.
+  Done 2026-10-16 (host); renders in `docs/evidence/coherent-shell/accessibility-scale/steps/`.
 - [ ] C.8 Board: at 160% and 200% on the landscape panel, native `grim`
   captures of Home, drawer, Shade, Settings and Vision, and the operator's
   legibility judgement on glass. Closes C.4 if accepted.

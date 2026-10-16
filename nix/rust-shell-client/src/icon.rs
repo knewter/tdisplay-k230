@@ -431,6 +431,26 @@ impl IconCache {
 /// failure -- matching `decode`'s own "absent surface reads as absent,
 /// never as a panic" convention -- is simply an invisible label, not a
 /// crash.
+/// The label's Pango layout: bold, centred, wrapped onto at most `lines`
+/// lines, the last one ellipsized.
+fn label_layout(cr: &Context, value: &str, width: f64, size: f64, lines: u32) -> pango::Layout {
+    let layout = pangocairo::functions::create_layout(cr);
+    let mut font = FontDescription::new();
+    font.set_family(FONT_FAMILY);
+    font.set_absolute_size(size * f64::from(pango::SCALE));
+    font.set_weight(pango::Weight::Bold);
+    layout.set_font_description(Some(&font));
+    layout.set_text(value);
+    layout.set_width((width * f64::from(pango::SCALE)) as i32);
+    layout.set_alignment(pango::Alignment::Center);
+    layout.set_ellipsize(EllipsizeMode::End);
+    if lines > 1 {
+        layout.set_wrap(pango::WrapMode::WordChar);
+        layout.set_height(-(lines as i32));
+    }
+    layout
+}
+
 fn render_label(value: &str, width: f64, size: f64, rgb: u32, lines: u32) -> ImageSurface {
     let w = (width.max(1.0)).ceil() as i32;
     // A single bold line at `size` never exceeds this height even counting
@@ -440,20 +460,7 @@ fn render_label(value: &str, width: f64, size: f64, rgb: u32, lines: u32) -> Ima
     let fallback = || ImageSurface::create(Format::ARgb32, 1, 1).expect("1x1 fallback surface");
     let surface = ImageSurface::create(Format::ARgb32, w, h).unwrap_or_else(|_| fallback());
     if let Ok(cr) = Context::new(&surface) {
-        let layout = pangocairo::functions::create_layout(&cr);
-        let mut font = FontDescription::new();
-        font.set_family(FONT_FAMILY);
-        font.set_absolute_size(size * f64::from(pango::SCALE));
-        font.set_weight(pango::Weight::Bold);
-        layout.set_font_description(Some(&font));
-        layout.set_text(value);
-        layout.set_width((width * f64::from(pango::SCALE)) as i32);
-        layout.set_alignment(pango::Alignment::Center);
-        layout.set_ellipsize(EllipsizeMode::End);
-        if lines > 1 {
-            layout.set_wrap(pango::WrapMode::WordChar);
-            layout.set_height(-(lines as i32));
-        }
+        let layout = label_layout(&cr, value, width, size, lines);
         color(&cr, rgb, 1.0);
         cr.move_to(0.0, 0.0);
         pangocairo::functions::show_layout(&cr, &layout);
@@ -470,6 +477,24 @@ impl Default for IconCache {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn drawer_names_wrap_without_ellipsizing_at_the_largest_text_step() {
+        crate::set_layout_text_scale(2.0);
+        let target = ImageSurface::create(Format::ARgb32, 10, 10).unwrap();
+        let cr = Context::new(&target).unwrap();
+        let size = crate::navigation::drawer_metrics().label_px;
+        for (width, height) in [(568u32, 1232u32), (1232, 568)] {
+            let (_, _, tile_w, _) = crate::navigation::tile_rect(width, height, 0, 0.0);
+            for name in ["Terminal", "Files", "Video Player", "Settings", "Text Editor",
+                         "System Monitor", "Calculator", "Image Viewer"] {
+                let layout = label_layout(&cr, name, tile_w - 8.0, size, 2);
+                assert!(!layout.is_ellipsized(), "{name} ellipsized at {width}x{height}");
+                assert!(layout.line_count() <= 2);
+            }
+        }
+        crate::set_layout_text_scale(1.0);
+    }
 
     #[test]
     fn labels_are_cached_by_their_exact_key_and_bounded() {
