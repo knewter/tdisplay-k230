@@ -371,6 +371,19 @@ fn text_weight_resolved(cr: &Context, value: &str, x: f64, y: f64, width: f64,
     pangocairo::functions::show_layout(cr, &layout);
 }
 
+/// The drawn width of `value` as `text_weight` would lay it out unclipped,
+/// at the same theme-scaled size, so a label can be placed after it.
+fn text_advance(cr: &Context, value: &str, size: f64, weight: pango::Weight) -> f64 {
+    let layout = pangocairo::functions::create_layout(cr);
+    let mut font = FontDescription::new();
+    font.set_family(FONT_FAMILY);
+    font.set_absolute_size(context_font_size(cr, size) * f64::from(pango::SCALE));
+    font.set_weight(weight);
+    layout.set_font_description(Some(&font));
+    layout.set_text(value);
+    f64::from(layout.pixel_size().0)
+}
+
 fn text(cr: &Context, value: &str, x: f64, y: f64, width: f64, size: f64, rgb: u32) {
     text_weight(cr, value, x, y, width, size, rgb, pango::Weight::Normal);
 }
@@ -1485,7 +1498,19 @@ fn paint_theme_chooser(
         Some(("Applied to Home", style.accent))
     } else { None };
     if let Some((message, color)) = background_feedback {
-        text(cr, message, lay.feedback.0, lay.feedback.1, lay.feedback.2, 20.0, color);
+        // On the wide layout the acknowledgement shares the heading's line;
+        // the heading now names the fit mode and grows with the theme's (and
+        // the vision option's) text size, so start after what was drawn.
+        let (mut x, y, mut width) = lay.feedback;
+        let (hx, hy) = lay.backgrounds_heading;
+        if (y - hy).abs() < 30.0 {
+            let end = x + width;
+            x = x.max(hx + text_advance(cr, &backgrounds_title, 22.0, pango::Weight::Bold) + 16.0);
+            width = end - x;
+        }
+        if width >= 80.0 {
+            text(cr, message, x, y, width, 20.0, color);
+        }
     }
     match view.preview.as_ref() {
         Some(preview) if lay.background_grid.is_some() && !preview.backgrounds.is_empty() => {
