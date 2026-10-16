@@ -72,3 +72,34 @@ So the dismiss order (sheet, then keyboard) holds on the board for the
 pointer path. Injected pointer swipes from the bottom edge and the dock did
 not open the drawer, so the drawer case is not covered here. Real-finger
 feel stays open.
+
+## Long-press menu before the drawer (2026-10-16 23:18Z)
+
+Source: branch `side-back-sheet`. The adapter's overlay step now sends
+`back`; the Rust client closes an open long-press app menu and otherwise
+hides like `hide`. The board ran
+`/nix/store/5vj9z6z0ims1svg437qncsv7y2p5hw2z-nixos-system-…`, built from
+integration commit `e71dabce`. That is this change plus the clock restyle
+commit, with no other source. It was deployed live with
+`switch-to-configuration test`.
+
+Method: on the landscape panel, a uinput mouse through `/tmp/bp.py`
+(`tools/board-pointer.py`), with native `grim` captures. The drawer was opened
+with the shell socket's `drawer` route.
+
+Evidence class: injected pointer input. There was no finger on the glass.
+
+| Step | Injected input (px) | Log | Result | Capture |
+| --- | --- | --- | --- | --- |
+| Drawer open | socket `drawer` | — | Drawer | `10-panel-drawer-open-1232x568.png` |
+| Long-press "Clock" | `hold 616 190 900; up` | `app-menu-open`, `app-menu-ready rows=3` | App menu (Open, New Window, Add to Home) | `11-panel-long-press-menu-1232x568.png` |
+| Left edge, inward | (3,300)→(160,304), 300 ms | `side-back target=2`, then `app-menu-dismiss` | Menu closed; the drawer is still open | `12-panel-side-back-closes-menu-drawer-stays-1232x568.png` |
+| Left edge, inward again | (3,300)→(160,304), 300 ms | `side-back target=2` | Drawer closed to Home | `13-panel-side-back-closes-drawer-1232x568.png` |
+
+While the menu is open the drawer is not drawn behind it (capture 11). That
+is the existing menu presentation and was not changed here.
+
+The compositor still reports `target=2` (overlay) for the menu, because the
+menu is on the same `k230-shell-drawer` layer. The Rust client makes the
+menu-first decision. `sheet_open()` in the adapter stays false by design (see
+its comment).

@@ -1700,6 +1700,10 @@ DATA f6ed9b1cabf3b12a43d6be2f834e7b3706cc25f9bc11f1608fe231dbca6da57e docs/evide
 DATA 0795a42e09634432b9b5ce3b612f0a705a69283a45c9c81a3493ce5d07e9dfc3 docs/evidence/coherent-shell/shade-quick-toggles/host/shade-4-keyboard-available-568x1232.png
 DATA 2b7f1d9461d73fe5bef505bba781a69a26b01d933188282340df0fceae44b06a docs/evidence/coherent-shell/shade-quick-toggles/host/shade-4-keyboard-unavailable-568x1232.png
 DATA a923f91bc32054b92985b36ac490cc876a587938193b3ee31664d8e98fa0fdb5 docs/evidence/coherent-shell/side-edge-back/1-shade-open-1280x720.png
+DATA 304ff44b7577876d4cb7027fca17dd8a55830c257d9cee75c803effcc004e3f7 docs/evidence/coherent-shell/side-edge-back/10-panel-drawer-open-1232x568.png
+DATA d54b1413153069e85bf3a66260c3b506cf0ce484d2f9bf1ba079d8b31909a13c docs/evidence/coherent-shell/side-edge-back/11-panel-long-press-menu-1232x568.png
+DATA 316eaadd642c70f771db6fac8f98fe386daf63dd7fe1307fe0dc2a858abd15f2 docs/evidence/coherent-shell/side-edge-back/12-panel-side-back-closes-menu-drawer-stays-1232x568.png
+DATA bccb1b73882504d6f50ff58326dee2ff26bd0d5138180e721a0a4325609d43c0 docs/evidence/coherent-shell/side-edge-back/13-panel-side-back-closes-drawer-1232x568.png
 DATA 2d181a2927d4edbdf3a2ea92c87f049fb307940b4d5ebeb4c76a26d53e62869d docs/evidence/coherent-shell/side-edge-back/2-after-left-side-back-1280x720.png
 DATA 82d010631988c5b7e6ddf21c414f01bfed772d95b7cb30dfc8b79be32ca06f17 docs/evidence/coherent-shell/side-edge-back/3-keyboard-shown-swipe-not-claimed-1280x720.png
 DATA 90159f4d0e109d3bcea7e43475192eb2a70d5c5f3f97ab000210753c9b23ef6f docs/evidence/coherent-shell/side-edge-back/4-panel-keyboard-shown-1232x568.png
@@ -2499,6 +2503,10 @@ shared pre-touch frame both are compared against).
 | `docs/evidence/coherent-shell/shade-quick-toggles/host/shade-4-keyboard-available-568x1232.png` | 54900 | DATA | `0795a42e09634432b9b5ce3b612f0a705a69283a45c9c81a3493ce5d07e9dfc3` |
 | `docs/evidence/coherent-shell/shade-quick-toggles/host/shade-4-keyboard-unavailable-568x1232.png` | 53575 | DATA | `2b7f1d9461d73fe5bef505bba781a69a26b01d933188282340df0fceae44b06a` |
 | `docs/evidence/coherent-shell/side-edge-back/1-shade-open-1280x720.png` | 53761 | DATA | `a923f91bc32054b92985b36ac490cc876a587938193b3ee31664d8e98fa0fdb5` |
+| `docs/evidence/coherent-shell/side-edge-back/10-panel-drawer-open-1232x568.png` | 64156 | DATA | `304ff44b7577876d4cb7027fca17dd8a55830c257d9cee75c803effcc004e3f7` |
+| `docs/evidence/coherent-shell/side-edge-back/11-panel-long-press-menu-1232x568.png` | 185893 | DATA | `d54b1413153069e85bf3a66260c3b506cf0ce484d2f9bf1ba079d8b31909a13c` |
+| `docs/evidence/coherent-shell/side-edge-back/12-panel-side-back-closes-menu-drawer-stays-1232x568.png` | 65504 | DATA | `316eaadd642c70f771db6fac8f98fe386daf63dd7fe1307fe0dc2a858abd15f2` |
+| `docs/evidence/coherent-shell/side-edge-back/13-panel-side-back-closes-drawer-1232x568.png` | 318993 | DATA | `bccb1b73882504d6f50ff58326dee2ff26bd0d5138180e721a0a4325609d43c0` |
 | `docs/evidence/coherent-shell/side-edge-back/2-after-left-side-back-1280x720.png` | 707535 | DATA | `2d181a2927d4edbdf3a2ea92c87f049fb307940b4d5ebeb4c76a26d53e62869d` |
 | `docs/evidence/coherent-shell/side-edge-back/3-keyboard-shown-swipe-not-claimed-1280x720.png` | 32476 | DATA | `82d010631988c5b7e6ddf21c414f01bfed772d95b7cb30dfc8b79be32ca06f17` |
 | `docs/evidence/coherent-shell/side-edge-back/4-panel-keyboard-shown-1232x568.png` | 156587 | DATA | `90159f4d0e109d3bcea7e43475192eb2a70d5c5f3f97ab000210753c9b23ef6f` |

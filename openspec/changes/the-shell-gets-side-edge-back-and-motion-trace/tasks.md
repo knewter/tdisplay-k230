@@ -10,7 +10,7 @@ the blocker on starting them.
 
 ## 1. Side-edge contextual Back and touch ownership (host)
 
-- [ ] 1.1 (parent 2.2) Implement qualified side-edge contextual Back for shell
+- [x] 1.1 (parent 2.2) Implement qualified side-edge contextual Back for shell
   sheet/Settings/shade/drawer/keyboard, without injecting a universal Back
   key into apps, alongside the existing bottom-edge overlay-escape recognizer
   in `nix/card-shell/adapter.c`. Verify with a new host/native fixture
@@ -28,7 +28,16 @@ the blocker on starting them.
   Home surface, which reports nothing to the compositor, so `sheet_open()` is a
   stub returning false and the sheet step of the order is not reachable on a
   device. It needs a Home-surface signal plus a Rust route; keep this task
-  open until that exists. <!-- UNVERIFIED: sheet dismissal by side Back -->
+  open until that exists.
+  Progress 2026-10-16 (later): the menu is on the Rust overlay layer, so
+  the adapter now sends `back` for the overlay step. The Rust client closes
+  the long-press app menu first, and otherwise hides. Host: `cargo test`
+  (incl. `side_back_line_is_its_own_request_not_a_route`) and
+  `python3 tests/test_card_shell_route.py` (4/4) passed. Board, injected
+  pointer on the panel: side Back closed the menu and left the drawer open,
+  then closed the drawer
+  (`docs/evidence/coherent-shell/side-edge-back/board-2026-10-16-injected.md`,
+  "Long-press menu before the drawer").
 - [x] 1.2 (parent 4.4) Define touch ownership for bottom Home/drawer, top
   shade, side Back, keyboard, deck and app content; test app scroll/text
   selection and keyboard conflict before enabling edges. Verify with the same
