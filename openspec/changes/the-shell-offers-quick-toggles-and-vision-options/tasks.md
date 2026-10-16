@@ -73,7 +73,7 @@ authorization only removes the blocker on starting them.
   with the C.1/C.2 commands plus the new screenshots.
   Done 2026-10-16 (host): Settings "Vision ›" page; renders in
   `docs/evidence/coherent-shell/accessibility-scale/host/`.
-- [ ] C.4 On a reserved board, confirm the choice persists across a reboot
+- [x] C.4 On a reserved board, confirm the choice persists across a reboot
   and is legibly larger/higher-contrast on the real panel. Operator command:
   `python3 tools/capture-feature.py accessibility-scale --provenance
   real-touch --duration 30 --description 'Text-scale and high-contrast
@@ -89,6 +89,7 @@ authorization only removes the blocker on starting them.
   enough.** "the drawer is not particularly legible at 'large' text but also i
   think 'normal and large' is a pretty shitty accessibility option anyway".
   This task stays open for the redesign in C.5–C.8.
+  Closed 2026-10-16 by C.8: the operator accepted the redesign on glass.
 - [x] C.5 Replace the two-way text choice with four steps (100/130/160/200%)
   end to end: `tools/theme_vision.py` (`TEXT_SCALES`), the helper protocol
   and Rust `VisionChoice`, `vision_text_scale` (bound raised to 2.0),
@@ -109,12 +110,16 @@ authorization only removes the blocker on starting them.
   orientations, committed to `docs/evidence/coherent-shell/accessibility-scale/`,
   and a test that measures text height against card height.
   Done 2026-10-16 (host); renders in `docs/evidence/coherent-shell/accessibility-scale/steps/`.
-- [ ] C.8 Board: at 160% and 200% on the landscape panel, native `grim`
+- [x] C.8 Board: at 160% and 200% on the landscape panel, native `grim`
   captures of Home, drawer, Shade, Settings and Vision, and the operator's
   legibility judgement on glass. Closes C.4 if accepted.
   Progress 2026-10-16: captures at both steps (injected input, native `grim`)
   are in `docs/evidence/coherent-shell/accessibility-scale/board/13`–`23`.
-  The operator's judgement on glass is still needed.
+  Result 2026-10-16 (operator on glass, landscape panel): **accepted.** "it's
+  all good however the clock widget could use a redesign it's got some text
+  too small to see really but yeah it's good". The clock widget's small text
+  is outside this change (Home widgets keep their 100% sizes); it is
+  recorded as a limit in the evidence README.
 
 ## D. Shared spec/evidence
 

@@ -270,4 +270,12 @@ After the capture, the board was set back to `largest`/`standard`.
 - At 200% the Shade's title and its "Swipe up…" caption shrink to fit beside
   the Settings link and the battery label. In `16-panel-200-shade.png` they
   are smaller than the rest of the Shade.
-- No operator has judged legibility on glass. C.8 stays open for that.
+- The clock widget has text too small to read on the panel (the operator's
+  note below). It needs its own redesign.
+
+### Operator judgement on glass (2026-10-16)
+
+Evidence class: the operator looked at the landscape panel. No camera
+recording was made. Verbatim: "it's all good however the clock widget could
+use a redesign it's got some text too small to see really but yeah it's
+good". This accepts C.8 and closes C.4.
