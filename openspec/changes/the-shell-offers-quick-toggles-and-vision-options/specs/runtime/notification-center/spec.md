@@ -2,21 +2,14 @@
 
 ### Requirement: The shade offers quick-toggle controls without a trip into Settings
 
-<!-- UNVERIFIED: planning only; no implementation, host render, or board
-observation exists yet. Grounding for the gap being closed:
-nix/rust-shell-client/src/service_ui.rs:279-320 (`panel_intent`'s
-`Route::Shade` arm, read directly against origin/master 80817e3d) recognizes
-only notification scroll, a per-notification action tap, `OpenSettings`,
-`NotificationDismissAll`, and its own swipe-to-close — no capability toggle.
-`ServiceRequest::Brightness` and `ServiceRequest::KeyboardToggle` exist and
-are already wired end-to-end, but only from inside `Route::Settings`
-(service_ui.rs:353-370).
-Re-read on master 38c264e4 for this scope split: the shade now has a
-brightness slider (`SHADE_SLIDER_TOP`, from
-the-brightness-control-is-a-slider), and that slider meets the brightness
-scenario below. No keyboard control is in the shade yet
-(service_ui.rs `Route::Shade` arm, about lines 652-693). Requirement text is
-carried over unchanged from the-shell-behaves-as-one-coherent-system. -->
+*Grounding (2026-10-16): host tests in `service_ui.rs` cover the keyboard
+row's hit region and its unavailable state (tasks B.1–B.3). On the board, with
+injected pointer events on HDMI at 1280x800, the toggle was reachable, showed
+and hid the keyboard with the Shade staying open, and showed "Unavailable"
+and ignored a tap once wvkbd was stopped
+(`docs/evidence/coherent-shell/shade-quick-toggles/README.md`). Brightness is
+the existing Shade slider. Real-finger use and the DSI panel orientation were
+not exercised.*
 
 
 The notification shade SHALL offer at least a brightness-step control and a
@@ -51,16 +44,10 @@ control.
 
 ### Requirement: Shade tap targets meet the shell's 48dp-equivalent floor
 
-<!-- UNVERIFIED: planning only; no implementation, host render, or board
-observation exists yet. Grounding: this panel is 568x1232 logical px at 1
-logical px : 1 panel px (docs/design/handheld-shell/README.md) over a 4.1in
-diagonal, giving ~330.9 ppi and ~2.07 physical px per Android dp; 46dp is
-therefore ~99 logical px on this panel. nix/rust-shell-client/src/
-service_ui.rs:305-310's "Dismiss all" hit region
-((116.0..190.0).contains(&end.1) && end.0 > w-150.0) is 74 logical px tall
-(~36dp), read directly against origin/master 80817e3d. On master 38c264e4
-the band is still `116.0..190.0` (service_ui.rs, about line 683), now with
-`end.0 > w - 180.0`. -->
+*Grounding (2026-10-16): task B.5 gave every Shade tap target, including
+"Dismiss all", a hit region of at least 99 logical px, with a unit test that
+asserts each region's height (`service_ui.rs`). Host-tested only; no
+real-finger measurement.*
 
 Every shade tap target, including "Dismiss all", SHALL meet or exceed a
 48dp-equivalent hit region on this panel's measured density (~99 logical

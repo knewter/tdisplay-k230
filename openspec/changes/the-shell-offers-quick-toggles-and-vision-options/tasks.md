@@ -126,10 +126,16 @@ authorization only removes the blocker on starting them.
 - [x] D.1 Validate this change: `openspec validate
   the-shell-offers-quick-toggles-and-vision-options --strict`. Passed
   2026-09-28 on `close/shell-umbrella`.
-- [ ] D.2 After B/C's host tasks land, evaluate the integrated closure:
+- [x] D.2 After B/C's host tasks land, evaluate the integrated closure:
   `nix build .#nixosConfigurations.k230-coherent-shell.config.system.build.toplevel`
   (cross-build proof only, not board proof). The parent named the `k230`
   toplevel. The Rust client and card shell are only in the opt-in
   `k230-coherent-shell` configuration, so that configuration is the one that
   exercises this code.
-- [ ] D.3 Do not archive until B.4 and C.4 are committed.
+  Done 2026-10-16 (cross-build only): from master `9d2135110c02`, run
+  22:47:00Z–22:48:40Z, exit 0. Output
+  `/nix/store/8w4p48rhqb001v15ndwxx72hh208i9wa-nixos-system-nixos-26.11.20260919.20b1ddd`;
+  its closure contains `k230-shell-rust` and `k230-card-shell`. The board ran
+  the `kernelMainlineDrmShellLandscapeHdmiBootFiles` system instead (see the
+  accessibility-scale README).
+- [x] D.3 Do not archive until B.4 and C.4 are committed.

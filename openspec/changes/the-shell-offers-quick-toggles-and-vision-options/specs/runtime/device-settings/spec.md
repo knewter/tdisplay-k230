@@ -2,19 +2,6 @@
 
 ### Requirement: Settings offers a vision-accessibility text scale and high-contrast option
 
-<!-- UNVERIFIED: planning only; no implementation, host render, or board
-observation exists yet. Grounding for the gap being closed: a search of
-nix/rust-shell-client/src/*.rs for "accessib", "a11y", "contrast",
-"large_text", and "screen reader" against origin/master 80817e3d returns no
-hits; the only related mechanism found is a single boolean
-reduced_motion flag (main.rs:3344-3345, K230_SETTINGS_REDUCED_MOTION),
-which shortens animation durations and does not affect text size or
-contrast. the-handheld-presents-a-coherent-shell/design.md decision 2 plans
-a separate "accessibility aid" (task 1.5) that is explicitly large labeled
-route controls as a swipe-gesture alternative, not a text-scale or contrast
-accommodation; this requirement is additive to, not a restatement of, that
-one. -->
-
 *Grounding (2026-10-16): the first implementation offered one larger step
 (1.25x). On the panel (568x1232 at 4.1", about 331 ppi, 2.07 px per dp) the
 default body text is 17-18 px (about 8.5 sp) and drawer labels are 14 px
@@ -23,6 +10,17 @@ drawer illegible to the operator: "the drawer is not particularly legible at
 'large' text", with labels ellipsized ("Same G…") over a translucent drawer
 that shows the Home clock and wallpaper through it
 (`docs/evidence/coherent-shell/accessibility-scale/board/11-panel-drawer.png`).*
+
+*Grounding (2026-10-16): the four steps and the reflow were host-tested and
+rendered at every step in both orientations
+(`docs/evidence/coherent-shell/accessibility-scale/README.md`, "Redesign").
+On the landscape panel, native `grim` captures at 160% and 200% of Home, the
+drawer, the Shade, Settings and the Vision page are in `board/13`–`23` of
+that directory. The operator judged them legible on glass. Persistence across
+a reboot was observed on the board with injected taps (`board/06`, `07`).
+The card-shell headers' scaling is host-tested only
+(`tests/test_card_shell_appearance.py`); no board capture of the card deck at
+a larger step exists.*
 
 Settings SHALL offer a person four text-size steps, 100%, 130%, 160% and 200%
 of the shell's design size, and a high-contrast palette variant. Both choices
@@ -41,14 +39,16 @@ The chosen scale and contrast variant SHALL apply consistently to both the
 Rust-rendered surfaces (Home, drawer, shade, Settings) and the C-rendered card
 deck and its labels, using the same shared theme-token mechanism that already
 carries per-theme colors across that boundary, so a person does not get a
-larger Settings but an unchanged card header. The choice SHALL persist across
+larger Settings but an unchanged card header. Home widgets keep the
+proportions of their cells, so a widget's contents are not scaled by the step;
+the Clock widget's date, which follows the step, is the exception. The choice SHALL persist across
 restarts the same way the active theme choice already does.
 
 #### Scenario: A person chooses a larger text size
 
 - **WHEN** a person selects the 130%, 160% or 200% text-size step in Settings
-- **THEN** text on Home, the drawer, the shade, Settings, and card headers
-  all render at that size, not only the Settings screen itself
+- **THEN** Home's app labels, the drawer, the shade, Settings, and card
+  headers all render at that size, not only the Settings screen itself
 
 #### Scenario: The largest step keeps every drawer label readable
 
