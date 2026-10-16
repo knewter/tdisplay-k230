@@ -23,9 +23,9 @@ fn main() {
             for (state, name) in [(ControlState::Action, "available"), (ControlState::Unavailable, "unavailable")] {
                 let mut settings = fixture_settings();
                 settings.keyboard.state = state;
-                if state == ControlState::Unavailable {
-                    settings.keyboard.label = "Unavailable".into();
-                }
+                // The helper keeps "Toggle keyboard" as the label in both states.
+                settings.keyboard.label = "Toggle keyboard".into();
+                settings.keyboard.action = (state == ControlState::Action).then(|| "keyboard-toggle".into());
                 let view = ServiceView {
                     settings: Some(settings),
                     notifications: Some(NotificationSnapshot { count, events: fixture_notification_events(count), preview: None }),

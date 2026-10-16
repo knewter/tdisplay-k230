@@ -1551,8 +1551,11 @@ fn service_exit_label(route: Route) -> &'static str {
 /// return); a genuine failure (`outcome_error` is `Some`, e.g. permission
 /// denied or an unreachable backend) still surfaces normally, and every
 /// other request keeps showing its own message exactly as before.
+/// A successful brightness change or keyboard toggle is its own feedback
+/// (the panel dims, the keyboard slides in), so its bare "requested" state
+/// is not shown as a message; a failure still is.
 fn suppresses_action_message(request: &ServiceRequest, outcome_error: Option<&str>) -> bool {
-    matches!(request, ServiceRequest::Brightness(_)) && outcome_error.is_none()
+    matches!(request, ServiceRequest::Brightness(_) | ServiceRequest::KeyboardToggle) && outcome_error.is_none()
 }
 
 struct HudStreamDrag {
@@ -7923,12 +7926,20 @@ mod route_tests {
             &ServiceRequest::Brightness(50),
             Some("brightness-denied")
         ));
-        // Every other request keeps its own message exactly as before,
-        // success or failure.
-        assert!(!suppresses_action_message(
+        // The keyboard toggle (Settings and the Shade quick toggle) is the
+        // same: on the board its bare "requested" state painted in the
+        // message card's error style read as a failure, while the keyboard
+        // sliding in is the actual feedback. A failure still surfaces.
+        assert!(suppresses_action_message(
             &ServiceRequest::KeyboardToggle,
             None
         ));
+        assert!(!suppresses_action_message(
+            &ServiceRequest::KeyboardToggle,
+            Some("keyboard-unavailable")
+        ));
+        // Every other request keeps its own message exactly as before,
+        // success or failure.
         assert!(!suppresses_action_message(
             &ServiceRequest::BrightnessLive(50),
             None

@@ -2810,9 +2810,13 @@ fn scene(
                 let keyboard = &settings.keyboard;
                 let y = SHADE_TOGGLE_TOP + 4.0;
                 service_card(cr, theme, "controls", 24.0, y, hw - 48.0, SHADE_TOGGLE_H - 8.0, false);
-                let ink = if keyboard.state == ControlState::Action { style.text } else { style.muted };
+                let available = keyboard.state == ControlState::Action;
+                let ink = if available { style.text } else { style.muted };
+                // The helper keeps the label "Toggle keyboard" in both states,
+                // so the unavailable card says so instead of echoing it.
+                let detail = if available { control_text(keyboard) } else { "Unavailable".into() };
                 themed_medium(cr, theme, "body", "Keyboard", 44.0, y + 15.0, hw - 88.0, 17.0, 14.0, 22.0, ink);
-                themed_text(cr, theme, "body", &control_text(keyboard), 44.0, y + 43.0, hw - 88.0, 19.0, 14.0, 24.0, ink);
+                themed_text(cr, theme, "body", &detail, 44.0, y + 43.0, hw - 88.0, 19.0, 14.0, 24.0, ink);
             }
             // The preview tile repeated whatever the top history row already
             // shows -- identical text for one notification, or a
