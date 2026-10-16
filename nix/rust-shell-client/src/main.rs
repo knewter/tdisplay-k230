@@ -2083,6 +2083,17 @@ impl ShellClient {
                     self.theme_dirty();
                 }
             }
+            ThemeIntent::OpenVision => {
+                let request = self.theme_view.open_vision();
+                self.submit_theme(request);
+            }
+            ThemeIntent::Vision(toggle) => {
+                if let Some(request) = self.theme_view.toggle_vision(toggle) {
+                    self.submit_theme(request);
+                } else {
+                    self.theme_dirty();
+                }
+            }
         }
     }
 

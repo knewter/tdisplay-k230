@@ -27,6 +27,7 @@ stdenvNoCC.mkDerivation {
     install -m 0644 ${../tools/theme_sources.py} "$out/libexec/handheld-theme/theme_sources.py"
     install -m 0644 ${../tools/theme_transaction.py} "$out/libexec/handheld-theme/theme_transaction.py"
     install -m 0644 ${../tools/theme_preferences.py} "$out/libexec/handheld-theme/theme_preferences.py"
+    install -m 0644 ${../tools/theme_vision.py} "$out/libexec/handheld-theme/theme_vision.py"
     install -m 0644 ${../tools/theme_tokens.py} "$out/libexec/handheld-theme/theme_tokens.py"
     install -m 0644 ${../tools/theme_catalog.py} "$out/libexec/handheld-theme/theme_catalog.py"
     install -m 0644 ${../tools/theme_client.py} "$out/libexec/handheld-theme/theme_client.py"

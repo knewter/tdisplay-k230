@@ -27,7 +27,7 @@ use std::{
     thread,
     time::{Duration, Instant, SystemTime, UNIX_EPOCH},
 };
-use theme_catalog::{ThemeReply, ThemeRequest, ThemeResponse, ThemeWorker};
+use theme_catalog::{ThemeReply, ThemeRequest, ThemeResponse, ThemeWorker, VisionChoice};
 
 struct Fixture {
     root: PathBuf,
@@ -325,4 +325,82 @@ fn a_fit_change_sends_fit_through_the_helper_in_both_steps_and_rejects_unknown_m
         })
         .is_err());
     assert!(!marker.exists());
+}
+
+fn high_contrast() -> VisionChoice {
+    VisionChoice { text_scale: "default".into(), contrast: "high".into() }
+}
+
+#[test]
+fn a_vision_change_is_one_durable_helper_request_and_its_reply_must_match() {
+    let fixture = Fixture::new();
+    let socket_path = fixture.path("helper.sock");
+    let marker = fixture.path("subprocess-ran");
+    let body = json!({"schema": 1, "activated": true,
+                      "vision": {"text_scale": "default", "contrast": "high"}});
+    let command = fake_command(&fixture, &marker, &body);
+    let server = serve_one(socket_path.clone(), body, 0);
+    let worker = ThemeWorker::spawn(command, socket_path);
+    let request = ThemeRequest::Vision(high_contrast());
+    assert!(request.is_activation());
+    let id = worker.try_submit(request).unwrap();
+    let reply = recv(&worker, id);
+    assert_eq!(reply.result, Ok(ThemeResponse::Vision { choice: high_contrast(), activated: true }));
+    let sent = server.join().unwrap();
+    assert_eq!(sent, json!({"action": "vision", "text_scale": "default", "contrast": "high"}));
+    assert!(!marker.exists());
+}
+
+#[test]
+fn a_vision_reply_naming_another_choice_or_an_invalid_one_is_refused() {
+    let request = ThemeRequest::Vision(high_contrast());
+    let other = json!({"schema": 1, "activated": true,
+                       "vision": {"text_scale": "large", "contrast": "high"}});
+    assert!(theme_catalog::parse_response(&request, other.to_string().as_bytes()).is_err());
+    let invalid = json!({"schema": 1, "activated": true,
+                         "vision": {"text_scale": "huge", "contrast": "high"}});
+    assert!(theme_catalog::parse_response(&request, invalid.to_string().as_bytes()).is_err());
+    // A request naming an unknown option never reaches the helper or the
+    // subprocess.
+    let fixture = Fixture::new();
+    let marker = fixture.path("subprocess-ran");
+    let command = fake_command(&fixture, &marker, &list_body());
+    let worker = ThemeWorker::spawn(command, fixture.path("none.sock"));
+    assert!(worker
+        .try_submit(ThemeRequest::Vision(VisionChoice { text_scale: "huge".into(), contrast: "high".into() }))
+        .is_err());
+    assert!(!marker.exists());
+}
+
+#[test]
+fn the_subprocess_fallback_passes_the_vision_choice_as_flags() {
+    let fixture = Fixture::new();
+    let args = fixture.path("args");
+    let path = fixture.path("fake-k230-theme");
+    fs::write(&path, format!(
+        "#!/bin/sh\necho \"$@\" > {}\necho '{}'\n",
+        args.display(),
+        json!({"schema": 1, "activated": false, "vision": {"text_scale": "default", "contrast": "high"}}),
+    )).unwrap();
+    fs::set_permissions(&path, fs::Permissions::from_mode(0o700)).unwrap();
+    let worker = ThemeWorker::spawn(path, PathBuf::new());
+    let id = worker.try_submit(ThemeRequest::Vision(high_contrast())).unwrap();
+    assert_eq!(recv(&worker, id).result,
+               Ok(ThemeResponse::Vision { choice: high_contrast(), activated: false }));
+    assert_eq!(fs::read_to_string(args).unwrap().trim(),
+               "vision --text-scale default --contrast high");
+}
+
+#[test]
+fn a_list_carries_the_saved_vision_choice_when_the_helper_knows_it() {
+    let with = json!({"schema": 1, "themes": [], "active": {"id": null, "generation": null},
+                      "vision": {"text_scale": "large", "contrast": "standard"}});
+    let Ok(ThemeResponse::List(list)) =
+        theme_catalog::parse_response(&ThemeRequest::List, with.to_string().as_bytes())
+        else { panic!("list expected") };
+    assert_eq!(list.vision, Some(VisionChoice { text_scale: "large".into(), contrast: "standard".into() }));
+    let Ok(ThemeResponse::List(list)) =
+        theme_catalog::parse_response(&ThemeRequest::List, list_body().to_string().as_bytes())
+        else { panic!("list expected") };
+    assert_eq!(list.vision, None);
 }

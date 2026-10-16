@@ -14,6 +14,7 @@
 use crate::background_decode::{BackgroundCache, FitMode};
 use crate::theme_catalog::{
     BackgroundKind, ThemeList, ThemeOrigin, ThemePreview, ThemeReply, ThemeRequest, ThemeResponse,
+    VisionChoice,
 };
 use std::{
     collections::{HashMap, VecDeque},
@@ -115,6 +116,29 @@ pub enum ThemePage {
     /// own background carousel below it, and a "Current"/ring marker on
     /// whichever slice of each is currently, durably active.
     List,
+    /// The vision options: a larger text step and a high-contrast palette,
+    /// applied to every theme (`tools/theme_vision.py`).
+    Vision,
+}
+
+/// Which Vision page card a tap toggled.
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub enum VisionToggle {
+    TextSize,
+    Contrast,
+}
+
+/// Top of the first Vision card; each card is `VISION_CARD_H` tall (the
+/// 99 px tap floor) with `VISION_CARD_GAP` between them.
+pub const VISION_CARD_TOP: f64 = 150.0;
+pub const VISION_CARD_H: f64 = 99.0;
+pub const VISION_CARD_GAP: f64 = 16.0;
+/// The Vision cards keep a readable column on a wide output.
+pub const VISION_CARD_MAX_W: f64 = 520.0;
+
+/// The x span of the Vision cards for an output `width` px wide.
+pub fn vision_card_span(width: f64) -> (f64, f64) {
+    (24.0, (width - 48.0).min(VISION_CARD_MAX_W))
 }
 
 /// The theme (and, once a theme is active, which of its own backgrounds)
@@ -238,6 +262,11 @@ pub struct ThemeView {
     /// step has returned, the generation to activate. Independent of
     /// `desired` (a theme or background tap clears it).
     pub fit_wanted: Option<(String, Option<String>)>,
+    /// The saved vision choice, as the last `list` or `vision` reply said.
+    pub vision: VisionChoice,
+    /// False until a reply has said what the saved choice is, so the Vision
+    /// page never toggles from a guessed starting point.
+    pub vision_loaded: bool,
 }
 
 /// The `fit_mode` recorded in the generation directory that holds
@@ -301,6 +330,8 @@ impl Default for ThemeView {
             desired: None,
             fit: "crop".into(),
             fit_wanted: None,
+            vision: VisionChoice::default(),
+            vision_loaded: false,
         }
     }
 }
@@ -321,6 +352,10 @@ pub enum ThemeIntent {
     /// Tap on the "Backgrounds" heading: cycle the active background's fit
     /// mode (crop, fit, center, fill, solid).
     Fit,
+    /// "Vision ›" in the Settings header.
+    OpenVision,
+    /// A Vision page card.
+    Vision(VisionToggle),
 }
 
 /// Top of the theme carousel band (below the "Themes" heading/subtext).
@@ -563,7 +598,7 @@ fn request_target(request: &ThemeRequest) -> Option<(&str, Option<&str>)> {
             background_id,
             ..
         } => Some((theme_id.as_str(), background_id.as_deref())),
-        ThemeRequest::List | ThemeRequest::Fit { .. } => None,
+        ThemeRequest::List | ThemeRequest::Fit { .. } | ThemeRequest::Vision(_) => None,
     }
 }
 
@@ -578,6 +613,46 @@ impl ThemeView {
         self.desired = None;
         self.reset_prepare_ahead_debounce();
         ThemeRequest::List
+    }
+
+    /// Opens the Vision page and asks for the saved choice; the `list`
+    /// reply fills `vision` without leaving the page.
+    pub fn open_vision(&mut self) -> ThemeRequest {
+        self.page = ThemePage::Vision;
+        self.error = None;
+        self.message = None;
+        self.desired = None;
+        self.fit_wanted = None;
+        ThemeRequest::List
+    }
+
+    /// The request for a Vision card tap: the saved choice with that one
+    /// option flipped. Nothing while another request is in flight or before
+    /// the saved choice is known.
+    pub fn toggle_vision(&mut self, toggle: VisionToggle) -> Option<ThemeRequest> {
+        if self.pending.is_some() || !self.vision_loaded {
+            return None;
+        }
+        let mut next = self.vision.clone();
+        match toggle {
+            VisionToggle::TextSize => {
+                next.text_scale = if next.large_text() { "default" } else { "large" }.into()
+            }
+            VisionToggle::Contrast => {
+                next.contrast = if next.high_contrast() { "standard" } else { "high" }.into()
+            }
+        }
+        self.error = None;
+        self.message = None;
+        Some(ThemeRequest::Vision(next))
+    }
+
+    /// The choice a Vision request in flight is applying, if any.
+    pub fn vision_pending(&self) -> Option<&VisionChoice> {
+        match self.pending.as_ref() {
+            Some(ThemeRequest::Vision(choice)) => Some(choice),
+            _ => None,
+        }
     }
 
     /// Clears task 3.2's debounce/dedupe bookkeeping (never the one
@@ -610,7 +685,7 @@ impl ThemeView {
         self.background_pressed = None;
         self.reset_prepare_ahead_debounce();
         match self.page {
-            ThemePage::List => {
+            ThemePage::List | ThemePage::Vision => {
                 self.page = ThemePage::Controls;
                 None
             }
@@ -639,6 +714,26 @@ impl ThemeView {
             self.accept_fit(fit, reply.result);
             return true;
         }
+        if let ThemeRequest::Vision(_) = &reply.request {
+            match reply.result {
+                Ok(ThemeResponse::Vision { choice, activated }) => {
+                    self.vision = choice;
+                    self.vision_loaded = true;
+                    // Every generation's identity includes the choice, so a
+                    // remembered one for any theme would now be rejected.
+                    self.known_generations.clear();
+                    self.message = Some(if activated {
+                        "Applied to every theme".into()
+                    } else {
+                        "Saved; applies with the next theme".into()
+                    });
+                    self.error = None;
+                }
+                Ok(_) => self.error = Some("wrong theme response".into()),
+                Err(error) => self.error = Some(error),
+            }
+            return true;
+        }
         let matches_desired = request_target(&reply.request).is_some_and(|(theme_id, background_id)| {
             self.desired
                 .as_ref()
@@ -661,6 +756,16 @@ impl ThemeView {
                 // longer wanted.
             }
             Ok(ThemeResponse::List(list)) => {
+                if let Some(vision) = list.vision.clone() {
+                    self.vision = vision;
+                    self.vision_loaded = true;
+                }
+                if self.page == ThemePage::Vision {
+                    // Opened only to read the saved vision choice.
+                    self.list = Some(list);
+                    self.error = None;
+                    return true;
+                }
                 // Center the theme carousel on the currently active theme,
                 // like Quattro's own picker opening on `selectedImage`.
                 // With no durable choice yet, the shell shows the packaged
@@ -717,6 +822,7 @@ impl ThemeView {
                 self.page = ThemePage::List;
                 self.error = None;
             }
+            Ok(ThemeResponse::Vision { .. }) => {}
             Ok(ThemeResponse::Preview(preview)) => {
                 if !matches_desired {
                     // Superseded by a later tap; `advance()` (called by the
@@ -1109,7 +1215,38 @@ impl ThemeView {
         }
         match self.page {
             ThemePage::Controls => {
-                ((104.0..162.0).contains(&end.1) && end.0 > w - 185.0).then_some(ThemeIntent::Open)
+                if !(104.0..162.0).contains(&end.1) {
+                    None
+                } else if end.0 > w - 185.0 {
+                    Some(ThemeIntent::Open)
+                } else if end.0 > w - 310.0 {
+                    Some(ThemeIntent::OpenVision)
+                } else {
+                    None
+                }
+            }
+            ThemePage::Vision => {
+                if end.1 < header_h {
+                    return if end.0 < 190.0 {
+                        Some(ThemeIntent::Back)
+                    } else if end.0 > w - 150.0 {
+                        Some(ThemeIntent::Close)
+                    } else {
+                        None
+                    };
+                }
+                let (x, cw) = vision_card_span(w);
+                if !(x..x + cw).contains(&end.0) {
+                    return None;
+                }
+                [VisionToggle::TextSize, VisionToggle::Contrast]
+                    .into_iter()
+                    .enumerate()
+                    .find(|(index, _)| {
+                        let top = VISION_CARD_TOP + *index as f64 * (VISION_CARD_H + VISION_CARD_GAP);
+                        (top..top + VISION_CARD_H).contains(&end.1)
+                    })
+                    .map(|(_, toggle)| ThemeIntent::Vision(toggle))
             }
             ThemePage::List => {
                 let lay = self.layout(width, height);
@@ -1223,6 +1360,7 @@ mod tests {
                 generation: None,
             },
             themes,
+            vision: None,
         }
     }
 
@@ -1580,6 +1718,122 @@ mod tests {
         view.tap_background(2).unwrap();
         assert!(view.fit_wanted.is_none());
         assert!(view.desired.is_some());
+    }
+
+    #[test]
+    fn vision_sits_left_of_themes_in_the_settings_header() {
+        let view = ThemeView::default();
+        for (w, h) in [(568u32, 1232u32), (1280, 800)] {
+            let tap = |x: f64, y: f64| view.hit((x, y), (x, y), w, h);
+            let w = f64::from(w);
+            assert_eq!(tap(w - 100.0, 120.0), Some(ThemeIntent::Open));
+            assert_eq!(tap(w - 250.0, 120.0), Some(ThemeIntent::OpenVision));
+            assert_eq!(tap(w - 400.0, 120.0), None);
+            assert_eq!(tap(w - 250.0, 200.0), None);
+        }
+    }
+
+    fn vision_list(choice: Option<VisionChoice>) -> ThemeList {
+        ThemeList { vision: choice, ..theme_list(Some(0)) }
+    }
+
+    fn open_vision_page(view: &mut ThemeView, choice: Option<VisionChoice>) {
+        let request = view.open_vision();
+        assert_eq!(request, ThemeRequest::List);
+        view.submitted(request.clone(), 1);
+        assert!(view.accept(ThemeReply {
+            id: 1,
+            request,
+            result: Ok(ThemeResponse::List(vision_list(choice))),
+        }));
+    }
+
+    #[test]
+    fn opening_vision_reads_the_saved_choice_and_stays_on_the_page() {
+        let mut view = ThemeView::default();
+        let large = VisionChoice { text_scale: "large".into(), contrast: "standard".into() };
+        open_vision_page(&mut view, Some(large.clone()));
+        assert_eq!(view.page, ThemePage::Vision);
+        assert!(view.vision_loaded);
+        assert_eq!(view.vision, large);
+        // Not the chooser's own list handling: no theme detail is requested.
+        assert!(view.desired.is_none());
+        assert!(view.advance().is_none());
+        assert_eq!(view.back(), None);
+        assert_eq!(view.page, ThemePage::Controls);
+    }
+
+    #[test]
+    fn a_helper_without_vision_support_leaves_the_toggles_inert() {
+        let mut view = ThemeView::default();
+        open_vision_page(&mut view, None);
+        assert!(!view.vision_loaded);
+        assert!(view.toggle_vision(VisionToggle::TextSize).is_none());
+    }
+
+    #[test]
+    fn each_vision_card_flips_only_its_own_option_and_applies_once() {
+        let mut view = ThemeView::default();
+        open_vision_page(&mut view, Some(VisionChoice::default()));
+        let (w, h) = (568u32, 1232u32);
+        let card = |index: f64| VISION_CARD_TOP + index * (VISION_CARD_H + VISION_CARD_GAP) + 50.0;
+        let tap = |view: &ThemeView, y: f64| view.hit((200.0, y), (200.0, y), w, h);
+        assert_eq!(tap(&view, card(0.0)), Some(ThemeIntent::Vision(VisionToggle::TextSize)));
+        assert_eq!(tap(&view, card(1.0)), Some(ThemeIntent::Vision(VisionToggle::Contrast)));
+        // The gap between the cards and the space below them are dead.
+        assert_eq!(tap(&view, VISION_CARD_TOP + VISION_CARD_H + 4.0), None);
+        assert_eq!(tap(&view, card(2.0)), None);
+
+        let request = view.toggle_vision(VisionToggle::Contrast).unwrap();
+        assert_eq!(request, ThemeRequest::Vision(VisionChoice {
+            text_scale: "default".into(), contrast: "high".into(),
+        }));
+        assert!(request.is_activation());
+        view.submitted(request.clone(), 2);
+        // In flight: no second request, and the page cannot be left.
+        assert!(view.toggle_vision(VisionToggle::TextSize).is_none());
+        assert_eq!(tap(&view, card(0.0)), None);
+        assert_eq!(view.vision_pending().map(|c| c.contrast.as_str()), Some("high"));
+        view.known_generations.insert(id('a'), id('b'));
+        let ThemeRequest::Vision(choice) = request.clone() else { unreachable!() };
+        assert!(view.accept(ThemeReply {
+            id: 2,
+            request,
+            result: Ok(ThemeResponse::Vision { choice, activated: true }),
+        }));
+        assert!(view.vision.high_contrast());
+        assert!(!view.vision.large_text());
+        assert_eq!(view.message.as_deref(), Some("Applied to every theme"));
+        // Every generation identity changed with the choice.
+        assert!(view.known_generations.is_empty());
+        // The next tap starts from the saved choice.
+        assert_eq!(view.toggle_vision(VisionToggle::TextSize), Some(ThemeRequest::Vision(VisionChoice {
+            text_scale: "large".into(), contrast: "high".into(),
+        })));
+    }
+
+    #[test]
+    fn a_failed_vision_change_keeps_the_saved_choice_and_says_why() {
+        let mut view = ThemeView::default();
+        open_vision_page(&mut view, Some(VisionChoice::default()));
+        let request = view.toggle_vision(VisionToggle::TextSize).unwrap();
+        view.submitted(request.clone(), 2);
+        assert!(view.accept(ThemeReply { id: 2, request, result: Err("theme command failed".into()) }));
+        assert_eq!(view.vision, VisionChoice::default());
+        assert_eq!(view.error.as_deref(), Some("theme command failed"));
+        assert!(view.vision_pending().is_none());
+    }
+
+    #[test]
+    fn a_vision_choice_saved_with_no_active_theme_says_when_it_applies() {
+        let mut view = ThemeView::default();
+        open_vision_page(&mut view, Some(VisionChoice::default()));
+        let request = view.toggle_vision(VisionToggle::TextSize).unwrap();
+        view.submitted(request.clone(), 2);
+        let ThemeRequest::Vision(choice) = request.clone() else { unreachable!() };
+        view.accept(ThemeReply { id: 2, request, result: Ok(ThemeResponse::Vision { choice, activated: false }) });
+        assert_eq!(view.message.as_deref(), Some("Saved; applies with the next theme"));
+        assert!(view.vision.large_text());
     }
 
     #[test]

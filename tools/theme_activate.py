@@ -25,6 +25,7 @@ import tomllib
 from theme_sources import source_dir, source_digest, source_fingerprint
 from theme_preferences import (DEFAULT_FIT, FIT_MODES, SelectionIntent,
                                choice as remembered_choice, fit as remembered_fit)
+import theme_vision
 from theme_tokens import system_surface_coverage, TokenError, compile_tokens
 from theme_transaction import TransactionError, activate_generation
 import keyboard_appearance
@@ -261,17 +262,21 @@ def select_background(backgrounds: list[str], background_choice: str | None,
 
 def generation_identity(*, source_hash: str, source_path: str, helper_hash: str,
                         adapter_hash: str, name: str, selected_background: str | None,
-                        fit_mode: str = DEFAULT_FIT, overlays: str | None = None) -> str:
+                        fit_mode: str = DEFAULT_FIT, overlays: str | None = None,
+                        vision: dict | None = None) -> str:
     identity = {"source": source_hash, "source_path": source_path,
                 "helpers": helper_hash, "adapter": adapter_hash,
                 "name": name, "selected_background": selected_background,
                 "version": 1}
     # Added only when they differ from "none", so every generation prepared
-    # without a fit choice or overlays keeps the identity it already had.
+    # without a fit choice, overlays or a vision choice keeps the identity it
+    # already had.
     if fit_mode != DEFAULT_FIT:
         identity["fit_mode"] = fit_mode
     if overlays is not None:
         identity["overlays"] = overlays
+    if vision is not None and vision != theme_vision.DEFAULT:
+        identity["vision"] = vision
     return hashlib.sha256(json.dumps(identity, sort_keys=True).encode()).hexdigest()[:24]
 
 
@@ -352,7 +357,9 @@ def prepare(name: str, *, source: Path | None, state_root: Path,
     helper_hash = helper_digest(tools)
     stopwatch.lap("helper_hash")
     adapter_hash = hashlib.sha256(Path(__file__).read_bytes()
-                                  + (Path(__file__).with_name("theme_tokens.py")).read_bytes()).hexdigest()
+                                  + (Path(__file__).with_name("theme_tokens.py")).read_bytes()
+                                  + (Path(__file__).with_name("theme_vision.py")).read_bytes()).hexdigest()
+    vision = theme_vision.load(state_root)
     generations = state_root / "generations"
     generations.mkdir(parents=True, exist_ok=True)
 
@@ -373,7 +380,8 @@ def prepare(name: str, *, source: Path | None, state_root: Path,
     generation_id = generation_identity(
         source_hash=source_hash, source_path=str(theme), helper_hash=helper_hash,
         adapter_hash=adapter_hash, name=name, selected_background=selected_background,
-        fit_mode=fit_mode, overlays=overlay_fingerprint(overlay_accepted))
+        fit_mode=fit_mode, overlays=overlay_fingerprint(overlay_accepted),
+        vision=vision)
     destination = generations / generation_id
     if destination.exists():
         existing = json.loads((destination / "report.json").read_text())
@@ -382,7 +390,8 @@ def prepare(name: str, *, source: Path | None, state_root: Path,
                 or existing.get("selected_background") != selected_background
                 or existing.get("fit_mode", DEFAULT_FIT) != fit_mode
                 or existing["helper_sha256"] != helper_hash
-                or existing["adapter_sha256"] != adapter_hash):
+                or existing["adapter_sha256"] != adapter_hash
+                or existing.get("vision", theme_vision.DEFAULT) != vision):
             raise ThemeError("generation identity collision")
         if remembered_missing:
             # Request-specific, not a property of the (immutable, shared)
@@ -404,7 +413,7 @@ def prepare(name: str, *, source: Path | None, state_root: Path,
                   "helper_sha256": helper_hash, "adapter_sha256": adapter_hash,
                   "name": name, "applied": [], "adapted": [], "unavailable": [], "unknown": [],
                   "backgrounds": [], "selected_background": None,
-                  "fit_mode": fit_mode, "icon_theme": None}
+                  "fit_mode": fit_mode, "icon_theme": None, "vision": vision}
         total = 0
         allowed = {"colors.toml", "shell.toml", "icons.theme", "foot.ini", "alacritty.toml"}
         for entry in sorted(theme.iterdir()):
@@ -451,6 +460,10 @@ def prepare(name: str, *, source: Path | None, state_root: Path,
         report["unknown"].extend(overlay_rejected)
         if not (staged / "colors.toml").is_file():
             raise ThemeError("theme has no usable palette")
+        if vision["contrast"] == "high":
+            palette_file = staged / "colors.toml"
+            palette_file.write_text(theme_vision.palette_text(palette_file.read_text(), vision))
+            report["adapted"].append("colors.toml: high-contrast palette")
         # `selected_background`/`remembered_missing` were already resolved
         # (and, for an invalid `background_choice`, already raised) from
         # `background_listing()`'s cheap pre-pass above; `report["backgrounds"]`,
@@ -499,6 +512,7 @@ def prepare(name: str, *, source: Path | None, state_root: Path,
             with (staged / "shell.toml").open("rb") as stream:
                 resolved_shell = tomllib.load(stream)
             tokens = compile_tokens(resolved_shell)
+            tokens["sections"]["accessibility"] = theme_vision.tokens(vision)
             for category, roles in system_surface_coverage(tokens).items():
                 report[category].extend(roles)
         except (tomllib.TOMLDecodeError, TokenError) as error:
@@ -537,7 +551,8 @@ def prepare(name: str, *, source: Path | None, state_root: Path,
                     or existing.get("selected_background") != report["selected_background"]
                     or existing.get("fit_mode", DEFAULT_FIT) != fit_mode
                     or existing["helper_sha256"] != helper_hash
-                    or existing["adapter_sha256"] != adapter_hash):
+                    or existing["adapter_sha256"] != adapter_hash
+                    or existing.get("vision", theme_vision.DEFAULT) != vision):
                 raise ThemeError("generation identity collision")
             # Memory diagnostics are request-specific: a previously prepared
             # immutable generation can have the same selected default while

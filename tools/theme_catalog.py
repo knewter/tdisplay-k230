@@ -24,6 +24,7 @@ from theme_transaction import TransactionError, _pointer, activate_generation, p
 from theme_preferences import FIT_MODES, SelectionIntent
 import keyboard_appearance
 import theme_timing
+import theme_vision
 
 
 MAX_ENTRIES = 512
@@ -335,6 +336,11 @@ def build_parser() -> argparse.ArgumentParser:
         if action == "activate":
             command.add_argument("--expected-generation", required=True,
                                  help="generation reviewed in preview; reject changed sources")
+    vision = actions.add_parser("vision", help="save the text-scale/contrast choice and "
+                                "re-apply the active theme with it")
+    vision.add_argument("--json", action="store_true")
+    vision.add_argument("--text-scale", required=True, choices=tuple(theme_vision.TEXT_SCALES))
+    vision.add_argument("--contrast", required=True, choices=theme_vision.CONTRASTS)
     return parser
 
 
@@ -362,6 +368,79 @@ def _deferred_keyboard_sync(state_root: Path, generation_name: str, runtime_dir:
         print(f"k230-theme: deferred keyboard sync failed: {error}", file=sys.stderr)
 
 
+def activate_prepared(args, generation: Path, report: dict, result: dict, *,
+                      explicit: bool, fit: str | None,
+                      stopwatch: theme_timing.Stopwatch) -> None:
+    """Commit a prepared generation to every receiver, remember its
+    background choice, and restart the keyboard off the critical path.
+    Fills `result` in place; raises on a failed commit."""
+    preference = SelectionIntent(args.state_root.resolve(), Path(report["source"]),
+                                 report["selected_background"], report["backgrounds"],
+                                 explicit=explicit, fit=fit)
+    result["app_appearance"] = activate_generation(
+        generation, state_root=args.state_root, endpoint=args.socket,
+        preference=preference, defer_app_sync=True,
+        endpoints=(args.rust_socket, args.deck_socket)
+        if args.rust_socket is not None else None)
+    stopwatch.lap("activate_generation")
+    # Task 4 (visible side effects off the critical path): the
+    # panel is already showing the new theme by this point --
+    # activate_generation() above only returns after both
+    # receivers' two-phase commit is acknowledged. wvkbd has no
+    # live-recolor IPC (see keyboard_appearance.py's own doc), so
+    # applying its new colours means restarting the process; that
+    # restart has no bearing on whether *this* activation
+    # succeeded (keyboard_appearance.py's own docstring: failure
+    # here "never rolls back or fails the shell's own
+    # acknowledged generation"), so it does not need to complete
+    # before this response is observable. Run it on a background
+    # thread rather than inline: `theme-helper.service`'s
+    # request loop (tools/theme_helperd.py) sends its reply the
+    # moment `handle()` returns, independent of this thread, so
+    # the daemon-served chooser path sees this restart's cost
+    # removed entirely. A non-daemon thread is used deliberately
+    # so a bare `python3 theme_catalog.py activate` (or the
+    # client's own in-process fallback) is unaffected: the
+    # interpreter already waits for non-daemon threads at exit,
+    # so that path's total wall-clock time is unchanged from
+    # before this reordering -- only the daemon path's *observed*
+    # latency (the client's read of the response) improves.
+    result["keyboard_appearance"] = {"state": "deferred"}
+    threading.Thread(
+        target=_deferred_keyboard_sync,
+        args=(args.state_root, generation.name, args.keyboard_runtime_dir, args.pkill),
+    ).start()
+    stopwatch.lap("keyboard_deferred_dispatch")
+    result["activated"] = True
+
+
+def apply_vision(args, entries: list[Entry], stopwatch: theme_timing.Stopwatch) -> dict:
+    """Save the vision choice, then re-prepare and activate the active theme
+    so both renderers pick it up from the one new generation. The previous
+    choice is restored if that fails, so the saved preference never names a
+    look the panel is not showing. With no active theme the choice is only
+    saved; the next activation applies it."""
+    choice = theme_vision.validate(args.text_scale, args.contrast)
+    previous = theme_vision.load(args.state_root)
+    active = selected(args.state_root, entries)
+    theme_vision.save(args.state_root, choice)
+    if active["id"] is None:
+        return {"schema": 1, "vision": choice, "activated": False, "generation": None}
+    try:
+        entry = choose(entries, active["id"])
+        generation, report = prepare_entry(entry, state_root=args.state_root, tools=args.tools,
+                                           wallpaper_cache_tool=args.wallpaper_cache_tool,
+                                           overlays=args.overlays)
+        result = preview(entry, generation, report)
+        activate_prepared(args, generation, report, result, explicit=False, fit=None,
+                          stopwatch=stopwatch)
+    except BaseException:
+        theme_vision.save(args.state_root, previous)
+        raise
+    result["vision"] = choice
+    return result
+
+
 @runtime_trace.traced("theme_catalog_handle")
 def handle(args) -> tuple[dict, int]:
     """Run one already-parsed request and return `(result, exit_code)`.
@@ -379,8 +458,12 @@ def handle(args) -> tuple[dict, int]:
         stopwatch.lap("discover")
         if args.action == "list":
             result = {"schema": 1, "themes": [entry.public() for entry in entries],
-                      "active": selected(args.state_root, entries)}
+                      "active": selected(args.state_root, entries),
+                      "vision": theme_vision.load(args.state_root)}
             stopwatch.lap("selected")
+        elif args.action == "vision":
+            result = apply_vision(args, entries, stopwatch)
+            stopwatch.lap("vision")
         else:
             entry = choose(entries, args.id)
             generation, report = prepare_entry(entry, state_root=args.state_root,
@@ -409,46 +492,9 @@ def handle(args) -> tuple[dict, int]:
             if args.action == "activate":
                 if args.expected_generation != generation.name:
                     raise activation.ThemeError("theme changed since preview; preview it again")
-                preference = SelectionIntent(args.state_root.resolve(), Path(report["source"]),
-                                             report["selected_background"], report["backgrounds"],
-                                             explicit=args.background is not None
-                                             or args.fit is not None,
-                                             fit=args.fit)
-                result["app_appearance"] = activate_generation(
-                    generation, state_root=args.state_root, endpoint=args.socket,
-                    preference=preference, defer_app_sync=True,
-                    endpoints=(args.rust_socket, args.deck_socket)
-                    if args.rust_socket is not None else None)
-                stopwatch.lap("activate_generation")
-                # Task 4 (visible side effects off the critical path): the
-                # panel is already showing the new theme by this point --
-                # activate_generation() above only returns after both
-                # receivers' two-phase commit is acknowledged. wvkbd has no
-                # live-recolor IPC (see keyboard_appearance.py's own doc), so
-                # applying its new colours means restarting the process; that
-                # restart has no bearing on whether *this* activation
-                # succeeded (keyboard_appearance.py's own docstring: failure
-                # here "never rolls back or fails the shell's own
-                # acknowledged generation"), so it does not need to complete
-                # before this response is observable. Run it on a background
-                # thread rather than inline: `theme-helper.service`'s
-                # request loop (tools/theme_helperd.py) sends its reply the
-                # moment `handle()` returns, independent of this thread, so
-                # the daemon-served chooser path sees this restart's cost
-                # removed entirely. A non-daemon thread is used deliberately
-                # so a bare `python3 theme_catalog.py activate` (or the
-                # client's own in-process fallback) is unaffected: the
-                # interpreter already waits for non-daemon threads at exit,
-                # so that path's total wall-clock time is unchanged from
-                # before this reordering -- only the daemon path's *observed*
-                # latency (the client's read of the response) improves.
-                result["keyboard_appearance"] = {"state": "deferred"}
-                threading.Thread(
-                    target=_deferred_keyboard_sync,
-                    args=(args.state_root, generation.name, args.keyboard_runtime_dir, args.pkill),
-                ).start()
-                stopwatch.lap("keyboard_deferred_dispatch")
-                result["activated"] = True
+                activate_prepared(args, generation, report, result,
+                                  explicit=args.background is not None or args.fit is not None,
+                                  fit=args.fit, stopwatch=stopwatch)
         theme_timing.log("handle", args.action, stopwatch,
                          id=getattr(args, "id", "-"), outcome="ok")
         return result, 0

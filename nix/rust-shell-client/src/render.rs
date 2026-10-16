@@ -27,8 +27,8 @@ use crate::{
     theme_catalog::BackgroundKind,
     theme_thumbnails::{bounded_working_set, ThemeThumbnailCache, ThumbnailKey, Variant},
     theme_ui::{
-        background_display_label, ThemeImageKey, ThemeImageWorker, ThemePage, ThemeView,
-        BACKGROUND_CAROUSEL_TOP,
+        background_display_label, vision_card_span, ThemeImageKey, ThemeImageWorker, ThemePage,
+        ThemeView, BACKGROUND_CAROUSEL_TOP, VISION_CARD_GAP, VISION_CARD_H, VISION_CARD_TOP,
     },
     wifi_settings::{Secret, Security},
     wifi_ui::{all_networks, Page as WifiPage, WifiPublic},
@@ -61,9 +61,20 @@ fn theme_spacing_scale(theme: Option<&AppearanceSnapshot>) -> f64 {
 
 fn attach_theme_metrics(cr: &Context, theme: Option<&AppearanceSnapshot>) {
     let _ = cr.target().set_user_data(&THEME_METRICS, Rc::new(ThemeMetrics {
-        font: (theme_number(theme, "font", "base-size").unwrap_or(12.0) / 12.0).clamp(0.8, 1.25),
+        // `accessibility.text-scale` is the person's vision choice
+        // (`tools/theme_vision.py`), on top of the theme's own size; the card
+        // shell's `appearance.c` `metrics()` applies the same product.
+        font: (theme_number(theme, "font", "base-size").unwrap_or(12.0) / 12.0).clamp(0.8, 1.25)
+            * vision_text_scale(theme),
         spacing: theme_spacing_scale(theme),
     }));
+}
+
+/// The person's vision text step (`accessibility.text-scale`, written by
+/// `tools/theme_vision.py`): 1.0 or 1.25, applied after the theme's own
+/// sizing so a theme cannot clamp it away.
+fn vision_text_scale(theme: Option<&AppearanceSnapshot>) -> f64 {
+    theme_number(theme, "accessibility", "text-scale").unwrap_or(1.0).clamp(1.0, 1.25)
 }
 
 fn context_font_size(cr: &Context, design: f64) -> f64 {
@@ -213,6 +224,7 @@ fn theme_font_size(theme: Option<&AppearanceSnapshot>, role: &str, design: f64, 
         .or_else(|| number("base-size").map(|base| design * base / 12.0))
         .unwrap_or(design)
         .clamp(min, max)
+        * vision_text_scale(theme)
 }
 
 /// Theme spacing changes visual Settings row inset only, never the row's
@@ -1322,6 +1334,53 @@ fn paint_grid(
 }
 
 #[allow(clippy::too_many_arguments)]
+/// Settings' Vision page: two toggle cards, larger text and high contrast,
+/// each a full 99 px tap target (`theme_ui::ThemeView::hit`). A tap saves the
+/// choice and re-applies the active theme with it, so the page itself redraws
+/// in the new size and palette once that settles.
+fn paint_vision(cr: &Context, w: f64, h: f64, view: &ThemeView, theme: Option<&AppearanceSnapshot>) {
+    let style = visual_style(theme, "controls");
+    // The same header and title rows as the theme chooser, which is also
+    // where `ThemeView::hit` looks for Back and Close.
+    let lay = crate::theme_ui::chooser_layout(w as u32, h as u32);
+    text(cr, "‹ Settings", 28.0, lay.header_y, 185.0, 22.0, style.accent);
+    text(cr, "Close", w - 115.0, lay.header_y, 90.0, 21.0, style.accent);
+    let title_y = lay.themes_heading.1;
+    heading(cr, "Vision", 28.0, title_y, w - 56.0, 26.0, style.text);
+    let note_x = 28.0 + text_advance(cr, "Vision", 26.0, pango::Weight::Bold) + 20.0;
+    text(cr, "Applies to every theme", note_x, title_y + 9.0, w - note_x - 28.0, 17.0, style.muted);
+    let pending = view.vision_pending();
+    let shown = pending.unwrap_or(&view.vision);
+    let cards = [
+        ("Larger text", shown.large_text(), pending.is_some_and(|p| p.text_scale != view.vision.text_scale)),
+        ("High contrast", shown.high_contrast(), pending.is_some_and(|p| p.contrast != view.vision.contrast)),
+    ];
+    let (x, cw) = vision_card_span(w);
+    for (index, (label, on, applying)) in cards.into_iter().enumerate() {
+        let y = VISION_CARD_TOP + index as f64 * (VISION_CARD_H + VISION_CARD_GAP);
+        service_card(cr, theme, "controls", x, y + 4.0, cw, VISION_CARD_H - 8.0, on);
+        let ink = if view.vision_loaded { style.text } else { style.muted };
+        themed_medium(cr, theme, "body", label, x + 20.0, y + 19.0, cw - 40.0, 17.0, 14.0, 22.0, ink);
+        let value = if !view.vision_loaded {
+            "Loading…"
+        } else if applying {
+            "Applying…"
+        } else if on {
+            "On"
+        } else {
+            "Off"
+        };
+        let value_ink = if on && view.vision_loaded { style.accent } else { ink };
+        themed_text(cr, theme, "body", value, x + 20.0, y + 47.0, cw - 40.0, 19.0, 14.0, 24.0, value_ink);
+    }
+    let status_y = VISION_CARD_TOP + 2.0 * (VISION_CARD_H + VISION_CARD_GAP) + 8.0;
+    if let Some(error) = view.error.as_deref() {
+        text(cr, error, x, status_y, cw, 18.0, style.error);
+    } else if let Some(message) = view.message.as_deref() {
+        text(cr, message, x, status_y, cw, 18.0, style.muted);
+    }
+}
+
 fn paint_theme_chooser(
     cr: &Context,
     w: f64,
@@ -2049,6 +2108,7 @@ fn theme_chooser_content_bottom(view: &ThemeView) -> f64 {
         ThemePage::List => {
             BACKGROUND_CAROUSEL_TOP + theme_carousel::BACKGROUND_GEOMETRY.expanded_h + 100.0
         }
+        ThemePage::Vision => VISION_CARD_TOP + 2.0 * (VISION_CARD_H + VISION_CARD_GAP) + 80.0,
         ThemePage::Controls => f64::MAX,
     }
 }
@@ -3082,6 +3142,10 @@ fn scene(
                 paint_wifi(cr, view, theme, w, h);
                 return;
             }
+            if let Some(view) = chooser.filter(|view| view.page == ThemePage::Vision) {
+                paint_vision(cr, w, h, view, theme);
+                return;
+            }
             if let Some(view) = chooser.filter(|view| view.page != ThemePage::Controls) {
                 paint_theme_chooser(
                     cr,
@@ -3099,6 +3163,7 @@ fn scene(
             text(cr, "Done", w - 114.0, 46.0, 90.0, 20.0, style.accent);
             themed_medium(cr, theme, "heading", "Device controls", 28.0, 112.0, w - 56.0, 19.0, 16.0, 24.0, style.muted);
             text(cr, "Themes ›", w - 164.0, 113.0, 140.0, 20.0, style.accent);
+            text(cr, "Vision ›", w - 290.0, 113.0, 110.0, 20.0, style.accent);
             // The row cards/sliders/Power section below are Settings' own
             // scrollable body, not header chrome -- centered and scaled by
             // `crate::settings_content_transform` (the same `(scale, x)`
@@ -7058,6 +7123,7 @@ mod tests {
                     id: Some(theme_entry.id.clone()),
                     generation: None,
                 },
+                vision: None,
             }),
             preview: Some(ThemePreview {
                 theme: theme_entry,
@@ -7198,6 +7264,7 @@ mod tests {
                     id: Some("fixture-0".into()),
                     generation: None,
                 },
+                vision: None,
             }),
             ..ThemeView::default()
         };
@@ -7331,6 +7398,7 @@ mod tests {
                     id: Some("fixture-0".into()),
                     generation: None,
                 },
+                vision: None,
             }),
             ..ThemeView::default()
         };
@@ -7443,6 +7511,7 @@ mod tests {
                     id: None,
                     generation: None,
                 },
+                vision: None,
             }),
             ..ThemeView::default()
         }
@@ -7817,6 +7886,7 @@ mod tests {
                     id: None,
                     generation: None,
                 },
+                vision: None,
             }),
             ..ThemeView::default()
         });
@@ -7879,6 +7949,7 @@ mod tests {
                     id: None,
                     generation: None,
                 },
+                vision: None,
             }),
             ..ThemeView::default()
         });
@@ -7901,6 +7972,7 @@ mod tests {
                     id: None,
                     generation: None,
                 },
+                vision: None,
             }),
             ..ThemeView::default()
         });
@@ -9558,6 +9630,36 @@ mod tests {
             assert_ne!(old, render(&adapted, route), "font.base-size must reach {route:?}");
             assert_eq!(old, render(&baseline, route), "another renderer must not inherit an adapted surface's metrics");
         }
+    }
+
+    #[test]
+    fn the_vision_text_step_enlarges_text_everywhere_including_themed_rows() {
+        let baseline = fixture_theme("vision-baseline", (32, 64, 96));
+        let mut large = baseline.clone();
+        large.sections.insert("accessibility".into(), BTreeMap::from([
+            ("text-scale".into(), AppearanceToken::Number(1.25)),
+            ("high-contrast".into(), AppearanceToken::Boolean(false)),
+        ]));
+        let mut huge = baseline.clone();
+        huge.sections.insert("accessibility".into(), BTreeMap::from([
+            ("text-scale".into(), AppearanceToken::Number(9.0)),
+        ]));
+        let render = |theme: &AppearanceSnapshot, route| {
+            let mut cache = RendererCache::default();
+            cache.set_appearance(Some(theme.clone()));
+            let mut pixels = vec![0; 568 * 1232 * 4];
+            cache.draw(&mut pixels, RenderParams { width: 568, height: 1232, route, progress: 1.0, scroll: 0.0 }, &[]).unwrap();
+            pixels
+        };
+        for route in [Route::Drawer, Route::Shade, Route::Settings, Route::Power] {
+            let old = render(&baseline, route);
+            let bigger = render(&large, route);
+            assert_ne!(old, bigger, "accessibility.text-scale must reach {route:?}");
+            assert_eq!(bigger, render(&huge, route), "the vision step is bounded at 1.25 on {route:?}");
+        }
+        // Themed labels (role-sized, then clamped) still get the step.
+        assert_eq!(theme_font_size(Some(&baseline), "body", 18.0, 14.0, 18.0), 18.0);
+        assert_eq!(theme_font_size(Some(&large), "body", 18.0, 14.0, 18.0), 22.5);
     }
 
     #[test]

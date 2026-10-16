@@ -73,11 +73,14 @@ static bool metric(json_object *sections, const char *section_name,
 }
 
 static bool metrics(json_object *sections, struct card_appearance *out) {
-	double base = 12, scale = 1;
+	double base = 12, scale = 1, text_scale = 1;
 	bool with_font = true;
 	json_object *spacing = NULL, *token = NULL, *value = NULL;
+	/* accessibility.text-scale is the person's vision choice
+	 * (tools/theme_vision.py), applied on top of the theme's own size. */
 	if (!metric(sections, "font", "base-size", &base) ||
-			!metric(sections, "spacing", "scale", &scale)) return false;
+			!metric(sections, "spacing", "scale", &scale) ||
+			!metric(sections, "accessibility", "text-scale", &text_scale)) return false;
 	if (json_object_object_get_ex(sections, "spacing", &spacing) &&
 			json_object_object_get_ex(spacing, "scale-with-font", &token)) {
 		const char *kind = string(token, "kind");
@@ -86,7 +89,7 @@ static bool metrics(json_object *sections, struct card_appearance *out) {
 				json_object_get_type(value) != json_type_boolean) return false;
 		with_font = json_object_get_boolean(value);
 	}
-	out->font_scale = fmax(0.8, fmin(1.25, base / 12.0));
+	out->font_scale = fmax(0.8, fmin(1.25, base / 12.0)) * fmax(1.0, fmin(1.25, text_scale));
 	out->spacing_scale = fmax(0.8, fmin(1.25, scale * (with_font ? base / 12.0 : 1)));
 	return true;
 }

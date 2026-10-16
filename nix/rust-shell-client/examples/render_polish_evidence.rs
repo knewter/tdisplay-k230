@@ -149,6 +149,7 @@ fn chooser(theme: &AppearanceSnapshot, all: &[AppearanceSnapshot]) -> ThemeView 
             id: Some(entry.id.clone()),
             generation: Some(theme.generation.clone()),
         },
+        vision: None,
     });
     let selected = theme
         .backgrounds

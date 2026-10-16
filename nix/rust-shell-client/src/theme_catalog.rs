@@ -47,6 +47,34 @@ const HELPER_RESPONSE_LIMIT: usize = RESPONSE_LIMIT + 4096;
 /// the two lists together.
 pub const FIT_NAMES: [&str; 5] = ["crop", "fit", "center", "fill", "solid"];
 
+/// `tools/theme_vision.py`'s `TEXT_SCALES` keys and `CONTRASTS`.
+pub const TEXT_SCALE_NAMES: [&str; 2] = ["default", "large"];
+pub const CONTRAST_NAMES: [&str; 2] = ["standard", "high"];
+
+/// The person's vision preference (`<state-root>/vision.json`), applied to
+/// every theme generation: a larger text step and a high-contrast palette.
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct VisionChoice {
+    pub text_scale: String,
+    pub contrast: String,
+}
+
+impl Default for VisionChoice {
+    fn default() -> Self {
+        Self { text_scale: "default".into(), contrast: "standard".into() }
+    }
+}
+
+impl VisionChoice {
+    pub fn large_text(&self) -> bool {
+        self.text_scale == "large"
+    }
+
+    pub fn high_contrast(&self) -> bool {
+        self.contrast == "high"
+    }
+}
+
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum ThemeRequest {
     List,
@@ -69,6 +97,9 @@ pub enum ThemeRequest {
         expected_generation: Option<String>,
         fit: String,
     },
+    /// Save the vision choice and re-apply the active theme with it, in one
+    /// durable step (`theme_catalog.py vision`).
+    Vision(VisionChoice),
 }
 
 impl ThemeRequest {
@@ -77,6 +108,7 @@ impl ThemeRequest {
         matches!(
             self,
             ThemeRequest::Activate { .. }
+                | ThemeRequest::Vision(_)
                 | ThemeRequest::Fit {
                     expected_generation: Some(_),
                     ..
@@ -114,6 +146,8 @@ pub struct ActiveTheme {
 pub struct ThemeList {
     pub themes: Vec<ThemeEntry>,
     pub active: ActiveTheme,
+    /// Absent from a helper that predates the vision option.
+    pub vision: Option<VisionChoice>,
 }
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
@@ -168,6 +202,9 @@ pub struct ThemePreview {
 pub enum ThemeResponse {
     List(ThemeList),
     Preview(Box<ThemePreview>),
+    /// A saved vision choice; `activated` is false only when no theme was
+    /// active yet, so the choice waits for the next activation.
+    Vision { choice: VisionChoice, activated: bool },
 }
 
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -288,7 +325,13 @@ fn valid_request(request: &ThemeRequest) -> bool {
                 && expected_generation.as_deref().is_none_or(identity)
                 && FIT_NAMES.contains(&fit.as_str())
         }
+        ThemeRequest::Vision(choice) => valid_vision(choice),
     }
+}
+
+fn valid_vision(choice: &VisionChoice) -> bool {
+    TEXT_SCALE_NAMES.contains(&choice.text_scale.as_str())
+        && CONTRAST_NAMES.contains(&choice.contrast.as_str())
 }
 
 /// The exact JSON object `tools/theme_client.py`'s own `as_request()` sends
@@ -330,6 +373,11 @@ fn helper_request(request: &ThemeRequest) -> Value {
             "background": null,
             "expected_generation": expected_generation,
             "fit": fit,
+        }),
+        ThemeRequest::Vision(choice) => json!({
+            "action": "vision",
+            "text_scale": choice.text_scale,
+            "contrast": choice.contrast,
         }),
     }
 }
@@ -474,6 +522,13 @@ fn execute(
             }
             args.extend(["--fit", fit]);
         }
+        ThemeRequest::Vision(choice) => args.extend([
+            "vision",
+            "--text-scale",
+            &choice.text_scale,
+            "--contrast",
+            &choice.contrast,
+        ]),
     }
     let call_name = args.first().copied().unwrap_or("-");
     let theme_id = args.get(1).copied().unwrap_or("-");
@@ -743,7 +798,7 @@ fn preview(value: &Value, request: &ThemeRequest) -> Result<ThemePreview, String
             expected_generation,
             ..
         } => (theme_id, expected_generation.as_deref(), None),
-        ThemeRequest::List => return Err("wrong theme response".into()),
+        ThemeRequest::List | ThemeRequest::Vision(_) => return Err("wrong theme response".into()),
     };
     if theme.id != *requested {
         return Err("theme reply identity changed".into());
@@ -897,8 +952,34 @@ fn parse_response_value(request: &ThemeRequest, value: Value) -> Result<ThemeRes
                     id: optional_id(active.get("id"))?,
                     generation: optional_id(active.get("generation"))?,
                 },
+                vision: match value.get("vision") {
+                    None | Some(Value::Null) => None,
+                    Some(vision) => Some(vision_choice(vision)?),
+                },
             }))
+        }
+        ThemeRequest::Vision(requested) => {
+            let choice = vision_choice(value.get("vision").ok_or("missing vision choice")?)?;
+            if choice != *requested {
+                return Err("vision reply changed".into());
+            }
+            let activated = value
+                .get("activated")
+                .and_then(Value::as_bool)
+                .ok_or("missing activation state")?;
+            Ok(ThemeResponse::Vision { choice, activated })
         }
         _ => preview(&value, request).map(|value| ThemeResponse::Preview(Box::new(value))),
     }
+}
+
+fn vision_choice(value: &Value) -> Result<VisionChoice, String> {
+    let choice = VisionChoice {
+        text_scale: required_text(value.get("text_scale"), 16)?,
+        contrast: required_text(value.get("contrast"), 16)?,
+    };
+    if !valid_vision(&choice) {
+        return Err("invalid vision choice".into());
+    }
+    Ok(choice)
 }

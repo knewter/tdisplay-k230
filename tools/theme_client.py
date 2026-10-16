@@ -100,12 +100,19 @@ def build_light_parser() -> argparse.ArgumentParser:
         command.add_argument("--fit")
         if action == "activate":
             command.add_argument("--expected-generation")
+    vision = actions.add_parser("vision", add_help=False)
+    vision.add_argument("--json", action="store_true")
+    vision.add_argument("--text-scale")
+    vision.add_argument("--contrast")
     return parser
 
 
 def as_request(args: argparse.Namespace) -> dict:
     request: dict = {"action": args.action}
-    if args.action != "list":
+    if args.action == "vision":
+        request["text_scale"] = args.text_scale
+        request["contrast"] = args.contrast
+    elif args.action != "list":
         request["id"] = args.id
         request["background"] = args.background
         if args.fit is not None:

@@ -62,10 +62,15 @@ def fixed_flags_argv(fixed: dict) -> list[str]:
 
 def request_argv(fixed_argv: list[str], request: dict) -> list[str]:
     action = request.get("action")
-    if action not in ("list", "preview", "activate"):
+    if action not in ("list", "preview", "activate", "vision"):
         raise ValueError("invalid action")
     argv = list(fixed_argv) + [action]
-    if action != "list":
+    if action == "vision":
+        text_scale, contrast = request.get("text_scale"), request.get("contrast")
+        if not isinstance(text_scale, str) or not isinstance(contrast, str):
+            raise ValueError("invalid vision choice")
+        argv += ["--text-scale", text_scale, "--contrast", contrast]
+    elif action != "list":
         theme_id = request.get("id")
         if not isinstance(theme_id, str) or not theme_id:
             raise ValueError("missing id")

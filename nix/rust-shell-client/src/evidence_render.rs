@@ -269,6 +269,7 @@ pub fn fixture_theme_view(themes: usize) -> crate::theme_ui::ThemeView {
     let list = ThemeList {
         themes: (0..themes).map(entry).collect(),
         active: ActiveTheme { id: Some(id(1)), generation: None },
+        vision: None,
     };
     let background = |n: usize| BackgroundChoice {
         id: format!("{:024x}", 0x100 + n),

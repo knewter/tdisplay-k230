@@ -400,7 +400,8 @@ class CatalogTests(unittest.TestCase):
     def test_fresh_home_lists_without_creating_state(self):
         status, listing = self.run_cli("list", "--json")
         self.assertEqual(status, 0)
-        self.assertEqual(listing, {"schema": 1, "themes": [], "active": {"id": None, "generation": None}})
+        self.assertEqual(listing, {"schema": 1, "themes": [], "active": {"id": None, "generation": None},
+                                   "vision": {"text_scale": "default", "contrast": "standard"}})
         self.assertFalse(self.state.exists())
 
     def preview_with_sockets(self, entry_id, *, prepare_only_effect=None):

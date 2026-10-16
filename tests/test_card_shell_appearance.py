@@ -168,10 +168,14 @@ class AppearanceReceiver(unittest.TestCase):
         pointer.symlink_to(self.root / 'missing' / NEXT_ID)
         restart(f'APPLY {DEFAULT_ID} 1 1 0 -')
 
-    def activate_metrics(self, with_font, expected):
+    def activate_metrics(self, with_font, expected, base=15, text_scale=None):
         path = self.next / 'appearance.json'
         data = json.loads(path.read_text())
-        data['sections']['font'] = {'base-size': {'kind': 'number', 'value': 15}}
+        data['sections']['font'] = {'base-size': {'kind': 'number', 'value': base}}
+        if text_scale is not None:
+            data['sections']['accessibility'] = {
+                'text-scale': {'kind': 'number', 'value': text_scale},
+                'high-contrast': {'kind': 'boolean', 'value': False}}
         data['sections']['spacing'] = {
             'scale': {'kind': 'number', 'value': 1.1},
             'scale-with-font': {'kind': 'boolean', 'value': with_font}}
@@ -190,6 +194,14 @@ class AppearanceReceiver(unittest.TestCase):
 
     def test_font_relative_spacing_can_be_disabled_independently(self):
         self.activate_metrics(False, 'METRICS 1.250 1.100')
+
+    def test_vision_text_scale_multiplies_the_theme_font_but_not_spacing(self):
+        # theme_vision.py's "large" step on a 12 px theme: text grows,
+        # insets keep the theme's own spacing.
+        self.activate_metrics(True, 'METRICS 1.250 1.100', base=12, text_scale=1.25)
+
+    def test_vision_text_scale_is_bounded(self):
+        self.activate_metrics(True, 'METRICS 1.250 1.100', base=12, text_scale=9)
 
     def test_malformed_font_metric_is_not_acknowledged(self):
         path = self.next / 'appearance.json'
