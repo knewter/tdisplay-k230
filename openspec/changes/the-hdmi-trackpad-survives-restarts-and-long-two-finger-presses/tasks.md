@@ -13,11 +13,13 @@
 
 ## 2. Board
 
-- [ ] 2.1 On HDMI, after a live deployment restarts sway, the first two-finger
+- [x] 2.1 On HDMI, after a live deployment restarts sway, the first two-finger
       swipe on Home pages it. A two-finger press held for about 1 s with the
       cursor on a widget enters rearrange mode, both before and after a swipe.
       Use a fake protocol-B touchscreen fed to a second daemon instance
       (`--device=`), so the run covers the real gate, relay, libinput and
       shell path. Evidence class: injected raw touch + shell log.
+      Done 2026-10-15:
+      `docs/evidence/display-touch/trackpad-restart-and-long-press/README.md`.
 - [ ] 2.2 The operator swipes between Home pages and right-clicks a widget with
       a two-finger press on the trackpad. Evidence class: operator observation.

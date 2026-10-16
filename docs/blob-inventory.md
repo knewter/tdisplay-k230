@@ -1887,6 +1887,9 @@ DATA  58829059cff1e99ef81e09d252af7c7203d0957336c79c764d56f90eda1dd9a5  docs/evi
 DATA  6e52317412dd88c019d15fa08558b59ce63bf68c5b7656d206ba1179c7f48a91  docs/evidence/keyboard-base/shell/board/settings-three-column-grim.png
 DATA  0b84ded661718cd1b9306ef2327c4a4218f6e4e85143c244526130f1bf5457d3  docs/evidence/keyboard-base/battery-policy/shade-countdown-grim.png
 DATA  35392bb82d2662916a720b29ebeb5594de6d1490e040f07686ad69b8aab7a726  docs/evidence/keyboard-base/shell/board/home-battery-widget.png
+DATA 15db802b2ecd6922ddea88a9241ef1ac2c1170f03239c04eada585e206ef5e0c docs/evidence/display-touch/trackpad-restart-and-long-press/first-swipe-after-sway-restart-page2-1280x800-grim.png
+DATA 72969291055b086c99065f7f595d78a04ecbe8c3609958c6aede900abf581e42 docs/evidence/display-touch/trackpad-restart-and-long-press/long-two-finger-press-clock-1280x800-grim.png
+DATA 1e858f92dd9f427097d33a4b98dac5b37511b5c19b33020fb63c3147ffdd1212 docs/evidence/display-touch/trackpad-restart-and-long-press/long-two-finger-press-page2-after-swipe-1280x800-grim.png
 ```
 
 `group:` rows stand for a directory whose members are enumerated by
@@ -3231,3 +3234,6 @@ Command and limits: `docs/evidence/battery-details-widget/host/README.md`.
 | `docs/evidence/battery-details-widget/history/fresh-1920x1080.png` | 77618 | DATA | `1a658f6118544201ef42abcd7b8343d4a6e1b69fac925a218f44823e7e252220` |
 | `docs/evidence/battery-details-widget/history/fresh-568x1232.png` | 61673 | DATA | `672fe3c7ee2c05b7cc1b009f379e510f2e8426600b2a681c190fdf3bed0c22b7` |
 | `docs/evidence/battery-details-widget/history/board/page2-graph-1280x800-grim.png` | 808698 | DATA | `fb49616a25f887cd0f983c825729929cce2b99775c691bea78c1e37aa7dc6447` |
+| `docs/evidence/display-touch/trackpad-restart-and-long-press/first-swipe-after-sway-restart-page2-1280x800-grim.png` | 787020 | DATA | `15db802b2ecd6922ddea88a9241ef1ac2c1170f03239c04eada585e206ef5e0c` |
+| `docs/evidence/display-touch/trackpad-restart-and-long-press/long-two-finger-press-clock-1280x800-grim.png` | 821210 | DATA | `72969291055b086c99065f7f595d78a04ecbe8c3609958c6aede900abf581e42` |
+| `docs/evidence/display-touch/trackpad-restart-and-long-press/long-two-finger-press-page2-after-swipe-1280x800-grim.png` | 787548 | DATA | `1e858f92dd9f427097d33a4b98dac5b37511b5c19b33020fb63c3147ffdd1212` |
