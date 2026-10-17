@@ -341,8 +341,6 @@ pub const SHADE_TOGGLE_H: f64 = SHADE_TAP_MIN;
 /// directly after Brightness (row 1), before Keyboard/Motion, which both
 /// shift down one row (`render.rs`'s own `SETTINGS_ROW_COUNT` bump).
 pub const SETTINGS_VOLUME_ROW: u32 = 2;
-/// Output detail occupies the line between the volume heading and slider.
-pub const SETTINGS_OUTPUT_DETAIL_Y: f64 = 43.0;
 const SWIPE_START: f64 = 18.0;
 pub const SWIPE_COMMIT: f64 = 85.0;
 const SWIPE_TRAVEL: f64 = 160.0;
@@ -879,18 +877,12 @@ pub fn shade_adopts_poll(
 /// header's last line.
 pub fn settings_body_top(width: u32, height: u32) -> f64 {
     let (scale, _) = crate::settings_content_transform(width, height);
-    if crate::layout_text_scale() <= 1.0 {
-        return 0.0;
-    }
     (crate::render::settings_first_y() - 8.0) * scale
 }
 
 /// How far the Settings body can scroll: its content bottom against the
-/// screen. Zero whenever the rows already fit, as they do at 100%.
+/// screen. Zero whenever the rows already fit.
 pub fn settings_max_scroll(width: u32, height: u32, view: &ServiceView) -> f64 {
-    if crate::layout_text_scale() <= 1.0 {
-        return 0.0;
-    }
     let (scale, _) = crate::settings_content_transform(width, height);
     let key_backlight = view.key_backlight.is_some();
     let bottom = if crate::settings_wide(width, height) {
@@ -1306,7 +1298,6 @@ pub fn panel_intent(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::render::{SETTINGS_POWER_CARD_H, SETTINGS_ROW_H};
     use crate::pipewire_ipc::Sink;
     use crate::service_data::{Control, ControlValue, NotificationEvent, Priority};
     use std::path::PathBuf;
@@ -1824,7 +1815,7 @@ mod tests {
     #[test]
     fn settings_output_picker_hit_is_settings_only_and_needs_a_default_sink() {
         let view = writable_volume_view();
-        let y = settings_row_y(SETTINGS_VOLUME_ROW) + SETTINGS_OUTPUT_DETAIL_Y;
+        let y = settings_row_y(SETTINGS_VOLUME_ROW) + crate::render::settings_output_detail_y();
         assert!(settings_output_picker_hit(y, Route::Settings, &view));
         // Shade's compact volume row shows no such text and has no
         // equivalent zone, even at the analogous offset.
@@ -1841,7 +1832,7 @@ mod tests {
             &view
         ));
         assert!(!settings_output_picker_hit(
-            settings_row_y(SETTINGS_VOLUME_ROW) + 76.0,
+            settings_row_y(SETTINGS_VOLUME_ROW) + crate::render::settings_row_lines(SETTINGS_VOLUME_ROW).3,
             Route::Settings,
             &view
         ));
@@ -2023,17 +2014,18 @@ mod tests {
     }
 
     fn wide_settings_items(key_backlight: bool) -> Vec<(&'static str, Rect)> {
-        use crate::render::{settings_row_column, settings_wide_offset, SETTINGS_POWER_CARD_H};
+        use crate::render::{settings_power_card_h, settings_row_column, settings_wide_offset};
         let layout = settings_layout(key_backlight);
+        let row = |name, row| (name, row, settings_row_y(row), settings_row_h(row));
         let mut items = vec![
-            ("wifi", 0, settings_row_y(0), SETTINGS_ROW_H),
-            ("brightness", 1, settings_row_y(1), SETTINGS_ROW_H),
-            ("volume", 2, settings_row_y(SETTINGS_VOLUME_ROW), SETTINGS_ROW_H),
-            ("keyboard", 3, settings_row_y(3), SETTINGS_ROW_H),
-            ("motion", 4, settings_row_y(4), SETTINGS_ROW_H),
+            row("wifi", 0),
+            row("brightness", 1),
+            row("volume", SETTINGS_VOLUME_ROW),
+            row("keyboard", 3),
+            row("motion", 4),
         ];
         if key_backlight {
-            items.push(("key-backlight", SETTINGS_KEY_BACKLIGHT_ROW, settings_row_y(SETTINGS_KEY_BACKLIGHT_ROW), SETTINGS_ROW_H));
+            items.push(row("key-backlight", SETTINGS_KEY_BACKLIGHT_ROW));
         }
         let mut out: Vec<_> = items
             .into_iter()
@@ -2044,7 +2036,7 @@ mod tests {
             .collect();
         let (dx, dy) = settings_wide_offset(2, key_backlight);
         for (name, y) in [("reboot", layout.reboot_y), ("poweroff", layout.poweroff_y)] {
-            out.push((name, (dx + 24.0, y + dy, crate::SETTINGS_WIDE_COL_W - 48.0, SETTINGS_POWER_CARD_H)));
+            out.push((name, (dx + 24.0, y + dy, crate::SETTINGS_WIDE_COL_W - 48.0, settings_power_card_h())));
         }
         out
     }
@@ -2057,14 +2049,21 @@ mod tests {
                 key_backlight: key_backlight.then_some(crate::keyboard_base::KeyBacklight::Off),
                 ..ServiceView::default()
             };
+            let mut view = view;
             let items = wide_settings_items(key_backlight);
             assert_eq!(items.len(), if key_backlight { 8 } else { 7 });
+            // The body scrolls under the header; every row is inside the
+            // panel's width and within the scroll range.
+            let top = settings_body_top(1232, 568);
+            let max = settings_max_scroll(1232, 568, &view);
             for (name, (x, y, w, h)) in &items {
                 assert!(
-                    *x >= 0.0 && *y >= 0.0 && x + w <= 1232.0 && y + h <= 568.0,
-                    "{name} ({x},{y},{w},{h}) leaves 1232x568 (key backlight {key_backlight})"
+                    *x >= 0.0 && *y >= top && x + w <= 1232.0 && y + h <= 568.0 + max,
+                    "{name} ({x},{y},{w},{h}) leaves 1232x568 scrolled by {max} (key backlight {key_backlight})"
                 );
             }
+            // Scrolled just far enough to show a row whole.
+            let reveal = |(_, y, _, h): Rect| (y + h - 568.0 + 8.0).clamp(0.0, max);
             for (i, a) in items.iter().enumerate() {
                 for b in &items[i + 1..] {
                     let (ax, ay, aw, ah) = a.1;
@@ -2078,7 +2077,9 @@ mod tests {
                 }
             }
             for (name, (x, y, w, h)) in &items {
-                let tap = (x + w / 2.0, y + h / 2.0);
+                view.settings_scroll = reveal((*x, *y, *w, *h));
+                let tap = (x + w / 2.0, y + h / 2.0 - view.settings_scroll);
+                assert!(tap.1 > top && tap.1 < 568.0, "{name} centre is on screen");
                 let intent = panel_intent(Route::Settings, tap, tap, 1232, 568, &view);
                 let expected = match *name {
                     "wifi" => Some(PanelIntent::OpenWifi),
@@ -2093,7 +2094,8 @@ mod tests {
             }
             if key_backlight {
                 let row = items.iter().find(|i| i.0 == "key-backlight").unwrap().1;
-                let centre = (row.0 + row.2 / 2.0, row.1 + row.3 / 2.0);
+                view.settings_scroll = reveal(row);
+                let centre = (row.0 + row.2 / 2.0, row.1 + row.3 / 2.0 - view.settings_scroll);
                 assert!(key_backlight_slider_hit(centre, 1232, 568, &view));
                 // The same y in the first column is Volume, not this slider.
                 assert!(!key_backlight_slider_hit((100.0, centre.1), 1232, 568, &view));
@@ -2101,6 +2103,7 @@ mod tests {
             // The slider rows are owned by the sliders only inside column 0.
             let brightness = items.iter().find(|i| i.0 == "brightness").unwrap().1;
             let motion = items.iter().find(|i| i.0 == "motion").unwrap().1;
+            view.settings_scroll = 0.0;
             let band_y = brightness.1 + 10.0;
             assert!(slider_band(Route::Settings, band_y, &writable_brightness_view()));
             assert!(settings_slider_column_hit(Route::Settings, 1232, 568, brightness.0 + 40.0));
@@ -2133,9 +2136,15 @@ mod tests {
             let layout = settings_layout(key_backlight);
             let confirm = settings_confirm_layout(layout.poweroff_bottom);
             let (dx, dy) = crate::render::settings_wide_offset(2, key_backlight);
-            let (top, bottom) = (confirm.card_y + dy, confirm.bottom + dy);
-            // The message line below the card (17 px text) stays on the panel too.
-            assert!(bottom + 14.0 + 17.0 <= 568.0, "confirm + message end at {}", bottom + 31.0);
+            // Scrolled to the end, the card and the message line below it
+            // are on the panel.
+            let mut view = view;
+            view.settings_scroll = settings_max_scroll(1232, 568, &view);
+            let scroll = view.settings_scroll;
+            let (top, bottom) = (confirm.card_y + dy - scroll, confirm.bottom + dy - scroll);
+            assert!(top > settings_body_top(1232, 568));
+            let message = 14.0 + crate::render::TYPE_CAPTION * 1.25;
+            assert!(bottom + message <= 568.0, "confirm + message end at {}", bottom + message);
             let y = (top + bottom) / 2.0;
             let cancel = (dx + 60.0, y);
             let ok = (dx + crate::SETTINGS_WIDE_COL_W - 60.0, y);
@@ -2275,12 +2284,12 @@ mod tests {
             for row in [0, 3, 4] {
                 let (_, value, caption, _) = crate::render::settings_row_lines(row);
                 let captions = if row == 3 { 2.0 } else { 1.0 };
-                assert!(value + line(19.0) <= caption);
-                assert!(caption + captions * line(14.0) <= settings_row_h(row), "row {row} clips");
+                assert!(value + line(crate::render::TYPE_BODY) <= caption);
+                assert!(caption + captions * line(crate::render::TYPE_CAPTION) <= settings_row_h(row), "row {row} clips");
             }
             for row in [1, SETTINGS_KEY_BACKLIGHT_ROW] {
                 let (_, value, _, slider) = crate::render::settings_row_lines(row);
-                assert!(value + line(19.0) <= slider - 28.0 + 4.0, "row {row} text runs into its slider");
+                assert!(value + line(crate::render::TYPE_BODY) <= slider - 28.0 + 4.0, "row {row} text runs into its slider");
                 assert!(slider + 28.0 <= settings_row_h(row));
             }
             // Rows stack without overlap, each at least the tap floor.
@@ -2308,9 +2317,12 @@ mod tests {
                 assert_eq!(panel_intent(Route::Settings, (60.0, header_y), (60.0, header_y), width, height, &view), None);
             }
         }
+        let head_first_y_at_200 = crate::render::settings_header(568.0).first_y;
         crate::set_layout_text_scale(1.0);
-        assert_eq!(settings_max_scroll(568, 1232, &view), 0.0, "100% still fits");
-        assert_eq!(crate::render::settings_header(568.0).first_y, crate::render::SETTINGS_ROW_FIRST_Y);
+        // At 100% the portrait rows and Power section nearly fit; the
+        // header and rows use the same type roles at every step.
+        assert!(settings_max_scroll(568, 1232, &view) < settings_max_scroll(1232, 568, &view));
+        assert!(crate::render::settings_header(568.0).first_y < head_first_y_at_200);
     }
 
     #[test]
@@ -2631,15 +2643,13 @@ mod tests {
             motion: unavailable.clone(),
             volume: unavailable,
         });
-        // Row y's shifted +126 (SETTINGS_ROW_H + SETTINGS_ROW_GAP) from
-        // 730/985: the added Volume settings row (task: "in Settings")
-        // cascaded the power section down by one row's rhythm, same as
-        // `settings_layout_cascades_from_the_row_rhythm`'s own shift.
+        // The Reboot card's centre, from the row rhythm.
+        let reboot = settings_layout(false).reboot_y + crate::render::settings_power_card_h() / 2.0;
         assert_eq!(
             panel_intent(
                 Route::Settings,
-                (60.0, 856.0),
-                (60.0, 856.0),
+                (60.0, reboot),
+                (60.0, reboot),
                 568,
                 1232,
                 &view
@@ -2654,11 +2664,18 @@ mod tests {
             label: "Restart device?".into(),
             expires_at: Instant::now() + std::time::Duration::from_secs(30),
         });
+        // The dialog is below the Power section; scrolled to the end it is
+        // on screen.
+        view.settings_scroll = settings_max_scroll(568, 1232, &view);
+        let confirm = settings_confirm_layout(settings_layout(false).poweroff_bottom);
+        let buttons = (confirm.card_y + confirm.bottom) / 2.0 - view.settings_scroll;
+        assert!(buttons < 1232.0);
+        let reboot = reboot - view.settings_scroll;
         assert_eq!(
             panel_intent(
                 Route::Settings,
-                (60.0, 856.0),
-                (60.0, 856.0),
+                (60.0, reboot),
+                (60.0, reboot),
                 568,
                 1232,
                 &view
@@ -2668,8 +2685,8 @@ mod tests {
         assert_eq!(
             panel_intent(
                 Route::Settings,
-                (80.0, 1111.0),
-                (80.0, 1111.0),
+                (80.0, buttons),
+                (80.0, buttons),
                 568,
                 1232,
                 &view
@@ -2681,8 +2698,8 @@ mod tests {
         assert_eq!(
             panel_intent(
                 Route::Settings,
-                (440.0, 1111.0),
-                (440.0, 1111.0),
+                (440.0, buttons),
+                (440.0, buttons),
                 568,
                 1232,
                 &view
@@ -2695,8 +2712,8 @@ mod tests {
         assert_eq!(
             panel_intent(
                 Route::Settings,
-                (440.0, 1111.0),
-                (440.0, 1111.0),
+                (440.0, buttons),
+                (440.0, buttons),
                 568,
                 1232,
                 &view
@@ -2729,7 +2746,7 @@ mod tests {
             detail: None,
             action: None,
         };
-        let view = ServiceView {
+        let mut view = ServiceView {
             settings: Some(SettingsSnapshot {
                 network: unavailable.clone(),
                 brightness: unavailable.clone(),
@@ -2739,10 +2756,13 @@ mod tests {
             }),
             ..ServiceView::default()
         };
-        let design_point = (60.0, 856.0);
+        let design_point = (60.0, settings_layout(false).reboot_y + crate::render::settings_power_card_h() / 2.0);
         for (width, height) in [(1280u32, 1024u32), (1080u32, 1920u32)] {
             let (scale, x) = crate::settings_content_transform(width, height);
-            let real_point = (design_point.0 * scale + x, design_point.1 * scale);
+            // Scrolled to the end, where the Power section is on screen.
+            view.settings_scroll = settings_max_scroll(width, height, &view);
+            let real_point = (design_point.0 * scale + x, design_point.1 * scale - view.settings_scroll);
+            assert!(real_point.1 > settings_body_top(width, height) && real_point.1 < f64::from(height));
             assert_eq!(
                 panel_intent(Route::Settings, real_point, real_point, width, height, &view),
                 Some(PanelIntent::Request(ServiceRequest::PowerRequest(PowerAction::Reboot))),

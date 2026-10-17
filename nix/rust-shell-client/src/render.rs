@@ -40,6 +40,20 @@ use std::{fs::File, path::Path, rc::Rc};
 
 // Per-surface metrics keep independent renderers/candidate previews isolated.
 // Geometry and input coordinates stay fixed; only glyphs and visual insets scale.
+/// The five type roles (`the-shell-has-one-visual-language` design.md §7),
+/// in design pixels at 100% before the vision step. Nothing is set below
+/// `TYPE_CAPTION`; Display sizes come from the widget cell.
+pub const TYPE_TITLE: f64 = 40.0;
+pub const TYPE_BODY: f64 = 30.0;
+pub const TYPE_LABEL: f64 = 26.0;
+pub const TYPE_CAPTION: f64 = 26.0;
+/// The 8 px spacing rhythm (§8): inside a row, between rows, around a
+/// card's content, and between groups.
+pub const SPACE_IN_ROW: f64 = 8.0;
+pub const SPACE_BETWEEN_ROWS: f64 = 16.0;
+pub const SPACE_CARD: f64 = 24.0;
+pub const SPACE_GROUP: f64 = 32.0;
+
 #[derive(Clone, Copy)]
 struct ThemeMetrics { font: f64, spacing: f64 }
 static THEME_METRICS: cairo::UserDataKey<ThemeMetrics> = cairo::UserDataKey::new();
@@ -404,6 +418,18 @@ fn text_advance(cr: &Context, value: &str, size: f64, weight: pango::Weight) -> 
     f64::from(layout.pixel_size().0)
 }
 
+/// `text_advance` for a size already resolved through the theme and step.
+fn text_advance_resolved(cr: &Context, value: &str, size: f64, weight: pango::Weight) -> f64 {
+    let layout = pangocairo::functions::create_layout(cr);
+    let mut font = FontDescription::new();
+    font.set_family(FONT_FAMILY);
+    font.set_absolute_size(size * f64::from(pango::SCALE));
+    font.set_weight(weight);
+    layout.set_font_description(Some(&font));
+    layout.set_text(value);
+    f64::from(layout.pixel_size().0)
+}
+
 fn text(cr: &Context, value: &str, x: f64, y: f64, width: f64, size: f64, rgb: u32) {
     text_weight(cr, value, x, y, width, size, rgb, pango::Weight::Normal);
 }
@@ -421,47 +447,44 @@ fn themed_text(cr: &Context, theme: Option<&AppearanceSnapshot>, role: &str,
     text_weight_resolved(cr, value, x, y, width, theme_font_size(theme, role, size, min, max), rgb, pango::Weight::Normal);
 }
 
-/// `themed_text` that, at a larger vision step, shrinks a line that would
-/// ellipsize in a narrow column until it fits -- never below its 100% size.
-#[allow(clippy::too_many_arguments)]
-fn themed_text_fit(cr: &Context, theme: Option<&AppearanceSnapshot>, role: &str,
-                   value: &str, x: f64, y: f64, width: f64, size: f64,
-                   min: f64, max: f64, rgb: u32) {
-    let resolved = theme_font_size(theme, role, size, min, max);
-    let scale = crate::layout_text_scale();
-    let size = if scale > 1.0 {
-        let layout = pangocairo::functions::create_layout(cr);
-        let mut font = FontDescription::new();
-        font.set_family(FONT_FAMILY);
-        font.set_absolute_size(resolved * f64::from(pango::SCALE));
-        layout.set_font_description(Some(&font));
-        layout.set_text(value);
-        let advance = f64::from(layout.pixel_size().0);
-        let room = width - 8.0;
-        if advance > room * 0.96 { (resolved * room * 0.96 / advance).max(resolved / scale) } else { resolved }
-    } else {
-        resolved
-    };
-    text_weight_resolved(cr, value, x, y, width, size, rgb, pango::Weight::Normal);
-}
-
 fn themed_medium(cr: &Context, theme: Option<&AppearanceSnapshot>, role: &str,
                  value: &str, x: f64, y: f64, width: f64, size: f64,
                  min: f64, max: f64, rgb: u32) {
     text_weight_resolved(cr, value, x, y, width, theme_font_size(theme, role, size, min, max), rgb, pango::Weight::Medium);
 }
 
+/// Text in a type role: the theme may enlarge the role (`font.<key>`), but
+/// never below the role's own size; the vision step applies on top.
+#[allow(clippy::too_many_arguments)]
+fn themed_role(cr: &Context, theme: Option<&AppearanceSnapshot>, key: &str,
+               value: &str, x: f64, y: f64, width: f64, role: f64, rgb: u32,
+               weight: pango::Weight) {
+    text_weight_resolved(cr, value, x, y, width, theme_font_size(theme, key, role, role, role * 1.25), rgb, weight);
+}
+
+/// `themed_role` that, at a larger vision step, shrinks a line that would
+/// ellipsize in its column until it fits -- never below the role's 100%
+/// size, so nothing is set under `TYPE_CAPTION`.
+#[allow(clippy::too_many_arguments)]
+fn themed_role_fit(cr: &Context, theme: Option<&AppearanceSnapshot>, key: &str,
+                   value: &str, x: f64, y: f64, width: f64, role: f64, rgb: u32,
+                   weight: pango::Weight) {
+    let resolved = theme_font_size(theme, key, role, role, role * 1.25);
+    let advance = text_advance_resolved(cr, value, resolved, weight);
+    let room = (width - 8.0) * 0.96;
+    let size = if advance > room { (resolved * room / advance).max(role) } else { resolved };
+    text_weight_resolved(cr, value, x, y, width, size, rgb, weight);
+}
+
 fn heading(cr: &Context, value: &str, x: f64, y: f64, width: f64, size: f64, rgb: u32) {
     text_weight(cr, value, x, y, width, size, rgb, pango::Weight::Bold);
 }
 
-/// Vertical rhythm for the Settings screen's four capability rows (finding
-/// P0-4 of `docs/design/webos-polish-review.md`): one row height plus one
-/// gap, computed from `index`, in place of five independent hand-typed `y`
-/// constants that drifted out of sync with each other.
-/// `service_ui::hit` mirrors these exact numbers for touch regions --
-/// keep the two in lockstep if this rhythm ever changes.
-pub const SETTINGS_ROW_FIRST_Y: f64 = 162.0;
+/// Vertical rhythm for the Settings screen's capability rows (finding P0-4
+/// of `docs/design/webos-polish-review.md`): each row's height plus one gap,
+/// from the header's `first_y`. `service_ui`'s hit-tests read the same
+/// functions, so a tap and its paint cannot drift apart.
+/// `SETTINGS_ROW_H` is the floor under a row's own height.
 pub const SETTINGS_ROW_H: f64 = 110.0;
 pub const SETTINGS_ROW_GAP: f64 = 16.0;
 /// Wi-Fi, Brightness, Volume, Keyboard, Motion -- Volume (row 2, task:
@@ -476,9 +499,6 @@ pub const SETTINGS_POWER_CARD_H: f64 = 70.0;
 pub const SETTINGS_KEY_BACKLIGHT_ROW: u32 = 5;
 
 pub fn settings_row_y(index: u32) -> f64 {
-    if crate::layout_text_scale() <= 1.0 {
-        return SETTINGS_ROW_FIRST_Y + f64::from(index) * (SETTINGS_ROW_H + SETTINGS_ROW_GAP);
-    }
     (0..index).fold(settings_first_y(), |y, row| y + settings_row_h(row) + SETTINGS_ROW_GAP)
 }
 
@@ -487,43 +507,38 @@ fn vision_line(design: f64) -> f64 {
     design * crate::layout_text_scale() * 1.25
 }
 
-/// Capability row `row`'s height. 100% keeps the uniform `SETTINGS_ROW_H`;
-/// a larger vision step gives each row room for its own lines (label,
-/// value, one caption or two for Keyboard's gesture hint) and, for the
-/// slider rows, a full slider band beneath them.
+/// Capability row `row`'s height: room for its own lines (Label name, Body
+/// value, one Caption or two for Keyboard's gesture hint) at the current
+/// vision step and, for the slider rows, a full slider band beneath them.
 pub fn settings_row_h(row: u32) -> f64 {
-    if crate::layout_text_scale() <= 1.0 {
-        return SETTINGS_ROW_H;
-    }
-    let body = 15.0 + vision_line(17.0) + 2.0 + vision_line(19.0);
-    let slider = 8.0 + 56.0 + 6.0;
+    let body = SETTINGS_ROW_INSET + vision_line(TYPE_LABEL) + 2.0 + vision_line(TYPE_BODY);
+    let slider = SPACE_IN_ROW + 56.0 + 6.0;
     let h = match row {
         1 | SETTINGS_KEY_BACKLIGHT_ROW => body + slider,
-        crate::service_ui::SETTINGS_VOLUME_ROW => 15.0 + vision_line(19.0) + 2.0 + vision_line(14.0) + slider,
-        3 => body + 4.0 + 2.0 * vision_line(14.0) + 12.0,
-        _ => body + 4.0 + vision_line(14.0) + 12.0,
+        crate::service_ui::SETTINGS_VOLUME_ROW => {
+            SETTINGS_ROW_INSET + vision_line(TYPE_BODY) + 2.0 + vision_line(TYPE_CAPTION) + slider
+        }
+        3 => body + 4.0 + 2.0 * vision_line(TYPE_CAPTION) + SETTINGS_ROW_INSET,
+        _ => body + 4.0 + vision_line(TYPE_CAPTION) + SETTINGS_ROW_INSET,
     };
     h.ceil().max(SETTINGS_ROW_H)
 }
 
-/// Inside a row at a larger step: where the label, value and caption lines
-/// start and where the slider's centre sits, measured from the row's top.
-/// 100% returns the original offsets (15, 43, 76 and 86).
+/// The space above a row's first line and below its last.
+const SETTINGS_ROW_INSET: f64 = SPACE_BETWEEN_ROWS;
+
+/// Inside a row: where the label, value and caption lines start and where
+/// the slider's centre sits, measured from the row's top.
 pub fn settings_row_lines(row: u32) -> (f64, f64, f64, f64) {
-    if crate::layout_text_scale() <= 1.0 {
-        return (15.0, 43.0, 76.0, 86.0);
-    }
-    let value = 15.0 + vision_line(17.0) + 2.0;
-    let caption = value + vision_line(19.0) + 4.0;
+    let value = SETTINGS_ROW_INSET + vision_line(TYPE_LABEL) + 2.0;
+    let caption = value + vision_line(TYPE_BODY) + 4.0;
     let slider = settings_row_h(row) - 6.0 - 28.0;
-    (15.0, value, caption, slider)
+    (SETTINGS_ROW_INSET, value, caption, slider)
 }
 
-/// The Settings header's tap bands and text rows. At 100% these are the
-/// original literals (Done at the top right, the Vision and Themes links on
-/// the "Device controls" line, rows from `SETTINGS_ROW_FIRST_Y`). A larger
-/// vision step gives the links their own row with bands sized for the
-/// larger text, puts "Device controls" under them, and starts the rows
+/// The Settings header's tap bands and text rows: the Title beside Done,
+/// the Vision and Themes links on their own Label row with bands sized for
+/// the text at the current step, "Device controls" under them, and the rows
 /// below that. Paint and every hit-test read this one struct.
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct SettingsHeader {
@@ -547,23 +562,13 @@ fn estimated_text_w(chars: usize, design: f64) -> f64 {
 }
 
 pub fn settings_header(width: f64) -> SettingsHeader {
-    let s = crate::layout_text_scale();
-    if s <= 1.0 {
-        return SettingsHeader {
-            done_x: width - 150.0,
-            done_bottom: 108.0,
-            links_y: (104.0, 162.0),
-            vision_x: (width - 310.0, width - 185.0),
-            themes_x: (width - 185.0, width),
-            eyebrow_y: 112.0,
-            first_y: SETTINGS_ROW_FIRST_Y,
-        };
-    }
-    let done_w = (estimated_text_w(4, 20.0) + 48.0).max(150.0);
-    let done_bottom = (16.0 + vision_line(32.0) + 8.0).max(108.0);
-    let links_h = (vision_line(20.0) + 16.0).max(58.0);
-    let themes_w = estimated_text_w(8, 20.0) + 48.0;
-    let vision_w = estimated_text_w(8, 20.0) + 24.0;
+    let done_w = (estimated_text_w(4, TYPE_LABEL) + 48.0).max(150.0);
+    let done_bottom = (16.0 + vision_line(TYPE_TITLE) + SPACE_IN_ROW).max(80.0);
+    let links_h = (vision_line(TYPE_LABEL) + SPACE_BETWEEN_ROWS).max(58.0);
+    // The two links share the width; each fits its text to its band.
+    let links_fit = ((width - 28.0) / (estimated_text_w(16, TYPE_LABEL) + 72.0)).min(1.0);
+    let themes_w = (estimated_text_w(8, TYPE_LABEL) + 48.0) * links_fit;
+    let vision_w = (estimated_text_w(8, TYPE_LABEL) + 24.0) * links_fit;
     let eyebrow_y = done_bottom + links_h + 4.0;
     SettingsHeader {
         done_x: width - done_w,
@@ -572,7 +577,7 @@ pub fn settings_header(width: f64) -> SettingsHeader {
         vision_x: (width - themes_w - vision_w, width - themes_w),
         themes_x: (width - themes_w, width),
         eyebrow_y,
-        first_y: (eyebrow_y + vision_line(19.0) + 12.0).ceil(),
+        first_y: (eyebrow_y + vision_line(TYPE_LABEL) + 12.0).ceil(),
     }
 }
 
@@ -584,16 +589,12 @@ pub fn settings_first_y() -> f64 {
 /// The Volume row's output line, from the row's top: between the heading
 /// and the slider.
 pub fn settings_output_detail_y() -> f64 {
-    if crate::layout_text_scale() <= 1.0 {
-        crate::service_ui::SETTINGS_OUTPUT_DETAIL_Y
-    } else {
-        15.0 + vision_line(19.0) + 2.0
-    }
+    SETTINGS_ROW_INSET + vision_line(TYPE_BODY) + 2.0
 }
 
 /// The Power section's card height: 70 px, or room for its larger label.
 pub fn settings_power_card_h() -> f64 {
-    (vision_line(23.0) + 24.0).ceil().max(SETTINGS_POWER_CARD_H)
+    (vision_line(TYPE_BODY) + SPACE_CARD).ceil().max(SETTINGS_POWER_CARD_H)
 }
 
 /// The bottom edge of `count` stacked settings rows, i.e. where any content
@@ -620,7 +621,7 @@ pub struct SettingsLayout {
 pub fn settings_layout(key_backlight: bool) -> SettingsLayout {
     let rows_bottom = settings_rows_bottom(SETTINGS_ROW_COUNT + u32::from(key_backlight));
     let power_heading_y = rows_bottom + 22.0;
-    let reboot_y = power_heading_y + (vision_line(19.0) + 4.0).max(28.0);
+    let reboot_y = power_heading_y + (vision_line(TYPE_LABEL) + SPACE_IN_ROW).max(28.0);
     let poweroff_y = reboot_y + settings_power_card_h() + SETTINGS_ROW_GAP;
     SettingsLayout {
         power_heading_y,
@@ -641,7 +642,7 @@ pub fn settings_row_column(row: u32) -> usize {
 /// their single-column design position: `(dx, dy)` added to the design x/y.
 /// Column 1's rows slide up to the top of the row area and column 2's Power
 /// heading takes the first row's y, so each column reads as its own stack
-/// starting at `SETTINGS_ROW_FIRST_Y`. `render` paints through this offset
+/// starting at the header's `first_y`. `render` paints through this offset
 /// and `service_ui::panel_intent` subtracts the same one, so a tap and its
 /// paint cannot drift apart.
 pub fn settings_wide_offset(column: usize, key_backlight: bool) -> (f64, f64) {
@@ -665,7 +666,7 @@ pub struct SettingsConfirmLayout {
 /// precedes it (the Power section's bottom edge).
 pub fn settings_confirm_layout(after: f64) -> SettingsConfirmLayout {
     let label_y = after + 14.0;
-    let card_y = label_y + (vision_line(19.0) + 4.0).max(28.0);
+    let card_y = label_y + (vision_line(TYPE_BODY) + SPACE_IN_ROW).max(28.0);
     SettingsConfirmLayout {
         label_y,
         card_y,
@@ -2238,21 +2239,22 @@ fn wifi_layout(view: &WifiPublic, width: f64, height: f64) -> crate::wifi_ui::La
 /// confirm dialog or message) naturally ends, feeding `content_sized_panel_h`
 /// (finding P0-2) instead of always filling the screen.
 pub fn settings_content_bottom(services: Option<&ServiceView>) -> f64 {
-    const EMPTY_BOTTOM: f64 = 177.0 + 20.0 + 24.0;
+    // "Loading settings" or the error, on one Body line under the header.
+    let empty_bottom = settings_first_y() + vision_line(TYPE_BODY) + SPACE_CARD;
     let Some(view) = services else {
-        return EMPTY_BOTTOM;
+        return empty_bottom;
     };
     if view.settings.is_none() {
-        return EMPTY_BOTTOM;
+        return empty_bottom;
     }
     let mut bottom = settings_layout(view.key_backlight.is_some()).poweroff_bottom;
     if view.confirmation.is_some() {
         bottom = settings_confirm_layout(bottom).bottom;
     }
     if view.message.is_some() {
-        bottom += 56.0;
+        bottom += 14.0 + vision_line(TYPE_CAPTION) + SPACE_IN_ROW;
     }
-    bottom + 32.0
+    bottom + SPACE_GROUP
 }
 
 /// Wi-Fi's List page is a plain scrollable row list, like Settings and
@@ -2831,22 +2833,22 @@ fn paint_shade_header_reflowed(
     text(cr, &label, 28.0, count_y, count_room, count_size, style.muted);
 }
 
-/// The Settings header at a larger vision step (`settings_header`): the
-/// title fits beside Done, the Vision and Themes links get their own row,
-/// and "Device controls" sits beneath them.
-fn paint_settings_header_reflowed(cr: &Context, theme: Option<&AppearanceSnapshot>, style: VisualStyle, w: f64) {
+/// The Settings header (`settings_header`): the Title fits beside Done, the
+/// Vision and Themes links get their own row, and "Device controls" sits
+/// beneath them.
+fn paint_settings_header(cr: &Context, theme: Option<&AppearanceSnapshot>, style: VisualStyle, w: f64) {
     let head = settings_header(w);
     let fit = |value: &str, size: f64, room: f64, weight| {
         let advance = text_advance(cr, value, size, weight);
         if advance > room * 0.96 { size * room * 0.96 / advance } else { size }
     };
     let title_room = head.done_x - 28.0 - 8.0;
-    let title_size = fit("Settings", 32.0, title_room, pango::Weight::Bold);
+    let title_size = fit("Settings", TYPE_TITLE, title_room, pango::Weight::Bold);
     heading(cr, "Settings", 28.0, 16.0, title_room, title_size, style.text);
-    let line_mid = 16.0 + vision_line(32.0) / 2.0;
+    let line_mid = 16.0 + vision_line(TYPE_TITLE) / 2.0;
     let link = |label: &str, (x0, x1): (f64, f64), y_mid: f64| {
         let room = x1 - x0 - 24.0;
-        let size = fit(label, 20.0, room, pango::Weight::Normal);
+        let size = fit(label, TYPE_LABEL, room, pango::Weight::Normal);
         let advance = text_advance(cr, label, size, pango::Weight::Normal) + 2.0;
         text(cr, label, x1 - 24.0 - advance, y_mid - vision_line(size) / 2.0, advance, size, style.accent);
     };
@@ -2854,7 +2856,7 @@ fn paint_settings_header_reflowed(cr: &Context, theme: Option<&AppearanceSnapsho
     let links_mid = (head.links_y.0 + head.links_y.1) / 2.0;
     link("Vision ›", head.vision_x, links_mid);
     link("Themes ›", head.themes_x, links_mid);
-    themed_medium(cr, theme, "heading", "Device controls", 28.0, head.eyebrow_y, w - 56.0, 19.0, 16.0, 24.0, style.muted);
+    themed_role(cr, theme, "heading", "Device controls", 28.0, head.eyebrow_y, w - 56.0, TYPE_LABEL, style.muted, pango::Weight::Bold);
 }
 
 /// The theme chooser's and Vision page's Back and Close links, inside
@@ -3099,12 +3101,9 @@ fn scene(
         Route::Help => "Help",
         Route::Hide => return,
     };
-    if route != Route::Help && !(route == Route::Settings
-        && (chooser.is_some_and(|view| view.page != ThemePage::Controls)
-            || services
-                .and_then(|s| s.wifi.as_ref())
-                .is_some_and(|view| view.page != WifiPage::Closed)))
-        && !(matches!(route, Route::Shade | Route::Settings) && crate::layout_text_scale() > 1.0)
+    // Settings, its Wi-Fi pages and the theme chooser draw their own titles.
+    if !matches!(route, Route::Help | Route::Settings)
+        && !(route == Route::Shade && crate::layout_text_scale() > 1.0)
     {
         heading(cr, title, 28.0, panel_y + 32.0, w - 180.0, 32.0, style.text);
     }
@@ -3504,14 +3503,7 @@ fn scene(
                 );
                 return;
             }
-            if crate::layout_text_scale() > 1.0 {
-                paint_settings_header_reflowed(cr, theme, style, w);
-            } else {
-                text(cr, "Done", w - 114.0, 46.0, 90.0, 20.0, style.accent);
-                themed_medium(cr, theme, "heading", "Device controls", 28.0, 112.0, w - 56.0, 19.0, 16.0, 24.0, style.muted);
-                text(cr, "Themes ›", w - 164.0, 113.0, 140.0, 20.0, style.accent);
-                text(cr, "Vision ›", w - 290.0, 113.0, 110.0, 20.0, style.accent);
-            }
+            paint_settings_header(cr, theme, style, w);
             // The row cards/sliders/Power section below are Settings' own
             // scrollable body, not header chrome -- centered and scaled by
             // `crate::settings_content_transform` (the same `(scale, x)`
@@ -3551,7 +3543,6 @@ fn scene(
             let row_padding = theme_settings_row_padding(theme);
             let row_text_x = 24.0 + row_padding;
             let row_text_width = w - 48.0 - row_padding * 2.0;
-            let lifted = crate::layout_text_scale() > 1.0;
             if let Some(settings) = services.and_then(|view| view.settings.as_ref()) {
                 // Row numbers are explicit, not a plain `enumerate()`,
                 // because row 2 (Volume) is painted separately below --
@@ -3568,44 +3559,14 @@ fn scene(
                     let y = settings_row_y(row);
                     let (label_dy, value_dy, caption_dy, _) = settings_row_lines(row);
                     service_card(cr, theme, "controls", 24.0, y, w - 48.0, settings_row_h(row), false);
-                    themed_medium(cr, theme, "body", name, row_text_x, y + label_dy, row_text_width, 17.0, 14.0, 22.0, style.text);
-                    themed_text_fit(
-                        cr, theme, "body",
-                        &control_text(control),
-                        row_text_x,
-                        y + value_dy,
-                        row_text_width,
-                        19.0,
-                        14.0,
-                        24.0,
-                        style.text,
-                    );
+                    themed_role_fit(cr, theme, "body", name, row_text_x, y + label_dy, row_text_width, TYPE_LABEL, style.text, pango::Weight::Medium);
+                    themed_role_fit(cr, theme, "body", &control_text(control), row_text_x, y + value_dy, row_text_width, TYPE_BODY, style.text, pango::Weight::Normal);
                     if name == "Keyboard" && services.is_some_and(|view| view.keyboard_gesture_hint)
                     {
-                        themed_text_fit(
-                            cr, theme, "caption",
-                            "Two fingers up at bottom to show;",
-                            row_text_x,
-                            if lifted { y + caption_dy } else { y + 72.0 },
-                            row_text_width,
-                            14.0,
-                            11.0,
-                            18.0,
-                            style.muted,
-                        );
-                        themed_text_fit(
-                            cr, theme, "caption",
-                            "drag the handle down to hide.",
-                            row_text_x,
-                            if lifted { y + caption_dy + vision_line(14.0) } else { y + 89.0 },
-                            row_text_width,
-                            14.0,
-                            11.0,
-                            18.0,
-                            style.muted,
-                        );
+                        themed_role_fit(cr, theme, "caption", "Two fingers up at bottom to show;", row_text_x, y + caption_dy, row_text_width, TYPE_CAPTION, style.muted, pango::Weight::Normal);
+                        themed_role_fit(cr, theme, "caption", "drag the handle down to hide.", row_text_x, y + caption_dy + vision_line(TYPE_CAPTION), row_text_width, TYPE_CAPTION, style.muted, pango::Weight::Normal);
                     } else if let Some(detail) = &control.detail {
-                        themed_text_fit(cr, theme, "caption", detail, row_text_x, y + caption_dy, row_text_width, 14.0, 11.0, 18.0, style.muted);
+                        themed_role_fit(cr, theme, "caption", detail, row_text_x, y + caption_dy, row_text_width, TYPE_CAPTION, style.muted, pango::Weight::Normal);
                     }
                     let _ = cr.restore();
                 }
@@ -3628,7 +3589,7 @@ fn scene(
                 let volume_y = settings_row_y(SETTINGS_VOLUME_ROW);
                 let volume_lines = settings_row_lines(SETTINGS_VOLUME_ROW);
                 service_card(cr, theme, "controls", 24.0, volume_y, w - 48.0, settings_row_h(SETTINGS_VOLUME_ROW), false);
-                themed_medium(cr, theme, "body", "Volume", row_text_x, volume_y + 15.0, row_text_width, 17.0, 14.0, 22.0, style.text);
+                themed_role_fit(cr, theme, "body", "Volume", row_text_x, volume_y + volume_lines.0, row_text_width, TYPE_LABEL, style.text, pango::Weight::Medium);
                 if let Some(sink) = default_sink(services.and_then(|view| view.audio.as_ref())) {
                     let percent = volume::linear_to_percent(sink.linear_volume);
                     let label = if sink.muted {
@@ -3636,17 +3597,18 @@ fn scene(
                     } else {
                         format!("{percent}%")
                     };
-                    themed_text(cr, theme, "body", &label, w - 138.0, volume_y + 15.0, 96.0, 19.0, 14.0, 24.0, style.text);
-                    themed_text(
+                    let value_w = text_advance_resolved(cr, &label, theme_font_size(theme, "body", TYPE_BODY, TYPE_BODY, TYPE_BODY * 1.25), pango::Weight::Normal) + 2.0;
+                    let value_x = 24.0 + w - 48.0 - row_padding - value_w;
+                    themed_role(cr, theme, "body", &label, value_x, volume_y + volume_lines.0, value_w, TYPE_BODY, style.text, pango::Weight::Normal);
+                    themed_role_fit(
                         cr, theme, "caption",
                         &format!("{} · tap to change output", sink.description),
                         row_text_x,
                         volume_y + settings_output_detail_y(),
                         row_text_width,
-                        14.0,
-                        11.0,
-                        18.0,
+                        TYPE_CAPTION,
                         style.muted,
+                        pango::Weight::Normal,
                     );
                     paint_volume_slider(cr, style, w, volume_y + volume_lines.3, percent, sink.muted);
                 } else {
@@ -3655,10 +3617,10 @@ fn scene(
                         services
                             .and_then(|view| view.audio_error.as_deref())
                             .unwrap_or("No audio device found"),
-                        42.0,
+                        row_text_x,
                         volume_y + volume_lines.1,
-                        w - 90.0,
-                        19.0,
+                        row_text_width,
+                        TYPE_BODY,
                         style.muted,
                     );
                 }
@@ -3669,8 +3631,8 @@ fn scene(
                     let y = settings_row_y(SETTINGS_KEY_BACKLIGHT_ROW);
                     let lines = settings_row_lines(SETTINGS_KEY_BACKLIGHT_ROW);
                     service_card(cr, theme, "controls", 24.0, y, w - 48.0, settings_row_h(SETTINGS_KEY_BACKLIGHT_ROW), false);
-                    themed_medium(cr, theme, "body", "Key backlight", row_text_x, y + lines.0, row_text_width, 17.0, 14.0, 22.0, style.text);
-                    themed_text(cr, theme, "body", level.label(), row_text_x, y + lines.1, row_text_width, 19.0, 14.0, 24.0, style.text);
+                    themed_role_fit(cr, theme, "body", "Key backlight", row_text_x, y + lines.0, row_text_width, TYPE_LABEL, style.text, pango::Weight::Medium);
+                    themed_role_fit(cr, theme, "body", level.label(), row_text_x, y + lines.1, row_text_width, TYPE_BODY, style.text, pango::Weight::Normal);
                     paint_level_slider(cr, style, w, y + lines.3, level.index(), 3);
                     let _ = cr.restore();
                 }
@@ -3681,9 +3643,9 @@ fn scene(
                         .and_then(|view| view.settings_error.as_deref())
                         .unwrap_or("Loading settings"),
                     28.0,
-                    177.0,
+                    settings_first_y(),
                     w - 56.0,
-                    20.0,
+                    TYPE_BODY,
                     style.muted,
                 );
             }
@@ -3691,18 +3653,10 @@ fn scene(
             // relative to the row rhythm above (finding P0-4), not as
             // independent literals that stay correct only by coincidence.
             let layout = settings_layout(key_backlight_row);
-            let power_label_dy = if lifted { (settings_power_card_h() - vision_line(23.0)) / 2.0 } else { 20.0 };
+            let power_label_dy = (settings_power_card_h() - vision_line(TYPE_BODY)) / 2.0;
             place(2);
             if services.and_then(|view| view.settings.as_ref()).is_some() {
-                text(
-                    cr,
-                    "Power",
-                    28.0,
-                    layout.power_heading_y,
-                    w - 56.0,
-                    19.0,
-                    style.muted,
-                );
+                themed_role(cr, theme, "heading", "Power", 28.0, layout.power_heading_y, w - 56.0, TYPE_LABEL, style.muted, pango::Weight::Bold);
                 service_card(
                     cr,
                     theme,
@@ -3713,15 +3667,7 @@ fn scene(
                     settings_power_card_h(),
                     false,
                 );
-                text(
-                    cr,
-                    "Reboot…",
-                    42.0,
-                    layout.reboot_y + power_label_dy,
-                    w - 84.0,
-                    23.0,
-                    style.text,
-                );
+                themed_role_fit(cr, theme, "body", "Reboot…", 42.0, layout.reboot_y + power_label_dy, w - 84.0, TYPE_BODY, style.text, pango::Weight::Normal);
                 service_card(
                     cr,
                     theme,
@@ -3732,27 +3678,11 @@ fn scene(
                     settings_power_card_h(),
                     false,
                 );
-                text(
-                    cr,
-                    "Power off…",
-                    42.0,
-                    layout.poweroff_y + power_label_dy,
-                    w - 84.0,
-                    23.0,
-                    style.text,
-                );
+                themed_role_fit(cr, theme, "body", "Power off…", 42.0, layout.poweroff_y + power_label_dy, w - 84.0, TYPE_BODY, style.text, pango::Weight::Normal);
             }
             if let Some(confirm) = services.and_then(|view| view.confirmation.as_ref()) {
                 let confirm_layout = settings_confirm_layout(layout.poweroff_bottom);
-                text(
-                    cr,
-                    &confirm.label,
-                    28.0,
-                    confirm_layout.label_y,
-                    w - 56.0,
-                    19.0,
-                    style.text,
-                );
+                themed_role_fit(cr, theme, "body", &confirm.label, 28.0, confirm_layout.label_y, w - 56.0, TYPE_BODY, style.text, pango::Weight::Normal);
                 service_card(
                     cr,
                     theme,
@@ -3763,17 +3693,9 @@ fn scene(
                     110.0,
                     true,
                 );
-                let button_y = confirm_layout.card_y + 33.0;
-                text(cr, "Cancel", 45.0, button_y, w / 2.0 - 45.0, 23.0, style.muted);
-                text(
-                    cr,
-                    "Confirm",
-                    w / 2.0 + 20.0,
-                    button_y,
-                    w / 2.0 - 45.0,
-                    23.0,
-                    style.error,
-                );
+                let button_y = confirm_layout.card_y + (110.0 - vision_line(TYPE_BODY)) / 2.0;
+                themed_role_fit(cr, theme, "body", "Cancel", 45.0, button_y, w / 2.0 - 45.0, TYPE_BODY, style.muted, pango::Weight::Normal);
+                themed_role_fit(cr, theme, "body", "Confirm", w / 2.0 + 20.0, button_y, w / 2.0 - 45.0, TYPE_BODY, style.error, pango::Weight::Normal);
             }
             if let Some(message) = services.and_then(|view| view.message.as_deref()) {
                 let after = services
@@ -3781,7 +3703,7 @@ fn scene(
                     .map_or(layout.poweroff_bottom, |_| {
                         settings_confirm_layout(layout.poweroff_bottom).bottom
                     });
-                text(cr, message, 28.0, after + 14.0, w - 56.0, 17.0, style.muted);
+                themed_role_fit(cr, theme, "caption", message, 28.0, after + 14.0, w - 56.0, TYPE_CAPTION, style.muted, pango::Weight::Normal);
             }
             let _ = cr.restore();
             let _ = cr.restore();
@@ -7207,40 +7129,58 @@ mod layout_tests {
 
     #[test]
     fn settings_row_y_uses_one_height_and_one_gap() {
-        assert_eq!(settings_row_y(0), 162.0);
-        assert_eq!(settings_row_y(1), 288.0);
-        assert_eq!(settings_row_y(2), 414.0);
-        assert_eq!(settings_row_y(3), 540.0);
+        // The header holds a Title line, the Vision and Themes links on
+        // their own Label line, and "Device controls" (visual language 2.1).
+        assert_eq!(settings_row_y(0), 187.0);
+        for row in 0..5 {
+            assert_eq!(settings_row_y(row + 1), settings_row_y(row) + settings_row_h(row) + SETTINGS_ROW_GAP);
+        }
+    }
+
+    #[test]
+    fn every_settings_row_holds_its_role_lines() {
+        for row in 0..6 {
+            let (label, value, caption, slider) = settings_row_lines(row);
+            assert_eq!(label, SPACE_BETWEEN_ROWS);
+            assert!(value >= label + TYPE_LABEL * 1.25, "row {row}");
+            assert!(caption >= value + TYPE_BODY * 1.25, "row {row}");
+            assert!(settings_row_h(row) >= SETTINGS_ROW_H, "row {row}");
+            if matches!(row, 1 | 2 | SETTINGS_KEY_BACKLIGHT_ROW) {
+                assert!(slider - 28.0 >= caption.min(value + TYPE_BODY * 1.25) - 1.0, "row {row}");
+            }
+        }
     }
 
     #[test]
     fn settings_rows_bottom_is_the_last_row_end() {
-        assert_eq!(settings_rows_bottom(0), SETTINGS_ROW_FIRST_Y);
-        assert_eq!(settings_rows_bottom(1), 272.0);
-        assert_eq!(settings_rows_bottom(4), 650.0);
+        assert_eq!(settings_rows_bottom(0), settings_first_y());
+        assert_eq!(settings_rows_bottom(1), settings_row_y(0) + settings_row_h(0));
+        assert_eq!(settings_rows_bottom(4), settings_row_y(3) + settings_row_h(3));
     }
 
     #[test]
     fn settings_layout_cascades_from_the_row_rhythm() {
-        // +126 (SETTINGS_ROW_H + SETTINGS_ROW_GAP) from the pre-volume-row
-        // values: the Volume row (task: "in Settings") added a fifth
-        // settings row, cascading every value below it down by one row's
-        // rhythm, same as `NOTIFICATION_TOP`'s own shift for the shade.
+        // The Key backlight row, when present, moves the Power section down
+        // by its own height and one gap.
         let with_keys = settings_layout(true);
-        assert_eq!(with_keys.power_heading_y, 798.0 + 126.0);
         let layout = settings_layout(false);
-        assert_eq!(layout.power_heading_y, 798.0);
-        assert_eq!(layout.reboot_y, 826.0);
-        assert_eq!(layout.poweroff_y, 912.0);
-        assert_eq!(layout.poweroff_bottom, 982.0);
+        assert_eq!(
+            with_keys.power_heading_y,
+            layout.power_heading_y + settings_row_h(SETTINGS_KEY_BACKLIGHT_ROW) + SETTINGS_ROW_GAP
+        );
+        assert_eq!(layout.power_heading_y, settings_rows_bottom(SETTINGS_ROW_COUNT) + 22.0);
+        assert_eq!(layout.reboot_y, layout.power_heading_y + TYPE_LABEL * 1.25 + SPACE_IN_ROW);
+        assert_eq!(layout.poweroff_y, layout.reboot_y + settings_power_card_h() + SETTINGS_ROW_GAP);
+        assert_eq!(layout.poweroff_bottom, layout.poweroff_y + settings_power_card_h());
+        assert!(settings_power_card_h() >= TYPE_BODY * 1.25 + SPACE_CARD);
     }
 
     #[test]
     fn settings_confirm_layout_follows_whatever_precedes_it() {
         let confirm = settings_confirm_layout(982.0);
         assert_eq!(confirm.label_y, 996.0);
-        assert_eq!(confirm.card_y, 1024.0);
-        assert_eq!(confirm.bottom, 1134.0);
+        assert_eq!(confirm.card_y, 996.0 + TYPE_BODY * 1.25 + SPACE_IN_ROW);
+        assert_eq!(confirm.bottom, confirm.card_y + 110.0);
     }
 
     #[test]
@@ -10309,7 +10249,11 @@ mod tests {
         theme.sections.get_mut("spacing").unwrap().insert("scale-with-font".into(), AppearanceToken::Boolean(false));
         assert_eq!(theme_settings_row_padding(Some(&theme)), 19.8);
         assert_eq!(theme_settings_row_padding(None), 18.0);
-        assert_eq!(settings_row_y(1), 288.0, "theme spacing does not move touch rows");
+        assert_eq!(settings_row_y(1), settings_row_y(0) + settings_row_h(0) + SETTINGS_ROW_GAP,
+                   "theme spacing does not move touch rows");
+        // A theme can enlarge a type role but never set it below the role.
+        assert_eq!(theme_font_size(Some(&theme), "body", TYPE_BODY, TYPE_BODY, TYPE_BODY * 1.25), TYPE_BODY);
+        assert_eq!(theme_font_size(Some(&theme), "caption", TYPE_CAPTION, TYPE_CAPTION, TYPE_CAPTION * 1.25), TYPE_CAPTION);
 
         fn label(theme: Option<&AppearanceSnapshot>) -> Vec<u8> {
             let mut surface = ImageSurface::create(Format::ARgb32, 240, 56).unwrap();
@@ -10341,7 +10285,7 @@ mod tests {
             pixels
         }
         assert_ne!(card(&theme, false), card(&theme, true));
-        assert_eq!(settings_row_y(1), 288.0);
+        assert_eq!(settings_row_y(1), settings_row_y(0) + settings_row_h(0) + SETTINGS_ROW_GAP);
     }
 
     #[test]
