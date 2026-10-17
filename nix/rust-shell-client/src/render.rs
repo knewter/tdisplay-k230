@@ -4843,7 +4843,13 @@ fn paint_battery_details(cr: &Context, style: &VisualStyle, rect: (f64, f64, f64
         let label_w = text_advance(cr, label, label_size, pango::Weight::Normal);
         detail_glow(cr, label, cx, cy + label_drop, cell_w, label_size, style.muted, pango::Weight::Normal, pango::Alignment::Left);
         let value_x = cx + label_w + label_size * 0.4;
-        detail_glow(cr, &value, value_x, cy, (cx + cell_w - value_x).max(10.0), value_size, style.text, pango::Weight::Bold, pango::Alignment::Left);
+        // The value may use its column up to the next one (the right
+        // column up to the widget's inset), and shrinks toward the label
+        // size, never below it, before it would be cut off.
+        let room = cx + col_w - pad * 0.25 - value_x;
+        let advance = text_advance(cr, &value, value_size, pango::Weight::Bold);
+        let fitted = if advance > room * 0.96 { (value_size * room * 0.96 / advance).max(label_size) } else { value_size };
+        detail_glow(cr, &value, value_x, cy + (value_size - fitted) * 0.8, room.max(10.0), fitted, style.text, pango::Weight::Bold, pango::Alignment::Left);
     }
 
     // Input line.
