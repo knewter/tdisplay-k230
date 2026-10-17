@@ -1490,24 +1490,25 @@ fn paint_grid(
 /// in the new size and palette once that settles.
 fn paint_vision(cr: &Context, w: f64, h: f64, view: &ThemeView, theme: Option<&AppearanceSnapshot>) {
     let style = visual_style(theme, "controls");
-    // The same header and title rows as the theme chooser, which is also
-    // where `ThemeView::hit` looks for Back and Close.
-    let lay = crate::theme_ui::chooser_layout(w as u32, h as u32);
-    let header_bottom = paint_chooser_header(cr, style, w, h);
-    let title_y = lay.themes_heading.1.max(header_bottom + 4.0);
-    heading(cr, "Vision", 28.0, title_y, w - 56.0, 26.0, style.text);
-    if crate::layout_text_scale() > 1.0 {
-        // The note gets its own line rather than ellipsizing beside the title.
-        text(cr, "Applies to every theme", 28.0, title_y + vision_line(26.0) + 2.0, w - 56.0, 17.0, style.muted);
-    } else {
-        let note_x = 28.0 + text_advance(cr, "Vision", 26.0, pango::Weight::Bold) + 20.0;
-        text(cr, "Applies to every theme", note_x, title_y + 9.0, w - note_x - 28.0, 17.0, style.muted);
-    }
+    // The same header row as the theme chooser, which is also where
+    // `ThemeView::hit` looks for Back and Close.
+    paint_chooser_header(cr, style, w, h);
     let pending = view.vision_pending();
     let shown = pending.unwrap_or(&view.vision);
     // Laid out for the size the screen is drawn at now (the saved step),
     // the same call `ThemeView::hit` makes.
     let lay = vision_layout(w, view.vision.text_scale_value());
+    let title_w = text_advance(cr, "Vision", TYPE_TITLE, pango::Weight::Bold);
+    heading(cr, "Vision", 28.0, lay.title_y, w - 56.0, TYPE_TITLE, style.text);
+    let note = "Applies to every theme";
+    if lay.note_beside {
+        let x = 28.0 + title_w + SPACE_CARD;
+        let y = lay.title_y + vision_line(TYPE_TITLE) - vision_line(TYPE_CAPTION) - 4.0;
+        themed_role_fit(cr, theme, "caption", note, x, y, w - x - 28.0, TYPE_CAPTION, style.muted, pango::Weight::Normal);
+    } else {
+        let y = lay.title_y + vision_line(TYPE_TITLE) + 2.0;
+        themed_role_fit(cr, theme, "caption", note, 28.0, y, w - 56.0, TYPE_CAPTION, style.muted, pango::Weight::Normal);
+    }
     let ink = if view.vision_loaded { style.text } else { style.muted };
     let state = |applying: bool, value: &str| -> String {
         if !view.vision_loaded {
@@ -1525,37 +1526,40 @@ fn paint_vision(cr: &Context, w: f64, h: f64, view: &ThemeView, theme: Option<&A
     let text_applying = pending.is_some_and(|p| p.text_scale != view.vision.text_scale);
     let step = shown.text_step();
     let heading_value = state(text_applying, &format!("{}%", (TEXT_SCALE_VALUES[step] * 100.0).round()));
-    text_weight(cr, "Text size", x + 20.0, y + 18.0, cw * 0.6, 17.0, ink, pango::Weight::Medium);
-    let value_w = text_advance(cr, &heading_value, 17.0, pango::Weight::Medium);
-    text_weight(cr, &heading_value, x + cw - 20.0 - value_w, y + 18.0, value_w + 2.0, 17.0,
+    let value_w = text_advance(cr, &heading_value, TYPE_LABEL, pango::Weight::Medium);
+    text_weight(cr, &heading_value, x + cw - 20.0 - value_w, y + 18.0, value_w + 2.0, TYPE_LABEL,
                 if view.vision_loaded { style.accent } else { ink }, pango::Weight::Medium);
+    themed_role_fit(cr, theme, "body", "Text size", x + 20.0, y + 18.0, cw - 60.0 - value_w, TYPE_LABEL, ink, pango::Weight::Medium);
     for (index, (sx, sy, sw, sh)) in lay.segments.into_iter().enumerate() {
         let selected = index == step && view.vision_loaded;
         service_card(cr, theme, "controls", sx, sy, sw, sh, selected);
         let label = format!("{}%", (TEXT_SCALE_VALUES[index] * 100.0).round());
-        let size = 18.0;
-        let lw = text_advance(cr, &label, size, pango::Weight::Bold);
-        let drawn = context_font_size(cr, size);
-        text_weight(cr, &label, sx + (sw - lw) / 2.0, sy + (sh - drawn * 1.2) / 2.0, lw + 2.0, size,
-                    if selected { style.accent } else { ink }, pango::Weight::Bold);
+        // Shrinks toward the Body role to fit its segment at a larger step.
+        let full = context_font_size(cr, TYPE_BODY);
+        let advance = text_advance_resolved(cr, &label, full, pango::Weight::Bold);
+        let room = sw - 12.0;
+        let drawn = if advance > room { (full * room / advance).max(TYPE_BODY) } else { full };
+        let lw = text_advance_resolved(cr, &label, drawn, pango::Weight::Bold);
+        text_weight_resolved(cr, &label, sx + (sw - lw) / 2.0, sy + (sh - drawn * 1.2) / 2.0, lw + 2.0, drawn,
+                             if selected { style.accent } else { ink }, pango::Weight::Bold);
     }
 
     // High contrast: one on/off card.
     let (x, y, cw, ch) = lay.contrast_card;
     let on = shown.high_contrast();
     service_card(cr, theme, "controls", x, y, cw, ch, on);
-    text_weight(cr, "High contrast", x + 20.0, y + 18.0, cw - 40.0, 17.0, ink, pango::Weight::Medium);
+    themed_role_fit(cr, theme, "body", "High contrast", x + 20.0, y + 18.0, cw - 40.0, TYPE_LABEL, ink, pango::Weight::Medium);
     let contrast_applying = pending.is_some_and(|p| p.contrast != view.vision.contrast);
     let value = state(contrast_applying, if on { "On" } else { "Off" });
-    let label_h = (17.0 * lay.scale * 1.35).ceil();
-    text(cr, &value, x + 20.0, y + 18.0 + label_h + 6.0, cw - 40.0, 19.0,
-         if on && view.vision_loaded { style.accent } else { ink });
+    let label_h = (TYPE_LABEL * lay.scale * 1.35).ceil();
+    themed_role_fit(cr, theme, "body", &value, x + 20.0, y + 18.0 + label_h + 6.0, cw - 40.0, TYPE_BODY,
+                    if on && view.vision_loaded { style.accent } else { ink }, pango::Weight::Normal);
 
     let (sx, sw) = (lay.text_card.0, lay.contrast_card.0 + lay.contrast_card.2 - lay.text_card.0);
     if let Some(error) = view.error.as_deref() {
-        text(cr, error, sx, lay.status_y, sw, 18.0, style.error);
+        themed_role_fit(cr, theme, "caption", error, sx, lay.status_y, sw, TYPE_CAPTION, style.error, pango::Weight::Normal);
     } else if let Some(message) = view.message.as_deref() {
-        text(cr, message, sx, lay.status_y, sw, 18.0, style.muted);
+        themed_role_fit(cr, theme, "caption", message, sx, lay.status_y, sw, TYPE_CAPTION, style.muted, pango::Weight::Normal);
     }
 }
 
@@ -2863,20 +2867,15 @@ fn paint_settings_header(cr: &Context, theme: Option<&AppearanceSnapshot>, style
 /// `theme_ui::chooser_header_bands`; returns the header line's bottom.
 fn paint_chooser_header(cr: &Context, style: VisualStyle, w: f64, h: f64) -> f64 {
     let lay = crate::theme_ui::chooser_layout(w as u32, h as u32);
-    if crate::layout_text_scale() <= 1.0 {
-        text(cr, "‹ Settings", 28.0, lay.header_y, 185.0, 22.0, style.accent);
-        text(cr, "Close", w - 115.0, lay.header_y, 90.0, 21.0, style.accent);
-        return lay.header_y + 22.0 * 1.25;
-    }
     let (_, back_right, close_left) = crate::theme_ui::chooser_header_bands(w as u32, h as u32);
     let fit = |value: &str, size: f64, room: f64| {
         let advance = text_advance(cr, value, size, pango::Weight::Normal);
         if advance > room * 0.96 { size * room * 0.96 / advance } else { size }
     };
-    let back_size = fit("‹ Settings", 22.0, back_right - 28.0 - 8.0);
+    let back_size = fit("‹ Settings", TYPE_LABEL, back_right - 28.0 - 8.0);
     text(cr, "‹ Settings", 28.0, lay.header_y, back_right - 28.0, back_size, style.accent);
     let close_room = w - 24.0 - close_left - 8.0;
-    let close_size = fit("Close", 21.0, close_room);
+    let close_size = fit("Close", TYPE_LABEL, close_room);
     let close_w = text_advance(cr, "Close", close_size, pango::Weight::Normal) + 2.0;
     text(cr, "Close", w - 24.0 - close_w, lay.header_y, close_w, close_size, style.accent);
     lay.header_y + vision_line(back_size.max(close_size))

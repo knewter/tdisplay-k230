@@ -140,6 +140,10 @@ pub const VISION_TAP_MIN: f64 = 99.0;
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct VisionLayout {
     pub scale: f64,
+    /// The "Vision" Title's top, and whether the "Applies to every theme"
+    /// note sits beside it (side by side) or on its own line beneath.
+    pub title_y: f64,
+    pub note_beside: bool,
     /// The "Text size" card and its four step segments.
     pub text_card: (f64, f64, f64, f64),
     pub segments: [(f64, f64, f64, f64); 4],
@@ -155,18 +159,24 @@ pub struct VisionLayout {
 /// Side by side when two cards fit (landscape panel, HDMI); stacked in
 /// portrait.
 pub fn vision_layout(width: f64, scale: f64) -> VisionLayout {
+    use crate::render::{SPACE_BETWEEN_ROWS, TYPE_BODY, TYPE_CAPTION, TYPE_LABEL, TYPE_TITLE};
     let s = scale.clamp(1.0, 2.0);
     let line = |size: f64| (size * s * 1.35).ceil();
-    // A larger step also gives "Applies to every theme" its own line under
-    // the title, so the cards start lower still.
-    let top = if s <= 1.0 { 150.0 } else { (110.0 + 75.0 * s).round() };
     let cw = (width - 48.0).clamp(0.0, VISION_CARD_MAX_W);
     // `width` 0 asks for the stacked (portrait) column without a width.
     let side_by_side = cw > 0.0 && width >= 2.0 * cw + 72.0;
-    let label_h = line(17.0);
-    let seg_h = (line(18.0) + 40.0).max(VISION_TAP_MIN);
+    // Under the chooser header's Label links (`chooser_layout`'s header
+    // and heading rows: 14 and 48 when wide, 42 and 84 in portrait), the
+    // Title, then the note: beside the Title when the cards sit side by
+    // side on a short output, on its own line otherwise.
+    let (header_y, heading_y) = if side_by_side { (14.0, 48.0) } else { (42.0, 84.0) };
+    let title_y = (header_y + line(TYPE_LABEL) + 4.0).max(heading_y);
+    let note_h = if side_by_side { 0.0 } else { 2.0 + line(TYPE_CAPTION) };
+    let top = (title_y + line(TYPE_TITLE) + note_h + SPACE_BETWEEN_ROWS).round();
+    let label_h = line(TYPE_LABEL);
+    let seg_h = (line(TYPE_BODY) + 40.0).max(VISION_TAP_MIN);
     let text_h = 18.0 + label_h + 12.0 + seg_h + 14.0;
-    let contrast_h = (18.0 + label_h + 6.0 + line(19.0) + 18.0).max(VISION_TAP_MIN);
+    let contrast_h = (18.0 + label_h + 6.0 + line(TYPE_BODY) + 18.0).max(VISION_TAP_MIN);
     let text_card = (24.0, top, cw, text_h);
     let contrast_card = if side_by_side {
         (24.0 + cw + 24.0, top, cw, contrast_h)
@@ -180,7 +190,16 @@ pub fn vision_layout(width: f64, scale: f64) -> VisionLayout {
     let segments = std::array::from_fn(|i| (24.0 + pad + i as f64 * (seg_w + gap), seg_y, seg_w, seg_h));
     let cards_bottom = (text_card.1 + text_card.3).max(contrast_card.1 + contrast_card.3);
     let status_y = cards_bottom + 12.0;
-    VisionLayout { scale: s, text_card, segments, contrast_card, status_y, bottom: status_y + line(18.0) + 24.0 }
+    VisionLayout {
+        scale: s,
+        title_y,
+        note_beside: side_by_side,
+        text_card,
+        segments,
+        contrast_card,
+        status_y,
+        bottom: status_y + line(TYPE_CAPTION) + 24.0,
+    }
 }
 
 /// The theme (and, once a theme is active, which of its own backgrounds)
@@ -558,13 +577,11 @@ pub fn chooser_header_bands(width: u32, height: u32) -> (f64, f64, f64) {
     let w = f64::from(width);
     let lay = chooser_layout(width, height);
     let s = crate::layout_text_scale();
-    if s <= 1.0 {
-        return (lay.header_hit_h, 190.0, w - 150.0);
-    }
-    let em = |chars: f64, design: f64| chars * design * s * 0.62;
-    let h = lay.header_hit_h.max(lay.header_y + 22.0 * s * 1.25 + 8.0);
-    let back_right = (28.0 + em(10.0, 22.0) + 16.0).max(190.0).min(w * 0.6);
-    let close_left = (w - em(5.0, 21.0) - 48.0).min(w - 150.0).max(w * 0.6);
+    let label = crate::render::TYPE_LABEL;
+    let em = |chars: f64| chars * label * s * 0.62;
+    let h = lay.header_hit_h.max(lay.header_y + label * s * 1.25 + 8.0);
+    let back_right = (28.0 + em(10.0) + 16.0).max(190.0).min(w * 0.6);
+    let close_left = (w - em(5.0) - 48.0).min(w - 150.0).max(w * 0.6);
     (h, back_right, close_left)
 }
 
@@ -1852,11 +1869,16 @@ mod tests {
                     assert!(rh >= VISION_TAP_MIN, "{w}x{h} at {scale}: 48 dp tap floor");
                     assert!(y + rh <= h, "{w}x{h} at {scale}: inside the height");
                 }
-                // A segment holds its "200%" label (DejaVu Sans Bold is under
-                // 0.7 em per glyph) and its line.
+                // A segment holds its "200%" label at the Body role (DejaVu
+                // Sans Bold is under 0.7 em per glyph; a larger step shrinks
+                // it toward the role to fit) and its line.
                 let (_, _, sw, sh) = lay.segments[0];
-                assert!(sw >= 4.0 * 0.7 * 18.0 * scale, "{w}x{h} at {scale}: segment width {sw}");
-                assert!(sh >= 18.0 * scale * 1.35, "{w}x{h} at {scale}: segment height");
+                let body = crate::render::TYPE_BODY;
+                assert!(sw >= 4.0 * 0.7 * body, "{w}x{h} at {scale}: segment width {sw}");
+                assert!(sh >= body * scale * 1.35, "{w}x{h} at {scale}: segment height");
+                // The Title and its note end above the cards.
+                let note = if lay.note_beside { 0.0 } else { crate::render::TYPE_CAPTION * scale * 1.35 };
+                assert!(lay.title_y + crate::render::TYPE_TITLE * scale * 1.35 + note <= lay.text_card.1);
                 // Segments sit inside the text card and do not overlap.
                 let (tx, ty, tw, th) = lay.text_card;
                 for pair in lay.segments.windows(2) {
