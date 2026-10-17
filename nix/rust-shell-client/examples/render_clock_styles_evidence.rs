@@ -3,6 +3,10 @@
 //!
 //! usage: render_clock_styles_evidence <out-dir> <generations-root>
 //!        <name>=<generation-id>...
+//!
+//! Optional environment: `CLOCK_SIZE=portrait` renders 568x1232 (cropped to
+//! the top 620 px) instead of 1232x568; `CLOCK_WALLPAPER=<png>` replaces the
+//! flat teal/orange backdrops with that image, scaled to cover the panel.
 use cairo::{Context, Format, ImageSurface};
 use k230_shell_rust::{
     appearance::{AppearanceReceiver, AppearanceSnapshot},
@@ -24,9 +28,14 @@ fn snapshot(root: &PathBuf, sockets: &PathBuf, name: &str, id: &str) -> Appearan
     receiver.active().cloned().expect("generation did not load")
 }
 
-/// One Home with a single Clock widget in slot 0 over a flat `backdrop`,
-/// cropped to the left `crop` x `h` pixels.
-fn render_clock(path: PathBuf, theme: &AppearanceSnapshot, kind: WidgetKind, backdrop: (f64, f64, f64), w: u32, h: u32, crop: i32) {
+enum Backdrop {
+    Flat(f64, f64, f64),
+    Image(ImageSurface),
+}
+
+/// One Home with a single Clock widget in slot 0 over a `backdrop`,
+/// cropped to the top-left `crop` pixels.
+fn render_clock(path: PathBuf, theme: &AppearanceSnapshot, kind: WidgetKind, backdrop: &Backdrop, w: u32, h: u32, crop: (i32, i32)) {
     // `RendererCache::set_appearance` sets the layout step; do the same.
     let mut cache = RendererCache::default();
     cache.set_appearance(Some(theme.clone()));
@@ -41,8 +50,19 @@ fn render_clock(path: PathBuf, theme: &AppearanceSnapshot, kind: WidgetKind, bac
     let target = ImageSurface::create(Format::ARgb32, w as i32, h as i32).unwrap();
     {
         let cr = Context::new(&target).unwrap();
-        cr.set_source_rgb(backdrop.0, backdrop.1, backdrop.2);
-        cr.paint().unwrap();
+        match backdrop {
+            Backdrop::Flat(r, g, b) => {
+                cr.set_source_rgb(*r, *g, *b);
+                cr.paint().unwrap();
+            }
+            Backdrop::Image(img) => {
+                let scale = (f64::from(w) / f64::from(img.width())).max(f64::from(h) / f64::from(img.height()));
+                cr.scale(scale, scale);
+                cr.set_source_surface(img, 0.0, 0.0).unwrap();
+                cr.paint().unwrap();
+                cr.identity_matrix();
+            }
+        }
         let content = ImageSurface::create(Format::ARgb32, w as i32, h as i32).unwrap();
         {
             let cc = Context::new(&content).unwrap();
@@ -51,7 +71,7 @@ fn render_clock(path: PathBuf, theme: &AppearanceSnapshot, kind: WidgetKind, bac
         cr.set_source_surface(&content, 0.0, 0.0).unwrap();
         cr.paint().unwrap();
     }
-    let cropped = ImageSurface::create(Format::ARgb32, crop, h as i32).unwrap();
+    let cropped = ImageSurface::create(Format::ARgb32, crop.0, crop.1).unwrap();
     {
         let cr = Context::new(&cropped).unwrap();
         cr.set_source_surface(&target, 0.0, 0.0).unwrap();
@@ -70,7 +90,15 @@ fn main() {
     fs::set_permissions(&sockets, fs::Permissions::from_mode(0o700)).unwrap();
     // A dark teal and a bright orange: the two halves of the vinyl
     // wallpaper the operator's panel shows.
-    let backdrops = [("teal", (0.05, 0.55, 0.52)), ("orange", (0.93, 0.45, 0.25))];
+    let backdrops: Vec<(&str, Backdrop)> = match env::var("CLOCK_WALLPAPER") {
+        Ok(path) => {
+            let img = ImageSurface::create_from_png(&mut fs::File::open(path).expect("wallpaper png")).expect("decode wallpaper png");
+            vec![("wall", Backdrop::Image(img))]
+        }
+        Err(_) => vec![("teal", Backdrop::Flat(0.05, 0.55, 0.52)), ("orange", Backdrop::Flat(0.93, 0.45, 0.25))],
+    };
+    let portrait = env::var("CLOCK_SIZE").is_ok_and(|v| v == "portrait");
+    let (w, h, crop, tag) = if portrait { (568, 1232, (568, 620), "portrait-") } else { (1232, 568, (620, 568), "") };
     let styles = [
         ("bubble", WidgetKind::Clock),
         ("thin", WidgetKind::ClockMinimal),
@@ -81,8 +109,8 @@ fn main() {
         let (name, id) = pair.split_once('=').expect("name=generation");
         let theme = snapshot(&root, &sockets, name, id);
         for (style, kind) in styles {
-            for (back, rgb) in backdrops {
-                render_clock(out.join(format!("{name}-{style}-{back}.png")), &theme, kind, rgb, 1232, 568, 620);
+            for (back, backdrop) in &backdrops {
+                render_clock(out.join(format!("{tag}{name}-{style}-{back}.png")), &theme, kind, backdrop, w, h, crop);
             }
         }
         println!("rendered {name}");

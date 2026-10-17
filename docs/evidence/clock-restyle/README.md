@@ -83,3 +83,73 @@ Evidence class: native captures. No judgement on glass yet.
 On this theme the hour is cream and the minute is retro-82's orange accent.
 Both have the dark halo over the teal and orange vinyl. The date is one cream
 line that grows with the step.
+
+## Host evidence (2026-10-17): portrait, wallpaper, light theme
+
+Evidence class: host renders only, from real theme generations. No board
+capture and no judgement on glass. Tasks 1.3 and 1.4 of the change.
+
+The example gained two optional environment variables:
+`CLOCK_SIZE=portrait` renders 568x1232, cropped to the top 620 px, and
+`CLOCK_WALLPAPER=<png>` replaces the flat backdrops with that image, scaled to
+cover the panel. Each Clock style is drawn alone in slot 0 of Home, so the
+dock placeholder shows below it. The text step comes from the generation, not
+from the name. The generations were prepared on the host with
+`tools/theme_activate.py` and `tools/theme_vision.py` at each of `default`,
+`large`, `larger` and `largest` (100/130/160/200%), contrast `standard`.
+
+Sources: `nix/handheld-theme-default/catppuccin` (the default theme), and
+`/nix/store/sk567bs144zc0fpn7v16q10amjsz4wsb-source/themes/retro-82` and
+`.../themes/catppuccin-latte`.
+
+| Theme | 100% | 130% | 160% | 200% |
+|---|---|---|---|---|
+| catppuccin | 3ca9e2aff350ca417e2ff4d4 | 4bb1717c22218debb2901ff7 | 51892a062666a9636a15a911 | 00b94d7cb2c378c9e167bfea |
+| retro-82 | 32b73c36b03bf9f4e1836b3b | 3ac6617e73fc472072bb22a5 | 42d25c3f28bba5ca4b7b5093 | 0017cb90ff4788c72a594ed0 |
+| catppuccin-latte | c3f3ed1da29e4794867c6407 | 055d709f012e41598de6e193 | 122e3e491beb0684d6a9580a | 3d3427bb1dcfe70d59c085c3 |
+
+Commands (from the worktree root; wallpapers converted with ImageMagick to
+1800 px wide PNG first):
+
+```
+magick .../themes/retro-82/backgrounds/1-in-the-groove.webp -resize 1800x groove.png
+magick .../themes/catppuccin-latte/backgrounds/1-color-fade.webp -resize 1800x fade.png
+E="cargo run --offline -q --manifest-path nix/rust-shell-client/Cargo.toml \
+  --example render_clock_styles_evidence --"
+CLOCK_SIZE=portrait $E <out> <catppuccin-state>/generations default=<id> large=<id> larger=<id> largest=<id>
+CLOCK_WALLPAPER=groove.png $E <out> <retro-82-state>/generations default=<id> ...
+CLOCK_WALLPAPER=fade.png   $E <out> <catppuccin-latte-state>/generations default=<id> ...
+```
+
+Each sheet has four rows (Bubble, Thin, dot matrix, analog) and four columns
+(100%, 130%, 160%, 200%), built with `magick montage` and then
+`-resize 50% -strip`. The clock reads a different minute on each sheet because
+they were rendered at different times.
+
+| File | Shows |
+|---|---|
+| `host-portrait-steps.png` | catppuccin, 568x1232 portrait (top 620 px), over flat teal |
+| `host-retro82-wallpaper.png` | retro-82 over its `1-in-the-groove` vinyl wallpaper, landscape |
+| `host-latte.png` | catppuccin-latte over its `1-color-fade` wallpaper, landscape |
+
+What the images show:
+
+- Portrait: all four styles fit the 568 px width at every step; no clipping.
+  The dot-matrix clock nearly fills the width at 200%. The date grows with the
+  step. The analog clock is small and sits left in its cell in portrait.
+- retro-82 over the vinyl: the Bubble and Thin minutes in the orange accent
+  stay readable because of the dark halo, including over the orange label.
+  The dot-matrix minute is the weak case: its orange dots over the orange
+  label have little contrast against the backdrop (only the faint halo rings
+  separate them), and they get worse where they cross the spindle. The hour and
+  date in cream read well. The Thin minute at 200% is thin and reads only by
+  its halo outline.
+- catppuccin-latte over the pastel wallpaper: the hour is dark and the minute
+  is the saturated blue accent, both clearly legible at all steps and styles.
+  The halo is a light tone and is not visible on this light wallpaper; it is
+  not needed there.
+
+Limits: host renders only. The wallpaper is scaled to cover and is not the
+panel's exact crop or the shell's wallpaper pipeline. The clock is in slot 0
+only, so its position over the vinyl is not where a user would place it.
+Task 1.4 is not ticked because of the dot-matrix minute over the orange label.

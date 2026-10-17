@@ -14,13 +14,20 @@
   committed under `docs/evidence/clock-restyle/`. Host class, from
   `examples/render_clock_styles_evidence.rs`.
   Done 2026-10-16 (host).
-- [ ] 1.3 Portrait (568x1232) renders of the four styles at the four steps.
+- [x] 1.3 Portrait (568x1232) renders of the four styles at the four steps.
   Verify with `cargo run --offline --manifest-path
   nix/rust-shell-client/Cargo.toml --example render_clock_styles_evidence`
   after adding a portrait size. Host class.
+  Done 2026-10-17 (host): `CLOCK_SIZE=portrait`;
+  `docs/evidence/clock-restyle/host-portrait-steps.png`.
 - [ ] 1.4 Renders over a real wallpaper and in a light theme (for example a
   retro-82 and a catppuccin-latte generation) to confirm the halo on the
   accent minute. Host class.
+  Renders done 2026-10-17 (host): `host-retro82-wallpaper.png` and
+  `host-latte.png` in `docs/evidence/clock-restyle/`. Latte is legible. Over
+  the retro-82 vinyl the Bubble and Thin minutes read through the halo, but
+  the dot-matrix minute over the orange label is weak, so this stays open
+  until that is judged or fixed.
 
 ## 2. Type scale and spacing
 
