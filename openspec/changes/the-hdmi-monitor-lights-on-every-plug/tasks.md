@@ -7,6 +7,13 @@
   the built kernel's config for `CONFIG_DMA_CMA=y` and
   `CONFIG_CMA_SIZE_MBYTES=64`.
   Done 2026-10-16: `docs/evidence/hdmi-plug-cma/board-2026-10-16.md`.
+- [ ] 1.2 Remove `bg #000000 solid_color` from the HDMI-A-1 output line in
+  `nix/shell.nix`. On a 2026-10-16 hotplug, Sway's swaybg for HDMI-A-1
+  covered the shell's wallpaper. Both are background-layer surfaces, and
+  swaybg's black stacked on top; stopping that swaybg showed the vinyl
+  wallpaper. Verify by building the board boot files and checking the built
+  sway config has no `bg` on that line, then on the board: replug HDMI and
+  capture the wallpaper with `grim`.
 
 ## 2. Board
 
