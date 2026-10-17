@@ -8131,7 +8131,7 @@ mod route_tests {
         // domain), not a close drag.
         assert!(!close_drag_zone(
             Route::Shade,
-            k230_shell_rust::service_ui::NOTIFICATION_TOP + 10.0,
+            k230_shell_rust::service_ui::notification_top() + 10.0,
             travel
         ));
         // The backdrop below the panel is eligible too.

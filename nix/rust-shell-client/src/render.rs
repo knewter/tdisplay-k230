@@ -17,7 +17,7 @@ use crate::{
     service_ui::{
         filter_app_indices, DrawerSearch, ServiceView,
         SETTINGS_VOLUME_ROW, SHADE_SLIDER_H, SHADE_SLIDER_TOP,
-        SHADE_TOGGLE_H, SHADE_TOGGLE_TOP, SHADE_VOLUME_H, SHADE_VOLUME_TOP,
+        shade_toggle_h, SHADE_TOGGLE_TOP, SHADE_VOLUME_H, SHADE_VOLUME_TOP,
     },
     slider,
     volume::{self, Hud},
@@ -432,25 +432,6 @@ fn text_advance_resolved(cr: &Context, value: &str, size: f64, weight: pango::We
 
 fn text(cr: &Context, value: &str, x: f64, y: f64, width: f64, size: f64, rgb: u32) {
     text_weight(cr, value, x, y, width, size, rgb, pango::Weight::Normal);
-}
-
-/// A third weight tier between `text()` and `heading()` (finding P1-1), for
-/// section-eyebrow labels like "YOUR DEVICE" or "Device controls" that
-/// should read as a distinct hierarchy step, not plain body text nor a
-/// heading. DejaVu Sans ships only Book/Bold faces, so fontconfig/Pango
-/// synthesize this via partial emboldening rather than a true medium
-/// instance; that is an accepted, low-risk approximation given the image
-/// deliberately carries one font family (see `FONT_FAMILY`).
-fn themed_text(cr: &Context, theme: Option<&AppearanceSnapshot>, role: &str,
-               value: &str, x: f64, y: f64, width: f64, size: f64,
-               min: f64, max: f64, rgb: u32) {
-    text_weight_resolved(cr, value, x, y, width, theme_font_size(theme, role, size, min, max), rgb, pango::Weight::Normal);
-}
-
-fn themed_medium(cr: &Context, theme: Option<&AppearanceSnapshot>, role: &str,
-                 value: &str, x: f64, y: f64, width: f64, size: f64,
-                 min: f64, max: f64, rgb: u32) {
-    text_weight_resolved(cr, value, x, y, width, theme_font_size(theme, role, size, min, max), rgb, pango::Weight::Medium);
 }
 
 /// Text in a type role: the theme may enlarge the role (`font.<key>`), but
@@ -2776,12 +2757,20 @@ fn paint_drawer_chrome(
 /// blitting one slice of `DrawerGridCache` rather than repainting every
 /// tile -- see that struct's own doc.
 #[allow(clippy::too_many_arguments)]
-/// The Shade header at a larger vision step: the title shrinks only as far
-/// as it must to sit beside the Settings link, and the hint, count and
-/// "Dismiss all" lines stack by their drawn height instead of the 100%
-/// literals, so nothing overlaps or ellipsizes. Each link stays inside its
-/// `service_ui::shade_link_w` band.
-fn paint_shade_header_reflowed(
+/// The Shade header on the type roles: the Title shrinks only as far as it
+/// must to sit beside the Settings link, and the hint, count and "Dismiss
+/// all" lines stack by their drawn height, so nothing overlaps or
+/// ellipsizes. Each link stays inside its `service_ui::shade_link_w` band.
+/// The Shade's empty-state tile: one Body line, or the preview's source
+/// (Label) and summary (Body), inside `SHADE_TILE_INSET` above and below.
+const SHADE_TILE_INSET: f64 = 11.0;
+
+fn shade_preview_tile_h(preview: bool) -> f64 {
+    let lines = if preview { vision_line(TYPE_LABEL) + vision_line(TYPE_BODY) } else { vision_line(TYPE_BODY) };
+    (lines + 2.0 * SHADE_TILE_INSET).ceil().max(72.0)
+}
+
+fn paint_shade_header(
     cr: &Context,
     style: VisualStyle,
     services: Option<&ServiceView>,
@@ -2789,52 +2778,80 @@ fn paint_shade_header_reflowed(
     hw: f64,
     count: usize,
 ) {
-    use crate::service_ui::{shade_link_w, SHADE_SETTINGS_BOTTOM};
+    use crate::service_ui::{shade_link_w, SHADE_DISMISS_BOTTOM, SHADE_SETTINGS_BOTTOM};
+    let scale = crate::layout_text_scale();
     let line = |size: f64| context_font_size(cr, size) * 1.25;
-    let fit = |value: &str, size: f64, room: f64, weight| {
-        let advance = text_advance(cr, value, size, weight);
-        if advance > room * 0.96 { size * room * 0.96 / advance } else { size }
+    // Two lines that share a row shrink together, keeping their ratio, until
+    // both fit; neither goes below the Label floor.
+    let share = |left: (&str, f64, pango::Weight), right: (&str, f64), room: f64, right_room: f64| {
+        let floor = TYPE_LABEL / scale;
+        let left_adv = text_advance(cr, left.0, left.1, left.2);
+        let right_adv = text_advance(cr, right.0, right.1, pango::Weight::Normal);
+        let k = (room * 0.96 / (left_adv + right_adv)).min(right_room * 0.96 / right_adv).min(1.0);
+        let right_size = (right.1 * k).max(floor);
+        let right_w = text_advance(cr, right.0, right_size, pango::Weight::Normal) + 2.0;
+        let left_room = room - right_w;
+        let left_size = if left_adv * (left.1 * k) / left.1 > left_room * 0.96 {
+            left.1 * left_room * 0.96 / left_adv
+        } else {
+            left.1 * k
+        };
+        (left_size.max(floor), right_size, right_w)
     };
     let link_room = shade_link_w(hw) - 24.0;
-    let settings_size = fit("Settings", 20.0, link_room, pango::Weight::Normal);
-    let settings_w = text_advance(cr, "Settings", settings_size, pango::Weight::Normal) + 2.0;
-    let title_room = hw - 28.0 - settings_w - 24.0 - 16.0;
-    let title_size = fit("Notifications", 32.0, title_room, pango::Weight::Bold);
+    let row_room = hw - 28.0 - 24.0 - 16.0;
+    let (title_size, settings_size, settings_w) = share(
+        ("Notifications", TYPE_TITLE, pango::Weight::Bold), ("Settings", TYPE_LABEL), row_room, link_room,
+    );
     let title_y = panel_y + 16.0;
     let title_h = line(title_size);
-    heading(cr, "Notifications", 28.0, title_y, title_room, title_size, style.text);
+    heading(cr, "Notifications", 28.0, title_y, row_room - settings_w, title_size, style.text);
     let settings_y = title_y + (title_h - line(settings_size)) / 2.0;
     text(cr, "Settings", hw - 24.0 - settings_w, settings_y, settings_w, settings_size, style.accent);
 
-    let hint_y = title_y + title_h + 2.0;
-    let mut hint_room = hw - 56.0;
-    if let Some(view) = services {
-        if view.battery != crate::home_widgets::battery::BatteryState::Absent {
-            let label = crate::home_widgets::battery::format(&view.battery);
-            let battery_w = text_advance(cr, &label, 15.0, pango::Weight::Normal) + 2.0;
-            text(cr, &label, hw - 24.0 - battery_w, hint_y, battery_w, 15.0, style.text);
-            hint_room -= battery_w + 12.0;
-        }
-    }
-    // Secondary lines shrink to fit before they ellipsize, never below
-    // their 100% size.
-    let floor = |size: f64| size / crate::layout_text_scale();
-    let hint = "Swipe up above the list to close";
-    let hint_size = fit(hint, 15.0, hint_room, pango::Weight::Normal).max(floor(15.0));
-    text(cr, hint, 28.0, hint_y, hint_room, hint_size, style.muted);
+    let count_label = if count == 1 { "1 notification".to_string() } else { format!("{count} notifications") };
+    let (count_size, dismiss_size, dismiss_w) = if count > 0 {
+        share((&count_label, TYPE_LABEL, pango::Weight::Normal), ("Dismiss all", TYPE_LABEL), row_room, link_room)
+    } else {
+        let (size, _, _) = share((&count_label, TYPE_LABEL, pango::Weight::Normal), ("", TYPE_LABEL), hw - 56.0, link_room);
+        (size, TYPE_LABEL, 0.0)
+    };
+    let count_h = line(count_size).max(line(dismiss_size));
 
-    let count_y = (hint_y + line(15.0) + 2.0).max(SHADE_SETTINGS_BOTTOM + 4.0);
-    let mut count_room = hw - 56.0;
+    // The hint and battery line, while it fits between the Title and the
+    // count row inside the "Dismiss all" band; otherwise it is left out.
+    let hint_y = title_y + title_h + 2.0;
+    let battery = services
+        .filter(|view| view.battery != crate::home_widgets::battery::BatteryState::Absent)
+        .map(|view| crate::home_widgets::battery::format(&view.battery));
+    let hint = "Swipe up above the list to close";
+    let fit = |value: &str, size: f64, room: f64| {
+        let advance = text_advance(cr, value, size, pango::Weight::Normal);
+        let fitted = if advance > room * 0.96 { size * room * 0.96 / advance } else { size };
+        fitted.max(TYPE_CAPTION / scale)
+    };
+    let battery_size = battery.as_deref().map_or(TYPE_CAPTION, |label| fit(label, TYPE_CAPTION, (hw - 56.0) * 0.5));
+    let battery_w = battery.as_deref().map_or(0.0, |label| text_advance(cr, label, battery_size, pango::Weight::Normal) + 2.0);
+    let hint_room = hw - 56.0 - if battery.is_some() { battery_w + 12.0 } else { 0.0 };
+    let hint_size = fit(hint, TYPE_CAPTION, hint_room);
+    let hint_h = line(hint_size).max(line(battery_size));
+    let band_bottom = SHADE_DISMISS_BOTTOM - 4.0;
+    let count_top = SHADE_SETTINGS_BOTTOM + 4.0;
+    let count_y = if (hint_y + hint_h + 2.0).max(count_top) + count_h <= band_bottom {
+        if let Some(label) = &battery {
+            text(cr, label, hw - 24.0 - battery_w, hint_y, battery_w, battery_size, style.text);
+        }
+        text(cr, hint, 28.0, hint_y, hint_room, hint_size, style.muted);
+        (hint_y + hint_h + 2.0).max(count_top)
+    } else {
+        (title_y + title_h + 2.0).max(count_top)
+    };
     if count > 0 {
-        let dismiss_size = fit("Dismiss all", 17.0, link_room, pango::Weight::Normal);
-        let dismiss_w = text_advance(cr, "Dismiss all", dismiss_size, pango::Weight::Normal) + 2.0;
-        let dismiss_y = count_y + (line(19.0) - line(dismiss_size)) / 2.0;
+        let dismiss_y = count_y + (count_h - line(dismiss_size)) / 2.0;
         text(cr, "Dismiss all", hw - 24.0 - dismiss_w, dismiss_y, dismiss_w, dismiss_size, style.accent);
-        count_room -= dismiss_w + 16.0;
     }
-    let label = if count == 1 { "1 notification".to_string() } else { format!("{count} notifications") };
-    let count_size = fit(&label, 19.0, count_room, pango::Weight::Normal).max(floor(19.0));
-    text(cr, &label, 28.0, count_y, count_room, count_size, style.muted);
+    let count_room = hw - 56.0 - if count > 0 { dismiss_w + 16.0 } else { 0.0 };
+    text(cr, &count_label, 28.0, count_y + (count_h - line(count_size)) / 2.0, count_room, count_size, style.muted);
 }
 
 /// The Settings header (`settings_header`): the Title fits beside Done, the
@@ -3100,10 +3117,9 @@ fn scene(
         Route::Help => "Help",
         Route::Hide => return,
     };
-    // Settings, its Wi-Fi pages and the theme chooser draw their own titles.
-    if !matches!(route, Route::Help | Route::Settings)
-        && !(route == Route::Shade && crate::layout_text_scale() > 1.0)
-    {
+    // The Shade, Settings, its Wi-Fi pages and the theme chooser draw their
+    // own titles.
+    if !matches!(route, Route::Help | Route::Settings | Route::Shade) {
         heading(cr, title, 28.0, panel_y + 32.0, w - 180.0, 32.0, style.text);
     }
     match route {
@@ -3113,67 +3129,12 @@ fn scene(
             // left column and gives the notification list the rest at its
             // full height (`service_ui::shade_layout`, which the hit-tests
             // read too). Portrait: `hw == w` and the list sits at
-            // `NOTIFICATION_TOP`, exactly as before.
+            // `notification_top()`, exactly as before.
             let shade = crate::service_ui::shade_layout(width, height);
             let hw = shade.controls_w;
             let items = services.and_then(|view| view.notifications.as_ref());
             let count = items.map_or(0, |snapshot| snapshot.count);
-            if crate::layout_text_scale() > 1.0 {
-                paint_shade_header_reflowed(cr, style, services, panel_y, hw, count);
-            } else {
-                text(cr, "Settings", hw - 150.0, 46.0, 126.0, 20.0, style.accent);
-                text(
-                    cr,
-                    "Swipe up above the list to close",
-                    28.0,
-                    86.0,
-                    hw - 56.0,
-                    15.0,
-                    style.muted,
-                );
-                // The keyboard base's battery, on the hint line's right; nothing
-                // at all when no `Battery` supply exists.
-                if let Some(view) = services {
-                    if view.battery != crate::home_widgets::battery::BatteryState::Absent {
-                        text(
-                            cr,
-                            &crate::home_widgets::battery::format(&view.battery),
-                            hw - 220.0,
-                            if shade.wide { 112.0 } else { 86.0 },
-                            196.0,
-                            15.0,
-                            style.text,
-                        );
-                    }
-                }
-                text(
-                    cr,
-                    // Singular form (finding P1-4): "1 notifications" read as a
-                    // bug on the one screen where the number is always visible.
-                    if count == 1 {
-                        "1 notification".to_string()
-                    } else {
-                        format!("{count} notifications")
-                    }
-                    .as_str(),
-                    28.0,
-                    112.0,
-                    hw - 220.0,
-                    19.0,
-                    style.muted,
-                );
-                if count > 0 {
-                    text(
-                        cr,
-                        "Dismiss all",
-                        hw - 166.0,
-                        143.0,
-                        140.0,
-                        17.0,
-                        style.accent,
-                    );
-                }
-            }
+            paint_shade_header(cr, style, services, panel_y, hw, count);
 
             // The shared brightness slider (task: "brightness should be a
             // slider" -- Android puts one at the top of its own quick
@@ -3215,24 +3176,19 @@ fn scene(
             if let Some(settings) = services.and_then(|view| view.settings.as_ref()) {
                 let keyboard = &settings.keyboard;
                 let y = SHADE_TOGGLE_TOP + 4.0;
-                service_card(cr, theme, "controls", 24.0, y, hw - 48.0, SHADE_TOGGLE_H - 8.0, false);
+                service_card(cr, theme, "controls", 24.0, y, hw - 48.0, shade_toggle_h() - 8.0, false);
                 let available = keyboard.state == ControlState::Action;
                 let ink = if available { style.text } else { style.muted };
                 // The helper keeps the label "Toggle keyboard" in both states,
                 // so the unavailable card says so instead of echoing it.
                 let detail = if available { control_text(keyboard) } else { "Unavailable".into() };
-                // A larger vision step centres the two lines by their drawn
-                // height; 100% keeps the original offsets.
-                let (label_y, detail_y) = if crate::layout_text_scale() > 1.0 {
-                    let label_h = theme_font_size(theme, "body", 17.0, 14.0, 22.0) * 1.2;
-                    let detail_h = theme_font_size(theme, "body", 19.0, 14.0, 24.0) * 1.2;
-                    let top = y + ((SHADE_TOGGLE_H - 8.0) - label_h - detail_h) / 2.0;
-                    (top, top + label_h)
-                } else {
-                    (y + 15.0, y + 43.0)
-                };
-                themed_medium(cr, theme, "body", "Keyboard", 44.0, label_y, hw - 88.0, 17.0, 14.0, 22.0, ink);
-                themed_text(cr, theme, "body", &detail, 44.0, detail_y, hw - 88.0, 19.0, 14.0, 24.0, ink);
+                // The two lines centred by their drawn height
+                // (`service_ui::shade_toggle_h` grows the card to hold them).
+                let label_h = vision_line(TYPE_LABEL) / 1.25 * 1.2;
+                let detail_h = vision_line(TYPE_BODY) / 1.25 * 1.2;
+                let label_y = y + ((shade_toggle_h() - 8.0) - label_h - detail_h) / 2.0;
+                themed_role_fit(cr, theme, "body", "Keyboard", 44.0, label_y, hw - 88.0, TYPE_LABEL, ink, pango::Weight::Medium);
+                themed_role_fit(cr, theme, "body", &detail, 44.0, label_y + label_h, hw - 88.0, TYPE_BODY, ink, pango::Weight::Normal);
             }
             // The preview tile repeated whatever the top history row already
             // shows -- identical text for one notification, or a
@@ -3249,6 +3205,8 @@ fn scene(
             } else {
                 (0.0, w, shade.list_top)
             };
+            let preview = items.and_then(|snapshot| snapshot.preview.as_ref());
+            let tile_h = shade_preview_tile_h(preview.is_some());
             let _ = cr.save();
             cr.translate(px, py - 262.0);
             let w = pw;
@@ -3260,10 +3218,10 @@ fn scene(
                     24.0,
                     262.0,
                     w - 48.0,
-                    72.0,
+                    tile_h,
                     false,
                 );
-                if let Some(preview) = items.and_then(|snapshot| snapshot.preview.as_ref()) {
+                if let Some(preview) = preview {
                     let painted = preview
                         .icon
                         .as_deref()
@@ -3285,31 +3243,18 @@ fn scene(
                             style.text,
                         );
                     }
-                    text(
-                        cr,
-                        &preview.source,
-                        94.0,
-                        273.0,
-                        w - 132.0,
-                        17.0,
-                        style.accent,
-                    );
-                    text(
-                        cr,
-                        &preview.summary,
-                        94.0,
-                        296.0,
-                        w - 132.0,
-                        21.0,
-                        style.text,
-                    );
+                    let source_y = 262.0 + SHADE_TILE_INSET;
+                    themed_role_fit(cr, theme, "body", &preview.source, 94.0, source_y, w - 132.0, TYPE_LABEL, style.accent, pango::Weight::Normal);
+                    let summary_y = source_y + vision_line(TYPE_LABEL);
+                    themed_role_fit(cr, theme, "body", &preview.summary, 94.0, summary_y, w - 132.0, TYPE_BODY, style.text, pango::Weight::Normal);
                 } else {
                     let empty = if items.is_none() {
                         "Loading preview"
                     } else {
                         "No new notifications"
                     };
-                    text(cr, empty, 42.0, 287.0, w - 84.0, 20.0, style.muted);
+                    let y = 262.0 + (tile_h - vision_line(TYPE_BODY)) / 2.0;
+                    themed_role_fit(cr, theme, "body", empty, 42.0, y, w - 84.0, TYPE_BODY, style.muted, pango::Weight::Normal);
                 }
             }
             let _ = cr.restore();
@@ -3318,19 +3263,11 @@ fn scene(
             let list_bottom = shade.list_bottom;
             // The wide list column starts with the empty-state tile, so its
             // loading/error line goes beneath that instead of on top of it.
-            let status_y = list_top + 14.0 + if shade.wide && show_preview { 86.0 } else { 0.0 };
+            let status_y = list_top + 14.0 + if shade.wide && show_preview { tile_h + 14.0 } else { 0.0 };
             let _ = cr.save();
             cr.translate(shade.list_x, 0.0);
             if let Some(error) = services.and_then(|view| view.notification_error.as_deref()) {
-                text(
-                    cr,
-                    error,
-                    28.0,
-                    status_y,
-                    w - 56.0,
-                    18.0,
-                    style.error,
-                );
+                themed_role_fit(cr, theme, "caption", error, 28.0, status_y, w - 56.0, TYPE_CAPTION, style.error, pango::Weight::Normal);
             } else if let Some(items) = items {
                 let _ = cr.save();
                 cr.rectangle(0.0, list_top, w, (list_bottom - list_top).max(0.0));
@@ -3352,29 +3289,19 @@ fn scene(
                         })
                         .map_or(0.0, |swipe| swipe.offset);
                     if drag.abs() >= 18.0 {
-                        text(
-                            cr,
-                            "Dismiss",
-                            if drag > 0.0 { 36.0 } else { w - 128.0 },
-                            y + 44.0,
-                            96.0,
-                            18.0,
-                            style.error,
-                        );
+                        let label_w = text_advance(cr, "Dismiss", TYPE_LABEL, pango::Weight::Normal) + 2.0;
+                        let x = if drag > 0.0 { 36.0 } else { w - 32.0 - label_w };
+                        let label_y = y + (row - 8.0 - vision_line(TYPE_LABEL)) / 2.0;
+                        text(cr, "Dismiss", x, label_y, label_w, TYPE_LABEL, style.error);
                     }
-                    // Larger vision steps stack the lines by their drawn
-                    // height and widen the initial's column; 100% keeps the
-                    // original positions.
+                    // The source (Label), summary (Body) and body (Caption)
+                    // stack by their drawn height beside the icon column,
+                    // which widens with the step.
                     let lift = crate::layout_text_scale();
                     let text_x = 56.0 + 36.0 * lift;
-                    let line_y = if lift <= 1.0 {
-                        [y + 13.0, y + 39.0, y + 71.0, y + 90.0]
-                    } else {
-                        let source = y + 13.0;
-                        let summary = source + context_font_size(cr, 16.0) * 1.25 + 4.0;
-                        let body = summary + context_font_size(cr, 21.0) * 1.25 + 4.0;
-                        [source, summary, body, body + context_font_size(cr, 15.0) * 1.25]
-                    };
+                    let source_y = y + 13.0;
+                    let summary_y = source_y + vision_line(TYPE_LABEL) + 4.0;
+                    let body_y = summary_y + vision_line(TYPE_BODY) + 4.0;
                     let _ = cr.save();
                     cr.translate(drag, 0.0);
                     service_card(
@@ -3408,72 +3335,28 @@ fn scene(
                             style.text,
                         );
                     }
-                    text(
-                        cr,
-                        &event.source,
-                        text_x,
-                        line_y[0],
-                        w - text_x - 40.0,
-                        16.0,
-                        style.accent,
-                    );
-                    text(
-                        cr,
-                        &event.summary,
-                        text_x,
-                        line_y[1],
-                        w - text_x - 40.0,
-                        21.0,
-                        style.text,
-                    );
-                    text(
-                        cr,
-                        &event.body,
-                        text_x,
-                        line_y[2],
-                        w - text_x - 40.0,
-                        15.0,
-                        style.muted,
-                    );
-                    if let Some(error) = &event.error {
-                        text(cr, error, text_x, line_y[3], w - text_x - 40.0, 14.0, style.error);
+                    let text_w = w - text_x - 40.0;
+                    themed_role_fit(cr, theme, "body", &event.source, text_x, source_y, text_w, TYPE_LABEL, style.accent, pango::Weight::Normal);
+                    themed_role_fit(cr, theme, "body", &event.summary, text_x, summary_y, text_w, TYPE_BODY, style.text, pango::Weight::Normal);
+                    // A failed action's reason takes the body's line.
+                    match &event.error {
+                        Some(error) => themed_role_fit(cr, theme, "caption", error, text_x, body_y, text_w, TYPE_CAPTION, style.error, pango::Weight::Normal),
+                        None => themed_role_fit(cr, theme, "caption", &event.body, text_x, body_y, text_w, TYPE_CAPTION, style.muted, pango::Weight::Normal),
                     }
                     let _ = cr.restore();
                 }
                 let _ = cr.restore();
             } else {
-                text(
-                    cr,
-                    "Loading notifications",
-                    28.0,
-                    status_y,
-                    w - 56.0,
-                    19.0,
-                    style.muted,
-                );
+                themed_role_fit(cr, theme, "caption", "Loading notifications", 28.0, status_y, w - 56.0, TYPE_CAPTION, style.muted, pango::Weight::Normal);
             }
             let _ = cr.restore();
             let w = hw;
             if let Some(message) = services.and_then(|view| view.message.as_deref()) {
-                service_card(
-                    cr,
-                    theme,
-                    "notifications",
-                    24.0,
-                    panel_h - 73.0,
-                    w - 48.0,
-                    49.0,
-                    false,
-                );
-                text(
-                    cr,
-                    message,
-                    42.0,
-                    panel_h - 62.0,
-                    w - 84.0,
-                    16.0,
-                    style.error,
-                );
+                let card_h = (vision_line(TYPE_CAPTION) + 2.0 * SPACE_IN_ROW).max(49.0);
+                let card_y = panel_h - 24.0 - card_h;
+                service_card(cr, theme, "notifications", 24.0, card_y, w - 48.0, card_h, false);
+                let y = card_y + (card_h - vision_line(TYPE_CAPTION)) / 2.0;
+                themed_role_fit(cr, theme, "caption", message, 42.0, y, w - 84.0, TYPE_CAPTION, style.error, pango::Weight::Normal);
             }
         }
         Route::Settings => {
@@ -8688,7 +8571,7 @@ mod tests {
         renderer.set_services(view);
         let mut failed = vec![0; normal.len()];
         renderer.draw(&mut failed, params, &[]).unwrap();
-        // Rows shifted +76 again along with `NOTIFICATION_TOP` itself
+        // Rows shifted +76 again along with `notification_top()` itself
         // (task: "volume slider in the shade under the brightness
         // slider" -- room for the second header slider pushed the whole
         // list down once more, from 342 to 418) -- 431+76=507; the keyboard
@@ -8725,11 +8608,12 @@ mod tests {
         };
         let discharging = draw_view(Route::Shade, battery(64, "Discharging"));
         let charging = draw_view(Route::Shade, battery(64, "Charging"));
-        // The battery text sits on the hint line (y 80..105); nothing else moves.
-        assert_ne!(rows(&none, 80, 105), rows(&discharging, 80, 105));
-        assert_ne!(rows(&discharging, 80, 105), rows(&charging, 80, 105), "charging mark");
-        assert_eq!(rows(&none, 0, 80), rows(&discharging, 0, 80));
-        assert_eq!(rows(&none, 105, 1232), rows(&discharging, 105, 1232));
+        // The battery text sits on the hint line under the Title (y 66..104,
+        // a Caption line from 16 + 50 + 2); nothing else moves.
+        assert_ne!(rows(&none, 66, 104), rows(&discharging, 66, 104));
+        assert_ne!(rows(&discharging, 66, 104), rows(&charging, 66, 104), "charging mark");
+        assert_eq!(rows(&none, 0, 66), rows(&discharging, 0, 66));
+        assert_eq!(rows(&none, 104, 1232), rows(&discharging, 104, 1232));
         let absent = ServiceView { battery: BatteryState::Absent, ..ServiceView::default() };
         assert_eq!(none, draw_view(Route::Shade, absent), "Absent paints no battery element");
     }
@@ -9236,7 +9120,7 @@ mod tests {
         // the brightness slider now sits above it (task: "brightness
         // should be a slider").
         // The empty-state tile now sits where the list starts
-        // (`NOTIFICATION_TOP`, 480) instead of at 262: 296-262+480 = 514.
+        // (`notification_top()`, 480) instead of at 262: 296-262+480 = 514.
         let pixel = (514 * 568 + 59) * 4;
         assert!(
             frame[pixel + 2] > 160,
@@ -10257,7 +10141,8 @@ mod tests {
         fn label(theme: Option<&AppearanceSnapshot>) -> Vec<u8> {
             let mut surface = ImageSurface::create(Format::ARgb32, 240, 56).unwrap();
             let cr = Context::new(&surface).unwrap();
-            themed_text(&cr, theme, "body", "Brightness", 12.0, 10.0, 216.0, 19.0, 14.0, 24.0, 0xffffff);
+            // `font.base-size` 15 enlarges the role by 15/12.
+            themed_role(&cr, theme, "heading", "Brightness", 12.0, 10.0, 216.0, TYPE_LABEL, 0xffffff, pango::Weight::Normal);
             drop(cr);
             let pixels = surface.data().unwrap().to_vec();
             pixels

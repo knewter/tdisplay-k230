@@ -224,29 +224,32 @@ pub enum PanelIntent {
 /// The quick-toggle row (keyboard show/hide) and the 99 px tap floor
 /// (`SHADE_TAP_MIN`) moved everything below "Dismiss all" down again: the
 /// list now starts under the toggle band (`SHADE_TOGGLE_TOP` +
-/// `SHADE_TOGGLE_H`) with a 19px gap -- from `418.0` to `480.0`.
-pub const NOTIFICATION_TOP: f64 = SHADE_TOGGLE_TOP + SHADE_TOGGLE_H + 19.0;
+/// `shade_toggle_h()`) with a 19px gap -- from `418.0` to `480.0`.
+/// A larger vision step grows the toggle (`shade_toggle_h`), so the list
+/// moves down with it.
+pub fn notification_top() -> f64 {
+    SHADE_TOGGLE_TOP + shade_toggle_h() + 19.0
+}
 pub const NOTIFICATION_ROW: f64 = 116.0;
 
-/// A notification row's pitch at the current vision text step: the 100%
-/// `NOTIFICATION_ROW`, or room for its source, summary and body lines at a
-/// larger step so they stack instead of overlapping.
+/// A notification row's pitch at the current vision text step: room for
+/// its source (Label), summary (Body) and body or error (Caption) lines,
+/// never less than `NOTIFICATION_ROW`.
 pub fn notification_row() -> f64 {
-    let s = crate::layout_text_scale();
-    if s <= 1.0 {
-        return NOTIFICATION_ROW;
-    }
-    (13.0 + (16.0 + 21.0 + 15.0) * s * 1.25 + 8.0 + 14.0 + 8.0).ceil().max(NOTIFICATION_ROW)
+    use crate::render::{TYPE_BODY, TYPE_CAPTION, TYPE_LABEL};
+    let lines = (TYPE_LABEL + TYPE_BODY + TYPE_CAPTION) * crate::layout_text_scale() * 1.25;
+    // 13 above the source, 4 between lines, 13 below, the 8 px gutter.
+    (13.0_f64 + lines + 8.0 + 13.0 + 8.0).ceil().max(NOTIFICATION_ROW)
 }
 
 /// The Shade sheet's height: 65% of the output, as on the portrait panel,
 /// but never so short that the notification list (which starts at the
-/// fixed `NOTIFICATION_TOP`) has no row of its own -- the landscape panel's
+/// fixed `notification_top()`) has no row of its own -- the landscape panel's
 /// 568px height would otherwise end the sheet above the list. Capped at
 /// the output's own height.
 pub fn shade_panel_height(height: u32) -> f64 {
     let h = f64::from(height);
-    (h * 0.65).max((NOTIFICATION_TOP + notification_row() + 24.0).min(h))
+    (h * 0.65).max((notification_top() + notification_row() + 24.0).min(h))
 }
 /// Width of the wide Shade's left column (header, sliders); the notification
 /// list takes the rest of the landscape panel.
@@ -256,7 +259,7 @@ pub const SHADE_WIDE_CONTROLS_W: f64 = 480.0;
 pub const SHADE_WIDE_LIST_TOP: f64 = 24.0;
 
 /// Where the Shade's pieces sit. Portrait and HDMI outputs keep the single
-/// column (the controls over the list, which starts at `NOTIFICATION_TOP`);
+/// column (the controls over the list, which starts at `notification_top()`);
 /// the landscape panel (`help::wide`) puts the controls in a left column and
 /// the notification list beside them at its full height, so several rows are
 /// reachable. `render.rs` paints and every hit-test reads from this one
@@ -290,7 +293,7 @@ pub fn shade_layout(width: u32, height: u32) -> ShadeLayout {
             controls_w: w,
             list_x: 0.0,
             list_w: w,
-            list_top: NOTIFICATION_TOP,
+            list_top: notification_top(),
             list_bottom: shade_panel_height(height) - 24.0,
         }
     }
@@ -328,7 +331,7 @@ pub const SHADE_DISMISS_BOTTOM: f64 = SHADE_DISMISS_TOP + SHADE_TAP_MIN;
 pub const SHADE_SLIDER_TOP: f64 = SHADE_DISMISS_BOTTOM + 3.0;
 pub const SHADE_SLIDER_H: f64 = 56.0;
 /// The volume slider's own band, directly under the brightness slider
-/// with the same 20px gap `NOTIFICATION_TOP`'s own shift already
+/// with the same 20px gap `notification_top()`'s own shift already
 /// accounts for.
 pub const SHADE_VOLUME_TOP: f64 = SHADE_SLIDER_TOP + SHADE_SLIDER_H + 20.0;
 pub const SHADE_VOLUME_H: f64 = 56.0;
@@ -336,7 +339,13 @@ pub const SHADE_VOLUME_H: f64 = 56.0;
 /// `KeyboardToggle` request and `ControlState` gate as Settings' Keyboard
 /// row, so the two cannot disagree.
 pub const SHADE_TOGGLE_TOP: f64 = SHADE_VOLUME_TOP + SHADE_VOLUME_H + 16.0;
-pub const SHADE_TOGGLE_H: f64 = SHADE_TAP_MIN;
+/// The toggle's band: the tap floor, or room for its Label and Body lines
+/// (drawn 1.2 lines high, 10 px above and below, inside a card 8 px
+/// shorter than the band) at the current vision step.
+pub fn shade_toggle_h() -> f64 {
+    let lines = (crate::render::TYPE_LABEL + crate::render::TYPE_BODY) * crate::layout_text_scale() * 1.2;
+    (8.0_f64 + 20.0 + lines).ceil().max(SHADE_TAP_MIN)
+}
 /// The Settings row index the volume slider paints/hit-tests at --
 /// directly after Brightness (row 1), before Keyboard/Motion, which both
 /// shift down one row (`render.rs`'s own `SETTINGS_ROW_COUNT` bump).
@@ -420,7 +429,7 @@ pub fn close_drag_engaged(route: Route, dx: f64, dy: f64) -> bool {
 /// or after the panel's own bottom edge -- the dim backdrop below it,
 /// which also covers grabbing right at ("the panel's bottom edge/handle").
 /// Both zones sit outside every scrollable/interactive region either route
-/// paints (the notification list starts at `NOTIFICATION_TOP`, well below
+/// paints (the notification list starts at `notification_top()`, well below
 /// the dismiss zone, and `panel_intent`'s own fall-through already shows
 /// nothing is hit-tested at or below `panel_travel` today), so a drag
 /// starting here can never race a list scroll or a Settings control.
@@ -1144,7 +1153,7 @@ pub fn panel_intent(
             if end.1 < SHADE_SETTINGS_BOTTOM && end.0 > layout.controls_w - shade_link_w(layout.controls_w) && end.0 < layout.controls_w {
                 return Some(PanelIntent::OpenSettings);
             }
-            if (SHADE_TOGGLE_TOP..SHADE_TOGGLE_TOP + SHADE_TOGGLE_H).contains(&end.1)
+            if (SHADE_TOGGLE_TOP..SHADE_TOGGLE_TOP + shade_toggle_h()).contains(&end.1)
                 && end.0 >= 24.0
                 && end.0 < layout.controls_w - 24.0
             {
@@ -1310,7 +1319,7 @@ mod tests {
         // The wide Shade's list sits beside the controls from the top.
         let layout = shade_layout(1232, 568);
         assert!(layout.list_bottom >= layout.list_top + NOTIFICATION_ROW, "one whole row fits: {h}");
-        assert!(SHADE_TOGGLE_TOP + SHADE_TOGGLE_H <= h, "the controls column holds the quick toggle");
+        assert!(SHADE_TOGGLE_TOP + shade_toggle_h() <= h, "the controls column holds the quick toggle");
     }
 
     fn app(name: &str) -> AppEntry {
@@ -2208,7 +2217,7 @@ mod tests {
     fn the_shade_keyboard_toggle_sends_the_settings_request_only_when_available() {
         for (w, h) in [(568, 1232), (1232, 568), (1280, 800)] {
             let controls_w = shade_layout(w, h).controls_w;
-            let tap = (controls_w / 2.0, SHADE_TOGGLE_TOP + SHADE_TOGGLE_H / 2.0);
+            let tap = (controls_w / 2.0, SHADE_TOGGLE_TOP + shade_toggle_h() / 2.0);
             let action = shade_view_with_keyboard(ControlState::Action, 1);
             assert_eq!(
                 panel_intent(Route::Shade, tap, tap, w, h, &action),
@@ -2222,7 +2231,7 @@ mod tests {
                 assert_eq!(panel_intent(Route::Shade, tap, tap, w, h, &view), None, "{w}x{h} {state:?}");
             }
             // Both edges of the band still hit; just outside does not.
-            for y in [SHADE_TOGGLE_TOP, SHADE_TOGGLE_TOP + SHADE_TOGGLE_H - 0.5] {
+            for y in [SHADE_TOGGLE_TOP, SHADE_TOGGLE_TOP + shade_toggle_h() - 0.5] {
                 assert!(panel_intent(Route::Shade, (tap.0, y), (tap.0, y), w, h, &action).is_some());
             }
         }
@@ -2235,7 +2244,7 @@ mod tests {
         let bands = [
             ("settings", 0.0, SHADE_SETTINGS_BOTTOM),
             ("dismiss all", SHADE_DISMISS_TOP, SHADE_DISMISS_BOTTOM),
-            ("keyboard", SHADE_TOGGLE_TOP, SHADE_TOGGLE_TOP + SHADE_TOGGLE_H),
+            ("keyboard", SHADE_TOGGLE_TOP, SHADE_TOGGLE_TOP + shade_toggle_h()),
         ];
         for (name, top, bottom) in bands {
             assert!(bottom - top >= SHADE_TAP_MIN, "{name}: {} px", bottom - top);
@@ -2247,8 +2256,8 @@ mod tests {
             (SHADE_DISMISS_TOP, SHADE_DISMISS_BOTTOM),
             (SHADE_SLIDER_TOP, SHADE_SLIDER_TOP + SHADE_SLIDER_H),
             (SHADE_VOLUME_TOP, SHADE_VOLUME_TOP + SHADE_VOLUME_H),
-            (SHADE_TOGGLE_TOP, SHADE_TOGGLE_TOP + SHADE_TOGGLE_H),
-            (NOTIFICATION_TOP, NOTIFICATION_TOP + NOTIFICATION_ROW),
+            (SHADE_TOGGLE_TOP, SHADE_TOGGLE_TOP + shade_toggle_h()),
+            (notification_top(), notification_top() + NOTIFICATION_ROW),
         ];
         for pair in all.windows(2) {
             assert!(pair[0].1 <= pair[1].0, "{:?} overlaps {:?}", pair[0], pair[1]);
@@ -2330,7 +2339,8 @@ mod tests {
         crate::set_layout_text_scale(2.0);
         // Source, summary and body at 200%, stacked with their gaps, fit
         // inside the card (row minus its 8 px gutter).
-        let lines = 13.0 + (16.0 + 21.0 + 15.0) * 2.0 * 1.25 + 8.0;
+        use crate::render::{TYPE_BODY, TYPE_CAPTION, TYPE_LABEL};
+        let lines = 13.0 + (TYPE_LABEL + TYPE_BODY + TYPE_CAPTION) * 2.0 * 1.25 + 8.0;
         assert!(notification_row() - 8.0 >= lines);
         for width in [568.0, SHADE_WIDE_CONTROLS_W] {
             assert_eq!(shade_link_w(width), 360.0_f64.min(width * 0.5));
@@ -2338,7 +2348,8 @@ mod tests {
         let layout = shade_layout(568, 1232);
         assert!(layout.list_bottom - layout.list_top >= notification_row(), "one whole row fits");
         crate::set_layout_text_scale(1.0);
-        assert_eq!(notification_row(), NOTIFICATION_ROW);
+        let lines = 13.0 + (TYPE_LABEL + TYPE_BODY + TYPE_CAPTION) * 1.25 + 8.0;
+        assert!(notification_row() - 8.0 >= lines && notification_row() >= NOTIFICATION_ROW);
         assert_eq!(shade_link_w(568.0), 180.0);
     }
 
@@ -2862,7 +2873,7 @@ mod tests {
         for (w, h) in [(568, 1232), (768, 1024), (1080, 1920), (1280, 1024)] {
             let layout = shade_layout(w, h);
             assert!(!layout.wide);
-            assert_eq!((layout.list_x, layout.list_top, layout.controls_w), (0.0, NOTIFICATION_TOP, f64::from(w)));
+            assert_eq!((layout.list_x, layout.list_top, layout.controls_w), (0.0, notification_top(), f64::from(w)));
         }
     }
 
@@ -2900,8 +2911,8 @@ mod tests {
         let events = &view.notifications.as_ref().unwrap().events;
         let mut seen = 0;
         for (index, event) in events.iter().enumerate() {
-            let top = layout.list_top + index as f64 * NOTIFICATION_ROW;
-            let card = (layout.list_x + 24.0, top, layout.list_w - 48.0, NOTIFICATION_ROW - 8.0);
+            let top = layout.list_top + index as f64 * notification_row();
+            let card = (layout.list_x + 24.0, top, layout.list_w - 48.0, notification_row() - 8.0);
             if card.1 + card.3 > layout.list_bottom {
                 continue;
             }
@@ -2925,8 +2936,8 @@ mod tests {
         assert!(max > 0.0, "six rows overflow the list");
         view.notification_scroll = max;
         // The last row now ends at the list's bottom: reachable.
-        let last_top = layout.list_top + 5.0 * NOTIFICATION_ROW - max;
-        assert!(last_top >= layout.list_top && last_top + NOTIFICATION_ROW - 8.0 <= layout.list_bottom + 1.0);
+        let last_top = layout.list_top + 5.0 * notification_row() - max;
+        assert!(last_top >= layout.list_top && last_top + notification_row() - 8.0 <= layout.list_bottom + 1.0);
         let tap = (layout.list_x + layout.list_w / 2.0, last_top + 40.0);
         assert_eq!(notification_index(tap, 1232, 568, &view), Some(5));
         // A horizontal drag that starts in the list dismisses a dismissible
