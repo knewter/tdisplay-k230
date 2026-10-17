@@ -22,7 +22,7 @@
 - **Picker preview.** The floor scales down in proportion for widgets
   narrower than 400 px, such as the picker's preview.
 
-## Host evidence (2026-10-17)
+## Host evidence (2026-10-16)
 
 - `cargo test --offline --manifest-path nix/rust-shell-client/Cargo.toml`:
   every target passed, including `--lib` (569 passed, 2 ignored) and
@@ -42,6 +42,26 @@ The host fixture has fewer than two charge samples, so the plot shows
 
 ## Limits
 
-- Host renders only, until the board section below.
+- The board capture is a single grim frame at 160%; the other steps are host renders.
 - The battery ring's percentage (Display role, fitted inside the ring) is
   unchanged.
+- The input line ("USB power - limit … @ …") is still ellipsized at the
+  26 px floor in a 4x2 Home cell. It is dropped when there is no room for
+  it, and is cut off when there is room for part of it.
+
+## Board evidence (2026-10-16)
+
+The fix was deployed live to the board with `deploy-live.sh` (commit
+`96844d6e`, sway restarted). The text step was `larger` (160%). The
+capture was taken with `grim` on the HDMI output, after the terminal was
+moved to the scratchpad.
+
+| File | Content |
+|---|---|
+| `board-hdmi-home-160.png` | 1280x800 grim capture of Home at 160%. The battery widget shows Current, Power, Voltage, Temp, Health and Cycles as label/value pairs in two columns, and every value is whole. |
+
+An earlier deploy of `42849460` showed "Current +53 m…" ellipsized. The
+value's room is now the full column, and the value shrinks toward the
+label size before it is cut off. That deploy's frame was not kept. The
+volume overlay, raised by the sway restart, covers the graph's right-hand
+"now" caption in this frame. The overlay is not part of the widget.

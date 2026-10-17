@@ -1937,6 +1937,7 @@ DATA  1168261a0da7bdf63f4159a1f88c4ba69e19ae14d03861000fdd7b7172b52ea1  docs/evi
 DATA  020462acd02e38f9e85e5145a19da89f1084a6003eaf6cc4494a5357ed0110e9  docs/evidence/battery-details-widget/host/no-battery-1920x1080.png
 DATA  a03c125e64c86fec1b327dba56c78254508ab60af71e55efeac3b43b16cb96ca  docs/evidence/battery-details-widget/host/no-battery-568x1232.png
 DATA  e954fab750d4099ee4d7120197cda001f7692b4c1add50c2a35e465360a721d8  docs/evidence/battery-details-widget/host/picker-568x1232.png
+DATA 418b3422b4a9b0f79b1ccc46ddf97740956762fc12e727182eb17f88eb332009 docs/evidence/battery-details-type/board-hdmi-home-160.png
 DATA 85c42274fdbbd7132eef19e3fdf26e867c4f0d50821e3f2f11ded1d3123ae178 docs/evidence/battery-details-type/host-landscape-steps.png
 DATA 64642d60967ca79da8135460fd7b381a24d16e77e1fc212424b14bfde449fb81 docs/evidence/battery-details-type/host-portrait-steps.png
 DATA 7734298d1350e5de05032c5196b9bd43beddb97fd92002b8fbe4176d69438416 docs/evidence/battery-details-widget/board/home-page2-battery-details-1280x800-grim.png
@@ -3438,6 +3439,7 @@ Command and limits: `docs/evidence/battery-details-widget/host/README.md`.
 
 | Path | Bytes | Class | SHA-256 |
 | --- | ---: | --- | --- |
+| `docs/evidence/battery-details-type/board-hdmi-home-160.png` | 830572 | DATA | `418b3422b4a9b0f79b1ccc46ddf97740956762fc12e727182eb17f88eb332009` |
 | `docs/evidence/battery-details-type/host-landscape-steps.png` | 148715 | DATA | `85c42274fdbbd7132eef19e3fdf26e867c4f0d50821e3f2f11ded1d3123ae178` |
 | `docs/evidence/battery-details-type/host-portrait-steps.png` | 143099 | DATA | `64642d60967ca79da8135460fd7b381a24d16e77e1fc212424b14bfde449fb81` |
 | `docs/evidence/battery-details-widget/host/charging-1232x568.png` | 69909 | DATA | `89fb5e30e2319141d86165b5d2cf341a200cd28cfb524d01ea14343e3bfcb2de` |
