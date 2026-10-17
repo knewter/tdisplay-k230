@@ -29,8 +29,11 @@
   Update `tests/responsive_pixel_identity.rs` baselines deliberately and say
   so in the commit. Verify with `cargo test --offline --manifest-path
   nix/rust-shell-client/Cargo.toml --tests`. Host class.
-- [ ] 2.2 Replace tracked capitals in the Battery details grid labels with
+- [x] 2.2 Replace tracked capitals in the Battery details grid labels with
   the Label role and check it at 160% and 200%. Host class.
+  Done 2026-10-17 (host): labels, graph captions and the input line are on
+  the 26 px floor as one-line label/value pairs. Renders at all four steps in
+  both orientations are in `docs/evidence/battery-details-type/`.
 
 ## 3. Cards and the accent
 
