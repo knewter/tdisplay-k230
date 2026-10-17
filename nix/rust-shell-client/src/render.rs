@@ -2761,12 +2761,12 @@ fn paint_drawer_chrome(
 /// must to sit beside the Settings link, and the hint, count and "Dismiss
 /// all" lines stack by their drawn height, so nothing overlaps or
 /// ellipsizes. Each link stays inside its `service_ui::shade_link_w` band.
-/// The Shade's empty-state tile: one Body line, or the preview's source
+/// The Shade's empty-state tile: one Caption line, or the preview's source
 /// (Label) and summary (Body), inside `SHADE_TILE_INSET` above and below.
 const SHADE_TILE_INSET: f64 = 11.0;
 
 fn shade_preview_tile_h(preview: bool) -> f64 {
-    let lines = if preview { vision_line(TYPE_LABEL) + vision_line(TYPE_BODY) } else { vision_line(TYPE_BODY) };
+    let lines = if preview { vision_line(TYPE_LABEL) + vision_line(TYPE_BODY) } else { vision_line(TYPE_CAPTION) };
     (lines + 2.0 * SHADE_TILE_INSET).ceil().max(72.0)
 }
 
@@ -2809,12 +2809,17 @@ fn paint_shade_header(
     let settings_y = title_y + (title_h - line(settings_size)) / 2.0;
     text(cr, "Settings", hw - 24.0 - settings_w, settings_y, settings_w, settings_size, style.accent);
 
+    // The rows under the Title keep their ratio to it: when a narrow
+    // column shrinks the Title, they shrink with it (to the Label floor).
+    let header_k = title_size / TYPE_TITLE;
+    let label = (TYPE_LABEL * header_k).max(TYPE_LABEL / scale).min(TYPE_LABEL);
+    let caption = (TYPE_CAPTION * header_k).max(TYPE_CAPTION / scale).min(TYPE_CAPTION);
     let count_label = if count == 1 { "1 notification".to_string() } else { format!("{count} notifications") };
     let (count_size, dismiss_size, dismiss_w) = if count > 0 {
-        share((&count_label, TYPE_LABEL, pango::Weight::Normal), ("Dismiss all", TYPE_LABEL), row_room, link_room)
+        share((&count_label, label, pango::Weight::Normal), ("Dismiss all", label), row_room, link_room)
     } else {
-        let (size, _, _) = share((&count_label, TYPE_LABEL, pango::Weight::Normal), ("", TYPE_LABEL), hw - 56.0, link_room);
-        (size, TYPE_LABEL, 0.0)
+        let (size, _, _) = share((&count_label, label, pango::Weight::Normal), ("", label), hw - 56.0, link_room);
+        (size, label, 0.0)
     };
     let count_h = line(count_size).max(line(dismiss_size));
 
@@ -2830,10 +2835,12 @@ fn paint_shade_header(
         let fitted = if advance > room * 0.96 { size * room * 0.96 / advance } else { size };
         fitted.max(TYPE_CAPTION / scale)
     };
-    let battery_size = battery.as_deref().map_or(TYPE_CAPTION, |label| fit(label, TYPE_CAPTION, (hw - 56.0) * 0.5));
+    let battery_size = battery.as_deref().map_or(caption, |label| fit(label, caption, (hw - 56.0) * 0.5));
     let battery_w = battery.as_deref().map_or(0.0, |label| text_advance(cr, label, battery_size, pango::Weight::Normal) + 2.0);
     let hint_room = hw - 56.0 - if battery.is_some() { battery_w + 12.0 } else { 0.0 };
-    let hint_size = fit(hint, TYPE_CAPTION, hint_room);
+    let hint_size = fit(hint, caption, hint_room);
+    // The hint is left out rather than cut off; the battery stays.
+    let hint_whole = text_advance(cr, hint, hint_size, pango::Weight::Normal) <= hint_room;
     let hint_h = line(hint_size).max(line(battery_size));
     let band_bottom = SHADE_DISMISS_BOTTOM - 4.0;
     let count_top = SHADE_SETTINGS_BOTTOM + 4.0;
@@ -2841,7 +2848,9 @@ fn paint_shade_header(
         if let Some(label) = &battery {
             text(cr, label, hw - 24.0 - battery_w, hint_y, battery_w, battery_size, style.text);
         }
-        text(cr, hint, 28.0, hint_y, hint_room, hint_size, style.muted);
+        if hint_whole {
+            text(cr, hint, 28.0, hint_y, hint_room, hint_size, style.muted);
+        }
         (hint_y + hint_h + 2.0).max(count_top)
     } else {
         (title_y + title_h + 2.0).max(count_top)
@@ -3253,8 +3262,8 @@ fn scene(
                     } else {
                         "No new notifications"
                     };
-                    let y = 262.0 + (tile_h - vision_line(TYPE_BODY)) / 2.0;
-                    themed_role_fit(cr, theme, "body", empty, 42.0, y, w - 84.0, TYPE_BODY, style.muted, pango::Weight::Normal);
+                    let y = 262.0 + (tile_h - vision_line(TYPE_CAPTION)) / 2.0;
+                    themed_role_fit(cr, theme, "caption", empty, 42.0, y, w - 84.0, TYPE_CAPTION, style.muted, pango::Weight::Normal);
                 }
             }
             let _ = cr.restore();
@@ -3445,8 +3454,8 @@ fn scene(
                     themed_role_fit(cr, theme, "body", &control_text(control), row_text_x, y + value_dy, row_text_width, TYPE_BODY, style.text, pango::Weight::Normal);
                     if name == "Keyboard" && services.is_some_and(|view| view.keyboard_gesture_hint)
                     {
-                        themed_role_fit(cr, theme, "caption", "Two fingers up at bottom to show;", row_text_x, y + caption_dy, row_text_width, TYPE_CAPTION, style.muted, pango::Weight::Normal);
-                        themed_role_fit(cr, theme, "caption", "drag the handle down to hide.", row_text_x, y + caption_dy + vision_line(TYPE_CAPTION), row_text_width, TYPE_CAPTION, style.muted, pango::Weight::Normal);
+                        themed_role_fit(cr, theme, "caption", "Two fingers up: show", row_text_x, y + caption_dy, row_text_width, TYPE_CAPTION, style.muted, pango::Weight::Normal);
+                        themed_role_fit(cr, theme, "caption", "Drag handle down: hide", row_text_x, y + caption_dy + vision_line(TYPE_CAPTION), row_text_width, TYPE_CAPTION, style.muted, pango::Weight::Normal);
                     } else if let Some(detail) = &control.detail {
                         themed_role_fit(cr, theme, "caption", detail, row_text_x, y + caption_dy, row_text_width, TYPE_CAPTION, style.muted, pango::Weight::Normal);
                     }

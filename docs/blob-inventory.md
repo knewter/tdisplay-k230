@@ -1731,8 +1731,8 @@ DATA c0f4155dee9e0a9f65f2db9aa231e9d8e481563d5ff3ff1f0ba46466081d59f0 docs/evide
 DATA 0e4ea4bbd724e66ca03867a762bc00b24f67c3504dfe9f6703719401edae85d0 docs/evidence/the-shell-is-navigable-with-a-mouse/edge-controls-board/search-q.jpg
 DATA 1afbe66898b6e3e1d236a3d4d9aa10021e3c40ffeb4ebcc11dda7e540e7c3e1e docs/evidence/type-roles/host-settings-landscape-steps.png
 DATA fee1891f2f96bd4e4291c8e32d675cfb5ff1e61591679489d61188d537be3800 docs/evidence/type-roles/host-settings-portrait-steps.png
-DATA aad324164611cc4720bd0568f561ec1ed28e07b8a86fcd85716f63b48c8fa1cf docs/evidence/type-roles/host-shade-landscape-steps.png
-DATA a8cfee38cca7c4a6999b943b258280ec82d6909747ec30f22190b21d9f4f0ccd docs/evidence/type-roles/host-shade-portrait-steps.png
+DATA 6537a53dbe93d30db9eb3f196c4b0402a823de793f9495703e3a006ecd090193 docs/evidence/type-roles/host-shade-landscape-steps.png
+DATA 91219b4a683ef259842b3a97054c3f5fea5d1f038ba8b0afc3c349c42abc93f6 docs/evidence/type-roles/host-shade-portrait-steps.png
 DATA ae5a5b24de9f4ac3fa96d6ad528df09ad30eb4975e70abb87fa5c744423c6020 docs/evidence/type-roles/host-vision-landscape-steps.png
 DATA b9d91f77f6185d650801e5f003338c68ccebdca3d481f88a80e734bcb527d8b8 docs/evidence/type-roles/host-vision-portrait-steps.png
 DATA bbdbcdff21dbf352505f6ec56ab00748083cc520c875b22a8996f954e50c3786 docs/evidence/files-app/board-2026-09-30/portfolio.jpg
@@ -3380,8 +3380,8 @@ hashes and the exact triggers are in `docs/evidence/recovery-routes/touch-captur
 | `docs/evidence/theme-picker/board-session-2026-10-12/18.3/labels-mo-theme.png` | 65152 | DATA | `854cacdba026a85315abcc61b565ddebc3293fc50009c7c5b2640ab17c069726` |
 | `docs/evidence/type-roles/host-settings-landscape-steps.png` | 197358 | DATA | `1afbe66898b6e3e1d236a3d4d9aa10021e3c40ffeb4ebcc11dda7e540e7c3e1e` |
 | `docs/evidence/type-roles/host-settings-portrait-steps.png` | 217467 | DATA | `fee1891f2f96bd4e4291c8e32d675cfb5ff1e61591679489d61188d537be3800` |
-| `docs/evidence/type-roles/host-shade-landscape-steps.png` | 249977 | DATA | `aad324164611cc4720bd0568f561ec1ed28e07b8a86fcd85716f63b48c8fa1cf` |
-| `docs/evidence/type-roles/host-shade-portrait-steps.png` | 204721 | DATA | `a8cfee38cca7c4a6999b943b258280ec82d6909747ec30f22190b21d9f4f0ccd` |
+| `docs/evidence/type-roles/host-shade-landscape-steps.png` | 245430 | DATA | `6537a53dbe93d30db9eb3f196c4b0402a823de793f9495703e3a006ecd090193` |
+| `docs/evidence/type-roles/host-shade-portrait-steps.png` | 190180 | DATA | `91219b4a683ef259842b3a97054c3f5fea5d1f038ba8b0afc3c349c42abc93f6` |
 | `docs/evidence/type-roles/host-vision-landscape-steps.png` | 160939 | DATA | `ae5a5b24de9f4ac3fa96d6ad528df09ad30eb4975e70abb87fa5c744423c6020` |
 | `docs/evidence/type-roles/host-vision-portrait-steps.png` | 156417 | DATA | `b9d91f77f6185d650801e5f003338c68ccebdca3d481f88a80e734bcb527d8b8` |
 | `docs/evidence/recovery-routes/touch-capture-2026-10-11/stale-splash-camera-zoom.jpg` | 15353 | DATA | `379ebd25d4a0f224c33d2651d7aaeb134fa7258b625503b12e1e4a2d3e2f5cc5` |
