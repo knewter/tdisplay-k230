@@ -64,8 +64,11 @@
   the Vision page at 100% and 200% on the landscape panel, with the vinyl
   wallpaper, after the coordinator deploys the closure. Board class.
   Progress 2026-10-16: Home (the restyled Clock) at 100%, 160% and 200% is
-  in `docs/evidence/clock-restyle/board-panel-*-home.png`. The other
-  surfaces are not restyled yet, so they were not captured.
+  in `docs/evidence/clock-restyle/board-panel-*-home.png`.
+  Progress 2026-10-16: Settings, Vision and the Shade on the type roles
+  (2.1) at 100%, 160% and 200% on the HDMI output (1280x800, the only
+  active output) are in `docs/evidence/type-roles/board-hdmi-*.png`. Panel
+  captures of those surfaces and of the drawer remain.
 - [ ] 5.2 The operator's judgement on glass that the Clock and each restyled
   surface are readable and that the accent marks what is live. Board class;
   this task stays open until the operator has looked.

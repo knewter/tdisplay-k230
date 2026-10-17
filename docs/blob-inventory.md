@@ -1729,6 +1729,9 @@ DATA c9c05b81fb3d12e81f2b5f61135846d7779f4246d1fbda106e2ed5653cc165f5 docs/evide
 DATA 032b3a6635590f6a8e8bc2b976b5afe89a1bc3c7a03648a6cee50a7f21b29062 docs/evidence/the-shell-is-navigable-with-a-mouse/edge-controls-board/home-handle-overview.jpg
 DATA c0f4155dee9e0a9f65f2db9aa231e9d8e481563d5ff3ff1f0ba46466081d59f0 docs/evidence/the-shell-is-navigable-with-a-mouse/edge-controls-board/search-backspace.jpg
 DATA 0e4ea4bbd724e66ca03867a762bc00b24f67c3504dfe9f6703719401edae85d0 docs/evidence/the-shell-is-navigable-with-a-mouse/edge-controls-board/search-q.jpg
+DATA 602664b30c1ad73b92262f18eeb04dfbe8a4feb722f4e5ff616f75ebe1ea3349 docs/evidence/type-roles/board-hdmi-100.png
+DATA 8ef18c9fab70530c8a3a2f70229a2bfe0ed2327668fb29d94f5b50643ca4c3a9 docs/evidence/type-roles/board-hdmi-160.png
+DATA 240e7ed0d3c042b68eb33b4eacf9eb2116dbb664fc98b66825177c3903c193ac docs/evidence/type-roles/board-hdmi-200.png
 DATA 1afbe66898b6e3e1d236a3d4d9aa10021e3c40ffeb4ebcc11dda7e540e7c3e1e docs/evidence/type-roles/host-settings-landscape-steps.png
 DATA fee1891f2f96bd4e4291c8e32d675cfb5ff1e61591679489d61188d537be3800 docs/evidence/type-roles/host-settings-portrait-steps.png
 DATA 6537a53dbe93d30db9eb3f196c4b0402a823de793f9495703e3a006ecd090193 docs/evidence/type-roles/host-shade-landscape-steps.png
@@ -3378,6 +3381,9 @@ hashes and the exact triggers are in `docs/evidence/recovery-routes/touch-captur
 | `docs/evidence/theme-picker/board-session-2026-10-12/18.3/labels-ca-theme.png` | 63945 | DATA | `7997913ea7ddfc13ba865c7614052838da147851b0e3fe9f4623c66923d006a9` |
 | `docs/evidence/theme-picker/board-session-2026-10-12/18.3/labels-mo-bg.png` | 37737 | DATA | `7884f1bbaf1cab44ef5a91856f97c98ada66d5db3eea8d2632725083d6c28924` |
 | `docs/evidence/theme-picker/board-session-2026-10-12/18.3/labels-mo-theme.png` | 65152 | DATA | `854cacdba026a85315abcc61b565ddebc3293fc50009c7c5b2640ab17c069726` |
+| `docs/evidence/type-roles/board-hdmi-100.png` | 138064 | DATA | `602664b30c1ad73b92262f18eeb04dfbe8a4feb722f4e5ff616f75ebe1ea3349` |
+| `docs/evidence/type-roles/board-hdmi-160.png` | 172358 | DATA | `8ef18c9fab70530c8a3a2f70229a2bfe0ed2327668fb29d94f5b50643ca4c3a9` |
+| `docs/evidence/type-roles/board-hdmi-200.png` | 172360 | DATA | `240e7ed0d3c042b68eb33b4eacf9eb2116dbb664fc98b66825177c3903c193ac` |
 | `docs/evidence/type-roles/host-settings-landscape-steps.png` | 197358 | DATA | `1afbe66898b6e3e1d236a3d4d9aa10021e3c40ffeb4ebcc11dda7e540e7c3e1e` |
 | `docs/evidence/type-roles/host-settings-portrait-steps.png` | 217467 | DATA | `fee1891f2f96bd4e4291c8e32d675cfb5ff1e61591679489d61188d537be3800` |
 | `docs/evidence/type-roles/host-shade-landscape-steps.png` | 245430 | DATA | `6537a53dbe93d30db9eb3f196c4b0402a823de793f9495703e3a006ecd090193` |
