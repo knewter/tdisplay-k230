@@ -296,7 +296,7 @@ impl WindowRefit {
     }
     /// Send the refit when one is due. No window to refit is not an error.
     pub fn poll(&mut self, path: &PathBuf, now: Instant) -> Option<io::Result<bool>> {
-        if !self.due.first().is_some_and(|due| now >= *due) {
+        if self.due.first().is_none_or(|due| now < *due) {
             return None;
         }
         self.due.remove(0);
