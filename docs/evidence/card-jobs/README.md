@@ -80,8 +80,8 @@ backdrop, not the shell.
 ## Limits
 
 - The theme grid's Chosen rim is not in the host renders; it is in the board capture.
-- The board captures are below. The operator's
-  judgement on glass (5.1, 5.2) are separate evidence classes.
+- The board captures below are native frames; the operator's judgement on
+  glass (5.2) is a separate evidence class and is still open.
 
 ## Board evidence (2026-10-17)
 
