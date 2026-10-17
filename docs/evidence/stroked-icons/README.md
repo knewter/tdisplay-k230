@@ -66,5 +66,30 @@ Change: `openspec/changes/the-shell-has-one-visual-language`, task 4.1.
 
 - The Volume row's "No audio device found" is still cut off at 200% in
   portrait. That text call was not changed here.
-- These are host renders only. The board captures follow below; the
-  operator's look at the icons (5.2) is separate.
+- The board captures are below. The operator's look at the icons (5.2) is
+  separate and still open.
+
+## Board evidence (2026-10-17)
+
+- **Build.** `kernelMainlineDrmShellLandscapeHdmiBootFiles` was built at
+  `5f244c0c` and deployed live with `switch-to-configuration test`. The
+  active system was
+  `/nix/store/a4241ifl36r41l3ccx24prrsq5p2q1n0-nixos-system-nixos-26.11.20260919.20b1ddd`.
+- **Capture.** DSI-1 was the only output, at 1232x568 and 100%, with the
+  retro-82 theme.
+- **Navigation.** Surfaces were opened with `k230-shell-rust --surface`.
+  Settings was scrolled with an injected uinput swipe (`/tmp/bp.py`). The
+  frames are native `grim` captures.
+
+| File | What it shows |
+|---|---|
+| `board-panel-settings.png` | Wi‑Fi, Brightness, Keyboard, Motion, Reboot and Power off glyphs |
+| `board-panel-settings-scrolled.png` | Volume (40%) with the speaker glyph and slider; Key backlight glyph and level slider |
+| `board-panel-shade.png` | Shade: stroked suns and speaker at the slider ends, Keyboard toggle glyph |
+
+- **Observation (not changed here).** The deploy restarted PipeWire. Two
+  Shade captures taken before Settings had been opened showed no volume
+  slider. Once Settings had shown "Volume 40%", the Shade showed it too.
+  The Shade's volume row takes its data from the same audio view as
+  Settings; this change did not touch that path. It is a separate defect
+  to trace.

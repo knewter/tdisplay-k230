@@ -1903,6 +1903,9 @@ DATA 8b0f1bfa6b50fd0ae6fd1db609decbc22e800a8ceac84f746e01bae6f4e46f61 docs/evide
 DATA f08588cb20f272da51d3e69f941e5130a1d040e13b5b7f8b0d36e74cd58585c2 docs/evidence/hdmi-hotplug/landscape/wide-reflow/wifi-list-1280x800.png
 DATA 95178d12ade837cc1fda9a03e7a58bbed213230e845e0a64eb79e4185fe1c65b docs/evidence/hdmi-hotplug/landscape/wide-reflow/wifi-list-1920x1080.png
 DATA 0938edbc429fe58e4ccc4f16e4f25e163b8a8c3664f8a298bed8b8c19bfc7f1d docs/evidence/shell-responsive/board/acceptance-2026-10-09/home.png
+DATA c98b920c65045ce8343e8bd247fcc1fd7ad7cd15c671477017475c10f2b063f2 docs/evidence/stroked-icons/board-panel-settings-scrolled.png
+DATA b0d3c684830cd403884f4f61c7ec7b72661a5fb9a4167c305723c8ff9dcc492d docs/evidence/stroked-icons/board-panel-settings.png
+DATA a51cada8f2a82729c14c2f1264cfb951e93776c00de0c1f4132575c3fbce22f8 docs/evidence/stroked-icons/board-panel-shade.png
 DATA ef106ae06c7ac7ddc52a993cfab2f130bfba6cfa013ed85c996008b4ab9a1a5d docs/evidence/stroked-icons/host-dark-landscape.png
 DATA 5339bfa0b2b08d8ea00a063436fbf49a7ae5ae372029cfaab4b926c81208ac9c docs/evidence/stroked-icons/host-dark-portrait.png
 DATA 6c3d4ea48118e0b022af08ee0e73e3ca62ccc59f453a780c4620f6254e5a6f66 docs/evidence/stroked-icons/host-glyph-sheet.png
@@ -3447,6 +3450,9 @@ in `docs/evidence/second-core/linux-start-2026-10-12/README.md`.
 | File | Bytes | Class | SHA256 |
 | --- | ---: | --- | --- |
 | `docs/evidence/second-core/linux-start-2026-10-12/cpu0-start.png` | 7734 | DATA | `a6a8591d874042351b5785b57b87277c1af63eeb007045ebb220960a896a03e8` |
+| `docs/evidence/stroked-icons/board-panel-settings-scrolled.png` | 50843 | DATA | `c98b920c65045ce8343e8bd247fcc1fd7ad7cd15c671477017475c10f2b063f2` |
+| `docs/evidence/stroked-icons/board-panel-settings.png` | 27104 | DATA | `b0d3c684830cd403884f4f61c7ec7b72661a5fb9a4167c305723c8ff9dcc492d` |
+| `docs/evidence/stroked-icons/board-panel-shade.png` | 13125 | DATA | `a51cada8f2a82729c14c2f1264cfb951e93776c00de0c1f4132575c3fbce22f8` |
 | `docs/evidence/stroked-icons/host-dark-landscape.png` | 212819 | DATA | `ef106ae06c7ac7ddc52a993cfab2f130bfba6cfa013ed85c996008b4ab9a1a5d` |
 | `docs/evidence/stroked-icons/host-dark-portrait.png` | 222347 | DATA | `5339bfa0b2b08d8ea00a063436fbf49a7ae5ae372029cfaab4b926c81208ac9c` |
 | `docs/evidence/stroked-icons/host-glyph-sheet.png` | 57618 | DATA | `6c3d4ea48118e0b022af08ee0e73e3ca62ccc59f453a780c4620f6254e5a6f66` |
