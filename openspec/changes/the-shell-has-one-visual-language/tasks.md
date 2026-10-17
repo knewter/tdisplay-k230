@@ -80,7 +80,7 @@
 
 ## 5. Board
 
-- [ ] 5.1 Native `grim` captures of Home, the drawer, the Shade, Settings and
+- [x] 5.1 Native `grim` captures of Home, the drawer, the Shade, Settings and
   the Vision page at 100% and 200% on the landscape panel, with the vinyl
   wallpaper, after the coordinator deploys the closure. Board class.
   Progress 2026-10-16: Home (the restyled Clock) at 100%, 160% and 200% is
@@ -89,6 +89,10 @@
   (2.1) at 100%, 160% and 200% on the HDMI output (1280x800, the only
   active output) are in `docs/evidence/type-roles/board-hdmi-*.png`. Panel
   captures of those surfaces and of the drawer remain.
+  Done 2026-10-17: native captures of Home, the drawer, Settings, the Vision
+  page and the Shade at 100% and 200% on DSI-1 (1232x568), retro-82 with
+  the vinyl wallpaper, from `caaf4ff4`, are in
+  `docs/evidence/visual-language-panel/`.
 - [ ] 5.2 The operator's judgement on glass that the Clock and each restyled
   surface are readable and that the accent marks what is live. Board class;
   this task stays open until the operator has looked.

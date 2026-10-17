@@ -681,6 +681,16 @@ DATA 623061d59c3f38531b61e47f418ccd5f2ae29990fb1a4af145e1e30f40a7889f docs/evide
 DATA 1250dd1a8b302938865b558775cf818d8f67f80d44484a7147469b4b338c213c docs/evidence/omarchy-themes/consumer-closeout-2026-10-10/settings-hover-baseline.png
 DATA e25bde2aeed303bb0f318292e527f6dc12752579d018309514a851c0236eab0b docs/evidence/omarchy-themes/font-spacing-adaptation/baseline.png
 DATA 2c971a30f7138e3ed0b0cfeb4538bbdf432e33ac65cc329225fc7b5af9d52a6f docs/evidence/omarchy-themes/font-spacing-adaptation/font-spacing-adapted.png
+DATA d470fae779b6106d7c6cd59cb250d928f28c0e97f7f0192be618863933a1d4ee docs/evidence/visual-language-panel/board-panel-100-drawer.png
+DATA 57c5b786d39209e28d67addb5c557f0d93e875a78483d7d7d403021acc9d7a71 docs/evidence/visual-language-panel/board-panel-100-home.png
+DATA ac5aa88ae6dadc73672c322a57ce91dbfd4216b4b64678f188c1c691243f6270 docs/evidence/visual-language-panel/board-panel-100-settings.png
+DATA a51cada8f2a82729c14c2f1264cfb951e93776c00de0c1f4132575c3fbce22f8 docs/evidence/visual-language-panel/board-panel-100-shade.png
+DATA d2318655f0617eb8a3eeaa7cd60c40a716cb0dd3e5b0d4cbca8aeb27ddd17834 docs/evidence/visual-language-panel/board-panel-100-vision.png
+DATA 482d8a04f510b691584287b3225da562874dd15f8184ddf12e7a4415de17154d docs/evidence/visual-language-panel/board-panel-200-drawer.png
+DATA 67306afb8745e6fe7f2eff6e0c2d3d324b3531d1c435e3f9a638db9fb5d86b11 docs/evidence/visual-language-panel/board-panel-200-home.png
+DATA a4ece9287f51c2d7583781013563932f9c92c04c7f686e7fe3b7ed82e7304435 docs/evidence/visual-language-panel/board-panel-200-settings.png
+DATA 6b8e7a461293f2ff62576ab4a5d0bda53835fb50c0f8c49cdc574183ec1f7beb docs/evidence/visual-language-panel/board-panel-200-shade.png
+DATA 7b87bebba551c421c6a521324e524da735f8d333cc6449c179c4ab1894f098ae docs/evidence/visual-language-panel/board-panel-200-vision.png
 DATA 6c932721f51eccfe719486e1474e411c6303c2a95bf1ea7c6240260f1b939669 docs/evidence/volume/closeout-2026-10-01/expanded-real-stream.jpg
 DATA ef63b26ac876397657f42f5e72039874a82b658ef9cd11abf16d96047ed3d8ee docs/evidence/volume/closeout-2026-10-01/hud-dragged.jpg
 DATA 65557a7fe7f93d61c76232c8484f87ac11c2ee475618c61de0c620d1c2da304d docs/evidence/volume/closeout-2026-10-01/hud-hidden.jpg
@@ -3017,6 +3027,16 @@ a real cross-built Rust client and patched Sway under
 
 | File | Bytes | Class | SHA256 |
 | --- | ---: | --- | --- |
+| `docs/evidence/visual-language-panel/board-panel-100-drawer.png` | 106498 | DATA | `d470fae779b6106d7c6cd59cb250d928f28c0e97f7f0192be618863933a1d4ee` |
+| `docs/evidence/visual-language-panel/board-panel-100-home.png` | 325585 | DATA | `57c5b786d39209e28d67addb5c557f0d93e875a78483d7d7d403021acc9d7a71` |
+| `docs/evidence/visual-language-panel/board-panel-100-settings.png` | 27635 | DATA | `ac5aa88ae6dadc73672c322a57ce91dbfd4216b4b64678f188c1c691243f6270` |
+| `docs/evidence/visual-language-panel/board-panel-100-shade.png` | 13125 | DATA | `a51cada8f2a82729c14c2f1264cfb951e93776c00de0c1f4132575c3fbce22f8` |
+| `docs/evidence/visual-language-panel/board-panel-100-vision.png` | 27186 | DATA | `d2318655f0617eb8a3eeaa7cd60c40a716cb0dd3e5b0d4cbca8aeb27ddd17834` |
+| `docs/evidence/visual-language-panel/board-panel-200-drawer.png` | 51340 | DATA | `482d8a04f510b691584287b3225da562874dd15f8184ddf12e7a4415de17154d` |
+| `docs/evidence/visual-language-panel/board-panel-200-home.png` | 332532 | DATA | `67306afb8745e6fe7f2eff6e0c2d3d324b3531d1c435e3f9a638db9fb5d86b11` |
+| `docs/evidence/visual-language-panel/board-panel-200-settings.png` | 29304 | DATA | `a4ece9287f51c2d7583781013563932f9c92c04c7f686e7fe3b7ed82e7304435` |
+| `docs/evidence/visual-language-panel/board-panel-200-shade.png` | 17744 | DATA | `6b8e7a461293f2ff62576ab4a5d0bda53835fb50c0f8c49cdc574183ec1f7beb` |
+| `docs/evidence/visual-language-panel/board-panel-200-vision.png` | 41753 | DATA | `7b87bebba551c421c6a521324e524da735f8d333cc6449c179c4ab1894f098ae` |
 | `docs/evidence/volume/shade-both-sliders.png` | 60471 | DATA | `9d1ffe6cd11029eec3dc103a72a93d1c661362ed45127db426e94fe78a428b9d` |
 | `docs/evidence/volume/hud-collapsed.png` | 60444 | DATA | `6afe4816bc6a66f409c5d70bff41ed94eb33d1034ebb93f05db303923632826a` |
 | `docs/evidence/volume/hud-expanded.png` | 64958 | DATA | `1db2d849128d5574ea833cad147a4f75bcf3868ed3132fb7ed6b0a5b21a65401` |

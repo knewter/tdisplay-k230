@@ -87,9 +87,10 @@ Change: `openspec/changes/the-shell-has-one-visual-language`, task 4.1.
 | `board-panel-settings-scrolled.png` | Volume (40%) with the speaker glyph and slider; Key backlight glyph and level slider |
 | `board-panel-shade.png` | Shade: stroked suns and speaker at the slider ends, Keyboard toggle glyph |
 
-- **Observation (not changed here).** The deploy restarted PipeWire. Two
-  Shade captures taken before Settings had been opened showed no volume
-  slider. Once Settings had shown "Volume 40%", the Shade showed it too.
-  The Shade's volume row takes its data from the same audio view as
-  Settings; this change did not touch that path. It is a separate defect
-  to trace.
+- **Observation: audio arrives late after a restart.** The deploy
+  restarted PipeWire and the shell together (`shell-ui` started at
+  01:36:40). The shell's journal shows its first default-sink snapshot at
+  69.6 s: the volume HUD opened at 01:37:56. The two Shade captures without
+  a volume slider were mapped at 12.2 s and 43.6 s, before that snapshot.
+  The capture with the slider was mapped at 126.8 s. The missing slider was
+  PipeWire still starting, not a rendering fault.
