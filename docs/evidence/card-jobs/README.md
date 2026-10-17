@@ -79,6 +79,29 @@ backdrop, not the shell.
 
 ## Limits
 
-- The theme grid's Chosen rim is not in these renders.
-- These are host renders only. The board captures and the operator's
+- The theme grid's Chosen rim is not in the host renders; it is in the board capture.
+- The board captures are below. The operator's
   judgement on glass (5.1, 5.2) are separate evidence classes.
+
+## Board evidence (2026-10-17)
+
+- **Build.** `kernelMainlineDrmShellLandscapeHdmiBootFiles` was built at
+  `2d80b1e2` and deployed live with `switch-to-configuration test`. The
+  active system was
+  `/nix/store/wsjjmyhq7p069g62fqi8bf7ypmbix0z3-nixos-system-nixos-26.11.20260919.20b1ddd`.
+- **Capture.** HDMI was unplugged, so DSI-1 was the only output, at 1232x568
+  landscape and the 100% step, with the retro-82 theme.
+- **Navigation.** Each surface was opened with `k230-shell-rust --surface`.
+  The Vision and Themes links were reached with injected uinput taps
+  (`/tmp/bp.py`), not a finger. The frames are native `grim` captures.
+
+| File | What it shows |
+|---|---|
+| `board-panel-settings.png` | Control rows, Reboot/Power off, links in the foreground colour, slider accent |
+| `board-panel-vision.png` | Text size as a Group with the 100% Chosen pill; High contrast Off as Control |
+| `board-panel-shade.png` | Shade with no notifications: "Settings ›" in the foreground colour, Keyboard as Control |
+| `board-panel-themes.png` | Theme grid with the current theme behind a Chosen rim (other previews still loading) |
+
+- **Not covered here.** The operator has not yet looked at the panel
+  (task 5.2). These captures don't show "Dismiss all", because the board
+  had no notifications.

@@ -761,6 +761,10 @@ DATA ebc175d2acd4816f5ae26f54fcca81158565c499c88146b4b1d8e693931c8582 docs/evide
 DATA fd28b3884a4b4c93e4720a931c286dbcbc7e7339c1fa070fdfad6d8b547458fe docs/evidence/backlight/runtime-recovery/cycled-26-128-255.jpg
 DATA d2f33d7a70abbaaa6bc8f6e16e309536bbba828c6e51b3c8b63f269deaec3c92 docs/evidence/backlight/runtime-recovery/live-26-128-255.jpg
 DATA 53d41ebcc10164feb3cd70821119b7c6a83ce62b70c339548fe3b98764928d61 docs/evidence/backlight/runtime-recovery/off-on-128.jpg
+DATA a6246c66a56d7fa3c3fcc17a6c5d1038b243f76a95cbfbe2a4188bd1c14a8888 docs/evidence/card-jobs/board-panel-settings.png
+DATA b5f5de398afffe85b8aabc759cc1192a4731b42217250459900b354c2d6af517 docs/evidence/card-jobs/board-panel-shade.png
+DATA 3ab9fff686da3c51ada7f76c07891e971f2ee0cd1f8507fa8bf8a92c95f9a078 docs/evidence/card-jobs/board-panel-themes.png
+DATA d2318655f0617eb8a3eeaa7cd60c40a716cb0dd3e5b0d4cbca8aeb27ddd17834 docs/evidence/card-jobs/board-panel-vision.png
 DATA a5e85404002a301c945fdd3a80eeb878f9b0a37c9f60f07e7ded8c4c552d7d6a docs/evidence/card-jobs/host-dark-default-landscape.png
 DATA d198ed2f8ade0d14f595826bac42e2f943eab14ef73fc5fc638afc144c0dcc3c docs/evidence/card-jobs/host-dark-default-portrait.png
 DATA 1b2b279fa5c0735303795b0bdbaf6fa8bee94dbfc16acc22eb09d2c026912aab docs/evidence/card-jobs/host-dark-largest-landscape.png
@@ -2701,6 +2705,10 @@ These DATA screenshots are headless-QEMU captures of synthetic fixture clients s
 
 | File | Bytes | Kind | SHA256 |
 | --- | ---: | --- | --- |
+| `docs/evidence/card-jobs/board-panel-settings.png` | 25482 | DATA | `a6246c66a56d7fa3c3fcc17a6c5d1038b243f76a95cbfbe2a4188bd1c14a8888` |
+| `docs/evidence/card-jobs/board-panel-shade.png` | 28087 | DATA | `b5f5de398afffe85b8aabc759cc1192a4731b42217250459900b354c2d6af517` |
+| `docs/evidence/card-jobs/board-panel-themes.png` | 83205 | DATA | `3ab9fff686da3c51ada7f76c07891e971f2ee0cd1f8507fa8bf8a92c95f9a078` |
+| `docs/evidence/card-jobs/board-panel-vision.png` | 27186 | DATA | `d2318655f0617eb8a3eeaa7cd60c40a716cb0dd3e5b0d4cbca8aeb27ddd17834` |
 | `docs/evidence/card-jobs/host-dark-default-landscape.png` | 146655 | DATA | `a5e85404002a301c945fdd3a80eeb878f9b0a37c9f60f07e7ded8c4c552d7d6a` |
 | `docs/evidence/card-jobs/host-dark-default-portrait.png` | 175666 | DATA | `d198ed2f8ade0d14f595826bac42e2f943eab14ef73fc5fc638afc144c0dcc3c` |
 | `docs/evidence/card-jobs/host-dark-largest-landscape.png` | 218874 | DATA | `1b2b279fa5c0735303795b0bdbaf6fa8bee94dbfc16acc22eb09d2c026912aab` |
