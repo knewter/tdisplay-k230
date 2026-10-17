@@ -75,3 +75,21 @@ runs no decode.
 
 See the task notes in
 `openspec/changes/the-background-chooser-supports-fill-solid-and-video/tasks.md`.
+
+## Deployment (2026-10-17)
+
+- **Build.** `kernelMainlineDrmShellLandscapeHdmiBootFiles` was built at
+  master `eb2ada3a` and deployed live to the board with
+  `switch-to-configuration test`. The active system was
+  `/nix/store/s8fb6h0hlfwrhjp7hq89j1nmh2fjk7jm-nixos-system-nixos-26.11.20260919.20b1ddd`.
+- **Services.** After the switch, `systemctl is-active shell-ui theme-helper shell`
+  read `active` three times. The theme-helper journal since the switch had no
+  error or failure lines.
+- **Theme state.** `k230-theme list` showed retro-82 re-prepared as a new
+  generation, `5cb25c04f758427406790fb9`. That is expected, because
+  `theme_activate.py` changed the adapter hash. The vision choice stayed
+  `default`/`standard`.
+- **Display.** Native `grim` captures of Home and Settings on DSI-1 rendered
+  normally. These frames are not committed.
+- **Not tested.** The active background is a still, so this deployment
+  exercises no video path. Task 3.3 is still the board gate for video.
