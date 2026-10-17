@@ -341,6 +341,7 @@ fn run(args: Args) {
     let mut session: Option<TrackpadSession> = None;
     let mut last_mode: Option<Mode> = None;
     let mut direct_mapping = shell_ipc::DirectTouchMapping::default();
+    let mut window_refit = shell_ipc::WindowRefit::default();
     let mut unplug_watch = mode::UnplugWatch::default();
     // A start failure (e.g. axis_plan rejecting a degenerate range) will
     // keep failing identically every poll until the underlying hardware
@@ -366,9 +367,18 @@ fn run(args: Args) {
                 "k230-touch-trackpad: mode -> {mode:?} (panel connected: {})",
                 mode::panel_connected(&args.drm_root)
             );
+            // Not at startup: the windows already fit the output they mapped on.
+            if last_mode.is_some() {
+                window_refit.schedule(std::time::Instant::now());
+            }
             last_mode = Some(mode);
             start_failures = 0;
             direct_mapping.clear();
+        }
+        if !args.dry_run {
+            if let Some(socket) = args.shell_socket.as_ref() {
+                let _ = window_refit.poll(socket, std::time::Instant::now());
+            }
         }
 
         match (mode, &mut session) {

@@ -274,6 +274,40 @@ impl DirectTouchMapping {
     }
 }
 
+/// Sway fills the screen with an ordinary app window only when it maps
+/// (`shell.nix`'s `for_window ... resize set 100 ppt 100 ppt`). When HDMI
+/// comes or goes, a floating window keeps the old output's size: after an
+/// unplug the terminal stayed 1280x800 on the 1232x568 panel, taller than
+/// the device (board, 2026-10-16). The video windows keep their own sizes.
+pub const REFIT_WINDOWS: &str =
+    "[app_id=\"^(?!k230-video-).+\" floating] resize set 100 ppt 100 ppt, move position 0 0";
+
+/// When the output changes, refit the app windows to it: once Sway has
+/// switched outputs and again after it has settled, since the relay sees
+/// the connector change before or after Sway does.
+#[derive(Default)]
+pub struct WindowRefit {
+    due: Vec<Instant>,
+}
+impl WindowRefit {
+    pub const DELAYS: [Duration; 2] = [Duration::from_millis(1500), Duration::from_secs(5)];
+    pub fn schedule(&mut self, now: Instant) {
+        self.due = Self::DELAYS.iter().map(|delay| now + *delay).collect();
+    }
+    /// Send the refit when one is due. No window to refit is not an error.
+    pub fn poll(&mut self, path: &PathBuf, now: Instant) -> Option<io::Result<bool>> {
+        if !self.due.first().is_some_and(|due| now >= *due) {
+            return None;
+        }
+        self.due.remove(0);
+        let result = connect(path).and_then(|mut stream| command(&mut stream, REFIT_WINDOWS));
+        if let Err(error) = &result {
+            eprintln!("k230-touch-trackpad: window refit failed: {:?}", error.kind());
+        }
+        Some(result)
+    }
+}
+
 fn move_command(seq: u64, point: Point) -> String {
     format!(
         "card_shell trackpad move {seq} {:.6} {:.6} {}",
@@ -484,6 +518,48 @@ mod tests {
         assert!(mapping.restore(&path).is_ok());
         server.join().unwrap();
         drop(listener);
+        std::fs::remove_dir_all(directory).unwrap();
+    }
+
+    #[test]
+    fn an_output_change_refits_app_windows_twice_and_only_when_due() {
+        use std::os::unix::{fs::PermissionsExt, net::UnixListener};
+        let directory = std::env::temp_dir().join(format!(
+            "k230-refit-{}-{}", std::process::id(), monotonic_ms()
+        ));
+        std::fs::create_dir(&directory).unwrap();
+        std::fs::set_permissions(&directory, std::fs::Permissions::from_mode(0o700)).unwrap();
+        let path = directory.join("sway.sock");
+        let listener = UnixListener::bind(&path).unwrap();
+        let server = std::thread::spawn(move || {
+            for _ in 0..2 {
+                let (mut stream, _) = listener.accept().unwrap();
+                stream.set_read_timeout(Some(Duration::from_secs(2))).unwrap();
+                let mut header = [0; 14];
+                stream.read_exact(&mut header).unwrap();
+                let mut body = vec![0; u32::from_ne_bytes(header[6..10].try_into().unwrap()) as usize];
+                stream.read_exact(&mut body).unwrap();
+                assert_eq!(String::from_utf8(body).unwrap(), REFIT_WINDOWS);
+                let reply = b"[{\"success\":true},{\"success\":true}]";
+                let mut frame = b"i3-ipc".to_vec();
+                frame.extend((reply.len() as u32).to_ne_bytes());
+                frame.extend(0u32.to_ne_bytes());
+                frame.extend(reply);
+                stream.write_all(&frame).unwrap();
+            }
+        });
+        let mut refit = WindowRefit::default();
+        let start = Instant::now();
+        assert!(refit.poll(&path, start + Duration::from_secs(60)).is_none(), "nothing scheduled");
+        refit.schedule(start);
+        assert!(refit.poll(&path, start).is_none(), "not before the output settles");
+        assert!(matches!(refit.poll(&path, start + WindowRefit::DELAYS[0]), Some(Ok(true))));
+        assert!(refit.poll(&path, start + WindowRefit::DELAYS[0]).is_none(), "once per delay");
+        assert!(matches!(refit.poll(&path, start + WindowRefit::DELAYS[1]), Some(Ok(true))));
+        assert!(refit.poll(&path, start + Duration::from_secs(60)).is_none(), "then done");
+        server.join().unwrap();
+        // Video windows keep their own size; everything else is matched.
+        assert!(REFIT_WINDOWS.contains("(?!k230-video-)"));
         std::fs::remove_dir_all(directory).unwrap();
     }
 
