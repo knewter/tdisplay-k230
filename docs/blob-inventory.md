@@ -761,6 +761,14 @@ DATA ebc175d2acd4816f5ae26f54fcca81158565c499c88146b4b1d8e693931c8582 docs/evide
 DATA fd28b3884a4b4c93e4720a931c286dbcbc7e7339c1fa070fdfad6d8b547458fe docs/evidence/backlight/runtime-recovery/cycled-26-128-255.jpg
 DATA d2f33d7a70abbaaa6bc8f6e16e309536bbba828c6e51b3c8b63f269deaec3c92 docs/evidence/backlight/runtime-recovery/live-26-128-255.jpg
 DATA 53d41ebcc10164feb3cd70821119b7c6a83ce62b70c339548fe3b98764928d61 docs/evidence/backlight/runtime-recovery/off-on-128.jpg
+DATA a5e85404002a301c945fdd3a80eeb878f9b0a37c9f60f07e7ded8c4c552d7d6a docs/evidence/card-jobs/host-dark-default-landscape.png
+DATA d198ed2f8ade0d14f595826bac42e2f943eab14ef73fc5fc638afc144c0dcc3c docs/evidence/card-jobs/host-dark-default-portrait.png
+DATA 1b2b279fa5c0735303795b0bdbaf6fa8bee94dbfc16acc22eb09d2c026912aab docs/evidence/card-jobs/host-dark-largest-landscape.png
+DATA f714891ec8d8502c12b70bb22c4773e839a474ff1dbd1fabde9174cbecc0434a docs/evidence/card-jobs/host-dark-largest-portrait.png
+DATA ff3e1c3856ce9e963f05304f90ad0ac218dc834023cf0d9ddb91edd8578da391 docs/evidence/card-jobs/host-latte-default-landscape.png
+DATA 929a9cf9e33d008f9040e0be57c68ea4ac2b3afab0cb9403657548f1037f2714 docs/evidence/card-jobs/host-latte-default-portrait.png
+DATA 35d6a5e23c99b9dc771c1b2a722ade827cdb365fe7997384b093a853a685ffd2 docs/evidence/card-jobs/host-latte-largest-landscape.png
+DATA b398a501fe669fa51f7ff2593a046f8a7a41f2f0665ae1d4e6b328e3aff3874e docs/evidence/card-jobs/host-latte-largest-portrait.png
 DATA d5a067cf58487b011cb292b25575beb69455e4de7fdcc496b1fab130c4c0aa27 docs/evidence/card-shell/transparent-corners/argb-child.png
 DATA e2e03191c80b95f5d5447ea6c335ce7562611a3e414c6c1e8b5e2ae3b9f96036 docs/evidence/card-shell/transparent-corners/baseline.png
 DATA 5194b788f0935fc0d1a20f4da641cc65aeca78c6a70c14d4635ddaec56d4fc8c docs/evidence/card-shell/transparent-corners/before.png
@@ -1891,6 +1899,18 @@ DATA 8b0f1bfa6b50fd0ae6fd1db609decbc22e800a8ceac84f746e01bae6f4e46f61 docs/evide
 DATA f08588cb20f272da51d3e69f941e5130a1d040e13b5b7f8b0d36e74cd58585c2 docs/evidence/hdmi-hotplug/landscape/wide-reflow/wifi-list-1280x800.png
 DATA 95178d12ade837cc1fda9a03e7a58bbed213230e845e0a64eb79e4185fe1c65b docs/evidence/hdmi-hotplug/landscape/wide-reflow/wifi-list-1920x1080.png
 DATA 0938edbc429fe58e4ccc4f16e4f25e163b8a8c3664f8a298bed8b8c19bfc7f1d docs/evidence/shell-responsive/board/acceptance-2026-10-09/home.png
+DATA 8ed667a929be7d67c1d26694da4d7ec3a531f20fcc33bd4864d75f96f8bded60 docs/evidence/shell-responsive/drawer-1080x1920.png
+DATA 01769210c5012d06b67d575d23b1b7475f4949af773d7bfc44401688f84e2377 docs/evidence/shell-responsive/drawer-1920x1080.png
+DATA 6b27c0d9103cb3012ce1d792373ef0a42f5614c9cf66001778ebb14c4dc3e822 docs/evidence/shell-responsive/drawer-568x1232.png
+DATA ebb91163a40502f6b631668958ea5b0ab1fcc8fd4754b0d77ace98d724292743 docs/evidence/shell-responsive/drawer-768x1024.png
+DATA b05d2d79300fbdae27772bca67427b78ed986743230cfca4eecbfcbc57d87bf8 docs/evidence/shell-responsive/home-1080x1920.png
+DATA e12860142abdf9395a4400e1c877baac17504d880f659a24a0c612c6bba6b099 docs/evidence/shell-responsive/home-1920x1080.png
+DATA 00bd95f2f3699e9a3fd9b65446134c01bac6d14974ab1c84f7f722073b34f4d3 docs/evidence/shell-responsive/home-568x1232.png
+DATA 5742a0fa3ff6e4de023ae83875234f71bec4cccbeec6e4ad8c108d97d91fe3b8 docs/evidence/shell-responsive/home-768x1024.png
+DATA f6c79777e272bf7d5d87d3ce97c9e01bc82d4eb0b3cdf651833a60c13dd9b2a4 docs/evidence/shell-responsive/settings-1080x1920.png
+DATA dd6f2a3753125acffecc720391fd27aa9e31639115418f1e993945c1d6808f7b docs/evidence/shell-responsive/settings-1920x1080.png
+DATA 6ee6e4579ebd967337c44bec1934adba71af6ad64ccd14b760ea470eaed89b57 docs/evidence/shell-responsive/settings-568x1232.png
+DATA b1a9a737cb73eef4abd8c94ab5b8888a683cb6f853b1bd810734c090104b12d0 docs/evidence/shell-responsive/settings-768x1024.png
 # Current UX candidate native captures — 2026-10-09
 DATA 83c8b4261beb9621eaaeed8c8e6c1d4fe25bb16abbad63de4234355d25e16de8 docs/evidence/ux-review-round-2/candidate-2026-10-09/overview.png
 DATA 2d009ee5c0b97bfc21e04592bd099b0f21643bafe660043ed9d0a3e7c418b286 docs/evidence/ux-review-round-2/candidate-2026-10-09/drawer.png
@@ -2693,6 +2713,14 @@ These DATA screenshots are headless-QEMU captures of synthetic fixture clients s
 
 | File | Bytes | Kind | SHA256 |
 | --- | ---: | --- | --- |
+| `docs/evidence/card-jobs/host-dark-default-landscape.png` | 146655 | DATA | `a5e85404002a301c945fdd3a80eeb878f9b0a37c9f60f07e7ded8c4c552d7d6a` |
+| `docs/evidence/card-jobs/host-dark-default-portrait.png` | 175666 | DATA | `d198ed2f8ade0d14f595826bac42e2f943eab14ef73fc5fc638afc144c0dcc3c` |
+| `docs/evidence/card-jobs/host-dark-largest-landscape.png` | 218874 | DATA | `1b2b279fa5c0735303795b0bdbaf6fa8bee94dbfc16acc22eb09d2c026912aab` |
+| `docs/evidence/card-jobs/host-dark-largest-portrait.png` | 223608 | DATA | `f714891ec8d8502c12b70bb22c4773e839a474ff1dbd1fabde9174cbecc0434a` |
+| `docs/evidence/card-jobs/host-latte-default-landscape.png` | 138593 | DATA | `ff3e1c3856ce9e963f05304f90ad0ac218dc834023cf0d9ddb91edd8578da391` |
+| `docs/evidence/card-jobs/host-latte-default-portrait.png` | 170469 | DATA | `929a9cf9e33d008f9040e0be57c68ea4ac2b3afab0cb9403657548f1037f2714` |
+| `docs/evidence/card-jobs/host-latte-largest-landscape.png` | 207003 | DATA | `35d6a5e23c99b9dc771c1b2a722ade827cdb365fe7997384b093a853a685ffd2` |
+| `docs/evidence/card-jobs/host-latte-largest-portrait.png` | 215313 | DATA | `b398a501fe669fa51f7ff2593a046f8a7a41f2f0665ae1d4e6b328e3aff3874e` |
 | `docs/evidence/card-shell/overview-home-bleed-through/after-overview-home-hidden.png` | 24294 | DATA | `2d4f8420c1db9d1f40c9217ee3d4ba646270226f2525ea4eeb8918a3e3cb50a0` |
 | `docs/evidence/card-shell/overview-home-bleed-through/before-app-focused.png` | 7292 | DATA | `a4d56bc27c4eba894cb36931c3030a018f1d0945414129a800295786787dd217` |
 | `docs/evidence/card-shell/overview-home-bleed-through/before-overview-home-bleeds-through.png` | 24358 | DATA | `a1a9df92965e1208b1f2bc1d3f1b20a7f1bc26d4f9d4322db2ec18ff47e618de` |
@@ -3222,6 +3250,18 @@ acceptance is recorded separately in its evidence directory.
 | Path | Bytes | Class | SHA256 |
 | --- | ---: | --- | --- |
 | `docs/evidence/shell-responsive/board/acceptance-2026-10-09/home.png` | 359917 | DATA | `0938edbc429fe58e4ccc4f16e4f25e163b8a8c3664f8a298bed8b8c19bfc7f1d` |
+| `docs/evidence/shell-responsive/drawer-1080x1920.png` | 41437 | DATA | `8ed667a929be7d67c1d26694da4d7ec3a531f20fcc33bd4864d75f96f8bded60` |
+| `docs/evidence/shell-responsive/drawer-1920x1080.png` | 72343 | DATA | `01769210c5012d06b67d575d23b1b7475f4949af773d7bfc44401688f84e2377` |
+| `docs/evidence/shell-responsive/drawer-568x1232.png` | 43659 | DATA | `6b27c0d9103cb3012ce1d792373ef0a42f5614c9cf66001778ebb14c4dc3e822` |
+| `docs/evidence/shell-responsive/drawer-768x1024.png` | 93775 | DATA | `ebb91163a40502f6b631668958ea5b0ab1fcc8fd4754b0d77ace98d724292743` |
+| `docs/evidence/shell-responsive/home-1080x1920.png` | 57734 | DATA | `b05d2d79300fbdae27772bca67427b78ed986743230cfca4eecbfcbc57d87bf8` |
+| `docs/evidence/shell-responsive/home-1920x1080.png` | 47737 | DATA | `e12860142abdf9395a4400e1c877baac17504d880f659a24a0c612c6bba6b099` |
+| `docs/evidence/shell-responsive/home-568x1232.png` | 40463 | DATA | `00bd95f2f3699e9a3fd9b65446134c01bac6d14974ab1c84f7f722073b34f4d3` |
+| `docs/evidence/shell-responsive/home-768x1024.png` | 43641 | DATA | `5742a0fa3ff6e4de023ae83875234f71bec4cccbeec6e4ad8c108d97d91fe3b8` |
+| `docs/evidence/shell-responsive/settings-1080x1920.png` | 30547 | DATA | `f6c79777e272bf7d5d87d3ce97c9e01bc82d4eb0b3cdf651833a60c13dd9b2a4` |
+| `docs/evidence/shell-responsive/settings-1920x1080.png` | 25450 | DATA | `dd6f2a3753125acffecc720391fd27aa9e31639115418f1e993945c1d6808f7b` |
+| `docs/evidence/shell-responsive/settings-568x1232.png` | 20695 | DATA | `6ee6e4579ebd967337c44bec1934adba71af6ad64ccd14b760ea470eaed89b57` |
+| `docs/evidence/shell-responsive/settings-768x1024.png` | 21488 | DATA | `b1a9a737cb73eef4abd8c94ab5b8888a683cb6f853b1bd810734c090104b12d0` |
 
 ### Coherent-shell integration gate captures (2026-10-10)
 

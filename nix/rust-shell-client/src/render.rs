@@ -755,8 +755,15 @@ fn service_card_state(
 fn service_card_interaction(cr: &Context, theme: Option<&AppearanceSnapshot>, section: &str,
                             x: f64, y: f64, w: f64, h: f64,
                             selected: bool, pressed: bool, focused: bool) {
+    service_card_shaped(cr, theme, section, (x, y, w, h), CARD_RADIUS_CONTROL, selected, pressed, focused);
+}
+
+#[allow(clippy::too_many_arguments)]
+fn service_card_shaped(cr: &Context, theme: Option<&AppearanceSnapshot>, section: &str,
+                       (x, y, w, h): (f64, f64, f64, f64), radius: f64,
+                       selected: bool, pressed: bool, focused: bool) {
     let _ = cr.save();
-    rounded(cr, x, y, w, h, 16.0);
+    rounded(cr, x, y, w, h, radius);
     cr.clip();
     let brush = theme_brush(
         theme,
@@ -807,12 +814,78 @@ fn service_card_interaction(cr: &Context, theme: Option<&AppearanceSnapshot>, se
     let _ = cr.restore();
 
     // Idle rims remain omitted; focus/hover/selection are transient or explicit.
-    paint_control_border(cr, theme, section, state, x, y, w, h);
+    paint_control_border(cr, theme, section, state, (x, y, w, h), radius);
+}
+
+/// Card radii by job (`the-shell-has-one-visual-language` design.md §9).
+const CARD_RADIUS_GROUP: f64 = 24.0;
+const CARD_RADIUS_CONTROL: f64 = 16.0;
+
+/// The three card treatments, by job (design.md §9).
+#[derive(Clone, Copy, Debug, PartialEq)]
+enum CardJob {
+    /// A container of rows: the flat theme tint.
+    Group,
+    /// A row that acts: a slightly stronger tint and a 1 px top-edge
+    /// highlight in the text colour at 10%.
+    Control,
+    /// The current choice: the accent at 18% and a 2 px accent rim. `pill`
+    /// rounds it fully, for segments and chips.
+    Chosen { pill: bool },
+}
+
+/// The Control tint's extra over the theme's flat card, and its highlight.
+const CONTROL_TINT_ALPHA: f64 = 0.05;
+/// Grab handles are not choices: the text colour, half strength.
+const HANDLE_ALPHA: f64 = 0.5;
+const CONTROL_EDGE_ALPHA: f64 = 0.10;
+const CHOSEN_FILL_ALPHA: f64 = 0.18;
+const CHOSEN_RIM: f64 = 2.0;
+
+#[allow(clippy::too_many_arguments)]
+/// The Control treatment over whatever the clip already shapes: the extra
+/// tint and the 1 px top-edge highlight.
+fn control_overlay(cr: &Context, ink: u32, x: f64, y: f64, w: f64) {
+    color(cr, ink, CONTROL_TINT_ALPHA);
+    let _ = cr.paint();
+    color(cr, ink, CONTROL_EDGE_ALPHA);
+    cr.rectangle(x, y, w, 1.0);
+    let _ = cr.fill();
+}
+
+#[allow(clippy::too_many_arguments)]
+fn paint_card(cr: &Context, theme: Option<&AppearanceSnapshot>, section: &str, job: CardJob,
+              x: f64, y: f64, w: f64, h: f64) {
+    let style = visual_style(theme, section);
+    let radius = match job {
+        CardJob::Group => CARD_RADIUS_GROUP,
+        CardJob::Control => CARD_RADIUS_CONTROL,
+        CardJob::Chosen { pill: true } => (h.min(w) / 2.0).max(0.0),
+        CardJob::Chosen { pill: false } => CARD_RADIUS_CONTROL,
+    };
+    service_card_shaped(cr, theme, section, (x, y, w, h), radius, false, false, false);
+    let _ = cr.save();
+    rounded(cr, x, y, w, h, radius);
+    cr.clip();
+    match job {
+        CardJob::Group => {}
+        CardJob::Control => control_overlay(cr, style.text, x, y, w),
+        CardJob::Chosen { .. } => {
+            color(cr, style.accent, CHOSEN_FILL_ALPHA);
+            let _ = cr.paint();
+            let inset = CHOSEN_RIM / 2.0;
+            rounded(cr, x + inset, y + inset, w - CHOSEN_RIM, h - CHOSEN_RIM, (radius - inset).max(0.0));
+            cr.set_line_width(CHOSEN_RIM);
+            color(cr, style.accent, 1.0);
+            let _ = cr.stroke();
+        }
+    }
+    let _ = cr.restore();
 }
 
 #[allow(clippy::too_many_arguments)]
 fn paint_control_border(cr: &Context, theme: Option<&AppearanceSnapshot>, section: &str,
-                        state: &str, x: f64, y: f64, w: f64, h: f64) {
+                        state: &str, (x, y, w, h): (f64, f64, f64, f64), radius: f64) {
     if state != "normal" {
         let border_section = if state == "selected" { section } else { "controls" };
         let widths = match theme.and_then(|s| s.token(border_section, &format!("{state}-border-width"))) {
@@ -822,7 +895,7 @@ fn paint_control_border(cr: &Context, theme: Option<&AppearanceSnapshot>, sectio
         if let Some(border) = theme_brush(theme, border_section, &format!("{state}-border")) {
             if let Some(gradient) = brush_gradient(border, x, y, w, h) {
                 let _ = cr.save();
-                rounded(cr, x, y, w, h, 16.0);
+                rounded(cr, x, y, w, h, radius);
                 cr.clip();
                 if cr.set_source(&gradient).is_ok() {
                     // Stroke each edge within its own strip, retaining rounded
@@ -835,7 +908,7 @@ fn paint_control_border(cr: &Context, theme: Option<&AppearanceSnapshot>, sectio
                         let _ = cr.save();
                         cr.rectangle(strip.0, strip.1, strip.2, strip.3);
                         cr.clip();
-                        rounded(cr, x, y, w, h, 16.0);
+                        rounded(cr, x, y, w, h, radius);
                         cr.set_line_width(width * 2.0);
                         let _ = cr.stroke();
                         let _ = cr.restore();
@@ -1453,9 +1526,12 @@ fn paint_grid(
             color(cr, style.accent, 0.28);
             let _ = cr.fill();
         }
+        // The Chosen rim (design.md §9) around the current theme; its
+        // preview stays unfilled.
         if card.current {
-            rounded(cr, x - 3.0, y - 3.0, w + 6.0, h + 6.0, 16.0);
-            cr.set_line_width(3.0);
+            let out = CHOSEN_RIM + 1.0;
+            rounded(cr, x - out, y - out, w + 2.0 * out, h + 2.0 * out, 14.0 + out);
+            cr.set_line_width(CHOSEN_RIM);
             color(cr, style.accent, 1.0);
             let _ = cr.stroke();
         }
@@ -1503,38 +1579,46 @@ fn paint_vision(cr: &Context, w: f64, h: f64, view: &ThemeView, theme: Option<&A
 
     // Text size: one card with the four steps as segments.
     let (x, y, cw, ch) = lay.text_card;
-    service_card(cr, theme, "controls", x, y, cw, ch, false);
+    paint_card(cr, theme, "controls", CardJob::Group, x, y, cw, ch);
     let text_applying = pending.is_some_and(|p| p.text_scale != view.vision.text_scale);
     let step = shown.text_step();
     let heading_value = state(text_applying, &format!("{}%", (TEXT_SCALE_VALUES[step] * 100.0).round()));
     let value_w = text_advance(cr, &heading_value, TYPE_LABEL, pango::Weight::Medium);
     text_weight(cr, &heading_value, x + cw - 20.0 - value_w, y + 18.0, value_w + 2.0, TYPE_LABEL,
-                if view.vision_loaded { style.accent } else { ink }, pango::Weight::Medium);
+                ink, pango::Weight::Medium);
     themed_role_fit(cr, theme, "body", "Text size", x + 20.0, y + 18.0, cw - 60.0 - value_w, TYPE_LABEL, ink, pango::Weight::Medium);
     for (index, (sx, sy, sw, sh)) in lay.segments.into_iter().enumerate() {
-        let selected = index == step && view.vision_loaded;
-        service_card(cr, theme, "controls", sx, sy, sw, sh, selected);
         let label = format!("{}%", (TEXT_SCALE_VALUES[index] * 100.0).round());
         // Shrinks toward the Body role to fit its segment at a larger step.
         let full = context_font_size(cr, TYPE_BODY);
         let advance = text_advance_resolved(cr, &label, full, pango::Weight::Bold);
         let room = sw - 12.0;
         let drawn = if advance > room { (full * room / advance).max(TYPE_BODY) } else { full };
+        // The chosen step is the page's one accent: a pill around its
+        // label (the whole segment stays the tap target). The others are
+        // bare labels inside the group.
+        let selected = index == step && view.vision_loaded;
+        if selected {
+            let pill_h = (drawn * 1.2 + 2.0 * SPACE_IN_ROW).min(sh);
+            paint_card(cr, theme, "controls", CardJob::Chosen { pill: true },
+                       sx + 2.0, sy + (sh - pill_h) / 2.0, sw - 4.0, pill_h);
+        }
         let lw = text_advance_resolved(cr, &label, drawn, pango::Weight::Bold);
         text_weight_resolved(cr, &label, sx + (sw - lw) / 2.0, sy + (sh - drawn * 1.2) / 2.0, lw + 2.0, drawn,
-                             if selected { style.accent } else { ink }, pango::Weight::Bold);
+                             ink, pango::Weight::Bold);
     }
 
     // High contrast: one on/off card.
     let (x, y, cw, ch) = lay.contrast_card;
     let on = shown.high_contrast();
-    service_card(cr, theme, "controls", x, y, cw, ch, on);
+    let job = if on { CardJob::Chosen { pill: false } } else { CardJob::Control };
+    paint_card(cr, theme, "controls", job, x, y, cw, ch);
     themed_role_fit(cr, theme, "body", "High contrast", x + 20.0, y + 18.0, cw - 40.0, TYPE_LABEL, ink, pango::Weight::Medium);
     let contrast_applying = pending.is_some_and(|p| p.contrast != view.vision.contrast);
     let value = state(contrast_applying, if on { "On" } else { "Off" });
     let label_h = (TYPE_LABEL * lay.scale * 1.35).ceil();
     themed_role_fit(cr, theme, "body", &value, x + 20.0, y + 18.0 + label_h + 6.0, cw - 40.0, TYPE_BODY,
-                    if on && view.vision_loaded { style.accent } else { ink }, pango::Weight::Normal);
+                    ink, pango::Weight::Normal);
 
     let (sx, sw) = (lay.text_card.0, lay.contrast_card.0 + lay.contrast_card.2 - lay.text_card.0);
     if let Some(error) = view.error.as_deref() {
@@ -2672,7 +2756,7 @@ fn paint_drawer_chrome(
     let style = visual_style(theme, "launcher");
     let (hx, hy, hw, hh) = navigation::handle_rect(width, height);
     rounded(cr, hx, hy, hw, hh, hh / 2.0);
-    color(cr, style.accent, 0.7);
+    color(cr, style.text, HANDLE_ALPHA);
     let _ = cr.fill();
 
     let (hx, hy, hw, hh) = navigation::help_rect(width, height);
@@ -2680,7 +2764,7 @@ fn paint_drawer_chrome(
     // A larger vision step centres the larger label; 100% keeps its offset.
     let lifted = crate::layout_text_scale() > 1.0;
     let help_y = if lifted { hy + (hh - context_font_size(cr, 18.0) * 1.2) / 2.0 } else { hy + 16.0 };
-    text(cr, "Help", hx + 12.0, help_y, hw - 24.0, 18.0, style.accent);
+    text(cr, "Help", hx + 12.0, help_y, hw - 24.0, 18.0, style.text);
     let (sx, sy, sw, sh) = search_field_rect(width, height);
     rounded(cr, sx, sy, sw, sh, sh / 2.0);
     let _ = cr.save();
@@ -2691,6 +2775,7 @@ fn paint_drawer_chrome(
         color(cr, palette_rgb_or(theme, "surface2", 0x2a2f3a), 1.0);
         let _ = cr.paint();
     }
+    control_overlay(cr, style.text, sx, sy, sw);
     let _ = cr.restore();
 
     service_card_interaction(cr, theme, "launcher", sx, sy, sw, sh, false, false, search.focused);
@@ -2801,13 +2886,13 @@ fn paint_shade_header(
     let link_room = shade_link_w(hw) - 24.0;
     let row_room = hw - 28.0 - 24.0 - 16.0;
     let (title_size, settings_size, settings_w) = share(
-        ("Notifications", TYPE_TITLE, pango::Weight::Bold), ("Settings", TYPE_LABEL), row_room, link_room,
+        ("Notifications", TYPE_TITLE, pango::Weight::Bold), ("Settings ›", TYPE_LABEL), row_room, link_room,
     );
     let title_y = panel_y + 16.0;
     let title_h = line(title_size);
     heading(cr, "Notifications", 28.0, title_y, row_room - settings_w, title_size, style.text);
     let settings_y = title_y + (title_h - line(settings_size)) / 2.0;
-    text(cr, "Settings", hw - 24.0 - settings_w, settings_y, settings_w, settings_size, style.accent);
+    text(cr, "Settings ›", hw - 24.0 - settings_w, settings_y, settings_w, settings_size, style.text);
 
     // The rows under the Title keep their ratio to it: when a narrow
     // column shrinks the Title, they shrink with it (to the Label floor).
@@ -2857,6 +2942,7 @@ fn paint_shade_header(
     };
     if count > 0 {
         let dismiss_y = count_y + (count_h - line(dismiss_size)) / 2.0;
+        // The Shade's one primary action takes the accent (design.md §10).
         text(cr, "Dismiss all", hw - 24.0 - dismiss_w, dismiss_y, dismiss_w, dismiss_size, style.accent);
     }
     let count_room = hw - 56.0 - if count > 0 { dismiss_w + 16.0 } else { 0.0 };
@@ -2880,7 +2966,7 @@ fn paint_settings_header(cr: &Context, theme: Option<&AppearanceSnapshot>, style
         let room = x1 - x0 - 24.0;
         let size = fit(label, TYPE_LABEL, room, pango::Weight::Normal);
         let advance = text_advance(cr, label, size, pango::Weight::Normal) + 2.0;
-        text(cr, label, x1 - 24.0 - advance, y_mid - vision_line(size) / 2.0, advance, size, style.accent);
+        text(cr, label, x1 - 24.0 - advance, y_mid - vision_line(size) / 2.0, advance, size, style.text);
     };
     link("Done", (head.done_x, w), line_mid);
     let links_mid = (head.links_y.0 + head.links_y.1) / 2.0;
@@ -2899,11 +2985,11 @@ fn paint_chooser_header(cr: &Context, style: VisualStyle, w: f64, h: f64) -> f64
         if advance > room * 0.96 { size * room * 0.96 / advance } else { size }
     };
     let back_size = fit("‹ Settings", TYPE_LABEL, back_right - 28.0 - 8.0);
-    text(cr, "‹ Settings", 28.0, lay.header_y, back_right - 28.0, back_size, style.accent);
+    text(cr, "‹ Settings", 28.0, lay.header_y, back_right - 28.0, back_size, style.text);
     let close_room = w - 24.0 - close_left - 8.0;
     let close_size = fit("Close", TYPE_LABEL, close_room);
     let close_w = text_advance(cr, "Close", close_size, pango::Weight::Normal) + 2.0;
-    text(cr, "Close", w - 24.0 - close_w, lay.header_y, close_w, close_size, style.accent);
+    text(cr, "Close", w - 24.0 - close_w, lay.header_y, close_w, close_size, style.text);
     lay.header_y + vision_line(back_size.max(close_size))
 }
 
@@ -2985,7 +3071,7 @@ fn paint_drawer(
             overlay_brush(cr, theme_brush(theme, "controls", "hover-cursor-color"), x, y, tw, th,
                 theme_number(theme, "controls", "hover-cursor-fill-alpha").unwrap_or(0.08).clamp(0.0, 1.0), style.accent);
             let _ = cr.restore();
-            paint_control_border(cr, theme, "controls", "hover-cursor", x, y, tw, th);
+            paint_control_border(cr, theme, "controls", "hover-cursor", (x, y, tw, th), CARD_RADIUS_CONTROL);
             let _ = cr.restore();
         }
     }
@@ -3111,7 +3197,7 @@ fn scene(
     // Nothing is painted here -- see this function's own doc above.
     if route == Route::Shade {
         rounded(cr, w / 2.0 - 36.0, panel_y + 11.0, 72.0, 6.0, 3.0);
-        color(cr, style.accent, 0.82);
+        color(cr, style.text, HANDLE_ALPHA);
         let _ = cr.fill();
     }
     let title = match route {
@@ -3185,7 +3271,7 @@ fn scene(
             if let Some(settings) = services.and_then(|view| view.settings.as_ref()) {
                 let keyboard = &settings.keyboard;
                 let y = SHADE_TOGGLE_TOP + 4.0;
-                service_card(cr, theme, "controls", 24.0, y, hw - 48.0, shade_toggle_h() - 8.0, false);
+                paint_card(cr, theme, "controls", CardJob::Control, 24.0, y, hw - 48.0, shade_toggle_h() - 8.0);
                 let available = keyboard.state == ControlState::Action;
                 let ink = if available { style.text } else { style.muted };
                 // The helper keeps the label "Toggle keyboard" in both states,
@@ -3253,7 +3339,7 @@ fn scene(
                         );
                     }
                     let source_y = 262.0 + SHADE_TILE_INSET;
-                    themed_role_fit(cr, theme, "body", &preview.source, 94.0, source_y, w - 132.0, TYPE_LABEL, style.accent, pango::Weight::Normal);
+                    themed_role_fit(cr, theme, "body", &preview.source, 94.0, source_y, w - 132.0, TYPE_LABEL, style.text, pango::Weight::Medium);
                     let summary_y = source_y + vision_line(TYPE_LABEL);
                     themed_role_fit(cr, theme, "body", &preview.summary, 94.0, summary_y, w - 132.0, TYPE_BODY, style.text, pango::Weight::Normal);
                 } else {
@@ -3345,7 +3431,7 @@ fn scene(
                         );
                     }
                     let text_w = w - text_x - 40.0;
-                    themed_role_fit(cr, theme, "body", &event.source, text_x, source_y, text_w, TYPE_LABEL, style.accent, pango::Weight::Normal);
+                    themed_role_fit(cr, theme, "body", &event.source, text_x, source_y, text_w, TYPE_LABEL, style.text, pango::Weight::Medium);
                     themed_role_fit(cr, theme, "body", &event.summary, text_x, summary_y, text_w, TYPE_BODY, style.text, pango::Weight::Normal);
                     // A failed action's reason takes the body's line.
                     match &event.error {
@@ -3449,7 +3535,7 @@ fn scene(
                     place(settings_row_column(row));
                     let y = settings_row_y(row);
                     let (label_dy, value_dy, caption_dy, _) = settings_row_lines(row);
-                    service_card(cr, theme, "controls", 24.0, y, w - 48.0, settings_row_h(row), false);
+                    paint_card(cr, theme, "controls", CardJob::Control, 24.0, y, w - 48.0, settings_row_h(row));
                     themed_role_fit(cr, theme, "body", name, row_text_x, y + label_dy, row_text_width, TYPE_LABEL, style.text, pango::Weight::Medium);
                     themed_role_fit(cr, theme, "body", &control_text(control), row_text_x, y + value_dy, row_text_width, TYPE_BODY, style.text, pango::Weight::Normal);
                     if name == "Keyboard" && services.is_some_and(|view| view.keyboard_gesture_hint)
@@ -3479,7 +3565,7 @@ fn scene(
                 place(settings_row_column(SETTINGS_VOLUME_ROW));
                 let volume_y = settings_row_y(SETTINGS_VOLUME_ROW);
                 let volume_lines = settings_row_lines(SETTINGS_VOLUME_ROW);
-                service_card(cr, theme, "controls", 24.0, volume_y, w - 48.0, settings_row_h(SETTINGS_VOLUME_ROW), false);
+                paint_card(cr, theme, "controls", CardJob::Control, 24.0, volume_y, w - 48.0, settings_row_h(SETTINGS_VOLUME_ROW));
                 themed_role_fit(cr, theme, "body", "Volume", row_text_x, volume_y + volume_lines.0, row_text_width, TYPE_LABEL, style.text, pango::Weight::Medium);
                 if let Some(sink) = default_sink(services.and_then(|view| view.audio.as_ref())) {
                     let percent = volume::linear_to_percent(sink.linear_volume);
@@ -3521,7 +3607,7 @@ fn scene(
                     place(settings_row_column(SETTINGS_KEY_BACKLIGHT_ROW));
                     let y = settings_row_y(SETTINGS_KEY_BACKLIGHT_ROW);
                     let lines = settings_row_lines(SETTINGS_KEY_BACKLIGHT_ROW);
-                    service_card(cr, theme, "controls", 24.0, y, w - 48.0, settings_row_h(SETTINGS_KEY_BACKLIGHT_ROW), false);
+                    paint_card(cr, theme, "controls", CardJob::Control, 24.0, y, w - 48.0, settings_row_h(SETTINGS_KEY_BACKLIGHT_ROW));
                     themed_role_fit(cr, theme, "body", "Key backlight", row_text_x, y + lines.0, row_text_width, TYPE_LABEL, style.text, pango::Weight::Medium);
                     themed_role_fit(cr, theme, "body", level.label(), row_text_x, y + lines.1, row_text_width, TYPE_BODY, style.text, pango::Weight::Normal);
                     paint_level_slider(cr, style, w, y + lines.3, level.index(), 3);
@@ -3548,27 +3634,9 @@ fn scene(
             place(2);
             if services.and_then(|view| view.settings.as_ref()).is_some() {
                 themed_role(cr, theme, "heading", "Power", 28.0, layout.power_heading_y, w - 56.0, TYPE_LABEL, style.muted, pango::Weight::Bold);
-                service_card(
-                    cr,
-                    theme,
-                    "controls",
-                    24.0,
-                    layout.reboot_y,
-                    w - 48.0,
-                    settings_power_card_h(),
-                    false,
-                );
+                paint_card(cr, theme, "controls", CardJob::Control, 24.0, layout.reboot_y, w - 48.0, settings_power_card_h());
                 themed_role_fit(cr, theme, "body", "Reboot…", 42.0, layout.reboot_y + power_label_dy, w - 84.0, TYPE_BODY, style.text, pango::Weight::Normal);
-                service_card(
-                    cr,
-                    theme,
-                    "controls",
-                    24.0,
-                    layout.poweroff_y,
-                    w - 48.0,
-                    settings_power_card_h(),
-                    false,
-                );
+                paint_card(cr, theme, "controls", CardJob::Control, 24.0, layout.poweroff_y, w - 48.0, settings_power_card_h());
                 themed_role_fit(cr, theme, "body", "Power off…", 42.0, layout.poweroff_y + power_label_dy, w - 84.0, TYPE_BODY, style.text, pango::Weight::Normal);
             }
             if let Some(confirm) = services.and_then(|view| view.confirmation.as_ref()) {
@@ -5156,7 +5224,7 @@ pub fn paint_home(
         f64::from(width) - 24.0,
         f64::from(height) - home_grid::dock_top(height) - 18.0,
     );
-    service_card(cr, theme, "launcher", dock_band.0, dock_band.1, dock_band.2, dock_band.3, false);
+    paint_card(cr, theme, "launcher", CardJob::Control, dock_band.0, dock_band.1, dock_band.2, dock_band.3);
     for slot in 0..home_grid::dock_slots(width, height) {
         let Some(item) = home.layout.dock.get(slot).and_then(Option::as_ref) else {
             continue;
@@ -10106,6 +10174,94 @@ mod tests {
         assert!(cache.pointer.is_none(), "invalid or removed pointer must clear hover");
     }
 
+    /// Groups of accent-coloured pixels in a frame: 8 px cells holding any
+    /// pixel within a small distance of `accent`, joined when within two
+    /// cells, so the words of one label are one group.
+    fn accent_groups(frame: &[u8], width: usize, height: usize, accent: u32) -> usize {
+        let (ar, ag, ab) = ((accent >> 16) as i32 & 0xff, (accent >> 8) as i32 & 0xff, accent as i32 & 0xff);
+        let cell = 8;
+        let (cw, ch) = (width.div_ceil(cell), height.div_ceil(cell));
+        let mut on = vec![false; cw * ch];
+        for y in 0..height {
+            for x in 0..width {
+                let i = (y * width + x) * 4;
+                let (b, g, r) = (frame[i] as i32, frame[i + 1] as i32, frame[i + 2] as i32);
+                if (r - ar).abs() + (g - ag).abs() + (b - ab).abs() <= 30 {
+                    on[(y / cell) * cw + x / cell] = true;
+                }
+            }
+        }
+        let mut groups = 0;
+        for start in 0..on.len() {
+            if !on[start] {
+                continue;
+            }
+            groups += 1;
+            let mut stack = vec![start];
+            on[start] = false;
+            while let Some(index) = stack.pop() {
+                let (cx, cy) = ((index % cw) as i64, (index / cw) as i64);
+                for dy in -2..=2 {
+                    for dx in -2..=2 {
+                        let (nx, ny) = (cx + dx, cy + dy);
+                        if nx >= 0 && ny >= 0 && (nx as usize) < cw && (ny as usize) < ch {
+                            let next = ny as usize * cw + nx as usize;
+                            if on[next] {
+                                on[next] = false;
+                                stack.push(next);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        groups
+    }
+
+    #[test]
+    fn the_accent_marks_only_the_current_choice_on_settings_vision_and_the_shade() {
+        use crate::service_data::{ControlState, NotificationSnapshot};
+        // No sliders: a slider's filled track is its own current value and
+        // is counted apart from this rule. Brightness read only, no audio.
+        let mut settings = crate::evidence_render::fixture_settings();
+        settings.brightness.state = ControlState::ReadOnly;
+        let services = ServiceView {
+            settings: Some(settings),
+            notifications: Some(NotificationSnapshot {
+                count: 2,
+                events: crate::evidence_render::fixture_notification_events(2),
+                preview: None,
+            }),
+            ..ServiceView::default()
+        };
+        let accent = visual_style(None, "controls").accent;
+        for (width, height) in [(568u32, 1232u32), (1232, 568)] {
+            let draw = |route, vision: bool| {
+                let mut renderer = RendererCache::default();
+                renderer.set_services(services.clone());
+                if vision {
+                    renderer.set_theme_view(ThemeView {
+                        page: ThemePage::Vision,
+                        vision_loaded: true,
+                        ..ThemeView::default()
+                    });
+                }
+                let mut frame = vec![0; (width * height * 4) as usize];
+                renderer
+                    .draw(&mut frame, RenderParams { width, height, route, progress: 1.0, scroll: 0.0 }, &[])
+                    .unwrap();
+                accent_groups(&frame, width as usize, height as usize, accent)
+            };
+            // Links, Done, Close and a row's source are in the foreground
+            // colour; Settings has no current choice, and the Shade's one
+            // accent is its primary action, Dismiss all.
+            assert_eq!(draw(Route::Settings, false), 0, "Settings at {width}x{height}");
+            assert_eq!(draw(Route::Shade, false), 1, "Shade at {width}x{height}");
+            // Vision: only the chosen text step.
+            assert_eq!(draw(Route::Settings, true), 1, "Vision at {width}x{height}");
+        }
+    }
+
     #[test]
     fn theme_scrim_preserves_gradient_and_authored_opacity() {
         let mut theme = fixture_theme("scrim", (32, 64, 96));
@@ -10191,6 +10347,15 @@ mod tests {
         fn panel(theme: &AppearanceSnapshot, route: Route) -> Vec<u8> {
             let mut renderer = RendererCache::default();
             renderer.set_appearance(Some(theme.clone()));
+            // One notification, so the Shade shows its accent action.
+            renderer.set_services(ServiceView {
+                notifications: Some(crate::service_data::NotificationSnapshot {
+                    count: 1,
+                    events: crate::evidence_render::fixture_notification_events(1),
+                    preview: None,
+                }),
+                ..ServiceView::default()
+            });
             let mut pixels = vec![0; 568 * 1232 * 4];
             renderer.draw(&mut pixels, RenderParams { route, ..SETTINGS_PARAMS }, &[]).unwrap();
             pixels

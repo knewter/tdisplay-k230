@@ -42,15 +42,29 @@
 
 ## 3. Cards and the accent
 
-- [ ] 3.1 Implement the Chosen card treatment (accent fill and rim) and use
+- [x] 3.1 Implement the Chosen card treatment (accent fill and rim) and use
   it for the Vision segments, the High contrast card when on, and the
   current theme. Host renders at 100% and 200% in a dark and a light theme.
-- [ ] 3.2 Implement the Control card treatment and use it for Settings rows,
+  Done 2026-10-17: `paint_card` with `CardJob::Chosen`. The chosen
+  text-size step is a pill. Renders in catppuccin and catppuccin-latte are
+  in `docs/evidence/card-jobs/`.
+- [x] 3.2 Implement the Control card treatment and use it for Settings rows,
   the Shade controls, the drawer search and the dock.
-- [ ] 3.3 Apply the one-accent rule: links, Done and Close take the
+  Done 2026-10-17: `CardJob::Control` is applied to the Settings rows,
+  Reboot/Power off, the Shade's Keyboard toggle, the drawer search and
+  the dock. The Wi‑Fi pages, the Help buttons and the theme carousel are
+  not converted. See `docs/evidence/card-jobs/`.
+- [x] 3.3 Apply the one-accent rule: links, Done and Close take the
   foreground colour with a chevron; the accent stays on the current choice
   and one primary action per surface. Verify with a test that counts
   accent-coloured pixels groups per surface fixture. Host class.
+  Done 2026-10-17: links, Done, Close, values and source names use the
+  foreground colour. Navigation links carry a chevron (‹ Settings, Vision ›,
+  Themes ›, Settings ›); Done and Close dismiss and have none. "Dismiss all" is the Shade's primary action. Slider
+  fills are exempt as current-value marks. The test
+  `the_accent_marks_only_the_current_choice_on_settings_vision_and_the_shade`
+  counts the accent groups: Settings 0, Vision 1, Shade 1, in both
+  orientations.
 
 ## 4. Icons
 
@@ -73,5 +87,8 @@
   surface are readable and that the accent marks what is live. Board class;
   this task stays open until the operator has looked.
   Progress 2026-10-16: the operator looked at the restyled Clock on glass
-  (retro-82, 160%) and said "clock lookgs good". The other surfaces are not
-  restyled yet, so this stays open for them.
+  (retro-82, 160%) and said "clock lookgs good".
+  Progress 2026-10-17: after Settings, Vision and the Shade moved onto the
+  type roles (2.1), the operator said "text sizes are fine". This covers
+  readability only; the card treatments and the accent rule (3.x) and the
+  icons (4.1) still need their look.
