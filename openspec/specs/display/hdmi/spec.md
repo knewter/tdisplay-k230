@@ -132,7 +132,7 @@ vendor kernel/tree pair above remains host-only; the obsolete Settings reboot re
 
 With the combined mainline device tree, the system SHALL switch the active
 output to HDMI when a monitor is plugged in and return to the panel on unplug,
-without a reboot. It SHALL preserve the accepted HDMI portrait rotation and
+without a reboot, on every plug however long the system has been running. The monitor SHALL be driven at 1280x800 when it offers that mode. It SHALL preserve the accepted HDMI portrait rotation and
 trackpad input, and restore direct touch when the panel becomes active again.
 The separately qualified HDMI-only and panel-only boot trees remain available
 for recovery; their presence does not require a manual Settings reboot control.
@@ -188,3 +188,18 @@ timing is evidence for the 30s scenario ceiling, not those precise targets.*
 - **WHEN** the HDMI cable is then unplugged
 - **THEN** the visible output returns to the panel within 30 seconds and touch responds to
   direct input again, without a reboot
+
+#### Scenario: A cable is plugged in after hours of uptime
+
+- **WHEN** an HDMI cable is plugged in after the system has run for hours,
+  with repeated shell restarts and theme changes
+- **THEN** the monitor shows the shell at 1280x800 within 30 seconds, with no
+  framebuffer allocation failure in the compositor log
+
+*Grounding (2026-10-17): after 3 h 41 min of uptime with shell restarts and
+theme changes, a plug allocated the 1280x800 scanout buffer 1.2 s after HPD
+with no allocation failure, and the operator saw the shell on the monitor.
+After the swaybg fix, a replug showed the wallpaper. The board side finished
+within 2 s of HPD. The monitor's own lock time, about 25–30 s after that on
+one replug, is reported by the operator and not measured
+(`docs/evidence/hdmi-plug-cma/board-2026-10-16.md`).*
