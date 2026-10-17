@@ -17,6 +17,13 @@ struct Cover {
     height: u32,
 }
 
+/// Whether the decoder child may run: never under reduced motion, and not
+/// while the compositor certifies the wallpaper fully covered. Every start,
+/// resume and pause decision in `main.rs` goes through this one predicate.
+pub fn should_decode(reduced_motion: bool, covered: bool) -> bool {
+    !reduced_motion && !covered
+}
+
 pub fn certified(path: &Path, width: u32, height: u32, now_ms: u64) -> bool {
     let Ok(file) = OpenOptions::new()
         .read(true)
@@ -53,6 +60,15 @@ pub fn certified(path: &Path, width: u32, height: u32, now_ms: u64) -> bool {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn decoding_needs_motion_allowed_and_wallpaper_uncovered() {
+        assert!(should_decode(false, false));
+        assert!(!should_decode(true, false));
+        assert!(!should_decode(false, true));
+        assert!(!should_decode(true, true));
+    }
+
     #[test]
     fn rejects_partial_transparent_stale_and_wrong_geometry() {
         let path =

@@ -842,3 +842,48 @@ fn generation_wallpaper_fit_reads_the_report_and_solid_takes_the_background_role
     assert_eq!(appearance::generation_wallpaper_fit(&root), FitMode::Crop);
     let _ = fs::remove_dir_all(&root);
 }
+
+#[test]
+fn video_selection_falls_back_to_the_first_still_and_never_to_a_video() {
+    use appearance::{fallback_still, AppearanceSnapshot, BackgroundChoice};
+    let choice = |relative: &str, is_video: bool, selected: bool| BackgroundChoice {
+        relative: relative.into(),
+        staged_path: PathBuf::from(format!("/staged/{relative}")),
+        is_video,
+        selected,
+    };
+    let snapshot = |background: Option<&str>, backgrounds: Vec<BackgroundChoice>| AppearanceSnapshot {
+        generation: "g".into(),
+        path: PathBuf::from("/staged"),
+        icon_theme: None,
+        background: background.map(PathBuf::from),
+        selected_background: None,
+        backgrounds,
+        palette: Default::default(),
+        sections: Default::default(),
+        applied: vec![],
+        unavailable: vec![],
+        unknown: vec![],
+    };
+    assert_eq!(fallback_still(None), None);
+    // A selected still is its own fallback.
+    let still = snapshot(Some("/staged/a.png"), vec![choice("a.png", false, true)]);
+    assert_eq!(fallback_still(Some(&still)), Some(PathBuf::from("/staged/a.png")));
+    // A selected video: the theme's first still stands in, never the video.
+    let video = snapshot(
+        None,
+        vec![
+            choice("backgrounds/clip.mp4", true, true),
+            choice("backgrounds/paired.png", false, false),
+            choice("backgrounds/other.png", false, false),
+        ],
+    );
+    assert_eq!(
+        fallback_still(Some(&video)),
+        Some(PathBuf::from("/staged/backgrounds/paired.png"))
+    );
+    // A video-only theme has nothing to fall back on (the wallpaper keeps
+    // its palette base colour rather than a blank or undecodable surface).
+    let only = snapshot(None, vec![choice("backgrounds/clip.mp4", true, true)]);
+    assert_eq!(fallback_still(Some(&only)), None);
+}

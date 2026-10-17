@@ -121,6 +121,60 @@ def checked_copy(source: Path, destination: Path, *, limit: int) -> int:
     return size
 
 
+# What the Rust shell's video wallpaper decoder accepts
+# (nix/rust-shell-client/src/video_wallpaper.rs: `local_video` and `probe`).
+# `VIDEOS` is wider on purpose -- it names what counts as a video asset -- so a
+# recognised suffix can still be undecodable here.
+DECODABLE_VIDEOS = {".mp4", ".m4v", ".mov"}
+ISO_BOXES = {b"ftyp", b"moov", b"mdat", b"wide", b"free", b"skip"}
+VIDEO_PROBE_TIMEOUT_S = 3
+VIDEO_MAX_EDGE, VIDEO_MAX_PIXELS = (1920, 1080), 1920 * 1080
+
+
+def video_diagnostic(path: Path) -> str | None:
+    """Why the wallpaper decoder would refuse this staged video, or None.
+
+    The returned word is one of the decoder's own error categories
+    (`unsupported-format`, `unsupported-codec`), so the compatibility report
+    and the runtime wallpaper status name the same condition. Always cheap
+    and never fatal: it reads the first 12 bytes, and runs the same
+    `ffprobe` the shell uses only when `K230_WALLPAPER_FFPROBE` names one
+    (an absolute path). Without it a codec problem is only caught at play
+    time, where the shell falls back to the still and reports the category.
+    """
+    if path.suffix.lower() not in DECODABLE_VIDEOS:
+        return "unsupported-format"
+    try:
+        with path.open("rb") as stream:
+            head = stream.read(12)
+    except OSError:
+        return "unsupported-codec"
+    if len(head) < 12 or head[4:8] not in ISO_BOXES:
+        return "unsupported-codec"
+    ffprobe = os.environ.get("K230_WALLPAPER_FFPROBE")
+    if not ffprobe or not os.path.isabs(ffprobe):
+        return None
+    try:
+        done = subprocess.run(
+            [ffprobe, "-v", "error", "-select_streams", "v:0", "-show_entries",
+             "stream=codec_name,width,height", "-of", "json", str(path)],
+            capture_output=True, timeout=VIDEO_PROBE_TIMEOUT_S, check=False)
+        stream = json.loads(done.stdout[:4096])["streams"][0]
+        width, height = int(stream["width"]), int(stream["height"])
+    except (OSError, subprocess.TimeoutExpired, ValueError, KeyError, IndexError, TypeError):
+        return "unsupported-codec"
+    if (done.returncode != 0 or stream.get("codec_name") != "h264" or width <= 0 or height <= 0
+            or width > VIDEO_MAX_EDGE[0] or height > VIDEO_MAX_EDGE[1]
+            or width * height > VIDEO_MAX_PIXELS):
+        return "unsupported-codec"
+    return None
+
+
+def video_report_line(asset: str, category: str) -> str:
+    return (f"{asset}: video not decodable ({category}); "
+            "the theme's still background is shown instead")
+
+
 def choose_source(name: str, source: Path | None, user_themes: Path, builtins: Path | None):
     name = normalize_name(name)
     if source is not None:
@@ -428,6 +482,10 @@ def prepare(name: str, *, source: Path | None, state_root: Path,
                         continue
                     total += checked_copy(asset, staged / "backgrounds" / asset.name, limit=MAX_ASSET)
                     report["backgrounds"].append(f"backgrounds/{asset.name}")
+                    if asset.suffix.lower() in VIDEOS:
+                        category = video_diagnostic(staged / "backgrounds" / asset.name)
+                        if category:
+                            report["unavailable"].append(video_report_line(f"backgrounds/{asset.name}", category))
             elif entry.is_dir():
                 report["unknown"].append(f"{entry.name}/: not an appearance input")
             elif entry.name in allowed or SECTION.fullmatch(entry.name):
@@ -455,6 +513,10 @@ def prepare(name: str, *, source: Path | None, state_root: Path,
         for asset, path, _size, _mtime in overlay_accepted:
             total += checked_copy(path, staged / asset, limit=MAX_ASSET)
             report["backgrounds"].append(asset)
+            if path.suffix.lower() in VIDEOS:
+                category = video_diagnostic(staged / asset)
+                if category:
+                    report["unavailable"].append(video_report_line(asset, category))
         if total > MAX_TOTAL:
             raise ThemeError("theme exceeds total staging bound")
         report["unknown"].extend(overlay_rejected)

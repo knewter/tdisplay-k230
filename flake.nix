@@ -499,6 +499,8 @@
         # Narrow builds use the same pinned packages as the shell image.
         video-player = (self.nixosConfigurations.k230.pkgs.callPackage ./nix/video-probe.nix { }).player;
         video-ffmpeg = (self.nixosConfigurations.k230.pkgs.callPackage ./nix/video-probe.nix { }).ffmpeg;
+        # The decoder pair behind the video wallpaper (nix/handheld-wallpaper.nix).
+        handheld-wallpaper = self.nixosConfigurations.k230.pkgs.callPackage ./nix/handheld-wallpaper.nix { };
         # Native asset conversion; the U-Boot and Linux owners share this image.
         inherit bootSplashImage;
         drm-splash = self.nixosConfigurations.k230.pkgs.callPackage ./nix/drm-splash { inherit bootSplashImage; };

@@ -68,33 +68,49 @@ Proof: the named host/cargo tests above. No device claim.
   unsupported/unsafe/oversized/symlinked/non-regular rejection without failing
   activation, count and total bounds, theme-name collision, symlinked
   directory ignored, remembered overlay choice and its removal diagnostic.
-- [ ] 2.2 Add bounded, muted video decode to `background_decode.rs` behind
+- [x] 2.2 Add bounded, muted video decode to `background_decode.rs` behind
   its own isolated flake output, `nix build .#handheld-wallpaper`; format
   diagnostics for a recognized-suffix-but-undecodable file surface as a
   named compatibility-report entry, never a crash. Verify with
   `cargo test --offline` for the new decode module and
   `nix build .#handheld-wallpaper --no-link --print-out-paths`.
-  Not started in the host pass of 2026-10-16. Finding for whoever takes it:
-  the premise above is partly stale -- `nix/rust-shell-client/src/
-  video_wallpaper.rs`, `video_status.rs` and `video_visibility.rs` already
-  exist (commit `68badde1`: a bounded, muted decoder child process with
-  proven-opaque pause and rollback retention), and `main.rs` already plays a
-  selected video. What is absent is a `handheld-wallpaper` flake output and
-  the named compatibility-report entry for a recognised-suffix-but-
-  undecodable file. Reconcile this task with what `68badde1` shipped (and
-  with `docs/evidence/omarchy-themes/background-workload-host.md`) before
-  writing code, then build the isolated output and run 3.3.
-- [ ] 2.3 Add visibility pause (stop decoding/advancing when the wallpaper
+  Reconciled 2026-10-17 (audit: `docs/evidence/omarchy-themes/background-video-audit.md`).
+  The decode already shipped in `68badde1` as `video_wallpaper.rs` (not
+  `background_decode.rs`). Added: the `handheld-wallpaper` output
+  (`nix/handheld-wallpaper.nix`) -- the minimal ffmpeg/ffprobe pair the decoder
+  child runs, NOT a separate Rust crate (the decode module shares the shell
+  crate's types; the audit explains why) -- and the named report entry
+  (`theme_activate.video_diagnostic`, a line in the report's `unavailable`
+  list using the decoder's own category, for theme assets and user overlays).
+  Proof (host, 2026-10-17): `cargo test --offline --manifest-path
+  nix/rust-shell-client/Cargo.toml --tests` -- all targets ok (lib 575, bin 23,
+  appearance_module 16, new video_wallpaper_module 5); `python3 -m unittest
+  tests.test_omarchy_theme_activation` -- 21 ok; `python3
+  tests/test_handheld_theme_backgrounds.py --video` -- 11 run, 3 board-only
+  skips; `flock /tmp/k230-nix-build.lock nix build .#handheld-wallpaper
+  --no-link --print-out-paths --max-jobs 1 --cores 4` -> `/nix/store/fg79cz66dpqhrhm6xf0rcjy3h5c0wqz5-handheld-wallpaper`
+  (cross-build only; decodes nothing). Codec check at report time runs only
+  when the helper's environment names an absolute `K230_WALLPAPER_FFPROBE`
+  <!-- UNVERIFIED: whether the board's theme helper has it -->; otherwise
+  play time names the same category.
+- [x] 2.3 Add visibility pause (stop decoding/advancing when the wallpaper
   surface is not visible) and reduced-motion behavior (no video autoplay
   when `reduced_motion_enabled`), plus a still-frame or `FitMode::Crop`
   fallback of the theme's own paired still on any decode failure. Verify
   with a new `tests/test_handheld_theme_backgrounds.py --video` (the file
   this scope's parent task named but never created) covering lifecycle,
   pause/resume, reduced-motion and every failure case named above.
-  Left open on 2026-10-16: every host test named here is video behaviour (none
-  applies to a still background), and see the 2.2 note -- visibility pause
-  and a decode-failure still fallback may already exist in `video_visibility.rs`
-  and `video_wallpaper.rs`; audit them against this task before adding tests.
+  Audited 2026-10-17: the behaviours already existed (`video_visibility.rs`,
+  `main.rs`, `video_wallpaper.rs`); added the single `should_decode`
+  predicate at all five gates, `appearance::fallback_still`, the stand-in
+  decoder lifecycle/failure tests and the test file. Proof (host,
+  2026-10-17): `python3 tests/test_handheld_theme_backgrounds.py --video` --
+  OK (11 run, 3 skipped): decoder start/stop/restart reaps the child, every
+  failure category, the pause predicate, the still fallback, a real host-ffmpeg
+  decode of two distinct frames, and the compatibility-report cases. The three
+  skips are board-only and stay under 3.3: the compositor's real cover signal
+  end to end, the live reduced-motion setting (read once at shell start;
+  <!-- UNVERIFIED: live toggle -->), and CPU/frame budgets.
 
 Proof: the named host/cargo tests and the isolated `handheld-wallpaper`
 build. Video suffix recognition or a first frame is not playback/

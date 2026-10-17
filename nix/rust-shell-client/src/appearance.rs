@@ -87,6 +87,22 @@ pub struct AppearanceSnapshot {
     pub unknown: Vec<String>,
 }
 
+/// The still shown while a selected video is not (or can no longer be)
+/// playing: the generation's own selected still when there is one, otherwise
+/// its first still background. A video-only selection therefore never leaves
+/// the wallpaper blank when the theme ships any still.
+pub fn fallback_still(snapshot: Option<&AppearanceSnapshot>) -> Option<PathBuf> {
+    snapshot.and_then(|snapshot| {
+        snapshot.background.clone().or_else(|| {
+            snapshot
+                .backgrounds
+                .iter()
+                .find(|choice| !choice.is_video)
+                .map(|choice| choice.staged_path.clone())
+        })
+    })
+}
+
 impl AppearanceSnapshot {
     pub fn token(&self, section: &str, key: &str) -> Option<&AppearanceToken> {
         self.sections.get(section)?.get(key)

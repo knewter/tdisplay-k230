@@ -5,7 +5,9 @@ use gio::prelude::*;
 use k230_shell_rust::{
     app_actions::{self, AppAction, AppMenu, ActionRow, MenuOutcome},
     app_watch::CatalogWatcher,
-    appearance::{AppearanceEvent, AppearancePhase, AppearanceReceiver, AppearanceSnapshot},
+    appearance::{
+        fallback_still, AppearanceEvent, AppearancePhase, AppearanceReceiver, AppearanceSnapshot,
+    },
     background_decode::{BackgroundCache, FitMode},
     catalog::{applications_dirs, scan_apps, AppEntry},
     configure_acceptable, configure_size, ConfigureSurface, RejectedConfigures, frame_bytes, runtime_trace,
@@ -47,7 +49,7 @@ use k230_shell_rust::{
         chooser_layout, default_theme_name, ThemeIntent, ThemePage, ThemeView,
     },
     video_status::{self, VideoStatus},
-    video_visibility,
+    video_visibility::{self, should_decode},
     video_wallpaper::{VideoEvent, VideoKey, VideoWallpaper},
     wifi_settings::{Kind as WifiKind, WifiRequest, WifiResult, WifiWorker},
     wifi_ui::{self, key_event_intent, Intent as WifiIntent, Page as WifiPage, WifiView},
@@ -262,18 +264,6 @@ fn selected_video(snapshot: Option<&AppearanceSnapshot>, geometry: (u32, u32)) -
         path: choice.staged_path.clone(),
         width: geometry.0,
         height: geometry.1,
-    })
-}
-
-fn fallback_still(snapshot: Option<&AppearanceSnapshot>) -> Option<PathBuf> {
-    snapshot.and_then(|snapshot| {
-        snapshot.background.clone().or_else(|| {
-            snapshot
-                .backgrounds
-                .iter()
-                .find(|choice| !choice.is_video)
-                .map(|choice| choice.staged_path.clone())
-        })
     })
 }
 
@@ -2339,7 +2329,7 @@ impl ShellClient {
             self.video_previous = former;
         }
         if let Some(video) = self.video_active.as_mut() {
-            if self.video_covered || self.reduced_motion {
+            if !should_decode(self.reduced_motion, self.video_covered) {
                 video.pause();
             }
         }
@@ -7077,7 +7067,7 @@ fn serve() -> Result<(), String> {
                 };
                 state.video_start_attempted = true;
                 state.video_display = Some(key.clone());
-                if !state.reduced_motion && !state.video_covered {
+                if should_decode(state.reduced_motion, state.video_covered) {
                     match state.start_video(key) {
                         Ok(video) => state.video_active = Some(video),
                         Err(error) => {
@@ -7089,8 +7079,7 @@ fn serve() -> Result<(), String> {
             }
         }
         if state.wallpaper.configured
-            && !state.video_covered
-            && !state.reduced_motion
+            && should_decode(state.reduced_motion, state.video_covered)
             && state.video_start_attempted
             && state.video_active.is_none()
             && state.video_error.is_none()
@@ -7106,7 +7095,7 @@ fn serve() -> Result<(), String> {
             }
         }
         if let Some(video) = state.video_active.as_mut() {
-            if state.video_covered || state.reduced_motion {
+            if !should_decode(state.reduced_motion, state.video_covered) {
                 video.pause();
             } else if video.paused {
                 if let (Some(ffmpeg), Some(ffprobe)) = (&state.video_ffmpeg, &state.video_ffprobe) {
@@ -7148,7 +7137,7 @@ fn serve() -> Result<(), String> {
             if ready || error || started.elapsed() >= Duration::from_millis(1450) {
                 if !ready {
                     state.video_candidate = None;
-                } else if state.video_covered || state.reduced_motion {
+                } else if !should_decode(state.reduced_motion, state.video_covered) {
                     if let Some(video) = state.video_candidate.as_mut() {
                         video.pause();
                     }
