@@ -1903,6 +1903,11 @@ DATA 8b0f1bfa6b50fd0ae6fd1db609decbc22e800a8ceac84f746e01bae6f4e46f61 docs/evide
 DATA f08588cb20f272da51d3e69f941e5130a1d040e13b5b7f8b0d36e74cd58585c2 docs/evidence/hdmi-hotplug/landscape/wide-reflow/wifi-list-1280x800.png
 DATA 95178d12ade837cc1fda9a03e7a58bbed213230e845e0a64eb79e4185fe1c65b docs/evidence/hdmi-hotplug/landscape/wide-reflow/wifi-list-1920x1080.png
 DATA 0938edbc429fe58e4ccc4f16e4f25e163b8a8c3664f8a298bed8b8c19bfc7f1d docs/evidence/shell-responsive/board/acceptance-2026-10-09/home.png
+DATA ef106ae06c7ac7ddc52a993cfab2f130bfba6cfa013ed85c996008b4ab9a1a5d docs/evidence/stroked-icons/host-dark-landscape.png
+DATA 5339bfa0b2b08d8ea00a063436fbf49a7ae5ae372029cfaab4b926c81208ac9c docs/evidence/stroked-icons/host-dark-portrait.png
+DATA 6c3d4ea48118e0b022af08ee0e73e3ca62ccc59f453a780c4620f6254e5a6f66 docs/evidence/stroked-icons/host-glyph-sheet.png
+DATA 4b8a9e1e62f86d1b73e363abecbf30a86e95e54f0a892374519834ee8343d933 docs/evidence/stroked-icons/host-latte-landscape.png
+DATA 04dc1e1199800310f48125df1fe9764373cd9eaea5be0834fcb68852391b112c docs/evidence/stroked-icons/host-latte-portrait.png
 # Current UX candidate native captures — 2026-10-09
 DATA 83c8b4261beb9621eaaeed8c8e6c1d4fe25bb16abbad63de4234355d25e16de8 docs/evidence/ux-review-round-2/candidate-2026-10-09/overview.png
 DATA 2d009ee5c0b97bfc21e04592bd099b0f21643bafe660043ed9d0a3e7c418b286 docs/evidence/ux-review-round-2/candidate-2026-10-09/drawer.png
@@ -3442,6 +3447,11 @@ in `docs/evidence/second-core/linux-start-2026-10-12/README.md`.
 | File | Bytes | Class | SHA256 |
 | --- | ---: | --- | --- |
 | `docs/evidence/second-core/linux-start-2026-10-12/cpu0-start.png` | 7734 | DATA | `a6a8591d874042351b5785b57b87277c1af63eeb007045ebb220960a896a03e8` |
+| `docs/evidence/stroked-icons/host-dark-landscape.png` | 212819 | DATA | `ef106ae06c7ac7ddc52a993cfab2f130bfba6cfa013ed85c996008b4ab9a1a5d` |
+| `docs/evidence/stroked-icons/host-dark-portrait.png` | 222347 | DATA | `5339bfa0b2b08d8ea00a063436fbf49a7ae5ae372029cfaab4b926c81208ac9c` |
+| `docs/evidence/stroked-icons/host-glyph-sheet.png` | 57618 | DATA | `6c3d4ea48118e0b022af08ee0e73e3ca62ccc59f453a780c4620f6254e5a6f66` |
+| `docs/evidence/stroked-icons/host-latte-landscape.png` | 201595 | DATA | `4b8a9e1e62f86d1b73e363abecbf30a86e95e54f0a892374519834ee8343d933` |
+| `docs/evidence/stroked-icons/host-latte-portrait.png` | 210178 | DATA | `04dc1e1199800310f48125df1fe9764373cd9eaea5be0834fcb68852391b112c` |
 
 ## Keyboard base shell host renders
 

@@ -68,9 +68,15 @@
 
 ## 4. Icons
 
-- [ ] 4.1 Add a stroked vector icon set (3 px round caps) for Settings rows
+- [x] 4.1 Add a stroked vector icon set (3 px round caps) for Settings rows
   and the Shade, replacing the ad hoc glyphs, and a test that the icons
   render nonblank at 48 px and 64 px. Host class.
+  Done 2026-10-17: `glyph.rs` provides eleven glyphs, which replace the
+  filled sun, speaker and search shapes. Settings rows, the power cards and
+  the Shade toggle get a leading glyph. That glyph is sized to the label
+  line rather than a fixed 48 px, so it grows with the text step without
+  cutting off values. Tests and renders are in
+  `docs/evidence/stroked-icons/`.
 
 ## 5. Board
 
@@ -92,3 +98,6 @@
   type roles (2.1), the operator said "text sizes are fine". This covers
   readability only; the card treatments and the accent rule (3.x) and the
   icons (4.1) still need their look.
+  Progress 2026-10-17: the operator looked at the card treatments and the
+  accent on glass (retro-82, 100%), was told where the accent remains, and
+  said "it's dope". The icons (4.1) still need their look.

@@ -34,6 +34,7 @@ use crate::{
     wifi_ui::{all_networks, Page as WifiPage, WifiPublic},
     Route,
 };
+use crate::glyph::{self, Glyph};
 use cairo::{Context, Filter, Format, ImageSurface, LinearGradient, Matrix, Operator, SurfacePattern};
 use pango::{Alignment, EllipsizeMode, FontDescription};
 use std::{fs::File, path::Path, rc::Rc};
@@ -931,25 +932,24 @@ fn control_text(control: &Control) -> String {
     }
 }
 
-/// A cheap vector sun glyph -- a filled disc plus a few short rays -- for
-/// each end of the brightness slider (task: "a sun icon at each end if
-/// cheap"). No new image asset: this is a handful of `arc`/`line_to`
-/// calls, in the same spirit as `rounded`'s own plain-cairo shapes
-/// elsewhere in this file.
-fn paint_sun(cr: &Context, cx: f64, cy: f64, r: f64, rgb: u32, alpha: f64) {
-    color(cr, rgb, alpha);
-    cr.new_sub_path();
-    cr.arc(cx, cy, r * 0.5, 0.0, std::f64::consts::TAU);
-    let _ = cr.fill();
-    cr.set_line_width(2.0);
-    for i in 0..8 {
-        let angle = f64::from(i) * std::f64::consts::FRAC_PI_4;
-        let (dx, dy) = (angle.cos(), angle.sin());
-        cr.move_to(cx + dx * r * 0.7, cy + dy * r * 0.7);
-        cr.line_to(cx + dx * r, cy + dy * r);
-    }
-    color(cr, rgb, alpha);
-    let _ = cr.stroke();
+/// The box a slider-end glyph (sun, speaker) is drawn in, centred on the
+/// point the touch geometry already uses (`volume_icon_tap_zone`).
+const SLIDER_END_GLYPH: f64 = 36.0;
+
+/// A card's leading glyph, sized to the first line of text (a `role` line
+/// at the current vision step) and centred on it, so it grows with the
+/// text and only that line is indented; the lines under it keep the full
+/// width. Returns the x where that first line's text starts.
+fn paint_line_glyph(cr: &Context, icon: Glyph, x: f64, line_y: f64, role: f64, rgb: u32) -> f64 {
+    let drawn = role * crate::layout_text_scale();
+    let size = (drawn * 1.3).round();
+    glyph::paint(cr, icon, x, line_y + drawn * 0.6 - size / 2.0, size, rgb, 1.0);
+    x + size + SPACE_IN_ROW
+}
+
+fn paint_slider_end(cr: &Context, glyph: Glyph, cx: f64, cy: f64, rgb: u32, alpha: f64) {
+    let half = SLIDER_END_GLYPH / 2.0;
+    glyph::paint(cr, glyph, cx - half, cy - half, SLIDER_END_GLYPH, rgb, alpha);
 }
 
 /// The shared Material-3-style brightness slider: a full-width track (a
@@ -1000,8 +1000,8 @@ fn paint_slider(cr: &Context, style: VisualStyle, w: f64, center_y: f64, control
     };
     let percent = *percent;
     let (left, right) = slider::track_bounds(w);
-    paint_sun(cr, left - 30.0, center_y, 11.0, style.muted, 0.8);
-    paint_sun(cr, right + 30.0, center_y, 15.0, style.accent, 1.0);
+    paint_slider_end(cr, Glyph::SunSmall, left - 30.0, center_y, style.muted, 0.8);
+    paint_slider_end(cr, Glyph::Sun, right + 30.0, center_y, style.text, 1.0);
     paint_slider_track(cr, style, w, center_y, percent);
 }
 
@@ -1012,8 +1012,8 @@ fn paint_slider(cr: &Context, style: VisualStyle, w: f64, center_y: f64, control
 /// (`service_ui::key_backlight_level_at`).
 fn paint_level_slider(cr: &Context, style: VisualStyle, w: f64, center_y: f64, index: u8, steps: u8) {
     let (left, right) = slider::track_bounds(w);
-    paint_sun(cr, left - 30.0, center_y, 11.0, style.muted, 0.8);
-    paint_sun(cr, right + 30.0, center_y, 15.0, style.accent, 1.0);
+    paint_slider_end(cr, Glyph::SunSmall, left - 30.0, center_y, style.muted, 0.8);
+    paint_slider_end(cr, Glyph::Sun, right + 30.0, center_y, style.text, 1.0);
     let percent = (f64::from(index.min(steps)) * 100.0 / f64::from(steps)).round() as u8;
     paint_slider_track(cr, style, w, center_y, percent);
     for detent in (0..=steps).filter(|&d| d != index) {
@@ -1025,43 +1025,6 @@ fn paint_level_slider(cr: &Context, style: VisualStyle, w: f64, center_y: f64, i
     }
 }
 
-/// A cheap vector speaker glyph for the volume slider's own left end,
-/// which doubles as the mute toggle (task: "a speaker icon that toggles
-/// mute when tapped", `service_ui::volume_icon_tap_zone` owns the hit
-/// test for this same glyph's position). A filled speaker-cone
-/// polygon plus two short arcs (sound waves) when unmuted; muted swaps
-/// the waves for a single diagonal slash through the cone, the same
-/// "struck-through" convention Android's own muted speaker glyph uses.
-/// No new image asset, same spirit as `paint_sun`.
-fn paint_speaker(cr: &Context, cx: f64, cy: f64, r: f64, rgb: u32, alpha: f64, muted: bool) {
-    color(cr, rgb, alpha);
-    let body_w = r * 0.6;
-    let body_h = r * 0.85;
-    cr.move_to(cx - r, cy - body_h * 0.35);
-    cr.line_to(cx - r + body_w, cy - body_h * 0.35);
-    cr.line_to(cx - r + body_w + r * 0.55, cy - body_h);
-    cr.line_to(cx - r + body_w + r * 0.55, cy + body_h);
-    cr.line_to(cx - r + body_w, cy + body_h * 0.35);
-    cr.line_to(cx - r, cy + body_h * 0.35);
-    cr.close_path();
-    let _ = cr.fill();
-    cr.set_line_width(2.0);
-    let cone_tip_x = cx - r + body_w + r * 0.55;
-    if muted {
-        cr.move_to(cone_tip_x - r * 0.1, cy - r * 0.7);
-        cr.line_to(cone_tip_x + r * 0.7, cy + r * 0.7);
-        color(cr, rgb, alpha);
-        let _ = cr.stroke();
-    } else {
-        for radius in [r * 0.5, r * 0.85] {
-            cr.new_sub_path();
-            cr.arc(cone_tip_x, cy, radius, -0.6, 0.6);
-            color(cr, rgb, alpha);
-            let _ = cr.stroke();
-        }
-    }
-}
-
 /// The volume slider: `paint_slider_track` shared with brightness, plus a
 /// speaker glyph (the mute toggle) at the track's left end and nothing at
 /// the right end -- Android's own volume slider has no second icon.
@@ -1070,8 +1033,8 @@ fn paint_speaker(cr: &Context, cx: f64, cy: f64, r: f64, rgb: u32, alpha: f64, m
 /// function's -- this never re-derives mute from the percent itself).
 fn paint_volume_slider(cr: &Context, style: VisualStyle, w: f64, center_y: f64, percent: u8, muted: bool) {
     let (left, _right) = slider::track_bounds(w);
-    let icon_rgb = if muted { style.muted } else { style.accent };
-    paint_speaker(cr, left - 30.0, center_y, 15.0, icon_rgb, 1.0, muted);
+    let icon_rgb = if muted { style.muted } else { style.text };
+    paint_slider_end(cr, if muted { Glyph::SpeakerMuted } else { Glyph::Speaker }, left - 30.0, center_y, icon_rgb, 1.0);
     paint_slider_track(cr, style, w, center_y, percent);
 }
 
@@ -2792,17 +2755,7 @@ fn paint_drawer_chrome(
     } else {
         style.text
     };
-    // A lightweight search glyph provides recognition without another tile.
-    let _ = cr.save();
-    cr.new_path();
-    cr.arc(sx + 26.0, sy + sh / 2.0 - 2.0, 7.0, 0.0, std::f64::consts::TAU);
-    cr.move_to(sx + 31.0, sy + sh / 2.0 + 3.0);
-    cr.line_to(sx + 37.0, sy + sh / 2.0 + 9.0);
-    color(cr, label_color, 0.8);
-    cr.set_line_width(2.0);
-    cr.set_line_cap(cairo::LineCap::Round);
-    let _ = cr.stroke();
-    let _ = cr.restore();
+    glyph::paint(cr, Glyph::Search, sx + 15.0, sy + sh / 2.0 - 12.0, 24.0, label_color, 0.8);
     let tx = sx + 54.0;
     let ty = if lifted { sy + (sh - context_font_size(cr, 18.0) * 1.2) / 2.0 } else { sy + sh / 2.0 - 9.0 };
     let available = sw - 76.0;
@@ -3282,7 +3235,8 @@ fn scene(
                 let label_h = vision_line(TYPE_LABEL) / 1.25 * 1.2;
                 let detail_h = vision_line(TYPE_BODY) / 1.25 * 1.2;
                 let label_y = y + ((shade_toggle_h() - 8.0) - label_h - detail_h) / 2.0;
-                themed_role_fit(cr, theme, "body", "Keyboard", 44.0, label_y, hw - 88.0, TYPE_LABEL, ink, pango::Weight::Medium);
+                let text_x = paint_line_glyph(cr, Glyph::Keyboard, 44.0, label_y, TYPE_LABEL, ink);
+                themed_role_fit(cr, theme, "body", "Keyboard", text_x, label_y, hw - 44.0 - text_x, TYPE_LABEL, ink, pango::Weight::Medium);
                 themed_role_fit(cr, theme, "body", &detail, 44.0, label_y + label_h, hw - 88.0, TYPE_BODY, ink, pango::Weight::Normal);
             }
             // The preview tile repeated whatever the top history row already
@@ -3526,17 +3480,18 @@ fn scene(
                 // its data comes from the PipeWire monitor
                 // (`GraphSnapshot`), not `k230-settings`, so there is no
                 // `Control` to hand this generic loop.
-                for (row, name, control) in [
-                    (0u32, "Wi-Fi ›", &settings.network),
-                    (1, "Brightness", &settings.brightness),
-                    (3, "Keyboard", &settings.keyboard),
-                    (4, "Motion", &settings.motion),
+                for (row, name, control, icon) in [
+                    (0u32, "Wi-Fi ›", &settings.network, Glyph::Wifi),
+                    (1, "Brightness", &settings.brightness, Glyph::Sun),
+                    (3, "Keyboard", &settings.keyboard, Glyph::Keyboard),
+                    (4, "Motion", &settings.motion, Glyph::Motion),
                 ] {
                     place(settings_row_column(row));
                     let y = settings_row_y(row);
                     let (label_dy, value_dy, caption_dy, _) = settings_row_lines(row);
                     paint_card(cr, theme, "controls", CardJob::Control, 24.0, y, w - 48.0, settings_row_h(row));
-                    themed_role_fit(cr, theme, "body", name, row_text_x, y + label_dy, row_text_width, TYPE_LABEL, style.text, pango::Weight::Medium);
+                    let label_x = paint_line_glyph(cr, icon, row_text_x, y + label_dy, TYPE_LABEL, style.text);
+                    themed_role_fit(cr, theme, "body", name, label_x, y + label_dy, row_text_x + row_text_width - label_x, TYPE_LABEL, style.text, pango::Weight::Medium);
                     themed_role_fit(cr, theme, "body", &control_text(control), row_text_x, y + value_dy, row_text_width, TYPE_BODY, style.text, pango::Weight::Normal);
                     if name == "Keyboard" && services.is_some_and(|view| view.keyboard_gesture_hint)
                     {
@@ -3566,7 +3521,8 @@ fn scene(
                 let volume_y = settings_row_y(SETTINGS_VOLUME_ROW);
                 let volume_lines = settings_row_lines(SETTINGS_VOLUME_ROW);
                 paint_card(cr, theme, "controls", CardJob::Control, 24.0, volume_y, w - 48.0, settings_row_h(SETTINGS_VOLUME_ROW));
-                themed_role_fit(cr, theme, "body", "Volume", row_text_x, volume_y + volume_lines.0, row_text_width, TYPE_LABEL, style.text, pango::Weight::Medium);
+                let label_x = paint_line_glyph(cr, Glyph::Speaker, row_text_x, volume_y + volume_lines.0, TYPE_LABEL, style.text);
+                themed_role_fit(cr, theme, "body", "Volume", label_x, volume_y + volume_lines.0, row_text_x + row_text_width - label_x, TYPE_LABEL, style.text, pango::Weight::Medium);
                 if let Some(sink) = default_sink(services.and_then(|view| view.audio.as_ref())) {
                     let percent = volume::linear_to_percent(sink.linear_volume);
                     let label = if sink.muted {
@@ -3608,7 +3564,8 @@ fn scene(
                     let y = settings_row_y(SETTINGS_KEY_BACKLIGHT_ROW);
                     let lines = settings_row_lines(SETTINGS_KEY_BACKLIGHT_ROW);
                     paint_card(cr, theme, "controls", CardJob::Control, 24.0, y, w - 48.0, settings_row_h(SETTINGS_KEY_BACKLIGHT_ROW));
-                    themed_role_fit(cr, theme, "body", "Key backlight", row_text_x, y + lines.0, row_text_width, TYPE_LABEL, style.text, pango::Weight::Medium);
+                    let label_x = paint_line_glyph(cr, Glyph::KeyBacklight, row_text_x, y + lines.0, TYPE_LABEL, style.text);
+                    themed_role_fit(cr, theme, "body", "Key backlight", label_x, y + lines.0, row_text_x + row_text_width - label_x, TYPE_LABEL, style.text, pango::Weight::Medium);
                     themed_role_fit(cr, theme, "body", level.label(), row_text_x, y + lines.1, row_text_width, TYPE_BODY, style.text, pango::Weight::Normal);
                     paint_level_slider(cr, style, w, y + lines.3, level.index(), 3);
                     let _ = cr.restore();
@@ -3634,10 +3591,11 @@ fn scene(
             place(2);
             if services.and_then(|view| view.settings.as_ref()).is_some() {
                 themed_role(cr, theme, "heading", "Power", 28.0, layout.power_heading_y, w - 56.0, TYPE_LABEL, style.muted, pango::Weight::Bold);
-                paint_card(cr, theme, "controls", CardJob::Control, 24.0, layout.reboot_y, w - 48.0, settings_power_card_h());
-                themed_role_fit(cr, theme, "body", "Reboot…", 42.0, layout.reboot_y + power_label_dy, w - 84.0, TYPE_BODY, style.text, pango::Weight::Normal);
-                paint_card(cr, theme, "controls", CardJob::Control, 24.0, layout.poweroff_y, w - 48.0, settings_power_card_h());
-                themed_role_fit(cr, theme, "body", "Power off…", 42.0, layout.poweroff_y + power_label_dy, w - 84.0, TYPE_BODY, style.text, pango::Weight::Normal);
+                for (label, icon, card_y) in [("Reboot…", Glyph::Reboot, layout.reboot_y), ("Power off…", Glyph::Power, layout.poweroff_y)] {
+                    paint_card(cr, theme, "controls", CardJob::Control, 24.0, card_y, w - 48.0, settings_power_card_h());
+                    let text_x = paint_line_glyph(cr, icon, 42.0, card_y + power_label_dy, TYPE_BODY, style.text);
+                    themed_role_fit(cr, theme, "body", label, text_x, card_y + power_label_dy, w - 42.0 - text_x, TYPE_BODY, style.text, pango::Weight::Normal);
+                }
             }
             if let Some(confirm) = services.and_then(|view| view.confirmation.as_ref()) {
                 let confirm_layout = settings_confirm_layout(layout.poweroff_bottom);
@@ -6328,8 +6286,9 @@ impl RendererCache {
         color(cr, palette_rgb_or(theme, "background", 0x1e1e2e), 0.92);
         let _ = cr.fill();
         let center_x = geometry.left + geometry.width / 2.0;
-        let icon_rgb = if muted { style.muted } else { style.accent };
-        paint_speaker(cr, center_x, geometry.top + 30.0, 16.0, icon_rgb, 1.0, muted);
+        let icon_rgb = if muted { style.muted } else { style.text };
+        let speaker = if muted { Glyph::SpeakerMuted } else { Glyph::Speaker };
+        glyph::paint(cr, speaker, center_x - 19.0, geometry.top + 11.0, 38.0, icon_rgb, 1.0);
         // The vertical fill bar: the same inactive/active-track idea
         // `paint_slider_track` uses, rotated, at a scale that fits the
         // pill rather than the full panel width.

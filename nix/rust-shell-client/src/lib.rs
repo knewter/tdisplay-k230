@@ -6,6 +6,7 @@ pub mod appearance;
 pub mod background_decode;
 pub mod catalog;
 pub mod evidence_render;
+pub mod glyph;
 pub mod help;
 pub mod home_grid;
 pub mod home_pager;
