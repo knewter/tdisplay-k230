@@ -64,8 +64,10 @@ Change: `openspec/changes/the-shell-has-one-visual-language`, task 4.1.
 
 ## Limits
 
-- The Volume row's "No audio device found" is still cut off at 200% in
-  portrait. That text call was not changed here.
+- The Volume row's "No audio device found" was cut off at 200% in portrait.
+  Fixed afterwards (2026-10-17): the line now uses `themed_role_fit` like
+  the other row values. It shrinks to fit the column, never below the Body
+  role, and a host render of `largest-settings-568x1232` shows it whole.
 - The board captures are below. The operator's look at the icons (5.2) is
   separate and still open.
 

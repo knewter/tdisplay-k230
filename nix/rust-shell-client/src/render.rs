@@ -3545,8 +3545,10 @@ fn scene(
                     );
                     paint_volume_slider(cr, style, w, volume_y + volume_lines.3, percent, sink.muted);
                 } else {
-                    text(
+                    themed_role_fit(
                         cr,
+                        theme,
+                        "body",
                         services
                             .and_then(|view| view.audio_error.as_deref())
                             .unwrap_or("No audio device found"),
@@ -3555,6 +3557,7 @@ fn scene(
                         row_text_width,
                         TYPE_BODY,
                         style.muted,
+                        pango::Weight::Normal,
                     );
                 }
                 let _ = cr.restore();
