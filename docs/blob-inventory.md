@@ -1518,6 +1518,9 @@ DATA e25dd43c6c9aca1f1dc57ace48a2de2a682760c5d35c095cd2536603e4e6761d  docs/evid
 DATA 099a47af0e5726fe78af086c0dc9cbbad1b6f4a9c88b30bbdcba5e22f780c980  docs/evidence/card-shell/app-switch-neighbour-render/after-held-1.png
 DATA 55e6ebda0e06d3ccd1ac7b61a94a59912d993b69a30ac1ab97e7685b203d69b1  docs/evidence/card-shell/app-switch-neighbour-render/after-held-2.png
 DATA f338397d2cf535385ce1e57c85756685d8bdb4c62a0856d170be35aec0da312c  docs/evidence/card-shell/app-switch-neighbour-render/before-cropped-neighbour.png
+DATA 3c2cf9367ad3ef90e23ac0e5c33deca77a5f848e789f3b98196567bec0e6afb6 docs/evidence/hdmi-plug-cma/board-hdmi-plug-3h41m-black-bg.png
+DATA 028ac6897682a822685435215e03ad39bcb24bc2355e41c948fafc186be7485b docs/evidence/hdmi-plug-cma/board-hdmi-replug-after-fix.png
+DATA dc1e82ff86948651d0d532605ed6598cbbcbc04c3e68af2310c803060c84e52c docs/evidence/hdmi-plug-cma/board-hdmi-swaybg-stopped.png
 DATA c84f70ac6b2178a285fcc3629a9345310784a4b79ea20098941bf3c7d7b4ef02 docs/evidence/hdmi-shell-performance/scene/turn180-sampler-fallback/ordinary-a.png
 DATA b37fda708291fac1c44a0559dcafc37fee0505b2f6bacad9f82d88e03a5d4b5d docs/evidence/hdmi-shell-performance/scene/turn180-sampler-fallback/ordinary-b.png
 DATA 8c10dd5611d5b97754603642c6c3728fa3fa4bac939c51b8e75cbe093a046111 docs/evidence/hdmi-shell-performance/scene/turn90-quarter-turn/ordinary-a.png
@@ -3040,6 +3043,9 @@ These are test fixtures, not physical HDMI or touch photographs.
 
 | File | Bytes | Class | SHA256 |
 | --- | ---: | --- | --- |
+| `docs/evidence/hdmi-plug-cma/board-hdmi-plug-3h41m-black-bg.png` | 62064 | DATA | `3c2cf9367ad3ef90e23ac0e5c33deca77a5f848e789f3b98196567bec0e6afb6` |
+| `docs/evidence/hdmi-plug-cma/board-hdmi-replug-after-fix.png` | 808987 | DATA | `028ac6897682a822685435215e03ad39bcb24bc2355e41c948fafc186be7485b` |
+| `docs/evidence/hdmi-plug-cma/board-hdmi-swaybg-stopped.png` | 809063 | DATA | `dc1e82ff86948651d0d532605ed6598cbbcbc04c3e68af2310c803060c84e52c` |
 | `docs/evidence/hdmi-shell-performance/scene/turn180-sampler-fallback/ordinary-a.png` | 8782 | DATA | `c84f70ac6b2178a285fcc3629a9345310784a4b79ea20098941bf3c7d7b4ef02` |
 | `docs/evidence/hdmi-shell-performance/scene/turn180-sampler-fallback/ordinary-b.png` | 8790 | DATA | `b37fda708291fac1c44a0559dcafc37fee0505b2f6bacad9f82d88e03a5d4b5d` |
 | `docs/evidence/hdmi-shell-performance/scene/turn90-quarter-turn/ordinary-a.png` | 10537 | DATA | `8c10dd5611d5b97754603642c6c3728fa3fa4bac939c51b8e75cbe093a046111` |

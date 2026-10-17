@@ -7,13 +7,15 @@
   the built kernel's config for `CONFIG_DMA_CMA=y` and
   `CONFIG_CMA_SIZE_MBYTES=64`.
   Done 2026-10-16: `docs/evidence/hdmi-plug-cma/board-2026-10-16.md`.
-- [ ] 1.2 Remove `bg #000000 solid_color` from the HDMI-A-1 output line in
+- [x] 1.2 Remove `bg #000000 solid_color` from the HDMI-A-1 output line in
   `nix/shell.nix`. On a 2026-10-16 hotplug, Sway's swaybg for HDMI-A-1
   covered the shell's wallpaper. Both are background-layer surfaces, and
   swaybg's black stacked on top; stopping that swaybg showed the vinyl
   wallpaper. Verify by building the board boot files and checking the built
   sway config has no `bg` on that line, then on the board: replug HDMI and
   capture the wallpaper with `grim`.
+  Done 2026-10-17 (board, operator replug): no swaybg runs; the wallpaper
+  is visible on HDMI after a replug. See the evidence file, section 1.2.
 
 ## 2. Board
 
@@ -21,8 +23,13 @@
   `CmaTotal`/`CmaFree` from `/proc/meminfo`.
   Done 2026-10-16 (board, soft reboot 15:40): `cma: Reserved 64 MiB`,
   `CmaTotal: 65536 kB`, `CmaFree: 63016 kB`; same evidence file.
-- [ ] 2.2 After at least an hour of uptime that includes shell restarts and
+- [x] 2.2 After at least an hour of uptime that includes shell restarts and
   theme changes, the operator plugs in the monitor. Record that the
   compositor log has no dumb-buffer allocation failure for the chosen mode,
   that HDMI comes up at 1280x800, and the operator's report that the monitor
   shows the shell.
+  Done 2026-10-17 (board, operator plug after 3 h 41 min uptime): the 1280x800
+  dumb buffer was allocated 1.2 s after HPD with no allocation failure, and
+  the operator confirmed the shell on the monitor. See the evidence file,
+  section 2.2. The monitor can take about 30 s to lock after a replug, and
+  that part is the monitor's.

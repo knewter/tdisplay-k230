@@ -67,4 +67,11 @@ timing is evidence for the 30s scenario ceiling, not those precise targets.*
   with repeated shell restarts and theme changes
 - **THEN** the monitor shows the shell at 1280x800 within 30 seconds, with no
   framebuffer allocation failure in the compositor log
-<!-- UNVERIFIED: board proof is task 2.2 -->
+
+*Grounding (2026-10-17): after 3 h 41 min of uptime with shell restarts and
+theme changes, a plug allocated the 1280x800 scanout buffer 1.2 s after HPD
+with no allocation failure, and the operator saw the shell on the monitor.
+After the swaybg fix, a replug showed the wallpaper. The board side finished
+within 2 s of HPD. The monitor's own lock time, about 25–30 s after that on
+one replug, is reported by the operator and not measured
+(`docs/evidence/hdmi-plug-cma/board-2026-10-16.md`).*
