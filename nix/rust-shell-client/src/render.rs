@@ -1034,7 +1034,10 @@ fn paint_level_slider(cr: &Context, style: VisualStyle, w: f64, center_y: f64, i
 fn paint_volume_slider(cr: &Context, style: VisualStyle, w: f64, center_y: f64, percent: u8, muted: bool) {
     let (left, _right) = slider::track_bounds(w);
     let icon_rgb = if muted { style.muted } else { style.text };
-    paint_slider_end(cr, if muted { Glyph::SpeakerMuted } else { Glyph::Speaker }, left - 30.0, center_y, icon_rgb, 1.0);
+    // Six px further out than the suns: the muted cross reaches the glyph's
+    // right edge, and at 0% the thumb sits on the track's left end. Still
+    // inside `volume_icon_tap_zone` (56 px left of the track).
+    paint_slider_end(cr, if muted { Glyph::SpeakerMuted } else { Glyph::Speaker }, left - 36.0, center_y, icon_rgb, 1.0);
     paint_slider_track(cr, style, w, center_y, percent);
 }
 
