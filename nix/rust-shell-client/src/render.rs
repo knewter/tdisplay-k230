@@ -4724,6 +4724,12 @@ fn paint_charge_graph(cr: &Context, style: &VisualStyle, view: &crate::home_widg
 /// are skipped and the rest reflow), and the charger/input line beneath.
 /// Sizes derive from both the rect's height and width so the same code reads
 /// on the portrait panel, wide surfaces and the square picker preview.
+/// The Label/Caption role's floor for Battery - Details text, in design px.
+const BATTERY_TEXT_FLOOR: f64 = 26.0;
+/// The widget width at which that floor applies in full (a Home-sized 4x2
+/// cell is wider); narrower previews scale it down in proportion.
+const BATTERY_FLOOR_WIDTH: f64 = 400.0;
+
 fn paint_battery_details(cr: &Context, style: &VisualStyle, rect: (f64, f64, f64, f64), home: &HomeScreen, pad: f64) {
     use crate::home_widgets::battery::DetailsState;
     let (x, y, w, h) = rect;
@@ -4735,9 +4741,13 @@ fn paint_battery_details(cr: &Context, style: &VisualStyle, rect: (f64, f64, f64
         caption_glow(cr, "No battery info", x + pad, y + h * 0.62, w - pad * 2.0, 13.0, style.text, true);
         return;
     };
+    // The Label/Caption floor (the-shell-has-one-visual-language, type
+    // scale): 26 px on a Home-sized widget. The picker's small preview
+    // scales it down with the widget instead of overflowing.
+    let floor = BATTERY_TEXT_FLOOR * (w / BATTERY_FLOOR_WIDTH).min(1.0);
     // The bottom of the widget is the charge graph; everything else lays
-    // out in the rest.
-    let graph_h = h * 0.27;
+    // out in the rest. The graph keeps a readable plot under its captions.
+    let graph_h = (h * 0.27).max(floor * 1.5 + 48.0 * (w / BATTERY_FLOOR_WIDTH).min(1.0));
     let h = h - graph_h;
     let size = |h_frac: f64, w_frac: f64, floor: f64| (h * h_frac).min(w * w_frac).max(floor);
     let left = x + pad;
@@ -4747,26 +4757,57 @@ fn paint_battery_details(cr: &Context, style: &VisualStyle, rect: (f64, f64, f64
         style,
         &home.battery_history,
         (left, y + h, inner_w, graph_h - pad * 0.4),
-        size(0.048, 0.026, 10.0),
+        floor,
     );
 
     // Hero: ring + percentage, then state and time to its right.
     let radius = (h * 0.17).min(w * 0.105);
-    let state_size = size(0.10, 0.06, 12.0);
-    let time_size = size(0.08, 0.048, 11.0);
-    let line_size = size(0.06, 0.034, 11.0);
-    // A larger vision step enlarges the grid's labels and values as far as
-    // two rows still fit, and halves the columns so each value has room;
-    // the hero and graph keep their cell-proportional sizes.
-    let unit_row_h = size(0.048, 0.026, 10.0) * 1.35 + size(0.082, 0.039, 12.0) * 1.3;
-    let grid_room = (h - radius * 2.2 - line_size * 1.3) / (unit_row_h * 2.0);
-    let grid_scale = crate::layout_text_scale().min(grid_room).max(1.0);
-    let columns = if grid_scale > 1.2 { 2 } else { 4 };
-    let label_size = size(0.048, 0.026, 10.0) * grid_scale;
-    let value_size = size(0.082, 0.039, 12.0) * grid_scale;
-    let row_h = label_size * 1.35 + value_size * 1.3;
-    // Hero, two grid rows and the input line, evenly spaced in the rect.
-    let blocks_h = radius * 2.2 + row_h * 2.0 + line_size * 1.3;
+    let state_size = size(0.10, 0.06, floor);
+    let time_size = size(0.08, 0.048, floor);
+    let line_size = size(0.06, 0.034, floor);
+    // Metrics: one line per cell, the label on the left and the value
+    // after it, two cells to a row. A larger vision step enlarges them as
+    // far as two rows still fit; the hero and graph keep their
+    // cell-proportional sizes.
+    let base_label = floor;
+    let base_value = floor * 1.15;
+    let mut cells: Vec<(&str, String)> = Vec::new();
+    let mut push = |label: &'static str, value: Option<String>| {
+        if let Some(value) = value {
+            cells.push((label, value));
+        }
+    };
+    push("Current", details.current_label());
+    push("Power", details.power_label());
+    push("Voltage", details.voltage_label());
+    push("Temp", details.temperature_label());
+    push("Health", details.health_label());
+    push("Cycles", details.cycles_label());
+    let cell_w = inner_w / 2.0 - pad * 0.5;
+    // The widest label-and-value pair (in the first two rows) at 100%,
+    // which bounds how far the step can enlarge them without cutting a
+    // value off.
+    let widest = cells
+        .iter()
+        .take(4)
+        .map(|(label, value)| {
+            text_advance(cr, label, base_label, pango::Weight::Normal)
+                + base_label * 0.4
+                + text_advance(cr, value, base_value, pango::Weight::Bold)
+        })
+        .fold(0.0, f64::max);
+    let width_room = if widest > 0.0 { cell_w * 0.96 / widest } else { 1.0 };
+    let grid_room = (h - radius * 2.2 - line_size * 1.3) / (base_value * 1.3 * 2.0);
+    let grid_scale = crate::layout_text_scale().min(grid_room).min(width_room).max(1.0);
+    let label_size = base_label * grid_scale;
+    let value_size = base_value * grid_scale;
+    let row_h = value_size * 1.3;
+    // As many rows as the space holds (at least one, at most three), and
+    // the input line only when it still fits under them.
+    let free = h - radius * 2.2;
+    let rows = ((free / row_h).floor() as usize).clamp(1, 3).min(cells.len().div_ceil(2));
+    let input = details.input_label().filter(|_| free - rows as f64 * row_h >= line_size * 1.3);
+    let blocks_h = radius * 2.2 + row_h * rows as f64 + if input.is_some() { line_size * 1.3 } else { 0.0 };
     let gap = ((h - blocks_h) / 4.0).max(0.0);
     let ring_cx = left + radius + radius * 0.2;
     let ring_cy = y + gap + radius * 1.1;
@@ -4792,46 +4833,22 @@ fn paint_battery_details(cr: &Context, style: &VisualStyle, rect: (f64, f64, f64
         detail_glow(cr, &time, text_x, ty, text_w, time_size, style.accent, pango::Weight::Bold, pango::Alignment::Left);
     }
 
-    // Grid: label over value, four columns (two at a larger vision step),
-    // at most two rows.
-    let mut cells: Vec<(&str, String, usize)> = Vec::new();
-    let mut push = |label: &'static str, value: Option<String>, span: usize| {
-        if let Some(value) = value {
-            cells.push((label, value, span));
-        }
-    };
-    push("Current", details.current_label(), 1);
-    push("Power", details.power_label(), 1);
-    push("Voltage", details.voltage_label(), 1);
-    push("Temp", details.temperature_label(), 1);
-    push("Charge", details.charge_label(), 2);
-    push("Health", details.health_label(), 1);
-    push("Cycles", details.cycles_label(), 1);
-    let col_w = inner_w / columns as f64;
+    let col_w = inner_w / 2.0;
     let grid_y = ring_cy + radius * 1.1 + gap;
-    let (mut col, mut row) = (0usize, 0usize);
-    for (label, value, span) in cells {
-        if span > columns {
-            continue;
-        }
-        if col + span > columns {
-            col = 0;
-            row += 1;
-        }
-        if row >= 2 {
-            break;
-        }
-        let cx = left + col as f64 * col_w;
-        let cy = grid_y + row as f64 * row_h;
-        let cell_w = col_w * span as f64 - pad * 0.3;
-        caption_glow(cr, label, cx, cy, cell_w, label_size, style.muted, false);
-        detail_glow(cr, &value, cx, cy + label_size * 1.35, cell_w, value_size, style.text, pango::Weight::Bold, pango::Alignment::Left);
-        col += span;
+    // The label sits on the value's baseline, roughly.
+    let label_drop = (value_size - label_size) * 0.8;
+    for (i, (label, value)) in cells.into_iter().take(rows * 2).enumerate() {
+        let cx = left + (i % 2) as f64 * col_w;
+        let cy = grid_y + (i / 2) as f64 * row_h;
+        let label_w = text_advance(cr, label, label_size, pango::Weight::Normal);
+        detail_glow(cr, label, cx, cy + label_drop, cell_w, label_size, style.muted, pango::Weight::Normal, pango::Alignment::Left);
+        let value_x = cx + label_w + label_size * 0.4;
+        detail_glow(cr, &value, value_x, cy, (cx + cell_w - value_x).max(10.0), value_size, style.text, pango::Weight::Bold, pango::Alignment::Left);
     }
 
     // Input line.
-    if let Some(line) = details.input_label() {
-        detail_glow(cr, &line, left, grid_y + row_h * 2.0 + gap, inner_w, line_size, style.accent, pango::Weight::Normal, pango::Alignment::Left);
+    if let Some(line) = input {
+        detail_glow(cr, &line, left, grid_y + row_h * rows as f64 + gap, inner_w, line_size, style.accent, pango::Weight::Normal, pango::Alignment::Left);
     }
 }
 
