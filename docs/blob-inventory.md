@@ -1899,18 +1899,6 @@ DATA 8b0f1bfa6b50fd0ae6fd1db609decbc22e800a8ceac84f746e01bae6f4e46f61 docs/evide
 DATA f08588cb20f272da51d3e69f941e5130a1d040e13b5b7f8b0d36e74cd58585c2 docs/evidence/hdmi-hotplug/landscape/wide-reflow/wifi-list-1280x800.png
 DATA 95178d12ade837cc1fda9a03e7a58bbed213230e845e0a64eb79e4185fe1c65b docs/evidence/hdmi-hotplug/landscape/wide-reflow/wifi-list-1920x1080.png
 DATA 0938edbc429fe58e4ccc4f16e4f25e163b8a8c3664f8a298bed8b8c19bfc7f1d docs/evidence/shell-responsive/board/acceptance-2026-10-09/home.png
-DATA 8ed667a929be7d67c1d26694da4d7ec3a531f20fcc33bd4864d75f96f8bded60 docs/evidence/shell-responsive/drawer-1080x1920.png
-DATA 01769210c5012d06b67d575d23b1b7475f4949af773d7bfc44401688f84e2377 docs/evidence/shell-responsive/drawer-1920x1080.png
-DATA 6b27c0d9103cb3012ce1d792373ef0a42f5614c9cf66001778ebb14c4dc3e822 docs/evidence/shell-responsive/drawer-568x1232.png
-DATA ebb91163a40502f6b631668958ea5b0ab1fcc8fd4754b0d77ace98d724292743 docs/evidence/shell-responsive/drawer-768x1024.png
-DATA b05d2d79300fbdae27772bca67427b78ed986743230cfca4eecbfcbc57d87bf8 docs/evidence/shell-responsive/home-1080x1920.png
-DATA e12860142abdf9395a4400e1c877baac17504d880f659a24a0c612c6bba6b099 docs/evidence/shell-responsive/home-1920x1080.png
-DATA 00bd95f2f3699e9a3fd9b65446134c01bac6d14974ab1c84f7f722073b34f4d3 docs/evidence/shell-responsive/home-568x1232.png
-DATA 5742a0fa3ff6e4de023ae83875234f71bec4cccbeec6e4ad8c108d97d91fe3b8 docs/evidence/shell-responsive/home-768x1024.png
-DATA f6c79777e272bf7d5d87d3ce97c9e01bc82d4eb0b3cdf651833a60c13dd9b2a4 docs/evidence/shell-responsive/settings-1080x1920.png
-DATA dd6f2a3753125acffecc720391fd27aa9e31639115418f1e993945c1d6808f7b docs/evidence/shell-responsive/settings-1920x1080.png
-DATA 6ee6e4579ebd967337c44bec1934adba71af6ad64ccd14b760ea470eaed89b57 docs/evidence/shell-responsive/settings-568x1232.png
-DATA b1a9a737cb73eef4abd8c94ab5b8888a683cb6f853b1bd810734c090104b12d0 docs/evidence/shell-responsive/settings-768x1024.png
 # Current UX candidate native captures — 2026-10-09
 DATA 83c8b4261beb9621eaaeed8c8e6c1d4fe25bb16abbad63de4234355d25e16de8 docs/evidence/ux-review-round-2/candidate-2026-10-09/overview.png
 DATA 2d009ee5c0b97bfc21e04592bd099b0f21643bafe660043ed9d0a3e7c418b286 docs/evidence/ux-review-round-2/candidate-2026-10-09/drawer.png
@@ -3250,18 +3238,6 @@ acceptance is recorded separately in its evidence directory.
 | Path | Bytes | Class | SHA256 |
 | --- | ---: | --- | --- |
 | `docs/evidence/shell-responsive/board/acceptance-2026-10-09/home.png` | 359917 | DATA | `0938edbc429fe58e4ccc4f16e4f25e163b8a8c3664f8a298bed8b8c19bfc7f1d` |
-| `docs/evidence/shell-responsive/drawer-1080x1920.png` | 41437 | DATA | `8ed667a929be7d67c1d26694da4d7ec3a531f20fcc33bd4864d75f96f8bded60` |
-| `docs/evidence/shell-responsive/drawer-1920x1080.png` | 72343 | DATA | `01769210c5012d06b67d575d23b1b7475f4949af773d7bfc44401688f84e2377` |
-| `docs/evidence/shell-responsive/drawer-568x1232.png` | 43659 | DATA | `6b27c0d9103cb3012ce1d792373ef0a42f5614c9cf66001778ebb14c4dc3e822` |
-| `docs/evidence/shell-responsive/drawer-768x1024.png` | 93775 | DATA | `ebb91163a40502f6b631668958ea5b0ab1fcc8fd4754b0d77ace98d724292743` |
-| `docs/evidence/shell-responsive/home-1080x1920.png` | 57734 | DATA | `b05d2d79300fbdae27772bca67427b78ed986743230cfca4eecbfcbc57d87bf8` |
-| `docs/evidence/shell-responsive/home-1920x1080.png` | 47737 | DATA | `e12860142abdf9395a4400e1c877baac17504d880f659a24a0c612c6bba6b099` |
-| `docs/evidence/shell-responsive/home-568x1232.png` | 40463 | DATA | `00bd95f2f3699e9a3fd9b65446134c01bac6d14974ab1c84f7f722073b34f4d3` |
-| `docs/evidence/shell-responsive/home-768x1024.png` | 43641 | DATA | `5742a0fa3ff6e4de023ae83875234f71bec4cccbeec6e4ad8c108d97d91fe3b8` |
-| `docs/evidence/shell-responsive/settings-1080x1920.png` | 30547 | DATA | `f6c79777e272bf7d5d87d3ce97c9e01bc82d4eb0b3cdf651833a60c13dd9b2a4` |
-| `docs/evidence/shell-responsive/settings-1920x1080.png` | 25450 | DATA | `dd6f2a3753125acffecc720391fd27aa9e31639115418f1e993945c1d6808f7b` |
-| `docs/evidence/shell-responsive/settings-568x1232.png` | 20695 | DATA | `6ee6e4579ebd967337c44bec1934adba71af6ad64ccd14b760ea470eaed89b57` |
-| `docs/evidence/shell-responsive/settings-768x1024.png` | 21488 | DATA | `b1a9a737cb73eef4abd8c94ab5b8888a683cb6f853b1bd810734c090104b12d0` |
 
 ### Coherent-shell integration gate captures (2026-10-10)
 
