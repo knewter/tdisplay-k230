@@ -137,13 +137,19 @@ What the images show:
 - Portrait: all four styles fit the 568 px width at every step; no clipping.
   The dot-matrix clock nearly fills the width at 200%. The date grows with the
   step. The analog clock is small and sits left in its cell in portrait.
-- retro-82 over the vinyl: the Bubble and Thin minutes in the orange accent
-  stay readable because of the dark halo, including over the orange label.
-  The dot-matrix minute is the weak case: its orange dots over the orange
-  label have little contrast against the backdrop (only the faint halo rings
-  separate them), and they get worse where they cross the spindle. The hour and
-  date in cream read well. The Thin minute at 200% is thin and reads only by
-  its halo outline.
+- retro-82 over the vinyl:
+  - The Bubble and Thin minutes, in the orange accent, stay readable because
+    of the dark halo, including over the orange label. The Thin minute at
+    200% is thin and reads mainly by its halo outline.
+  - The first renders showed the dot-matrix minute as the weak case: orange
+    dots over the orange label, separated only by faint soft halos.
+    `draw_dot_matrix_glyph` now gives each lit dot a crisp ring in the halo
+    colour (`pitch * 0.1`, at least 1.5 px, at 80%). The re-rendered sheet
+    shows the minute dots outlined and legible at every step, including
+    where they cross the spindle.
+  - The analog style's cream hour ticks are faint over the orange label;
+    its hands keep their halo and read.
+  - The hour and date, in cream, read well.
 - catppuccin-latte over the pastel wallpaper: the hour is dark and the minute
   is the saturated blue accent, both clearly legible at all steps and styles.
   The halo is a light tone and is not visible on this light wallpaper; it is
@@ -152,4 +158,4 @@ What the images show:
 Limits: host renders only. The wallpaper is scaled to cover and is not the
 panel's exact crop or the shell's wallpaper pipeline. The clock is in slot 0
 only, so its position over the vinyl is not where a user would place it.
-Task 1.4 is not ticked because of the dot-matrix minute over the orange label.
+The sheets were re-rendered after the dot-ring change, from the same generations.

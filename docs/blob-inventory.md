@@ -1678,9 +1678,9 @@ DATA ee2ee568349d2934b8b8c6950b9278d9b0f41203f6b71ced033796e4bcbc8974 docs/evide
 DATA a030cb1e75d983468dc23384351c0c4c411dac03ff5db25022e8f62bf3cf37c2 docs/evidence/clock-restyle/host-160-before-after.png
 DATA e590ff3c14c7c08eeba6acc7ec745eb5f63e4e0b0ad46a88ecdad3d0903069ad docs/evidence/clock-restyle/host-200-before-after.png
 DATA 9e258d5a07a483381d428302c67f39a9d8a799d94461e51d1ea4a86604f27f22 docs/evidence/clock-restyle/host-200-high-before-after.png
-DATA 8ef2262820967a6860dc429672f3b6de4b8b47fafa20e2f506843eeb06818bdb docs/evidence/clock-restyle/host-latte.png
-DATA d7c879ee3f5f9a7a625d015ecba9a7e4daaff9db7949ef6ba11ba48619643ce0 docs/evidence/clock-restyle/host-portrait-steps.png
-DATA 214a3187ff02f0662ca4a963ad35198af695f785889764a2d318920defad2585 docs/evidence/clock-restyle/host-retro82-wallpaper.png
+DATA 928965287512f34e9111f2428f00d97aed21ba3668557aed880f1d87cf336439 docs/evidence/clock-restyle/host-latte.png
+DATA 8e3fc56d90f9fb9b02d709dec1384e37a0b07dc2c6574334f2f3bcb80f0b5db8 docs/evidence/clock-restyle/host-portrait-steps.png
+DATA c8862c1934628c68c99651f932dc05a6078b6a9e1504ef8d2b5df9de63e1e177 docs/evidence/clock-restyle/host-retro82-wallpaper.png
 DATA eb97830d3b2c407b8a1a9559f4547c5faf30a528c36085c065ede0d2971e5eb6 docs/evidence/coherent-shell/accessibility-scale/board/01-settings.png
 DATA 067bdb088d7d3b137a2586058819ab40830bef98aab4bf2daca440413794e7a6 docs/evidence/coherent-shell/accessibility-scale/board/02-vision-default.png
 DATA 1052f94fa56517b0116ce10500455c31e71e37504080bdea57fe91a6eff8d4f1 docs/evidence/coherent-shell/accessibility-scale/board/03-large.png
@@ -2398,9 +2398,9 @@ limits are in the adjacent README. They are not physical-panel captures.
 | `docs/evidence/clock-restyle/host-160-before-after.png` | 196462 | DATA | `a030cb1e75d983468dc23384351c0c4c411dac03ff5db25022e8f62bf3cf37c2` |
 | `docs/evidence/clock-restyle/host-200-before-after.png` | 217616 | DATA | `e590ff3c14c7c08eeba6acc7ec745eb5f63e4e0b0ad46a88ecdad3d0903069ad` |
 | `docs/evidence/clock-restyle/host-200-high-before-after.png` | 214678 | DATA | `9e258d5a07a483381d428302c67f39a9d8a799d94461e51d1ea4a86604f27f22` |
-| `docs/evidence/clock-restyle/host-latte.png` | 388762 | DATA | `8ef2262820967a6860dc429672f3b6de4b8b47fafa20e2f506843eeb06818bdb` |
-| `docs/evidence/clock-restyle/host-portrait-steps.png` | 283674 | DATA | `d7c879ee3f5f9a7a625d015ecba9a7e4daaff9db7949ef6ba11ba48619643ce0` |
-| `docs/evidence/clock-restyle/host-retro82-wallpaper.png` | 707349 | DATA | `214a3187ff02f0662ca4a963ad35198af695f785889764a2d318920defad2585` |
+| `docs/evidence/clock-restyle/host-latte.png` | 362466 | DATA | `928965287512f34e9111f2428f00d97aed21ba3668557aed880f1d87cf336439` |
+| `docs/evidence/clock-restyle/host-portrait-steps.png` | 262562 | DATA | `8e3fc56d90f9fb9b02d709dec1384e37a0b07dc2c6574334f2f3bcb80f0b5db8` |
+| `docs/evidence/clock-restyle/host-retro82-wallpaper.png` | 698591 | DATA | `c8862c1934628c68c99651f932dc05a6078b6a9e1504ef8d2b5df9de63e1e177` |
 | `docs/evidence/coherent-shell/accessibility-scale/board/01-settings.png` | 53914 | DATA | `eb97830d3b2c407b8a1a9559f4547c5faf30a528c36085c065ede0d2971e5eb6` |
 | `docs/evidence/coherent-shell/accessibility-scale/board/02-vision-default.png` | 18953 | DATA | `067bdb088d7d3b137a2586058819ab40830bef98aab4bf2daca440413794e7a6` |
 | `docs/evidence/coherent-shell/accessibility-scale/board/03-large.png` | 26944 | DATA | `1052f94fa56517b0116ce10500455c31e71e37504080bdea57fe91a6eff8d4f1` |

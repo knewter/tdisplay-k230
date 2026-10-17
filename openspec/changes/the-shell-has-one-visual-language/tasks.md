@@ -20,14 +20,17 @@
   after adding a portrait size. Host class.
   Done 2026-10-17 (host): `CLOCK_SIZE=portrait`;
   `docs/evidence/clock-restyle/host-portrait-steps.png`.
-- [ ] 1.4 Renders over a real wallpaper and in a light theme (for example a
+- [x] 1.4 Renders over a real wallpaper and in a light theme (for example a
   retro-82 and a catppuccin-latte generation) to confirm the halo on the
   accent minute. Host class.
   Renders done 2026-10-17 (host): `host-retro82-wallpaper.png` and
   `host-latte.png` in `docs/evidence/clock-restyle/`. Latte is legible. Over
   the retro-82 vinyl the Bubble and Thin minutes read through the halo, but
-  the dot-matrix minute over the orange label is weak, so this stays open
-  until that is judged or fixed.
+  the dot-matrix minute over the orange label was weak.
+  Done 2026-10-17 (host): each lit dot now has a crisp ring in the halo
+  colour. The re-rendered sheets show the dot-matrix minute legible over
+  the label at every step. The analog ticks remain faint there; the hands
+  read.
 
 ## 2. Type scale and spacing
 

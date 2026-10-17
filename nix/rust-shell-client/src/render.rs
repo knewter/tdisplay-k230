@@ -4047,6 +4047,13 @@ fn draw_dot_matrix_glyph(cr: &Context, rows: &[&str], cols: usize, x0: f64, y0: 
                 continue;
             }
             draw_soft_backdrop(cr, cx, cy, radius * 1.9, glow, 0.16);
+            // A crisp ring in the halo colour keeps a lit dot apart from a
+            // wallpaper of its own hue (the accent minute over an orange
+            // label), the way the Bubble digits keep their outline.
+            cr.new_path();
+            cr.arc(cx, cy, radius + (pitch * 0.1).max(1.5), 0.0, std::f64::consts::TAU);
+            color(cr, glow, 0.8);
+            let _ = cr.fill();
             cr.new_path();
             cr.arc(cx, cy, radius, 0.0, std::f64::consts::TAU);
             color(cr, rgb, 0.95);
