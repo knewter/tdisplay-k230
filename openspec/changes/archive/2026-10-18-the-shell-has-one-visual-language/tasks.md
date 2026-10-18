@@ -134,7 +134,7 @@
   page and the Shade at 100% and 200% on DSI-1 (1232x568), retro-82 with
   the vinyl wallpaper, from `caaf4ff4`, are in
   `docs/evidence/visual-language-panel/`.
-- [ ] 5.2 The operator's judgement on glass that the Clock and each restyled
+- [x] 5.2 The operator's judgement on glass that the Clock and each restyled
   surface are readable and that the accent marks what is live. Board class;
   this task stays open until the operator has looked.
   Progress 2026-10-16: the operator looked at the restyled Clock on glass
@@ -150,3 +150,6 @@
   (Settings rows, the power cards, the Shade's keyboard toggle and volume
   slider ends, the drawer search) and said "looks good to me". The
   drawer's move onto the type roles (2.3) still needs its look.
+  Done 2026-10-18: the operator looked at the drawer on the type roles on
+  glass (retro-82, 100%, from the 80b12e58 closure) and said "lgtm". Every
+  restyled surface has now had its look.

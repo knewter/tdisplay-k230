@@ -1,6 +1,6 @@
 # Card jobs and the one-accent rule
 
-Change: `openspec/changes/the-shell-has-one-visual-language`, tasks 3.1–3.3.
+Change: `openspec/changes/archive/2026-10-18-the-shell-has-one-visual-language`, tasks 3.1–3.3.
 
 ## What changed
 

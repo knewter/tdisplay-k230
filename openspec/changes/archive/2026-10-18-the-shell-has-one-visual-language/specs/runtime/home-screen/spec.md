@@ -2,7 +2,10 @@
 
 ### Requirement: The Clock widget marks the minute with the theme accent
 
-<!-- UNVERIFIED -->
+<!-- UNVERIFIED: the hour/minute colours are seen in the panel captures under
+docs/evidence/clock-restyle/ and approved on glass, but a theme change
+re-colouring the minute without a restart has not been observed on the
+board. -->
 
 Every Clock widget style SHALL draw the hour in the active theme's foreground
 colour and the minute in its accent colour. It SHALL take both colours from
@@ -24,7 +27,10 @@ except the analog style's minute hand.
 
 ### Requirement: The Clock widget's date is one neutral line of at least 32 px
 
-<!-- UNVERIFIED -->
+*Grounding (2026-10-17): host tests `clock_date` check the date's size, width
+and clearance at 100/130/160/200%; native panel captures at 100%, 160% and
+200% are in `docs/evidence/clock-restyle/board-panel-*-home.png`, and the
+operator judged the Clock on glass ("clock lookgs good").*
 
 Every Clock widget style SHALL draw its date as one line of mixed-case text
 (for example "Fri, Oct 16") in the foreground colour, at no less than 32 px at

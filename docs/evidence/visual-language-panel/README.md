@@ -1,6 +1,6 @@
 # The visual language on the panel
 
-Change: `openspec/changes/the-shell-has-one-visual-language`, task 5.1.
+Change: `openspec/changes/archive/2026-10-18-the-shell-has-one-visual-language`, task 5.1.
 
 Evidence class: native `grim` captures on the board. They show what the
 shell draws; they are not the operator's judgement on glass (5.2).

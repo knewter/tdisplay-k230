@@ -2,7 +2,14 @@
 
 ### Requirement: The shell uses one visual language across its surfaces
 
-<!-- UNVERIFIED -->
+*Grounding (2026-10-18): native captures of Home, the drawer, Settings, the
+Vision page and the Shade at 100% and 200% on the landscape panel are in
+`docs/evidence/visual-language-panel/`; host renders at all four steps in
+both orientations are in `docs/evidence/type-roles/`,
+`docs/evidence/card-jobs/` and `docs/evidence/stroked-icons/`; the operator
+approved the text sizes, the card treatments and accent, the icons and the
+drawer on glass (task 5.2). High contrast and portrait are host renders
+only.*
 
 Settings, the Vision page, the Shade's header and controls, the drawer, the
 Clock widget and the Battery details widget SHALL draw text from one type

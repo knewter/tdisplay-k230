@@ -1,6 +1,6 @@
 # The stroked icon set
 
-Change: `openspec/changes/the-shell-has-one-visual-language`, task 4.1.
+Change: `openspec/changes/archive/2026-10-18-the-shell-has-one-visual-language`, task 4.1.
 
 ## What changed
 

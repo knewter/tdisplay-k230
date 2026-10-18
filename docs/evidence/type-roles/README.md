@@ -1,6 +1,6 @@
 # Settings, Vision and the Shade on the type roles
 
-Change: `openspec/changes/the-shell-has-one-visual-language`, task 2.1.
+Change: `openspec/changes/archive/2026-10-18-the-shell-has-one-visual-language`, task 2.1.
 
 ## What changed
 
