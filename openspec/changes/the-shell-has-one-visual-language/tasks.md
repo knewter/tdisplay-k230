@@ -50,6 +50,34 @@
   the 26 px floor as one-line label/value pairs. Renders at all four steps in
   both orientations are in `docs/evidence/battery-details-type/`.
 
+- [x] 2.3 Move the drawer's app labels, Help and search text onto the type
+  roles: names in the 26 px Caption role, wrapping onto a second line
+  rather than shortening, in tiles that hold that label at every step;
+  Help and the search pill in the Label role. The placeholder shrinks to
+  fit a narrow pill at a large step (never below 26 px) instead of being
+  ellipsized. Verify with `cargo test --offline --manifest-path
+  nix/rust-shell-client/Cargo.toml --tests`. Host class.
+  Done 2026-10-18 (host): all test targets pass, including
+  `drawer_names_wrap_without_ellipsizing_at_every_text_step`, which checks
+  stock names at four steps in three output sizes and asserts that lines
+  break only between words. The `drawer-*.png` baselines under
+  `docs/evidence/shell-responsive/` were updated deliberately (three
+  columns on the portrait panel, six on the landscape panel). Renders are
+  `host-drawer-steps-568x1232.png` and `host-drawer-steps-1232x568.png` in
+  `docs/evidence/visual-language-panel/`.
+- [x] 2.4 Scope the requirement to the surfaces this change restyled:
+  Settings, the Vision page, the Shade's header and controls, the drawer,
+  the Clock and Battery details. The no-ellipsis rule covers text the
+  shell writes; app names and notification text from senders may be cut
+  short after they fill their space. Home app labels (15 px, in cells too
+  short for a 26 px line), the other widget captions (12-13 px), the
+  Shade's audio and notification rows, the Wi-Fi pages, the Help page,
+  the theme grid and the recovery menu stay below the floor. They move to
+  the successor change `the-rest-of-the-shell-text-takes-the-type-roles`
+  with their own tasks.
+  Done 2026-10-18: the delta in `specs/runtime/shell/spec.md` names those
+  surfaces, and the successor proposal is committed with this change.
+
 ## 3. Cards and the accent
 
 - [x] 3.1 Implement the Chosen card treatment (accent fill and rim) and use
@@ -115,3 +143,7 @@
   Progress 2026-10-17: the operator looked at the card treatments and the
   accent on glass (retro-82, 100%), was told where the accent remains, and
   said "it's dope". The icons (4.1) still need their look.
+  Progress 2026-10-17: the operator looked at the stroked icons on glass
+  (Settings rows, the power cards, the Shade's keyboard toggle and volume
+  slider ends, the drawer search) and said "looks good to me". The
+  drawer's move onto the type roles (2.3) still needs its look.

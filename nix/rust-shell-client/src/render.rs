@@ -148,15 +148,15 @@ pub const FONT_FAMILY: &str = "DejaVu Sans";
 pub const CLOCK_FONT_FAMILY: &str = "Inter";
 
 /// The drawer grid's own icon geometry (`docs/design/app-drawer-review.md`):
-/// a 64px icon (no plate/box around it -- see `paint_drawer`), single-line
-/// 14px label below.
+/// a 64px icon (no plate/box around it -- see `paint_drawer`), with a
+/// two-line Caption-role label below.
 pub const DRAWER_ICON_SIZE: i32 = 64;
 /// The icon's own width in the grid math (a plain `f64` copy of
 /// `DRAWER_ICON_SIZE`, since `IconCache::paint`/`paint_label` want
 /// different numeric types for size).
 pub const DRAWER_ICON_CARD: f64 = DRAWER_ICON_SIZE as f64;
-/// Single-line app-name label font size -- 13-14px per the redesign.
-pub const DRAWER_LABEL_SIZE: f64 = 14.0;
+/// The app-name label's design size: the Caption role.
+pub const DRAWER_LABEL_SIZE: f64 = TYPE_CAPTION;
 
 pub(crate) fn color(cr: &Context, rgb: u32, alpha: f64) {
     cr.set_source_rgba(
@@ -2566,7 +2566,7 @@ impl DrawerGridCache {
 
 /// One tile's worth of content: an icon (no plate/box around it -- the
 /// redesign's own "just the icon, with its label below, on the sheet
-/// surface") and a single-line ellipsized label. Icon fallback (no
+/// surface") and a label of up to two lines. Icon fallback (no
 /// resolvable icon) is a round, theme-tinted circle with the app's
 /// initial -- rare in practice (`docs/evidence/app-drawer/`'s real-icon
 /// screenshots), but still legible and on-theme when it happens.
@@ -2633,17 +2633,15 @@ fn paint_drawer_tile(
         );
     }
     let label_y = icon_y + icon_card + visual_inset(cr, 6.0);
-    // At a larger vision step a name wraps onto a second line rather than
-    // ellipsizing; the 100% drawer keeps its single line.
-    let lines = if crate::layout_text_scale() > 1.0 { 2 } else { 1 };
+    // A name wraps onto a second line rather than ellipsizing.
     icons.paint_label_lines(
         cr,
         &app.name,
-        (x + 4.0, label_y),
-        (cell_w - 8.0).max(1.0),
-        theme_font_size(theme, "caption", DRAWER_LABEL_SIZE, 11.0, 18.0),
+        (x + 2.0, label_y),
+        (cell_w - 4.0).max(1.0),
+        theme_font_size(theme, "caption", DRAWER_LABEL_SIZE, DRAWER_LABEL_SIZE, DRAWER_LABEL_SIZE * 1.25),
         brush_rgb(theme, "menu", "text", style.text),
-        lines,
+        2,
     );
 }
 
@@ -2727,10 +2725,8 @@ fn paint_drawer_chrome(
 
     let (hx, hy, hw, hh) = navigation::help_rect(width, height);
     service_card(cr, theme, "launcher", hx, hy, hw, hh, false);
-    // A larger vision step centres the larger label; 100% keeps its offset.
-    let lifted = crate::layout_text_scale() > 1.0;
-    let help_y = if lifted { hy + (hh - context_font_size(cr, 18.0) * 1.2) / 2.0 } else { hy + 16.0 };
-    text(cr, "Help", hx + 12.0, help_y, hw - 24.0, 18.0, style.text);
+    let help_y = hy + (hh - context_font_size(cr, TYPE_LABEL) * 1.2) / 2.0;
+    text(cr, "Help", hx + 12.0, help_y, hw - 24.0, TYPE_LABEL, style.text);
     let (sx, sy, sw, sh) = search_field_rect(width, height);
     rounded(cr, sx, sy, sw, sh, sh / 2.0);
     let _ = cr.save();
@@ -2760,17 +2756,24 @@ fn paint_drawer_chrome(
     };
     glyph::paint(cr, Glyph::Search, sx + 15.0, sy + sh / 2.0 - 12.0, 24.0, label_color, 0.8);
     let tx = sx + 54.0;
-    let ty = if lifted { sy + (sh - context_font_size(cr, 18.0) * 1.2) / 2.0 } else { sy + sh / 2.0 - 9.0 };
     let available = sw - 76.0;
+    // A narrow pill at a large step shrinks the line until the placeholder
+    // fits rather than ellipsizing it, never below the Label role's 100%
+    // size. A query keeps that size and scrolls under the caret.
+    let full = context_font_size(cr, TYPE_LABEL);
+    let advance = text_advance_resolved(cr, "Search apps", full, pango::Weight::Normal);
+    let room = available * 0.96;
+    let label_size = if advance > room { (full * room / advance).max(TYPE_LABEL) } else { full };
+    let ty = sy + (sh - label_size * 1.2) / 2.0;
     if !search.focused {
-        text(cr, label, tx, ty, available, 18.0, label_color);
+        text_weight_resolved(cr, label, tx, ty, available, label_size, label_color, pango::Weight::Normal);
         return;
     }
     // The focus brush/outline above belongs to the theme; keep the caret steady.
     let layout = pangocairo::functions::create_layout(cr);
     let mut font = FontDescription::new();
     font.set_family(FONT_FAMILY);
-    font.set_absolute_size(context_font_size(cr, 18.0) * f64::from(pango::SCALE));
+    font.set_absolute_size(label_size * f64::from(pango::SCALE));
     layout.set_font_description(Some(&font));
     layout.set_single_paragraph_mode(true);
     layout.set_text(&search.query);
@@ -2781,7 +2784,7 @@ fn paint_drawer_chrome(
     cr.rectangle(tx - 2.0, sy + 8.0, available + 2.0, sh - 16.0);
     cr.clip();
     if search.query.is_empty() {
-        text(cr, label, tx, ty, available, 18.0, label_color);
+        text_weight_resolved(cr, label, tx, ty, available, label_size, label_color, pango::Weight::Normal);
     } else {
         color(cr, style.text, 1.0);
         cr.move_to(tx - shift, ty);
@@ -3054,7 +3057,7 @@ fn paint_drawer(
         } else {
             "No apps match your search"
         };
-        text(cr, message, 28.0, row_start + 18.0, w - 56.0, 21.0, style.muted);
+        text(cr, message, 28.0, row_start + 18.0, w - 56.0, TYPE_BODY, style.muted);
     }
 }
 

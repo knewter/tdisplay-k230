@@ -691,6 +691,8 @@ DATA 67306afb8745e6fe7f2eff6e0c2d3d324b3531d1c435e3f9a638db9fb5d86b11 docs/evide
 DATA a4ece9287f51c2d7583781013563932f9c92c04c7f686e7fe3b7ed82e7304435 docs/evidence/visual-language-panel/board-panel-200-settings.png
 DATA 6b8e7a461293f2ff62576ab4a5d0bda53835fb50c0f8c49cdc574183ec1f7beb docs/evidence/visual-language-panel/board-panel-200-shade.png
 DATA 7b87bebba551c421c6a521324e524da735f8d333cc6449c179c4ab1894f098ae docs/evidence/visual-language-panel/board-panel-200-vision.png
+DATA e1b06b77e8d7b8072e5cd8b09aedabe4c094c5c719d8bcd5c1b90399b15a4bda docs/evidence/visual-language-panel/host-drawer-steps-1232x568.png
+DATA 0074e6a96aaef045a1a3e41760cd2ba9ce75423028e3553cbb125e15ff902356 docs/evidence/visual-language-panel/host-drawer-steps-568x1232.png
 DATA 6c932721f51eccfe719486e1474e411c6303c2a95bf1ea7c6240260f1b939669 docs/evidence/volume/closeout-2026-10-01/expanded-real-stream.jpg
 DATA ef63b26ac876397657f42f5e72039874a82b658ef9cd11abf16d96047ed3d8ee docs/evidence/volume/closeout-2026-10-01/hud-dragged.jpg
 DATA 65557a7fe7f93d61c76232c8484f87ac11c2ee475618c61de0c620d1c2da304d docs/evidence/volume/closeout-2026-10-01/hud-hidden.jpg
@@ -3043,6 +3045,8 @@ a real cross-built Rust client and patched Sway under
 | `docs/evidence/visual-language-panel/board-panel-200-settings.png` | 29304 | DATA | `a4ece9287f51c2d7583781013563932f9c92c04c7f686e7fe3b7ed82e7304435` |
 | `docs/evidence/visual-language-panel/board-panel-200-shade.png` | 17744 | DATA | `6b8e7a461293f2ff62576ab4a5d0bda53835fb50c0f8c49cdc574183ec1f7beb` |
 | `docs/evidence/visual-language-panel/board-panel-200-vision.png` | 41753 | DATA | `7b87bebba551c421c6a521324e524da735f8d333cc6449c179c4ab1894f098ae` |
+| `docs/evidence/visual-language-panel/host-drawer-steps-1232x568.png` | 165256 | DATA | `e1b06b77e8d7b8072e5cd8b09aedabe4c094c5c719d8bcd5c1b90399b15a4bda` |
+| `docs/evidence/visual-language-panel/host-drawer-steps-568x1232.png` | 187020 | DATA | `0074e6a96aaef045a1a3e41760cd2ba9ce75423028e3553cbb125e15ff902356` |
 | `docs/evidence/volume/shade-both-sliders.png` | 60471 | DATA | `9d1ffe6cd11029eec3dc103a72a93d1c661362ed45127db426e94fe78a428b9d` |
 | `docs/evidence/volume/hud-collapsed.png` | 60444 | DATA | `6afe4816bc6a66f409c5d70bff41ed94eb33d1034ebb93f05db303923632826a` |
 | `docs/evidence/volume/hud-expanded.png` | 64958 | DATA | `1db2d849128d5574ea833cad147a4f75bcf3868ed3132fb7ed6b0a5b21a65401` |

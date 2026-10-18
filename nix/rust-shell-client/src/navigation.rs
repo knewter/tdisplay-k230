@@ -1,47 +1,34 @@
 //! Touch and pointer drawer navigation. The compositor reveals the panel; these
 //! gestures begin only after the drawer owns a settled input region.
 
-/// `docs/design/app-drawer-review.md`'s redesign: a 4-column grid, closer
-/// to the Pixel launcher's own drawer on this panel's width (568px) than
-/// the previous 3 columns. `SIDE_MARGIN` and `TILE_GAP` are deliberately
-/// equal (both 24px) so the whole row reads as one evenly-spaced strip --
-/// margin, gap, gap, gap, margin -- rather than a tighter inter-column gap
-/// inside a wider outer border. At this width that divides out exactly:
-/// `2*24 + 3*24 + 4*112 = 568`, so the grid is centered with no remainder
-/// and no separate centering offset to compute.
-pub const COLUMNS: usize = 4;
+/// The drawer's column count on the portrait panel (568 px) at 100%: three
+/// tiles wide enough for a two-line 26 px Caption label (the shell's one
+/// visual language). `SIDE_MARGIN` and `TILE_GAP` are deliberately equal
+/// (both 24 px) so the row reads as one evenly-spaced strip.
+pub const COLUMNS: usize = 3;
 
-/// How many drawer grid columns fit `width`: `crate::reflow_columns` at
-/// scale `1.0` -- more columns of this module's own 112px reference tile
-/// width on a wider (HDMI) output, instead of `COLUMNS` staying fixed at 4
-/// and each cell stretching into a wide, sparse tile (`feat/shell-
-/// responsive`: the operator did not want an HDMI output's drawer to just
-/// have four huge tiles). Scale is fixed at `1.0` here rather than `crate::
-/// density_scale`'s own value on purpose: a grid's extra width should
-/// become more cells, not bigger ones -- see `reflow_columns`'s own doc.
-/// Pure and stateless -- unlike `home_grid`'s per-page layout, the drawer
-/// has no persisted per-column data to keep in sync, only this live tile
-/// geometry and the matching `tile_at` hit-test, both of which call this on
-/// every use.
+/// How many drawer grid columns fit `width`: as many `REFERENCE_TILE_W`
+/// tiles (grown with the text step) as fit between the margins, so a
+/// wider (HDMI or landscape) output gains columns rather than stretching
+/// each tile (`feat/shell-responsive`). Pure and stateless -- the live tile
+/// geometry and the matching `tile_at` hit-test both call this on every use.
 pub fn columns_for_width(width: u32) -> usize {
-    let scale = crate::layout_text_scale();
-    if scale <= 1.0 {
-        return crate::reflow_columns(width, 1.0, COLUMNS);
-    }
-    // A larger text step needs wider tiles, so fewer of them fit: the
-    // 112 px reference tile grows with the text.
-    let tile = REFERENCE_TILE_W * scale;
+    // Each tile holds a two-line Caption-role label, so a larger text step
+    // needs wider tiles and fewer of them fit.
+    let tile = REFERENCE_TILE_W * crate::layout_text_scale().max(1.0);
     let fit = ((f64::from(width) - 2.0 * SIDE_MARGIN + TILE_GAP) / (tile + TILE_GAP)).floor();
     (fit as usize).max(1)
 }
 
-/// The drawer tile's reference width at the 100% text step.
-const REFERENCE_TILE_W: f64 = 112.0;
+/// The drawer tile's reference width at the 100% text step: the widest
+/// single word of a stock app name ("Calculator", 150 px) in the 26 px
+/// Caption role, plus the label's inset.
+const REFERENCE_TILE_W: f64 = 156.0;
 
 /// The drawer tile's icon, label and row pitch at the current text step.
-/// At 100% this is the original 64 px icon in a 110 px row; larger steps
-/// grow the icon toward the 99 px (48 dp) tap floor and make room for a
-/// two-line label at the larger size.
+/// At 100% this is a 64 px icon over a two-line 26 px Caption label; larger
+/// steps grow the icon toward the 99 px (48 dp) tap floor and the label with
+/// the text.
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct DrawerMetrics {
     pub icon: i32,
@@ -53,22 +40,18 @@ pub struct DrawerMetrics {
 }
 
 pub fn drawer_metrics() -> DrawerMetrics {
-    let s = crate::layout_text_scale();
-    let label_design = 14.0;
-    if s <= 1.0 {
-        return DrawerMetrics { icon: 64, label_design, label_px: label_design, row_height: ROW_HEIGHT };
-    }
+    let s = crate::layout_text_scale().max(1.0);
+    let label_design = crate::render::TYPE_CAPTION;
     let icon = (64.0 * s).min(99.0).round();
     let label_px = label_design * s;
     // icon top inset, icon, gap, two label lines, breathing room.
     let row_height = (8.0 + icon + 6.0 + 2.0 * (label_px * 1.25) + 14.0).ceil().max(ROW_HEIGHT);
     DrawerMetrics { icon: icon as i32, label_design, label_px, row_height }
 }
-/// The cell's full vertical pitch: an icon, a small gap, a single-line
-/// label, and the row's own share of vertical breathing room -- see
-/// `render.rs`'s Drawer paint block for the exact split. Also `tile_at`'s
-/// per-row tap-target height (the whole cell is tappable, not just the
-/// icon).
+/// The smallest vertical pitch of a cell: at 100% `drawer_metrics` comes
+/// to 157 px (an icon, a small gap, a two-line label and breathing room).
+/// Also `tile_at`'s per-row tap-target floor (the whole cell is tappable,
+/// not just the icon).
 pub const ROW_HEIGHT: f64 = 110.0;
 pub const TILE_HEIGHT: f64 = ROW_HEIGHT;
 /// A small safe-bottom margin now that the old "Swipe down to return to
@@ -105,15 +88,15 @@ fn top_chrome_height() -> f64 {
     TOP_CHROME_HEIGHT + (search_field_height() - 48.0)
 }
 
+/// The search pill holds one Label-role line at the current step.
 fn search_field_height() -> f64 {
-    let s = crate::layout_text_scale();
-    if s <= 1.0 { 48.0 } else { (18.0 * s * 1.35 + 20.0).ceil().max(48.0) }
+    let s = crate::layout_text_scale().max(1.0);
+    (crate::render::TYPE_LABEL * s * 1.35 + 20.0).ceil().max(48.0)
 }
 
-/// Help's width: room for its label at the current text step.
+/// Help's width: room for its Label-role text at the current text step.
 fn help_width() -> f64 {
-    let s = crate::layout_text_scale();
-    if s <= 1.0 { 80.0 } else { (80.0 * s).ceil() }
+    (96.0 * crate::layout_text_scale().max(1.0)).ceil()
 }
 
 /// The drawer-drag's Cancel target (task 1: "A Cancel target at the top,
@@ -554,20 +537,16 @@ mod tests {
 
     #[test]
     fn columns_for_width_reflows_wider_hdmi_outputs_but_never_shrinks() {
-        // Exactly 4 at this panel's own design width -- pixel-identical to
-        // today (`configure_preserves_aspect`'s own design band).
+        // Three at the portrait panel's design width.
         assert_eq!(columns_for_width(568), COLUMNS);
-        // Never fewer than the design's own 4, even below 568 (a configure
-        // this narrow is already rejected before reaching here -- see
-        // `lib.rs`'s `configure_size`/`configure_preserves_aspect` -- but
-        // this stays a safe floor regardless).
-        assert_eq!(columns_for_width(300), COLUMNS);
-        // Wider (HDMI) outputs: this change's own capture evidence sizes,
-        // `feat/shell-responsive`'s reflow instead of `feat/hdmi-pillarbox`'s
-        // now-removed centered column.
-        assert_eq!(columns_for_width(768), 5);
-        assert_eq!(columns_for_width(1080), 8);
-        assert_eq!(columns_for_width(1920), 14);
+        // Never fewer than one, even far below 568 (a configure this narrow
+        // is already rejected -- see `lib.rs`'s `configure_size`).
+        assert_eq!(columns_for_width(100), 1);
+        // Wider (HDMI and landscape) outputs gain columns.
+        assert_eq!(columns_for_width(768), 4);
+        assert_eq!(columns_for_width(1080), 5);
+        assert_eq!(columns_for_width(1232), 6);
+        assert_eq!(columns_for_width(1920), 10);
         // Monotonic: strictly wider never yields fewer columns.
         assert!(columns_for_width(1920) >= columns_for_width(1080));
         assert!(columns_for_width(1080) >= columns_for_width(768));
@@ -604,13 +583,12 @@ mod tests {
             ..DrawerNavigation::default()
         };
         let top = list_top(1232);
-        // x=200 lands in column 1 of the 4-column grid (col0 [24,136),
-        // col1 [160,272), col2 [296,408), col3 [432,544)); row 1 (content_y
-        // 190 / ROW_HEIGHT 110 = 1) starts at index 4, so column 1 is
-        // index 5.
+        // x=280 lands in column 1 of the 3-column grid (col0 [24,181),
+        // col1 [205,363), col2 [387,544)); row 1 (content_y 190 / the
+        // 157 px row pitch = 1) starts at index 3, so column 1 is index 4.
         assert_eq!(
-            tap(&mut nav, (200.0, top + 30.0), 60),
-            Some(DrawerAction::Launch(5))
+            tap(&mut nav, (280.0, top + 30.0), 60),
+            Some(DrawerAction::Launch(4))
         );
         assert_eq!(
             tap(&mut nav, (200.0, 1210.0), 60),
@@ -618,8 +596,7 @@ mod tests {
             "footer is outside the grid"
         );
         assert_eq!(max_scroll(568, 1232, 7), 0.0);
-        // 60 apps (15 rows) actually overflows this panel's viewport at the
-        // new, shorter 110px row pitch -- 30 no longer does.
+        // 60 apps (20 rows) overflow this panel's viewport.
         assert!(max_scroll(568, 1232, 60) > 0.0);
     }
 
@@ -750,8 +727,10 @@ mod tests {
             }
         }
         crate::set_layout_text_scale(1.0);
-        assert_eq!(drawer_metrics().row_height, ROW_HEIGHT, "the 100% drawer is unchanged");
-        assert_eq!(columns_for_width(568), crate::reflow_columns(568, 1.0, COLUMNS));
+        let metrics = drawer_metrics();
+        assert_eq!(metrics.label_px, crate::render::TYPE_CAPTION, "the 100% label is the Caption role");
+        assert!(metrics.row_height >= 8.0 + 64.0 + 6.0 + 2.0 * metrics.label_px * 1.25);
+        assert_eq!(columns_for_width(568), COLUMNS);
     }
 
     #[test]

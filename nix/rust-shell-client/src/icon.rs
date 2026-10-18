@@ -479,18 +479,26 @@ mod tests {
     use super::*;
 
     #[test]
-    fn drawer_names_wrap_without_ellipsizing_at_the_largest_text_step() {
-        crate::set_layout_text_scale(2.0);
+    fn drawer_names_wrap_without_ellipsizing_at_every_text_step() {
         let target = ImageSurface::create(Format::ARgb32, 10, 10).unwrap();
         let cr = Context::new(&target).unwrap();
-        let size = crate::navigation::drawer_metrics().label_px;
-        for (width, height) in [(568u32, 1232u32), (1232, 568)] {
-            let (_, _, tile_w, _) = crate::navigation::tile_rect(width, height, 0, 0.0);
-            for name in ["Terminal", "Files", "Video Player", "Settings", "Text Editor",
-                         "System Monitor", "Calculator", "Image Viewer"] {
-                let layout = label_layout(&cr, name, tile_w - 8.0, size, 2);
-                assert!(!layout.is_ellipsized(), "{name} ellipsized at {width}x{height}");
-                assert!(layout.line_count() <= 2);
+        for step in [1.0, 1.3, 1.6, 2.0] {
+            crate::set_layout_text_scale(step);
+            let size = crate::navigation::drawer_metrics().label_px;
+            for (width, height) in [(568u32, 1232u32), (1232, 568), (1280, 800)] {
+                let (_, _, tile_w, _) = crate::navigation::tile_rect(width, height, 0, 0.0);
+                for name in ["Terminal", "Files", "Video Player", "Settings", "Text Editor",
+                             "System Monitor", "Calculator", "Image Viewer", "Files (Nautilus)",
+                             "Foot Client"] {
+                    let layout = label_layout(&cr, name, tile_w - 4.0, size, 2);
+                    assert!(!layout.is_ellipsized(), "{name} ellipsized at {width}x{height} x{step}");
+                    assert!(layout.line_count() <= 2);
+                    // Lines break only between words, never inside one.
+                    for line in layout.lines_readonly().iter().skip(1) {
+                        let start = line.start_index() as usize;
+                        assert!(name[..start].ends_with(' '), "{name} breaks mid-word at x{step}");
+                    }
+                }
             }
         }
         crate::set_layout_text_scale(1.0);
