@@ -7,6 +7,14 @@ refuses to bind without an IRQ. With no interrupt and no bq25890_irq GPIO,
 run the interrupt handler from a 2 s delayed work instead. The work is
 cancelled before the power_supply unregisters and across suspend.
 
+A polled chip is sampled by that work alone. Mainline also re-samples the
+chip on every property read and calls power_supply_changed() when the state
+differs; building a uevent reads every property, so each uevent can raise
+the next. Near charge termination CHRG_STAT chatters between fast charge and
+done within tens of milliseconds, and the loop ran at about 5 uevents/s,
+holding systemd-udevd in I2C transfers so new input devices never reached
+libinput (2026-10-18: 83 uevents in 20 s after an online 0 -> 1 cycle).
+
 --- a/drivers/power/supply/bq25890_charger.c
 +++ b/drivers/power/supply/bq25890_charger.c
 @@ -117,6 +117,8 @@
@@ -18,7 +26,24 @@ cancelled before the power_supply unregisters and across suspend.
  	unsigned long usb_event;
  
  	struct regmap *rmap;
-@@ -870,6 +872,29 @@
+@@ -472,8 +474,14 @@
+ 	int ret;
+ 
+ 	mutex_lock(&bq->lock);
+-	/* update state in case we lost an interrupt */
+-	__bq25890_handle_irq(bq);
++	/*
++	 * update state in case we lost an interrupt. A polled chip is sampled
++	 * by its poll work alone: sampling here too lets each uevent's own
++	 * property reads raise the next uevent while CHRG_STAT chatters near
++	 * termination, which keeps udevd busy on I2C.
++	 */
++	if (!bq->polled)
++		__bq25890_handle_irq(bq);
+ 	*state = bq->state;
+ 	do_adc_conv = (!state->online || state->hiz) && bq25890_is_adc_property(psp);
+ 	if (do_adc_conv)
+@@ -870,6 +878,29 @@
  	return ret;
  }
  
@@ -48,7 +73,7 @@ cancelled before the power_supply unregisters and across suspend.
  static int bq25890_chip_reset(struct bq25890_device *bq)
  {
  	int ret;
-@@ -1330,10 +1355,12 @@
+@@ -1330,10 +1361,12 @@
  {
  	struct gpio_desc *irq;
  
@@ -62,7 +87,7 @@ cancelled before the power_supply unregisters and across suspend.
  
  	return gpiod_to_irq(irq);
  }
-@@ -1475,6 +1502,7 @@
+@@ -1475,6 +1508,7 @@
  
  	mutex_init(&bq->lock);
  	INIT_DELAYED_WORK(&bq->pump_express_work, bq25890_pump_express_work);
@@ -70,7 +95,7 @@ cancelled before the power_supply unregisters and across suspend.
  
  	bq->rmap = devm_regmap_init_i2c(client, &bq25890_regmap_config);
  	if (IS_ERR(bq->rmap))
-@@ -1507,9 +1535,13 @@
+@@ -1507,9 +1541,13 @@
  	if (client->irq <= 0)
  		client->irq = bq25890_irq_probe(bq);
  
@@ -86,7 +111,7 @@ cancelled before the power_supply unregisters and across suspend.
  	}
  
  	/* OTG reporting */
-@@ -1531,12 +1563,20 @@
+@@ -1531,12 +1569,20 @@
  	if (ret < 0)
  		return dev_err_probe(dev, ret, "registering power supply\n");
  
@@ -113,7 +138,7 @@ cancelled before the power_supply unregisters and across suspend.
  
  	if (!IS_ERR_OR_NULL(bq->usb_phy)) {
  		INIT_WORK(&bq->usb_work, bq25890_usb_work);
-@@ -1589,6 +1629,9 @@
+@@ -1589,6 +1635,9 @@
  {
  	struct bq25890_device *bq = dev_get_drvdata(dev);
  
@@ -123,7 +148,7 @@ cancelled before the power_supply unregisters and across suspend.
  	/*
  	 * If charger is removed, while in suspend, make sure ADC is diabled
  	 * since it consumes slightly more power.
-@@ -1620,6 +1663,11 @@
+@@ -1620,6 +1669,11 @@
  unlock:
  	mutex_unlock(&bq->lock);
  
