@@ -65,6 +65,9 @@
   columns on the portrait panel, six on the landscape panel). Renders are
   `host-drawer-steps-568x1232.png` and `host-drawer-steps-1232x568.png` in
   `docs/evidence/visual-language-panel/`.
+  Board 2026-10-18: native captures at 100% and 200% on DSI-1 from the
+  80b12e58 closure are `board-panel-{100,200}-drawer-roles.png` in the same
+  directory.
 - [x] 2.4 Scope the requirement to the surfaces this change restyled:
   Settings, the Vision page, the Shade's header and controls, the drawer,
   the Clock and Battery details. The no-ellipsis rule covers text the

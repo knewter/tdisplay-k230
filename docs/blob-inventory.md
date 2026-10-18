@@ -682,6 +682,8 @@ DATA 1250dd1a8b302938865b558775cf818d8f67f80d44484a7147469b4b338c213c docs/evide
 DATA e25bde2aeed303bb0f318292e527f6dc12752579d018309514a851c0236eab0b docs/evidence/omarchy-themes/font-spacing-adaptation/baseline.png
 DATA 2c971a30f7138e3ed0b0cfeb4538bbdf432e33ac65cc329225fc7b5af9d52a6f docs/evidence/omarchy-themes/font-spacing-adaptation/font-spacing-adapted.png
 DATA d470fae779b6106d7c6cd59cb250d928f28c0e97f7f0192be618863933a1d4ee docs/evidence/visual-language-panel/board-panel-100-drawer.png
+DATA 976484f682c9a36422d53f52c6f967d0a6b910701e5c58df16b7ab1bfa8d3004 docs/evidence/visual-language-panel/board-panel-100-drawer-roles.png
+DATA 6cdb9a7768d00c85c01e951a6db5bd4af13cc7eeb767867020b63c23d5d744ae docs/evidence/visual-language-panel/board-panel-200-drawer-roles.png
 DATA 57c5b786d39209e28d67addb5c557f0d93e875a78483d7d7d403021acc9d7a71 docs/evidence/visual-language-panel/board-panel-100-home.png
 DATA ac5aa88ae6dadc73672c322a57ce91dbfd4216b4b64678f188c1c691243f6270 docs/evidence/visual-language-panel/board-panel-100-settings.png
 DATA a51cada8f2a82729c14c2f1264cfb951e93776c00de0c1f4132575c3fbce22f8 docs/evidence/visual-language-panel/board-panel-100-shade.png
@@ -3036,6 +3038,8 @@ a real cross-built Rust client and patched Sway under
 | File | Bytes | Class | SHA256 |
 | --- | ---: | --- | --- |
 | `docs/evidence/visual-language-panel/board-panel-100-drawer.png` | 106498 | DATA | `d470fae779b6106d7c6cd59cb250d928f28c0e97f7f0192be618863933a1d4ee` |
+| `docs/evidence/visual-language-panel/board-panel-100-drawer-roles.png` | 67654 | DATA | `976484f682c9a36422d53f52c6f967d0a6b910701e5c58df16b7ab1bfa8d3004` |
+| `docs/evidence/visual-language-panel/board-panel-200-drawer-roles.png` | 33594 | DATA | `6cdb9a7768d00c85c01e951a6db5bd4af13cc7eeb767867020b63c23d5d744ae` |
 | `docs/evidence/visual-language-panel/board-panel-100-home.png` | 325585 | DATA | `57c5b786d39209e28d67addb5c557f0d93e875a78483d7d7d403021acc9d7a71` |
 | `docs/evidence/visual-language-panel/board-panel-100-settings.png` | 27635 | DATA | `ac5aa88ae6dadc73672c322a57ce91dbfd4216b4b64678f188c1c691243f6270` |
 | `docs/evidence/visual-language-panel/board-panel-100-shade.png` | 13125 | DATA | `a51cada8f2a82729c14c2f1264cfb951e93776c00de0c1f4132575c3fbce22f8` |

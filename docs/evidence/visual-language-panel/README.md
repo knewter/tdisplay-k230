@@ -66,3 +66,27 @@ shell draws; they are not the operator's judgement on glass (5.2).
   renders and the HDMI captures in `docs/evidence/type-roles/`.
 - The Shade had no notifications, so "Dismiss all" and notification rows are
   not in these frames. They are in the host renders.
+
+## Drawer on the type roles (task 2.3)
+
+`board-panel-100-drawer-roles.png` and `board-panel-200-drawer-roles.png`:
+native `grim` captures on DSI-1 (1232x568), retro-82, from the 80b12e58
+closure (`/nix/store/5da7ihmgcabh7cpbyb28j3108yhbxiwk-nixos-system-…`,
+deployed with `switch-to-configuration test`), 2026-10-18 about 06:05 UTC.
+The drawer was opened with `k230-shell-rust --surface drawer`; the step was
+set with `k230-theme vision --text-scale largest|default`.
+
+- At 100%: six columns; names in the 26 px Caption role. "Files
+  (Nautilus)", "Files (Portfolio)" and "Same Game" wrap onto a second line;
+  nothing is ellipsized.
+- At 200%: three columns; "Search apps" and Help in the Label role at the
+  step, unshortened. The second row is cut by the scroll viewport, not by
+  its tile.
+- The search glyph stays 24 px at 200%.
+- A terminal prompt shows through the 32 px gap above the sheet. That gap
+  existed before this change.
+
+`host-drawer-steps-568x1232.png` (100/130/160/200/200 high contrast) and
+`host-drawer-steps-1232x568.png` (100, 130 / 160, 200) are host renders from
+`render_accessibility_scale_evidence` over catppuccin generations with stock
+app names.
