@@ -2754,9 +2754,11 @@ fn paint_drawer_chrome(
     } else {
         style.text
     };
-    glyph::paint(cr, Glyph::Search, sx + 15.0, sy + sh / 2.0 - 12.0, 24.0, label_color, 0.8);
-    let tx = sx + 54.0;
-    let available = sw - 76.0;
+    // The glyph grows with the text step, inside the pill's height.
+    let glyph_size = (24.0 * crate::layout_text_scale().max(1.0)).round().min(sh - 16.0);
+    glyph::paint(cr, Glyph::Search, sx + 15.0, sy + (sh - glyph_size) / 2.0, glyph_size, label_color, 0.8);
+    let tx = sx + 30.0 + glyph_size;
+    let available = sw - (tx - sx) - 22.0;
     // A narrow pill at a large step shrinks the line until the placeholder
     // fits rather than ellipsizing it, never below the Label role's 100%
     // size. A query keeps that size and scrolls under the caret.
