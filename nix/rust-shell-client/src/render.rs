@@ -4910,9 +4910,11 @@ fn paint_widget_card_content(cr: &Context, style: &VisualStyle, kind: WidgetKind
             widget_line(cr, &high_low, x + pad, hl_y, w - pad * 2.0, px, floor, style.text,
                 pango::Weight::Normal, pango::Alignment::Left);
             if !shown.is_empty() {
-                let col_w = (w - pad * 2.0) / shown.len() as f64;
+                // The strip spans the whole card: with the side padding a
+                // column is too narrow for "12am" at the Caption role.
+                let col_w = w / shown.len() as f64;
                 for (index, entry) in shown.iter().enumerate() {
-                    let col_x = x + pad + col_w * index as f64;
+                    let col_x = x + col_w * index as f64;
                     widget_line(cr, &entry.label, col_x, strip_y, col_w, px, floor, style.text,
                         pango::Weight::Normal, pango::Alignment::Center);
                     let entry_glyph = crate::home_widgets::weather::condition_glyph(&entry.condition);

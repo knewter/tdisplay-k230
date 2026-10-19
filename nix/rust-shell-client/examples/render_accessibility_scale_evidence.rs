@@ -149,7 +149,7 @@ fn render_home_small(path: PathBuf, theme: &AppearanceSnapshot, w: u32, h: u32) 
     );
     let mut home = HomeScreen::new(layout, f64::from(w));
     home.battery = BatteryState::Present { percent: 87, status: "Discharging".into() };
-    let forecast = [("3pm", 23, "Partly cloudy"), ("6pm", 19, "Overcast"), ("9pm", 16, "Clear")]
+    let forecast = [("9pm", 16, "Clear"), ("12am", 13, "Clear"), ("3am", 12, "Light rain")]
         .into_iter()
         .map(|(label, temp_c, condition)| ForecastEntry { label: label.into(), temp_c, condition: condition.into() })
         .collect();
