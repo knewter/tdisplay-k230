@@ -29,7 +29,8 @@ static struct {
 	uint64_t stage_cpu_start, stage_cpu[3], render_attempts, failed_attempts;
 	uint64_t submit_time, input_damage_time;
 	uint32_t frame_done_seq;
-	bool frame_done_seen;
+	bool frame_done_seen, motion_settled;
+	uint64_t release_input;
 	uint64_t run, next_input, input_time, input_origin, input_gesture, charged_cpu,
 		last_resource;
 	const char *kind, *source;
@@ -178,6 +179,7 @@ void card_bench_input_begin(uint64_t gesture, const char *kind, bool injected) {
 	bench.input_time = stamp(CLOCK_MONOTONIC);
 	bench.input_origin = 0;
 	bench.input_damage_time = 0;
+	bench.release_input = 0;
 	bench.input_cpu_start = stamp(CLOCK_PROCESS_CPUTIME_ID);
 	memset(bench.input_stage_cpu, 0, sizeof(bench.input_stage_cpu));
 	bench.in_input = true;
@@ -200,6 +202,7 @@ void card_bench_input_end(bool consumed, bool final) {
 	if (!bench.armed || !consumed)
 		return;
 	uint64_t id = ++bench.next_input;
+	if (!strcmp(bench.kind, "release")) bench.release_input = id;
 	if (bench.input_origin)
 		sway_log(SWAY_INFO, "K230_CARD_SHELL input-origin run=%" PRIu64
 			" input_id=%" PRIu64 " source_ns=%" PRIu64, bench.run, id, bench.input_origin);
@@ -226,6 +229,9 @@ void card_bench_input_end(bool consumed, bool final) {
 		sway_log(SWAY_ERROR,
 				 "K230_CARD_BENCH v=1 run=%" PRIu64 " event=incomplete reason=input-overflow",
 				 bench.run);
+}
+void card_bench_motion_settled(bool settled) {
+	if (bench.armed) bench.motion_settled = settled;
 }
 void card_bench_scene_damage(void) {
 	if (bench.armed && bench.in_input && !bench.input_damage_time)
@@ -321,6 +327,12 @@ void card_bench_render_end(struct sway_output *output, bool success) {
 			bench.run, frame, bench.render_cpu, bench.stage_cpu[CARD_BENCH_PREPARE],
 			bench.stage_cpu[CARD_BENCH_BUILD], bench.stage_cpu[CARD_BENCH_COMMIT],
 			bench.render_attempts, bench.failed_attempts);
+	if (bench.release_input && bench.motion_settled) {
+		sway_log(SWAY_INFO, "K230_CARD_SHELL motion-settle run=%" PRIu64
+			" input_id=%" PRIu64 " frame_id=%" PRIu64 " t_ns=%" PRIu64,
+			bench.run, bench.release_input, frame, now);
+		bench.release_input = 0;
+	}
 	bench.count = 0;
 	bench.charged_cpu = 0;
 	bench.render_cpu = 0;

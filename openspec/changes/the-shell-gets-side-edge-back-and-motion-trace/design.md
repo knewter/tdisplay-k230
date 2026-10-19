@@ -87,3 +87,11 @@ Layer: userspace, the Sway compositor and host trace consumer.
 Rejected: adding new events to `K230_CARD_BENCH`, which would break its
 strict existing consumers; labeling render completion as a frame callback;
 and treating a missing scene/callback stage as a successful legacy run.
+
+Release traces finish at the successful frame committed after the card/Home
+policy stops moving. The producer emits a separate settlement correlation;
+the consumer waits for that commit's callback and presentation, rather than
+calling the first frame after lift-off a completed animation. The policy
+observer excludes the motion sampler's 300 ms quality hold. An interrupted
+release stays unresolved. `--compare-motion` checks one full and one reduced
+run from the same recorded workload using these measured settled frames.

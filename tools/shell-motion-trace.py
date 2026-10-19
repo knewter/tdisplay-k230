@@ -127,7 +127,7 @@ def rows_from_log(raw):
     if len(raw) > MAX_BYTES:
         raise InvalidTrace('log exceeds bounded input size')
     rows, inputs, submits, presents, sessions, resources = [], {}, {}, {}, {}, []
-    damage, callbacks, motion = {}, {}, {}
+    damage, callbacks, motion, settles = {}, {}, {}, {}
     for line in raw.decode('utf-8', 'replace').splitlines():
         if MOTION_PREFIX in line:
             event, _, payload = line.split(MOTION_PREFIX, 1)[1].partition(' ')
@@ -138,6 +138,12 @@ def rows_from_log(raw):
                 if fields['run'] in motion:
                     raise InvalidTrace('duplicate motion session')
                 motion[fields['run']] = fields['motion']
+            elif event == 'settle':
+                key = (fields['run'], fields['input_id'])
+                if key in settles:
+                    raise InvalidTrace('duplicate release settlement')
+                counter(fields['t_ns'], 't_ns')
+                settles[key] = fields
             elif event in ('stage', 'frame'):
                 table, key_field, stage = (damage, 'input_id', 'scene_damage') if event == 'stage' else (callbacks, 'frame_id', 'frame_done')
                 if fields.get('stage') != stage:
@@ -186,11 +192,17 @@ def rows_from_log(raw):
         submit = submits.get((run, input_id))
         if not submit:
             continue
+        release = entry['kind'] == 'release'
+        settlement = settles.get((run, input_id))
+        if release and settlement:
+            submit = settlement
         rows.append({**base, 'stage': 'commit', 't_ns': counter(submit['t_ns'], 't_ns'), 'presented': 1})
         if (run, submit['frame_id']) in callbacks:
             rows.append({**base, 'stage': 'frame_done', 't_ns': callbacks[(run, submit['frame_id'])], 'presented': 1})
         present = presents.get((run, submit['frame_id']))
-        if present:
+        # A release ends at its observed settled frame. The first post-up
+        # presentation alone does not establish animation completion.
+        if present and (not release or settlement):
             rows.append({**base, 'stage': 'present', 't_ns': counter(present['t_ns'], 't_ns'),
                          'presented': counter(present['presented'], 'presented')})
     for r in resources:
@@ -412,6 +424,8 @@ def main():
     parser.add_argument('--log', type=Path, help='console log holding K230_CARD_BENCH rows')
     parser.add_argument('--provenance', choices=sorted(SOURCES))
     parser.add_argument('--output', type=Path)
+    parser.add_argument('--compare-motion', action='store_true',
+                        help='compare one full and one reduced run from the same workload')
     args = parser.parse_args()
     if args.self_test:
         self_test()
@@ -431,6 +445,14 @@ def main():
                 'provenance': args.provenance, 'source': (args.trace or args.log).name,
                 'camera_correlation': 'not provided; UNVERIFIED', 'runs': report,
                 'failed_budgets': failures(report)}
+    if args.compare_motion:
+        modes = {mode: [run for run, result in report.items() if result['motion'] == mode]
+                 for mode in MOTIONS}
+        if any(len(runs) != 1 for runs in modes.values()):
+            raise InvalidTrace('motion comparison needs one full and one reduced run')
+        full = [row for row in rows if row['run'] == modes['full'][0]]
+        reduced = [row for row in rows if row['run'] == modes['reduced'][0]]
+        document['reduced_motion_parity'] = reduced_motion_parity(full, reduced)
     text = json.dumps(document, indent=2, sort_keys=True) + '\n'
     if args.output:
         args.output.write_text(text)

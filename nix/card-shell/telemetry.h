@@ -16,6 +16,7 @@ void card_bench_input_origin(uint64_t source_ns);
 void card_bench_input_end(bool consumed, bool final);
 /* Actual scene-update completion and surface frame-callback dispatch. */
 void card_bench_scene_damage(void);
+void card_bench_motion_settled(bool settled);
 void card_bench_frame_done(struct wlr_scene_output *output);
 enum card_bench_input_stage { CARD_BENCH_POLICY, CARD_BENCH_SCENE, CARD_BENCH_CHROME };
 uint64_t card_bench_input_stage_begin(void);

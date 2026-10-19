@@ -112,7 +112,7 @@ int main(void) {
     card_bench_render_begin(&o); cpu+=1; card_bench_render_stage(&o,CARD_BENCH_BUILD);
     cpu+=4; card_bench_render_end(&o,false);
     card_bench_render_begin(&o); cpu+=1; card_bench_render_stage(&o,CARD_BENCH_BUILD);
-    cpu+=2; w.commit_seq=2; card_bench_commit_begin(&o); cpu+=3;
+    cpu+=2; w.commit_seq=2; card_bench_motion_settled(true); card_bench_commit_begin(&o); cpu+=3;
     card_bench_render_end(&o,true);
     card_bench_frame_done(o.scene_output);
     shown.commit_seq=2; card_bench_present(&o,&shown);
@@ -144,7 +144,7 @@ int main(void) {
             self.assertEqual(tuple(int(costs[1][k]) for k in
                 ('cpu_ns','policy_cpu_ns','scene_cpu_ns','chrome_cpu_ns')),(2,0,0,0))
             rows,ignored=parser.parse_rows(output.encode())
-            self.assertEqual(ignored,11)
+            self.assertEqual(ignored,12)
             self.assertEqual([row['update_cpu_ns'] for row in rows if row['event']=='submit'],[20,13])
             # Feed the actual C producer output into the motion consumer. The
             # existing benchmark parser continues accepting its frozen schema.
@@ -156,6 +156,13 @@ int main(void) {
             self.assertEqual(measured['incomplete_stage_chains'],0)
             self.assertEqual(measured['status'],'INCOMPLETE') # deliberately short sample
             self.assertEqual(len([line for line in output.splitlines() if 'motion-frame' in line]),2)
+            # Removing actual final-frame evidence must not turn the first
+            # post-release present into a settlement measurement.
+            partial='\n'.join(line for line in output.splitlines() if 'motion-settle' not in line)
+            unfinished=next(iter(motion.analyze(motion.rows_from_log(partial.encode())).values()))
+            self.assertEqual(unfinished['unresolved_traces'],1)
+            self.assertEqual(unfinished['settle_ms'],[])
+
 
             spec=importlib.util.spec_from_file_location('repaint_profile',ROOT/'docs/evidence/card-shell/repaint-stages/analyze.py')
             repaint=importlib.util.module_from_spec(spec);spec.loader.exec_module(repaint)

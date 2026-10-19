@@ -2730,6 +2730,17 @@ static void prepare_impl(struct sway_output *output) {
 void card_shell_prepare(struct sway_output *output) {
 	card_bench_work_begin();
 	prepare_impl(output);
+	if (output == shell.output) {
+		/* Observe policy settling, independently of the 300 ms sampler hold
+		 * in scene_in_motion(): sampler quality is not animation duration. */
+		bool settling = shell.policy.contact || shell.policy.edge.tracking ||
+			shell.policy.scroll_settling || shell.policy.mode == CS_EXPANDING ||
+			shell.policy.mode == CS_CLOSING ||
+			(shell.policy.mode == CS_ENTERING &&
+			 (shell.policy.entry_settling || shell.policy.entry_reversing)) ||
+			shell.home_gesture.contacts || shell.home_settling;
+		card_bench_motion_settled(!settling);
+	}
 	card_bench_work_end();
 }
 void card_shell_observe(struct sway_view *view) {
