@@ -12,7 +12,8 @@ text by hand, well under that floor:
 - The volume HUD's expanded stream and output rows are 15 px and the
   notification banner's source line is 14 px.
 - The Wi-Fi pages use 16-21 px, the Help page 18-22 px, the theme grid 16 px
-  and the recovery menu 20 px.
+  and the recovery menu 20 px. The recovery splash's hints are 18-20 px and
+  the card Overview's title and footer 24 and 18 px.
 
 ## What Changes
 
@@ -20,7 +21,8 @@ text by hand, well under that floor:
   whole cell; a cell too short for the full icon plate above that label
   gets a smaller plate. Columns, pages and saved layouts do not change.
 - Widget captions, the volume HUD's rows, the notification banner, the Wi-Fi pages,
-  the Help page, the theme grid and the recovery menu move onto the roles.
+  the Help page, the theme chooser, the recovery menu and splash, and the
+  card Overview's title and footer move onto the roles.
 - Each surface reflows without clipping, ellipsizing or overlapping its own
   text at all four steps and in high contrast, in both orientations.
 

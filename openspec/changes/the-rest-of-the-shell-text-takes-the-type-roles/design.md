@@ -21,9 +21,23 @@ shell text rather than ellipsize it.
   (`BATTERY_TEXT_FLOOR`).
 - **Shade rows, Wi-Fi, Help, theme grid, recovery.** Replace literal sizes
   with roles and derive row heights from `vision_line(role)`.
+- **Help and Wi-Fi layouts.** Both are computed from the roles at the
+  current step and theme size (`help::layout`, `wifi_ui::Layout`), with
+  wrapped text measured before it is painted. Help scrolls when it is
+  taller than the output. A Wi-Fi Entry page that does not fit above the
+  raised keyboard pans up, header included.
+- **Theme chooser.** The portrait carousels take the height the role text
+  leaves. A wide grid whose cards are too narrow for role-size names falls
+  back to the carousels.
+- **Card Overview.** The C card shell mirrors the roles as `CARD_TYPE_*` in
+  `render.h` and sizes each label box from the theme's font scale.
 
 ## Risks
 
 - The landscape plate shrinks from 108 to about 97 px; it stays above the
   48 dp tap floor and the cell (the tap target) is unchanged.
 - Long app names ("Terminal", "Settings") are shortened in a narrow cell.
+- Network names, app names and one-line status messages can still end in
+  "…" when they are longer than their line at a large step.
+- On the 1232x568 panel the chooser shows carousels instead of the grid
+  with seven or more themes.

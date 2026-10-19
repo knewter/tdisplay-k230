@@ -1229,6 +1229,13 @@ static struct wlr_scene_buffer *themed_label(struct wlr_scene_tree *parent,
 	return card_label_color(parent, text, width, height, lround(size * scale), argb);
 }
 
+/* The height of one line of `themed_label` text at `size`, after the
+ * theme's size and the vision step. */
+static int role_line(int size) {
+	double scale = shell.appearance_enabled && shell.appearance.font_scale > 0 ? shell.appearance.font_scale : 1;
+	return (int)ceil(size * scale * 1.25) + 4;
+}
+
 static int theme_gap(int size) {
 	double scale = shell.appearance_enabled && shell.appearance.spacing_scale > 0 ? shell.appearance.spacing_scale : 1;
 	return lround(size * scale);
@@ -1697,8 +1704,9 @@ static bool rebuild_chrome(void) {
 		 * entered the same way it always was. See
 		 * openspec/changes/the-shell-presents-a-pinned-home-screen/design.md
 		 * decision 2. */
-		struct wlr_scene_buffer *title = themed_label(shell.chrome, "Overview", 176, 40, 24,
-			appearance_text(false));
+		int title_h = role_line(CARD_TYPE_LABEL);
+		struct wlr_scene_buffer *title = themed_label(shell.chrome, "Overview", cfg->width - 48,
+			title_h, CARD_TYPE_LABEL, appearance_text(false));
 		if (!title) {
 			sway_log(SWAY_INFO, "K230_CARD_SHELL rebuild_chrome fail reason=title-failed");
 			return false;
@@ -1706,9 +1714,9 @@ static bool rebuild_chrome(void) {
 		wlr_scene_node_set_position(&title->node, x + 24, y + 16);
 		const char *text = touch_deck_status(shell.policy.message);
 		if (text) {
-			int status_y = shell.policy.message == CS_MESSAGE_EMPTY ? y + 210 : y + 64;
+			int status_y = shell.policy.message == CS_MESSAGE_EMPTY ? y + 210 : y + 16 + title_h + 8;
 			if (!label_update(shell.chrome, &shell.status, &shell.status_text, text,
-					cfg->width - 48, 44, 21, appearance_text(false))) {
+					cfg->width - 48, role_line(CARD_TYPE_BODY), CARD_TYPE_BODY, appearance_text(false))) {
 				sway_log(SWAY_INFO, "K230_CARD_SHELL rebuild_chrome fail reason=status-failed");
 				return false;
 			}
@@ -1716,14 +1724,15 @@ static bool rebuild_chrome(void) {
 		}
 		/* This footer is now a tap/click target as well as a swipe origin.
 		 * Keep the existing muted treatment, with a readable action label. */
+		int cue_h = role_line(CARD_TYPE_CAPTION);
 		struct wlr_scene_buffer *cue = themed_label(shell.chrome,
-			"Home · tap or swipe up", cfg->width - 48, 28, 18, appearance_text_muted(false));
+			"Home · tap or swipe up", cfg->width - 48, cue_h, CARD_TYPE_CAPTION, appearance_text_muted(false));
 		if (!cue) {
 			sway_log(SWAY_INFO, "K230_CARD_SHELL rebuild_chrome fail reason=cue-failed");
 			return false;
 		}
 		wlr_scene_node_set_position(&cue->node, x + 24,
-			y + cfg->height - cfg->top_reserved - cfg->bottom_reserved - 40);
+			y + cfg->height - cfg->top_reserved - cfg->bottom_reserved - cue_h - 12);
 		return true;
 	}
 	if (!button(shell.chrome, x + cfg->width - 152, y + 8, 128, shell.active ? "Back" : "Cards",

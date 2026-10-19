@@ -32,7 +32,8 @@
   at 100%, inside the 256 px banner bound at 200%). Renders:
   `docs/evidence/rest-of-text/host-banner-*.png`. All test targets pass.
 - [ ] 2.2 The Wi-Fi pages, the Help page, the theme grid and the recovery
-  menu on the roles. Host class.
+  menu on the roles; also the recovery splash and the card Overview's
+  title and footer (added 2026-10-19). Host class.
   Progress 2026-10-19 (host): Help is laid out by `help::layout` from the
   Title, Label and Caption roles at the current step and the theme's base
   size; text wraps instead of ending in "…". Content taller than the
@@ -66,6 +67,11 @@
   and its hints in Caption, wrapped. Renders:
   `docs/evidence/rest-of-text/host-menu-splash-*.png`. All test targets
   pass. The card Overview remains.
+  Progress 2026-10-19 (source): the card Overview's "Overview" title is
+  Label, its status Body and its "Home · tap or swipe up" footer Caption
+  (`CARD_TYPE_*` in `nix/card-shell/render.h`), each in a box one role
+  line tall after the theme size and step. The C card shell has no host
+  renderer here; its proof is the board build and a board capture.
 
 ## 3. Board
 

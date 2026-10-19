@@ -15,6 +15,12 @@ struct card_brush;
  * present; the old bare "sans" alias here depended on fontconfig's default
  * mapping instead of naming it. */
 #define CARD_SHELL_FONT_FAMILY "DejaVu Sans"
+/* The Rust shell's type roles (render::TYPE_BODY, TYPE_LABEL and
+ * TYPE_CAPTION), so the deck's chrome reads at the same sizes as the
+ * surfaces composited with it. */
+#define CARD_TYPE_BODY 30
+#define CARD_TYPE_LABEL 26
+#define CARD_TYPE_CAPTION 26
 enum card_label_weight { CARD_LABEL_REGULAR, CARD_LABEL_MEDIUM, CARD_LABEL_BOLD };
 struct wlr_scene_buffer *card_label(struct wlr_scene_tree *tree, const char *text, int width,
 									int height, int size);
