@@ -3698,9 +3698,13 @@ fn shadowed_label(cr: &Context, value: &str, x: f64, y: f64, width: f64, size: f
 }
 
 /// An app or folder name under its icon: the Caption role at the current
-/// step, but never taller than the cell leaves room for.
+/// step, never taller than the cell leaves room for, and shrunk toward the
+/// role's 100% size before a long name is shortened.
 fn icon_label(cr: &Context, value: &str, content: &home_grid::TileContent, rgb: u32) {
     let px = context_font_size(cr, TYPE_CAPTION).min(content.label_room / 1.3).max(TYPE_CAPTION);
+    let advance = text_advance_resolved(cr, value, px, pango::Weight::Medium);
+    let room = content.label_w * 0.96;
+    let px = if advance > room { (px * room / advance).max(TYPE_CAPTION) } else { px };
     shadowed_label_px(cr, value, content.label_x, content.label_y, content.label_w, px, rgb);
 }
 
@@ -3758,7 +3762,9 @@ fn paint_icon_plate(
             plate_x,
             plate_y + plate_size / 2.0 - icon_size * 0.27,
             plate_size,
-            icon_size * 0.55,
+            // Sized to the icon, not the text step: undo the step that
+            // `centered_label` applies.
+            icon_size * 0.55 * 100.0 / context_font_size(cr, 100.0),
             style.accent,
         );
     }
@@ -3959,46 +3965,6 @@ fn hero_glow(cr: &Context, value: &str, x: f64, y: f64, width: f64, size: f64, r
         layout.set_alignment(pango::Alignment::Center);
     }
     draw_layout_halo(cr, &layout, x, y, glow_for(rgb), (size * 0.05).max(2.0), 8, 0.30);
-    color(cr, rgb, 1.0);
-    cr.move_to(x, y);
-    pangocairo::functions::show_layout(cr, &layout);
-}
-
-/// A small, letter-spaced, uppercase caption line (task: "the date beneath
-/// in a small caps/label style"), haloed the same way [`hero_glow`] is --
-/// DejaVu Sans has no true small-caps feature this toy Cairo/Pango setup
-/// can request, so this fakes the same "eyebrow label" read with
-/// `.to_uppercase()` plus a thin space (`\u{2009}`) inserted between every
-/// character for visible tracking.
-#[allow(clippy::too_many_arguments)]
-fn caption_layout(cr: &Context, value: &str, size: f64, tracking: bool) -> pango::Layout {
-    let tracked: String = if tracking {
-        value.to_uppercase().chars().flat_map(|ch| [ch, '\u{2009}']).collect()
-    } else {
-        value.to_uppercase()
-    };
-    let layout = pangocairo::functions::create_layout(cr);
-    let mut font = FontDescription::new();
-    font.set_family(FONT_FAMILY);
-    font.set_absolute_size(context_font_size(cr, size) * f64::from(pango::SCALE));
-    font.set_weight(pango::Weight::Bold);
-    layout.set_font_description(Some(&font));
-    layout.set_text(tracked.trim_end());
-    layout
-}
-
-fn caption_glow(cr: &Context, value: &str, x: f64, y: f64, width: f64, size: f64, rgb: u32, centered: bool) {
-    caption_glow_tracked(cr, value, x, y, width, size, rgb, centered, true);
-}
-
-fn caption_glow_tracked(cr: &Context, value: &str, x: f64, y: f64, width: f64, size: f64, rgb: u32, centered: bool, tracking: bool) {
-    let layout = caption_layout(cr, value, size, tracking);
-    layout.set_width((width * f64::from(pango::SCALE)) as i32);
-    layout.set_ellipsize(EllipsizeMode::End);
-    if centered {
-        layout.set_alignment(pango::Alignment::Center);
-    }
-    draw_layout_halo(cr, &layout, x, y, glow_for(rgb), 2.0, 8, 0.35);
     color(cr, rgb, 1.0);
     cr.move_to(x, y);
     pangocairo::functions::show_layout(cr, &layout);
@@ -4481,8 +4447,43 @@ fn draw_analog_clock(cr: &Context, cx: f64, cy: f64, radius: f64, hour: i32, min
 }
 
 /// One haloed text run with explicit alignment and end-ellipsis, for the
-/// Battery - Details widget (mixed-case values, unlike [`caption_glow`]).
+/// Battery - Details widget.
 #[allow(clippy::too_many_arguments)]
+/// A small widget's line at an already-resolved `px`, shrunk toward (never
+/// below) `floor` until it fits `width`, haloed like [`detail_glow`].
+#[allow(clippy::too_many_arguments)]
+fn widget_line(cr: &Context, value: &str, x: f64, y: f64, width: f64, px: f64, floor: f64, rgb: u32,
+               weight: pango::Weight, align: pango::Alignment) {
+    let advance = text_advance_resolved(cr, value, px, weight);
+    let room = width * 0.96;
+    let px = if advance > room { (px * room / advance).max(floor.min(px)) } else { px };
+    let layout = pangocairo::functions::create_layout(cr);
+    let mut font = FontDescription::new();
+    font.set_family(FONT_FAMILY);
+    font.set_absolute_size(px * f64::from(pango::SCALE));
+    font.set_weight(weight);
+    layout.set_font_description(Some(&font));
+    layout.set_text(value);
+    layout.set_width((width * f64::from(pango::SCALE)) as i32);
+    layout.set_ellipsize(EllipsizeMode::End);
+    layout.set_alignment(align);
+    draw_layout_halo(cr, &layout, x, y, glow_for(rgb), 2.0, 8, 0.35);
+    color(cr, rgb, 1.0);
+    cr.move_to(x, y);
+    pangocairo::functions::show_layout(cr, &layout);
+}
+
+/// The Caption-role size for a 2x2 widget's lines: 26 px at a Home-sized
+/// card (narrower picker previews scale down in proportion), growing with
+/// the text step only as far as `lines` such lines plus `fixed` px of
+/// other content fit the card's height.
+fn widget_caption_px(w: f64, h: f64, lines: f64, fixed: f64) -> (f64, f64) {
+    let floor = TYPE_CAPTION * (w / 240.0).min(1.0);
+    let step = crate::layout_text_scale().max(1.0);
+    let fit = ((h - fixed) / (lines * floor * 1.25)).max(1.0);
+    (floor * step.min(fit), floor)
+}
+
 fn detail_glow(cr: &Context, value: &str, x: f64, y: f64, width: f64, size: f64, rgb: u32, weight: pango::Weight, align: pango::Alignment) {
     let layout = pangocairo::functions::create_layout(cr);
     let mut font = FontDescription::new();
@@ -4602,11 +4603,14 @@ fn paint_battery_details(cr: &Context, style: &VisualStyle, rect: (f64, f64, f64
     use crate::home_widgets::battery::DetailsState;
     let (x, y, w, h) = rect;
     let DetailsState::Present(details) = &home.battery_details else {
-        caption_glow(cr, "Battery", x + pad, y + pad * 0.7, w - pad * 2.0, 13.0, style.text, false);
+        let (px, floor) = widget_caption_px(w, h, 2.0, h * 0.62);
+        widget_line(cr, "Battery", x + pad, y + pad * 0.7, w - pad * 2.0, px, floor, style.text,
+            pango::Weight::Medium, pango::Alignment::Left);
         let glyph_w = (w * 0.16).min(h * 0.4);
         let glyph_h = glyph_w * 0.52;
         draw_battery_outline(cr, x + (w - glyph_w) / 2.0, y + h * 0.32, glyph_w, glyph_h, style.text);
-        caption_glow(cr, "No battery info", x + pad, y + h * 0.62, w - pad * 2.0, 13.0, style.text, true);
+        widget_line(cr, "No battery info", x + pad, y + h * 0.62, w - pad * 2.0, px, floor, style.text,
+            pango::Weight::Normal, pango::Alignment::Center);
         return;
     };
     // The Label/Caption floor (the-shell-has-one-visual-language, type
@@ -4818,7 +4822,9 @@ fn paint_widget_card_content(cr: &Context, style: &VisualStyle, kind: WidgetKind
             clock_date_glow(cr, &date_text, x + pad, y + date.top, w - pad * 2.0, date.size, style.text);
         }
         WidgetKind::Battery => {
-            caption_glow(cr, "Battery", x + pad, y + pad * 0.7, w - pad * 2.0, 13.0, style.text, false);
+            let (px, floor) = widget_caption_px(w, h, 2.0, h * 0.62);
+            widget_line(cr, "Battery", x + pad, y + pad * 0.7, w - pad * 2.0, px, floor, style.text,
+                pango::Weight::Medium, pango::Alignment::Left);
             match &home.battery {
                 crate::home_widgets::battery::BatteryState::Present { percent, .. } => {
                     let cx = x + w / 2.0;
@@ -4842,7 +4848,8 @@ fn paint_widget_card_content(cr: &Context, style: &VisualStyle, kind: WidgetKind
                     let glyph_w = w * 0.30;
                     let glyph_h = glyph_w * 0.52;
                     draw_battery_outline(cr, x + (w - glyph_w) / 2.0, y + h * 0.36, glyph_w, glyph_h, style.text);
-                    caption_glow(cr, "No battery info", x + pad, y + h * 0.68, w - pad * 2.0, 13.0, style.text, true);
+                    widget_line(cr, "No battery info", x + pad, y + h * 0.68, w - pad * 2.0, px, floor, style.text,
+                        pango::Weight::Normal, pango::Alignment::Center);
                 }
             }
         }
@@ -4860,33 +4867,51 @@ fn paint_widget_card_content(cr: &Context, style: &VisualStyle, kind: WidgetKind
                     ),
                     WeatherDisplay::Unavailable => ("sun".to_string(), None, String::new(), None, None, Vec::new()),
                 };
-            if !location.is_empty() {
-                caption_glow(cr, &location, x + pad, y + pad * 0.6, w - pad * 2.0, 12.0, style.text, false);
-            }
-            draw_weather_glyph(cr, &glyph, x + w - pad - 26.0, y + pad + 22.0, 56.0, style);
-            match temp_c {
-                Some(value) => hero_glow(cr, &crate::home_widgets::weather::fahrenheit_label(value), x + pad, y + h * 0.22, w, h * 0.24, style.text, pango::Weight::Bold, false, FONT_FAMILY),
-                None => hero_glow(cr, "--", x + pad, y + h * 0.22, w, h * 0.24, style.text, pango::Weight::Bold, false, FONT_FAMILY),
-            }
-            match (high_c, low_c) {
-                (Some(high), Some(low)) => {
-                    caption_glow(cr, &format!("H:{} L:{}", crate::home_widgets::weather::fahrenheit_label(high), crate::home_widgets::weather::fahrenheit_label(low)), x + pad, y + h * 0.52, w - pad * 2.0, 13.0, style.text, false);
-                }
-                _ => caption_glow(cr, "No data", x + pad, y + h * 0.52, w - pad * 2.0, 13.0, style.text, false),
-            }
-            // A short forecast strip (task: "a small 3-5 hour... forecast
-            // strip"); this card's own 2x2 width comfortably fits 3
-            // columns at a legible size, with generous vertical room.
+            // Top to bottom: location (beside the condition glyph), the
+            // temperature, the high/low line and a three-column forecast
+            // strip, each caption on the Caption role; the temperature takes
+            // whatever height is left.
             let shown: Vec<_> = forecast.iter().take(3).collect();
+            let k = (w / 240.0).min(1.0);
+            let strip_glyph = 32.0 * k;
+            let lines = if shown.is_empty() { 2.0 } else { 4.0 };
+            let (px, floor) = widget_caption_px(w, h, lines, pad * 1.6 + 56.0 * k + strip_glyph + 20.0);
+            let line_h = px * 1.25;
+            let glyph_size = 56.0 * k;
+            draw_weather_glyph(cr, &glyph, x + w - pad - glyph_size * 0.46, y + pad + glyph_size * 0.4, glyph_size, style);
+            let loc_y = y + pad * 0.6;
+            if !location.is_empty() {
+                widget_line(cr, &location, x + pad, loc_y, w - pad * 2.0 - glyph_size, px, floor, style.text,
+                    pango::Weight::Medium, pango::Alignment::Left);
+            }
+            let strip_h = if shown.is_empty() { 0.0 } else { line_h + 4.0 + strip_glyph + 4.0 + line_h };
+            let strip_y = y + h - pad * 0.6 - strip_h;
+            let hl_y = strip_y - line_h - 4.0;
+            let hero_top = loc_y + line_h;
+            let hero_size = (h * 0.24).min(((hl_y - hero_top) / 1.2).max(0.0) / context_font_size(cr, 1.0));
+            let hero = temp_c.map_or_else(|| "--".to_string(), crate::home_widgets::weather::fahrenheit_label);
+            hero_glow(cr, &hero, x + pad, hero_top, w, hero_size, style.text, pango::Weight::Bold, false, FONT_FAMILY);
+            let high_low = match (high_c, low_c) {
+                (Some(high), Some(low)) => format!("H {}  L {}", crate::home_widgets::weather::fahrenheit_label(high),
+                    crate::home_widgets::weather::fahrenheit_label(low)),
+                _ => "No data".to_string(),
+            };
+            widget_line(cr, &high_low, x + pad, hl_y, w - pad * 2.0, px, floor, style.text,
+                pango::Weight::Normal, pango::Alignment::Left);
             if !shown.is_empty() {
-                let strip_y = y + h - pad - 90.0;
-                let col_w = (w - pad * 2.0) / shown.len().max(1) as f64;
+                let col_w = (w - pad * 2.0) / shown.len() as f64;
                 for (index, entry) in shown.iter().enumerate() {
                     let col_x = x + pad + col_w * index as f64;
-                    caption_glow(cr, &entry.label, col_x, strip_y, col_w, 13.0, style.text, true);
+                    widget_line(cr, &entry.label, col_x, strip_y, col_w, px, floor, style.text,
+                        pango::Weight::Normal, pango::Alignment::Center);
                     let entry_glyph = crate::home_widgets::weather::condition_glyph(&entry.condition);
-                    draw_weather_glyph(cr, entry_glyph, col_x + col_w / 2.0, strip_y + 38.0, 32.0, style);
-                    centered_glow(cr, &crate::home_widgets::weather::fahrenheit_label(entry.temp_c), col_x, strip_y + 60.0, col_w, 17.0, style.text);
+                    draw_weather_glyph(cr, entry_glyph, col_x + col_w / 2.0, strip_y + line_h + 4.0 + strip_glyph / 2.0,
+                        strip_glyph, style);
+                    // Degrees alone: three "°F" columns run together in a 2x2 card.
+                    let temp = crate::home_widgets::weather::fahrenheit_label(entry.temp_c);
+                    widget_line(cr, temp.trim_end_matches('F'), col_x,
+                        strip_y + line_h + 8.0 + strip_glyph, col_w, px, floor, style.text, pango::Weight::Bold,
+                        pango::Alignment::Center);
                 }
             }
         }

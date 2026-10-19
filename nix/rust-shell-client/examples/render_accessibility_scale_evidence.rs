@@ -16,8 +16,11 @@ use k230_shell_rust::{
     theme_ui::{ThemePage, ThemeView},
     home_grid::{self, HomeSlot},
     home_screen::HomeScreen,
-    home_state::{HomeItem, HomeLayout, WidgetKind},
-    home_widgets::battery::read_details,
+    home_state::{FolderData, HomeItem, HomeLayout, WidgetKind},
+    home_widgets::{
+        battery::{read_details, BatteryState},
+        weather::{ForecastEntry, WeatherDisplay, WeatherSnapshot},
+    },
     icon::IconCache,
     Route,
 };
@@ -119,6 +122,57 @@ fn render_home(path: PathBuf, theme: &AppearanceSnapshot, w: u32, h: u32) {
     target.write_to_png(&mut fs::File::create(path).unwrap()).unwrap();
 }
 
+/// Home with the Battery and Weather widgets, a folder and apps with stock
+/// names, for the labels and widget captions on the type roles.
+fn render_home_small(path: PathBuf, theme: &AppearanceSnapshot, w: u32, h: u32) {
+    let mut cache = RendererCache::default();
+    cache.set_appearance(Some(theme.clone()));
+    let names = ["Terminal", "Settings", "Video", "Files", "Calculator", "System Monitor"];
+    let apps: Vec<AppEntry> = names
+        .iter()
+        .map(|name| AppEntry { id: format!("{name}.desktop"), name: (*name).into(), icon: None, path: PathBuf::new() })
+        .collect();
+    let per_page = home_grid::apps_per_page(w, h);
+    let mut layout = HomeLayout {
+        columns: home_grid::columns_for_width(w),
+        dock: vec![None; home_grid::DOCK_SLOTS],
+        ..HomeLayout::default()
+    };
+    layout.place(HomeSlot::Grid { page: 0, slot: 0 }, HomeItem::Widget { widget: WidgetKind::Battery }, per_page, false);
+    layout.place_first_fit(HomeItem::Widget { widget: WidgetKind::Weather }, per_page);
+    for app in &apps {
+        layout.place_first_fit(HomeItem::app(app.id.clone()), per_page);
+    }
+    layout.place_first_fit(
+        HomeItem::Folder(FolderData { name: "Games".into(), apps: vec![apps[2].id.clone(), apps[3].id.clone()] }),
+        per_page,
+    );
+    let mut home = HomeScreen::new(layout, f64::from(w));
+    home.battery = BatteryState::Present { percent: 87, status: "Discharging".into() };
+    let forecast = [("3pm", 23, "Partly cloudy"), ("6pm", 19, "Overcast"), ("9pm", 16, "Clear")]
+        .into_iter()
+        .map(|(label, temp_c, condition)| ForecastEntry { label: label.into(), temp_c, condition: condition.into() })
+        .collect();
+    home.weather = WeatherDisplay::Fresh(WeatherSnapshot {
+        location: "Boston".into(),
+        condition: "Partly cloudy".into(),
+        temperature_c: 21,
+        feels_like_c: 20,
+        high_c: 24,
+        low_c: 15,
+        forecast,
+        fetched_unix_secs: 0,
+    });
+    let target = ImageSurface::create(Format::ARgb32, w as i32, h as i32).unwrap();
+    {
+        let cr = Context::new(&target).unwrap();
+        cr.set_source_rgb(0.12, 0.3, 0.3);
+        cr.paint().unwrap();
+        render::paint_home(&cr, w, h, Some(theme), &home, &apps, &mut IconCache::new());
+    }
+    target.write_to_png(&mut fs::File::create(path).unwrap()).unwrap();
+}
+
 fn main() {
     let mut args = env::args().skip(1);
     let out = PathBuf::from(args.next().expect("out dir"));
@@ -141,6 +195,7 @@ fn main() {
                 render(out.join(format!("{name}-{page}-{w}x{h}.png")), &theme, &vision, w, h, page);
             }
             render_home(out.join(format!("{name}-home-{w}x{h}.png")), &theme, w, h);
+            render_home_small(out.join(format!("{name}-home-small-{w}x{h}.png")), &theme, w, h);
         }
         println!("rendered {name}");
     }
