@@ -21,10 +21,7 @@ import sys
 import tempfile
 import time
 
-from PIL import Image, ImageChops
-from card_shell_test_support import ROOT, binaries
-from card_virtual_keyboard import Keyboard
-from rust_service_surface_qemu import SETTINGS_FIXTURE
+ROOT = Path(__file__).resolve().parents[1]
 
 
 SCENE_CASES = ("shrink-live", "drawer-rise", "shade-descend", "expand-live", "focus")
@@ -1076,6 +1073,13 @@ def main():
         return
     if any(case in HOST_CASES for case in args.case):
         parser.error("host trace cases cannot be mixed with compositor cases")
+    # Host trace checks use only the standard library. Load image/Wayland
+    # dependencies only for cases that actually run a compositor.
+    global Image, ImageChops, Keyboard, SETTINGS_FIXTURE
+    from PIL import Image, ImageChops
+    from card_shell_test_support import binaries
+    from card_virtual_keyboard import Keyboard
+    from rust_service_surface_qemu import SETTINGS_FIXTURE
     sway, client = binaries()
     rust = os.environ.get("K230_SHELL_RUST")
     if any(case in SCENE_CASES + INTERRUPTION_CASES for case in args.case):
