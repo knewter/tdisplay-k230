@@ -6352,7 +6352,7 @@ impl RendererCache {
                     rounded(cr, left, row_top + 6.0, 28.0, 28.0, 14.0);
                     color(cr, style.muted, 0.4);
                     let _ = cr.fill();
-                    text(
+                    centered_label(
                         cr,
                         &stream
                             .app_name
@@ -6361,10 +6361,12 @@ impl RendererCache {
                             .unwrap_or('?')
                             .to_uppercase()
                             .to_string(),
-                        left + 7.0,
+                        left,
                         row_top + 10.0,
-                        18.0,
-                        16.0,
+                        28.0,
+                        // Sized to the circle, not the text step: undo the
+                        // step that `centered_label` applies.
+                        16.0 * 100.0 / context_font_size(cr, 100.0),
                         style.text,
                     );
                 }
@@ -10086,6 +10088,32 @@ mod tests {
         // Themed labels (role-sized, then clamped) still get the step.
         assert_eq!(theme_font_size(Some(&baseline), "body", 18.0, 14.0, 18.0), 18.0);
         assert_eq!(theme_font_size(Some(&large), "body", 18.0, 14.0, 18.0), 36.0);
+    }
+
+    #[test]
+    fn a_hud_stream_initial_stays_a_letter_at_the_largest_text_step() {
+        let surface = ImageSurface::create(Format::ARgb32, 240, 60).unwrap();
+        let _ = surface.set_user_data(&THEME_METRICS, std::rc::Rc::new(ThemeMetrics { font: 2.0, spacing: 1.0 }));
+        {
+            let cr = Context::new(&surface).unwrap();
+            let style = visual_style(None, "controls");
+            let geometry = volume::HudGeometry { left: 0.0, top: 0.0, width: 240.0, height: 60.0, collapsed_h: 0.0 };
+            let stream = crate::pipewire_ipc::Stream {
+                id: 1, app_name: "PipeWire ALSA".into(), app_icon: None, linear_volume: 0.5, muted: false,
+            };
+            RendererCache::paint_hud_row(&mut IconCache::new(), &cr, style, &geometry, 0.0,
+                                    crate::pipewire_ipc::ExpandedRow::Stream(&stream));
+        }
+        surface.flush();
+        let stride = surface.stride() as usize;
+        let data = surface.take_data().unwrap();
+        // Bright text pixels inside the 28 px icon circle at x 12..40.
+        let rows: Vec<usize> = (6..34)
+            .filter(|y| (12..40).any(|x| data[y * stride + x * 4 + 1] > 180))
+            .collect();
+        let span = rows.last().unwrap_or(&0) - rows.first().unwrap_or(&0);
+        // An ellipsis is a 2 px row of dots; a capital letter is most of the circle.
+        assert!(span >= 9, "the initial collapsed to an ellipsis: rows {rows:?}");
     }
 
     #[test]
