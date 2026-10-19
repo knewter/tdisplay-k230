@@ -1,0 +1,66 @@
+[
+  {
+    "memory": "heap",
+    "cpp": 2,
+    "transform": 1,
+    "baseline_cpu_ms": 10.124737333333334,
+    "candidate_cpu_ms": 4.115200333333333,
+    "speedup": 2.4603267188045366
+  },
+  {
+    "memory": "heap",
+    "cpp": 2,
+    "transform": 3,
+    "baseline_cpu_ms": 8.573722083333333,
+    "candidate_cpu_ms": 4.041691166666666,
+    "speedup": 2.121320439830736
+  },
+  {
+    "memory": "heap",
+    "cpp": 4,
+    "transform": 1,
+    "baseline_cpu_ms": 13.116728166666666,
+    "candidate_cpu_ms": 12.617959666666666,
+    "speedup": 1.0395284588932088
+  },
+  {
+    "memory": "heap",
+    "cpp": 4,
+    "transform": 3,
+    "baseline_cpu_ms": 11.751049583333334,
+    "candidate_cpu_ms": 11.7812315,
+    "speedup": 0.9974381356765066
+  },
+  {
+    "memory": "dumb",
+    "cpp": 2,
+    "transform": 1,
+    "baseline_cpu_ms": 10.13023075,
+    "candidate_cpu_ms": 4.108885666666667,
+    "speedup": 2.465444787666275
+  },
+  {
+    "memory": "dumb",
+    "cpp": 2,
+    "transform": 3,
+    "baseline_cpu_ms": 8.506922833333334,
+    "candidate_cpu_ms": 4.0661233333333335,
+    "speedup": 2.092145794888989
+  },
+  {
+    "memory": "dumb",
+    "cpp": 4,
+    "transform": 1,
+    "baseline_cpu_ms": 12.457110583333334,
+    "candidate_cpu_ms": 11.989892083333332,
+    "speedup": 1.0389676985207785
+  },
+  {
+    "memory": "dumb",
+    "cpp": 4,
+    "transform": 3,
+    "baseline_cpu_ms": 11.140469416666667,
+    "candidate_cpu_ms": 11.17161025,
+    "speedup": 0.9972125027067308
+  }
+]

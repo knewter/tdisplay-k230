@@ -6,6 +6,7 @@
 #include <pixman.h>
 #include <stdbool.h>
 #include <stdint.h>
+#include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -53,22 +54,59 @@ static inline bool k230_turn_into(pixman_image_t *destination,
 	uintptr_t source_address = (uintptr_t)src, destination_address = (uintptr_t)dst;
 	if (source_address <= destination_address ? destination_address - source_address < source_bytes :
 			source_address - destination_address < destination_bytes) return false;
-	/* Tiles keep both the contiguous source rows and transposed destination
-	 * rows hot, instead of touching an entire image's cache lines per row. */
-	for (int by = 0; by < height; by += 16) {
-		int end_y = by + 16 < height ? by + 16 : height;
-		for (int bx = 0; bx < width; bx += 16) {
-			int end_x = bx + 16 < width ? bx + 16 : width;
-			for (int y = by; y < end_y; y++) {
-				for (int x = bx; x < end_x; x++) {
+	/* Keep the established path for 32-bit pixels. The panel profile selects
+	 * RGB565; packing pairs of 32-bit pixels regressed the board benchmark. */
+	if (cpp == 4) {
+		for (int by = 0; by < height; by += 16) {
+			int end_y = by + 16 < height ? by + 16 : height;
+			for (int bx = 0; bx < width; bx += 16) {
+				int end_x = bx + 16 < width ? bx + 16 : width;
+				for (int y = by; y < end_y; y++) for (int x = bx; x < end_x; x++) {
 					int dx = transform == 1 ? y : height - 1 - y;
 					int dy = transform == 1 ? width - 1 - x : x;
-					if (cpp == 4)
-						*(uint32_t *)(dst + (size_t)dy * stride + dx * 4) =
-							*(uint32_t *)(src + (size_t)y * source_stride + x * 4);
-					else
-						*(uint16_t *)(dst + (size_t)dy * stride + dx * 2) =
-							*(uint16_t *)(src + (size_t)y * source_stride + x * 2);
+					*(uint32_t *)(dst + (size_t)dy * stride + dx * 4) =
+						*(const uint32_t *)(src + (size_t)y * source_stride + x * 4);
+				}
+			}
+		}
+		return true;
+	}
+	/* Contiguous destination runs within source tiles let the scanout target
+	 * receive one aligned 64-bit store for four fresh RGB565 pixels. Prefix
+	 * and tail halfwords handle odd geometry, padding and four-byte alignment. */
+	ptrdiff_t step = transform == 1 ? source_stride / 2 : -source_stride / 2;
+	for (int by = 0; by < height; by += 16) {
+		int end_y = by + 16 < height ? by + 16 : height;
+		int left = transform == 1 ? by : height - end_y;
+		int right = transform == 1 ? end_y : height - by;
+		int first_y = transform == 1 ? left : height - 1 - left;
+		for (int bx = 0; bx < width; bx += 16) {
+			int end_x = bx + 16 < width ? bx + 16 : width;
+			for (int x = bx; x < end_x; x++) {
+				int dy = transform == 1 ? width - 1 - x : x;
+				uint16_t *target = (uint16_t *)(dst + (size_t)dy * stride) + left;
+				const uint16_t *pixel = (const uint16_t *)(src + (size_t)first_y * source_stride) + x;
+				int remaining = right - left;
+#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
+				while (remaining && (uintptr_t)target % 8) {
+					*target++ = *pixel;
+					if (--remaining) pixel += step;
+				}
+				while (remaining >= 4) {
+					uint64_t packed = (uint64_t)pixel[0] |
+						(uint64_t)pixel[step] << 16 |
+						(uint64_t)pixel[2 * step] << 32 |
+						(uint64_t)pixel[3 * step] << 48;
+					/* Preserve effective types while enabling one aligned store. */
+					memcpy(__builtin_assume_aligned(target, 8), &packed, sizeof(packed));
+					target += 4;
+					remaining -= 4;
+					if (remaining) pixel += 4 * step;
+				}
+#endif
+				while (remaining) {
+					*target++ = *pixel;
+					if (--remaining) pixel += step;
 				}
 			}
 		}

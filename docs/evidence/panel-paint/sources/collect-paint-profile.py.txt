@@ -1,0 +1,27 @@
+from pathlib import Path
+import subprocess,json,re,shlex
+base=Path(__file__).parent
+ssh=['ssh','-F',str(Path.home()/'tmp/k230-coordination/ssh_config.private'),'k230']
+py='/nix/store/v189xydz6qkcd4cbkixcmv91w8hbc560-python3-riscv64-unknown-linux-gnu-3.14.7/bin/python3'
+script=r'''import json,subprocess,re,time
+from pathlib import Path
+pid=subprocess.check_output(['systemctl','show','shell.service','-p','MainPID','--value'],text=True).strip()
+env=dict(p.split(b'=',1) for p in Path('/proc',pid,'environ').read_bytes().split(b'\0') if b'=' in p)
+assert env.get(b'WLR_PIXMAN_DRAW_TRACE')==b'1'
+raw=subprocess.check_output(['journalctl','-u','shell.service','_PID='+pid,'--no-pager','-o','json'],text=True)
+patterns=[('draw',re.compile(r'K230_PIXMAN_DRAW transform=([0-7]) path=(sampler|tiled) copy_cpu_ns=(\d+) total_cpu_ns=(\d+) dst_pixels=(\d+) scratch_bytes=(\d+)$'),['transform','path','copy_cpu_ns','total_cpu_ns','dst_pixels','scratch_bytes']),('rotation',re.compile(r'K230_PIXMAN_OUTPUT_TURN src=(\d+)x(\d+) dst=(\d+)x(\d+) format=(0x[0-9a-f]{8}) rotation=([13]) rotation_cpu_ns=(\d+) scratch_bytes=(\d+)$'),['src_width','src_height','dst_width','dst_height','format','transform','rotation_cpu_ns','scratch_bytes'])]
+rows=[]
+for line in raw.splitlines():
+ row=json.loads(line);msg=row.get('MESSAGE','')
+ if not isinstance(msg,str):continue
+ for stage,pattern,keys in patterns:
+  m=pattern.search(msg)
+  if m:
+   ns=int(row['__MONOTONIC_TIMESTAMP'])*1000
+   rows.append('K230_PANEL_PAINT v=1 stage='+stage+' t_ns='+str(ns)+' '+' '.join(k+'='+v for k,v in zip(keys,m.groups())))
+metadata={'captured_utc':time.strftime('%Y-%m-%dT%H:%M:%SZ',time.gmtime()),'system':str(Path('/run/current-system').resolve()),'pid':int(pid),'environment':{k:env.get(k.encode(),b'').decode() for k in ['WLR_RENDERER','WLR_PIXMAN_OUTPUT_TURN','WLR_PIXMAN_QUARTER_TURN','WLR_PIXMAN_DRAW_TRACE']},'observer_limits':{'draw_rows':512,'rotation_rows':128,'journal_timestamp':'entry receipt monotonic; not exact stage start or commit ID'},'rows':len(rows)}
+print(json.dumps({'metadata':metadata,'profile':'\n'.join(rows)+'\n'}))
+'''
+p=subprocess.run(ssh+[py+' -'],input=script.encode(),capture_output=True,timeout=45)
+if p.returncode:raise RuntimeError(p.stderr.decode()[-1500:])
+d=json.loads(p.stdout);(base/'paint-baseline-profile.log').write_text(d['profile']);(base/'paint-baseline-profile-metadata.json').write_text(json.dumps(d['metadata'],indent=2)+'\n');print(json.dumps(d['metadata']),flush=True)

@@ -1,0 +1,46 @@
+static bool baseline_turn_into(pixman_image_t *destination,
+		pixman_image_t *source, int transform) {
+	if (!source || !destination || (transform != 1 && transform != 3)) return false;
+	pixman_format_code_t format = pixman_image_get_format(source);
+	int cpp = k230_turn_cpp(format);
+	if (!cpp || pixman_image_get_format(destination) != format) return false;
+	int width = pixman_image_get_width(source), height = pixman_image_get_height(source);
+	int source_stride = pixman_image_get_stride(source);
+	int stride = pixman_image_get_stride(destination);
+	uint8_t *src = (uint8_t *)pixman_image_get_data(source);
+	uint8_t *dst = (uint8_t *)pixman_image_get_data(destination);
+	if (!src || !dst || width <= 0 || height <= 0 || width > 16384 || height > 16384 ||
+			pixman_image_get_width(destination) != height ||
+			pixman_image_get_height(destination) != width ||
+			source_stride < width * cpp || stride < height * cpp ||
+			source_stride % cpp || stride % cpp || (uintptr_t)src % cpp || (uintptr_t)dst % cpp)
+		return false;
+	size_t source_bytes = (size_t)source_stride * height, destination_bytes = (size_t)stride * width;
+	if (source_bytes > 64u * 1024u * 1024u || destination_bytes > 64u * 1024u * 1024u)
+		return false;
+	uintptr_t source_address = (uintptr_t)src, destination_address = (uintptr_t)dst;
+	if (source_address <= destination_address ? destination_address - source_address < source_bytes :
+			source_address - destination_address < destination_bytes) return false;
+	/* Tiles keep both the contiguous source rows and transposed destination
+	 * rows hot, instead of touching an entire image's cache lines per row. */
+	for (int by = 0; by < height; by += 16) {
+		int end_y = by + 16 < height ? by + 16 : height;
+		for (int bx = 0; bx < width; bx += 16) {
+			int end_x = bx + 16 < width ? bx + 16 : width;
+			for (int y = by; y < end_y; y++) {
+				for (int x = bx; x < end_x; x++) {
+					int dx = transform == 1 ? y : height - 1 - y;
+					int dy = transform == 1 ? width - 1 - x : x;
+					if (cpp == 4)
+						*(uint32_t *)(dst + (size_t)dy * stride + dx * 4) =
+							*(uint32_t *)(src + (size_t)y * source_stride + x * 4);
+					else
+						*(uint16_t *)(dst + (size_t)dy * stride + dx * 2) =
+							*(uint16_t *)(src + (size_t)y * source_stride + x * 2);
+				}
+			}
+		}
+	}
+	return true;
+}
+

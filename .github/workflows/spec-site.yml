@@ -116,6 +116,13 @@ jobs:
           python3 tools/shell-motion-trace.py --self-test
           python3 tests/test_shell_motion.py --case trace-order --case reduced-motion
 
+      - name: Check landscape copy pixels and profile boundaries
+        run: |
+          python3 tools/panel-paint-profile.py --self-test
+          python3 tests/test_panel_paint.py
+          python3 tests/test_pixman_quarter_turn.py
+          python3 tests/test_card_rounded_clip.py
+
       - name: Check opaque card scale pixels
         run: python3 tests/test_card_scaled_cache.py
 

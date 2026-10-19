@@ -1,0 +1,7 @@
+from pathlib import Path
+import subprocess,sys
+b=Path(__file__).parent;s=['ssh','-F',str(Path.home()/'tmp/k230-coordination/ssh_config.private'),'k230'];py='/nix/store/v189xydz6qkcd4cbkixcmv91w8hbc560-python3-riscv64-unknown-linux-gnu-3.14.7/bin/python3'
+p=subprocess.run(s+['cat > /tmp/k230-motion-tools/set-paint-profile.py'],input=(b/'set-paint-profile-board.py').read_bytes(),capture_output=True,timeout=30);p.check_returncode()
+p=subprocess.run(s+[py+' /tmp/k230-motion-tools/set-paint-profile.py '+sys.argv[1]],stdin=subprocess.DEVNULL,capture_output=True,text=True,timeout=100)
+print(p.stdout,flush=True)
+if p.returncode:raise RuntimeError(p.stderr)

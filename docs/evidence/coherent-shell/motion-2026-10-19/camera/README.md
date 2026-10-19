@@ -15,7 +15,7 @@ into a performance pass, prove real-finger latency, or observe every refresh.
   running system:
   `/nix/store/48afqvxz6i15rz9q4if3b1c08j6l3n37-nixos-system-nixos-26.11.20260919.20b1ddd`.
 - DSI-1 landscape, transform 270, physical 568×1232, logical 1232×568,
-  nominal 52.19 Hz, Pixman/XRGB8888. No new build, flash, or reboot.
+  nominal 52.19 Hz, Pixman/RGB565. No new build, flash, or reboot.
 - Same three-card workload as the preceding runs: existing Terminal plus
   two temporary labeled Foot clients. Six alternating left/right gestures,
   35 moves over 700 ms, 800 ms after release, baseline/tail 3.2 s. `grim` runs

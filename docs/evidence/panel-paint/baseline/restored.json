@@ -1,0 +1,10 @@
+{
+  "system": "/nix/store/48afqvxz6i15rz9q4if3b1c08j6l3n37-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "shell_active": true,
+  "shell_ui_active": true,
+  "reduced_motion_environment": "0",
+  "owned_override_absent": true,
+  "remaining_virtual_test_devices": 0,
+  "home_command_succeeded": true,
+  "profile_override_absent": true
+}

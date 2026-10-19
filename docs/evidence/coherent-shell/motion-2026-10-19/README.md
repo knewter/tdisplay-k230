@@ -41,7 +41,7 @@ HDMI, performance improvement, or new reboot is claimed.
   Boot files were installed and verified and userspace was activated. No new
   reboot was performed; this change touches userspace only.
 - Output: `DSI-1`, transform `270`, logical 1232×568, physical mode 568×1232
-  advertising 52190 mHz; renderer `pixman`, format `XRGB8888`.
+  advertising 52190 mHz; renderer `pixman`, format `RGB565`.
 - Each session reported **three open cards**: an existing Terminal and two
   temporary Foot clients labeled `Motion-one` and `Motion-two`.
 - Each run held a three-second resource baseline, entered Overview, then

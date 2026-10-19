@@ -1,0 +1,601 @@
+K230_PANEL_PAINT v=1 stage=rotation t_ns=85956718708000 src_width=1232 src_height=568 dst_width=568 dst_height=1232 format=0x10020565 transform=1 rotation_cpu_ns=11505998 scratch_bytes=1399552
+K230_PANEL_PAINT v=1 stage=rotation t_ns=85957079822000 src_width=1232 src_height=568 dst_width=568 dst_height=1232 format=0x10020565 transform=1 rotation_cpu_ns=11724590 scratch_bytes=1399552
+K230_PANEL_PAINT v=1 stage=rotation t_ns=85958716167000 src_width=1232 src_height=568 dst_width=568 dst_height=1232 format=0x10020565 transform=1 rotation_cpu_ns=11582816 scratch_bytes=1399552
+K230_PANEL_PAINT v=1 stage=rotation t_ns=85958833141000 src_width=1232 src_height=568 dst_width=568 dst_height=1232 format=0x10020565 transform=1 rotation_cpu_ns=11464479 scratch_bytes=1399552
+K230_PANEL_PAINT v=1 stage=rotation t_ns=85963137418000 src_width=1232 src_height=568 dst_width=568 dst_height=1232 format=0x10020565 transform=1 rotation_cpu_ns=11608262 scratch_bytes=1399552
+K230_PANEL_PAINT v=1 stage=rotation t_ns=85964189452000 src_width=1232 src_height=568 dst_width=568 dst_height=1232 format=0x10020565 transform=1 rotation_cpu_ns=11346625 scratch_bytes=1399552
+K230_PANEL_PAINT v=1 stage=draw t_ns=85964267984000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=8573591 dst_pixels=699776 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=rotation t_ns=85964302784000 src_width=1232 src_height=568 dst_width=568 dst_height=1232 format=0x10020565 transform=1 rotation_cpu_ns=11256330 scratch_bytes=1399552
+K230_PANEL_PAINT v=1 stage=draw t_ns=85965583110000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=7726444 dst_pixels=699776 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=rotation t_ns=85965610837000 src_width=1232 src_height=568 dst_width=568 dst_height=1232 format=0x10020565 transform=1 rotation_cpu_ns=11160995 scratch_bytes=1399552
+K230_PANEL_PAINT v=1 stage=draw t_ns=85965777360000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=8163035 dst_pixels=699776 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=rotation t_ns=85965804946000 src_width=1232 src_height=568 dst_width=568 dst_height=1232 format=0x10020565 transform=1 rotation_cpu_ns=10946556 scratch_bytes=1399552
+K230_PANEL_PAINT v=1 stage=draw t_ns=85965938425000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=7392597 dst_pixels=699776 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=rotation t_ns=85965949993000 src_width=1232 src_height=568 dst_width=568 dst_height=1232 format=0x10020565 transform=1 rotation_cpu_ns=10763666 scratch_bytes=1399552
+K230_PANEL_PAINT v=1 stage=draw t_ns=85990145870000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=8625479 dst_pixels=699776 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=rotation t_ns=85990157515000 src_width=1232 src_height=568 dst_width=568 dst_height=1232 format=0x10020565 transform=1 rotation_cpu_ns=10607296 scratch_bytes=1399552
+K230_PANEL_PAINT v=1 stage=draw t_ns=85990335313000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=913555 dst_pixels=699776 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85990345821000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=8146551 dst_pixels=675648 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=rotation t_ns=85990357073000 src_width=1232 src_height=568 dst_width=568 dst_height=1232 format=0x10020565 transform=1 rotation_cpu_ns=10647334 scratch_bytes=1399552
+K230_PANEL_PAINT v=1 stage=draw t_ns=85990383821000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=765630 dst_pixels=699776 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85990392584000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=7797925 dst_pixels=675648 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=rotation t_ns=85990404460000 src_width=1232 src_height=568 dst_width=568 dst_height=1232 format=0x10020565 transform=1 rotation_cpu_ns=10692482 scratch_bytes=1399552
+K230_PANEL_PAINT v=1 stage=draw t_ns=85993967303000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=6023889 dst_pixels=699776 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85993973310000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=5202149 dst_pixels=72960 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85993974293000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=223371 dst_pixels=8360 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85993980832000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=5030297 dst_pixels=71440 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85993980832000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=136666 dst_pixels=6336 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85993980832000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=38296 dst_pixels=1296 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85993999823000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=17766371 dst_pixels=313208 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85994000869000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=377814 dst_pixels=34628 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85994002085000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=46667 dst_pixels=1296 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85994002085000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=361037 dst_pixels=43808 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85994003408000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=371666 dst_pixels=43808 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=rotation t_ns=85994015816000 src_width=1232 src_height=568 dst_width=568 dst_height=1232 format=0x10020565 transform=1 rotation_cpu_ns=11018373 scratch_bytes=1399552
+K230_PANEL_PAINT v=1 stage=draw t_ns=85994042068000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=6017000 dst_pixels=699776 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85994047942000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=5181222 dst_pixels=72960 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85994049312000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=257594 dst_pixels=8360 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85994055493000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=5155369 dst_pixels=71440 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85994056369000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=146074 dst_pixels=6336 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85994057574000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=38704 dst_pixels=1296 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85994076111000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=17716373 dst_pixels=313208 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85994076111000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=309408 dst_pixels=34628 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85994076987000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=45963 dst_pixels=1296 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85994078734000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=416037 dst_pixels=43808 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85994078734000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=365370 dst_pixels=43808 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=rotation t_ns=85994090908000 src_width=1232 src_height=568 dst_width=568 dst_height=1232 format=0x10020565 transform=1 rotation_cpu_ns=10705223 scratch_bytes=1399552
+K230_PANEL_PAINT v=1 stage=draw t_ns=85995118924000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=5432333 dst_pixels=699776 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85995125027000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=5189483 dst_pixels=72960 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85995125027000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=167667 dst_pixels=8360 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85995132172000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=5256262 dst_pixels=71440 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85995133029000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=193260 dst_pixels=6336 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85995133029000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=45074 dst_pixels=1296 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85995151927000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=17765152 dst_pixels=313208 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85995152951000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=368741 dst_pixels=34628 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85995154184000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=76371 dst_pixels=1296 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85995154184000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=363925 dst_pixels=43808 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85995156098000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=428259 dst_pixels=43808 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=rotation t_ns=85995167452000 src_width=1232 src_height=568 dst_width=568 dst_height=1232 format=0x10020565 transform=1 rotation_cpu_ns=10693222 scratch_bytes=1399552
+K230_PANEL_PAINT v=1 stage=draw t_ns=85995399855000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=5487742 dst_pixels=699776 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85995401733000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=1060963 dst_pixels=72960 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85995402913000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=211371 dst_pixels=8360 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85995404990000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=1015666 dst_pixels=71440 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85995404990000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=135778 dst_pixels=6336 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85995404990000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=35741 dst_pixels=1296 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85995409027000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=2698850 dst_pixels=313208 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85995410039000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=313667 dst_pixels=34628 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85995411083000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=93482 dst_pixels=1296 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85995411901000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=363629 dst_pixels=43808 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85995413137000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=423370 dst_pixels=43808 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=rotation t_ns=85995424641000 src_width=1232 src_height=568 dst_width=568 dst_height=1232 format=0x10020565 transform=1 rotation_cpu_ns=10680667 scratch_bytes=1399552
+K230_PANEL_PAINT v=1 stage=draw t_ns=85995458522000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=5580964 dst_pixels=699776 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85995461381000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=1100483 dst_pixels=72960 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85995463123000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=171778 dst_pixels=8360 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85995463964000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=993557 dst_pixels=71440 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85995464882000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=137370 dst_pixels=6336 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85995466083000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=39740 dst_pixels=1296 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85995468961000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=2720553 dst_pixels=313208 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85995470146000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=318852 dst_pixels=34628 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85995470146000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=38889 dst_pixels=1296 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85995471493000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=417075 dst_pixels=43808 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85995472686000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=415852 dst_pixels=43808 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=rotation t_ns=85995484645000 src_width=1232 src_height=568 dst_width=568 dst_height=1232 format=0x10020565 transform=1 rotation_cpu_ns=10751666 scratch_bytes=1399552
+K230_PANEL_PAINT v=1 stage=draw t_ns=85995514995000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=5408666 dst_pixels=699776 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85995516693000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=1007408 dst_pixels=64896 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85995518624000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=217889 dst_pixels=7436 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85995519528000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=1051816 dst_pixels=79336 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85995520359000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=166445 dst_pixels=7260 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85995521952000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=98371 dst_pixels=1296 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85995524996000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=2696110 dst_pixels=313208 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85995526197000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=358593 dst_pixels=34628 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85995526197000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=38148 dst_pixels=1296 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85995527547000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=414333 dst_pixels=43808 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85995528844000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=363482 dst_pixels=43808 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=rotation t_ns=85995542062000 src_width=1232 src_height=568 dst_width=568 dst_height=1232 format=0x10020565 transform=1 rotation_cpu_ns=10918707 scratch_bytes=1399552
+K230_PANEL_PAINT v=1 stage=draw t_ns=85995572565000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=5416333 dst_pixels=699776 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85995574963000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=877222 dst_pixels=56448 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85995574963000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=140963 dst_pixels=6468 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85995577316000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=1175888 dst_pixels=87232 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85995577316000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=165371 dst_pixels=8184 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85995577316000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=36815 dst_pixels=1296 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85995581345000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=2694629 dst_pixels=313208 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85995582404000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=362704 dst_pixels=34628 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85995583673000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=40222 dst_pixels=1296 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85995583673000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=367852 dst_pixels=43808 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85995585412000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=449295 dst_pixels=43808 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=rotation t_ns=85995596713000 src_width=1232 src_height=568 dst_width=568 dst_height=1232 format=0x10020565 transform=1 rotation_cpu_ns=10727407 scratch_bytes=1399552
+K230_PANEL_PAINT v=1 stage=draw t_ns=85995630285000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=5480852 dst_pixels=699776 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85995632273000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=847369 dst_pixels=48000 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85995634108000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=123741 dst_pixels=5500 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85995635146000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=1193185 dst_pixels=95504 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85995635936000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=171444 dst_pixels=9152 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85995637330000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=79592 dst_pixels=1296 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85995640999000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=2679075 dst_pixels=313208 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85995642309000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=311889 dst_pixels=34628 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85995642309000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=43815 dst_pixels=1296 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85995642309000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=358222 dst_pixels=43808 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85995643867000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=367778 dst_pixels=43808 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=rotation t_ns=85995656151000 src_width=1232 src_height=568 dst_width=568 dst_height=1232 format=0x10020565 transform=1 rotation_cpu_ns=10776888 scratch_bytes=1399552
+K230_PANEL_PAINT v=1 stage=draw t_ns=85995689479000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=5971966 dst_pixels=699776 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85995690810000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=751259 dst_pixels=42624 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85995691568000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=156186 dst_pixels=4884 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85995693988000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=1299222 dst_pixels=100768 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85995694971000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=214925 dst_pixels=9768 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85995694971000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=40592 dst_pixels=1296 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85995698435000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=2701036 dst_pixels=313208 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85995699410000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=363961 dst_pixels=34628 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85995700581000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=88853 dst_pixels=1296 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85995700581000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=367296 dst_pixels=43808 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85995702319000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=376963 dst_pixels=43808 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=rotation t_ns=85995713857000 src_width=1232 src_height=568 dst_width=568 dst_height=1232 format=0x10020565 transform=1 rotation_cpu_ns=10751593 scratch_bytes=1399552
+K230_PANEL_PAINT v=1 stage=draw t_ns=85995745728000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=5532555 dst_pixels=699776 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85995747030000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=686147 dst_pixels=34560 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85995747868000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=156482 dst_pixels=3960 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85995751202000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=1405148 dst_pixels=108664 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85995751202000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=188297 dst_pixels=10692 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85995751202000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=38037 dst_pixels=1296 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85995754678000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=2672296 dst_pixels=313208 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85995755657000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=363333 dst_pixels=34628 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85995756898000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=82407 dst_pixels=1296 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85995756898000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=365370 dst_pixels=43808 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85995758328000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=418149 dst_pixels=43808 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=rotation t_ns=85995770238000 src_width=1232 src_height=568 dst_width=568 dst_height=1232 format=0x10020565 transform=1 rotation_cpu_ns=10796035 scratch_bytes=1399552
+K230_PANEL_PAINT v=1 stage=draw t_ns=85995802991000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=5470889 dst_pixels=699776 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85995804276000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=628519 dst_pixels=26496 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85995805112000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=141519 dst_pixels=3036 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85995807481000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=1443630 dst_pixels=116936 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85995808475000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=197444 dst_pixels=11660 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85995808475000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=38000 dst_pixels=1296 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85995811990000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=2690260 dst_pixels=313208 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85995813004000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=366185 dst_pixels=34628 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85995814122000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=92629 dst_pixels=1296 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85995814122000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=365593 dst_pixels=43808 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85995815445000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=432630 dst_pixels=43808 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=rotation t_ns=85995827277000 src_width=1232 src_height=568 dst_width=568 dst_height=1232 format=0x10020565 transform=1 rotation_cpu_ns=10812703 scratch_bytes=1399552
+K230_PANEL_PAINT v=1 stage=draw t_ns=85995860976000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=5457815 dst_pixels=699776 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85995861713000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=483334 dst_pixels=18048 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85995862805000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=104556 dst_pixels=2068 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85995864943000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=1488075 dst_pixels=124832 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85995865675000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=181000 dst_pixels=12584 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85995866521000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=89149 dst_pixels=1296 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85995870049000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=2718962 dst_pixels=313208 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85995871695000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=312444 dst_pixels=34628 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85995871695000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=40444 dst_pixels=1296 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85995873251000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=356371 dst_pixels=43808 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85995873251000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=365630 dst_pixels=43808 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=rotation t_ns=85995886178000 src_width=1232 src_height=568 dst_width=568 dst_height=1232 format=0x10020565 transform=1 rotation_cpu_ns=10888222 scratch_bytes=1399552
+K230_PANEL_PAINT v=1 stage=draw t_ns=85995917506000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=5420705 dst_pixels=699776 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85995919360000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=408445 dst_pixels=9600 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85995919360000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=47852 dst_pixels=1100 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85995921917000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=1712444 dst_pixels=133104 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85995923104000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=178593 dst_pixels=13552 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85995923104000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=40629 dst_pixels=1296 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85995926494000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=2697296 dst_pixels=313208 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85995927382000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=358593 dst_pixels=34628 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85995928795000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=88334 dst_pixels=1296 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85995930392000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=395888 dst_pixels=43808 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85995930392000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=371185 dst_pixels=43808 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=rotation t_ns=85995944344000 src_width=1232 src_height=568 dst_width=568 dst_height=1232 format=0x10020565 transform=1 rotation_cpu_ns=10982369 scratch_bytes=1399552
+K230_PANEL_PAINT v=1 stage=draw t_ns=85995975178000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=5451777 dst_pixels=699776 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85995976119000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=244667 dst_pixels=1536 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85995977389000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=35519 dst_pixels=176 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85995979124000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=1745926 dst_pixels=141000 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85995979922000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=240334 dst_pixels=14476 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85995980905000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=86777 dst_pixels=1296 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85995984766000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=2742111 dst_pixels=313208 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85995985749000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=322963 dst_pixels=34628 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85995986633000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=92705 dst_pixels=1296 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85995987784000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=395963 dst_pixels=43808 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85995988499000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=364851 dst_pixels=43808 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=rotation t_ns=85996001515000 src_width=1232 src_height=568 dst_width=568 dst_height=1232 format=0x10020565 transform=1 rotation_cpu_ns=10726219 scratch_bytes=1399552
+K230_PANEL_PAINT v=1 stage=draw t_ns=85996032876000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=5501665 dst_pixels=699776 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85996035981000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=1740370 dst_pixels=148896 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85996035981000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=184889 dst_pixels=15400 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85996035981000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=36778 dst_pixels=1296 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85996040224000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=2710112 dst_pixels=310576 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85996041821000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=363037 dst_pixels=34628 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85996042688000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=35037 dst_pixels=1044 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85996043827000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=405481 dst_pixels=43808 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85996045157000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=370037 dst_pixels=43808 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=rotation t_ns=85996056980000 src_width=1232 src_height=568 dst_width=568 dst_height=1232 format=0x10020565 transform=1 rotation_cpu_ns=10668333 scratch_bytes=1399552
+K230_PANEL_PAINT v=1 stage=draw t_ns=85996090036000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=5411666 dst_pixels=699776 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85996092926000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=1870444 dst_pixels=157168 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85996094070000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=189481 dst_pixels=16368 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85996094070000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=42408 dst_pixels=1296 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85996098162000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=2597481 dst_pixels=302304 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85996098162000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=308111 dst_pixels=34628 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85996099483000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=30371 dst_pixels=252 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85996099483000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=365815 dst_pixels=43808 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85996101281000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=406372 dst_pixels=43808 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=rotation t_ns=85996112705000 src_width=1232 src_height=568 dst_width=568 dst_height=1232 format=0x10020565 transform=1 rotation_cpu_ns=10672037 scratch_bytes=1399552
+K230_PANEL_PAINT v=1 stage=draw t_ns=85996150660000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=5495369 dst_pixels=699776 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85996153228000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=1846000 dst_pixels=165440 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85996154196000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=247037 dst_pixels=17336 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85996154196000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=38704 dst_pixels=1296 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85996158119000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=2609668 dst_pixels=294408 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85996159872000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=353815 dst_pixels=34452 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85996159872000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=364111 dst_pixels=43808 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85996161448000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=430333 dst_pixels=43808 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=rotation t_ns=85996172736000 src_width=1232 src_height=568 dst_width=568 dst_height=1232 format=0x10020565 transform=1 rotation_cpu_ns=10682146 scratch_bytes=1399552
+K230_PANEL_PAINT v=1 stage=draw t_ns=85996204833000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=5420481 dst_pixels=699776 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85996207299000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=1843556 dst_pixels=166568 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85996208214000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=246814 dst_pixels=17468 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85996208738000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=40814 dst_pixels=1296 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85996211841000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=2479629 dst_pixels=292904 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85996212800000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=344334 dst_pixels=34276 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85996213992000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=425222 dst_pixels=43808 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85996215110000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=413185 dst_pixels=43808 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=rotation t_ns=85996226544000 src_width=1232 src_height=568 dst_width=568 dst_height=1232 format=0x10020565 transform=1 rotation_cpu_ns=10657444 scratch_bytes=1399552
+K230_PANEL_PAINT v=1 stage=draw t_ns=85996243337000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=5458148 dst_pixels=699776 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85996245816000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=1853187 dst_pixels=163184 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85996246716000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=244964 dst_pixels=17072 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85996246716000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=38778 dst_pixels=1296 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85996250096000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=2479147 dst_pixels=296288 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85996250986000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=360297 dst_pixels=34628 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85996252141000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=424851 dst_pixels=43808 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85996253056000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=426853 dst_pixels=43808 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=rotation t_ns=85996265260000 src_width=1232 src_height=568 dst_width=568 dst_height=1232 format=0x10020565 transform=1 rotation_cpu_ns=10806146 scratch_bytes=1399552
+K230_PANEL_PAINT v=1 stage=draw t_ns=85996301210000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=5471926 dst_pixels=699776 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85996303612000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=1824482 dst_pixels=153784 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85996304533000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=237000 dst_pixels=15972 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85996304533000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=39963 dst_pixels=1296 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85996307955000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=2605481 dst_pixels=305688 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85996308989000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=366777 dst_pixels=34628 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85996310077000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=76888 dst_pixels=576 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85996310077000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=362222 dst_pixels=43808 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85996311462000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=419260 dst_pixels=43808 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=rotation t_ns=85996322712000 src_width=1232 src_height=568 dst_width=568 dst_height=1232 format=0x10020565 transform=1 rotation_cpu_ns=10666443 scratch_bytes=1399552
+K230_PANEL_PAINT v=1 stage=draw t_ns=85996358650000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=5507002 dst_pixels=699776 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85996359516000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=231815 dst_pixels=768 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85996359516000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=34667 dst_pixels=88 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85996362797000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=1829409 dst_pixels=141752 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85996364156000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=303000 dst_pixels=14564 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85996364156000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=41815 dst_pixels=1296 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85996367549000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=2682517 dst_pixels=313208 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85996368514000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=362668 dst_pixels=34628 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85996369628000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=46222 dst_pixels=1296 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85996369628000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=364260 dst_pixels=43808 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85996371055000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=431481 dst_pixels=43808 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=rotation t_ns=85996382419000 src_width=1232 src_height=568 dst_width=568 dst_height=1232 format=0x10020565 transform=1 rotation_cpu_ns=10703888 scratch_bytes=1399552
+K230_PANEL_PAINT v=1 stage=draw t_ns=85996415481000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=5410518 dst_pixels=699776 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85996419254000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=1076184 dst_pixels=72960 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85996419254000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=166074 dst_pixels=8360 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85996421474000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=1037370 dst_pixels=71440 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85996421474000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=134852 dst_pixels=6336 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85996421474000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=35370 dst_pixels=1296 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85996424990000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=2682482 dst_pixels=313208 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85996425973000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=363704 dst_pixels=34628 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85996427095000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=40296 dst_pixels=1296 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85996427095000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=372444 dst_pixels=43808 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85996428559000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=411925 dst_pixels=43808 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=rotation t_ns=85996440806000 src_width=1232 src_height=568 dst_width=568 dst_height=1232 format=0x10020565 transform=1 rotation_cpu_ns=10903997 scratch_bytes=1399552
+K230_PANEL_PAINT v=1 stage=draw t_ns=85996472969000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=5420963 dst_pixels=699776 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85996478804000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=5199851 dst_pixels=72960 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85996479715000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=217593 dst_pixels=8360 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85996485591000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=5079294 dst_pixels=71440 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85996486565000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=139000 dst_pixels=6336 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85996487724000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=39371 dst_pixels=1296 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85996506560000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=17750370 dst_pixels=313208 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85996507811000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=315999 dst_pixels=34628 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85996507811000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=42778 dst_pixels=1296 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85996509305000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=359407 dst_pixels=43808 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85996509305000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=366222 dst_pixels=43808 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=rotation t_ns=85996521458000 src_width=1232 src_height=568 dst_width=568 dst_height=1232 format=0x10020565 transform=1 rotation_cpu_ns=10723335 scratch_bytes=1399552
+K230_PANEL_PAINT v=1 stage=draw t_ns=85996950002000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=5433260 dst_pixels=699776 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85996951619000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=1034889 dst_pixels=72960 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85996952824000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=227074 dst_pixels=8360 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85996954804000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=1015593 dst_pixels=71440 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85996954804000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=135148 dst_pixels=6336 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85996954804000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=35629 dst_pixels=1296 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85996958685000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=2675555 dst_pixels=313208 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85996960130000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=320260 dst_pixels=34628 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85996960130000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=41815 dst_pixels=1296 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85996961910000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=416073 dst_pixels=43808 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85996961910000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=365555 dst_pixels=43808 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=rotation t_ns=85996974151000 src_width=1232 src_height=568 dst_width=568 dst_height=1232 format=0x10020565 transform=1 rotation_cpu_ns=10735483 scratch_bytes=1399552
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997009862000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=5416925 dst_pixels=699776 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997011499000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=1049519 dst_pixels=72960 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997012815000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=233074 dst_pixels=8360 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997014277000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=1061297 dst_pixels=71440 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997015268000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=189111 dst_pixels=6336 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997015268000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=38889 dst_pixels=1296 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997019714000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=2721593 dst_pixels=313208 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997020949000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=316963 dst_pixels=34628 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997020949000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=41630 dst_pixels=1296 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997022405000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=359963 dst_pixels=43808 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997023063000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=420222 dst_pixels=43808 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=rotation t_ns=85997036100000 src_width=1232 src_height=568 dst_width=568 dst_height=1232 format=0x10020565 transform=1 rotation_cpu_ns=11008814 scratch_bytes=1399552
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997067507000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=5503185 dst_pixels=699776 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997070107000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=1124889 dst_pixels=81024 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997070107000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=181149 dst_pixels=9284 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997072244000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=983001 dst_pixels=63168 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997072244000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=125074 dst_pixels=5368 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997072244000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=35111 dst_pixels=1296 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997076516000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=2703630 dst_pixels=313208 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997077762000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=324444 dst_pixels=34628 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997078595000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=49407 dst_pixels=1296 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997079829000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=381556 dst_pixels=43808 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997081723000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=375001 dst_pixels=43808 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=rotation t_ns=85997093261000 src_width=1232 src_height=568 dst_width=568 dst_height=1232 format=0x10020565 transform=1 rotation_cpu_ns=10751370 scratch_bytes=1399552
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997124867000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=5527407 dst_pixels=699776 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997126639000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=1196667 dst_pixels=89472 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997127461000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=244925 dst_pixels=10252 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997128924000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=866221 dst_pixels=54896 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997129927000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=157555 dst_pixels=4400 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997129927000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=37074 dst_pixels=1296 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997134201000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=2843926 dst_pixels=313208 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997135102000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=329037 dst_pixels=34628 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997136078000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=98408 dst_pixels=1296 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997137319000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=429741 dst_pixels=43808 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997138551000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=365407 dst_pixels=43808 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=rotation t_ns=85997151320000 src_width=1232 src_height=568 dst_width=568 dst_height=1232 format=0x10020565 transform=1 rotation_cpu_ns=10862407 scratch_bytes=1399552
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997182049000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=5412851 dst_pixels=699776 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997184290000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=1341408 dst_pixels=97536 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997185257000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=249037 dst_pixels=11176 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997186858000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=759703 dst_pixels=47000 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997187737000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=93296 dst_pixels=3476 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997191377000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=35556 dst_pixels=1296 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997192159000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=2642852 dst_pixels=313208 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997194143000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=318036 dst_pixels=34628 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997195034000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=44482 dst_pixels=1296 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997195959000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=381852 dst_pixels=43808 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997196937000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=424481 dst_pixels=43808 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=rotation t_ns=85997208833000 src_width=1232 src_height=568 dst_width=568 dst_height=1232 format=0x10020565 transform=1 rotation_cpu_ns=10762555 scratch_bytes=1399552
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997242298000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=5544814 dst_pixels=699776 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997244443000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=1359815 dst_pixels=105984 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997245391000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=215703 dst_pixels=12144 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997246472000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=709038 dst_pixels=38728 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997247586000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=107852 dst_pixels=2508 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997247586000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=34038 dst_pixels=1296 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997250782000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=2687962 dst_pixels=313208 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997251665000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=356333 dst_pixels=34628 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997252774000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=96370 dst_pixels=1296 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997253576000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=365444 dst_pixels=43808 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997254685000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=420853 dst_pixels=43808 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=rotation t_ns=85997266825000 src_width=1232 src_height=568 dst_width=568 dst_height=1232 format=0x10020565 transform=1 rotation_cpu_ns=10782409 scratch_bytes=1399552
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997297935000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=5516666 dst_pixels=699776 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997299813000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=1389703 dst_pixels=111360 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997300896000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=218592 dst_pixels=12760 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997302113000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=653444 dst_pixels=33464 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997302743000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=58148 dst_pixels=1892 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997303630000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=44630 dst_pixels=1296 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997306689000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=2688037 dst_pixels=313208 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997307577000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=358444 dst_pixels=34628 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997308697000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=90074 dst_pixels=1296 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997308697000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=361926 dst_pixels=43808 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997310178000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=369519 dst_pixels=43808 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=rotation t_ns=85997321987000 src_width=1232 src_height=568 dst_width=568 dst_height=1232 format=0x10020565 transform=1 rotation_cpu_ns=10793778 scratch_bytes=1399552
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997355003000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=5488371 dst_pixels=699776 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997357162000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=1452149 dst_pixels=119424 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997358087000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=231518 dst_pixels=13684 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997359294000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=584741 dst_pixels=25568 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997359294000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=40593 dst_pixels=968 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997360584000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=31593 dst_pixels=1296 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997364170000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=2701554 dst_pixels=313208 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997364170000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=322333 dst_pixels=34628 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997365169000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=48148 dst_pixels=1296 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997366916000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=411889 dst_pixels=43808 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997366916000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=365741 dst_pixels=43808 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=rotation t_ns=85997379651000 src_width=1232 src_height=568 dst_width=568 dst_height=1232 format=0x10020565 transform=1 rotation_cpu_ns=10868298 scratch_bytes=1399552
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997412079000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=5409963 dst_pixels=699776 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997415564000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=1590667 dst_pixels=127872 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997415564000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=184519 dst_pixels=14652 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997416959000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=448852 dst_pixels=17296 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997416959000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=41038 dst_pixels=1296 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997420255000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=2723408 dst_pixels=313208 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997421179000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=360445 dst_pixels=34628 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997422363000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=101593 dst_pixels=1296 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997422363000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=371852 dst_pixels=43808 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997423649000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=417334 dst_pixels=43808 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=rotation t_ns=85997435703000 src_width=1232 src_height=568 dst_width=568 dst_height=1232 format=0x10020565 transform=1 rotation_cpu_ns=10794592 scratch_bytes=1399552
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997470182000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=5473815 dst_pixels=699776 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997473196000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=1700851 dst_pixels=135936 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997474390000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=246407 dst_pixels=15576 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997474390000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=344185 dst_pixels=9400 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997475785000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=26926 dst_pixels=900 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997478831000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=2688814 dst_pixels=313208 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997480124000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=307852 dst_pixels=34628 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997480124000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=41111 dst_pixels=1296 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997481204000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=430260 dst_pixels=43808 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997482120000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=409148 dst_pixels=43808 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=rotation t_ns=85997495060000 src_width=1232 src_height=568 dst_width=568 dst_height=1232 format=0x10020565 transform=1 rotation_cpu_ns=10902555 scratch_bytes=1399552
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997527652000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=5472296 dst_pixels=699776 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997530066000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=1716704 dst_pixels=144000 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997531119000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=246703 dst_pixels=16500 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997532383000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=241703 dst_pixels=1504 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997532383000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=26704 dst_pixels=144 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997535718000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=2683666 dst_pixels=313208 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997536760000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=362185 dst_pixels=34628 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997537835000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=100520 dst_pixels=1296 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997537835000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=363444 dst_pixels=43808 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997539226000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=424407 dst_pixels=43808 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=rotation t_ns=85997551738000 src_width=1232 src_height=568 dst_width=568 dst_height=1232 format=0x10020565 transform=1 rotation_cpu_ns=10867443 scratch_bytes=1399552
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997585282000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=5416926 dst_pixels=699776 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997588082000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=1835038 dst_pixels=152448 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997588082000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=194852 dst_pixels=17468 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997592111000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=2703036 dst_pixels=310200 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997592111000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=305593 dst_pixels=34276 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997594244000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=110222 dst_pixels=1296 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997594244000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=365519 dst_pixels=43808 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997595534000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=419038 dst_pixels=43808 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=rotation t_ns=85997606886000 src_width=1232 src_height=568 dst_width=568 dst_height=1232 format=0x10020565 transform=1 rotation_cpu_ns=10639889 scratch_bytes=1399552
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997643224000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=5422445 dst_pixels=699776 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997645734000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=1893741 dst_pixels=160896 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997646844000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=247926 dst_pixels=18436 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997650369000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=2547962 dst_pixels=302304 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997650369000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=300556 dst_pixels=33352 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997651698000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=92741 dst_pixels=1296 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997651698000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=364481 dst_pixels=43808 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997653373000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=379000 dst_pixels=43808 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=rotation t_ns=85997664774000 src_width=1232 src_height=568 dst_width=568 dst_height=1232 format=0x10020565 transform=1 rotation_cpu_ns=10657962 scratch_bytes=1399552
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997705572000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=5798004 dst_pixels=699776 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997708807000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=1865890 dst_pixels=168960 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997708807000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=204370 dst_pixels=19360 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997712579000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=2498629 dst_pixels=294032 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997712579000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=298964 dst_pixels=32384 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997713978000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=103556 dst_pixels=1296 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997714538000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=364667 dst_pixels=43808 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997715498000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=374852 dst_pixels=43808 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=rotation t_ns=85997726954000 src_width=1232 src_height=568 dst_width=568 dst_height=1232 format=0x10020565 transform=1 rotation_cpu_ns=10663370 scratch_bytes=1399552
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997756834000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=5417184 dst_pixels=699776 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997761472000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=1772778 dst_pixels=170496 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997761472000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=205741 dst_pixels=19536 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997764870000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=2574334 dst_pixels=292904 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997765644000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=347555 dst_pixels=32252 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997766466000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=90741 dst_pixels=1296 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997767773000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=395260 dst_pixels=43808 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997769008000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=413407 dst_pixels=43808 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=rotation t_ns=85997780440000 src_width=1232 src_height=568 dst_width=568 dst_height=1232 format=0x10020565 transform=1 rotation_cpu_ns=10663778 scratch_bytes=1399552
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997814415000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=5410073 dst_pixels=699776 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997817766000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=1854705 dst_pixels=163968 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997817766000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=206297 dst_pixels=18788 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997821754000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=2542334 dst_pixels=298920 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997821754000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=297333 dst_pixels=32956 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997821754000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=42111 dst_pixels=1296 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997823282000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=394074 dst_pixels=43808 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997824317000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=416408 dst_pixels=43808 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=rotation t_ns=85997836113000 src_width=1232 src_height=568 dst_width=568 dst_height=1232 format=0x10020565 transform=1 rotation_cpu_ns=10728296 scratch_bytes=1399552
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997873740000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=5438964 dst_pixels=699776 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997876384000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=1807926 dst_pixels=153216 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997876384000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=204148 dst_pixels=17556 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997879866000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=2750259 dst_pixels=309824 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997880894000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=361851 dst_pixels=34232 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997882055000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=88704 dst_pixels=1296 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997882055000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=365777 dst_pixels=43808 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997883324000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=427223 dst_pixels=43808 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=rotation t_ns=85997894886000 src_width=1232 src_height=568 dst_width=568 dst_height=1232 format=0x10020565 transform=1 rotation_cpu_ns=10787962 scratch_bytes=1399552
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997929443000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=5415926 dst_pixels=699776 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997931182000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=1047372 dst_pixels=72960 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997932297000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=217148 dst_pixels=8360 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997933914000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=1033963 dst_pixels=71440 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997935033000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=150111 dst_pixels=6336 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997935033000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=43741 dst_pixels=1296 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997938824000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=2691333 dst_pixels=313208 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997938824000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=309260 dst_pixels=34628 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997940210000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=106333 dst_pixels=1296 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997940713000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=397296 dst_pixels=43808 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997941700000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=368888 dst_pixels=43808 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=rotation t_ns=85997954619000 src_width=1232 src_height=568 dst_width=568 dst_height=1232 format=0x10020565 transform=1 rotation_cpu_ns=10943557 scratch_bytes=1399552
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997987029000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=5451036 dst_pixels=699776 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997988700000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=1050557 dst_pixels=72960 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997989824000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=217667 dst_pixels=8360 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997991398000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=1012408 dst_pixels=71440 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997992449000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=137259 dst_pixels=6336 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997992449000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=42519 dst_pixels=1296 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997995998000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=2656741 dst_pixels=313208 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997996932000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=357852 dst_pixels=34628 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997998028000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=88556 dst_pixels=1296 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997998028000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=364408 dst_pixels=43808 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85997999390000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=418962 dst_pixels=43808 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=rotation t_ns=85998012095000 src_width=1232 src_height=568 dst_width=568 dst_height=1232 format=0x10020565 transform=1 rotation_cpu_ns=11006627 scratch_bytes=1399552
+K230_PANEL_PAINT v=1 stage=draw t_ns=85998045024000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=5445556 dst_pixels=699776 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85998050788000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=5216520 dst_pixels=72960 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85998051703000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=218556 dst_pixels=8360 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85998057243000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=5031037 dst_pixels=71440 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85998058163000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=179963 dst_pixels=6336 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85998058163000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=39481 dst_pixels=1296 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85998077428000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=17783739 dst_pixels=313208 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85998079053000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=311889 dst_pixels=34628 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85998079053000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=40667 dst_pixels=1296 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85998080461000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=358741 dst_pixels=43808 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85998080461000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=369332 dst_pixels=43808 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=rotation t_ns=85998092083000 src_width=1232 src_height=568 dst_width=568 dst_height=1232 format=0x10020565 transform=1 rotation_cpu_ns=10680259 scratch_bytes=1399552
+K230_PANEL_PAINT v=1 stage=draw t_ns=85998502103000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=5476037 dst_pixels=699776 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85998503778000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=1037703 dst_pixels=72960 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85998504745000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=207075 dst_pixels=8360 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85998506207000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=1057629 dst_pixels=71440 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85998507051000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=186222 dst_pixels=6336 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85998508177000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=75185 dst_pixels=1296 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85998511571000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=2693629 dst_pixels=313208 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85998511571000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=311556 dst_pixels=34628 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85998512939000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=93295 dst_pixels=1296 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85998512939000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=362556 dst_pixels=43808 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85998514618000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=495813 dst_pixels=43808 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=rotation t_ns=85998526172000 src_width=1232 src_height=568 dst_width=568 dst_height=1232 format=0x10020565 transform=1 rotation_cpu_ns=10723668 scratch_bytes=1399552
+K230_PANEL_PAINT v=1 stage=draw t_ns=85998561945000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=5475372 dst_pixels=699776 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85998563644000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=1041408 dst_pixels=72960 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85998564818000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=227297 dst_pixels=8360 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85998567093000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=1023926 dst_pixels=71440 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85998567093000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=134593 dst_pixels=6336 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85998567093000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=37259 dst_pixels=1296 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85998570798000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=2734555 dst_pixels=313208 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85998571720000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=369963 dst_pixels=34628 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85998572528000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=84703 dst_pixels=1296 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85998573698000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=396962 dst_pixels=43808 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85998574890000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=419740 dst_pixels=43808 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=rotation t_ns=85998586801000 src_width=1232 src_height=568 dst_width=568 dst_height=1232 format=0x10020565 transform=1 rotation_cpu_ns=10748259 scratch_bytes=1399552
+K230_PANEL_PAINT v=1 stage=draw t_ns=85998619443000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=5510444 dst_pixels=699776 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85998621123000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=1006073 dst_pixels=64896 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85998622176000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=207259 dst_pixels=7436 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85998624881000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=1132668 dst_pixels=79336 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85998625998000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=205185 dst_pixels=7260 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85998625998000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=38555 dst_pixels=1296 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85998629195000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=2683554 dst_pixels=313208 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85998630087000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=360481 dst_pixels=34628 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85998631277000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=92629 dst_pixels=1296 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85998631277000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=367000 dst_pixels=43808 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85998632561000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=380593 dst_pixels=43808 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=rotation t_ns=85998644095000 src_width=1232 src_height=568 dst_width=568 dst_height=1232 format=0x10020565 transform=1 rotation_cpu_ns=10701334 scratch_bytes=1399552
+K230_PANEL_PAINT v=1 stage=draw t_ns=85998676719000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=5419557 dst_pixels=699776 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85998678154000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=862334 dst_pixels=56448 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85998679137000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=197888 dst_pixels=6468 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85998681161000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=1181704 dst_pixels=87232 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85998681913000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=171741 dst_pixels=8184 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85998683032000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=40148 dst_pixels=1296 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85998686959000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=2743187 dst_pixels=313208 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85998686959000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=306815 dst_pixels=34628 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85998688282000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=95630 dst_pixels=1296 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85998689595000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=370556 dst_pixels=43808 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85998689595000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=371000 dst_pixels=43808 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=rotation t_ns=85998701102000 src_width=1232 src_height=568 dst_width=568 dst_height=1232 format=0x10020565 transform=1 rotation_cpu_ns=10659184 scratch_bytes=1399552
+K230_PANEL_PAINT v=1 stage=draw t_ns=85998734370000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=5448890 dst_pixels=699776 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85998735730000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=789148 dst_pixels=48000 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85998737318000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=167297 dst_pixels=5500 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85998738904000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=1237889 dst_pixels=95504 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85998739753000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=175778 dst_pixels=9152 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85998739753000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=38963 dst_pixels=1296 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85998743659000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=2725927 dst_pixels=313208 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85998744913000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=351630 dst_pixels=34628 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85998746114000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=91148 dst_pixels=1296 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85998747291000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=395371 dst_pixels=43808 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85998747291000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=364296 dst_pixels=43808 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=rotation t_ns=85998761418000 src_width=1232 src_height=568 dst_width=568 dst_height=1232 format=0x10020565 transform=1 rotation_cpu_ns=11000927 scratch_bytes=1399552
+K230_PANEL_PAINT v=1 stage=draw t_ns=85998794560000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=5474258 dst_pixels=699776 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85998795864000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=732668 dst_pixels=39936 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85998795864000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=105555 dst_pixels=4576 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85998798778000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=1298667 dst_pixels=103400 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85998798778000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=182704 dst_pixels=10076 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85998798778000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=39000 dst_pixels=1296 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85998802332000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=2679519 dst_pixels=313208 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85998803221000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=359925 dst_pixels=34628 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85998804333000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=93112 dst_pixels=1296 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85998805480000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=366888 dst_pixels=43808 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=draw t_ns=85998808110000 transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=421926 dst_pixels=43808 scratch_bytes=0
+K230_PANEL_PAINT v=1 stage=rotation t_ns=85998818109000 src_width=1232 src_height=568 dst_width=568 dst_height=1232 format=0x10020565 transform=1 rotation_cpu_ns=10707815 scratch_bytes=1399552
+K230_PANEL_PAINT v=1 stage=rotation t_ns=85998870968000 src_width=1232 src_height=568 dst_width=568 dst_height=1232 format=0x10020565 transform=1 rotation_cpu_ns=10668776 scratch_bytes=1399552
+K230_PANEL_PAINT v=1 stage=rotation t_ns=85998928799000 src_width=1232 src_height=568 dst_width=568 dst_height=1232 format=0x10020565 transform=1 rotation_cpu_ns=10787628 scratch_bytes=1399552
+K230_PANEL_PAINT v=1 stage=rotation t_ns=85998981459000 src_width=1232 src_height=568 dst_width=568 dst_height=1232 format=0x10020565 transform=1 rotation_cpu_ns=10668222 scratch_bytes=1399552
+K230_PANEL_PAINT v=1 stage=rotation t_ns=85999020613000 src_width=1232 src_height=568 dst_width=568 dst_height=1232 format=0x10020565 transform=1 rotation_cpu_ns=10597259 scratch_bytes=1399552
+K230_PANEL_PAINT v=1 stage=rotation t_ns=85999058986000 src_width=1232 src_height=568 dst_width=568 dst_height=1232 format=0x10020565 transform=1 rotation_cpu_ns=10753296 scratch_bytes=1399552
+K230_PANEL_PAINT v=1 stage=rotation t_ns=85999097931000 src_width=1232 src_height=568 dst_width=568 dst_height=1232 format=0x10020565 transform=1 rotation_cpu_ns=10606816 scratch_bytes=1399552
+K230_PANEL_PAINT v=1 stage=rotation t_ns=85999135947000 src_width=1232 src_height=568 dst_width=568 dst_height=1232 format=0x10020565 transform=1 rotation_cpu_ns=10758776 scratch_bytes=1399552
+K230_PANEL_PAINT v=1 stage=rotation t_ns=85999175684000 src_width=1232 src_height=568 dst_width=568 dst_height=1232 format=0x10020565 transform=1 rotation_cpu_ns=10852815 scratch_bytes=1399552
+K230_PANEL_PAINT v=1 stage=rotation t_ns=85999212605000 src_width=1232 src_height=568 dst_width=568 dst_height=1232 format=0x10020565 transform=1 rotation_cpu_ns=10678814 scratch_bytes=1399552
+K230_PANEL_PAINT v=1 stage=rotation t_ns=85999253141000 src_width=1232 src_height=568 dst_width=568 dst_height=1232 format=0x10020565 transform=1 rotation_cpu_ns=10901707 scratch_bytes=1399552
+K230_PANEL_PAINT v=1 stage=rotation t_ns=85999288081000 src_width=1232 src_height=568 dst_width=568 dst_height=1232 format=0x10020565 transform=1 rotation_cpu_ns=10619962 scratch_bytes=1399552
+K230_PANEL_PAINT v=1 stage=rotation t_ns=85999325673000 src_width=1232 src_height=568 dst_width=568 dst_height=1232 format=0x10020565 transform=1 rotation_cpu_ns=10615000 scratch_bytes=1399552
+K230_PANEL_PAINT v=1 stage=rotation t_ns=85999365390000 src_width=1232 src_height=568 dst_width=568 dst_height=1232 format=0x10020565 transform=1 rotation_cpu_ns=10798963 scratch_bytes=1399552
+K230_PANEL_PAINT v=1 stage=rotation t_ns=85999402092000 src_width=1232 src_height=568 dst_width=568 dst_height=1232 format=0x10020565 transform=1 rotation_cpu_ns=10613557 scratch_bytes=1399552
+K230_PANEL_PAINT v=1 stage=rotation t_ns=85999441384000 src_width=1232 src_height=568 dst_width=568 dst_height=1232 format=0x10020565 transform=1 rotation_cpu_ns=10772739 scratch_bytes=1399552
+K230_PANEL_PAINT v=1 stage=rotation t_ns=85999479369000 src_width=1232 src_height=568 dst_width=568 dst_height=1232 format=0x10020565 transform=1 rotation_cpu_ns=10646036 scratch_bytes=1399552
+K230_PANEL_PAINT v=1 stage=rotation t_ns=85999517787000 src_width=1232 src_height=568 dst_width=568 dst_height=1232 format=0x10020565 transform=1 rotation_cpu_ns=10600444 scratch_bytes=1399552
+K230_PANEL_PAINT v=1 stage=rotation t_ns=85999557870000 src_width=1232 src_height=568 dst_width=568 dst_height=1232 format=0x10020565 transform=1 rotation_cpu_ns=10798371 scratch_bytes=1399552
+K230_PANEL_PAINT v=1 stage=rotation t_ns=85999617696000 src_width=1232 src_height=568 dst_width=568 dst_height=1232 format=0x10020565 transform=1 rotation_cpu_ns=10608148 scratch_bytes=1399552
+K230_PANEL_PAINT v=1 stage=rotation t_ns=86000181040000 src_width=1232 src_height=568 dst_width=568 dst_height=1232 format=0x10020565 transform=1 rotation_cpu_ns=10715703 scratch_bytes=1399552
+K230_PANEL_PAINT v=1 stage=rotation t_ns=86003972412000 src_width=1232 src_height=568 dst_width=568 dst_height=1232 format=0x10020565 transform=1 rotation_cpu_ns=11714485 scratch_bytes=1399552
+K230_PANEL_PAINT v=1 stage=rotation t_ns=86004276560000 src_width=1232 src_height=568 dst_width=568 dst_height=1232 format=0x10020565 transform=1 rotation_cpu_ns=11759778 scratch_bytes=1399552
+K230_PANEL_PAINT v=1 stage=rotation t_ns=86004500525000 src_width=1232 src_height=568 dst_width=568 dst_height=1232 format=0x10020565 transform=1 rotation_cpu_ns=11352036 scratch_bytes=1399552
+K230_PANEL_PAINT v=1 stage=rotation t_ns=86004704426000 src_width=1232 src_height=568 dst_width=568 dst_height=1232 format=0x10020565 transform=1 rotation_cpu_ns=10772482 scratch_bytes=1399552
+K230_PANEL_PAINT v=1 stage=rotation t_ns=86012542026000 src_width=1232 src_height=568 dst_width=568 dst_height=1232 format=0x10020565 transform=1 rotation_cpu_ns=10661667 scratch_bytes=1399552
+K230_PANEL_PAINT v=1 stage=rotation t_ns=86022579386000 src_width=1232 src_height=568 dst_width=568 dst_height=1232 format=0x10020565 transform=1 rotation_cpu_ns=10619333 scratch_bytes=1399552
+K230_PANEL_PAINT v=1 stage=rotation t_ns=86040238100000 src_width=1232 src_height=568 dst_width=568 dst_height=1232 format=0x10020565 transform=1 rotation_cpu_ns=10586815 scratch_bytes=1399552

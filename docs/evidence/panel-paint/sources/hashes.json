@@ -1,0 +1,12 @@
+{
+  "docs/evidence/panel-paint/sources/baseline-turn.h.txt": "efb848b3e0cbabeed78aeb1952290610926853796f0328df260d846374fccda4",
+  "docs/evidence/panel-paint/sources/candidate-quarter-turn.h.txt": "963710afd845629fc7ef6ce222c2d719de4e69b17574a2f2cb49ac5f9bcbac70",
+  "docs/evidence/panel-paint/sources/collect-paint-profile.py.txt": "3f83a091b5bbb1a1ecf1d0d19998202e1364199ecb5641eb6bf9cd024b52d815",
+  "docs/evidence/panel-paint/sources/compile-paint-copy.py.txt": "134c7e05ac526a7a93b17c4287e40017dd1e92e473a6069ed3d3d88fe073cee3",
+  "docs/evidence/panel-paint/sources/paint-copy-bench.c.txt": "1b5c7556bf4eddec4382c6da5553bcfa2063b2cfb2e28962dc0d9b5bc350ad90",
+  "docs/evidence/panel-paint/sources/run-paint-copy-bench.py.txt": "c795b21fdbb7ce9de3d1542ff3b8f665b6755278ef3d57cee0194f87389c837b",
+  "docs/evidence/panel-paint/sources/run-paint-workload-host.py.txt": "d8aae6713ba355835d2dad6158f53addca8d33f12f8951c4241c774ed8f0c0f1",
+  "docs/evidence/panel-paint/sources/set-paint-profile-board.py.txt": "dda03a1197f65ea165bf84a8b28cab40ce0d3ceb410e57e288a139a79b36fc4c",
+  "docs/evidence/panel-paint/sources/set-paint-profile-host.py.txt": "277bf6ee713ebef8a1f727472efb287d452be40db035a965d84b5d53a8dc6c63",
+  "microbenchmark_binary_sha256": "edb0124dd7738cb920019ba3d6412a922791dfc1160679fb0466d84a075de8b2"
+}

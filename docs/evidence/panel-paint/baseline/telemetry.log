@@ -1,0 +1,588 @@
+K230_CARD_BENCH v=1 run=85990710516561 event=resource phase=active t_ns=86002867122439 cpu_ns=3811187259 memory_bytes=43864064 scope=compositor
+K230_CARD_BENCH v=1 run=85990710516561 event=resource phase=active t_ns=86001855391717 cpu_ns=3791311149 memory_bytes=43864064 scope=compositor
+K230_CARD_BENCH v=1 run=85990710516561 event=resource phase=active t_ns=86000843783843 cpu_ns=3771602585 memory_bytes=43864064 scope=compositor
+K230_CARD_BENCH v=1 run=85990710516561 event=present frame_id=84 t_ns=86000192730000 presented=1 clock=monotonic
+K230_CARD_SHELL motion-frame run=85990710516561 frame_id=84 stage=frame_done t_ns=86000186365535
+K230_CARD_BENCH v=1 run=85990710516561 event=resource phase=active t_ns=85999831483111 cpu_ns=3696736444 memory_bytes=43864064 scope=compositor
+K230_CARD_SHELL motion-frame run=85990710516561 frame_id=83 stage=frame_done t_ns=85999637641872
+K230_CARD_BENCH v=1 run=85990710516561 event=present frame_id=83 t_ns=85999637078000 presented=1 clock=monotonic
+K230_CARD_SHELL motion-frame run=85990710516561 frame_id=82 stage=frame_done t_ns=85999560847062
+K230_CARD_BENCH v=1 run=85990710516561 event=present frame_id=82 t_ns=85999560435000 presented=1 clock=monotonic
+K230_CARD_SHELL motion-frame run=85990710516561 frame_id=81 stage=frame_done t_ns=85999522689869
+K230_CARD_BENCH v=1 run=85990710516561 event=present frame_id=81 t_ns=85999522116000 presented=1 clock=monotonic
+K230_CARD_SHELL motion-settle run=85990710516561 input_id=108 frame_id=81 t_ns=85999518272691
+K230_CARD_SHELL motion-frame run=85990710516561 frame_id=80 stage=frame_done t_ns=85999484434014
+K230_CARD_BENCH v=1 run=85990710516561 event=present frame_id=80 t_ns=85999483794000 presented=1 clock=monotonic
+K230_CARD_SHELL motion-frame run=85990710516561 frame_id=79 stage=frame_done t_ns=85999445852024
+K230_CARD_BENCH v=1 run=85990710516561 event=present frame_id=79 t_ns=85999445473000 presented=1 clock=monotonic
+K230_CARD_SHELL motion-frame run=85990710516561 frame_id=78 stage=frame_done t_ns=85999407568467
+K230_CARD_BENCH v=1 run=85990710516561 event=present frame_id=78 t_ns=85999407152000 presented=1 clock=monotonic
+K230_CARD_SHELL motion-frame run=85990710516561 frame_id=77 stage=frame_done t_ns=85999369411385
+K230_CARD_BENCH v=1 run=85990710516561 event=present frame_id=77 t_ns=85999368831000 presented=1 clock=monotonic
+K230_CARD_SHELL motion-frame run=85990710516561 frame_id=76 stage=frame_done t_ns=85999330916910
+K230_CARD_BENCH v=1 run=85990710516561 event=present frame_id=76 t_ns=85999330510000 presented=1 clock=monotonic
+K230_CARD_SHELL motion-frame run=85990710516561 frame_id=75 stage=frame_done t_ns=85999292794679
+K230_CARD_BENCH v=1 run=85990710516561 event=present frame_id=75 t_ns=85999292190000 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=85990710516561 event=submit input_id=108 frame_id=75 t_ns=85999288580565 update_cpu_ns=24715149 final=1
+K230_CARD_BENCH v=1 run=85990710516561 event=submit input_id=107 frame_id=75 t_ns=85999288580565 update_cpu_ns=24715149 final=0
+K230_CARD_SHELL motion-frame run=85990710516561 frame_id=74 stage=frame_done t_ns=85999259763263
+K230_CARD_BENCH v=1 run=85990710516561 event=present frame_id=74 t_ns=85999253866000 presented=1 clock=monotonic
+K230_CARD_SHELL motion-stage run=85990710516561 input_id=108 stage=scene_damage t_ns=85999258314437
+K230_CARD_BENCH v=1 run=85990710516561 event=input input_id=108 gesture_id=3 kind=release t_ns=85999257244668 source=injected
+K230_CARD_SHELL input-origin run=85990710516561 input_id=108 source_ns=85999245000000
+K230_CARD_SHELL motion-stage run=85990710516561 input_id=107 stage=scene_damage t_ns=85999256855241
+K230_CARD_BENCH v=1 run=85990710516561 event=input input_id=107 gesture_id=3 kind=motion t_ns=85999255888505 source=injected
+K230_CARD_SHELL input-origin run=85990710516561 input_id=107 source_ns=85999245000000
+K230_CARD_BENCH v=1 run=85990710516561 event=submit input_id=106 frame_id=74 t_ns=85999252993187 update_cpu_ns=25512190 final=0
+K230_CARD_BENCH v=1 run=85990710516561 event=submit input_id=105 frame_id=74 t_ns=85999252993187 update_cpu_ns=25512190 final=0
+K230_CARD_SHELL motion-stage run=85990710516561 input_id=106 stage=scene_damage t_ns=85999226658406
+K230_CARD_BENCH v=1 run=85990710516561 event=input input_id=106 gesture_id=3 kind=motion t_ns=85999224689084 source=injected
+K230_CARD_SHELL input-origin run=85990710516561 input_id=106 source_ns=85999224000000
+K230_CARD_SHELL motion-frame run=85990710516561 frame_id=73 stage=frame_done t_ns=85999217276406
+K230_CARD_BENCH v=1 run=85990710516561 event=present frame_id=73 t_ns=85999215551000 presented=1 clock=monotonic
+K230_CARD_SHELL motion-stage run=85990710516561 input_id=105 stage=scene_damage t_ns=85999215411932
+K230_CARD_BENCH v=1 run=85990710516561 event=input input_id=105 gesture_id=3 kind=motion t_ns=85999214109099 source=injected
+K230_CARD_SHELL input-origin run=85990710516561 input_id=105 source_ns=85999205000000
+K230_CARD_BENCH v=1 run=85990710516561 event=submit input_id=104 frame_id=73 t_ns=85999212357027 update_cpu_ns=25182665 final=0
+K230_CARD_BENCH v=1 run=85990710516561 event=submit input_id=103 frame_id=73 t_ns=85999212357027 update_cpu_ns=25182665 final=0
+K230_CARD_SHELL motion-stage run=85990710516561 input_id=104 stage=scene_damage t_ns=85999188461288
+K230_CARD_BENCH v=1 run=85990710516561 event=input input_id=104 gesture_id=3 kind=motion t_ns=85999184688749 source=injected
+K230_CARD_SHELL input-origin run=85990710516561 input_id=104 source_ns=85999184000000
+K230_CARD_SHELL motion-frame run=85990710516561 frame_id=72 stage=frame_done t_ns=85999179941326
+K230_CARD_BENCH v=1 run=85990710516561 event=present frame_id=72 t_ns=85999177232000 presented=1 clock=monotonic
+K230_CARD_SHELL motion-stage run=85990710516561 input_id=103 stage=scene_damage t_ns=85999179074548
+K230_CARD_BENCH v=1 run=85990710516561 event=input input_id=103 gesture_id=3 kind=motion t_ns=85999178579681 source=injected
+K230_CARD_SHELL input-origin run=85990710516561 input_id=103 source_ns=85999164000000
+K230_CARD_BENCH v=1 run=85990710516561 event=submit input_id=102 frame_id=72 t_ns=85999176236968 update_cpu_ns=25181629 final=0
+K230_CARD_BENCH v=1 run=85990710516561 event=submit input_id=101 frame_id=72 t_ns=85999176236968 update_cpu_ns=25181629 final=0
+K230_CARD_SHELL motion-stage run=85990710516561 input_id=102 stage=scene_damage t_ns=85999150392129
+K230_CARD_BENCH v=1 run=85990710516561 event=input input_id=102 gesture_id=3 kind=motion t_ns=85999144627787 source=injected
+K230_CARD_SHELL input-origin run=85990710516561 input_id=102 source_ns=85999144000000
+K230_CARD_SHELL motion-frame run=85990710516561 frame_id=71 stage=frame_done t_ns=85999140354454
+K230_CARD_BENCH v=1 run=85990710516561 event=present frame_id=71 t_ns=85999138908000 presented=1 clock=monotonic
+K230_CARD_SHELL motion-stage run=85990710516561 input_id=101 stage=scene_damage t_ns=85999138896814
+K230_CARD_BENCH v=1 run=85990710516561 event=input input_id=101 gesture_id=3 kind=motion t_ns=85999138357133 source=injected
+K230_CARD_SHELL input-origin run=85990710516561 input_id=101 source_ns=85999125000000
+K230_CARD_BENCH v=1 run=85990710516561 event=submit input_id=100 frame_id=71 t_ns=85999136572915 update_cpu_ns=24843405 final=0
+K230_CARD_BENCH v=1 run=85990710516561 event=submit input_id=99 frame_id=71 t_ns=85999136572915 update_cpu_ns=24843405 final=0
+K230_CARD_SHELL motion-stage run=85990710516561 input_id=100 stage=scene_damage t_ns=85999111827805
+K230_CARD_BENCH v=1 run=85990710516561 event=input input_id=100 gesture_id=3 kind=motion t_ns=85999104692967 source=injected
+K230_CARD_SHELL input-origin run=85990710516561 input_id=100 source_ns=85999104000000
+K230_CARD_SHELL motion-frame run=85990710516561 frame_id=70 stage=frame_done t_ns=85999102440917
+K230_CARD_BENCH v=1 run=85990710516561 event=present frame_id=70 t_ns=85999100608000 presented=1 clock=monotonic
+K230_CARD_SHELL motion-stage run=85990710516561 input_id=99 stage=scene_damage t_ns=85999100875985
+K230_CARD_BENCH v=1 run=85990710516561 event=input input_id=99 gesture_id=3 kind=motion t_ns=85999099470861 source=injected
+K230_CARD_SHELL input-origin run=85990710516561 input_id=99 source_ns=85999084000000
+K230_CARD_BENCH v=1 run=85990710516561 event=submit input_id=98 frame_id=70 t_ns=85999098528717 update_cpu_ns=24985409 final=0
+K230_CARD_BENCH v=1 run=85990710516561 event=submit input_id=97 frame_id=70 t_ns=85999098528717 update_cpu_ns=24985409 final=0
+K230_CARD_SHELL motion-stage run=85990710516561 input_id=98 stage=scene_damage t_ns=85999074129666
+K230_CARD_BENCH v=1 run=85990710516561 event=input input_id=98 gesture_id=3 kind=motion t_ns=85999065333864 source=injected
+K230_CARD_SHELL input-origin run=85990710516561 input_id=98 source_ns=85999065000000
+K230_CARD_SHELL motion-frame run=85990710516561 frame_id=69 stage=frame_done t_ns=85999063627641
+K230_CARD_BENCH v=1 run=85990710516561 event=present frame_id=69 t_ns=85999062267000 presented=1 clock=monotonic
+K230_CARD_SHELL motion-stage run=85990710516561 input_id=97 stage=scene_damage t_ns=85999061993453
+K230_CARD_BENCH v=1 run=85990710516561 event=input input_id=97 gesture_id=3 kind=motion t_ns=85999060602625 source=injected
+K230_CARD_SHELL input-origin run=85990710516561 input_id=97 source_ns=85999044000000
+K230_CARD_BENCH v=1 run=85990710516561 event=submit input_id=96 frame_id=69 t_ns=85999059622334 update_cpu_ns=25313184 final=0
+K230_CARD_BENCH v=1 run=85990710516561 event=submit input_id=95 frame_id=69 t_ns=85999059622334 update_cpu_ns=25313184 final=0
+K230_CARD_SHELL motion-frame run=85990710516561 frame_id=68 stage=frame_done t_ns=85999028118556
+K230_CARD_SHELL motion-stage run=85990710516561 input_id=96 stage=scene_damage t_ns=85999027269296
+K230_CARD_BENCH v=1 run=85990710516561 event=present frame_id=68 t_ns=85999023944000 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=85990710516561 event=input input_id=96 gesture_id=3 kind=motion t_ns=85999025153055 source=injected
+K230_CARD_SHELL input-origin run=85990710516561 input_id=96 source_ns=85999024000000
+K230_CARD_SHELL motion-stage run=85990710516561 input_id=95 stage=scene_damage t_ns=85999023466165
+K230_CARD_BENCH v=1 run=85990710516561 event=input input_id=95 gesture_id=3 kind=motion t_ns=85999022074189 source=injected
+K230_CARD_SHELL input-origin run=85990710516561 input_id=95 source_ns=85999004000000
+K230_CARD_BENCH v=1 run=85990710516561 event=submit input_id=94 frame_id=68 t_ns=85999021130082 update_cpu_ns=25207557 final=0
+K230_CARD_BENCH v=1 run=85990710516561 event=submit input_id=93 frame_id=68 t_ns=85999021130082 update_cpu_ns=25207557 final=0
+K230_CARD_SHELL motion-frame run=85990710516561 frame_id=67 stage=frame_done t_ns=85998988399282
+K230_CARD_SHELL motion-stage run=85990710516561 input_id=94 stage=scene_damage t_ns=85998988275510
+K230_CARD_BENCH v=1 run=85990710516561 event=present frame_id=67 t_ns=85998985626000 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=85990710516561 event=input input_id=94 gesture_id=3 kind=motion t_ns=85998986400888 source=injected
+K230_CARD_SHELL input-origin run=85990710516561 input_id=94 source_ns=85998984000000
+K230_CARD_SHELL motion-stage run=85990710516561 input_id=93 stage=scene_damage t_ns=85998985038540
+K230_CARD_BENCH v=1 run=85990710516561 event=input input_id=93 gesture_id=3 kind=motion t_ns=85998982915669 source=injected
+K230_CARD_SHELL input-origin run=85990710516561 input_id=93 source_ns=85998965000000
+K230_CARD_BENCH v=1 run=85990710516561 event=submit input_id=92 frame_id=67 t_ns=85998981951044 update_cpu_ns=25644780 final=0
+K230_CARD_BENCH v=1 run=85990710516561 event=submit input_id=91 frame_id=67 t_ns=85998981951044 update_cpu_ns=25644780 final=0
+K230_CARD_BENCH v=1 run=85990710516561 event=submit input_id=90 frame_id=67 t_ns=85998981951044 update_cpu_ns=25644780 final=0
+K230_CARD_SHELL motion-frame run=85990710516561 frame_id=66 stage=frame_done t_ns=85998947756457
+K230_CARD_BENCH v=1 run=85990710516561 event=present frame_id=66 t_ns=85998947302000 presented=1 clock=monotonic
+K230_CARD_SHELL motion-stage run=85990710516561 input_id=92 stage=scene_damage t_ns=85998945220974
+K230_CARD_BENCH v=1 run=85990710516561 event=input input_id=92 gesture_id=3 kind=motion t_ns=85998944678516 source=injected
+K230_CARD_SHELL input-origin run=85990710516561 input_id=92 source_ns=85998944000000
+K230_CARD_SHELL motion-stage run=85990710516561 input_id=91 stage=scene_damage t_ns=85998945220974
+K230_CARD_BENCH v=1 run=85990710516561 event=input input_id=91 gesture_id=3 kind=motion t_ns=85998932822143 source=injected
+K230_CARD_SHELL input-origin run=85990710516561 input_id=91 source_ns=85998924000000
+K230_CARD_SHELL motion-stage run=85990710516561 input_id=90 stage=scene_damage t_ns=85998931054442
+K230_CARD_BENCH v=1 run=85990710516561 event=input input_id=90 gesture_id=3 kind=motion t_ns=85998930591425 source=injected
+K230_CARD_SHELL input-origin run=85990710516561 input_id=90 source_ns=85998905000000
+K230_CARD_BENCH v=1 run=85990710516561 event=submit input_id=89 frame_id=66 t_ns=85998929459548 update_cpu_ns=26004145 final=0
+K230_CARD_BENCH v=1 run=85990710516561 event=submit input_id=88 frame_id=66 t_ns=85998929459548 update_cpu_ns=26004145 final=0
+K230_CARD_BENCH v=1 run=85990710516561 event=submit input_id=87 frame_id=66 t_ns=85998929459548 update_cpu_ns=26004145 final=0
+K230_CARD_SHELL motion-frame run=85990710516561 frame_id=65 stage=frame_done t_ns=85998890288548
+K230_CARD_BENCH v=1 run=85990710516561 event=present frame_id=65 t_ns=85998889820000 presented=1 clock=monotonic
+K230_CARD_SHELL motion-stage run=85990710516561 input_id=89 stage=scene_damage t_ns=85998888932496
+K230_CARD_SHELL motion-stage run=85990710516561 input_id=88 stage=scene_damage t_ns=85998888932496
+K230_CARD_BENCH v=1 run=85990710516561 event=input input_id=89 gesture_id=3 kind=motion t_ns=85998884691421 source=injected
+K230_CARD_SHELL input-origin run=85990710516561 input_id=89 source_ns=85998884000000
+K230_CARD_BENCH v=1 run=85990710516561 event=input input_id=88 gesture_id=3 kind=motion t_ns=85998874506382 source=injected
+K230_CARD_SHELL input-origin run=85990710516561 input_id=88 source_ns=85998864000000
+K230_CARD_SHELL motion-stage run=85990710516561 input_id=87 stage=scene_damage t_ns=85998873687455
+K230_CARD_BENCH v=1 run=85990710516561 event=input input_id=87 gesture_id=3 kind=motion t_ns=85998873193365 source=injected
+K230_CARD_SHELL input-origin run=85990710516561 input_id=87 source_ns=85998845000000
+K230_CARD_BENCH v=1 run=85990710516561 event=submit input_id=86 frame_id=65 t_ns=85998870699807 update_cpu_ns=26026852 final=0
+K230_CARD_BENCH v=1 run=85990710516561 event=submit input_id=85 frame_id=65 t_ns=85998870699807 update_cpu_ns=26026852 final=0
+K230_CARD_SHELL motion-frame run=85990710516561 frame_id=64 stage=frame_done t_ns=85998834533379
+K230_CARD_SHELL motion-stage run=85990710516561 input_id=86 stage=scene_damage t_ns=85998833990403
+K230_CARD_BENCH v=1 run=85990710516561 event=present frame_id=64 t_ns=85998832338000 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=85990710516561 event=input input_id=86 gesture_id=3 kind=motion t_ns=85998824807765 source=injected
+K230_CARD_SHELL input-origin run=85990710516561 input_id=86 source_ns=85998824000000
+K230_CARD_SHELL motion-stage run=85990710516561 input_id=85 stage=scene_damage t_ns=85998823166762
+K230_CARD_BENCH v=1 run=85990710516561 event=input input_id=85 gesture_id=3 kind=motion t_ns=85998821351100 source=injected
+K230_CARD_SHELL input-origin run=85990710516561 input_id=85 source_ns=85998804000000
+K230_CARD_BENCH v=1 run=85990710516561 event=resource phase=active t_ns=85998820250482 cpu_ns=3179439823 memory_bytes=43864064 scope=compositor
+K230_CARD_BENCH v=1 run=85990710516561 event=submit input_id=84 frame_id=64 t_ns=85998819337077 update_cpu_ns=29172188 final=0
+K230_CARD_BENCH v=1 run=85990710516561 event=submit input_id=83 frame_id=64 t_ns=85998819337077 update_cpu_ns=29172188 final=0
+K230_CARD_BENCH v=1 run=85990710516561 event=submit input_id=82 frame_id=64 t_ns=85998819337077 update_cpu_ns=29172188 final=0
+K230_CARD_SHELL motion-stage run=85990710516561 input_id=84 stage=scene_damage t_ns=85998785237856
+K230_CARD_BENCH v=1 run=85990710516561 event=input input_id=84 gesture_id=3 kind=motion t_ns=85998784681139 source=injected
+K230_CARD_SHELL input-origin run=85990710516561 input_id=84 source_ns=85998784000000
+K230_CARD_SHELL motion-frame run=85990710516561 frame_id=63 stage=frame_done t_ns=85998776285578
+K230_CARD_SHELL motion-stage run=85990710516561 input_id=83 stage=scene_damage t_ns=85998775620866
+K230_CARD_BENCH v=1 run=85990710516561 event=present frame_id=63 t_ns=85998774859000 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=85990710516561 event=input input_id=83 gesture_id=3 kind=motion t_ns=85998766056652 source=injected
+K230_CARD_SHELL input-origin run=85990710516561 input_id=83 source_ns=85998764000000
+K230_CARD_SHELL motion-stage run=85990710516561 input_id=82 stage=scene_damage t_ns=85998765601080
+K230_CARD_BENCH v=1 run=85990710516561 event=input input_id=82 gesture_id=3 kind=motion t_ns=85998763728346 source=injected
+K230_CARD_SHELL input-origin run=85990710516561 input_id=82 source_ns=85998744000000
+K230_CARD_BENCH v=1 run=85990710516561 event=submit input_id=81 frame_id=63 t_ns=85998761171680 update_cpu_ns=29303410 final=0
+K230_CARD_BENCH v=1 run=85990710516561 event=submit input_id=80 frame_id=63 t_ns=85998761171680 update_cpu_ns=29303410 final=0
+K230_CARD_BENCH v=1 run=85990710516561 event=submit input_id=79 frame_id=63 t_ns=85998761171680 update_cpu_ns=29303410 final=0
+K230_CARD_SHELL motion-stage run=85990710516561 input_id=81 stage=scene_damage t_ns=85998725163912
+K230_CARD_BENCH v=1 run=85990710516561 event=input input_id=81 gesture_id=3 kind=motion t_ns=85998724625861 source=injected
+K230_CARD_SHELL input-origin run=85990710516561 input_id=81 source_ns=85998724000000
+K230_CARD_SHELL motion-frame run=85990710516561 frame_id=62 stage=frame_done t_ns=85998719471344
+K230_CARD_SHELL motion-stage run=85990710516561 input_id=80 stage=scene_damage t_ns=85998719177654
+K230_CARD_BENCH v=1 run=85990710516561 event=present frame_id=62 t_ns=85998717379000 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=85990710516561 event=input input_id=80 gesture_id=3 kind=motion t_ns=85998706187774 source=injected
+K230_CARD_SHELL input-origin run=85990710516561 input_id=80 source_ns=85998705000000
+K230_CARD_SHELL motion-stage run=85990710516561 input_id=79 stage=scene_damage t_ns=85998704588843
+K230_CARD_BENCH v=1 run=85990710516561 event=input input_id=79 gesture_id=3 kind=motion t_ns=85998703166646 source=injected
+K230_CARD_SHELL input-origin run=85990710516561 input_id=79 source_ns=85998684000000
+K230_CARD_BENCH v=1 run=85990710516561 event=submit input_id=78 frame_id=62 t_ns=85998701429647 update_cpu_ns=29407261 final=0
+K230_CARD_BENCH v=1 run=85990710516561 event=submit input_id=77 frame_id=62 t_ns=85998701429647 update_cpu_ns=29407261 final=0
+K230_CARD_BENCH v=1 run=85990710516561 event=submit input_id=76 frame_id=62 t_ns=85998701429647 update_cpu_ns=29407261 final=0
+K230_CARD_SHELL motion-stage run=85990710516561 input_id=78 stage=scene_damage t_ns=85998665214592
+K230_CARD_BENCH v=1 run=85990710516561 event=input input_id=78 gesture_id=3 kind=motion t_ns=85998664672801 source=injected
+K230_CARD_SHELL input-origin run=85990710516561 input_id=78 source_ns=85998664000000
+K230_CARD_SHELL motion-frame run=85990710516561 frame_id=61 stage=frame_done t_ns=85998661787334
+K230_CARD_SHELL motion-stage run=85990710516561 input_id=77 stage=scene_damage t_ns=85998661465977
+K230_CARD_BENCH v=1 run=85990710516561 event=present frame_id=61 t_ns=85998659892000 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=85990710516561 event=input input_id=77 gesture_id=3 kind=motion t_ns=85998649867333 source=injected
+K230_CARD_SHELL input-origin run=85990710516561 input_id=77 source_ns=85998644000000
+K230_CARD_SHELL motion-stage run=85990710516561 input_id=76 stage=scene_damage t_ns=85998649026259
+K230_CARD_BENCH v=1 run=85990710516561 event=input input_id=76 gesture_id=3 kind=motion t_ns=85998647603432 source=injected
+K230_CARD_SHELL input-origin run=85990710516561 input_id=76 source_ns=85998624000000
+K230_CARD_BENCH v=1 run=85990710516561 event=submit input_id=75 frame_id=61 t_ns=85998644694040 update_cpu_ns=28433812 final=0
+K230_CARD_BENCH v=1 run=85990710516561 event=submit input_id=74 frame_id=61 t_ns=85998644694040 update_cpu_ns=28433812 final=0
+K230_CARD_BENCH v=1 run=85990710516561 event=submit input_id=73 frame_id=61 t_ns=85998644694040 update_cpu_ns=28433812 final=0
+K230_CARD_SHELL motion-stage run=85990710516561 input_id=75 stage=scene_damage t_ns=85998606002018
+K230_CARD_BENCH v=1 run=85990710516561 event=input input_id=75 gesture_id=3 kind=motion t_ns=85998605523113 source=injected
+K230_CARD_SHELL input-origin run=85990710516561 input_id=75 source_ns=85998604000000
+K230_CARD_SHELL motion-frame run=85990710516561 frame_id=60 stage=frame_done t_ns=85998603986624
+K230_CARD_SHELL motion-stage run=85990710516561 input_id=74 stage=scene_damage t_ns=85998603156549
+K230_CARD_BENCH v=1 run=85990710516561 event=present frame_id=60 t_ns=85998602416000 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=85990710516561 event=input input_id=74 gesture_id=3 kind=motion t_ns=85998588893873 source=injected
+K230_CARD_SHELL input-origin run=85990710516561 input_id=74 source_ns=85998584000000
+K230_CARD_SHELL motion-stage run=85990710516561 input_id=73 stage=scene_damage t_ns=85998587954803
+K230_CARD_BENCH v=1 run=85990710516561 event=input input_id=73 gesture_id=3 kind=motion t_ns=85998587851178 source=injected
+K230_CARD_SHELL input-origin run=85990710516561 input_id=73 source_ns=85998565000000
+K230_CARD_BENCH v=1 run=85990710516561 event=present frame_id=59 t_ns=85998544933000 presented=1 clock=monotonic
+K230_CARD_SHELL motion-frame run=85990710516561 frame_id=59 stage=frame_done t_ns=85998527186667
+K230_CARD_SHELL motion-frame run=85990710516561 frame_id=58 stage=frame_done t_ns=85998104819104
+K230_CARD_BENCH v=1 run=85990710516561 event=present frame_id=58 t_ns=85998104244000 presented=1 clock=monotonic
+K230_CARD_SHELL motion-frame run=85990710516561 frame_id=57 stage=frame_done t_ns=85998028208620
+K230_CARD_BENCH v=1 run=85990710516561 event=present frame_id=57 t_ns=85998027604000 presented=1 clock=monotonic
+K230_CARD_SHELL motion-frame run=85990710516561 frame_id=56 stage=frame_done t_ns=85997970701453
+K230_CARD_BENCH v=1 run=85990710516561 event=present frame_id=56 t_ns=85997970120000 presented=1 clock=monotonic
+K230_CARD_SHELL motion-settle run=85990710516561 input_id=72 frame_id=56 t_ns=85997955226756
+K230_CARD_SHELL motion-frame run=85990710516561 frame_id=55 stage=frame_done t_ns=85997913285431
+K230_CARD_BENCH v=1 run=85990710516561 event=present frame_id=55 t_ns=85997912641000 presented=1 clock=monotonic
+K230_CARD_SHELL motion-frame run=85990710516561 frame_id=54 stage=frame_done t_ns=85997856472382
+K230_CARD_BENCH v=1 run=85990710516561 event=present frame_id=54 t_ns=85997855162000 presented=1 clock=monotonic
+K230_CARD_SHELL motion-frame run=85990710516561 frame_id=53 stage=frame_done t_ns=85997798287430
+K230_CARD_BENCH v=1 run=85990710516561 event=present frame_id=53 t_ns=85997797672000 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=85990710516561 event=resource phase=active t_ns=85997781818184 cpu_ns=2833269463 memory_bytes=43864064 scope=compositor
+K230_CARD_BENCH v=1 run=85990710516561 event=submit input_id=72 frame_id=53 t_ns=85997780191995 update_cpu_ns=26746072 final=1
+K230_CARD_SHELL motion-frame run=85990710516561 frame_id=52 stage=frame_done t_ns=85997740621271
+K230_CARD_BENCH v=1 run=85990710516561 event=present frame_id=52 t_ns=85997740196000 presented=1 clock=monotonic
+K230_CARD_SHELL motion-stage run=85990710516561 input_id=72 stage=scene_damage t_ns=85997728465577
+K230_CARD_BENCH v=1 run=85990710516561 event=input input_id=72 gesture_id=2 kind=release t_ns=85997728278696 source=injected
+K230_CARD_SHELL input-origin run=85990710516561 input_id=72 source_ns=85997693000000
+K230_CARD_BENCH v=1 run=85990710516561 event=submit input_id=71 frame_id=52 t_ns=85997727558172 update_cpu_ns=29006933 final=0
+K230_CARD_BENCH v=1 run=85990710516561 event=submit input_id=70 frame_id=52 t_ns=85997727558172 update_cpu_ns=29006933 final=0
+K230_CARD_BENCH v=1 run=85990710516561 event=submit input_id=69 frame_id=52 t_ns=85997727558172 update_cpu_ns=29006933 final=0
+K230_CARD_SHELL motion-stage run=85990710516561 input_id=71 stage=scene_damage t_ns=85997693384843
+K230_CARD_BENCH v=1 run=85990710516561 event=input input_id=71 gesture_id=2 kind=motion t_ns=85997692823386 source=injected
+K230_CARD_SHELL input-origin run=85990710516561 input_id=71 source_ns=85997692000000
+K230_CARD_SHELL motion-frame run=85990710516561 frame_id=51 stage=frame_done t_ns=85997684679999
+K230_CARD_SHELL motion-stage run=85990710516561 input_id=70 stage=scene_damage t_ns=85997684221612
+K230_CARD_BENCH v=1 run=85990710516561 event=present frame_id=51 t_ns=85997682715000 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=85990710516561 event=input input_id=70 gesture_id=2 kind=motion t_ns=85997672883623 source=injected
+K230_CARD_SHELL input-origin run=85990710516561 input_id=70 source_ns=85997672000000
+K230_CARD_SHELL motion-stage run=85990710516561 input_id=69 stage=scene_damage t_ns=85997668694546
+K230_CARD_BENCH v=1 run=85990710516561 event=input input_id=69 gesture_id=2 kind=motion t_ns=85997667544226 source=injected
+K230_CARD_SHELL input-origin run=85990710516561 input_id=69 source_ns=85997653000000
+K230_CARD_BENCH v=1 run=85990710516561 event=submit input_id=68 frame_id=51 t_ns=85997665373950 update_cpu_ns=27884222 final=0
+K230_CARD_BENCH v=1 run=85990710516561 event=submit input_id=67 frame_id=51 t_ns=85997665373950 update_cpu_ns=27884222 final=0
+K230_CARD_BENCH v=1 run=85990710516561 event=submit input_id=66 frame_id=51 t_ns=85997665373950 update_cpu_ns=27884222 final=0
+K230_CARD_SHELL motion-stage run=85990710516561 input_id=68 stage=scene_damage t_ns=85997633467855
+K230_CARD_BENCH v=1 run=85990710516561 event=input input_id=68 gesture_id=2 kind=motion t_ns=85997632906250 source=injected
+K230_CARD_SHELL input-origin run=85990710516561 input_id=68 source_ns=85997632000000
+K230_CARD_SHELL motion-frame run=85990710516561 frame_id=50 stage=frame_done t_ns=85997626351313
+K230_CARD_BENCH v=1 run=85990710516561 event=present frame_id=50 t_ns=85997625236000 presented=1 clock=monotonic
+K230_CARD_SHELL motion-stage run=85990710516561 input_id=67 stage=scene_damage t_ns=85997625444686
+K230_CARD_BENCH v=1 run=85990710516561 event=input input_id=67 gesture_id=2 kind=motion t_ns=85997612867047 source=injected
+K230_CARD_SHELL input-origin run=85990710516561 input_id=67 source_ns=85997612000000
+K230_CARD_SHELL motion-stage run=85990710516561 input_id=66 stage=scene_damage t_ns=85997610328787
+K230_CARD_BENCH v=1 run=85990710516561 event=input input_id=66 gesture_id=2 kind=motion t_ns=85997609808069 source=injected
+K230_CARD_SHELL input-origin run=85990710516561 input_id=66 source_ns=85997592000000
+K230_CARD_BENCH v=1 run=85990710516561 event=submit input_id=65 frame_id=50 t_ns=85997607371175 update_cpu_ns=27822301 final=0
+K230_CARD_BENCH v=1 run=85990710516561 event=submit input_id=64 frame_id=50 t_ns=85997607371175 update_cpu_ns=27822301 final=0
+K230_CARD_BENCH v=1 run=85990710516561 event=submit input_id=63 frame_id=50 t_ns=85997607371175 update_cpu_ns=27822301 final=0
+K230_CARD_SHELL motion-stage run=85990710516561 input_id=65 stage=scene_damage t_ns=85997573371394
+K230_CARD_BENCH v=1 run=85990710516561 event=input input_id=65 gesture_id=2 kind=motion t_ns=85997572815752 source=injected
+K230_CARD_SHELL input-origin run=85990710516561 input_id=65 source_ns=85997572000000
+K230_CARD_SHELL motion-frame run=85990710516561 frame_id=49 stage=frame_done t_ns=85997569652186
+K230_CARD_SHELL motion-stage run=85990710516561 input_id=64 stage=scene_damage t_ns=85997569263795
+K230_CARD_BENCH v=1 run=85990710516561 event=present frame_id=49 t_ns=85997567751000 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=85990710516561 event=input input_id=64 gesture_id=2 kind=motion t_ns=85997556260990 source=injected
+K230_CARD_SHELL input-origin run=85990710516561 input_id=64 source_ns=85997553000000
+K230_CARD_SHELL motion-stage run=85990710516561 input_id=63 stage=scene_damage t_ns=85997555357474
+K230_CARD_BENCH v=1 run=85990710516561 event=input input_id=63 gesture_id=2 kind=motion t_ns=85997553795949 source=injected
+K230_CARD_SHELL input-origin run=85990710516561 input_id=63 source_ns=85997533000000
+K230_CARD_BENCH v=1 run=85990710516561 event=submit input_id=62 frame_id=49 t_ns=85997552375863 update_cpu_ns=28401184 final=0
+K230_CARD_BENCH v=1 run=85990710516561 event=submit input_id=61 frame_id=49 t_ns=85997552375863 update_cpu_ns=28401184 final=0
+K230_CARD_BENCH v=1 run=85990710516561 event=submit input_id=60 frame_id=49 t_ns=85997552375863 update_cpu_ns=28401184 final=0
+K230_CARD_SHELL motion-stage run=85990710516561 input_id=62 stage=scene_damage t_ns=85997514203226
+K230_CARD_BENCH v=1 run=85990710516561 event=input input_id=62 gesture_id=2 kind=motion t_ns=85997513647472 source=injected
+K230_CARD_SHELL input-origin run=85990710516561 input_id=62 source_ns=85997513000000
+K230_CARD_SHELL motion-frame run=85990710516561 frame_id=48 stage=frame_done t_ns=85997512178462
+K230_CARD_SHELL motion-stage run=85990710516561 input_id=61 stage=scene_damage t_ns=85997511735222
+K230_CARD_BENCH v=1 run=85990710516561 event=present frame_id=48 t_ns=85997510271000 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=85990710516561 event=input input_id=61 gesture_id=2 kind=motion t_ns=85997499699005 source=injected
+K230_CARD_SHELL input-origin run=85990710516561 input_id=61 source_ns=85997492000000
+K230_CARD_SHELL motion-stage run=85990710516561 input_id=60 stage=scene_damage t_ns=85997498446578
+K230_CARD_BENCH v=1 run=85990710516561 event=input input_id=60 gesture_id=2 kind=motion t_ns=85997496741874 source=injected
+K230_CARD_SHELL input-origin run=85990710516561 input_id=60 source_ns=85997472000000
+K230_CARD_BENCH v=1 run=85990710516561 event=submit input_id=59 frame_id=48 t_ns=85997495678513 update_cpu_ns=28282036 final=0
+K230_CARD_BENCH v=1 run=85990710516561 event=submit input_id=58 frame_id=48 t_ns=85997495678513 update_cpu_ns=28282036 final=0
+K230_CARD_BENCH v=1 run=85990710516561 event=submit input_id=57 frame_id=48 t_ns=85997495678513 update_cpu_ns=28282036 final=0
+K230_CARD_SHELL motion-frame run=85990710516561 frame_id=47 stage=frame_done t_ns=85997455663326
+K230_CARD_BENCH v=1 run=85990710516561 event=present frame_id=47 t_ns=85997452790000 presented=1 clock=monotonic
+K230_CARD_SHELL motion-stage run=85990710516561 input_id=59 stage=scene_damage t_ns=85997453697190
+K230_CARD_BENCH v=1 run=85990710516561 event=input input_id=59 gesture_id=2 kind=motion t_ns=85997453022071 source=injected
+K230_CARD_SHELL input-origin run=85990710516561 input_id=59 source_ns=85997452000000
+K230_CARD_SHELL motion-stage run=85990710516561 input_id=58 stage=scene_damage t_ns=85997453697190
+K230_CARD_BENCH v=1 run=85990710516561 event=input input_id=58 gesture_id=2 kind=motion t_ns=85997440872970 source=injected
+K230_CARD_SHELL input-origin run=85990710516561 input_id=58 source_ns=85997432000000
+K230_CARD_SHELL motion-stage run=85990710516561 input_id=57 stage=scene_damage t_ns=85997439075900
+K230_CARD_BENCH v=1 run=85990710516561 event=input input_id=57 gesture_id=2 kind=motion t_ns=85997437465895 source=injected
+K230_CARD_SHELL input-origin run=85990710516561 input_id=57 source_ns=85997412000000
+K230_CARD_BENCH v=1 run=85990710516561 event=submit input_id=56 frame_id=47 t_ns=85997436469828 update_cpu_ns=27882373 final=0
+K230_CARD_BENCH v=1 run=85990710516561 event=submit input_id=55 frame_id=47 t_ns=85997436469828 update_cpu_ns=27882373 final=0
+K230_CARD_BENCH v=1 run=85990710516561 event=submit input_id=54 frame_id=47 t_ns=85997436469828 update_cpu_ns=27882373 final=0
+K230_CARD_SHELL motion-frame run=85990710516561 frame_id=46 stage=frame_done t_ns=85997397378342
+K230_CARD_SHELL motion-stage run=85990710516561 input_id=56 stage=scene_damage t_ns=85997396829810
+K230_CARD_SHELL motion-stage run=85990710516561 input_id=55 stage=scene_damage t_ns=85997396829810
+K230_CARD_BENCH v=1 run=85990710516561 event=present frame_id=46 t_ns=85997395305000 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=85990710516561 event=input input_id=56 gesture_id=2 kind=motion t_ns=85997392831132 source=injected
+K230_CARD_SHELL input-origin run=85990710516561 input_id=56 source_ns=85997392000000
+K230_CARD_BENCH v=1 run=85990710516561 event=input input_id=55 gesture_id=2 kind=motion t_ns=85997383930853 source=injected
+K230_CARD_SHELL input-origin run=85990710516561 input_id=55 source_ns=85997373000000
+K230_CARD_SHELL motion-stage run=85990710516561 input_id=54 stage=scene_damage t_ns=85997382679685
+K230_CARD_BENCH v=1 run=85990710516561 event=input input_id=54 gesture_id=2 kind=motion t_ns=85997381272153 source=injected
+K230_CARD_SHELL input-origin run=85990710516561 input_id=54 source_ns=85997352000000
+K230_CARD_BENCH v=1 run=85990710516561 event=submit input_id=53 frame_id=46 t_ns=85997379399790 update_cpu_ns=28320553 final=0
+K230_CARD_BENCH v=1 run=85990710516561 event=submit input_id=52 frame_id=46 t_ns=85997379399790 update_cpu_ns=28320553 final=0
+K230_CARD_BENCH v=1 run=85990710516561 event=submit input_id=51 frame_id=46 t_ns=85997379399790 update_cpu_ns=28320553 final=0
+K230_CARD_SHELL motion-frame run=85990710516561 frame_id=45 stage=frame_done t_ns=85997339795142
+K230_CARD_SHELL motion-stage run=85990710516561 input_id=53 stage=scene_damage t_ns=85997339447305
+K230_CARD_SHELL motion-stage run=85990710516561 input_id=52 stage=scene_damage t_ns=85997339447305
+K230_CARD_BENCH v=1 run=85990710516561 event=present frame_id=45 t_ns=85997337825000 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=85990710516561 event=input input_id=53 gesture_id=2 kind=motion t_ns=85997332938440 source=injected
+K230_CARD_SHELL input-origin run=85990710516561 input_id=53 source_ns=85997332000000
+K230_CARD_BENCH v=1 run=85990710516561 event=input input_id=52 gesture_id=2 kind=motion t_ns=85997325481579 source=injected
+K230_CARD_SHELL input-origin run=85990710516561 input_id=52 source_ns=85997312000000
+K230_CARD_SHELL motion-stage run=85990710516561 input_id=51 stage=scene_damage t_ns=85997325132742
+K230_CARD_BENCH v=1 run=85990710516561 event=input input_id=51 gesture_id=2 kind=motion t_ns=85997323601068 source=injected
+K230_CARD_SHELL input-origin run=85990710516561 input_id=51 source_ns=85997293000000
+K230_CARD_BENCH v=1 run=85990710516561 event=submit input_id=50 frame_id=45 t_ns=85997322650369 update_cpu_ns=28076630 final=0
+K230_CARD_BENCH v=1 run=85990710516561 event=submit input_id=49 frame_id=45 t_ns=85997322650369 update_cpu_ns=28076630 final=0
+K230_CARD_SHELL motion-frame run=85990710516561 frame_id=44 stage=frame_done t_ns=85997282251347
+K230_CARD_SHELL motion-stage run=85990710516561 input_id=50 stage=scene_damage t_ns=85997281802330
+K230_CARD_BENCH v=1 run=85990710516561 event=present frame_id=44 t_ns=85997280347000 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=85990710516561 event=input input_id=50 gesture_id=2 kind=motion t_ns=85997272874348 source=injected
+K230_CARD_SHELL input-origin run=85990710516561 input_id=50 source_ns=85997272000000
+K230_CARD_SHELL motion-stage run=85990710516561 input_id=49 stage=scene_damage t_ns=85997270187613
+K230_CARD_BENCH v=1 run=85990710516561 event=input input_id=49 gesture_id=2 kind=motion t_ns=85997269703522 source=injected
+K230_CARD_SHELL input-origin run=85990710516561 input_id=49 source_ns=85997253000000
+K230_CARD_BENCH v=1 run=85990710516561 event=submit input_id=48 frame_id=44 t_ns=85997267291257 update_cpu_ns=29122556 final=0
+K230_CARD_BENCH v=1 run=85990710516561 event=submit input_id=47 frame_id=44 t_ns=85997267291257 update_cpu_ns=29122556 final=0
+K230_CARD_BENCH v=1 run=85990710516561 event=submit input_id=46 frame_id=44 t_ns=85997267291257 update_cpu_ns=29122556 final=0
+K230_CARD_SHELL motion-stage run=85990710516561 input_id=48 stage=scene_damage t_ns=85997233439655
+K230_CARD_BENCH v=1 run=85990710516561 event=input input_id=48 gesture_id=2 kind=motion t_ns=85997232868346 source=injected
+K230_CARD_SHELL input-origin run=85990710516561 input_id=48 source_ns=85997232000000
+K230_CARD_SHELL motion-frame run=85990710516561 frame_id=43 stage=frame_done t_ns=85997224813844
+K230_CARD_SHELL motion-stage run=85990710516561 input_id=47 stage=scene_damage t_ns=85997224367123
+K230_CARD_BENCH v=1 run=85990710516561 event=present frame_id=43 t_ns=85997222865000 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=85990710516561 event=input input_id=47 gesture_id=2 kind=motion t_ns=85997213195238 source=injected
+K230_CARD_SHELL input-origin run=85990710516561 input_id=47 source_ns=85997212000000
+K230_CARD_SHELL motion-stage run=85990710516561 input_id=46 stage=scene_damage t_ns=85997211099441
+K230_CARD_BENCH v=1 run=85990710516561 event=input input_id=46 gesture_id=2 kind=motion t_ns=85997210625721 source=injected
+K230_CARD_SHELL input-origin run=85990710516561 input_id=46 source_ns=85997192000000
+K230_CARD_BENCH v=1 run=85990710516561 event=submit input_id=45 frame_id=43 t_ns=85997209427180 update_cpu_ns=29228184 final=0
+K230_CARD_BENCH v=1 run=85990710516561 event=submit input_id=44 frame_id=43 t_ns=85997209427180 update_cpu_ns=29228184 final=0
+K230_CARD_BENCH v=1 run=85990710516561 event=submit input_id=43 frame_id=43 t_ns=85997209427180 update_cpu_ns=29228184 final=0
+K230_CARD_SHELL motion-stage run=85990710516561 input_id=45 stage=scene_damage t_ns=85997173433041
+K230_CARD_BENCH v=1 run=85990710516561 event=input input_id=45 gesture_id=2 kind=motion t_ns=85997172870214 source=injected
+K230_CARD_SHELL input-origin run=85990710516561 input_id=45 source_ns=85997172000000
+K230_CARD_SHELL motion-frame run=85990710516561 frame_id=42 stage=frame_done t_ns=85997166831921
+K230_CARD_SHELL motion-stage run=85990710516561 input_id=44 stage=scene_damage t_ns=85997166697482
+K230_CARD_BENCH v=1 run=85990710516561 event=present frame_id=42 t_ns=85997165381000 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=85990710516561 event=input input_id=44 gesture_id=2 kind=motion t_ns=85997155798252 source=injected
+K230_CARD_SHELL input-origin run=85990710516561 input_id=44 source_ns=85997152000000
+K230_CARD_SHELL motion-stage run=85990710516561 input_id=43 stage=scene_damage t_ns=85997154543344
+K230_CARD_BENCH v=1 run=85990710516561 event=input input_id=43 gesture_id=2 kind=motion t_ns=85997153125220 source=injected
+K230_CARD_SHELL input-origin run=85990710516561 input_id=43 source_ns=85997132000000
+K230_CARD_BENCH v=1 run=85990710516561 event=submit input_id=42 frame_id=42 t_ns=85997151055977 update_cpu_ns=29844072 final=0
+K230_CARD_BENCH v=1 run=85990710516561 event=submit input_id=41 frame_id=42 t_ns=85997151055977 update_cpu_ns=29844072 final=0
+K230_CARD_BENCH v=1 run=85990710516561 event=submit input_id=40 frame_id=42 t_ns=85997151055977 update_cpu_ns=29844072 final=0
+K230_CARD_SHELL motion-stage run=85990710516561 input_id=42 stage=scene_damage t_ns=85997113436242
+K230_CARD_BENCH v=1 run=85990710516561 event=input input_id=42 gesture_id=2 kind=motion t_ns=85997112882563 source=injected
+K230_CARD_SHELL input-origin run=85990710516561 input_id=42 source_ns=85997112000000
+K230_CARD_SHELL motion-frame run=85990710516561 frame_id=41 stage=frame_done t_ns=85997109673073
+K230_CARD_SHELL motion-stage run=85990710516561 input_id=41 stage=scene_damage t_ns=85997109227351
+K230_CARD_BENCH v=1 run=85990710516561 event=present frame_id=41 t_ns=85997107902000 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=85990710516561 event=input input_id=41 gesture_id=2 kind=motion t_ns=85997098558482 source=injected
+K230_CARD_SHELL input-origin run=85990710516561 input_id=41 source_ns=85997092000000
+K230_CARD_SHELL motion-stage run=85990710516561 input_id=40 stage=scene_damage t_ns=85997097343497
+K230_CARD_BENCH v=1 run=85990710516561 event=input input_id=40 gesture_id=2 kind=motion t_ns=85997095973890 source=injected
+K230_CARD_SHELL input-origin run=85990710516561 input_id=40 source_ns=85997073000000
+K230_CARD_BENCH v=1 run=85990710516561 event=submit input_id=39 frame_id=41 t_ns=85997093213159 update_cpu_ns=28838261 final=0
+K230_CARD_BENCH v=1 run=85990710516561 event=submit input_id=38 frame_id=41 t_ns=85997093213159 update_cpu_ns=28838261 final=0
+K230_CARD_BENCH v=1 run=85990710516561 event=submit input_id=37 frame_id=41 t_ns=85997093213159 update_cpu_ns=28838261 final=0
+K230_CARD_SHELL motion-stage run=85990710516561 input_id=39 stage=scene_damage t_ns=85997054110933
+K230_CARD_BENCH v=1 run=85990710516561 event=input input_id=39 gesture_id=2 kind=motion t_ns=85997053561549 source=injected
+K230_CARD_SHELL input-origin run=85990710516561 input_id=39 source_ns=85997052000000
+K230_CARD_SHELL motion-frame run=85990710516561 frame_id=40 stage=frame_done t_ns=85997052801841
+K230_CARD_SHELL motion-stage run=85990710516561 input_id=38 stage=scene_damage t_ns=85997051922324
+K230_CARD_BENCH v=1 run=85990710516561 event=present frame_id=40 t_ns=85997050421000 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=85990710516561 event=input input_id=38 gesture_id=2 kind=motion t_ns=85997039086401 source=injected
+K230_CARD_SHELL input-origin run=85990710516561 input_id=38 source_ns=85997033000000
+K230_CARD_SHELL motion-stage run=85990710516561 input_id=37 stage=scene_damage t_ns=85997037937932
+K230_CARD_BENCH v=1 run=85990710516561 event=input input_id=37 gesture_id=2 kind=motion t_ns=85997037811975 source=injected
+K230_CARD_SHELL input-origin run=85990710516561 input_id=37 source_ns=85997012000000
+K230_CARD_BENCH v=1 run=85990710516561 event=present frame_id=39 t_ns=85996992938000 presented=1 clock=monotonic
+K230_CARD_SHELL motion-frame run=85990710516561 frame_id=39 stage=frame_done t_ns=85996975043037
+K230_CARD_BENCH v=1 run=85990710516561 event=resource phase=active t_ns=85996751158660 cpu_ns=2385355703 memory_bytes=43864064 scope=compositor
+K230_CARD_SHELL motion-frame run=85990710516561 frame_id=38 stage=frame_done t_ns=85996533650153
+K230_CARD_BENCH v=1 run=85990710516561 event=present frame_id=38 t_ns=85996533089000 presented=1 clock=monotonic
+K230_CARD_SHELL motion-frame run=85990710516561 frame_id=37 stage=frame_done t_ns=85996456917823
+K230_CARD_BENCH v=1 run=85990710516561 event=present frame_id=37 t_ns=85996456447000 presented=1 clock=monotonic
+K230_CARD_SHELL motion-settle run=85990710516561 input_id=36 frame_id=37 t_ns=85996440553867
+K230_CARD_SHELL motion-frame run=85990710516561 frame_id=36 stage=frame_done t_ns=85996399358621
+K230_CARD_BENCH v=1 run=85990710516561 event=present frame_id=36 t_ns=85996398966000 presented=1 clock=monotonic
+K230_CARD_SHELL motion-frame run=85990710516561 frame_id=35 stage=frame_done t_ns=85996342120332
+K230_CARD_BENCH v=1 run=85990710516561 event=present frame_id=35 t_ns=85996341508000 presented=1 clock=monotonic
+K230_CARD_SHELL motion-frame run=85990710516561 frame_id=34 stage=frame_done t_ns=85996284691348
+K230_CARD_BENCH v=1 run=85990710516561 event=present frame_id=34 t_ns=85996284003000 presented=1 clock=monotonic
+K230_CARD_SHELL motion-frame run=85990710516561 frame_id=33 stage=frame_done t_ns=85996230929574
+K230_CARD_BENCH v=1 run=85990710516561 event=present frame_id=33 t_ns=85996226520000 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=85990710516561 event=submit input_id=36 frame_id=33 t_ns=85996226264851 update_cpu_ns=26826107 final=1
+K230_CARD_SHELL motion-frame run=85990710516561 frame_id=32 stage=frame_done t_ns=85996188645746
+K230_CARD_BENCH v=1 run=85990710516561 event=present frame_id=32 t_ns=85996188201000 presented=1 clock=monotonic
+K230_CARD_SHELL motion-stage run=85990710516561 input_id=36 stage=scene_damage t_ns=85996175545130
+K230_CARD_BENCH v=1 run=85990710516561 event=input input_id=36 gesture_id=1 kind=release t_ns=85996174021196 source=injected
+K230_CARD_SHELL input-origin run=85990710516561 input_id=36 source_ns=85996141000000
+K230_CARD_BENCH v=1 run=85990710516561 event=submit input_id=35 frame_id=32 t_ns=85996173317412 update_cpu_ns=27864031 final=0
+K230_CARD_BENCH v=1 run=85990710516561 event=submit input_id=34 frame_id=32 t_ns=85996173317412 update_cpu_ns=27864031 final=0
+K230_CARD_BENCH v=1 run=85990710516561 event=submit input_id=33 frame_id=32 t_ns=85996173317412 update_cpu_ns=27864031 final=0
+K230_CARD_SHELL motion-stage run=85990710516561 input_id=35 stage=scene_damage t_ns=85996141531016
+K230_CARD_BENCH v=1 run=85990710516561 event=input input_id=35 gesture_id=1 kind=motion t_ns=85996140977411 source=injected
+K230_CARD_SHELL input-origin run=85990710516561 input_id=35 source_ns=85996140000000
+K230_CARD_SHELL motion-frame run=85990710516561 frame_id=31 stage=frame_done t_ns=85996132565888
+K230_CARD_SHELL motion-stage run=85990710516561 input_id=34 stage=scene_damage t_ns=85996132268160
+K230_CARD_BENCH v=1 run=85990710516561 event=present frame_id=31 t_ns=85996130717000 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=85990710516561 event=input input_id=34 gesture_id=1 kind=motion t_ns=85996121042203 source=injected
+K230_CARD_SHELL input-origin run=85990710516561 input_id=34 source_ns=85996120000000
+K230_CARD_SHELL motion-stage run=85990710516561 input_id=33 stage=scene_damage t_ns=85996115849170
+K230_CARD_BENCH v=1 run=85990710516561 event=input input_id=33 gesture_id=1 kind=motion t_ns=85996115405782 source=injected
+K230_CARD_SHELL input-origin run=85990710516561 input_id=33 source_ns=85996101000000
+K230_CARD_BENCH v=1 run=85990710516561 event=submit input_id=32 frame_id=31 t_ns=85996113330057 update_cpu_ns=28450333 final=0
+K230_CARD_BENCH v=1 run=85990710516561 event=submit input_id=31 frame_id=31 t_ns=85996113330057 update_cpu_ns=28450333 final=0
+K230_CARD_BENCH v=1 run=85990710516561 event=submit input_id=30 frame_id=31 t_ns=85996113330057 update_cpu_ns=28450333 final=0
+K230_CARD_SHELL motion-stage run=85990710516561 input_id=32 stage=scene_damage t_ns=85996081571438
+K230_CARD_BENCH v=1 run=85990710516561 event=input input_id=32 gesture_id=1 kind=motion t_ns=85996081036165 source=injected
+K230_CARD_SHELL input-origin run=85990710516561 input_id=32 source_ns=85996080000000
+K230_CARD_SHELL motion-frame run=85990710516561 frame_id=30 stage=frame_done t_ns=85996075043425
+K230_CARD_SHELL motion-stage run=85990710516561 input_id=31 stage=scene_damage t_ns=85996074736513
+K230_CARD_BENCH v=1 run=85990710516561 event=present frame_id=30 t_ns=85996073238000 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=85990710516561 event=input input_id=31 gesture_id=1 kind=motion t_ns=85996061955328 source=injected
+K230_CARD_SHELL input-origin run=85990710516561 input_id=31 source_ns=85996060000000
+K230_CARD_SHELL motion-stage run=85990710516561 input_id=30 stage=scene_damage t_ns=85996061072662
+K230_CARD_BENCH v=1 run=85990710516561 event=input input_id=30 gesture_id=1 kind=motion t_ns=85996059605504 source=injected
+K230_CARD_SHELL input-origin run=85990710516561 input_id=30 source_ns=85996041000000
+K230_CARD_BENCH v=1 run=85990710516561 event=submit input_id=29 frame_id=30 t_ns=85996056403088 update_cpu_ns=27685815 final=0
+K230_CARD_BENCH v=1 run=85990710516561 event=submit input_id=28 frame_id=30 t_ns=85996056403088 update_cpu_ns=27685815 final=0
+K230_CARD_BENCH v=1 run=85990710516561 event=submit input_id=27 frame_id=30 t_ns=85996056403088 update_cpu_ns=27685815 final=0
+K230_CARD_SHELL motion-stage run=85990710516561 input_id=29 stage=scene_damage t_ns=85996021563380
+K230_CARD_BENCH v=1 run=85990710516561 event=input input_id=29 gesture_id=1 kind=motion t_ns=85996021025626 source=injected
+K230_CARD_SHELL input-origin run=85990710516561 input_id=29 source_ns=85996020000000
+K230_CARD_SHELL motion-frame run=85990710516561 frame_id=29 stage=frame_done t_ns=85996016658149
+K230_CARD_SHELL motion-stage run=85990710516561 input_id=28 stage=scene_damage t_ns=85996016554709
+K230_CARD_BENCH v=1 run=85990710516561 event=present frame_id=29 t_ns=85996015757000 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=85990710516561 event=input input_id=28 gesture_id=1 kind=motion t_ns=85996005409712 source=injected
+K230_CARD_SHELL input-origin run=85990710516561 input_id=28 source_ns=85996000000000
+K230_CARD_SHELL motion-stage run=85990710516561 input_id=27 stage=scene_damage t_ns=85996004347536
+K230_CARD_BENCH v=1 run=85990710516561 event=input input_id=27 gesture_id=1 kind=motion t_ns=85996003843299 source=injected
+K230_CARD_SHELL input-origin run=85990710516561 input_id=27 source_ns=85995981000000
+K230_CARD_BENCH v=1 run=85990710516561 event=submit input_id=26 frame_id=29 t_ns=85996001243004 update_cpu_ns=29046554 final=0
+K230_CARD_BENCH v=1 run=85990710516561 event=submit input_id=25 frame_id=29 t_ns=85996001243004 update_cpu_ns=29046554 final=0
+K230_CARD_BENCH v=1 run=85990710516561 event=submit input_id=24 frame_id=29 t_ns=85996001243004 update_cpu_ns=29046554 final=0
+K230_CARD_SHELL motion-stage run=85990710516561 input_id=26 stage=scene_damage t_ns=85995961619468
+K230_CARD_BENCH v=1 run=85990710516561 event=input input_id=26 gesture_id=1 kind=motion t_ns=85995961061603 source=injected
+K230_CARD_SHELL input-origin run=85990710516561 input_id=26 source_ns=85995960000000
+K230_CARD_SHELL motion-frame run=85990710516561 frame_id=28 stage=frame_done t_ns=85995960148087
+K230_CARD_SHELL motion-stage run=85990710516561 input_id=25 stage=scene_damage t_ns=85995959961725
+K230_CARD_BENCH v=1 run=85990710516561 event=present frame_id=28 t_ns=85995958271000 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=85990710516561 event=input input_id=25 gesture_id=1 kind=motion t_ns=85995948463077 source=injected
+K230_CARD_SHELL input-origin run=85990710516561 input_id=25 source_ns=85995941000000
+K230_CARD_SHELL motion-stage run=85990710516561 input_id=24 stage=scene_damage t_ns=85995947184725
+K230_CARD_BENCH v=1 run=85990710516561 event=input input_id=24 gesture_id=1 kind=motion t_ns=85995946659007 source=injected
+K230_CARD_SHELL input-origin run=85990710516561 input_id=24 source_ns=85995920000000
+K230_CARD_BENCH v=1 run=85990710516561 event=submit input_id=23 frame_id=28 t_ns=85995944097748 update_cpu_ns=28815777 final=0
+K230_CARD_BENCH v=1 run=85990710516561 event=submit input_id=22 frame_id=28 t_ns=85995944097748 update_cpu_ns=28815777 final=0
+K230_CARD_BENCH v=1 run=85990710516561 event=submit input_id=21 frame_id=28 t_ns=85995944097748 update_cpu_ns=28815777 final=0
+K230_CARD_SHELL motion-stage run=85990710516561 input_id=23 stage=scene_damage t_ns=85995903993566
+K230_CARD_BENCH v=1 run=85990710516561 event=input input_id=23 gesture_id=1 kind=motion t_ns=85995902780730 source=injected
+K230_CARD_SHELL input-origin run=85990710516561 input_id=23 source_ns=85995901000000
+K230_CARD_SHELL motion-frame run=85990710516561 frame_id=27 stage=frame_done t_ns=85995902590812
+K230_CARD_SHELL motion-stage run=85990710516561 input_id=22 stage=scene_damage t_ns=85995902454596
+K230_CARD_BENCH v=1 run=85990710516561 event=present frame_id=27 t_ns=85995900795000 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=85990710516561 event=input input_id=22 gesture_id=1 kind=motion t_ns=85995889718150 source=injected
+K230_CARD_SHELL input-origin run=85990710516561 input_id=22 source_ns=85995881000000
+K230_CARD_SHELL motion-stage run=85990710516561 input_id=21 stage=scene_damage t_ns=85995888731007
+K230_CARD_BENCH v=1 run=85990710516561 event=input input_id=21 gesture_id=1 kind=motion t_ns=85995888229399 source=injected
+K230_CARD_SHELL input-origin run=85990710516561 input_id=21 source_ns=85995860000000
+K230_CARD_BENCH v=1 run=85990710516561 event=submit input_id=20 frame_id=27 t_ns=85995885995052 update_cpu_ns=28292072 final=0
+K230_CARD_BENCH v=1 run=85990710516561 event=submit input_id=19 frame_id=27 t_ns=85995885995052 update_cpu_ns=28292072 final=0
+K230_CARD_BENCH v=1 run=85990710516561 event=submit input_id=18 frame_id=27 t_ns=85995885995052 update_cpu_ns=28292072 final=0
+K230_CARD_SHELL motion-frame run=85990710516561 frame_id=26 stage=frame_done t_ns=85995843788517
+K230_CARD_BENCH v=1 run=85990710516561 event=present frame_id=26 t_ns=85995843313000 presented=1 clock=monotonic
+K230_CARD_SHELL motion-stage run=85990710516561 input_id=20 stage=scene_damage t_ns=85995841537096
+K230_CARD_BENCH v=1 run=85990710516561 event=input input_id=20 gesture_id=1 kind=motion t_ns=85995841002638 source=injected
+K230_CARD_SHELL input-origin run=85990710516561 input_id=20 source_ns=85995840000000
+K230_CARD_SHELL motion-stage run=85990710516561 input_id=19 stage=scene_damage t_ns=85995841537096
+K230_CARD_BENCH v=1 run=85990710516561 event=input input_id=19 gesture_id=1 kind=motion t_ns=85995830946409 source=injected
+K230_CARD_SHELL input-origin run=85990710516561 input_id=19 source_ns=85995821000000
+K230_CARD_SHELL motion-stage run=85990710516561 input_id=18 stage=scene_damage t_ns=85995830595609
+K230_CARD_BENCH v=1 run=85990710516561 event=input input_id=18 gesture_id=1 kind=motion t_ns=85995829207003 source=injected
+K230_CARD_SHELL input-origin run=85990710516561 input_id=18 source_ns=85995801000000
+K230_CARD_BENCH v=1 run=85990710516561 event=submit input_id=17 frame_id=26 t_ns=85995827873246 update_cpu_ns=28327852 final=0
+K230_CARD_BENCH v=1 run=85990710516561 event=submit input_id=16 frame_id=26 t_ns=85995827873246 update_cpu_ns=28327852 final=0
+K230_CARD_BENCH v=1 run=85990710516561 event=submit input_id=15 frame_id=26 t_ns=85995827873246 update_cpu_ns=28327852 final=0
+K230_CARD_SHELL motion-frame run=85990710516561 frame_id=25 stage=frame_done t_ns=85995787770730
+K230_CARD_SHELL motion-stage run=85990710516561 input_id=17 stage=scene_damage t_ns=85995787388376
+K230_CARD_SHELL motion-stage run=85990710516561 input_id=16 stage=scene_damage t_ns=85995787388376
+K230_CARD_BENCH v=1 run=85990710516561 event=present frame_id=25 t_ns=85995785830000 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=85990710516561 event=input input_id=17 gesture_id=1 kind=motion t_ns=85995781047171 source=injected
+K230_CARD_SHELL input-origin run=85990710516561 input_id=17 source_ns=85995780000000
+K230_CARD_BENCH v=1 run=85990710516561 event=input input_id=16 gesture_id=1 kind=motion t_ns=85995774966213 source=injected
+K230_CARD_SHELL input-origin run=85990710516561 input_id=16 source_ns=85995760000000
+K230_CARD_SHELL motion-stage run=85990710516561 input_id=15 stage=scene_damage t_ns=85995773712897
+K230_CARD_BENCH v=1 run=85990710516561 event=input input_id=15 gesture_id=1 kind=motion t_ns=85995772286181 source=injected
+K230_CARD_SHELL input-origin run=85990710516561 input_id=15 source_ns=85995741000000
+K230_CARD_BENCH v=1 run=85990710516561 event=submit input_id=14 frame_id=25 t_ns=85995770833948 update_cpu_ns=28690554 final=0
+K230_CARD_BENCH v=1 run=85990710516561 event=submit input_id=13 frame_id=25 t_ns=85995770833948 update_cpu_ns=28690554 final=0
+K230_CARD_BENCH v=1 run=85990710516561 event=submit input_id=12 frame_id=25 t_ns=85995770833948 update_cpu_ns=28690554 final=0
+K230_CARD_BENCH v=1 run=85990710516561 event=resource phase=active t_ns=85995735130982 cpu_ns=1956116364 memory_bytes=43864064 scope=compositor
+K230_CARD_SHELL motion-frame run=85990710516561 frame_id=24 stage=frame_done t_ns=85995730261860
+K230_CARD_SHELL motion-stage run=85990710516561 input_id=14 stage=scene_damage t_ns=85995730142125
+K230_CARD_BENCH v=1 run=85990710516561 event=present frame_id=24 t_ns=85995728350000 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=85990710516561 event=input input_id=14 gesture_id=1 kind=motion t_ns=85995721208550 source=injected
+K230_CARD_SHELL input-origin run=85990710516561 input_id=14 source_ns=85995720000000
+K230_CARD_SHELL motion-stage run=85990710516561 input_id=13 stage=scene_damage t_ns=85995718697437
+K230_CARD_BENCH v=1 run=85990710516561 event=input input_id=13 gesture_id=1 kind=motion t_ns=85995716917737 source=injected
+K230_CARD_SHELL input-origin run=85990710516561 input_id=13 source_ns=85995701000000
+K230_CARD_SHELL motion-stage run=85990710516561 input_id=12 stage=scene_damage t_ns=85995715674680
+K230_CARD_BENCH v=1 run=85990710516561 event=input input_id=12 gesture_id=1 kind=motion t_ns=85995715166072 source=injected
+K230_CARD_SHELL input-origin run=85990710516561 input_id=12 source_ns=85995680000000
+K230_CARD_BENCH v=1 run=85990710516561 event=submit input_id=11 frame_id=24 t_ns=85995714510656 update_cpu_ns=28237149 final=0
+K230_CARD_BENCH v=1 run=85990710516561 event=submit input_id=10 frame_id=24 t_ns=85995714510656 update_cpu_ns=28237149 final=0
+K230_CARD_SHELL motion-frame run=85990710516561 frame_id=23 stage=frame_done t_ns=85995672372377
+K230_CARD_SHELL motion-stage run=85990710516561 input_id=11 stage=scene_damage t_ns=85995671617262
+K230_CARD_BENCH v=1 run=85990710516561 event=present frame_id=23 t_ns=85995670869000 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=85990710516561 event=input input_id=11 gesture_id=1 kind=motion t_ns=85995661795207 source=injected
+K230_CARD_SHELL input-origin run=85990710516561 input_id=11 source_ns=85995660000000
+K230_CARD_SHELL motion-stage run=85990710516561 input_id=10 stage=scene_damage t_ns=85995659254096
+K230_CARD_BENCH v=1 run=85990710516561 event=input input_id=10 gesture_id=1 kind=motion t_ns=85995657712051 source=injected
+K230_CARD_SHELL input-origin run=85990710516561 input_id=10 source_ns=85995640000000
+K230_CARD_BENCH v=1 run=85990710516561 event=submit input_id=9 frame_id=23 t_ns=85995655856688 update_cpu_ns=28811699 final=0
+K230_CARD_BENCH v=1 run=85990710516561 event=submit input_id=8 frame_id=23 t_ns=85995655856688 update_cpu_ns=28811699 final=0
+K230_CARD_BENCH v=1 run=85990710516561 event=submit input_id=7 frame_id=23 t_ns=85995655856688 update_cpu_ns=28811699 final=0
+K230_CARD_SHELL motion-stage run=85990710516561 input_id=9 stage=scene_damage t_ns=85995621590474
+K230_CARD_BENCH v=1 run=85990710516561 event=input input_id=9 gesture_id=1 kind=motion t_ns=85995621051571 source=injected
+K230_CARD_SHELL input-origin run=85990710516561 input_id=9 source_ns=85995620000000
+K230_CARD_SHELL motion-frame run=85990710516561 frame_id=22 stage=frame_done t_ns=85995615015019
+K230_CARD_SHELL motion-stage run=85990710516561 input_id=8 stage=scene_damage t_ns=85995614143020
+K230_CARD_BENCH v=1 run=85990710516561 event=present frame_id=22 t_ns=85995613386000 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=85990710516561 event=input input_id=8 gesture_id=1 kind=motion t_ns=85995601640526 source=injected
+K230_CARD_SHELL input-origin run=85990710516561 input_id=8 source_ns=85995600000000
+K230_CARD_SHELL motion-stage run=85990710516561 input_id=7 stage=scene_damage t_ns=85995599917416
+K230_CARD_BENCH v=1 run=85990710516561 event=input input_id=7 gesture_id=1 kind=motion t_ns=85995599421845 source=injected
+K230_CARD_SHELL input-origin run=85990710516561 input_id=7 source_ns=85995581000000
+K230_CARD_BENCH v=1 run=85990710516561 event=submit input_id=6 frame_id=22 t_ns=85995597335121 update_cpu_ns=28888256 final=0
+K230_CARD_BENCH v=1 run=85990710516561 event=submit input_id=5 frame_id=22 t_ns=85995597335121 update_cpu_ns=28888256 final=0
+K230_CARD_BENCH v=1 run=85990710516561 event=submit input_id=4 frame_id=22 t_ns=85995597335121 update_cpu_ns=28888256 final=0
+K230_CARD_SHELL motion-stage run=85990710516561 input_id=6 stage=scene_damage t_ns=85995561584046
+K230_CARD_BENCH v=1 run=85990710516561 event=input input_id=6 gesture_id=1 kind=motion t_ns=85995561059550 source=injected
+K230_CARD_SHELL input-origin run=85990710516561 input_id=6 source_ns=85995560000000
+K230_CARD_SHELL motion-frame run=85990710516561 frame_id=21 stage=frame_done t_ns=85995557650735
+K230_CARD_SHELL motion-stage run=85990710516561 input_id=5 stage=scene_damage t_ns=85995556680074
+K230_CARD_BENCH v=1 run=85990710516561 event=present frame_id=21 t_ns=85995555905000 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=85990710516561 event=input input_id=5 gesture_id=1 kind=motion t_ns=85995546536070 source=injected
+K230_CARD_SHELL input-origin run=85990710516561 input_id=5 source_ns=85995541000000
+K230_CARD_SHELL motion-stage run=85990710516561 input_id=4 stage=scene_damage t_ns=85995546004316
+K230_CARD_BENCH v=1 run=85990710516561 event=input input_id=4 gesture_id=1 kind=motion t_ns=85995545121280 source=injected
+K230_CARD_SHELL input-origin run=85990710516561 input_id=4 source_ns=85995520000000
+K230_CARD_BENCH v=1 run=85990710516561 event=submit input_id=3 frame_id=21 t_ns=85995541797573 update_cpu_ns=28650782 final=0
+K230_CARD_BENCH v=1 run=85990710516561 event=submit input_id=2 frame_id=21 t_ns=85995541797573 update_cpu_ns=28650782 final=0
+K230_CARD_BENCH v=1 run=85990710516561 event=submit input_id=1 frame_id=21 t_ns=85995541797573 update_cpu_ns=28650782 final=0
+K230_CARD_SHELL motion-stage run=85990710516561 input_id=3 stage=scene_damage t_ns=85995501947231
+K230_CARD_BENCH v=1 run=85990710516561 event=input input_id=3 gesture_id=1 kind=motion t_ns=85995501399070 source=injected
+K230_CARD_SHELL input-origin run=85990710516561 input_id=3 source_ns=85995500000000
+K230_CARD_SHELL motion-frame run=85990710516561 frame_id=20 stage=frame_done t_ns=85995499966688
+K230_CARD_SHELL motion-stage run=85990710516561 input_id=2 stage=scene_damage t_ns=85995499170241
+K230_CARD_BENCH v=1 run=85990710516561 event=present frame_id=20 t_ns=85995498425000 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=85990710516561 event=input input_id=2 gesture_id=1 kind=motion t_ns=85995487195799 source=injected
+K230_CARD_SHELL input-origin run=85990710516561 input_id=2 source_ns=85995481000000
+K230_CARD_SHELL motion-stage run=85990710516561 input_id=1 stage=scene_damage t_ns=85995486033553
+K230_CARD_BENCH v=1 run=85990710516561 event=input input_id=1 gesture_id=1 kind=motion t_ns=85995485896448 source=injected
+K230_CARD_SHELL input-origin run=85990710516561 input_id=1 source_ns=85995460000000
+K230_CARD_BENCH v=1 run=85990710516561 event=present frame_id=19 t_ns=85995440942000 presented=1 clock=monotonic
+K230_CARD_SHELL motion-frame run=85990710516561 frame_id=19 stage=frame_done t_ns=85995425553219
+K230_CARD_BENCH v=1 run=85990710516561 event=present frame_id=18 t_ns=85995172699000 presented=1 clock=monotonic
+K230_CARD_SHELL motion-frame run=85990710516561 frame_id=18 stage=frame_done t_ns=85995172318267
+K230_CARD_BENCH v=1 run=85990710516561 event=resource phase=active t_ns=85994728326163 cpu_ns=1707212061 memory_bytes=43864064 scope=compositor
+K230_CARD_SHELL motion-frame run=85990710516561 frame_id=17 stage=frame_done t_ns=85994100146253
+K230_CARD_BENCH v=1 run=85990710516561 event=present frame_id=17 t_ns=85994099711000 presented=1 clock=monotonic
+K230_CARD_BENCH v=1 run=85990710516561 event=present frame_id=16 t_ns=85994023072000 presented=1 clock=monotonic
+K230_CARD_SHELL motion-frame run=85990710516561 frame_id=16 stage=frame_done t_ns=85994016904502
+K230_CARD_SHELL motion-session run=85990710516561 motion=full
+K230_CARD_BENCH v=1 run=85990710516561 event=session t_ns=85993913025574 clock=monotonic backend=drm renderer=pixman width=1232 height=568 output_format=RGB565 input=injected cards=3
+K230_CARD_BENCH v=1 run=85990710516561 event=resource phase=baseline t_ns=85993725200296 cpu_ns=1547473134 memory_bytes=34295808 scope=compositor
+K230_CARD_BENCH v=1 run=85990710516561 event=resource phase=baseline t_ns=85992721417496 cpu_ns=1535812688 memory_bytes=34295808 scope=compositor
+K230_CARD_BENCH v=1 run=85990710516561 event=resource phase=baseline t_ns=85991716699589 cpu_ns=1523730939 memory_bytes=34295808 scope=compositor
+K230_CARD_BENCH v=1 run=85990710516561 event=resource phase=baseline t_ns=85990710522932 cpu_ns=1511473007 memory_bytes=34295808 scope=compositor
