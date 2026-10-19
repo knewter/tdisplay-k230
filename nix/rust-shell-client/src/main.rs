@@ -1225,6 +1225,8 @@ struct ShellClient {
     trackpad_pan_start: Option<(f64, f64)>,
     panel_origin_scroll: f64,
     panel_scrolled: bool,
+    /// Help's scroll range, measured when the contact went down.
+    help_max_scroll: f64,
     panel_scroll_dragged: bool,
     panel_scroll_sample: Option<(f64, u32)>,
     panel_scroll_velocity: f64,
@@ -2894,6 +2896,7 @@ impl ShellClient {
                         self.help_home_result = None;
                         self.service_view.help_home_pending = false;
                         self.service_view.navigation_aid = action == Action::OpenAid;
+                        self.service_view.help_scroll = 0.0;
                         self.service_view.message = None;
                         self.renderer.set_services(self.service_view.clone());
                         self.dirty = true;
@@ -4501,6 +4504,7 @@ impl ShellClient {
     fn hide(&mut self) {
         self.reset_overlay_interaction();
         self.service_view.settings_scroll = 0.0;
+        self.service_view.help_scroll = 0.0;
         self.stop_splash_watch();
         self.splash = None;
         self.layer.take();
@@ -5151,10 +5155,22 @@ impl ShellClient {
                     && self.input_ready
                 {
                     self.panel_start = Some((id, pos));
-                    self.panel_origin_scroll = if self.route == Route::Settings {
-                        self.service_view.settings_scroll
+                    self.panel_origin_scroll = match self.route {
+                        Route::Settings => self.service_view.settings_scroll,
+                        Route::Help => self.service_view.help_scroll,
+                        _ => self.service_view.notification_scroll,
+                    };
+                    // Help's wrapped layout is measured once per contact,
+                    // not on every motion event.
+                    self.help_max_scroll = if self.route == Route::Help {
+                        k230_shell_rust::help::layout(
+                            self.width,
+                            self.height,
+                            self.service_view.navigation_aid,
+                        )
+                        .max_scroll(self.height)
                     } else {
-                        self.service_view.notification_scroll
+                        0.0
                     };
                     let stopped_coast = self.notification_coast.stop();
                     let shade = k230_shell_rust::service_ui::shade_layout(self.width, self.height);
@@ -6132,6 +6148,21 @@ impl ShellClient {
                         self.panel_scrolled = true;
                     }
                 }
+            } else if self.route == Route::Help && self.input_ready && self.help_max_scroll > 0.0 {
+                // A larger vision step makes Help taller than the output; a
+                // vertical drag scrolls it, and its release is not a tap.
+                if let Some((start_id, start)) = self.panel_start {
+                    let dy = pos.1 - start.1;
+                    if start_id == id && dy.abs() > 22.0 {
+                        let next = (self.panel_origin_scroll - dy).clamp(0.0, self.help_max_scroll);
+                        if (next - self.service_view.help_scroll).abs() >= 1.0 {
+                            self.service_view.help_scroll = next;
+                            self.renderer.set_services(self.service_view.clone());
+                            self.dirty = true;
+                        }
+                        self.panel_scrolled = true;
+                    }
+                }
             } else if self.route == Route::Settings
                 && self.input_ready
                 && self.wifi_view.page == WifiPage::List
@@ -6768,6 +6799,7 @@ fn serve() -> Result<(), String> {
         trackpad_pan_start: None,
         panel_origin_scroll: 0.0,
         panel_scrolled: false,
+        help_max_scroll: 0.0,
         panel_scroll_dragged: false,
         panel_scroll_sample: None,
         panel_scroll_velocity: 0.0,

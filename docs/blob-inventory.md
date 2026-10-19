@@ -2059,6 +2059,8 @@ DATA bc20c47de804c4f5527101e6f8398009d47de992c8434b397740d17b321094f6 docs/evide
 DATA 25e9fbda189c1349dd464f2e741065fab1baa77ed140369c4790bfdc9559b704 docs/evidence/rest-of-text/board-panel-100-home-weather.png
 DATA 6e222d41121d2e15b3e0a882577b0254fde1067a2716aa50fdb044673eaf893a docs/evidence/rest-of-text/host-banner-1232x568.png
 DATA e7d43131d2a871cf09143d8e3b5f304338fc22c66522d8f01e3c753340b1090e docs/evidence/rest-of-text/host-banner-568x1232.png
+DATA ca4afb3558abc30f43505beae2499dbc7410712f9cbb33abdb76731b942a1cd6 docs/evidence/rest-of-text/host-help-steps.png
+DATA e0bf987dd554a51d571177549278875a59a03f7da38cdf863690d69f124ca427 docs/evidence/rest-of-text/host-help-wide.png
 DATA 84944d451c4c5266e381fbac4b859350e3c50e7b36d9f583f3b2de2ea22c5dea docs/evidence/rest-of-text/host-home-widgets-steps.png
 ```
 
@@ -3576,4 +3578,6 @@ Command and limits: `docs/evidence/battery-details-widget/host/README.md`.
 | `docs/evidence/rest-of-text/board-panel-100-home-weather.png` | 303552 | DATA | `25e9fbda189c1349dd464f2e741065fab1baa77ed140369c4790bfdc9559b704` |
 | `docs/evidence/rest-of-text/host-banner-1232x568.png` | 9685 | DATA | `6e222d41121d2e15b3e0a882577b0254fde1067a2716aa50fdb044673eaf893a` |
 | `docs/evidence/rest-of-text/host-banner-568x1232.png` | 8607 | DATA | `e7d43131d2a871cf09143d8e3b5f304338fc22c66522d8f01e3c753340b1090e` |
+| `docs/evidence/rest-of-text/host-help-steps.png` | 326452 | DATA | `ca4afb3558abc30f43505beae2499dbc7410712f9cbb33abdb76731b942a1cd6` |
+| `docs/evidence/rest-of-text/host-help-wide.png` | 448186 | DATA | `e0bf987dd554a51d571177549278875a59a03f7da38cdf863690d69f124ca427` |
 | `docs/evidence/rest-of-text/host-home-widgets-steps.png` | 169349 | DATA | `84944d451c4c5266e381fbac4b859350e3c50e7b36d9f583f3b2de2ea22c5dea` |

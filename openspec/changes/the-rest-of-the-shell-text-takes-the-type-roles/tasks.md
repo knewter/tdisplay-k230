@@ -33,6 +33,16 @@
   `docs/evidence/rest-of-text/host-banner-*.png`. All test targets pass.
 - [ ] 2.2 The Wi-Fi pages, the Help page, the theme grid and the recovery
   menu on the roles. Host class.
+  Progress 2026-10-19 (host): Help is laid out by `help::layout` from the
+  Title, Label and Caption roles at the current step and the theme's base
+  size; text wraps instead of ending in "…". Content taller than the
+  output scrolls with a vertical drag (`help_scroll`, reset on close and
+  on the aid toggle), and `help::hit` uses the same layout and scroll. The
+  wide layout fits a 600-unit height so the landscape panel shows all of
+  Help at 100% with no scrolling (a unit test). The guide splits across
+  the two columns to keep the taller one short. Renders:
+  `docs/evidence/rest-of-text/host-help-{steps,wide}.png`. All test
+  targets pass. Wi-Fi, the theme grid and recovery remain.
 
 ## 3. Board
 

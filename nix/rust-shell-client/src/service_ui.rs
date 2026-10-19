@@ -41,6 +41,9 @@ pub struct ServiceView {
     /// How far the Settings body has scrolled under its header; nonzero only
     /// when a larger vision step makes the rows taller than the panel.
     pub settings_scroll: f64,
+    /// How far Help has scrolled; nonzero only when a larger vision step
+    /// makes its wrapped text taller than the output.
+    pub help_scroll: f64,
     /// Active, single-contact history drag. Never used for a critical row.
     pub notification_swipe: Option<NotificationSwipe>,
     pub wifi: Option<WifiPublic>,
@@ -1173,7 +1176,7 @@ pub fn panel_intent(
             }
             None
         }
-        Route::Help => crate::help::hit(start, end, width, height, view.navigation_aid)
+        Route::Help => crate::help::hit(start, end, width, height, view.navigation_aid, view.help_scroll)
             .map(PanelIntent::Help),
         Route::Power => {
             // An upward swipe closes the sheet, as on the Shade and

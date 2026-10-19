@@ -79,10 +79,14 @@ fn attach_theme_metrics(cr: &Context, theme: Option<&AppearanceSnapshot>) {
         // `accessibility.text-scale` is the person's vision choice
         // (`tools/theme_vision.py`), on top of the theme's own size; the card
         // shell's `appearance.c` `metrics()` applies the same product.
-        font: (theme_number(theme, "font", "base-size").unwrap_or(12.0) / 12.0).clamp(0.8, 1.25)
-            * vision_text_scale(theme),
+        font: theme_base_font(theme) * vision_text_scale(theme),
         spacing: theme_spacing_scale(theme),
     }));
+}
+
+/// The theme's own text size factor, before the vision step.
+fn theme_base_font(theme: Option<&AppearanceSnapshot>) -> f64 {
+    (theme_number(theme, "font", "base-size").unwrap_or(12.0) / 12.0).clamp(0.8, 1.25)
 }
 
 /// The person's vision text step (`accessibility.text-scale`, written by
@@ -403,6 +407,40 @@ fn text_weight_resolved(cr: &Context, value: &str, x: f64, y: f64, width: f64,
     layout.set_ellipsize(EllipsizeMode::End);
     color(cr, rgb, 1.0);
     cr.move_to(x + inset, y);
+    pangocairo::functions::show_layout(cr, &layout);
+}
+
+/// How many lines `value` takes when wrapped (between words, then inside a
+/// word) to `width` at `px` -- for layouts that must place wrapped text
+/// before there is a cairo context, such as `help::layout`.
+pub fn wrapped_line_count(value: &str, px: f64, width: f64, weight: pango::Weight) -> u32 {
+    let context = pango::prelude::FontMapExt::create_context(&pangocairo::FontMap::default());
+    let layout = pango::Layout::new(&context);
+    let mut font = FontDescription::new();
+    font.set_family(FONT_FAMILY);
+    font.set_absolute_size(px * f64::from(pango::SCALE));
+    font.set_weight(weight);
+    layout.set_font_description(Some(&font));
+    layout.set_text(value);
+    layout.set_width((width.max(1.0) * f64::from(pango::SCALE)) as i32);
+    layout.set_wrap(pango::WrapMode::WordChar);
+    u32::try_from(layout.line_count()).unwrap_or(1).max(1)
+}
+
+/// `value` wrapped onto as many lines as it needs at `px` (no ellipsis).
+#[allow(clippy::too_many_arguments)]
+fn wrapped_text(cr: &Context, value: &str, x: f64, y: f64, width: f64, px: f64, rgb: u32, weight: pango::Weight) {
+    let layout = pangocairo::functions::create_layout(cr);
+    let mut font = FontDescription::new();
+    font.set_family(FONT_FAMILY);
+    font.set_absolute_size(px * f64::from(pango::SCALE));
+    font.set_weight(weight);
+    layout.set_font_description(Some(&font));
+    layout.set_text(value);
+    layout.set_width((width.max(1.0) * f64::from(pango::SCALE)) as i32);
+    layout.set_wrap(pango::WrapMode::WordChar);
+    color(cr, rgb, 1.0);
+    cr.move_to(x, y);
     pangocairo::functions::show_layout(cr, &layout);
 }
 
@@ -2654,54 +2692,43 @@ fn paint_help(
 ) {
     let aid = services.is_some_and(|s| s.navigation_aid);
     let style = visual_style(theme, "controls");
-    let (scale, x) = crate::help::transform(width, height);
+    let scroll = services.map_or(0.0, |s| s.help_scroll);
+    let lay = crate::help::layout(width, height, aid);
+    let w = lay.column_w;
     let _ = cr.save();
-    cr.translate(x, 0.0);
-    cr.scale(scale, scale);
-    heading(
+    cr.translate(lay.x, -scroll);
+    cr.scale(lay.scale, lay.scale);
+    // Text is drawn at the layout's own sizes (the roles at the current
+    // step), so every wrapped line lands where `help::layout` measured it.
+    wrapped_text(
         cr,
         if aid { "Navigation buttons" } else { "Help" },
-        24.0,
-        32.0,
-        520.0,
-        32.0,
+        lay.intro.0,
+        lay.heading_y,
+        w,
+        lay.title_px,
         style.text,
+        pango::Weight::Bold,
     );
-    text(
-        cr,
-        "These controls appear only while this view is open.",
-        24.0,
-        100.0,
-        520.0,
-        18.0,
-        style.muted,
-    );
-    if !aid {
-        for (i, (title, detail)) in crate::help::GUIDE.iter().enumerate() {
-            let y = 168.0 + i as f64 * 88.0;
-            text(cr, title, 24.0, y, 520.0, 22.0, style.text);
-            text(cr, detail, 24.0, y + 32.0, 520.0, 18.0, style.muted);
-        }
+    let (ix, iy) = lay.intro;
+    wrapped_text(cr, crate::help::INTRO, ix, iy, w, lay.caption_px, style.muted, pango::Weight::Normal);
+    for ((title, detail), ((tx, ty), (dx, dy))) in crate::help::GUIDE.iter().zip(&lay.guide) {
+        wrapped_text(cr, title, *tx, *ty, w, lay.label_px, style.text, pango::Weight::Medium);
+        wrapped_text(cr, detail, *dx, *dy, w, lay.caption_px, style.muted, pango::Weight::Normal);
     }
-    for (i, (action, label, detail)) in crate::help::buttons(aid).iter().enumerate() {
-        let (x, y, w, h) = crate::help::button_rect(width, height, aid, i);
-        service_card(cr, theme, "controls", x, y, w, h, false);
+    let buttons = crate::help::buttons(aid).iter().zip(&lay.buttons).zip(&lay.button_text);
+    for (((action, label, detail), &(x, y, bw, bh)), &(label_y, detail_y)) in buttons {
+        service_card(cr, theme, "controls", x, y, bw, bh, false);
         let pending =
             *action == crate::help::Action::Home && services.is_some_and(|s| s.help_home_pending);
-        text(
-            cr,
-            if pending { "Opening Home…" } else { label },
-            x + 24.0,
-            y + 22.0,
-            w - 48.0,
-            26.0,
-            style.accent,
-        );
-        text(cr, detail, x + 24.0, y + 62.0, w - 48.0, 18.0, style.muted);
+        let inner = bw - 48.0;
+        let label = if pending { "Opening Home…" } else { label };
+        wrapped_text(cr, label, x + 24.0, label_y, inner, lay.label_px, style.accent, pango::Weight::Normal);
+        wrapped_text(cr, detail, x + 24.0, detail_y, inner, lay.caption_px, style.muted, pango::Weight::Normal);
     }
     if let Some(message) = services.and_then(|s| s.message.as_deref()) {
-        let (mx, my) = crate::help::message_origin(width, height);
-        text(cr, message, mx, my, 520.0, 20.0, style.error);
+        let (mx, my) = lay.message;
+        wrapped_text(cr, message, mx, my, w, lay.caption_px, style.error, pango::Weight::Normal);
     }
     let _ = cr.restore();
 }
@@ -5991,6 +6018,7 @@ impl RendererCache {
         let name = icon_theme_name_for(theme.as_ref());
         self.icons.set_theme(&name);
         crate::set_layout_text_scale(vision_text_scale(theme.as_ref()));
+        crate::set_layout_theme_font(theme_base_font(theme.as_ref()));
         self.theme = theme;
         self.invalidate();
     }

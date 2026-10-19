@@ -241,6 +241,19 @@ pub fn density_scale(width: u32, height: u32) -> f64 {
 
 thread_local! {
     static LAYOUT_TEXT_SCALE: std::cell::Cell<f64> = const { std::cell::Cell::new(1.0) };
+    static LAYOUT_THEME_FONT: std::cell::Cell<f64> = const { std::cell::Cell::new(1.0) };
+}
+
+/// The active theme's own text size (`font.base-size` / 12, 0.8-1.25),
+/// before the vision step; set beside `layout_text_scale` for layouts
+/// that measure text before painting it (`help::layout`).
+pub fn layout_theme_font() -> f64 {
+    LAYOUT_THEME_FONT.with(|font| font.get())
+}
+
+pub fn set_layout_theme_font(font: f64) {
+    let font = if font.is_finite() { font.clamp(0.8, 1.25) } else { 1.0 };
+    LAYOUT_THEME_FONT.with(|cell| cell.set(font));
 }
 
 /// The vision text step (1.0-2.0) the shell's layouts reflow for. Set from

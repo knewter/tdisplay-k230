@@ -51,6 +51,7 @@ fn render(path: PathBuf, theme: &AppearanceSnapshot, vision: &VisionChoice, w: u
     let route = match page {
         "settings" | "vision" => Route::Settings,
         "shade" => Route::Shade,
+        "help" => Route::Help,
         _ => Route::Drawer,
     };
     if page == "vision" {
@@ -191,7 +192,7 @@ fn main() {
             contrast: if name.ends_with("high") { "high" } else { "standard" }.into(),
         };
         for (w, h) in [(568u32, 1232u32), (1232, 568)] {
-            for page in ["settings", "vision", "shade", "drawer"] {
+            for page in ["settings", "vision", "shade", "drawer", "help"] {
                 render(out.join(format!("{name}-{page}-{w}x{h}.png")), &theme, &vision, w, h, page);
             }
             render_home(out.join(format!("{name}-home-{w}x{h}.png")), &theme, w, h);

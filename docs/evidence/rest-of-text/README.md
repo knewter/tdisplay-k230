@@ -11,6 +11,12 @@ Evidence class: host renders unless a section says otherwise.
 - `host-banner-1232x568.png`, `host-banner-568x1232.png`: the top 140 px of
   `render_notification_banner_evidence`'s trusted-source banner at 100%
   (task 2.1).
+- `host-help-steps.png`: `<step>-help-568x1232.png` from
+  `render_accessibility_scale_evidence` at 100%, 125%, 150% and 200%,
+  side by side at half size (task 2.2). At 200% the rest scrolls.
+- `host-help-wide.png`: from top, 1232x568 at 125% and 200% (catppuccin
+  generations), then `render_responsive_evidence`'s `help-1232x568.png`
+  (100%) and `help-1920x1080.png` scaled to 1232 wide.
 
 Limits: no board captures yet (task 3.1). The volume HUD's expanded rows
 are covered by unit tests only; they need streams playing on the board.
