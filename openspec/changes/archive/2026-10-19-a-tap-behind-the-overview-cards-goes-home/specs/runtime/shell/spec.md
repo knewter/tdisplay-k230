@@ -2,10 +2,10 @@
 
 ### Requirement: A tap behind the Overview cards goes Home
 
-Grounded by the landscape panel captures and filtered journal in
+*Grounding: landscape panel captures and filtered journal in
 `docs/evidence/overview-backdrop-tap/README.md`, and the operator's
 physical glass confirmation in
-`docs/evidence/overview-backdrop-tap/operator-signoff.md` (2026-10-19).
+`docs/evidence/overview-backdrop-tap/operator-signoff.md` (2026-10-19).*
 Multi-contact rejection has host policy proof; the physical report covers
 backdrop taps and retained apps. The system userspace shell owns this
 behavior.
