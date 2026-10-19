@@ -31,9 +31,12 @@ Evidence class: host renders unless a section says otherwise.
   themes. Thumbnails are not decoded in this renderer, so cards show their
   loading spinners; the text and card sizes are the evidence.
 - `host-themes-1232x568.png`: the landscape chooser at 100% (top) and 200%,
-  half size. With seven themes the grid's cards would be about 94 px wide,
-  too narrow for role-size names, so the panel shows the carousels;
-  monitors keep the grid (unit test).
+  half size: the two carousels side by side.
+- `host-themes-1920x1080.png`: `render_landscape_surfaces`'
+  `theme-chooser-1920x1080.png` at half size. Every output now shows the
+  carousels (operator, 2026-10-19: "even the larger displays should show
+  the omarchy-style theme switcher"); on a monitor they grow to fill each
+  half.
 - `host-menu-splash-{568x1232,1232x568}.png`: the app actions (recovery)
   menu with three rows, then the "That window has closed" recovery splash,
   each at 100% and 200%, half size (`<step>-menu-*`, `<step>-splash-*`).

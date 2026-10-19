@@ -1511,78 +1511,6 @@ fn paint_carousel(
     }
 }
 
-/// One card of a wide chooser grid: its name, whether it is the one in use,
-/// and whether its label reports a problem (a video background).
-struct GridCard<'a> {
-    id: &'a str,
-    label: String,
-    current: bool,
-    problem: bool,
-}
-
-/// A wide chooser column: every card at rest size with its name below, the
-/// one in use outlined, a wash under a finger and a spinner while applying.
-#[allow(clippy::too_many_arguments)]
-fn paint_grid(
-    cr: &Context,
-    theme: Option<&AppearanceSnapshot>,
-    dim_color: u32,
-    style: VisualStyle,
-    thumbnails: Option<&ThemeThumbnailCache>,
-    grid: &crate::theme_ui::Grid,
-    cards: &[GridCard],
-    pressed: Option<usize>,
-    busy: Option<usize>,
-    pulse_phase: f64,
-) {
-    let scrim = theme_brush(theme, "image-picker", "scrim");
-    let fallback = palette_rgb_or(theme, "background", 0x1b2830);
-    for (index, card) in cards.iter().enumerate() {
-        let (x, y, w, h) = grid.rect(index);
-        let image = thumbnails
-            .and_then(|cache| cache.get(card.id, Variant::Expanded))
-            .filter(|image| image.width() > 0 && image.height() > 0);
-        let (sw, sh) = (w.round().max(1.0) as i32, h.round().max(1.0) as i32);
-        let key = CardKey {
-            id: card.id.to_owned(),
-            variant: Variant::Expanded.tag(),
-            image: image.map_or(0, |image| image.to_raw_none() as usize),
-            width: sw,
-            height: sh,
-            skew: 0,
-            blend: 0,
-            look: format!("{scrim:?}/{dim_color}/{fallback}"),
-        };
-        CARD_SPRITES.with(|sprites| {
-            sprites.borrow_mut().draw(cr, key, true, image, scrim, dim_color, fallback, (x.round(), y.round()));
-        });
-        let spin = |cr: &Context, scale: f64| {
-            spinner(cr, x + w / 2.0, y + h / 2.0, (w.min(h) * scale).max(8.0), pulse_phase, style.accent);
-        };
-        if Some(index) == busy {
-            spin(cr, 0.18);
-        } else if image.is_none() {
-            spin(cr, 0.12);
-        }
-        if Some(index) == pressed && Some(index) != busy {
-            rounded(cr, x, y, w, h, 14.0);
-            color(cr, style.accent, 0.28);
-            let _ = cr.fill();
-        }
-        // The Chosen rim (design.md §9) around the current theme; its
-        // preview stays unfilled.
-        if card.current {
-            let out = CHOSEN_RIM + 1.0;
-            rounded(cr, x - out, y - out, w + 2.0 * out, h + 2.0 * out, 14.0 + out);
-            cr.set_line_width(CHOSEN_RIM);
-            color(cr, style.accent, 1.0);
-            let _ = cr.stroke();
-        }
-        let tone = if card.problem { style.error } else if card.current { style.accent } else { style.text };
-        wrapped_text_lines(cr, &card.label, x, y + h + 5.0, w, context_font_size(cr, TYPE_CAPTION), tone, 2);
-    }
-}
-
 #[allow(clippy::too_many_arguments)]
 /// Settings' Vision page: two toggle cards, larger text and high contrast,
 /// each a full 99 px tap target (`theme_ui::ThemeView::hit`). A tap saves the
@@ -1731,7 +1659,7 @@ fn paint_theme_chooser(
     };
     text(
         cr,
-        if lay.theme_grid.is_some() { "Tap a theme to apply it" } else { "Drag to browse · tap the centre to apply" },
+        "Drag to browse · tap the centre to apply",
         hint_x,
         lay.themes_hint.1,
         lay.theme_text.1 - (hint_x - lay.theme_text.0),
@@ -1739,18 +1667,6 @@ fn paint_theme_chooser(
         style.muted,
     );
     match &view.list {
-        Some(list) if lay.theme_grid.is_some() && !list.themes.is_empty() => {
-            let cards: Vec<GridCard> = list.themes.iter().map(|entry| GridCard {
-                id: entry.id.as_str(),
-                label: entry.label.clone(),
-                current: list.active.id.as_deref() == Some(entry.id.as_str()),
-                problem: false,
-            }).collect();
-            if let Some(grid) = lay.theme_grid.as_ref() {
-                paint_grid(cr, theme, dim_color, style, thumbnails, grid, &cards,
-                    view.theme_pressed, view.applying_theme_index(), pulse_phase);
-            }
-        }
         Some(list) if !list.themes.is_empty() => {
             let center_x = lay.theme_cx;
             let ids: Vec<&str> = list.themes.iter().map(|t| t.id.as_str()).collect();
@@ -1867,22 +1783,6 @@ fn paint_theme_chooser(
         }
     }
     match view.preview.as_ref() {
-        Some(preview) if lay.background_grid.is_some() && !preview.backgrounds.is_empty() => {
-            let cards: Vec<GridCard> = preview.backgrounds.iter().map(|background| {
-                let video = background.kind == BackgroundKind::Video;
-                let name = background_display_label(&background.label);
-                GridCard {
-                    id: background.id.as_str(),
-                    label: if video { format!("{name} · video unavailable") } else { name },
-                    current: background.selected,
-                    problem: video,
-                }
-            }).collect();
-            if let Some(grid) = lay.background_grid.as_ref() {
-                paint_grid(cr, theme, dim_color, style, thumbnails, grid, &cards,
-                    view.background_pressed, view.applying_background_index(), pulse_phase);
-            }
-        }
         Some(preview) if !preview.backgrounds.is_empty() => {
             let center_x = lay.background_cx;
             let ids: Vec<&str> = preview.backgrounds.iter().map(|b| b.id.as_str()).collect();
@@ -5700,10 +5600,6 @@ fn picker_row_changes(old: &ThemeView, new: &ThemeView) -> Option<u8> {
 /// Integer device-space bands enclose outlines and both row labels.
 fn picker_row_clip(mask: u8, width: u32, height: u32, view: Option<&ThemeView>) -> (f64, f64) {
     let lay = view.map_or_else(|| crate::theme_ui::chooser_layout(width, height), |view| view.layout(width, height));
-    // Grids sit side by side: repaint from the grids' top to the bottom edge.
-    if lay.theme_grid.is_some() || lay.background_grid.is_some() {
-        return ((lay.theme_top.min(lay.background_top) - 8.0).floor(), f64::from(height));
-    }
     let top = if mask & 1 != 0 { lay.theme_top - 4.0 } else { lay.background_top - 4.0 };
     let bottom = if mask & 2 != 0 {
         lay.background_top + lay.background_geometry.expanded_h + crate::theme_ui::carousel_label_h() + 4.0
@@ -5724,30 +5620,6 @@ fn theme_picker_working_set(chooser: Option<&ThemeView>, viewport_width: u32, vi
         return Vec::new();
     }
     let lay = chooser.layout(viewport_width, viewport_height);
-    // A grid shows every card at one size: decode each once, in order.
-    if lay.theme_grid.is_some() || lay.background_grid.is_some() {
-        let mut keys = Vec::new();
-        let mut cards = |grid: Option<crate::theme_ui::Grid>, rows: Vec<(&str, &std::path::Path)>| {
-            let Some(grid) = grid else { return };
-            for (id, path) in rows {
-                keys.push(ThumbnailKey {
-                    id: id.to_owned(),
-                    path: path.to_owned(),
-                    variant: Variant::Expanded,
-                    width: grid.card_w.round() as u32,
-                    height: grid.card_h.round() as u32,
-                });
-            }
-        };
-        cards(lay.theme_grid, chooser.list.as_ref().map_or_else(Vec::new, |list| {
-            list.themes.iter().filter_map(|t| Some((t.id.as_str(), t.preview_path.as_deref()?))).collect()
-        }));
-        cards(lay.background_grid, chooser.preview.as_ref().map_or_else(Vec::new, |preview| {
-            preview.backgrounds.iter().filter(|b| b.kind == BackgroundKind::Image)
-                .map(|b| (b.id.as_str(), b.path.as_path())).collect()
-        }));
-        return bounded_working_set(keys);
-    }
     let mut requested = Vec::new();
     fn add<'a>(
         requested: &mut Vec<(f64, ThumbnailKey)>,

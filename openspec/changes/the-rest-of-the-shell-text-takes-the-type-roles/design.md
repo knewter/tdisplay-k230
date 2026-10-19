@@ -27,8 +27,9 @@ shell text rather than ellipsize it.
   taller than the output. A Wi-Fi Entry page that does not fit above the
   raised keyboard pans up, header included.
 - **Theme chooser.** The portrait carousels take the height the role text
-  leaves. A wide grid whose cards are too narrow for role-size names falls
-  back to the carousels.
+  leaves. Every output shows the omarchy-style carousels; the wide card
+  grid is removed (operator decision 2026-10-19), and on a monitor the
+  carousels grow, each centred card up to 70% of its half.
 - **Card Overview.** The C card shell mirrors the roles as `CARD_TYPE_*` in
   `render.h` and sizes each label box from the theme's font scale.
 
@@ -39,5 +40,4 @@ shell text rather than ellipsize it.
 - Long app names ("Terminal", "Settings") are shortened in a narrow cell.
 - Network names, app names and one-line status messages can still end in
   "…" when they are longer than their line at a large step.
-- On the 1232x568 panel the chooser shows carousels instead of the grid
-  with seven or more themes.
+- Monitors lose the all-at-once theme grid; browsing is by carousel only.

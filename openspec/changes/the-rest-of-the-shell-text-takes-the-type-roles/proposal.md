@@ -23,6 +23,8 @@ text by hand, well under that floor:
 - Widget captions, the volume HUD's rows, the notification banner, the Wi-Fi pages,
   the Help page, the theme chooser, the recovery menu and splash, and the
   card Overview's title and footer move onto the roles.
+- The theme chooser shows its carousels on every output; the wide card
+  grid is removed (operator decision 2026-10-19).
 - Each surface reflows without clipping, ellipsizing or overlapping its own
   text at all four steps and in high contrast, in both orientations.
 

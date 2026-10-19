@@ -55,9 +55,10 @@
   Progress 2026-10-19 (host): the theme chooser's headings and card names
   are Label, its hint, statuses, feedback and message Caption. Portrait
   sizes both carousels from the room that text leaves (the hero card is
-  530 px tall at 100%, was 640). Grid names wrap to two lines; when a
-  grid's cards are narrower than about five Caption characters (seven
-  themes on the 1232x568 panel) the chooser shows its carousels instead.
+  530 px tall at 100%, was 640). The operator then asked for the
+  carousels on every output ("even the larger displays should show the
+  omarchy-style theme switcher"), so the wide grid is removed and on a
+  monitor the carousels grow to fill each half.
   Renders: `docs/evidence/rest-of-text/host-themes-*.png`. All test
   targets pass. Recovery and the card Overview remain.
   Progress 2026-10-19 (host): the app actions (recovery) menu names the

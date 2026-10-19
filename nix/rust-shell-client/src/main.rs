@@ -1217,9 +1217,6 @@ struct ShellClient {
     themes: ThemeWorker,
     theme_view: ThemeView,
     theme_carousel: Carousel,
-    /// A finger down on a wide chooser's grid card: `(touch id, start,
-    /// background grid?, card index)`. Drives the card's pressed wash.
-    grid_press: Option<(i32, (f64, f64), bool, usize)>,
     background_carousel: Carousel,
     panel_start: Option<(i32, (f64, f64))>,
     trackpad_pan_start: Option<(f64, f64)>,
@@ -1933,15 +1930,12 @@ impl ShellClient {
 
     fn sync_theme_pressed(&mut self) {
         let lay = self.theme_view.layout(self.width, self.height);
-        let grid = lay.theme_grid.is_some().then(|| {
-            self.grid_press.filter(|press| !press.2).map(|press| press.3)
-        });
-        let want = if let Some(grid) = grid { grid } else { (self.theme_view.page == ThemePage::List)
+        let want = (self.theme_view.page == ThemePage::List)
             .then(|| {
                 let count = self.theme_view.list.as_ref().map_or(0, |l| l.themes.len());
                 self.theme_carousel.pressed(count, lay.theme_cx, lay.theme_top)
             })
-            .flatten() };
+            .flatten();
         if self.theme_view.theme_pressed != want {
             self.theme_view.theme_pressed = want;
             self.theme_dirty();
@@ -1952,10 +1946,7 @@ impl ShellClient {
     /// carousel, below the theme carousel on this same List page.
     fn sync_background_pressed(&mut self) {
         let lay = self.theme_view.layout(self.width, self.height);
-        let grid = lay.background_grid.is_some().then(|| {
-            self.grid_press.filter(|press| press.2).map(|press| press.3)
-        });
-        let want = if let Some(grid) = grid { grid } else { (self.theme_view.page == ThemePage::List)
+        let want = (self.theme_view.page == ThemePage::List)
             .then(|| {
                 let count = self
                     .theme_view
@@ -1965,7 +1956,7 @@ impl ShellClient {
                 self.background_carousel
                     .pressed(count, lay.background_cx, lay.background_top)
             })
-            .flatten() };
+            .flatten();
         if self.theme_view.background_pressed != want {
             self.theme_view.background_pressed = want;
             self.theme_dirty();
@@ -5337,12 +5328,6 @@ impl ShellClient {
                             } else if lay.in_background_band(pos) {
                                 self.background_carousel.down(id, pos, time_ms);
                                 self.sync_background_pressed();
-                            } else if let Some(index) = lay.theme_grid.and_then(|g| g.hit(pos)) {
-                                self.grid_press = Some((id, pos, false, index));
-                                self.sync_theme_pressed();
-                            } else if let Some(index) = lay.background_grid.and_then(|g| g.hit(pos)) {
-                                self.grid_press = Some((id, pos, true, index));
-                                self.sync_background_pressed();
                             }
                         }
                     }
@@ -5378,7 +5363,6 @@ impl ShellClient {
                 }
                 self.theme_carousel.cancel();
                 self.background_carousel.cancel();
-                self.grid_press = None;
                 self.sync_theme_pressed();
                 self.sync_background_pressed();
                 self.wifi_dragged = false;
@@ -5737,7 +5721,6 @@ impl ShellClient {
                                     } else {
                                         (None, false)
                                     };
-                                self.grid_press = None;
                                 self.sync_theme_pressed();
                                 self.sync_background_pressed();
                                 match carousel_outcome {
@@ -6206,11 +6189,6 @@ impl ShellClient {
                     .preview
                     .as_ref()
                     .map_or(0, |p| p.backgrounds.len());
-                if self.grid_press.is_some_and(|press| {
-                    press.0 == id && ((pos.0 - press.1 .0).abs() > 18.0 || (pos.1 - press.1 .1).abs() > 18.0)
-                }) {
-                    self.grid_press = None;
-                }
                 if self.theme_carousel.motion(id, pos, time_ms, theme_count) {
                     self.theme_view.theme_position = self.theme_carousel.position();
                     self.theme_dirty();
@@ -6266,7 +6244,6 @@ impl ShellClient {
         self.renderer.set_services(self.service_view.clone());
         self.theme_carousel.cancel();
         self.background_carousel.cancel();
-        self.grid_press = None;
         self.sync_theme_pressed();
         self.sync_background_pressed();
         self.log("touch-cancel");
@@ -6797,7 +6774,6 @@ fn serve() -> Result<(), String> {
             ..ThemeView::default()
         },
         theme_carousel: Carousel::new(THEME_GEOMETRY),
-        grid_press: None,
         background_carousel: Carousel::new(BACKGROUND_GEOMETRY),
         panel_start: None,
         trackpad_pan_start: None,

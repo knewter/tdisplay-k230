@@ -2065,6 +2065,7 @@ DATA f485463e5cddad72e96e4da6ed9ec324fdfe9e5a121dbab138db9dda3ae77dc4 docs/evide
 DATA 356bd1051e47d4d8c3c766deadd32b1f9bc566bb55fc8e77274098d88d061d17 docs/evidence/rest-of-text/host-themes-1232x568.png
 DATA 7ed97151eb5301a3c567ce5e62f2e32fad72ee8e7296afb1db073b1fd08061b8 docs/evidence/rest-of-text/host-menu-splash-568x1232.png
 DATA b537a8fb335420c5812d18d81b0ea6c9ee3880390a81b4db884594de703476d7 docs/evidence/rest-of-text/host-menu-splash-1232x568.png
+DATA 7533a7fc5e336eaa337f4943939f199a1da62b6fb3f774b44b2445ff4bcd9130 docs/evidence/rest-of-text/host-themes-1920x1080.png
 DATA 84944d451c4c5266e381fbac4b859350e3c50e7b36d9f583f3b2de2ea22c5dea docs/evidence/rest-of-text/host-home-widgets-steps.png
 DATA 358c0360d0755c724e7b8ea13cfbcd5ff9b357ea568f2d408ce9ab40e6a19c0c docs/evidence/rest-of-text/host-wifi-200-568x1232.png
 DATA cb857af450c15fd308bad5d86ef53d3613567cdaed92be693785a423deb9ec81 docs/evidence/rest-of-text/host-wifi-200-1232x568.png
@@ -3592,6 +3593,7 @@ Command and limits: `docs/evidence/battery-details-widget/host/README.md`.
 | `docs/evidence/rest-of-text/host-themes-1232x568.png` | 69206 | DATA | `356bd1051e47d4d8c3c766deadd32b1f9bc566bb55fc8e77274098d88d061d17` |
 | `docs/evidence/rest-of-text/host-menu-splash-568x1232.png` | 72239 | DATA | `7ed97151eb5301a3c567ce5e62f2e32fad72ee8e7296afb1db073b1fd08061b8` |
 | `docs/evidence/rest-of-text/host-menu-splash-1232x568.png` | 71885 | DATA | `b537a8fb335420c5812d18d81b0ea6c9ee3880390a81b4db884594de703476d7` |
+| `docs/evidence/rest-of-text/host-themes-1920x1080.png` | 37691 | DATA | `7533a7fc5e336eaa337f4943939f199a1da62b6fb3f774b44b2445ff4bcd9130` |
 | `docs/evidence/rest-of-text/host-home-widgets-steps.png` | 169349 | DATA | `84944d451c4c5266e381fbac4b859350e3c50e7b36d9f583f3b2de2ea22c5dea` |
 | `docs/evidence/rest-of-text/host-wifi-200-568x1232.png` | 231358 | DATA | `358c0360d0755c724e7b8ea13cfbcd5ff9b357ea568f2d408ce9ab40e6a19c0c` |
 | `docs/evidence/rest-of-text/host-wifi-200-1232x568.png` | 231872 | DATA | `cb857af450c15fd308bad5d86ef53d3613567cdaed92be693785a423deb9ec81` |

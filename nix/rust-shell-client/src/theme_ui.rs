@@ -458,120 +458,12 @@ pub struct ChooserLayout {
     /// Y of the single pending/error/message line at the bottom of the
     /// background column.
     pub message_y: f64,
-    /// Wide surfaces show every theme and every background at once as a
-    /// grid of cards (tap a card to apply) instead of the two carousels.
-    pub theme_grid: Option<Grid>,
-    pub background_grid: Option<Grid>,
-}
-
-/// Card grid of one column: `count` cards of `card_w`x`card_h`, `cols`
-/// across, each with a label line below it.
-#[derive(Clone, Copy, Debug, PartialEq)]
-pub struct Grid {
-    pub x: f64,
-    pub y: f64,
-    pub cols: usize,
-    pub count: usize,
-    pub card_w: f64,
-    pub card_h: f64,
-    pub gap: f64,
-}
-
-/// Height of the name (up to two Caption lines, under a 5 px gap) under
-/// each grid card.
-pub fn grid_label_h() -> f64 {
-    5.0 + 2.0 * chooser_lines().1 + 3.0
-}
-
-/// The narrowest grid card whose name still reads: about five Caption
-/// characters a line. Narrower, the wide chooser uses its carousels.
-fn grid_min_card_w() -> f64 {
-    let s = crate::layout_text_scale().max(1.0) * crate::layout_theme_font();
-    4.5 * crate::render::TYPE_CAPTION * s
-}
-
-impl Grid {
-    /// The largest cards of aspect `h_per_w` that fit `count` of them in
-    /// `(x, y, w, h)`, aligned with the column's text, never wider than `max_w`.
-    pub fn fit(count: usize, (x, y, w, h): (f64, f64, f64, f64), h_per_w: f64, max_w: f64) -> Grid {
-        let gap = 16.0;
-        let count = count.max(1);
-        let mut best = (1, 0.0);
-        for cols in 1..=count {
-            let rows = count.div_ceil(cols) as f64;
-            let by_width = (w - gap * (cols - 1) as f64) / cols as f64;
-            let by_height = ((h - gap * (rows - 1.0)) / rows - grid_label_h()) / h_per_w;
-            let card_w = by_width.min(by_height).min(max_w);
-            if card_w > best.1 {
-                best = (cols, card_w);
-            }
-        }
-        let (cols, card_w) = (best.0, best.1.max(1.0).floor());
-        Grid {
-            x: x.round(),
-            y,
-            cols,
-            count,
-            card_w,
-            card_h: (card_w * h_per_w).round(),
-            gap,
-        }
-    }
-
-    pub fn rect(&self, index: usize) -> (f64, f64, f64, f64) {
-        let (col, row) = ((index % self.cols) as f64, (index / self.cols) as f64);
-        (
-            self.x + col * (self.card_w + self.gap),
-            self.y + row * (self.card_h + grid_label_h() + self.gap),
-            self.card_w,
-            self.card_h,
-        )
-    }
-
-    /// The card (its image or its label line) under `pos`.
-    pub fn hit(&self, pos: (f64, f64)) -> Option<usize> {
-        (0..self.count).find(|&index| {
-            let (x, y, w, h) = self.rect(index);
-            pos.0 >= x && pos.0 < x + w && pos.1 >= y && pos.1 < y + h + grid_label_h()
-        })
-    }
-}
-
-/// `chooser_layout` with the grids sized for the themes and backgrounds
-/// actually listed. Without counts (`chooser_layout`) the wide layout has
-/// no grids and falls back to the carousels.
-pub fn chooser_layout_for(width: u32, height: u32, themes: usize, backgrounds: usize) -> ChooserLayout {
-    let mut lay = chooser_layout(width, height);
-    if lay.wide {
-        let h = f64::from(height);
-        lay.message_y = h - chooser_lines().1 - 12.0;
-        let bottom = lay.message_y - 8.0;
-        let (tx, tw) = lay.theme_text;
-        let (bx, bw) = lay.background_text;
-        let readable = |grid: Grid| (grid.card_w >= grid_min_card_w()).then_some(grid);
-        let theme_grid = (themes > 0).then(|| Grid::fit(themes, (tx, lay.theme_top, tw, bottom - lay.theme_top), 4.0 / 3.0, 240.0));
-        let background_grid = (backgrounds > 0).then(|| Grid::fit(backgrounds, (bx, lay.background_top, bw, bottom - lay.background_top), 475.0 / 768.0, 360.0));
-        // Both grids or neither: at a large step whose names no longer fit
-        // their cards, the carousels show one name at a time instead.
-        if theme_grid.is_none_or(|g| readable(g).is_some()) && background_grid.is_none_or(|g| readable(g).is_some()) {
-            lay.theme_grid = theme_grid;
-            lay.background_grid = background_grid;
-        } else {
-            lay.message_y = chooser_layout(width, height).message_y;
-        }
-    }
-    lay
 }
 
 impl ThemeView {
     /// The chooser layout for this view's own lists at a surface size.
     pub fn layout(&self, width: u32, height: u32) -> ChooserLayout {
-        chooser_layout_for(
-            width,
-            height,
-            self.list.as_ref().map_or(0, |l| l.themes.len()),
-            self.preview.as_ref().map_or(0, |p| p.backgrounds.len()),
-        )
+        chooser_layout(width, height)
     }
 }
 
@@ -608,9 +500,10 @@ pub fn carousel_label_h() -> f64 {
 
 const CAROUSEL_LABEL_GAP: f64 = 12.0;
 
-/// `geometry` scaled to `height`, every measure in proportion.
-fn scaled(geometry: crate::theme_carousel::CarouselGeometry, height: f64) -> crate::theme_carousel::CarouselGeometry {
-    let f = (height / geometry.expanded_h).min(1.0);
+/// `geometry` scaled to `height` (never past `max` times its own size),
+/// every measure in proportion.
+fn scaled_up_to(geometry: crate::theme_carousel::CarouselGeometry, height: f64, max: f64) -> crate::theme_carousel::CarouselGeometry {
+    let f = (height / geometry.expanded_h).min(max);
     crate::theme_carousel::CarouselGeometry {
         expanded_w: (geometry.expanded_w * f).round(),
         expanded_h: (geometry.expanded_h * f).round(),
@@ -619,6 +512,10 @@ fn scaled(geometry: crate::theme_carousel::CarouselGeometry, height: f64) -> cra
         skew: (geometry.skew * f).round(),
         spacing: (geometry.spacing * f).round(),
     }
+}
+
+fn scaled(geometry: crate::theme_carousel::CarouselGeometry, height: f64) -> crate::theme_carousel::CarouselGeometry {
+    scaled_up_to(geometry, height, 1.0)
 }
 
 /// Text sits on the shell's type roles: the "Themes" and "Backgrounds"
@@ -638,8 +535,13 @@ pub fn chooser_layout(width: u32, height: u32) -> ChooserLayout {
         // Above the bottom message line.
         let message_y = h - caption - 12.0;
         let room = message_y - 8.0 - label_block - top;
-        let theme_geometry = scaled(crate::theme_carousel::THEME_GEOMETRY_WIDE, room);
-        let background_geometry = scaled(crate::theme_carousel::BACKGROUND_GEOMETRY, room);
+        // A larger monitor grows both carousels, each centred card at most
+        // 70% of its half's width.
+        let grow = |g: crate::theme_carousel::CarouselGeometry| {
+            scaled_up_to(g, room, (half * 0.7 / g.expanded_w).max(1.0))
+        };
+        let theme_geometry = grow(crate::theme_carousel::THEME_GEOMETRY_WIDE);
+        let background_geometry = grow(crate::theme_carousel::BACKGROUND_GEOMETRY);
         ChooserLayout {
             wide: true,
             theme_geometry,
@@ -659,8 +561,6 @@ pub fn chooser_layout(width: u32, height: u32) -> ChooserLayout {
             backgrounds_heading: (half + 28.0, heading_y),
             feedback: (half + 190.0, heading_y + (label - caption) / 2.0, half - 218.0),
             message_y: (top + background_geometry.expanded_h + label_block + 12.0).min(message_y),
-            theme_grid: None,
-            background_grid: None,
         }
     } else {
         let center = w / 2.0;
@@ -707,8 +607,6 @@ pub fn chooser_layout(width: u32, height: u32) -> ChooserLayout {
             backgrounds_heading: (28.0, background_top - label - 8.0),
             feedback: (center, background_top - label - 8.0 + (label - caption) / 2.0, center - 28.0),
             message_y,
-            theme_grid: None,
-            background_grid: None,
         }
     }
 }
@@ -716,8 +614,7 @@ pub fn chooser_layout(width: u32, height: u32) -> ChooserLayout {
 impl ChooserLayout {
     /// Whether a touch at `pos` lands in the theme carousel's band.
     pub fn in_theme_band(&self, pos: (f64, f64)) -> bool {
-        self.theme_grid.is_none()
-            && pos.0 >= self.theme_cols.0
+        pos.0 >= self.theme_cols.0
             && pos.0 < self.theme_cols.1
             && pos.1 >= self.theme_top
             && pos.1 < self.theme_top + self.theme_geometry.expanded_h
@@ -725,8 +622,7 @@ impl ChooserLayout {
 
     /// Same, for the background carousel's band.
     pub fn in_background_band(&self, pos: (f64, f64)) -> bool {
-        self.background_grid.is_none()
-            && pos.0 >= self.background_cols.0
+        pos.0 >= self.background_cols.0
             && pos.0 < self.background_cols.1
             && pos.1 >= self.background_top
             && pos.1 < self.background_top + self.background_geometry.expanded_h
@@ -1402,13 +1298,6 @@ impl ThemeView {
             }
             ThemePage::List => {
                 let lay = self.layout(width, height);
-                let same = |grid: Option<Grid>| grid.and_then(|g| g.hit(start).filter(|&i| g.hit(end) == Some(i)));
-                if let Some(index) = same(lay.theme_grid) {
-                    return Some(ThemeIntent::Theme(index));
-                }
-                if let Some(index) = same(lay.background_grid) {
-                    return Some(ThemeIntent::Background(index));
-                }
                 // The "Backgrounds" heading (and the fit mode it names).
                 let (hx, hy) = lay.backgrounds_heading;
                 if end.0 >= hx
@@ -2878,52 +2767,6 @@ mod tests {
         assert!(lay.message_y >= lay.background_top + lay.background_geometry.expanded_h + carousel_label_h(), "message below the background label");
         // Header: back and Close are above both carousels.
         assert!(lay.header_y + 22.0 <= lay.themes_heading.1 && lay.header_hit_h <= lay.theme_top);
-    }
-
-    #[test]
-    fn wide_choosers_show_every_theme_and_background_as_a_tappable_grid() {
-        for (w, h) in [(1232u32, 568u32), (1280, 720), (1280, 800), (1920, 1080)] {
-            for themes in [1usize, 7, 12] {
-                let view = crate::evidence_render::fixture_theme_view(themes);
-                let backgrounds = view.preview.as_ref().unwrap().backgrounds.len();
-                let lay = view.layout(w, h);
-                // Cards too narrow for their names fall back to the carousels.
-                let (Some(tg), Some(bg)) = (lay.theme_grid, lay.background_grid) else {
-                    assert!(lay.theme_grid.is_none() && lay.background_grid.is_none(), "{w}x{h} {themes}: both or neither");
-                    assert!((w, h) == (1232, 568) || themes == 12, "{w}x{h} {themes}: monitors keep the grid");
-                    // The message line is in the background column, under its carousel.
-                    assert!(lay.theme_top + lay.theme_geometry.expanded_h + carousel_label_h() <= f64::from(h));
-                    assert!(lay.background_top + lay.background_geometry.expanded_h + carousel_label_h() <= lay.message_y);
-                    continue;
-                };
-                let (fw, fh) = (f64::from(w), f64::from(h));
-                for (name, grid, count, cols) in [("theme", tg, themes, lay.theme_cols), ("background", bg, backgrounds, lay.background_cols)] {
-                    assert!(grid.card_w >= grid_min_card_w(), "{w}x{h} {themes}: {name} cards readable: {}", grid.card_w);
-                    for i in 0..count {
-                        let (x, y, cw, ch) = grid.rect(i);
-                        assert!(x >= cols.0 && x + cw <= cols.1 && x + cw <= fw, "{w}x{h} {name} {i} inside its column");
-                        assert!(y >= lay.theme_top && y + ch + grid_label_h() <= lay.message_y + 1e-9, "{w}x{h} {themes}: {name} {i} label above the message line");
-                        for j in 0..i {
-                            let (ox, oy, ow, oh) = grid.rect(j);
-                            assert!(x >= ox + ow || ox >= x + cw || y >= oy + oh + grid_label_h() || oy >= y + ch + grid_label_h(), "{name} {i} overlaps {j}");
-                        }
-                        let centre = (x + cw / 2.0, y + ch / 2.0);
-                        let want = if name == "theme" { ThemeIntent::Theme(i) } else { ThemeIntent::Background(i) };
-                        assert_eq!(view.hit(centre, centre, w, h), Some(want), "{w}x{h} {themes} {name} {i}");
-                        // A drag across a card applies nothing.
-                        assert_eq!(view.hit(centre, (centre.0 + 30.0, centre.1), w, h), None);
-                    }
-                }
-                assert!(tg.rect(0).0 + tg.card_w <= bg.rect(0).0, "grids side by side");
-                assert!(lay.message_y + 18.0 <= fh && !lay.in_theme_band((tg.rect(0).0 + 5.0, tg.rect(0).1 + 5.0)));
-                // The header still works above the grids.
-                assert_eq!(view.hit((60.0, 30.0), (60.0, 30.0), w, h), Some(ThemeIntent::Back));
-                assert_eq!(view.hit((fw - 50.0, 30.0), (fw - 50.0, 30.0), w, h), Some(ThemeIntent::Close));
-            }
-        }
-        // Portrait keeps the carousels.
-        let view = crate::evidence_render::fixture_theme_view(7);
-        assert!(view.layout(568, 1232).theme_grid.is_none() && view.layout(1280, 1024).theme_grid.is_none());
     }
 
     #[test]
