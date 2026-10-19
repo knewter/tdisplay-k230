@@ -92,3 +92,15 @@ opaque, and every new source generation repeats the certificate. Native
 fixtures cover opaque→transparent→opaque transitions; rounded corners retain
 their geometric mask. Cache-alpha counters separately expose certificates
 and retained-alpha allocations. A new integrated trial is mandatory.
+
+## Conversion result and remaining attribution
+
+Source748545c0's exact unscaled opaque conversion lowers integrated build mean
+to11.210ms, p95 11.828ms, while full/reduced motion still fails at26Hz. The
+512/128-capped follow-up profile observes8 complete gesture passes: texture
+mean7.290ms and rotation4.244ms. Exact block-transpose and tile-size experiments
+are slower, so they are rejected and the current rotation remains unchanged.
+A699,776-pixel draw still averages2.323ms, but geometry does not establish
+its source format, mask or scaling. Add only bounded numeric identities to
+the existing512 draw rows before selecting another rendering boundary.
+No new logging during qualifying motion runs and no8ms render-window change.

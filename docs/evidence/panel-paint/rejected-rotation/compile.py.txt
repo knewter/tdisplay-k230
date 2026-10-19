@@ -1,0 +1,8 @@
+from pathlib import Path
+import subprocess,json
+b=Path(__file__).parent;r=Path('/mnt/MediaVolume/home/jadams/src/gitlab.daringbit.com/josh/tdisplay-k230/.claude/worktrees/panel-paint')
+gcc='/nix/store/4j2mwxqjvnyr6da0925sp0bm4jaj5r5i-riscv64-unknown-linux-gnu-gcc-wrapper-15.3.0/bin/riscv64-unknown-linux-gnu-gcc'
+pix='/nix/store/brhzfimak2r3c23lmn80y1g6ww6nmb1r-pixman-riscv64-unknown-linux-gnu-0.46.4'
+drm='/nix/store/gwy2gbwqmilz8hs0mmnlxv5c90c2sla4-libdrm-riscv64-unknown-linux-gnu-2.4.134-dev/include/libdrm'
+c=[gcc,'-std=c11','-O2','-Wall','-Wextra','-Werror','-I'+str(b/'transpose-prototype'),'-I'+str(b),'-I'+drm,'-I'+pix+'/include/pixman-1',str(b/'transpose-bench.c'),'-L'+pix+'/lib','-Wl,-rpath,'+pix+'/lib','-lpixman-1','-o',str(b/'transpose-bench')]
+(b/'transpose-compile.json').write_text(json.dumps(c,indent=2)+'\n');subprocess.run(c,check=True)

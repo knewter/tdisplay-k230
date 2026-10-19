@@ -5,6 +5,7 @@ let
       ++ lib.optionals quarterTurnTrial [
         ./patches/wlroots-k230-quarter-turn.patch
         ./patches/wlroots-k230-output-turn.patch
+        ./patches/wlroots-k230-draw-formats.patch
       ];
     postPatch = (old.postPatch or "") + ''
       cp ${./card-shell/rounded-clip.h} include/render/k230_rounded_clip.h

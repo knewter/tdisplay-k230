@@ -37,7 +37,7 @@ not uniquely identify an internal Pixman symbol. See profile.json and its
 explicit PARTIAL limits. Visibility remained enabled. Reproduce:
 
 ```sh
-python3 tools/panel-paint-profile.py --log docs/evidence/panel-paint/candidate-opaque-cache/profile.log --output docs/evidence/panel-paint/candidate-opaque-cache/profile.json
+python3 tools/panel-paint-profile.py --log docs/evidence/panel-paint/candidate-opaque-cache/profile.log --workload docs/evidence/panel-paint/candidate-opaque-cache/profile-workload.json --output docs/evidence/panel-paint/candidate-opaque-cache/profile.json
 ```
 
 No camera acceptance was obtained: the separately inspected23:28:12UTC still

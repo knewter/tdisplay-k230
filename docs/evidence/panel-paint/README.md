@@ -188,3 +188,9 @@ The [opaque-cache trial](candidate-opaque-cache/README.md) confirms all cached
 Foot texels are opaque but still fails at26Hz. Its bounded profile selects
 unscaled format conversion next. An [isolated conversion benchmark](conversion-microbenchmark/README.md)
 shows3.4× lower CPU with identical pixels; integrated proof remains open.
+
+The [integrated conversion trial](candidate-conversion/README.md) reduces full
+build CPU to11.210ms mean/11.828ms p95, but both modes still fail latency at26Hz.
+[Rejected rotation variants](rejected-rotation/README.md) preserve the measured
+16-pixel tile. Bounded format/mask/scaling diagnostics are the next step;
+geometry alone does not identify the remaining large draw. Hardware gates stay open.

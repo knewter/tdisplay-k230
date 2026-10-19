@@ -1,0 +1,273 @@
+{
+  "schema": "card-input-cpu-stages-v1",
+  "frame_profile": {
+    "schema": "card-repaint-cpu-stages-v1",
+    "frame_profile": {
+      "schema": "card-frame-cpu-diagnostic-v1",
+      "runs": [
+        {
+          "run": "89663995616338",
+          "cards": 3,
+          "frames": 114,
+          "stages": {
+            "total": {
+              "p95_ms": 15.173635,
+              "max_ms": 15.483704,
+              "mean_ms": 14.300952447368422,
+              "percent_of_total_cpu": 100.0
+            },
+            "render": {
+              "p95_ms": 12.353038,
+              "max_ms": 12.828553,
+              "mean_ms": 11.775693736842106,
+              "percent_of_total_cpu": 82.34202428250855
+            },
+            "input": {
+              "p95_ms": 1.704481,
+              "max_ms": 1.767074,
+              "mean_ms": 1.261760807017544,
+              "percent_of_total_cpu": 8.822914499304735
+            },
+            "other": {
+              "p95_ms": 1.821111,
+              "max_ms": 1.983296,
+              "mean_ms": 1.263497903508772,
+              "percent_of_total_cpu": 8.83506121818672
+            }
+          }
+        }
+      ],
+      "limits": [
+        "Diagnostic CPU subdivision only; not an acceptance decision.",
+        "Render includes scene preparation, renderer and output commit.",
+        "Additional instrumentation has measurement overhead."
+      ]
+    },
+    "runs": [
+      {
+        "run": 89663995616338,
+        "cards": 3,
+        "frames": 114,
+        "stages": {
+          "prepare": {
+            "mean_ms": 0.3070614385964912,
+            "p95_ms": 0.404704,
+            "max_ms": 0.447889,
+            "percent_of_render_cpu": 2.607586826377807
+          },
+          "build": {
+            "mean_ms": 11.210300649122807,
+            "p95_ms": 11.828223,
+            "max_ms": 12.232888,
+            "percent_of_render_cpu": 95.19864306634965
+          },
+          "commit": {
+            "mean_ms": 0.25833164912280704,
+            "p95_ms": 0.287666,
+            "max_ms": 0.297184,
+            "percent_of_render_cpu": 2.1937701072725417
+          }
+        },
+        "attempts": 114,
+        "uncommitted_attempts": 0,
+        "hottest_frames": [
+          {
+            "run": 89663995616338,
+            "frame_id": 69,
+            "render_cpu_ns": 12828553,
+            "prepare_cpu_ns": 325517,
+            "build_cpu_ns": 12232888,
+            "commit_cpu_ns": 270148,
+            "attempts": 1,
+            "failed_attempts": 0,
+            "input_kinds": [
+              "motion"
+            ],
+            "total_cpu_ns": 15302257
+          },
+          {
+            "run": 89663995616338,
+            "frame_id": 60,
+            "render_cpu_ns": 12676634,
+            "prepare_cpu_ns": 419814,
+            "build_cpu_ns": 12030746,
+            "commit_cpu_ns": 226074,
+            "attempts": 1,
+            "failed_attempts": 0,
+            "input_kinds": [
+              "motion"
+            ],
+            "total_cpu_ns": 15173635
+          },
+          {
+            "run": 89663995616338,
+            "frame_id": 100,
+            "render_cpu_ns": 12583331,
+            "prepare_cpu_ns": 317704,
+            "build_cpu_ns": 12055553,
+            "commit_cpu_ns": 210074,
+            "attempts": 1,
+            "failed_attempts": 0,
+            "input_kinds": [
+              "motion"
+            ],
+            "total_cpu_ns": 15190959
+          },
+          {
+            "run": 89663995616338,
+            "frame_id": 66,
+            "render_cpu_ns": 12530966,
+            "prepare_cpu_ns": 298260,
+            "build_cpu_ns": 11967892,
+            "commit_cpu_ns": 264814,
+            "attempts": 1,
+            "failed_attempts": 0,
+            "input_kinds": [
+              "motion"
+            ],
+            "total_cpu_ns": 15121227
+          },
+          {
+            "run": 89663995616338,
+            "frame_id": 184,
+            "render_cpu_ns": 12429555,
+            "prepare_cpu_ns": 290259,
+            "build_cpu_ns": 11889778,
+            "commit_cpu_ns": 249518,
+            "attempts": 1,
+            "failed_attempts": 0,
+            "input_kinds": [
+              "motion"
+            ],
+            "total_cpu_ns": 15099515
+          }
+        ]
+      }
+    ],
+    "limits": [
+      "Diagnostic CPU breakdown; no acceptance decision or optical timing.",
+      "Prepare includes output scene configuration and card preparation.",
+      "Build includes wlroots output-state construction, painting and any tearing test; it is not pure Pixman time.",
+      "Commit measures output commit CPU, not time until light output.",
+      "Uncommitted attempts include no-frame early returns as well as failures.",
+      "Extra clocks/logging have overhead; per-stage p95 values are not additive."
+    ]
+  },
+  "runs": [
+    {
+      "run": 89663995616338,
+      "cards": 3,
+      "inputs": 216,
+      "stages": {
+        "policy": {
+          "mean_ms": 0.0052282361111111115,
+          "p95_ms": 0.006297,
+          "max_ms": 0.041222
+        },
+        "scene": {
+          "mean_ms": 0.4436551527777778,
+          "p95_ms": 0.694704,
+          "max_ms": 0.75574
+        },
+        "chrome": {
+          "mean_ms": 0.0025645138888888887,
+          "p95_ms": 0.00363,
+          "max_ms": 0.023444
+        },
+        "cpu": {
+          "mean_ms": 0.6659293148148149,
+          "p95_ms": 0.887851,
+          "max_ms": 0.950333
+        }
+      },
+      "hottest_inputs": [
+        {
+          "run": 89663995616338,
+          "input_id": 139,
+          "cpu_ns": 950333,
+          "policy_cpu_ns": 5593,
+          "scene_cpu_ns": 702518,
+          "chrome_cpu_ns": 2889,
+          "kind": "motion",
+          "frame_id": 196
+        },
+        {
+          "run": 89663995616338,
+          "input_id": 215,
+          "cpu_ns": 946592,
+          "policy_cpu_ns": 3926,
+          "scene_cpu_ns": 728296,
+          "chrome_cpu_ns": 3667,
+          "kind": "motion",
+          "frame_id": 279
+        },
+        {
+          "run": 89663995616338,
+          "input_id": 141,
+          "cpu_ns": 920408,
+          "policy_cpu_ns": 4518,
+          "scene_cpu_ns": 694075,
+          "chrome_cpu_ns": 3111,
+          "kind": "motion",
+          "frame_id": 197
+        },
+        {
+          "run": 89663995616338,
+          "input_id": 65,
+          "cpu_ns": 914445,
+          "policy_cpu_ns": 4518,
+          "scene_cpu_ns": 755740,
+          "chrome_cpu_ns": 3000,
+          "kind": "motion",
+          "frame_id": 114
+        },
+        {
+          "run": 89663995616338,
+          "input_id": 188,
+          "cpu_ns": 910888,
+          "policy_cpu_ns": 4852,
+          "scene_cpu_ns": 525222,
+          "chrome_cpu_ns": 2778,
+          "kind": "motion",
+          "frame_id": 264
+        },
+        {
+          "run": 89663995616338,
+          "input_id": 183,
+          "cpu_ns": 909407,
+          "policy_cpu_ns": 4296,
+          "scene_cpu_ns": 631556,
+          "chrome_cpu_ns": 2926,
+          "kind": "motion",
+          "frame_id": 262
+        },
+        {
+          "run": 89663995616338,
+          "input_id": 186,
+          "cpu_ns": 904890,
+          "policy_cpu_ns": 5148,
+          "scene_cpu_ns": 518704,
+          "chrome_cpu_ns": 2704,
+          "kind": "motion",
+          "frame_id": 263
+        },
+        {
+          "run": 89663995616338,
+          "input_id": 170,
+          "cpu_ns": 898886,
+          "policy_cpu_ns": 5593,
+          "scene_cpu_ns": 519629,
+          "chrome_cpu_ns": 2593,
+          "kind": "motion",
+          "frame_id": 233
+        }
+      ]
+    }
+  ],
+  "limits": [
+    "Diagnostic CPU subdivision only; existing charged frame and input totals remain the acceptance values.",
+    "Stage clocks and other handler work remain inside the charged input interval.",
+    "A submitted frame may include multiple accepted input events and other charged work.",
+    "Host timing cannot establish board CPU cost or physical touch latency."
+  ]
+}

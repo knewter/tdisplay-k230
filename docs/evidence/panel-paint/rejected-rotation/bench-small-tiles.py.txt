@@ -1,0 +1,12 @@
+from pathlib import Path
+import subprocess,json,time,hashlib
+b=Path(__file__).parent;r=Path('/mnt/MediaVolume/home/jadams/src/gitlab.daringbit.com/josh/tdisplay-k230/.claude/worktrees/panel-paint');gcc='/nix/store/4j2mwxqjvnyr6da0925sp0bm4jaj5r5i-riscv64-unknown-linux-gnu-gcc-wrapper-15.3.0/bin/riscv64-unknown-linux-gnu-gcc';pix='/nix/store/brhzfimak2r3c23lmn80y1g6ww6nmb1r-pixman-riscv64-unknown-linux-gnu-0.46.4';drm='/nix/store/gwy2gbwqmilz8hs0mmnlxv5c90c2sla4-libdrm-riscv64-unknown-linux-gnu-2.4.134-dev/include/libdrm';ssh=['ssh','-F',str(Path.home()/'tmp/k230-coordination/ssh_config.private'),'k230']
+for size in [4,8]:
+ d=b/('tile-'+str(size));d.mkdir(exist_ok=True);source=(r/'nix/card-shell/quarter-turn.h').read_text();pos=source.index('\t/* Contiguous destination runs');source=source[:pos]+source[pos:].replace('+= 16','+= '+str(size)).replace('+ 16','+ '+str(size));(d/'quarter-turn.h').write_text(source)
+ bench=(b/'transpose-bench.c').read_text().replace('cpp<=4','cpp<=2');(d/'benchmark.c').write_text(bench)
+ c=[gcc,'-std=c11','-O2','-Wall','-Wextra','-Werror','-I'+str(d),'-I'+str(b),'-I'+drm,'-I'+pix+'/include/pixman-1',str(d/'benchmark.c'),'-L'+pix+'/lib','-Wl,-rpath,'+pix+'/lib','-lpixman-1','-o',str(d/'bench')];(d/'compile.json').write_text(json.dumps(c,indent=2)+'\n');subprocess.run(c,check=True)
+ meta=dict(started_utc=time.strftime('%Y-%m-%dT%H:%M:%SZ',time.gmtime()),binary_sha256=hashlib.sha256((d/'bench').read_bytes()).hexdigest())
+ p=subprocess.run(ssh+['cat > /tmp/k230-tile-bench && chmod 0700 /tmp/k230-tile-bench'],input=(d/'bench').read_bytes(),capture_output=True,timeout=30);p.check_returncode()
+ for mode in ['heap','dumb']:
+  p=subprocess.run(ssh+['/tmp/k230-tile-bench'+(' --dumb' if mode=='dumb' else '')],capture_output=True,text=True,timeout=45);(d/(mode+'.log')).write_text(p.stdout);(d/(mode+'-stderr.log')).write_text(p.stderr);meta[mode+'_exit']=p.returncode;p.check_returncode()
+ meta['ended_utc']=time.strftime('%Y-%m-%dT%H:%M:%SZ',time.gmtime());(d/'metadata.json').write_text(json.dumps(meta,indent=2)+'\n');print('Tile',size,'complete',flush=True)

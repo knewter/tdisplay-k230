@@ -1,0 +1,48 @@
+#define _POSIX_C_SOURCE 200809L
+#include <assert.h>
+#include <stdio.h>
+#include <time.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <sys/mman.h>
+#include <sys/ioctl.h>
+#include <drm.h>
+#include <drm_mode.h>
+#include "quarter-turn.h"
+#include "transpose-current.h"
+static uint64_t ns(clockid_t clock) { struct timespec t;assert(clock_gettime(clock,&t)==0);return (uint64_t)t.tv_sec*1000000000+t.tv_nsec; }
+static bool __attribute__((noinline)) run(pixman_image_t *d,pixman_image_t *s,int turn,bool candidate) {
+ return candidate ? k230_turn_into(d,s,turn) : baseline_turn_into(d,s,turn);
+}
+int main(int argc,char **argv) {
+ bool dumb=argc==2 && !strcmp(argv[1],"--dumb");int fd=-1;
+ if(dumb){fd=open("/dev/dri/card0",O_RDWR|O_CLOEXEC);assert(fd>=0);}
+ for(int cpp=2;cpp<=4;cpp+=2)for(int turn=1;turn<=3;turn+=2){
+  int width=1232,height=568;pixman_format_code_t format=cpp==2 ? PIXMAN_r5g6b5 : PIXMAN_x8r8g8b8;
+  pixman_image_t *src=pixman_image_create_bits(format,width,height,NULL,0);assert(src);
+  uint8_t *data=(uint8_t*)pixman_image_get_data(src);int ss=pixman_image_get_stride(src);
+  for(int y=0;y<height;y++)for(int x=0;x<width*cpp;x++)data[(size_t)y*ss+x]=(uint8_t)(x*17+y*31);
+  struct drm_mode_create_dumb create={.width=height,.height=width,.bpp=cpp*8};
+  void *mapped=NULL;pixman_image_t *dst;
+  if(dumb){assert(ioctl(fd,DRM_IOCTL_MODE_CREATE_DUMB,&create)==0);
+   struct drm_mode_map_dumb map={.handle=create.handle};assert(ioctl(fd,DRM_IOCTL_MODE_MAP_DUMB,&map)==0);
+   mapped=mmap(NULL,create.size,PROT_READ|PROT_WRITE,MAP_SHARED,fd,(off_t)map.offset);assert(mapped!=MAP_FAILED);
+   dst=pixman_image_create_bits_no_clear(format,height,width,mapped,(int)create.pitch);
+  }else dst=pixman_image_create_bits(format,height,width,NULL,0);
+  assert(dst);int ds=pixman_image_get_stride(dst);size_t bytes=(size_t)ds*width;
+  uint8_t *expected=malloc(bytes);assert(expected);
+  assert(run(dst,src,turn,false));memcpy(expected,pixman_image_get_data(dst),bytes);
+  assert(run(dst,src,turn,true));assert(memcmp(expected,pixman_image_get_data(dst),bytes)==0);
+  for(int round=0;round<3;round++)for(int which=0;which<2;which++){
+   bool candidate=(which+round)%2;
+   assert(run(dst,src,turn,candidate));uint64_t wall=ns(CLOCK_MONOTONIC),cpu=ns(CLOCK_PROCESS_CPUTIME_ID);
+   for(int i=0;i<12;i++)assert(run(dst,src,turn,candidate));
+   cpu=ns(CLOCK_PROCESS_CPUTIME_ID)-cpu;wall=ns(CLOCK_MONOTONIC)-wall;
+   printf("K230_COPY_BENCH memory=%s cpp=%d transform=%d candidate=%d round=%d frames=12 cpu_ns=%llu wall_ns=%llu pixels_equal=1\n",dumb?"dumb":"heap",cpp,turn,candidate,round,(unsigned long long)cpu,(unsigned long long)wall);fflush(stdout);
+  }
+  free(expected);pixman_image_unref(dst);pixman_image_unref(src);
+  if(dumb){assert(munmap(mapped,create.size)==0);struct drm_mode_destroy_dumb destroy={.handle=create.handle};assert(ioctl(fd,DRM_IOCTL_MODE_DESTROY_DUMB,&destroy)==0);}
+ }
+ if(fd>=0)close(fd);
+ return 0;
+}

@@ -1,0 +1,12 @@
+K230_COPY_BENCH memory=heap cpp=2 transform=1 candidate=0 round=0 frames=12 cpu_ns=49065699 wall_ns=52576665 pixels_equal=1
+K230_COPY_BENCH memory=heap cpp=2 transform=1 candidate=1 round=0 frames=12 cpu_ns=66012187 wall_ns=70005273 pixels_equal=1
+K230_COPY_BENCH memory=heap cpp=2 transform=1 candidate=1 round=1 frames=12 cpu_ns=66272855 wall_ns=73910526 pixels_equal=1
+K230_COPY_BENCH memory=heap cpp=2 transform=1 candidate=0 round=1 frames=12 cpu_ns=49089966 wall_ns=55842684 pixels_equal=1
+K230_COPY_BENCH memory=heap cpp=2 transform=1 candidate=0 round=2 frames=12 cpu_ns=49323112 wall_ns=52924984 pixels_equal=1
+K230_COPY_BENCH memory=heap cpp=2 transform=1 candidate=1 round=2 frames=12 cpu_ns=66002735 wall_ns=70617582 pixels_equal=1
+K230_COPY_BENCH memory=heap cpp=2 transform=3 candidate=0 round=0 frames=12 cpu_ns=49183403 wall_ns=53921353 pixels_equal=1
+K230_COPY_BENCH memory=heap cpp=2 transform=3 candidate=1 round=0 frames=12 cpu_ns=63395003 wall_ns=66673849 pixels_equal=1
+K230_COPY_BENCH memory=heap cpp=2 transform=3 candidate=1 round=1 frames=12 cpu_ns=63872404 wall_ns=68870392 pixels_equal=1
+K230_COPY_BENCH memory=heap cpp=2 transform=3 candidate=0 round=1 frames=12 cpu_ns=48436146 wall_ns=51332121 pixels_equal=1
+K230_COPY_BENCH memory=heap cpp=2 transform=3 candidate=0 round=2 frames=12 cpu_ns=48471850 wall_ns=51325973 pixels_equal=1
+K230_COPY_BENCH memory=heap cpp=2 transform=3 candidate=1 round=2 frames=12 cpu_ns=63553667 wall_ns=68438631 pixels_equal=1
