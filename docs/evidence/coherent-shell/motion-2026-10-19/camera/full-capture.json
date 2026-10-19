@@ -1,0 +1,2897 @@
+{
+  "mode": "full",
+  "interaction_provenance": "injected",
+  "description": "Concurrent K230 full/reduced native-uinput card motion and trace correlation",
+  "camera": {
+    "input_format": "mjpeg",
+    "video_size": "1280x720",
+    "framerate": 30,
+    "device": "/dev/video0",
+    "rotate180": true,
+    "still": false,
+    "duration": 40
+  },
+  "command": [
+    "ffmpeg",
+    "-stats_period",
+    "0.1",
+    "-progress",
+    "pipe:1",
+    "-hide_banner",
+    "-loglevel",
+    "warning",
+    "-f",
+    "v4l2",
+    "-input_format",
+    "mjpeg",
+    "-video_size",
+    "1280x720",
+    "-framerate",
+    "30",
+    "-i",
+    "/dev/video0",
+    "-vf",
+    "transpose=2,transpose=2,scale=out_range=tv",
+    "-t",
+    "40",
+    "-an",
+    "-c:v",
+    "libx264",
+    "-pix_fmt",
+    "yuv420p",
+    "-color_range",
+    "tv",
+    "-preset",
+    "veryfast",
+    "-crf",
+    "23",
+    "-threads",
+    "2",
+    "-movflags",
+    "+faststart",
+    "-y",
+    "/home/jadams/tmp/codex-claude-handoff-20261019/3/camera-full-20261019T221727Z/20261019T221727Z-shell-motion-full.mp4"
+  ],
+  "clock_sample": {
+    "host_before": {
+      "host_monotonic_ns": 175700031506874,
+      "host_utc_ns": 1792448247830763496
+    },
+    "board": {
+      "board_monotonic_ns": 84088462912877,
+      "board_utc_ns": 1792448248556782023
+    },
+    "host_after": {
+      "host_monotonic_ns": 175700785345720,
+      "host_utc_ns": 1792448248584602152
+    }
+  },
+  "camera_launch": {
+    "host_monotonic_ns": 175700848324250,
+    "host_utc_ns": 1792448248647580451
+  },
+  "progress": [
+    {
+      "stamp": {
+        "host_monotonic_ns": 175701445717768,
+        "host_utc_ns": 1792448249244975372
+      },
+      "out_time_us": "N/A"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175701545800168,
+        "host_utc_ns": 1792448249345057702
+      },
+      "out_time_us": "N/A"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175701645898308,
+        "host_utc_ns": 1792448249445154419
+      },
+      "out_time_us": "N/A"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175701745918400,
+        "host_utc_ns": 1792448249545175313
+      },
+      "out_time_us": "N/A"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175701846498878,
+        "host_utc_ns": 1792448249645756172
+      },
+      "out_time_us": "N/A"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175701946592359,
+        "host_utc_ns": 1792448249745849613
+      },
+      "out_time_us": "0"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175702046723201,
+        "host_utc_ns": 1792448249845979803
+      },
+      "out_time_us": "100000"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175702146926709,
+        "host_utc_ns": 1792448249946184082
+      },
+      "out_time_us": "200000"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175702246965817,
+        "host_utc_ns": 1792448250046224042
+      },
+      "out_time_us": "300000"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175702347148776,
+        "host_utc_ns": 1792448250146406270
+      },
+      "out_time_us": "400000"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175702447208223,
+        "host_utc_ns": 1792448250246464976
+      },
+      "out_time_us": "500000"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175702547346919,
+        "host_utc_ns": 1792448250346605425
+      },
+      "out_time_us": "600000"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175702647395215,
+        "host_utc_ns": 1792448250446651296
+      },
+      "out_time_us": "700000"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175702747559359,
+        "host_utc_ns": 1792448250546816572
+      },
+      "out_time_us": "800000"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175702848479307,
+        "host_utc_ns": 1792448250647738023
+      },
+      "out_time_us": "900000"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175702948217067,
+        "host_utc_ns": 1792448250747473880
+      },
+      "out_time_us": "1000000"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175703048419694,
+        "host_utc_ns": 1792448250847678641
+      },
+      "out_time_us": "1100000"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175703148502895,
+        "host_utc_ns": 1792448250947760099
+      },
+      "out_time_us": "1200000"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175703248655788,
+        "host_utc_ns": 1792448251047912882
+      },
+      "out_time_us": "1300000"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175703348791940,
+        "host_utc_ns": 1792448251148049153
+      },
+      "out_time_us": "1400000"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175703448853240,
+        "host_utc_ns": 1792448251248110423
+      },
+      "out_time_us": "1500000"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175703550067802,
+        "host_utc_ns": 1792448251349324315
+      },
+      "out_time_us": "1600000"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175703649254535,
+        "host_utc_ns": 1792448251448510687
+      },
+      "out_time_us": "1700000"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175703749302480,
+        "host_utc_ns": 1792448251548558912
+      },
+      "out_time_us": "1800000"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175703849411491,
+        "host_utc_ns": 1792448251648667542
+      },
+      "out_time_us": "1900000"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175703949554034,
+        "host_utc_ns": 1792448251748810947
+      },
+      "out_time_us": "2000000"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175704049711866,
+        "host_utc_ns": 1792448251848969761
+      },
+      "out_time_us": "2100000"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175704149834572,
+        "host_utc_ns": 1792448251949092046
+      },
+      "out_time_us": "2200000"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175704250222909,
+        "host_utc_ns": 1792448252049480363
+      },
+      "out_time_us": "2300000"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175704350407722,
+        "host_utc_ns": 1792448252149665576
+      },
+      "out_time_us": "2400000"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175704450528674,
+        "host_utc_ns": 1792448252249786459
+      },
+      "out_time_us": "2500000"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175704550611665,
+        "host_utc_ns": 1792448252349869219
+      },
+      "out_time_us": "2600000"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175704650761442,
+        "host_utc_ns": 1792448252450017904
+      },
+      "out_time_us": "2700000"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175704751158665,
+        "host_utc_ns": 1792448252550416731
+      },
+      "out_time_us": "2800000"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175704851143361,
+        "host_utc_ns": 1792448252650400505
+      },
+      "out_time_us": "2900000"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175704951220512,
+        "host_utc_ns": 1792448252750476713
+      },
+      "out_time_us": "3000000"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175705051551871,
+        "host_utc_ns": 1792448252850808333
+      },
+      "out_time_us": "3100000"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175705151631886,
+        "host_utc_ns": 1792448252950888699
+      },
+      "out_time_us": "3200000"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175705254125809,
+        "host_utc_ns": 1792448253053383072
+      },
+      "out_time_us": "3300000"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175705353854402,
+        "host_utc_ns": 1792448253153112948
+      },
+      "out_time_us": "3400000"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175705454100982,
+        "host_utc_ns": 1792448253253359768
+      },
+      "out_time_us": "3500000"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175705554138227,
+        "host_utc_ns": 1792448253353394799
+      },
+      "out_time_us": "3600000"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175705654372032,
+        "host_utc_ns": 1792448253453629426
+      },
+      "out_time_us": "3700000"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175705754492123,
+        "host_utc_ns": 1792448253553749748
+      },
+      "out_time_us": "3800000"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175705854590904,
+        "host_utc_ns": 1792448253653847336
+      },
+      "out_time_us": "3900000"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175705954796577,
+        "host_utc_ns": 1792448253754054471
+      },
+      "out_time_us": "4033333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175706054896179,
+        "host_utc_ns": 1792448253854153813
+      },
+      "out_time_us": "4100000"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175706155282171,
+        "host_utc_ns": 1792448253954539365
+      },
+      "out_time_us": "4200000"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175706258484578,
+        "host_utc_ns": 1792448254057742373
+      },
+      "out_time_us": "4300000"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175706358653371,
+        "host_utc_ns": 1792448254157910825
+      },
+      "out_time_us": "4400000"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175706460176595,
+        "host_utc_ns": 1792448254259433859
+      },
+      "out_time_us": "4500000"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175706560842725,
+        "host_utc_ns": 1792448254360098937
+      },
+      "out_time_us": "4600000"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175706661025394,
+        "host_utc_ns": 1792448254460283720
+      },
+      "out_time_us": "4700000"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175706761284878,
+        "host_utc_ns": 1792448254560543474
+      },
+      "out_time_us": "4766667"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175706861291065,
+        "host_utc_ns": 1792448254660547557
+      },
+      "out_time_us": "4866667"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175706961460739,
+        "host_utc_ns": 1792448254760718544
+      },
+      "out_time_us": "4933333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175707061641304,
+        "host_utc_ns": 1792448254860899790
+      },
+      "out_time_us": "5000000"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175707161765052,
+        "host_utc_ns": 1792448254961024189
+      },
+      "out_time_us": "5100000"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175707261849076,
+        "host_utc_ns": 1792448255061106209
+      },
+      "out_time_us": "5166667"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175707361931506,
+        "host_utc_ns": 1792448255161188389
+      },
+      "out_time_us": "5266667"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175707462108103,
+        "host_utc_ns": 1792448255261365677
+      },
+      "out_time_us": "5366667"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175707562174874,
+        "host_utc_ns": 1792448255361431577
+      },
+      "out_time_us": "5433333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175707662234311,
+        "host_utc_ns": 1792448255461490833
+      },
+      "out_time_us": "5566667"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175707762374751,
+        "host_utc_ns": 1792448255561632014
+      },
+      "out_time_us": "5666667"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175707862491966,
+        "host_utc_ns": 1792448255661748078
+      },
+      "out_time_us": "5766667"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175707962562364,
+        "host_utc_ns": 1792448255761818315
+      },
+      "out_time_us": "5866667"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175708062662367,
+        "host_utc_ns": 1792448255861918579
+      },
+      "out_time_us": "5933333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175708162763733,
+        "host_utc_ns": 1792448255962019654
+      },
+      "out_time_us": "6066667"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175708263019991,
+        "host_utc_ns": 1792448256062278387
+      },
+      "out_time_us": "6166667"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175708363134742,
+        "host_utc_ns": 1792448256162392857
+      },
+      "out_time_us": "6266667"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175708463120370,
+        "host_utc_ns": 1792448256262376622
+      },
+      "out_time_us": "6366667"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175708563300725,
+        "host_utc_ns": 1792448256362558750
+      },
+      "out_time_us": "6500000"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175708663467274,
+        "host_utc_ns": 1792448256462724627
+      },
+      "out_time_us": "6566667"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175708763514758,
+        "host_utc_ns": 1792448256562771040
+      },
+      "out_time_us": "6666667"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175708863593131,
+        "host_utc_ns": 1792448256662849062
+      },
+      "out_time_us": "6766667"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175708963737458,
+        "host_utc_ns": 1792448256762993319
+      },
+      "out_time_us": "6866667"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175709063861717,
+        "host_utc_ns": 1792448256863119131
+      },
+      "out_time_us": "6933333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175709163992348,
+        "host_utc_ns": 1792448256963250493
+      },
+      "out_time_us": "7066667"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175709264082954,
+        "host_utc_ns": 1792448257063339666
+      },
+      "out_time_us": "7166667"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175709364108787,
+        "host_utc_ns": 1792448257163364668
+      },
+      "out_time_us": "7266667"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175709464192660,
+        "host_utc_ns": 1792448257263448882
+      },
+      "out_time_us": "7366667"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175709564323542,
+        "host_utc_ns": 1792448257363580134
+      },
+      "out_time_us": "7500000"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175709664415550,
+        "host_utc_ns": 1792448257463671772
+      },
+      "out_time_us": "7566667"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175709764477793,
+        "host_utc_ns": 1792448257563734275
+      },
+      "out_time_us": "7666667"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175709864686491,
+        "host_utc_ns": 1792448257663946159
+      },
+      "out_time_us": "7766667"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175709964785292,
+        "host_utc_ns": 1792448257764043037
+      },
+      "out_time_us": "7900000"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175710064963253,
+        "host_utc_ns": 1792448257864221568
+      },
+      "out_time_us": "8000000"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175710165055782,
+        "host_utc_ns": 1792448257964312174
+      },
+      "out_time_us": "8133333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175710265167908,
+        "host_utc_ns": 1792448258064424801
+      },
+      "out_time_us": "8233333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175710365244477,
+        "host_utc_ns": 1792448258164500409
+      },
+      "out_time_us": "8366667"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175710465388343,
+        "host_utc_ns": 1792448258264645036
+      },
+      "out_time_us": "8533333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175710565400431,
+        "host_utc_ns": 1792448258364657374
+      },
+      "out_time_us": "8633333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175710665440943,
+        "host_utc_ns": 1792448258464697485
+      },
+      "out_time_us": "8733333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175710765547539,
+        "host_utc_ns": 1792448258564804432
+      },
+      "out_time_us": "8833333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175710865653854,
+        "host_utc_ns": 1792448258664910597
+      },
+      "out_time_us": "8933333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175710965738048,
+        "host_utc_ns": 1792448258764993969
+      },
+      "out_time_us": "9033333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175711065848080,
+        "host_utc_ns": 1792448258865104583
+      },
+      "out_time_us": "9133333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175711165960998,
+        "host_utc_ns": 1792448258965217480
+      },
+      "out_time_us": "9233333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175711266245289,
+        "host_utc_ns": 1792448259065503524
+      },
+      "out_time_us": "9300000"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175711366287874,
+        "host_utc_ns": 1792448259165544517
+      },
+      "out_time_us": "9400000"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175711466420609,
+        "host_utc_ns": 1792448259265678234
+      },
+      "out_time_us": "9533333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175711566508550,
+        "host_utc_ns": 1792448259365766505
+      },
+      "out_time_us": "9633333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175711666604947,
+        "host_utc_ns": 1792448259465861389
+      },
+      "out_time_us": "9733333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175711766770844,
+        "host_utc_ns": 1792448259566027337
+      },
+      "out_time_us": "9833333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175711866818690,
+        "host_utc_ns": 1792448259666074741
+      },
+      "out_time_us": "9933333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175711966929524,
+        "host_utc_ns": 1792448259766185635
+      },
+      "out_time_us": "10033333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175712067047090,
+        "host_utc_ns": 1792448259866303172
+      },
+      "out_time_us": "10133333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175712167300322,
+        "host_utc_ns": 1792448259966559039
+      },
+      "out_time_us": "10200000"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175712267259000,
+        "host_utc_ns": 1792448260066515322
+      },
+      "out_time_us": "10300000"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175712367385924,
+        "host_utc_ns": 1792448260166643478
+      },
+      "out_time_us": "10433333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175712467486499,
+        "host_utc_ns": 1792448260266743422
+      },
+      "out_time_us": "10533333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175712567609045,
+        "host_utc_ns": 1792448260366865527
+      },
+      "out_time_us": "10633333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175712667692527,
+        "host_utc_ns": 1792448260466949120
+      },
+      "out_time_us": "10733333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175712767800165,
+        "host_utc_ns": 1792448260567057148
+      },
+      "out_time_us": "10833333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175712868022409,
+        "host_utc_ns": 1792448260667278691
+      },
+      "out_time_us": "10933333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175712968164071,
+        "host_utc_ns": 1792448260767420804
+      },
+      "out_time_us": "11033333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175713068239288,
+        "host_utc_ns": 1792448260867495630
+      },
+      "out_time_us": "11133333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175713168369589,
+        "host_utc_ns": 1792448260967627854
+      },
+      "out_time_us": "11200000"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175713268908819,
+        "host_utc_ns": 1792448261068165131
+      },
+      "out_time_us": "11333333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175713369110354,
+        "host_utc_ns": 1792448261168367458
+      },
+      "out_time_us": "11433333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175713469299416,
+        "host_utc_ns": 1792448261268557401
+      },
+      "out_time_us": "11533333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175713569404639,
+        "host_utc_ns": 1792448261368663125
+      },
+      "out_time_us": "11633333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175713669464627,
+        "host_utc_ns": 1792448261468721530
+      },
+      "out_time_us": "11733333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175713769573317,
+        "host_utc_ns": 1792448261568829689
+      },
+      "out_time_us": "11833333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175713869748623,
+        "host_utc_ns": 1792448261669005676
+      },
+      "out_time_us": "11933333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175713969780739,
+        "host_utc_ns": 1792448261769036740
+      },
+      "out_time_us": "12033333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175714069988315,
+        "host_utc_ns": 1792448261869244687
+      },
+      "out_time_us": "12100000"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175714170087317,
+        "host_utc_ns": 1792448261969343218
+      },
+      "out_time_us": "12233333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175714270217166,
+        "host_utc_ns": 1792448262069473679
+      },
+      "out_time_us": "12333333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175714370317401,
+        "host_utc_ns": 1792448262169574003
+      },
+      "out_time_us": "12433333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175714470455065,
+        "host_utc_ns": 1792448262269712950
+      },
+      "out_time_us": "12533333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175714570564136,
+        "host_utc_ns": 1792448262369820157
+      },
+      "out_time_us": "12633333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175714670614837,
+        "host_utc_ns": 1792448262469870958
+      },
+      "out_time_us": "12733333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175714770667912,
+        "host_utc_ns": 1792448262569923693
+      },
+      "out_time_us": "12833333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175714870780419,
+        "host_utc_ns": 1792448262670036090
+      },
+      "out_time_us": "12933333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175714970908756,
+        "host_utc_ns": 1792448262770165178
+      },
+      "out_time_us": "13033333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175715070980677,
+        "host_utc_ns": 1792448262870236818
+      },
+      "out_time_us": "13133333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175715171105728,
+        "host_utc_ns": 1792448262970362901
+      },
+      "out_time_us": "13233333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175715271190252,
+        "host_utc_ns": 1792448263070446925
+      },
+      "out_time_us": "13333333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175715371283623,
+        "host_utc_ns": 1792448263170539314
+      },
+      "out_time_us": "13433333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175715471399768,
+        "host_utc_ns": 1792448263270655609
+      },
+      "out_time_us": "13533333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175715571530108,
+        "host_utc_ns": 1792448263370787101
+      },
+      "out_time_us": "13633333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175715671611647,
+        "host_utc_ns": 1792448263470868180
+      },
+      "out_time_us": "13733333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175715771745555,
+        "host_utc_ns": 1792448263571001857
+      },
+      "out_time_us": "13833333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175715871873181,
+        "host_utc_ns": 1792448263671131707
+      },
+      "out_time_us": "13933333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175715972035752,
+        "host_utc_ns": 1792448263771292445
+      },
+      "out_time_us": "14033333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175716072173136,
+        "host_utc_ns": 1792448263871429208
+      },
+      "out_time_us": "14133333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175716172350396,
+        "host_utc_ns": 1792448263971608471
+      },
+      "out_time_us": "14233333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175716272384756,
+        "host_utc_ns": 1792448264071641789
+      },
+      "out_time_us": "14333333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175716372574999,
+        "host_utc_ns": 1792448264171831461
+      },
+      "out_time_us": "14433333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175716472622544,
+        "host_utc_ns": 1792448264271878275
+      },
+      "out_time_us": "14533333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175716572844969,
+        "host_utc_ns": 1792448264372102032
+      },
+      "out_time_us": "14633333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175716673030173,
+        "host_utc_ns": 1792448264472289520
+      },
+      "out_time_us": "14733333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175716773084881,
+        "host_utc_ns": 1792448264572342255
+      },
+      "out_time_us": "14833333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175716873130803,
+        "host_utc_ns": 1792448264672387365
+      },
+      "out_time_us": "14933333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175716973297953,
+        "host_utc_ns": 1792448264772555077
+      },
+      "out_time_us": "15033333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175717073389261,
+        "host_utc_ns": 1792448264872646103
+      },
+      "out_time_us": "15133333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175717173469066,
+        "host_utc_ns": 1792448264972726039
+      },
+      "out_time_us": "15233333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175717273578849,
+        "host_utc_ns": 1792448265072835381
+      },
+      "out_time_us": "15333333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175717373687158,
+        "host_utc_ns": 1792448265172943269
+      },
+      "out_time_us": "15433333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175717473806478,
+        "host_utc_ns": 1792448265273070685
+      },
+      "out_time_us": "15533333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175717573952358,
+        "host_utc_ns": 1792448265373210303
+      },
+      "out_time_us": "15633333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175717674048114,
+        "host_utc_ns": 1792448265473305107
+      },
+      "out_time_us": "15733333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175717774156063,
+        "host_utc_ns": 1792448265573412846
+      },
+      "out_time_us": "15833333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175717874268099,
+        "host_utc_ns": 1792448265673524571
+      },
+      "out_time_us": "15933333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175717974390465,
+        "host_utc_ns": 1792448265773647448
+      },
+      "out_time_us": "16033333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175718074473106,
+        "host_utc_ns": 1792448265873729528
+      },
+      "out_time_us": "16133333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175718174620760,
+        "host_utc_ns": 1792448265973877322
+      },
+      "out_time_us": "16233333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175718274689805,
+        "host_utc_ns": 1792448266073946838
+      },
+      "out_time_us": "16333333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175718374849201,
+        "host_utc_ns": 1792448266174106395
+      },
+      "out_time_us": "16433333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175718474921212,
+        "host_utc_ns": 1792448266274178035
+      },
+      "out_time_us": "16533333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175718575026566,
+        "host_utc_ns": 1792448266374283770
+      },
+      "out_time_us": "16633333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175718675726350,
+        "host_utc_ns": 1792448266474985888
+      },
+      "out_time_us": "16733333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175718775953533,
+        "host_utc_ns": 1792448266575209745
+      },
+      "out_time_us": "16833333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175718876065549,
+        "host_utc_ns": 1792448266675321951
+      },
+      "out_time_us": "16933333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175718976147659,
+        "host_utc_ns": 1792448266775404242
+      },
+      "out_time_us": "17033333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175719076256049,
+        "host_utc_ns": 1792448266875512581
+      },
+      "out_time_us": "17133333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175719176411618,
+        "host_utc_ns": 1792448266975667849
+      },
+      "out_time_us": "17233333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175719276530377,
+        "host_utc_ns": 1792448267075786889
+      },
+      "out_time_us": "17333333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175719376940585,
+        "host_utc_ns": 1792448267176197378
+      },
+      "out_time_us": "17433333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175719476808271,
+        "host_utc_ns": 1792448267276066166
+      },
+      "out_time_us": "17533333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175719576925087,
+        "host_utc_ns": 1792448267376181659
+      },
+      "out_time_us": "17633333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175719677067310,
+        "host_utc_ns": 1792448267476325375
+      },
+      "out_time_us": "17733333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175719777164869,
+        "host_utc_ns": 1792448267576421873
+      },
+      "out_time_us": "17833333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175719877281384,
+        "host_utc_ns": 1792448267676537826
+      },
+      "out_time_us": "17933333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175719977380286,
+        "host_utc_ns": 1792448267776636568
+      },
+      "out_time_us": "18033333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175720077476232,
+        "host_utc_ns": 1792448267876732354
+      },
+      "out_time_us": "18133333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175720177650326,
+        "host_utc_ns": 1792448267976906828
+      },
+      "out_time_us": "18233333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175720277791948,
+        "host_utc_ns": 1792448268077049663
+      },
+      "out_time_us": "18333333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175720377843601,
+        "host_utc_ns": 1792448268177099893
+      },
+      "out_time_us": "18433333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175720477990974,
+        "host_utc_ns": 1792448268277247667
+      },
+      "out_time_us": "18533333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175720578107309,
+        "host_utc_ns": 1792448268377364131
+      },
+      "out_time_us": "18633333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175720678263418,
+        "host_utc_ns": 1792448268477520742
+      },
+      "out_time_us": "18733333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175720778482006,
+        "host_utc_ns": 1792448268577740221
+      },
+      "out_time_us": "18833333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175720878582120,
+        "host_utc_ns": 1792448268677838512
+      },
+      "out_time_us": "18933333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175720978770891,
+        "host_utc_ns": 1792448268778029958
+      },
+      "out_time_us": "19033333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175721078917382,
+        "host_utc_ns": 1792448268878175327
+      },
+      "out_time_us": "19133333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175721179329404,
+        "host_utc_ns": 1792448268978588501
+      },
+      "out_time_us": "19200000"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175721279383732,
+        "host_utc_ns": 1792448269078643620
+      },
+      "out_time_us": "19333333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175721379448209,
+        "host_utc_ns": 1792448269178705643
+      },
+      "out_time_us": "19433333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175721479550297,
+        "host_utc_ns": 1792448269278806799
+      },
+      "out_time_us": "19533333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175721579650371,
+        "host_utc_ns": 1792448269378908346
+      },
+      "out_time_us": "19633333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175721679850203,
+        "host_utc_ns": 1792448269479108749
+      },
+      "out_time_us": "19733333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175721779900774,
+        "host_utc_ns": 1792448269579157145
+      },
+      "out_time_us": "19833333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175721880096598,
+        "host_utc_ns": 1792448269679354312
+      },
+      "out_time_us": "19933333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175721980219986,
+        "host_utc_ns": 1792448269779477450
+      },
+      "out_time_us": "20033333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175722080382568,
+        "host_utc_ns": 1792448269879641394
+      },
+      "out_time_us": "20133333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175722180437577,
+        "host_utc_ns": 1792448269979693688
+      },
+      "out_time_us": "20233333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175722280554222,
+        "host_utc_ns": 1792448270079811426
+      },
+      "out_time_us": "20333333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175722380657993,
+        "host_utc_ns": 1792448270179915247
+      },
+      "out_time_us": "20433333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175722480793775,
+        "host_utc_ns": 1792448270280050698
+      },
+      "out_time_us": "20533333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175722580886365,
+        "host_utc_ns": 1792448270380142206
+      },
+      "out_time_us": "20633333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175722681012087,
+        "host_utc_ns": 1792448270480268439
+      },
+      "out_time_us": "20733333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175722781128011,
+        "host_utc_ns": 1792448270580384293
+      },
+      "out_time_us": "20833333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175722881303457,
+        "host_utc_ns": 1792448270680562184
+      },
+      "out_time_us": "20933333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175722981336465,
+        "host_utc_ns": 1792448270780592346
+      },
+      "out_time_us": "21033333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175723081399028,
+        "host_utc_ns": 1792448270880655581
+      },
+      "out_time_us": "21133333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175723181505575,
+        "host_utc_ns": 1792448270980762107
+      },
+      "out_time_us": "21233333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175723281614886,
+        "host_utc_ns": 1792448271080872070
+      },
+      "out_time_us": "21333333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175723381757581,
+        "host_utc_ns": 1792448271181014394
+      },
+      "out_time_us": "21433333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175723481807791,
+        "host_utc_ns": 1792448271281065546
+      },
+      "out_time_us": "21533333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175723581902876,
+        "host_utc_ns": 1792448271381158917
+      },
+      "out_time_us": "21633333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175723682037325,
+        "host_utc_ns": 1792448271481294548
+      },
+      "out_time_us": "21733333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175723782092725,
+        "host_utc_ns": 1792448271581349257
+      },
+      "out_time_us": "21833333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175723882176999,
+        "host_utc_ns": 1792448271681433491
+      },
+      "out_time_us": "21933333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175723982439389,
+        "host_utc_ns": 1792448271781696522
+      },
+      "out_time_us": "22033333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175724082527851,
+        "host_utc_ns": 1792448271881784474
+      },
+      "out_time_us": "22133333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175724182629318,
+        "host_utc_ns": 1792448271981886071
+      },
+      "out_time_us": "22233333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175724282793262,
+        "host_utc_ns": 1792448272082050316
+      },
+      "out_time_us": "22333333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175724382900520,
+        "host_utc_ns": 1792448272182158806
+      },
+      "out_time_us": "22433333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175724482981909,
+        "host_utc_ns": 1792448272282238572
+      },
+      "out_time_us": "22533333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175724583382620,
+        "host_utc_ns": 1792448272382641266
+      },
+      "out_time_us": "22633333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175724683474689,
+        "host_utc_ns": 1792448272482731953
+      },
+      "out_time_us": "22733333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175724783629025,
+        "host_utc_ns": 1792448272582887862
+      },
+      "out_time_us": "22833333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175724883770908,
+        "host_utc_ns": 1792448272683028332
+      },
+      "out_time_us": "22933333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175724983768509,
+        "host_utc_ns": 1792448272783024360
+      },
+      "out_time_us": "23033333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175725083820653,
+        "host_utc_ns": 1792448272883076815
+      },
+      "out_time_us": "23133333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175725183959991,
+        "host_utc_ns": 1792448272983217055
+      },
+      "out_time_us": "23233333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175725284257508,
+        "host_utc_ns": 1792448273083515913
+      },
+      "out_time_us": "23333333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175725384233558,
+        "host_utc_ns": 1792448273183489559
+      },
+      "out_time_us": "23433333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175725484424604,
+        "host_utc_ns": 1792448273283682268
+      },
+      "out_time_us": "23533333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175725584481867,
+        "host_utc_ns": 1792448273383738360
+      },
+      "out_time_us": "23633333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175725684653937,
+        "host_utc_ns": 1792448273483911301
+      },
+      "out_time_us": "23733333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175725784686735,
+        "host_utc_ns": 1792448273583943337
+      },
+      "out_time_us": "23833333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175725884823238,
+        "host_utc_ns": 1792448273684080171
+      },
+      "out_time_us": "23933333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175725984926508,
+        "host_utc_ns": 1792448273784183180
+      },
+      "out_time_us": "24033333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175726085061468,
+        "host_utc_ns": 1792448273884318301
+      },
+      "out_time_us": "24133333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175726185107510,
+        "host_utc_ns": 1792448273984363131
+      },
+      "out_time_us": "24233333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175726285459158,
+        "host_utc_ns": 1792448274084715661
+      },
+      "out_time_us": "24333333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175726385522413,
+        "host_utc_ns": 1792448274184778515
+      },
+      "out_time_us": "24433333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175726485701887,
+        "host_utc_ns": 1792448274284960213
+      },
+      "out_time_us": "24533333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175726585861624,
+        "host_utc_ns": 1792448274385119168
+      },
+      "out_time_us": "24633333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175726686027532,
+        "host_utc_ns": 1792448274485285367
+      },
+      "out_time_us": "24733333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175726786116145,
+        "host_utc_ns": 1792448274585372928
+      },
+      "out_time_us": "24833333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175726886255213,
+        "host_utc_ns": 1792448274685512236
+      },
+      "out_time_us": "24933333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175726986437963,
+        "host_utc_ns": 1792448274785694906
+      },
+      "out_time_us": "25033333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175727087940218,
+        "host_utc_ns": 1792448274887198374
+      },
+      "out_time_us": "25133333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175727188164306,
+        "host_utc_ns": 1792448274987421489
+      },
+      "out_time_us": "25233333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175727288272936,
+        "host_utc_ns": 1792448275087529118
+      },
+      "out_time_us": "25333333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175727388343766,
+        "host_utc_ns": 1792448275187600969
+      },
+      "out_time_us": "25433333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175727488509073,
+        "host_utc_ns": 1792448275287767809
+      },
+      "out_time_us": "25533333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175727589245305,
+        "host_utc_ns": 1792448275388502980
+      },
+      "out_time_us": "25633333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175727689289515,
+        "host_utc_ns": 1792448275488545947
+      },
+      "out_time_us": "25733333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175727789494266,
+        "host_utc_ns": 1792448275588750929
+      },
+      "out_time_us": "25833333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175727889661858,
+        "host_utc_ns": 1792448275688918961
+      },
+      "out_time_us": "25933333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175727990232108,
+        "host_utc_ns": 1792448275789489341
+      },
+      "out_time_us": "26033333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175728090449994,
+        "host_utc_ns": 1792448275889708139
+      },
+      "out_time_us": "26133333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175728190545840,
+        "host_utc_ns": 1792448275989802993
+      },
+      "out_time_us": "26233333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175728291461851,
+        "host_utc_ns": 1792448276090719075
+      },
+      "out_time_us": "26333333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175728390784211,
+        "host_utc_ns": 1792448276190041615
+      },
+      "out_time_us": "26433333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175728490916686,
+        "host_utc_ns": 1792448276290175523
+      },
+      "out_time_us": "26533333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175728590947390,
+        "host_utc_ns": 1792448276390205215
+      },
+      "out_time_us": "26633333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175728691077481,
+        "host_utc_ns": 1792448276490334784
+      },
+      "out_time_us": "26733333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175728791215046,
+        "host_utc_ns": 1792448276590471778
+      },
+      "out_time_us": "26833333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175728891266198,
+        "host_utc_ns": 1792448276690523672
+      },
+      "out_time_us": "26933333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175728991435954,
+        "host_utc_ns": 1792448276790693047
+      },
+      "out_time_us": "27033333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175729091537771,
+        "host_utc_ns": 1792448276890793923
+      },
+      "out_time_us": "27133333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175729191726202,
+        "host_utc_ns": 1792448276990983185
+      },
+      "out_time_us": "27233333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175729292183339,
+        "host_utc_ns": 1792448277091440693
+      },
+      "out_time_us": "27333333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175729392401436,
+        "host_utc_ns": 1792448277191658669
+      },
+      "out_time_us": "27433333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175729492468969,
+        "host_utc_ns": 1792448277291725230
+      },
+      "out_time_us": "27533333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175729592698888,
+        "host_utc_ns": 1792448277391955740
+      },
+      "out_time_us": "27633333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175729692825722,
+        "host_utc_ns": 1792448277492083016
+      },
+      "out_time_us": "27733333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175729792983996,
+        "host_utc_ns": 1792448277592242783
+      },
+      "out_time_us": "27833333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175729893106714,
+        "host_utc_ns": 1792448277692362885
+      },
+      "out_time_us": "27933333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175729993230863,
+        "host_utc_ns": 1792448277792489299
+      },
+      "out_time_us": "28033333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175730093859644,
+        "host_utc_ns": 1792448277893116627
+      },
+      "out_time_us": "28133333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175730193485435,
+        "host_utc_ns": 1792448277992742478
+      },
+      "out_time_us": "28233333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175730293626456,
+        "host_utc_ns": 1792448278092903156
+      },
+      "out_time_us": "28333333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175730393741308,
+        "host_utc_ns": 1792448278192998572
+      },
+      "out_time_us": "28433333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175730494424451,
+        "host_utc_ns": 1792448278293689059
+      },
+      "out_time_us": "28533333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175730594425730,
+        "host_utc_ns": 1792448278393682031
+      },
+      "out_time_us": "28633333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175730694582982,
+        "host_utc_ns": 1792448278493839945
+      },
+      "out_time_us": "28733333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175730794652138,
+        "host_utc_ns": 1792448278593909311
+      },
+      "out_time_us": "28833333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175730894794241,
+        "host_utc_ns": 1792448278694050914
+      },
+      "out_time_us": "28933333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175730994933870,
+        "host_utc_ns": 1792448278794190723
+      },
+      "out_time_us": "29033333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175731095500363,
+        "host_utc_ns": 1792448278894759520
+      },
+      "out_time_us": "29133333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175731195476344,
+        "host_utc_ns": 1792448278994733407
+      },
+      "out_time_us": "29233333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175731295694962,
+        "host_utc_ns": 1792448279094951614
+      },
+      "out_time_us": "29333333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175731395820424,
+        "host_utc_ns": 1792448279195076996
+      },
+      "out_time_us": "29433333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175731496095639,
+        "host_utc_ns": 1792448279295352421
+      },
+      "out_time_us": "29533333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175731596153393,
+        "host_utc_ns": 1792448279395410356
+      },
+      "out_time_us": "29633333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175731697144306,
+        "host_utc_ns": 1792448279496402241
+      },
+      "out_time_us": "29733333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175731796965154,
+        "host_utc_ns": 1792448279596222147
+      },
+      "out_time_us": "29833333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175731897110013,
+        "host_utc_ns": 1792448279696366976
+      },
+      "out_time_us": "29933333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175731997318873,
+        "host_utc_ns": 1792448279796577469
+      },
+      "out_time_us": "30033333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175732097550104,
+        "host_utc_ns": 1792448279896809983
+      },
+      "out_time_us": "30133333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175732197573985,
+        "host_utc_ns": 1792448279996831579
+      },
+      "out_time_us": "30233333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175732297772194,
+        "host_utc_ns": 1792448280097031903
+      },
+      "out_time_us": "30333333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175732397910481,
+        "host_utc_ns": 1792448280197167564
+      },
+      "out_time_us": "30433333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175732498360264,
+        "host_utc_ns": 1792448280297618419
+      },
+      "out_time_us": "30533333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175732598352816,
+        "host_utc_ns": 1792448280397610070
+      },
+      "out_time_us": "30633333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175732699217240,
+        "host_utc_ns": 1792448280498474594
+      },
+      "out_time_us": "30733333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175732799306715,
+        "host_utc_ns": 1792448280598564109
+      },
+      "out_time_us": "30833333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175732899520373,
+        "host_utc_ns": 1792448280698778619
+      },
+      "out_time_us": "30933333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175733001912005,
+        "host_utc_ns": 1792448280801170270
+      },
+      "out_time_us": "31033333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175733099799511,
+        "host_utc_ns": 1792448280899057897
+      },
+      "out_time_us": "31133333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175733199926547,
+        "host_utc_ns": 1792448280999185303
+      },
+      "out_time_us": "31233333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175733300573291,
+        "host_utc_ns": 1792448281099830935
+      },
+      "out_time_us": "31366667"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175733400132487,
+        "host_utc_ns": 1792448281199389219
+      },
+      "out_time_us": "31433333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175733500539359,
+        "host_utc_ns": 1792448281299796853
+      },
+      "out_time_us": "31533333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175733600721007,
+        "host_utc_ns": 1792448281399978511
+      },
+      "out_time_us": "31633333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175733701075411,
+        "host_utc_ns": 1792448281500333446
+      },
+      "out_time_us": "31733333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175733801113058,
+        "host_utc_ns": 1792448281600369841
+      },
+      "out_time_us": "31866667"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175733901257005,
+        "host_utc_ns": 1792448281700514479
+      },
+      "out_time_us": "31966667"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175734001373210,
+        "host_utc_ns": 1792448281800629672
+      },
+      "out_time_us": "32066667"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175734101501828,
+        "host_utc_ns": 1792448281900757729
+      },
+      "out_time_us": "32133333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175734201614286,
+        "host_utc_ns": 1792448282000871620
+      },
+      "out_time_us": "32266667"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175734301785044,
+        "host_utc_ns": 1792448282101043179
+      },
+      "out_time_us": "32333333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175734401827851,
+        "host_utc_ns": 1792448282201084122
+      },
+      "out_time_us": "32466667"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175734502058531,
+        "host_utc_ns": 1792448282301316446
+      },
+      "out_time_us": "32533333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175734602114994,
+        "host_utc_ns": 1792448282401371676
+      },
+      "out_time_us": "32633333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175734702227632,
+        "host_utc_ns": 1792448282501484645
+      },
+      "out_time_us": "32766667"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175734802315343,
+        "host_utc_ns": 1792448282601573298
+      },
+      "out_time_us": "32866667"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175734902539702,
+        "host_utc_ns": 1792448282701797877
+      },
+      "out_time_us": "32966667"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175735005543346,
+        "host_utc_ns": 1792448282804799748
+      },
+      "out_time_us": "33033333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175735102845280,
+        "host_utc_ns": 1792448282902101852
+      },
+      "out_time_us": "33133333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175735203232024,
+        "host_utc_ns": 1792448283002488497
+      },
+      "out_time_us": "33266667"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175735303762049,
+        "host_utc_ns": 1792448283103019373
+      },
+      "out_time_us": "33333333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175735404327240,
+        "host_utc_ns": 1792448283203585475
+      },
+      "out_time_us": "33433333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175735504699828,
+        "host_utc_ns": 1792448283303957592
+      },
+      "out_time_us": "33533333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175735604846530,
+        "host_utc_ns": 1792448283404104355
+      },
+      "out_time_us": "33666667"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175735704940283,
+        "host_utc_ns": 1792448283504197827
+      },
+      "out_time_us": "33766667"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175735805040758,
+        "host_utc_ns": 1792448283604298042
+      },
+      "out_time_us": "33833333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175735905821214,
+        "host_utc_ns": 1792448283705078909
+      },
+      "out_time_us": "33966667"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175736005932761,
+        "host_utc_ns": 1792448283805190165
+      },
+      "out_time_us": "34066667"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175736106104941,
+        "host_utc_ns": 1792448283905362646
+      },
+      "out_time_us": "34133333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175736206249259,
+        "host_utc_ns": 1792448284005507895
+      },
+      "out_time_us": "34233333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175736306322904,
+        "host_utc_ns": 1792448284105579506
+      },
+      "out_time_us": "34366667"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175736406452474,
+        "host_utc_ns": 1792448284205708826
+      },
+      "out_time_us": "34466667"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175736506603866,
+        "host_utc_ns": 1792448284305861059
+      },
+      "out_time_us": "34566667"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175736606739277,
+        "host_utc_ns": 1792448284405997242
+      },
+      "out_time_us": "34633333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175736706851895,
+        "host_utc_ns": 1792448284506109500
+      },
+      "out_time_us": "34766667"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175736809383771,
+        "host_utc_ns": 1792448284608640633
+      },
+      "out_time_us": "34833333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175736907330459,
+        "host_utc_ns": 1792448284706589005
+      },
+      "out_time_us": "34966667"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175737007566710,
+        "host_utc_ns": 1792448284806823122
+      },
+      "out_time_us": "35066667"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175737107746705,
+        "host_utc_ns": 1792448284907003819
+      },
+      "out_time_us": "35166667"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175737207780856,
+        "host_utc_ns": 1792448285007038089
+      },
+      "out_time_us": "35266667"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175737308093551,
+        "host_utc_ns": 1792448285107350594
+      },
+      "out_time_us": "35366667"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175737408208404,
+        "host_utc_ns": 1792448285207466729
+      },
+      "out_time_us": "35466667"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175737508377729,
+        "host_utc_ns": 1792448285307636345
+      },
+      "out_time_us": "35566667"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175737608514733,
+        "host_utc_ns": 1792448285407771997
+      },
+      "out_time_us": "35666667"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175737708679961,
+        "host_utc_ns": 1792448285507936813
+      },
+      "out_time_us": "35766667"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175737808836702,
+        "host_utc_ns": 1792448285608095328
+      },
+      "out_time_us": "35833333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175737908923211,
+        "host_utc_ns": 1792448285708180094
+      },
+      "out_time_us": "35933333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175738009098468,
+        "host_utc_ns": 1792448285808356773
+      },
+      "out_time_us": "36066667"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175738109221886,
+        "host_utc_ns": 1792448285908479450
+      },
+      "out_time_us": "36166667"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175738209278699,
+        "host_utc_ns": 1792448286008536384
+      },
+      "out_time_us": "36266667"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175738309420683,
+        "host_utc_ns": 1792448286108677696
+      },
+      "out_time_us": "36366667"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175738409541597,
+        "host_utc_ns": 1792448286208799051
+      },
+      "out_time_us": "36466667"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175738509684903,
+        "host_utc_ns": 1792448286308941997
+      },
+      "out_time_us": "36533333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175738609934520,
+        "host_utc_ns": 1792448286409192134
+      },
+      "out_time_us": "36666667"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175738710010629,
+        "host_utc_ns": 1792448286509266851
+      },
+      "out_time_us": "36766667"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175738810208869,
+        "host_utc_ns": 1792448286609466333
+      },
+      "out_time_us": "36866667"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175738910323251,
+        "host_utc_ns": 1792448286709582238
+      },
+      "out_time_us": "36933333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175739010396856,
+        "host_utc_ns": 1792448286809654039
+      },
+      "out_time_us": "37066667"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175739110546654,
+        "host_utc_ns": 1792448286909804298
+      },
+      "out_time_us": "37166667"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175739210638614,
+        "host_utc_ns": 1792448287009894945
+      },
+      "out_time_us": "37266667"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175739310812167,
+        "host_utc_ns": 1792448287110070362
+      },
+      "out_time_us": "37366667"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175739410858971,
+        "host_utc_ns": 1792448287210116746
+      },
+      "out_time_us": "37466667"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175739511401509,
+        "host_utc_ns": 1792448287310660246
+      },
+      "out_time_us": "37566667"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175739611439517,
+        "host_utc_ns": 1792448287410695969
+      },
+      "out_time_us": "37666667"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175739711543139,
+        "host_utc_ns": 1792448287510801174
+      },
+      "out_time_us": "37766667"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175739811768620,
+        "host_utc_ns": 1792448287611026314
+      },
+      "out_time_us": "37866667"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175739911842585,
+        "host_utc_ns": 1792448287711099729
+      },
+      "out_time_us": "37966667"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175740011974240,
+        "host_utc_ns": 1792448287811232024
+      },
+      "out_time_us": "38066667"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175740112067492,
+        "host_utc_ns": 1792448287911323834
+      },
+      "out_time_us": "38166667"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175740212170021,
+        "host_utc_ns": 1792448288011426613
+      },
+      "out_time_us": "38266667"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175740312337483,
+        "host_utc_ns": 1792448288111593795
+      },
+      "out_time_us": "38366667"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175740412572352,
+        "host_utc_ns": 1792448288211832290
+      },
+      "out_time_us": "38466667"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175740512643031,
+        "host_utc_ns": 1792448288311900695
+      },
+      "out_time_us": "38566667"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175740612811715,
+        "host_utc_ns": 1792448288412068849
+      },
+      "out_time_us": "38666667"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175740713138016,
+        "host_utc_ns": 1792448288512394699
+      },
+      "out_time_us": "38766667"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175740813440653,
+        "host_utc_ns": 1792448288612698287
+      },
+      "out_time_us": "38866667"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175740913268655,
+        "host_utc_ns": 1792448288712525227
+      },
+      "out_time_us": "38966667"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175741013438611,
+        "host_utc_ns": 1792448288812696666
+      },
+      "out_time_us": "39066667"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175741113563994,
+        "host_utc_ns": 1792448288912822309
+      },
+      "out_time_us": "39166667"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175741213742697,
+        "host_utc_ns": 1792448289013000311
+      },
+      "out_time_us": "39266667"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175741313889981,
+        "host_utc_ns": 1792448289113147565
+      },
+      "out_time_us": "39366667"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175741414084263,
+        "host_utc_ns": 1792448289213342979
+      },
+      "out_time_us": "39633333"
+    },
+    {
+      "stamp": {
+        "host_monotonic_ns": 175741448411364,
+        "host_utc_ns": 1792448289247669920
+      },
+      "out_time_us": "39933333"
+    }
+  ],
+  "workload_launch": {
+    "host_monotonic_ns": 175701445752914,
+    "host_utc_ns": 1792448249245007954
+  },
+  "camera_exit": 0,
+  "camera_end": {
+    "host_monotonic_ns": 175741550899837,
+    "host_utc_ns": 1792448289350157412
+  },
+  "workload_exit": 0,
+  "workload_end": {
+    "host_monotonic_ns": 175741550964028,
+    "host_utc_ns": 1792448289350218998
+  },
+  "sha256": "e38a564b4f0a002e510a319eb9c94ca4aed51172d53c9cbeaeb5f57a76d6d695"
+}

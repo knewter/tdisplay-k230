@@ -1,0 +1,330 @@
+{
+  "blank_frame_limit": "unpresented output events are counted; camera-visible blank frames remain UNVERIFIED",
+  "camera_correlation": "not provided; UNVERIFIED",
+  "failed_budgets": [
+    "84093776463236: input_to_present_ms p95 measured 74.634 exceeds 38.322",
+    "84093776463236: input_to_present_ms p99 measured 84.555 exceeds 57.482",
+    "84093776463236: frame_interval_ms p95 measured 57.481 exceeds 38.322",
+    "84093776463236: frame_interval_ms p99 measured 57.497 exceeds 57.482",
+    "84157760180137: input_to_present_ms p95 measured 74.115 exceeds 38.322",
+    "84157760180137: input_to_present_ms p99 measured 82.147 exceeds 57.482",
+    "84157760180137: frame_interval_ms p95 measured 57.481 exceeds 38.322",
+    "84157760180137: frame_interval_ms p99 measured 57.484 exceeds 57.482"
+  ],
+  "generated_utc": "2026-10-19T22:19:51.491817+00:00",
+  "input_timestamp": "device monotonic origin when emitted, otherwise handler dispatch",
+  "provenance": "injected",
+  "reduced_motion_parity": {
+    "full_settle_p50_ms": 278.527,
+    "reduced_settle_p50_ms": 149.244,
+    "stages": [
+      [
+        "input",
+        "scene_damage",
+        "commit",
+        "frame_done",
+        "present"
+      ]
+    ]
+  },
+  "runs": {
+    "84093776463236": {
+      "actual_cadence_hz": 26.095352417734404,
+      "cadence_source": "output presentation events",
+      "incomplete_stage_chains": 0,
+      "input": "injected",
+      "metrics": {
+        "blank_frames": {
+          "budget": {
+            "max": 0
+          },
+          "count": 0,
+          "failed": [],
+          "status": "PASS"
+        },
+        "frame_interval_ms": {
+          "budget": {
+            "p95": 38.32151753209427,
+            "p99": 57.4822762981414
+          },
+          "count": 143,
+          "failed": [
+            {
+              "allowed": 38.32151753209427,
+              "limit": "p95",
+              "measured": 57.481
+            },
+            {
+              "allowed": 57.4822762981414,
+              "limit": "p99",
+              "measured": 57.497
+            }
+          ],
+          "max": 57.497,
+          "p50": 38.321,
+          "p95": 57.481,
+          "p99": 57.497,
+          "status": "FAIL"
+        },
+        "input_to_present_ms": {
+          "budget": {
+            "p95": 38.32151753209427,
+            "p99": 57.4822762981414
+          },
+          "count": 210,
+          "failed": [
+            {
+              "allowed": 38.32151753209427,
+              "limit": "p95",
+              "measured": 74.634
+            },
+            {
+              "allowed": 57.4822762981414,
+              "limit": "p99",
+              "measured": 84.555
+            }
+          ],
+          "max": 87.731,
+          "p50": 50.754,
+          "p95": 74.634,
+          "p99": 84.555,
+          "status": "FAIL"
+        },
+        "rss_growth_bytes": {
+          "budget": {
+            "max": 67108864
+          },
+          "count": 1,
+          "failed": [],
+          "status": "PASS"
+        }
+      },
+      "missed_frames": 154,
+      "motion": "full",
+      "nominal_cadence_hz": 52.19,
+      "presentation_events": 169,
+      "renderer": "pixman",
+      "resources": {
+        "count": 18,
+        "cpu_budget": "none declared; reported only",
+        "cpu_percent": 28.125437207212247,
+        "peak_rss_bytes": 51064832,
+        "rss_growth_bytes": 5263360,
+        "span_ms": 17227.164635,
+        "status": "PASS"
+      },
+      "run": "84093776463236",
+      "settle_ms": [
+        264.363,
+        263.365,
+        281.527,
+        280.531,
+        298.689,
+        278.527
+      ],
+      "stage_timings": {
+        "commit_to_frame_done_ms": {
+          "budget": {},
+          "count": 216,
+          "failed": [],
+          "max": 21.851985,
+          "p50": 5.421035,
+          "p95": 19.176317,
+          "p99": 20.845137,
+          "status": "PASS"
+        },
+        "frame_done_to_present_ms": {
+          "budget": {},
+          "count": 216,
+          "failed": [],
+          "max": -0.374325,
+          "p50": -2.881504,
+          "p95": -0.473676,
+          "p99": -0.387216,
+          "status": "PASS"
+        },
+        "input_to_scene_damage_ms": {
+          "budget": {},
+          "count": 216,
+          "failed": [],
+          "max": 27.739393,
+          "p50": 10.793013,
+          "p95": 25.0685,
+          "p99": 27.440431,
+          "status": "PASS"
+        },
+        "scene_damage_to_commit_ms": {
+          "budget": {},
+          "count": 216,
+          "failed": [],
+          "max": 292.382051,
+          "p50": 34.537941,
+          "p95": 52.563306,
+          "p99": 262.75198,
+          "status": "PASS"
+        }
+      },
+      "stages_observed": [
+        "input",
+        "scene_damage",
+        "commit",
+        "frame_done",
+        "present"
+      ],
+      "stages_unobserved": [],
+      "status": "FAIL",
+      "traces": 216,
+      "unresolved_traces": 0
+    },
+    "84157760180137": {
+      "actual_cadence_hz": 26.095352417734404,
+      "cadence_source": "output presentation events",
+      "incomplete_stage_chains": 0,
+      "input": "injected",
+      "metrics": {
+        "blank_frames": {
+          "budget": {
+            "max": 0
+          },
+          "count": 0,
+          "failed": [],
+          "status": "PASS"
+        },
+        "frame_interval_ms": {
+          "budget": {
+            "p95": 38.32151753209427,
+            "p99": 57.4822762981414
+          },
+          "count": 123,
+          "failed": [
+            {
+              "allowed": 38.32151753209427,
+              "limit": "p95",
+              "measured": 57.481
+            },
+            {
+              "allowed": 57.4822762981414,
+              "limit": "p99",
+              "measured": 57.484
+            }
+          ],
+          "max": 57.502,
+          "p50": 38.321,
+          "p95": 57.481,
+          "p99": 57.484,
+          "status": "FAIL"
+        },
+        "input_to_present_ms": {
+          "budget": {
+            "p95": 38.32151753209427,
+            "p99": 57.4822762981414
+          },
+          "count": 210,
+          "failed": [
+            {
+              "allowed": 38.32151753209427,
+              "limit": "p95",
+              "measured": 74.115
+            },
+            {
+              "allowed": 57.4822762981414,
+              "limit": "p99",
+              "measured": 82.147
+            }
+          ],
+          "max": 84.679,
+          "p50": 51.078,
+          "p95": 74.115,
+          "p99": 82.147,
+          "status": "FAIL"
+        },
+        "rss_growth_bytes": {
+          "budget": {
+            "max": 67108864
+          },
+          "count": 1,
+          "failed": [],
+          "status": "PASS"
+        }
+      },
+      "missed_frames": 135,
+      "motion": "reduced",
+      "nominal_cadence_hz": 52.19,
+      "presentation_events": 170,
+      "renderer": "pixman",
+      "resources": {
+        "count": 18,
+        "cpu_budget": "none declared; reported only",
+        "cpu_percent": 28.483161588857133,
+        "peak_rss_bytes": 45207552,
+        "rss_growth_bytes": 10924032,
+        "span_ms": 17178.784331,
+        "status": "PASS"
+      },
+      "run": "84157760180137",
+      "settle_ms": [
+        151.243,
+        150.243,
+        149.244,
+        149.246,
+        148.248,
+        148.248
+      ],
+      "stage_timings": {
+        "commit_to_frame_done_ms": {
+          "budget": {},
+          "count": 216,
+          "failed": [],
+          "max": 21.624031,
+          "p50": 5.808574,
+          "p95": 18.6933,
+          "p99": 19.747923,
+          "status": "PASS"
+        },
+        "frame_done_to_present_ms": {
+          "budget": {},
+          "count": 216,
+          "failed": [],
+          "max": -0.379729,
+          "p50": -2.966972,
+          "p95": -0.482692,
+          "p99": -0.407313,
+          "status": "PASS"
+        },
+        "input_to_scene_damage_ms": {
+          "budget": {},
+          "count": 216,
+          "failed": [],
+          "max": 28.965295,
+          "p50": 11.58036,
+          "p95": 26.53881,
+          "p99": 28.309934,
+          "status": "PASS"
+        },
+        "scene_damage_to_commit_ms": {
+          "budget": {},
+          "count": 216,
+          "failed": [],
+          "max": 145.383016,
+          "p50": 34.523274,
+          "p95": 51.165437,
+          "p99": 143.59572,
+          "status": "PASS"
+        }
+      },
+      "stages_observed": [
+        "input",
+        "scene_damage",
+        "commit",
+        "frame_done",
+        "present"
+      ],
+      "stages_unobserved": [],
+      "status": "FAIL",
+      "traces": 216,
+      "unresolved_traces": 0
+    }
+  },
+  "schema": "shell-motion-trace-v1",
+  "source": "camera-paired-telemetry.log"
+}

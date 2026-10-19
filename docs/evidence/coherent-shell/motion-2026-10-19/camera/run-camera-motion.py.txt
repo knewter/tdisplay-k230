@@ -1,0 +1,42 @@
+"""Bounded camera recording concurrent with the original injected workload."""
+from pathlib import Path
+import subprocess,sys,time,json,datetime,importlib.util,argparse,hashlib
+base=Path(__file__).parent
+repo=Path('/mnt/MediaVolume/home/jadams/src/gitlab.daringbit.com/josh/tdisplay-k230/.claude/worktrees/agent-a576b48f3db2aa9c4')
+mode=sys.argv[1]; assert mode in ('full','reduced')
+tag=datetime.datetime.now(datetime.timezone.utc).strftime('%Y%m%dT%H%M%SZ')
+out=base/('camera-'+mode+'-'+tag);out.mkdir()
+ssh=['ssh','-F',str(Path.home()/'tmp/k230-coordination/ssh_config.private'),'k230']
+py='/nix/store/v189xydz6qkcd4cbkixcmv91w8hbc560-python3-riscv64-unknown-linux-gnu-3.14.7/bin/python3'
+def stamp():return {'host_monotonic_ns':time.monotonic_ns(),'host_utc_ns':time.time_ns()}
+clock={'host_before':stamp()}
+p=subprocess.run(ssh+[py+" -c 'import time,json; print(json.dumps(dict(board_monotonic_ns=time.monotonic_ns(),board_utc_ns=time.time_ns())))'"],capture_output=True,check=True,timeout=30)
+clock['board']=json.loads(p.stdout);clock['host_after']=stamp()
+spec=importlib.util.spec_from_file_location('capture',repo/'tools/capture-feature.py');cap=importlib.util.module_from_spec(spec);spec.loader.exec_module(cap)
+args=argparse.Namespace(input_format='mjpeg',video_size='1280x720',framerate=30,device='/dev/video0',rotate180=True,still=False,duration=40)
+video=out/(tag+'-shell-motion-'+mode+'.mp4')
+cmd=cap.command(args,video);cmd[1:1]=['-stats_period','0.1','-progress','pipe:1']
+manifest={'mode':mode,'interaction_provenance':'injected','description':'Concurrent K230 full/reduced native-uinput card motion and trace correlation','camera':vars(args),'command':cmd,'clock_sample':clock,'camera_launch':stamp(),'progress':[]}
+log=(out/'camera.log').open('w')
+camera=subprocess.Popen(cmd,stdout=subprocess.PIPE,stderr=log,text=True,bufsize=1)
+# First FFmpeg progress gives a conservative first-frame startup bound; not an optical latency clock.
+while True:
+ line=camera.stdout.readline()
+ if not line:raise RuntimeError('camera stopped before first progress')
+ if line.startswith('out_time_us='):
+  manifest['progress'].append({'stamp':stamp(),'out_time_us':line.strip().split('=',1)[1]})
+ if line.startswith('progress='):break
+manifest['workload_launch']=stamp()
+with (out/'workload.log').open('w') as f:
+ workload=subprocess.Popen([sys.executable,str(base/'run-motion-host.py'),mode,'6'],stdout=f,stderr=subprocess.STDOUT)
+while True:
+ line=camera.stdout.readline()
+ if not line:break
+ if line.startswith('out_time_us='):manifest['progress'].append({'stamp':stamp(),'out_time_us':line.strip().split('=',1)[1]})
+rc=camera.wait(timeout=10);manifest['camera_exit']=rc;manifest['camera_end']=stamp()
+manifest['workload_exit']=workload.wait(timeout=120);manifest['workload_end']=stamp()
+manifest['sha256']=hashlib.sha256(video.read_bytes()).hexdigest()
+(out/'manifest.json').write_text(json.dumps(manifest,indent=2)+'\n')
+print('CAMERA_OUTPUT',out,flush=True)
+print((out/'workload.log').read_text(),flush=True)
+if rc or manifest['workload_exit']:raise SystemExit(1)

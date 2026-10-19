@@ -124,3 +124,14 @@ Legacy logs and synthetic fixtures fall back to handler dispatch. The
 fixed-grammar exporter preserves only numeric origin fields; timestamps
 following their handler dispatch are rejected. The board collection records
 which producer and consumer were used.
+
+## Board and camera completion (2026-10-19)
+
+The actual userspace producer is installed at source `29fe458c`. Native-uinput
+full/reduced runs capture every named stage and honestly fail timing budgets.
+After the operator repositioned the camera, new concurrent video/trace runs
+completed the optical correlation task with bounded alignment and sampling
+limits. Evidence: `docs/evidence/coherent-shell/motion-2026-10-19/camera/README.md`.
+Reduced settling is shorter; no renderer performance fix is claimed. The camera
+checks visible movement and sampled blanking, not every physical refresh or
+precise optical latency. Original software-only runs keep their evidence class.

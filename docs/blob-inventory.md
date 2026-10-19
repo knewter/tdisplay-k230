@@ -651,6 +651,10 @@ Paths are relative to the repository root. `(sdk)` is
 so that building stage 1 from source does not silently drop them from view.
 
 ```
+DATA 8f41ffe0be47661ffb7b4f75ea8a847eca8eb466c6457ef5af9ffebd4ca6d9e0 docs/evidence/coherent-shell/motion-2026-10-19/camera/full-contact.jpg
+DATA e38a564b4f0a002e510a319eb9c94ca4aed51172d53c9cbeaeb5f57a76d6d695 docs/evidence/coherent-shell/motion-2026-10-19/camera/full.mp4
+DATA 5a42db1dae662497c74822f66e22f7e3abfeb4ba158efe4859be2603b61ee82a docs/evidence/coherent-shell/motion-2026-10-19/camera/reduced-contact.jpg
+DATA 62c08db87ee6b7110d7855ae14805c009c1c47be10804f3d528da4edbed2e9a2 docs/evidence/coherent-shell/motion-2026-10-19/camera/reduced.mp4
 DATA 022cccd66d73e4dfd2f1d48c4a5e3e32abb901296e8a876d7c94a5359d814d08 docs/evidence/coherent-shell/motion-2026-10-19/diagnostic-probe/held.png
 DATA 0fd107c75e8a68b2a3bf8cae56fadf5aa9814b108a179ecc1891d6b1cd8478eb docs/evidence/coherent-shell/motion-2026-10-19/full-after.png
 DATA 0fd107c75e8a68b2a3bf8cae56fadf5aa9814b108a179ecc1891d6b1cd8478eb docs/evidence/coherent-shell/motion-2026-10-19/full-before.png
@@ -3647,3 +3651,16 @@ and camera limits: `docs/evidence/coherent-shell/motion-2026-10-19/README.md`.
 | `docs/evidence/coherent-shell/motion-2026-10-19/full-before.png` | 30342 | DATA | `0fd107c75e8a68b2a3bf8cae56fadf5aa9814b108a179ecc1891d6b1cd8478eb` |
 | `docs/evidence/coherent-shell/motion-2026-10-19/reduced-after.png` | 31646 | DATA | `8aedb44255dd121e869fcc78c2845ae9dfbc52131d1ef9aa3c038ac41283e9b0` |
 | `docs/evidence/coherent-shell/motion-2026-10-19/reduced-before.png` | 31646 | DATA | `8aedb44255dd121e869fcc78c2845ae9dfbc52131d1ef9aa3c038ac41283e9b0` |
+
+## Shell motion camera correlation, 2026-10-19
+
+Concurrent injected-input recordings and derived review contact sheets.
+See `docs/evidence/coherent-shell/motion-2026-10-19/camera/README.md` for
+clock alignment, observed movement and camera sampling limits.
+
+| Path | Bytes | Class | SHA-256 |
+| --- | ---: | --- | --- |
+| `docs/evidence/coherent-shell/motion-2026-10-19/camera/full-contact.jpg` | 244202 | DATA | `8f41ffe0be47661ffb7b4f75ea8a847eca8eb466c6457ef5af9ffebd4ca6d9e0` |
+| `docs/evidence/coherent-shell/motion-2026-10-19/camera/full.mp4` | 1423087 | DATA | `e38a564b4f0a002e510a319eb9c94ca4aed51172d53c9cbeaeb5f57a76d6d695` |
+| `docs/evidence/coherent-shell/motion-2026-10-19/camera/reduced-contact.jpg` | 245114 | DATA | `5a42db1dae662497c74822f66e22f7e3abfeb4ba158efe4859be2603b61ee82a` |
+| `docs/evidence/coherent-shell/motion-2026-10-19/camera/reduced.mp4` | 1570474 | DATA | `62c08db87ee6b7110d7855ae14805c009c1c47be10804f3d528da4edbed2e9a2` |

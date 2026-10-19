@@ -2,7 +2,12 @@
 
 ### Requirement: A qualified side edge dismisses shell surfaces without touching app content
 
-<!-- UNVERIFIED: side-edge contextual Back is implemented in nix/card-shell/adapter.c and checked on the host only (tests/test_card_shell_route.py); no board or glass observation exists, and the long-press sheet step is not wired. -->
+*Grounding: native-injected board cases and operator real-finger acceptance
+("back works fine") recorded in task 1.3 of the archived change
+`2026-10-19-the-shell-gets-side-edge-back-and-motion-trace` and
+`docs/evidence/coherent-shell/side-edge-back/board-2026-10-16-injected.md`.
+The context-sheet route is wired; host routing/ownership fixtures retain
+sources and limits in the task results.*
 An inward touch gesture from a qualified side edge SHALL dismiss the topmost
 shell context in order: an open long-press context sheet; then Settings,
 shade, or drawer; then the on-screen keyboard when it owns input focus. The
@@ -25,7 +30,13 @@ swipes reaching the overview or switching apps from a mapped overlay.
 
 ### Requirement: One arbiter owns every touch at down
 
-<!-- UNVERIFIED: card_shell_touch_owner() in nix/card-shell/route.c decides side Back and is checked on the host only; the existing bottom and top branches in adapter.c still run their own code, and nothing was observed on the board. -->
+*Grounding: native-injected board routing/keyboard cases in
+`docs/evidence/coherent-shell/side-edge-back/board-2026-10-16-injected.md`
+and host `tests/test_card_shell_route.py`. App scrolling/text-selection
+contention beyond these cases has host policy coverage only; no broad
+physical app-content acceptance is inferred.*
+<!-- UNVERIFIED: physical app scrolling/text-selection contention beyond the
+named injected routing cases retains host policy coverage only. -->
 A single compositor-side arbiter SHALL decide, at touch-down, which of bottom
 Home/drawer, top shade, side Back, keyboard, deck, or app content owns a
 contact, using measured hit regions. Ordinary app scrolling and text selection
@@ -45,7 +56,12 @@ region in its reserved lower area SHALL win over a Home/drawer gesture there.
 
 ### Requirement: Shell motion is measured against declared budgets
 
-<!-- UNVERIFIED: tools/shell-motion-trace.py and its host cases exist; paired native-injected board runs now capture all stages and honestly fail timing budgets; docs/evidence/coherent-shell/motion-2026-10-19/README.md and docs/evidence/coherent-shell/motion.json record them. Camera-visible panel movement/correlation remains open, so task 2.2 is incomplete. -->
+*Grounding: actual-board native-injected traces and concurrent camera-visible
+card motion in `docs/evidence/coherent-shell/motion-2026-10-19/camera/README.md`,
+with original telemetry, video hashes, bounded clock correlation and camera
+sampling limits. Both motion modes honestly fail the declared timing budgets;
+reduced settling is shorter. This is measurement/reporting proof, not a
+performance pass or every-refresh optical blanking proof.*
 The shell SHALL produce a touch-to-scene-damage, damage-to-commit,
 commit-to-frame-done, and frame-done-to-output-presented trace with stable
 IDs correlating one accepted touch through to panel presentation, plus

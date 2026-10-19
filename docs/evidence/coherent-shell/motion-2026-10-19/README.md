@@ -13,11 +13,13 @@ input handler averages about 0.5 ms. This points the next performance
 investigation at the build/paint path; it is not proof of one particular
 Pixman operation or a claimed performance fix.
 
-**Task 2.2 stays open.** These are actual-board software timestamps and native
-`grim` captures after injected uinput events. No K230 camera recording was
-obtained: the available camera framed another device. There is no new real
-finger, optical-latency, camera-visible blank-frame, HDMI, or reboot claim.
-The change remains unarchived, with task 3.2 also open.
+These original runs are actual-board software timestamps and native `grim`
+captures after injected uinput events. At their collection time the camera
+framed another device. Later, the operator aimed it at the K230 and **new**
+concurrent full/reduced runs completed the separate camera-visible gate:
+[camera/README.md](camera/README.md). The original runs are not retroactively
+claimed as optical evidence. No real-finger latency, every-refresh blanking,
+HDMI, performance improvement, or new reboot is claimed.
 
 ## Identity and workload
 
@@ -199,20 +201,11 @@ checks pass with `python3 -S tests/test_shell_motion.py --case trace-order
 30 tests. This was a CI dependency issue, separate from the measured board
 budget failures.
 
-## Remaining proof
+## Camera proof completed separately
 
-Aim the bench camera at the K230 panel and repeat the same workload while
-recording. For example, under the board reservation:
-
-```sh
-python3 tools/capture-feature.py shell-motion --provenance injected \
-  --duration 45 --rotate180 \
-  --description 'K230 full/reduced card motion paired with trace IDs' \
-  --output-dir docs/evidence/coherent-shell/motion-2026-10-19/camera
-```
-
-Record the matching run IDs, video hash, capture timestamps, visible movement,
-and the camera's timing limits; observe blank/missed frames at its actual
-capture rate. A later unrelated video cannot retroactively correlate these
-runs. Keep task 2.2 and the archive gate 3.2 open until that named proof is
-committed. The render/paint performance failures are recorded for follow-up.
+After the operator repositioned the camera, two new concurrent trace/video
+runs completed the named task 2.2 gate. See [camera/README.md](camera/README.md)
+for run IDs, original videos, hashes, clock bounds, frame review and limits.
+Both new runs still fail the timing budgets; this change measures those
+failures rather than fixing the renderer. The initial runs and report above
+retain their original software-only evidence class.

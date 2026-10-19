@@ -1,0 +1,353 @@
+{
+  "method": "Board clock is bracketed by SSH request/response host stamps; first camera frame is conservatively bracketed by camera launch and first FFmpeg progress. Video PTS ranges include those startup/transport uncertainties. Camera 30fps is not panel52Hz.",
+  "runs": {
+    "full": {
+      "run_id": "84093776463236",
+      "video": "20261019T221727Z-shell-motion-full.mp4",
+      "max_camera_pts_gap_seconds": 0.0666670000000007,
+      "camera_pts_gaps_over_50ms": 20,
+      "sha256": "e38a564b4f0a002e510a319eb9c94ca4aed51172d53c9cbeaeb5f57a76d6d695",
+      "probe": {
+        "width": 1280,
+        "height": 720,
+        "avg_frame_rate": "59/2",
+        "duration": "40.000000",
+        "nb_frames": "1180"
+      },
+      "first_frame_host_monotonic_ns_bounds": [
+        175700848324250,
+        175701445717768
+      ],
+      "clock_roundtrip_ms": 753.838846,
+      "alignment_uncertainty_width_ms": 1351.232364,
+      "gestures": [
+        {
+          "index": 0,
+          "trace_gesture_id": 1,
+          "trace_input_id_range": [
+            1,
+            36
+          ],
+          "logical_direction": "left",
+          "down_video_pts_bounds_seconds": [
+            8.573713662,
+            9.924946026
+          ],
+          "up_video_pts_bounds_seconds": [
+            9.325973944,
+            10.677206308
+          ],
+          "review_window_frames": 75,
+          "min_bright_header_fraction": 1.0,
+          "separator_row_range_pixels": [
+            252,
+            410
+          ]
+        },
+        {
+          "index": 1,
+          "trace_gesture_id": 2,
+          "trace_input_id_range": [
+            37,
+            72
+          ],
+          "logical_direction": "right",
+          "down_video_pts_bounds_seconds": [
+            10.12614243,
+            11.477374794
+          ],
+          "up_video_pts_bounds_seconds": [
+            10.876990733,
+            12.228223097
+          ],
+          "review_window_frames": 75,
+          "min_bright_header_fraction": 1.0,
+          "separator_row_range_pixels": [
+            100,
+            579
+          ]
+        },
+        {
+          "index": 2,
+          "trace_gesture_id": 3,
+          "trace_input_id_range": [
+            73,
+            108
+          ],
+          "logical_direction": "left",
+          "down_video_pts_bounds_seconds": [
+            11.677151551,
+            13.028383915
+          ],
+          "up_video_pts_bounds_seconds": [
+            12.428176735,
+            13.779409099
+          ],
+          "review_window_frames": 75,
+          "min_bright_header_fraction": 1.0,
+          "separator_row_range_pixels": [
+            252,
+            579
+          ]
+        },
+        {
+          "index": 3,
+          "trace_gesture_id": 4,
+          "trace_input_id_range": [
+            109,
+            144
+          ],
+          "logical_direction": "right",
+          "down_video_pts_bounds_seconds": [
+            13.228321961,
+            14.579554325
+          ],
+          "up_video_pts_bounds_seconds": [
+            13.979206224,
+            15.330438588
+          ],
+          "review_window_frames": 75,
+          "min_bright_header_fraction": 1.0,
+          "separator_row_range_pixels": [
+            100,
+            579
+          ]
+        },
+        {
+          "index": 4,
+          "trace_gesture_id": 5,
+          "trace_input_id_range": [
+            145,
+            180
+          ],
+          "logical_direction": "left",
+          "down_video_pts_bounds_seconds": [
+            14.779376448,
+            16.130608812
+          ],
+          "up_video_pts_bounds_seconds": [
+            15.530206639,
+            16.881439003
+          ],
+          "review_window_frames": 75,
+          "min_bright_header_fraction": 1.0,
+          "separator_row_range_pixels": [
+            252,
+            579
+          ]
+        },
+        {
+          "index": 5,
+          "trace_gesture_id": 6,
+          "trace_input_id_range": [
+            181,
+            216
+          ],
+          "logical_direction": "right",
+          "down_video_pts_bounds_seconds": [
+            16.330373159,
+            17.681605523
+          ],
+          "up_video_pts_bounds_seconds": [
+            17.081187165,
+            18.432419529
+          ],
+          "review_window_frames": 75,
+          "min_bright_header_fraction": 1.0,
+          "separator_row_range_pixels": [
+            100,
+            579
+          ]
+        }
+      ],
+      "review_video_pts_window": [
+        8.573713662,
+        18.832419529
+      ],
+      "reviewed_camera_frames": 307,
+      "bright_header_roi_xywh": [
+        560,
+        250,
+        40,
+        250
+      ],
+      "threshold_note": "Proxy flags frame if under2% of interior bright header ROI exceeds grayscale120. This is not calibrated black level, optical latency, or every panel refresh. Human contact-sheet review checks visible card motion.",
+      "dark_candidate_frame_indices": [],
+      "min_bright_header_fraction": 1.0
+    },
+    "reduced": {
+      "run_id": "84157760180137",
+      "video": "20261019T221831Z-shell-motion-reduced.mp4",
+      "max_camera_pts_gap_seconds": 0.0666670000000007,
+      "camera_pts_gaps_over_50ms": 20,
+      "sha256": "62c08db87ee6b7110d7855ae14805c009c1c47be10804f3d528da4edbed2e9a2",
+      "probe": {
+        "width": 1280,
+        "height": 720,
+        "avg_frame_rate": "59/2",
+        "duration": "40.000000",
+        "nb_frames": "1180"
+      },
+      "first_frame_host_monotonic_ns_bounds": [
+        175764759773211,
+        175765284579394
+      ],
+      "clock_roundtrip_ms": 647.993517,
+      "alignment_uncertainty_width_ms": 1172.7997,
+      "gestures": [
+        {
+          "index": 0,
+          "trace_gesture_id": 1,
+          "trace_input_id_range": [
+            1,
+            36
+          ],
+          "logical_direction": "left",
+          "down_video_pts_bounds_seconds": [
+            8.817026419,
+            9.989826119
+          ],
+          "up_video_pts_bounds_seconds": [
+            9.569465373,
+            10.742265073
+          ],
+          "review_window_frames": 70,
+          "min_bright_header_fraction": 1.0,
+          "separator_row_range_pixels": [
+            252,
+            412
+          ]
+        },
+        {
+          "index": 1,
+          "trace_gesture_id": 2,
+          "trace_input_id_range": [
+            37,
+            72
+          ],
+          "logical_direction": "right",
+          "down_video_pts_bounds_seconds": [
+            10.369646387,
+            11.542446087
+          ],
+          "up_video_pts_bounds_seconds": [
+            11.120562329,
+            12.293362029
+          ],
+          "review_window_frames": 69,
+          "min_bright_header_fraction": 1.0,
+          "separator_row_range_pixels": [
+            102,
+            579
+          ]
+        },
+        {
+          "index": 2,
+          "trace_gesture_id": 3,
+          "trace_input_id_range": [
+            73,
+            108
+          ],
+          "logical_direction": "left",
+          "down_video_pts_bounds_seconds": [
+            11.920747601,
+            13.093547301
+          ],
+          "up_video_pts_bounds_seconds": [
+            12.671582731,
+            13.844382431
+          ],
+          "review_window_frames": 70,
+          "min_bright_header_fraction": 1.0,
+          "separator_row_range_pixels": [
+            252,
+            569
+          ]
+        },
+        {
+          "index": 3,
+          "trace_gesture_id": 4,
+          "trace_input_id_range": [
+            109,
+            144
+          ],
+          "logical_direction": "right",
+          "down_video_pts_bounds_seconds": [
+            13.471744411,
+            14.644544111
+          ],
+          "up_video_pts_bounds_seconds": [
+            14.223039818,
+            15.395839518
+          ],
+          "review_window_frames": 69,
+          "min_bright_header_fraction": 1.0,
+          "separator_row_range_pixels": [
+            100,
+            579
+          ]
+        },
+        {
+          "index": 4,
+          "trace_gesture_id": 5,
+          "trace_input_id_range": [
+            145,
+            180
+          ],
+          "logical_direction": "left",
+          "down_video_pts_bounds_seconds": [
+            15.023182721,
+            16.195982421
+          ],
+          "up_video_pts_bounds_seconds": [
+            15.774033923,
+            16.946833623
+          ],
+          "review_window_frames": 70,
+          "min_bright_header_fraction": 1.0,
+          "separator_row_range_pixels": [
+            252,
+            571
+          ]
+        },
+        {
+          "index": 5,
+          "trace_gesture_id": 6,
+          "trace_input_id_range": [
+            181,
+            216
+          ],
+          "logical_direction": "right",
+          "down_video_pts_bounds_seconds": [
+            16.574180418,
+            17.746980118
+          ],
+          "up_video_pts_bounds_seconds": [
+            17.325608707,
+            18.498408407
+          ],
+          "review_window_frames": 69,
+          "min_bright_header_fraction": 1.0,
+          "separator_row_range_pixels": [
+            100,
+            579
+          ]
+        }
+      ],
+      "review_video_pts_window": [
+        8.817026419,
+        18.898408406999998
+      ],
+      "reviewed_camera_frames": 302,
+      "bright_header_roi_xywh": [
+        560,
+        250,
+        40,
+        250
+      ],
+      "threshold_note": "Proxy flags frame if under2% of interior bright header ROI exceeds grayscale120. This is not calibrated black level, optical latency, or every panel refresh. Human contact-sheet review checks visible card motion.",
+      "dark_candidate_frame_indices": [],
+      "min_bright_header_fraction": 1.0
+    }
+  }
+}

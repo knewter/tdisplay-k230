@@ -1,0 +1,41 @@
+"""Bounded video/board correlation; brightness proxy is not a scanout blank test."""
+from pathlib import Path
+import subprocess,json,sys,csv,re
+import numpy as np
+base=Path(__file__).parent
+pairs=[('full','camera-full-20261019T221727Z','motion-full-221729'),('reduced','camera-reduced-20261019T221831Z','motion-reduced-221833')]
+result={'method':'Board clock is bracketed by SSH request/response host stamps; first camera frame is conservatively bracketed by camera launch and first FFmpeg progress. Video PTS ranges include those startup/transport uncertainties. Camera 30fps is not panel52Hz.','runs':{}}
+for mode,cam,board in pairs:
+ c=base/cam;m=json.loads((c/'manifest.json').read_text());b=json.loads((base/board/'metadata.json').read_text());v=next(c.glob('*.mp4'))
+ probe=json.loads(subprocess.check_output(['ffprobe','-v','error','-select_streams','v:0','-show_entries','stream=avg_frame_rate,nb_frames,duration,width,height','-of','json',str(v)]))['streams'][0]
+ frames=json.loads(subprocess.check_output(['ffprobe','-v','error','-select_streams','v:0','-show_entries','frame=best_effort_timestamp_time','-of','json',str(v)]))['frames']
+ pts=np.array([float(f['best_effort_timestamp_time']) for f in frames])
+ # Decoding grayscale retains camera orientation and samples only screen regions.
+ raw=subprocess.check_output(['ffmpeg','-v','error','-i',str(v),'-pix_fmt','gray','-fps_mode','passthrough','-f','rawvideo','-'])
+ a=np.frombuffer(raw,dtype=np.uint8).reshape((-1,720,1280));assert len(a)==len(pts)
+ clock=m['clock_sample'];bo=clock['board']['board_monotonic_ns'];offlo=clock['host_before']['host_monotonic_ns']-bo;offhi=clock['host_after']['host_monotonic_ns']-bo
+ originlo=m['camera_launch']['host_monotonic_ns'];originhi=m['progress'][0]['stamp']['host_monotonic_ns']
+ def bounds(t):return [(t+offlo-originhi)/1e9,(t+offhi-originlo)/1e9]
+ run=re.search(r'motion-session run=(\d+) motion='+mode,(base/board/'telemetry.log').read_text()).group(1)
+ inputs={}
+ for line in (base/board/'telemetry.log').read_text().splitlines():
+  if ' event=input ' in line:
+   row=dict(item.split('=',1) for item in line.split() if '=' in item);inputs.setdefault(int(row['gesture_id']),[]).append(int(row['input_id']))
+ gestures=[]
+ for g in b['gestures']:
+  down,up=bounds(g['down_monotonic_ns']),bounds(g['up_monotonic_ns'])
+  # Broad union includes transport/startup uncertainty and 0.4s of settling.
+  pick=(pts>=down[0])&(pts<=up[1]+.4)
+  stripe=(a[:,250:500,560:600]>120).mean(axis=(1,2))
+  rows=a[:,100:580,700:850].mean(axis=2);sepy=rows.argmax(axis=1)+100
+  peak=rows.max(axis=1)
+  gestures.append({'index':g['index'],'trace_gesture_id':g['index']+1,'trace_input_id_range':[min(inputs[g['index']+1]),max(inputs[g['index']+1])],'logical_direction':'left' if g['to'][0]<g['from'][0] else 'right','down_video_pts_bounds_seconds':down,'up_video_pts_bounds_seconds':up,'review_window_frames':int(pick.sum()),'min_bright_header_fraction':round(float(stripe[pick].min()),4),'separator_row_range_pixels':[int(sepy[pick].min()),int(sepy[pick].max())]})
+ start=gestures[0]['down_video_pts_bounds_seconds'][0];end=gestures[-1]['up_video_pts_bounds_seconds'][1]+.4
+ selected=(pts>=start)&(pts<=end)
+ dark=np.where(selected&(stripe<.02))[0]
+ with (c/'frame-review.csv').open('w') as f:
+  w=csv.writer(f);w.writerow(['frame','pts_s','in_review_window','bright_header_fraction_gt120','brightest_separator_row_y','separator_row_mean'])
+  for i,t in enumerate(pts):w.writerow([i,round(float(t),6),int(selected[i]),round(float(stripe[i]),4),int(sepy[i]),round(float(peak[i]),3)])
+ result['runs'][mode]={'run_id':run,'video':v.name,'max_camera_pts_gap_seconds':float(np.diff(pts).max()),'camera_pts_gaps_over_50ms':int((np.diff(pts)>.05).sum()),'sha256':m['sha256'],'probe':probe,'first_frame_host_monotonic_ns_bounds':[originlo,originhi],'clock_roundtrip_ms':(offhi-offlo)/1e6,'alignment_uncertainty_width_ms':(offhi-offlo+originhi-originlo)/1e6,'gestures':gestures,'review_video_pts_window':[start,end],'reviewed_camera_frames':int(selected.sum()),'bright_header_roi_xywh':[560,250,40,250],'threshold_note':'Proxy flags frame if under2% of interior bright header ROI exceeds grayscale120. This is not calibrated black level, optical latency, or every panel refresh. Human contact-sheet review checks visible card motion.','dark_candidate_frame_indices':dark.tolist(),'min_bright_header_fraction':round(float(stripe[selected].min()),4)}
+(base/'camera-correlation.json').write_text(json.dumps(result,indent=2)+'\n')
+print(json.dumps(result,indent=2))

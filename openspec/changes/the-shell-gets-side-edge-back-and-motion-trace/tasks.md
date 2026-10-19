@@ -5,8 +5,8 @@ NOT PERFORMED HERE` and cross-reference this file. Task IDs here are
 renumbered for this change's own groups; each task names its parent task ID
 for traceability. Two new board tasks (1.3, 2.2) are added since the
 parent's existing group-5 physical tasks predate this mechanism and do not
-cover it. None of the tasks below are done yet; authorization only removes
-the blocker on starting them.
+cover it. The task results below record the subsequent implementation and
+proof; the original authorization only removed the blocker on starting them.
 
 ## 1. Side-edge contextual Back and touch ownership (host)
 
@@ -100,8 +100,8 @@ the blocker on starting them.
   reported with no budget. The card-shell console already emits only input,
   submit (commit) and present rows, so `--log` reports `scene_damage` and
   `frame_done` as unobserved; emitting them with trace IDs is compositor work
-  that task 2.2 depends on. <!-- UNVERIFIED: no budget has been measured on the board -->
-- [ ] 2.2 (new) Under a board reservation, run
+  that task 2.2 depends on. The later board results in task 2.2 supersede that initial host-only limit.
+- [x] 2.2 (new) Under a board reservation, run
   `python3 tools/shell-motion-trace.py --board --output
   docs/evidence/coherent-shell/motion.json`, correlating input->scene
   commit->output presentation with camera-visible movement; report p50/p95/p99,
@@ -136,8 +136,18 @@ the blocker on starting them.
   restored and the board released. Commands, identities, CPU breakdown,
   screenshots, limits and the outstanding camera gate are committed under
   `docs/evidence/coherent-shell/motion-2026-10-19/README.md`.
-  **Still open:** the camera did not frame the K230, so camera-visible
-  movement/correlation and visible blank-frame evidence were not obtained.
+  At that point the camera did not frame the K230. Completed 2026-10-19
+  after the operator repositioned it: new concurrent full/reduced runs
+  `84093776463236` / `84157760180137`, each with 216 complete trace IDs and
+  original 40 s camera footage, are committed under
+  `docs/evidence/coherent-shell/motion-2026-10-19/camera/README.md`.
+  The board command above, using `camera/telemetry.log` and `camera/motion.json`,
+  exits 1 for honestly recorded timing failures. Visible card movement is
+  correlated with gesture/trace IDs using bounded clock alignment. A decoded
+  frame brightness proxy flags no dark candidates over 307/302 gesture-window
+  camera frames. Camera averages 29.5 fps with 66.667 ms maximum PTS gaps; this
+  does not prove every 52.19 Hz refresh blank-free or measure optical latency.
+  Normal mode restored, test devices removed, board/camera released.
 
 ## 3. Validation
 
