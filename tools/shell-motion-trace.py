@@ -3,7 +3,7 @@
 
 A trace follows one accepted touch through its stages:
 
-    input -> scene_damage -> commit -> frame_done -> present
+    input -> scene_damage -> commit -> {frame_done, present}
 
 Rows are JSON objects, one per line (schema shell-motion-trace-v1), or the
 K230_CARD_BENCH rows plus K230_CARD_SHELL motion-* diagnostics (--log).
@@ -253,7 +253,7 @@ def metric(values, budget, required):
 
 
 def check_chain(traces, require):
-    """Each trace has at most one row per stage, in order, with IDs intact."""
+    """Each trace keeps its IDs and causal order; callback/presentation are independent."""
     for trace_id, rows in traces.items():
         seen = [row['stage'] for row in rows]
         if len(set(seen)) != len(seen):

@@ -1,0 +1,12 @@
+from pathlib import Path
+import subprocess,importlib.util,re,json
+b=Path(__file__).parent;r=Path('/mnt/MediaVolume/home/jadams/src/gitlab.daringbit.com/josh/tdisplay-k230/.claude/worktrees/agent-a576b48f3db2aa9c4')
+spec=importlib.util.spec_from_file_location('export',r/'tools/card-shell-board-session.py');m=importlib.util.module_from_spec(spec);spec.loader.exec_module(m)
+ssh=['ssh','-F',str(Path.home()/'tmp/k230-coordination/ssh_config.private'),'k230']
+raw=subprocess.check_output(ssh+["journalctl -u shell.service --since '2026-10-19 21:52:00 UTC' --no-pager -o cat --grep='K230_CARD_SHELL (frame-cost|repaint-cost|input-cost)' -n 10000"],stdin=subprocess.DEVNULL,text=True,timeout=30)
+allowed={'82570247133503','82650784426941'}
+clean=m.normalized_journal(raw)
+lines=[line for line in clean.splitlines() if re.search(r'\brun=([0-9]+)',line).group(1) in allowed]
+(b/'motion-costs.log').write_text('\n'.join(lines)+'\n')
+print('Exported fixed-grammar cost rows',len(lines))
+print(subprocess.check_output(ssh+["readlink -f /run/current-system; systemctl is-active shell.service shell-ui.service; test ! -e /run/systemd/system/shell.service.d/91-k230-motion-proof.conf && echo MODE_OVERRIDE_ABSENT"],stdin=subprocess.DEVNULL,text=True,timeout=20))

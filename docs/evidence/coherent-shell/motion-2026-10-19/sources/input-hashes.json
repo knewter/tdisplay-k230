@@ -1,0 +1,48 @@
+{
+  "runtime_source": "29fe458cc4044cb5095e6aeb5fc84b4fdfb3d931",
+  "analysis_source": "f45bbeba51f1e9d51820b9a3280e522cb2d7489a",
+  "original_inputs": [
+    {
+      "artifact": "motion-full-215204/after.png",
+      "sha256": "0fd107c75e8a68b2a3bf8cae56fadf5aa9814b108a179ecc1891d6b1cd8478eb",
+      "recorded_utc": "2026-10-19T21:52:31.823001+00:00"
+    },
+    {
+      "artifact": "motion-full-215204/before.png",
+      "sha256": "0fd107c75e8a68b2a3bf8cae56fadf5aa9814b108a179ecc1891d6b1cd8478eb",
+      "recorded_utc": "2026-10-19T21:52:31.436125+00:00"
+    },
+    {
+      "artifact": "motion-full-215204/metadata.json",
+      "sha256": "44afe3b87ab42e46aba5df603de35fc32345e13ce2a6a31af5d478a6ec19ed54",
+      "recorded_utc": "2026-10-19T21:52:30.627597+00:00"
+    },
+    {
+      "artifact": "motion-full-215204/telemetry.log",
+      "sha256": "22aceec1378224bc3471c549fbcb4ce1fe1df99d8944fa34dd075d08038ab601",
+      "recorded_utc": "2026-10-19T21:52:31.047127+00:00"
+    },
+    {
+      "artifact": "motion-reduced-215323/after.png",
+      "sha256": "8aedb44255dd121e869fcc78c2845ae9dfbc52131d1ef9aa3c038ac41283e9b0",
+      "recorded_utc": "2026-10-19T21:53:51.124911+00:00"
+    },
+    {
+      "artifact": "motion-reduced-215323/before.png",
+      "sha256": "8aedb44255dd121e869fcc78c2845ae9dfbc52131d1ef9aa3c038ac41283e9b0",
+      "recorded_utc": "2026-10-19T21:53:50.723058+00:00"
+    },
+    {
+      "artifact": "motion-reduced-215323/metadata.json",
+      "sha256": "b694d66388e7d3650cb1db063560671de959b2c746c5b705b1589459240206d6",
+      "recorded_utc": "2026-10-19T21:53:49.898623+00:00"
+    },
+    {
+      "artifact": "motion-reduced-215323/telemetry.log",
+      "sha256": "48c9ee2f96ba0befb3a58f8e7efa410ece43fea532eab3bb7df35c5e0c9ed97e",
+      "recorded_utc": "2026-10-19T21:53:50.339640+00:00"
+    }
+  ],
+  "trace_consumer_sha256": "069db27429ee2b4ba7c0fc6a4510fa288c61aa68995f92b34884d75ff99bdc0c",
+  "analysis_note": "Same measured algorithm as f45bbeba; help/docstrings now spell out independent callback/presentation order."
+}

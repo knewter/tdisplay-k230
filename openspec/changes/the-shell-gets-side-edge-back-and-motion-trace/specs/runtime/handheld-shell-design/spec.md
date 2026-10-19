@@ -45,7 +45,7 @@ region in its reserved lower area SHALL win over a Home/drawer gesture there.
 
 ### Requirement: Shell motion is measured against declared budgets
 
-<!-- UNVERIFIED: tools/shell-motion-trace.py and its host cases exist; no budget has been measured on the board. Supplemental compositor rows now emit scene_damage and frame_done timestamps; native host producer/consumer checks pass, but panel and camera correlation remain open. -->
+<!-- UNVERIFIED: tools/shell-motion-trace.py and its host cases exist; paired native-injected board runs now capture all stages and honestly fail timing budgets; docs/evidence/coherent-shell/motion-2026-10-19/README.md and docs/evidence/coherent-shell/motion.json record them. Camera-visible panel movement/correlation remains open, so task 2.2 is incomplete. -->
 The shell SHALL produce a touch-to-scene-damage, damage-to-commit,
 commit-to-frame-done, and frame-done-to-output-presented trace with stable
 IDs correlating one accepted touch through to panel presentation, plus

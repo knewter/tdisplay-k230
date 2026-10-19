@@ -125,6 +125,20 @@ the blocker on starting them.
   acceptance run; measured full/reduced runs and optical correlation remain
   open.
 
+  Board progress 2026-10-19: `29fe458c` installed, then six full and six
+  reduced-motion gestures captured 216 IDs per mode with all five stages
+  and zero unresolved chains. The paired command
+  `python3 tools/shell-motion-trace.py --board --log
+  docs/evidence/coherent-shell/motion-2026-10-19/telemetry.log --provenance
+  injected --compare-motion --output docs/evidence/coherent-shell/motion.json`
+  exits 1, honestly reporting latency/frame-budget failures in both modes.
+  Reduced settling shortens from 294.035 to 155.655 ms. Normal mode was
+  restored and the board released. Commands, identities, CPU breakdown,
+  screenshots, limits and the outstanding camera gate are committed under
+  `docs/evidence/coherent-shell/motion-2026-10-19/README.md`.
+  **Still open:** the camera did not frame the K230, so camera-visible
+  movement/correlation and visible blank-frame evidence were not obtained.
+
 ## 3. Validation
 
 - [x] 3.1 Validate this change: `openspec validate

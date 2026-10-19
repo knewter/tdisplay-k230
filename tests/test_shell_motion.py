@@ -949,7 +949,7 @@ def stage_row(rows, trace_id, stage):
 
 
 def trace_order():
-    """One touch keeps its ID through every stage, in order; gaps never pass."""
+    """One touch keeps its ID and causal order through every stage; gaps never pass."""
     tool = trace_tool()
     rows = tool.synthetic("order")
     run = tool.analyze(rows)["order"]

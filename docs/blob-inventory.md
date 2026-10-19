@@ -651,6 +651,11 @@ Paths are relative to the repository root. `(sdk)` is
 so that building stage 1 from source does not silently drop them from view.
 
 ```
+DATA 022cccd66d73e4dfd2f1d48c4a5e3e32abb901296e8a876d7c94a5359d814d08 docs/evidence/coherent-shell/motion-2026-10-19/diagnostic-probe/held.png
+DATA 0fd107c75e8a68b2a3bf8cae56fadf5aa9814b108a179ecc1891d6b1cd8478eb docs/evidence/coherent-shell/motion-2026-10-19/full-after.png
+DATA 0fd107c75e8a68b2a3bf8cae56fadf5aa9814b108a179ecc1891d6b1cd8478eb docs/evidence/coherent-shell/motion-2026-10-19/full-before.png
+DATA 8aedb44255dd121e869fcc78c2845ae9dfbc52131d1ef9aa3c038ac41283e9b0 docs/evidence/coherent-shell/motion-2026-10-19/reduced-after.png
+DATA 8aedb44255dd121e869fcc78c2845ae9dfbc52131d1ef9aa3c038ac41283e9b0 docs/evidence/coherent-shell/motion-2026-10-19/reduced-before.png
 DATA cd41143071204ffd096a6e9aa0fdccd6a71531c4d1a94205b17bcd886db24c88 docs/evidence/overview-backdrop-tap/backdrop-drag-overview.png
 DATA 58692858d53cf304c793082fa706d60fa48c8f75d9f5da9bd08dbeae46142ff1 docs/evidence/overview-backdrop-tap/body-tap-home.png
 DATA 7a2f2289f6cb1dcf31e4d017265769563b9eb27d065cc0e9f351453f21a7315e docs/evidence/overview-backdrop-tap/card-tap-terminal.png
@@ -3629,3 +3634,16 @@ commands and limits: `docs/evidence/overview-backdrop-tap/README.md`.
 | `docs/evidence/overview-backdrop-tap/side-back.png` | 36020 | DATA | `cd41143071204ffd096a6e9aa0fdccd6a71531c4d1a94205b17bcd886db24c88` |
 | `docs/evidence/overview-backdrop-tap/side-tap-home.png` | 102251 | DATA | `880f1bc6d3bb49be989aa9c9903b7849ee377f7b2dd78add53f0335f51600de1` |
 | `docs/evidence/overview-backdrop-tap/title-tap-home.png` | 102317 | DATA | `358adfa74c2011904c9062a9ac94e429cc7feab3f743282428d31dc57a126075` |
+
+## Shell motion trace board captures, 2026-10-19
+
+Native `grim` captures after injected uinput; full commands, failed budgets
+and camera limits: `docs/evidence/coherent-shell/motion-2026-10-19/README.md`.
+
+| Path | Bytes | Class | SHA-256 |
+| --- | ---: | --- | --- |
+| `docs/evidence/coherent-shell/motion-2026-10-19/diagnostic-probe/held.png` | 28140 | DATA | `022cccd66d73e4dfd2f1d48c4a5e3e32abb901296e8a876d7c94a5359d814d08` |
+| `docs/evidence/coherent-shell/motion-2026-10-19/full-after.png` | 30342 | DATA | `0fd107c75e8a68b2a3bf8cae56fadf5aa9814b108a179ecc1891d6b1cd8478eb` |
+| `docs/evidence/coherent-shell/motion-2026-10-19/full-before.png` | 30342 | DATA | `0fd107c75e8a68b2a3bf8cae56fadf5aa9814b108a179ecc1891d6b1cd8478eb` |
+| `docs/evidence/coherent-shell/motion-2026-10-19/reduced-after.png` | 31646 | DATA | `8aedb44255dd121e869fcc78c2845ae9dfbc52131d1ef9aa3c038ac41283e9b0` |
+| `docs/evidence/coherent-shell/motion-2026-10-19/reduced-before.png` | 31646 | DATA | `8aedb44255dd121e869fcc78c2845ae9dfbc52131d1ef9aa3c038ac41283e9b0` |
