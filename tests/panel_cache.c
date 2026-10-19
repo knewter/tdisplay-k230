@@ -7,7 +7,7 @@
 #include "rounded-clip.h"
 #include "quarter-turn.h"
 static void compare(bool fast,int turn,int radius,bool partial,int sw,int sh,int dw,int dh,int source_kind){
- bool rgb565=source_kind==1,alpha=source_kind==2;
+ bool rgb565=source_kind==1,alpha=source_kind>=2;
  uint32_t data[38*30],scaled[56*44];
  pixman_image_t *src=pixman_image_create_bits(rgb565?PIXMAN_r5g6b5:alpha?PIXMAN_a8r8g8b8:PIXMAN_x8r8g8b8,sw,sh,data,sw*(rgb565?2:4));
  pixman_image_t *cache=pixman_image_create_bits(alpha?PIXMAN_a8r8g8b8:PIXMAN_x8r8g8b8,dw,dh,scaled,dw*4);
@@ -19,7 +19,7 @@ static void compare(bool fast,int turn,int radius,bool partial,int sw,int sh,int
   for(int i=0;i<sw*sh;i++) {
    if(rgb565)((uint16_t*)data)[i]=(uint16_t)(i*3911+frame*731);
    else {
-    unsigned a=alpha ? 32+(unsigned)(i*17+frame*23)%224 : 255;
+    unsigned a=(!alpha || source_kind==3 || (source_kind==4 && frame!=1)) ? 255 : 32+(unsigned)(i*17+frame*23)%224;
     unsigned r=(unsigned)(i*19+frame*11)%256*a/255;
     unsigned g=(unsigned)(i*7+frame*13)%256*a/255;
     unsigned b=(unsigned)(i*29+frame*3)%256*a/255;
@@ -28,6 +28,11 @@ static void compare(bool fast,int turn,int radius,bool partial,int sw,int sh,int
   }
   memset(pixman_image_get_data(a),0x5a,160*64);memset(pixman_image_get_data(b),0x5a,160*64);
   assert(card_scale_pixels(scaled,(size_t)dw*4,dw,dh,alpha?DRM_FORMAT_ARGB8888:DRM_FORMAT_XRGB8888,data,(size_t)sw*(rgb565?2:4),sw,sh,rgb565?DRM_FORMAT_RGB565:alpha?DRM_FORMAT_ARGB8888:DRM_FORMAT_XRGB8888,fast));
+  bool opaque=alpha && card_pixels_argb_opaque(scaled,(size_t)dw*4,dw,dh);
+  assert(opaque==(source_kind==3 || (source_kind==4 && frame!=1)));
+  pixman_image_unref(cache);
+  cache=pixman_image_create_bits(alpha&&!opaque?PIXMAN_a8r8g8b8:PIXMAN_x8r8g8b8,dw,dh,scaled,dw*4);
+  assert(cache);
   pixman_transform_t t;pixman_transform_init_identity(&t);pixman_transform_scale(&t,NULL,pixman_double_to_fixed((double)sw/dw),pixman_double_to_fixed((double)sh/dh));
   pixman_image_set_transform(src,&t);pixman_image_set_repeat(src,PIXMAN_REPEAT_PAD);pixman_image_set_filter(src,fast?PIXMAN_FILTER_NEAREST:PIXMAN_FILTER_BILINEAR,NULL,0);
   struct k230_round_box box={7,11,dw,dh};
@@ -36,7 +41,7 @@ static void compare(bool fast,int turn,int radius,bool partial,int sw,int sh,int
   assert(k230_round_composite(&masks,alpha?PIXMAN_OP_OVER:PIXMAN_OP_SRC,src,NULL,a,0,0,box,box,radius,65535));
   struct k230_round_box fragment = partial ?
       (struct k230_round_box){12,14,dw/2,dh/2} : box;
-  assert(k230_round_composite(&masks,alpha?PIXMAN_OP_OVER:PIXMAN_OP_SRC,cache,NULL,b,
+  assert(k230_round_composite(&masks,alpha&&!opaque?PIXMAN_OP_OVER:PIXMAN_OP_SRC,cache,NULL,b,
       fragment.x-box.x,fragment.y-box.y,fragment,box,radius,65535));
   pixman_region32_fini(&clip);
   assert(memcmp(pixman_image_get_data(a),pixman_image_get_data(b),160*64)==0);
@@ -46,8 +51,14 @@ static void compare(bool fast,int turn,int radius,bool partial,int sw,int sh,int
  k230_round_cache_finish(&masks);pixman_image_unref(src);pixman_image_unref(cache);pixman_image_unref(a);pixman_image_unref(b);pixman_image_unref(ar);pixman_image_unref(br);
 }
 int main(void){
+ uint32_t opacity[6]={0xffffffff,0xff123456,0,0xff112233,0xffffffff,0};
+ assert(card_pixels_argb_opaque(opacity,12,2,2));
+ opacity[4]=0xfeffffff;assert(!card_pixels_argb_opaque(opacity,12,2,2));
+ assert(!card_pixels_argb_opaque(opacity,4,2,2));
+ assert(!card_pixels_argb_opaque(NULL,12,2,2));
+ assert(!card_pixels_argb_opaque(opacity,12,0,2));
  unsigned cases=0;
- for(int fast=0;fast<2;fast++)for(int turn=1;turn<=3;turn+=2)for(int r=0;r<=7;r+=7)for(int crop=0;crop<2;crop++)for(int up=0;up<2;up++)for(int fmt=0;fmt<3;fmt++){
+ for(int fast=0;fast<2;fast++)for(int turn=1;turn<=3;turn+=2)for(int r=0;r<=7;r+=7)for(int crop=0;crop<2;crop++)for(int up=0;up<2;up++)for(int fmt=0;fmt<5;fmt++){
   compare(fast,turn,r,crop,38,30,up?56:20,up?44:16,fmt);cases++;
  }
  assert(card_cache_logical_output(0,false,true,true));

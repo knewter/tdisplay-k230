@@ -80,3 +80,15 @@ ARGB8888 intermediate for those buffers, with exact native output comparisons
 before enabling it. XRGB8888/RGB565 sources keep their full-precision path;
 normal-output RGB565-cache eligibility stays unchanged. No wrapper bypass is
 needed: pinned wlroots client buffers forward SHM/data-pointer access.
+
+## Active cache outcome and opacity certificate
+
+The24b2a03d trial records4,736 cache hits/42misses/zero fallbacks but still
+fails timing budgets at26Hz; cache activation alone is not success. The next
+correction scans the freshly generated ARGB cache, excluding padding. Only
+all-255 alpha may be represented asXRGB, enabling existing opaque-region
+culling andSRC compositing. No pixels are changed, no source alpha is assumed
+opaque, and every new source generation repeats the certificate. Native
+fixtures cover opaque→transparent→opaque transitions; rounded corners retain
+their geometric mask. Cache-alpha counters separately expose certificates
+and retained-alpha allocations. A new integrated trial is mandatory.

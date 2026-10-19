@@ -58,3 +58,18 @@ bool card_cache_logical_output(int transform, bool rotate_once,
     return transform == 0 || ((transform == 1 || transform == 3) &&
         rotate_once && !software_cursor && !damage_highlight);
 }
+
+/* Certify only the actual cached texels, never infer opacity from ARGB's
+ * name or a background setting. Exclude row padding and fail closed. */
+bool card_pixels_argb_opaque(const void *pixels, size_t stride, int width, int height) {
+    if (!pixels || width <= 0 || height <= 0 || (stride & 3) ||
+            (uintptr_t)pixels % 4 || (size_t)width > SIZE_MAX / 4 ||
+            stride < (size_t)width * 4 || (size_t)height > SIZE_MAX / stride)
+        return false;
+    for (int y = 0; y < height; y++) {
+        const uint32_t *row = (const uint32_t *)((const uint8_t *)pixels + (size_t)y * stride);
+        for (int x = 0; x < width; x++)
+            if ((row[x] >> 24) != 255) return false;
+    }
+    return true;
+}

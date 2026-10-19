@@ -25,6 +25,11 @@ struct scaled_buffer {
     uint32_t format;
 };
 static size_t scaled_bytes;
+static uint64_t scaled_opaque_certifications, scaled_alpha_retained;
+void card_scaled_buffer_alpha_counts(uint64_t *opaque, uint64_t *alpha) {
+    *opaque = scaled_opaque_certifications;
+    *alpha = scaled_alpha_retained;
+}
 static void scaled_destroy(struct wlr_buffer *base) {
 	struct scaled_buffer *b = wl_container_of(base, b, base);
 	wlr_buffer_finish(base);
@@ -72,6 +77,17 @@ struct wlr_buffer *card_scaled_buffer_create_format(struct wlr_buffer *source, i
 	if (!okay) { free(b->pixels); free(b); return NULL; }
 	b->stride = stride;
     b->format = target_format;
+    /* No alpha is discarded: only an all-255 cached image is exposed as
+     * XRGB, allowing wlroots' rounded opaque-region culling and SRC path.
+     * New source commits create a fresh image and repeat this certificate. */
+    if (target_format == DRM_FORMAT_ARGB8888) {
+        if (card_pixels_argb_opaque(b->pixels, stride, width, height)) {
+            b->format = DRM_FORMAT_XRGB8888;
+            scaled_opaque_certifications++;
+        } else {
+            scaled_alpha_retained++;
+        }
+    }
 	b->bytes = bytes;
 	wlr_buffer_init(&b->base, &scaled_impl, width, height);
 	scaled_bytes += bytes;

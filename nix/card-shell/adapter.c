@@ -450,6 +450,12 @@ static void scaled_cache_log(void) {
 			" fallbacks=%" PRIu64 " bytes=%zu",
 			shell.cache_hits, shell.cache_misses, shell.cache_fallbacks,
 			card_scaled_buffer_bytes());
+    if (scaled_cache_enabled()) {
+        uint64_t opaque, alpha;
+        card_scaled_buffer_alpha_counts(&opaque, &alpha);
+        sway_log(SWAY_INFO, "K230_CARD_SHELL cache-alpha opaque=%" PRIu64
+            " alpha=%" PRIu64, opaque, alpha);
+    }
 }
 /* Motion-time quality (approach 3): a live mirror's filter_mode counts here
  * every sync_node call, regardless of scaled-cache eligibility, so a test

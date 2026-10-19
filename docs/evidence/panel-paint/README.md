@@ -175,3 +175,11 @@ next version preserves premultiplied alpha in anARGB8888 intermediate rather
 than treating those pixels as opaque. The pixel oracle now passes96 cases
 (three sourceformats, filtering, cropping, rounding, rotation and changed
 sourcecontents); normal-output RGB565 eligibility is retained.
+
+The [active alpha-cache trial](candidate-alpha-cache/README.md) proves cache
+use but still fails timing budgets and gives no build/cadence gain. The next
+correction certifies all-255 cached alpha before exposing an immutable image
+asXRGB; actual transparency retainsARGB. It relies on pixel contents, not
+format naming or a user background setting. Native tests pass160 cached
+cases, including opaque→transparent→opaque changes, plus the288 guarded
+copy cases. Board acceptance remains open.
