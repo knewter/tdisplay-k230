@@ -1,6 +1,6 @@
 # The rest of the shell's text on the type roles
 
-Change: `openspec/changes/the-rest-of-the-shell-text-takes-the-type-roles`.
+Change: `openspec/changes/archive/2026-10-19-the-rest-of-the-shell-text-takes-the-type-roles`.
 Evidence class: host renders unless a section says otherwise.
 
 - `host-home-widgets-steps.png`: `render_accessibility_scale_evidence`
