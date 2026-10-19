@@ -2061,16 +2061,18 @@ DATA 6e222d41121d2e15b3e0a882577b0254fde1067a2716aa50fdb044673eaf893a docs/evide
 DATA e7d43131d2a871cf09143d8e3b5f304338fc22c66522d8f01e3c753340b1090e docs/evidence/rest-of-text/host-banner-568x1232.png
 DATA ca4afb3558abc30f43505beae2499dbc7410712f9cbb33abdb76731b942a1cd6 docs/evidence/rest-of-text/host-help-steps.png
 DATA e0bf987dd554a51d571177549278875a59a03f7da38cdf863690d69f124ca427 docs/evidence/rest-of-text/host-help-wide.png
-DATA f485463e5cddad72e96e4da6ed9ec324fdfe9e5a121dbab138db9dda3ae77dc4 docs/evidence/rest-of-text/host-themes-steps-568x1232.png
-DATA 356bd1051e47d4d8c3c766deadd32b1f9bc566bb55fc8e77274098d88d061d17 docs/evidence/rest-of-text/host-themes-1232x568.png
+DATA 40af3196323e16637a133d30834077dc82233204c4d55d17edac781342786b07 docs/evidence/rest-of-text/host-themes-steps-568x1232.png
+DATA 536e64bc9f493912259970e5a137678db4da9c78505137dd8f136d71c02ea21e docs/evidence/rest-of-text/host-themes-1232x568.png
 DATA 7ed97151eb5301a3c567ce5e62f2e32fad72ee8e7296afb1db073b1fd08061b8 docs/evidence/rest-of-text/host-menu-splash-568x1232.png
 DATA b537a8fb335420c5812d18d81b0ea6c9ee3880390a81b4db884594de703476d7 docs/evidence/rest-of-text/host-menu-splash-1232x568.png
-DATA 7533a7fc5e336eaa337f4943939f199a1da62b6fb3f774b44b2445ff4bcd9130 docs/evidence/rest-of-text/host-themes-1920x1080.png
+DATA 64c0fc8b9758247af7bdf85f2457d88ac1a695bae7fd387eb42a3dc6d543c3da docs/evidence/rest-of-text/host-themes-1920x1080.png
 DATA 84944d451c4c5266e381fbac4b859350e3c50e7b36d9f583f3b2de2ea22c5dea docs/evidence/rest-of-text/host-home-widgets-steps.png
-DATA 358c0360d0755c724e7b8ea13cfbcd5ff9b357ea568f2d408ce9ab40e6a19c0c docs/evidence/rest-of-text/host-wifi-200-568x1232.png
-DATA cb857af450c15fd308bad5d86ef53d3613567cdaed92be693785a423deb9ec81 docs/evidence/rest-of-text/host-wifi-200-1232x568.png
-DATA 98a7b9e654f59fb3559dc9b7a3d08ae0f0868f88f370395428b6c6d991482b5d docs/evidence/rest-of-text/host-wifi-100-568x1232.png
-DATA f570d9f0ef0e038151fbf0d92fd9e9ff26bbce00178beec62fa4d2431c81891e docs/evidence/rest-of-text/host-wifi-100-1232x568.png
+DATA 9a6dbcaf060694446bf9c1aacc827cf46e47c118f638cf8a0462a91ccdab845a docs/evidence/rest-of-text/host-wifi-200-568x1232.png
+DATA de6d2d21d69ae2665761c63868da86a650829570fc4c84d77b4ae88f9e6e2de7 docs/evidence/rest-of-text/host-wifi-200-1232x568.png
+DATA 81ff11de0912324f6ac0f0a6de8605474c80b9c331be793a442c5fbed05c702b docs/evidence/rest-of-text/host-wifi-100-568x1232.png
+DATA 1416ea0b21de344e7d619a22ffb3a88636fe5aa51be06c10be1558a6f540e5a1 docs/evidence/rest-of-text/host-wifi-100-1232x568.png
+DATA 9a9b114124f744820f581a8eb43f8ff6f9db4aec88de5205269f60d8a99390e7 docs/evidence/rest-of-text/board-panel-100.png
+DATA b5415580d0ea62acb239e220ebd320fab3b35145a245e79da39e433632fa46fd docs/evidence/rest-of-text/board-panel-200.png
 ```
 
 `group:` rows stand for a directory whose members are enumerated by
@@ -3589,13 +3591,15 @@ Command and limits: `docs/evidence/battery-details-widget/host/README.md`.
 | `docs/evidence/rest-of-text/host-banner-568x1232.png` | 8607 | DATA | `e7d43131d2a871cf09143d8e3b5f304338fc22c66522d8f01e3c753340b1090e` |
 | `docs/evidence/rest-of-text/host-help-steps.png` | 326452 | DATA | `ca4afb3558abc30f43505beae2499dbc7410712f9cbb33abdb76731b942a1cd6` |
 | `docs/evidence/rest-of-text/host-help-wide.png` | 448186 | DATA | `e0bf987dd554a51d571177549278875a59a03f7da38cdf863690d69f124ca427` |
-| `docs/evidence/rest-of-text/host-themes-steps-568x1232.png` | 152191 | DATA | `f485463e5cddad72e96e4da6ed9ec324fdfe9e5a121dbab138db9dda3ae77dc4` |
-| `docs/evidence/rest-of-text/host-themes-1232x568.png` | 69206 | DATA | `356bd1051e47d4d8c3c766deadd32b1f9bc566bb55fc8e77274098d88d061d17` |
+| `docs/evidence/rest-of-text/host-themes-steps-568x1232.png` | 189412 | DATA | `40af3196323e16637a133d30834077dc82233204c4d55d17edac781342786b07` |
+| `docs/evidence/rest-of-text/host-themes-1232x568.png` | 84153 | DATA | `536e64bc9f493912259970e5a137678db4da9c78505137dd8f136d71c02ea21e` |
 | `docs/evidence/rest-of-text/host-menu-splash-568x1232.png` | 72239 | DATA | `7ed97151eb5301a3c567ce5e62f2e32fad72ee8e7296afb1db073b1fd08061b8` |
 | `docs/evidence/rest-of-text/host-menu-splash-1232x568.png` | 71885 | DATA | `b537a8fb335420c5812d18d81b0ea6c9ee3880390a81b4db884594de703476d7` |
-| `docs/evidence/rest-of-text/host-themes-1920x1080.png` | 37691 | DATA | `7533a7fc5e336eaa337f4943939f199a1da62b6fb3f774b44b2445ff4bcd9130` |
+| `docs/evidence/rest-of-text/host-themes-1920x1080.png` | 44418 | DATA | `64c0fc8b9758247af7bdf85f2457d88ac1a695bae7fd387eb42a3dc6d543c3da` |
 | `docs/evidence/rest-of-text/host-home-widgets-steps.png` | 169349 | DATA | `84944d451c4c5266e381fbac4b859350e3c50e7b36d9f583f3b2de2ea22c5dea` |
-| `docs/evidence/rest-of-text/host-wifi-200-568x1232.png` | 231358 | DATA | `358c0360d0755c724e7b8ea13cfbcd5ff9b357ea568f2d408ce9ab40e6a19c0c` |
-| `docs/evidence/rest-of-text/host-wifi-200-1232x568.png` | 231872 | DATA | `cb857af450c15fd308bad5d86ef53d3613567cdaed92be693785a423deb9ec81` |
-| `docs/evidence/rest-of-text/host-wifi-100-568x1232.png` | 123861 | DATA | `98a7b9e654f59fb3559dc9b7a3d08ae0f0868f88f370395428b6c6d991482b5d` |
-| `docs/evidence/rest-of-text/host-wifi-100-1232x568.png` | 127315 | DATA | `f570d9f0ef0e038151fbf0d92fd9e9ff26bbce00178beec62fa4d2431c81891e` |
+| `docs/evidence/rest-of-text/host-wifi-200-568x1232.png` | 264969 | DATA | `9a6dbcaf060694446bf9c1aacc827cf46e47c118f638cf8a0462a91ccdab845a` |
+| `docs/evidence/rest-of-text/host-wifi-200-1232x568.png` | 263691 | DATA | `de6d2d21d69ae2665761c63868da86a650829570fc4c84d77b4ae88f9e6e2de7` |
+| `docs/evidence/rest-of-text/host-wifi-100-568x1232.png` | 145256 | DATA | `81ff11de0912324f6ac0f0a6de8605474c80b9c331be793a442c5fbed05c702b` |
+| `docs/evidence/rest-of-text/host-wifi-100-1232x568.png` | 148099 | DATA | `1416ea0b21de344e7d619a22ffb3a88636fe5aa51be06c10be1558a6f540e5a1` |
+| `docs/evidence/rest-of-text/board-panel-100.png` | 1130629 | DATA | `9a9b114124f744820f581a8eb43f8ff6f9db4aec88de5205269f60d8a99390e7` |
+| `docs/evidence/rest-of-text/board-panel-200.png` | 1176167 | DATA | `b5415580d0ea62acb239e220ebd320fab3b35145a245e79da39e433632fa46fd` |

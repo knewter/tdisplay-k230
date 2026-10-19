@@ -31,7 +31,7 @@
   its summary Body; its height comes from those roles and the step (98 px
   at 100%, inside the 256 px banner bound at 200%). Renders:
   `docs/evidence/rest-of-text/host-banner-*.png`. All test targets pass.
-- [ ] 2.2 The Wi-Fi pages, the Help page, the theme grid and the recovery
+- [x] 2.2 The Wi-Fi pages, the Help page, the theme grid and the recovery
   menu on the roles; also the recovery splash and the card Overview's
   title and footer (added 2026-10-19). Host class.
   Progress 2026-10-19 (host): Help is laid out by `help::layout` from the
@@ -73,12 +73,25 @@
   (`CARD_TYPE_*` in `nix/card-shell/render.h`), each in a box one role
   line tall after the theme size and step. The C card shell has no host
   renderer here; its proof is the board build and a board capture.
+  Done 2026-10-19 (board): the Overview at 100% and 200% in
+  `docs/evidence/rest-of-text/board-panel-{100,200}.png`. Its title and
+  footer bands now grow to one role line (`prepare_impl` in
+  `nix/card-shell/adapter.c`) after the first 200% capture showed the
+  card covering the footer.
 
 ## 3. Board
 
-- [ ] 3.1 Native `grim` captures of Home, a folder, the volume HUD with
+- [x] 3.1 Native `grim` captures of Home, a folder, the volume HUD with
   audio streams, a notification banner, Wi-Fi and Help at 100% and 200% on the landscape panel. Board
   class.
+  Done 2026-10-19 (board, `grim` on DSI-1):
+  `docs/evidence/rest-of-text/board-panel-{100,200}.png`, also showing the
+  theme chooser, the Overview and the Settings Volume card. The final
+  tiles come from the e6cfec6a and 2a7a86ba closures; the README names
+  each store path, the temporary folder, the silent stream and the
+  redacted network name. Board review found eight defects (README), each
+  fixed before the final set. Limit: one stream was
+  playing, not several.
 - [ ] 3.2 The operator's look on glass. Board class; stays open until the
   operator has looked.
   Progress 2026-10-19: the operator looked at Home (both pages: the Video

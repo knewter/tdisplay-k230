@@ -29,9 +29,23 @@ shell text rather than ellipsize it.
 - **Theme chooser.** The portrait carousels take the height the role text
   leaves. Every output shows the omarchy-style carousels; the wide card
   grid is removed (operator decision 2026-10-19), and on a monitor the
-  carousels grow, each centred card up to 70% of its half.
+  carousels grow, each centred card up to 70% of its half. The hint and
+  the backgrounds heading wrap rather than end in "…". Cards keep a
+  minimum height (200 px wide, 300 and 160 px portrait); when the text
+  at a large step leaves less, the page scrolls with a vertical drag
+  instead of shrinking the cards. A feedback line is drawn only where it
+  fits whole.
+- **Volume HUD.** Row names follow the Caption role. The "…" expand mark
+  is three fixed dots, and a stream's fallback initial is sized to its
+  icon circle: both are marks, not text, so they do not grow with the
+  step into the rows.
 - **Card Overview.** The C card shell mirrors the roles as `CARD_TYPE_*` in
-  `render.h` and sizes each label box from the theme's font scale.
+  `render.h` and sizes each label box from the theme's font scale. The
+  title and footer bands grow to one role line, so the card no longer
+  covers the footer at 200%.
+- **Close drags.** Settings and Help close with an upward drag from their
+  top zone. A downward drag that starts there is left to the page, so a
+  scroll that starts near the top at a large step still scrolls.
 
 ## Risks
 

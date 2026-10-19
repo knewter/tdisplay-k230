@@ -41,8 +41,8 @@ Evidence class: host renders unless a section says otherwise.
   menu with three rows, then the "That window has closed" recovery splash,
   each at 100% and 200%, half size (`<step>-menu-*`, `<step>-splash-*`).
 
-Limits: no board captures yet (task 3.1). The volume HUD's expanded rows
-are covered by unit tests only; they need streams playing on the board.
+Limits: host renders do not decode theme thumbnails or play audio; the
+board captures below cover those.
 
 ## Board (2026-10-19 UTC)
 
@@ -56,3 +56,35 @@ wallpaper, 100%, reached with `tools/board-pointer.py` swipes.
   Weather card's location, high/low and forecast in the Caption role. The
   e11757ee fix exists because the a23e199a closure showed "12…" for
   "12am" in this card.
+- `board-panel-100.png`, `board-panel-200.png`: native `grim` captures on
+  DSI-1 at 100% and 200%, half size, two per row. Left to right, top to
+  bottom: Home (page 1), an open folder, Help, Wi-Fi, the theme chooser,
+  the card Overview, a notification banner over Home, Settings scrolled to
+  the Volume card, and the expanded volume HUD over Settings with one
+  stream and the output row (task 3.1; the Overview completes task 2.2).
+  The step was changed in Settings → Vision with injected taps.
+  - Closures: Help, Wi-Fi, the chooser, the Overview and the banner are
+    from e6cfec6a (`/nix/store/3cvpcan6n8s12gqxc5wlzli4dpv9lkks-nixos-system-…`).
+    Home, the folder, the Settings Volume card and the HUD are from
+    2a7a86ba (`/nix/store/3yskrvsm9kb7zajhix80bk5z4ma95nj3-nixos-system-…`),
+    which changes only the HUD's stream initial.
+  - Sources and redactions: the folder ("Games": 2048, Fifteen, SameGame,
+    NetHack) was added to the saved Home layout for the capture and the
+    layout was restored afterwards. The stream is `aplay` writing silence
+    as the shell user. The network name is covered by a grey box in both
+    Wi-Fi tiles. The banner comes from `k230-notifications emit` run as
+    root, an untrusted source, so it shows the generic "New notification"
+    text by design.
+  - Defects these captures found, each fixed before the final set:
+    - the chooser hint and "Backgrounds · crop" ended in "…" at 200%;
+    - the 200% chooser cards shrank to slivers;
+    - Wi-Fi's "Saved and nearby" was shortened;
+    - a downward drag from the top of Settings or Help was taken as a close drag;
+    - the Overview card covered its footer at 200%;
+    - the HUD's "…" mark overlapped the stream icon;
+    - the Settings Volume label overlapped "40%";
+    - the HUD stream initial turned into "…" at 200%.
+  - Limits:
+    - At 200%, Home and folder labels keep their 100% size where the cell leaves no room, as designed. "SameGame" is shortened, which the requirement allows.
+    - HUD rows do not grow with the step beyond their 64 px row.
+    - The chooser's page scroll at 200% was exercised on the board with a drag, but the final sheet shows the top of the page only.
