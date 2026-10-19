@@ -68,9 +68,9 @@ Layer: userspace, the Sway compositor and host trace consumer.
   existing acceptance parser. Supplemental `K230_CARD_SHELL motion-*`
   rows carry the motion mode, scene-update completion, and frame callback.
 - `scene_damage` is stamped at the first successful scene update within
-  an accepted input handler. Its timestamp is emitted with the accepted
-  input ID only after ownership is known; an unconsumed input emits no
-  damage trace. This is scene-graph update completion, not the later
+  an accepted input handler or after it while its input is still pending.
+  Its timestamp is emitted with the accepted input ID only after ownership
+  is known; an unconsumed input emits no damage trace. This is scene-graph update completion, not the later
   output-buffer damage-region calculation.
 - `frame_done` is stamped immediately after the actual surface callback
   dispatch, in both immediate and delayed Sway paths. It identifies the
@@ -78,8 +78,8 @@ Layer: userspace, the Sway compositor and host trace consumer.
   commit yield one row; a different output is ignored.
 - Missing stages, mismatched frame IDs, or event provenance do not become
   a pass. The report includes each adjacent stage's measured distribution.
-  A callback that cannot be correlated in the required ordering remains
-  incomplete or invalid; no timestamp is fabricated to fit the schema.
+  A callback that cannot be correlated remains incomplete or invalid; no
+  timestamp is fabricated to fit the schema.
 - Native producer tests feed real C output through both consumers. They
   are host evidence only. The board measurement, reduced-motion comparison,
   and camera-visible panel correlation remain task 2.2.
@@ -95,3 +95,25 @@ calling the first frame after lift-off a completed animation. The policy
 observer excludes the motion sampler's 300 ms quality hold. An interrupted
 release stays unresolved. `--compare-motion` checks one full and one reduced
 run from the same recorded workload using these measured settled frames.
+
+The log adapter retains all output presentation events inside each gesture's
+tracking/settling window. Cadence and inferred missed intervals use those
+frames, including animation frames with no new touch; they are not derived
+from gaps between accepted input IDs. Motion-to-first-present and
+release-to-settled-present distributions are separate. Output events marked
+unpresented are reported, and camera-visible blank frames require the
+separate physical recording. The fixed-grammar journal exporter preserves
+only the known diagnostic fields and stage/mode values.
+
+### Ordering observed on the landscape panel
+
+The initial 2026-10-19 injected diagnostic probe (source `3c6ea3eb`)
+showed DRM presentation timestamps 0.4–6 ms before surface-callback dispatch.
+The pinned Sway output path commits before sending callbacks; a synchronous
+output commit can report an earlier scanout timestamp. The consumer therefore
+checks causal order input <= scene update <= commit, then commit <= callback
+and commit <= presentation independently. Callback-to-presentation intervals
+remain signed. The native producer fixture reproduces both this ordering
+and coalesced inputs whose scene update occurs in the next accepted handler.
+The initial probe is not a performance acceptance run: it has only 17 trace
+IDs, missing stages in the first producer, and an intrusive held `grim` capture.

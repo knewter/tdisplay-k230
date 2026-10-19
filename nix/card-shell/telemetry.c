@@ -14,7 +14,7 @@
 #include <wlr/backend/headless.h>
 struct input {
 	uint64_t id;
-	bool final;
+	bool final, damage_emitted;
 };
 static struct {
 	bool armed, ever_active, header_sent, in_input;
@@ -224,7 +224,8 @@ void card_bench_input_end(bool consumed, bool final) {
 			" input_id=%" PRIu64 " stage=scene_damage t_ns=%" PRIu64,
 			bench.run, id, bench.input_damage_time);
 	if (bench.count < 1024)
-		bench.pending[bench.count++] = (struct input){id, final};
+		bench.pending[bench.count++] = (struct input){.id=id, .final=final,
+			.damage_emitted=bench.input_damage_time != 0};
 	else
 		sway_log(SWAY_ERROR,
 				 "K230_CARD_BENCH v=1 run=%" PRIu64 " event=incomplete reason=input-overflow",
@@ -234,8 +235,18 @@ void card_bench_motion_settled(bool settled) {
 	if (bench.armed) bench.motion_settled = settled;
 }
 void card_bench_scene_damage(void) {
-	if (bench.armed && bench.in_input && !bench.input_damage_time)
-		bench.input_damage_time = stamp(CLOCK_MONOTONIC);
+	if (!bench.armed) return;
+	uint64_t now = stamp(CLOCK_MONOTONIC);
+	if (bench.in_input && !bench.input_damage_time) bench.input_damage_time = now;
+	/* A scene update can run from a later input or an animation tick. The
+	 * pending coalesced inputs keep their own IDs through that real update. */
+	for (size_t i = 0; i < bench.count; i++) {
+		if (bench.pending[i].damage_emitted) continue;
+		bench.pending[i].damage_emitted = true;
+		sway_log(SWAY_INFO, "K230_CARD_SHELL motion-stage run=%" PRIu64
+			" input_id=%" PRIu64 " stage=scene_damage t_ns=%" PRIu64,
+			bench.run, bench.pending[i].id, now);
+	}
 }
 void card_bench_frame_done(struct wlr_scene_output *output) {
 	if (!bench.armed || !bench.output || bench.output->scene_output != output)

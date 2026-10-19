@@ -964,6 +964,13 @@ def trace_order():
     swapped = [dict(r) for r in rows]
     stage_row(swapped, "order-3", "commit")["t_ns"] = 0
     must_reject(tool, swapped, "regress")
+    # A driver can timestamp scanout before the compositor dispatches the
+    # surface callback. Keep the negative callback-to-present duration.
+    dispatched_later = [dict(r) for r in rows]
+    callback = stage_row(dispatched_later, "order-3", "frame_done")
+    callback["t_ns"] = stage_row(dispatched_later, "order-3", "present")["t_ns"] + 1_000_000
+    actual_order = tool.analyze(dispatched_later)["order"]
+    assert actual_order["stage_timings"]["frame_done_to_present_ms"]["count"] == 120
     # A repeated stage, a presented trace that skipped a stage, and an ID that
     # changes gesture are each refused rather than averaged away.
     must_reject(tool, rows + [dict(stage_row(rows, "order-1", "commit"))], "duplicate stage")
@@ -1013,6 +1020,17 @@ def trace_order():
         else:
             raise AssertionError("accepted mismatched output frame or input provenance")
 
+    # The output keeps presenting during release animation even without a
+    # new touch event. Those frames must count toward cadence and misses.
+    smooth = tool.synthetic("smooth")
+    times = [row["t_ns"] for row in smooth if row["event"] == "stage" and row["stage"] == "present"]
+    step = round(tool.INTERVAL_MS * 1e6)
+    for frame, when in enumerate(range(min(times), max(times) + step, step), 1):
+        smooth.append({"v": 1, "run": "smooth", "event": "presentation",
+                       "frame_id": frame, "t_ns": when, "presented": 1})
+    observed = tool.analyze(smooth)["smooth"]
+    assert observed["missed_frames"] == 0, observed
+    assert observed["cadence_source"] == "output presentation events"
     return {"stages": list(tool.STAGES), "budgets": tool.BUDGETS,
             "claim": "host trace schema only; no panel presentation"}
 

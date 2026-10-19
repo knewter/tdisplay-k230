@@ -78,6 +78,22 @@ def normalized_journal(text: str) -> str:
             words = row[len(prefix):].split()
             if len(row) > 2048 or not words:
                 continue
+            if prefix.endswith('SHELL ') and words[0].startswith('motion-'):
+                event = words.pop(0)
+                grammar = {
+                    'motion-session': {'run': None, 'motion': {'full', 'reduced'}},
+                    'motion-stage': {'run': None, 'input_id': None, 'stage': {'scene_damage'}, 't_ns': None},
+                    'motion-frame': {'run': None, 'frame_id': None, 'stage': {'frame_done'}, 't_ns': None},
+                    'motion-settle': {'run': None, 'input_id': None, 'frame_id': None, 't_ns': None},
+                }.get(event)
+                fields = [word.split('=', 1) for word in words]
+                if grammar and len(fields) == len(grammar) and all(len(pair) == 2 for pair in fields):
+                    values = dict(fields)
+                    if set(values) == set(grammar) and all(
+                        value in grammar[key] if grammar[key] else re.fullmatch(r'[0-9]+', value)
+                        for key, value in values.items()):
+                        rows.append(row)
+                continue
             if prefix.endswith('SHELL ') and '=' not in words[0]:
                 if words.pop(0) not in CARD_EVENTS:
                     continue

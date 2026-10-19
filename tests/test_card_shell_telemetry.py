@@ -164,6 +164,32 @@ int main(void) {
             self.assertEqual(unfinished['settle_ms'],[])
 
 
+            put('coalesce.c', r'''#include "sway/output.h"
+#include "telemetry.h"
+#include <assert.h>
+#include <time.h>
+int main(void) {
+    struct wlr_output w={.backend=(void*)1,.render_format=1,.commit_seq=1};
+    struct sway_output o={.wlr_output=&w,.scene_output=(void*)1,.width=568,.height=1232};
+    assert(card_bench_arm(&o,"injected",1)); card_bench_phase(true,1);
+    card_bench_input_begin(1,"motion",true); card_bench_input_end(true,false);
+    card_bench_input_begin(1,"motion",true); card_bench_scene_damage();
+    card_bench_input_end(true,false);
+    card_bench_render_begin(&o); card_bench_commit_begin(&o); card_bench_render_end(&o,true);
+    struct wlr_output_event_present shown={.commit_seq=1,.presented=true};
+    clock_gettime(CLOCK_MONOTONIC,&shown.when);
+    card_bench_frame_done(o.scene_output); card_bench_present(&o,&shown);
+    card_bench_stop();
+}
+''')
+            coalesced=root/'coalesce'
+            subprocess.run([os.environ.get('CC','cc'),'-std=gnu11','-I'+str(root),
+                str(ROOT/'nix/card-shell/telemetry.c'),str(root/'coalesce.c'),'-o',str(coalesced)],check=True)
+            emitted=subprocess.check_output([str(coalesced)],text=True)
+            sample=next(iter(motion.analyze(motion.rows_from_log(emitted.encode())).values()))
+            self.assertEqual(sample['incomplete_stage_chains'],0)
+            self.assertEqual(sample['traces'],2)
+            self.assertLess(sample['stage_timings']['frame_done_to_present_ms']['p50'],0)
             spec=importlib.util.spec_from_file_location('repaint_profile',ROOT/'docs/evidence/card-shell/repaint-stages/analyze.py')
             repaint=importlib.util.module_from_spec(spec);spec.loader.exec_module(repaint)
             result=repaint.analyze(output.encode())['runs'][0]

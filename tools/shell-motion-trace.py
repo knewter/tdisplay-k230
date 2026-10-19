@@ -58,8 +58,9 @@ FIELDS = {
     'session': {'v', 'run', 'event', 't_ns', 'clock', 'motion', 'renderer', 'input'},
     'stage': {'v', 'run', 'event', 'trace_id', 'gesture_id', 'kind', 'stage', 't_ns', 'presented'},
     'resource': {'v', 'run', 'event', 't_ns', 'cpu_ns', 'rss_bytes'},
+    'presentation': {'v', 'run', 'event', 'frame_id', 't_ns', 'presented'},
 }
-NUMERIC = {'v', 't_ns', 'gesture_id', 'presented', 'cpu_ns', 'rss_bytes'}
+NUMERIC = {'v', 't_ns', 'gesture_id', 'frame_id', 'presented', 'cpu_ns', 'rss_bytes'}
 
 
 class InvalidTrace(ValueError):
@@ -108,6 +109,8 @@ def parse_rows(raw):
             if row['clock'] not in CLOCKS or row['motion'] not in MOTIONS or \
                     row['input'] not in SOURCES:
                 raise InvalidTrace(f'line {number}: unsupported session field')
+        if row['event'] == 'presentation' and row['presented'] not in (0, 1):
+            raise InvalidTrace(f'line {number}: unsupported presentation field')
         if row['event'] == 'stage':
             if row['stage'] not in STAGES or row['kind'] not in ('motion', 'release') or \
                     row['presented'] not in (0, 1):
@@ -205,6 +208,12 @@ def rows_from_log(raw):
         if present and (not release or settlement):
             rows.append({**base, 'stage': 'present', 't_ns': counter(present['t_ns'], 't_ns'),
                          'presented': counter(present['presented'], 'presented')})
+    for (run, frame), present in presents.items():
+        if run in sessions:
+            rows.append({'v': 1, 'run': run, 'event': 'presentation',
+                         'frame_id': counter(frame, 'frame_id'),
+                         't_ns': counter(present['t_ns'], 't_ns'),
+                         'presented': counter(present['presented'], 'presented')})
     for r in resources:
         rows.append({'v': 1, 'run': r['run'], 'event': 'resource', 't_ns': counter(r['t_ns'], 't_ns'),
                      'cpu_ns': counter(r['cpu_ns'], 'cpu_ns'),
@@ -239,8 +248,15 @@ def check_chain(traces, require):
             raise InvalidTrace('duplicate stage within one trace')
         if len({row['gesture_id'] for row in rows}) != 1 or len({row['kind'] for row in rows}) != 1:
             raise InvalidTrace('trace changes gesture or kind between stages')
-        ordered = sorted(rows, key=lambda row: STAGES.index(row['stage']))
-        if [row['t_ns'] for row in ordered] != sorted(row['t_ns'] for row in ordered):
+        by_stage = {row['stage']: row['t_ns'] for row in rows}
+        # Presentation carries the driver's scanout timestamp, while frame_done
+        # is callback dispatch in the compositor. A blocking commit can put
+        # presentation before dispatch; preserve that signed interval.
+        causal = (('input', 'scene_damage'), ('input', 'commit'),
+                  ('scene_damage', 'commit'), ('commit', 'frame_done'),
+                  ('commit', 'present'))
+        if any(a in by_stage and b in by_stage and by_stage[a] > by_stage[b]
+               for a, b in causal):
             raise InvalidTrace('stage timestamps regress within one trace')
         if 'input' not in seen:
             raise InvalidTrace('trace has no input stage')
@@ -264,6 +280,7 @@ def analyze_run(run, rows, require=STAGES):
     incomplete_chains = 0
     stage_latencies = {f"{a}_to_{b}_ms": [] for a, b in zip(STAGES, STAGES[1:])}
     settle = []
+    windows = defaultdict(list)
     for trace_id, stage_rows in traces.items():
         by_stage = {row['stage']: row for row in stage_rows}
         incomplete_chains += any(stage not in by_stage for stage in STAGES)
@@ -271,6 +288,7 @@ def analyze_run(run, rows, require=STAGES):
             if a in by_stage and b in by_stage:
                 stage_latencies[f'{a}_to_{b}_ms'].append((by_stage[b]['t_ns'] - by_stage[a]['t_ns']) / 1e6)
         entry = by_stage['input']
+        windows[entry['gesture_id']].append(entry['t_ns'])
         shown = by_stage.get('present')
         if not shown:
             unresolved += 1
@@ -278,14 +296,27 @@ def analyze_run(run, rows, require=STAGES):
         if not shown['presented']:
             blank += 1
             continue
-        latencies.append((shown['t_ns'] - entry['t_ns']) / 1e6)
+        # Motion latency and release settling are distinct measurements.
+        if entry['kind'] == 'motion':
+            latencies.append((shown['t_ns'] - entry['t_ns']) / 1e6)
+        windows[entry['gesture_id']].append(shown['t_ns'])
         presented_at.append((entry['gesture_id'], shown['t_ns']))
         if entry['kind'] == 'release':
             settle.append((shown['t_ns'] - entry['t_ns']) / 1e6)
     intervals, missed = [], 0
     gestures = defaultdict(list)
-    for gesture, when in presented_at:
-        gestures[gesture].append(when)
+    output_frames = [row for row in rows if row['event'] == 'presentation']
+    if output_frames:
+        # All observed output frames inside each gesture's tracking/settling
+        # window count, including frames with no new input. Coalesced inputs
+        # and smooth release animation must not become fictitious misses.
+        for gesture, edges in windows.items():
+            lo, hi = min(edges), max(edges)
+            gestures[gesture] = sorted({row['t_ns'] for row in output_frames
+                                        if row['presented'] and lo <= row['t_ns'] <= hi})
+    else:
+        for gesture, when in presented_at:
+            gestures[gesture].append(when)
     for times in gestures.values():
         times.sort()
         for before, after in zip(times, times[1:]):
@@ -327,7 +358,9 @@ def analyze_run(run, rows, require=STAGES):
             'incomplete_stage_chains': incomplete_chains, 'stage_timings': stage_metrics,
             'stages_observed': observed,
             'stages_unobserved': [stage for stage in STAGES if stage not in observed],
-            'missed_frames': missed, 'actual_cadence_hz': cadence,
+            'missed_frames': missed, 'presentation_events': len(output_frames),
+            'cadence_source': 'output presentation events' if output_frames else 'trace-stage presentations only',
+            'actual_cadence_hz': cadence,
             'nominal_cadence_hz': OUTPUT_HZ, 'settle_ms': settle,
             'metrics': metrics, 'resources': resource,
             'status': 'FAIL' if 'FAIL' in statuses else 'INCOMPLETE' if 'INCOMPLETE' in statuses or unresolved or incomplete_chains else 'PASS'}
@@ -443,7 +476,9 @@ def main():
             raise InvalidTrace('declared provenance does not match the session row')
     document = {'schema': SCHEMA, 'generated_utc': datetime.now(timezone.utc).isoformat(),
                 'provenance': args.provenance, 'source': (args.trace or args.log).name,
-                'camera_correlation': 'not provided; UNVERIFIED', 'runs': report,
+                'camera_correlation': 'not provided; UNVERIFIED',
+                'blank_frame_limit': 'unpresented output events are counted; camera-visible blank frames remain UNVERIFIED',
+                'runs': report,
                 'failed_budgets': failures(report)}
     if args.compare_motion:
         modes = {mode: [run for run, result in report.items() if result['motion'] == mode]

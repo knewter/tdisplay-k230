@@ -57,6 +57,19 @@ class Fake:
                 if self.fail=='input':raise RuntimeError('input failure')
         return subprocess.CompletedProcess(args,0,'','')
 class SessionTests(unittest.TestCase):
+    def test_motion_export_preserves_only_known_stage_and_mode_grammar(self):
+        rows = [
+            'K230_CARD_SHELL motion-session run=1 motion=reduced',
+            'K230_CARD_SHELL motion-stage run=1 input_id=2 stage=scene_damage t_ns=3',
+            'K230_CARD_SHELL motion-frame run=1 frame_id=4 stage=frame_done t_ns=5',
+            'K230_CARD_SHELL motion-settle run=1 input_id=2 frame_id=4 t_ns=3',
+        ]
+        bad = [rows[0]+' secret=private', rows[1].replace('t_ns=3', 't_ns=private'),
+               rows[2].replace('stage=frame_done', 'stage=private'),
+               rows[3].replace('frame_id=4', 'frame_id=-4'),
+               rows[1].replace('input_id=2', 'run=2')]
+        self.assertEqual(H.normalized_journal('\n'.join(rows+bad)), '\n'.join(rows)+'\n')
+
     def test_frame_cost_export_accepts_only_complete_numeric_rows(self):
         row='K230_CARD_SHELL frame-cost run=1 frame_id=2 total_cpu_ns=20 render_cpu_ns=10 input_cpu_ns=7'
         raw='prefix '+row+'\n'+row.replace('render_cpu_ns=10','render_cpu_ns=private-token')+'\n'+row+' secret=secret\n'+row.replace(' input_cpu_ns=7','')+'\n'
