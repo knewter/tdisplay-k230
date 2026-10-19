@@ -9,8 +9,8 @@ text by hand, well under that floor:
   on the landscape panel with a 108 px icon plate, so a 26 px label does not
   fit without a new grid.
 - The Battery and Weather widget captions are 12-13 px.
-- The Shade's audio stream and output rows are 15 px and the notification
-  source line is 14 px.
+- The volume HUD's expanded stream and output rows are 15 px and the
+  notification banner's source line is 14 px.
 - The Wi-Fi pages use 16-21 px, the Help page 18-22 px, the theme grid 16 px
   and the recovery menu 20 px.
 
@@ -19,7 +19,7 @@ text by hand, well under that floor:
 - Home's app and folder labels take the 26 px Caption role across the
   whole cell; a cell too short for the full icon plate above that label
   gets a smaller plate. Columns, pages and saved layouts do not change.
-- Widget captions, the Shade's audio and notification rows, the Wi-Fi pages,
+- Widget captions, the volume HUD's rows, the notification banner, the Wi-Fi pages,
   the Help page, the theme grid and the recovery menu move onto the roles.
 - Each surface reflows without clipping, ellipsizing or overlapping its own
   text at all four steps and in high contrast, in both orientations.

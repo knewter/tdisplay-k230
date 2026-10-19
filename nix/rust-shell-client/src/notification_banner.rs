@@ -11,7 +11,16 @@ use crate::service_data::NotificationPreview;
 
 /// Gap between the output's top edge and the banner.
 pub const TOP_MARGIN: f64 = 10.0;
-pub const HEIGHT: f64 = 64.0;
+/// Padding above and below the banner's two lines.
+pub const PAD_Y: f64 = 12.0;
+
+/// The banner holds a Caption-role source line over a Body-role summary
+/// at the current text step: 98 px at 100%.
+pub fn height() -> f64 {
+    let step = crate::layout_text_scale().max(1.0);
+    let lines = (crate::render::TYPE_CAPTION + crate::render::TYPE_BODY) * 1.25 * step;
+    (2.0 * PAD_Y + lines + 4.0).ceil()
+}
 /// Minimum gap to each side edge.
 pub const SIDE_MARGIN: f64 = 12.0;
 /// The banner never grows wider than this, so landscape stays a card.
@@ -38,7 +47,7 @@ impl BannerGeometry {
 /// Banner rectangle for an output of the given size, horizontally centred.
 pub fn banner_geometry(output_w: f64, _output_h: f64) -> BannerGeometry {
     let width = (output_w - 2.0 * SIDE_MARGIN).clamp(1.0, MAX_WIDTH);
-    BannerGeometry { left: ((output_w - width) / 2.0).floor(), top: TOP_MARGIN, width, height: HEIGHT }
+    BannerGeometry { left: ((output_w - width) / 2.0).floor(), top: TOP_MARGIN, width, height: height() }
 }
 
 /// The surface size (width, height) and top margin the layer surface uses;
@@ -100,8 +109,8 @@ mod tests {
     #[test]
     fn portrait_banner_spans_the_width_minus_margins() {
         let g = banner_geometry(568.0, 1232.0);
-        assert_eq!((g.left, g.top, g.width, g.height), (12.0, 10.0, 544.0, 64.0));
-        assert_eq!(surface_size(568.0, 1232.0), (544, 64, 10));
+        assert_eq!((g.left, g.top, g.width, g.height), (12.0, 10.0, 544.0, 98.0));
+        assert_eq!(surface_size(568.0, 1232.0), (544, 98, 10));
     }
 
     #[test]
@@ -109,7 +118,11 @@ mod tests {
         let g = banner_geometry(1232.0, 568.0);
         assert_eq!((g.left, g.width), (296.0, 640.0));
         assert_eq!(g.left * 2.0 + g.width, 1232.0);
-        assert_eq!(surface_size(1232.0, 568.0), (640, 64, 10));
+        assert_eq!(surface_size(1232.0, 568.0), (640, 98, 10));
+        crate::set_layout_text_scale(2.0);
+        let (_, h, _) = surface_size(1232.0, 568.0);
+        assert!(frame_bytes(640, h).is_some(), "the 200% banner ({h} px) stays inside the banner bound");
+        crate::set_layout_text_scale(1.0);
     }
 
     #[test]
@@ -117,11 +130,12 @@ mod tests {
         let g = banner_geometry(568.0, 1232.0);
         assert!(g.contains(300.0, 40.0));
         assert!(!g.contains(300.0, 5.0));
-        assert!(!g.contains(300.0, 74.0));
+        assert!(g.contains(300.0, 107.0));
+        assert!(!g.contains(300.0, 108.0));
         assert!(!g.contains(11.0, 40.0));
         let local = local_geometry(1232.0, 568.0);
-        assert!(local.contains(0.0, 0.0) && local.contains(639.0, 63.0));
-        assert!(!local.contains(640.0, 10.0) && !local.contains(10.0, 64.0));
+        assert!(local.contains(0.0, 0.0) && local.contains(639.0, 97.0));
+        assert!(!local.contains(640.0, 10.0) && !local.contains(10.0, 98.0));
     }
 
     #[test]

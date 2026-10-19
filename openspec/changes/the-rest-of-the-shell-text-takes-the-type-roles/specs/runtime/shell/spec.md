@@ -5,7 +5,7 @@
 <!-- UNVERIFIED -->
 
 Home's app and folder labels, the Battery and Weather widget captions, the
-Shade's audio and notification rows, the Wi-Fi pages, the Help page, the
+volume HUD's expanded rows, the notification banner, the Wi-Fi pages, the Help page, the
 theme grid and the recovery menu SHALL draw text from the shell's five type
 roles with no text below 26 px at the 100% step. Text the shell writes on
 these surfaces SHALL reflow without clipping, ellipsizing or overlapping at
@@ -18,8 +18,8 @@ all four text steps and in high contrast, in both orientations.
   cell
 - **AND** the page keeps its columns, so a 4-wide widget stays where it was
 
-#### Scenario: The Shade with audio playing
+#### Scenario: The volume HUD with audio playing
 
-- **WHEN** a stream is playing and the person opens the Shade at 200%
-- **THEN** the stream's row text is set in a type role and does not overlap
-  its slider
+- **WHEN** a stream is playing and the person expands the volume HUD at 200%
+- **THEN** the stream's name is set in a type role and does not overlap its
+  slider

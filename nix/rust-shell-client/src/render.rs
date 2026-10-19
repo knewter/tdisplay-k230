@@ -3770,6 +3770,17 @@ fn paint_icon_plate(
     }
 }
 
+/// A stream or output name in the volume HUD's expanded row: the Caption
+/// role, growing with the step only as far as the row leaves above its
+/// slider, and shrunk toward 26 px before a long name is shortened.
+fn hud_row_name(cr: &Context, value: &str, x: f64, y: f64, width: f64, rgb: u32) {
+    let room = volume::HUD_ROW_H - 18.0 - 6.0;
+    let px = context_font_size(cr, TYPE_CAPTION).min(room / 1.25).max(TYPE_CAPTION);
+    let advance = text_advance_resolved(cr, value, px, pango::Weight::Normal);
+    let px = if advance > width * 0.96 { (px * width * 0.96 / advance).max(TYPE_CAPTION) } else { px };
+    text_weight_resolved(cr, value, x, y, width, px, rgb, pango::Weight::Normal);
+}
+
 /// Rearrange mode's per-icon remove badge (iOS/webOS's jiggle-mode
 /// affordance): a small red circle with a white "remove" bar, anchored at
 /// the icon plate's top-left corner. Its drawn size is smaller than its
@@ -6273,8 +6284,10 @@ impl RendererCache {
             let _ = cr.fill();
         }
         let left = 62.0;
-        text(&cr, &source, left, 9.0, w - left - 14.0, 14.0, style.muted);
-        text(&cr, &summary, left, 29.0, w - left - 14.0, 19.0, style.text);
+        let pad = crate::notification_banner::PAD_Y;
+        let source_h = context_font_size(&cr, TYPE_CAPTION) * 1.25;
+        text(&cr, &source, left, pad, w - left - 14.0, TYPE_CAPTION, style.muted);
+        text(&cr, &summary, left, pad + source_h + 4.0, w - left - 14.0, TYPE_BODY, style.text);
         drop(cr);
         surface.flush();
         Ok(())
@@ -6414,12 +6427,12 @@ impl RendererCache {
                         style.text,
                     );
                 }
-                text(cr, &stream.app_name, left + 36.0, row_top + 8.0, width - 36.0, 15.0, style.text);
+                hud_row_name(cr, &stream.app_name, left + 36.0, row_top + 4.0, width - 36.0, style.text);
                 let percent = volume::linear_to_percent(stream.linear_volume);
                 let track_left = left + 36.0;
                 let track_right = geometry.left + geometry.width - 12.0;
                 let track_w = (track_right - track_left).max(1.0);
-                let track_y = row_top + 38.0;
+                let track_y = row_top + volume::HUD_ROW_H - 18.0;
                 rounded(cr, track_left, track_y, track_w, 8.0, 4.0);
                 color(cr, style.muted, 0.35);
                 let _ = cr.fill();
@@ -6429,7 +6442,7 @@ impl RendererCache {
                 let _ = cr.fill();
             }
             crate::pipewire_ipc::ExpandedRow::Sink(sink) => {
-                text(cr, &sink.description, left, row_top + 8.0, width - 28.0, 15.0, style.text);
+                hud_row_name(cr, &sink.description, left, row_top + 4.0, width - 28.0, style.text);
                 let dot_x = geometry.left + geometry.width - 22.0;
                 let dot_y = row_top + 16.0;
                 cr.new_sub_path();
