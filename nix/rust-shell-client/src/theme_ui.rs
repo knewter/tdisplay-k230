@@ -485,6 +485,17 @@ pub fn chooser_header_bands(width: u32, height: u32) -> (f64, f64, f64) {
 
 /// The chooser's text lines, from the type roles at the current step and
 /// theme size: `(label, caption)` line heights.
+/// The theme carousel's hint, under the "Themes" heading.
+pub const CHOOSER_HINT: &str = "Drag to browse · tap the centre to apply";
+
+/// The hint's wrapped height in a column `width` wide.
+fn hint_h(width: f64) -> f64 {
+    let s = crate::layout_text_scale().max(1.0) * crate::layout_theme_font();
+    let px = crate::render::TYPE_CAPTION * s;
+    let lines = crate::render::wrapped_line_count(CHOOSER_HINT, px, width - 4.0, pango::Weight::Normal);
+    f64::from(lines.max(1)) * (px * 1.25).ceil()
+}
+
 fn chooser_lines() -> (f64, f64) {
     let s = crate::layout_text_scale().max(1.0) * crate::layout_theme_font();
     let line = |size: f64| (size * s * 1.25).ceil();
@@ -531,7 +542,9 @@ pub fn chooser_layout(width: u32, height: u32) -> ChooserLayout {
         let half = w / 2.0;
         let header_y = 14.0;
         let heading_y = (header_y + label + 1.0).max(48.0);
-        let top = (heading_y + label + 12.0).max(100.0);
+        // The hint wraps on its own lines under the heading.
+        let hint_y = heading_y + label + 2.0;
+        let top = (hint_y + hint_h(half - 56.0) + 12.0).max(100.0);
         // Above the bottom message line.
         let message_y = h - caption - 12.0;
         let room = message_y - 8.0 - label_block - top;
@@ -557,7 +570,7 @@ pub fn chooser_layout(width: u32, height: u32) -> ChooserLayout {
             header_y,
             header_hit_h: 48.0,
             themes_heading: (28.0, heading_y),
-            themes_hint: (150.0, heading_y + (label - caption) / 2.0),
+            themes_hint: (28.0, hint_y),
             backgrounds_heading: (half + 28.0, heading_y),
             feedback: (half + 190.0, heading_y + (label - caption) / 2.0, half - 218.0),
             message_y: (top + background_geometry.expanded_h + label_block + 12.0).min(message_y),
@@ -567,7 +580,9 @@ pub fn chooser_layout(width: u32, height: u32) -> ChooserLayout {
         let header_y = 42.0;
         let heading_y = (header_y + label + 8.0).max(84.0);
         let hint_y = heading_y + label + 2.0;
-        let theme_top = (hint_y + caption + 12.0).max(THEME_CAROUSEL_TOP);
+        // Before the first configure, measure against the panel's width.
+        let column = if width > 0 { w } else { 568.0 } - 56.0;
+        let theme_top = (hint_y + hint_h(column) + 12.0).max(THEME_CAROUSEL_TOP);
         // Under the theme card: its name and status, a gap, then the
         // "Backgrounds" heading and a gap before the background carousel.
         let between = label_block + 16.0 + label + 8.0;
@@ -2716,6 +2731,26 @@ mod tests {
     }
 
     #[test]
+    fn the_wide_chooser_hint_wraps_under_its_heading_above_the_carousels() {
+        use crate::render::{TYPE_CAPTION, TYPE_LABEL};
+        for step in [1.0, 1.5, 2.0] {
+            crate::set_layout_text_scale(step);
+            let (label, caption) = ((TYPE_LABEL * step * 1.25).ceil(), (TYPE_CAPTION * step * 1.25).ceil());
+            for (w, h) in [(1232, 568), (1280, 800), (1920, 1080)] {
+                let lay = chooser_layout(w, h);
+                assert!(lay.wide, "{w}x{h}");
+                assert_eq!(lay.themes_hint.0, lay.theme_text.0);
+                assert!(lay.themes_hint.1 >= lay.themes_heading.1 + label, "{w}x{h} step {step}");
+                let lines = crate::render::wrapped_line_count(
+                    CHOOSER_HINT, TYPE_CAPTION * step, lay.theme_text.1 - 4.0, pango::Weight::Normal);
+                assert!(lay.theme_top >= lay.themes_hint.1 + f64::from(lines) * caption, "{w}x{h} step {step}");
+                assert!(lay.theme_geometry.expanded_h > 0.0);
+            }
+        }
+        crate::set_layout_text_scale(1.0);
+    }
+
+    #[test]
     fn the_portrait_chooser_layout_stacks_role_text_between_the_carousels() {
         use crate::render::{TYPE_CAPTION, TYPE_LABEL};
         for step in [1.0, 1.5, 2.0] {
@@ -2744,7 +2779,8 @@ mod tests {
             }
         }
         crate::set_layout_text_scale(1.0);
-        assert!(chooser_layout(568, 1232).theme_geometry.expanded_h >= 500.0, "the hero carousel stays large at 100%");
+        // The hint takes two whole lines here rather than an ellipsis.
+        assert!(chooser_layout(568, 1232).theme_geometry.expanded_h >= 480.0, "the hero carousel stays large at 100%: {:?}", chooser_layout(568, 1232).theme_geometry);
     }
 
     #[test]

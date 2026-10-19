@@ -1651,18 +1651,12 @@ fn paint_theme_chooser(
     // centred rule; see `theme_ui::ThemeView::tap_theme`/`tap_background`);
     // dragging only ever recentres.
     heading(cr, "Themes", lay.themes_heading.0, lay.themes_heading.1, lay.theme_text.1, TYPE_LABEL, style.text);
-    // On the wide layout the hint shares the heading's line, after it.
-    let hint_x = if (lay.themes_hint.1 - lay.themes_heading.1).abs() < 30.0 {
-        lay.themes_hint.0.max(lay.themes_heading.0 + text_advance(cr, "Themes", TYPE_LABEL, pango::Weight::Bold) + 16.0)
-    } else {
-        lay.themes_hint.0
-    };
-    text(
+    text_wrapped(
         cr,
-        "Drag to browse · tap the centre to apply",
-        hint_x,
+        crate::theme_ui::CHOOSER_HINT,
+        lay.themes_hint.0,
         lay.themes_hint.1,
-        lay.theme_text.1 - (hint_x - lay.theme_text.0),
+        lay.theme_text.1,
         TYPE_CAPTION,
         style.muted,
     );
