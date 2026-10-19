@@ -2,7 +2,7 @@
 
 ### Requirement: A tap behind the Overview cards goes Home
 
-<!-- UNVERIFIED -->
+<!-- UNVERIFIED: operator glass tap (task 2.2) remains open; injected-pointer board checks are recorded in docs/evidence/overview-backdrop-tap/README.md. -->
 
 In the card Overview, a tap on the backdrop that is not on a card, the
 Close control or the footer SHALL show Home exactly as the footer's Home

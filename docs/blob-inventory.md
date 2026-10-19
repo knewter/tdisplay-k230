@@ -651,6 +651,15 @@ Paths are relative to the repository root. `(sdk)` is
 so that building stage 1 from source does not silently drop them from view.
 
 ```
+DATA cd41143071204ffd096a6e9aa0fdccd6a71531c4d1a94205b17bcd886db24c88 docs/evidence/overview-backdrop-tap/backdrop-drag-overview.png
+DATA 58692858d53cf304c793082fa706d60fa48c8f75d9f5da9bd08dbeae46142ff1 docs/evidence/overview-backdrop-tap/body-tap-home.png
+DATA 7a2f2289f6cb1dcf31e4d017265769563b9eb27d065cc0e9f351453f21a7315e docs/evidence/overview-backdrop-tap/card-tap-terminal.png
+DATA aaae7b98bbc9c44b2a7842080798db969d4b456ddbc6e8309113b6399ac52d0d docs/evidence/overview-backdrop-tap/overview-before.png
+DATA cd41143071204ffd096a6e9aa0fdccd6a71531c4d1a94205b17bcd886db24c88 docs/evidence/overview-backdrop-tap/overview-retained.png
+DATA 8eea0fd6d76f9aa12a0551f52024b56987f7f64f12794160a00dc8bf322546bf docs/evidence/overview-backdrop-tap/shade-pull.png
+DATA cd41143071204ffd096a6e9aa0fdccd6a71531c4d1a94205b17bcd886db24c88 docs/evidence/overview-backdrop-tap/side-back.png
+DATA 880f1bc6d3bb49be989aa9c9903b7849ee377f7b2dd78add53f0335f51600de1 docs/evidence/overview-backdrop-tap/side-tap-home.png
+DATA 358adfa74c2011904c9062a9ac94e429cc7feab3f743282428d31dc57a126075 docs/evidence/overview-backdrop-tap/title-tap-home.png
 DATA 1b8409b74178fdc996d5cd617e7f042ae56e59a9b1ba20cd8306bd4640fbd42b docs/evidence/mainline-display/physical-2026-10-01/minimal-probe-recovery-2026-10-02/home.png
 DATA 09218a4f2d904716a63418e0ebc38cfc2d055350ffab11032bd0d65bb81531ad docs/evidence/omarchy-themes/background-fit-modes-board/chooser-heading-tap-fit-1280x720.png
 DATA f5905b8474ee17347b47c5c10095b943e9c57a47bf9dd292ea306c99105cd4d1 docs/evidence/omarchy-themes/background-fit-modes-board/chooser-status-overlap-before-fix-1280x800.png
@@ -3603,3 +3612,20 @@ Command and limits: `docs/evidence/battery-details-widget/host/README.md`.
 | `docs/evidence/rest-of-text/host-wifi-100-1232x568.png` | 148099 | DATA | `1416ea0b21de344e7d619a22ffb3a88636fe5aa51be06c10be1558a6f540e5a1` |
 | `docs/evidence/rest-of-text/board-panel-100.png` | 1130629 | DATA | `9a9b114124f744820f581a8eb43f8ff6f9db4aec88de5205269f60d8a99390e7` |
 | `docs/evidence/rest-of-text/board-panel-200.png` | 1176167 | DATA | `b5415580d0ea62acb239e220ebd320fab3b35145a245e79da39e433632fa46fd` |
+
+## Overview backdrop tap board captures, 2026-10-19
+
+Native landscape panel captures after injected absolute-pointer input;
+commands and limits: `docs/evidence/overview-backdrop-tap/README.md`.
+
+| Path | Bytes | Class | SHA-256 |
+| --- | ---: | --- | --- |
+| `docs/evidence/overview-backdrop-tap/backdrop-drag-overview.png` | 36020 | DATA | `cd41143071204ffd096a6e9aa0fdccd6a71531c4d1a94205b17bcd886db24c88` |
+| `docs/evidence/overview-backdrop-tap/body-tap-home.png` | 104198 | DATA | `58692858d53cf304c793082fa706d60fa48c8f75d9f5da9bd08dbeae46142ff1` |
+| `docs/evidence/overview-backdrop-tap/card-tap-terminal.png` | 6233 | DATA | `7a2f2289f6cb1dcf31e4d017265769563b9eb27d065cc0e9f351453f21a7315e` |
+| `docs/evidence/overview-backdrop-tap/overview-before.png` | 35966 | DATA | `aaae7b98bbc9c44b2a7842080798db969d4b456ddbc6e8309113b6399ac52d0d` |
+| `docs/evidence/overview-backdrop-tap/overview-retained.png` | 36020 | DATA | `cd41143071204ffd096a6e9aa0fdccd6a71531c4d1a94205b17bcd886db24c88` |
+| `docs/evidence/overview-backdrop-tap/shade-pull.png` | 29017 | DATA | `8eea0fd6d76f9aa12a0551f52024b56987f7f64f12794160a00dc8bf322546bf` |
+| `docs/evidence/overview-backdrop-tap/side-back.png` | 36020 | DATA | `cd41143071204ffd096a6e9aa0fdccd6a71531c4d1a94205b17bcd886db24c88` |
+| `docs/evidence/overview-backdrop-tap/side-tap-home.png` | 102251 | DATA | `880f1bc6d3bb49be989aa9c9903b7849ee377f7b2dd78add53f0335f51600de1` |
+| `docs/evidence/overview-backdrop-tap/title-tap-home.png` | 102317 | DATA | `358adfa74c2011904c9062a9ac94e429cc7feab3f743282428d31dc57a126075` |

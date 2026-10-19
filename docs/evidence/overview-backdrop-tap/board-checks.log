@@ -1,0 +1,19 @@
+2026-10-19 UTC; deployed source 90ac21db317751126b4dd46e95f5705c58f5b432
+/run/current-system = /nix/store/qp8z15xgrkny5gnria1bx5hbb5xgv7ds-nixos-system-nixos-26.11.20260919.20b1ddd
+systemctl is-active shell shell-ui: active, active
+
+Filtered journal from the title tap:
+00:04:11.048 [INFO] [sway/card_shell.c:1982] K230_CARD_SHELL home selected cards=1
+
+Filtered journal after side Back:
+00:04:11.048 [INFO] [sway/card_shell.c:1982] K230_CARD_SHELL home selected cards=1
+00:04:39.021 [INFO] [sway/card_shell.c:1982] K230_CARD_SHELL home selected cards=1
+00:05:36.846 [INFO] [sway/card_shell.c:2938] K230_CARD_SHELL side-back target=2
+
+Filtered journal after body tap:
+00:04:39.021 [INFO] [sway/card_shell.c:1982] K230_CARD_SHELL home selected cards=1
+00:05:36.846 [INFO] [sway/card_shell.c:2938] K230_CARD_SHELL side-back target=2
+00:06:15.376 [INFO] [sway/card_shell.c:1982] K230_CARD_SHELL home selected cards=1
+
+Host proof: python3 -m unittest tests.test_card_shell_state
+Ran 41 tests in 6.943s; OK

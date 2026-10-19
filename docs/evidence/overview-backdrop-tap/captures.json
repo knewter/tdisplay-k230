@@ -1,0 +1,60 @@
+{
+  "source_revision": "90ac21db317751126b4dd46e95f5705c58f5b432",
+  "evidence_class": "board: injected absolute pointer and native grim capture; no physical touch observation",
+  "captures": [
+    {
+      "file": "overview-before.png",
+      "captured_utc": "2026-10-19T18:46:47.238858+00:00",
+      "action": "hide overlay; card_shell enter; wait 1200 ms",
+      "sha256": "aaae7b98bbc9c44b2a7842080798db969d4b456ddbc6e8309113b6399ac52d0d"
+    },
+    {
+      "file": "title-tap-home.png",
+      "captured_utc": "2026-10-19T18:47:03.634211+00:00",
+      "action": "click 700 40; wait 1200",
+      "sha256": "358adfa74c2011904c9062a9ac94e429cc7feab3f743282428d31dc57a126075"
+    },
+    {
+      "file": "overview-retained.png",
+      "captured_utc": "2026-10-19T18:47:09.864241+00:00",
+      "action": "hide overlay; card_shell enter; wait 1200 ms",
+      "sha256": "cd41143071204ffd096a6e9aa0fdccd6a71531c4d1a94205b17bcd886db24c88"
+    },
+    {
+      "file": "side-tap-home.png",
+      "captured_utc": "2026-10-19T18:47:31.690595+00:00",
+      "action": "click 20 280; wait 1200",
+      "sha256": "880f1bc6d3bb49be989aa9c9903b7849ee377f7b2dd78add53f0335f51600de1"
+    },
+    {
+      "file": "backdrop-drag-overview.png",
+      "captured_utc": "2026-10-19T18:47:41.291085+00:00",
+      "action": "swipe 1130 200 1130 420 400; wait 1200",
+      "sha256": "cd41143071204ffd096a6e9aa0fdccd6a71531c4d1a94205b17bcd886db24c88"
+    },
+    {
+      "file": "shade-pull.png",
+      "captured_utc": "2026-10-19T18:48:05.011544+00:00",
+      "action": "swipe 700 10 700 370 500; wait 1200",
+      "sha256": "8eea0fd6d76f9aa12a0551f52024b56987f7f64f12794160a00dc8bf322546bf"
+    },
+    {
+      "file": "side-back.png",
+      "captured_utc": "2026-10-19T18:48:29.598750+00:00",
+      "action": "swipe 8 280 240 280 500; wait 1200",
+      "sha256": "cd41143071204ffd096a6e9aa0fdccd6a71531c4d1a94205b17bcd886db24c88"
+    },
+    {
+      "file": "card-tap-terminal.png",
+      "captured_utc": "2026-10-19T18:48:54.049700+00:00",
+      "action": "card_shell enter; click 616 280; wait 1200",
+      "sha256": "7a2f2289f6cb1dcf31e4d017265769563b9eb27d065cc0e9f351453f21a7315e"
+    },
+    {
+      "file": "body-tap-home.png",
+      "captured_utc": "2026-10-19T18:49:07.996917+00:00",
+      "action": "card_shell enter; click 1130 300; wait 1200",
+      "sha256": "58692858d53cf304c793082fa706d60fa48c8f75d9f5da9bd08dbeae46142ff1"
+    }
+  ]
+}
