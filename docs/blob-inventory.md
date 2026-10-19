@@ -2055,6 +2055,8 @@ DATA  35392bb82d2662916a720b29ebeb5594de6d1490e040f07686ad69b8aab7a726  docs/evi
 DATA 15db802b2ecd6922ddea88a9241ef1ac2c1170f03239c04eada585e206ef5e0c docs/evidence/display-touch/trackpad-restart-and-long-press/first-swipe-after-sway-restart-page2-1280x800-grim.png
 DATA 72969291055b086c99065f7f595d78a04ecbe8c3609958c6aede900abf581e42 docs/evidence/display-touch/trackpad-restart-and-long-press/long-two-finger-press-clock-1280x800-grim.png
 DATA 1e858f92dd9f427097d33a4b98dac5b37511b5c19b33020fb63c3147ffdd1212 docs/evidence/display-touch/trackpad-restart-and-long-press/long-two-finger-press-page2-after-swipe-1280x800-grim.png
+DATA bc20c47de804c4f5527101e6f8398009d47de992c8434b397740d17b321094f6 docs/evidence/rest-of-text/board-panel-100-home.png
+DATA 25e9fbda189c1349dd464f2e741065fab1baa77ed140369c4790bfdc9559b704 docs/evidence/rest-of-text/board-panel-100-home-weather.png
 DATA 6e222d41121d2e15b3e0a882577b0254fde1067a2716aa50fdb044673eaf893a docs/evidence/rest-of-text/host-banner-1232x568.png
 DATA e7d43131d2a871cf09143d8e3b5f304338fc22c66522d8f01e3c753340b1090e docs/evidence/rest-of-text/host-banner-568x1232.png
 DATA 84944d451c4c5266e381fbac4b859350e3c50e7b36d9f583f3b2de2ea22c5dea docs/evidence/rest-of-text/host-home-widgets-steps.png
@@ -3570,6 +3572,8 @@ Command and limits: `docs/evidence/battery-details-widget/host/README.md`.
 | `docs/evidence/display-touch/trackpad-restart-and-long-press/first-swipe-after-sway-restart-page2-1280x800-grim.png` | 787020 | DATA | `15db802b2ecd6922ddea88a9241ef1ac2c1170f03239c04eada585e206ef5e0c` |
 | `docs/evidence/display-touch/trackpad-restart-and-long-press/long-two-finger-press-clock-1280x800-grim.png` | 821210 | DATA | `72969291055b086c99065f7f595d78a04ecbe8c3609958c6aede900abf581e42` |
 | `docs/evidence/display-touch/trackpad-restart-and-long-press/long-two-finger-press-page2-after-swipe-1280x800-grim.png` | 787548 | DATA | `1e858f92dd9f427097d33a4b98dac5b37511b5c19b33020fb63c3147ffdd1212` |
+| `docs/evidence/rest-of-text/board-panel-100-home.png` | 327813 | DATA | `bc20c47de804c4f5527101e6f8398009d47de992c8434b397740d17b321094f6` |
+| `docs/evidence/rest-of-text/board-panel-100-home-weather.png` | 303552 | DATA | `25e9fbda189c1349dd464f2e741065fab1baa77ed140369c4790bfdc9559b704` |
 | `docs/evidence/rest-of-text/host-banner-1232x568.png` | 9685 | DATA | `6e222d41121d2e15b3e0a882577b0254fde1067a2716aa50fdb044673eaf893a` |
 | `docs/evidence/rest-of-text/host-banner-568x1232.png` | 8607 | DATA | `e7d43131d2a871cf09143d8e3b5f304338fc22c66522d8f01e3c753340b1090e` |
 | `docs/evidence/rest-of-text/host-home-widgets-steps.png` | 169349 | DATA | `84944d451c4c5266e381fbac4b859350e3c50e7b36d9f583f3b2de2ea22c5dea` |

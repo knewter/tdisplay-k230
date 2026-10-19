@@ -14,3 +14,16 @@ Evidence class: host renders unless a section says otherwise.
 
 Limits: no board captures yet (task 3.1). The volume HUD's expanded rows
 are covered by unit tests only; they need streams playing on the board.
+
+## Board (2026-10-19 UTC)
+
+Native `grim` captures on DSI-1 (1232x568), retro-82 with the vinyl
+wallpaper, 100%, reached with `tools/board-pointer.py` swipes.
+
+- `board-panel-100-home.png`: Home page 1 from the a23e199a closure; the
+  "Video" label is in the 26 px Caption role.
+- `board-panel-100-home-weather.png`: Home page 2 from the e11757ee closure
+  (`/nix/store/am78j36v3kx1zvqmgbixv2qi0qqzwafz-nixos-system-…`); the
+  Weather card's location, high/low and forecast in the Caption role. The
+  e11757ee fix exists because the a23e199a closure showed "12…" for
+  "12am" in this card.
