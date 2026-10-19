@@ -17,8 +17,17 @@ adapter routes a touch in the footer band to its own Home gesture
 - **The adapter** answers `CS_HOME` with the footer's own path,
   `home_settle(true)`, so Home looks and behaves exactly as after a footer
   tap, including keeping app windows in Overview.
-- The title band counts as backdrop; its Close button is hit-tested
-  before the policy and keeps its meaning.
+- The title band counts as backdrop. In touch-first mode its top 48 px
+  are the Shade pull-down band and the sides are the side Back bands:
+  the adapter holds those touches as edge gestures before the policy
+  sees them, and an unmoved tap there was handed to the (absent) client
+  under it. The adapter's edge release now treats an unmoved,
+  single-contact Shade or Back band tap in the deck that is off every
+  card as a backdrop tap too. A pull or an inward swipe keeps its
+  gesture. The first board build missed this: a tap at (700, 40) in the
+  title band did nothing.
+- The pointer-mode Close button is hit-tested before the policy and
+  keeps its meaning.
 
 ## Rejected
 

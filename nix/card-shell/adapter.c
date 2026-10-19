@@ -3291,10 +3291,17 @@ static bool input_up(struct sway_seat *seat, int32_t id, uint64_t event_ms) {
 		bool home = !edge.cancelled && !edge.moved && id == edge.id &&
 			edge.intent == EDGE_HOME && edge.x >= shell.policy.config.width * .35 &&
 			edge.x <= shell.policy.config.width * .65;
-		if (!edge.cancelled && id == edge.id && !home) edge_client_up(event_ms);
+		/* The Shade and side Back bands lie over the Overview backdrop, so a
+		 * plain tap there is a backdrop tap: Home, as cs_up's CS_HOME. */
+		bool backdrop = !edge.cancelled && !edge.moved && id == edge.id &&
+			(edge.intent == EDGE_SHADE || edge.intent == EDGE_BACK) &&
+			shell.active && shell.policy.mode == CS_DECK &&
+			cs_hit_test(&shell.policy, edge.x, edge.y) == SIZE_MAX;
+		if (!edge.cancelled && id == edge.id && !home && !backdrop) edge_client_up(event_ms);
 		if (--edge.contacts == 0) {
 			edge_reset(false);
 			if (home) enter(seat);
+			else if (backdrop) home_settle(true);
 		}
 		return true;
 	}
