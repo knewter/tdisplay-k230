@@ -278,6 +278,40 @@ static void adjacent_tap(void) {
     assert((r.actions&CS_EXPAND) && r.focus_id==202);
     cs_finish(&p);
 }
+static void backdrop_tap(void) {
+    struct cs_policy p=setup();cs_enter(&p,101);
+    struct cs_rect a=cs_card_rect(&p,0),content=cs_content_rect(&p);
+    double x=a.x+a.width/2,y=a.y-10;
+    assert(y>content.y && cs_hit_test(&p,x,y)==SIZE_MAX); /* above the card */
+    assert(cs_down(&p,1,x,y,1).consumed);
+    assert(cs_motion(&p,1,x+3,y+2,9).consumed); /* a wobble is still a tap */
+    struct cs_result r=cs_up(&p,1,20);
+    assert((r.actions&CS_HOME) && r.consumed && p.mode==CS_DECK);
+    /* A card tap is unchanged: it opens the card, never Home. */
+    down(&p,40);r=cs_up(&p,1,41);
+    assert((r.actions&CS_EXPAND) && !(r.actions&CS_HOME));
+    cs_finish(&p);
+}
+static void backdrop_drag(void) {
+    struct cs_policy p=setup();cs_enter(&p,101);
+    struct cs_rect a=cs_card_rect(&p,0);
+    double x=a.x+a.width/2,y=a.y-10;
+    assert(cs_down(&p,1,x,y,1).consumed);
+    cs_motion(&p,1,x+40,y,9);
+    cs_motion(&p,1,x,y,17); /* back where it started: still a drag */
+    struct cs_result r=cs_up(&p,1,20);
+    assert(!(r.actions&CS_HOME) && p.mode==CS_DECK);
+    /* A second contact joining a backdrop touch cancels the tap. */
+    assert(cs_down(&p,1,x,y,30).consumed);
+    assert(cs_down(&p,2,x+100,y,31).consumed);
+    assert(!(cs_up(&p,1,32).actions&CS_HOME));
+    assert(!(cs_up(&p,2,33).actions&CS_HOME));
+    /* And a cancelled stream never goes Home on a late release. */
+    assert(cs_down(&p,1,x,y,40).consumed);
+    cs_stream_cancel(&p);
+    assert(!(cs_up(&p,1,42).actions&CS_HOME));
+    cs_finish(&p);
+}
 static void adjacent_throw(void) {
     struct cs_policy p=setup();cs_enter(&p,101);
     struct cs_rect a=cs_card_rect(&p,0),b=cs_card_rect(&p,1);
@@ -1285,6 +1319,7 @@ int main(int argc,char **argv) {
         {"scroll-catch-mid-coast",scroll_catch_mid_coast},
         {"scroll-end-clamp-soft",scroll_end_clamp_soft},
         {"adjacent-tap",adjacent_tap},
+        {"backdrop-tap",backdrop_tap},{"backdrop-drag",backdrop_drag},
         {"adjacent-throw",adjacent_throw},{"privacy",privacy},{"privacy-transition",privacy_transition},
         {"close-recovery",close_recovery},{"slow-drag",slow_drag},{"source-loss",source_loss},
         {"repeated-timestamp-throw",repeated_timestamp_throw},

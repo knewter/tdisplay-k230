@@ -155,6 +155,7 @@ struct cs_result cs_leave(struct cs_policy *p) {
     if (p->contact || p->edge.tracking) {p->blocked_until_up=true;p->blocked_contacts=1;}
     reset_drag(p);
     p->edge.tracking=false;
+    p->backdrop_tap=false;
     p->closing_id=0;p->close_deadline_ms=0;p->mode=CS_NORMAL;
     free(p->entry_order);p->entry_order=NULL;p->entry_count=0;p->entry_origin=0;
     p->entry_left_id=0;p->entry_right_id=0;p->entry_target_id=0;
@@ -412,6 +413,7 @@ static struct cs_result multiple_contacts(struct cs_policy *p,uint64_t time_ms) 
 struct cs_result cs_down(struct cs_policy *p,int32_t contact_id,double x,double y,uint64_t time_ms) {
     if (p->blocked_until_up) {
         if (p->blocked_contacts<UINT_MAX) p->blocked_contacts++;
+        p->backdrop_tap=false;
         return result(p,0,true);
     }
     /* A fresh touch during an overview scroll coast catches it: advance
@@ -467,6 +469,8 @@ struct cs_result cs_down(struct cs_policy *p,int32_t contact_id,double x,double 
     size_t index=cs_hit_test(p,x,y);
     if (index==SIZE_MAX) {
         p->scroll_settling=false;
+        p->backdrop_tap=p->mode==CS_DECK && !scroll_catch;
+        p->backdrop_id=contact_id;p->backdrop_x=x;p->backdrop_y=y;
         p->blocked_until_up=true;p->blocked_contacts=1;return result(p,0,true);
     }
     p->scroll_settling=false; /* the catch above, if any, is now resolved */
@@ -557,7 +561,12 @@ static double scroll_release_velocity_x(const struct cs_policy *p,uint64_t up_ti
  * project the resting card from the release velocity -- see its comment. */
 #define CS_SCROLL_OMEGA .006
 struct cs_result cs_motion(struct cs_policy *p,int32_t contact_id,double x,double y,uint64_t time_ms) {
-    if (p->blocked_until_up) return result(p,0,true);
+    if (p->blocked_until_up) {
+        if (p->backdrop_tap && contact_id==p->backdrop_id &&
+                !(hypot(x-p->backdrop_x,y-p->backdrop_y)<=p->config.tap_slop))
+            p->backdrop_tap=false;
+        return result(p,0,true);
+    }
     if (!p->contact || contact_id!=p->contact_id) return result(p,0,false);
     if (!isfinite(x) || !isfinite(y) || time_ms<p->last_time_ms) return cs_cancel(p);
     double dx=bound(x-p->down_x,2*p->config.width);
@@ -587,6 +596,10 @@ struct cs_result cs_up(struct cs_policy *p,int32_t contact_id,uint64_t time_ms) 
     if (p->blocked_until_up) {
         if (p->blocked_contacts) p->blocked_contacts--;
         if (!p->blocked_contacts) p->blocked_until_up=false;
+        if (p->backdrop_tap && contact_id==p->backdrop_id) {
+            p->backdrop_tap=false;
+            if (!p->blocked_until_up && p->mode==CS_DECK) return result(p,CS_HOME,true);
+        }
 		if (!p->blocked_until_up && p->entry_interrupted_hold) {
 			p->entry_interrupted_hold=false;
 			p->entry_started_ms=time_ms;
@@ -717,6 +730,7 @@ struct cs_result cs_cancel(struct cs_policy *p) {
 	}
     bool owned=p->contact;
     reset_drag(p);
+    p->backdrop_tap=false;
     if (owned) {p->blocked_until_up=true;p->blocked_contacts=1;}
     cs_edge_cancel(p);
     if (p->mode==CS_DRAGGING) p->mode=CS_DECK;
@@ -738,6 +752,7 @@ struct cs_result cs_stream_cancel(struct cs_policy *p) {
 	}
     bool owned=p->contact || p->edge.tracking || p->blocked_until_up;
     reset_drag(p);
+    p->backdrop_tap=false;
     memset(&p->edge,0,sizeof(p->edge));
     p->blocked_until_up=false;p->blocked_contacts=0;
     p->contact_id=0;p->last_time_ms=0;

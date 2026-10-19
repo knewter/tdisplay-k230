@@ -25,7 +25,7 @@ enum cs_message {
 enum cs_actions {
     CS_NO_ACTION = 0, CS_REDRAW = 1 << 0, CS_SHRINK = 1 << 1,
     CS_EXPAND = 1 << 2, CS_RESTORE = 1 << 3, CS_CLOSE = 1 << 4,
-    CS_RECONCILE = 1 << 5
+    CS_RECONCILE = 1 << 5, CS_HOME = 1 << 6
 };
 struct cs_result {
     unsigned actions;
@@ -94,6 +94,12 @@ struct cs_policy {
     uint64_t saved_focus_id, pressed_id, closing_id, close_deadline_ms;
     bool contact, blocked_until_up;
     unsigned blocked_contacts;
+    /* A deck touch that missed every card: still a tap on the backdrop,
+     * which goes Home on release (CS_HOME), until it moves past tap_slop
+     * or another contact joins. */
+    bool backdrop_tap;
+    int32_t backdrop_id;
+    double backdrop_x, backdrop_y;
     int32_t contact_id;
     double down_x, down_y, last_x, last_y, dx, dy, velocity_y, velocity_x;
     uint64_t last_time_ms;

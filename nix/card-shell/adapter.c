@@ -1998,6 +1998,11 @@ static void handle_result(struct cs_result r) {
 		restore(r);
 		return;
 	}
+	/* A tap on the backdrop behind the cards: the footer tap's Home. */
+	if ((r.actions & CS_HOME) && shell.active) {
+		home_settle(true);
+		return;
+	}
 	if (r.source_gone_id)
 		sway_log(SWAY_INFO, "K230_CARD_SHELL source-gone id=%" PRIu64, r.source_gone_id);
 	if (r.actions & CS_SHRINK) {

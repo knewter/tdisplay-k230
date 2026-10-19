@@ -9,7 +9,7 @@ import unittest
 ROOT = Path(__file__).resolve().parents[1]
 CASES = ('activate-selected enter-expand horizontal overview-geometry landscape-panel-config '
          'scroll-fling-multi-card scroll-slow-release-snaps-nearest scroll-catch-mid-coast scroll-end-clamp-soft '
-         'adjacent-tap adjacent-throw privacy privacy-transition '
+         'adjacent-tap backdrop-tap backdrop-drag adjacent-throw privacy privacy-transition '
          'close-recovery slow-drag repeated-timestamp-throw repeated-timestamp-rejection source-loss restore-gesture multi-contact edge '
          'keyboard-geometry changed-ids many-cards reduced-motion invalid-events buttons stream-cancel stream-cancel-multitouch tracked-entry '
          'entry-geometry-rejects-undersized-source '
