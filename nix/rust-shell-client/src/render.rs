@@ -3488,16 +3488,19 @@ fn scene(
                 let volume_lines = settings_row_lines(SETTINGS_VOLUME_ROW);
                 paint_card(cr, theme, "controls", CardJob::Control, 24.0, volume_y, w - 48.0, settings_row_h(SETTINGS_VOLUME_ROW));
                 let label_x = paint_line_glyph(cr, Glyph::Speaker, row_text_x, volume_y + volume_lines.0, TYPE_LABEL, style.text);
-                themed_role_fit(cr, theme, "body", "Volume", label_x, volume_y + volume_lines.0, row_text_x + row_text_width - label_x, TYPE_LABEL, style.text, pango::Weight::Medium);
-                if let Some(sink) = default_sink(services.and_then(|view| view.audio.as_ref())) {
+                let sink = default_sink(services.and_then(|view| view.audio.as_ref()));
+                // The level sits at the right of the heading line; the
+                // "Volume" label fits the room left of it.
+                let value = sink.map(|sink| {
                     let percent = volume::linear_to_percent(sink.linear_volume);
-                    let label = if sink.muted {
-                        "Muted".to_string()
-                    } else {
-                        format!("{percent}%")
-                    };
+                    let label = if sink.muted { "Muted".to_string() } else { format!("{percent}%") };
                     let value_w = text_advance_resolved(cr, &label, theme_font_size(theme, "body", TYPE_BODY, TYPE_BODY, TYPE_BODY * 1.25), pango::Weight::Normal) + 2.0;
-                    let value_x = 24.0 + w - 48.0 - row_padding - value_w;
+                    (label, 24.0 + w - 48.0 - row_padding - value_w, value_w)
+                });
+                let label_end = value.as_ref().map_or(row_text_x + row_text_width, |(_, value_x, _)| value_x - 8.0);
+                themed_role_fit(cr, theme, "body", "Volume", label_x, volume_y + volume_lines.0, label_end - label_x, TYPE_LABEL, style.text, pango::Weight::Medium);
+                if let (Some(sink), Some((label, value_x, value_w))) = (sink, value) {
+                    let percent = volume::linear_to_percent(sink.linear_volume);
                     themed_role(cr, theme, "body", &label, value_x, volume_y + volume_lines.0, value_w, TYPE_BODY, style.text, pango::Weight::Normal);
                     themed_role_fit(
                         cr, theme, "caption",
@@ -6295,16 +6298,20 @@ impl RendererCache {
         color(cr, style.accent, 1.0);
         let _ = cr.fill();
         // The "..." expand affordance, always at the same offset from the
-        // pill's own top whether or not it is currently expanded.
-        text(
-            cr,
-            "\u{2026}",
-            geometry.left,
-            geometry.top + geometry.collapsed_h - 22.0,
-            geometry.width,
-            16.0,
-            style.muted,
-        );
+        // pill's own top whether or not it is currently expanded. Three
+        // dots rather than a glyph: it is a control mark, and a glyph would
+        // grow with the text step into the first expanded row.
+        color(cr, style.muted, 1.0);
+        for dot in 0..3 {
+            cr.arc(
+                geometry.left + 5.0 + f64::from(dot) * 5.0,
+                geometry.top + geometry.collapsed_h - 9.0,
+                1.5,
+                0.0,
+                std::f64::consts::TAU,
+            );
+            let _ = cr.fill();
+        }
         if expanded_rows > 0 {
             if let Some(audio) = audio {
                 for index in 0..expanded_rows {
