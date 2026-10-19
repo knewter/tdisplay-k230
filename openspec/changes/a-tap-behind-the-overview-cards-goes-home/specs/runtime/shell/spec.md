@@ -2,7 +2,13 @@
 
 ### Requirement: A tap behind the Overview cards goes Home
 
-<!-- UNVERIFIED: operator glass tap (task 2.2) remains open; injected-pointer board checks are recorded in docs/evidence/overview-backdrop-tap/README.md. -->
+Grounded by the landscape panel captures and filtered journal in
+`docs/evidence/overview-backdrop-tap/README.md`, and the operator's
+physical glass confirmation in
+`docs/evidence/overview-backdrop-tap/operator-signoff.md` (2026-10-19).
+Multi-contact rejection has host policy proof; the physical report covers
+backdrop taps and retained apps. The system userspace shell owns this
+behavior.
 
 In the card Overview, a tap on the backdrop that is not on a card, the
 Close control or the footer SHALL show Home exactly as the footer's Home

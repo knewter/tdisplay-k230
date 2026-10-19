@@ -7,9 +7,11 @@ open. Pulling down the Shade and swiping Back still work, and tapping the
 card still opens Terminal.
 
 This is **board evidence from injected absolute-pointer input and native
-`grim` captures**, at 1232×568 on the landscape panel. It is not a physical
-finger interaction, a camera recording, HDMI proof, or a reboot test.
-The operator's glass test (task 2.2) remains open; the change is not archived.
+`grim` captures**, at 1232×568 on the landscape panel. These captures are
+not a physical finger interaction, a camera recording, HDMI proof, or a
+reboot test.
+The later operator glass confirmation completing task 2.2 is recorded
+separately in [operator-signoff.md](operator-signoff.md).
 Multi-contact cancellation has host policy proof only.
 
 ## Source, build and installation
@@ -90,7 +92,7 @@ Shade/Back-band taps outside cards on release. The first build's scratch
 captures are not substituted for the final-build evidence above.
 
 The board lock was released after the checks. The board was left at Home
-with Terminal open. For the remaining physical task, open Overview, tap the
-backdrop above/beside the card including the top/side strips, then reopen
-Overview and confirm the app remains. Record the operator's observation
-before completing task 2.2 or archiving.
+with Terminal open. The operator subsequently completed the physical task:
+open Overview, tap the backdrop above/beside the card including the top/side strips,
+then reopen Overview and confirm the app remains. Their confirmation is
+committed in [operator-signoff.md](operator-signoff.md).
