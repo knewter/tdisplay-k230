@@ -1,6 +1,6 @@
 # Opt-in live application cards
 
-`nix build .#card-shell --max-jobs 1 --cores 8` builds a separate source-built
+`nix build .#card-shell --max-jobs 4 --cores 8` builds a separate source-built
 Sway/Pixman package. Its wrapper supplies D-Bus, coreutils and bash in PATH. `bin/card-shell --sway --config FILE` starts it in a reserved
 single-compositor session; `--enter` and `--back` send IPC commands. The normal
 image and the architecture probe remain separate. This package has not passed

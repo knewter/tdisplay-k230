@@ -59,7 +59,7 @@ def main():
     args.output.mkdir(parents=True, exist_ok=True); args.output.chmod(0o700)
     def build(attr):
         return Path(subprocess.check_output(['nix', 'build', '.#'+attr, '--no-link', '--print-out-paths',
-                                             '--max-jobs', '1', '--cores', '8'], cwd=ROOT, text=True).strip())
+                                             '--max-jobs', '4', '--cores', '8'], cwd=ROOT, text=True).strip())
     package = (args.package or build('root-growth-guest')).resolve()
     kernel = (args.kernel or build('qemu-kernel')).resolve()
     if not (package/'bin/k230-root-growth-guest').is_file() or not (kernel/'Image').is_file():

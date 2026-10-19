@@ -211,6 +211,18 @@ derivation (`nix/device-tree.nix`) compiled against the pinned kernel's
 headers, so iterating on the panel init sequence costs about a second
 instead of a twenty-minute cross-compile.
 
+Iterating on the Rust shell, build the shell alone first:
+`nix build .#handheld-shell-rust --max-jobs 4 --cores 8`. Its ~110 locked
+dependencies are a separate derivation keyed on `Cargo.toml` and
+`Cargo.lock` (`k230-shell-rust-deps`), so an edit to `src/` recompiles one
+crate, and an edit under `tests/` or `examples/` rebuilds nothing. Build the
+whole system or boot files only when you are ready to deploy. The bundled
+theme package's build-time thumbnail tool (`nix/theme-cache-tool`) compiles
+just the shell's decode modules, so a shell edit does not produce a new
+100 MB theme path to copy to the board. Builds share one machine; hold
+`/tmp/k230-nix-build.lock` (`flock`) so only one runs at a time, and use
+`--max-jobs 4 --cores 8` unless something else on the host needs the cores.
+
 Everything cross-compiles from `x86_64-linux`; you do not need riscv64
 hardware to build. Budget real time for a first build: the glibc cross
 toolchain substitutes from the cache, but NixOS's initrd wants a static

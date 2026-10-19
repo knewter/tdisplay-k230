@@ -69,7 +69,7 @@ fi
 # turn an image build into a timeout, so select the official cache for these
 # build commands only; do not change the user's global Nix configuration.
 #
-MAX_JOBS="${K230_MAX_JOBS:-2}"
+MAX_JOBS="${K230_MAX_JOBS:-4}"
 CORES="${K230_CORES:-8}"
 NIX_IMAGE_ARGS=(--option substituters https://cache.nixos.org/ --max-jobs "$MAX_JOBS" --cores "$CORES")
 case "${K230_STAGE1:-source}" in

@@ -116,7 +116,7 @@ def stage(args):
     commands = []
     for name, attr in TARGETS.items():
         cmd = ['nix', 'build', '--no-write-lock-file', flake(revision) + '#' + attr,
-               '--out-link', str(roots / name), '--max-jobs', '1', '--cores', '8']
+               '--out-link', str(roots / name), '--max-jobs', '4', '--cores', '8']
         commands.append(cmd)
         print('Building ' + name, flush=True)
         run(cmd, capture=False)

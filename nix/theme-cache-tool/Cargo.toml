@@ -1,0 +1,17 @@
+[package]
+name = "k230-theme-cache"
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+description = "Build-time wallpaper and thumbnail cache writer for the bundled themes"
+
+# The same pins as ../rust-shell-client/Cargo.toml, so this tool decodes
+# exactly as the shell does. It compiles the shell's own decode modules by
+# path (src/main.rs) and nothing else.
+[dependencies]
+libc = "=0.2.175"
+cairo-rs = { version = "=0.21.5", features = ["png"] }
+image = { version = "=0.25.10", default-features = false, features = ["png", "jpeg", "webp", "gif", "bmp"] }
+serde = { version = "=1.0.228", features = ["derive"] }
+serde_json = "=1.0.149"
+sha2 = "=0.10.9"

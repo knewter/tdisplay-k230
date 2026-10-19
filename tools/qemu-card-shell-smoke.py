@@ -150,7 +150,7 @@ def main():
         if args.no_build:
             command = ['nix', 'eval', '--impure', '--raw', '--expr', prefix+expression+'.outPath']
         else:
-            command = ['nix', 'build', '--impure', '--no-link', '--print-out-paths', '--max-jobs', '1', '--cores', '8', '--expr', prefix+expression]
+            command = ['nix', 'build', '--impure', '--no-link', '--print-out-paths', '--max-jobs', '4', '--cores', '8', '--expr', prefix+expression]
         paths[key] = subprocess.check_output(command, cwd=ROOT, text=True).strip()
     params = json.loads(subprocess.check_output(['nix', 'eval', '--impure', '--json', '--expr', prefix+'s.config.boot.kernelParams'], cwd=ROOT, text=True))
     kernel, initrd = Path(paths['kernel'])/'Image', Path(paths['initrd'])/'initrd'

@@ -5,16 +5,15 @@ let
   bundledIdentity = bundledReport.generation;
   bundledBackground = bundledReport.selected_background;
   recoveryIdentity = (builtins.fromJSON (builtins.readFile ./default-report.json)).generation;
-  # A native (build-platform) copy of the same Rust shell binary that is
-  # cross-compiled onto the device, used only to precompute the pinned
-  # bundled generation's panel-sized wallpaper decode at build time
-  # (background_decode.rs's `--write-wallpaper-cache` verb). It never runs
-  # on the board and ships nothing into the image; `buildPackages` resolves
-  # every one of rust-shell-client's own inputs (rustPlatform, wayland,
-  # cairo, pango, glib, librsvg) for the build platform automatically, the
-  # same pattern nix/opensbi-k230.nix and nix/uboot-k230.nix already use for
-  # a native build-time tool.
-  wallpaperCacheTool = buildPackages.callPackage ../rust-shell-client { };
+  # A native (build-platform) tool that precomputes the bundled themes'
+  # thumbnails and the pinned bundled generation's panel-sized wallpaper
+  # decode at build time. It compiles the shell's own decode modules
+  # (background_decode.rs, theme_thumbnails.rs) and nothing else of the
+  # shell, so an unrelated shell edit leaves this package unchanged. It never
+  # runs on the board and ships nothing into the image; `buildPackages`
+  # resolves its inputs for the build platform, the same pattern
+  # nix/opensbi-k230.nix and nix/uboot-k230.nix use for a native tool.
+  wallpaperCacheTool = buildPackages.callPackage ../theme-cache-tool { };
   # Every member of omacom/omarchy's `themes/` collection at the pinned
   # revision. Verified with `ls themes/` against the fetched source and
   # recorded in SOURCE.md; all 22 have a colors.toml palette. catppuccin and
@@ -111,10 +110,10 @@ stdenvNoCC.mkDerivation {
       themeDir="$out/share/omarchy/themes/$name"
       for previewName in preview.png preview.jpg preview.jpeg preview.webp preview.gif preview.bmp; do
         if [ -f "$themeDir/$previewName" ]; then
-          "${wallpaperCacheTool}/bin/k230-shell-rust" --write-thumbnail-cache \
+          "${wallpaperCacheTool}/bin/k230-theme-cache" --write-thumbnail-cache \
             "$themeDir/$previewName" "$thumbnailSeedDir" expanded 480 640 \
             || echo "handheld-theme-default: theme thumbnail precompute skipped ($name expanded)" >&2
-          "${wallpaperCacheTool}/bin/k230-shell-rust" --write-thumbnail-cache \
+          "${wallpaperCacheTool}/bin/k230-theme-cache" --write-thumbnail-cache \
             "$themeDir/$previewName" "$thumbnailSeedDir" slice 68 582 \
             || echo "handheld-theme-default: theme thumbnail precompute skipped ($name slice)" >&2
           break
@@ -125,10 +124,10 @@ stdenvNoCC.mkDerivation {
           \( -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.png' -o -iname '*.webp' -o -iname '*.gif' -o -iname '*.bmp' \) \
           -print0 |
         while IFS= read -r -d "" background; do
-          "${wallpaperCacheTool}/bin/k230-shell-rust" --write-thumbnail-cache \
+          "${wallpaperCacheTool}/bin/k230-theme-cache" --write-thumbnail-cache \
             "$background" "$thumbnailSeedDir" expanded 420 260 \
             || echo "handheld-theme-default: background thumbnail precompute skipped ($background expanded)" >&2
-          "${wallpaperCacheTool}/bin/k230-shell-rust" --write-thumbnail-cache \
+          "${wallpaperCacheTool}/bin/k230-theme-cache" --write-thumbnail-cache \
             "$background" "$thumbnailSeedDir" slice 59 237 \
             || echo "handheld-theme-default: background thumbnail precompute skipped ($background slice)" >&2
         done
@@ -149,7 +148,7 @@ stdenvNoCC.mkDerivation {
       # background on the K230's single in-order core. Advisory: if this
       # ever fails, the generation is exactly as correct and only as slow as
       # it was before this optimization existed.
-      "${wallpaperCacheTool}/bin/k230-shell-rust" --write-wallpaper-cache \
+      "${wallpaperCacheTool}/bin/k230-theme-cache" --write-wallpaper-cache \
         "$out/generations/${bundledIdentity}/theme/${bundledBackground}" \
         "$out/generations/${bundledIdentity}" 568 1232 \
         || echo "handheld-theme-default: wallpaper cache precompute skipped" >&2

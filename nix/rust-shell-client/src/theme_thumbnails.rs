@@ -60,8 +60,8 @@ use std::{
 /// [`hashed_cache_file`]) -- rather than by source *path*:
 ///
 /// - **Build-time seed, for the bundled built-in themes.** `nix/handheld-
-///   theme-default/default.nix` runs this same binary's hidden
-///   `--write-thumbnail-cache` verb over every pinned theme's `preview.png`
+///   theme-default/default.nix` runs nix/theme-cache-tool's
+///   `--write-thumbnail-cache` verb (this module, compiled natively) over every pinned theme's `preview.png`
 ///   and background images, at exactly the sizes `theme_carousel`'s two
 ///   geometries need, into a read-only directory shipped inside the
 ///   package (`share/omarchy/thumbs-by-hash/`, wired to this process via
@@ -314,10 +314,9 @@ fn builtin_seed_dir_from(value: Option<&str>) -> Option<PathBuf> {
 /// module doc's "Two disk caches" section), keyed by `source`'s own content
 /// hash so a later lookup finds it regardless of which path -- the pinned
 /// Nix store source, or a staged generation's byte-identical copy -- asked.
-/// Used only by the hidden `--write-thumbnail-cache` CLI verb, invoked by a
-/// native-arch build of this binary from `nix/handheld-theme-default/
-/// default.nix` (the same pattern as
-/// `background_decode::write_wallpaper_cache`). Never runs on the board.
+/// Used only by the `--write-thumbnail-cache` verb of nix/theme-cache-tool,
+/// which compiles this module and which `nix/handheld-theme-default/
+/// default.nix` runs at build time. Never runs on the board.
 pub fn write_builtin_thumbnail(
     source: &Path,
     dest_dir: &Path,

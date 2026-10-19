@@ -34,8 +34,8 @@ const MAX_OUTPUT_PIXELS: u64 = 2048 * 2048;
 /// On-disk cache of an already-decoded, already-cropped-to-panel-size still
 /// wallpaper, written once per prepared theme generation (either by
 /// `tools/theme_activate.py`'s `prepare()` at runtime, through the hidden
-/// `--write-wallpaper-cache` verb, or by a native-arch build of this same
-/// binary at Nix build time for the one pinned bundled generation). The
+/// `--write-wallpaper-cache` verb, or by nix/theme-cache-tool, which compiles
+/// this module, at Nix build time for the one pinned bundled generation). The
 /// generation directory is already an immutable, hash-identified, one-shot
 /// staged copy (see `tools/theme_activate.py`), so this file lives beside
 /// its `theme/`, `report.json` and `appearance.json` and is invalidated
@@ -139,8 +139,8 @@ fn write_cache(
 /// bypassing any cache) and persist them as `generation_root`'s wallpaper
 /// cache. Used by the hidden `--write-wallpaper-cache` CLI verb, which is
 /// invoked both by `tools/theme_activate.py`'s `prepare()` (a fresh runtime
-/// generation, once) and by a native-arch build of this binary at Nix build
-/// time (the one pinned bundled generation).
+/// generation, once) and by nix/theme-cache-tool at Nix build time (the one
+/// pinned bundled generation).
 pub fn write_wallpaper_cache(
     source: &Path,
     generation_root: &Path,

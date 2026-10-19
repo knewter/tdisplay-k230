@@ -17,7 +17,7 @@ def binaries():
         output = subprocess.check_output(['nix', 'eval', '--raw', '.#card-shell.outPath'], cwd=ROOT, text=True)
         wrapper = Path(output) / 'bin/.sway-wrapped'
         if not wrapper.exists():
-            raise RuntimeError('Build nix build .#card-shell --max-jobs 1 --cores 8 first, or set CARD_SHELL_SWAY to the unwrapped executable')
+            raise RuntimeError('Build nix build .#card-shell --max-jobs 4 --cores 8 first, or set CARD_SHELL_SWAY to the unwrapped executable')
         sway = re.search(r'exec (/nix/store/[^ ]+/bin/sway) ', wrapper.read_text()).group(1)
     if not client:
         expr = f'let f=builtins.getFlake {json.dumps(str(ROOT))}; p=import f.inputs.nixpkgs {{system=builtins.currentSystem;}}; in (p.callPackage (f.outPath + "/nix/card-composition-probe-client") {{}}).outPath'
