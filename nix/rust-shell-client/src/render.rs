@@ -28,7 +28,7 @@ use crate::{
     theme_thumbnails::{bounded_working_set, ThemeThumbnailCache, ThumbnailKey, Variant},
     theme_ui::{
         background_display_label, vision_layout, ThemeImageKey, ThemeImageWorker, ThemePage,
-        ThemeView, BACKGROUND_CAROUSEL_TOP,
+        ThemeView,
     },
     wifi_settings::{Secret, Security},
     wifi_ui::{all_networks, Page as WifiPage, WifiPublic},
@@ -1579,7 +1579,7 @@ fn paint_grid(
             let _ = cr.stroke();
         }
         let tone = if card.problem { style.error } else if card.current { style.accent } else { style.text };
-        text(cr, &card.label, x, y + h + 5.0, w, 16.0, tone);
+        wrapped_text_lines(cr, &card.label, x, y + h + 5.0, w, context_font_size(cr, TYPE_CAPTION), tone, 2);
     }
 }
 
@@ -1722,14 +1722,20 @@ fn paint_theme_chooser(
     // applies immediately (`Carousel::up`'s own `Confirm`-only-when-
     // centred rule; see `theme_ui::ThemeView::tap_theme`/`tap_background`);
     // dragging only ever recentres.
-    heading(cr, "Themes", lay.themes_heading.0, lay.themes_heading.1, lay.theme_text.1, 26.0, style.text);
+    heading(cr, "Themes", lay.themes_heading.0, lay.themes_heading.1, lay.theme_text.1, TYPE_LABEL, style.text);
+    // On the wide layout the hint shares the heading's line, after it.
+    let hint_x = if (lay.themes_hint.1 - lay.themes_heading.1).abs() < 30.0 {
+        lay.themes_hint.0.max(lay.themes_heading.0 + text_advance(cr, "Themes", TYPE_LABEL, pango::Weight::Bold) + 16.0)
+    } else {
+        lay.themes_hint.0
+    };
     text(
         cr,
         if lay.theme_grid.is_some() { "Tap a theme to apply it" } else { "Drag to browse · tap the centre to apply" },
-        lay.themes_hint.0,
+        hint_x,
         lay.themes_hint.1,
-        lay.theme_text.1 - (lay.themes_hint.0 - lay.theme_text.0),
-        16.0,
+        lay.theme_text.1 - (hint_x - lay.theme_text.0),
+        TYPE_CAPTION,
         style.muted,
     );
     match &view.list {
@@ -1785,7 +1791,7 @@ fn paint_theme_chooser(
             let entry = &list.themes[centered];
             let is_current = list.active.id.as_deref() == Some(entry.id.as_str());
             let label_y = lay.theme_top + lay.theme_geometry.expanded_h + 12.0;
-            heading(cr, &entry.label, lay.theme_text.0, label_y, lay.theme_text.1, 24.0, style.text);
+            heading(cr, &entry.label, lay.theme_text.0, label_y, lay.theme_text.1, TYPE_LABEL, style.text);
             let status = if is_current {
                 "Current theme"
             } else {
@@ -1794,7 +1800,7 @@ fn paint_theme_chooser(
                     crate::theme_catalog::ThemeOrigin::User => "User theme",
                 }
             };
-            text(cr, status, lay.theme_text.0, label_y + 26.0, lay.theme_text.1, 16.0, style.muted);
+            text(cr, status, lay.theme_text.0, label_y + chooser_label_line(cr), lay.theme_text.1, TYPE_CAPTION, style.muted);
         }
         Some(_) => {
             text(
@@ -1803,7 +1809,7 @@ fn paint_theme_chooser(
                 lay.theme_text.0,
                 lay.theme_top + 22.0,
                 lay.theme_text.1,
-                20.0,
+                TYPE_CAPTION,
                 style.muted,
             );
         }
@@ -1814,7 +1820,7 @@ fn paint_theme_chooser(
                 lay.theme_text.0,
                 lay.theme_top + 22.0,
                 lay.theme_text.1,
-                20.0,
+                TYPE_CAPTION,
                 style.muted,
             );
         }
@@ -1833,7 +1839,7 @@ fn paint_theme_chooser(
         lay.backgrounds_heading.0,
         lay.backgrounds_heading.1,
         lay.background_text.1,
-        22.0,
+        TYPE_LABEL,
         style.text,
     );
     // Put acknowledgement next to the row being changed, above the images.
@@ -1853,11 +1859,11 @@ fn paint_theme_chooser(
         let (hx, hy) = lay.backgrounds_heading;
         if (y - hy).abs() < 30.0 {
             let end = x + width;
-            x = x.max(hx + text_advance(cr, &backgrounds_title, 22.0, pango::Weight::Bold) + 16.0);
+            x = x.max(hx + text_advance(cr, &backgrounds_title, TYPE_LABEL, pango::Weight::Bold) + 16.0);
             width = end - x;
         }
         if width >= 80.0 {
-            text(cr, message, x, y, width, 20.0, color);
+            text(cr, message, x, y, width, TYPE_CAPTION, color);
         }
     }
     match view.preview.as_ref() {
@@ -1909,7 +1915,7 @@ fn paint_theme_chooser(
                 lay.background_text.0,
                 label_y,
                 lay.background_text.1,
-                24.0,
+                TYPE_LABEL,
                 style.text,
             );
             let status = if view.applying_background_index() == Some(centered) {
@@ -1925,9 +1931,9 @@ fn paint_theme_chooser(
                 cr,
                 status,
                 lay.background_text.0,
-                label_y + 26.0,
+                label_y + chooser_label_line(cr),
                 lay.background_text.1,
-                16.0,
+                TYPE_CAPTION,
                 if background.kind == BackgroundKind::Video {
                     style.error
                 } else {
@@ -1942,7 +1948,7 @@ fn paint_theme_chooser(
                 lay.background_text.0,
                 lay.background_top + 22.0,
                 lay.background_text.1,
-                20.0,
+                TYPE_CAPTION,
                 style.muted,
             );
         }
@@ -1953,7 +1959,7 @@ fn paint_theme_chooser(
                 lay.background_text.0,
                 lay.background_top + 22.0,
                 lay.background_text.1,
-                20.0,
+                TYPE_CAPTION,
                 style.muted,
             );
         }
@@ -1974,11 +1980,11 @@ fn paint_theme_chooser(
     let message_y = lay.message_y;
     let (mx, mw) = lay.background_text;
     if let Some(error) = &view.error {
-        text(cr, error, mx, message_y, mw, 17.0, style.error);
+        text(cr, error, mx, message_y, mw, TYPE_CAPTION, style.error);
     } else if view.pending.is_some() {
-        text(cr, "Preparing…", mx, message_y, mw, 18.0, style.muted);
+        text(cr, "Preparing…", mx, message_y, mw, TYPE_CAPTION, style.muted);
     } else if let Some(message) = &view.message {
-        text(cr, message, mx, message_y, mw, 17.0, style.muted);
+        text(cr, message, mx, message_y, mw, TYPE_CAPTION, style.muted);
     }
 }
 
@@ -2374,7 +2380,8 @@ fn wifi_content_bottom(view: &WifiPublic) -> f64 {
 fn theme_chooser_content_bottom(view: &ThemeView) -> f64 {
     match view.page {
         ThemePage::List => {
-            BACKGROUND_CAROUSEL_TOP + theme_carousel::BACKGROUND_GEOMETRY.expanded_h + 100.0
+            let lay = crate::theme_ui::chooser_layout(568, 1232);
+            lay.message_y + (TYPE_CAPTION * crate::layout_text_scale() * crate::layout_theme_font() * 1.25).ceil() + 16.0
         }
         // Only the portrait sheet is content-sized (`settings_panel_h`), and
         // there the Vision cards stack whatever the exact width.
@@ -2982,6 +2989,12 @@ fn paint_settings_header(cr: &Context, theme: Option<&AppearanceSnapshot>, style
 
 /// The theme chooser's and Vision page's Back and Close links, inside
 /// `theme_ui::chooser_header_bands`; returns the header line's bottom.
+/// The distance from a carousel card's name line to its status line,
+/// matching `theme_ui::carousel_label_h`.
+fn chooser_label_line(cr: &Context) -> f64 {
+    (context_font_size(cr, TYPE_LABEL) * 1.25).ceil() + 2.0
+}
+
 fn paint_chooser_header(cr: &Context, style: VisualStyle, w: f64, h: f64) -> f64 {
     let lay = crate::theme_ui::chooser_layout(w as u32, h as u32);
     let (_, back_right, close_left) = crate::theme_ui::chooser_header_bands(w as u32, h as u32);
@@ -5693,9 +5706,9 @@ fn picker_row_clip(mask: u8, width: u32, height: u32, view: Option<&ThemeView>) 
     }
     let top = if mask & 1 != 0 { lay.theme_top - 4.0 } else { lay.background_top - 4.0 };
     let bottom = if mask & 2 != 0 {
-        lay.background_top + lay.background_geometry.expanded_h + 60.0
+        lay.background_top + lay.background_geometry.expanded_h + crate::theme_ui::carousel_label_h() + 4.0
     } else {
-        lay.theme_top + lay.theme_geometry.expanded_h + 60.0
+        lay.theme_top + lay.theme_geometry.expanded_h + crate::theme_ui::carousel_label_h() + 4.0
     };
     (top.floor(), bottom.ceil())
 }
@@ -8124,7 +8137,8 @@ mod tests {
             renderer.set_theme_view(view.clone());
             renderer.draw(&mut pixels, params, &[]).unwrap();
         }
-        let rest: Vec<(i32, i32)> = [theme_carousel::THEME_GEOMETRY, theme_carousel::BACKGROUND_GEOMETRY]
+        let lay = crate::theme_ui::chooser_layout(568, 1232);
+        let rest: Vec<(i32, i32)> = [lay.theme_geometry, lay.background_geometry]
             .iter()
             .flat_map(|g| [(g.expanded_w, g.expanded_h), (g.slice_w, g.slice_h)])
             .map(|(w, h)| (w.round() as i32, h.round() as i32))
@@ -8334,7 +8348,7 @@ mod tests {
         };
         renderer.set_theme_view(view.clone());
         let expected = theme_picker_working_set(Some(&view), 568, 1232);
-        assert_eq!(expected.len(), 24); // five hero slices + seven background slices
+        assert_eq!(expected.len(), 28); // seven hero slices + seven background slices
         assert_eq!(expected[0].id, "theme-20");
         assert_eq!(expected[2].id, "background-20"); // both centers claim first queue slots
         let mut admitted = Vec::new();

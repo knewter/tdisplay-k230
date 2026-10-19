@@ -4537,6 +4537,10 @@ impl ShellClient {
             self.log("invalid-geometry");
             return false;
         };
+        // A new text step resizes the chooser's carousels.
+        if chooser_layout(self.width, self.height).theme_geometry != self.theme_carousel.geometry() {
+            self.sync_carousel_geometry();
+        }
         let tracing = runtime_trace::active();
         if tracing {
             self.trace_frame += 1;

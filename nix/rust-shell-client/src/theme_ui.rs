@@ -419,23 +419,10 @@ pub enum ThemeIntent {
     Vision(VisionToggle),
 }
 
-/// Top of the theme carousel band (below the "Themes" heading/subtext).
-/// Task: tap-to-apply (2026-09-25) put the active theme's own background
-/// carousel on this same page, below this one, so this moved up from the
-/// old single-carousel page's own `204.0` to leave the extra room a
-/// second carousel plus its own labels need within the fixed 1232-tall
-/// panel (board evidence still outstanding for this exact layout -- see
-/// this task's own evidence doc).
+/// The highest the portrait theme carousel band starts (below the
+/// "Themes" heading and its hint); `chooser_layout` moves it down when
+/// those lines need more room.
 pub const THEME_CAROUSEL_TOP: f64 = 132.0;
-/// Top of the background carousel band, directly below the theme
-/// carousel's own name label and origin caption (`paint_theme_chooser`'s
-/// own fixed layout: a 12px gap, a 24px name line, a 26px-offset 16px
-/// status line, a 16px gap, a 22px "Backgrounds" heading, then an 8px
-/// gap -- `100.0` total). Both carousels live on the one chooser page
-/// now; there is no longer a separate page transition between them.
-pub const BACKGROUND_CAROUSEL_TOP: f64 =
-    THEME_CAROUSEL_TOP + crate::theme_carousel::THEME_GEOMETRY.expanded_h + 100.0;
-
 /// Where the theme chooser's pieces sit. The portrait panel and the HDMI
 /// outputs keep the stacked layout (the theme carousel over the backgrounds
 /// carousel); the landscape panel (`help::wide`) puts them side by side, each
@@ -490,8 +477,18 @@ pub struct Grid {
     pub gap: f64,
 }
 
-/// Height of the name line under each grid card.
-pub const GRID_LABEL_H: f64 = 26.0;
+/// Height of the name (up to two Caption lines, under a 5 px gap) under
+/// each grid card.
+pub fn grid_label_h() -> f64 {
+    5.0 + 2.0 * chooser_lines().1 + 3.0
+}
+
+/// The narrowest grid card whose name still reads: about five Caption
+/// characters a line. Narrower, the wide chooser uses its carousels.
+fn grid_min_card_w() -> f64 {
+    let s = crate::layout_text_scale().max(1.0) * crate::layout_theme_font();
+    4.5 * crate::render::TYPE_CAPTION * s
+}
 
 impl Grid {
     /// The largest cards of aspect `h_per_w` that fit `count` of them in
@@ -503,7 +500,7 @@ impl Grid {
         for cols in 1..=count {
             let rows = count.div_ceil(cols) as f64;
             let by_width = (w - gap * (cols - 1) as f64) / cols as f64;
-            let by_height = ((h - gap * (rows - 1.0)) / rows - GRID_LABEL_H) / h_per_w;
+            let by_height = ((h - gap * (rows - 1.0)) / rows - grid_label_h()) / h_per_w;
             let card_w = by_width.min(by_height).min(max_w);
             if card_w > best.1 {
                 best = (cols, card_w);
@@ -525,7 +522,7 @@ impl Grid {
         let (col, row) = ((index % self.cols) as f64, (index / self.cols) as f64);
         (
             self.x + col * (self.card_w + self.gap),
-            self.y + row * (self.card_h + GRID_LABEL_H + self.gap),
+            self.y + row * (self.card_h + grid_label_h() + self.gap),
             self.card_w,
             self.card_h,
         )
@@ -535,7 +532,7 @@ impl Grid {
     pub fn hit(&self, pos: (f64, f64)) -> Option<usize> {
         (0..self.count).find(|&index| {
             let (x, y, w, h) = self.rect(index);
-            pos.0 >= x && pos.0 < x + w && pos.1 >= y && pos.1 < y + h + GRID_LABEL_H
+            pos.0 >= x && pos.0 < x + w && pos.1 >= y && pos.1 < y + h + grid_label_h()
         })
     }
 }
@@ -547,12 +544,21 @@ pub fn chooser_layout_for(width: u32, height: u32, themes: usize, backgrounds: u
     let mut lay = chooser_layout(width, height);
     if lay.wide {
         let h = f64::from(height);
-        let bottom = h - 48.0;
+        lay.message_y = h - chooser_lines().1 - 12.0;
+        let bottom = lay.message_y - 8.0;
         let (tx, tw) = lay.theme_text;
         let (bx, bw) = lay.background_text;
-        lay.theme_grid = (themes > 0).then(|| Grid::fit(themes, (tx, lay.theme_top, tw, bottom - lay.theme_top), 4.0 / 3.0, 240.0));
-        lay.background_grid = (backgrounds > 0).then(|| Grid::fit(backgrounds, (bx, lay.background_top, bw, bottom - lay.background_top), 475.0 / 768.0, 360.0));
-        lay.message_y = h - 34.0;
+        let readable = |grid: Grid| (grid.card_w >= grid_min_card_w()).then_some(grid);
+        let theme_grid = (themes > 0).then(|| Grid::fit(themes, (tx, lay.theme_top, tw, bottom - lay.theme_top), 4.0 / 3.0, 240.0));
+        let background_grid = (backgrounds > 0).then(|| Grid::fit(backgrounds, (bx, lay.background_top, bw, bottom - lay.background_top), 475.0 / 768.0, 360.0));
+        // Both grids or neither: at a large step whose names no longer fit
+        // their cards, the carousels show one name at a time instead.
+        if theme_grid.is_none_or(|g| readable(g).is_some()) && background_grid.is_none_or(|g| readable(g).is_some()) {
+            lay.theme_grid = theme_grid;
+            lay.background_grid = background_grid;
+        } else {
+            lay.message_y = chooser_layout(width, height).message_y;
+        }
     }
     lay
 }
@@ -585,16 +591,59 @@ pub fn chooser_header_bands(width: u32, height: u32) -> (f64, f64, f64) {
     (h, back_right, close_left)
 }
 
+/// The chooser's text lines, from the type roles at the current step and
+/// theme size: `(label, caption)` line heights.
+fn chooser_lines() -> (f64, f64) {
+    let s = crate::layout_text_scale().max(1.0) * crate::layout_theme_font();
+    let line = |size: f64| (size * s * 1.25).ceil();
+    (line(crate::render::TYPE_LABEL), line(crate::render::TYPE_CAPTION))
+}
+
+/// The name (Label) and status (Caption) lines under a centred carousel
+/// card, from the card's bottom edge.
+pub fn carousel_label_h() -> f64 {
+    let (label, caption) = chooser_lines();
+    CAROUSEL_LABEL_GAP + label + 2.0 + caption
+}
+
+const CAROUSEL_LABEL_GAP: f64 = 12.0;
+
+/// `geometry` scaled to `height`, every measure in proportion.
+fn scaled(geometry: crate::theme_carousel::CarouselGeometry, height: f64) -> crate::theme_carousel::CarouselGeometry {
+    let f = (height / geometry.expanded_h).min(1.0);
+    crate::theme_carousel::CarouselGeometry {
+        expanded_w: (geometry.expanded_w * f).round(),
+        expanded_h: (geometry.expanded_h * f).round(),
+        slice_w: (geometry.slice_w * f).round(),
+        slice_h: (geometry.slice_h * f).round(),
+        skew: (geometry.skew * f).round(),
+        spacing: (geometry.spacing * f).round(),
+    }
+}
+
+/// Text sits on the shell's type roles: the "Themes" and "Backgrounds"
+/// headings and each card's name in Label, hints, statuses and the message
+/// line in Caption. The carousels take the height that text leaves, so a
+/// larger step shrinks the cards rather than overlapping them.
 pub fn chooser_layout(width: u32, height: u32) -> ChooserLayout {
     let w = f64::from(width);
+    let (label, caption) = chooser_lines();
+    let label_block = carousel_label_h();
     if width > 0 && height > 0 && crate::help::wide(width, height) {
+        let h = f64::from(height);
         let half = w / 2.0;
-        let top = 100.0;
-        let bg_h = crate::theme_carousel::BACKGROUND_GEOMETRY.expanded_h;
+        let header_y = 14.0;
+        let heading_y = (header_y + label + 1.0).max(48.0);
+        let top = (heading_y + label + 12.0).max(100.0);
+        // Above the bottom message line.
+        let message_y = h - caption - 12.0;
+        let room = message_y - 8.0 - label_block - top;
+        let theme_geometry = scaled(crate::theme_carousel::THEME_GEOMETRY_WIDE, room);
+        let background_geometry = scaled(crate::theme_carousel::BACKGROUND_GEOMETRY, room);
         ChooserLayout {
             wide: true,
-            theme_geometry: crate::theme_carousel::THEME_GEOMETRY_WIDE,
-            background_geometry: crate::theme_carousel::BACKGROUND_GEOMETRY,
+            theme_geometry,
+            background_geometry,
             theme_top: top,
             background_top: top,
             theme_cx: half / 2.0,
@@ -603,40 +652,60 @@ pub fn chooser_layout(width: u32, height: u32) -> ChooserLayout {
             background_cols: (half, w),
             theme_text: (28.0, half - 56.0),
             background_text: (half + 28.0, half - 56.0),
-            header_y: 14.0,
+            header_y,
             header_hit_h: 48.0,
-            themes_heading: (28.0, 48.0),
-            themes_hint: (150.0, 54.0),
-            backgrounds_heading: (half + 28.0, 48.0),
-            feedback: (half + 190.0, 50.0, half - 218.0),
-            message_y: (top + bg_h + 64.0).min(f64::from(height) - 30.0),
+            themes_heading: (28.0, heading_y),
+            themes_hint: (150.0, heading_y + (label - caption) / 2.0),
+            backgrounds_heading: (half + 28.0, heading_y),
+            feedback: (half + 190.0, heading_y + (label - caption) / 2.0, half - 218.0),
+            message_y: (top + background_geometry.expanded_h + label_block + 12.0).min(message_y),
             theme_grid: None,
             background_grid: None,
         }
     } else {
         let center = w / 2.0;
-        let message_y = (BACKGROUND_CAROUSEL_TOP
-            + crate::theme_carousel::BACKGROUND_GEOMETRY.expanded_h
-            + 64.0)
-            .min(f64::from(height) - 30.0);
+        let header_y = 42.0;
+        let heading_y = (header_y + label + 8.0).max(84.0);
+        let hint_y = heading_y + label + 2.0;
+        let theme_top = (hint_y + caption + 12.0).max(THEME_CAROUSEL_TOP);
+        // Under the theme card: its name and status, a gap, then the
+        // "Backgrounds" heading and a gap before the background carousel.
+        let between = label_block + 16.0 + label + 8.0;
+        let tail = label_block + 12.0 + caption + 16.0;
+        let tall = if height > 0 { f64::from(height) } else { 1232.0 };
+        // The cards share what the text leaves: the background carousel
+        // keeps its size while the theme carousel can stay at least 320
+        // tall; below that both shrink in proportion.
+        let (theme, background) = (crate::theme_carousel::THEME_GEOMETRY, crate::theme_carousel::BACKGROUND_GEOMETRY);
+        let room = (tall.min(1232.0) - theme_top - between - tail).max(0.0);
+        let (theme_h, background_h) = if room - background.expanded_h >= 320.0 {
+            (room - background.expanded_h, background.expanded_h)
+        } else {
+            let total = theme.expanded_h + background.expanded_h;
+            (room * theme.expanded_h / total, room * background.expanded_h / total)
+        };
+        let theme_geometry = scaled(theme, theme_h);
+        let background = scaled(background, background_h);
+        let background_top = theme_top + theme_geometry.expanded_h + between;
+        let message_y = background_top + background.expanded_h + label_block + 12.0;
         ChooserLayout {
             wide: false,
-            theme_geometry: crate::theme_carousel::THEME_GEOMETRY,
-            background_geometry: crate::theme_carousel::BACKGROUND_GEOMETRY,
-            theme_top: THEME_CAROUSEL_TOP,
-            background_top: BACKGROUND_CAROUSEL_TOP,
+            theme_geometry,
+            background_geometry: background,
+            theme_top,
+            background_top,
             theme_cx: center,
             background_cx: center,
             theme_cols: (0.0, w),
             background_cols: (0.0, w),
             theme_text: (28.0, w - 56.0),
             background_text: (28.0, w - 56.0),
-            header_y: 42.0,
-            header_hit_h: 104.0,
-            themes_heading: (28.0, 84.0),
-            themes_hint: (28.0, 112.0),
-            backgrounds_heading: (28.0, BACKGROUND_CAROUSEL_TOP - 30.0),
-            feedback: (center, BACKGROUND_CAROUSEL_TOP - 30.0, center - 28.0),
+            header_y,
+            header_hit_h: (header_y + label + 8.0).max(104.0),
+            themes_heading: (28.0, heading_y),
+            themes_hint: (28.0, hint_y),
+            backgrounds_heading: (28.0, background_top - label - 8.0),
+            feedback: (center, background_top - label - 8.0 + (label - caption) / 2.0, center - 28.0),
             message_y,
             theme_grid: None,
             background_grid: None,
@@ -2758,17 +2827,35 @@ mod tests {
     }
 
     #[test]
-    fn the_portrait_chooser_layout_keeps_the_stacked_constants() {
-        for (w, h) in [(568, 1232), (768, 1024), (1080, 1920), (1280, 1024), (0, 0)] {
-            let lay = chooser_layout(w, h);
-            assert!(!lay.wide, "{w}x{h}");
-            assert_eq!(
-                (lay.theme_top, lay.background_top, lay.header_hit_h),
-                (THEME_CAROUSEL_TOP, BACKGROUND_CAROUSEL_TOP, 104.0)
-            );
-            assert_eq!(lay.theme_geometry, crate::theme_carousel::THEME_GEOMETRY);
-            assert_eq!(lay.theme_cx, f64::from(w) / 2.0);
+    fn the_portrait_chooser_layout_stacks_role_text_between_the_carousels() {
+        use crate::render::{TYPE_CAPTION, TYPE_LABEL};
+        for step in [1.0, 1.5, 2.0] {
+            crate::set_layout_text_scale(step);
+            let (label, caption) = ((TYPE_LABEL * step * 1.25).ceil(), (TYPE_CAPTION * step * 1.25).ceil());
+            for (w, h) in [(568, 1232), (768, 1024), (1080, 1920), (1280, 1024), (0, 0)] {
+                let lay = chooser_layout(w, h);
+                assert!(!lay.wide, "{w}x{h}");
+                assert_eq!(lay.theme_cx, f64::from(w) / 2.0);
+                // Heading, hint, carousel, its name and status, the
+                // Backgrounds heading, the background carousel: in order.
+                assert!(lay.header_hit_h >= lay.header_y + label);
+                assert!(lay.themes_hint.1 >= lay.themes_heading.1 + label);
+                assert!(lay.theme_top >= lay.themes_hint.1 + caption && lay.theme_top >= THEME_CAROUSEL_TOP);
+                let theme_bottom = lay.theme_top + lay.theme_geometry.expanded_h + carousel_label_h();
+                assert!(lay.backgrounds_heading.1 >= theme_bottom, "{w}x{h} step {step}");
+                assert!(lay.background_top >= lay.backgrounds_heading.1 + label);
+                let background_bottom = lay.background_top + lay.background_geometry.expanded_h + carousel_label_h();
+                assert!(lay.message_y >= background_bottom, "{w}x{h} step {step}");
+                if h > 0 {
+                    assert!(lay.message_y + caption <= f64::from(h.min(1232)), "{w}x{h} step {step}");
+                }
+                // The theme carousel keeps its 3:4 crop.
+                let g = lay.theme_geometry;
+                assert!((g.expanded_h / g.expanded_w - 4.0 / 3.0).abs() < 0.02);
+            }
         }
+        crate::set_layout_text_scale(1.0);
+        assert!(chooser_layout(568, 1232).theme_geometry.expanded_h >= 500.0, "the hero carousel stays large at 100%");
     }
 
     #[test]
@@ -2783,12 +2870,12 @@ mod tests {
         ] {
             assert!(cx - geometry.expanded_w / 2.0 >= cols.0 && cx + geometry.expanded_w / 2.0 <= cols.1, "{name} centred card in its half");
             assert!(top >= lay.themes_heading.1 + 26.0, "{name} starts below its heading");
-            // The label (12 px gap, 24 px name, 26 px offset 16 px status) ends on the panel.
-            assert!(top + geometry.expanded_h + 12.0 + 26.0 + 16.0 <= 568.0, "{name} label ends at {}", top + geometry.expanded_h + 54.0);
+            // The name and status lines end on the panel.
+            assert!(top + geometry.expanded_h + carousel_label_h() <= 568.0, "{name} label ends at {}", top + geometry.expanded_h + carousel_label_h());
             assert!(text.0 >= cols.0 && text.0 + text.1 <= cols.1, "{name} text inside its half");
         }
         assert!(lay.message_y + 18.0 <= 568.0);
-        assert!(lay.message_y >= lay.background_top + lay.background_geometry.expanded_h + 12.0 + 26.0 + 16.0, "message below the background label");
+        assert!(lay.message_y >= lay.background_top + lay.background_geometry.expanded_h + carousel_label_h(), "message below the background label");
         // Header: back and Close are above both carousels.
         assert!(lay.header_y + 22.0 <= lay.themes_heading.1 && lay.header_hit_h <= lay.theme_top);
     }
@@ -2800,17 +2887,25 @@ mod tests {
                 let view = crate::evidence_render::fixture_theme_view(themes);
                 let backgrounds = view.preview.as_ref().unwrap().backgrounds.len();
                 let lay = view.layout(w, h);
-                let (tg, bg) = (lay.theme_grid.unwrap(), lay.background_grid.unwrap());
+                // Cards too narrow for their names fall back to the carousels.
+                let (Some(tg), Some(bg)) = (lay.theme_grid, lay.background_grid) else {
+                    assert!(lay.theme_grid.is_none() && lay.background_grid.is_none(), "{w}x{h} {themes}: both or neither");
+                    assert!((w, h) == (1232, 568) || themes == 12, "{w}x{h} {themes}: monitors keep the grid");
+                    // The message line is in the background column, under its carousel.
+                    assert!(lay.theme_top + lay.theme_geometry.expanded_h + carousel_label_h() <= f64::from(h));
+                    assert!(lay.background_top + lay.background_geometry.expanded_h + carousel_label_h() <= lay.message_y);
+                    continue;
+                };
                 let (fw, fh) = (f64::from(w), f64::from(h));
                 for (name, grid, count, cols) in [("theme", tg, themes, lay.theme_cols), ("background", bg, backgrounds, lay.background_cols)] {
-                    assert!(grid.card_w >= 80.0, "{w}x{h} {themes}: {name} cards readable: {}", grid.card_w);
+                    assert!(grid.card_w >= grid_min_card_w(), "{w}x{h} {themes}: {name} cards readable: {}", grid.card_w);
                     for i in 0..count {
                         let (x, y, cw, ch) = grid.rect(i);
                         assert!(x >= cols.0 && x + cw <= cols.1 && x + cw <= fw, "{w}x{h} {name} {i} inside its column");
-                        assert!(y >= lay.theme_top && y + ch + GRID_LABEL_H <= fh - 48.0 + 1e-9, "{w}x{h} {themes}: {name} {i} label above the message line");
+                        assert!(y >= lay.theme_top && y + ch + grid_label_h() <= lay.message_y + 1e-9, "{w}x{h} {themes}: {name} {i} label above the message line");
                         for j in 0..i {
                             let (ox, oy, ow, oh) = grid.rect(j);
-                            assert!(x >= ox + ow || ox >= x + cw || y >= oy + oh + GRID_LABEL_H || oy >= y + ch + GRID_LABEL_H, "{name} {i} overlaps {j}");
+                            assert!(x >= ox + ow || ox >= x + cw || y >= oy + oh + grid_label_h() || oy >= y + ch + grid_label_h(), "{name} {i} overlaps {j}");
                         }
                         let centre = (x + cw / 2.0, y + ch / 2.0);
                         let want = if name == "theme" { ThemeIntent::Theme(i) } else { ThemeIntent::Background(i) };

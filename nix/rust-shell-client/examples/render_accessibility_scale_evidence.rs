@@ -8,7 +8,7 @@ use cairo::{Context, Format, ImageSurface};
 use k230_shell_rust::{
     appearance::{AppearanceReceiver, AppearanceSnapshot},
     catalog::AppEntry,
-    evidence_render::{fixture_notification_events, fixture_settings, fixture_wifi},
+    evidence_render::{fixture_notification_events, fixture_settings, fixture_theme_view, fixture_wifi},
     render::{self, RenderParams, RendererCache},
     service_data::NotificationSnapshot,
     service_ui::ServiceView,
@@ -65,11 +65,14 @@ fn render(path: PathBuf, theme: &AppearanceSnapshot, vision: &VisionChoice, w: u
         ..ServiceView::default()
     });
     let route = match page {
-        "settings" | "vision" | "wifi-list" | "wifi-entry" | "wifi-saved" | "wifi-connecting" | "wifi-forget" => Route::Settings,
+        "settings" | "vision" | "themes" | "wifi-list" | "wifi-entry" | "wifi-saved" | "wifi-connecting" | "wifi-forget" => Route::Settings,
         "shade" => Route::Shade,
         "help" => Route::Help,
         _ => Route::Drawer,
     };
+    if page == "themes" {
+        cache.set_theme_view(fixture_theme_view(7));
+    }
     if page == "vision" {
         cache.set_theme_view(ThemeView {
             page: ThemePage::Vision,
@@ -208,7 +211,7 @@ fn main() {
             contrast: if name.ends_with("high") { "high" } else { "standard" }.into(),
         };
         for (w, h) in [(568u32, 1232u32), (1232, 568)] {
-            for page in ["settings", "vision", "shade", "drawer", "help", "wifi-list", "wifi-entry", "wifi-saved", "wifi-connecting", "wifi-forget"] {
+            for page in ["settings", "vision", "shade", "drawer", "help", "themes", "wifi-list", "wifi-entry", "wifi-saved", "wifi-connecting", "wifi-forget"] {
                 render(out.join(format!("{name}-{page}-{w}x{h}.png")), &theme, &vision, w, h, page);
             }
             render_home(out.join(format!("{name}-home-{w}x{h}.png")), &theme, w, h);

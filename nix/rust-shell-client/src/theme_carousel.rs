@@ -170,7 +170,7 @@ pub const THEME_GEOMETRY: CarouselGeometry = CarouselGeometry {
 
 /// The Preview page's background carousel: smaller than the Themes hero
 /// because that page already carries a palette row and a screen-crop
-/// preview above it (see `theme_ui::BACKGROUND_CAROUSEL_TOP`'s own doc for
+/// preview above it (see `theme_ui::chooser_layout` for
 /// exactly what's above). Keeps upstream's own landscape aspect (`475/768`
 /// between `expanded_h`/`expanded_w`, same as every other measure here)
 /// rather than fighting for height a portrait crop would need but this
@@ -464,6 +464,10 @@ impl Carousel {
     /// Adopts `geometry` (the output's size changed, so the chooser's
     /// carousels were re-laid out), dropping any touch or motion in flight
     /// and snapping to the nearest item. A no-op when it is already in use.
+    pub fn geometry(&self) -> CarouselGeometry {
+        self.geometry
+    }
+
     pub fn set_geometry(&mut self, geometry: CarouselGeometry) {
         if self.geometry == geometry {
             return;

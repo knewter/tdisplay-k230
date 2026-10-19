@@ -26,6 +26,14 @@ Evidence class: host renders unless a section says otherwise.
   Limits: SSIDs and the single-line status messages still end in "…" when
   too long; at 200% with the keyboard raised the Entry page pans its
   header and network card off the top, by design.
+- `host-themes-steps-568x1232.png`: `<step>-themes-568x1232.png` at 100%,
+  125%, 150% and 200%, half size: the portrait chooser with seven fixture
+  themes. Thumbnails are not decoded in this renderer, so cards show their
+  loading spinners; the text and card sizes are the evidence.
+- `host-themes-1232x568.png`: the landscape chooser at 100% (top) and 200%,
+  half size. With seven themes the grid's cards would be about 94 px wide,
+  too narrow for role-size names, so the panel shows the carousels;
+  monitors keep the grid (unit test).
 
 Limits: no board captures yet (task 3.1). The volume HUD's expanded rows
 are covered by unit tests only; they need streams playing on the board.
