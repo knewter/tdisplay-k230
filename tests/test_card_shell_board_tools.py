@@ -59,15 +59,16 @@ class Fake:
 class SessionTests(unittest.TestCase):
     def test_motion_export_preserves_only_known_stage_and_mode_grammar(self):
         rows = [
+            'K230_CARD_SHELL input-origin run=1 input_id=2 source_ns=1',
             'K230_CARD_SHELL motion-session run=1 motion=reduced',
             'K230_CARD_SHELL motion-stage run=1 input_id=2 stage=scene_damage t_ns=3',
             'K230_CARD_SHELL motion-frame run=1 frame_id=4 stage=frame_done t_ns=5',
             'K230_CARD_SHELL motion-settle run=1 input_id=2 frame_id=4 t_ns=3',
         ]
-        bad = [rows[0]+' secret=private', rows[1].replace('t_ns=3', 't_ns=private'),
-               rows[2].replace('stage=frame_done', 'stage=private'),
-               rows[3].replace('frame_id=4', 'frame_id=-4'),
-               rows[1].replace('input_id=2', 'run=2')]
+        bad = [rows[0]+' secret=private', rows[2].replace('t_ns=3', 't_ns=private'),
+               rows[3].replace('stage=frame_done', 'stage=private'),
+               rows[4].replace('frame_id=4', 'frame_id=-4'),
+               rows[2].replace('input_id=2', 'run=2')]
         self.assertEqual(H.normalized_journal('\n'.join(rows+bad)), '\n'.join(rows)+'\n')
 
     def test_frame_cost_export_accepts_only_complete_numeric_rows(self):

@@ -118,6 +118,12 @@ the blocker on starting them.
   `python3 tests/test_shell_motion.py --case trace-order --case reduced-motion`
   passed. The C producer fixture feeds both actual parsers; this remains
   host proof, not panel motion. Task 2.2 stays open for the board and camera.
+  An initial 17-ID diagnostic probe on the actual landscape board exposed
+  callback dispatch after presentation and coalesced scene updates. The
+  producer/parser were corrected and both exact-source boot bundles built.
+  These short diagnostic captures are not a complete performance or camera
+  acceptance run; measured full/reduced runs and optical correlation remain
+  open.
 
 ## 3. Validation
 

@@ -78,9 +78,10 @@ def normalized_journal(text: str) -> str:
             words = row[len(prefix):].split()
             if len(row) > 2048 or not words:
                 continue
-            if prefix.endswith('SHELL ') and words[0].startswith('motion-'):
+            if prefix.endswith('SHELL ') and (words[0].startswith('motion-') or words[0] == 'input-origin'):
                 event = words.pop(0)
                 grammar = {
+                    'input-origin': {'run': None, 'input_id': None, 'source_ns': None},
                     'motion-session': {'run': None, 'motion': {'full', 'reduced'}},
                     'motion-stage': {'run': None, 'input_id': None, 'stage': {'scene_damage'}, 't_ns': None},
                     'motion-frame': {'run': None, 'frame_id': None, 'stage': {'frame_done'}, 't_ns': None},

@@ -1008,6 +1008,8 @@ def trace_order():
         "K230_CARD_SHELL motion-stage run=7 input_id=1 stage=scene_damage t_ns=1000100",
         "K230_CARD_SHELL motion-frame run=7 frame_id=9 stage=frame_done t_ns=10000100",
     ]).encode()
+    with_origin = rich + b"\nK230_CARD_SHELL input-origin run=7 input_id=1 source_ns=50"
+    assert stage_row(tool.rows_from_log(with_origin), "7:1", "input")["t_ns"] == 50
     enriched = tool.analyze(tool.rows_from_log(rich))["7"]
     assert enriched["stages_unobserved"] == [] and enriched["motion"] == "reduced"
     assert enriched["stage_timings"]["commit_to_frame_done_ms"]["p50"] == 5.0

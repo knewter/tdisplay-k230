@@ -79,7 +79,8 @@ inside the accepted handler, and frame done means the first actual surface
 callback dispatch associated with the output commit. Missing stage chains
 remain incomplete. Release timing waits for the observed settled commit;
 add `--compare-motion` for a log containing one full and one reduced run
-of the same workload. Camera-visible panel movement is separate evidence.
+of the same workload. Presentation timestamps may precede callback dispatch; the signed interval
+is retained. Camera-visible panel movement is separate evidence.
 
 Compositor RSS and CPU are measured directly. Set
 `SWAY_K230_CARD_BENCH_CGROUP=1` only when the operator has placed this compositor

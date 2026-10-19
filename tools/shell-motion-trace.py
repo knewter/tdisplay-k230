@@ -28,6 +28,7 @@ import sys
 SCHEMA = 'shell-motion-trace-v1'
 PREFIX = 'K230_CARD_BENCH '
 MOTION_PREFIX = 'K230_CARD_SHELL motion-'
+ORIGIN_PREFIX = 'K230_CARD_SHELL input-origin '
 STAGES = ('input', 'scene_damage', 'commit', 'frame_done', 'present')
 # Legacy logs contain these stages; new diagnostics add the other two.
 
@@ -130,8 +131,15 @@ def rows_from_log(raw):
     if len(raw) > MAX_BYTES:
         raise InvalidTrace('log exceeds bounded input size')
     rows, inputs, submits, presents, sessions, resources = [], {}, {}, {}, {}, []
-    damage, callbacks, motion, settles = {}, {}, {}, {}
+    damage, callbacks, motion, settles, origins = {}, {}, {}, {}, {}
     for line in raw.decode('utf-8', 'replace').splitlines():
+        if ORIGIN_PREFIX in line:
+            fields = dict(pair.split('=', 1) for pair in line.split(ORIGIN_PREFIX, 1)[1].split() if '=' in pair)
+            key = (fields['run'], fields['input_id'])
+            if key in origins:
+                raise InvalidTrace('duplicate device origin')
+            origins[key] = counter(fields['source_ns'], 'source_ns')
+            continue
         if MOTION_PREFIX in line:
             event, _, payload = line.split(MOTION_PREFIX, 1)[1].partition(' ')
             fields = dict(pair.split('=', 1) for pair in payload.split() if '=' in pair)
@@ -189,7 +197,11 @@ def rows_from_log(raw):
         base = {'v': 1, 'run': run, 'event': 'stage', 'trace_id': trace,
                 'gesture_id': counter(entry['gesture_id'], 'gesture_id'),
                 'kind': entry['kind']}
-        rows.append({**base, 'stage': 'input', 't_ns': counter(entry['t_ns'], 't_ns'), 'presented': 1})
+        dispatch = counter(entry['t_ns'], 't_ns')
+        origin = origins.get((run, input_id), dispatch)
+        if origin > dispatch:
+            raise InvalidTrace('device timestamp follows input dispatch')
+        rows.append({**base, 'stage': 'input', 't_ns': origin, 'presented': 1})
         if (run, input_id) in damage:
             rows.append({**base, 'stage': 'scene_damage', 't_ns': damage[(run, input_id)], 'presented': 1})
         submit = submits.get((run, input_id))
@@ -477,6 +489,7 @@ def main():
     document = {'schema': SCHEMA, 'generated_utc': datetime.now(timezone.utc).isoformat(),
                 'provenance': args.provenance, 'source': (args.trace or args.log).name,
                 'camera_correlation': 'not provided; UNVERIFIED',
+                'input_timestamp': 'device monotonic origin when emitted, otherwise handler dispatch',
                 'blank_frame_limit': 'unpresented output events are counted; camera-visible blank frames remain UNVERIFIED',
                 'runs': report,
                 'failed_budgets': failures(report)}

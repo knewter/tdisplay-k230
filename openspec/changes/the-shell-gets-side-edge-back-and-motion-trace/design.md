@@ -117,3 +117,10 @@ remain signed. The native producer fixture reproduces both this ordering
 and coalesced inputs whose scene update occurs in the next accepted handler.
 The initial probe is not a performance acceptance run: it has only 17 trace
 IDs, missing stages in the first producer, and an intrusive held `grim` capture.
+
+When the existing `input-origin` diagnostic is present, the input stage uses
+its device monotonic timestamp, including dispatch queueing in the latency.
+Legacy logs and synthetic fixtures fall back to handler dispatch. The
+fixed-grammar exporter preserves only numeric origin fields; timestamps
+following their handler dispatch are rejected. The board collection records
+which producer and consumer were used.
