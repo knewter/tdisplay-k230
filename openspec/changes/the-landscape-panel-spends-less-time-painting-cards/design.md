@@ -70,3 +70,13 @@ quality changes invalidate the cache, and landscape client commits always
 invalidate (no new15fps content cap). The original scene-surface/callback
 ownership and8MiB global cache bound are retained. Software-cursor/debug
 frames fall back to the direct path. See copy-only trial evidence for failures.
+
+## Alpha eligibility correction
+
+The sourcef1c70977 board trial recorded zero cache use: Foot suppliesARGB8888,
+which the opaque-only guard rejected. Its small build-CPU difference is not
+attributed to caching. The next cache path retains premultiplied alpha in an
+ARGB8888 intermediate for those buffers, with exact native output comparisons
+before enabling it. XRGB8888/RGB565 sources keep their full-precision path;
+normal-output RGB565-cache eligibility stays unchanged. No wrapper bypass is
+needed: pinned wlroots client buffers forward SHM/data-pointer access.

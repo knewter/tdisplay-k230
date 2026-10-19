@@ -48,7 +48,7 @@ size_t card_scaled_buffer_bytes(void) { return scaled_bytes; }
 struct wlr_buffer *card_scaled_buffer_create_format(struct wlr_buffer *source, int width, int height,
         bool fast, uint32_t target_format) {
     int cpp = target_format == DRM_FORMAT_RGB565 ? 2 :
-        target_format == DRM_FORMAT_XRGB8888 ? 4 : 0;
+        (target_format == DRM_FORMAT_XRGB8888 || target_format == DRM_FORMAT_ARGB8888) ? 4 : 0;
 	if (!cpp || !source || width <= 0 || height <= 0 || width > 4096 || height > 4096)
 		return NULL;
 	size_t stride = ((size_t)width * (size_t)cpp + 3) & ~(size_t)3;
@@ -66,7 +66,7 @@ struct wlr_buffer *card_scaled_buffer_create_format(struct wlr_buffer *source, i
 			&data, &format, &source_stride)) {
 		free(b->pixels); free(b); return NULL;
 	}
-	bool okay = card_scale_opaque(b->pixels, stride, width, height, target_format, data, source_stride,
+	bool okay = card_scale_pixels(b->pixels, stride, width, height, target_format, data, source_stride,
 		source->width, source->height, format, fast);
 	wlr_buffer_end_data_ptr_access(source);
 	if (!okay) { free(b->pixels); free(b); return NULL; }

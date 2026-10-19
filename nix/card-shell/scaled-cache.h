@@ -12,8 +12,8 @@
 bool card_scale_rgb565(void *dst, size_t dst_stride, int dst_width, int dst_height,
 		const void *src, size_t src_stride, int src_width, int src_height, uint32_t src_format,
 		bool fast);
-/* Full-precision opaque cache for logical composition before output rotation. */
-bool card_scale_opaque(void *dst, size_t dst_stride, int dst_width, int dst_height,
+/* Full-precision cache, preserving premultiplied alpha before output rotation. */
+bool card_scale_pixels(void *dst, size_t dst_stride, int dst_width, int dst_height,
         uint32_t dst_format, const void *src, size_t src_stride, int src_width,
         int src_height, uint32_t src_format, bool fast);
 bool card_cache_logical_output(int transform, bool rotate_once,

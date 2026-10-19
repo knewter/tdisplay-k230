@@ -167,3 +167,11 @@ than adding the normal-output15fps thumbnail cap. The existing total8MiB
 cache memory bound remains. Software-cursor/debug fallbacks retain the direct
 path, and cropped scene fragments sample only the visible cached subrectangle.
 This follow-up still requires a new exact-source build and board qualification.
+
+The [cache eligibility trial](candidate-cache-ineligible/README.md) atsource
+`f1c70977` also failed timing budgets. Its cache counters stayed atzero because
+Foot usesARGB8888. The small timing difference is not a cache-gain claim. The
+next version preserves premultiplied alpha in anARGB8888 intermediate rather
+than treating those pixels as opaque. The pixel oracle now passes96 cases
+(three sourceformats, filtering, cropping, rounding, rotation and changed
+sourcecontents); normal-output RGB565 eligibility is retained.

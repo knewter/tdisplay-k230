@@ -65,3 +65,8 @@ repeated scaling while preserving every source commit and the8ms anti-flicker
 window. Native tests cover64 rounded/partial/output-rotation cases across
 XRGB8888/RGB565 sources and three changed frames each. Exact-source build and
 board/live-content/camera/default/archive gates remain open for this follow-up.
+
+Sourcef1c70977 exact build and trial passed native pixel tests but still failed
+board budgets. Cache counters were zero; actual Foot SHM isARGB8888. The next
+source preserves alpha in anARGB8888 cache and passes96 native cached-pixel
+cases. Baseline restored; new build/board/live/camera gates remain open.

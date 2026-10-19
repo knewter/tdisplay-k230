@@ -3,11 +3,11 @@
 #include <limits.h>
 #include <pixman.h>
 
-bool card_scale_opaque(void *dst, size_t dst_stride, int dst_width, int dst_height,
+bool card_scale_pixels(void *dst, size_t dst_stride, int dst_width, int dst_height,
         uint32_t dst_format, const void *src, size_t src_stride, int src_width, int src_height, uint32_t src_format,
 		bool fast) {
 	int cpp = dst_format == DRM_FORMAT_RGB565 ? 2 :
-        dst_format == DRM_FORMAT_XRGB8888 ? 4 : 0;
+        (dst_format == DRM_FORMAT_XRGB8888 || dst_format == DRM_FORMAT_ARGB8888) ? 4 : 0;
     if (!cpp || !dst || !src || dst_width <= 0 || dst_height <= 0 || src_width <= 0 || src_height <= 0 ||
 		(dst_stride & 3) || (src_stride & 3) || dst_stride > INT_MAX || src_stride > INT_MAX ||
 		(size_t)dst_width > SIZE_MAX / (size_t)cpp || dst_stride < (size_t)dst_width * (size_t)cpp ||
@@ -17,12 +17,14 @@ bool card_scale_opaque(void *dst, size_t dst_stride, int dst_width, int dst_heig
 	if (src_format == DRM_FORMAT_XRGB8888)
 		format = PIXMAN_x8r8g8b8;
 	else if (src_format == DRM_FORMAT_RGB565)
-		format = PIXMAN_r5g6b5;
+        format = PIXMAN_r5g6b5;
+    else if (src_format == DRM_FORMAT_ARGB8888 && dst_format == DRM_FORMAT_ARGB8888)
+        format = PIXMAN_a8r8g8b8;
 	else
 		return false;
 	pixman_image_t *source = pixman_image_create_bits(format, src_width, src_height,
 		(uint32_t *)src, (int)src_stride);
-	pixman_image_t *target = pixman_image_create_bits(cpp == 2 ? PIXMAN_r5g6b5 : PIXMAN_x8r8g8b8, dst_width, dst_height,
+	pixman_image_t *target = pixman_image_create_bits(cpp == 2 ? PIXMAN_r5g6b5 : dst_format == DRM_FORMAT_ARGB8888 ? PIXMAN_a8r8g8b8 : PIXMAN_x8r8g8b8, dst_width, dst_height,
 		(uint32_t *)dst, (int)dst_stride);
 	if (!source || !target) {
 		if (source) pixman_image_unref(source);
@@ -47,7 +49,7 @@ bool card_scale_opaque(void *dst, size_t dst_stride, int dst_width, int dst_heig
 bool card_scale_rgb565(void *dst, size_t dst_stride, int dst_width, int dst_height,
         const void *src, size_t src_stride, int src_width, int src_height,
         uint32_t src_format, bool fast) {
-    return card_scale_opaque(dst, dst_stride, dst_width, dst_height,
+    return card_scale_pixels(dst, dst_stride, dst_width, dst_height,
         DRM_FORMAT_RGB565, src, src_stride, src_width, src_height, src_format, fast);
 }
 

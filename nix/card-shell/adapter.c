@@ -1119,7 +1119,9 @@ static bool scaled_mirror(struct mirror *m, struct wlr_scene_buffer *source, dou
 		return false;
 	struct wlr_shm_attributes shm;
 	if (!wlr_buffer_get_shm(source->buffer, &shm) ||
-		(shm.format != DRM_FORMAT_XRGB8888 && shm.format != DRM_FORMAT_RGB565))
+		(shm.format != DRM_FORMAT_XRGB8888 && shm.format != DRM_FORMAT_RGB565 &&
+            !(output->transform != WL_OUTPUT_TRANSFORM_NORMAL &&
+              shm.format == DRM_FORMAT_ARGB8888)))
 		return false;
 	int left = lround(x * scale), top = lround(y * scale);
 	int right = lround((x + source->buffer->width) * scale);
@@ -1134,7 +1136,8 @@ static bool scaled_mirror(struct mirror *m, struct wlr_scene_buffer *source, dou
     }
     /* Keep full precision through rounded-edge blending on rotated panels. */
     uint32_t format = output->transform == WL_OUTPUT_TRANSFORM_NORMAL ?
-        DRM_FORMAT_RGB565 : DRM_FORMAT_XRGB8888;
+        DRM_FORMAT_RGB565 : shm.format == DRM_FORMAT_ARGB8888 ?
+        DRM_FORMAT_ARGB8888 : DRM_FORMAT_XRGB8888;
     bool fast = scene_in_motion();
 	/* Generic for every card, not just video: a small deck thumbnail that is
 	 * not currently shown at full panel size (card_shown_large) is capped
