@@ -43,6 +43,14 @@
   the two columns to keep the taller one short. Renders:
   `docs/evidence/rest-of-text/host-help-{steps,wide}.png`. All test
   targets pass. Wi-Fi, the theme grid and recovery remain.
+  Progress 2026-10-19 (host): the Wi-Fi pages' `wifi_ui::Layout` is now
+  built from the roles at the current step (titles Title or Body, rows and
+  buttons Label, status and detail Caption). Rows, cards and buttons take
+  their heights from those roles; card text wraps; the counter sits inside
+  the password field; with the keyboard raised a too-tall Entry page pans
+  up so its field stays visible. Renders:
+  `docs/evidence/rest-of-text/host-wifi-{100,200}-*.png`. All test targets
+  pass. The theme grid, recovery and the card Overview remain.
 
 ## 3. Board
 

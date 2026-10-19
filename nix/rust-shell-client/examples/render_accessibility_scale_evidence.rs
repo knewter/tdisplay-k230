@@ -8,7 +8,7 @@ use cairo::{Context, Format, ImageSurface};
 use k230_shell_rust::{
     appearance::{AppearanceReceiver, AppearanceSnapshot},
     catalog::AppEntry,
-    evidence_render::{fixture_notification_events, fixture_settings},
+    evidence_render::{fixture_notification_events, fixture_settings, fixture_wifi},
     render::{self, RenderParams, RendererCache},
     service_data::NotificationSnapshot,
     service_ui::ServiceView,
@@ -36,6 +36,21 @@ fn snapshot(root: &PathBuf, sockets: &PathBuf, name: &str, id: &str) -> Appearan
     receiver.active().cloned().expect("generation did not load")
 }
 
+/// The Wi-Fi pages, with the keyboard raised on the password page.
+fn wifi_page(page: &str, wide: bool) -> Option<k230_shell_rust::wifi_ui::WifiPublic> {
+    use k230_shell_rust::wifi_ui::Page;
+    let keyboard = if wide { 240.0 } else { 440.0 };
+    let long = "A Rather Long Network Name For The Neighbours Upstairs";
+    Some(match page {
+        "wifi-list" => fixture_wifi(Page::List, None, false, 0.0, None),
+        "wifi-entry" => fixture_wifi(Page::Entry, Some(long), false, keyboard, Some("Wrong password or the network refused it")),
+        "wifi-saved" => fixture_wifi(Page::Entry, Some("Home Network"), true, 0.0, None),
+        "wifi-connecting" => fixture_wifi(Page::Connecting, Some(long), false, 0.0, Some("Connecting to the network")),
+        "wifi-forget" => fixture_wifi(Page::ForgetConfirm, Some("Home Network"), true, 0.0, None),
+        _ => return None,
+    })
+}
+
 fn render(path: PathBuf, theme: &AppearanceSnapshot, vision: &VisionChoice, w: u32, h: u32, page: &str) {
     let mut cache = RendererCache::default();
     cache.set_appearance(Some(theme.clone()));
@@ -46,10 +61,11 @@ fn render(path: PathBuf, theme: &AppearanceSnapshot, vision: &VisionChoice, w: u
             events: fixture_notification_events(2),
             preview: None,
         }),
+        wifi: wifi_page(page, w > h),
         ..ServiceView::default()
     });
     let route = match page {
-        "settings" | "vision" => Route::Settings,
+        "settings" | "vision" | "wifi-list" | "wifi-entry" | "wifi-saved" | "wifi-connecting" | "wifi-forget" => Route::Settings,
         "shade" => Route::Shade,
         "help" => Route::Help,
         _ => Route::Drawer,
@@ -192,7 +208,7 @@ fn main() {
             contrast: if name.ends_with("high") { "high" } else { "standard" }.into(),
         };
         for (w, h) in [(568u32, 1232u32), (1232, 568)] {
-            for page in ["settings", "vision", "shade", "drawer", "help"] {
+            for page in ["settings", "vision", "shade", "drawer", "help", "wifi-list", "wifi-entry", "wifi-saved", "wifi-connecting", "wifi-forget"] {
                 render(out.join(format!("{name}-{page}-{w}x{h}.png")), &theme, &vision, w, h, page);
             }
             render_home(out.join(format!("{name}-home-{w}x{h}.png")), &theme, w, h);

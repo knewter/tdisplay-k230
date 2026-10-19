@@ -427,6 +427,45 @@ pub fn wrapped_line_count(value: &str, px: f64, width: f64, weight: pango::Weigh
     u32::try_from(layout.line_count()).unwrap_or(1).max(1)
 }
 
+/// The width `value` takes on one line at `px`, measured like
+/// `wrapped_line_count`, for layouts that place text beside other text.
+pub fn measured_text_width(value: &str, px: f64, weight: pango::Weight) -> f64 {
+    let context = pango::prelude::FontMapExt::create_context(&pangocairo::FontMap::default());
+    let layout = pango::Layout::new(&context);
+    let mut font = FontDescription::new();
+    font.set_family(FONT_FAMILY);
+    font.set_absolute_size(px * f64::from(pango::SCALE));
+    font.set_weight(weight);
+    layout.set_font_description(Some(&font));
+    layout.set_text(value);
+    f64::from(layout.pixel_size().0)
+}
+
+/// `text` that wraps onto as many lines as `width` needs instead of
+/// ending in "…", at the same theme- and step-scaled size.
+fn text_wrapped(cr: &Context, value: &str, x: f64, y: f64, width: f64, size: f64, rgb: u32) {
+    wrapped_text(cr, value, x, y, width, context_font_size(cr, size), rgb, pango::Weight::Normal);
+}
+
+/// `value` wrapped onto at most `lines` lines at `px`, the last ending in
+/// "…" if it still does not fit.
+#[allow(clippy::too_many_arguments)]
+fn wrapped_text_lines(cr: &Context, value: &str, x: f64, y: f64, width: f64, px: f64, rgb: u32, lines: i32) {
+    let layout = pangocairo::functions::create_layout(cr);
+    let mut font = FontDescription::new();
+    font.set_family(FONT_FAMILY);
+    font.set_absolute_size(px * f64::from(pango::SCALE));
+    layout.set_font_description(Some(&font));
+    layout.set_text(value);
+    layout.set_width((width.max(1.0) * f64::from(pango::SCALE)) as i32);
+    layout.set_wrap(pango::WrapMode::WordChar);
+    layout.set_height(-lines.max(1));
+    layout.set_ellipsize(EllipsizeMode::End);
+    color(cr, rgb, 1.0);
+    cr.move_to(x, y);
+    pangocairo::functions::show_layout(cr, &layout);
+}
+
 /// `value` wrapped onto as many lines as it needs at `px` (no ellipsis).
 #[allow(clippy::too_many_arguments)]
 fn wrapped_text(cr: &Context, value: &str, x: f64, y: f64, width: f64, px: f64, rgb: u32, weight: pango::Weight) {
@@ -1994,7 +2033,10 @@ fn paint_wifi(
         cr.scale(width / 568.0, height / 1232.0);
     }
     let style = visual_style(theme, "controls");
+    // The Entry page pans its header up with it.
+    let header_pan = if view.page == WifiPage::Entry { lay.entry_pan } else { 0.0 };
     let (bx, by, bw, bs) = lay.back_text;
+    let by = by - header_pan;
     text(
         cr,
         if view.page == WifiPage::List {
@@ -2009,7 +2051,7 @@ fn paint_wifi(
         style.accent,
     );
     let (tx, ty, tw, ts) = lay.title;
-    heading(cr, "Wi-Fi", tx, ty, tw, ts, style.text);
+    heading(cr, "Wi-Fi", tx, ty - header_pan, tw, ts, style.text);
     match view.page {
         WifiPage::Closed => {}
         WifiPage::List => {
@@ -2017,15 +2059,8 @@ fn paint_wifi(
             text(cr, "Refresh", rx, ry, rw, rs, style.accent);
             let (cx, cy, cw, ch) = lay.current_card;
             service_card(cr, theme, "controls", cx, cy, cw, ch, false);
-            text(
-                cr,
-                "Current connection",
-                cx + 18.0,
-                cy + 18.0,
-                470.0,
-                16.0,
-                style.muted,
-            );
+            let (label_dy, name_dy, saved_dy) = lay.current_dy;
+            text_wrapped(cr, crate::wifi_ui::CURRENT_LABEL, cx + 18.0, cy + label_dy, cw - 36.0, TYPE_CAPTION, style.muted);
             text(
                 cr,
                 view.snapshot
@@ -2033,19 +2068,19 @@ fn paint_wifi(
                     .and_then(|s| s.current.as_deref())
                     .unwrap_or("Not connected"),
                 cx + 18.0,
-                cy + 49.0,
-                460.0,
-                24.0,
+                cy + name_dy,
+                cw - 36.0,
+                TYPE_BODY,
                 style.text,
             );
             let saved = view.snapshot.as_ref().map_or(0, |s| s.saved.len());
-            text(
+            text_wrapped(
                 cr,
-                &format!("{saved} saved  ·  tap a network to connect"),
+                &format!("{saved} saved  ·  tap to connect"),
                 cx + 18.0,
-                cy + 85.0,
-                470.0,
-                15.0,
+                cy + saved_dy,
+                cw - 36.0,
+                TYPE_CAPTION,
                 style.muted,
             );
             let (lx, ly, lw, ls) = lay.list_label;
@@ -2055,15 +2090,16 @@ fn paint_wifi(
             cr.rectangle(kx, ky, kw, kh);
             cr.clip();
             let top = lay.list_view.1;
+            let (name_dy, status_dy, chevron_dy) = lay.row_dy;
             if let Some(snapshot) = &view.snapshot {
                 let rows = all_networks(snapshot);
                 for (index, item) in rows.iter().enumerate() {
-                    let y = top + index as f64 * 88.0 - view.scroll;
+                    let y = top + index as f64 * lay.row_pitch - view.scroll;
                     if !(lay.row_cull.0..lay.row_cull.1).contains(&y) {
                         continue;
                     }
-                    service_card(cr, theme, "controls", lay.row_x, y, lay.row_w, 78.0, false);
-                    text(cr, &item.ssid, lay.row_x + 18.0, y + 13.0, lay.row_w - 170.0, 21.0, style.text);
+                    service_card(cr, theme, "controls", lay.row_x, y, lay.row_w, lay.row_h, false);
+                    text(cr, &item.ssid, lay.row_x + 18.0, y + name_dy, lay.row_w - 80.0, TYPE_LABEL, style.text);
                     let status = if snapshot.current.as_ref() == Some(&item.ssid) {
                         "Connected"
                     } else if snapshot.saved.iter().any(|saved| saved.ssid == item.ssid) {
@@ -2075,16 +2111,16 @@ fn paint_wifi(
                             Security::Unsupported => "Unsupported",
                         }
                     };
-                    text(cr, status, lay.row_x + 18.0, y + 45.0, lay.row_w - 90.0, 16.0, style.muted);
-                    text(cr, "›", lay.row_x + lay.row_w - 52.0, y + 22.0, 30.0, 25.0, style.accent);
+                    text(cr, status, lay.row_x + 18.0, y + status_dy, lay.row_w - 80.0, TYPE_CAPTION, style.muted);
+                    text(cr, "›", lay.row_x + lay.row_w - 52.0, y + chevron_dy, 40.0, TYPE_LABEL, style.accent);
                 }
                 if rows.is_empty() && !view.pending {
                     let (ex, ey, ew) = lay.list_empty;
-                    text(cr, "No networks found. Tap Refresh.", ex, ey, ew, 21.0, style.muted);
+                    text_wrapped(cr, "No networks found. Tap Refresh.", ex, ey, ew, TYPE_CAPTION, style.muted);
                 }
             } else {
                 let (ex, ey, ew) = lay.list_empty;
-                text(cr, "Scanning nearby networks…", ex, ey, ew, 21.0, style.muted);
+                text_wrapped(cr, "Scanning nearby networks…", ex, ey, ew, TYPE_CAPTION, style.muted);
             }
             let _ = cr.restore();
         }
@@ -2092,19 +2128,19 @@ fn paint_wifi(
             if let Some(selected) = &view.selected {
                 let (nx, ny, nw, nh) = lay.net_card;
                 service_card(cr, theme, "controls", nx, ny, nw, nh, true);
-                text(cr, &selected.ssid, nx + 18.0, ny + lay.net_name_dy, nw - 50.0, 25.0, style.text);
-                text(
+                text(cr, &selected.ssid, nx + 18.0, ny + lay.net_name_dy, nw - 50.0, TYPE_BODY, style.text);
+                text_wrapped(
                     cr,
                     match selected.security {
                         Security::Open => "Open network · no password needed",
                         Security::Wpa2Psk if view.use_saved => "WPA2-Personal · saved credential",
-                        Security::Wpa2Psk => "WPA2-Personal · password required",
+                        Security::Wpa2Psk => crate::wifi_ui::LONGEST_SECURITY,
                         Security::Unsupported => "Unsupported",
                     },
                     nx + 18.0,
                     ny + lay.net_sub_dy,
                     nw - 50.0,
-                    17.0,
+                    TYPE_CAPTION,
                     style.muted,
                 );
                 if selected.security == Security::Wpa2Psk {
@@ -2117,17 +2153,19 @@ fn paint_wifi(
                         },
                         lay.pw_label.0,
                         lay.pw_label.1,
-                        500.0,
-                        18.0,
+                        nw - 8.0,
+                        TYPE_CAPTION,
                         style.muted,
                     );
                     let (fx, fy, fw, fh) = lay.field;
                     service_card_interaction(cr, theme, "controls", fx, fy, fw, fh, false, false, !view.use_saved);
-                    let mask = "•".repeat(view.password_len.min(22));
+                    // As many dots as fit beside the counter, never an ellipsis.
+                    let fit = (lay.field_text_w / (context_font_size(cr, TYPE_BODY) * 0.62)).floor() as usize;
+                    let mask = "•".repeat(view.password_len.min(22).min(fit));
                     text(
                         cr,
                         if view.use_saved {
-                            "Stored securely; no re-entry needed"
+                            "Stored securely"
                         } else if view.password_visible {
                             "" // Revealed input is painted transiently, outside scene caches.
                         } else if mask.is_empty() {
@@ -2137,12 +2175,12 @@ fn paint_wifi(
                         },
                         fx + 18.0,
                         fy + lay.field_text_dy,
-                        if view.use_saved { 464.0 } else { 410.0 },
-                        25.0,
+                        if view.use_saved { fw - 36.0 } else { lay.field_text_w },
+                        TYPE_BODY,
                         style.text,
                     );
                     if !view.use_saved {
-                        // Eye target is 72x74 reference pixels, above the keyboard.
+                        // Eye target is 72 units wide and the field's height, above the keyboard.
                         let (ex, ey) = lay.eye_center;
                         color(cr, style.accent, 1.0);
                         cr.set_line_width(2.5);
@@ -2156,15 +2194,8 @@ fn paint_wifi(
                             cr.move_to(ex - 18.0, ey + 18.0); cr.line_to(ex + 18.0, ey - 18.0);
                             let _ = cr.stroke();
                         }
-                        text(
-                            cr,
-                            &format!("{} / 63", view.password_len),
-                            lay.counter.0,
-                            lay.counter.1,
-                            75.0,
-                            15.0,
-                            style.muted,
-                        );
+                        let (kx, ky, kw) = lay.counter;
+                        text(cr, &format!("{} / 63", view.password_len), kx, ky, kw, TYPE_CAPTION, style.muted);
                     }
                 }
                 let show_saved_buttons = view
@@ -2175,11 +2206,11 @@ fn paint_wifi(
                     if view.use_saved && selected.security == Security::Wpa2Psk {
                         let (x, y, w, h) = lay.saved_change;
                         service_card(cr, theme, "controls", x, y, w, h, false);
-                        text(cr, "Change password…", x + 18.0, y + 18.0, w - 25.0, 18.0, style.accent);
+                        text_wrapped(cr, crate::wifi_ui::CHANGE_PASSWORD, x + crate::wifi_ui::SAVED_INSET, y + lay.saved_text_dy, w - 2.0 * crate::wifi_ui::SAVED_INSET, TYPE_LABEL, style.accent);
                     }
                     let (x, y, w, h) = lay.saved_forget;
                     service_card(cr, theme, "controls", x, y, w, h, false);
-                    text(cr, "Forget network…", x + 20.0, y + 18.0, w - 35.0, 18.0, style.error);
+                    text_wrapped(cr, crate::wifi_ui::FORGET_NETWORK, x + crate::wifi_ui::SAVED_INSET, y + lay.saved_text_dy, w - 2.0 * crate::wifi_ui::SAVED_INSET, TYPE_LABEL, style.error);
                 }
                 // A rejected password used to sit as a single line of colored
                 // text between the numeric row and the Cancel/Connect
@@ -2192,14 +2223,20 @@ fn paint_wifi(
                         let banner_y = if show_saved_buttons { lay.banner_saved_y } else { lay.banner_unsaved_y };
                         let (bw, bh, mw) = lay.banner;
                         let bx = lay.buttons.0 .0;
-                        let pad = (bh - 64.0) / 2.0;
                         service_card(cr, theme, "controls", bx, banner_y, bw, bh, false);
                         rounded(cr, bx + 0.75, banner_y + 0.75, bw - 1.5, bh - 1.5, 15.25);
                         cr.set_line_width(1.5);
                         color(cr, style.error, 0.85);
                         let _ = cr.stroke();
-                        text(cr, "!", bx + 16.0, banner_y + 17.0 + pad, 30.0, 28.0, style.error);
-                        text(cr, message, bx + 54.0, banner_y + 21.0 + pad, mw, 19.0, style.error);
+                        let label_y = banner_y + (bh - context_font_size(cr, TYPE_LABEL) * 1.25) / 2.0;
+                        let caption_px = context_font_size(cr, TYPE_CAPTION);
+                        let line_h = (caption_px * 1.25).ceil();
+                        // Two lines where the banner has room for them.
+                        let room = ((bh - 12.0) / line_h).floor().max(1.0);
+                        let lines = f64::from(wrapped_line_count(message, caption_px, mw, pango::Weight::Normal)).min(room);
+                        let caption_y = banner_y + (bh - lines * line_h) / 2.0;
+                        text(cr, "!", bx + 16.0, label_y, 30.0, TYPE_LABEL, style.error);
+                        wrapped_text_lines(cr, message, bx + 54.0, caption_y, mw, caption_px, style.error, lines as i32);
                     }
                 }
             }
@@ -2214,61 +2251,40 @@ fn paint_wifi(
             let (cancel, connect) = lay.buttons;
             service_card(cr, theme, "controls", cancel.0, cancel.1, cancel.2, cancel.3, false);
             service_card(cr, theme, "controls", connect.0, connect.1, connect.2, connect.3, true);
-            text(cr, "Cancel", cancel.0 + lay.button_text_dx.0, cancel.1 + lay.button_text_dy, 145.0, 25.0, style.muted);
-            text(cr, "Connect", connect.0 + lay.button_text_dx.1, connect.1 + lay.button_text_dy, 145.0, 25.0, style.accent);
+            let (cancel_dx, connect_dx) = lay.button_text_dx;
+            text(cr, "Cancel", cancel.0 + cancel_dx, cancel.1 + lay.button_text_dy, cancel.2 - cancel_dx, TYPE_LABEL, style.muted);
+            text(cr, "Connect", connect.0 + connect_dx, connect.1 + lay.button_text_dy, connect.2 - connect_dx, TYPE_LABEL, style.accent);
         }
         WifiPage::Connecting => {
             let (x, y, w, h) = lay.connecting_card;
             service_card(cr, theme, "controls", x, y, w, h, true);
-            text(cr, "Connecting…", x + 18.0, y + lay.connecting_title_dy, 460.0, 31.0, style.text);
-            text(
+            text(cr, "Connecting…", x + 18.0, y + lay.connecting_title_dy, w - 36.0, TYPE_BODY, style.text);
+            text_wrapped(
                 cr,
-                "Checking association, then saving for reconnect",
+                crate::wifi_ui::CONNECTING_SUB,
                 x + 18.0,
                 y + lay.connecting_sub_dy,
-                460.0,
-                19.0,
+                w - 36.0,
+                TYPE_CAPTION,
                 style.muted,
             );
             let (cx, cy, cw, ch) = lay.connecting_cancel;
             service_card(cr, theme, "controls", cx, cy, cw, ch, false);
-            text(
-                cr,
-                "Cancel connection",
-                cx + lay.connecting_cancel_text.0,
-                cy + lay.connecting_cancel_text.1,
-                310.0,
-                25.0,
-                style.accent,
-            );
+            let (dx, dy) = lay.connecting_cancel_text;
+            text(cr, "Cancel connection", cx + dx, cy + dy, cw - dx, TYPE_LABEL, style.accent);
         }
         WifiPage::ForgetConfirm => {
             let (x, y, w, h) = lay.forget_card;
             service_card(cr, theme, "controls", x, y, w, h, true);
-            text(
-                cr,
-                "Forget saved network?",
-                x + 18.0,
-                y + lay.forget_title_dy,
-                470.0,
-                27.0,
-                style.text,
-            );
-            text(
-                cr,
-                "It will not reconnect automatically.",
-                x + 18.0,
-                y + lay.forget_sub_dy,
-                470.0,
-                19.0,
-                style.muted,
-            );
+            text_wrapped(cr, crate::wifi_ui::FORGET_TITLE, x + 18.0, y + lay.forget_title_dy, w - 36.0, TYPE_BODY, style.text);
+            text_wrapped(cr, crate::wifi_ui::FORGET_SUB, x + 18.0, y + lay.forget_sub_dy, w - 36.0, TYPE_CAPTION, style.muted);
             let (kx, ky, kw, kh) = lay.forget_keep;
             let (fx, fy, fw, fh) = lay.forget_confirm;
             service_card(cr, theme, "controls", kx, ky, kw, kh, false);
             service_card(cr, theme, "controls", fx, fy, fw, fh, true);
-            text(cr, "Keep", kx + lay.forget_text_dx.0, ky + lay.forget_text_dy, 140.0, 25.0, style.muted);
-            text(cr, "Forget", fx + lay.forget_text_dx.1, fy + lay.forget_text_dy, 140.0, 25.0, style.error);
+            let (keep_dx, forget_dx) = lay.forget_text_dx;
+            text(cr, "Keep", kx + keep_dx, ky + lay.forget_text_dy, kw - keep_dx, TYPE_LABEL, style.muted);
+            text(cr, "Forget", fx + forget_dx, fy + lay.forget_text_dy, fw - forget_dx, TYPE_LABEL, style.error);
         }
     }
     // The Entry page's rejected-password case already got its own elevated
@@ -2295,7 +2311,7 @@ fn paint_wifi(
                 style.error
             };
             if let Some((mx, my)) = at {
-                text(cr, message, mx, my, if lay.wide { 540.0 } else { 506.0 }, 18.0, color);
+                text(cr, message, mx, my, lay.message_w, TYPE_CAPTION, color);
             }
         }
     }
@@ -2341,7 +2357,8 @@ fn wifi_content_bottom(view: &WifiPublic) -> f64 {
     match view.page {
         WifiPage::List => {
             let rows = view.snapshot.as_ref().map_or(0, |s| all_networks(s).len());
-            338.0 + rows as f64 * 88.0 + 24.0
+            let lay = crate::wifi_ui::layout(false, 0.0);
+            lay.list_view.1 + rows as f64 * lay.row_pitch + 24.0
         }
         WifiPage::Entry | WifiPage::Connecting | WifiPage::ForgetConfirm | WifiPage::Closed => {
             f64::MAX
@@ -6636,7 +6653,7 @@ impl RendererCache {
                 }
                 attach_theme_metrics(&cr, self.theme.as_ref());
                 let style = visual_style(self.theme.as_ref(), "controls");
-                text(&cr, preview.as_str(), lay.field.0 + 18.0, lay.field.1 + lay.field_text_dy, 410.0, 25.0, style.text);
+                text(&cr, preview.as_str(), lay.field.0 + 18.0, lay.field.1 + lay.field_text_dy, lay.field_text_w, TYPE_BODY, style.text);
                 drop(cr); surface.flush();
             }
         }

@@ -2062,6 +2062,10 @@ DATA e7d43131d2a871cf09143d8e3b5f304338fc22c66522d8f01e3c753340b1090e docs/evide
 DATA ca4afb3558abc30f43505beae2499dbc7410712f9cbb33abdb76731b942a1cd6 docs/evidence/rest-of-text/host-help-steps.png
 DATA e0bf987dd554a51d571177549278875a59a03f7da38cdf863690d69f124ca427 docs/evidence/rest-of-text/host-help-wide.png
 DATA 84944d451c4c5266e381fbac4b859350e3c50e7b36d9f583f3b2de2ea22c5dea docs/evidence/rest-of-text/host-home-widgets-steps.png
+DATA 358c0360d0755c724e7b8ea13cfbcd5ff9b357ea568f2d408ce9ab40e6a19c0c docs/evidence/rest-of-text/host-wifi-200-568x1232.png
+DATA cb857af450c15fd308bad5d86ef53d3613567cdaed92be693785a423deb9ec81 docs/evidence/rest-of-text/host-wifi-200-1232x568.png
+DATA 98a7b9e654f59fb3559dc9b7a3d08ae0f0868f88f370395428b6c6d991482b5d docs/evidence/rest-of-text/host-wifi-100-568x1232.png
+DATA f570d9f0ef0e038151fbf0d92fd9e9ff26bbce00178beec62fa4d2431c81891e docs/evidence/rest-of-text/host-wifi-100-1232x568.png
 ```
 
 `group:` rows stand for a directory whose members are enumerated by
@@ -3581,3 +3585,7 @@ Command and limits: `docs/evidence/battery-details-widget/host/README.md`.
 | `docs/evidence/rest-of-text/host-help-steps.png` | 326452 | DATA | `ca4afb3558abc30f43505beae2499dbc7410712f9cbb33abdb76731b942a1cd6` |
 | `docs/evidence/rest-of-text/host-help-wide.png` | 448186 | DATA | `e0bf987dd554a51d571177549278875a59a03f7da38cdf863690d69f124ca427` |
 | `docs/evidence/rest-of-text/host-home-widgets-steps.png` | 169349 | DATA | `84944d451c4c5266e381fbac4b859350e3c50e7b36d9f583f3b2de2ea22c5dea` |
+| `docs/evidence/rest-of-text/host-wifi-200-568x1232.png` | 231358 | DATA | `358c0360d0755c724e7b8ea13cfbcd5ff9b357ea568f2d408ce9ab40e6a19c0c` |
+| `docs/evidence/rest-of-text/host-wifi-200-1232x568.png` | 231872 | DATA | `cb857af450c15fd308bad5d86ef53d3613567cdaed92be693785a423deb9ec81` |
+| `docs/evidence/rest-of-text/host-wifi-100-568x1232.png` | 123861 | DATA | `98a7b9e654f59fb3559dc9b7a3d08ae0f0868f88f370395428b6c6d991482b5d` |
+| `docs/evidence/rest-of-text/host-wifi-100-1232x568.png` | 127315 | DATA | `f570d9f0ef0e038151fbf0d92fd9e9ff26bbce00178beec62fa4d2431c81891e` |

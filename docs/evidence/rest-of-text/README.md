@@ -17,6 +17,15 @@ Evidence class: host renders unless a section says otherwise.
 - `host-help-wide.png`: from top, 1232x568 at 125% and 200% (catppuccin
   generations), then `render_responsive_evidence`'s `help-1232x568.png`
   (100%) and `help-1920x1080.png` scaled to 1232 wide.
+- `host-wifi-{100,200}-568x1232.png`: `<step>-wifi-*-568x1232.png` at
+  100% and 200%, half size, left to right: the list, a password entry with
+  the 440 px keyboard raised and a rejection, a saved network, connecting,
+  and the forget confirmation (task 2.2).
+- `host-wifi-{100,200}-1232x568.png`: the same five pages on the landscape
+  panel (240 px keyboard on the entry page), two per row, half size.
+  Limits: SSIDs and the single-line status messages still end in "…" when
+  too long; at 200% with the keyboard raised the Entry page pans its
+  header and network card off the top, by design.
 
 Limits: no board captures yet (task 3.1). The volume HUD's expanded rows
 are covered by unit tests only; they need streams playing on the board.

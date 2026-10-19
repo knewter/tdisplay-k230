@@ -64,9 +64,8 @@ pub struct WifiView {
     pub use_saved: bool,
     pub pending: Option<(u64, Kind)>,
     keyboard_inset: f64,
-    /// Height of the network list's viewport, in the layout's own units
-    /// (814 in the portrait artwork); the landscape panel's list is shorter.
-    list_visible: f64,
+    /// The surface the list scrolls on, for its `layout_for`.
+    surface: (u32, u32),
 }
 impl Default for WifiView {
     fn default() -> Self {
@@ -81,7 +80,7 @@ impl Default for WifiView {
             use_saved: false,
             pending: None,
             keyboard_inset: 0.0,
-            list_visible: 814.0,
+            surface: (568, 1232),
         }
     }
 }
@@ -89,7 +88,7 @@ impl WifiView {
     /// Sizes the list's scroll range to the layout in use for a
     /// `width`x`height` surface (`layout`'s own `list_view`).
     pub fn set_surface(&mut self, width: u32, height: u32) {
-        self.list_visible = layout_for(width, height, 0.0).list_view.3;
+        self.surface = (width, height);
         self.scroll(0.0);
     }
     pub fn public(&self) -> WifiPublic {
@@ -324,8 +323,8 @@ impl WifiView {
             return;
         }
         let count = self.snapshot.as_ref().map_or(0, |s| all_networks(s).len());
-        let visible = self.list_visible;
-        let max = (count as f64 * 88.0 - visible).max(0.0);
+        let lay = layout_for(self.surface.0, self.surface.1, 0.0);
+        let max = (count as f64 * lay.row_pitch - 10.0 - lay.list_view.3).max(0.0);
         self.scroll = (self.scroll + delta).clamp(0.0, max);
     }
 }
@@ -337,8 +336,8 @@ impl WifiView {
 /// Android's `adjustResize`. Shared by `target`'s hit-testing and
 /// `render::paint_wifi`'s drawing so the two can never drift apart.
 pub fn entry_buttons_rect(keyboard_inset: f64) -> (f64, f64) {
-    let bottom = 1208.0 - keyboard_inset;
-    (bottom - 88.0, bottom)
+    let (_, connect) = layout(false, keyboard_inset).buttons;
+    (connect.1, connect.1 + connect.3)
 }
 
 /// `(x, y, width, height)`.
@@ -372,10 +371,12 @@ pub fn layout_scale(width: u32, height: u32) -> (f64, f64) {
 }
 
 /// Every Wi-Fi page rect that is both painted and hit-tested, in one place.
-/// The portrait values are the 568x1232 artwork's own literals (they must
-/// not move: the native render stays byte-identical); the wide values lay
-/// the same pages out in two columns on the short landscape panel. Text
-/// positions are relative to their card so both layouts share the paint code.
+/// Text uses the shell's type roles (`render::TYPE_*`) at the current text
+/// step and theme size, and every card, row and button is sized from those
+/// roles, so text never overlaps or is cut by its card. Portrait values are
+/// in the 568x1232 artwork's units; the wide layout lays the same pages out
+/// in two columns in real pixels. Text positions are relative to their card
+/// so both layouts share the paint code.
 #[derive(Clone, Copy, Debug)]
 pub struct Layout {
     pub wide: bool,
@@ -388,12 +389,19 @@ pub struct Layout {
     pub refresh_hit: Rect,
     // List page.
     pub current_card: Rect,
+    /// The current card's three lines, as offsets from its top.
+    pub current_dy: (f64, f64, f64),
     pub list_label: (f64, f64, f64, f64),
     /// The scrolling list's viewport (clip and tap region both).
     pub list_view: Rect,
     pub list_clip: Rect,
     pub row_x: f64,
     pub row_w: f64,
+    /// A network row's card height, and the pitch from one row to the next.
+    pub row_h: f64,
+    pub row_pitch: f64,
+    /// Name, status and chevron offsets from a row's top.
+    pub row_dy: (f64, f64, f64),
     pub row_cull: (f64, f64),
     pub list_empty: (f64, f64, f64),
     pub list_message: (f64, f64),
@@ -404,11 +412,16 @@ pub struct Layout {
     pub pw_label: (f64, f64),
     pub field: Rect,
     pub field_text_dy: f64,
+    /// Width of the typed (masked) password, left of the counter.
+    pub field_text_w: f64,
     pub eye_hit: Rect,
     pub eye_center: (f64, f64),
-    pub counter: (f64, f64),
+    /// The "n / 63" counter under the field: `(x, y, width)`.
+    pub counter: (f64, f64, f64),
     pub saved_change: Rect,
     pub saved_forget: Rect,
+    /// Text offset inside the saved-network buttons.
+    pub saved_text_dy: f64,
     pub banner_saved_y: f64,
     pub banner_unsaved_y: f64,
     pub banner: (f64, f64, f64),
@@ -431,136 +444,266 @@ pub struct Layout {
     pub forget_text_dx: (f64, f64),
     pub forget_text_dy: f64,
     pub status_message: (f64, f64),
+    /// Width of a one-line status or error message.
+    pub message_w: f64,
+    /// How far the Entry page, header included, has panned up.
+    pub entry_pan: f64,
 }
 
 /// The layout for a real surface: the portrait artwork, or the wide layout
 /// sized to the surface itself (the landscape panel or an HDMI monitor).
 pub fn layout_for(width: u32, height: u32, keyboard_inset: f64) -> Layout {
     if wide(width, height) {
-        wide_layout(f64::from(width), f64::from(height), keyboard_inset)
+        build(f64::from(width), f64::from(height), true, keyboard_inset)
     } else {
         layout(false, keyboard_inset)
-    }
-}
-
-/// Two columns that grow with the surface: the left (status, password)
-/// keeps 520/1184 of the content width, the right (the list and the page's
-/// buttons) takes the rest, and the list runs to the bottom edge. At the
-/// landscape panel's 1232x568 every value is the panel's own literal.
-fn wide_layout(w: f64, h: f64, keyboard_inset: f64) -> Layout {
-    let s = (w - 48.0) / 1184.0;
-    let lw = 520.0 * s;
-    let rx = 24.0 + lw + 56.0 * s;
-    let rw = w - 24.0 - rx;
-    let half = (rw - 16.0) / 2.0;
-    let second = rx + half + 16.0;
-    let list_h = h - 88.0;
-    let bottom = h - 24.0 - keyboard_inset;
-    let top = bottom - 72.0;
-    Layout {
-        wide: true,
-        back_text: (28.0, 14.0, 180.0, 22.0),
-        title: (28.0, 44.0, 360.0, 30.0),
-        back_hit: (200.0, 84.0),
-        refresh_text: (w - 146.0, 22.0, 120.0, 22.0),
-        refresh_hit: (w - 192.0, 0.0, 192.0, 64.0),
-        current_card: (24.0, 92.0, lw, 116.0),
-        list_label: (rx + 4.0, 22.0, rw - 168.0, 19.0),
-        list_view: (rx, 64.0, rw, list_h),
-        list_clip: (rx - 4.0, 64.0, rw + 8.0, list_h),
-        row_x: rx,
-        row_w: rw,
-        row_cull: (64.0 - 88.0, 64.0 + list_h),
-        list_empty: (rx + 22.0, 90.0, rw - 48.0),
-        list_message: (30.0, 224.0),
-        net_card: (24.0, 92.0, lw, 84.0),
-        net_name_dy: 10.0,
-        net_sub_dy: 50.0,
-        pw_label: (28.0, 186.0),
-        field: (24.0, 210.0, lw, 78.0),
-        field_text_dy: 22.0,
-        eye_hit: (lw - 52.0, 210.0, 72.0, 78.0),
-        eye_center: (lw - 16.0, 244.0),
-        counter: (lw - 75.0, 264.0),
-        saved_change: (rx, 92.0, half, 62.0),
-        saved_forget: (second, 92.0, half, 62.0),
-        banner_saved_y: 166.0,
-        banner_unsaved_y: 92.0,
-        banner: (rw, 52.0, rw - 8.0),
-        buttons: ((rx, top, half, 72.0), (second, top, half, 72.0)),
-        button_text_dx: (half / 2.0 - 74.0, half / 2.0 - 74.0),
-        button_text_dy: 22.0,
-        entry_message: (rx + 4.0, top - 34.0),
-        connecting_card: (24.0, 92.0, lw, 170.0),
-        connecting_title_dy: 28.0,
-        connecting_sub_dy: 90.0,
-        connecting_cancel: (rx, 92.0, rw, 100.0),
-        connecting_cancel_text: (rw / 2.0 - 134.0, 34.0),
-        forget_card: (24.0, 92.0, lw, 170.0),
-        forget_title_dy: 28.0,
-        forget_sub_dy: 90.0,
-        forget_keep: (rx, 92.0, half, 100.0),
-        forget_confirm: (second, 92.0, half, 100.0),
-        forget_text_dx: (half / 2.0 - 38.0, half / 2.0 - 42.0),
-        forget_text_dy: 34.0,
-        status_message: (30.0, 282.0),
     }
 }
 
 /// `layout(true, …)` is the wide layout at the landscape panel's own size.
 pub fn layout(wide: bool, keyboard_inset: f64) -> Layout {
     if wide {
-        wide_layout(1232.0, 568.0, keyboard_inset)
+        build(1232.0, 568.0, true, keyboard_inset)
     } else {
-        let (top, _) = entry_buttons_rect(keyboard_inset);
-        Layout {
-            wide,
-            back_text: (28.0, 45.0, 180.0, 23.0),
-            title: (28.0, 105.0, 360.0, 38.0),
-            back_hit: (150.0, 104.0),
-            refresh_text: (420.0, 45.0, 125.0, 22.0),
-            refresh_hit: (418.0, 0.0, 150.0, 104.0),
-            current_card: (24.0, 150.0, 520.0, 116.0),
-            list_label: (28.0, 304.0, 480.0, 19.0),
-            list_view: (24.0, 338.0, 520.0, 814.0),
-            list_clip: (20.0, 338.0, 528.0, 814.0),
-            row_x: 24.0,
-            row_w: 520.0,
-            row_cull: (-88.0, 1152.0),
-            list_empty: (42.0, 370.0, 470.0),
-            list_message: (30.0, 1163.0),
-            net_card: (24.0, 150.0, 520.0, 108.0),
-            net_name_dy: 22.0,
-            net_sub_dy: 64.0,
-            pw_label: (28.0, 281.0),
-            field: (24.0, 310.0, 520.0, 90.0),
-            field_text_dy: 27.0,
-            eye_hit: (468.0, 314.0, 72.0, 74.0),
-            eye_center: (504.0, 350.0),
-            counter: (445.0, 369.0),
-            saved_change: (24.0, 414.0, 250.0, 62.0),
-            saved_forget: (294.0, 414.0, 250.0, 62.0),
-            banner_saved_y: 486.0,
-            banner_unsaved_y: 408.0,
-            banner: (520.0, 64.0, 448.0),
-            buttons: ((24.0, top, 250.0, 88.0), (294.0, top, 250.0, 88.0)),
-            button_text_dx: (66.0, 57.0),
-            button_text_dy: 27.0,
-            entry_message: (30.0, top - 100.0),
-            connecting_card: (24.0, 220.0, 520.0, 210.0),
-            connecting_title_dy: 40.0,
-            connecting_sub_dy: 104.0,
-            connecting_cancel: (24.0, 1010.0, 520.0, 110.0),
-            connecting_cancel_text: (111.0, 37.0),
-            forget_card: (24.0, 230.0, 520.0, 210.0),
-            forget_title_dy: 40.0,
-            forget_sub_dy: 96.0,
-            forget_keep: (24.0, 850.0, 250.0, 110.0),
-            forget_confirm: (294.0, 850.0, 250.0, 110.0),
-            forget_text_dx: (77.0, 66.0),
-            forget_text_dy: 36.0,
-            status_message: (30.0, 480.0),
+        build(568.0, 1232.0, false, keyboard_inset)
+    }
+}
+
+/// Texts the layout measures to size their cards; `render::paint_wifi`
+/// paints these same strings.
+pub const SAVED_LINE: &str = "99 saved  ·  tap to connect";
+pub const CONNECTING_SUB: &str = "Checking association, then saving for reconnect";
+pub const FORGET_SUB: &str = "It will not reconnect automatically.";
+pub const LONGEST_SECURITY: &str = "WPA2-Personal · password required";
+pub const CURRENT_LABEL: &str = "Current connection";
+pub const CHANGE_PASSWORD: &str = "Change password…";
+pub const FORGET_NETWORK: &str = "Forget network…";
+/// The saved-network buttons' text inset, each side.
+pub const SAVED_INSET: f64 = 14.0;
+pub const FORGET_TITLE: &str = "Forget saved network?";
+
+/// The type roles at the current step and theme size, as drawn pixels in
+/// the layout's units, and the height of one line of each.
+struct Roles {
+    title: f64,
+    body: f64,
+    label: f64,
+    caption: f64,
+}
+
+impl Roles {
+    fn current() -> Self {
+        let s = crate::layout_text_scale().max(1.0) * crate::layout_theme_font();
+        Self {
+            title: crate::render::TYPE_TITLE * s,
+            body: crate::render::TYPE_BODY * s,
+            label: crate::render::TYPE_LABEL * s,
+            caption: crate::render::TYPE_CAPTION * s,
         }
+    }
+}
+
+fn line(px: f64) -> f64 {
+    (px * 1.25).ceil()
+}
+
+fn width_of(text: &str, px: f64) -> f64 {
+    crate::render::measured_text_width(text, px, pango::Weight::Normal)
+}
+
+/// Wrapped height, measured a little narrower than painted so hinting can
+/// only leave spare room.
+fn wrapped(text: &str, px: f64, width: f64) -> f64 {
+    f64::from(crate::render::wrapped_line_count(text, px, width - 4.0, pango::Weight::Normal)) * line(px)
+}
+
+/// Portrait stacks every page in one 520-wide column of the 568x1232
+/// artwork; wide keeps status and password on the left (520/1184 of the
+/// content width) and the list and the page's buttons on the right.
+fn build(w: f64, h: f64, wide: bool, keyboard_inset: f64) -> Layout {
+    let r = Roles::current();
+    let (lab, cap, body, title) = (line(r.label), line(r.caption), line(r.body), line(r.title));
+    // The short landscape panel packs the left column tighter, so the
+    // password field stays clear of its 240 px keyboard at 100%.
+    let pad = if wide { 12.0 } else { 16.0 };
+    let (lw, rx, rw) = if wide {
+        let s = (w - 48.0) / 1184.0;
+        let lw = 520.0 * s;
+        let rx = 24.0 + lw + 56.0 * s;
+        (lw, rx, w - 24.0 - rx)
+    } else {
+        (w - 48.0, 24.0, w - 48.0)
+    };
+    // Header: the back link, then the title under it; Refresh at the right.
+    let top_y = if wide { 14.0 } else { 45.0 };
+    let title_y = top_y + lab + if wide { 2.0 } else { 16.0 };
+    let title_size = if wide { crate::render::TYPE_BODY } else { crate::render::TYPE_TITLE };
+    let title_h = if wide { body } else { title };
+    let back_w = width_of("‹ Settings", r.label).max(width_of("‹ Networks", r.label)) + 8.0;
+    let refresh_w = width_of("Refresh", r.label) + 8.0;
+    let refresh_x = w - 24.0 - refresh_w;
+    let content = title_y + title_h + if wide { 4.0 } else { 12.0 };
+
+    // List page.
+    let current_label_h = wrapped(CURRENT_LABEL, r.caption, lw - 36.0);
+    let current_dy = (pad, pad + current_label_h + 2.0, pad + current_label_h + 2.0 + body + 2.0);
+    let current_h = current_dy.2 + wrapped(SAVED_LINE, r.caption, lw - 36.0) + pad;
+    let current_card = (24.0, content, lw, current_h);
+    let (list_label, list_y) = if wide {
+        ((rx + 4.0, top_y + 8.0, (refresh_x - 24.0 - rx).max(80.0), crate::render::TYPE_CAPTION), top_y + lab + 18.0)
+    } else {
+        let y = content + current_h + 22.0;
+        ((28.0, y, rw - 8.0, crate::render::TYPE_CAPTION), y + cap + 12.0)
+    };
+    let (list_bottom, list_message) = if wide {
+        (h - 24.0, (30.0, content + current_h + 16.0))
+    } else {
+        let message_y = h - 24.0 - cap - 12.0;
+        (message_y - 8.0, (30.0, message_y))
+    };
+    let list_h = (list_bottom - list_y).max(0.0);
+    let row_h = (14.0 + lab + 2.0 + cap + 14.0).max(78.0);
+    let row_pitch = row_h + 10.0;
+
+    // Entry page.
+    let sub_h = wrapped(LONGEST_SECURITY, r.caption, lw - 50.0);
+    let net_card = (24.0, content, lw, pad + body + 4.0 + sub_h + pad);
+    let pw_label = (28.0, content + net_card.3 + if wide { 6.0 } else { 14.0 });
+    let field_h = (body + 40.0).max(if wide { 78.0 } else { 90.0 });
+    let field = (24.0, pw_label.1 + cap + if wide { 2.0 } else { 6.0 }, lw, field_h);
+    // The "n / 63" counter sits inside the field, left of the eye.
+    let eye_x = 24.0 + lw - 76.0;
+    let counter_w = width_of("63 / 63", r.caption) + 8.0;
+    let counter = (eye_x - counter_w, field.1 + (field_h - cap) / 2.0, counter_w);
+    let below_field = field.1 + field_h + 14.0;
+    let gap = if wide { 16.0 } else { 20.0 };
+    let half = (rw - gap) / 2.0;
+    let second = rx + half + gap;
+    let saved_w = if wide { half } else { rw } - 2.0 * SAVED_INSET;
+    let saved_lines = wrapped(CHANGE_PASSWORD, r.label, saved_w).max(wrapped(FORGET_NETWORK, r.label, saved_w));
+    let saved_h = (saved_lines + 28.0).max(62.0);
+    let saved_top = if wide { content } else { below_field };
+    // Wide: Change password and Forget side by side; portrait stacks them
+    // full width so neither label is shortened.
+    let (saved_change, saved_forget) = if wide {
+        ((rx, saved_top, half, saved_h), (second, saved_top, half, saved_h))
+    } else {
+        ((rx, saved_top, rw, saved_h), (rx, saved_top + saved_h + 12.0, rw, saved_h))
+    };
+    // Portrait has room for a two-line rejection message; the landscape
+    // panel's right column, above its keyboard, for one.
+    let banner_h = if wide { (cap + 18.0).max(52.0) } else { (2.0 * cap + 30.0).max(64.0) };
+    let banner_saved_y = saved_forget.1 + saved_h + 12.0;
+    let button_h = (lab + if wide { 32.0 } else { 44.0 }).max(if wide { 72.0 } else { 88.0 });
+    let bottom = h - 24.0 - keyboard_inset;
+    let top = bottom - button_h;
+    let banner_unsaved_y = if wide { top - banner_h - 12.0 } else { below_field };
+    // An Entry page too tall for what the keyboard and buttons leave pans
+    // up, header included (Android's adjustPan), so the field -- and in
+    // portrait the error banner under it -- stays visible. Portrait only
+    // needs it with the keyboard raised; at large steps the landscape
+    // panel's left column needs it without.
+    let pan = if keyboard_inset <= 0.0 && !wide {
+        0.0
+    } else {
+        let (needed, limit) = if wide {
+            (field.1 + field_h, h - keyboard_inset - 8.0)
+        } else {
+            (banner_unsaved_y + banner_h, top - 12.0)
+        };
+        (needed - limit).max(0.0)
+    };
+    let up = |rect: Rect| (rect.0, rect.1 - pan, rect.2, rect.3);
+    let (net_card, field) = (up(net_card), up(field));
+    let pw_label = (pw_label.0, pw_label.1 - pan);
+    let counter = (counter.0, counter.1 - pan, counter.2);
+    let (saved_change, saved_forget, banner_saved_y, banner_unsaved_y) = if wide {
+        (saved_change, saved_forget, banner_saved_y, banner_unsaved_y)
+    } else {
+        (up(saved_change), up(saved_forget), banner_saved_y - pan, banner_unsaved_y - pan)
+    };
+    let centred = |label: &str, width: f64| ((width - width_of(label, r.label)) / 2.0).max(12.0);
+
+    // Connecting and Forget pages.
+    let card_pad = 28.0;
+    let connecting_sub_dy = card_pad + body + 14.0;
+    let connecting_card = (
+        24.0,
+        if wide { content } else { 220.0 },
+        lw,
+        connecting_sub_dy + wrapped(CONNECTING_SUB, r.caption, lw - 36.0) + card_pad,
+    );
+    let action_h = (lab + 50.0).max(if wide { 100.0 } else { 110.0 });
+    let connecting_cancel = if wide {
+        (rx, content, rw, action_h)
+    } else {
+        // Above where Cancel/Connect sit with no keyboard raised.
+        (24.0, h - 112.0 - action_h, rw, action_h)
+    };
+    let forget_sub_dy = card_pad + wrapped(FORGET_TITLE, r.body, lw - 36.0) + 14.0;
+    let forget_card = (
+        24.0,
+        if wide { content } else { 230.0 },
+        lw,
+        forget_sub_dy + wrapped(FORGET_SUB, r.caption, lw - 36.0) + card_pad,
+    );
+    let forget_y = if wide { content } else { (forget_card.1 + forget_card.3 + 40.0).max(850.0) };
+    let card_bottom = |card: Rect| card.1 + card.3 + 16.0;
+    Layout {
+        wide,
+        back_text: (28.0, top_y, back_w, crate::render::TYPE_LABEL),
+        title: (28.0, title_y, (refresh_x - 40.0).max(200.0), title_size),
+        back_hit: ((28.0 + back_w + 24.0).max(150.0), title_y),
+        refresh_text: (refresh_x, top_y + if wide { 8.0 } else { 0.0 }, refresh_w, crate::render::TYPE_LABEL),
+        refresh_hit: (refresh_x - 46.0, 0.0, w - refresh_x + 46.0, list_y.min(title_y + title_h)),
+        current_card,
+        current_dy,
+        list_label,
+        list_view: (rx, list_y, rw, list_h),
+        list_clip: (rx - 4.0, list_y, rw + 8.0, list_h),
+        row_x: rx,
+        row_w: rw,
+        row_h,
+        row_pitch,
+        row_dy: (14.0, 14.0 + lab + 2.0, (row_h - lab) / 2.0),
+        row_cull: (list_y - row_pitch, list_y + list_h),
+        list_empty: (rx + 18.0, list_y + 26.0, rw - 36.0),
+        list_message,
+        net_card,
+        net_name_dy: pad,
+        net_sub_dy: pad + body + 4.0,
+        pw_label,
+        field,
+        field_text_dy: (field_h - body) / 2.0,
+        field_text_w: counter.0 - 24.0 - 18.0 - 8.0,
+        eye_hit: (eye_x, field.1, 72.0, field_h),
+        eye_center: (24.0 + lw - 40.0, field.1 + field_h / 2.0),
+        counter,
+        saved_change,
+        saved_forget,
+        saved_text_dy: (saved_h - saved_lines) / 2.0,
+        banner_saved_y,
+        banner_unsaved_y,
+        banner: (rw, banner_h, rw - 72.0),
+        buttons: ((rx, top, half, button_h), (second, top, half, button_h)),
+        button_text_dx: (centred("Cancel", half), centred("Connect", half)),
+        button_text_dy: (button_h - lab) / 2.0,
+        entry_message: (rx + 4.0, top - cap - 10.0),
+        connecting_card,
+        connecting_title_dy: card_pad,
+        connecting_sub_dy,
+        connecting_cancel,
+        connecting_cancel_text: (centred("Cancel connection", connecting_cancel.2), (action_h - lab) / 2.0),
+        forget_card,
+        forget_title_dy: card_pad,
+        forget_sub_dy,
+        forget_keep: (rx, forget_y, half, action_h),
+        forget_confirm: (second, forget_y, half, action_h),
+        forget_text_dx: (centred("Keep", half), centred("Forget", half)),
+        forget_text_dy: (action_h - lab) / 2.0,
+        status_message: (30.0, card_bottom(connecting_card).max(card_bottom(forget_card))),
+        entry_pan: pan,
+        message_w: if wide { lw } else { rw },
     }
 }
 
@@ -679,7 +822,8 @@ pub fn hit(
 }
 
 fn target(view: &WifiPublic, lay: &Layout, x: f64, y: f64) -> Option<Intent> {
-    if y < lay.back_hit.1 && x < lay.back_hit.0 {
+    let header_pan = if view.page == Page::Entry { lay.entry_pan } else { 0.0 };
+    if y < lay.back_hit.1 - header_pan && x < lay.back_hit.0 {
         return Some(Intent::Back);
     }
     if view.page == Page::List {
@@ -687,7 +831,7 @@ fn target(view: &WifiPublic, lay: &Layout, x: f64, y: f64) -> Option<Intent> {
             return Some(Intent::Refresh);
         }
         if contains(lay.list_view, x, y) {
-            let index = ((y - lay.list_view.1 + view.scroll) / 88.0).floor() as usize;
+            let index = ((y - lay.list_view.1 + view.scroll) / lay.row_pitch).floor() as usize;
             let count = view.snapshot.as_ref().map_or(0, |s| all_networks(s).len());
             return (index < count).then_some(Intent::Select(index));
         }
@@ -872,7 +1016,8 @@ mod tests {
         let mut view = WifiView::default();
         view.page = Page::List;
         view.snapshot = Some(snapshot());
-        let point = (250.0 * 390.0 / 568.0, 370.0 * 844.0 / 1232.0);
+        let lay = layout(false, 0.0);
+        let point = (250.0 * 390.0 / 568.0, (lay.list_view.1 + lay.row_h / 2.0) * 844.0 / 1232.0);
         assert!(matches!(
             hit(&view.public(), point, point, 390, 844),
             Some(Intent::Select(0))
@@ -1090,11 +1235,45 @@ mod tests {
     }
 
     #[test]
+    fn wifi_cards_grow_with_the_text_step_and_never_overlap() {
+        use crate::render::{TYPE_CAPTION, TYPE_LABEL};
+        for step in [1.0, 1.5, 2.0] {
+            crate::set_layout_text_scale(step);
+            for wide in [false, true] {
+                let lay = layout(wide, 0.0);
+                // A row holds its name and status lines.
+                assert!(lay.row_h >= (TYPE_LABEL + TYPE_CAPTION) * step * 1.25 + 28.0, "step {step} wide {wide}");
+                assert!(lay.row_dy.1 >= lay.row_dy.0 + TYPE_LABEL * step * 1.25);
+                // The current card sits under the title; the list under both.
+                assert!(lay.current_card.1 >= lay.title.1 + lay.title.3 * step);
+                if !wide {
+                    assert!(lay.list_view.1 >= lay.current_card.1 + lay.current_card.3);
+                    // Entry: the network card, field and saved buttons stack.
+                    assert!(lay.field.1 >= lay.net_card.1 + lay.net_card.3);
+                    assert!(lay.saved_change.1 >= lay.field.1 + lay.field.3);
+                    assert!(lay.counter.0 + lay.counter.2 <= lay.eye_hit.0);
+                    disjoint(&[("change", lay.saved_change), ("forget", lay.saved_forget), ("cancel", lay.buttons.0), ("connect", lay.buttons.1)]);
+                }
+                for (name, h, size) in [
+                    ("button", lay.buttons.0 .3, TYPE_LABEL),
+                    ("saved", lay.saved_change.3, TYPE_LABEL),
+                    ("keep", lay.forget_keep.3, TYPE_LABEL),
+                    ("abort", lay.connecting_cancel.3, TYPE_LABEL),
+                ] {
+                    assert!(h >= size * step * 1.25 + 24.0, "{name} at step {step} wide {wide}");
+                }
+            }
+        }
+        crate::set_layout_text_scale(1.0);
+    }
+
+    #[test]
     fn the_portrait_wifi_layout_keeps_the_artworks_literals() {
         assert!(!wide(568, 1232) && !wide(1080, 1920) && !wide(1280, 1024));
         let lay = layout(false, 0.0);
         assert_eq!(lay.buttons, ((24.0, 1120.0, 250.0, 88.0), (294.0, 1120.0, 250.0, 88.0)));
-        assert_eq!(lay.list_view, (24.0, 338.0, 520.0, 814.0));
+        assert_eq!((lay.list_view.0, lay.list_view.2), (24.0, 520.0));
+        assert!(lay.list_view.1 + lay.list_view.3 <= lay.list_message.1);
         assert_eq!(layout(false, 440.0).buttons.0 .1, entry_buttons_rect(440.0).0);
         assert_eq!(layout_scale(568, 1232), (1.0, 1.0));
     }
@@ -1121,7 +1300,7 @@ mod tests {
         let rows = all_networks(view.snapshot.as_ref().unwrap()).len();
         let mut reachable = 0;
         for index in 0..rows {
-            let card = (lay.row_x, lay.list_view.1 + index as f64 * 88.0, lay.row_w, 78.0);
+            let card = (lay.row_x, lay.list_view.1 + index as f64 * lay.row_pitch, lay.row_w, lay.row_h);
             if card.1 + card.3 > lay.list_view.1 + lay.list_view.3 {
                 continue;
             }
@@ -1129,18 +1308,18 @@ mod tests {
             assert_eq!(tap(&view, centre(card)), Some(Intent::Select(index)), "row {index}");
             reachable += 1;
         }
-        assert!(reachable >= 5, "several networks reachable without scrolling: {reachable}");
+        assert!(reachable >= 4, "several networks reachable without scrolling: {reachable}");
         // The rest are reached by scrolling the list: a vertical drag inside it.
         let drag = hit(&view, (900.0, 400.0), (900.0, 300.0), 1232, 568);
         assert_eq!(drag, Some(Intent::Scroll(100.0)));
         let mut state = WifiView { snapshot: view.snapshot.clone(), page: Page::List, ..WifiView::default() };
         state.set_surface(1232, 568);
         state.scroll(10_000.0);
-        let last_top = lay.list_view.1 + (rows - 1) as f64 * 88.0 - state.scroll;
-        assert!(last_top + 78.0 <= lay.list_view.1 + lay.list_view.3 + 1.0, "the last row scrolls fully into view");
+        let last_top = lay.list_view.1 + (rows - 1) as f64 * lay.row_pitch - state.scroll;
+        assert!(last_top + lay.row_h <= lay.list_view.1 + lay.list_view.3 + 1.0, "the last row scrolls fully into view");
         let scrolled = WifiPublic { scroll: state.scroll, ..view.clone() };
         assert_eq!(
-            tap(&scrolled, (900.0, last_top + 39.0)),
+            tap(&scrolled, (900.0, last_top + lay.row_h / 2.0)),
             Some(Intent::Select(rows - 1)),
             "tap on the last row after scrolling"
         );
@@ -1197,14 +1376,13 @@ mod tests {
 
     #[test]
     fn the_wide_wifi_layout_keeps_the_panel_literals_and_fills_a_monitor() {
-        // The landscape panel's board-proven numbers are unchanged.
+        // The landscape panel keeps its columns and button row.
         let panel = layout_for(1232, 568, 0.0);
-        assert_eq!(panel.current_card, (24.0, 92.0, 520.0, 116.0));
-        assert_eq!(panel.list_view, (600.0, 64.0, 608.0, 480.0));
+        assert_eq!((panel.current_card.0, panel.current_card.2), (24.0, 520.0));
+        assert_eq!((panel.list_view.0, panel.list_view.2), (600.0, 608.0));
         assert_eq!(panel.buttons, ((600.0, 472.0, 296.0, 72.0), (912.0, 472.0, 296.0, 72.0)));
-        assert_eq!((panel.refresh_text.0, panel.eye_hit.0, panel.counter.0), (1086.0, 468.0, 445.0));
-        assert_eq!((panel.banner, panel.button_text_dx, panel.forget_text_dx), ((608.0, 52.0, 600.0), (74.0, 74.0), (110.0, 106.0)));
-        assert_eq!(panel.connecting_cancel_text.0, 170.0);
+        assert_eq!(panel.banner.0, 608.0);
+        assert!(panel.refresh_text.0 + panel.refresh_text.2 <= 1208.0 + 1e-9);
         // A monitor: two columns across the whole width, the list to the
         // bottom edge, every control on the surface and reachable.
         for (w, h) in [(1280u32, 800u32), (1920, 1080), (1280, 720)] {
@@ -1226,8 +1404,11 @@ mod tests {
             assert!(lay.eye_hit.0 + lay.eye_hit.2 <= lay.field.0 + lay.field.2 + 1e-9, "{w}x{h} eye inside the field");
             let list = fixture(Page::List, None, false, 0.0);
             let rows = all_networks(list.snapshot.as_ref().unwrap()).len();
-            let last = (lay.row_x + lay.row_w / 2.0, lay.list_view.1 + (rows - 1) as f64 * 88.0 + 39.0);
-            assert!(last.1 < lay.list_view.1 + lay.list_view.3, "{w}x{h}: every fixture network fits without scrolling");
+            let last = (lay.row_x + lay.row_w / 2.0, lay.list_view.1 + (rows - 1) as f64 * lay.row_pitch + lay.row_h / 2.0);
+            // Scrolled just far enough, the last network taps at its centre.
+            let scroll = (last.1 + lay.row_h / 2.0 - lay.list_view.1 - lay.list_view.3).max(0.0);
+            let last = (last.0, last.1 - scroll);
+            let list = WifiPublic { scroll, ..list };
             assert_eq!(hit(&list, last, last, w, h), Some(Intent::Select(rows - 1)), "{w}x{h} last row");
             let entry = fixture(Page::Entry, Some(LONG), false, 0.0);
             assert_eq!(hit(&entry, centre(connect), centre(connect), w, h), Some(Intent::Connect), "{w}x{h}");
