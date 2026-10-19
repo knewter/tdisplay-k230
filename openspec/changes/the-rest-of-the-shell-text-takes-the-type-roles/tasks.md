@@ -1,9 +1,13 @@
 ## 1. Home
 
-- [ ] 1.1 Home app and folder labels in the Caption role, with cells sized to
-  hold them at each step and persisted layouts reflowed. Verify with `cargo
-  test --offline --manifest-path nix/rust-shell-client/Cargo.toml --tests`
-  (updating `home-*.png` baselines deliberately). Host class.
+- [x] 1.1 Home app and folder labels in the Caption role across the cell,
+  with a smaller plate where the cell is too short; columns, pages and saved
+  layouts unchanged. Verify with `cargo test --offline --manifest-path
+  nix/rust-shell-client/Cargo.toml --tests` (updating `home-*.png`
+  baselines deliberately). Host class.
+  Done 2026-10-19 (host): all test targets pass; `home_grid::content_in`
+  serves Home tiles and folder members, and the `home-*.png` baselines under
+  `docs/evidence/shell-responsive/` were updated deliberately.
 - [ ] 1.2 Battery and Weather widget captions on the Caption role with its
   floor at a Home-sized cell. Host renders at four steps in both
   orientations. Host class.

@@ -3694,10 +3694,21 @@ fn app_by_id<'a>(apps: &'a [AppEntry], id: &str) -> Option<&'a AppEntry> {
 /// doc comment): a soft dark shadow pass behind the themed label text, not
 /// just the plain themed color alone.
 fn shadowed_label(cr: &Context, value: &str, x: f64, y: f64, width: f64, size: f64, rgb: u32) {
+    shadowed_label_px(cr, value, x, y, width, context_font_size(cr, size), rgb);
+}
+
+/// An app or folder name under its icon: the Caption role at the current
+/// step, but never taller than the cell leaves room for.
+fn icon_label(cr: &Context, value: &str, content: &home_grid::TileContent, rgb: u32) {
+    let px = context_font_size(cr, TYPE_CAPTION).min(content.label_room / 1.3).max(TYPE_CAPTION);
+    shadowed_label_px(cr, value, content.label_x, content.label_y, content.label_w, px, rgb);
+}
+
+fn shadowed_label_px(cr: &Context, value: &str, x: f64, y: f64, width: f64, px: f64, rgb: u32) {
     let layout = pangocairo::functions::create_layout(cr);
     let mut font = FontDescription::new();
     font.set_family(FONT_FAMILY);
-    font.set_absolute_size(context_font_size(cr, size) * f64::from(pango::SCALE));
+    font.set_absolute_size(px * f64::from(pango::SCALE));
     font.set_weight(pango::Weight::Medium);
     layout.set_font_description(Some(&font));
     layout.set_text(value);
@@ -4920,12 +4931,11 @@ fn paint_open_folder(
         if Some(id.as_str()) == dragged_from_this_folder {
             continue;
         }
-        let (x, y, w, _h) = home_grid::folder_app_rect_inset(width, height, index, home.keyboard_inset);
-        let plate_size = w.min(home_grid::ICON_PLATE_SIZE);
-        let plate_x = x + (w - plate_size) / 2.0;
+        let content = home_grid::content_in(home_grid::folder_app_rect_inset(width, height, index, home.keyboard_inset));
         if let Some(app) = app_by_id(apps, id) {
-            paint_icon_plate(cr, theme, icons, app, plate_x, y, plate_size, plate_size * 0.72, false);
-            shadowed_label(cr, &app.name, x, y + plate_size + 6.0, w, 14.0, brush_rgb(theme, "launcher", "text", style.text));
+            paint_icon_plate(cr, theme, icons, app, content.plate_x, content.plate_y, content.plate_size,
+                content.icon_size, false);
+            icon_label(cr, &app.name, &content, brush_rgb(theme, "launcher", "text", style.text));
         }
     }
 }
@@ -5134,19 +5144,11 @@ pub fn paint_home(
                     content.plate_x,
                     content.plate_y,
                     content.plate_size,
-                    home_grid::ICON_SIZE,
+                    content.icon_size,
                     pressed == Some(this_slot),
                 );
                 if let Some(label) = label {
-                    shadowed_label(
-                        cr,
-                        &label,
-                        content.plate_x,
-                        content.label_y,
-                        content.plate_size,
-                        15.0,
-                        brush_rgb(theme, "launcher", "text", style.text),
-                    );
+                    icon_label(cr, &label, &content, brush_rgb(theme, "launcher", "text", style.text));
                 }
                 if home.rearranging {
                     paint_remove_badge(cr, theme, (content.plate_x, content.plate_y));
@@ -5284,7 +5286,7 @@ pub fn paint_home(
                     plate_x,
                     plate_y + plate_size + visual_inset(cr, 8.0),
                     plate_size,
-                    15.0,
+                    TYPE_CAPTION,
                     brush_rgb(theme, "launcher", "text", style.text),
                 );
             }

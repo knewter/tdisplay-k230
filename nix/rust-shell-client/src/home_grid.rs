@@ -69,9 +69,9 @@ pub const ICON_SIZE: f64 = 80.0;
 /// "squircle" tile is visible even for icons with transparent edges.
 const ICON_PLATE_PAD: f64 = 14.0;
 pub const ICON_PLATE_SIZE: f64 = ICON_SIZE + ICON_PLATE_PAD * 2.0;
-/// Height reserved for one line of the (bold, ellipsized) name label below
-/// a grid icon's plate.
-const LABEL_HEIGHT: f64 = 20.0;
+/// Height reserved for one line of the name label below a grid icon's
+/// plate: the 26 px Caption role at 100%, with its line spacing.
+pub const LABEL_HEIGHT: f64 = crate::render::TYPE_CAPTION * 1.3;
 /// Gap between an icon's plate and its label.
 const ICON_LABEL_GAP: f64 = 8.0;
 
@@ -245,23 +245,45 @@ pub fn spanned_tile_rect(width: u32, height: u32, top_left: usize, span: (usize,
 /// tile cell is taller than an icon+label needs (see this module's top
 /// comment), and top-pinning it is exactly what made the first cut's icons
 /// read as "crammed at the top" of an otherwise-empty page.
+///
+/// A cell too short for the full plate above a Caption-role label (the
+/// landscape panel's compact rows) gets a smaller plate rather than a
+/// smaller label. The label spans the whole cell width.
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct TileContent {
     pub plate_x: f64,
     pub plate_y: f64,
     pub plate_size: f64,
+    pub icon_size: f64,
+    pub label_x: f64,
     pub label_y: f64,
+    pub label_w: f64,
+    /// Height from `label_y` to the cell's bottom: the most one label line
+    /// may take at a larger text step.
+    pub label_room: f64,
 }
 
 pub fn tile_content(width: u32, height: u32, slot: usize, columns: usize) -> TileContent {
-    let (x, y, w, h) = tile_rect(width, height, slot, columns);
-    let content_h = ICON_PLATE_SIZE + ICON_LABEL_GAP + LABEL_HEIGHT;
+    content_in(tile_rect(width, height, slot, columns))
+}
+
+/// [`TileContent`] for any icon cell (a Home tile or an open folder's
+/// member).
+pub fn content_in(cell: (f64, f64, f64, f64)) -> TileContent {
+    let (x, y, w, h) = cell;
+    let plate = ICON_PLATE_SIZE.min(h - ICON_LABEL_GAP - LABEL_HEIGHT).min(w).max(0.0);
+    let content_h = plate + ICON_LABEL_GAP + LABEL_HEIGHT;
     let top = y + ((h - content_h) / 2.0).max(0.0);
+    let label_y = top + plate + ICON_LABEL_GAP;
     TileContent {
-        plate_x: x + (w - ICON_PLATE_SIZE) / 2.0,
+        plate_x: x + (w - plate) / 2.0,
         plate_y: top,
-        plate_size: ICON_PLATE_SIZE,
-        label_y: top + ICON_PLATE_SIZE + ICON_LABEL_GAP,
+        plate_size: plate,
+        icon_size: plate * ICON_SIZE / ICON_PLATE_SIZE,
+        label_x: x,
+        label_y,
+        label_w: w,
+        label_room: y + h - label_y,
     }
 }
 
@@ -675,10 +697,11 @@ mod tests {
         assert!(!compact(1232) && !compact(1024) && !compact(1080));
         assert!(compact(568));
         assert_eq!(rows_per_page(568), 2, "a 2-row widget fits a landscape page");
-        let content = ICON_PLATE_SIZE + ICON_LABEL_GAP + LABEL_HEIGHT;
         let (_, y0, _, h) = tile_rect(1232, 568, 0, 9);
         let (_, y1, _, _) = tile_rect(1232, 568, 9, 9);
-        assert!(h >= content, "plate and label fit the tile: {h} < {content}");
+        let content = tile_content(1232, 568, 0, 9);
+        assert!(content.plate_size >= 96.0, "a compact cell keeps a finger-sized plate");
+        assert!(content.label_room >= LABEL_HEIGHT, "a Caption-role label fits the tile: {h}");
         assert!(y1 + h <= grid_bottom(568) + 0.001, "the second row clears the dots");
         assert!(y0 >= GRID_TOP);
         assert!(apps_per_page(1232, 568) + dock_slots(1232, 568) <= 24, "page plus dock stays inside the icon cache");
@@ -914,7 +937,8 @@ mod tests {
             );
             assert!(x + w <= 1232.0 && y + h <= 568.0);
             // The tile holds the plate and its label.
-            assert!(h >= ICON_PLATE_SIZE + ICON_LABEL_GAP + LABEL_HEIGHT - 1.0, "member {index} fits its content");
+            let content = content_in((x, y, w, h));
+            assert!(content.plate_size >= 72.0 && content.label_room >= LABEL_HEIGHT, "member {index} fits its content");
             assert_eq!(
                 folder_app_at((x + w / 2.0, y + h / 2.0), 1232, 568, 16, 0.0),
                 Some(index),

@@ -16,8 +16,9 @@ text by hand, well under that floor:
 
 ## What Changes
 
-- Home's grid gets cells that hold an icon and a 26 px label at each text
-  step, migrating persisted page layouts through `HomeLayout::reflow_to`.
+- Home's app and folder labels take the 26 px Caption role across the
+  whole cell; a cell too short for the full icon plate above that label
+  gets a smaller plate. Columns, pages and saved layouts do not change.
 - Widget captions, the Shade's audio and notification rows, the Wi-Fi pages,
   the Help page, the theme grid and the recovery menu move onto the roles.
 - Each surface reflows without clipping, ellipsizing or overlapping its own

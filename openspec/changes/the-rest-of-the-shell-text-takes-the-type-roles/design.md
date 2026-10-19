@@ -8,10 +8,14 @@ shell text rather than ellipsize it.
 
 ## Decisions
 
-- **Home grid.** Size a cell from the plate, a gap and one 26 px label line
-  (two at larger steps) rather than from the plate alone. Fewer columns fit;
-  `home_grid::columns_for_width` and `HomeLayout::reflow_to` already handle a
-  column change. Folder overlays follow the same cell.
+- **Home grid.** Keep the column count and pages: fewer columns would push
+  a 4-wide widget (Clock, Battery details) off the landscape page and out of
+  a 3-column portrait page entirely. Instead the label takes the whole cell
+  width in the Caption role, and a cell too short for the full plate above
+  that label (the landscape panel's compact rows) gets a smaller plate.
+  At a larger step the label grows only as far as the cell leaves room.
+  App names longer than the cell are shortened, as the requirement allows.
+  Open folders use the same cell content.
 - **Widgets.** Captions use the Caption role scaled to the cell, with the
   role's floor at a Home-sized cell, as Battery details already does
   (`BATTERY_TEXT_FLOOR`).
@@ -20,5 +24,6 @@ shell text rather than ellipsize it.
 
 ## Risks
 
-- A Home grid with fewer columns moves a person's icons. The reflow keeps
-  their order; the board check confirms it on a populated layout.
+- The landscape plate shrinks from 108 to about 97 px; it stays above the
+  48 dp tap floor and the cell (the tap target) is unchanged.
+- Long app names ("Terminal", "Settings") are shortened in a narrow cell.

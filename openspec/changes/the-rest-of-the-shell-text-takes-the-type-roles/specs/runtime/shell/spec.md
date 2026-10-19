@@ -14,7 +14,9 @@ all four text steps and in high contrast, in both orientations.
 #### Scenario: Home at 100%
 
 - **WHEN** a person looks at Home at the 100% step
-- **THEN** each app label is at least 26 px tall and sits inside its own cell
+- **THEN** each app label is set at 26 px or more and sits inside its own
+  cell
+- **AND** the page keeps its columns, so a 4-wide widget stays where it was
 
 #### Scenario: The Shade with audio playing
 
