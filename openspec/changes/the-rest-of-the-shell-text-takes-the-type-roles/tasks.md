@@ -41,3 +41,7 @@
   class.
 - [ ] 3.2 The operator's look on glass. Board class; stays open until the
   operator has looked.
+  Progress 2026-10-19: the operator looked at Home (both pages: the Video
+  label, the Clock, Battery details and the Weather card) on glass from
+  the e11757ee closure and said "seems good to me". Help, Wi-Fi, the
+  theme grid, recovery, the volume HUD and the banner still need a look.
