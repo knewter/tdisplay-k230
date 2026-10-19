@@ -993,6 +993,26 @@ def trace_order():
     logged = tool.analyze(tool.rows_from_log(log), tool.LOG_STAGES)["7"]
     assert logged["stages_observed"] == ["input", "commit", "present"], logged
     assert logged["stages_unobserved"] == ["scene_damage", "frame_done"]
+    # An otherwise sufficient old log remains incomplete when stages are absent.
+    legacy = tool.synthetic("legacy", stages=tool.LOG_STAGES)
+    assert tool.analyze(legacy, tool.LOG_STAGES)["legacy"]["status"] == "INCOMPLETE"
+    rich = log + b"\n" + "\n".join([
+        "K230_CARD_SHELL motion-session run=7 motion=reduced",
+        "K230_CARD_SHELL motion-stage run=7 input_id=1 stage=scene_damage t_ns=1000100",
+        "K230_CARD_SHELL motion-frame run=7 frame_id=9 stage=frame_done t_ns=10000100",
+    ]).encode()
+    enriched = tool.analyze(tool.rows_from_log(rich))["7"]
+    assert enriched["stages_unobserved"] == [] and enriched["motion"] == "reduced"
+    assert enriched["stage_timings"]["commit_to_frame_done_ms"]["p50"] == 5.0
+    for changed in (rich.replace(b"frame_id=9 stage=frame_done", b"frame_id=10 stage=frame_done"),
+                    rich.replace(b"source=injected", b"source=physical")):
+        try:
+            tool.analyze(tool.rows_from_log(changed))
+        except tool.InvalidTrace:
+            pass
+        else:
+            raise AssertionError("accepted mismatched output frame or input provenance")
+
     return {"stages": list(tool.STAGES), "budgets": tool.BUDGETS,
             "claim": "host trace schema only; no panel presentation"}
 

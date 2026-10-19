@@ -28,7 +28,7 @@ class EntryTiming(unittest.TestCase):
 #include <stdint.h>
 #include <time.h>
 struct wlr_output { void *backend; uint32_t render_format,commit_seq; };
-struct sway_output { struct wlr_output *wlr_output; int width,height; };
+struct sway_output { struct wlr_output *wlr_output; struct wlr_scene_output *scene_output; int width,height; };
 struct wlr_output_event_present { struct timespec when; unsigned commit_seq; bool presented; };
 ''')
             put('wlr/backend/drm.h','static inline int wlr_backend_is_drm(void *p) { return p != 0; }\n')
@@ -91,23 +91,31 @@ int profile_clock(clockid_t clock, struct timespec *t) {
 }
 int main(void) {
     struct wlr_output w={.backend=(void*)1,.render_format=1,.commit_seq=1};
-    struct sway_output o={.wlr_output=&w,.width=568,.height=1232};
+    struct sway_output o={.wlr_output=&w,.scene_output=(void*)1,.width=568,.height=1232};
     assert(card_bench_arm(&o,"injected",1)); card_bench_phase(true,1);
     card_bench_input_begin(1,"motion",true);
     uint64_t start=card_bench_input_stage_begin(); cpu+=2; card_bench_input_stage_end(CARD_BENCH_POLICY,start);
     start=card_bench_input_stage_begin(); cpu+=3; card_bench_input_stage_end(CARD_BENCH_SCENE,start);
+    card_bench_scene_damage();
     start=card_bench_input_stage_begin(); cpu+=1; card_bench_input_stage_end(CARD_BENCH_CHROME,start);
     cpu+=1; card_bench_input_end(true,false);
     card_bench_work_begin(); cpu+=3; card_bench_work_end();
     card_bench_render_begin(&o); cpu+=2; card_bench_render_stage(&o,CARD_BENCH_BUILD);
     cpu+=5; card_bench_commit_begin(&o); cpu+=3;
     card_bench_render_end(&o,true);
-    card_bench_input_begin(1,"release",true); cpu+=2; card_bench_input_end(true,true);
+    card_bench_frame_done(o.scene_output);
+    card_bench_frame_done(o.scene_output); /* multiple surfaces: one frame event */
+    struct wlr_output_event_present shown={.when={.tv_sec=10,.tv_nsec=1000},.commit_seq=1,.presented=true};
+    card_bench_present(&o,&shown);
+    card_bench_input_begin(1,"release",true); cpu+=2;
+    card_bench_scene_damage(); card_bench_input_end(true,true);
     card_bench_render_begin(&o); cpu+=1; card_bench_render_stage(&o,CARD_BENCH_BUILD);
     cpu+=4; card_bench_render_end(&o,false);
     card_bench_render_begin(&o); cpu+=1; card_bench_render_stage(&o,CARD_BENCH_BUILD);
     cpu+=2; w.commit_seq=2; card_bench_commit_begin(&o); cpu+=3;
     card_bench_render_end(&o,true);
+    card_bench_frame_done(o.scene_output);
+    shown.commit_seq=2; card_bench_present(&o,&shown);
     card_bench_stop();
 }
 ''')
@@ -136,8 +144,19 @@ int main(void) {
             self.assertEqual(tuple(int(costs[1][k]) for k in
                 ('cpu_ns','policy_cpu_ns','scene_cpu_ns','chrome_cpu_ns')),(2,0,0,0))
             rows,ignored=parser.parse_rows(output.encode())
-            self.assertEqual(ignored,6)
+            self.assertEqual(ignored,11)
             self.assertEqual([row['update_cpu_ns'] for row in rows if row['event']=='submit'],[20,13])
+            # Feed the actual C producer output into the motion consumer. The
+            # existing benchmark parser continues accepting its frozen schema.
+            spec=importlib.util.spec_from_file_location('motion_trace',ROOT/'tools/shell-motion-trace.py')
+            motion=importlib.util.module_from_spec(spec);spec.loader.exec_module(motion)
+            motion_rows=motion.rows_from_log(output.encode())
+            measured=next(iter(motion.analyze(motion_rows).values()))
+            self.assertEqual(measured['stages_observed'],list(motion.STAGES))
+            self.assertEqual(measured['incomplete_stage_chains'],0)
+            self.assertEqual(measured['status'],'INCOMPLETE') # deliberately short sample
+            self.assertEqual(len([line for line in output.splitlines() if 'motion-frame' in line]),2)
+
             spec=importlib.util.spec_from_file_location('repaint_profile',ROOT/'docs/evidence/card-shell/repaint-stages/analyze.py')
             repaint=importlib.util.module_from_spec(spec);spec.loader.exec_module(repaint)
             result=repaint.analyze(output.encode())['runs'][0]

@@ -108,6 +108,17 @@ the blocker on starting them.
   blank/missed frames, CPU/RSS, renderer and actual cadence. Record failed
   budgets honestly. Keep open until committed.
 
+  Host progress 2026-10-19: the compositor now emits supplemental scene-update
+  and actual surface-frame-callback timestamps, correlated through existing
+  input and successful output commit IDs. The log consumer preserves the
+  motion mode, rejects provenance/frame mismatches, reports adjacent stage
+  timing distributions, and keeps legacy or partial chains incomplete.
+  `python3 -m unittest tests.test_card_shell_telemetry`,
+  `python3 tools/shell-motion-trace.py --self-test`, and
+  `python3 tests/test_shell_motion.py --case trace-order --case reduced-motion`
+  passed. The C producer fixture feeds both actual parsers; this remains
+  host proof, not panel motion. Task 2.2 stays open for the board and camera.
+
 ## 3. Validation
 
 - [x] 3.1 Validate this change: `openspec validate

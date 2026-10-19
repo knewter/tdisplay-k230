@@ -59,3 +59,31 @@ Implement side Back and ownership arbitration host-side, land host/QEMU
 fixtures, then implement the trace tool and its self-test. Board acceptance
 for both stays open until a reservation is available. No stage 1, kernel, or
 device tree change.
+
+## Motion producer completion (2026-10-19)
+
+Layer: userspace, the Sway compositor and host trace consumer.
+
+- The frozen `K230_CARD_BENCH` event schema stays compatible with the
+  existing acceptance parser. Supplemental `K230_CARD_SHELL motion-*`
+  rows carry the motion mode, scene-update completion, and frame callback.
+- `scene_damage` is stamped at the first successful scene update within
+  an accepted input handler. Its timestamp is emitted with the accepted
+  input ID only after ownership is known; an unconsumed input emits no
+  damage trace. This is scene-graph update completion, not the later
+  output-buffer damage-region calculation.
+- `frame_done` is stamped immediately after the actual surface callback
+  dispatch, in both immediate and delayed Sway paths. It identifies the
+  output's current successful commit sequence. Multiple surfaces on that
+  commit yield one row; a different output is ignored.
+- Missing stages, mismatched frame IDs, or event provenance do not become
+  a pass. The report includes each adjacent stage's measured distribution.
+  A callback that cannot be correlated in the required ordering remains
+  incomplete or invalid; no timestamp is fabricated to fit the schema.
+- Native producer tests feed real C output through both consumers. They
+  are host evidence only. The board measurement, reduced-motion comparison,
+  and camera-visible panel correlation remain task 2.2.
+
+Rejected: adding new events to `K230_CARD_BENCH`, which would break its
+strict existing consumers; labeling render completion as a frame callback;
+and treating a missing scene/callback stage as a successful legacy run.

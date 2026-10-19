@@ -1888,6 +1888,7 @@ static bool sync_scene_impl(void) {
 static bool sync_scene(void) {
 	uint64_t start = card_bench_input_stage_begin();
 	bool ok = sync_scene_impl();
+	if (ok) card_bench_scene_damage();
 	card_bench_input_stage_end(CARD_BENCH_SCENE, start);
 	return ok;
 }

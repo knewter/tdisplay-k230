@@ -6,9 +6,10 @@ A trace follows one accepted touch through its stages:
     input -> scene_damage -> commit -> frame_done -> present
 
 Rows are JSON objects, one per line (schema shell-motion-trace-v1), or the
-K230_CARD_BENCH rows card-shell already emits (--log). The latter carry only
-input, submit (commit) and present, so scene_damage and frame_done are reported
-as unobserved rather than invented.
+K230_CARD_BENCH rows plus K230_CARD_SHELL motion-* diagnostics (--log).
+Older logs carry only input, submit (commit) and present, and remain incomplete.
+Scene damage is the first completed scene update in the accepted input handler;
+frame_done is the first actual surface callback dispatch for its output commit.
 
 --self-test proves the schema and the budget report format on synthetic data;
 it says nothing about panel presentation. --board analyzes an operator-supplied
@@ -26,8 +27,10 @@ import sys
 
 SCHEMA = 'shell-motion-trace-v1'
 PREFIX = 'K230_CARD_BENCH '
+MOTION_PREFIX = 'K230_CARD_SHELL motion-'
 STAGES = ('input', 'scene_damage', 'commit', 'frame_done', 'present')
-# The log adapter can only see these; the rest stay unobserved.
+# Legacy logs contain these stages; new diagnostics add the other two.
+
 LOG_STAGES = ('input', 'commit', 'present')
 # The mode advertises about 52.19 Hz (docs/evidence/card-shell/frame-budget),
 # so one output interval is nominally 19.16 ms; that is an advertised mode,
@@ -124,7 +127,26 @@ def rows_from_log(raw):
     if len(raw) > MAX_BYTES:
         raise InvalidTrace('log exceeds bounded input size')
     rows, inputs, submits, presents, sessions, resources = [], {}, {}, {}, {}, []
+    damage, callbacks, motion = {}, {}, {}
     for line in raw.decode('utf-8', 'replace').splitlines():
+        if MOTION_PREFIX in line:
+            event, _, payload = line.split(MOTION_PREFIX, 1)[1].partition(' ')
+            fields = dict(pair.split('=', 1) for pair in payload.split() if '=' in pair)
+            if event == 'session':
+                if fields.get('motion') not in MOTIONS:
+                    raise InvalidTrace('invalid motion session mode')
+                if fields['run'] in motion:
+                    raise InvalidTrace('duplicate motion session')
+                motion[fields['run']] = fields['motion']
+            elif event in ('stage', 'frame'):
+                table, key_field, stage = (damage, 'input_id', 'scene_damage') if event == 'stage' else (callbacks, 'frame_id', 'frame_done')
+                if fields.get('stage') != stage:
+                    raise InvalidTrace('invalid motion diagnostic stage')
+                key = (fields['run'], fields[key_field])
+                if key in table:
+                    raise InvalidTrace('duplicate motion diagnostic stage')
+                table[key] = counter(fields['t_ns'], 't_ns')
+            continue
         if PREFIX not in line:
             continue
         fields = dict(pair.split('=', 1) for pair in line.split(PREFIX, 1)[1].split() if '=' in pair)
@@ -146,21 +168,27 @@ def rows_from_log(raw):
     for run, session in sessions.items():
         source = session.get('input', 'host')
         rows.append({'v': 1, 'run': run, 'event': 'session', 't_ns': counter(session['t_ns'], 't_ns'),
-                     'clock': 'monotonic', 'motion': 'full',
+                     'clock': 'monotonic', 'motion': motion.get(run, 'full'),
                      'renderer': session.get('renderer', 'pixman'),
                      'input': source if source in SOURCES else 'host'})
     for (run, input_id), entry in inputs.items():
         if run not in sessions:
             continue
+        if entry.get('source') != sessions[run].get('input'):
+            raise InvalidTrace('input provenance differs from session')
         trace = f'{run}:{input_id}'
         base = {'v': 1, 'run': run, 'event': 'stage', 'trace_id': trace,
                 'gesture_id': counter(entry['gesture_id'], 'gesture_id'),
                 'kind': entry['kind']}
         rows.append({**base, 'stage': 'input', 't_ns': counter(entry['t_ns'], 't_ns'), 'presented': 1})
+        if (run, input_id) in damage:
+            rows.append({**base, 'stage': 'scene_damage', 't_ns': damage[(run, input_id)], 'presented': 1})
         submit = submits.get((run, input_id))
         if not submit:
             continue
         rows.append({**base, 'stage': 'commit', 't_ns': counter(submit['t_ns'], 't_ns'), 'presented': 1})
+        if (run, submit['frame_id']) in callbacks:
+            rows.append({**base, 'stage': 'frame_done', 't_ns': callbacks[(run, submit['frame_id'])], 'presented': 1})
         present = presents.get((run, submit['frame_id']))
         if present:
             rows.append({**base, 'stage': 'present', 't_ns': counter(present['t_ns'], 't_ns'),
@@ -221,9 +249,15 @@ def analyze_run(run, rows, require=STAGES):
     check_chain(traces, require)
     observed = [stage for stage in STAGES if any(r['stage'] == stage for rs in traces.values() for r in rs)]
     latencies, presented_at, blank, unresolved = [], [], 0, 0
+    incomplete_chains = 0
+    stage_latencies = {f"{a}_to_{b}_ms": [] for a, b in zip(STAGES, STAGES[1:])}
     settle = []
     for trace_id, stage_rows in traces.items():
         by_stage = {row['stage']: row for row in stage_rows}
+        incomplete_chains += any(stage not in by_stage for stage in STAGES)
+        for a, b in zip(STAGES, STAGES[1:]):
+            if a in by_stage and b in by_stage:
+                stage_latencies[f'{a}_to_{b}_ms'].append((by_stage[b]['t_ns'] - by_stage[a]['t_ns']) / 1e6)
         entry = by_stage['input']
         shown = by_stage.get('present')
         if not shown:
@@ -252,6 +286,7 @@ def analyze_run(run, rows, require=STAGES):
         'input_to_present_ms': metric(latencies, BUDGETS['input_to_present_ms'], MIN_TRACES),
         'frame_interval_ms': metric(intervals, BUDGETS['frame_interval_ms'], MIN_INTERVALS),
     }
+    stage_metrics = {name: metric(values, {}, MIN_TRACES) for name, values in stage_latencies.items()}
     blank_fail = [{'limit': 'max', 'measured': blank, 'allowed': 0}] if blank else []
     metrics['blank_frames'] = {'status': 'FAIL' if blank_fail else 'PASS', 'count': blank,
                                'budget': BUDGETS['blank_frames'], 'failed': blank_fail}
@@ -277,12 +312,13 @@ def analyze_run(run, rows, require=STAGES):
     statuses = {m['status'] for m in metrics.values()}
     return {'run': run, 'motion': session['motion'], 'renderer': session['renderer'],
             'input': session['input'], 'traces': len(traces), 'unresolved_traces': unresolved,
+            'incomplete_stage_chains': incomplete_chains, 'stage_timings': stage_metrics,
             'stages_observed': observed,
             'stages_unobserved': [stage for stage in STAGES if stage not in observed],
             'missed_frames': missed, 'actual_cadence_hz': cadence,
             'nominal_cadence_hz': OUTPUT_HZ, 'settle_ms': settle,
             'metrics': metrics, 'resources': resource,
-            'status': 'FAIL' if 'FAIL' in statuses else 'INCOMPLETE' if 'INCOMPLETE' in statuses or unresolved else 'PASS'}
+            'status': 'FAIL' if 'FAIL' in statuses else 'INCOMPLETE' if 'INCOMPLETE' in statuses or unresolved or incomplete_chains else 'PASS'}
 
 
 def analyze(rows, require=STAGES):

@@ -63,10 +63,13 @@
  #include <assert.h>
  #include <stdlib.h>
  #include <strings.h>
-@@ -187,6 +189,7 @@
+@@ -104,0 +108,1 @@
++	card_bench_frame_done(scene_surface->buffer->primary_output);
+@@ -187,6 +189,8 @@
  		wl_event_source_timer_update(timer->frame_done_timer, delay);
  	} else {
  		wlr_scene_surface_send_frame_done(scene_surface, &data->when);
++		card_bench_frame_done(buffer->primary_output);
 +		card_shell_frame(buffer);
  	}
  }

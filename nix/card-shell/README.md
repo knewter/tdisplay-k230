@@ -71,6 +71,14 @@ rendering, timer reconciliation and preparation, with nested work counted once.
 Final release means the visual manipulation settled, including a stable
 Closing card; it does not mean the close handshake completed.
 
+For the motion-stage report, `tools/shell-motion-trace.py --board --log
+CAPTURE --provenance injected --output REPORT` also consumes supplemental
+`K230_CARD_SHELL motion-*` diagnostics. These retain the original benchmark
+schema: scene damage means completion of the first successful scene update
+inside the accepted handler, and frame done means the first actual surface
+callback dispatch associated with the output commit. Missing stage chains
+remain incomplete. Camera-visible panel movement is separate evidence.
+
 Compositor RSS and CPU are measured directly. Set
 `SWAY_K230_CARD_BENCH_CGROUP=1` only when the operator has placed this compositor
 and its test apps in their own cgroup v2 session; this additionally reads actual

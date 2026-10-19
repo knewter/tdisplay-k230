@@ -27,7 +27,9 @@ static struct {
 	bool in_render;
 	enum card_bench_render_stage render_stage;
 	uint64_t stage_cpu_start, stage_cpu[3], render_attempts, failed_attempts;
-	uint64_t submit_time;
+	uint64_t submit_time, input_damage_time;
+	uint32_t frame_done_seq;
+	bool frame_done_seen;
 	uint64_t run, next_input, input_time, input_origin, input_gesture, charged_cpu,
 		last_resource;
 	const char *kind, *source;
@@ -157,6 +159,9 @@ void card_bench_phase(bool active, size_t cards) {
 				 "input=%s cards=%zu",
 				 bench.run, entry, bench.backend, bench.output->width, bench.output->height,
 				 bench.format, bench.input, cards);
+		const char *reduced = getenv("SWAY_K230_CARD_REDUCED_MOTION");
+		sway_log(SWAY_INFO, "K230_CARD_SHELL motion-session run=%" PRIu64 " motion=%s",
+			bench.run, reduced && !strcmp(reduced, "1") ? "reduced" : "full");
 	}
 	if (active)
 		bench.ever_active = true;
@@ -172,6 +177,7 @@ void card_bench_input_begin(uint64_t gesture, const char *kind, bool injected) {
 	card_bench_work_begin();
 	bench.input_time = stamp(CLOCK_MONOTONIC);
 	bench.input_origin = 0;
+	bench.input_damage_time = 0;
 	bench.input_cpu_start = stamp(CLOCK_PROCESS_CPUTIME_ID);
 	memset(bench.input_stage_cpu, 0, sizeof(bench.input_stage_cpu));
 	bench.in_input = true;
@@ -210,12 +216,32 @@ void card_bench_input_end(bool consumed, bool final) {
 			 "K230_CARD_BENCH v=1 run=%" PRIu64 " event=input input_id=%" PRIu64
 			 " gesture_id=%" PRIu64 " kind=%s t_ns=%" PRIu64 " source=%s",
 			 bench.run, id, bench.input_gesture, bench.kind, bench.input_time, bench.source);
+	if (bench.input_damage_time)
+		sway_log(SWAY_INFO, "K230_CARD_SHELL motion-stage run=%" PRIu64
+			" input_id=%" PRIu64 " stage=scene_damage t_ns=%" PRIu64,
+			bench.run, id, bench.input_damage_time);
 	if (bench.count < 1024)
 		bench.pending[bench.count++] = (struct input){id, final};
 	else
 		sway_log(SWAY_ERROR,
 				 "K230_CARD_BENCH v=1 run=%" PRIu64 " event=incomplete reason=input-overflow",
 				 bench.run);
+}
+void card_bench_scene_damage(void) {
+	if (bench.armed && bench.in_input && !bench.input_damage_time)
+		bench.input_damage_time = stamp(CLOCK_MONOTONIC);
+}
+void card_bench_frame_done(struct wlr_scene_output *output) {
+	if (!bench.armed || !bench.output || bench.output->scene_output != output)
+		return;
+	uint32_t frame = bench.output->wlr_output->commit_seq;
+	if (bench.frame_done_seen && bench.frame_done_seq == frame)
+		return;
+	bench.frame_done_seen = true;
+	bench.frame_done_seq = frame;
+	sway_log(SWAY_INFO, "K230_CARD_SHELL motion-frame run=%" PRIu64
+		" frame_id=%u stage=frame_done t_ns=%" PRIu64,
+		bench.run, frame, stamp(CLOCK_MONOTONIC));
 }
 uint64_t card_bench_input_stage_begin(void) {
 	return bench.armed && bench.in_input ? stamp(CLOCK_PROCESS_CPUTIME_ID) : 0;
