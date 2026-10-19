@@ -183,3 +183,8 @@ asXRGB; actual transparency retainsARGB. It relies on pixel contents, not
 format naming or a user background setting. Native tests pass160 cached
 cases, including opaque→transparent→opaque changes, plus the288 guarded
 copy cases. Board acceptance remains open.
+
+The [opaque-cache trial](candidate-opaque-cache/README.md) confirms all cached
+Foot texels are opaque but still fails at26Hz. Its bounded profile selects
+unscaled format conversion next. An [isolated conversion benchmark](conversion-microbenchmark/README.md)
+shows3.4× lower CPU with identical pixels; integrated proof remains open.

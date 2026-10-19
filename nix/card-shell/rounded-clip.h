@@ -8,6 +8,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <pixman.h>
+#include "rgb565-blit.h"
 
 struct k230_round_box { int x, y, width, height; };
 #define K230_ROUND_MAX_RADIUS 256
@@ -69,9 +70,10 @@ static inline pixman_image_t *k230_round_mask_get(struct k230_round_cache *cache
 	*slot = (struct k230_round_mask){radius, alpha, ++cache->clock, data, image};
 	return image;
 }
-static inline void k230_round_part(pixman_op_t op, pixman_image_t *source,
+static inline void k230_round_part_impl(pixman_op_t op, pixman_image_t *source,
 		pixman_image_t *mask, pixman_image_t *dest, int sx, int sy,
-		struct k230_round_box dst, struct k230_round_box part, int mx, int my) {
+		struct k230_round_box dst, struct k230_round_box part, int mx, int my,
+        const pixman_region32_t *clip, bool direct) {
 	int x = dst.x > part.x ? dst.x : part.x;
 	int y = dst.y > part.y ? dst.y : part.y;
 	int right = dst.x + dst.width < part.x + part.width ?
@@ -79,15 +81,19 @@ static inline void k230_round_part(pixman_op_t op, pixman_image_t *source,
 	int bottom = dst.y + dst.height < part.y + part.height ?
 		dst.y + dst.height : part.y + part.height;
 	if (right <= x || bottom <= y) return;
+    if (direct && k230_rgb565_blit(op, source, mask, dest,
+            sx+x-dst.x, sy+y-dst.y, x, y, right-x, bottom-y, clip)) return;
 	pixman_image_composite32(op, source, mask, dest,
 		sx + x - dst.x, sy + y - dst.y,
 		mx + x - part.x, my + y - part.y, x, y, right - x, bottom - y);
 }
-static inline bool k230_round_composite(struct k230_round_cache *cache, pixman_op_t op,
+static inline bool k230_round_composite_impl(struct k230_round_cache *cache, pixman_op_t op,
 		pixman_image_t *source, pixman_image_t *alpha_mask, pixman_image_t *dest,
 		int sx, int sy, struct k230_round_box dst, struct k230_round_box round,
-		int radius, uint16_t alpha) {
+		int radius, uint16_t alpha, const pixman_region32_t *clip, bool direct) {
 	if (round.width <= 0 || round.height <= 0) {
+        if (direct && k230_rgb565_blit(op, source, alpha_mask, dest,
+                sx, sy, dst.x, dst.y, dst.width, dst.height, clip)) return true;
 		pixman_image_composite32(op, source, alpha_mask, dest, sx, sy, 0, 0,
 			dst.x, dst.y, dst.width, dst.height);
 		return true;
@@ -96,7 +102,7 @@ static inline bool k230_round_composite(struct k230_round_cache *cache, pixman_o
 	if (radius > round.height / 2) radius = round.height / 2;
 	if (radius < 0 || radius > K230_ROUND_MAX_RADIUS) return false;
 	if (radius == 0) {
-		k230_round_part(op, source, alpha_mask, dest, sx, sy, dst, round, 0, 0);
+		k230_round_part_impl(op, source, alpha_mask, dest, sx, sy, dst, round, 0, 0, clip, direct);
 		return true;
 	}
 	pixman_image_t *corners = k230_round_mask_get(cache, radius, alpha);
@@ -109,18 +115,33 @@ static inline bool k230_round_composite(struct k230_round_cache *cache, pixman_o
 		round.width - 2 * radius, radius};
 	struct k230_round_box bottom = {top.x, round.y + round.height - radius,
 		top.width, radius};
-	k230_round_part(op, source, alpha_mask, dest, sx, sy, dst, middle, 0, 0);
-	k230_round_part(op, source, alpha_mask, dest, sx, sy, dst, top, 0, 0);
-	k230_round_part(op, source, alpha_mask, dest, sx, sy, dst, bottom, 0, 0);
+	k230_round_part_impl(op, source, alpha_mask, dest, sx, sy, dst, middle, 0, 0, clip, direct);
+	k230_round_part_impl(op, source, alpha_mask, dest, sx, sy, dst, top, 0, 0, clip, direct);
+	k230_round_part_impl(op, source, alpha_mask, dest, sx, sy, dst, bottom, 0, 0, clip, direct);
 	for (int i = 0; i < 4; i++) {
 		struct k230_round_box corner = {
 			round.x + (i & 1 ? round.width - radius : 0),
 			round.y + (i & 2 ? round.height - radius : 0), radius, radius};
 		/* OVER is mandatory here even for an opaque source: coverage must
 		 * preserve the already-rendered wallpaper, including at alpha zero. */
-		k230_round_part(PIXMAN_OP_OVER, source, corners, dest, sx, sy, dst,
-			corner, i * radius, 0);
+		k230_round_part_impl(PIXMAN_OP_OVER, source, corners, dest, sx, sy, dst,
+			corner, i * radius, 0, clip, direct);
 	}
 	return true;
+}
+static inline bool k230_round_composite(struct k230_round_cache *cache, pixman_op_t op,
+        pixman_image_t *source, pixman_image_t *alpha_mask, pixman_image_t *dest,
+        int sx, int sy, struct k230_round_box dst, struct k230_round_box round,
+        int radius, uint16_t alpha) {
+    return k230_round_composite_impl(cache, op, source, alpha_mask, dest,
+        sx, sy, dst, round, radius, alpha, NULL, false);
+}
+/* Only the renderer's untransformed branch may use this entry point. */
+static inline bool k230_round_composite_unscaled(struct k230_round_cache *cache, pixman_op_t op,
+        pixman_image_t *source, pixman_image_t *alpha_mask, pixman_image_t *dest,
+        int sx, int sy, struct k230_round_box dst, struct k230_round_box round,
+        int radius, uint16_t alpha, const pixman_region32_t *clip) {
+    return k230_round_composite_impl(cache, op, source, alpha_mask, dest,
+        sx, sy, dst, round, radius, alpha, clip, true);
 }
 #endif

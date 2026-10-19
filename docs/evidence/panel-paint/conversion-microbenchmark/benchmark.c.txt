@@ -1,0 +1,43 @@
+#define _POSIX_C_SOURCE 200809L
+#include <assert.h>
+#include <stdio.h>
+#include <time.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <sys/mman.h>
+#include <sys/ioctl.h>
+#include <drm.h>
+#include <drm_mode.h>
+#include "rounded-clip.h"
+static uint64_t ns(clockid_t clock){struct timespec t;assert(clock_gettime(clock,&t)==0);return (uint64_t)t.tv_sec*1000000000+t.tv_nsec;}
+static bool __attribute__((noinline)) run(struct k230_round_cache *c,pixman_image_t*d,pixman_image_t*s,int w,int h,bool candidate){
+ struct k230_round_box box={0,0,w,h};
+ if(candidate)return k230_round_composite_unscaled(c,PIXMAN_OP_OVER,s,NULL,d,0,0,box,box,24,65535,NULL);
+ return k230_round_composite(c,PIXMAN_OP_OVER,s,NULL,d,0,0,box,box,24,65535);
+}
+int main(int argc,char**argv){
+ bool dumb=argc==2&&!strcmp(argv[1],"--dumb");int fd=dumb?open("/dev/dri/card0",O_RDWR|O_CLOEXEC):-1;assert(!dumb||fd>=0);
+ int sizes[][2]={{833,376},{1232,568}};
+ for(unsigned size=0;size<2;size++){
+  int w=sizes[size][0],h=sizes[size][1];pixman_image_t*src=pixman_image_create_bits(PIXMAN_x8r8g8b8,w,h,NULL,0);assert(src);
+  uint32_t*p=pixman_image_get_data(src);int ss=pixman_image_get_stride(src)/4;
+  for(int y=0;y<h;y++)for(int x=0;x<w;x++)p[(size_t)y*ss+x]=0xff000000u|((unsigned)(x*109123+y*3911)&0xffffff);
+  struct drm_mode_create_dumb create={.width=(w+1)&~1,.height=h,.bpp=16};void*mapped=NULL;pixman_image_t*dst;
+  if(dumb){assert(ioctl(fd,DRM_IOCTL_MODE_CREATE_DUMB,&create)==0);struct drm_mode_map_dumb map={.handle=create.handle};assert(ioctl(fd,DRM_IOCTL_MODE_MAP_DUMB,&map)==0);mapped=mmap(NULL,create.size,PROT_READ|PROT_WRITE,MAP_SHARED,fd,(off_t)map.offset);assert(mapped!=MAP_FAILED);dst=pixman_image_create_bits_no_clear(PIXMAN_r5g6b5,w,h,mapped,(int)create.pitch);}
+  else dst=pixman_image_create_bits(PIXMAN_r5g6b5,w,h,NULL,0);
+  assert(dst);size_t bytes=(size_t)pixman_image_get_stride(dst)*h;uint8_t*ref=malloc(bytes);assert(ref);struct k230_round_cache caches[2]={0};
+  memset(pixman_image_get_data(dst),0x5a,bytes);assert(run(&caches[0],dst,src,w,h,false));memcpy(ref,pixman_image_get_data(dst),bytes);
+  memset(pixman_image_get_data(dst),0x5a,bytes);assert(run(&caches[1],dst,src,w,h,true));assert(memcmp(ref,pixman_image_get_data(dst),bytes)==0);
+  for(int round=0;round<3;round++)for(int which=0;which<2;which++){
+   bool candidate=(round+which)%2;assert(run(&caches[candidate],dst,src,w,h,candidate));uint64_t wall=ns(CLOCK_MONOTONIC),cpu=ns(CLOCK_PROCESS_CPUTIME_ID);
+   for(int frame=0;frame<12;frame++)assert(run(&caches[candidate],dst,src,w,h,candidate));
+   cpu=ns(CLOCK_PROCESS_CPUTIME_ID)-cpu;wall=ns(CLOCK_MONOTONIC)-wall;
+   printf("K230_BLIT_BENCH memory=%s width=%d height=%d candidate=%d round=%d frames=12 cpu_ns=%llu wall_ns=%llu pixels_equal=1\n",dumb?"dumb":"heap",w,h,candidate,round,(unsigned long long)cpu,(unsigned long long)wall);fflush(stdout);
+  }
+  for(int i=0;i<2;i++)k230_round_cache_finish(&caches[i]);
+  free(ref);pixman_image_unref(src);pixman_image_unref(dst);
+  if(dumb){assert(munmap(mapped,create.size)==0);struct drm_mode_destroy_dumb destroy={.handle=create.handle};assert(ioctl(fd,DRM_IOCTL_MODE_DESTROY_DUMB,&destroy)==0);}
+ }
+ if(fd>=0)close(fd);
+ return 0;
+}

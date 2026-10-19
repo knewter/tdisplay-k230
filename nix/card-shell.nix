@@ -8,6 +8,7 @@ let
       ];
     postPatch = (old.postPatch or "") + ''
       cp ${./card-shell/rounded-clip.h} include/render/k230_rounded_clip.h
+      cp ${./card-shell/rgb565-blit.h} include/render/rgb565-blit.h
     '' + lib.optionalString quarterTurnTrial ''
       cp ${./card-shell/quarter-turn.h} include/render/k230_quarter_turn.h
     '';

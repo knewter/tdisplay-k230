@@ -206,9 +206,9 @@
 -		pixman_image_composite32(op, texture->image, mask, buffer->image,
 -			src_box.x, src_box.y, 0, 0, dst_box.x, dst_box.y,
 -			src_box.width, src_box.height);
-+		if (!k230_round_composite(&buffer->renderer->rounded_cache, op,
++		if (!k230_round_composite_unscaled(&buffer->renderer->rounded_cache, op,
 +				texture->image, mask, buffer->image, src_box.x, src_box.y, round_box(dst_box),
-+				round_box(options->rounded_clip), options->rounded_radius, 65535 * alpha))
++				round_box(options->rounded_clip), options->rounded_radius, 65535 * alpha, options->clip))
 +			pass->failed = true;
  	}
  

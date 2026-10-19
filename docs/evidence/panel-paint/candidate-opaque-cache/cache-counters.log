@@ -1,0 +1,26 @@
+K230_CARD_SHELL cache-alpha opaque=85 alpha=0
+K230_CARD_SHELL scaled-cache hits=9540 misses=85 fallbacks=0 bytes=0
+K230_CARD_SHELL cache-alpha opaque=82 alpha=0
+K230_CARD_SHELL scaled-cache hits=9216 misses=82 fallbacks=0 bytes=3785152
+K230_CARD_SHELL cache-alpha opaque=82 alpha=0
+K230_CARD_SHELL scaled-cache hits=8853 misses=82 fallbacks=0 bytes=3785152
+K230_CARD_SHELL cache-alpha opaque=82 alpha=0
+K230_CARD_SHELL scaled-cache hits=8487 misses=82 fallbacks=0 bytes=3785152
+K230_CARD_SHELL cache-alpha opaque=79 alpha=0
+K230_CARD_SHELL scaled-cache hits=8112 misses=79 fallbacks=0 bytes=3785152
+K230_CARD_SHELL cache-alpha opaque=76 alpha=0
+K230_CARD_SHELL scaled-cache hits=7676 misses=76 fallbacks=0 bytes=3785152
+K230_CARD_SHELL cache-alpha opaque=70 alpha=0
+K230_CARD_SHELL scaled-cache hits=7245 misses=70 fallbacks=0 bytes=3785152
+K230_CARD_SHELL cache-alpha opaque=67 alpha=0
+K230_CARD_SHELL scaled-cache hits=6850 misses=67 fallbacks=0 bytes=3785152
+K230_CARD_SHELL cache-alpha opaque=61 alpha=0
+K230_CARD_SHELL scaled-cache hits=6441 misses=61 fallbacks=0 bytes=3785152
+K230_CARD_SHELL cache-alpha opaque=55 alpha=0
+K230_CARD_SHELL scaled-cache hits=6010 misses=55 fallbacks=0 bytes=3785152
+K230_CARD_SHELL cache-alpha opaque=52 alpha=0
+K230_CARD_SHELL scaled-cache hits=5578 misses=52 fallbacks=0 bytes=3785152
+K230_CARD_SHELL cache-alpha opaque=46 alpha=0
+K230_CARD_SHELL scaled-cache hits=5128 misses=46 fallbacks=0 bytes=3785152
+K230_CARD_SHELL cache-alpha opaque=43 alpha=0
+K230_CARD_SHELL scaled-cache hits=4774 misses=43 fallbacks=0 bytes=0

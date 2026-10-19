@@ -130,10 +130,12 @@ index 93fe82a..a83e1e2 100644
 @@ -244,12 +269,12 @@ static void render_pass_add_texture(struct wlr_render_pass *wlr_pass,
  		// No transforms or crop needed, just a straight blit from the source
  		pixman_image_set_transform(texture->image, NULL);
- 		if (!k230_round_composite(&buffer->renderer->rounded_cache, op,
+-		if (!k230_round_composite_unscaled(&buffer->renderer->rounded_cache, op,
++		if (!k230_round_composite_unscaled(&buffer->renderer->rounded_cache, op,
 -				texture->image, mask, buffer->image, src_box.x, src_box.y, round_box(dst_box),
 +				texture->image, mask, pass_image(pass), src_box.x, src_box.y, round_box(dst_box),
- 				round_box(options->rounded_clip), options->rounded_radius, 65535 * alpha))
+-				round_box(options->rounded_clip), options->rounded_radius, 65535 * alpha, options->clip))
++				round_box(options->rounded_clip), options->rounded_radius, 65535 * alpha, options->clip))
  			pass->failed = true;
  	}
  
