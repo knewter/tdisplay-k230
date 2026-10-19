@@ -257,6 +257,9 @@ pub struct ThemeView {
     pub theme_pressed: Option<usize>,
     /// Same, for the background carousel.
     pub background_pressed: Option<usize>,
+    /// How far the List page is scrolled when its text and minimum-size
+    /// cards are taller than the output (`ChooserLayout::max_scroll`).
+    pub scroll: f64,
     /// A slow, deliberately throttled 0.0..1.0 animation phase driving every
     /// loading spinner this page paints (pending thumbnails, a preparing
     /// still preview, a tap still being applied). `main.rs` advances this on
@@ -379,6 +382,7 @@ impl Default for ThemeView {
             message: None,
             theme_position: 0.0,
             background_position: 0.0,
+            scroll: 0.0,
             theme_pressed: None,
             background_pressed: None,
             pulse_phase: 0.0,
@@ -458,12 +462,48 @@ pub struct ChooserLayout {
     /// Y of the single pending/error/message line at the bottom of the
     /// background column.
     pub message_y: f64,
+    /// Each carousel's name and wrapped status lines under its card.
+    pub theme_label_h: f64,
+    pub background_label_h: f64,
+    /// The wrapped "Backgrounds · <fit>" heading's height.
+    pub backgrounds_heading_h: f64,
+    /// The whole page's height; taller than the output, the page scrolls.
+    pub content_h: f64,
+}
+
+impl ChooserLayout {
+    /// How far the page scrolls on a `height`-tall output.
+    pub fn max_scroll(&self, height: u32) -> f64 {
+        if height == 0 { 0.0 } else { (self.content_h - f64::from(height)).max(0.0) }
+    }
+
+    /// The same layout moved up by `dy`, as painted and hit-tested while
+    /// the page is scrolled.
+    pub fn shifted(mut self, dy: f64) -> Self {
+        self.theme_top -= dy;
+        self.background_top -= dy;
+        self.header_y -= dy;
+        self.header_hit_h -= dy;
+        self.themes_heading.1 -= dy;
+        self.themes_hint.1 -= dy;
+        self.backgrounds_heading.1 -= dy;
+        self.feedback.1 -= dy;
+        self.message_y -= dy;
+        self
+    }
 }
 
 impl ThemeView {
-    /// The chooser layout for this view's own lists at a surface size.
+    /// The chooser layout for this view's own lists at a surface size,
+    /// moved by the page's scroll.
     pub fn layout(&self, width: u32, height: u32) -> ChooserLayout {
-        chooser_layout(width, height)
+        let lay = chooser_layout(width, height);
+        lay.shifted(self.page_scroll(width, height))
+    }
+
+    /// `scroll`, kept within what this output allows.
+    pub fn page_scroll(&self, width: u32, height: u32) -> f64 {
+        self.scroll.clamp(0.0, chooser_layout(width, height).max_scroll(height))
     }
 }
 
@@ -483,30 +523,56 @@ pub fn chooser_header_bands(width: u32, height: u32) -> (f64, f64, f64) {
     (h, back_right, close_left)
 }
 
-/// The chooser's text lines, from the type roles at the current step and
-/// theme size: `(label, caption)` line heights.
 /// The theme carousel's hint, under the "Themes" heading.
 pub const CHOOSER_HINT: &str = "Drag to browse · tap the centre to apply";
+/// Every status the shell writes under a centred card; each label block is
+/// as tall as its longest one wraps.
+pub const THEME_STATUSES: [&str; 3] = ["Current theme", "Built in", "User theme"];
+pub const BACKGROUND_STATUSES: [&str; 4] =
+    ["Applying to Home…", "Video unavailable", "Current background on Home", "Tap to use on Home"];
+/// The longest "Backgrounds · <fit>" heading (`FitMode::NAMES`).
+const LONGEST_BACKGROUNDS_HEADING: &str = "Backgrounds · center";
+/// The smallest a side-by-side card gets before the page scrolls instead.
+const MIN_WIDE_CARD_H: f64 = 200.0;
+/// The same for the stacked layout's theme and background cards.
+const MIN_TALL_THEME_H: f64 = 300.0;
+const MIN_TALL_BACKGROUND_H: f64 = 160.0;
+
+fn chooser_scale() -> f64 {
+    crate::layout_text_scale().max(1.0) * crate::layout_theme_font()
+}
+
+/// The tallest of `texts` wrapped in a column `width` wide at role `size`.
+fn wrapped_h(texts: &[&str], size: f64, width: f64, weight: pango::Weight) -> f64 {
+    let px = size * chooser_scale();
+    let lines = texts
+        .iter()
+        .map(|text| crate::render::wrapped_line_count(text, px, (width - 4.0).max(40.0), weight))
+        .max()
+        .unwrap_or(1)
+        .max(1);
+    f64::from(lines) * (px * 1.25).ceil()
+}
 
 /// The hint's wrapped height in a column `width` wide.
 fn hint_h(width: f64) -> f64 {
-    let s = crate::layout_text_scale().max(1.0) * crate::layout_theme_font();
-    let px = crate::render::TYPE_CAPTION * s;
-    let lines = crate::render::wrapped_line_count(CHOOSER_HINT, px, width - 4.0, pango::Weight::Normal);
-    f64::from(lines.max(1)) * (px * 1.25).ceil()
+    wrapped_h(&[CHOOSER_HINT], crate::render::TYPE_CAPTION, width, pango::Weight::Normal)
 }
 
+/// The chooser's text lines, from the type roles at the current step and
+/// theme size: `(label, caption)` line heights.
 fn chooser_lines() -> (f64, f64) {
-    let s = crate::layout_text_scale().max(1.0) * crate::layout_theme_font();
+    let s = chooser_scale();
     let line = |size: f64| (size * s * 1.25).ceil();
     (line(crate::render::TYPE_LABEL), line(crate::render::TYPE_CAPTION))
 }
 
-/// The name (Label) and status (Caption) lines under a centred carousel
-/// card, from the card's bottom edge.
-pub fn carousel_label_h() -> f64 {
-    let (label, caption) = chooser_lines();
-    CAROUSEL_LABEL_GAP + label + 2.0 + caption
+/// The name (Label) line and the wrapped status (Caption) under a centred
+/// carousel card, from the card's bottom edge.
+fn carousel_label_h(statuses: &[&str], width: f64) -> f64 {
+    let (label, _) = chooser_lines();
+    CAROUSEL_LABEL_GAP + label + 2.0
+        + wrapped_h(statuses, crate::render::TYPE_CAPTION, width, pango::Weight::Normal)
 }
 
 const CAROUSEL_LABEL_GAP: f64 = 12.0;
@@ -536,18 +602,26 @@ fn scaled(geometry: crate::theme_carousel::CarouselGeometry, height: f64) -> cra
 pub fn chooser_layout(width: u32, height: u32) -> ChooserLayout {
     let w = f64::from(width);
     let (label, caption) = chooser_lines();
-    let label_block = carousel_label_h();
+    let bold = pango::Weight::Bold;
     if width > 0 && height > 0 && crate::help::wide(width, height) {
         let h = f64::from(height);
         let half = w / 2.0;
+        let column = half - 56.0;
         let header_y = 14.0;
         let heading_y = (header_y + label + 1.0).max(48.0);
-        // The hint wraps on its own lines under the heading.
+        // The hint wraps on its own lines under "Themes"; the backgrounds
+        // heading wraps in its own column. Both carousels start below the
+        // taller of the two.
         let hint_y = heading_y + label + 2.0;
-        let top = (hint_y + hint_h(half - 56.0) + 12.0).max(100.0);
-        // Above the bottom message line.
-        let message_y = h - caption - 12.0;
-        let room = message_y - 8.0 - label_block - top;
+        let backgrounds_heading_h = wrapped_h(&[LONGEST_BACKGROUNDS_HEADING], crate::render::TYPE_LABEL, column, bold);
+        let top = (hint_y + hint_h(column)).max(heading_y + backgrounds_heading_h);
+        let top = (top + 12.0).max(100.0);
+        let theme_label_h = carousel_label_h(&THEME_STATUSES, column);
+        let background_label_h = carousel_label_h(&BACKGROUND_STATUSES, column);
+        let label_block = theme_label_h.max(background_label_h);
+        // Above the bottom message line. Cards never shrink below a usable
+        // size; past that the page scrolls instead.
+        let room = (h - caption - 12.0 - 8.0 - label_block - top).max(MIN_WIDE_CARD_H);
         // A larger monitor grows both carousels, each centred card at most
         // 70% of its half's width.
         let grow = |g: crate::theme_carousel::CarouselGeometry| {
@@ -555,6 +629,7 @@ pub fn chooser_layout(width: u32, height: u32) -> ChooserLayout {
         };
         let theme_geometry = grow(crate::theme_carousel::THEME_GEOMETRY_WIDE);
         let background_geometry = grow(crate::theme_carousel::BACKGROUND_GEOMETRY);
+        let message_y = top + background_geometry.expanded_h + label_block + 12.0;
         ChooserLayout {
             wide: true,
             theme_geometry,
@@ -565,44 +640,56 @@ pub fn chooser_layout(width: u32, height: u32) -> ChooserLayout {
             background_cx: half + half / 2.0,
             theme_cols: (0.0, half),
             background_cols: (half, w),
-            theme_text: (28.0, half - 56.0),
-            background_text: (half + 28.0, half - 56.0),
+            theme_text: (28.0, column),
+            background_text: (half + 28.0, column),
             header_y,
             header_hit_h: 48.0,
             themes_heading: (28.0, heading_y),
             themes_hint: (28.0, hint_y),
             backgrounds_heading: (half + 28.0, heading_y),
             feedback: (half + 190.0, heading_y + (label - caption) / 2.0, half - 218.0),
-            message_y: (top + background_geometry.expanded_h + label_block + 12.0).min(message_y),
+            message_y,
+            theme_label_h,
+            background_label_h,
+            backgrounds_heading_h,
+            content_h: (message_y + caption + 12.0)
+                .max(top + theme_geometry.expanded_h + theme_label_h + 12.0),
         }
     } else {
         let center = w / 2.0;
+        // Before the first configure, measure against the panel's width.
+        let column = if width > 0 { w } else { 568.0 } - 56.0;
         let header_y = 42.0;
         let heading_y = (header_y + label + 8.0).max(84.0);
         let hint_y = heading_y + label + 2.0;
-        // Before the first configure, measure against the panel's width.
-        let column = if width > 0 { w } else { 568.0 } - 56.0;
         let theme_top = (hint_y + hint_h(column) + 12.0).max(THEME_CAROUSEL_TOP);
+        let theme_label_h = carousel_label_h(&THEME_STATUSES, column);
+        let background_label_h = carousel_label_h(&BACKGROUND_STATUSES, column);
+        let backgrounds_heading_h = wrapped_h(&[LONGEST_BACKGROUNDS_HEADING], crate::render::TYPE_LABEL, column, bold);
         // Under the theme card: its name and status, a gap, then the
         // "Backgrounds" heading and a gap before the background carousel.
-        let between = label_block + 16.0 + label + 8.0;
-        let tail = label_block + 12.0 + caption + 16.0;
+        let between = theme_label_h + 16.0 + backgrounds_heading_h + 8.0;
+        let tail = background_label_h + 12.0 + caption + 16.0;
         let tall = if height > 0 { f64::from(height) } else { 1232.0 };
         // The cards share what the text leaves: the background carousel
         // keeps its size while the theme carousel can stay at least 320
-        // tall; below that both shrink in proportion.
+        // tall; below that both shrink in proportion, down to a usable
+        // minimum, past which the page scrolls.
         let (theme, background) = (crate::theme_carousel::THEME_GEOMETRY, crate::theme_carousel::BACKGROUND_GEOMETRY);
         let room = (tall.min(1232.0) - theme_top - between - tail).max(0.0);
         let (theme_h, background_h) = if room - background.expanded_h >= 320.0 {
             (room - background.expanded_h, background.expanded_h)
         } else {
             let total = theme.expanded_h + background.expanded_h;
-            (room * theme.expanded_h / total, room * background.expanded_h / total)
+            (
+                (room * theme.expanded_h / total).max(MIN_TALL_THEME_H),
+                (room * background.expanded_h / total).max(MIN_TALL_BACKGROUND_H),
+            )
         };
         let theme_geometry = scaled(theme, theme_h);
         let background = scaled(background, background_h);
         let background_top = theme_top + theme_geometry.expanded_h + between;
-        let message_y = background_top + background.expanded_h + label_block + 12.0;
+        let message_y = background_top + background.expanded_h + background_label_h + 12.0;
         ChooserLayout {
             wide: false,
             theme_geometry,
@@ -619,9 +706,13 @@ pub fn chooser_layout(width: u32, height: u32) -> ChooserLayout {
             header_hit_h: (header_y + label + 8.0).max(104.0),
             themes_heading: (28.0, heading_y),
             themes_hint: (28.0, hint_y),
-            backgrounds_heading: (28.0, background_top - label - 8.0),
-            feedback: (center, background_top - label - 8.0 + (label - caption) / 2.0, center - 28.0),
+            backgrounds_heading: (28.0, background_top - backgrounds_heading_h - 8.0),
+            feedback: (center, background_top - backgrounds_heading_h - 8.0 + (label - caption) / 2.0, center - 28.0),
             message_y,
+            theme_label_h,
+            background_label_h,
+            backgrounds_heading_h,
+            content_h: message_y + caption + 16.0,
         }
     }
 }
@@ -662,6 +753,7 @@ fn request_target(request: &ThemeRequest) -> Option<(&str, Option<&str>)> {
 impl ThemeView {
     pub fn open(&mut self) -> ThemeRequest {
         self.page = ThemePage::List;
+        self.scroll = 0.0;
         self.preview = None;
         self.error = None;
         self.message = None;
@@ -1315,18 +1407,20 @@ impl ThemeView {
                 let lay = self.layout(width, height);
                 // The "Backgrounds" heading (and the fit mode it names).
                 let (hx, hy) = lay.backgrounds_heading;
+                let heading_bottom = hy + lay.backgrounds_heading_h.max(34.0);
                 if end.0 >= hx
                     && end.0 < hx + 260.0
                     && end.1 >= hy - 6.0
-                    && end.1 < hy + 34.0
+                    && end.1 < heading_bottom
                     && start.0 >= hx
                     && start.0 < hx + 260.0
                     && start.1 >= hy - 6.0
-                    && start.1 < hy + 34.0
+                    && start.1 < heading_bottom
                 {
                     return Some(ThemeIntent::Fit);
                 }
-                if end.1 < header_h {
+                // The header scrolls away with the page.
+                if end.1 + self.page_scroll(width, height) < header_h {
                     return if end.0 < back_right {
                         Some(ThemeIntent::Back)
                     } else if end.0 > close_left {
@@ -2751,6 +2845,38 @@ mod tests {
     }
 
     #[test]
+    fn a_large_step_scrolls_the_wide_chooser_instead_of_shrinking_its_cards() {
+        for step in [1.0, 1.5, 2.0] {
+            crate::set_layout_text_scale(step);
+            let lay = chooser_layout(1232, 568);
+            // Both headings end above the carousels; every card stays usable.
+            assert!(lay.theme_top >= lay.backgrounds_heading.1 + lay.backgrounds_heading_h, "step {step}");
+            assert!(lay.theme_geometry.expanded_h >= MIN_WIDE_CARD_H - 1.0, "step {step}");
+            assert!(lay.background_geometry.expanded_h >= MIN_WIDE_CARD_H - 1.0, "step {step}");
+            // The labels and the message line end on the page.
+            assert!(lay.theme_top + lay.theme_geometry.expanded_h + lay.theme_label_h <= lay.content_h);
+            assert!(lay.message_y + (crate::render::TYPE_CAPTION * step * 1.25).ceil() <= lay.content_h);
+            if step == 1.0 {
+                assert_eq!(lay.max_scroll(568), 0.0);
+            }
+        }
+        let lay = chooser_layout(1232, 568);
+        assert!(lay.max_scroll(568) > 0.0, "200% scrolls on the landscape panel");
+        // A scrolled view moves its bands and its header with it.
+        let mut view = ThemeView::default();
+        view.page = ThemePage::List;
+        view.scroll = 1e6;
+        let max = lay.max_scroll(568);
+        assert_eq!(view.page_scroll(1232, 568), max);
+        let moved = view.layout(1232, 568);
+        assert_eq!(moved.theme_top, lay.theme_top - max);
+        assert_eq!(view.hit((60.0, 20.0), (60.0, 20.0), 1232, 568), None, "the header has scrolled away");
+        view.scroll = 0.0;
+        assert_eq!(view.hit((60.0, 20.0), (60.0, 20.0), 1232, 568), Some(ThemeIntent::Back));
+        crate::set_layout_text_scale(1.0);
+    }
+
+    #[test]
     fn the_portrait_chooser_layout_stacks_role_text_between_the_carousels() {
         use crate::render::{TYPE_CAPTION, TYPE_LABEL};
         for step in [1.0, 1.5, 2.0] {
@@ -2765,13 +2891,17 @@ mod tests {
                 assert!(lay.header_hit_h >= lay.header_y + label);
                 assert!(lay.themes_hint.1 >= lay.themes_heading.1 + label);
                 assert!(lay.theme_top >= lay.themes_hint.1 + caption && lay.theme_top >= THEME_CAROUSEL_TOP);
-                let theme_bottom = lay.theme_top + lay.theme_geometry.expanded_h + carousel_label_h();
+                let theme_bottom = lay.theme_top + lay.theme_geometry.expanded_h + lay.theme_label_h;
                 assert!(lay.backgrounds_heading.1 >= theme_bottom, "{w}x{h} step {step}");
                 assert!(lay.background_top >= lay.backgrounds_heading.1 + label);
-                let background_bottom = lay.background_top + lay.background_geometry.expanded_h + carousel_label_h();
+                let background_bottom = lay.background_top + lay.background_geometry.expanded_h + lay.background_label_h;
                 assert!(lay.message_y >= background_bottom, "{w}x{h} step {step}");
-                if h > 0 {
-                    assert!(lay.message_y + caption <= f64::from(h.min(1232)), "{w}x{h} step {step}");
+                // Whatever does not fit scrolls into view; cards stay usable.
+                assert!(lay.message_y + caption <= lay.content_h, "{w}x{h} step {step}");
+                assert!(lay.theme_geometry.expanded_h >= MIN_TALL_THEME_H - 1.0, "{w}x{h} step {step}");
+                assert!(lay.background_geometry.expanded_h >= MIN_TALL_BACKGROUND_H - 1.0, "{w}x{h} step {step}");
+                if h > 0 && step == 1.0 && h >= 1024 {
+                    assert_eq!(lay.max_scroll(h), 0.0, "{w}x{h} fits at 100%");
                 }
                 // The theme carousel keeps its 3:4 crop.
                 let g = lay.theme_geometry;
@@ -2789,18 +2919,19 @@ mod tests {
         assert!(lay.wide);
         // The two carousels are in disjoint halves, inside the panel.
         assert!(lay.theme_cols.1 <= lay.background_cols.0 && lay.background_cols.1 <= 1232.0);
-        for (name, cx, cols, geometry, top, text) in [
-            ("themes", lay.theme_cx, lay.theme_cols, lay.theme_geometry, lay.theme_top, lay.theme_text),
-            ("backgrounds", lay.background_cx, lay.background_cols, lay.background_geometry, lay.background_top, lay.background_text),
+        for (name, cx, cols, geometry, top, text, label_h) in [
+            ("themes", lay.theme_cx, lay.theme_cols, lay.theme_geometry, lay.theme_top, lay.theme_text, lay.theme_label_h),
+            ("backgrounds", lay.background_cx, lay.background_cols, lay.background_geometry, lay.background_top, lay.background_text, lay.background_label_h),
         ] {
             assert!(cx - geometry.expanded_w / 2.0 >= cols.0 && cx + geometry.expanded_w / 2.0 <= cols.1, "{name} centred card in its half");
             assert!(top >= lay.themes_heading.1 + 26.0, "{name} starts below its heading");
             // The name and status lines end on the panel.
-            assert!(top + geometry.expanded_h + carousel_label_h() <= 568.0, "{name} label ends at {}", top + geometry.expanded_h + carousel_label_h());
+            assert!(top + geometry.expanded_h + label_h <= 568.0, "{name} label ends at {}", top + geometry.expanded_h + label_h);
             assert!(text.0 >= cols.0 && text.0 + text.1 <= cols.1, "{name} text inside its half");
         }
         assert!(lay.message_y + 18.0 <= 568.0);
-        assert!(lay.message_y >= lay.background_top + lay.background_geometry.expanded_h + carousel_label_h(), "message below the background label");
+        assert!(lay.message_y >= lay.background_top + lay.background_geometry.expanded_h + lay.background_label_h, "message below the background label");
+        assert_eq!(lay.max_scroll(568), 0.0, "100% fits without scrolling");
         // Header: back and Close are above both carousels.
         assert!(lay.header_y + 22.0 <= lay.themes_heading.1 && lay.header_hit_h <= lay.theme_top);
     }

@@ -1224,6 +1224,8 @@ struct ShellClient {
     panel_scrolled: bool,
     /// Help's scroll range, measured when the contact went down.
     help_max_scroll: f64,
+    /// The theme chooser page's scroll range, measured at touch-down.
+    chooser_max_scroll: f64,
     panel_scroll_dragged: bool,
     panel_scroll_sample: Option<(f64, u32)>,
     panel_scroll_velocity: f64,
@@ -5150,7 +5152,11 @@ impl ShellClient {
                     && self.input_ready
                 {
                     self.panel_start = Some((id, pos));
+                    let chooser_list = self.route == Route::Settings
+                        && self.wifi_view.page == WifiPage::Closed
+                        && self.theme_view.page == ThemePage::List;
                     self.panel_origin_scroll = match self.route {
+                        Route::Settings if chooser_list => self.theme_view.page_scroll(self.width, self.height),
                         Route::Settings => self.service_view.settings_scroll,
                         Route::Help => self.service_view.help_scroll,
                         _ => self.service_view.notification_scroll,
@@ -5164,6 +5170,11 @@ impl ShellClient {
                             self.service_view.navigation_aid,
                         )
                         .max_scroll(self.height)
+                    } else {
+                        0.0
+                    };
+                    self.chooser_max_scroll = if chooser_list {
+                        chooser_layout(self.width, self.height).max_scroll(self.height)
                     } else {
                         0.0
                     };
@@ -5673,7 +5684,7 @@ impl ShellClient {
                                     }
                                 }
                             } else {
-                                let lay = chooser_layout(self.width, self.height);
+                                let lay = self.theme_view.layout(self.width, self.height);
                                 // Task: tap-to-apply (2026-09-25): both
                                 // carousels live on the one List page now.
                                 // `Carousel::up` returns `None` for a
@@ -6178,6 +6189,37 @@ impl ShellClient {
                 && self.theme_view.page == ThemePage::List
                 && self.wifi_view.page == WifiPage::Closed
             {
+                // Text larger than the output makes the page taller than it:
+                // a mostly vertical drag that no carousel has claimed
+                // scrolls the page, and its release is not a tap.
+                if self.chooser_max_scroll > 0.0
+                    && !self.theme_carousel.dragging()
+                    && !self.background_carousel.dragging()
+                {
+                    if let Some((start_id, start)) = self.panel_start {
+                        let (dx, dy) = (pos.0 - start.0, pos.1 - start.1);
+                        if start_id == id
+                            && (self.panel_scrolled || (dy.abs() > 22.0 && dy.abs() > dx.abs()))
+                        {
+                            if !self.panel_scrolled {
+                                self.theme_carousel.cancel();
+                                self.background_carousel.cancel();
+                                self.panel_scrolled = true;
+                            }
+                            let next = (self.panel_origin_scroll - dy).clamp(0.0, self.chooser_max_scroll);
+                            if (next - self.theme_view.scroll).abs() >= 1.0 {
+                                self.theme_view.scroll = next;
+                                self.theme_dirty();
+                            }
+                            self.sync_theme_pressed();
+                            self.sync_background_pressed();
+                            if self.dirty && !self.coalesce_theme_motion() {
+                                self.draw(qh);
+                            }
+                            return;
+                        }
+                    }
+                }
                 // Task: tap-to-apply (2026-09-25): both carousels are live
                 // at once now; `Carousel::motion` is keyed by its own
                 // armed `contact.id` internally, so calling it on both
@@ -6780,6 +6822,7 @@ fn serve() -> Result<(), String> {
         panel_origin_scroll: 0.0,
         panel_scrolled: false,
         help_max_scroll: 0.0,
+        chooser_max_scroll: 0.0,
         panel_scroll_dragged: false,
         panel_scroll_sample: None,
         panel_scroll_velocity: 0.0,

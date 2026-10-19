@@ -1636,10 +1636,15 @@ fn paint_theme_chooser(
     // Upstream's `dimColor: Color.background` -- tints unselected carousel
     // slices, not the panel's own background wash above.
     let dim_color = palette_rgb_or(theme, "background", 0x0b1216);
-    paint_chooser_header(cr, style, w, h);
     if view.page != ThemePage::List {
+        paint_chooser_header(cr, style, w, h);
         return;
     }
+    // The header scrolls away with the page (`ThemeView::layout`).
+    let _ = cr.save();
+    cr.translate(0.0, -view.page_scroll(w as u32, h as u32));
+    paint_chooser_header(cr, style, w, h);
+    let _ = cr.restore();
     // Task: tap-to-apply (2026-09-25, user decision: "tap theme in the
     // theme picker, apply immediately, so i can compare them easily").
     // There is only one chooser page now: the theme carousel, the active
@@ -1710,7 +1715,7 @@ fn paint_theme_chooser(
                     crate::theme_catalog::ThemeOrigin::User => "User theme",
                 }
             };
-            text(cr, status, lay.theme_text.0, label_y + chooser_label_line(cr), lay.theme_text.1, TYPE_CAPTION, style.muted);
+            text_wrapped(cr, status, lay.theme_text.0, label_y + chooser_label_line(cr), lay.theme_text.1, TYPE_CAPTION, style.muted);
         }
         Some(_) => {
             text(
@@ -1743,14 +1748,15 @@ fn paint_theme_chooser(
     // Tapping this heading cycles the background's fit mode
     // (`ThemeIntent::Fit`); the current mode is named after the title.
     let backgrounds_title = format!("Backgrounds · {}", view.fit);
-    heading(
+    wrapped_text(
         cr,
         &backgrounds_title,
         lay.backgrounds_heading.0,
         lay.backgrounds_heading.1,
         lay.background_text.1,
-        TYPE_LABEL,
+        context_font_size(cr, TYPE_LABEL),
         style.text,
+        pango::Weight::Bold,
     );
     // Put acknowledgement next to the row being changed, above the images.
     // This remains visible even when the bottom status line is near the edge.
@@ -1765,15 +1771,16 @@ fn paint_theme_chooser(
         // On the wide layout the acknowledgement shares the heading's line;
         // the heading now names the fit mode and grows with the theme's (and
         // the vision option's) text size, so start after what was drawn.
-        let (mut x, y, mut width) = lay.feedback;
-        let (hx, hy) = lay.backgrounds_heading;
-        if (y - hy).abs() < 30.0 {
-            let end = x + width;
-            x = x.max(hx + text_advance(cr, &backgrounds_title, TYPE_LABEL, pango::Weight::Bold) + 16.0);
-            width = end - x;
-        }
-        if width >= 80.0 {
-            text(cr, message, x, y, width, TYPE_CAPTION, color);
+        // Only when the whole message fits after a one-line heading: the
+        // card's status and the message line below say the same thing.
+        let (x, y, width) = lay.feedback;
+        let (hx, _) = lay.backgrounds_heading;
+        let title_w = text_advance(cr, &backgrounds_title, TYPE_LABEL, pango::Weight::Bold);
+        let start = x.max(hx + title_w + 16.0);
+        if title_w <= lay.background_text.1
+            && text_advance(cr, message, TYPE_CAPTION, pango::Weight::Normal) <= x + width - start
+        {
+            text(cr, message, start, y, x + width - start, TYPE_CAPTION, color);
         }
     }
     match view.preview.as_ref() {
@@ -1821,7 +1828,7 @@ fn paint_theme_chooser(
             } else {
                 "Tap to use on Home"
             };
-            text(
+            text_wrapped(
                 cr,
                 status,
                 lay.background_text.0,
@@ -1984,7 +1991,7 @@ fn paint_wifi(
                 style.muted,
             );
             let (lx, ly, lw, ls) = lay.list_label;
-            text(cr, "Saved and nearby", lx, ly, lw, ls, style.muted);
+            text_wrapped(cr, crate::wifi_ui::LIST_LABEL, lx, ly, lw, ls, style.muted);
             let _ = cr.save();
             let (kx, ky, kw, kh) = lay.list_clip;
             cr.rectangle(kx, ky, kw, kh);
@@ -5563,11 +5570,12 @@ fn stable_hash(text: &str) -> u64 {
 fn chooser_fingerprint(static_key: u64, view: &ThemeView) -> u64 {
     let quantise = |position: f64| (position * 4.0).round() as i64;
     stable_hash(&format!(
-        "{static_key}|{}|{}|{:?}|{:?}",
+        "{static_key}|{}|{}|{:?}|{:?}|{}",
         quantise(view.theme_position),
         quantise(view.background_position),
         view.theme_pressed,
-        view.background_pressed
+        view.background_pressed,
+        view.scroll.round() as i64
     ))
 }
 
@@ -5578,7 +5586,7 @@ fn picker_row_changes(old: &ThemeView, new: &ThemeView) -> Option<u8> {
         || old.list != new.list || old.preview != new.preview
         || old.pending != new.pending || old.pending_id != new.pending_id
         || old.error != new.error || old.message != new.message
-        || old.desired != new.desired
+        || old.desired != new.desired || old.scroll != new.scroll
     {
         return None;
     }
@@ -5596,9 +5604,9 @@ fn picker_row_clip(mask: u8, width: u32, height: u32, view: Option<&ThemeView>) 
     let lay = view.map_or_else(|| crate::theme_ui::chooser_layout(width, height), |view| view.layout(width, height));
     let top = if mask & 1 != 0 { lay.theme_top - 4.0 } else { lay.background_top - 4.0 };
     let bottom = if mask & 2 != 0 {
-        lay.background_top + lay.background_geometry.expanded_h + crate::theme_ui::carousel_label_h() + 4.0
+        lay.background_top + lay.background_geometry.expanded_h + lay.background_label_h + 4.0
     } else {
-        lay.theme_top + lay.theme_geometry.expanded_h + crate::theme_ui::carousel_label_h() + 4.0
+        lay.theme_top + lay.theme_geometry.expanded_h + lay.theme_label_h + 4.0
     };
     (top.floor(), bottom.ceil())
 }

@@ -476,6 +476,7 @@ pub const CONNECTING_SUB: &str = "Checking association, then saving for reconnec
 pub const FORGET_SUB: &str = "It will not reconnect automatically.";
 pub const LONGEST_SECURITY: &str = "WPA2-Personal · password required";
 pub const CURRENT_LABEL: &str = "Current connection";
+pub const LIST_LABEL: &str = "Saved and nearby";
 pub const CHANGE_PASSWORD: &str = "Change password…";
 pub const FORGET_NETWORK: &str = "Forget network…";
 /// The saved-network buttons' text inset, each side.
@@ -550,7 +551,10 @@ fn build(w: f64, h: f64, wide: bool, keyboard_inset: f64) -> Layout {
     let current_h = current_dy.2 + wrapped(SAVED_LINE, r.caption, lw - 36.0) + pad;
     let current_card = (24.0, content, lw, current_h);
     let (list_label, list_y) = if wide {
-        ((rx + 4.0, top_y + 8.0, (refresh_x - 24.0 - rx).max(80.0), crate::render::TYPE_CAPTION), top_y + lab + 18.0)
+        // Beside Refresh; it wraps rather than run under it.
+        let label_w = (refresh_x - 24.0 - rx).max(80.0);
+        let label_h = wrapped(LIST_LABEL, r.caption, label_w);
+        ((rx + 4.0, top_y + 8.0, label_w, crate::render::TYPE_CAPTION), (top_y + lab + 18.0).max(top_y + 8.0 + label_h + 10.0))
     } else {
         let y = content + current_h + 22.0;
         ((28.0, y, rw - 8.0, crate::render::TYPE_CAPTION), y + cap + 12.0)
@@ -1246,6 +1250,10 @@ mod tests {
                 assert!(lay.row_dy.1 >= lay.row_dy.0 + TYPE_LABEL * step * 1.25);
                 // The current card sits under the title; the list under both.
                 assert!(lay.current_card.1 >= lay.title.1 + lay.title.3 * step);
+                // "Saved and nearby" wraps whole above the first row.
+                let (_, ly, lw, ls) = lay.list_label;
+                let lines = crate::render::wrapped_line_count(LIST_LABEL, ls * step, lw - 4.0, pango::Weight::Normal);
+                assert!(lay.list_view.1 >= ly + f64::from(lines) * (ls * step * 1.25).ceil(), "step {step} wide {wide}");
                 if !wide {
                     assert!(lay.list_view.1 >= lay.current_card.1 + lay.current_card.3);
                     // Entry: the network card, field and saved buttons stack.

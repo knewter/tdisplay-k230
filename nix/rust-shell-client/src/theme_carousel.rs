@@ -654,6 +654,11 @@ impl Carousel {
         Some(CarouselOutcome::Consumed)
     }
 
+    /// Whether the current contact has moved past the tap slop.
+    pub fn dragging(&self) -> bool {
+        self.contact.as_ref().is_some_and(|contact| contact.dragged && !contact.cancelled)
+    }
+
     pub fn cancel(&mut self) {
         self.contact = None;
         self.velocity = 0.0;
