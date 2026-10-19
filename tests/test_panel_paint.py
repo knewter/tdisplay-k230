@@ -13,7 +13,7 @@ ROOT = Path(__file__).resolve().parents[1]
 class PanelPaint(unittest.TestCase):
     def test_rotations_padding_alignment_and_live_pixels(self):
         flags = shlex.split(subprocess.check_output(
-            ['pkg-config', '--cflags', '--libs', 'pixman-1'], text=True))
+            ['pkg-config', '--cflags', '--libs', 'pixman-1', 'libdrm'], text=True))
         with tempfile.TemporaryDirectory(prefix='panel-paint-') as directory:
             exe = Path(directory) / 'pixels'
             subprocess.run([os.environ.get('CC', 'cc'), '-std=c11', '-O2',
@@ -21,6 +21,23 @@ class PanelPaint(unittest.TestCase):
                             '-I' + str(ROOT / 'nix/card-shell'),
                             str(ROOT / 'tests/panel_paint.c'), '-o', str(exe), *flags], check=True)
             subprocess.run([str(exe)], check=True, env={**os.environ, 'UBSAN_OPTIONS': 'halt_on_error=1'})
+
+    def test_full_precision_cache_corners_damage_and_output_guard(self):
+        flags = shlex.split(subprocess.check_output(
+            ['pkg-config', '--cflags', '--libs', 'pixman-1', 'libdrm'], text=True))
+        with tempfile.TemporaryDirectory(prefix='panel-cache-') as directory:
+            include = Path(directory) / 'sway'
+            include.mkdir()
+            (include / 'card_shell_scaled_cache.h').symlink_to(ROOT / 'nix/card-shell/scaled-cache.h')
+            exe = Path(directory) / 'pixels'
+            subprocess.run([os.environ.get('CC', 'cc'), '-std=c11', '-O2',
+                            '-Wall', '-Wextra', '-Werror', '-fsanitize=undefined',
+                            '-I' + directory, '-I' + str(ROOT / 'nix/card-shell'),
+                            str(ROOT / 'tests/panel_cache.c'),
+                            str(ROOT / 'nix/card-shell/scaled-cache.c'),
+                            '-o', str(exe), *flags], check=True)
+            subprocess.run([str(exe)], check=True,
+                           env={**os.environ, 'UBSAN_OPTIONS': 'halt_on_error=1'})
 
 
 if __name__ == '__main__':

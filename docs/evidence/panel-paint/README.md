@@ -5,8 +5,9 @@ RGB565 rotation**, in addition to about **12 ms in texture draws**. This
 selects the final-copy loop for the first bounded optimization. A standalone
 on-board comparison copies identical pixels into **unattached** DRM dumb
 buffers: baseline10.130 ms, candidate4.109 ms for the panel's actual copy
-rotation. This is **not yet an integrated frame/latency or visual acceptance
-result**. The board/camera/default-selection tasks remain open.
+rotation. The later [copy-only integrated trial](candidate-copy-only/README.md)
+reduced build CPU but still failed latency/frame budgets. The board/camera/
+default-selection tasks remain open.
 
 ## Identities and workload
 
@@ -149,3 +150,20 @@ Keep the native pixels, resolution, card count and frozen motion budgets.
 Require p95 build CPU within19.161ms and the existing latency/frame/memory
 gates; retain any failures as failures. Default selection and archival stay
 open pending those named proofs.
+
+## Follow-up selected after the integrated result
+
+Copy-only build CPU dropped to16.506ms mean/17.521ms p95, still above the
+existing8ms anti-flicker render window. The next candidate avoids repeated
+resampling of unchanged opaque card content during logical composition.
+RGB565 pre-scaling differed at15/18 rounded-edge pixels in a diagnostic
+nearest/bilinear probe, so it is not used for the rotated output. Full-precision
+XRGB8888 pre-scaling matched exactly in that probe. Production native tests
+now exercise full-precision rounded/partial/rotated pixels over64 cases and
+three changed source frames each. Cache keys include source generation,
+geometry, pixel format and quality filter. Landscape updates invalidate on
+every source commit, preserving the former uncached path's freshness rather
+than adding the normal-output15fps thumbnail cap. The existing total8MiB
+cache memory bound remains. Software-cursor/debug fallbacks retain the direct
+path, and cropped scene fragments sample only the visible cached subrectangle.
+This follow-up still requires a new exact-source build and board qualification.

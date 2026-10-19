@@ -1,0 +1,136 @@
+{
+  "evidence_class": "board injected native touch; camera separate",
+  "mode": "reduced",
+  "started_utc": "2026-10-19T23:02:09Z",
+  "source_revision": "08cf4516b396b3e7902827fabe7d4de891322de7",
+  "system": "/nix/store/ib5x4pwvjzb3d4ql2zjc6dbd07k6s4xb-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "gestures": [
+    {
+      "index": 0,
+      "from": [
+        616,
+        280
+      ],
+      "to": [
+        366,
+        280
+      ],
+      "down_monotonic_ns": 86776799780793,
+      "up_monotonic_ns": 86777551792696
+    },
+    {
+      "index": 1,
+      "from": [
+        616,
+        280
+      ],
+      "to": [
+        866,
+        280
+      ],
+      "down_monotonic_ns": 86778351957380,
+      "up_monotonic_ns": 86779103151305
+    },
+    {
+      "index": 2,
+      "from": [
+        616,
+        280
+      ],
+      "to": [
+        366,
+        280
+      ],
+      "down_monotonic_ns": 86779903829756,
+      "up_monotonic_ns": 86780654977516
+    },
+    {
+      "index": 3,
+      "from": [
+        616,
+        280
+      ],
+      "to": [
+        866,
+        280
+      ],
+      "down_monotonic_ns": 86781455121939,
+      "up_monotonic_ns": 86782206696654
+    },
+    {
+      "index": 4,
+      "from": [
+        616,
+        280
+      ],
+      "to": [
+        366,
+        280
+      ],
+      "down_monotonic_ns": 86783006840131,
+      "up_monotonic_ns": 86783757703196
+    },
+    {
+      "index": 5,
+      "from": [
+        616,
+        280
+      ],
+      "to": [
+        866,
+        280
+      ],
+      "down_monotonic_ns": 86784557852135,
+      "up_monotonic_ns": 86785309345997
+    }
+  ],
+  "output": {
+    "name": "DSI-1",
+    "transform": "270",
+    "rect": {
+      "x": 0,
+      "y": 0,
+      "width": 1232,
+      "height": 568
+    },
+    "current_mode": {
+      "width": 568,
+      "height": 1232,
+      "refresh": 52190,
+      "picture_aspect_ratio": "none"
+    }
+  },
+  "input_axes": {
+    "0": [
+      0,
+      1079
+    ],
+    "1": [
+      0,
+      2399
+    ],
+    "47": [
+      0,
+      9
+    ],
+    "48": [
+      0,
+      255
+    ],
+    "53": [
+      0,
+      1079
+    ],
+    "54": [
+      0,
+      2399
+    ],
+    "57": [
+      0,
+      65535
+    ]
+  },
+  "start_monotonic_ns": 86772135692599,
+  "end_monotonic_ns": 86790055906480,
+  "telemetry_lines": 1246
+}

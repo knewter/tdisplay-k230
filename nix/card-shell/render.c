@@ -22,6 +22,7 @@ struct scaled_buffer {
 	struct wlr_buffer base;
 	uint8_t *pixels;
 	size_t bytes, stride;
+    uint32_t format;
 };
 static size_t scaled_bytes;
 static void scaled_destroy(struct wlr_buffer *base) {
@@ -36,7 +37,7 @@ static bool scaled_access(struct wlr_buffer *base, uint32_t flags, void **data,
 	if (flags & WLR_BUFFER_DATA_PTR_ACCESS_WRITE) return false;
 	struct scaled_buffer *b = wl_container_of(base, b, base);
 	*data = b->pixels;
-	*format = DRM_FORMAT_RGB565;
+	*format = b->format;
 	*stride = b->stride;
 	return true;
 }
@@ -44,11 +45,13 @@ static void scaled_end(struct wlr_buffer *base) {}
 static const struct wlr_buffer_impl scaled_impl = {
 	.destroy = scaled_destroy, .begin_data_ptr_access = scaled_access, .end_data_ptr_access = scaled_end};
 size_t card_scaled_buffer_bytes(void) { return scaled_bytes; }
-struct wlr_buffer *card_scaled_buffer_create(struct wlr_buffer *source, int width, int height,
-		bool fast) {
-	if (!source || width <= 0 || height <= 0 || width > 4096 || height > 4096)
+struct wlr_buffer *card_scaled_buffer_create_format(struct wlr_buffer *source, int width, int height,
+        bool fast, uint32_t target_format) {
+    int cpp = target_format == DRM_FORMAT_RGB565 ? 2 :
+        target_format == DRM_FORMAT_XRGB8888 ? 4 : 0;
+	if (!cpp || !source || width <= 0 || height <= 0 || width > 4096 || height > 4096)
 		return NULL;
-	size_t stride = ((size_t)width * 2 + 3) & ~(size_t)3;
+	size_t stride = ((size_t)width * (size_t)cpp + 3) & ~(size_t)3;
 	size_t bytes = stride * (size_t)height;
 	if (bytes > SCALED_CACHE_LIMIT - scaled_bytes)
 		return NULL;
@@ -63,15 +66,20 @@ struct wlr_buffer *card_scaled_buffer_create(struct wlr_buffer *source, int widt
 			&data, &format, &source_stride)) {
 		free(b->pixels); free(b); return NULL;
 	}
-	bool okay = card_scale_rgb565(b->pixels, stride, width, height, data, source_stride,
+	bool okay = card_scale_opaque(b->pixels, stride, width, height, target_format, data, source_stride,
 		source->width, source->height, format, fast);
 	wlr_buffer_end_data_ptr_access(source);
 	if (!okay) { free(b->pixels); free(b); return NULL; }
 	b->stride = stride;
+    b->format = target_format;
 	b->bytes = bytes;
 	wlr_buffer_init(&b->base, &scaled_impl, width, height);
 	scaled_bytes += bytes;
 	return &b->base;
+}
+struct wlr_buffer *card_scaled_buffer_create(struct wlr_buffer *source, int width,
+        int height, bool fast) {
+    return card_scaled_buffer_create_format(source, width, height, fast, DRM_FORMAT_RGB565);
 }
 static void destroy(struct wlr_buffer *base) {
 	struct label_buffer *b = wl_container_of(base, b, base);

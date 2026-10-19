@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+set -euo pipefail
+PAINT_HANDOFF=/home/jadams/tmp/codex-claude-handoff-20261019/3
+PAINT_SYSTEM=$(readlink "$PAINT_HANDOFF/panel-paint-boot/system")
+PAINT_SSH_CONFIG=$HOME/tmp/k230-coordination/ssh_config.private
+export NIX_SSHOPTS="-F $PAINT_SSH_CONFIG -o Compression=yes"
+timeout 3000 nix copy --no-check-sigs --to ssh://k230 "$PAINT_SYSTEM"
+ssh -F "$PAINT_SSH_CONFIG" k230 'set -e; test ! -e /run/systemd/transient/k230-panel-paint-trial-restore.timer; systemd-run --quiet --unit=k230-panel-paint-trial-restore --on-active=600s /nix/store/48afqvxz6i15rz9q4if3b1c08j6l3n37-nixos-system-nixos-26.11.20260919.20b1ddd/bin/switch-to-configuration test'
+ssh -F "$PAINT_SSH_CONFIG" k230 "$PAINT_SYSTEM/bin/switch-to-configuration test"
+ssh -F "$PAINT_SSH_CONFIG" k230 'readlink -f /run/current-system; readlink -f /nix/var/nix/profiles/system'

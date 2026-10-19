@@ -6,6 +6,7 @@
 #include "sway/card_shell.h"
 #include "sway/card_shell_icon.h"
 #include "sway/card_shell_render.h"
+#include "sway/card_shell_scaled_cache.h"
 #include "sway/card_shell_route.h"
 #include "sway/card_shell_telemetry.h"
 #include "sway/card_shell_test_input.h"
@@ -78,6 +79,8 @@ struct mirror {
 	struct wlr_buffer *scaled;
 	uint64_t generation, scaled_generation;
 	int scaled_width, scaled_height;
+    uint32_t scaled_format;
+    bool scaled_fast;
 	/* Wall-clock time (now_ms()) the scaled copy was last regenerated.
 	 * Gates the ~15fps refresh cap applied to any card not currently shown
 	 * at full panel size -- see scaled_mirror's own comment. */
@@ -1082,11 +1085,25 @@ static void order_mirror(struct wlr_scene_node **previous, struct wlr_scene_buff
 /* Only a fully visible, opaque, untransformed SHM surface is pixel-equivalent
  * to a pre-scaled RGB565 buffer. Keep the wlroots scene-surface node itself:
  * it still owns live commits, frame callbacks, and presentation sampling. */
+static bool cache_output_logical(struct wlr_output *output) {
+    const char *turn = getenv("WLR_PIXMAN_OUTPUT_TURN");
+    const char *renderer = getenv("WLR_RENDERER");
+    const char *debug = getenv("WLR_SCENE_DEBUG_DAMAGE");
+    bool software_cursor = false;
+    struct wlr_output_cursor *cursor;
+    wl_list_for_each(cursor, &output->cursors, link) {
+        if (cursor->enabled && cursor->visible && output->hardware_cursor != cursor &&
+                cursor->texture != NULL) software_cursor = true;
+    }
+    return card_cache_logical_output(output->transform,
+        turn && strcmp(turn, "1") == 0 && renderer && strcmp(renderer, "pixman") == 0,
+        software_cursor, debug && strcmp(debug, "highlight") == 0);
+}
 static bool scaled_mirror(struct mirror *m, struct wlr_scene_buffer *source, double scale,
 		int x, int y, int parent_x, int parent_y, struct wlr_box clip) {
 	struct wlr_output *output = shell.output->wlr_output;
 	if (!scaled_cache_enabled() || output->render_format != DRM_FORMAT_RGB565 ||
-		output->scale != 1 || output->transform != WL_OUTPUT_TRANSFORM_NORMAL ||
+		output->scale != 1 || !cache_output_logical(output) ||
 		shell.output->color_transform || source->opacity != 1 ||
 		source->transform != WL_OUTPUT_TRANSFORM_NORMAL ||
 		!((source->src_box.x == 0 && source->src_box.y == 0 &&
@@ -1109,9 +1126,16 @@ static bool scaled_mirror(struct mirror *m, struct wlr_scene_buffer *source, dou
 	int bottom = lround((y + source->buffer->height) * scale);
 	int width = right - left, height = bottom - top;
 	int ax = parent_x + left, ay = parent_y + top;
-	if (width <= 0 || height <= 0 || ax < clip.x || ay < clip.y ||
-		ax + width > clip.x + clip.width || ay + height > clip.y + clip.height)
-		return false;
+    if (width <= 0 || height <= 0) return false;
+    struct wlr_box visible;
+    if (!wlr_box_intersection(&visible, &(struct wlr_box){ax, ay, width, height}, &clip)) {
+        wlr_scene_node_set_enabled(&m->copy->node, false);
+        return true;
+    }
+    /* Keep full precision through rounded-edge blending on rotated panels. */
+    uint32_t format = output->transform == WL_OUTPUT_TRANSFORM_NORMAL ?
+        DRM_FORMAT_RGB565 : DRM_FORMAT_XRGB8888;
+    bool fast = scene_in_motion();
 	/* Generic for every card, not just video: a small deck thumbnail that is
 	 * not currently shown at full panel size (card_shown_large) is capped
 	 * to about 15fps (66ms) instead of regenerating on every single client
@@ -1124,8 +1148,12 @@ static bool scaled_mirror(struct mirror *m, struct wlr_scene_buffer *source, dou
 	 * the cap. */
 	bool large = card_shown_large(m->card);
 	uint64_t now = now_ms();
-	bool due = large || !m->scaled_at_ms || now - m->scaled_at_ms >= 66;
+	/* Landscape previously used the uncached path: retain its per-commit
+     * freshness rather than introducing the normal-output thumbnail cap. */
+    bool due = output->transform != WL_OUTPUT_TRANSFORM_NORMAL || large ||
+        !m->scaled_at_ms || now - m->scaled_at_ms >= 66;
 	if (!m->scaled || m->scaled_width != width || m->scaled_height != height ||
+        m->scaled_format != format || m->scaled_fast != fast ||
 		(due && m->scaled_generation != m->generation)) {
 		if (m->scaled) { wlr_buffer_drop(m->scaled); m->scaled = NULL; }
 		/* A cheap nearest-neighbor filter while something is actively
@@ -1133,12 +1161,14 @@ static bool scaled_mirror(struct mirror *m, struct wlr_scene_buffer *source, dou
 		 * avoiding a full bilinear resample on every one of many
 		 * closely-spaced frames; at rest the default bilinear filter runs
 		 * as before. */
-		m->scaled = card_scaled_buffer_create(source->buffer, width, height, scene_in_motion());
+		m->scaled = card_scaled_buffer_create_format(source->buffer, width, height, fast, format);
 		shell.cache_misses++;
 		if (!m->scaled) return false;
 		m->scaled_generation = m->generation;
 		m->scaled_width = width;
 		m->scaled_height = height;
+        m->scaled_format = format;
+        m->scaled_fast = fast;
 		m->scaled_at_ms = now;
 	} else {
 		shell.cache_hits++;
@@ -1146,10 +1176,11 @@ static bool scaled_mirror(struct mirror *m, struct wlr_scene_buffer *source, dou
 	struct wlr_scene_buffer *copy = m->copy;
 	if (copy->buffer != m->scaled)
 		wlr_scene_buffer_set_buffer(copy, m->scaled);
-	wlr_scene_buffer_set_source_box(copy, NULL);
-	wlr_scene_buffer_set_dest_size(copy, width, height);
-	wlr_scene_buffer_set_transform(copy, WL_OUTPUT_TRANSFORM_NORMAL);
-	wlr_scene_node_set_position(&copy->node, left, top);
+	wlr_scene_buffer_set_source_box(copy, &(struct wlr_fbox){
+        visible.x - ax, visible.y - ay, visible.width, visible.height});
+    wlr_scene_buffer_set_dest_size(copy, visible.width, visible.height);
+    wlr_scene_buffer_set_transform(copy, WL_OUTPUT_TRANSFORM_NORMAL);
+    wlr_scene_node_set_position(&copy->node, left + visible.x - ax, top + visible.y - ay);
 	wlr_scene_node_set_enabled(&copy->node, true);
 	return true;
 }

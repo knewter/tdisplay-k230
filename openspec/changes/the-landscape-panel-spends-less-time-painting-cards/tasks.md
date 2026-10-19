@@ -56,3 +56,12 @@ comparisons and288 rounded-clip comparisons. A separate board microbenchmark
 with unattached DRM dumb buffers measures10.130→4.109ms for rotation1, with
 exact pixels; this is not integrated frame/latency proof. Hardware tasks2.2/3.x
 and archival remain open. See docs/evidence/panel-paint/README.md.
+
+Follow-up after integrated trial: source08cf4516 built and was activated with
+baseline boot/profile preserved. It reduced full-run build CPU to16.506ms
+mean/17.521ms p95, but full/reduced still failed motion budgets at26Hz, so
+the baseline was restored. A full-precision landscape opaque cache now avoids
+repeated scaling while preserving every source commit and the8ms anti-flicker
+window. Native tests cover64 rounded/partial/output-rotation cases across
+XRGB8888/RGB565 sources and three changed frames each. Exact-source build and
+board/live-content/camera/default/archive gates remain open for this follow-up.

@@ -1,0 +1,428 @@
+K230_CARD_SHELL repaint-cost run=86713382406222 frame_id=180 render_cpu_ns=16674668 prepare_cpu_ns=294741 build_cpu_ns=16172186 commit_cpu_ns=207741 attempts=1 failed_attempts=0
+K230_CARD_SHELL frame-cost run=86713382406222 frame_id=180 total_cpu_ns=19586964 render_cpu_ns=16674668 input_cpu_ns=1992074
+K230_CARD_SHELL input-cost run=86713382406222 input_id=216 cpu_ns=373147 policy_cpu_ns=0 scene_cpu_ns=183852 chrome_cpu_ns=2407
+K230_CARD_SHELL input-cost run=86713382406222 input_id=215 cpu_ns=822556 policy_cpu_ns=5926 scene_cpu_ns=654778 chrome_cpu_ns=3259
+K230_CARD_SHELL input-cost run=86713382406222 input_id=214 cpu_ns=796371 policy_cpu_ns=4926 scene_cpu_ns=652963 chrome_cpu_ns=3703
+K230_CARD_SHELL repaint-cost run=86713382406222 frame_id=179 render_cpu_ns=16440779 prepare_cpu_ns=311778 build_cpu_ns=15896371 commit_cpu_ns=232630 attempts=1 failed_attempts=0
+K230_CARD_SHELL frame-cost run=86713382406222 frame_id=179 total_cpu_ns=18986741 render_cpu_ns=16440779 input_cpu_ns=1581703
+K230_CARD_SHELL input-cost run=86713382406222 input_id=213 cpu_ns=822222 policy_cpu_ns=5445 scene_cpu_ns=655296 chrome_cpu_ns=3481
+K230_CARD_SHELL input-cost run=86713382406222 input_id=212 cpu_ns=759481 policy_cpu_ns=4592 scene_cpu_ns=616703 chrome_cpu_ns=2889
+K230_CARD_SHELL repaint-cost run=86713382406222 frame_id=178 render_cpu_ns=16558224 prepare_cpu_ns=377704 build_cpu_ns=15915111 commit_cpu_ns=265409 attempts=1 failed_attempts=0
+K230_CARD_SHELL frame-cost run=86713382406222 frame_id=178 total_cpu_ns=19474184 render_cpu_ns=16558224 input_cpu_ns=1625741
+K230_CARD_SHELL input-cost run=86713382406222 input_id=211 cpu_ns=824074 policy_cpu_ns=5407 scene_cpu_ns=657111 chrome_cpu_ns=3296
+K230_CARD_SHELL input-cost run=86713382406222 input_id=210 cpu_ns=801667 policy_cpu_ns=4074 scene_cpu_ns=662074 chrome_cpu_ns=2926
+K230_CARD_SHELL repaint-cost run=86713382406222 frame_id=177 render_cpu_ns=16524924 prepare_cpu_ns=312593 build_cpu_ns=15953257 commit_cpu_ns=259074 attempts=1 failed_attempts=0
+K230_CARD_SHELL frame-cost run=86713382406222 frame_id=177 total_cpu_ns=20037335 render_cpu_ns=16524924 input_cpu_ns=1630703
+K230_CARD_SHELL input-cost run=86713382406222 input_id=209 cpu_ns=791148 policy_cpu_ns=5519 scene_cpu_ns=615370 chrome_cpu_ns=2592
+K230_CARD_SHELL input-cost run=86713382406222 input_id=208 cpu_ns=125629 policy_cpu_ns=5889 scene_cpu_ns=0 chrome_cpu_ns=0
+K230_CARD_SHELL input-cost run=86713382406222 input_id=207 cpu_ns=713926 policy_cpu_ns=5481 scene_cpu_ns=539630 chrome_cpu_ns=3260
+K230_CARD_SHELL repaint-cost run=86713382406222 frame_id=176 render_cpu_ns=17690328 prepare_cpu_ns=388739 build_cpu_ns=17033514 commit_cpu_ns=268075 attempts=1 failed_attempts=0
+K230_CARD_SHELL frame-cost run=86713382406222 frame_id=176 total_cpu_ns=20482476 render_cpu_ns=17690328 input_cpu_ns=1029593
+K230_CARD_SHELL input-cost run=86713382406222 input_id=206 cpu_ns=212297 policy_cpu_ns=5185 scene_cpu_ns=0 chrome_cpu_ns=0
+K230_CARD_SHELL input-cost run=86713382406222 input_id=205 cpu_ns=817296 policy_cpu_ns=5037 scene_cpu_ns=650481 chrome_cpu_ns=2926
+K230_CARD_SHELL repaint-cost run=86713382406222 frame_id=175 render_cpu_ns=16708260 prepare_cpu_ns=316703 build_cpu_ns=16141520 commit_cpu_ns=250037 attempts=1 failed_attempts=0
+K230_CARD_SHELL frame-cost run=86713382406222 frame_id=175 total_cpu_ns=19106262 render_cpu_ns=16708260 input_cpu_ns=959407
+K230_CARD_SHELL input-cost run=86713382406222 input_id=204 cpu_ns=142185 policy_cpu_ns=7037 scene_cpu_ns=0 chrome_cpu_ns=0
+K230_CARD_SHELL input-cost run=86713382406222 input_id=203 cpu_ns=817222 policy_cpu_ns=5223 scene_cpu_ns=659333 chrome_cpu_ns=2963
+K230_CARD_SHELL repaint-cost run=86713382406222 frame_id=174 render_cpu_ns=16643039 prepare_cpu_ns=267852 build_cpu_ns=16108928 commit_cpu_ns=266259 attempts=1 failed_attempts=0
+K230_CARD_SHELL frame-cost run=86713382406222 frame_id=174 total_cpu_ns=19402928 render_cpu_ns=16643039 input_cpu_ns=1060668
+K230_CARD_SHELL input-cost run=86713382406222 input_id=202 cpu_ns=262483 policy_cpu_ns=5629 scene_cpu_ns=0 chrome_cpu_ns=0
+K230_CARD_SHELL input-cost run=86713382406222 input_id=201 cpu_ns=798185 policy_cpu_ns=5148 scene_cpu_ns=649519 chrome_cpu_ns=3074
+K230_CARD_SHELL repaint-cost run=86713382406222 frame_id=173 render_cpu_ns=16735555 prepare_cpu_ns=308185 build_cpu_ns=16176592 commit_cpu_ns=250778 attempts=1 failed_attempts=0
+K230_CARD_SHELL frame-cost run=86713382406222 frame_id=173 total_cpu_ns=19359404 render_cpu_ns=16735555 input_cpu_ns=1027703
+K230_CARD_SHELL input-cost run=86713382406222 input_id=200 cpu_ns=213629 policy_cpu_ns=5593 scene_cpu_ns=0 chrome_cpu_ns=0
+K230_CARD_SHELL input-cost run=86713382406222 input_id=199 cpu_ns=814074 policy_cpu_ns=4593 scene_cpu_ns=650037 chrome_cpu_ns=2704
+K230_CARD_SHELL repaint-cost run=86713382406222 frame_id=172 render_cpu_ns=16817108 prepare_cpu_ns=264778 build_cpu_ns=16291293 commit_cpu_ns=261037 attempts=1 failed_attempts=0
+K230_CARD_SHELL frame-cost run=86713382406222 frame_id=172 total_cpu_ns=19399738 render_cpu_ns=16817108 input_cpu_ns=996481
+K230_CARD_SHELL input-cost run=86713382406222 input_id=198 cpu_ns=217038 policy_cpu_ns=4593 scene_cpu_ns=0 chrome_cpu_ns=0
+K230_CARD_SHELL input-cost run=86713382406222 input_id=197 cpu_ns=779443 policy_cpu_ns=5185 scene_cpu_ns=635778 chrome_cpu_ns=3074
+K230_CARD_SHELL repaint-cost run=86713382406222 frame_id=171 render_cpu_ns=16651628 prepare_cpu_ns=263814 build_cpu_ns=16126334 commit_cpu_ns=261480 attempts=1 failed_attempts=0
+K230_CARD_SHELL frame-cost run=86713382406222 frame_id=171 total_cpu_ns=19158034 render_cpu_ns=16651628 input_cpu_ns=936926
+K230_CARD_SHELL input-cost run=86713382406222 input_id=196 cpu_ns=132741 policy_cpu_ns=5222 scene_cpu_ns=0 chrome_cpu_ns=0
+K230_CARD_SHELL input-cost run=86713382406222 input_id=195 cpu_ns=804185 policy_cpu_ns=5111 scene_cpu_ns=644703 chrome_cpu_ns=3222
+K230_CARD_SHELL repaint-cost run=86713382406222 frame_id=170 render_cpu_ns=16828554 prepare_cpu_ns=301962 build_cpu_ns=16259998 commit_cpu_ns=266594 attempts=1 failed_attempts=0
+K230_CARD_SHELL frame-cost run=86713382406222 frame_id=170 total_cpu_ns=19295296 render_cpu_ns=16828554 input_cpu_ns=1097371
+K230_CARD_SHELL input-cost run=86713382406222 input_id=194 cpu_ns=122148 policy_cpu_ns=5111 scene_cpu_ns=0 chrome_cpu_ns=0
+K230_CARD_SHELL input-cost run=86713382406222 input_id=193 cpu_ns=975223 policy_cpu_ns=5000 scene_cpu_ns=801001 chrome_cpu_ns=5481
+K230_CARD_SHELL repaint-cost run=86713382406222 frame_id=169 render_cpu_ns=16947886 prepare_cpu_ns=362667 build_cpu_ns=16318700 commit_cpu_ns=266519 attempts=1 failed_attempts=0
+K230_CARD_SHELL frame-cost run=86713382406222 frame_id=169 total_cpu_ns=18494368 render_cpu_ns=16947886 input_cpu_ns=697112
+K230_CARD_SHELL input-cost run=86713382406222 input_id=192 cpu_ns=697112 policy_cpu_ns=4408 scene_cpu_ns=535741 chrome_cpu_ns=3889
+K230_CARD_SHELL repaint-cost run=86713382406222 frame_id=168 render_cpu_ns=17125702 prepare_cpu_ns=419186 build_cpu_ns=16440406 commit_cpu_ns=266110 attempts=1 failed_attempts=0
+K230_CARD_SHELL frame-cost run=86713382406222 frame_id=168 total_cpu_ns=19561702 render_cpu_ns=17125702 input_cpu_ns=1587332
+K230_CARD_SHELL input-cost run=86713382406222 input_id=191 cpu_ns=816481 policy_cpu_ns=4963 scene_cpu_ns=649073 chrome_cpu_ns=3185
+K230_CARD_SHELL input-cost run=86713382406222 input_id=190 cpu_ns=770851 policy_cpu_ns=5296 scene_cpu_ns=549518 chrome_cpu_ns=2926
+K230_CARD_SHELL repaint-cost run=86713382406222 frame_id=167 render_cpu_ns=16798295 prepare_cpu_ns=301741 build_cpu_ns=16233961 commit_cpu_ns=262593 attempts=1 failed_attempts=0
+K230_CARD_SHELL frame-cost run=86713382406222 frame_id=167 total_cpu_ns=19153927 render_cpu_ns=16798295 input_cpu_ns=1517261
+K230_CARD_SHELL input-cost run=86713382406222 input_id=189 cpu_ns=732779 policy_cpu_ns=4148 scene_cpu_ns=551185 chrome_cpu_ns=3037
+K230_CARD_SHELL input-cost run=86713382406222 input_id=188 cpu_ns=784482 policy_cpu_ns=4333 scene_cpu_ns=644185 chrome_cpu_ns=3445
+K230_CARD_SHELL repaint-cost run=86713382406222 frame_id=166 render_cpu_ns=16801223 prepare_cpu_ns=299556 build_cpu_ns=16220370 commit_cpu_ns=281297 attempts=1 failed_attempts=0
+K230_CARD_SHELL frame-cost run=86713382406222 frame_id=166 total_cpu_ns=19202519 render_cpu_ns=16801223 input_cpu_ns=1610778
+K230_CARD_SHELL input-cost run=86713382406222 input_id=187 cpu_ns=778370 policy_cpu_ns=3963 scene_cpu_ns=604556 chrome_cpu_ns=2666
+K230_CARD_SHELL input-cost run=86713382406222 input_id=186 cpu_ns=832408 policy_cpu_ns=3926 scene_cpu_ns=663149 chrome_cpu_ns=3185
+K230_CARD_SHELL repaint-cost run=86713382406222 frame_id=165 render_cpu_ns=17003963 prepare_cpu_ns=297667 build_cpu_ns=16449148 commit_cpu_ns=257148 attempts=1 failed_attempts=0
+K230_CARD_SHELL frame-cost run=86713382406222 frame_id=165 total_cpu_ns=19649554 render_cpu_ns=17003963 input_cpu_ns=1027518
+K230_CARD_SHELL input-cost run=86713382406222 input_id=185 cpu_ns=200704 policy_cpu_ns=4333 scene_cpu_ns=0 chrome_cpu_ns=0
+K230_CARD_SHELL input-cost run=86713382406222 input_id=184 cpu_ns=826814 policy_cpu_ns=3814 scene_cpu_ns=663036 chrome_cpu_ns=2889
+K230_CARD_SHELL repaint-cost run=86713382406222 frame_id=164 render_cpu_ns=17066073 prepare_cpu_ns=299778 build_cpu_ns=16500961 commit_cpu_ns=265334 attempts=1 failed_attempts=0
+K230_CARD_SHELL frame-cost run=86713382406222 frame_id=164 total_cpu_ns=19506074 render_cpu_ns=17066073 input_cpu_ns=1070556
+K230_CARD_SHELL input-cost run=86713382406222 input_id=183 cpu_ns=204889 policy_cpu_ns=4555 scene_cpu_ns=0 chrome_cpu_ns=0
+K230_CARD_SHELL input-cost run=86713382406222 input_id=182 cpu_ns=865667 policy_cpu_ns=5259 scene_cpu_ns=707149 chrome_cpu_ns=3000
+K230_CARD_SHELL repaint-cost run=86713382406222 frame_id=163 render_cpu_ns=16796999 prepare_cpu_ns=261333 build_cpu_ns=16268777 commit_cpu_ns=266889 attempts=1 failed_attempts=0
+K230_CARD_SHELL frame-cost run=86713382406222 frame_id=163 total_cpu_ns=17841443 render_cpu_ns=16796999 input_cpu_ns=309777
+K230_CARD_SHELL input-cost run=86713382406222 input_id=181 cpu_ns=309777 policy_cpu_ns=6037 scene_cpu_ns=149184 chrome_cpu_ns=3963
+K230_CARD_SHELL repaint-cost run=86713382406222 frame_id=152 render_cpu_ns=16968189 prepare_cpu_ns=324111 build_cpu_ns=16379818 commit_cpu_ns=264260 attempts=1 failed_attempts=0
+K230_CARD_SHELL frame-cost run=86713382406222 frame_id=152 total_cpu_ns=18908003 render_cpu_ns=16968189 input_cpu_ns=1135445
+K230_CARD_SHELL input-cost run=86713382406222 input_id=180 cpu_ns=318259 policy_cpu_ns=0 scene_cpu_ns=185852 chrome_cpu_ns=2629
+K230_CARD_SHELL input-cost run=86713382406222 input_id=179 cpu_ns=817186 policy_cpu_ns=5000 scene_cpu_ns=676742 chrome_cpu_ns=3370
+K230_CARD_SHELL repaint-cost run=86713382406222 frame_id=151 render_cpu_ns=16872671 prepare_cpu_ns=302185 build_cpu_ns=16310448 commit_cpu_ns=260038 attempts=1 failed_attempts=0
+K230_CARD_SHELL frame-cost run=86713382406222 frame_id=151 total_cpu_ns=19059524 render_cpu_ns=16872671 input_cpu_ns=1534667
+K230_CARD_SHELL input-cost run=86713382406222 input_id=178 cpu_ns=766483 policy_cpu_ns=4852 scene_cpu_ns=579927 chrome_cpu_ns=7889
+K230_CARD_SHELL input-cost run=86713382406222 input_id=177 cpu_ns=768184 policy_cpu_ns=5111 scene_cpu_ns=609074 chrome_cpu_ns=2630
+K230_CARD_SHELL repaint-cost run=86713382406222 frame_id=150 render_cpu_ns=17334816 prepare_cpu_ns=732481 build_cpu_ns=16385558 commit_cpu_ns=216777 attempts=1 failed_attempts=0
+K230_CARD_SHELL frame-cost run=86713382406222 frame_id=150 total_cpu_ns=19118076 render_cpu_ns=17334816 input_cpu_ns=841517
+K230_CARD_SHELL input-cost run=86713382406222 input_id=176 cpu_ns=132371 policy_cpu_ns=4926 scene_cpu_ns=0 chrome_cpu_ns=0
+K230_CARD_SHELL input-cost run=86713382406222 input_id=175 cpu_ns=709146 policy_cpu_ns=4889 scene_cpu_ns=497333 chrome_cpu_ns=2556
+K230_CARD_SHELL repaint-cost run=86713382406222 frame_id=149 render_cpu_ns=18126705 prepare_cpu_ns=916519 build_cpu_ns=16952815 commit_cpu_ns=257371 attempts=1 failed_attempts=0
+K230_CARD_SHELL frame-cost run=86713382406222 frame_id=149 total_cpu_ns=19670039 render_cpu_ns=18126705 input_cpu_ns=911075
+K230_CARD_SHELL input-cost run=86713382406222 input_id=174 cpu_ns=146296 policy_cpu_ns=5519 scene_cpu_ns=0 chrome_cpu_ns=0
+K230_CARD_SHELL input-cost run=86713382406222 input_id=173 cpu_ns=764779 policy_cpu_ns=5222 scene_cpu_ns=624520 chrome_cpu_ns=3851
+K230_CARD_SHELL repaint-cost run=86713382406222 frame_id=148 render_cpu_ns=17002700 prepare_cpu_ns=296481 build_cpu_ns=16445627 commit_cpu_ns=260592 attempts=1 failed_attempts=0
+K230_CARD_SHELL frame-cost run=86713382406222 frame_id=148 total_cpu_ns=20093291 render_cpu_ns=17002700 input_cpu_ns=1708001
+K230_CARD_SHELL input-cost run=86713382406222 input_id=172 cpu_ns=698666 policy_cpu_ns=4889 scene_cpu_ns=552963 chrome_cpu_ns=2630
+K230_CARD_SHELL input-cost run=86713382406222 input_id=171 cpu_ns=86593 policy_cpu_ns=4963 scene_cpu_ns=0 chrome_cpu_ns=0
+K230_CARD_SHELL input-cost run=86713382406222 input_id=170 cpu_ns=133445 policy_cpu_ns=5630 scene_cpu_ns=0 chrome_cpu_ns=0
+K230_CARD_SHELL input-cost run=86713382406222 input_id=169 cpu_ns=789297 policy_cpu_ns=5000 scene_cpu_ns=642963 chrome_cpu_ns=3926
+K230_CARD_SHELL repaint-cost run=86713382406222 frame_id=147 render_cpu_ns=18019083 prepare_cpu_ns=304629 build_cpu_ns=17443750 commit_cpu_ns=270704 attempts=1 failed_attempts=0
+K230_CARD_SHELL frame-cost run=86713382406222 frame_id=147 total_cpu_ns=21222860 render_cpu_ns=18019083 input_cpu_ns=1593258
+K230_CARD_SHELL input-cost run=86713382406222 input_id=168 cpu_ns=759147 policy_cpu_ns=5444 scene_cpu_ns=533333 chrome_cpu_ns=2667
+K230_CARD_SHELL input-cost run=86713382406222 input_id=167 cpu_ns=71297 policy_cpu_ns=3926 scene_cpu_ns=0 chrome_cpu_ns=0
+K230_CARD_SHELL input-cost run=86713382406222 input_id=166 cpu_ns=83666 policy_cpu_ns=5000 scene_cpu_ns=0 chrome_cpu_ns=0
+K230_CARD_SHELL input-cost run=86713382406222 input_id=165 cpu_ns=679148 policy_cpu_ns=6889 scene_cpu_ns=527593 chrome_cpu_ns=2630
+K230_CARD_SHELL repaint-cost run=86713382406222 frame_id=146 render_cpu_ns=18080780 prepare_cpu_ns=306074 build_cpu_ns=17520557 commit_cpu_ns=254149 attempts=1 failed_attempts=0
+K230_CARD_SHELL frame-cost run=86713382406222 frame_id=146 total_cpu_ns=21256557 render_cpu_ns=18080780 input_cpu_ns=2253002
+K230_CARD_SHELL input-cost run=86713382406222 input_id=164 cpu_ns=1177704 policy_cpu_ns=10223 scene_cpu_ns=1079888 chrome_cpu_ns=3926
+K230_CARD_SHELL input-cost run=86713382406222 input_id=163 cpu_ns=81556 policy_cpu_ns=5852 scene_cpu_ns=0 chrome_cpu_ns=0
+K230_CARD_SHELL input-cost run=86713382406222 input_id=162 cpu_ns=63260 policy_cpu_ns=3371 scene_cpu_ns=0 chrome_cpu_ns=0
+K230_CARD_SHELL input-cost run=86713382406222 input_id=161 cpu_ns=76667 policy_cpu_ns=4889 scene_cpu_ns=0 chrome_cpu_ns=0
+K230_CARD_SHELL input-cost run=86713382406222 input_id=160 cpu_ns=853815 policy_cpu_ns=5037 scene_cpu_ns=704408 chrome_cpu_ns=3703
+K230_CARD_SHELL repaint-cost run=86713382406222 frame_id=145 render_cpu_ns=18954031 prepare_cpu_ns=434444 build_cpu_ns=18243883 commit_cpu_ns=275704 attempts=1 failed_attempts=0
+K230_CARD_SHELL frame-cost run=86713382406222 frame_id=145 total_cpu_ns=22155252 render_cpu_ns=18954031 input_cpu_ns=1903813
+K230_CARD_SHELL input-cost run=86713382406222 input_id=159 cpu_ns=795888 policy_cpu_ns=4852 scene_cpu_ns=649222 chrome_cpu_ns=3741
+K230_CARD_SHELL input-cost run=86713382406222 input_id=158 cpu_ns=69074 policy_cpu_ns=3482 scene_cpu_ns=0 chrome_cpu_ns=0
+K230_CARD_SHELL input-cost run=86713382406222 input_id=157 cpu_ns=83185 policy_cpu_ns=5481 scene_cpu_ns=0 chrome_cpu_ns=0
+K230_CARD_SHELL input-cost run=86713382406222 input_id=156 cpu_ns=77000 policy_cpu_ns=5222 scene_cpu_ns=0 chrome_cpu_ns=0
+K230_CARD_SHELL input-cost run=86713382406222 input_id=155 cpu_ns=878666 policy_cpu_ns=9630 scene_cpu_ns=679406 chrome_cpu_ns=3296
+K230_CARD_SHELL repaint-cost run=86713382406222 frame_id=144 render_cpu_ns=18948371 prepare_cpu_ns=230000 build_cpu_ns=18375964 commit_cpu_ns=342407 attempts=1 failed_attempts=0
+K230_CARD_SHELL frame-cost run=86713382406222 frame_id=144 total_cpu_ns=21741554 render_cpu_ns=18948371 input_cpu_ns=1054963
+K230_CARD_SHELL input-cost run=86713382406222 input_id=154 cpu_ns=86778 policy_cpu_ns=4630 scene_cpu_ns=0 chrome_cpu_ns=0
+K230_CARD_SHELL input-cost run=86713382406222 input_id=153 cpu_ns=202704 policy_cpu_ns=31037 scene_cpu_ns=0 chrome_cpu_ns=0
+K230_CARD_SHELL input-cost run=86713382406222 input_id=152 cpu_ns=765481 policy_cpu_ns=3518 scene_cpu_ns=630074 chrome_cpu_ns=3371
+K230_CARD_SHELL repaint-cost run=86713382406222 frame_id=143 render_cpu_ns=18921075 prepare_cpu_ns=304630 build_cpu_ns=18332705 commit_cpu_ns=283740 attempts=1 failed_attempts=0
+K230_CARD_SHELL frame-cost run=86713382406222 frame_id=143 total_cpu_ns=22466965 render_cpu_ns=18921075 input_cpu_ns=1752110
+K230_CARD_SHELL input-cost run=86713382406222 input_id=151 cpu_ns=791147 policy_cpu_ns=4482 scene_cpu_ns=530889 chrome_cpu_ns=3037
+K230_CARD_SHELL input-cost run=86713382406222 input_id=150 cpu_ns=66334 policy_cpu_ns=2815 scene_cpu_ns=0 chrome_cpu_ns=0
+K230_CARD_SHELL input-cost run=86713382406222 input_id=149 cpu_ns=83148 policy_cpu_ns=4297 scene_cpu_ns=0 chrome_cpu_ns=0
+K230_CARD_SHELL input-cost run=86713382406222 input_id=148 cpu_ns=811481 policy_cpu_ns=3556 scene_cpu_ns=645297 chrome_cpu_ns=3222
+K230_CARD_SHELL repaint-cost run=86713382406222 frame_id=142 render_cpu_ns=18333180 prepare_cpu_ns=316777 build_cpu_ns=17770922 commit_cpu_ns=245481 attempts=1 failed_attempts=0
+K230_CARD_SHELL frame-cost run=86713382406222 frame_id=142 total_cpu_ns=20753325 render_cpu_ns=18333180 input_cpu_ns=1053443
+K230_CARD_SHELL input-cost run=86713382406222 input_id=147 cpu_ns=219740 policy_cpu_ns=4481 scene_cpu_ns=0 chrome_cpu_ns=0
+K230_CARD_SHELL input-cost run=86713382406222 input_id=146 cpu_ns=833703 policy_cpu_ns=5815 scene_cpu_ns=682296 chrome_cpu_ns=3963
+K230_CARD_SHELL repaint-cost run=86713382406222 frame_id=141 render_cpu_ns=18217264 prepare_cpu_ns=261111 build_cpu_ns=17670783 commit_cpu_ns=285370 attempts=1 failed_attempts=0
+K230_CARD_SHELL frame-cost run=86713382406222 frame_id=141 total_cpu_ns=19214078 render_cpu_ns=18217264 input_cpu_ns=269074
+K230_CARD_SHELL input-cost run=86713382406222 input_id=145 cpu_ns=269074 policy_cpu_ns=5296 scene_cpu_ns=135777 chrome_cpu_ns=2704
+K230_CARD_SHELL repaint-cost run=86713382406222 frame_id=130 render_cpu_ns=16395444 prepare_cpu_ns=312852 build_cpu_ns=15818111 commit_cpu_ns=264481 attempts=1 failed_attempts=0
+K230_CARD_SHELL frame-cost run=86713382406222 frame_id=130 total_cpu_ns=18101370 render_cpu_ns=16395444 input_cpu_ns=1123777
+K230_CARD_SHELL input-cost run=86713382406222 input_id=144 cpu_ns=293481 policy_cpu_ns=0 scene_cpu_ns=183778 chrome_cpu_ns=2518
+K230_CARD_SHELL input-cost run=86713382406222 input_id=143 cpu_ns=830296 policy_cpu_ns=4186 scene_cpu_ns=669333 chrome_cpu_ns=3000
+K230_CARD_SHELL repaint-cost run=86713382406222 frame_id=129 render_cpu_ns=17309486 prepare_cpu_ns=423482 build_cpu_ns=16623670 commit_cpu_ns=262334 attempts=1 failed_attempts=0
+K230_CARD_SHELL frame-cost run=86713382406222 frame_id=129 total_cpu_ns=19833522 render_cpu_ns=17309486 input_cpu_ns=1563889
+K230_CARD_SHELL input-cost run=86713382406222 input_id=142 cpu_ns=774667 policy_cpu_ns=5333 scene_cpu_ns=583111 chrome_cpu_ns=3444
+K230_CARD_SHELL input-cost run=86713382406222 input_id=141 cpu_ns=789222 policy_cpu_ns=4704 scene_cpu_ns=604629 chrome_cpu_ns=5963
+K230_CARD_SHELL repaint-cost run=86713382406222 frame_id=128 render_cpu_ns=17823815 prepare_cpu_ns=828000 build_cpu_ns=16720851 commit_cpu_ns=274964 attempts=1 failed_attempts=0
+K230_CARD_SHELL frame-cost run=86713382406222 frame_id=128 total_cpu_ns=19522039 render_cpu_ns=17823815 input_cpu_ns=1103446
+K230_CARD_SHELL input-cost run=86713382406222 input_id=140 cpu_ns=210630 policy_cpu_ns=5333 scene_cpu_ns=0 chrome_cpu_ns=0
+K230_CARD_SHELL input-cost run=86713382406222 input_id=139 cpu_ns=892816 policy_cpu_ns=4667 scene_cpu_ns=732557 chrome_cpu_ns=3074
+K230_CARD_SHELL repaint-cost run=86713382406222 frame_id=127 render_cpu_ns=17688591 prepare_cpu_ns=439445 build_cpu_ns=16984183 commit_cpu_ns=264963 attempts=1 failed_attempts=0
+K230_CARD_SHELL frame-cost run=86713382406222 frame_id=127 total_cpu_ns=20730072 render_cpu_ns=17688591 input_cpu_ns=1746669
+K230_CARD_SHELL input-cost run=86713382406222 input_id=138 cpu_ns=905186 policy_cpu_ns=4852 scene_cpu_ns=728741 chrome_cpu_ns=2926
+K230_CARD_SHELL input-cost run=86713382406222 input_id=137 cpu_ns=841483 policy_cpu_ns=4963 scene_cpu_ns=660408 chrome_cpu_ns=4000
+K230_CARD_SHELL repaint-cost run=86713382406222 frame_id=126 render_cpu_ns=17619261 prepare_cpu_ns=908815 build_cpu_ns=16448557 commit_cpu_ns=261889 attempts=1 failed_attempts=0
+K230_CARD_SHELL frame-cost run=86713382406222 frame_id=126 total_cpu_ns=19288928 render_cpu_ns=17619261 input_cpu_ns=1113444
+K230_CARD_SHELL input-cost run=86713382406222 input_id=136 cpu_ns=163185 policy_cpu_ns=5148 scene_cpu_ns=0 chrome_cpu_ns=0
+K230_CARD_SHELL input-cost run=86713382406222 input_id=135 cpu_ns=950259 policy_cpu_ns=5444 scene_cpu_ns=733075 chrome_cpu_ns=3111
+K230_CARD_SHELL repaint-cost run=86713382406222 frame_id=125 render_cpu_ns=17891558 prepare_cpu_ns=950816 build_cpu_ns=16600558 commit_cpu_ns=340184 attempts=1 failed_attempts=0
+K230_CARD_SHELL frame-cost run=86713382406222 frame_id=125 total_cpu_ns=19814598 render_cpu_ns=17891558 input_cpu_ns=1177890
+K230_CARD_SHELL input-cost run=86713382406222 input_id=134 cpu_ns=127851 policy_cpu_ns=4667 scene_cpu_ns=0 chrome_cpu_ns=0
+K230_CARD_SHELL input-cost run=86713382406222 input_id=133 cpu_ns=1050039 policy_cpu_ns=4851 scene_cpu_ns=795335 chrome_cpu_ns=3370
+K230_CARD_SHELL repaint-cost run=86713382406222 frame_id=124 render_cpu_ns=17507077 prepare_cpu_ns=277704 build_cpu_ns=16970928 commit_cpu_ns=258445 attempts=1 failed_attempts=0
+K230_CARD_SHELL frame-cost run=86713382406222 frame_id=124 total_cpu_ns=20223410 render_cpu_ns=17507077 input_cpu_ns=1110111
+K230_CARD_SHELL input-cost run=86713382406222 input_id=132 cpu_ns=213592 policy_cpu_ns=5000 scene_cpu_ns=0 chrome_cpu_ns=0
+K230_CARD_SHELL input-cost run=86713382406222 input_id=131 cpu_ns=896519 policy_cpu_ns=4815 scene_cpu_ns=678630 chrome_cpu_ns=8926
+K230_CARD_SHELL repaint-cost run=86713382406222 frame_id=123 render_cpu_ns=17324812 prepare_cpu_ns=324555 build_cpu_ns=16733147 commit_cpu_ns=267110 attempts=1 failed_attempts=0
+K230_CARD_SHELL frame-cost run=86713382406222 frame_id=123 total_cpu_ns=19536480 render_cpu_ns=17324812 input_cpu_ns=958778
+K230_CARD_SHELL input-cost run=86713382406222 input_id=130 cpu_ns=220075 policy_cpu_ns=5408 scene_cpu_ns=0 chrome_cpu_ns=0
+K230_CARD_SHELL input-cost run=86713382406222 input_id=129 cpu_ns=738703 policy_cpu_ns=5630 scene_cpu_ns=544815 chrome_cpu_ns=7371
+K230_CARD_SHELL repaint-cost run=86713382406222 frame_id=122 render_cpu_ns=17743812 prepare_cpu_ns=322555 build_cpu_ns=17134960 commit_cpu_ns=286297 attempts=1 failed_attempts=0
+K230_CARD_SHELL frame-cost run=86713382406222 frame_id=122 total_cpu_ns=19880441 render_cpu_ns=17743812 input_cpu_ns=827296
+K230_CARD_SHELL input-cost run=86713382406222 input_id=128 cpu_ns=126260 policy_cpu_ns=5148 scene_cpu_ns=0 chrome_cpu_ns=0
+K230_CARD_SHELL input-cost run=86713382406222 input_id=127 cpu_ns=701036 policy_cpu_ns=4296 scene_cpu_ns=535296 chrome_cpu_ns=2815
+K230_CARD_SHELL repaint-cost run=86713382406222 frame_id=121 render_cpu_ns=17592224 prepare_cpu_ns=278963 build_cpu_ns=17044928 commit_cpu_ns=268333 attempts=1 failed_attempts=0
+K230_CARD_SHELL frame-cost run=86713382406222 frame_id=121 total_cpu_ns=20014333 render_cpu_ns=17592224 input_cpu_ns=906000
+K230_CARD_SHELL input-cost run=86713382406222 input_id=126 cpu_ns=127185 policy_cpu_ns=5741 scene_cpu_ns=0 chrome_cpu_ns=0
+K230_CARD_SHELL input-cost run=86713382406222 input_id=125 cpu_ns=778815 policy_cpu_ns=5334 scene_cpu_ns=623000 chrome_cpu_ns=2741
+K230_CARD_SHELL repaint-cost run=86713382406222 frame_id=120 render_cpu_ns=17057114 prepare_cpu_ns=300111 build_cpu_ns=16490300 commit_cpu_ns=266703 attempts=1 failed_attempts=0
+K230_CARD_SHELL frame-cost run=86713382406222 frame_id=120 total_cpu_ns=19346742 render_cpu_ns=17057114 input_cpu_ns=977517
+K230_CARD_SHELL input-cost run=86713382406222 input_id=124 cpu_ns=84444 policy_cpu_ns=5074 scene_cpu_ns=0 chrome_cpu_ns=0
+K230_CARD_SHELL input-cost run=86713382406222 input_id=123 cpu_ns=893073 policy_cpu_ns=4482 scene_cpu_ns=739036 chrome_cpu_ns=4000
+K230_CARD_SHELL repaint-cost run=86713382406222 frame_id=119 render_cpu_ns=17682038 prepare_cpu_ns=308852 build_cpu_ns=17106224 commit_cpu_ns=266962 attempts=1 failed_attempts=0
+K230_CARD_SHELL frame-cost run=86713382406222 frame_id=119 total_cpu_ns=20096482 render_cpu_ns=17682038 input_cpu_ns=1073260
+K230_CARD_SHELL input-cost run=86713382406222 input_id=122 cpu_ns=85666 policy_cpu_ns=5482 scene_cpu_ns=0 chrome_cpu_ns=0
+K230_CARD_SHELL input-cost run=86713382406222 input_id=121 cpu_ns=987594 policy_cpu_ns=4445 scene_cpu_ns=833631 chrome_cpu_ns=2852
+K230_CARD_SHELL repaint-cost run=86713382406222 frame_id=118 render_cpu_ns=17394328 prepare_cpu_ns=300852 build_cpu_ns=16851328 commit_cpu_ns=242148 attempts=1 failed_attempts=0
+K230_CARD_SHELL frame-cost run=86713382406222 frame_id=118 total_cpu_ns=18928329 render_cpu_ns=17394328 input_cpu_ns=964519
+K230_CARD_SHELL input-cost run=86713382406222 input_id=120 cpu_ns=964519 policy_cpu_ns=5259 scene_cpu_ns=545593 chrome_cpu_ns=2519
+K230_CARD_SHELL repaint-cost run=86713382406222 frame_id=117 render_cpu_ns=17324074 prepare_cpu_ns=211148 build_cpu_ns=16766074 commit_cpu_ns=346852 attempts=1 failed_attempts=0
+K230_CARD_SHELL frame-cost run=86713382406222 frame_id=117 total_cpu_ns=19723221 render_cpu_ns=17324074 input_cpu_ns=1632147
+K230_CARD_SHELL input-cost run=86713382406222 input_id=119 cpu_ns=838591 policy_cpu_ns=5482 scene_cpu_ns=671703 chrome_cpu_ns=3592
+K230_CARD_SHELL input-cost run=86713382406222 input_id=118 cpu_ns=793556 policy_cpu_ns=4741 scene_cpu_ns=649185 chrome_cpu_ns=3222
+K230_CARD_SHELL repaint-cost run=86713382406222 frame_id=116 render_cpu_ns=17533515 prepare_cpu_ns=434666 build_cpu_ns=16845553 commit_cpu_ns=253296 attempts=1 failed_attempts=0
+K230_CARD_SHELL frame-cost run=86713382406222 frame_id=116 total_cpu_ns=19690626 render_cpu_ns=17533515 input_cpu_ns=1567221
+K230_CARD_SHELL input-cost run=86713382406222 input_id=117 cpu_ns=765592 policy_cpu_ns=4815 scene_cpu_ns=570556 chrome_cpu_ns=2778
+K230_CARD_SHELL input-cost run=86713382406222 input_id=116 cpu_ns=801629 policy_cpu_ns=3482 scene_cpu_ns=657148 chrome_cpu_ns=3074
+K230_CARD_SHELL repaint-cost run=86713382406222 frame_id=115 render_cpu_ns=18306663 prepare_cpu_ns=822481 build_cpu_ns=17189218 commit_cpu_ns=294964 attempts=1 failed_attempts=0
+K230_CARD_SHELL frame-cost run=86713382406222 frame_id=115 total_cpu_ns=20170924 render_cpu_ns=18306663 input_cpu_ns=953223
+K230_CARD_SHELL input-cost run=86713382406222 input_id=115 cpu_ns=202667 policy_cpu_ns=4482 scene_cpu_ns=0 chrome_cpu_ns=0
+K230_CARD_SHELL input-cost run=86713382406222 input_id=114 cpu_ns=750556 policy_cpu_ns=51407 scene_cpu_ns=553778 chrome_cpu_ns=2815
+K230_CARD_SHELL repaint-cost run=86713382406222 frame_id=114 render_cpu_ns=18516589 prepare_cpu_ns=940110 build_cpu_ns=17327663 commit_cpu_ns=248816 attempts=1 failed_attempts=0
+K230_CARD_SHELL frame-cost run=86713382406222 frame_id=114 total_cpu_ns=20101220 render_cpu_ns=18516589 input_cpu_ns=994924
+K230_CARD_SHELL input-cost run=86713382406222 input_id=113 cpu_ns=146185 policy_cpu_ns=4370 scene_cpu_ns=0 chrome_cpu_ns=0
+K230_CARD_SHELL input-cost run=86713382406222 input_id=112 cpu_ns=848739 policy_cpu_ns=4296 scene_cpu_ns=685148 chrome_cpu_ns=3259
+K230_CARD_SHELL repaint-cost run=86713382406222 frame_id=113 render_cpu_ns=18327188 prepare_cpu_ns=927297 build_cpu_ns=17087929 commit_cpu_ns=311962 attempts=1 failed_attempts=0
+K230_CARD_SHELL frame-cost run=86713382406222 frame_id=113 total_cpu_ns=19858818 render_cpu_ns=18327188 input_cpu_ns=1019408
+K230_CARD_SHELL input-cost run=86713382406222 input_id=111 cpu_ns=148667 policy_cpu_ns=4370 scene_cpu_ns=0 chrome_cpu_ns=0
+K230_CARD_SHELL input-cost run=86713382406222 input_id=110 cpu_ns=870741 policy_cpu_ns=5518 scene_cpu_ns=706704 chrome_cpu_ns=2852
+K230_CARD_SHELL repaint-cost run=86713382406222 frame_id=112 render_cpu_ns=17762662 prepare_cpu_ns=297667 build_cpu_ns=17202810 commit_cpu_ns=262185 attempts=1 failed_attempts=0
+K230_CARD_SHELL frame-cost run=86713382406222 frame_id=112 total_cpu_ns=18620366 render_cpu_ns=17762662 input_cpu_ns=297667
+K230_CARD_SHELL input-cost run=86713382406222 input_id=109 cpu_ns=297667 policy_cpu_ns=5888 scene_cpu_ns=136667 chrome_cpu_ns=2630
+K230_CARD_SHELL repaint-cost run=86713382406222 frame_id=101 render_cpu_ns=16461221 prepare_cpu_ns=304666 build_cpu_ns=15889259 commit_cpu_ns=267296 attempts=1 failed_attempts=0
+K230_CARD_SHELL frame-cost run=86713382406222 frame_id=101 total_cpu_ns=19663778 render_cpu_ns=16461221 input_cpu_ns=1621852
+K230_CARD_SHELL input-cost run=86713382406222 input_id=108 cpu_ns=847223 policy_cpu_ns=0 scene_cpu_ns=753334 chrome_cpu_ns=3444
+K230_CARD_SHELL input-cost run=86713382406222 input_id=107 cpu_ns=147444 policy_cpu_ns=6000 scene_cpu_ns=0 chrome_cpu_ns=0
+K230_CARD_SHELL input-cost run=86713382406222 input_id=106 cpu_ns=627185 policy_cpu_ns=5259 scene_cpu_ns=487037 chrome_cpu_ns=2741
+K230_CARD_SHELL repaint-cost run=86713382406222 frame_id=100 render_cpu_ns=16314147 prepare_cpu_ns=302593 build_cpu_ns=15752850 commit_cpu_ns=258704 attempts=1 failed_attempts=0
+K230_CARD_SHELL frame-cost run=86713382406222 frame_id=100 total_cpu_ns=18034296 render_cpu_ns=16314147 input_cpu_ns=720815
+K230_CARD_SHELL input-cost run=86713382406222 input_id=105 cpu_ns=720815 policy_cpu_ns=4741 scene_cpu_ns=554482 chrome_cpu_ns=3000
+K230_CARD_SHELL repaint-cost run=86713382406222 frame_id=99 render_cpu_ns=16615444 prepare_cpu_ns=430481 build_cpu_ns=15868556 commit_cpu_ns=316407 attempts=1 failed_attempts=0
+K230_CARD_SHELL frame-cost run=86713382406222 frame_id=99 total_cpu_ns=19222778 render_cpu_ns=16615444 input_cpu_ns=1481112
+K230_CARD_SHELL input-cost run=86713382406222 input_id=104 cpu_ns=732927 policy_cpu_ns=5000 scene_cpu_ns=545259 chrome_cpu_ns=2815
+K230_CARD_SHELL input-cost run=86713382406222 input_id=103 cpu_ns=748185 policy_cpu_ns=5000 scene_cpu_ns=608556 chrome_cpu_ns=2778
+K230_CARD_SHELL repaint-cost run=86713382406222 frame_id=98 render_cpu_ns=16491151 prepare_cpu_ns=292074 build_cpu_ns=15922150 commit_cpu_ns=276927 attempts=1 failed_attempts=0
+K230_CARD_SHELL frame-cost run=86713382406222 frame_id=98 total_cpu_ns=18836524 render_cpu_ns=16491151 input_cpu_ns=1497889
+K230_CARD_SHELL input-cost run=86713382406222 input_id=102 cpu_ns=697111 policy_cpu_ns=10519 scene_cpu_ns=522481 chrome_cpu_ns=2704
+K230_CARD_SHELL input-cost run=86713382406222 input_id=101 cpu_ns=800778 policy_cpu_ns=4814 scene_cpu_ns=645149 chrome_cpu_ns=2741
+K230_CARD_SHELL repaint-cost run=86713382406222 frame_id=97 render_cpu_ns=16545297 prepare_cpu_ns=236074 build_cpu_ns=16048927 commit_cpu_ns=260296 attempts=1 failed_attempts=0
+K230_CARD_SHELL frame-cost run=86713382406222 frame_id=97 total_cpu_ns=18824483 render_cpu_ns=16545297 input_cpu_ns=1380889
+K230_CARD_SHELL input-cost run=86713382406222 input_id=100 cpu_ns=684963 policy_cpu_ns=5185 scene_cpu_ns=396925 chrome_cpu_ns=2370
+K230_CARD_SHELL input-cost run=86713382406222 input_id=99 cpu_ns=695926 policy_cpu_ns=4963 scene_cpu_ns=548519 chrome_cpu_ns=4444
+K230_CARD_SHELL repaint-cost run=86713382406222 frame_id=96 render_cpu_ns=16924373 prepare_cpu_ns=293519 build_cpu_ns=16366668 commit_cpu_ns=264186 attempts=1 failed_attempts=0
+K230_CARD_SHELL frame-cost run=86713382406222 frame_id=96 total_cpu_ns=19348076 render_cpu_ns=16924373 input_cpu_ns=1585594
+K230_CARD_SHELL input-cost run=86713382406222 input_id=98 cpu_ns=754926 policy_cpu_ns=5370 scene_cpu_ns=561148 chrome_cpu_ns=3593
+K230_CARD_SHELL input-cost run=86713382406222 input_id=97 cpu_ns=830668 policy_cpu_ns=4889 scene_cpu_ns=653705 chrome_cpu_ns=3185
+K230_CARD_SHELL repaint-cost run=86713382406222 frame_id=95 render_cpu_ns=16722186 prepare_cpu_ns=298667 build_cpu_ns=16155038 commit_cpu_ns=268481 attempts=1 failed_attempts=0
+K230_CARD_SHELL frame-cost run=86713382406222 frame_id=95 total_cpu_ns=19002927 render_cpu_ns=16722186 input_cpu_ns=1003667
+K230_CARD_SHELL input-cost run=86713382406222 input_id=96 cpu_ns=195889 policy_cpu_ns=4778 scene_cpu_ns=0 chrome_cpu_ns=0
+K230_CARD_SHELL input-cost run=86713382406222 input_id=95 cpu_ns=807778 policy_cpu_ns=4778 scene_cpu_ns=651334 chrome_cpu_ns=3259
+K230_CARD_SHELL repaint-cost run=86713382406222 frame_id=94 render_cpu_ns=16730626 prepare_cpu_ns=302926 build_cpu_ns=16159405 commit_cpu_ns=268295 attempts=1 failed_attempts=0
+K230_CARD_SHELL frame-cost run=86713382406222 frame_id=94 total_cpu_ns=19030478 render_cpu_ns=16730626 input_cpu_ns=1006630
+K230_CARD_SHELL input-cost run=86713382406222 input_id=94 cpu_ns=191594 policy_cpu_ns=6778 scene_cpu_ns=0 chrome_cpu_ns=0
+K230_CARD_SHELL input-cost run=86713382406222 input_id=93 cpu_ns=815036 policy_cpu_ns=5037 scene_cpu_ns=653703 chrome_cpu_ns=2778
+K230_CARD_SHELL repaint-cost run=86713382406222 frame_id=93 render_cpu_ns=17011336 prepare_cpu_ns=268778 build_cpu_ns=16487928 commit_cpu_ns=254630 attempts=1 failed_attempts=0
+K230_CARD_SHELL frame-cost run=86713382406222 frame_id=93 total_cpu_ns=19291113 render_cpu_ns=17011336 input_cpu_ns=842778
+K230_CARD_SHELL input-cost run=86713382406222 input_id=92 cpu_ns=145259 policy_cpu_ns=5259 scene_cpu_ns=0 chrome_cpu_ns=0
+K230_CARD_SHELL input-cost run=86713382406222 input_id=91 cpu_ns=697519 policy_cpu_ns=4926 scene_cpu_ns=503593 chrome_cpu_ns=8629
+K230_CARD_SHELL repaint-cost run=86713382406222 frame_id=92 render_cpu_ns=16932964 prepare_cpu_ns=254445 build_cpu_ns=16436371 commit_cpu_ns=242148 attempts=1 failed_attempts=0
+K230_CARD_SHELL frame-cost run=86713382406222 frame_id=92 total_cpu_ns=19411777 render_cpu_ns=16932964 input_cpu_ns=962148
+K230_CARD_SHELL input-cost run=86713382406222 input_id=90 cpu_ns=196592 policy_cpu_ns=5445 scene_cpu_ns=0 chrome_cpu_ns=0
+K230_CARD_SHELL input-cost run=86713382406222 input_id=89 cpu_ns=765556 policy_cpu_ns=4556 scene_cpu_ns=626815 chrome_cpu_ns=3333
+K230_CARD_SHELL repaint-cost run=86713382406222 frame_id=91 render_cpu_ns=17006775 prepare_cpu_ns=292407 build_cpu_ns=16447479 commit_cpu_ns=266889 attempts=1 failed_attempts=0
+K230_CARD_SHELL frame-cost run=86713382406222 frame_id=91 total_cpu_ns=19459071 render_cpu_ns=17006775 input_cpu_ns=944184
+K230_CARD_SHELL input-cost run=86713382406222 input_id=88 cpu_ns=149185 policy_cpu_ns=5148 scene_cpu_ns=0 chrome_cpu_ns=0
+K230_CARD_SHELL input-cost run=86713382406222 input_id=87 cpu_ns=794999 policy_cpu_ns=5148 scene_cpu_ns=633555 chrome_cpu_ns=2889
+K230_CARD_SHELL repaint-cost run=86713382406222 frame_id=90 render_cpu_ns=16847812 prepare_cpu_ns=263148 build_cpu_ns=16319554 commit_cpu_ns=265110 attempts=1 failed_attempts=0
+K230_CARD_SHELL frame-cost run=86713382406222 frame_id=90 total_cpu_ns=19277553 render_cpu_ns=16847812 input_cpu_ns=891518
+K230_CARD_SHELL input-cost run=86713382406222 input_id=86 cpu_ns=126444 policy_cpu_ns=5296 scene_cpu_ns=0 chrome_cpu_ns=0
+K230_CARD_SHELL input-cost run=86713382406222 input_id=85 cpu_ns=765074 policy_cpu_ns=4778 scene_cpu_ns=621185 chrome_cpu_ns=3148
+K230_CARD_SHELL repaint-cost run=86713382406222 frame_id=89 render_cpu_ns=16878334 prepare_cpu_ns=317852 build_cpu_ns=16295148 commit_cpu_ns=265334 attempts=1 failed_attempts=0
+K230_CARD_SHELL frame-cost run=86713382406222 frame_id=89 total_cpu_ns=18214001 render_cpu_ns=16878334 input_cpu_ns=828703
+K230_CARD_SHELL input-cost run=86713382406222 input_id=84 cpu_ns=828703 policy_cpu_ns=4000 scene_cpu_ns=618815 chrome_cpu_ns=3037
+K230_CARD_SHELL repaint-cost run=86713382406222 frame_id=88 render_cpu_ns=17294260 prepare_cpu_ns=436297 build_cpu_ns=16600482 commit_cpu_ns=257481 attempts=1 failed_attempts=0
+K230_CARD_SHELL frame-cost run=86713382406222 frame_id=88 total_cpu_ns=19724591 render_cpu_ns=17294260 input_cpu_ns=1630999
+K230_CARD_SHELL input-cost run=86713382406222 input_id=83 cpu_ns=836962 policy_cpu_ns=5260 scene_cpu_ns=527814 chrome_cpu_ns=2852
+K230_CARD_SHELL input-cost run=86713382406222 input_id=82 cpu_ns=794037 policy_cpu_ns=4630 scene_cpu_ns=645482 chrome_cpu_ns=2963
+K230_CARD_SHELL repaint-cost run=86713382406222 frame_id=87 render_cpu_ns=17180074 prepare_cpu_ns=254482 build_cpu_ns=16670148 commit_cpu_ns=255444 attempts=1 failed_attempts=0
+K230_CARD_SHELL frame-cost run=86713382406222 frame_id=87 total_cpu_ns=19601039 render_cpu_ns=17180074 input_cpu_ns=1555184
+K230_CARD_SHELL input-cost run=86713382406222 input_id=81 cpu_ns=746740 policy_cpu_ns=4852 scene_cpu_ns=552036 chrome_cpu_ns=18593
+K230_CARD_SHELL input-cost run=86713382406222 input_id=80 cpu_ns=808444 policy_cpu_ns=4000 scene_cpu_ns=648852 chrome_cpu_ns=3223
+K230_CARD_SHELL repaint-cost run=86713382406222 frame_id=86 render_cpu_ns=17053109 prepare_cpu_ns=304592 build_cpu_ns=16486702 commit_cpu_ns=261815 attempts=1 failed_attempts=0
+K230_CARD_SHELL frame-cost run=86713382406222 frame_id=86 total_cpu_ns=19847963 render_cpu_ns=17053109 input_cpu_ns=1467556
+K230_CARD_SHELL input-cost run=86713382406222 input_id=79 cpu_ns=739778 policy_cpu_ns=3889 scene_cpu_ns=543444 chrome_cpu_ns=2445
+K230_CARD_SHELL input-cost run=86713382406222 input_id=78 cpu_ns=727778 policy_cpu_ns=5296 scene_cpu_ns=517704 chrome_cpu_ns=10074
+K230_CARD_SHELL repaint-cost run=86713382406222 frame_id=85 render_cpu_ns=17076072 prepare_cpu_ns=300926 build_cpu_ns=16534664 commit_cpu_ns=240482 attempts=1 failed_attempts=0
+K230_CARD_SHELL frame-cost run=86713382406222 frame_id=85 total_cpu_ns=19360961 render_cpu_ns=17076072 input_cpu_ns=1502998
+K230_CARD_SHELL input-cost run=86713382406222 input_id=77 cpu_ns=737888 policy_cpu_ns=4556 scene_cpu_ns=547036 chrome_cpu_ns=2593
+K230_CARD_SHELL input-cost run=86713382406222 input_id=76 cpu_ns=765110 policy_cpu_ns=3185 scene_cpu_ns=631889 chrome_cpu_ns=3074
+K230_CARD_SHELL repaint-cost run=86713382406222 frame_id=84 render_cpu_ns=16940553 prepare_cpu_ns=265666 build_cpu_ns=16404665 commit_cpu_ns=270222 attempts=1 failed_attempts=0
+K230_CARD_SHELL frame-cost run=86713382406222 frame_id=84 total_cpu_ns=19290478 render_cpu_ns=16940553 input_cpu_ns=1600556
+K230_CARD_SHELL input-cost run=86713382406222 input_id=75 cpu_ns=798740 policy_cpu_ns=4037 scene_cpu_ns=547333 chrome_cpu_ns=2370
+K230_CARD_SHELL input-cost run=86713382406222 input_id=74 cpu_ns=801816 policy_cpu_ns=5296 scene_cpu_ns=647446 chrome_cpu_ns=3185
+K230_CARD_SHELL repaint-cost run=86713382406222 frame_id=83 render_cpu_ns=16974775 prepare_cpu_ns=254962 build_cpu_ns=16463776 commit_cpu_ns=256037 attempts=1 failed_attempts=0
+K230_CARD_SHELL frame-cost run=86713382406222 frame_id=83 total_cpu_ns=17974146 render_cpu_ns=16974775 input_cpu_ns=275371
+K230_CARD_SHELL input-cost run=86713382406222 input_id=73 cpu_ns=275371 policy_cpu_ns=5482 scene_cpu_ns=135519 chrome_cpu_ns=2482
+K230_CARD_SHELL repaint-cost run=86713382406222 frame_id=72 render_cpu_ns=16486220 prepare_cpu_ns=310888 build_cpu_ns=15910999 commit_cpu_ns=264333 attempts=1 failed_attempts=0
+K230_CARD_SHELL frame-cost run=86713382406222 frame_id=72 total_cpu_ns=18138812 render_cpu_ns=16486220 input_cpu_ns=1076185
+K230_CARD_SHELL input-cost run=86713382406222 input_id=72 cpu_ns=291259 policy_cpu_ns=0 scene_cpu_ns=182407 chrome_cpu_ns=2296
+K230_CARD_SHELL input-cost run=86713382406222 input_id=71 cpu_ns=784926 policy_cpu_ns=5037 scene_cpu_ns=650518 chrome_cpu_ns=2963
+K230_CARD_SHELL repaint-cost run=86713382406222 frame_id=71 render_cpu_ns=17363034 prepare_cpu_ns=427149 build_cpu_ns=16694588 commit_cpu_ns=241297 attempts=1 failed_attempts=0
+K230_CARD_SHELL frame-cost run=86713382406222 frame_id=71 total_cpu_ns=20351663 render_cpu_ns=17363034 input_cpu_ns=1505851
+K230_CARD_SHELL input-cost run=86713382406222 input_id=70 cpu_ns=739444 policy_cpu_ns=5741 scene_cpu_ns=550407 chrome_cpu_ns=31704
+K230_CARD_SHELL input-cost run=86713382406222 input_id=69 cpu_ns=766407 policy_cpu_ns=6444 scene_cpu_ns=543444 chrome_cpu_ns=9185
+K230_CARD_SHELL repaint-cost run=86713382406222 frame_id=70 render_cpu_ns=16617926 prepare_cpu_ns=300556 build_cpu_ns=16053592 commit_cpu_ns=263778 attempts=1 failed_attempts=0
+K230_CARD_SHELL frame-cost run=86713382406222 frame_id=70 total_cpu_ns=19103110 render_cpu_ns=16617926 input_cpu_ns=1559778
+K230_CARD_SHELL input-cost run=86713382406222 input_id=68 cpu_ns=721148 policy_cpu_ns=4667 scene_cpu_ns=551074 chrome_cpu_ns=3186
+K230_CARD_SHELL input-cost run=86713382406222 input_id=67 cpu_ns=838630 policy_cpu_ns=4666 scene_cpu_ns=678926 chrome_cpu_ns=2703
+K230_CARD_SHELL repaint-cost run=86713382406222 frame_id=69 render_cpu_ns=16706818 prepare_cpu_ns=317741 build_cpu_ns=16124522 commit_cpu_ns=264555 attempts=1 failed_attempts=0
+K230_CARD_SHELL frame-cost run=86713382406222 frame_id=69 total_cpu_ns=19234892 render_cpu_ns=16706818 input_cpu_ns=1541184
+K230_CARD_SHELL input-cost run=86713382406222 input_id=66 cpu_ns=841369 policy_cpu_ns=4963 scene_cpu_ns=659555 chrome_cpu_ns=3222
+K230_CARD_SHELL input-cost run=86713382406222 input_id=65 cpu_ns=699815 policy_cpu_ns=4704 scene_cpu_ns=525482 chrome_cpu_ns=2741
+K230_CARD_SHELL repaint-cost run=86713382406222 frame_id=68 render_cpu_ns=16482926 prepare_cpu_ns=306260 build_cpu_ns=15905074 commit_cpu_ns=271592 attempts=1 failed_attempts=0
+K230_CARD_SHELL frame-cost run=86713382406222 frame_id=68 total_cpu_ns=19100262 render_cpu_ns=16482926 input_cpu_ns=1641890
+K230_CARD_SHELL input-cost run=86713382406222 input_id=64 cpu_ns=764778 policy_cpu_ns=4482 scene_cpu_ns=572223 chrome_cpu_ns=4037
+K230_CARD_SHELL input-cost run=86713382406222 input_id=63 cpu_ns=877112 policy_cpu_ns=5852 scene_cpu_ns=707816 chrome_cpu_ns=3000
+K230_CARD_SHELL repaint-cost run=86713382406222 frame_id=67 render_cpu_ns=16873331 prepare_cpu_ns=336741 build_cpu_ns=16242331 commit_cpu_ns=294259 attempts=1 failed_attempts=0
+K230_CARD_SHELL frame-cost run=86713382406222 frame_id=67 total_cpu_ns=19358294 render_cpu_ns=16873331 input_cpu_ns=1623001
+K230_CARD_SHELL input-cost run=86713382406222 input_id=62 cpu_ns=774704 policy_cpu_ns=5333 scene_cpu_ns=599518 chrome_cpu_ns=4148
+K230_CARD_SHELL input-cost run=86713382406222 input_id=61 cpu_ns=848297 policy_cpu_ns=4963 scene_cpu_ns=690519 chrome_cpu_ns=3111
+K230_CARD_SHELL repaint-cost run=86713382406222 frame_id=66 render_cpu_ns=16971666 prepare_cpu_ns=317000 build_cpu_ns=16389444 commit_cpu_ns=265222 attempts=1 failed_attempts=0
+K230_CARD_SHELL frame-cost run=86713382406222 frame_id=66 total_cpu_ns=19339147 render_cpu_ns=16971666 input_cpu_ns=1038148
+K230_CARD_SHELL input-cost run=86713382406222 input_id=60 cpu_ns=200333 policy_cpu_ns=4555 scene_cpu_ns=0 chrome_cpu_ns=0
+K230_CARD_SHELL input-cost run=86713382406222 input_id=59 cpu_ns=837815 policy_cpu_ns=4408 scene_cpu_ns=682964 chrome_cpu_ns=2926
+K230_CARD_SHELL repaint-cost run=86713382406222 frame_id=65 render_cpu_ns=16840999 prepare_cpu_ns=343148 build_cpu_ns=16230147 commit_cpu_ns=267704 attempts=1 failed_attempts=0
+K230_CARD_SHELL frame-cost run=86713382406222 frame_id=65 total_cpu_ns=19367738 render_cpu_ns=16840999 input_cpu_ns=1120257
+K230_CARD_SHELL input-cost run=86713382406222 input_id=58 cpu_ns=166037 policy_cpu_ns=11593 scene_cpu_ns=0 chrome_cpu_ns=0
+K230_CARD_SHELL input-cost run=86713382406222 input_id=57 cpu_ns=954220 policy_cpu_ns=4555 scene_cpu_ns=623444 chrome_cpu_ns=2814
+K230_CARD_SHELL repaint-cost run=86713382406222 frame_id=64 render_cpu_ns=17037627 prepare_cpu_ns=283814 build_cpu_ns=16473554 commit_cpu_ns=280259 attempts=1 failed_attempts=0
+K230_CARD_SHELL frame-cost run=86713382406222 frame_id=64 total_cpu_ns=19555845 render_cpu_ns=17037627 input_cpu_ns=955999
+K230_CARD_SHELL input-cost run=86713382406222 input_id=56 cpu_ns=217112 policy_cpu_ns=4889 scene_cpu_ns=0 chrome_cpu_ns=0
+K230_CARD_SHELL input-cost run=86713382406222 input_id=55 cpu_ns=738887 policy_cpu_ns=4519 scene_cpu_ns=517888 chrome_cpu_ns=8148
+K230_CARD_SHELL repaint-cost run=86713382406222 frame_id=63 render_cpu_ns=16948332 prepare_cpu_ns=247889 build_cpu_ns=16415405 commit_cpu_ns=285038 attempts=1 failed_attempts=0
+K230_CARD_SHELL frame-cost run=86713382406222 frame_id=63 total_cpu_ns=19467072 render_cpu_ns=16948332 input_cpu_ns=980556
+K230_CARD_SHELL input-cost run=86713382406222 input_id=54 cpu_ns=145667 policy_cpu_ns=5259 scene_cpu_ns=0 chrome_cpu_ns=0
+K230_CARD_SHELL input-cost run=86713382406222 input_id=53 cpu_ns=834889 policy_cpu_ns=4778 scene_cpu_ns=676370 chrome_cpu_ns=2889
+K230_CARD_SHELL repaint-cost run=86713382406222 frame_id=62 render_cpu_ns=17055334 prepare_cpu_ns=264926 build_cpu_ns=16526296 commit_cpu_ns=264112 attempts=1 failed_attempts=0
+K230_CARD_SHELL frame-cost run=86713382406222 frame_id=62 total_cpu_ns=19606222 render_cpu_ns=17055334 input_cpu_ns=1015001
+K230_CARD_SHELL input-cost run=86713382406222 input_id=52 cpu_ns=103889 policy_cpu_ns=5408 scene_cpu_ns=0 chrome_cpu_ns=0
+K230_CARD_SHELL input-cost run=86713382406222 input_id=51 cpu_ns=911112 policy_cpu_ns=4778 scene_cpu_ns=649705 chrome_cpu_ns=2741
+K230_CARD_SHELL repaint-cost run=86713382406222 frame_id=61 render_cpu_ns=16896742 prepare_cpu_ns=276444 build_cpu_ns=16352039 commit_cpu_ns=268259 attempts=1 failed_attempts=0
+K230_CARD_SHELL frame-cost run=86713382406222 frame_id=61 total_cpu_ns=19451743 render_cpu_ns=16896742 input_cpu_ns=1026814
+K230_CARD_SHELL input-cost run=86713382406222 input_id=50 cpu_ns=127259 policy_cpu_ns=5408 scene_cpu_ns=0 chrome_cpu_ns=0
+K230_CARD_SHELL input-cost run=86713382406222 input_id=49 cpu_ns=899555 policy_cpu_ns=3704 scene_cpu_ns=740889 chrome_cpu_ns=3296
+K230_CARD_SHELL repaint-cost run=86713382406222 frame_id=60 render_cpu_ns=16753667 prepare_cpu_ns=278000 build_cpu_ns=16210889 commit_cpu_ns=264778 attempts=1 failed_attempts=0
+K230_CARD_SHELL frame-cost run=86713382406222 frame_id=60 total_cpu_ns=19375371 render_cpu_ns=16753667 input_cpu_ns=1071778
+K230_CARD_SHELL input-cost run=86713382406222 input_id=48 cpu_ns=118333 policy_cpu_ns=5333 scene_cpu_ns=0 chrome_cpu_ns=0
+K230_CARD_SHELL input-cost run=86713382406222 input_id=47 cpu_ns=953445 policy_cpu_ns=5222 scene_cpu_ns=666815 chrome_cpu_ns=3260
+K230_CARD_SHELL repaint-cost run=86713382406222 frame_id=59 render_cpu_ns=16955889 prepare_cpu_ns=300296 build_cpu_ns=16447853 commit_cpu_ns=207740 attempts=1 failed_attempts=0
+K230_CARD_SHELL frame-cost run=86713382406222 frame_id=59 total_cpu_ns=18502221 render_cpu_ns=16955889 input_cpu_ns=810629
+K230_CARD_SHELL input-cost run=86713382406222 input_id=46 cpu_ns=810629 policy_cpu_ns=5111 scene_cpu_ns=668591 chrome_cpu_ns=3185
+K230_CARD_SHELL repaint-cost run=86713382406222 frame_id=58 render_cpu_ns=16937743 prepare_cpu_ns=297445 build_cpu_ns=16361556 commit_cpu_ns=278742 attempts=1 failed_attempts=0
+K230_CARD_SHELL frame-cost run=86713382406222 frame_id=58 total_cpu_ns=19281964 render_cpu_ns=16937743 input_cpu_ns=1570482
+K230_CARD_SHELL input-cost run=86713382406222 input_id=45 cpu_ns=739741 policy_cpu_ns=5000 scene_cpu_ns=547963 chrome_cpu_ns=20592
+K230_CARD_SHELL input-cost run=86713382406222 input_id=44 cpu_ns=830741 policy_cpu_ns=3740 scene_cpu_ns=672000 chrome_cpu_ns=3037
+K230_CARD_SHELL repaint-cost run=86713382406222 frame_id=57 render_cpu_ns=16952891 prepare_cpu_ns=303593 build_cpu_ns=16380891 commit_cpu_ns=268407 attempts=1 failed_attempts=0
+K230_CARD_SHELL frame-cost run=86713382406222 frame_id=57 total_cpu_ns=19933708 render_cpu_ns=16952891 input_cpu_ns=1593039
+K230_CARD_SHELL input-cost run=86713382406222 input_id=43 cpu_ns=768631 policy_cpu_ns=4482 scene_cpu_ns=569704 chrome_cpu_ns=3778
+K230_CARD_SHELL input-cost run=86713382406222 input_id=42 cpu_ns=824408 policy_cpu_ns=3778 scene_cpu_ns=667334 chrome_cpu_ns=3000
+K230_CARD_SHELL repaint-cost run=86713382406222 frame_id=56 render_cpu_ns=16953928 prepare_cpu_ns=249704 build_cpu_ns=16435038 commit_cpu_ns=269186 attempts=1 failed_attempts=0
+K230_CARD_SHELL frame-cost run=86713382406222 frame_id=56 total_cpu_ns=19368111 render_cpu_ns=16953928 input_cpu_ns=1613073
+K230_CARD_SHELL input-cost run=86713382406222 input_id=41 cpu_ns=757704 policy_cpu_ns=4593 scene_cpu_ns=564741 chrome_cpu_ns=3444
+K230_CARD_SHELL input-cost run=86713382406222 input_id=40 cpu_ns=855369 policy_cpu_ns=3852 scene_cpu_ns=658147 chrome_cpu_ns=7555
+K230_CARD_SHELL repaint-cost run=86713382406222 frame_id=55 render_cpu_ns=17165849 prepare_cpu_ns=265814 build_cpu_ns=16640924 commit_cpu_ns=259111 attempts=1 failed_attempts=0
+K230_CARD_SHELL frame-cost run=86713382406222 frame_id=55 total_cpu_ns=19603738 render_cpu_ns=17165849 input_cpu_ns=1647592
+K230_CARD_SHELL input-cost run=86713382406222 input_id=39 cpu_ns=766111 policy_cpu_ns=4296 scene_cpu_ns=571666 chrome_cpu_ns=3445
+K230_CARD_SHELL input-cost run=86713382406222 input_id=38 cpu_ns=881481 policy_cpu_ns=5741 scene_cpu_ns=724629 chrome_cpu_ns=2815
+K230_CARD_SHELL repaint-cost run=86713382406222 frame_id=54 render_cpu_ns=17025034 prepare_cpu_ns=251704 build_cpu_ns=16509998 commit_cpu_ns=263332 attempts=1 failed_attempts=0
+K230_CARD_SHELL frame-cost run=86713382406222 frame_id=54 total_cpu_ns=18146589 render_cpu_ns=17025034 input_cpu_ns=358259
+K230_CARD_SHELL input-cost run=86713382406222 input_id=37 cpu_ns=358259 policy_cpu_ns=6259 scene_cpu_ns=133593 chrome_cpu_ns=2407
+K230_CARD_SHELL repaint-cost run=86713382406222 frame_id=43 render_cpu_ns=16541962 prepare_cpu_ns=306037 build_cpu_ns=15961703 commit_cpu_ns=274222 attempts=1 failed_attempts=0
+K230_CARD_SHELL frame-cost run=86713382406222 frame_id=43 total_cpu_ns=19598851 render_cpu_ns=16541962 input_cpu_ns=1566631
+K230_CARD_SHELL input-cost run=86713382406222 input_id=36 cpu_ns=812926 policy_cpu_ns=0 scene_cpu_ns=627741 chrome_cpu_ns=8481
+K230_CARD_SHELL input-cost run=86713382406222 input_id=35 cpu_ns=134408 policy_cpu_ns=6963 scene_cpu_ns=0 chrome_cpu_ns=0
+K230_CARD_SHELL input-cost run=86713382406222 input_id=34 cpu_ns=619297 policy_cpu_ns=5111 scene_cpu_ns=486926 chrome_cpu_ns=2778
+K230_CARD_SHELL repaint-cost run=86713382406222 frame_id=42 render_cpu_ns=16346743 prepare_cpu_ns=300371 build_cpu_ns=15800854 commit_cpu_ns=245518 attempts=1 failed_attempts=0
+K230_CARD_SHELL frame-cost run=86713382406222 frame_id=42 total_cpu_ns=18315483 render_cpu_ns=16346743 input_cpu_ns=736110
+K230_CARD_SHELL input-cost run=86713382406222 input_id=33 cpu_ns=736110 policy_cpu_ns=5889 scene_cpu_ns=588257 chrome_cpu_ns=2925
+K230_CARD_SHELL repaint-cost run=86713382406222 frame_id=41 render_cpu_ns=16394925 prepare_cpu_ns=284703 build_cpu_ns=15852443 commit_cpu_ns=257779 attempts=1 failed_attempts=0
+K230_CARD_SHELL frame-cost run=86713382406222 frame_id=41 total_cpu_ns=18776630 render_cpu_ns=16394925 input_cpu_ns=1524333
+K230_CARD_SHELL input-cost run=86713382406222 input_id=32 cpu_ns=737518 policy_cpu_ns=6000 scene_cpu_ns=541184 chrome_cpu_ns=2630
+K230_CARD_SHELL input-cost run=86713382406222 input_id=31 cpu_ns=786815 policy_cpu_ns=4629 scene_cpu_ns=644593 chrome_cpu_ns=2888
+K230_CARD_SHELL repaint-cost run=86713382406222 frame_id=40 render_cpu_ns=16394038 prepare_cpu_ns=292074 build_cpu_ns=15831445 commit_cpu_ns=270519 attempts=1 failed_attempts=0
+K230_CARD_SHELL frame-cost run=86713382406222 frame_id=40 total_cpu_ns=18903594 render_cpu_ns=16394038 input_cpu_ns=1499778
+K230_CARD_SHELL input-cost run=86713382406222 input_id=30 cpu_ns=698037 policy_cpu_ns=5222 scene_cpu_ns=527222 chrome_cpu_ns=2667
+K230_CARD_SHELL input-cost run=86713382406222 input_id=29 cpu_ns=801741 policy_cpu_ns=5037 scene_cpu_ns=640186 chrome_cpu_ns=2592
+K230_CARD_SHELL repaint-cost run=86713382406222 frame_id=39 render_cpu_ns=16489295 prepare_cpu_ns=288592 build_cpu_ns=15937370 commit_cpu_ns=263333 attempts=1 failed_attempts=0
+K230_CARD_SHELL frame-cost run=86713382406222 frame_id=39 total_cpu_ns=18593072 render_cpu_ns=16489295 input_cpu_ns=1320333
+K230_CARD_SHELL input-cost run=86713382406222 input_id=28 cpu_ns=663555 policy_cpu_ns=5556 scene_cpu_ns=405001 chrome_cpu_ns=2926
+K230_CARD_SHELL input-cost run=86713382406222 input_id=27 cpu_ns=656778 policy_cpu_ns=4667 scene_cpu_ns=515592 chrome_cpu_ns=3260
+K230_CARD_SHELL repaint-cost run=86713382406222 frame_id=38 render_cpu_ns=16747183 prepare_cpu_ns=290297 build_cpu_ns=16189072 commit_cpu_ns=267814 attempts=1 failed_attempts=0
+K230_CARD_SHELL frame-cost run=86713382406222 frame_id=38 total_cpu_ns=19105921 render_cpu_ns=16747183 input_cpu_ns=1553369
+K230_CARD_SHELL input-cost run=86713382406222 input_id=26 cpu_ns=755629 policy_cpu_ns=5370 scene_cpu_ns=561444 chrome_cpu_ns=999
+K230_CARD_SHELL input-cost run=86713382406222 input_id=25 cpu_ns=797740 policy_cpu_ns=4814 scene_cpu_ns=644147 chrome_cpu_ns=3556
+K230_CARD_SHELL repaint-cost run=86713382406222 frame_id=37 render_cpu_ns=16861111 prepare_cpu_ns=299259 build_cpu_ns=16287630 commit_cpu_ns=274222 attempts=1 failed_attempts=0
+K230_CARD_SHELL frame-cost run=86713382406222 frame_id=37 total_cpu_ns=19081000 render_cpu_ns=16861111 input_cpu_ns=933518
+K230_CARD_SHELL input-cost run=86713382406222 input_id=24 cpu_ns=198074 policy_cpu_ns=5148 scene_cpu_ns=0 chrome_cpu_ns=0
+K230_CARD_SHELL input-cost run=86713382406222 input_id=23 cpu_ns=735444 policy_cpu_ns=4111 scene_cpu_ns=596889 chrome_cpu_ns=2777
+K230_CARD_SHELL repaint-cost run=86713382406222 frame_id=36 render_cpu_ns=16938849 prepare_cpu_ns=293852 build_cpu_ns=16381700 commit_cpu_ns=263297 attempts=1 failed_attempts=0
+K230_CARD_SHELL frame-cost run=86713382406222 frame_id=36 total_cpu_ns=19304108 render_cpu_ns=16938849 input_cpu_ns=1082630
+K230_CARD_SHELL input-cost run=86713382406222 input_id=22 cpu_ns=208704 policy_cpu_ns=4963 scene_cpu_ns=0 chrome_cpu_ns=0
+K230_CARD_SHELL input-cost run=86713382406222 input_id=21 cpu_ns=873926 policy_cpu_ns=5111 scene_cpu_ns=645667 chrome_cpu_ns=2741
+K230_CARD_SHELL repaint-cost run=86713382406222 frame_id=35 render_cpu_ns=16807924 prepare_cpu_ns=263371 build_cpu_ns=16274664 commit_cpu_ns=269889 attempts=1 failed_attempts=0
+K230_CARD_SHELL frame-cost run=86713382406222 frame_id=35 total_cpu_ns=19217851 render_cpu_ns=16807924 input_cpu_ns=905112
+K230_CARD_SHELL input-cost run=86713382406222 input_id=20 cpu_ns=146445 policy_cpu_ns=5481 scene_cpu_ns=0 chrome_cpu_ns=0
+K230_CARD_SHELL input-cost run=86713382406222 input_id=19 cpu_ns=758667 policy_cpu_ns=4704 scene_cpu_ns=622037 chrome_cpu_ns=3148
+K230_CARD_SHELL repaint-cost run=86713382406222 frame_id=34 render_cpu_ns=16926928 prepare_cpu_ns=247889 build_cpu_ns=16464483 commit_cpu_ns=214556 attempts=1 failed_attempts=0
+K230_CARD_SHELL frame-cost run=86713382406222 frame_id=34 total_cpu_ns=19411484 render_cpu_ns=16926928 input_cpu_ns=988444
+K230_CARD_SHELL input-cost run=86713382406222 input_id=18 cpu_ns=141444 policy_cpu_ns=5963 scene_cpu_ns=0 chrome_cpu_ns=0
+K230_CARD_SHELL input-cost run=86713382406222 input_id=17 cpu_ns=847000 policy_cpu_ns=5148 scene_cpu_ns=646074 chrome_cpu_ns=8777
+K230_CARD_SHELL repaint-cost run=86713382406222 frame_id=33 render_cpu_ns=16956667 prepare_cpu_ns=262518 build_cpu_ns=16429037 commit_cpu_ns=265112 attempts=1 failed_attempts=0
+K230_CARD_SHELL frame-cost run=86713382406222 frame_id=33 total_cpu_ns=19429556 render_cpu_ns=16956667 input_cpu_ns=1005779
+K230_CARD_SHELL input-cost run=86713382406222 input_id=16 cpu_ns=204446 policy_cpu_ns=5407 scene_cpu_ns=0 chrome_cpu_ns=0
+K230_CARD_SHELL input-cost run=86713382406222 input_id=15 cpu_ns=801333 policy_cpu_ns=4926 scene_cpu_ns=645556 chrome_cpu_ns=2926
+K230_CARD_SHELL repaint-cost run=86713382406222 frame_id=32 render_cpu_ns=16875443 prepare_cpu_ns=243185 build_cpu_ns=16365518 commit_cpu_ns=266740 attempts=1 failed_attempts=0
+K230_CARD_SHELL frame-cost run=86713382406222 frame_id=32 total_cpu_ns=19208924 render_cpu_ns=16875443 input_cpu_ns=835741
+K230_CARD_SHELL input-cost run=86713382406222 input_id=14 cpu_ns=95148 policy_cpu_ns=5259 scene_cpu_ns=0 chrome_cpu_ns=0
+K230_CARD_SHELL input-cost run=86713382406222 input_id=13 cpu_ns=740593 policy_cpu_ns=5519 scene_cpu_ns=537852 chrome_cpu_ns=8407
+K230_CARD_SHELL repaint-cost run=86713382406222 frame_id=31 render_cpu_ns=17140072 prepare_cpu_ns=326962 build_cpu_ns=16543109 commit_cpu_ns=270001 attempts=1 failed_attempts=0
+K230_CARD_SHELL frame-cost run=86713382406222 frame_id=31 total_cpu_ns=18388147 render_cpu_ns=17140072 input_cpu_ns=765333
+K230_CARD_SHELL input-cost run=86713382406222 input_id=12 cpu_ns=765333 policy_cpu_ns=5186 scene_cpu_ns=626149 chrome_cpu_ns=3593
+K230_CARD_SHELL repaint-cost run=86713382406222 frame_id=30 render_cpu_ns=17688632 prepare_cpu_ns=403483 build_cpu_ns=17058186 commit_cpu_ns=226963 attempts=1 failed_attempts=0
+K230_CARD_SHELL frame-cost run=86713382406222 frame_id=30 total_cpu_ns=20176894 render_cpu_ns=17688632 input_cpu_ns=1397113
+K230_CARD_SHELL input-cost run=86713382406222 input_id=11 cpu_ns=750261 policy_cpu_ns=5334 scene_cpu_ns=565779 chrome_cpu_ns=7371
+K230_CARD_SHELL input-cost run=86713382406222 input_id=10 cpu_ns=646852 policy_cpu_ns=4889 scene_cpu_ns=510296 chrome_cpu_ns=2815
+K230_CARD_SHELL repaint-cost run=86713382406222 frame_id=29 render_cpu_ns=16920703 prepare_cpu_ns=309370 build_cpu_ns=16364260 commit_cpu_ns=247073 attempts=1 failed_attempts=0
+K230_CARD_SHELL frame-cost run=86713382406222 frame_id=29 total_cpu_ns=19370404 render_cpu_ns=16920703 input_cpu_ns=1538184
+K230_CARD_SHELL input-cost run=86713382406222 input_id=9 cpu_ns=737481 policy_cpu_ns=4814 scene_cpu_ns=543037 chrome_cpu_ns=2630
+K230_CARD_SHELL input-cost run=86713382406222 input_id=8 cpu_ns=800703 policy_cpu_ns=3630 scene_cpu_ns=503111 chrome_cpu_ns=926
+K230_CARD_SHELL repaint-cost run=86713382406222 frame_id=28 render_cpu_ns=17116818 prepare_cpu_ns=313668 build_cpu_ns=16540891 commit_cpu_ns=262259 attempts=1 failed_attempts=0
+K230_CARD_SHELL frame-cost run=86713382406222 frame_id=28 total_cpu_ns=19499191 render_cpu_ns=17116818 input_cpu_ns=1523111
+K230_CARD_SHELL input-cost run=86713382406222 input_id=7 cpu_ns=756408 policy_cpu_ns=4333 scene_cpu_ns=535592 chrome_cpu_ns=2740
+K230_CARD_SHELL input-cost run=86713382406222 input_id=6 cpu_ns=766703 policy_cpu_ns=3741 scene_cpu_ns=629592 chrome_cpu_ns=2926
+K230_CARD_SHELL repaint-cost run=86713382406222 frame_id=27 render_cpu_ns=16895780 prepare_cpu_ns=299186 build_cpu_ns=16397594 commit_cpu_ns=199000 attempts=1 failed_attempts=0
+K230_CARD_SHELL frame-cost run=86713382406222 frame_id=27 total_cpu_ns=19185854 render_cpu_ns=16895780 input_cpu_ns=1514520
+K230_CARD_SHELL input-cost run=86713382406222 input_id=5 cpu_ns=740148 policy_cpu_ns=4185 scene_cpu_ns=548814 chrome_cpu_ns=3259
+K230_CARD_SHELL input-cost run=86713382406222 input_id=4 cpu_ns=774372 policy_cpu_ns=3963 scene_cpu_ns=638631 chrome_cpu_ns=3037
+K230_CARD_SHELL repaint-cost run=86713382406222 frame_id=26 render_cpu_ns=17021260 prepare_cpu_ns=295963 build_cpu_ns=16457149 commit_cpu_ns=268148 attempts=1 failed_attempts=0
+K230_CARD_SHELL frame-cost run=86713382406222 frame_id=26 total_cpu_ns=19289262 render_cpu_ns=17021260 input_cpu_ns=1000185
+K230_CARD_SHELL input-cost run=86713382406222 input_id=3 cpu_ns=194963 policy_cpu_ns=4481 scene_cpu_ns=0 chrome_cpu_ns=0
+K230_CARD_SHELL input-cost run=86713382406222 input_id=2 cpu_ns=805222 policy_cpu_ns=5593 scene_cpu_ns=649704 chrome_cpu_ns=3185
+K230_CARD_SHELL repaint-cost run=86713382406222 frame_id=25 render_cpu_ns=17135775 prepare_cpu_ns=286592 build_cpu_ns=16583406 commit_cpu_ns=265777 attempts=1 failed_attempts=0
+K230_CARD_SHELL frame-cost run=86713382406222 frame_id=25 total_cpu_ns=18269850 render_cpu_ns=17135775 input_cpu_ns=357704
+K230_CARD_SHELL input-cost run=86713382406222 input_id=1 cpu_ns=357704 policy_cpu_ns=6444 scene_cpu_ns=136851 chrome_cpu_ns=2593

@@ -56,3 +56,17 @@ slots only during actual work. Enable a candidate by default only after its
 pixel/lifetime and board gates; restore exact baseline if it regresses.
 Archive only with committed complete evidence, sync the delta through OpenSpec,
 push and inspect matching CI/Pages publication.
+
+## First integrated decision
+
+Source08cf4516 lowered build CPU to16.506ms mean/17.521ms p95, but the same
+full/reduced traces still failed timing budgets at26Hz. The persistent system
+was not changed and the baseline was restored. The8ms anti-flicker render
+window stays in place. Remaining repeated scaling is addressed with a bounded
+full-precision opaque cache on the proven logical-composition path. Native
+oracles reject RGB565 pre-quantization at rounded edges; XRGB8888 cached
+intermediates preserve those pixels. Partial clips use a cached subrectangle,
+quality changes invalidate the cache, and landscape client commits always
+invalidate (no new15fps content cap). The original scene-surface/callback
+ownership and8MiB global cache bound are retained. Software-cursor/debug
+frames fall back to the direct path. See copy-only trial evidence for failures.

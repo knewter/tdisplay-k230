@@ -1,0 +1,19 @@
+from pathlib import Path
+import subprocess,sys,shlex,datetime
+b=Path(__file__).parent;r=Path('/mnt/MediaVolume/home/jadams/src/gitlab.daringbit.com/josh/tdisplay-k230/.claude/worktrees/panel-paint')
+ssh=['ssh','-F',str(Path.home()/'tmp/k230-coordination/ssh_config.private'),'k230'];py='/nix/store/v189xydz6qkcd4cbkixcmv91w8hbc560-python3-riscv64-unknown-linux-gnu-3.14.7/bin/python3'
+def remote(c,data=b'',timeout=45):
+ p=subprocess.run(ssh+[c],input=data,stdout=subprocess.PIPE,stderr=subprocess.PIPE,timeout=timeout)
+ if p.returncode:raise RuntimeError(p.stderr.decode()[-2000:]+'\n'+p.stdout.decode(errors='replace')[-2000:])
+ return p.stdout
+source='08cf4516b396b3e7902827fabe7d4de891322de7'
+expected=str((b/'panel-paint-boot/system').resolve())
+mode=sys.argv[1];count=sys.argv[2] if len(sys.argv)>2 else '6';tag=datetime.datetime.now(datetime.timezone.utc).strftime('%H%M%S');dest='/tmp/k230-motion-'+mode+'-'+tag
+remote('install -d -m 0700 /tmp/k230-motion-tools')
+for src,name in [(b/'collect-paint-board.py','collect.py'),(r/'tools/card-shell-board-session.py','card-shell-board-session.py')]:
+ remote('cat > /tmp/k230-motion-tools/'+name,src.read_bytes())
+print(remote(py+' /tmp/k230-motion-tools/collect.py '+shlex.quote(mode)+' '+shlex.quote(dest)+' '+count+' '+shlex.quote(source)+' '+shlex.quote(expected),timeout=150).decode(),flush=True)
+out=b/('motion-'+mode+'-'+tag);out.mkdir()
+for n in ['metadata.json','telemetry.log','before.png','after.png'] + (['held.png'] if count=='1' else []):
+ (out/n).write_bytes(remote('cat '+shlex.quote(dest+'/'+n)))
+print('HOST_OUTPUT',out,flush=True)
