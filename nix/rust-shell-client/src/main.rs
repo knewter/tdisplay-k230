@@ -6027,6 +6027,11 @@ impl ShellClient {
                 let dy = pos.1 - start.1;
                 if !self.panel_close.tracking() && close_drag_engaged(self.route, dx, dy) {
                     self.panel_close.begin(id);
+                } else if !self.panel_close.tracking()
+                    && k230_shell_rust::service_ui::close_drag_refused(self.route, dx, dy)
+                {
+                    // Pulled down from the top: the next motion scrolls.
+                    self.panel_close_candidate = false;
                 }
                 if self.panel_close.tracking() {
                     let travel = self.panel_travel();

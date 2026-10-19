@@ -428,6 +428,15 @@ pub fn close_drag_engaged(route: Route, dx: f64, dy: f64) -> bool {
     dy * close_direction(route) >= CLOSE_DRAG_SLOP && dy.abs() > dx.abs()
 }
 
+/// Whether a close-drag candidate has moved clearly the other way (a
+/// vertical drag away from closing), so a scrolling Settings page or Help
+/// gets the gesture instead.
+pub fn close_drag_refused(route: Route, dx: f64, dy: f64) -> bool {
+    matches!(route, Route::Settings | Route::Help)
+        && -dy * close_direction(route) >= CLOSE_DRAG_SLOP
+        && dy.abs() > dx.abs()
+}
+
 /// Where a close drag may originate: the existing top dismiss zone, or at
 /// or after the panel's own bottom edge -- the dim backdrop below it,
 /// which also covers grabbing right at ("the panel's bottom edge/handle").
@@ -1485,6 +1494,17 @@ mod tests {
         // An upward move (the wrong direction for a Drawer close) only
         // ever pushes back toward 1.0, clamped there.
         assert_eq!(close_drag_progress(Route::Drawer, -120.0, travel), 1.0);
+    }
+
+    #[test]
+    fn a_downward_drag_from_the_top_zone_leaves_settings_and_help_to_scroll() {
+        for route in [Route::Settings, Route::Help] {
+            assert!(close_drag_refused(route, 0.0, 30.0));
+            assert!(!close_drag_refused(route, 0.0, 4.0), "under slop");
+            assert!(!close_drag_refused(route, 0.0, -30.0), "upward closes");
+            assert!(!close_drag_refused(route, 40.0, 30.0), "sideways");
+        }
+        assert!(!close_drag_refused(Route::Shade, 0.0, 30.0), "Shade keeps its gesture");
     }
 
     #[test]

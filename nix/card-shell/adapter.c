@@ -2669,6 +2669,11 @@ static void prepare_impl(struct sway_output *output) {
 		fmax(56, output->usable_area.y);
 	cfg.bottom_reserved =
 		fmax(0, output->height - output->usable_area.y - output->usable_area.height);
+	/* The Overview's title and footer cue (rebuild_chrome) grow with the
+	 * theme's size and the vision step; the deck sits between them, so a
+	 * large step moves the cards rather than drawing text over them. */
+	cfg.title_height = fmax(cfg.title_height, 16 + role_line(CARD_TYPE_LABEL) + 8);
+	cfg.footer_height = fmax(cfg.footer_height, role_line(CARD_TYPE_CAPTION) + 16);
 	/* cs_default_config's own entry_card_height uses hardcoded
 	 * top/bottom-reserved constants (56/0); recompute it here against the
 	 * output's real usable_area the same way, keeping the direct-switch
@@ -2701,6 +2706,8 @@ static void prepare_impl(struct sway_output *output) {
 	if (cfg.width != shell.policy.config.width || cfg.height != shell.policy.config.height ||
 		cfg.top_reserved != shell.policy.config.top_reserved ||
 		cfg.bottom_reserved != shell.policy.config.bottom_reserved ||
+		cfg.title_height != shell.policy.config.title_height ||
+		cfg.footer_height != shell.policy.config.footer_height ||
 		cfg.reduced_motion != shell.policy.config.reduced_motion ||
 		cfg.touch_first_motion != shell.policy.config.touch_first_motion) {
 		handle_result(cs_set_config(&shell.policy, &cfg));
