@@ -159,3 +159,20 @@ Limits: host renders only. The wallpaper is scaled to cover and is not the
 panel's exact crop or the shell's wallpaper pipeline. The clock is in slot 0
 only, so its position over the vinyl is not where a user would place it.
 The sheets were re-rendered after the dot-ring change, from the same generations.
+
+## Theme change without a restart (2026-10-19 UTC)
+
+Native `grim` captures of Home on DSI-1 (1232x568), Bubble Clock, 100%,
+from the db133d1f closure. `shell-ui` kept MainPID 1080 throughout, so the
+shell was not restarted.
+
+| File | Theme (accent) | Minute | Time (UTC) |
+| --- | --- | --- | --- |
+| `board-theme-change-retro.png` | retro-82 (`#faa968`) | orange "27" | about 00:27 |
+| `board-theme-change-catppuccin.png` | catppuccin (`#89b4fa`) | blue "29" | 00:29:47 activate |
+| `board-theme-change-retro-back.png` | retro-82 (`#faa968`) | orange "30" | 00:30:19 activate |
+
+Each theme was applied with `k230-theme preview --json <id>` and then
+`k230-theme activate --json --expected-generation <preview generation>
+<id>`; retro-82 was restored with its vinyl background. The hour stays the
+foreground colour in both themes.

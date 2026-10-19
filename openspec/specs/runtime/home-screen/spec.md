@@ -864,10 +864,12 @@ overlap the date at any step.
 
 ### Requirement: The Clock widget marks the minute with the theme accent
 
-<!-- UNVERIFIED: the hour/minute colours are seen in the panel captures under
-docs/evidence/clock-restyle/ and approved on glass, but a theme change
-re-colouring the minute without a restart has not been observed on the
-board. -->
+*Grounding (2026-10-19): native panel captures in
+`docs/evidence/clock-restyle/` show the hour in the foreground colour and the
+minute in the accent, approved on glass ("clock lookgs good"); activating
+catppuccin and then retro-82 re-coloured the minute from `#faa968` to
+`#89b4fa` and back with the same `shell-ui` process
+(`board-theme-change-*.png`).*
 
 Every Clock widget style SHALL draw the hour in the active theme's foreground
 colour and the minute in its accent colour. It SHALL take both colours from

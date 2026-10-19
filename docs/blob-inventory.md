@@ -1685,6 +1685,9 @@ DATA 9e258d5a07a483381d428302c67f39a9d8a799d94461e51d1ea4a86604f27f22 docs/evide
 DATA 928965287512f34e9111f2428f00d97aed21ba3668557aed880f1d87cf336439 docs/evidence/clock-restyle/host-latte.png
 DATA 8e3fc56d90f9fb9b02d709dec1384e37a0b07dc2c6574334f2f3bcb80f0b5db8 docs/evidence/clock-restyle/host-portrait-steps.png
 DATA c8862c1934628c68c99651f932dc05a6078b6a9e1504ef8d2b5df9de63e1e177 docs/evidence/clock-restyle/host-retro82-wallpaper.png
+DATA 65816b008ae9ef83de1cf0554ce401b813e1652890a3c62f80fafdff3488f154 docs/evidence/clock-restyle/board-theme-change-catppuccin.png
+DATA d57e58fa7477047188e3b5ae243dd40830ceaf2ab0baf2ada6a9c81d09567041 docs/evidence/clock-restyle/board-theme-change-retro-back.png
+DATA 1f89ef9f8642bb3962d9ebc4324e5c4585e3504a8f82388112d8bb88efdcbbe5 docs/evidence/clock-restyle/board-theme-change-retro.png
 DATA eb97830d3b2c407b8a1a9559f4547c5faf30a528c36085c065ede0d2971e5eb6 docs/evidence/coherent-shell/accessibility-scale/board/01-settings.png
 DATA 067bdb088d7d3b137a2586058819ab40830bef98aab4bf2daca440413794e7a6 docs/evidence/coherent-shell/accessibility-scale/board/02-vision-default.png
 DATA 1052f94fa56517b0116ce10500455c31e71e37504080bdea57fe91a6eff8d4f1 docs/evidence/coherent-shell/accessibility-scale/board/03-large.png
@@ -2405,6 +2408,9 @@ limits are in the adjacent README. They are not physical-panel captures.
 | `docs/evidence/clock-restyle/host-latte.png` | 362466 | DATA | `928965287512f34e9111f2428f00d97aed21ba3668557aed880f1d87cf336439` |
 | `docs/evidence/clock-restyle/host-portrait-steps.png` | 262562 | DATA | `8e3fc56d90f9fb9b02d709dec1384e37a0b07dc2c6574334f2f3bcb80f0b5db8` |
 | `docs/evidence/clock-restyle/host-retro82-wallpaper.png` | 698591 | DATA | `c8862c1934628c68c99651f932dc05a6078b6a9e1504ef8d2b5df9de63e1e177` |
+| `docs/evidence/clock-restyle/board-theme-change-catppuccin.png` | 110054 | DATA | `65816b008ae9ef83de1cf0554ce401b813e1652890a3c62f80fafdff3488f154` |
+| `docs/evidence/clock-restyle/board-theme-change-retro-back.png` | 329015 | DATA | `d57e58fa7477047188e3b5ae243dd40830ceaf2ab0baf2ada6a9c81d09567041` |
+| `docs/evidence/clock-restyle/board-theme-change-retro.png` | 326474 | DATA | `1f89ef9f8642bb3962d9ebc4324e5c4585e3504a8f82388112d8bb88efdcbbe5` |
 | `docs/evidence/coherent-shell/accessibility-scale/board/01-settings.png` | 53914 | DATA | `eb97830d3b2c407b8a1a9559f4547c5faf30a528c36085c065ede0d2971e5eb6` |
 | `docs/evidence/coherent-shell/accessibility-scale/board/02-vision-default.png` | 18953 | DATA | `067bdb088d7d3b137a2586058819ab40830bef98aab4bf2daca440413794e7a6` |
 | `docs/evidence/coherent-shell/accessibility-scale/board/03-large.png` | 26944 | DATA | `1052f94fa56517b0116ce10500455c31e71e37504080bdea57fe91a6eff8d4f1` |
