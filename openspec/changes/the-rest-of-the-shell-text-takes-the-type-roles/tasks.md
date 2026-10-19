@@ -92,9 +92,14 @@
   redacted network name. Board review found eight defects (README), each
   fixed before the final set. Limit: one stream was
   playing, not several.
-- [ ] 3.2 The operator's look on glass. Board class; stays open until the
+- [x] 3.2 The operator's look on glass. Board class; stays open until the
   operator has looked.
   Progress 2026-10-19: the operator looked at Home (both pages: the Video
   label, the Clock, Battery details and the Weather card) on glass from
   the e11757ee closure and said "seems good to me". Help, Wi-Fi, the
   theme grid, recovery, the volume HUD and the banner still need a look.
+  Done 2026-10-19: after the 2a7a86ba deploy the operator looked at the
+  remaining surfaces on glass and said "it all seems fine", then of the
+  banner and the Overview, "it's good to go". They also asked that a tap
+  anywhere behind the Overview card go Home; that is a new behaviour,
+  tracked as its own change.

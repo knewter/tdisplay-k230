@@ -2,8 +2,6 @@
 
 ### Requirement: The rest of the shell's text uses the type roles
 
-<!-- UNVERIFIED -->
-
 Home's app and folder labels, the Battery and Weather widget captions, the
 volume HUD's expanded rows, the notification banner, the Wi-Fi pages, the Help page, the
 theme chooser, the recovery menu and splash, and the card Overview's title
@@ -11,6 +9,14 @@ and footer SHALL draw text from the shell's five type
 roles with no text below 26 px at the 100% step. Text the shell writes on
 these surfaces SHALL reflow without clipping, ellipsizing or overlapping at
 all four text steps and in high contrast, in both orientations.
+
+*Grounding (2026-10-19): host renders at four steps in both orientations
+and unit tests (`docs/evidence/rest-of-text/host-*.png`); native `grim`
+captures of every named surface at 100% and 200% on the landscape panel
+(`docs/evidence/rest-of-text/board-panel-{100,200}.png`, closures
+e6cfec6a and 2a7a86ba); the operator looked on glass: "it all seems
+fine", "it's good to go". Network and app names that are longer than
+their line may still be shortened.*
 
 #### Scenario: Home at 100%
 
