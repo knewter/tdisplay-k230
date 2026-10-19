@@ -154,6 +154,11 @@ proof; the original authorization only removed the blocker on starting them.
 - [x] 3.1 Validate this change: `openspec validate
   the-shell-gets-side-edge-back-and-motion-trace --strict`. Passed
   2026-09-28 on `close/shell-umbrella`.
-- [ ] 3.2 Do not archive until tasks 1.3 and 2.2 are committed, or the
+- [x] 3.2 Do not archive until tasks 1.3 and 2.2 are committed, or the
   coordinator explicitly authorizes archiving the host-only portion with the
   board tasks split into a further successor.
+
+  Completed 2026-10-19: task 1.3's operator signoff was already committed;
+  task 2.2's concurrent camera/trace evidence is committed in `62ee39a3`.
+  All seven tasks now have their named evidence. Timing failures remain
+  explicit; archive does not claim a renderer performance fix.
