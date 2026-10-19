@@ -6709,30 +6709,31 @@ impl RendererCache {
         if let Some(point) = self.pointer { let _ = cr.target().set_user_data(&HOVER_POINT, Rc::new(point)); }
         paint_scrim(&cr,theme,"menu",f64::from(width),f64::from(height),0,0.32);
         let style=visual_style(theme,"menu");
-        let scale=crate::density_scale(width,height);
+        let m=crate::app_actions::AppMenu::metrics(width,height);
+        let scale=m.scale;
         let (x,y,w,h,row)=menu.geometry(width,height);
         service_card(&cr,theme,"menu",x,y,w,h,false);
         if let Some(icon)=menu.entry.icon.as_deref() {
             self.icons.paint(&cr,icon,(44.0*scale) as i32,x+20.0*scale,y+16.0*scale);
         }
-        heading(&cr,&menu.entry.name,x+80.0*scale,y+18.0*scale,w-100.0*scale,22.0*scale,style.text);
+        heading(&cr,&menu.entry.name,x+80.0*scale,y+m.name_y,w-100.0*scale,TYPE_LABEL*scale,style.text);
         let subtitle=match menu.window_state() {
             Some(RecoveryState::WindowsEmpty)=>format!("App actions · {}",RecoveryState::WindowsEmpty.copy()),
             _=>"App actions".to_string(),
         };
-        text(&cr,&subtitle,x+80.0*scale,y+45.0*scale,w-100.0*scale,14.0*scale,style.muted);
-        let top=y+78.0*scale;
+        wrapped_text_lines(&cr,&subtitle,x+80.0*scale,y+m.subtitle_y,w-100.0*scale,context_font_size(&cr,TYPE_CAPTION*scale),style.muted,2);
+        let top=y+m.header;
         cr.save().map_err(|e|e.to_string())?;
-        cr.rectangle(x,top,w,(h-90.0*scale).max(0.0));cr.clip();
+        cr.rectangle(x,top,w,(h-m.header-12.0*scale).max(0.0));cr.clip();
         if menu.rows.is_empty() {
             let copy=if menu.ready {"App actions unavailable"}else{RecoveryState::WindowsLoading.copy()};
-            text(&cr,copy,x+24.0*scale,top+16.0*scale,w-48.0*scale,18.0*scale,style.muted);
-            text(&cr,crate::recovery::RecoveryAction::Back.label(),x+24.0*scale,top+16.0*scale+row,w-48.0*scale,20.0*scale,style.accent);
+            text(&cr,copy,x+24.0*scale,top+m.row_text_dy,w-48.0*scale,TYPE_CAPTION*scale,style.muted);
+            text(&cr,crate::recovery::RecoveryAction::Back.label(),x+24.0*scale,top+m.row_text_dy+row,w-48.0*scale,TYPE_LABEL*scale,style.accent);
         }
         for (index,action) in menu.rows.iter().enumerate() {
             let at=top+index as f64*row-menu.scroll;
             if at+row<top || at>y+h {continue;}
-            text(&cr,&action.label,x+24.0*scale,at+16.0*scale,w-48.0*scale,20.0*scale,
+            text(&cr,&action.label,x+24.0*scale,at+m.row_text_dy,w-48.0*scale,TYPE_LABEL*scale,
                 if matches!(action.action,crate::app_actions::AppAction::NewWindow(_)) {style.accent}else{style.text});
         }
         cr.restore().map_err(|e|e.to_string())?;
@@ -6895,19 +6896,22 @@ fn splash_status_code(status: SplashStatus) -> u8 {
     }
 }
 
-fn draw_centered(cr: &Context, value: &str, y: f64, width: f64, size: f64, rgb: u32) {
+/// Centred text, wrapped inside a 24 px margin each side; returns the
+/// height it took.
+fn draw_centered(cr: &Context, value: &str, y: f64, width: f64, size: f64, rgb: u32) -> f64 {
     let layout = pangocairo::functions::create_layout(cr);
     let mut font = FontDescription::new();
     font.set_family(FONT_FAMILY);
     font.set_absolute_size(context_font_size(cr, size) * f64::from(pango::SCALE));
     layout.set_font_description(Some(&font));
     layout.set_text(value);
-    layout.set_width((width * f64::from(pango::SCALE)) as i32);
+    layout.set_width(((width - 48.0).max(1.0) * f64::from(pango::SCALE)) as i32);
+    layout.set_wrap(pango::WrapMode::WordChar);
     layout.set_alignment(Alignment::Center);
-    layout.set_ellipsize(EllipsizeMode::End);
     color(cr, rgb, 1.0);
-    cr.move_to(0.0, y);
+    cr.move_to(24.0, y);
     pangocairo::functions::show_layout(cr, &layout);
+    f64::from(layout.pixel_size().1)
 }
 
 /// The launch splash's cached, name/geometry/status-keyed backdrop: the
@@ -6971,34 +6975,16 @@ fn build_splash_bake(
         SplashStatus::Failed => (format!("Couldn't open {name}"), style.error),
         SplashStatus::Recovery(state) => (state.copy().to_string(), style.text),
     };
-    draw_centered(&cr, &primary, label_y, width as f64, 30.0, primary_color);
+    // The name or recovery copy in Body, the hints under it in Caption,
+    // each wrapping onto as many lines as it needs.
+    let mut y = label_y;
+    y += draw_centered(&cr, &primary, y, width as f64, TYPE_BODY, primary_color) + 10.0;
     if let SplashStatus::Recovery(state) = status {
-        draw_centered(
-            &cr,
-            &state.tap_hint(),
-            label_y + 40.0,
-            width as f64,
-            18.0,
-            style.accent,
-        );
+        draw_centered(&cr, &state.tap_hint(), y, width as f64, TYPE_CAPTION, style.accent);
     }
     if status == SplashStatus::TimedOut {
-        draw_centered(
-            &cr,
-            "Taking longer than usual…",
-            label_y + 40.0,
-            width as f64,
-            20.0,
-            style.muted,
-        );
-        draw_centered(
-            &cr,
-            "Tap to go Home",
-            label_y + 70.0,
-            width as f64,
-            18.0,
-            style.accent,
-        );
+        y += draw_centered(&cr, "Taking longer than usual…", y, width as f64, TYPE_CAPTION, style.muted) + 4.0;
+        draw_centered(&cr, "Tap to go Home", y, width as f64, TYPE_CAPTION, style.accent);
     }
     drop(cr);
     surface.flush();

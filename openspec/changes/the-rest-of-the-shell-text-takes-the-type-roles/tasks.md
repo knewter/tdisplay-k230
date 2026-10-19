@@ -59,6 +59,13 @@
   themes on the 1232x568 panel) the chooser shows its carousels instead.
   Renders: `docs/evidence/rest-of-text/host-themes-*.png`. All test
   targets pass. Recovery and the card Overview remain.
+  Progress 2026-10-19 (host): the app actions (recovery) menu names the
+  app in Label, its subtitle in Caption (two lines) and its rows in
+  Label; its header, rows and width come from those roles and the step.
+  The launch and recovery splash put the name or recovery copy in Body
+  and its hints in Caption, wrapped. Renders:
+  `docs/evidence/rest-of-text/host-menu-splash-*.png`. All test targets
+  pass. The card Overview remains.
 
 ## 3. Board
 

@@ -34,6 +34,9 @@ Evidence class: host renders unless a section says otherwise.
   half size. With seven themes the grid's cards would be about 94 px wide,
   too narrow for role-size names, so the panel shows the carousels;
   monitors keep the grid (unit test).
+- `host-menu-splash-{568x1232,1232x568}.png`: the app actions (recovery)
+  menu with three rows, then the "That window has closed" recovery splash,
+  each at 100% and 200%, half size (`<step>-menu-*`, `<step>-splash-*`).
 
 Limits: no board captures yet (task 3.1). The volume HUD's expanded rows
 are covered by unit tests only; they need streams playing on the board.

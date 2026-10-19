@@ -87,9 +87,34 @@ fn render(path: PathBuf, theme: &AppearanceSnapshot, vision: &VisionChoice, w: u
         .map(|name| AppEntry { id: format!("{name}.desktop"), name: name.into(), icon: None, path: PathBuf::new() })
         .collect();
     let mut pixels = vec![0; (w * h * 4) as usize];
-    cache
-        .draw(&mut pixels, RenderParams { width: w, height: h, route, progress: 1.0, scroll: 0.0 }, &apps)
-        .expect("draw");
+    if page == "menu" {
+        // The app actions (recovery) menu over Home.
+        let mut menu = k230_shell_rust::app_actions::AppMenu::new(apps[0].clone(), true, 1);
+        menu.ready = true;
+        menu.rows = ["Open", "New Window", "Close all windows"]
+            .into_iter()
+            .map(|label| k230_shell_rust::app_actions::ActionRow {
+                label: label.into(),
+                action: k230_shell_rust::app_actions::AppAction::Activate,
+            })
+            .collect();
+        cache.draw_app_menu(&mut pixels, w, h, &menu).expect("menu");
+    } else if page == "splash" {
+        cache
+            .draw_splash(&mut pixels, render::SplashParams {
+                width: w,
+                height: h,
+                name: "Video Player",
+                icon: None,
+                status: k230_shell_rust::splash::SplashStatus::Recovery(k230_shell_rust::recovery::RecoveryState::WindowStale),
+                icon_alpha: 1.0,
+            })
+            .expect("splash");
+    } else {
+        cache
+            .draw(&mut pixels, RenderParams { width: w, height: h, route, progress: 1.0, scroll: 0.0 }, &apps)
+            .expect("draw");
+    }
     let frame = ImageSurface::create_for_data(pixels, Format::ARgb32, w as i32, h as i32, (w * 4) as i32).unwrap();
     let target = ImageSurface::create(Format::ARgb32, w as i32, h as i32).unwrap();
     let cr = Context::new(&target).unwrap();
@@ -211,7 +236,7 @@ fn main() {
             contrast: if name.ends_with("high") { "high" } else { "standard" }.into(),
         };
         for (w, h) in [(568u32, 1232u32), (1232, 568)] {
-            for page in ["settings", "vision", "shade", "drawer", "help", "themes", "wifi-list", "wifi-entry", "wifi-saved", "wifi-connecting", "wifi-forget"] {
+            for page in ["settings", "vision", "shade", "drawer", "help", "themes", "menu", "splash", "wifi-list", "wifi-entry", "wifi-saved", "wifi-connecting", "wifi-forget"] {
                 render(out.join(format!("{name}-{page}-{w}x{h}.png")), &theme, &vision, w, h, page);
             }
             render_home(out.join(format!("{name}-home-{w}x{h}.png")), &theme, w, h);

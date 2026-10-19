@@ -242,6 +242,20 @@ pub struct AppMenu {
     pub ready: bool,
     contact: Option<(i32, (f64, f64), f64)>,
 }
+/// `AppMenu::metrics`: offsets from the card's top, and the row pitch.
+#[derive(Clone, Copy, Debug)]
+pub struct MenuMetrics {
+    pub scale: f64,
+    /// The card's width.
+    pub w: f64,
+    pub name_y: f64,
+    pub subtitle_y: f64,
+    /// Where the action list starts.
+    pub header: f64,
+    pub row: f64,
+    pub row_text_dy: f64,
+}
+
 impl AppMenu {
     pub fn new(entry: AppEntry, from_home: bool, serial: u64) -> Self {
         Self {
@@ -254,13 +268,30 @@ impl AppMenu {
             contact: None,
         }
     }
-    pub fn geometry(&self, width: u32, height: u32) -> (f64, f64, f64, f64, f64) {
+    /// The header (icon, the app's name in Label and the subtitle in
+    /// Caption) and one action row (Label), both sized from the type roles
+    /// at the current step and the output's density.
+    pub fn metrics(width: u32, height: u32) -> MenuMetrics {
+        use crate::render::{TYPE_CAPTION, TYPE_LABEL};
         let scale = crate::density_scale(width, height);
-        let w = (440.0 * scale).min(f64::from(width) - 32.0);
-        let row = 56.0 * scale;
+        let s = crate::layout_text_scale().max(1.0) * crate::layout_theme_font();
+        let line = |size: f64| (size * s * scale * 1.25).ceil();
+        let name_y = 18.0 * scale;
+        let subtitle_y = name_y + line(TYPE_LABEL) + 2.0 * scale;
+        // Two subtitle lines: "App actions · No open windows" wraps.
+        let header = (subtitle_y + 2.0 * line(TYPE_CAPTION) + 12.0 * scale).max(78.0 * scale);
+        let row = (line(TYPE_LABEL) + 24.0 * scale).max(56.0 * scale);
+        // The card widens with the step, up to the output's width.
+        let w = (440.0 * scale * s.min(1.6)).min(f64::from(width) - 32.0);
+        MenuMetrics { scale, w, name_y, subtitle_y, header, row, row_text_dy: (row - line(TYPE_LABEL)) / 2.0 }
+    }
+    pub fn geometry(&self, width: u32, height: u32) -> (f64, f64, f64, f64, f64) {
+        let m = Self::metrics(width, height);
+        let w = m.w;
+        let row = m.row;
         // An empty list still shows its state line and the Back row.
         let rows = if self.rows.is_empty() { 2 } else { self.rows.len() };
-        let h = (90.0 * scale + rows as f64 * row).min(f64::from(height) - 64.0);
+        let h = (m.header + 12.0 * m.scale + rows as f64 * row).min(f64::from(height) - 64.0);
         (
             (f64::from(width) - w) / 2.0,
             (f64::from(height) - h) / 2.0,
@@ -271,10 +302,10 @@ impl AppMenu {
     }
     pub fn scroll_by(&mut self, delta: f64, width: u32, height: u32) {
         let (_, _, _, h, row) = self.geometry(width, height);
-        let scale = crate::density_scale(width, height);
+        let m = Self::metrics(width, height);
         self.scroll = (self.scroll + delta).clamp(
             0.0,
-            (self.rows.len() as f64 * row - (h - 90.0 * scale)).max(0.0),
+            (self.rows.len() as f64 * row - (h - m.header - 12.0 * m.scale)).max(0.0),
         );
     }
     pub fn down(&mut self, id: i32, point: (f64, f64)) {
@@ -297,7 +328,7 @@ impl AppMenu {
             return MenuOutcome::Consumed;
         }
         let (x, y, w, h, row) = self.geometry(width, height);
-        let top = y + 78.0 * crate::density_scale(width, height);
+        let top = y + Self::metrics(width, height).header;
         if point.0 < x || point.0 >= x + w || point.1 < top || point.1 >= y + h - 12.0 {
             return MenuOutcome::Dismiss;
         }
@@ -386,8 +417,8 @@ mod tests {
             label: "Open".into(),
             action: AppAction::Activate,
         }];
-        let (x, y, _, _, _) = menu.geometry(568, 1232);
-        let point = (x + 30.0, y + 100.0);
+        let (x, y, _, _, row) = menu.geometry(568, 1232);
+        let point = (x + 30.0, y + AppMenu::metrics(568, 1232).header + row / 2.0);
         menu.down(1, point);
         menu.cancel();
         assert_eq!(menu.up(1, point, 568, 1232), MenuOutcome::Consumed);
@@ -414,8 +445,8 @@ mod tests {
         assert_eq!(menu.window_state(), Some(RecoveryState::WindowsLoading));
         assert_eq!(RecoveryState::WindowsLoading.action().label(), "Back");
         // While loading, a tap on the list area is the visible Back.
-        let (x, y, _, _, _) = menu.geometry(568, 1232);
-        let point = (x + 30.0, y + 100.0);
+        let (x, y, _, _, row) = menu.geometry(568, 1232);
+        let point = (x + 30.0, y + AppMenu::metrics(568, 1232).header + row / 2.0);
         menu.down(1, point);
         assert_eq!(menu.up(1, point, 568, 1232), MenuOutcome::Dismiss);
         menu.ready = true;
