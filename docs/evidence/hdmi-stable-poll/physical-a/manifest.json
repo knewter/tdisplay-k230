@@ -1,0 +1,16 @@
+{
+  "started_at": "2026-10-20T19:08:45.508957+00:00",
+  "boot_id": "c17ee483-0191-48ea-986a-9738a274393e",
+  "system": "/nix/store/hpmzja32mncizz7s49ylr8pj9cy5npvg-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "persistent_system": "/nix/store/j30yag05ic9k68n9dzbzindgf4ardp08-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "command_source_sha256": "3a669bee34a947b8f4d77699ba19e83a1515220add93ec5ebb865b0484b5130b",
+  "input_generation": "NONE; read-only runtime/sysfs/scene requests",
+  "scope": "Physical action and visible/user-input acceptance require a separate timestamped operator report. Software states alone are not glass proof.",
+  "finished_at": "2026-10-20T19:15:37.650200+00:00",
+  "samples": 799,
+  "state_changes": 17,
+  "boot_unchanged": true,
+  "runtime_unchanged": true,
+  "persistent_unchanged": true,
+  "states_sha256": "0d4fbb4e3bc4e95c7b2e81d3679285574cc9719d4c77b5ef7f0c0a12ffd79648"
+}

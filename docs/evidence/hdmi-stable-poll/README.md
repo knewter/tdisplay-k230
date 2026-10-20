@@ -133,3 +133,7 @@ and short holds during motion. Candidate p95 is not uniformly better. These
 are bounded software measurements, not native/glass/optical smoothness or a
 universal bound. Fresh physical cable/input and persistent promotion gates
 remain open; no source or timing test substitutes for them.
+
+## Partial physical acceptance
+
+[Operator report and read-only runtime record](physical-a/README.md) confirm panel return and bottom-edge Overview on the candidate. HDMI replug/pinch and persistent promotion remain open. A reported top notification-shade stutter is a separate userspace investigation.

@@ -1,0 +1,39 @@
+"""Bounded read-only cable/output/scene watcher; generates no input."""
+import argparse,datetime,hashlib,importlib.util,json,os,re,time
+from pathlib import Path
+p=argparse.ArgumentParser();p.add_argument('--directory',type=Path,required=True);p.add_argument('--system',required=True);p.add_argument('--fallback',required=True);p.add_argument('--boot-id',required=True);p.add_argument('--seconds',type=int,default=300);a=p.parse_args();assert 30<=a.seconds<=600
+spec=importlib.util.spec_from_file_location('proof',Path(__file__).with_name('hdmi-stable-poll-proof.py'));proof=importlib.util.module_from_spec(spec);spec.loader.exec_module(proof)
+assert os.path.realpath('/run/current-system')==a.system and os.path.realpath('/nix/var/nix/profiles/system')==a.fallback
+assert Path('/proc/sys/kernel/random/boot_id').read_text().strip()==a.boot_id
+assert not a.directory.exists();a.directory.mkdir(mode=0o700);now=lambda:datetime.datetime.now(datetime.timezone.utc).isoformat();start=time.monotonic();ipc=None;last=None;count=0;changes=0
+meta={'started_at':now(),'boot_id':a.boot_id,'system':a.system,'persistent_system':a.fallback,'command_source_sha256':hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),'input_generation':'NONE; read-only runtime/sysfs/scene requests','scope':'Physical action and visible/user-input acceptance require a separate timestamped operator report. Software states alone are not glass proof.'}
+(a.directory/'manifest.json').write_text(json.dumps(meta,indent=2)+'\n');print('WATCHER_READY '+json.dumps(meta),flush=True)
+with (a.directory/'states.jsonl').open('w',buffering=1) as out:
+ while time.monotonic()-start<a.seconds and not (a.directory/'STOP').exists():
+  row={'utc':now(),'monotonic_ns':time.monotonic_ns()}
+  assert Path('/proc/sys/kernel/random/boot_id').read_text().strip()==a.boot_id
+  try:
+   if ipc is None:ipc=proof.cap.IPC()
+   row['outputs']=proof.cap.output_state(ipc.outputs())
+   inputs=ipc.request(100)
+   row['hdmi_trackpad_present']=any(i.get('name')=='K230 Virtual Touchpad (HDMI mode)' for i in inputs)
+   row['physical_touch_present']=any('goodix' in i.get('name','').lower() or 'gt911' in i.get('name','').lower() for i in inputs)
+   response=ipc.request(0,'card_shell debug-scene');text=' '.join(str(i.get('error','')) for i in response)
+   pairs=dict(re.findall(r'\b(active|mode|home_enabled|home_selected|trackpad_client|trackpad_owned)=(-?[0-9]+)\b',text));row['scene']={k:int(v) for k,v in pairs.items()}
+   row['pid']=ipc.pid
+  except (OSError,EOFError,ValueError,proof.cap.CaptureError) as error:
+   row['ipc_error_class']=type(error).__name__
+   if ipc:ipc.close();ipc=None
+  connectors={}
+  for pattern in ('card*-HDMI-A-1','card*-DSI-1'):
+   matches=list(Path('/sys/class/drm').glob(pattern))
+   if len(matches)!=1:raise RuntimeError('connector identity missing or ambiguous')
+   root=matches[0]
+   connectors[root.name]={k:(root/k).read_text().strip() if (root/k).exists() else 'absent' for k in ('status','enabled')}
+  row['connectors']=connectors;out.write(json.dumps(row,separators=(',',':'))+'\n');count+=1
+  state={k:v for k,v in row.items() if k not in ('utc','monotonic_ns')}
+  if state!=last:changes+=1;print('STATE_CHANGE '+json.dumps(row),flush=True);last=state
+  time.sleep(.5)
+if ipc:ipc.close()
+meta.update(finished_at=now(),samples=count,state_changes=changes,boot_unchanged=Path('/proc/sys/kernel/random/boot_id').read_text().strip()==a.boot_id,runtime_unchanged=os.path.realpath('/run/current-system')==a.system,persistent_unchanged=os.path.realpath('/nix/var/nix/profiles/system')==a.fallback,states_sha256=hashlib.sha256((a.directory/'states.jsonl').read_bytes()).hexdigest())
+(a.directory/'manifest.json').write_text(json.dumps(meta,indent=2)+'\n');print('WATCHER_DONE',flush=True)
