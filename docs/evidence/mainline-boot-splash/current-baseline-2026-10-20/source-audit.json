@@ -1,0 +1,83 @@
+{
+  "checked_at": "2026-10-20T21:28:03.221669+00:00",
+  "scope": "Read-only source and existing SSH boot-journal audit for open mainline-boot-splash task4.1; no new film or fix.",
+  "worktree_base": "8b0ef828bcbec5f2c11d3c37cc3892284e2f50c8",
+  "current_boot_id": "9cc88abc-dc62-490e-8035-5d4832558a41",
+  "system": "/nix/store/p501mchy0dq9lyjnaxwkx5s2pdm4i2yj-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "kernel": "/nix/store/21lz5c6pkk329c0xcac9bzlx40dplrlk-linux-riscv64-unknown-linux-gnu-7.3.0-rc5",
+  "kernel_derivation": "/nix/store/0zq193wki0mimhnmsr0gq406g901c5gx-linux-riscv64-unknown-linux-gnu-7.3.0-rc5.drv",
+  "configured_kernel_source": "/nix/store/1sr18plbky4kzy5x1gjqmy4pqdm68zbc-linux-mainline-k230-drm-src",
+  "derivation_query_format": "Nix derivation-show JSONv4 structuredAttrs.src",
+  "source_matches": {
+    "canaan_vo.c": {
+      "repo_path": "nix/patches/mainline/drm/canaan_vo.c",
+      "configured_kernel_path": "/nix/store/1sr18plbky4kzy5x1gjqmy4pqdm68zbc-linux-mainline-k230-drm-src/drivers/gpu/drm/canaan/canaan_vo.c",
+      "repo_sha256": "4fd123ac3ff1936f31e2d16c061eeff2156818f0aa3fa982f71127d7059074e9",
+      "configured_sha256": "4fd123ac3ff1936f31e2d16c061eeff2156818f0aa3fa982f71127d7059074e9",
+      "identical": true
+    },
+    "canaan_dsi.c": {
+      "repo_path": "nix/patches/mainline/drm/canaan_dsi.c",
+      "configured_kernel_path": "/nix/store/1sr18plbky4kzy5x1gjqmy4pqdm68zbc-linux-mainline-k230-drm-src/drivers/gpu/drm/canaan/canaan_dsi.c",
+      "repo_sha256": "0d368a8f8ae33513ea0a11a43ce2ef52c5fe1631055792803f13f9354fd0602b",
+      "configured_sha256": "0d368a8f8ae33513ea0a11a43ce2ef52c5fe1631055792803f13f9354fd0602b",
+      "identical": true
+    },
+    "canaan_drv.c": {
+      "repo_path": "nix/patches/mainline/drm/canaan_drv.c",
+      "configured_kernel_path": "/nix/store/1sr18plbky4kzy5x1gjqmy4pqdm68zbc-linux-mainline-k230-drm-src/drivers/gpu/drm/canaan/canaan_drv.c",
+      "repo_sha256": "45e58a18332e2c730f19c3e3335b207b4c9946ae63534f15e2f4888ea5c97c69",
+      "configured_sha256": "45e58a18332e2c730f19c3e3335b207b4c9946ae63534f15e2f4888ea5c97c69",
+      "identical": true
+    },
+    "panel-canaan-universal.c": {
+      "repo_path": "nix/patches/mainline/drm/panel-canaan-universal.c",
+      "configured_kernel_path": "/nix/store/1sr18plbky4kzy5x1gjqmy4pqdm68zbc-linux-mainline-k230-drm-src/drivers/gpu/drm/panel/panel-canaan-universal.c",
+      "repo_sha256": "bd8f70d7cb6dfecdde625ecbc256c29cd9b06e32b405bd95fc06046352b7465e",
+      "configured_sha256": "bd8f70d7cb6dfecdde625ecbc256c29cd9b06e32b405bd95fc06046352b7465e",
+      "identical": true
+    }
+  },
+  "journal_sha256": "f68992dd96a3dea2dd09a3760492e1d09b0e6fce408eb1dbaca489e6cc99f2e9",
+  "allowlist_sha256": "84efed90b7b1601c1fc467d01b080de06a84339e15b757523011fdad0ecac063",
+  "grounded_findings": [
+    "canaan_vo_probe holds all display gates before unused-clock cleanup. git blame ties this to ad627a2bf on2026-10-05, predating the2026-10-12 glitch films; this is not a new proposed fix.",
+    "canaan_drm_bind leaves fbdev unset on stage1-splash flag; reused journal prints that at7.378308s.",
+    "Reused journal prints VO preservation49.137026s, panel prepare preserving stage1 at49.154606s and DSI preservation49.559692s. These are journal observations, not camera visibility or a qualified kernel/video alignment.",
+    "VO IRQ handler writes0xffffffff to VO_DISP_IRQ_STATUS without reading/logging the pending value. Source alone does not identify an underrun or correlate any hardware condition with a bad frame."
+  ],
+  "unverified": [
+    "Whether the old1–4frame corruption reproduces on the current kernel/profile.",
+    "Cause of any scanout glitch; clock, FIFO, memory-bandwidth and probe activity remain hypotheses.",
+    "Film-to-kernel alignment within±0.1s; old approximate±2s offsets and first-FFmpeg-progress bounds do not satisfy this gate."
+  ],
+  "camera": {
+    "devices_under_dev": [],
+    "video4linux_devices": [],
+    "available_connector_tools": [],
+    "operator_reconnect_or_feed_question": "PENDING"
+  },
+  "next": "Acquire current camera/feed, preview correct panel ROI, film a bounded normal warm reboot with full logo-to-first-shell coverage and a qualified kernel/video clock bound; keep task4.1 unchecked until actual removal/proof.",
+  "board_reservation": null,
+  "build_slot": null,
+  "board_mutations_for_this_audit": false,
+  "observed_journal_events": [
+    "[    7.082351] nixos kernel: Linux version 7.3.0-rc5 (nixbld@localhost) (riscv64-unknown-linux-gnu-gcc (GCC) 15.3.0, GNU ld (GNU Binutils) 2.46) #1-NixOS SMP PREEMPT Tue Jan  1 00:00:00 UTC 1980",
+    "[    7.082432] nixos kernel: Machine model: LILYGO T-Display-K230 (mainline)",
+    "[    7.378308] nixos kernel: canaan-drm display-subsystem: [drm:canaan_drm_bind] stage 1 splash: leaving fbdev unset",
+    "[    7.383367] nixos kernel: clk: Disabling unused clocks",
+    "[    7.397998] nixos systemd[1]: Starting Load Kernel Modules...",
+    "[    7.399963] nixos systemd[1]: Starting Coldplug All udev Devices...",
+    "[    7.400238] nixos systemd[1]: Finished Load Kernel Modules.",
+    "[   28.667394] nixos systemd[1]: Starting Load Kernel Modules...",
+    "[   28.671734] nixos systemd[1]: Starting Coldplug All udev Devices...",
+    "[   49.137026] nixos kernel: canaan-vo 90840000.vo: stage 1 splash: preserving VO to first plane update",
+    "[   49.154606] nixos kernel: canaan-panel-dsi 90850000.dsi.0: canaan_panel_prepare: left as stage 1 set it",
+    "[   49.559692] nixos kernel: canaan-mipi-dsi 90850000.dsi: stage 1 splash: preserving DSI to first plane update"
+  ],
+  "journal_timestamp_limit": "Printed journal monotonic times only; camera/kernel alignment unqualified.",
+  "kernel_gnu_build_id": "7a61d8cea3e26df94695189b766de3fd66fa6860",
+  "hardware_fix_claimed": false,
+  "tasks_complete": 8,
+  "tasks_total": 9
+}
