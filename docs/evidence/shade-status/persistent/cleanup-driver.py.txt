@@ -1,0 +1,104 @@
+from pathlib import Path
+import datetime,json,os,hashlib,importlib.util,re,subprocess,struct,shutil,pwd
+C={'utc': '2026-10-20T20:41:52.225551+00:00', 'baseline_ui_wrapper': '/nix/store/lpaw4i5lkyln67c4gn0c8dqhb0y6hs8y-k230-shell-rust/bin/k230-shell-rust', 'candidate_ui_wrapper': '/nix/store/52ad5p0y2g0ynskm9bb7c0qbw4glh144-k230-shell-rust/bin/k230-shell-rust', 'baseline_settings': '/nix/store/46sw7cwipb8g0pfjqa7vry4x1x65345g-k230-settings/bin/k230-settings', 'candidate_settings': '/nix/store/kdc5bmnqf6n5px5nfsv0iz8l02d1azah-k230-settings/bin/k230-settings', 'ui_wrapper_hashes': {'/nix/store/lpaw4i5lkyln67c4gn0c8dqhb0y6hs8y-k230-shell-rust/bin/k230-shell-rust': 'fae6cbd1f460bebcd63543f3a55651df71edf6fdfdce06d34e55513d82f452ee', '/nix/store/52ad5p0y2g0ynskm9bb7c0qbw4glh144-k230-shell-rust/bin/k230-shell-rust': 'bb81738e03e7ba670ce8a088c26745f0d222cf29767acf7d05166754f08b26df'}, 'settings_wrapper_hashes': {'/nix/store/46sw7cwipb8g0pfjqa7vry4x1x65345g-k230-settings/bin/k230-settings': 'c909c7144e320e28c588b019a0d32fcd427c02babe1fa5c999525a54c5276788', '/nix/store/kdc5bmnqf6n5px5nfsv0iz8l02d1azah-k230-settings/bin/k230-settings': '9a38a0562fd57707fe2430d1e72598b22f768cc07824785a9cb9f0c49754f4c7'}, 'sway_sha256': '9464072ac100e77500c7b6113920d2c2ed14e022612eddbc38a037ce9b006670', 'rust_sha256': '32c8c445eb0e9467114880d0084762aa6649e69b1274ba7f87d24e300bee9148', 'kernel_notes_sha256': '1a98ea1e0a6e75f923c0fd53cfcf472f576ddb36de86b89361bfc224a305d9b6', 'boot_files': {'Image': 'd6b2153d97ac8382b5329c64397b8b46435e6a423b16796f8c37e052d4bcd642', 'initrd.uimg': '7d983aeffd4e47d2e36f825a731b485d55f05534a5dd28f036244d79c16f197c', 'k230-tdisplay.dtb': '71846b14ec47456fe9bec713ee850c97e1d8c1563afa9ffe21ac87da196ed581', 'bootargs.txt': '09c0214ca1b36924ad5a24662e1f55efd137a8eff2e7d1052127d318eb3ca6b7', 'fw_jump_add_uboot_head.bin': '9627edbeea9b115d7040beea27cc61b23b6aca61cd502fd7760d7ee179f42c99'}, 'tracing': {'current_tracer': '64aec5a7fa151222572a241383c857738318e63cca7ee771952c95a31d92a19d', 'tracing_on': '4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865', 'trace_clock': '925ca315bd3de6ef99e08c002e320406936ae2da2f2c0afd8da1e87f7980a253', 'events/enable': '9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa', 'set_event_pid': 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855', 'set_ftrace_pid': 'cdf4d2acfdcd5cd2556f83eeb52ee253ea6afbaa941c760f77dcfae3c925cb78', 'set_ftrace_filter': '5c83074a334aa00236037c3c0621b592cf3c740b5f5977f6ee95a308c5c8281e', 'set_graph_function': '5c83074a334aa00236037c3c0621b592cf3c740b5f5977f6ee95a308c5c8281e', 'trace_options': 'a01cdd327a047d28b4241491a330220fa96feba5a60309dee36ca7e3bbd9204a'}, 'tracefs_mounted': True, 'systems': {'/run/current-system': '/nix/store/hpmzja32mncizz7s49ylr8pj9cy5npvg-nixos-system-nixos-26.11.20260919.20b1ddd', '/run/booted-system': '/nix/store/hpmzja32mncizz7s49ylr8pj9cy5npvg-nixos-system-nixos-26.11.20260919.20b1ddd', '/nix/var/nix/profiles/system': '/nix/store/hpmzja32mncizz7s49ylr8pj9cy5npvg-nixos-system-nixos-26.11.20260919.20b1ddd'}, 'candidate_system': '/nix/store/p501mchy0dq9lyjnaxwkx5s2pdm4i2yj-nixos-system-nixos-26.11.20260919.20b1ddd', 'candidate_gc_root': '/var/lib/k230/shade-status-candidate-root', 'native': {'path': '/nix/store/fm6zs80m11nc122z0djwaycz0zrhnbij-k230-settings-status-riscv64-unknown-linux-gnu-0.1.0/bin/k230-settings-status', 'bytes': 18096, 'sha256': 'c262a1f1aaff1cb3a5b353f3880f1dfbe197d8fbe40bbb8510261a19a9283cd0'}, 'root_available_bytes': 176812032}
+P={'phase': 'PERSISTENT_FILES_SELECTED', 'started_at': '2026-10-20T21:09:22.929271+00:00', 'source_sha256': '1d6b29e7a1fa68e88886984db981869d548f5d1651d151576f3f4a43aabee83a', 'operator_acceptance': {'recorded_at': '2026-10-20T21:07:43.548497+00:00', 'operator_quote': "top drawer's good to go what's next go on", 'context': 'Reply to the request for real top-drawer pulls on the normally selected native Settings candidate.', 'evidence_class': 'operator physical acceptance', 'accepted_candidate_system': '/nix/store/p501mchy0dq9lyjnaxwkx5s2pdm4i2yj-nixos-system-nixos-26.11.20260919.20b1ddd', 'runtime_identity': 'Same boot69e90426, RustPID3724/executableSHA32c8c445, native Settings wrapperkdc5bmn, original Sway1046/landscape, no trace environment; fresh SSH preflight matches physical-ready record.', 'accepted_for_persistent_promotion': True, 'limits': 'Operator qualitative acceptance; no camera, contact timestamps, optical latency or universal frame-rate bound inferred. Existing134.129ms instrumented tail remains recorded.'}, 'candidate_system': '/nix/store/p501mchy0dq9lyjnaxwkx5s2pdm4i2yj-nixos-system-nixos-26.11.20260919.20b1ddd', 'previous_system': '/nix/store/hpmzja32mncizz7s49ylr8pj9cy5npvg-nixos-system-nixos-26.11.20260919.20b1ddd', 'before_boot_id': '69e90426-5ead-4ebb-82d5-2a592168e34d', 'before_boot_files': {'Image': 'd6b2153d97ac8382b5329c64397b8b46435e6a423b16796f8c37e052d4bcd642', 'initrd.uimg': '7d983aeffd4e47d2e36f825a731b485d55f05534a5dd28f036244d79c16f197c', 'k230-tdisplay.dtb': '71846b14ec47456fe9bec713ee850c97e1d8c1563afa9ffe21ac87da196ed581', 'bootargs.txt': '09c0214ca1b36924ad5a24662e1f55efd137a8eff2e7d1052127d318eb3ca6b7', 'fw_jump_add_uboot_head.bin': '9627edbeea9b115d7040beea27cc61b23b6aca61cd502fd7760d7ee179f42c99'}, 'expected_changed_files': {'k230-tdisplay.dtb': 'ad61b8a70acba495b77761a6e73e935c4cd8ccd2a7ca6eb3da7fca6c256a18df', 'bootargs.txt': '38a90761c55914c426828c41d1c8b1cb636d19cda6893859d43afbe64c0fefc4'}, 'protected_before': {'logo.xrgb': {'bytes': 2799104, 'sha256': '6c7a36086297597b359657ab53925ee0725e5201461484d543cbd950f5baa3af'}, 'fw_jump_add_uboot_head.bin': {'bytes': 270808, 'sha256': '9627edbeea9b115d7040beea27cc61b23b6aca61cd502fd7760d7ee179f42c99'}, 'lost+found': {'directory': True}, 'Image': {'bytes': 42752512, 'sha256': 'd6b2153d97ac8382b5329c64397b8b46435e6a423b16796f8c37e052d4bcd642'}, 'initrd.uimg': {'bytes': 27328407, 'sha256': '7d983aeffd4e47d2e36f825a731b485d55f05534a5dd28f036244d79c16f197c'}, 'hdmi_dtb': {'bytes': 17, 'sha256': '175342c82dd1b437cdafb6bb01090e7ff73c2769515654c48b02c1e9f73440c6'}, 'force_dtb': {'bytes': 17, 'sha256': '175342c82dd1b437cdafb6bb01090e7ff73c2769515654c48b02c1e9f73440c6'}, 'lcd_dtb': {'bytes': 17, 'sha256': '175342c82dd1b437cdafb6bb01090e7ff73c2769515654c48b02c1e9f73440c6'}}, 'tracing_before': {'current_tracer': '64aec5a7fa151222572a241383c857738318e63cca7ee771952c95a31d92a19d', 'tracing_on': '4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865', 'trace_clock': '925ca315bd3de6ef99e08c002e320406936ae2da2f2c0afd8da1e87f7980a253', 'events/enable': '9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa', 'set_event_pid': 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855', 'set_ftrace_pid': 'cdf4d2acfdcd5cd2556f83eeb52ee253ea6afbaa941c760f77dcfae3c925cb78', 'set_ftrace_filter': '5c83074a334aa00236037c3c0621b592cf3c740b5f5977f6ee95a308c5c8281e', 'set_graph_function': '5c83074a334aa00236037c3c0621b592cf3c740b5f5977f6ee95a308c5c8281e', 'trace_options': 'a01cdd327a047d28b4241491a330220fa96feba5a60309dee36ca7e3bbd9204a'}, 'idle_before': {'app_id': 'k230-terminal', 'idle_shell_without_child_jobs': True, 'pinned_idle_color_followers': 1}, 'outputs': [{'name': 'DSI-1', 'active': True, 'transform': '270', 'scale': 1.0, 'current_mode': {'width': 568, 'height': 1232, 'refresh': 52190, 'picture_aspect_ratio': 'none'}, 'rect': {'x': 0, 'y': 0, 'width': 1232, 'height': 568}}], 'backup': '/var/lib/k230/shade-status-accepted-20261020/rollback', 'methods': {'k230-tdisplay.dtb': 'fsynced-atomic-rename', 'bootargs.txt': 'fsynced-atomic-rename'}, 'ordinary_boot_verified': False, 'finished_at': '2026-10-20T21:09:26.972808+00:00', 'profile_after': '/nix/store/p501mchy0dq9lyjnaxwkx5s2pdm4i2yj-nixos-system-nixos-26.11.20260919.20b1ddd', 'after_boot_files': {'Image': 'd6b2153d97ac8382b5329c64397b8b46435e6a423b16796f8c37e052d4bcd642', 'initrd.uimg': '7d983aeffd4e47d2e36f825a731b485d55f05534a5dd28f036244d79c16f197c', 'k230-tdisplay.dtb': 'ad61b8a70acba495b77761a6e73e935c4cd8ccd2a7ca6eb3da7fca6c256a18df', 'bootargs.txt': '38a90761c55914c426828c41d1c8b1cb636d19cda6893859d43afbe64c0fefc4', 'fw_jump_add_uboot_head.bin': '9627edbeea9b115d7040beea27cc61b23b6aca61cd502fd7760d7ee179f42c99'}, 'protected_after': {'logo.xrgb': {'bytes': 2799104, 'sha256': '6c7a36086297597b359657ab53925ee0725e5201461484d543cbd950f5baa3af'}, 'fw_jump_add_uboot_head.bin': {'bytes': 270808, 'sha256': '9627edbeea9b115d7040beea27cc61b23b6aca61cd502fd7760d7ee179f42c99'}, 'lost+found': {'directory': True}, 'Image': {'bytes': 42752512, 'sha256': 'd6b2153d97ac8382b5329c64397b8b46435e6a423b16796f8c37e052d4bcd642'}, 'initrd.uimg': {'bytes': 27328407, 'sha256': '7d983aeffd4e47d2e36f825a731b485d55f05534a5dd28f036244d79c16f197c'}, 'hdmi_dtb': {'bytes': 17, 'sha256': '175342c82dd1b437cdafb6bb01090e7ff73c2769515654c48b02c1e9f73440c6'}, 'force_dtb': {'bytes': 17, 'sha256': '175342c82dd1b437cdafb6bb01090e7ff73c2769515654c48b02c1e9f73440c6'}, 'lcd_dtb': {'bytes': 17, 'sha256': '175342c82dd1b437cdafb6bb01090e7ff73c2769515654c48b02c1e9f73440c6'}}}
+E={'config': '/nix/store/7khi8238q2qbx1wsyw6ivvn7nhc1sa4z-k230-sway.conf', 'config_sha256': '7a52358fcb2691330bbafba01479cb1368ef536325398b4f085d094c2368ea46', 'new_boot': '9cc88abc-dc62-490e-8035-5d4832558a41', 'system': '/nix/store/p501mchy0dq9lyjnaxwkx5s2pdm4i2yj-nixos-system-nixos-26.11.20260919.20b1ddd', 'kernel_build_id': '7a61d8cea3e26df94695189b766de3fd66fa6860'}
+BASE=Path('/run/pane23-shade-final');STAGE=Path('/var/lib/k230/shade-status-accepted-20261020');ROOT=Path('/sys/kernel/tracing')
+sha=lambda p:hashlib.file_digest(Path(p).open('rb'),'sha256').hexdigest();digest=sha
+SOURCE_HASH=sha(__file__);CAP_HASH=sha(BASE/'hdmi-shell-capture-board.py')
+COLOR_FOLLOWER_SHA256='4c4be0deb6eaf565675596afd845735a017999c01348e6252be2509687b1fd42'
+class TrialError(RuntimeError):pass
+def app_nodes(node):
+    result = [node] if node.get('app_id') else []
+    for key in ('nodes', 'floating_nodes'):
+        for child in node.get(key, []):
+            result.extend(app_nodes(child))
+    return result
+
+def pinned_color_follower(proc):
+    """The default terminal forks this pinned idle helper before execing bash."""
+    argv = [x.decode() for x in proc.joinpath('cmdline').read_bytes().split(b'\0') if x]
+    return (len(argv) > 1 and proc.joinpath('comm').read_text().strip() == 'python3' and
+            re.fullmatch(r'/nix/store/[a-z0-9]{32}-[A-Za-z0-9+._-]+/libexec/handheld-theme/foot_color_session.py', argv[1]) is not None and
+            digest(Path(argv[1])) == COLOR_FOLLOWER_SHA256)
+
+def idle_startup(ipc, proc_root=Path('/proc')):
+    apps = app_nodes(ipc.tree())
+    if len(apps) != 1 or apps[0]['app_id'] != 'k230-terminal':
+        raise TrialError('preserve user apps: expected only the standard startup terminal')
+    pid = apps[0].get('pid')
+    if type(pid) is not int or pid <= 0:
+        raise TrialError('cannot identify startup terminal process')
+    children = (proc_root/f'{pid}/task/{pid}/children').read_text().split()
+    if len(children) != 1:
+        raise TrialError('startup terminal has an unexpected child workload')
+    child = children[0]
+    proc = proc_root / child
+    if (proc.joinpath('comm').read_text().strip() not in ('bash', 'sh') or
+            not re.search(r'^State:\s+S\b', proc.joinpath('status').read_text(), re.M)):
+        raise TrialError('startup terminal has an active job; preserve it')
+    descendants = proc.joinpath(f'task/{child}/children').read_text().split()
+    if len(descendants) > 1:
+        raise TrialError('startup terminal has an unexpected child workload')
+    for descendant in descendants:
+        follower = proc_root/descendant
+        if (not re.search(r'^State:\s+S\b', follower.joinpath('status').read_text(), re.M) or
+                follower.joinpath(f'task/{descendant}/children').read_text().strip() or
+                not pinned_color_follower(follower)):
+            raise TrialError('startup terminal has an active or unknown child job; preserve it')
+    return {'app_id': 'k230-terminal', 'idle_shell_without_child_jobs': True,
+            'pinned_idle_color_followers': len(descendants)}
+command=lambda *a:subprocess.check_output(a,text=True,timeout=30).strip()
+spec=importlib.util.spec_from_file_location('cap','/run/pane23-shade-final/hdmi-shell-capture-board.py');cap=importlib.util.module_from_spec(spec);spec.loader.exec_module(cap)
+def protected():
+ result={}
+ for p in Path('/boot').iterdir():
+  if p.name in ('k230-tdisplay.dtb','bootargs.txt'):continue
+  assert not p.name.endswith('.pane23-shade-new')
+  if p.is_symlink():result[p.name]={'link':os.readlink(p)}
+  elif p.is_file():result[p.name]={'bytes':p.stat().st_size,'sha256':sha(p)}
+  else:result[p.name]={'directory':True}
+ return result
+def state():
+ ipc=cap.IPC()
+ try:
+  sway=ipc.pid;outputs=cap.output_state(ipc.outputs());idle=idle_startup(ipc);inputs=ipc.request(100)
+  scene=' '.join(str(x.get('error','')) for x in ipc.request(0,'card_shell debug-scene'));scene={k:int(v) for k,v in re.findall(r'\b(active|mode|home_enabled|home_selected|trackpad_client|trackpad_owned)=(-?[0-9]+)\b',scene)}
+ finally:ipc.close()
+ args=[os.fsdecode(a) for a in Path(f'/proc/{sway}/cmdline').read_bytes().split(b'\0') if a];assert len(args)==4 and args[1]=='-d' and args[2]=='-c' and args[3]==E['config']
+ env=dict(x.partition(b'=')[::2] for x in Path(f'/proc/{sway}/environ').read_bytes().split(b'\0') if b'=' in x)
+ rust=int(command('systemctl','show','shell-ui','-p','MainPID','--value'));renv=dict(x.partition(b'=')[::2] for x in Path(f'/proc/{rust}/environ').read_bytes().split(b'\0') if b'=' in x)
+ return {'utc':datetime.datetime.now(datetime.timezone.utc).isoformat(),'boot_id':Path('/proc/sys/kernel/random/boot_id').read_text().strip(),'systems':{p:os.path.realpath(p) for p in ('/run/current-system','/run/booted-system','/nix/var/nix/profiles/system')},'kernel_notes_sha256':sha('/sys/kernel/notes'),'sway_pid':sway,'sway_sha256':sha(f'/proc/{sway}/exe'),'config':args[3],'config_sha256':sha(args[3]),'rust_pid':rust,'rust_sha256':sha(f'/proc/{rust}/exe'),'settings_wrapper':os.fsdecode(renv[b'K230_SETTINGS']),'settings_wrapper_sha256':sha(os.fsdecode(renv[b'K230_SETTINGS'])),'native_sha256':sha(C['native']['path']),'trace_environment_absent':not any(k.startswith(b'K230_TRACE_') for k in renv),'outputs':outputs,'idle':idle,'scene':scene,'services':command('systemctl','is-active','shell','shell-ui').splitlines(),'cpu_online':Path('/sys/devices/system/cpu/online').read_text().strip(),'environment':{k:os.fsdecode(env.get(k.encode(),b'')) for k in ('WLR_RENDERER','WLR_PIXMAN_OUTPUT_TURN','WLR_PIXMAN_QUARTER_TURN','WLR_PIXMAN_DRAW_TRACE','SWAY_K230_CPU_FRAME_TIMING','SWAY_K230_TOUCH_ROUTE_TRACE','SWAY_K230_CARD_REDUCED_MOTION')},'owned_trace_dropin_absent':not Path('/run/systemd/system/shell-ui.service.d/90-pane23-shade-status-trace.conf').exists(),'candidate_override_absent':not Path('/run/systemd/system/shell-ui.service.d/95-pane23-shade-status-candidate.conf').exists(),'old_ram_trace_dirs_absent':all(not Path(p).exists() for p in ['/run/shell/pane23-shade-status-baseline-a','/run/shell/pane23-shade-status-candidate-a','/run/pane23-shade-status']),'physical_touch_present':any('goodix' in i.get('name','').lower() or 'gt911' in i.get('name','').lower() for i in inputs),'virtual_test_devices':sum('K230 injected touchscreen'==(p/'device/name').read_text().strip() for p in Path('/sys/class/input').glob('event*') if (p/'device/name').exists()),'boot_files':{n:sha(Path('/boot')/n) for n in C['boot_files']},'protected_boot':protected(),'root_available_bytes':os.statvfs('/').f_bavail*os.statvfs('/').f_frsize}
+before=state();assert before['boot_id']==E['new_boot'] and set(before['systems'].values())=={E['system']}
+assert before['kernel_notes_sha256']==C['kernel_notes_sha256'] and before['sway_sha256']==C['sway_sha256'] and before['rust_sha256']==C['rust_sha256']
+assert before['config_sha256']==E['config_sha256'] and re.search(r'\bmax_render_time 8\b',Path(E['config']).read_text())
+assert before['settings_wrapper']==C['candidate_settings'] and before['settings_wrapper_sha256']==C['settings_wrapper_hashes'][C['candidate_settings']] and before['native_sha256']==C['native']['sha256']
+assert before['trace_environment_absent'] and before['owned_trace_dropin_absent'] and before['candidate_override_absent'] and before['old_ram_trace_dirs_absent']
+assert before['physical_touch_present'] and before['virtual_test_devices']==0 and before['cpu_online']=='0' and before['services']==['active','active']
+assert before['environment']==dict(WLR_RENDERER='pixman',WLR_PIXMAN_OUTPUT_TURN='1',WLR_PIXMAN_QUARTER_TURN='0',WLR_PIXMAN_DRAW_TRACE='',SWAY_K230_CPU_FRAME_TIMING='',SWAY_K230_TOUCH_ROUTE_TRACE='',SWAY_K230_CARD_REDUCED_MOTION='0')
+assert len(before['outputs'])==1 and before['outputs'][0]['name']=='DSI-1' and before['outputs'][0]['transform']=='270' and before['outputs'][0]['rect']['width']==1232 and before['outputs'][0]['rect']['height']==568
+assert before['boot_files']==P['after_boot_files'] and before['protected_boot']==P['protected_after']
+for n,h in P['expected_changed_files'].items():assert sha(STAGE/'rollback'/n)==C['boot_files'][n] and sha(STAGE/n)==h
+roots={n:os.path.realpath(STAGE/n) for n in ('accepted-system-root','rollback-system-root')};assert roots=={'accepted-system-root':E['system'],'rollback-system-root':P['previous_system']}
+assert os.path.realpath('/var/lib/k230/shade-status-candidate-root')==E['system']
+account=pwd.getpwnam('shell')
+def user():os.setgroups([]);os.setgid(account.pw_gid);os.setuid(account.pw_uid)
+p=subprocess.run([C['candidate_settings'],'status'],preexec_fn=user,env={**os.environ,'K230_SETTINGS_REDUCED_MOTION':'0'},stdin=subprocess.DEVNULL,stdout=subprocess.PIPE,stderr=subprocess.DEVNULL,timeout=4);value=json.loads(p.stdout);assert p.returncode==0 and value['schema']==1 and set(value['controls'])=={'network','brightness','keyboard','motion'}
+mounted_before=(ROOT/'current_tracer').exists()
+if not mounted_before:command('mount','-t','tracefs','tracefs',str(ROOT))
+fields=('current_tracer','tracing_on','trace_clock','events/enable','set_event_pid','set_ftrace_pid','set_ftrace_filter','set_graph_function','trace_options')
+try:
+ tracing_before={n:sha(ROOT/n) for n in fields};assert (ROOT/'current_tracer').read_text().strip()=='nop' and (ROOT/'events/enable').read_text().strip()=='0' and not list((ROOT/'instances').iterdir())
+ retired={}
+ for n,h in P['expected_changed_files'].items():retired[n]={'bytes':(STAGE/n).stat().st_size,'sha256':h};(STAGE/n).unlink()
+ os.sync();tracing_after={n:sha(ROOT/n) for n in fields};assert tracing_before==tracing_after
+finally:
+ if not mounted_before:command('umount',str(ROOT))
+after=state();assert {k:v for k,v in before.items() if k not in ('utc','root_available_bytes')}=={k:v for k,v in after.items() if k not in ('utc','root_available_bytes')}
+timers=command('systemctl','list-units','--all','--type=timer','--plain','--no-legend');owned_timers=[s for s in timers.splitlines() if 'pane23-shade-status' in s];assert not owned_timers
+# The pre-reboot recorder/source directories vanished with RAM. Remove only this new finalizer namespace.
+for p in BASE.rglob('*'):
+ assert not p.is_symlink()
+ if p.is_file():assert (p.name=='shade-status-finalize.py' and sha(p)==SOURCE_HASH) or (p.name=='hdmi-shell-capture-board.py' and sha(p)==CAP_HASH) or ('__pycache__' in p.parts and p.suffix=='.pyc')
+shutil.rmtree(BASE)
+print(json.dumps({'result':'PASS','source_sha256':SOURCE_HASH,'before_cleanup':before,'after_cleanup':after,'tracing_before':tracing_before,'tracing_after':tracing_after,'tracing_unchanged':True,'tracefs_initially_mounted':mounted_before,'tracefs_mount_state_restored':(ROOT/'current_tracer').exists()==mounted_before,'owned_timers':owned_timers,'owned_finalizer_namespace_removed':not BASE.exists(),'retired_staging_duplicates':retired,'retained_rollback':str(STAGE/'rollback'),'retained_gc_roots':roots,'installed_status_exit_code':p.returncode if hasattr(p,'returncode') else 0,'installed_status_schema':value['schema'],'limits':'Ordinary boot/runtime/control cleanup proof. Prior operator acceptance is separate; no new optical timing or performance measurement.'},indent=2))

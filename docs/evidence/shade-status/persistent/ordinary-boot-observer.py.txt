@@ -1,0 +1,29 @@
+from pathlib import Path
+import subprocess,json,time,datetime
+b=Path(__file__).parent;ssh=['ssh','-F',str(Path.home()/'tmp/k230-coordination/ssh_config.private'),'-o','ConnectTimeout=3','k230'];py='/nix/store/v189xydz6qkcd4cbkixcmv91w8hbc560-python3-riscv64-unknown-linux-gnu-3.14.7/bin/python3 -';candidate='/nix/store/p501mchy0dq9lyjnaxwkx5s2pdm4i2yj-nixos-system-nixos-26.11.20260919.20b1ddd';normal='/nix/store/hpmzja32mncizz7s49ylr8pj9cy5npvg-nixos-system-nixos-26.11.20260919.20b1ddd';old='69e90426-5ead-4ebb-82d5-2a592168e34d';expected='7a61d8cea3e26df94695189b766de3fd66fa6860';now=lambda:datetime.datetime.now(datetime.timezone.utc).isoformat()
+code="""from pathlib import Path
+import os,json,struct,hashlib
+raw=Path('/sys/kernel/notes').read_bytes();i=0;ids=[]
+while i+12<=len(raw):
+ ns,ds,t=struct.unpack_from('<III',raw,i);i+=12
+ if ns>4096 or ds>4096 or i+((ns+3)//4*4)+ds>len(raw):raise ValueError('invalid note bound')
+ name=raw[i:i+ns].rstrip(b'\\0');i+=(ns+3)//4*4;data=raw[i:i+ds];i+=(ds+3)//4*4
+ if name==b'GNU' and t==3:ids.append(data.hex())
+assert len(ids)==1
+print(json.dumps({'boot_id':Path('/proc/sys/kernel/random/boot_id').read_text().strip(),'system':os.path.realpath('/run/current-system'),'booted_system':os.path.realpath('/run/booted-system'),'persistent_system':os.path.realpath('/nix/var/nix/profiles/system'),'kernel_build_id':ids[0],'kernel_notes_sha256':hashlib.sha256(raw).hexdigest(),'init_tokens':[s for s in Path('/proc/cmdline').read_text().split() if s.startswith('init=')]}))
+"""
+v={'started_at':now(),'status':'WAITING_SSH','expected_build_id':expected,'candidate_system':candidate,'preserved_system':normal,'expected_persistent_system':candidate,'reboot_method':'systemctl reboot; ordinary U-Boot autoboot, no kexec','old_boot_id':old,'attempts':0};out=b/'shade-status-ordinary-boot-observation.json';deadline=time.monotonic()+240
+while time.monotonic()<deadline:
+ v['attempts']+=1;out.write_text(json.dumps(v,indent=2)+'\n')
+ try:
+  p=subprocess.run(ssh+[py],input=code,capture_output=True,text=True,timeout=8)
+  if p.returncode==0:
+   found=json.loads(p.stdout);v['latest']=found;v['checked_at']=now()
+   if found['boot_id']!=old:
+    if found['system']==candidate and found['booted_system']==candidate and found['persistent_system']==candidate and found['kernel_build_id']==expected and found['init_tokens']==['init='+candidate+'/init']:
+     v.update(status='PERSISTENT_ORDINARY_BOOT_VERIFIED',finished_at=now());out.write_text(json.dumps(v,indent=2)+'\n');print(json.dumps(v,indent=2));raise SystemExit(0)
+    if found['system']==normal and found['booted_system']==normal:
+     v.update(status='NORMAL_BOOT_RETURNED',finished_at=now());out.write_text(json.dumps(v,indent=2)+'\n');print(json.dumps(v,indent=2));raise SystemExit(2)
+ except (OSError,ValueError,subprocess.SubprocessError) as e:v['last_error_class']=type(e).__name__
+ time.sleep(5)
+v.update(status='CANDIDATE_BOOT_NOT_VERIFIED',finished_at=now());out.write_text(json.dumps(v,indent=2)+'\n');print(json.dumps(v,indent=2));raise SystemExit(2)

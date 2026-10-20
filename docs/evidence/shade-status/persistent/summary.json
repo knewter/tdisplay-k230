@@ -1,0 +1,62 @@
+{
+  "result": "PASS",
+  "completed_at": "2026-10-20T21:15:27.068088+00:00",
+  "source_revision": "ffa19e381de7151708ad339846660ec19d16ebda",
+  "operator_acceptance": "../board/operator-acceptance.json",
+  "ordinary_boot_id": "9cc88abc-dc62-490e-8035-5d4832558a41",
+  "kernel_build_id": "7a61d8cea3e26df94695189b766de3fd66fa6860",
+  "systems": {
+    "/run/current-system": "/nix/store/p501mchy0dq9lyjnaxwkx5s2pdm4i2yj-nixos-system-nixos-26.11.20260919.20b1ddd",
+    "/run/booted-system": "/nix/store/p501mchy0dq9lyjnaxwkx5s2pdm4i2yj-nixos-system-nixos-26.11.20260919.20b1ddd",
+    "/nix/var/nix/profiles/system": "/nix/store/p501mchy0dq9lyjnaxwkx5s2pdm4i2yj-nixos-system-nixos-26.11.20260919.20b1ddd"
+  },
+  "native": {
+    "path": "/nix/store/fm6zs80m11nc122z0djwaycz0zrhnbij-k230-settings-status-riscv64-unknown-linux-gnu-0.1.0/bin/k230-settings-status",
+    "bytes": 18096,
+    "sha256": "c262a1f1aaff1cb3a5b353f3880f1dfbe197d8fbe40bbb8510261a19a9283cd0"
+  },
+  "boot_changes": "Only generated DTB chosen bootargs and bootargs.txt replace exactly the init system path; Image/initrd/logo/loader/selectors unchanged.",
+  "source_dtb_hardware_configuration_changed": false,
+  "normal_runtime": {
+    "sway_pid": 1062,
+    "rust_pid": 1076,
+    "settings_wrapper": "/nix/store/kdc5bmnqf6n5px5nfsv0iz8l02d1azah-k230-settings/bin/k230-settings",
+    "settings_wrapper_sha256": "9a38a0562fd57707fe2430d1e72598b22f768cc07824785a9cb9f0c49754f4c7",
+    "config": "/nix/store/7khi8238q2qbx1wsyw6ivvn7nhc1sa4z-k230-sway.conf",
+    "config_sha256": "7a52358fcb2691330bbafba01479cb1368ef536325398b4f085d094c2368ea46",
+    "landscape_retained": true,
+    "trace_environment_absent": true,
+    "runtime_trial_override_absent": true,
+    "normal_services_active": true,
+    "idle_terminal": true
+  },
+  "cleanup": {
+    "staging_duplicates_removed": true,
+    "preboot_ram_traces_and_overrides_absent": true,
+    "owned_finalizer_namespace_removed": true,
+    "root_tracing_unchanged_within_new_boot": true,
+    "root_available_bytes": 176742400
+  },
+  "retained_rollback": "/var/lib/k230/shade-status-accepted-20261020/rollback",
+  "retained_gc_roots": {
+    "accepted-system-root": "/nix/store/p501mchy0dq9lyjnaxwkx5s2pdm4i2yj-nixos-system-nixos-26.11.20260919.20b1ddd",
+    "rollback-system-root": "/nix/store/hpmzja32mncizz7s49ylr8pj9cy5npvg-nixos-system-nixos-26.11.20260919.20b1ddd"
+  },
+  "board_lease": {
+    "tool_session": 58851,
+    "result": "RELEASED",
+    "exit_code": 0
+  },
+  "build_slot": null,
+  "kernel_journal": {
+    "command": "journalctl -k -b -o short-monotonic --no-pager over protected SSH",
+    "full_protected_log_sha256": "f68992dd96a3dea2dd09a3760492e1d09b0e6fce408eb1dbaca489e6cc99f2e9",
+    "public_allowlist_lines": 3
+  },
+  "source_sha256": {
+    "promotion-driver.py.txt": "1d6b29e7a1fa68e88886984db981869d548f5d1651d151576f3f4a43aabee83a",
+    "cleanup-driver.py.txt": "f1a171962363b2cdd277c7722c00962b4854189cdfef861c9c401d1b2eb77fab",
+    "ordinary-boot-observer.py.txt": "2be4e104e237c50210a7cd45f6b861247d5ca6e2fa96a56838659bf52b76d16a"
+  },
+  "limits": "Operator acceptance, bounded injected timing and SSH ordinary boot/control checks are separate evidence. No universal latency/native-frame-rate/optical/portrait claim. Instrumented134.129ms tail is retained."
+}

@@ -1,0 +1,275 @@
+{
+  "result": "PASS",
+  "source_sha256": "f1a171962363b2cdd277c7722c00962b4854189cdfef861c9c401d1b2eb77fab",
+  "before_cleanup": {
+    "utc": "2026-10-20T21:13:49.389395+00:00",
+    "boot_id": "9cc88abc-dc62-490e-8035-5d4832558a41",
+    "systems": {
+      "/run/current-system": "/nix/store/p501mchy0dq9lyjnaxwkx5s2pdm4i2yj-nixos-system-nixos-26.11.20260919.20b1ddd",
+      "/run/booted-system": "/nix/store/p501mchy0dq9lyjnaxwkx5s2pdm4i2yj-nixos-system-nixos-26.11.20260919.20b1ddd",
+      "/nix/var/nix/profiles/system": "/nix/store/p501mchy0dq9lyjnaxwkx5s2pdm4i2yj-nixos-system-nixos-26.11.20260919.20b1ddd"
+    },
+    "kernel_notes_sha256": "1a98ea1e0a6e75f923c0fd53cfcf472f576ddb36de86b89361bfc224a305d9b6",
+    "sway_pid": 1062,
+    "sway_sha256": "9464072ac100e77500c7b6113920d2c2ed14e022612eddbc38a037ce9b006670",
+    "config": "/nix/store/7khi8238q2qbx1wsyw6ivvn7nhc1sa4z-k230-sway.conf",
+    "config_sha256": "7a52358fcb2691330bbafba01479cb1368ef536325398b4f085d094c2368ea46",
+    "rust_pid": 1076,
+    "rust_sha256": "32c8c445eb0e9467114880d0084762aa6649e69b1274ba7f87d24e300bee9148",
+    "settings_wrapper": "/nix/store/kdc5bmnqf6n5px5nfsv0iz8l02d1azah-k230-settings/bin/k230-settings",
+    "settings_wrapper_sha256": "9a38a0562fd57707fe2430d1e72598b22f768cc07824785a9cb9f0c49754f4c7",
+    "native_sha256": "c262a1f1aaff1cb3a5b353f3880f1dfbe197d8fbe40bbb8510261a19a9283cd0",
+    "trace_environment_absent": true,
+    "outputs": [
+      {
+        "name": "DSI-1",
+        "active": true,
+        "transform": "270",
+        "scale": 1.0,
+        "current_mode": {
+          "width": 568,
+          "height": 1232,
+          "refresh": 52190,
+          "picture_aspect_ratio": "none"
+        },
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "width": 1232,
+          "height": 568
+        }
+      }
+    ],
+    "idle": {
+      "app_id": "k230-terminal",
+      "idle_shell_without_child_jobs": true,
+      "pinned_idle_color_followers": 1
+    },
+    "scene": {
+      "active": 0,
+      "home_enabled": 1,
+      "mode": 0,
+      "home_selected": 0,
+      "trackpad_owned": 0,
+      "trackpad_client": 0
+    },
+    "services": [
+      "active",
+      "active"
+    ],
+    "cpu_online": "0",
+    "environment": {
+      "WLR_RENDERER": "pixman",
+      "WLR_PIXMAN_OUTPUT_TURN": "1",
+      "WLR_PIXMAN_QUARTER_TURN": "0",
+      "WLR_PIXMAN_DRAW_TRACE": "",
+      "SWAY_K230_CPU_FRAME_TIMING": "",
+      "SWAY_K230_TOUCH_ROUTE_TRACE": "",
+      "SWAY_K230_CARD_REDUCED_MOTION": "0"
+    },
+    "owned_trace_dropin_absent": true,
+    "candidate_override_absent": true,
+    "old_ram_trace_dirs_absent": true,
+    "physical_touch_present": true,
+    "virtual_test_devices": 0,
+    "boot_files": {
+      "Image": "d6b2153d97ac8382b5329c64397b8b46435e6a423b16796f8c37e052d4bcd642",
+      "initrd.uimg": "7d983aeffd4e47d2e36f825a731b485d55f05534a5dd28f036244d79c16f197c",
+      "k230-tdisplay.dtb": "ad61b8a70acba495b77761a6e73e935c4cd8ccd2a7ca6eb3da7fca6c256a18df",
+      "bootargs.txt": "38a90761c55914c426828c41d1c8b1cb636d19cda6893859d43afbe64c0fefc4",
+      "fw_jump_add_uboot_head.bin": "9627edbeea9b115d7040beea27cc61b23b6aca61cd502fd7760d7ee179f42c99"
+    },
+    "protected_boot": {
+      "logo.xrgb": {
+        "bytes": 2799104,
+        "sha256": "6c7a36086297597b359657ab53925ee0725e5201461484d543cbd950f5baa3af"
+      },
+      "fw_jump_add_uboot_head.bin": {
+        "bytes": 270808,
+        "sha256": "9627edbeea9b115d7040beea27cc61b23b6aca61cd502fd7760d7ee179f42c99"
+      },
+      "lost+found": {
+        "directory": true
+      },
+      "Image": {
+        "bytes": 42752512,
+        "sha256": "d6b2153d97ac8382b5329c64397b8b46435e6a423b16796f8c37e052d4bcd642"
+      },
+      "initrd.uimg": {
+        "bytes": 27328407,
+        "sha256": "7d983aeffd4e47d2e36f825a731b485d55f05534a5dd28f036244d79c16f197c"
+      },
+      "hdmi_dtb": {
+        "bytes": 17,
+        "sha256": "175342c82dd1b437cdafb6bb01090e7ff73c2769515654c48b02c1e9f73440c6"
+      },
+      "force_dtb": {
+        "bytes": 17,
+        "sha256": "175342c82dd1b437cdafb6bb01090e7ff73c2769515654c48b02c1e9f73440c6"
+      },
+      "lcd_dtb": {
+        "bytes": 17,
+        "sha256": "175342c82dd1b437cdafb6bb01090e7ff73c2769515654c48b02c1e9f73440c6"
+      }
+    },
+    "root_available_bytes": 176717824
+  },
+  "after_cleanup": {
+    "utc": "2026-10-20T21:13:54.775254+00:00",
+    "boot_id": "9cc88abc-dc62-490e-8035-5d4832558a41",
+    "systems": {
+      "/run/current-system": "/nix/store/p501mchy0dq9lyjnaxwkx5s2pdm4i2yj-nixos-system-nixos-26.11.20260919.20b1ddd",
+      "/run/booted-system": "/nix/store/p501mchy0dq9lyjnaxwkx5s2pdm4i2yj-nixos-system-nixos-26.11.20260919.20b1ddd",
+      "/nix/var/nix/profiles/system": "/nix/store/p501mchy0dq9lyjnaxwkx5s2pdm4i2yj-nixos-system-nixos-26.11.20260919.20b1ddd"
+    },
+    "kernel_notes_sha256": "1a98ea1e0a6e75f923c0fd53cfcf472f576ddb36de86b89361bfc224a305d9b6",
+    "sway_pid": 1062,
+    "sway_sha256": "9464072ac100e77500c7b6113920d2c2ed14e022612eddbc38a037ce9b006670",
+    "config": "/nix/store/7khi8238q2qbx1wsyw6ivvn7nhc1sa4z-k230-sway.conf",
+    "config_sha256": "7a52358fcb2691330bbafba01479cb1368ef536325398b4f085d094c2368ea46",
+    "rust_pid": 1076,
+    "rust_sha256": "32c8c445eb0e9467114880d0084762aa6649e69b1274ba7f87d24e300bee9148",
+    "settings_wrapper": "/nix/store/kdc5bmnqf6n5px5nfsv0iz8l02d1azah-k230-settings/bin/k230-settings",
+    "settings_wrapper_sha256": "9a38a0562fd57707fe2430d1e72598b22f768cc07824785a9cb9f0c49754f4c7",
+    "native_sha256": "c262a1f1aaff1cb3a5b353f3880f1dfbe197d8fbe40bbb8510261a19a9283cd0",
+    "trace_environment_absent": true,
+    "outputs": [
+      {
+        "name": "DSI-1",
+        "active": true,
+        "transform": "270",
+        "scale": 1.0,
+        "current_mode": {
+          "width": 568,
+          "height": 1232,
+          "refresh": 52190,
+          "picture_aspect_ratio": "none"
+        },
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "width": 1232,
+          "height": 568
+        }
+      }
+    ],
+    "idle": {
+      "app_id": "k230-terminal",
+      "idle_shell_without_child_jobs": true,
+      "pinned_idle_color_followers": 1
+    },
+    "scene": {
+      "active": 0,
+      "home_enabled": 1,
+      "mode": 0,
+      "home_selected": 0,
+      "trackpad_owned": 0,
+      "trackpad_client": 0
+    },
+    "services": [
+      "active",
+      "active"
+    ],
+    "cpu_online": "0",
+    "environment": {
+      "WLR_RENDERER": "pixman",
+      "WLR_PIXMAN_OUTPUT_TURN": "1",
+      "WLR_PIXMAN_QUARTER_TURN": "0",
+      "WLR_PIXMAN_DRAW_TRACE": "",
+      "SWAY_K230_CPU_FRAME_TIMING": "",
+      "SWAY_K230_TOUCH_ROUTE_TRACE": "",
+      "SWAY_K230_CARD_REDUCED_MOTION": "0"
+    },
+    "owned_trace_dropin_absent": true,
+    "candidate_override_absent": true,
+    "old_ram_trace_dirs_absent": true,
+    "physical_touch_present": true,
+    "virtual_test_devices": 0,
+    "boot_files": {
+      "Image": "d6b2153d97ac8382b5329c64397b8b46435e6a423b16796f8c37e052d4bcd642",
+      "initrd.uimg": "7d983aeffd4e47d2e36f825a731b485d55f05534a5dd28f036244d79c16f197c",
+      "k230-tdisplay.dtb": "ad61b8a70acba495b77761a6e73e935c4cd8ccd2a7ca6eb3da7fca6c256a18df",
+      "bootargs.txt": "38a90761c55914c426828c41d1c8b1cb636d19cda6893859d43afbe64c0fefc4",
+      "fw_jump_add_uboot_head.bin": "9627edbeea9b115d7040beea27cc61b23b6aca61cd502fd7760d7ee179f42c99"
+    },
+    "protected_boot": {
+      "logo.xrgb": {
+        "bytes": 2799104,
+        "sha256": "6c7a36086297597b359657ab53925ee0725e5201461484d543cbd950f5baa3af"
+      },
+      "fw_jump_add_uboot_head.bin": {
+        "bytes": 270808,
+        "sha256": "9627edbeea9b115d7040beea27cc61b23b6aca61cd502fd7760d7ee179f42c99"
+      },
+      "lost+found": {
+        "directory": true
+      },
+      "Image": {
+        "bytes": 42752512,
+        "sha256": "d6b2153d97ac8382b5329c64397b8b46435e6a423b16796f8c37e052d4bcd642"
+      },
+      "initrd.uimg": {
+        "bytes": 27328407,
+        "sha256": "7d983aeffd4e47d2e36f825a731b485d55f05534a5dd28f036244d79c16f197c"
+      },
+      "hdmi_dtb": {
+        "bytes": 17,
+        "sha256": "175342c82dd1b437cdafb6bb01090e7ff73c2769515654c48b02c1e9f73440c6"
+      },
+      "force_dtb": {
+        "bytes": 17,
+        "sha256": "175342c82dd1b437cdafb6bb01090e7ff73c2769515654c48b02c1e9f73440c6"
+      },
+      "lcd_dtb": {
+        "bytes": 17,
+        "sha256": "175342c82dd1b437cdafb6bb01090e7ff73c2769515654c48b02c1e9f73440c6"
+      }
+    },
+    "root_available_bytes": 176742400
+  },
+  "tracing_before": {
+    "current_tracer": "64aec5a7fa151222572a241383c857738318e63cca7ee771952c95a31d92a19d",
+    "tracing_on": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865",
+    "trace_clock": "925ca315bd3de6ef99e08c002e320406936ae2da2f2c0afd8da1e87f7980a253",
+    "events/enable": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+    "set_event_pid": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "set_ftrace_pid": "cdf4d2acfdcd5cd2556f83eeb52ee253ea6afbaa941c760f77dcfae3c925cb78",
+    "set_ftrace_filter": "5c83074a334aa00236037c3c0621b592cf3c740b5f5977f6ee95a308c5c8281e",
+    "set_graph_function": "5c83074a334aa00236037c3c0621b592cf3c740b5f5977f6ee95a308c5c8281e",
+    "trace_options": "a01cdd327a047d28b4241491a330220fa96feba5a60309dee36ca7e3bbd9204a"
+  },
+  "tracing_after": {
+    "current_tracer": "64aec5a7fa151222572a241383c857738318e63cca7ee771952c95a31d92a19d",
+    "tracing_on": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865",
+    "trace_clock": "925ca315bd3de6ef99e08c002e320406936ae2da2f2c0afd8da1e87f7980a253",
+    "events/enable": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+    "set_event_pid": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "set_ftrace_pid": "cdf4d2acfdcd5cd2556f83eeb52ee253ea6afbaa941c760f77dcfae3c925cb78",
+    "set_ftrace_filter": "5c83074a334aa00236037c3c0621b592cf3c740b5f5977f6ee95a308c5c8281e",
+    "set_graph_function": "5c83074a334aa00236037c3c0621b592cf3c740b5f5977f6ee95a308c5c8281e",
+    "trace_options": "a01cdd327a047d28b4241491a330220fa96feba5a60309dee36ca7e3bbd9204a"
+  },
+  "tracing_unchanged": true,
+  "tracefs_initially_mounted": true,
+  "tracefs_mount_state_restored": true,
+  "owned_timers": [],
+  "owned_finalizer_namespace_removed": true,
+  "retired_staging_duplicates": {
+    "k230-tdisplay.dtb": {
+      "bytes": 19048,
+      "sha256": "ad61b8a70acba495b77761a6e73e935c4cd8ccd2a7ca6eb3da7fca6c256a18df"
+    },
+    "bootargs.txt": {
+      "bytes": 198,
+      "sha256": "38a90761c55914c426828c41d1c8b1cb636d19cda6893859d43afbe64c0fefc4"
+    }
+  },
+  "retained_rollback": "/var/lib/k230/shade-status-accepted-20261020/rollback",
+  "retained_gc_roots": {
+    "accepted-system-root": "/nix/store/p501mchy0dq9lyjnaxwkx5s2pdm4i2yj-nixos-system-nixos-26.11.20260919.20b1ddd",
+    "rollback-system-root": "/nix/store/hpmzja32mncizz7s49ylr8pj9cy5npvg-nixos-system-nixos-26.11.20260919.20b1ddd"
+  },
+  "installed_status_exit_code": 0,
+  "installed_status_schema": 1,
+  "limits": "Ordinary boot/runtime/control cleanup proof. Prior operator acceptance is separate; no new optical timing or performance measurement."
+}

@@ -1,0 +1,1 @@
+{"result": "SAFE_IDLE_ORDINARY_REBOOT", "idle": {"app_id": "k230-terminal", "idle_shell_without_child_jobs": true, "pinned_idle_color_followers": 1}, "persistent_system": "/nix/store/p501mchy0dq9lyjnaxwkx5s2pdm4i2yj-nixos-system-nixos-26.11.20260919.20b1ddd"}

@@ -1,0 +1,3 @@
+[    7.082351] nixos kernel: Linux version 7.3.0-rc5 (nixbld@localhost) (riscv64-unknown-linux-gnu-gcc (GCC) 15.3.0, GNU ld (GNU Binutils) 2.46) #1-NixOS SMP PREEMPT Tue Jan  1 00:00:00 UTC 1980
+[    7.082432] nixos kernel: Machine model: LILYGO T-Display-K230 (mainline)
+[    7.091922] nixos kernel: Kernel command line: consoleblank=0 console=ttyS0,115200n8 root=fstab loglevel=4 lsm=landlock,yama,bpf loglevel=7 init=/nix/store/p501mchy0dq9lyjnaxwkx5s2pdm4i2yj-nixos-system-nixos-26.11.20260919.20b1ddd/init

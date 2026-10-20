@@ -1,0 +1,146 @@
+{
+  "phase": "PERSISTENT_FILES_SELECTED",
+  "started_at": "2026-10-20T21:09:22.929271+00:00",
+  "source_sha256": "1d6b29e7a1fa68e88886984db981869d548f5d1651d151576f3f4a43aabee83a",
+  "operator_acceptance": {
+    "recorded_at": "2026-10-20T21:07:43.548497+00:00",
+    "operator_quote": "top drawer's good to go what's next go on",
+    "context": "Reply to the request for real top-drawer pulls on the normally selected native Settings candidate.",
+    "evidence_class": "operator physical acceptance",
+    "accepted_candidate_system": "/nix/store/p501mchy0dq9lyjnaxwkx5s2pdm4i2yj-nixos-system-nixos-26.11.20260919.20b1ddd",
+    "runtime_identity": "Same boot69e90426, RustPID3724/executableSHA32c8c445, native Settings wrapperkdc5bmn, original Sway1046/landscape, no trace environment; fresh SSH preflight matches physical-ready record.",
+    "accepted_for_persistent_promotion": true,
+    "limits": "Operator qualitative acceptance; no camera, contact timestamps, optical latency or universal frame-rate bound inferred. Existing134.129ms instrumented tail remains recorded."
+  },
+  "candidate_system": "/nix/store/p501mchy0dq9lyjnaxwkx5s2pdm4i2yj-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "previous_system": "/nix/store/hpmzja32mncizz7s49ylr8pj9cy5npvg-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "before_boot_id": "69e90426-5ead-4ebb-82d5-2a592168e34d",
+  "before_boot_files": {
+    "Image": "d6b2153d97ac8382b5329c64397b8b46435e6a423b16796f8c37e052d4bcd642",
+    "initrd.uimg": "7d983aeffd4e47d2e36f825a731b485d55f05534a5dd28f036244d79c16f197c",
+    "k230-tdisplay.dtb": "71846b14ec47456fe9bec713ee850c97e1d8c1563afa9ffe21ac87da196ed581",
+    "bootargs.txt": "09c0214ca1b36924ad5a24662e1f55efd137a8eff2e7d1052127d318eb3ca6b7",
+    "fw_jump_add_uboot_head.bin": "9627edbeea9b115d7040beea27cc61b23b6aca61cd502fd7760d7ee179f42c99"
+  },
+  "expected_changed_files": {
+    "k230-tdisplay.dtb": "ad61b8a70acba495b77761a6e73e935c4cd8ccd2a7ca6eb3da7fca6c256a18df",
+    "bootargs.txt": "38a90761c55914c426828c41d1c8b1cb636d19cda6893859d43afbe64c0fefc4"
+  },
+  "protected_before": {
+    "logo.xrgb": {
+      "bytes": 2799104,
+      "sha256": "6c7a36086297597b359657ab53925ee0725e5201461484d543cbd950f5baa3af"
+    },
+    "fw_jump_add_uboot_head.bin": {
+      "bytes": 270808,
+      "sha256": "9627edbeea9b115d7040beea27cc61b23b6aca61cd502fd7760d7ee179f42c99"
+    },
+    "lost+found": {
+      "directory": true
+    },
+    "Image": {
+      "bytes": 42752512,
+      "sha256": "d6b2153d97ac8382b5329c64397b8b46435e6a423b16796f8c37e052d4bcd642"
+    },
+    "initrd.uimg": {
+      "bytes": 27328407,
+      "sha256": "7d983aeffd4e47d2e36f825a731b485d55f05534a5dd28f036244d79c16f197c"
+    },
+    "hdmi_dtb": {
+      "bytes": 17,
+      "sha256": "175342c82dd1b437cdafb6bb01090e7ff73c2769515654c48b02c1e9f73440c6"
+    },
+    "force_dtb": {
+      "bytes": 17,
+      "sha256": "175342c82dd1b437cdafb6bb01090e7ff73c2769515654c48b02c1e9f73440c6"
+    },
+    "lcd_dtb": {
+      "bytes": 17,
+      "sha256": "175342c82dd1b437cdafb6bb01090e7ff73c2769515654c48b02c1e9f73440c6"
+    }
+  },
+  "tracing_before": {
+    "current_tracer": "64aec5a7fa151222572a241383c857738318e63cca7ee771952c95a31d92a19d",
+    "tracing_on": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865",
+    "trace_clock": "925ca315bd3de6ef99e08c002e320406936ae2da2f2c0afd8da1e87f7980a253",
+    "events/enable": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+    "set_event_pid": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "set_ftrace_pid": "cdf4d2acfdcd5cd2556f83eeb52ee253ea6afbaa941c760f77dcfae3c925cb78",
+    "set_ftrace_filter": "5c83074a334aa00236037c3c0621b592cf3c740b5f5977f6ee95a308c5c8281e",
+    "set_graph_function": "5c83074a334aa00236037c3c0621b592cf3c740b5f5977f6ee95a308c5c8281e",
+    "trace_options": "a01cdd327a047d28b4241491a330220fa96feba5a60309dee36ca7e3bbd9204a"
+  },
+  "idle_before": {
+    "app_id": "k230-terminal",
+    "idle_shell_without_child_jobs": true,
+    "pinned_idle_color_followers": 1
+  },
+  "outputs": [
+    {
+      "name": "DSI-1",
+      "active": true,
+      "transform": "270",
+      "scale": 1.0,
+      "current_mode": {
+        "width": 568,
+        "height": 1232,
+        "refresh": 52190,
+        "picture_aspect_ratio": "none"
+      },
+      "rect": {
+        "x": 0,
+        "y": 0,
+        "width": 1232,
+        "height": 568
+      }
+    }
+  ],
+  "backup": "/var/lib/k230/shade-status-accepted-20261020/rollback",
+  "methods": {
+    "k230-tdisplay.dtb": "fsynced-atomic-rename",
+    "bootargs.txt": "fsynced-atomic-rename"
+  },
+  "ordinary_boot_verified": false,
+  "finished_at": "2026-10-20T21:09:26.972808+00:00",
+  "profile_after": "/nix/store/p501mchy0dq9lyjnaxwkx5s2pdm4i2yj-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "after_boot_files": {
+    "Image": "d6b2153d97ac8382b5329c64397b8b46435e6a423b16796f8c37e052d4bcd642",
+    "initrd.uimg": "7d983aeffd4e47d2e36f825a731b485d55f05534a5dd28f036244d79c16f197c",
+    "k230-tdisplay.dtb": "ad61b8a70acba495b77761a6e73e935c4cd8ccd2a7ca6eb3da7fca6c256a18df",
+    "bootargs.txt": "38a90761c55914c426828c41d1c8b1cb636d19cda6893859d43afbe64c0fefc4",
+    "fw_jump_add_uboot_head.bin": "9627edbeea9b115d7040beea27cc61b23b6aca61cd502fd7760d7ee179f42c99"
+  },
+  "protected_after": {
+    "logo.xrgb": {
+      "bytes": 2799104,
+      "sha256": "6c7a36086297597b359657ab53925ee0725e5201461484d543cbd950f5baa3af"
+    },
+    "fw_jump_add_uboot_head.bin": {
+      "bytes": 270808,
+      "sha256": "9627edbeea9b115d7040beea27cc61b23b6aca61cd502fd7760d7ee179f42c99"
+    },
+    "lost+found": {
+      "directory": true
+    },
+    "Image": {
+      "bytes": 42752512,
+      "sha256": "d6b2153d97ac8382b5329c64397b8b46435e6a423b16796f8c37e052d4bcd642"
+    },
+    "initrd.uimg": {
+      "bytes": 27328407,
+      "sha256": "7d983aeffd4e47d2e36f825a731b485d55f05534a5dd28f036244d79c16f197c"
+    },
+    "hdmi_dtb": {
+      "bytes": 17,
+      "sha256": "175342c82dd1b437cdafb6bb01090e7ff73c2769515654c48b02c1e9f73440c6"
+    },
+    "force_dtb": {
+      "bytes": 17,
+      "sha256": "175342c82dd1b437cdafb6bb01090e7ff73c2769515654c48b02c1e9f73440c6"
+    },
+    "lcd_dtb": {
+      "bytes": 17,
+      "sha256": "175342c82dd1b437cdafb6bb01090e7ff73c2769515654c48b02c1e9f73440c6"
+    }
+  }
+}

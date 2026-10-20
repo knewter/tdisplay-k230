@@ -1,0 +1,20 @@
+{
+  "requested_at": "2026-10-20T21:10:25.282438+00:00",
+  "command": [
+    "ssh",
+    "-F",
+    "<protected-SSH-config>",
+    "k230",
+    "systemctl",
+    "--no-block",
+    "reboot"
+  ],
+  "method": "ordinary systemd reboot; no kexec",
+  "prior_boot_id": "69e90426-5ead-4ebb-82d5-2a592168e34d",
+  "expected_system": "/nix/store/p501mchy0dq9lyjnaxwkx5s2pdm4i2yj-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "exit_code": 0,
+  "finished_at": "2026-10-20T21:10:25.848757+00:00",
+  "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "limits": "Request result only; ordinary boot requires a new boot ID/system/kernel observation."
+}

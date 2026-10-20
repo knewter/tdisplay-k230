@@ -1,0 +1,122 @@
+"""Persist the accepted native Settings userspace; preserve kernel/initrd and checked rollback."""
+from pathlib import Path
+import datetime,hashlib,importlib.util,json,os,re,shutil,signal,subprocess
+STAGE=Path('/var/lib/k230/shade-status-accepted-20261020');BOOT=Path('/boot');PROFILE=Path('/nix/var/nix/profiles/system')
+OLD='/nix/store/hpmzja32mncizz7s49ylr8pj9cy5npvg-nixos-system-nixos-26.11.20260919.20b1ddd'
+NEW='/nix/store/p501mchy0dq9lyjnaxwkx5s2pdm4i2yj-nixos-system-nixos-26.11.20260919.20b1ddd'
+C=json.loads(Path('/run/pane23-shade-status/identity.json').read_text());A=json.loads(Path('/run/pane23-shade-status/operator-acceptance.json').read_text());P=json.loads(Path('/run/pane23-shade-status/promotion-plan.json').read_text())
+MUTABLE=('k230-tdisplay.dtb','bootargs.txt');RECEIPT=STAGE/'promotion-state.json';BACKUP=STAGE/'rollback'
+sha=lambda p:hashlib.file_digest(Path(p).open('rb'),'sha256').hexdigest()
+digest=sha;COLOR_FOLLOWER_SHA256='4c4be0deb6eaf565675596afd845735a017999c01348e6252be2509687b1fd42'
+class TrialError(RuntimeError):pass
+def app_nodes(node):
+    result = [node] if node.get('app_id') else []
+    for key in ('nodes', 'floating_nodes'):
+        for child in node.get(key, []):
+            result.extend(app_nodes(child))
+    return result
+
+def pinned_color_follower(proc):
+    """The default terminal forks this pinned idle helper before execing bash."""
+    argv = [x.decode() for x in proc.joinpath('cmdline').read_bytes().split(b'\0') if x]
+    return (len(argv) > 1 and proc.joinpath('comm').read_text().strip() == 'python3' and
+            re.fullmatch(r'/nix/store/[a-z0-9]{32}-[A-Za-z0-9+._-]+/libexec/handheld-theme/foot_color_session.py', argv[1]) is not None and
+            digest(Path(argv[1])) == COLOR_FOLLOWER_SHA256)
+
+def idle_startup(ipc, proc_root=Path('/proc')):
+    apps = app_nodes(ipc.tree())
+    if len(apps) != 1 or apps[0]['app_id'] != 'k230-terminal':
+        raise TrialError('preserve user apps: expected only the standard startup terminal')
+    pid = apps[0].get('pid')
+    if type(pid) is not int or pid <= 0:
+        raise TrialError('cannot identify startup terminal process')
+    children = (proc_root/f'{pid}/task/{pid}/children').read_text().split()
+    if len(children) != 1:
+        raise TrialError('startup terminal has an unexpected child workload')
+    child = children[0]
+    proc = proc_root / child
+    if (proc.joinpath('comm').read_text().strip() not in ('bash', 'sh') or
+            not re.search(r'^State:\s+S\b', proc.joinpath('status').read_text(), re.M)):
+        raise TrialError('startup terminal has an active job; preserve it')
+    descendants = proc.joinpath(f'task/{child}/children').read_text().split()
+    if len(descendants) > 1:
+        raise TrialError('startup terminal has an unexpected child workload')
+    for descendant in descendants:
+        follower = proc_root/descendant
+        if (not re.search(r'^State:\s+S\b', follower.joinpath('status').read_text(), re.M) or
+                follower.joinpath(f'task/{descendant}/children').read_text().strip() or
+                not pinned_color_follower(follower)):
+            raise TrialError('startup terminal has an active or unknown child job; preserve it')
+    return {'app_id': 'k230-terminal', 'idle_shell_without_child_jobs': True,
+            'pinned_idle_color_followers': len(descendants)}
+now=lambda:datetime.datetime.now(datetime.timezone.utc).isoformat()
+def command(*args):return subprocess.run(args,check=True,capture_output=True,text=True,timeout=60)
+def save():
+ tmp=RECEIPT.with_suffix('.new')
+ with tmp.open('w') as out:json.dump(state,out,indent=2);out.write('\n');out.flush();os.fsync(out.fileno())
+ os.replace(tmp,RECEIPT);os.sync()
+def protected():
+ result={}
+ for p in BOOT.iterdir():
+  if p.name in MUTABLE:continue
+  assert not p.name.endswith('.pane23-shade-new')
+  if p.is_symlink():result[p.name]={'link':os.readlink(p)}
+  elif p.is_file():result[p.name]={'bytes':p.stat().st_size,'sha256':sha(p)}
+  else:result[p.name]={'directory':True}
+ return result
+def replace(source,target,expected):
+ assert target.name in MUTABLE and not target.is_symlink() and sha(source)==expected
+ if sha(target)==expected:return 'unchanged'
+ tmp=target.with_name(target.name+'.pane23-shade-new');assert not tmp.exists() and not tmp.is_symlink()
+ assert shutil.disk_usage(BOOT).free>source.stat().st_size+1024**2
+ with source.open('rb') as inp,tmp.open('xb') as out:shutil.copyfileobj(inp,out);out.flush();os.fsync(out.fileno())
+ assert sha(tmp)==expected;os.chmod(tmp,0o644);os.replace(tmp,target);os.sync();assert sha(target)==expected
+ return 'fsynced-atomic-rename'
+def interrupted(signum,frame):raise InterruptedError('promotion interrupted')
+for sig in (signal.SIGHUP,signal.SIGINT,signal.SIGTERM):signal.signal(sig,interrupted)
+assert os.geteuid()==0 and STAGE.is_dir() and not STAGE.is_symlink() and not RECEIPT.exists() and not BACKUP.exists()
+assert A['operator_quote']=="top drawer's good to go what's next go on" and A['accepted_for_persistent_promotion'] and A['accepted_candidate_system']==NEW
+assert Path('/proc/sys/kernel/random/boot_id').read_text().strip()=='69e90426-5ead-4ebb-82d5-2a592168e34d'
+assert all(os.path.realpath(p)==OLD for p in ('/run/current-system','/run/booted-system',str(PROFILE)))
+assert sha('/sys/kernel/notes')==C['kernel_notes_sha256'] and os.path.realpath(C['candidate_gc_root'])==NEW
+assert not Path('/nix-path-registration').exists()
+for n,h in C['boot_files'].items():assert sha(BOOT/n)==h
+for n,h in C['tracing'].items():assert sha('/sys/kernel/tracing/'+n)==h
+for n in MUTABLE:
+ assert sha(STAGE/n)==P['host_bundle_diff'][n]['new_sha256']
+ assert (BOOT/n).read_bytes().count(OLD.encode())==1
+ assert (BOOT/n).read_bytes().replace(OLD.encode(),NEW.encode())==(STAGE/n).read_bytes()
+assert os.statvfs('/').f_bavail*os.statvfs('/').f_frsize>16*1024**2
+rust=int(command('systemctl','show','shell-ui','-p','MainPID','--value').stdout.strip());assert rust==3724
+assert sha(f'/proc/{rust}/exe')==C['rust_sha256']
+env=dict(x.partition(b'=')[::2] for x in Path(f'/proc/{rust}/environ').read_bytes().split(b'\0') if b'=' in x);assert os.fsdecode(env[b'K230_SETTINGS'])==C['candidate_settings'] and not any(k.startswith(b'K230_TRACE_') for k in env)
+assert sha(C['native']['path'])==C['native']['sha256']
+spec=importlib.util.spec_from_file_location('cap','/run/pane23-shade-status/hdmi-shell-capture-board.py');cap=importlib.util.module_from_spec(spec);spec.loader.exec_module(cap)
+ipc=cap.IPC()
+try:
+ idle=idle_startup(ipc);assert ipc.pid==1046 and sha(f'/proc/{ipc.pid}/exe')==C['sway_sha256'];outputs=cap.output_state(ipc.outputs())
+finally:ipc.close()
+assert len(outputs)==1 and outputs[0]['name']=='DSI-1' and outputs[0]['transform']=='270' and outputs[0]['rect']['width']==1232 and outputs[0]['rect']['height']==568
+assert command('systemctl','is-active','shell','shell-ui').stdout.splitlines()==['active','active']
+BACKUP.mkdir(mode=0o700)
+for n in MUTABLE:
+ with (BOOT/n).open('rb') as inp,(BACKUP/n).open('xb') as out:shutil.copyfileobj(inp,out);out.flush();os.fsync(out.fileno())
+ assert sha(BACKUP/n)==C['boot_files'][n]
+(BACKUP/'previous-system').write_text(OLD+'\n')
+for name,system in [('accepted-system-root',NEW),('rollback-system-root',OLD)]:
+ root=STAGE/name;assert not root.exists() and not root.is_symlink();command('nix-store','--check-validity',system);command('nix-store','--add-root',str(root),'--indirect','--realise',system);assert os.path.realpath(root)==system
+state={'phase':'ROLLBACK_PROTECTED','started_at':now(),'source_sha256':sha(__file__),'operator_acceptance':A,'candidate_system':NEW,'previous_system':OLD,'before_boot_id':'69e90426-5ead-4ebb-82d5-2a592168e34d','before_boot_files':C['boot_files'],'expected_changed_files':{n:P['host_bundle_diff'][n]['new_sha256'] for n in MUTABLE},'protected_before':protected(),'tracing_before':C['tracing'],'idle_before':idle,'outputs':outputs,'backup':str(BACKUP),'methods':{},'ordinary_boot_verified':False};save()
+try:
+ for n in MUTABLE:state['phase']='replacing-'+n;save();state['methods'][n]=replace(STAGE/n,BOOT/n,P['host_bundle_diff'][n]['new_sha256']);save()
+ assert protected()==state['protected_before']
+ assert all(sha(BOOT/n)==h for n,h in state['expected_changed_files'].items())
+ command('nix-env','--profile',str(PROFILE),'--set',NEW);assert os.path.realpath(PROFILE)==NEW
+ state.update(phase='PERSISTENT_FILES_SELECTED',finished_at=now(),profile_after=os.path.realpath(PROFILE),after_boot_files={n:sha(BOOT/n) for n in C['boot_files']},protected_after=protected());save()
+except BaseException as error:
+ state.update(phase='ROLLING_BACK',error_class=type(error).__name__);save()
+ for n in MUTABLE:
+  (BOOT/(n+'.pane23-shade-new')).unlink(missing_ok=True);replace(BACKUP/n,BOOT/n,C['boot_files'][n])
+ command('nix-env','--profile',str(PROFILE),'--set',OLD)
+ assert protected()==state['protected_before'] and all(sha(BOOT/n)==h for n,h in C['boot_files'].items()) and os.path.realpath(PROFILE)==OLD
+ state.update(phase='ROLLED_BACK',rollback_at=now());save();raise
+print(json.dumps(state,indent=2),flush=True)

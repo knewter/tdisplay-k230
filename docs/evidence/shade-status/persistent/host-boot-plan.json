@@ -1,0 +1,57 @@
+{
+  "checked_at": "2026-10-20T20:53:51.371758+00:00",
+  "state": "PREPARED_ONLY_NOT_EXECUTED",
+  "required_precondition": "Actual operator physical shade response accepting this exact runtime candidate, plus fresh board lease/identity/control checks. Pending question is not answered by elapsed time or these host checks.",
+  "candidate_system": "/nix/store/p501mchy0dq9lyjnaxwkx5s2pdm4i2yj-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "preserved_current_and_rollback": "/nix/store/hpmzja32mncizz7s49ylr8pj9cy5npvg-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "bundle": "/nix/store/pa46qfg8v8pdgdgmk7lai218wmh4dzh9-k230-coherent-shell-boot-files",
+  "host_bundle_diff": {
+    "Image": {
+      "old_sha256": "d6b2153d97ac8382b5329c64397b8b46435e6a423b16796f8c37e052d4bcd642",
+      "new_sha256": "d6b2153d97ac8382b5329c64397b8b46435e6a423b16796f8c37e052d4bcd642",
+      "old_bytes": 42752512,
+      "new_bytes": 42752512
+    },
+    "initrd.uimg": {
+      "old_sha256": "7d983aeffd4e47d2e36f825a731b485d55f05534a5dd28f036244d79c16f197c",
+      "new_sha256": "7d983aeffd4e47d2e36f825a731b485d55f05534a5dd28f036244d79c16f197c",
+      "old_bytes": 27328407,
+      "new_bytes": 27328407
+    },
+    "k230-tdisplay.dtb": {
+      "old_sha256": "71846b14ec47456fe9bec713ee850c97e1d8c1563afa9ffe21ac87da196ed581",
+      "new_sha256": "ad61b8a70acba495b77761a6e73e935c4cd8ccd2a7ca6eb3da7fca6c256a18df",
+      "old_bytes": 19048,
+      "new_bytes": 19048
+    },
+    "bootargs.txt": {
+      "old_sha256": "09c0214ca1b36924ad5a24662e1f55efd137a8eff2e7d1052127d318eb3ca6b7",
+      "new_sha256": "38a90761c55914c426828c41d1c8b1cb636d19cda6893859d43afbe64c0fefc4",
+      "old_bytes": 198,
+      "new_bytes": 198
+    },
+    "logo.xrgb": {
+      "old_sha256": "6c7a36086297597b359657ab53925ee0725e5201461484d543cbd950f5baa3af",
+      "new_sha256": "6c7a36086297597b359657ab53925ee0725e5201461484d543cbd950f5baa3af",
+      "old_bytes": 2799104,
+      "new_bytes": 2799104
+    }
+  },
+  "only_boot_payloads_to_change": [
+    "k230-tdisplay.dtb",
+    "bootargs.txt"
+  ],
+  "bootargs_change": "In both generated DTB /chosen/bootargs and bootargs.txt, exactly one init= system path changes, checked byte-for-byte. Source DTB path and every hardware property are identical. Image/initrd/logo are byte-identical.",
+  "rejected_initial_host_assumption": "An assertion expecting initrd plus bootargs changes was rejected before any board action. Actual bundle audit shows initrd unchanged and generated DTB contains the new init path. Correct sequence uses actual artifact differences.",
+  "staging_and_backup_bytes_estimate": 42588,
+  "promotion_order": [
+    "Guard exact candidate physical acceptance, running wrapper, current hpmz and unchanged protected boot/runtime controls.",
+    "Copy only new generated DTB/bootargs to root-owned staging and verify pinned SHA256; back up existing two payloads and record previous persistent system.",
+    "Retain candidate and hpmz rollback GC roots before writes. Keep Image/initrd/loader/logo/selectors byte-identical.",
+    "Atomic fsynced same-filesystem DTB replacement followed by bootargs.txt last, with verified root-backed rollback on failure. Verify every payload/protected hash.",
+    "Select persistent system p501 only after payload verification; record preboot receipt separately.",
+    "Ordinary systemctl reboot over SSH. Verify distinct boot ID, current/booted/persistent p501, GNU kernel buildID7a61, unchanged compositor/Rust/kernel, normal native Settings wrapper and landscape/service/idle controls.",
+    "Remove only owned copied temporary traces/staging duplicates; retain durable backup/roots; release reservation; commit/push matching proof/CI/Pages. Archive only all7complete."
+  ],
+  "limits": "Host artifact audit/intended sequence only; no staging, backup, boot-file write, profile selection or reboot has occurred."
+}
