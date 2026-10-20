@@ -352,6 +352,9 @@ def capture(args):
     # test-touch traverses a synthetic wlroots device and is headless-only.
     # The board diagnostic uses the existing explicitly injected policy IPC.
     touch_prefix = 'card_shell' if profile == 'landscape-1280x800' else 'card_shell test-touch'
+    # The first real DRM trial hit journald's per-service burst limit. Longer
+    # rests lower diagnostic log pressure without dropping motion samples.
+    settle_seconds = 1.6 if profile == 'landscape-1280x800' else SETTLE_SECONDS
     transform = {'normal': 0, '90': 90, '180': 180, '270': 270}.get(out.get('transform'), out.get('transform'))
     physical = (mode.get('width'), mode.get('height'), transform, out.get('scale'))
     if physical != (pw, ph, turn, 1):
@@ -402,7 +405,7 @@ def capture(args):
                     ipc.command(f'{touch_prefix} motion {gesture} {x} {height//2}')
                     time.sleep(min(DRAG_SECONDS / DRAG_STEPS, max(0, deadline-time.monotonic())))
                 ipc.command(f'{touch_prefix} up {gesture}'); touch_down, active_touch_id = False, None
-                time.sleep(min(SETTLE_SECONDS, max(0, deadline-time.monotonic())))
+                time.sleep(min(settle_seconds, max(0, deadline-time.monotonic())))
         else:
             print('READY: swipe up from Foot into overview, then perform center horizontal drags.', flush=True)
             entered = True
@@ -480,7 +483,7 @@ def capture(args):
         'injected_workload':({'route':('compositor IPC card_shell down/motion/up'
                                      if profile == 'landscape-1280x800' else 'compositor IPC test-touch'),
             'moves_per_drag':DRAG_STEPS,'nominal_motion_seconds':DRAG_SECONDS,
-            'settle_seconds':SETTLE_SECONDS,
+            'settle_seconds':settle_seconds,
             'limit':'IPC processing adds time; actual input timestamps remain in capture.log.'}
             if args.input == 'injected' else None),
         'frequency':read_frequency(), 'stop_error':stop_failed,'restore_error':restore_failed,
@@ -682,6 +685,7 @@ class Fixtures(unittest.TestCase):
             self.assertTrue(any('down 1 540 400' in cmd for cmd in instances[0].commands))
             self.assertFalse(any('test-touch' in cmd for cmd in instances[0].commands))
             self.assertEqual(context['injected_workload']['route'],'compositor IPC card_shell down/motion/up')
+            self.assertEqual(context['injected_workload']['settle_seconds'],1.6)
             parser_module.validate_run_metadata(dict(meta['runs'][0]),directory,'candidate',profile='landscape-1280x800')
             with self.assertRaises(parser_module.InvalidTrace):
                 parser_module.validate_run_metadata(dict(meta['runs'][0]),directory,'candidate')

@@ -253,11 +253,25 @@ def snapshot(tree: SourceTree, status: dict, generated: str) -> dict:
         checked = TASK.findall(tasks)
         done = sum(flag != " " for flag, _ in checked)
         delta = sorted(p for p in tree.paths if p.startswith(f"{change_dir}/specs/") and p.endswith("/spec.md"))
-        if not delta:
+        metadata_path = f"{change_dir}/.openspec.yaml"
+        skip_specs = False
+        if metadata_path in tree.paths:
+            # Recognize OpenSpec's explicit top-level literal without adding a
+            # YAML dependency to this stdlib-only renderer. Quoted, nested or
+            # repeated declarations never waive the missing-spec guard.
+            metadata = tree.read(metadata_path)
+            declarations = re.findall(r"^skip_specs\s*:[^\n]*$", metadata, re.M)
+            skip_specs = (len(declarations) == 1 and
+                          re.fullmatch(r"skip_specs\s*:\s*true\s*(?:#.*)?", declarations[0]) is not None)
+        if not delta and not skip_specs:
             raise WorkError(f"missing delta specification for {ident}: {change_dir}/specs/")
+        if delta and skip_specs:
+            raise WorkError(f"skip_specs conflicts with delta specifications for {ident}")
         details = [document(tree, proposal_path, "Proposal"), document(tree, design_path, "Design"),
                    document(tree, task_path, "Tasks")]
         details.extend(document(tree, path, "Delta spec: " + path.split("/specs/", 1)[1].removesuffix("/spec.md")) for path in delta)
+        if skip_specs:
+            details.append(document(tree, metadata_path, "Tooling-only change metadata"))
         accepted = ["openspec/specs/" + p.split("/specs/", 1)[1] for p in delta]
         accepted = [p for p in accepted if p in tree.paths]
         item = {

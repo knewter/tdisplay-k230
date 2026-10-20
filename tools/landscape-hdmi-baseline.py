@@ -43,7 +43,7 @@ def load(directory, cards):
     workload = context.get('injected_workload')
     if not isinstance(workload, dict) or any(workload.get(k) != v for k, v in {
             'route': 'compositor IPC card_shell down/motion/up', 'moves_per_drag': 35,
-            'nominal_motion_seconds': .7, 'settle_seconds': .8}.items()):
+            'nominal_motion_seconds': .7, 'settle_seconds': 1.6}.items()):
         raise perf.InvalidTrace('unexpected IPC workload pacing')
     outputs = context.get('output_before')
     if not isinstance(outputs, list) or len(outputs) != 1 or outputs != context.get('output_after'):
@@ -97,7 +97,7 @@ class Fixtures(unittest.TestCase):
             collector_sha256='b'*64, output_before=output, output_after=output,
             compositor={k: item[k] for k in ('compositor_executable', 'pixman_identity')},
             injected_workload=dict(route='compositor IPC card_shell down/motion/up', moves_per_drag=35,
-                                   nominal_motion_seconds=.7, settle_seconds=.8))
+                                   nominal_motion_seconds=.7, settle_seconds=1.6))
         (directory / 'context.json').write_text(json.dumps(context))
         return item
 

@@ -1,0 +1,30 @@
+{
+  "utc": "2026-10-20T04:52:40.003669+00:00",
+  "checks": [
+    {
+      "command": "python3 tools/hdmi-shell-capture-board.py --self-test",
+      "exit_code": 0,
+      "tests": 11,
+      "source_sha256": "ddc51fcd86d7b4d546f19b394624ca10c103fbe4b797a1dc54ec04262ee3300b"
+    },
+    {
+      "command": "python3 tools/landscape-hdmi-baseline.py --self-test",
+      "exit_code": 0,
+      "tests": 2,
+      "source_sha256": "a84f9ab0ffd423470ff157111b5a180641bc6f00949513603bd467b316d9e292"
+    },
+    {
+      "command": "python3 tests/test_work_board.py",
+      "exit_code": 0,
+      "tests": 25,
+      "source_sha256": "6578beff70a372155667dd3874b1f959d9de004be1675bcab087d1f43a2d5d34"
+    },
+    {
+      "command": "python3 scripts/render_work_board.py --working-tree --output /tmp/k230-landscape-work-preview.json",
+      "exit_code": 0,
+      "tests": null,
+      "source_sha256": "6578beff70a372155667dd3874b1f959d9de004be1675bcab087d1f43a2d5d34"
+    }
+  ],
+  "result": "Executed after landscape pacing and work-board compatibility fixes; all pass. Host proof only."
+}

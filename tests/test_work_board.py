@@ -145,6 +145,36 @@ class Fixture(unittest.TestCase):
         self.assertIn("| A | B |", item["details"][1]["markdown"])
         self.assertNotIn("Private uncommitted", item["details"][1]["markdown"])
 
+    def test_explicit_tooling_change_needs_no_delta(self) -> None:
+        root = "openspec/changes/the-second-thing"
+        command(self.repo, "rm", f"{root}/specs/runtime/demo/spec.md")
+        put(self.repo, f"{root}/.openspec.yaml", "schema: spec-driven\nskip_specs: true\n")
+        old = next(i for i in self.data()["items"] if i["id"] == "the-second-thing")
+        self.assertEqual(len(old["details"]), 4)  # dirty opt-out is not published
+        self.assertEqual(old["details"][-1]["label"], "Delta spec: runtime/demo")
+        command(self.repo, "add", f"{root}/.openspec.yaml")
+        command(self.repo, "commit", "-qm", "tooling-only fixture")
+        item = next(i for i in self.data()["items"] if i["id"] == "the-second-thing")
+        self.assertEqual(item["acceptedSpecs"], [])
+        self.assertEqual(item["details"][-1]["label"], "Tooling-only change metadata")
+
+    def test_missing_delta_requires_unambiguous_literal_waiver(self) -> None:
+        root = "openspec/changes/the-second-thing"
+        command(self.repo, "rm", f"{root}/specs/runtime/demo/spec.md")
+        for marker in ("", "skip_specs: false\n", 'skip_specs: "true"\n',
+                       "nested:\n  skip_specs: true\n", "skip_specs: true\nskip_specs: false\n"):
+            with self.subTest(marker=marker):
+                put(self.repo, f"{root}/.openspec.yaml", marker)
+                with self.assertRaisesRegex(work.WorkError, "missing delta specification"):
+                    self.data(working=True)
+        put(self.repo, f"{root}/.openspec.yaml", "skip_specs: true # diagnostic tooling\n")
+        self.data(working=True)
+
+    def test_tooling_waiver_cannot_hide_delta_specs(self) -> None:
+        put(self.repo, "openspec/changes/the-second-thing/.openspec.yaml", "skip_specs: true\n")
+        with self.assertRaisesRegex(work.WorkError, "conflicts with delta"):
+            self.data(working=True)
+
     def test_snapshot_stays_at_captured_revision_when_head_advances(self) -> None:
         tree = work.SourceTree(self.repo)
         put(self.repo, "openspec/changes/the-first-thing/design.md", "## A newer commit\n")
