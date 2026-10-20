@@ -1,0 +1,16 @@
+{
+  "selected_at": "2026-10-20T03:46:28.678385+00:00",
+  "compiled_source": "221bbcf34a276a939356e5a6af9bfb124af9896a",
+  "bundle": "/nix/store/rmhy6m2cfq72alwrxb1s2wzwalx2l47a-k230-coherent-shell-boot-files",
+  "system": "/nix/store/j30yag05ic9k68n9dzbzindgf4ardp08-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "previous_system": "/nix/store/48afqvxz6i15rz9q4if3b1c08j6l3n37-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "backup": "/var/lib/k230/boot-backup-panel-paint-20261020T034434Z",
+  "staging": "/var/lib/k230/panel-paint-staging-20261020T034434Z",
+  "boot_file_hashes_verified": true,
+  "persistent_profile_verified": true,
+  "running_system_verified": true,
+  "trial_timer_stopped": true,
+  "reboot_performed": false,
+  "full_image_flash_performed": false,
+  "output": "Image: OK\nk230-tdisplay.dtb: OK\ninitrd.uimg: OK\nbootargs.txt: OK\nImage: OK\nk230-tdisplay.dtb: OK\ninitrd.uimg: OK\nbootargs.txt: OK\nlogo.xrgb: OK\n/nix/store/j30yag05ic9k68n9dzbzindgf4ardp08-nixos-system-nixos-26.11.20260919.20b1ddd\n/nix/store/j30yag05ic9k68n9dzbzindgf4ardp08-nixos-system-nixos-26.11.20260919.20b1ddd\n"
+}

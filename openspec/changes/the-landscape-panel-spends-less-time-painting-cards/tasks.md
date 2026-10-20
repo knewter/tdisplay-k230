@@ -23,14 +23,14 @@ require the build slot. No physical gate can be ticked from a host check.
 
 ## 3. Qualify the candidate on the board
 
-- [ ] 3.1 Install the exact candidate recoverably and repeat the same paired
+- [x] 3.1 Install the exact candidate recoverably and repeat the same paired
   full/reduced workload and cost attribution. Verify changing live content,
   callbacks and buffer release, native pixels and concurrent camera movement.
   Commit source/system IDs, workload, clocks and camera limits. Proof:
-  `python3 tools/shell-motion-trace.py --board --log docs/evidence/panel-paint/candidate/telemetry.log --provenance injected --compare-motion --output docs/evidence/panel-paint/candidate/motion.json`,
-  plus `python3 tools/panel-paint-profile.py --log docs/evidence/panel-paint/candidate/profile.log --output docs/evidence/panel-paint/candidate/profile.json`.
+  `python3 tools/shell-motion-trace.py --board --log docs/evidence/panel-paint/candidate-scene-coalescing/camera/telemetry.log --provenance injected --compare-motion --output /tmp/panel-paint-camera-motion.json`,
+  plus `python3 tools/panel-paint-profile.py --log docs/evidence/panel-paint/candidate-scene-coalescing/profile.log --workload docs/evidence/panel-paint/candidate-scene-coalescing/profile-workload.json --output /tmp/panel-paint-profile.json`.
   Keep open on any pixel/lifetime regression or missed acceptance gate; report all failed budgets.
-- [ ] 3.2 Select the qualified default in repository source and restore normal
+- [x] 3.2 Select the qualified default in repository source and restore normal
   motion/Home. Record installed source/system, absent owned overrides, active
   shell/UI and no test devices. Proof: the committed protected-SSH/console
   restoration check and `python3 tools/console.py /dev/ttyACM0 --wait=3 'systemctl is-active shell shell-ui'` if serial is used. No reboot/image claim without one.
@@ -154,3 +154,14 @@ under candidate-scene-coalescing/. Baseline restored normal/Home, own91/92
 absent and no test devices; board released. Task3.1 stays open for **current
 camera** proof:02:57:54UTC camera still shows the other Ladybird display, no
 qualifying video. No persistent qualified selection or archive is claimed.
+
+2026-10-20 camera completion: new current-source full/reduced40s videos cover
+all six gestures;48 samples/mode visibly show movement. Both associated traces
+PASS (fullp95/p9931.423/34.793ms; reduced34.447/38.113ms). Camera sampling and
+1.881s/1.255s correlation bounds remain explicit; no optical-latency/every-
+refresh claim. Qualified source221bbcf3/build12 systemj30 is now running and
+persistently selected, with verified boot hashes and baseline48 backup.
+Normal/Home, shell/UI, profiling off, owned91/92 absent and no injected devices
+are checked under reservation. No reboot or full-image flash. All proof and
+executed protocol are in candidate-scene-coalescing/camera/. Publication and
+archive follow only after this evidence is committed and strict checks pass.

@@ -651,6 +651,12 @@ Paths are relative to the repository root. `(sdk)` is
 so that building stage 1 from source does not silently drop them from view.
 
 ```
+DATA 8fe55879676a9662c4d0c7ed068f7437869a22a4abe18145ca9315e400b9a426 docs/evidence/panel-paint/candidate-scene-coalescing/camera/full-contact-1.jpg
+DATA 6fb32d8d67ec0e046c31eea5614eb7fed410fdd98f41b722594cb990579db9b8 docs/evidence/panel-paint/candidate-scene-coalescing/camera/full-contact-2.jpg
+DATA 563259b918556d4182fcc2620f17cd567fca6682abd015eca5361d6572f93530 docs/evidence/panel-paint/candidate-scene-coalescing/camera/full.mp4
+DATA 5a2b89b995f2bb8fcfd03bb52f1c8b4d6c265b00e4dd7df77eab24400319e4ba docs/evidence/panel-paint/candidate-scene-coalescing/camera/reduced-contact-1.jpg
+DATA b4eb088fec63029b100b283af1b6c71c0f403256a2e8172d02fdf65ec0e4e5eb docs/evidence/panel-paint/candidate-scene-coalescing/camera/reduced-contact-2.jpg
+DATA 386de08ceb29b10af5330130f6b21329f65dffd2effe9fb124a4c7d875b43ea5 docs/evidence/panel-paint/candidate-scene-coalescing/camera/reduced.mp4
 DATA eace8062bd0f7d19d5887aeb823b5184e28c82132539b1874ca17aac360f10d1 docs/evidence/panel-paint/candidate-scene-coalescing/live/before.png
 DATA e7980631e2786f14afe4b7ef4960e2ee6b45dc66a66add188b95cac5fc8067af docs/evidence/panel-paint/candidate-scene-coalescing/live/after.png
 DATA 4fbe0ded570c91331436bfc5b73b5c78b6769bed5bede911913ca0817c16c6db docs/evidence/panel-paint/candidate-label-ink/static-before.png
@@ -3712,3 +3718,16 @@ Changing clients are described in `docs/evidence/panel-paint/candidate-scene-coa
 | --- | ---: | --- | --- |
 | `docs/evidence/panel-paint/candidate-scene-coalescing/live/before.png` | 31404 | DATA | `eace8062bd0f7d19d5887aeb823b5184e28c82132539b1874ca17aac360f10d1` |
 | `docs/evidence/panel-paint/candidate-scene-coalescing/live/after.png` | 31465 | DATA | `e7980631e2786f14afe4b7ef4960e2ee6b45dc66a66add188b95cac5fc8067af` |
+
+### Qualified panel-paint camera proof
+
+Full/reduced injected motion and sampling limits: `docs/evidence/panel-paint/candidate-scene-coalescing/camera/README.md`.
+
+| Path | Bytes | Class | SHA-256 |
+| --- | ---: | --- | --- |
+| `docs/evidence/panel-paint/candidate-scene-coalescing/camera/full-contact-1.jpg` | 306264 | DATA | `8fe55879676a9662c4d0c7ed068f7437869a22a4abe18145ca9315e400b9a426` |
+| `docs/evidence/panel-paint/candidate-scene-coalescing/camera/full-contact-2.jpg` | 304601 | DATA | `6fb32d8d67ec0e046c31eea5614eb7fed410fdd98f41b722594cb990579db9b8` |
+| `docs/evidence/panel-paint/candidate-scene-coalescing/camera/full.mp4` | 1346668 | DATA | `563259b918556d4182fcc2620f17cd567fca6682abd015eca5361d6572f93530` |
+| `docs/evidence/panel-paint/candidate-scene-coalescing/camera/reduced-contact-1.jpg` | 312434 | DATA | `5a2b89b995f2bb8fcfd03bb52f1c8b4d6c265b00e4dd7df77eab24400319e4ba` |
+| `docs/evidence/panel-paint/candidate-scene-coalescing/camera/reduced-contact-2.jpg` | 311815 | DATA | `b4eb088fec63029b100b283af1b6c71c0f403256a2e8172d02fdf65ec0e4e5eb` |
+| `docs/evidence/panel-paint/candidate-scene-coalescing/camera/reduced.mp4` | 1259697 | DATA | `386de08ceb29b10af5330130f6b21329f65dffd2effe9fb124a4c7d875b43ea5` |

@@ -2,7 +2,7 @@
 
 ### Requirement: Landscape card repainting preserves live content within measured budgets
 
-<!-- UNVERIFIED: existing board evidence in docs/evidence/coherent-shell/motion-2026-10-19/camera/README.md measures about26Hz and timing failures. No optimization is implemented or accepted by this proposal. -->
+<!-- Grounded: docs/evidence/panel-paint/candidate-scene-coalescing/README.md and camera/README.md record exact-source native pixel/lifetime checks, current live-client callbacks/releases, separate bounded cost profile, two consecutive controlled paired software PASS results and current K230 camera-associated full/reduced PASS with visible movement. camera/qualified-selection.json and qualified-normal-check.json record running/persistent source221bbcf3/build12 selection and normal/Home cleanup. Camera30fps and broad clock bounds do not prove optical input latency or every52Hz refresh; no cold boot is claimed. -->
 The userspace landscape card shell SHALL preserve live client updates,
 orientation, rounded clipping, opacity, card selection and client callbacks
 while reducing the measured scene-build/paint cost on the native panel.

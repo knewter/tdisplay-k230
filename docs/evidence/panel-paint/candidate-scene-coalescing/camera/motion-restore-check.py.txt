@@ -1,0 +1,31 @@
+from pathlib import Path
+import subprocess,json
+s=['ssh','-F',str(Path.home()/'tmp/k230-coordination/ssh_config.private'),'k230']
+remote=r'''import subprocess,socket,struct,json,time,os
+from pathlib import Path
+def ipc(c='',kind=0):
+ p=c.encode()
+ with socket.socket(socket.AF_UNIX) as s:
+  s.settimeout(15);s.connect('/run/shell/sway-ipc.sock');s.sendall(b'i3-ipc'+struct.pack('=II',len(p),kind)+p)
+  def read(n):
+   b=b''
+   while len(b)<n:b+=s.recv(n-len(b))
+   return b
+  n,_=struct.unpack('=II',read(14)[6:]);return json.loads(read(n))
+def walk(n):
+ yield n
+ for c in n.get('nodes',[])+n.get('floating_nodes',[]):yield from walk(c)
+ids=[n.get('app_id') for n in walk(ipc(kind=4)) if n.get('app_id')]
+if not ids:ipc('exec foot');time.sleep(2)
+home_result=ipc('card_shell home');assert all(x.get('success') for x in home_result);time.sleep(1)
+pid=subprocess.check_output(['systemctl','show','shell.service','-p','MainPID','--value'],text=True).strip()
+e=dict(x.split(b'=',1) for x in Path('/proc',pid,'environ').read_bytes().split(b'\0') if b'=' in x)
+virtual=[]
+for p in Path('/sys/class/input').glob('event*/device/name'):
+ if p.read_text().strip()=='K230 injected touchscreen':virtual.append(str(p))
+r={'system':str(Path('/run/current-system').resolve()),'shell_active':subprocess.run(['systemctl','is-active','--quiet','shell.service']).returncode==0,'shell_ui_active':subprocess.run(['systemctl','is-active','--quiet','shell-ui.service']).returncode==0,'reduced_motion_environment':e.get(b'SWAY_K230_CARD_REDUCED_MOTION',b'0').decode(),'owned_override_absent':not Path('/run/systemd/system/shell.service.d/91-k230-motion-proof.conf').exists(),'remaining_virtual_test_devices':len(virtual),'home_command_succeeded':True}
+print(json.dumps(r))
+'''
+py='/nix/store/v189xydz6qkcd4cbkixcmv91w8hbc560-python3-riscv64-unknown-linux-gnu-3.14.7/bin/python3'
+p=subprocess.run(s+[py+' -'],input=remote.encode(),capture_output=True,timeout=35);p.check_returncode()
+r=json.loads(p.stdout);Path(__file__).with_name('motion-restored.json').write_text(json.dumps(r,indent=2)+'\n');print(json.dumps(r),flush=True)

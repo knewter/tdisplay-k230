@@ -1,7 +1,8 @@
 # Coalesced scene candidate — 2026-10-20 UTC
 
-**Two consecutive controlled full/reduced pairs pass all frozen software
-motion budgets. Current K230 camera proof remains UNVERIFIED.**
+**Two consecutive controlled full/reduced pairs and a new camera-associated
+pair pass all frozen software motion budgets. Current K230 camera movement
+proof is complete; the exact qualified candidate is persistently selected.**
 
 Exact compiled source `221bbcf34a276a939356e5a6af9bfb124af9896a`, bundle
 `/nix/store/rmhy6m2cfq72alwrxb1s2wzwalx2l47a-k230-coherent-shell-boot-files` and temporary system
@@ -74,23 +75,25 @@ acceptance claim follows from these counts. Both compositor PNGs were inspected:
 visible counter patterns change and rounded composition remains visible.
 This is board software capture, not camera or real-glass proof.
 
-The camera still framed a different, larger Ladybird welcome display in the
-separately inspected02:57:54UTC still. No video of it was started or committed.
-The current candidate has **no qualifying optical footage**. User camera-aim
-input remains pending. Old archived motion camera footage does not qualify
-this source. Prepared camera scripts are included as unperformed protocol,
-not evidence. After aiming at the K230, reserve the board, deploy this exact
-recoverable candidate, inspect a new still, then record full/reduced native
-workloads with clock bounds and actual video PTS/coverage. No physical38ms
-optical-latency/every-refresh claim from a30fps camera.
+The operator subsequently aimed the camera at the K230. New40s full/reduced
+recordings and48 sampled contact frames per mode show card movement. The
+camera-associated pair also passes every frozen software budget: full31.423/
+34.793ms p95/p99 input, reduced34.447/38.113ms. Both videos cover all six gestures;
+maximum camera PTS gap33.334ms, no gap above50ms. Clock/camera origin bounds
+are1.881s/1.255s wide. See [camera/README.md](camera/README.md) for all artifacts,
+SHA-256, original PTS, trace IDs and observations. No optical input latency,
+every-refresh blanking, real-glass or subtle text/tearing claim is made.
 
-After software proof, own92 profile override is removed, own91 absent, rollback
-timer stopped as baseline48af activation begins. restored-baseline.json checks
-normal mode/Home, active shell/UI and no test devices; a separate owned-path
-check verifies92 absent. The sole board reservation is released. Persistent
-boot/profile remains baseline48af and no reboot/flash/new default is claimed.
-Camera completion, qualified persistent selection, final publication/archive
-remain open; no incomplete task is waived or archived.
+After camera qualification, the exact source221bbcf3/build12 candidate is
+selected in the persistent system profile and verified boot files. Running
+and persistent system both resolve to j30yag05ic9k68n9dzbzindgf4ardp08 above.
+The previous baseline48af profile and boot files are backed up; the owned trial
+rollback timer is stopped after selection. Normal mode/Home, shell/UI active,
+profiling off, exact owned91/92 paths absent and no injected devices are
+verified in camera/qualified-normal-check.json. See qualified-selection.json
+and its command/log for boot hashes and backup. No reboot or full-image flash
+was performed; a subsequent cold boot is not claimed. The source default
+already includes the qualified renderer, without any quality/window change.
 
 ```sh
 python3 tools/shell-motion-trace.py --board --log docs/evidence/panel-paint/candidate-scene-coalescing/pair-16/telemetry.log --provenance injected --compare-motion --output /tmp/scene-pair16.json
@@ -98,6 +101,7 @@ python3 tools/shell-motion-trace.py --board --log docs/evidence/panel-paint/cand
 python3 tools/panel-paint-profile.py --log docs/evidence/panel-paint/candidate-scene-coalescing/profile.log --workload docs/evidence/panel-paint/candidate-scene-coalescing/profile-workload.json --output /tmp/scene-profile.json
 ```
 
-Both motion commands exit0. Task3.1 remains open for its current
-camera movement/blanking observations; software/native/QEMU classes remain
-separate. Reproduction requires the sole board/build reservations as applicable.
+Both motion commands and the camera-associated pair command exit0. Task3.1
+now has its named current-camera movement proof; software/native/QEMU and
+physical evidence classes remain separate. Reproduction requires the sole
+board/build reservations as applicable.

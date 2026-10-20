@@ -1,0 +1,29 @@
+{
+  "started_at": "2026-10-20T03:41:33.897517+00:00",
+  "steps": [
+    {
+      "step": "prepare-full",
+      "exit": 0
+    },
+    {
+      "step": "record-full",
+      "exit": 0
+    },
+    {
+      "step": "reduced-on",
+      "exit": 0
+    },
+    {
+      "step": "prepare-reduced",
+      "exit": 0
+    },
+    {
+      "step": "record-reduced",
+      "exit": 0
+    },
+    {
+      "step": "reduced-off",
+      "exit": 0
+    }
+  ]
+}

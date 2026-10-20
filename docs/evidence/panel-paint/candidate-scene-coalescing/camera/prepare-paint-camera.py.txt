@@ -1,0 +1,28 @@
+from pathlib import Path
+import subprocess,sys,shlex,json
+b=Path(__file__).parent
+mode=sys.argv[1];assert mode in ['full','reduced']
+source=(b/'collect-paint-board.py').read_text();a=source.index('def ipc(');z=source.index('def capture(',a)
+script='import socket,struct,json,time,subprocess\nfrom pathlib import Path\n'+source[a:z]+r"""
+expected=EXPECTED
+if str(Path('/run/current-system').resolve())!=expected:raise RuntimeError('camera preflight system differs')
+pid=subprocess.check_output(['systemctl','show','shell.service','-p','MainPID','--value'],text=True).strip()
+env=dict(p.split(b'=',1) for p in Path('/proc',pid,'environ').read_bytes().split(b'\0') if b'=' in p)
+if (env.get(b'SWAY_K230_CARD_REDUCED_MOTION')==b'1')!=(MODE=='reduced'):raise RuntimeError('camera preflight mode differs')
+if env.get(b'WLR_PIXMAN_DRAW_TRACE')==b'1':raise RuntimeError('profiling must be off before camera motion')
+end=time.monotonic()+35
+while 'k230-terminal' not in apps():
+ if time.monotonic()>end:raise RuntimeError('startup terminal not ready')
+ time.sleep(.1)
+if apps()!={'k230-terminal'}:raise RuntimeError('camera setup has unexpected applications')
+for attempt in range(2):
+ p=subprocess.run(['sudo','-u','shell','env','XDG_RUNTIME_DIR=/run/shell','/run/current-system/sw/bin/k230-shell-rust','--surface','hide'],capture_output=True,text=True,timeout=25)
+ if p.returncode==0:break
+ if attempt or 'route timed out' not in p.stderr:raise RuntimeError('camera preflight hide route failed')
+ time.sleep(1)
+print(json.dumps({'camera_workload_ready':True,'mode':MODE,'system':expected,'profiling_off':True,'startup_terminal_ready':True}))
+"""
+script=script.replace('EXPECTED',repr(str((b/'panel-paint-boot12/system').resolve()))).replace('MODE',repr(mode))
+p=subprocess.run(['ssh','-F',str(Path.home()/'tmp/k230-coordination/ssh_config.private'),'k230','/nix/store/v189xydz6qkcd4cbkixcmv91w8hbc560-python3-riscv64-unknown-linux-gnu-3.14.7/bin/python3 -'],input=script,text=True,capture_output=True,timeout=100)
+print(p.stdout,flush=True)
+if p.returncode:raise RuntimeError(p.stderr)

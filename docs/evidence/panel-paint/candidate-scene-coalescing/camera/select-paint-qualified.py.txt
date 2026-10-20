@@ -1,0 +1,37 @@
+"""Select the exact camera-qualified bundle; preserve boot/profile rollback."""
+from pathlib import Path
+import subprocess,json,datetime,shlex
+b=Path(__file__).parent;bundle=(b/'panel-paint-boot12').resolve();system=str((bundle/'system').resolve())
+assert system=='/nix/store/j30yag05ic9k68n9dzbzindgf4ardp08-nixos-system-nixos-26.11.20260919.20b1ddd'
+tag=datetime.datetime.now(datetime.timezone.utc).strftime('%Y%m%dT%H%M%SZ');stage='/var/lib/k230/panel-paint-staging-'+tag;backup='/var/lib/k230/boot-backup-panel-paint-'+tag
+ssh=['ssh','-F',str(Path.home()/'tmp/k230-coordination/ssh_config.private'),'k230']
+def remote(cmd):
+ p=subprocess.run(ssh+[cmd],capture_output=True,text=True,timeout=120)
+ (b/'paint-qualified-selection.log').open('a').write(p.stdout+p.stderr)
+ p.check_returncode();return p.stdout
+remote('install -d -m 0700 '+stage)
+files=['Image','initrd.uimg','k230-tdisplay.dtb','bootargs.txt','SHA256SUMS']
+subprocess.run(['scp','-q','-F',str(Path.home()/'tmp/k230-coordination/ssh_config.private'),*[str(bundle/f) for f in files],'k230:'+stage+'/'],check=True,timeout=120)
+cmd=f'''set -eu
+ST={shlex.quote(stage)}; BK={shlex.quote(backup)}; SYS={shlex.quote(system)}
+test "$(readlink -f /run/current-system)" = "$SYS"
+test "$(readlink -f /nix/var/nix/profiles/system)" = /nix/store/48afqvxz6i15rz9q4if3b1c08j6l3n37-nixos-system-nixos-26.11.20260919.20b1ddd
+test ! -e "$BK"; cd "$ST"; sha256sum -c --ignore-missing SHA256SUMS
+install -d -m 0700 "$BK"
+cp -a /boot/Image /boot/initrd.uimg /boot/k230-tdisplay.dtb /boot/bootargs.txt "$BK/"
+readlink -f /nix/var/nix/profiles/system > "$BK/previous-system"
+restore_boot() {{ cp -a "$BK/Image" "$BK/initrd.uimg" "$BK/k230-tdisplay.dtb" "$BK/bootargs.txt" /boot/; nix-env -p /nix/var/nix/profiles/system --set "$(cat "$BK/previous-system")"; sync; }}
+trap restore_boot EXIT
+for f in k230-tdisplay.dtb bootargs.txt initrd.uimg Image; do
+ if ! cmp -s "$ST/$f" "/boot/$f"; then cp "$ST/$f" "/boot/.panel-paint-$f"; sync; mv "/boot/.panel-paint-$f" "/boot/$f"; fi
+done
+sync; cd /boot; sha256sum -c --ignore-missing "$ST/SHA256SUMS"
+nix-env -p /nix/var/nix/profiles/system --set "$SYS"; sync
+test "$(readlink -f /nix/var/nix/profiles/system)" = "$SYS"
+systemctl stop k230-panel-paint-scene-restore.timer
+trap - EXIT
+readlink -f /run/current-system; readlink -f /nix/var/nix/profiles/system
+'''
+output=remote(cmd)
+r={'selected_at':datetime.datetime.now(datetime.timezone.utc).isoformat(),'compiled_source':'221bbcf34a276a939356e5a6af9bfb124af9896a','bundle':str(bundle),'system':system,'previous_system':'/nix/store/48afqvxz6i15rz9q4if3b1c08j6l3n37-nixos-system-nixos-26.11.20260919.20b1ddd','backup':backup,'staging':stage,'boot_file_hashes_verified':True,'persistent_profile_verified':True,'running_system_verified':True,'trial_timer_stopped':True,'reboot_performed':False,'full_image_flash_performed':False,'output':output}
+(b/'paint-qualified-selection.json').write_text(json.dumps(r,indent=2)+'\n');print(json.dumps(r,indent=2))

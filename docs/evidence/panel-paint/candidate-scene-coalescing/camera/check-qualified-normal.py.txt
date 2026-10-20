@@ -1,0 +1,19 @@
+from pathlib import Path
+import subprocess,json
+b=Path(__file__).parent
+p=subprocess.run(['python3',str(b/'motion-restore-check.py')],capture_output=True,text=True,check=True);r=json.loads(p.stdout)
+s=r'''from pathlib import Path
+import subprocess,json
+paths=['/run/systemd/system/shell.service.d/91-k230-motion-proof.conf','/run/systemd/system/shell.service.d/92-k230-paint-profile.conf']
+units=['k230-panel-paint-scene-restore.timer','k230-panel-paint-scene-proof-restore.timer','k230-motion-proof-restore.timer','k230-paint-profile-restore.timer']
+pid=subprocess.check_output(['systemctl','show','shell.service','-p','MainPID','--value'],text=True).strip()
+e=dict(x.split(b'=',1) for x in Path('/proc',pid,'environ').read_bytes().split(b'\0') if b'=' in x)
+r={'persistent_system':str(Path('/nix/var/nix/profiles/system').resolve()),'owned_paths_absent':{p:not Path(p).exists() for p in paths},'own_timers_inactive':{u:subprocess.run(['systemctl','is-active','--quiet',u]).returncode!=0 for u in units},'profiling_environment':e.get(b'WLR_PIXMAN_DRAW_TRACE',b'0').decode()}
+print(json.dumps(r))
+'''
+py='/nix/store/v189xydz6qkcd4cbkixcmv91w8hbc560-python3-riscv64-unknown-linux-gnu-3.14.7/bin/python3'
+p=subprocess.run(['ssh','-F',str(Path.home()/'tmp/k230-coordination/ssh_config.private'),'k230',py+' -'],input=s,capture_output=True,text=True,check=True,timeout=30);r.update(json.loads(p.stdout));r['compiled_source']='221bbcf34a276a939356e5a6af9bfb124af9896a';r['reboot_performed']=False
+assert r['system']==r['persistent_system']==str((b/'panel-paint-boot12/system').resolve())
+assert r['shell_active'] and r['shell_ui_active'] and r['home_command_succeeded']
+assert r['reduced_motion_environment']=='0' and r['profiling_environment']=='0' and r['remaining_virtual_test_devices']==0 and all(r['owned_paths_absent'].values()) and all(r['own_timers_inactive'].values())
+(b/'paint-qualified-normal-check.json').write_text(json.dumps(r,indent=2)+'\n');print(json.dumps(r,indent=2))

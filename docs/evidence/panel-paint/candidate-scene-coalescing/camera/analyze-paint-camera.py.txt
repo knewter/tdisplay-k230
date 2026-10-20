@@ -1,0 +1,39 @@
+from pathlib import Path
+import json,subprocess,re,hashlib,sys
+from PIL import Image,ImageDraw
+b=Path(__file__).parent
+out=b/'paint-camera-analysis';out.mkdir(exist_ok=True)
+result={'method':'SSH brackets board monotonic clock; first-frame origin is conservatively bounded by launch and first FFmpeg progress receipt. Actual frame PTS are retained. No optical input latency or every-refresh claim.','runs':{}}
+for mode in ['full','reduced']:
+ log=(b/('paint-camera-record-'+mode+'.log')).read_text()
+ cam=Path(re.search(r'CAMERA_OUTPUT (.+)',log).group(1));board=Path(re.search(r'HOST_OUTPUT (.+)',log).group(1))
+ m=json.loads((cam/'manifest.json').read_text());md=json.loads((board/'metadata.json').read_text());v=next(cam.glob('*.mp4'))
+ frames=json.loads(subprocess.check_output(['ffprobe','-v','error','-select_streams','v:0','-show_entries','frame=best_effort_timestamp_time','-of','json',str(v)]))['frames'];pts=[float(f['best_effort_timestamp_time']) for f in frames]
+ probe=json.loads(subprocess.check_output(['ffprobe','-v','error','-select_streams','v:0','-show_entries','stream=avg_frame_rate,nb_frames,duration,width,height','-of','json',str(v)]))['streams'][0]
+ c=m['clock_sample'];lo=c['host_before']['host_monotonic_ns']-c['board']['board_monotonic_ns'];hi=c['host_after']['host_monotonic_ns']-c['board']['board_monotonic_ns'];originlo=m['camera_launch']['host_monotonic_ns'];originhi=m['progress'][0]['stamp']['host_monotonic_ns']
+ def bounds(t):return [(t+lo-originhi)/1e9,(t+hi-originlo)/1e9]
+ text=(board/'telemetry.log').read_text();run=re.search(r'motion-session run=(\d+) motion='+mode,text).group(1)
+ inputs={}
+ for line in text.splitlines():
+  if ' event=input ' in line:
+   row=dict(x.split('=',1) for x in line.split() if '=' in x);inputs.setdefault(int(row['gesture_id']),[]).append(int(row['input_id']))
+ gestures=[]
+ for g in md['gestures']:
+  down=bounds(g['down_monotonic_ns']);up=bounds(g['up_monotonic_ns']);gid=g['index']+1
+  assert down[0]>=pts[0] and up[1]+.4<=pts[-1], 'camera does not cover full uncertainty bounds'
+  gestures.append({'index':g['index'],'trace_gesture_id':gid,'trace_input_id_range':[min(inputs[gid]),max(inputs[gid])],'direction':'left' if g['to'][0]<g['from'][0] else 'right','down_video_pts_bounds_seconds':down,'up_video_pts_bounds_seconds':up})
+ start=gestures[0]['down_video_pts_bounds_seconds'][0];end=gestures[-1]['up_video_pts_bounds_seconds'][1]+.4
+ sample=[start+(end-start)*i/47 for i in range(48)]
+ sheet=Image.new('RGB',(1536,6*240),'#202020');draw=ImageDraw.Draw(sheet)
+ for i,t in enumerate(sample):
+  f=out/(mode+'-frame-'+str(i)+'.jpg');subprocess.run(['ffmpeg','-v','error','-ss',str(t),'-i',str(v),'-frames:v','1','-vf','scale=384:216','-y',str(f)],check=True)
+  im=Image.open(f);x=i%4*384;y=i//4*240
+  # Two sheets, 24 samples each, preserve every selected sample and readable labels.
+  if i%24==0:sheet=Image.new('RGB',(1536,1440),'#202020');draw=ImageDraw.Draw(sheet)
+  y=(i%24)//4*240;sheet.paste(im,(x,y));draw.text((x+5,y+218),f'{mode} original PTS {t:.3f}s',fill='white')
+  if i%24==23:sheet.save(out/(mode+'-contact-'+str(i//24+1)+'.jpg'),quality=90)
+  f.unlink()
+ gaps=[z-a for a,z in zip(pts,pts[1:])]
+ result['runs'][mode]={'camera_directory':str(cam),'board_directory':str(board),'run_id':run,'video':v.name,'sha256':hashlib.sha256(v.read_bytes()).hexdigest(),'camera_exit':m['camera_exit'],'workload_exit':m['workload_exit'],'probe':probe,'frame_pts_seconds':pts,'max_camera_pts_gap_seconds':max(gaps),'camera_pts_gaps_over_50ms':sum(x>.05 for x in gaps),'first_frame_host_monotonic_ns_bounds':[originlo,originhi],'clock_roundtrip_ms':(hi-lo)/1e6,'alignment_uncertainty_width_ms':(hi-lo+originhi-originlo)/1e6,'gestures':gestures,'review_video_pts_window':[start,end],'contact_sample_pts':sample,'limits':'48 sampled frames in two contact sheets; inspect MP4 for temporal detail. No fixed-ROI brightness proxy used because camera framing changed. Camera sampling cannot exclude transient blanking/tearing between frames.'}
+(out/'correlation.json').write_text(json.dumps(result,indent=2)+'\n')
+print(json.dumps({k:{x:v[x] for x in ['run_id','max_camera_pts_gap_seconds','camera_pts_gaps_over_50ms','alignment_uncertainty_width_ms','review_video_pts_window']} for k,v in result['runs'].items()},indent=2))

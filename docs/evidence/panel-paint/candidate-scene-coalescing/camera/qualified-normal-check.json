@@ -1,0 +1,23 @@
+{
+  "system": "/nix/store/j30yag05ic9k68n9dzbzindgf4ardp08-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "shell_active": true,
+  "shell_ui_active": true,
+  "reduced_motion_environment": "0",
+  "owned_override_absent": true,
+  "remaining_virtual_test_devices": 0,
+  "home_command_succeeded": true,
+  "persistent_system": "/nix/store/j30yag05ic9k68n9dzbzindgf4ardp08-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "owned_paths_absent": {
+    "/run/systemd/system/shell.service.d/91-k230-motion-proof.conf": true,
+    "/run/systemd/system/shell.service.d/92-k230-paint-profile.conf": true
+  },
+  "own_timers_inactive": {
+    "k230-panel-paint-scene-restore.timer": true,
+    "k230-panel-paint-scene-proof-restore.timer": true,
+    "k230-motion-proof-restore.timer": true,
+    "k230-paint-profile-restore.timer": true
+  },
+  "profiling_environment": "0",
+  "compiled_source": "221bbcf34a276a939356e5a6af9bfb124af9896a",
+  "reboot_performed": false
+}
