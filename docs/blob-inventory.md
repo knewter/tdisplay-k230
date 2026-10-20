@@ -651,6 +651,8 @@ Paths are relative to the repository root. `(sdk)` is
 so that building stage 1 from source does not silently drop them from view.
 
 ```
+DATA af2b216b1e6e6be97c2d8ec3aa74b7c7e5790747dfe93989aa142705fcf0c5b0 docs/evidence/landscape-hdmi-stall-trace/board/trial-a/traced/events.jsonl.gz
+DATA 8123fd85b5c5afad79a32b226bcf2de6a8c147b3792c83f95bf8f4e36f27f891 docs/evidence/landscape-hdmi-stall-trace/board/trial-a/traced-retry/events.jsonl.gz
 DATA 154e3568645238a0f6bc21fb72a41ae3e1126f9d9812df1b48836b0c1c0412bc docs/evidence/hdmi-shell-performance/current-scene-221/turn180-sampler-fallback/ordinary-a.png
 DATA 6b99b5674b661119e865270d33eaaddb0e043ae2d4ab574911f2ec9d05f69821 docs/evidence/hdmi-shell-performance/current-scene-221/turn180-sampler-fallback/ordinary-b.png
 DATA ad86810b1c0735f4cd2cedc112331afc6a52cf2e2787f8c004c452b99377247c docs/evidence/hdmi-shell-performance/current-scene-221/turn180-sampler-fallback/overview-a.png
@@ -3762,3 +3764,13 @@ Twelve native software captures and limits: `docs/evidence/hdmi-shell-performanc
 | `docs/evidence/hdmi-shell-performance/current-scene-221/turn90-sampler/ordinary-b.png` | 10531 | DATA | `e1215e04cf0d51f0be7555e0b663909c8fb614cfa779936e78925dac57a2e9f3` |
 | `docs/evidence/hdmi-shell-performance/current-scene-221/turn90-sampler/overview-a.png` | 23372 | DATA | `33a74cc4d484efea10356015da31969b0fb55b632a3cd5a81ffe8d5ec0713097` |
 | `docs/evidence/hdmi-shell-performance/current-scene-221/turn90-sampler/overview-b.png` | 23295 | DATA | `271b7cd1f072d238fb891a25ff068c01b07f43513430a699019c9e8425262659` |
+
+### Landscape HDMI numeric scheduler/I/O traces
+
+Compressed allowlisted numeric records; raw buffers, pointers and process names are excluded.
+Provenance and limits: `docs/evidence/landscape-hdmi-stall-trace/README.md`.
+
+| Path | Bytes | Class | SHA-256 |
+| --- | ---: | --- | --- |
+| `docs/evidence/landscape-hdmi-stall-trace/board/trial-a/traced/events.jsonl.gz` | 1862260 | DATA | `af2b216b1e6e6be97c2d8ec3aa74b7c7e5790747dfe93989aa142705fcf0c5b0` |
+| `docs/evidence/landscape-hdmi-stall-trace/board/trial-a/traced-retry/events.jsonl.gz` | 1868852 | DATA | `8123fd85b5c5afad79a32b226bcf2de6a8c147b3792c83f95bf8f4e36f27f891` |

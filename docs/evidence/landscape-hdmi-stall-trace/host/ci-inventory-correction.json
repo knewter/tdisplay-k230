@@ -1,0 +1,11 @@
+{
+  "failed_ci_run": "https://github.com/knewter/tdisplay-k230/actions/runs/39379469799",
+  "failed_revision": "c6994a1d4dd22f0cf07c84bb833b02d107b289b7",
+  "owner": "perf/landscape-hdmi-stall-trace",
+  "failure": "tools/blob-scan.py: two new compressed numeric trace files had no inventory row. Site rendered 806 pages within time/size budgets; binary accounting guard correctly rejected publication.",
+  "correction": "Add only the two owned events.jsonl.gz paths, byte counts, DATA classification and SHA256 manifest rows to docs/blob-inventory.md. No trace bytes, source or board state changed.",
+  "checked_at": "2026-10-20T06:22:55.261880+00:00",
+  "proof_command": "python3 tools/blob-scan.py --no-vendor",
+  "proof_exit_code": 0,
+  "proof_log": "docs/evidence/landscape-hdmi-stall-trace/host/blob-scan.log"
+}
