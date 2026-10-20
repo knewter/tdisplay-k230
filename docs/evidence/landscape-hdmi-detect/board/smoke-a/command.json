@@ -1,0 +1,12 @@
+{
+  "command": [
+    "python3",
+    "/var/tmp/k230-hdmi-detect-20261020/landscape-hdmi-detect.py",
+    "--board-smoke",
+    "--output",
+    "/var/tmp/k230-hdmi-detect-20261020/smoke-a"
+  ],
+  "transport": "Protected SSH configuration pathname; no runtime secrets in command",
+  "capture_source_revision": "6b94a7859a8935de28a4d25dc94b2f92e5e649a0",
+  "exit_code": 0
+}
