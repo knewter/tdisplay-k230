@@ -1,0 +1,58 @@
+{
+  "checked_at": "2026-10-20T22:36:01.534180+00:00",
+  "parent_revision": "7a9e3bf41026e7129d9dca92302247c049b82d54",
+  "scope": "Host-only recorder protocol checks; synthetic ioctl buffers, not a camera or hardware proof.",
+  "compiler": "cc (GCC) 16.2.1 20260810",
+  "source_sha256": {
+    "tools/capture-boot-camera.c": "0a882c49a3c905f11e2fb770f20e8329418985479d850be0a9e036791fe1508e",
+    "tests/boot_camera_ioctl_fixture.c": "fda31811a4e8301b84cd1ddeeb52e63931fb8c4fba8db4b5fef4bf3b99e80596",
+    "tests/test_boot_camera.py": "c8bd1bd28b709d8b303904250b045f0059914447ee15133a798b6929cd24843f"
+  },
+  "results": [
+    {
+      "command": [
+        "cc",
+        "-std=c11",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "tools/capture-boot-camera.c",
+        "-o",
+        "/home/jadams/tmp/codex-claude-handoff-20261019/3/capture-boot-camera"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "python3",
+        "-m",
+        "unittest",
+        "tests.test_boot_camera"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": "............\n----------------------------------------------------------------------\nRan 12 tests in 0.356s\n\nOK\n"
+    },
+    {
+      "command": [
+        "<built-recorder>",
+        "/dev/k230-no-camera-fixture",
+        "<new-scratch-directory>",
+        "1",
+        "1",
+        "1"
+      ],
+      "exit_code": 2,
+      "stderr": "open_camera: No such file or directory\nframes=0 bytes=0 reason=open_camera exit=2; kernel/video alignment UNQUALIFIED\n",
+      "output_directory_created": false,
+      "evidence_class": "host missing-device error check"
+    }
+  ],
+  "real_camera_tested": false,
+  "board_accessed": false,
+  "kernel_video_alignment_qualified": false,
+  "hardware_task_4_1_complete": false
+}

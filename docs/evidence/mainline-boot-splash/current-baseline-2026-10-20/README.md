@@ -120,3 +120,58 @@ Once a camera is available, the next bounded board action is:
 The task remains unchecked until its actual fix and named physical proof
 exist. No archive, cold-power claim, scope reduction or waiver follows from
 this source audit.
+
+## Recorder preparation, October 20
+
+`tools/capture-boot-camera.c` now provides a bounded host recorder for a
+single-planar V4L2 camera already configured for MJPEG. It saves unmodified
+buffer bytes to `frames.mjpeg`, and one `frames.jsonl` record per buffer with
+its sequence, byte range, raw flags, driver timestamp, decoded clock/source
+flags, and host monotonic times immediately around dequeue. No rotation,
+transcoding, camera format/control write, board access or reboot is included.
+It requests eight mmap buffers; the actual count is chosen by the driver.
+
+The [kernel buffer API](https://docs.kernel.org/userspace-api/media/v4l/buffer.html)
+defines the timestamp clock and source flags. An end-of-frame timestamp is
+recorded as such, not relabeled as start of exposure. An unknown clock stays
+unknown. Host dequeue times describe receipt, not exposure. All outputs
+explicitly retain `kernel_video_alignment_qualified: false`, even when
+capture completes. The recorder supplies timestamp evidence for later
+qualification; it does not itself satisfy ±0.1 s or prove any camera's
+timestamp accuracy, exposure/readout delay, frame coverage or boot behavior.
+
+Build and run a short camera qualification sample once the device is
+available, with a **new** output directory outside the repository:
+
+```sh
+cc -std=c11 -O2 -Wall -Wextra -Werror tools/capture-boot-camera.c -o /tmp/k230-capture-boot-camera
+/tmp/k230-capture-boot-camera /dev/video0 /tmp/k230-camera-qualification-new 5 64 150
+```
+
+Arguments are device, new directory, seconds, maximum video MiB and optional
+maximum frames. Camera format/size/rate must be inspected and explicitly set
+separately if needed; unsupported formats are rejected. For a later full
+boot recording, use a newly named directory and limits chosen to cover the
+whole boot (for example 180 seconds / 512 MiB / 6000 frames), after qualifying
+the camera and clock mapping. Preview the raw orientation and ROI first.
+Starting this program does not trigger a reboot.
+
+Exit 0 and a terminal `capture_complete: true` mean that the recording reached
+its duration/frame limit without a detected stream/file error. Inspect the
+process exit **and** terminal summary, verify raw-file size and every record's
+byte range, then hash both files before preserving them as evidence. A byte
+cap, sequence discontinuity, error buffer, timestamp regression/invalidity,
+changed clock/source flags, camera stall or setup/write failure yields a
+nonzero exit. SIGINT/SIGTERM preserve partial output and stop the stream.
+An abrupt kill may leave buffered bytes or a missing summary: that is an
+incomplete capture. Existing output directories are never overwritten.
+
+Host checks: `python3 -m unittest tests.test_boot_camera` compiles with
+warnings treated as errors and runs 12 tests using synthetic ioctl buffers
+with real file/mmap/poll operations. They cover raw bytes/timestamps,
+unknown clocks, sequence wrap/gaps, malformed index/size/timeval, error and
+regressing/future timestamps, changed timestamp flags, byte limits, requeue
+failure, existing output, wrong format, invalid limits and SIGTERM cleanup.
+[`recorder-host.json`](recorder-host.json) pins the source hashes and exact
+host results. **No real camera, board capture, optical clock qualification or
+hardware fix was performed.** Camera reconnect/feed remains pending.
