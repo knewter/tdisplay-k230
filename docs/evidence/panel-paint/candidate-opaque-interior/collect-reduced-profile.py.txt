@@ -1,0 +1,31 @@
+from pathlib import Path
+import subprocess,json,re,shlex
+base=Path(__file__).parent
+ssh=['ssh','-F',str(Path.home()/'tmp/k230-coordination/ssh_config.private'),'k230']
+py='/nix/store/v189xydz6qkcd4cbkixcmv91w8hbc560-python3-riscv64-unknown-linux-gnu-3.14.7/bin/python3'
+script=r'''import json,subprocess,re,time
+from pathlib import Path
+pid=subprocess.check_output(['systemctl','show','shell.service','-p','MainPID','--value'],text=True).strip()
+env=dict(p.split(b'=',1) for p in Path('/proc',pid,'environ').read_bytes().split(b'\0') if b'=' in p)
+assert env.get(b'WLR_PIXMAN_DRAW_TRACE')==b'1'
+raw=subprocess.check_output(['journalctl','-u','shell.service','_PID='+pid,'--no-pager','-o','json'],text=True)
+patterns=[('draw',re.compile(r'K230_PIXMAN_DRAW transform=([0-7]) path=(sampler|tiled) copy_cpu_ns=(\d+) total_cpu_ns=(\d+) dst_pixels=(\d+) scratch_bytes=(\d+) src_format=(0x[0-9a-f]{8}) dst_format=(0x[0-9a-f]{8}) src_width=(\d+) src_height=(\d+) masked=([01]) sampled=([01]) op=(\d+) interior=([01])$'),['transform','path','copy_cpu_ns','total_cpu_ns','dst_pixels','scratch_bytes','src_format','dst_format','src_width','src_height','masked','sampled','op','interior']),('rotation',re.compile(r'K230_PIXMAN_OUTPUT_TURN src=(\d+)x(\d+) dst=(\d+)x(\d+) format=(0x[0-9a-f]{8}) rotation=([13]) rotation_cpu_ns=(\d+) scratch_bytes=(\d+)$'),['src_width','src_height','dst_width','dst_height','format','transform','rotation_cpu_ns','scratch_bytes'])]
+rows=[];formats=[];damages=[]
+damage_pattern=re.compile(r'K230_PIXMAN_OUTPUT_DAMAGE preserved=([01]) pixels=(\d+) rects=(\d+) cache_bytes=(\d+)$')
+for line in raw.splitlines():
+ row=json.loads(line);msg=row.get('MESSAGE','')
+ if not isinstance(msg,str):continue
+ dm=damage_pattern.search(msg)
+ if dm:damages.append({'t_ns':int(row['__MONOTONIC_TIMESTAMP'])*1000,**{k:int(v) for k,v in zip(['preserved','pixels','rects','cache_bytes'],dm.groups())}})
+ for stage,pattern,keys in patterns:
+  m=pattern.search(msg)
+  if m:
+   ns=int(row['__MONOTONIC_TIMESTAMP'])*1000
+   if stage=='draw':formats.append({'t_ns':ns,**dict(zip(keys,m.groups()))})
+   rows.append('K230_PANEL_PAINT v=1 stage='+stage+' t_ns='+str(ns)+' '+' '.join(k+'='+v for k,v in zip(keys,m.groups()) if stage!='draw' or k not in {'src_format','dst_format','src_width','src_height','masked','sampled','op','interior'}))
+metadata={'captured_utc':time.strftime('%Y-%m-%dT%H:%M:%SZ',time.gmtime()),'system':str(Path('/run/current-system').resolve()),'pid':int(pid),'environment':{k:env.get(k.encode(),b'').decode() for k in ['WLR_RENDERER','WLR_PIXMAN_OUTPUT_TURN','WLR_PIXMAN_QUARTER_TURN','WLR_PIXMAN_DRAW_TRACE','WLR_SCENE_DISABLE_VISIBILITY','WLR_SCENE_DEBUG_DAMAGE']},'observer_limits':{'draw_rows':512,'rotation_rows':128,'journal_timestamp':'entry receipt monotonic; not exact stage start or commit ID'},'rows':len(rows)}
+print(json.dumps({'metadata':metadata,'profile':'\n'.join(rows)+'\n','formats':formats,'damages':damages}))
+'''
+p=subprocess.run(ssh+[py+' -'],input=script.encode(),capture_output=True,timeout=45)
+if p.returncode:raise RuntimeError(p.stderr.decode()[-1500:])
+d=json.loads(p.stdout);(base/'paint9-reduced-output-damage.jsonl').write_text(''.join(json.dumps(row,separators=(',',':'))+'\n' for row in d['damages']));(base/'paint9-reduced-draw-formats.json').write_text(json.dumps(d['formats'],indent=2)+'\n');(base/'paint9-reduced-profile.log').write_text(d['profile']);(base/'paint9-reduced-profile-metadata.json').write_text(json.dumps(d['metadata'],indent=2)+'\n');print(json.dumps(d['metadata']),flush=True)

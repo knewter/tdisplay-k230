@@ -1,0 +1,52 @@
+{
+  "started_utc": "2026-10-20T01:33:28.579454+00:00",
+  "steps": [
+    {
+      "script": "set-motion-mode-host",
+      "args": [
+        "on"
+      ],
+      "exit": 0,
+      "log": "paint9-reduced-diag-retry-set-motion-mode-host.log"
+    },
+    {
+      "script": "set-paint-profile-host",
+      "args": [
+        "on"
+      ],
+      "exit": 0,
+      "log": "paint9-reduced-diag-retry-set-paint-profile-host.log"
+    },
+    {
+      "script": "run-paint-candidate-host",
+      "args": [
+        "reduced",
+        "3"
+      ],
+      "exit": 0,
+      "log": "paint9-reduced-diag-retry-run-paint-candidate-host.log"
+    },
+    {
+      "script": "collect-paint9-reduced-profile",
+      "args": [],
+      "exit": 0,
+      "log": "paint9-reduced-diag-retry-collect-paint9-reduced-profile.log"
+    },
+    {
+      "script": "set-paint-profile-host",
+      "args": [
+        "off"
+      ],
+      "exit": 0,
+      "log": "paint9-reduced-diag-retry-set-paint-profile-host.log"
+    },
+    {
+      "script": "set-motion-mode-host",
+      "args": [
+        "off"
+      ],
+      "exit": 0,
+      "log": "paint9-reduced-diag-retry-set-motion-mode-host.log"
+    }
+  ]
+}

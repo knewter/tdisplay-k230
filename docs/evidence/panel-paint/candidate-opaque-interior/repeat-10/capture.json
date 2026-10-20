@@ -1,0 +1,37 @@
+{
+  "started_utc": "2026-10-20T01:35:25.881005+00:00",
+  "source_revision": "37be9567fdd1198aa1ba7d7e377060999e37b44b",
+  "attempts": [
+    {
+      "mode": "full",
+      "attempt": 1,
+      "started_utc": "2026-10-20T01:35:25.881226+00:00",
+      "ended_utc": "2026-10-20T01:35:56.196838+00:00",
+      "exit": 0,
+      "log": "paint10-full-pair-attempt1.log"
+    },
+    {
+      "mode": "reduced",
+      "attempt": 1,
+      "started_utc": "2026-10-20T01:36:06.250742+00:00",
+      "ended_utc": "2026-10-20T01:36:16.865744+00:00",
+      "exit": 1,
+      "log": "paint10-reduced-pair-attempt1.log"
+    },
+    {
+      "mode": "reduced",
+      "attempt": 2,
+      "started_utc": "2026-10-20T01:36:17.866312+00:00",
+      "ended_utc": "2026-10-20T01:36:44.660545+00:00",
+      "exit": 0,
+      "log": "paint10-reduced-pair-attempt2.log"
+    }
+  ],
+  "mode_restore_succeeded": true,
+  "full_directory": "/home/jadams/tmp/codex-claude-handoff-20261019/3/motion-full-013525",
+  "mode_on_exit": 0,
+  "reduced_directory": "/home/jadams/tmp/codex-claude-handoff-20261019/3/motion-reduced-013617",
+  "mode_off_exit": 0,
+  "capture_ended_utc": "2026-10-20T01:36:55.055322+00:00",
+  "analysis_exit": 1
+}

@@ -651,6 +651,8 @@ Paths are relative to the repository root. `(sdk)` is
 so that building stage 1 from source does not silently drop them from view.
 
 ```
+DATA ec0e34b5236fbc340ed3afca3cd657df3dfe7dbcbc9909d21500b0cfdc4216a1 docs/evidence/panel-paint/candidate-opaque-interior/live/before.png
+DATA 7e629704a01b4463024d513233f49c65495e458246bff6239a4e647471631eb7 docs/evidence/panel-paint/candidate-opaque-interior/live/after.png
 DATA cac6396187d3f193e964b389f5da86a80852635d2b0a2b8ce311279387241557 docs/evidence/panel-paint/candidate-retained-output/live/before.png
 DATA a036bc8d1ca10157be62ee4fc1fab2535b2591c999c05244bca42388052c1a41 docs/evidence/panel-paint/candidate-retained-output/live/after.png
 DATA 8f41ffe0be47661ffb7b4f75ea8a847eca8eb466c6457ef5af9ffebd4ca6d9e0 docs/evidence/coherent-shell/motion-2026-10-19/camera/full-contact.jpg
@@ -3677,3 +3679,12 @@ No camera or real-glass interaction is claimed.
 | --- | ---: | --- | --- |
 | `docs/evidence/panel-paint/candidate-retained-output/live/before.png` | 31333 | DATA | `cac6396187d3f193e964b389f5da86a80852635d2b0a2b8ce311279387241557` |
 | `docs/evidence/panel-paint/candidate-retained-output/live/after.png` | 31441 | DATA | `a036bc8d1ca10157be62ee4fc1fab2535b2591c999c05244bca42388052c1a41` |
+
+## Opaque-interior live-client software captures, 2026-10-20 UTC
+
+Compositor captures described in `docs/evidence/panel-paint/candidate-opaque-interior/README.md`; no camera/glass claim.
+
+| Path | Bytes | Class | SHA-256 |
+| --- | ---: | --- | --- |
+| `docs/evidence/panel-paint/candidate-opaque-interior/live/before.png` | 31427 | DATA | `ec0e34b5236fbc340ed3afca3cd657df3dfe7dbcbc9909d21500b0cfdc4216a1` |
+| `docs/evidence/panel-paint/candidate-opaque-interior/live/after.png` | 31382 | DATA | `7e629704a01b4463024d513233f49c65495e458246bff6239a4e647471631eb7` |

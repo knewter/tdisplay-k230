@@ -86,3 +86,11 @@ that reject quantized corners, and reuse/budget/allocation/registration/free
 checks; all earlier pixel/lifecycle commands pass. Synthetic on-board copies
 are faster, with setup costs separately recorded. Exact-source build and all
 paired timing/live/camera/default/archive gates remain open for this candidate.
+
+Source37be9567 exact build9b succeeded and live counters/callbacks/releases
+advance. Two earlier full PASS / reduced FAIL pairs used asynchronously
+ordered terminals; the corrected middle-card pair11 fails both modes. Full
+build6.243ms mean/6.722ms p95, reduced6.178ms/6.861ms, do not meet all end-to-end
+budgets. All runs/limits are committed under candidate-opaque-interior/.
+Mostly transparent title margins select the next exact paint omission.
+Camera/default/archive remain open; no full-only pass qualifies the pair.

@@ -219,3 +219,10 @@ an optionalRGB565 representation for reused immutable card interiors, within
 the existing8MiB app-cache budget. Full-precision masked edges remain exact
 (512 new oracle cases and32 corner-loss sentinels). Isolated card draws fall
 about6×, but setup costs and all frozen board/physical gates still need proof.
+
+The [opaque-interior integrated trials](candidate-opaque-interior/README.md)
+activate the auxiliary path and pass the exact cross-build/live-content check,
+but still fail the comparable full/reduced timing pair. Earlier full passes
+used a different starting card order and cannot qualify the pair. Serialized
+terminal mapping now fixes setup. Mostly empty ARGB title blending is the next
+measured boundary; quality,8ms guard and all hardware gates remain unchanged.

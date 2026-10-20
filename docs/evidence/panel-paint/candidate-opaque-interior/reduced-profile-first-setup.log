@@ -1,0 +1,16 @@
+Traceback (most recent call last):
+  File "/home/jadams/tmp/codex-claude-handoff-20261019/3/run-paint-candidate-host.py", line 15, in <module>
+    print(remote(py+' /tmp/k230-motion-tools/collect.py '+shlex.quote(mode)+' '+shlex.quote(dest)+' '+count+' '+shlex.quote(source)+' '+shlex.quote(expected),timeout=150).decode(),flush=True)
+          ~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/jadams/tmp/codex-claude-handoff-20261019/3/run-paint-candidate-host.py", line 7, in remote
+    if p.returncode:raise RuntimeError(p.stderr.decode()[-2000:]+'\n'+p.stdout.decode(errors='replace')[-2000:])
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+RuntimeError: k230-shell-rust: route timed out
+Traceback (most recent call last):
+  File "/tmp/k230-motion-tools/collect.py", line 75, in <module>
+    subprocess.run(['sudo','-u','shell','env','XDG_RUNTIME_DIR=/run/shell','/run/current-system/sw/bin/k230-shell-rust','--surface','hide'],check=True,timeout=20)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/nix/store/v189xydz6qkcd4cbkixcmv91w8hbc560-python3-riscv64-unknown-linux-gnu-3.14.7/lib/python3.14/subprocess.py", line 578, in run
+    raise CalledProcessError(retcode, process.args,
+                             output=stdout, stderr=stderr)
+subprocess.CalledProcessError: Command '['sudo', '-u', 'shell', 'env', 'XDG_RUNTIME_DIR=/run/shell', '/run/current-system/sw/bin/k230-shell-rust', '--surface', 'hide']' returned non-zero exit status 1.

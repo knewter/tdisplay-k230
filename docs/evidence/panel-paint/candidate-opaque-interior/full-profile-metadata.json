@@ -1,0 +1,22 @@
+{
+  "captured_utc": "2026-10-20T01:31:07Z",
+  "pid": 59660,
+  "environment_unavailable_after_profile_watchdog": true,
+  "environment": {
+    "WLR_RENDERER": "",
+    "WLR_PIXMAN_OUTPUT_TURN": "",
+    "WLR_PIXMAN_QUARTER_TURN": "",
+    "WLR_PIXMAN_DRAW_TRACE": "",
+    "WLR_SCENE_DISABLE_VISIBILITY": "",
+    "WLR_SCENE_DEBUG_DAMAGE": ""
+  },
+  "observer_limits": {
+    "draw_rows": 512,
+    "rotation_rows": 128,
+    "journal_timestamp": "entry receipt monotonic; not exact stage start or commit ID"
+  },
+  "rows": 640,
+  "system_at_collection": "/nix/store/48afqvxz6i15rz9q4if3b1c08j6l3n37-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "workload_system": "/nix/store/ysfxir8hgbvh2xk8n68qjls94rdbx76g-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "limits": "Historical PID selected uniquely by draw messages in 01:26\u201301:28 UTC; environment unavailable after independent watchdog restart. System at collection was already restored; workload metadata identifies candidate."
+}
