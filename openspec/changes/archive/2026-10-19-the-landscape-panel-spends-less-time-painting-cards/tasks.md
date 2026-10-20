@@ -175,3 +175,10 @@ Archive/sync completed successfully with openspec archive --yes; only the
 existing runtime/card-shell capability was updated. No physical gate was
 waived and all seven tasks are complete. Final archive publication is checked
 after committing/pushing this operation.
+
+Publication correction: archive commit36f57cd4 CI39366761992 failed the site
+classifier because an HTML `Grounded:` comment is not its accepted `Grounding:`
+paragraph. The evidence and all hardware/budget results remain unchanged.
+This change was reopened only to apply the required marker through OpenSpec
+archive/sync; the existing requirement is MODIFIED by that corrective sync.
+The local site renderer is run before committing the correction.

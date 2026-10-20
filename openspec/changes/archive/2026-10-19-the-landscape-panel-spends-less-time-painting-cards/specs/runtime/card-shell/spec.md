@@ -1,8 +1,8 @@
-## ADDED Requirements
+## MODIFIED Requirements
 
 ### Requirement: Landscape card repainting preserves live content within measured budgets
 
-<!-- Grounded: docs/evidence/panel-paint/candidate-scene-coalescing/README.md and camera/README.md record exact-source native pixel/lifetime checks, current live-client callbacks/releases, separate bounded cost profile, two consecutive controlled paired software PASS results and current K230 camera-associated full/reduced PASS with visible movement. camera/qualified-selection.json and qualified-normal-check.json record running/persistent source221bbcf3/build12 selection and normal/Home cleanup. Camera30fps and broad clock bounds do not prove optical input latency or every52Hz refresh; no cold boot is claimed. -->
+*Grounding: exact-source board results in `docs/evidence/panel-paint/candidate-scene-coalescing/README.md` and current camera observations in `docs/evidence/panel-paint/candidate-scene-coalescing/camera/README.md`; `docs/evidence/panel-paint/candidate-scene-coalescing/camera/qualified-selection.json` and `docs/evidence/panel-paint/candidate-scene-coalescing/camera/qualified-normal-check.json` record matching running/persistent selection and normal/Home cleanup. Native pixel/lifetime, live-client callbacks/releases, bounded cost profiling and three paired full/reduced PASS results retain their distinct evidence classes. The 30fps camera and broad clock bounds do not prove optical input latency or every 52Hz refresh; no cold boot is claimed.*
 The userspace landscape card shell SHALL preserve live client updates,
 orientation, rounded clipping, opacity, card selection and client callbacks
 while reducing the measured scene-build/paint cost on the native panel.
