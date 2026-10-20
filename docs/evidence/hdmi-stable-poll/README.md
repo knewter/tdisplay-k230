@@ -82,3 +82,12 @@ See `boot-attempt-a/recovered-normal.json`. This is recovery/runtime-state
 proof on the original image, not a boot or timing result for the candidate.
 The retry driver now requires a fresh K230 nonce received on an explicit
 by-id UART before any serial input/reboot; the candidate remains staged.
+
+The user clarified that SSH should be used rather than requiring a USB
+data cable. `ssh-boot/` records an unchanged-image load/unload qualification
+of the existing RV64 kexec_file_load API. First flags0 failed errno99;
+existing NO_CMA flag16 passed. Both attempts retain all normal controls and
+leave kexec_loaded0. The plan now uses a one-time SSH-controlled kernel
+boot plus fresh boot/kernel-build-ID/boot-journal evidence. The rejected
+UART attempt stays rejected; no UART observation is claimed. Boot, timing,
+physical and persistent gates remain open pending their actual checks.

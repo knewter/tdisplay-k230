@@ -1,0 +1,17 @@
+{
+  "checked_at": "2026-10-20T18:55:26.142104+00:00",
+  "source": "/nix/store/1sr18plbky4kzy5x1gjqmy4pqdm68zbc-linux-mainline-k230-drm-src",
+  "unchanged_from_installed_source": "/nix/store/7vzlvixrdhv5a1iw75p18yzwkaqrlxjd-linux-mainline-k230-drm-src",
+  "files_sha256": {
+    "include/uapi/asm-generic/unistd.h": "2e6a1b646c5111ad76db86c0508684223d9956384e1d23e86733eca09505d02d",
+    "include/uapi/linux/kexec.h": "4c64008ef4c74a417cc09d6baca73ed2b9da0183a30b28e67a346d581ffef061",
+    "arch/riscv/kernel/kexec_image.c": "9ea7d7737a83418081a6630f72d78f8d433ed72d6e7ad2477ed5fa119826625d",
+    "arch/riscv/kernel/machine_kexec_file.c": "13e1219ad42f4e17843b4179aaf5498c99475cb69b281b81df190041e327f4a8",
+    "arch/riscv/kernel/machine_kexec.c": "149ed4490abc391846517400937fcffc390310b46755f2bb1a40489a22718df8",
+    "kernel/kexec_file.c": "b8b70686c88ab40da3ac7503e3ac71becc9be9d660b14536e58428fa22f34e20"
+  },
+  "abi": "RV64 syscall294 kexec_file_load, unload1, no-CMA16",
+  "first_attempt": "flags0 rejected errno99/EADDRNOTAVAIL; no loaded image, reboot, persistent or live control change. Kernel log identified placement in CMA region.",
+  "qualified_attempt": "Existing KEXEC_FILE_NO_CMA flag16 bypasses first CMA allocator; exact candidate Image/rawinitrd loaded and unloaded successfully. This does not prove execution/boot.",
+  "recovery": "Trial will preserve /boot and persistent j30y profile. A normal reset returns to installed image; SSH may be unavailable if candidate boot fails. Serial observation is uncollected, not required to inspect/runtime-test over SSH."
+}
