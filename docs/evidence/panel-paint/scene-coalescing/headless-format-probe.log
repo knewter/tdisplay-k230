@@ -1,0 +1,90 @@
+00:00:00.000 [INFO] [sway/main.c:308] Sway version 1.12
+00:00:00.001 [INFO] [sway/main.c:309] wlroots version 0.20.2
+00:00:00.020 [INFO] [sway/main.c:78] Linux solomon 7.1.9-1-MANJARO #1 SMP PREEMPT_DYNAMIC Thu, 20 Aug 2026 02:30:29 +0000 x86_64 GNU/Linux
+00:00:00.021 [INFO] [sway/main.c:94] Contents of /etc/lsb-release:
+00:00:00.021 [INFO] [sway/main.c:78] DISTRIB_ID="ManjaroLinux"
+00:00:00.021 [INFO] [sway/main.c:78] DISTRIB_RELEASE="26.1.1"
+00:00:00.021 [INFO] [sway/main.c:78] DISTRIB_CODENAME="Bian-May"
+00:00:00.021 [INFO] [sway/main.c:78] DISTRIB_DESCRIPTION="Manjaro Linux"
+00:00:00.021 [INFO] [sway/main.c:94] Contents of /etc/os-release:
+00:00:00.021 [INFO] [sway/main.c:78] NAME="Manjaro Linux"
+00:00:00.021 [INFO] [sway/main.c:78] PRETTY_NAME="Manjaro Linux"
+00:00:00.021 [INFO] [sway/main.c:78] ID=manjaro
+00:00:00.021 [INFO] [sway/main.c:78] ID_LIKE=arch
+00:00:00.021 [INFO] [sway/main.c:78] BUILD_ID=rolling
+00:00:00.021 [INFO] [sway/main.c:78] ANSI_COLOR="32;1;24;144;200"
+00:00:00.021 [INFO] [sway/main.c:78] HOME_URL="https://manjaro.org/"
+00:00:00.021 [INFO] [sway/main.c:78] DOCUMENTATION_URL="https://wiki.manjaro.org/"
+00:00:00.021 [INFO] [sway/main.c:78] SUPPORT_URL="https://forum.manjaro.org/"
+00:00:00.021 [INFO] [sway/main.c:78] BUG_REPORT_URL="https://manjaro.org/help/"
+00:00:00.021 [INFO] [sway/main.c:78] PRIVACY_POLICY_URL="https://manjaro.org/privacy-policy/"
+00:00:00.021 [INFO] [sway/main.c:78] LOGO=manjarolinux
+00:00:00.022 [INFO] [sway/main.c:66] LD_LIBRARY_PATH=
+00:00:00.022 [INFO] [sway/main.c:66] LD_PRELOAD=
+00:00:00.022 [INFO] [sway/main.c:66] PATH=/home/jadams/.codex/packages/app-server-daemon/releases/0.163.0-x86_64-unknown-linux-musl/codex-path:/home/jadams/.local/bin:/opt/google-cloud-cli/bin:/home/jadams/.codex/tmp/arg0-linux/codex-arg0u56dV5:/home/jadams/.codex/packages/app-server-daemon/releases/0.163.0-x86_64-unknown-linux-musl/codex-path:/home/jadams/.codex/tmp/arg0/codex-arg0JIR767:/home/jadams/.codex/packages/app-server-daemon/releases/0.162.1-x86_64-unknown-linux-musl/codex-path:/home/jadams/.codex/tmp/arg0/codex-arg09ZkVtV:/usr/lib/node_modules/@openai/codex/node_modules/@openai/codex-linux-x64/vendor/x86_64-unknown-linux-musl/codex-path:/home/jadams/.local/bin:/home/jadams/.grok/bin:/home/jadams/.grok/bin:/home/jadams/.opencode/bin:/home/jadams/.asdf/installs/elixir/1.18.3-otp-27/.mix/escripts:/home/jadams/.asdf/installs/elixir/1.19.4-otp-28/.mix/escripts:/home/jadams/.bun/bin:/opt/miniconda3/condabin:/home/jadams/.asdf/shims:/home/jadams/.asdf/bin:/home/jadams/.fly/bin:/home/jadams/bin:/home/jadams/software/nRF-Command-Line-Tools_10_12_2_Linux-amd64/nrfjprog/:/home/jadams/.local/bin:/home/jadams/.deno/bin:/home/jadams/.cargo/bin:/home/jadams/.nix-profile/bin:/nix/var/nix/profiles/default/bin:/home/jadams/.local/bin:/opt/google-cloud-cli/bin:/usr/local/bin:/usr/bin:/var/lib/snapd/snap/bin:/usr/local/sbin:/opt/cuda/bin:/usr/lib/emscripten:/home/jadams/.local/share/flatpak/exports/bin:/var/lib/flatpak/exports/bin:/opt/flutter/bin:/usr/lib/jvm/default/bin:/usr/bin/site_perl:/usr/bin/vendor_perl:/usr/bin/core_perl:/home/jadams/.local/share/JetBrains/Toolbox/scripts:/mnt/MediaVolume/home/jadams/.local/bin:/home/jadams/.pub-cache/bin:/home/jadams/.roswell/bin:/home/jadams/.dotnet/tools:/home/jadams/.krew/bin:/opt/gerbil/bin:/home/jadams/software/roc_nightly-linux_x86_64-2024-07-13-070d14a/:/home/jadams/.fzf/bin:/home/jadams/.maestro/bin:/usr/lib/emscripten:/opt/flutter/bin:/home/jadams/.local/share/JetBrains/Toolbox/scripts
+00:00:00.022 [INFO] [sway/main.c:66] SWAYSOCK=
+00:00:00.022 [INFO] [sway/main.c:338] Starting sway version 1.12
+00:00:00.022 [DEBUG] [sway/server.c:247] Initializing Wayland server
+00:00:00.026 [INFO] [wlr] [backend/backend.c:342] Loading user-specified backends due to WLR_BACKENDS: headless
+00:00:00.026 [INFO] [wlr] [backend/headless/backend.c:60] Creating headless backend
+00:00:00.028 [INFO] [wlr] [util/env.c:25] Loading WLR_RENDERER option: pixman
+00:00:00.029 [INFO] [wlr] [render/pixman/renderer.c:342] Creating pixman renderer
+00:00:00.030 [DEBUG] [wlr] [render/allocator/allocator.c:132] Trying to create shm allocator
+00:00:00.030 [DEBUG] [wlr] [render/allocator/shm.c:119] Created shm allocator
+00:00:00.033 [DEBUG] [wlr] [types/wlr_drm_lease_v1.c:679] No DRM backend supplied, failed to create wlr_drm_lease_v1_manager
+00:00:00.033 [DEBUG] [sway/server.c:498] Failed to create wlr_drm_lease_device_v1
+00:00:00.033 [INFO] [sway/server.c:499] VR will not be available
+00:00:00.036 [INFO] [wlr] [backend/headless/backend.c:60] Creating headless backend
+00:00:00.102 [INFO] [sway/config.c:423] Loading config from /tmp/k230-headless565-fat8__8r/sway.conf
+00:00:00.104 [DEBUG] [sway/config.c:782] Read line 1: output HEADLESS-1 mode 568x1232 transform 270 render_bit_depth 6
+00:00:00.105 [INFO] [sway/commands.c:382] Config command: output HEADLESS-1 mode 568x1232 transform 270 render_bit_depth 6
+00:00:00.105 [INFO] [sway/commands.c:405] After replacement: output HEADLESS-1 mode 568x1232 transform 270 render_bit_depth 6
+00:00:00.105 [DEBUG] [sway/commands.c:437] Subcommand: mode 568x1232 transform 270 render_bit_depth 6
+00:00:00.106 [DEBUG] [sway/commands.c:437] Subcommand: transform 270 render_bit_depth 6
+00:00:00.106 [DEBUG] [sway/commands.c:437] Subcommand: render_bit_depth 6
+00:00:00.106 [DEBUG] [sway/config/output.c:279] Config stored for output HEADLESS-1 (enabled: -1) (568x1232@-1.000000Hz position 2147483647,2147483647 scale -1.000000 subpixel unknown transform 1) (bg (null) (null)) (power -1) (max render time: -1) (allow tearing: -1) (hdr: -1)
+00:00:00.107 [DEBUG] [sway/config.c:782] Read line 2: seat seat0 fallback true
+00:00:00.107 [INFO] [sway/commands.c:382] Config command: seat seat0 fallback true
+00:00:00.107 [INFO] [sway/commands.c:405] After replacement: seat seat0 fallback true
+00:00:00.107 [DEBUG] [sway/commands.c:437] Subcommand: fallback true
+00:00:00.107 [DEBUG] [sway/config/seat.c:65] Adding non-wildcard seat config
+00:00:00.107 [DEBUG] [sway/config/seat.c:82] Config stored for seat seat0
+00:00:00.859 [DEBUG] [sway/input/input-manager.c:637] applying seat config for seat seat0
+00:00:00.860 [DEBUG] [sway/config/output.c:1286] spawn_swaybg cmd[0] = /nix/store/yhh05srfyhf81cdrm0f9ckxajjgh9qql-swaybg-riscv64-unknown-linux-gnu-1.2.2/bin/swaybg
+00:00:00.874 [INFO] [sway/server.c:789] Starting backend on wayland display 'wayland-1'
+00:00:00.874 [INFO] [wlr] [backend/headless/backend.c:17] Starting headless backend
+00:00:00.875 [DEBUG] [sway/desktop/output.c:572] New output 0x55555561ac00: HEADLESS-1 (non-desktop: 0)
+00:00:00.878 [INFO] [wlr] [backend/headless/backend.c:17] Starting headless backend
+00:00:00.879 [DEBUG] [sway/config/output.c:1008] Committing 1 outputs
+00:00:00.880 [DEBUG] [sway/config/output.c:769] Output state for HEADLESS-1
+00:00:00.880 [DEBUG] [sway/config/output.c:771]     enabled:       yes
+00:00:00.880 [DEBUG] [sway/config/output.c:775]     render_format: RG16
+00:00:00.880 [DEBUG] [sway/config/output.c:780]     custom mode:   568x1232@0mHz
+00:00:00.880 [DEBUG] [sway/config/output.c:793]     scale:         1.000000
+00:00:00.880 [DEBUG] [sway/config/output.c:796]     subpixel:      unknown
+00:00:00.880 [DEBUG] [wlr] [types/wlr_output_swapchain_manager.c:164] Preparing test commit for 1 outputs with explicit modifiers
+00:00:00.881 [DEBUG] [wlr] [render/swapchain.c:103] Allocating new swapchain buffer
+00:00:00.883 [DEBUG] [wlr] [types/wlr_output_swapchain_manager.c:185] Test commit for 1 outputs succeeded
+00:00:00.887 [DEBUG] [wlr] [render/pixman/renderer.c:189] Created pixman buffer 568x1232
+00:00:00.903 [INFO] [wlr] [render/pixman/pass.c:37] K230_PIXMAN_OUTPUT_TURN src=1232x568 dst=568x1232 format=0x10020565 rotation=1 rotation_cpu_ns=9001410 scratch_bytes=1399552
+00:00:00.910 [DEBUG] [sway/config/output.c:1072] Commit of 1 outputs succeeded
+00:00:00.910 [DEBUG] [sway/config/output.c:1080] Finalizing config for HEADLESS-1
+00:00:00.913 [DEBUG] [sway/tree/workspace.c:437] Workspace: Generating new workspace name for output HEADLESS-1
+00:00:00.914 [DEBUG] [sway/tree/output.c:166] Creating default workspace 1
+00:00:00.914 [DEBUG] [sway/tree/workspace.c:185] Adding workspace 1 for output HEADLESS-1
+00:00:00.917 [DEBUG] [sway/desktop/layer_shell.c:98] Usable area changed, rearranging output
+00:00:00.917 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x568@0,0
+00:00:00.918 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+00:00:00.919 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x568@0,0
+00:00:00.919 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+00:00:00.921 [DEBUG] [sway/desktop/transaction.c:821] Transaction 0x555555842240 committing with 2 instructions
+00:00:00.921 [DEBUG] [sway/desktop/transaction.c:717] Applying transaction 0x555555842240
+00:00:01.018 [DEBUG] [wlr] [xcursor/wlr_xcursor.c:233] Loaded cursor theme 'default' at size 24 (63 available cursors)
+00:00:01.019 [INFO] [sway/server.c:801] Running compositor on wayland display 'wayland-1'
+00:00:01.033 [INFO] [wlr] [render/pixman/pass.c:37] K230_PIXMAN_OUTPUT_TURN src=1232x568 dst=568x1232 format=0x10020565 rotation=1 rotation_cpu_ns=4802895 scratch_bytes=1399552
+00:00:01.038 [INFO] [sway/main.c:399] Shutting down sway
+00:00:01.041 [INFO] [sway/card_shell.c:466] K230_CARD_SHELL filter-mode nearest=0 bilinear=0
+00:00:01.041 [INFO] [sway/card_shell.c:1995] K230_CARD_SHELL restored focus=0 message=0
+00:00:01.042 [DEBUG] [sway/tree/output.c:290] Disabling output 'HEADLESS-1'
+00:00:01.042 [DEBUG] [sway/tree/workspace.c:300] Destroying workspace '1'
+00:00:01.043 [DEBUG] [sway/tree/output.c:307] Destroying output 'HEADLESS-1'

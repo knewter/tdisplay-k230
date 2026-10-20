@@ -1,0 +1,72 @@
+/tmp/card-chrome-cvrfq2lx/test.c:67:26: error: field ‘intent’ has incomplete type
+   67 |         enum edge_intent intent;
+      |                          ^~~~~~
+/tmp/card-chrome-cvrfq2lx/test.c: In function ‘rebuild_chrome’:
+/tmp/card-chrome-cvrfq2lx/test.c:262:17: error: implicit declaration of function ‘sway_log’ [-Wimplicit-function-declaration]
+  262 |                 sway_log(SWAY_INFO, "K230_CARD_SHELL rebuild_chrome fail reason=tree-alloc-failed");
+      |                 ^~~~~~~~
+/tmp/card-chrome-cvrfq2lx/test.c:262:26: error: ‘SWAY_INFO’ undeclared (first use in this function)
+  262 |                 sway_log(SWAY_INFO, "K230_CARD_SHELL rebuild_chrome fail reason=tree-alloc-failed");
+      |                          ^~~~~~~~~
+/tmp/card-chrome-cvrfq2lx/test.c:262:26: note: each undeclared identifier is reported only once for each function it appears in
+/tmp/card-chrome-cvrfq2lx/test.c:277:31: error: implicit declaration of function ‘role_line’ [-Wimplicit-function-declaration]
+  277 |                 int title_h = role_line(CARD_TYPE_LABEL);
+      |                               ^~~~~~~~~
+/tmp/card-chrome-cvrfq2lx/test.c:277:41: error: ‘CARD_TYPE_LABEL’ undeclared (first use in this function)
+  277 |                 int title_h = role_line(CARD_TYPE_LABEL);
+      |                                         ^~~~~~~~~~~~~~~
+/tmp/card-chrome-cvrfq2lx/test.c:278:50: error: implicit declaration of function ‘themed_label’ [-Wimplicit-function-declaration]
+  278 |                 struct wlr_scene_buffer *title = themed_label(shell.chrome, "Overview", cfg->width - 48,
+      |                                                  ^~~~~~~~~~~~
+/tmp/card-chrome-cvrfq2lx/test.c:289:68: error: ‘CARD_TYPE_BODY’ undeclared (first use in this function)
+  289 |                                         cfg->width - 48, role_line(CARD_TYPE_BODY), CARD_TYPE_BODY, appearance_text(false))) {
+      |                                                                    ^~~~~~~~~~~~~~
+/tmp/card-chrome-cvrfq2lx/test.c:297:39: error: ‘CARD_TYPE_CAPTION’ undeclared (first use in this function)
+  297 |                 int cue_h = role_line(CARD_TYPE_CAPTION);
+      |                                       ^~~~~~~~~~~~~~~~~
+/tmp/card-chrome-cvrfq2lx/test.c:315:42: error: initialization of ‘struct wlr_scene_buffer *’ from ‘int’ makes pointer from integer without a cast [-Wint-conversion]
+  315 |         struct wlr_scene_buffer *title = themed_label(shell.chrome, "Cards", 250, 56, 42,
+      |                                          ^~~~~~~~~~~~
+/tmp/card-chrome-cvrfq2lx/test.c: In function ‘chrome_impl’:
+/tmp/card-chrome-cvrfq2lx/test.c:357:26: error: ‘SWAY_INFO’ undeclared (first use in this function)
+  357 |                 sway_log(SWAY_INFO, "K230_CARD_SHELL chrome fail reason=rebuild-chrome-failed");
+      |                          ^~~~~~~~~
+/tmp/card-chrome-cvrfq2lx/test.c: At top level:
+/tmp/card-chrome-cvrfq2lx/test.c:74:13: error: ‘edge_reset’ declared ‘static’ but never defined [-Werror=unused-function]
+   74 | static void edge_reset(bool cancel_client);
+      |             ^~~~~~~~~~
+/tmp/card-chrome-cvrfq2lx/test.c:75:13: error: ‘edge_cancel_client’ declared ‘static’ but never defined [-Werror=unused-function]
+   75 | static void edge_cancel_client(void);
+      |             ^~~~~~~~~~~~~~~~~~
+/tmp/card-chrome-cvrfq2lx/test.c:73:3: error: ‘edge’ defined but not used [-Werror=unused-variable]
+   73 | } edge;
+      |   ^~~~
+/tmp/card-chrome-cvrfq2lx/test.c:48:33: error: ‘card_label_color’ defined but not used [-Werror=unused-function]
+   48 | static struct wlr_scene_buffer *card_label_color(struct wlr_scene_tree *parent,
+      |                                 ^~~~~~~~~~~~~~~~
+cc1: all warnings being treated as errors
+E
+======================================================================
+ERROR: test_layout_feedback_and_failed_builds (chrome.ChromeCache.test_layout_feedback_and_failed_builds)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/mnt/MediaVolume/home/jadams/src/gitlab.daringbit.com/josh/tdisplay-k230/.claude/worktrees/panel-paint/tests/test_card_shell_chrome.py", line 148, in test_layout_feedback_and_failed_builds
+    subprocess.run([os.environ.get('CC', 'cc'), '-std=gnu11', '-Wall', '-Wextra',
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                    '-Werror', '-I' + str(ROOT / 'nix/card-shell-policy'),
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                    '-I' + str(ROOT / 'nix/card-keyboard-policy'),
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                    '-I' + str(ROOT / 'nix/card-shell'),
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                    str(path / 'test.c'), '-o', str(path / 'test')], check=True)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.14/subprocess.py", line 578, in run
+    raise CalledProcessError(retcode, process.args,
+                             output=stdout, stderr=stderr)
+subprocess.CalledProcessError: Command '['cc', '-std=gnu11', '-Wall', '-Wextra', '-Werror', '-I/tmp/chrome-baseline-z8n5aos0/nix/card-shell-policy', '-I/tmp/chrome-baseline-z8n5aos0/nix/card-keyboard-policy', '-I/tmp/chrome-baseline-z8n5aos0/nix/card-shell', '/tmp/card-chrome-cvrfq2lx/test.c', '-o', '/tmp/card-chrome-cvrfq2lx/test']' returned non-zero exit status 1.
+
+----------------------------------------------------------------------
+Ran 1 test in 0.145s
+
+FAILED (errors=1)

@@ -1,0 +1,21 @@
+from pathlib import Path
+import subprocess,os,time,tempfile,json,socket,struct
+b=Path(__file__).parent
+with tempfile.TemporaryDirectory(prefix='k230-headless565-') as t:
+ w=Path(t);(w/'sway.conf').write_text('output HEADLESS-1 mode 568x1232 transform 270 render_bit_depth 6\nseat seat0 fallback true\n')
+ env=dict(os.environ,XDG_RUNTIME_DIR=t,WLR_BACKENDS='headless',WLR_HEADLESS_OUTPUTS='1',WLR_RENDERER='pixman',WLR_PIXMAN_OUTPUT_TURN='1',SWAY_K230_CARD_SHELL='1',SWAY_K230_CARD_TOUCH_FIRST='1')
+ with (b/'headless565-probe.log').open('w') as log:
+  p=subprocess.Popen(['/usr/bin/qemu-riscv64-static','/nix/store/j49sp13dpp6dj4vq69p20m6a4g4vjfai-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway','-c',str(w/'sway.conf'),'-d'],env=env,stdout=log,stderr=log)
+  try:
+   end=time.monotonic()+30
+   while time.monotonic()<end:
+    s=(b/'headless565-probe.log').read_text()
+    if 'K230_PIXMAN_OUTPUT_TURN' in s:break
+    if p.poll() is not None:raise RuntimeError('headless compositor exited '+str(p.returncode))
+    time.sleep(.1)
+   else:raise RuntimeError('no output turn format in headless probe')
+   print('\n'.join(l for l in s.splitlines() if 'K230_PIXMAN_OUTPUT_TURN' in l)[-1500:])
+  finally:
+   p.terminate()
+   try:p.wait(timeout=10)
+   except subprocess.TimeoutExpired:p.kill();p.wait()

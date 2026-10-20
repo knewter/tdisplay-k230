@@ -127,3 +127,11 @@ then timer/render prepare repeats it. That duplication is the next measured
 boundary; every presented frame, policy/ownership and structural changes must
 remain current. Baseline restored and board released; camera/default/archive
 still open. Complete evidence is in candidate-rotation-batches/.
+
+The next checkpoint coalesces plain moving redraws at render preparation only
+for rotatedRGB565, retaining immediate policy/chrome, structural changes and
+idle/bilinear restoration.41 policy cases pass; the new actual-compositor
+rotated/full/reduced/normal regression test remains unperformed until the exact
+build is available. The old chrome mock also fails unchanged baseline due to
+fixture drift, with both logs retained in scene-coalescing/. No new board,
+physical/default/archive proof is claimed at this checkpoint.

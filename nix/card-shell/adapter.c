@@ -169,6 +169,9 @@ static struct {
 	 * chrome() pass for a plain (non-structural) redraw -- see
 	 * handle_result's own throttle comment. */
 	uint64_t last_motion_sync_ms;
+	/* Read-only debug counters, never periodic/per-input log rows. */
+	uint64_t scene_redraw_coalesced, scene_timer_coalesced;
+	uint64_t scene_render_syncs, scene_structural_syncs;
 	enum cs_message chrome_message;
 	bool chrome_active, chrome_valid;
 	int chrome_pressed, chrome_x, chrome_y;
@@ -480,6 +483,7 @@ static bool sync_scene(void);
 static void handle_result(struct cs_result result);
 static bool snapshot(void);
 static bool chrome(void);
+static void prepare_from_timer(struct sway_output *output);
 static void keyboard_refresh(void);
 static void ordinary_backdrop_sync(struct sway_output *output);
 static void home_layer_sync(struct sway_output *output);
@@ -1064,6 +1068,19 @@ static bool scene_in_motion(void) {
     uint64_t now = now_ms();
     if (moving) motion_filter_until = now + 300;
     return moving || (shell.active && now < motion_filter_until);
+}
+/* Only the measured rotated RGB565 path coalesces moving scene work. Policy
+ * ownership/coordinates already changed synchronously; each render calls
+ * prepare before building pixels. Idle/held-interrupt ticks retain their
+ * ordinary refresh, including the settled bilinear filter restoration. */
+static bool motion_scene_at_render(void) {
+	struct wlr_output *output = shell.output ? shell.output->wlr_output : NULL;
+	if (!shell.active || !output || output->transform == WL_OUTPUT_TRANSFORM_NORMAL ||
+			output->render_format != DRM_FORMAT_RGB565) return false;
+	return (shell.policy.mode == CS_DRAGGING && shell.policy.contact) ||
+		(shell.policy.mode == CS_ENTERING && (shell.policy.contact ||
+			shell.policy.edge.tracking || shell.policy.entry_settling ||
+			shell.policy.entry_reversing)) || shell.policy.mode == CS_EXPANDING;
 }
 static struct wlr_box card_clip_box(struct card *c) {
 	/* c->full_clip mirrors the entry_id special case for every card sharing
@@ -2092,7 +2109,11 @@ static void handle_result(struct cs_result r) {
 		}
 	}
 	if (shell.active && (r.actions & (CS_REDRAW | CS_RECONCILE | CS_SHRINK))) {
-		/* A continuous gesture (an active drag, or the direct-switch entry
+		/* The measured landscape path paints plain motion redraws at the
+		 * render boundary, not once per input plus timer plus render. Its
+		 * chrome visibility still changes immediately. Structural actions
+		 * and other outputs retain the synchronous/12ms behavior below.
+		 * A continuous gesture (an active drag, or the direct-switch entry
 		 * animation while a finger is down or the release settle is still
 		 * running) delivers a plain CS_REDRAW for nearly every raw touch
 		 * sample -- tens of them a second, each synchronously re-running
@@ -2119,16 +2140,27 @@ static void handle_result(struct cs_result r) {
 		bool structural = r.actions & (CS_RECONCILE | CS_SHRINK);
 		bool continuous = shell.policy.mode == CS_ENTERING ||
 			shell.policy.mode == CS_DRAGGING || shell.policy.mode == CS_EXPANDING;
+		bool at_render = r.actions == CS_REDRAW && motion_scene_at_render();
+		if (at_render) {
+			shell.scene_redraw_coalesced++;
+			wlr_output_schedule_frame(shell.output->wlr_output);
+		}
 		uint64_t now = now_ms();
-		bool throttled = !structural && continuous && shell.last_motion_sync_ms &&
-			now - shell.last_motion_sync_ms < 12;
+		bool throttled = at_render || (!structural && continuous && shell.last_motion_sync_ms &&
+			now - shell.last_motion_sync_ms < 12);
 		if (!throttled) {
 			shell.last_motion_sync_ms = now;
 			if (!sync_scene() || !chrome()) {
 				struct cs_result leave = cs_leave(&shell.policy);
 				leave.message = CS_MESSAGE_FAILED;
 				restore(leave);
+			} else if (structural) {
+				shell.scene_structural_syncs++;
 			}
+		} else if (at_render && !chrome()) {
+			struct cs_result leave = cs_leave(&shell.policy);
+			leave.message = CS_MESSAGE_FAILED;
+			restore(leave);
 		}
 	}
 	if (r.actions)
@@ -2231,7 +2263,7 @@ static int tick_impl(void *data) {
 		sway_log(SWAY_INFO, "K230_CARD_SHELL reveal stream closed; scene retained");
 	}
 	home_transition_tick();
-	card_shell_prepare(shell.output);
+	prepare_from_timer(shell.output);
 	card_bench_resource(shell.active);
 	if (shell.output && shell.timer) {
 		if (shell.active)
@@ -2259,9 +2291,9 @@ static int tick_impl(void *data) {
 		 * timeout countdown -- see card-shell-policy.c's cs_tick). A
 		 * settled, untouched overview (CS_DECK with neither) needs no
 		 * frame until the next real input or state change, which already
-		 * has its own path to visible pixels (handle_result's CS_REDRAW
-		 * branch calls sync_scene/chrome synchronously from the input
-		 * handlers) and does not depend on this timer to be seen -- only
+		 * has its own path to visible pixels (handle_result either updates
+		 * the scene synchronously or schedules render-boundary preparation)
+		 * and does not depend on this timer to be seen -- only
 		 * on wlr_output_schedule_frame having been called recently enough
 		 * that the output is still willing to render again, which an
 		 * active drag or animation already guarantees moment to moment. */
@@ -2657,7 +2689,7 @@ void card_shell_usable_area_changed(struct sway_output *output) {
 	if (shell.initialized && shell.output == output)
 		ordinary_sync_usable(output, false);
 }
-static void prepare_impl(struct sway_output *output) {
+static void prepare_impl(struct sway_output *output, bool from_render) {
 	if (shell.preparing || !ensure_ui(output))
 		return;
 	shell.preparing = true;
@@ -2775,16 +2807,22 @@ static void prepare_impl(struct sway_output *output) {
 		chrome();
 	}
 	snapshot();
-	if (shell.active && !sync_scene()) {
-		struct cs_result r = cs_leave(&shell.policy);
-		r.message = CS_MESSAGE_FAILED;
-		restore(r);
+	bool coalesced = !from_render && motion_scene_at_render();
+	if (coalesced) shell.scene_timer_coalesced++;
+	if (shell.active && !coalesced) {
+		if (!sync_scene()) {
+			struct cs_result r = cs_leave(&shell.policy);
+			r.message = CS_MESSAGE_FAILED;
+			restore(r);
+		} else if (from_render) {
+			shell.scene_render_syncs++;
+		}
 	}
 	shell.preparing = false;
 }
-void card_shell_prepare(struct sway_output *output) {
+static void prepare_common(struct sway_output *output, bool from_render) {
 	card_bench_work_begin();
-	prepare_impl(output);
+	prepare_impl(output, from_render);
 	if (output == shell.output) {
 		/* Observe policy settling, independently of the 300 ms sampler hold
 		 * in scene_in_motion(): sampler quality is not animation duration. */
@@ -2797,6 +2835,12 @@ void card_shell_prepare(struct sway_output *output) {
 		card_bench_motion_settled(!settling);
 	}
 	card_bench_work_end();
+}
+void card_shell_prepare(struct sway_output *output) {
+	prepare_common(output, true);
+}
+static void prepare_from_timer(struct sway_output *output) {
+	prepare_common(output, false);
 }
 void card_shell_observe(struct sway_view *view) {
 	if (!enabled() || !live(view) || root->outputs->length != 1 ||
@@ -3694,7 +3738,7 @@ static char *debug_scene_text(void) {
 	wl_list_for_each(c, &shell.cards, link)
 		if (c->view && c->view->container && c->view->container->card_shell_ordinary_maximized)
 			ordinary_maximized_cards++;
-	size_t capacity = 1024;
+	size_t capacity = 2048;
 	char *text = malloc(capacity);
 	if (!text)
 		return NULL;
@@ -3725,9 +3769,15 @@ static char *debug_scene_text(void) {
 	 * move until the deck is actually left. "(none)" covers every case
 	 * with no meaningful selection (deck empty, or no current card). */
 	const char *selected_app_id = "(none)";
+	int selected_scene_x = 0, selected_scene_y = 0, selected_scene_valid = 0;
 	if (shell.policy.count && shell.policy.selected < shell.policy.count) {
 		struct card *selected_card = find(shell.policy.cards[shell.policy.selected].id);
 		if (selected_card && selected_card->view) {
+			if (selected_card->tree) {
+				selected_scene_x = selected_card->tree->node.x;
+				selected_scene_y = selected_card->tree->node.y;
+				selected_scene_valid = 1;
+			}
 			const char *id = view_get_app_id(selected_card->view);
 			if (id) selected_app_id = id;
 		}
@@ -3736,7 +3786,11 @@ static char *debug_scene_text(void) {
 		"K230_CARD_SHELL_DEBUG_SCENE active=%d deck_enabled=%d %s %s %s "
 		"ordinary_maximized_cards=%u appearance_enabled=%d appearance_wallpaper=%d "
 		"appearance_canvas_authored=%d home_enabled=%d mode=%d entry_progress=%.4f "
-		"chrome_enabled=%d drawer_mapped=%d keyboard_mapped=%d selected_app_id=%s home_selected=%d home_offset=%.1f home_settling=%d trackpad_owned=%d axis_owned=%d card_dx=%.3f card_velocity=%.3f trackpad_client=%d trackpad_keyboard=%d keyboard_progress=%.4f",
+		"chrome_enabled=%d drawer_mapped=%d keyboard_mapped=%d selected_app_id=%s home_selected=%d home_offset=%.1f home_settling=%d trackpad_owned=%d axis_owned=%d card_dx=%.3f card_velocity=%.3f trackpad_client=%d trackpad_keyboard=%d keyboard_progress=%.4f "
+		"scene_redraw_coalesced=%" PRIu64 " scene_timer_coalesced=%" PRIu64
+		" scene_render_syncs=%" PRIu64 " scene_structural_syncs=%" PRIu64
+		" selected_scene_valid=%d selected_scene_x=%d selected_scene_y=%d"
+		" filter_nearest=%" PRIu64 " filter_bilinear=%" PRIu64,
 		shell.active, shell.deck ? shell.deck->node.enabled : -1,
 		canvas, gradient, ordinary,
 		ordinary_maximized_cards, shell.appearance_enabled,
@@ -3744,8 +3798,12 @@ static char *debug_scene_text(void) {
 		shell.appearance_enabled ? shell.appearance.canvas_authored : -1,
 		home_enabled, (int)shell.policy.mode, shell.policy.entry_progress,
 		chrome_enabled, drawer_mapped_now, keyboard_mapped_now, selected_app_id,
-		shell.home_selected, shell.home_offset, shell.home_settling, shell.trackpad_owned, shell.axis_owned, shell.policy.dx, shell.policy.velocity_x, shell.trackpad_client, shell.trackpad_keyboard, shell.keyboard.progress);
-	if (written < 0) {
+		shell.home_selected, shell.home_offset, shell.home_settling, shell.trackpad_owned, shell.axis_owned, shell.policy.dx, shell.policy.velocity_x, shell.trackpad_client, shell.trackpad_keyboard, shell.keyboard.progress,
+		shell.scene_redraw_coalesced, shell.scene_timer_coalesced,
+		shell.scene_render_syncs, shell.scene_structural_syncs,
+		selected_scene_valid, selected_scene_x, selected_scene_y,
+		shell.filter_nearest, shell.filter_bilinear);
+	if (written < 0 || (size_t)written >= capacity) {
 		free(text);
 		return NULL;
 	}
