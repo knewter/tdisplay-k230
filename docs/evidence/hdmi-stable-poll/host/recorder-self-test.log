@@ -1,7 +1,8 @@
 test_reject_reader_long_hold_missing_cycle_and_caller (__main__.Fixtures.test_reject_reader_long_hold_missing_cycle_and_caller) ... ok
+test_report_identity_gates_and_tail_retention (__main__.Fixtures.test_report_identity_gates_and_tail_retention) ... ok
 test_three_cycles_and_boundaries (__main__.Fixtures.test_three_cycles_and_boundaries) ... ok
 
 ----------------------------------------------------------------------
-Ran 2 tests in 0.000s
+Ran 3 tests in 0.014s
 
 OK

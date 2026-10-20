@@ -8,8 +8,10 @@ from pathlib import Path
 import re
 import subprocess
 import sys
+import tempfile
 import time
 import unittest
+from unittest.mock import patch
 
 _spec = importlib.util.spec_from_file_location('stable_detect', Path(__file__).with_name('landscape-hdmi-detect.py'))
 detect = importlib.util.module_from_spec(_spec); _spec.loader.exec_module(detect)
@@ -126,6 +128,10 @@ def report(directory):
     original = load(directory / 'original.json'); normal = load(directory / 'normal.json')
     if trial.get('schema') != SCHEMA or trial.get('status') != 'CAPTURED' or trial.get('runs') != ['untraced', 'traced']:
         raise Error('requires exact single untraced/traced pair')
+    if (smoke.get('schema') != detect.SCHEMA or smoke.get('status') != 'QUALIFIED' or
+        trial['boot']['machine'] != 'riscv64' or smoke.get('kernel') != trial['boot']['kernel'] or
+        smoke.get('system') != original['system'] or trial['boot']['booted_system'] != original['system']):
+        raise Error('smoke/booted candidate identity differs')
     if load(directory / 'candidate-smoke.json') != {'schema': SCHEMA, 'boot': trial['boot'],
             **{k: trial[k] for k in ('tool_sha256', 'detect_sha256', 'dependencies')}}:
         raise Error('candidate smoke/boot identity differs')
@@ -146,6 +152,8 @@ def report(directory):
             raise Error('run identity/integrity differs')
         row, context, samples = base.benchmark(run / 'capture')
         if row['source_revision'] != trial['source_revision']: raise Error('capture source differs')
+        if not row['runtime_identity']['compositor_executable'].endswith(' sha256:' + original['executable_sha256']):
+            raise Error('capture does not identify the controlled executable')
         if first_row is not None:
             for k in ('source_revision', 'runtime_identity', 'format', 'input_class'):
                 if first_row[k] != row[k]: raise Error('paired runtime/workload differs: ' + k)
@@ -157,7 +165,7 @@ def report(directory):
         if traced:
             rows, meta = detect.checked(run); detect.cleanup_checked(run)
             if (meta['mode'] != 'probe' or meta['tool_sha256'] != trial['detect_sha256'] or
-                meta['dependencies'] != trial['dependencies'] or
+                meta['dependencies'] != trial['dependencies'] or meta['global_before'] != normal['global_before'] or
                 not meta['markers']['start']['after_ns'] <= min(s['start_ns'] for s in samples) <=
                     max(s['end_ns'] for s in samples) <= meta['markers']['end']['before_ns']):
                 raise Error('trace source or complete workload bracket differs')
@@ -202,6 +210,49 @@ class Fixtures(unittest.TestCase):
                 elif mutation == 'missing': rows = rows[:-5]
                 else: rows[1]['parent'] = '[other]'
                 self.assertEqual(qualify_poll(rows)['status'], 'REJECTED')
+
+    def test_report_identity_gates_and_tail_retention(self):
+        # Mock only previously qualified lower-level collectors. Exercise this
+        # report's cross-file identity joins and retention, not fake board proof.
+        for mutation in (None, 'boot', 'smoke', 'executable', 'global', 'token'):
+            with self.subTest(mutation=mutation), tempfile.TemporaryDirectory() as temp:
+                d = Path(temp); ident = identities(); source = 'a' * 40
+                control = dict(pid=10, debug_flag=True, verbose_flag=False, arguments_without_logging=[],
+                    config_sha256='1'*64, executable_sha256='2'*64, system='/nix/store/candidate',
+                    persistent_system='/nix/store/fallback', environment={}, output=[])
+                boot = dict(boot_id='test-boot', machine='riscv64', kernel='test-kernel', booted_system=control['system'])
+                smoke = dict(schema=detect.SCHEMA, status='QUALIFIED', kernel=boot['kernel'],
+                    system=control['system'], tool_sha256=ident['detect_sha256'], dependencies=ident['dependencies'], control=control)
+                normal = dict(control=control, global_before={'test': 'hash'}, global_after={'test': 'hash'},
+                    boot_before=boot, boot_after=boot, services=['active', 'active'], virtual_test_devices=0,
+                    idle_terminal={'idle_shell_without_child_jobs': True}, home_command_succeeded=True,
+                    benchmark_stop_succeeded=True)
+                trial = dict(schema=SCHEMA, status='CAPTURED', runs=['untraced', 'traced'],
+                    source_revision=source, boot=boot, **ident)
+                if mutation == 'boot': normal['boot_after'] = dict(boot, boot_id='different')
+                if mutation == 'smoke': smoke['status'] = 'REJECTED'
+                for name, value in [('trial', trial), ('qualified-smoke', smoke), ('original', control),
+                    ('normal', normal), ('candidate-smoke', dict(schema=SCHEMA, boot=boot, **ident))]:
+                    log.write_json(d / (name + '.json'), value)
+                for name, traced in [('untraced', False), ('traced', True)]:
+                    (d / name).mkdir(); log.write_json(d / name / 'control.json',
+                        dict(control=control, traced=traced, capture_exit_code=0, **ident))
+                meta = dict(mode='probe', tool_sha256=ident['detect_sha256'], dependencies=ident['dependencies'],
+                    global_before={'test': 'other' if mutation == 'global' else 'hash'},
+                    markers={'start': {'after_ns': 0}, 'end': {'before_ns': 30_000_000_000}})
+                def benchmark(path):
+                    row = dict(source_revision=source, runtime_identity={'compositor_executable':
+                        '/nix/store/sway sha256:' + ('3'*64 if mutation == 'executable' else '2'*64)},
+                        format='test', input_class='injected', run='same' if mutation == 'token' else path.parent.name)
+                    return row, dict(collector_sha256='4'*64, injected_workload={}, output=[]), [
+                        dict(start_ns=2_000_000_000, end_ns=2_120_000_000, wall_ms=120)]
+                with patch.object(base, 'benchmark', side_effect=benchmark), patch.object(detect,
+                    'checked', return_value=(self.rows(), meta)), patch.object(detect, 'cleanup_checked'):
+                    if mutation:
+                        with self.assertRaises(Error): report(d)
+                    else:
+                        result = report(d); self.assertEqual(result['status'], 'QUALIFIED')
+                        self.assertEqual(len(result['runs'][0]['over_100ms_samples']), 1)
 
 
 def main():
