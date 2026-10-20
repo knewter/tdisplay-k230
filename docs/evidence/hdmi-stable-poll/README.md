@@ -23,3 +23,14 @@ so it is explicitly REJECTED_TARGET and proves nothing about this patch.
 `host/rejected-vendor-target/` retains the command/result. The installed
 bundle identifies `k230-mainline-drm-shell-landscape-hdmi`; corrected
 builds use that profile. No candidate has been deployed.
+
+`tools/hdmi-stable-poll-proof.py` provides the bounded candidate recorder
+and separate report. Its host fixtures pass (see `host/recorder-check.json`);
+this is preparation, not completion of task2.2. It requires a fresh function
+smoke tied to the candidate boot/controller, explicit running system,
+preserved persistent fallback and executable identities. It collects exactly
+one untraced/traced24-drag pair, checks864 joins each, retains all >100ms
+input samples, and separately qualifies >=3 complete polling cycles without
+EDID-reader markers or >100ms source-grounded held intervals. It checks
+trace clock/count/loss/cleanup and all nine root tracing control hashes.
+Incomplete boundary probes remain explicit. No retries or native/glass claim.

@@ -1,0 +1,11 @@
+{
+  "checked_at": "2026-10-20T18:02:55.243695+00:00",
+  "command": [
+    "python3",
+    "tools/hdmi-stable-poll-proof.py",
+    "--self-test"
+  ],
+  "exit_code": 0,
+  "tool_sha256": "3798b17d731de0401f4c077334e005e4ac7e5944466d2acd875df45ca3b3a486",
+  "scope": "Host fixtures accept three short polling cycles and explicit boundary truncation; reject EDID reread, >100ms complete hold, insufficient cycles and ambiguous caller. No board/candidate result."
+}
