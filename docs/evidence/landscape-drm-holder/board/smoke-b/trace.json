@@ -1,0 +1,53 @@
+{
+  "base_tool_sha256": "b98a6404bdd96afab1db9edb6779f325bc7958574e754b04dffbed73ae67f42b",
+  "buffer_total_kb": 32771,
+  "current_tracer": "function",
+  "event_count": 39,
+  "events_sha256": "936518743120c49bec5b6a502f7f16db44468e61816366aed126d3d33e4486b6",
+  "function_count": 124,
+  "function_filter": [
+    "detect_connector_status",
+    "drm_helper_probe_detect",
+    "drm_helper_probe_detect_ctx",
+    "drm_modeset_backoff",
+    "drm_modeset_drop_locks",
+    "lt9611_bridge_detect",
+    "output_poll_execute"
+  ],
+  "functions_sha256": "df65050e85550a2227ae7666a01f5632659d826135a1c1b988a097efd227cf78",
+  "global_before": {
+    "current_tracer": "64aec5a7fa151222572a241383c857738318e63cca7ee771952c95a31d92a19d",
+    "events/enable": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+    "set_event_pid": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "set_ftrace_pid": "cdf4d2acfdcd5cd2556f83eeb52ee253ea6afbaa941c760f77dcfae3c925cb78",
+    "trace_clock": "925ca315bd3de6ef99e08c002e320406936ae2da2f2c0afd8da1e87f7980a253",
+    "tracing_on": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865"
+  },
+  "holder_schema": "landscape-drm-holder-v1",
+  "markers": {
+    "end": {
+      "after_ns": 148182647867856,
+      "before_ns": 148182647027149
+    },
+    "start": {
+      "after_ns": 148157646828408,
+      "before_ns": 148157646099882
+    }
+  },
+  "pid": 101250,
+  "raw_bytes": 15861,
+  "raw_sha256": "222ee86925649ca05d5b83e8ca8e172515703f4c0be9c76c25d98baca4358255",
+  "schema": "landscape-hdmi-stall-trace-v1",
+  "stats": {
+    "cpu0": {
+      "bytes": 6880,
+      "commit overrun": 0,
+      "dropped events": 0,
+      "entries": 163,
+      "overrun": 0,
+      "read events": 0
+    }
+  },
+  "tool_sha256": "49ef1e5b7de367527a1ab8380a4b8fb9413547dfac9e76e684eb829ddfc19c98",
+  "trace_clock": "local global counter uptime perf [mono] mono_raw boot tai"
+}

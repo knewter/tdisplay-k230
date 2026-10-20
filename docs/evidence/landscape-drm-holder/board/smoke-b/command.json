@@ -1,0 +1,14 @@
+{
+  "mode": "board-smoke",
+  "command": [
+    "python3",
+    "/var/tmp/k230-drm-holder-20261020b/landscape-drm-holder.py",
+    "--board-smoke",
+    "--output",
+    "/var/tmp/k230-drm-holder-20261020b/smoke-b"
+  ],
+  "transport": "Protected SSH configuration pathname; no runtime secrets in command",
+  "capture_source_revision": "9afa87c925b823c44340c901b795a89a106484e6",
+  "tool_sha256": "49ef1e5b7de367527a1ab8380a4b8fb9413547dfac9e76e684eb829ddfc19c98",
+  "exit_code": 0
+}
