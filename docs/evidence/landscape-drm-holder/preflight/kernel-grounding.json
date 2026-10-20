@@ -1,0 +1,46 @@
+{
+  "checked_at": "2026-10-20T16:02:43.423684+00:00",
+  "kernel": "7.3.0-rc5",
+  "kernel_deriver": "/nix/store/jc68jp45kfkmgq9ix0v2rfv6gadcrlmk-linux-riscv64-unknown-linux-gnu-7.3.0-rc5.drv",
+  "files": [
+    {
+      "path": "/nix/store/7vzlvixrdhv5a1iw75p18yzwkaqrlxjd-linux-mainline-k230-drm-src/drivers/gpu/drm/drm_probe_helper.c",
+      "sha256": "81c995343aa5306daba58722335e78ceed93c77af77a1becbd50f8e4acff4a61",
+      "excerpts": [
+        {
+          "first_line": 340,
+          "last_line": 384,
+          "text": "EXPORT_SYMBOL(drm_kms_helper_poll_reschedule);\n\nstatic int detect_connector_status(struct drm_connector *connector,\n\t\t\t\t   struct drm_modeset_acquire_ctx *ctx,\n\t\t\t\t   bool force)\n{\n\tconst struct drm_connector_helper_funcs *funcs = connector->helper_private;\n\n\tif (funcs->detect_ctx)\n\t\treturn funcs->detect_ctx(connector, ctx, force);\n\telse if (connector->funcs->detect)\n\t\treturn connector->funcs->detect(connector, force);\n\n\treturn connector_status_connected;\n}\n\nstatic enum drm_connector_status\ndrm_helper_probe_detect_ctx(struct drm_connector *connector, bool force)\n{\n\tstruct drm_modeset_acquire_ctx ctx;\n\tint ret;\n\n\tdrm_modeset_acquire_init(&ctx, 0);\n\nretry:\n\tret = drm_modeset_lock(&connector->dev->mode_config.connection_mutex, &ctx);\n\tif (!ret)\n\t\tret = detect_connector_status(connector, &ctx, force);\n\n\tif (ret == -EDEADLK) {\n\t\tdrm_modeset_backoff(&ctx);\n\t\tgoto retry;\n\t}\n\n\tif (WARN_ON(ret < 0))\n\t\tret = connector_status_unknown;\n\n\tif (ret != connector->status)\n\t\tconnector->epoch_counter += 1;\n\n\tdrm_modeset_drop_locks(&ctx);\n\tdrm_modeset_acquire_fini(&ctx);\n\n\treturn ret;\n}"
+        },
+        {
+          "first_line": 755,
+          "last_line": 813,
+          "text": "\nstatic void output_poll_execute(struct work_struct *work)\n{\n\tstruct delayed_work *delayed_work = to_delayed_work(work);\n\tstruct drm_device *dev = container_of(delayed_work, struct drm_device, mode_config.output_poll_work);\n\tstruct drm_connector *connector;\n\tstruct drm_connector_list_iter conn_iter;\n\tenum drm_connector_status old_status;\n\tbool repoll = false, changed = false;\n\tu64 old_epoch_counter;\n\n\tif (!dev->mode_config.poll_enabled)\n\t\treturn;\n\n\tif (!drm_kms_helper_poll) {\n\t\tif (dev->mode_config.poll_running) {\n\t\t\tdrm_kms_helper_disable_hpd(dev);\n\t\t\tdev->mode_config.poll_running = false;\n\t\t}\n\n\t\tscoped_guard(mutex, &dev->mode_config.mutex) {\n\t\t\tchanged = dev->mode_config.delayed_event;\n\t\t\tdev->mode_config.delayed_event = false;\n\t\t}\n\n\t\tif (changed)\n\t\t\tdrm_kms_helper_hotplug_event(dev);\n\n\t\treturn;\n\t}\n\n\tif (!mutex_trylock(&dev->mode_config.mutex)) {\n\t\tschedule_delayed_work(delayed_work, DRM_OUTPUT_POLL_PERIOD);\n\t\treturn;\n\t}\n\n\tdrm_connector_list_iter_begin(dev, &conn_iter);\n\tdrm_for_each_connector_iter(connector, &conn_iter) {\n\t\t/* Ignore forced connectors. */\n\t\tif (connector->force)\n\t\t\tcontinue;\n\n\t\t/* Ignore HPD capable connectors and connectors where we don't\n\t\t * want any hotplug detection at all for polling. */\n\t\tif (!connector->polled || connector->polled == DRM_CONNECTOR_POLL_HPD)\n\t\t\tcontinue;\n\n\t\told_status = connector->status;\n\t\t/* if we are connected and don't want to poll for disconnect\n\t\t   skip it */\n\t\tif (old_status == connector_status_connected &&\n\t\t    !(connector->polled & DRM_CONNECTOR_POLL_DISCONNECT))\n\t\t\tcontinue;\n\n\t\trepoll = true;\n\n\t\told_epoch_counter = connector->epoch_counter;\n\t\tconnector->status = drm_helper_probe_detect(connector, NULL, false);\n\t\tif (old_epoch_counter != connector->epoch_counter) {"
+        }
+      ]
+    },
+    {
+      "path": "/nix/store/7vzlvixrdhv5a1iw75p18yzwkaqrlxjd-linux-mainline-k230-drm-src/drivers/gpu/drm/drm_atomic.c",
+      "sha256": "980c8d1827861e9a1f922c7be563ef45fb811dcc33149c29244f926e7ba6a687",
+      "excerpts": [
+        {
+          "first_line": 1349,
+          "last_line": 1390,
+          "text": " *\n * This function returns the connector state for the given connector,\n * allocating it if needed. It will also grab the relevant connector lock to\n * make sure that the state is consistent.\n *\n * Returns:\n * Either the allocated state or the error code encoded into the pointer. When\n * the error is EDEADLK then the w/w mutex code has detected a deadlock and the\n * entire atomic sequence must be restarted. All other errors are fatal.\n */\nstruct drm_connector_state *\ndrm_atomic_get_connector_state(struct drm_atomic_commit *state,\n\t\t\t  struct drm_connector *connector)\n{\n\tint ret, index;\n\tstruct drm_mode_config *config = &connector->dev->mode_config;\n\tstruct drm_connector_state *connector_state;\n\n\tWARN_ON(!state->acquire_ctx);\n\tdrm_WARN_ON(state->dev, state->checked);\n\n\tret = drm_modeset_lock(&config->connection_mutex, state->acquire_ctx);\n\tif (ret)\n\t\treturn ERR_PTR(ret);\n\n\tindex = drm_connector_index(connector);\n\n\tif (index >= state->num_connector) {\n\t\tstruct __drm_connnectors_state *c;\n\t\tint alloc = max(index + 1, config->num_connector);\n\n\t\tc = krealloc_array(state->connectors, alloc,\n\t\t\t\t   sizeof(*state->connectors), GFP_KERNEL);\n\t\tif (!c)\n\t\t\treturn ERR_PTR(-ENOMEM);\n\n\t\tstate->connectors = c;\n\t\tmemset(&state->connectors[state->num_connector], 0,\n\t\t       sizeof(*state->connectors) * (alloc - state->num_connector));\n\n\t\tstate->num_connector = alloc;\n\t}"
+        }
+      ]
+    },
+    {
+      "path": "/nix/store/7vzlvixrdhv5a1iw75p18yzwkaqrlxjd-linux-mainline-k230-drm-src/drivers/gpu/drm/display/drm_bridge_connector.c",
+      "sha256": "ba529f21010d378e80046358fd11ec958c483aeb07c6a91fb7c4c71e8f7eec81",
+      "excerpts": [
+        {
+          "first_line": 210,
+          "last_line": 242,
+          "text": "\nstatic enum drm_connector_status\ndrm_bridge_connector_detect(struct drm_connector *connector, bool force)\n{\n\tstruct drm_bridge_connector *bridge_connector =\n\t\tto_drm_bridge_connector(connector);\n\tstruct drm_bridge *detect = bridge_connector->bridge_detect;\n\tstruct drm_bridge *hdmi = bridge_connector->bridge_hdmi;\n\tenum drm_connector_status status;\n\n\tif (detect) {\n\t\tstatus = detect->funcs->detect(detect, connector);\n\n\t\tif (hdmi)\n\t\t\tdrm_atomic_helper_connector_hdmi_hotplug(connector, status);\n\n\t\tdrm_bridge_connector_hpd_notify(connector, status);\n\t} else {\n\t\tswitch (connector->connector_type) {\n\t\tcase DRM_MODE_CONNECTOR_DPI:\n\t\tcase DRM_MODE_CONNECTOR_LVDS:\n\t\tcase DRM_MODE_CONNECTOR_DSI:\n\t\tcase DRM_MODE_CONNECTOR_eDP:\n\t\t\tstatus = connector_status_connected;\n\t\t\tbreak;\n\t\tdefault:\n\t\t\tstatus = connector_status_unknown;\n\t\t\tbreak;\n\t\t}\n\t}\n\n\treturn status;\n}"
+        }
+      ]
+    }
+  ],
+  "interpretation": "Successful probe detection is inside the device connection_mutex critical section. Conservatively bound the held interval from detect_connector_status entry to drm_modeset_drop_locks entry; caller/PID sequence plus LT9611 bridge marker must qualify. Symbols do not expose mutex addresses; no I2C duration measured."
+}

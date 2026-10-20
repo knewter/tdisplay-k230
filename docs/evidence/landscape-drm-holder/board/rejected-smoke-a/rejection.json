@@ -1,0 +1,8 @@
+{
+  "checked_at": "2026-10-20T16:04:15.557887+00:00",
+  "exit_code": 2,
+  "reason": "smoke lacks a complete source-grounded poll/detect/bridge/drop interval",
+  "capture_source_revision": "6c15edd550c69121681aff085ec1c9d05c432bcc",
+  "capture_tool_sha256": "d0e1e67a105fe1869a150a2251e7bb56e30ff56c5a90bd1c767e0796e31f7054",
+  "interpretation": "All numeric/function export checks and cleanup passed, but interval qualification assumed a separately traceable helper call. Actual compiler inlines it and emits a direct output_poll_execute caller for the context helper. Two connector probes appear per polling invocation. Rejected attempt retained; new source requires a new qualified smoke."
+}

@@ -80,35 +80,44 @@ def checked_events(directory):
 
 
 def intervals(functions):
-    """Conservative lock-held interval; reject ambiguous/backoff paths explicitly."""
-    pending = {}; result = []; rejected = []
+    """Conservative per-probe lock intervals within one polling invocation."""
+    pending={};result=[];rejected=[]
+    def reset(p):
+        p.update(helper_ns=None,probe_ns=None,detect_ns=None,bridge_ns=None)
     def reject(pid,reason):
-        if pid in pending: rejected.append({'pid':pid,'poll_ns':pending[pid]['poll_ns'],'reason':reason});del pending[pid]
+        if pid in pending:
+            p=pending[pid];rejected.append({'pid':pid,'poll_ns':p['poll_ns'],'reason':reason})
+            del pending[pid]
     for row in functions:
-        pid,symbol,stamp = row['pid'],row['symbol'],row['ts_ns']
-        if symbol == 'output_poll_execute':
-            reject(pid,'next poll before complete interval')
-            pending[pid] = {'pid':pid,'poll_ns':stamp,'helper_ns':None,'probe_ns':None,'detect_ns':None,'bridge_ns':None}
+        pid,symbol,stamp=row['pid'],row['symbol'],row['ts_ns']
+        if symbol=='output_poll_execute':
+            if pid in pending and pending[pid]['probe_ns'] is not None:reject(pid,'next poll before probe completed')
+            pending[pid]={'pid':pid,'poll_ns':stamp};reset(pending[pid])
         elif pid in pending:
-            p = pending[pid]
-            if symbol == 'drm_helper_probe_detect':
-                if p['helper_ns'] is not None or row['parent']!='output_poll_execute': reject(pid,'probe helper lacks polling caller')
-                else: p['helper_ns']=stamp
-            elif symbol == 'drm_helper_probe_detect_ctx':
-                if p['helper_ns'] is None or p['probe_ns'] is not None or row['parent'] not in ('drm_helper_probe_detect','output_poll_execute'): reject(pid,'ambiguous probe caller/order')
-                else: p['probe_ns'] = stamp
-            elif symbol == 'detect_connector_status':
-                if p['probe_ns'] is None or p['detect_ns'] is not None or row['parent']!='drm_helper_probe_detect_ctx': reject(pid,'ambiguous detection order')
-                else: p['detect_ns'] = stamp
-            elif symbol == 'lt9611_bridge_detect':
-                if p['detect_ns'] is None or p['bridge_ns'] is not None: reject(pid,'ambiguous bridge order')
-                else: p['bridge_ns'] = stamp
-            elif symbol == 'drm_modeset_backoff': reject(pid,'lock backoff invalidates held interval')
-            elif symbol == 'drm_modeset_drop_locks':
-                if p['bridge_ns'] is None or row['parent']!='drm_helper_probe_detect_ctx': reject(pid,'drop without complete LT9611 detect path')
+            p=pending[pid]
+            if symbol=='drm_helper_probe_detect':
+                if p['helper_ns'] is not None or row['parent']!='output_poll_execute':reject(pid,'probe helper lacks polling caller')
+                else:p['helper_ns']=stamp
+            elif symbol=='drm_helper_probe_detect_ctx':
+                # GCC may inline the tiny helper entirely. A direct polling
+                # caller proves origin without requiring a missing entry.
+                caller=(row['parent']=='output_poll_execute' or
+                        (row['parent']=='drm_helper_probe_detect' and p['helper_ns'] is not None))
+                if p['probe_ns'] is not None or not caller:reject(pid,'ambiguous probe caller/order')
+                else:p['probe_ns']=stamp
+            elif symbol=='detect_connector_status':
+                if p['probe_ns'] is None or p['detect_ns'] is not None or row['parent']!='drm_helper_probe_detect_ctx':reject(pid,'ambiguous detection order')
+                else:p['detect_ns']=stamp
+            elif symbol=='lt9611_bridge_detect' and p['probe_ns'] is not None:
+                if p['detect_ns'] is None or p['bridge_ns'] is not None:reject(pid,'ambiguous bridge order')
+                else:p['bridge_ns']=stamp
+            elif symbol=='drm_modeset_backoff' and p['probe_ns'] is not None:reject(pid,'lock backoff invalidates held interval')
+            elif symbol=='drm_modeset_drop_locks' and p['probe_ns'] is not None:
+                if p['bridge_ns'] is None or row['parent']!='drm_helper_probe_detect_ctx':reject(pid,'drop without complete LT9611 detect path')
                 else:
-                    result.append(dict(p,drop_ns=stamp,held_lower_bound_ms=(stamp-p['detect_ns'])/1e6));del pending[pid]
-    for pid in list(pending): reject(pid,'capture boundary before complete interval')
+                    result.append(dict(p,drop_ns=stamp,held_lower_bound_ms=(stamp-p['detect_ns'])/1e6));reset(p)
+    for pid,p in list(pending.items()):
+        if p['probe_ns'] is not None:reject(pid,'capture boundary before probe completed')
     return result,rejected
 
 
@@ -312,6 +321,14 @@ class Fixtures(unittest.TestCase):
         held,rejected=intervals(rows)
         self.assertEqual(len(held),1);self.assertEqual(rejected,[])
         self.assertEqual((held[0]['pid'],held[0]['detect_ns'],held[0]['drop_ns']),(99,120,300))
+
+    def test_inlined_helper_and_two_connectors(self):
+        rows=[dict(r,parent='output_poll_execute') if r['symbol']=='drm_helper_probe_detect_ctx' else r
+              for r in self.path() if r['symbol']!='drm_helper_probe_detect']
+        second=[dict(r,ts_ns=r['ts_ns']+300) for r in rows[1:]]
+        held,rejected=intervals(rows+second)
+        self.assertEqual(len(held),2);self.assertEqual(rejected,[])
+        self.assertEqual([r['poll_ns'] for r in held],[100,100])
 
     def test_incomplete_ambiguous_backoff(self):
         bad=[self.path()[:-1],self.path()[:2]+self.path()[1:],
