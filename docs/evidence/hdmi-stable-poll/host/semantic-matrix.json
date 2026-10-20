@@ -1,0 +1,25 @@
+{
+  "checked_at": "2026-10-20T17:51:30.769657+00:00",
+  "status": "HOST_SEMANTICS_PASS",
+  "matrix_cases": 72,
+  "named_scenarios": 7,
+  "fallback_cases": 5,
+  "source": "/nix/store/7vzlvixrdhv5a1iw75p18yzwkaqrlxjd-linux-mainline-k230-drm-src",
+  "source_file_sha256": "ba529f21010d378e80046358fd11ec958c483aeb07c6a91fb7c4c71e8f7eec81",
+  "patched_file_sha256": "bf1d9725b3441467867ce4461e5c69c24f53d017998b49e68962cb8641c6f82b",
+  "patch_sha256": "09cedc33fe95dec9f34f952ab69fabfb8faddeff7a790cb827c8ed83c9c4e329",
+  "test_tool_sha256": "ac73cee31a56297b7c448870063412367c593b7422cf9bc1f393257035eade7c",
+  "unchanged_functions": [
+    "drm_bridge_connector_handle_hpd",
+    "drm_bridge_connector_force",
+    "drm_bridge_connector_get_modes_edid"
+  ],
+  "compiler_flags": [
+    "-std=c11",
+    "-Wall",
+    "-Wextra",
+    "-Werror",
+    "-Wno-unused-parameter"
+  ],
+  "limits": "Actual patched detector compiled with stub kernel callbacks; source/behavior proof only. Full target kernel/closure build, runtime timing, physical hotplug/input and persistent boot remain separate gates."
+}

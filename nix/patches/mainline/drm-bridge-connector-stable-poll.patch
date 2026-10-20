@@ -1,0 +1,16 @@
+--- a/drivers/gpu/drm/display/drm_bridge_connector.c
++++ b/drivers/gpu/drm/display/drm_bridge_connector.c
+@@ -223,2 +223,11 @@
+-		if (hdmi)
+-			drm_atomic_helper_connector_hdmi_hotplug(connector, status);
++		/*
++		 * A stable connected sink already has its monitor metadata. Avoid
++		 * repeating the slow DDC read under connection_mutex on every
++		 * background poll. Keep refreshes for missing EDID, link changes
++		 * and non-polling probes, including HPD paths with updated status.
++		 */
++		if (hdmi && !(drm_kms_helper_is_poll_worker() &&
++			      status == connector_status_connected &&
++			      connector->status == status &&
++			      connector->edid_blob_ptr))
++			drm_atomic_helper_connector_hdmi_hotplug(connector, status);
