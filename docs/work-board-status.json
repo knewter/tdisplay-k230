@@ -157,14 +157,18 @@
       }
     },
     "the-shell-profiles-reported-interaction-jank": {
-      "lane": "planned",
-      "source": "not-started",
+      "lane": "in-progress",
+      "source": "in-progress",
       "physical": "pending",
-      "next": "When a slow interaction is reported, measure that workload; deferred drawer/keyboard timing is not a blocker on accepted UX.",
+      "next": "Notification-shade drag diagnosis is recorded; preserve fresh-state behavior in a bounded follow-up. Deferred app-drawer, keyboard and ordinary-card measurements remain open.",
       "dependencies": [],
-      "evidence": [],
-      "rationale": "Operator-authorized successor for drawer 5.2/5.4 and keyboard 3.3; no performance measurements claimed.",
-      "reviewRevision": "5605c9e6c02119c201d2bb95531497639711aacb"
+      "evidence": [
+        "docs/evidence/interaction-jank/notification-shade/README.md",
+        "docs/evidence/interaction-jank/notification-shade/comparison.json",
+        "docs/evidence/interaction-jank/notification-shade/final-control.json"
+      ],
+      "rationale": "One reported-route task is complete. Installed-board synthetic traces and a priority-only diagnostic identify settings-status CPU competition. No persistent shade source fix, optical acceptance or unrelated performance budget is claimed.",
+      "reviewRevision": "a1bc1e5706cc9d6187f9520229cb1ff7a2224a99"
     },
     "2026-10-01-the-compositor-renders-ahead-of-scanout": {
       "lane": "archived",
