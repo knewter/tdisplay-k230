@@ -62,6 +62,12 @@ impl Route {
     }
 }
 
+/// A complete tightly packed BGRA frame may advertise opacity only after
+/// every actual alpha byte has been checked. Recheck each new frame.
+pub fn bgra_frame_is_opaque(pixels: &[u8]) -> bool {
+    !pixels.is_empty() && pixels.len() % 4 == 0 && pixels.chunks_exact(4).all(|p| p[3] == 255)
+}
+
 pub fn frame_bytes(width: u32, height: u32) -> Option<usize> {
     // Upper bounds widened from the original panel-only 300..=1024 (width)
     // to 300..=2048 on both axes for `feat/shell-responsive`: a whole HDMI
@@ -634,3 +640,23 @@ mod tests {
 }
 
 pub mod runtime_trace;
+
+#[cfg(test)]
+mod frame_opacity_tests {
+    use super::bgra_frame_is_opaque;
+    #[test]
+    fn opacity_tracks_every_pixel_and_new_frame() {
+        let mut frame = vec![23, 47, 91, 255].repeat(35);
+        assert!(bgra_frame_is_opaque(&frame));
+        for i in 0..35 {
+            frame[i*4+3] = 254;
+            assert!(!bgra_frame_is_opaque(&frame));
+            frame[i*4+3] = 0;
+            assert!(!bgra_frame_is_opaque(&frame));
+            frame[i*4+3] = 255;
+            assert!(bgra_frame_is_opaque(&frame));
+        }
+        assert!(!bgra_frame_is_opaque(&[]));
+        assert!(!bgra_frame_is_opaque(&frame[..frame.len()-1]));
+    }
+}

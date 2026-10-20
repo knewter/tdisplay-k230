@@ -1,0 +1,14 @@
+from pathlib import Path
+import subprocess,json,time,hashlib
+b=Path(__file__).parent
+s=['ssh','-F',str(Path.home()/'tmp/k230-coordination/ssh_config.private'),'k230']
+metadata={'started_utc':time.strftime('%Y-%m-%dT%H:%M:%SZ',time.gmtime()),'binary_sha256':hashlib.sha256((b/'paint-alpha-bench').read_bytes()).hexdigest(),'note':'Standalone copy into fresh heap and unattached DRM dumb buffers. No modesetting, no running compositor replacement, no end-to-end claim.'}
+p=subprocess.run(s+['cat > /tmp/k230-paint-alpha-bench && chmod 0700 /tmp/k230-paint-alpha-bench'],input=(b/'paint-alpha-bench').read_bytes(),capture_output=True,timeout=30);p.check_returncode()
+for mode in ['heap','dumb']:
+ command='/tmp/k230-paint-alpha-bench'+(' --dumb' if mode=='dumb' else '')
+ p=subprocess.run(s+[command],capture_output=True,text=True,timeout=90)
+ (b/('paint-alpha-'+mode+'.log')).write_text(p.stdout);(b/('paint-alpha-'+mode+'-stderr.log')).write_text(p.stderr)
+ metadata[mode+'_exit']=p.returncode
+ if p.returncode:print(p.stderr[-1300:]);raise SystemExit(p.returncode)
+ print(mode,'captured',len(p.stdout.splitlines()),'rows',flush=True)
+metadata['ended_utc']=time.strftime('%Y-%m-%dT%H:%M:%SZ',time.gmtime());(b/'paint-alpha-bench-metadata.json').write_text(json.dumps(metadata,indent=2)+'\n')

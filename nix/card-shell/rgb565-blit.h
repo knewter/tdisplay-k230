@@ -1,6 +1,6 @@
-/* Exact opaque, untransformed XRGB8888 -> RGB565 copy for Pixman buffers.
+/* Exact untransformed XRGB8888, or ARGB8888 SRC, -> RGB565 copy for Pixman buffers.
  * Caller must have reset the source transform and use the supplied clip as
- * the destination's complete clip. Masks, alpha and other formats fall back. */
+ * the destination's complete clip. Masks, ARGB OVER and other formats fall back. */
 #ifndef K230_RGB565_BLIT_H
 #define K230_RGB565_BLIT_H
 #include <stdbool.h>
@@ -14,7 +14,8 @@ static inline bool k230_rgb565_blit(pixman_op_t op, pixman_image_t *source,
         pixman_image_t *mask, pixman_image_t *dest, int sx, int sy,
         int dx, int dy, int width, int height, const pixman_region32_t *clip) {
     if (!source || !dest || mask || (op != PIXMAN_OP_SRC && op != PIXMAN_OP_OVER) ||
-            pixman_image_get_format(source) != PIXMAN_x8r8g8b8 ||
+            (pixman_image_get_format(source) != PIXMAN_x8r8g8b8 &&
+             !(op == PIXMAN_OP_SRC && pixman_image_get_format(source) == PIXMAN_a8r8g8b8)) ||
             pixman_image_get_format(dest) != PIXMAN_r5g6b5) return false;
     int sw = pixman_image_get_width(source), sh = pixman_image_get_height(source);
     int dw = pixman_image_get_width(dest), dh = pixman_image_get_height(dest);

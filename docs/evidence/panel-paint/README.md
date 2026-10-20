@@ -194,3 +194,9 @@ build CPU to11.210ms mean/11.828ms p95, but both modes still fail latency at26Hz
 [Rejected rotation variants](rejected-rotation/README.md) preserve the measured
 16-pixel tile. Bounded format/mask/scaling diagnostics are the next step;
 geometry alone does not identify the remaining large draw. Hardware gates stay open.
+
+[Format attribution](format-attribution/README.md) identifies the remaining
+full-panel image as unscaledARGB OVER. Dense-alpha direct blending was slower
+and rejected. The selected correction is a per-frame wallpaper opacity
+certificate plus exact ARGB SRC conversion; transparent images retain blending.
+New native/Rust tests pass; exact build and integrated acceptance remain open.

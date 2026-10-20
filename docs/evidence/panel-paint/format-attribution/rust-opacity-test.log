@@ -1,0 +1,128 @@
+   Compiling pkg-config v0.3.34
+   Compiling proc-macro2 v1.0.107
+   Compiling unicode-ident v1.0.26
+   Compiling quote v1.0.47
+   Compiling winnow v1.0.4
+   Compiling toml_datetime v1.1.1+spec-1.1.0
+   Compiling target-lexicon v0.13.5
+   Compiling heck v0.5.0
+   Compiling smallvec v1.16.1
+   Compiling serde_spanned v1.1.1
+   Compiling version-compare v0.2.1
+   Compiling bitflags v2.13.2
+   Compiling libc v0.2.175
+   Compiling memchr v2.8.3
+   Compiling shlex v2.0.1
+   Compiling find-msvc-tools v0.1.13
+   Compiling rustix v1.1.2
+   Compiling linux-raw-sys v0.11.0
+   Compiling hashbrown v0.17.1
+   Compiling equivalent v1.0.2
+   Compiling downcast-rs v1.2.1
+   Compiling wayland-client v0.31.11
+   Compiling futures-core v0.3.34
+   Compiling version_check v0.9.5
+   Compiling futures-task v0.3.34
+   Compiling slab v0.4.12
+   Compiling pin-project-lite v0.2.17
+   Compiling simd-adler32 v0.3.10
+   Compiling adler2 v2.0.1
+   Compiling crc32fast v1.5.2
+   Compiling typenum v1.20.1
+   Compiling autocfg v1.5.1
+   Compiling cfg-if v1.0.5
+   Compiling serde_core v1.0.228
+   Compiling thiserror v2.0.21
+   Compiling futures-io v0.3.34
+   Compiling zmij v1.0.23
+   Compiling xcursor v0.3.11
+   Compiling weezl v0.1.12
+   Compiling pxfm v0.1.30
+   Compiling serde_json v1.0.149
+   Compiling quick-error v2.0.1
+   Compiling cc v1.4.7
+   Compiling futures-channel v0.3.34
+   Compiling miniz_oxide v0.9.1
+   Compiling miniz_oxide v0.8.9
+   Compiling fdeflate v0.3.7
+   Compiling byteorder-lite v0.1.0
+   Compiling generic-array v0.14.7
+   Compiling cursor-icon v1.2.0
+   Compiling color_quant v1.1.0
+   Compiling serde v1.0.228
+   Compiling wayland-sys v0.31.11
+   Compiling indexmap v2.14.2
+   Compiling quick-xml v0.41.0
+   Compiling smithay-client-toolkit v0.20.0
+   Compiling zune-core v0.5.3
+   Compiling log v0.4.34
+   Compiling cpufeatures v0.2.17
+   Compiling num-traits v0.2.19
+   Compiling gif v0.14.2
+   Compiling itoa v1.0.18
+   Compiling image-webp v0.2.4
+   Compiling toml_parser v1.1.3+spec-1.1.0
+   Compiling flate2 v1.1.10
+   Compiling zune-jpeg v0.5.15
+   Compiling wayland-backend v0.3.17
+   Compiling cfg-expr v0.20.9
+   Compiling toml v1.1.6+spec-1.1.0
+   Compiling toml_edit v0.25.15+spec-1.1.0
+   Compiling png v0.18.1
+   Compiling block-buffer v0.10.4
+   Compiling crypto-common v0.1.7
+   Compiling digest v0.10.7
+   Compiling system-deps v7.0.8
+   Compiling syn v3.0.6
+   Compiling syn v2.0.119
+   Compiling wayland-scanner v0.31.11
+   Compiling memmap2 v0.9.11
+   Compiling proc-macro-crate v3.5.0
+   Compiling sha2 v0.10.9
+   Compiling glib-sys v0.21.5
+   Compiling gobject-sys v0.21.5
+   Compiling gio-sys v0.21.5
+   Compiling cairo-sys-rs v0.21.5
+   Compiling pango-sys v0.21.5
+   Compiling pangocairo-sys v0.21.5
+   Compiling moxcms v0.8.1
+   Compiling futures-macro v0.3.34
+   Compiling bytemuck_derive v1.12.1
+   Compiling thiserror-impl v2.0.21
+   Compiling glib-macros v0.21.5
+   Compiling serde_derive v1.0.228
+   Compiling futures-util v0.3.34
+   Compiling bytemuck v1.25.2
+   Compiling wayland-csd-frame v0.3.0
+   Compiling xkeysym v0.2.1
+   Compiling image v0.25.10
+   Compiling xkbcommon v0.8.0
+   Compiling wayland-protocols v0.32.9
+   Compiling wayland-cursor v0.31.11
+   Compiling futures-executor v0.3.34
+   Compiling glib v0.21.5
+   Compiling wayland-protocols-experimental v20250721.0.1
+   Compiling wayland-protocols-wlr v0.3.9
+   Compiling wayland-protocols-misc v0.3.9
+   Compiling gio v0.21.5
+   Compiling cairo-rs v0.21.5
+   Compiling pango v0.21.5
+   Compiling pangocairo v0.21.5
+   Compiling k230-shell-rust v0.1.0 (/mnt/MediaVolume/home/jadams/src/gitlab.daringbit.com/josh/tdisplay-k230/.claude/worktrees/panel-paint/nix/rust-shell-client)
+warning: function `theme_view_cache_key_differs` is never used
+    --> src/render.rs:5553:4
+     |
+5553 | fn theme_view_cache_key_differs(old: &ThemeView, new: &ThemeView) -> bool {
+     |    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+     = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `k230-shell-rust` (lib test) generated 1 warning
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 42.90s
+     Running unittests src/lib.rs (/tmp/k230-panel-paint-cargo-target/debug/deps/k230_shell_rust-1ffb034c166b92ba)
+
+running 1 test
+test frame_opacity_tests::opacity_tracks_every_pixel_and_new_frame ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 581 filtered out; finished in 0.00s
+

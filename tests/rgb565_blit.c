@@ -26,7 +26,26 @@ static void compare(int seed,int op,bool alpha,bool masked,int radius,int dx,int
  if(mask)pixman_image_unref(mask);
  pixman_image_unref(src);pixman_image_unref(ref);pixman_image_unref(got);
 }
+static void alpha_oracle(void) {
+ uint32_t source[64];uint16_t a[64],b[64];
+ pixman_image_t *src=pixman_image_create_bits(PIXMAN_a8r8g8b8,8,8,source,32);
+ pixman_image_t *ref=pixman_image_create_bits(PIXMAN_r5g6b5,8,8,(uint32_t*)a,16);
+ pixman_image_t *got=pixman_image_create_bits(PIXMAN_r5g6b5,8,8,(uint32_t*)b,16);
+ assert(src&&ref&&got);
+ for(unsigned alpha=0;alpha<256;alpha++)for(unsigned valid=0;valid<2;valid++){
+  for(unsigned i=0;i<64;i++){
+   unsigned r=(i*71+alpha*3)&255,g=(i*37+alpha*5)&255,bl=(i*19+alpha*7)&255;
+   if(valid){r=r*alpha/255;g=g*alpha/255;bl=bl*alpha/255;}
+   source[i]=alpha<<24|r<<16|g<<8|bl;a[i]=b[i]=(uint16_t)(i*739+alpha*17);
+  }
+  pixman_image_composite32(PIXMAN_OP_SRC,src,NULL,ref,0,0,0,0,0,0,8,8);
+  assert(k230_rgb565_blit(PIXMAN_OP_SRC,src,NULL,got,0,0,0,0,8,8,NULL));
+  if(memcmp(a,b,sizeof(a))){fprintf(stderr,"alpha mismatch alpha=%u valid=%u\n",alpha,valid);abort();}
+ }
+ pixman_image_unref(src);pixman_image_unref(ref);pixman_image_unref(got);
+}
 int main(void){
+ alpha_oracle();
  unsigned n=0;
  for(int seed=0;seed<4;seed++)for(int alpha=0;alpha<2;alpha++)for(int mask=0;mask<2;mask++)for(int radius=0;radius<=6;radius+=6)
  for(int op=0;op<2;op++)for(int edge=0;edge<4;edge++){
@@ -41,5 +60,5 @@ int main(void){
  assert(!k230_rgb565_blit(PIXMAN_OP_SRC,src,NULL,src,0,0,0,0,4,4,NULL));
  assert(!k230_rgb565_blit(PIXMAN_OP_SRC,NULL,NULL,dst,0,0,0,0,4,4,NULL));
  pixman_image_unref(src);pixman_image_unref(dst);
- printf("PASS RGB565 unscaled conversion: %u clipped/rounded/alpha-fallback oracle cases\n",n);
+ printf("PASS RGB565 unscaled conversion: %u clipped/rounded/mask-fallback cases plus512 ARGB-SRC oracle cases\n",n);
 }

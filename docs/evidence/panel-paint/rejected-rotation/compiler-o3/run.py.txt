@@ -1,0 +1,14 @@
+from pathlib import Path
+import subprocess,json,time,hashlib
+b=Path(__file__).parent.parent
+s=['ssh','-F',str(Path.home()/'tmp/k230-coordination/ssh_config.private'),'k230']
+metadata={'started_utc':time.strftime('%Y-%m-%dT%H:%M:%SZ',time.gmtime()),'binary_sha256':hashlib.sha256((b/'rotation-o3/bench').read_bytes()).hexdigest(),'note':'Standalone copy into fresh heap and unattached DRM dumb buffers. No modesetting, no running compositor replacement, no end-to-end claim.'}
+p=subprocess.run(s+['cat > /tmp/k230-transpose-bench && chmod 0700 /tmp/k230-transpose-bench'],input=(b/'rotation-o3/bench').read_bytes(),capture_output=True,timeout=30);p.check_returncode()
+for mode in ['heap','dumb']:
+ command='/tmp/k230-transpose-bench'+(' --dumb' if mode=='dumb' else '')
+ p=subprocess.run(s+[command],capture_output=True,text=True,timeout=90)
+ (b/('rotation-o3/'+mode+'.log')).write_text(p.stdout);(b/('rotation-o3/'+mode+'-stderr.log')).write_text(p.stderr)
+ metadata[mode+'_exit']=p.returncode
+ if p.returncode:print(p.stderr[-1300:]);raise SystemExit(p.returncode)
+ print(mode,'captured',len(p.stdout.splitlines()),'rows',flush=True)
+metadata['ended_utc']=time.strftime('%Y-%m-%dT%H:%M:%SZ',time.gmtime());(b/'rotation-o3/metadata.json').write_text(json.dumps(metadata,indent=2)+'\n')

@@ -1,0 +1,146 @@
+{
+  "schema": "k230-panel-paint-profile-v1",
+  "status": "PARTIAL",
+  "quantiles": "nearest-rank p95; lower-middle p50",
+  "rotation_formats": {
+    "0x10020565": 128
+  },
+  "evidence_class": "board software CPU diagnostics; no optical claim",
+  "limits": [
+    "texture timers exclude solid rectangles, scene preparation and commit",
+    "journal receipt timestamps group rows; no exact commit ID",
+    "profiling/logging overhead is not subtracted",
+    "draw cap512 / rotation cap128 may truncate the workload",
+    "cost distributions do not establish a performance budget pass"
+  ],
+  "row_counts": {
+    "draw": 512,
+    "rotation": 128
+  },
+  "cap_reached": {
+    "draw": true,
+    "rotation": true
+  },
+  "selected_time_window_ns": [
+    90315833505698,
+    90320487838388
+  ],
+  "selected_row_counts": {
+    "draw": 145,
+    "rotation": 82
+  },
+  "draw_cpu_ms": {
+    "count": 145,
+    "mean": 0.6578586413793104,
+    "p50": 0.385961,
+    "p95": 2.31911,
+    "max": 2.643704
+  },
+  "rotation_cpu_ms": {
+    "count": 82,
+    "mean": 4.143724512195122,
+    "p50": 4.120259,
+    "p95": 4.266666,
+    "max": 4.493962
+  },
+  "grouped_frame_texture_cpu_ms": {
+    "count": 12,
+    "mean": 7.1443385,
+    "p50": 7.133072,
+    "p95": 7.508408,
+    "max": 7.508408
+  },
+  "grouped_frame_rotation_cpu_ms": {
+    "count": 12,
+    "mean": 4.216360916666667,
+    "p50": 4.172111,
+    "p95": 4.493962,
+    "max": 4.493962
+  },
+  "grouped_frames": [
+    {
+      "rotation_journal_t_ns": 90315911575000,
+      "texture_draws": 11,
+      "texture_cpu_ns": 7108001,
+      "texture_copy_cpu_ns": 0,
+      "rotation_cpu_ns": 4266666
+    },
+    {
+      "rotation_journal_t_ns": 90315950587000,
+      "texture_draws": 11,
+      "texture_cpu_ns": 7436739,
+      "texture_copy_cpu_ns": 0,
+      "rotation_cpu_ns": 4157111
+    },
+    {
+      "rotation_journal_t_ns": 90315994181000,
+      "texture_draws": 11,
+      "texture_cpu_ns": 7508408,
+      "texture_copy_cpu_ns": 0,
+      "rotation_cpu_ns": 4493962
+    },
+    {
+      "rotation_journal_t_ns": 90316028589000,
+      "texture_draws": 11,
+      "texture_cpu_ns": 7293852,
+      "texture_copy_cpu_ns": 0,
+      "rotation_cpu_ns": 4225297
+    },
+    {
+      "rotation_journal_t_ns": 90316067610000,
+      "texture_draws": 11,
+      "texture_cpu_ns": 7237480,
+      "texture_copy_cpu_ns": 0,
+      "rotation_cpu_ns": 4172111
+    },
+    {
+      "rotation_journal_t_ns": 90316104624000,
+      "texture_draws": 11,
+      "texture_cpu_ns": 7264222,
+      "texture_copy_cpu_ns": 0,
+      "rotation_cpu_ns": 4157185
+    },
+    {
+      "rotation_journal_t_ns": 90316141171000,
+      "texture_draws": 11,
+      "texture_cpu_ns": 7044145,
+      "texture_copy_cpu_ns": 0,
+      "rotation_cpu_ns": 4202740
+    },
+    {
+      "rotation_journal_t_ns": 90316180074000,
+      "texture_draws": 11,
+      "texture_cpu_ns": 7133072,
+      "texture_copy_cpu_ns": 0,
+      "rotation_cpu_ns": 4125665
+    },
+    {
+      "rotation_journal_t_ns": 90316218122000,
+      "texture_draws": 11,
+      "texture_cpu_ns": 7253222,
+      "texture_copy_cpu_ns": 0,
+      "rotation_cpu_ns": 4134964
+    },
+    {
+      "rotation_journal_t_ns": 90316256582000,
+      "texture_draws": 11,
+      "texture_cpu_ns": 6961038,
+      "texture_copy_cpu_ns": 0,
+      "rotation_cpu_ns": 4163408
+    },
+    {
+      "rotation_journal_t_ns": 90316294150000,
+      "texture_draws": 11,
+      "texture_cpu_ns": 6805146,
+      "texture_copy_cpu_ns": 0,
+      "rotation_cpu_ns": 4221332
+    },
+    {
+      "rotation_journal_t_ns": 90316333675000,
+      "texture_draws": 11,
+      "texture_cpu_ns": 6686737,
+      "texture_copy_cpu_ns": 0,
+      "rotation_cpu_ns": 4275890
+    }
+  ]
+}

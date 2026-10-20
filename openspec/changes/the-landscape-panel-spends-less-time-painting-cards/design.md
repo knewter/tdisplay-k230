@@ -104,3 +104,17 @@ A699,776-pixel draw still averages2.323ms, but geometry does not establish
 its source format, mask or scaling. Add only bounded numeric identities to
 the existing512 draw rows before selecting another rendering boundary.
 No new logging during qualifying motion runs and no8ms render-window change.
+
+## Opaque wallpaper producer boundary
+
+The0eae9900 profile proves the remaining full-panel draw is unscaledARGB8888
+OVER→RGB565 without an extra mask. Source lookup identifies the Rust wallpaper
+producer; default/still/video frames share its draw/attachment boundary.
+Direct partial-alpha blending is pixel-exact but regresses dense alpha3.5×,
+so it is rejected. Instead, scan each completed frame before committing:
+all255 alpha permits a full opaque region; any transparency or allocation
+failure clears the region. No assumption about videos or source formats,
+and no retained-opacity state across frames. Preserve pool/callback/damage/
+attachment ownership. ARGB SRC conversion is exactly Pixman's RGB565 result;
+ARGB OVER and all masks keep Pixman. Rebuild and repeat the frozen paired
+motion workload before any default selection; camera gate remains open.

@@ -3444,9 +3444,19 @@ impl ShellClient {
             self.log(&format!("wallpaper-render-failed {error}"));
             return false;
         }
+        let opaque = k230_shell_rust::bgra_frame_is_opaque(canvas);
         let Some(layer) = self.wallpaper.layer.as_ref() else {
             return false;
         };
+        // Declare only opacity proved by this exact frame. Clearing the
+        // region on alpha/geometry changes also covers transparent videos.
+        // Region allocation failure keeps the correct blending fallback.
+        let opaque_region = if opaque { Region::new(&self.compositor).ok() } else { None };
+        if let Some(region) = &opaque_region {
+            region.add(0, 0, width as i32, height as i32);
+        }
+        layer.wl_surface()
+            .set_opaque_region(opaque_region.as_ref().map(|r| r.wl_region()));
         layer
             .wl_surface()
             .damage_buffer(0, 0, width as i32, height as i32);

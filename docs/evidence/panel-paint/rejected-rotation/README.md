@@ -24,3 +24,10 @@ adjacent. This is measured rejection, not a claimed theoretical speedup.
 
 The existing16 tile and packed64-bit stores remain unchanged. Neither failed
 experiments nor synthetic copies are counted as motion acceptance.
+
+A final function-local GCCO3/unroll-loops experiment also loses for the actual
+RGB565 path: DRM rotation1 median4.069→4.411ms, rotation3 4.043→4.204ms.
+The unchanged source's32-bit loop does improve under these compiler options
+(12.060→8.749ms and11.168→7.870ms), but that is not the selected panel format.
+The experiment is rejected for this change; production compilation is unchanged.
+Sources/compiler command/timestamps/raw rows are in compiler-o3/.

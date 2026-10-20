@@ -1,0 +1,8 @@
+{
+  "started_utc": "2026-10-20T00:04:09Z",
+  "binary_sha256": "0450d1dc07966ede86a1b8dd756e765b4d071107483681d95392eda580d07fb0",
+  "note": "Standalone copy into fresh heap and unattached DRM dumb buffers. No modesetting, no running compositor replacement, no end-to-end claim.",
+  "heap_exit": 0,
+  "dumb_exit": 0,
+  "ended_utc": "2026-10-20T00:04:16Z"
+}
