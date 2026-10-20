@@ -1,0 +1,13 @@
+{
+  "base_tool_sha256": "b98a6404bdd96afab1db9edb6779f325bc7958574e754b04dffbed73ae67f42b",
+  "created_at": "2026-10-20T06:46:25.563528+00:00",
+  "event_count": 41,
+  "kernel": "7.3.0-rc5",
+  "machine": "riscv64",
+  "observed_sleep_symbol": "hrtimer_nanosleep",
+  "schema": "landscape-drm-wait-v1",
+  "stack_count": 1,
+  "status": "QUALIFIED",
+  "system": "/nix/store/j30yag05ic9k68n9dzbzindgf4ardp08-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "tool_sha256": "4f29492ee1fc84934f181e7688b883e6f645035b599bf9992a526bb397f1f3c6"
+}

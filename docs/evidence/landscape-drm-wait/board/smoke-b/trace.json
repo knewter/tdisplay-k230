@@ -1,0 +1,45 @@
+{
+  "base_tool_sha256": "b98a6404bdd96afab1db9edb6779f325bc7958574e754b04dffbed73ae67f42b",
+  "buffer_total_kb": 32771,
+  "event_count": 41,
+  "events_sha256": "04c4ddb3f11ebdee3d09684d7ae00533a6ebbcbb54d80a2fd8c7994a56bb72eb",
+  "global_before": {
+    "current_tracer": "64aec5a7fa151222572a241383c857738318e63cca7ee771952c95a31d92a19d",
+    "events/enable": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+    "set_event_pid": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "set_ftrace_pid": "cdf4d2acfdcd5cd2556f83eeb52ee253ea6afbaa941c760f77dcfae3c925cb78",
+    "trace_clock": "925ca315bd3de6ef99e08c002e320406936ae2da2f2c0afd8da1e87f7980a253",
+    "tracing_on": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865"
+  },
+  "markers": {
+    "end": {
+      "after_ns": 114625399801338,
+      "before_ns": 114625399067077
+    },
+    "start": {
+      "after_ns": 114625348902119,
+      "before_ns": 114625346991435
+    }
+  },
+  "pid": 79500,
+  "raw_bytes": 4763,
+  "raw_sha256": "061aac0738c9a8b9e771775659fdb15a5aceac03f37b37a1bc607419da42ad31",
+  "schema": "landscape-hdmi-stall-trace-v1",
+  "stack_count": 1,
+  "stack_schema": "landscape-drm-wait-v1",
+  "stacks_sha256": "6709b25df39618b5472cb1cbb45c79a56e59206c57e9fce0fa2b4a229f31ef49",
+  "stats": {
+    "cpu0": {
+      "bytes": 2352,
+      "commit overrun": 0,
+      "dropped events": 0,
+      "entries": 42,
+      "overrun": 0,
+      "read events": 0
+    }
+  },
+  "tool_sha256": "4f29492ee1fc84934f181e7688b883e6f645035b599bf9992a526bb397f1f3c6",
+  "trace_clock": "local global counter uptime perf [mono] mono_raw boot tai",
+  "trigger_after": "stacktrace:count=49999 if prev_pid == 79500 && (prev_state == 1 || prev_state == 2)\n",
+  "trigger_before": "stacktrace:count=50000 if prev_pid == 79500 && (prev_state == 1 || prev_state == 2)\n"
+}
