@@ -1,0 +1,24 @@
+{
+  "system": "/nix/store/j30yag05ic9k68n9dzbzindgf4ardp08-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "outputs": [
+    {
+      "name": "DSI-1",
+      "active": true,
+      "rect": {
+        "x": 0,
+        "y": 0,
+        "width": 1232,
+        "height": 568
+      },
+      "current_mode": {
+        "width": 568,
+        "height": 1232,
+        "refresh": 52190,
+        "picture_aspect_ratio": "none"
+      },
+      "transform": "270"
+    }
+  ],
+  "checked_at": "2026-10-20T04:01:13.985012+00:00",
+  "evidence_class": "Read-only current output configuration; no HDMI latency/gesture claim"
+}

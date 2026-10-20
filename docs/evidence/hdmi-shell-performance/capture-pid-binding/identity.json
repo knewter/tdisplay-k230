@@ -1,0 +1,9 @@
+{
+  "base_revision": "ff4ee7050c0658bf0c4e0448f33a9033a084eb1b",
+  "helper_sha256": "c6c07d75218aba0002a3f052bdca8f1e42432b658e8d481fc7e8f0c938c3b10a",
+  "command": "python3 tools/hdmi-shell-capture-board.py --self-test",
+  "exit": 0,
+  "tests": 10,
+  "evidence_class": "host fixtures; no HDMI timing or physical acceptance",
+  "recorded_at": "2026-10-20T04:07:30.412355+00:00"
+}

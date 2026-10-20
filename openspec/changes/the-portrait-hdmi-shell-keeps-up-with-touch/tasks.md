@@ -68,3 +68,11 @@ reservation. Public traces must omit network/device secrets.
   retain unfinished neighboring changes. Verify
   `openspec validate the-portrait-hdmi-shell-keeps-up-with-touch --strict`
   immediately before syncing/archive, then inspect the deployed revision.
+
+2026-10-20 host capture checkpoint: journal collection now binds every read to
+its live IPC compositor PID instead of obsolete k230-card-shell.service.
+The10 host capture fixtures pass, including cleanup and PID selection. Evidence:
+`docs/evidence/hdmi-shell-performance/capture-pid-binding/README.md`.
+The read-only board preflight sees only the native panel; the HDMI monitor is
+not connected. No physical/profile/default task is ticked; progress remains3/12.
+The older dirty portrait implementation worktree is preserved without edits.

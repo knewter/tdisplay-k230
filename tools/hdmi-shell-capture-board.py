@@ -147,9 +147,14 @@ def runtime_identity(pid, variant):
                             'WLR_PIXMAN_OUTPUT_TURN': toggles[1]}}
 
 
-def journal(since, timeout=8):
+def journal(since, timeout=8, *, pid):
+    # Bind collection to the compositor identified by the live IPC connection.
+    # Its service name changed from k230-card-shell to shell; unit names also
+    # cannot distinguish a restarted compositor within the same time window.
+    if type(pid) is not int or pid <= 0:
+        raise CaptureError('invalid compositor journal PID')
     try:
-        result = subprocess.run(['journalctl','--unit=k230-card-shell.service','--since',since,
+        result = subprocess.run(['journalctl',f'_PID={pid}','--since',since,
                                  '--output=cat','--lines=20000'], stdout=subprocess.PIPE,
                                 stderr=subprocess.DEVNULL, timeout=timeout, check=True)
     except (OSError, subprocess.SubprocessError) as error:
@@ -340,7 +345,7 @@ def capture(args):
         # benchmark resource row and then reject every other run identity.
         if time.monotonic() >= deadline:
             raise CaptureError('capture deadline expired while arming benchmark')
-        raw = journal(since, max(.1, min(8, deadline-time.monotonic())))
+        raw = journal(since, max(.1, min(8, deadline-time.monotonic())), pid=ipc.pid)
         _, _, run_id, benchmark_error = allowlisted_records(raw, None, t0_ns, time.monotonic_ns())
         if not run_id:
             raise CaptureError('benchmark arm did not emit a run identity')
@@ -368,7 +373,7 @@ def capture(args):
             entered = True
             while time.monotonic() < deadline:
                 time.sleep(min(.2, max(0, deadline-time.monotonic())))
-                raw = journal(since, max(.1, min(8, deadline-time.monotonic())))
+                raw = journal(since, max(.1, min(8, deadline-time.monotonic())), pid=ipc.pid)
                 lines, session, _, marker = allowlisted_records(raw, run_id, t0_ns, time.monotonic_ns())
                 benchmark_error = marker or benchmark_error
                 if complete_gestures(lines) >= args.drags + 1:
@@ -387,7 +392,7 @@ def capture(args):
         try: ipc.command('card_shell back')
         except Exception as error: restore_failed = str(error)
         try:
-            raw = journal(since)
+            raw = journal(since, pid=ipc.pid)
             lines, session, _, marker = allowlisted_records(raw, run_id, t0_ns, time.monotonic_ns())
             benchmark_error = marker or benchmark_error
         except Exception as error:
@@ -460,6 +465,20 @@ def read_frequency():
 
 
 class Fixtures(unittest.TestCase):
+    def test_journal_reads_only_the_live_compositor(self):
+        completed = subprocess.CompletedProcess(['journalctl'], 0, b'fixture telemetry\n')
+        with mock.patch('subprocess.run', return_value=completed) as run:
+            self.assertEqual(journal('2026-10-20 04:00:00', pid=4321), 'fixture telemetry\n')
+        command = run.call_args.args[0]
+        self.assertIn('_PID=4321', command)
+        self.assertFalse(any(arg.startswith('--unit') for arg in command))
+        self.assertIn('--lines=20000', command)
+        for invalid in (0, -1, True, '4321'):
+            with self.subTest(pid=invalid), mock.patch('subprocess.run') as run:
+                with self.assertRaises(CaptureError):
+                    journal('2026-10-20 04:00:00', pid=invalid)
+                run.assert_not_called()
+
     def test_output_whitelist_and_foot_count(self):
         state = output_state([{'name':'HDMI-A-1','active':True,'transform':'90','scale':1,
             'rect':{'x':0,'y':0,'width':1080,'height':1920},'current_mode':{'width':1920,'height':1080},
@@ -542,7 +561,8 @@ class Fixtures(unittest.TestCase):
             FakeIPC.instances.clear()
             run='fixture_run'
             calls=[]
-            def fake_journal(_since, _timeout=8):
+            def fake_journal(_since, _timeout=8, *, pid):
+                self.assertEqual(pid, FakeIPC.instances[-1].pid)
                 calls.append(1)
                 t=time.monotonic_ns()
                 rows=[f'K230_CARD_BENCH v=1 run={run} event=resource t_ns={t} clock=monotonic phase=baseline cpu_ns=1 memory_bytes=2 scope=compositor',
