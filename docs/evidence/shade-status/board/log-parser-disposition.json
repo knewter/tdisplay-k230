@@ -1,0 +1,7 @@
+{
+  "result": "HOST_SUMMARY_PARSER_CORRECTED",
+  "reason": "systemd-run emitted a launcher message before the one-line JSON result. Parsing the whole combined log as a JSON document failed.",
+  "driver_exit_code": 0,
+  "manifest_status": "CAPTURED",
+  "disposition": "Retain original combined log; parse the final JSON line and validate committed raw capture files independently. No measurement failure or inferred missing manifest."
+}

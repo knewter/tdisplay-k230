@@ -1,0 +1,7 @@
+{
+  "requested_observed_at": "2026-10-20T20:47:16.615389+00:00",
+  "candidate_ready_at": "2026-10-20T20:46:14.836081+00:00",
+  "request": "The native Settings candidate is active on the board now. Pull the top drawer down a few times: does it feel smooth enough, or is it still noticeably stuttery?",
+  "status": "AWAITING_OPERATOR",
+  "limits": "No response or physical acceptance inferred from host/injected results. Candidate runtime wrapper selected; normal boot/persistent hpmz unchanged."
+}

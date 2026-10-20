@@ -1,0 +1,202 @@
+{
+  "status": "QUALIFIED_BOUNDED_IMPROVEMENT_WITH_RETAINED_TAIL_REGRESSION",
+  "checked_at": "2026-10-20T20:47:16.600968+00:00",
+  "source_revision": "ffa19e381de7151708ad339846660ec19d16ebda",
+  "same_recorder_source_sha256": "5adf2f745b7d7724c61ff548f99333201030541762060fbe43c8f6f3794bdf34",
+  "status_median_cpu_ms": {
+    "baseline": 814.0889999999999,
+    "candidate": 85.92199999999998
+  },
+  "status_median_elapsed_ms": {
+    "baseline": 891.299777,
+    "candidate": 102.015815
+  },
+  "status_median_cpu_reduction_percent": 89.44562572396876,
+  "observer_cpu_percent_over_sample_interval": {
+    "baseline": 10.59686166452473,
+    "candidate": 10.15112887958851
+  },
+  "pulls": [
+    {
+      "pull": 1,
+      "baseline": {
+        "gesture": 0,
+        "sent_span_ms": 1046.804518,
+        "committed_during_pull": 25,
+        "presented_frames": 14,
+        "discarded_frames": 11,
+        "presentation_gap_ms": {
+          "count": 13,
+          "min": 57.481,
+          "median": 76.625,
+          "p95": 114.973,
+          "max": 114.973
+        },
+        "resource_sample_seconds": 0.920317147,
+        "cpu0_busy_percent": 100.0,
+        "resources": {
+          "sway": {
+            "process_cpu_percent": 19.558,
+            "main_thread_run_ms": 179.469,
+            "main_thread_runnable_wait_ms": 432.713
+          },
+          "rust": {
+            "process_cpu_percent": 23.905,
+            "main_thread_run_ms": 199.493,
+            "main_thread_runnable_wait_ms": 467.661
+          }
+        }
+      },
+      "candidate": {
+        "gesture": 0,
+        "sent_span_ms": 1048.504296,
+        "committed_during_pull": 34,
+        "presented_frames": 19,
+        "discarded_frames": 15,
+        "presentation_gap_ms": {
+          "count": 18,
+          "min": 38.314,
+          "median": 38.4085,
+          "p95": 114.967,
+          "max": 114.967
+        },
+        "resource_sample_seconds": 0.902344703,
+        "cpu0_busy_percent": 86.813,
+        "resources": {
+          "sway": {
+            "process_cpu_percent": 27.706,
+            "main_thread_run_ms": 253.603,
+            "main_thread_runnable_wait_ms": 293.508
+          },
+          "rust": {
+            "process_cpu_percent": 27.706,
+            "main_thread_run_ms": 250.405,
+            "main_thread_runnable_wait_ms": 331.022
+          }
+        }
+      }
+    },
+    {
+      "pull": 2,
+      "baseline": {
+        "gesture": 1,
+        "sent_span_ms": 1051.955221,
+        "committed_during_pull": 27,
+        "presented_frames": 15,
+        "discarded_frames": 12,
+        "presentation_gap_ms": {
+          "count": 14,
+          "min": 57.481,
+          "median": 57.49,
+          "p95": 114.968,
+          "max": 114.968
+        },
+        "resource_sample_seconds": 0.924075888,
+        "cpu0_busy_percent": 100.0,
+        "resources": {
+          "sway": {
+            "process_cpu_percent": 20.561,
+            "main_thread_run_ms": 193.755,
+            "main_thread_runnable_wait_ms": 429.599
+          },
+          "rust": {
+            "process_cpu_percent": 21.643,
+            "main_thread_run_ms": 197.163,
+            "main_thread_runnable_wait_ms": 478.114
+          }
+        }
+      },
+      "candidate": {
+        "gesture": 1,
+        "sent_span_ms": 1051.978777,
+        "committed_during_pull": 36,
+        "presented_frames": 20,
+        "discarded_frames": 16,
+        "presentation_gap_ms": {
+          "count": 19,
+          "min": 38.315,
+          "median": 38.327,
+          "p95": 134.129,
+          "max": 134.129
+        },
+        "resource_sample_seconds": 0.895448295,
+        "cpu0_busy_percent": 85.714,
+        "resources": {
+          "sway": {
+            "process_cpu_percent": 29.036,
+            "main_thread_run_ms": 251.396,
+            "main_thread_runnable_wait_ms": 283.342
+          },
+          "rust": {
+            "process_cpu_percent": 25.685,
+            "main_thread_run_ms": 239.342,
+            "main_thread_runnable_wait_ms": 312.107
+          }
+        }
+      }
+    },
+    {
+      "pull": 3,
+      "baseline": {
+        "gesture": 2,
+        "sent_span_ms": 1047.480222,
+        "committed_during_pull": 28,
+        "presented_frames": 15,
+        "discarded_frames": 13,
+        "presentation_gap_ms": {
+          "count": 14,
+          "min": 57.479,
+          "median": 67.06,
+          "p95": 114.972,
+          "max": 114.972
+        },
+        "resource_sample_seconds": 0.920918777,
+        "cpu0_busy_percent": 100.0,
+        "resources": {
+          "sway": {
+            "process_cpu_percent": 21.717,
+            "main_thread_run_ms": 191.83,
+            "main_thread_runnable_wait_ms": 421.243
+          },
+          "rust": {
+            "process_cpu_percent": 21.717,
+            "main_thread_run_ms": 194.863,
+            "main_thread_runnable_wait_ms": 464.306
+          }
+        }
+      },
+      "candidate": {
+        "gesture": 2,
+        "sent_span_ms": 1039.00674,
+        "committed_during_pull": 37,
+        "presented_frames": 20,
+        "discarded_frames": 17,
+        "presentation_gap_ms": {
+          "count": 19,
+          "min": 38.32,
+          "median": 38.33,
+          "p95": 114.97,
+          "max": 114.97
+        },
+        "resource_sample_seconds": 0.894951778,
+        "cpu0_busy_percent": 85.87,
+        "resources": {
+          "sway": {
+            "process_cpu_percent": 26.817,
+            "main_thread_run_ms": 248.534,
+            "main_thread_runnable_wait_ms": 304.302
+          },
+          "rust": {
+            "process_cpu_percent": 27.934,
+            "main_thread_run_ms": 246.26,
+            "main_thread_runnable_wait_ms": 296.901
+          }
+        }
+      }
+    }
+  ],
+  "control_difference": "UI wrapper changes exactly the Settings executable path; original Rust/compositor binaries, boot, system/profile, landscape, tracing and sampler are otherwise matched. Native path still invokes bounded pgrep; no priority changes.",
+  "qualification": "All three median presentation gaps improve and status CPU cost falls; worst presentation tail does not uniformly improve. Candidate second pull134.129ms exceeds baseline worst114.973ms. Retain all discards/tails. No universal smoothness/60fps/optical/contact bound or physical acceptance.",
+  "physical_acceptance": "PENDING",
+  "persistent_promotion": "PENDING"
+}

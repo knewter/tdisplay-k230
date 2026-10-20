@@ -1,0 +1,67 @@
+{
+  "utc": "2026-10-20T20:44:22.415886+00:00",
+  "status": "PASS",
+  "process_cost": {
+    "baseline": [
+      {
+        "elapsed_ms": 892.829296,
+        "user_cpu_ms": 693.49199999999996,
+        "system_cpu_ms": 120.59699999999999,
+        "exit_code": 0
+      },
+      {
+        "elapsed_ms": 891.29977699999995,
+        "user_cpu_ms": 684.37399999999991,
+        "system_cpu_ms": 133.21000000000004,
+        "exit_code": 0
+      },
+      {
+        "elapsed_ms": 886.87029500000006,
+        "user_cpu_ms": 689.95800000000031,
+        "system_cpu_ms": 123.79600000000002,
+        "exit_code": 0
+      }
+    ],
+    "candidate": [
+      {
+        "elapsed_ms": 102.015815,
+        "user_cpu_ms": 31.747999999999998,
+        "system_cpu_ms": 54.173999999999985,
+        "exit_code": 0
+      },
+      {
+        "elapsed_ms": 101.75840700000001,
+        "user_cpu_ms": 46.289999999999942,
+        "system_cpu_ms": 39.207999999999963,
+        "exit_code": 0
+      },
+      {
+        "elapsed_ms": 103.23336999999999,
+        "user_cpu_ms": 52.567999999999948,
+        "system_cpu_ms": 33.518999999999963,
+        "exit_code": 0
+      }
+    ]
+  },
+  "limits": "Three alternating fresh-process calls per wrapper, outside animation; source/page caches may already be warm. Child CPU includes reaped descendants. No optical or contact timing.",
+  "fresh_external_brightness": {
+    "changed_percent": 99,
+    "expected_percent": 99,
+    "baseline_and_candidate_match": true,
+    "restored_percent": 100,
+    "raw_brightness_restored": true
+  },
+  "safe_action_route": {
+    "invalid_brightness": {
+      "state": "failed",
+      "error": "invalid-value"
+    },
+    "reboot_request_state": "confirmation",
+    "reboot_cancel_state": "cancelled",
+    "power_action_executed": false,
+    "confirmation_contents_discarded": true
+  },
+  "finished_at": "2026-10-20T20:44:30.510875+00:00",
+  "source_sha256": "fc874eb3dfe67f42c0e53b22f36b2cf278853e3458607ea5d3cfb4a39834374c",
+  "root_available_bytes": 176816128
+}

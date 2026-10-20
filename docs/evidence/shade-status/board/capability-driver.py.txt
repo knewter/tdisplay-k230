@@ -1,0 +1,37 @@
+from pathlib import Path
+import datetime,json,os,pwd,resource,subprocess,time,hashlib
+C=json.loads(Path('/run/pane23-shade-status/identity.json').read_text());account=pwd.getpwnam('shell')
+def user():os.setgroups([]);os.setgid(account.pw_gid);os.setuid(account.pw_uid)
+env={**os.environ,'K230_SETTINGS_REDUCED_MOTION':'0'}
+def invoke(command,*args):
+ start=time.monotonic_ns();r0=resource.getrusage(resource.RUSAGE_CHILDREN)
+ p=subprocess.run([command,*args],preexec_fn=user,stdin=subprocess.DEVNULL,stdout=subprocess.PIPE,stderr=subprocess.DEVNULL,env=env,timeout=4)
+ r1=resource.getrusage(resource.RUSAGE_CHILDREN);elapsed=(time.monotonic_ns()-start)/1e6
+ assert p.returncode==0 and len(p.stdout)<=16384
+ return json.loads(p.stdout),{'elapsed_ms':elapsed,'user_cpu_ms':(r1.ru_utime-r0.ru_utime)*1000,'system_cpu_ms':(r1.ru_stime-r0.ru_stime)*1000,'exit_code':p.returncode}
+results={'utc':datetime.datetime.now(datetime.timezone.utc).isoformat(),'status':'IN_PROGRESS','process_cost':{'baseline':[],'candidate':[]},'limits':'Three alternating fresh-process calls per wrapper, outside animation; source/page caches may already be warm. Child CPU includes reaped descendants. No optical or contact timing.'}
+for i in range(3):
+ a,ar=invoke(C['baseline_settings'],'status');b,br=invoke(C['candidate_settings'],'status');assert a==b
+ results['process_cost']['baseline'].append(ar);results['process_cost']['candidate'].append(br)
+paths=list(Path('/sys/class/backlight').iterdir());assert len(paths)==1;panel=paths[0];maximum=int((panel/'max_brightness').read_text());original=int((panel/'brightness').read_text());actual=int((panel/'actual_brightness').read_text());assert actual==original and maximum>0
+step=max(1,(maximum+99)//100);changed=original-step if original>=step else min(maximum,original+step);assert changed!=original
+try:
+ (panel/'brightness').write_text(str(changed));deadline=time.monotonic()+3
+ while int((panel/'actual_brightness').read_text())!=changed and time.monotonic()<deadline:time.sleep(.02)
+ a,_=invoke(C['baseline_settings'],'status');b,_=invoke(C['candidate_settings'],'status');assert a==b and b['controls']['brightness']['value']==round(changed*100/maximum)
+ results['fresh_external_brightness']={'changed_percent':b['controls']['brightness']['value'],'expected_percent':round(changed*100/maximum),'baseline_and_candidate_match':True}
+finally:
+ (panel/'brightness').write_text(str(original));deadline=time.monotonic()+3
+ while int((panel/'actual_brightness').read_text())!=original and time.monotonic()<deadline:time.sleep(.02)
+ assert int((panel/'actual_brightness').read_text())==original
+b,_=invoke(C['candidate_settings'],'status');assert b['controls']['brightness']['value']==round(original*100/maximum);results['fresh_external_brightness'].update(restored_percent=b['controls']['brightness']['value'],raw_brightness_restored=True)
+invalid,_=invoke(C['candidate_settings'],'brightness','101');assert invalid=={'state':'failed','error':'invalid-value'}
+request,_=invoke(C['candidate_settings'],'request','reboot');assert request['state']=='confirmation' and request['action']=='reboot';cancel,_=invoke(C['candidate_settings'],'cancel',request['token']);assert cancel['state']=='cancelled'
+results['safe_action_route']={'invalid_brightness':invalid,'reboot_request_state':request['state'],'reboot_cancel_state':cancel['state'],'power_action_executed':False,'confirmation_contents_discarded':True}
+sha=lambda p:hashlib.file_digest(Path(p).open('rb'),'sha256').hexdigest()
+assert sha(C['native']['path'])==C['native']['sha256']
+for n,h in C['boot_files'].items():assert sha('/boot/'+n)==h
+for n,h in C['tracing'].items():assert sha('/sys/kernel/tracing/'+n)==h
+assert sha('/sys/kernel/notes')==C['kernel_notes_sha256'];assert all(os.path.realpath(p)==s for p,s in C['systems'].items())
+results.update(status='PASS',finished_at=datetime.datetime.now(datetime.timezone.utc).isoformat(),source_sha256=sha(__file__),root_available_bytes=os.statvfs('/').f_bavail*os.statvfs('/').f_frsize)
+print(json.dumps(results,indent=2))

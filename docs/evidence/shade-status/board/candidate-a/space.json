@@ -1,0 +1,12 @@
+{
+  "/var/tmp": {
+    "block_size": 4096,
+    "free_blocks": 210886,
+    "unprivileged_available_blocks": 43168
+  },
+  "/run/shell": {
+    "block_size": 4096,
+    "free_blocks": 57641,
+    "unprivileged_available_blocks": 57641
+  }
+}

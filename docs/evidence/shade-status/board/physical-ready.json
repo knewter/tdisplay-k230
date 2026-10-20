@@ -1,0 +1,78 @@
+{
+  "result": "CANDIDATE_READY_FOR_PHYSICAL_PULL",
+  "before": {
+    "utc": "2026-10-20T20:46:06.207491+00:00",
+    "sway_pid": 1046,
+    "sway_sha256": "9464072ac100e77500c7b6113920d2c2ed14e022612eddbc38a037ce9b006670",
+    "rust_pid": 3509,
+    "rust_sha256": "32c8c445eb0e9467114880d0084762aa6649e69b1274ba7f87d24e300bee9148",
+    "settings_wrapper": "/nix/store/46sw7cwipb8g0pfjqa7vry4x1x65345g-k230-settings/bin/k230-settings",
+    "trace_environment_absent": true,
+    "outputs": [
+      {
+        "name": "DSI-1",
+        "active": true,
+        "transform": "270",
+        "scale": 1.0,
+        "current_mode": {
+          "width": 568,
+          "height": 1232,
+          "refresh": 52190,
+          "picture_aspect_ratio": "none"
+        },
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "width": 1232,
+          "height": 568
+        }
+      }
+    ],
+    "services": [
+      "active",
+      "active"
+    ]
+  },
+  "after": {
+    "utc": "2026-10-20T20:46:14.836081+00:00",
+    "sway_pid": 1046,
+    "sway_sha256": "9464072ac100e77500c7b6113920d2c2ed14e022612eddbc38a037ce9b006670",
+    "rust_pid": 3724,
+    "rust_sha256": "32c8c445eb0e9467114880d0084762aa6649e69b1274ba7f87d24e300bee9148",
+    "settings_wrapper": "/nix/store/kdc5bmnqf6n5px5nfsv0iz8l02d1azah-k230-settings/bin/k230-settings",
+    "trace_environment_absent": true,
+    "outputs": [
+      {
+        "name": "DSI-1",
+        "active": true,
+        "transform": "270",
+        "scale": 1.0,
+        "current_mode": {
+          "width": 568,
+          "height": 1232,
+          "refresh": 52190,
+          "picture_aspect_ratio": "none"
+        },
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "width": 1232,
+          "height": 568
+        }
+      }
+    ],
+    "services": [
+      "active",
+      "active"
+    ]
+  },
+  "candidate_system": "/nix/store/p501mchy0dq9lyjnaxwkx5s2pdm4i2yj-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "candidate_ui_wrapper": "/nix/store/52ad5p0y2g0ynskm9bb7c0qbw4glh144-k230-shell-rust/bin/k230-shell-rust",
+  "candidate_settings": "/nix/store/kdc5bmnqf6n5px5nfsv0iz8l02d1azah-k230-settings/bin/k230-settings",
+  "candidate_gc_root": "/var/lib/k230/shade-status-candidate-root",
+  "trial_dropin": "/run/systemd/system/shell-ui.service.d/95-pane23-shade-status-candidate.conf",
+  "boot_and_persistent_system_changed": false,
+  "landscape_retained": true,
+  "ordinary_reboot_returns_to": "existing hpmz persistent system until separately accepted promotion",
+  "source_sha256": "8db193888acfac7754f549d3dfcda183baaaaa6afbd1043992334c5996e6f25f"
+}

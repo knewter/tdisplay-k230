@@ -1,0 +1,3030 @@
+{
+  "clock_ticks_per_second": 100,
+  "samples": [
+    {
+      "monotonic_ns": 2771712547458,
+      "processes": {
+        "sway": {
+          "pid": 1046,
+          "state": "R",
+          "cpu_ticks": 2718,
+          "schedstat": [
+            27081580426,
+            13763462491,
+            171185
+          ]
+        },
+        "rust": {
+          "pid": 3421,
+          "state": "S",
+          "cpu_ticks": 204,
+          "schedstat": [
+            1836167748,
+            1659577903,
+            1544
+          ]
+        },
+        "observer": {
+          "pid": 3361,
+          "state": "S",
+          "cpu_ticks": 388,
+          "schedstat": [
+            3883487237,
+            566379255,
+            1576
+          ]
+        }
+      },
+      "cpu0_ticks": [
+        15001,
+        0,
+        12190,
+        277084,
+        1488,
+        2813,
+        2276,
+        0,
+        0,
+        0
+      ],
+      "settings_status_children": {}
+    },
+    {
+      "monotonic_ns": 2771846330458,
+      "processes": {
+        "sway": {
+          "pid": 1046,
+          "state": "R",
+          "cpu_ticks": 2718,
+          "schedstat": [
+            27082948613,
+            13764399566,
+            171193
+          ]
+        },
+        "rust": {
+          "pid": 3421,
+          "state": "S",
+          "cpu_ticks": 205,
+          "schedstat": [
+            1836519934,
+            1659994569,
+            1546
+          ]
+        },
+        "observer": {
+          "pid": 3361,
+          "state": "S",
+          "cpu_ticks": 389,
+          "schedstat": [
+            3883487237,
+            566379255,
+            1576
+          ]
+        }
+      },
+      "cpu0_ticks": [
+        15012,
+        0,
+        12191,
+        277084,
+        1488,
+        2814,
+        2276,
+        0,
+        0,
+        0
+      ],
+      "settings_status_children": {}
+    },
+    {
+      "monotonic_ns": 2771975927680,
+      "processes": {
+        "sway": {
+          "pid": 1046,
+          "state": "S",
+          "cpu_ticks": 2718,
+          "schedstat": [
+            27084191981,
+            13765373789,
+            171201
+          ]
+        },
+        "rust": {
+          "pid": 3421,
+          "state": "S",
+          "cpu_ticks": 205,
+          "schedstat": [
+            1836690341,
+            1660041569,
+            1547
+          ]
+        },
+        "observer": {
+          "pid": 3361,
+          "state": "S",
+          "cpu_ticks": 390,
+          "schedstat": [
+            3883487237,
+            566379255,
+            1576
+          ]
+        }
+      },
+      "cpu0_ticks": [
+        15023,
+        0,
+        12193,
+        277084,
+        1488,
+        2814,
+        2276,
+        0,
+        0,
+        0
+      ],
+      "settings_status_children": {}
+    },
+    {
+      "monotonic_ns": 2772099971939,
+      "processes": {
+        "sway": {
+          "pid": 1046,
+          "state": "S",
+          "cpu_ticks": 2718,
+          "schedstat": [
+            27085572204,
+            13766379790,
+            171209
+          ]
+        },
+        "rust": {
+          "pid": 3421,
+          "state": "S",
+          "cpu_ticks": 205,
+          "schedstat": [
+            1836993748,
+            1660081902,
+            1548
+          ]
+        },
+        "observer": {
+          "pid": 3361,
+          "state": "S",
+          "cpu_ticks": 391,
+          "schedstat": [
+            3883487237,
+            566379255,
+            1576
+          ]
+        }
+      },
+      "cpu0_ticks": [
+        15032,
+        0,
+        12195,
+        277084,
+        1488,
+        2815,
+        2276,
+        0,
+        0,
+        0
+      ],
+      "settings_status_children": {}
+    },
+    {
+      "monotonic_ns": 2772228964569,
+      "processes": {
+        "sway": {
+          "pid": 1046,
+          "state": "S",
+          "cpu_ticks": 2720,
+          "schedstat": [
+            27087326648,
+            13767745051,
+            171221
+          ]
+        },
+        "rust": {
+          "pid": 3421,
+          "state": "S",
+          "cpu_ticks": 205,
+          "schedstat": [
+            1837147155,
+            1660122643,
+            1549
+          ]
+        },
+        "observer": {
+          "pid": 3361,
+          "state": "S",
+          "cpu_ticks": 393,
+          "schedstat": [
+            3883487237,
+            566379255,
+            1576
+          ]
+        }
+      },
+      "cpu0_ticks": [
+        15041,
+        0,
+        12198,
+        277084,
+        1488,
+        2815,
+        2276,
+        0,
+        0,
+        0
+      ],
+      "settings_status_children": {}
+    },
+    {
+      "monotonic_ns": 2772356533569,
+      "processes": {
+        "sway": {
+          "pid": 1046,
+          "state": "S",
+          "cpu_ticks": 2720,
+          "schedstat": [
+            27088683577,
+            13769343015,
+            171229
+          ]
+        },
+        "rust": {
+          "pid": 3421,
+          "state": "S",
+          "cpu_ticks": 205,
+          "schedstat": [
+            1837439822,
+            1663910940,
+            1551
+          ]
+        },
+        "observer": {
+          "pid": 3361,
+          "state": "S",
+          "cpu_ticks": 394,
+          "schedstat": [
+            3883487237,
+            566379255,
+            1576
+          ]
+        }
+      },
+      "cpu0_ticks": [
+        15052,
+        0,
+        12200,
+        277084,
+        1488,
+        2815,
+        2276,
+        0,
+        0,
+        0
+      ],
+      "settings_status_children": {}
+    },
+    {
+      "monotonic_ns": 2772482737754,
+      "processes": {
+        "sway": {
+          "pid": 1046,
+          "state": "S",
+          "cpu_ticks": 2720,
+          "schedstat": [
+            27089922798,
+            13773875718,
+            171236
+          ]
+        },
+        "rust": {
+          "pid": 3421,
+          "state": "S",
+          "cpu_ticks": 205,
+          "schedstat": [
+            1837585267,
+            1663939644,
+            1552
+          ]
+        },
+        "observer": {
+          "pid": 3361,
+          "state": "S",
+          "cpu_ticks": 396,
+          "schedstat": [
+            3883487237,
+            566379255,
+            1576
+          ]
+        }
+      },
+      "cpu0_ticks": [
+        15062,
+        0,
+        12202,
+        277084,
+        1488,
+        2816,
+        2276,
+        0,
+        0,
+        0
+      ],
+      "settings_status_children": {}
+    },
+    {
+      "monotonic_ns": 2772608258791,
+      "processes": {
+        "sway": {
+          "pid": 1046,
+          "state": "S",
+          "cpu_ticks": 2720,
+          "schedstat": [
+            27091309763,
+            13775848459,
+            171244
+          ]
+        },
+        "rust": {
+          "pid": 3421,
+          "state": "S",
+          "cpu_ticks": 205,
+          "schedstat": [
+            1838204674,
+            1664126755,
+            1553
+          ]
+        },
+        "observer": {
+          "pid": 3361,
+          "state": "S",
+          "cpu_ticks": 397,
+          "schedstat": [
+            3883487237,
+            566379255,
+            1576
+          ]
+        }
+      },
+      "cpu0_ticks": [
+        15072,
+        0,
+        12205,
+        277084,
+        1488,
+        2816,
+        2276,
+        0,
+        0,
+        0
+      ],
+      "settings_status_children": {}
+    },
+    {
+      "monotonic_ns": 2772739096606,
+      "processes": {
+        "sway": {
+          "pid": 1046,
+          "state": "S",
+          "cpu_ticks": 2720,
+          "schedstat": [
+            27093008802,
+            13777878127,
+            171252
+          ]
+        },
+        "rust": {
+          "pid": 3421,
+          "state": "S",
+          "cpu_ticks": 205,
+          "schedstat": [
+            1838545266,
+            1664211125,
+            1555
+          ]
+        },
+        "observer": {
+          "pid": 3361,
+          "state": "S",
+          "cpu_ticks": 398,
+          "schedstat": [
+            3883487237,
+            566379255,
+            1576
+          ]
+        }
+      },
+      "cpu0_ticks": [
+        15083,
+        0,
+        12206,
+        277084,
+        1488,
+        2817,
+        2276,
+        0,
+        0,
+        0
+      ],
+      "settings_status_children": {}
+    },
+    {
+      "monotonic_ns": 2772865262458,
+      "processes": {
+        "sway": {
+          "pid": 1046,
+          "state": "S",
+          "cpu_ticks": 2720,
+          "schedstat": [
+            27094382097,
+            13778217719,
+            171261
+          ]
+        },
+        "rust": {
+          "pid": 3421,
+          "state": "S",
+          "cpu_ticks": 205,
+          "schedstat": [
+            1838698229,
+            1664253347,
+            1556
+          ]
+        },
+        "observer": {
+          "pid": 3361,
+          "state": "S",
+          "cpu_ticks": 399,
+          "schedstat": [
+            3883487237,
+            566379255,
+            1576
+          ]
+        }
+      },
+      "cpu0_ticks": [
+        15095,
+        0,
+        12207,
+        277084,
+        1488,
+        2817,
+        2276,
+        0,
+        0,
+        0
+      ],
+      "settings_status_children": {}
+    },
+    {
+      "monotonic_ns": 2772990780198,
+      "processes": {
+        "sway": {
+          "pid": 1046,
+          "state": "S",
+          "cpu_ticks": 2720,
+          "schedstat": [
+            27096071281,
+            13780627088,
+            171268
+          ]
+        },
+        "rust": {
+          "pid": 3421,
+          "state": "R",
+          "cpu_ticks": 208,
+          "schedstat": [
+            1865083154,
+            1708555720,
+            1603
+          ]
+        },
+        "observer": {
+          "pid": 3361,
+          "state": "S",
+          "cpu_ticks": 400,
+          "schedstat": [
+            3883487237,
+            566379255,
+            1576
+          ]
+        }
+      },
+      "cpu0_ticks": [
+        15104,
+        0,
+        12209,
+        277085,
+        1488,
+        2817,
+        2277,
+        0,
+        0,
+        0
+      ],
+      "settings_status_children": {}
+    },
+    {
+      "monotonic_ns": 2773122851013,
+      "processes": {
+        "sway": {
+          "pid": 1046,
+          "state": "R",
+          "cpu_ticks": 2722,
+          "schedstat": [
+            27114877024,
+            13807025718,
+            171312
+          ]
+        },
+        "rust": {
+          "pid": 3421,
+          "state": "R",
+          "cpu_ticks": 211,
+          "schedstat": [
+            1897544339,
+            1773839719,
+            1669
+          ]
+        },
+        "observer": {
+          "pid": 3361,
+          "state": "S",
+          "cpu_ticks": 402,
+          "schedstat": [
+            3883487237,
+            566379255,
+            1576
+          ]
+        }
+      },
+      "cpu0_ticks": [
+        15111,
+        0,
+        12214,
+        277085,
+        1488,
+        2818,
+        2277,
+        0,
+        0,
+        0
+      ],
+      "settings_status_children": {}
+    },
+    {
+      "monotonic_ns": 2773257239494,
+      "processes": {
+        "sway": {
+          "pid": 1046,
+          "state": "S",
+          "cpu_ticks": 2724,
+          "schedstat": [
+            27144070430,
+            13879459348,
+            171363
+          ]
+        },
+        "rust": {
+          "pid": 3421,
+          "state": "R",
+          "cpu_ticks": 214,
+          "schedstat": [
+            1928855750,
+            1854406717,
+            1726
+          ]
+        },
+        "observer": {
+          "pid": 3361,
+          "state": "S",
+          "cpu_ticks": 403,
+          "schedstat": [
+            3883487237,
+            566379255,
+            1576
+          ]
+        }
+      },
+      "cpu0_ticks": [
+        15117,
+        0,
+        12220,
+        277086,
+        1488,
+        2819,
+        2277,
+        0,
+        0,
+        0
+      ],
+      "settings_status_children": {}
+    },
+    {
+      "monotonic_ns": 2773387117568,
+      "processes": {
+        "sway": {
+          "pid": 1046,
+          "state": "S",
+          "cpu_ticks": 2729,
+          "schedstat": [
+            27189002429,
+            13919509534,
+            171430
+          ]
+        },
+        "rust": {
+          "pid": 3421,
+          "state": "S",
+          "cpu_ticks": 219,
+          "schedstat": [
+            1972165490,
+            1894951423,
+            1781
+          ]
+        },
+        "observer": {
+          "pid": 3361,
+          "state": "S",
+          "cpu_ticks": 404,
+          "schedstat": [
+            3883487237,
+            566379255,
+            1576
+          ]
+        }
+      },
+      "cpu0_ticks": [
+        15126,
+        0,
+        12222,
+        277087,
+        1488,
+        2820,
+        2277,
+        0,
+        0,
+        0
+      ],
+      "settings_status_children": {}
+    },
+    {
+      "monotonic_ns": 2773511920272,
+      "processes": {
+        "sway": {
+          "pid": 1046,
+          "state": "R",
+          "cpu_ticks": 2733,
+          "schedstat": [
+            27231568906,
+            13953444199,
+            171469
+          ]
+        },
+        "rust": {
+          "pid": 3421,
+          "state": "S",
+          "cpu_ticks": 222,
+          "schedstat": [
+            2010028377,
+            1932574350,
+            1826
+          ]
+        },
+        "observer": {
+          "pid": 3361,
+          "state": "S",
+          "cpu_ticks": 406,
+          "schedstat": [
+            3883487237,
+            566379255,
+            1576
+          ]
+        }
+      },
+      "cpu0_ticks": [
+        15136,
+        0,
+        12222,
+        277089,
+        1488,
+        2820,
+        2277,
+        0,
+        0,
+        0
+      ],
+      "settings_status_children": {}
+    },
+    {
+      "monotonic_ns": 2773636168716,
+      "processes": {
+        "sway": {
+          "pid": 1046,
+          "state": "R",
+          "cpu_ticks": 2737,
+          "schedstat": [
+            27264104904,
+            13990065090,
+            171506
+          ]
+        },
+        "rust": {
+          "pid": 3421,
+          "state": "R",
+          "cpu_ticks": 227,
+          "schedstat": [
+            2046997084,
+            1968810612,
+            1884
+          ]
+        },
+        "observer": {
+          "pid": 3361,
+          "state": "S",
+          "cpu_ticks": 407,
+          "schedstat": [
+            3883487237,
+            566379255,
+            1576
+          ]
+        }
+      },
+      "cpu0_ticks": [
+        15144,
+        0,
+        12225,
+        277092,
+        1488,
+        2821,
+        2277,
+        0,
+        0,
+        0
+      ],
+      "settings_status_children": {}
+    },
+    {
+      "monotonic_ns": 2773764164272,
+      "processes": {
+        "sway": {
+          "pid": 1046,
+          "state": "R",
+          "cpu_ticks": 2741,
+          "schedstat": [
+            27306168860,
+            14036587760,
+            171558
+          ]
+        },
+        "rust": {
+          "pid": 3421,
+          "state": "R",
+          "cpu_ticks": 230,
+          "schedstat": [
+            2083199937,
+            2008554130,
+            1946
+          ]
+        },
+        "observer": {
+          "pid": 3361,
+          "state": "S",
+          "cpu_ticks": 408,
+          "schedstat": [
+            3883487237,
+            566379255,
+            1576
+          ]
+        }
+      },
+      "cpu0_ticks": [
+        15151,
+        0,
+        12227,
+        277094,
+        1488,
+        2821,
+        2277,
+        0,
+        0,
+        0
+      ],
+      "settings_status_children": {}
+    },
+    {
+      "monotonic_ns": 2773893124901,
+      "processes": {
+        "sway": {
+          "pid": 1046,
+          "state": "S",
+          "cpu_ticks": 2745,
+          "schedstat": [
+            27349674706,
+            14074134911,
+            171605
+          ]
+        },
+        "rust": {
+          "pid": 3421,
+          "state": "R",
+          "cpu_ticks": 233,
+          "schedstat": [
+            2115487933,
+            2039577720,
+            1991
+          ]
+        },
+        "observer": {
+          "pid": 3361,
+          "state": "S",
+          "cpu_ticks": 409,
+          "schedstat": [
+            3883487237,
+            566379255,
+            1576
+          ]
+        }
+      },
+      "cpu0_ticks": [
+        15160,
+        0,
+        12228,
+        277097,
+        1488,
+        2821,
+        2277,
+        0,
+        0,
+        0
+      ],
+      "settings_status_children": {}
+    },
+    {
+      "monotonic_ns": 2774019284864,
+      "processes": {
+        "sway": {
+          "pid": 1046,
+          "state": "S",
+          "cpu_ticks": 2750,
+          "schedstat": [
+            27392454261,
+            14109327614,
+            171649
+          ]
+        },
+        "rust": {
+          "pid": 3421,
+          "state": "S",
+          "cpu_ticks": 236,
+          "schedstat": [
+            2150136381,
+            2079534721,
+            2033
+          ]
+        },
+        "observer": {
+          "pid": 3361,
+          "state": "S",
+          "cpu_ticks": 411,
+          "schedstat": [
+            3883487237,
+            566379255,
+            1576
+          ]
+        }
+      },
+      "cpu0_ticks": [
+        15169,
+        0,
+        12230,
+        277099,
+        1488,
+        2822,
+        2277,
+        0,
+        0,
+        0
+      ],
+      "settings_status_children": {}
+    },
+    {
+      "monotonic_ns": 2774141408901,
+      "processes": {
+        "sway": {
+          "pid": 1046,
+          "state": "R",
+          "cpu_ticks": 2754,
+          "schedstat": [
+            27434016744,
+            14130722353,
+            171684
+          ]
+        },
+        "rust": {
+          "pid": 3421,
+          "state": "R",
+          "cpu_ticks": 239,
+          "schedstat": [
+            2176566822,
+            2106195391,
+            2073
+          ]
+        },
+        "observer": {
+          "pid": 3361,
+          "state": "S",
+          "cpu_ticks": 412,
+          "schedstat": [
+            3883487237,
+            566379255,
+            1576
+          ]
+        }
+      },
+      "cpu0_ticks": [
+        15177,
+        0,
+        12231,
+        277103,
+        1488,
+        2822,
+        2277,
+        0,
+        0,
+        0
+      ],
+      "settings_status_children": {}
+    },
+    {
+      "monotonic_ns": 2774266957568,
+      "processes": {
+        "sway": {
+          "pid": 1046,
+          "state": "S",
+          "cpu_ticks": 2755,
+          "schedstat": [
+            27445371153,
+            14139503650,
+            171705
+          ]
+        },
+        "rust": {
+          "pid": 3421,
+          "state": "S",
+          "cpu_ticks": 240,
+          "schedstat": [
+            2183394562,
+            2117837944,
+            2084
+          ]
+        },
+        "observer": {
+          "pid": 3361,
+          "state": "S",
+          "cpu_ticks": 414,
+          "schedstat": [
+            3883487237,
+            566379255,
+            1576
+          ]
+        }
+      },
+      "cpu0_ticks": [
+        15179,
+        0,
+        12232,
+        277113,
+        1488,
+        2822,
+        2277,
+        0,
+        0,
+        0
+      ],
+      "settings_status_children": {}
+    },
+    {
+      "monotonic_ns": 2774378960605,
+      "processes": {
+        "sway": {
+          "pid": 1046,
+          "state": "S",
+          "cpu_ticks": 2755,
+          "schedstat": [
+            27446417559,
+            14139585317,
+            171712
+          ]
+        },
+        "rust": {
+          "pid": 3421,
+          "state": "S",
+          "cpu_ticks": 240,
+          "schedstat": [
+            2183671859,
+            2117877314,
+            2086
+          ]
+        },
+        "observer": {
+          "pid": 3361,
+          "state": "S",
+          "cpu_ticks": 415,
+          "schedstat": [
+            3883487237,
+            566379255,
+            1576
+          ]
+        }
+      },
+      "cpu0_ticks": [
+        15180,
+        0,
+        12232,
+        277125,
+        1488,
+        2822,
+        2277,
+        0,
+        0,
+        0
+      ],
+      "settings_status_children": {}
+    },
+    {
+      "monotonic_ns": 2774490181679,
+      "processes": {
+        "sway": {
+          "pid": 1046,
+          "state": "S",
+          "cpu_ticks": 2755,
+          "schedstat": [
+            27447465336,
+            14139815650,
+            171719
+          ]
+        },
+        "rust": {
+          "pid": 3421,
+          "state": "S",
+          "cpu_ticks": 240,
+          "schedstat": [
+            2183816119,
+            2117877314,
+            2087
+          ]
+        },
+        "observer": {
+          "pid": 3361,
+          "state": "S",
+          "cpu_ticks": 416,
+          "schedstat": [
+            3883487237,
+            566379255,
+            1576
+          ]
+        }
+      },
+      "cpu0_ticks": [
+        15182,
+        0,
+        12232,
+        277136,
+        1488,
+        2823,
+        2277,
+        0,
+        0,
+        0
+      ],
+      "settings_status_children": {}
+    },
+    {
+      "monotonic_ns": 2774601993568,
+      "processes": {
+        "sway": {
+          "pid": 1046,
+          "state": "S",
+          "cpu_ticks": 2755,
+          "schedstat": [
+            27448485930,
+            14139815650,
+            171726
+          ]
+        },
+        "rust": {
+          "pid": 3421,
+          "state": "S",
+          "cpu_ticks": 240,
+          "schedstat": [
+            2184450192,
+            2118865500,
+            2089
+          ]
+        },
+        "observer": {
+          "pid": 3361,
+          "state": "S",
+          "cpu_ticks": 417,
+          "schedstat": [
+            3883487237,
+            566379255,
+            1576
+          ]
+        }
+      },
+      "cpu0_ticks": [
+        15183,
+        0,
+        12232,
+        277146,
+        1488,
+        2823,
+        2277,
+        0,
+        0,
+        0
+      ],
+      "settings_status_children": {}
+    },
+    {
+      "monotonic_ns": 2774713507864,
+      "processes": {
+        "sway": {
+          "pid": 1046,
+          "state": "S",
+          "cpu_ticks": 2755,
+          "schedstat": [
+            27449634966,
+            14139827576,
+            171732
+          ]
+        },
+        "rust": {
+          "pid": 3421,
+          "state": "S",
+          "cpu_ticks": 240,
+          "schedstat": [
+            2184595711,
+            2118865500,
+            2090
+          ]
+        },
+        "observer": {
+          "pid": 3361,
+          "state": "S",
+          "cpu_ticks": 418,
+          "schedstat": [
+            3883487237,
+            566379255,
+            1576
+          ]
+        }
+      },
+      "cpu0_ticks": [
+        15184,
+        0,
+        12232,
+        277158,
+        1488,
+        2823,
+        2277,
+        0,
+        0,
+        0
+      ],
+      "settings_status_children": {}
+    },
+    {
+      "monotonic_ns": 2774825480679,
+      "processes": {
+        "sway": {
+          "pid": 1046,
+          "state": "S",
+          "cpu_ticks": 2755,
+          "schedstat": [
+            27450715853,
+            14139890873,
+            171739
+          ]
+        },
+        "rust": {
+          "pid": 3421,
+          "state": "S",
+          "cpu_ticks": 240,
+          "schedstat": [
+            2184738045,
+            2118865500,
+            2091
+          ]
+        },
+        "observer": {
+          "pid": 3361,
+          "state": "S",
+          "cpu_ticks": 419,
+          "schedstat": [
+            3883487237,
+            566379255,
+            1576
+          ]
+        }
+      },
+      "cpu0_ticks": [
+        15185,
+        0,
+        12233,
+        277169,
+        1488,
+        2823,
+        2277,
+        0,
+        0,
+        0
+      ],
+      "settings_status_children": {}
+    },
+    {
+      "monotonic_ns": 2774937415271,
+      "processes": {
+        "sway": {
+          "pid": 1046,
+          "state": "S",
+          "cpu_ticks": 2755,
+          "schedstat": [
+            27451766670,
+            14140039466,
+            171746
+          ]
+        },
+        "rust": {
+          "pid": 3421,
+          "state": "S",
+          "cpu_ticks": 240,
+          "schedstat": [
+            2184875934,
+            2118865500,
+            2092
+          ]
+        },
+        "observer": {
+          "pid": 3361,
+          "state": "S",
+          "cpu_ticks": 420,
+          "schedstat": [
+            3883487237,
+            566379255,
+            1576
+          ]
+        }
+      },
+      "cpu0_ticks": [
+        15186,
+        0,
+        12233,
+        277180,
+        1488,
+        2823,
+        2277,
+        0,
+        0,
+        0
+      ],
+      "settings_status_children": {}
+    },
+    {
+      "monotonic_ns": 2775049986716,
+      "processes": {
+        "sway": {
+          "pid": 1046,
+          "state": "S",
+          "cpu_ticks": 2755,
+          "schedstat": [
+            27453521006,
+            14147881279,
+            171754
+          ]
+        },
+        "rust": {
+          "pid": 3421,
+          "state": "R",
+          "cpu_ticks": 243,
+          "schedstat": [
+            2208482822,
+            2153439091,
+            2124
+          ]
+        },
+        "observer": {
+          "pid": 3361,
+          "state": "S",
+          "cpu_ticks": 422,
+          "schedstat": [
+            3883487237,
+            566379255,
+            1576
+          ]
+        }
+      },
+      "cpu0_ticks": [
+        15190,
+        0,
+        12235,
+        277185,
+        1488,
+        2823,
+        2277,
+        0,
+        0,
+        0
+      ],
+      "settings_status_children": {}
+    },
+    {
+      "monotonic_ns": 2775181804790,
+      "processes": {
+        "sway": {
+          "pid": 1046,
+          "state": "R",
+          "cpu_ticks": 2758,
+          "schedstat": [
+            27469887823,
+            14172299942,
+            171790
+          ]
+        },
+        "rust": {
+          "pid": 3421,
+          "state": "R",
+          "cpu_ticks": 246,
+          "schedstat": [
+            2240635608,
+            2215375831,
+            2191
+          ]
+        },
+        "observer": {
+          "pid": 3361,
+          "state": "S",
+          "cpu_ticks": 423,
+          "schedstat": [
+            3883487237,
+            566379255,
+            1576
+          ]
+        }
+      },
+      "cpu0_ticks": [
+        15199,
+        0,
+        12239,
+        277185,
+        1488,
+        2824,
+        2277,
+        0,
+        0,
+        0
+      ],
+      "settings_status_children": {}
+    },
+    {
+      "monotonic_ns": 2775311124901,
+      "processes": {
+        "sway": {
+          "pid": 1046,
+          "state": "S",
+          "cpu_ticks": 2760,
+          "schedstat": [
+            27500196335,
+            14238534838,
+            171853
+          ]
+        },
+        "rust": {
+          "pid": 3421,
+          "state": "R",
+          "cpu_ticks": 249,
+          "schedstat": [
+            2266525313,
+            2277444126,
+            2243
+          ]
+        },
+        "observer": {
+          "pid": 3361,
+          "state": "S",
+          "cpu_ticks": 424,
+          "schedstat": [
+            3883487237,
+            566379255,
+            1576
+          ]
+        }
+      },
+      "cpu0_ticks": [
+        15205,
+        0,
+        12244,
+        277186,
+        1488,
+        2825,
+        2277,
+        0,
+        0,
+        0
+      ],
+      "settings_status_children": {}
+    },
+    {
+      "monotonic_ns": 2775440364160,
+      "processes": {
+        "sway": {
+          "pid": 1046,
+          "state": "R",
+          "cpu_ticks": 2765,
+          "schedstat": [
+            27543197453,
+            14280457803,
+            171908
+          ]
+        },
+        "rust": {
+          "pid": 3421,
+          "state": "R",
+          "cpu_ticks": 252,
+          "schedstat": [
+            2301889760,
+            2317941196,
+            2289
+          ]
+        },
+        "observer": {
+          "pid": 3361,
+          "state": "S",
+          "cpu_ticks": 426,
+          "schedstat": [
+            3883487237,
+            566379255,
+            1576
+          ]
+        }
+      },
+      "cpu0_ticks": [
+        15213,
+        0,
+        12246,
+        277189,
+        1488,
+        2826,
+        2277,
+        0,
+        0,
+        0
+      ],
+      "settings_status_children": {}
+    },
+    {
+      "monotonic_ns": 2775565105271,
+      "processes": {
+        "sway": {
+          "pid": 1046,
+          "state": "R",
+          "cpu_ticks": 2769,
+          "schedstat": [
+            27586163121,
+            14317956026,
+            171956
+          ]
+        },
+        "rust": {
+          "pid": 3421,
+          "state": "S",
+          "cpu_ticks": 256,
+          "schedstat": [
+            2338054904,
+            2360703192,
+            2343
+          ]
+        },
+        "observer": {
+          "pid": 3361,
+          "state": "S",
+          "cpu_ticks": 427,
+          "schedstat": [
+            3883487237,
+            566379255,
+            1576
+          ]
+        }
+      },
+      "cpu0_ticks": [
+        15223,
+        0,
+        12246,
+        277191,
+        1488,
+        2826,
+        2277,
+        0,
+        0,
+        0
+      ],
+      "settings_status_children": {}
+    },
+    {
+      "monotonic_ns": 2775690117493,
+      "processes": {
+        "sway": {
+          "pid": 1046,
+          "state": "R",
+          "cpu_ticks": 2773,
+          "schedstat": [
+            27621122678,
+            14358333026,
+            171999
+          ]
+        },
+        "rust": {
+          "pid": 3421,
+          "state": "R",
+          "cpu_ticks": 259,
+          "schedstat": [
+            2376351788,
+            2404292562,
+            2404
+          ]
+        },
+        "observer": {
+          "pid": 3361,
+          "state": "S",
+          "cpu_ticks": 428,
+          "schedstat": [
+            3883487237,
+            566379255,
+            1576
+          ]
+        }
+      },
+      "cpu0_ticks": [
+        15232,
+        0,
+        12248,
+        277193,
+        1488,
+        2826,
+        2277,
+        0,
+        0,
+        0
+      ],
+      "settings_status_children": {}
+    },
+    {
+      "monotonic_ns": 2775820319308,
+      "processes": {
+        "sway": {
+          "pid": 1046,
+          "state": "R",
+          "cpu_ticks": 2777,
+          "schedstat": [
+            27664775493,
+            14391596845,
+            172058
+          ]
+        },
+        "rust": {
+          "pid": 3421,
+          "state": "R",
+          "cpu_ticks": 262,
+          "schedstat": [
+            2409968787,
+            2425777564,
+            2456
+          ]
+        },
+        "observer": {
+          "pid": 3361,
+          "state": "S",
+          "cpu_ticks": 429,
+          "schedstat": [
+            3883487237,
+            566379255,
+            1576
+          ]
+        }
+      },
+      "cpu0_ticks": [
+        15241,
+        0,
+        12249,
+        277196,
+        1488,
+        2827,
+        2277,
+        0,
+        0,
+        0
+      ],
+      "settings_status_children": {}
+    },
+    {
+      "monotonic_ns": 2775945435011,
+      "processes": {
+        "sway": {
+          "pid": 1046,
+          "state": "S",
+          "cpu_ticks": 2781,
+          "schedstat": [
+            27704916533,
+            14431223177,
+            172102
+          ]
+        },
+        "rust": {
+          "pid": 3421,
+          "state": "S",
+          "cpu_ticks": 266,
+          "schedstat": [
+            2447824977,
+            2465546193,
+            2508
+          ]
+        },
+        "observer": {
+          "pid": 3361,
+          "state": "S",
+          "cpu_ticks": 431,
+          "schedstat": [
+            3883487237,
+            566379255,
+            1576
+          ]
+        }
+      },
+      "cpu0_ticks": [
+        15249,
+        0,
+        12250,
+        277198,
+        1488,
+        2827,
+        2277,
+        0,
+        0,
+        0
+      ],
+      "settings_status_children": {}
+    },
+    {
+      "monotonic_ns": 2776075782789,
+      "processes": {
+        "sway": {
+          "pid": 1046,
+          "state": "S",
+          "cpu_ticks": 2785,
+          "schedstat": [
+            27748369124,
+            14473397921,
+            172157
+          ]
+        },
+        "rust": {
+          "pid": 3421,
+          "state": "R",
+          "cpu_ticks": 271,
+          "schedstat": [
+            2483410166,
+            2501938189,
+            2568
+          ]
+        },
+        "observer": {
+          "pid": 3361,
+          "state": "S",
+          "cpu_ticks": 432,
+          "schedstat": [
+            3883487237,
+            566379255,
+            1576
+          ]
+        }
+      },
+      "cpu0_ticks": [
+        15259,
+        0,
+        12251,
+        277200,
+        1488,
+        2828,
+        2277,
+        0,
+        0,
+        0
+      ],
+      "settings_status_children": {}
+    },
+    {
+      "monotonic_ns": 2776202110159,
+      "processes": {
+        "sway": {
+          "pid": 1046,
+          "state": "S",
+          "cpu_ticks": 2790,
+          "schedstat": [
+            27791411269,
+            14503903812,
+            172204
+          ]
+        },
+        "rust": {
+          "pid": 3421,
+          "state": "S",
+          "cpu_ticks": 273,
+          "schedstat": [
+            2511086577,
+            2533194077,
+            2614
+          ]
+        },
+        "observer": {
+          "pid": 3361,
+          "state": "S",
+          "cpu_ticks": 433,
+          "schedstat": [
+            3883487237,
+            566379255,
+            1576
+          ]
+        }
+      },
+      "cpu0_ticks": [
+        15267,
+        0,
+        12251,
+        277204,
+        1488,
+        2828,
+        2277,
+        0,
+        0,
+        0
+      ],
+      "settings_status_children": {}
+    },
+    {
+      "monotonic_ns": 2776325187381,
+      "processes": {
+        "sway": {
+          "pid": 1046,
+          "state": "S",
+          "cpu_ticks": 2791,
+          "schedstat": [
+            27801839159,
+            14511248184,
+            172219
+          ]
+        },
+        "rust": {
+          "pid": 3421,
+          "state": "S",
+          "cpu_ticks": 274,
+          "schedstat": [
+            2518806503,
+            2542698891,
+            2624
+          ]
+        },
+        "observer": {
+          "pid": 3361,
+          "state": "S",
+          "cpu_ticks": 435,
+          "schedstat": [
+            3883487237,
+            566379255,
+            1576
+          ]
+        }
+      },
+      "cpu0_ticks": [
+        15269,
+        0,
+        12253,
+        277213,
+        1488,
+        2828,
+        2278,
+        0,
+        0,
+        0
+      ],
+      "settings_status_children": {}
+    },
+    {
+      "monotonic_ns": 2776437004344,
+      "processes": {
+        "sway": {
+          "pid": 1046,
+          "state": "S",
+          "cpu_ticks": 2791,
+          "schedstat": [
+            27802916567,
+            14511405258,
+            172226
+          ]
+        },
+        "rust": {
+          "pid": 3421,
+          "state": "S",
+          "cpu_ticks": 274,
+          "schedstat": [
+            2519090763,
+            2543053372,
+            2626
+          ]
+        },
+        "observer": {
+          "pid": 3361,
+          "state": "S",
+          "cpu_ticks": 435,
+          "schedstat": [
+            3883487237,
+            566379255,
+            1576
+          ]
+        }
+      },
+      "cpu0_ticks": [
+        15270,
+        0,
+        12253,
+        277225,
+        1488,
+        2828,
+        2278,
+        0,
+        0,
+        0
+      ],
+      "settings_status_children": {}
+    },
+    {
+      "monotonic_ns": 2776549512418,
+      "processes": {
+        "sway": {
+          "pid": 1046,
+          "state": "S",
+          "cpu_ticks": 2791,
+          "schedstat": [
+            27804015308,
+            14511442443,
+            172233
+          ]
+        },
+        "rust": {
+          "pid": 3421,
+          "state": "S",
+          "cpu_ticks": 274,
+          "schedstat": [
+            2519229134,
+            2543053372,
+            2627
+          ]
+        },
+        "observer": {
+          "pid": 3361,
+          "state": "S",
+          "cpu_ticks": 437,
+          "schedstat": [
+            3883487237,
+            566379255,
+            1576
+          ]
+        }
+      },
+      "cpu0_ticks": [
+        15271,
+        0,
+        12253,
+        277237,
+        1488,
+        2829,
+        2278,
+        0,
+        0,
+        0
+      ],
+      "settings_status_children": {}
+    },
+    {
+      "monotonic_ns": 2776661895789,
+      "processes": {
+        "sway": {
+          "pid": 1046,
+          "state": "S",
+          "cpu_ticks": 2791,
+          "schedstat": [
+            27805097753,
+            14511883035,
+            172240
+          ]
+        },
+        "rust": {
+          "pid": 3421,
+          "state": "S",
+          "cpu_ticks": 274,
+          "schedstat": [
+            2519886133,
+            2544039224,
+            2629
+          ]
+        },
+        "observer": {
+          "pid": 3361,
+          "state": "S",
+          "cpu_ticks": 438,
+          "schedstat": [
+            3883487237,
+            566379255,
+            1576
+          ]
+        }
+      },
+      "cpu0_ticks": [
+        15273,
+        0,
+        12254,
+        277247,
+        1488,
+        2829,
+        2278,
+        0,
+        0,
+        0
+      ],
+      "settings_status_children": {}
+    },
+    {
+      "monotonic_ns": 2776778306752,
+      "processes": {
+        "sway": {
+          "pid": 1046,
+          "state": "S",
+          "cpu_ticks": 2791,
+          "schedstat": [
+            27806415528,
+            14511975294,
+            172247
+          ]
+        },
+        "rust": {
+          "pid": 3421,
+          "state": "S",
+          "cpu_ticks": 274,
+          "schedstat": [
+            2520036910,
+            2544039224,
+            2630
+          ]
+        },
+        "observer": {
+          "pid": 3361,
+          "state": "S",
+          "cpu_ticks": 439,
+          "schedstat": [
+            3883487237,
+            566379255,
+            1576
+          ]
+        }
+      },
+      "cpu0_ticks": [
+        15275,
+        0,
+        12254,
+        277258,
+        1488,
+        2829,
+        2278,
+        0,
+        0,
+        0
+      ],
+      "settings_status_children": {}
+    },
+    {
+      "monotonic_ns": 2776890565492,
+      "processes": {
+        "sway": {
+          "pid": 1046,
+          "state": "S",
+          "cpu_ticks": 2791,
+          "schedstat": [
+            27807438934,
+            14513728923,
+            172254
+          ]
+        },
+        "rust": {
+          "pid": 3421,
+          "state": "S",
+          "cpu_ticks": 274,
+          "schedstat": [
+            2520175354,
+            2544039224,
+            2631
+          ]
+        },
+        "observer": {
+          "pid": 3361,
+          "state": "S",
+          "cpu_ticks": 440,
+          "schedstat": [
+            3883487237,
+            566379255,
+            1576
+          ]
+        }
+      },
+      "cpu0_ticks": [
+        15276,
+        0,
+        12255,
+        277268,
+        1488,
+        2829,
+        2278,
+        0,
+        0,
+        0
+      ],
+      "settings_status_children": {}
+    },
+    {
+      "monotonic_ns": 2777002553825,
+      "processes": {
+        "sway": {
+          "pid": 1046,
+          "state": "S",
+          "cpu_ticks": 2791,
+          "schedstat": [
+            27808473895,
+            14513768960,
+            172261
+          ]
+        },
+        "rust": {
+          "pid": 3421,
+          "state": "S",
+          "cpu_ticks": 274,
+          "schedstat": [
+            2520317798,
+            2544039224,
+            2632
+          ]
+        },
+        "observer": {
+          "pid": 3361,
+          "state": "S",
+          "cpu_ticks": 442,
+          "schedstat": [
+            3883487237,
+            566379255,
+            1576
+          ]
+        }
+      },
+      "cpu0_ticks": [
+        15276,
+        0,
+        12255,
+        277279,
+        1488,
+        2829,
+        2278,
+        0,
+        0,
+        0
+      ],
+      "settings_status_children": {}
+    },
+    {
+      "monotonic_ns": 2777115483825,
+      "processes": {
+        "sway": {
+          "pid": 1046,
+          "state": "S",
+          "cpu_ticks": 2792,
+          "schedstat": [
+            27810210006,
+            14520303554,
+            172270
+          ]
+        },
+        "rust": {
+          "pid": 3421,
+          "state": "R",
+          "cpu_ticks": 276,
+          "schedstat": [
+            2541618309,
+            2573162113,
+            2657
+          ]
+        },
+        "observer": {
+          "pid": 3361,
+          "state": "S",
+          "cpu_ticks": 442,
+          "schedstat": [
+            3883487237,
+            566379255,
+            1576
+          ]
+        }
+      },
+      "cpu0_ticks": [
+        15281,
+        0,
+        12257,
+        277283,
+        1488,
+        2829,
+        2278,
+        0,
+        0,
+        0
+      ],
+      "settings_status_children": {}
+    },
+    {
+      "monotonic_ns": 2777243121899,
+      "processes": {
+        "sway": {
+          "pid": 1046,
+          "state": "R",
+          "cpu_ticks": 2793,
+          "schedstat": [
+            27829516821,
+            14558003922,
+            172308
+          ]
+        },
+        "rust": {
+          "pid": 3421,
+          "state": "R",
+          "cpu_ticks": 280,
+          "schedstat": [
+            2575450454,
+            2635745301,
+            2728
+          ]
+        },
+        "observer": {
+          "pid": 3361,
+          "state": "S",
+          "cpu_ticks": 444,
+          "schedstat": [
+            3883487237,
+            566379255,
+            1576
+          ]
+        }
+      },
+      "cpu0_ticks": [
+        15288,
+        0,
+        12262,
+        277283,
+        1488,
+        2830,
+        2278,
+        0,
+        0,
+        0
+      ],
+      "settings_status_children": {}
+    },
+    {
+      "monotonic_ns": 2777373597344,
+      "processes": {
+        "sway": {
+          "pid": 1046,
+          "state": "R",
+          "cpu_ticks": 2796,
+          "schedstat": [
+            27860448897,
+            14632008148,
+            172374
+          ]
+        },
+        "rust": {
+          "pid": 3421,
+          "state": "R",
+          "cpu_ticks": 282,
+          "schedstat": [
+            2602749126,
+            2690507628,
+            2783
+          ]
+        },
+        "observer": {
+          "pid": 3361,
+          "state": "S",
+          "cpu_ticks": 445,
+          "schedstat": [
+            3883487237,
+            566379255,
+            1576
+          ]
+        }
+      },
+      "cpu0_ticks": [
+        15296,
+        0,
+        12266,
+        277284,
+        1488,
+        2831,
+        2278,
+        0,
+        0,
+        0
+      ],
+      "settings_status_children": {}
+    },
+    {
+      "monotonic_ns": 2777500782418,
+      "processes": {
+        "sway": {
+          "pid": 1046,
+          "state": "R",
+          "cpu_ticks": 2800,
+          "schedstat": [
+            27898196044,
+            14678897375,
+            172428
+          ]
+        },
+        "rust": {
+          "pid": 3421,
+          "state": "R",
+          "cpu_ticks": 286,
+          "schedstat": [
+            2642489897,
+            2729778069,
+            2832
+          ]
+        },
+        "observer": {
+          "pid": 3361,
+          "state": "S",
+          "cpu_ticks": 446,
+          "schedstat": [
+            3883487237,
+            566379255,
+            1576
+          ]
+        }
+      },
+      "cpu0_ticks": [
+        15306,
+        0,
+        12266,
+        277286,
+        1488,
+        2832,
+        2278,
+        0,
+        0,
+        0
+      ],
+      "settings_status_children": {}
+    },
+    {
+      "monotonic_ns": 2777629507121,
+      "processes": {
+        "sway": {
+          "pid": 1046,
+          "state": "R",
+          "cpu_ticks": 2804,
+          "schedstat": [
+            27939232964,
+            14709662819,
+            172471
+          ]
+        },
+        "rust": {
+          "pid": 3421,
+          "state": "R",
+          "cpu_ticks": 290,
+          "schedstat": [
+            2678862599,
+            2764804440,
+            2874
+          ]
+        },
+        "observer": {
+          "pid": 3361,
+          "state": "S",
+          "cpu_ticks": 447,
+          "schedstat": [
+            3883487237,
+            566379255,
+            1576
+          ]
+        }
+      },
+      "cpu0_ticks": [
+        15316,
+        0,
+        12267,
+        277289,
+        1488,
+        2832,
+        2278,
+        0,
+        0,
+        0
+      ],
+      "settings_status_children": {}
+    },
+    {
+      "monotonic_ns": 2777758417195,
+      "processes": {
+        "sway": {
+          "pid": 1046,
+          "state": "R",
+          "cpu_ticks": 2808,
+          "schedstat": [
+            27976455078,
+            14752794222,
+            172517
+          ]
+        },
+        "rust": {
+          "pid": 3421,
+          "state": "S",
+          "cpu_ticks": 294,
+          "schedstat": [
+            2719039786,
+            2803995924,
+            2933
+          ]
+        },
+        "observer": {
+          "pid": 3361,
+          "state": "S",
+          "cpu_ticks": 449,
+          "schedstat": [
+            3883487237,
+            566379255,
+            1576
+          ]
+        }
+      },
+      "cpu0_ticks": [
+        15326,
+        0,
+        12267,
+        277291,
+        1488,
+        2833,
+        2278,
+        0,
+        0,
+        0
+      ],
+      "settings_status_children": {}
+    },
+    {
+      "monotonic_ns": 2777884477084,
+      "processes": {
+        "sway": {
+          "pid": 1046,
+          "state": "R",
+          "cpu_ticks": 2812,
+          "schedstat": [
+            28016239338,
+            14785711117,
+            172558
+          ]
+        },
+        "rust": {
+          "pid": 3421,
+          "state": "R",
+          "cpu_ticks": 297,
+          "schedstat": [
+            2754292226,
+            2829012291,
+            2979
+          ]
+        },
+        "observer": {
+          "pid": 3361,
+          "state": "S",
+          "cpu_ticks": 450,
+          "schedstat": [
+            3883487237,
+            566379255,
+            1576
+          ]
+        }
+      },
+      "cpu0_ticks": [
+        15336,
+        0,
+        12267,
+        277293,
+        1488,
+        2833,
+        2278,
+        0,
+        0,
+        0
+      ],
+      "settings_status_children": {}
+    },
+    {
+      "monotonic_ns": 2778010435603,
+      "processes": {
+        "sway": {
+          "pid": 1046,
+          "state": "S",
+          "cpu_ticks": 2816,
+          "schedstat": [
+            28058744151,
+            14824605380,
+            172603
+          ]
+        },
+        "rust": {
+          "pid": 3421,
+          "state": "R",
+          "cpu_ticks": 301,
+          "schedstat": [
+            2787878154,
+            2870062619,
+            3031
+          ]
+        },
+        "observer": {
+          "pid": 3361,
+          "state": "S",
+          "cpu_ticks": 452,
+          "schedstat": [
+            3883487237,
+            566379255,
+            1576
+          ]
+        }
+      },
+      "cpu0_ticks": [
+        15345,
+        0,
+        12268,
+        277296,
+        1488,
+        2833,
+        2278,
+        0,
+        0,
+        0
+      ],
+      "settings_status_children": {}
+    },
+    {
+      "monotonic_ns": 2778136422121,
+      "processes": {
+        "sway": {
+          "pid": 1046,
+          "state": "S",
+          "cpu_ticks": 2821,
+          "schedstat": [
+            28101263406,
+            14857022239,
+            172645
+          ]
+        },
+        "rust": {
+          "pid": 3421,
+          "state": "S",
+          "cpu_ticks": 305,
+          "schedstat": [
+            2821530040,
+            2906755874,
+            3076
+          ]
+        },
+        "observer": {
+          "pid": 3361,
+          "state": "S",
+          "cpu_ticks": 453,
+          "schedstat": [
+            3883487237,
+            566379255,
+            1576
+          ]
+        }
+      },
+      "cpu0_ticks": [
+        15352,
+        0,
+        12271,
+        277299,
+        1488,
+        2834,
+        2278,
+        0,
+        0,
+        0
+      ],
+      "settings_status_children": {}
+    },
+    {
+      "monotonic_ns": 2778257337232,
+      "processes": {
+        "sway": {
+          "pid": 1046,
+          "state": "R",
+          "cpu_ticks": 2825,
+          "schedstat": [
+            28143439550,
+            14877013831,
+            172675
+          ]
+        },
+        "rust": {
+          "pid": 3421,
+          "state": "R",
+          "cpu_ticks": 308,
+          "schedstat": [
+            2853431857,
+            2934580910,
+            3109
+          ]
+        },
+        "observer": {
+          "pid": 3361,
+          "state": "S",
+          "cpu_ticks": 454,
+          "schedstat": [
+            3883487237,
+            566379255,
+            1576
+          ]
+        }
+      },
+      "cpu0_ticks": [
+        15360,
+        0,
+        12273,
+        277302,
+        1488,
+        2834,
+        2278,
+        0,
+        0,
+        0
+      ],
+      "settings_status_children": {}
+    },
+    {
+      "monotonic_ns": 2778384660269,
+      "processes": {
+        "sway": {
+          "pid": 1046,
+          "state": "S",
+          "cpu_ticks": 2826,
+          "schedstat": [
+            28153304692,
+            14889189016,
+            172692
+          ]
+        },
+        "rust": {
+          "pid": 3421,
+          "state": "S",
+          "cpu_ticks": 308,
+          "schedstat": [
+            2859743930,
+            2943357948,
+            3123
+          ]
+        },
+        "observer": {
+          "pid": 3361,
+          "state": "S",
+          "cpu_ticks": 456,
+          "schedstat": [
+            3883487237,
+            566379255,
+            1576
+          ]
+        }
+      },
+      "cpu0_ticks": [
+        15362,
+        0,
+        12273,
+        277311,
+        1488,
+        2834,
+        2278,
+        0,
+        0,
+        0
+      ],
+      "settings_status_children": {}
+    },
+    {
+      "monotonic_ns": 2778497204862,
+      "processes": {
+        "sway": {
+          "pid": 1046,
+          "state": "S",
+          "cpu_ticks": 2826,
+          "schedstat": [
+            28154349544,
+            14891725349,
+            172699
+          ]
+        },
+        "rust": {
+          "pid": 3421,
+          "state": "S",
+          "cpu_ticks": 308,
+          "schedstat": [
+            2860033931,
+            2943405282,
+            3125
+          ]
+        },
+        "observer": {
+          "pid": 3361,
+          "state": "S",
+          "cpu_ticks": 456,
+          "schedstat": [
+            3883487237,
+            566379255,
+            1576
+          ]
+        }
+      },
+      "cpu0_ticks": [
+        15363,
+        0,
+        12273,
+        277321,
+        1488,
+        2834,
+        2278,
+        0,
+        0,
+        0
+      ],
+      "settings_status_children": {}
+    },
+    {
+      "monotonic_ns": 2778610435862,
+      "processes": {
+        "sway": {
+          "pid": 1046,
+          "state": "S",
+          "cpu_ticks": 2826,
+          "schedstat": [
+            28155404950,
+            14893386645,
+            172706
+          ]
+        },
+        "rust": {
+          "pid": 3421,
+          "state": "R",
+          "cpu_ticks": 308,
+          "schedstat": [
+            2862546671,
+            2944158319,
+            3145
+          ]
+        },
+        "observer": {
+          "pid": 3361,
+          "state": "S",
+          "cpu_ticks": 458,
+          "schedstat": [
+            3883487237,
+            566379255,
+            1576
+          ]
+        }
+      },
+      "cpu0_ticks": [
+        15365,
+        0,
+        12274,
+        277332,
+        1488,
+        2835,
+        2278,
+        0,
+        0,
+        0
+      ],
+      "settings_status_children": {}
+    },
+    {
+      "monotonic_ns": 2778723837195,
+      "processes": {
+        "sway": {
+          "pid": 1046,
+          "state": "S",
+          "cpu_ticks": 2826,
+          "schedstat": [
+            28156475950,
+            14893425941,
+            172713
+          ]
+        },
+        "rust": {
+          "pid": 3421,
+          "state": "S",
+          "cpu_ticks": 308,
+          "schedstat": [
+            2863434932,
+            2945187874,
+            3148
+          ]
+        },
+        "observer": {
+          "pid": 3361,
+          "state": "S",
+          "cpu_ticks": 458,
+          "schedstat": [
+            3883487237,
+            566379255,
+            1576
+          ]
+        }
+      },
+      "cpu0_ticks": [
+        15366,
+        0,
+        12275,
+        277341,
+        1488,
+        2835,
+        2278,
+        0,
+        0,
+        0
+      ],
+      "settings_status_children": {}
+    },
+    {
+      "monotonic_ns": 2778835809417,
+      "processes": {
+        "sway": {
+          "pid": 1046,
+          "state": "S",
+          "cpu_ticks": 2826,
+          "schedstat": [
+            28157782171,
+            14893465978,
+            172720
+          ]
+        },
+        "rust": {
+          "pid": 3421,
+          "state": "S",
+          "cpu_ticks": 308,
+          "schedstat": [
+            2863579155,
+            2945187874,
+            3149
+          ]
+        },
+        "observer": {
+          "pid": 3361,
+          "state": "S",
+          "cpu_ticks": 460,
+          "schedstat": [
+            3883487237,
+            566379255,
+            1576
+          ]
+        }
+      },
+      "cpu0_ticks": [
+        15367,
+        0,
+        12275,
+        277353,
+        1488,
+        2835,
+        2278,
+        0,
+        0,
+        0
+      ],
+      "settings_status_children": {}
+    },
+    {
+      "monotonic_ns": 2778948110417,
+      "processes": {
+        "sway": {
+          "pid": 1046,
+          "state": "S",
+          "cpu_ticks": 2827,
+          "schedstat": [
+            28158862688,
+            14893892979,
+            172727
+          ]
+        },
+        "rust": {
+          "pid": 3421,
+          "state": "S",
+          "cpu_ticks": 308,
+          "schedstat": [
+            2863720748,
+            2945187874,
+            3150
+          ]
+        },
+        "observer": {
+          "pid": 3361,
+          "state": "S",
+          "cpu_ticks": 461,
+          "schedstat": [
+            3883487237,
+            566379255,
+            1576
+          ]
+        }
+      },
+      "cpu0_ticks": [
+        15368,
+        0,
+        12276,
+        277365,
+        1488,
+        2835,
+        2278,
+        0,
+        0,
+        0
+      ],
+      "settings_status_children": {}
+    },
+    {
+      "monotonic_ns": 2779060123898,
+      "processes": {
+        "sway": {
+          "pid": 1046,
+          "state": "S",
+          "cpu_ticks": 2827,
+          "schedstat": [
+            28159908060,
+            14893933646,
+            172734
+          ]
+        },
+        "rust": {
+          "pid": 3421,
+          "state": "S",
+          "cpu_ticks": 308,
+          "schedstat": [
+            2863862748,
+            2945187874,
+            3151
+          ]
+        },
+        "observer": {
+          "pid": 3361,
+          "state": "S",
+          "cpu_ticks": 462,
+          "schedstat": [
+            3883487237,
+            566379255,
+            1576
+          ]
+        }
+      },
+      "cpu0_ticks": [
+        15368,
+        0,
+        12276,
+        277376,
+        1488,
+        2835,
+        2278,
+        0,
+        0,
+        0
+      ],
+      "settings_status_children": {}
+    },
+    {
+      "monotonic_ns": 2779172159528,
+      "processes": {
+        "sway": {
+          "pid": 1046,
+          "state": "S",
+          "cpu_ticks": 2827,
+          "schedstat": [
+            28161077170,
+            14894259757,
+            172741
+          ]
+        },
+        "rust": {
+          "pid": 3421,
+          "state": "S",
+          "cpu_ticks": 308,
+          "schedstat": [
+            2863998119,
+            2945747503,
+            3152
+          ]
+        },
+        "observer": {
+          "pid": 3361,
+          "state": "S",
+          "cpu_ticks": 464,
+          "schedstat": [
+            3883728052,
+            566497255,
+            1577
+          ]
+        }
+      },
+      "cpu0_ticks": [
+        15374,
+        0,
+        12277,
+        277381,
+        1488,
+        2835,
+        2278,
+        0,
+        0,
+        0
+      ],
+      "settings_status_children": {}
+    },
+    {
+      "monotonic_ns": 2779297910713,
+      "processes": {
+        "sway": {
+          "pid": 1046,
+          "state": "S",
+          "cpu_ticks": 2827,
+          "schedstat": [
+            28162495728,
+            14895323832,
+            172749
+          ]
+        },
+        "rust": {
+          "pid": 3421,
+          "state": "S",
+          "cpu_ticks": 308,
+          "schedstat": [
+            2864350119,
+            2945791318,
+            3153
+          ]
+        },
+        "observer": {
+          "pid": 3361,
+          "state": "S",
+          "cpu_ticks": 465,
+          "schedstat": [
+            3883728052,
+            566497255,
+            1577
+          ]
+        }
+      },
+      "cpu0_ticks": [
+        15386,
+        0,
+        12277,
+        277381,
+        1488,
+        2836,
+        2278,
+        0,
+        0,
+        0
+      ],
+      "settings_status_children": {}
+    }
+  ],
+  "observer": "Two /proc process stat/schedstat and CPU0 tick samples at10Hz; observation overhead remains present."
+}

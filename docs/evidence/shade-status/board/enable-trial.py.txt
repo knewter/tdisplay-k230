@@ -1,0 +1,31 @@
+from pathlib import Path
+import os,json,hashlib,subprocess,time,datetime,importlib.util
+C=json.loads(Path('/run/pane23-shade-status/identity.json').read_text());drop=Path('/run/systemd/system/shell-ui.service.d/95-pane23-shade-status-candidate.conf')
+sha=lambda p:hashlib.file_digest(Path(p).open('rb'),'sha256').hexdigest()
+run=lambda *a:subprocess.check_output(a,text=True,timeout=20).strip()
+spec=importlib.util.spec_from_file_location('cap','/run/pane23-shade-status/hdmi-shell-capture-board.py');cap=importlib.util.module_from_spec(spec);spec.loader.exec_module(cap)
+def state():
+ ipc=cap.IPC()
+ try:sway=ipc.pid;outputs=cap.output_state(ipc.outputs())
+ finally:ipc.close()
+ rust=int(run('systemctl','show','shell-ui','-p','MainPID','--value'));env=dict(x.partition(b'=')[::2] for x in Path(f'/proc/{rust}/environ').read_bytes().split(b'\0') if b'=' in x)
+ return {'utc':datetime.datetime.now(datetime.timezone.utc).isoformat(),'sway_pid':sway,'sway_sha256':sha(f'/proc/{sway}/exe'),'rust_pid':rust,'rust_sha256':sha(f'/proc/{rust}/exe'),'settings_wrapper':os.fsdecode(env[b'K230_SETTINGS']),'trace_environment_absent':not any(k.startswith(b'K230_TRACE_') for k in env),'outputs':outputs,'services':run('systemctl','is-active','shell','shell-ui').splitlines()}
+def guard(s):
+ assert s['sway_sha256']==C['sway_sha256'] and s['rust_sha256']==C['rust_sha256'] and s['services']==['active','active'] and s['trace_environment_absent']
+ assert len(s['outputs'])==1 and s['outputs'][0]['name']=='DSI-1' and s['outputs'][0]['transform']=='270' and s['outputs'][0]['rect']['width']==1232 and s['outputs'][0]['rect']['height']==568
+ assert all(os.path.realpath(p)==v for p,v in C['systems'].items())
+ for n,h in C['boot_files'].items():assert sha('/boot/'+n)==h
+ for n,h in C['tracing'].items():assert sha('/sys/kernel/tracing/'+n)==h
+ assert sha('/sys/kernel/notes')==C['kernel_notes_sha256']
+assert not drop.exists() and not drop.is_symlink() and not Path('/run/systemd/system/shell-ui.service.d/90-pane23-shade-status-trace.conf').exists()
+before=state();guard(before);assert before['settings_wrapper']==C['baseline_settings']
+old=Path(C['baseline_ui_wrapper']).read_text();new=Path(C['candidate_ui_wrapper']).read_text();assert old.replace(C['baseline_settings'],C['candidate_settings'])==new
+for p,h in C['ui_wrapper_hashes'].items():assert sha(p)==h
+for p,h in C['settings_wrapper_hashes'].items():assert sha(p)==h
+try:
+ with drop.open('x') as f:f.write('[Service]\nExecStart=\nExecStart='+C['candidate_ui_wrapper']+' --serve\n')
+ run('systemctl','daemon-reload');run('systemctl','restart','shell-ui');time.sleep(2)
+ after=state();guard(after);assert after['sway_pid']==before['sway_pid'] and after['outputs']==before['outputs'] and after['settings_wrapper']==C['candidate_settings']
+except BaseException:
+ drop.unlink(missing_ok=True);run('systemctl','daemon-reload');run('systemctl','restart','shell-ui');raise
+print(json.dumps({'result':'CANDIDATE_READY_FOR_PHYSICAL_PULL','before':before,'after':after,'candidate_system':C['candidate_system'],'candidate_ui_wrapper':C['candidate_ui_wrapper'],'candidate_settings':C['candidate_settings'],'candidate_gc_root':C['candidate_gc_root'],'trial_dropin':str(drop),'boot_and_persistent_system_changed':False,'landscape_retained':True,'ordinary_reboot_returns_to':'existing hpmz persistent system until separately accepted promotion','source_sha256':sha(__file__)},indent=2))

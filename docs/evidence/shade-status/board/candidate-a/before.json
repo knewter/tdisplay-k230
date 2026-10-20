@@ -1,0 +1,39 @@
+{
+  "utc": "2026-10-20T20:43:15.457725+00:00",
+  "boot_id": "69e90426-5ead-4ebb-82d5-2a592168e34d",
+  "system": "/nix/store/hpmzja32mncizz7s49ylr8pj9cy5npvg-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "persistent_system": "/nix/store/hpmzja32mncizz7s49ylr8pj9cy5npvg-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "outputs": [
+    {
+      "name": "DSI-1",
+      "active": true,
+      "transform": "270",
+      "scale": 1.0,
+      "current_mode": {
+        "width": 568,
+        "height": 1232,
+        "refresh": 52190,
+        "picture_aspect_ratio": "none"
+      },
+      "rect": {
+        "x": 0,
+        "y": 0,
+        "width": 1232,
+        "height": 568
+      }
+    }
+  ],
+  "sway_pid": 1046,
+  "sway_executable": "/nix/store/3vk3p0ps0dng1qmqsrj7w2gfjq024zv8-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway",
+  "sway_sha256": "9464072ac100e77500c7b6113920d2c2ed14e022612eddbc38a037ce9b006670",
+  "rust_pid": 3332,
+  "rust_executable": "/nix/store/fj1v8k4sl1v48qx1v7qafzd9c1g3i259-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0/bin/k230-shell-rust",
+  "rust_sha256": "32c8c445eb0e9467114880d0084762aa6649e69b1274ba7f87d24e300bee9148",
+  "settings_wrapper": "/nix/store/46sw7cwipb8g0pfjqa7vry4x1x65345g-k230-settings/bin/k230-settings",
+  "settings_wrapper_sha256": "c909c7144e320e28c588b019a0d32fcd427c02babe1fa5c999525a54c5276788",
+  "services": [
+    "active",
+    "active"
+  ],
+  "cpu_online": "0"
+}
