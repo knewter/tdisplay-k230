@@ -14,4 +14,4 @@
 
 ## 3. Evidence and publication
 
-- [ ] 3.1 Commit all named source/build/runtime/physical/persistent proof, remove only resolved UNVERIFIED markers, validate, land/push, verify successful CI and exact published revision. Proof: `openspec validate the-landscape-hdmi-shell-avoids-periodic-edid-stalls --strict`, `python3 tools/blob-scan.py --no-vendor`, and committed CI/HTTP evidence. Archive/sync the ADDED display/hdmi requirement only after all9tasks pass; retain every incomplete hardware gate otherwise.
+- [x] 3.1 Commit all named source/build/runtime/physical/persistent proof, remove only resolved UNVERIFIED markers, validate, land/push, verify successful CI and exact published revision. Proof: `openspec validate the-landscape-hdmi-shell-avoids-periodic-edid-stalls --strict`, `python3 tools/blob-scan.py --no-vendor`, and committed CI/HTTP evidence. Archive/sync the ADDED display/hdmi requirement only after all9tasks pass; retain every incomplete hardware gate otherwise.

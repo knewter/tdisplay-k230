@@ -1,0 +1,21 @@
+{
+  "started_at": "2026-10-20T20:07:15.613726+00:00",
+  "expected_revision": "c81572e884fa78305a9941f5c44d827894be1b9d",
+  "status": "VERIFIED",
+  "owner": "Codex pane23",
+  "pid": 2649722,
+  "pgid": 2649722,
+  "sid": 2649722,
+  "stdin": "/dev/null",
+  "controlling_tty": null,
+  "scope": "8/9: operator accepted; persistent ordinary boot and cleanup verified; publication gate and archive remain. Landscape retained; no permanent shade fix.",
+  "ci_run": "https://github.com/knewter/tdisplay-k230/actions/runs/39489265282",
+  "ci_status": "completed",
+  "ci_conclusion": "success",
+  "checked_at": "2026-10-20T20:10:21.052437+00:00",
+  "http_status": 200,
+  "published_revision": "c81572e884fa78305a9941f5c44d827894be1b9d",
+  "published_url": "https://knewter.github.io/tdisplay-k230/work/",
+  "exact_published_revision": true,
+  "finished_at": "2026-10-20T20:10:21.053208+00:00"
+}

@@ -619,6 +619,21 @@
       ],
       "rationale": "Operator restated the change against k230-mainline-drm-shell on 2026-10-11; all restated tasks have committed evidence.",
       "reviewRevision": "cefa90fbd3d26e596e8e30c6ac6e050bed06b7dc"
+    },
+    "2026-10-20-the-landscape-hdmi-shell-avoids-periodic-edid-stalls": {
+      "lane": "archived",
+      "source": "archived",
+      "physical": "verified",
+      "next": "Closed at 9/9. Accepted cached-EDID kernel is persistent and verified through ordinary reboot. Permanent notification-shade status refresh and safe storage cleanup remain separate work.",
+      "dependencies": [],
+      "evidence": [
+        "docs/evidence/hdmi-stable-poll/persistent/README.md",
+        "docs/evidence/hdmi-stable-poll/persistent/summary.json",
+        "docs/evidence/hdmi-stable-poll/physical-a/operator-acceptance.json",
+        "docs/evidence/hdmi-stable-poll/timing/report.json"
+      ],
+      "rationale": "Source and configured-kernel build checks, bounded injected board timing, operator acceptance, and SSH-observed ordinary boot are distinct evidence classes. Installed kernel identity, persistent system, normal controls and cleanup match the accepted candidate. No universal smoothness, optical latency, portrait acceptance or permanent shade fix is claimed.",
+      "reviewRevision": "c81572e884fa78305a9941f5c44d827894be1b9d"
     }
   }
 }

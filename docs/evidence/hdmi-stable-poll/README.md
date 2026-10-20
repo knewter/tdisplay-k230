@@ -1,5 +1,9 @@
 # Stable connected HDMI polling fix
 
+The accepted kernel is persistently installed and verified through ordinary boot. [Current installation and cleanup result](persistent/summary.json) ties the actual kernel build ID, fresh boot, exact installed system, preserved rollback and normal landscape controls together. [Operator acceptance](physical-a/operator-acceptance.json) is separate from the injected timing evidence. The dated stages below retain the unsuccessful attempts and original qualification limits.
+
+## Source and host semantics
+
 The source guard is implemented and host semantics pass:72 matrix cases,
 seven named discovery/retry/HPD/disconnect/reconnect scenarios and five
 connector fallback cases. The actual patched C detector was compiled with
@@ -12,20 +16,21 @@ old/new status are connected and cached EDID exists. Link detection and HPD
 notification still run. All non-polling, missing-cache and transition cases
 retain refresh. Nix wires the patch into the mainline DRM source derivation.
 
-UNVERIFIED: fresh physical cable/input qualification and persistent promotion remain
-open. Current landscape and separate portrait hardware gates are preserved.
-The preceding committed holder/EDID-stage diagnostics ground the problem,
-not an unperformed candidate result.
+Physical cable/input behavior is now accepted and persistent ordinary boot is
+verified in the named records below. Landscape is retained. The separate portrait
+hardware gates remain open. The preceding holder/EDID-stage diagnostics ground
+the problem; candidate results retain their distinct evidence classes.
 
 The initial default-k230 build exited0 from cache but resolved to vendor6.6,
 so it is explicitly REJECTED_TARGET and proves nothing about this patch.
 `host/rejected-vendor-target/` retains the command/result. The installed
 bundle identifies `k230-mainline-drm-shell-landscape-hdmi`; corrected
-builds use that profile. No candidate has been deployed.
+builds use that profile; deployment and its fresh boot are recorded separately below.
 
 `tools/hdmi-stable-poll-proof.py` provides the bounded candidate recorder
 and separate report. Its host fixtures pass (see `host/recorder-check.json`);
-this is preparation, not completion of task2.2. It requires a fresh function
+these fixtures prove the recorder only; the candidate board pair is recorded
+separately below. The recorder requires a fresh function
 smoke tied to the candidate boot/controller, explicit running system,
 preserved persistent fallback and executable identities. It collects exactly
 one untraced/traced24-drag pair, checks864 joins each, retains all >100ms
@@ -39,7 +44,8 @@ normal HDMI geometry/flags, services and idle Foot. `preflight/` records all
 boot-file hashes, the protected on-board known-good backup and the exact
 backup command. `/run/current-system` and the persistent profile are j30y,
 while `/run/booted-system` still names cmdvr from an earlier boot. This is
-recorded explicitly; the new candidate needs its own serial-observed boot.
+recorded as a historical preflight. The later SSH boot route superseded the
+serial prerequisite; no UART boot observation is claimed.
 No boot file or profile was changed by backup/preflight.
 
 The actual configured7.3 mainline kernel cross-build passed at18:13:12Z
@@ -48,7 +54,7 @@ command, successful exit, derivation and Image/System.map identities.
 `host/mainline-source.json` verifies that the realized Nix bridge source
 and patch exactly match the host semantic matrix. The new kernel output
 is `/nix/store/21lz5c6pkk329c0xcac9bzlx40dplrlk-linux-riscv64-unknown-linux-gnu-7.3.0-rc5`.
-This is cross-build proof; no candidate boot or physical acceptance yet.
+At cross-build time no candidate boot or physical acceptance had yet been obtained.
 
 The full landscape system and coherent boot-bundle builds passed at18:16:14Z
 and18:16:35Z. `host/mainline-system/` preserves both commands/results and
@@ -70,8 +76,9 @@ no host serial input or K230 marker was sent through that failed port.
 `boot-attempt-a/` retains the staging/copy/boot commands, failure, recovery
 and private-source hashes. Candidate checksums and preserved boot-file
 checks passed; no boot file/profile was modified. An identified, working
-K230 UART is required before retrying the named serial-observed boot gate.
-Neither task2.1 nor any runtime/physical/promotion gate is complete.
+K230 UART would have been required for that serial retry. At this historical
+stage the boot/runtime/physical/promotion gates were incomplete; the later
+SSH method superseded the serial prerequisite and obtained separate proof.
 
 At18:30:46Z a fresh protected query verified recovered normal controls:
 current/booted/persistent system all j30y; PID1076 with unchanged executable,
@@ -79,8 +86,8 @@ config, debug flags and landscape1280x800@59.91normal/scale1; idle Foot,
 both shell services active, zero virtual test devices and no trace instances.
 See `boot-attempt-a/recovered-normal.json`. This is recovery/runtime-state
 proof on the original image, not a boot or timing result for the candidate.
-The retry driver now requires a fresh K230 nonce received on an explicit
-by-id UART before any serial input/reboot; the candidate remains staged.
+The prepared serial retry driver required a fresh K230 nonce on an explicit
+by-id UART. It was not used for the later SSH-only boot route.
 
 The user clarified that SSH should be used rather than requiring a USB
 data cable. `ssh-boot/` records an unchanged-image load/unload qualification
@@ -89,7 +96,8 @@ existing NO_CMA flag16 passed. Both attempts retain all normal controls and
 leave kexec_loaded0. The plan now uses a one-time SSH-controlled kernel
 boot plus fresh boot/kernel-build-ID/boot-journal evidence. The rejected
 UART attempt stays rejected; no UART observation is claimed. Boot, timing,
-physical and persistent gates remain open pending their actual checks.
+physical and persistent gates were not passed by that load/unload probe;
+their later actual checks are recorded below.
 
 At18:58:31Z the one-time SSH boot is VERIFIED: new bootIDc17ee483,
 current/booted systemhpmzja32, persistent profilej30y, and running GNU
@@ -98,8 +106,9 @@ the built vmlinux and a unique GNU note in candidate Image (absent from
 original Image). `ssh-boot/` preserves commands, load/shutdown request,
 transport disconnect255, fresh SSH observation and allowed kernel journal
 lines. The transport disconnect itself is not boot proof. No UART log is
-claimed. All five normal boot files remain unchanged; ordinary reset still
-selects the original system.
+claimed. During this one-time trial all five normal boot files remained
+unchanged and ordinary reset still selected the original system; the later
+persistent installation below changed that selection after acceptance.
 
 Fresh candidate controls retain compositor9464072a/config575fa8d1, DEBUG
 flags, onlyCPU0, idle Foot, both services active and normal1280x800@59.91
@@ -131,12 +140,12 @@ so their instrumentation differs. The earlier function-only idle diagnostic
 measured170–184ms holds with EDID reads; this candidate observes no reread
 and short holds during motion. Candidate p95 is not uniformly better. These
 are bounded software measurements, not native/glass/optical smoothness or a
-universal bound. Fresh physical cable/input and persistent promotion gates
-remain open; no source or timing test substitutes for them.
+universal bound. These timing runs alone did not pass physical cable/input
+or persistent-promotion gates; their separate later proof is linked below.
 
 ## Partial physical acceptance
 
-[Operator report and read-only runtime record](physical-a/README.md) confirm panel return and bottom-edge Overview on the candidate. HDMI replug/pinch and persistent promotion remain open. A reported top notification-shade stutter is a separate userspace investigation.
+[Operator report and read-only runtime record](physical-a/README.md) confirmed panel return and bottom-edge Overview on the candidate. At that stage HDMI replug/pinch and persistent promotion remained open; the later acceptance and installation below close them. A reported top notification-shade stutter is a separate userspace investigation.
 
 ## Operator acceptance for promotion
 
@@ -145,3 +154,7 @@ The operator replied “everything's good land whatever we're on tell me what's 
 ## Persistent installation completed
 
 [Guarded promotion and ordinary reboot proof](persistent/summary.json) now qualify the accepted candidate as persistent. Running, booted and persistent system are hpmz, with fresh boot ID69e90426-5ead-4ebb-82d5-2a592168e34d and actual GNU kernel build ID7a61d8cea3e26df94695189b766de3fd66fa6860. [Commands and limits](persistent/README.md) separate persistent file selection from fresh ordinary boot and preserve the old j30 root-backed backup and GC root. Final normal-state checks passed and the board lease was released; source diagnostics and duplicate staging payloads were removed after protected copies/hash checks. Root storage remains a separate issue; no portrait, optical or permanent shade fix is claimed.
+
+## Completed publication and closeout
+
+[Exact proof publication](persistent/proof-publication.json) records successful CI39489265282 and the matching published revision c81572e884fa78305a9941f5c44d827894be1b9d. Source, build, candidate timing, operator acceptance, persistent ordinary boot and cleanup proof are committed; all nine tasks are complete. The archive sync adds this single bounded requirement to existing `display/hdmi`. Other deferred performance/portrait changes retain their own unchecked tasks.
