@@ -1,0 +1,8 @@
+{
+  "removed": [
+    "/run/pane23-stable-poll-final.py",
+    "/run/pane23-stable-poll-final-manifest.json"
+  ],
+  "only_verified_owned_files": true,
+  "utc": "2026-10-20T20:04:02.568022+00:00"
+}

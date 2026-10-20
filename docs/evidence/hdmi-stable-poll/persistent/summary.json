@@ -1,0 +1,46 @@
+{
+  "result": "PASS",
+  "completed_at": "2026-10-20T20:04:30.577963+00:00",
+  "ordinary_boot_verified": true,
+  "source_kernel_build_id": "7a61d8cea3e26df94695189b766de3fd66fa6860",
+  "fresh_boot_id": "69e90426-5ead-4ebb-82d5-2a592168e34d",
+  "accepted_physical_report": "../physical-a/operator-acceptance.json",
+  "system": "/nix/store/hpmzja32mncizz7s49ylr8pj9cy5npvg-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "final_landscape_output": [
+    {
+      "name": "DSI-1",
+      "active": true,
+      "transform": "270",
+      "scale": 1.0,
+      "current_mode": {
+        "width": 568,
+        "height": 1232,
+        "refresh": 52190,
+        "picture_aspect_ratio": "none"
+      },
+      "rect": {
+        "x": 0,
+        "y": 0,
+        "width": 1232,
+        "height": 568
+      }
+    }
+  ],
+  "promotion_receipt_sha256": "4ed13c2893499446116c58034b7fa97b8b07da288c88c5fc779960b7cacfce9e",
+  "ordinary_boot_observation_sha256": "25c4a1e07d974529e18abd8364c7459f62ce0f14ac0e0a5d04d6197a118544df",
+  "final_control_sha256": "e4e8107626e4c4e3df56fc5309672498a7bf5dda70a65e427283585e82f5c316",
+  "raw_boot_journal_sha256": "a6312b700402f237245b68d9abbffea05372ae6a9b8b4a66dc50fe483e02abae",
+  "serial_observation": "NOT_COLLECTED; user prefers SSH",
+  "board_lease": {
+    "session_id": 76428,
+    "released": true
+  },
+  "build_slot": "not held",
+  "rollback_backup_retained": "/var/lib/k230/boot-backup-hdmi-stable-poll-20261020",
+  "rollback_gc_roots_retained": {
+    "accepted-candidate-root": "/nix/store/hpmzja32mncizz7s49ylr8pj9cy5npvg-nixos-system-nixos-26.11.20260919.20b1ddd",
+    "rollback-system-root": "/nix/store/j30yag05ic9k68n9dzbzindgf4ardp08-nixos-system-nixos-26.11.20260919.20b1ddd"
+  },
+  "root_space_issue": "Still zero unprivileged available bytes; unrelated storage cleanup is not claimed complete.",
+  "limits": "Physical acceptance is the operator report; runtime snapshots do not invent replug/contact timestamps. No portrait/optical/universal latency guarantee. Temporary shade priority test was restored; no shade source fix."
+}

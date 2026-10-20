@@ -1,0 +1,94 @@
+"""Verify ordinary boot, retire hash-verified owned diagnostics, retain durable rollback."""
+from pathlib import Path
+import datetime,hashlib,importlib.util,json,os,re,shutil,subprocess,sys
+
+BASE=Path('/var/tmp/k230-hdmi-stable-poll-candidate-a')
+STAGE=Path('/var/lib/k230/hdmi-stable-poll-candidate-a')
+BACKUP=Path('/var/lib/k230/boot-backup-hdmi-stable-poll-20261020')
+ROOT=Path('/sys/kernel/tracing')
+FIELDS=('current_tracer','tracing_on','trace_clock','events/enable','set_event_pid','set_ftrace_pid','set_ftrace_filter','set_graph_function','trace_options')
+sha=lambda p:hashlib.sha256(p.read_bytes()).hexdigest()
+command=lambda *args:subprocess.check_output(args,text=True,timeout=30).strip()
+expected=json.loads(Path('/run/pane23-stable-poll-final-manifest.json').read_text())
+assert not BASE.is_symlink()
+before_files={str(p.relative_to(BASE)):sha(p) for p in BASE.rglob('*') if p.is_file()}
+assert before_files==expected['owned_files'] and all(not p.is_symlink() for p in BASE.rglob('*'))
+promotion=json.loads((STAGE/'promotion-state.json').read_text())
+assert promotion['phase']=='PERSISTENT_FILES_SELECTED'
+assert Path('/proc/sys/kernel/random/boot_id').read_text().strip()==expected['new_boot_id']
+assert all(os.path.realpath(p)==promotion['candidate_system'] for p in ('/run/current-system','/run/booted-system','/nix/var/nix/profiles/system'))
+for name,h in promotion['after_boot_files'].items():assert sha(Path('/boot')/name)==h
+for name,h in promotion['before_boot_files'].items():assert sha(BACKUP/name)==h
+assert os.path.realpath(STAGE/'accepted-candidate-root')==promotion['candidate_system']
+assert os.path.realpath(STAGE/'rollback-system-root')==promotion['previous_system']
+
+def module(name,file):
+    spec=importlib.util.spec_from_file_location(name,BASE/file);m=importlib.util.module_from_spec(spec);sys.modules[name]=m;spec.loader.exec_module(m);return m
+cap=module('cap_final','hdmi-shell-capture-board.py')
+log=module('log_final','landscape-hdmi-logging.py')
+def state():
+    ipc=cap.IPC()
+    try:
+        sway=ipc.pid;outputs=cap.output_state(ipc.outputs());idle=log.idle_startup(ipc)
+        inputs=ipc.request(100)
+        scene=ipc.request(0,'card_shell debug-scene');text=' '.join(str(x.get('error','')) for x in scene)
+        scalar=dict(re.findall(r'\b(active|mode|home_enabled|home_selected|trackpad_client|trackpad_owned)=(-?[0-9]+)\b',text))
+    finally:ipc.close()
+    rust=int(command('systemctl','show','shell-ui','--property=MainPID','--value'))
+    env=dict(x.partition(b'=')[::2] for x in Path(f'/proc/{sway}/environ').read_bytes().split(b'\0') if b'=' in x)
+    return dict(utc=datetime.datetime.now(datetime.timezone.utc).isoformat(),boot_id=Path('/proc/sys/kernel/random/boot_id').read_text().strip(),
+        system=os.path.realpath('/run/current-system'),booted_system=os.path.realpath('/run/booted-system'),persistent_system=os.path.realpath('/nix/var/nix/profiles/system'),
+        sway_pid=sway,sway_sha256=sha(Path(f'/proc/{sway}/exe')),config_sha256=sha(Path('/nix/store/ila85h1q2fkpzkj7q1jlmc1gz8xq1syp-k230-sway.conf')),
+        rust_pid=rust,rust_sha256=sha(Path(f'/proc/{rust}/exe')),output=outputs,idle=idle,scene={k:int(v) for k,v in scalar.items()},
+        environment={k:env.get(k.encode(),b'').decode() for k in ('WLR_RENDERER','WLR_PIXMAN_OUTPUT_TURN','WLR_PIXMAN_QUARTER_TURN','WLR_PIXMAN_DRAW_TRACE','SWAY_K230_CPU_FRAME_TIMING','SWAY_K230_TOUCH_ROUTE_TRACE','SWAY_K230_CARD_REDUCED_MOTION')},
+        services=command('systemctl','is-active','shell','shell-ui').splitlines(),cpu_online=Path('/sys/devices/system/cpu/online').read_text().strip(),
+        virtual_test_devices=sum('K230 injected touchscreen'==(p/'device/name').read_text().strip() for p in Path('/sys/class/input').glob('event*') if (p/'device/name').exists()),
+        hdmi_trackpad_present=any(i.get('name')=='K230 Virtual Touchpad (HDMI mode)' for i in inputs),
+        physical_touch_present=any('goodix' in i.get('name','').lower() or 'gt911' in i.get('name','').lower() for i in inputs),
+        rust_trace_environment_absent=not any(x.startswith((b'K230_TRACE_PATH=',b'K230_TRACE_SECONDS=',b'K230_TRACE_ID=')) for x in Path(f'/proc/{rust}/environ').read_bytes().split(b'\0')),
+        owned_ui_override_absent=not Path('/run/systemd/system/shell-ui.service.d/90-pane23-shade-trace.conf').exists())
+before=state()
+assert before['sway_sha256']=='9464072ac100e77500c7b6113920d2c2ed14e022612eddbc38a037ce9b006670'
+assert before['rust_sha256']=='32c8c445eb0e9467114880d0084762aa6649e69b1274ba7f87d24e300bee9148'
+assert before['config_sha256']=='575fa8d14d8dda6d0707c369015d37dbd7ea9295c66cefdebef2ef3ea26bdcd0'
+assert before['services']==['active','active'] and before['virtual_test_devices']==0
+assert before['cpu_online']=='0' and before['rust_trace_environment_absent'] and before['owned_ui_override_absent'] and before['physical_touch_present']
+assert before['environment']==dict(WLR_RENDERER='pixman',WLR_PIXMAN_OUTPUT_TURN='1',WLR_PIXMAN_QUARTER_TURN='0',WLR_PIXMAN_DRAW_TRACE='',SWAY_K230_CPU_FRAME_TIMING='',SWAY_K230_TOUCH_ROUTE_TRACE='',SWAY_K230_CARD_REDUCED_MOTION='0')
+assert len(before['output'])==1
+output=before['output'][0]
+assert (output['name']=='DSI-1' and output['transform']=='270' and output['rect']['width']==1232 and output['rect']['height']==568) or (output['name']=='HDMI-A-1' and output['transform']=='normal' and output['rect']['width']==1280 and output['rect']['height']==800)
+assert before['hdmi_trackpad_present']==(output['name']=='HDMI-A-1')
+
+mounted_before=(ROOT/'current_tracer').exists()
+if not mounted_before:command('mount','-t','tracefs','tracefs',str(ROOT))
+try:
+    tracing_before={n:sha(ROOT/n) for n in FIELDS}
+    assert (ROOT/'current_tracer').read_text().strip()=='nop'
+    assert (ROOT/'events/enable').read_text().strip()=='0'
+    assert list((ROOT/'instances').iterdir())==[]
+    # Imports may create only owned Python cache; all evidence/source bytes remain pinned.
+    for p in BASE.rglob('*'):
+        if not p.is_file():continue
+        relative=str(p.relative_to(BASE))
+        assert (relative in before_files and sha(p)==before_files[relative]) or ('__pycache__' in p.parts and p.suffix=='.pyc')
+    shutil.rmtree(BASE)
+    retired={}
+    for name,h in promotion['expected_candidate_files'].items():
+        p=STAGE/name;assert sha(p)==h;retired[name]=dict(bytes=p.stat().st_size,sha256=h);p.unlink()
+    Path('/run/pane23-stable-poll-accepted-preflight.json').unlink(missing_ok=True)
+    os.sync()
+    tracing_after={n:sha(ROOT/n) for n in FIELDS};assert tracing_after==tracing_before
+finally:
+    if not mounted_before:command('umount',str(ROOT))
+after=state()
+assert all(before[k]==after[k] for k in ('boot_id','system','booted_system','persistent_system','sway_pid','sway_sha256','config_sha256','rust_pid','rust_sha256','output','environment','services','cpu_online','virtual_test_devices'))
+timers=command('systemctl','list-units','--all','--type=timer','--plain','--no-legend')
+owned_timers=[line.split()[0] for line in timers.splitlines() if any(x in line for x in ('k230-hdmi','k230-drm-holder','k230-drm-wait','k230-stall-trace'))]
+assert not owned_timers and not BASE.exists()
+result=dict(result='PASS',before_cleanup=before,after_cleanup=after,tracing_before=tracing_before,tracing_after=tracing_after,tracing_unchanged=True,
+    tracefs_initially_mounted=mounted_before,tracefs_mount_state_restored=(ROOT/'current_tracer').exists()==mounted_before,
+    owned_trace_instances=0,owned_timers=owned_timers,owned_diagnostic_directory_removed=True,retired_duplicate_stage_payloads=retired,
+    retained_backup=str(BACKUP),retained_gc_roots={n:os.path.realpath(STAGE/n) for n in ('accepted-candidate-root','rollback-system-root')},
+    boot_files={name:sha(Path('/boot')/name) for name in promotion['after_boot_files']},source_sha256=sha(Path(__file__)),
+    root_unprivileged_available_bytes=os.statvfs('/').f_bavail*os.statvfs('/').f_frsize)
+print(json.dumps(result,indent=2),flush=True)

@@ -141,3 +141,7 @@ remain open; no source or timing test substitutes for them.
 ## Operator acceptance for promotion
 
 The operator replied “everything's good land whatever we're on tell me what's next” after the remaining HDMI reconnect/Overview and persistent-install gate were named. [Exact acceptance and provenance limits](physical-a/operator-acceptance.json) record this as acceptance of the remaining candidate behavior, with no invented contact/cable timestamps or camera proof. [Reserved-board preflight](physical-a/accepted-preflight.json) verifies the unchanged candidate boot, source identity, staged four payloads and original five-file backup before promotion.
+
+## Persistent installation completed
+
+[Guarded promotion and ordinary reboot proof](persistent/summary.json) now qualify the accepted candidate as persistent. Running, booted and persistent system are hpmz, with fresh boot ID69e90426-5ead-4ebb-82d5-2a592168e34d and actual GNU kernel build ID7a61d8cea3e26df94695189b766de3fd66fa6860. [Commands and limits](persistent/README.md) separate persistent file selection from fresh ordinary boot and preserve the old j30 root-backed backup and GC root. Final normal-state checks passed and the board lease was released; source diagnostics and duplicate staging payloads were removed after protected copies/hash checks. Root storage remains a separate issue; no portrait, optical or permanent shade fix is claimed.

@@ -1,0 +1,103 @@
+"""Persist only the accepted four-file kernel bundle; retain checked root rollback."""
+from pathlib import Path
+import datetime, hashlib, json, os, shutil, signal, struct, subprocess
+
+STAGE=Path('/var/lib/k230/hdmi-stable-poll-candidate-a')
+BACKUP=Path('/var/lib/k230/boot-backup-hdmi-stable-poll-20261020')
+BOOT=Path('/boot'); PROFILE=Path('/nix/var/nix/profiles/system')
+SYSTEM='/nix/store/hpmzja32mncizz7s49ylr8pj9cy5npvg-nixos-system-nixos-26.11.20260919.20b1ddd'
+OLD='/nix/store/j30yag05ic9k68n9dzbzindgf4ardp08-nixos-system-nixos-26.11.20260919.20b1ddd'
+BOOT_ID='c17ee483-0191-48ea-986a-9738a274393e'
+MUTABLE=('Image','initrd.uimg','k230-tdisplay.dtb','bootargs.txt')
+RECEIPT=STAGE/'promotion-state.json'
+EXPECTED=json.loads(Path('/run/pane23-stable-poll-accepted-preflight.json').read_text())
+sha=lambda p:hashlib.sha256(p.read_bytes()).hexdigest()
+now=lambda:datetime.datetime.now(datetime.timezone.utc).isoformat()
+def command(*args):
+    return subprocess.run(args,check=True,capture_output=True,text=True,timeout=60)
+def save():
+    tmp=RECEIPT.with_suffix('.new')
+    with tmp.open('w') as out:
+        json.dump(state,out,indent=2);out.write('\n');out.flush();os.fsync(out.fileno())
+    os.replace(tmp,RECEIPT);os.sync()
+def protected():
+    result={}
+    for p in BOOT.iterdir():
+        if p.name in MUTABLE or p.name.endswith('.pane23-new'):continue
+        if p.is_symlink(): result[p.name]={'link':os.readlink(p)}
+        elif p.is_file():result[p.name]={'bytes':p.stat().st_size,'sha256':sha(p)}
+        else:result[p.name]={'directory':True}
+    return result
+def replace(source,target,expected):
+    # Same checked, fsynced rename/root-backed-gap algorithm as coherent-shell-board-install.py.
+    assert target.name in MUTABLE and not target.is_symlink() and sha(source)==expected
+    if target.exists() and sha(target)==expected:return 'unchanged'
+    tmp=target.with_name(target.name+'.pane23-new');assert not tmp.exists()
+    size=source.stat().st_size;free=shutil.disk_usage(BOOT).free;old_size=target.stat().st_size if target.exists() else 0
+    assert free+old_size>size+1024**2
+    method='atomic-rename'
+    if free<size+1024**2:
+        assert target.name in ('Image','initrd.uimg')
+        target.unlink();os.sync();method='checked-root-backup replacement gap'
+    with source.open('rb') as inp,tmp.open('xb') as out:
+        shutil.copyfileobj(inp,out,1024**2);out.flush();os.fsync(out.fileno())
+    assert sha(tmp)==expected
+    os.chmod(tmp,0o644);os.replace(tmp,target);os.sync();assert sha(target)==expected
+    return method
+def interrupted(signum,frame):raise InterruptedError('promotion interrupted')
+for sig in (signal.SIGTERM,signal.SIGINT,signal.SIGHUP):signal.signal(sig,interrupted)
+
+assert os.geteuid()==0 and not RECEIPT.exists()
+assert Path('/proc/sys/kernel/random/boot_id').read_text().strip()==BOOT_ID
+assert os.path.realpath('/run/current-system')==SYSTEM and os.path.realpath('/run/booted-system')==SYSTEM
+assert os.path.realpath(PROFILE)==OLD
+assert not Path('/nix-path-registration').exists()
+assert [x for x in Path('/proc/cmdline').read_text().split() if x.startswith('init=')]==['init='+SYSTEM+'/init']
+assert BOOT.stat().st_dev!=BACKUP.stat().st_dev
+raw=Path('/sys/kernel/notes').read_bytes();offset=0;ids=[]
+while offset+12<=len(raw):
+    ns,ds,kind=struct.unpack_from('<III',raw,offset);offset+=12
+    assert ns<4096 and ds<4096 and offset+((ns+3)&~3)+ds<=len(raw)
+    name=raw[offset:offset+ns].rstrip(b'\0');offset+=(ns+3)&~3;desc=raw[offset:offset+ds];offset+=(ds+3)&~3
+    if name==b'GNU' and kind==3:ids.append(desc.hex())
+assert ids==['7a61d8cea3e26df94695189b766de3fd66fa6860']
+for name,expected in EXPECTED['hashes']['boot'].items():
+    assert sha(BOOT/name)==expected==sha(BACKUP/name)
+for name in MUTABLE:
+    assert sha(STAGE/name)==EXPECTED['hashes']['stage'][name]
+    assert not (BOOT/(name+'.pane23-new')).exists()
+assert STAGE.joinpath('bootargs.txt').read_text().strip().endswith('init='+SYSTEM+'/init')
+assert os.statvfs('/').f_bfree*os.statvfs('/').f_frsize>1024**2
+for label,path in [('accepted-candidate-root',SYSTEM),('rollback-system-root',OLD)]:
+    root=STAGE/label;assert not root.exists() and not root.is_symlink()
+    command('nix-store','--check-validity',path)
+    command('nix-store','--add-root',str(root),'-r',path)
+state=dict(started_at=now(),phase='rollback-protected',source_sha256=sha(Path(__file__)),before_boot_id=BOOT_ID,
+    preflight_sha256=sha(Path('/run/pane23-stable-poll-accepted-preflight.json')),
+    candidate_system=SYSTEM,previous_system=OLD,before_boot_files=EXPECTED['hashes']['boot'],
+    expected_candidate_files=EXPECTED['hashes']['stage'],protected_before=protected(),methods={},
+    backup=str(BACKUP),rollback_gc_root=str(STAGE/'rollback-system-root'),candidate_gc_root=str(STAGE/'accepted-candidate-root'),
+    operator_acceptance='everything\'s good land whatever we\'re on tell me what\'s next',
+    ordinary_boot_verified=False)
+save()
+try:
+    for name in MUTABLE:
+        state['phase']='replacing-'+name;save()
+        state['methods'][name]=replace(STAGE/name,BOOT/name,EXPECTED['hashes']['stage'][name]);save()
+    assert protected()==state['protected_before']
+    assert all(sha(BOOT/name)==EXPECTED['hashes']['stage'][name] for name in MUTABLE)
+    command('nix-env','--profile',str(PROFILE),'--set',SYSTEM)
+    assert os.path.realpath(PROFILE)==SYSTEM
+    state.update(phase='PERSISTENT_FILES_SELECTED',finished_at=now(),profile_after=os.path.realpath(PROFILE),
+        after_boot_files={name:sha(BOOT/name) for name in EXPECTED['hashes']['boot']},protected_after=protected())
+    save()
+except BaseException as error:
+    state.update(phase='ROLLING_BACK',error_class=type(error).__name__);save()
+    for name in MUTABLE:
+        (BOOT/(name+'.pane23-new')).unlink(missing_ok=True)
+        replace(BACKUP/name,BOOT/name,EXPECTED['hashes']['boot'][name])
+    command('nix-env','--profile',str(PROFILE),'--set',OLD)
+    assert protected()==state['protected_before'] and os.path.realpath(PROFILE)==OLD
+    assert all(sha(BOOT/name)==expected for name,expected in EXPECTED['hashes']['boot'].items())
+    state.update(phase='ROLLED_BACK',rollback_at=now());save();raise
+print(json.dumps(state,indent=2),flush=True)

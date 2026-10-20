@@ -1,0 +1,10 @@
+{
+  "requested_at": "2026-10-20T19:57:01.539467+00:00",
+  "remote_command": "systemctl --no-block reboot",
+  "exit_code": 0,
+  "method": "ordinary systemd reboot, not kexec",
+  "before_boot_id": "c17ee483-0191-48ea-986a-9738a274393e",
+  "candidate_system": "/nix/store/hpmzja32mncizz7s49ylr8pj9cy5npvg-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "source_receipt_sha256": "4ed13c2893499446116c58034b7fa97b8b07da288c88c5fc779960b7cacfce9e",
+  "transport_result_is_not_boot_proof": true
+}
