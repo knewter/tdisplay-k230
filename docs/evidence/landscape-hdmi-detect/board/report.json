@@ -1,0 +1,283 @@
+{
+  "created_at": "2026-10-20T17:34:44.102659+00:00",
+  "edid_stages": [
+    {
+      "after_edid_ms": 0.043,
+      "before_edid_ms": 0.366,
+      "block_callback_count": 2,
+      "bridge_ns": 153416416464000,
+      "callback_ns": 153416416829000,
+      "connector_update_ns": 153416586878000,
+      "detect_ns": 153416416462000,
+      "drop_ns": 153416586921000,
+      "edid_path_ms": 170.05,
+      "edid_share_percent": 99.76005960377569,
+      "held_lower_bound_ms": 170.459,
+      "helper_ns": null,
+      "pid": 103026,
+      "poll_ns": 153416416051000,
+      "probe_ns": 153416416461000,
+      "read_ns": 153416416828000
+    },
+    {
+      "after_edid_ms": 0.044,
+      "before_edid_ms": 0.367,
+      "block_callback_count": 2,
+      "bridge_ns": 153426656468000,
+      "callback_ns": 153426656835000,
+      "connector_update_ns": 153426836623000,
+      "detect_ns": 153426656467000,
+      "drop_ns": 153426836667000,
+      "edid_path_ms": 179.789,
+      "edid_share_percent": 99.77192008879024,
+      "held_lower_bound_ms": 180.2,
+      "helper_ns": null,
+      "pid": 103026,
+      "poll_ns": 153426656060000,
+      "probe_ns": 153426656466000,
+      "read_ns": 153426656834000
+    },
+    {
+      "after_edid_ms": 0.042,
+      "before_edid_ms": 0.366,
+      "block_callback_count": 2,
+      "bridge_ns": 153436896447000,
+      "callback_ns": 153436896812000,
+      "connector_update_ns": 153437080360000,
+      "detect_ns": 153436896445000,
+      "drop_ns": 153437080402000,
+      "edid_path_ms": 183.549,
+      "edid_share_percent": 99.7782090379817,
+      "held_lower_bound_ms": 183.957,
+      "helper_ns": null,
+      "pid": 103026,
+      "poll_ns": 153436896038000,
+      "probe_ns": 153436896444000,
+      "read_ns": 153436896811000
+    }
+  ],
+  "limits": [
+    "Idle-board observation; no new gesture/native/glass/optical or latency-improvement proof.",
+    "Stage boundaries are function entries: EDID path includes wrappers, validation and return overhead, instrumentation and scheduling.",
+    "No EDID bytes, individual I2C durations, exact inlined function-return time, mutex pointers or per-probe connector IDs were collected."
+  ],
+  "normal": {
+    "benchmark_stop_succeeded": true,
+    "checked_at": "2026-10-20T17:33:27.782593+00:00",
+    "control": {
+      "arguments_without_logging": [
+        "-c",
+        "/nix/store/ila85h1q2fkpzkj7q1jlmc1gz8xq1syp-k230-sway.conf"
+      ],
+      "config_sha256": "575fa8d14d8dda6d0707c369015d37dbd7ea9295c66cefdebef2ef3ea26bdcd0",
+      "debug_flag": true,
+      "environment": {
+        "SWAY_K230_CARD_REDUCED_MOTION": "0",
+        "SWAY_K230_CPU_FRAME_TIMING": "",
+        "SWAY_K230_TOUCH_ROUTE_TRACE": "",
+        "WLR_PIXMAN_DRAW_TRACE": "",
+        "WLR_PIXMAN_OUTPUT_TURN": "1",
+        "WLR_PIXMAN_QUARTER_TURN": "0",
+        "WLR_RENDERER": "pixman"
+      },
+      "executable_sha256": "9464072ac100e77500c7b6113920d2c2ed14e022612eddbc38a037ce9b006670",
+      "output": [
+        {
+          "active": true,
+          "current_mode": {
+            "height": 800,
+            "picture_aspect_ratio": "none",
+            "refresh": 59910,
+            "width": 1280
+          },
+          "name": "HDMI-A-1",
+          "rect": {
+            "height": 800,
+            "width": 1280,
+            "x": 0,
+            "y": 0
+          },
+          "scale": 1.0,
+          "transform": "normal"
+        }
+      ],
+      "persistent_system": "/nix/store/j30yag05ic9k68n9dzbzindgf4ardp08-nixos-system-nixos-26.11.20260919.20b1ddd",
+      "pid": 77507,
+      "system": "/nix/store/j30yag05ic9k68n9dzbzindgf4ardp08-nixos-system-nixos-26.11.20260919.20b1ddd",
+      "verbose_flag": false
+    },
+    "home_command_succeeded": true,
+    "idle_terminal": {
+      "app_id": "k230-terminal",
+      "idle_shell_without_child_jobs": true,
+      "pinned_idle_color_followers": 1
+    },
+    "services": [
+      "active",
+      "active"
+    ],
+    "virtual_test_devices": 0
+  },
+  "original": {
+    "arguments_without_logging": [
+      "-c",
+      "/nix/store/ila85h1q2fkpzkj7q1jlmc1gz8xq1syp-k230-sway.conf"
+    ],
+    "config_sha256": "575fa8d14d8dda6d0707c369015d37dbd7ea9295c66cefdebef2ef3ea26bdcd0",
+    "debug_flag": true,
+    "environment": {
+      "SWAY_K230_CARD_REDUCED_MOTION": "0",
+      "SWAY_K230_CPU_FRAME_TIMING": "",
+      "SWAY_K230_TOUCH_ROUTE_TRACE": "",
+      "WLR_PIXMAN_DRAW_TRACE": "",
+      "WLR_PIXMAN_OUTPUT_TURN": "1",
+      "WLR_PIXMAN_QUARTER_TURN": "0",
+      "WLR_RENDERER": "pixman"
+    },
+    "executable_sha256": "9464072ac100e77500c7b6113920d2c2ed14e022612eddbc38a037ce9b006670",
+    "output": [
+      {
+        "active": true,
+        "current_mode": {
+          "height": 800,
+          "picture_aspect_ratio": "none",
+          "refresh": 59910,
+          "width": 1280
+        },
+        "name": "HDMI-A-1",
+        "rect": {
+          "height": 800,
+          "width": 1280,
+          "x": 0,
+          "y": 0
+        },
+        "scale": 1.0,
+        "transform": "normal"
+      }
+    ],
+    "persistent_system": "/nix/store/j30yag05ic9k68n9dzbzindgf4ardp08-nixos-system-nixos-26.11.20260919.20b1ddd",
+    "pid": 77507,
+    "system": "/nix/store/j30yag05ic9k68n9dzbzindgf4ardp08-nixos-system-nixos-26.11.20260919.20b1ddd",
+    "verbose_flag": false
+  },
+  "probes_without_edid_reader_marker": [
+    {
+      "bridge_ns": 153416416062000,
+      "detect_ns": 153416416059000,
+      "drop_ns": 153416416458000,
+      "held_lower_bound_ms": 0.399,
+      "helper_ns": null,
+      "pid": 103026,
+      "poll_ns": 153416416051000,
+      "probe_ns": 153416416057000
+    },
+    {
+      "bridge_ns": 153426656070000,
+      "detect_ns": 153426656068000,
+      "drop_ns": 153426656463000,
+      "held_lower_bound_ms": 0.395,
+      "helper_ns": null,
+      "pid": 103026,
+      "poll_ns": 153426656060000,
+      "probe_ns": 153426656065000
+    },
+    {
+      "bridge_ns": 153436896049000,
+      "detect_ns": 153436896046000,
+      "drop_ns": 153436896441000,
+      "held_lower_bound_ms": 0.395,
+      "helper_ns": null,
+      "pid": 103026,
+      "poll_ns": 153436896038000,
+      "probe_ns": 153436896044000
+    },
+    {
+      "bridge_ns": 153447136117000,
+      "detect_ns": 153447136115000,
+      "drop_ns": 153447136508000,
+      "held_lower_bound_ms": 0.393,
+      "helper_ns": null,
+      "pid": 103026,
+      "poll_ns": 153447136107000,
+      "probe_ns": 153447136112000
+    }
+  ],
+  "rejected_edid_stages": [],
+  "rejected_poll_intervals": [
+    {
+      "pid": 103026,
+      "poll_ns": 153447136107000,
+      "reason": "capture boundary before probe completed"
+    }
+  ],
+  "report_tool_sha256": "ddfdbc6d97c250597c829eccba5c5e042a5c772086f9d06f84cea3e8f9434be9",
+  "schema": "landscape-hdmi-detect-v1",
+  "status": "STAGE_MEASURED",
+  "trace": {
+    "buffer_total_kb": 1027,
+    "controller_pid": 103114,
+    "current_tracer": "function",
+    "dependencies": {
+      "hdmi-shell-capture-board.py": "ddc51fcd86d7b4d546f19b394624ca10c103fbe4b797a1dc54ec04262ee3300b",
+      "hdmi-shell-performance.py": "47d601d3181f4a66065bb73951d4c428b7a0c0f8b33bab00dd37e914234ae50a",
+      "landscape-drm-holder.py": "6c12fc6b5179e1ff35415076f101687e4878bb846761c11df162f74a2917346f",
+      "landscape-hdmi-baseline.py": "a84f9ab0ffd423470ff157111b5a180641bc6f00949513603bd467b316d9e292",
+      "landscape-hdmi-logging.py": "5b310841e69bac1719cf5bfa5fb78a7ba47a9c062f74ab6cd653054e8e3d41dd",
+      "landscape-hdmi-stall-trace.py": "b98a6404bdd96afab1db9edb6779f325bc7958574e754b04dffbed73ae67f42b"
+    },
+    "event_count": 205,
+    "events_sha256": "b554d1b47fafdd943afbde0676d81f267a86bea5bd587afbe6b3ba080853aab4",
+    "function_filter": [
+      "detect_connector_status",
+      "drm_atomic_helper_connector_hdmi_hotplug",
+      "drm_atomic_helper_connector_hdmi_update",
+      "drm_bridge_connector_read_edid",
+      "drm_edid_connector_update",
+      "drm_helper_probe_detect",
+      "drm_helper_probe_detect_ctx",
+      "drm_modeset_backoff",
+      "drm_modeset_drop_locks",
+      "lt9611_bridge_detect",
+      "lt9611_bridge_edid_read",
+      "lt9611_get_edid_block",
+      "output_poll_execute"
+    ],
+    "global_before": {
+      "current_tracer": "64aec5a7fa151222572a241383c857738318e63cca7ee771952c95a31d92a19d",
+      "events/enable": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+      "set_event_pid": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "set_ftrace_filter": "5c83074a334aa00236037c3c0621b592cf3c740b5f5977f6ee95a308c5c8281e",
+      "set_ftrace_pid": "cdf4d2acfdcd5cd2556f83eeb52ee253ea6afbaa941c760f77dcfae3c925cb78",
+      "set_graph_function": "5c83074a334aa00236037c3c0621b592cf3c740b5f5977f6ee95a308c5c8281e",
+      "trace_clock": "925ca315bd3de6ef99e08c002e320406936ae2da2f2c0afd8da1e87f7980a253",
+      "trace_options": "a01cdd327a047d28b4241491a330220fa96feba5a60309dee36ca7e3bbd9204a",
+      "tracing_on": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865"
+    },
+    "markers": {
+      "end": {
+        "after_ns": 153447237222959,
+        "before_ns": 153447235876828
+      },
+      "start": {
+        "after_ns": 153412235670899,
+        "before_ns": 153412234911744
+      }
+    },
+    "mode": "probe",
+    "raw_bytes": 20521,
+    "raw_sha256": "0f7f4f21eb081c928d9b3dcb2e95b4587dd31d9d2eecdbbbf397ab3acfbfcc51",
+    "schema": "landscape-hdmi-detect-v1",
+    "stats": {
+      "cpu0": {
+        "bytes": 7720,
+        "commit overrun": 0,
+        "dropped events": 0,
+        "entries": 205,
+        "overrun": 0,
+        "read events": 0
+      }
+    },
+    "tool_sha256": "ddfdbc6d97c250597c829eccba5c5e042a5c772086f9d06f84cea3e8f9434be9",
+    "trace_clock": "local global counter uptime perf [mono] mono_raw boot tai"
+  }
+}

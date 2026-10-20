@@ -1,0 +1,17 @@
+{
+  "checked_at": "2026-10-20T17:36:35.484251+00:00",
+  "command": "python3 tools/landscape-hdmi-detect.py --report docs/evidence/landscape-hdmi-detect/board/trial-a --output docs/evidence/landscape-hdmi-detect/board/report.json",
+  "exit_code": 0,
+  "status": "STAGE_MEASURED",
+  "qualified_edid_stages": 3,
+  "boundary_rejections": [
+    {
+      "pid": 103026,
+      "poll_ns": 153447136107000,
+      "reason": "capture boundary before probe completed"
+    }
+  ],
+  "tool_sha256": "ddfdbc6d97c250597c829eccba5c5e042a5c772086f9d06f84cea3e8f9434be9",
+  "report_sha256": "ed5c3a9c5e2070ecca644f666933ac04971bc514ce337c4f90fbcdc71e8460d5",
+  "private_raw_hash_verified": true
+}

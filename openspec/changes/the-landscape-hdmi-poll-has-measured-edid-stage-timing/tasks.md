@@ -5,9 +5,9 @@
 ## 2. Hardware observation
 
 - [x] 2.1 Qualify harmless 50ms controller-sleep smoke with source/kernel/system and cleanup records. Hardware proof: protected SSH `python3 <probe-dir>/landscape-hdmi-detect.py --board-smoke --output <probe-dir>/smoke-a`.
-- [ ] 2.2 Record exactly one 35s idle observation on pinned source221/j30/DEBUG/landscape, requiring >=3 complete EDID stage intervals. Hardware proof: protected SSH `python3 <probe-dir>/landscape-hdmi-detect.py --board-run --smoke <probe-dir>/smoke-a --expected-system <pinned-j30-system> --expected-executable-sha256 9464072ac100e77500c7b6113920d2c2ed14e022612eddbc38a037ce9b006670 --output <probe-dir>/trial-a`; preserve command, exit status and rejections.
-- [ ] 2.3 Commit sanitized records, source grounding and stage report with entry-boundary/instrumentation limits. Proof: `python3 tools/landscape-hdmi-detect.py --report docs/evidence/landscape-hdmi-detect/board/trial-a --output docs/evidence/landscape-hdmi-detect/board/report.json`.
-- [ ] 2.4 Verify owned instance/timer removal, unchanged root controls/options/filter hashes and runtime/output, active services, idle terminal and no virtual inputs; release board. Hardware proof: timestamped protected-SSH final-state query committed with its command.
+- [x] 2.2 Record exactly one 35s idle observation on pinned source221/j30/DEBUG/landscape, requiring >=3 complete EDID stage intervals. Hardware proof: protected SSH `python3 <probe-dir>/landscape-hdmi-detect.py --board-run --smoke <probe-dir>/smoke-a --expected-system <pinned-j30-system> --expected-executable-sha256 9464072ac100e77500c7b6113920d2c2ed14e022612eddbc38a037ce9b006670 --output <probe-dir>/trial-a`; preserve command, exit status and rejections.
+- [x] 2.3 Commit sanitized records, source grounding and stage report with entry-boundary/instrumentation limits. Proof: `python3 tools/landscape-hdmi-detect.py --report docs/evidence/landscape-hdmi-detect/board/trial-a --output docs/evidence/landscape-hdmi-detect/board/report.json`.
+- [x] 2.4 Verify owned instance/timer removal, unchanged root controls/options/filter hashes and runtime/output, active services, idle terminal and no virtual inputs; release board. Hardware proof: timestamped protected-SSH final-state query committed with its command.
 
 ## 3. Publication
 

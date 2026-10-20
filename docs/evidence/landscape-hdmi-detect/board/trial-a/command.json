@@ -1,0 +1,24 @@
+{
+  "started_at": "2026-10-20T17:31:37.534836+00:00",
+  "command": [
+    "ssh",
+    "-F",
+    "/home/jadams/tmp/k230-coordination/ssh_config.private",
+    "k230",
+    "/nix/store/v189xydz6qkcd4cbkixcmv91w8hbc560-python3-riscv64-unknown-linux-gnu-3.14.7/bin/python3",
+    "/var/tmp/k230-hdmi-detect-20261020/landscape-hdmi-detect.py",
+    "--board-run",
+    "--smoke",
+    "/var/tmp/k230-hdmi-detect-20261020/smoke-a",
+    "--expected-system",
+    "/nix/store/j30yag05ic9k68n9dzbzindgf4ardp08-nixos-system-nixos-26.11.20260919.20b1ddd",
+    "--expected-executable-sha256",
+    "9464072ac100e77500c7b6113920d2c2ed14e022612eddbc38a037ce9b006670",
+    "--output",
+    "/var/tmp/k230-hdmi-detect-20261020/trial-a"
+  ],
+  "capture_source_revision": "6b94a7859a8935de28a4d25dc94b2f92e5e649a0",
+  "tool_sha256": "ddfdbc6d97c250597c829eccba5c5e042a5c772086f9d06f84cea3e8f9434be9",
+  "finished_at": "2026-10-20T17:33:28.159395+00:00",
+  "exit_code": 0
+}
