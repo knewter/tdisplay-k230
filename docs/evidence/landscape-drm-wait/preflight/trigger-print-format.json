@@ -1,0 +1,9 @@
+{
+  "recorded_at": "2026-10-20T06:46:10.015504+00:00",
+  "observed_on": "source395a3601 smoke-a before tracing enabled",
+  "kernel": "7.3.0-rc5",
+  "trigger": "stacktrace:count=50000 if prev_pid == 79449 && (prev_state == 1 || prev_state == 2)",
+  "tracing_on": 0,
+  "failure": "Parser expected stacktrace:50000, but kernel prints stacktrace:count=50000. No compositor capture or enabled tracing occurred.",
+  "correction": "Accept the explicit count= label with identical PID/expression/count guards; host regression included. Preserve rejected attempt and explicitly cleanup instance/timer before next smoke."
+}

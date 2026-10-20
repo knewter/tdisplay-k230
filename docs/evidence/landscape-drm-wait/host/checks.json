@@ -1,9 +1,9 @@
 {
-  "checked_at": "2026-10-20T06:44:12.169397+00:00",
+  "checked_at": "2026-10-20T06:46:10.009397+00:00",
   "command": "python3 tools/landscape-drm-wait.py --self-test",
   "exit_code": 0,
   "test_methods": 7,
   "includes": "Inherited clock/loss/partial/frame-join gates; stack adjacency/schema/privacy, trigger ownership/exhaustion, failure cleanup and gzip identity/expansion.",
-  "source_sha256": "70eb54c41c4b1ebe41049b97633da1146a47885182a6c8bae17f9473c4d34633",
+  "source_sha256": "4f29492ee1fc84934f181e7688b883e6f645035b599bf9992a526bb397f1f3c6",
   "base_tool_sha256": "b98a6404bdd96afab1db9edb6779f325bc7958574e754b04dffbed73ae67f42b"
 }

@@ -35,7 +35,7 @@ def trigger_remaining(text, pid, allow_absent=False):
     rows = [s.strip() for s in text.splitlines() if s.strip() and not s.startswith('#')]
     if not rows and allow_absent: return None
     if len(rows) != 1: raise Error('stack trigger missing or has foreign entries')
-    match = re.fullmatch(r'stacktrace:(\d+) if (.+)', rows[0])
+    match = re.fullmatch(r'stacktrace:(?:count=)?(\d+) if (.+)', rows[0])
     if (not match or re.sub(r'\s+', '', match[2]) != re.sub(r'\s+', '', expression(pid)) or
             not 0 <= int(match[1]) <= CAPACITY):
         raise Error('stack trigger ownership or count differs')
@@ -426,6 +426,7 @@ class Fixtures(unittest.TestCase):
             with self.assertRaises(Error):checked(d)
 
     def test_trigger_ownership_precedes_mutation(self):
+        self.assertEqual(trigger_remaining('stacktrace:count=50000 if '+expression(10),10),50000)
         with tempfile.TemporaryDirectory() as tmp:
             root=Path(tmp);name='k230-stall-'+'a'*16;p=root/'instances'/name;p.mkdir(parents=True)
             control=p/'events/sched/sched_switch';control.mkdir(parents=True)

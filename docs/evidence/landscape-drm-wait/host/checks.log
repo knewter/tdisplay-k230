@@ -7,6 +7,6 @@ test_symbol_export_and_unresolved_addresses (__main__.Fixtures.test_symbol_expor
 test_trigger_ownership_precedes_mutation (__main__.Fixtures.test_trigger_ownership_precedes_mutation) ... ok
 
 ----------------------------------------------------------------------
-Ran 7 tests in 0.302s
+Ran 7 tests in 1.118s
 
 OK
