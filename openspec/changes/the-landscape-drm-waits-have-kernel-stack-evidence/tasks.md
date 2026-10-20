@@ -1,6 +1,6 @@
 ## 1. Host tooling
 
-- [ ] 1.1 Implement isolated bounded stack triggers, safe symbol export, strict stack/syscall/scheduler/frame association and ownership cleanup. Test address/payload rejection, unresolved frames, lost/missing/ambiguous stack records, trigger ownership/exhaustion, clock/loss and gzip identity. Proof: `python3 tools/landscape-drm-wait.py --self-test`; commit log/source hashes under `docs/evidence/landscape-drm-wait/host/`.
+- [x] 1.1 Implement isolated bounded stack triggers, safe symbol export, strict stack/syscall/scheduler/frame association and ownership cleanup. Test address/payload rejection, unresolved frames, lost/missing/ambiguous stack records, trigger ownership/exhaustion, clock/loss and gzip identity. Proof: `python3 tools/landscape-drm-wait.py --self-test`; commit log/source hashes under `docs/evidence/landscape-drm-wait/host/`.
 
 ## 2. Reserved-board diagnostic (no physical contact claim)
 
