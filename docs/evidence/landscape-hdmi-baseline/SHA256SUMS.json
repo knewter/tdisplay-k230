@@ -1,5 +1,5 @@
 {
-  "created_utc": "2026-10-20T04:56:55.476563+00:00",
+  "created_utc": "2026-10-20T05:01:39.119298+00:00",
   "files": [
     {
       "path": "README.md",
@@ -65,6 +65,11 @@
       "path": "board/report.json",
       "bytes": 4941,
       "sha256": "570ed7ee81b930347d7f47ec863c1d671c8892d0179f1d2e0de3eeac210d843a"
+    },
+    {
+      "path": "board/source-publication.json",
+      "bytes": 347,
+      "sha256": "3e304b91e868720eeba55f467ccf38daab6721eaf6c8e1556e22743e0eee58db"
     },
     {
       "path": "board/two/capture.log",

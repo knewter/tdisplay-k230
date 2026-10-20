@@ -10,6 +10,6 @@
 ## 3. Publication
 
 - [x] 3.1 Honor the explicit tooling-only metadata in the public work board; keep missing-delta checks for absent, false, nested, quoted or repeated markers. Run `python3 tests/test_work_board.py` and `python3 scripts/render_work_board.py --working-tree --output /tmp/k230-landscape-work-preview.json`.
-- [ ] 3.2 Run `openspec validate the-landscape-hdmi-shell-has-a-reproducible-motion-baseline --strict`, commit the proved tooling/evidence and push master; verify the exact revision at `https://knewter.github.io/tdisplay-k230/work/` after its CI succeeds. Archive only after tasks1–2 have their committed proof. Leave the portrait proposal and all nine unchecked tasks open.
+- [x] 3.2 Run `openspec validate the-landscape-hdmi-shell-has-a-reproducible-motion-baseline --strict`, commit the proved tooling/evidence and push master; verify the exact revision at `https://knewter.github.io/tdisplay-k230/work/` after its CI succeeds. Archive only after tasks1–2 have their committed proof. Leave the portrait proposal and all nine unchecked tasks open.
 
 Evidence: `docs/evidence/landscape-hdmi-baseline/README.md` and its bounded logs, manifests and strict report. This tooling-only change has no capability delta; the portrait proposal remains open.
