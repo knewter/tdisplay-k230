@@ -61,3 +61,15 @@ The evaluated Sway wrapper still selects3vk3p0ps and the exact ila85 config
 identifies the candidate kernel/system input; the reused compositor binary
 remains the previously qualified221bbcf3 artifact. No runtime proof follows
 from these successful builds.
+
+Boot attemptA is REJECTED_WRONG_SERIAL_DEVICE. The historical ttyACM0 now
+leads to an unrelated Linux USB gadget; only whitespace was sent there.
+K230 was rebooted only through its protected SSH alias and returned to the
+known-good j30y system/profile (bootID914f8346). The candidate was never
+selected. The remaining CP2102N serial candidate fails to open with EIO;
+no host serial input or K230 marker was sent through that failed port.
+`boot-attempt-a/` retains the staging/copy/boot commands, failure, recovery
+and private-source hashes. Candidate checksums and preserved boot-file
+checks passed; no boot file/profile was modified. An identified, working
+K230 UART is required before retrying the named serial-observed boot gate.
+Neither task2.1 nor any runtime/physical/promotion gate is complete.

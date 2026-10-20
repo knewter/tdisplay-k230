@@ -1,0 +1,15 @@
+{
+  "started_at": "2026-10-20T18:17:52.716371+00:00",
+  "finished_at": "2026-10-20T18:21:37.105736+00:00",
+  "command": [
+    "nix",
+    "copy",
+    "--no-check-sigs",
+    "--to",
+    "ssh://k230",
+    "/nix/store/hpmzja32mncizz7s49ylr8pj9cy5npvg-nixos-system-nixos-26.11.20260919.20b1ddd"
+  ],
+  "ssh_options": "protected configuration path; Compression=yes",
+  "exit_code": 0,
+  "system": "/nix/store/hpmzja32mncizz7s49ylr8pj9cy5npvg-nixos-system-nixos-26.11.20260919.20b1ddd"
+}

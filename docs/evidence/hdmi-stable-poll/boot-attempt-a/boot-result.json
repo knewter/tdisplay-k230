@@ -1,0 +1,15 @@
+{
+  "started_at": "2026-10-20T18:25:12.132977+00:00",
+  "candidate_system": "/nix/store/hpmzja32mncizz7s49ylr8pj9cy5npvg-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "preserved_system": "/nix/store/j30yag05ic9k68n9dzbzindgf4ardp08-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "pre_boot_id": "d79e00a9-3020-4c59-9836-703fd2115527",
+  "stage": "/var/lib/k230/hdmi-stable-poll-candidate-a",
+  "bundle": "/nix/store/8y2w7ll59b82miqpdy93xlyhfgsgq413-k230-coherent-shell-boot-files",
+  "persistent_boot_files_modified": false,
+  "persistent_profile_modified": false,
+  "status": "FAILED",
+  "error": "failed to catch autoboot; normal files unchanged",
+  "failed_at": "2026-10-20T18:25:55.461057+00:00",
+  "recovered_normal": true,
+  "recovery_boot_id": "914f8346-b3d5-449b-ab32-569e8b78675e"
+}

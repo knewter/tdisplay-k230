@@ -1,0 +1,80 @@
+"""One recoverable volatile U-Boot selection; never changes /boot or profile."""
+import argparse,contextlib,datetime,hashlib,importlib.util,json,re,subprocess,time,zlib
+from pathlib import Path
+p=argparse.ArgumentParser();p.add_argument('--bundle',type=Path,required=True);p.add_argument('--stage',required=True);p.add_argument('--preflight',type=Path,required=True);a=p.parse_args()
+b=Path(__file__).parent;r=Path('/mnt/MediaVolume/home/jadams/src/gitlab.daringbit.com/josh/tdisplay-k230/.claude/worktrees/hdmi-stable-poll');ssh=['ssh','-F',str(Path.home()/'tmp/k230-coordination/ssh_config.private'),'-o','ConnectTimeout=3','k230'];now=lambda:datetime.datetime.now(datetime.timezone.utc).isoformat()
+assert re.fullmatch(r'/var/lib/k230/hdmi-stable-poll-[a-z0-9-]+',a.stage)
+pre=json.loads(a.preflight.read_text());bundle=a.bundle.resolve();identity=json.loads((bundle/'identity.json').read_text());candidate=identity['system'];normal=pre['control']['persistent_system'];oldboot=pre['boot']['boot_id'];assert candidate!=normal
+assert identity['configuration']=='k230-mainline-drm-shell-landscape-hdmi'
+inspect=subprocess.run(['python3',str(b/'stable-poll-inspect-bundle.py'),str(bundle)],capture_output=True,text=True,check=True);(b/'stable-poll-bundle-inspection.json').write_text(inspect.stdout)
+for name in ('Image','k230-tdisplay.dtb','initrd.uimg','bootargs.txt'):
+ assert (bundle/name).is_file()
+fw=b/'stable-poll-known-good-fw.bin';assert fw.is_file();fwdata=fw.read_bytes()
+spec=importlib.util.spec_from_file_location('splash',r/'tools/splash-uboot-session.py');splash=importlib.util.module_from_spec(spec);spec.loader.exec_module(splash)
+def remote(cmd,timeout=10):
+ return subprocess.run(ssh+[cmd],capture_output=True,text=True,timeout=timeout)
+def query():
+ v=remote('readlink -f /run/current-system; readlink -f /run/booted-system; readlink -f /nix/var/nix/profiles/system; cat /proc/sys/kernel/random/boot_id')
+ return v.stdout.splitlines() if v.returncode==0 else []
+assert query()==[pre['control']['system'],pre['boot']['booted_system'],normal,oldboot]
+scripts=json.loads((b/'stable-poll-stage.json').read_text())['scripts']
+code="import importlib.util,json;from pathlib import Path;s=importlib.util.spec_from_file_location('proof',Path("+repr(scripts+"/hdmi-stable-poll-proof.py")+"));m=importlib.util.module_from_spec(s);s.loader.exec_module(m);ipc=m.cap.IPC();print(json.dumps(dict(control=m.log.control(ipc),idle=m.log.idle_startup(ipc))));ipc.close()"
+check=subprocess.run(ssh+['/nix/store/v189xydz6qkcd4cbkixcmv91w8hbc560-python3-riscv64-unknown-linux-gnu-3.14.7/bin/python3 -'],input=code,capture_output=True,text=True,timeout=30);check.check_returncode();live=json.loads(check.stdout)
+assert live['control']==pre['control'] and live['idle']['idle_shell_without_child_jobs'] is True
+(b/'stable-poll-immediate-preboot-control.json').write_text(json.dumps(live,indent=2)+'\n')
+manifest={'started_at':now(),'candidate_system':candidate,'preserved_system':normal,'pre_boot_id':oldboot,'stage':a.stage,'bundle':str(bundle),'persistent_boot_files_modified':False,'persistent_profile_modified':False,'status':'STARTING'}
+def save(): (b/'stable-poll-candidate-boot.json').write_text(json.dumps(manifest,indent=2)+'\n')
+save();s=None;at_uboot=False
+with (b/'stable-poll-candidate-console.private.log').open('w') as stdout,contextlib.redirect_stdout(stdout):
+ try:
+  s=splash.ums.Session('/dev/ttyACM0',115200,str(b/'stable-poll-candidate-serial.private.log'))
+  s.note('candidate volatile boot start UTC '+now());remote('sync; systemctl reboot',15)
+  end=time.monotonic()+12
+  while time.monotonic()<end:
+   s.port.write(b' \x08');s.port.flush();s.pump();time.sleep(.1)
+  s.buf=b'';s.port.write(b'\r\n');s.port.flush()
+  if not s.wait_for(splash.ums.PROMPT,30):raise RuntimeError('failed to catch autoboot; normal files unchanged')
+  at_uboot=True
+  for name,address in splash.LOADS:
+   data=(bundle/name).read_bytes();out=splash.run(s,f'ext4load mmc 1:2 {address} {a.stage}/{name}',90)
+   if not out or f'{len(data)} bytes read'.encode() not in out:raise RuntimeError('load size mismatch '+name)
+   crc=splash.run(s,f'crc32 {address} {len(data):#x}',30)
+   if not crc or f'{zlib.crc32(data):08x}'.encode() not in crc:raise RuntimeError('load CRC mismatch '+name)
+  out=splash.run(s,'ext4load mmc 1:1 0x8000000 /fw_jump_add_uboot_head.bin',60)
+  crc=splash.run(s,f'crc32 0x8000000 {len(fwdata):#x}',30)
+  if not out or f'{len(fwdata)} bytes read'.encode() not in out or not crc or f'{zlib.crc32(fwdata):08x}'.encode() not in crc:raise RuntimeError('firmware load mismatch')
+  if not splash.run(s,f'env import -t 0x7000000 {(bundle/"bootargs.txt").stat().st_size:#x}'):raise RuntimeError('bootargs import failed')
+  out=splash.run(s,'printenv bootargs')
+  if identity['bootargs'].encode() not in out:raise RuntimeError('bootargs differ')
+  manifest.update(status='BOOTING',all_load_sizes_and_crcs_match=True,bootargs_match=True);save()
+  s.send_line('bootm 0x8000000 0x9000000 0x8400000');at_uboot=False
+  end=time.monotonic()+300;next_query=time.monotonic()+40;found=[]
+  while time.monotonic()<end:
+   s.pump()
+   if time.monotonic()>=next_query:
+    try:found=query()
+    except subprocess.SubprocessError:found=[]
+    next_query=time.monotonic()+5
+    if len(found)==4 and found[:3]==[candidate,candidate,normal] and found[3]!=oldboot:break
+  else:raise RuntimeError('candidate fresh boot/runtime identity not obtained')
+  s.note('candidate identity verified UTC '+now());manifest.update(status='BOOTED',finished_at=now(),post_boot_id=found[3],runtime_system=found[0],booted_system=found[1],persistent_system=found[2]);save()
+ except BaseException as error:
+  manifest.update(status='FAILED',error=str(error),failed_at=now());save()
+  if s and at_uboot:s.send_line('reset')
+  elif s:
+   try:remote('systemctl reboot',15)
+   except subprocess.SubprocessError:pass
+  if s:
+   end=time.monotonic()+240;next_query=time.monotonic()+30
+   while time.monotonic()<end:
+    s.pump()
+    if time.monotonic()>=next_query:
+     try:found=query()
+     except subprocess.SubprocessError:found=[]
+     next_query=time.monotonic()+5
+     if len(found)==4 and found[:3]==[normal,normal,normal]:
+      manifest.update(recovered_normal=True,recovery_boot_id=found[3]);save();break
+  raise
+ finally:
+  if s:s.port.close();s.log.close()
+print(json.dumps(manifest,indent=2))

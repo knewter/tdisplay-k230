@@ -1,0 +1,26 @@
+{
+  "staged_at": "2026-10-20T18:24:08.218919+00:00",
+  "stage": "/var/lib/k230/hdmi-stable-poll-candidate-a",
+  "scripts": "/var/tmp/k230-hdmi-stable-poll-candidate-a",
+  "bundle": "/nix/store/8y2w7ll59b82miqpdy93xlyhfgsgq413-k230-coherent-shell-boot-files",
+  "candidate_system": "/nix/store/hpmzja32mncizz7s49ylr8pj9cy5npvg-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "preserved_system": "/nix/store/j30yag05ic9k68n9dzbzindgf4ardp08-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "commands": [
+    "set -eu\ntest \"$(readlink -f /run/current-system)\" = /nix/store/j30yag05ic9k68n9dzbzindgf4ardp08-nixos-system-nixos-26.11.20260919.20b1ddd\ntest \"$(readlink -f /nix/var/nix/profiles/system)\" = /nix/store/j30yag05ic9k68n9dzbzindgf4ardp08-nixos-system-nixos-26.11.20260919.20b1ddd\ntest -x /nix/store/hpmzja32mncizz7s49ylr8pj9cy5npvg-nixos-system-nixos-26.11.20260919.20b1ddd/init\ntest ! -e /var/lib/k230/hdmi-stable-poll-candidate-a; test ! -e /var/tmp/k230-hdmi-stable-poll-candidate-a\ninstall -d -m0700 /var/lib/k230/hdmi-stable-poll-candidate-a /var/tmp/k230-hdmi-stable-poll-candidate-a\ncp /nix/store/21lz5c6pkk329c0xcac9bzlx40dplrlk-linux-riscv64-unknown-linux-gnu-7.3.0-rc5/Image /var/lib/k230/hdmi-stable-poll-candidate-a/Image\n",
+    "set -eu\ncd /var/lib/k230/hdmi-stable-poll-candidate-a; sha256sum -c --ignore-missing SHA256SUMS\ncd /boot; sha256sum -c /var/lib/k230/boot-backup-hdmi-stable-poll-20261020/SHA256SUMS\nsync\n"
+  ],
+  "candidate_four_file_checksums_verified": true,
+  "normal_five_boot_files_unchanged": true,
+  "persistent_selection_changed": false,
+  "helper_sources": [
+    "hdmi-stable-poll-proof.py",
+    "landscape-hdmi-detect.py",
+    "landscape-drm-holder.py",
+    "landscape-hdmi-stall-trace.py",
+    "landscape-hdmi-logging.py",
+    "hdmi-shell-capture-board.py",
+    "landscape-hdmi-baseline.py",
+    "hdmi-shell-performance.py",
+    "stable-poll-physical-watch.py"
+  ]
+}

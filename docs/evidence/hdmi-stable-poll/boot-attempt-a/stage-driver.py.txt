@@ -1,0 +1,25 @@
+from pathlib import Path
+import subprocess,json,datetime
+b=Path(__file__).parent;w=Path('/mnt/MediaVolume/home/jadams/src/gitlab.daringbit.com/josh/tdisplay-k230/.claude/worktrees/hdmi-stable-poll');bundle=(b/'stable-poll-mainline-bundle-result').resolve();identity=json.loads((bundle/'identity.json').read_text());assert json.loads((b/'stable-poll-copy-closure.json').read_text())['exit_code']==0
+s=str(Path.home()/'tmp/k230-coordination/ssh_config.private');ssh=['ssh','-F',s,'k230'];stage='/var/lib/k230/hdmi-stable-poll-candidate-a';scripts='/var/tmp/k230-hdmi-stable-poll-candidate-a';backup='/var/lib/k230/boot-backup-hdmi-stable-poll-20261020';normal=json.loads((b/'stable-poll-original-control.json').read_text())['control']['persistent_system'];commands=[]
+def remote(cmd):
+ commands.append(cmd);p=subprocess.run(ssh+[cmd],capture_output=True,text=True,timeout=90)
+ with (b/'stable-poll-stage.private.log').open('a') as log:log.write(p.stdout+p.stderr)
+ p.check_returncode();return p.stdout
+remote(f'''set -eu
+test "$(readlink -f /run/current-system)" = {normal}
+test "$(readlink -f /nix/var/nix/profiles/system)" = {normal}
+test -x {identity['system']}/init
+test ! -e {stage}; test ! -e {scripts}
+install -d -m0700 {stage} {scripts}
+cp {identity['kernel']} {stage}/Image
+''')
+subprocess.run(['scp','-q','-F',s,*[str(bundle/n) for n in ('initrd.uimg','k230-tdisplay.dtb','bootargs.txt','SHA256SUMS')],'k230:'+stage+'/'],check=True,timeout=300)
+files=['hdmi-stable-poll-proof.py','landscape-hdmi-detect.py','landscape-drm-holder.py','landscape-hdmi-stall-trace.py','landscape-hdmi-logging.py','hdmi-shell-capture-board.py','landscape-hdmi-baseline.py','hdmi-shell-performance.py']
+subprocess.run(['scp','-q','-F',s,*[str(w/'tools'/f) for f in files],str(b/'stable-poll-physical-watch.py'),'k230:'+scripts+'/'],check=True,timeout=60)
+out=remote(f'''set -eu
+cd {stage}; sha256sum -c --ignore-missing SHA256SUMS
+cd /boot; sha256sum -c {backup}/SHA256SUMS
+sync
+''')
+(b/'stable-poll-stage.json').write_text(json.dumps({'staged_at':datetime.datetime.now(datetime.timezone.utc).isoformat(),'stage':stage,'scripts':scripts,'bundle':str(bundle),'candidate_system':identity['system'],'preserved_system':normal,'commands':commands,'candidate_four_file_checksums_verified':True,'normal_five_boot_files_unchanged':True,'persistent_selection_changed':False,'helper_sources':files+['stable-poll-physical-watch.py']},indent=2)+'\n');print(out)

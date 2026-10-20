@@ -1,0 +1,40 @@
+{
+  "checked_at": "2026-10-20T18:29:20.969364+00:00",
+  "status": "REJECTED_WRONG_SERIAL_DEVICE",
+  "candidate_selected": false,
+  "candidate_boot_observed": false,
+  "configured_serial": "/dev/ttyACM0",
+  "mapping": "Linux7.2.9 composite gadget; unrelated login prompt. No login or command sent; whitespace only.",
+  "other_serial_candidate": "CP2102N by-id -> ttyUSB0; open fails EIO before any host serial write or K230 identification marker.",
+  "recovered_normal": true,
+  "recovery_boot_id": "914f8346-b3d5-449b-ab32-569e8b78675e",
+  "normal_system": "/nix/store/j30yag05ic9k68n9dzbzindgf4ardp08-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "persistent_boot_files_or_profile_modified": false,
+  "raw_files": {
+    "stable-poll-candidate-boot.py": {
+      "bytes": 6370,
+      "sha256": "7328b06c861c1fe732e6b646489654a33d4205768cec781bfc0fd2db1cc4add6"
+    },
+    "stable-poll-candidate-boot.json": {
+      "bytes": 790,
+      "sha256": "686ec6737e86ffd3220a00c6e809bd115c27774400d0973adf65a65d5bdd7f42"
+    },
+    "stable-poll-candidate-serial.private.log": {
+      "bytes": 362,
+      "sha256": "1f9ca317aae215298791e8ec89bd23a2b741eccd0476f447d8503310e5a7e411"
+    },
+    "stable-poll-candidate-console.private.log": {
+      "bytes": 362,
+      "sha256": "1f9ca317aae215298791e8ec89bd23a2b741eccd0476f447d8503310e5a7e411"
+    },
+    "stable-poll-immediate-preboot-control.json": {
+      "bytes": 1446,
+      "sha256": "90080c521bd8e6e9a20688c584fbd9f8f8513b48abae2c7544cf60d21e150a03"
+    },
+    "stable-poll-boot-attempt-a-query.private.log": {
+      "bytes": 305,
+      "sha256": "e6eead432154f62e572f7fadcd1cde0c0569ef86ead7975ea9c08749a37fd2de"
+    }
+  },
+  "limit": "Serial capture is from an unrelated device and remains private; no candidate runtime or physical acceptance."
+}

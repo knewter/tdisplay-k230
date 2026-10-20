@@ -1,0 +1,14 @@
+{
+  "checked_at": "2026-10-20T18:23:09.808971+00:00",
+  "url": "https://knewter.github.io/tdisplay-k230/work/",
+  "http_status": 200,
+  "expected_revision": "83b67808c4940195c1514f209bb95e30e0534f84",
+  "exact_revision_present": true,
+  "ci_run": "https://github.com/knewter/tdisplay-k230/actions/runs/39473565937",
+  "ci_conclusion": "success",
+  "ci_head": "83b67808c4940195c1514f209bb95e30e0534f84",
+  "change": "the-landscape-hdmi-shell-avoids-periodic-edid-stalls",
+  "completed_tasks": 3,
+  "total_tasks": 9,
+  "scope": "Source and actual configured cross-build gates only; deployment/physical/promotion not claimed."
+}
