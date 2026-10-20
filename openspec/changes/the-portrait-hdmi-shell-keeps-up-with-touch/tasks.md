@@ -76,3 +76,10 @@ The10 host capture fixtures pass, including cleanup and PID selection. Evidence:
 The read-only board preflight sees only the native panel; the HDMI monitor is
 not connected. No physical/profile/default task is ticked; progress remains3/12.
 The older dirty portrait implementation worktree is preserved without edits.
+
+Current-renderer capture preparation: retain the complete extended numeric
+draw schema, reject arbitrary values, and pace injected diagnostic motions
+across frames.11 host fixtures pass, including a measured motion-span check.
+Exact helper hash, command, workload differences and limits are recorded in
+`docs/evidence/hdmi-shell-performance/capture-current-renderer/README.md`.
+No new board trace or physical acceptance exists; progress remains3/12.

@@ -31,6 +31,9 @@ PREFIXES = ('K230_CARD_BENCH ', 'K230_CARD_SHELL ', 'K230_PIXMAN_DRAW ',
             'K230_PIXMAN_OUTPUT_TURN ')
 MAX_JOURNAL = 16 * 1024 * 1024
 MAX_ROWS = 20_000
+DRAG_STEPS = 35
+DRAG_SECONDS = .7
+SETTLE_SECONDS = .8
 SAFE_VALUE = re.compile(r'[A-Za-z0-9_.:+/-]{1,512}\Z')
 RUN_FIELDS = {'run','source_revision','compositor_executable','pixman_identity','kernel',
               'logical_width','logical_height','physical_width','physical_height','transform',
@@ -182,6 +185,8 @@ def allowlisted_records(text, run_id, start_ns, end_ns):
         'input-cost': {'run','input_id','cpu_ns','policy_cpu_ns','scene_cpu_ns','chrome_cpu_ns'},
         'touch-route': {'phase','id','source_ms','dispatch_ms','x','y','width','height','edge','bottom_reserved','consumed','active','mode','ui','lock','launcher','drawer','popup','points','pointer','contact','edge_tracking','blocked','home'}}
     draw_keys = {'transform','path','copy_cpu_ns','total_cpu_ns','dst_pixels','scratch_bytes'}
+    draw_format_keys = {'src_format','dst_format','src_width','src_height',
+                        'masked','sampled','op','interior'}
     turn_keys = {'src','dst','format','rotation','rotation_cpu_ns','scratch_bytes'}
     source_lines = text.splitlines()[:MAX_ROWS]
     benchmark_error = None
@@ -236,6 +241,21 @@ def allowlisted_records(text, run_id, start_ns, end_ns):
         expected = (bench_keys.get(fields.get('event')) if prefix == 'K230_CARD_BENCH ' else
                     shell_fields.get(kind) if prefix == 'K230_CARD_SHELL ' else
                     draw_keys if prefix == 'K230_PIXMAN_DRAW ' else turn_keys)
+        if prefix == 'K230_PIXMAN_DRAW ':
+            # The current renderer adds bounded numeric format/geometry fields.
+            # Accept either complete schema, never arbitrary journal values.
+            extended = set(fields) == draw_keys | draw_format_keys
+            if extended:
+                expected = draw_keys | draw_format_keys
+            numeric_keys = set(fields) - {'path', 'src_format', 'dst_format'}
+            if (fields.get('path') not in ('sampler', 'tiled') or
+                    not all(re.fullmatch(r'[0-9]{1,20}', fields[key]) for key in numeric_keys) or
+                    fields.get('transform') not in tuple(map(str, range(8)))):
+                continue
+            if extended and (not all(re.fullmatch(r'0x[0-9A-Fa-f]{8}', fields[k])
+                                     for k in ('src_format', 'dst_format')) or
+                    not all(fields[k] in ('0', '1') for k in ('masked', 'sampled', 'interior'))):
+                continue
         if (prefix == 'K230_CARD_BENCH ' and fields.get('event') in ('incomplete','error')
                 and fields.get('run') == discovered):
             # Keep only a known safe reason in context. Do not add this marker
@@ -361,13 +381,14 @@ def capture(args):
                 gesture = index + 1
                 ipc.command(f'card_shell test-touch down {gesture} {start_x} {height//2}')
                 touch_down, active_touch_id = True, gesture
-                for step in range(1, 7):
+                for step in range(1, DRAG_STEPS + 1):
                     if time.monotonic() >= deadline:
                         raise CaptureError('capture deadline reached during injected gestures')
-                    x = start_x + ((end_x-start_x)*step)//6
+                    x = start_x + ((end_x-start_x)*step)//DRAG_STEPS
                     ipc.command(f'card_shell test-touch motion {gesture} {x} {height//2}')
+                    time.sleep(min(DRAG_SECONDS / DRAG_STEPS, max(0, deadline-time.monotonic())))
                 ipc.command(f'card_shell test-touch up {gesture}'); touch_down, active_touch_id = False, None
-                time.sleep(min(.05, max(0, deadline-time.monotonic())))
+                time.sleep(min(SETTLE_SECONDS, max(0, deadline-time.monotonic())))
         else:
             print('READY: swipe up from Foot into overview, then perform center horizontal drags.', flush=True)
             entered = True
@@ -441,6 +462,12 @@ def capture(args):
         'elapsed_seconds':round(time.monotonic()-started,3),'source_revision':args.source_revision,
         'compositor':identity,'kernel':kernel,'output_before':before,
         'output_after':output_after,
+        'collector_sha256':hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
+        'injected_workload':({'route':'compositor IPC test-touch',
+            'moves_per_drag':DRAG_STEPS,'nominal_motion_seconds':DRAG_SECONDS,
+            'settle_seconds':SETTLE_SECONDS,
+            'limit':'IPC processing adds time; actual input timestamps remain in capture.log.'}
+            if args.input == 'injected' else None),
         'frequency':read_frequency(), 'stop_error':stop_failed,'restore_error':restore_failed,
         'evidence_limit':'capture telemetry is not optical proof; injected input is not physical contact.'}
     (args.output/'metadata.json').write_text(json.dumps({'schema':SCHEMA,'runs':logs},indent=2,sort_keys=True)+'\n')
@@ -525,10 +552,20 @@ class Fixtures(unittest.TestCase):
         self.assertEqual(unknown,'benchmark-error')
 
     def test_sanitizer_ignores_arbitrary_text_and_pixman_unscoped(self):
-        rows, _, _, _ = allowlisted_records('password=secret K230_CARD_BENCH junk\nK230_PIXMAN_DRAW transform=90 path=fast copy_cpu_ns=1 total_cpu_ns=2 dst_pixels=3 scratch_bytes=0', 'x',0,3)
+        rows, _, _, _ = allowlisted_records('password=secret K230_CARD_BENCH junk\nK230_PIXMAN_DRAW transform=1 path=tiled copy_cpu_ns=1 total_cpu_ns=2 dst_pixels=3 scratch_bytes=0', 'x',0,3)
         self.assertEqual(len(rows),1)
         self.assertTrue(rows[0].startswith('K230_PIXMAN_DRAW '))
         self.assertNotIn('secret','\n'.join(rows))
+
+    def test_current_draw_formats_preserved_without_arbitrary_fields(self):
+        row = ('K230_PIXMAN_DRAW transform=0 path=sampler copy_cpu_ns=0 total_cpu_ns=20 '
+               'dst_pixels=100 scratch_bytes=0 src_format=0x20028888 dst_format=0x10020565 '
+               'src_width=10 src_height=10 masked=0 sampled=1 op=3 interior=0')
+        bad = [row + ' title=private', row.replace('interior=0', 'interior=private'),
+               row.replace('src_format=0x20028888', 'src_format=private'),
+               row.replace('path=sampler', 'path=private'), row.replace('sampled=1', 'sampled=2')]
+        rows, _, _, _ = allowlisted_records('\n'.join([row] + bad), 'x', 0, 100)
+        self.assertEqual(rows, [row])
 
     def test_schema_exact(self):
         self.assertEqual(len(RUN_FIELDS),19)
@@ -544,6 +581,7 @@ class Fixtures(unittest.TestCase):
             instances=[]
             def __init__(self):
                 self.commands=[]; self.fail_stop=False; self.closed=False; self.pid=123
+                self.command_times=[]
                 FakeIPC.instances.append(self)
             def outputs(self):
                 return [{'name':'HDMI-A-1','active':True,'transform':'90','scale':1,
@@ -553,6 +591,7 @@ class Fixtures(unittest.TestCase):
                 return {'nodes':[{'app_id':'foot','window_properties':{'class':'foot'}}]}
             def command(self, command):
                 self.commands.append(command)
+                self.command_times.append((time.monotonic(), command))
                 if self.fail_stop and command == 'card_shell benchmark-stop':
                     raise CaptureError('fixture stop failure')
             def close(self): self.closed=True
@@ -598,6 +637,9 @@ class Fixtures(unittest.TestCase):
             self.assertEqual(meta['runs'][0]['drag_count'],1)
             self.assertEqual(meta['runs'][0]['log'],'capture.log')
             self.assertTrue(any('down 1 440 960' in cmd for cmd in instances[0].commands))
+            motion_times = [t for t, cmd in instances[0].command_times
+                            if cmd.startswith('card_shell test-touch motion ')]
+            self.assertGreaterEqual(motion_times[-1] - motion_times[0], .6)
             self.assertTrue(instances[0].closed)
             import importlib.util
             parser_path=Path(__file__).with_name('hdmi-shell-performance.py')
