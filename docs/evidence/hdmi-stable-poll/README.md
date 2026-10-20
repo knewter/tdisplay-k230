@@ -73,3 +73,12 @@ and private-source hashes. Candidate checksums and preserved boot-file
 checks passed; no boot file/profile was modified. An identified, working
 K230 UART is required before retrying the named serial-observed boot gate.
 Neither task2.1 nor any runtime/physical/promotion gate is complete.
+
+At18:30:46Z a fresh protected query verified recovered normal controls:
+current/booted/persistent system all j30y; PID1076 with unchanged executable,
+config, debug flags and landscape1280x800@59.91normal/scale1; idle Foot,
+both shell services active, zero virtual test devices and no trace instances.
+See `boot-attempt-a/recovered-normal.json`. This is recovery/runtime-state
+proof on the original image, not a boot or timing result for the candidate.
+The retry driver now requires a fresh K230 nonce received on an explicit
+by-id UART before any serial input/reboot; the candidate remains staged.
