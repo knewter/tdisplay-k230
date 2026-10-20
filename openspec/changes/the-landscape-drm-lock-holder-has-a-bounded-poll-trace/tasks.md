@@ -1,6 +1,6 @@
 ## 1. Tooling
 
-- [ ] 1.1 Implement isolated selected-function capture, strict sanitized exports, interval qualification and negative fixtures. Host proof: `python3 tools/landscape-drm-holder.py --self-test`.
+- [x] 1.1 Implement isolated selected-function capture, strict sanitized exports, interval qualification and negative fixtures. Host proof: `python3 tools/landscape-drm-holder.py --self-test`.
 
 ## 2. Board measurement
 

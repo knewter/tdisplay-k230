@@ -1,0 +1,8 @@
+{
+  "checked_at": "2026-10-20T16:01:28.214808+00:00",
+  "command": "python3 tools/landscape-drm-holder.py --self-test",
+  "exit_code": 0,
+  "test_methods": 7,
+  "tool_sha256": "d0e1e67a105fe1869a150a2251e7bb56e30ff56c5a90bd1c767e0796e31f7054",
+  "limits": "Host parser, interval, privacy, clock/loss/count and cleanup-ownership fixtures; no hardware proof."
+}

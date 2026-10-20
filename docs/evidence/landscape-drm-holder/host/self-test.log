@@ -1,0 +1,12 @@
+test_cleanup_ownership (__main__.Fixtures.test_cleanup_ownership) ... ok
+test_critical_section_and_pid (__main__.Fixtures.test_critical_section_and_pid) ... ok
+test_export_rejects_payload_and_redacts (__main__.Fixtures.test_export_rejects_payload_and_redacts) ... ok
+test_gzip_identity (__main__.Fixtures.test_gzip_identity) ... ok
+test_incomplete_ambiguous_backoff (__main__.Fixtures.test_incomplete_ambiguous_backoff) ... ok
+test_overlap_boundaries (__main__.Fixtures.test_overlap_boundaries) ... ok
+test_strict_hash_schema_loss_clock_counts (__main__.Fixtures.test_strict_hash_schema_loss_clock_counts) ... ok
+
+----------------------------------------------------------------------
+Ran 7 tests in 0.006s
+
+OK
