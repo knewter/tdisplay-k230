@@ -1,0 +1,6 @@
+{
+  "compiled_source_revision": "221bbcf34a276a939356e5a6af9bfb124af9896a",
+  "adapter_sha256": "4406a63e1f0cc137e47d697aa3415d9b5b4f2a049a1e3f603f8f2d4c71e405cf",
+  "test_sha256": "02e61a9d6ab9231de1ccfc7509ded96ae8109aca0afb28a5715da0faf77b8555",
+  "scope": "Compiled adapter source unchanged; host test fixture IDs corrected before successful run. No hardware/timing claim."
+}

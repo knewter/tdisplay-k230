@@ -31,12 +31,24 @@ A separate **old-source format probe**, not new-source correctness evidence,
 confirms actual headless QEMU Sway can select rotatedRGB565 (format0x10020565).
 This enables meaningful integration coverage of the targeted path.
 
-The new test is a deliverable and is not yet proof at this checkpoint:
+The exact221bbcf3 build passes. The first integration attempt used unsupported
+probe IDs and failed before mapping any window; its complete driver log and
+command are preserved. The corrected host test uses the existing supported
+IDs and detects early client exit. Its source hash is recorded separately;
+the compiled compositor/adapter source remains221bbcf3 unchanged.
 
-```sh
-CARD_SHELL_SWAY=<exact-cross-built-unwrapped-sway> CARD_SHELL_CLIENT=<native-probe-client> python3 tests/test_card_shell_scene_coalesce_runtime.py
-```
+All three actual-compositor cases pass: rotatedRGB565 full/reduced and normal
+RGB565 rollback. In one IPC batch, policy reaches the latest requested pose
+without a render; the next render applies that pose. Main/desynchronized-child
+frames advance during a held drag. New maps force structural synchronization.
+Expansion hides chrome in the same dispatch before a frame can conceal stale
+visibility, and settled bilinear counts advance after release. Rotated paths
+increment coalescing counters; normal output keeps both zero. Complete numeric
+results/client logs and Sway logs are committed under runtime/. This is actual
+headless QEMU/Wayland integration, not panel pixels or real touch/latency proof.
 
-Exact build, new headless integration, paired board timings, live callbacks,
-current camera, persistent selection and archive remain open. Keep the baseline
-installed until the named qualification is complete.
+`runtime-command.json` preserves the concrete command and exact binary paths.
+The legacy mock failure remains an independent fixture limitation; no unperformed
+or failed check is marked passed. Board paired timing, live content/current
+camera, persistent selection and archival gates remain open. The board stays
+on baseline until its recoverable candidate trial is reserved and started.

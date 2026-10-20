@@ -1,0 +1,393 @@
+00:00:00.000 [INFO] [sway/main.c:308] Sway version 1.12
+00:00:00.001 [INFO] [sway/main.c:309] wlroots version 0.20.2
+00:00:00.021 [INFO] [sway/main.c:78] Linux solomon 7.1.9-1-MANJARO #1 SMP PREEMPT_DYNAMIC Thu, 20 Aug 2026 02:30:29 +0000 x86_64 GNU/Linux
+00:00:00.022 [INFO] [sway/main.c:94] Contents of /etc/lsb-release:
+00:00:00.022 [INFO] [sway/main.c:78] DISTRIB_ID="ManjaroLinux"
+00:00:00.022 [INFO] [sway/main.c:78] DISTRIB_RELEASE="26.1.1"
+00:00:00.022 [INFO] [sway/main.c:78] DISTRIB_CODENAME="Bian-May"
+00:00:00.022 [INFO] [sway/main.c:78] DISTRIB_DESCRIPTION="Manjaro Linux"
+00:00:00.022 [INFO] [sway/main.c:94] Contents of /etc/os-release:
+00:00:00.022 [INFO] [sway/main.c:78] NAME="Manjaro Linux"
+00:00:00.022 [INFO] [sway/main.c:78] PRETTY_NAME="Manjaro Linux"
+00:00:00.022 [INFO] [sway/main.c:78] ID=manjaro
+00:00:00.023 [INFO] [sway/main.c:78] ID_LIKE=arch
+00:00:00.023 [INFO] [sway/main.c:78] BUILD_ID=rolling
+00:00:00.023 [INFO] [sway/main.c:78] ANSI_COLOR="32;1;24;144;200"
+00:00:00.023 [INFO] [sway/main.c:78] HOME_URL="https://manjaro.org/"
+00:00:00.023 [INFO] [sway/main.c:78] DOCUMENTATION_URL="https://wiki.manjaro.org/"
+00:00:00.023 [INFO] [sway/main.c:78] SUPPORT_URL="https://forum.manjaro.org/"
+00:00:00.023 [INFO] [sway/main.c:78] BUG_REPORT_URL="https://manjaro.org/help/"
+00:00:00.023 [INFO] [sway/main.c:78] PRIVACY_POLICY_URL="https://manjaro.org/privacy-policy/"
+00:00:00.023 [INFO] [sway/main.c:78] LOGO=manjarolinux
+00:00:00.023 [INFO] [sway/main.c:66] LD_LIBRARY_PATH=
+00:00:00.023 [INFO] [sway/main.c:66] LD_PRELOAD=
+00:00:00.023 [INFO] [sway/main.c:66] PATH=/home/jadams/.codex/packages/app-server-daemon/releases/0.163.0-x86_64-unknown-linux-musl/codex-path:/home/jadams/.local/bin:/opt/google-cloud-cli/bin:/home/jadams/.codex/tmp/arg0-linux/codex-arg0u56dV5:/home/jadams/.codex/packages/app-server-daemon/releases/0.163.0-x86_64-unknown-linux-musl/codex-path:/home/jadams/.codex/tmp/arg0/codex-arg0JIR767:/home/jadams/.codex/packages/app-server-daemon/releases/0.162.1-x86_64-unknown-linux-musl/codex-path:/home/jadams/.codex/tmp/arg0/codex-arg09ZkVtV:/usr/lib/node_modules/@openai/codex/node_modules/@openai/codex-linux-x64/vendor/x86_64-unknown-linux-musl/codex-path:/home/jadams/.local/bin:/home/jadams/.grok/bin:/home/jadams/.grok/bin:/home/jadams/.opencode/bin:/home/jadams/.asdf/installs/elixir/1.18.3-otp-27/.mix/escripts:/home/jadams/.asdf/installs/elixir/1.19.4-otp-28/.mix/escripts:/home/jadams/.bun/bin:/opt/miniconda3/condabin:/home/jadams/.asdf/shims:/home/jadams/.asdf/bin:/home/jadams/.fly/bin:/home/jadams/bin:/home/jadams/software/nRF-Command-Line-Tools_10_12_2_Linux-amd64/nrfjprog/:/home/jadams/.local/bin:/home/jadams/.deno/bin:/home/jadams/.cargo/bin:/home/jadams/.nix-profile/bin:/nix/var/nix/profiles/default/bin:/home/jadams/.local/bin:/opt/google-cloud-cli/bin:/usr/local/bin:/usr/bin:/var/lib/snapd/snap/bin:/usr/local/sbin:/opt/cuda/bin:/usr/lib/emscripten:/home/jadams/.local/share/flatpak/exports/bin:/var/lib/flatpak/exports/bin:/opt/flutter/bin:/usr/lib/jvm/default/bin:/usr/bin/site_perl:/usr/bin/vendor_perl:/usr/bin/core_perl:/home/jadams/.local/share/JetBrains/Toolbox/scripts:/mnt/MediaVolume/home/jadams/.local/bin:/home/jadams/.pub-cache/bin:/home/jadams/.roswell/bin:/home/jadams/.dotnet/tools:/home/jadams/.krew/bin:/opt/gerbil/bin:/home/jadams/software/roc_nightly-linux_x86_64-2024-07-13-070d14a/:/home/jadams/.fzf/bin:/home/jadams/.maestro/bin:/usr/lib/emscripten:/opt/flutter/bin:/home/jadams/.local/share/JetBrains/Toolbox/scripts
+00:00:00.023 [INFO] [sway/main.c:66] SWAYSOCK=
+00:00:00.024 [INFO] [sway/main.c:338] Starting sway version 1.12
+00:00:00.024 [DEBUG] [sway/server.c:247] Initializing Wayland server
+00:00:00.027 [INFO] [wlr] [backend/backend.c:342] Loading user-specified backends due to WLR_BACKENDS: headless
+00:00:00.027 [INFO] [wlr] [backend/headless/backend.c:60] Creating headless backend
+00:00:00.029 [INFO] [wlr] [util/env.c:25] Loading WLR_RENDERER option: pixman
+00:00:00.030 [INFO] [wlr] [render/pixman/renderer.c:342] Creating pixman renderer
+00:00:00.031 [DEBUG] [wlr] [render/allocator/allocator.c:132] Trying to create shm allocator
+00:00:00.031 [DEBUG] [wlr] [render/allocator/shm.c:119] Created shm allocator
+00:00:00.033 [DEBUG] [wlr] [types/wlr_drm_lease_v1.c:679] No DRM backend supplied, failed to create wlr_drm_lease_v1_manager
+00:00:00.033 [DEBUG] [sway/server.c:498] Failed to create wlr_drm_lease_device_v1
+00:00:00.033 [INFO] [sway/server.c:499] VR will not be available
+00:00:00.036 [INFO] [wlr] [backend/headless/backend.c:60] Creating headless backend
+00:00:00.098 [INFO] [sway/config.c:423] Loading config from /home/jadams/tmp/codex-claude-handoff-20261019/3/scene-coalesce-runtime12b/rotated/full/sway.conf
+00:00:00.101 [DEBUG] [sway/config.c:782] Read line 1: output HEADLESS-1 mode 568x1232 render_bit_depth 6 max_render_time 8 transform 270
+00:00:00.102 [INFO] [sway/commands.c:382] Config command: output HEADLESS-1 mode 568x1232 render_bit_depth 6 max_render_time 8 transform 270
+00:00:00.104 [INFO] [sway/commands.c:405] After replacement: output HEADLESS-1 mode 568x1232 render_bit_depth 6 max_render_time 8 transform 270
+00:00:00.105 [DEBUG] [sway/commands.c:437] Subcommand: mode 568x1232 render_bit_depth 6 max_render_time 8 transform 270
+00:00:00.105 [DEBUG] [sway/commands.c:437] Subcommand: render_bit_depth 6 max_render_time 8 transform 270
+00:00:00.105 [DEBUG] [sway/commands.c:437] Subcommand: max_render_time 8 transform 270
+00:00:00.106 [DEBUG] [sway/commands.c:437] Subcommand: transform 270
+00:00:00.107 [DEBUG] [sway/config/output.c:279] Config stored for output HEADLESS-1 (enabled: -1) (568x1232@-1.000000Hz position 2147483647,2147483647 scale -1.000000 subpixel unknown transform 1) (bg (null) (null)) (power -1) (max render time: 8) (allow tearing: -1) (hdr: -1)
+00:00:00.108 [DEBUG] [sway/config.c:782] Read line 2: seat seat0 fallback true
+00:00:00.108 [INFO] [sway/commands.c:382] Config command: seat seat0 fallback true
+00:00:00.108 [INFO] [sway/commands.c:405] After replacement: seat seat0 fallback true
+00:00:00.109 [DEBUG] [sway/commands.c:437] Subcommand: fallback true
+00:00:00.109 [DEBUG] [sway/config/seat.c:65] Adding non-wildcard seat config
+00:00:00.109 [DEBUG] [sway/config/seat.c:82] Config stored for seat seat0
+00:00:00.109 [DEBUG] [sway/config.c:782] Read line 3: focus_follows_mouse no
+00:00:00.109 [INFO] [sway/commands.c:382] Config command: focus_follows_mouse no
+00:00:00.109 [INFO] [sway/commands.c:405] After replacement: focus_follows_mouse no
+00:00:00.109 [DEBUG] [sway/config.c:782] Read line 4: for_window [app_id="^k230"] card_shell ordinary, floating enable, border none, resize set 100 ppt 100 ppt, move position 0 0
+00:00:00.110 [INFO] [sway/commands.c:382] Config command: for_window [app_id="^k230"] card_shell ordinary, floating enable, border none, resize set 100 ppt 100 ppt, move position 0 0
+00:00:00.110 [INFO] [sway/commands.c:405] After replacement: for_window [app_id="^k230"] card_shell ordinary, floating enable, border none, resize set 100 ppt 100 ppt, move position 0 0
+00:00:00.110 [DEBUG] [sway/criteria.c:841] Found pair: app_id=^k230
+00:00:00.114 [DEBUG] [sway/commands/for_window.c:34] for_window: '[app_id="^k230"]' -> 'card_shell ordinary, floating enable, border none, resize set 100 ppt 100 ppt, move position 0 0' added
+00:00:00.647 [DEBUG] [sway/input/input-manager.c:637] applying seat config for seat seat0
+00:00:00.648 [DEBUG] [sway/config/output.c:1286] spawn_swaybg cmd[0] = /nix/store/yhh05srfyhf81cdrm0f9ckxajjgh9qql-swaybg-riscv64-unknown-linux-gnu-1.2.2/bin/swaybg
+00:00:00.655 [INFO] [sway/server.c:789] Starting backend on wayland display 'wayland-1'
+00:00:00.656 [INFO] [wlr] [backend/headless/backend.c:17] Starting headless backend
+00:00:00.657 [DEBUG] [sway/desktop/output.c:572] New output 0x55555561ac30: HEADLESS-1 (non-desktop: 0)
+00:00:00.673 [INFO] [wlr] [backend/headless/backend.c:17] Starting headless backend
+00:00:00.674 [DEBUG] [sway/config/output.c:1008] Committing 1 outputs
+00:00:00.675 [DEBUG] [sway/config/output.c:769] Output state for HEADLESS-1
+00:00:00.675 [DEBUG] [sway/config/output.c:771]     enabled:       yes
+00:00:00.675 [DEBUG] [sway/config/output.c:775]     render_format: RG16
+00:00:00.675 [DEBUG] [sway/config/output.c:780]     custom mode:   568x1232@0mHz
+00:00:00.675 [DEBUG] [sway/config/output.c:793]     scale:         1.000000
+00:00:00.675 [DEBUG] [sway/config/output.c:796]     subpixel:      unknown
+00:00:00.676 [DEBUG] [wlr] [types/wlr_output_swapchain_manager.c:164] Preparing test commit for 1 outputs with explicit modifiers
+00:00:00.676 [DEBUG] [wlr] [render/swapchain.c:103] Allocating new swapchain buffer
+00:00:00.679 [DEBUG] [wlr] [types/wlr_output_swapchain_manager.c:185] Test commit for 1 outputs succeeded
+00:00:00.681 [DEBUG] [wlr] [render/pixman/renderer.c:189] Created pixman buffer 568x1232
+00:00:00.698 [INFO] [wlr] [render/pixman/pass.c:37] K230_PIXMAN_OUTPUT_TURN src=1232x568 dst=568x1232 format=0x10020565 rotation=1 rotation_cpu_ns=10020077 scratch_bytes=1399552
+00:00:00.704 [DEBUG] [sway/config/output.c:1072] Commit of 1 outputs succeeded
+00:00:00.704 [DEBUG] [sway/config/output.c:1080] Finalizing config for HEADLESS-1
+00:00:00.707 [DEBUG] [sway/tree/workspace.c:437] Workspace: Generating new workspace name for output HEADLESS-1
+00:00:00.708 [DEBUG] [sway/tree/output.c:166] Creating default workspace 1
+00:00:00.708 [DEBUG] [sway/tree/workspace.c:185] Adding workspace 1 for output HEADLESS-1
+00:00:00.711 [DEBUG] [sway/desktop/layer_shell.c:98] Usable area changed, rearranging output
+00:00:00.712 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x568@0,0
+00:00:00.712 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+00:00:00.713 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x568@0,0
+00:00:00.713 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+00:00:00.714 [DEBUG] [sway/desktop/transaction.c:821] Transaction 0x5555557fed70 committing with 2 instructions
+00:00:00.715 [DEBUG] [sway/desktop/transaction.c:717] Applying transaction 0x5555557fed70
+00:00:00.796 [DEBUG] [wlr] [xcursor/wlr_xcursor.c:233] Loaded cursor theme 'default' at size 24 (63 available cursors)
+00:00:00.797 [INFO] [sway/server.c:801] Running compositor on wayland display 'wayland-1'
+00:00:00.813 [INFO] [wlr] [render/pixman/pass.c:37] K230_PIXMAN_OUTPUT_TURN src=1232x568 dst=568x1232 format=0x10020565 rotation=1 rotation_cpu_ns=6769364 scratch_bytes=1399552
+00:00:00.830 [DEBUG] [sway/ipc-server.c:196] New client: fd 17
+00:00:00.840 [INFO] [sway/ipc-server.c:570] IPC Client 17 disconnected
+00:00:00.844 [DEBUG] [wlr] [types/wlr_compositor.c:785] New wlr_surface 0x555555853480 (res 0x555555853850)
+00:00:00.845 [DEBUG] [wlr] [types/xdg_shell/wlr_xdg_surface.c:441] new xdg_surface 0x5555558538e0 (res 0x555555855700)
+00:00:00.846 [DEBUG] [sway/desktop/xdg_shell.c:562] New xdg_shell toplevel title='(null)' app_id='(null)'
+00:00:00.848 [DEBUG] [wlr] [types/wlr_compositor.c:785] New wlr_surface 0x5555558527a0 (res 0x555555852b70)
+2026-10-19 21:44:28 - [main.c:328] Could not find config for output HEADLESS-1 ((null))
+00:00:00.864 [DEBUG] [sway/tree/view.c:529] View 0x5555558531f0 updated CSD to 1
+00:00:00.910 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x568@0,0
+00:00:00.910 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+00:00:00.910 [DEBUG] [sway/tree/arrange.c:76] Arranging 0x7f578f9fb298 horizontally
+00:00:00.913 [DEBUG] [sway/tree/view.c:575] Checking criteria [app_id="^k230"]
+00:00:00.913 [DEBUG] [sway/tree/view.c:580] for_window '[app_id="^k230"]' matches view 0x5555558531f0, cmd: 'card_shell ordinary, floating enable, border none, resize set 100 ppt 100 ppt, move position 0 0'
+00:00:00.913 [INFO] [sway/commands.c:262] Handling command 'card_shell ordinary'
+00:00:00.914 [INFO] [sway/commands.c:262] Handling command 'floating enable'
+00:00:00.915 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x568@0,0
+00:00:00.915 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+00:00:00.916 [INFO] [sway/commands.c:262] Handling command 'border none'
+00:00:00.916 [DEBUG] [sway/tree/view.c:517] Telling view 0x5555558531f0 to set CSD to 0
+00:00:00.916 [INFO] [sway/commands.c:262] Handling command 'resize set 100 ppt 100 ppt'
+00:00:00.930 [INFO] [sway/commands.c:262] Handling command 'move position 0 0'
+00:00:00.933 [DEBUG] [sway/desktop/transaction.c:821] Transaction 0x555555855a20 committing with 3 instructions
+00:00:00.935 [DEBUG] [sway/card_shell.c:2167] K230_CARD_SHELL state mode=0 actions=32 message=0 cards=1 entry_settling=0 entry_reversing=0 entry_interrupted_hold=0 entry_progress=0.000 blocked_until_up=0 blocked_contacts=0
+00:00:00.935 [INFO] [sway/card_shell.c:2863] K230_CARD_SHELL map id=5 class=2
+00:00:00.937 [DEBUG] [sway/ipc-server.c:196] New client: fd 22
+00:00:00.949 [INFO] [wlr] [render/pixman/pass.c:37] K230_PIXMAN_OUTPUT_TURN src=1232x568 dst=568x1232 format=0x10020565 rotation=1 rotation_cpu_ns=6760050 scratch_bytes=1399552
+00:00:00.954 [INFO] [sway/ipc-server.c:570] IPC Client 22 disconnected
+00:00:00.957 [DEBUG] [sway/ipc-server.c:196] New client: fd 24
+00:00:00.960 [DEBUG] [sway/desktop/transaction.c:907] Transaction 0x555555855a20 is ready
+00:00:00.961 [DEBUG] [sway/desktop/transaction.c:717] Applying transaction 0x555555855a20
+00:00:00.964 [DEBUG] [sway/desktop/transaction.c:821] Transaction 0x555555857ec0 committing with 1 instructions
+00:00:00.965 [DEBUG] [sway/desktop/transaction.c:717] Applying transaction 0x555555857ec0
+00:00:00.977 [INFO] [wlr] [render/pixman/pass.c:37] K230_PIXMAN_OUTPUT_TURN src=1232x568 dst=568x1232 format=0x10020565 rotation=1 rotation_cpu_ns=6395806 scratch_bytes=1399552
+00:00:00.978 [INFO] [sway/ipc-server.c:570] IPC Client 24 disconnected
+00:00:00.979 [DEBUG] [wlr] [types/wlr_compositor.c:785] New wlr_surface 0x555555856600 (res 0x5555558569d0)
+00:00:00.979 [DEBUG] [wlr] [types/xdg_shell/wlr_xdg_surface.c:441] new xdg_surface 0x555555882800 (res 0x555555882960)
+00:00:00.979 [DEBUG] [sway/desktop/xdg_shell.c:562] New xdg_shell toplevel title='(null)' app_id='(null)'
+00:00:00.979 [DEBUG] [wlr] [types/wlr_compositor.c:785] New wlr_surface 0x55555587fba0 (res 0x55555587ff70)
+00:00:00.983 [DEBUG] [sway/tree/view.c:529] View 0x555555883180 updated CSD to 1
+00:00:00.985 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x568@0,0
+00:00:00.985 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+00:00:00.985 [DEBUG] [sway/tree/arrange.c:76] Arranging 0x7f578f9fb298 horizontally
+00:00:00.985 [DEBUG] [sway/tree/view.c:575] Checking criteria [app_id="^k230"]
+00:00:00.985 [DEBUG] [sway/tree/view.c:580] for_window '[app_id="^k230"]' matches view 0x555555883180, cmd: 'card_shell ordinary, floating enable, border none, resize set 100 ppt 100 ppt, move position 0 0'
+00:00:00.985 [INFO] [sway/commands.c:262] Handling command 'card_shell ordinary'
+00:00:00.985 [INFO] [sway/commands.c:262] Handling command 'floating enable'
+00:00:00.985 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x568@0,0
+00:00:00.985 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+00:00:00.985 [INFO] [sway/commands.c:262] Handling command 'border none'
+00:00:00.985 [DEBUG] [sway/tree/view.c:517] Telling view 0x555555883180 to set CSD to 0
+00:00:00.985 [INFO] [sway/commands.c:262] Handling command 'resize set 100 ppt 100 ppt'
+00:00:00.985 [INFO] [sway/commands.c:262] Handling command 'move position 0 0'
+00:00:00.986 [DEBUG] [sway/desktop/transaction.c:821] Transaction 0x555555880690 committing with 4 instructions
+00:00:00.987 [DEBUG] [sway/card_shell.c:2167] K230_CARD_SHELL state mode=0 actions=32 message=0 cards=2 entry_settling=0 entry_reversing=0 entry_interrupted_hold=0 entry_progress=0.000 blocked_until_up=0 blocked_contacts=0
+00:00:00.987 [INFO] [sway/card_shell.c:2863] K230_CARD_SHELL map id=6 class=2
+00:00:01.003 [INFO] [wlr] [render/pixman/pass.c:37] K230_PIXMAN_OUTPUT_TURN src=1232x568 dst=568x1232 format=0x10020565 rotation=1 rotation_cpu_ns=6940686 scratch_bytes=1399552
+00:00:01.004 [DEBUG] [sway/desktop/transaction.c:907] Transaction 0x555555880690 is ready
+00:00:01.005 [DEBUG] [sway/desktop/transaction.c:717] Applying transaction 0x555555880690
+00:00:01.006 [DEBUG] [sway/desktop/transaction.c:821] Transaction 0x555555880990 committing with 1 instructions
+00:00:01.006 [DEBUG] [sway/desktop/transaction.c:717] Applying transaction 0x555555880990
+00:00:01.007 [DEBUG] [sway/ipc-server.c:196] New client: fd 33
+00:00:01.010 [INFO] [sway/ipc-server.c:570] IPC Client 33 disconnected
+00:00:01.013 [DEBUG] [sway/ipc-server.c:196] New client: fd 33
+00:00:01.015 [INFO] [sway/ipc-server.c:570] IPC Client 33 disconnected
+00:00:01.015 [DEBUG] [wlr] [types/wlr_compositor.c:785] New wlr_surface 0x555555903a10 (res 0x555555903de0)
+00:00:01.015 [DEBUG] [wlr] [types/xdg_shell/wlr_xdg_surface.c:441] new xdg_surface 0x555555903e70 (res 0x555555903fd0)
+00:00:01.015 [DEBUG] [sway/desktop/xdg_shell.c:562] New xdg_shell toplevel title='(null)' app_id='(null)'
+00:00:01.015 [DEBUG] [wlr] [types/wlr_compositor.c:785] New wlr_surface 0x555555900ad0 (res 0x555555900ea0)
+00:00:01.019 [DEBUG] [sway/tree/view.c:529] View 0x5555559016b0 updated CSD to 1
+00:00:01.020 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x568@0,0
+00:00:01.020 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+00:00:01.020 [DEBUG] [sway/tree/arrange.c:76] Arranging 0x7f578f9fb298 horizontally
+00:00:01.021 [DEBUG] [sway/tree/view.c:575] Checking criteria [app_id="^k230"]
+00:00:01.021 [DEBUG] [sway/tree/view.c:580] for_window '[app_id="^k230"]' matches view 0x5555559016b0, cmd: 'card_shell ordinary, floating enable, border none, resize set 100 ppt 100 ppt, move position 0 0'
+00:00:01.021 [INFO] [sway/commands.c:262] Handling command 'card_shell ordinary'
+00:00:01.021 [INFO] [sway/commands.c:262] Handling command 'floating enable'
+00:00:01.021 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x568@0,0
+00:00:01.021 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+00:00:01.021 [INFO] [sway/commands.c:262] Handling command 'border none'
+00:00:01.021 [DEBUG] [sway/tree/view.c:517] Telling view 0x5555559016b0 to set CSD to 0
+00:00:01.021 [INFO] [sway/commands.c:262] Handling command 'resize set 100 ppt 100 ppt'
+00:00:01.021 [INFO] [sway/commands.c:262] Handling command 'move position 0 0'
+00:00:01.021 [DEBUG] [sway/desktop/transaction.c:821] Transaction 0x5555559033b0 committing with 5 instructions
+00:00:01.022 [DEBUG] [sway/card_shell.c:2167] K230_CARD_SHELL state mode=0 actions=32 message=0 cards=3 entry_settling=0 entry_reversing=0 entry_interrupted_hold=0 entry_progress=0.000 blocked_until_up=0 blocked_contacts=0
+00:00:01.022 [INFO] [sway/card_shell.c:2863] K230_CARD_SHELL map id=7 class=2
+00:00:01.033 [INFO] [wlr] [render/pixman/pass.c:37] K230_PIXMAN_OUTPUT_TURN src=1232x568 dst=568x1232 format=0x10020565 rotation=1 rotation_cpu_ns=7428931 scratch_bytes=1399552
+00:00:01.039 [DEBUG] [sway/desktop/transaction.c:907] Transaction 0x5555559033b0 is ready
+00:00:01.039 [DEBUG] [sway/desktop/transaction.c:717] Applying transaction 0x5555559033b0
+00:00:01.040 [DEBUG] [sway/desktop/transaction.c:821] Transaction 0x555555903620 committing with 1 instructions
+00:00:01.041 [DEBUG] [sway/desktop/transaction.c:717] Applying transaction 0x555555903620
+00:00:01.047 [DEBUG] [sway/ipc-server.c:196] New client: fd 40
+00:00:01.061 [INFO] [wlr] [render/pixman/pass.c:37] K230_PIXMAN_OUTPUT_TURN src=1232x568 dst=568x1232 format=0x10020565 rotation=1 rotation_cpu_ns=7669188 scratch_bytes=1399552
+00:00:01.062 [INFO] [sway/ipc-server.c:570] IPC Client 40 disconnected
+00:00:01.062 [DEBUG] [sway/ipc-server.c:196] New client: fd 40
+00:00:01.062 [DEBUG] [sway/criteria.c:841] Found pair: app_id=k230.card.one
+00:00:01.067 [INFO] [sway/commands.c:262] Handling command 'focus'
+00:00:01.068 [DEBUG] [sway/desktop/transaction.c:821] Transaction 0x555555913df0 committing with 4 instructions
+00:00:01.068 [DEBUG] [sway/desktop/transaction.c:717] Applying transaction 0x555555913df0
+00:00:01.071 [INFO] [sway/ipc-server.c:570] IPC Client 40 disconnected
+00:00:01.071 [DEBUG] [sway/ipc-server.c:196] New client: fd 40
+00:00:01.075 [INFO] [sway/ipc-server.c:570] IPC Client 40 disconnected
+00:00:01.076 [DEBUG] [sway/ipc-server.c:196] New client: fd 34
+00:00:01.076 [INFO] [sway/commands.c:262] Handling command 'card_shell enter'
+00:00:01.690 [INFO] [sway/card_shell.c:1023] K230_CARD_SHELL mirror id=5 format=34325258 width=1232 height=568 stride=4928
+00:00:01.714 [INFO] [sway/card_shell.c:1023] K230_CARD_SHELL mirror id=5 format=34325258 width=128 height=96 stride=512
+00:00:01.801 [INFO] [sway/card_shell.c:1023] K230_CARD_SHELL mirror id=6 format=34325258 width=1232 height=568 stride=4928
+00:00:01.817 [INFO] [sway/card_shell.c:1023] K230_CARD_SHELL mirror id=6 format=34325258 width=128 height=96 stride=512
+00:00:01.904 [INFO] [sway/card_shell.c:1023] K230_CARD_SHELL mirror id=7 format=34325258 width=1232 height=568 stride=4928
+00:00:01.919 [INFO] [sway/card_shell.c:1023] K230_CARD_SHELL mirror id=7 format=34325258 width=128 height=96 stride=512
+00:00:02.087 [DEBUG] [sway/card_shell.c:2167] K230_CARD_SHELL state mode=1 actions=35 message=0 cards=3 entry_settling=0 entry_reversing=0 entry_interrupted_hold=0 entry_progress=0.000 blocked_until_up=0 blocked_contacts=0
+00:00:02.088 [INFO] [sway/card_shell.c:4065] K230_CARD_SHELL input=injected operation=enter accepted=1
+00:00:02.201 [INFO] [wlr] [render/pixman/pass.c:37] K230_PIXMAN_OUTPUT_TURN src=1232x568 dst=568x1232 format=0x10020565 rotation=1 rotation_cpu_ns=10165711 scratch_bytes=1399552
+00:00:02.210 [INFO] [sway/ipc-server.c:570] IPC Client 34 disconnected
+00:00:02.211 [DEBUG] [sway/ipc-server.c:196] New client: fd 34
+00:00:02.212 [INFO] [sway/commands.c:262] Handling command 'card_shell debug-scene'
+00:00:02.214 [INFO] [sway/card_shell.c:3970] K230_CARD_SHELL_DEBUG_SCENE active=1 deck_enabled=1 canvas enabled=1 pos=0,0 size=1232x568 rgba=0.067,0.094,0.153,1.000 canvas_gradient enabled=-1 ordinary_backdrop enabled=0 pos=0,0 size=1232x568 rgba=0.141,0.286,0.353,1.000 ordinary_maximized_cards=3 appearance_enabled=0 appearance_wallpaper=-1 appearance_canvas_authored=-1 home_enabled=0 mode=1 entry_progress=0.0000 chrome_enabled=1 drawer_mapped=0 keyboard_mapped=0 selected_app_id=k230.card.one home_selected=0 home_offset=0.0 home_settling=0 trackpad_owned=0 axis_owned=0 card_dx=0.000 card_velocity=0.000 trackpad_client=0 trackpad_keyboard=0 keyboard_progress=0.0000 scene_redraw_coalesced=0 scene_timer_coalesced=0 scene_render_syncs=2 scene_structural_syncs=1 selected_scene_valid=1 selected_scene_x=200 selected_scene_y=128 filter_nearest=0 filter_bilinear=24
+00:00:02.311 [INFO] [wlr] [render/pixman/pass.c:37] K230_PIXMAN_OUTPUT_TURN src=1232x568 dst=568x1232 format=0x10020565 rotation=1 rotation_cpu_ns=6662274 scratch_bytes=1399552
+00:00:02.370 [INFO] [wlr] [render/pixman/pass.c:37] K230_PIXMAN_OUTPUT_TURN src=1232x568 dst=568x1232 format=0x10020565 rotation=1 rotation_cpu_ns=3002551 scratch_bytes=1399552
+00:00:02.371 [INFO] [sway/ipc-server.c:570] IPC Client 34 disconnected
+00:00:02.372 [DEBUG] [sway/ipc-server.c:196] New client: fd 34
+00:00:02.433 [INFO] [wlr] [render/pixman/pass.c:37] K230_PIXMAN_OUTPUT_TURN src=1232x568 dst=568x1232 format=0x10020565 rotation=1 rotation_cpu_ns=4303470 scratch_bytes=1399552
+00:00:02.434 [INFO] [sway/ipc-server.c:570] IPC Client 34 disconnected
+00:00:02.435 [DEBUG] [sway/ipc-server.c:196] New client: fd 34
+00:00:02.464 [INFO] [sway/commands.c:262] Handling command 'card_shell debug-scene'
+00:00:02.468 [INFO] [sway/card_shell.c:3970] K230_CARD_SHELL_DEBUG_SCENE active=1 deck_enabled=1 canvas enabled=1 pos=0,0 size=1232x568 rgba=0.067,0.094,0.153,1.000 canvas_gradient enabled=-1 ordinary_backdrop enabled=0 pos=0,0 size=1232x568 rgba=0.141,0.286,0.353,1.000 ordinary_maximized_cards=3 appearance_enabled=0 appearance_wallpaper=-1 appearance_canvas_authored=-1 home_enabled=0 mode=1 entry_progress=0.0000 chrome_enabled=1 drawer_mapped=0 keyboard_mapped=0 selected_app_id=k230.card.one home_selected=0 home_offset=0.0 home_settling=0 trackpad_owned=0 axis_owned=0 card_dx=0.000 card_velocity=0.000 trackpad_client=0 trackpad_keyboard=0 keyboard_progress=0.0000 scene_redraw_coalesced=0 scene_timer_coalesced=0 scene_render_syncs=8 scene_structural_syncs=1 selected_scene_valid=1 selected_scene_x=200 selected_scene_y=128 filter_nearest=0 filter_bilinear=78
+00:00:02.468 [INFO] [sway/commands.c:262] Handling command 'card_shell down 7 616 284'
+00:00:02.471 [DEBUG] [sway/card_shell.c:2167] K230_CARD_SHELL state mode=2 actions=1 message=0 cards=3 entry_settling=0 entry_reversing=0 entry_interrupted_hold=0 entry_progress=0.000 blocked_until_up=0 blocked_contacts=0
+00:00:02.472 [INFO] [sway/card_shell.c:4065] K230_CARD_SHELL input=injected operation=down accepted=1
+00:00:02.472 [INFO] [sway/commands.c:262] Handling command 'card_shell motion 7 556 284'
+00:00:02.472 [DEBUG] [sway/card_shell.c:2167] K230_CARD_SHELL state mode=2 actions=1 message=0 cards=3 entry_settling=0 entry_reversing=0 entry_interrupted_hold=0 entry_progress=0.000 blocked_until_up=0 blocked_contacts=0
+00:00:02.473 [INFO] [sway/card_shell.c:4065] K230_CARD_SHELL input=injected operation=motion accepted=1
+00:00:02.473 [INFO] [sway/commands.c:262] Handling command 'card_shell motion 7 516 284'
+00:00:02.473 [DEBUG] [sway/card_shell.c:2167] K230_CARD_SHELL state mode=2 actions=1 message=0 cards=3 entry_settling=0 entry_reversing=0 entry_interrupted_hold=0 entry_progress=0.000 blocked_until_up=0 blocked_contacts=0
+00:00:02.473 [INFO] [sway/card_shell.c:4065] K230_CARD_SHELL input=injected operation=motion accepted=1
+00:00:02.473 [INFO] [sway/commands.c:262] Handling command 'card_shell debug-scene'
+00:00:02.474 [INFO] [sway/card_shell.c:3970] K230_CARD_SHELL_DEBUG_SCENE active=1 deck_enabled=1 canvas enabled=1 pos=0,0 size=1232x568 rgba=0.067,0.094,0.153,1.000 canvas_gradient enabled=-1 ordinary_backdrop enabled=0 pos=0,0 size=1232x568 rgba=0.141,0.286,0.353,1.000 ordinary_maximized_cards=3 appearance_enabled=0 appearance_wallpaper=-1 appearance_canvas_authored=-1 home_enabled=0 mode=2 entry_progress=0.0000 chrome_enabled=1 drawer_mapped=0 keyboard_mapped=0 selected_app_id=k230.card.one home_selected=0 home_offset=0.0 home_settling=0 trackpad_owned=0 axis_owned=0 card_dx=-100.000 card_velocity=-40.000 trackpad_client=0 trackpad_keyboard=0 keyboard_progress=0.0000 scene_redraw_coalesced=3 scene_timer_coalesced=0 scene_render_syncs=8 scene_structural_syncs=1 selected_scene_valid=1 selected_scene_x=200 selected_scene_y=128 filter_nearest=0 filter_bilinear=78
+00:00:02.514 [INFO] [wlr] [render/pixman/pass.c:37] K230_PIXMAN_OUTPUT_TURN src=1232x568 dst=568x1232 format=0x10020565 rotation=1 rotation_cpu_ns=7345146 scratch_bytes=1399552
+00:00:02.589 [INFO] [wlr] [render/pixman/pass.c:37] K230_PIXMAN_OUTPUT_TURN src=1232x568 dst=568x1232 format=0x10020565 rotation=1 rotation_cpu_ns=1430242 scratch_bytes=1399552
+00:00:02.603 [INFO] [sway/ipc-server.c:570] IPC Client 34 disconnected
+00:00:02.604 [DEBUG] [sway/ipc-server.c:196] New client: fd 20
+00:00:02.604 [INFO] [sway/commands.c:262] Handling command 'card_shell debug-scene'
+00:00:02.605 [INFO] [sway/card_shell.c:3970] K230_CARD_SHELL_DEBUG_SCENE active=1 deck_enabled=1 canvas enabled=1 pos=0,0 size=1232x568 rgba=0.067,0.094,0.153,1.000 canvas_gradient enabled=-1 ordinary_backdrop enabled=0 pos=0,0 size=1232x568 rgba=0.141,0.286,0.353,1.000 ordinary_maximized_cards=3 appearance_enabled=0 appearance_wallpaper=-1 appearance_canvas_authored=-1 home_enabled=0 mode=2 entry_progress=0.0000 chrome_enabled=1 drawer_mapped=0 keyboard_mapped=0 selected_app_id=k230.card.one home_selected=0 home_offset=0.0 home_settling=0 trackpad_owned=0 axis_owned=0 card_dx=-100.000 card_velocity=-40.000 trackpad_client=0 trackpad_keyboard=0 keyboard_progress=0.0000 scene_redraw_coalesced=3 scene_timer_coalesced=2 scene_render_syncs=12 scene_structural_syncs=1 selected_scene_valid=1 selected_scene_x=100 selected_scene_y=128 filter_nearest=24 filter_bilinear=78
+00:00:02.631 [INFO] [wlr] [render/pixman/pass.c:37] K230_PIXMAN_OUTPUT_TURN src=1232x568 dst=568x1232 format=0x10020565 rotation=1 rotation_cpu_ns=7972800 scratch_bytes=1399552
+00:00:02.680 [INFO] [wlr] [render/pixman/pass.c:37] K230_PIXMAN_OUTPUT_TURN src=1232x568 dst=568x1232 format=0x10020565 rotation=1 rotation_cpu_ns=1030613 scratch_bytes=1399552
+00:00:02.682 [INFO] [sway/ipc-server.c:570] IPC Client 20 disconnected
+00:00:02.720 [INFO] [wlr] [render/pixman/pass.c:37] K230_PIXMAN_OUTPUT_TURN src=1232x568 dst=568x1232 format=0x10020565 rotation=1 rotation_cpu_ns=4319901 scratch_bytes=1399552
+00:00:02.767 [INFO] [wlr] [render/pixman/pass.c:37] K230_PIXMAN_OUTPUT_TURN src=1232x568 dst=568x1232 format=0x10020565 rotation=1 rotation_cpu_ns=1213517 scratch_bytes=1399552
+00:00:02.805 [INFO] [wlr] [render/pixman/pass.c:37] K230_PIXMAN_OUTPUT_TURN src=1232x568 dst=568x1232 format=0x10020565 rotation=1 rotation_cpu_ns=3688889 scratch_bytes=1399552
+00:00:02.850 [INFO] [wlr] [render/pixman/pass.c:37] K230_PIXMAN_OUTPUT_TURN src=1232x568 dst=568x1232 format=0x10020565 rotation=1 rotation_cpu_ns=1672858 scratch_bytes=1399552
+00:00:02.892 [INFO] [wlr] [render/pixman/pass.c:37] K230_PIXMAN_OUTPUT_TURN src=1232x568 dst=568x1232 format=0x10020565 rotation=1 rotation_cpu_ns=5832427 scratch_bytes=1399552
+00:00:02.934 [INFO] [wlr] [render/pixman/pass.c:37] K230_PIXMAN_OUTPUT_TURN src=1232x568 dst=568x1232 format=0x10020565 rotation=1 rotation_cpu_ns=541225 scratch_bytes=1399552
+00:00:02.970 [INFO] [wlr] [render/pixman/pass.c:37] K230_PIXMAN_OUTPUT_TURN src=1232x568 dst=568x1232 format=0x10020565 rotation=1 rotation_cpu_ns=3035811 scratch_bytes=1399552
+00:00:03.014 [INFO] [wlr] [render/pixman/pass.c:37] K230_PIXMAN_OUTPUT_TURN src=1232x568 dst=568x1232 format=0x10020565 rotation=1 rotation_cpu_ns=955151 scratch_bytes=1399552
+00:00:03.017 [DEBUG] [sway/ipc-server.c:196] New client: fd 20
+00:00:03.017 [INFO] [sway/commands.c:262] Handling command 'card_shell debug-scene'
+00:00:03.017 [INFO] [sway/card_shell.c:3970] K230_CARD_SHELL_DEBUG_SCENE active=1 deck_enabled=1 canvas enabled=1 pos=0,0 size=1232x568 rgba=0.067,0.094,0.153,1.000 canvas_gradient enabled=-1 ordinary_backdrop enabled=0 pos=0,0 size=1232x568 rgba=0.141,0.286,0.353,1.000 ordinary_maximized_cards=3 appearance_enabled=0 appearance_wallpaper=-1 appearance_canvas_authored=-1 home_enabled=0 mode=2 entry_progress=0.0000 chrome_enabled=1 drawer_mapped=0 keyboard_mapped=0 selected_app_id=k230.card.one home_selected=0 home_offset=0.0 home_settling=0 trackpad_owned=0 axis_owned=0 card_dx=-100.000 card_velocity=-40.000 trackpad_client=0 trackpad_keyboard=0 keyboard_progress=0.0000 scene_redraw_coalesced=3 scene_timer_coalesced=11 scene_render_syncs=32 scene_structural_syncs=1 selected_scene_valid=1 selected_scene_x=100 selected_scene_y=128 filter_nearest=144 filter_bilinear=78
+00:00:03.017 [INFO] [sway/ipc-server.c:570] IPC Client 20 disconnected
+00:00:03.018 [DEBUG] [sway/ipc-server.c:196] New client: fd 20
+00:00:03.018 [INFO] [sway/commands.c:262] Handling command 'card_shell debug-scene'
+00:00:03.018 [INFO] [sway/card_shell.c:3970] K230_CARD_SHELL_DEBUG_SCENE active=1 deck_enabled=1 canvas enabled=1 pos=0,0 size=1232x568 rgba=0.067,0.094,0.153,1.000 canvas_gradient enabled=-1 ordinary_backdrop enabled=0 pos=0,0 size=1232x568 rgba=0.141,0.286,0.353,1.000 ordinary_maximized_cards=3 appearance_enabled=0 appearance_wallpaper=-1 appearance_canvas_authored=-1 home_enabled=0 mode=2 entry_progress=0.0000 chrome_enabled=1 drawer_mapped=0 keyboard_mapped=0 selected_app_id=k230.card.one home_selected=0 home_offset=0.0 home_settling=0 trackpad_owned=0 axis_owned=0 card_dx=-100.000 card_velocity=-40.000 trackpad_client=0 trackpad_keyboard=0 keyboard_progress=0.0000 scene_redraw_coalesced=3 scene_timer_coalesced=11 scene_render_syncs=32 scene_structural_syncs=1 selected_scene_valid=1 selected_scene_x=100 selected_scene_y=128 filter_nearest=144 filter_bilinear=78
+00:00:03.018 [INFO] [sway/ipc-server.c:570] IPC Client 20 disconnected
+00:00:03.019 [DEBUG] [sway/ipc-server.c:196] New client: fd 20
+00:00:03.026 [INFO] [sway/ipc-server.c:570] IPC Client 20 disconnected
+00:00:03.027 [DEBUG] [wlr] [types/wlr_compositor.c:785] New wlr_surface 0x55555597e570 (res 0x55555597e940)
+00:00:03.027 [DEBUG] [wlr] [types/xdg_shell/wlr_xdg_surface.c:441] new xdg_surface 0x55555599db80 (res 0x55555597e9d0)
+00:00:03.028 [DEBUG] [sway/desktop/xdg_shell.c:562] New xdg_shell toplevel title='(null)' app_id='(null)'
+00:00:03.029 [DEBUG] [wlr] [types/wlr_compositor.c:785] New wlr_surface 0x555555deba20 (res 0x555555debdf0)
+00:00:03.052 [INFO] [wlr] [render/pixman/pass.c:37] K230_PIXMAN_OUTPUT_TURN src=1232x568 dst=568x1232 format=0x10020565 rotation=1 rotation_cpu_ns=3868987 scratch_bytes=1399552
+00:00:03.101 [INFO] [wlr] [render/pixman/pass.c:37] K230_PIXMAN_OUTPUT_TURN src=1232x568 dst=568x1232 format=0x10020565 rotation=1 rotation_cpu_ns=1157141 scratch_bytes=1399552
+00:00:03.105 [DEBUG] [sway/tree/view.c:529] View 0x55555597d2d0 updated CSD to 1
+00:00:03.112 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x568@0,0
+00:00:03.112 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+00:00:03.112 [DEBUG] [sway/tree/arrange.c:76] Arranging 0x7f578f9fb298 horizontally
+00:00:03.114 [DEBUG] [sway/tree/view.c:575] Checking criteria [app_id="^k230"]
+00:00:03.114 [DEBUG] [sway/tree/view.c:580] for_window '[app_id="^k230"]' matches view 0x55555597d2d0, cmd: 'card_shell ordinary, floating enable, border none, resize set 100 ppt 100 ppt, move position 0 0'
+00:00:03.114 [INFO] [sway/commands.c:262] Handling command 'card_shell ordinary'
+00:00:03.115 [INFO] [sway/commands.c:262] Handling command 'floating enable'
+00:00:03.116 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x568@0,0
+00:00:03.116 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+00:00:03.116 [INFO] [sway/commands.c:262] Handling command 'border none'
+00:00:03.116 [DEBUG] [sway/tree/view.c:517] Telling view 0x55555597d2d0 to set CSD to 0
+00:00:03.116 [INFO] [sway/commands.c:262] Handling command 'resize set 100 ppt 100 ppt'
+00:00:03.117 [INFO] [sway/commands.c:262] Handling command 'move position 0 0'
+00:00:03.120 [DEBUG] [sway/desktop/transaction.c:821] Transaction 0x555555dedcf0 committing with 6 instructions
+00:00:03.194 [INFO] [sway/card_shell.c:1023] K230_CARD_SHELL mirror id=8 format=34325258 width=128 height=96 stride=512
+00:00:03.194 [DEBUG] [sway/card_shell.c:2167] K230_CARD_SHELL state mode=2 actions=33 message=0 cards=4 entry_settling=0 entry_reversing=0 entry_interrupted_hold=0 entry_progress=0.000 blocked_until_up=0 blocked_contacts=0
+00:00:03.194 [INFO] [sway/card_shell.c:2863] K230_CARD_SHELL map id=8 class=2
+00:00:03.195 [DEBUG] [sway/ipc-server.c:196] New client: fd 35
+00:00:03.206 [INFO] [sway/card_shell.c:1023] K230_CARD_SHELL mirror id=8 format=34325258 width=480 height=720 stride=1920
+00:00:03.209 [INFO] [wlr] [render/pixman/pass.c:37] K230_PIXMAN_OUTPUT_TURN src=1232x568 dst=568x1232 format=0x10020565 rotation=1 rotation_cpu_ns=644097 scratch_bytes=1399552
+00:00:03.214 [INFO] [sway/ipc-server.c:570] IPC Client 35 disconnected
+00:00:03.216 [DEBUG] [sway/ipc-server.c:196] New client: fd 35
+00:00:03.216 [INFO] [sway/commands.c:262] Handling command 'card_shell debug-scene'
+00:00:03.216 [INFO] [sway/card_shell.c:3970] K230_CARD_SHELL_DEBUG_SCENE active=1 deck_enabled=1 canvas enabled=1 pos=0,0 size=1232x568 rgba=0.067,0.094,0.153,1.000 canvas_gradient enabled=-1 ordinary_backdrop enabled=0 pos=0,0 size=1232x568 rgba=0.141,0.286,0.353,1.000 ordinary_maximized_cards=4 appearance_enabled=0 appearance_wallpaper=-1 appearance_canvas_authored=-1 home_enabled=0 mode=2 entry_progress=0.0000 chrome_enabled=1 drawer_mapped=0 keyboard_mapped=0 selected_app_id=k230.card.one home_selected=0 home_offset=0.0 home_settling=0 trackpad_owned=0 axis_owned=0 card_dx=-100.000 card_velocity=-40.000 trackpad_client=0 trackpad_keyboard=0 keyboard_progress=0.0000 scene_redraw_coalesced=3 scene_timer_coalesced=15 scene_render_syncs=38 scene_structural_syncs=2 selected_scene_valid=1 selected_scene_x=100 selected_scene_y=128 filter_nearest=191 filter_bilinear=78
+00:00:03.217 [INFO] [sway/ipc-server.c:570] IPC Client 35 disconnected
+00:00:03.217 [DEBUG] [sway/ipc-server.c:196] New client: fd 35
+00:00:03.217 [INFO] [sway/commands.c:262] Handling command 'card_shell up 7'
+00:00:03.226 [DEBUG] [sway/card_shell.c:2167] K230_CARD_SHELL state mode=1 actions=1 message=0 cards=4 entry_settling=0 entry_reversing=0 entry_interrupted_hold=0 entry_progress=0.000 blocked_until_up=0 blocked_contacts=0
+00:00:03.226 [INFO] [sway/card_shell.c:4065] K230_CARD_SHELL input=injected operation=up accepted=1
+00:00:03.289 [INFO] [wlr] [render/pixman/pass.c:37] K230_PIXMAN_OUTPUT_TURN src=1232x568 dst=568x1232 format=0x10020565 rotation=1 rotation_cpu_ns=6639522 scratch_bytes=1399552
+00:00:03.293 [DEBUG] [sway/desktop/transaction.c:907] Transaction 0x555555dedcf0 is ready
+00:00:03.293 [DEBUG] [sway/desktop/transaction.c:717] Applying transaction 0x555555dedcf0
+00:00:03.296 [DEBUG] [sway/desktop/transaction.c:821] Transaction 0x555555deddf0 committing with 1 instructions
+00:00:03.296 [DEBUG] [sway/desktop/transaction.c:717] Applying transaction 0x555555deddf0
+00:00:03.351 [DEBUG] [sway/card_shell.c:2167] K230_CARD_SHELL state mode=1 actions=1 message=0 cards=4 entry_settling=0 entry_reversing=0 entry_interrupted_hold=0 entry_progress=0.000 blocked_until_up=0 blocked_contacts=0
+00:00:03.367 [INFO] [wlr] [render/pixman/pass.c:37] K230_PIXMAN_OUTPUT_TURN src=1232x568 dst=568x1232 format=0x10020565 rotation=1 rotation_cpu_ns=3836313 scratch_bytes=1399552
+00:00:03.368 [INFO] [sway/ipc-server.c:570] IPC Client 35 disconnected
+00:00:03.402 [DEBUG] [sway/card_shell.c:2167] K230_CARD_SHELL state mode=1 actions=1 message=0 cards=4 entry_settling=0 entry_reversing=0 entry_interrupted_hold=0 entry_progress=0.000 blocked_until_up=0 blocked_contacts=0
+00:00:03.416 [INFO] [wlr] [render/pixman/pass.c:37] K230_PIXMAN_OUTPUT_TURN src=1232x568 dst=568x1232 format=0x10020565 rotation=1 rotation_cpu_ns=3688707 scratch_bytes=1399552
+00:00:03.435 [DEBUG] [sway/card_shell.c:2167] K230_CARD_SHELL state mode=1 actions=1 message=0 cards=4 entry_settling=0 entry_reversing=0 entry_interrupted_hold=0 entry_progress=0.000 blocked_until_up=0 blocked_contacts=0
+00:00:03.444 [INFO] [wlr] [render/pixman/pass.c:37] K230_PIXMAN_OUTPUT_TURN src=1232x568 dst=568x1232 format=0x10020565 rotation=1 rotation_cpu_ns=3234607 scratch_bytes=1399552
+00:00:03.499 [DEBUG] [sway/card_shell.c:2167] K230_CARD_SHELL state mode=1 actions=1 message=0 cards=4 entry_settling=0 entry_reversing=0 entry_interrupted_hold=0 entry_progress=0.000 blocked_until_up=0 blocked_contacts=0
+00:00:03.514 [INFO] [wlr] [render/pixman/pass.c:37] K230_PIXMAN_OUTPUT_TURN src=1232x568 dst=568x1232 format=0x10020565 rotation=1 rotation_cpu_ns=4517332 scratch_bytes=1399552
+00:00:03.608 [INFO] [wlr] [render/pixman/pass.c:37] K230_PIXMAN_OUTPUT_TURN src=1232x568 dst=568x1232 format=0x10020565 rotation=1 rotation_cpu_ns=3416707 scratch_bytes=1399552
+00:00:03.711 [INFO] [wlr] [render/pixman/pass.c:37] K230_PIXMAN_OUTPUT_TURN src=1232x568 dst=568x1232 format=0x10020565 rotation=1 rotation_cpu_ns=4204534 scratch_bytes=1399552
+00:00:03.776 [INFO] [wlr] [render/pixman/pass.c:37] K230_PIXMAN_OUTPUT_TURN src=1232x568 dst=568x1232 format=0x10020565 rotation=1 rotation_cpu_ns=3909840 scratch_bytes=1399552
+00:00:03.824 [INFO] [wlr] [render/pixman/pass.c:37] K230_PIXMAN_OUTPUT_TURN src=1232x568 dst=568x1232 format=0x10020565 rotation=1 rotation_cpu_ns=2321665 scratch_bytes=1399552
+00:00:03.928 [INFO] [wlr] [render/pixman/pass.c:37] K230_PIXMAN_OUTPUT_TURN src=1232x568 dst=568x1232 format=0x10020565 rotation=1 rotation_cpu_ns=4712750 scratch_bytes=1399552
+00:00:03.993 [INFO] [wlr] [render/pixman/pass.c:37] K230_PIXMAN_OUTPUT_TURN src=1232x568 dst=568x1232 format=0x10020565 rotation=1 rotation_cpu_ns=4521098 scratch_bytes=1399552
+00:00:04.040 [INFO] [wlr] [render/pixman/pass.c:37] K230_PIXMAN_OUTPUT_TURN src=1232x568 dst=568x1232 format=0x10020565 rotation=1 rotation_cpu_ns=1899811 scratch_bytes=1399552
+00:00:04.041 [DEBUG] [sway/ipc-server.c:196] New client: fd 35
+00:00:04.043 [INFO] [sway/commands.c:262] Handling command 'card_shell debug-scene'
+00:00:04.043 [INFO] [sway/card_shell.c:3970] K230_CARD_SHELL_DEBUG_SCENE active=1 deck_enabled=1 canvas enabled=1 pos=0,0 size=1232x568 rgba=0.067,0.094,0.153,1.000 canvas_gradient enabled=-1 ordinary_backdrop enabled=0 pos=0,0 size=1232x568 rgba=0.141,0.286,0.353,1.000 ordinary_maximized_cards=4 appearance_enabled=0 appearance_wallpaper=-1 appearance_canvas_authored=-1 home_enabled=0 mode=1 entry_progress=0.0000 chrome_enabled=1 drawer_mapped=0 keyboard_mapped=0 selected_app_id=k230.card.one home_selected=0 home_offset=0.0 home_settling=0 trackpad_owned=0 axis_owned=0 card_dx=0.000 card_velocity=0.000 trackpad_client=0 trackpad_keyboard=0 keyboard_progress=0.0000 scene_redraw_coalesced=3 scene_timer_coalesced=15 scene_render_syncs=62 scene_structural_syncs=2 selected_scene_valid=1 selected_scene_x=200 selected_scene_y=128 filter_nearest=335 filter_bilinear=254
+00:00:04.044 [INFO] [sway/ipc-server.c:570] IPC Client 35 disconnected
+00:00:04.044 [DEBUG] [sway/ipc-server.c:196] New client: fd 35
+00:00:04.044 [INFO] [sway/commands.c:262] Handling command 'card_shell activate'
+00:00:04.045 [DEBUG] [sway/card_shell.c:2167] K230_CARD_SHELL state mode=5 actions=1 message=0 cards=4 entry_settling=0 entry_reversing=0 entry_interrupted_hold=0 entry_progress=0.000 blocked_until_up=0 blocked_contacts=0
+00:00:04.045 [INFO] [sway/card_shell.c:4065] K230_CARD_SHELL input=injected operation=activate accepted=1
+00:00:04.045 [INFO] [sway/commands.c:262] Handling command 'card_shell debug-scene'
+00:00:04.045 [INFO] [sway/card_shell.c:3970] K230_CARD_SHELL_DEBUG_SCENE active=1 deck_enabled=1 canvas enabled=1 pos=0,0 size=1232x568 rgba=0.067,0.094,0.153,1.000 canvas_gradient enabled=-1 ordinary_backdrop enabled=0 pos=0,0 size=1232x568 rgba=0.141,0.286,0.353,1.000 ordinary_maximized_cards=4 appearance_enabled=0 appearance_wallpaper=-1 appearance_canvas_authored=-1 home_enabled=0 mode=5 entry_progress=0.0000 chrome_enabled=0 drawer_mapped=0 keyboard_mapped=0 selected_app_id=k230.card.one home_selected=0 home_offset=0.0 home_settling=0 trackpad_owned=0 axis_owned=0 card_dx=0.000 card_velocity=0.000 trackpad_client=0 trackpad_keyboard=0 keyboard_progress=0.0000 scene_redraw_coalesced=4 scene_timer_coalesced=15 scene_render_syncs=62 scene_structural_syncs=2 selected_scene_valid=1 selected_scene_x=200 selected_scene_y=128 filter_nearest=335 filter_bilinear=254
+00:00:04.045 [INFO] [sway/ipc-server.c:570] IPC Client 35 disconnected
+00:00:04.045 [DEBUG] [sway/ipc-server.c:196] New client: fd 35
+00:00:04.045 [INFO] [sway/commands.c:262] Handling command 'card_shell debug-scene'
+00:00:04.045 [INFO] [sway/card_shell.c:3970] K230_CARD_SHELL_DEBUG_SCENE active=1 deck_enabled=1 canvas enabled=1 pos=0,0 size=1232x568 rgba=0.067,0.094,0.153,1.000 canvas_gradient enabled=-1 ordinary_backdrop enabled=0 pos=0,0 size=1232x568 rgba=0.141,0.286,0.353,1.000 ordinary_maximized_cards=4 appearance_enabled=0 appearance_wallpaper=-1 appearance_canvas_authored=-1 home_enabled=0 mode=5 entry_progress=0.0000 chrome_enabled=0 drawer_mapped=0 keyboard_mapped=0 selected_app_id=k230.card.one home_selected=0 home_offset=0.0 home_settling=0 trackpad_owned=0 axis_owned=0 card_dx=0.000 card_velocity=0.000 trackpad_client=0 trackpad_keyboard=0 keyboard_progress=0.0000 scene_redraw_coalesced=4 scene_timer_coalesced=15 scene_render_syncs=62 scene_structural_syncs=2 selected_scene_valid=1 selected_scene_x=200 selected_scene_y=128 filter_nearest=335 filter_bilinear=254
+00:00:04.045 [INFO] [sway/ipc-server.c:570] IPC Client 35 disconnected
+00:00:04.078 [INFO] [wlr] [render/pixman/pass.c:37] K230_PIXMAN_OUTPUT_TURN src=1232x568 dst=568x1232 format=0x10020565 rotation=1 rotation_cpu_ns=7376023 scratch_bytes=1399552
+00:00:04.126 [DEBUG] [sway/card_shell.c:2167] K230_CARD_SHELL state mode=5 actions=1 message=0 cards=4 entry_settling=0 entry_reversing=0 entry_interrupted_hold=0 entry_progress=0.000 blocked_until_up=0 blocked_contacts=0
+00:00:04.142 [INFO] [wlr] [render/pixman/pass.c:37] K230_PIXMAN_OUTPUT_TURN src=1232x568 dst=568x1232 format=0x10020565 rotation=1 rotation_cpu_ns=2636354 scratch_bytes=1399552
+00:00:04.166 [DEBUG] [sway/ipc-server.c:196] New client: fd 35
+00:00:04.166 [DEBUG] [sway/card_shell.c:2167] K230_CARD_SHELL state mode=5 actions=1 message=0 cards=4 entry_settling=0 entry_reversing=0 entry_interrupted_hold=0 entry_progress=0.000 blocked_until_up=0 blocked_contacts=0
+00:00:04.182 [INFO] [wlr] [render/pixman/pass.c:37] K230_PIXMAN_OUTPUT_TURN src=1232x568 dst=568x1232 format=0x10020565 rotation=1 rotation_cpu_ns=4426471 scratch_bytes=1399552
+00:00:04.189 [INFO] [sway/commands.c:262] Handling command 'card_shell debug-scene'
+00:00:04.189 [INFO] [sway/card_shell.c:3970] K230_CARD_SHELL_DEBUG_SCENE active=1 deck_enabled=1 canvas enabled=1 pos=0,0 size=1232x568 rgba=0.067,0.094,0.153,1.000 canvas_gradient enabled=-1 ordinary_backdrop enabled=0 pos=0,0 size=1232x568 rgba=0.141,0.286,0.353,1.000 ordinary_maximized_cards=4 appearance_enabled=0 appearance_wallpaper=-1 appearance_canvas_authored=-1 home_enabled=0 mode=5 entry_progress=0.0000 chrome_enabled=0 drawer_mapped=0 keyboard_mapped=0 selected_app_id=k230.card.one home_selected=0 home_offset=0.0 home_settling=0 trackpad_owned=0 axis_owned=0 card_dx=0.000 card_velocity=0.000 trackpad_client=0 trackpad_keyboard=0 keyboard_progress=0.0000 scene_redraw_coalesced=6 scene_timer_coalesced=18 scene_render_syncs=68 scene_structural_syncs=2 selected_scene_valid=1 selected_scene_x=54 selected_scene_y=34 filter_nearest=383 filter_bilinear=254
+00:00:04.190 [DEBUG] [sway/card_shell.c:2167] K230_CARD_SHELL state mode=5 actions=1 message=0 cards=4 entry_settling=0 entry_reversing=0 entry_interrupted_hold=0 entry_progress=0.000 blocked_until_up=0 blocked_contacts=0
+00:00:04.190 [INFO] [sway/ipc-server.c:570] IPC Client 35 disconnected
+00:00:04.218 [INFO] [wlr] [render/pixman/pass.c:37] K230_PIXMAN_OUTPUT_TURN src=1232x568 dst=568x1232 format=0x10020565 rotation=1 rotation_cpu_ns=4177724 scratch_bytes=1399552
+00:00:04.271 [DEBUG] [sway/card_shell.c:2167] K230_CARD_SHELL state mode=5 actions=1 message=0 cards=4 entry_settling=0 entry_reversing=0 entry_interrupted_hold=0 entry_progress=0.000 blocked_until_up=0 blocked_contacts=0
+00:00:04.286 [INFO] [wlr] [render/pixman/pass.c:37] K230_PIXMAN_OUTPUT_TURN src=1232x568 dst=568x1232 format=0x10020565 rotation=1 rotation_cpu_ns=5772686 scratch_bytes=1399552
+00:00:04.293 [DEBUG] [sway/ipc-server.c:196] New client: fd 35
+00:00:04.295 [DEBUG] [sway/card_shell.c:654] K230_CARD_SHELL mirror-release id=5
+00:00:04.295 [DEBUG] [sway/card_shell.c:654] K230_CARD_SHELL mirror-release id=5
+00:00:04.296 [DEBUG] [sway/card_shell.c:654] K230_CARD_SHELL mirror-release id=6
+00:00:04.296 [DEBUG] [sway/card_shell.c:654] K230_CARD_SHELL mirror-release id=6
+00:00:04.296 [DEBUG] [sway/card_shell.c:654] K230_CARD_SHELL mirror-release id=7
+00:00:04.296 [DEBUG] [sway/card_shell.c:654] K230_CARD_SHELL mirror-release id=7
+00:00:04.296 [DEBUG] [sway/card_shell.c:654] K230_CARD_SHELL mirror-release id=8
+00:00:04.296 [DEBUG] [sway/card_shell.c:654] K230_CARD_SHELL mirror-release id=8
+00:00:04.297 [INFO] [sway/card_shell.c:451] K230_CARD_SHELL scaled-cache hits=358 misses=112 fallbacks=2 bytes=0
+00:00:04.297 [INFO] [sway/card_shell.c:459] K230_CARD_SHELL cache-alpha opaque=0 alpha=0
+00:00:04.297 [INFO] [sway/card_shell.c:469] K230_CARD_SHELL filter-mode nearest=415 bilinear=254
+00:00:04.300 [DEBUG] [sway/desktop/transaction.c:821] Transaction 0x5555559039c0 committing with 4 instructions
+00:00:04.302 [DEBUG] [sway/desktop/transaction.c:717] Applying transaction 0x5555559039c0
+00:00:04.306 [INFO] [sway/card_shell.c:2012] K230_CARD_SHELL restored focus=6 message=0
+00:00:04.307 [INFO] [sway/commands.c:262] Handling command 'card_shell debug-scene'
+00:00:04.307 [INFO] [sway/card_shell.c:3970] K230_CARD_SHELL_DEBUG_SCENE active=0 deck_enabled=0 canvas enabled=1 pos=0,0 size=1232x568 rgba=0.067,0.094,0.153,1.000 canvas_gradient enabled=-1 ordinary_backdrop enabled=1 pos=0,0 size=1232x568 rgba=0.141,0.286,0.353,1.000 ordinary_maximized_cards=4 appearance_enabled=0 appearance_wallpaper=-1 appearance_canvas_authored=-1 home_enabled=1 mode=0 entry_progress=0.0000 chrome_enabled=1 drawer_mapped=0 keyboard_mapped=0 selected_app_id=k230.card.one home_selected=0 home_offset=0.0 home_settling=0 trackpad_owned=0 axis_owned=0 card_dx=0.000 card_velocity=0.000 trackpad_client=0 trackpad_keyboard=0 keyboard_progress=0.0000 scene_redraw_coalesced=8 scene_timer_coalesced=21 scene_render_syncs=72 scene_structural_syncs=2 selected_scene_valid=0 selected_scene_x=0 selected_scene_y=0 filter_nearest=415 filter_bilinear=254
+00:00:04.315 [INFO] [wlr] [render/pixman/pass.c:37] K230_PIXMAN_OUTPUT_TURN src=1232x568 dst=568x1232 format=0x10020565 rotation=1 rotation_cpu_ns=4730092 scratch_bytes=1399552
+00:00:04.316 [INFO] [sway/ipc-server.c:570] IPC Client 35 disconnected
+00:00:04.319 [DEBUG] [sway/card_shell.c:2167] K230_CARD_SHELL state mode=0 actions=32 message=0 cards=3 entry_settling=0 entry_reversing=0 entry_interrupted_hold=0 entry_progress=0.000 blocked_until_up=0 blocked_contacts=0
+00:00:04.319 [INFO] [sway/card_shell.c:2901] K230_CARD_SHELL unmap id=8
+00:00:04.321 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x568@0,0
+00:00:04.321 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+00:00:04.322 [DEBUG] [sway/desktop/transaction.c:821] Transaction 0x555555ded900 committing with 6 instructions
+00:00:04.323 [DEBUG] [sway/desktop/transaction.c:717] Applying transaction 0x555555ded900
+00:00:04.329 [DEBUG] [sway/card_shell.c:2167] K230_CARD_SHELL state mode=0 actions=32 message=0 cards=2 entry_settling=0 entry_reversing=0 entry_interrupted_hold=0 entry_progress=0.000 blocked_until_up=0 blocked_contacts=0
+00:00:04.329 [INFO] [sway/card_shell.c:2901] K230_CARD_SHELL unmap id=6
+00:00:04.330 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x568@0,0
+00:00:04.330 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+00:00:04.330 [DEBUG] [sway/desktop/transaction.c:821] Transaction 0x555555deace0 committing with 5 instructions
+00:00:04.331 [DEBUG] [sway/desktop/transaction.c:717] Applying transaction 0x555555deace0
+00:00:04.335 [DEBUG] [sway/card_shell.c:2167] K230_CARD_SHELL state mode=0 actions=32 message=0 cards=1 entry_settling=0 entry_reversing=0 entry_interrupted_hold=0 entry_progress=0.000 blocked_until_up=0 blocked_contacts=0
+00:00:04.335 [INFO] [sway/card_shell.c:2901] K230_CARD_SHELL unmap id=7
+00:00:04.335 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x568@0,0
+00:00:04.335 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+00:00:04.335 [DEBUG] [sway/desktop/transaction.c:821] Transaction 0x555555880610 committing with 4 instructions
+00:00:04.336 [DEBUG] [sway/desktop/transaction.c:717] Applying transaction 0x555555880610
+00:00:04.339 [DEBUG] [sway/card_shell.c:2167] K230_CARD_SHELL state mode=0 actions=32 message=0 cards=0 entry_settling=0 entry_reversing=0 entry_interrupted_hold=0 entry_progress=0.000 blocked_until_up=0 blocked_contacts=0
+00:00:04.340 [INFO] [sway/card_shell.c:2901] K230_CARD_SHELL unmap id=5
+00:00:04.340 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x568@0,0
+00:00:04.340 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+00:00:04.340 [DEBUG] [sway/desktop/transaction.c:821] Transaction 0x555555903000 committing with 2 instructions
+00:00:04.341 [DEBUG] [sway/desktop/transaction.c:717] Applying transaction 0x555555903000
+00:00:04.354 [INFO] [wlr] [render/pixman/pass.c:37] K230_PIXMAN_OUTPUT_TURN src=1232x568 dst=568x1232 format=0x10020565 rotation=1 rotation_cpu_ns=7630428 scratch_bytes=1399552
+00:00:04.355 [INFO] [sway/main.c:399] Shutting down sway
+00:00:04.358 [INFO] [sway/card_shell.c:451] K230_CARD_SHELL scaled-cache hits=358 misses=112 fallbacks=2 bytes=0
+00:00:04.358 [INFO] [sway/card_shell.c:459] K230_CARD_SHELL cache-alpha opaque=0 alpha=0
+00:00:04.358 [INFO] [sway/card_shell.c:469] K230_CARD_SHELL filter-mode nearest=415 bilinear=254
+00:00:04.358 [INFO] [sway/card_shell.c:2012] K230_CARD_SHELL restored focus=0 message=0
+00:00:04.358 [DEBUG] [sway/tree/output.c:290] Disabling output 'HEADLESS-1'
+00:00:04.359 [DEBUG] [sway/tree/workspace.c:300] Destroying workspace '1'
+00:00:04.359 [DEBUG] [sway/tree/output.c:307] Destroying output 'HEADLESS-1'

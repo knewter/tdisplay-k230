@@ -135,3 +135,11 @@ rotated/full/reduced/normal regression test remains unperformed until the exact
 build is available. The old chrome mock also fails unchanged baseline due to
 fixture drift, with both logs retained in scene-coalescing/. No new board,
 physical/default/archive proof is claimed at this checkpoint.
+
+Checkpoint221bbcf3 exact build and actual-compositor integration pass after
+correcting unsupported fixture app IDs (first failure preserved). RotatedRGB565
+full/reduced exercise coalesced redraw/timer calls and latest-pose rendering;
+normal output leaves those counters zero. Live main/child frames, structural
+maps, immediate expansion chrome and restored bilinear counts pass. The host
+test fix changes no compiled adapter source. Board timing/current live/camera,
+qualified default and archive remain unverified for this checkpoint.

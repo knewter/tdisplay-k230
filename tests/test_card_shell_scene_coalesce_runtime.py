@@ -37,7 +37,7 @@ class SceneCoalescingRuntime(unittest.TestCase):
             'output HEADLESS-1 mode 568x1232 render_bit_depth 6 max_render_time 8' +
             (' transform 270' if rotated else '') + '\n'
             'seat seat0 fallback true\nfocus_follows_mouse no\n'
-            'for_window [app_id="^k230.card."] card_shell ordinary, floating enable, '
+            'for_window [app_id="^k230"] card_shell ordinary, floating enable, '
             'border none, resize set 100 ppt 100 ppt, move position 0 0\n')
         env = dict(os.environ, XDG_RUNTIME_DIR=str(socket_dir), WLR_BACKENDS='headless',
                    WLR_HEADLESS_OUTPUTS='1', WLR_RENDERER='pixman',
@@ -105,7 +105,10 @@ class SceneCoalescingRuntime(unittest.TestCase):
             process = subprocess.Popen(prefix + [client, '--app-id', name], env=env,
                                        stdout=stream, stderr=stream)
             processes.append(process)
-            wait(lambda: name in apps())
+            def mapped():
+                self.assertIsNone(process.poll(), (work/(name+'.jsonl')).read_text())
+                return name in apps()
+            wait(mapped)
 
         def client_frames():
             rows = [json.loads(line) for line in (work/'k230.card.one.jsonl').read_text().splitlines()
@@ -117,7 +120,7 @@ class SceneCoalescingRuntime(unittest.TestCase):
             wait(lambda: 'Running compositor on wayland display' in (work/'sway.log').read_text(), 60)
             env['WAYLAND_DISPLAY'] = next(p.name for p in socket_dir.glob('wayland-*')
                                           if not p.name.endswith('.lock'))
-            for name in ('k230.card.zero', 'k230.card.one', 'k230.card.two'):
+            for name in ('k230.card.three', 'k230.card.one', 'k230.card.two'):
                 start(name)
             ipc('[app_id="k230.card.one"] focus')
             wait(lambda: any(n.get('focused') and n.get('app_id') == 'k230.card.one'
@@ -152,7 +155,7 @@ class SceneCoalescingRuntime(unittest.TestCase):
             else:
                 self.assertEqual(scene()['scene_timer_coalesced'], '0')
             structural_before = int(scene()['scene_structural_syncs'])
-            start('k230.card.four')
+            start('k230-video-software')
             wait(lambda: int(scene()['scene_structural_syncs']) > structural_before)
             ipc('card_shell up 7', check=False)  # map may have cancelled/drained the owned stream
             time.sleep(.7)

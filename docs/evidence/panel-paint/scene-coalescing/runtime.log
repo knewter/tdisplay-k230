@@ -1,0 +1,8 @@
+PASS actual scene scheduling: rotated=True reduced=False
+PASS actual scene scheduling: rotated=True reduced=True
+PASS actual scene scheduling: rotated=False reduced=False
+.
+----------------------------------------------------------------------
+Ran 1 test in 13.426s
+
+OK

@@ -1,0 +1,194 @@
+FFF
+======================================================================
+FAIL: test_latest_pose_clients_structure_chrome_and_settled_quality (__main__.SceneCoalescingRuntime.test_latest_pose_clients_structure_chrome_and_settled_quality) (rotated=True, reduced=False)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/mnt/MediaVolume/home/jadams/src/gitlab.daringbit.com/josh/tdisplay-k230/.claude/worktrees/panel-paint/tests/test_card_shell_scene_coalesce_runtime.py", line 27, in test_latest_pose_clients_structure_chrome_and_settled_quality
+    self.exercise(root, sway, client, rotated, reduced)
+    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/MediaVolume/home/jadams/src/gitlab.daringbit.com/josh/tdisplay-k230/.claude/worktrees/panel-paint/tests/test_card_shell_scene_coalesce_runtime.py", line 121, in exercise
+    start(name)
+    ~~~~~^^^^^^
+  File "/mnt/MediaVolume/home/jadams/src/gitlab.daringbit.com/josh/tdisplay-k230/.claude/worktrees/panel-paint/tests/test_card_shell_scene_coalesce_runtime.py", line 108, in start
+    wait(lambda: name in apps())
+    ~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/MediaVolume/home/jadams/src/gitlab.daringbit.com/josh/tdisplay-k230/.claude/worktrees/panel-paint/tests/test_card_shell_scene_coalesce_runtime.py", line 64, in wait
+    self.fail('runtime condition timed out: ' + (work / 'sway.log').read_text()[-3000:])
+    ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: runtime condition timed out:  [sway/ipc-server.c:570] IPC Client 17 disconnected
+00:00:30.485 [DEBUG] [sway/ipc-server.c:196] New client: fd 17
+00:00:30.487 [INFO] [sway/ipc-server.c:570] IPC Client 17 disconnected
+00:00:30.518 [DEBUG] [sway/ipc-server.c:196] New client: fd 17
+00:00:30.520 [INFO] [sway/ipc-server.c:570] IPC Client 17 disconnected
+00:00:30.551 [DEBUG] [sway/ipc-server.c:196] New client: fd 17
+00:00:30.553 [INFO] [sway/ipc-server.c:570] IPC Client 17 disconnected
+00:00:30.584 [DEBUG] [sway/ipc-server.c:196] New client: fd 17
+00:00:30.587 [INFO] [sway/ipc-server.c:570] IPC Client 17 disconnected
+00:00:30.618 [DEBUG] [sway/ipc-server.c:196] New client: fd 17
+00:00:30.620 [INFO] [sway/ipc-server.c:570] IPC Client 17 disconnected
+00:00:30.652 [DEBUG] [sway/ipc-server.c:196] New client: fd 17
+00:00:30.653 [INFO] [sway/ipc-server.c:570] IPC Client 17 disconnected
+00:00:30.684 [DEBUG] [sway/ipc-server.c:196] New client: fd 17
+00:00:30.686 [INFO] [sway/ipc-server.c:570] IPC Client 17 disconnected
+00:00:30.717 [DEBUG] [sway/ipc-server.c:196] New client: fd 17
+00:00:30.719 [INFO] [sway/ipc-server.c:570] IPC Client 17 disconnected
+00:00:30.751 [DEBUG] [sway/ipc-server.c:196] New client: fd 17
+00:00:30.753 [INFO] [sway/ipc-server.c:570] IPC Client 17 disconnected
+00:00:30.784 [DEBUG] [sway/ipc-server.c:196] New client: fd 17
+00:00:30.786 [INFO] [sway/ipc-server.c:570] IPC Client 17 disconnected
+00:00:30.817 [DEBUG] [sway/ipc-server.c:196] New client: fd 17
+00:00:30.819 [INFO] [sway/ipc-server.c:570] IPC Client 17 disconnected
+00:00:30.850 [DEBUG] [sway/ipc-server.c:196] New client: fd 17
+00:00:30.852 [INFO] [sway/ipc-server.c:570] IPC Client 17 disconnected
+00:00:30.883 [DEBUG] [sway/ipc-server.c:196] New client: fd 17
+00:00:30.884 [INFO] [sway/ipc-server.c:570] IPC Client 17 disconnected
+00:00:30.915 [DEBUG] [sway/ipc-server.c:196] New client: fd 17
+00:00:30.917 [INFO] [sway/ipc-server.c:570] IPC Client 17 disconnected
+00:00:30.948 [DEBUG] [sway/ipc-server.c:196] New client: fd 17
+00:00:30.950 [INFO] [sway/ipc-server.c:570] IPC Client 17 disconnected
+00:00:30.982 [DEBUG] [sway/ipc-server.c:196] New client: fd 17
+00:00:30.984 [INFO] [sway/ipc-server.c:570] IPC Client 17 disconnected
+00:00:31.015 [DEBUG] [sway/ipc-server.c:196] New client: fd 17
+00:00:31.017 [INFO] [sway/ipc-server.c:570] IPC Client 17 disconnected
+00:00:31.048 [DEBUG] [sway/ipc-server.c:196] New client: fd 17
+00:00:31.050 [INFO] [sway/ipc-server.c:570] IPC Client 17 disconnected
+00:00:31.081 [DEBUG] [sway/ipc-server.c:196] New client: fd 17
+00:00:31.083 [INFO] [sway/ipc-server.c:570] IPC Client 17 disconnected
+00:00:31.116 [DEBUG] [sway/ipc-server.c:196] New client: fd 17
+00:00:31.118 [INFO] [sway/ipc-server.c:570] IPC Client 17 disconnected
+00:00:31.149 [DEBUG] [sway/ipc-server.c:196] New client: fd 17
+00:00:31.151 [INFO] [sway/ipc-server.c:570] IPC Client 17 disconnected
+00:00:31.182 [DEBUG] [sway/ipc-server.c:196] New client: fd 17
+00:00:31.184 [INFO] [sway/ipc-server.c:570] IPC Client 17 disconnected
+
+
+======================================================================
+FAIL: test_latest_pose_clients_structure_chrome_and_settled_quality (__main__.SceneCoalescingRuntime.test_latest_pose_clients_structure_chrome_and_settled_quality) (rotated=True, reduced=True)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/mnt/MediaVolume/home/jadams/src/gitlab.daringbit.com/josh/tdisplay-k230/.claude/worktrees/panel-paint/tests/test_card_shell_scene_coalesce_runtime.py", line 27, in test_latest_pose_clients_structure_chrome_and_settled_quality
+    self.exercise(root, sway, client, rotated, reduced)
+    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/MediaVolume/home/jadams/src/gitlab.daringbit.com/josh/tdisplay-k230/.claude/worktrees/panel-paint/tests/test_card_shell_scene_coalesce_runtime.py", line 121, in exercise
+    start(name)
+    ~~~~~^^^^^^
+  File "/mnt/MediaVolume/home/jadams/src/gitlab.daringbit.com/josh/tdisplay-k230/.claude/worktrees/panel-paint/tests/test_card_shell_scene_coalesce_runtime.py", line 108, in start
+    wait(lambda: name in apps())
+    ~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/MediaVolume/home/jadams/src/gitlab.daringbit.com/josh/tdisplay-k230/.claude/worktrees/panel-paint/tests/test_card_shell_scene_coalesce_runtime.py", line 64, in wait
+    self.fail('runtime condition timed out: ' + (work / 'sway.log').read_text()[-3000:])
+    ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: runtime condition timed out:  [sway/ipc-server.c:570] IPC Client 17 disconnected
+00:00:29.897 [DEBUG] [sway/ipc-server.c:196] New client: fd 17
+00:00:29.900 [INFO] [sway/ipc-server.c:570] IPC Client 17 disconnected
+00:00:29.930 [DEBUG] [sway/ipc-server.c:196] New client: fd 17
+00:00:29.933 [INFO] [sway/ipc-server.c:570] IPC Client 17 disconnected
+00:00:29.964 [DEBUG] [sway/ipc-server.c:196] New client: fd 17
+00:00:29.966 [INFO] [sway/ipc-server.c:570] IPC Client 17 disconnected
+00:00:29.997 [DEBUG] [sway/ipc-server.c:196] New client: fd 17
+00:00:29.999 [INFO] [sway/ipc-server.c:570] IPC Client 17 disconnected
+00:00:30.031 [DEBUG] [sway/ipc-server.c:196] New client: fd 17
+00:00:30.033 [INFO] [sway/ipc-server.c:570] IPC Client 17 disconnected
+00:00:30.065 [DEBUG] [sway/ipc-server.c:196] New client: fd 17
+00:00:30.067 [INFO] [sway/ipc-server.c:570] IPC Client 17 disconnected
+00:00:30.098 [DEBUG] [sway/ipc-server.c:196] New client: fd 17
+00:00:30.100 [INFO] [sway/ipc-server.c:570] IPC Client 17 disconnected
+00:00:30.131 [DEBUG] [sway/ipc-server.c:196] New client: fd 17
+00:00:30.134 [INFO] [sway/ipc-server.c:570] IPC Client 17 disconnected
+00:00:30.165 [DEBUG] [sway/ipc-server.c:196] New client: fd 17
+00:00:30.167 [INFO] [sway/ipc-server.c:570] IPC Client 17 disconnected
+00:00:30.198 [DEBUG] [sway/ipc-server.c:196] New client: fd 17
+00:00:30.201 [INFO] [sway/ipc-server.c:570] IPC Client 17 disconnected
+00:00:30.232 [DEBUG] [sway/ipc-server.c:196] New client: fd 17
+00:00:30.233 [INFO] [sway/ipc-server.c:570] IPC Client 17 disconnected
+00:00:30.264 [DEBUG] [sway/ipc-server.c:196] New client: fd 17
+00:00:30.266 [INFO] [sway/ipc-server.c:570] IPC Client 17 disconnected
+00:00:30.297 [DEBUG] [sway/ipc-server.c:196] New client: fd 17
+00:00:30.299 [INFO] [sway/ipc-server.c:570] IPC Client 17 disconnected
+00:00:30.330 [DEBUG] [sway/ipc-server.c:196] New client: fd 17
+00:00:30.331 [INFO] [sway/ipc-server.c:570] IPC Client 17 disconnected
+00:00:30.366 [DEBUG] [sway/ipc-server.c:196] New client: fd 17
+00:00:30.368 [INFO] [sway/ipc-server.c:570] IPC Client 17 disconnected
+00:00:30.399 [DEBUG] [sway/ipc-server.c:196] New client: fd 17
+00:00:30.402 [INFO] [sway/ipc-server.c:570] IPC Client 17 disconnected
+00:00:30.433 [DEBUG] [sway/ipc-server.c:196] New client: fd 17
+00:00:30.436 [INFO] [sway/ipc-server.c:570] IPC Client 17 disconnected
+00:00:30.468 [DEBUG] [sway/ipc-server.c:196] New client: fd 17
+00:00:30.470 [INFO] [sway/ipc-server.c:570] IPC Client 17 disconnected
+00:00:30.502 [DEBUG] [sway/ipc-server.c:196] New client: fd 17
+00:00:30.504 [INFO] [sway/ipc-server.c:570] IPC Client 17 disconnected
+00:00:30.535 [DEBUG] [sway/ipc-server.c:196] New client: fd 17
+00:00:30.537 [INFO] [sway/ipc-server.c:570] IPC Client 17 disconnected
+00:00:30.568 [DEBUG] [sway/ipc-server.c:196] New client: fd 17
+00:00:30.570 [INFO] [sway/ipc-server.c:570] IPC Client 17 disconnected
+00:00:30.601 [DEBUG] [sway/ipc-server.c:196] New client: fd 17
+00:00:30.604 [INFO] [sway/ipc-server.c:570] IPC Client 17 disconnected
+
+
+======================================================================
+FAIL: test_latest_pose_clients_structure_chrome_and_settled_quality (__main__.SceneCoalescingRuntime.test_latest_pose_clients_structure_chrome_and_settled_quality) (rotated=False, reduced=False)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/mnt/MediaVolume/home/jadams/src/gitlab.daringbit.com/josh/tdisplay-k230/.claude/worktrees/panel-paint/tests/test_card_shell_scene_coalesce_runtime.py", line 27, in test_latest_pose_clients_structure_chrome_and_settled_quality
+    self.exercise(root, sway, client, rotated, reduced)
+    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/MediaVolume/home/jadams/src/gitlab.daringbit.com/josh/tdisplay-k230/.claude/worktrees/panel-paint/tests/test_card_shell_scene_coalesce_runtime.py", line 121, in exercise
+    start(name)
+    ~~~~~^^^^^^
+  File "/mnt/MediaVolume/home/jadams/src/gitlab.daringbit.com/josh/tdisplay-k230/.claude/worktrees/panel-paint/tests/test_card_shell_scene_coalesce_runtime.py", line 108, in start
+    wait(lambda: name in apps())
+    ~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/MediaVolume/home/jadams/src/gitlab.daringbit.com/josh/tdisplay-k230/.claude/worktrees/panel-paint/tests/test_card_shell_scene_coalesce_runtime.py", line 64, in wait
+    self.fail('runtime condition timed out: ' + (work / 'sway.log').read_text()[-3000:])
+    ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: runtime condition timed out:  [sway/ipc-server.c:570] IPC Client 17 disconnected
+00:00:30.026 [DEBUG] [sway/ipc-server.c:196] New client: fd 17
+00:00:30.028 [INFO] [sway/ipc-server.c:570] IPC Client 17 disconnected
+00:00:30.060 [DEBUG] [sway/ipc-server.c:196] New client: fd 17
+00:00:30.062 [INFO] [sway/ipc-server.c:570] IPC Client 17 disconnected
+00:00:30.093 [DEBUG] [sway/ipc-server.c:196] New client: fd 17
+00:00:30.096 [INFO] [sway/ipc-server.c:570] IPC Client 17 disconnected
+00:00:30.130 [DEBUG] [sway/ipc-server.c:196] New client: fd 17
+00:00:30.132 [INFO] [sway/ipc-server.c:570] IPC Client 17 disconnected
+00:00:30.163 [DEBUG] [sway/ipc-server.c:196] New client: fd 17
+00:00:30.167 [INFO] [sway/ipc-server.c:570] IPC Client 17 disconnected
+00:00:30.202 [DEBUG] [sway/ipc-server.c:196] New client: fd 17
+00:00:30.204 [INFO] [sway/ipc-server.c:570] IPC Client 17 disconnected
+00:00:30.237 [DEBUG] [sway/ipc-server.c:196] New client: fd 17
+00:00:30.239 [INFO] [sway/ipc-server.c:570] IPC Client 17 disconnected
+00:00:30.270 [DEBUG] [sway/ipc-server.c:196] New client: fd 17
+00:00:30.272 [INFO] [sway/ipc-server.c:570] IPC Client 17 disconnected
+00:00:30.308 [DEBUG] [sway/ipc-server.c:196] New client: fd 17
+00:00:30.311 [INFO] [sway/ipc-server.c:570] IPC Client 17 disconnected
+00:00:30.349 [DEBUG] [sway/ipc-server.c:196] New client: fd 17
+00:00:30.353 [INFO] [sway/ipc-server.c:570] IPC Client 17 disconnected
+00:00:30.386 [DEBUG] [sway/ipc-server.c:196] New client: fd 17
+00:00:30.391 [INFO] [sway/ipc-server.c:570] IPC Client 17 disconnected
+00:00:30.423 [DEBUG] [sway/ipc-server.c:196] New client: fd 17
+00:00:30.429 [INFO] [sway/ipc-server.c:570] IPC Client 17 disconnected
+00:00:30.460 [DEBUG] [sway/ipc-server.c:196] New client: fd 17
+00:00:30.463 [INFO] [sway/ipc-server.c:570] IPC Client 17 disconnected
+00:00:30.496 [DEBUG] [sway/ipc-server.c:196] New client: fd 17
+00:00:30.503 [INFO] [sway/ipc-server.c:570] IPC Client 17 disconnected
+00:00:30.548 [DEBUG] [sway/ipc-server.c:196] New client: fd 17
+00:00:30.563 [INFO] [sway/ipc-server.c:570] IPC Client 17 disconnected
+00:00:30.594 [DEBUG] [sway/ipc-server.c:196] New client: fd 17
+00:00:30.596 [INFO] [sway/ipc-server.c:570] IPC Client 17 disconnected
+00:00:30.627 [DEBUG] [sway/ipc-server.c:196] New client: fd 17
+00:00:30.629 [INFO] [sway/ipc-server.c:570] IPC Client 17 disconnected
+00:00:30.661 [DEBUG] [sway/ipc-server.c:196] New client: fd 17
+00:00:30.663 [INFO] [sway/ipc-server.c:570] IPC Client 17 disconnected
+00:00:30.696 [DEBUG] [sway/ipc-server.c:196] New client: fd 17
+00:00:30.698 [INFO] [sway/ipc-server.c:570] IPC Client 17 disconnected
+00:00:30.731 [DEBUG] [sway/ipc-server.c:196] New client: fd 17
+00:00:30.733 [INFO] [sway/ipc-server.c:570] IPC Client 17 disconnected
+00:00:30.764 [DEBUG] [sway/ipc-server.c:196] New client: fd 17
+00:00:30.766 [INFO] [sway/ipc-server.c:570] IPC Client 17 disconnected
+00:00:30.798 [DEBUG] [sway/ipc-server.c:196] New client: fd 17
+00:00:30.800 [INFO] [sway/ipc-server.c:570] IPC Client 17 disconnected
+
+
+----------------------------------------------------------------------
+Ran 1 test in 93.482s
+
+FAILED (failures=3)
