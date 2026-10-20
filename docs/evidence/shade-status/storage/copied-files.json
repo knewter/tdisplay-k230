@@ -1,0 +1,582 @@
+{
+  "utc": "2026-10-20T20:32:17.950875+00:00",
+  "roots": [
+    "/var/tmp/k230-drm-holder-20261020b",
+    "/var/tmp/k230-stall-trace-20261020",
+    "/var/tmp/k230-drm-wait-20261020"
+  ],
+  "files": {
+    "/var/tmp/k230-drm-holder-20261020b/landscape-hdmi-logging.py": {
+      "bytes": 31629,
+      "sha256": "5b310841e69bac1719cf5bfa5fb78a7ba47a9c062f74ab6cd653054e8e3d41dd"
+    },
+    "/var/tmp/k230-drm-holder-20261020b/hdmi-shell-capture-board.py": {
+      "bytes": 41719,
+      "sha256": "ddc51fcd86d7b4d546f19b394624ca10c103fbe4b797a1dc54ec04262ee3300b"
+    },
+    "/var/tmp/k230-drm-holder-20261020b/landscape-hdmi-stall-trace.py": {
+      "bytes": 40112,
+      "sha256": "b98a6404bdd96afab1db9edb6779f325bc7958574e754b04dffbed73ae67f42b"
+    },
+    "/var/tmp/k230-drm-holder-20261020b/landscape-hdmi-baseline.py": {
+      "bytes": 9822,
+      "sha256": "a84f9ab0ffd423470ff157111b5a180641bc6f00949513603bd467b316d9e292"
+    },
+    "/var/tmp/k230-drm-holder-20261020b/landscape-drm-holder.py": {
+      "bytes": 28060,
+      "sha256": "49ef1e5b7de367527a1ab8380a4b8fb9413547dfac9e76e684eb829ddfc19c98"
+    },
+    "/var/tmp/k230-drm-holder-20261020b/hdmi-shell-performance.py": {
+      "bytes": 35673,
+      "sha256": "47d601d3181f4a66065bb73951d4c428b7a0c0f8b33bab00dd37e914234ae50a"
+    },
+    "/var/tmp/k230-drm-holder-20261020b/smoke-b/trace-state.json": {
+      "bytes": 1259,
+      "sha256": "09dd670ede19b6a2d9421116456384308fa6c39a1f525f9d6aeb559a8d1826c9"
+    },
+    "/var/tmp/k230-drm-holder-20261020b/smoke-b/trace-state.lock": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "/var/tmp/k230-drm-holder-20261020b/smoke-b/events.jsonl": {
+      "bytes": 3241,
+      "sha256": "936518743120c49bec5b6a502f7f16db44468e61816366aed126d3d33e4486b6"
+    },
+    "/var/tmp/k230-drm-holder-20261020b/smoke-b/raw.trace": {
+      "bytes": 15861,
+      "sha256": "222ee86925649ca05d5b83e8ca8e172515703f4c0be9c76c25d98baca4358255"
+    },
+    "/var/tmp/k230-drm-holder-20261020b/smoke-b/functions.jsonl": {
+      "bytes": 12533,
+      "sha256": "df65050e85550a2227ae7666a01f5632659d826135a1c1b988a097efd227cf78"
+    },
+    "/var/tmp/k230-drm-holder-20261020b/smoke-b/trace.json": {
+      "bytes": 1924,
+      "sha256": "81140deb92d2465f0a5581964bdaf4c22058e10a02fc4362d913f47e40b58395"
+    },
+    "/var/tmp/k230-drm-holder-20261020b/smoke-b/trace-cleanup.json": {
+      "bytes": 743,
+      "sha256": "808d05fa3fbb3da13e2119cc076dd724b46c75e42c6ab20a51634b743af5a43d"
+    },
+    "/var/tmp/k230-drm-holder-20261020b/smoke-b/smoke.json": {
+      "bytes": 2224,
+      "sha256": "86052b3ce48e8ce1d4a48c3bfe17881e7ebdf8842e233d1c684bf3e21ebf9d28"
+    },
+    "/var/tmp/k230-drm-holder-20261020b/trial-a/cleanup.json": {
+      "bytes": 2765,
+      "sha256": "b90433ef2f090eb14498670f33dab5765267a56005a0bd044a2834903369a311"
+    },
+    "/var/tmp/k230-drm-holder-20261020b/trial-a/trial.json": {
+      "bytes": 334,
+      "sha256": "205a4503fd6443af93d74005e75797b7c7f1760c6714b61373a52b3c3933bcab"
+    },
+    "/var/tmp/k230-drm-holder-20261020b/trial-a/qualified-smoke.json": {
+      "bytes": 2224,
+      "sha256": "86052b3ce48e8ce1d4a48c3bfe17881e7ebdf8842e233d1c684bf3e21ebf9d28"
+    },
+    "/var/tmp/k230-drm-holder-20261020b/trial-a/original.json": {
+      "bytes": 1219,
+      "sha256": "d9a712b2008b7ae25d231f762dc123b052ece50824c0843bcd77e180ca49ec84"
+    },
+    "/var/tmp/k230-drm-holder-20261020b/__pycache__/landscape-hdmi-logging.cpython-314.pyc": {
+      "bytes": 54066,
+      "sha256": "b5a57bb412b9df21ecebd5c2b27d097bbd821c0ee94d20a06a06d7c1d81eec5e"
+    },
+    "/var/tmp/k230-drm-holder-20261020b/__pycache__/hdmi-shell-performance.cpython-314.pyc": {
+      "bytes": 52363,
+      "sha256": "f860f9430b7dcb1bafda19787302eb275413cf17534d91d45a737edf6d8a4f4f"
+    },
+    "/var/tmp/k230-drm-holder-20261020b/__pycache__/hdmi-shell-capture-board.cpython-314.pyc": {
+      "bytes": 67015,
+      "sha256": "8fbbf07ec6b775b7993f72cb414a5e4a1a95dcc63397d71b11381b41bf611657"
+    },
+    "/var/tmp/k230-drm-holder-20261020b/__pycache__/landscape-hdmi-baseline.cpython-314.pyc": {
+      "bytes": 16940,
+      "sha256": "738dd8903aa207df6a94dd06e257daecda59c28b31fd8575b159977445d62115"
+    },
+    "/var/tmp/k230-drm-holder-20261020b/__pycache__/landscape-hdmi-stall-trace.cpython-314.pyc": {
+      "bytes": 73864,
+      "sha256": "4af181f297c92b4b11f17675c7f460ba4ccf8055c16a5d8fb48916663e7c33a7"
+    },
+    "/var/tmp/k230-drm-holder-20261020b/__pycache__/landscape-drm-holder.cpython-314.pyc": {
+      "bytes": 53817,
+      "sha256": "79bfebdc08e6f0bea356cf2093ef77ad6f2534ef0c55612bbe14d316b4cc3bdf"
+    },
+    "/var/tmp/k230-drm-holder-20261020b/trial-a/untraced/control.json": {
+      "bytes": 1589,
+      "sha256": "fbee50be9ef4b489286baa31017d91c94ef869eae1a0b1c13336d7b1294c2e46"
+    },
+    "/var/tmp/k230-drm-holder-20261020b/trial-a/traced/trace-state.json": {
+      "bytes": 1253,
+      "sha256": "391f73aae49645637947032f125ade5a06f7f5e31da782c73c6d8d584c5ada7b"
+    },
+    "/var/tmp/k230-drm-holder-20261020b/trial-a/traced/trace-state.lock": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "/var/tmp/k230-drm-holder-20261020b/trial-a/traced/events.jsonl": {
+      "bytes": 31778462,
+      "sha256": "ce229310b4d434ae539e9fc07e62650f79a70407d48d711aa21915cca57c1c4f"
+    },
+    "/var/tmp/k230-drm-holder-20261020b/trial-a/traced/control.json": {
+      "bytes": 1588,
+      "sha256": "258f6522a052bf1d8c1f3217cdee3068ac472ec6b7dc02bbdde0a398caeb25bc"
+    },
+    "/var/tmp/k230-drm-holder-20261020b/trial-a/traced/raw.trace": {
+      "bytes": 36996300,
+      "sha256": "52d2d5d8c672a9369904da2c1ed27c8171d27447be9ba55e88b32ddfd1eee4e5"
+    },
+    "/var/tmp/k230-drm-holder-20261020b/trial-a/traced/functions.jsonl": {
+      "bytes": 486648,
+      "sha256": "9bbe7916a5b790e65d70a9a12c85a2e6592095be3fbe14c0a8d42b291527d126"
+    },
+    "/var/tmp/k230-drm-holder-20261020b/trial-a/traced/trace.json": {
+      "bytes": 1938,
+      "sha256": "a752ff756d45135ca8f5c5f487c3f9934376b691e202ee4eee97b1d31714bc2c"
+    },
+    "/var/tmp/k230-drm-holder-20261020b/trial-a/traced/trace-cleanup.json": {
+      "bytes": 743,
+      "sha256": "adb7187441d0d4aa3b3861bfcf335adecf669c31d4cc6ecfb3f334f7b55555d5"
+    },
+    "/var/tmp/k230-drm-holder-20261020b/trial-a/traced-retry/trace-state.json": {
+      "bytes": 1253,
+      "sha256": "f3cef2a48e2876870aa12b6c0bf3ce1420e2c1dc46b8322588f180e9d6d57e7b"
+    },
+    "/var/tmp/k230-drm-holder-20261020b/trial-a/traced-retry/trace-state.lock": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "/var/tmp/k230-drm-holder-20261020b/trial-a/traced-retry/events.jsonl": {
+      "bytes": 31658747,
+      "sha256": "41639ff8c8316329d374bb1e985028b0d414ebc29dc5e8a9a8946749ddee96ee"
+    },
+    "/var/tmp/k230-drm-holder-20261020b/trial-a/traced-retry/control.json": {
+      "bytes": 1588,
+      "sha256": "258f6522a052bf1d8c1f3217cdee3068ac472ec6b7dc02bbdde0a398caeb25bc"
+    },
+    "/var/tmp/k230-drm-holder-20261020b/trial-a/traced-retry/raw.trace": {
+      "bytes": 36849071,
+      "sha256": "441d110c37c1bd453274826aa0a1a15c71ed70c1b890e8257a93a19f441ca888"
+    },
+    "/var/tmp/k230-drm-holder-20261020b/trial-a/traced-retry/functions.jsonl": {
+      "bytes": 480999,
+      "sha256": "d0332ed47e7b4759cb7d9f9bce6a764b39dfeb0a18a6707e38b2e3e0a27e63df"
+    },
+    "/var/tmp/k230-drm-holder-20261020b/trial-a/traced-retry/trace.json": {
+      "bytes": 1938,
+      "sha256": "ee3b9a53452a574ec8c6100bd129bcde7ed4eea24cdcaa7d76502f4872dc5bdf"
+    },
+    "/var/tmp/k230-drm-holder-20261020b/trial-a/traced-retry/trace-cleanup.json": {
+      "bytes": 743,
+      "sha256": "29083e97320feb9bb0ef3840cd1af5c6ea81ac12bf4b20e401ee22bb7b26cb78"
+    },
+    "/var/tmp/k230-drm-holder-20261020b/trial-a/traced-retry/capture/context.json": {
+      "bytes": 2341,
+      "sha256": "c0ad9cda0a265bfc9a867c3b64e2eaefe5913871153b36cc09df296558415b78"
+    },
+    "/var/tmp/k230-drm-holder-20261020b/trial-a/traced-retry/capture/metadata.json": {
+      "bytes": 1015,
+      "sha256": "66ea78d7a97471b91c8944c197373566207e884d7d1f230f75fe5731ac4a251d"
+    },
+    "/var/tmp/k230-drm-holder-20261020b/trial-a/traced-retry/capture/capture.log": {
+      "bytes": 863180,
+      "sha256": "9f11241c1df12ba262048b54fb36c2a4b66e512cf7704a86ce77ea566df2da72"
+    },
+    "/var/tmp/k230-drm-holder-20261020b/trial-a/traced/capture/context.json": {
+      "bytes": 2329,
+      "sha256": "cbde9f69148ce2363b9f364f63cc974e5018d34ecb03b84e6965f701a6217a63"
+    },
+    "/var/tmp/k230-drm-holder-20261020b/trial-a/traced/capture/metadata.json": {
+      "bytes": 1015,
+      "sha256": "8d3b321f62797158edf6fee862c5534d4f100897f92ada61b20f3d31f9a95c85"
+    },
+    "/var/tmp/k230-drm-holder-20261020b/trial-a/traced/capture/capture.log": {
+      "bytes": 865368,
+      "sha256": "c0571e4977191f809acb302ffd3d5292f5ef7a18c7f44a8347076390b4ffcbb3"
+    },
+    "/var/tmp/k230-drm-holder-20261020b/trial-a/untraced/capture/context.json": {
+      "bytes": 2340,
+      "sha256": "2ac10484959dfeb409cce5923b6d9f045abbcb7ae02fb27c2b9e7b61d3c43a7f"
+    },
+    "/var/tmp/k230-drm-holder-20261020b/trial-a/untraced/capture/metadata.json": {
+      "bytes": 1015,
+      "sha256": "98bf88cad930daad747a57029c4a3569da3a32c31f5e81ab40ed761f64387d82"
+    },
+    "/var/tmp/k230-drm-holder-20261020b/trial-a/untraced/capture/capture.log": {
+      "bytes": 876827,
+      "sha256": "238306689562823b01793892afb6ffb91d669d147f0b02118e0170e7b36de4b7"
+    },
+    "/var/tmp/k230-stall-trace-20261020/landscape-hdmi-logging.py": {
+      "bytes": 31629,
+      "sha256": "5b310841e69bac1719cf5bfa5fb78a7ba47a9c062f74ab6cd653054e8e3d41dd"
+    },
+    "/var/tmp/k230-stall-trace-20261020/hdmi-shell-capture-board.py": {
+      "bytes": 41719,
+      "sha256": "ddc51fcd86d7b4d546f19b394624ca10c103fbe4b797a1dc54ec04262ee3300b"
+    },
+    "/var/tmp/k230-stall-trace-20261020/landscape-hdmi-stall-trace.py": {
+      "bytes": 36933,
+      "sha256": "32c177f57e77283460346b1f453a790456e7e441367976d083b099084fae1075"
+    },
+    "/var/tmp/k230-stall-trace-20261020/landscape-hdmi-baseline.py": {
+      "bytes": 9822,
+      "sha256": "a84f9ab0ffd423470ff157111b5a180641bc6f00949513603bd467b316d9e292"
+    },
+    "/var/tmp/k230-stall-trace-20261020/hdmi-shell-performance.py": {
+      "bytes": 35673,
+      "sha256": "47d601d3181f4a66065bb73951d4c428b7a0c0f8b33bab00dd37e914234ae50a"
+    },
+    "/var/tmp/k230-stall-trace-20261020/trial-a/cleanup.json": {
+      "bytes": 2765,
+      "sha256": "ff645ba79bd2a8a0aa491a8d22ef5089a0ca81f3a017027af80da8476eb3d6e6"
+    },
+    "/var/tmp/k230-stall-trace-20261020/trial-a/trial.json": {
+      "bytes": 288,
+      "sha256": "10e904b245ca92d4ffd55cb1ec581d3001b19935e13ac696d78887abd3f9afd7"
+    },
+    "/var/tmp/k230-stall-trace-20261020/trial-a/qualified-smoke.json": {
+      "bytes": 531,
+      "sha256": "e1fded66d364733cbbbfba2fe60f1f5f5acbf18d4285d1e9822c90ab31a9fdb3"
+    },
+    "/var/tmp/k230-stall-trace-20261020/trial-a/original.json": {
+      "bytes": 1219,
+      "sha256": "d9a712b2008b7ae25d231f762dc123b052ece50824c0843bcd77e180ca49ec84"
+    },
+    "/var/tmp/k230-stall-trace-20261020/smoke-a/trace-state.json": {
+      "bytes": 983,
+      "sha256": "fac1b321030fdc012e2fdd843c7b5be13fad9ac15a27b898d26488218304fb8b"
+    },
+    "/var/tmp/k230-stall-trace-20261020/smoke-a/trace-state.lock": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "/var/tmp/k230-stall-trace-20261020/smoke-a/events.jsonl": {
+      "bytes": 3351,
+      "sha256": "6e9c1dde11490926d3ecff1bb982051325dd6d62260d58647096280509d5ba63"
+    },
+    "/var/tmp/k230-stall-trace-20261020/smoke-a/raw.trace": {
+      "bytes": 4319,
+      "sha256": "3b05a01ecb1500458680d51c259122a1b3c01a286ddb75c44a1d8267192cfe63"
+    },
+    "/var/tmp/k230-stall-trace-20261020/smoke-a/trace.json": {
+      "bytes": 1402,
+      "sha256": "71c6f9c2a40d8c63a45ee3f3496ffd3336fe21852272530df307f203d0dfd0cd"
+    },
+    "/var/tmp/k230-stall-trace-20261020/smoke-a/trace-cleanup.json": {
+      "bytes": 708,
+      "sha256": "341df0ed9d6738687b2fb4ac6d9acaab6d7a4fc69e28188265caf283e2f46231"
+    },
+    "/var/tmp/k230-stall-trace-20261020/smoke-a/smoke.json": {
+      "bytes": 531,
+      "sha256": "e1fded66d364733cbbbfba2fe60f1f5f5acbf18d4285d1e9822c90ab31a9fdb3"
+    },
+    "/var/tmp/k230-stall-trace-20261020/__pycache__/landscape-hdmi-logging.cpython-314.pyc": {
+      "bytes": 54066,
+      "sha256": "b7cf3b6a864118ed2dac789c2420df9b5e48f1237e518537176b77fca218ee5a"
+    },
+    "/var/tmp/k230-stall-trace-20261020/__pycache__/hdmi-shell-performance.cpython-314.pyc": {
+      "bytes": 52363,
+      "sha256": "8febb950e6a88da7fb232c0d2de9b8d511361f146bddb6761e4dbcefce4aae86"
+    },
+    "/var/tmp/k230-stall-trace-20261020/__pycache__/hdmi-shell-capture-board.cpython-314.pyc": {
+      "bytes": 67015,
+      "sha256": "efb6a7b920790ab9eb4ca3d8d762b3efd5ab9133337948857708d33ed64c18c3"
+    },
+    "/var/tmp/k230-stall-trace-20261020/__pycache__/landscape-hdmi-baseline.cpython-314.pyc": {
+      "bytes": 16940,
+      "sha256": "5a17f5c24cb495d5b566731a5fa635499a811b2f71d3111a96d48e3b1623e1ca"
+    },
+    "/var/tmp/k230-stall-trace-20261020/__pycache__/landscape-hdmi-stall-trace.cpython-314.pyc": {
+      "bytes": 68481,
+      "sha256": "0680e4208b443c1929f12c7e5d6676619109410818375216133822ace02440c9"
+    },
+    "/var/tmp/k230-stall-trace-20261020/trial-a/untraced/control.json": {
+      "bytes": 1589,
+      "sha256": "2301f7cdc4eaaa821e2fe2cace9bb1e6622edc70b159bf8ebb1696a8c105adee"
+    },
+    "/var/tmp/k230-stall-trace-20261020/trial-a/traced/trace-state.json": {
+      "bytes": 983,
+      "sha256": "f07284e3ad62fb6f39410cac5f1eae79ec6553a86245e2f4e87cd0966287a836"
+    },
+    "/var/tmp/k230-stall-trace-20261020/trial-a/traced/trace-state.lock": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "/var/tmp/k230-stall-trace-20261020/trial-a/traced/events.jsonl": {
+      "bytes": 31194942,
+      "sha256": "273a92ea33f25cb5d4582bb122d1d3924260ac431b839e891f4c2fe5d76cbb0f"
+    },
+    "/var/tmp/k230-stall-trace-20261020/trial-a/traced/control.json": {
+      "bytes": 1588,
+      "sha256": "59a3961ad22bc2594a2fccf9303b6445748acd1bd8f5d566c8c3bbe187b64a42"
+    },
+    "/var/tmp/k230-stall-trace-20261020/trial-a/traced/raw.trace": {
+      "bytes": 36428871,
+      "sha256": "eddab5d620d64a777c2ad96dce514c78380abcf95546bb39d93e49f9b7e0a88d"
+    },
+    "/var/tmp/k230-stall-trace-20261020/trial-a/traced/trace.json": {
+      "bytes": 1418,
+      "sha256": "44eaa3156066b7f5d829e212e7d079d77f96e02d691f40f608b4ab6e84f96b3e"
+    },
+    "/var/tmp/k230-stall-trace-20261020/trial-a/traced/trace-cleanup.json": {
+      "bytes": 708,
+      "sha256": "082a3e1b1fa576435a081decf677714b6a63c2018653061f998a660bfeb10bb1"
+    },
+    "/var/tmp/k230-stall-trace-20261020/trial-a/traced-retry/trace-state.json": {
+      "bytes": 983,
+      "sha256": "3e8e37390d94e323faa3c9c283e739b3989ca16fb35f1a484f4613cc8dfea92c"
+    },
+    "/var/tmp/k230-stall-trace-20261020/trial-a/traced-retry/trace-state.lock": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "/var/tmp/k230-stall-trace-20261020/trial-a/traced-retry/events.jsonl": {
+      "bytes": 31328402,
+      "sha256": "adcd2e89afb2b65671c21850aa869e7025c977ac50da903b1f3336a42bb1fae9"
+    },
+    "/var/tmp/k230-stall-trace-20261020/trial-a/traced-retry/control.json": {
+      "bytes": 1588,
+      "sha256": "59a3961ad22bc2594a2fccf9303b6445748acd1bd8f5d566c8c3bbe187b64a42"
+    },
+    "/var/tmp/k230-stall-trace-20261020/trial-a/traced-retry/raw.trace": {
+      "bytes": 36593471,
+      "sha256": "92768bfb460b82857b4db5f2f07b313f7d87b424d9d9c3a7d453b02357ad76ad"
+    },
+    "/var/tmp/k230-stall-trace-20261020/trial-a/traced-retry/trace.json": {
+      "bytes": 1418,
+      "sha256": "2cb98cffd1d19011ad259ddbf05e265a195ce397462ab332d9414ae9a93e796c"
+    },
+    "/var/tmp/k230-stall-trace-20261020/trial-a/traced-retry/trace-cleanup.json": {
+      "bytes": 708,
+      "sha256": "b335ba5b71aa5eb31048a5d29c771b1b9e498395f47fc02769072aec4c73d1c1"
+    },
+    "/var/tmp/k230-stall-trace-20261020/trial-a/traced-retry/capture/context.json": {
+      "bytes": 2341,
+      "sha256": "261781a972fd76c079c756468ae31e595fb2c35f78e3a233601edb064d70081c"
+    },
+    "/var/tmp/k230-stall-trace-20261020/trial-a/traced-retry/capture/metadata.json": {
+      "bytes": 1015,
+      "sha256": "64b1fd7396149e90596cd5d577595cef3212c5f97756950b1d8e4207ffd8909f"
+    },
+    "/var/tmp/k230-stall-trace-20261020/trial-a/traced-retry/capture/capture.log": {
+      "bytes": 863510,
+      "sha256": "705ce0cc562d28c742382d9774e7f661357ca25d56a1d148f023d167fea849ad"
+    },
+    "/var/tmp/k230-stall-trace-20261020/trial-a/traced/capture/context.json": {
+      "bytes": 2329,
+      "sha256": "0e1634cfb7c1f346e6c9c6e65f780332a622da171ac001079aefa8d5c976374c"
+    },
+    "/var/tmp/k230-stall-trace-20261020/trial-a/traced/capture/metadata.json": {
+      "bytes": 1015,
+      "sha256": "e75cf18435501f8764986a84f19280295cc4989f98dcee33879e9a606be9e228"
+    },
+    "/var/tmp/k230-stall-trace-20261020/trial-a/traced/capture/capture.log": {
+      "bytes": 862465,
+      "sha256": "bb85b304a0408d15126b7bf6928fe61cb3bc555a8c74af2074d72f75686af1cd"
+    },
+    "/var/tmp/k230-stall-trace-20261020/trial-a/untraced/capture/context.json": {
+      "bytes": 2341,
+      "sha256": "461a225cd04041837ce9afd8b4e7cfdf311aad34dd77ff0c9650d9224213df3d"
+    },
+    "/var/tmp/k230-stall-trace-20261020/trial-a/untraced/capture/metadata.json": {
+      "bytes": 1015,
+      "sha256": "4fa7d9d621e3784e798048a0d894aeb77d9a70bd620df8bc064fbb545d396a23"
+    },
+    "/var/tmp/k230-stall-trace-20261020/trial-a/untraced/capture/capture.log": {
+      "bytes": 876015,
+      "sha256": "9ba415c11d7cc6c49b8d24404f4411ae484a9036e432e6a6477decd454583733"
+    },
+    "/var/tmp/k230-drm-wait-20261020/landscape-hdmi-logging.py": {
+      "bytes": 31629,
+      "sha256": "5b310841e69bac1719cf5bfa5fb78a7ba47a9c062f74ab6cd653054e8e3d41dd"
+    },
+    "/var/tmp/k230-drm-wait-20261020/hdmi-shell-capture-board.py": {
+      "bytes": 41719,
+      "sha256": "ddc51fcd86d7b4d546f19b394624ca10c103fbe4b797a1dc54ec04262ee3300b"
+    },
+    "/var/tmp/k230-drm-wait-20261020/landscape-drm-wait.py": {
+      "bytes": 28167,
+      "sha256": "4f29492ee1fc84934f181e7688b883e6f645035b599bf9992a526bb397f1f3c6"
+    },
+    "/var/tmp/k230-drm-wait-20261020/landscape-hdmi-stall-trace.py": {
+      "bytes": 40112,
+      "sha256": "b98a6404bdd96afab1db9edb6779f325bc7958574e754b04dffbed73ae67f42b"
+    },
+    "/var/tmp/k230-drm-wait-20261020/landscape-hdmi-baseline.py": {
+      "bytes": 9822,
+      "sha256": "a84f9ab0ffd423470ff157111b5a180641bc6f00949513603bd467b316d9e292"
+    },
+    "/var/tmp/k230-drm-wait-20261020/hdmi-shell-performance.py": {
+      "bytes": 35673,
+      "sha256": "47d601d3181f4a66065bb73951d4c428b7a0c0f8b33bab00dd37e914234ae50a"
+    },
+    "/var/tmp/k230-drm-wait-20261020/smoke-b/trace-state.json": {
+      "bytes": 983,
+      "sha256": "c2a352b7a86253f96dc687b2e0ae8ad08c2d936e61c4c6c5ec1998264cca0d2c"
+    },
+    "/var/tmp/k230-drm-wait-20261020/smoke-b/trace-state.lock": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "/var/tmp/k230-drm-wait-20261020/smoke-b/stacks.jsonl": {
+      "bytes": 303,
+      "sha256": "6709b25df39618b5472cb1cbb45c79a56e59206c57e9fce0fa2b4a229f31ef49"
+    },
+    "/var/tmp/k230-drm-wait-20261020/smoke-b/events.jsonl": {
+      "bytes": 3433,
+      "sha256": "04c4ddb3f11ebdee3d09684d7ae00533a6ebbcbb54d80a2fd8c7994a56bb72eb"
+    },
+    "/var/tmp/k230-drm-wait-20261020/smoke-b/raw.trace": {
+      "bytes": 4763,
+      "sha256": "061aac0738c9a8b9e771775659fdb15a5aceac03f37b37a1bc607419da42ad31"
+    },
+    "/var/tmp/k230-drm-wait-20261020/smoke-b/trace.json": {
+      "bytes": 1859,
+      "sha256": "22a9fd1f92481100e30b1fba59f9b26561b0bb136e9d674084ad9253fb0f02c1"
+    },
+    "/var/tmp/k230-drm-wait-20261020/smoke-b/trace-cleanup.json": {
+      "bytes": 741,
+      "sha256": "9abee94073558e7844f7dc4d26529f5351fb5687cf631273789c76d7d058f7da"
+    },
+    "/var/tmp/k230-drm-wait-20261020/smoke-b/smoke.json": {
+      "bytes": 531,
+      "sha256": "6851b6cacab199914406e0e2e82d291bf703bd7973965edcfb737ee925aebf27"
+    },
+    "/var/tmp/k230-drm-wait-20261020/trial-a/cleanup.json": {
+      "bytes": 2765,
+      "sha256": "10439d93e51246060a4903f6e9941b890b4ee7e9eca2099c9e5b0a5d15e1e722"
+    },
+    "/var/tmp/k230-drm-wait-20261020/trial-a/qualified-smoke.json": {
+      "bytes": 531,
+      "sha256": "6851b6cacab199914406e0e2e82d291bf703bd7973965edcfb737ee925aebf27"
+    },
+    "/var/tmp/k230-drm-wait-20261020/trial-a/original.json": {
+      "bytes": 1219,
+      "sha256": "d9a712b2008b7ae25d231f762dc123b052ece50824c0843bcd77e180ca49ec84"
+    },
+    "/var/tmp/k230-drm-wait-20261020/smoke-a/trace-state.json": {
+      "bytes": 983,
+      "sha256": "433ad1ef86e82f607a2a72233e9b4185127b1eb3442dbed1ad4b10a0870f0f7f"
+    },
+    "/var/tmp/k230-drm-wait-20261020/smoke-a/trace-state.lock": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "/var/tmp/k230-drm-wait-20261020/smoke-a/trace-cleanup.json": {
+      "bytes": 708,
+      "sha256": "dc321a3a6fa277a82dd1f6556e130cb43e7bd16e5b5ed20c3ce275eb66d94da3"
+    },
+    "/var/tmp/k230-drm-wait-20261020/__pycache__/landscape-hdmi-logging.cpython-314.pyc": {
+      "bytes": 54063,
+      "sha256": "cf0f7ef47eba71ace75604190cf06e2428964a16c96d773181b8c76f9e97d413"
+    },
+    "/var/tmp/k230-drm-wait-20261020/__pycache__/hdmi-shell-performance.cpython-314.pyc": {
+      "bytes": 52360,
+      "sha256": "cc281b51eb7ca0d36f874dadfecc0354a851df746d27d5213b56c73e8c94540b"
+    },
+    "/var/tmp/k230-drm-wait-20261020/__pycache__/hdmi-shell-capture-board.cpython-314.pyc": {
+      "bytes": 67012,
+      "sha256": "7c8e9ce1f3b24db56e1ed06b2a7c4def009b4a18373bf37d069a40356af393d1"
+    },
+    "/var/tmp/k230-drm-wait-20261020/__pycache__/landscape-hdmi-baseline.cpython-314.pyc": {
+      "bytes": 16937,
+      "sha256": "0eecf8eaeb178063c3bb65a173c7dcd2201832b9aaab5ab5880cda7cf81be6b5"
+    },
+    "/var/tmp/k230-drm-wait-20261020/__pycache__/landscape-hdmi-stall-trace.cpython-314.pyc": {
+      "bytes": 73861,
+      "sha256": "7b2339a6fa28118e4768cff75102b672f2b0ab49f5d5f4ba86a65ab77b89c4ce"
+    },
+    "/var/tmp/k230-drm-wait-20261020/__pycache__/landscape-drm-wait.cpython-314.pyc": {
+      "bytes": 55865,
+      "sha256": "7a94e8e6b35f7761a107832470360d867bf69de3e1c740486ac35c332d54efd3"
+    },
+    "/var/tmp/k230-drm-wait-20261020/trial-a/untraced/control.json": {
+      "bytes": 1589,
+      "sha256": "47d8912b22dfa18bdb1d1934df8d2057db9004d1f59621f8618c412ded252a83"
+    },
+    "/var/tmp/k230-drm-wait-20261020/trial-a/traced/trace-state.json": {
+      "bytes": 983,
+      "sha256": "e616633f313b64caae5b8d627427a9926b33b853fa8232c78df399f42b6696b2"
+    },
+    "/var/tmp/k230-drm-wait-20261020/trial-a/traced/trace-state.lock": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "/var/tmp/k230-drm-wait-20261020/trial-a/traced/stacks.jsonl": {
+      "bytes": 2116317,
+      "sha256": "39e2fd3cb42a1aa57c5d58d25442705bb7503604dff0b6d8e8ebf75bf7a83621"
+    },
+    "/var/tmp/k230-drm-wait-20261020/trial-a/traced/events.jsonl": {
+      "bytes": 31645118,
+      "sha256": "60b0c23c1218b17fc9ca866f71031728c3f03fea558786b821f95cd1dcebeb5d"
+    },
+    "/var/tmp/k230-drm-wait-20261020/trial-a/traced/raw.trace": {
+      "bytes": 38481400,
+      "sha256": "9937799b4d42ab8f44092d2910f051153e0dda559c7b8a4b0b8e02e15f56208d"
+    },
+    "/var/tmp/k230-drm-wait-20261020/trial-a/traced/trace.json": {
+      "bytes": 1878,
+      "sha256": "0bbff05aac6f5b13a28a0dc770727703e7c49bf736efaa9c767f1d2aa7c63c46"
+    },
+    "/var/tmp/k230-drm-wait-20261020/trial-a/traced/trace-cleanup.json": {
+      "bytes": 741,
+      "sha256": "7d5ef615ac0fad3ad549c99e821ddb023d0ef8b177b021eb4cc20a32cc378bb7"
+    },
+    "/var/tmp/k230-drm-wait-20261020/trial-a/traced/capture/context.json": {
+      "bytes": 2341,
+      "sha256": "b9627b809876dd836e763fd8adc349bffab2eb2bec48df22e7eb330615c8ceb4"
+    },
+    "/var/tmp/k230-drm-wait-20261020/trial-a/traced/capture/metadata.json": {
+      "bytes": 1015,
+      "sha256": "186f1e481b4da63222c8d38af2db9d0a50614d1f49770657dfcb4894300fcbd2"
+    },
+    "/var/tmp/k230-drm-wait-20261020/trial-a/traced/capture/capture.log": {
+      "bytes": 856864,
+      "sha256": "4b193eef37a685fb81830a91f9751af48ca9ecb6467187572d59337046af15cc"
+    },
+    "/var/tmp/k230-drm-wait-20261020/trial-a/untraced/capture/context.json": {
+      "bytes": 2341,
+      "sha256": "8d843b3684dec1de92f660a56ee9d41fbf619e2998b1ff1dbff02b6372ae7237"
+    },
+    "/var/tmp/k230-drm-wait-20261020/trial-a/untraced/capture/metadata.json": {
+      "bytes": 1015,
+      "sha256": "e9bfd314ec09f494eba883f22919fc02a48342ad4e09c9ef3e61d1fa180c2845"
+    },
+    "/var/tmp/k230-drm-wait-20261020/trial-a/untraced/capture/capture.log": {
+      "bytes": 874898,
+      "sha256": "2ce5e486ebf0ac0566fc24771da46143ff2e62f1f9e48ede4bbfb10c74f7eebf"
+    }
+  },
+  "directories": [
+    "/var/tmp/k230-drm-holder-20261020b",
+    "/var/tmp/k230-drm-holder-20261020b/smoke-b",
+    "/var/tmp/k230-drm-holder-20261020b/trial-a",
+    "/var/tmp/k230-drm-holder-20261020b/__pycache__",
+    "/var/tmp/k230-drm-holder-20261020b/trial-a/untraced",
+    "/var/tmp/k230-drm-holder-20261020b/trial-a/traced",
+    "/var/tmp/k230-drm-holder-20261020b/trial-a/traced-retry",
+    "/var/tmp/k230-drm-holder-20261020b/trial-a/untraced/capture",
+    "/var/tmp/k230-drm-holder-20261020b/trial-a/traced/capture",
+    "/var/tmp/k230-drm-holder-20261020b/trial-a/traced-retry/capture",
+    "/var/tmp/k230-stall-trace-20261020",
+    "/var/tmp/k230-stall-trace-20261020/trial-a",
+    "/var/tmp/k230-stall-trace-20261020/smoke-a",
+    "/var/tmp/k230-stall-trace-20261020/__pycache__",
+    "/var/tmp/k230-stall-trace-20261020/trial-a/untraced",
+    "/var/tmp/k230-stall-trace-20261020/trial-a/traced",
+    "/var/tmp/k230-stall-trace-20261020/trial-a/traced-retry",
+    "/var/tmp/k230-stall-trace-20261020/trial-a/untraced/capture",
+    "/var/tmp/k230-stall-trace-20261020/trial-a/traced/capture",
+    "/var/tmp/k230-stall-trace-20261020/trial-a/traced-retry/capture",
+    "/var/tmp/k230-drm-wait-20261020",
+    "/var/tmp/k230-drm-wait-20261020/smoke-b",
+    "/var/tmp/k230-drm-wait-20261020/trial-a",
+    "/var/tmp/k230-drm-wait-20261020/smoke-a",
+    "/var/tmp/k230-drm-wait-20261020/__pycache__",
+    "/var/tmp/k230-drm-wait-20261020/trial-a/untraced",
+    "/var/tmp/k230-drm-wait-20261020/trial-a/traced",
+    "/var/tmp/k230-drm-wait-20261020/trial-a/untraced/capture",
+    "/var/tmp/k230-drm-wait-20261020/trial-a/traced/capture"
+  ],
+  "open_references": []
+}

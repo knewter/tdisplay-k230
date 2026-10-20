@@ -1,0 +1,7 @@
+{
+  "checked_at": "2026-10-20T20:33:12.882762+00:00",
+  "result": "NOT_QUALIFIED_WRITER_STILL_RUNNING",
+  "error": "tarfile.ReadError: unexpected end of data",
+  "board_files_deleted": false,
+  "disposition": "Do not modify source or discard live stream. Wait for original copy session86309 exit0, then validate complete tar contents against immutable inventory before removal."
+}

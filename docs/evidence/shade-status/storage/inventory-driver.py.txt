@@ -1,0 +1,26 @@
+from pathlib import Path
+import os,json,hashlib,datetime
+roots=['/var/tmp/k230-drm-holder-20261020b','/var/tmp/k230-stall-trace-20261020','/var/tmp/k230-drm-wait-20261020']
+v={'utc':datetime.datetime.now(datetime.timezone.utc).isoformat(),'roots':roots,'files':{},'directories':[],'open_references':[]}
+for root in roots:
+ p=Path(root);assert p.is_dir() and not p.is_symlink()
+ for x in [p,*p.rglob('*')]:
+  assert not x.is_symlink(),str(x)
+  if x.is_dir():v['directories'].append(str(x))
+  else:
+   assert x.is_file(),str(x)
+   h=hashlib.sha256()
+   with x.open('rb') as f:
+    while chunk:=f.read(1024*1024):h.update(chunk)
+   v['files'][str(x)]={'bytes':x.stat().st_size,'sha256':h.hexdigest()}
+for process in Path('/proc').iterdir():
+ if not process.name.isdigit():continue
+ try:
+  refs=[process/'cwd',*(process/'fd').iterdir()]
+  for ref in refs:
+   try:target=os.readlink(ref)
+   except OSError:continue
+   if any(target==r or target.startswith(r+'/') for r in roots):v['open_references'].append({'pid':process.name,'reference':str(ref),'target':target})
+ except OSError:pass
+assert not v['open_references'],v['open_references']
+print(json.dumps(v,indent=2))

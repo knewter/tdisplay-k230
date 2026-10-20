@@ -1,0 +1,7 @@
+{
+  "command": "NIX_SSHOPTS=\"-F <protected-SSH-config> -o BatchMode=yes\" nix-copy-closure --to k230 /nix/store/p501mchy0dq9lyjnaxwkx5s2pdm4i2yj-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "exit_code": 0,
+  "log_sha256": "407cafed3ea68ad28bd4d69b27e7bdc1cddcdb46be5471c6c734cc074766bb31",
+  "candidate_gc_root": "/var/lib/k230/shade-status-candidate-root",
+  "copy_is_not_activation": true
+}
