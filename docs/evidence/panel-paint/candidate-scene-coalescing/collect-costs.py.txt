@@ -1,0 +1,14 @@
+from pathlib import Path
+import subprocess,importlib.util,re,json,sys,shlex
+b=Path(__file__).parent;r=Path('/mnt/MediaVolume/home/jadams/src/gitlab.daringbit.com/josh/tdisplay-k230/.claude/worktrees/panel-paint')
+prefix='paint'+str(int(sys.argv[1]));allowed=set(json.loads((b/(prefix+'-paired-motion.json')).read_text())['runs'])
+assert len(allowed)==2 and all(re.fullmatch('[0-9]+',x) for x in allowed)
+spec=importlib.util.spec_from_file_location('export',r/'tools/card-shell-board-session.py');m=importlib.util.module_from_spec(spec);spec.loader.exec_module(m)
+pattern='K230_CARD_SHELL (frame-cost|repaint-cost|input-cost) run=('+'|'.join(sorted(allowed))+')( |$)'
+ssh=['ssh','-F',str(Path.home()/'tmp/k230-coordination/ssh_config.private'),'k230']
+raw=subprocess.check_output(ssh+['journalctl -u shell.service --no-pager -o cat --grep='+shlex.quote(pattern)+' -n 10000'],stdin=subprocess.DEVNULL,text=True,timeout=45)
+clean=m.normalized_journal(raw);lines=[line for line in clean.splitlines() if re.search(r'\brun=([0-9]+)',line).group(1) in allowed]
+(b/(prefix+'-costs.log')).write_text('\n'.join(lines)+'\n')
+combined=b/(prefix+'-cpu-combined.log');combined.write_text((b/(prefix+'-paired.log')).read_text()+'\n'.join(lines)+'\n')
+subprocess.run([sys.executable,str(r/'docs/evidence/card-shell/input-cost-probe/analyze.py'),'--input',str(combined),'--output',str(b/(prefix+'-cpu.json'))],check=True)
+print('Exported fixed-grammar cost rows',len(lines))

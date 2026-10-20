@@ -17,7 +17,7 @@ require the build slot. No physical gate can be ticked from a host check.
   Proof: `python3 tests/test_panel_paint.py` (new deliverable, host only), plus
   existing `python3 tests/test_pixman_quarter_turn.py` and
   `python3 tests/test_card_rounded_clip.py` where relevant.
-- [ ] 2.2 Build the exact candidate userspace/landscape boot bundle and preserve
+- [x] 2.2 Build the exact candidate userspace/landscape boot bundle and preserve
   source/store identities. Proof: `nix build .#kernelMainlineDrmShellLandscapeHdmiBootFiles`
   at the committed source revision under the build lock; build success is not installation proof.
 
@@ -143,3 +143,14 @@ normal output leaves those counters zero. Live main/child frames, structural
 maps, immediate expansion chrome and restored bilinear counts pass. The host
 test fix changes no compiled adapter source. Board timing/current live/camera,
 qualified default and archive remain unverified for this checkpoint.
+
+Exact candidate221bbcf3 build12 succeeds with committed source/bundle/system
+identities. Controlled pairs16 and17 both pass full/reduced frozen software
+budgets, with verified identical setup frames and positive coalescing counters.
+Build p95<=5.458ms; input CPUmean about0.19ms, all stages retained. Current
+board live main/child content/callbacks/releases advance; separate profile
+captures53 complete grouped passes. All evidence/commands/limits are committed
+under candidate-scene-coalescing/. Baseline restored normal/Home, own91/92
+absent and no test devices; board released. Task3.1 stays open for **current
+camera** proof:02:57:54UTC camera still shows the other Ladybird display, no
+qualifying video. No persistent qualified selection or archive is claimed.

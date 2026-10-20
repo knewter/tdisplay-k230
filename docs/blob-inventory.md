@@ -651,6 +651,8 @@ Paths are relative to the repository root. `(sdk)` is
 so that building stage 1 from source does not silently drop them from view.
 
 ```
+DATA eace8062bd0f7d19d5887aeb823b5184e28c82132539b1874ca17aac360f10d1 docs/evidence/panel-paint/candidate-scene-coalescing/live/before.png
+DATA e7980631e2786f14afe4b7ef4960e2ee6b45dc66a66add188b95cac5fc8067af docs/evidence/panel-paint/candidate-scene-coalescing/live/after.png
 DATA 4fbe0ded570c91331436bfc5b73b5c78b6769bed5bede911913ca0817c16c6db docs/evidence/panel-paint/candidate-label-ink/static-before.png
 DATA 1c00680d9329156e8764348c3b06d638edd55488c9f19fd54ef2359e1ef7c71a docs/evidence/panel-paint/candidate-label-ink/live/before.png
 DATA c32dbb9ce42ffb0a06c5f5d185cbe95424e128964c75296c9a7ea8766dc0c3b1 docs/evidence/panel-paint/candidate-label-ink/live/after.png
@@ -3701,3 +3703,12 @@ Static setup equality and changing clients are described in `docs/evidence/panel
 | `docs/evidence/panel-paint/candidate-label-ink/static-before.png` | 30290 | DATA | `4fbe0ded570c91331436bfc5b73b5c78b6769bed5bede911913ca0817c16c6db` |
 | `docs/evidence/panel-paint/candidate-label-ink/live/before.png` | 31450 | DATA | `1c00680d9329156e8764348c3b06d638edd55488c9f19fd54ef2359e1ef7c71a` |
 | `docs/evidence/panel-paint/candidate-label-ink/live/after.png` | 31456 | DATA | `c32dbb9ce42ffb0a06c5f5d185cbe95424e128964c75296c9a7ea8766dc0c3b1` |
+
+## Coalesced-scene live software captures, 2026-10-20 UTC
+
+Changing clients are described in `docs/evidence/panel-paint/candidate-scene-coalescing/README.md`; current camera/glass proof remains unverified.
+
+| Path | Bytes | Class | SHA-256 |
+| --- | ---: | --- | --- |
+| `docs/evidence/panel-paint/candidate-scene-coalescing/live/before.png` | 31404 | DATA | `eace8062bd0f7d19d5887aeb823b5184e28c82132539b1874ca17aac360f10d1` |
+| `docs/evidence/panel-paint/candidate-scene-coalescing/live/after.png` | 31465 | DATA | `e7980631e2786f14afe4b7ef4960e2ee6b45dc66a66add188b95cac5fc8067af` |

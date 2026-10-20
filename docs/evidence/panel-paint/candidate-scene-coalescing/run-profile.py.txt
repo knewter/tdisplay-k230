@@ -1,0 +1,19 @@
+from pathlib import Path
+import subprocess,sys,json,datetime,time
+b=Path(__file__).parent
+meta={'started_utc':datetime.datetime.now(datetime.timezone.utc).isoformat(),'steps':[]}
+def run(script,args=[],suffix=''):
+ log=b/('paint12-full-diag-'+script+suffix+'.log')
+ with log.open('w') as f:p=subprocess.run([sys.executable,str(b/(script+'.py'))]+args,stdout=f,stderr=subprocess.STDOUT,timeout=160)
+ meta['steps'].append({'script':script,'args':args,'exit':p.returncode,'log':log.name});(b/'paint12-full-diagnostics.json').write_text(json.dumps(meta,indent=2)+'\n')
+ print(script,p.returncode,flush=True);return p.returncode,log
+try:
+ rc,_=run('set-paint-profile-host',['on']);assert rc==0
+ time.sleep(5)
+ rc,log=run('run-paint-candidate-host',['full','3'])
+ if rc and 'route timed out' in log.read_text() and "'hide'" in log.read_text():
+  time.sleep(1);rc,_=run('run-paint-candidate-host',['full','3'],'-retry')
+ assert rc==0
+ rc,_=run('collect-paint12-full-profile');assert rc==0
+finally:
+ rc,_=run('set-paint-profile-host',['off']);assert rc==0

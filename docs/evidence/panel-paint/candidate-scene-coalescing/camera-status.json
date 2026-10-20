@@ -1,0 +1,7 @@
+{
+  "status": "UNVERIFIED",
+  "last_inspected_utc": "2026-10-20T02:57:54Z",
+  "observation": "Camera still shows the larger Ladybird welcome display rather than the K230 Overview test.",
+  "qualifying_video_started": false,
+  "pending_operator_action": "Aim camera at the small K230 handheld; inspect a new still before any recording."
+}

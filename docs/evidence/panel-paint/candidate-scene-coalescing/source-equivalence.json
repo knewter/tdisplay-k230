@@ -1,0 +1,11 @@
+{
+  "compiled_source_revision": "221bbcf34a276a939356e5a6af9bfb124af9896a",
+  "reviewed_runtime_proof_revision": "7905e5e3a70c008adb46827b5ce9c30613b4150a",
+  "compared_paths": [
+    "nix/",
+    "flake.nix",
+    "flake.lock"
+  ],
+  "changed_paths": [],
+  "note": "The later revision corrects host fixture IDs and adds proof; compiled candidate remains exactly221bbcf3."
+}

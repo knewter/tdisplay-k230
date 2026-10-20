@@ -247,3 +247,11 @@ modes. Build mean is about4.8–4.9ms. All data is retained; no stable qualifica
 or physical claim. Per-input scene sync remains about0.53ms and is repeated by
 timer/render preparation, selecting the next boundary. Baseline is restored;
 policy freshness/structural behavior, quality and8ms guard must be preserved.
+
+The [coalesced-scene candidate](candidate-scene-coalescing/README.md) passes
+**two consecutive controlled full/reduced software pairs** at exact source221bbcf3.
+Build p95 is5.39–5.46ms; mean input CPU falls from about0.75ms to0.19ms.
+Actual headless integration, changing board clients and bounded profile pass.
+Baseline is restored. Current K230 camera proof is still UNVERIFIED because
+the camera shows the other Ladybird display; persistent selection/archive stay
+open. Earlier failed runs are retained and no camera proof is inferred.
