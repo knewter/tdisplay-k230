@@ -10,6 +10,6 @@
 
 ## 3. Publication
 
-- [ ] 3.1 Run `openspec validate the-landscape-hdmi-stalls-have-a-bounded-logging-comparison --strict`, commit proved source/evidence and push master; verify CI and exact revision at `https://knewter.github.io/tdisplay-k230/work/`. Archive only after all above proof is committed. No main-spec delta or portrait acceptance is implied.
+- [x] 3.1 Run `openspec validate the-landscape-hdmi-stalls-have-a-bounded-logging-comparison --strict`, commit proved source/evidence and push master; verify CI and exact revision at `https://knewter.github.io/tdisplay-k230/work/`. Archive only after all above proof is committed. No main-spec delta or portrait acceptance is implied.
 
 Evidence: `docs/evidence/landscape-hdmi-logging/README.md`. DEBUG reduction did not eliminate the stalls; no default or renderer change is justified by this comparison alone.
