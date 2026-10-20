@@ -1,0 +1,3 @@
+{"starting_cards": 2, "command": ["/nix/store/v189xydz6qkcd4cbkixcmv91w8hbc560-python3-riscv64-unknown-linux-gnu-3.14.7/bin/python3", "/tmp/k230-landscape-baseline-b-20261020/hdmi-shell-capture-board.py", "--profile", "landscape-1280x800", "--variant", "candidate", "--input", "injected", "--seconds", "180", "--drags", "24", "--source-revision", "221bbcf34a276a939356e5a6af9bfb124af9896a", "--output", "/tmp/k230-landscape-baseline-b-20261020/two"]}
+{"finished_cards": 2, "exit_code": 0}
+{"cleanup": {"benchmark_stop": true, "home_requested": true, "original_apps": 1, "remaining_apps": 1, "output_unchanged": true, "system": "/nix/store/j30yag05ic9k68n9dzbzindgf4ardp08-nixos-system-nixos-26.11.20260919.20b1ddd", "services": ["active", "active"]}}

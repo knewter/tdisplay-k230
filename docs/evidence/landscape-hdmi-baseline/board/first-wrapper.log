@@ -1,0 +1,8 @@
+{"starting_cards": 1, "command": ["/nix/store/v189xydz6qkcd4cbkixcmv91w8hbc560-python3-riscv64-unknown-linux-gnu-3.14.7/bin/python3", "/tmp/k230-landscape-baseline-b-20261020/hdmi-shell-capture-board.py", "--profile", "landscape-1280x800", "--variant", "candidate", "--input", "injected", "--seconds", "180", "--drags", "24", "--source-revision", "221bbcf34a276a939356e5a6af9bfb124af9896a", "--output", "/tmp/k230-landscape-baseline-b-20261020/one"]}
+{"finished_cards": 1, "exit_code": 0}
+{"cleanup": {"benchmark_stop": true, "home_requested": true, "original_apps": 1, "remaining_apps": 1, "output_unchanged": true, "system": "/nix/store/j30yag05ic9k68n9dzbzindgf4ardp08-nixos-system-nixos-26.11.20260919.20b1ddd", "services": ["active", "active"]}}
+Traceback (most recent call last):
+  File "/tmp/k230-landscape-baseline-b-20261020/run.py", line 22, in <module>
+    if owned.poll() is not None or time.monotonic()>end:raise RuntimeError('owned Foot did not map')
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+RuntimeError: owned Foot did not map

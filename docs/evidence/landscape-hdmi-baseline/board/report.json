@@ -1,0 +1,156 @@
+{
+  "capture_contexts": [
+    {
+      "collector_sha256": "ddc51fcd86d7b4d546f19b394624ca10c103fbe4b797a1dc54ec04262ee3300b",
+      "frequency": {
+        "temperature": "57803"
+      },
+      "injected_workload": {
+        "limit": "IPC processing adds time; actual input timestamps remain in capture.log.",
+        "moves_per_drag": 35,
+        "nominal_motion_seconds": 0.7,
+        "route": "compositor IPC card_shell down/motion/up",
+        "settle_seconds": 1.6
+      },
+      "output": [
+        {
+          "active": true,
+          "current_mode": {
+            "height": 800,
+            "picture_aspect_ratio": "none",
+            "refresh": 59910,
+            "width": 1280
+          },
+          "name": "HDMI-A-1",
+          "rect": {
+            "height": 800,
+            "width": 1280,
+            "x": 0,
+            "y": 0
+          },
+          "scale": 1.0,
+          "transform": "normal"
+        }
+      ]
+    },
+    {
+      "collector_sha256": "ddc51fcd86d7b4d546f19b394624ca10c103fbe4b797a1dc54ec04262ee3300b",
+      "frequency": {
+        "temperature": "57204"
+      },
+      "injected_workload": {
+        "limit": "IPC processing adds time; actual input timestamps remain in capture.log.",
+        "moves_per_drag": 35,
+        "nominal_motion_seconds": 0.7,
+        "route": "compositor IPC card_shell down/motion/up",
+        "settle_seconds": 1.6
+      },
+      "output": [
+        {
+          "active": true,
+          "current_mode": {
+            "height": 800,
+            "picture_aspect_ratio": "none",
+            "refresh": 59910,
+            "width": 1280
+          },
+          "name": "HDMI-A-1",
+          "rect": {
+            "height": 800,
+            "width": 1280,
+            "x": 0,
+            "y": 0
+          },
+          "scale": 1.0,
+          "transform": "normal"
+        }
+      ]
+    }
+  ],
+  "created_at": "2026-10-20T04:55:44.437765+00:00",
+  "limits": [
+    "IPC injection is not native-input or physical contact proof.",
+    "IPC processing adds to nominal pacing; dispatch timing excludes input delivery.",
+    "Presentation feedback is not optical visibility.",
+    "This landscape diagnostic does not satisfy portrait performance or glass gates."
+  ],
+  "performance_acceptance": "NOT_EVALUATED",
+  "schema": "hdmi-shell-landscape-baseline-v1",
+  "status": "MEASURED",
+  "workloads": [
+    {
+      "build_cpu_ms": {
+        "max_ms": 5.276446,
+        "p95_ms": 4.896851,
+        "sample_count": 855
+      },
+      "cards": 1,
+      "drag_count": 24,
+      "format": "34325241",
+      "input_class": "injected",
+      "input_to_present_ms": {
+        "max_ms": 276.519935,
+        "p95_ms": 27.254963,
+        "sample_count": 864
+      },
+      "latency_clock_start": "compositor-dispatch",
+      "logical_geometry": [
+        1280,
+        800
+      ],
+      "operator_confirmed_contacts": false,
+      "physical_geometry": [
+        1280,
+        800
+      ],
+      "physical_label_proves_real_finger": false,
+      "run": "107776769565348",
+      "runtime_identity": {
+        "compositor_executable": "/nix/store/3vk3p0ps0dng1qmqsrj7w2gfjq024zv8-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway sha256:9464072ac100e77500c7b6113920d2c2ed14e022612eddbc38a037ce9b006670",
+        "kernel": "7.3.0-rc5",
+        "pixman_identity": "/nix/store/brhzfimak2r3c23lmn80y1g6ww6nmb1r-pixman-riscv64-unknown-linux-gnu-0.46.4/lib/libpixman-1.so.0.46.4 sha256:983f88f4f8628824022644297993aa367963288c6d8a61c87ccbac47fa9beb56"
+      },
+      "scale": 1.0,
+      "source_revision": "221bbcf34a276a939356e5a6af9bfb124af9896a",
+      "transform": 0,
+      "variant": "candidate"
+    },
+    {
+      "build_cpu_ms": {
+        "max_ms": 8.407445,
+        "p95_ms": 6.577113,
+        "sample_count": 737
+      },
+      "cards": 2,
+      "drag_count": 24,
+      "format": "34325241",
+      "input_class": "injected",
+      "input_to_present_ms": {
+        "max_ms": 192.036942,
+        "p95_ms": 47.037977,
+        "sample_count": 864
+      },
+      "latency_clock_start": "compositor-dispatch",
+      "logical_geometry": [
+        1280,
+        800
+      ],
+      "operator_confirmed_contacts": false,
+      "physical_geometry": [
+        1280,
+        800
+      ],
+      "physical_label_proves_real_finger": false,
+      "run": "107898445750082",
+      "runtime_identity": {
+        "compositor_executable": "/nix/store/3vk3p0ps0dng1qmqsrj7w2gfjq024zv8-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway sha256:9464072ac100e77500c7b6113920d2c2ed14e022612eddbc38a037ce9b006670",
+        "kernel": "7.3.0-rc5",
+        "pixman_identity": "/nix/store/brhzfimak2r3c23lmn80y1g6ww6nmb1r-pixman-riscv64-unknown-linux-gnu-0.46.4/lib/libpixman-1.so.0.46.4 sha256:983f88f4f8628824022644297993aa367963288c6d8a61c87ccbac47fa9beb56"
+      },
+      "scale": 1.0,
+      "source_revision": "221bbcf34a276a939356e5a6af9bfb124af9896a",
+      "transform": 0,
+      "variant": "candidate"
+    }
+  ]
+}

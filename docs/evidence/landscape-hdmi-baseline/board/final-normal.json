@@ -1,0 +1,45 @@
+{
+  "checked_unix": 1792472169.2690032,
+  "system": "/nix/store/j30yag05ic9k68n9dzbzindgf4ardp08-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "persistent_system": "/nix/store/j30yag05ic9k68n9dzbzindgf4ardp08-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "services": [
+    "active",
+    "active"
+  ],
+  "home_command_succeeded": true,
+  "benchmark_stop_succeeded": true,
+  "debug_numeric_state": {
+    "active": "0",
+    "mode": "0"
+  },
+  "ordinary_foot_windows": 1,
+  "outputs": [
+    {
+      "name": "HDMI-A-1",
+      "active": true,
+      "transform": "normal",
+      "scale": 1.0,
+      "current_mode": {
+        "width": 1280,
+        "height": 800,
+        "refresh": 59910,
+        "picture_aspect_ratio": "none"
+      },
+      "rect": {
+        "x": 0,
+        "y": 0,
+        "width": 1280,
+        "height": 800
+      }
+    }
+  ],
+  "reduced_motion_environment": "0",
+  "profiling_environment": "",
+  "remaining_virtual_test_devices": 0,
+  "override_absent": {
+    "/run/systemd/system/shell.service.d/91-k230-motion-proof.conf": true,
+    "/run/systemd/system/shell.service.d/92-k230-paint-profile.conf": true
+  },
+  "reboot_performed": false,
+  "output_mode_changed": false
+}

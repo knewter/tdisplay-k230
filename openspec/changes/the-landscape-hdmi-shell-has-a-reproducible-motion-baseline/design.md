@@ -53,7 +53,7 @@ commit evidence. Push master and verify CI plus the exact published revision.
 No image deployment, output change or reboot is required for this tooling change.
 The public work-board renderer must honor explicit `skip_specs: true` metadata
 without inventing a capability delta; test absent/false/ambiguous waivers and
-committed revision behavior. The first hardware attempt lost61 journal records
-at the service burst limit; retain it as incomplete and use1.6s rests instead
-of0.8s, with unchanged35motion steps and nominal0.7s motion.
+committed revision behavior. The first hardware attempt lost 61 journal records
+at the service burst limit; retain it as incomplete and use 1.6 s rests instead
+of 0.8 s, with unchanged 35 motion steps and nominal 0.7 s motion.
 The portrait proposal remains open with all its outstanding gates.

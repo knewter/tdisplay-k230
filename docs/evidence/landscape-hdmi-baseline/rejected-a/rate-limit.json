@@ -1,0 +1,24 @@
+{
+  "command": [
+    "journalctl",
+    "--since",
+    "@1792471766",
+    "--until",
+    "@1792471813",
+    "--output=cat",
+    "--no-pager",
+    "--lines=30000"
+  ],
+  "journal_lines": 14182,
+  "rate_limit_markers": [
+    "Suppressed 61 messages from shell.service"
+  ],
+  "K230_CARD_lines": 13272,
+  "input_ids_missing": [
+    609,
+    610,
+    611,
+    612
+  ],
+  "result": "INCOMPLETE; 23 complete drags out of 24; never used for a performance baseline"
+}

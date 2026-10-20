@@ -1,0 +1,41 @@
+{
+  "system": "/nix/store/j30yag05ic9k68n9dzbzindgf4ardp08-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "compositor_pid": 73393,
+  "exe": "/nix/store/3vk3p0ps0dng1qmqsrj7w2gfjq024zv8-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway",
+  "apps": [
+    {
+      "app_id": "k230-terminal",
+      "pid": 73433
+    }
+  ],
+  "outputs": [
+    {
+      "name": "HDMI-A-1",
+      "active": true,
+      "current_mode": {
+        "width": 1280,
+        "height": 800,
+        "refresh": 59910,
+        "picture_aspect_ratio": "none"
+      },
+      "rect": {
+        "x": 0,
+        "y": 0,
+        "width": 1280,
+        "height": 800
+      },
+      "transform": "normal",
+      "scale": 1.0
+    }
+  ],
+  "flags": {
+    "WLR_PIXMAN_QUARTER_TURN": "0",
+    "WLR_PIXMAN_OUTPUT_TURN": "1",
+    "WLR_PIXMAN_DRAW_TRACE": "",
+    "SWAY_K230_CARD_REDUCED_MOTION": "0"
+  },
+  "shell_active": [
+    "active",
+    "active"
+  ]
+}

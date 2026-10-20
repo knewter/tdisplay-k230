@@ -1,0 +1,11 @@
+
+import importlib.util,json,re,subprocess,time
+from pathlib import Path
+s=importlib.util.spec_from_file_location('capture','/tmp/k230-landscape-baseline-b-20261020/hdmi-shell-capture-board.py');c=importlib.util.module_from_spec(s);s.loader.exec_module(c)
+ipc=c.IPC();ipc.command('card_shell benchmark-stop');ipc.command('card_shell home');time.sleep(.3)
+pid=str(ipc.pid);env=dict(x.split(b'=',1) for x in Path('/proc',pid,'environ').read_bytes().split(b'\0') if b'=' in x)
+debug=ipc.request(0,'card_shell debug-scene');text=' '.join(str(x.get('error','')) for x in debug)
+state={k:m.group(1) for k in ['active','mode','home'] if (m:=re.search(r'\b'+k+r'=([0-9]+)\b',text))}
+result={'checked_unix':time.time(),'system':str(Path('/run/current-system').resolve()),'persistent_system':str(Path('/nix/var/nix/profiles/system').resolve()),'services':subprocess.check_output(['systemctl','is-active','shell.service','shell-ui.service'],text=True).splitlines(),'home_command_succeeded':True,'benchmark_stop_succeeded':True,'debug_numeric_state':state,'ordinary_foot_windows':c.app_count(ipc.tree()),'outputs':c.output_state(ipc.outputs()),'reduced_motion_environment':env.get(b'SWAY_K230_CARD_REDUCED_MOTION',b'').decode(),'profiling_environment':env.get(b'WLR_PIXMAN_DRAW_TRACE',b'').decode(),'remaining_virtual_test_devices':sum('injected' in x.get('name','').lower() or 'fixture' in x.get('name','').lower() for x in ipc.request(100)),'override_absent':{p:not Path(p).exists() for p in ['/run/systemd/system/shell.service.d/91-k230-motion-proof.conf','/run/systemd/system/shell.service.d/92-k230-paint-profile.conf']},'reboot_performed':False,'output_mode_changed':False}
+print(json.dumps(result,indent=2));ipc.close()
+assert result['ordinary_foot_windows']==1 and result['services']==['active','active'] and result['remaining_virtual_test_devices']==0 and all(result['override_absent'].values())

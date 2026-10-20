@@ -1,0 +1,23 @@
+{
+  "command": [
+    "/nix/store/v189xydz6qkcd4cbkixcmv91w8hbc560-python3-riscv64-unknown-linux-gnu-3.14.7/bin/python3",
+    "/tmp/k230-landscape-baseline-b-20261020/hdmi-shell-capture-board.py",
+    "--profile",
+    "landscape-1280x800",
+    "--variant",
+    "candidate",
+    "--input",
+    "injected",
+    "--seconds",
+    "180",
+    "--drags",
+    "24",
+    "--source-revision",
+    "221bbcf34a276a939356e5a6af9bfb124af9896a",
+    "--output",
+    "/tmp/k230-landscape-baseline-b-20261020/one"
+  ],
+  "exit_code": 0,
+  "stdout": "",
+  "stderr": ""
+}

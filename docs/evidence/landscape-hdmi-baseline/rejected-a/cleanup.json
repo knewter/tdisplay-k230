@@ -1,0 +1,12 @@
+{
+  "benchmark_stop": true,
+  "home_requested": true,
+  "original_apps": 1,
+  "remaining_apps": 1,
+  "output_unchanged": true,
+  "system": "/nix/store/j30yag05ic9k68n9dzbzindgf4ardp08-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "services": [
+    "active",
+    "active"
+  ]
+}
