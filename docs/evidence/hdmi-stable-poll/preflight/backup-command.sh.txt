@@ -1,0 +1,11 @@
+set -eu
+test "$(readlink -f /run/current-system)" = /nix/store/j30yag05ic9k68n9dzbzindgf4ardp08-nixos-system-nixos-26.11.20260919.20b1ddd
+test "$(readlink -f /nix/var/nix/profiles/system)" = /nix/store/j30yag05ic9k68n9dzbzindgf4ardp08-nixos-system-nixos-26.11.20260919.20b1ddd
+test ! -e /var/lib/k230/boot-backup-hdmi-stable-poll-20261020
+install -d -m0700 /var/lib/k230/boot-backup-hdmi-stable-poll-20261020
+cp -a /boot/Image /boot/initrd.uimg /boot/k230-tdisplay.dtb /boot/bootargs.txt /boot/fw_jump_add_uboot_head.bin /var/lib/k230/boot-backup-hdmi-stable-poll-20261020/
+readlink -f /nix/var/nix/profiles/system > /var/lib/k230/boot-backup-hdmi-stable-poll-20261020/previous-system
+cd /var/lib/k230/boot-backup-hdmi-stable-poll-20261020
+sha256sum Image initrd.uimg k230-tdisplay.dtb bootargs.txt fw_jump_add_uboot_head.bin > SHA256SUMS
+sha256sum -c SHA256SUMS
+sync

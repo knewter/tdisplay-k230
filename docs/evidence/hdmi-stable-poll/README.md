@@ -34,3 +34,11 @@ input samples, and separately qualifies >=3 complete polling cycles without
 EDID-reader markers or >100ms source-grounded held intervals. It checks
 trace clock/count/loss/cleanup and all nine root tracing control hashes.
 Incomplete boundary probes remain explicit. No retries or native/glass claim.
+
+Preflight at2026-10-20T18:02:27Z verified the unchanged installed7.3 image,
+normal HDMI geometry/flags, services and idle Foot. `preflight/` records all
+boot-file hashes, the protected on-board known-good backup and the exact
+backup command. `/run/current-system` and the persistent profile are j30y,
+while `/run/booted-system` still names cmdvr from an earlier boot. This is
+recorded explicitly; the new candidate needs its own serial-observed boot.
+No boot file or profile was changed by backup/preflight.

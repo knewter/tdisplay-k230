@@ -1,0 +1,12 @@
+{
+  "boot_files": {
+    "/boot/Image": "d0cd1b14f4c32b7208500cf7710a83e2804a12111043c7fb95e4b6fe01469940",
+    "/boot/initrd.uimg": "1146f947158f07c625edef03b7467212213789c2c29644148afcbd554a4b17d7",
+    "/boot/k230-tdisplay.dtb": "da9f9e697d00e3c3e8e863b7633d4d2004751249df30280372e817cf5713aecc",
+    "/boot/bootargs.txt": "e211e351cfccfd4275dcf77ed79be088dcc025904c3209264586dad492c1fd88",
+    "/boot/fw_jump_add_uboot_head.bin": "9627edbeea9b115d7040beea27cc61b23b6aca61cd502fd7760d7ee179f42c99"
+  },
+  "kernel_version_alone_is_insufficient": true,
+  "booted_system_differs_from_live_system": true,
+  "limit": "Current image is unchanged. Earlier live activation explains the distinct booted-system; candidate needs a new boot/artifact identity."
+}

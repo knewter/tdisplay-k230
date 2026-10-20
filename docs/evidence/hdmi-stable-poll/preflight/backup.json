@@ -1,0 +1,7 @@
+{
+  "created_at": "2026-10-20T18:03:21.071711+00:00",
+  "backup": "/var/lib/k230/boot-backup-hdmi-stable-poll-20261020",
+  "persistent_system": "/nix/store/j30yag05ic9k68n9dzbzindgf4ardp08-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "boot_files_unchanged": true,
+  "backup_sha256_check_exit": 0
+}
