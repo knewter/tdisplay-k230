@@ -11,4 +11,4 @@
 
 ## 3. Publication
 
-- [ ] 3.1 Validate `openspec validate the-landscape-drm-waits-have-kernel-stack-evidence --strict`, commit proved tooling/evidence/inventory, push master and verify CI plus exact revision at `https://knewter.github.io/tdisplay-k230/work/`. Archive only with committed proof for all tasks; no capability/main-spec delta or performance/default fix is implied.
+- [x] 3.1 Validate `openspec validate the-landscape-drm-waits-have-kernel-stack-evidence --strict`, commit proved tooling/evidence/inventory, push master and verify CI plus exact revision at `https://knewter.github.io/tdisplay-k230/work/`. Archive only with committed proof for all tasks; no capability/main-spec delta or performance/default fix is implied.

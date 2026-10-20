@@ -1,0 +1,11 @@
+{
+  "checked_at": "2026-10-20T07:12:37.047170+00:00",
+  "url": "https://knewter.github.io/tdisplay-k230/work/",
+  "http_status": 200,
+  "expected_revision": "24085c994fbedbf7e66d27812adf04fabe069f23",
+  "published_revision": "24085c994fbedbf7e66d27812adf04fabe069f23",
+  "exact_revision_present": true,
+  "ci_run": "https://github.com/knewter/tdisplay-k230/actions/runs/39384644039",
+  "ci_conclusion": "success",
+  "scope": "Diagnostic source, safe wait-stack evidence and explicit offline recovery. Original board driver exit2 is preserved; recovered report passes. No image/default or physical acceptance."
+}

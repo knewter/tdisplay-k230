@@ -129,3 +129,7 @@ board lease was released after download and final verification; no build slot.
 This is a real DRM hardware diagnostic using direct IPC, not native/finger,
 physical glass, optical or portrait acceptance. The older portrait proposal
 remains3/12 with nine hardware/profile gates open.
+
+CI and exact revision24085c99 publication are verified in
+`board/evidence-publication.json`. All six diagnostic tasks have committed
+proof; no capability delta or main-spec change is part of this work.
