@@ -1,0 +1,4 @@
+{"phase": "starting", "run": "untraced"}
+{"phase": "captured", "run": "untraced"}
+{"phase": "starting", "run": "traced"}
+{"phase": "captured", "run": "traced"}

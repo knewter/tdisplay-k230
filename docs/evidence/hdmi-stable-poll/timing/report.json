@@ -1,0 +1,520 @@
+{
+  "created_at": "2026-10-20T19:04:53.120572+00:00",
+  "limits": [
+    "One untraced/traced injected24-drag pair; no retries or universal latency guarantee.",
+    "Only selected kernel function entries; no syscall/scheduler, mutex pointer or exact acquisition/release proof.",
+    "Source-grounded poll probes lack per-probe connector IDs; observed HDMI geometry and LT9611 callbacks ground the stable path.",
+    "Input-to-presentation feedback is not native touch, glass contact or optical visibility.",
+    "Prior baseline is a separate kernel/system/boot/process; compare identities explicitly, never as the same-process pair.",
+    "Physical cable/input and persistent ordinary boot remain separate acceptance gates."
+  ],
+  "normal": {
+    "benchmark_stop_succeeded": true,
+    "boot_after": {
+      "boot_id": "c17ee483-0191-48ea-986a-9738a274393e",
+      "booted_system": "/nix/store/hpmzja32mncizz7s49ylr8pj9cy5npvg-nixos-system-nixos-26.11.20260919.20b1ddd",
+      "kernel": "7.3.0-rc5",
+      "machine": "riscv64"
+    },
+    "boot_before": {
+      "boot_id": "c17ee483-0191-48ea-986a-9738a274393e",
+      "booted_system": "/nix/store/hpmzja32mncizz7s49ylr8pj9cy5npvg-nixos-system-nixos-26.11.20260919.20b1ddd",
+      "kernel": "7.3.0-rc5",
+      "machine": "riscv64"
+    },
+    "checked_at": "2026-10-20T19:04:27.111007+00:00",
+    "control": {
+      "arguments_without_logging": [
+        "-c",
+        "/nix/store/ila85h1q2fkpzkj7q1jlmc1gz8xq1syp-k230-sway.conf"
+      ],
+      "config_sha256": "575fa8d14d8dda6d0707c369015d37dbd7ea9295c66cefdebef2ef3ea26bdcd0",
+      "debug_flag": true,
+      "environment": {
+        "SWAY_K230_CARD_REDUCED_MOTION": "0",
+        "SWAY_K230_CPU_FRAME_TIMING": "",
+        "SWAY_K230_TOUCH_ROUTE_TRACE": "",
+        "WLR_PIXMAN_DRAW_TRACE": "",
+        "WLR_PIXMAN_OUTPUT_TURN": "1",
+        "WLR_PIXMAN_QUARTER_TURN": "0",
+        "WLR_RENDERER": "pixman"
+      },
+      "executable_sha256": "9464072ac100e77500c7b6113920d2c2ed14e022612eddbc38a037ce9b006670",
+      "output": [
+        {
+          "active": true,
+          "current_mode": {
+            "height": 800,
+            "picture_aspect_ratio": "none",
+            "refresh": 59910,
+            "width": 1280
+          },
+          "name": "HDMI-A-1",
+          "rect": {
+            "height": 800,
+            "width": 1280,
+            "x": 0,
+            "y": 0
+          },
+          "scale": 1.0,
+          "transform": "normal"
+        }
+      ],
+      "persistent_system": "/nix/store/j30yag05ic9k68n9dzbzindgf4ardp08-nixos-system-nixos-26.11.20260919.20b1ddd",
+      "pid": 1076,
+      "system": "/nix/store/hpmzja32mncizz7s49ylr8pj9cy5npvg-nixos-system-nixos-26.11.20260919.20b1ddd",
+      "verbose_flag": false
+    },
+    "global_after": {
+      "current_tracer": "64aec5a7fa151222572a241383c857738318e63cca7ee771952c95a31d92a19d",
+      "events/enable": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+      "set_event_pid": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "set_ftrace_filter": "5c83074a334aa00236037c3c0621b592cf3c740b5f5977f6ee95a308c5c8281e",
+      "set_ftrace_pid": "cdf4d2acfdcd5cd2556f83eeb52ee253ea6afbaa941c760f77dcfae3c925cb78",
+      "set_graph_function": "5c83074a334aa00236037c3c0621b592cf3c740b5f5977f6ee95a308c5c8281e",
+      "trace_clock": "925ca315bd3de6ef99e08c002e320406936ae2da2f2c0afd8da1e87f7980a253",
+      "trace_options": "a01cdd327a047d28b4241491a330220fa96feba5a60309dee36ca7e3bbd9204a",
+      "tracing_on": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865"
+    },
+    "global_before": {
+      "current_tracer": "64aec5a7fa151222572a241383c857738318e63cca7ee771952c95a31d92a19d",
+      "events/enable": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+      "set_event_pid": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "set_ftrace_filter": "5c83074a334aa00236037c3c0621b592cf3c740b5f5977f6ee95a308c5c8281e",
+      "set_ftrace_pid": "cdf4d2acfdcd5cd2556f83eeb52ee253ea6afbaa941c760f77dcfae3c925cb78",
+      "set_graph_function": "5c83074a334aa00236037c3c0621b592cf3c740b5f5977f6ee95a308c5c8281e",
+      "trace_clock": "925ca315bd3de6ef99e08c002e320406936ae2da2f2c0afd8da1e87f7980a253",
+      "trace_options": "a01cdd327a047d28b4241491a330220fa96feba5a60309dee36ca7e3bbd9204a",
+      "tracing_on": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865"
+    },
+    "home_command_succeeded": true,
+    "idle_terminal": {
+      "app_id": "k230-terminal",
+      "idle_shell_without_child_jobs": true,
+      "pinned_idle_color_followers": 1
+    },
+    "services": [
+      "active",
+      "active"
+    ],
+    "virtual_test_devices": 0
+  },
+  "original": {
+    "arguments_without_logging": [
+      "-c",
+      "/nix/store/ila85h1q2fkpzkj7q1jlmc1gz8xq1syp-k230-sway.conf"
+    ],
+    "config_sha256": "575fa8d14d8dda6d0707c369015d37dbd7ea9295c66cefdebef2ef3ea26bdcd0",
+    "debug_flag": true,
+    "environment": {
+      "SWAY_K230_CARD_REDUCED_MOTION": "0",
+      "SWAY_K230_CPU_FRAME_TIMING": "",
+      "SWAY_K230_TOUCH_ROUTE_TRACE": "",
+      "WLR_PIXMAN_DRAW_TRACE": "",
+      "WLR_PIXMAN_OUTPUT_TURN": "1",
+      "WLR_PIXMAN_QUARTER_TURN": "0",
+      "WLR_RENDERER": "pixman"
+    },
+    "executable_sha256": "9464072ac100e77500c7b6113920d2c2ed14e022612eddbc38a037ce9b006670",
+    "output": [
+      {
+        "active": true,
+        "current_mode": {
+          "height": 800,
+          "picture_aspect_ratio": "none",
+          "refresh": 59910,
+          "width": 1280
+        },
+        "name": "HDMI-A-1",
+        "rect": {
+          "height": 800,
+          "width": 1280,
+          "x": 0,
+          "y": 0
+        },
+        "scale": 1.0,
+        "transform": "normal"
+      }
+    ],
+    "persistent_system": "/nix/store/j30yag05ic9k68n9dzbzindgf4ardp08-nixos-system-nixos-26.11.20260919.20b1ddd",
+    "pid": 1076,
+    "system": "/nix/store/hpmzja32mncizz7s49ylr8pj9cy5npvg-nixos-system-nixos-26.11.20260919.20b1ddd",
+    "verbose_flag": false
+  },
+  "report_tool_sha256": "51ffd85f4971b43ba6b96831ffc249135218906b9828f0ea52cbccbb5f018240",
+  "runs": [
+    {
+      "benchmark": {
+        "build_cpu_ms": {
+          "max_ms": 6.144109,
+          "p95_ms": 4.959554,
+          "sample_count": 853
+        },
+        "cards": 1,
+        "drag_count": 24,
+        "format": "34325241",
+        "input_class": "injected",
+        "input_to_present_ms": {
+          "max_ms": 47.456531,
+          "p95_ms": 37.920418,
+          "sample_count": 864
+        },
+        "latency_clock_start": "compositor-dispatch",
+        "logical_geometry": [
+          1280,
+          800
+        ],
+        "operator_confirmed_contacts": false,
+        "physical_geometry": [
+          1280,
+          800
+        ],
+        "physical_label_proves_real_finger": false,
+        "run": "238335372894",
+        "runtime_identity": {
+          "compositor_executable": "/nix/store/3vk3p0ps0dng1qmqsrj7w2gfjq024zv8-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway sha256:9464072ac100e77500c7b6113920d2c2ed14e022612eddbc38a037ce9b006670",
+          "kernel": "7.3.0-rc5",
+          "pixman_identity": "/nix/store/brhzfimak2r3c23lmn80y1g6ww6nmb1r-pixman-riscv64-unknown-linux-gnu-0.46.4/lib/libpixman-1.so.0.46.4 sha256:983f88f4f8628824022644297993aa367963288c6d8a61c87ccbac47fa9beb56"
+        },
+        "scale": 1.0,
+        "source_revision": "1956859593e904be0cf0146f34a259911912c62b",
+        "transform": 0,
+        "variant": "candidate"
+      },
+      "context": {
+        "collector_sha256": "ddc51fcd86d7b4d546f19b394624ca10c103fbe4b797a1dc54ec04262ee3300b",
+        "frequency": {
+          "temperature": "53606"
+        },
+        "injected_workload": {
+          "limit": "IPC processing adds time; actual input timestamps remain in capture.log.",
+          "moves_per_drag": 35,
+          "nominal_motion_seconds": 0.7,
+          "route": "compositor IPC card_shell down/motion/up",
+          "settle_seconds": 1.6
+        },
+        "output": [
+          {
+            "active": true,
+            "current_mode": {
+              "height": 800,
+              "picture_aspect_ratio": "none",
+              "refresh": 59910,
+              "width": 1280
+            },
+            "name": "HDMI-A-1",
+            "rect": {
+              "height": 800,
+              "width": 1280,
+              "x": 0,
+              "y": 0
+            },
+            "scale": 1.0,
+            "transform": "normal"
+          }
+        ]
+      },
+      "name": "untraced",
+      "over_100ms_samples": []
+    },
+    {
+      "benchmark": {
+        "build_cpu_ms": {
+          "max_ms": 5.310222,
+          "p95_ms": 4.841519,
+          "sample_count": 855
+        },
+        "cards": 1,
+        "drag_count": 24,
+        "format": "34325241",
+        "input_class": "injected",
+        "input_to_present_ms": {
+          "max_ms": 46.961216,
+          "p95_ms": 25.959442,
+          "sample_count": 864
+        },
+        "latency_clock_start": "compositor-dispatch",
+        "logical_geometry": [
+          1280,
+          800
+        ],
+        "operator_confirmed_contacts": false,
+        "physical_geometry": [
+          1280,
+          800
+        ],
+        "physical_label_proves_real_finger": false,
+        "run": "377296783737",
+        "runtime_identity": {
+          "compositor_executable": "/nix/store/3vk3p0ps0dng1qmqsrj7w2gfjq024zv8-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway sha256:9464072ac100e77500c7b6113920d2c2ed14e022612eddbc38a037ce9b006670",
+          "kernel": "7.3.0-rc5",
+          "pixman_identity": "/nix/store/brhzfimak2r3c23lmn80y1g6ww6nmb1r-pixman-riscv64-unknown-linux-gnu-0.46.4/lib/libpixman-1.so.0.46.4 sha256:983f88f4f8628824022644297993aa367963288c6d8a61c87ccbac47fa9beb56"
+        },
+        "scale": 1.0,
+        "source_revision": "1956859593e904be0cf0146f34a259911912c62b",
+        "transform": 0,
+        "variant": "candidate"
+      },
+      "context": {
+        "collector_sha256": "ddc51fcd86d7b4d546f19b394624ca10c103fbe4b797a1dc54ec04262ee3300b",
+        "frequency": {
+          "temperature": "55105"
+        },
+        "injected_workload": {
+          "limit": "IPC processing adds time; actual input timestamps remain in capture.log.",
+          "moves_per_drag": 35,
+          "nominal_motion_seconds": 0.7,
+          "route": "compositor IPC card_shell down/motion/up",
+          "settle_seconds": 1.6
+        },
+        "output": [
+          {
+            "active": true,
+            "current_mode": {
+              "height": 800,
+              "picture_aspect_ratio": "none",
+              "refresh": 59910,
+              "width": 1280
+            },
+            "name": "HDMI-A-1",
+            "rect": {
+              "height": 800,
+              "width": 1280,
+              "x": 0,
+              "y": 0
+            },
+            "scale": 1.0,
+            "transform": "normal"
+          }
+        ]
+      },
+      "name": "traced",
+      "over_100ms_samples": [],
+      "poll": {
+        "complete_poll_cycles": 6,
+        "edid_reader_markers": [],
+        "interval_definition": "detect_connector_status entry to drm_modeset_drop_locks entry in the same complete source-grounded LT9611 poll probe; not exact lock acquisition/release",
+        "over_100ms_poll_intervals": [],
+        "poll_held_intervals": [
+          {
+            "bridge_ns": 383456154000,
+            "detect_ns": 383456151000,
+            "drop_ns": 383456557000,
+            "held_lower_bound_ms": 0.406,
+            "helper_ns": null,
+            "pid": 49,
+            "poll_ns": 383456144000,
+            "probe_ns": 383456149000
+          },
+          {
+            "bridge_ns": 383456564000,
+            "detect_ns": 383456563000,
+            "drop_ns": 383456932000,
+            "held_lower_bound_ms": 0.369,
+            "helper_ns": null,
+            "pid": 49,
+            "poll_ns": 383456144000,
+            "probe_ns": 383456561000
+          },
+          {
+            "bridge_ns": 393696057000,
+            "detect_ns": 393696054000,
+            "drop_ns": 393696462000,
+            "held_lower_bound_ms": 0.408,
+            "helper_ns": null,
+            "pid": 49,
+            "poll_ns": 393696046000,
+            "probe_ns": 393696052000
+          },
+          {
+            "bridge_ns": 393696468000,
+            "detect_ns": 393696466000,
+            "drop_ns": 393696835000,
+            "held_lower_bound_ms": 0.369,
+            "helper_ns": null,
+            "pid": 49,
+            "poll_ns": 393696046000,
+            "probe_ns": 393696465000
+          },
+          {
+            "bridge_ns": 403936842000,
+            "detect_ns": 403936840000,
+            "drop_ns": 403937593000,
+            "held_lower_bound_ms": 0.753,
+            "helper_ns": null,
+            "pid": 49,
+            "poll_ns": 403936833000,
+            "probe_ns": 403936837000
+          },
+          {
+            "bridge_ns": 403937601000,
+            "detect_ns": 403937599000,
+            "drop_ns": 403937970000,
+            "held_lower_bound_ms": 0.371,
+            "helper_ns": null,
+            "pid": 49,
+            "poll_ns": 403936833000,
+            "probe_ns": 403937597000
+          },
+          {
+            "bridge_ns": 414176100000,
+            "detect_ns": 414176098000,
+            "drop_ns": 414176496000,
+            "held_lower_bound_ms": 0.398,
+            "helper_ns": null,
+            "pid": 49,
+            "poll_ns": 414176091000,
+            "probe_ns": 414176096000
+          },
+          {
+            "bridge_ns": 414176502000,
+            "detect_ns": 414176501000,
+            "drop_ns": 414176869000,
+            "held_lower_bound_ms": 0.368,
+            "helper_ns": null,
+            "pid": 49,
+            "poll_ns": 414176091000,
+            "probe_ns": 414176500000
+          },
+          {
+            "bridge_ns": 424416152000,
+            "detect_ns": 424416149000,
+            "drop_ns": 424416602000,
+            "held_lower_bound_ms": 0.453,
+            "helper_ns": null,
+            "pid": 1343,
+            "poll_ns": 424416142000,
+            "probe_ns": 424416147000
+          },
+          {
+            "bridge_ns": 424416610000,
+            "detect_ns": 424416608000,
+            "drop_ns": 424416997000,
+            "held_lower_bound_ms": 0.389,
+            "helper_ns": null,
+            "pid": 1343,
+            "poll_ns": 424416142000,
+            "probe_ns": 424416607000
+          },
+          {
+            "bridge_ns": 434656069000,
+            "detect_ns": 434656067000,
+            "drop_ns": 434656464000,
+            "held_lower_bound_ms": 0.397,
+            "helper_ns": null,
+            "pid": 1343,
+            "poll_ns": 434656059000,
+            "probe_ns": 434656064000
+          },
+          {
+            "bridge_ns": 434656470000,
+            "detect_ns": 434656468000,
+            "drop_ns": 434656835000,
+            "held_lower_bound_ms": 0.367,
+            "helper_ns": null,
+            "pid": 1343,
+            "poll_ns": 434656059000,
+            "probe_ns": 434656467000
+          }
+        ],
+        "reasons": [],
+        "rejected_poll_intervals": [],
+        "status": "QUALIFIED"
+      },
+      "trace": {
+        "buffer_total_kb": 1027,
+        "controller_pid": 1315,
+        "current_tracer": "function",
+        "dependencies": {
+          "hdmi-shell-capture-board.py": "ddc51fcd86d7b4d546f19b394624ca10c103fbe4b797a1dc54ec04262ee3300b",
+          "hdmi-shell-performance.py": "47d601d3181f4a66065bb73951d4c428b7a0c0f8b33bab00dd37e914234ae50a",
+          "landscape-drm-holder.py": "6c12fc6b5179e1ff35415076f101687e4878bb846761c11df162f74a2917346f",
+          "landscape-hdmi-baseline.py": "a84f9ab0ffd423470ff157111b5a180641bc6f00949513603bd467b316d9e292",
+          "landscape-hdmi-logging.py": "5b310841e69bac1719cf5bfa5fb78a7ba47a9c062f74ab6cd653054e8e3d41dd",
+          "landscape-hdmi-stall-trace.py": "b98a6404bdd96afab1db9edb6779f325bc7958574e754b04dffbed73ae67f42b"
+        },
+        "event_count": 5418,
+        "events_sha256": "d2eebd2bcae15d7182599db08c9bbe2977c809fbd13ec7874f93c47d132cd0b8",
+        "function_filter": [
+          "detect_connector_status",
+          "drm_atomic_helper_connector_hdmi_hotplug",
+          "drm_atomic_helper_connector_hdmi_update",
+          "drm_bridge_connector_read_edid",
+          "drm_edid_connector_update",
+          "drm_helper_probe_detect",
+          "drm_helper_probe_detect_ctx",
+          "drm_modeset_backoff",
+          "drm_modeset_drop_locks",
+          "lt9611_bridge_detect",
+          "lt9611_bridge_edid_read",
+          "lt9611_get_edid_block",
+          "output_poll_execute"
+        ],
+        "global_before": {
+          "current_tracer": "64aec5a7fa151222572a241383c857738318e63cca7ee771952c95a31d92a19d",
+          "events/enable": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+          "set_event_pid": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "set_ftrace_filter": "5c83074a334aa00236037c3c0621b592cf3c740b5f5977f6ee95a308c5c8281e",
+          "set_ftrace_pid": "cdf4d2acfdcd5cd2556f83eeb52ee253ea6afbaa941c760f77dcfae3c925cb78",
+          "set_graph_function": "5c83074a334aa00236037c3c0621b592cf3c740b5f5977f6ee95a308c5c8281e",
+          "trace_clock": "925ca315bd3de6ef99e08c002e320406936ae2da2f2c0afd8da1e87f7980a253",
+          "trace_options": "a01cdd327a047d28b4241491a330220fa96feba5a60309dee36ca7e3bbd9204a",
+          "tracing_on": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865"
+        },
+        "markers": {
+          "end": {
+            "after_ns": 438958597144,
+            "before_ns": 438957835737
+          },
+          "start": {
+            "after_ns": 377239375996,
+            "before_ns": 377238634663
+          }
+        },
+        "mode": "probe",
+        "raw_bytes": 571168,
+        "raw_sha256": "d5fa114284d14b68bc615030c7281fa53691905fb9d4377da746481f2b3ece9e",
+        "schema": "landscape-hdmi-detect-v1",
+        "stats": {
+          "cpu0": {
+            "bytes": 174984,
+            "commit overrun": 0,
+            "dropped events": 0,
+            "entries": 5418,
+            "overrun": 0,
+            "read events": 0
+          }
+        },
+        "tool_sha256": "ddfdbc6d97c250597c829eccba5c5e042a5c772086f9d06f84cea3e8f9434be9",
+        "trace_clock": "local global counter uptime perf [mono] mono_raw boot tai"
+      }
+    }
+  ],
+  "schema": "hdmi-stable-poll-proof-v1",
+  "status": "QUALIFIED",
+  "trial": {
+    "boot": {
+      "boot_id": "c17ee483-0191-48ea-986a-9738a274393e",
+      "booted_system": "/nix/store/hpmzja32mncizz7s49ylr8pj9cy5npvg-nixos-system-nixos-26.11.20260919.20b1ddd",
+      "kernel": "7.3.0-rc5",
+      "machine": "riscv64"
+    },
+    "dependencies": {
+      "hdmi-shell-capture-board.py": "ddc51fcd86d7b4d546f19b394624ca10c103fbe4b797a1dc54ec04262ee3300b",
+      "hdmi-shell-performance.py": "47d601d3181f4a66065bb73951d4c428b7a0c0f8b33bab00dd37e914234ae50a",
+      "landscape-drm-holder.py": "6c12fc6b5179e1ff35415076f101687e4878bb846761c11df162f74a2917346f",
+      "landscape-hdmi-baseline.py": "a84f9ab0ffd423470ff157111b5a180641bc6f00949513603bd467b316d9e292",
+      "landscape-hdmi-logging.py": "5b310841e69bac1719cf5bfa5fb78a7ba47a9c062f74ab6cd653054e8e3d41dd",
+      "landscape-hdmi-stall-trace.py": "b98a6404bdd96afab1db9edb6779f325bc7958574e754b04dffbed73ae67f42b"
+    },
+    "detect_sha256": "ddfdbc6d97c250597c829eccba5c5e042a5c772086f9d06f84cea3e8f9434be9",
+    "runs": [
+      "untraced",
+      "traced"
+    ],
+    "schema": "hdmi-stable-poll-proof-v1",
+    "source_revision": "1956859593e904be0cf0146f34a259911912c62b",
+    "status": "CAPTURED",
+    "tool_sha256": "51ffd85f4971b43ba6b96831ffc249135218906b9828f0ea52cbccbb5f018240"
+  }
+}

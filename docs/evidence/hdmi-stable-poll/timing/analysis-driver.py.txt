@@ -1,0 +1,20 @@
+from pathlib import Path
+import hashlib,importlib.util,json,datetime
+repo=Path('/mnt/MediaVolume/home/jadams/src/gitlab.daringbit.com/josh/tdisplay-k230/.claude/worktrees/hdmi-stable-poll');b=Path(__file__).parent;directory=b/'stable-poll-candidate-trial-a';s=importlib.util.spec_from_file_location('proof',repo/'tools/hdmi-stable-poll-proof.py');m=importlib.util.module_from_spec(s);s.loader.exec_module(m)
+result=m.report(directory);assert result['status']=='QUALIFIED';runs=[]
+for name in ['untraced','traced']:
+ row,context,samples=m.base.benchmark(directory/name/'capture');item={'name':name,'latency':m.log.distribution([r['wall_ms'] for r in samples]),'control':json.loads((directory/name/'control.json').read_text())['control'],'source_revision':row['source_revision'],'runtime_identity':row['runtime_identity'],'context':context}
+ if name=='traced':
+  rows,_=m.detect.checked(directory/name);first=min(r['start_ns'] for r in samples);last=max(r['end_ns'] for r in samples);qualified=m.qualify_poll([r for r in rows if first<=r['ts_ns']<=last]);assert qualified['status']=='QUALIFIED' and qualified['complete_poll_cycles']>=3
+  item.update(motion_window={'first_input_ns':first,'last_presentation_ns':last,'seconds':(last-first)/1e9},poll_during_motion=qualified)
+ runs.append(item)
+oldpath=repo/'docs/evidence/landscape-drm-holder/board/report.json';old=json.loads(oldpath.read_text());oldrun=old['runs'][0];assert oldrun['name']=='untraced'
+for key in ['executable_sha256','config_sha256','environment','output']:
+ assert oldrun['control']['control'][key]==runs[0]['control'][key]
+for key in ['collector_sha256','injected_workload','output']:
+ # Historical holder report stores benchmark, rather than collector context;
+ # validate that context directly from its committed capture.
+ olddir=repo/'docs/evidence/landscape-drm-holder/board/trial-a/untraced/capture'
+ _,oldcontext,_=m.base.benchmark(olddir);assert oldcontext[key]==runs[0]['context'][key]
+v={'created_at':datetime.datetime.now(datetime.timezone.utc).isoformat(),'status':'CANDIDATE_BOUNDED_POLL_QUALIFIED','analysis_source_sha256':hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),'capture_and_report_tool_sha256':m.log.digest(repo/'tools/hdmi-stable-poll-proof.py'),'candidate_boot':result['trial']['boot'],'candidate_runs':runs,'original_untraced':{'report':str(oldpath.relative_to(repo)),'report_sha256':hashlib.sha256(oldpath.read_bytes()).hexdigest(),'latency':oldrun['latency'],'control':oldrun['control']['control'],'source_revision':oldrun['benchmark']['source_revision']},'limits':['Same compositor/config/environment/output and24-drag injected collector/workload; original/candidate are separate kernel/system/boot/process observations, even though numeric PIDs may be reused.','Original traced runs additionally collect scheduler/syscalls; candidate function-only trace is a different instrumentation class. Untraced summaries are shown separately; no same-process A/B or statistical guarantee.','Candidate p95 is not uniformly lower: retain all distributions/tails and both original/candidate identities.','No native/glass/optical, physical cable/input acceptance or persistent promotion is inferred.']}
+(b/'stable-poll-candidate-analysis.json').write_text(json.dumps(v,indent=2)+'\n');print(json.dumps({'status':v['status'],'new':[r['latency'] for r in runs],'old_untraced':oldrun['latency']},indent=2))

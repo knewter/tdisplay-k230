@@ -1,0 +1,22 @@
+{
+  "raw_trace_bytes": 571168,
+  "raw_trace_sha256": "d5fa114284d14b68bc615030c7281fa53691905fb9d4377da746481f2b3ece9e",
+  "public_records": 5418,
+  "ring_records": 5418,
+  "privacy": "Raw function trace stays protected; committed export is allowlisted numeric/function/marker schema, no arbitrary payload or addresses. Capture logs contain collector-allowlisted benchmark rows.",
+  "host_report_command": [
+    "python3",
+    "tools/hdmi-stable-poll-proof.py",
+    "--report",
+    "/home/jadams/tmp/codex-claude-handoff-20261019/3/stable-poll-candidate-trial-a",
+    "--output",
+    "/home/jadams/tmp/codex-claude-handoff-20261019/3/stable-poll-candidate-report.json"
+  ],
+  "board_driver_exit_code": 0,
+  "host_report_exit_code": 0,
+  "analysis_command": [
+    "python3",
+    "/home/jadams/tmp/codex-claude-handoff-20261019/3/analyze-stable-poll-candidate.py"
+  ],
+  "analysis_exit_code": 0
+}

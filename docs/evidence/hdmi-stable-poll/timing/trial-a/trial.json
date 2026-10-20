@@ -1,0 +1,25 @@
+{
+  "boot": {
+    "boot_id": "c17ee483-0191-48ea-986a-9738a274393e",
+    "booted_system": "/nix/store/hpmzja32mncizz7s49ylr8pj9cy5npvg-nixos-system-nixos-26.11.20260919.20b1ddd",
+    "kernel": "7.3.0-rc5",
+    "machine": "riscv64"
+  },
+  "dependencies": {
+    "hdmi-shell-capture-board.py": "ddc51fcd86d7b4d546f19b394624ca10c103fbe4b797a1dc54ec04262ee3300b",
+    "hdmi-shell-performance.py": "47d601d3181f4a66065bb73951d4c428b7a0c0f8b33bab00dd37e914234ae50a",
+    "landscape-drm-holder.py": "6c12fc6b5179e1ff35415076f101687e4878bb846761c11df162f74a2917346f",
+    "landscape-hdmi-baseline.py": "a84f9ab0ffd423470ff157111b5a180641bc6f00949513603bd467b316d9e292",
+    "landscape-hdmi-logging.py": "5b310841e69bac1719cf5bfa5fb78a7ba47a9c062f74ab6cd653054e8e3d41dd",
+    "landscape-hdmi-stall-trace.py": "b98a6404bdd96afab1db9edb6779f325bc7958574e754b04dffbed73ae67f42b"
+  },
+  "detect_sha256": "ddfdbc6d97c250597c829eccba5c5e042a5c772086f9d06f84cea3e8f9434be9",
+  "runs": [
+    "untraced",
+    "traced"
+  ],
+  "schema": "hdmi-stable-poll-proof-v1",
+  "source_revision": "1956859593e904be0cf0146f34a259911912c62b",
+  "status": "CAPTURED",
+  "tool_sha256": "51ffd85f4971b43ba6b96831ffc249135218906b9828f0ea52cbccbb5f018240"
+}

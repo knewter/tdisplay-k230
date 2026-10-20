@@ -12,8 +12,7 @@ old/new status are connected and cached EDID exists. Link detection and HPD
 notification still run. All non-polling, missing-cache and transition cases
 retain refresh. Nix wires the patch into the mainline DRM source derivation.
 
-UNVERIFIED: candidate timing,
-fresh physical cable/input qualification and persistent promotion remain
+UNVERIFIED: fresh physical cable/input qualification and persistent promotion remain
 open. Current landscape and separate portrait hardware gates are preserved.
 The preceding committed holder/EDID-stage diagnostics ground the problem,
 not an unperformed candidate result.
@@ -108,3 +107,29 @@ scale1 output. Numeric PID1076 is reused across the reboot; distinct boot
 IDs and kernel build IDs distinguish the processes. Fresh function smoke
 qualified4 records and cleanup; actual bounded motion/physical/promotion
 gates remain separate. The kernel trial needs no USB data cable.
+
+The single24-drag untraced/traced candidate pair qualifies. `timing/`
+commits all864 complete input/presentation joins per run, manifests, numeric
+function export, raw-source hash, reports and exact commands. Six complete
+poll cycles occur within the57.665-second traced motion span, with zero
+EDID reader/callback markers and maximum conservative held interval0.753ms.
+All5418 exported records match the ring count, with zero loss. No interval
+was rejected. The owned trace/timer was removed, all nine root tracing
+control hashes match, Home/benchmark-stop succeeded, both services are
+active, idle Foot is unchanged and no test devices remain.
+
+| Observation | p95 ms | p99 ms | max ms | >100ms / samples |
+| --- | ---: | ---: | ---: | ---: |
+| Original untraced |27.331278|45.781325|208.049997|1/864|
+| Candidate untraced |37.920418|45.766998|47.456531|0/864|
+| Candidate function-traced |25.959442|40.229160|46.961216|0/864|
+
+The compositor/config/flags/output and injected collector/workload match the
+original untraced capture. Kernel/system/boot/process identities differ
+and are preserved; original traced runs also had syscall/scheduler tracing,
+so their instrumentation differs. The earlier function-only idle diagnostic
+measured170–184ms holds with EDID reads; this candidate observes no reread
+and short holds during motion. Candidate p95 is not uniformly better. These
+are bounded software measurements, not native/glass/optical smoothness or a
+universal bound. Fresh physical cable/input and persistent promotion gates
+remain open; no source or timing test substitutes for them.
