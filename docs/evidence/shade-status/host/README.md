@@ -1,0 +1,3 @@
+# Native Settings status host conformance
+
+`python3 -m unittest tests.test_settings_status tests.test_device_settings` passed17tests. The native helper compiled with C11/O2 and all Wall/Wextra/Werror checks. Python-oracle cases include201brightness positions/ties, malformed/absent/multiple capability sources, fresh changed values, carrier limit/unknown states, identifiers, keyboard failure/signals and an owned-child3s deadline/reap. [Exact command and hashes](conformance.json), [output](conformance.log). The action implementation in `tools/device_settings.py` is unchanged. Host fixtures do not establish installed speed or glass behavior.

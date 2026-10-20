@@ -1,0 +1,30 @@
+{
+  "checked_at": "2026-10-20T20:31:52.339370+00:00",
+  "command": [
+    "python3",
+    "-m",
+    "unittest",
+    "tests.test_settings_status",
+    "tests.test_device_settings"
+  ],
+  "exit_code": 0,
+  "tests": 17,
+  "elapsed_seconds": 3.858,
+  "compiler_flags": [
+    "-std=c11",
+    "-O2",
+    "-Wall",
+    "-Wextra",
+    "-Werror"
+  ],
+  "source_sha256": {
+    "nix/settings-status.c": "4969af88021abb74b87d0a055b482fbad27505ffb43c7f024cccff11c1fc28fc",
+    "nix/settings-status.nix": "f10d580dcfef3a630daab559726b2dba22f7857b67f881375f6aec4df916576e",
+    "nix/handheld-settings.nix": "7e5d82731ab4a63b0ab34f75d66c29dc8f285a96db021cdbcc66e90087dd5eeb",
+    "tests/test_settings_status.py": "7cffbc27858f52285cac4d52d5180b369f895129fd7973ab1e25c54ba6666d40",
+    "tools/device_settings.py": "130bd6a560176f112d9c3a677c76bafa591a40aec97c744cd362d6c5485f4106",
+    ".github/workflows/spec-site.yml": "c2a53d981fb33d9b1a1f00ce82bacd9d9e93d8406031c478f44c7e7f12ae1837"
+  },
+  "post_test_changes": "Removed unused Python import only; same test command wired into CI. No native behavior changed.",
+  "limits": "Host fixture/protocol proof only. No cross-build, installed performance, physical or persistent qualification is inferred."
+}

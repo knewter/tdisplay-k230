@@ -136,7 +136,7 @@ jobs:
         run: python3 tests/test_launcher_navigation.py
 
       - name: Check Settings capabilities and confirmed actions
-        run: python3 tests/test_device_settings.py
+        run: python3 -m unittest tests.test_settings_status tests.test_device_settings
 
       - name: Check notification broker and prototype shell routes
         run: |
