@@ -635,11 +635,11 @@
       "rationale": "Source and configured-kernel build checks, bounded injected board timing, operator acceptance, and SSH-observed ordinary boot are distinct evidence classes. Installed kernel identity, persistent system, normal controls and cleanup match the accepted candidate. No universal smoothness, optical latency, portrait acceptance or permanent shade fix is claimed.",
       "reviewRevision": "c81572e884fa78305a9941f5c44d827894be1b9d"
     },
-    "the-notification-shade-reads-settings-without-cold-starts": {
-      "lane": "verification",
-      "source": "source-landed",
+    "2026-10-20-the-notification-shade-reads-settings-without-cold-starts": {
+      "lane": "archived",
+      "source": "archived",
       "physical": "verified",
-      "next": "Accepted native Settings default is persistent and ordinary startup/cleanup verified. Publish the matching proof and close all seven tasks.",
+      "next": "Closed at7/7. Operator-accepted native Settings default is persistent and ordinary startup/cleanup/publication are verified; other boot-glitch, jank and portrait work remains separate.",
       "dependencies": [],
       "evidence": [
         "docs/evidence/shade-status/README.md",
@@ -650,8 +650,8 @@
         "docs/evidence/shade-status/board/operator-acceptance.json",
         "docs/evidence/shade-status/persistent/summary.json"
       ],
-      "rationale": "Native fresh status preserves the existing protocol and Python action route. Host parity and coherent build pass. Paired injected pulls reduce median gaps and status CPU while retaining a worse maximum; no universal smoothness or optical timing is inferred. Operator real-touch acceptance is separately recorded; ordinary startup and normal-state cleanup now pass separately over SSH. The accepted native Settings userspace is persistent after an ordinary reboot; kernel/compositor/Rust binaries and landscape remain unchanged, with no trace flags or temporary UI override.",
-      "reviewRevision": "ffa19e381de7151708ad339846660ec19d16ebda"
+      "rationale": "17 host tests and matching cross-builds pass. Paired injected pulls reduce median gaps and status CPU while retaining the134.129ms worse maximum. Operator physical acceptance and persistent ordinary boot/control cleanup are separately committed; no universal smoothness/optical/portrait claim. Normal native Settings wrapper is selected without trace flags or a temporary override; landscape/kernel/compositor/Rust binaries remain accepted.",
+      "reviewRevision": "8dce7634bee26a9c8eb2202e8fe61bde0623ab33"
     }
   }
 }

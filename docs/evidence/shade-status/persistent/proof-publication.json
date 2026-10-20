@@ -1,0 +1,23 @@
+{
+  "started_at": "2026-10-20T21:18:04.165842+00:00",
+  "expected_revision": "8dce7634bee26a9c8eb2202e8fe61bde0623ab33",
+  "status": "VERIFIED",
+  "owner": "Codex pane23",
+  "pid": 4032005,
+  "pgid": 4031768,
+  "sid": 4031768,
+  "stdin": "/dev/null",
+  "controlling_tty": null,
+  "scope": "6/7 complete: operator accepted, persistent native Settings ordinary boot9cc88abc/p501 and final controls/cleanup verified. Board lease released. Exact proof publication then archive remain. Landscape retained;134ms instrumented tail retained.",
+  "ci_run": "https://github.com/knewter/tdisplay-k230/actions/runs/39499154720",
+  "ci_status": "completed",
+  "ci_conclusion": "success",
+  "checked_at": "2026-10-20T21:21:59.527340+00:00",
+  "http_status": 200,
+  "published_revision": "8dce7634bee26a9c8eb2202e8fe61bde0623ab33",
+  "published_url": "https://knewter.github.io/tdisplay-k230/work/",
+  "exact_published_revision": true,
+  "finished_at": "2026-10-20T21:20:38.312305+00:00",
+  "http_method": "Completed curl --fail --location --write-out http_code; exact data-revision parsed after exit0",
+  "http_body_sha256": "21b1a4826aaabaecaed8df46b15c16ff4a68d6fc6a906c3087546677d8efe038"
+}

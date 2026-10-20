@@ -12,4 +12,4 @@
 
 ## 3. Publication
 
-- [ ] 3.1 Commit named proof, validate `openspec validate the-notification-shade-reads-settings-without-cold-starts --strict`, run `python3 tools/blob-scan.py --no-vendor`, land/push and inspect successful matching CI/exact Pages. Archive with no main-spec edits only after all seven tasks pass; keep other jank/portrait tasks open.
+- [x] 3.1 Commit named proof, validate `openspec validate the-notification-shade-reads-settings-without-cold-starts --strict`, run `python3 tools/blob-scan.py --no-vendor`, land/push and inspect successful matching CI/exact Pages. Archive with no main-spec edits only after all seven tasks pass; keep other jank/portrait tasks open.
