@@ -11,4 +11,4 @@
 
 ## 3. Publication
 
-- [ ] 3.1 Validate, land, push, verify CI/exact workboard revision and commit publication proof before archive. Proof: `openspec validate the-landscape-hdmi-poll-has-measured-edid-stage-timing --strict`, `python3 tools/blob-scan.py --no-vendor`, and CI/HTTP revision evidence. No delta/main specs changes.
+- [x] 3.1 Validate, land, push, verify CI/exact workboard revision and commit publication proof before archive. Proof: `openspec validate the-landscape-hdmi-poll-has-measured-edid-stage-timing --strict`, `python3 tools/blob-scan.py --no-vendor`, and CI/HTTP revision evidence. No delta/main specs changes.

@@ -92,3 +92,12 @@ and requested mode/EDID refresh. That fix, its cross-build/deployment and
 hotplug regression proof are **not performed by this diagnostic**. Individual
 I2C transaction/delay contributions remain unmeasured. The separate portrait
 change remains3/12, with nine hardware/profile evidence gates open.
+
+## Publication
+
+Evidenceaddb24b77886f5ee63bc6fd4f2733afb9533039e passedCI39467836791 and
+was observed exactly in the public workboard data-revision at
+2026-10-20T17:45:55Z (HTTP200). `publication.json` records URL/comparison.
+All6diagnostic tasks are complete, with no delta/main specs. The separately
+planned kernel fix remains UNVERIFIED until its own build/runtime/physical
+gates pass; this diagnostic does not close those or the portrait gates.

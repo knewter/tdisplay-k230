@@ -1,0 +1,13 @@
+{
+  "checked_at": "2026-10-20T17:45:55.503171+00:00",
+  "url": "https://knewter.github.io/tdisplay-k230/work/",
+  "http_status": 200,
+  "expected_revision": "addb24b77886f5ee63bc6fd4f2733afb9533039e",
+  "published_revision": "addb24b77886f5ee63bc6fd4f2733afb9533039e",
+  "exact_revision_present": true,
+  "ci_run": "https://github.com/knewter/tdisplay-k230/actions/runs/39467836791",
+  "ci_conclusion": "success",
+  "change": "the-landscape-hdmi-poll-has-measured-edid-stage-timing",
+  "phase": "evidence",
+  "scope": "Diagnostic tooling/evidence only; no image/default change or physical/native acceptance."
+}
