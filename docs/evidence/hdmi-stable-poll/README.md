@@ -137,3 +137,7 @@ remain open; no source or timing test substitutes for them.
 ## Partial physical acceptance
 
 [Operator report and read-only runtime record](physical-a/README.md) confirm panel return and bottom-edge Overview on the candidate. HDMI replug/pinch and persistent promotion remain open. A reported top notification-shade stutter is a separate userspace investigation.
+
+## Operator acceptance for promotion
+
+The operator replied “everything's good land whatever we're on tell me what's next” after the remaining HDMI reconnect/Overview and persistent-install gate were named. [Exact acceptance and provenance limits](physical-a/operator-acceptance.json) record this as acceptance of the remaining candidate behavior, with no invented contact/cable timestamps or camera proof. [Reserved-board preflight](physical-a/accepted-preflight.json) verifies the unchanged candidate boot, source identity, staged four payloads and original five-file backup before promotion.

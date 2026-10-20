@@ -1,0 +1,67 @@
+{
+  "utc": "2026-10-20T19:53:02.988068+00:00",
+  "boot_id": "c17ee483-0191-48ea-986a-9738a274393e",
+  "system": "/nix/store/hpmzja32mncizz7s49ylr8pj9cy5npvg-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "booted_system": "/nix/store/hpmzja32mncizz7s49ylr8pj9cy5npvg-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "persistent_system": "/nix/store/j30yag05ic9k68n9dzbzindgf4ardp08-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "outputs": [
+    {
+      "name": "DSI-1",
+      "active": true,
+      "transform": "270",
+      "scale": 1.0,
+      "current_mode": {
+        "width": 568,
+        "height": 1232,
+        "refresh": 52190,
+        "picture_aspect_ratio": "none"
+      },
+      "rect": {
+        "x": 0,
+        "y": 0,
+        "width": 1232,
+        "height": 568
+      }
+    }
+  ],
+  "sway_pid": 1076,
+  "sway_sha256": "9464072ac100e77500c7b6113920d2c2ed14e022612eddbc38a037ce9b006670",
+  "hdmi_trackpad_present": false,
+  "physical_touch_present": true,
+  "hashes": {
+    "boot": {
+      "Image": "d0cd1b14f4c32b7208500cf7710a83e2804a12111043c7fb95e4b6fe01469940",
+      "initrd.uimg": "1146f947158f07c625edef03b7467212213789c2c29644148afcbd554a4b17d7",
+      "k230-tdisplay.dtb": "da9f9e697d00e3c3e8e863b7633d4d2004751249df30280372e817cf5713aecc",
+      "bootargs.txt": "e211e351cfccfd4275dcf77ed79be088dcc025904c3209264586dad492c1fd88",
+      "fw_jump_add_uboot_head.bin": "9627edbeea9b115d7040beea27cc61b23b6aca61cd502fd7760d7ee179f42c99"
+    },
+    "backup": {
+      "Image": "d0cd1b14f4c32b7208500cf7710a83e2804a12111043c7fb95e4b6fe01469940",
+      "initrd.uimg": "1146f947158f07c625edef03b7467212213789c2c29644148afcbd554a4b17d7",
+      "k230-tdisplay.dtb": "da9f9e697d00e3c3e8e863b7633d4d2004751249df30280372e817cf5713aecc",
+      "bootargs.txt": "e211e351cfccfd4275dcf77ed79be088dcc025904c3209264586dad492c1fd88",
+      "fw_jump_add_uboot_head.bin": "9627edbeea9b115d7040beea27cc61b23b6aca61cd502fd7760d7ee179f42c99"
+    },
+    "stage": {
+      "Image": "d6b2153d97ac8382b5329c64397b8b46435e6a423b16796f8c37e052d4bcd642",
+      "initrd.uimg": "7d983aeffd4e47d2e36f825a731b485d55f05534a5dd28f036244d79c16f197c",
+      "k230-tdisplay.dtb": "71846b14ec47456fe9bec713ee850c97e1d8c1563afa9ffe21ac87da196ed581",
+      "bootargs.txt": "09c0214ca1b36924ad5a24662e1f55efd137a8eff2e7d1052127d318eb3ca6b7"
+    }
+  },
+  "free": {
+    "root": {
+      "free_bytes": 450228224,
+      "unprivileged_available_bytes": 0
+    },
+    "boot": {
+      "free_bytes": 31158272,
+      "unprivileged_available_bytes": 27636736
+    }
+  },
+  "services": [
+    "active",
+    "active"
+  ]
+}

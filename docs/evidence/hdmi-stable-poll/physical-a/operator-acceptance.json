@@ -1,0 +1,11 @@
+{
+  "recorded_at": "2026-10-20T19:54:20.771597+00:00",
+  "operator_statement": "everything's good land whatever we're on tell me what's next",
+  "context": "Reply after the outstanding HDMI reconnect/four-finger Overview confirmation and persistent-install gate were named. Accepted as confirmation of the remaining candidate cable/input behavior and authorization to finish landing/promotion.",
+  "evidence_class": "operator acceptance report; not a new camera recording or event trace",
+  "candidate_boot_id": "c17ee483-0191-48ea-986a-9738a274393e",
+  "candidate_system": "/nix/store/hpmzja32mncizz7s49ylr8pj9cy5npvg-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "physical_timing": "Not measured; exact replug/contact timestamps not collected",
+  "existing_observations": "Earlier watcher plus explicit panel-return/bottom-swipe report remain separate. Current preflight shows panel landscape, physical touch present, HDMI unplugged; it does not recreate the accepted HDMI gesture.",
+  "accepted_for_promotion": true
+}
