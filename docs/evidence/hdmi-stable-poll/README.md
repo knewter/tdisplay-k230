@@ -12,7 +12,7 @@ old/new status are connected and cached EDID exists. Link detection and HPD
 notification still run. All non-polling, missing-cache and transition cases
 retain refresh. Nix wires the patch into the mainline DRM source derivation.
 
-UNVERIFIED: configured full system cross-build, candidate boot/timing,
+UNVERIFIED: candidate boot/timing,
 fresh physical cable/input qualification and persistent promotion remain
 open. Current landscape and separate portrait hardware gates are preserved.
 The preceding committed holder/EDID-stage diagnostics ground the problem,
@@ -50,3 +50,14 @@ command, successful exit, derivation and Image/System.map identities.
 and patch exactly match the host semantic matrix. The new kernel output
 is `/nix/store/21lz5c6pkk329c0xcac9bzlx40dplrlk-linux-riscv64-unknown-linux-gnu-7.3.0-rc5`.
 This is cross-build proof; no candidate boot or physical acceptance yet.
+
+The full landscape system and coherent boot-bundle builds passed at18:16:14Z
+and18:16:35Z. `host/mainline-system/` preserves both commands/results and
+complete bundle inspection, including the narrow inspector allowlist variant.
+The matching candidate system is hpmzja32; its42,752,512-byte Image has SHA256
+`d6b2153d97ac8382b5329c64397b8b46435e6a423b16796f8c37e052d4bcd642`.
+The evaluated Sway wrapper still selects3vk3p0ps and the exact ila85 config
+(SHA575fa8d1), matching the installed compositor/config. Build source19568595
+identifies the candidate kernel/system input; the reused compositor binary
+remains the previously qualified221bbcf3 artifact. No runtime proof follows
+from these successful builds.

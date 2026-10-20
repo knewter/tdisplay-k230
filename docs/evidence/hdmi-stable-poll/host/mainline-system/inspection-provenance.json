@@ -1,0 +1,12 @@
+{
+  "original_tool": "tools/coherent-shell-boot-inspect.py",
+  "original_sha256": "27946f9c0aeb8b6df97a1efc89c9a4475d467b2498b7d58350bdac6f6ae2c342",
+  "variant_sha256": "f2a5ffbdd49044207aace8d552e52b9968e42085fe362a4363efe6f54ed67a42",
+  "only_change": "Add exact k230-mainline-drm-shell-landscape-hdmi configuration to existing allowlist; all Image/DTB/initrd/bootargs/closure/CRC checks unchanged.",
+  "command": [
+    "python3",
+    "/home/jadams/tmp/codex-claude-handoff-20261019/3/stable-poll-inspect-bundle.py",
+    "/home/jadams/tmp/codex-claude-handoff-20261019/3/stable-poll-mainline-bundle-result"
+  ],
+  "exit_code": 0
+}

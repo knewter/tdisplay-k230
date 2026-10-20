@@ -2,7 +2,7 @@
 
 - [x] 1.1 Implement the narrow polling/cached-EDID guard and Nix wiring; verify the actual patched C72-case behavior and unchanged HPD/force/mode functions. Host proof: `python3 tools/test-hdmi-stable-poll.py --source /nix/store/7vzlvixrdhv5a1iw75p18yzwkaqrlxjd-linux-mainline-k230-drm-src`.
 - [x] 1.2 Cross-build the actual configured candidate kernel and commit derivation/source/patch/output identities plus build result. Host proof under the heavy-build lock: `nix build .#nixosConfigurations.k230-mainline-drm-shell-landscape-hdmi.config.boot.kernelPackages.kernel`.
-- [ ] 1.3 Cross-build the matching full candidate closure without changing landscape/default application settings; record installed artifacts separately from build success. Host proof: `nix build .#nixosConfigurations.k230-mainline-drm-shell-landscape-hdmi.config.system.build.toplevel`.
+- [x] 1.3 Cross-build the matching full candidate closure without changing landscape/default application settings; record installed artifacts separately from build success. Host proof: `nix build .#nixosConfigurations.k230-mainline-drm-shell-landscape-hdmi.config.system.build.toplevel`.
 
 ## 2. Board qualification and promotion
 
