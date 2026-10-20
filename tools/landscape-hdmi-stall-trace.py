@@ -80,7 +80,14 @@ def parse_line(line, target):
         m = re.fullmatch(r'NR (\d+) = (-?\d+)', body)
         if not m or row['pid'] != target:
             raise TraceError('unexpected syscall exit or PID')
-        row.update(event='exit', nr=int(m[1]), ret=int(m[2]))
+        nr, result = int(m[1]), int(m[2])
+        row.update(event='exit', nr=nr)
+        if nr in (29,64,66):
+            row['ret']=result
+        else:
+            # mmap/brk and other calls may return pointers. Preserve only the
+            # errno category for unrelated calls, never an arbitrary address.
+            row['result_error']=-result if -4095<=result<0 else 0
     elif kind == 'sched_switch':
         m = re.search(r'\bprev_pid=(\d+) prev_prio=\d+ prev_state=([RSDTtXZPI+|]+) ==> .*?\bnext_pid=(\d+) next_prio=\d+$', body)
         if not m or target not in (int(m[1]), int(m[3])):
@@ -112,6 +119,24 @@ def export(raw_path, safe_path, target):
             if count > MAX_EVENTS: raise TraceError('too many trace events')
             out.write(json.dumps(row, separators=(',', ':'))+'\n')
     return count
+
+
+def public_reexport(private_directory, public_directory):
+    """Re-export original bytes without changing clocks, events or loss proof."""
+    metadata=json.loads((private_directory/'trace.json').read_text())
+    raw=private_directory/'raw.trace'
+    if log.digest(raw)!=metadata['raw_sha256']:
+        raise TraceError('private raw trace identity differs')
+    public_directory.mkdir(parents=True,exist_ok=True)
+    count=export(raw,public_directory/'events.jsonl',metadata['pid'])
+    if count!=metadata['event_count']:
+        raise TraceError('re-export changed event count')
+    metadata.update(original_numeric_sha256=metadata['events_sha256'],
+        events_sha256=log.digest(public_directory/'events.jsonl'),
+        public_export_tool_sha256=log.digest(Path(__file__)),
+        public_export_note='Unknown syscall returns retain only errno category; pointer-valued returns are omitted. Capture timestamps, event count and loss statistics are unchanged.')
+    log.write_json(public_directory/'trace.json',metadata)
+    checked_events(public_directory)
 
 
 def owned_path(state, root=ROOT):
@@ -273,7 +298,8 @@ def intervals(events, target, first, last):
                 if t>=first: raise TraceError('unmatched syscall exit inside qualified window')
                 partial.append({'event':'initial_syscall_exit','ts_ns':t}); continue
             if row['nr']!=pending['nr']: raise TraceError('syscall entry/exit mismatch')
-            calls.append({**pending,'start_ns':pending['ts_ns'],'end_ns':t,'ret':row['ret'],
+            calls.append({**pending,'start_ns':pending['ts_ns'],'end_ns':t,'ret':row.get('ret'),
+                          'result_error':row.get('result_error'),
                           'wall_ms':(t-pending['ts_ns'])/1e6});pending=None
         elif kind=='switch':
             if row['prev_pid']==target:
@@ -462,12 +488,13 @@ def load_safe_events(directory):
     for line in (directory/'events.jsonl').read_text().splitlines():
         if len(line)>1024 or len(rows)>=MAX_EVENTS:raise TraceError('numeric trace exceeds bounds')
         r=json.loads(line);base={'pid','cpu','ts_ns','event'}
-        extras={'enter':{'nr'},'exit':{'nr','ret'},'switch':{'prev_pid','prev_state','next_pid'},
+        extras={'enter':{'nr'},'exit':{'nr'},'switch':{'prev_pid','prev_state','next_pid'},
                 'wake':{'wake_pid','target_cpu'},'marker':{'phase','before_ns'}}
         if r.get('event') not in extras:raise TraceError('unknown numeric trace event')
         required=base|extras[r['event']]
         if r['event']=='enter' and r.get('nr') in (29,64,66):
             required|={'fd',({29:'command',64:'count',66:'iov_count'}[r['nr']])}
+        if r['event']=='exit':required|={'ret' if r.get('nr') in (29,64,66) else 'result_error'}
         if set(r)!=required:raise TraceError('unexpected or private numeric event fields')
         for k,v in r.items():
             if k in ('event','phase','prev_state'):continue
@@ -556,6 +583,10 @@ class Fixtures(unittest.TestCase):
             with self.subTest(bad=bad),self.assertRaises(TraceError):parse_line(bad,10)
         switch=parse_line('private-task-name-99 [000] .... 1.320000: sched_switch: prev_comm=private prev_pid=99 prev_prio=120 prev_state=R ==> next_comm=sway next_pid=10 next_prio=120',10)
         self.assertNotIn('private',json.dumps(switch));self.assertEqual(switch['next_pid'],10)
+        address=parse_line('sway-10 [000] .... 1.100000: sys_exit: NR 222 = 1400123456789',10)
+        self.assertNotIn('1400123456789',json.dumps(address));self.assertEqual(address['result_error'],0)
+        error=parse_line('sway-10 [000] .... 1.100000: sys_exit: NR 222 = -12',10)
+        self.assertEqual(error['result_error'],12)
 
     def events(self):
         def e(t,kind,**kw):return {'ts_ns':int(t*1e9),'pid':10,'cpu':0,'event':kind,**kw}

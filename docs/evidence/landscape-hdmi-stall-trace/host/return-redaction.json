@@ -1,0 +1,11 @@
+{
+  "checked_at": "2026-10-20T06:07:26.984144+00:00",
+  "command": [
+    "python3",
+    "tools/landscape-hdmi-stall-trace.py",
+    "--self-test"
+  ],
+  "exit_code": 0,
+  "source_sha256": "c0d7fb0ce3073c94d0ae82f90bce2aa563bcb1a896302c82e97a96a423b13220",
+  "change": "Non-I/O syscall returns may be pointer-valued; public export now retains only their errno category. Original private raw data and capture identity retained; physical timing/clock/loss/event count unchanged."
+}

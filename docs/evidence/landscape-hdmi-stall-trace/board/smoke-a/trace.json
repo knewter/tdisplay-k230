@@ -1,7 +1,7 @@
 {
   "buffer_total_kb": 32771,
   "event_count": 42,
-  "events_sha256": "6e9c1dde11490926d3ecff1bb982051325dd6d62260d58647096280509d5ba63",
+  "events_sha256": "d1e2e7a8fab85c46228b11bfc8273e45fc30eae71c7c1039d14372fa06e78300",
   "global_before": {
     "current_tracer": "64aec5a7fa151222572a241383c857738318e63cca7ee771952c95a31d92a19d",
     "events/enable": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
@@ -20,7 +20,10 @@
       "before_ns": 111755111111861
     }
   },
+  "original_numeric_sha256": "6e9c1dde11490926d3ecff1bb982051325dd6d62260d58647096280509d5ba63",
   "pid": 78459,
+  "public_export_note": "Unknown syscall returns retain only errno category; pointer-valued returns are omitted. Capture timestamps, event count and loss statistics are unchanged.",
+  "public_export_tool_sha256": "c0d7fb0ce3073c94d0ae82f90bce2aa563bcb1a896302c82e97a96a423b13220",
   "raw_bytes": 4319,
   "raw_sha256": "3b05a01ecb1500458680d51c259122a1b3c01a286ddb75c44a1d8267192cfe63",
   "schema": "landscape-hdmi-stall-trace-v1",
