@@ -1,0 +1,14 @@
+{
+  "checked_at": "2026-10-20T18:13:11.404980+00:00",
+  "source_revision": "1956859593e904be0cf0146f34a259911912c62b",
+  "configuration": "k230-mainline-drm-shell-landscape-hdmi",
+  "source_derivation": "/nix/store/g5v1d8xdc843y8ydlwjf9jibwsmc57dj-linux-mainline-k230-drm-src.drv",
+  "patched_source": "/nix/store/1sr18plbky4kzy5x1gjqmy4pqdm68zbc-linux-mainline-k230-drm-src",
+  "patched_bridge_file_sha256": "bf1d9725b3441467867ce4461e5c69c24f53d017998b49e68962cb8641c6f82b",
+  "patch_store_path": "/nix/store/51hhg029l5gypjdrnl4bbdan3j0mwrqn-drm-bridge-connector-stable-poll.patch",
+  "patch_sha256": "09cedc33fe95dec9f34f952ab69fabfb8faddeff7a790cb827c8ed83c9c4e329",
+  "matches_host_semantic_matrix": true,
+  "kernel_derivation": "/nix/store/0zq193wki0mimhnmsr0gq406g901c5gx-linux-riscv64-unknown-linux-gnu-7.3.0-rc5.drv",
+  "configured_kernel_version": "7.3.0-rc5",
+  "limit": "Actual Nix source realization matches the tested patch byte-for-byte. Kernel build has passed (mainline-kernel/); no boot/runtime claim."
+}

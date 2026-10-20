@@ -1,0 +1,16 @@
+{
+  "deriver": "/nix/store/0zq193wki0mimhnmsr0gq406g901c5gx-linux-riscv64-unknown-linux-gnu-7.3.0-rc5.drv",
+  "store_path": "/nix/store/21lz5c6pkk329c0xcac9bzlx40dplrlk-linux-riscv64-unknown-linux-gnu-7.3.0-rc5",
+  "files": {
+    "Image": {
+      "bytes": 42752512,
+      "sha256": "d6b2153d97ac8382b5329c64397b8b46435e6a423b16796f8c37e052d4bcd642"
+    },
+    "System.map": {
+      "bytes": 7537888,
+      "sha256": "5ec019de70b77fd5e69f1973a7669ab01f68f3573e5cff56d118d33c54f6cf52"
+    }
+  },
+  "status": "KERNEL_BUILD_PASS",
+  "limit": "Host cross-build only. Full system/bundle and candidate runtime/physical qualification remain separate."
+}

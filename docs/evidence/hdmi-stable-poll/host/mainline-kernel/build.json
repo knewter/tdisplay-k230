@@ -1,0 +1,30 @@
+{
+  "phase": "kernel",
+  "configuration": "k230-mainline-drm-shell-landscape-hdmi",
+  "source_revision": "1956859593e904be0cf0146f34a259911912c62b",
+  "command": [
+    "nix",
+    "build",
+    "--print-out-paths",
+    "--out-link",
+    "/home/jadams/tmp/codex-claude-handoff-20261019/3/stable-poll-mainline-kernel-result",
+    "git+file:///mnt/MediaVolume/home/jadams/src/gitlab.daringbit.com/josh/tdisplay-k230/.claude/worktrees/hdmi-stable-poll?rev=1956859593e904be0cf0146f34a259911912c62b#nixosConfigurations.k230-mainline-drm-shell-landscape-hdmi.config.boot.kernelPackages.kernel"
+  ],
+  "cwd": "/mnt/MediaVolume/home/jadams/src/gitlab.daringbit.com/josh/tdisplay-k230/.claude/worktrees/hdmi-stable-poll",
+  "pid": 241932,
+  "pgid": 241932,
+  "sid": 241932,
+  "stdin": "/dev/null",
+  "controlling_tty": null,
+  "stdout": "/home/jadams/tmp/codex-claude-handoff-20261019/3/stable-poll-mainline-kernel-paths.txt",
+  "stderr": "/home/jadams/tmp/codex-claude-handoff-20261019/3/stable-poll-mainline-kernel-build.log",
+  "started_at": "2026-10-20T17:54:49.965934+00:00",
+  "status": "SUCCESS",
+  "build_slot": "released",
+  "exit_code": 0,
+  "store_paths": [
+    "/nix/store/21lz5c6pkk329c0xcac9bzlx40dplrlk-linux-riscv64-unknown-linux-gnu-7.3.0-rc5"
+  ],
+  "finished_at": "2026-10-20T18:13:12.447419+00:00",
+  "elapsed_seconds": 1102.482
+}

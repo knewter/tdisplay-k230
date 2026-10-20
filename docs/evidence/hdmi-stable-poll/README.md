@@ -12,7 +12,7 @@ old/new status are connected and cached EDID exists. Link detection and HPD
 notification still run. All non-polling, missing-cache and transition cases
 retain refresh. Nix wires the patch into the mainline DRM source derivation.
 
-UNVERIFIED: configured kernel/system cross-build, candidate boot/timing,
+UNVERIFIED: configured full system cross-build, candidate boot/timing,
 fresh physical cable/input qualification and persistent promotion remain
 open. Current landscape and separate portrait hardware gates are preserved.
 The preceding committed holder/EDID-stage diagnostics ground the problem,
@@ -42,3 +42,11 @@ backup command. `/run/current-system` and the persistent profile are j30y,
 while `/run/booted-system` still names cmdvr from an earlier boot. This is
 recorded explicitly; the new candidate needs its own serial-observed boot.
 No boot file or profile was changed by backup/preflight.
+
+The actual configured7.3 mainline kernel cross-build passed at18:13:12Z
+from source19568595 in1102.482seconds. `host/mainline-kernel/` records the
+command, successful exit, derivation and Image/System.map identities.
+`host/mainline-source.json` verifies that the realized Nix bridge source
+and patch exactly match the host semantic matrix. The new kernel output
+is `/nix/store/21lz5c6pkk329c0xcac9bzlx40dplrlk-linux-riscv64-unknown-linux-gnu-7.3.0-rc5`.
+This is cross-build proof; no candidate boot or physical acceptance yet.
