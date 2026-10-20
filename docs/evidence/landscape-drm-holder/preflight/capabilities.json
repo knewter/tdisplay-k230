@@ -1,0 +1,79 @@
+{
+  "checked_at": "2026-10-20T15:56:28.734832+00:00",
+  "kernel": "7.3.0-rc5",
+  "control": {
+    "pid": 77507,
+    "debug_flag": true,
+    "verbose_flag": false,
+    "arguments_without_logging": [
+      "-c",
+      "/nix/store/ila85h1q2fkpzkj7q1jlmc1gz8xq1syp-k230-sway.conf"
+    ],
+    "config_sha256": "575fa8d14d8dda6d0707c369015d37dbd7ea9295c66cefdebef2ef3ea26bdcd0",
+    "executable_sha256": "9464072ac100e77500c7b6113920d2c2ed14e022612eddbc38a037ce9b006670",
+    "system": "/nix/store/j30yag05ic9k68n9dzbzindgf4ardp08-nixos-system-nixos-26.11.20260919.20b1ddd",
+    "persistent_system": "/nix/store/j30yag05ic9k68n9dzbzindgf4ardp08-nixos-system-nixos-26.11.20260919.20b1ddd",
+    "environment": {
+      "WLR_RENDERER": "pixman",
+      "WLR_PIXMAN_OUTPUT_TURN": "1",
+      "WLR_PIXMAN_QUARTER_TURN": "0",
+      "WLR_PIXMAN_DRAW_TRACE": "",
+      "SWAY_K230_CPU_FRAME_TIMING": "",
+      "SWAY_K230_TOUCH_ROUTE_TRACE": "",
+      "SWAY_K230_CARD_REDUCED_MOTION": "0"
+    },
+    "output": [
+      {
+        "name": "HDMI-A-1",
+        "active": true,
+        "transform": "normal",
+        "scale": 1.0,
+        "current_mode": {
+          "width": 1280,
+          "height": 800,
+          "refresh": 59910,
+          "picture_aspect_ratio": "none"
+        },
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "width": 1280,
+          "height": 800
+        }
+      }
+    ]
+  },
+  "idle": {
+    "app_id": "k230-terminal",
+    "idle_shell_without_child_jobs": true,
+    "pinned_idle_color_followers": 1
+  },
+  "global_controls": {
+    "current_tracer": "64aec5a7fa151222572a241383c857738318e63cca7ee771952c95a31d92a19d",
+    "tracing_on": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865",
+    "trace_clock": "925ca315bd3de6ef99e08c002e320406936ae2da2f2c0afd8da1e87f7980a253",
+    "events/enable": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+    "set_event_pid": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "set_ftrace_pid": "cdf4d2acfdcd5cd2556f83eeb52ee253ea6afbaa941c760f77dcfae3c925cb78"
+  },
+  "capabilities": {
+    "available_tracers": "function_graph wakeup_dl wakeup_rt wakeup function nop\n",
+    "trace_options": "print-parent\nnosym-offset\nnosym-addr\nnoverbose\nnoraw\nnohex\nnobin\nnoblock\nnofields\ntrace_printk\nannotate\nnouserstacktrace\nnosym-userobj\nnoprintk-msg-only\ncontext-info\nnolatency-format\nrecord-cmd\nnorecord-tgid\noverwrite\nnodisable_on_free\nirq-info\nmarkers\nnoevent-fork\ntrace_printk_dest\ncopy_trace_marker\nnopause-on-trace\nhash-ptr\nnobitmask-list\nfunction-trace\nnofunction-fork\nnodisplay-graph\nnostacktrace\nnoprof-text-offset\ngraph-time\nnotest_nop_accept\nnotest_nop_refuse\n",
+    "events/workqueue/workqueue_execute_start/format": "name: workqueue_execute_start\nID: 174\nformat:\n\tfield:unsigned short common_type;\toffset:0;\tsize:2;\tsigned:0;\n\tfield:unsigned char common_flags;\toffset:2;\tsize:1;\tsigned:0;\n\tfield:unsigned char common_preempt_count;\toffset:3;\tsize:1;\tsigned:0;\n\tfield:int common_pid;\toffset:4;\tsize:4;\tsigned:1;\n\n\tfield:void * work;\toffset:8;\tsize:8;\tsigned:0;\n\tfield:void * function;\toffset:16;\tsize:8;\tsigned:0;\n\nprint fmt: \"work struct %p: function %ps\", REC->work, REC->function\n",
+    "events/workqueue/workqueue_execute_end/format": "name: workqueue_execute_end\nID: 173\nformat:\n\tfield:unsigned short common_type;\toffset:0;\tsize:2;\tsigned:0;\n\tfield:unsigned char common_flags;\toffset:2;\tsize:1;\tsigned:0;\n\tfield:unsigned char common_preempt_count;\toffset:3;\tsize:1;\tsigned:0;\n\tfield:int common_pid;\toffset:4;\tsize:4;\tsigned:1;\n\n\tfield:void * work;\toffset:8;\tsize:8;\tsigned:0;\n\tfield:void * function;\toffset:16;\tsize:8;\tsigned:0;\n\nprint fmt: \"work struct %p: function %ps\", REC->work, REC->function\n",
+    "events/ftrace/funcgraph_entry/format": "name: funcgraph_entry\nID: 11\nformat:\n\tfield:unsigned short common_type;\toffset:0;\tsize:2;\tsigned:0;\n\tfield:unsigned char common_flags;\toffset:2;\tsize:1;\tsigned:0;\n\tfield:unsigned char common_preempt_count;\toffset:3;\tsize:1;\tsigned:0;\n\tfield:int common_pid;\toffset:4;\tsize:4;\tsigned:1;\n\n\tfield:unsigned long func;\toffset:8;\tsize:8;\tsigned:0;\n\tfield:unsigned long depth;\toffset:16;\tsize:8;\tsigned:0;\n\tfield:unsigned long args[];\toffset:24;\tsize:0;\tsigned:0;\n\nprint fmt: \"--> %ps (%lu)\", (void *)REC->func, REC->depth\n",
+    "events/ftrace/funcgraph_exit/format": "name: funcgraph_exit\nID: 10\nformat:\n\tfield:unsigned short common_type;\toffset:0;\tsize:2;\tsigned:0;\n\tfield:unsigned char common_flags;\toffset:2;\tsize:1;\tsigned:0;\n\tfield:unsigned char common_preempt_count;\toffset:3;\tsize:1;\tsigned:0;\n\tfield:int common_pid;\toffset:4;\tsize:4;\tsigned:1;\n\n\tfield:unsigned long func;\toffset:8;\tsize:8;\tsigned:0;\n\tfield:unsigned long retval;\toffset:16;\tsize:8;\tsigned:0;\n\tfield:unsigned int depth;\toffset:24;\tsize:4;\tsigned:0;\n\tfield:unsigned int overrun;\toffset:28;\tsize:4;\tsigned:0;\n\tfield:unsigned long long calltime;\toffset:32;\tsize:8;\tsigned:0;\n\tfield:unsigned long long rettime;\toffset:40;\tsize:8;\tsigned:0;\n\nprint fmt: \"<-- %ps (%u) (start: %llx  end: %llx) over: %u retval: %lx\", (void *)REC->func, REC->depth, REC->calltime, REC->rettime, REC->depth, REC->retval\n"
+  },
+  "available_selected_functions": [
+    "drm_modeset_drop_locks",
+    "drm_modeset_lock",
+    "detect_connector_status",
+    "drm_helper_probe_detect_ctx",
+    "drm_helper_probe_detect",
+    "output_poll_execute",
+    "lt9611_bridge_detect",
+    "regmap_read",
+    "i2c_transfer"
+  ],
+  "online_cpus": "0"
+}

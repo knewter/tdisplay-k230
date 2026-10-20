@@ -1,0 +1,11 @@
+from pathlib import Path
+import importlib.util,json,platform
+p=Path('/var/tmp/k230-drm-wait-20261020/landscape-drm-wait.py');s=importlib.util.spec_from_file_location('m',p);m=importlib.util.module_from_spec(s);s.loader.exec_module(m)
+r=m.base.ROOT;i=m.cap.IPC()
+try:
+ files=['available_tracers','trace_options','events/workqueue/workqueue_execute_start/format','events/workqueue/workqueue_execute_end/format','events/ftrace/funcgraph_entry/format','events/ftrace/funcgraph_exit/format']
+ names={'output_poll_execute','drm_helper_probe_detect_ctx','drm_helper_probe_detect','drm_modeset_lock','drm_modeset_drop_locks','detect_connector_status','lt9611_bridge_detect','regmap_read','i2c_transfer'}
+ functions=[line.split()[0] for line in (r/'available_filter_functions').read_text().splitlines() if line.split() and line.split()[0] in names]
+ result={'checked_at':m.base.now(),'kernel':platform.release(),'control':m.log.control(i),'idle':m.log.idle_startup(i),'global_controls':m.base.global_state(),'capabilities':{n:(r/n).read_text() if (r/n).exists() else None for n in files},'available_selected_functions':functions,'online_cpus':Path('/sys/devices/system/cpu/online').read_text().strip()}
+ print(json.dumps(result,indent=2))
+finally:i.close()
