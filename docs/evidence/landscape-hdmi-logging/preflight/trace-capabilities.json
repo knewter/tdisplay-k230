@@ -1,0 +1,36 @@
+[
+  {
+    "path": "/sys/kernel/tracing",
+    "available": true,
+    "clock": "[local] global counter uptime perf mono mono_raw boot tai",
+    "tracing_on": "1",
+    "instances_available": true,
+    "events": {
+      "sched:sched_switch": true,
+      "sched:sched_wakeup": true,
+      "syscalls:sys_enter_write": true,
+      "syscalls:sys_exit_write": true,
+      "syscalls:sys_enter_ioctl": true,
+      "syscalls:sys_exit_ioctl": true,
+      "raw_syscalls:sys_enter": true,
+      "raw_syscalls:sys_exit": true
+    }
+  },
+  {
+    "path": "/sys/kernel/debug/tracing",
+    "available": true,
+    "clock": "[local] global counter uptime perf mono mono_raw boot tai",
+    "tracing_on": "1",
+    "instances_available": true,
+    "events": {
+      "sched:sched_switch": true,
+      "sched:sched_wakeup": true,
+      "syscalls:sys_enter_write": true,
+      "syscalls:sys_exit_write": true,
+      "syscalls:sys_enter_ioctl": true,
+      "syscalls:sys_exit_ioctl": true,
+      "raw_syscalls:sys_enter": true,
+      "raw_syscalls:sys_exit": true
+    }
+  }
+]

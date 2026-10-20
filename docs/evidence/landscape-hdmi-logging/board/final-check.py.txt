@@ -1,0 +1,10 @@
+
+import importlib.util,json,datetime,subprocess
+from pathlib import Path
+p=Path('/var/tmp/k230-landscape-logging-20261020/landscape-hdmi-logging.py');s=importlib.util.spec_from_file_location('m',p);m=importlib.util.module_from_spec(s);s.loader.exec_module(m)
+base=p.parent/'trial-a';state=json.loads((base/'restore-state.json').read_text());i=m.capture.IPC()
+try:
+ i.command('card_shell benchmark-stop');i.command('card_shell home');control=m.control(i)
+ result={'checked_at':datetime.datetime.now(datetime.timezone.utc).isoformat(),'control':control,'idle_terminal':m.idle_startup(i),'owned_dropin_absent':not m.DROPIN.exists(),'restore_timer_active':subprocess.run(['systemctl','is-active','--quiet',state['restore_unit']+'.timer']).returncode==0,'services':m.command('systemctl','is-active','shell.service','shell-ui.service').splitlines(),'benchmark_stop_succeeded':True,'home_command_succeeded':True,'virtual_test_devices':sum('injected' in x.get('name','').lower() or 'fixture' in x.get('name','').lower() for x in i.request(100)),'reboot_performed':False}
+ print(json.dumps(result,indent=2));assert control['debug_flag'] and not control['verbose_flag'] and result['owned_dropin_absent'] and not result['restore_timer_active'] and result['services']==['active','active'] and result['virtual_test_devices']==0
+finally:i.close()

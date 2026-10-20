@@ -1,0 +1,26 @@
+{
+  "runs": [
+    {
+      "cards": 1,
+      "clock": "monotonic",
+      "compositor_executable": "/nix/store/3vk3p0ps0dng1qmqsrj7w2gfjq024zv8-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway sha256:9464072ac100e77500c7b6113920d2c2ed14e022612eddbc38a037ce9b006670",
+      "drag_count": 24,
+      "format": "34325241",
+      "input_class": "injected",
+      "kernel": "7.3.0-rc5",
+      "log": "capture.log",
+      "logical_height": 800,
+      "logical_width": 1280,
+      "operator_confirmed_contacts": false,
+      "physical_height": 800,
+      "physical_width": 1280,
+      "pixman_identity": "/nix/store/brhzfimak2r3c23lmn80y1g6ww6nmb1r-pixman-riscv64-unknown-linux-gnu-0.46.4/lib/libpixman-1.so.0.46.4 sha256:983f88f4f8628824022644297993aa367963288c6d8a61c87ccbac47fa9beb56",
+      "run": "110058910397302",
+      "scale": 1,
+      "source_revision": "221bbcf34a276a939356e5a6af9bfb124af9896a",
+      "transform": 0,
+      "variant": "candidate"
+    }
+  ],
+  "schema": "hdmi-shell-landscape-baseline-v1"
+}

@@ -1,0 +1,60 @@
+{
+  "checked_at": "2026-10-20T05:35:48.032779+00:00",
+  "control": {
+    "pid": 77507,
+    "debug_flag": true,
+    "verbose_flag": false,
+    "arguments_without_logging": [
+      "-c",
+      "/nix/store/ila85h1q2fkpzkj7q1jlmc1gz8xq1syp-k230-sway.conf"
+    ],
+    "config_sha256": "575fa8d14d8dda6d0707c369015d37dbd7ea9295c66cefdebef2ef3ea26bdcd0",
+    "executable_sha256": "9464072ac100e77500c7b6113920d2c2ed14e022612eddbc38a037ce9b006670",
+    "system": "/nix/store/j30yag05ic9k68n9dzbzindgf4ardp08-nixos-system-nixos-26.11.20260919.20b1ddd",
+    "persistent_system": "/nix/store/j30yag05ic9k68n9dzbzindgf4ardp08-nixos-system-nixos-26.11.20260919.20b1ddd",
+    "environment": {
+      "WLR_RENDERER": "pixman",
+      "WLR_PIXMAN_OUTPUT_TURN": "1",
+      "WLR_PIXMAN_QUARTER_TURN": "0",
+      "WLR_PIXMAN_DRAW_TRACE": "",
+      "SWAY_K230_CPU_FRAME_TIMING": "",
+      "SWAY_K230_TOUCH_ROUTE_TRACE": "",
+      "SWAY_K230_CARD_REDUCED_MOTION": "0"
+    },
+    "output": [
+      {
+        "name": "HDMI-A-1",
+        "active": true,
+        "transform": "normal",
+        "scale": 1.0,
+        "current_mode": {
+          "width": 1280,
+          "height": 800,
+          "refresh": 59910,
+          "picture_aspect_ratio": "none"
+        },
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "width": 1280,
+          "height": 800
+        }
+      }
+    ]
+  },
+  "idle_terminal": {
+    "app_id": "k230-terminal",
+    "idle_shell_without_child_jobs": true,
+    "pinned_idle_color_followers": 1
+  },
+  "owned_dropin_absent": true,
+  "restore_timer_active": false,
+  "services": [
+    "active",
+    "active"
+  ],
+  "benchmark_stop_succeeded": true,
+  "home_command_succeeded": true,
+  "virtual_test_devices": 0,
+  "reboot_performed": false
+}

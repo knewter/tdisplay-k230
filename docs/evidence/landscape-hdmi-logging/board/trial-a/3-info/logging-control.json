@@ -1,0 +1,77 @@
+{
+  "arguments_without_logging": [
+    "-c",
+    "/nix/store/ila85h1q2fkpzkj7q1jlmc1gz8xq1syp-k230-sway.conf"
+  ],
+  "capture_exit_code": 0,
+  "config_sha256": "575fa8d14d8dda6d0707c369015d37dbd7ea9295c66cefdebef2ef3ea26bdcd0",
+  "counters_after": {
+    "clock_ticks_per_second": 100,
+    "nonvoluntary_ctxt_switches": 12688,
+    "schedstat": [
+      13200445950,
+      8810783206,
+      22549
+    ],
+    "stime_ticks": 307,
+    "utime_ticks": 1021,
+    "voluntary_ctxt_switches": 9862
+  },
+  "counters_before": {
+    "clock_ticks_per_second": 100,
+    "nonvoluntary_ctxt_switches": 1544,
+    "schedstat": [
+      1293833985,
+      5669319607,
+      4790
+    ],
+    "stime_ticks": 54,
+    "utime_ticks": 82,
+    "voluntary_ctxt_switches": 3246
+  },
+  "debug_flag": false,
+  "environment": {
+    "SWAY_K230_CARD_REDUCED_MOTION": "0",
+    "SWAY_K230_CPU_FRAME_TIMING": "",
+    "SWAY_K230_TOUCH_ROUTE_TRACE": "",
+    "WLR_PIXMAN_DRAW_TRACE": "",
+    "WLR_PIXMAN_OUTPUT_TURN": "1",
+    "WLR_PIXMAN_QUARTER_TURN": "0",
+    "WLR_RENDERER": "pixman"
+  },
+  "executable_sha256": "9464072ac100e77500c7b6113920d2c2ed14e022612eddbc38a037ce9b006670",
+  "index": 3,
+  "log_volume": {
+    "bounded_limit_reached": false,
+    "bytes": 2203582,
+    "lines": 13176,
+    "window": "capture start rounded down to seconds through final export"
+  },
+  "mode": "INFO",
+  "output": [
+    {
+      "active": true,
+      "current_mode": {
+        "height": 800,
+        "picture_aspect_ratio": "none",
+        "refresh": 59910,
+        "width": 1280
+      },
+      "name": "HDMI-A-1",
+      "rect": {
+        "height": 800,
+        "width": 1280,
+        "x": 0,
+        "y": 0
+      },
+      "scale": 1.0,
+      "transform": "normal"
+    }
+  ],
+  "persistent_system": "/nix/store/j30yag05ic9k68n9dzbzindgf4ardp08-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "pid": 77140,
+  "schema": "landscape-hdmi-logging-v1",
+  "settle_seconds": 30.253399008011911,
+  "system": "/nix/store/j30yag05ic9k68n9dzbzindgf4ardp08-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "verbose_flag": true
+}

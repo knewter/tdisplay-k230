@@ -1,0 +1,673 @@
+{
+  "by_mode": {
+    "DEBUG": {
+      "max_ms": 208.014351,
+      "over_100ms_count": 3,
+      "p95_ms": 27.292408,
+      "p99_ms": 45.127163,
+      "sample_count": 1728
+    },
+    "INFO": {
+      "max_ms": 231.455805,
+      "over_100ms_count": 6,
+      "p95_ms": 27.288565,
+      "p99_ms": 44.141934,
+      "sample_count": 1728
+    }
+  },
+  "created_at": "2026-10-20T05:34:35.619794+00:00",
+  "limits": [
+    "This tests DEBUG logging contribution; INFO benchmark logging remains enabled.",
+    "Direct IPC timing is not native-input, finger or optical latency.",
+    "Four runs do not prove absence of rare stalls or a specific blocking syscall.",
+    "No persistent default, renderer change or portrait acceptance is implied."
+  ],
+  "order": [
+    "DEBUG",
+    "INFO",
+    "INFO",
+    "DEBUG"
+  ],
+  "performance_acceptance": "NOT_EVALUATED",
+  "runs": [
+    {
+      "build_cpu_ms": {
+        "max_ms": 5.752037,
+        "p95_ms": 4.891185,
+        "sample_count": 857
+      },
+      "cards": 1,
+      "dispatch_to_present": {
+        "max_ms": 208.014351,
+        "over_100ms_count": 2,
+        "p95_ms": 26.50567,
+        "p99_ms": 45.127163,
+        "sample_count": 864
+      },
+      "dispatch_to_submit": {
+        "max_ms": 179.930567,
+        "over_100ms_count": 1,
+        "p95_ms": 18.332657,
+        "p99_ms": 29.778201,
+        "sample_count": 864
+      },
+      "drag_count": 24,
+      "format": "34325241",
+      "index": 1,
+      "input_class": "injected",
+      "input_to_present_ms": {
+        "max_ms": 208.014351,
+        "p95_ms": 26.50567,
+        "sample_count": 864
+      },
+      "latency_clock_start": "compositor-dispatch",
+      "logging_control": {
+        "arguments_without_logging": [
+          "-c",
+          "/nix/store/ila85h1q2fkpzkj7q1jlmc1gz8xq1syp-k230-sway.conf"
+        ],
+        "capture_exit_code": 0,
+        "config_sha256": "575fa8d14d8dda6d0707c369015d37dbd7ea9295c66cefdebef2ef3ea26bdcd0",
+        "counters_after": {
+          "clock_ticks_per_second": 100,
+          "nonvoluntary_ctxt_switches": 13484,
+          "schedstat": [
+            13313734173,
+            9353667960,
+            23306
+          ],
+          "stime_ticks": 322,
+          "utime_ticks": 1016,
+          "voluntary_ctxt_switches": 9824
+        },
+        "counters_before": {
+          "clock_ticks_per_second": 100,
+          "nonvoluntary_ctxt_switches": 1660,
+          "schedstat": [
+            1342550065,
+            5840172646,
+            4935
+          ],
+          "stime_ticks": 65,
+          "utime_ticks": 76,
+          "voluntary_ctxt_switches": 3276
+        },
+        "debug_flag": true,
+        "environment": {
+          "SWAY_K230_CARD_REDUCED_MOTION": "0",
+          "SWAY_K230_CPU_FRAME_TIMING": "",
+          "SWAY_K230_TOUCH_ROUTE_TRACE": "",
+          "WLR_PIXMAN_DRAW_TRACE": "",
+          "WLR_PIXMAN_OUTPUT_TURN": "1",
+          "WLR_PIXMAN_QUARTER_TURN": "0",
+          "WLR_RENDERER": "pixman"
+        },
+        "executable_sha256": "9464072ac100e77500c7b6113920d2c2ed14e022612eddbc38a037ce9b006670",
+        "index": 1,
+        "log_volume": {
+          "bounded_limit_reached": false,
+          "bytes": 2461538,
+          "lines": 14328,
+          "window": "capture start rounded down to seconds through final export"
+        },
+        "mode": "DEBUG",
+        "output": [
+          {
+            "active": true,
+            "current_mode": {
+              "height": 800,
+              "picture_aspect_ratio": "none",
+              "refresh": 59910,
+              "width": 1280
+            },
+            "name": "HDMI-A-1",
+            "rect": {
+              "height": 800,
+              "width": 1280,
+              "x": 0,
+              "y": 0
+            },
+            "scale": 1.0,
+            "transform": "normal"
+          }
+        ],
+        "persistent_system": "/nix/store/j30yag05ic9k68n9dzbzindgf4ardp08-nixos-system-nixos-26.11.20260919.20b1ddd",
+        "pid": 76763,
+        "schema": "landscape-hdmi-logging-v1",
+        "settle_seconds": 30.20610769400082,
+        "system": "/nix/store/j30yag05ic9k68n9dzbzindgf4ardp08-nixos-system-nixos-26.11.20260919.20b1ddd",
+        "verbose_flag": false
+      },
+      "logging_mode": "DEBUG",
+      "logical_geometry": [
+        1280,
+        800
+      ],
+      "operator_confirmed_contacts": false,
+      "over_100ms_samples": [
+        {
+          "build_cpu_ms": 4.677741,
+          "dispatch_to_present_ms": 185.784417,
+          "dispatch_to_submit_ms": 179.930567,
+          "frame_id": 1325,
+          "input_id": 693,
+          "kind": "motion",
+          "submit_to_present_ms": 5.85385
+        },
+        {
+          "build_cpu_ms": 5.174038,
+          "dispatch_to_present_ms": 208.014351,
+          "dispatch_to_submit_ms": 16.082975,
+          "frame_id": 1622,
+          "input_id": 844,
+          "kind": "motion",
+          "submit_to_present_ms": 191.931376
+        }
+      ],
+      "physical_geometry": [
+        1280,
+        800
+      ],
+      "physical_label_proves_real_finger": false,
+      "run": "109831423463105",
+      "runtime_identity": {
+        "compositor_executable": "/nix/store/3vk3p0ps0dng1qmqsrj7w2gfjq024zv8-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway sha256:9464072ac100e77500c7b6113920d2c2ed14e022612eddbc38a037ce9b006670",
+        "kernel": "7.3.0-rc5",
+        "pixman_identity": "/nix/store/brhzfimak2r3c23lmn80y1g6ww6nmb1r-pixman-riscv64-unknown-linux-gnu-0.46.4/lib/libpixman-1.so.0.46.4 sha256:983f88f4f8628824022644297993aa367963288c6d8a61c87ccbac47fa9beb56"
+      },
+      "scale": 1.0,
+      "source_revision": "221bbcf34a276a939356e5a6af9bfb124af9896a",
+      "submit_to_present": {
+        "max_ms": 191.931376,
+        "over_100ms_count": 1,
+        "p95_ms": 16.136142,
+        "p99_ms": 16.74511,
+        "sample_count": 864
+      },
+      "transform": 0,
+      "variant": "candidate"
+    },
+    {
+      "build_cpu_ms": {
+        "max_ms": 6.069296,
+        "p95_ms": 4.831556,
+        "sample_count": 855
+      },
+      "cards": 1,
+      "dispatch_to_present": {
+        "max_ms": 231.455805,
+        "over_100ms_count": 3,
+        "p95_ms": 28.291777,
+        "p99_ms": 44.318216,
+        "sample_count": 864
+      },
+      "dispatch_to_submit": {
+        "max_ms": 212.974678,
+        "over_100ms_count": 2,
+        "p95_ms": 24.590188,
+        "p99_ms": 30.381635,
+        "sample_count": 864
+      },
+      "drag_count": 24,
+      "format": "34325241",
+      "index": 2,
+      "input_class": "injected",
+      "input_to_present_ms": {
+        "max_ms": 231.455805,
+        "p95_ms": 28.291777,
+        "sample_count": 864
+      },
+      "latency_clock_start": "compositor-dispatch",
+      "logging_control": {
+        "arguments_without_logging": [
+          "-c",
+          "/nix/store/ila85h1q2fkpzkj7q1jlmc1gz8xq1syp-k230-sway.conf"
+        ],
+        "capture_exit_code": 0,
+        "config_sha256": "575fa8d14d8dda6d0707c369015d37dbd7ea9295c66cefdebef2ef3ea26bdcd0",
+        "counters_after": {
+          "clock_ticks_per_second": 100,
+          "nonvoluntary_ctxt_switches": 12219,
+          "schedstat": [
+            13065391639,
+            9265526377,
+            21986
+          ],
+          "stime_ticks": 295,
+          "utime_ticks": 1019,
+          "voluntary_ctxt_switches": 9767
+        },
+        "counters_before": {
+          "clock_ticks_per_second": 100,
+          "nonvoluntary_ctxt_switches": 1432,
+          "schedstat": [
+            1287782209,
+            5702739411,
+            4691
+          ],
+          "stime_ticks": 57,
+          "utime_ticks": 79,
+          "voluntary_ctxt_switches": 3259
+        },
+        "debug_flag": false,
+        "environment": {
+          "SWAY_K230_CARD_REDUCED_MOTION": "0",
+          "SWAY_K230_CPU_FRAME_TIMING": "",
+          "SWAY_K230_TOUCH_ROUTE_TRACE": "",
+          "WLR_PIXMAN_DRAW_TRACE": "",
+          "WLR_PIXMAN_OUTPUT_TURN": "1",
+          "WLR_PIXMAN_QUARTER_TURN": "0",
+          "WLR_RENDERER": "pixman"
+        },
+        "executable_sha256": "9464072ac100e77500c7b6113920d2c2ed14e022612eddbc38a037ce9b006670",
+        "index": 2,
+        "log_volume": {
+          "bounded_limit_reached": false,
+          "bytes": 2189091,
+          "lines": 13096,
+          "window": "capture start rounded down to seconds through final export"
+        },
+        "mode": "INFO",
+        "output": [
+          {
+            "active": true,
+            "current_mode": {
+              "height": 800,
+              "picture_aspect_ratio": "none",
+              "refresh": 59910,
+              "width": 1280
+            },
+            "name": "HDMI-A-1",
+            "rect": {
+              "height": 800,
+              "width": 1280,
+              "x": 0,
+              "y": 0
+            },
+            "scale": 1.0,
+            "transform": "normal"
+          }
+        ],
+        "persistent_system": "/nix/store/j30yag05ic9k68n9dzbzindgf4ardp08-nixos-system-nixos-26.11.20260919.20b1ddd",
+        "pid": 76944,
+        "schema": "landscape-hdmi-logging-v1",
+        "settle_seconds": 30.203128714012564,
+        "system": "/nix/store/j30yag05ic9k68n9dzbzindgf4ardp08-nixos-system-nixos-26.11.20260919.20b1ddd",
+        "verbose_flag": true
+      },
+      "logging_mode": "INFO",
+      "logical_geometry": [
+        1280,
+        800
+      ],
+      "operator_confirmed_contacts": false,
+      "over_100ms_samples": [
+        {
+          "build_cpu_ms": 4.631037,
+          "dispatch_to_present_ms": 192.456467,
+          "dispatch_to_submit_ms": 185.119582,
+          "frame_id": 185,
+          "input_id": 90,
+          "kind": "motion",
+          "submit_to_present_ms": 7.336885
+        },
+        {
+          "build_cpu_ms": 4.595293,
+          "dispatch_to_present_ms": 231.455805,
+          "dispatch_to_submit_ms": 212.974678,
+          "frame_id": 748,
+          "input_id": 390,
+          "kind": "motion",
+          "submit_to_present_ms": 18.481127
+        },
+        {
+          "build_cpu_ms": 4.601334,
+          "dispatch_to_present_ms": 216.69937,
+          "dispatch_to_submit_ms": 8.003973,
+          "frame_id": 1019,
+          "input_id": 536,
+          "kind": "motion",
+          "submit_to_present_ms": 208.695397
+        }
+      ],
+      "physical_geometry": [
+        1280,
+        800
+      ],
+      "physical_label_proves_real_finger": false,
+      "run": "109945533233810",
+      "runtime_identity": {
+        "compositor_executable": "/nix/store/3vk3p0ps0dng1qmqsrj7w2gfjq024zv8-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway sha256:9464072ac100e77500c7b6113920d2c2ed14e022612eddbc38a037ce9b006670",
+        "kernel": "7.3.0-rc5",
+        "pixman_identity": "/nix/store/brhzfimak2r3c23lmn80y1g6ww6nmb1r-pixman-riscv64-unknown-linux-gnu-0.46.4/lib/libpixman-1.so.0.46.4 sha256:983f88f4f8628824022644297993aa367963288c6d8a61c87ccbac47fa9beb56"
+      },
+      "scale": 1.0,
+      "source_revision": "221bbcf34a276a939356e5a6af9bfb124af9896a",
+      "submit_to_present": {
+        "max_ms": 208.695397,
+        "over_100ms_count": 1,
+        "p95_ms": 15.753897,
+        "p99_ms": 16.619901,
+        "sample_count": 864
+      },
+      "transform": 0,
+      "variant": "candidate"
+    },
+    {
+      "build_cpu_ms": {
+        "max_ms": 5.494113,
+        "p95_ms": 4.830704,
+        "sample_count": 854
+      },
+      "cards": 1,
+      "dispatch_to_present": {
+        "max_ms": 208.567318,
+        "over_100ms_count": 3,
+        "p95_ms": 26.673831,
+        "p99_ms": 39.741457,
+        "sample_count": 864
+      },
+      "dispatch_to_submit": {
+        "max_ms": 196.415818,
+        "over_100ms_count": 2,
+        "p95_ms": 18.061528,
+        "p99_ms": 30.076364,
+        "sample_count": 864
+      },
+      "drag_count": 24,
+      "format": "34325241",
+      "index": 3,
+      "input_class": "injected",
+      "input_to_present_ms": {
+        "max_ms": 208.567318,
+        "p95_ms": 26.673831,
+        "sample_count": 864
+      },
+      "latency_clock_start": "compositor-dispatch",
+      "logging_control": {
+        "arguments_without_logging": [
+          "-c",
+          "/nix/store/ila85h1q2fkpzkj7q1jlmc1gz8xq1syp-k230-sway.conf"
+        ],
+        "capture_exit_code": 0,
+        "config_sha256": "575fa8d14d8dda6d0707c369015d37dbd7ea9295c66cefdebef2ef3ea26bdcd0",
+        "counters_after": {
+          "clock_ticks_per_second": 100,
+          "nonvoluntary_ctxt_switches": 12688,
+          "schedstat": [
+            13200445950,
+            8810783206,
+            22549
+          ],
+          "stime_ticks": 307,
+          "utime_ticks": 1021,
+          "voluntary_ctxt_switches": 9862
+        },
+        "counters_before": {
+          "clock_ticks_per_second": 100,
+          "nonvoluntary_ctxt_switches": 1544,
+          "schedstat": [
+            1293833985,
+            5669319607,
+            4790
+          ],
+          "stime_ticks": 54,
+          "utime_ticks": 82,
+          "voluntary_ctxt_switches": 3246
+        },
+        "debug_flag": false,
+        "environment": {
+          "SWAY_K230_CARD_REDUCED_MOTION": "0",
+          "SWAY_K230_CPU_FRAME_TIMING": "",
+          "SWAY_K230_TOUCH_ROUTE_TRACE": "",
+          "WLR_PIXMAN_DRAW_TRACE": "",
+          "WLR_PIXMAN_OUTPUT_TURN": "1",
+          "WLR_PIXMAN_QUARTER_TURN": "0",
+          "WLR_RENDERER": "pixman"
+        },
+        "executable_sha256": "9464072ac100e77500c7b6113920d2c2ed14e022612eddbc38a037ce9b006670",
+        "index": 3,
+        "log_volume": {
+          "bounded_limit_reached": false,
+          "bytes": 2203582,
+          "lines": 13176,
+          "window": "capture start rounded down to seconds through final export"
+        },
+        "mode": "INFO",
+        "output": [
+          {
+            "active": true,
+            "current_mode": {
+              "height": 800,
+              "picture_aspect_ratio": "none",
+              "refresh": 59910,
+              "width": 1280
+            },
+            "name": "HDMI-A-1",
+            "rect": {
+              "height": 800,
+              "width": 1280,
+              "x": 0,
+              "y": 0
+            },
+            "scale": 1.0,
+            "transform": "normal"
+          }
+        ],
+        "persistent_system": "/nix/store/j30yag05ic9k68n9dzbzindgf4ardp08-nixos-system-nixos-26.11.20260919.20b1ddd",
+        "pid": 77140,
+        "schema": "landscape-hdmi-logging-v1",
+        "settle_seconds": 30.25339900801191,
+        "system": "/nix/store/j30yag05ic9k68n9dzbzindgf4ardp08-nixos-system-nixos-26.11.20260919.20b1ddd",
+        "verbose_flag": true
+      },
+      "logging_mode": "INFO",
+      "logical_geometry": [
+        1280,
+        800
+      ],
+      "operator_confirmed_contacts": false,
+      "over_100ms_samples": [
+        {
+          "build_cpu_ms": 5.006666,
+          "dispatch_to_present_ms": 201.577907,
+          "dispatch_to_submit_ms": 10.295059,
+          "frame_id": 730,
+          "input_id": 370,
+          "kind": "motion",
+          "submit_to_present_ms": 191.282848
+        },
+        {
+          "build_cpu_ms": 4.643111,
+          "dispatch_to_present_ms": 192.608984,
+          "dispatch_to_submit_ms": 189.140685,
+          "frame_id": 1015,
+          "input_id": 519,
+          "kind": "motion",
+          "submit_to_present_ms": 3.468299
+        },
+        {
+          "build_cpu_ms": 4.351333,
+          "dispatch_to_present_ms": 208.567318,
+          "dispatch_to_submit_ms": 196.415818,
+          "frame_id": 1601,
+          "input_id": 825,
+          "kind": "motion",
+          "submit_to_present_ms": 12.1515
+        }
+      ],
+      "physical_geometry": [
+        1280,
+        800
+      ],
+      "physical_label_proves_real_finger": false,
+      "run": "110058910397302",
+      "runtime_identity": {
+        "compositor_executable": "/nix/store/3vk3p0ps0dng1qmqsrj7w2gfjq024zv8-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway sha256:9464072ac100e77500c7b6113920d2c2ed14e022612eddbc38a037ce9b006670",
+        "kernel": "7.3.0-rc5",
+        "pixman_identity": "/nix/store/brhzfimak2r3c23lmn80y1g6ww6nmb1r-pixman-riscv64-unknown-linux-gnu-0.46.4/lib/libpixman-1.so.0.46.4 sha256:983f88f4f8628824022644297993aa367963288c6d8a61c87ccbac47fa9beb56"
+      },
+      "scale": 1.0,
+      "source_revision": "221bbcf34a276a939356e5a6af9bfb124af9896a",
+      "submit_to_present": {
+        "max_ms": 191.282848,
+        "over_100ms_count": 1,
+        "p95_ms": 15.423592,
+        "p99_ms": 16.343983,
+        "sample_count": 864
+      },
+      "transform": 0,
+      "variant": "candidate"
+    },
+    {
+      "build_cpu_ms": {
+        "max_ms": 5.455669,
+        "p95_ms": 4.876926,
+        "sample_count": 853
+      },
+      "cards": 1,
+      "dispatch_to_present": {
+        "max_ms": 184.304861,
+        "over_100ms_count": 1,
+        "p95_ms": 27.768623,
+        "p99_ms": 45.326897,
+        "sample_count": 864
+      },
+      "dispatch_to_submit": {
+        "max_ms": 175.76942,
+        "over_100ms_count": 1,
+        "p95_ms": 23.877609,
+        "p99_ms": 30.910742,
+        "sample_count": 864
+      },
+      "drag_count": 24,
+      "format": "34325241",
+      "index": 4,
+      "input_class": "injected",
+      "input_to_present_ms": {
+        "max_ms": 184.304861,
+        "p95_ms": 27.768623,
+        "sample_count": 864
+      },
+      "latency_clock_start": "compositor-dispatch",
+      "logging_control": {
+        "arguments_without_logging": [
+          "-c",
+          "/nix/store/ila85h1q2fkpzkj7q1jlmc1gz8xq1syp-k230-sway.conf"
+        ],
+        "capture_exit_code": 0,
+        "config_sha256": "575fa8d14d8dda6d0707c369015d37dbd7ea9295c66cefdebef2ef3ea26bdcd0",
+        "counters_after": {
+          "clock_ticks_per_second": 100,
+          "nonvoluntary_ctxt_switches": 13928,
+          "schedstat": [
+            13180607254,
+            9568872194,
+            23657
+          ],
+          "stime_ticks": 312,
+          "utime_ticks": 1013,
+          "voluntary_ctxt_switches": 9732
+        },
+        "counters_before": {
+          "clock_ticks_per_second": 100,
+          "nonvoluntary_ctxt_switches": 1676,
+          "schedstat": [
+            1330643067,
+            5881697346,
+            4908
+          ],
+          "stime_ticks": 58,
+          "utime_ticks": 82,
+          "voluntary_ctxt_switches": 3232
+        },
+        "debug_flag": true,
+        "environment": {
+          "SWAY_K230_CARD_REDUCED_MOTION": "0",
+          "SWAY_K230_CPU_FRAME_TIMING": "",
+          "SWAY_K230_TOUCH_ROUTE_TRACE": "",
+          "WLR_PIXMAN_DRAW_TRACE": "",
+          "WLR_PIXMAN_OUTPUT_TURN": "1",
+          "WLR_PIXMAN_QUARTER_TURN": "0",
+          "WLR_RENDERER": "pixman"
+        },
+        "executable_sha256": "9464072ac100e77500c7b6113920d2c2ed14e022612eddbc38a037ce9b006670",
+        "index": 4,
+        "log_volume": {
+          "bounded_limit_reached": false,
+          "bytes": 2446324,
+          "lines": 14246,
+          "window": "capture start rounded down to seconds through final export"
+        },
+        "mode": "DEBUG",
+        "output": [
+          {
+            "active": true,
+            "current_mode": {
+              "height": 800,
+              "picture_aspect_ratio": "none",
+              "refresh": 59910,
+              "width": 1280
+            },
+            "name": "HDMI-A-1",
+            "rect": {
+              "height": 800,
+              "width": 1280,
+              "x": 0,
+              "y": 0
+            },
+            "scale": 1.0,
+            "transform": "normal"
+          }
+        ],
+        "persistent_system": "/nix/store/j30yag05ic9k68n9dzbzindgf4ardp08-nixos-system-nixos-26.11.20260919.20b1ddd",
+        "pid": 77330,
+        "schema": "landscape-hdmi-logging-v1",
+        "settle_seconds": 30.204435478008236,
+        "system": "/nix/store/j30yag05ic9k68n9dzbzindgf4ardp08-nixos-system-nixos-26.11.20260919.20b1ddd",
+        "verbose_flag": false
+      },
+      "logging_mode": "DEBUG",
+      "logical_geometry": [
+        1280,
+        800
+      ],
+      "operator_confirmed_contacts": false,
+      "over_100ms_samples": [
+        {
+          "build_cpu_ms": 4.793297,
+          "dispatch_to_present_ms": 184.304861,
+          "dispatch_to_submit_ms": 175.76942,
+          "frame_id": 1526,
+          "input_id": 798,
+          "kind": "motion",
+          "submit_to_present_ms": 8.535441
+        }
+      ],
+      "physical_geometry": [
+        1280,
+        800
+      ],
+      "physical_label_proves_real_finger": false,
+      "run": "110172321172141",
+      "runtime_identity": {
+        "compositor_executable": "/nix/store/3vk3p0ps0dng1qmqsrj7w2gfjq024zv8-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway sha256:9464072ac100e77500c7b6113920d2c2ed14e022612eddbc38a037ce9b006670",
+        "kernel": "7.3.0-rc5",
+        "pixman_identity": "/nix/store/brhzfimak2r3c23lmn80y1g6ww6nmb1r-pixman-riscv64-unknown-linux-gnu-0.46.4/lib/libpixman-1.so.0.46.4 sha256:983f88f4f8628824022644297993aa367963288c6d8a61c87ccbac47fa9beb56"
+      },
+      "scale": 1.0,
+      "source_revision": "221bbcf34a276a939356e5a6af9bfb124af9896a",
+      "submit_to_present": {
+        "max_ms": 17.25333,
+        "over_100ms_count": 0,
+        "p95_ms": 16.186834,
+        "p99_ms": 16.603413,
+        "sample_count": 864
+      },
+      "transform": 0,
+      "variant": "candidate"
+    }
+  ],
+  "schema": "landscape-hdmi-logging-v1",
+  "status": "MEASURED"
+}

@@ -1,0 +1,8 @@
+{"phase": "starting", "index": 1, "mode": "DEBUG"}
+{"phase": "captured", "index": 1, "mode": "DEBUG", "exit_code": 0}
+{"phase": "starting", "index": 2, "mode": "INFO"}
+{"phase": "captured", "index": 2, "mode": "INFO", "exit_code": 0}
+{"phase": "starting", "index": 3, "mode": "INFO"}
+{"phase": "captured", "index": 3, "mode": "INFO", "exit_code": 0}
+{"phase": "starting", "index": 4, "mode": "DEBUG"}
+{"phase": "captured", "index": 4, "mode": "DEBUG", "exit_code": 0}
