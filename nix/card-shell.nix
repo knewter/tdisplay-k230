@@ -46,6 +46,7 @@ let
       cp ${./card-shell/scaled-cache.c} sway/card_shell_scaled_cache.c
       cp ${./card-shell/scaled-cache.h} include/sway/card_shell_scaled_cache.h
       cp ${./card-shell/opaque-interior.h} include/sway/card_shell_opaque_interior.h
+      cp ${./card-shell/label-ink.h} include/sway/card_shell_label_ink.h
       cp ${./card-shell/rgb565-pixels.h} include/sway/rgb565-pixels.h
       cp ${./card-shell-policy/card-shell-policy.c} sway/card-shell-policy.c
       cp ${./card-shell-policy/card-shell-policy.h} include/sway/card-shell-policy.h

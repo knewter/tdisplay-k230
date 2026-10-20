@@ -3,6 +3,7 @@
 #include "sway/card_shell_icon.h"
 #include "sway/card_shell_scaled_cache.h"
 #include "sway/card_shell_opaque_interior.h"
+#include "sway/card_shell_label_ink.h"
 #include <wlr/render/pixman.h>
 #include <cairo.h>
 #include <drm_fourcc.h>
@@ -15,6 +16,8 @@ struct label_buffer {
 	struct wlr_buffer base;
 	cairo_surface_t *surface;
 	size_t gradient_bytes;
+	struct card_label_ink ink;
+	bool ink_valid;
 };
 static size_t gradient_bytes;
 #define GRADIENT_BYTES_LIMIT (24u * 1024u * 1024u)
@@ -134,6 +137,14 @@ static bool access(struct wlr_buffer *base, uint32_t flags, void **data, uint32_
 static void end(struct wlr_buffer *base) {}
 static const struct wlr_buffer_impl impl = {
 	.destroy = destroy, .begin_data_ptr_access = access, .end_data_ptr_access = end};
+bool card_label_ink_box(struct wlr_buffer *buffer, struct wlr_box *box) {
+	if (!buffer || !box || buffer->impl != &impl) return false;
+	struct label_buffer *b = wl_container_of(buffer, b, base);
+	/* Empty labels keep the ordinary path, including its input geometry. */
+	if (!b->ink_valid || !b->ink.width || !b->ink.height) return false;
+	*box = (struct wlr_box){b->ink.x, b->ink.y, b->ink.width, b->ink.height};
+	return true;
+}
 struct wlr_scene_buffer *card_label_weight(struct wlr_scene_tree *tree, const char *text,
 		int width, int height, int size, uint32_t argb, enum card_label_weight weight) {
 	struct label_buffer *b = calloc(1, sizeof(*b));
@@ -171,6 +182,9 @@ struct wlr_scene_buffer *card_label_weight(struct wlr_scene_tree *tree, const ch
 	pango_font_description_free(font);
 	cairo_destroy(cr);
 	cairo_surface_flush(b->surface);
+	b->ink_valid = card_label_ink_find(&b->ink,
+		cairo_image_surface_get_data(b->surface),
+		cairo_image_surface_get_stride(b->surface), width, height);
 	wlr_buffer_init(&b->base, &impl, width, height);
 	struct wlr_scene_buffer *node = wlr_scene_buffer_create(tree, &b->base);
 	wlr_buffer_drop(&b->base);

@@ -11,6 +11,18 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 class PanelPaint(unittest.TestCase):
+    def test_label_ink_preserves_glyph_pixels_clips_and_alpha(self):
+        flags = shlex.split(subprocess.check_output(
+            ['pkg-config', '--cflags', '--libs', 'pixman-1', 'pangocairo'], text=True))
+        with tempfile.TemporaryDirectory(prefix='label-ink-') as directory:
+            exe = Path(directory) / 'pixels'
+            subprocess.run([os.environ.get('CC', 'cc'), '-std=c11', '-O2',
+                            '-Wall', '-Wextra', '-Werror', '-fsanitize=undefined',
+                            '-I' + str(ROOT / 'nix/card-shell'),
+                            str(ROOT / 'tests/panel_label_ink.c'), '-o', str(exe), *flags], check=True)
+            subprocess.run([str(exe)], check=True,
+                           env={**os.environ, 'UBSAN_OPTIONS': 'halt_on_error=1'})
+
     def test_rotations_padding_alignment_and_live_pixels(self):
         flags = shlex.split(subprocess.check_output(
             ['pkg-config', '--cflags', '--libs', 'pixman-1', 'libdrm'], text=True))

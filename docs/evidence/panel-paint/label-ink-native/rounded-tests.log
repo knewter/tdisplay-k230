@@ -1,0 +1,6 @@
+PASS 288 rounded clip pixel comparisons (wallpaper, alpha, transform, cropped child, damage, RGB565)
+.
+----------------------------------------------------------------------
+Ran 1 test in 0.606s
+
+OK

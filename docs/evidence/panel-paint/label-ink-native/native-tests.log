@@ -1,0 +1,12 @@
+PASS full-precision cached rounded/partial/rotated pixels: 160 cases, three live frames each
+.label ink: 1104 exact clipped/alpha/moving RGB565/XRGB comparisons; immutable sources, padded rows, real glyphs, empty/failure bounds PASS
+.PASS opaque interiors: 512 exact guarded Pixman cases, 64 selected; 32 sentinels reject quantized corners; reuse/budget/allocation/registration/teardown pass
+.PASS retained output lifecycle: keys, failed/interrupted/fallback passes, allocation/image failure and balanced teardown
+PASS retained output: 16 three-buffer cases, 352 exact multi-frame compositions
+.PASS panel paint: 288 guarded multi-frame rotation cases
+.PASS RGB565 unscaled conversion: 256 clipped/rounded/mask-fallback cases plus512 ARGB-SRC oracle cases
+.
+----------------------------------------------------------------------
+Ran 6 tests in 11.863s
+
+OK

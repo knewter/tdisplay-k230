@@ -1305,14 +1305,26 @@ static bool label_update(struct wlr_scene_tree *parent, struct wlr_scene_buffer 
 	*node = next;
 	return true;
 }
-static void label_clip(struct wlr_scene_buffer *label, int x, int y, int px, int py,
+static bool label_clip(struct wlr_scene_buffer *label, int x, int y, int px, int py,
 					   struct wlr_box clip) {
 	struct wlr_scene_buffer source = *label;
 	source.src_box = (struct wlr_fbox){0};
 	source.dst_width = source.buffer->width;
 	source.dst_height = source.buffer->height;
 	source.transform = WL_OUTPUT_TRANSFORM_NORMAL;
+	struct wlr_box ink;
+	if (card_label_ink_box(source.buffer, &ink)) {
+		/* Labels use an integer, unscaled source crop. Full layout dimensions
+		 * remain the label cache key. Deck input uses cs_down/cs_hit_test's
+		 * unchanged policy geometry, independently of this paint-only crop. */
+		source.src_box = (struct wlr_fbox){ink.x, ink.y, ink.width, ink.height};
+		source.dst_width = ink.width;
+		source.dst_height = ink.height;
+		x += ink.x;
+		y += ink.y;
+	}
 	card_clip_buffer(label, &source, 1, x, y, px, py, clip);
+	return label->node.enabled;
 }
 /* Non-live placeholder only (private/unavailable content: see the caller's
  * content-type gate). There is no live mirror to preserve here, so this
@@ -1630,8 +1642,8 @@ static bool sync_card(struct card *c, size_t index) {
 	}
 	c->label_selected = selected;
 	int text_y = header_top + (header_h - (text_size + 6)) / 2;
-	label_clip(c->label, text_x, text_y, c->x, c->y, clip_box());
-	wlr_scene_node_set_enabled(&c->label->node, !entering && !expanding);
+	bool label_visible = label_clip(c->label, text_x, text_y, c->x, c->y, clip_box());
+	wlr_scene_node_set_enabled(&c->label->node, label_visible && !entering && !expanding);
 	char letter = show_icon ? card_badge_letter(display_title) : 0;
 	const char *icon_name = show_icon ? desktop_identity_icon(app_id) : NULL;
 	if (!show_icon) {

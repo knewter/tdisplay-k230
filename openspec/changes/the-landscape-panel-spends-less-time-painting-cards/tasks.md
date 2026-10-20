@@ -94,3 +94,11 @@ build6.243ms mean/6.722ms p95, reduced6.178ms/6.861ms, do not meet all end-to-en
 budgets. All runs/limits are committed under candidate-opaque-interior/.
 Mostly transparent title margins select the next exact paint omission.
 Camera/default/archive remain open; no full-only pass qualifies the pair.
+
+The next source crops immutable header painting to actual nonzero texels,
+retaining full authored Pango layout/cache keys,1:1 pixels and policy hit tests.
+1104 native cropped/full pixel comparisons pass (real glyphs, ellipsis,
+Unicode, alpha, clips and offscreen motion), plus all earlier native commands.
+Header visibility preserves clipping so offscreen ink cannot reappear at a
+stale position. This candidate still requires its own exact build and board,
+live-content, camera, default-selection and archive proof.

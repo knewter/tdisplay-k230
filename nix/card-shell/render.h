@@ -22,6 +22,8 @@ struct card_brush;
 #define CARD_TYPE_LABEL 26
 #define CARD_TYPE_CAPTION 26
 enum card_label_weight { CARD_LABEL_REGULAR, CARD_LABEL_MEDIUM, CARD_LABEL_BOLD };
+/* Actual nonzero texels of our immutable labels; authored buffer size stays. */
+bool card_label_ink_box(struct wlr_buffer *buffer, struct wlr_box *box);
 struct wlr_scene_buffer *card_label(struct wlr_scene_tree *tree, const char *text, int width,
 									int height, int size);
 struct wlr_scene_buffer *card_label_color(struct wlr_scene_tree *tree, const char *text,
