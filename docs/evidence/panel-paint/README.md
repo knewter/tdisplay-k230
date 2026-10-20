@@ -206,3 +206,10 @@ The [opaque wallpaper trial](candidate-wallpaper-opaque/README.md) reaches
 motion modes still fail at26Hz. The remaining forced whole-frame repaint/copy
 selects buffer-owned logical images and damage-only composition/rotation.
 Native three-buffer/failure tests pass; exact build and board proof remain open.
+
+The [retained-output board trial](candidate-retained-output/README.md) proves
+cache reuse and copies about433k of700k pixels per selected frame, with
+7.804ms mean/8.705ms p95 build CPU. Both timing modes still fail at26Hz.
+Changing main/child clients advance callbacks and releases; compositor PNGs
+are committed separately from the still-missing camera proof. Repeated
+conversion of immutable cached card interiors is the next measured boundary.

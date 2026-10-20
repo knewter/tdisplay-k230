@@ -651,6 +651,8 @@ Paths are relative to the repository root. `(sdk)` is
 so that building stage 1 from source does not silently drop them from view.
 
 ```
+DATA cac6396187d3f193e964b389f5da86a80852635d2b0a2b8ce311279387241557 docs/evidence/panel-paint/candidate-retained-output/live/before.png
+DATA a036bc8d1ca10157be62ee4fc1fab2535b2591c999c05244bca42388052c1a41 docs/evidence/panel-paint/candidate-retained-output/live/after.png
 DATA 8f41ffe0be47661ffb7b4f75ea8a847eca8eb466c6457ef5af9ffebd4ca6d9e0 docs/evidence/coherent-shell/motion-2026-10-19/camera/full-contact.jpg
 DATA e38a564b4f0a002e510a319eb9c94ca4aed51172d53c9cbeaeb5f57a76d6d695 docs/evidence/coherent-shell/motion-2026-10-19/camera/full.mp4
 DATA 5a42db1dae662497c74822f66e22f7e3abfeb4ba158efe4859be2603b61ee82a docs/evidence/coherent-shell/motion-2026-10-19/camera/reduced-contact.jpg
@@ -3664,3 +3666,14 @@ clock alignment, observed movement and camera sampling limits.
 | `docs/evidence/coherent-shell/motion-2026-10-19/camera/full.mp4` | 1423087 | DATA | `e38a564b4f0a002e510a319eb9c94ca4aed51172d53c9cbeaeb5f57a76d6d695` |
 | `docs/evidence/coherent-shell/motion-2026-10-19/camera/reduced-contact.jpg` | 245114 | DATA | `5a42db1dae662497c74822f66e22f7e3abfeb4ba158efe4859be2603b61ee82a` |
 | `docs/evidence/coherent-shell/motion-2026-10-19/camera/reduced.mp4` | 1570474 | DATA | `62c08db87ee6b7110d7855ae14805c009c1c47be10804f3d528da4edbed2e9a2` |
+
+## Retained-output live-client software captures, 2026-10-20 UTC
+
+Board compositor PNGs and callback/release logs are described in
+`docs/evidence/panel-paint/candidate-retained-output/README.md`.
+No camera or real-glass interaction is claimed.
+
+| Path | Bytes | Class | SHA-256 |
+| --- | ---: | --- | --- |
+| `docs/evidence/panel-paint/candidate-retained-output/live/before.png` | 31333 | DATA | `cac6396187d3f193e964b389f5da86a80852635d2b0a2b8ce311279387241557` |
+| `docs/evidence/panel-paint/candidate-retained-output/live/after.png` | 31441 | DATA | `a036bc8d1ca10157be62ee4fc1fab2535b2591c999c05244bca42388052c1a41` |
