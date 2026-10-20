@@ -40,7 +40,40 @@
           "text": "\nstatic enum drm_connector_status\ndrm_bridge_connector_detect(struct drm_connector *connector, bool force)\n{\n\tstruct drm_bridge_connector *bridge_connector =\n\t\tto_drm_bridge_connector(connector);\n\tstruct drm_bridge *detect = bridge_connector->bridge_detect;\n\tstruct drm_bridge *hdmi = bridge_connector->bridge_hdmi;\n\tenum drm_connector_status status;\n\n\tif (detect) {\n\t\tstatus = detect->funcs->detect(detect, connector);\n\n\t\tif (hdmi)\n\t\t\tdrm_atomic_helper_connector_hdmi_hotplug(connector, status);\n\n\t\tdrm_bridge_connector_hpd_notify(connector, status);\n\t} else {\n\t\tswitch (connector->connector_type) {\n\t\tcase DRM_MODE_CONNECTOR_DPI:\n\t\tcase DRM_MODE_CONNECTOR_LVDS:\n\t\tcase DRM_MODE_CONNECTOR_DSI:\n\t\tcase DRM_MODE_CONNECTOR_eDP:\n\t\t\tstatus = connector_status_connected;\n\t\t\tbreak;\n\t\tdefault:\n\t\t\tstatus = connector_status_unknown;\n\t\t\tbreak;\n\t\t}\n\t}\n\n\treturn status;\n}"
         }
       ]
+    },
+    {
+      "path": "/nix/store/7vzlvixrdhv5a1iw75p18yzwkaqrlxjd-linux-mainline-k230-drm-src/drivers/gpu/drm/display/drm_hdmi_state_helper.c",
+      "sha256": "a7fa4520de8373d1d621d9300ba9b5084088fa0e61dbfa2bb95f0f5395dde52c",
+      "excerpts": [
+        {
+          "first_line": 1199,
+          "last_line": 1242,
+          "text": "static void\ndrm_atomic_helper_connector_hdmi_update(struct drm_connector *connector,\n\t\t\t\t\tenum drm_connector_status status)\n{\n\tconst struct drm_edid *drm_edid;\n\n\tif (status == connector_status_disconnected) {\n\t\t// TODO: also handle scramber, HDMI sink disconnected.\n\t\tdrm_connector_hdmi_audio_plugged_notify(connector, false);\n\t\tdrm_edid_connector_update(connector, NULL);\n\t\tdrm_connector_cec_phys_addr_invalidate(connector);\n\t\treturn;\n\t}\n\n\tif (connector->hdmi.funcs->read_edid)\n\t\tdrm_edid = connector->hdmi.funcs->read_edid(connector);\n\telse\n\t\tdrm_edid = drm_edid_read(connector);\n\n\tdrm_edid_connector_update(connector, drm_edid);\n\n\tdrm_edid_free(drm_edid);\n\n\tif (status == connector_status_connected) {\n\t\t// TODO: also handle scramber, HDMI sink is now connected.\n\t\tdrm_connector_hdmi_audio_plugged_notify(connector, true);\n\t\tdrm_connector_cec_phys_addr_set(connector);\n\t}\n}\n\n/**\n * drm_atomic_helper_connector_hdmi_hotplug - Handle the hotplug event for the HDMI connector\n * @connector: A pointer to the HDMI connector\n * @status: Connection status\n *\n * This function should be called as a part of the .detect() / .detect_ctx()\n * callbacks for all status changes.\n */\nvoid drm_atomic_helper_connector_hdmi_hotplug(struct drm_connector *connector,\n\t\t\t\t\t      enum drm_connector_status status)\n{\n\tdrm_atomic_helper_connector_hdmi_update(connector, status);\n}\nEXPORT_SYMBOL(drm_atomic_helper_connector_hdmi_hotplug);"
+        }
+      ]
+    },
+    {
+      "path": "/nix/store/7vzlvixrdhv5a1iw75p18yzwkaqrlxjd-linux-mainline-k230-drm-src/drivers/gpu/drm/bridge/lontium-lt9611.c",
+      "sha256": "842ce9ad86ed77b0a9d656c6bee6f4891e7267d6b2e55ceee9f5c34872b5faa8",
+      "excerpts": [
+        {
+          "first_line": 604,
+          "last_line": 621,
+          "text": "static enum drm_connector_status\nlt9611_bridge_detect(struct drm_bridge *bridge, struct drm_connector *connector)\n{\n\tstruct lt9611 *lt9611 = bridge_to_lt9611(bridge);\n\tunsigned int reg_val = 0;\n\tint connected = 0;\n\n\tif (regmap_read(lt9611->regmap, 0x825e, &reg_val))\n\t\treturn connector_status_unknown;\n\tconnected  = (reg_val & (BIT(2) | BIT(0)));\n\n\tlt9611->status = connected ?  connector_status_connected :\n\t\t\t\tconnector_status_disconnected;\n\n\treturn lt9611->status;\n}\n\nstatic int lt9611_read_edid(struct lt9611 *lt9611)"
+        },
+        {
+          "first_line": 623,
+          "last_line": 672,
+          "text": "\tunsigned int temp;\n\tint ret = 0;\n\tint i, j;\n\n\t/* memset to clear old buffer, if any */\n\tmemset(lt9611->edid_buf, 0, sizeof(lt9611->edid_buf));\n\n\tregmap_write(lt9611->regmap, 0x8503, 0xc9);\n\n\t/* 0xA0 is EDID device address */\n\tregmap_write(lt9611->regmap, 0x8504, 0xa0);\n\t/* 0x00 is EDID offset address */\n\tregmap_write(lt9611->regmap, 0x8505, 0x00);\n\n\t/* length for read */\n\tregmap_write(lt9611->regmap, 0x8506, EDID_LEN);\n\tregmap_write(lt9611->regmap, 0x8514, 0x7f);\n\n\tfor (i = 0; i < EDID_LOOP; i++) {\n\t\t/* offset address */\n\t\tregmap_write(lt9611->regmap, 0x8505, i * EDID_LEN);\n\t\tregmap_write(lt9611->regmap, 0x8507, 0x36);\n\t\tregmap_write(lt9611->regmap, 0x8507, 0x31);\n\t\tregmap_write(lt9611->regmap, 0x8507, 0x37);\n\t\tusleep_range(5000, 10000);\n\n\t\tregmap_read(lt9611->regmap, 0x8540, &temp);\n\n\t\tif (temp & KEY_DDC_ACCS_DONE) {\n\t\t\tfor (j = 0; j < EDID_LEN; j++) {\n\t\t\t\tregmap_read(lt9611->regmap, 0x8583, &temp);\n\t\t\t\tlt9611->edid_buf[i * EDID_LEN + j] = temp;\n\t\t\t}\n\n\t\t} else if (temp & DDC_NO_ACK) { /* DDC No Ack or Abitration lost */\n\t\t\tdev_err(lt9611->dev, \"read edid failed: no ack\\n\");\n\t\t\tret = -EIO;\n\t\t\tgoto end;\n\n\t\t} else {\n\t\t\tdev_err(lt9611->dev, \"read edid failed: access not done\\n\");\n\t\t\tret = -EIO;\n\t\t\tgoto end;\n\t\t}\n\t}\n\nend:\n\tregmap_write(lt9611->regmap, 0x8507, 0x1f);\n\treturn ret;\n}"
+        },
+        {
+          "first_line": 968,
+          "last_line": 976,
+          "text": "\nstatic const struct drm_edid *lt9611_bridge_edid_read(struct drm_bridge *bridge,\n\t\t\t\t\t\t      struct drm_connector *connector)\n{\n\tstruct lt9611 *lt9611 = bridge_to_lt9611(bridge);\n\n\tlt9611_power_on(lt9611);\n\treturn drm_edid_read_custom(connector, lt9611_get_edid_block, lt9611);\n}"
+        }
+      ]
     }
   ],
-  "interpretation": "Successful probe detection is inside the device connection_mutex critical section. Conservatively bound the held interval from detect_connector_status entry to drm_modeset_drop_locks entry; caller/PID sequence plus LT9611 bridge marker must qualify. Symbols do not expose mutex addresses; no I2C duration measured."
+  "interpretation": "Successful probe detection is inside the device connection_mutex critical section. Conservatively bound the held interval from detect_connector_status entry to drm_modeset_drop_locks entry; caller/PID sequence plus LT9611 bridge marker must qualify. Symbols do not expose mutex addresses; no I2C duration measured.",
+  "internal_detection_limit": "The bridge connector calls the HDMI hotplug helper, which can reread EDID inside the connection_mutex critical section. The driver EDID path performs DDC register transactions and delays. This is a source lead, not a measured decomposition or an authorized hotplug default change."
 }

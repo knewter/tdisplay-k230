@@ -1,0 +1,12 @@
+{
+  "checked_at": "2026-10-20T16:25:45.427594+00:00",
+  "command": "python3 tools/landscape-drm-holder.py --report docs/evidence/landscape-drm-holder/board/trial-a --output docs/evidence/landscape-drm-holder/board/report.json",
+  "exit_code": 0,
+  "report_sha256": "754f3493b53ca5a5bcb37a6b61941eac5370d588a8894bddd76a9082fdf326a7",
+  "report_tool_sha256": "6c12fc6b5179e1ff35415076f101687e4878bb846761c11df162f74a2917346f",
+  "capture_tool_sha256": "49ef1e5b7de367527a1ab8380a4b8fb9413547dfac9e76e684eb829ddfc19c98",
+  "status": "MEASURED",
+  "runs": 3,
+  "complete_inputs_per_run": 864,
+  "private_raw_hashes_verified": true
+}

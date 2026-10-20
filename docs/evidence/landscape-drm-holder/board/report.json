@@ -1,0 +1,3308 @@
+{
+  "created_at": "2026-10-20T16:23:53.974417+00:00",
+  "limits": [
+    "Tracing overhead is included; compare the paired untraced workload.",
+    "Elapsed syscalls and scheduling intervals need interpretation, not automatic causal labels.",
+    "Main-thread direct-IPC diagnostic only; no native/finger/optical or portrait acceptance.",
+    "Selected function entries identify a source-grounded conservative held-lock interval, not exact acquisition/release timestamps or mutex addresses.",
+    "Poll detection time includes all work inside the interval; the internal I2C or bridge operation consuming that time remains unmeasured.",
+    "Prior kernel sleep stacks locate these DRM call paths in modeset mutex acquisition; this run measures scheduler/syscalls and the polling critical section, without new kernel sleep stacks."
+  ],
+  "performance_acceptance": "NOT_EVALUATED",
+  "report_tool_sha256": "6c12fc6b5179e1ff35415076f101687e4878bb846761c11df162f74a2917346f",
+  "runs": [
+    {
+      "benchmark": {
+        "build_cpu_ms": {
+          "max_ms": 5.455555,
+          "p95_ms": 4.883593,
+          "sample_count": 852
+        },
+        "cards": 1,
+        "drag_count": 24,
+        "format": "34325241",
+        "input_class": "injected",
+        "input_to_present_ms": {
+          "max_ms": 208.049997,
+          "p95_ms": 27.331278,
+          "sample_count": 864
+        },
+        "latency_clock_start": "compositor-dispatch",
+        "logical_geometry": [
+          1280,
+          800
+        ],
+        "operator_confirmed_contacts": false,
+        "physical_geometry": [
+          1280,
+          800
+        ],
+        "physical_label_proves_real_finger": false,
+        "run": "148226360232612",
+        "runtime_identity": {
+          "compositor_executable": "/nix/store/3vk3p0ps0dng1qmqsrj7w2gfjq024zv8-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway sha256:9464072ac100e77500c7b6113920d2c2ed14e022612eddbc38a037ce9b006670",
+          "kernel": "7.3.0-rc5",
+          "pixman_identity": "/nix/store/brhzfimak2r3c23lmn80y1g6ww6nmb1r-pixman-riscv64-unknown-linux-gnu-0.46.4/lib/libpixman-1.so.0.46.4 sha256:983f88f4f8628824022644297993aa367963288c6d8a61c87ccbac47fa9beb56"
+        },
+        "scale": 1.0,
+        "source_revision": "221bbcf34a276a939356e5a6af9bfb124af9896a",
+        "transform": 0,
+        "variant": "candidate"
+      },
+      "control": {
+        "capture_exit_code": 0,
+        "control": {
+          "arguments_without_logging": [
+            "-c",
+            "/nix/store/ila85h1q2fkpzkj7q1jlmc1gz8xq1syp-k230-sway.conf"
+          ],
+          "config_sha256": "575fa8d14d8dda6d0707c369015d37dbd7ea9295c66cefdebef2ef3ea26bdcd0",
+          "debug_flag": true,
+          "environment": {
+            "SWAY_K230_CARD_REDUCED_MOTION": "0",
+            "SWAY_K230_CPU_FRAME_TIMING": "",
+            "SWAY_K230_TOUCH_ROUTE_TRACE": "",
+            "WLR_PIXMAN_DRAW_TRACE": "",
+            "WLR_PIXMAN_OUTPUT_TURN": "1",
+            "WLR_PIXMAN_QUARTER_TURN": "0",
+            "WLR_RENDERER": "pixman"
+          },
+          "executable_sha256": "9464072ac100e77500c7b6113920d2c2ed14e022612eddbc38a037ce9b006670",
+          "output": [
+            {
+              "active": true,
+              "current_mode": {
+                "height": 800,
+                "picture_aspect_ratio": "none",
+                "refresh": 59910,
+                "width": 1280
+              },
+              "name": "HDMI-A-1",
+              "rect": {
+                "height": 800,
+                "width": 1280,
+                "x": 0,
+                "y": 0
+              },
+              "scale": 1.0,
+              "transform": "normal"
+            }
+          ],
+          "persistent_system": "/nix/store/j30yag05ic9k68n9dzbzindgf4ardp08-nixos-system-nixos-26.11.20260919.20b1ddd",
+          "pid": 77507,
+          "system": "/nix/store/j30yag05ic9k68n9dzbzindgf4ardp08-nixos-system-nixos-26.11.20260919.20b1ddd",
+          "verbose_flag": false
+        },
+        "fd_labels": {
+          "1": "journal-stream",
+          "10": "DRM-card",
+          "11": "DRM-card",
+          "12": "DRM-card",
+          "2": "journal-stream"
+        },
+        "tool_sha256": "49ef1e5b7de367527a1ab8380a4b8fb9413547dfac9e76e684eb829ddfc19c98",
+        "traced": false
+      },
+      "latency": {
+        "max_ms": 208.049997,
+        "over_100ms_count": 1,
+        "p95_ms": 27.331278,
+        "p99_ms": 45.781325,
+        "sample_count": 864
+      },
+      "name": "untraced"
+    },
+    {
+      "benchmark": {
+        "build_cpu_ms": {
+          "max_ms": 5.970512,
+          "p95_ms": 5.029777,
+          "sample_count": 855
+        },
+        "cards": 1,
+        "drag_count": 24,
+        "format": "34325241",
+        "input_class": "injected",
+        "input_to_present_ms": {
+          "max_ms": 47.39925,
+          "p95_ms": 25.920345,
+          "sample_count": 864
+        },
+        "latency_clock_start": "compositor-dispatch",
+        "logical_geometry": [
+          1280,
+          800
+        ],
+        "operator_confirmed_contacts": false,
+        "physical_geometry": [
+          1280,
+          800
+        ],
+        "physical_label_proves_real_finger": false,
+        "run": "148335625451934",
+        "runtime_identity": {
+          "compositor_executable": "/nix/store/3vk3p0ps0dng1qmqsrj7w2gfjq024zv8-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway sha256:9464072ac100e77500c7b6113920d2c2ed14e022612eddbc38a037ce9b006670",
+          "kernel": "7.3.0-rc5",
+          "pixman_identity": "/nix/store/brhzfimak2r3c23lmn80y1g6ww6nmb1r-pixman-riscv64-unknown-linux-gnu-0.46.4/lib/libpixman-1.so.0.46.4 sha256:983f88f4f8628824022644297993aa367963288c6d8a61c87ccbac47fa9beb56"
+        },
+        "scale": 1.0,
+        "source_revision": "221bbcf34a276a939356e5a6af9bfb124af9896a",
+        "transform": 0,
+        "variant": "candidate"
+      },
+      "control": {
+        "capture_exit_code": 0,
+        "control": {
+          "arguments_without_logging": [
+            "-c",
+            "/nix/store/ila85h1q2fkpzkj7q1jlmc1gz8xq1syp-k230-sway.conf"
+          ],
+          "config_sha256": "575fa8d14d8dda6d0707c369015d37dbd7ea9295c66cefdebef2ef3ea26bdcd0",
+          "debug_flag": true,
+          "environment": {
+            "SWAY_K230_CARD_REDUCED_MOTION": "0",
+            "SWAY_K230_CPU_FRAME_TIMING": "",
+            "SWAY_K230_TOUCH_ROUTE_TRACE": "",
+            "WLR_PIXMAN_DRAW_TRACE": "",
+            "WLR_PIXMAN_OUTPUT_TURN": "1",
+            "WLR_PIXMAN_QUARTER_TURN": "0",
+            "WLR_RENDERER": "pixman"
+          },
+          "executable_sha256": "9464072ac100e77500c7b6113920d2c2ed14e022612eddbc38a037ce9b006670",
+          "output": [
+            {
+              "active": true,
+              "current_mode": {
+                "height": 800,
+                "picture_aspect_ratio": "none",
+                "refresh": 59910,
+                "width": 1280
+              },
+              "name": "HDMI-A-1",
+              "rect": {
+                "height": 800,
+                "width": 1280,
+                "x": 0,
+                "y": 0
+              },
+              "scale": 1.0,
+              "transform": "normal"
+            }
+          ],
+          "persistent_system": "/nix/store/j30yag05ic9k68n9dzbzindgf4ardp08-nixos-system-nixos-26.11.20260919.20b1ddd",
+          "pid": 77507,
+          "system": "/nix/store/j30yag05ic9k68n9dzbzindgf4ardp08-nixos-system-nixos-26.11.20260919.20b1ddd",
+          "verbose_flag": false
+        },
+        "fd_labels": {
+          "1": "journal-stream",
+          "10": "DRM-card",
+          "11": "DRM-card",
+          "12": "DRM-card",
+          "2": "journal-stream"
+        },
+        "tool_sha256": "49ef1e5b7de367527a1ab8380a4b8fb9413547dfac9e76e684eb829ddfc19c98",
+        "traced": true
+      },
+      "correlation": {
+        "boundary_partial_events": [
+          {
+            "event": "initial_switch_in",
+            "ts_ns": 148335567011000
+          },
+          {
+            "event": "initial_syscall_exit",
+            "ts_ns": 148335567029000
+          },
+          {
+            "event": "final_syscall_enter",
+            "ts_ns": 148399351367000
+          },
+          {
+            "event": "final_switch_out",
+            "ts_ns": 148399351391000
+          }
+        ],
+        "complete_switch_spans": 18923,
+        "complete_syscall_spans": 163947,
+        "held_interval_definition": "detect_connector_status entry to drm_modeset_drop_locks entry in the same complete output_poll_execute/probe/LT9611 worker path; conservative connection_mutex-held interval grounded in pinned kernel source",
+        "late_samples": [],
+        "limits": [
+          "Syscall wall time includes scheduling delays; it is not kernel CPU time.",
+          "Only the compositor main thread is traced; no finger or optical claim."
+        ],
+        "long_drm_calls": [],
+        "long_drm_calls_scope": "All complete >100ms DRM-fd ioctls in the trace, including input-idle periods; no arbitrary ioctl payload exported.",
+        "poll_held_intervals": [
+          {
+            "bridge_ns": 148340192146000,
+            "detect_ns": 148340192144000,
+            "drop_ns": 148340193486000,
+            "held_lower_bound_ms": 1.342,
+            "helper_ns": null,
+            "pid": 101254,
+            "poll_ns": 148340192138000,
+            "probe_ns": 148340192142000
+          },
+          {
+            "bridge_ns": 148340193495000,
+            "detect_ns": 148340193493000,
+            "drop_ns": 148340372709000,
+            "held_lower_bound_ms": 179.216,
+            "helper_ns": null,
+            "pid": 101254,
+            "poll_ns": 148340192138000,
+            "probe_ns": 148340193491000
+          },
+          {
+            "bridge_ns": 148350432073000,
+            "detect_ns": 148350432070000,
+            "drop_ns": 148350432471000,
+            "held_lower_bound_ms": 0.401,
+            "helper_ns": null,
+            "pid": 101254,
+            "poll_ns": 148350432063000,
+            "probe_ns": 148350432068000
+          },
+          {
+            "bridge_ns": 148350432477000,
+            "detect_ns": 148350432475000,
+            "drop_ns": 148350612478000,
+            "held_lower_bound_ms": 180.003,
+            "helper_ns": null,
+            "pid": 101254,
+            "poll_ns": 148350432063000,
+            "probe_ns": 148350432474000
+          },
+          {
+            "bridge_ns": 148360672097000,
+            "detect_ns": 148360672094000,
+            "drop_ns": 148360672498000,
+            "held_lower_bound_ms": 0.404,
+            "helper_ns": null,
+            "pid": 101183,
+            "poll_ns": 148360672088000,
+            "probe_ns": 148360672091000
+          },
+          {
+            "bridge_ns": 148360672505000,
+            "detect_ns": 148360672503000,
+            "drop_ns": 148360853693000,
+            "held_lower_bound_ms": 181.19,
+            "helper_ns": null,
+            "pid": 101183,
+            "poll_ns": 148360672088000,
+            "probe_ns": 148360672502000
+          },
+          {
+            "bridge_ns": 148370912070000,
+            "detect_ns": 148370912067000,
+            "drop_ns": 148370912471000,
+            "held_lower_bound_ms": 0.404,
+            "helper_ns": null,
+            "pid": 101254,
+            "poll_ns": 148370912060000,
+            "probe_ns": 148370912065000
+          },
+          {
+            "bridge_ns": 148370912477000,
+            "detect_ns": 148370912476000,
+            "drop_ns": 148371089693000,
+            "held_lower_bound_ms": 177.217,
+            "helper_ns": null,
+            "pid": 101254,
+            "poll_ns": 148370912060000,
+            "probe_ns": 148370912475000
+          },
+          {
+            "bridge_ns": 148381152131000,
+            "detect_ns": 148381152129000,
+            "drop_ns": 148381152535000,
+            "held_lower_bound_ms": 0.406,
+            "helper_ns": null,
+            "pid": 101254,
+            "poll_ns": 148381152122000,
+            "probe_ns": 148381152126000
+          },
+          {
+            "bridge_ns": 148381152541000,
+            "detect_ns": 148381152540000,
+            "drop_ns": 148381333062000,
+            "held_lower_bound_ms": 180.522,
+            "helper_ns": null,
+            "pid": 101254,
+            "poll_ns": 148381152122000,
+            "probe_ns": 148381152538000
+          },
+          {
+            "bridge_ns": 148391392066000,
+            "detect_ns": 148391392064000,
+            "drop_ns": 148391392462000,
+            "held_lower_bound_ms": 0.398,
+            "helper_ns": null,
+            "pid": 101254,
+            "poll_ns": 148391392057000,
+            "probe_ns": 148391392062000
+          },
+          {
+            "bridge_ns": 148391392468000,
+            "detect_ns": 148391392466000,
+            "drop_ns": 148391573931000,
+            "held_lower_bound_ms": 181.465,
+            "helper_ns": null,
+            "pid": 101254,
+            "poll_ns": 148391392057000,
+            "probe_ns": 148391392465000
+          }
+        ],
+        "rejected_poll_intervals": [],
+        "trace": {
+          "base_tool_sha256": "b98a6404bdd96afab1db9edb6779f325bc7958574e754b04dffbed73ae67f42b",
+          "buffer_total_kb": 32771,
+          "current_tracer": "function",
+          "event_count": 371915,
+          "events_sha256": "ce229310b4d434ae539e9fc07e62650f79a70407d48d711aa21915cca57c1c4f",
+          "function_count": 4911,
+          "function_filter": [
+            "detect_connector_status",
+            "drm_helper_probe_detect",
+            "drm_helper_probe_detect_ctx",
+            "drm_modeset_backoff",
+            "drm_modeset_drop_locks",
+            "lt9611_bridge_detect",
+            "output_poll_execute"
+          ],
+          "functions_sha256": "9bbe7916a5b790e65d70a9a12c85a2e6592095be3fbe14c0a8d42b291527d126",
+          "global_before": {
+            "current_tracer": "64aec5a7fa151222572a241383c857738318e63cca7ee771952c95a31d92a19d",
+            "events/enable": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+            "set_event_pid": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "set_ftrace_pid": "cdf4d2acfdcd5cd2556f83eeb52ee253ea6afbaa941c760f77dcfae3c925cb78",
+            "trace_clock": "925ca315bd3de6ef99e08c002e320406936ae2da2f2c0afd8da1e87f7980a253",
+            "tracing_on": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865"
+          },
+          "holder_schema": "landscape-drm-holder-v1",
+          "markers": {
+            "end": {
+              "after_ns": 148399361325600,
+              "before_ns": 148399360616999
+            },
+            "start": {
+              "after_ns": 148335565739325,
+              "before_ns": 148335564973949
+            }
+          },
+          "pid": 77507,
+          "raw_bytes": 36996300,
+          "raw_sha256": "52d2d5d8c672a9369904da2c1ed27c8171d27447be9ba55e88b32ddfd1eee4e5",
+          "schema": "landscape-hdmi-stall-trace-v1",
+          "stats": {
+            "cpu0": {
+              "bytes": 20356600,
+              "commit overrun": 0,
+              "dropped events": 0,
+              "entries": 376826,
+              "overrun": 0,
+              "read events": 0
+            }
+          },
+          "tool_sha256": "49ef1e5b7de367527a1ab8380a4b8fb9413547dfac9e76e684eb829ddfc19c98",
+          "trace_clock": "local global counter uptime perf [mono] mono_raw boot tai"
+        }
+      },
+      "latency": {
+        "max_ms": 47.39925,
+        "over_100ms_count": 0,
+        "p95_ms": 25.920345,
+        "p99_ms": 46.180643,
+        "sample_count": 864
+      },
+      "name": "traced"
+    },
+    {
+      "benchmark": {
+        "build_cpu_ms": {
+          "max_ms": 5.924256,
+          "p95_ms": 5.056225,
+          "sample_count": 856
+        },
+        "cards": 1,
+        "drag_count": 24,
+        "format": "34325241",
+        "input_class": "injected",
+        "input_to_present_ms": {
+          "max_ms": 201.240924,
+          "p95_ms": 28.32786,
+          "sample_count": 864
+        },
+        "latency_clock_start": "compositor-dispatch",
+        "logical_geometry": [
+          1280,
+          800
+        ],
+        "operator_confirmed_contacts": false,
+        "physical_geometry": [
+          1280,
+          800
+        ],
+        "physical_label_proves_real_finger": false,
+        "run": "148732081695912",
+        "runtime_identity": {
+          "compositor_executable": "/nix/store/3vk3p0ps0dng1qmqsrj7w2gfjq024zv8-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway sha256:9464072ac100e77500c7b6113920d2c2ed14e022612eddbc38a037ce9b006670",
+          "kernel": "7.3.0-rc5",
+          "pixman_identity": "/nix/store/brhzfimak2r3c23lmn80y1g6ww6nmb1r-pixman-riscv64-unknown-linux-gnu-0.46.4/lib/libpixman-1.so.0.46.4 sha256:983f88f4f8628824022644297993aa367963288c6d8a61c87ccbac47fa9beb56"
+        },
+        "scale": 1.0,
+        "source_revision": "221bbcf34a276a939356e5a6af9bfb124af9896a",
+        "transform": 0,
+        "variant": "candidate"
+      },
+      "control": {
+        "capture_exit_code": 0,
+        "control": {
+          "arguments_without_logging": [
+            "-c",
+            "/nix/store/ila85h1q2fkpzkj7q1jlmc1gz8xq1syp-k230-sway.conf"
+          ],
+          "config_sha256": "575fa8d14d8dda6d0707c369015d37dbd7ea9295c66cefdebef2ef3ea26bdcd0",
+          "debug_flag": true,
+          "environment": {
+            "SWAY_K230_CARD_REDUCED_MOTION": "0",
+            "SWAY_K230_CPU_FRAME_TIMING": "",
+            "SWAY_K230_TOUCH_ROUTE_TRACE": "",
+            "WLR_PIXMAN_DRAW_TRACE": "",
+            "WLR_PIXMAN_OUTPUT_TURN": "1",
+            "WLR_PIXMAN_QUARTER_TURN": "0",
+            "WLR_RENDERER": "pixman"
+          },
+          "executable_sha256": "9464072ac100e77500c7b6113920d2c2ed14e022612eddbc38a037ce9b006670",
+          "output": [
+            {
+              "active": true,
+              "current_mode": {
+                "height": 800,
+                "picture_aspect_ratio": "none",
+                "refresh": 59910,
+                "width": 1280
+              },
+              "name": "HDMI-A-1",
+              "rect": {
+                "height": 800,
+                "width": 1280,
+                "x": 0,
+                "y": 0
+              },
+              "scale": 1.0,
+              "transform": "normal"
+            }
+          ],
+          "persistent_system": "/nix/store/j30yag05ic9k68n9dzbzindgf4ardp08-nixos-system-nixos-26.11.20260919.20b1ddd",
+          "pid": 77507,
+          "system": "/nix/store/j30yag05ic9k68n9dzbzindgf4ardp08-nixos-system-nixos-26.11.20260919.20b1ddd",
+          "verbose_flag": false
+        },
+        "fd_labels": {
+          "1": "journal-stream",
+          "10": "DRM-card",
+          "11": "DRM-card",
+          "12": "DRM-card",
+          "2": "journal-stream"
+        },
+        "tool_sha256": "49ef1e5b7de367527a1ab8380a4b8fb9413547dfac9e76e684eb829ddfc19c98",
+        "traced": true
+      },
+      "correlation": {
+        "boundary_partial_events": [
+          {
+            "event": "initial_switch_in",
+            "ts_ns": 148731942084000
+          },
+          {
+            "event": "initial_syscall_exit",
+            "ts_ns": 148731942102000
+          },
+          {
+            "event": "final_syscall_enter",
+            "ts_ns": 148797281105000
+          },
+          {
+            "event": "final_switch_out",
+            "ts_ns": 148797281141000
+          }
+        ],
+        "complete_switch_spans": 18804,
+        "complete_syscall_spans": 163350,
+        "held_interval_definition": "detect_connector_status entry to drm_modeset_drop_locks entry in the same complete output_poll_execute/probe/LT9611 worker path; conservative connection_mutex-held interval grounded in pinned kernel source",
+        "late_samples": [
+          {
+            "build_cpu_ms": 5.303228,
+            "end_ns": 148736405605000,
+            "frame_id": 13015,
+            "input_id": 54,
+            "off_cpu": [
+              {
+                "descheduled_to_pid": 0,
+                "end_ns": 148736404489000,
+                "poll_lock_overlap": [
+                  {
+                    "bridge_ns": 148736225210000,
+                    "detect_ns": 148736225209000,
+                    "drop_ns": 148736404438000,
+                    "held_lower_bound_ms": 179.229,
+                    "helper_ns": null,
+                    "overlap_ms": 171.259,
+                    "pid": 101254,
+                    "poll_ns": 148736224720000,
+                    "probe_ns": 148736225207000
+                  }
+                ],
+                "runnable_wait_ms": 0.021,
+                "start_ns": 148736233179000,
+                "state": "S",
+                "wakeup_ns": 148736404468000,
+                "wall_ms": 171.31
+              },
+              {
+                "descheduled_to_pid": 270,
+                "end_ns": 148736224851000,
+                "poll_lock_overlap": [
+                  {
+                    "bridge_ns": 148736224730000,
+                    "detect_ns": 148736224727000,
+                    "drop_ns": 148736225202000,
+                    "held_lower_bound_ms": 0.475,
+                    "helper_ns": null,
+                    "overlap_ms": 0.124,
+                    "pid": 101254,
+                    "poll_ns": 148736224720000,
+                    "probe_ns": 148736224725000
+                  }
+                ],
+                "runnable_wait_ms": 1.727,
+                "start_ns": 148736223124000,
+                "state": "R",
+                "wakeup_ns": null,
+                "wall_ms": 1.727
+              },
+              {
+                "descheduled_to_pid": 101275,
+                "end_ns": 148736406625000,
+                "poll_lock_overlap": [],
+                "runnable_wait_ms": 1.038,
+                "start_ns": 148736405587000,
+                "state": "R+",
+                "wakeup_ns": null,
+                "wall_ms": 1.038
+              },
+              {
+                "descheduled_to_pid": 270,
+                "end_ns": 148736222334000,
+                "poll_lock_overlap": [],
+                "runnable_wait_ms": 0.648,
+                "start_ns": 148736221686000,
+                "state": "R",
+                "wakeup_ns": null,
+                "wall_ms": 0.648
+              },
+              {
+                "descheduled_to_pid": 270,
+                "end_ns": 148736233008000,
+                "poll_lock_overlap": [
+                  {
+                    "bridge_ns": 148736225210000,
+                    "detect_ns": 148736225209000,
+                    "drop_ns": 148736404438000,
+                    "held_lower_bound_ms": 179.229,
+                    "helper_ns": null,
+                    "overlap_ms": 0.487,
+                    "pid": 101254,
+                    "poll_ns": 148736224720000,
+                    "probe_ns": 148736225207000
+                  }
+                ],
+                "runnable_wait_ms": 0.487,
+                "start_ns": 148736232521000,
+                "state": "R",
+                "wakeup_ns": null,
+                "wall_ms": 0.487
+              },
+              {
+                "descheduled_to_pid": 270,
+                "end_ns": 148736405237000,
+                "poll_lock_overlap": [],
+                "runnable_wait_ms": 0.278,
+                "start_ns": 148736404959000,
+                "state": "R",
+                "wakeup_ns": null,
+                "wall_ms": 0.278
+              },
+              {
+                "descheduled_to_pid": 101141,
+                "end_ns": 148736226257000,
+                "poll_lock_overlap": [
+                  {
+                    "bridge_ns": 148736225210000,
+                    "detect_ns": 148736225209000,
+                    "drop_ns": 148736404438000,
+                    "held_lower_bound_ms": 179.229,
+                    "helper_ns": null,
+                    "overlap_ms": 0.264,
+                    "pid": 101254,
+                    "poll_ns": 148736224720000,
+                    "probe_ns": 148736225207000
+                  }
+                ],
+                "runnable_wait_ms": 0.264,
+                "start_ns": 148736225993000,
+                "state": "R",
+                "wakeup_ns": null,
+                "wall_ms": 0.264
+              },
+              {
+                "descheduled_to_pid": 101254,
+                "end_ns": 148736225900000,
+                "poll_lock_overlap": [
+                  {
+                    "bridge_ns": 148736225210000,
+                    "detect_ns": 148736225209000,
+                    "drop_ns": 148736404438000,
+                    "held_lower_bound_ms": 179.229,
+                    "helper_ns": null,
+                    "overlap_ms": 0.26,
+                    "pid": 101254,
+                    "poll_ns": 148736224720000,
+                    "probe_ns": 148736225207000
+                  }
+                ],
+                "runnable_wait_ms": 0.26,
+                "start_ns": 148736225640000,
+                "state": "R",
+                "wakeup_ns": null,
+                "wall_ms": 0.26
+              },
+              {
+                "descheduled_to_pid": 101254,
+                "end_ns": 148736225254000,
+                "poll_lock_overlap": [
+                  {
+                    "bridge_ns": 148736224730000,
+                    "detect_ns": 148736224727000,
+                    "drop_ns": 148736225202000,
+                    "held_lower_bound_ms": 0.475,
+                    "helper_ns": null,
+                    "overlap_ms": 0.175,
+                    "pid": 101254,
+                    "poll_ns": 148736224720000,
+                    "probe_ns": 148736224725000
+                  },
+                  {
+                    "bridge_ns": 148736225210000,
+                    "detect_ns": 148736225209000,
+                    "drop_ns": 148736404438000,
+                    "held_lower_bound_ms": 179.229,
+                    "helper_ns": null,
+                    "overlap_ms": 0.045,
+                    "pid": 101254,
+                    "poll_ns": 148736224720000,
+                    "probe_ns": 148736225207000
+                  }
+                ],
+                "runnable_wait_ms": 0.227,
+                "start_ns": 148736225027000,
+                "state": "R",
+                "wakeup_ns": null,
+                "wall_ms": 0.227
+              },
+              {
+                "descheduled_to_pid": 101254,
+                "end_ns": 148736227029000,
+                "poll_lock_overlap": [
+                  {
+                    "bridge_ns": 148736225210000,
+                    "detect_ns": 148736225209000,
+                    "drop_ns": 148736404438000,
+                    "held_lower_bound_ms": 179.229,
+                    "helper_ns": null,
+                    "overlap_ms": 0.227,
+                    "pid": 101254,
+                    "poll_ns": 148736224720000,
+                    "probe_ns": 148736225207000
+                  }
+                ],
+                "runnable_wait_ms": 0.227,
+                "start_ns": 148736226802000,
+                "state": "R+",
+                "wakeup_ns": null,
+                "wall_ms": 0.227
+              },
+              {
+                "descheduled_to_pid": 101254,
+                "end_ns": 148736226542000,
+                "poll_lock_overlap": [
+                  {
+                    "bridge_ns": 148736225210000,
+                    "detect_ns": 148736225209000,
+                    "drop_ns": 148736404438000,
+                    "held_lower_bound_ms": 179.229,
+                    "helper_ns": null,
+                    "overlap_ms": 0.159,
+                    "pid": 101254,
+                    "poll_ns": 148736224720000,
+                    "probe_ns": 148736225207000
+                  }
+                ],
+                "runnable_wait_ms": 0.159,
+                "start_ns": 148736226383000,
+                "state": "R",
+                "wakeup_ns": null,
+                "wall_ms": 0.159
+              },
+              {
+                "descheduled_to_pid": 101254,
+                "end_ns": 148736225517000,
+                "poll_lock_overlap": [
+                  {
+                    "bridge_ns": 148736225210000,
+                    "detect_ns": 148736225209000,
+                    "drop_ns": 148736404438000,
+                    "held_lower_bound_ms": 179.229,
+                    "helper_ns": null,
+                    "overlap_ms": 0.155,
+                    "pid": 101254,
+                    "poll_ns": 148736224720000,
+                    "probe_ns": 148736225207000
+                  }
+                ],
+                "runnable_wait_ms": 0.155,
+                "start_ns": 148736225362000,
+                "state": "R",
+                "wakeup_ns": null,
+                "wall_ms": 0.155
+              }
+            ],
+            "poll_lock_overlap": [
+              {
+                "bridge_ns": 148736224730000,
+                "detect_ns": 148736224727000,
+                "drop_ns": 148736225202000,
+                "held_lower_bound_ms": 0.475,
+                "helper_ns": null,
+                "overlap_ms": 0.475,
+                "pid": 101254,
+                "poll_ns": 148736224720000,
+                "probe_ns": 148736224725000
+              },
+              {
+                "bridge_ns": 148736225210000,
+                "detect_ns": 148736225209000,
+                "drop_ns": 148736404438000,
+                "held_lower_bound_ms": 179.229,
+                "helper_ns": null,
+                "overlap_ms": 179.229,
+                "pid": 101254,
+                "poll_ns": 148736224720000,
+                "probe_ns": 148736225207000
+              }
+            ],
+            "start_ns": 148736221223138,
+            "submit_ns": 148736233024475,
+            "syscalls": [
+              {
+                "command": 3224921276,
+                "cpu": 0,
+                "end_ns": 148736404750000,
+                "event": "enter",
+                "fd": 10,
+                "nr": 29,
+                "pid": 77507,
+                "poll_lock_overlap": [
+                  {
+                    "bridge_ns": 148736225210000,
+                    "detect_ns": 148736225209000,
+                    "drop_ns": 148736404438000,
+                    "held_lower_bound_ms": 179.229,
+                    "helper_ns": null,
+                    "overlap_ms": 171.35,
+                    "pid": 101254,
+                    "poll_ns": 148736224720000,
+                    "probe_ns": 148736225207000
+                  }
+                ],
+                "result_error": null,
+                "ret": 0,
+                "start_ns": 148736233088000,
+                "ts_ns": 148736233088000,
+                "wall_ms": 171.662
+              },
+              {
+                "count": 37,
+                "cpu": 0,
+                "end_ns": 148736406643000,
+                "event": "enter",
+                "fd": 54,
+                "nr": 64,
+                "pid": 77507,
+                "poll_lock_overlap": [],
+                "result_error": null,
+                "ret": 37,
+                "start_ns": 148736405514000,
+                "ts_ns": 148736405514000,
+                "wall_ms": 1.129
+              },
+              {
+                "count": 13,
+                "cpu": 0,
+                "end_ns": 148736232418000,
+                "event": "enter",
+                "fd": 2,
+                "nr": 64,
+                "pid": 77507,
+                "poll_lock_overlap": [
+                  {
+                    "bridge_ns": 148736225210000,
+                    "detect_ns": 148736225209000,
+                    "drop_ns": 148736404438000,
+                    "held_lower_bound_ms": 179.229,
+                    "helper_ns": null,
+                    "overlap_ms": 0.089,
+                    "pid": 101254,
+                    "poll_ns": 148736224720000,
+                    "probe_ns": 148736225207000
+                  }
+                ],
+                "result_error": null,
+                "ret": 13,
+                "start_ns": 148736232329000,
+                "ts_ns": 148736232329000,
+                "wall_ms": 0.089
+              },
+              {
+                "count": 13,
+                "cpu": 0,
+                "end_ns": 148736404949000,
+                "event": "enter",
+                "fd": 2,
+                "nr": 64,
+                "pid": 77507,
+                "poll_lock_overlap": [],
+                "result_error": null,
+                "ret": 13,
+                "start_ns": 148736404883000,
+                "ts_ns": 148736404883000,
+                "wall_ms": 0.066
+              },
+              {
+                "count": 7,
+                "cpu": 0,
+                "end_ns": 148736222417000,
+                "event": "enter",
+                "fd": 2,
+                "nr": 64,
+                "pid": 77507,
+                "poll_lock_overlap": [],
+                "result_error": null,
+                "ret": 7,
+                "start_ns": 148736222375000,
+                "ts_ns": 148736222375000,
+                "wall_ms": 0.042
+              },
+              {
+                "count": 7,
+                "cpu": 0,
+                "end_ns": 148736405315000,
+                "event": "enter",
+                "fd": 2,
+                "nr": 64,
+                "pid": 77507,
+                "poll_lock_overlap": [],
+                "result_error": null,
+                "ret": 7,
+                "start_ns": 148736405274000,
+                "ts_ns": 148736405274000,
+                "wall_ms": 0.041
+              },
+              {
+                "command": 3223348409,
+                "cpu": 0,
+                "end_ns": 148736222884000,
+                "event": "enter",
+                "fd": 10,
+                "nr": 29,
+                "pid": 77507,
+                "poll_lock_overlap": [],
+                "result_error": null,
+                "ret": 0,
+                "start_ns": 148736222856000,
+                "ts_ns": 148736222856000,
+                "wall_ms": 0.028
+              },
+              {
+                "count": 13,
+                "cpu": 0,
+                "end_ns": 148736221430000,
+                "event": "enter",
+                "fd": 2,
+                "nr": 64,
+                "pid": 77507,
+                "poll_lock_overlap": [],
+                "result_error": null,
+                "ret": 13,
+                "start_ns": 148736221407000,
+                "ts_ns": 148736221407000,
+                "wall_ms": 0.023
+              },
+              {
+                "cpu": 0,
+                "end_ns": 148736222646000,
+                "event": "enter",
+                "nr": 21,
+                "pid": 77507,
+                "poll_lock_overlap": [],
+                "result_error": 0,
+                "ret": null,
+                "start_ns": 148736222627000,
+                "ts_ns": 148736222627000,
+                "wall_ms": 0.019
+              },
+              {
+                "count": 8,
+                "cpu": 0,
+                "end_ns": 148736221454000,
+                "event": "enter",
+                "fd": 2,
+                "nr": 64,
+                "pid": 77507,
+                "poll_lock_overlap": [],
+                "result_error": null,
+                "ret": 8,
+                "start_ns": 148736221440000,
+                "ts_ns": 148736221440000,
+                "wall_ms": 0.014
+              },
+              {
+                "cpu": 0,
+                "end_ns": 148736222693000,
+                "event": "enter",
+                "nr": 113,
+                "pid": 77507,
+                "poll_lock_overlap": [],
+                "result_error": 0,
+                "ret": null,
+                "start_ns": 148736222680000,
+                "ts_ns": 148736222680000,
+                "wall_ms": 0.013
+              },
+              {
+                "count": 13,
+                "cpu": 0,
+                "end_ns": 148736222481000,
+                "event": "enter",
+                "fd": 2,
+                "nr": 64,
+                "pid": 77507,
+                "poll_lock_overlap": [],
+                "result_error": null,
+                "ret": 13,
+                "start_ns": 148736222469000,
+                "ts_ns": 148736222469000,
+                "wall_ms": 0.012
+              }
+            ],
+            "wall_ms": 184.381862
+          },
+          {
+            "build_cpu_ms": 4.771814,
+            "end_ns": 148746668378000,
+            "frame_id": 13260,
+            "input_id": 194,
+            "off_cpu": [
+              {
+                "descheduled_to_pid": 270,
+                "end_ns": 148746652957000,
+                "poll_lock_overlap": [
+                  {
+                    "bridge_ns": 148746465251000,
+                    "detect_ns": 148746465249000,
+                    "drop_ns": 148746652908000,
+                    "held_lower_bound_ms": 187.659,
+                    "helper_ns": null,
+                    "overlap_ms": 180.498,
+                    "pid": 101141,
+                    "poll_ns": 148746464095000,
+                    "probe_ns": 148746465248000
+                  }
+                ],
+                "runnable_wait_ms": 0.018,
+                "start_ns": 148746472410000,
+                "state": "D",
+                "wakeup_ns": 148746652939000,
+                "wall_ms": 180.547
+              },
+              {
+                "descheduled_to_pid": 101275,
+                "end_ns": 148746668490000,
+                "poll_lock_overlap": [],
+                "runnable_wait_ms": 0.076,
+                "start_ns": 148746660033000,
+                "state": "S",
+                "wakeup_ns": 148746668414000,
+                "wall_ms": 8.457
+              },
+              {
+                "descheduled_to_pid": 270,
+                "end_ns": 148746469297000,
+                "poll_lock_overlap": [
+                  {
+                    "bridge_ns": 148746465251000,
+                    "detect_ns": 148746465249000,
+                    "drop_ns": 148746652908000,
+                    "held_lower_bound_ms": 187.659,
+                    "helper_ns": null,
+                    "overlap_ms": 0.854,
+                    "pid": 101141,
+                    "poll_ns": 148746464095000,
+                    "probe_ns": 148746465248000
+                  }
+                ],
+                "runnable_wait_ms": 0.854,
+                "start_ns": 148746468443000,
+                "state": "R+",
+                "wakeup_ns": null,
+                "wall_ms": 0.854
+              },
+              {
+                "descheduled_to_pid": 101141,
+                "end_ns": 148746471961000,
+                "poll_lock_overlap": [
+                  {
+                    "bridge_ns": 148746465251000,
+                    "detect_ns": 148746465249000,
+                    "drop_ns": 148746652908000,
+                    "held_lower_bound_ms": 187.659,
+                    "helper_ns": null,
+                    "overlap_ms": 0.835,
+                    "pid": 101141,
+                    "poll_ns": 148746464095000,
+                    "probe_ns": 148746465248000
+                  }
+                ],
+                "runnable_wait_ms": 0.835,
+                "start_ns": 148746471126000,
+                "state": "R",
+                "wakeup_ns": null,
+                "wall_ms": 0.835
+              },
+              {
+                "descheduled_to_pid": 270,
+                "end_ns": 148746658575000,
+                "poll_lock_overlap": [],
+                "runnable_wait_ms": 0.802,
+                "start_ns": 148746657773000,
+                "state": "R",
+                "wakeup_ns": null,
+                "wall_ms": 0.802
+              },
+              {
+                "descheduled_to_pid": 101141,
+                "end_ns": 148746469840000,
+                "poll_lock_overlap": [
+                  {
+                    "bridge_ns": 148746465251000,
+                    "detect_ns": 148746465249000,
+                    "drop_ns": 148746652908000,
+                    "held_lower_bound_ms": 187.659,
+                    "helper_ns": null,
+                    "overlap_ms": 0.292,
+                    "pid": 101141,
+                    "poll_ns": 148746464095000,
+                    "probe_ns": 148746465248000
+                  }
+                ],
+                "runnable_wait_ms": 0.292,
+                "start_ns": 148746469548000,
+                "state": "R",
+                "wakeup_ns": null,
+                "wall_ms": 0.292
+              },
+              {
+                "descheduled_to_pid": 101141,
+                "end_ns": 148746467584000,
+                "poll_lock_overlap": [
+                  {
+                    "bridge_ns": 148746465251000,
+                    "detect_ns": 148746465249000,
+                    "drop_ns": 148746652908000,
+                    "held_lower_bound_ms": 187.659,
+                    "helper_ns": null,
+                    "overlap_ms": 0.209,
+                    "pid": 101141,
+                    "poll_ns": 148746464095000,
+                    "probe_ns": 148746465248000
+                  }
+                ],
+                "runnable_wait_ms": 0.209,
+                "start_ns": 148746467375000,
+                "state": "R",
+                "wakeup_ns": null,
+                "wall_ms": 0.209
+              },
+              {
+                "descheduled_to_pid": 101141,
+                "end_ns": 148746467891000,
+                "poll_lock_overlap": [
+                  {
+                    "bridge_ns": 148746465251000,
+                    "detect_ns": 148746465249000,
+                    "drop_ns": 148746652908000,
+                    "held_lower_bound_ms": 187.659,
+                    "helper_ns": null,
+                    "overlap_ms": 0.208,
+                    "pid": 101141,
+                    "poll_ns": 148746464095000,
+                    "probe_ns": 148746465248000
+                  }
+                ],
+                "runnable_wait_ms": 0.208,
+                "start_ns": 148746467683000,
+                "state": "R",
+                "wakeup_ns": null,
+                "wall_ms": 0.208
+              },
+              {
+                "descheduled_to_pid": 101141,
+                "end_ns": 148746470449000,
+                "poll_lock_overlap": [
+                  {
+                    "bridge_ns": 148746465251000,
+                    "detect_ns": 148746465249000,
+                    "drop_ns": 148746652908000,
+                    "held_lower_bound_ms": 187.659,
+                    "helper_ns": null,
+                    "overlap_ms": 0.197,
+                    "pid": 101141,
+                    "poll_ns": 148746464095000,
+                    "probe_ns": 148746465248000
+                  }
+                ],
+                "runnable_wait_ms": 0.197,
+                "start_ns": 148746470252000,
+                "state": "R",
+                "wakeup_ns": null,
+                "wall_ms": 0.197
+              },
+              {
+                "descheduled_to_pid": 101141,
+                "end_ns": 148746470148000,
+                "poll_lock_overlap": [
+                  {
+                    "bridge_ns": 148746465251000,
+                    "detect_ns": 148746465249000,
+                    "drop_ns": 148746652908000,
+                    "held_lower_bound_ms": 187.659,
+                    "helper_ns": null,
+                    "overlap_ms": 0.172,
+                    "pid": 101141,
+                    "poll_ns": 148746464095000,
+                    "probe_ns": 148746465248000
+                  }
+                ],
+                "runnable_wait_ms": 0.172,
+                "start_ns": 148746469976000,
+                "state": "R",
+                "wakeup_ns": null,
+                "wall_ms": 0.172
+              },
+              {
+                "descheduled_to_pid": 101141,
+                "end_ns": 148746470747000,
+                "poll_lock_overlap": [
+                  {
+                    "bridge_ns": 148746465251000,
+                    "detect_ns": 148746465249000,
+                    "drop_ns": 148746652908000,
+                    "held_lower_bound_ms": 187.659,
+                    "helper_ns": null,
+                    "overlap_ms": 0.169,
+                    "pid": 101141,
+                    "poll_ns": 148746464095000,
+                    "probe_ns": 148746465248000
+                  }
+                ],
+                "runnable_wait_ms": 0.169,
+                "start_ns": 148746470578000,
+                "state": "R",
+                "wakeup_ns": null,
+                "wall_ms": 0.169
+              },
+              {
+                "descheduled_to_pid": 101141,
+                "end_ns": 148746471028000,
+                "poll_lock_overlap": [
+                  {
+                    "bridge_ns": 148746465251000,
+                    "detect_ns": 148746465249000,
+                    "drop_ns": 148746652908000,
+                    "held_lower_bound_ms": 187.659,
+                    "helper_ns": null,
+                    "overlap_ms": 0.155,
+                    "pid": 101141,
+                    "poll_ns": 148746464095000,
+                    "probe_ns": 148746465248000
+                  }
+                ],
+                "runnable_wait_ms": 0.155,
+                "start_ns": 148746470873000,
+                "state": "R",
+                "wakeup_ns": null,
+                "wall_ms": 0.155
+              }
+            ],
+            "poll_lock_overlap": [
+              {
+                "bridge_ns": 148746465251000,
+                "detect_ns": 148746465249000,
+                "drop_ns": 148746652908000,
+                "held_lower_bound_ms": 187.659,
+                "helper_ns": null,
+                "overlap_ms": 185.770924,
+                "pid": 101141,
+                "poll_ns": 148746464095000,
+                "probe_ns": 148746465248000
+              }
+            ],
+            "start_ns": 148746467137076,
+            "submit_ns": 148746658594247,
+            "syscalls": [
+              {
+                "command": 3223348409,
+                "cpu": 0,
+                "end_ns": 148746652983000,
+                "event": "enter",
+                "fd": 10,
+                "nr": 29,
+                "pid": 77507,
+                "poll_lock_overlap": [
+                  {
+                    "bridge_ns": 148746465251000,
+                    "detect_ns": 148746465249000,
+                    "drop_ns": 148746652908000,
+                    "held_lower_bound_ms": 187.659,
+                    "helper_ns": null,
+                    "overlap_ms": 180.529,
+                    "pid": 101141,
+                    "poll_ns": 148746464095000,
+                    "probe_ns": 148746465248000
+                  }
+                ],
+                "result_error": null,
+                "ret": 0,
+                "start_ns": 148746472379000,
+                "ts_ns": 148746472379000,
+                "wall_ms": 180.604
+              },
+              {
+                "cpu": 0,
+                "end_ns": 148746668506000,
+                "event": "enter",
+                "nr": 22,
+                "pid": 77507,
+                "poll_lock_overlap": [],
+                "result_error": 0,
+                "ret": null,
+                "start_ns": 148746659969000,
+                "ts_ns": 148746659969000,
+                "wall_ms": 8.537
+              },
+              {
+                "command": 2150388778,
+                "cpu": 0,
+                "end_ns": 148746469317000,
+                "event": "enter",
+                "fd": 2,
+                "nr": 29,
+                "pid": 77507,
+                "poll_lock_overlap": [
+                  {
+                    "bridge_ns": 148746465251000,
+                    "detect_ns": 148746465249000,
+                    "drop_ns": 148746652908000,
+                    "held_lower_bound_ms": 187.659,
+                    "helper_ns": null,
+                    "overlap_ms": 0.912,
+                    "pid": 101141,
+                    "poll_ns": 148746464095000,
+                    "probe_ns": 148746465248000
+                  }
+                ],
+                "result_error": null,
+                "ret": -25,
+                "start_ns": 148746468405000,
+                "ts_ns": 148746468405000,
+                "wall_ms": 0.912
+              },
+              {
+                "command": 3224921276,
+                "cpu": 0,
+                "end_ns": 148746658979000,
+                "event": "enter",
+                "fd": 10,
+                "nr": 29,
+                "pid": 77507,
+                "poll_lock_overlap": [],
+                "result_error": null,
+                "ret": 0,
+                "start_ns": 148746658659000,
+                "ts_ns": 148746658659000,
+                "wall_ms": 0.32
+              },
+              {
+                "count": 7,
+                "cpu": 0,
+                "end_ns": 148746469457000,
+                "event": "enter",
+                "fd": 2,
+                "nr": 64,
+                "pid": 77507,
+                "poll_lock_overlap": [
+                  {
+                    "bridge_ns": 148746465251000,
+                    "detect_ns": 148746465249000,
+                    "drop_ns": 148746652908000,
+                    "held_lower_bound_ms": 187.659,
+                    "helper_ns": null,
+                    "overlap_ms": 0.124,
+                    "pid": 101141,
+                    "poll_ns": 148746464095000,
+                    "probe_ns": 148746465248000
+                  }
+                ],
+                "result_error": null,
+                "ret": 7,
+                "start_ns": 148746469333000,
+                "ts_ns": 148746469333000,
+                "wall_ms": 0.124
+              },
+              {
+                "cpu": 0,
+                "end_ns": 148746467251000,
+                "event": "enter",
+                "nr": 113,
+                "pid": 77507,
+                "poll_lock_overlap": [
+                  {
+                    "bridge_ns": 148746465251000,
+                    "detect_ns": 148746465249000,
+                    "drop_ns": 148746652908000,
+                    "held_lower_bound_ms": 187.659,
+                    "helper_ns": null,
+                    "overlap_ms": 0.111,
+                    "pid": 101141,
+                    "poll_ns": 148746464095000,
+                    "probe_ns": 148746465248000
+                  }
+                ],
+                "result_error": 0,
+                "ret": null,
+                "start_ns": 148746467140000,
+                "ts_ns": 148746467140000,
+                "wall_ms": 0.111
+              },
+              {
+                "count": 13,
+                "cpu": 0,
+                "end_ns": 148746657667000,
+                "event": "enter",
+                "fd": 2,
+                "nr": 64,
+                "pid": 77507,
+                "poll_lock_overlap": [],
+                "result_error": null,
+                "ret": 13,
+                "start_ns": 148746657574000,
+                "ts_ns": 148746657574000,
+                "wall_ms": 0.093
+              },
+              {
+                "cpu": 0,
+                "end_ns": 148746659735000,
+                "event": "enter",
+                "nr": 56,
+                "pid": 77507,
+                "poll_lock_overlap": [],
+                "result_error": 0,
+                "ret": null,
+                "start_ns": 148746659673000,
+                "ts_ns": 148746659673000,
+                "wall_ms": 0.062
+              },
+              {
+                "cpu": 0,
+                "end_ns": 148746468055000,
+                "event": "enter",
+                "nr": 113,
+                "pid": 77507,
+                "poll_lock_overlap": [
+                  {
+                    "bridge_ns": 148746465251000,
+                    "detect_ns": 148746465249000,
+                    "drop_ns": 148746652908000,
+                    "held_lower_bound_ms": 187.659,
+                    "helper_ns": null,
+                    "overlap_ms": 0.057,
+                    "pid": 101141,
+                    "poll_ns": 148746464095000,
+                    "probe_ns": 148746465248000
+                  }
+                ],
+                "result_error": 0,
+                "ret": null,
+                "start_ns": 148746467998000,
+                "ts_ns": 148746467998000,
+                "wall_ms": 0.057
+              },
+              {
+                "cpu": 0,
+                "end_ns": 148746470564000,
+                "event": "enter",
+                "nr": 21,
+                "pid": 77507,
+                "poll_lock_overlap": [
+                  {
+                    "bridge_ns": 148746465251000,
+                    "detect_ns": 148746465249000,
+                    "drop_ns": 148746652908000,
+                    "held_lower_bound_ms": 187.659,
+                    "helper_ns": null,
+                    "overlap_ms": 0.052,
+                    "pid": 101141,
+                    "poll_ns": 148746464095000,
+                    "probe_ns": 148746465248000
+                  }
+                ],
+                "result_error": 0,
+                "ret": null,
+                "start_ns": 148746470512000,
+                "ts_ns": 148746470512000,
+                "wall_ms": 0.052
+              },
+              {
+                "count": 13,
+                "cpu": 0,
+                "end_ns": 148746469914000,
+                "event": "enter",
+                "fd": 2,
+                "nr": 64,
+                "pid": 77507,
+                "poll_lock_overlap": [
+                  {
+                    "bridge_ns": 148746465251000,
+                    "detect_ns": 148746465249000,
+                    "drop_ns": 148746652908000,
+                    "held_lower_bound_ms": 187.659,
+                    "helper_ns": null,
+                    "overlap_ms": 0.046,
+                    "pid": 101141,
+                    "poll_ns": 148746464095000,
+                    "probe_ns": 148746465248000
+                  }
+                ],
+                "result_error": null,
+                "ret": 13,
+                "start_ns": 148746469868000,
+                "ts_ns": 148746469868000,
+                "wall_ms": 0.046
+              },
+              {
+                "count": 37,
+                "cpu": 0,
+                "end_ns": 148746659466000,
+                "event": "enter",
+                "fd": 54,
+                "nr": 64,
+                "pid": 77507,
+                "poll_lock_overlap": [],
+                "result_error": null,
+                "ret": 37,
+                "start_ns": 148746659425000,
+                "ts_ns": 148746659425000,
+                "wall_ms": 0.041
+              }
+            ],
+            "wall_ms": 201.240924
+          },
+          {
+            "build_cpu_ms": 5.366333,
+            "end_ns": 148756883291000,
+            "frame_id": 13500,
+            "input_id": 333,
+            "off_cpu": [
+              {
+                "descheduled_to_pid": 101141,
+                "end_ns": 148756876435000,
+                "poll_lock_overlap": [
+                  {
+                    "bridge_ns": 148756704640000,
+                    "detect_ns": 148756704638000,
+                    "drop_ns": 148756876387000,
+                    "held_lower_bound_ms": 171.749,
+                    "helper_ns": null,
+                    "overlap_ms": 167.643,
+                    "pid": 101141,
+                    "poll_ns": 148756704166000,
+                    "probe_ns": 148756704637000
+                  }
+                ],
+                "runnable_wait_ms": 0.018,
+                "start_ns": 148756708744000,
+                "state": "S",
+                "wakeup_ns": 148756876417000,
+                "wall_ms": 167.691
+              },
+              {
+                "descheduled_to_pid": 16,
+                "end_ns": 148756883436000,
+                "poll_lock_overlap": [],
+                "runnable_wait_ms": 0.083,
+                "start_ns": 148756880746000,
+                "state": "S",
+                "wakeup_ns": 148756883353000,
+                "wall_ms": 2.69
+              },
+              {
+                "descheduled_to_pid": 101275,
+                "end_ns": 148756700420000,
+                "poll_lock_overlap": [],
+                "runnable_wait_ms": 1.212,
+                "start_ns": 148756699208000,
+                "state": "R",
+                "wakeup_ns": null,
+                "wall_ms": 1.212
+              },
+              {
+                "descheduled_to_pid": 270,
+                "end_ns": 148756878341000,
+                "poll_lock_overlap": [],
+                "runnable_wait_ms": 0.818,
+                "start_ns": 148756877523000,
+                "state": "R+",
+                "wakeup_ns": null,
+                "wall_ms": 0.818
+              },
+              {
+                "descheduled_to_pid": 270,
+                "end_ns": 148756879968000,
+                "poll_lock_overlap": [],
+                "runnable_wait_ms": 0.816,
+                "start_ns": 148756879152000,
+                "state": "R",
+                "wakeup_ns": null,
+                "wall_ms": 0.816
+              },
+              {
+                "descheduled_to_pid": 270,
+                "end_ns": 148756698568000,
+                "poll_lock_overlap": [],
+                "runnable_wait_ms": 0.682,
+                "start_ns": 148756697886000,
+                "state": "R",
+                "wakeup_ns": null,
+                "wall_ms": 0.682
+              },
+              {
+                "descheduled_to_pid": 270,
+                "end_ns": 148756701334000,
+                "poll_lock_overlap": [],
+                "runnable_wait_ms": 0.618,
+                "start_ns": 148756700716000,
+                "state": "R",
+                "wakeup_ns": null,
+                "wall_ms": 0.618
+              },
+              {
+                "descheduled_to_pid": 101141,
+                "end_ns": 148756708084000,
+                "poll_lock_overlap": [
+                  {
+                    "bridge_ns": 148756704640000,
+                    "detect_ns": 148756704638000,
+                    "drop_ns": 148756876387000,
+                    "held_lower_bound_ms": 171.749,
+                    "helper_ns": null,
+                    "overlap_ms": 0.207,
+                    "pid": 101141,
+                    "poll_ns": 148756704166000,
+                    "probe_ns": 148756704637000
+                  }
+                ],
+                "runnable_wait_ms": 0.207,
+                "start_ns": 148756707877000,
+                "state": "R",
+                "wakeup_ns": null,
+                "wall_ms": 0.207
+              },
+              {
+                "descheduled_to_pid": 101141,
+                "end_ns": 148756708428000,
+                "poll_lock_overlap": [
+                  {
+                    "bridge_ns": 148756704640000,
+                    "detect_ns": 148756704638000,
+                    "drop_ns": 148756876387000,
+                    "held_lower_bound_ms": 171.749,
+                    "helper_ns": null,
+                    "overlap_ms": 0.206,
+                    "pid": 101141,
+                    "poll_ns": 148756704166000,
+                    "probe_ns": 148756704637000
+                  }
+                ],
+                "runnable_wait_ms": 0.206,
+                "start_ns": 148756708222000,
+                "state": "R",
+                "wakeup_ns": null,
+                "wall_ms": 0.206
+              },
+              {
+                "descheduled_to_pid": 101141,
+                "end_ns": 148756704263000,
+                "poll_lock_overlap": [
+                  {
+                    "bridge_ns": 148756704175000,
+                    "detect_ns": 148756704173000,
+                    "drop_ns": 148756704632000,
+                    "held_lower_bound_ms": 0.459,
+                    "helper_ns": null,
+                    "overlap_ms": 0.09,
+                    "pid": 101141,
+                    "poll_ns": 148756704166000,
+                    "probe_ns": 148756704171000
+                  }
+                ],
+                "runnable_wait_ms": 0.11,
+                "start_ns": 148756704153000,
+                "state": "R",
+                "wakeup_ns": null,
+                "wall_ms": 0.11
+              },
+              {
+                "descheduled_to_pid": 101141,
+                "end_ns": 148756705140000,
+                "poll_lock_overlap": [
+                  {
+                    "bridge_ns": 148756704640000,
+                    "detect_ns": 148756704638000,
+                    "drop_ns": 148756876387000,
+                    "held_lower_bound_ms": 171.749,
+                    "helper_ns": null,
+                    "overlap_ms": 0.071,
+                    "pid": 101141,
+                    "poll_ns": 148756704166000,
+                    "probe_ns": 148756704637000
+                  }
+                ],
+                "runnable_wait_ms": 0.071,
+                "start_ns": 148756705069000,
+                "state": "R",
+                "wakeup_ns": null,
+                "wall_ms": 0.071
+              },
+              {
+                "descheduled_to_pid": 101141,
+                "end_ns": 148756704678000,
+                "poll_lock_overlap": [
+                  {
+                    "bridge_ns": 148756704175000,
+                    "detect_ns": 148756704173000,
+                    "drop_ns": 148756704632000,
+                    "held_lower_bound_ms": 0.459,
+                    "helper_ns": null,
+                    "overlap_ms": 0.02,
+                    "pid": 101141,
+                    "poll_ns": 148756704166000,
+                    "probe_ns": 148756704171000
+                  },
+                  {
+                    "bridge_ns": 148756704640000,
+                    "detect_ns": 148756704638000,
+                    "drop_ns": 148756876387000,
+                    "held_lower_bound_ms": 171.749,
+                    "helper_ns": null,
+                    "overlap_ms": 0.04,
+                    "pid": 101141,
+                    "poll_ns": 148756704166000,
+                    "probe_ns": 148756704637000
+                  }
+                ],
+                "runnable_wait_ms": 0.066,
+                "start_ns": 148756704612000,
+                "state": "R",
+                "wakeup_ns": null,
+                "wall_ms": 0.066
+              }
+            ],
+            "poll_lock_overlap": [
+              {
+                "bridge_ns": 148756704175000,
+                "detect_ns": 148756704173000,
+                "drop_ns": 148756704632000,
+                "held_lower_bound_ms": 0.459,
+                "helper_ns": null,
+                "overlap_ms": 0.459,
+                "pid": 101141,
+                "poll_ns": 148756704166000,
+                "probe_ns": 148756704171000
+              },
+              {
+                "bridge_ns": 148756704640000,
+                "detect_ns": 148756704638000,
+                "drop_ns": 148756876387000,
+                "held_lower_bound_ms": 171.749,
+                "helper_ns": null,
+                "overlap_ms": 171.749,
+                "pid": 101141,
+                "poll_ns": 148756704166000,
+                "probe_ns": 148756704637000
+              }
+            ],
+            "start_ns": 148756697437088,
+            "submit_ns": 148756708562489,
+            "syscalls": [
+              {
+                "command": 3224921276,
+                "cpu": 0,
+                "end_ns": 148756876699000,
+                "event": "enter",
+                "fd": 10,
+                "nr": 29,
+                "pid": 77507,
+                "poll_lock_overlap": [
+                  {
+                    "bridge_ns": 148756704640000,
+                    "detect_ns": 148756704638000,
+                    "drop_ns": 148756876387000,
+                    "held_lower_bound_ms": 171.749,
+                    "helper_ns": null,
+                    "overlap_ms": 167.748,
+                    "pid": 101141,
+                    "poll_ns": 148756704166000,
+                    "probe_ns": 148756704637000
+                  }
+                ],
+                "result_error": null,
+                "ret": 0,
+                "start_ns": 148756708639000,
+                "ts_ns": 148756708639000,
+                "wall_ms": 168.06
+              },
+              {
+                "cpu": 0,
+                "end_ns": 148756883451000,
+                "event": "enter",
+                "nr": 22,
+                "pid": 77507,
+                "poll_lock_overlap": [],
+                "result_error": 0,
+                "ret": null,
+                "start_ns": 148756880720000,
+                "ts_ns": 148756880720000,
+                "wall_ms": 2.731
+              },
+              {
+                "cpu": 0,
+                "end_ns": 148756878375000,
+                "event": "enter",
+                "nr": 276,
+                "pid": 77507,
+                "poll_lock_overlap": [],
+                "result_error": 0,
+                "ret": null,
+                "start_ns": 148756877390000,
+                "ts_ns": 148756877390000,
+                "wall_ms": 0.985
+              },
+              {
+                "cpu": 0,
+                "end_ns": 148756877312000,
+                "event": "enter",
+                "nr": 56,
+                "pid": 77507,
+                "poll_lock_overlap": [],
+                "result_error": 0,
+                "ret": null,
+                "start_ns": 148756877221000,
+                "ts_ns": 148756877221000,
+                "wall_ms": 0.091
+              },
+              {
+                "count": 13,
+                "cpu": 0,
+                "end_ns": 148756707867000,
+                "event": "enter",
+                "fd": 2,
+                "nr": 64,
+                "pid": 77507,
+                "poll_lock_overlap": [
+                  {
+                    "bridge_ns": 148756704640000,
+                    "detect_ns": 148756704638000,
+                    "drop_ns": 148756876387000,
+                    "held_lower_bound_ms": 171.749,
+                    "helper_ns": null,
+                    "overlap_ms": 0.073,
+                    "pid": 101141,
+                    "poll_ns": 148756704166000,
+                    "probe_ns": 148756704637000
+                  }
+                ],
+                "result_error": null,
+                "ret": 13,
+                "start_ns": 148756707794000,
+                "ts_ns": 148756707794000,
+                "wall_ms": 0.073
+              },
+              {
+                "count": 13,
+                "cpu": 0,
+                "end_ns": 148756876897000,
+                "event": "enter",
+                "fd": 2,
+                "nr": 64,
+                "pid": 77507,
+                "poll_lock_overlap": [],
+                "result_error": null,
+                "ret": 13,
+                "start_ns": 148756876831000,
+                "ts_ns": 148756876831000,
+                "wall_ms": 0.066
+              },
+              {
+                "count": 37,
+                "cpu": 0,
+                "end_ns": 148756699186000,
+                "event": "enter",
+                "fd": 54,
+                "nr": 64,
+                "pid": 77507,
+                "poll_lock_overlap": [],
+                "result_error": null,
+                "ret": 37,
+                "start_ns": 148756699126000,
+                "ts_ns": 148756699126000,
+                "wall_ms": 0.06
+              },
+              {
+                "cpu": 0,
+                "end_ns": 148756878588000,
+                "event": "enter",
+                "nr": 56,
+                "pid": 77507,
+                "poll_lock_overlap": [],
+                "result_error": 0,
+                "ret": null,
+                "start_ns": 148756878532000,
+                "ts_ns": 148756878532000,
+                "wall_ms": 0.056
+              },
+              {
+                "count": 37,
+                "cpu": 0,
+                "end_ns": 148756880697000,
+                "event": "enter",
+                "fd": 54,
+                "nr": 64,
+                "pid": 77507,
+                "poll_lock_overlap": [],
+                "result_error": null,
+                "ret": 37,
+                "start_ns": 148756880641000,
+                "ts_ns": 148756880641000,
+                "wall_ms": 0.056
+              },
+              {
+                "count": 80,
+                "cpu": 0,
+                "end_ns": 148756877368000,
+                "event": "enter",
+                "fd": 57,
+                "nr": 64,
+                "pid": 77507,
+                "poll_lock_overlap": [],
+                "result_error": null,
+                "ret": 80,
+                "start_ns": 148756877321000,
+                "ts_ns": 148756877321000,
+                "wall_ms": 0.047
+              },
+              {
+                "count": 13,
+                "cpu": 0,
+                "end_ns": 148756880179000,
+                "event": "enter",
+                "fd": 2,
+                "nr": 64,
+                "pid": 77507,
+                "poll_lock_overlap": [],
+                "result_error": null,
+                "ret": 13,
+                "start_ns": 148756880138000,
+                "ts_ns": 148756880138000,
+                "wall_ms": 0.041
+              },
+              {
+                "cpu": 0,
+                "end_ns": 148756878424000,
+                "event": "enter",
+                "nr": 242,
+                "pid": 77507,
+                "poll_lock_overlap": [],
+                "result_error": 11,
+                "ret": null,
+                "start_ns": 148756878384000,
+                "ts_ns": 148756878384000,
+                "wall_ms": 0.04
+              }
+            ],
+            "wall_ms": 185.853912
+          },
+          {
+            "build_cpu_ms": 4.761036,
+            "end_ns": 148767146081000,
+            "frame_id": 13764,
+            "input_id": 480,
+            "off_cpu": [
+              {
+                "descheduled_to_pid": 101254,
+                "end_ns": 148767128437000,
+                "poll_lock_overlap": [
+                  {
+                    "bridge_ns": 148766944518000,
+                    "detect_ns": 148766944516000,
+                    "drop_ns": 148767128389000,
+                    "held_lower_bound_ms": 183.873,
+                    "helper_ns": null,
+                    "overlap_ms": 165.643,
+                    "pid": 101254,
+                    "poll_ns": 148766944092000,
+                    "probe_ns": 148766944515000
+                  }
+                ],
+                "runnable_wait_ms": 0.019,
+                "start_ns": 148766962746000,
+                "state": "D",
+                "wakeup_ns": 148767128418000,
+                "wall_ms": 165.691
+              },
+              {
+                "descheduled_to_pid": 270,
+                "end_ns": 148766962466000,
+                "poll_lock_overlap": [
+                  {
+                    "bridge_ns": 148766944518000,
+                    "detect_ns": 148766944516000,
+                    "drop_ns": 148767128389000,
+                    "held_lower_bound_ms": 183.873,
+                    "helper_ns": null,
+                    "overlap_ms": 6.635,
+                    "pid": 101254,
+                    "poll_ns": 148766944092000,
+                    "probe_ns": 148766944515000
+                  }
+                ],
+                "runnable_wait_ms": 0.017,
+                "start_ns": 148766955831000,
+                "state": "S",
+                "wakeup_ns": 148766962449000,
+                "wall_ms": 6.635
+              },
+              {
+                "descheduled_to_pid": 270,
+                "end_ns": 148767146141000,
+                "poll_lock_overlap": [],
+                "runnable_wait_ms": 0.021,
+                "start_ns": 148767139586000,
+                "state": "S",
+                "wakeup_ns": 148767146120000,
+                "wall_ms": 6.555
+              },
+              {
+                "descheduled_to_pid": 101275,
+                "end_ns": 148767139504000,
+                "poll_lock_overlap": [],
+                "runnable_wait_ms": 1.2,
+                "start_ns": 148767138304000,
+                "state": "R",
+                "wakeup_ns": null,
+                "wall_ms": 1.2
+              },
+              {
+                "descheduled_to_pid": 101275,
+                "end_ns": 148766955209000,
+                "poll_lock_overlap": [
+                  {
+                    "bridge_ns": 148766944518000,
+                    "detect_ns": 148766944516000,
+                    "drop_ns": 148767128389000,
+                    "held_lower_bound_ms": 183.873,
+                    "helper_ns": null,
+                    "overlap_ms": 1.169,
+                    "pid": 101254,
+                    "poll_ns": 148766944092000,
+                    "probe_ns": 148766944515000
+                  }
+                ],
+                "runnable_wait_ms": 1.169,
+                "start_ns": 148766954040000,
+                "state": "R",
+                "wakeup_ns": null,
+                "wall_ms": 1.169
+              },
+              {
+                "descheduled_to_pid": 270,
+                "end_ns": 148766953560000,
+                "poll_lock_overlap": [
+                  {
+                    "bridge_ns": 148766944518000,
+                    "detect_ns": 148766944516000,
+                    "drop_ns": 148767128389000,
+                    "held_lower_bound_ms": 183.873,
+                    "helper_ns": null,
+                    "overlap_ms": 0.807,
+                    "pid": 101254,
+                    "poll_ns": 148766944092000,
+                    "probe_ns": 148766944515000
+                  }
+                ],
+                "runnable_wait_ms": 0.807,
+                "start_ns": 148766952753000,
+                "state": "R+",
+                "wakeup_ns": null,
+                "wall_ms": 0.807
+              },
+              {
+                "descheduled_to_pid": 270,
+                "end_ns": 148767137538000,
+                "poll_lock_overlap": [],
+                "runnable_wait_ms": 0.709,
+                "start_ns": 148767136829000,
+                "state": "R",
+                "wakeup_ns": null,
+                "wall_ms": 0.709
+              },
+              {
+                "descheduled_to_pid": 270,
+                "end_ns": 148767136026000,
+                "poll_lock_overlap": [],
+                "runnable_wait_ms": 0.704,
+                "start_ns": 148767135322000,
+                "state": "R",
+                "wakeup_ns": null,
+                "wall_ms": 0.704
+              },
+              {
+                "descheduled_to_pid": 270,
+                "end_ns": 148767133739000,
+                "poll_lock_overlap": [],
+                "runnable_wait_ms": 0.457,
+                "start_ns": 148767133282000,
+                "state": "R",
+                "wakeup_ns": null,
+                "wall_ms": 0.457
+              },
+              {
+                "descheduled_to_pid": 270,
+                "end_ns": 148767134576000,
+                "poll_lock_overlap": [],
+                "runnable_wait_ms": 0.197,
+                "start_ns": 148767134379000,
+                "state": "R",
+                "wakeup_ns": null,
+                "wall_ms": 0.197
+              },
+              {
+                "descheduled_to_pid": 82829,
+                "end_ns": 148766955557000,
+                "poll_lock_overlap": [
+                  {
+                    "bridge_ns": 148766944518000,
+                    "detect_ns": 148766944516000,
+                    "drop_ns": 148767128389000,
+                    "held_lower_bound_ms": 183.873,
+                    "helper_ns": null,
+                    "overlap_ms": 0.062,
+                    "pid": 101254,
+                    "poll_ns": 148766944092000,
+                    "probe_ns": 148766944515000
+                  }
+                ],
+                "runnable_wait_ms": 0.062,
+                "start_ns": 148766955495000,
+                "state": "R+",
+                "wakeup_ns": null,
+                "wall_ms": 0.062
+              }
+            ],
+            "poll_lock_overlap": [
+              {
+                "bridge_ns": 148766944518000,
+                "detect_ns": 148766944516000,
+                "drop_ns": 148767128389000,
+                "held_lower_bound_ms": 183.873,
+                "helper_ns": null,
+                "overlap_ms": 176.042712,
+                "pid": 101254,
+                "poll_ns": 148766944092000,
+                "probe_ns": 148766944515000
+              }
+            ],
+            "start_ns": 148766952346288,
+            "submit_ns": 148767133756160,
+            "syscalls": [
+              {
+                "command": 3223348409,
+                "cpu": 0,
+                "end_ns": 148767128463000,
+                "event": "enter",
+                "fd": 10,
+                "nr": 29,
+                "pid": 77507,
+                "poll_lock_overlap": [
+                  {
+                    "bridge_ns": 148766944518000,
+                    "detect_ns": 148766944516000,
+                    "drop_ns": 148767128389000,
+                    "held_lower_bound_ms": 183.873,
+                    "helper_ns": null,
+                    "overlap_ms": 165.678,
+                    "pid": 101254,
+                    "poll_ns": 148766944092000,
+                    "probe_ns": 148766944515000
+                  }
+                ],
+                "result_error": null,
+                "ret": 0,
+                "start_ns": 148766962711000,
+                "ts_ns": 148766962711000,
+                "wall_ms": 165.752
+              },
+              {
+                "cpu": 0,
+                "end_ns": 148766962481000,
+                "event": "enter",
+                "nr": 22,
+                "pid": 77507,
+                "poll_lock_overlap": [
+                  {
+                    "bridge_ns": 148766944518000,
+                    "detect_ns": 148766944516000,
+                    "drop_ns": 148767128389000,
+                    "held_lower_bound_ms": 183.873,
+                    "helper_ns": null,
+                    "overlap_ms": 6.683,
+                    "pid": 101254,
+                    "poll_ns": 148766944092000,
+                    "probe_ns": 148766944515000
+                  }
+                ],
+                "result_error": 0,
+                "ret": null,
+                "start_ns": 148766955798000,
+                "ts_ns": 148766955798000,
+                "wall_ms": 6.683
+              },
+              {
+                "cpu": 0,
+                "end_ns": 148767146157000,
+                "event": "enter",
+                "nr": 22,
+                "pid": 77507,
+                "poll_lock_overlap": [],
+                "result_error": 0,
+                "ret": null,
+                "start_ns": 148767139568000,
+                "ts_ns": 148767139568000,
+                "wall_ms": 6.589
+              },
+              {
+                "count": 1,
+                "cpu": 0,
+                "end_ns": 148766953606000,
+                "event": "enter",
+                "fd": 2,
+                "nr": 64,
+                "pid": 77507,
+                "poll_lock_overlap": [
+                  {
+                    "bridge_ns": 148766944518000,
+                    "detect_ns": 148766944516000,
+                    "drop_ns": 148767128389000,
+                    "held_lower_bound_ms": 183.873,
+                    "helper_ns": null,
+                    "overlap_ms": 0.891,
+                    "pid": 101254,
+                    "poll_ns": 148766944092000,
+                    "probe_ns": 148766944515000
+                  }
+                ],
+                "result_error": null,
+                "ret": 1,
+                "start_ns": 148766952715000,
+                "ts_ns": 148766952715000,
+                "wall_ms": 0.891
+              },
+              {
+                "command": 3224921276,
+                "cpu": 0,
+                "end_ns": 148767134166000,
+                "event": "enter",
+                "fd": 10,
+                "nr": 29,
+                "pid": 77507,
+                "poll_lock_overlap": [],
+                "result_error": null,
+                "ret": 0,
+                "start_ns": 148767133823000,
+                "ts_ns": 148767133823000,
+                "wall_ms": 0.343
+              },
+              {
+                "cpu": 0,
+                "end_ns": 148766955564000,
+                "event": "enter",
+                "nr": 113,
+                "pid": 77507,
+                "poll_lock_overlap": [
+                  {
+                    "bridge_ns": 148766944518000,
+                    "detect_ns": 148766944516000,
+                    "drop_ns": 148767128389000,
+                    "held_lower_bound_ms": 183.873,
+                    "helper_ns": null,
+                    "overlap_ms": 0.126,
+                    "pid": 101254,
+                    "poll_ns": 148766944092000,
+                    "probe_ns": 148766944515000
+                  }
+                ],
+                "result_error": 0,
+                "ret": null,
+                "start_ns": 148766955438000,
+                "ts_ns": 148766955438000,
+                "wall_ms": 0.126
+              },
+              {
+                "cpu": 0,
+                "end_ns": 148767135173000,
+                "event": "enter",
+                "nr": 276,
+                "pid": 77507,
+                "poll_lock_overlap": [],
+                "result_error": 0,
+                "ret": null,
+                "start_ns": 148767135078000,
+                "ts_ns": 148767135078000,
+                "wall_ms": 0.095
+              },
+              {
+                "cpu": 0,
+                "end_ns": 148767135003000,
+                "event": "enter",
+                "nr": 56,
+                "pid": 77507,
+                "poll_lock_overlap": [],
+                "result_error": 0,
+                "ret": null,
+                "start_ns": 148767134909000,
+                "ts_ns": 148767134909000,
+                "wall_ms": 0.094
+              },
+              {
+                "count": 13,
+                "cpu": 0,
+                "end_ns": 148767133174000,
+                "event": "enter",
+                "fd": 2,
+                "nr": 64,
+                "pid": 77507,
+                "poll_lock_overlap": [],
+                "result_error": null,
+                "ret": 13,
+                "start_ns": 148767133082000,
+                "ts_ns": 148767133082000,
+                "wall_ms": 0.092
+              },
+              {
+                "cpu": 0,
+                "end_ns": 148767136238000,
+                "event": "enter",
+                "nr": 56,
+                "pid": 77507,
+                "poll_lock_overlap": [],
+                "result_error": 0,
+                "ret": null,
+                "start_ns": 148767136169000,
+                "ts_ns": 148767136169000,
+                "wall_ms": 0.069
+              },
+              {
+                "count": 13,
+                "cpu": 0,
+                "end_ns": 148767137770000,
+                "event": "enter",
+                "fd": 2,
+                "nr": 64,
+                "pid": 77507,
+                "poll_lock_overlap": [],
+                "result_error": null,
+                "ret": 13,
+                "start_ns": 148767137711000,
+                "ts_ns": 148767137711000,
+                "wall_ms": 0.059
+              },
+              {
+                "count": 37,
+                "cpu": 0,
+                "end_ns": 148766954022000,
+                "event": "enter",
+                "fd": 54,
+                "nr": 64,
+                "pid": 77507,
+                "poll_lock_overlap": [
+                  {
+                    "bridge_ns": 148766944518000,
+                    "detect_ns": 148766944516000,
+                    "drop_ns": 148767128389000,
+                    "held_lower_bound_ms": 183.873,
+                    "helper_ns": null,
+                    "overlap_ms": 0.052,
+                    "pid": 101254,
+                    "poll_ns": 148766944092000,
+                    "probe_ns": 148766944515000
+                  }
+                ],
+                "result_error": null,
+                "ret": 37,
+                "start_ns": 148766953970000,
+                "ts_ns": 148766953970000,
+                "wall_ms": 0.052
+              }
+            ],
+            "wall_ms": 193.734712
+          },
+          {
+            "build_cpu_ms": 4.800406,
+            "end_ns": 148777376951000,
+            "frame_id": 14017,
+            "input_id": 621,
+            "off_cpu": [
+              {
+                "descheduled_to_pid": 16,
+                "end_ns": 148777366937000,
+                "poll_lock_overlap": [
+                  {
+                    "bridge_ns": 148777184509000,
+                    "detect_ns": 148777184508000,
+                    "drop_ns": 148777366889000,
+                    "held_lower_bound_ms": 182.381,
+                    "helper_ns": null,
+                    "overlap_ms": 170.633,
+                    "pid": 101254,
+                    "poll_ns": 148777184088000,
+                    "probe_ns": 148777184507000
+                  }
+                ],
+                "runnable_wait_ms": 0.017,
+                "start_ns": 148777196256000,
+                "state": "D",
+                "wakeup_ns": 148777366920000,
+                "wall_ms": 170.681
+              },
+              {
+                "descheduled_to_pid": 101275,
+                "end_ns": 148777195473000,
+                "poll_lock_overlap": [
+                  {
+                    "bridge_ns": 148777184509000,
+                    "detect_ns": 148777184508000,
+                    "drop_ns": 148777366889000,
+                    "held_lower_bound_ms": 182.381,
+                    "helper_ns": null,
+                    "overlap_ms": 1.295,
+                    "pid": 101254,
+                    "poll_ns": 148777184088000,
+                    "probe_ns": 148777184507000
+                  }
+                ],
+                "runnable_wait_ms": 1.295,
+                "start_ns": 148777194178000,
+                "state": "R",
+                "wakeup_ns": null,
+                "wall_ms": 1.295
+              },
+              {
+                "descheduled_to_pid": 270,
+                "end_ns": 148777376590000,
+                "poll_lock_overlap": [],
+                "runnable_wait_ms": 0.843,
+                "start_ns": 148777375747000,
+                "state": "R+",
+                "wakeup_ns": null,
+                "wall_ms": 0.843
+              },
+              {
+                "descheduled_to_pid": 270,
+                "end_ns": 148777372669000,
+                "poll_lock_overlap": [],
+                "runnable_wait_ms": 0.808,
+                "start_ns": 148777371861000,
+                "state": "R",
+                "wakeup_ns": null,
+                "wall_ms": 0.808
+              },
+              {
+                "descheduled_to_pid": 270,
+                "end_ns": 148777374957000,
+                "poll_lock_overlap": [],
+                "runnable_wait_ms": 0.808,
+                "start_ns": 148777374149000,
+                "state": "R",
+                "wakeup_ns": null,
+                "wall_ms": 0.808
+              },
+              {
+                "descheduled_to_pid": 270,
+                "end_ns": 148777193501000,
+                "poll_lock_overlap": [
+                  {
+                    "bridge_ns": 148777184509000,
+                    "detect_ns": 148777184508000,
+                    "drop_ns": 148777366889000,
+                    "held_lower_bound_ms": 182.381,
+                    "helper_ns": null,
+                    "overlap_ms": 0.669,
+                    "pid": 101254,
+                    "poll_ns": 148777184088000,
+                    "probe_ns": 148777184507000
+                  }
+                ],
+                "runnable_wait_ms": 0.669,
+                "start_ns": 148777192832000,
+                "state": "R+",
+                "wakeup_ns": null,
+                "wall_ms": 0.669
+              },
+              {
+                "descheduled_to_pid": 270,
+                "end_ns": 148777195940000,
+                "poll_lock_overlap": [
+                  {
+                    "bridge_ns": 148777184509000,
+                    "detect_ns": 148777184508000,
+                    "drop_ns": 148777366889000,
+                    "held_lower_bound_ms": 182.381,
+                    "helper_ns": null,
+                    "overlap_ms": 0.345,
+                    "pid": 101254,
+                    "poll_ns": 148777184088000,
+                    "probe_ns": 148777184507000
+                  }
+                ],
+                "runnable_wait_ms": 0.345,
+                "start_ns": 148777195595000,
+                "state": "R",
+                "wakeup_ns": null,
+                "wall_ms": 0.345
+              },
+              {
+                "descheduled_to_pid": 101270,
+                "end_ns": 148777373379000,
+                "poll_lock_overlap": [],
+                "runnable_wait_ms": 0.059,
+                "start_ns": 148777373320000,
+                "state": "R+",
+                "wakeup_ns": null,
+                "wall_ms": 0.059
+              },
+              {
+                "descheduled_to_pid": 16,
+                "end_ns": 148777368110000,
+                "poll_lock_overlap": [],
+                "runnable_wait_ms": 0.025,
+                "start_ns": 148777368085000,
+                "state": "R",
+                "wakeup_ns": null,
+                "wall_ms": 0.025
+              }
+            ],
+            "poll_lock_overlap": [
+              {
+                "bridge_ns": 148777184509000,
+                "detect_ns": 148777184508000,
+                "drop_ns": 148777366889000,
+                "held_lower_bound_ms": 182.381,
+                "helper_ns": null,
+                "overlap_ms": 174.501724,
+                "pid": 101254,
+                "poll_ns": 148777184088000,
+                "probe_ns": 148777184507000
+              }
+            ],
+            "start_ns": 148777192387276,
+            "submit_ns": 148777372689451,
+            "syscalls": [
+              {
+                "command": 3223348409,
+                "cpu": 0,
+                "end_ns": 148777366965000,
+                "event": "enter",
+                "fd": 10,
+                "nr": 29,
+                "pid": 77507,
+                "poll_lock_overlap": [
+                  {
+                    "bridge_ns": 148777184509000,
+                    "detect_ns": 148777184508000,
+                    "drop_ns": 148777366889000,
+                    "held_lower_bound_ms": 182.381,
+                    "helper_ns": null,
+                    "overlap_ms": 170.673,
+                    "pid": 101254,
+                    "poll_ns": 148777184088000,
+                    "probe_ns": 148777184507000
+                  }
+                ],
+                "result_error": null,
+                "ret": 0,
+                "start_ns": 148777196216000,
+                "ts_ns": 148777196216000,
+                "wall_ms": 170.749
+              },
+              {
+                "count": 7,
+                "cpu": 0,
+                "end_ns": 148777376605000,
+                "event": "enter",
+                "fd": 2,
+                "nr": 64,
+                "pid": 77507,
+                "poll_lock_overlap": [],
+                "result_error": null,
+                "ret": 7,
+                "start_ns": 148777375689000,
+                "ts_ns": 148777375689000,
+                "wall_ms": 0.916
+              },
+              {
+                "count": 7,
+                "cpu": 0,
+                "end_ns": 148777193522000,
+                "event": "enter",
+                "fd": 2,
+                "nr": 64,
+                "pid": 77507,
+                "poll_lock_overlap": [
+                  {
+                    "bridge_ns": 148777184509000,
+                    "detect_ns": 148777184508000,
+                    "drop_ns": 148777366889000,
+                    "held_lower_bound_ms": 182.381,
+                    "helper_ns": null,
+                    "overlap_ms": 0.738,
+                    "pid": 101254,
+                    "poll_ns": 148777184088000,
+                    "probe_ns": 148777184507000
+                  }
+                ],
+                "result_error": null,
+                "ret": 7,
+                "start_ns": 148777192784000,
+                "ts_ns": 148777192784000,
+                "wall_ms": 0.738
+              },
+              {
+                "command": 3224921276,
+                "cpu": 0,
+                "end_ns": 148777373071000,
+                "event": "enter",
+                "fd": 10,
+                "nr": 29,
+                "pid": 77507,
+                "poll_lock_overlap": [],
+                "result_error": null,
+                "ret": 0,
+                "start_ns": 148777372753000,
+                "ts_ns": 148777372753000,
+                "wall_ms": 0.318
+              },
+              {
+                "cpu": 0,
+                "end_ns": 148777373684000,
+                "event": "enter",
+                "nr": 56,
+                "pid": 77507,
+                "poll_lock_overlap": [],
+                "result_error": 0,
+                "ret": null,
+                "start_ns": 148777373593000,
+                "ts_ns": 148777373593000,
+                "wall_ms": 0.091
+              },
+              {
+                "count": 13,
+                "cpu": 0,
+                "end_ns": 148777371754000,
+                "event": "enter",
+                "fd": 2,
+                "nr": 64,
+                "pid": 77507,
+                "poll_lock_overlap": [],
+                "result_error": null,
+                "ret": 13,
+                "start_ns": 148777371667000,
+                "ts_ns": 148777371667000,
+                "wall_ms": 0.087
+              },
+              {
+                "cpu": 0,
+                "end_ns": 148777373847000,
+                "event": "enter",
+                "nr": 276,
+                "pid": 77507,
+                "poll_lock_overlap": [],
+                "result_error": 0,
+                "ret": null,
+                "start_ns": 148777373761000,
+                "ts_ns": 148777373761000,
+                "wall_ms": 0.086
+              },
+              {
+                "cpu": 0,
+                "end_ns": 148777376997000,
+                "event": "enter",
+                "nr": 21,
+                "pid": 77507,
+                "poll_lock_overlap": [],
+                "result_error": 0,
+                "ret": null,
+                "start_ns": 148777376926000,
+                "ts_ns": 148777376926000,
+                "wall_ms": 0.071
+              },
+              {
+                "count": 37,
+                "cpu": 0,
+                "end_ns": 148777194158000,
+                "event": "enter",
+                "fd": 54,
+                "nr": 64,
+                "pid": 77507,
+                "poll_lock_overlap": [
+                  {
+                    "bridge_ns": 148777184509000,
+                    "detect_ns": 148777184508000,
+                    "drop_ns": 148777366889000,
+                    "held_lower_bound_ms": 182.381,
+                    "helper_ns": null,
+                    "overlap_ms": 0.065,
+                    "pid": 101254,
+                    "poll_ns": 148777184088000,
+                    "probe_ns": 148777184507000
+                  }
+                ],
+                "result_error": null,
+                "ret": 37,
+                "start_ns": 148777194093000,
+                "ts_ns": 148777194093000,
+                "wall_ms": 0.065
+              },
+              {
+                "cpu": 0,
+                "end_ns": 148777374036000,
+                "event": "enter",
+                "nr": 56,
+                "pid": 77507,
+                "poll_lock_overlap": [],
+                "result_error": 0,
+                "ret": null,
+                "start_ns": 148777373978000,
+                "ts_ns": 148777373978000,
+                "wall_ms": 0.058
+              },
+              {
+                "count": 80,
+                "cpu": 0,
+                "end_ns": 148777373738000,
+                "event": "enter",
+                "fd": 57,
+                "nr": 64,
+                "pid": 77507,
+                "poll_lock_overlap": [],
+                "result_error": null,
+                "ret": 80,
+                "start_ns": 148777373692000,
+                "ts_ns": 148777373692000,
+                "wall_ms": 0.046
+              },
+              {
+                "cpu": 0,
+                "end_ns": 148777374098000,
+                "event": "enter",
+                "nr": 63,
+                "pid": 77507,
+                "poll_lock_overlap": [],
+                "result_error": 0,
+                "ret": null,
+                "start_ns": 148777374057000,
+                "ts_ns": 148777374057000,
+                "wall_ms": 0.041
+              }
+            ],
+            "wall_ms": 184.563724
+          }
+        ],
+        "limits": [
+          "Syscall wall time includes scheduling delays; it is not kernel CPU time.",
+          "Only the compositor main thread is traced; no finger or optical claim."
+        ],
+        "long_drm_calls": [
+          {
+            "command": 3224921276,
+            "cpu": 0,
+            "end_ns": 148736404750000,
+            "event": "enter",
+            "fd": 10,
+            "nr": 29,
+            "off_cpu": [
+              {
+                "descheduled_to_pid": 0,
+                "end_ns": 148736404489000,
+                "poll_lock_overlap": [
+                  {
+                    "bridge_ns": 148736225210000,
+                    "detect_ns": 148736225209000,
+                    "drop_ns": 148736404438000,
+                    "held_lower_bound_ms": 179.229,
+                    "helper_ns": null,
+                    "overlap_ms": 171.259,
+                    "pid": 101254,
+                    "poll_ns": 148736224720000,
+                    "probe_ns": 148736225207000
+                  }
+                ],
+                "runnable_wait_ms": 0.021,
+                "start_ns": 148736233179000,
+                "state": "S",
+                "wakeup_ns": 148736404468000,
+                "wall_ms": 171.31
+              }
+            ],
+            "pid": 77507,
+            "poll_lock_overlap": [
+              {
+                "bridge_ns": 148736225210000,
+                "detect_ns": 148736225209000,
+                "drop_ns": 148736404438000,
+                "held_lower_bound_ms": 179.229,
+                "helper_ns": null,
+                "overlap_ms": 171.35,
+                "pid": 101254,
+                "poll_ns": 148736224720000,
+                "probe_ns": 148736225207000
+              }
+            ],
+            "result_error": null,
+            "ret": 0,
+            "start_ns": 148736233088000,
+            "ts_ns": 148736233088000,
+            "wall_ms": 171.662
+          },
+          {
+            "command": 3223348409,
+            "cpu": 0,
+            "end_ns": 148746652983000,
+            "event": "enter",
+            "fd": 10,
+            "nr": 29,
+            "off_cpu": [
+              {
+                "descheduled_to_pid": 270,
+                "end_ns": 148746652957000,
+                "poll_lock_overlap": [
+                  {
+                    "bridge_ns": 148746465251000,
+                    "detect_ns": 148746465249000,
+                    "drop_ns": 148746652908000,
+                    "held_lower_bound_ms": 187.659,
+                    "helper_ns": null,
+                    "overlap_ms": 180.498,
+                    "pid": 101141,
+                    "poll_ns": 148746464095000,
+                    "probe_ns": 148746465248000
+                  }
+                ],
+                "runnable_wait_ms": 0.018,
+                "start_ns": 148746472410000,
+                "state": "D",
+                "wakeup_ns": 148746652939000,
+                "wall_ms": 180.547
+              }
+            ],
+            "pid": 77507,
+            "poll_lock_overlap": [
+              {
+                "bridge_ns": 148746465251000,
+                "detect_ns": 148746465249000,
+                "drop_ns": 148746652908000,
+                "held_lower_bound_ms": 187.659,
+                "helper_ns": null,
+                "overlap_ms": 180.529,
+                "pid": 101141,
+                "poll_ns": 148746464095000,
+                "probe_ns": 148746465248000
+              }
+            ],
+            "result_error": null,
+            "ret": 0,
+            "start_ns": 148746472379000,
+            "ts_ns": 148746472379000,
+            "wall_ms": 180.604
+          },
+          {
+            "command": 3224921276,
+            "cpu": 0,
+            "end_ns": 148756876699000,
+            "event": "enter",
+            "fd": 10,
+            "nr": 29,
+            "off_cpu": [
+              {
+                "descheduled_to_pid": 101141,
+                "end_ns": 148756876435000,
+                "poll_lock_overlap": [
+                  {
+                    "bridge_ns": 148756704640000,
+                    "detect_ns": 148756704638000,
+                    "drop_ns": 148756876387000,
+                    "held_lower_bound_ms": 171.749,
+                    "helper_ns": null,
+                    "overlap_ms": 167.643,
+                    "pid": 101141,
+                    "poll_ns": 148756704166000,
+                    "probe_ns": 148756704637000
+                  }
+                ],
+                "runnable_wait_ms": 0.018,
+                "start_ns": 148756708744000,
+                "state": "S",
+                "wakeup_ns": 148756876417000,
+                "wall_ms": 167.691
+              }
+            ],
+            "pid": 77507,
+            "poll_lock_overlap": [
+              {
+                "bridge_ns": 148756704640000,
+                "detect_ns": 148756704638000,
+                "drop_ns": 148756876387000,
+                "held_lower_bound_ms": 171.749,
+                "helper_ns": null,
+                "overlap_ms": 167.748,
+                "pid": 101141,
+                "poll_ns": 148756704166000,
+                "probe_ns": 148756704637000
+              }
+            ],
+            "result_error": null,
+            "ret": 0,
+            "start_ns": 148756708639000,
+            "ts_ns": 148756708639000,
+            "wall_ms": 168.06
+          },
+          {
+            "command": 3223348409,
+            "cpu": 0,
+            "end_ns": 148767128463000,
+            "event": "enter",
+            "fd": 10,
+            "nr": 29,
+            "off_cpu": [
+              {
+                "descheduled_to_pid": 101254,
+                "end_ns": 148767128437000,
+                "poll_lock_overlap": [
+                  {
+                    "bridge_ns": 148766944518000,
+                    "detect_ns": 148766944516000,
+                    "drop_ns": 148767128389000,
+                    "held_lower_bound_ms": 183.873,
+                    "helper_ns": null,
+                    "overlap_ms": 165.643,
+                    "pid": 101254,
+                    "poll_ns": 148766944092000,
+                    "probe_ns": 148766944515000
+                  }
+                ],
+                "runnable_wait_ms": 0.019,
+                "start_ns": 148766962746000,
+                "state": "D",
+                "wakeup_ns": 148767128418000,
+                "wall_ms": 165.691
+              }
+            ],
+            "pid": 77507,
+            "poll_lock_overlap": [
+              {
+                "bridge_ns": 148766944518000,
+                "detect_ns": 148766944516000,
+                "drop_ns": 148767128389000,
+                "held_lower_bound_ms": 183.873,
+                "helper_ns": null,
+                "overlap_ms": 165.678,
+                "pid": 101254,
+                "poll_ns": 148766944092000,
+                "probe_ns": 148766944515000
+              }
+            ],
+            "result_error": null,
+            "ret": 0,
+            "start_ns": 148766962711000,
+            "ts_ns": 148766962711000,
+            "wall_ms": 165.752
+          },
+          {
+            "command": 3223348409,
+            "cpu": 0,
+            "end_ns": 148777366965000,
+            "event": "enter",
+            "fd": 10,
+            "nr": 29,
+            "off_cpu": [
+              {
+                "descheduled_to_pid": 16,
+                "end_ns": 148777366937000,
+                "poll_lock_overlap": [
+                  {
+                    "bridge_ns": 148777184509000,
+                    "detect_ns": 148777184508000,
+                    "drop_ns": 148777366889000,
+                    "held_lower_bound_ms": 182.381,
+                    "helper_ns": null,
+                    "overlap_ms": 170.633,
+                    "pid": 101254,
+                    "poll_ns": 148777184088000,
+                    "probe_ns": 148777184507000
+                  }
+                ],
+                "runnable_wait_ms": 0.017,
+                "start_ns": 148777196256000,
+                "state": "D",
+                "wakeup_ns": 148777366920000,
+                "wall_ms": 170.681
+              }
+            ],
+            "pid": 77507,
+            "poll_lock_overlap": [
+              {
+                "bridge_ns": 148777184509000,
+                "detect_ns": 148777184508000,
+                "drop_ns": 148777366889000,
+                "held_lower_bound_ms": 182.381,
+                "helper_ns": null,
+                "overlap_ms": 170.673,
+                "pid": 101254,
+                "poll_ns": 148777184088000,
+                "probe_ns": 148777184507000
+              }
+            ],
+            "result_error": null,
+            "ret": 0,
+            "start_ns": 148777196216000,
+            "ts_ns": 148777196216000,
+            "wall_ms": 170.749
+          },
+          {
+            "command": 3223348409,
+            "cpu": 0,
+            "end_ns": 148787613479000,
+            "event": "enter",
+            "fd": 10,
+            "nr": 29,
+            "off_cpu": [
+              {
+                "descheduled_to_pid": 101254,
+                "end_ns": 148787424849000,
+                "poll_lock_overlap": [
+                  {
+                    "bridge_ns": 148787424106000,
+                    "detect_ns": 148787424103000,
+                    "drop_ns": 148787424780000,
+                    "held_lower_bound_ms": 0.677,
+                    "helper_ns": null,
+                    "overlap_ms": 0.302,
+                    "pid": 101254,
+                    "poll_ns": 148787424095000,
+                    "probe_ns": 148787424101000
+                  },
+                  {
+                    "bridge_ns": 148787424799000,
+                    "detect_ns": 148787424798000,
+                    "drop_ns": 148787613404000,
+                    "held_lower_bound_ms": 188.606,
+                    "helper_ns": null,
+                    "overlap_ms": 0.051,
+                    "pid": 101254,
+                    "poll_ns": 148787424095000,
+                    "probe_ns": 148787424794000
+                  }
+                ],
+                "runnable_wait_ms": 0.059,
+                "start_ns": 148787424478000,
+                "state": "D",
+                "wakeup_ns": 148787424790000,
+                "wall_ms": 0.371
+              },
+              {
+                "descheduled_to_pid": 0,
+                "end_ns": 148787613451000,
+                "poll_lock_overlap": [
+                  {
+                    "bridge_ns": 148787424799000,
+                    "detect_ns": 148787424798000,
+                    "drop_ns": 148787613404000,
+                    "held_lower_bound_ms": 188.606,
+                    "helper_ns": null,
+                    "overlap_ms": 188.542,
+                    "pid": 101254,
+                    "poll_ns": 148787424095000,
+                    "probe_ns": 148787424794000
+                  }
+                ],
+                "runnable_wait_ms": 0.018,
+                "start_ns": 148787424862000,
+                "state": "D",
+                "wakeup_ns": 148787613433000,
+                "wall_ms": 188.589
+              }
+            ],
+            "pid": 77507,
+            "poll_lock_overlap": [
+              {
+                "bridge_ns": 148787424106000,
+                "detect_ns": 148787424103000,
+                "drop_ns": 148787424780000,
+                "held_lower_bound_ms": 0.677,
+                "helper_ns": null,
+                "overlap_ms": 0.338,
+                "pid": 101254,
+                "poll_ns": 148787424095000,
+                "probe_ns": 148787424101000
+              },
+              {
+                "bridge_ns": 148787424799000,
+                "detect_ns": 148787424798000,
+                "drop_ns": 148787613404000,
+                "held_lower_bound_ms": 188.606,
+                "helper_ns": null,
+                "overlap_ms": 188.606,
+                "pid": 101254,
+                "poll_ns": 148787424095000,
+                "probe_ns": 148787424794000
+              }
+            ],
+            "result_error": null,
+            "ret": 0,
+            "start_ns": 148787424442000,
+            "ts_ns": 148787424442000,
+            "wall_ms": 189.037
+          }
+        ],
+        "long_drm_calls_scope": "All complete >100ms DRM-fd ioctls in the trace, including input-idle periods; no arbitrary ioctl payload exported.",
+        "poll_held_intervals": [
+          {
+            "bridge_ns": 148736224730000,
+            "detect_ns": 148736224727000,
+            "drop_ns": 148736225202000,
+            "held_lower_bound_ms": 0.475,
+            "helper_ns": null,
+            "pid": 101254,
+            "poll_ns": 148736224720000,
+            "probe_ns": 148736224725000
+          },
+          {
+            "bridge_ns": 148736225210000,
+            "detect_ns": 148736225209000,
+            "drop_ns": 148736404438000,
+            "held_lower_bound_ms": 179.229,
+            "helper_ns": null,
+            "pid": 101254,
+            "poll_ns": 148736224720000,
+            "probe_ns": 148736225207000
+          },
+          {
+            "bridge_ns": 148746464104000,
+            "detect_ns": 148746464102000,
+            "drop_ns": 148746465243000,
+            "held_lower_bound_ms": 1.141,
+            "helper_ns": null,
+            "pid": 101141,
+            "poll_ns": 148746464095000,
+            "probe_ns": 148746464100000
+          },
+          {
+            "bridge_ns": 148746465251000,
+            "detect_ns": 148746465249000,
+            "drop_ns": 148746652908000,
+            "held_lower_bound_ms": 187.659,
+            "helper_ns": null,
+            "pid": 101141,
+            "poll_ns": 148746464095000,
+            "probe_ns": 148746465248000
+          },
+          {
+            "bridge_ns": 148756704175000,
+            "detect_ns": 148756704173000,
+            "drop_ns": 148756704632000,
+            "held_lower_bound_ms": 0.459,
+            "helper_ns": null,
+            "pid": 101141,
+            "poll_ns": 148756704166000,
+            "probe_ns": 148756704171000
+          },
+          {
+            "bridge_ns": 148756704640000,
+            "detect_ns": 148756704638000,
+            "drop_ns": 148756876387000,
+            "held_lower_bound_ms": 171.749,
+            "helper_ns": null,
+            "pid": 101141,
+            "poll_ns": 148756704166000,
+            "probe_ns": 148756704637000
+          },
+          {
+            "bridge_ns": 148766944102000,
+            "detect_ns": 148766944100000,
+            "drop_ns": 148766944512000,
+            "held_lower_bound_ms": 0.412,
+            "helper_ns": null,
+            "pid": 101254,
+            "poll_ns": 148766944092000,
+            "probe_ns": 148766944097000
+          },
+          {
+            "bridge_ns": 148766944518000,
+            "detect_ns": 148766944516000,
+            "drop_ns": 148767128389000,
+            "held_lower_bound_ms": 183.873,
+            "helper_ns": null,
+            "pid": 101254,
+            "poll_ns": 148766944092000,
+            "probe_ns": 148766944515000
+          },
+          {
+            "bridge_ns": 148777184097000,
+            "detect_ns": 148777184094000,
+            "drop_ns": 148777184504000,
+            "held_lower_bound_ms": 0.41,
+            "helper_ns": null,
+            "pid": 101254,
+            "poll_ns": 148777184088000,
+            "probe_ns": 148777184092000
+          },
+          {
+            "bridge_ns": 148777184509000,
+            "detect_ns": 148777184508000,
+            "drop_ns": 148777366889000,
+            "held_lower_bound_ms": 182.381,
+            "helper_ns": null,
+            "pid": 101254,
+            "poll_ns": 148777184088000,
+            "probe_ns": 148777184507000
+          },
+          {
+            "bridge_ns": 148787424106000,
+            "detect_ns": 148787424103000,
+            "drop_ns": 148787424780000,
+            "held_lower_bound_ms": 0.677,
+            "helper_ns": null,
+            "pid": 101254,
+            "poll_ns": 148787424095000,
+            "probe_ns": 148787424101000
+          },
+          {
+            "bridge_ns": 148787424799000,
+            "detect_ns": 148787424798000,
+            "drop_ns": 148787613404000,
+            "held_lower_bound_ms": 188.606,
+            "helper_ns": null,
+            "pid": 101254,
+            "poll_ns": 148787424095000,
+            "probe_ns": 148787424794000
+          }
+        ],
+        "rejected_poll_intervals": [],
+        "trace": {
+          "base_tool_sha256": "b98a6404bdd96afab1db9edb6779f325bc7958574e754b04dffbed73ae67f42b",
+          "buffer_total_kb": 32771,
+          "current_tracer": "function",
+          "event_count": 370565,
+          "events_sha256": "41639ff8c8316329d374bb1e985028b0d414ebc29dc5e8a9a8946749ddee96ee",
+          "function_count": 4854,
+          "function_filter": [
+            "detect_connector_status",
+            "drm_helper_probe_detect",
+            "drm_helper_probe_detect_ctx",
+            "drm_modeset_backoff",
+            "drm_modeset_drop_locks",
+            "lt9611_bridge_detect",
+            "output_poll_execute"
+          ],
+          "functions_sha256": "d0332ed47e7b4759cb7d9f9bce6a764b39dfeb0a18a6707e38b2e3e0a27e63df",
+          "global_before": {
+            "current_tracer": "64aec5a7fa151222572a241383c857738318e63cca7ee771952c95a31d92a19d",
+            "events/enable": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+            "set_event_pid": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "set_ftrace_pid": "cdf4d2acfdcd5cd2556f83eeb52ee253ea6afbaa941c760f77dcfae3c925cb78",
+            "trace_clock": "925ca315bd3de6ef99e08c002e320406936ae2da2f2c0afd8da1e87f7980a253",
+            "tracing_on": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865"
+          },
+          "holder_schema": "landscape-drm-holder-v1",
+          "markers": {
+            "end": {
+              "after_ns": 148797280667515,
+              "before_ns": 148797279821438
+            },
+            "start": {
+              "after_ns": 148731941144529,
+              "before_ns": 148731940464927
+            }
+          },
+          "pid": 77507,
+          "raw_bytes": 36849071,
+          "raw_sha256": "441d110c37c1bd453274826aa0a1a15c71ed70c1b890e8257a93a19f441ca888",
+          "schema": "landscape-hdmi-stall-trace-v1",
+          "stats": {
+            "cpu0": {
+              "bytes": 20279320,
+              "commit overrun": 0,
+              "dropped events": 0,
+              "entries": 375419,
+              "overrun": 0,
+              "read events": 0
+            }
+          },
+          "tool_sha256": "49ef1e5b7de367527a1ab8380a4b8fb9413547dfac9e76e684eb829ddfc19c98",
+          "trace_clock": "local global counter uptime perf [mono] mono_raw boot tai"
+        }
+      },
+      "latency": {
+        "max_ms": 201.240924,
+        "over_100ms_count": 5,
+        "p95_ms": 28.32786,
+        "p99_ms": 47.051607,
+        "sample_count": 864
+      },
+      "name": "traced-retry"
+    }
+  ],
+  "schema": "landscape-drm-holder-v1",
+  "status": "MEASURED"
+}

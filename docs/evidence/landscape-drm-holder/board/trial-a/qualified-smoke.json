@@ -1,0 +1,75 @@
+{
+  "base_tool_sha256": "b98a6404bdd96afab1db9edb6779f325bc7958574e754b04dffbed73ae67f42b",
+  "created_at": "2026-10-20T16:05:42.841862+00:00",
+  "event_count": 39,
+  "function_count": 124,
+  "held_intervals": [
+    {
+      "bridge_ns": 148161248070000,
+      "detect_ns": 148161248067000,
+      "drop_ns": 148161248469000,
+      "held_lower_bound_ms": 0.40200000000000002,
+      "helper_ns": null,
+      "pid": 101141,
+      "poll_ns": 148161248059000,
+      "probe_ns": 148161248065000
+    },
+    {
+      "bridge_ns": 148161248475000,
+      "detect_ns": 148161248473000,
+      "drop_ns": 148161422300000,
+      "held_lower_bound_ms": 173.827,
+      "helper_ns": null,
+      "pid": 101141,
+      "poll_ns": 148161248059000,
+      "probe_ns": 148161248472000
+    },
+    {
+      "bridge_ns": 148171488049000,
+      "detect_ns": 148171488047000,
+      "drop_ns": 148171488447000,
+      "held_lower_bound_ms": 0.40000000000000002,
+      "helper_ns": null,
+      "pid": 101141,
+      "poll_ns": 148171488040000,
+      "probe_ns": 148171488044000
+    },
+    {
+      "bridge_ns": 148171488452000,
+      "detect_ns": 148171488451000,
+      "drop_ns": 148171665382000,
+      "held_lower_bound_ms": 176.93100000000001,
+      "helper_ns": null,
+      "pid": 101141,
+      "poll_ns": 148171488040000,
+      "probe_ns": 148171488450000
+    },
+    {
+      "bridge_ns": 148181728084000,
+      "detect_ns": 148181728082000,
+      "drop_ns": 148181728482000,
+      "held_lower_bound_ms": 0.40000000000000002,
+      "helper_ns": null,
+      "pid": 101141,
+      "poll_ns": 148181728074000,
+      "probe_ns": 148181728079000
+    },
+    {
+      "bridge_ns": 148181728488000,
+      "detect_ns": 148181728486000,
+      "drop_ns": 148181902165000,
+      "held_lower_bound_ms": 173.679,
+      "helper_ns": null,
+      "pid": 101141,
+      "poll_ns": 148181728074000,
+      "probe_ns": 148181728485000
+    }
+  ],
+  "holder_schema": "landscape-drm-holder-v1",
+  "kernel": "7.3.0-rc5",
+  "machine": "riscv64",
+  "rejected_intervals": [],
+  "status": "QUALIFIED",
+  "system": "/nix/store/j30yag05ic9k68n9dzbzindgf4ardp08-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "tool_sha256": "49ef1e5b7de367527a1ab8380a4b8fb9413547dfac9e76e684eb829ddfc19c98"
+}

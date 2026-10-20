@@ -1,0 +1,18 @@
+from pathlib import Path
+import importlib.util,json,subprocess,os,re
+p=Path('/var/tmp/k230-drm-holder-20261020b/landscape-drm-holder.py');s=importlib.util.spec_from_file_location('m',p);m=importlib.util.module_from_spec(s);s.loader.exec_module(m);b=p.parent;i=m.cap.IPC()
+try:
+ i.command('card_shell benchmark-stop');i.command('card_shell home');original=json.loads((b/'trial-a/original.json').read_text());control=m.log.control(i);m.base.immutable(original,control);saved=json.loads((b/'trial-a/cleanup.json').read_text());g=m.base.global_state();assert g==saved['global_before']==saved['global_after']
+ states=[json.loads(f.read_text()) for folder in [Path('/var/tmp/k230-drm-holder-20261020'),b] for f in folder.rglob('trace-state.json')];timers={x['cleanup_unit']:subprocess.run(['systemctl','is-active','--quiet',x['cleanup_unit']+'.timer']).returncode==0 for x in states};instances={x['instance']:(m.base.ROOT/'instances'/x['instance']).exists() for x in states}
+ cards=[]
+ for fd in Path('/proc',str(control['pid']),'fd').iterdir():
+  try:target=os.readlink(fd)
+  except OSError:continue
+  if re.fullmatch('/dev/dri/card[0-9]+',target):
+   name=Path(target).name;connectors=[]
+   for connector in sorted(Path('/sys/class/drm').glob(name+'-*')):
+    connectors.append({'name':connector.name,'status':(connector/'status').read_text().strip(),'enabled':(connector/'enabled').read_text().strip() if (connector/'enabled').exists() else None})
+   cards.append({'fd':int(fd.name),'card':name,'connectors':connectors})
+ result={'compositor_drm_cards':cards,'checked_at' :m.base.now(),'control':control,'global_controls_unchanged':True,'global_controls':g,'owned_timers_active':timers,'owned_instances_present':instances,'owned_function_tracers_removed_with_instances':not any(instances.values()),'home_command_succeeded':True,'benchmark_stop_succeeded':True,'idle_terminal':m.log.idle_startup(i),'services':m.log.command('systemctl','is-active','shell.service','shell-ui.service').splitlines(),'virtual_test_devices':sum('injected' in x.get('name','').lower() or 'fixture' in x.get('name','').lower() for x in i.request(100)),'reboot_performed':False}
+ print(json.dumps(result,indent=2));assert not any(timers.values()) and not any(instances.values()) and result['services']==['active','active'] and result['virtual_test_devices']==0
+finally:i.close()

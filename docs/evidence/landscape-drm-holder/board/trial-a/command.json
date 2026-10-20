@@ -1,0 +1,26 @@
+{
+  "started_at": "2026-10-20T16:06:19.399879+00:00",
+  "command": [
+    "ssh",
+    "-F",
+    "/home/jadams/tmp/k230-coordination/ssh_config.private",
+    "k230",
+    "/nix/store/v189xydz6qkcd4cbkixcmv91w8hbc560-python3-riscv64-unknown-linux-gnu-3.14.7/bin/python3",
+    "/var/tmp/k230-drm-holder-20261020b/landscape-drm-holder.py",
+    "--board-run",
+    "--source-revision",
+    "221bbcf34a276a939356e5a6af9bfb124af9896a",
+    "--expected-system",
+    "/nix/store/j30yag05ic9k68n9dzbzindgf4ardp08-nixos-system-nixos-26.11.20260919.20b1ddd",
+    "--expected-executable-sha256",
+    "9464072ac100e77500c7b6113920d2c2ed14e022612eddbc38a037ce9b006670",
+    "--smoke",
+    "/var/tmp/k230-drm-holder-20261020b/smoke-b",
+    "--output",
+    "/var/tmp/k230-drm-holder-20261020b/trial-a"
+  ],
+  "capture_source_revision": "9afa87c925b823c44340c901b795a89a106484e6",
+  "capture_tool_sha256": "49ef1e5b7de367527a1ab8380a4b8fb9413547dfac9e76e684eb829ddfc19c98",
+  "finished_at": "2026-10-20T16:20:26.976610+00:00",
+  "exit_code": 0
+}

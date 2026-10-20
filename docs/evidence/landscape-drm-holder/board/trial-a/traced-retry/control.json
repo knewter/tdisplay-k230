@@ -1,0 +1,54 @@
+{
+  "capture_exit_code": 0,
+  "control": {
+    "arguments_without_logging": [
+      "-c",
+      "/nix/store/ila85h1q2fkpzkj7q1jlmc1gz8xq1syp-k230-sway.conf"
+    ],
+    "config_sha256": "575fa8d14d8dda6d0707c369015d37dbd7ea9295c66cefdebef2ef3ea26bdcd0",
+    "debug_flag": true,
+    "environment": {
+      "SWAY_K230_CARD_REDUCED_MOTION": "0",
+      "SWAY_K230_CPU_FRAME_TIMING": "",
+      "SWAY_K230_TOUCH_ROUTE_TRACE": "",
+      "WLR_PIXMAN_DRAW_TRACE": "",
+      "WLR_PIXMAN_OUTPUT_TURN": "1",
+      "WLR_PIXMAN_QUARTER_TURN": "0",
+      "WLR_RENDERER": "pixman"
+    },
+    "executable_sha256": "9464072ac100e77500c7b6113920d2c2ed14e022612eddbc38a037ce9b006670",
+    "output": [
+      {
+        "active": true,
+        "current_mode": {
+          "height": 800,
+          "picture_aspect_ratio": "none",
+          "refresh": 59910,
+          "width": 1280
+        },
+        "name": "HDMI-A-1",
+        "rect": {
+          "height": 800,
+          "width": 1280,
+          "x": 0,
+          "y": 0
+        },
+        "scale": 1.0,
+        "transform": "normal"
+      }
+    ],
+    "persistent_system": "/nix/store/j30yag05ic9k68n9dzbzindgf4ardp08-nixos-system-nixos-26.11.20260919.20b1ddd",
+    "pid": 77507,
+    "system": "/nix/store/j30yag05ic9k68n9dzbzindgf4ardp08-nixos-system-nixos-26.11.20260919.20b1ddd",
+    "verbose_flag": false
+  },
+  "fd_labels": {
+    "1": "journal-stream",
+    "10": "DRM-card",
+    "11": "DRM-card",
+    "12": "DRM-card",
+    "2": "journal-stream"
+  },
+  "tool_sha256": "49ef1e5b7de367527a1ab8380a4b8fb9413547dfac9e76e684eb829ddfc19c98",
+  "traced": true
+}

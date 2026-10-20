@@ -651,6 +651,10 @@ Paths are relative to the repository root. `(sdk)` is
 so that building stage 1 from source does not silently drop them from view.
 
 ```
+DATA c17ccf67aa547ac359aee159ae2dc28452d8e68ff184cb2b6e92197690d2d1d6 docs/evidence/landscape-drm-holder/board/trial-a/traced/events.jsonl.gz
+DATA e60a160e2c036c989b8e3082cdf47e4d32d02060dd2a25982b63ed627bf5e858 docs/evidence/landscape-drm-holder/board/trial-a/traced/functions.jsonl.gz
+DATA 9f7545361103f1308392285dc905b982f98a6d7b2c0696ac20167b6d5f1c5413 docs/evidence/landscape-drm-holder/board/trial-a/traced-retry/events.jsonl.gz
+DATA 40ac701d2440a95cd9d4e2c0b95bb7024ef16fe51c28b4e111b984641e0d59ca docs/evidence/landscape-drm-holder/board/trial-a/traced-retry/functions.jsonl.gz
 DATA 25d1f864fbce06099ae0f0af2bb3476de54cf5ff3506b1a133711705e2a647c3 docs/evidence/landscape-drm-wait/board/trial-a/traced/events.jsonl.gz
 DATA 99bab6a7531c1c5e97bf4c5f00052eb6a4afaea573358e069bb739cdc4154641 docs/evidence/landscape-drm-wait/board/trial-a/traced/stacks.jsonl.gz
 DATA af2b216b1e6e6be97c2d8ec3aa74b7c7e5790747dfe93989aa142705fcf0c5b0 docs/evidence/landscape-hdmi-stall-trace/board/trial-a/traced/events.jsonl.gz
@@ -3786,3 +3790,17 @@ Address-free numeric/symbol streams; capture/postprocessing recovery and limits:
 | --- | ---: | --- | --- |
 | `docs/evidence/landscape-drm-wait/board/trial-a/traced/events.jsonl.gz` | 1856362 | DATA | `25d1f864fbce06099ae0f0af2bb3476de54cf5ff3506b1a133711705e2a647c3` |
 | `docs/evidence/landscape-drm-wait/board/trial-a/traced/stacks.jsonl.gz` | 63547 | DATA | `99bab6a7531c1c5e97bf4c5f00052eb6a4afaea573358e069bb739cdc4154641` |
+
+
+## Landscape connector-poll trace evidence, 2026-10-20
+
+Deterministic gzip of sanitized numeric and allowlisted function/caller records.
+Private raw traces are not committed. Provenance, commands, hashes and limits:
+`docs/evidence/landscape-drm-holder/README.md`.
+
+| Path | Bytes | Class | SHA256 |
+| --- | ---: | --- | --- |
+| `docs/evidence/landscape-drm-holder/board/trial-a/traced/events.jsonl.gz` | 1857350 | DATA | `c17ccf67aa547ac359aee159ae2dc28452d8e68ff184cb2b6e92197690d2d1d6` |
+| `docs/evidence/landscape-drm-holder/board/trial-a/traced/functions.jsonl.gz` | 23451 | DATA | `e60a160e2c036c989b8e3082cdf47e4d32d02060dd2a25982b63ed627bf5e858` |
+| `docs/evidence/landscape-drm-holder/board/trial-a/traced-retry/events.jsonl.gz` | 1850954 | DATA | `9f7545361103f1308392285dc905b982f98a6d7b2c0696ac20167b6d5f1c5413` |
+| `docs/evidence/landscape-drm-holder/board/trial-a/traced-retry/functions.jsonl.gz` | 23198 | DATA | `40ac701d2440a95cd9d4e2c0b95bb7024ef16fe51c28b4e111b984641e0d59ca` |
