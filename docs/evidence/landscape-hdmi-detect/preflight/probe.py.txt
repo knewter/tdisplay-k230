@@ -1,0 +1,10 @@
+from pathlib import Path
+import importlib.util,json,platform
+p=Path('/var/tmp/k230-drm-holder-20261020b/landscape-drm-holder.py');s=importlib.util.spec_from_file_location('m',p);m=importlib.util.module_from_spec(s);s.loader.exec_module(m)
+r=m.base.ROOT;i=m.cap.IPC()
+try:
+ names={'output_poll_execute','drm_helper_probe_detect','drm_helper_probe_detect_ctx','detect_connector_status','lt9611_bridge_detect','drm_modeset_backoff','drm_modeset_drop_locks','drm_atomic_helper_connector_hdmi_hotplug','drm_atomic_helper_connector_hdmi_update','drm_bridge_connector_read_edid','lt9611_bridge_edid_read','lt9611_get_edid_block','lt9611_read_edid','drm_edid_connector_update','hrtimer_nanosleep'}
+ functions=[line.split()[0] for line in (r/'available_filter_functions').read_text().splitlines() if line.split() and line.split()[0] in names]
+ result={'checked_at':m.base.now(),'kernel':platform.release(),'control':m.log.control(i),'idle':m.log.idle_startup(i),'global_controls':m.base.global_state(),'available_functions':functions,'available_tracers':(r/'available_tracers').read_text(),'online_cpus':Path('/sys/devices/system/cpu/online').read_text().strip()}
+ print(json.dumps(result,indent=2))
+finally:i.close()

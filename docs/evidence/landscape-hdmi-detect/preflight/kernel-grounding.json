@@ -1,0 +1,71 @@
+{
+  "kernel": "7.3.0-rc5",
+  "kernel_deriver": "/nix/store/jc68jp45kfkmgq9ix0v2rfv6gadcrlmk-linux-riscv64-unknown-linux-gnu-7.3.0-rc5.drv",
+  "files": [
+    {
+      "path": "/nix/store/7vzlvixrdhv5a1iw75p18yzwkaqrlxjd-linux-mainline-k230-drm-src/drivers/gpu/drm/drm_probe_helper.c",
+      "sha256": "81c995343aa5306daba58722335e78ceed93c77af77a1becbd50f8e4acff4a61",
+      "excerpts": [
+        {
+          "first_line": 355,
+          "last_line": 383,
+          "text": "\nstatic enum drm_connector_status\ndrm_helper_probe_detect_ctx(struct drm_connector *connector, bool force)\n{\n\tstruct drm_modeset_acquire_ctx ctx;\n\tint ret;\n\n\tdrm_modeset_acquire_init(&ctx, 0);\n\nretry:\n\tret = drm_modeset_lock(&connector->dev->mode_config.connection_mutex, &ctx);\n\tif (!ret)\n\t\tret = detect_connector_status(connector, &ctx, force);\n\n\tif (ret == -EDEADLK) {\n\t\tdrm_modeset_backoff(&ctx);\n\t\tgoto retry;\n\t}\n\n\tif (WARN_ON(ret < 0))\n\t\tret = connector_status_unknown;\n\n\tif (ret != connector->status)\n\t\tconnector->epoch_counter += 1;\n\n\tdrm_modeset_drop_locks(&ctx);\n\tdrm_modeset_acquire_fini(&ctx);\n\n\treturn ret;"
+        },
+        {
+          "first_line": 755,
+          "last_line": 815,
+          "text": "\nstatic void output_poll_execute(struct work_struct *work)\n{\n\tstruct delayed_work *delayed_work = to_delayed_work(work);\n\tstruct drm_device *dev = container_of(delayed_work, struct drm_device, mode_config.output_poll_work);\n\tstruct drm_connector *connector;\n\tstruct drm_connector_list_iter conn_iter;\n\tenum drm_connector_status old_status;\n\tbool repoll = false, changed = false;\n\tu64 old_epoch_counter;\n\n\tif (!dev->mode_config.poll_enabled)\n\t\treturn;\n\n\tif (!drm_kms_helper_poll) {\n\t\tif (dev->mode_config.poll_running) {\n\t\t\tdrm_kms_helper_disable_hpd(dev);\n\t\t\tdev->mode_config.poll_running = false;\n\t\t}\n\n\t\tscoped_guard(mutex, &dev->mode_config.mutex) {\n\t\t\tchanged = dev->mode_config.delayed_event;\n\t\t\tdev->mode_config.delayed_event = false;\n\t\t}\n\n\t\tif (changed)\n\t\t\tdrm_kms_helper_hotplug_event(dev);\n\n\t\treturn;\n\t}\n\n\tif (!mutex_trylock(&dev->mode_config.mutex)) {\n\t\tschedule_delayed_work(delayed_work, DRM_OUTPUT_POLL_PERIOD);\n\t\treturn;\n\t}\n\n\tdrm_connector_list_iter_begin(dev, &conn_iter);\n\tdrm_for_each_connector_iter(connector, &conn_iter) {\n\t\t/* Ignore forced connectors. */\n\t\tif (connector->force)\n\t\t\tcontinue;\n\n\t\t/* Ignore HPD capable connectors and connectors where we don't\n\t\t * want any hotplug detection at all for polling. */\n\t\tif (!connector->polled || connector->polled == DRM_CONNECTOR_POLL_HPD)\n\t\t\tcontinue;\n\n\t\told_status = connector->status;\n\t\t/* if we are connected and don't want to poll for disconnect\n\t\t   skip it */\n\t\tif (old_status == connector_status_connected &&\n\t\t    !(connector->polled & DRM_CONNECTOR_POLL_DISCONNECT))\n\t\t\tcontinue;\n\n\t\trepoll = true;\n\n\t\told_epoch_counter = connector->epoch_counter;\n\t\tconnector->status = drm_helper_probe_detect(connector, NULL, false);\n\t\tif (old_epoch_counter != connector->epoch_counter) {\n\t\t\tconst char *old, *new;\n"
+        }
+      ]
+    },
+    {
+      "path": "/nix/store/7vzlvixrdhv5a1iw75p18yzwkaqrlxjd-linux-mainline-k230-drm-src/drivers/gpu/drm/display/drm_bridge_connector.c",
+      "sha256": "ba529f21010d378e80046358fd11ec958c483aeb07c6a91fb7c4c71e8f7eec81",
+      "excerpts": [
+        {
+          "first_line": 211,
+          "last_line": 228,
+          "text": "static enum drm_connector_status\ndrm_bridge_connector_detect(struct drm_connector *connector, bool force)\n{\n\tstruct drm_bridge_connector *bridge_connector =\n\t\tto_drm_bridge_connector(connector);\n\tstruct drm_bridge *detect = bridge_connector->bridge_detect;\n\tstruct drm_bridge *hdmi = bridge_connector->bridge_hdmi;\n\tenum drm_connector_status status;\n\n\tif (detect) {\n\t\tstatus = detect->funcs->detect(detect, connector);\n\n\t\tif (hdmi)\n\t\t\tdrm_atomic_helper_connector_hdmi_hotplug(connector, status);\n\n\t\tdrm_bridge_connector_hpd_notify(connector, status);\n\t} else {\n\t\tswitch (connector->connector_type) {"
+        },
+        {
+          "first_line": 579,
+          "last_line": 590,
+          "text": "drm_bridge_connector_read_edid(struct drm_connector *connector)\n{\n\tstruct drm_bridge_connector *bridge_connector =\n\t\tto_drm_bridge_connector(connector);\n\tstruct drm_bridge *bridge;\n\n\tbridge = bridge_connector->bridge_edid;\n\tif (!bridge)\n\t\treturn NULL;\n\n\treturn drm_bridge_edid_read(bridge, connector);\n}"
+        }
+      ]
+    },
+    {
+      "path": "/nix/store/7vzlvixrdhv5a1iw75p18yzwkaqrlxjd-linux-mainline-k230-drm-src/drivers/gpu/drm/display/drm_hdmi_state_helper.c",
+      "sha256": "a7fa4520de8373d1d621d9300ba9b5084088fa0e61dbfa2bb95f0f5395dde52c",
+      "excerpts": [
+        {
+          "first_line": 1199,
+          "last_line": 1242,
+          "text": "static void\ndrm_atomic_helper_connector_hdmi_update(struct drm_connector *connector,\n\t\t\t\t\tenum drm_connector_status status)\n{\n\tconst struct drm_edid *drm_edid;\n\n\tif (status == connector_status_disconnected) {\n\t\t// TODO: also handle scramber, HDMI sink disconnected.\n\t\tdrm_connector_hdmi_audio_plugged_notify(connector, false);\n\t\tdrm_edid_connector_update(connector, NULL);\n\t\tdrm_connector_cec_phys_addr_invalidate(connector);\n\t\treturn;\n\t}\n\n\tif (connector->hdmi.funcs->read_edid)\n\t\tdrm_edid = connector->hdmi.funcs->read_edid(connector);\n\telse\n\t\tdrm_edid = drm_edid_read(connector);\n\n\tdrm_edid_connector_update(connector, drm_edid);\n\n\tdrm_edid_free(drm_edid);\n\n\tif (status == connector_status_connected) {\n\t\t// TODO: also handle scramber, HDMI sink is now connected.\n\t\tdrm_connector_hdmi_audio_plugged_notify(connector, true);\n\t\tdrm_connector_cec_phys_addr_set(connector);\n\t}\n}\n\n/**\n * drm_atomic_helper_connector_hdmi_hotplug - Handle the hotplug event for the HDMI connector\n * @connector: A pointer to the HDMI connector\n * @status: Connection status\n *\n * This function should be called as a part of the .detect() / .detect_ctx()\n * callbacks for all status changes.\n */\nvoid drm_atomic_helper_connector_hdmi_hotplug(struct drm_connector *connector,\n\t\t\t\t\t      enum drm_connector_status status)\n{\n\tdrm_atomic_helper_connector_hdmi_update(connector, status);\n}\nEXPORT_SYMBOL(drm_atomic_helper_connector_hdmi_hotplug);"
+        }
+      ]
+    },
+    {
+      "path": "/nix/store/7vzlvixrdhv5a1iw75p18yzwkaqrlxjd-linux-mainline-k230-drm-src/drivers/gpu/drm/bridge/lontium-lt9611.c",
+      "sha256": "842ce9ad86ed77b0a9d656c6bee6f4891e7267d6b2e55ceee9f5c34872b5faa8",
+      "excerpts": [
+        {
+          "first_line": 605,
+          "last_line": 621,
+          "text": "lt9611_bridge_detect(struct drm_bridge *bridge, struct drm_connector *connector)\n{\n\tstruct lt9611 *lt9611 = bridge_to_lt9611(bridge);\n\tunsigned int reg_val = 0;\n\tint connected = 0;\n\n\tif (regmap_read(lt9611->regmap, 0x825e, &reg_val))\n\t\treturn connector_status_unknown;\n\tconnected  = (reg_val & (BIT(2) | BIT(0)));\n\n\tlt9611->status = connected ?  connector_status_connected :\n\t\t\t\tconnector_status_disconnected;\n\n\treturn lt9611->status;\n}\n\nstatic int lt9611_read_edid(struct lt9611 *lt9611)"
+        },
+        {
+          "first_line": 623,
+          "last_line": 700,
+          "text": "\tunsigned int temp;\n\tint ret = 0;\n\tint i, j;\n\n\t/* memset to clear old buffer, if any */\n\tmemset(lt9611->edid_buf, 0, sizeof(lt9611->edid_buf));\n\n\tregmap_write(lt9611->regmap, 0x8503, 0xc9);\n\n\t/* 0xA0 is EDID device address */\n\tregmap_write(lt9611->regmap, 0x8504, 0xa0);\n\t/* 0x00 is EDID offset address */\n\tregmap_write(lt9611->regmap, 0x8505, 0x00);\n\n\t/* length for read */\n\tregmap_write(lt9611->regmap, 0x8506, EDID_LEN);\n\tregmap_write(lt9611->regmap, 0x8514, 0x7f);\n\n\tfor (i = 0; i < EDID_LOOP; i++) {\n\t\t/* offset address */\n\t\tregmap_write(lt9611->regmap, 0x8505, i * EDID_LEN);\n\t\tregmap_write(lt9611->regmap, 0x8507, 0x36);\n\t\tregmap_write(lt9611->regmap, 0x8507, 0x31);\n\t\tregmap_write(lt9611->regmap, 0x8507, 0x37);\n\t\tusleep_range(5000, 10000);\n\n\t\tregmap_read(lt9611->regmap, 0x8540, &temp);\n\n\t\tif (temp & KEY_DDC_ACCS_DONE) {\n\t\t\tfor (j = 0; j < EDID_LEN; j++) {\n\t\t\t\tregmap_read(lt9611->regmap, 0x8583, &temp);\n\t\t\t\tlt9611->edid_buf[i * EDID_LEN + j] = temp;\n\t\t\t}\n\n\t\t} else if (temp & DDC_NO_ACK) { /* DDC No Ack or Abitration lost */\n\t\t\tdev_err(lt9611->dev, \"read edid failed: no ack\\n\");\n\t\t\tret = -EIO;\n\t\t\tgoto end;\n\n\t\t} else {\n\t\t\tdev_err(lt9611->dev, \"read edid failed: access not done\\n\");\n\t\t\tret = -EIO;\n\t\t\tgoto end;\n\t\t}\n\t}\n\nend:\n\tregmap_write(lt9611->regmap, 0x8507, 0x1f);\n\treturn ret;\n}\n\nstatic int\nlt9611_get_edid_block(void *data, u8 *buf, unsigned int block, size_t len)\n{\n\tstruct lt9611 *lt9611 = data;\n\tint ret;\n\n\tif (len > 128)\n\t\treturn -EINVAL;\n\n\t/* supports up to 1 extension block */\n\t/* TODO: add support for more extension blocks */\n\tif (block > 1)\n\t\treturn -EINVAL;\n\n\tif (block == 0) {\n\t\tret = lt9611_read_edid(lt9611);\n\t\tif (ret) {\n\t\t\tdev_err(lt9611->dev, \"edid read failed\\n\");\n\t\t\treturn ret;\n\t\t}\n\t}\n\n\tblock %= 2;\n\tmemcpy(buf, lt9611->edid_buf + (block * 128), len);\n\n\treturn 0;\n}"
+        },
+        {
+          "first_line": 969,
+          "last_line": 976,
+          "text": "static const struct drm_edid *lt9611_bridge_edid_read(struct drm_bridge *bridge,\n\t\t\t\t\t\t      struct drm_connector *connector)\n{\n\tstruct lt9611 *lt9611 = bridge_to_lt9611(bridge);\n\n\tlt9611_power_on(lt9611);\n\treturn drm_edid_read_custom(connector, lt9611_get_edid_block, lt9611);\n}"
+        }
+      ]
+    }
+  ],
+  "limits": "Source establishes call order, not duration. Reader-to-connector-update entry interval includes wrappers/validation/return overhead; no individual I2C or exact inlined lt9611_read_edid timing claim."
+}
