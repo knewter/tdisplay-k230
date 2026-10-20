@@ -1,0 +1,7 @@
+{
+  "status": "REJECTED_TARGET",
+  "reason": "nixosConfigurations.k230 resolves to vendor6.6.36-xuantie, not the installed mainline DRM landscape HDMI profile. Build command exited0 from cache but does not qualify the HDMI patch. No deployment occurred.",
+  "actual_installed_configuration": "k230-mainline-drm-shell-landscape-hdmi",
+  "grounding": "docs/evidence/panel-paint/candidate-scene-coalescing/bundle-identity.json",
+  "hardware_build_task_complete": false
+}

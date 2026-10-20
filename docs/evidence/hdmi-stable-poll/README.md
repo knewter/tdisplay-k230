@@ -17,3 +17,9 @@ fresh physical cable/input qualification and persistent promotion remain
 open. Current landscape and separate portrait hardware gates are preserved.
 The preceding committed holder/EDID-stage diagnostics ground the problem,
 not an unperformed candidate result.
+
+The initial default-k230 build exited0 from cache but resolved to vendor6.6,
+so it is explicitly REJECTED_TARGET and proves nothing about this patch.
+`host/rejected-vendor-target/` retains the command/result. The installed
+bundle identifies `k230-mainline-drm-shell-landscape-hdmi`; corrected
+builds use that profile. No candidate has been deployed.

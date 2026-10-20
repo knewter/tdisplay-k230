@@ -1,0 +1,29 @@
+{
+  "phase": "kernel",
+  "source_revision": "e677b728491cffa5f2c2da38456c46c4e065944e",
+  "command": [
+    "nix",
+    "build",
+    "--print-out-paths",
+    "--out-link",
+    "/home/jadams/tmp/codex-claude-handoff-20261019/3/stable-poll-kernel-result",
+    "git+file:///mnt/MediaVolume/home/jadams/src/gitlab.daringbit.com/josh/tdisplay-k230/.claude/worktrees/hdmi-stable-poll?rev=e677b728491cffa5f2c2da38456c46c4e065944e#nixosConfigurations.k230.config.boot.kernelPackages.kernel"
+  ],
+  "cwd": "/mnt/MediaVolume/home/jadams/src/gitlab.daringbit.com/josh/tdisplay-k230/.claude/worktrees/hdmi-stable-poll",
+  "pid": 179963,
+  "pgid": 179963,
+  "sid": 179963,
+  "stdin": "/dev/null",
+  "controlling_tty": null,
+  "stdout": "/home/jadams/tmp/codex-claude-handoff-20261019/3/stable-poll-kernel-paths.txt",
+  "stderr": "/home/jadams/tmp/codex-claude-handoff-20261019/3/stable-poll-kernel-build.log",
+  "started_at": "2026-10-20T17:52:23.584823+00:00",
+  "status": "SUCCESS",
+  "build_slot": "released",
+  "exit_code": 0,
+  "store_paths": [
+    "/nix/store/03zyl0mjsxbjyisb3lhjaxswpxm71ap6-linux-riscv64-unknown-linux-gnu-6.6.36-xuantie"
+  ],
+  "finished_at": "2026-10-20T17:52:31.954388+00:00",
+  "elapsed_seconds": 8.37
+}

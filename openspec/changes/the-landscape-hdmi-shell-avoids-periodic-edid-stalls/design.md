@@ -18,6 +18,11 @@ Reuse the isolated function-only recorder (fresh smoke on the candidate) and exa
 
 An old EDID cache must not prevent initial or explicitly requested refresh: cached-blob and polling-context guards plus the72-case matrix limit that risk; physical unplug/replug is still required. Cross-build success does not identify the running kernel. Tie candidate Image/DTB/initrd hashes, fresh boot identity, serial boot transcript and running/booted system/kernel evidence together. Keep raw serial/network/monitor data protected; publish allowlisted/redacted records and exact hashes. No runtime secrets enter Git or ad-hoc configuration paths.
 
+The installed bundle identity names `k230-mainline-drm-shell-landscape-hdmi`.
+Use that exact profile for both configured kernel and full closure. The first
+cached build of default k230 resolved to the vendor6.6 kernel and is retained
+as rejected target proof, not a successful candidate build.
+
 ## Migration Plan
 
 Land proposal and proved source early. Use the one heavy-build slot for kernel then system closure. Before touching boot, reserve the board and inspect current image/boot hashes and recovery paths, preserve the known-good bundle, and stage a recoverable candidate without overwriting the only fallback. Record exact deployment commands/artifacts. Obtain a fresh serial-observed candidate boot and normal shell/landscape state, then bounded timing/gesture and physical cable/input proof. Roll back to the preserved normal if boot/runtime controls fail; keep failures in evidence. Promote persistent normal boot only after named candidate checks and operator physical acceptance, and verify its ordinary boot. Until physical proof exists, keep those tasks and UNVERIFIED markers open. Validate/delta-sync/archive/push only when every task and proof is complete.
