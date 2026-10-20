@@ -1,13 +1,22 @@
 # Landscape paint attribution and candidate — 2026-10-19
 
-The installed landscape compositor spends about **10.8 ms per frame in final
+The qualified result is [candidate-scene-coalescing/README.md](candidate-scene-coalescing/README.md):
+two consecutive controlled full/reduced pairs and a new camera-associated
+pair pass all frozen software budgets. Current K230 videos show card movement;
+exact source `221bbcf34a276a939356e5a6af9bfb124af9896a` is running and selected
+persistently as system `j30yag05ic9k68n9dzbzindgf4ardp08`. Normal motion/Home,
+active shell/UI, absent temporary overrides and no test devices are verified.
+Camera sampling and correlation limits remain explicit; no cold boot or
+optical latency claim is made. All earlier failures are preserved below.
+
+The original installed baseline spends about **10.8 ms per frame in final
 RGB565 rotation**, in addition to about **12 ms in texture draws**. This
-selects the final-copy loop for the first bounded optimization. A standalone
+selected the final-copy loop for the first bounded optimization. A standalone
 on-board comparison copies identical pixels into **unattached** DRM dumb
 buffers: baseline10.130 ms, candidate4.109 ms for the panel's actual copy
-rotation. The later [copy-only integrated trial](candidate-copy-only/README.md)
-reduced build CPU but still failed latency/frame budgets. The board/camera/
-default-selection tasks remain open.
+rotation. The [copy-only integrated trial](candidate-copy-only/README.md)
+reduced build CPU but still failed latency/frame budgets; later measured
+optimizations, native proof and integrated outcomes are linked above.
 
 ## Identities and workload
 

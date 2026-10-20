@@ -37,11 +37,11 @@ require the build slot. No physical gate can be ticked from a host check.
 
 ## 4. Publish and close deliberately
 
-- [ ] 4.1 Validate, commit and land tested source/evidence promptly, inspect CI
+- [x] 4.1 Validate, commit and land tested source/evidence promptly, inspect CI
   and the exact published revision. Proof:
   `openspec validate the-landscape-panel-spends-less-time-painting-cards --strict`
   and `python3 tools/blob-scan.py --no-vendor`; retain unchecked hardware gates.
-- [ ] 4.2 Archive/sync only when all named correctness/budget/physical gates
+- [x] 4.2 Archive/sync only when all named correctness/budget/physical gates
   pass and evidence is committed, or an explicit new user decision preserves
   remaining work. Proof: strict validation immediately before `openspec archive`,
   then matching pushed revision and Pages deployment.
@@ -165,3 +165,13 @@ Normal/Home, shell/UI, profiling off, owned91/92 absent and no injected devices
 are checked under reservation. No reboot or full-image flash. All proof and
 executed protocol are in candidate-scene-coalescing/camera/. Publication and
 archive follow only after this evidence is committed and strict checks pass.
+
+Qualification evidence2d8142d4 is committed and landed on master; CI39366313919
+passed, exact public work revision verified2026-10-20T03:53:32Z.
+All correctness, budget and current-camera gates are complete. Archive/sync is
+the remaining procedural action; its checkbox is completed only after success.
+
+Archive/sync completed successfully with openspec archive --yes; only the
+existing runtime/card-shell capability was updated. No physical gate was
+waived and all seven tasks are complete. Final archive publication is checked
+after committing/pushing this operation.
