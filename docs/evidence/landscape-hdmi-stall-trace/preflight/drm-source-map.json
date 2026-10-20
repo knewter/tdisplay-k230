@@ -1,0 +1,53 @@
+{
+  "checked_at": "2026-10-20T06:14:51.866538+00:00",
+  "running_system": "/nix/store/j30yag05ic9k68n9dzbzindgf4ardp08-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "sway_derivation": "/nix/store/v8y0vml89b63knlikb8fpwlcgrpfd5rs-sway-unwrapped-riscv64-unknown-linux-gnu-1.12.drv",
+  "wlroots_derivation": "/nix/store/hyfdyigzih70031620mssj5c6s914x6y-wlroots-riscv64-unknown-linux-gnu-0.20.2.drv",
+  "libdrm_derivation": "/nix/store/9c1iiw6hgfax0mfnn3azdia8m321zjnd-libdrm-riscv64-unknown-linux-gnu-2.4.134.drv",
+  "kernel_derivation": "/nix/store/jc68jp45kfkmgq9ix0v2rfv6gadcrlmk-linux-riscv64-unknown-linux-gnu-7.3.0-rc5.drv",
+  "files": [
+    {
+      "path": "/nix/store/gwy2gbwqmilz8hs0mmnlxv5c90c2sla4-libdrm-riscv64-unknown-linux-gnu-2.4.134-dev/include/libdrm/drm.h",
+      "sha256": "f9eadbfa0f9e1aeacc27f5c931ca3bd7b46974dbad817cd02fe601ccb5cdf08d",
+      "first_line": 1263,
+      "last_line": 1269,
+      "excerpt": "#define DRM_IOCTL_MODE_SETPLANE\tDRM_IOWR(0xB7, struct drm_mode_set_plane)\n#define DRM_IOCTL_MODE_ADDFB2\t\tDRM_IOWR(0xB8, struct drm_mode_fb_cmd2)\n#define DRM_IOCTL_MODE_OBJ_GETPROPERTIES\tDRM_IOWR(0xB9, struct drm_mode_obj_get_properties)\n#define DRM_IOCTL_MODE_OBJ_SETPROPERTY\tDRM_IOWR(0xBA, struct drm_mode_obj_set_property)\n#define DRM_IOCTL_MODE_CURSOR2\t\tDRM_IOWR(0xBB, struct drm_mode_cursor2)\n#define DRM_IOCTL_MODE_ATOMIC\t\tDRM_IOWR(0xBC, struct drm_mode_atomic)\n#define DRM_IOCTL_MODE_CREATEPROPBLOB\tDRM_IOWR(0xBD, struct drm_mode_create_blob)"
+    },
+    {
+      "path": "/nix/store/r2zcb3d3dgmz09qjaqsy945inal2h41r-source/backend/drm/atomic.c",
+      "sha256": "1779d62c50b6dd30d11b20bcd0e638d498c4c092f40858f27c60e797d67121c7",
+      "first_line": 579,
+      "last_line": 600,
+      "excerpt": "\t}\n\n\tstruct atomic atom;\n\tatomic_begin(&atom);\n\n\tfor (size_t i = 0; i < state->connectors_len; i++) {\n\t\tatomic_connector_add(&atom, &state->connectors[i], state->modeset);\n\t}\n\n\tif (test_only) {\n\t\tflags |= DRM_MODE_ATOMIC_TEST_ONLY;\n\t}\n\tif (state->modeset) {\n\t\tflags |= DRM_MODE_ATOMIC_ALLOW_MODESET;\n\t}\n\tif (state->nonblock) {\n\t\tflags |= DRM_MODE_ATOMIC_NONBLOCK;\n\t}\n\n\tok = atomic_commit(&atom, drm, state, page_flip, flags);\n\tatomic_finish(&atom);\n"
+    },
+    {
+      "path": "/nix/store/7vzlvixrdhv5a1iw75p18yzwkaqrlxjd-linux-mainline-k230-drm-src/drivers/gpu/drm/drm_mode_object.c",
+      "sha256": "421ad21ddc040c71b180780dc406089b0810c1ce410ca270e1c804e18fd5b9f6",
+      "first_line": 478,
+      "last_line": 513,
+      "excerpt": "int drm_mode_obj_get_properties_ioctl(struct drm_device *dev, void *data,\n\t\t\t\t      struct drm_file *file_priv)\n{\n\tstruct drm_mode_obj_get_properties *arg = data;\n\tstruct drm_mode_object *obj;\n\tstruct drm_modeset_acquire_ctx ctx;\n\tint ret = 0;\n\n\tif (!drm_core_check_feature(dev, DRIVER_MODESET))\n\t\treturn -EOPNOTSUPP;\n\n\tDRM_MODESET_LOCK_ALL_BEGIN(dev, ctx, 0, ret);\n\n\tobj = drm_mode_object_find(dev, file_priv, arg->obj_id, arg->obj_type);\n\tif (!obj) {\n\t\tret = -ENOENT;\n\t\tgoto out;\n\t}\n\tif (!obj->properties) {\n\t\tret = -EINVAL;\n\t\tgoto out_unref;\n\t}\n\n\tret = drm_mode_object_get_properties(obj, file_priv->atomic,\n\t\t\tfile_priv->plane_color_pipeline,\n\t\t\t(uint32_t __user *)(unsigned long)(arg->props_ptr),\n\t\t\t(uint64_t __user *)(unsigned long)(arg->prop_values_ptr),\n\t\t\t&arg->count_props);\n\nout_unref:\n\tdrm_mode_object_put(obj);\nout:\n\tDRM_MODESET_LOCK_ALL_END(dev, ctx, ret);\n\treturn ret;\n}\n"
+    },
+    {
+      "path": "/nix/store/7vzlvixrdhv5a1iw75p18yzwkaqrlxjd-linux-mainline-k230-drm-src/drivers/gpu/drm/drm_atomic_uapi.c",
+      "sha256": "40866cabaa591f506d446895fa1a1e1a69244d6611b0d6599028a4c6141e89dd",
+      "first_line": 1611,
+      "last_line": 1630,
+      "excerpt": "int drm_mode_atomic_ioctl(struct drm_device *dev,\n\t\t\t  void *data, struct drm_file *file_priv)\n{\n\tstruct drm_mode_atomic *arg = data;\n\tuint32_t __user *objs_ptr = (uint32_t __user *)(unsigned long)(arg->objs_ptr);\n\tuint32_t __user *count_props_ptr = (uint32_t __user *)(unsigned long)(arg->count_props_ptr);\n\tuint32_t __user *props_ptr = (uint32_t __user *)(unsigned long)(arg->props_ptr);\n\tuint64_t __user *prop_values_ptr = (uint64_t __user *)(unsigned long)(arg->prop_values_ptr);\n\tunsigned int copied_objs, copied_props;\n\tstruct drm_atomic_commit *state;\n\tstruct drm_modeset_acquire_ctx ctx;\n\tstruct drm_out_fence_state *fence_state;\n\tint ret = 0;\n\tunsigned int i, j, num_fences;\n\tbool async_flip = false;\n\n\t/* disallow for drivers not supporting atomic: */\n\tif (!drm_core_check_feature(dev, DRIVER_ATOMIC))\n\t\treturn -EOPNOTSUPP;\n"
+    }
+  ],
+  "observed_ioctl_commands": {
+    "3224921276": {
+      "hex": "0xc03864bc",
+      "name": "DRM_IOCTL_MODE_ATOMIC"
+    },
+    "3223348409": {
+      "hex": "0xc02064b9",
+      "name": "DRM_IOCTL_MODE_OBJ_GETPROPERTIES"
+    }
+  },
+  "limits": [
+    "Scalar command and fd identity were observed. User argument structs, object IDs and atomic flags were not recorded.",
+    "GETPROPERTIES takes all modeset locks in this source; the trace has no kernel stacks and does not prove which internal wait held the thread.",
+    "Atomic userspace can set NONBLOCK conditionally; these traces do not establish the flag for any individual observed call."
+  ]
+}

@@ -1,0 +1,78 @@
+{
+  "collector_sha256": "ddc51fcd86d7b4d546f19b394624ca10c103fbe4b797a1dc54ec04262ee3300b",
+  "complete_drag_count": 24,
+  "compositor": {
+    "compositor_executable": "/nix/store/3vk3p0ps0dng1qmqsrj7w2gfjq024zv8-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway sha256:9464072ac100e77500c7b6113920d2c2ed14e022612eddbc38a037ce9b006670",
+    "environment": {
+      "WLR_PIXMAN_OUTPUT_TURN": "1",
+      "WLR_PIXMAN_QUARTER_TURN": "0"
+    },
+    "pixman_identity": "/nix/store/brhzfimak2r3c23lmn80y1g6ww6nmb1r-pixman-riscv64-unknown-linux-gnu-0.46.4/lib/libpixman-1.so.0.46.4 sha256:983f88f4f8628824022644297993aa367963288c6d8a61c87ccbac47fa9beb56"
+  },
+  "elapsed_seconds": 63.875,
+  "evidence_limit": "capture telemetry is not optical proof; injected input is not physical contact.",
+  "frequency": {
+    "temperature": "57204"
+  },
+  "injected_workload": {
+    "limit": "IPC processing adds time; actual input timestamps remain in capture.log.",
+    "moves_per_drag": 35,
+    "nominal_motion_seconds": 0.69999999999999996,
+    "route": "compositor IPC card_shell down/motion/up",
+    "settle_seconds": 1.6000000000000001
+  },
+  "input": "injected",
+  "kernel": "7.3.0-rc5",
+  "operator_confirmed_contacts": false,
+  "output_after": [
+    {
+      "active": true,
+      "current_mode": {
+        "height": 800,
+        "picture_aspect_ratio": "none",
+        "refresh": 59910,
+        "width": 1280
+      },
+      "name": "HDMI-A-1",
+      "rect": {
+        "height": 800,
+        "width": 1280,
+        "x": 0,
+        "y": 0
+      },
+      "scale": 1.0,
+      "transform": "normal"
+    }
+  ],
+  "output_before": [
+    {
+      "active": true,
+      "current_mode": {
+        "height": 800,
+        "picture_aspect_ratio": "none",
+        "refresh": 59910,
+        "width": 1280
+      },
+      "name": "HDMI-A-1",
+      "rect": {
+        "height": 800,
+        "width": 1280,
+        "x": 0,
+        "y": 0
+      },
+      "scale": 1.0,
+      "transform": "normal"
+    }
+  ],
+  "profile": "landscape-1280x800",
+  "reason": null,
+  "requested_drags": 24,
+  "restore_error": null,
+  "schema": "hdmi-shell-landscape-baseline-v1",
+  "seconds_limit": 180,
+  "source_revision": "221bbcf34a276a939356e5a6af9bfb124af9896a",
+  "started_unix": 1792476076.9261446,
+  "status": "CAPTURED",
+  "stop_error": null,
+  "variant": "candidate"
+}

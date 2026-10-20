@@ -1,0 +1,12 @@
+{
+  "checked_at": "2026-10-20T06:13:51.521623+00:00",
+  "url": "https://knewter.github.io/tdisplay-k230/work/",
+  "http_status": 200,
+  "published_revision": "ce88a7246f3fd4bc12ea4a90242b38b7af788285",
+  "archive_commit": "cbadf910774fc85120ffd4b30706674ed25f54b0",
+  "archive_is_ancestor": true,
+  "archive_tasks_present_in_published_revision": true,
+  "archive_ci_run": "https://github.com/knewter/tdisplay-k230/actions/runs/39376673328",
+  "archive_ci_conclusion": "success",
+  "limit": "Exact cbad archive response was not sampled before a descendant deployed; this check verifies the current published descendant contains that archive."
+}

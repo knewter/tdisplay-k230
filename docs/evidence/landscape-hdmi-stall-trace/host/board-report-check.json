@@ -1,0 +1,13 @@
+{
+  "checked_at": "2026-10-20T06:16:00.742935+00:00",
+  "report_command": "python3 tools/landscape-hdmi-stall-trace.py --report docs/evidence/landscape-hdmi-stall-trace/board/trial-a --output docs/evidence/landscape-hdmi-stall-trace/board/report.json",
+  "report_exit_code": 0,
+  "report_status": "MEASURED",
+  "tool_sha256": "b98a6404bdd96afab1db9edb6779f325bc7958574e754b04dffbed73ae67f42b",
+  "report_sha256": "6b77da2c7c5ccafd2dbe59dcefb532441d55c6cf6891159e806a0ade4ae602b2",
+  "openspec_command": "openspec validate the-landscape-hdmi-stalls-have-correlated-scheduler-and-io-traces --strict",
+  "openspec_exit_code": 0,
+  "board_lease_released": true,
+  "build_slot": "none",
+  "evidence_class": "direct-IPC hardware diagnostic; no physical contact or optical proof"
+}

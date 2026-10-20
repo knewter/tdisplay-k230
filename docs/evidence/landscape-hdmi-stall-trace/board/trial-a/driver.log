@@ -1,0 +1,6 @@
+{"phase": "starting", "run": "untraced"}
+{"phase": "captured", "run": "untraced", "over_100ms": 3}
+{"phase": "starting", "run": "traced"}
+{"phase": "captured", "run": "traced", "over_100ms": 0}
+{"phase": "starting", "run": "traced-retry"}
+{"phase": "captured", "run": "traced-retry", "over_100ms": 4}

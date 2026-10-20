@@ -1,0 +1,17 @@
+{
+  "command": [
+    "/nix/store/v189xydz6qkcd4cbkixcmv91w8hbc560-python3-riscv64-unknown-linux-gnu-3.14.7/bin/python3",
+    "/var/tmp/k230-stall-trace-20261020/landscape-hdmi-stall-trace.py",
+    "--board-run",
+    "--source-revision",
+    "221bbcf34a276a939356e5a6af9bfb124af9896a",
+    "--expected-system",
+    "/nix/store/j30yag05ic9k68n9dzbzindgf4ardp08-nixos-system-nixos-26.11.20260919.20b1ddd",
+    "--expected-executable-sha256",
+    "9464072ac100e77500c7b6113920d2c2ed14e022612eddbc38a037ce9b006670",
+    "--smoke",
+    "/var/tmp/k230-stall-trace-20261020/smoke-a",
+    "--output",
+    "/var/tmp/k230-stall-trace-20261020/trial-a"
+  ]
+}

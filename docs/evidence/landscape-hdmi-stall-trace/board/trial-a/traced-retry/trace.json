@@ -1,0 +1,42 @@
+{
+  "buffer_total_kb": 32771,
+  "event_count": 373291,
+  "events_sha256": "dada1692dd52357ddcc1a4d6f351a2faae6809bb4e980dd996ccc0408267a7f9",
+  "global_before": {
+    "current_tracer": "64aec5a7fa151222572a241383c857738318e63cca7ee771952c95a31d92a19d",
+    "events/enable": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+    "set_event_pid": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "set_ftrace_pid": "cdf4d2acfdcd5cd2556f83eeb52ee253ea6afbaa941c760f77dcfae3c925cb78",
+    "trace_clock": "925ca315bd3de6ef99e08c002e320406936ae2da2f2c0afd8da1e87f7980a253",
+    "tracing_on": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865"
+  },
+  "markers": {
+    "end": {
+      "after_ns": 112144129636055,
+      "before_ns": 112144128871120
+    },
+    "start": {
+      "after_ns": 112079579077382,
+      "before_ns": 112079578441182
+    }
+  },
+  "original_numeric_sha256": "adcd2e89afb2b65671c21850aa869e7025c977ac50da903b1f3336a42bb1fae9",
+  "pid": 77507,
+  "public_export_note": "Unknown syscall returns retain only errno category; pointer-valued returns are omitted. Capture timestamps, event count and loss statistics are unchanged.",
+  "public_export_tool_sha256": "c0d7fb0ce3073c94d0ae82f90bce2aa563bcb1a896302c82e97a96a423b13220",
+  "raw_bytes": 36593471,
+  "raw_sha256": "92768bfb460b82857b4db5f2f07b313f7d87b424d9d9c3a7d453b02357ad76ad",
+  "schema": "landscape-hdmi-stall-trace-v1",
+  "stats": {
+    "cpu0": {
+      "bytes": 20269632,
+      "commit overrun": 0,
+      "dropped events": 0,
+      "entries": 373291,
+      "overrun": 0,
+      "read events": 0
+    }
+  },
+  "tool_sha256": "32c177f57e77283460346b1f453a790456e7e441367976d083b099084fae1075",
+  "trace_clock": "local global counter uptime perf [mono] mono_raw boot tai"
+}

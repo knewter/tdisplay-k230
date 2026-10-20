@@ -1,0 +1,7 @@
+{
+  "command": "python3 tools/landscape-hdmi-stall-trace.py --self-test",
+  "exit_code": 0,
+  "tests": 9,
+  "tool_sha256": "b98a6404bdd96afab1db9edb6779f325bc7958574e754b04dffbed73ae67f42b",
+  "compression": "Deterministic gzip, mtime=0; original uncompressed numeric export hash retained and checked after bounded expansion. Capture helper and export helper hashes remain separately recorded in trace.json."
+}

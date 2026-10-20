@@ -3,6 +3,7 @@
 import argparse
 import errno
 import fcntl
+import gzip
 import hashlib
 import json
 import os
@@ -257,13 +258,14 @@ def checked_events(directory):
     meta = json.loads((directory/'trace.json').read_text())
     if meta.get('schema') != SCHEMA or '[mono]' not in meta.get('trace_clock',''):
         raise TraceError('trace clock/schema is not qualified')
-    if log.digest(directory/'events.jsonl') != meta.get('events_sha256'):
+    payload = event_bytes(directory)
+    if hashlib.sha256(payload).hexdigest() != meta.get('events_sha256'):
         raise TraceError('numeric trace identity differs')
     for fields in meta['stats'].values():
         for key in ('overrun', 'commit overrun', 'dropped events'):
             if fields.get(key) != 0: raise TraceError('trace loss or missing loss statistics')
     if not meta['stats']: raise TraceError('missing CPU trace statistics')
-    events = load_safe_events(directory)
+    events = load_safe_events(directory, payload)
     if len(events) != meta['event_count'] or len(events) > MAX_EVENTS:
         raise TraceError('trace record count differs')
     previous = -1
@@ -482,10 +484,23 @@ def board_run(args):
         'source_revision':args.source_revision,'tool_sha256':log.digest(Path(__file__))})
 
 
-def load_safe_events(directory):
+def event_bytes(directory):
+    plain, packed = directory/'events.jsonl', directory/'events.jsonl.gz'
+    if plain.exists() == packed.exists():
+        raise TraceError('exactly one plain or compressed numeric trace is required')
+    opener = plain.open if plain.exists() else lambda mode: gzip.open(packed, mode)
+    with opener('rb') as src:
+        payload = src.read(MAX_RAW + 1)
+    if len(payload) > MAX_RAW:
+        raise TraceError('expanded numeric trace exceeds bounds')
+    return payload
+
+
+def load_safe_events(directory, payload=None):
     # Exporter provenance is checked separately; enforce the public schema too.
     rows=[]
-    for line in (directory/'events.jsonl').read_text().splitlines():
+    if payload is None: payload = event_bytes(directory)
+    for line in payload.decode('utf-8').splitlines():
         if len(line)>1024 or len(rows)>=MAX_EVENTS:raise TraceError('numeric trace exceeds bounds')
         r=json.loads(line);base={'pid','cpu','ts_ns','event'}
         extras={'enter':{'nr'},'exit':{'nr'},'switch':{'prev_pid','prev_state','next_pid'},
@@ -642,6 +657,17 @@ class Fixtures(unittest.TestCase):
                 if mutation=='none':self.assertEqual(len(checked_events(d)[0]),7)
                 else:
                     with self.assertRaises(TraceError):checked_events(d)
+
+    def test_compressed_trace_preserves_identity_and_bounds(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            d=Path(tmp);self.fixture(d);plain=d/'events.jsonl';payload=plain.read_bytes()
+            packed=d/'events.jsonl.gz';packed.write_bytes(gzip.compress(payload,mtime=0))
+            with self.assertRaises(TraceError):checked_events(d)
+            plain.unlink()
+            self.assertEqual(checked_events(d)[0],self.events())
+            with mock.patch(__name__+'.MAX_RAW',10),self.assertRaises(TraceError):checked_events(d)
+            packed.write_bytes(gzip.compress(payload+b' ',mtime=0))
+            with self.assertRaises(TraceError):checked_events(d)
 
     def test_correlated_late_interval_and_coverage(self):
         with tempfile.TemporaryDirectory() as tmp:
