@@ -93,8 +93,11 @@ sleep state and wakeup-to-reschedule delay, not the kernel stack or wait owner.
 ```sh
 python3 tools/landscape-hdmi-stall-trace.py --self-test
 python3 tools/landscape-hdmi-stall-trace.py --report docs/evidence/landscape-hdmi-stall-trace/board/trial-a --output /tmp/landscape-hdmi-stall-report.json
-openspec validate the-landscape-hdmi-stalls-have-correlated-scheduler-and-io-traces --strict
 ```
+
+The pre-archive OpenSpec proof was
+`openspec validate the-landscape-hdmi-stalls-have-correlated-scheduler-and-io-traces --strict`
+(exit 0).
 
 Nine host tests pass, including negative clock/loss/private-field/PID/partial-
 pair/ownership/cleanup/frame-join cases and compressed identity/expansion guards.
@@ -116,3 +119,8 @@ DEBUG/output/system/config are intact, and no reboot occurred. See
 was released after copying completed and cleanup verification; no build slot
 was needed. The next useful measurement is a bounded kernel-stack/DRM wait
 trace around these ioctls, preserving this installed image and landscape.
+
+CI and exact evidence publication at revision `7f590fa3` are recorded in
+`board/evidence-publication.json`; the initial missing gzip inventory rows
+were corrected and the binary-accounting guard passes. This tooling-only
+change has no delta specs or main-capability changes.

@@ -11,4 +11,4 @@
 
 ## 3. Publication
 
-- [ ] 3.1 Run `openspec validate the-landscape-hdmi-stalls-have-correlated-scheduler-and-io-traces --strict`, commit proved source/safe evidence and push master; verify CI and exact revision at `https://knewter.github.io/tdisplay-k230/work/`. Archive only with committed proof for every task. No capability/main-spec change or renderer fix is implied.
+- [x] 3.1 Run `openspec validate the-landscape-hdmi-stalls-have-correlated-scheduler-and-io-traces --strict`, commit proved source/safe evidence and push master; verify CI and exact revision at `https://knewter.github.io/tdisplay-k230/work/`. Archive only with committed proof for every task. No capability/main-spec change or renderer fix is implied.

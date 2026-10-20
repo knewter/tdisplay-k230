@@ -1,0 +1,12 @@
+{
+  "checked_at": "2026-10-20T06:27:26.669123+00:00",
+  "url": "https://knewter.github.io/tdisplay-k230/work/",
+  "http_status": 200,
+  "expected_revision": "7f590fa322297e9cb856d799657ec47a3b001354",
+  "published_revision": "7f590fa322297e9cb856d799657ec47a3b001354",
+  "exact_revision_present": true,
+  "ci_run": "https://github.com/knewter/tdisplay-k230/actions/runs/39380103230",
+  "ci_conclusion": "success",
+  "source_and_safe_evidence_committed": true,
+  "limit": "This is diagnostic source/evidence publication, not a new flashed image or physical acceptance."
+}
