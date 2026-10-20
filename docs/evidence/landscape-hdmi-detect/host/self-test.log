@@ -1,0 +1,12 @@
+test_cleanup_foreign_control_and_inode (__main__.Fixtures.test_cleanup_foreign_control_and_inode) ... ok
+test_clock_loss_count_hash_schema (__main__.Fixtures.test_clock_loss_count_hash_schema) ... ok
+test_foreign_worker_cannot_supply_stage (__main__.Fixtures.test_foreign_worker_cannot_supply_stage) ... ok
+test_inlined_update_helper_variant (__main__.Fixtures.test_inlined_update_helper_variant) ... ok
+test_missing_duplicate_wrong_caller (__main__.Fixtures.test_missing_duplicate_wrong_caller) ... ok
+test_private_payload_rejection_and_redaction (__main__.Fixtures.test_private_payload_rejection_and_redaction) ... ok
+test_three_stages_and_additive_boundaries (__main__.Fixtures.test_three_stages_and_additive_boundaries) ... ok
+
+----------------------------------------------------------------------
+Ran 7 tests in 0.008s
+
+OK

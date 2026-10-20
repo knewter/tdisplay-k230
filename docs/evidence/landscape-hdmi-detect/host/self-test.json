@@ -1,0 +1,8 @@
+{
+  "checked_at": "2026-10-20T17:30:18.308685+00:00",
+  "command": "python3 tools/landscape-hdmi-detect.py --self-test",
+  "exit_code": 0,
+  "test_methods": 7,
+  "tool_sha256": "ddfdbc6d97c250597c829eccba5c5e042a5c772086f9d06f84cea3e8f9434be9",
+  "limits": "Host fixtures for stage/caller ordering, foreign workers, malformed/private payloads, clock/loss/count/hash and cleanup ownership; no hardware proof."
+}

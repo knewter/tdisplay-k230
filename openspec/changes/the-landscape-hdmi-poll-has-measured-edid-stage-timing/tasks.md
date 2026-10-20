@@ -1,6 +1,6 @@
 ## 1. Probe tooling
 
-- [ ] 1.1 Implement bounded isolated function-only capture, privacy/schema/clock/loss/ownership guards and source-defined EDID stages. Host proof: `python3 tools/landscape-hdmi-detect.py --self-test`.
+- [x] 1.1 Implement bounded isolated function-only capture, privacy/schema/clock/loss/ownership guards and source-defined EDID stages. Host proof: `python3 tools/landscape-hdmi-detect.py --self-test`.
 
 ## 2. Hardware observation
 
