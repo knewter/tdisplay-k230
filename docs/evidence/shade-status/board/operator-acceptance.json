@@ -1,0 +1,10 @@
+{
+  "recorded_at": "2026-10-20T21:07:43.548497+00:00",
+  "operator_quote": "top drawer's good to go what's next go on",
+  "context": "Reply to the request for real top-drawer pulls on the normally selected native Settings candidate.",
+  "evidence_class": "operator physical acceptance",
+  "accepted_candidate_system": "/nix/store/p501mchy0dq9lyjnaxwkx5s2pdm4i2yj-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "runtime_identity": "Same boot69e90426, RustPID3724/executableSHA32c8c445, native Settings wrapperkdc5bmn, original Sway1046/landscape, no trace environment; fresh SSH preflight matches physical-ready record.",
+  "accepted_for_persistent_promotion": true,
+  "limits": "Operator qualitative acceptance; no camera, contact timestamps, optical latency or universal frame-rate bound inferred. Existing134.129ms instrumented tail remains recorded."
+}
