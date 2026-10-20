@@ -1,0 +1,6 @@
+{
+  "status": "NOT_COMPARABLE_OBSERVER",
+  "reason": "Full process scans stretched sampling intervals to roughly200\u2013520ms and used about33% of the single CPU over the whole captured window. Per-pull resource coverage gate failed. Its all-process hints require narrower confirmation; do not use presentation deltas as an optimization result.",
+  "private_trace_sha256": "781e37518601f4c51fc1397c0c469658af480a5d90f63e32412848a728ca5591",
+  "private_resources_sha256": "d8752699d16ea8b4d710abde427b579c0007e0858611c2cfeb8bc979f8fce54e"
+}

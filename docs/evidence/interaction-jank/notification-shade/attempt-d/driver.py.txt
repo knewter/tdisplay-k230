@@ -1,0 +1,131 @@
+"""Bounded installed-client shade trace. No source/binary/kernel replacement."""
+from pathlib import Path
+import datetime, hashlib, importlib.util, json, os, pwd, socket, subprocess, sys, time, threading
+
+D = Path('/run/shell/pane23-shade-trace-d')
+DROP = Path('/run/systemd/system/shell-ui.service.d/90-pane23-shade-trace.conf')
+BOOT = 'c17ee483-0191-48ea-986a-9738a274393e'
+SYSTEM = '/nix/store/hpmzja32mncizz7s49ylr8pj9cy5npvg-nixos-system-nixos-26.11.20260919.20b1ddd'
+FALLBACK = '/nix/store/j30yag05ic9k68n9dzbzindgf4ardp08-nixos-system-nixos-26.11.20260919.20b1ddd'
+TRACE = D / 'trace.json'
+PYTHON = sys.executable
+def run(*cmd):
+    return subprocess.check_output(cmd, text=True, timeout=20).strip()
+def save(name, value):
+    (D/name).write_text(json.dumps(value, indent=2)+'\n')
+def sha(path): return hashlib.sha256(Path(path).read_bytes()).hexdigest()
+def now(): return datetime.datetime.now(datetime.timezone.utc).isoformat()
+
+spec = importlib.util.spec_from_file_location('capture', '/var/tmp/k230-hdmi-stable-poll-candidate-a/hdmi-shell-capture-board.py')
+cap = importlib.util.module_from_spec(spec); spec.loader.exec_module(cap)
+def identity():
+    ipc=cap.IPC()
+    try:
+        outputs=cap.output_state(ipc.outputs()); sway=ipc.pid
+    finally:
+        ipc.close()
+    rust=int(run('systemctl','show','shell-ui','--property=MainPID','--value'))
+    return dict(utc=now(), boot_id=Path('/proc/sys/kernel/random/boot_id').read_text().strip(),
+        system=os.path.realpath('/run/current-system'), persistent_system=os.path.realpath('/nix/var/nix/profiles/system'),
+        outputs=outputs, sway_pid=sway, sway_executable=os.path.realpath(f'/proc/{sway}/exe'),
+        sway_sha256=sha(f'/proc/{sway}/exe'), rust_pid=rust,
+        rust_executable=os.path.realpath(f'/proc/{rust}/exe'), rust_sha256=sha(f'/proc/{rust}/exe'),
+        services=run('systemctl','is-active','shell','shell-ui').splitlines(),
+        cpu_online=Path('/sys/devices/system/cpu/online').read_text().strip())
+def guard(v):
+    assert v['boot_id']==BOOT and v['system']==SYSTEM and v['persistent_system']==FALLBACK
+    assert len(v['outputs'])==1 and v['outputs'][0]['name']=='DSI-1'
+    assert v['outputs'][0]['rect']['width']==1232 and v['outputs'][0]['rect']['height']==568
+    assert v['outputs'][0]['transform']=='270'
+    assert v['services']==['active','active']
+def sender():
+    account=pwd.getpwnam('shell'); os.setgroups([]); os.setgid(account.pw_gid); os.setuid(account.pw_uid)
+    rows=[]
+    for gesture in range(3):
+        # Real protocol, synthetic reveal. No physical touch or compositor input claim.
+        with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as peer:
+            peer.settimeout(2); peer.connect('/run/shell/k230-shell-rust.sock')
+            seq=230000+gesture
+            for index, (phase, progress) in enumerate([('begin',0)]+[('update',round(i*1000/60)) for i in range(1,61)]+[('finish',0)]):
+                deadline=time.monotonic()+1/60
+                message=dict(v=1,kind='reveal',surface='shade',phase=phase,seq=seq,progress=progress)
+                peer.sendall((json.dumps(message,separators=(',',':'))+'\n').encode())
+                rows.append(dict(gesture=gesture,phase=phase,progress=progress,sent_monotonic_ns=time.monotonic_ns()))
+                time.sleep(max(0,deadline-time.monotonic()))
+            time.sleep(.5)
+        time.sleep(.5)
+    print(json.dumps(rows))
+
+if len(sys.argv)>1 and sys.argv[1]=='--send':
+    sender(); raise SystemExit(0)
+
+assert not D.exists() and not DROP.exists()
+D.mkdir(mode=0o700); account=pwd.getpwnam('shell'); os.chown(D,account.pw_uid,account.pw_gid)
+manifest=dict(started_at=now(),source_sha256=sha(__file__),status='PREPARING',
+    workload='Three synthetic shade reveal streams: begin, 60 updates at 60Hz (0..1000), finish closed, 0.5s settle and 0.5s inter-gesture pause. Panel landscape1232x568.',
+    limits='Installed Rust client spans and presentation feedback; bypasses physical input and compositor gesture routing. Restarted client, cold startup included separately. No optical/finger-latency claim.')
+save('manifest.json',manifest)
+before=identity(); guard(before); save('before.json',before)
+space={p:dict(block_size=(v:=os.statvfs(p)).f_frsize,free_blocks=v.f_bfree,unprivileged_available_blocks=v.f_bavail) for p in ('/var/tmp','/run/shell')}
+save('space.json',space)
+assert space['/run/shell']['unprivileged_available_blocks']*space['/run/shell']['block_size']>32*1024*1024
+drop_written=False
+try:
+    DROP.parent.mkdir(exist_ok=True)
+    DROP.write_text('[Service]\nEnvironment=K230_TRACE_PATH='+str(TRACE)+'\nEnvironment=K230_TRACE_SECONDS=20\nEnvironment=K230_TRACE_ID=23000000000000000000000000000001\n')
+    drop_written=True
+    run('systemctl','daemon-reload'); run('systemctl','restart','shell-ui')
+    time.sleep(3)
+    during=identity(); guard(during)
+    assert during['sway_pid']==before['sway_pid'] and during['rust_executable']==before['rust_executable']
+    save('during.json',during)
+    manifest.update(status='CAPTURING',capture_start=now()); save('manifest.json',manifest)
+    samples=[]; stop=threading.Event()
+    def sample():
+        while not stop.is_set():
+            row=dict(monotonic_ns=time.monotonic_ns(), processes={})
+            for tag,pid in [('sway',during['sway_pid']),('rust',during['rust_pid'])]:
+                fields=Path(f'/proc/{pid}/stat').read_text().rpartition(')')[2].split()
+                sched=[int(v) for v in Path(f'/proc/{pid}/schedstat').read_text().split()]
+                row['processes'][tag]=dict(pid=pid,state=fields[0],cpu_ticks=int(fields[11])+int(fields[12]),schedstat=sched)
+            row['cpu0_ticks']=[int(v) for v in Path('/proc/stat').read_text().splitlines()[1].split()[1:]]
+            row['all_processes']={}
+            for d in Path('/proc').iterdir():
+                if not d.name.isdecimal(): continue
+                try:
+                    text=(d/'stat').read_text(); f=text.rpartition(')')[2].split()
+                    row['all_processes'][d.name]=dict(comm=text.partition('(')[2].rpartition(')')[0],cpu_ticks=int(f[11])+int(f[12]),start_ticks=int(f[19]))
+                except (FileNotFoundError,ProcessLookupError,PermissionError): pass
+            samples.append(row); stop.wait(.1)
+    thread=threading.Thread(target=sample); thread.start()
+    try:
+        sent=json.loads(run(PYTHON,__file__,'--send')); save('sent.json',sent)
+    finally:
+        stop.set(); thread.join(timeout=2)
+        assert not thread.is_alive()
+        save('resources.json',dict(clock_ticks_per_second=os.sysconf('SC_CLK_TCK'),samples=samples,observer='Two /proc process stat/schedstat and CPU0 tick samples at10Hz; observation overhead remains present.'))
+    deadline=time.monotonic()+25
+    while time.monotonic()<deadline:
+        if TRACE.exists() and TRACE.stat().st_size:
+            # The recorder streams JSON; file creation/size is not completion.
+            raw=TRACE.read_bytes()
+            if raw.endswith(b'\n'):
+                report=json.loads(raw); break
+        time.sleep(.25)
+    else: raise RuntimeError('bounded trace did not finish')
+    assert report['pid']==during['rust_pid'] and report['dropped']==0 and report['phase_log_dropped']==0
+    manifest.update(status='CAPTURED',trace_sha256=sha(TRACE),event_count=len(report['events']),trace_dropped=report['dropped'])
+except BaseException as error:
+    manifest.update(status='INCOMPLETE',error_class=type(error).__name__)
+    raise
+finally:
+    if drop_written:
+        DROP.unlink(); run('systemctl','daemon-reload'); run('systemctl','restart','shell-ui'); time.sleep(2)
+    after=identity(); save('after.json',after)
+    unchanged=[k for k in ('boot_id','system','persistent_system','outputs','sway_pid','sway_executable','sway_sha256','rust_executable','rust_sha256','services','cpu_online') if before[k]==after[k]]
+    manifest.update(finished_at=now(),dropin_removed=not DROP.exists(),unchanged_controls=unchanged,
+        expected_control_count=11,rust_client_restored=after['rust_pid']!=before['rust_pid'])
+    save('manifest.json',manifest)
+    guard(after)
+    assert len(unchanged)==11 and not DROP.exists()
+    print(json.dumps(manifest),flush=True)

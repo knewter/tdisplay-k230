@@ -1,6 +1,6 @@
 ## 1. Preserve deferred scope (planning; no hardware claim)
 
-- [ ] 1.1 When a slow interaction is reported, record route/workload and installed system/Rust/compositor identities under `docs/evidence/interaction-jank/`. Proof: the named report and `python3 tools/console.py /dev/ttyACM0 --wait=3 'readlink -f /run/current-system'` under the board reservation. Do not start solely to reconfirm accepted UX.
+- [x] 1.1 Record the reported landscape panel notification-shade pull workload and installed system/Rust/compositor identities in `docs/evidence/interaction-jank/notification-shade/README.md`. Hardware proof under the board reservation: protected-SSH Python current-system/profile/process/hash/output queries and the exact installed-client capture commands in that report, replayed with `python3 docs/evidence/interaction-jank/notification-shade/analyze.py.txt docs/evidence/interaction-jank/notification-shade/trial-f` (and `trial-g`). SSH follows the operator's explicit preference; no UART or physical performance acceptance is claimed. The settings-priority comparison diagnoses a contributor and does not ship a fix. Do not start unrelated measurements solely to reconfirm accepted UX.
 
 ## 2. Drawer measurement (parent 5.2 and 5.4, hardware-only)
 

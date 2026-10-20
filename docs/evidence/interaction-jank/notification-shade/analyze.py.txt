@@ -1,0 +1,66 @@
+"""Replay one completed shade capture; report client cost and actual presentations."""
+import collections, hashlib, json, math, statistics, sys
+from pathlib import Path
+
+root=Path(sys.argv[1])
+read=lambda n:json.loads((root/n).read_text())
+m,t,s=read('manifest.json'),read('trace.json'),read('sent.json')
+before,during,after=map(read,('before.json','during.json','after.json'))
+assert m['status']=='CAPTURED' and m['dropin_removed']
+assert hashlib.sha256((root/'trace.json').read_bytes()).hexdigest()==m['trace_sha256']
+assert t['schema']==1 and t['clock']=='CLOCK_MONOTONIC' and t['pid']==during['rust_pid']
+assert t['dropped']==0 and t['phase_log_dropped']==0 and not t['counters_only']
+assert len(t['events'])==m['event_count'] and t['finished_us']>=t['deadline_us']
+controls=('boot_id','system','persistent_system','outputs','sway_pid','sway_executable','sway_sha256','rust_executable','rust_sha256','services','cpu_online')
+assert all(before[k]==during[k]==after[k] for k in controls)
+assert after['services']==['active','active'] and after['cpu_online']=='0'
+assert during['outputs'][0]['name']=='DSI-1' and during['outputs'][0]['transform']=='270'
+events=t['events']; groups=collections.defaultdict(list)
+for event in events: groups[event['kind']].append(event)
+assert not groups['feedback_unavailable'] and not groups['feedback_overflow']
+commits={e['data'][0]:e for e in groups['commit']}
+presented={e['data'][0]:e for e in groups['presented']}
+discarded={e['data'][0]:e for e in groups['discarded']}
+assert len(commits)==len(groups['commit'])
+assert set(commits)==set(presented)|set(discarded) and not set(presented)&set(discarded)
+assert all(e['data'][5]==1 for e in presented.values()) # CLOCK_MONOTONIC
+def stats(values):
+    a=sorted(values)
+    if not a:return dict(count=0)
+    return dict(count=len(a),min=round(a[0],6),median=round(statistics.median(a),6),p95=round(a[math.ceil(.95*len(a))-1],6),max=round(a[-1],6))
+rebuilt={e['parent_span_id'] for e in groups['scene_rebuild']}
+spans={}
+for kind in ('scene_rebuild','canvas_copy','render_total','overlay_draw'):
+    rows=groups[kind]
+    spans[kind]=dict(wall_ms=stats([(e['end_us']-e['start_us'])/1000 for e in rows]),cpu_ms=stats([e['cpu_us']/1000 for e in rows]))
+rows=[e for e in groups['render_total'] if e['span_id'] not in rebuilt]
+spans['render_total_without_scene_rebuild']=dict(wall_ms=stats([(e['end_us']-e['start_us'])/1000 for e in rows]),cpu_ms=stats([e['cpu_us']/1000 for e in rows]))
+r=read('resources.json'); hz=r['clock_ticks_per_second']; gestures=[]
+for gesture in range(3):
+    sent=[e for e in s if e['gesture']==gesture]
+    assert len(sent)==62 and sent[0]['phase']=='begin' and sent[-1]['phase']=='finish'
+    assert len([e for e in sent if e['phase']=='update'])==60
+    lo,hi=(sent[i]['sent_monotonic_ns'] for i in (0,-1))
+    ids={i for i,e in commits.items() if lo<=e['start_us']*1000<=hi}
+    times=sorted(presented[i]['data'][1]/1e6 for i in ids&set(presented))
+    samples=[v for v in r['samples'] if lo<=v['monotonic_ns']<=hi]
+    assert len(samples)>=4
+    a,b=samples[0],samples[-1]; seconds=(b['monotonic_ns']-a['monotonic_ns'])/1e9
+    resources={}
+    for tag in ('sway','rust'):
+        x,y=a['processes'][tag],b['processes'][tag]
+        assert x['pid']==y['pid']
+        run,wait=(y['schedstat'][i]-x['schedstat'][i] for i in (0,1))
+        resources[tag]=dict(process_cpu_percent=round((y['cpu_ticks']-x['cpu_ticks'])/hz/seconds*100,3),main_thread_run_ms=round(run/1e6,3),main_thread_runnable_wait_ms=round(wait/1e6,3))
+    x,y=a['cpu0_ticks'],b['cpu0_ticks']; total=sum(y[:8])-sum(x[:8]);idle=(y[3]+y[4])-(x[3]+x[4])
+    entry=dict(gesture=gesture,sent_span_ms=(hi-lo)/1e6,committed_during_pull=len(ids),presented_frames=len(times),discarded_frames=len(ids&set(discarded)),presentation_gap_ms=stats([y-x for x,y in zip(times,times[1:])]),resource_sample_seconds=seconds,cpu0_busy_percent=round((total-idle)/total*100,3),resources=resources)
+    if 'all_processes' in a:
+        totals=[]
+        for pid,y in b['all_processes'].items():
+            x=a['all_processes'].get(pid)
+            if x and x['start_ticks']==y['start_ticks']:
+                cpu=(y['cpu_ticks']-x['cpu_ticks'])/hz/seconds*100
+                if cpu>1:totals.append(dict(pid=int(pid),comm=y['comm'],cpu_percent=round(cpu,3)))
+        entry['top_processes']=sorted(totals,key=lambda x:x['cpu_percent'],reverse=True)
+    gestures.append(entry)
+print(json.dumps(dict(status='QUALIFIED_DIAGNOSTIC',trace_sha256=m['trace_sha256'],pid=t['pid'],event_counts={k:len(v) for k,v in groups.items()},spans=spans,gestures=gestures,limits=['Synthetic reveal bypasses touch and compositor gesture routing; no finger/glass latency bound.','Client spans include tracer overhead; CPU sampler adds work. CPU samples are coarse and partial at gesture edges.','Presentation feedback uses actual CLOCK_MONOTONIC timestamps, not event-delivery times. Consecutive gaps are only within each pull; idle/settle boundaries excluded.','Frame discards are retained. No whole-interaction budget is claimed from client paint cost.','All captures share a fixed trace ID: keep PID and monotonic interval boundaries; do not merge their span IDs.']),indent=2))

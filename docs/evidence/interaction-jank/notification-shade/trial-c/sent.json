@@ -1,0 +1,1118 @@
+[
+  {
+    "gesture": 0,
+    "phase": "begin",
+    "progress": 0,
+    "sent_monotonic_ns": 1411867357639
+  },
+  {
+    "gesture": 0,
+    "phase": "update",
+    "progress": 17,
+    "sent_monotonic_ns": 1411885079194
+  },
+  {
+    "gesture": 0,
+    "phase": "update",
+    "progress": 33,
+    "sent_monotonic_ns": 1411902496083
+  },
+  {
+    "gesture": 0,
+    "phase": "update",
+    "progress": 50,
+    "sent_monotonic_ns": 1411920197564
+  },
+  {
+    "gesture": 0,
+    "phase": "update",
+    "progress": 67,
+    "sent_monotonic_ns": 1411936990972
+  },
+  {
+    "gesture": 0,
+    "phase": "update",
+    "progress": 83,
+    "sent_monotonic_ns": 1411954239527
+  },
+  {
+    "gesture": 0,
+    "phase": "update",
+    "progress": 100,
+    "sent_monotonic_ns": 1411971721750
+  },
+  {
+    "gesture": 0,
+    "phase": "update",
+    "progress": 117,
+    "sent_monotonic_ns": 1411992419083
+  },
+  {
+    "gesture": 0,
+    "phase": "update",
+    "progress": 133,
+    "sent_monotonic_ns": 1412009250564
+  },
+  {
+    "gesture": 0,
+    "phase": "update",
+    "progress": 150,
+    "sent_monotonic_ns": 1412026662194
+  },
+  {
+    "gesture": 0,
+    "phase": "update",
+    "progress": 167,
+    "sent_monotonic_ns": 1412043535157
+  },
+  {
+    "gesture": 0,
+    "phase": "update",
+    "progress": 183,
+    "sent_monotonic_ns": 1412060750157
+  },
+  {
+    "gesture": 0,
+    "phase": "update",
+    "progress": 200,
+    "sent_monotonic_ns": 1412077575305
+  },
+  {
+    "gesture": 0,
+    "phase": "update",
+    "progress": 217,
+    "sent_monotonic_ns": 1412094398527
+  },
+  {
+    "gesture": 0,
+    "phase": "update",
+    "progress": 233,
+    "sent_monotonic_ns": 1412111243861
+  },
+  {
+    "gesture": 0,
+    "phase": "update",
+    "progress": 250,
+    "sent_monotonic_ns": 1412128183305
+  },
+  {
+    "gesture": 0,
+    "phase": "update",
+    "progress": 267,
+    "sent_monotonic_ns": 1412144957490
+  },
+  {
+    "gesture": 0,
+    "phase": "update",
+    "progress": 283,
+    "sent_monotonic_ns": 1412161760675
+  },
+  {
+    "gesture": 0,
+    "phase": "update",
+    "progress": 300,
+    "sent_monotonic_ns": 1412178614379
+  },
+  {
+    "gesture": 0,
+    "phase": "update",
+    "progress": 317,
+    "sent_monotonic_ns": 1412195479305
+  },
+  {
+    "gesture": 0,
+    "phase": "update",
+    "progress": 333,
+    "sent_monotonic_ns": 1412212378305
+  },
+  {
+    "gesture": 0,
+    "phase": "update",
+    "progress": 350,
+    "sent_monotonic_ns": 1412229729712
+  },
+  {
+    "gesture": 0,
+    "phase": "update",
+    "progress": 367,
+    "sent_monotonic_ns": 1412246572898
+  },
+  {
+    "gesture": 0,
+    "phase": "update",
+    "progress": 383,
+    "sent_monotonic_ns": 1412263433120
+  },
+  {
+    "gesture": 0,
+    "phase": "update",
+    "progress": 400,
+    "sent_monotonic_ns": 1412280308823
+  },
+  {
+    "gesture": 0,
+    "phase": "update",
+    "progress": 417,
+    "sent_monotonic_ns": 1412297845268
+  },
+  {
+    "gesture": 0,
+    "phase": "update",
+    "progress": 433,
+    "sent_monotonic_ns": 1412314679675
+  },
+  {
+    "gesture": 0,
+    "phase": "update",
+    "progress": 450,
+    "sent_monotonic_ns": 1412332299564
+  },
+  {
+    "gesture": 0,
+    "phase": "update",
+    "progress": 467,
+    "sent_monotonic_ns": 1412349691823
+  },
+  {
+    "gesture": 0,
+    "phase": "update",
+    "progress": 483,
+    "sent_monotonic_ns": 1412366497046
+  },
+  {
+    "gesture": 0,
+    "phase": "update",
+    "progress": 500,
+    "sent_monotonic_ns": 1412383954231
+  },
+  {
+    "gesture": 0,
+    "phase": "update",
+    "progress": 517,
+    "sent_monotonic_ns": 1412400738712
+  },
+  {
+    "gesture": 0,
+    "phase": "update",
+    "progress": 533,
+    "sent_monotonic_ns": 1412417579638
+  },
+  {
+    "gesture": 0,
+    "phase": "update",
+    "progress": 550,
+    "sent_monotonic_ns": 1412434415157
+  },
+  {
+    "gesture": 0,
+    "phase": "update",
+    "progress": 567,
+    "sent_monotonic_ns": 1412451230786
+  },
+  {
+    "gesture": 0,
+    "phase": "update",
+    "progress": 583,
+    "sent_monotonic_ns": 1412468084786
+  },
+  {
+    "gesture": 0,
+    "phase": "update",
+    "progress": 600,
+    "sent_monotonic_ns": 1412484835305
+  },
+  {
+    "gesture": 0,
+    "phase": "update",
+    "progress": 617,
+    "sent_monotonic_ns": 1412502522046
+  },
+  {
+    "gesture": 0,
+    "phase": "update",
+    "progress": 633,
+    "sent_monotonic_ns": 1412519356527
+  },
+  {
+    "gesture": 0,
+    "phase": "update",
+    "progress": 650,
+    "sent_monotonic_ns": 1412536432934
+  },
+  {
+    "gesture": 0,
+    "phase": "update",
+    "progress": 667,
+    "sent_monotonic_ns": 1412556437601
+  },
+  {
+    "gesture": 0,
+    "phase": "update",
+    "progress": 683,
+    "sent_monotonic_ns": 1412573890712
+  },
+  {
+    "gesture": 0,
+    "phase": "update",
+    "progress": 700,
+    "sent_monotonic_ns": 1412590734008
+  },
+  {
+    "gesture": 0,
+    "phase": "update",
+    "progress": 717,
+    "sent_monotonic_ns": 1412607638045
+  },
+  {
+    "gesture": 0,
+    "phase": "update",
+    "progress": 733,
+    "sent_monotonic_ns": 1412624441120
+  },
+  {
+    "gesture": 0,
+    "phase": "update",
+    "progress": 750,
+    "sent_monotonic_ns": 1412641941601
+  },
+  {
+    "gesture": 0,
+    "phase": "update",
+    "progress": 767,
+    "sent_monotonic_ns": 1412658738008
+  },
+  {
+    "gesture": 0,
+    "phase": "update",
+    "progress": 783,
+    "sent_monotonic_ns": 1412675612564
+  },
+  {
+    "gesture": 0,
+    "phase": "update",
+    "progress": 800,
+    "sent_monotonic_ns": 1412693044527
+  },
+  {
+    "gesture": 0,
+    "phase": "update",
+    "progress": 817,
+    "sent_monotonic_ns": 1412709888490
+  },
+  {
+    "gesture": 0,
+    "phase": "update",
+    "progress": 833,
+    "sent_monotonic_ns": 1412726806045
+  },
+  {
+    "gesture": 0,
+    "phase": "update",
+    "progress": 850,
+    "sent_monotonic_ns": 1412743559082
+  },
+  {
+    "gesture": 0,
+    "phase": "update",
+    "progress": 867,
+    "sent_monotonic_ns": 1412760952231
+  },
+  {
+    "gesture": 0,
+    "phase": "update",
+    "progress": 883,
+    "sent_monotonic_ns": 1412778520675
+  },
+  {
+    "gesture": 0,
+    "phase": "update",
+    "progress": 900,
+    "sent_monotonic_ns": 1412795838231
+  },
+  {
+    "gesture": 0,
+    "phase": "update",
+    "progress": 917,
+    "sent_monotonic_ns": 1412812636305
+  },
+  {
+    "gesture": 0,
+    "phase": "update",
+    "progress": 933,
+    "sent_monotonic_ns": 1412829466156
+  },
+  {
+    "gesture": 0,
+    "phase": "update",
+    "progress": 950,
+    "sent_monotonic_ns": 1412848457971
+  },
+  {
+    "gesture": 0,
+    "phase": "update",
+    "progress": 967,
+    "sent_monotonic_ns": 1412865247749
+  },
+  {
+    "gesture": 0,
+    "phase": "update",
+    "progress": 983,
+    "sent_monotonic_ns": 1412882703823
+  },
+  {
+    "gesture": 0,
+    "phase": "update",
+    "progress": 1000,
+    "sent_monotonic_ns": 1412899620601
+  },
+  {
+    "gesture": 0,
+    "phase": "finish",
+    "progress": 0,
+    "sent_monotonic_ns": 1412916392601
+  },
+  {
+    "gesture": 1,
+    "phase": "begin",
+    "progress": 0,
+    "sent_monotonic_ns": 1413934034637
+  },
+  {
+    "gesture": 1,
+    "phase": "update",
+    "progress": 17,
+    "sent_monotonic_ns": 1413950874156
+  },
+  {
+    "gesture": 1,
+    "phase": "update",
+    "progress": 33,
+    "sent_monotonic_ns": 1413969944304
+  },
+  {
+    "gesture": 1,
+    "phase": "update",
+    "progress": 50,
+    "sent_monotonic_ns": 1413987127378
+  },
+  {
+    "gesture": 1,
+    "phase": "update",
+    "progress": 67,
+    "sent_monotonic_ns": 1414004115822
+  },
+  {
+    "gesture": 1,
+    "phase": "update",
+    "progress": 83,
+    "sent_monotonic_ns": 1414021437711
+  },
+  {
+    "gesture": 1,
+    "phase": "update",
+    "progress": 100,
+    "sent_monotonic_ns": 1414040443896
+  },
+  {
+    "gesture": 1,
+    "phase": "update",
+    "progress": 117,
+    "sent_monotonic_ns": 1414057227267
+  },
+  {
+    "gesture": 1,
+    "phase": "update",
+    "progress": 133,
+    "sent_monotonic_ns": 1414074077045
+  },
+  {
+    "gesture": 1,
+    "phase": "update",
+    "progress": 150,
+    "sent_monotonic_ns": 1414090950008
+  },
+  {
+    "gesture": 1,
+    "phase": "update",
+    "progress": 167,
+    "sent_monotonic_ns": 1414107782674
+  },
+  {
+    "gesture": 1,
+    "phase": "update",
+    "progress": 183,
+    "sent_monotonic_ns": 1414125282563
+  },
+  {
+    "gesture": 1,
+    "phase": "update",
+    "progress": 200,
+    "sent_monotonic_ns": 1414142188859
+  },
+  {
+    "gesture": 1,
+    "phase": "update",
+    "progress": 217,
+    "sent_monotonic_ns": 1414158980563
+  },
+  {
+    "gesture": 1,
+    "phase": "update",
+    "progress": 233,
+    "sent_monotonic_ns": 1414175883859
+  },
+  {
+    "gesture": 1,
+    "phase": "update",
+    "progress": 250,
+    "sent_monotonic_ns": 1414192645304
+  },
+  {
+    "gesture": 1,
+    "phase": "update",
+    "progress": 267,
+    "sent_monotonic_ns": 1414209480637
+  },
+  {
+    "gesture": 1,
+    "phase": "update",
+    "progress": 283,
+    "sent_monotonic_ns": 1414226545230
+  },
+  {
+    "gesture": 1,
+    "phase": "update",
+    "progress": 300,
+    "sent_monotonic_ns": 1414243370711
+  },
+  {
+    "gesture": 1,
+    "phase": "update",
+    "progress": 317,
+    "sent_monotonic_ns": 1414260287711
+  },
+  {
+    "gesture": 1,
+    "phase": "update",
+    "progress": 333,
+    "sent_monotonic_ns": 1414280144415
+  },
+  {
+    "gesture": 1,
+    "phase": "update",
+    "progress": 350,
+    "sent_monotonic_ns": 1414294059970
+  },
+  {
+    "gesture": 1,
+    "phase": "update",
+    "progress": 367,
+    "sent_monotonic_ns": 1414310913896
+  },
+  {
+    "gesture": 1,
+    "phase": "update",
+    "progress": 383,
+    "sent_monotonic_ns": 1414327778044
+  },
+  {
+    "gesture": 1,
+    "phase": "update",
+    "progress": 400,
+    "sent_monotonic_ns": 1414344723304
+  },
+  {
+    "gesture": 1,
+    "phase": "update",
+    "progress": 417,
+    "sent_monotonic_ns": 1414361530267
+  },
+  {
+    "gesture": 1,
+    "phase": "update",
+    "progress": 433,
+    "sent_monotonic_ns": 1414378344044
+  },
+  {
+    "gesture": 1,
+    "phase": "update",
+    "progress": 450,
+    "sent_monotonic_ns": 1414395261378
+  },
+  {
+    "gesture": 1,
+    "phase": "update",
+    "progress": 467,
+    "sent_monotonic_ns": 1414412129304
+  },
+  {
+    "gesture": 1,
+    "phase": "update",
+    "progress": 483,
+    "sent_monotonic_ns": 1414428937526
+  },
+  {
+    "gesture": 1,
+    "phase": "update",
+    "progress": 500,
+    "sent_monotonic_ns": 1414445792526
+  },
+  {
+    "gesture": 1,
+    "phase": "update",
+    "progress": 517,
+    "sent_monotonic_ns": 1414462864155
+  },
+  {
+    "gesture": 1,
+    "phase": "update",
+    "progress": 533,
+    "sent_monotonic_ns": 1414479679193
+  },
+  {
+    "gesture": 1,
+    "phase": "update",
+    "progress": 550,
+    "sent_monotonic_ns": 1414497249044
+  },
+  {
+    "gesture": 1,
+    "phase": "update",
+    "progress": 567,
+    "sent_monotonic_ns": 1414514192044
+  },
+  {
+    "gesture": 1,
+    "phase": "update",
+    "progress": 583,
+    "sent_monotonic_ns": 1414531411304
+  },
+  {
+    "gesture": 1,
+    "phase": "update",
+    "progress": 600,
+    "sent_monotonic_ns": 1414548294081
+  },
+  {
+    "gesture": 1,
+    "phase": "update",
+    "progress": 617,
+    "sent_monotonic_ns": 1414566265933
+  },
+  {
+    "gesture": 1,
+    "phase": "update",
+    "progress": 633,
+    "sent_monotonic_ns": 1414581923637
+  },
+  {
+    "gesture": 1,
+    "phase": "update",
+    "progress": 650,
+    "sent_monotonic_ns": 1414599582600
+  },
+  {
+    "gesture": 1,
+    "phase": "update",
+    "progress": 667,
+    "sent_monotonic_ns": 1414616398044
+  },
+  {
+    "gesture": 1,
+    "phase": "update",
+    "progress": 683,
+    "sent_monotonic_ns": 1414633225822
+  },
+  {
+    "gesture": 1,
+    "phase": "update",
+    "progress": 700,
+    "sent_monotonic_ns": 1414650087822
+  },
+  {
+    "gesture": 1,
+    "phase": "update",
+    "progress": 717,
+    "sent_monotonic_ns": 1414668993674
+  },
+  {
+    "gesture": 1,
+    "phase": "update",
+    "progress": 733,
+    "sent_monotonic_ns": 1414688421674
+  },
+  {
+    "gesture": 1,
+    "phase": "update",
+    "progress": 750,
+    "sent_monotonic_ns": 1414705232600
+  },
+  {
+    "gesture": 1,
+    "phase": "update",
+    "progress": 767,
+    "sent_monotonic_ns": 1414722045007
+  },
+  {
+    "gesture": 1,
+    "phase": "update",
+    "progress": 783,
+    "sent_monotonic_ns": 1414738903007
+  },
+  {
+    "gesture": 1,
+    "phase": "update",
+    "progress": 800,
+    "sent_monotonic_ns": 1414755654303
+  },
+  {
+    "gesture": 1,
+    "phase": "update",
+    "progress": 817,
+    "sent_monotonic_ns": 1414773283822
+  },
+  {
+    "gesture": 1,
+    "phase": "update",
+    "progress": 833,
+    "sent_monotonic_ns": 1414789986785
+  },
+  {
+    "gesture": 1,
+    "phase": "update",
+    "progress": 850,
+    "sent_monotonic_ns": 1414806992118
+  },
+  {
+    "gesture": 1,
+    "phase": "update",
+    "progress": 867,
+    "sent_monotonic_ns": 1414824781674
+  },
+  {
+    "gesture": 1,
+    "phase": "update",
+    "progress": 883,
+    "sent_monotonic_ns": 1414841921970
+  },
+  {
+    "gesture": 1,
+    "phase": "update",
+    "progress": 900,
+    "sent_monotonic_ns": 1414858795489
+  },
+  {
+    "gesture": 1,
+    "phase": "update",
+    "progress": 917,
+    "sent_monotonic_ns": 1414875736711
+  },
+  {
+    "gesture": 1,
+    "phase": "update",
+    "progress": 933,
+    "sent_monotonic_ns": 1414892986489
+  },
+  {
+    "gesture": 1,
+    "phase": "update",
+    "progress": 950,
+    "sent_monotonic_ns": 1414909862229
+  },
+  {
+    "gesture": 1,
+    "phase": "update",
+    "progress": 967,
+    "sent_monotonic_ns": 1414926664489
+  },
+  {
+    "gesture": 1,
+    "phase": "update",
+    "progress": 983,
+    "sent_monotonic_ns": 1414945314303
+  },
+  {
+    "gesture": 1,
+    "phase": "update",
+    "progress": 1000,
+    "sent_monotonic_ns": 1414960903081
+  },
+  {
+    "gesture": 1,
+    "phase": "finish",
+    "progress": 0,
+    "sent_monotonic_ns": 1414978090674
+  },
+  {
+    "gesture": 2,
+    "phase": "begin",
+    "progress": 0,
+    "sent_monotonic_ns": 1415996422821
+  },
+  {
+    "gesture": 2,
+    "phase": "update",
+    "progress": 17,
+    "sent_monotonic_ns": 1416014166340
+  },
+  {
+    "gesture": 2,
+    "phase": "update",
+    "progress": 33,
+    "sent_monotonic_ns": 1416031030821
+  },
+  {
+    "gesture": 2,
+    "phase": "update",
+    "progress": 50,
+    "sent_monotonic_ns": 1416047863710
+  },
+  {
+    "gesture": 2,
+    "phase": "update",
+    "progress": 67,
+    "sent_monotonic_ns": 1416065840969
+  },
+  {
+    "gesture": 2,
+    "phase": "update",
+    "progress": 83,
+    "sent_monotonic_ns": 1416081568525
+  },
+  {
+    "gesture": 2,
+    "phase": "update",
+    "progress": 100,
+    "sent_monotonic_ns": 1416099026192
+  },
+  {
+    "gesture": 2,
+    "phase": "update",
+    "progress": 117,
+    "sent_monotonic_ns": 1416115924377
+  },
+  {
+    "gesture": 2,
+    "phase": "update",
+    "progress": 133,
+    "sent_monotonic_ns": 1416133287562
+  },
+  {
+    "gesture": 2,
+    "phase": "update",
+    "progress": 150,
+    "sent_monotonic_ns": 1416150562006
+  },
+  {
+    "gesture": 2,
+    "phase": "update",
+    "progress": 167,
+    "sent_monotonic_ns": 1416167977229
+  },
+  {
+    "gesture": 2,
+    "phase": "update",
+    "progress": 183,
+    "sent_monotonic_ns": 1416185444636
+  },
+  {
+    "gesture": 2,
+    "phase": "update",
+    "progress": 200,
+    "sent_monotonic_ns": 1416202452154
+  },
+  {
+    "gesture": 2,
+    "phase": "update",
+    "progress": 217,
+    "sent_monotonic_ns": 1416219254784
+  },
+  {
+    "gesture": 2,
+    "phase": "update",
+    "progress": 233,
+    "sent_monotonic_ns": 1416236999562
+  },
+  {
+    "gesture": 2,
+    "phase": "update",
+    "progress": 250,
+    "sent_monotonic_ns": 1416252991414
+  },
+  {
+    "gesture": 2,
+    "phase": "update",
+    "progress": 267,
+    "sent_monotonic_ns": 1416269691414
+  },
+  {
+    "gesture": 2,
+    "phase": "update",
+    "progress": 283,
+    "sent_monotonic_ns": 1416287028117
+  },
+  {
+    "gesture": 2,
+    "phase": "update",
+    "progress": 300,
+    "sent_monotonic_ns": 1416303879154
+  },
+  {
+    "gesture": 2,
+    "phase": "update",
+    "progress": 317,
+    "sent_monotonic_ns": 1416320726414
+  },
+  {
+    "gesture": 2,
+    "phase": "update",
+    "progress": 333,
+    "sent_monotonic_ns": 1416337558858
+  },
+  {
+    "gesture": 2,
+    "phase": "update",
+    "progress": 350,
+    "sent_monotonic_ns": 1416354342228
+  },
+  {
+    "gesture": 2,
+    "phase": "update",
+    "progress": 367,
+    "sent_monotonic_ns": 1416371873117
+  },
+  {
+    "gesture": 2,
+    "phase": "update",
+    "progress": 383,
+    "sent_monotonic_ns": 1416389289562
+  },
+  {
+    "gesture": 2,
+    "phase": "update",
+    "progress": 400,
+    "sent_monotonic_ns": 1416407201969
+  },
+  {
+    "gesture": 2,
+    "phase": "update",
+    "progress": 417,
+    "sent_monotonic_ns": 1416423009636
+  },
+  {
+    "gesture": 2,
+    "phase": "update",
+    "progress": 433,
+    "sent_monotonic_ns": 1416440426895
+  },
+  {
+    "gesture": 2,
+    "phase": "update",
+    "progress": 450,
+    "sent_monotonic_ns": 1416457779117
+  },
+  {
+    "gesture": 2,
+    "phase": "update",
+    "progress": 467,
+    "sent_monotonic_ns": 1416474525451
+  },
+  {
+    "gesture": 2,
+    "phase": "update",
+    "progress": 483,
+    "sent_monotonic_ns": 1416492141265
+  },
+  {
+    "gesture": 2,
+    "phase": "update",
+    "progress": 500,
+    "sent_monotonic_ns": 1416508922525
+  },
+  {
+    "gesture": 2,
+    "phase": "update",
+    "progress": 517,
+    "sent_monotonic_ns": 1416526320747
+  },
+  {
+    "gesture": 2,
+    "phase": "update",
+    "progress": 533,
+    "sent_monotonic_ns": 1416544117932
+  },
+  {
+    "gesture": 2,
+    "phase": "update",
+    "progress": 550,
+    "sent_monotonic_ns": 1416561387339
+  },
+  {
+    "gesture": 2,
+    "phase": "update",
+    "progress": 567,
+    "sent_monotonic_ns": 1416578273339
+  },
+  {
+    "gesture": 2,
+    "phase": "update",
+    "progress": 583,
+    "sent_monotonic_ns": 1416595095043
+  },
+  {
+    "gesture": 2,
+    "phase": "update",
+    "progress": 600,
+    "sent_monotonic_ns": 1416612645488
+  },
+  {
+    "gesture": 2,
+    "phase": "update",
+    "progress": 617,
+    "sent_monotonic_ns": 1416629849228
+  },
+  {
+    "gesture": 2,
+    "phase": "update",
+    "progress": 633,
+    "sent_monotonic_ns": 1416647254043
+  },
+  {
+    "gesture": 2,
+    "phase": "update",
+    "progress": 650,
+    "sent_monotonic_ns": 1416664692154
+  },
+  {
+    "gesture": 2,
+    "phase": "update",
+    "progress": 667,
+    "sent_monotonic_ns": 1416681517673
+  },
+  {
+    "gesture": 2,
+    "phase": "update",
+    "progress": 683,
+    "sent_monotonic_ns": 1416698412710
+  },
+  {
+    "gesture": 2,
+    "phase": "update",
+    "progress": 700,
+    "sent_monotonic_ns": 1416715503006
+  },
+  {
+    "gesture": 2,
+    "phase": "update",
+    "progress": 717,
+    "sent_monotonic_ns": 1416732414006
+  },
+  {
+    "gesture": 2,
+    "phase": "update",
+    "progress": 733,
+    "sent_monotonic_ns": 1416749279710
+  },
+  {
+    "gesture": 2,
+    "phase": "update",
+    "progress": 750,
+    "sent_monotonic_ns": 1416766054191
+  },
+  {
+    "gesture": 2,
+    "phase": "update",
+    "progress": 767,
+    "sent_monotonic_ns": 1416782895969
+  },
+  {
+    "gesture": 2,
+    "phase": "update",
+    "progress": 783,
+    "sent_monotonic_ns": 1416799759265
+  },
+  {
+    "gesture": 2,
+    "phase": "update",
+    "progress": 800,
+    "sent_monotonic_ns": 1416817492561
+  },
+  {
+    "gesture": 2,
+    "phase": "update",
+    "progress": 817,
+    "sent_monotonic_ns": 1416834807524
+  },
+  {
+    "gesture": 2,
+    "phase": "update",
+    "progress": 833,
+    "sent_monotonic_ns": 1416851967784
+  },
+  {
+    "gesture": 2,
+    "phase": "update",
+    "progress": 850,
+    "sent_monotonic_ns": 1416868835154
+  },
+  {
+    "gesture": 2,
+    "phase": "update",
+    "progress": 867,
+    "sent_monotonic_ns": 1416885574376
+  },
+  {
+    "gesture": 2,
+    "phase": "update",
+    "progress": 883,
+    "sent_monotonic_ns": 1416903023228
+  },
+  {
+    "gesture": 2,
+    "phase": "update",
+    "progress": 900,
+    "sent_monotonic_ns": 1416920429228
+  },
+  {
+    "gesture": 2,
+    "phase": "update",
+    "progress": 917,
+    "sent_monotonic_ns": 1416937213376
+  },
+  {
+    "gesture": 2,
+    "phase": "update",
+    "progress": 933,
+    "sent_monotonic_ns": 1416954297043
+  },
+  {
+    "gesture": 2,
+    "phase": "update",
+    "progress": 950,
+    "sent_monotonic_ns": 1416971151265
+  },
+  {
+    "gesture": 2,
+    "phase": "update",
+    "progress": 967,
+    "sent_monotonic_ns": 1416987964895
+  },
+  {
+    "gesture": 2,
+    "phase": "update",
+    "progress": 983,
+    "sent_monotonic_ns": 1417008391376
+  },
+  {
+    "gesture": 2,
+    "phase": "update",
+    "progress": 1000,
+    "sent_monotonic_ns": 1417025230302
+  },
+  {
+    "gesture": 2,
+    "phase": "finish",
+    "progress": 0,
+    "sent_monotonic_ns": 1417042059969
+  }
+]

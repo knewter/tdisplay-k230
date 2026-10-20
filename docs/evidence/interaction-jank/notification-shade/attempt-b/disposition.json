@@ -1,0 +1,8 @@
+{
+  "status": "INCOMPLETE_DRIVER",
+  "trace_bytes": 431475,
+  "trace_sha256": "ac23903423f5a05ddf72776019c9eb4d04f27736b6aae499eb5f2b6a555c42f9",
+  "reason": "Driver parsed while JSON writer was still running. Full trace later exists, but this driver result remains incomplete; no acceptance uses this attempt.",
+  "private_source": "shade-trace-b/trace.json",
+  "raw_trace_committed": false
+}

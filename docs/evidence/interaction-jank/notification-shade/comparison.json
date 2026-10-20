@@ -1,0 +1,96 @@
+{
+  "status": "BOUNDED_DIAGNOSTIC_COMPARISON",
+  "source_sha256": "203d542c89e53481957f23dd73f8436d5400eb02aa00dce6c59e9128b41f13eb",
+  "matched_controls": [
+    "boot_id",
+    "system",
+    "persistent_system",
+    "outputs",
+    "sway_pid",
+    "sway_executable",
+    "sway_sha256",
+    "rust_executable",
+    "rust_sha256",
+    "services",
+    "cpu_online"
+  ],
+  "difference": "Only matched read-only k230-settings status child priority0->19. Source binaries/config/kernel/output unchanged. Same three synthetic 60Hz pull streams and same sampler/tracer.",
+  "gestures": [
+    {
+      "gesture": 0,
+      "baseline_median_gap_ms": 76.641,
+      "treatment_median_gap_ms": 38.338,
+      "baseline_max_gap_ms": 114.972,
+      "treatment_max_gap_ms": 76.621,
+      "baseline_presented": 14,
+      "treatment_presented": 20
+    },
+    {
+      "gesture": 1,
+      "baseline_median_gap_ms": 76.6395,
+      "treatment_median_gap_ms": 38.324,
+      "baseline_max_gap_ms": 114.967,
+      "treatment_max_gap_ms": 57.486,
+      "baseline_presented": 15,
+      "treatment_presented": 24
+    },
+    {
+      "gesture": 2,
+      "baseline_median_gap_ms": 76.6175,
+      "treatment_median_gap_ms": 38.327,
+      "baseline_max_gap_ms": 114.964,
+      "treatment_max_gap_ms": 95.809,
+      "baseline_presented": 15,
+      "treatment_presented": 22
+    }
+  ],
+  "resources": {
+    "f": {
+      "observer_cpu_percent": 10.93190194541366,
+      "settings_status_children_last_observed": {
+        "2823": {
+          "command": "k230-settings status",
+          "script_path": "/nix/store/qc4fg0nvm8i3lpclnyji2ms68axr0vf3-device_settings.py",
+          "cpu_ticks": 73,
+          "start_ticks": 188511,
+          "nice": 0
+        },
+        "2825": {
+          "command": "k230-settings status",
+          "script_path": "/nix/store/qc4fg0nvm8i3lpclnyji2ms68axr0vf3-device_settings.py",
+          "cpu_ticks": 72,
+          "start_ticks": 188719,
+          "nice": 0
+        },
+        "2827": {
+          "command": "k230-settings status",
+          "script_path": "/nix/store/qc4fg0nvm8i3lpclnyji2ms68axr0vf3-device_settings.py",
+          "cpu_ticks": 71,
+          "start_ticks": 188926,
+          "nice": 0
+        }
+      }
+    },
+    "g": {
+      "observer_cpu_percent": 10.592219240922645,
+      "settings_status_children_last_observed": {
+        "3003": {
+          "command": "k230-settings status",
+          "script_path": "/nix/store/qc4fg0nvm8i3lpclnyji2ms68axr0vf3-device_settings.py",
+          "cpu_ticks": 75,
+          "start_ticks": 193991,
+          "nice": 19
+        },
+        "3005": {
+          "command": "k230-settings status",
+          "script_path": "/nix/store/qc4fg0nvm8i3lpclnyji2ms68axr0vf3-device_settings.py",
+          "cpu_ticks": 69,
+          "start_ticks": 194406,
+          "nice": 19
+        }
+      }
+    }
+  },
+  "cleanup": "Both treated children exited; temporary UI environment removed and normal client restored. No persistent scheduler policy or code change.",
+  "limits": "One sequential pair with three pulls per condition; extra early diagnostic captures retained by disposition. Observer CPU about11%, no optical/native/finger-latency acceptance. G has two status processes because pending requests coalesce; fresh-state timing and all control actions are unqualified. Residual38ms median gaps remain."
+}

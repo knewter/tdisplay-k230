@@ -1,0 +1,38 @@
+{
+  "derivation": "/nix/store/azb6fkv01ihj9wb93qj224092ig7wi01-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0.drv",
+  "source": "/nix/store/lm7axb6ncfhm81qflz44zr1ww9zn76v3-source",
+  "files": {
+    "src/main.rs": {
+      "installed_source_sha256": "51a8829b5769ebbbc1fc6b789f16066c9477a7a6bb7556f969d872c583555fb6",
+      "reviewed_sha256": "51a8829b5769ebbbc1fc6b789f16066c9477a7a6bb7556f969d872c583555fb6",
+      "identical": true
+    },
+    "src/render.rs": {
+      "installed_source_sha256": "e05fc496d40252014d15470683c893f092e8b49917c48215ff5cd602de8ecc06",
+      "reviewed_sha256": "e05fc496d40252014d15470683c893f092e8b49917c48215ff5cd602de8ecc06",
+      "identical": true
+    },
+    "src/protocol.rs": {
+      "installed_source_sha256": "ff55c0e997893944d617ea46006a687e3681dc0e61a30666e78a817e11261bc5",
+      "reviewed_sha256": "ff55c0e997893944d617ea46006a687e3681dc0e61a30666e78a817e11261bc5",
+      "identical": true
+    },
+    "src/runtime_trace.rs": {
+      "installed_source_sha256": "6146a425a7afc04305633123018fa1b903acf778cac5c4e67bc38c6b4cd93d52",
+      "reviewed_sha256": "6146a425a7afc04305633123018fa1b903acf778cac5c4e67bc38c6b4cd93d52",
+      "identical": true
+    },
+    "src/service_data.rs": {
+      "installed_source_sha256": "aacc9e0e4e5d34daa05781545ef53c1adbc0883196f52d114e2275437ce77017",
+      "reviewed_sha256": "aacc9e0e4e5d34daa05781545ef53c1adbc0883196f52d114e2275437ce77017",
+      "identical": true
+    }
+  },
+  "settings_status": {
+    "source": "/nix/store/qc4fg0nvm8i3lpclnyji2ms68axr0vf3-device_settings.py",
+    "source_sha256": "130bd6a560176f112d9c3a677c76bafa591a40aec97c744cd362d6c5485f4106",
+    "reviewed_source": "tools/device_settings.py",
+    "reviewed_sha256": "130bd6a560176f112d9c3a677c76bafa591a40aec97c744cd362d6c5485f4106",
+    "identical": true
+  }
+}

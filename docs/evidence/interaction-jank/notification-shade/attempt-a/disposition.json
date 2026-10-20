@@ -1,0 +1,8 @@
+{
+  "status": "INCOMPLETE_DRIVER",
+  "trace_bytes": 0,
+  "trace_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "reason": "Trace serialization hit ENOSPC on root filesystem; empty trace, no timing qualification.",
+  "private_source": "shade-trace-a/trace.json",
+  "raw_trace_committed": false
+}

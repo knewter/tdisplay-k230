@@ -1,0 +1,29 @@
+{
+  "treatment": "settings-status nice19 only",
+  "started_at": "2026-10-20T19:29:14.296962+00:00",
+  "source_sha256": "203d542c89e53481957f23dd73f8436d5400eb02aa00dce6c59e9128b41f13eb",
+  "status": "CAPTURED",
+  "workload": "Three synthetic shade reveal streams: begin, 60 updates at 60Hz (0..1000), finish closed, 0.5s settle and 0.5s inter-gesture pause. Panel landscape1232x568.",
+  "limits": "Installed Rust client spans and presentation feedback; bypasses physical input and compositor gesture routing. Restarted client, cold startup included separately. No optical/finger-latency claim.",
+  "capture_start": "2026-10-20T19:29:23.123650+00:00",
+  "trace_sha256": "535431b850fdbe864380ba5bdd53a5a7b0905b8590bd7fa359c3245725c465aa",
+  "event_count": 3260,
+  "trace_dropped": 0,
+  "finished_at": "2026-10-20T19:29:48.014239+00:00",
+  "dropin_removed": true,
+  "unchanged_controls": [
+    "boot_id",
+    "system",
+    "persistent_system",
+    "outputs",
+    "sway_pid",
+    "sway_executable",
+    "sway_sha256",
+    "rust_executable",
+    "rust_sha256",
+    "services",
+    "cpu_online"
+  ],
+  "expected_control_count": 11,
+  "rust_client_restored": true
+}

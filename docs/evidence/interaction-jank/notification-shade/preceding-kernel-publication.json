@@ -1,0 +1,11 @@
+{
+  "checked_at": "2026-10-20T19:22:57.300548+00:00",
+  "expected_revision": "5ec642d710dc51216d0eaf8ef966daca5b5b6069",
+  "published_revision": "5ec642d710dc51216d0eaf8ef966daca5b5b6069",
+  "http_status": 200,
+  "exact_revision_present": true,
+  "url": "https://knewter.github.io/tdisplay-k230/work/",
+  "ci_run": "https://github.com/knewter/tdisplay-k230/actions/runs/39482148003",
+  "ci_conclusion": "success",
+  "scope": "Kernel timing and partial physical evidence; HDMI reconnect and persistent promotion remain unverified."
+}

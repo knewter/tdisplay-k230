@@ -1,0 +1,16 @@
+{
+  "3003": {
+    "start_ticks": 193991,
+    "previous_nice": 0,
+    "new_nice": 19,
+    "changed_monotonic_ns": 1939990070176,
+    "cleanup": "process exited"
+  },
+  "3005": {
+    "start_ticks": 194406,
+    "previous_nice": 0,
+    "new_nice": 19,
+    "changed_monotonic_ns": 1944216926655,
+    "cleanup": "process exited"
+  }
+}

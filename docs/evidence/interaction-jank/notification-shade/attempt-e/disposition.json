@@ -1,0 +1,6 @@
+{
+  "status": "TRACE_CAPTURED_HELPER_IDENTIFICATION_INCOMPLETE",
+  "reason": "Detector matched the brief k230-settings wrapper, while the long-running Python argv names device_settings.py. No claim that settings consumed zero CPU is made. F/G correct the detector and preserve the exact source hash.",
+  "private_trace_sha256": "edaaefa8323ded4faec4427919bba4fc9df2d94b0994ac7f3335c06afa6e43f9",
+  "private_resources_sha256": "3d2c1251ea1a7b47af00d95acdef439b4d03713360abcf927bf54a1e7bf17fab"
+}

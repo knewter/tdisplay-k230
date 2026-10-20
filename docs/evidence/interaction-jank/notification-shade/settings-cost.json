@@ -1,0 +1,17 @@
+{
+  "command": [
+    "/nix/store/46sw7cwipb8g0pfjqa7vry4x1x65345g-k230-settings/bin/k230-settings",
+    "status"
+  ],
+  "script_sha256": "c909c7144e320e28c588b019a0d32fcd427c02babe1fa5c999525a54c5276788",
+  "observed_controlled_child_argv": [
+    "/nix/store/v189xydz6qkcd4cbkixcmv91w8hbc560-python3-riscv64-unknown-linux-gnu-3.14.7/bin/python3",
+    "/nix/store/qc4fg0nvm8i3lpclnyji2ms68axr0vf3-device_settings.py",
+    "status"
+  ],
+  "elapsed_ms": 895.25818500000003,
+  "user_cpu_ms": 678.05099999999993,
+  "system_cpu_ms": 142.70099999999999,
+  "exit_code": 0,
+  "stdout": "discarded; no settings values retained"
+}

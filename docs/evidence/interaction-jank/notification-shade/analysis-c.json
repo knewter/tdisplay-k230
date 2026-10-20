@@ -1,0 +1,199 @@
+{
+  "status": "QUALIFIED_DIAGNOSTIC",
+  "trace_sha256": "fee52d4823822416f302497f65df650bbd4be4c2b5096508323b7f4f1b1226e9",
+  "pid": 2132,
+  "event_counts": {
+    "trace_start": 1,
+    "wayland_dispatch": 396,
+    "thumbnail_poll": 506,
+    "wayland_flush": 396,
+    "event_loop_work": 396,
+    "draw_begin": 110,
+    "scene_rebuild": 6,
+    "canvas_copy": 110,
+    "render_total": 110,
+    "draw_end": 110,
+    "commit": 110,
+    "overlay_draw": 110,
+    "frame_callback": 105,
+    "presented": 56,
+    "discarded": 54,
+    "feedback_unavailable": 0,
+    "feedback_overflow": 0
+  },
+  "spans": {
+    "scene_rebuild": {
+      "wall_ms": {
+        "count": 6,
+        "min": 20.856,
+        "median": 28.0985,
+        "p95": 51.071,
+        "max": 51.071
+      },
+      "cpu_ms": {
+        "count": 6,
+        "min": 10.039,
+        "median": 12.349,
+        "p95": 21.569,
+        "max": 21.569
+      }
+    },
+    "canvas_copy": {
+      "wall_ms": {
+        "count": 110,
+        "min": 0.31,
+        "median": 8.3975,
+        "p95": 13.161,
+        "max": 30.101
+      },
+      "cpu_ms": {
+        "count": 110,
+        "min": 0.311,
+        "median": 2.8715,
+        "p95": 3.027,
+        "max": 9.729
+      }
+    },
+    "render_total": {
+      "wall_ms": {
+        "count": 110,
+        "min": 0.355,
+        "median": 9.3975,
+        "p95": 27.218,
+        "max": 51.429
+      },
+      "cpu_ms": {
+        "count": 110,
+        "min": 0.352,
+        "median": 2.9245,
+        "p95": 12.517,
+        "max": 21.921
+      }
+    },
+    "overlay_draw": {
+      "wall_ms": {
+        "count": 110,
+        "min": 0.515,
+        "median": 10.1125,
+        "p95": 27.502,
+        "max": 53.347
+      },
+      "cpu_ms": {
+        "count": 110,
+        "min": 0.499,
+        "median": 3.171,
+        "p95": 12.967,
+        "max": 22.303
+      }
+    },
+    "render_total_without_scene_rebuild": {
+      "wall_ms": {
+        "count": 104,
+        "min": 0.355,
+        "median": 9.3435,
+        "p95": 13.518,
+        "max": 35.193
+      },
+      "cpu_ms": {
+        "count": 104,
+        "min": 0.352,
+        "median": 2.922,
+        "p95": 3.064,
+        "max": 9.807
+      }
+    }
+  },
+  "gestures": [
+    {
+      "gesture": 0,
+      "sent_span_ms": 1049.034962,
+      "committed_during_pull": 29,
+      "presented_frames": 16,
+      "discarded_frames": 13,
+      "presentation_gap_ms": {
+        "count": 15,
+        "min": 57.47,
+        "median": 57.487,
+        "p95": 95.81,
+        "max": 95.81
+      },
+      "resource_sample_seconds": 0.974772962,
+      "cpu0_busy_percent": 100.0,
+      "resources": {
+        "sway": {
+          "process_cpu_percent": 21.543,
+          "main_thread_run_ms": 208.352,
+          "main_thread_runnable_wait_ms": 430.802
+        },
+        "rust": {
+          "process_cpu_percent": 25.647,
+          "main_thread_run_ms": 243.116,
+          "main_thread_runnable_wait_ms": 481.557
+        }
+      }
+    },
+    {
+      "gesture": 1,
+      "sent_span_ms": 1044.056037,
+      "committed_during_pull": 31,
+      "presented_frames": 17,
+      "discarded_frames": 14,
+      "presentation_gap_ms": {
+        "count": 16,
+        "min": 57.476,
+        "median": 57.4845,
+        "p95": 95.807,
+        "max": 95.807
+      },
+      "resource_sample_seconds": 0.86286974,
+      "cpu0_busy_percent": 100.0,
+      "resources": {
+        "sway": {
+          "process_cpu_percent": 24.337,
+          "main_thread_run_ms": 203.844,
+          "main_thread_runnable_wait_ms": 408.174
+        },
+        "rust": {
+          "process_cpu_percent": 22.02,
+          "main_thread_run_ms": 195.29,
+          "main_thread_runnable_wait_ms": 395.929
+        }
+      }
+    },
+    {
+      "gesture": 2,
+      "sent_span_ms": 1045.637148,
+      "committed_during_pull": 31,
+      "presented_frames": 17,
+      "discarded_frames": 14,
+      "presentation_gap_ms": {
+        "count": 16,
+        "min": 57.476,
+        "median": 57.486,
+        "p95": 114.968,
+        "max": 114.968
+      },
+      "resource_sample_seconds": 0.978220592,
+      "cpu0_busy_percent": 100.0,
+      "resources": {
+        "sway": {
+          "process_cpu_percent": 23.512,
+          "main_thread_run_ms": 229.484,
+          "main_thread_runnable_wait_ms": 460.757
+        },
+        "rust": {
+          "process_cpu_percent": 22.49,
+          "main_thread_run_ms": 218.491,
+          "main_thread_runnable_wait_ms": 455.113
+        }
+      }
+    }
+  ],
+  "limits": [
+    "Synthetic reveal bypasses touch and compositor gesture routing; no finger/glass latency bound.",
+    "Client spans include tracer overhead; CPU sampler adds work. CPU samples are coarse and partial at gesture edges.",
+    "Presentation feedback uses actual CLOCK_MONOTONIC timestamps, not event-delivery times. Consecutive gaps are only within each pull; idle/settle boundaries excluded.",
+    "Frame discards are retained. No whole-interaction budget is claimed from client paint cost.",
+    "All captures share a fixed trace ID: keep PID and monotonic interval boundaries; do not merge their span IDs."
+  ]
+}
