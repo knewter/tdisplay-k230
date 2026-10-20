@@ -1,0 +1,30 @@
+{
+  "scope": "one settled setup capture per run; no per-frame/optical claim",
+  "captures": [
+    {
+      "source_revision_prefix": "37be9567",
+      "workload": "motion-full-013747",
+      "artifact": "before.png",
+      "sha256": "4fbe0ded570c91331436bfc5b73b5c78b6769bed5bede911913ca0817c16c6db"
+    },
+    {
+      "source_revision_prefix": "895e753d",
+      "workload": "motion-full-015004",
+      "artifact": "before.png",
+      "sha256": "4fbe0ded570c91331436bfc5b73b5c78b6769bed5bede911913ca0817c16c6db"
+    },
+    {
+      "source_revision_prefix": "895e753d",
+      "workload": "motion-full-015337",
+      "artifact": "before.png",
+      "sha256": "4fbe0ded570c91331436bfc5b73b5c78b6769bed5bede911913ca0817c16c6db"
+    },
+    {
+      "source_revision_prefix": "895e753d",
+      "workload": "motion-reduced-015427",
+      "artifact": "before.png",
+      "sha256": "4fbe0ded570c91331436bfc5b73b5c78b6769bed5bede911913ca0817c16c6db"
+    }
+  ],
+  "identical": true
+}

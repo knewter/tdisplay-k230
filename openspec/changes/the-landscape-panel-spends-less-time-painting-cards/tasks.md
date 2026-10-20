@@ -102,3 +102,11 @@ Unicode, alpha, clips and offscreen motion), plus all earlier native commands.
 Header visibility preserves clipping so offscreen ink cannot reappear at a
 stale position. This candidate still requires its own exact build and board,
 live-content, camera, default-selection and archive proof.
+
+Source895e753d exact build/live/native checks pass. Final collector also waits
+for the late startup Terminal, confirms focus/app set and actual selected card.
+Comparable pair13 has byte-identical setup captures: reduced passes software
+budgets, full still fails latency51.738ms p95/66.006ms p99. Full build mean5.246ms,
+measured title0.059ms; rotation is largest remaining stage. Baseline restored;
+all trial failures and fixture limits are committed in candidate-label-ink/.
+No paired/camera/default/archive qualification is claimed.

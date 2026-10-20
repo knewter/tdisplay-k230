@@ -1,0 +1,145 @@
+{
+  "evidence_class": "board injected native touch; camera separate",
+  "mode": "full",
+  "started_utc": "2026-10-20T01:53:39Z",
+  "source_revision": "895e753df5d1d4e7b1db1fe3440733406b23f849",
+  "system": "/nix/store/3nz1860j3835279ldbmngqyxbr0c0qhm-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "gestures": [
+    {
+      "index": 0,
+      "from": [
+        616,
+        280
+      ],
+      "to": [
+        366,
+        280
+      ],
+      "down_monotonic_ns": 97066967122793,
+      "up_monotonic_ns": 97067718884086
+    },
+    {
+      "index": 1,
+      "from": [
+        616,
+        280
+      ],
+      "to": [
+        866,
+        280
+      ],
+      "down_monotonic_ns": 97068519054028,
+      "up_monotonic_ns": 97069270557778
+    },
+    {
+      "index": 2,
+      "from": [
+        616,
+        280
+      ],
+      "to": [
+        366,
+        280
+      ],
+      "down_monotonic_ns": 97070070734201,
+      "up_monotonic_ns": 97070821524095
+    },
+    {
+      "index": 3,
+      "from": [
+        616,
+        280
+      ],
+      "to": [
+        866,
+        280
+      ],
+      "down_monotonic_ns": 97071621677150,
+      "up_monotonic_ns": 97072372546929
+    },
+    {
+      "index": 4,
+      "from": [
+        616,
+        280
+      ],
+      "to": [
+        366,
+        280
+      ],
+      "down_monotonic_ns": 97073172700688,
+      "up_monotonic_ns": 97073923481769
+    },
+    {
+      "index": 5,
+      "from": [
+        616,
+        280
+      ],
+      "to": [
+        866,
+        280
+      ],
+      "down_monotonic_ns": 97074723639750,
+      "up_monotonic_ns": 97075474410461
+    }
+  ],
+  "output": {
+    "name": "DSI-1",
+    "transform": "270",
+    "rect": {
+      "x": 0,
+      "y": 0,
+      "width": 1232,
+      "height": 568
+    },
+    "current_mode": {
+      "width": 568,
+      "height": 1232,
+      "refresh": 52190,
+      "picture_aspect_ratio": "none"
+    }
+  },
+  "startup_terminal_ready_before_owned_apps": true,
+  "input_axes": {
+    "0": [
+      0,
+      1079
+    ],
+    "1": [
+      0,
+      2399
+    ],
+    "47": [
+      0,
+      9
+    ],
+    "48": [
+      0,
+      255
+    ],
+    "53": [
+      0,
+      1079
+    ],
+    "54": [
+      0,
+      2399
+    ],
+    "57": [
+      0,
+      65535
+    ]
+  },
+  "setup": {
+    "terminal_mapping": "serialized one then two; each must map before next launch",
+    "initial_app_count": 1,
+    "focused_app_before_benchmark": "k230.motion.one",
+    "expected_app_set_verified": true,
+    "selected_app_before_gestures": "k230.motion.one",
+    "initial_app_count_verified": 1
+  },
+  "start_monotonic_ns": 97062211745999,
+  "end_monotonic_ns": 97080603030106,
+  "telemetry_lines": 2216
+}

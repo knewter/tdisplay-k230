@@ -1,0 +1,140 @@
+{
+  "evidence_class": "board injected native touch; camera separate",
+  "mode": "full",
+  "started_utc": "2026-10-20T01:50:06Z",
+  "source_revision": "895e753df5d1d4e7b1db1fe3440733406b23f849",
+  "system": "/nix/store/3nz1860j3835279ldbmngqyxbr0c0qhm-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "gestures": [
+    {
+      "index": 0,
+      "from": [
+        616,
+        280
+      ],
+      "to": [
+        366,
+        280
+      ],
+      "down_monotonic_ns": 96854102831885,
+      "up_monotonic_ns": 96854856735737
+    },
+    {
+      "index": 1,
+      "from": [
+        616,
+        280
+      ],
+      "to": [
+        866,
+        280
+      ],
+      "down_monotonic_ns": 96855656894146,
+      "up_monotonic_ns": 96856408160971
+    },
+    {
+      "index": 2,
+      "from": [
+        616,
+        280
+      ],
+      "to": [
+        366,
+        280
+      ],
+      "down_monotonic_ns": 96857208316899,
+      "up_monotonic_ns": 96857959064637
+    },
+    {
+      "index": 3,
+      "from": [
+        616,
+        280
+      ],
+      "to": [
+        866,
+        280
+      ],
+      "down_monotonic_ns": 96858759235417,
+      "up_monotonic_ns": 96859510005155
+    },
+    {
+      "index": 4,
+      "from": [
+        616,
+        280
+      ],
+      "to": [
+        366,
+        280
+      ],
+      "down_monotonic_ns": 96860310708652,
+      "up_monotonic_ns": 96861061940999
+    },
+    {
+      "index": 5,
+      "from": [
+        616,
+        280
+      ],
+      "to": [
+        866,
+        280
+      ],
+      "down_monotonic_ns": 96861862760307,
+      "up_monotonic_ns": 96862613542638
+    }
+  ],
+  "output": {
+    "name": "DSI-1",
+    "transform": "270",
+    "rect": {
+      "x": 0,
+      "y": 0,
+      "width": 1232,
+      "height": 568
+    },
+    "current_mode": {
+      "width": 568,
+      "height": 1232,
+      "refresh": 52190,
+      "picture_aspect_ratio": "none"
+    }
+  },
+  "input_axes": {
+    "0": [
+      0,
+      1079
+    ],
+    "1": [
+      0,
+      2399
+    ],
+    "47": [
+      0,
+      9
+    ],
+    "48": [
+      0,
+      255
+    ],
+    "53": [
+      0,
+      1079
+    ],
+    "54": [
+      0,
+      2399
+    ],
+    "57": [
+      0,
+      65535
+    ]
+  },
+  "setup": {
+    "terminal_mapping": "serialized one then two; each must map before next launch",
+    "initial_app_count": 1
+  },
+  "start_monotonic_ns": 96849300644058,
+  "end_monotonic_ns": 96867917409244,
+  "telemetry_lines": 2194
+}

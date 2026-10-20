@@ -1,0 +1,97 @@
+{
+  "evidence_class": "board injected native touch; camera separate",
+  "mode": "full",
+  "started_utc": "2026-10-20T01:55:20Z",
+  "source_revision": "895e753df5d1d4e7b1db1fe3440733406b23f849",
+  "system": "/nix/store/3nz1860j3835279ldbmngqyxbr0c0qhm-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "gestures": [
+    {
+      "index": 0,
+      "from": [
+        616,
+        280
+      ],
+      "to": [
+        366,
+        280
+      ],
+      "down_monotonic_ns": 97169265048747,
+      "up_monotonic_ns": 97170020460238
+    },
+    {
+      "index": 1,
+      "from": [
+        616,
+        280
+      ],
+      "to": [
+        866,
+        280
+      ],
+      "down_monotonic_ns": 97170820659468,
+      "up_monotonic_ns": 97171572888992
+    },
+    {
+      "index": 2,
+      "from": [
+        616,
+        280
+      ],
+      "to": [
+        366,
+        280
+      ],
+      "down_monotonic_ns": 97172376121345,
+      "up_monotonic_ns": 97173127367803
+    }
+  ],
+  "output": {
+    "name": "DSI-1",
+    "transform": "270",
+    "rect": {
+      "x": 0,
+      "y": 0,
+      "width": 1232,
+      "height": 568
+    },
+    "current_mode": {
+      "width": 568,
+      "height": 1232,
+      "refresh": 52190,
+      "picture_aspect_ratio": "none"
+    }
+  },
+  "input_axes": {
+    "0": [
+      0,
+      1079
+    ],
+    "1": [
+      0,
+      2399
+    ],
+    "47": [
+      0,
+      9
+    ],
+    "48": [
+      0,
+      255
+    ],
+    "53": [
+      0,
+      1079
+    ],
+    "54": [
+      0,
+      2399
+    ],
+    "57": [
+      0,
+      65535
+    ]
+  },
+  "start_monotonic_ns": 97163135400318,
+  "end_monotonic_ns": 97179152807660,
+  "telemetry_lines": 788
+}

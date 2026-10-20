@@ -226,3 +226,11 @@ but still fail the comparable full/reduced timing pair. Earlier full passes
 used a different starting card order and cannot qualify the pair. Serialized
 terminal mapping now fixes setup. Mostly empty ARGB title blending is the next
 measured boundary; quality,8ms guard and all hardware gates remain unchanged.
+
+The [label-ink candidate](candidate-label-ink/README.md) builds and preserves
+native pixels/live clients. After waiting for the late startup Terminal and
+verifying actual selected app, full/reduced setup captures are identical.
+Reduced software timing passes; full p95/p99 latency still fails. The title
+falls0.399→0.059ms and full build mean6.243→5.246ms; no paired qualification or
+optical claim. Rotation is the remaining largest measured stage. Baseline
+restored, quality/8ms guard unchanged, camera/default/archive still open.

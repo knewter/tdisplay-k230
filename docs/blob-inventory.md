@@ -651,6 +651,9 @@ Paths are relative to the repository root. `(sdk)` is
 so that building stage 1 from source does not silently drop them from view.
 
 ```
+DATA 4fbe0ded570c91331436bfc5b73b5c78b6769bed5bede911913ca0817c16c6db docs/evidence/panel-paint/candidate-label-ink/static-before.png
+DATA 1c00680d9329156e8764348c3b06d638edd55488c9f19fd54ef2359e1ef7c71a docs/evidence/panel-paint/candidate-label-ink/live/before.png
+DATA c32dbb9ce42ffb0a06c5f5d185cbe95424e128964c75296c9a7ea8766dc0c3b1 docs/evidence/panel-paint/candidate-label-ink/live/after.png
 DATA ec0e34b5236fbc340ed3afca3cd657df3dfe7dbcbc9909d21500b0cfdc4216a1 docs/evidence/panel-paint/candidate-opaque-interior/live/before.png
 DATA 7e629704a01b4463024d513233f49c65495e458246bff6239a4e647471631eb7 docs/evidence/panel-paint/candidate-opaque-interior/live/after.png
 DATA cac6396187d3f193e964b389f5da86a80852635d2b0a2b8ce311279387241557 docs/evidence/panel-paint/candidate-retained-output/live/before.png
@@ -3688,3 +3691,13 @@ Compositor captures described in `docs/evidence/panel-paint/candidate-opaque-int
 | --- | ---: | --- | --- |
 | `docs/evidence/panel-paint/candidate-opaque-interior/live/before.png` | 31427 | DATA | `ec0e34b5236fbc340ed3afca3cd657df3dfe7dbcbc9909d21500b0cfdc4216a1` |
 | `docs/evidence/panel-paint/candidate-opaque-interior/live/after.png` | 31382 | DATA | `7e629704a01b4463024d513233f49c65495e458246bff6239a4e647471631eb7` |
+
+## Label-ink board software captures, 2026-10-20 UTC
+
+Static setup equality and changing clients are described in `docs/evidence/panel-paint/candidate-label-ink/README.md`; no camera/glass claim.
+
+| Path | Bytes | Class | SHA-256 |
+| --- | ---: | --- | --- |
+| `docs/evidence/panel-paint/candidate-label-ink/static-before.png` | 30290 | DATA | `4fbe0ded570c91331436bfc5b73b5c78b6769bed5bede911913ca0817c16c6db` |
+| `docs/evidence/panel-paint/candidate-label-ink/live/before.png` | 31450 | DATA | `1c00680d9329156e8764348c3b06d638edd55488c9f19fd54ef2359e1ef7c71a` |
+| `docs/evidence/panel-paint/candidate-label-ink/live/after.png` | 31456 | DATA | `c32dbb9ce42ffb0a06c5f5d185cbe95424e128964c75296c9a7ea8766dc0c3b1` |

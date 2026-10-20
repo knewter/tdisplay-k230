@@ -1,0 +1,7 @@
+{
+  "corrected_utc": "2026-10-20T01:48:54.405249+00:00",
+  "actual_command_output_link": "panel-paint-boot9b",
+  "candidate_link": "panel-paint-boot10",
+  "candidate_bundle": "/nix/store/mmc1ma177avxyx9p8ndy91bgswzhkjm1-k230-coherent-shell-boot-files",
+  "restored_previous_bundle": "/nix/store/m8m8gkwp3zmd00ma199b8b6bw487prn1-k230-coherent-shell-boot-files"
+}
