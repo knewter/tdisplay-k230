@@ -118,3 +118,12 @@ stores are rejected. Complete source/commands/results are in rotation-batches/.
 Native6 tests plus1152 affine/288 rounded pass; eight distinct overlap pairs
 are rejected before the restricted helper's full/partial calls. This new
 source still needs exact build and all integrated/physical/default gates.
+
+Source1bc9243f exact build/CI/native proof passes. Controlled pair14 passes
+both modes, but stability repeat15 fails fullp95=39.326ms and reducedp95=46.078ms/
+p99=65.078ms; all four setup images are identical. Build mean4.8–4.9ms is not
+stable latency qualification. Per-input scene synchronization remains0.53ms,
+then timer/render prepare repeats it. That duplication is the next measured
+boundary; every presented frame, policy/ownership and structural changes must
+remain current. Baseline restored and board released; camera/default/archive
+still open. Complete evidence is in candidate-rotation-batches/.

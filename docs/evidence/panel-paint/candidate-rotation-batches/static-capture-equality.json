@@ -1,0 +1,31 @@
+{
+  "scope": "one settled before-capture per run, not every-frame or optical proof",
+  "shared_artifact": "../candidate-label-ink/static-before.png",
+  "captures": [
+    {
+      "pair": 14,
+      "mode": "full",
+      "workload": "motion-full-021154",
+      "before_png_sha256": "4fbe0ded570c91331436bfc5b73b5c78b6769bed5bede911913ca0817c16c6db"
+    },
+    {
+      "pair": 14,
+      "mode": "reduced",
+      "workload": "motion-reduced-021248",
+      "before_png_sha256": "4fbe0ded570c91331436bfc5b73b5c78b6769bed5bede911913ca0817c16c6db"
+    },
+    {
+      "pair": 15,
+      "mode": "full",
+      "workload": "motion-full-021422",
+      "before_png_sha256": "4fbe0ded570c91331436bfc5b73b5c78b6769bed5bede911913ca0817c16c6db"
+    },
+    {
+      "pair": 15,
+      "mode": "reduced",
+      "workload": "motion-reduced-021512",
+      "before_png_sha256": "4fbe0ded570c91331436bfc5b73b5c78b6769bed5bede911913ca0817c16c6db"
+    }
+  ],
+  "identical": true
+}

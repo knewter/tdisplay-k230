@@ -1,0 +1,21 @@
+{
+  "source_revision": "1bc9243f229e21214dd5f41f1c3da4409ac6c732",
+  "started_utc": "2026-10-20T02:08:34Z",
+  "command": [
+    "flock",
+    "/tmp/k230-nix-build.lock",
+    "nix",
+    "build",
+    "git+file:///mnt/MediaVolume/home/jadams/src/gitlab.daringbit.com/josh/tdisplay-k230/.claude/worktrees/panel-paint?rev=1bc9243f229e21214dd5f41f1c3da4409ac6c732#kernelMainlineDrmShellLandscapeHdmiBootFiles",
+    "--max-jobs",
+    "4",
+    "--cores",
+    "8",
+    "--option",
+    "substituters",
+    "https://cache.nixos.org",
+    "--fallback",
+    "--out-link",
+    "/home/jadams/tmp/codex-claude-handoff-20261019/3/panel-paint-boot11"
+  ]
+}

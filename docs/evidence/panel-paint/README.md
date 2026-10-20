@@ -240,3 +240,10 @@ rectangular tiles and changed traversal order, but select eight-pixel batches
 with the existing disjoint-range contract. Isolated full/partial copies improve
 about12%/16%; native pixels and explicit overlap rejection pass. Integrated
 build/timing/live/camera/default/archive proof remains open for this source.
+
+The [batched-rotation integrated trials](candidate-rotation-batches/README.md)
+pass one controlled full/reduced pair, but a repeat fails latency in both
+modes. Build mean is about4.8–4.9ms. All data is retained; no stable qualification
+or physical claim. Per-input scene sync remains about0.53ms and is repeated by
+timer/render preparation, selecting the next boundary. Baseline is restored;
+policy freshness/structural behavior, quality and8ms guard must be preserved.
