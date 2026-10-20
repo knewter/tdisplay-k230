@@ -158,7 +158,7 @@ def parse_log(raw, expected_run):
     return rows, origins, costs
 
 
-def validate_run_metadata(item, directory, expected_variant):
+def validate_run_metadata(item, directory, expected_variant, *, profile='portrait-1080p'):
     if not isinstance(item, dict) or set(item) != RUN_FIELDS:
         raise InvalidTrace('run metadata has missing or unsupported fields')
     if item['variant'] != expected_variant:
@@ -194,10 +194,17 @@ def validate_run_metadata(item, directory, expected_variant):
         raise InvalidTrace('scale must be positive numeric') from error
     if not math.isfinite(scale) or scale <= 0:
         raise InvalidTrace('scale must be positive numeric')
-    if (item['physical_width'], item['physical_height'], item['transform']) != (1920, 1080, 90):
-        raise InvalidTrace('comparison requires physical 1920x1080 transform 90')
-    if (item['logical_width'], item['logical_height']) != (1080, 1920):
-        raise InvalidTrace('comparison requires logical portrait 1080x1920')
+    profiles = {'portrait-1080p': (1920, 1080, 90, 1080, 1920),
+                'landscape-1280x800': (1280, 800, 0, 1280, 800)}
+    if profile not in profiles:
+        raise InvalidTrace('unknown diagnostic geometry profile')
+    pw, ph, turn, lw, lh = profiles[profile]
+    if (item['physical_width'], item['physical_height'], item['transform']) != (pw, ph, turn):
+        raise InvalidTrace(f'{profile} requires physical {pw}x{ph} transform {turn}')
+    if (item['logical_width'], item['logical_height']) != (lw, lh):
+        raise InvalidTrace(f'{profile} requires logical {lw}x{lh}')
+    if profile == 'landscape-1280x800' and scale != 1:
+        raise InvalidTrace('landscape diagnostic requires scale 1')
     if item['cards'] not in (1, 2):
         raise InvalidTrace('comparison workload cards must be one or two')
     if item['input_class'] == 'physical' and not item['operator_confirmed_contacts']:

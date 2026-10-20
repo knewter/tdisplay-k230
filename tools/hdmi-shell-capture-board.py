@@ -27,6 +27,11 @@ import uuid
 SOCKET = '/run/shell/sway-ipc.sock'
 MAGIC = b'i3-ipc'
 SCHEMA = 'hdmi-shell-performance-v1'
+LANDSCAPE_SCHEMA = 'hdmi-shell-landscape-baseline-v1'
+PROFILES = {
+    'portrait-1080p': (1920, 1080, 90, 1080, 1920, SCHEMA),
+    'landscape-1280x800': (1280, 800, 0, 1280, 800, LANDSCAPE_SCHEMA),
+}
 PREFIXES = ('K230_CARD_BENCH ', 'K230_CARD_SHELL ', 'K230_PIXMAN_DRAW ',
             'K230_PIXMAN_OUTPUT_TURN ')
 MAX_JOURNAL = 16 * 1024 * 1024
@@ -342,11 +347,19 @@ def capture(args):
     out = before[0]
     mode = out.get('current_mode') or {}
     rect = out['rect']
-    physical = (mode.get('width'), mode.get('height'), out.get('transform'), out.get('scale'))
-    if physical != (1920, 1080, '90', 1) and physical != (1920,1080,90,1):
-        ipc.close(); raise CaptureError('required output is physical 1920x1080 transform 90 scale 1')
-    if (rect.get('width'), rect.get('height')) != (1080, 1920):
-        ipc.close(); raise CaptureError('required logical output geometry is 1080x1920')
+    profile = getattr(args, 'profile', 'portrait-1080p')
+    pw, ph, turn, lw, lh, schema = PROFILES[profile]
+    # test-touch traverses a synthetic wlroots device and is headless-only.
+    # The board diagnostic uses the existing explicitly injected policy IPC.
+    touch_prefix = 'card_shell' if profile == 'landscape-1280x800' else 'card_shell test-touch'
+    transform = {'normal': 0, '90': 90, '180': 180, '270': 270}.get(out.get('transform'), out.get('transform'))
+    physical = (mode.get('width'), mode.get('height'), transform, out.get('scale'))
+    if physical != (pw, ph, turn, 1):
+        ipc.close(); raise CaptureError(f'{profile} requires physical {pw}x{ph} transform {turn} scale 1')
+    if (rect.get('width'), rect.get('height')) != (lw, lh):
+        ipc.close(); raise CaptureError(f'{profile} requires logical {lw}x{lh}')
+    if profile == 'landscape-1280x800' and out.get('name') != 'HDMI-A-1':
+        ipc.close(); raise CaptureError('landscape diagnostic requires HDMI-A-1')
     identity = runtime_identity(ipc.pid, args.variant)
     kernel = subprocess.run(['uname','-r'], text=True, stdout=subprocess.PIPE, timeout=2, check=True).stdout.strip()
     run_id = None
@@ -370,7 +383,8 @@ def capture(args):
         if not run_id:
             raise CaptureError('benchmark arm did not emit a run identity')
         if args.input == 'injected':
-            ipc.command('card_shell test-touch init')
+            if profile == 'portrait-1080p':
+                ipc.command('card_shell test-touch init')
             ipc.command('card_shell enter'); entered = True
             width, height = rect['width'], rect['height']
             for index in range(args.drags):
@@ -379,15 +393,15 @@ def capture(args):
                 start_x, end_x = ((width//2-100,width//2+100) if index % 2 == 0 else
                                    (width//2+100,width//2-100))
                 gesture = index + 1
-                ipc.command(f'card_shell test-touch down {gesture} {start_x} {height//2}')
+                ipc.command(f'{touch_prefix} down {gesture} {start_x} {height//2}')
                 touch_down, active_touch_id = True, gesture
                 for step in range(1, DRAG_STEPS + 1):
                     if time.monotonic() >= deadline:
                         raise CaptureError('capture deadline reached during injected gestures')
                     x = start_x + ((end_x-start_x)*step)//DRAG_STEPS
-                    ipc.command(f'card_shell test-touch motion {gesture} {x} {height//2}')
+                    ipc.command(f'{touch_prefix} motion {gesture} {x} {height//2}')
                     time.sleep(min(DRAG_SECONDS / DRAG_STEPS, max(0, deadline-time.monotonic())))
-                ipc.command(f'card_shell test-touch up {gesture}'); touch_down, active_touch_id = False, None
+                ipc.command(f'{touch_prefix} up {gesture}'); touch_down, active_touch_id = False, None
                 time.sleep(min(SETTLE_SECONDS, max(0, deadline-time.monotonic())))
         else:
             print('READY: swipe up from Foot into overview, then perform center horizontal drags.', flush=True)
@@ -406,7 +420,7 @@ def capture(args):
         reason = str(error)
     finally:
         if touch_down:
-            try: ipc.command(f'card_shell test-touch up {active_touch_id}')
+            try: ipc.command(f'{touch_prefix} up {active_touch_id}')
             except Exception: pass
         try: ipc.command('card_shell benchmark-stop')
         except Exception as error: stop_failed = str(error)
@@ -449,28 +463,29 @@ def capture(args):
         metadata = {'run':run_id,'source_revision':args.source_revision,
             'compositor_executable':identity['compositor_executable'], 'pixman_identity':identity['pixman_identity'],
             'kernel':kernel, 'logical_width':rect['width'],'logical_height':rect['height'],
-            'physical_width':1920,'physical_height':1080,'transform':90,'scale':1,
+            'physical_width':pw,'physical_height':ph,'transform':turn,'scale':1,
             'format':fmt,'cards':int(session['cards']),'input_class':args.input,
             'operator_confirmed_contacts':bool(args.operator_confirmed_contacts), 'variant':args.variant,
             'drag_count':count,'clock':'monotonic','log':log_name}
         if set(metadata) != RUN_FIELDS:
             raise CaptureError('internal metadata schema mismatch')
         logs = [metadata]
-    context = {'schema':SCHEMA,'status':status,'reason':reason,'variant':args.variant,'input':args.input,
+    context = {'schema':schema,'profile':profile,'status':status,'reason':reason,'variant':args.variant,'input':args.input,
         'operator_confirmed_contacts':bool(args.operator_confirmed_contacts), 'requested_drags':args.drags,
         'complete_drag_count':count,'seconds_limit':args.seconds,'started_unix':wall_started,
         'elapsed_seconds':round(time.monotonic()-started,3),'source_revision':args.source_revision,
         'compositor':identity,'kernel':kernel,'output_before':before,
         'output_after':output_after,
         'collector_sha256':hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
-        'injected_workload':({'route':'compositor IPC test-touch',
+        'injected_workload':({'route':('compositor IPC card_shell down/motion/up'
+                                     if profile == 'landscape-1280x800' else 'compositor IPC test-touch'),
             'moves_per_drag':DRAG_STEPS,'nominal_motion_seconds':DRAG_SECONDS,
             'settle_seconds':SETTLE_SECONDS,
             'limit':'IPC processing adds time; actual input timestamps remain in capture.log.'}
             if args.input == 'injected' else None),
         'frequency':read_frequency(), 'stop_error':stop_failed,'restore_error':restore_failed,
         'evidence_limit':'capture telemetry is not optical proof; injected input is not physical contact.'}
-    (args.output/'metadata.json').write_text(json.dumps({'schema':SCHEMA,'runs':logs},indent=2,sort_keys=True)+'\n')
+    (args.output/'metadata.json').write_text(json.dumps({'schema':schema,'runs':logs},indent=2,sort_keys=True)+'\n')
     (args.output/'context.json').write_text(json.dumps(context,indent=2,sort_keys=True)+'\n')
     return 0 if status == 'CAPTURED' else 1
 
@@ -596,7 +611,7 @@ class Fixtures(unittest.TestCase):
                     raise CaptureError('fixture stop failure')
             def close(self): self.closed=True
 
-        def run_fixture(directory, fail_stop=False, overflow=False):
+        def run_fixture(directory, fail_stop=False, overflow=False, landscape=False):
             FakeIPC.instances.clear()
             run='fixture_run'
             calls=[]
@@ -618,10 +633,20 @@ class Fixtures(unittest.TestCase):
                 rows.append('Foot title=private secret')
                 if overflow:
                     rows.append(f'K230_CARD_BENCH v=1 run={run} event=incomplete reason=input-overflow')
-                return '\n'.join(rows if len(calls)>1 else rows[:1])
+                text = '\n'.join(rows if len(calls)>1 else rows[:1])
+                return text.replace('width=1080 height=1920', 'width=1280 height=800') if landscape else text
             args=argparse.Namespace(input='injected',operator_confirmed_contacts=False,output=directory,
-                variant='candidate',source_revision='a'*40,seconds=5,drags=1)
+                variant='candidate',source_revision='a'*40,seconds=5,drags=1,
+                profile='landscape-1280x800' if landscape else 'portrait-1080p')
+            original_outputs = FakeIPC.outputs
+            def fixture_outputs(self):
+                if landscape:
+                    return [{'name':'HDMI-A-1','active':True,'transform':'normal','scale':1,
+                        'current_mode':{'width':1280,'height':800,'refresh':59910},
+                        'rect':{'x':0,'y':0,'width':1280,'height':800}}]
+                return original_outputs(self)
             with mock.patch(__name__+'.IPC',FakeIPC), \
+                 mock.patch.object(FakeIPC,'outputs',fixture_outputs), \
                  mock.patch(__name__+'.runtime_identity',return_value={'compositor_executable':'sway sha256:x','pixman_identity':'pixman sha256:y','environment':{'WLR_PIXMAN_QUARTER_TURN':'1','WLR_PIXMAN_OUTPUT_TURN':''}}), \
                  mock.patch(__name__+'.journal',side_effect=fake_journal), \
                  mock.patch('subprocess.run',return_value=subprocess.CompletedProcess(['uname'],0,'fixture-kernel\n','')):
@@ -646,6 +671,20 @@ class Fixtures(unittest.TestCase):
             spec=importlib.util.spec_from_file_location('hdmi_shell_performance',parser_path)
             parser_module=importlib.util.module_from_spec(spec); spec.loader.exec_module(parser_module)
             parser_module.validate_run_metadata(dict(meta['runs'][0]),directory,'candidate')
+        with tempfile.TemporaryDirectory() as tmp:
+            directory=Path(tmp)/'landscape'
+            code,meta,context,instances=run_fixture(directory,landscape=True)
+            self.assertEqual(code,0,context)
+            self.assertEqual(meta['schema'],LANDSCAPE_SCHEMA)
+            self.assertEqual(context['profile'],'landscape-1280x800')
+            self.assertEqual(meta['runs'][0]['physical_width'],1280)
+            self.assertEqual(meta['runs'][0]['transform'],0)
+            self.assertTrue(any('down 1 540 400' in cmd for cmd in instances[0].commands))
+            self.assertFalse(any('test-touch' in cmd for cmd in instances[0].commands))
+            self.assertEqual(context['injected_workload']['route'],'compositor IPC card_shell down/motion/up')
+            parser_module.validate_run_metadata(dict(meta['runs'][0]),directory,'candidate',profile='landscape-1280x800')
+            with self.assertRaises(parser_module.InvalidTrace):
+                parser_module.validate_run_metadata(dict(meta['runs'][0]),directory,'candidate')
         with tempfile.TemporaryDirectory() as tmp:
             directory=Path(tmp)/'stop-fails'
             # Inject a failure on the fake IPC only after initialization.
@@ -680,6 +719,7 @@ class Fixtures(unittest.TestCase):
 def parser():
     p=argparse.ArgumentParser(description=__doc__)
     p.add_argument('--self-test',action='store_true')
+    p.add_argument('--profile', choices=tuple(PROFILES), default='portrait-1080p')
     p.add_argument('--variant',choices=('baseline','candidate'))
     p.add_argument('--input',choices=('injected','physical'))
     p.add_argument('--seconds',type=int,default=60)

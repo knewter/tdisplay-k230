@@ -21,8 +21,10 @@ comparison keeps its original geometry and schema checks. Reject mixed runtime,
 geometry and input provenance rather than silently combining traces.
 
 Capture at least 24 alternating center drags each with one and two ordinary
-Foot windows. Use the existing paced compositor-IPC injection and label it
-literally; IPC adds time to nominal pacing and is not native/uinput input.
+Foot windows. Use paced `card_shell down/motion/up` policy IPC and label it
+literally; IPC adds time to nominal pacing and is not native/uinput input. The separate
+`test-touch` wlroots-device fixture is headless-only (`nix/card-shell/test-input.c`)
+and cannot run on the DRM board; do not pretend the direct IPC traverses it.
 Report actual dispatch-to-presentation p95/max and build CPU p95/max without
 performance PASS/FAIL budgets. A completed diagnostic is not feature acceptance.
 Keep existing user windows, create only a named temporary Foot if needed, and

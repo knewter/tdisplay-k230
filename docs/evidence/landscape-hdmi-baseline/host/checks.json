@@ -1,0 +1,33 @@
+{
+  "utc": "2026-10-20T04:48:58.117146+00:00",
+  "checks": [
+    {
+      "command": [
+        "python3",
+        "tools/hdmi-shell-capture-board.py",
+        "--self-test"
+      ],
+      "exit_code": 0,
+      "source_sha256": "8a073d51284deaf5c50e24f677d4df1c992fec9f6c8c71513dff37b2239029d0"
+    },
+    {
+      "command": [
+        "python3",
+        "tools/hdmi-shell-performance.py",
+        "--self-test"
+      ],
+      "exit_code": 0,
+      "source_sha256": "47d601d3181f4a66065bb73951d4c428b7a0c0f8b33bab00dd37e914234ae50a"
+    },
+    {
+      "command": [
+        "python3",
+        "tools/landscape-hdmi-baseline.py",
+        "--self-test"
+      ],
+      "exit_code": 0,
+      "source_sha256": "de1be8e91cb6c3561d7cd661403af3e2543cf4537ea68fd402b504c0a138bf31"
+    }
+  ],
+  "proof": "host fixtures only; no board or physical acceptance"
+}

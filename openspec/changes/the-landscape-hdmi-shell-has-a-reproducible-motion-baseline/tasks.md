@@ -1,6 +1,6 @@
 ## 1. Explicit diagnostic profile (host proof)
 
-- [ ] 1.1 Add a named landscape capture profile and strict report with separate schema; reject portrait/landscape cross-use, incomplete joins and mixed runtime/workload. Run `python3 tools/hdmi-shell-capture-board.py --self-test`, `python3 tools/hdmi-shell-performance.py --self-test` and `python3 tools/landscape-hdmi-baseline.py --self-test`; commit the passing host evidence.
+- [x] 1.1 Add a named landscape capture profile and strict report with separate schema; reject portrait/landscape cross-use, incomplete joins and mixed runtime/workload. Run `python3 tools/hdmi-shell-capture-board.py --self-test`, `python3 tools/hdmi-shell-performance.py --self-test` and `python3 tools/landscape-hdmi-baseline.py --self-test`; commit the passing host evidence.
 
 ## 2. Installed runtime baseline (hardware diagnostic, not glass proof)
 
