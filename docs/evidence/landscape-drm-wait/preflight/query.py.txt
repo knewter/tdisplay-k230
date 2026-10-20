@@ -1,0 +1,10 @@
+from pathlib import Path
+import importlib.util,json,platform
+p=Path('/var/tmp/k230-stall-trace-20261020/landscape-hdmi-stall-trace.py');s=importlib.util.spec_from_file_location('m',p);m=importlib.util.module_from_spec(s);s.loader.exec_module(m)
+r=m.ROOT;i=m.cap.IPC()
+try:
+ control=m.log.control(i);idle=m.log.idle_startup(i)
+ files=['events/sched/sched_switch/trigger','events/sched/sched_switch/format','events/ftrace/kernel_stack/format','trace_options','available_tracers','events/raw_syscalls/sys_enter/format']
+ result={'checked_at':m.now(),'kernel':platform.release(),'machine':platform.machine(),'control':control,'idle':idle,'global_controls':m.global_state(),'capabilities':{n:(r/n).read_text() if (r/n).exists() else None for n in files},'online_cpus':Path('/sys/devices/system/cpu/online').read_text().strip()}
+ print(json.dumps(result,indent=2))
+finally:i.close()
