@@ -1,0 +1,23 @@
+{
+  "started_at": "2026-10-20T18:57:20.442504+00:00",
+  "status": "CANDIDATE_BOOT_VERIFIED",
+  "expected_build_id": "7a61d8cea3e26df94695189b766de3fd66fa6860",
+  "candidate_system": "/nix/store/hpmzja32mncizz7s49ylr8pj9cy5npvg-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "preserved_system": "/nix/store/j30yag05ic9k68n9dzbzindgf4ardp08-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "old_boot_id": "914f8346-b3d5-449b-ab32-569e8b78675e",
+  "attempts": 9,
+  "last_error_class": "TimeoutExpired",
+  "latest": {
+    "boot_id": "c17ee483-0191-48ea-986a-9738a274393e",
+    "system": "/nix/store/hpmzja32mncizz7s49ylr8pj9cy5npvg-nixos-system-nixos-26.11.20260919.20b1ddd",
+    "booted_system": "/nix/store/hpmzja32mncizz7s49ylr8pj9cy5npvg-nixos-system-nixos-26.11.20260919.20b1ddd",
+    "persistent_system": "/nix/store/j30yag05ic9k68n9dzbzindgf4ardp08-nixos-system-nixos-26.11.20260919.20b1ddd",
+    "kernel_build_id": "7a61d8cea3e26df94695189b766de3fd66fa6860",
+    "kernel_notes_sha256": "1a98ea1e0a6e75f923c0fd53cfcf472f576ddb36de86b89361bfc224a305d9b6",
+    "init_tokens": [
+      "init=/nix/store/hpmzja32mncizz7s49ylr8pj9cy5npvg-nixos-system-nixos-26.11.20260919.20b1ddd/init"
+    ]
+  },
+  "checked_at": "2026-10-20T18:58:31.273837+00:00",
+  "finished_at": "2026-10-20T18:58:31.273865+00:00"
+}

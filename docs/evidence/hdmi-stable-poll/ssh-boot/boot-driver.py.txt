@@ -1,0 +1,30 @@
+"""Load a single candidate and request normal systemd kexec shutdown, preserving disk boot."""
+from pathlib import Path
+import argparse,ctypes,datetime,hashlib,importlib.util,json,os,platform,subprocess
+p=argparse.ArgumentParser();p.add_argument('--output',type=Path,required=True);a=p.parse_args();assert not a.output.exists();a.output.mkdir(mode=0o700)
+root=Path(__file__).parent;s=importlib.util.spec_from_file_location('proof',root/'hdmi-stable-poll-proof.py');m=importlib.util.module_from_spec(s);s.loader.exec_module(m)
+normal='/nix/store/j30yag05ic9k68n9dzbzindgf4ardp08-nixos-system-nixos-26.11.20260919.20b1ddd';candidate='/nix/store/hpmzja32mncizz7s49ylr8pj9cy5npvg-nixos-system-nixos-26.11.20260919.20b1ddd';image=Path('/nix/store/21lz5c6pkk329c0xcac9bzlx40dplrlk-linux-riscv64-unknown-linux-gnu-7.3.0-rc5/Image');initrd=Path(candidate)/'initrd';args=Path('/var/lib/k230/hdmi-stable-poll-candidate-a/bootargs.txt').read_text().strip().removeprefix('bootargs=')
+assert platform.machine()=='riscv64' and ctypes.sizeof(ctypes.c_long)==8
+assert m.log.digest(image)=='d6b2153d97ac8382b5329c64397b8b46435e6a423b16796f8c37e052d4bcd642'
+assert [x for x in args.split() if x.startswith('init=')]==['init='+candidate+'/init']
+assert os.path.realpath('/run/current-system')==normal and os.path.realpath('/nix/var/nix/profiles/system')==normal
+assert Path('/sys/kernel/kexec_loaded').read_text().strip()=='0'
+qualified=json.loads((root/'kexec-load-b/probe.json').read_text());assert qualified['status']=='LOAD_UNLOAD_PASS' and qualified['load_flags']==16 and qualified['image_sha256']==m.log.digest(image) and qualified['initrd_sha256']==m.log.digest(initrd)
+ipc=m.cap.IPC();control=m.log.control(ipc);idle=m.log.idle_startup(ipc);boot=m.boot_identity();m.base.immutable(qualified['normal_control'],control);assert boot==qualified['after_boot'];ipc.close()
+bootfiles={n:m.log.digest(Path('/boot')/n) for n in ('Image','initrd.uimg','k230-tdisplay.dtb','bootargs.txt','fw_jump_add_uboot_head.bin')};assert bootfiles==qualified['boot_files_after']
+now=lambda:datetime.datetime.now(datetime.timezone.utc).isoformat();v={'started_at':now(),'status':'STARTING','syscall':294,'load_flags':16,'flag':'KEXEC_FILE_NO_CMA','kernel':str(image),'image_sha256':m.log.digest(image),'initrd':str(initrd.resolve()),'initrd_sha256':m.log.digest(initrd),'cmdline':args,'candidate_system':candidate,'normal_system':normal,'before_boot':boot,'control':control,'idle':idle,'boot_files_before':bootfiles,'persistent_profile_unchanged':True,'controller_sha256':m.log.digest(Path(__file__)),'serial_observation':'NOT_COLLECTED; SSH one-time trial'}
+def save():m.log.write_json(a.output/'boot-request.json',v)
+libc=ctypes.CDLL(None,use_errno=True);call=libc.syscall;call.restype=ctypes.c_long;call.argtypes=[ctypes.c_long,ctypes.c_int,ctypes.c_int,ctypes.c_ulong,ctypes.c_char_p,ctypes.c_ulong]
+def invoke(kfd,ifd,cmd,flags):
+ ctypes.set_errno(0);ret=call(294,kfd,ifd,len(cmd) if cmd else 0,cmd,flags);return {'return':ret,'errno':ctypes.get_errno() if ret<0 else 0}
+owned=False;accepted=False;save()
+try:
+ with image.open('rb') as k,initrd.open('rb') as i:v['load']=invoke(k.fileno(),i.fileno(),args.encode()+b'\0',16)
+ owned=v['load']['return']==0;v['loaded_observed']=Path('/sys/kernel/kexec_loaded').read_text().strip();save();assert owned and v['loaded_observed']=='1'
+ v.update(status='LOADED',shutdown_command=['/run/current-system/sw/bin/systemctl','--no-block','kexec']);save();os.sync()
+ result=subprocess.run(v['shutdown_command'],capture_output=True,text=True,timeout=20);v['shutdown_return']=result.returncode
+ (a.output/'systemctl.private.log').write_text(result.stdout+result.stderr)
+ accepted=result.returncode==0;v.update(status='KEXEC_REQUEST_ACCEPTED' if accepted else 'KEXEC_REQUEST_REJECTED',request_finished_at=now());save();os.sync();assert accepted
+finally:
+ if owned and not accepted:v['cleanup_unload']=invoke(-1,-1,None,1);v['loaded_after_cleanup']=Path('/sys/kernel/kexec_loaded').read_text().strip();save()
+print(json.dumps({'status':v['status'],'boot_request_file':str(a.output/'boot-request.json')}),flush=True)

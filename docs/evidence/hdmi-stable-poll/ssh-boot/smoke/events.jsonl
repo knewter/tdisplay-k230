@@ -1,0 +1,4 @@
+{"pid":1281,"cpu":0,"ts_ns":157312739000,"event":"marker","phase":"start","before_ns":157311986238}
+{"event":"function","pid":1281,"cpu":0,"ts_ns":157312922000,"symbol":"hrtimer_nanosleep","parent":"[other]"}
+{"event":"function","pid":539,"cpu":0,"ts_ns":157350190000,"symbol":"hrtimer_nanosleep","parent":"[other]"}
+{"pid":1281,"cpu":0,"ts_ns":157363690000,"event":"marker","phase":"end","before_ns":157363057127}

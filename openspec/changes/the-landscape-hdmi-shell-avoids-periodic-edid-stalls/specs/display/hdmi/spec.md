@@ -6,9 +6,9 @@ While a previously discovered HDMI monitor remains connected, routine background
 
 Qualification SHALL distinguish source/API tests, injected motion/timing evidence and fresh physical cable/input observations. It SHALL NOT claim a universal latency bound or portrait acceptance from the bounded landscape test.
 
-*Grounding: `docs/evidence/landscape-drm-holder/README.md` associates five late inputs with connector-poll lock holds; `docs/evidence/landscape-hdmi-detect/README.md` measures the EDID path at170–184ms and99.76–99.78% of three complete slow holds. Pinned generic bridge and probe-helper source establishes the polling context and refresh call ordering. Source/host and cross-build results are committed separately; candidate runtime/hotplug results remain UNVERIFIED until committed in `docs/evidence/hdmi-stable-poll/README.md`.*
+*Grounding: `docs/evidence/landscape-drm-holder/README.md` associates five late inputs with connector-poll lock holds; `docs/evidence/landscape-hdmi-detect/README.md` measures the EDID path at170–184ms and99.76–99.78% of three complete slow holds. Pinned generic bridge and probe-helper source establishes the polling context and refresh call ordering. Source/host and cross-build results are committed separately; candidate bounded timing/hotplug results remain UNVERIFIED until committed in `docs/evidence/hdmi-stable-poll/README.md`.*
 
-<!-- UNVERIFIED: candidate has not yet been booted or physically qualified. -->
+<!-- UNVERIFIED: candidate SSH boot/build-ID and idle controls are verified; bounded timing and fresh physical hotplug/input qualification remain open. -->
 
 #### Scenario: The discovered monitor stays connected during card motion
 

@@ -12,7 +12,7 @@ old/new status are connected and cached EDID exists. Link detection and HPD
 notification still run. All non-polling, missing-cache and transition cases
 retain refresh. Nix wires the patch into the mainline DRM source derivation.
 
-UNVERIFIED: candidate boot/timing,
+UNVERIFIED: candidate timing,
 fresh physical cable/input qualification and persistent promotion remain
 open. Current landscape and separate portrait hardware gates are preserved.
 The preceding committed holder/EDID-stage diagnostics ground the problem,
@@ -91,3 +91,20 @@ leave kexec_loaded0. The plan now uses a one-time SSH-controlled kernel
 boot plus fresh boot/kernel-build-ID/boot-journal evidence. The rejected
 UART attempt stays rejected; no UART observation is claimed. Boot, timing,
 physical and persistent gates remain open pending their actual checks.
+
+At18:58:31Z the one-time SSH boot is VERIFIED: new bootIDc17ee483,
+current/booted systemhpmzja32, persistent profilej30y, and running GNU
+kernel build ID7a61d8cea3e26df94695189b766de3fd66fa6860 exactly matches
+the built vmlinux and a unique GNU note in candidate Image (absent from
+original Image). `ssh-boot/` preserves commands, load/shutdown request,
+transport disconnect255, fresh SSH observation and allowed kernel journal
+lines. The transport disconnect itself is not boot proof. No UART log is
+claimed. All five normal boot files remain unchanged; ordinary reset still
+selects the original system.
+
+Fresh candidate controls retain compositor9464072a/config575fa8d1, DEBUG
+flags, onlyCPU0, idle Foot, both services active and normal1280x800@59.91
+scale1 output. Numeric PID1076 is reused across the reboot; distinct boot
+IDs and kernel build IDs distinguish the processes. Fresh function smoke
+qualified4 records and cleanup; actual bounded motion/physical/promotion
+gates remain separate. The kernel trial needs no USB data cable.

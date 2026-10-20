@@ -1,0 +1,21 @@
+{
+  "checked_at": "2026-10-20T19:01:57.263849+00:00",
+  "command": [
+    "readelf",
+    "-n",
+    "/nix/store/16w261rjr78g8cd9j61viqyb2qs9dpg3-linux-riscv64-unknown-linux-gnu-7.3.0-rc5-dev/vmlinux"
+  ],
+  "expected_build_id": "7a61d8cea3e26df94695189b766de3fd66fa6860",
+  "running_build_id": "7a61d8cea3e26df94695189b766de3fd66fa6860",
+  "candidate_image_sha256": "d6b2153d97ac8382b5329c64397b8b46435e6a423b16796f8c37e052d4bcd642",
+  "candidate_image_matching_GNU_note_count": 1,
+  "original_image_matching_GNU_note_count": 0,
+  "host_ssh_exit_code": 255,
+  "host_ssh_exit_scope": "Old transport disconnected during the accepted normal systemd kexec; fresh SSH identity, not this exit, qualifies boot.",
+  "board_shutdown_request_return": 0,
+  "boot_id_changed": true,
+  "persistent_profile_and_five_boot_files_unchanged": true,
+  "serial_observation": "NOT_COLLECTED",
+  "qualification": "SSH_OBSERVED_CANDIDATE_BOOT_PASS",
+  "limit": "Boot and idle controls verified; candidate motion/physical cable/input/persistent promotion remain separate."
+}
