@@ -111,9 +111,14 @@ def checked(directory):
         raise Error('kernel symbol identity differs')
     stacks = [json.loads(line) for line in data.decode().splitlines()]
     remaining = trigger_remaining(meta['trigger_after'],meta['pid'])
+    # The kernel decrements this trigger even with tracing_on=0. This snapshot
+    # is after export, so off-window invocations may consume additional count.
+    # Exact completeness comes from the recorded S/D switches and ring entries.
     if (remaining <= 0 or len(stacks) != meta['stack_count'] or
-            CAPACITY-remaining != len(stacks) or len(stacks) > CAPACITY):
+            CAPACITY-remaining < len(stacks) or len(stacks) > CAPACITY):
         raise Error('stack trigger exhausted or event count differs')
+    if sum(s.get('entries',-base.MAX_EVENTS) for s in meta['stats'].values()) != len(events)+len(stacks):
+        raise Error('ring entries differ from numeric and kernel-stack records')
     trigger_remaining(meta['trigger_before'],meta['pid'])
     if trigger_remaining(meta['trigger_before'],meta['pid']) != CAPACITY:
         raise Error('stack trigger initial count differs')
@@ -309,20 +314,83 @@ def board_run(args):
 
 
 def report(directory):
-    manifest=json.loads((directory/'trial.json').read_text())
-    if manifest.get('stack_schema')!=SCHEMA:raise Error('trial stack schema differs')
-    result=base.report(directory);result['schema']=SCHEMA
+    if (directory/'trial.json').exists():
+        manifest=json.loads((directory/'trial.json').read_text())
+        if manifest.get('stack_schema')!=SCHEMA:raise Error('trial stack schema differs')
+        result=base.report(directory)
+    else:
+        result=recovered_report(directory)
+    result['schema']=SCHEMA
     for run in result['runs']:
         if run['name']=='untraced':continue
         d=directory/run['name'];events,stacks,meta=checked(d)
         by_switch={s['switch_ts_ns']:s for s in stacks}
         c=run['correlation'];c['stack_count']=len(stacks);c['trigger_remaining']=trigger_remaining(meta['trigger_after'],meta['pid'])
+        c['trigger_invocations_outside_recorded_stream']=CAPACITY-c['trigger_remaining']-len(stacks)
+        c['counter_scope']='Counter continues while recording is off; exact stream completeness uses ring entries and one stack per recorded S/D switch.'
         for sample in c['late_samples']:
             for off in sample['off_cpu']:
                 if off['state'] in ('S','D'):off['kernel_stack']=by_switch[off['start_ns']]
         c['limits'].append('A sleeping stack locates the captured wait; it does not identify a lock holder or prove connector-poll causality.')
     result['limits'].append('Kernel symbol-only exports; unresolved frames remain explicit. No poll/default change.')
+    result['report_tool_sha256']=log.digest(Path(__file__))
     return result
+
+
+def recovered_report(directory):
+    """Validate retained complete captures after the old counter checker failed.
+
+    Never manufacture an original success manifest or missing control record.
+    Preserve the nonzero driver status and distinguish the final observation.
+    """
+    recovery=json.loads((directory/'recovery.json').read_text())
+    if (recovery.get('original_driver_exit_code')!=2 or recovery.get('original_rejection')!=
+            'stack trigger exhausted or event count differs' or recovery.get('runs')!=['untraced','traced'] or
+            not re.fullmatch('[0-9a-f]{64}',recovery.get('capture_tool_sha256',''))):
+        raise Error('unrecognized postprocessing recovery')
+    original=json.loads((directory/'original.json').read_text())
+    cleaned=json.loads((directory/'cleanup.json').read_text());base.immutable(original,cleaned['control'])
+    if (cleaned['global_before']!=cleaned['global_after'] or cleaned.get('home_command_succeeded') is not True or
+            cleaned.get('benchmark_stop_succeeded') is not True or cleaned.get('services')!=['active','active'] or
+            cleaned.get('virtual_test_devices')!=0):raise Error('recovered trial cleanup incomplete')
+    reference=None;result=[]
+    for name in recovery['runs']:
+        d=directory/name;row,context,samples=base.benchmark(d/'capture')
+        capture_context=json.loads((d/'capture/context.json').read_text())
+        if row['source_revision']!=recovery['source_revision'] or capture_context.get('status')!='CAPTURED':
+            raise Error('recovered capture is incomplete or has mixed source')
+        key={k:row[k] for k in ('source_revision','runtime_identity','physical_geometry','logical_geometry','format','input_class')}
+        key.update({k:context[k] for k in ('collector_sha256','injected_workload','output')})
+        if reference is None:reference=key
+        elif key!=reference:raise Error('recovered workloads differ')
+        entry={'name':name,'benchmark':row,'latency':log.distribution([s['wall_ms'] for s in samples])}
+        if name=='untraced':
+            control=json.loads((d/'control.json').read_text());base.immutable(original,control['control'])
+            if control['capture_exit_code']!=0 or control['traced'] is not False:
+                raise Error('untraced baseline did not finish normally')
+            entry['control']=control
+        else:
+            if (d/'control.json').exists():raise Error('unexpected original traced control in recovery')
+            meta=json.loads((d/'trace.json').read_text())
+            if meta['tool_sha256']!=recovery['capture_tool_sha256']:raise Error('recovery capture source differs')
+            if original['executable_sha256'] not in json.dumps(row['runtime_identity']):
+                raise Error('recovered benchmark executable differs from original/final control')
+            c=json.loads((d/'trace-cleanup.json').read_text())
+            if (c.get('stack_trigger_removed') is not True or c.get('instance_removed') is not True or
+                    c.get('global_controls_unchanged') is not True or c.get('cleanup_timer_active') is not False):
+                raise Error('recovered stack cleanup incomplete')
+            entry['control_observation']={'original_and_final_controls_match':True,
+                'final_control':cleaned['control'],'observed_at':cleaned['checked_at'],
+                'capture_context_status':capture_context['status'],'original_traced_control_record_written':False,
+                'limit':'The old checker failed after capture and export, before the per-run control record; runtime identity/output come from the capture collector and matching original/final controls.'}
+            entry['correlation']=base.correlate(d,samples)
+        result.append(entry)
+    return {'created_at':base.now(),'status':'MEASURED_AFTER_POSTPROCESSING_RECOVERY',
+        'performance_acceptance':'NOT_EVALUATED','recovery':recovery,'report_tool_sha256':log.digest(Path(__file__)),
+        'runs':result,'limits':['Original board driver exited 2; its checker rejection is preserved, not relabeled as exit 0.',
+        'Offline revalidation retains original captures, timestamps, counts and hashes; no extra hardware run.',
+        'Paired direct-IPC main-thread hardware diagnostic; no native/finger/optical or portrait acceptance.',
+        'Tracing overhead and syscall wall time require interpretation, not automatic causal labels.']}
 
 
 def main():
@@ -372,6 +440,7 @@ class Fixtures(unittest.TestCase):
         meta.update(event_count=count,events_sha256=log.digest(d/'events.jsonl'),stack_schema=SCHEMA,
             stack_count=stacks,stacks_sha256=log.digest(d/'stacks.jsonl'),
             trigger_before=f'stacktrace:{CAPACITY} if '+expression(10),trigger_after=f'stacktrace:{CAPACITY-stacks} if '+expression(10))
+        meta['stats']['cpu0']['entries']=count+stacks
         log.write_json(d/'trace.json',meta);return meta
 
     def test_symbol_export_and_unresolved_addresses(self):
@@ -438,6 +507,24 @@ class Fixtures(unittest.TestCase):
             (control/'trigger').write_text('stacktrace:49999 if '+expression(10));(control/'filter').write_text('foreign')
             with self.assertRaises(Error):stop_owned(state,root)
             self.assertEqual((p/'tracing_on').read_text(),'1')
+
+    def test_counter_may_advance_off_window_but_coverage_cannot_change(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            d=Path(tmp);meta=self.fixture(d)
+            meta['trigger_after']='stacktrace:count=49990 if '+expression(10)
+            log.write_json(d/'trace.json',meta);self.assertEqual(len(checked(d)[1]),1)
+            meta['stats']['cpu0']['entries']+=1;log.write_json(d/'trace.json',meta)
+            with self.assertRaises(Error):checked(d)
+            meta['stats']['cpu0']['entries']-=1
+            meta['trigger_after']='stacktrace:count=50000 if '+expression(10)
+            log.write_json(d/'trace.json',meta)
+            with self.assertRaises(Error):checked(d)
+
+    def test_recovery_rejects_unknown_original_failure(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            d=Path(tmp)
+            log.write_json(d/'recovery.json',{'original_driver_exit_code':0})
+            with self.assertRaises(Error):recovered_report(d)
 
     def test_smoke_failure_cleans_owned_session(self):
         with tempfile.TemporaryDirectory() as tmp:

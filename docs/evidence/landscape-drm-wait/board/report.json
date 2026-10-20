@@ -1,0 +1,1602 @@
+{
+  "created_at": "2026-10-20T07:04:11.940925+00:00",
+  "limits": [
+    "Original board driver exited 2; its checker rejection is preserved, not relabeled as exit 0.",
+    "Offline revalidation retains original captures, timestamps, counts and hashes; no extra hardware run.",
+    "Paired direct-IPC main-thread hardware diagnostic; no native/finger/optical or portrait acceptance.",
+    "Tracing overhead and syscall wall time require interpretation, not automatic causal labels.",
+    "Kernel symbol-only exports; unresolved frames remain explicit. No poll/default change."
+  ],
+  "performance_acceptance": "NOT_EVALUATED",
+  "recovery": {
+    "capture_tool_commit": "6fc2adf14df36ad1bb5b102d0b22ef9c18155d71",
+    "capture_tool_sha256": "4f29492ee1fc84934f181e7688b883e6f645035b599bf9992a526bb397f1f3c6",
+    "command": "python3 tools/landscape-drm-wait.py --report docs/evidence/landscape-drm-wait/board/trial-a --output docs/evidence/landscape-drm-wait/board/report.json",
+    "method": "Retain complete original capture/trace/cleanup files and hashes; offline strict report checks zero loss, all numeric+stack ring entries, one stack per S/D switch and non-exhausted trigger. The trigger counter also consumes off-window events, so it is not an exact recorded-event count. No extra hardware run or fabricated original control/success manifest.",
+    "original_driver_exit_code": 2,
+    "original_rejection": "stack trigger exhausted or event count differs",
+    "original_traced_control_record_written": false,
+    "original_trial_manifest_written": false,
+    "recorded_at": "2026-10-20T07:01:21.298690+00:00",
+    "runs": [
+      "untraced",
+      "traced"
+    ],
+    "source_revision": "221bbcf34a276a939356e5a6af9bfb124af9896a"
+  },
+  "report_tool_sha256": "baffbdb879f40a38d8847bc01981e0d899064145edc8607646e85e90ee05bd25",
+  "runs": [
+    {
+      "benchmark": {
+        "build_cpu_ms": {
+          "max_ms": 5.351073,
+          "p95_ms": 4.865818,
+          "sample_count": 855
+        },
+        "cards": 1,
+        "drag_count": 24,
+        "format": "34325241",
+        "input_class": "injected",
+        "input_to_present_ms": {
+          "max_ms": 207.667627,
+          "p95_ms": 26.294344,
+          "sample_count": 864
+        },
+        "latency_clock_start": "compositor-dispatch",
+        "logical_geometry": [
+          1280,
+          800
+        ],
+        "operator_confirmed_contacts": false,
+        "physical_geometry": [
+          1280,
+          800
+        ],
+        "physical_label_proves_real_finger": false,
+        "run": "114716906878078",
+        "runtime_identity": {
+          "compositor_executable": "/nix/store/3vk3p0ps0dng1qmqsrj7w2gfjq024zv8-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway sha256:9464072ac100e77500c7b6113920d2c2ed14e022612eddbc38a037ce9b006670",
+          "kernel": "7.3.0-rc5",
+          "pixman_identity": "/nix/store/brhzfimak2r3c23lmn80y1g6ww6nmb1r-pixman-riscv64-unknown-linux-gnu-0.46.4/lib/libpixman-1.so.0.46.4 sha256:983f88f4f8628824022644297993aa367963288c6d8a61c87ccbac47fa9beb56"
+        },
+        "scale": 1.0,
+        "source_revision": "221bbcf34a276a939356e5a6af9bfb124af9896a",
+        "transform": 0,
+        "variant": "candidate"
+      },
+      "control": {
+        "capture_exit_code": 0,
+        "control": {
+          "arguments_without_logging": [
+            "-c",
+            "/nix/store/ila85h1q2fkpzkj7q1jlmc1gz8xq1syp-k230-sway.conf"
+          ],
+          "config_sha256": "575fa8d14d8dda6d0707c369015d37dbd7ea9295c66cefdebef2ef3ea26bdcd0",
+          "debug_flag": true,
+          "environment": {
+            "SWAY_K230_CARD_REDUCED_MOTION": "0",
+            "SWAY_K230_CPU_FRAME_TIMING": "",
+            "SWAY_K230_TOUCH_ROUTE_TRACE": "",
+            "WLR_PIXMAN_DRAW_TRACE": "",
+            "WLR_PIXMAN_OUTPUT_TURN": "1",
+            "WLR_PIXMAN_QUARTER_TURN": "0",
+            "WLR_RENDERER": "pixman"
+          },
+          "executable_sha256": "9464072ac100e77500c7b6113920d2c2ed14e022612eddbc38a037ce9b006670",
+          "output": [
+            {
+              "active": true,
+              "current_mode": {
+                "height": 800,
+                "picture_aspect_ratio": "none",
+                "refresh": 59910,
+                "width": 1280
+              },
+              "name": "HDMI-A-1",
+              "rect": {
+                "height": 800,
+                "width": 1280,
+                "x": 0,
+                "y": 0
+              },
+              "scale": 1.0,
+              "transform": "normal"
+            }
+          ],
+          "persistent_system": "/nix/store/j30yag05ic9k68n9dzbzindgf4ardp08-nixos-system-nixos-26.11.20260919.20b1ddd",
+          "pid": 77507,
+          "system": "/nix/store/j30yag05ic9k68n9dzbzindgf4ardp08-nixos-system-nixos-26.11.20260919.20b1ddd",
+          "verbose_flag": false
+        },
+        "fd_labels": {
+          "1": "journal-stream",
+          "10": "DRM-card",
+          "11": "DRM-card",
+          "12": "DRM-card",
+          "2": "journal-stream"
+        },
+        "tool_sha256": "4f29492ee1fc84934f181e7688b883e6f645035b599bf9992a526bb397f1f3c6",
+        "traced": false
+      },
+      "latency": {
+        "max_ms": 207.667627,
+        "over_100ms_count": 2,
+        "p95_ms": 26.294344,
+        "p99_ms": 45.580127,
+        "sample_count": 864
+      },
+      "name": "untraced"
+    },
+    {
+      "benchmark": {
+        "build_cpu_ms": {
+          "max_ms": 5.97289,
+          "p95_ms": 5.078039,
+          "sample_count": 851
+        },
+        "cards": 1,
+        "drag_count": 24,
+        "format": "34325241",
+        "input_class": "injected",
+        "input_to_present_ms": {
+          "max_ms": 223.216072,
+          "p95_ms": 32.473862,
+          "sample_count": 864
+        },
+        "latency_clock_start": "compositor-dispatch",
+        "logical_geometry": [
+          1280,
+          800
+        ],
+        "operator_confirmed_contacts": false,
+        "physical_geometry": [
+          1280,
+          800
+        ],
+        "physical_label_proves_real_finger": false,
+        "run": "114786826319437",
+        "runtime_identity": {
+          "compositor_executable": "/nix/store/3vk3p0ps0dng1qmqsrj7w2gfjq024zv8-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway sha256:9464072ac100e77500c7b6113920d2c2ed14e022612eddbc38a037ce9b006670",
+          "kernel": "7.3.0-rc5",
+          "pixman_identity": "/nix/store/brhzfimak2r3c23lmn80y1g6ww6nmb1r-pixman-riscv64-unknown-linux-gnu-0.46.4/lib/libpixman-1.so.0.46.4 sha256:983f88f4f8628824022644297993aa367963288c6d8a61c87ccbac47fa9beb56"
+        },
+        "scale": 1.0,
+        "source_revision": "221bbcf34a276a939356e5a6af9bfb124af9896a",
+        "transform": 0,
+        "variant": "candidate"
+      },
+      "control_observation": {
+        "capture_context_status": "CAPTURED",
+        "final_control": {
+          "arguments_without_logging": [
+            "-c",
+            "/nix/store/ila85h1q2fkpzkj7q1jlmc1gz8xq1syp-k230-sway.conf"
+          ],
+          "config_sha256": "575fa8d14d8dda6d0707c369015d37dbd7ea9295c66cefdebef2ef3ea26bdcd0",
+          "debug_flag": true,
+          "environment": {
+            "SWAY_K230_CARD_REDUCED_MOTION": "0",
+            "SWAY_K230_CPU_FRAME_TIMING": "",
+            "SWAY_K230_TOUCH_ROUTE_TRACE": "",
+            "WLR_PIXMAN_DRAW_TRACE": "",
+            "WLR_PIXMAN_OUTPUT_TURN": "1",
+            "WLR_PIXMAN_QUARTER_TURN": "0",
+            "WLR_RENDERER": "pixman"
+          },
+          "executable_sha256": "9464072ac100e77500c7b6113920d2c2ed14e022612eddbc38a037ce9b006670",
+          "output": [
+            {
+              "active": true,
+              "current_mode": {
+                "height": 800,
+                "picture_aspect_ratio": "none",
+                "refresh": 59910,
+                "width": 1280
+              },
+              "name": "HDMI-A-1",
+              "rect": {
+                "height": 800,
+                "width": 1280,
+                "x": 0,
+                "y": 0
+              },
+              "scale": 1.0,
+              "transform": "normal"
+            }
+          ],
+          "persistent_system": "/nix/store/j30yag05ic9k68n9dzbzindgf4ardp08-nixos-system-nixos-26.11.20260919.20b1ddd",
+          "pid": 77507,
+          "system": "/nix/store/j30yag05ic9k68n9dzbzindgf4ardp08-nixos-system-nixos-26.11.20260919.20b1ddd",
+          "verbose_flag": false
+        },
+        "limit": "The old checker failed after capture and export, before the per-run control record; runtime identity/output come from the capture collector and matching original/final controls.",
+        "observed_at": "2026-10-20T06:54:31.921346+00:00",
+        "original_and_final_controls_match": true,
+        "original_traced_control_record_written": false
+      },
+      "correlation": {
+        "boundary_partial_events": [
+          {
+            "event": "initial_switch_in",
+            "ts_ns": 114786769198000
+          },
+          {
+            "event": "initial_syscall_exit",
+            "ts_ns": 114786769216000
+          },
+          {
+            "event": "final_syscall_enter",
+            "ts_ns": 114851838332000
+          },
+          {
+            "event": "final_switch_out",
+            "ts_ns": 114851838368000
+          }
+        ],
+        "complete_switch_spans": 19272,
+        "complete_syscall_spans": 162774,
+        "counter_scope": "Counter continues while recording is off; exact stream completeness uses ring entries and one stack per recorded S/D switch.",
+        "late_samples": [
+          {
+            "build_cpu_ms": 4.792221,
+            "end_ns": 114788296035000,
+            "frame_id": 6687,
+            "input_id": 28,
+            "off_cpu": [
+              {
+                "descheduled_to_pid": 79407,
+                "end_ns": 114788276924000,
+                "kernel_stack": {
+                  "cpu": 0,
+                  "pid": 77507,
+                  "switch_ts_ns": 114788097466000,
+                  "symbols": [
+                    "trace_event_buffer_commit",
+                    "trace_event_raw_event_sched_switch",
+                    "__schedule",
+                    "schedule",
+                    "schedule_preempt_disabled",
+                    "__ww_mutex_lock.constprop.0",
+                    "__ww_mutex_lock_slowpath",
+                    "ww_mutex_lock",
+                    "drm_modeset_lock_all_ctx",
+                    "drm_mode_obj_get_properties_ioctl",
+                    "drm_ioctl_kernel",
+                    "drm_ioctl",
+                    "__riscv_sys_ioctl",
+                    "do_trap_ecall_u",
+                    "handle_exception"
+                  ],
+                  "ts_ns": 114788097474000
+                },
+                "runnable_wait_ms": 0.021,
+                "start_ns": 114788097466000,
+                "state": "D",
+                "wakeup_ns": 114788276903000,
+                "wall_ms": 179.458
+              },
+              {
+                "descheduled_to_pid": 270,
+                "end_ns": 114788097152000,
+                "kernel_stack": {
+                  "cpu": 0,
+                  "pid": 77507,
+                  "switch_ts_ns": 114788089309000,
+                  "symbols": [
+                    "trace_event_buffer_commit",
+                    "trace_event_raw_event_sched_switch",
+                    "__schedule",
+                    "schedule",
+                    "schedule_hrtimeout_range_clock",
+                    "schedule_hrtimeout_range",
+                    "do_epoll_wait",
+                    "do_compat_epoll_pwait.part.0",
+                    "__riscv_sys_epoll_pwait",
+                    "do_trap_ecall_u",
+                    "handle_exception"
+                  ],
+                  "ts_ns": 114788089319000
+                },
+                "runnable_wait_ms": 0.085,
+                "start_ns": 114788089309000,
+                "state": "S",
+                "wakeup_ns": 114788097067000,
+                "wall_ms": 7.843
+              },
+              {
+                "descheduled_to_pid": 270,
+                "end_ns": 114788296139000,
+                "kernel_stack": {
+                  "cpu": 0,
+                  "pid": 77507,
+                  "switch_ts_ns": 114788289188000,
+                  "symbols": [
+                    "trace_event_buffer_commit",
+                    "trace_event_raw_event_sched_switch",
+                    "__schedule",
+                    "schedule",
+                    "schedule_hrtimeout_range_clock",
+                    "schedule_hrtimeout_range",
+                    "do_epoll_wait",
+                    "do_compat_epoll_pwait.part.0",
+                    "__riscv_sys_epoll_pwait",
+                    "do_trap_ecall_u",
+                    "handle_exception"
+                  ],
+                  "ts_ns": 114788289196000
+                },
+                "runnable_wait_ms": 0.07,
+                "start_ns": 114788289188000,
+                "state": "S",
+                "wakeup_ns": 114788296069000,
+                "wall_ms": 6.951
+              },
+              {
+                "descheduled_to_pid": 68897,
+                "end_ns": 114788088832000,
+                "kernel_stack": {
+                  "cpu": 0,
+                  "pid": 77507,
+                  "switch_ts_ns": 114788086485000,
+                  "symbols": [
+                    "trace_event_buffer_commit",
+                    "trace_event_raw_event_sched_switch",
+                    "__schedule",
+                    "schedule",
+                    "schedule_hrtimeout_range_clock",
+                    "schedule_hrtimeout_range",
+                    "do_epoll_wait",
+                    "do_compat_epoll_pwait.part.0",
+                    "__riscv_sys_epoll_pwait",
+                    "do_trap_ecall_u",
+                    "handle_exception"
+                  ],
+                  "ts_ns": 114788086493000
+                },
+                "runnable_wait_ms": 0.224,
+                "start_ns": 114788086485000,
+                "state": "S",
+                "wakeup_ns": 114788088608000,
+                "wall_ms": 2.347
+              },
+              {
+                "descheduled_to_pid": 68897,
+                "end_ns": 114788085997000,
+                "runnable_wait_ms": 2.031,
+                "start_ns": 114788083966000,
+                "state": "R+",
+                "wakeup_ns": null,
+                "wall_ms": 2.031
+              },
+              {
+                "descheduled_to_pid": 270,
+                "end_ns": 114788288453000,
+                "runnable_wait_ms": 1.019,
+                "start_ns": 114788287434000,
+                "state": "R+",
+                "wakeup_ns": null,
+                "wall_ms": 1.019
+              },
+              {
+                "descheduled_to_pid": 270,
+                "end_ns": 114788283040000,
+                "runnable_wait_ms": 0.479,
+                "start_ns": 114788282561000,
+                "state": "R",
+                "wakeup_ns": null,
+                "wall_ms": 0.479
+              },
+              {
+                "descheduled_to_pid": 270,
+                "end_ns": 114788286248000,
+                "runnable_wait_ms": 0.476,
+                "start_ns": 114788285772000,
+                "state": "R",
+                "wakeup_ns": null,
+                "wall_ms": 0.476
+              },
+              {
+                "descheduled_to_pid": 68897,
+                "end_ns": 114788286666000,
+                "runnable_wait_ms": 0.377,
+                "start_ns": 114788286289000,
+                "state": "R",
+                "wakeup_ns": null,
+                "wall_ms": 0.377
+              },
+              {
+                "descheduled_to_pid": 68897,
+                "end_ns": 114788284278000,
+                "runnable_wait_ms": 0.323,
+                "start_ns": 114788283955000,
+                "state": "R",
+                "wakeup_ns": null,
+                "wall_ms": 0.323
+              },
+              {
+                "descheduled_to_pid": 270,
+                "end_ns": 114788285007000,
+                "runnable_wait_ms": 0.314,
+                "start_ns": 114788284693000,
+                "state": "R",
+                "wakeup_ns": null,
+                "wall_ms": 0.314
+              },
+              {
+                "descheduled_to_pid": 78466,
+                "end_ns": 114788283762000,
+                "runnable_wait_ms": 0.266,
+                "start_ns": 114788283496000,
+                "state": "R",
+                "wakeup_ns": null,
+                "wall_ms": 0.266
+              }
+            ],
+            "start_ns": 114788083351364,
+            "submit_ns": 114788283055591,
+            "syscalls": [
+              {
+                "command": 3223348409,
+                "cpu": 0,
+                "end_ns": 114788276950000,
+                "event": "enter",
+                "fd": 10,
+                "nr": 29,
+                "pid": 77507,
+                "result_error": null,
+                "ret": 0,
+                "start_ns": 114788097424000,
+                "ts_ns": 114788097424000,
+                "wall_ms": 179.526
+              },
+              {
+                "cpu": 0,
+                "end_ns": 114788097168000,
+                "event": "enter",
+                "nr": 22,
+                "pid": 77507,
+                "result_error": 0,
+                "ret": null,
+                "start_ns": 114788089269000,
+                "ts_ns": 114788089269000,
+                "wall_ms": 7.899
+              },
+              {
+                "cpu": 0,
+                "end_ns": 114788296155000,
+                "event": "enter",
+                "nr": 22,
+                "pid": 77507,
+                "result_error": 0,
+                "ret": null,
+                "start_ns": 114788289162000,
+                "ts_ns": 114788289162000,
+                "wall_ms": 6.993
+              },
+              {
+                "cpu": 0,
+                "end_ns": 114788088863000,
+                "event": "enter",
+                "nr": 22,
+                "pid": 77507,
+                "result_error": 0,
+                "ret": null,
+                "start_ns": 114788086460000,
+                "ts_ns": 114788086460000,
+                "wall_ms": 2.403
+              },
+              {
+                "count": 7,
+                "cpu": 0,
+                "end_ns": 114788086019000,
+                "event": "enter",
+                "fd": 2,
+                "nr": 64,
+                "pid": 77507,
+                "result_error": null,
+                "ret": 7,
+                "start_ns": 114788083911000,
+                "ts_ns": 114788083911000,
+                "wall_ms": 2.108
+              },
+              {
+                "count": 1,
+                "cpu": 0,
+                "end_ns": 114788288522000,
+                "event": "enter",
+                "fd": 2,
+                "nr": 64,
+                "pid": 77507,
+                "result_error": null,
+                "ret": 1,
+                "start_ns": 114788287390000,
+                "ts_ns": 114788287390000,
+                "wall_ms": 1.132
+              },
+              {
+                "command": 3224921276,
+                "cpu": 0,
+                "end_ns": 114788283477000,
+                "event": "enter",
+                "fd": 10,
+                "nr": 29,
+                "pid": 77507,
+                "result_error": null,
+                "ret": 0,
+                "start_ns": 114788283143000,
+                "ts_ns": 114788283143000,
+                "wall_ms": 0.334
+              },
+              {
+                "count": 13,
+                "cpu": 0,
+                "end_ns": 114788283941000,
+                "event": "enter",
+                "fd": 2,
+                "nr": 64,
+                "pid": 77507,
+                "result_error": null,
+                "ret": 13,
+                "start_ns": 114788283854000,
+                "ts_ns": 114788283854000,
+                "wall_ms": 0.087
+              },
+              {
+                "count": 13,
+                "cpu": 0,
+                "end_ns": 114788285122000,
+                "event": "enter",
+                "fd": 2,
+                "nr": 64,
+                "pid": 77507,
+                "result_error": null,
+                "ret": 13,
+                "start_ns": 114788285037000,
+                "ts_ns": 114788285037000,
+                "wall_ms": 0.085
+              },
+              {
+                "count": 128,
+                "cpu": 0,
+                "end_ns": 114788086125000,
+                "event": "enter",
+                "fd": 2,
+                "nr": 64,
+                "pid": 77507,
+                "result_error": null,
+                "ret": 128,
+                "start_ns": 114788086044000,
+                "ts_ns": 114788086044000,
+                "wall_ms": 0.081
+              },
+              {
+                "count": 13,
+                "cpu": 0,
+                "end_ns": 114788282451000,
+                "event": "enter",
+                "fd": 2,
+                "nr": 64,
+                "pid": 77507,
+                "result_error": null,
+                "ret": 13,
+                "start_ns": 114788282375000,
+                "ts_ns": 114788282375000,
+                "wall_ms": 0.076
+              },
+              {
+                "count": 13,
+                "cpu": 0,
+                "end_ns": 114788287347000,
+                "event": "enter",
+                "fd": 2,
+                "nr": 64,
+                "pid": 77507,
+                "result_error": null,
+                "ret": 13,
+                "start_ns": 114788287289000,
+                "ts_ns": 114788287289000,
+                "wall_ms": 0.058
+              }
+            ],
+            "wall_ms": 212.683636
+          },
+          {
+            "build_cpu_ms": 4.872667,
+            "end_ns": 114798494913000,
+            "frame_id": 6919,
+            "input_id": 162,
+            "off_cpu": [
+              {
+                "descheduled_to_pid": 270,
+                "end_ns": 114798481595000,
+                "kernel_stack": {
+                  "cpu": 0,
+                  "pid": 77507,
+                  "switch_ts_ns": 114798313859000,
+                  "symbols": [
+                    "trace_event_buffer_commit",
+                    "trace_event_raw_event_sched_switch",
+                    "__schedule",
+                    "schedule",
+                    "schedule_preempt_disabled",
+                    "__ww_mutex_lock.constprop.0",
+                    "__ww_mutex_lock_slowpath",
+                    "ww_mutex_lock",
+                    "drm_modeset_lock_all_ctx",
+                    "drm_mode_obj_get_properties_ioctl",
+                    "drm_ioctl_kernel",
+                    "drm_ioctl",
+                    "__riscv_sys_ioctl",
+                    "do_trap_ecall_u",
+                    "handle_exception"
+                  ],
+                  "ts_ns": 114798313867000
+                },
+                "runnable_wait_ms": 0.02,
+                "start_ns": 114798313859000,
+                "state": "D",
+                "wakeup_ns": 114798481575000,
+                "wall_ms": 167.736
+              },
+              {
+                "descheduled_to_pid": 270,
+                "end_ns": 114798494962000,
+                "kernel_stack": {
+                  "cpu": 0,
+                  "pid": 77507,
+                  "switch_ts_ns": 114798491165000,
+                  "symbols": [
+                    "trace_event_buffer_commit",
+                    "trace_event_raw_event_sched_switch",
+                    "__schedule",
+                    "schedule",
+                    "schedule_hrtimeout_range_clock",
+                    "schedule_hrtimeout_range",
+                    "do_epoll_wait",
+                    "do_compat_epoll_pwait.part.0",
+                    "__riscv_sys_epoll_pwait",
+                    "do_trap_ecall_u",
+                    "handle_exception"
+                  ],
+                  "ts_ns": 114798491173000
+                },
+                "runnable_wait_ms": 0.017,
+                "start_ns": 114798491165000,
+                "state": "S",
+                "wakeup_ns": 114798494945000,
+                "wall_ms": 3.797
+              },
+              {
+                "descheduled_to_pid": 78466,
+                "end_ns": 114798305003000,
+                "runnable_wait_ms": 1.559,
+                "start_ns": 114798303444000,
+                "state": "R",
+                "wakeup_ns": null,
+                "wall_ms": 1.559
+              },
+              {
+                "descheduled_to_pid": 79539,
+                "end_ns": 114798491081000,
+                "runnable_wait_ms": 1.22,
+                "start_ns": 114798489861000,
+                "state": "R",
+                "wakeup_ns": null,
+                "wall_ms": 1.22
+              },
+              {
+                "descheduled_to_pid": 79407,
+                "end_ns": 114798306604000,
+                "runnable_wait_ms": 1.043,
+                "start_ns": 114798305561000,
+                "state": "R",
+                "wakeup_ns": null,
+                "wall_ms": 1.043
+              },
+              {
+                "descheduled_to_pid": 79407,
+                "end_ns": 114798308921000,
+                "runnable_wait_ms": 0.85,
+                "start_ns": 114798308071000,
+                "state": "R",
+                "wakeup_ns": null,
+                "wall_ms": 0.85
+              },
+              {
+                "descheduled_to_pid": 79407,
+                "end_ns": 114798312778000,
+                "runnable_wait_ms": 0.833,
+                "start_ns": 114798311945000,
+                "state": "R",
+                "wakeup_ns": null,
+                "wall_ms": 0.833
+              },
+              {
+                "descheduled_to_pid": 270,
+                "end_ns": 114798488637000,
+                "runnable_wait_ms": 0.814,
+                "start_ns": 114798487823000,
+                "state": "R",
+                "wakeup_ns": null,
+                "wall_ms": 0.814
+              },
+              {
+                "descheduled_to_pid": 79407,
+                "end_ns": 114798307788000,
+                "runnable_wait_ms": 0.779,
+                "start_ns": 114798307009000,
+                "state": "R",
+                "wakeup_ns": null,
+                "wall_ms": 0.779
+              },
+              {
+                "descheduled_to_pid": 79407,
+                "end_ns": 114798309939000,
+                "runnable_wait_ms": 0.603,
+                "start_ns": 114798309336000,
+                "state": "R",
+                "wakeup_ns": null,
+                "wall_ms": 0.603
+              },
+              {
+                "descheduled_to_pid": 79539,
+                "end_ns": 114798313798000,
+                "runnable_wait_ms": 0.458,
+                "start_ns": 114798313340000,
+                "state": "R",
+                "wakeup_ns": null,
+                "wall_ms": 0.458
+              },
+              {
+                "descheduled_to_pid": 79407,
+                "end_ns": 114798310819000,
+                "runnable_wait_ms": 0.455,
+                "start_ns": 114798310364000,
+                "state": "R",
+                "wakeup_ns": null,
+                "wall_ms": 0.455
+              }
+            ],
+            "start_ns": 114798302946832,
+            "submit_ns": 114798486930857,
+            "syscalls": [
+              {
+                "command": 3223348409,
+                "cpu": 0,
+                "end_ns": 114798481620000,
+                "event": "enter",
+                "fd": 10,
+                "nr": 29,
+                "pid": 77507,
+                "result_error": null,
+                "ret": 0,
+                "start_ns": 114798313823000,
+                "ts_ns": 114798313823000,
+                "wall_ms": 167.797
+              },
+              {
+                "cpu": 0,
+                "end_ns": 114798494978000,
+                "event": "enter",
+                "nr": 22,
+                "pid": 77507,
+                "result_error": 0,
+                "ret": null,
+                "start_ns": 114798491145000,
+                "ts_ns": 114798491145000,
+                "wall_ms": 3.833
+              },
+              {
+                "command": 3224921276,
+                "cpu": 0,
+                "end_ns": 114798487359000,
+                "event": "enter",
+                "fd": 10,
+                "nr": 29,
+                "pid": 77507,
+                "result_error": null,
+                "ret": 0,
+                "start_ns": 114798487014000,
+                "ts_ns": 114798487014000,
+                "wall_ms": 0.345
+              },
+              {
+                "count": 13,
+                "cpu": 0,
+                "end_ns": 114798486437000,
+                "event": "enter",
+                "fd": 2,
+                "nr": 64,
+                "pid": 77507,
+                "result_error": null,
+                "ret": 13,
+                "start_ns": 114798486345000,
+                "ts_ns": 114798486345000,
+                "wall_ms": 0.092
+              },
+              {
+                "count": 7,
+                "cpu": 0,
+                "end_ns": 114798310052000,
+                "event": "enter",
+                "fd": 2,
+                "nr": 64,
+                "pid": 77507,
+                "result_error": null,
+                "ret": 7,
+                "start_ns": 114798309975000,
+                "ts_ns": 114798309975000,
+                "wall_ms": 0.077
+              },
+              {
+                "count": 34,
+                "cpu": 0,
+                "end_ns": 114798306693000,
+                "event": "enter",
+                "fd": 2,
+                "nr": 64,
+                "pid": 77507,
+                "result_error": null,
+                "ret": 34,
+                "start_ns": 114798306626000,
+                "ts_ns": 114798306626000,
+                "wall_ms": 0.067
+              },
+              {
+                "count": 13,
+                "cpu": 0,
+                "end_ns": 114798487562000,
+                "event": "enter",
+                "fd": 2,
+                "nr": 64,
+                "pid": 77507,
+                "result_error": null,
+                "ret": 13,
+                "start_ns": 114798487496000,
+                "ts_ns": 114798487496000,
+                "wall_ms": 0.066
+              },
+              {
+                "count": 13,
+                "cpu": 0,
+                "end_ns": 114798311675000,
+                "event": "enter",
+                "fd": 2,
+                "nr": 64,
+                "pid": 77507,
+                "result_error": null,
+                "ret": 13,
+                "start_ns": 114798311610000,
+                "ts_ns": 114798311610000,
+                "wall_ms": 0.065
+              },
+              {
+                "count": 37,
+                "cpu": 0,
+                "end_ns": 114798489841000,
+                "event": "enter",
+                "fd": 54,
+                "nr": 64,
+                "pid": 77507,
+                "result_error": null,
+                "ret": 37,
+                "start_ns": 114798489780000,
+                "ts_ns": 114798489780000,
+                "wall_ms": 0.061
+              },
+              {
+                "count": 7,
+                "cpu": 0,
+                "end_ns": 114798307885000,
+                "event": "enter",
+                "fd": 2,
+                "nr": 64,
+                "pid": 77507,
+                "result_error": null,
+                "ret": 7,
+                "start_ns": 114798307828000,
+                "ts_ns": 114798307828000,
+                "wall_ms": 0.057
+              },
+              {
+                "count": 128,
+                "cpu": 0,
+                "end_ns": 114798303424000,
+                "event": "enter",
+                "fd": 2,
+                "nr": 64,
+                "pid": 77507,
+                "result_error": null,
+                "ret": 128,
+                "start_ns": 114798303370000,
+                "ts_ns": 114798303370000,
+                "wall_ms": 0.054
+              },
+              {
+                "count": 37,
+                "cpu": 0,
+                "end_ns": 114798312953000,
+                "event": "enter",
+                "fd": 54,
+                "nr": 64,
+                "pid": 77507,
+                "result_error": null,
+                "ret": 37,
+                "start_ns": 114798312906000,
+                "ts_ns": 114798312906000,
+                "wall_ms": 0.047
+              }
+            ],
+            "wall_ms": 191.966168
+          },
+          {
+            "build_cpu_ms": 4.779704,
+            "end_ns": 114808741678000,
+            "frame_id": 7171,
+            "input_id": 301,
+            "off_cpu": [
+              {
+                "descheduled_to_pid": 79407,
+                "end_ns": 114808735242000,
+                "kernel_stack": {
+                  "cpu": 0,
+                  "pid": 77507,
+                  "switch_ts_ns": 114808559941000,
+                  "symbols": [
+                    "trace_event_buffer_commit",
+                    "trace_event_raw_event_sched_switch",
+                    "__schedule",
+                    "schedule",
+                    "schedule_preempt_disabled",
+                    "__ww_mutex_lock.constprop.0",
+                    "__ww_mutex_lock_slowpath",
+                    "ww_mutex_lock",
+                    "drm_modeset_lock_all_ctx",
+                    "drm_mode_obj_get_properties_ioctl",
+                    "drm_ioctl_kernel",
+                    "drm_ioctl",
+                    "__riscv_sys_ioctl",
+                    "do_trap_ecall_u",
+                    "handle_exception"
+                  ],
+                  "ts_ns": 114808559949000
+                },
+                "runnable_wait_ms": 0.022,
+                "start_ns": 114808559941000,
+                "state": "D",
+                "wakeup_ns": 114808735220000,
+                "wall_ms": 175.301
+              },
+              {
+                "descheduled_to_pid": 79539,
+                "end_ns": 114808559470000,
+                "runnable_wait_ms": 1.265,
+                "start_ns": 114808558205000,
+                "state": "R",
+                "wakeup_ns": null,
+                "wall_ms": 1.265
+              },
+              {
+                "descheduled_to_pid": 270,
+                "end_ns": 114808742079000,
+                "runnable_wait_ms": 0.73,
+                "start_ns": 114808741349000,
+                "state": "R",
+                "wakeup_ns": null,
+                "wall_ms": 0.73
+              },
+              {
+                "descheduled_to_pid": 270,
+                "end_ns": 114808557709000,
+                "runnable_wait_ms": 0.613,
+                "start_ns": 114808557096000,
+                "state": "R+",
+                "wakeup_ns": null,
+                "wall_ms": 0.613
+              },
+              {
+                "descheduled_to_pid": 270,
+                "end_ns": 114808740440000,
+                "runnable_wait_ms": 0.374,
+                "start_ns": 114808740066000,
+                "state": "R+",
+                "wakeup_ns": null,
+                "wall_ms": 0.374
+              },
+              {
+                "descheduled_to_pid": 79407,
+                "end_ns": 114808559792000,
+                "runnable_wait_ms": 0.063,
+                "start_ns": 114808559729000,
+                "state": "R",
+                "wakeup_ns": null,
+                "wall_ms": 0.063
+              },
+              {
+                "descheduled_to_pid": 78466,
+                "end_ns": 114808740949000,
+                "runnable_wait_ms": 0.047,
+                "start_ns": 114808740902000,
+                "state": "R",
+                "wakeup_ns": null,
+                "wall_ms": 0.047
+              }
+            ],
+            "start_ns": 114808556667162,
+            "submit_ns": 114808740457688,
+            "syscalls": [
+              {
+                "command": 3223348409,
+                "cpu": 0,
+                "end_ns": 114808735268000,
+                "event": "enter",
+                "fd": 10,
+                "nr": 29,
+                "pid": 77507,
+                "result_error": null,
+                "ret": 0,
+                "start_ns": 114808559908000,
+                "ts_ns": 114808559908000,
+                "wall_ms": 175.36
+              },
+              {
+                "count": 13,
+                "cpu": 0,
+                "end_ns": 114808557773000,
+                "event": "enter",
+                "fd": 2,
+                "nr": 64,
+                "pid": 77507,
+                "result_error": null,
+                "ret": 13,
+                "start_ns": 114808557041000,
+                "ts_ns": 114808557041000,
+                "wall_ms": 0.732
+              },
+              {
+                "cpu": 0,
+                "end_ns": 114808740453000,
+                "event": "enter",
+                "nr": 113,
+                "pid": 77507,
+                "result_error": 0,
+                "ret": null,
+                "start_ns": 114808739996000,
+                "ts_ns": 114808739996000,
+                "wall_ms": 0.457
+              },
+              {
+                "command": 3224921276,
+                "cpu": 0,
+                "end_ns": 114808740885000,
+                "event": "enter",
+                "fd": 10,
+                "nr": 29,
+                "pid": 77507,
+                "result_error": null,
+                "ret": 0,
+                "start_ns": 114808740540000,
+                "ts_ns": 114808740540000,
+                "wall_ms": 0.345
+              },
+              {
+                "count": 13,
+                "cpu": 0,
+                "end_ns": 114808739918000,
+                "event": "enter",
+                "fd": 2,
+                "nr": 64,
+                "pid": 77507,
+                "result_error": null,
+                "ret": 13,
+                "start_ns": 114808739825000,
+                "ts_ns": 114808739825000,
+                "wall_ms": 0.093
+              },
+              {
+                "count": 13,
+                "cpu": 0,
+                "end_ns": 114808741085000,
+                "event": "enter",
+                "fd": 2,
+                "nr": 64,
+                "pid": 77507,
+                "result_error": null,
+                "ret": 13,
+                "start_ns": 114808741016000,
+                "ts_ns": 114808741016000,
+                "wall_ms": 0.069
+              },
+              {
+                "count": 37,
+                "cpu": 0,
+                "end_ns": 114808558185000,
+                "event": "enter",
+                "fd": 54,
+                "nr": 64,
+                "pid": 77507,
+                "result_error": null,
+                "ret": 37,
+                "start_ns": 114808558136000,
+                "ts_ns": 114808558136000,
+                "wall_ms": 0.049
+              },
+              {
+                "count": 13,
+                "cpu": 0,
+                "end_ns": 114808556888000,
+                "event": "enter",
+                "fd": 2,
+                "nr": 64,
+                "pid": 77507,
+                "result_error": null,
+                "ret": 13,
+                "start_ns": 114808556862000,
+                "ts_ns": 114808556862000,
+                "wall_ms": 0.026
+              },
+              {
+                "count": 7,
+                "cpu": 0,
+                "end_ns": 114808557824000,
+                "event": "enter",
+                "fd": 2,
+                "nr": 64,
+                "pid": 77507,
+                "result_error": null,
+                "ret": 7,
+                "start_ns": 114808557799000,
+                "ts_ns": 114808557799000,
+                "wall_ms": 0.025
+              },
+              {
+                "cpu": 0,
+                "end_ns": 114808559514000,
+                "event": "enter",
+                "nr": 21,
+                "pid": 77507,
+                "result_error": 0,
+                "ret": null,
+                "start_ns": 114808559493000,
+                "ts_ns": 114808559493000,
+                "wall_ms": 0.021
+              },
+              {
+                "cpu": 0,
+                "end_ns": 114808558116000,
+                "event": "enter",
+                "nr": 21,
+                "pid": 77507,
+                "result_error": 0,
+                "ret": null,
+                "start_ns": 114808558097000,
+                "ts_ns": 114808558097000,
+                "wall_ms": 0.019
+              },
+              {
+                "command": 3223348409,
+                "cpu": 0,
+                "end_ns": 114808735297000,
+                "event": "enter",
+                "fd": 10,
+                "nr": 29,
+                "pid": 77507,
+                "result_error": null,
+                "ret": 0,
+                "start_ns": 114808735280000,
+                "ts_ns": 114808735280000,
+                "wall_ms": 0.017
+              }
+            ],
+            "wall_ms": 185.010838
+          },
+          {
+            "build_cpu_ms": 5.149588,
+            "end_ns": 114829235188000,
+            "frame_id": 7666,
+            "input_id": 578,
+            "off_cpu": [
+              {
+                "descheduled_to_pid": 79375,
+                "end_ns": 114829221429000,
+                "kernel_stack": {
+                  "cpu": 0,
+                  "pid": 77507,
+                  "switch_ts_ns": 114829030401000,
+                  "symbols": [
+                    "trace_event_buffer_commit",
+                    "trace_event_raw_event_sched_switch",
+                    "__schedule",
+                    "schedule",
+                    "schedule_preempt_disabled",
+                    "__ww_mutex_lock.constprop.0",
+                    "__ww_mutex_lock_interruptible_slowpath",
+                    "ww_mutex_lock_interruptible",
+                    "drm_modeset_lock",
+                    "drm_atomic_get_connector_state",
+                    "drm_atomic_set_property",
+                    "drm_mode_atomic_ioctl",
+                    "drm_ioctl_kernel",
+                    "drm_ioctl",
+                    "__riscv_sys_ioctl",
+                    "do_trap_ecall_u",
+                    "handle_exception"
+                  ],
+                  "ts_ns": 114829030410000
+                },
+                "runnable_wait_ms": 0.022,
+                "start_ns": 114829030401000,
+                "state": "S",
+                "wakeup_ns": 114829221407000,
+                "wall_ms": 191.028
+              },
+              {
+                "descheduled_to_pid": 270,
+                "end_ns": 114829235294000,
+                "kernel_stack": {
+                  "cpu": 0,
+                  "pid": 77507,
+                  "switch_ts_ns": 114829227770000,
+                  "symbols": [
+                    "trace_event_buffer_commit",
+                    "trace_event_raw_event_sched_switch",
+                    "__schedule",
+                    "schedule",
+                    "schedule_hrtimeout_range_clock",
+                    "schedule_hrtimeout_range",
+                    "do_epoll_wait",
+                    "do_compat_epoll_pwait.part.0",
+                    "__riscv_sys_epoll_pwait",
+                    "do_trap_ecall_u",
+                    "handle_exception"
+                  ],
+                  "ts_ns": 114829227778000
+                },
+                "runnable_wait_ms": 0.073,
+                "start_ns": 114829227770000,
+                "state": "S",
+                "wakeup_ns": 114829235221000,
+                "wall_ms": 7.524
+              },
+              {
+                "descheduled_to_pid": 0,
+                "end_ns": 114829019843000,
+                "kernel_stack": {
+                  "cpu": 0,
+                  "pid": 77507,
+                  "switch_ts_ns": 114829013611000,
+                  "symbols": [
+                    "trace_event_buffer_commit",
+                    "trace_event_raw_event_sched_switch",
+                    "__schedule",
+                    "schedule",
+                    "schedule_hrtimeout_range_clock",
+                    "schedule_hrtimeout_range",
+                    "do_epoll_wait",
+                    "do_compat_epoll_pwait.part.0",
+                    "__riscv_sys_epoll_pwait",
+                    "do_trap_ecall_u",
+                    "handle_exception"
+                  ],
+                  "ts_ns": 114829013619000
+                },
+                "runnable_wait_ms": 0.014,
+                "start_ns": 114829013611000,
+                "state": "S",
+                "wakeup_ns": 114829019829000,
+                "wall_ms": 6.232
+              },
+              {
+                "descheduled_to_pid": 79467,
+                "end_ns": 114829026825000,
+                "runnable_wait_ms": 2.719,
+                "start_ns": 114829024106000,
+                "state": "R",
+                "wakeup_ns": null,
+                "wall_ms": 2.719
+              },
+              {
+                "descheduled_to_pid": 68897,
+                "end_ns": 114829224877000,
+                "runnable_wait_ms": 1.174,
+                "start_ns": 114829223703000,
+                "state": "R",
+                "wakeup_ns": null,
+                "wall_ms": 1.174
+              },
+              {
+                "descheduled_to_pid": 270,
+                "end_ns": 114829226600000,
+                "runnable_wait_ms": 0.916,
+                "start_ns": 114829225684000,
+                "state": "R+",
+                "wakeup_ns": null,
+                "wall_ms": 0.916
+              },
+              {
+                "descheduled_to_pid": 79375,
+                "end_ns": 114829029210000,
+                "runnable_wait_ms": 0.553,
+                "start_ns": 114829028657000,
+                "state": "R",
+                "wakeup_ns": null,
+                "wall_ms": 0.553
+              },
+              {
+                "descheduled_to_pid": 270,
+                "end_ns": 114829222900000,
+                "runnable_wait_ms": 0.55,
+                "start_ns": 114829222350000,
+                "state": "R",
+                "wakeup_ns": null,
+                "wall_ms": 0.55
+              },
+              {
+                "descheduled_to_pid": 79539,
+                "end_ns": 114829227685000,
+                "runnable_wait_ms": 0.444,
+                "start_ns": 114829227241000,
+                "state": "R",
+                "wakeup_ns": null,
+                "wall_ms": 0.444
+              },
+              {
+                "descheduled_to_pid": 79539,
+                "end_ns": 114829013533000,
+                "runnable_wait_ms": 0.391,
+                "start_ns": 114829013142000,
+                "state": "R",
+                "wakeup_ns": null,
+                "wall_ms": 0.391
+              },
+              {
+                "descheduled_to_pid": 77509,
+                "end_ns": 114829029684000,
+                "runnable_wait_ms": 0.235,
+                "start_ns": 114829029449000,
+                "state": "R+",
+                "wakeup_ns": null,
+                "wall_ms": 0.235
+              },
+              {
+                "descheduled_to_pid": 79375,
+                "end_ns": 114829029955000,
+                "runnable_wait_ms": 0.169,
+                "start_ns": 114829029786000,
+                "state": "R",
+                "wakeup_ns": null,
+                "wall_ms": 0.169
+              }
+            ],
+            "start_ns": 114829011971928,
+            "submit_ns": 114829029996481,
+            "syscalls": [
+              {
+                "command": 3224921276,
+                "cpu": 0,
+                "end_ns": 114829221719000,
+                "event": "enter",
+                "fd": 10,
+                "nr": 29,
+                "pid": 77507,
+                "result_error": null,
+                "ret": 0,
+                "start_ns": 114829030297000,
+                "ts_ns": 114829030297000,
+                "wall_ms": 191.422
+              },
+              {
+                "cpu": 0,
+                "end_ns": 114829235312000,
+                "event": "enter",
+                "nr": 22,
+                "pid": 77507,
+                "result_error": 0,
+                "ret": null,
+                "start_ns": 114829227750000,
+                "ts_ns": 114829227750000,
+                "wall_ms": 7.562
+              },
+              {
+                "cpu": 0,
+                "end_ns": 114829019856000,
+                "event": "enter",
+                "nr": 22,
+                "pid": 77507,
+                "result_error": 0,
+                "ret": null,
+                "start_ns": 114829013592000,
+                "ts_ns": 114829013592000,
+                "wall_ms": 6.264
+              },
+              {
+                "count": 13,
+                "cpu": 0,
+                "end_ns": 114829226636000,
+                "event": "enter",
+                "fd": 2,
+                "nr": 64,
+                "pid": 77507,
+                "result_error": null,
+                "ret": 13,
+                "start_ns": 114829225638000,
+                "ts_ns": 114829225638000,
+                "wall_ms": 0.998
+              },
+              {
+                "count": 69,
+                "cpu": 0,
+                "end_ns": 114829029718000,
+                "event": "enter",
+                "fd": 2,
+                "nr": 64,
+                "pid": 77507,
+                "result_error": null,
+                "ret": 69,
+                "start_ns": 114829029423000,
+                "ts_ns": 114829029423000,
+                "wall_ms": 0.295
+              },
+              {
+                "cpu": 0,
+                "end_ns": 114829223094000,
+                "event": "enter",
+                "nr": 56,
+                "pid": 77507,
+                "result_error": 0,
+                "ret": null,
+                "start_ns": 114829223000000,
+                "ts_ns": 114829223000000,
+                "wall_ms": 0.094
+              },
+              {
+                "cpu": 0,
+                "end_ns": 114829223275000,
+                "event": "enter",
+                "nr": 276,
+                "pid": 77507,
+                "result_error": 0,
+                "ret": null,
+                "start_ns": 114829223187000,
+                "ts_ns": 114829223187000,
+                "wall_ms": 0.088
+              },
+              {
+                "count": 13,
+                "cpu": 0,
+                "end_ns": 114829028642000,
+                "event": "enter",
+                "fd": 2,
+                "nr": 64,
+                "pid": 77507,
+                "result_error": null,
+                "ret": 13,
+                "start_ns": 114829028558000,
+                "ts_ns": 114829028558000,
+                "wall_ms": 0.084
+              },
+              {
+                "count": 13,
+                "cpu": 0,
+                "end_ns": 114829222037000,
+                "event": "enter",
+                "fd": 2,
+                "nr": 64,
+                "pid": 77507,
+                "result_error": null,
+                "ret": 13,
+                "start_ns": 114829221973000,
+                "ts_ns": 114829221973000,
+                "wall_ms": 0.064
+              },
+              {
+                "count": 80,
+                "cpu": 0,
+                "end_ns": 114829223165000,
+                "event": "enter",
+                "fd": 57,
+                "nr": 64,
+                "pid": 77507,
+                "result_error": null,
+                "ret": 80,
+                "start_ns": 114829223103000,
+                "ts_ns": 114829223103000,
+                "wall_ms": 0.062
+              },
+              {
+                "count": 7,
+                "cpu": 0,
+                "end_ns": 114829029323000,
+                "event": "enter",
+                "fd": 2,
+                "nr": 64,
+                "pid": 77507,
+                "result_error": null,
+                "ret": 7,
+                "start_ns": 114829029266000,
+                "ts_ns": 114829029266000,
+                "wall_ms": 0.057
+              },
+              {
+                "cpu": 0,
+                "end_ns": 114829223477000,
+                "event": "enter",
+                "nr": 56,
+                "pid": 77507,
+                "result_error": 0,
+                "ret": null,
+                "start_ns": 114829223420000,
+                "ts_ns": 114829223420000,
+                "wall_ms": 0.057
+              }
+            ],
+            "wall_ms": 223.216072
+          }
+        ],
+        "limits": [
+          "Syscall wall time includes scheduling delays; it is not kernel CPU time.",
+          "Only the compositor main thread is traced; no finger or optical claim.",
+          "A sleeping stack locates the captured wait; it does not identify a lock holder or prove connector-poll causality."
+        ],
+        "stack_count": 6080,
+        "trace": {
+          "base_tool_sha256": "b98a6404bdd96afab1db9edb6779f325bc7958574e754b04dffbed73ae67f42b",
+          "buffer_total_kb": 32771,
+          "event_count": 370178,
+          "events_sha256": "60b0c23c1218b17fc9ca866f71031728c3f03fea558786b821f95cd1dcebeb5d",
+          "global_before": {
+            "current_tracer": "64aec5a7fa151222572a241383c857738318e63cca7ee771952c95a31d92a19d",
+            "events/enable": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+            "set_event_pid": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "set_ftrace_pid": "cdf4d2acfdcd5cd2556f83eeb52ee253ea6afbaa941c760f77dcfae3c925cb78",
+            "trace_clock": "925ca315bd3de6ef99e08c002e320406936ae2da2f2c0afd8da1e87f7980a253",
+            "tracing_on": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865"
+          },
+          "markers": {
+            "end": {
+              "after_ns": 114851846129430,
+              "before_ns": 114851845424093
+            },
+            "start": {
+              "after_ns": 114786767969144,
+              "before_ns": 114786767242882
+            }
+          },
+          "pid": 77507,
+          "raw_bytes": 38481400,
+          "raw_sha256": "9937799b4d42ab8f44092d2910f051153e0dda559c7b8a4b0b8e02e15f56208d",
+          "schema": "landscape-hdmi-stall-trace-v1",
+          "stack_count": 6080,
+          "stack_schema": "landscape-drm-wait-v1",
+          "stacks_sha256": "39e2fd3cb42a1aa57c5d58d25442705bb7503604dff0b6d8e8ebf75bf7a83621",
+          "stats": {
+            "cpu0": {
+              "bytes": 20826760,
+              "commit overrun": 0,
+              "dropped events": 0,
+              "entries": 376258,
+              "overrun": 0,
+              "read events": 0
+            }
+          },
+          "tool_sha256": "4f29492ee1fc84934f181e7688b883e6f645035b599bf9992a526bb397f1f3c6",
+          "trace_clock": "local global counter uptime perf [mono] mono_raw boot tai",
+          "trigger_after": "stacktrace:count=30768 if prev_pid == 77507 && (prev_state == 1 || prev_state == 2)\n",
+          "trigger_before": "stacktrace:count=50000 if prev_pid == 77507 && (prev_state == 1 || prev_state == 2)\n"
+        },
+        "trigger_invocations_outside_recorded_stream": 13152,
+        "trigger_remaining": 30768
+      },
+      "latency": {
+        "max_ms": 223.216072,
+        "over_100ms_count": 4,
+        "p95_ms": 32.473862,
+        "p99_ms": 47.424635,
+        "sample_count": 864
+      },
+      "name": "traced"
+    }
+  ],
+  "schema": "landscape-drm-wait-v1",
+  "status": "MEASURED_AFTER_POSTPROCESSING_RECOVERY"
+}

@@ -1,0 +1,16 @@
+{
+  "recorded_at": "2026-10-20T07:01:21.298690+00:00",
+  "original_driver_exit_code": 2,
+  "original_rejection": "stack trigger exhausted or event count differs",
+  "capture_tool_sha256": "4f29492ee1fc84934f181e7688b883e6f645035b599bf9992a526bb397f1f3c6",
+  "capture_tool_commit": "6fc2adf14df36ad1bb5b102d0b22ef9c18155d71",
+  "source_revision": "221bbcf34a276a939356e5a6af9bfb124af9896a",
+  "runs": [
+    "untraced",
+    "traced"
+  ],
+  "original_trial_manifest_written": false,
+  "original_traced_control_record_written": false,
+  "method": "Retain complete original capture/trace/cleanup files and hashes; offline strict report checks zero loss, all numeric+stack ring entries, one stack per S/D switch and non-exhausted trigger. The trigger counter also consumes off-window events, so it is not an exact recorded-event count. No extra hardware run or fabricated original control/success manifest.",
+  "command": "python3 tools/landscape-drm-wait.py --report docs/evidence/landscape-drm-wait/board/trial-a --output docs/evidence/landscape-drm-wait/board/report.json"
+}

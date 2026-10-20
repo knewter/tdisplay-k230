@@ -1,0 +1,15 @@
+{
+  "checked_at": "2026-10-20T07:04:14.777814+00:00",
+  "host_command": "python3 tools/landscape-drm-wait.py --self-test",
+  "host_exit_code": 0,
+  "test_methods": 9,
+  "report_command": "python3 tools/landscape-drm-wait.py --report docs/evidence/landscape-drm-wait/board/trial-a --output docs/evidence/landscape-drm-wait/board/report.json",
+  "report_exit_code": 0,
+  "report_status": "MEASURED_AFTER_POSTPROCESSING_RECOVERY",
+  "report_tool_sha256": "baffbdb879f40a38d8847bc01981e0d899064145edc8607646e85e90ee05bd25",
+  "capture_tool_commit": "6fc2adf14df36ad1bb5b102d0b22ef9c18155d71",
+  "capture_tool_sha256": "4f29492ee1fc84934f181e7688b883e6f645035b599bf9992a526bb397f1f3c6",
+  "original_board_driver_exit_code": 2,
+  "report_sha256": "f6e2ee348d1a4cd2b35a9ef483238a62005d61d362582d9e51d66d315f421474",
+  "no_extra_hardware_attempt": true
+}

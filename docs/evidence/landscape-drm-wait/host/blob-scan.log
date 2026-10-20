@@ -1,0 +1,3 @@
+blob-scan: /mnt/MediaVolume/home/jadams/src/gitlab.daringbit.com/josh/tdisplay-k230/.claude/worktrees/landscape-drm-wait (committed tree only)
+  walked 6840 files: 1457 binary (1364 by file row, 93 by group row); 1374 inventory rows verified on disk, 59 not present here; 3 nix pins checked
+blob-scan: ok -- every binary is accounted for

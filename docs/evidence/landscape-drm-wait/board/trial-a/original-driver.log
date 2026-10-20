@@ -1,0 +1,4 @@
+{"phase": "starting", "run": "untraced"}
+{"phase": "captured", "run": "untraced", "over_100ms": 2}
+{"phase": "starting", "run": "traced"}
+drm-wait: stack trigger exhausted or event count differs

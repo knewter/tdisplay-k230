@@ -1,0 +1,21 @@
+{
+  "cleanup_unit": "k230-stall-81bc5f3501334f7e-cleanup",
+  "filters": {
+    "raw_syscalls/sys_enter": "common_pid == 77507",
+    "raw_syscalls/sys_exit": "common_pid == 77507",
+    "sched/sched_switch": "prev_pid == 77507 || next_pid == 77507",
+    "sched/sched_wakeup": "pid == 77507"
+  },
+  "global_before": {
+    "current_tracer": "64aec5a7fa151222572a241383c857738318e63cca7ee771952c95a31d92a19d",
+    "events/enable": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+    "set_event_pid": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "set_ftrace_pid": "cdf4d2acfdcd5cd2556f83eeb52ee253ea6afbaa941c760f77dcfae3c925cb78",
+    "trace_clock": "925ca315bd3de6ef99e08c002e320406936ae2da2f2c0afd8da1e87f7980a253",
+    "tracing_on": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865"
+  },
+  "inode": 8562928,
+  "instance": "k230-stall-81bc5f3501334f7e",
+  "schema": "landscape-hdmi-stall-trace-v1",
+  "target_pid": 77507
+}

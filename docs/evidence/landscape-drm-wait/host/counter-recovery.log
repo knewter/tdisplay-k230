@@ -1,0 +1,14 @@
+test_base_clock_loss_and_frame_guards (__main__.Fixtures.test_base_clock_loss_and_frame_guards) ... ok
+test_compressed_identity_expansion_and_ambiguity (__main__.Fixtures.test_compressed_identity_expansion_and_ambiguity) ... ok
+test_counter_may_advance_off_window_but_coverage_cannot_change (__main__.Fixtures.test_counter_may_advance_off_window_but_coverage_cannot_change) ... ok
+test_missing_duplicate_private_stacks_and_trigger_exhaustion (__main__.Fixtures.test_missing_duplicate_private_stacks_and_trigger_exhaustion) ... ok
+test_raw_stack_adjacency_and_truncation (__main__.Fixtures.test_raw_stack_adjacency_and_truncation) ... ok
+test_recovery_rejects_unknown_original_failure (__main__.Fixtures.test_recovery_rejects_unknown_original_failure) ... ok
+test_smoke_failure_cleans_owned_session (__main__.Fixtures.test_smoke_failure_cleans_owned_session) ... ok
+test_symbol_export_and_unresolved_addresses (__main__.Fixtures.test_symbol_export_and_unresolved_addresses) ... ok
+test_trigger_ownership_precedes_mutation (__main__.Fixtures.test_trigger_ownership_precedes_mutation) ... ok
+
+----------------------------------------------------------------------
+Ran 9 tests in 0.127s
+
+OK

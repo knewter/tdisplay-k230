@@ -1,0 +1,45 @@
+{
+  "recorded_at": "2026-10-20T07:04:14.777597+00:00",
+  "running_system": "/nix/store/j30yag05ic9k68n9dzbzindgf4ardp08-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "kernel_derivation": "/nix/store/jc68jp45kfkmgq9ix0v2rfv6gadcrlmk-linux-riscv64-unknown-linux-gnu-7.3.0-rc5.drv",
+  "files": [
+    {
+      "path": "/nix/store/7vzlvixrdhv5a1iw75p18yzwkaqrlxjd-linux-mainline-k230-drm-src/kernel/trace/trace_events_trigger.c",
+      "sha256": "4c3cc2f13d188ac83f8f2fdc795b7b228e0c6dcbe757932d3756df25335d3d88",
+      "first_line": 509,
+      "last_line": 533,
+      "excerpt": " * special, they can use this function to assign to their .count_func\n * field.\n *\n * This simply does a count down of the @data->count field.\n *\n * If the @data->count is greater than zero, it will decrement it.\n *\n * Returns false if @data->count is zero, otherwise true.\n */\nbool event_trigger_count(struct event_trigger_data *data,\n\t\t\t struct trace_buffer *buffer,  void *rec,\n\t\t\t struct ring_buffer_event *event)\n{\n\tif (!data->count)\n\t\treturn false;\n\n\tif (data->count != -1)\n\t\t(data->count)--;\n\n\treturn true;\n}\n\n/**\n * event_trigger_print - Generic event_command @print implementation\n * @name: The name of the event trigger"
+    },
+    {
+      "path": "/nix/store/7vzlvixrdhv5a1iw75p18yzwkaqrlxjd-linux-mainline-k230-drm-src/drivers/gpu/drm/drm_atomic.c",
+      "sha256": "980c8d1827861e9a1f922c7be563ef45fb811dcc33149c29244f926e7ba6a687",
+      "first_line": 1360,
+      "last_line": 1378,
+      "excerpt": "drm_atomic_get_connector_state(struct drm_atomic_commit *state,\n\t\t\t  struct drm_connector *connector)\n{\n\tint ret, index;\n\tstruct drm_mode_config *config = &connector->dev->mode_config;\n\tstruct drm_connector_state *connector_state;\n\n\tWARN_ON(!state->acquire_ctx);\n\tdrm_WARN_ON(state->dev, state->checked);\n\n\tret = drm_modeset_lock(&config->connection_mutex, state->acquire_ctx);\n\tif (ret)\n\t\treturn ERR_PTR(ret);\n\n\tindex = drm_connector_index(connector);\n\n\tif (index >= state->num_connector) {\n\t\tstruct __drm_connnectors_state *c;\n\t\tint alloc = max(index + 1, config->num_connector);"
+    },
+    {
+      "path": "/nix/store/7vzlvixrdhv5a1iw75p18yzwkaqrlxjd-linux-mainline-k230-drm-src/drivers/gpu/drm/drm_modeset_lock.c",
+      "sha256": "54283bd9ede3a8c5ed897e4cc4133229cbaa4277c058eb91615548da62103d48",
+      "first_line": 447,
+      "last_line": 480,
+      "excerpt": "int drm_modeset_lock_all_ctx(struct drm_device *dev,\n\t\t\t     struct drm_modeset_acquire_ctx *ctx)\n{\n\tstruct drm_private_obj *privobj;\n\tstruct drm_crtc *crtc;\n\tstruct drm_plane *plane;\n\tint ret;\n\n\tret = drm_modeset_lock(&dev->mode_config.connection_mutex, ctx);\n\tif (ret)\n\t\treturn ret;\n\n\tdrm_for_each_crtc(crtc, dev) {\n\t\tret = drm_modeset_lock(&crtc->mutex, ctx);\n\t\tif (ret)\n\t\t\treturn ret;\n\t}\n\n\tdrm_for_each_plane(plane, dev) {\n\t\tret = drm_modeset_lock(&plane->mutex, ctx);\n\t\tif (ret)\n\t\t\treturn ret;\n\t}\n\n\tdrm_for_each_privobj(privobj, dev) {\n\t\tret = drm_modeset_lock(&privobj->lock, ctx);\n\t\tif (ret)\n\t\t\treturn ret;\n\t}\n\n\treturn 0;\n}\nEXPORT_SYMBOL(drm_modeset_lock_all_ctx);"
+    },
+    {
+      "path": "/nix/store/7vzlvixrdhv5a1iw75p18yzwkaqrlxjd-linux-mainline-k230-drm-src/drivers/gpu/drm/drm_probe_helper.c",
+      "sha256": "81c995343aa5306daba58722335e78ceed93c77af77a1becbd50f8e4acff4a61",
+      "first_line": 357,
+      "last_line": 387,
+      "excerpt": "drm_helper_probe_detect_ctx(struct drm_connector *connector, bool force)\n{\n\tstruct drm_modeset_acquire_ctx ctx;\n\tint ret;\n\n\tdrm_modeset_acquire_init(&ctx, 0);\n\nretry:\n\tret = drm_modeset_lock(&connector->dev->mode_config.connection_mutex, &ctx);\n\tif (!ret)\n\t\tret = detect_connector_status(connector, &ctx, force);\n\n\tif (ret == -EDEADLK) {\n\t\tdrm_modeset_backoff(&ctx);\n\t\tgoto retry;\n\t}\n\n\tif (WARN_ON(ret < 0))\n\t\tret = connector_status_unknown;\n\n\tif (ret != connector->status)\n\t\tconnector->epoch_counter += 1;\n\n\tdrm_modeset_drop_locks(&ctx);\n\tdrm_modeset_acquire_fini(&ctx);\n\n\treturn ret;\n}\n\n/**\n * drm_helper_probe_detect - probe connector status"
+    },
+    {
+      "path": "/nix/store/7vzlvixrdhv5a1iw75p18yzwkaqrlxjd-linux-mainline-k230-drm-src/drivers/gpu/drm/drm_probe_helper.c",
+      "sha256": "81c995343aa5306daba58722335e78ceed93c77af77a1becbd50f8e4acff4a61",
+      "first_line": 260,
+      "last_line": 271,
+      "excerpt": "\t}\n\tdrm_connector_list_iter_end(&conn_iter);\n\n\treturn poll;\n}\n\n#define DRM_OUTPUT_POLL_PERIOD (10*HZ)\nstatic void reschedule_output_poll_work(struct drm_device *dev)\n{\n\tunsigned long delay = DRM_OUTPUT_POLL_PERIOD;\n\n\tif (dev->mode_config.delayed_event)"
+    }
+  ],
+  "observed_wait": "WW modeset mutex. Atomic stack drm_atomic_get_connector_state calls drm_modeset_lock on connection_mutex. Property-query lock_all_ctx also takes other modeset locks, so its exact object is not established by symbol-only stack.",
+  "counter_correction": "event_trigger_count decrements without checking tracing_on. Count consumed >= recorded stacks and remains positive; exact zero-loss record completeness is numeric+stack ring entries plus one stack per S/D switch.",
+  "limit": "No lock holder, kernel worker stack or poll-disable comparison was captured; periodic connector polling remains a candidate."
+}
