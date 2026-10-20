@@ -1,0 +1,90 @@
+these 27 derivations will be built:
+  /nix/store/5p2q5ljwsds9i34jzc898icsk7ccyfbv-wlroots-riscv64-unknown-linux-gnu-0.20.2.drv
+  /nix/store/agcsijspgqva8mmvhbdnnqmbs0gmpj9d-sway-unwrapped-riscv64-unknown-linux-gnu-1.12.drv
+  /nix/store/lrcs7snhbmkpky52nl7bwrd1d77q6qpm-sway.drv
+  /nix/store/dd9zs4a4ls90kzrr69jbadmfgf34npmh-sway-1.12.drv
+  /nix/store/cv6abpiy5b08jkysishy6d2ibmawvwgq-card-shell.drv
+  /nix/store/a87dipkym6dpyjqnvd3zjafscrmcxyq5-k230-card-shell-hdmi-trial.drv
+  /nix/store/0114q8qd4plqkvq8iibp3h8s5h6f49rr-unit-shell-power-key.service.drv
+  /nix/store/ac50sgk4wy21s6d856pgv17wij6pxs7h-k230-window-catalog.drv
+  /nix/store/zx1j0i6hzdghs791nlnvg29a4mnhnm8j-k230-launcher-action.drv
+  /nix/store/l5yvh4kg8pi2ym5hqmnyhs9nfd828680-k230-touch-launcher.drv
+  /nix/store/rvqcrz2gpsifmgx5hmcyaw7sib46j711-k230-shell-rust.drv
+  /nix/store/h1hl4yypgkzrai7s8wx1zxmjj71wdi23-system-path.drv
+  /nix/store/s1k9ir3hl8q8njzv3rm0fbn654flji1c-dbus-1.drv
+  /nix/store/jbb619kij2xxv2nxncilw4xp9l0vp05w-X-Restart-Triggers-dbus-broker.drv
+  /nix/store/1afpcrvq0vcda78xxnnwmxpik97m9svn-unit-dbus-broker.service.drv
+  /nix/store/2hl44ys1ylsyf7gz6hszdfi71ah0qf2l-unit-shell-keyboard-base.service.drv
+  /nix/store/i24wpkwd3vd14d3llm6sjv5f17gdanff-unit-dbus-broker.service.drv
+  /nix/store/mhfi8nyi73srxjhqn0y70gh0ivcsn0bf-user-units.drv
+  /nix/store/yw04jbfldq77nma1xy41hq4dvf23ncxa-k230-sway.conf.drv
+  /nix/store/8hwn6kv29xdz29lb3w3hj8zvnjp1q3kp-unit-shell.service.drv
+  /nix/store/id3a77c2168zglvm1vc2fp5b4w3wi5nd-unit-shell-ui.service.drv
+  /nix/store/pq6zs7h2jhi1s0lw3zziwbph1nymgm3q-system-units.drv
+  /nix/store/6jv54axgkzq5dllzpvm0ih7fjg1zlzqh-etc.drv
+  /nix/store/cff0i87fsbywkqwglx5a62w0i1f4pcr5-activate.drv
+  /nix/store/4lxjamzaksgqlky5c96gq3mffsc1bgk3-nixos-system-nixos-26.11.20260919.20b1ddd.drv
+  /nix/store/ghv239xfzfhmjdmhax4wlnrrbm04vy5y-closure-info.drv
+  /nix/store/acgazgck05jjfqkrjfj7rsqgw14m0ajl-k230-coherent-shell-boot-files.drv
+building '/nix/store/5p2q5ljwsds9i34jzc898icsk7ccyfbv-wlroots-riscv64-unknown-linux-gnu-0.20.2.drv'...
+building '/nix/store/agcsijspgqva8mmvhbdnnqmbs0gmpj9d-sway-unwrapped-riscv64-unknown-linux-gnu-1.12.drv'...
+error: Cannot build '/nix/store/agcsijspgqva8mmvhbdnnqmbs0gmpj9d-sway-unwrapped-riscv64-unknown-linux-gnu-1.12.drv'.
+       Reason: builder failed with exit code 1.
+       Output paths:
+         /nix/store/87pl8h40bslqq121mch99xa4jg4d3g7z-sway-unwrapped-riscv64-unknown-linux-gnu-1.12
+       Last 25 log lines:
+       > [62/302] Compiling C object sway/sway.p/desktop_layer_shell.c.o
+       > [63/302] Compiling C object sway/sway.p/desktop_launcher.c.o
+       > [64/302] Compiling C object sway/sway.p/desktop_xdg_shell.c.o
+       > [65/302] Compiling C object sway/sway.p/desktop_output.c.o
+       > [66/302] Compiling C object sway/sway.p/input_input-manager.c.o
+       > [67/302] Compiling C object sway/sway.p/desktop_transaction.c.o
+       > [68/302] Compiling C object sway/sway.p/card_shell.c.o
+       > FAILED: [code=1] sway/sway.p/card_shell.c.o
+       > riscv64-unknown-linux-gnu-gcc -Isway/sway.p -Isway -I../sway -Iinclude -I../include -Iprotocols -I/nix/store/9lvlsi106i3lwp8cbbqxbxspphnm8bwf-cairo-riscv64-unknown-linux-gnu-1.18.4-dev/include/cairo -I/nix/store/a9kgfs3r6mdbnys5jwsc3j0gfp5bkk7k-freetype-riscv64-unknown-linux-gnu-2.14.3-dev/include/freetype2 -I/nix/store/a9kgfs3r6mdbnys5jwsc3j0gfp5bkk7k-freetype-riscv64-unknown-linux-gnu-2.14.3-dev/include -I/nix/store/168fx5hilysmdcz14xrxkblwf7gqx7fd-glib-riscv64-unknown-linux-gnu-2.88.3-dev/include -I/nix/store/168fx5hilysmdcz14xrxkblwf7gqx7fd-glib-riscv64-unknown-linux-gnu-2.88.3-dev/include/glib-2.0 -I/nix/store/dx7ljr01359zlgn8n5an7x4hp1gz43n1-glib-riscv64-unknown-linux-gnu-2.88.3/lib/glib-2.0/include -I/nix/store/xqlq0cx3hmgp7d294m5dxfrv2lil0z2v-gdk-pixbuf-riscv64-unknown-linux-gnu-2.44.7-dev/include/gdk-pixbuf-2.0 -I/nix/store/d9nim5fl84y06ni326a56gbrd9jqw9mn-librsvg-riscv64-unknown-linux-gnu-2.62.3-dev/include/librsvg-2.0 -I/nix/store/gwy2gbwqmilz8hs0mmnlxv5c90c2sla4-libdrm-riscv64-unknown-linux-gnu-2.4.134-dev/include -I/nix/store/gwy2gbwqmilz8hs0mmnlxv5c90c2sla4-libdrm-riscv64-unknown-linux-gnu-2.4.134-dev/include/libdrm -I/nix/store/kigvm94hsq2ldyfaq7zban88nz3widr0-json-c-riscv64-unknown-linux-gnu-0.18-dev/include -I/nix/store/kigvm94hsq2ldyfaq7zban88nz3widr0-json-c-riscv64-unknown-linux-gnu-0.18-dev/include/json-c -I/nix/store/1syjmlq2x15lgn4chijxps7fp0zc5sl5-libevdev-riscv64-unknown-linux-gnu-1.13.6/include/libevdev-1.0/ -I/nix/store/kb6xfrl3qq28zc2y1w7jkq29vq8ji714-libinput-riscv64-unknown-linux-gnu-1.31.3-dev/include -I/nix/store/0hlizkpvq4hbfxc70cfrvlrg7qrbwmpn-systemd-minimal-libs-riscv64-unknown-linux-gnu-261.2-dev/include -I/nix/store/k7jyhvjxjljvb1xp8y52ww9ar551czrn-pango-riscv64-unknown-linux-gnu-1.57.1-dev/include/pango-1.0 -I/nix/store/s39xhbgzhid34nn7ikl230ps6y6r1pkw-harfbuzz-riscv64-unknown-linux-gnu-13.2.1-dev/include/harfbuzz -I/nix/store/iyri5c3lmniypyjdl29qixpfxjxp21vl-pcre2-riscv64-unknown-linux-gnu-10.48-dev/include -I/nix/store/brhzfimak2r3c23lmn80y1g6ww6nmb1r-pixman-riscv64-unknown-linux-gnu-0.46.4/include/pixman-1 -I/nix/store/s9pcips2gggavzl0dbr2ck8i10iw1hzx-wayland-riscv64-unknown-linux-gnu-1.26.0-dev/include -I/nix/store/bx2007cxnx11ibw4grmsz82cl3zql962-wlroots-riscv64-unknown-linux-gnu-0.20.2/include/wlroots-0.20 -I/nix/store/rlkg54w66k67zk4p7k5y2w5rjlvl42iv-libxkbcommon-riscv64-unknown-linux-gnu-1.13.2-dev/include -fdiagnostics-color=always -D_FILE_OFFSET_BITS=64 -Wall -Winvalid-pch -Wextra -Werror -std=c11 -DWLR_USE_UNSTABLE -D_POSIX_C_SOURCE=200809L -Wno-unused-parameter -Wno-unused-result -Wno-missing-braces -Wno-format-zero-length -Wundef -Wvla '-DSYSCONFDIR="/etc"' '-DNIX_SYSCONFDIR="//nix/store/87pl8h40bslqq121mch99xa4jg4d3g7z-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/etc"' '-DSWAY_VERSION="1.12"' -fmacro-prefix-map=../= -pthread -MD -MQ sway/sway.p/card_shell.c.o -MF sway/sway.p/card_shell.c.o.d -o sway/sway.p/card_shell.c.o -c ../sway/card_shell.c
+       > ../sway/card_shell.c: In function 'scaled_mirror':
+       > ../sway/card_shell.c:1185:5: error: this 'if' clause does not guard... [-Werror=misleading-indentation]
+       >  1185 |     if (output->transform != WL_OUTPUT_TRANSFORM_NORMAL && output->render_format == DRM_FORMAT_RGB565)
+       >       |     ^~
+       > ../sway/card_shell.c:1187:9: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the 'if'
+       >  1187 |         struct wlr_scene_buffer *copy = m->copy;
+       >       |         ^~~~~~
+       > cc1: all warnings being treated as errors
+       > [69/302] Compiling C object sway/sway.p/input_seatop_down.c.o
+       > [70/302] Compiling C object sway/sway.p/input_seatop_move_floating.c.o
+       > [71/302] Compiling C object sway/sway.p/input_keyboard.c.o
+       > [72/302] Compiling C object sway/sway.p/input_cursor.c.o
+       > [73/302] Compiling C object sway/sway.p/input_seatop_move_tiling.c.o
+       > [74/302] Compiling C object sway/sway.p/input_seatop_default.c.o
+       > [75/302] Compiling C object sway/sway.p/input_seat.c.o
+       > ninja: build stopped: subcommand failed.
+       For full logs, run:
+         nix-store -l /nix/store/agcsijspgqva8mmvhbdnnqmbs0gmpj9d-sway-unwrapped-riscv64-unknown-linux-gnu-1.12.drv
+error: Cannot build '/nix/store/dd9zs4a4ls90kzrr69jbadmfgf34npmh-sway-1.12.drv'.
+       Reason: 1 dependency failed.
+       Output paths:
+         /nix/store/50g2cgwd195b2l7av3mxkl0klfk2z0pa-sway-1.12
+error: Cannot build '/nix/store/a87dipkym6dpyjqnvd3zjafscrmcxyq5-k230-card-shell-hdmi-trial.drv'.
+       Reason: 1 dependency failed.
+       Output paths:
+         /nix/store/8qgli2k3gc9l3lgn86amq5l6zhnv6dvr-k230-card-shell-hdmi-trial
+error: Cannot build '/nix/store/rvqcrz2gpsifmgx5hmcyaw7sib46j711-k230-shell-rust.drv'.
+       Reason: 1 dependency failed.
+       Output paths:
+         /nix/store/ddl6md4szdlfnk339ybqdm8wxzl55bvx-k230-shell-rust
+error: Cannot build '/nix/store/h1hl4yypgkzrai7s8wx1zxmjj71wdi23-system-path.drv'.
+       Reason: 1 dependency failed.
+       Output paths:
+         /nix/store/w3az8fpq22ba89vqh46xw0lrdagw2wnf-system-path
+error: Cannot build '/nix/store/2hl44ys1ylsyf7gz6hszdfi71ah0qf2l-unit-shell-keyboard-base.service.drv'.
+       Reason: 1 dependency failed.
+       Output paths:
+         /nix/store/c558mjgbgjac7nhi2wgqig3i26x8gmx8-unit-shell-keyboard-base.service
+error: Cannot build '/nix/store/4lxjamzaksgqlky5c96gq3mffsc1bgk3-nixos-system-nixos-26.11.20260919.20b1ddd.drv'.
+       Reason: 1 dependency failed.
+       Output paths:
+         /nix/store/hsaxcpm9jd35alkdgmdl70r5ajd3njv1-nixos-system-nixos-26.11.20260919.20b1ddd
+error: Cannot build '/nix/store/acgazgck05jjfqkrjfj7rsqgw14m0ajl-k230-coherent-shell-boot-files.drv'.
+       Reason: 1 dependency failed.
+       Output paths:
+         /nix/store/53qc8jy4qgs9bcdg5k8y13cdr8fb061p-k230-coherent-shell-boot-files
