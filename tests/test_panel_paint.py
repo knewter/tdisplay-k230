@@ -52,5 +52,20 @@ class PanelPaint(unittest.TestCase):
                            env={**os.environ, 'UBSAN_OPTIONS': 'halt_on_error=1'})
 
 
+    def test_retained_output_damage_buffer_age_and_failure_lifetime(self):
+        flags = shlex.split(subprocess.check_output(
+            ['pkg-config', '--cflags', '--libs', 'pixman-1'], text=True))
+        with tempfile.TemporaryDirectory(prefix='output-damage-') as directory:
+            (Path(directory) / 'k230_quarter_turn.h').symlink_to(ROOT / 'nix/card-shell/quarter-turn.h')
+            for fixture in ['panel_output_cache_state.c', 'panel_output_damage.c']:
+                exe = Path(directory) / fixture.removesuffix('.c')
+                subprocess.run([os.environ.get('CC', 'cc'), '-std=c11', '-O2',
+                                '-Wall', '-Wextra', '-Werror', '-fsanitize=undefined',
+                                '-I' + directory, '-I' + str(ROOT / 'nix/card-shell'),
+                                str(ROOT / 'tests' / fixture), '-o', str(exe), *flags], check=True)
+                subprocess.run([str(exe)], check=True,
+                               env={**os.environ, 'UBSAN_OPTIONS': 'halt_on_error=1'})
+
+
 if __name__ == '__main__':
     unittest.main()

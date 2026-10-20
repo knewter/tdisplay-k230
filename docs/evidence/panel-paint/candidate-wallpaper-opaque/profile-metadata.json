@@ -1,0 +1,19 @@
+{
+  "captured_utc": "2026-10-20T00:15:39Z",
+  "system": "/nix/store/hr6xcp4kr9vlbw5r2nfldy9jw47lwdcb-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "pid": 55517,
+  "environment": {
+    "WLR_RENDERER": "pixman",
+    "WLR_PIXMAN_OUTPUT_TURN": "1",
+    "WLR_PIXMAN_QUARTER_TURN": "0",
+    "WLR_PIXMAN_DRAW_TRACE": "1",
+    "WLR_SCENE_DISABLE_VISIBILITY": "",
+    "WLR_SCENE_DEBUG_DAMAGE": ""
+  },
+  "observer_limits": {
+    "draw_rows": 512,
+    "rotation_rows": 128,
+    "journal_timestamp": "entry receipt monotonic; not exact stage start or commit ID"
+  },
+  "rows": 640
+}

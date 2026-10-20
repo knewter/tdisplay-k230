@@ -31,36 +31,16 @@ static inline int k230_turn_cpp(pixman_format_code_t format) {
 
 /* Copy directly to an already-mapped target; no intermediate second copy.
  * Reject overlap, format mismatch and invalid geometry before writing. */
-static inline bool k230_turn_into(pixman_image_t *destination,
-		pixman_image_t *source, int transform) {
-	if (!source || !destination || (transform != 1 && transform != 3)) return false;
-	pixman_format_code_t format = pixman_image_get_format(source);
-	int cpp = k230_turn_cpp(format);
-	if (!cpp || pixman_image_get_format(destination) != format) return false;
-	int width = pixman_image_get_width(source), height = pixman_image_get_height(source);
-	int source_stride = pixman_image_get_stride(source);
-	int stride = pixman_image_get_stride(destination);
-	uint8_t *src = (uint8_t *)pixman_image_get_data(source);
-	uint8_t *dst = (uint8_t *)pixman_image_get_data(destination);
-	if (!src || !dst || width <= 0 || height <= 0 || width > 16384 || height > 16384 ||
-			pixman_image_get_width(destination) != height ||
-			pixman_image_get_height(destination) != width ||
-			source_stride < width * cpp || stride < height * cpp ||
-			source_stride % cpp || stride % cpp || (uintptr_t)src % cpp || (uintptr_t)dst % cpp)
-		return false;
-	size_t source_bytes = (size_t)source_stride * height, destination_bytes = (size_t)stride * width;
-	if (source_bytes > 64u * 1024u * 1024u || destination_bytes > 64u * 1024u * 1024u)
-		return false;
-	uintptr_t source_address = (uintptr_t)src, destination_address = (uintptr_t)dst;
-	if (source_address <= destination_address ? destination_address - source_address < source_bytes :
-			source_address - destination_address < destination_bytes) return false;
+static inline bool k230_turn_copy_rect(uint8_t *dst, const uint8_t *src,
+        int width, int height, int cpp, int stride, int source_stride,
+        int transform, pixman_box32_t box) {
 	/* Keep the established path for 32-bit pixels. The panel profile selects
 	 * RGB565; packing pairs of 32-bit pixels regressed the board benchmark. */
 	if (cpp == 4) {
-		for (int by = 0; by < height; by += 16) {
-			int end_y = by + 16 < height ? by + 16 : height;
-			for (int bx = 0; bx < width; bx += 16) {
-				int end_x = bx + 16 < width ? bx + 16 : width;
+		for (int by = box.y1; by < box.y2; by += 16) {
+			int end_y = by + 16 < box.y2 ? by + 16 : box.y2;
+			for (int bx = box.x1; bx < box.x2; bx += 16) {
+				int end_x = bx + 16 < box.x2 ? bx + 16 : box.x2;
 				for (int y = by; y < end_y; y++) for (int x = bx; x < end_x; x++) {
 					int dx = transform == 1 ? y : height - 1 - y;
 					int dy = transform == 1 ? width - 1 - x : x;
@@ -75,13 +55,13 @@ static inline bool k230_turn_into(pixman_image_t *destination,
 	 * receive one aligned 64-bit store for four fresh RGB565 pixels. Prefix
 	 * and tail halfwords handle odd geometry, padding and four-byte alignment. */
 	ptrdiff_t step = transform == 1 ? source_stride / 2 : -source_stride / 2;
-	for (int by = 0; by < height; by += 16) {
-		int end_y = by + 16 < height ? by + 16 : height;
+	for (int by = box.y1; by < box.y2; by += 16) {
+		int end_y = by + 16 < box.y2 ? by + 16 : box.y2;
 		int left = transform == 1 ? by : height - end_y;
 		int right = transform == 1 ? end_y : height - by;
 		int first_y = transform == 1 ? left : height - 1 - left;
-		for (int bx = 0; bx < width; bx += 16) {
-			int end_x = bx + 16 < width ? bx + 16 : width;
+		for (int bx = box.x1; bx < box.x2; bx += 16) {
+			int end_x = bx + 16 < box.x2 ? bx + 16 : box.x2;
 			for (int x = bx; x < end_x; x++) {
 				int dy = transform == 1 ? width - 1 - x : x;
 				uint16_t *target = (uint16_t *)(dst + (size_t)dy * stride) + left;
@@ -112,6 +92,116 @@ static inline bool k230_turn_into(pixman_image_t *destination,
 		}
 	}
 	return true;
+}
+
+static inline bool k230_turn_into(pixman_image_t *destination,
+		pixman_image_t *source, int transform) {
+	if (!source || !destination || (transform != 1 && transform != 3)) return false;
+	pixman_format_code_t format = pixman_image_get_format(source);
+	int cpp = k230_turn_cpp(format);
+	if (!cpp || pixman_image_get_format(destination) != format) return false;
+	int width = pixman_image_get_width(source), height = pixman_image_get_height(source);
+	int source_stride = pixman_image_get_stride(source);
+	int stride = pixman_image_get_stride(destination);
+	uint8_t *src = (uint8_t *)pixman_image_get_data(source);
+	uint8_t *dst = (uint8_t *)pixman_image_get_data(destination);
+	if (!src || !dst || width <= 0 || height <= 0 || width > 16384 || height > 16384 ||
+			pixman_image_get_width(destination) != height ||
+			pixman_image_get_height(destination) != width ||
+			source_stride < width * cpp || stride < height * cpp ||
+			source_stride % cpp || stride % cpp || (uintptr_t)src % cpp || (uintptr_t)dst % cpp)
+		return false;
+	size_t source_bytes = (size_t)source_stride * height, destination_bytes = (size_t)stride * width;
+	if (source_bytes > 64u * 1024u * 1024u || destination_bytes > 64u * 1024u * 1024u)
+		return false;
+	uintptr_t source_address = (uintptr_t)src, destination_address = (uintptr_t)dst;
+	if (source_address <= destination_address ? destination_address - source_address < source_bytes :
+			source_address - destination_address < destination_bytes) return false;
+    return k230_turn_copy_rect(dst, src, width, height, cpp, stride, source_stride,
+        transform, (pixman_box32_t){0, 0, width, height});
+}
+
+/* Damage is logical source geometry; every other destination pixel stays untouched. */
+static inline bool k230_turn_region_into(pixman_image_t *destination,
+		pixman_image_t *source, int transform, const pixman_region32_t *damage) {
+    if (!damage) return k230_turn_into(destination, source, transform);
+	if (!source || !destination || (transform != 1 && transform != 3)) return false;
+	pixman_format_code_t format = pixman_image_get_format(source);
+	int cpp = k230_turn_cpp(format);
+	if (!cpp || pixman_image_get_format(destination) != format) return false;
+	int width = pixman_image_get_width(source), height = pixman_image_get_height(source);
+	int source_stride = pixman_image_get_stride(source);
+	int stride = pixman_image_get_stride(destination);
+	uint8_t *src = (uint8_t *)pixman_image_get_data(source);
+	uint8_t *dst = (uint8_t *)pixman_image_get_data(destination);
+	if (!src || !dst || width <= 0 || height <= 0 || width > 16384 || height > 16384 ||
+			pixman_image_get_width(destination) != height ||
+			pixman_image_get_height(destination) != width ||
+			source_stride < width * cpp || stride < height * cpp ||
+			source_stride % cpp || stride % cpp || (uintptr_t)src % cpp || (uintptr_t)dst % cpp)
+		return false;
+	size_t source_bytes = (size_t)source_stride * height, destination_bytes = (size_t)stride * width;
+	if (source_bytes > 64u * 1024u * 1024u || destination_bytes > 64u * 1024u * 1024u)
+		return false;
+	uintptr_t source_address = (uintptr_t)src, destination_address = (uintptr_t)dst;
+	if (source_address <= destination_address ? destination_address - source_address < source_bytes :
+			source_address - destination_address < destination_bytes) return false;
+    pixman_region32_t clipped;
+    pixman_region32_init(&clipped);
+    if (!pixman_region32_intersect_rect(&clipped, (pixman_region32_t *)damage, 0, 0, width, height)) {
+        pixman_region32_fini(&clipped);
+        return false;
+    }
+    int count;
+    pixman_box32_t *boxes = pixman_region32_rectangles(&clipped, &count);
+    for (int i = 0; i < count; i++)
+        k230_turn_copy_rect(dst, src, width, height, cpp, stride, source_stride, transform, boxes[i]);
+    pixman_region32_fini(&clipped);
+    return true;
+}
+
+/* Record the actual clipped pixels painted into a logical output image. */
+static inline bool k230_turn_damage_add(pixman_region32_t *damage,
+        int x, int y, int width, int height, const pixman_region32_t *clip,
+        int output_width, int output_height) {
+    if (output_width <= 0 || output_height <= 0 || output_width > 16384 || output_height > 16384)
+        return false;
+    if (width <= 0 || height <= 0) return true;
+    int64_t right = (int64_t)x+width, bottom = (int64_t)y+height;
+    int left = x > 0 ? x : 0, top = y > 0 ? y : 0;
+    if (right > output_width) right = output_width;
+    if (bottom > output_height) bottom = output_height;
+    if (right <= left || bottom <= top) return true;
+    pixman_region32_t painted;
+    pixman_region32_init_rect(&painted, left, top, (unsigned)(right-left), (unsigned)(bottom-top));
+    bool okay = !clip || pixman_region32_intersect(&painted, &painted, (pixman_region32_t *)clip);
+    if (okay) okay = pixman_region32_union(damage, damage, &painted);
+    pixman_region32_fini(&painted);
+    return okay;
+}
+
+/* Convert physical damage back to the complete logical source geometry.
+ * These are the inverse coordinates of k230_turn_copy_rect, not Pixman's
+ * texture sampling transform. Both regions must be initialized; aliasing is OK. */
+static inline bool k230_turn_damage_from_output(pixman_region32_t *logical,
+        const pixman_region32_t *physical, int width, int height, int transform) {
+    if (!logical || !physical || (transform != 1 && transform != 3) ||
+            width <= 0 || height <= 0 || width > 16384 || height > 16384) return false;
+    pixman_region32_t clipped, result;
+    pixman_region32_init(&clipped); pixman_region32_init(&result);
+    bool okay = pixman_region32_intersect_rect(&clipped, (pixman_region32_t *)physical,
+        0, 0, height, width);
+    int count = 0;
+    pixman_box32_t *boxes = pixman_region32_rectangles(&clipped, &count);
+    for (int i = 0; okay && i < count; i++) {
+        pixman_box32_t b = boxes[i];
+        int x = transform == 1 ? width-b.y2 : b.y1;
+        int y = transform == 1 ? b.x1 : height-b.x2;
+        okay = pixman_region32_union_rect(&result, &result, x, y, b.y2-b.y1, b.x2-b.x1);
+    }
+    if (okay) okay = pixman_region32_copy(logical, &result);
+    pixman_region32_fini(&clipped); pixman_region32_fini(&result);
+    return okay;
 }
 
 static inline pixman_image_t *k230_turn_image(struct k230_turn_scratch *scratch,

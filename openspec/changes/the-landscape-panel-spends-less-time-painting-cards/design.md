@@ -118,3 +118,32 @@ and no retained-opacity state across frames. Preserve pool/callback/damage/
 attachment ownership. ARGB SRC conversion is exactly Pixman's RGB565 result;
 ARGB OVER and all masks keep Pixman. Rebuild and repeat the frozen paired
 motion workload before any default selection; camera gate remains open.
+
+## Buffer-owned logical output and actual damage
+
+Theed45dc69 trial confirms the wallpaper SRC path and build CPU9.970ms mean,
+10.817ms p95, but still26Hz/failed budgets. The original design's retained
+output-scratch option is now selected to remove forced whole-frame work.
+Each Pixman physical-buffer wrapper owns exactly one logical image keyed by
+geometry, format and output transform. A begin operation consumes the valid
+flag; only a successful submission restores it. Ordinary/cursor/debug passes,
+failed/interrupted draws, allocation/image failure and key changes invalidate.
+Buffer destruction frees the image/data; the pass only borrows it under the
+existing buffer lock. No live-client/callback/attachment ownership changes.
+
+The scene damage ring remains physical and keeps its existing buffer-age
+accounting. Convert its aged region through the exact inverse of the final
+copy into logical coordinates. Fresh/invalid images require a whole repaint.
+Accumulate actual clipped draw rectangles and rotate only those source pixels;
+keep unchanged target pixels and padding. Preserve stock fallback when output
+turn is unavailable. Bound supplemental damage logging by the existing128
+rotation rows and the diagnostic draw flag; qualifying runs add no new logs.
+
+Native proof uses the production mapping/copy/cache helpers: three physical
+buffers,16 geometry/format/transform cases,352 compared compositions with
+moving rounded/alpha-changing content and a disjoint clock update. It covers
+failed/interrupted passes, ordinary fallback, transform changes, wrapper
+recreation, empty/outside damage, allocation/image failure and balanced frees.
+The full288 guarded copy cases,1152 affine comparisons and288 rounded cases
+remain required. Exact-source build, quiet paired timing, changing live clients
+and camera still gate persistence/archive; no host result substitutes for them.

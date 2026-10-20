@@ -6,12 +6,14 @@ let
         ./patches/wlroots-k230-quarter-turn.patch
         ./patches/wlroots-k230-output-turn.patch
         ./patches/wlroots-k230-draw-formats.patch
+        ./patches/wlroots-k230-retained-output.patch
       ];
     postPatch = (old.postPatch or "") + ''
       cp ${./card-shell/rounded-clip.h} include/render/k230_rounded_clip.h
       cp ${./card-shell/rgb565-blit.h} include/render/rgb565-blit.h
     '' + lib.optionalString quarterTurnTrial ''
       cp ${./card-shell/quarter-turn.h} include/render/k230_quarter_turn.h
+      cp ${./card-shell/output-cache.h} include/render/k230_output_cache.h
     '';
   });
   unwrapped = (swayUnwrapped.override {

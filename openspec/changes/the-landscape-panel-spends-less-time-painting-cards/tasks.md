@@ -70,3 +70,11 @@ Sourcef1c70977 exact build and trial passed native pixel tests but still failed
 board budgets. Cache counters were zero; actual Foot SHM isARGB8888. The next
 source preserves alpha in anARGB8888 cache and passes96 native cached-pixel
 cases. Baseline restored; new build/board/live/camera gates remain open.
+
+After sourceed45dc69, actual wallpaper opacity lowers build mean9.970ms but
+motion still fails. A buffer-owned logical image and damage-aware final copy
+now remove forced whole-frame work. The named native command passes16
+three-buffer cases/352 exact compositions, lifecycle/failure injection,768
+conversion cases,160 live cache cases and288 guarded full copies; existing
+1152 affine/288 rounded comparisons also pass. No new hardware result yet;
+exact build2.2 and qualification/default/archive tasks remain unchecked.

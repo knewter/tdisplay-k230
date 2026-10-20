@@ -200,3 +200,9 @@ full-panel image as unscaledARGB OVER. Dense-alpha direct blending was slower
 and rejected. The selected correction is a per-frame wallpaper opacity
 certificate plus exact ARGB SRC conversion; transparent images retain blending.
 New native/Rust tests pass; exact build and integrated acceptance remain open.
+
+The [opaque wallpaper trial](candidate-wallpaper-opaque/README.md) reaches
+9.970ms mean/10.817ms p95 build CPU and confirmsSRC compositing, but both
+motion modes still fail at26Hz. The remaining forced whole-frame repaint/copy
+selects buffer-owned logical images and damage-only composition/rotation.
+Native three-buffer/failure tests pass; exact build and board proof remain open.
