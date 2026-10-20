@@ -1,0 +1,284 @@
+{
+  "started_utc": "20261020T015803Z",
+  "remote_directory": "/tmp/k230-rotation-anisotropic-20261020T015803Z",
+  "evidence_class": "isolated fresh heap/unattached DRM buffers; no modeset/compositor replacement/optical claim",
+  "region": "synthetic union of measured card geometries; not a captured repaint region",
+  "runs": [
+    {
+      "variant": "16x32",
+      "mode": "full",
+      "started_utc": "2026-10-20T01:58:04.227697+00:00",
+      "ended_utc": "2026-10-20T01:58:05.602918+00:00",
+      "exit": 0,
+      "command": [
+        "/tmp/k230-rotation-anisotropic-20261020T015803Z/16x32",
+        "--dumb"
+      ]
+    },
+    {
+      "variant": "16x32",
+      "mode": "region",
+      "started_utc": "2026-10-20T01:58:05.603157+00:00",
+      "ended_utc": "2026-10-20T01:58:06.643114+00:00",
+      "exit": 0,
+      "command": [
+        "/tmp/k230-rotation-anisotropic-20261020T015803Z/16x32",
+        "--dumb",
+        "--region"
+      ]
+    },
+    {
+      "variant": "16x64",
+      "mode": "full",
+      "started_utc": "2026-10-20T01:58:07.424868+00:00",
+      "ended_utc": "2026-10-20T01:58:08.749377+00:00",
+      "exit": 0,
+      "command": [
+        "/tmp/k230-rotation-anisotropic-20261020T015803Z/16x64",
+        "--dumb"
+      ]
+    },
+    {
+      "variant": "16x64",
+      "mode": "region",
+      "started_utc": "2026-10-20T01:58:08.749624+00:00",
+      "ended_utc": "2026-10-20T01:58:09.971441+00:00",
+      "exit": 0,
+      "command": [
+        "/tmp/k230-rotation-anisotropic-20261020T015803Z/16x64",
+        "--dumb",
+        "--region"
+      ]
+    },
+    {
+      "variant": "32x16",
+      "mode": "full",
+      "started_utc": "2026-10-20T01:58:10.752495+00:00",
+      "ended_utc": "2026-10-20T01:58:11.880623+00:00",
+      "exit": 0,
+      "command": [
+        "/tmp/k230-rotation-anisotropic-20261020T015803Z/32x16",
+        "--dumb"
+      ]
+    },
+    {
+      "variant": "32x16",
+      "mode": "region",
+      "started_utc": "2026-10-20T01:58:11.881010+00:00",
+      "ended_utc": "2026-10-20T01:58:12.874435+00:00",
+      "exit": 0,
+      "command": [
+        "/tmp/k230-rotation-anisotropic-20261020T015803Z/32x16",
+        "--dumb",
+        "--region"
+      ]
+    },
+    {
+      "variant": "32x8",
+      "mode": "full",
+      "started_utc": "2026-10-20T01:58:13.655363+00:00",
+      "ended_utc": "2026-10-20T01:58:14.813466+00:00",
+      "exit": 0,
+      "command": [
+        "/tmp/k230-rotation-anisotropic-20261020T015803Z/32x8",
+        "--dumb"
+      ]
+    },
+    {
+      "variant": "32x8",
+      "mode": "region",
+      "started_utc": "2026-10-20T01:58:14.813759+00:00",
+      "ended_utc": "2026-10-20T01:58:17.836555+00:00",
+      "exit": 0,
+      "command": [
+        "/tmp/k230-rotation-anisotropic-20261020T015803Z/32x8",
+        "--dumb",
+        "--region"
+      ]
+    },
+    {
+      "variant": "4x16",
+      "mode": "full",
+      "started_utc": "2026-10-20T01:58:18.618337+00:00",
+      "ended_utc": "2026-10-20T01:58:19.722285+00:00",
+      "exit": 0,
+      "command": [
+        "/tmp/k230-rotation-anisotropic-20261020T015803Z/4x16",
+        "--dumb"
+      ]
+    },
+    {
+      "variant": "4x16",
+      "mode": "region",
+      "started_utc": "2026-10-20T01:58:19.722865+00:00",
+      "ended_utc": "2026-10-20T01:58:20.715943+00:00",
+      "exit": 0,
+      "command": [
+        "/tmp/k230-rotation-anisotropic-20261020T015803Z/4x16",
+        "--dumb",
+        "--region"
+      ]
+    },
+    {
+      "variant": "4x32",
+      "mode": "full",
+      "started_utc": "2026-10-20T01:58:21.499974+00:00",
+      "ended_utc": "2026-10-20T01:58:22.756168+00:00",
+      "exit": 0,
+      "command": [
+        "/tmp/k230-rotation-anisotropic-20261020T015803Z/4x32",
+        "--dumb"
+      ]
+    },
+    {
+      "variant": "4x32",
+      "mode": "region",
+      "started_utc": "2026-10-20T01:58:22.756818+00:00",
+      "ended_utc": "2026-10-20T01:58:23.826846+00:00",
+      "exit": 0,
+      "command": [
+        "/tmp/k230-rotation-anisotropic-20261020T015803Z/4x32",
+        "--dumb",
+        "--region"
+      ]
+    },
+    {
+      "variant": "4x64",
+      "mode": "full",
+      "started_utc": "2026-10-20T01:58:24.609025+00:00",
+      "ended_utc": "2026-10-20T01:58:25.915635+00:00",
+      "exit": 0,
+      "command": [
+        "/tmp/k230-rotation-anisotropic-20261020T015803Z/4x64",
+        "--dumb"
+      ]
+    },
+    {
+      "variant": "4x64",
+      "mode": "region",
+      "started_utc": "2026-10-20T01:58:25.915962+00:00",
+      "ended_utc": "2026-10-20T01:58:27.005070+00:00",
+      "exit": 0,
+      "command": [
+        "/tmp/k230-rotation-anisotropic-20261020T015803Z/4x64",
+        "--dumb",
+        "--region"
+      ]
+    },
+    {
+      "variant": "64x16",
+      "mode": "full",
+      "started_utc": "2026-10-20T01:58:27.786498+00:00",
+      "ended_utc": "2026-10-20T01:58:28.908225+00:00",
+      "exit": 0,
+      "command": [
+        "/tmp/k230-rotation-anisotropic-20261020T015803Z/64x16",
+        "--dumb"
+      ]
+    },
+    {
+      "variant": "64x16",
+      "mode": "region",
+      "started_utc": "2026-10-20T01:58:28.908496+00:00",
+      "ended_utc": "2026-10-20T01:58:29.976447+00:00",
+      "exit": 0,
+      "command": [
+        "/tmp/k230-rotation-anisotropic-20261020T015803Z/64x16",
+        "--dumb",
+        "--region"
+      ]
+    },
+    {
+      "variant": "64x8",
+      "mode": "full",
+      "started_utc": "2026-10-20T01:58:30.757630+00:00",
+      "ended_utc": "2026-10-20T01:58:31.965710+00:00",
+      "exit": 0,
+      "command": [
+        "/tmp/k230-rotation-anisotropic-20261020T015803Z/64x8",
+        "--dumb"
+      ]
+    },
+    {
+      "variant": "64x8",
+      "mode": "region",
+      "started_utc": "2026-10-20T01:58:31.966165+00:00",
+      "ended_utc": "2026-10-20T01:58:36.675313+00:00",
+      "exit": 0,
+      "command": [
+        "/tmp/k230-rotation-anisotropic-20261020T015803Z/64x8",
+        "--dumb",
+        "--region"
+      ]
+    },
+    {
+      "variant": "8x16",
+      "mode": "full",
+      "started_utc": "2026-10-20T01:58:37.486130+00:00",
+      "ended_utc": "2026-10-20T01:58:38.597361+00:00",
+      "exit": 0,
+      "command": [
+        "/tmp/k230-rotation-anisotropic-20261020T015803Z/8x16",
+        "--dumb"
+      ]
+    },
+    {
+      "variant": "8x16",
+      "mode": "region",
+      "started_utc": "2026-10-20T01:58:38.597958+00:00",
+      "ended_utc": "2026-10-20T01:58:39.582115+00:00",
+      "exit": 0,
+      "command": [
+        "/tmp/k230-rotation-anisotropic-20261020T015803Z/8x16",
+        "--dumb",
+        "--region"
+      ]
+    },
+    {
+      "variant": "8x32",
+      "mode": "full",
+      "started_utc": "2026-10-20T01:58:40.363611+00:00",
+      "ended_utc": "2026-10-20T01:58:41.586156+00:00",
+      "exit": 0,
+      "command": [
+        "/tmp/k230-rotation-anisotropic-20261020T015803Z/8x32",
+        "--dumb"
+      ]
+    },
+    {
+      "variant": "8x32",
+      "mode": "region",
+      "started_utc": "2026-10-20T01:58:41.586511+00:00",
+      "ended_utc": "2026-10-20T01:58:42.632657+00:00",
+      "exit": 0,
+      "command": [
+        "/tmp/k230-rotation-anisotropic-20261020T015803Z/8x32",
+        "--dumb",
+        "--region"
+      ]
+    },
+    {
+      "variant": "8x64",
+      "mode": "full",
+      "started_utc": "2026-10-20T01:58:43.415365+00:00",
+      "ended_utc": "2026-10-20T01:58:44.759304+00:00",
+      "exit": 0,
+      "command": [
+        "/tmp/k230-rotation-anisotropic-20261020T015803Z/8x64",
+        "--dumb"
+      ]
+    },
+    {
+      "variant": "8x64",
+      "mode": "region",
+      "started_utc": "2026-10-20T01:58:44.759843+00:00",
+      "ended_utc": "2026-10-20T01:58:45.845558+00:00",
+      "exit": 0,
+      "command": [
+        "/tmp/k230-rotation-anisotropic-20261020T015803Z/8x64",
+        "--dumb",
+        "--region"
+      ]
+    }
+  ]
+}

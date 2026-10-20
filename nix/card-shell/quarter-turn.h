@@ -30,8 +30,8 @@ static inline int k230_turn_cpp(pixman_format_code_t format) {
 }
 
 /* Copy directly to an already-mapped target; no intermediate second copy.
- * Reject overlap, format mismatch and invalid geometry before writing. */
-static inline bool k230_turn_copy_rect(uint8_t *dst, const uint8_t *src,
+ * Both callers validate complete disjoint ranges before this restrict promise. */
+static inline bool k230_turn_copy_rect(uint8_t *restrict dst, const uint8_t *restrict src,
         int width, int height, int cpp, int stride, int source_stride,
         int transform, pixman_box32_t box) {
 	/* Keep the established path for 32-bit pixels. The panel profile selects
@@ -71,6 +71,21 @@ static inline bool k230_turn_copy_rect(uint8_t *dst, const uint8_t *src,
 				while (remaining && (uintptr_t)target % 8) {
 					*target++ = *pixel;
 					if (--remaining) pixel += step;
+				}
+				/* Two packs per batch expose independent loads to the
+				 * compiler without changing the 16-row cache tile. */
+				while (remaining >= 8) {
+					uint64_t pack0 = (uint64_t)pixel[0] |
+						(uint64_t)pixel[step] << 16 | (uint64_t)pixel[2 * step] << 32 |
+						(uint64_t)pixel[3 * step] << 48;
+					memcpy(__builtin_assume_aligned(target, 8), &pack0, sizeof(pack0));
+					uint64_t pack1 = (uint64_t)pixel[4 * step] |
+						(uint64_t)pixel[5 * step] << 16 | (uint64_t)pixel[6 * step] << 32 |
+						(uint64_t)pixel[7 * step] << 48;
+					memcpy(__builtin_assume_aligned(target + 4, 8), &pack1, sizeof(pack1));
+					target += 8;
+					remaining -= 8;
+					if (remaining) pixel += 8 * step;
 				}
 				while (remaining >= 4) {
 					uint64_t packed = (uint64_t)pixel[0] |

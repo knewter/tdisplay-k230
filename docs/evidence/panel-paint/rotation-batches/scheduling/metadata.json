@@ -1,0 +1,100 @@
+{
+  "started_utc": "20261020T020341Z",
+  "remote_directory": "/tmp/k230-rotation-pack-followup-20261020T020341Z",
+  "evidence_class": "isolated fresh heap/unattached DRM buffers; no modeset/compositor replacement/optical claim",
+  "region": "synthetic union of measured card geometries; not a captured repaint region",
+  "runs": [
+    {
+      "variant": "deferred-pack16",
+      "mode": "full",
+      "started_utc": "2026-10-20T02:03:42.719871+00:00",
+      "ended_utc": "2026-10-20T02:03:43.812884+00:00",
+      "exit": 0,
+      "command": [
+        "/tmp/k230-rotation-pack-followup-20261020T020341Z/deferred-pack16",
+        "--dumb"
+      ]
+    },
+    {
+      "variant": "deferred-pack16",
+      "mode": "region",
+      "started_utc": "2026-10-20T02:03:43.813188+00:00",
+      "ended_utc": "2026-10-20T02:03:44.790954+00:00",
+      "exit": 0,
+      "command": [
+        "/tmp/k230-rotation-pack-followup-20261020T020341Z/deferred-pack16",
+        "--dumb",
+        "--region"
+      ]
+    },
+    {
+      "variant": "deferred-pack8",
+      "mode": "full",
+      "started_utc": "2026-10-20T02:03:45.571789+00:00",
+      "ended_utc": "2026-10-20T02:03:46.626510+00:00",
+      "exit": 0,
+      "command": [
+        "/tmp/k230-rotation-pack-followup-20261020T020341Z/deferred-pack8",
+        "--dumb"
+      ]
+    },
+    {
+      "variant": "deferred-pack8",
+      "mode": "region",
+      "started_utc": "2026-10-20T02:03:46.626786+00:00",
+      "ended_utc": "2026-10-20T02:03:47.569655+00:00",
+      "exit": 0,
+      "command": [
+        "/tmp/k230-rotation-pack-followup-20261020T020341Z/deferred-pack8",
+        "--dumb",
+        "--region"
+      ]
+    },
+    {
+      "variant": "restrict-base",
+      "mode": "full",
+      "started_utc": "2026-10-20T02:03:48.350054+00:00",
+      "ended_utc": "2026-10-20T02:03:49.457187+00:00",
+      "exit": 0,
+      "command": [
+        "/tmp/k230-rotation-pack-followup-20261020T020341Z/restrict-base",
+        "--dumb"
+      ]
+    },
+    {
+      "variant": "restrict-base",
+      "mode": "region",
+      "started_utc": "2026-10-20T02:03:49.457548+00:00",
+      "ended_utc": "2026-10-20T02:03:50.464643+00:00",
+      "exit": 0,
+      "command": [
+        "/tmp/k230-rotation-pack-followup-20261020T020341Z/restrict-base",
+        "--dumb",
+        "--region"
+      ]
+    },
+    {
+      "variant": "restrict-pack8",
+      "mode": "full",
+      "started_utc": "2026-10-20T02:03:53.100343+00:00",
+      "ended_utc": "2026-10-20T02:03:54.166120+00:00",
+      "exit": 0,
+      "command": [
+        "/tmp/k230-rotation-pack-followup-20261020T020341Z/restrict-pack8",
+        "--dumb"
+      ]
+    },
+    {
+      "variant": "restrict-pack8",
+      "mode": "region",
+      "started_utc": "2026-10-20T02:03:54.166497+00:00",
+      "ended_utc": "2026-10-20T02:03:55.130500+00:00",
+      "exit": 0,
+      "command": [
+        "/tmp/k230-rotation-pack-followup-20261020T020341Z/restrict-pack8",
+        "--dumb",
+        "--region"
+      ]
+    }
+  ]
+}

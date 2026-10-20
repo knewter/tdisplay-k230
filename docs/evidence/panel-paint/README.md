@@ -234,3 +234,9 @@ Reduced software timing passes; full p95/p99 latency still fails. The title
 falls0.399→0.059ms and full build mean6.243→5.246ms; no paired qualification or
 optical claim. Rotation is the remaining largest measured stage. Baseline
 restored, quality/8ms guard unchanged, camera/default/archive still open.
+
+The [rotation scheduling experiments](rotation-batches/README.md) reject
+rectangular tiles and changed traversal order, but select eight-pixel batches
+with the existing disjoint-range contract. Isolated full/partial copies improve
+about12%/16%; native pixels and explicit overlap rejection pass. Integrated
+build/timing/live/camera/default/archive proof remains open for this source.

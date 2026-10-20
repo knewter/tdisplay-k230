@@ -35,6 +35,24 @@ static void pixels(int width, int height, int cpp, int turn, int offset, int pad
 	free(sr); free(dr); free(expect);
 }
 
+static void overlapping_images(int cpp, int turn, bool reverse) {
+    uint8_t *data = malloc(2048), expected[2048];
+    assert(data);
+    memset(data, 0x7e, 2048); memcpy(expected, data, 2048);
+    pixman_format_code_t format = cpp == 2 ? PIXMAN_r5g6b5 : PIXMAN_a8r8g8b8;
+    pixman_image_t *source = pixman_image_create_bits_no_clear(format, 7, 19,
+        (uint32_t *)(data + (reverse ? 128 : 16)), (7*cpp+3)&~3);
+    pixman_image_t *target = pixman_image_create_bits_no_clear(format, 19, 7,
+        (uint32_t *)(data + (reverse ? 16 : 128)), (19*cpp+3)&~3);
+    assert(source && target);
+    pixman_region32_t region;
+    pixman_region32_init_rect(&region, 1, 2, 3, 7);
+    assert(!k230_turn_into(target, source, turn));
+    assert(!k230_turn_region_into(target, source, turn, &region));
+    assert(memcmp(data, expected, 2048) == 0);
+    pixman_region32_fini(&region);
+    pixman_image_unref(source); pixman_image_unref(target); free(data);
+}
 int main(void) {
 	int sizes[][2] = {{1,1},{2,3},{3,2},{7,19},{16,16},{17,31},{31,17},{1232,568},{568,1232}};
 	unsigned cases = 0;
@@ -46,5 +64,8 @@ int main(void) {
 		pixels(sizes[i][0], sizes[i][1], cpp, turn, offset, pad); cases++;
 	}
 	printf("PASS panel paint: %u guarded multi-frame rotation cases\n", cases);
+    for (int cpp=2;cpp<=4;cpp+=2) for (int turn=1;turn<=3;turn+=2)
+        for (int reverse=0;reverse<2;reverse++) overlapping_images(cpp,turn,reverse);
+    puts("PASS eight distinct overlapping-image pairs rejected before full/partial copies");
 	return 0;
 }

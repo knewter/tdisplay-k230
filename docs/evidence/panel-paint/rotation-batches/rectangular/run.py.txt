@@ -1,0 +1,18 @@
+from pathlib import Path
+import subprocess,datetime,json,shlex,time
+b=Path(__file__).parent
+ssh=['ssh','-F',str(Path.home()/'tmp/k230-coordination/ssh_config.private'),'k230']
+tag=datetime.datetime.now(datetime.timezone.utc).strftime('%Y%m%dT%H%M%SZ');remote='/tmp/k230-rotation-anisotropic-'+tag
+meta={'started_utc':tag,'remote_directory':remote,'evidence_class':'isolated fresh heap/unattached DRM buffers; no modeset/compositor replacement/optical claim','region':'synthetic union of measured card geometries; not a captured repaint region','runs':[]}
+subprocess.run(ssh+['mkdir -m 0700 '+shlex.quote(remote)],check=True,timeout=30)
+for d in sorted(b.iterdir()):
+ if not d.is_dir() or not (d/'bench').exists():continue
+ dst=remote+'/'+d.name
+ subprocess.run(ssh+['cat > '+shlex.quote(dst)],input=(d/'bench').read_bytes(),check=True,timeout=30)
+ subprocess.run(ssh+['chmod 0700 '+shlex.quote(dst)],check=True,timeout=30)
+ for mode,args in [('full',['--dumb']),('region',['--dumb','--region'])]:
+  start=datetime.datetime.now(datetime.timezone.utc).isoformat()
+  p=subprocess.run(ssh+[' '.join(shlex.quote(x) for x in [dst,*args])],stdin=subprocess.DEVNULL,capture_output=True,timeout=90)
+  (d/(mode+'.log')).write_bytes(p.stdout);(d/(mode+'-stderr.log')).write_bytes(p.stderr)
+  meta['runs'].append({'variant':d.name,'mode':mode,'started_utc':start,'ended_utc':datetime.datetime.now(datetime.timezone.utc).isoformat(),'exit':p.returncode,'command':[dst,*args]});(b/'metadata.json').write_text(json.dumps(meta,indent=2)+'\n')
+  print(d.name,mode,p.returncode,flush=True);p.check_returncode()

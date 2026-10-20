@@ -110,3 +110,11 @@ budgets, full still fails latency51.738ms p95/66.006ms p99. Full build mean5.246
 measured title0.059ms; rotation is largest remaining stage. Baseline restored;
 all trial failures and fixture limits are committed in candidate-label-ink/.
 No paired/camera/default/archive qualification is claimed.
+
+The remaining rotation stage selects eight-pixel gather/store batches within
+unchanged16×16 tiles. Isolated unattached-DRM trials lower full-copy CPU11–12%
+and representative-region CPU16%; rectangular tiles/loop reordering/32-bit
+stores are rejected. Complete source/commands/results are in rotation-batches/.
+Native6 tests plus1152 affine/288 rounded pass; eight distinct overlap pairs
+are rejected before the restricted helper's full/partial calls. This new
+source still needs exact build and all integrated/physical/default gates.

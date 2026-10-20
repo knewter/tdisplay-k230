@@ -1,0 +1,146 @@
+{
+  "started_utc": "20261020T020201Z",
+  "remote_directory": "/tmp/k230-rotation-loop-variants-20261020T020201Z",
+  "evidence_class": "isolated fresh heap/unattached DRM buffers; no modeset/compositor replacement/optical claim",
+  "region": "synthetic union of measured card geometries; not a captured repaint region",
+  "runs": [
+    {
+      "variant": "group-128",
+      "mode": "full",
+      "started_utc": "2026-10-20T02:02:02.340276+00:00",
+      "ended_utc": "2026-10-20T02:02:03.655198+00:00",
+      "exit": 0,
+      "command": [
+        "/tmp/k230-rotation-loop-variants-20261020T020201Z/group-128",
+        "--dumb"
+      ]
+    },
+    {
+      "variant": "group-128",
+      "mode": "region",
+      "started_utc": "2026-10-20T02:02:03.655512+00:00",
+      "ended_utc": "2026-10-20T02:02:04.677086+00:00",
+      "exit": 0,
+      "command": [
+        "/tmp/k230-rotation-loop-variants-20261020T020201Z/group-128",
+        "--dumb",
+        "--region"
+      ]
+    },
+    {
+      "variant": "group-64",
+      "mode": "full",
+      "started_utc": "2026-10-20T02:02:05.458153+00:00",
+      "ended_utc": "2026-10-20T02:02:06.676464+00:00",
+      "exit": 0,
+      "command": [
+        "/tmp/k230-rotation-loop-variants-20261020T020201Z/group-64",
+        "--dumb"
+      ]
+    },
+    {
+      "variant": "group-64",
+      "mode": "region",
+      "started_utc": "2026-10-20T02:02:06.676754+00:00",
+      "ended_utc": "2026-10-20T02:02:07.740190+00:00",
+      "exit": 0,
+      "command": [
+        "/tmp/k230-rotation-loop-variants-20261020T020201Z/group-64",
+        "--dumb",
+        "--region"
+      ]
+    },
+    {
+      "variant": "pack-16",
+      "mode": "full",
+      "started_utc": "2026-10-20T02:02:10.775833+00:00",
+      "ended_utc": "2026-10-20T02:02:11.908478+00:00",
+      "exit": 0,
+      "command": [
+        "/tmp/k230-rotation-loop-variants-20261020T020201Z/pack-16",
+        "--dumb"
+      ]
+    },
+    {
+      "variant": "pack-16",
+      "mode": "region",
+      "started_utc": "2026-10-20T02:02:11.908809+00:00",
+      "ended_utc": "2026-10-20T02:02:12.920217+00:00",
+      "exit": 0,
+      "command": [
+        "/tmp/k230-rotation-loop-variants-20261020T020201Z/pack-16",
+        "--dumb",
+        "--region"
+      ]
+    },
+    {
+      "variant": "pack-8",
+      "mode": "full",
+      "started_utc": "2026-10-20T02:02:13.701737+00:00",
+      "ended_utc": "2026-10-20T02:02:14.799841+00:00",
+      "exit": 0,
+      "command": [
+        "/tmp/k230-rotation-loop-variants-20261020T020201Z/pack-8",
+        "--dumb"
+      ]
+    },
+    {
+      "variant": "pack-8",
+      "mode": "region",
+      "started_utc": "2026-10-20T02:02:14.800212+00:00",
+      "ended_utc": "2026-10-20T02:02:15.750122+00:00",
+      "exit": 0,
+      "command": [
+        "/tmp/k230-rotation-loop-variants-20261020T020201Z/pack-8",
+        "--dumb",
+        "--region"
+      ]
+    },
+    {
+      "variant": "store-32",
+      "mode": "full",
+      "started_utc": "2026-10-20T02:02:16.531949+00:00",
+      "ended_utc": "2026-10-20T02:02:17.672608+00:00",
+      "exit": 0,
+      "command": [
+        "/tmp/k230-rotation-loop-variants-20261020T020201Z/store-32",
+        "--dumb"
+      ]
+    },
+    {
+      "variant": "store-32",
+      "mode": "region",
+      "started_utc": "2026-10-20T02:02:17.672827+00:00",
+      "ended_utc": "2026-10-20T02:02:18.689704+00:00",
+      "exit": 0,
+      "command": [
+        "/tmp/k230-rotation-loop-variants-20261020T020201Z/store-32",
+        "--dumb",
+        "--region"
+      ]
+    },
+    {
+      "variant": "swap-outer",
+      "mode": "full",
+      "started_utc": "2026-10-20T02:02:19.471701+00:00",
+      "ended_utc": "2026-10-20T02:02:20.708347+00:00",
+      "exit": 0,
+      "command": [
+        "/tmp/k230-rotation-loop-variants-20261020T020201Z/swap-outer",
+        "--dumb"
+      ]
+    },
+    {
+      "variant": "swap-outer",
+      "mode": "region",
+      "started_utc": "2026-10-20T02:02:20.708597+00:00",
+      "ended_utc": "2026-10-20T02:02:21.770516+00:00",
+      "exit": 0,
+      "command": [
+        "/tmp/k230-rotation-loop-variants-20261020T020201Z/swap-outer",
+        "--dumb",
+        "--region"
+      ]
+    }
+  ]
+}

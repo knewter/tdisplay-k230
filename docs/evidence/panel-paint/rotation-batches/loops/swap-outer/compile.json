@@ -1,0 +1,23 @@
+{
+  "command": [
+    "/nix/store/4j2mwxqjvnyr6da0925sp0bm4jaj5r5i-riscv64-unknown-linux-gnu-gcc-wrapper-15.3.0/bin/riscv64-unknown-linux-gnu-gcc",
+    "-std=c11",
+    "-O2",
+    "-Wall",
+    "-Wextra",
+    "-Werror",
+    "-I/home/jadams/tmp/codex-claude-handoff-20261019/3/rotation-loop-variants/swap-outer",
+    "-I/home/jadams/tmp/codex-claude-handoff-20261019/3/rotation-loop-variants",
+    "-I/nix/store/gwy2gbwqmilz8hs0mmnlxv5c90c2sla4-libdrm-riscv64-unknown-linux-gnu-2.4.134-dev/include/libdrm",
+    "-I/nix/store/brhzfimak2r3c23lmn80y1g6ww6nmb1r-pixman-riscv64-unknown-linux-gnu-0.46.4/include/pixman-1",
+    "/home/jadams/tmp/codex-claude-handoff-20261019/3/rotation-loop-variants/benchmark.c",
+    "-L/nix/store/brhzfimak2r3c23lmn80y1g6ww6nmb1r-pixman-riscv64-unknown-linux-gnu-0.46.4/lib",
+    "-Wl,-rpath,/nix/store/brhzfimak2r3c23lmn80y1g6ww6nmb1r-pixman-riscv64-unknown-linux-gnu-0.46.4/lib",
+    "-lpixman-1",
+    "-o",
+    "/home/jadams/tmp/codex-claude-handoff-20261019/3/rotation-loop-variants/swap-outer/bench"
+  ],
+  "utc": "2026-10-20T02:01:23.993652+00:00",
+  "binary_sha256": "6fab99a58a1cf000cc9a6df0f4988cb639a5c20da224b99c98d9faaded5a5d61",
+  "source_sha256": "d9a4ebf939f6e8530dee45806ee3a02535812392776697815298f51b3c6caafc"
+}

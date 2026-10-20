@@ -1,0 +1,23 @@
+{
+  "command": [
+    "/nix/store/4j2mwxqjvnyr6da0925sp0bm4jaj5r5i-riscv64-unknown-linux-gnu-gcc-wrapper-15.3.0/bin/riscv64-unknown-linux-gnu-gcc",
+    "-std=c11",
+    "-O2",
+    "-Wall",
+    "-Wextra",
+    "-Werror",
+    "-I/home/jadams/tmp/codex-claude-handoff-20261019/3/rotation-anisotropic/8x32",
+    "-I/home/jadams/tmp/codex-claude-handoff-20261019/3/rotation-anisotropic",
+    "-I/nix/store/gwy2gbwqmilz8hs0mmnlxv5c90c2sla4-libdrm-riscv64-unknown-linux-gnu-2.4.134-dev/include/libdrm",
+    "-I/nix/store/brhzfimak2r3c23lmn80y1g6ww6nmb1r-pixman-riscv64-unknown-linux-gnu-0.46.4/include/pixman-1",
+    "/home/jadams/tmp/codex-claude-handoff-20261019/3/rotation-anisotropic/benchmark.c",
+    "-L/nix/store/brhzfimak2r3c23lmn80y1g6ww6nmb1r-pixman-riscv64-unknown-linux-gnu-0.46.4/lib",
+    "-Wl,-rpath,/nix/store/brhzfimak2r3c23lmn80y1g6ww6nmb1r-pixman-riscv64-unknown-linux-gnu-0.46.4/lib",
+    "-lpixman-1",
+    "-o",
+    "/home/jadams/tmp/codex-claude-handoff-20261019/3/rotation-anisotropic/8x32/bench"
+  ],
+  "utc": "2026-10-20T01:57:45.023221+00:00",
+  "binary_sha256": "1dc035d4f4306938ffa90fe6d481a21b7d45229bb3fd2e2f4473a48eb1146fbc",
+  "source_sha256": "f495964dc480acc506c15ab235abde0f469bebddb7a27d33ab09294273fd0d89"
+}
