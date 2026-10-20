@@ -1,6 +1,6 @@
 ## 1. Tooling and guards (host proof)
 
-- [ ] 1.1 Implement the bounded trial/restore protocol and strict A/B/B/A report. Test unknown/unsafe ExecStart arguments, owned-file conflicts, restoration on failure, missing frame coverage, mixed runtime/config/geometry, incorrect actual logging flags, and workload/order mismatch. Proof: `python3 tools/landscape-hdmi-logging.py --self-test`; retain command output and hashes under `docs/evidence/landscape-hdmi-logging/host/`.
+- [x] 1.1 Implement the bounded trial/restore protocol and strict A/B/B/A report. Test unknown/unsafe ExecStart arguments, owned-file conflicts, restoration on failure, missing frame coverage, mixed runtime/config/geometry, incorrect actual logging flags, and workload/order mismatch. Proof: `python3 tools/landscape-hdmi-logging.py --self-test`; retain command output and hashes under `docs/evidence/landscape-hdmi-logging/host/`.
 
 ## 2. Logging comparison (physical-board diagnostic; no glass claim)
 

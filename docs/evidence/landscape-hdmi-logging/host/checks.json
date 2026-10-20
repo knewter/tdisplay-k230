@@ -1,0 +1,11 @@
+{
+  "utc": "2026-10-20T05:21:55.059031+00:00",
+  "command": [
+    "python3",
+    "tools/landscape-hdmi-logging.py",
+    "--self-test"
+  ],
+  "exit_code": 0,
+  "script_sha256": "795d2cfb1c973e5ebec91aecfc42a7918e79a14dcf47baaae17b5b4585ea8b0c",
+  "proof": "Host fixtures only; no hardware or physical acceptance"
+}
