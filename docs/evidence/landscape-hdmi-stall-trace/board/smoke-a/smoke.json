@@ -1,0 +1,19 @@
+{
+  "abi": {
+    "ioctl": 29,
+    "write": 64,
+    "writev": 66
+  },
+  "checked_at": "2026-10-20T05:58:35.295763+00:00",
+  "event_count": 42,
+  "ioctl_return": -25,
+  "kernel": "7.3.0-rc5",
+  "machine": "riscv64",
+  "probe_fd": 3,
+  "schema": "landscape-hdmi-stall-trace-v1",
+  "status": "QUALIFIED",
+  "system": "/nix/store/j30yag05ic9k68n9dzbzindgf4ardp08-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "tool_sha256": "32c177f57e77283460346b1f453a790456e7e441367976d083b099084fae1075",
+  "write_return": 8,
+  "writev_return": 8
+}

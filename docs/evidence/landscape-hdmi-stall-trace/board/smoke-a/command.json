@@ -1,0 +1,9 @@
+{
+  "command": [
+    "/nix/store/v189xydz6qkcd4cbkixcmv91w8hbc560-python3-riscv64-unknown-linux-gnu-3.14.7/bin/python3",
+    "/var/tmp/k230-stall-trace-20261020/landscape-hdmi-stall-trace.py",
+    "--board-smoke",
+    "--output",
+    "/var/tmp/k230-stall-trace-20261020/smoke-a"
+  ]
+}
