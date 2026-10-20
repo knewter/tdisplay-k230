@@ -1,0 +1,5 @@
+Traceback (most recent call last):
+  File "<stdin>", line 7, in <module>
+  File "/var/tmp/k230-landscape-logging-20261020/landscape-hdmi-logging.py", line 109, in idle_startup
+    raise TrialError('startup terminal has an active job; preserve it')
+trial.TrialError: startup terminal has an active job; preserve it

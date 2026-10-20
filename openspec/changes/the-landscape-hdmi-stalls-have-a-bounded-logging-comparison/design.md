@@ -39,7 +39,10 @@ outside the repository and never publish arbitrary journal text.
 
 Restarting Sway replaces the startup terminal. Before any restart require only
 the standard startup Foot and an idle shell with no running child workload;
-abort if another app or active terminal job appears. Record that session
+abort if another app or active terminal job appears. The normal terminal-color
+follower is a permitted idle helper only when its Nix-store script path and
+SHA256 match the repo-pinned `tools/foot_color_session.py`, it is sleeping,
+and it has no child jobs. An unknown Python child is never treated as idle. Record that session
 restart occurred. The operator's current layout and permanent system persist.
 No other operator may use the board during the reserved comparison.
 

@@ -1,0 +1,23 @@
+[
+  {
+    "pid": 73433,
+    "comm": "foot",
+    "state": "S (sleeping)",
+    "children_count": 1,
+    "wchan": "do_epoll_wait"
+  },
+  {
+    "pid": 73455,
+    "comm": "bash",
+    "state": "S (sleeping)",
+    "children_count": 1,
+    "wchan": "poll_schedule_timeout.constprop.0"
+  },
+  {
+    "pid": 73461,
+    "comm": "python3",
+    "state": "S (sleeping)",
+    "children_count": 0,
+    "wchan": "poll_schedule_timeout.constprop.0"
+  }
+]

@@ -1,0 +1,11 @@
+{
+  "utc": "2026-10-20T05:25:27.685628+00:00",
+  "command": [
+    "python3",
+    "tools/landscape-hdmi-logging.py",
+    "--self-test"
+  ],
+  "exit_code": 0,
+  "source_sha256": "5b310841e69bac1719cf5bfa5fb78a7ba47a9c062f74ab6cd653054e8e3d41dd",
+  "reason": "Permit only the known idle terminal-color follower after checking its exact pinned source hash; reject unknown scripts, active jobs and running shell."
+}

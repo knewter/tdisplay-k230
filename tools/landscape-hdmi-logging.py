@@ -14,6 +14,7 @@ import sys
 import tempfile
 import time
 import unittest
+from unittest import mock
 import uuid
 
 
@@ -32,6 +33,7 @@ DROPIN = Path('/run/systemd/system/shell.service.d/97-k230-hdmi-log-trial.conf')
 FLAGS = ('WLR_RENDERER', 'WLR_PIXMAN_OUTPUT_TURN', 'WLR_PIXMAN_QUARTER_TURN',
          'WLR_PIXMAN_DRAW_TRACE', 'SWAY_K230_CPU_FRAME_TIMING',
          'SWAY_K230_TOUCH_ROUTE_TRACE', 'SWAY_K230_CARD_REDUCED_MOTION')
+COLOR_FOLLOWER_SHA256 = '4c4be0deb6eaf565675596afd845735a017999c01348e6252be2509687b1fd42'
 
 
 class TrialError(RuntimeError):
@@ -91,6 +93,14 @@ def app_nodes(node):
     return result
 
 
+def pinned_color_follower(proc):
+    """The default terminal forks this pinned idle helper before execing bash."""
+    argv = [x.decode() for x in proc.joinpath('cmdline').read_bytes().split(b'\0') if x]
+    return (len(argv) > 1 and proc.joinpath('comm').read_text().strip() == 'python3' and
+            re.fullmatch(r'/nix/store/[a-z0-9]{32}-[A-Za-z0-9+._-]+/libexec/handheld-theme/foot_color_session.py', argv[1]) is not None and
+            digest(Path(argv[1])) == COLOR_FOLLOWER_SHA256)
+
+
 def idle_startup(ipc, proc_root=Path('/proc')):
     apps = app_nodes(ipc.tree())
     if len(apps) != 1 or apps[0]['app_id'] != 'k230-terminal':
@@ -104,10 +114,19 @@ def idle_startup(ipc, proc_root=Path('/proc')):
     child = children[0]
     proc = proc_root / child
     if (proc.joinpath('comm').read_text().strip() not in ('bash', 'sh') or
-            not re.search(r'^State:\s+S\b', proc.joinpath('status').read_text(), re.M) or
-            proc.joinpath(f'task/{child}/children').read_text().strip()):
+            not re.search(r'^State:\s+S\b', proc.joinpath('status').read_text(), re.M)):
         raise TrialError('startup terminal has an active job; preserve it')
-    return {'app_id': 'k230-terminal', 'idle_shell_without_child_jobs': True}
+    descendants = proc.joinpath(f'task/{child}/children').read_text().split()
+    if len(descendants) > 1:
+        raise TrialError('startup terminal has an unexpected child workload')
+    for descendant in descendants:
+        follower = proc_root/descendant
+        if (not re.search(r'^State:\s+S\b', follower.joinpath('status').read_text(), re.M) or
+                follower.joinpath(f'task/{descendant}/children').read_text().strip() or
+                not pinned_color_follower(follower)):
+            raise TrialError('startup terminal has an active or unknown child job; preserve it')
+    return {'app_id': 'k230-terminal', 'idle_shell_without_child_jobs': True,
+            'pinned_idle_color_followers': len(descendants)}
 
 
 def expected_output(rows):
@@ -449,6 +468,14 @@ class Fixtures(unittest.TestCase):
                 def tree(self): return {'app_id':'k230-terminal','pid':123}
             self.assertTrue(idle_startup(IPCFixture(),root)['idle_shell_without_child_jobs'])
             (root/'124/task/124/children').write_text('125')
+            for name, text in {'125/status':'State:\tS (sleeping)\n', '125/comm':'python3',
+                               '125/task/125/children':'', '125/cmdline':'python3\0/nix/store/'+'a'*32+'-theme/libexec/handheld-theme/foot_color_session.py\0'}.items():
+                p=root/name;p.parent.mkdir(parents=True,exist_ok=True);p.write_text(text)
+            with mock.patch(__name__+'.digest',return_value=COLOR_FOLLOWER_SHA256):
+                self.assertEqual(idle_startup(IPCFixture(),root)['pinned_idle_color_followers'],1)
+            with mock.patch(__name__+'.digest',return_value='0'*64):
+                with self.assertRaises(TrialError): idle_startup(IPCFixture(),root)
+            (root/'125/cmdline').write_text('python3\0/tmp/user-script.py\0')
             with self.assertRaises(TrialError): idle_startup(IPCFixture(),root)
             (root/'124/task/124/children').write_text('')
             (root/'124/status').write_text('State:\tR (running)\n')

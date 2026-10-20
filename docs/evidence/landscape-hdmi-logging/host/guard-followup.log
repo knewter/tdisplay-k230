@@ -1,0 +1,11 @@
+test_cleanup_runs_after_failure (__main__.Fixtures.test_cleanup_runs_after_failure) ... ok
+test_exec_override_rejects_unknown_arguments (__main__.Fixtures.test_exec_override_rejects_unknown_arguments) ... ok
+test_idle_guard_preserves_apps_and_terminal_jobs (__main__.Fixtures.test_idle_guard_preserves_apps_and_terminal_jobs) ... ok
+test_owned_override_preserves_conflict (__main__.Fixtures.test_owned_override_preserves_conflict) ... ok
+test_report_rejects_invalid_control_and_coverage (__main__.Fixtures.test_report_rejects_invalid_control_and_coverage) ... ok
+test_report_separates_modes_without_acceptance (__main__.Fixtures.test_report_separates_modes_without_acceptance) ... ok
+
+----------------------------------------------------------------------
+Ran 6 tests in 2.131s
+
+OK
