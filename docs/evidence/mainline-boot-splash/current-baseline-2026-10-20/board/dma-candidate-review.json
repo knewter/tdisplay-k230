@@ -1,0 +1,28 @@
+{
+  "checked_at": "2026-10-20T23:47:27.357300+00:00",
+  "candidate": "One source constant in existing RM69A10 OSD4 setup:0x40\u21920x4f; other register bits, format, stride, addresses, timings unchanged.",
+  "original_sha256": "a71e6718150040b92949d1e19279f42a424b1940f8ef4a0f64eeded83aa29f93",
+  "candidate_sha256": "b2383abda6366d991d53ecb1fe1863a16bc9a3cc04d1c58f42f187baa645365a",
+  "vendor_sdk_revision": "1104236db4d1e47873bd68924f912747b820228c",
+  "vendor_source": "buildroot-overlay/boot/uboot/u-boot-2022.10-overlay/board/canaan/common/logo/display_logo.c",
+  "vendor_source_store": "/nix/store/g58y0fnasf1gapxjnjmbdnmg6zs58yhs-source/buildroot-overlay/boot/uboot/u-boot-2022.10-overlay/board/canaan/common/logo/display_logo.c",
+  "grounding": "kd_vo_osd_set_dma_request lines401\u2013408 masks bits3:0 and sets0xf; byte-map selection uses bits5:4 separately. Mainline ARGB/RGB565 cases use0x4f. Candidate only, no proven cause.",
+  "first_dry_run_disposition": "Initial fixture copied only logo directory and omitted Kconfig touched by the preexisting patch; dry-run skipped that missing file. Fixture completed from same pinned overlay and explicit --batch rerun passed all5files. No repository or Nix source file was edited.",
+  "patch_dry_run_exit": 0,
+  "dry_run_output": "checking file arch/riscv/cpu/k230/Kconfig\nchecking file board/canaan/common/logo/display_logo.c\nchecking file board/canaan/common/logo/display_logo.h\nchecking file board/canaan/common/logo/k230_logo.c\nchecking file board/canaan/common/logo/st7701.c\n",
+  "repo_source_edited": false,
+  "build_performed": false,
+  "board_register_write_performed": false,
+  "bootloader_deployed": false,
+  "scope_choice": "PENDING user answer; current change explicitly excludes changing stage1 splash port.",
+  "patch_dry_run_command": [
+    "patch",
+    "--batch",
+    "--dry-run",
+    "-p1",
+    "-d",
+    "/home/jadams/tmp/codex-claude-handoff-20261019/3/splash-dma-patch-dryrun",
+    "-i",
+    "/home/jadams/tmp/codex-claude-handoff-20261019/3/splash-dma-request-candidate.patch"
+  ]
+}

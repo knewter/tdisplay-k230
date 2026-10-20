@@ -1,0 +1,29 @@
+from pathlib import Path
+import json,concurrent.futures,cv2,numpy as np
+from PIL import Image,ImageDraw
+p=Path(__file__).parent/'baseline-boot-20261020b';rows=[json.loads(s) for s in (p/'camera/frames.jsonl').read_text().splitlines()];records=[r for r in rows if r['kind']=='frame'];records=records[:-4] if rows[-1]['kind']!='summary' else records
+raw=(p/'camera/frames.mjpeg').read_bytes()
+def decode(r):
+ image=cv2.imdecode(np.frombuffer(raw[r['offset']:r['offset']+r['bytes']],dtype=np.uint8),cv2.IMREAD_GRAYSCALE)
+ assert image is not None
+ logo=cv2.resize(image[100:280,190:700],(170,60),interpolation=cv2.INTER_AREA)
+ control=cv2.resize(image[60:650,5:105],(20,118),interpolation=cv2.INTER_AREA)
+ return logo,control,float(image[280:450,340:620].mean())
+with concurrent.futures.ThreadPoolExecutor(max_workers=4) as pool:decoded=list(pool.map(decode,records))
+logo=np.array([x[0] for x in decoded],dtype=np.float32);control=np.array([x[1] for x in decoded],dtype=np.float32)
+score=np.zeros(len(records));controlscore=np.zeros(len(records))
+for i in range(5,len(records)-5):
+ score[i]=min(np.abs(logo[i]-logo[i-5]).mean(),np.abs(logo[i]-logo[i+5]).mean());controlscore[i]=min(np.abs(control[i]-control[i-5]).mean(),np.abs(control[i]-control[i+5]).mean())
+metrics=[{'frame':r['frame'],'camera_elapsed_s':(r['camera_timestamp_ns']-records[0]['camera_timestamp_ns'])/1e9,'transient_luma_score':float(score[i]),'control_transient_score':float(controlscore[i]),'panel_mean':decoded[i][2]} for i,r in enumerate(records)]
+(p/'frame-metrics.json').write_text(json.dumps({'method':'Minimum of mean absolute luma differences against ±5frames. Candidate selector only, not optical timing/fix proof. Keyboard control separated.','frames_analyzed':len(records),'metrics':metrics},indent=2)+'\n')
+candidates=[]
+for i in np.argsort(score)[::-1]:
+ if all(abs(int(i)-j)>6 for j in candidates):candidates.append(int(i))
+ if len(candidates)>=12:break
+(p/'transient-candidates.json').write_text(json.dumps([metrics[i] for i in candidates],indent=2)+'\n')
+def grid(indices,name):
+ sheet=Image.new('RGB',(960,210*((len(indices)+3)//4)),(24,24,24));d=ImageDraw.Draw(sheet)
+ for k,i in enumerate(indices):
+  r=records[i];im=Image.open(__import__('io').BytesIO(raw[r['offset']:r['offset']+r['bytes']])).convert('RGB');im.thumbnail((240,180));x=(k%4)*240;y=(k//4)*210;sheet.paste(im,(x,y));d.text((x+3,y+181),f"f{i} t={metrics[i]['camera_elapsed_s']:.2f}s score={score[i]:.2f}",fill='white')
+ sheet.save(p/name)
+grid(list(range(0,len(records),150)),'timeline.private.jpg');grid(candidates,'transient-candidates.private.jpg');print(json.dumps({'frames_analyzed':len(records),'top_candidates':[metrics[i] for i in candidates[:8]]},indent=2))

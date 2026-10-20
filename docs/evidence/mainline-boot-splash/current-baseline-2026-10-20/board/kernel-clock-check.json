@@ -1,0 +1,83 @@
+{
+  "boot_id": "3d59df47-0267-4ab3-8c1e-42a38ae4ae1e",
+  "uptime": "382.82",
+  "clocksource": "riscv_clocksource",
+  "samples": [
+    {
+      "index": 0,
+      "board_mono_before_ns": 378814709859,
+      "board_mono_after_ns": 378815111844,
+      "direct_syscall_mono_ns": 378814660453,
+      "python_mono_ns": 378814556531,
+      "board_raw_ns": 378860175515
+    },
+    {
+      "index": 1,
+      "board_mono_before_ns": 379315372552,
+      "board_mono_after_ns": 379315816906,
+      "direct_syscall_mono_ns": 379315326443,
+      "python_mono_ns": 379315256260,
+      "board_raw_ns": 379360857329
+    },
+    {
+      "index": 2,
+      "board_mono_before_ns": 379816094503,
+      "board_mono_after_ns": 379816510636,
+      "direct_syscall_mono_ns": 379816054801,
+      "python_mono_ns": 379815952583,
+      "board_raw_ns": 379861597551
+    },
+    {
+      "index": 3,
+      "board_mono_before_ns": 380316750680,
+      "board_mono_after_ns": 380317196700,
+      "direct_syscall_mono_ns": 380316713422,
+      "python_mono_ns": 380316655461,
+      "board_raw_ns": 380362273254
+    },
+    {
+      "index": 4,
+      "board_mono_before_ns": 380817435452,
+      "board_mono_after_ns": 380817863065,
+      "direct_syscall_mono_ns": 380817391712,
+      "python_mono_ns": 380817332641,
+      "board_raw_ns": 380862977476
+    },
+    {
+      "index": 5,
+      "board_mono_before_ns": 381318093820,
+      "board_mono_after_ns": 381318578802,
+      "direct_syscall_mono_ns": 381318055636,
+      "python_mono_ns": 381317995898,
+      "board_raw_ns": 381363654365
+    },
+    {
+      "index": 6,
+      "board_mono_before_ns": 381818808379,
+      "board_mono_after_ns": 381819236770,
+      "direct_syscall_mono_ns": 381818771714,
+      "python_mono_ns": 381818713605,
+      "board_raw_ns": 381864388513
+    },
+    {
+      "index": 7,
+      "board_mono_before_ns": 382319481719,
+      "board_mono_after_ns": 382319902296,
+      "direct_syscall_mono_ns": 382319444091,
+      "python_mono_ns": 382319384353,
+      "board_raw_ns": 382365081401
+    }
+  ],
+  "dmesg_markers": [
+    "[  378.864123] K230_BOOT_CLOCK_PANE23_A index=0 mono_before_ns=378814709859 direct_ns=378814660453 raw_ns=378860175515",
+    "[  379.364842] K230_BOOT_CLOCK_PANE23_A index=1 mono_before_ns=379315372552 direct_ns=379315326443 raw_ns=379360857329",
+    "[  379.865559] K230_BOOT_CLOCK_PANE23_A index=2 mono_before_ns=379816094503 direct_ns=379816054801 raw_ns=379861597551",
+    "[  380.366253] K230_BOOT_CLOCK_PANE23_A index=3 mono_before_ns=380316750680 direct_ns=380316713422 raw_ns=380362273254",
+    "[  380.866950] K230_BOOT_CLOCK_PANE23_A index=4 mono_before_ns=380817435452 direct_ns=380817391712 raw_ns=380862977476",
+    "[  381.367682] K230_BOOT_CLOCK_PANE23_A index=5 mono_before_ns=381318093820 direct_ns=381318055636 raw_ns=381363654365",
+    "[  381.868362] K230_BOOT_CLOCK_PANE23_A index=6 mono_before_ns=381818808379 direct_ns=381818771714 raw_ns=381864388513",
+    "[  382.369048] K230_BOOT_CLOCK_PANE23_A index=7 mono_before_ns=382319481719 direct_ns=382319444091 raw_ns=382365081401"
+  ],
+  "diagnostic_mutation": "8 uniquely named kernel log messages only; no boot/config/tracing changes",
+  "checked_at": "2026-10-20T23:37:10.508746+00:00"
+}

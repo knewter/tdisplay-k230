@@ -1,0 +1,1404 @@
+{
+  "started_at": "2026-10-20T23:30:30.014657+00:00",
+  "status": "DIAGNOSTIC_BASELINE_CAPTURED",
+  "scope": "Diagnostic baseline of accepted default ordinary warm reboot, no kernel/source change. Final kernel/video clock qualification and defect removal unperformed.",
+  "operator_ready": true,
+  "preboot_id": "9cc88abc-dc62-490e-8035-5d4832558a41",
+  "system": "/nix/store/p501mchy0dq9lyjnaxwkx5s2pdm4i2yj-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "camera_controls": {
+    "checked_at": "2026-10-20T23:30:20.587039+00:00",
+    "device": "/dev/video0",
+    "format": "MJPEG",
+    "width": 960,
+    "height": 720,
+    "requested_fps": 30,
+    "values": {
+      "white_balance_automatic": 0,
+      "white_balance_temperature": 4513,
+      "gain": 0,
+      "focus_automatic_continuous": 0,
+      "focus_absolute": 80,
+      "exposure_time_absolute": 99,
+      "auto_exposure": 1,
+      "exposure_dynamic_framerate": 0
+    },
+    "original_settings_to_restore": {
+      "width": 640,
+      "height": 480,
+      "format": "YUYV",
+      "fps": 30,
+      "auto_exposure": 3,
+      "exposure_dynamic_framerate": 1,
+      "focus_automatic_continuous": 1,
+      "white_balance_automatic": 1
+    },
+    "operator_ready": true,
+    "control_attempt_disposition": "Initial combined auto-disable/manual-value write rejected with EACCES while focus value was inactive. Initial baseline driver then failed loading nonexistent control receipt before camera/reboot; no reboot ran. Separate auto-disable calls succeeded, current values read back, no manual focus-value override required."
+  },
+  "board_lease_tool_session": 17656,
+  "kernel_video_alignment_qualified": false,
+  "hardware_task_4_1_complete": false,
+  "camera_pid": 1518036,
+  "camera_pg_id": 1517913,
+  "camera_started_host_ns": 266482216315321,
+  "reboot_requested_at": "2026-10-20T23:30:31.820936+00:00",
+  "reboot_host_before_ns": 266484021691930,
+  "reboot_command_exit": 0,
+  "reboot_host_after_ns": 266484456129818,
+  "ssh_attempts": [
+    {
+      "host_before_ns": 266484456408165,
+      "utc": "2026-10-20T23:30:32.255667+00:00",
+      "host_after_ns": 266490463947206,
+      "error_class": "TimeoutExpired"
+    },
+    {
+      "host_before_ns": 266492464298254,
+      "utc": "2026-10-20T23:30:40.263570+00:00",
+      "host_after_ns": 266495473467429,
+      "exit_code": 255
+    },
+    {
+      "host_before_ns": 266497473754785,
+      "utc": "2026-10-20T23:30:45.273018+00:00",
+      "host_after_ns": 266500482577789,
+      "exit_code": 255
+    },
+    {
+      "host_before_ns": 266502483073098,
+      "utc": "2026-10-20T23:30:50.282337+00:00",
+      "host_after_ns": 266505492304861,
+      "exit_code": 255
+    },
+    {
+      "host_before_ns": 266507492819037,
+      "utc": "2026-10-20T23:30:55.292083+00:00",
+      "host_after_ns": 266510502111661,
+      "exit_code": 255
+    },
+    {
+      "host_before_ns": 266512502414698,
+      "utc": "2026-10-20T23:31:00.301676+00:00",
+      "host_after_ns": 266515511075625,
+      "exit_code": 255
+    },
+    {
+      "host_before_ns": 266517511327007,
+      "utc": "2026-10-20T23:31:05.310589+00:00",
+      "host_after_ns": 266520521456282,
+      "exit_code": 255
+    },
+    {
+      "host_before_ns": 266522521732825,
+      "utc": "2026-10-20T23:31:10.320994+00:00",
+      "host_after_ns": 266525530515219,
+      "exit_code": 255
+    },
+    {
+      "host_before_ns": 266527530828365,
+      "utc": "2026-10-20T23:31:15.330092+00:00",
+      "host_after_ns": 266530540547164,
+      "exit_code": 255
+    },
+    {
+      "host_before_ns": 266532540962288,
+      "utc": "2026-10-20T23:31:20.340227+00:00",
+      "host_after_ns": 266535249320949,
+      "exit_code": 255
+    },
+    {
+      "host_before_ns": 266537249640022,
+      "utc": "2026-10-20T23:31:25.048904+00:00",
+      "host_after_ns": 266540259136103,
+      "exit_code": 255
+    },
+    {
+      "host_before_ns": 266542259434233,
+      "utc": "2026-10-20T23:31:30.058703+00:00",
+      "host_after_ns": 266545270107598,
+      "exit_code": 255
+    },
+    {
+      "host_before_ns": 266547270411697,
+      "utc": "2026-10-20T23:31:35.069675+00:00",
+      "host_after_ns": 266549074604703,
+      "exit_code": 255
+    },
+    {
+      "host_before_ns": 266551074932143,
+      "utc": "2026-10-20T23:31:38.874196+00:00",
+      "host_after_ns": 266554084965761,
+      "exit_code": 255
+    },
+    {
+      "host_before_ns": 266556085271559,
+      "utc": "2026-10-20T23:31:43.884533+00:00",
+      "host_after_ns": 266559094847888,
+      "exit_code": 255
+    },
+    {
+      "host_before_ns": 266561095221053,
+      "utc": "2026-10-20T23:31:48.894483+00:00",
+      "host_after_ns": 266562898540073,
+      "exit_code": 255
+    },
+    {
+      "host_before_ns": 266564899098378,
+      "utc": "2026-10-20T23:31:52.698360+00:00",
+      "host_after_ns": 266570906586763,
+      "error_class": "TimeoutExpired"
+    },
+    {
+      "host_before_ns": 266572907037809,
+      "utc": "2026-10-20T23:32:00.706302+00:00",
+      "host_after_ns": 266578915606013,
+      "error_class": "TimeoutExpired"
+    },
+    {
+      "host_before_ns": 266580916137547,
+      "utc": "2026-10-20T23:32:08.715413+00:00",
+      "host_after_ns": 266582541092098,
+      "exit_code": 0,
+      "identity": {
+        "boot_id": "3d59df47-0267-4ab3-8c1e-42a38ae4ae1e",
+        "system": "/nix/store/p501mchy0dq9lyjnaxwkx5s2pdm4i2yj-nixos-system-nixos-26.11.20260919.20b1ddd",
+        "booted_system": "/nix/store/p501mchy0dq9lyjnaxwkx5s2pdm4i2yj-nixos-system-nixos-26.11.20260919.20b1ddd",
+        "persistent_system": "/nix/store/p501mchy0dq9lyjnaxwkx5s2pdm4i2yj-nixos-system-nixos-26.11.20260919.20b1ddd",
+        "kernel_notes_sha256": "1a98ea1e0a6e75f923c0fd53cfcf472f576ddb36de86b89361bfc224a305d9b6",
+        "board_monotonic_ns": 82661717816
+      }
+    }
+  ],
+  "postboot_identity": {
+    "boot_id": "3d59df47-0267-4ab3-8c1e-42a38ae4ae1e",
+    "system": "/nix/store/p501mchy0dq9lyjnaxwkx5s2pdm4i2yj-nixos-system-nixos-26.11.20260919.20b1ddd",
+    "booted_system": "/nix/store/p501mchy0dq9lyjnaxwkx5s2pdm4i2yj-nixos-system-nixos-26.11.20260919.20b1ddd",
+    "persistent_system": "/nix/store/p501mchy0dq9lyjnaxwkx5s2pdm4i2yj-nixos-system-nixos-26.11.20260919.20b1ddd",
+    "kernel_notes_sha256": "1a98ea1e0a6e75f923c0fd53cfcf472f576ddb36de86b89361bfc224a305d9b6",
+    "board_monotonic_ns": 82661717816
+  },
+  "first_ssh_at": "2026-10-20T23:32:10.340410+00:00",
+  "clock_ready": {
+    "ready": true,
+    "boot_id": "3d59df47-0267-4ab3-8c1e-42a38ae4ae1e"
+  },
+  "clock_method": "Persistent SSH brackets include all overhead; affine/exposure/boot extrapolation not yet qualified.",
+  "clock_samples": [
+    {
+      "board_monotonic_ns": 86059835643,
+      "board_raw_ns": 86066767911,
+      "board_boottime_ns": 86059851936,
+      "boot_id": "3d59df47-0267-4ab3-8c1e-42a38ae4ae1e",
+      "host_before_ns": 266585799940156,
+      "host_after_ns": 266585806172117,
+      "offset_lower_ns": 266499740104513,
+      "offset_upper_ns": 266499746336474
+    },
+    {
+      "board_monotonic_ns": 87070304386,
+      "board_raw_ns": 87077422059,
+      "board_boottime_ns": 87070318124,
+      "boot_id": "3d59df47-0267-4ab3-8c1e-42a38ae4ae1e",
+      "host_before_ns": 266586808533319,
+      "host_after_ns": 266586815545437,
+      "offset_lower_ns": 266499738228933,
+      "offset_upper_ns": 266499745241051
+    },
+    {
+      "board_monotonic_ns": 91780532189,
+      "board_raw_ns": 91788378908,
+      "board_boottime_ns": 91780542076,
+      "boot_id": "3d59df47-0267-4ab3-8c1e-42a38ae4ae1e",
+      "host_before_ns": 266587815940027,
+      "host_after_ns": 266592334976207,
+      "offset_lower_ns": 266496035407838,
+      "offset_upper_ns": 266500554444018
+    },
+    {
+      "board_monotonic_ns": 93698754717,
+      "board_raw_ns": 93706841240,
+      "board_boottime_ns": 93698764864,
+      "boot_id": "3d59df47-0267-4ab3-8c1e-42a38ae4ae1e",
+      "host_before_ns": 266593335456637,
+      "host_after_ns": 266593454121774,
+      "offset_lower_ns": 266499636701920,
+      "offset_upper_ns": 266499755367057
+    },
+    {
+      "board_monotonic_ns": 94825785045,
+      "board_raw_ns": 94833999239,
+      "board_boottime_ns": 94825795636,
+      "boot_id": "3d59df47-0267-4ab3-8c1e-42a38ae4ae1e",
+      "host_before_ns": 266594454651139,
+      "host_after_ns": 266594573495474,
+      "offset_lower_ns": 266499628866094,
+      "offset_upper_ns": 266499747710429
+    },
+    {
+      "board_monotonic_ns": 95850865681,
+      "board_raw_ns": 95859188091,
+      "board_boottime_ns": 95850876680,
+      "boot_id": "3d59df47-0267-4ab3-8c1e-42a38ae4ae1e",
+      "host_before_ns": 266595573870799,
+      "host_after_ns": 266595599417414,
+      "offset_lower_ns": 266499723005118,
+      "offset_upper_ns": 266499748551733
+    },
+    {
+      "board_monotonic_ns": 96872827030,
+      "board_raw_ns": 96881249386,
+      "board_boottime_ns": 96872836881,
+      "boot_id": "3d59df47-0267-4ab3-8c1e-42a38ae4ae1e",
+      "host_before_ns": 266596599825433,
+      "host_after_ns": 266596621477363,
+      "offset_lower_ns": 266499726998403,
+      "offset_upper_ns": 266499748650333
+    },
+    {
+      "board_monotonic_ns": 97880706314,
+      "board_raw_ns": 97889222756,
+      "board_boottime_ns": 97880716646,
+      "boot_id": "3d59df47-0267-4ab3-8c1e-42a38ae4ae1e",
+      "host_before_ns": 266597621870476,
+      "host_after_ns": 266597626809148,
+      "offset_lower_ns": 266499741164162,
+      "offset_upper_ns": 266499746102834
+    },
+    {
+      "board_monotonic_ns": 98886912539,
+      "board_raw_ns": 98895516496,
+      "board_boottime_ns": 98886923242,
+      "boot_id": "3d59df47-0267-4ab3-8c1e-42a38ae4ae1e",
+      "host_before_ns": 266598627226900,
+      "host_after_ns": 266598633114379,
+      "offset_lower_ns": 266499740314361,
+      "offset_upper_ns": 266499746201840
+    },
+    {
+      "board_monotonic_ns": 99948586579,
+      "board_raw_ns": 99957275718,
+      "board_boottime_ns": 99948596875,
+      "boot_id": "3d59df47-0267-4ab3-8c1e-42a38ae4ae1e",
+      "host_before_ns": 266599633723145,
+      "host_after_ns": 266599696971962,
+      "offset_lower_ns": 266499685136566,
+      "offset_upper_ns": 266499748385383
+    },
+    {
+      "board_monotonic_ns": 100972301129,
+      "board_raw_ns": 100981068162,
+      "board_boottime_ns": 100972311573,
+      "boot_id": "3d59df47-0267-4ab3-8c1e-42a38ae4ae1e",
+      "host_before_ns": 266600697485821,
+      "host_after_ns": 266600721046064,
+      "offset_lower_ns": 266499725184692,
+      "offset_upper_ns": 266499748744935
+    },
+    {
+      "board_monotonic_ns": 101980095390,
+      "board_raw_ns": 101988934013,
+      "board_boottime_ns": 101980105649,
+      "boot_id": "3d59df47-0267-4ab3-8c1e-42a38ae4ae1e",
+      "host_before_ns": 266601721476267,
+      "host_after_ns": 266601726686282,
+      "offset_lower_ns": 266499741380877,
+      "offset_upper_ns": 266499746590892
+    },
+    {
+      "board_monotonic_ns": 102985604921,
+      "board_raw_ns": 102994510901,
+      "board_boottime_ns": 102985615439,
+      "boot_id": "3d59df47-0267-4ab3-8c1e-42a38ae4ae1e",
+      "host_before_ns": 266602727155532,
+      "host_after_ns": 266602731870410,
+      "offset_lower_ns": 266499741550611,
+      "offset_upper_ns": 266499746265489
+    },
+    {
+      "board_monotonic_ns": 104142878692,
+      "board_raw_ns": 104151855938,
+      "board_boottime_ns": 104142888617,
+      "boot_id": "3d59df47-0267-4ab3-8c1e-42a38ae4ae1e",
+      "host_before_ns": 266603732412770,
+      "host_after_ns": 266603891446098,
+      "offset_lower_ns": 266499589534078,
+      "offset_upper_ns": 266499748567406
+    },
+    {
+      "board_monotonic_ns": 105167466638,
+      "board_raw_ns": 105176502937,
+      "board_boottime_ns": 105167476452,
+      "boot_id": "3d59df47-0267-4ab3-8c1e-42a38ae4ae1e",
+      "host_before_ns": 266604892122023,
+      "host_after_ns": 266604916539428,
+      "offset_lower_ns": 266499724655385,
+      "offset_upper_ns": 266499749072790
+    },
+    {
+      "board_monotonic_ns": 108258637284,
+      "board_raw_ns": 108267831342,
+      "board_boottime_ns": 108258648283,
+      "boot_id": "3d59df47-0267-4ab3-8c1e-42a38ae4ae1e",
+      "host_before_ns": 266605917028001,
+      "host_after_ns": 266608036269881,
+      "offset_lower_ns": 266497658390717,
+      "offset_upper_ns": 266499777632597
+    },
+    {
+      "board_monotonic_ns": 110117696258,
+      "board_raw_ns": 110126970193,
+      "board_boottime_ns": 110117723331,
+      "boot_id": "3d59df47-0267-4ab3-8c1e-42a38ae4ae1e",
+      "host_before_ns": 266609036756998,
+      "host_after_ns": 266609868361447,
+      "offset_lower_ns": 266498919060740,
+      "offset_upper_ns": 266499750665189
+    },
+    {
+      "board_monotonic_ns": 111325588841,
+      "board_raw_ns": 111334909600,
+      "board_boottime_ns": 111325599211,
+      "boot_id": "3d59df47-0267-4ab3-8c1e-42a38ae4ae1e",
+      "host_before_ns": 266610868956065,
+      "host_after_ns": 266611082762627,
+      "offset_lower_ns": 266499543367224,
+      "offset_upper_ns": 266499757173786
+    },
+    {
+      "board_monotonic_ns": 112745393696,
+      "board_raw_ns": 112754764969,
+      "board_boottime_ns": 112745403548,
+      "boot_id": "3d59df47-0267-4ab3-8c1e-42a38ae4ae1e",
+      "host_before_ns": 266612083213353,
+      "host_after_ns": 266612493256394,
+      "offset_lower_ns": 266499337819657,
+      "offset_upper_ns": 266499747862698
+    },
+    {
+      "board_monotonic_ns": 113754561645,
+      "board_raw_ns": 113763966895,
+      "board_boottime_ns": 113754572015,
+      "boot_id": "3d59df47-0267-4ab3-8c1e-42a38ae4ae1e",
+      "host_before_ns": 266613493724964,
+      "host_after_ns": 266613510205910,
+      "offset_lower_ns": 266499739163319,
+      "offset_upper_ns": 266499755644265
+    },
+    {
+      "board_monotonic_ns": 114769704980,
+      "board_raw_ns": 114779142042,
+      "board_boottime_ns": 114769715350,
+      "boot_id": "3d59df47-0267-4ab3-8c1e-42a38ae4ae1e",
+      "host_before_ns": 266614510540709,
+      "host_after_ns": 266614516396667,
+      "offset_lower_ns": 266499740835729,
+      "offset_upper_ns": 266499746691687
+    },
+    {
+      "board_monotonic_ns": 115780974237,
+      "board_raw_ns": 115790440560,
+      "board_boottime_ns": 115780984348,
+      "boot_id": "3d59df47-0267-4ab3-8c1e-42a38ae4ae1e",
+      "host_before_ns": 266615516847138,
+      "host_after_ns": 266615529410166,
+      "offset_lower_ns": 266499735872901,
+      "offset_upper_ns": 266499748435929
+    },
+    {
+      "board_monotonic_ns": 116956889163,
+      "board_raw_ns": 116966387560,
+      "board_boottime_ns": 116956899311,
+      "boot_id": "3d59df47-0267-4ab3-8c1e-42a38ae4ae1e",
+      "host_before_ns": 266616529769086,
+      "host_after_ns": 266616705522808,
+      "offset_lower_ns": 266499572879923,
+      "offset_upper_ns": 266499748633645
+    },
+    {
+      "board_monotonic_ns": 118180963374,
+      "board_raw_ns": 118190492411,
+      "board_boottime_ns": 118180973559,
+      "boot_id": "3d59df47-0267-4ab3-8c1e-42a38ae4ae1e",
+      "host_before_ns": 266617706170216,
+      "host_after_ns": 266617930028841,
+      "offset_lower_ns": 266499525206842,
+      "offset_upper_ns": 266499749065467
+    },
+    {
+      "board_monotonic_ns": 119196237539,
+      "board_raw_ns": 119205790225,
+      "board_boottime_ns": 119196247465,
+      "boot_id": "3d59df47-0267-4ab3-8c1e-42a38ae4ae1e",
+      "host_before_ns": 266618930399586,
+      "host_after_ns": 266618944795444,
+      "offset_lower_ns": 266499734162047,
+      "offset_upper_ns": 266499748557905
+    },
+    {
+      "board_monotonic_ns": 120223439062,
+      "board_raw_ns": 120233014187,
+      "board_boottime_ns": 120223449432,
+      "boot_id": "3d59df47-0267-4ab3-8c1e-42a38ae4ae1e",
+      "host_before_ns": 266619945244330,
+      "host_after_ns": 266619971519631,
+      "offset_lower_ns": 266499721805268,
+      "offset_upper_ns": 266499748080569
+    },
+    {
+      "board_monotonic_ns": 121245318988,
+      "board_raw_ns": 121254914853,
+      "board_boottime_ns": 121245328655,
+      "boot_id": "3d59df47-0267-4ab3-8c1e-42a38ae4ae1e",
+      "host_before_ns": 266620972227921,
+      "host_after_ns": 266620994260508,
+      "offset_lower_ns": 266499726908933,
+      "offset_upper_ns": 266499748941520
+    },
+    {
+      "board_monotonic_ns": 122254340827,
+      "board_raw_ns": 122263956927,
+      "board_boottime_ns": 122254351938,
+      "boot_id": "3d59df47-0267-4ab3-8c1e-42a38ae4ae1e",
+      "host_before_ns": 266621994826692,
+      "host_after_ns": 266622002686153,
+      "offset_lower_ns": 266499740485865,
+      "offset_upper_ns": 266499748345326
+    },
+    {
+      "board_monotonic_ns": 124222152294,
+      "board_raw_ns": 124231801926,
+      "board_boottime_ns": 124222162664,
+      "boot_id": "3d59df47-0267-4ab3-8c1e-42a38ae4ae1e",
+      "host_before_ns": 266623003025971,
+      "host_after_ns": 266623979160241,
+      "offset_lower_ns": 266498780873677,
+      "offset_upper_ns": 266499757007947
+    },
+    {
+      "board_monotonic_ns": 125445072185,
+      "board_raw_ns": 125454741221,
+      "board_boottime_ns": 125445082333,
+      "boot_id": "3d59df47-0267-4ab3-8c1e-42a38ae4ae1e",
+      "host_before_ns": 266624980038274,
+      "host_after_ns": 266625194509414,
+      "offset_lower_ns": 266499534966089,
+      "offset_upper_ns": 266499749437229
+    },
+    {
+      "board_monotonic_ns": 126469650083,
+      "board_raw_ns": 126479333961,
+      "board_boottime_ns": 126469660602,
+      "boot_id": "3d59df47-0267-4ab3-8c1e-42a38ae4ae1e",
+      "host_before_ns": 266626195422645,
+      "host_after_ns": 266626227723533,
+      "offset_lower_ns": 266499725772562,
+      "offset_upper_ns": 266499758073450
+    },
+    {
+      "board_monotonic_ns": 127728954437,
+      "board_raw_ns": 127738655109,
+      "board_boottime_ns": 127728963918,
+      "boot_id": "3d59df47-0267-4ab3-8c1e-42a38ae4ae1e",
+      "host_before_ns": 266627228592202,
+      "host_after_ns": 266627476323551,
+      "offset_lower_ns": 266499499637765,
+      "offset_upper_ns": 266499747369114
+    },
+    {
+      "board_monotonic_ns": 128827578883,
+      "board_raw_ns": 128837293701,
+      "board_boottime_ns": 128827589216,
+      "boot_id": "3d59df47-0267-4ab3-8c1e-42a38ae4ae1e",
+      "host_before_ns": 266628477244581,
+      "host_after_ns": 266628573774057,
+      "offset_lower_ns": 266499649665698,
+      "offset_upper_ns": 266499746195174
+    },
+    {
+      "board_monotonic_ns": 130369167896,
+      "board_raw_ns": 130378900070,
+      "board_boottime_ns": 130369177451,
+      "boot_id": "3d59df47-0267-4ab3-8c1e-42a38ae4ae1e",
+      "host_before_ns": 266629576505708,
+      "host_after_ns": 266630119095868,
+      "offset_lower_ns": 266499207337812,
+      "offset_upper_ns": 266499749927972
+    },
+    {
+      "board_monotonic_ns": 131930237360,
+      "board_raw_ns": 131940496773,
+      "board_boottime_ns": 131930247943,
+      "boot_id": "3d59df47-0267-4ab3-8c1e-42a38ae4ae1e",
+      "host_before_ns": 266631119899638,
+      "host_after_ns": 266631678414432,
+      "offset_lower_ns": 266499189662278,
+      "offset_upper_ns": 266499748177072
+    },
+    {
+      "board_monotonic_ns": 132940678955,
+      "board_raw_ns": 132951885772,
+      "board_boottime_ns": 132940689204,
+      "boot_id": "3d59df47-0267-4ab3-8c1e-42a38ae4ae1e",
+      "host_before_ns": 266632683091635,
+      "host_after_ns": 266632688576159,
+      "offset_lower_ns": 266499742412680,
+      "offset_upper_ns": 266499747897204
+    },
+    {
+      "board_monotonic_ns": 133948669001,
+      "board_raw_ns": 133960794290,
+      "board_boottime_ns": 133948679029,
+      "boot_id": "3d59df47-0267-4ab3-8c1e-42a38ae4ae1e",
+      "host_before_ns": 266633690406233,
+      "host_after_ns": 266633698099439,
+      "offset_lower_ns": 266499741737232,
+      "offset_upper_ns": 266499749430438
+    },
+    {
+      "board_monotonic_ns": 134957044317,
+      "board_raw_ns": 134970063993,
+      "board_boottime_ns": 134957054826,
+      "boot_id": "3d59df47-0267-4ab3-8c1e-42a38ae4ae1e",
+      "host_before_ns": 266634700045506,
+      "host_after_ns": 266634707974498,
+      "offset_lower_ns": 266499743001189,
+      "offset_upper_ns": 266499750930181
+    },
+    {
+      "board_monotonic_ns": 135965785041,
+      "board_raw_ns": 135979674400,
+      "board_boottime_ns": 135965795328,
+      "boot_id": "3d59df47-0267-4ab3-8c1e-42a38ae4ae1e",
+      "host_before_ns": 266635708779458,
+      "host_after_ns": 266635716092554,
+      "offset_lower_ns": 266499742994417,
+      "offset_upper_ns": 266499750307513
+    },
+    {
+      "board_monotonic_ns": 136977337975,
+      "board_raw_ns": 136992074288,
+      "board_boottime_ns": 136977348115,
+      "boot_id": "3d59df47-0267-4ab3-8c1e-42a38ae4ae1e",
+      "host_before_ns": 266636716964374,
+      "host_after_ns": 266636728365209,
+      "offset_lower_ns": 266499739626399,
+      "offset_upper_ns": 266499751027234
+    },
+    {
+      "board_monotonic_ns": 137987186271,
+      "board_raw_ns": 138002745473,
+      "board_boottime_ns": 137987196670,
+      "boot_id": "3d59df47-0267-4ab3-8c1e-42a38ae4ae1e",
+      "host_before_ns": 266637729106414,
+      "host_after_ns": 266637739110125,
+      "offset_lower_ns": 266499741920143,
+      "offset_upper_ns": 266499751923854
+    },
+    {
+      "board_monotonic_ns": 138993804346,
+      "board_raw_ns": 139010160213,
+      "board_boottime_ns": 138993813968,
+      "boot_id": "3d59df47-0267-4ab3-8c1e-42a38ae4ae1e",
+      "host_before_ns": 266638740075457,
+      "host_after_ns": 266638746620719,
+      "offset_lower_ns": 266499746271111,
+      "offset_upper_ns": 266499752816373
+    },
+    {
+      "board_monotonic_ns": 140084547442,
+      "board_raw_ns": 140101743546,
+      "board_boottime_ns": 140084557546,
+      "boot_id": "3d59df47-0267-4ab3-8c1e-42a38ae4ae1e",
+      "host_before_ns": 266639747306095,
+      "host_after_ns": 266639840593165,
+      "offset_lower_ns": 266499662758653,
+      "offset_upper_ns": 266499756045723
+    },
+    {
+      "board_monotonic_ns": 141111557553,
+      "board_raw_ns": 141129521767,
+      "board_boottime_ns": 141111568064,
+      "boot_id": "3d59df47-0267-4ab3-8c1e-42a38ae4ae1e",
+      "host_before_ns": 266640841276990,
+      "host_after_ns": 266640867829081,
+      "offset_lower_ns": 266499729719437,
+      "offset_upper_ns": 266499756271528
+    },
+    {
+      "board_monotonic_ns": 142137881429,
+      "board_raw_ns": 142156591544,
+      "board_boottime_ns": 142137891496,
+      "boot_id": "3d59df47-0267-4ab3-8c1e-42a38ae4ae1e",
+      "host_before_ns": 266641868440832,
+      "host_after_ns": 266641894752488,
+      "offset_lower_ns": 266499730559403,
+      "offset_upper_ns": 266499756871059
+    },
+    {
+      "board_monotonic_ns": 143358314407,
+      "board_raw_ns": 143377886470,
+      "board_boottime_ns": 143358324955,
+      "boot_id": "3d59df47-0267-4ab3-8c1e-42a38ae4ae1e",
+      "host_before_ns": 266642895711610,
+      "host_after_ns": 266643116127278,
+      "offset_lower_ns": 266499537397203,
+      "offset_upper_ns": 266499757812871
+    },
+    {
+      "board_monotonic_ns": 144366329984,
+      "board_raw_ns": 144386591839,
+      "board_boottime_ns": 144366340088,
+      "boot_id": "3d59df47-0267-4ab3-8c1e-42a38ae4ae1e",
+      "host_before_ns": 266644116799929,
+      "host_after_ns": 266644123527967,
+      "offset_lower_ns": 266499750469945,
+      "offset_upper_ns": 266499757197983
+    },
+    {
+      "board_monotonic_ns": 145434908509,
+      "board_raw_ns": 145455881913,
+      "board_boottime_ns": 145434918687,
+      "boot_id": "3d59df47-0267-4ab3-8c1e-42a38ae4ae1e",
+      "host_before_ns": 266645124185554,
+      "host_after_ns": 266645192491405,
+      "offset_lower_ns": 266499689277045,
+      "offset_upper_ns": 266499757582896
+    },
+    {
+      "board_monotonic_ns": 146441276511,
+      "board_raw_ns": 146462901431,
+      "board_boottime_ns": 146441286579,
+      "boot_id": "3d59df47-0267-4ab3-8c1e-42a38ae4ae1e",
+      "host_before_ns": 266646192968041,
+      "host_after_ns": 266646199582253,
+      "offset_lower_ns": 266499751691530,
+      "offset_upper_ns": 266499758305742
+    },
+    {
+      "board_monotonic_ns": 147450711736,
+      "board_raw_ns": 147472972727,
+      "board_boottime_ns": 147450721989,
+      "boot_id": "3d59df47-0267-4ab3-8c1e-42a38ae4ae1e",
+      "host_before_ns": 266647200218726,
+      "host_after_ns": 266647210338545,
+      "offset_lower_ns": 266499749506990,
+      "offset_upper_ns": 266499759626809
+    },
+    {
+      "board_monotonic_ns": 148457462395,
+      "board_raw_ns": 148480341281,
+      "board_boottime_ns": 148457472352,
+      "boot_id": "3d59df47-0267-4ab3-8c1e-42a38ae4ae1e",
+      "host_before_ns": 266648210970332,
+      "host_after_ns": 266648216206515,
+      "offset_lower_ns": 266499753507937,
+      "offset_upper_ns": 266499758744120
+    },
+    {
+      "board_monotonic_ns": 149462907526,
+      "board_raw_ns": 149486387318,
+      "board_boottime_ns": 149462917410,
+      "boot_id": "3d59df47-0267-4ab3-8c1e-42a38ae4ae1e",
+      "host_before_ns": 266649216860808,
+      "host_after_ns": 266649222357704,
+      "offset_lower_ns": 266499753953282,
+      "offset_upper_ns": 266499759450178
+    },
+    {
+      "board_monotonic_ns": 150627193253,
+      "board_raw_ns": 150651348651,
+      "board_boottime_ns": 150627203173,
+      "boot_id": "3d59df47-0267-4ab3-8c1e-42a38ae4ae1e",
+      "host_before_ns": 266650223052607,
+      "host_after_ns": 266650390859913,
+      "offset_lower_ns": 266499595859354,
+      "offset_upper_ns": 266499763666660
+    },
+    {
+      "board_monotonic_ns": 152975920666,
+      "board_raw_ns": 153001379131,
+      "board_boottime_ns": 152975930623,
+      "boot_id": "3d59df47-0267-4ab3-8c1e-42a38ae4ae1e",
+      "host_before_ns": 266651391876948,
+      "host_after_ns": 266652739713898,
+      "offset_lower_ns": 266498415956282,
+      "offset_upper_ns": 266499763793232
+    },
+    {
+      "board_monotonic_ns": 153999056324,
+      "board_raw_ns": 154025059167,
+      "board_boottime_ns": 153999065986,
+      "boot_id": "3d59df47-0267-4ab3-8c1e-42a38ae4ae1e",
+      "host_before_ns": 266653740479801,
+      "host_after_ns": 266653763072053,
+      "offset_lower_ns": 266499741423477,
+      "offset_upper_ns": 266499764015729
+    },
+    {
+      "board_monotonic_ns": 155023666979,
+      "board_raw_ns": 155050200870,
+      "board_boottime_ns": 155023677196,
+      "boot_id": "3d59df47-0267-4ab3-8c1e-42a38ae4ae1e",
+      "host_before_ns": 266654764128329,
+      "host_after_ns": 266654788263772,
+      "offset_lower_ns": 266499740461350,
+      "offset_upper_ns": 266499764596793
+    },
+    {
+      "board_monotonic_ns": 156049274370,
+      "board_raw_ns": 156076326944,
+      "board_boottime_ns": 156049285216,
+      "boot_id": "3d59df47-0267-4ab3-8c1e-42a38ae4ae1e",
+      "host_before_ns": 266655789042136,
+      "host_after_ns": 266655814644315,
+      "offset_lower_ns": 266499739767766,
+      "offset_upper_ns": 266499765369945
+    },
+    {
+      "board_monotonic_ns": 157057126721,
+      "board_raw_ns": 157084674980,
+      "board_boottime_ns": 157057137456,
+      "boot_id": "3d59df47-0267-4ab3-8c1e-42a38ae4ae1e",
+      "host_before_ns": 266656815346057,
+      "host_after_ns": 266656820065011,
+      "offset_lower_ns": 266499758219336,
+      "offset_upper_ns": 266499762938290
+    },
+    {
+      "board_monotonic_ns": 158062278114,
+      "board_raw_ns": 158090309054,
+      "board_boottime_ns": 158062288221,
+      "boot_id": "3d59df47-0267-4ab3-8c1e-42a38ae4ae1e",
+      "host_before_ns": 266657820671145,
+      "host_after_ns": 266657825823700,
+      "offset_lower_ns": 266499758393031,
+      "offset_upper_ns": 266499763545586
+    },
+    {
+      "board_monotonic_ns": 159068054729,
+      "board_raw_ns": 159096556831,
+      "board_boottime_ns": 159068065354,
+      "boot_id": "3d59df47-0267-4ab3-8c1e-42a38ae4ae1e",
+      "host_before_ns": 266658826468039,
+      "host_after_ns": 266658832448210,
+      "offset_lower_ns": 266499758413310,
+      "offset_upper_ns": 266499764393481
+    },
+    {
+      "board_monotonic_ns": 160078450817,
+      "board_raw_ns": 160107413978,
+      "board_boottime_ns": 160078460813,
+      "boot_id": "3d59df47-0267-4ab3-8c1e-42a38ae4ae1e",
+      "host_before_ns": 266659833163077,
+      "host_after_ns": 266659842693299,
+      "offset_lower_ns": 266499754712260,
+      "offset_upper_ns": 266499764242482
+    },
+    {
+      "board_monotonic_ns": 161169660756,
+      "board_raw_ns": 161199110311,
+      "board_boottime_ns": 161169671121,
+      "boot_id": "3d59df47-0267-4ab3-8c1e-42a38ae4ae1e",
+      "host_before_ns": 266660843447574,
+      "host_after_ns": 266660936651012,
+      "offset_lower_ns": 266499673786818,
+      "offset_upper_ns": 266499766990256
+    },
+    {
+      "board_monotonic_ns": 162193420154,
+      "board_raw_ns": 162223314125,
+      "board_boottime_ns": 162193430224,
+      "boot_id": "3d59df47-0267-4ab3-8c1e-42a38ae4ae1e",
+      "host_before_ns": 266661937404598,
+      "host_after_ns": 266661960634716,
+      "offset_lower_ns": 266499743984444,
+      "offset_upper_ns": 266499767214562
+    },
+    {
+      "board_monotonic_ns": 163210545363,
+      "board_raw_ns": 163240870384,
+      "board_boottime_ns": 163210555766,
+      "boot_id": "3d59df47-0267-4ab3-8c1e-42a38ae4ae1e",
+      "host_before_ns": 266662961442107,
+      "host_after_ns": 266662979707747,
+      "offset_lower_ns": 266499750896744,
+      "offset_upper_ns": 266499769162384
+    },
+    {
+      "board_monotonic_ns": 164541817001,
+      "board_raw_ns": 164572690531,
+      "board_boottime_ns": 164541827405,
+      "boot_id": "3d59df47-0267-4ab3-8c1e-42a38ae4ae1e",
+      "host_before_ns": 266663980395916,
+      "host_after_ns": 266664309549096,
+      "offset_lower_ns": 266499438578915,
+      "offset_upper_ns": 266499767732095
+    },
+    {
+      "board_monotonic_ns": 165567255616,
+      "board_raw_ns": 165598540197,
+      "board_boottime_ns": 165567266241,
+      "boot_id": "3d59df47-0267-4ab3-8c1e-42a38ae4ae1e",
+      "host_before_ns": 266665310198172,
+      "host_after_ns": 266665336435092,
+      "offset_lower_ns": 266499742942556,
+      "offset_upper_ns": 266499769179476
+    },
+    {
+      "board_monotonic_ns": 166575986136,
+      "board_raw_ns": 166607664863,
+      "board_boottime_ns": 166575996132,
+      "boot_id": "3d59df47-0267-4ab3-8c1e-42a38ae4ae1e",
+      "host_before_ns": 266666337221441,
+      "host_after_ns": 266666342755177,
+      "offset_lower_ns": 266499761235305,
+      "offset_upper_ns": 266499766769041
+    },
+    {
+      "board_monotonic_ns": 167581770478,
+      "board_raw_ns": 167613834122,
+      "board_boottime_ns": 167581780660,
+      "boot_id": "3d59df47-0267-4ab3-8c1e-42a38ae4ae1e",
+      "host_before_ns": 266667343594230,
+      "host_after_ns": 266667354579806,
+      "offset_lower_ns": 266499761823752,
+      "offset_upper_ns": 266499772809328
+    },
+    {
+      "board_monotonic_ns": 168592888164,
+      "board_raw_ns": 168625329010,
+      "board_boottime_ns": 168592898197,
+      "boot_id": "3d59df47-0267-4ab3-8c1e-42a38ae4ae1e",
+      "host_before_ns": 266668355304927,
+      "host_after_ns": 266668360450137,
+      "offset_lower_ns": 266499762416763,
+      "offset_upper_ns": 266499767561973
+    },
+    {
+      "board_monotonic_ns": 169597886378,
+      "board_raw_ns": 169630694010,
+      "board_boottime_ns": 169597896189,
+      "boot_id": "3d59df47-0267-4ab3-8c1e-42a38ae4ae1e",
+      "host_before_ns": 266669360902885,
+      "host_after_ns": 266669365564179,
+      "offset_lower_ns": 266499763016507,
+      "offset_upper_ns": 266499767677801
+    },
+    {
+      "board_monotonic_ns": 170689563606,
+      "board_raw_ns": 170722760898,
+      "board_boottime_ns": 170689574195,
+      "boot_id": "3d59df47-0267-4ab3-8c1e-42a38ae4ae1e",
+      "host_before_ns": 266670366039895,
+      "host_after_ns": 266670460501198,
+      "offset_lower_ns": 266499676476289,
+      "offset_upper_ns": 266499770937592
+    },
+    {
+      "board_monotonic_ns": 171923800327,
+      "board_raw_ns": 171957425934,
+      "board_boottime_ns": 171923810434,
+      "boot_id": "3d59df47-0267-4ab3-8c1e-42a38ae4ae1e",
+      "host_before_ns": 266671461413533,
+      "host_after_ns": 266671694939797,
+      "offset_lower_ns": 266499537613206,
+      "offset_upper_ns": 266499771139470
+    },
+    {
+      "board_monotonic_ns": 173142193788,
+      "board_raw_ns": 173176231267,
+      "board_boottime_ns": 173142203156,
+      "boot_id": "3d59df47-0267-4ab3-8c1e-42a38ae4ae1e",
+      "host_before_ns": 266672695675940,
+      "host_after_ns": 266672912334181,
+      "offset_lower_ns": 266499553482152,
+      "offset_upper_ns": 266499770140393
+    },
+    {
+      "board_monotonic_ns": 174168115658,
+      "board_raw_ns": 174202491451,
+      "board_boottime_ns": 174168124951,
+      "boot_id": "3d59df47-0267-4ab3-8c1e-42a38ae4ae1e",
+      "host_before_ns": 266673912948896,
+      "host_after_ns": 266673939483288,
+      "offset_lower_ns": 266499744833238,
+      "offset_upper_ns": 266499771367630
+    },
+    {
+      "board_monotonic_ns": 175187373801,
+      "board_raw_ns": 175222079599,
+      "board_boottime_ns": 175187383316,
+      "boot_id": "3d59df47-0267-4ab3-8c1e-42a38ae4ae1e",
+      "host_before_ns": 266674939948183,
+      "host_after_ns": 266674959722487,
+      "offset_lower_ns": 266499752574382,
+      "offset_upper_ns": 266499772348686
+    },
+    {
+      "board_monotonic_ns": 176319959222,
+      "board_raw_ns": 176355022672,
+      "board_boottime_ns": 176319968886,
+      "boot_id": "3d59df47-0267-4ab3-8c1e-42a38ae4ae1e",
+      "host_before_ns": 266675960756443,
+      "host_after_ns": 266676094887691,
+      "offset_lower_ns": 266499640797221,
+      "offset_upper_ns": 266499774928469
+    },
+    {
+      "board_monotonic_ns": 177341213427,
+      "board_raw_ns": 177376592264,
+      "board_boottime_ns": 177341223757,
+      "boot_id": "3d59df47-0267-4ab3-8c1e-42a38ae4ae1e",
+      "host_before_ns": 266677095861266,
+      "host_after_ns": 266677114261659,
+      "offset_lower_ns": 266499754647839,
+      "offset_upper_ns": 266499773048232
+    },
+    {
+      "board_monotonic_ns": 178349785442,
+      "board_raw_ns": 178385469412,
+      "board_boottime_ns": 178349796106,
+      "boot_id": "3d59df47-0267-4ab3-8c1e-42a38ae4ae1e",
+      "host_before_ns": 266678114970816,
+      "host_after_ns": 266678120105968,
+      "offset_lower_ns": 266499765185374,
+      "offset_upper_ns": 266499770320526
+    },
+    {
+      "board_monotonic_ns": 179355489962,
+      "board_raw_ns": 179391470819,
+      "board_boottime_ns": 179355499700,
+      "boot_id": "3d59df47-0267-4ab3-8c1e-42a38ae4ae1e",
+      "host_before_ns": 266679120783889,
+      "host_after_ns": 266679126065578,
+      "offset_lower_ns": 266499765293927,
+      "offset_upper_ns": 266499770575616
+    },
+    {
+      "board_monotonic_ns": 180361757107,
+      "board_raw_ns": 180398030299,
+      "board_boottime_ns": 180361767067,
+      "boot_id": "3d59df47-0267-4ab3-8c1e-42a38ae4ae1e",
+      "host_before_ns": 266680126825709,
+      "host_after_ns": 266680132762688,
+      "offset_lower_ns": 266499765068602,
+      "offset_upper_ns": 266499771005581
+    },
+    {
+      "board_monotonic_ns": 181367840237,
+      "board_raw_ns": 181404399188,
+      "board_boottime_ns": 181367850086,
+      "boot_id": "3d59df47-0267-4ab3-8c1e-42a38ae4ae1e",
+      "host_before_ns": 266681133444514,
+      "host_after_ns": 266681139048633,
+      "offset_lower_ns": 266499765604277,
+      "offset_upper_ns": 266499771208396
+    },
+    {
+      "board_monotonic_ns": 182373988428,
+      "board_raw_ns": 182410827483,
+      "board_boottime_ns": 182373998573,
+      "boot_id": "3d59df47-0267-4ab3-8c1e-42a38ae4ae1e",
+      "host_before_ns": 266682139704955,
+      "host_after_ns": 266682145400607,
+      "offset_lower_ns": 266499765716527,
+      "offset_upper_ns": 266499771412179
+    },
+    {
+      "board_monotonic_ns": 183392247621,
+      "board_raw_ns": 183429364853,
+      "board_boottime_ns": 183392257729,
+      "boot_id": "3d59df47-0267-4ab3-8c1e-42a38ae4ae1e",
+      "host_before_ns": 266683146491996,
+      "host_after_ns": 266683169234718,
+      "offset_lower_ns": 266499754244375,
+      "offset_upper_ns": 266499776987097
+    },
+    {
+      "board_monotonic_ns": 184810715254,
+      "board_raw_ns": 184848210741,
+      "board_boottime_ns": 184810725955,
+      "boot_id": "3d59df47-0267-4ab3-8c1e-42a38ae4ae1e",
+      "host_before_ns": 266684169966590,
+      "host_after_ns": 266684587664963,
+      "offset_lower_ns": 266499359251336,
+      "offset_upper_ns": 266499776949709
+    },
+    {
+      "board_monotonic_ns": 185843904383,
+      "board_raw_ns": 185881668592,
+      "board_boottime_ns": 185843914565,
+      "boot_id": "3d59df47-0267-4ab3-8c1e-42a38ae4ae1e",
+      "host_before_ns": 266685590439674,
+      "host_after_ns": 266685628656879,
+      "offset_lower_ns": 266499746535291,
+      "offset_upper_ns": 266499784752496
+    },
+    {
+      "board_monotonic_ns": 187770888443,
+      "board_raw_ns": 187809141036,
+      "board_boottime_ns": 187770898626,
+      "boot_id": "3d59df47-0267-4ab3-8c1e-42a38ae4ae1e",
+      "host_before_ns": 266686630346318,
+      "host_after_ns": 266687544047291,
+      "offset_lower_ns": 266498859457875,
+      "offset_upper_ns": 266499773158848
+    },
+    {
+      "board_monotonic_ns": 188907068622,
+      "board_raw_ns": 188945616517,
+      "board_boottime_ns": 188907094023,
+      "boot_id": "3d59df47-0267-4ab3-8c1e-42a38ae4ae1e",
+      "host_before_ns": 266688545440728,
+      "host_after_ns": 266688684104655,
+      "offset_lower_ns": 266499638372106,
+      "offset_upper_ns": 266499777036033
+    },
+    {
+      "board_monotonic_ns": 189942012346,
+      "board_raw_ns": 189980794886,
+      "board_boottime_ns": 189942021899,
+      "boot_id": "3d59df47-0267-4ab3-8c1e-42a38ae4ae1e",
+      "host_before_ns": 266689685134387,
+      "host_after_ns": 266689717551962,
+      "offset_lower_ns": 266499743122041,
+      "offset_upper_ns": 266499775539616
+    },
+    {
+      "board_monotonic_ns": 191984313076,
+      "board_raw_ns": 192023576552,
+      "board_boottime_ns": 191984323406,
+      "boot_id": "3d59df47-0267-4ab3-8c1e-42a38ae4ae1e",
+      "host_before_ns": 266690718591035,
+      "host_after_ns": 266691765765714,
+      "offset_lower_ns": 266498734277959,
+      "offset_upper_ns": 266499781452638
+    },
+    {
+      "board_monotonic_ns": 193206054318,
+      "board_raw_ns": 193245596551,
+      "board_boottime_ns": 193206064242,
+      "boot_id": "3d59df47-0267-4ab3-8c1e-42a38ae4ae1e",
+      "host_before_ns": 266692766693313,
+      "host_after_ns": 266692981104021,
+      "offset_lower_ns": 266499560638995,
+      "offset_upper_ns": 266499775049703
+    },
+    {
+      "board_monotonic_ns": 194214021613,
+      "board_raw_ns": 194253789884,
+      "board_boottime_ns": 194214031833,
+      "boot_id": "3d59df47-0267-4ab3-8c1e-42a38ae4ae1e",
+      "host_before_ns": 266693981873364,
+      "host_after_ns": 266693988616097,
+      "offset_lower_ns": 266499767851751,
+      "offset_upper_ns": 266499774594484
+    },
+    {
+      "board_monotonic_ns": 195220118474,
+      "board_raw_ns": 195260109439,
+      "board_boottime_ns": 195220129139,
+      "boot_id": "3d59df47-0267-4ab3-8c1e-42a38ae4ae1e",
+      "host_before_ns": 266694989178802,
+      "host_after_ns": 266694994016900,
+      "offset_lower_ns": 266499769060328,
+      "offset_upper_ns": 266499773898426
+    },
+    {
+      "board_monotonic_ns": 196227080784,
+      "board_raw_ns": 196267289660,
+      "board_boottime_ns": 196227090856,
+      "boot_id": "3d59df47-0267-4ab3-8c1e-42a38ae4ae1e",
+      "host_before_ns": 266695994654751,
+      "host_after_ns": 266696001602622,
+      "offset_lower_ns": 266499767573967,
+      "offset_upper_ns": 266499774521838
+    },
+    {
+      "board_monotonic_ns": 197232799003,
+      "board_raw_ns": 197273222326,
+      "board_boottime_ns": 197232809000,
+      "boot_id": "3d59df47-0267-4ab3-8c1e-42a38ae4ae1e",
+      "host_before_ns": 266697002194269,
+      "host_after_ns": 266697007706915,
+      "offset_lower_ns": 266499769395266,
+      "offset_upper_ns": 266499774907912
+    },
+    {
+      "board_monotonic_ns": 198239336163,
+      "board_raw_ns": 198279970993,
+      "board_boottime_ns": 198239345865,
+      "boot_id": "3d59df47-0267-4ab3-8c1e-42a38ae4ae1e",
+      "host_before_ns": 266698008590668,
+      "host_after_ns": 266698016734434,
+      "offset_lower_ns": 266499769254505,
+      "offset_upper_ns": 266499777398271
+    },
+    {
+      "board_monotonic_ns": 199452149928,
+      "board_raw_ns": 199493035362,
+      "board_boottime_ns": 199452159629,
+      "boot_id": "3d59df47-0267-4ab3-8c1e-42a38ae4ae1e",
+      "host_before_ns": 266699017440285,
+      "host_after_ns": 266699228774903,
+      "offset_lower_ns": 266499565290357,
+      "offset_upper_ns": 266499776624975
+    },
+    {
+      "board_monotonic_ns": 200476543362,
+      "board_raw_ns": 200517636880,
+      "board_boottime_ns": 200476553397,
+      "boot_id": "3d59df47-0267-4ab3-8c1e-42a38ae4ae1e",
+      "host_before_ns": 266700229661969,
+      "host_after_ns": 266700253419610,
+      "offset_lower_ns": 266499753118607,
+      "offset_upper_ns": 266499776876248
+    },
+    {
+      "board_monotonic_ns": 201499569846,
+      "board_raw_ns": 201540867620,
+      "board_boottime_ns": 201499580178,
+      "boot_id": "3d59df47-0267-4ab3-8c1e-42a38ae4ae1e",
+      "host_before_ns": 266701253928685,
+      "host_after_ns": 266701277163296,
+      "offset_lower_ns": 266499754358839,
+      "offset_upper_ns": 266499777593450
+    },
+    {
+      "board_monotonic_ns": 202507944512,
+      "board_raw_ns": 202549440657,
+      "board_boottime_ns": 202507954510,
+      "boot_id": "3d59df47-0267-4ab3-8c1e-42a38ae4ae1e",
+      "host_before_ns": 266702277915935,
+      "host_after_ns": 266702286132879,
+      "offset_lower_ns": 266499769971423,
+      "offset_upper_ns": 266499778188367
+    },
+    {
+      "board_monotonic_ns": 204034563226,
+      "board_raw_ns": 204076354804,
+      "board_boottime_ns": 204034574150,
+      "boot_id": "3d59df47-0267-4ab3-8c1e-42a38ae4ae1e",
+      "host_before_ns": 266703286592819,
+      "host_after_ns": 266703812321612,
+      "offset_lower_ns": 266499252029593,
+      "offset_upper_ns": 266499777758386
+    },
+    {
+      "board_monotonic_ns": 205342848726,
+      "board_raw_ns": 205384887248,
+      "board_boottime_ns": 205342857946,
+      "boot_id": "3d59df47-0267-4ab3-8c1e-42a38ae4ae1e",
+      "host_before_ns": 266704812920385,
+      "host_after_ns": 266705119198231,
+      "offset_lower_ns": 266499470071659,
+      "offset_upper_ns": 266499776349505
+    },
+    {
+      "board_monotonic_ns": 206362344166,
+      "board_raw_ns": 206404573358,
+      "board_boottime_ns": 206362354275,
+      "boot_id": "3d59df47-0267-4ab3-8c1e-42a38ae4ae1e",
+      "host_before_ns": 266706120197445,
+      "host_after_ns": 266706139573932,
+      "offset_lower_ns": 266499757853279,
+      "offset_upper_ns": 266499777229766
+    },
+    {
+      "board_monotonic_ns": 207539993691,
+      "board_raw_ns": 207582484691,
+      "board_boottime_ns": 207540050754,
+      "boot_id": "3d59df47-0267-4ab3-8c1e-42a38ae4ae1e",
+      "host_before_ns": 266707140269484,
+      "host_after_ns": 266707318202026,
+      "offset_lower_ns": 266499600275793,
+      "offset_upper_ns": 266499778208335
+    },
+    {
+      "board_monotonic_ns": 209800102012,
+      "board_raw_ns": 209842952689,
+      "board_boottime_ns": 209800112677,
+      "boot_id": "3d59df47-0267-4ab3-8c1e-42a38ae4ae1e",
+      "host_before_ns": 266708319160508,
+      "host_after_ns": 266709578630158,
+      "offset_lower_ns": 266498519058496,
+      "offset_upper_ns": 266499778528146
+    },
+    {
+      "board_monotonic_ns": 211039961520,
+      "board_raw_ns": 211083029022,
+      "board_boottime_ns": 211039971296,
+      "boot_id": "3d59df47-0267-4ab3-8c1e-42a38ae4ae1e",
+      "host_before_ns": 266710579386053,
+      "host_after_ns": 266710818218896,
+      "offset_lower_ns": 266499539424533,
+      "offset_upper_ns": 266499778257376
+    },
+    {
+      "board_monotonic_ns": 212046889347,
+      "board_raw_ns": 212090131762,
+      "board_boottime_ns": 212046899604,
+      "boot_id": "3d59df47-0267-4ab3-8c1e-42a38ae4ae1e",
+      "host_before_ns": 266711818752354,
+      "host_after_ns": 266711823562068,
+      "offset_lower_ns": 266499771863007,
+      "offset_upper_ns": 266499776672721
+    },
+    {
+      "board_monotonic_ns": 213055741607,
+      "board_raw_ns": 213099156243,
+      "board_boottime_ns": 213055751902,
+      "boot_id": "3d59df47-0267-4ab3-8c1e-42a38ae4ae1e",
+      "host_before_ns": 266712824220656,
+      "host_after_ns": 266712832541396,
+      "offset_lower_ns": 266499768479049,
+      "offset_upper_ns": 266499776799789
+    },
+    {
+      "board_monotonic_ns": 214063310639,
+      "board_raw_ns": 214106894872,
+      "board_boottime_ns": 214063320563,
+      "boot_id": "3d59df47-0267-4ab3-8c1e-42a38ae4ae1e",
+      "host_before_ns": 266713833526306,
+      "host_after_ns": 266713840263097,
+      "offset_lower_ns": 266499770215667,
+      "offset_upper_ns": 266499776952458
+    },
+    {
+      "board_monotonic_ns": 215221582395,
+      "board_raw_ns": 215265360056,
+      "board_boottime_ns": 215221592319,
+      "boot_id": "3d59df47-0267-4ab3-8c1e-42a38ae4ae1e",
+      "host_before_ns": 266714840986286,
+      "host_after_ns": 266715001872935,
+      "offset_lower_ns": 266499619403891,
+      "offset_upper_ns": 266499780290540
+    },
+    {
+      "board_monotonic_ns": 216248188844,
+      "board_raw_ns": 216292135278,
+      "board_boottime_ns": 216248199175,
+      "boot_id": "3d59df47-0267-4ab3-8c1e-42a38ae4ae1e",
+      "host_before_ns": 266716002641282,
+      "host_after_ns": 266716027510936,
+      "offset_lower_ns": 266499754452438,
+      "offset_upper_ns": 266499779322092
+    },
+    {
+      "board_monotonic_ns": 217275544994,
+      "board_raw_ns": 217319658944,
+      "board_boottime_ns": 217275555622,
+      "boot_id": "3d59df47-0267-4ab3-8c1e-42a38ae4ae1e",
+      "host_before_ns": 266717028579856,
+      "host_after_ns": 266717055539355,
+      "offset_lower_ns": 266499753034862,
+      "offset_upper_ns": 266499779994361
+    },
+    {
+      "board_monotonic_ns": 218288141808,
+      "board_raw_ns": 218332418536,
+      "board_boottime_ns": 218288151881,
+      "boot_id": "3d59df47-0267-4ab3-8c1e-42a38ae4ae1e",
+      "host_before_ns": 266718056891375,
+      "host_after_ns": 266718069609999,
+      "offset_lower_ns": 266499768749567,
+      "offset_upper_ns": 266499781468191
+    },
+    {
+      "board_monotonic_ns": 219298838364,
+      "board_raw_ns": 219343275758,
+      "board_boottime_ns": 219298848695,
+      "boot_id": "3d59df47-0267-4ab3-8c1e-42a38ae4ae1e",
+      "host_before_ns": 266719071133487,
+      "host_after_ns": 266719077738158,
+      "offset_lower_ns": 266499772295123,
+      "offset_upper_ns": 266499778899794
+    },
+    {
+      "board_monotonic_ns": 220368953167,
+      "board_raw_ns": 220413559053,
+      "board_boottime_ns": 220368962906,
+      "boot_id": "3d59df47-0267-4ab3-8c1e-42a38ae4ae1e",
+      "host_before_ns": 266720081351457,
+      "host_after_ns": 266720147362101,
+      "offset_lower_ns": 266499712398290,
+      "offset_upper_ns": 266499778408934
+    },
+    {
+      "board_monotonic_ns": 221390508419,
+      "board_raw_ns": 221435273608,
+      "board_boottime_ns": 221390518492,
+      "boot_id": "3d59df47-0267-4ab3-8c1e-42a38ae4ae1e",
+      "host_before_ns": 266721149084914,
+      "host_after_ns": 266721168645188,
+      "offset_lower_ns": 266499758576495,
+      "offset_upper_ns": 266499778136769
+    },
+    {
+      "board_monotonic_ns": 222399875769,
+      "board_raw_ns": 222444795904,
+      "board_boottime_ns": 222399885212,
+      "boot_id": "3d59df47-0267-4ab3-8c1e-42a38ae4ae1e",
+      "host_before_ns": 266722170287563,
+      "host_after_ns": 266722178302884,
+      "offset_lower_ns": 266499770411794,
+      "offset_upper_ns": 266499778427115
+    },
+    {
+      "board_monotonic_ns": 223513486251,
+      "board_raw_ns": 223558576274,
+      "board_boottime_ns": 223513496397,
+      "boot_id": "3d59df47-0267-4ab3-8c1e-42a38ae4ae1e",
+      "host_before_ns": 266723179337494,
+      "host_after_ns": 266723293499696,
+      "offset_lower_ns": 266499665851243,
+      "offset_upper_ns": 266499780013445
+    },
+    {
+      "board_monotonic_ns": 224537088569,
+      "board_raw_ns": 224582333458,
+      "board_boottime_ns": 224537098826,
+      "boot_id": "3d59df47-0267-4ab3-8c1e-42a38ae4ae1e",
+      "host_before_ns": 266724294456211,
+      "host_after_ns": 266724318843169,
+      "offset_lower_ns": 266499757367642,
+      "offset_upper_ns": 266499781754600
+    },
+    {
+      "board_monotonic_ns": 225563350715,
+      "board_raw_ns": 225608748384,
+      "board_boottime_ns": 225563360528,
+      "boot_id": "3d59df47-0267-4ab3-8c1e-42a38ae4ae1e",
+      "host_before_ns": 266725319667739,
+      "host_after_ns": 266725341643593,
+      "offset_lower_ns": 266499756317024,
+      "offset_upper_ns": 266499778292878
+    },
+    {
+      "board_monotonic_ns": 228025888579,
+      "board_raw_ns": 228071649197,
+      "board_boottime_ns": 228025899392,
+      "boot_id": "3d59df47-0267-4ab3-8c1e-42a38ae4ae1e",
+      "host_before_ns": 266726342565862,
+      "host_after_ns": 266727823311536,
+      "offset_lower_ns": 266498316677283,
+      "offset_upper_ns": 266499797422957
+    }
+  ],
+  "camera_exit": 0,
+  "camera_summary": {
+    "kind": "summary",
+    "frames": 5393,
+    "bytes": 279370428,
+    "sequence_gaps": 0,
+    "reason": "duration_limit",
+    "capture_complete": true,
+    "kernel_video_alignment_qualified": false,
+    "host_monotonic_ns": 266662345836138
+  },
+  "recording_sha256": {
+    "frames.mjpeg": "d522a63af41e83d3a4bb8170a0b8265b68cb70443e3c2ed8d74168c24622280c",
+    "frames.jsonl": "b67d79f9c606417508ac0cf149d7a5c5ab638b8cbd559592f3689e0e5bed7725"
+  },
+  "finished_at": "2026-10-20T23:34:39.510788+00:00"
+}

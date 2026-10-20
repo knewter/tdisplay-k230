@@ -1,0 +1,40 @@
+{
+  "frames": {
+    "1426": {
+      "file": "frame-1426.jpg",
+      "camera_timestamp_ns": 266530011828000,
+      "camera_elapsed_s": 47.532948,
+      "source_offset": 63404746,
+      "source_bytes": 37837,
+      "sha256": "47c4afcb52a2d17c8adbf0db51c970f31f8013c2a4dac2e79ea48f6cd22a1fdd"
+    },
+    "1431": {
+      "file": "frame-1431.jpg",
+      "camera_timestamp_ns": 266530179826000,
+      "camera_elapsed_s": 47.700946,
+      "source_offset": 63593229,
+      "source_bytes": 37282,
+      "sha256": "069973fa256f5b48a1cdd2463141fe9f887ec03a11d83b37fd8504da060cdfc5"
+    },
+    "1436": {
+      "file": "frame-1436.jpg",
+      "camera_timestamp_ns": 266530343839000,
+      "camera_elapsed_s": 47.864959,
+      "source_offset": 63780728,
+      "source_bytes": 37689,
+      "sha256": "3fd83b6c03c5b15f3980e793acca5072d97fb20a537a4e115aa10ea5fb3f1875"
+    }
+  },
+  "keyboard_control_roi_xywh": [
+    5,
+    60,
+    100,
+    590
+  ],
+  "control_phase_shift_camera_px": [
+    -0.014934503913067942,
+    -0.12302674625442478
+  ],
+  "control_phase_response": 0.960327935218811,
+  "method_limit": "Image phase-correlation comparison only; no physical camera pose or touch-latency measurement. Unmodified original camera JPEGs retained."
+}

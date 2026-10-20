@@ -2126,6 +2126,13 @@ DATA 81ff11de0912324f6ac0f0a6de8605474c80b9c331be793a442c5fbed05c702b docs/evide
 DATA 1416ea0b21de344e7d619a22ffb3a88636fe5aa51be06c10be1558a6f540e5a1 docs/evidence/rest-of-text/host-wifi-100-1232x568.png
 DATA 9a9b114124f744820f581a8eb43f8ff6f9db4aec88de5205269f60d8a99390e7 docs/evidence/rest-of-text/board-panel-100.png
 DATA b5415580d0ea62acb239e220ebd320fab3b35145a245e79da39e433632fa46fd docs/evidence/rest-of-text/board-panel-200.png
+
+# Current splash baseline film, 2026-10-20 (diagnostic; task4.1 open)
+DATA  3cb362a67335b160be5a16e7dca5a8be56e2efe52bbfcf025e4d9713781eb91d  docs/evidence/mainline-boot-splash/current-baseline-2026-10-20/board/baseline.mp4
+DATA  47c4afcb52a2d17c8adbf0db51c970f31f8013c2a4dac2e79ea48f6cd22a1fdd  docs/evidence/mainline-boot-splash/current-baseline-2026-10-20/board/frame-1426.jpg
+DATA  069973fa256f5b48a1cdd2463141fe9f887ec03a11d83b37fd8504da060cdfc5  docs/evidence/mainline-boot-splash/current-baseline-2026-10-20/board/frame-1431.jpg
+DATA  3fd83b6c03c5b15f3980e793acca5072d97fb20a537a4e115aa10ea5fb3f1875  docs/evidence/mainline-boot-splash/current-baseline-2026-10-20/board/frame-1436.jpg
+DATA  6407b53f691f0fa16e814fbbc1eb0e6561b5427505442e58f1758446976716e7  docs/evidence/mainline-boot-splash/current-baseline-2026-10-20/board/frames.jsonl.gz
 ```
 
 `group:` rows stand for a directory whose members are enumerated by
@@ -3804,3 +3811,17 @@ Private raw traces are not committed. Provenance, commands, hashes and limits:
 | `docs/evidence/landscape-drm-holder/board/trial-a/traced/functions.jsonl.gz` | 23451 | DATA | `e60a160e2c036c989b8e3082cdf47e4d32d02060dd2a25982b63ed627bf5e858` |
 | `docs/evidence/landscape-drm-holder/board/trial-a/traced-retry/events.jsonl.gz` | 1850954 | DATA | `9f7545361103f1308392285dc905b982f98a6d7b2c0696ac20167b6d5f1c5413` |
 | `docs/evidence/landscape-drm-holder/board/trial-a/traced-retry/functions.jsonl.gz` | 23198 | DATA | `40ac701d2440a95cd9d4e2c0b95bb7024ef16fe51c28b4e111b984641e0d59ca` |
+
+
+## Current splash baseline film, 2026-10-20
+
+Diagnostic film, raw camera JPEG samples and deterministic gzip of numeric frame metadata.
+Provenance and limitations: `docs/evidence/mainline-boot-splash/current-baseline-2026-10-20/board/README.md`.
+
+| Path | Bytes | Class | SHA-256 |
+| --- | ---: | --- | --- |
+| `docs/evidence/mainline-boot-splash/current-baseline-2026-10-20/board/baseline.mp4` | 334583 | DATA | `3cb362a67335b160be5a16e7dca5a8be56e2efe52bbfcf025e4d9713781eb91d` |
+| `docs/evidence/mainline-boot-splash/current-baseline-2026-10-20/board/frame-1426.jpg` | 37837 | DATA | `47c4afcb52a2d17c8adbf0db51c970f31f8013c2a4dac2e79ea48f6cd22a1fdd` |
+| `docs/evidence/mainline-boot-splash/current-baseline-2026-10-20/board/frame-1431.jpg` | 37282 | DATA | `069973fa256f5b48a1cdd2463141fe9f887ec03a11d83b37fd8504da060cdfc5` |
+| `docs/evidence/mainline-boot-splash/current-baseline-2026-10-20/board/frame-1436.jpg` | 37689 | DATA | `3fd83b6c03c5b15f3980e793acca5072d97fb20a537a4e115aa10ea5fb3f1875` |
+| `docs/evidence/mainline-boot-splash/current-baseline-2026-10-20/board/frames.jsonl.gz` | 176478 | DATA | `6407b53f691f0fa16e814fbbc1eb0e6561b5427505442e58f1758446976716e7` |

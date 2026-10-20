@@ -1,0 +1,170 @@
+{
+  "method": "All120 persistent-SSH intervals constrain an affine map from hostCLOCK_MONOTONIC to boardCLOCK_MONOTONIC_RAW; separate bracketed kmsg writes constrain printk-minus-raw offset. No network-symmetry assumption, no outlier removal or relaxed constraints.",
+  "source_grounding": "Configured kernel timer-riscv.c reads get_cycles64() for both clocksource and sched_clock, registered with same riscv_timebase. Clocksource active riscv_clocksource. Kernel/syscall/Python monotonic samples agree within sampling intervals. The display enable-phase log does not establish the first visible presentation.",
+  "affine_vertices": [
+    [
+      4.9669124198110457e-05,
+      -0.0018854424568406608
+    ],
+    [
+      3.116956854863231e-05,
+      0.003116077123752206
+    ],
+    [
+      4.444275756040243e-05,
+      -0.001823647188566244
+    ],
+    [
+      3.648770611187332e-05,
+      0.0030260724350303137
+    ],
+    [
+      3.6841888035027405e-05,
+      0.0030009211656185186
+    ],
+    [
+      3.741564803485878e-05,
+      -0.0017046865565252594
+    ],
+    [
+      7.602033767267008e-05,
+      -0.0019121227785520196
+    ],
+    [
+      3.7408465569210264e-05,
+      0.002953579166845841
+    ],
+    [
+      1.9853276344360555e-06,
+      0.0031159861862412024
+    ],
+    [
+      3.3355227748817786e-05,
+      -0.001261325364386807
+    ]
+  ],
+  "reference_host_ns": 266585803056136,
+  "reference_board_raw_ns": 86066767911,
+  "slope_ppm_bounds": [
+    1.9853276344360555,
+    76.02033767267008
+  ],
+  "printk_minus_raw_s_bounds": [
+    0.003444090349996112,
+    0.003948485000026063
+  ],
+  "sample_count": 120,
+  "sample_span_s": 142.02337138,
+  "minimum_ssh_roundtrip_ms": 4.661294,
+  "conditional_frame_times": [
+    {
+      "frame": 510,
+      "camera_elapsed_s": 17.000337,
+      "conditional_kernel_time_low_s": -0.2621016248288807,
+      "conditional_kernel_time_high_s": -0.2501781349170938
+    },
+    {
+      "frame": 511,
+      "camera_elapsed_s": 17.032334,
+      "conditional_kernel_time_low_s": -0.2301021924061299,
+      "conditional_kernel_time_high_s": -0.2181810713925654
+    },
+    {
+      "frame": 512,
+      "camera_elapsed_s": 17.068308,
+      "conditional_kernel_time_low_s": -0.19412545765050843,
+      "conditional_kernel_time_high_s": -0.18220699997238057
+    },
+    {
+      "frame": 516,
+      "camera_elapsed_s": 17.200342,
+      "conditional_kernel_time_low_s": -0.062081420381241134,
+      "conditional_kernel_time_high_s": -0.05017273784163592
+    },
+    {
+      "frame": 523,
+      "camera_elapsed_s": 17.432348,
+      "conditional_kernel_time_low_s": 0.16994221679322302,
+      "conditional_kernel_time_high_s": 0.18183372276628404
+    },
+    {
+      "frame": 588,
+      "camera_elapsed_s": 19.600388,
+      "conditional_kernel_time_low_s": 2.3381470319261184,
+      "conditional_kernel_time_high_s": 2.349878027036012
+    },
+    {
+      "frame": 1360,
+      "camera_elapsed_s": 45.3329,
+      "conditional_kernel_time_low_s": 28.07261522617752,
+      "conditional_kernel_time_high_s": 28.08244111450319
+    },
+    {
+      "frame": 1430,
+      "camera_elapsed_s": 47.664953,
+      "conditional_kernel_time_low_s": 30.40484550963405,
+      "conditional_kernel_time_high_s": 30.41449874439246
+    },
+    {
+      "frame": 1431,
+      "camera_elapsed_s": 47.700946,
+      "conditional_kernel_time_low_s": 30.440841245834065,
+      "conditional_kernel_time_high_s": 30.450491815850363
+    },
+    {
+      "frame": 1432,
+      "camera_elapsed_s": 47.732953,
+      "conditional_kernel_time_low_s": 30.472850679017007,
+      "conditional_kernel_time_high_s": 30.482498879394733
+    },
+    {
+      "frame": 1453,
+      "camera_elapsed_s": 48.432961,
+      "conditional_kernel_time_low_s": 31.172911893861546,
+      "conditional_kernel_time_high_s": 31.182508269139966
+    },
+    {
+      "frame": 1461,
+      "camera_elapsed_s": 48.700967,
+      "conditional_kernel_time_low_s": 31.44093826776816,
+      "conditional_kernel_time_high_s": 31.450514801219683
+    },
+    {
+      "frame": 1502,
+      "camera_elapsed_s": 50.064995,
+      "conditional_kernel_time_low_s": 32.805069961637315,
+      "conditional_kernel_time_high_s": 32.81454550926216
+    },
+    {
+      "frame": 1794,
+      "camera_elapsed_s": 59.801187,
+      "conditional_kernel_time_low_s": 42.5420021102408,
+      "conditional_kernel_time_high_s": 42.55075683879319
+    },
+    {
+      "frame": 1815,
+      "camera_elapsed_s": 60.501202,
+      "conditional_kernel_time_low_s": 43.24207032561748,
+      "conditional_kernel_time_high_s": 43.25077322855232
+    },
+    {
+      "frame": 1983,
+      "camera_elapsed_s": 66.101311,
+      "conditional_kernel_time_low_s": 48.84260504779466,
+      "conditional_kernel_time_high_s": 48.85089334660347
+    },
+    {
+      "frame": 3151,
+      "camera_elapsed_s": 105.034077,
+      "conditional_kernel_time_low_s": 87.77831235217154,
+      "conditional_kernel_time_high_s": 87.78378663399596
+    }
+  ],
+  "kernel_video_alignment_qualified": false,
+  "limits": [
+    "This is a conditional software-clock map, not optical validation of the UVC SOE flag/exposure timing.",
+    "Affine extrapolation before firstSSH and early-kernel clock origin have not been physically qualified to\u00b10.1s. Negative times are retained, not clipped or used to assign a bootloader/kernel cause.",
+    "Preserving VO to first plane update is an enable-phase message, not first presentation; its timestamp must not anchor film visible takeover.",
+    "Current defect reproduced; removal and final filmed default-image proof remain open."
+  ]
+}

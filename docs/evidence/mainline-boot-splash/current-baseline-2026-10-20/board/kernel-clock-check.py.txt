@@ -1,0 +1,15 @@
+from pathlib import Path
+import time,json,os,ctypes,platform,subprocess
+assert platform.machine()=='riscv64'
+class TS(ctypes.Structure):_fields_=[('sec',ctypes.c_long),('nsec',ctypes.c_long)]
+lib=ctypes.CDLL(None,use_errno=True)
+def syscall_clock(clock):
+ v=TS();assert lib.syscall(113,clock,ctypes.byref(v))==0
+ return v.sec*1000000000+v.nsec
+samples=[]
+for i in range(8):
+ mono=time.monotonic_ns();direct=syscall_clock(1);raw=time.clock_gettime_ns(time.CLOCK_MONOTONIC_RAW);before=time.monotonic_ns()
+ message=f'<6>K230_BOOT_CLOCK_PANE23_A index={i} mono_before_ns={before} direct_ns={direct} raw_ns={raw}\n'
+ with open('/dev/kmsg','w') as f:f.write(message);f.flush()
+ after=time.monotonic_ns();samples.append({'index':i,'board_mono_before_ns':before,'board_mono_after_ns':after,'direct_syscall_mono_ns':direct,'python_mono_ns':mono,'board_raw_ns':raw});time.sleep(.5)
+print(json.dumps({'boot_id':Path('/proc/sys/kernel/random/boot_id').read_text().strip(),'uptime':Path('/proc/uptime').read_text().split()[0],'clocksource':Path('/sys/devices/system/clocksource/clocksource0/current_clocksource').read_text().strip(),'samples':samples,'dmesg_markers':[x for x in subprocess.check_output(['dmesg','--time-format=raw'],text=True).splitlines() if 'K230_BOOT_CLOCK_PANE23_A ' in x],'diagnostic_mutation':'8 uniquely named kernel log messages only; no boot/config/tracing changes'}))

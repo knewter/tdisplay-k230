@@ -1,0 +1,62 @@
+{
+  "source_revision": "71a71df925e8b9caea4cbaec1ef59686b3324f40",
+  "recorder_source_sha256": "0a882c49a3c905f11e2fb770f20e8329418985479d850be0a9e036791fe1508e",
+  "recorder_binary_sha256": "796c108dbfe8f8621f8f9915d2e3543e1faa7358156d21bd266cf8dc3dcfea3c",
+  "recorder_command": [
+    "/home/jadams/tmp/codex-claude-handoff-20261019/3/capture-boot-camera",
+    "/dev/video0",
+    "/home/jadams/tmp/codex-claude-handoff-20261019/3/baseline-boot-20261020b/camera",
+    "180",
+    "512",
+    "6000"
+  ],
+  "public_proxy_sha256": "3cb362a67335b160be5a16e7dca5a8be56e2efe52bbfcf025e4d9713781eb91d",
+  "public_proxy_bytes": 334583,
+  "public_proxy_ffprobe": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "width": 640,
+        "height": 480,
+        "duration": "120.000000",
+        "nb_read_frames": "3600"
+      }
+    ]
+  },
+  "public_proxy_command": [
+    "ffmpeg",
+    "-hide_banner",
+    "-loglevel",
+    "warning",
+    "-framerate",
+    "30",
+    "-f",
+    "mjpeg",
+    "-i",
+    "/home/jadams/tmp/codex-claude-handoff-20261019/3/baseline-boot-20261020b/camera/frames.mjpeg",
+    "-frames:v",
+    "3600",
+    "-an",
+    "-vf",
+    "scale=640:480:out_range=tv",
+    "-color_range",
+    "tv",
+    "-c:v",
+    "libx264",
+    "-preset",
+    "slow",
+    "-crf",
+    "26",
+    "-pix_fmt",
+    "yuv420p",
+    "-threads",
+    "4",
+    "-fps_mode",
+    "passthrough",
+    "-movflags",
+    "+faststart",
+    "/home/jadams/tmp/codex-claude-handoff-20261019/3/baseline-boot-20261020b/baseline-public.mp4"
+  ],
+  "limits": "First3600 original frames preserved in order; lossy/resized nominal30fps viewing copy. Raw camera timestamps are in full5393-frame metadata; image comparisons use original JPEG bytes."
+}

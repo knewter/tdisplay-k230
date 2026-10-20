@@ -1,0 +1,51 @@
+{
+  "checked_at": "2026-10-20T23:49:41.888727+00:00",
+  "results": [
+    {
+      "command": [
+        "v4l2-ctl",
+        "-d",
+        "/dev/video0",
+        "--set-fmt-video=width=640,height=480,pixelformat=YUYV",
+        "--set-parm=30"
+      ],
+      "exit_code": 0,
+      "stdout": "Frame rate set to 30.000 fps\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "v4l2-ctl",
+        "-d",
+        "/dev/video0",
+        "--set-ctrl=auto_exposure=3"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "v4l2-ctl",
+        "-d",
+        "/dev/video0",
+        "--set-ctrl=exposure_dynamic_framerate=1,focus_automatic_continuous=1,white_balance_automatic=1"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    }
+  ],
+  "readback": "white_balance_automatic: 1\nauto_exposure: 3 (Aperture Priority Mode)\nexposure_dynamic_framerate: 1\nfocus_automatic_continuous: 1\nFormat Video Capture:\n\tWidth/Height      : 640/480\n\tPixel Format      : 'YUYV' (YUYV 4:2:2)\n\tField             : None\n\tBytes per Line    : 1280\n\tSize Image        : 614400\n\tColorspace        : sRGB\n\tTransfer Function : Rec. 709\n\tYCbCr/HSV Encoding: ITU-R 601\n\tQuantization      : Default (maps to Limited Range)\n\tFlags             : \nStreaming Parameters Video Capture:\n\tCapabilities     : timeperframe\n\tFrames per second: 30.000 (30/1)\n\tRead buffers     : 0\n",
+  "restored_active_settings": {
+    "width": 640,
+    "height": 480,
+    "pixel_format": "YUYV",
+    "fps": 30,
+    "auto_exposure": 3,
+    "exposure_dynamic_framerate": 1,
+    "focus_automatic_continuous": 1,
+    "white_balance_automatic": 1
+  },
+  "limits": "Inactive manual-focus/exposure/WB values are controlled by the restored automatic modes; no claim of unchanged inactive cached values."
+}
