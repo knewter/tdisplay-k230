@@ -8,6 +8,6 @@ test_overlap_boundaries (__main__.Fixtures.test_overlap_boundaries) ... ok
 test_strict_hash_schema_loss_clock_counts (__main__.Fixtures.test_strict_hash_schema_loss_clock_counts) ... ok
 
 ----------------------------------------------------------------------
-Ran 8 tests in 0.005s
+Ran 8 tests in 0.006s
 
 OK

@@ -293,13 +293,30 @@ def report(directory):
     # The base report qualifies runtime, 864 joins, syscall/scheduler ordering,
     # paired workload identities and restoration before attaching holder data.
     result=base.report(directory);result['schema']=SCHEMA
+    smoke=json.loads((directory/'qualified-smoke.json').read_text())
+    if smoke.get('tool_sha256')!=trial.get('tool_sha256') or smoke.get('holder_schema')!=SCHEMA:
+        raise Error('capture and qualified smoke tool identities differ')
+    result['report_tool_sha256']=log.digest(Path(__file__))
     for run in result['runs']:
+        if run['control'].get('tool_sha256')!=trial.get('tool_sha256'):
+            raise Error('paired capture tool identities differ')
         if run['name']=='untraced':continue
         events,functions,meta=checked_events(directory/run['name'])
+        if meta.get('tool_sha256')!=trial.get('tool_sha256') or meta.get('base_tool_sha256')!=smoke.get('base_tool_sha256'):
+            raise Error('trace exporter identity differs from qualified capture source')
         held,rejected=intervals(functions)
         if not held:raise Error('instrumented workload has no qualified poll critical sections')
         c=run['correlation'];c.update(poll_held_intervals=held,rejected_poll_intervals=rejected,
             held_interval_definition='detect_connector_status entry to drm_modeset_drop_locks entry in the same complete output_poll_execute/probe/LT9611 worker path; conservative connection_mutex-held interval grounded in pinned kernel source')
+        _,_,samples=base.benchmark(directory/run['name']/'capture')
+        calls,switches,_=base.intervals(events,meta['pid'],min(s['start_ns'] for s in samples),max(s['end_ns'] for s in samples))
+        drm_fds={int(fd) for fd,label in run['control']['fd_labels'].items() if label=='DRM-card'}
+        if not drm_fds:raise Error('capture lacks observed DRM descriptor labels')
+        c['long_drm_calls']=[dict(call,poll_lock_overlap=overlap(held,call),
+            off_cpu=[dict(off,poll_lock_overlap=overlap(held,off)) for off in switches
+                     if off['start_ns']<call['end_ns'] and off['end_ns']>call['start_ns']])
+            for call in calls if call['nr']==29 and call.get('fd') in drm_fds and call['wall_ms']>100]
+        c['long_drm_calls_scope']='All complete >100ms DRM-fd ioctls in the trace, including input-idle periods; no arbitrary ioctl payload exported.'
         for sample in c['late_samples']:
             sample['poll_lock_overlap']=overlap(held,sample)
             for call in sample['syscalls']:call['poll_lock_overlap']=overlap(held,call)

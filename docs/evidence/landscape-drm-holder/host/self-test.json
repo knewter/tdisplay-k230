@@ -1,8 +1,9 @@
 {
-  "checked_at": "2026-10-20T16:04:15.558116+00:00",
+  "checked_at": "2026-10-20T16:15:46.167163+00:00",
   "command": "python3 tools/landscape-drm-holder.py --self-test",
   "exit_code": 0,
   "test_methods": 8,
-  "tool_sha256": "49ef1e5b7de367527a1ab8380a4b8fb9413547dfac9e76e684eb829ddfc19c98",
-  "limits": "Host parser, interval, privacy, clock/loss/count and cleanup-ownership fixtures; no hardware proof."
+  "tool_sha256": "6c12fc6b5179e1ff35415076f101687e4878bb846761c11df162f74a2917346f",
+  "limits": "Host parser, interval, privacy, clock/loss/count and cleanup-ownership fixtures; no hardware proof.",
+  "scope": "Host report adds all long DRM ioctls, including idle intervals. Board helper remains capture source9afa SHA49ef; capture code and all kernel controls are unchanged."
 }
