@@ -1,0 +1,13 @@
+{
+  "checked_at": "2026-10-20T16:32:42.697897+00:00",
+  "url": "https://knewter.github.io/tdisplay-k230/work/",
+  "http_status": 200,
+  "expected_revision": "7bde62b31f21dbb20f79516cca6b171cb76d72b2",
+  "published_revision": "7bde62b31f21dbb20f79516cca6b171cb76d72b2",
+  "exact_revision_present": true,
+  "ci_run": "https://github.com/knewter/tdisplay-k230/actions/runs/39457713772",
+  "ci_conclusion": "success",
+  "change": "the-landscape-drm-lock-holder-has-a-bounded-poll-trace",
+  "phase": "evidence",
+  "scope": "Diagnostic tooling/evidence only; no image/default change or physical/native acceptance."
+}

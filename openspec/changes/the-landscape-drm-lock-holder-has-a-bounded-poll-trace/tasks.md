@@ -11,4 +11,4 @@
 
 ## 3. Publication
 
-- [ ] 3.1 Validate, land and push evidence; verify CI success and exact published workboard revision. Proof: `openspec validate the-landscape-drm-lock-holder-has-a-bounded-poll-trace --strict`, `python3 tools/blob-scan.py --no-vendor`, and committed CI/HTTP revision evidence. Archive only after all tasks pass.
+- [x] 3.1 Validate, land and push evidence; verify CI success and exact published workboard revision. Proof: `openspec validate the-landscape-drm-lock-holder-has-a-bounded-poll-trace --strict`, `python3 tools/blob-scan.py --no-vendor`, and committed CI/HTTP revision evidence. Archive only after all tasks pass.

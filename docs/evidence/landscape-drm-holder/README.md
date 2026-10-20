@@ -151,3 +151,16 @@ HDMI hotplug update may reread EDID within detection. This probe does **not**
 measure the duration of the individual status-register read, EDID read, or I2C
 transaction. No hotplug fix, polling-disable comparison, optical smoothness,
 native input, portrait result, reboot or flash is claimed.
+
+## Publication
+
+Evidence commit `7bde62b31f21dbb20f79516cca6b171cb76d72b2` passed
+[CI39457713772](https://github.com/knewter/tdisplay-k230/actions/runs/39457713772).
+At **2026-10-20T16:32:42Z**, the public workboard returned HTTP200 and its
+`data-revision` exactly matched that commit. `publication.json` retains the
+URL, timestamp and comparison. All six diagnostic tasks are complete;
+there are no delta specs or accepted capability changes to sync. The
+original portrait change remains separate with nine hardware/profile gates
+open; this diagnostic does not complete them. No image deployment is
+needed for these tooling/evidence changes. A performance fix and its
+hotplug/native/optical regression proof remain future work.
