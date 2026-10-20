@@ -1,7 +1,7 @@
 { lib, symlinkJoin, writeShellScriptBin, sway, swayUnwrapped, dbus, coreutils, bash, librsvg, wlroots_0_20, quarterTurnTrial ? false }:
 let
   roundedWlroots = wlroots_0_20.overrideAttrs (old: {
-    patches = (old.patches or [ ]) ++ [ ./patches/wlroots-k230-rounded-clip.patch ]
+    patches = (old.patches or [ ]) ++ [ ./patches/wlroots-k230-rounded-clip.patch ./patches/wlroots-k230-opaque-interior.patch ]
       ++ lib.optionals quarterTurnTrial [
         ./patches/wlroots-k230-quarter-turn.patch
         ./patches/wlroots-k230-output-turn.patch
@@ -11,6 +11,7 @@ let
     postPatch = (old.postPatch or "") + ''
       cp ${./card-shell/rounded-clip.h} include/render/k230_rounded_clip.h
       cp ${./card-shell/rgb565-blit.h} include/render/rgb565-blit.h
+      cp ${./card-shell/rgb565-pixels.h} include/render/rgb565-pixels.h
     '' + lib.optionalString quarterTurnTrial ''
       cp ${./card-shell/quarter-turn.h} include/render/k230_quarter_turn.h
       cp ${./card-shell/output-cache.h} include/render/k230_output_cache.h
@@ -44,6 +45,8 @@ let
       cp ${./card-shell/icon.h} include/sway/card_shell_icon.h
       cp ${./card-shell/scaled-cache.c} sway/card_shell_scaled_cache.c
       cp ${./card-shell/scaled-cache.h} include/sway/card_shell_scaled_cache.h
+      cp ${./card-shell/opaque-interior.h} include/sway/card_shell_opaque_interior.h
+      cp ${./card-shell/rgb565-pixels.h} include/sway/rgb565-pixels.h
       cp ${./card-shell-policy/card-shell-policy.c} sway/card-shell-policy.c
       cp ${./card-shell-policy/card-shell-policy.h} include/sway/card-shell-policy.h
       cp ${./card-keyboard-policy/keyboard-gesture.c} sway/card-keyboard-gesture.c

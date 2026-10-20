@@ -1,0 +1,13 @@
+K230_INTERIOR_SETUP cpu_ns=2303184 auxiliary_bytes=628672 total_pixel_bytes=1881504
+K230_INTERIOR_BENCH memory=heap geometry=0 candidate=0 round=0 frames=12 cpu_ns=21340074 wall_ns=22346706 destination_stride=2464 pixels_equal=1
+K230_INTERIOR_BENCH memory=heap geometry=0 candidate=1 round=0 frames=12 cpu_ns=3628851 wall_ns=4080475 destination_stride=2464 pixels_equal=1
+K230_INTERIOR_BENCH memory=heap geometry=0 candidate=1 round=1 frames=12 cpu_ns=3545889 wall_ns=3886704 destination_stride=2464 pixels_equal=1
+K230_INTERIOR_BENCH memory=heap geometry=0 candidate=0 round=1 frames=12 cpu_ns=21330590 wall_ns=22279449 destination_stride=2464 pixels_equal=1
+K230_INTERIOR_BENCH memory=heap geometry=0 candidate=0 round=2 frames=12 cpu_ns=21437590 wall_ns=23369852 destination_stride=2464 pixels_equal=1
+K230_INTERIOR_BENCH memory=heap geometry=0 candidate=1 round=2 frames=12 cpu_ns=3424704 wall_ns=3456498 destination_stride=2464 pixels_equal=1
+K230_INTERIOR_BENCH memory=heap geometry=1 candidate=0 round=0 frames=12 cpu_ns=10873889 wall_ns=11816255 destination_stride=2464 pixels_equal=1
+K230_INTERIOR_BENCH memory=heap geometry=1 candidate=1 round=0 frames=12 cpu_ns=3324074 wall_ns=3482979 destination_stride=2464 pixels_equal=1
+K230_INTERIOR_BENCH memory=heap geometry=1 candidate=1 round=1 frames=12 cpu_ns=3388925 wall_ns=3977775 destination_stride=2464 pixels_equal=1
+K230_INTERIOR_BENCH memory=heap geometry=1 candidate=0 round=1 frames=12 cpu_ns=10805778 wall_ns=11547339 destination_stride=2464 pixels_equal=1
+K230_INTERIOR_BENCH memory=heap geometry=1 candidate=0 round=2 frames=12 cpu_ns=11001371 wall_ns=12215240 destination_stride=2464 pixels_equal=1
+K230_INTERIOR_BENCH memory=heap geometry=1 candidate=1 round=2 frames=12 cpu_ns=3451406 wall_ns=4075622 destination_stride=2464 pixels_equal=1

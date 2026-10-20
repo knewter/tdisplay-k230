@@ -18,27 +18,6 @@
  };
  
  struct wlr_pixman_buffer {
---- a/render/pixman/renderer.c
-+++ b/render/pixman/renderer.c
-@@ -290,6 +290,7 @@
- 	wlr_drm_format_set_finish(&renderer->drm_formats);
- 
- 	k230_round_cache_finish(&renderer->rounded_cache);
-+	k230_turn_finish(&renderer->turn_scratch);
- 	free(renderer);
- }
- 
-@@ -326,6 +327,10 @@
- 		return NULL;
- 	}
- 
-+	const char *quarter_turn = getenv("WLR_PIXMAN_QUARTER_TURN");
-+	renderer->quarter_turn = quarter_turn && strcmp(quarter_turn, "1") == 0;
-+	const char *trace_draw = getenv("WLR_PIXMAN_DRAW_TRACE");
-+	renderer->trace_draw = trace_draw && strcmp(trace_draw, "1") == 0;
- 	wlr_log(WLR_INFO, "Creating pixman renderer");
- 	wlr_renderer_init(&renderer->wlr_renderer, &renderer_impl, WLR_BUFFER_CAP_DATA_PTR);
- 	renderer->wlr_renderer.features.output_color_transform = false;
 --- a/render/pixman/pass.c
 +++ b/render/pixman/pass.c
 @@ -1,5 +1,8 @@
@@ -63,7 +42,7 @@
  static void render_pass_add_texture(struct wlr_render_pass *wlr_pass,
  		const struct wlr_render_texture_options *options) {
  	struct wlr_pixman_render_pass *pass = get_render_pass(wlr_pass);
-@@ -52,6 +61,14 @@
+@@ -53,6 +62,14 @@
  		return;
  	}
  
@@ -79,9 +58,10 @@
  	pixman_image_set_clip_region32(buffer->image, options->clip);
  
 @@ -67,6 +84,46 @@
+ 
  	struct wlr_box dst_box;
  	wlr_render_texture_options_get_dst_box(options, &dst_box);
- 
++
 +	/* Convert the quarter turn into a fresh tiled copy, then let Pixman's
 +	 * ordinary scaler/blender handle crop, damage and rounded clipping.
 +	 * The stack texture owns no client buffer and cannot escape this draw.
@@ -121,11 +101,10 @@
 +				ordinary.src_box.width, ordinary.src_box.height};
 +		}
 +	}
-+
+ 
  	pixman_image_t *mask = NULL;
  	float alpha = wlr_render_texture_options_get_alpha(options);
- 	if (alpha != 1) {
-@@ -194,8 +251,17 @@
+@@ -196,8 +253,17 @@
  
  	pixman_image_set_clip_region32(buffer->image, NULL);
  
@@ -145,3 +124,24 @@
  	}
  
  	if (mask != NULL) {
+--- a/render/pixman/renderer.c
++++ b/render/pixman/renderer.c
+@@ -290,6 +290,7 @@
+ 	wlr_drm_format_set_finish(&renderer->drm_formats);
+ 
+ 	k230_round_cache_finish(&renderer->rounded_cache);
++	k230_turn_finish(&renderer->turn_scratch);
+ 	free(renderer);
+ }
+ 
+@@ -326,6 +327,10 @@
+ 		return NULL;
+ 	}
+ 
++	const char *quarter_turn = getenv("WLR_PIXMAN_QUARTER_TURN");
++	renderer->quarter_turn = quarter_turn && strcmp(quarter_turn, "1") == 0;
++	const char *trace_draw = getenv("WLR_PIXMAN_DRAW_TRACE");
++	renderer->trace_draw = trace_draw && strcmp(trace_draw, "1") == 0;
+ 	wlr_log(WLR_INFO, "Creating pixman renderer");
+ 	wlr_renderer_init(&renderer->wlr_renderer, &renderer_impl, WLR_BUFFER_CAP_DATA_PTR);
+ 	renderer->wlr_renderer.features.output_color_transform = false;

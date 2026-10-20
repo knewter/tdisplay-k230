@@ -67,5 +67,18 @@ class PanelPaint(unittest.TestCase):
                                env={**os.environ, 'UBSAN_OPTIONS': 'halt_on_error=1'})
 
 
+    def test_opaque_interiors_keep_precise_corners_and_budget(self):
+        flags = shlex.split(subprocess.check_output(
+            ['pkg-config', '--cflags', '--libs', 'pixman-1'], text=True))
+        with tempfile.TemporaryDirectory(prefix='opaque-interior-') as directory:
+            exe = Path(directory) / 'pixels'
+            subprocess.run([os.environ.get('CC', 'cc'), '-std=c11', '-O2',
+                            '-Wall', '-Wextra', '-Werror', '-fsanitize=undefined',
+                            '-I' + str(ROOT / 'nix/card-shell'),
+                            str(ROOT / 'tests/panel_opaque_interior.c'), '-o', str(exe), *flags], check=True)
+            subprocess.run([str(exe)], check=True,
+                           env={**os.environ, 'UBSAN_OPTIONS': 'halt_on_error=1'})
+
+
 if __name__ == '__main__':
     unittest.main()

@@ -1,0 +1,47 @@
+#define _POSIX_C_SOURCE 200809L
+#include <assert.h>
+#include <stdio.h>
+#include <time.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <sys/mman.h>
+#include <sys/ioctl.h>
+#include <drm.h>
+#include <drm_mode.h>
+#include "opaque-interior.h"
+#include "rounded-clip.h"
+static uint64_t ns(clockid_t clock){struct timespec t;assert(clock_gettime(clock,&t)==0);return (uint64_t)t.tv_sec*1000000000+t.tv_nsec;}
+struct registration{pixman_image_t*image;};
+static bool registration(void*ctx,void*p,size_t stride,int w,int h){struct registration*r=ctx;r->image=pixman_image_create_bits_no_clear(PIXMAN_r5g6b5,w,h,p,(int)stride);return r->image!=NULL;}
+static bool __attribute__((noinline)) run(struct k230_round_cache*c,pixman_image_t*d,pixman_image_t*s,pixman_image_t*aux,int geometry,bool candidate){
+ struct k230_round_box box=geometry?(struct k230_round_box){0,132,190,376}:(struct k230_round_box){200,132,833,376};
+ struct k230_round_box round=geometry?(struct k230_round_box){-643,132,833,376}:box;
+ if(candidate)return k230_round_composite_unscaled_with_interior(c,PIXMAN_OP_OVER,s,NULL,d,geometry?643:0,0,box,round,24,65535,NULL,aux,NULL);
+ return k230_round_composite_unscaled(c,PIXMAN_OP_OVER,s,NULL,d,geometry?643:0,0,box,round,24,65535,NULL);
+}
+int main(int argc,char**argv){
+ bool dumb=argc==2&&!strcmp(argv[1],"--dumb");int fd=dumb?open("/dev/dri/card0",O_RDWR|O_CLOEXEC):-1;assert(!dumb||fd>=0);
+ int w=1232,h=568;pixman_image_t*src=pixman_image_create_bits(PIXMAN_x8r8g8b8,833,376,NULL,0);assert(src);uint32_t*p=pixman_image_get_data(src);int ss=pixman_image_get_stride(src)/4;
+ for(int y=0;y<376;y++)for(int x=0;x<833;x++)p[(size_t)y*ss+x]=0xff000000u|((unsigned)(x*109123+y*3911)&0xffffff);
+ struct card_opaque_interior aux={0};struct registration reg={0};size_t used=(size_t)ss*4*376;uint64_t setup=ns(CLOCK_PROCESS_CPUTIME_ID);
+ assert(!card_opaque_interior_prepare(&aux,p,(size_t)ss*4,833,376,&used,8u*1024u*1024u,registration,&reg));
+ assert(card_opaque_interior_prepare(&aux,p,(size_t)ss*4,833,376,&used,8u*1024u*1024u,registration,&reg));setup=ns(CLOCK_PROCESS_CPUTIME_ID)-setup;
+ printf("K230_INTERIOR_SETUP cpu_ns=%llu auxiliary_bytes=%zu total_pixel_bytes=%zu\n",(unsigned long long)setup,aux.bytes,used);
+ struct drm_mode_create_dumb create={.width=w,.height=h,.bpp=16};void*mapped=NULL;pixman_image_t*dst;
+ if(dumb){assert(ioctl(fd,DRM_IOCTL_MODE_CREATE_DUMB,&create)==0);struct drm_mode_map_dumb map={.handle=create.handle};assert(ioctl(fd,DRM_IOCTL_MODE_MAP_DUMB,&map)==0);mapped=mmap(NULL,create.size,PROT_READ|PROT_WRITE,MAP_SHARED,fd,(off_t)map.offset);assert(mapped!=MAP_FAILED);dst=pixman_image_create_bits_no_clear(PIXMAN_r5g6b5,w,h,mapped,(int)create.pitch);}
+ else dst=pixman_image_create_bits(PIXMAN_r5g6b5,w,h,NULL,0);
+ assert(dst);size_t bytes=(size_t)pixman_image_get_stride(dst)*h;uint8_t*ref=malloc(bytes);assert(ref);
+ for(int geometry=0;geometry<2;geometry++){
+  struct k230_round_cache caches[2]={0};memset(pixman_image_get_data(dst),0x5a,bytes);assert(run(&caches[0],dst,src,reg.image,geometry,false));memcpy(ref,pixman_image_get_data(dst),bytes);
+  memset(pixman_image_get_data(dst),0x5a,bytes);assert(run(&caches[1],dst,src,reg.image,geometry,true));assert(memcmp(ref,pixman_image_get_data(dst),bytes)==0);
+  for(int round=0;round<3;round++)for(int which=0;which<2;which++){
+   bool candidate=(round+which)%2;assert(run(&caches[candidate],dst,src,reg.image,geometry,candidate));uint64_t wall=ns(CLOCK_MONOTONIC),cpu=ns(CLOCK_PROCESS_CPUTIME_ID);
+   for(int frame=0;frame<12;frame++)assert(run(&caches[candidate],dst,src,reg.image,geometry,candidate));
+   cpu=ns(CLOCK_PROCESS_CPUTIME_ID)-cpu;wall=ns(CLOCK_MONOTONIC)-wall;
+   printf("K230_INTERIOR_BENCH memory=%s geometry=%d candidate=%d round=%d frames=12 cpu_ns=%llu wall_ns=%llu destination_stride=%d pixels_equal=1\n",dumb?"dumb":"heap",geometry,candidate,round,(unsigned long long)cpu,(unsigned long long)wall,pixman_image_get_stride(dst));fflush(stdout);
+  }
+  for(int i=0;i<2;i++)k230_round_cache_finish(&caches[i]);
+ }
+ free(ref);pixman_image_unref(dst);pixman_image_unref(src);pixman_image_unref(reg.image);card_opaque_interior_finish(&aux,&used);assert(used==(size_t)ss*4*376);
+ if(dumb){assert(munmap(mapped,create.size)==0);struct drm_mode_destroy_dumb destroy={.handle=create.handle};assert(ioctl(fd,DRM_IOCTL_MODE_DESTROY_DUMB,&destroy)==0);close(fd);}return 0;
+}

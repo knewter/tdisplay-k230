@@ -60,6 +60,8 @@ struct wlr_buffer *card_scaled_buffer_create(struct wlr_buffer *source, int widt
 struct wlr_buffer *card_scaled_buffer_create_format(struct wlr_buffer *source,
         int width, int height, bool fast, uint32_t format);
 size_t card_scaled_buffer_bytes(void);
+/* Optional, budgeted immutable interior; first use keeps the full-precision path. */
+bool card_scaled_buffer_prepare_rgb565_interior(struct wlr_buffer *buffer);
 void card_scaled_buffer_alpha_counts(uint64_t *opaque, uint64_t *alpha);
 void card_clip_buffer(struct wlr_scene_buffer *copy, struct wlr_scene_buffer *source, double scale,
 					  int x, int y, int parent_x, int parent_y, struct wlr_box clip);

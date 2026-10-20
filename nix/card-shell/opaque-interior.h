@@ -1,0 +1,73 @@
+/* Optional RGB565 interiors for one immutable, opaque XRGB8888 cache buffer.
+ * Full precision remains authoritative for every mask, scale and alpha draw.
+ * The registered image borrows pixels; finish it before freeing this owner.
+ * A failed registration callback must not retain the pixel pointer. */
+#ifndef CARD_OPAQUE_INTERIOR_H
+#define CARD_OPAQUE_INTERIOR_H
+#include <assert.h>
+#include <stdbool.h>
+#include <stdint.h>
+#include <stdlib.h>
+#include <string.h>
+#include "rgb565-pixels.h"
+#ifndef CARD_INTERIOR_CALLOC
+#define CARD_INTERIOR_CALLOC calloc
+#endif
+#ifndef CARD_INTERIOR_FREE
+#define CARD_INTERIOR_FREE free
+#endif
+struct card_opaque_interior {
+    uint8_t *pixels;
+    size_t stride, bytes;
+    unsigned uses;
+};
+typedef bool (*card_interior_register_fn)(void *context, void *pixels, size_t stride,
+    int width, int height);
+static inline bool card_opaque_interior_prepare(struct card_opaque_interior *owner,
+        const void *source, size_t source_stride, int width, int height,
+        size_t *used, size_t limit, card_interior_register_fn register_image, void *context) {
+    if (owner->pixels) return true;
+    if (!source || !register_image || width <= 0 || height <= 0 || width > 4096 || height > 4096 ||
+            source_stride < (size_t)width*4 || source_stride%4 || (uintptr_t)source%4 ||
+            source_stride > SIZE_MAX/(size_t)height) return false;
+    /* A single cache request gets no extra allocation/conversion. */
+    if (owner->uses < 2) owner->uses++;
+    if (owner->uses < 2) return false;
+    size_t stride = ((size_t)width*2+7)&~(size_t)7;
+    size_t bytes = stride*(size_t)height;
+    if (*used > limit || bytes > limit-*used) return false;
+    uint8_t *pixels = CARD_INTERIOR_CALLOC(1, bytes);
+    if (!pixels) return false;
+    for (int y = 0; y < height; y++) {
+        uint16_t *d = (uint16_t *)(pixels+(size_t)y*stride);
+        const uint32_t *s = (const uint32_t *)((const uint8_t *)source+(size_t)y*source_stride);
+        int x = 0;
+        for (; x+1 < width; x += 2) {
+            uint32_t packed = k230_rgb565_pair(s[x], s[x+1]);
+#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
+            memcpy(__builtin_assume_aligned(d+x, 4), &packed, sizeof(packed));
+#else
+            d[x] = (uint16_t)packed; d[x+1] = (uint16_t)(packed>>16);
+#endif
+        }
+        if (x < width) d[x] = k230_rgb565_pixel(s[x]);
+    }
+    if (!register_image(context, pixels, stride, width, height)) {
+        CARD_INTERIOR_FREE(pixels);
+        return false;
+    }
+    owner->pixels = pixels;
+    owner->stride = stride;
+    owner->bytes = bytes;
+    *used += bytes;
+    return true;
+}
+static inline void card_opaque_interior_finish(struct card_opaque_interior *owner, size_t *used) {
+    if (owner->pixels) {
+        assert(*used >= owner->bytes);
+        *used -= owner->bytes;
+        CARD_INTERIOR_FREE(owner->pixels);
+    }
+    *owner = (struct card_opaque_interior){0};
+}
+#endif

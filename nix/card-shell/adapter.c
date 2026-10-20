@@ -1182,6 +1182,8 @@ static bool scaled_mirror(struct mirror *m, struct wlr_scene_buffer *source, dou
 	} else {
 		shell.cache_hits++;
 	}
+    if (output->transform != WL_OUTPUT_TRANSFORM_NORMAL && output->render_format == DRM_FORMAT_RGB565)
+        card_scaled_buffer_prepare_rgb565_interior(m->scaled);
 	struct wlr_scene_buffer *copy = m->copy;
 	if (copy->buffer != m->scaled)
 		wlr_scene_buffer_set_buffer(copy, m->scaled);

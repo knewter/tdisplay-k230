@@ -1,6 +1,6 @@
 --- a/render/pixman/pass.c
 +++ b/render/pixman/pass.c
-@@ -91,6 +91,8 @@
+@@ -92,6 +92,8 @@
  	bool trace = renderer->trace_draw && renderer->trace_rows < 512;
  	uint64_t start_cpu = trace ? draw_cpu() : 0, copy_cpu = 0;
  	int original_transform = options->transform;
@@ -9,7 +9,7 @@
  	pixman_image_t *turned_image = NULL;
  	struct wlr_pixman_texture turned;
  	struct wlr_render_texture_options ordinary;
-@@ -165,6 +167,7 @@
+@@ -166,6 +168,7 @@
  	if (options->transform != WL_OUTPUT_TRANSFORM_NORMAL ||
  			src_box_transformed.width != dst_box.width ||
  			src_box_transformed.height != dst_box.height) {
@@ -17,19 +17,19 @@
  		// Cosinus/sinus values are exact integers for enum wl_output_transform entries
  		int tr_cos = 1, tr_sin = 0, tr_x = 0, tr_y = 0;
  		switch (options->transform) {
-@@ -283,10 +286,13 @@
+@@ -285,10 +288,13 @@
  	if (trace) {
  		renderer->trace_rows++;
  		wlr_log(WLR_INFO, "K230_PIXMAN_DRAW transform=%d path=%s copy_cpu_ns=%" PRIu64
 -			" total_cpu_ns=%" PRIu64 " dst_pixels=%" PRIu64 " scratch_bytes=%zu",
 +			" total_cpu_ns=%" PRIu64 " dst_pixels=%" PRIu64 " scratch_bytes=%zu "
 +			"src_format=0x%08x dst_format=0x%08x src_width=%d src_height=%d "
-+			"masked=%u sampled=%u op=%u",
++			"masked=%u sampled=%u op=%u interior=%u",
  			original_transform, turned_image ? "tiled" : "sampler", copy_cpu,
  			draw_cpu() - start_cpu, (uint64_t)dst_box.width * dst_box.height,
 -			renderer->turn_scratch.bytes);
 +			renderer->turn_scratch.bytes, source_format, pixman_image_get_format(pass_image(pass)),
-+			src_box.width, src_box.height, mask != NULL, sampled, (unsigned)op);
++			src_box.width, src_box.height, mask != NULL, sampled, (unsigned)op, (unsigned)interior_used);
  	}
  
  	if (mask != NULL) {

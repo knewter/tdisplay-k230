@@ -147,3 +147,28 @@ recreation, empty/outside damage, allocation/image failure and balanced frees.
 The full288 guarded copy cases,1152 affine comparisons and288 rounded cases
 remain required. Exact-source build, quiet paired timing, changing live clients
 and camera still gate persistence/archive; no host result substitutes for them.
+
+## Immutable opaque interiors without quantized edges
+
+Source2636ea7c correctly reuses logical output images but still has build p95
+8.705ms/failed motion. The profile identifies1.492ms of repeated XRGB interior
+conversion. Add an optionalRGB565 plane to the existing immutable scaled-buffer
+owner, on its second cache request. Charge canonical+auxiliary bytes to the
+same8MiB limit; constructor/registration failure keeps the canonical path.
+New source commits retain the current per-commit invalidation/freshness and
+receive fresh buffer ownership. Cache requests are not presentation counts.
+
+The producer owns both allocations. A local wlroots addon owns only a Pixman
+view, destroyed by buffer_finish before producer pixels are freed. No extra
+client lock/callback ownership. Both package variants provide the API; the
+adapter prepares it only on eligible rotatedRGB565 output. Unscaled unmasked
+XRGB interiors may copyRGB565 rows. All corner/global-alpha masks, ARGB,
+scaling/transforms, other destinations and geometry/format mismatches keep
+original full precision. Native512 cases/32 sensitivity sentinels prove the
+previous rounded-corner quantization regression cannot silently return.
+
+Select paired32-bit constructor stores and8-byte row alignment from actual
+board measurements; the64-bit constructor was slower and is rejected. Isolated
+hot copies improve about6× with pixel equality, while observed2.3–2.4ms setup
+is explicitly counted by the next frozen end-to-end trial. Preserve all failed
+prior budgets. No new ISA,8ms render-window change, content cap or optical waiver.

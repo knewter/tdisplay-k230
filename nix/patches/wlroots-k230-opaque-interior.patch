@@ -1,0 +1,77 @@
+--- a/include/wlr/render/pixman.h
++++ b/include/wlr/render/pixman.h
+@@ -10,6 +10,7 @@
+ #define WLR_RENDER_PIXMAN_H
+ 
+ #include <pixman.h>
++#include <stddef.h>
+ #include <wlr/render/wlr_renderer.h>
+ 
+ struct wlr_renderer *wlr_pixman_renderer_create(void);
+@@ -21,4 +22,11 @@
+     struct wlr_renderer *wlr_renderer, struct wlr_buffer *wlr_buffer);
+ pixman_image_t *wlr_pixman_texture_get_image(struct wlr_texture *wlr_texture);
+ 
++/* Local optional representation of an immutable opaque XRGB buffer. Pixels
++ * are borrowed until wlr_buffer_finish(); the producer owns/accounts them.
++ * False retains no pointer. Getter requires the buffer to remain locked. */
++bool wlr_pixman_buffer_set_opaque_rgb565(struct wlr_buffer *buffer,
++    void *pixels, size_t stride);
++pixman_image_t *wlr_pixman_buffer_get_opaque_rgb565(struct wlr_buffer *buffer);
++
+ #endif
+--- a/render/pixman/renderer.c
++++ b/render/pixman/renderer.c
+@@ -9,6 +9,8 @@
+ 
+ #include "render/pixman.h"
+ #include "types/wlr_buffer.h"
++#include <limits.h>
++#include <wlr/util/addon.h>
+ 
+ static const struct wlr_renderer_impl renderer_impl;
+ 
+@@ -361,3 +363,43 @@
+ 	struct wlr_pixman_texture *texture = get_texture(wlr_texture);
+ 	return texture->image;
+ }
++
++/* The immutable source's producer owns the RGB565 pixels. The addon owns only
++ * a Pixman view, released by buffer_finish before the producer frees pixels. */
++struct k230_opaque_interior {
++	struct wlr_addon addon;
++	pixman_image_t *image;
++};
++static void opaque_interior_destroy(struct wlr_addon *addon) {
++	struct k230_opaque_interior *plane = wl_container_of(addon, plane, addon);
++	wlr_addon_finish(addon);
++	pixman_image_unref(plane->image);
++	free(plane);
++}
++static const struct wlr_addon_interface opaque_interior_impl = {
++	.name = "k230-opaque-rgb565", .destroy = opaque_interior_destroy,
++};
++bool wlr_pixman_buffer_set_opaque_rgb565(struct wlr_buffer *buffer,
++		void *pixels, size_t stride) {
++	if (!buffer || !pixels || buffer->width <= 0 || buffer->height <= 0 ||
++			buffer->width > 16384 || buffer->height > 16384 ||
++			stride < (size_t)buffer->width*2 || stride > INT_MAX || stride%4 ||
++			(uintptr_t)pixels%4 || (uint64_t)stride*(unsigned)buffer->height > 64u*1024u*1024u ||
++			wlr_addon_find(&buffer->addons, NULL, &opaque_interior_impl)) return false;
++	struct k230_opaque_interior *plane = calloc(1, sizeof(*plane));
++	if (!plane) return false;
++	plane->image = pixman_image_create_bits_no_clear(PIXMAN_r5g6b5,
++		buffer->width, buffer->height, pixels, (int)stride);
++	if (!plane->image) { free(plane); return false; }
++	wlr_addon_init(&plane->addon, &buffer->addons, NULL, &opaque_interior_impl);
++	return true;
++}
++pixman_image_t *wlr_pixman_buffer_get_opaque_rgb565(struct wlr_buffer *buffer) {
++	if (!buffer) return NULL;
++	struct wlr_addon *addon = wlr_addon_find(&buffer->addons, NULL, &opaque_interior_impl);
++	if (!addon) return NULL;
++	struct k230_opaque_interior *plane = wl_container_of(addon, plane, addon);
++	if (pixman_image_get_width(plane->image) != buffer->width ||
++			pixman_image_get_height(plane->image) != buffer->height) return NULL;
++	return plane->image;
++}

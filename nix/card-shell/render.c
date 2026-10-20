@@ -2,6 +2,8 @@
 #include "sway/card_shell_appearance.h"
 #include "sway/card_shell_icon.h"
 #include "sway/card_shell_scaled_cache.h"
+#include "sway/card_shell_opaque_interior.h"
+#include <wlr/render/pixman.h>
 #include <cairo.h>
 #include <drm_fourcc.h>
 #include <math.h>
@@ -20,6 +22,7 @@ static size_t gradient_bytes;
 #define SCALED_CACHE_LIMIT (8u * 1024u * 1024u)
 struct scaled_buffer {
 	struct wlr_buffer base;
+    struct card_opaque_interior interior;
 	uint8_t *pixels;
 	size_t bytes, stride;
     uint32_t format;
@@ -33,6 +36,7 @@ void card_scaled_buffer_alpha_counts(uint64_t *opaque, uint64_t *alpha) {
 static void scaled_destroy(struct wlr_buffer *base) {
 	struct scaled_buffer *b = wl_container_of(base, b, base);
 	wlr_buffer_finish(base);
+    card_opaque_interior_finish(&b->interior, &scaled_bytes);
 	scaled_bytes -= b->bytes;
 	free(b->pixels);
 	free(b);
@@ -50,6 +54,20 @@ static void scaled_end(struct wlr_buffer *base) {}
 static const struct wlr_buffer_impl scaled_impl = {
 	.destroy = scaled_destroy, .begin_data_ptr_access = scaled_access, .end_data_ptr_access = scaled_end};
 size_t card_scaled_buffer_bytes(void) { return scaled_bytes; }
+static bool register_scaled_interior(void *context, void *pixels, size_t stride, int width, int height) {
+    struct wlr_buffer *base = context;
+    return base->width == width && base->height == height &&
+        wlr_pixman_buffer_set_opaque_rgb565(base, pixels, stride);
+}
+bool card_scaled_buffer_prepare_rgb565_interior(struct wlr_buffer *base) {
+    if (!base || base->impl != &scaled_impl) return false;
+    struct scaled_buffer *b = wl_container_of(base, b, base);
+    if (b->format != DRM_FORMAT_XRGB8888) return false;
+    return card_opaque_interior_prepare(&b->interior, b->pixels, b->stride,
+        base->width, base->height, &scaled_bytes, SCALED_CACHE_LIMIT,
+        register_scaled_interior, base);
+}
+
 struct wlr_buffer *card_scaled_buffer_create_format(struct wlr_buffer *source, int width, int height,
         bool fast, uint32_t target_format) {
     int cpp = target_format == DRM_FORMAT_RGB565 ? 2 :

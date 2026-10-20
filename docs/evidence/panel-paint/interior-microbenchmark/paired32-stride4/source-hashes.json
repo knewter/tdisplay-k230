@@ -1,0 +1,7 @@
+{
+  "opaque-interior.h.txt": "365edd3c191ac6aa7e8727f4e040bf0dbcfc9257660ada5a02e2c5300c522736",
+  "rgb565-pixels.h.txt": "fa26e592aab7a6e88c52581518f461bae579816383a42739fd5541d50a3aa45b",
+  "rgb565-blit.h.txt": "c1d182aae95bbaf8beed62613d3594e8512caf5021940450e3451d4dd6f1c6d5",
+  "paint-interior-bench.c.txt": "dc831b66d499e740f708649c8891b5a7e29b908547af92398e4d856fff08b71c",
+  "rounded-clip.h.txt": "5fe60e059e67574412b49761aa0a9c7509a04cb6a95b769357727ee6836d22c0"
+}

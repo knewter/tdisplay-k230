@@ -1,4 +1,4 @@
-/* Exact untransformed XRGB8888, or ARGB8888 SRC, -> RGB565 copy for Pixman buffers.
+/* Exact untransformed XRGB8888, ARGB8888 SRC, or RGB565 -> RGB565 copy for Pixman buffers.
  * Caller must have reset the source transform and use the supplied clip as
  * the destination's complete clip. Masks, ARGB OVER and other formats fall back. */
 #ifndef K230_RGB565_BLIT_H
@@ -7,16 +7,16 @@
 #include <stdint.h>
 #include <string.h>
 #include <pixman.h>
-static inline uint16_t k230_rgb565_pixel(uint32_t p) {
-    return (uint16_t)(((p >> 8) & 0xf800) | ((p >> 5) & 0x07e0) | ((p >> 3) & 0x001f));
-}
+#include "rgb565-pixels.h"
 static inline bool k230_rgb565_blit(pixman_op_t op, pixman_image_t *source,
         pixman_image_t *mask, pixman_image_t *dest, int sx, int sy,
         int dx, int dy, int width, int height, const pixman_region32_t *clip) {
     if (!source || !dest || mask || (op != PIXMAN_OP_SRC && op != PIXMAN_OP_OVER) ||
-            (pixman_image_get_format(source) != PIXMAN_x8r8g8b8 &&
-             !(op == PIXMAN_OP_SRC && pixman_image_get_format(source) == PIXMAN_a8r8g8b8)) ||
             pixman_image_get_format(dest) != PIXMAN_r5g6b5) return false;
+    pixman_format_code_t format = pixman_image_get_format(source);
+    if (format != PIXMAN_x8r8g8b8 && format != PIXMAN_r5g6b5 &&
+            !(op == PIXMAN_OP_SRC && format == PIXMAN_a8r8g8b8)) return false;
+    int source_cpp = format == PIXMAN_r5g6b5 ? 2 : 4;
     int sw = pixman_image_get_width(source), sh = pixman_image_get_height(source);
     int dw = pixman_image_get_width(dest), dh = pixman_image_get_height(dest);
     int ss = pixman_image_get_stride(source), ds = pixman_image_get_stride(dest);
@@ -24,8 +24,8 @@ static inline bool k230_rgb565_blit(pixman_op_t op, pixman_image_t *source,
     uint8_t *dst = (uint8_t *)pixman_image_get_data(dest);
     if (!src || !dst || sw <= 0 || sh <= 0 || dw <= 0 || dh <= 0 ||
             sw > 16384 || sh > 16384 || dw > 16384 || dh > 16384 ||
-            ss < sw * 4 || ds < dw * 2 || ss % 4 || ds % 2 ||
-            (uintptr_t)src % 4 || (uintptr_t)dst % 2 ||
+            ss < sw * source_cpp || ds < dw * 2 || ss % source_cpp || ds % 2 ||
+            (uintptr_t)src % source_cpp || (uintptr_t)dst % 2 ||
             width <= 0 || height <= 0 || sx < 0 || sy < 0 ||
             (int64_t)sx + width > sw || (int64_t)sy + height > sh ||
             (size_t)sh > SIZE_MAX / (size_t)ss ||
@@ -40,22 +40,26 @@ static inline bool k230_rgb565_blit(pixman_op_t op, pixman_image_t *source,
     if (right <= left || bottom <= top) return true;
     pixman_region32_t region;
     pixman_region32_init_rect(&region, left, top, (unsigned)(right-left), (unsigned)(bottom-top));
-    if (clip) pixman_region32_intersect(&region, &region, (pixman_region32_t *)clip);
+    if (clip && !pixman_region32_intersect(&region, &region, (pixman_region32_t *)clip)) {
+        pixman_region32_fini(&region);
+        return false;
+    }
     int count;
     pixman_box32_t *boxes = pixman_region32_rectangles(&region, &count);
     for (int i = 0; i < count; i++) {
         pixman_box32_t b = boxes[i];
         for (int y = b.y1; y < b.y2; y++) {
+            if (source_cpp == 2) {
+                memcpy(dst+(size_t)y*ds+(size_t)b.x1*2,
+                    src+(size_t)(sy+y-dy)*ss+(size_t)(sx+b.x1-dx)*2, (size_t)(b.x2-b.x1)*2);
+                continue;
+            }
             const uint32_t *s = (const uint32_t *)(src + (size_t)(sy+y-dy)*ss) + sx+b.x1-dx;
             uint16_t *d = (uint16_t *)(dst + (size_t)y*ds) + b.x1;
             int n = b.x2-b.x1;
             if (n && (uintptr_t)d % 4) { *d++ = k230_rgb565_pixel(*s++); n--; }
             for (; n >= 2; n -= 2, s += 2, d += 2) {
-                uint64_t p = (uint64_t)s[0] | (uint64_t)s[1] << 32;
-                uint64_t v = ((p >> 8) & UINT64_C(0x0000f8000000f800)) |
-                    ((p >> 5) & UINT64_C(0x000007e0000007e0)) |
-                    ((p >> 3) & UINT64_C(0x0000001f0000001f));
-                uint32_t packed = (uint32_t)v | (uint32_t)(v >> 16);
+                uint32_t packed = k230_rgb565_pair(s[0], s[1]);
 #if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
                 memcpy(__builtin_assume_aligned(d, 4), &packed, sizeof(packed));
 #else

@@ -1,0 +1,9 @@
+{
+  "opaque-interior.h.txt": "6c28c96975eb4ddcffee4bf57f5efb3d5ab4f12a1f18c87d71a4bdb4b66f282f",
+  "rgb565-pixels.h.txt": "fa26e592aab7a6e88c52581518f461bae579816383a42739fd5541d50a3aa45b",
+  "rgb565-blit.h.txt": "c1d182aae95bbaf8beed62613d3594e8512caf5021940450e3451d4dd6f1c6d5",
+  "run-paint-interior.py.txt": "679ee5a3311f3328120e67285c8798984ac2a4b94be36e7db4a81d7c9cd38ed1",
+  "compile-paint-interior.py.txt": "03587f71531bf0acf36bc38ab8b3fb3c3956a395711688663668a32d94bd3672",
+  "paint-interior-bench.c.txt": "dc831b66d499e740f708649c8891b5a7e29b908547af92398e4d856fff08b71c",
+  "rounded-clip.h.txt": "5fe60e059e67574412b49761aa0a9c7509a04cb6a95b769357727ee6836d22c0"
+}

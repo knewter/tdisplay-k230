@@ -1,0 +1,45 @@
+"""Reserved board only: serialize capture, mode restart, capture and immediate restore."""
+from pathlib import Path
+import subprocess,sys,json,datetime,re,time
+b=Path(__file__).parent;r=Path('/mnt/MediaVolume/home/jadams/src/gitlab.daringbit.com/josh/tdisplay-k230/.claude/worktrees/panel-paint')
+number=str(int(sys.argv[1]));prefix='paint'+number
+meta={'started_utc':datetime.datetime.now(datetime.timezone.utc).isoformat(),'source_revision':re.search(r"source='([0-9a-f]{40})'",(b/'run-paint-candidate-host.py').read_text()).group(1),'attempts':[],'mode_restore_succeeded':False}
+def save(): (b/(prefix+'-pair-capture.json')).write_text(json.dumps(meta,indent=2)+'\n')
+def command(args,logname,timeout):
+ with (b/logname).open('w') as log:return subprocess.run(args,stdout=log,stderr=subprocess.STDOUT,timeout=timeout).returncode
+
+def capture(mode):
+ for attempt in [1,2]:
+  name=prefix+'-'+mode+'-pair-attempt'+str(attempt)+'.log'
+  started=datetime.datetime.now(datetime.timezone.utc).isoformat()
+  rc=command([sys.executable,str(b/'run-paint-candidate-host.py'),mode,'6'],name,180)
+  raw=(b/name).read_text();row={'mode':mode,'attempt':attempt,'started_utc':started,'ended_utc':datetime.datetime.now(datetime.timezone.utc).isoformat(),'exit':rc,'log':name};meta['attempts'].append(row);save()
+  if rc==0:
+   match=re.search(r'^HOST_OUTPUT (.+)$',raw,re.M)
+   if not match:raise RuntimeError('capture returned no output directory')
+   out=Path(match.group(1));meta[mode+'_directory']=str(out);save();print(mode,'CAPTURED',out,flush=True);return out
+  # Only this known pre-benchmark startup failure may be retried. No input
+  # events have been injected at this point; the collector's finally closes uinput.
+  if attempt==1 and 'route timed out' in raw and '--surface' in raw and "'hide'" in raw:
+   print(mode,'pre-injection hide route not ready; retrying once',flush=True);time.sleep(1)
+  else:raise RuntimeError('capture failed; see '+name)
+ raise AssertionError('unreachable')
+
+mode_requested=False
+try:
+ full=capture('full')
+ mode_requested=True
+ rc=command([sys.executable,str(b/'set-motion-mode-host.py'),'on'],prefix+'-mode-on.log',110)
+ meta['mode_on_exit']=rc;save()
+ if rc:raise RuntimeError('reduced mode activation failed')
+ reduced=capture('reduced')
+finally:
+ if mode_requested:
+  rc=command([sys.executable,str(b/'set-motion-mode-host.py'),'off'],prefix+'-mode-off.log',110)
+  meta['mode_off_exit']=rc;meta['mode_restore_succeeded']=rc==0;save()
+  if rc:raise RuntimeError('owned motion override cleanup failed; inspect '+prefix+'-mode-off.log')
+ meta['capture_ended_utc']=datetime.datetime.now(datetime.timezone.utc).isoformat();save()
+
+combined=b/(prefix+'-paired.log');combined.write_text((full/'telemetry.log').read_text()+(reduced/'telemetry.log').read_text())
+analysis=[sys.executable,str(r/'tools/shell-motion-trace.py'),'--board','--log',str(combined),'--provenance','injected','--compare-motion','--output',str(b/(prefix+'-paired-motion.json'))]
+rc=command(analysis,prefix+'-paired-motion.log',30);meta['analysis_exit']=rc;save();print('ANALYSIS_EXIT',rc,flush=True);print((b/(prefix+'-paired-motion.log')).read_text(),flush=True);raise SystemExit(rc)

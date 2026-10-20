@@ -213,3 +213,9 @@ cache reuse and copies about433k of700k pixels per selected frame, with
 Changing main/child clients advance callbacks and releases; compositor PNGs
 are committed separately from the still-missing camera proof. Repeated
 conversion of immutable cached card interiors is the next measured boundary.
+
+An [opaque-interior microbenchmark](interior-microbenchmark/README.md) selects
+an optionalRGB565 representation for reused immutable card interiors, within
+the existing8MiB app-cache budget. Full-precision masked edges remain exact
+(512 new oracle cases and32 corner-loss sentinels). Isolated card draws fall
+about6×, but setup costs and all frozen board/physical gates still need proof.

@@ -78,3 +78,11 @@ three-buffer cases/352 exact compositions, lifecycle/failure injection,768
 conversion cases,160 live cache cases and288 guarded full copies; existing
 1152 affine/288 rounded comparisons also pass. No new hardware result yet;
 exact build2.2 and qualification/default/archive tasks remain unchecked.
+
+Source9 adds optional immutableRGB565 interiors, within the same8MiB app cache,
+while preserving full precision under every mask. The named native command
+passes512 extra guarded oracle cases,64 selected paths,32 sensitivity cases
+that reject quantized corners, and reuse/budget/allocation/registration/free
+checks; all earlier pixel/lifecycle commands pass. Synthetic on-board copies
+are faster, with setup costs separately recorded. Exact-source build and all
+paired timing/live/camera/default/archive gates remain open for this candidate.

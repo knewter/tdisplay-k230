@@ -1,15 +1,3 @@
---- a/include/wlr/render/pass.h
-+++ b/include/wlr/render/pass.h
-@@ -32,6 +32,9 @@
- 	/* Optional final transform applied when the completed image is copied to
- 	 * the destination buffer. Render operations still use buffer coordinates. */
- 	enum wl_output_transform output_transform;
-+	/* Optional result: transformed logical contents from this exact buffer's
-+	 * last successful pass are available. False requires a whole repaint. */
-+	bool *output_transform_preserved;
- 	/* Timer to measure the duration of the render pass */
- 	struct wlr_render_timer *timer;
- 	/* Color transform to apply to the output of the render pass.
 --- a/include/render/pixman.h
 +++ b/include/render/pixman.h
 @@ -8,6 +8,7 @@
@@ -47,26 +35,18 @@
 +	bool *output_preserved);
  
  #endif
---- a/render/pixman/renderer.c
-+++ b/render/pixman/renderer.c
-@@ -133,6 +133,7 @@
- 	wl_list_remove(&buffer->buffer_destroy.link);
- 
- 	pixman_image_unref(buffer->image);
-+	k230_output_cache_finish(&buffer->output_cache);
- 
- 	free(buffer);
- }
-@@ -308,7 +309,8 @@
- 
- 	enum wl_output_transform output_transform = options != NULL ?
- 		options->output_transform : WL_OUTPUT_TRANSFORM_NORMAL;
--	struct wlr_pixman_render_pass *pass = begin_pixman_render_pass(buffer, output_transform);
-+	struct wlr_pixman_render_pass *pass = begin_pixman_render_pass(buffer, output_transform,
-+		options != NULL ? options->output_transform_preserved : NULL);
- 	if (pass == NULL) {
- 		return NULL;
- 	}
+--- a/include/wlr/render/pass.h
++++ b/include/wlr/render/pass.h
+@@ -32,6 +32,9 @@
+ 	/* Optional final transform applied when the completed image is copied to
+ 	 * the destination buffer. Render operations still use buffer coordinates. */
+ 	enum wl_output_transform output_transform;
++	/* Optional result: transformed logical contents from this exact buffer's
++	 * last successful pass are available. False requires a whole repaint. */
++	bool *output_transform_preserved;
+ 	/* Timer to measure the duration of the render pass */
+ 	struct wlr_render_timer *timer;
+ 	/* Color transform to apply to the output of the render pass.
 --- a/render/pixman/pass.c
 +++ b/render/pixman/pass.c
 @@ -27,10 +27,12 @@
@@ -126,7 +106,7 @@
  static void render_pass_add_texture(struct wlr_render_pass *wlr_pass,
  		const struct wlr_render_texture_options *options) {
  	struct wlr_pixman_render_pass *pass = get_render_pass(wlr_pass);
-@@ -83,6 +103,7 @@
+@@ -84,6 +104,7 @@
  
  	if (texture->buffer != NULL && !begin_pixman_data_ptr_access(texture->buffer,
  			&texture->image, WLR_BUFFER_DATA_PTR_ACCESS_READ)) {
@@ -134,7 +114,7 @@
  		return;
  	}
  
-@@ -110,6 +131,7 @@
+@@ -111,6 +132,7 @@
  
  	struct wlr_box dst_box;
  	wlr_render_texture_options_get_dst_box(options, &dst_box);
@@ -142,7 +122,7 @@
  
  	/* Convert the quarter turn into a fresh tiled copy, then let Pixman's
  	 * ordinary scaler/blender handle crop, damage and rounded clipping.
-@@ -159,6 +181,8 @@
+@@ -160,6 +182,8 @@
  		});
  	}
  
@@ -151,7 +131,7 @@
  	// Rotate the source size into destination coordinates
  	struct wlr_box src_box_transformed;
  	wlr_box_transform(&src_box_transformed, &src_box, options->transform,
-@@ -306,6 +330,7 @@
+@@ -308,6 +332,7 @@
  	struct wlr_pixman_buffer *buffer = pass->buffer;
  	struct wlr_box box;
  	wlr_render_rect_options_get_box(options, pass->buffer->buffer, &box);
@@ -159,7 +139,7 @@
  
  	pixman_op_t op = get_pixman_blending(options->color.a == 1 ?
  		WLR_RENDER_BLEND_MODE_NONE : options->blend_mode);
-@@ -318,6 +343,7 @@
+@@ -320,6 +345,7 @@
  	};
  
  	pixman_image_t *fill = pixman_image_create_solid_fill(&color);
@@ -167,7 +147,7 @@
  
  	pixman_image_set_clip_region32(pass_image(pass), options->clip);
  	/* The solid source already carries color alpha; the corner mask only
-@@ -337,7 +363,9 @@
+@@ -339,7 +365,9 @@
  };
  
  struct wlr_pixman_render_pass *begin_pixman_render_pass(
@@ -178,7 +158,7 @@
  	struct wlr_pixman_render_pass *pass = calloc(1, sizeof(*pass));
  	if (pass == NULL) {
  		return NULL;
-@@ -352,44 +380,30 @@
+@@ -354,44 +382,30 @@
  	}
  
  	if (output_transform != WL_OUTPUT_TRANSFORM_NORMAL) {
@@ -235,6 +215,26 @@
  
  	wlr_buffer_lock(buffer->buffer);
  	pass->buffer = buffer;
+--- a/render/pixman/renderer.c
++++ b/render/pixman/renderer.c
+@@ -133,6 +133,7 @@
+ 	wl_list_remove(&buffer->buffer_destroy.link);
+ 
+ 	pixman_image_unref(buffer->image);
++	k230_output_cache_finish(&buffer->output_cache);
+ 
+ 	free(buffer);
+ }
+@@ -308,7 +309,8 @@
+ 
+ 	enum wl_output_transform output_transform = options != NULL ?
+ 		options->output_transform : WL_OUTPUT_TRANSFORM_NORMAL;
+-	struct wlr_pixman_render_pass *pass = begin_pixman_render_pass(buffer, output_transform);
++	struct wlr_pixman_render_pass *pass = begin_pixman_render_pass(buffer, output_transform,
++		options != NULL ? options->output_transform_preserved : NULL);
+ 	if (pass == NULL) {
+ 		return NULL;
+ 	}
 --- a/types/scene/wlr_scene.c
 +++ b/types/scene/wlr_scene.c
 @@ -17,6 +17,7 @@
