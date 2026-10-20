@@ -1,0 +1,122 @@
+[
+  {
+    "original_path": "/home/jadams/tmp/codex-claude-handoff-20261019/3/portrait-current-scene-b/turn90-sampler/client.jsonl",
+    "bytes": 5204,
+    "sha256": "86a8cc50754fee0961b490dad88df8be29a59e2de87e90da3ba583a45b7a1445"
+  },
+  {
+    "original_path": "/home/jadams/tmp/codex-claude-handoff-20261019/3/portrait-current-scene-b/turn90-sampler/ordinary-a.png",
+    "bytes": 10531,
+    "sha256": "0772c695ecea3a4d3402ba2b8dbc6e467239cf5a86269d14b5cec16720590427"
+  },
+  {
+    "original_path": "/home/jadams/tmp/codex-claude-handoff-20261019/3/portrait-current-scene-b/turn90-sampler/ordinary-b.png",
+    "bytes": 10531,
+    "sha256": "e1215e04cf0d51f0be7555e0b663909c8fb614cfa779936e78925dac57a2e9f3"
+  },
+  {
+    "original_path": "/home/jadams/tmp/codex-claude-handoff-20261019/3/portrait-current-scene-b/turn90-sampler/overview-a.png",
+    "bytes": 23372,
+    "sha256": "33a74cc4d484efea10356015da31969b0fb55b632a3cd5a81ffe8d5ec0713097"
+  },
+  {
+    "original_path": "/home/jadams/tmp/codex-claude-handoff-20261019/3/portrait-current-scene-b/turn90-sampler/overview-b.png",
+    "bytes": 23295,
+    "sha256": "271b7cd1f072d238fb891a25ff068c01b07f43513430a699019c9e8425262659"
+  },
+  {
+    "original_path": "/home/jadams/tmp/codex-claude-handoff-20261019/3/portrait-current-scene-b/turn90-sampler/result.json",
+    "bytes": 4206,
+    "sha256": "da267f7c6c2b2c31158f977ae308e03bd5c9b1583a4b14c29e761e74a4d74e9f"
+  },
+  {
+    "original_path": "/home/jadams/tmp/codex-claude-handoff-20261019/3/portrait-current-scene-b/turn90-sampler/sway.conf",
+    "bytes": 216,
+    "sha256": "28c899a021b5f8ee5af203fb30909bc4d09b04ebe12d51e1b717126b24d38a17"
+  },
+  {
+    "original_path": "/home/jadams/tmp/codex-claude-handoff-20261019/3/portrait-current-scene-b/turn90-sampler/sway.log",
+    "bytes": 105170,
+    "sha256": "0bb7396ad0e29a6484a86205778b0d5359ee3b574ae9625e47c4c81103aa43fa"
+  },
+  {
+    "original_path": "/home/jadams/tmp/codex-claude-handoff-20261019/3/portrait-current-scene-b/turn90-quarter-turn/client.jsonl",
+    "bytes": 5203,
+    "sha256": "6d486d4569896b54bdd9a4d5ebe51e3d88f6b057a98b28bcfd2b5760ce9ed087"
+  },
+  {
+    "original_path": "/home/jadams/tmp/codex-claude-handoff-20261019/3/portrait-current-scene-b/turn90-quarter-turn/ordinary-a.png",
+    "bytes": 10532,
+    "sha256": "1cb688812240d80a41acd853c8dda854df3c7041d62e3465f8981baa3b3250e1"
+  },
+  {
+    "original_path": "/home/jadams/tmp/codex-claude-handoff-20261019/3/portrait-current-scene-b/turn90-quarter-turn/ordinary-b.png",
+    "bytes": 10555,
+    "sha256": "47abdb889f5ec3a3ac1ee1e2a752a71ea2d2b75e6f04e398f1b909438a5841a8"
+  },
+  {
+    "original_path": "/home/jadams/tmp/codex-claude-handoff-20261019/3/portrait-current-scene-b/turn90-quarter-turn/overview-a.png",
+    "bytes": 23374,
+    "sha256": "b92c26ae53513519988f8533871b5ef0da5ce3d816f54e501034bc4c8fcfbae0"
+  },
+  {
+    "original_path": "/home/jadams/tmp/codex-claude-handoff-20261019/3/portrait-current-scene-b/turn90-quarter-turn/overview-b.png",
+    "bytes": 23311,
+    "sha256": "7d76c47ba299309671042a7b4336c6d0090d2dee1f0f20e815d181d4c2185e3c"
+  },
+  {
+    "original_path": "/home/jadams/tmp/codex-claude-handoff-20261019/3/portrait-current-scene-b/turn90-quarter-turn/result.json",
+    "bytes": 4235,
+    "sha256": "9035d1e0b2a6b31f4cca91d39f15b07f9a4d39b75931efba208af5403adde3aa"
+  },
+  {
+    "original_path": "/home/jadams/tmp/codex-claude-handoff-20261019/3/portrait-current-scene-b/turn90-quarter-turn/sway.conf",
+    "bytes": 216,
+    "sha256": "28c899a021b5f8ee5af203fb30909bc4d09b04ebe12d51e1b717126b24d38a17"
+  },
+  {
+    "original_path": "/home/jadams/tmp/codex-claude-handoff-20261019/3/portrait-current-scene-b/turn90-quarter-turn/sway.log",
+    "bytes": 95367,
+    "sha256": "47716559d98ecc1dc4855cde22bfd06b45234db97bf95a4bb4222f5e56be8e3e"
+  },
+  {
+    "original_path": "/home/jadams/tmp/codex-claude-handoff-20261019/3/portrait-current-scene-b/turn180-sampler-fallback/client.jsonl",
+    "bytes": 5224,
+    "sha256": "9052a5b3f2cbaf38c028b1fcf8308e144efa42cac2718a74e432bbc3c718ad34"
+  },
+  {
+    "original_path": "/home/jadams/tmp/codex-claude-handoff-20261019/3/portrait-current-scene-b/turn180-sampler-fallback/ordinary-a.png",
+    "bytes": 8777,
+    "sha256": "154e3568645238a0f6bc21fb72a41ae3e1126f9d9812df1b48836b0c1c0412bc"
+  },
+  {
+    "original_path": "/home/jadams/tmp/codex-claude-handoff-20261019/3/portrait-current-scene-b/turn180-sampler-fallback/ordinary-b.png",
+    "bytes": 8778,
+    "sha256": "6b99b5674b661119e865270d33eaaddb0e043ae2d4ab574911f2ec9d05f69821"
+  },
+  {
+    "original_path": "/home/jadams/tmp/codex-claude-handoff-20261019/3/portrait-current-scene-b/turn180-sampler-fallback/overview-a.png",
+    "bytes": 21460,
+    "sha256": "ad86810b1c0735f4cd2cedc112331afc6a52cf2e2787f8c004c452b99377247c"
+  },
+  {
+    "original_path": "/home/jadams/tmp/codex-claude-handoff-20261019/3/portrait-current-scene-b/turn180-sampler-fallback/overview-b.png",
+    "bytes": 21529,
+    "sha256": "ac9718bad50f8071df99e33cee2c72b113d5cb71fafa4e49a65de8e567dac24d"
+  },
+  {
+    "original_path": "/home/jadams/tmp/codex-claude-handoff-20261019/3/portrait-current-scene-b/turn180-sampler-fallback/result.json",
+    "bytes": 4224,
+    "sha256": "eb5d00aad65f6956a2ae6436d9e6bcd55afffcf704b6634105d6afe4bef20462"
+  },
+  {
+    "original_path": "/home/jadams/tmp/codex-claude-handoff-20261019/3/portrait-current-scene-b/turn180-sampler-fallback/sway.conf",
+    "bytes": 217,
+    "sha256": "d2ca31bd3860a98261be39b6ed8894b17bad1d575a84503eec256ffe479ab2b2"
+  },
+  {
+    "original_path": "/home/jadams/tmp/codex-claude-handoff-20261019/3/portrait-current-scene-b/turn180-sampler-fallback/sway.log",
+    "bytes": 122987,
+    "sha256": "ba6b01bf020afc71b0944384848ccc1e4391bb34b129ee5b74d18b59eb5bdf6c"
+  }
+]

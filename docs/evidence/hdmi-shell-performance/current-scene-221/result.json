@@ -1,0 +1,553 @@
+{
+  "result": "PASS",
+  "evidence_class": "headless-qemu-real-compositor-changing-client",
+  "physical_acceptance": "UNVERIFIED; no physical HDMI or touch interaction occurred",
+  "artifacts": {
+    "sway_path": "/nix/store/3vk3p0ps0dng1qmqsrj7w2gfjq024zv8-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway",
+    "sway_sha256": "9464072ac100e77500c7b6113920d2c2ed14e022612eddbc38a037ce9b006670",
+    "client_path": "/nix/store/yjb89ap4bq5vb29szdzkr5sv9lpw1sz6-card-composition-probe-client-0.1/bin/card-composition-probe-client",
+    "client_sha256": "1933c7fefe0bc6173bab2a88393abba3409a61259fc5b3afa14ebc20ffc93ec6",
+    "qemu_path": "/usr/bin/qemu-riscv64-static",
+    "qemu_sha256": "a2a9f1c7e6ea2c2838426c59320df04f2ed815e0c22eb7b7218a26c7b5c29f1f"
+  },
+  "runs": [
+    {
+      "name": "turn90-sampler",
+      "transform": "90",
+      "quarter_turn_enabled": false,
+      "captures": {
+        "ordinary": {
+          "a": {
+            "file": "ordinary-a.png",
+            "sha256": "0772c695ecea3a4d3402ba2b8dbc6e467239cf5a86269d14b5cec16720590427",
+            "size": [
+              1080,
+              1920
+            ]
+          },
+          "b": {
+            "file": "ordinary-b.png",
+            "sha256": "e1215e04cf0d51f0be7555e0b663909c8fb614cfa779936e78925dac57a2e9f3",
+            "size": [
+              1080,
+              1920
+            ]
+          }
+        },
+        "overview": {
+          "a": {
+            "file": "overview-a.png",
+            "sha256": "33a74cc4d484efea10356015da31969b0fb55b632a3cd5a81ffe8d5ec0713097",
+            "size": [
+              1080,
+              1920
+            ]
+          },
+          "b": {
+            "file": "overview-b.png",
+            "sha256": "271b7cd1f072d238fb891a25ff068c01b07f43513430a699019c9e8425262659",
+            "size": [
+              1080,
+              1920
+            ]
+          }
+        }
+      },
+      "client_states": {
+        "ordinary_before": {
+          "event": "heartbeat",
+          "app_id": "k230.card.one",
+          "elapsed_ms": 1013,
+          "frames": 31,
+          "callbacks": 30,
+          "releases": 29,
+          "child_frames": 30,
+          "child_callbacks": 29,
+          "child_releases": 28,
+          "callback_age_ms": 5,
+          "child_callback_age_ms": 0,
+          "max_callback_gap_ms": 92,
+          "child_max_callback_gap_ms": 94,
+          "width": 1080,
+          "height": 1920,
+          "stride": 4320,
+          "key_presses": 0,
+          "format": "XRGB8888",
+          "subsurface": "desynchronized",
+          "presentation": "unmeasured"
+        },
+        "ordinary_after": {
+          "event": "heartbeat",
+          "app_id": "k230.card.one",
+          "elapsed_ms": 2038,
+          "frames": 64,
+          "callbacks": 63,
+          "releases": 62,
+          "child_frames": 63,
+          "child_callbacks": 62,
+          "child_releases": 61,
+          "callback_age_ms": 6,
+          "child_callback_age_ms": 0,
+          "max_callback_gap_ms": 92,
+          "child_max_callback_gap_ms": 94,
+          "width": 1080,
+          "height": 1920,
+          "stride": 4320,
+          "key_presses": 0,
+          "format": "XRGB8888",
+          "subsurface": "desynchronized",
+          "presentation": "unmeasured"
+        },
+        "overview_before": {
+          "event": "heartbeat",
+          "app_id": "k230.card.one",
+          "elapsed_ms": 5153,
+          "frames": 101,
+          "callbacks": 100,
+          "releases": 99,
+          "child_frames": 100,
+          "child_callbacks": 99,
+          "child_releases": 98,
+          "callback_age_ms": 5,
+          "child_callback_age_ms": 1,
+          "max_callback_gap_ms": 631,
+          "child_max_callback_gap_ms": 631,
+          "width": 1080,
+          "height": 1920,
+          "stride": 4320,
+          "key_presses": 0,
+          "format": "XRGB8888",
+          "subsurface": "desynchronized",
+          "presentation": "unmeasured"
+        },
+        "overview_after": {
+          "event": "heartbeat",
+          "app_id": "k230.card.one",
+          "elapsed_ms": 7193,
+          "frames": 126,
+          "callbacks": 125,
+          "releases": 124,
+          "child_frames": 125,
+          "child_callbacks": 124,
+          "child_releases": 123,
+          "callback_age_ms": 4,
+          "child_callback_age_ms": 0,
+          "max_callback_gap_ms": 631,
+          "child_max_callback_gap_ms": 631,
+          "width": 1080,
+          "height": 1920,
+          "stride": 4320,
+          "key_presses": 0,
+          "format": "XRGB8888",
+          "subsurface": "desynchronized",
+          "presentation": "unmeasured"
+        }
+      },
+      "output": {
+        "name": "HEADLESS-1",
+        "current_mode": {
+          "width": 1920,
+          "height": 1080,
+          "refresh": 0
+        },
+        "transform": "90",
+        "scale": 1.0,
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "width": 1080,
+          "height": 1920
+        }
+      },
+      "exact_bottom_endpoint": {
+        "evidence_class": "headless-qemu-injected-input",
+        "x": 540.0,
+        "y": 1920,
+        "down_response": [
+          {
+            "success": true
+          }
+        ]
+      },
+      "overview": {
+        "status": "entered",
+        "ipc_response": [
+          {
+            "success": true
+          }
+        ]
+      },
+      "draw_trace": {
+        "rows": 308,
+        "paths": [
+          "sampler"
+        ],
+        "tiled_rows": 0,
+        "sampler_rows": 308,
+        "max_copy_cpu_ns": 0,
+        "max_total_cpu_ns": 62103575,
+        "max_scratch_bytes": 0
+      },
+      "evidence_class": "headless-qemu-real-compositor-changing-client"
+    },
+    {
+      "name": "turn90-quarter-turn",
+      "transform": "90",
+      "quarter_turn_enabled": true,
+      "captures": {
+        "ordinary": {
+          "a": {
+            "file": "ordinary-a.png",
+            "sha256": "1cb688812240d80a41acd853c8dda854df3c7041d62e3465f8981baa3b3250e1",
+            "size": [
+              1080,
+              1920
+            ]
+          },
+          "b": {
+            "file": "ordinary-b.png",
+            "sha256": "47abdb889f5ec3a3ac1ee1e2a752a71ea2d2b75e6f04e398f1b909438a5841a8",
+            "size": [
+              1080,
+              1920
+            ]
+          }
+        },
+        "overview": {
+          "a": {
+            "file": "overview-a.png",
+            "sha256": "b92c26ae53513519988f8533871b5ef0da5ce3d816f54e501034bc4c8fcfbae0",
+            "size": [
+              1080,
+              1920
+            ]
+          },
+          "b": {
+            "file": "overview-b.png",
+            "sha256": "7d76c47ba299309671042a7b4336c6d0090d2dee1f0f20e815d181d4c2185e3c",
+            "size": [
+              1080,
+              1920
+            ]
+          }
+        }
+      },
+      "client_states": {
+        "ordinary_before": {
+          "event": "heartbeat",
+          "app_id": "k230.card.one",
+          "elapsed_ms": 1018,
+          "frames": 15,
+          "callbacks": 14,
+          "releases": 13,
+          "child_frames": 14,
+          "child_callbacks": 13,
+          "child_releases": 12,
+          "callback_age_ms": 21,
+          "child_callback_age_ms": 0,
+          "max_callback_gap_ms": 104,
+          "child_max_callback_gap_ms": 145,
+          "width": 1080,
+          "height": 1920,
+          "stride": 4320,
+          "key_presses": 0,
+          "format": "XRGB8888",
+          "subsurface": "desynchronized",
+          "presentation": "unmeasured"
+        },
+        "ordinary_after": {
+          "event": "heartbeat",
+          "app_id": "k230.card.one",
+          "elapsed_ms": 2030,
+          "frames": 31,
+          "callbacks": 30,
+          "releases": 29,
+          "child_frames": 30,
+          "child_callbacks": 29,
+          "child_releases": 28,
+          "callback_age_ms": 5,
+          "child_callback_age_ms": 0,
+          "max_callback_gap_ms": 111,
+          "child_max_callback_gap_ms": 145,
+          "width": 1080,
+          "height": 1920,
+          "stride": 4320,
+          "key_presses": 0,
+          "format": "XRGB8888",
+          "subsurface": "desynchronized",
+          "presentation": "unmeasured"
+        },
+        "overview_before": {
+          "event": "heartbeat",
+          "app_id": "k230.card.one",
+          "elapsed_ms": 5163,
+          "frames": 65,
+          "callbacks": 64,
+          "releases": 63,
+          "child_frames": 64,
+          "child_callbacks": 63,
+          "child_releases": 62,
+          "callback_age_ms": 4,
+          "child_callback_age_ms": 0,
+          "max_callback_gap_ms": 560,
+          "child_max_callback_gap_ms": 558,
+          "width": 1080,
+          "height": 1920,
+          "stride": 4320,
+          "key_presses": 0,
+          "format": "XRGB8888",
+          "subsurface": "desynchronized",
+          "presentation": "unmeasured"
+        },
+        "overview_after": {
+          "event": "heartbeat",
+          "app_id": "k230.card.one",
+          "elapsed_ms": 7273,
+          "frames": 90,
+          "callbacks": 89,
+          "releases": 88,
+          "child_frames": 89,
+          "child_callbacks": 88,
+          "child_releases": 87,
+          "callback_age_ms": 4,
+          "child_callback_age_ms": 0,
+          "max_callback_gap_ms": 560,
+          "child_max_callback_gap_ms": 558,
+          "width": 1080,
+          "height": 1920,
+          "stride": 4320,
+          "key_presses": 0,
+          "format": "XRGB8888",
+          "subsurface": "desynchronized",
+          "presentation": "unmeasured"
+        }
+      },
+      "output": {
+        "name": "HEADLESS-1",
+        "current_mode": {
+          "width": 1920,
+          "height": 1080,
+          "refresh": 0
+        },
+        "transform": "90",
+        "scale": 1.0,
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "width": 1080,
+          "height": 1920
+        }
+      },
+      "exact_bottom_endpoint": {
+        "evidence_class": "headless-qemu-injected-input",
+        "x": 540.0,
+        "y": 1920,
+        "down_response": [
+          {
+            "success": true
+          }
+        ]
+      },
+      "overview": {
+        "status": "entered",
+        "ipc_response": [
+          {
+            "success": true
+          }
+        ]
+      },
+      "draw_trace": {
+        "rows": 263,
+        "paths": [
+          "sampler",
+          "tiled"
+        ],
+        "tiled_rows": 167,
+        "sampler_rows": 96,
+        "max_copy_cpu_ns": 41210467,
+        "max_total_cpu_ns": 59805369,
+        "max_scratch_bytes": 8294400
+      },
+      "evidence_class": "headless-qemu-real-compositor-changing-client"
+    },
+    {
+      "name": "turn180-sampler-fallback",
+      "transform": "180",
+      "quarter_turn_enabled": true,
+      "captures": {
+        "ordinary": {
+          "a": {
+            "file": "ordinary-a.png",
+            "sha256": "154e3568645238a0f6bc21fb72a41ae3e1126f9d9812df1b48836b0c1c0412bc",
+            "size": [
+              1920,
+              1080
+            ]
+          },
+          "b": {
+            "file": "ordinary-b.png",
+            "sha256": "6b99b5674b661119e865270d33eaaddb0e043ae2d4ab574911f2ec9d05f69821",
+            "size": [
+              1920,
+              1080
+            ]
+          }
+        },
+        "overview": {
+          "a": {
+            "file": "overview-a.png",
+            "sha256": "ad86810b1c0735f4cd2cedc112331afc6a52cf2e2787f8c004c452b99377247c",
+            "size": [
+              1920,
+              1080
+            ]
+          },
+          "b": {
+            "file": "overview-b.png",
+            "sha256": "ac9718bad50f8071df99e33cee2c72b113d5cb71fafa4e49a65de8e567dac24d",
+            "size": [
+              1920,
+              1080
+            ]
+          }
+        }
+      },
+      "client_states": {
+        "ordinary_before": {
+          "event": "heartbeat",
+          "app_id": "k230.card.one",
+          "elapsed_ms": 1009,
+          "frames": 29,
+          "callbacks": 28,
+          "releases": 27,
+          "child_frames": 28,
+          "child_callbacks": 27,
+          "child_releases": 26,
+          "callback_age_ms": 4,
+          "child_callback_age_ms": 0,
+          "max_callback_gap_ms": 143,
+          "child_max_callback_gap_ms": 195,
+          "width": 1920,
+          "height": 1080,
+          "stride": 7680,
+          "key_presses": 0,
+          "format": "XRGB8888",
+          "subsurface": "desynchronized",
+          "presentation": "unmeasured"
+        },
+        "ordinary_after": {
+          "event": "heartbeat",
+          "app_id": "k230.card.one",
+          "elapsed_ms": 2011,
+          "frames": 68,
+          "callbacks": 67,
+          "releases": 66,
+          "child_frames": 67,
+          "child_callbacks": 66,
+          "child_releases": 65,
+          "callback_age_ms": 6,
+          "child_callback_age_ms": 0,
+          "max_callback_gap_ms": 143,
+          "child_max_callback_gap_ms": 195,
+          "width": 1920,
+          "height": 1080,
+          "stride": 7680,
+          "key_presses": 0,
+          "format": "XRGB8888",
+          "subsurface": "desynchronized",
+          "presentation": "unmeasured"
+        },
+        "overview_before": {
+          "event": "heartbeat",
+          "app_id": "k230.card.one",
+          "elapsed_ms": 5166,
+          "frames": 120,
+          "callbacks": 119,
+          "releases": 118,
+          "child_frames": 119,
+          "child_callbacks": 118,
+          "child_releases": 117,
+          "callback_age_ms": 4,
+          "child_callback_age_ms": 0,
+          "max_callback_gap_ms": 929,
+          "child_max_callback_gap_ms": 929,
+          "width": 1920,
+          "height": 1080,
+          "stride": 7680,
+          "key_presses": 0,
+          "format": "XRGB8888",
+          "subsurface": "desynchronized",
+          "presentation": "unmeasured"
+        },
+        "overview_after": {
+          "event": "heartbeat",
+          "app_id": "k230.card.one",
+          "elapsed_ms": 7225,
+          "frames": 151,
+          "callbacks": 150,
+          "releases": 149,
+          "child_frames": 150,
+          "child_callbacks": 149,
+          "child_releases": 148,
+          "callback_age_ms": 4,
+          "child_callback_age_ms": 0,
+          "max_callback_gap_ms": 929,
+          "child_max_callback_gap_ms": 929,
+          "width": 1920,
+          "height": 1080,
+          "stride": 7680,
+          "key_presses": 0,
+          "format": "XRGB8888",
+          "subsurface": "desynchronized",
+          "presentation": "unmeasured"
+        }
+      },
+      "output": {
+        "name": "HEADLESS-1",
+        "current_mode": {
+          "width": 1920,
+          "height": 1080,
+          "refresh": 0
+        },
+        "transform": "180",
+        "scale": 1.0,
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "width": 1920,
+          "height": 1080
+        }
+      },
+      "exact_bottom_endpoint": {
+        "evidence_class": "headless-qemu-injected-input",
+        "x": 960.0,
+        "y": 1080,
+        "down_response": [
+          {
+            "success": true
+          }
+        ]
+      },
+      "overview": {
+        "status": "entered",
+        "ipc_response": [
+          {
+            "success": true
+          }
+        ]
+      },
+      "draw_trace": {
+        "rows": 373,
+        "paths": [
+          "sampler"
+        ],
+        "tiled_rows": 0,
+        "sampler_rows": 373,
+        "max_copy_cpu_ns": 0,
+        "max_total_cpu_ns": 54247365,
+        "max_scratch_bytes": 0
+      },
+      "evidence_class": "headless-qemu-real-compositor-changing-client"
+    }
+  ]
+}

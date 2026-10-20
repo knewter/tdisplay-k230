@@ -1,0 +1,23 @@
+{
+  "recorded_at": "2026-10-20T04:20:49.867958+00:00",
+  "checkout_base": "b02175bacf910df7f099fe64f720484b8caa2c22",
+  "compiled_source": "221bbcf34a276a939356e5a6af9bfb124af9896a",
+  "compiled_system": "/nix/store/j30yag05ic9k68n9dzbzindgf4ardp08-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "fixture_sha256": "743ef75c12dbdabd78195d75bc178c1a4ac21d45d4deaa43ec96fba3ca063fa4",
+  "command": [
+    "python3",
+    "tools/hdmi-shell-performance.py",
+    "--check-scene",
+    "--variant",
+    "candidate",
+    "--sway",
+    "/nix/store/3vk3p0ps0dng1qmqsrj7w2gfjq024zv8-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway",
+    "--client",
+    "/nix/store/yjb89ap4bq5vb29szdzkr5sv9lpw1sz6-card-composition-probe-client-0.1/bin/card-composition-probe-client",
+    "--output",
+    "/home/jadams/tmp/codex-claude-handoff-20261019/3/portrait-current-scene"
+  ],
+  "exit": 1,
+  "evidence_class": "headless QEMU software; no physical HDMI/touch or board performance proof",
+  "reason": "Obsolete fixture expected Overview rejection at180 degrees; current compositor returned success. Two90-degree cases had completed successfully."
+}

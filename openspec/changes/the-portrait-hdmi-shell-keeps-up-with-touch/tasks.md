@@ -83,3 +83,10 @@ across frames.11 host fixtures pass, including a measured motion-span check.
 Exact helper hash, command, workload differences and limits are recorded in
 `docs/evidence/hdmi-shell-performance/capture-current-renderer/README.md`.
 No new board trace or physical acceptance exists; progress remains3/12.
+
+Current compiled source221 headless confirmation: all three90-sampler,
+90-quarter-turn and180-sampler cases pass with live ordinary/Overview pixels
+and main/child counters. The old fixture's180-degree rejection expectation
+failed and is preserved; current behavior is tested more fully, with sampler
+fallback still required. Evidence: `docs/evidence/hdmi-shell-performance/current-scene-221/README.md`.
+This refreshes checked task2.3 only; all nine remaining gates stay open.

@@ -188,56 +188,44 @@ def run_variant(args, output, name, transform, quarter_turn):
                   "size": list(ordinary_b.size)},
         }
 
-        if transform == "180":
-            # The renderer's ordinary scene still exercises the unmodified
-            # transform sampler. The current card-shell UI guard declines to
-            # initialize at 180 degrees, so do not mislabel an overview as
-            # covered for this fallback-only orientation.
-            response = ipc(sockets, "card_shell enter", check=False)
-            assert response and not response[0].get("success") and \
-                response[0].get("error") == "card shell requires one Pixman output", response
-            result["overview"] = {
-                "status": "unavailable-at-transform-180",
-                "ipc_response": response,
-            }
-        else:
-            # Replay the exact y==height contact observed on physical HDMI.
-            # This is injected headless proof of the real adapter/policy path.
-            width, height = expected_rect["width"], expected_rect["height"]
-            down = ipc(sockets, f"card_shell down 91 {width / 2} {height}")
-            ipc(sockets, f"card_shell motion 91 {width / 2} {height - 300}")
-            ipc(sockets, "card_shell up 91")
-            time.sleep(0.5)
-            ipc(sockets, "card_shell back")
-            result["exact_bottom_endpoint"] = {
-                "evidence_class": "headless-qemu-injected-input",
-                "x": width / 2, "y": height, "down_response": down,
-            }
-            response = ipc(sockets, "card_shell enter")
-            result["overview"] = {"status": "entered", "ipc_response": response}
-        if transform != "180":
-            time.sleep(2.0)
-            overview_before = latest_client_state(app_log)
-            overview_a = capture(env, runtime / "overview-a.png")
-            time.sleep(0.8)
-            overview_b = capture(env, runtime / "overview-b.png")
-            overview_after = wait_for(
-                lambda: (state if (state := latest_client_state(app_log)) and
-                         state["frames"] > overview_before["frames"] else None),
-                timeout=10, description=f"{name} overview frame progress",
-            )
-            assert_live_between(overview_before, overview_after, f"{name} overview")
-            assert ImageChops.difference(overview_a, overview_b).getbbox(), (
-                f"{name}: overview scene pixels stayed static while client counters advanced"
-            )
-            result["client_states"]["overview_before"] = overview_before
-            result["client_states"]["overview_after"] = overview_after
-            result["captures"]["overview"] = {
-                "a": {"file": "overview-a.png", "sha256": digest(runtime / "overview-a.png"),
-                      "size": list(overview_a.size)},
-                "b": {"file": "overview-b.png", "sha256": digest(runtime / "overview-b.png"),
-                      "size": list(overview_b.size)},
-            }
+        # All supported orientations now expose Overview. The 180-degree
+        # renderer still must use its sampler fallback, checked below.
+        # Replay the exact y==height contact observed on physical HDMI.
+        # This is injected headless proof of the real adapter/policy path.
+        width, height = expected_rect["width"], expected_rect["height"]
+        down = ipc(sockets, f"card_shell down 91 {width / 2} {height}")
+        ipc(sockets, f"card_shell motion 91 {width / 2} {height - 300}")
+        ipc(sockets, "card_shell up 91")
+        time.sleep(0.5)
+        ipc(sockets, "card_shell back")
+        result["exact_bottom_endpoint"] = {
+            "evidence_class": "headless-qemu-injected-input",
+            "x": width / 2, "y": height, "down_response": down,
+        }
+        response = ipc(sockets, "card_shell enter")
+        result["overview"] = {"status": "entered", "ipc_response": response}
+        time.sleep(2.0)
+        overview_before = latest_client_state(app_log)
+        overview_a = capture(env, runtime / "overview-a.png")
+        time.sleep(0.8)
+        overview_b = capture(env, runtime / "overview-b.png")
+        overview_after = wait_for(
+            lambda: (state if (state := latest_client_state(app_log)) and
+                     state["frames"] > overview_before["frames"] else None),
+            timeout=10, description=f"{name} overview frame progress",
+        )
+        assert_live_between(overview_before, overview_after, f"{name} overview")
+        assert ImageChops.difference(overview_a, overview_b).getbbox(), (
+            f"{name}: overview scene pixels stayed static while client counters advanced"
+        )
+        result["client_states"]["overview_before"] = overview_before
+        result["client_states"]["overview_after"] = overview_after
+        result["captures"]["overview"] = {
+            "a": {"file": "overview-a.png", "sha256": digest(runtime / "overview-a.png"),
+                  "size": list(overview_a.size)},
+            "b": {"file": "overview-b.png", "sha256": digest(runtime / "overview-b.png"),
+                  "size": list(overview_b.size)},
+        }
 
         trace = (runtime / "sway.log").read_text(errors="replace")
         draw_rows = re.findall(

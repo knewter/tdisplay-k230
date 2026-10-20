@@ -1,0 +1,16 @@
+RUN turn90-sampler: transform=90 quarter_turn=0
+RUN turn90-quarter-turn: transform=90 quarter_turn=1
+RUN turn180-sampler-fallback: transform=180 quarter_turn=1
+Traceback (most recent call last):
+  File "/mnt/MediaVolume/home/jadams/src/gitlab.daringbit.com/josh/tdisplay-k230/.claude/worktrees/portrait-hdmi-proof/tests/test_hdmi_quarter_turn_scene.py", line 331, in <module>
+    main()
+    ~~~~^^
+  File "/mnt/MediaVolume/home/jadams/src/gitlab.daringbit.com/josh/tdisplay-k230/.claude/worktrees/portrait-hdmi-proof/tests/test_hdmi_quarter_turn_scene.py", line 322, in main
+    report["runs"].append(run_variant(args, args.output, name, transform, enabled))
+                          ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/MediaVolume/home/jadams/src/gitlab.daringbit.com/josh/tdisplay-k230/.claude/worktrees/portrait-hdmi-proof/tests/test_hdmi_quarter_turn_scene.py", line 197, in run_variant
+    assert response and not response[0].get("success") and \
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        response[0].get("error") == "card shell requires one Pixman output", response
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: [{'success': True}]

@@ -1,0 +1,180 @@
+{
+  "name": "turn90-quarter-turn",
+  "transform": "90",
+  "quarter_turn_enabled": true,
+  "captures": {
+    "ordinary": {
+      "a": {
+        "file": "ordinary-a.png",
+        "sha256": "1cb688812240d80a41acd853c8dda854df3c7041d62e3465f8981baa3b3250e1",
+        "size": [
+          1080,
+          1920
+        ]
+      },
+      "b": {
+        "file": "ordinary-b.png",
+        "sha256": "47abdb889f5ec3a3ac1ee1e2a752a71ea2d2b75e6f04e398f1b909438a5841a8",
+        "size": [
+          1080,
+          1920
+        ]
+      }
+    },
+    "overview": {
+      "a": {
+        "file": "overview-a.png",
+        "sha256": "b92c26ae53513519988f8533871b5ef0da5ce3d816f54e501034bc4c8fcfbae0",
+        "size": [
+          1080,
+          1920
+        ]
+      },
+      "b": {
+        "file": "overview-b.png",
+        "sha256": "7d76c47ba299309671042a7b4336c6d0090d2dee1f0f20e815d181d4c2185e3c",
+        "size": [
+          1080,
+          1920
+        ]
+      }
+    }
+  },
+  "client_states": {
+    "ordinary_before": {
+      "event": "heartbeat",
+      "app_id": "k230.card.one",
+      "elapsed_ms": 1018,
+      "frames": 15,
+      "callbacks": 14,
+      "releases": 13,
+      "child_frames": 14,
+      "child_callbacks": 13,
+      "child_releases": 12,
+      "callback_age_ms": 21,
+      "child_callback_age_ms": 0,
+      "max_callback_gap_ms": 104,
+      "child_max_callback_gap_ms": 145,
+      "width": 1080,
+      "height": 1920,
+      "stride": 4320,
+      "key_presses": 0,
+      "format": "XRGB8888",
+      "subsurface": "desynchronized",
+      "presentation": "unmeasured"
+    },
+    "ordinary_after": {
+      "event": "heartbeat",
+      "app_id": "k230.card.one",
+      "elapsed_ms": 2030,
+      "frames": 31,
+      "callbacks": 30,
+      "releases": 29,
+      "child_frames": 30,
+      "child_callbacks": 29,
+      "child_releases": 28,
+      "callback_age_ms": 5,
+      "child_callback_age_ms": 0,
+      "max_callback_gap_ms": 111,
+      "child_max_callback_gap_ms": 145,
+      "width": 1080,
+      "height": 1920,
+      "stride": 4320,
+      "key_presses": 0,
+      "format": "XRGB8888",
+      "subsurface": "desynchronized",
+      "presentation": "unmeasured"
+    },
+    "overview_before": {
+      "event": "heartbeat",
+      "app_id": "k230.card.one",
+      "elapsed_ms": 5163,
+      "frames": 65,
+      "callbacks": 64,
+      "releases": 63,
+      "child_frames": 64,
+      "child_callbacks": 63,
+      "child_releases": 62,
+      "callback_age_ms": 4,
+      "child_callback_age_ms": 0,
+      "max_callback_gap_ms": 560,
+      "child_max_callback_gap_ms": 558,
+      "width": 1080,
+      "height": 1920,
+      "stride": 4320,
+      "key_presses": 0,
+      "format": "XRGB8888",
+      "subsurface": "desynchronized",
+      "presentation": "unmeasured"
+    },
+    "overview_after": {
+      "event": "heartbeat",
+      "app_id": "k230.card.one",
+      "elapsed_ms": 7273,
+      "frames": 90,
+      "callbacks": 89,
+      "releases": 88,
+      "child_frames": 89,
+      "child_callbacks": 88,
+      "child_releases": 87,
+      "callback_age_ms": 4,
+      "child_callback_age_ms": 0,
+      "max_callback_gap_ms": 560,
+      "child_max_callback_gap_ms": 558,
+      "width": 1080,
+      "height": 1920,
+      "stride": 4320,
+      "key_presses": 0,
+      "format": "XRGB8888",
+      "subsurface": "desynchronized",
+      "presentation": "unmeasured"
+    }
+  },
+  "output": {
+    "name": "HEADLESS-1",
+    "current_mode": {
+      "width": 1920,
+      "height": 1080,
+      "refresh": 0
+    },
+    "transform": "90",
+    "scale": 1.0,
+    "rect": {
+      "x": 0,
+      "y": 0,
+      "width": 1080,
+      "height": 1920
+    }
+  },
+  "exact_bottom_endpoint": {
+    "evidence_class": "headless-qemu-injected-input",
+    "x": 540.0,
+    "y": 1920,
+    "down_response": [
+      {
+        "success": true
+      }
+    ]
+  },
+  "overview": {
+    "status": "entered",
+    "ipc_response": [
+      {
+        "success": true
+      }
+    ]
+  },
+  "draw_trace": {
+    "rows": 263,
+    "paths": [
+      "sampler",
+      "tiled"
+    ],
+    "tiled_rows": 167,
+    "sampler_rows": 96,
+    "max_copy_cpu_ns": 41210467,
+    "max_total_cpu_ns": 59805369,
+    "max_scratch_bytes": 8294400
+  },
+  "evidence_class": "headless-qemu-real-compositor-changing-client"
+}

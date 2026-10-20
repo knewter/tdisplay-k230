@@ -1,0 +1,46 @@
+RUN turn90-sampler: transform=90 quarter_turn=0
+RUN turn90-quarter-turn: transform=90 quarter_turn=1
+RUN turn180-sampler-fallback: transform=180 quarter_turn=1
+{
+  "result": "PASS",
+  "output": "/home/jadams/tmp/codex-claude-handoff-20261019/3/portrait-current-scene-b",
+  "runs": [
+    {
+      "name": "turn90-sampler",
+      "rect": {
+        "x": 0,
+        "y": 0,
+        "width": 1080,
+        "height": 1920
+      },
+      "paths": [
+        "sampler"
+      ]
+    },
+    {
+      "name": "turn90-quarter-turn",
+      "rect": {
+        "x": 0,
+        "y": 0,
+        "width": 1080,
+        "height": 1920
+      },
+      "paths": [
+        "sampler",
+        "tiled"
+      ]
+    },
+    {
+      "name": "turn180-sampler-fallback",
+      "rect": {
+        "x": 0,
+        "y": 0,
+        "width": 1920,
+        "height": 1080
+      },
+      "paths": [
+        "sampler"
+      ]
+    }
+  ]
+}

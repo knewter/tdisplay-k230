@@ -651,6 +651,18 @@ Paths are relative to the repository root. `(sdk)` is
 so that building stage 1 from source does not silently drop them from view.
 
 ```
+DATA 154e3568645238a0f6bc21fb72a41ae3e1126f9d9812df1b48836b0c1c0412bc docs/evidence/hdmi-shell-performance/current-scene-221/turn180-sampler-fallback/ordinary-a.png
+DATA 6b99b5674b661119e865270d33eaaddb0e043ae2d4ab574911f2ec9d05f69821 docs/evidence/hdmi-shell-performance/current-scene-221/turn180-sampler-fallback/ordinary-b.png
+DATA ad86810b1c0735f4cd2cedc112331afc6a52cf2e2787f8c004c452b99377247c docs/evidence/hdmi-shell-performance/current-scene-221/turn180-sampler-fallback/overview-a.png
+DATA ac9718bad50f8071df99e33cee2c72b113d5cb71fafa4e49a65de8e567dac24d docs/evidence/hdmi-shell-performance/current-scene-221/turn180-sampler-fallback/overview-b.png
+DATA 1cb688812240d80a41acd853c8dda854df3c7041d62e3465f8981baa3b3250e1 docs/evidence/hdmi-shell-performance/current-scene-221/turn90-quarter-turn/ordinary-a.png
+DATA 47abdb889f5ec3a3ac1ee1e2a752a71ea2d2b75e6f04e398f1b909438a5841a8 docs/evidence/hdmi-shell-performance/current-scene-221/turn90-quarter-turn/ordinary-b.png
+DATA b92c26ae53513519988f8533871b5ef0da5ce3d816f54e501034bc4c8fcfbae0 docs/evidence/hdmi-shell-performance/current-scene-221/turn90-quarter-turn/overview-a.png
+DATA 7d76c47ba299309671042a7b4336c6d0090d2dee1f0f20e815d181d4c2185e3c docs/evidence/hdmi-shell-performance/current-scene-221/turn90-quarter-turn/overview-b.png
+DATA 0772c695ecea3a4d3402ba2b8dbc6e467239cf5a86269d14b5cec16720590427 docs/evidence/hdmi-shell-performance/current-scene-221/turn90-sampler/ordinary-a.png
+DATA e1215e04cf0d51f0be7555e0b663909c8fb614cfa779936e78925dac57a2e9f3 docs/evidence/hdmi-shell-performance/current-scene-221/turn90-sampler/ordinary-b.png
+DATA 33a74cc4d484efea10356015da31969b0fb55b632a3cd5a81ffe8d5ec0713097 docs/evidence/hdmi-shell-performance/current-scene-221/turn90-sampler/overview-a.png
+DATA 271b7cd1f072d238fb891a25ff068c01b07f43513430a699019c9e8425262659 docs/evidence/hdmi-shell-performance/current-scene-221/turn90-sampler/overview-b.png
 DATA 8fe55879676a9662c4d0c7ed068f7437869a22a4abe18145ca9315e400b9a426 docs/evidence/panel-paint/candidate-scene-coalescing/camera/full-contact-1.jpg
 DATA 6fb32d8d67ec0e046c31eea5614eb7fed410fdd98f41b722594cb990579db9b8 docs/evidence/panel-paint/candidate-scene-coalescing/camera/full-contact-2.jpg
 DATA 563259b918556d4182fcc2620f17cd567fca6682abd015eca5361d6572f93530 docs/evidence/panel-paint/candidate-scene-coalescing/camera/full.mp4
@@ -3731,3 +3743,22 @@ Full/reduced injected motion and sampling limits: `docs/evidence/panel-paint/can
 | `docs/evidence/panel-paint/candidate-scene-coalescing/camera/reduced-contact-1.jpg` | 312434 | DATA | `5a2b89b995f2bb8fcfd03bb52f1c8b4d6c265b00e4dd7df77eab24400319e4ba` |
 | `docs/evidence/panel-paint/candidate-scene-coalescing/camera/reduced-contact-2.jpg` | 311815 | DATA | `b4eb088fec63029b100b283af1b6c71c0f403256a2e8172d02fdf65ec0e4e5eb` |
 | `docs/evidence/panel-paint/candidate-scene-coalescing/camera/reduced.mp4` | 1259697 | DATA | `386de08ceb29b10af5330130f6b21329f65dffd2effe9fb124a4c7d875b43ea5` |
+
+### Current source221 portrait headless scene
+
+Twelve native software captures and limits: `docs/evidence/hdmi-shell-performance/current-scene-221/README.md`.
+
+| Path | Bytes | Class | SHA-256 |
+| --- | ---: | --- | --- |
+| `docs/evidence/hdmi-shell-performance/current-scene-221/turn180-sampler-fallback/ordinary-a.png` | 8777 | DATA | `154e3568645238a0f6bc21fb72a41ae3e1126f9d9812df1b48836b0c1c0412bc` |
+| `docs/evidence/hdmi-shell-performance/current-scene-221/turn180-sampler-fallback/ordinary-b.png` | 8778 | DATA | `6b99b5674b661119e865270d33eaaddb0e043ae2d4ab574911f2ec9d05f69821` |
+| `docs/evidence/hdmi-shell-performance/current-scene-221/turn180-sampler-fallback/overview-a.png` | 21460 | DATA | `ad86810b1c0735f4cd2cedc112331afc6a52cf2e2787f8c004c452b99377247c` |
+| `docs/evidence/hdmi-shell-performance/current-scene-221/turn180-sampler-fallback/overview-b.png` | 21529 | DATA | `ac9718bad50f8071df99e33cee2c72b113d5cb71fafa4e49a65de8e567dac24d` |
+| `docs/evidence/hdmi-shell-performance/current-scene-221/turn90-quarter-turn/ordinary-a.png` | 10532 | DATA | `1cb688812240d80a41acd853c8dda854df3c7041d62e3465f8981baa3b3250e1` |
+| `docs/evidence/hdmi-shell-performance/current-scene-221/turn90-quarter-turn/ordinary-b.png` | 10555 | DATA | `47abdb889f5ec3a3ac1ee1e2a752a71ea2d2b75e6f04e398f1b909438a5841a8` |
+| `docs/evidence/hdmi-shell-performance/current-scene-221/turn90-quarter-turn/overview-a.png` | 23374 | DATA | `b92c26ae53513519988f8533871b5ef0da5ce3d816f54e501034bc4c8fcfbae0` |
+| `docs/evidence/hdmi-shell-performance/current-scene-221/turn90-quarter-turn/overview-b.png` | 23311 | DATA | `7d76c47ba299309671042a7b4336c6d0090d2dee1f0f20e815d181d4c2185e3c` |
+| `docs/evidence/hdmi-shell-performance/current-scene-221/turn90-sampler/ordinary-a.png` | 10531 | DATA | `0772c695ecea3a4d3402ba2b8dbc6e467239cf5a86269d14b5cec16720590427` |
+| `docs/evidence/hdmi-shell-performance/current-scene-221/turn90-sampler/ordinary-b.png` | 10531 | DATA | `e1215e04cf0d51f0be7555e0b663909c8fb614cfa779936e78925dac57a2e9f3` |
+| `docs/evidence/hdmi-shell-performance/current-scene-221/turn90-sampler/overview-a.png` | 23372 | DATA | `33a74cc4d484efea10356015da31969b0fb55b632a3cd5a81ffe8d5ec0713097` |
+| `docs/evidence/hdmi-shell-performance/current-scene-221/turn90-sampler/overview-b.png` | 23295 | DATA | `271b7cd1f072d238fb891a25ff068c01b07f43513430a699019c9e8425262659` |
