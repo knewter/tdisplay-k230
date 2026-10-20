@@ -1,6 +1,6 @@
 ## 1. Host parser and control guards
 
-- [ ] 1.1 Implement isolated-instance ownership/cleanup, numeric trace export and strict clock/loss/input-frame correlation. Test partial/missing events, unknown/private payload rejection, syscall pairing, switch/wakeup interpretation, ownership conflicts and cleanup on failure. Proof: `python3 tools/landscape-hdmi-stall-trace.py --self-test`; commit command output and source hashes under `docs/evidence/landscape-hdmi-stall-trace/host/`.
+- [x] 1.1 Implement isolated-instance ownership/cleanup, numeric trace export and strict clock/loss/input-frame correlation. Test partial/missing events, unknown/private payload rejection, syscall pairing, switch/wakeup interpretation, ownership conflicts and cleanup on failure. Proof: `python3 tools/landscape-hdmi-stall-trace.py --self-test`; commit command output and source hashes under `docs/evidence/landscape-hdmi-stall-trace/host/`.
 
 ## 2. Reserved-board profiling (hardware diagnostic, not physical contact)
 

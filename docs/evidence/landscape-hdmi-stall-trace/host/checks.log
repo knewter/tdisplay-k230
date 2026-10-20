@@ -1,0 +1,13 @@
+test_clock_loss_and_public_schema_guards (__main__.Fixtures.test_clock_loss_and_public_schema_guards) ... ok
+test_correlated_late_interval_and_coverage (__main__.Fixtures.test_correlated_late_interval_and_coverage) ... ok
+test_instance_ownership_conflict_is_preserved (__main__.Fixtures.test_instance_ownership_conflict_is_preserved) ... ok
+test_numeric_export_omits_buffers_and_names (__main__.Fixtures.test_numeric_export_omits_buffers_and_names) ... ok
+test_partial_events_only_outside_qualified_window (__main__.Fixtures.test_partial_events_only_outside_qualified_window) ... ok
+test_real_benchmark_parser_keeps_frame_join_gate (__main__.Fixtures.test_real_benchmark_parser_keeps_frame_join_gate) ... ok
+test_smoke_failure_closes_owned_session (__main__.Fixtures.test_smoke_failure_closes_owned_session) ... ok
+test_syscall_and_sleep_runnable_intervals (__main__.Fixtures.test_syscall_and_sleep_runnable_intervals) ... ok
+
+----------------------------------------------------------------------
+Ran 8 tests in 0.122s
+
+OK

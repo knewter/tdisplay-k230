@@ -1,0 +1,11 @@
+{
+  "checked_at": "2026-10-20T05:57:35.016537+00:00",
+  "command": [
+    "python3",
+    "tools/landscape-hdmi-stall-trace.py",
+    "--self-test"
+  ],
+  "exit_code": 0,
+  "source_sha256": "32c177f57e77283460346b1f453a790456e7e441367976d083b099084fae1075",
+  "evidence_class": "Host fixtures only; no hardware/profile claim"
+}
