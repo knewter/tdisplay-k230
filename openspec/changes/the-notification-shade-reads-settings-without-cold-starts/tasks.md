@@ -1,7 +1,7 @@
 ## 1. Host implementation and build
 
 - [x] 1.1 Implement the read-only native status helper and narrow wrapper routing; compare its capability output with the unchanged Python oracle, including fresh successive reads, malformed/missing data, rounding, permission/unavailable states and keyboard failure/deadline cleanup. Host proof: `python3 -m unittest tests.test_settings_status tests.test_device_settings` plus strict compiler warnings. Commit source and results under `docs/evidence/shade-status/host/`.
-- [ ] 1.2 Cross-build the installed wrapper/helper and matching landscape system, recording derivation/source/output hashes and unchanged kernel/compositor/Rust identities. Build proof under the existing build lock: `nix build .#handheld-settings` then `nix build .#nixosConfigurations.k230-mainline-drm-shell-landscape-hdmi.config.system.build.toplevel`. Host build is not deployment proof.
+- [x] 1.2 Cross-build the installed wrapper/helper and matching landscape system, recording derivation/source/output hashes and unchanged kernel/compositor/Rust identities. Build proof under the existing build lock: `nix build .#handheld-settings` then `nix build .#nixosConfigurations.k230-mainline-drm-shell-landscape-hdmi.config.system.build.toplevel`. Host build is not deployment proof.
 
 ## 2. Board qualification
 

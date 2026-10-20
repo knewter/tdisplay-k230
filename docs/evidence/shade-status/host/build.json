@@ -1,0 +1,74 @@
+{
+  "observed_completed_at": "2026-10-20T20:36:12.994964+00:00",
+  "source_revision": "ffa19e381de7151708ad339846660ec19d16ebda",
+  "profile": "k230-mainline-drm-shell-landscape-hdmi",
+  "builds": [
+    {
+      "command": "nix build git+file://<owned-worktree>?rev=<full-source-revision>#handheld-settings --max-jobs 4 --cores 8",
+      "exit_code": 0,
+      "output": "/nix/store/kdc5bmnqf6n5px5nfsv0iz8l02d1azah-k230-settings"
+    },
+    {
+      "command": "nix build git+file://<owned-worktree>?rev=<full-source-revision>#nixosConfigurations.k230-mainline-drm-shell-landscape-hdmi.config.system.build.toplevel --max-jobs 4 --cores 8",
+      "exit_code": 0,
+      "output": "/nix/store/p501mchy0dq9lyjnaxwkx5s2pdm4i2yj-nixos-system-nixos-26.11.20260919.20b1ddd"
+    }
+  ],
+  "build_lock": "/tmp/k230-nix-build.lock; each build held flock exclusively and released on exit",
+  "native": {
+    "path": "/nix/store/fm6zs80m11nc122z0djwaycz0zrhnbij-k230-settings-status-riscv64-unknown-linux-gnu-0.1.0/bin/k230-settings-status",
+    "bytes": 18096,
+    "sha256": "c262a1f1aaff1cb3a5b353f3880f1dfbe197d8fbe40bbb8510261a19a9283cd0"
+  },
+  "wrapper_sha256": "9a38a0562fd57707fe2430d1e72598b22f768cc07824785a9cb9f0c49754f4c7",
+  "ui_wrapper": "/nix/store/52ad5p0y2g0ynskm9bb7c0qbw4glh144-k230-shell-rust/bin/k230-shell-rust",
+  "ui_wrapper_sha256": "bb81738e03e7ba670ce8a088c26745f0d222cf29767acf7d05166754f08b26df",
+  "kernel": {
+    "path": "/nix/store/21lz5c6pkk329c0xcac9bzlx40dplrlk-linux-riscv64-unknown-linux-gnu-7.3.0-rc5/Image",
+    "same_store_path_as_accepted_system": true,
+    "sha256": "d6b2153d97ac8382b5329c64397b8b46435e6a423b16796f8c37e052d4bcd642"
+  },
+  "new_store_paths": [
+    "/nix/store/1l78djhwlirzh2jg0kjqynjvq206sddm-unit-shell.service",
+    "/nix/store/52ad5p0y2g0ynskm9bb7c0qbw4glh144-k230-shell-rust",
+    "/nix/store/7khi8238q2qbx1wsyw6ivvn7nhc1sa4z-k230-sway.conf",
+    "/nix/store/ayhclb0kgl2pdmla5whdxmr69h3bfm1h-unit-dbus-broker.service",
+    "/nix/store/fm6zs80m11nc122z0djwaycz0zrhnbij-k230-settings-status-riscv64-unknown-linux-gnu-0.1.0",
+    "/nix/store/k67p4pqg9n8vqk9kw3qf0n2xlp3dh69g-unit-shell-ui.service",
+    "/nix/store/kdc5bmnqf6n5px5nfsv0iz8l02d1azah-k230-settings",
+    "/nix/store/l4hax3x9apgj6fp4ys9qfy2lmxqdb26r-X-Restart-Triggers-dbus-broker",
+    "/nix/store/lgdc6zb7la31hn0i09idr1402hw0b9kj-dbus-1",
+    "/nix/store/lp1qx9xzk7z7rnyd54aw6sys2rwzclcr-etc",
+    "/nix/store/m2b4zpd5dvb7brl0xsvcr7q75sp2jcw6-system-path",
+    "/nix/store/mb7q0rscfz0f7g8c3ihyqkdvm448m7a3-system-units",
+    "/nix/store/p501mchy0dq9lyjnaxwkx5s2pdm4i2yj-nixos-system-nixos-26.11.20260919.20b1ddd",
+    "/nix/store/vf6bwd1sh4hvpf1cpk7f0ipyyzawklvv-unit-dbus-broker.service",
+    "/nix/store/zpcsahs0maj2j4rpvk7z4dj0rdkk8dwy-user-units"
+  ],
+  "incremental_nar_bytes_vs_accepted_system": 4144432,
+  "limits": "Cross-build and closure identities only; no copy/activation/performance/physical/persistence proof.",
+  "boot_bundle": "/nix/store/pa46qfg8v8pdgdgmk7lai218wmh4dzh9-k230-coherent-shell-boot-files",
+  "boot_bundle_files": {
+    "initrd.uimg": {
+      "bytes": 27328407,
+      "sha256": "7d983aeffd4e47d2e36f825a731b485d55f05534a5dd28f036244d79c16f197c"
+    },
+    "Image": {
+      "bytes": 42752512,
+      "sha256": "d6b2153d97ac8382b5329c64397b8b46435e6a423b16796f8c37e052d4bcd642"
+    },
+    "k230-tdisplay.dtb": {
+      "bytes": 19048,
+      "sha256": "ad61b8a70acba495b77761a6e73e935c4cd8ccd2a7ca6eb3da7fca6c256a18df"
+    },
+    "bootargs.txt": {
+      "bytes": 198,
+      "sha256": "38a90761c55914c426828c41d1c8b1cb636d19cda6893859d43afbe64c0fefc4"
+    }
+  },
+  "boot_bundle_build": {
+    "attribute": "kernelMainlineDrmShellLandscapeHdmiBootFiles",
+    "exit_code": 0,
+    "completed_observed_at": "2026-10-20T20:38:07.799399+00:00"
+  }
+}

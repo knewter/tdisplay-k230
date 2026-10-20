@@ -1,0 +1,25 @@
+{
+  "first_invocation": {
+    "result": "REJECTED_BEFORE_BUILD",
+    "exit_code": 1,
+    "reason": "Pinned Git URL used abbreviated revision; Nix requires the full SHA-1.",
+    "log": "error: hash ffa19e38 has wrong length for hash algorithm sha1"
+  },
+  "corrected_invocation": {
+    "source_revision": "ffa19e381de7151708ad339846660ec19d16ebda",
+    "wrapper_exit_code": 0,
+    "system_exit_code": 0,
+    "bundle_exit_code": 0
+  },
+  "proposal_publication": {
+    "ci_run": "https://github.com/knewter/tdisplay-k230/actions/runs/39492421817",
+    "build": "success",
+    "deploy": "failure",
+    "reason": "GitHub Pages identity-token request timed out. Retained protected failed-deployment log; no source test failure inferred."
+  },
+  "source_ci": {
+    "ci_run": "https://github.com/knewter/tdisplay-k230/actions/runs/39492963764",
+    "result": "success",
+    "exact_page_revision": "not yet verified by this evidence"
+  }
+}
