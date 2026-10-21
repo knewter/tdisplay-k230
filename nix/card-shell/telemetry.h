@@ -23,6 +23,8 @@ uint64_t card_bench_input_stage_begin(void);
 void card_bench_input_stage_end(enum card_bench_input_stage stage, uint64_t start);
 void card_bench_work_begin(void);
 void card_bench_work_end(void);
+/* Diagnostic wall-clock boundaries; never alter render scheduling or budgets. */
+void card_bench_schedule(struct sway_output *output, int delay_ms);
 void card_bench_render_begin(struct sway_output *output);
 enum card_bench_render_stage { CARD_BENCH_PREPARE, CARD_BENCH_BUILD, CARD_BENCH_COMMIT };
 void card_bench_render_stage(struct sway_output *output, enum card_bench_render_stage stage);

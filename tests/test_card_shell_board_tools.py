@@ -89,6 +89,13 @@ class SessionTests(unittest.TestCase):
                   row.replace('chrome_cpu_ns=1','cpu_ns=1'),
                   row.replace('scene_cpu_ns=12','scene_cpu_ns=-1')]
         self.assertEqual(H.normalized_journal('prefix '+row+'\n'+'\n'.join(rejected)),row+'\n')
+    def test_repaint_timing_export_never_copies_arbitrary_payloads(self):
+        row='K230_CARD_SHELL repaint-timing run=1 frame_id=2 scheduled_ns=0 delay_ms=0 start_ns=20 commit_start_ns=25 end_ns=30'
+        rejected=[row+' secret=private',row.replace(' start_ns=20',''),
+                  row.replace('end_ns=30','end_ns=private-token'),
+                  row.replace('commit_start_ns=25','start_ns=25'),
+                  row.replace('delay_ms=0','delay_ms=-1')]
+        self.assertEqual(H.normalized_journal('prefix '+row+'\n'+'\n'.join(rejected)),row+'\n')
     def setUp(self):
         self.temp=tempfile.TemporaryDirectory(prefix='board-tools-');self.root=Path(self.temp.name);self.runtime=self.root/'run';self.runtime.mkdir()
         self.account=patch.object(H.pwd,'getpwnam',return_value=types.SimpleNamespace(pw_uid=os.getuid(),pw_gid=os.getgid(),pw_dir=str(self.root)))

@@ -28,6 +28,8 @@ static struct {
 	enum card_bench_render_stage render_stage;
 	uint64_t stage_cpu_start, stage_cpu[3], render_attempts, failed_attempts;
 	uint64_t submit_time, input_damage_time;
+	uint64_t scheduled_time, render_wall_start;
+	int scheduled_delay_ms;
 	uint32_t frame_done_seq;
 	bool frame_done_seen, motion_settled;
 	uint64_t release_input;
@@ -275,8 +277,15 @@ void card_bench_work_end(void) {
 	if (bench.armed && bench.work_depth && --bench.work_depth == 0)
 		bench.charged_cpu += stamp(CLOCK_PROCESS_CPUTIME_ID) - bench.work_cpu;
 }
+void card_bench_schedule(struct sway_output *output, int delay_ms) {
+	if (bench.armed && bench.output == output) {
+		bench.scheduled_time = stamp(CLOCK_MONOTONIC);
+		bench.scheduled_delay_ms = delay_ms > 0 ? delay_ms : 0;
+	}
+}
 void card_bench_render_begin(struct sway_output *output) {
 	if (bench.armed && bench.output == output) {
+		bench.render_wall_start = stamp(CLOCK_MONOTONIC);
 		card_bench_work_begin();
 		bench.render_cpu_start = stamp(CLOCK_PROCESS_CPUTIME_ID);
 		bench.in_render = true;
@@ -303,6 +312,7 @@ void card_bench_commit_begin(struct sway_output *output) {
 void card_bench_render_end(struct sway_output *output, bool success) {
 	if (!bench.armed || bench.output != output)
 		return;
+	uint64_t wall_end = stamp(CLOCK_MONOTONIC);
 	uint64_t end = stamp(CLOCK_PROCESS_CPUTIME_ID);
 	bench.render_cpu += end - bench.render_cpu_start;
 	bench.stage_cpu[bench.render_stage] += end - bench.stage_cpu_start;
@@ -313,6 +323,18 @@ void card_bench_render_end(struct sway_output *output, bool success) {
 		return;
 	}
 	uint64_t now = bench.submit_time, frame = output->wlr_output->commit_seq;
+	/* CLOCK_MONOTONIC throughout. The requested delay starts just before
+	 * Sway updates its timer (or renders immediately); any subsequent scene
+	 * work/event-loop delay is included. This diagnoses elapsed waiting,
+	 * unlike the process-CPU subdivisions. A zero scheduled_ns means the
+	 * benchmark armed after a frame was already scheduled: do not infer a
+	 * timer lateness from that first partial sample. */
+	sway_log(SWAY_INFO,
+		"K230_CARD_SHELL repaint-timing run=%" PRIu64 " frame_id=%" PRIu64
+		" scheduled_ns=%" PRIu64 " delay_ms=%d start_ns=%" PRIu64
+		" commit_start_ns=%" PRIu64 " end_ns=%" PRIu64,
+		bench.run, frame, bench.scheduled_time, bench.scheduled_delay_ms,
+		bench.render_wall_start, now, wall_end);
 	for (size_t i = 0; i < bench.count; i++)
 		sway_log(SWAY_INFO,
 				 "K230_CARD_BENCH v=1 run=%" PRIu64 " event=submit input_id=%" PRIu64

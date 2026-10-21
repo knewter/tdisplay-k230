@@ -111,6 +111,7 @@ int main(void) {
     card_bench_scene_damage(); card_bench_input_end(true,true);
     card_bench_render_begin(&o); cpu+=1; card_bench_render_stage(&o,CARD_BENCH_BUILD);
     cpu+=4; card_bench_render_end(&o,false);
+    card_bench_schedule(&o,3);
     card_bench_render_begin(&o); cpu+=1; card_bench_render_stage(&o,CARD_BENCH_BUILD);
     cpu+=2; w.commit_seq=2; card_bench_motion_settled(true); card_bench_commit_begin(&o); cpu+=3;
     card_bench_render_end(&o,true);
@@ -144,7 +145,12 @@ int main(void) {
             self.assertEqual(tuple(int(costs[1][k]) for k in
                 ('cpu_ns','policy_cpu_ns','scene_cpu_ns','chrome_cpu_ns')),(2,0,0,0))
             rows,ignored=parser.parse_rows(output.encode())
-            self.assertEqual(ignored,12)
+            timing=[dict(field.split('=') for field in line.split()[2:])
+                    for line in output.splitlines() if line.startswith('K230_CARD_SHELL repaint-timing ')]
+            self.assertEqual(len(timing),2) # failed render emits no committed-frame timing
+            self.assertEqual((int(timing[0]['scheduled_ns']),int(timing[0]['delay_ms'])),(0,0))
+            self.assertEqual((int(timing[1]['scheduled_ns']),int(timing[1]['delay_ms'])),(10_000_001_000,3))
+            self.assertEqual(ignored,14) # two diagnostic rows; frozen benchmark schema unchanged
             self.assertEqual([row['update_cpu_ns'] for row in rows if row['event']=='submit'],[20,13])
             # Feed the actual C producer output into the motion consumer. The
             # existing benchmark parser continues accepting its frozen schema.

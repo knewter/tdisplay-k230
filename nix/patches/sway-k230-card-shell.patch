@@ -127,7 +127,9 @@
  		sway_log(SWAY_ERROR, "Page-flip failed on output %s", output->wlr_output->name);
  	}
  	wlr_output_state_finish(&pending);
-@@ -366,6 +376,7 @@
+@@ -358,0 +369,1 @@
++	card_bench_schedule(output, delay);
+@@ -366,6 +377,7 @@
  		wl_event_source_timer_update(output->repaint_timer, delay);
  	}
  
