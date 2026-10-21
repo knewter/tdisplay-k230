@@ -1,0 +1,38 @@
+{
+  "runs": [
+    {
+      "label": "8ms-before",
+      "prefix_at_collector_return": {
+        "bytes": 836318,
+        "sha256": "ab95240f25a23577aaab53fb2c47cc25bdf7c42821a4a00cb47302d2861d63af"
+      },
+      "final_private_file_after_shutdown": {
+        "bytes": 839850,
+        "sha256": "5f14714021a9ce9118286513ed285044ad4072d8ee6649849de9c1cac32f1e0d"
+      }
+    },
+    {
+      "label": "12ms",
+      "prefix_at_collector_return": {
+        "bytes": 856528,
+        "sha256": "3f6da7eae59d83bb0ab65cfce1903bf61e6a9bc73132b6f9deed6dae8d116214"
+      },
+      "final_private_file_after_shutdown": {
+        "bytes": 859963,
+        "sha256": "6ce01335c872efdc0b93c2efc9f1ad01d2308bdf9bf9a50240752c0c6f826e30"
+      }
+    },
+    {
+      "label": "8ms-return",
+      "prefix_at_collector_return": {
+        "bytes": 839810,
+        "sha256": "a7836132ea9c27c6c0206ecf70bcf2df781c064f4018a4d21835b128d97dbed8"
+      },
+      "final_private_file_after_shutdown": {
+        "bytes": 843074,
+        "sha256": "3304bab44c1f21725ea6984daa5830729f793b56ecd601488bfdac6556f95abe"
+      }
+    }
+  ],
+  "limits": "Private raw stderr remains outside Git. Capture-prefix hashes are checked independently because shutdown appends more lines. Published records use the strict normalizer unchanged."
+}

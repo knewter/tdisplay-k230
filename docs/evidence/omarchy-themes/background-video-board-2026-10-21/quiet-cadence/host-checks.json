@@ -1,0 +1,42 @@
+{
+  "checked_at": "2026-10-21T16:30:16.692329+00:00",
+  "branch": "bg-31-closure",
+  "worktree": ".claude/worktrees/bg31",
+  "base_revision": "7b318de0cf4785799498d615d571c67cfff94e17",
+  "checks": [
+    {
+      "command": "python3 docs/evidence/omarchy-themes/background-video-board-2026-10-21/log-destination/test-log-destination-analyze.py",
+      "result": "5PASS, reused CPU helper imported unchanged by new analyzer"
+    },
+    {
+      "command": "python3 -m unittest tests.test_card_shell_board_tools",
+      "result": "30PASS"
+    },
+    {
+      "command": "python3 docs/evidence/omarchy-themes/background-video-board-2026-10-21/quiet-cadence/quiet-cadence-analyze.py docs/evidence/omarchy-themes/background-video-board-2026-10-21/quiet-cadence --repo .",
+      "result": [
+        "8ms-before {\"elapsed_p95_ms\": 7.660582, \"tracking_p95_ms\": 38.323, \"journal_active_average_cores\": 0.0009193346078000263}",
+        "12ms {\"elapsed_p95_ms\": 8.195046, \"tracking_p95_ms\": 19.17, \"journal_active_average_cores\": 0.0009816818809232266}",
+        "8ms-return {\"elapsed_p95_ms\": 6.988731, \"tracking_p95_ms\": 38.321, \"journal_active_average_cores\": 0.0010996986244388768}"
+      ]
+    },
+    {
+      "command": "AST parse published Python; staged script SHA256 checks; all3 private raw-log prefix hashes",
+      "result": "PASS"
+    },
+    {
+      "command": "openspec validate --all --strict",
+      "result": "49PASS,0FAIL"
+    },
+    {
+      "command": "python3 tools/blob-scan.py --no-vendor (owned evidence staged)",
+      "result": [
+        "  walked 7526 files: 1499 binary (1406 by file row, 93 by group row); 1414 inventory rows verified on disk, 59 not present here; 3 nix pins checked",
+        "blob-scan: ok -- every binary is accounted for"
+      ]
+    }
+  ],
+  "review": "Reviewed independent8/12/8 output observations, same file FD routing and workload, unchanged frozen budgets/CPU calculations, all raw-data rows retained, no causal/default claim from one short3cardstillsequence, independent normal8ms/4fc/2ig/still/landscape/journal restoration.",
+  "remaining_gate": "12ms arm passes all numeric metrics; full paired still/video,one/multiplecard acceptance remains. Task3.3/archive4.2 unchecked.",
+  "site_validation": "Exact-revision CI/Pages checked after commit. Local build not repeated; earlier local timing failures remain preserved in tracking-elapsed evidence."
+}

@@ -300,3 +300,9 @@ render elapsed p95 from about 9.2 ms to 7.2 ms with file logging, returning to
 9.1 ms afterward. Journal-service CPU falls in the file arm, supporting a
 benchmark observer cost. Tracking still fails its frozen target; the normal
 compositor, journal routing, and landscape session were restored.
+
+With file logging held constant, the [quiet 8/12/8 ms comparison](quiet-cadence/README.md)
+passes the frozen three-card tracking target in its 12 ms arm (19.170 ms p95)
+while both 8 ms arms still fail. Every numeric metric passes in that arm;
+full paired still/video acceptance remains open. The normal 8 ms landscape
+session and journal routing were restored.

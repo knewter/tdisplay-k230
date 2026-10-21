@@ -182,6 +182,15 @@ performance acceptance.
   routing, still, landscape, and timers were independently audited restored.
   `docs/evidence/omarchy-themes/background-video-board-2026-10-21/log-destination/README.md`.
 
+  Quiet scheduling comparison 2026-10-21: holding file logging constant,
+  8/12/8 ms three-card still arms produce frozen tracking p95
+  38.323/19.170/38.321 ms. Every numeric metric passes in the 12 ms arm;
+  no target changes or dropped runs. This is not the complete paired
+  still/video, one/multiple-card gate, so this task remains open. Normal
+  compositor, journal routing, still, landscape, and 8 ms were independently
+  audited restored. Exact source, command, observations, and limits:
+  `docs/evidence/omarchy-themes/background-video-board-2026-10-21/quiet-cadence/README.md`.
+
 - [x] 3.4 Confirm a user-supplied overlay stages, applies, and survives a
   shell/helper restart on the board, the same way the pinned/bundled
   background test in `docs/evidence/theme-picker/background-selection/README.md`
