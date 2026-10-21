@@ -2133,6 +2133,8 @@ DATA  47c4afcb52a2d17c8adbf0db51c970f31f8013c2a4dac2e79ea48f6cd22a1fdd  docs/evi
 DATA  069973fa256f5b48a1cdd2463141fe9f887ec03a11d83b37fd8504da060cdfc5  docs/evidence/mainline-boot-splash/current-baseline-2026-10-20/board/frame-1431.jpg
 DATA  3fd83b6c03c5b15f3980e793acca5072d97fb20a537a4e115aa10ea5fb3f1875  docs/evidence/mainline-boot-splash/current-baseline-2026-10-20/board/frame-1436.jpg
 DATA  6407b53f691f0fa16e814fbbc1eb0e6561b5427505442e58f1758446976716e7  docs/evidence/mainline-boot-splash/current-baseline-2026-10-20/board/frames.jsonl.gz
+DATA 1580c39907dbfa971f3d8bf8236689d734341ddda8a17e2fa3ce0b835176abd9 docs/evidence/mainline-boot-splash/dma-request-trial-2026-10-20/camera-calibration.mp4
+DATA e9c1e3c374d9e6cdfdf3b2c62884dbdd45a8b06f3f398477d475ca9b8786ac26 docs/evidence/mainline-boot-splash/dma-request-trial-2026-10-20/calibration-frames.jsonl.gz
 ```
 
 `group:` rows stand for a directory whose members are enumerated by
@@ -3825,3 +3827,13 @@ Provenance and limitations: `docs/evidence/mainline-boot-splash/current-baseline
 | `docs/evidence/mainline-boot-splash/current-baseline-2026-10-20/board/frame-1431.jpg` | 37282 | DATA | `069973fa256f5b48a1cdd2463141fe9f887ec03a11d83b37fd8504da060cdfc5` |
 | `docs/evidence/mainline-boot-splash/current-baseline-2026-10-20/board/frame-1436.jpg` | 37689 | DATA | `3fd83b6c03c5b15f3980e793acca5072d97fb20a537a4e115aa10ea5fb3f1875` |
 | `docs/evidence/mainline-boot-splash/current-baseline-2026-10-20/board/frames.jsonl.gz` | 176478 | DATA | `6407b53f691f0fa16e814fbbc1eb0e6561b5427505442e58f1758446976716e7` |
+
+### Splash DMA-request optical calibration (2026-10-20)
+
+Proxies and original frame metadata for eight reversible panel-brightness transitions;
+early boot alignment remains UNVERIFIED. See the trial README.
+
+| File | Bytes | Kind | SHA256 |
+| --- | ---: | --- | --- |
+| `docs/evidence/mainline-boot-splash/dma-request-trial-2026-10-20/camera-calibration.mp4` | 123494 | DATA | `1580c39907dbfa971f3d8bf8236689d734341ddda8a17e2fa3ce0b835176abd9` |
+| `docs/evidence/mainline-boot-splash/dma-request-trial-2026-10-20/calibration-frames.jsonl.gz` | 18030 | DATA | `e9c1e3c374d9e6cdfdf3b2c62884dbdd45a8b06f3f398477d475ca9b8786ac26` |

@@ -53,3 +53,9 @@ analysis attempt hit a NumPy integer JSON-serialization error; converting the
 selected frame index to a Python integer fixed it without recapturing or
 changing raw evidence. This is a separate calibration, not a default boot
 film or proof that the boot defect is removed.
+
+The complete 533-frame calibration is also committed as
+`camera-calibration.mp4` (640×480/nominal30fps viewing proxy), with the original
+per-buffer sequence/clock/source/timestamp metadata in
+`calibration-frames.jsonl.gz`. Use those original timestamps, not proxy PTS,
+for timing calculations. Proxy encoding preserves the original camera orientation.
