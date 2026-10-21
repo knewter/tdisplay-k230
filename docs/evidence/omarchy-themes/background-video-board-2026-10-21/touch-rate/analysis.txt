@@ -1,0 +1,13 @@
+strokes 11
+ reports  51 dur   430 ms median 8.11 p95 8.20 max 32.5
+ reports  67 dur   625 ms median 8.12 p95 8.18 max 97.6
+ reports  76 dur   690 ms median 8.12 p95 8.19 max 89.5
+ reports  70 dur   641 ms median 8.12 p95 8.20 max 89.5
+ reports  72 dur   601 ms median 8.12 p95 8.18 max 32.6
+ reports 152 dur  1332 ms median 8.12 p95 8.18 max 113.8
+ reports  11 dur   186 ms median 8.12 p95 113.83 max 113.8
+ reports 175 dur  1591 ms median 8.12 p95 8.19 max 186.8
+ reports  16 dur   170 ms median 8.12 p95 56.99 max 57.0
+ reports  18 dur   186 ms median 8.12 p95 57.00 max 57.0
+ reports  13 dur   130 ms median 8.12 p95 40.78 max 40.8
+ALL moving-report gaps n 710 median 8.122 mean 9.279 p5 8.06 p95 8.19

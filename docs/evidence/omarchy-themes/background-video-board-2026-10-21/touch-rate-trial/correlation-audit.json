@@ -1,0 +1,56 @@
+{
+  "runs": {
+    "static-1-cards": {
+      "motion_inputs": 516,
+      "first_subsequent_render_mapping_disagreements": [],
+      "render_timing_logged_before_input_end_row": [],
+      "tracking_intervals": 218,
+      "tracking_p95_ms": 19.165,
+      "above_target_intervals": []
+    },
+    "static-3-cards": {
+      "motion_inputs": 516,
+      "first_subsequent_render_mapping_disagreements": [],
+      "render_timing_logged_before_input_end_row": [],
+      "tracking_intervals": 214,
+      "tracking_p95_ms": 19.164,
+      "above_target_intervals": [
+        {
+          "gesture_id": 8,
+          "previous_frame": 873,
+          "next_frame": 874,
+          "previous_input": 90,
+          "next_input": 93,
+          "present_gap_ms": 38.319,
+          "dispatch_gap_ms": 24.423817,
+          "origin_gap_ms": 25.0,
+          "intermediate_frames": [],
+          "intermediate_render_starts_before_next_input": true,
+          "next_input_to_render_start_ms": 3.176998
+        }
+      ]
+    },
+    "video-1-cards": {
+      "motion_inputs": 516,
+      "first_subsequent_render_mapping_disagreements": [],
+      "render_timing_logged_before_input_end_row": [],
+      "tracking_intervals": 216,
+      "tracking_p95_ms": 19.165,
+      "above_target_intervals": []
+    },
+    "video-3-cards": {
+      "motion_inputs": 516,
+      "first_subsequent_render_mapping_disagreements": [],
+      "render_timing_logged_before_input_end_row": [],
+      "tracking_intervals": 216,
+      "tracking_p95_ms": 19.165,
+      "above_target_intervals": []
+    }
+  },
+  "limits": [
+    "Host audit of committed board timestamps and stream order; no new hardware measurement.",
+    "First subsequent actual render-start agreement supports the recorded mapping; it does not prove optical visibility or identify every input-dispatch delay.",
+    "Intermediate presentations whose render started before the next input cannot simply be credited to that later input.",
+    "No frozen parser, input workload, threshold, or failed result is changed. Input/refresh phase sensitivity needs separate investigation."
+  ]
+}

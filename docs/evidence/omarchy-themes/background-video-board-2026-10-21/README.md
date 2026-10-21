@@ -315,3 +315,11 @@ input-to-render mapping. Reported video counters stay paused at gesture
 boundaries. This leaves input/render phase for investigation and the frozen
 gate open. Exact preference bytes, normal8ms, still, landscape, and journal
 routing were restored.
+
+A [real-finger capture](touch-rate/README.md) shows the Goodix controller
+reporting every 8.122 ms while a finger moves. The paired12 injection stepped
+every 20 ms, slower than the 19.16 ms refresh, so every drag had to contain one
+or two two-refresh intervals. The [touch-rate rerun](touch-rate-trial/README.md)
+repeats the same 12 ms trial with 8.14 ms steps, and every numeric metric passes
+in all four arms. The pass depends on the temporary 12 ms allowance, and the
+portrait-geometry item stays open.

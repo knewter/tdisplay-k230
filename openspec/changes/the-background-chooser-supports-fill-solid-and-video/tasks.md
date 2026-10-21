@@ -204,6 +204,18 @@ performance acceptance.
   The frozen target and this open task are unchanged:
   `docs/evidence/omarchy-themes/background-video-board-2026-10-21/paired12/README.md`.
 
+  Touch-rate trial 2026-10-21: the paired12 failure follows input aliasing,
+  not render cost. 20 ms injected steps against the 19.16 ms refresh force
+  6–12 two-refresh intervals per 204. A real finger on the Goodix panel
+  reports every 8.122 ms (operator glass capture). Rerunning the same paired
+  12 ms trial with 86 steps per 700 ms drag (8.14 ms) passes every frozen
+  numeric metric in all four arms (tracking p95 19.164–19.165 ms). This is
+  injected input at a temporary 12 ms allowance: three-card render wall p95
+  (about 10 ms) exceeds the installed 8 ms, and the combined gate still lacks
+  the portrait 568x1232 observation. The box stays open.
+  Normal 8 ms/still/landscape were independently audited restored:
+  `docs/evidence/omarchy-themes/background-video-board-2026-10-21/touch-rate-trial/README.md`.
+
 - [x] 3.4 Confirm a user-supplied overlay stages, applies, and survives a
   shell/helper restart on the board, the same way the pinned/bundled
   background test in `docs/evidence/theme-picker/background-selection/README.md`
