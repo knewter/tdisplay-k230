@@ -323,8 +323,16 @@ static void wallpaper_opaque_buffer(struct wlr_scene_buffer *buffer, int x, int 
 	struct wallpaper_cover *cover = data;
 	if (!wallpaper_above(cover->output, &buffer->node) || !buffer->buffer ||
 		buffer->opacity != 1 || buffer->transform != WL_OUTPUT_TRANSFORM_NORMAL ||
-		buffer->src_box.width > 0 || buffer->src_box.height > 0 ||
 		buffer->dst_width <= 0 || buffer->dst_height <= 0) return;
+	/* scene/surface.c supplies an explicit source box for ordinary client
+	 * surfaces too. A full-buffer viewport is equivalent to the implicit
+	 * source, not a crop. Keep rejecting offsets and actual cropped sources;
+	 * the opaque region below is already in logical surface coordinates. */
+	const struct wlr_fbox *src = &buffer->src_box;
+	if (src->x != 0 || src->y != 0 ||
+		!((src->width == 0 && src->height == 0) ||
+		  (src->width == buffer->buffer->width &&
+		   src->height == buffer->buffer->height))) return;
 	pixman_region32_t opaque;
 	pixman_region32_init(&opaque);
 	if (wlr_buffer_is_opaque(buffer->buffer))
