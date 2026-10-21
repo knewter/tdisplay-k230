@@ -1,0 +1,11 @@
+{
+  "prefix_at_collector_return": {
+    "bytes": 3235656,
+    "sha256": "5a5fa9e6d0bb5e80a96428943baa1b06e4c2ecc5e1d748d9ad84f04fb328d979"
+  },
+  "final_private_file": {
+    "bytes": 3238797,
+    "sha256": "a84c30711519f785f3c0f35eef9fb05b379227a2702e0ff276a3dfb67bf7f8aa"
+  },
+  "limits": "Private raw stderr, screenshots and rollback preference contents remain outside Git. Public records are strict-normalized telemetry or fixed result/status schemas only."
+}

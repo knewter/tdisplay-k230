@@ -1,0 +1,27 @@
+{
+  "attempt": "attempt3",
+  "description": "Named background workload completed with native/video/resource evidence and restoration. Static post-activation generation assertion then failed before card collection; exact rejected status was not captured. Retry waits for generation plus state. Automatic and independent restoration audits pass.",
+  "private_log_hashes": {
+    "theme-basic.private.log": {
+      "bytes": 106,
+      "sha256": "8c8d45528c3504f259d6362f80c01d099000bf1c733d32e1d1d25e1e473f1e77"
+    },
+    "basic-command.private.log": {
+      "bytes": 169,
+      "sha256": "537f0bdfbf3420dabf175d99b71566ac7d1be0d1e52e8cbabf6bb191f45aa28a"
+    },
+    "theme-prepare.private.log": {
+      "bytes": 478,
+      "sha256": "46a2fb5bb8a747e787d204dfbb03a17be12fe887efd275dd9d309b1540092f4a"
+    },
+    "theme-activate.private.log": {
+      "bytes": 106,
+      "sha256": "9159725cb13c779d83ae4b979ff81b55ba55bf45539f29223297d9134f175056"
+    },
+    "normal-restore.private.log": {
+      "bytes": 266,
+      "sha256": "c8bb7d8dd1030f396eebccb2fc17e3566e6c1c0ace7c64c997581ab0ef7ce9c1"
+    }
+  },
+  "limits": "Exact failed source and fixed results are preserved; private child stderr/snapshots are not published. No failed run is converted into a passing card measurement."
+}

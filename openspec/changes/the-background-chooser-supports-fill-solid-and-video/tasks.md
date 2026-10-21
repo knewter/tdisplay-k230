@@ -191,6 +191,19 @@ performance acceptance.
   audited restored. Exact source, command, observations, and limits:
   `docs/evidence/omarchy-themes/background-video-board-2026-10-21/quiet-cadence/README.md`.
 
+  Paired quiet12 trial 2026-10-21: the named background command completes
+  native playback/resource sampling and restoration; cover/resume passes.
+  Still1/3-card and video1-card arms pass all numeric metrics, but video3-card
+  tracking p95 remains 38.321 ms. All12 above-target intervals contain an
+  intermediate actual presentation, with that render starting before the
+  next input dispatch; all840 motion mappings match the first subsequent
+  render. Both video gesture-boundary snapshots are paused-covered with
+  unchanged reported counters/timestamps; active decode is not inferred as
+  the cause. All failed setup attempts are retained. Original8ms/still/
+  landscape/journal routing and exact preference/app pointers are restored.
+  The frozen target and this open task are unchanged:
+  `docs/evidence/omarchy-themes/background-video-board-2026-10-21/paired12/README.md`.
+
 - [x] 3.4 Confirm a user-supplied overlay stages, applies, and survives a
   shell/helper restart on the board, the same way the pinned/bundled
   background test in `docs/evidence/theme-picker/background-selection/README.md`

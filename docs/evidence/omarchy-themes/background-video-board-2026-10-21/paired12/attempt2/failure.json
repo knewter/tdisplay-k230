@@ -1,0 +1,23 @@
+{
+  "attempt": "attempt2",
+  "description": "Named background command reached measure-video but failed with startup terminal still visible. Its theme restoration passed. Outer user-context fixture deletion lacked parent permission; no card arms collected. Snapshot equality verified and known remaining owned fixture removed as root. Exact internal measure-video cause was not exported.",
+  "private_log_hashes": {
+    "theme-basic.private.log": {
+      "bytes": 257,
+      "sha256": "4de47c7aefb91f8c04941f36850c61721039c5df0601d03a4639ff711dc85649"
+    },
+    "basic-command.private.log": {
+      "bytes": 76,
+      "sha256": "e5c3cf8ac73e2e683b7af01dd5fdbb327b9b18908dd0363adcf6d0c7176055a3"
+    },
+    "theme-prepare.private.log": {
+      "bytes": 478,
+      "sha256": "46a2fb5bb8a747e787d204dfbb03a17be12fe887efd275dd9d309b1540092f4a"
+    },
+    "normal-restore.private.log": {
+      "bytes": 1110,
+      "sha256": "0d68ea11c83d465aff0ed2a8a454fb4af3787406dc5204a824b20f78926776cf"
+    }
+  },
+  "limits": "Exact failed source and fixed results are preserved; private child stderr/snapshots are not published. No failed run is converted into a passing card measurement."
+}

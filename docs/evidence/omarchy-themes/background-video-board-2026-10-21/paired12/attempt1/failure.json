@@ -1,0 +1,27 @@
+{
+  "attempt": "attempt1",
+  "description": "Public helper staged below protected0700 parent; named command could not read it. Initial fallback also read UI environment too early. No card arm collected. Original pointer/preferences/app pointer independently verified; owned fixture cleaned and timer stopped.",
+  "private_log_hashes": {
+    "theme-basic.private.log": {
+      "bytes": 1075,
+      "sha256": "ece950f9e8c0d0382337c069086ae2f6e887c3e9575c3ab3e3eecfbc0d1a83ec"
+    },
+    "basic-command.private.log": {
+      "bytes": 208,
+      "sha256": "9e9d15a3fd868929ab18e5008e5d4030f0aa3ef6bebfc5c2f4b514cd2c2a4241"
+    },
+    "theme-prepare.private.log": {
+      "bytes": 478,
+      "sha256": "46a2fb5bb8a747e787d204dfbb03a17be12fe887efd275dd9d309b1540092f4a"
+    },
+    "normal-restore.private.log": {
+      "bytes": 292,
+      "sha256": "fb5bd6c6d0462882c9b7f0061a00fd689727272bd5d53a6bb92637b390c33e54"
+    },
+    "manual-restore.private.log": {
+      "bytes": 545,
+      "sha256": "76cd2b92b36ff4a0afcd0294a351b90aee982c088b557e7381024d5fe7ce38d0"
+    }
+  },
+  "limits": "Exact failed source and fixed results are preserved; private child stderr/snapshots are not published. No failed run is converted into a passing card measurement."
+}

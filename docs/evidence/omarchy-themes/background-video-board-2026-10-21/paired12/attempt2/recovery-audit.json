@@ -1,0 +1,58 @@
+{
+  "original_state_checks": {
+    "theme_pointer": true,
+    "preferences_exact_bytes": true,
+    "app_pointer": true
+  },
+  "identity": {
+    "system": "/nix/store/2igpibpw4nn0clbda7p35dp5bhg28n35-nixos-system-nixos-26.11.20260919.20b1ddd",
+    "profile": "/nix/store/2igpibpw4nn0clbda7p35dp5bhg28n35-nixos-system-nixos-26.11.20260919.20b1ddd",
+    "boot_id": "9e664e59-dfd6-49ed-976a-2e38416c0a7f",
+    "sway_exe": "/nix/store/hy37k7zpyzawlnbmf5jd7cg2zdgybl3f-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway",
+    "sway_sha256": "4fc7bf3a0c0818c9eb3d286de4579999b3fbbaf9abe0e4317c017bca1dc663ba",
+    "outputs": [
+      {
+        "name": "DSI-1",
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "width": 1232,
+          "height": 568
+        },
+        "transform": "270",
+        "current_mode": {
+          "width": 568,
+          "height": 1232,
+          "refresh": 52190,
+          "picture_aspect_ratio": "none"
+        },
+        "max_render_time": 8
+      }
+    ],
+    "apps": [
+      "k230-terminal"
+    ],
+    "wallpaper": {
+      "schema": 1,
+      "generation": "2e583fb7dc1947e9d444c171",
+      "background_fingerprint": null,
+      "decoder_pid": null,
+      "state": "still",
+      "error_category": null,
+      "frames_decoded": 0,
+      "frames_submitted": 0,
+      "frame_callbacks": 0,
+      "last_decoded_monotonic_ms": null,
+      "last_submitted_monotonic_ms": null,
+      "last_callback_monotonic_ms": null
+    }
+  },
+  "preferences_sha256": "608049fec22538747e626ff34dc4dd97227e6ece6ffcd690cfedd46b2b80c5cc",
+  "fixture_removed": true,
+  "guard_active": false,
+  "basic_permission_denied": false,
+  "cleanup_parent_permission_failed": true,
+  "limits": "Second named basic command failed because video remained covered by startupterminal; its own restoration passed. Outer theme restore succeeded but fixture unlink lacked parent permissions. Original state verified against freshsnapshot; remaining owned fixture content validated as known subset and removed as root. No card arm collected.",
+  "owned_staging_parent_mode": "0o711",
+  "mode_label_note": "This mode describes the owned attempt parent; shared /var/lib/k230 remains0700, as independently checked by the user-code preflight."
+}

@@ -1,0 +1,53 @@
+{
+  "checked_at": "2026-10-21T17:13:36.554942+00:00",
+  "branch": "bg-31-closure",
+  "worktree": ".claude/worktrees/bg31",
+  "base_revision": "baca1124a22c5ab91200d7517061fbe7530c7667",
+  "checks": [
+    {
+      "command": "python3 -m unittest tests.test_handheld_theme_trial tests.test_theme_background_status",
+      "result": "28PASS"
+    },
+    {
+      "command": "python3 docs/evidence/omarchy-themes/background-video-board-2026-10-21/log-destination/test-log-destination-analyze.py; python3 -m unittest tests.test_card_shell_board_tools",
+      "result": "5+30PASS earlier in this continuation, unchanged helpers imported"
+    },
+    {
+      "command": "paired12-analyze.py <this-directory> --repo .",
+      "result": [
+        "static-1-cards {\"tracking\": {\"count\": 204, \"min\": 19.07, \"median\": 19.161, \"p95\": 19.167, \"max\": 38.324, \"budget\": {\"p95\": 33.334, \"max\": 100.0}, \"status\": \"PASS\"}, \"metric_failures\": {}, \"video_progress\": null}",
+        "static-3-cards {\"tracking\": {\"count\": 204, \"min\": 19.118, \"median\": 19.162, \"p95\": 19.176, \"max\": 38.326, \"budget\": {\"p95\": 33.334, \"max\": 100.0}, \"status\": \"PASS\"}, \"metric_failures\": {}, \"video_progress\": null}",
+        "video-1-cards {\"tracking\": {\"count\": 204, \"min\": 19.154, \"median\": 19.161, \"p95\": 19.167, \"max\": 38.326, \"budget\": {\"p95\": 33.334, \"max\": 100.0}, \"status\": \"PASS\"}, \"metric_failures\": {}, \"video_progress\": null}",
+        "video-3-cards {\"tracking\": {\"count\": 204, \"min\": 19.085, \"median\": 19.161, \"p95\": 38.321, \"max\": 38.325, \"budget\": {\"p95\": 33.334, \"max\": 100.0}, \"status\": \"FAIL\"}, \"metric_failures\": {\"tracking_present_interval_ms\": \"FAIL\"}, \"video_progress\": null}",
+        "all_numeric_metrics_pass False"
+      ]
+    },
+    {
+      "command": "correlation-audit.py <this-directory> --repo .",
+      "result": [
+        "static-1-cards {\"motions\": 210, \"mapping_disagreements\": 0, \"nested_render_rows\": 0, \"late\": 6, \"p95\": 19.167}",
+        "static-3-cards {\"motions\": 210, \"mapping_disagreements\": 0, \"nested_render_rows\": 0, \"late\": 8, \"p95\": 19.176}",
+        "video-1-cards {\"motions\": 210, \"mapping_disagreements\": 0, \"nested_render_rows\": 0, \"late\": 7, \"p95\": 19.167}",
+        "video-3-cards {\"motions\": 210, \"mapping_disagreements\": 0, \"nested_render_rows\": 0, \"late\": 12, \"p95\": 38.321}"
+      ]
+    },
+    {
+      "command": "AST parse all published Python; exact successful staged-script hashes; private raw-log prefix hash",
+      "result": "PASS"
+    },
+    {
+      "command": "openspec validate --all --strict",
+      "result": "49PASS,0FAIL"
+    },
+    {
+      "command": "python3 tools/blob-scan.py --no-vendor (exact owned paths staged)",
+      "result": [
+        "  walked 7586 files: 1499 binary (1406 by file row, 93 by group row); 1414 inventory rows verified on disk, 59 not present here; 3 nix pins checked",
+        "blob-scan: ok -- every binary is accounted for"
+      ]
+    }
+  ],
+  "review": "Reviewed full4arm completeness, unchanged frozen parser and workloads, separate globaljournal/2serviceCPU, pausedvideo boundaryobservations withoutcrosslifetime subtraction, correctcausal frameassociation, actualretained failedattempts includingmanualrecovery, privilegedfixturecleanup scopedtoinode/hashcheckedownfixture, all4ownedtimersinactive andindependentexact originalstate restoration.",
+  "remaining_gate": "Video3 trackingFAIL38.321 vs33.334; geometrywarning retained. Backgroundtask3.3/archive4.2open;no default12ms integration/deployment or realfinger/optical claim.",
+  "site_validation": "Exact-revision CI/Pages verified after commit. Local build not repeated; previous local timing failures remain in tracking-elapsed records."
+}

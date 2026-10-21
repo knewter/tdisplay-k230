@@ -1,0 +1,541 @@
+{
+  "runs": {
+    "static-1-cards": {
+      "motion_inputs": 210,
+      "first_subsequent_render_mapping_disagreements": [],
+      "render_timing_logged_before_input_end_row": [],
+      "tracking_intervals": 204,
+      "tracking_p95_ms": 19.167,
+      "above_target_intervals": [
+        {
+          "gesture_id": 1,
+          "previous_frame": 221,
+          "next_frame": 223,
+          "previous_input": 16,
+          "next_input": 17,
+          "present_gap_ms": 38.322,
+          "dispatch_gap_ms": 24.784608,
+          "origin_gap_ms": 21.0,
+          "intermediate_frames": [
+            222
+          ],
+          "intermediate_render_starts_before_next_input": true,
+          "next_input_to_render_start_ms": 13.728304
+        },
+        {
+          "gesture_id": 2,
+          "previous_frame": 302,
+          "next_frame": 304,
+          "previous_input": 53,
+          "next_input": 54,
+          "present_gap_ms": 38.322,
+          "dispatch_gap_ms": 22.317976,
+          "origin_gap_ms": 19.0,
+          "intermediate_frames": [
+            303
+          ],
+          "intermediate_render_starts_before_next_input": true,
+          "next_input_to_render_start_ms": 15.303842
+        },
+        {
+          "gesture_id": 3,
+          "previous_frame": 383,
+          "next_frame": 385,
+          "previous_input": 90,
+          "next_input": 91,
+          "present_gap_ms": 38.323,
+          "dispatch_gap_ms": 23.54491,
+          "origin_gap_ms": 20.0,
+          "intermediate_frames": [
+            384
+          ],
+          "intermediate_render_starts_before_next_input": true,
+          "next_input_to_render_start_ms": 15.512691
+        },
+        {
+          "gesture_id": 4,
+          "previous_frame": 465,
+          "next_frame": 467,
+          "previous_input": 128,
+          "next_input": 129,
+          "present_gap_ms": 38.323,
+          "dispatch_gap_ms": 24.213504,
+          "origin_gap_ms": 21.0,
+          "intermediate_frames": [
+            466
+          ],
+          "intermediate_render_starts_before_next_input": true,
+          "next_input_to_render_start_ms": 15.326868
+        },
+        {
+          "gesture_id": 5,
+          "previous_frame": 546,
+          "next_frame": 548,
+          "previous_input": 165,
+          "next_input": 166,
+          "present_gap_ms": 38.322,
+          "dispatch_gap_ms": 24.022978,
+          "origin_gap_ms": 20.0,
+          "intermediate_frames": [
+            547
+          ],
+          "intermediate_render_starts_before_next_input": true,
+          "next_input_to_render_start_ms": 14.677857
+        },
+        {
+          "gesture_id": 6,
+          "previous_frame": 627,
+          "next_frame": 629,
+          "previous_input": 202,
+          "next_input": 203,
+          "present_gap_ms": 38.324,
+          "dispatch_gap_ms": 23.519333,
+          "origin_gap_ms": 20.0,
+          "intermediate_frames": [
+            628
+          ],
+          "intermediate_render_starts_before_next_input": true,
+          "next_input_to_render_start_ms": 15.403713
+        }
+      ]
+    },
+    "static-3-cards": {
+      "motion_inputs": 210,
+      "first_subsequent_render_mapping_disagreements": [],
+      "render_timing_logged_before_input_end_row": [],
+      "tracking_intervals": 204,
+      "tracking_p95_ms": 19.176,
+      "above_target_intervals": [
+        {
+          "gesture_id": 7,
+          "previous_frame": 798,
+          "next_frame": 800,
+          "previous_input": 11,
+          "next_input": 12,
+          "present_gap_ms": 38.321,
+          "dispatch_gap_ms": 26.016301,
+          "origin_gap_ms": 20.0,
+          "intermediate_frames": [
+            799
+          ],
+          "intermediate_render_starts_before_next_input": true,
+          "next_input_to_render_start_ms": 12.529719
+        },
+        {
+          "gesture_id": 7,
+          "previous_frame": 821,
+          "next_frame": 823,
+          "previous_input": 33,
+          "next_input": 34,
+          "present_gap_ms": 38.326,
+          "dispatch_gap_ms": 25.392109,
+          "origin_gap_ms": 20.0,
+          "intermediate_frames": [
+            822
+          ],
+          "intermediate_render_starts_before_next_input": true,
+          "next_input_to_render_start_ms": 13.788991
+        },
+        {
+          "gesture_id": 8,
+          "previous_frame": 865,
+          "next_frame": 867,
+          "previous_input": 48,
+          "next_input": 49,
+          "present_gap_ms": 38.323,
+          "dispatch_gap_ms": 25.522735,
+          "origin_gap_ms": 20.0,
+          "intermediate_frames": [
+            866
+          ],
+          "intermediate_render_starts_before_next_input": true,
+          "next_input_to_render_start_ms": 12.798757
+        },
+        {
+          "gesture_id": 8,
+          "previous_frame": 888,
+          "next_frame": 890,
+          "previous_input": 70,
+          "next_input": 71,
+          "present_gap_ms": 38.325,
+          "dispatch_gap_ms": 25.151876,
+          "origin_gap_ms": 20.0,
+          "intermediate_frames": [
+            889
+          ],
+          "intermediate_render_starts_before_next_input": true,
+          "next_input_to_render_start_ms": 13.898654
+        },
+        {
+          "gesture_id": 9,
+          "previous_frame": 942,
+          "next_frame": 944,
+          "previous_input": 85,
+          "next_input": 86,
+          "present_gap_ms": 38.323,
+          "dispatch_gap_ms": 25.991693,
+          "origin_gap_ms": 20.0,
+          "intermediate_frames": [
+            943
+          ],
+          "intermediate_render_starts_before_next_input": true,
+          "next_input_to_render_start_ms": 12.371601
+        },
+        {
+          "gesture_id": 10,
+          "previous_frame": 1018,
+          "next_frame": 1020,
+          "previous_input": 122,
+          "next_input": 123,
+          "present_gap_ms": 38.322,
+          "dispatch_gap_ms": 31.962408,
+          "origin_gap_ms": 24.0,
+          "intermediate_frames": [
+            1019
+          ],
+          "intermediate_render_starts_before_next_input": true,
+          "next_input_to_render_start_ms": 6.885027
+        },
+        {
+          "gesture_id": 11,
+          "previous_frame": 1093,
+          "next_frame": 1095,
+          "previous_input": 158,
+          "next_input": 159,
+          "present_gap_ms": 38.325,
+          "dispatch_gap_ms": 30.330127,
+          "origin_gap_ms": 21.0,
+          "intermediate_frames": [
+            1094
+          ],
+          "intermediate_render_starts_before_next_input": true,
+          "next_input_to_render_start_ms": 9.618236
+        },
+        {
+          "gesture_id": 12,
+          "previous_frame": 1171,
+          "next_frame": 1173,
+          "previous_input": 197,
+          "next_input": 198,
+          "present_gap_ms": 38.319,
+          "dispatch_gap_ms": 25.953783,
+          "origin_gap_ms": 20.0,
+          "intermediate_frames": [
+            1172
+          ],
+          "intermediate_render_starts_before_next_input": true,
+          "next_input_to_render_start_ms": 12.570184
+        }
+      ]
+    },
+    "video-1-cards": {
+      "motion_inputs": 210,
+      "first_subsequent_render_mapping_disagreements": [],
+      "render_timing_logged_before_input_end_row": [],
+      "tracking_intervals": 204,
+      "tracking_p95_ms": 19.167,
+      "above_target_intervals": [
+        {
+          "gesture_id": 13,
+          "previous_frame": 1448,
+          "next_frame": 1450,
+          "previous_input": 11,
+          "next_input": 12,
+          "present_gap_ms": 38.322,
+          "dispatch_gap_ms": 25.547244,
+          "origin_gap_ms": 20.0,
+          "intermediate_frames": [
+            1449
+          ],
+          "intermediate_render_starts_before_next_input": true,
+          "next_input_to_render_start_ms": 13.88255
+        },
+        {
+          "gesture_id": 13,
+          "previous_frame": 1472,
+          "next_frame": 1474,
+          "previous_input": 34,
+          "next_input": 35,
+          "present_gap_ms": 38.322,
+          "dispatch_gap_ms": 23.065794,
+          "origin_gap_ms": 20.0,
+          "intermediate_frames": [
+            1473
+          ],
+          "intermediate_render_starts_before_next_input": true,
+          "next_input_to_render_start_ms": 15.300961
+        },
+        {
+          "gesture_id": 14,
+          "previous_frame": 1529,
+          "next_frame": 1531,
+          "previous_input": 48,
+          "next_input": 49,
+          "present_gap_ms": 38.322,
+          "dispatch_gap_ms": 23.259273,
+          "origin_gap_ms": 20.0,
+          "intermediate_frames": [
+            1530
+          ],
+          "intermediate_render_starts_before_next_input": true,
+          "next_input_to_render_start_ms": 15.232329
+        },
+        {
+          "gesture_id": 15,
+          "previous_frame": 1610,
+          "next_frame": 1612,
+          "previous_input": 85,
+          "next_input": 86,
+          "present_gap_ms": 38.323,
+          "dispatch_gap_ms": 23.323563,
+          "origin_gap_ms": 20.0,
+          "intermediate_frames": [
+            1611
+          ],
+          "intermediate_render_starts_before_next_input": true,
+          "next_input_to_render_start_ms": 15.431436
+        },
+        {
+          "gesture_id": 16,
+          "previous_frame": 1691,
+          "next_frame": 1693,
+          "previous_input": 122,
+          "next_input": 123,
+          "present_gap_ms": 38.324,
+          "dispatch_gap_ms": 26.830565,
+          "origin_gap_ms": 20.0,
+          "intermediate_frames": [
+            1692
+          ],
+          "intermediate_render_starts_before_next_input": true,
+          "next_input_to_render_start_ms": 13.048171
+        },
+        {
+          "gesture_id": 17,
+          "previous_frame": 1773,
+          "next_frame": 1775,
+          "previous_input": 160,
+          "next_input": 161,
+          "present_gap_ms": 38.326,
+          "dispatch_gap_ms": 23.336294,
+          "origin_gap_ms": 20.0,
+          "intermediate_frames": [
+            1774
+          ],
+          "intermediate_render_starts_before_next_input": true,
+          "next_input_to_render_start_ms": 15.141207
+        },
+        {
+          "gesture_id": 18,
+          "previous_frame": 1854,
+          "next_frame": 1856,
+          "previous_input": 197,
+          "next_input": 198,
+          "present_gap_ms": 38.315,
+          "dispatch_gap_ms": 23.350216,
+          "origin_gap_ms": 20.0,
+          "intermediate_frames": [
+            1855
+          ],
+          "intermediate_render_starts_before_next_input": true,
+          "next_input_to_render_start_ms": 15.535762
+        }
+      ]
+    },
+    "video-3-cards": {
+      "motion_inputs": 210,
+      "first_subsequent_render_mapping_disagreements": [],
+      "render_timing_logged_before_input_end_row": [],
+      "tracking_intervals": 204,
+      "tracking_p95_ms": 38.321,
+      "above_target_intervals": [
+        {
+          "gesture_id": 19,
+          "previous_frame": 2027,
+          "next_frame": 2029,
+          "previous_input": 1,
+          "next_input": 2,
+          "present_gap_ms": 38.32,
+          "dispatch_gap_ms": 23.116278,
+          "origin_gap_ms": 20.0,
+          "intermediate_frames": [
+            2028
+          ],
+          "intermediate_render_starts_before_next_input": true,
+          "next_input_to_render_start_ms": 15.50858
+        },
+        {
+          "gesture_id": 19,
+          "previous_frame": 2051,
+          "next_frame": 2053,
+          "previous_input": 24,
+          "next_input": 25,
+          "present_gap_ms": 38.323,
+          "dispatch_gap_ms": 25.32572,
+          "origin_gap_ms": 20.0,
+          "intermediate_frames": [
+            2052
+          ],
+          "intermediate_render_starts_before_next_input": true,
+          "next_input_to_render_start_ms": 13.217878
+        },
+        {
+          "gesture_id": 20,
+          "previous_frame": 2104,
+          "next_frame": 2106,
+          "previous_input": 38,
+          "next_input": 39,
+          "present_gap_ms": 38.321,
+          "dispatch_gap_ms": 25.471199,
+          "origin_gap_ms": 20.0,
+          "intermediate_frames": [
+            2105
+          ],
+          "intermediate_render_starts_before_next_input": true,
+          "next_input_to_render_start_ms": 13.477542
+        },
+        {
+          "gesture_id": 20,
+          "previous_frame": 2128,
+          "next_frame": 2130,
+          "previous_input": 61,
+          "next_input": 62,
+          "present_gap_ms": 38.324,
+          "dispatch_gap_ms": 25.157455,
+          "origin_gap_ms": 20.0,
+          "intermediate_frames": [
+            2129
+          ],
+          "intermediate_render_starts_before_next_input": true,
+          "next_input_to_render_start_ms": 13.638911
+        },
+        {
+          "gesture_id": 21,
+          "previous_frame": 2181,
+          "next_frame": 2183,
+          "previous_input": 75,
+          "next_input": 76,
+          "present_gap_ms": 38.325,
+          "dispatch_gap_ms": 25.627414,
+          "origin_gap_ms": 20.0,
+          "intermediate_frames": [
+            2182
+          ],
+          "intermediate_render_starts_before_next_input": true,
+          "next_input_to_render_start_ms": 13.302984
+        },
+        {
+          "gesture_id": 21,
+          "previous_frame": 2205,
+          "next_frame": 2207,
+          "previous_input": 98,
+          "next_input": 99,
+          "present_gap_ms": 38.323,
+          "dispatch_gap_ms": 30.331073,
+          "origin_gap_ms": 21.0,
+          "intermediate_frames": [
+            2206
+          ],
+          "intermediate_render_starts_before_next_input": true,
+          "next_input_to_render_start_ms": 8.354507
+        },
+        {
+          "gesture_id": 22,
+          "previous_frame": 2258,
+          "next_frame": 2260,
+          "previous_input": 111,
+          "next_input": 112,
+          "present_gap_ms": 38.324,
+          "dispatch_gap_ms": 28.06107,
+          "origin_gap_ms": 21.0,
+          "intermediate_frames": [
+            2259
+          ],
+          "intermediate_render_starts_before_next_input": true,
+          "next_input_to_render_start_ms": 11.891057
+        },
+        {
+          "gesture_id": 22,
+          "previous_frame": 2283,
+          "next_frame": 2285,
+          "previous_input": 135,
+          "next_input": 136,
+          "present_gap_ms": 38.322,
+          "dispatch_gap_ms": 25.17163,
+          "origin_gap_ms": 21.0,
+          "intermediate_frames": [
+            2284
+          ],
+          "intermediate_render_starts_before_next_input": true,
+          "next_input_to_render_start_ms": 13.616499
+        },
+        {
+          "gesture_id": 23,
+          "previous_frame": 2336,
+          "next_frame": 2338,
+          "previous_input": 149,
+          "next_input": 150,
+          "present_gap_ms": 38.321,
+          "dispatch_gap_ms": 25.629812,
+          "origin_gap_ms": 20.0,
+          "intermediate_frames": [
+            2337
+          ],
+          "intermediate_render_starts_before_next_input": true,
+          "next_input_to_render_start_ms": 13.411127
+        },
+        {
+          "gesture_id": 23,
+          "previous_frame": 2360,
+          "next_frame": 2362,
+          "previous_input": 172,
+          "next_input": 173,
+          "present_gap_ms": 38.322,
+          "dispatch_gap_ms": 25.883104,
+          "origin_gap_ms": 20.0,
+          "intermediate_frames": [
+            2361
+          ],
+          "intermediate_render_starts_before_next_input": true,
+          "next_input_to_render_start_ms": 14.043347
+        },
+        {
+          "gesture_id": 24,
+          "previous_frame": 2414,
+          "next_frame": 2416,
+          "previous_input": 186,
+          "next_input": 187,
+          "present_gap_ms": 38.324,
+          "dispatch_gap_ms": 25.514323,
+          "origin_gap_ms": 20.0,
+          "intermediate_frames": [
+            2415
+          ],
+          "intermediate_render_starts_before_next_input": true,
+          "next_input_to_render_start_ms": 13.585679
+        },
+        {
+          "gesture_id": 24,
+          "previous_frame": 2438,
+          "next_frame": 2440,
+          "previous_input": 209,
+          "next_input": 210,
+          "present_gap_ms": 38.324,
+          "dispatch_gap_ms": 24.908992,
+          "origin_gap_ms": 20.0,
+          "intermediate_frames": [
+            2439
+          ],
+          "intermediate_render_starts_before_next_input": true,
+          "next_input_to_render_start_ms": 14.053715
+        }
+      ]
+    }
+  },
+  "limits": [
+    "Host audit of committed board timestamps and stream order; no new hardware measurement.",
+    "First subsequent actual render-start agreement supports the recorded mapping; it does not prove optical visibility or identify every input-dispatch delay.",
+    "Intermediate presentations whose render started before the next input cannot simply be credited to that later input.",
+    "No frozen parser, input workload, threshold, or failed result is changed. Input/refresh phase sensitivity needs separate investigation."
+  ]
+}

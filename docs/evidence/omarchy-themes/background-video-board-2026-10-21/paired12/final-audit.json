@@ -1,0 +1,71 @@
+{
+  "identity": {
+    "system": "/nix/store/2igpibpw4nn0clbda7p35dp5bhg28n35-nixos-system-nixos-26.11.20260919.20b1ddd",
+    "profile": "/nix/store/2igpibpw4nn0clbda7p35dp5bhg28n35-nixos-system-nixos-26.11.20260919.20b1ddd",
+    "boot_id": "9e664e59-dfd6-49ed-976a-2e38416c0a7f",
+    "sway_exe": "/nix/store/hy37k7zpyzawlnbmf5jd7cg2zdgybl3f-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway",
+    "sway_sha256": "4fc7bf3a0c0818c9eb3d286de4579999b3fbbaf9abe0e4317c017bca1dc663ba",
+    "outputs": [
+      {
+        "name": "DSI-1",
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "width": 1232,
+          "height": 568
+        },
+        "transform": "270",
+        "current_mode": {
+          "width": 568,
+          "height": 1232,
+          "refresh": 52190,
+          "picture_aspect_ratio": "none"
+        },
+        "max_render_time": 8
+      }
+    ],
+    "apps": [
+      "k230-terminal"
+    ],
+    "wallpaper": {
+      "schema": 1,
+      "generation": "2e583fb7dc1947e9d444c171",
+      "background_fingerprint": null,
+      "decoder_pid": null,
+      "state": "still",
+      "error_category": null,
+      "frames_decoded": 0,
+      "frames_submitted": 0,
+      "frame_callbacks": 0,
+      "last_decoded_monotonic_ms": null,
+      "last_submitted_monotonic_ms": null,
+      "last_callback_monotonic_ms": null
+    }
+  },
+  "properties": {
+    "StandardOutput": "journal",
+    "StandardError": "inherit",
+    "LogLevelMax": "-1",
+    "LogRateLimitIntervalUSec": "0",
+    "LogRateLimitBurst": "0"
+  },
+  "timers": {
+    "k230-source3-paired12-20261021": false,
+    "k230-source3-paired12-20261021-attempt2": false,
+    "k230-source3-paired12-20261021-attempt3": false,
+    "k230-source3-paired12-20261021-attempt4": false
+  },
+  "theme_pointer_matches": true,
+  "preferences_exact_bytes": true,
+  "preferences_sha256": "608049fec22538747e626ff34dc4dd97227e6ece6ffcd690cfedd46b2b80c5cc",
+  "app_pointer_matches": true,
+  "fixture_removed": true,
+  "override_absent": true,
+  "test_input_devices": 0,
+  "normal_services": {
+    "shell": true,
+    "shell-ui": true,
+    "theme-helper": true
+  },
+  "completed_runs": 4
+}

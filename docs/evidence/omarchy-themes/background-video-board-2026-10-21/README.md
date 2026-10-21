@@ -306,3 +306,12 @@ passes the frozen three-card tracking target in its 12 ms arm (19.170 ms p95)
 while both 8 ms arms still fail. Every numeric metric passes in that arm;
 full paired still/video acceptance remains open. The normal 8 ms landscape
 session and journal routing were restored.
+
+The [complete quiet12 paired trial](paired12/README.md) then passes all
+numeric metrics for still1/3-card and video1-card cases, but video3-card
+tracking remains above target. All of its slow correlated intervals include
+intermediate actual presentations; the association audit finds no delayed
+input-to-render mapping. Reported video counters stay paused at gesture
+boundaries. This leaves input/render phase for investigation and the frozen
+gate open. Exact preference bytes, normal8ms, still, landscape, and journal
+routing were restored.
