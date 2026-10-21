@@ -276,3 +276,9 @@ for both still/video. The gallery and compatibility matrix satisfy 4.1 after
 link validation. Archive 4.2 remains open. Default selection remains the original
 still; the operator's landscape choice is preserved. No numerical target,
 physical-contact claim, or scope exception was inferred from "continue".
+
+The subsequent [guarded tracking-cadence comparison](tracking-cadence/README.md)
+keeps the original still and landscape, compares the 8/12/8 ms render allowance,
+and retains the failed gate. It distinguishes actual presentation gaps from
+correlated-input gaps without substituting either metric or changing budgets.
+The normal 8 ms setting and original runtime state were restored.

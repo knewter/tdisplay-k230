@@ -1,0 +1,10 @@
+{
+  "schema": 1,
+  "environment": "board",
+  "board_model": "LILYGO T-Display-K230",
+  "ownership": "coordinator-reserved",
+  "source_revision": "d39abadfab3fb4e6c0d8d201d06d9a82a73d22ad",
+  "package_store_path": "/nix/store/6l2pbfpnmm4b0393gvvj6m13795msgaa-k230-card-shell-hdmi-trial",
+  "evidence_class": "board-injected",
+  "collected_at": "2026-10-21T04:58:48Z"
+}

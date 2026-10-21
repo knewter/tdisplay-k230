@@ -1,0 +1,309 @@
+{
+  "a8": {
+    "run": "1461401125123",
+    "cards": 3,
+    "input_dispatch_interval_ms": {
+      "count": 204,
+      "p50": 19.99153,
+      "p95": 23.587717,
+      "max": 27.647614
+    },
+    "all_present_intervals_during_motion_ms": {
+      "count": 194,
+      "p50": 19.155,
+      "p95": 38.309,
+      "max": 38.33
+    },
+    "all_present_vblank_buckets": {
+      "1": 179,
+      "2": 15
+    },
+    "tracking_present_interval_ms": {
+      "count": 190,
+      "p50": 19.156,
+      "p95": 38.31,
+      "max": 38.33
+    },
+    "tracking_intervals_above_33_334_ms": 20,
+    "over_budget_tracking_intervals_with_an_intermediate_present": 4,
+    "submit_to_present_ms": {
+      "count": 196,
+      "p50": 2.479742,
+      "p95": 17.531008,
+      "max": 19.772507
+    },
+    "repaint_stages": {
+      "render_cpu_ms": {
+        "count": 196,
+        "p50": 5.637926,
+        "p95": 6.352038,
+        "max": 6.788222
+      },
+      "prepare_cpu_ms": {
+        "count": 196,
+        "p50": 0.31237,
+        "p95": 0.903,
+        "max": 1.035296
+      },
+      "build_cpu_ms": {
+        "count": 196,
+        "p50": 4.97689,
+        "p95": 5.293411,
+        "max": 5.748371
+      },
+      "commit_cpu_ms": {
+        "count": 196,
+        "p50": 0.262592,
+        "p95": 0.294704,
+        "max": 0.329555
+      }
+    },
+    "limits": "All-present intervals are a diagnostic across each gesture first/last motion window, not a replacement for the frozen correlated tracking metric. Presentation is backend feedback, not optical visibility. No kernel cause inferred."
+  },
+  "a8-one": {
+    "run": "1529857578838",
+    "cards": 1,
+    "input_dispatch_interval_ms": {
+      "count": 204,
+      "p50": 19.99515,
+      "p95": 21.181694,
+      "max": 28.260054
+    },
+    "all_present_intervals_during_motion_ms": {
+      "count": 206,
+      "p50": 19.155,
+      "p95": 19.161,
+      "max": 38.316
+    },
+    "all_present_vblank_buckets": {
+      "1": 204,
+      "2": 2
+    },
+    "tracking_present_interval_ms": {
+      "count": 202,
+      "p50": 19.155,
+      "p95": 19.186,
+      "max": 38.316
+    },
+    "tracking_intervals_above_33_334_ms": 10,
+    "over_budget_tracking_intervals_with_an_intermediate_present": 7,
+    "submit_to_present_ms": {
+      "count": 208,
+      "p50": 4.578156,
+      "p95": 5.39423,
+      "max": 19.737245
+    },
+    "repaint_stages": {
+      "render_cpu_ms": {
+        "count": 208,
+        "p50": 3.696593,
+        "p95": 3.863816,
+        "max": 4.057592
+      },
+      "prepare_cpu_ms": {
+        "count": 208,
+        "p50": 0.324445,
+        "p95": 0.478185,
+        "max": 0.610112
+      },
+      "build_cpu_ms": {
+        "count": 208,
+        "p50": 3.120666,
+        "p95": 3.26111,
+        "max": 3.463929
+      },
+      "commit_cpu_ms": {
+        "count": 208,
+        "p50": 0.257667,
+        "p95": 0.28852,
+        "max": 0.338295
+      }
+    },
+    "limits": "All-present intervals are a diagnostic across each gesture first/last motion window, not a replacement for the frozen correlated tracking metric. Presentation is backend feedback, not optical visibility. No kernel cause inferred."
+  },
+  "a8-return": {
+    "run": "1508374450060",
+    "cards": 3,
+    "input_dispatch_interval_ms": {
+      "count": 204,
+      "p50": 19.993162,
+      "p95": 24.523932,
+      "max": 32.868307
+    },
+    "all_present_intervals_during_motion_ms": {
+      "count": 177,
+      "p50": 19.156,
+      "p95": 38.312,
+      "max": 38.314
+    },
+    "all_present_vblank_buckets": {
+      "1": 149,
+      "2": 28
+    },
+    "tracking_present_interval_ms": {
+      "count": 181,
+      "p50": 19.156,
+      "p95": 38.312,
+      "max": 38.314
+    },
+    "tracking_intervals_above_33_334_ms": 34,
+    "over_budget_tracking_intervals_with_an_intermediate_present": 0,
+    "submit_to_present_ms": {
+      "count": 187,
+      "p50": 2.366923,
+      "p95": 18.53703,
+      "max": 19.541685
+    },
+    "repaint_stages": {
+      "render_cpu_ms": {
+        "count": 187,
+        "p50": 5.832188,
+        "p95": 6.650482,
+        "max": 7.18093
+      },
+      "prepare_cpu_ms": {
+        "count": 187,
+        "p50": 0.768333,
+        "p95": 0.954519,
+        "max": 1.222149
+      },
+      "build_cpu_ms": {
+        "count": 187,
+        "p50": 5.04052,
+        "p95": 5.536074,
+        "max": 5.737408
+      },
+      "commit_cpu_ms": {
+        "count": 187,
+        "p50": 0.260186,
+        "p95": 0.295742,
+        "max": 0.323036
+      }
+    },
+    "limits": "All-present intervals are a diagnostic across each gesture first/last motion window, not a replacement for the frozen correlated tracking metric. Presentation is backend feedback, not optical visibility. No kernel cause inferred."
+  },
+  "b12": {
+    "run": "1486066498527",
+    "cards": 3,
+    "input_dispatch_interval_ms": {
+      "count": 204,
+      "p50": 19.86485,
+      "p95": 29.268401,
+      "max": 141.591784
+    },
+    "all_present_intervals_during_motion_ms": {
+      "count": 182,
+      "p50": 19.155,
+      "p95": 38.309,
+      "max": 134.081
+    },
+    "all_present_vblank_buckets": {
+      "1": 169,
+      "3": 3,
+      "7": 1,
+      "2": 9
+    },
+    "tracking_present_interval_ms": {
+      "count": 179,
+      "p50": 19.155,
+      "p95": 38.311,
+      "max": 57.473
+    },
+    "tracking_intervals_above_33_334_ms": 17,
+    "over_budget_tracking_intervals_with_an_intermediate_present": 8,
+    "submit_to_present_ms": {
+      "count": 188,
+      "p50": 6.516399,
+      "p95": 9.557262,
+      "max": 16.999796
+    },
+    "repaint_stages": {
+      "render_cpu_ms": {
+        "count": 188,
+        "p50": 5.584295,
+        "p95": 6.320369,
+        "max": 8.148113
+      },
+      "prepare_cpu_ms": {
+        "count": 188,
+        "p50": 0.298518,
+        "p95": 0.85263,
+        "max": 1.409703
+      },
+      "build_cpu_ms": {
+        "count": 188,
+        "p50": 4.946819,
+        "p95": 5.388854,
+        "max": 6.50104
+      },
+      "commit_cpu_ms": {
+        "count": 188,
+        "p50": 0.261963,
+        "p95": 0.29074,
+        "max": 0.348111
+      }
+    },
+    "limits": "All-present intervals are a diagnostic across each gesture first/last motion window, not a replacement for the frozen correlated tracking metric. Presentation is backend feedback, not optical visibility. No kernel cause inferred."
+  },
+  "b12-one": {
+    "run": "1551170811891",
+    "cards": 1,
+    "input_dispatch_interval_ms": {
+      "count": 204,
+      "p50": 19.995027,
+      "p95": 23.986525,
+      "max": 30.441639
+    },
+    "all_present_intervals_during_motion_ms": {
+      "count": 205,
+      "p50": 19.155,
+      "p95": 19.162,
+      "max": 38.312
+    },
+    "all_present_vblank_buckets": {
+      "1": 200,
+      "2": 5
+    },
+    "tracking_present_interval_ms": {
+      "count": 200,
+      "p50": 19.155,
+      "p95": 38.31,
+      "max": 38.314
+    },
+    "tracking_intervals_above_33_334_ms": 16,
+    "over_budget_tracking_intervals_with_an_intermediate_present": 11,
+    "submit_to_present_ms": {
+      "count": 206,
+      "p50": 8.577836,
+      "p95": 11.925253,
+      "max": 18.816777
+    },
+    "repaint_stages": {
+      "render_cpu_ms": {
+        "count": 206,
+        "p50": 3.591442,
+        "p95": 3.909111,
+        "max": 4.101408
+      },
+      "prepare_cpu_ms": {
+        "count": 206,
+        "p50": 0.108444,
+        "p95": 0.483704,
+        "max": 0.521666
+      },
+      "build_cpu_ms": {
+        "count": 206,
+        "p50": 3.106149,
+        "p95": 3.377961,
+        "max": 3.499182
+      },
+      "commit_cpu_ms": {
+        "count": 206,
+        "p50": 0.258406,
+        "p95": 0.301999,
+        "max": 0.353888
+      }
+    },
+    "limits": "All-present intervals are a diagnostic across each gesture first/last motion window, not a replacement for the frozen correlated tracking metric. Presentation is backend feedback, not optical visibility. No kernel cause inferred."
+  }
+}

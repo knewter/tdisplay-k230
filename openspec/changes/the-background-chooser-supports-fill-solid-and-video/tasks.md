@@ -148,6 +148,13 @@ performance acceptance.
   performance waiver is inferred; this box remains open. Evidence:
   `docs/evidence/omarchy-themes/background-video-board-2026-10-21/README.md`.
 
+  Follow-up 2026-10-21: five original-still 8/12/8 ms render-allowance
+  diagnostic arms do not resolve the three-card tracking gate (p95 38.310–38.312
+  ms). Correlated-input gaps and actual presentation gaps are distinguished;
+  no frozen metric is replaced. Normal 8 ms, original still, and landscape
+  were restored. Replay and exact commands:
+  `docs/evidence/omarchy-themes/background-video-board-2026-10-21/tracking-cadence/README.md`.
+
 - [x] 3.4 Confirm a user-supplied overlay stages, applies, and survives a
   shell/helper restart on the board, the same way the pinned/bundled
   background test in `docs/evidence/theme-picker/background-selection/README.md`
