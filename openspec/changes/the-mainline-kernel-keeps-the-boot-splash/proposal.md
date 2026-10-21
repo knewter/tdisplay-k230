@@ -29,8 +29,8 @@ not been shown to leave a stage 1 image alone.
   `panelConsole = true` image inspection (6.1) if it was not performed there.
 
 **Non-goals.** Plymouth (task 5.2 of the predecessor was not taken; the
-measurement selected the minimal DRM owner). Boot animation. Changing the
-stage 1 splash port, which the predecessor already delivered and archived.
+measurement selected the minimal DRM owner). Boot animation. Stage 1 changes
+beyond the bounded DMA-request correction described below.
 Any claim that a host build, QEMU run or injected event satisfies a task that
 says *Hardware*.
 
@@ -38,18 +38,32 @@ says *Hardware*.
 image tasks are laptop claims. Recovery stays as it was: a second card with
 the last known-good image, and `docs/uboot-ums.md` for flashing in place.
 
+## Authorized follow-up: stage 1 DMA request
+
+After the accepted default reproduced brief garbled-logo frames on a normal
+warm reboot (2026-10-20), the operator authorized testing the stage 1 splash
+DMA-request correction, `0x40` to `0x4f`, in
+`nix/patches/uboot-k230/0004-rm69a10-logo-port.patch`. The pinned vendor
+`kd_vo_osd_set_dma_request` sets the lower four bits to `0xf`; the mainline
+driver also uses `0x4f` for this pixel format. This is a source-grounded
+candidate, not a proven cause or fix. The patch must preserve pixel format,
+framebuffer address, stride, timings, SPL and environment. Build, verified
+backup/readback and rollback precede a filmed warm-boot trial. The existing
+task 4.1 and its ±0.1 s video/kernel timing gate remain open until proved.
+
 ## Capabilities
 
 ### Modified Capabilities
 
-None yet. The requirements this change must satisfy are the ones
-`the-screen-lights-before-linux` archived into `display/boot-splash` and
-`image/boot-chain`; their `UNVERIFIED` markers point here. A delta is added
-when a hardware result restates one.
+`display/boot-splash` and `image/boot-chain`. Existing deltas record the
+mainline default and framebuffer reservation; the splash delta also requires
+a stable image through the first compositor frame. Its remaining physical
+proof is task 4.1, not the authorization to test a candidate.
 
 ## Impact
 
 `nix/dts/k230-tdisplay-mainline-drm-common.dtsi` (a `reserved-memory` node fed
 from the flake's splash-address constant), the mainline kernel patch set in
 `nix/` (panel and DRM handoff), `flake.nix` and `nix/panel-console.nix`
-(the selected default), and new evidence under `docs/evidence/`.
+(the selected default), the bounded stage 1 splash patch above, and new
+evidence under `docs/evidence/`.

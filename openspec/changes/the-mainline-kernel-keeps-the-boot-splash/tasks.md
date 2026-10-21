@@ -46,3 +46,12 @@ Run them on the image from 1.3.
   Reproduced 2026-10-20, still open: after the operator's camera “ready,” the accepted default's normal warm reboot yielded5393frames/no sequence gaps, with multiple brief garbled-logo frames and a stable keyboard control. Same p501 system/kernel and normal landscape/nativeSettings returned on boot3d59df47. Evidence: `docs/evidence/mainline-boot-splash/current-baseline-2026-10-20/board/README.md`. Camera controls were restored and board lease released. Conditional software-clock mapping is not final ±0.1s optical qualification. A one-field stage1 DMA-request source candidate is prepared privately; extending the proposal's explicit stage1-port non-goal is an unanswered scope question. No bootloader source edit, build, MMIO correction, deployment, fix or archive is claimed.
 
 **Proves group 1.** `nix build .#mainlineDrmHotplugDeviceTreeNormalName` and the image build, laptop claims. **Proves group 2.** The photograph, film and captures named in each task, hardware claims.
+
+### Authorized candidate work supporting task 4.1
+
+The operator approved the stage 1 scope extension on 2026-10-20 (“nah go for
+it”), resolving the previously unanswered question. Historical investigation
+notes above remain dated observations. Task 4.1 retains its full proof gate.
+
+- [ ] 4.2 Change only the stage 1 splash DMA-request constant `0x40` → `0x4f`; verify `nix build .#stage1`, inspect the packaged artifact and record exact hashes and unchanged SPL/environment/OpenSBI comparisons under `docs/evidence/` — laptop claim.
+- [ ] 4.3 **Hardware.** Under the exclusive board lease, identify the boot device and raw U-Boot region from source and live layout, preserve and verify both host and board backups with an exact restore command, install only the candidate U-Boot-proper region, verify readback and protected regions, and film a normal warm boot returning to the accepted landscape system. Commit the actual outcome under `docs/evidence/`; restore the original on a failed trial. This deployment proof does not by itself satisfy task 4.1 — hardware claim.

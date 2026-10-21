@@ -39,3 +39,34 @@ and it never ran against the mainline kernel the board uses now.
 Corrupted scanout after the Linux handoff is the defect that forced
 `panelConsole = true`; it has not been reproduced or fixed on mainline. A
 `false` image may show it, which is why the second-card rule applies.
+
+## Authorized stage 1 follow-up (2026-10-20)
+
+The operator approved extending the investigation to test the one-field
+stage 1 DMA-request correction (`0x40` → `0x4f`). The pinned SDK source's
+`kd_vo_osd_set_dma_request` sets bits 3:0 to `0xf`, independently of the
+byte-map field. This grounds the candidate's value, not a causal claim or
+a particular DMA burst size. Source paths, pinned revision and the current
+reproduction are in
+`docs/evidence/mainline-boot-splash/current-baseline-2026-10-20/board/README.md`.
+
+1. Change only that constant in the existing RM69A10 U-Boot patch. Build
+   `nix build .#stage1` and record exact source/artifact hashes. Compare SPL,
+   environment and OpenSBI to the baseline; do not deploy unrelated changes.
+2. Before any raw-media write, exclusively reserve the board, identify its
+   boot device and layout from the build source and live partition table,
+   and preserve verified host and board backups of the complete affected
+   region. Verify the candidate fits before the next region. Retain an
+   explicit restore command and existing USB flashing/recovery path. A
+   register-only diagnostic is distinct from installing stage 1.
+3. Deploy only the U-Boot-proper region when preflight and backups pass;
+   read back the written bytes, verify all surrounding protected regions
+   remain unchanged, and film a normal warm reboot. Keep the accepted p501
+   system and landscape session unchanged. On failure restore the original
+   region and verify the accepted boot, recording the failure.
+4. Inspect the full splash interval for brief distortion, not just dark
+   frames. Keep raw camera timestamps and qualify their relationship to
+   kernel time to ±0.1 s. A successful build, source similarity or software
+   clock fit cannot satisfy task 4.1. Record both positive and negative
+   results, leaving the change open if the candidate fails or timing remains
+   unqualified.
