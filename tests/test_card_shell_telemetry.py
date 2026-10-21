@@ -84,9 +84,9 @@ int main(int argc, char **argv) {
 #include "telemetry.h"
 #include <assert.h>
 #include <time.h>
-static unsigned long long cpu=100;
+static unsigned long long cpu=100, wall=1000;
 int profile_clock(clockid_t clock, struct timespec *t) {
-    t->tv_sec=10; t->tv_nsec=clock==CLOCK_PROCESS_CPUTIME_ID ? cpu : 1000;
+    t->tv_sec=10; t->tv_nsec=clock==CLOCK_PROCESS_CPUTIME_ID ? cpu : wall;
     return 0;
 }
 int main(void) {
@@ -100,23 +100,24 @@ int main(void) {
     start=card_bench_input_stage_begin(); cpu+=1; card_bench_input_stage_end(CARD_BENCH_CHROME,start);
     cpu+=1; card_bench_input_end(true,false);
     card_bench_work_begin(); cpu+=3; card_bench_work_end();
-    card_bench_render_begin(&o); cpu+=2; card_bench_render_stage(&o,CARD_BENCH_BUILD);
-    cpu+=5; card_bench_commit_begin(&o); cpu+=3;
+    wall+=1000000; card_bench_render_begin(&o); cpu+=2; card_bench_render_stage(&o,CARD_BENCH_BUILD);
+    cpu+=5; wall+=2000000; card_bench_commit_begin(&o); cpu+=3; wall+=3000000;
     card_bench_render_end(&o,true);
     card_bench_frame_done(o.scene_output);
     card_bench_frame_done(o.scene_output); /* multiple surfaces: one frame event */
-    struct wlr_output_event_present shown={.when={.tv_sec=10,.tv_nsec=1000},.commit_seq=1,.presented=true};
+    struct wlr_output_event_present shown={.when={.tv_sec=10,.tv_nsec=wall},.commit_seq=1,.presented=true};
     card_bench_present(&o,&shown);
     card_bench_input_begin(1,"release",true); cpu+=2;
     card_bench_scene_damage(); card_bench_input_end(true,true);
     card_bench_render_begin(&o); cpu+=1; card_bench_render_stage(&o,CARD_BENCH_BUILD);
     cpu+=4; card_bench_render_end(&o,false);
     card_bench_schedule(&o,3);
+    wall+=4000000;
     card_bench_render_begin(&o); cpu+=1; card_bench_render_stage(&o,CARD_BENCH_BUILD);
-    cpu+=2; w.commit_seq=2; card_bench_motion_settled(true); card_bench_commit_begin(&o); cpu+=3;
+    cpu+=2; w.commit_seq=2; card_bench_motion_settled(true); wall+=5000000; card_bench_commit_begin(&o); cpu+=3; wall+=6000000;
     card_bench_render_end(&o,true);
     card_bench_frame_done(o.scene_output);
-    shown.commit_seq=2; card_bench_present(&o,&shown);
+    shown.commit_seq=2; shown.when.tv_nsec=wall; card_bench_present(&o,&shown);
     card_bench_stop();
 }
 ''')
@@ -149,7 +150,11 @@ int main(void) {
                     for line in output.splitlines() if line.startswith('K230_CARD_SHELL repaint-timing ')]
             self.assertEqual(len(timing),2) # failed render emits no committed-frame timing
             self.assertEqual((int(timing[0]['scheduled_ns']),int(timing[0]['delay_ms'])),(0,0))
-            self.assertEqual((int(timing[1]['scheduled_ns']),int(timing[1]['delay_ms'])),(10_000_001_000,3))
+            self.assertEqual((int(timing[1]['scheduled_ns']),int(timing[1]['delay_ms'])),(10_006_001_000,3))
+            self.assertEqual(tuple(int(timing[0][k]) for k in
+                ('start_ns','commit_start_ns','end_ns')),(10_001_001_000,10_003_001_000,10_006_001_000))
+            self.assertEqual(tuple(int(timing[1][k]) for k in
+                ('start_ns','commit_start_ns','end_ns')),(10_010_001_000,10_015_001_000,10_021_001_000))
             self.assertEqual(ignored,14) # two diagnostic rows; frozen benchmark schema unchanged
             self.assertEqual([row['update_cpu_ns'] for row in rows if row['event']=='submit'],[20,13])
             # Feed the actual C producer output into the motion consumer. The
