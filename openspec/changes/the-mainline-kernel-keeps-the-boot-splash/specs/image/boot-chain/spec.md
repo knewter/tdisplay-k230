@@ -14,9 +14,11 @@ board (`docs/evidence/mainline-boot-splash/board/README.md`, 2026-10-12, warm
 reboots): the kernel logs `reserved mem: 0x10000000..0x103fffff nomap
 framebuffer@10000000`, an idle kernel with no DRM client keeps the logo on the
 glass for a 90 s hold, and two filmed boots show the logo until the
-compositor's first frame. Transient 1-4-frame scanout glitches during early
-userspace (same README) recover without leaving a changed image; their cause
-is open as task 4.1.*
+compositor's first frame. Transient1–4frame scanout glitches during early userspace were subsequently
+removed in two observed normal warm boots after the bounded stage1 DMA-request
+correction; the final film has a reviewed±75.244ms timing bound
+(`docs/evidence/mainline-boot-splash/dma-request-trial-2026-10-20/final/README.md`).
+The correction does not establish a FIFO-underrun mechanism.*
 
 #### Scenario: The compiled device tree is inspected
 

@@ -1,0 +1,32 @@
+{
+  "method": "Independent crosscheck using actual successor framebuffer journal record, not the earlier display-enable log. Journal CLOCK_MONOTONIC converted using same-boot bracketed MONO/RAW samples; no subtraction of bare incompatible clock timestamps.",
+  "roi": {
+    "x": [
+      190,
+      700
+    ],
+    "y": [
+      100,
+      280
+    ]
+  },
+  "before_luma": 10.790550108932461,
+  "after_luma": 6.432058823529411,
+  "first_midpoint_dark_replacement_frame": 2989,
+  "frame_photon_interval": {
+    "frame": 2989,
+    "camera_elapsed_s": 99.62982,
+    "kernel_time_lower_s": 82.90205846776783,
+    "kernel_time_upper_s": 83.03544811845019,
+    "kernel_time_mid_s": 82.96875329310902,
+    "uncertainty_half_width_s": 0.06669482534118032
+  },
+  "journal_line": "[   82.802361] nixos k230-drm-splash[538]: k230-drm-splash: successor replaced fb 57; releasing owner",
+  "journal_clock_conversion_allowance_s": 0.0012936471599999777,
+  "journal_event_printk_interval_s": [
+    83.0067890506919,
+    83.01281498919707
+  ],
+  "comparison_note": "Framebuffer replacement polling/logging can follow the initiating atomic commit and precede/follow a scanned frame. Agreement supports the clock map; the journal record alone is not a presentation timestamp.",
+  "overlap": true
+}

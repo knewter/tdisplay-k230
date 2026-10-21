@@ -1,0 +1,6 @@
+[   47.955953] nixos systemd[1]: Started Static DRM owner for the K230 stage-1 splash.
+[   48.490190] nixos k230-drm-splash[538]: k230-drm-splash: scanout fb 57 on connector 52 crtc 50 as RG16
+[   69.221488] nixos k230-drm-splash[538]: k230-drm-splash: DRM master dropped; retaining fb 57 for successor
+[   82.802361] nixos k230-drm-splash[538]: k230-drm-splash: successor replaced fb 57; releasing owner
+[   82.815163] nixos systemd[1]: k230-drm-splash.service: Deactivated successfully.
+[   82.821546] nixos systemd[1]: k230-drm-splash.service: Consumed 84ms CPU time over 34.859s wall clock time, 5.9M memory peak, 2.8M read from disk.

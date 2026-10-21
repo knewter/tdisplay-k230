@@ -1,0 +1,300 @@
+{
+  "boot_id": "fbfdd9d3-7f95-4aec-978f-1a19b2a220f9",
+  "frequency_hz": 27000000,
+  "clocksource": "riscv_clocksource",
+  "samples": [
+    {
+      "index": 0,
+      "counter_before_raw": 15640527838,
+      "board_raw_ns": 572996773251,
+      "counter_after_raw": 15640528461,
+      "counter_before_kmsg": 15640528572,
+      "counter_after_kmsg": 15640530272
+    },
+    {
+      "index": 1,
+      "counter_before_raw": 15643235978,
+      "board_raw_ns": 573097076584,
+      "counter_after_raw": 15643236677,
+      "counter_before_kmsg": 15643236811,
+      "counter_after_kmsg": 15643239069
+    },
+    {
+      "index": 2,
+      "counter_before_raw": 15645944861,
+      "board_raw_ns": 573197402028,
+      "counter_after_raw": 15645945421,
+      "counter_before_kmsg": 15645945530,
+      "counter_after_kmsg": 15645947547
+    },
+    {
+      "index": 3,
+      "counter_before_raw": 15648653373,
+      "board_raw_ns": 573297716991,
+      "counter_after_raw": 15648653946,
+      "counter_before_kmsg": 15648654068,
+      "counter_after_kmsg": 15648656100
+    },
+    {
+      "index": 4,
+      "counter_before_raw": 15651361499,
+      "board_raw_ns": 573398017917,
+      "counter_after_raw": 15651362070,
+      "counter_before_kmsg": 15651362202,
+      "counter_after_kmsg": 15651364206
+    },
+    {
+      "index": 5,
+      "counter_before_raw": 15654069763,
+      "board_raw_ns": 573498324102,
+      "counter_after_raw": 15654070327,
+      "counter_before_kmsg": 15654070443,
+      "counter_after_kmsg": 15654072431
+    },
+    {
+      "index": 6,
+      "counter_before_raw": 15656778517,
+      "board_raw_ns": 573598647584,
+      "counter_after_raw": 15656779062,
+      "counter_before_kmsg": 15656779181,
+      "counter_after_kmsg": 15656781156
+    },
+    {
+      "index": 7,
+      "counter_before_raw": 15659486721,
+      "board_raw_ns": 573698952398,
+      "counter_after_raw": 15659487309,
+      "counter_before_kmsg": 15659487431,
+      "counter_after_kmsg": 15659489418
+    },
+    {
+      "index": 8,
+      "counter_before_raw": 15662194843,
+      "board_raw_ns": 573799252769,
+      "counter_after_raw": 15662195409,
+      "counter_before_kmsg": 15662195525,
+      "counter_after_kmsg": 15662197562
+    },
+    {
+      "index": 9,
+      "counter_before_raw": 15664903250,
+      "board_raw_ns": 573899564769,
+      "counter_after_raw": 15664903827,
+      "counter_before_kmsg": 15664903942,
+      "counter_after_kmsg": 15664905929
+    },
+    {
+      "index": 10,
+      "counter_before_raw": 15667611405,
+      "board_raw_ns": 573999865917,
+      "counter_after_raw": 15667611973,
+      "counter_before_kmsg": 15667612077,
+      "counter_after_kmsg": 15667614083
+    },
+    {
+      "index": 11,
+      "counter_before_raw": 15670319637,
+      "board_raw_ns": 574100170843,
+      "counter_after_raw": 15670320194,
+      "counter_before_kmsg": 15670320310,
+      "counter_after_kmsg": 15670322284
+    },
+    {
+      "index": 12,
+      "counter_before_raw": 15673027841,
+      "board_raw_ns": 574200474620,
+      "counter_after_raw": 15673028404,
+      "counter_before_kmsg": 15673028519,
+      "counter_after_kmsg": 15673031011
+    },
+    {
+      "index": 13,
+      "counter_before_raw": 15675736862,
+      "board_raw_ns": 574300808991,
+      "counter_after_raw": 15675737427,
+      "counter_before_kmsg": 15675737545,
+      "counter_after_kmsg": 15675739565
+    },
+    {
+      "index": 14,
+      "counter_before_raw": 15678444980,
+      "board_raw_ns": 574401109657,
+      "counter_after_raw": 15678446819,
+      "counter_before_kmsg": 15678446990,
+      "counter_after_kmsg": 15678449031
+    },
+    {
+      "index": 15,
+      "counter_before_raw": 15681154970,
+      "board_raw_ns": 574501480583,
+      "counter_after_raw": 15681155575,
+      "counter_before_kmsg": 15681155704,
+      "counter_after_kmsg": 15681158255
+    },
+    {
+      "index": 16,
+      "counter_before_raw": 15683863681,
+      "board_raw_ns": 574601802768,
+      "counter_after_raw": 15683864276,
+      "counter_before_kmsg": 15683864389,
+      "counter_after_kmsg": 15683866389
+    },
+    {
+      "index": 17,
+      "counter_before_raw": 15686571984,
+      "board_raw_ns": 574702109916,
+      "counter_after_raw": 15686572561,
+      "counter_before_kmsg": 15686572684,
+      "counter_after_kmsg": 15686574713
+    },
+    {
+      "index": 18,
+      "counter_before_raw": 15689280520,
+      "board_raw_ns": 574802426064,
+      "counter_after_raw": 15689281092,
+      "counter_before_kmsg": 15689281203,
+      "counter_after_kmsg": 15689283220
+    },
+    {
+      "index": 19,
+      "counter_before_raw": 15691988522,
+      "board_raw_ns": 574902722138,
+      "counter_after_raw": 15691989098,
+      "counter_before_kmsg": 15691989214,
+      "counter_after_kmsg": 15691991224
+    },
+    {
+      "index": 20,
+      "counter_before_raw": 15694696700,
+      "board_raw_ns": 575003024805,
+      "counter_after_raw": 15694697247,
+      "counter_before_kmsg": 15694697355,
+      "counter_after_kmsg": 15694699418
+    },
+    {
+      "index": 21,
+      "counter_before_raw": 15697404895,
+      "board_raw_ns": 575103328249,
+      "counter_after_raw": 15697405433,
+      "counter_before_kmsg": 15697405558,
+      "counter_after_kmsg": 15697424762
+    },
+    {
+      "index": 22,
+      "counter_before_raw": 15700130902,
+      "board_raw_ns": 575204291657,
+      "counter_after_raw": 15700131452,
+      "counter_before_kmsg": 15700131583,
+      "counter_after_kmsg": 15700133588
+    },
+    {
+      "index": 23,
+      "counter_before_raw": 15702839059,
+      "board_raw_ns": 575304593546,
+      "counter_after_raw": 15702839612,
+      "counter_before_kmsg": 15702839734,
+      "counter_after_kmsg": 15702841793
+    },
+    {
+      "index": 24,
+      "counter_before_raw": 15705547144,
+      "board_raw_ns": 575404893286,
+      "counter_after_raw": 15705547703,
+      "counter_before_kmsg": 15705547811,
+      "counter_after_kmsg": 15705549850
+    },
+    {
+      "index": 25,
+      "counter_before_raw": 15708255404,
+      "board_raw_ns": 575505199620,
+      "counter_after_raw": 15708255972,
+      "counter_before_kmsg": 15708256094,
+      "counter_after_kmsg": 15708258104
+    },
+    {
+      "index": 26,
+      "counter_before_raw": 15710963523,
+      "board_raw_ns": 575605500249,
+      "counter_after_raw": 15710964110,
+      "counter_before_kmsg": 15710964216,
+      "counter_after_kmsg": 15710966209
+    },
+    {
+      "index": 27,
+      "counter_before_raw": 15713671716,
+      "board_raw_ns": 575705803805,
+      "counter_after_raw": 15713672284,
+      "counter_before_kmsg": 15713672403,
+      "counter_after_kmsg": 15713674426
+    },
+    {
+      "index": 28,
+      "counter_before_raw": 15716380158,
+      "board_raw_ns": 575806116805,
+      "counter_after_raw": 15716380739,
+      "counter_before_kmsg": 15716380848,
+      "counter_after_kmsg": 15716382871
+    },
+    {
+      "index": 29,
+      "counter_before_raw": 15719088208,
+      "board_raw_ns": 575906414434,
+      "counter_after_raw": 15719088759,
+      "counter_before_kmsg": 15719088885,
+      "counter_after_kmsg": 15719090890
+    },
+    {
+      "index": 30,
+      "counter_before_raw": 15721796321,
+      "board_raw_ns": 576006715101,
+      "counter_after_raw": 15721796903,
+      "counter_before_kmsg": 15721797009,
+      "counter_after_kmsg": 15721799065
+    },
+    {
+      "index": 31,
+      "counter_before_raw": 15724504580,
+      "board_raw_ns": 576107020767,
+      "counter_after_raw": 15724505143,
+      "counter_before_kmsg": 15724505261,
+      "counter_after_kmsg": 15724507306
+    }
+  ],
+  "dmesg_markers": [
+    "[  572.998719] K230_FINAL_COUNTER_PANE23 index=0",
+    "[  573.099042] K230_FINAL_COUNTER_PANE23 index=1",
+    "[  573.199355] K230_FINAL_COUNTER_PANE23 index=2",
+    "[  573.299672] K230_FINAL_COUNTER_PANE23 index=3",
+    "[  573.399972] K230_FINAL_COUNTER_PANE23 index=4",
+    "[  573.500277] K230_FINAL_COUNTER_PANE23 index=5",
+    "[  573.600601] K230_FINAL_COUNTER_PANE23 index=6",
+    "[  573.700907] K230_FINAL_COUNTER_PANE23 index=7",
+    "[  573.801207] K230_FINAL_COUNTER_PANE23 index=8",
+    "[  573.901518] K230_FINAL_COUNTER_PANE23 index=9",
+    "[  574.001819] K230_FINAL_COUNTER_PANE23 index=10",
+    "[  574.102124] K230_FINAL_COUNTER_PANE23 index=11",
+    "[  574.202440] K230_FINAL_COUNTER_PANE23 index=12",
+    "[  574.302763] K230_FINAL_COUNTER_PANE23 index=13",
+    "[  574.403112] K230_FINAL_COUNTER_PANE23 index=14",
+    "[  574.503447] K230_FINAL_COUNTER_PANE23 index=15",
+    "[  574.603757] K230_FINAL_COUNTER_PANE23 index=16",
+    "[  574.704065] K230_FINAL_COUNTER_PANE23 index=17",
+    "[  574.804380] K230_FINAL_COUNTER_PANE23 index=18",
+    "[  574.904677] K230_FINAL_COUNTER_PANE23 index=19",
+    "[  575.004980] K230_FINAL_COUNTER_PANE23 index=20",
+    "[  575.105282] K230_FINAL_COUNTER_PANE23 index=21",
+    "[  575.206246] K230_FINAL_COUNTER_PANE23 index=22",
+    "[  575.306548] K230_FINAL_COUNTER_PANE23 index=23",
+    "[  575.406848] K230_FINAL_COUNTER_PANE23 index=24",
+    "[  575.507154] K230_FINAL_COUNTER_PANE23 index=25",
+    "[  575.607454] K230_FINAL_COUNTER_PANE23 index=26",
+    "[  575.707758] K230_FINAL_COUNTER_PANE23 index=27",
+    "[  575.808071] K230_FINAL_COUNTER_PANE23 index=28",
+    "[  575.908368] K230_FINAL_COUNTER_PANE23 index=29",
+    "[  576.008670] K230_FINAL_COUNTER_PANE23 index=30",
+    "[  576.108976] K230_FINAL_COUNTER_PANE23 index=31"
+  ],
+  "library_sha256": "c17400ee6e465e955e73823e6c8453d3ea904b8a59000a48a8802c7569a7bc41",
+  "mutation": "One protected diagnostic library file and32 numeric kmsg records only; no firmware, config, tracing, MMIO or display changes.",
+  "checked_at": "2026-10-21T01:28:20.627590+00:00"
+}

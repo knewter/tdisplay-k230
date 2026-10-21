@@ -1,0 +1,217 @@
+{
+  "method": "Same-stream posthandoff optical calibration and causal dequeue bounds; contemporaneous host mono/raw brackets; all120 SSH intervals constrain an affine host-RAW to board-RAW map; separately bracketed printk/raw offset. No network-symmetry assumption, sample removal or relaxed feasibility constraints.",
+  "boot_id": "fbfdd9d3-7f95-4aec-978f-1a19b2a220f9",
+  "host_clocksource": {
+    "kind": "header",
+    "host_clocksource": "tsc",
+    "cpu_clock_flags": [
+      "constant_tsc",
+      "nonstop_tsc"
+    ],
+    "purpose": "Contemporaneous host CLOCK_MONOTONIC to CLOCK_MONOTONIC_RAW brackets throughout the full camera/boot/calibration stream."
+  },
+  "host_clock_samples": 5989,
+  "host_pair_max_width_ns": 2513015,
+  "host_monotonic_raw_conversion_slew_envelope_ppm": 2000.0,
+  "host_observed_offset_span_ms": 6.46776,
+  "affine_vertices": [
+    [
+      2.1009324510137273e-05,
+      0.00392208446111406
+    ],
+    [
+      4.116356569419421e-05,
+      0.0034780185722973578
+    ],
+    [
+      5.5856660267981716e-05,
+      0.0030944342179718746
+    ],
+    [
+      6.153519089369316e-05,
+      -0.0017087530270188899
+    ],
+    [
+      5.778624002466536e-05,
+      0.002948408955490912
+    ],
+    [
+      1.2686087155012804e-05,
+      0.003922051817359987
+    ],
+    [
+      5.0609353021508005e-05,
+      -0.0008708858228565598
+    ],
+    [
+      7.10681256791996e-05,
+      0.0012832064870836944
+    ],
+    [
+      9.63098211049745e-05,
+      -0.0019899384997341227
+    ],
+    [
+      8.025484227275346e-05,
+      0.0001036999912988927
+    ]
+  ],
+  "reference_host_raw_ns": 273055475704834.0,
+  "reference_board_raw_ns": 82647465210,
+  "raw_clock_slope_ppm_bounds": [
+    12.686087155012805,
+    96.3098211049745
+  ],
+  "all_ssh_samples_used": 120,
+  "minimum_ssh_roundtrip_ms": 4.441869,
+  "printk_minus_raw_bounds_s": [
+    0.0018573058518969177,
+    0.0019420090370685372
+  ],
+  "direct_hardware_counter_origin": {
+    "raw_minus_counter_seconds": [
+      -6.282058009036973,
+      -6.282038268814858
+    ],
+    "printk_minus_counter_seconds": [
+      -6.2801809629629615,
+      -6.2801159999999046
+    ],
+    "printk_minus_raw_seconds": [
+      0.0018573058518969177,
+      0.0019420090370685372
+    ],
+    "samples": 32,
+    "frequency_hz": 27000000,
+    "all_intervals_intersect": true
+  },
+  "optical_events": [
+    {
+      "value": 32,
+      "frame": 6922,
+      "pre_luma": 80.49691111111112,
+      "post_luma": 4.061733333333334,
+      "command_board_before_raw_ns": 214068232020,
+      "command_board_after_raw_ns": 214070388502,
+      "camera_board_raw_interval_s": [
+        214.1311629458324,
+        214.13625512016714
+      ],
+      "timestamp_minus_changed_photon_upper_s": 0.06802310016712454,
+      "host_ssh_roundtrip_ms": 9.063203
+    },
+    {
+      "value": 255,
+      "frame": 6952,
+      "pre_luma": 4.065144444444444,
+      "post_luma": 80.82977777777778,
+      "command_board_before_raw_ns": 215078074279,
+      "command_board_after_raw_ns": 215079788686,
+      "camera_board_raw_interval_s": [
+        215.13117332070271,
+        215.13635357038189
+      ],
+      "timestamp_minus_changed_photon_upper_s": 0.05827929138189347,
+      "host_ssh_roundtrip_ms": 7.329876
+    },
+    {
+      "value": 32,
+      "frame": 6982,
+      "pre_luma": 80.84207777777777,
+      "post_luma": 4.041844444444444,
+      "command_board_before_raw_ns": 216086726574,
+      "command_board_after_raw_ns": 216088328352,
+      "camera_board_raw_interval_s": [
+        216.1311777355287,
+        216.13645706005067
+      ],
+      "timestamp_minus_changed_photon_upper_s": 0.0497304860506631,
+      "host_ssh_roundtrip_ms": 8.393026
+    },
+    {
+      "value": 255,
+      "frame": 7017,
+      "pre_luma": 4.037444444444445,
+      "post_luma": 80.59066666666666,
+      "command_board_before_raw_ns": 217240807870,
+      "command_board_after_raw_ns": 217242340648,
+      "camera_board_raw_interval_s": [
+        217.29918980509365,
+        217.3045764393352
+      ],
+      "timestamp_minus_changed_photon_upper_s": 0.06376856933519548,
+      "host_ssh_roundtrip_ms": 156.915908
+    },
+    {
+      "value": 32,
+      "frame": 7048,
+      "pre_luma": 80.56943333333334,
+      "post_luma": 4.070888888888889,
+      "command_board_before_raw_ns": 218270980351,
+      "command_board_after_raw_ns": 218273449166,
+      "camera_board_raw_interval_s": [
+        218.33119011578594,
+        218.33668757038853
+      ],
+      "timestamp_minus_changed_photon_upper_s": 0.06570721938854263,
+      "host_ssh_roundtrip_ms": 27.983661
+    },
+    {
+      "value": 255,
+      "frame": 7079,
+      "pre_luma": 4.0803,
+      "post_luma": 80.881,
+      "command_board_before_raw_ns": 219291815684,
+      "command_board_after_raw_ns": 219294007943,
+      "camera_board_raw_interval_s": [
+        219.36320744319409,
+        219.36880236329458
+      ],
+      "timestamp_minus_changed_photon_upper_s": 0.0769866792945777,
+      "host_ssh_roundtrip_ms": 19.413465
+    },
+    {
+      "value": 32,
+      "frame": 7109,
+      "pre_luma": 80.86493333333334,
+      "post_luma": 4.047666666666666,
+      "command_board_before_raw_ns": 220308980979,
+      "command_board_after_raw_ns": 220312539831,
+      "camera_board_raw_interval_s": [
+        220.36322568432053,
+        220.3688737637481
+      ],
+      "timestamp_minus_changed_photon_upper_s": 0.05989278474808657,
+      "host_ssh_roundtrip_ms": 17.602214
+    },
+    {
+      "value": 255,
+      "frame": 7139,
+      "pre_luma": 4.0449,
+      "post_luma": 80.69786666666667,
+      "command_board_before_raw_ns": 221320336275,
+      "command_board_after_raw_ns": 221322550090,
+      "camera_board_raw_interval_s": [
+        221.36324723952015,
+        221.36896550012884
+      ],
+      "timestamp_minus_changed_photon_upper_s": 0.04862922512884893,
+      "host_ssh_roundtrip_ms": 8.311566
+    }
+  ],
+  "maximum_observed_timestamp_minus_changed_photon_upper_s": 0.0769866792945777,
+  "maximum_camera_period_s": 0.03638399997726083,
+  "exposure_units_100us": 100,
+  "rolling_sensor_plus_exposure_allowance_s": 0.04638399997726083,
+  "maximum_uncertainty_half_width_s": 0.07524348246946388,
+  "numeric_100ms_bound_passed": true,
+  "kernel_video_alignment_qualified": false,
+  "conditions": [
+    "The empirical same-stream upper latency envelope measured from eight posthandoff transitions applies to the preceding normal-boot frames; mode/controls/clock-source flags remain fixed, no gaps/errors/resets occurred. This is an empirical qualification, not a universal worst-case promise for unobserved camera behavior.",
+    "Host invariant TSC and board fixed27MHz riscv_clocksource are treated as affine over this single warmboot; source audit plus complete clock logs and all120 feasible SSH brackets ground the clock choice. A changed oscillator frequency outside the observed fit would invalidate extrapolation.",
+    "Whole-image rolling acquisition allowance uses the largest recorded frame interval plus exposure; per-frame dequeue causality supplies the opposite bound. This is conservative for the observed operating mode, not a sensor datasheet guarantee.",
+    "Negative new-kernel-relative times are retained for pre-kernel film frames. Source continuity/epoch audit must be reviewed before declaring the early-boot origin qualified."
+  ],
+  "conclusion": "Numeric timing interval computed; final qualification requires explicit review of the source epoch/continuity grounding and empirical camera conditions. Recorder flags alone do not prove it.",
+  "frame_time_records_artifact": "timing-analysis.json.gz"
+}

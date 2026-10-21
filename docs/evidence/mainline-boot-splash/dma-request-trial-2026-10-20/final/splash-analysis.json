@@ -1,0 +1,29 @@
+{
+  "frames_analyzed": 8993,
+  "dark_interval": {
+    "first_frame": 310,
+    "last_frame": 3101,
+    "first_elapsed_s": 10.331751,
+    "last_elapsed_s": 103.365707
+  },
+  "interior_frames": 2782,
+  "peak": {
+    "frame": 355,
+    "camera_elapsed_s": 11.831713,
+    "transient_luma_score": 0.6543137431144714,
+    "control_transient_score": 0.37457627058029175,
+    "panel_mean": 4.025798319327731
+  },
+  "threshold": 0.8,
+  "flagged_interior_frames": [],
+  "review_indices": [
+    350,
+    355,
+    360,
+    600,
+    1500,
+    2400,
+    3000
+  ],
+  "limits": "Selector proposes review frames; persistent initial lighting and compositor replacement are distinct. Full film retained; no universal per-panel-refresh claim."
+}

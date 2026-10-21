@@ -15,7 +15,7 @@ when the panel path itself is being debugged.
 `console=tty0`; `nix eval` gives `false` for it and `true` for the
 vendor-kernel `k230` and `k230-console`
 (`docs/evidence/mainline-boot-splash/board/README.md`). That system,
-`kc3iyr4c…`, is installed on the board and was filmed on warm reboots showing
+`kc3iyr4c…`, was installed on the board and filmed on warm reboots showing
 the splash from stage 1 to the compositor's first frame with no kernel text on
 the panel (same README). The console configuration remains the
 `panelConsole = true` option, photographed in
@@ -45,14 +45,17 @@ appearance through the compositor's first frame on the default warm boot,
 without transient garbled scanout frames. Stage 1 owns initial scanout setup;
 the system owns preserving it until its display client replaces the image.
 
-*Grounding for the defect: the current accepted default was filmed on a
-normal warm reboot on 2026-10-20, with original distorted-frame samples and
-raw camera metadata committed in
-`docs/evidence/mainline-boot-splash/current-baseline-2026-10-20/board/README.md`.*
-
-<!-- UNVERIFIED: defect removal and a full warm-boot film aligned to kernel
- time to ±0.1 s remain task 4.1. A stage 1 DMA-request correction is authorized
- for testing; vendor source and host builds do not prove this behavior. -->
+*Grounding: the accepted p501 default reproduced garbled-logo frames before
+this correction (`docs/evidence/mainline-boot-splash/current-baseline-2026-10-20/board/README.md`).
+After the bounded stage1 DMA-request change, two normal warm-boot films show no
+such frame. The final8993frame film includes same-stream post-handoff optical
+calibration; all120 SSH clock brackets, direct hardware counter/epoch probes
+and exact configured-source continuity checks bound every first120s frame to
+at most±75.244ms. The independent successor-framebuffer crosscheck agrees.
+`docs/evidence/mainline-boot-splash/dma-request-trial-2026-10-20/final/README.md`
+records the physical observations, replay and fixed-stream/counter assumptions.
+These are warm-boot samples, not cold-power-on, per-panel-refresh or universal
+future camera/clock guarantees. The FIFO mechanism remains unproved.*
 
 #### Scenario: The default warm boot reaches the shell
 

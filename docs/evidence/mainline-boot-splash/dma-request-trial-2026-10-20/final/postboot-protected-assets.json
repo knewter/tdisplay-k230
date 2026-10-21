@@ -1,0 +1,48 @@
+{
+  "boot_id": "fbfdd9d3-7f95-4aec-978f-1a19b2a220f9",
+  "first4MiB_sha256": "df7e9b6ab78879374cd0c2c503dd1a04ab5e6d0513cd30d7e09f9b13e495a5a4",
+  "expected_sha256": "df7e9b6ab78879374cd0c2c503dd1a04ab5e6d0513cd30d7e09f9b13e495a5a4",
+  "direct_readback": true,
+  "all_protected_boot_files_unchanged": true,
+  "boot_files": {
+    "logo.xrgb": {
+      "bytes": 2799104,
+      "sha256": "6c7a36086297597b359657ab53925ee0725e5201461484d543cbd950f5baa3af"
+    },
+    "fw_jump_add_uboot_head.bin": {
+      "bytes": 270808,
+      "sha256": "9627edbeea9b115d7040beea27cc61b23b6aca61cd502fd7760d7ee179f42c99"
+    },
+    "bootargs.txt": {
+      "bytes": 198,
+      "sha256": "38a90761c55914c426828c41d1c8b1cb636d19cda6893859d43afbe64c0fefc4"
+    },
+    "Image": {
+      "bytes": 42752512,
+      "sha256": "d6b2153d97ac8382b5329c64397b8b46435e6a423b16796f8c37e052d4bcd642"
+    },
+    "initrd.uimg": {
+      "bytes": 27328407,
+      "sha256": "7d983aeffd4e47d2e36f825a731b485d55f05534a5dd28f036244d79c16f197c"
+    },
+    "hdmi_dtb": {
+      "bytes": 17,
+      "sha256": "175342c82dd1b437cdafb6bb01090e7ff73c2769515654c48b02c1e9f73440c6"
+    },
+    "k230-tdisplay.dtb": {
+      "bytes": 19048,
+      "sha256": "ad61b8a70acba495b77761a6e73e935c4cd8ccd2a7ca6eb3da7fca6c256a18df"
+    },
+    "force_dtb": {
+      "bytes": 17,
+      "sha256": "175342c82dd1b437cdafb6bb01090e7ff73c2769515654c48b02c1e9f73440c6"
+    },
+    "lcd_dtb": {
+      "bytes": 17,
+      "sha256": "175342c82dd1b437cdafb6bb01090e7ff73c2769515654c48b02c1e9f73440c6"
+    }
+  },
+  "candidate_payload_sha256": "46437f404369b99b3300f89d8dd5dcbd3d3f9cf8f1c0a7724754ea74116814a9",
+  "mutations": false,
+  "checked_at": "2026-10-21T01:31:33.855856+00:00"
+}

@@ -1,0 +1,47 @@
+{
+  "configured_kernel_source": "/nix/store/1sr18plbky4kzy5x1gjqmy4pqdm68zbc-linux-mainline-k230-drm-src",
+  "running_kernel_notes_sha256": "1a98ea1e0a6e75f923c0fd53cfcf472f576ddb36de86b89361bfc224a305d9b6",
+  "files": {
+    "drivers/clocksource/timer-riscv.c": {
+      "sha256": "42856bab2c550948df3f0cfce550f7c17f7844ccb4a09d81f7760cbe38ccdb1e",
+      "excerpts": [
+        {
+          "first_line": 80,
+          "last_line": 106,
+          "text": "/*\n * It is guaranteed that all the timers across all the harts are synchronized\n * within one tick of each other, so while this could technically go\n * backwards when hopping between CPUs, practically it won't happen.\n */\nstatic unsigned long long riscv_clocksource_rdtime(struct clocksource *cs)\n{\n\treturn get_cycles64();\n}\n\nstatic u64 notrace riscv_sched_clock(void)\n{\n\treturn get_cycles64();\n}\n\nstatic struct clocksource riscv_clocksource = {\n\t.name\t\t= \"riscv_clocksource\",\n\t.rating\t\t= 400,\n\t.mask\t\t= CLOCKSOURCE_MASK(64),\n\t.flags\t\t= CLOCK_SOURCE_IS_CONTINUOUS,\n\t.read\t\t= riscv_clocksource_rdtime,\n\t.vdso_clock_mode = VDSO_CLOCKMODE_ARCHTIMER,\n};\n\nstatic int riscv_timer_starting_cpu(unsigned int cpu)\n{\n\tstruct clock_event_device *ce = per_cpu_ptr(&riscv_clock_event, cpu);"
+        },
+        {
+          "first_line": 170,
+          "last_line": 180,
+          "text": "\t\treturn -ENODEV;\n\t}\n\n\terror = clocksource_register_hz(&riscv_clocksource, riscv_timebase);\n\tif (error) {\n\t\tpr_err(\"RISCV timer registration failed [%d]\\n\", error);\n\t\treturn error;\n\t}\n\n\tsched_clock_register(riscv_sched_clock, 64, riscv_timebase);\n"
+        }
+      ]
+    },
+    "kernel/time/sched_clock.c": {
+      "sha256": "fe4ce32b7f1a5431b87ba5098fedf7153f6f259d74f4c8f61b4ed70fa9250c7a",
+      "excerpts": [
+        {
+          "first_line": 177,
+          "last_line": 220,
+          "text": "void sched_clock_register(u64 (*read)(void), int bits, unsigned long rate)\n{\n\tu64 res, wrap, new_mask, new_epoch, cyc, ns;\n\tu32 new_mult, new_shift;\n\tunsigned long r, flags;\n\tchar r_unit;\n\tstruct clock_read_data rd;\n\n\tif (cd.rate > rate)\n\t\treturn;\n\n\t/* Cannot register a sched_clock with interrupts on */\n\tlocal_irq_save(flags);\n\n\t/* Calculate the mult/shift to convert counter ticks to ns. */\n\tclocks_calc_mult_shift(&new_mult, &new_shift, rate, NSEC_PER_SEC, 3600);\n\n\tnew_mask = CLOCKSOURCE_MASK(bits);\n\tcd.rate = rate;\n\n\t/* Calculate how many nanosecs until we risk wrapping */\n\twrap = clocks_calc_max_nsecs(new_mult, new_shift, 0, new_mask, NULL);\n\tcd.wrap_kt = ns_to_ktime(wrap);\n\n\trd = cd.read_data[0];\n\n\t/* Update epoch for new counter and update 'epoch_ns' from old counter*/\n\tnew_epoch = read();\n\tcyc = cd.actual_read_sched_clock();\n\tns = rd.epoch_ns + cyc_to_ns((cyc - rd.epoch_cyc) & rd.sched_clock_mask, rd.mult, rd.shift);\n\tcd.actual_read_sched_clock = read;\n\n\trd.read_sched_clock\t= read;\n\trd.sched_clock_mask\t= new_mask;\n\trd.mult\t\t\t= new_mult;\n\trd.shift\t\t= new_shift;\n\trd.epoch_cyc\t\t= new_epoch;\n\trd.epoch_ns\t\t= ns;\n\n\tupdate_clock_read_data(&rd);\n\n\tif (ACCESS_PRIVATE(&sched_clock_timer, function) != NULL) {\n\t\t/* update timeout for clock wrap */\n\t\thrtimer_start(&sched_clock_timer, cd.wrap_kt,"
+        }
+      ]
+    },
+    "kernel/time/timekeeping.c": {
+      "sha256": "e92dea2530b664eac55633c92e13b3ef79249a04e704d8d829e27ff3db8925ad",
+      "excerpts": [
+        {
+          "first_line": 1851,
+          "last_line": 1881,
+          "text": " * Accumulates current time interval and initializes new clocksource\n */\nstatic int change_clocksource(void *data)\n{\n\tstruct clocksource *new = data, *old = NULL;\n\n\t/*\n\t * If the clocksource is in a module, get a module reference.\n\t * Succeeds for built-in code (owner == NULL) as well. Abort if the\n\t * reference can't be acquired.\n\t */\n\tif (!try_module_get(new->owner))\n\t\treturn 0;\n\n\t/* Abort if the device can't be enabled */\n\tif (new->enable && new->enable(new) != 0) {\n\t\tmodule_put(new->owner);\n\t\treturn 0;\n\t}\n\n\tscoped_guard (raw_spinlock_irqsave, &tk_core.lock) {\n\t\tstruct timekeeper *tks = &tk_core.shadow_timekeeper;\n\n\t\ttimekeeping_forward_now(tks);\n\t\told = tks->tkr_mono.clock;\n\t\ttk_setup_internals(tks, new);\n\t\ttimekeeping_update_from_shadow(&tk_core, TK_UPDATE_ALL);\n\t}\n\n\ttk_aux_update_clocksource();\n"
+        }
+      ]
+    }
+  },
+  "grounding": [
+    "Both riscv_sched_clock and CLOCK_MONOTONIC_RAW clocksource read the same64-bit get_cycles64 counter, registered at the same riscv_timebase. Runtime device tree and clock log confirm27MHz/riscv_clocksource.",
+    "sched_clock_register converts the old epoch to nanoseconds and installs the new counter with that epoch; it does not substitute zero when switching. timekeeping clocksource changes forward accumulated time before changing internals.",
+    "The32 direct rdtime/RAW/printk brackets independently locate the physical-counter epoch. Applying that fixed-counter epoch to earlier camera frames does not assume the late display-enable log is a presentation timestamp or that the earlier jiffies clock was already high-resolution.",
+    "The clock fit assumes the fixed invariant hardware counters remain affine over this single observed warmboot. All120 SSH brackets remain constraints; a future frequency discontinuity would invalidate the qualification."
+  ]
+}

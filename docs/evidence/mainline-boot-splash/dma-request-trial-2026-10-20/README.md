@@ -2,7 +2,9 @@
 
 Status: **source cross-build and direct installed-baseline artifact checks pass;
 candidate installed with direct readback and a clean filmed warm-boot trial**.
-Task 4.1 remains open. This report does not claim the flicker is fixed.
+Task4.1 is now complete for the qualified warm-boot proof in `final/README.md`.
+Two candidate warm boots showed no earlier garbled-logo frame; cold boot and
+second-card results remain unverified.
 
 The operator explicitly authorized extending the boot-splash change to test
 `0x40` → `0x4f` in the existing RM69A10 OSD DMA-control write. Plan revision
@@ -125,8 +127,17 @@ frames, so its bounds are not asserted to be exact logo/compositor timestamps.
 This is one successful filmed sample at30fps, not a guarantee about every
 52Hz panel refresh or every future boot. No FIFO/underrun mechanism is proved.
 
-Task4.3's install/readback/warm-boot proof is complete. Task4.1 remains open:
+At that checkpoint, task4.3's install/readback/warm-boot proof was complete and
+task4.1 remained open:
 this recording still lacks the final qualified ±0.1s kernel/video mapping.
-A further normal warm-boot film with contemporaneous host raw-clock sampling
-and **post-handoff** optical calibration in the same camera stream is running
-for that remaining gate. No archive or cold-boot/second-card claim is made.
+The subsequent normal warm-boot film with contemporaneous host raw-clock sampling
+and **post-handoff** optical calibration is now complete in `final/README.md`,
+with a reviewed±75.244ms physical timing interval. No archive or cold-boot/second-card claim is made.
+
+## Final closeout
+
+`final/qualification-review.json` and `final/README.md` record the second clean
+warm boot and completed timing/source/counter proof. Task4.1 and all11 tasks
+are complete. The raw recorder's conservative false qualification flags remain
+unchanged; only the later evidence review qualifies this measured recording.
+The corrected bootloader remains installed with verified rollback backups.

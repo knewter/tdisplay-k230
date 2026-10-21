@@ -1,0 +1,43 @@
+{
+  "restored_at": "2026-10-21T01:23:28.900126+00:00",
+  "camera": [
+    {
+      "command": [
+        "v4l2-ctl",
+        "--device=/dev/video0",
+        "--set-ctrl=auto_exposure=3,exposure_dynamic_framerate=1,focus_automatic_continuous=1,white_balance_automatic=1"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "v4l2-ctl",
+        "--device=/dev/video0",
+        "--set-fmt-video=width=640,height=480,pixelformat=YUYV",
+        "--set-parm=30"
+      ],
+      "exit_code": 0,
+      "stdout": "Frame rate set to 30.000 fps\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "v4l2-ctl",
+        "--device=/dev/video0",
+        "--get-fmt-video",
+        "--get-parm",
+        "--list-ctrls"
+      ],
+      "exit_code": 0,
+      "stdout": "Format Video Capture:\n\tWidth/Height      : 640/480\n\tPixel Format      : 'YUYV' (YUYV 4:2:2)\n\tField             : None\n\tBytes per Line    : 1280\n\tSize Image        : 614400\n\tColorspace        : sRGB\n\tTransfer Function : Rec. 709\n\tYCbCr/HSV Encoding: ITU-R 601\n\tQuantization      : Default (maps to Limited Range)\n\tFlags             : \nStreaming Parameters Video Capture:\n\tCapabilities     : timeperframe\n\tFrames per second: 30.000 (30/1)\n\tRead buffers     : 0\n\nUser Controls\n\n                     brightness 0x00980900 (int)    : min=0 max=255 step=1 default=128 value=128 flags=has-min-max\n                       contrast 0x00980901 (int)    : min=0 max=255 step=1 default=128 value=128 flags=has-min-max\n                     saturation 0x00980902 (int)    : min=0 max=255 step=1 default=128 value=128 flags=has-min-max\n        white_balance_automatic 0x0098090c (bool)   : default=1 value=1\n                           gain 0x00980913 (int)    : min=0 max=255 step=1 default=0 value=0 flags=has-min-max\n           power_line_frequency 0x00980918 (menu)   : min=0 max=2 default=2 value=2 (60 Hz)\n      white_balance_temperature 0x0098091a (int)    : min=2000 max=6500 step=1 default=4000 value=4513 flags=inactive, has-min-max\n                      sharpness 0x0098091b (int)    : min=0 max=255 step=1 default=128 value=128 flags=has-min-max\n         backlight_compensation 0x0098091c (int)    : min=0 max=1 step=1 default=0 value=0 flags=has-min-max\n\nCamera Controls\n\n                  auto_exposure 0x009a0901 (menu)   : min=0 max=3 default=3 value=3 (Aperture Priority Mode)\n         exposure_time_absolute 0x009a0902 (int)    : min=3 max=2047 step=1 default=250 value=99 flags=inactive, has-min-max\n     exposure_dynamic_framerate 0x009a0903 (bool)   : default=0 value=1\n                   pan_absolute 0x009a0908 (int)    : min=-36000 max=36000 step=3600 default=0 value=0 flags=has-min-max\n                  tilt_absolute 0x009a0909 (int)    : min=-36000 max=36000 step=3600 default=0 value=0 flags=has-min-max\n                 focus_absolute 0x009a090a (int)    : min=0 max=250 step=5 default=0 value=80 flags=inactive, has-min-max\n     focus_automatic_continuous 0x009a090c (bool)   : default=1 value=1\n                  zoom_absolute 0x009a090d (int)    : min=100 max=500 step=1 default=100 value=100 flags=has-min-max\n",
+      "stderr": ""
+    }
+  ],
+  "brightness": {
+    "exit_code": 0,
+    "readback": "255"
+  },
+  "all_passed": true
+}

@@ -1,0 +1,10 @@
+[    0.000000] Linux version 7.3.0-rc5 (nixbld@localhost) (riscv64-unknown-linux-gnu-gcc (GCC) 15.3.0, GNU ld (GNU Binutils) 2.46) #1-NixOS SMP PREEMPT Tue Jan  1 00:00:00 UTC 1980
+[    0.000000] Machine model: LILYGO T-Display-K230 (mainline)
+[    0.000000] clocksource: jiffies: mask: 0xffffffff max_cycles: 0xffffffff, max_idle_ns: 7645041785100000 ns
+[    0.000000] clocksource: riscv_clocksource: mask: 0xffffffffffffffff max_cycles: 0x63a1e71a3, max_idle_ns: 440795203123 ns
+[    0.000000] sched_clock: 64 bits at 27MHz, resolution 37ns, wraps every 4398046511093ns
+[    0.149917] clocksource: Switched to clocksource riscv_clocksource
+[    2.881229] canaan-drm display-subsystem: [drm:canaan_drm_bind] stage 1 splash: leaving fbdev unset
+[    4.198119] Run /init as init process
+[   48.457203] canaan-vo 90840000.vo: stage 1 splash: preserving VO to first plane update
+[   48.457253] canaan-mipi-dsi 90850000.dsi: stage 1 splash: preserving DSI to first plane update

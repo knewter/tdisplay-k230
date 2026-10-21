@@ -1,0 +1,23 @@
+{
+  "run_url": "https://github.com/knewter/tdisplay-k230/actions/runs/39526986591",
+  "expected_revision": "eca5794934f937c601bce25f310b4d8b89718365",
+  "ci_status": "completed",
+  "ci_conclusion": "success",
+  "artifact_hashes": {
+    "fn_u-boot-spl.bin": "fe3d537f62c34a3d01127c58fef4caec50f0e65b0192670712ecb1599584a954",
+    "fn_ug_u-boot.bin": "46437f404369b99b3300f89d8dd5dcbd3d3f9cf8f1c0a7724754ea74116814a9",
+    "env.env": "cf108755a3cf3a8070a2f0ded84af672108e2301dfd58e5c2aa6a7555dbbd352",
+    "fw_jump.bin": "74d08f8701dc72ea166d74be62fc3e5bff437d7c73ab68ad2f113cab289c38f9",
+    "fw_jump_add_uboot_head.bin": "9627edbeea9b115d7040beea27cc61b23b6aca61cd502fd7760d7ee179f42c99"
+  },
+  "artifact_matches_installed_candidate": {
+    "fn_u-boot-spl.bin": true,
+    "fn_ug_u-boot.bin": true,
+    "env.env": true,
+    "fw_jump.bin": true,
+    "fw_jump_add_uboot_head.bin": true
+  },
+  "all_artifact_hashes_match": true,
+  "finished_at": "2026-10-21T01:47:59.930028+00:00",
+  "scope": "Independent cold GitHub runner source-build; all five stage1 artifact hashes match the locally built candidate. Only U-Boot-proper was installed; SPL/environment/OpenSBI were unchanged."
+}

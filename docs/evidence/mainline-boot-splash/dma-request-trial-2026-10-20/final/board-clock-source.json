@@ -1,0 +1,11 @@
+{
+  "boot_id": "fbfdd9d3-7f95-4aec-978f-1a19b2a220f9",
+  "timebase_frequency": 27000000,
+  "clocksource": "riscv_clocksource",
+  "clock_log": [
+    "[    0.000000] clocksource: jiffies: mask: 0xffffffff max_cycles: 0xffffffff, max_idle_ns: 7645041785100000 ns",
+    "[    0.000000] clocksource: riscv_clocksource: mask: 0xffffffffffffffff max_cycles: 0x63a1e71a3, max_idle_ns: 440795203123 ns",
+    "[    0.000000] sched_clock: 64 bits at 27MHz, resolution 37ns, wraps every 4398046511093ns",
+    "[    0.149917] clocksource: Switched to clocksource riscv_clocksource"
+  ]
+}

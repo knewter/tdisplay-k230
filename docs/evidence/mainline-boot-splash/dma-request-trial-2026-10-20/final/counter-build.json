@@ -1,0 +1,19 @@
+{
+  "command": [
+    "/nix/store/4j2mwxqjvnyr6da0925sp0bm4jaj5r5i-riscv64-unknown-linux-gnu-gcc-wrapper-15.3.0/bin/riscv64-unknown-linux-gnu-gcc",
+    "-O2",
+    "-fPIC",
+    "-shared",
+    "-nostdlib",
+    "-march=rv64gc",
+    "-mabi=lp64d",
+    "-Wl,--build-id=none",
+    "/home/jadams/tmp/codex-claude-handoff-20261019/3/read-riscv-time.c",
+    "-o",
+    "/home/jadams/tmp/codex-claude-handoff-20261019/3/read-riscv-time.so"
+  ],
+  "exit_code": 0,
+  "source_sha256": "8ebcd81866dcaa9d1f027aaecbddd25ace693652aa5f9e3dbdec657f9c604d05",
+  "artifact_sha256": "c17400ee6e465e955e73823e6c8453d3ea904b8a59000a48a8802c7569a7bc41",
+  "artifact_bytes": 6008
+}

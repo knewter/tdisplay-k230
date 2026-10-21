@@ -1,0 +1,17 @@
+{
+  "raw_minus_counter_seconds": [
+    -6.282058009036973,
+    -6.282038268814858
+  ],
+  "printk_minus_counter_seconds": [
+    -6.2801809629629615,
+    -6.2801159999999046
+  ],
+  "printk_minus_raw_seconds": [
+    0.0018573058518969177,
+    0.0019420090370685372
+  ],
+  "samples": 32,
+  "frequency_hz": 27000000,
+  "all_intervals_intersect": true
+}

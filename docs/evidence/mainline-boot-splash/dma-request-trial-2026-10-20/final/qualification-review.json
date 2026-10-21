@@ -1,0 +1,30 @@
+{
+  "reviewed_at": "2026-10-21T01:39:01.420121+00:00",
+  "reviewer": "Codex pane23",
+  "task": "the-mainline-kernel-keeps-the-boot-splash 4.1",
+  "result": "PASS for this filmed normal warm boot under the explicitly recorded empirical measurement conditions",
+  "kernel_video_alignment_qualified": true,
+  "maximum_timing_uncertainty_s": 0.07524348246946388,
+  "measurement_frame_range": [
+    0,
+    3599
+  ],
+  "complete_recording_frames": 8993,
+  "clock_ssh_samples": 120,
+  "same_stream_optical_transitions": 8,
+  "direct_hardware_counter_samples": 32,
+  "boot_id": "fbfdd9d3-7f95-4aec-978f-1a19b2a220f9",
+  "garbled_logo_frames_observed": 0,
+  "physical_review": "Original largest-score frame355 and \u00b15 neighbors plus representative logo/takeover timeline inspected. Same selector as reproduced baseline flags no interior frames; full first120s viewing proxy and original8993-frame timestamps retained.",
+  "source_epoch_review": "timer-riscv.c reads the same continuous64-bit counter for raw clocksource and sched_clock at27MHz; sched_clock epoch preserved when registered.32 direct rdtime/RAW/printk brackets locate physical counter epoch; no early raw-clock epoch or display-enable presentation assumption is needed.",
+  "clock_map_review": "Every host mono/raw bracket and all120 SSH intervals retained. Host invariant-TSC counter and board continuous27MHz counter modeled affine for this single boot; empirical optical envelope and full-period+exposure allowance plus per-frame dequeue causality bound physical frame acquisition.",
+  "independent_crosscheck": "Observed persistent takeover frame2989 timing interval overlaps actual successor-framebuffer journal event after explicit journal MONOTONIC-to-RAW conversion. This validates neither a driver-enable-as-presentation shortcut nor a universal future clock guarantee.",
+  "raw_recorder_false_flag_explanation": "Raw recorder/initial calculation deliberately leave kernel_video_alignment_qualified=false; this separate review is performed only after same-stream optics, physical counter/epoch and source continuity checks. Original metadata is not changed.",
+  "limits": [
+    "The empirical same-stream upper latency envelope measured from eight posthandoff transitions applies to the preceding normal-boot frames; mode/controls/clock-source flags remain fixed, no gaps/errors/resets occurred. This is an empirical qualification, not a universal worst-case promise for unobserved camera behavior.",
+    "Host invariant TSC and board fixed27MHz riscv_clocksource are treated as affine over this single warmboot; source audit plus complete clock logs and all120 feasible SSH brackets ground the clock choice. A changed oscillator frequency outside the observed fit would invalidate extrapolation.",
+    "Whole-image rolling acquisition allowance uses the largest recorded frame interval plus exposure; per-frame dequeue causality supplies the opposite bound. This is conservative for the observed operating mode, not a sensor datasheet guarantee.",
+    "Negative new-kernel-relative times are retained for pre-kernel film frames. Source continuity/epoch audit must be reviewed before declaring the early-boot origin qualified.",
+    "This is a measured single-warmboot qualification of the accepted landscape default. No cold power-on, second-card, real-glass gesture, FIFO-underrun mechanism or universal52Hz/per-future-boot claim."
+  ]
+}

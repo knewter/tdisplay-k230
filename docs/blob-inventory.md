@@ -2140,6 +2140,21 @@ DATA d10957f38c4a58990b76473ae92bd5771e3f68dbed1606f6a2649802a4d9ed01 docs/evide
 DATA 750bc4fab6ce79dc1d5cbee5fb7e65b108c7959768ec9f843a1cf3f123c5a387 docs/evidence/mainline-boot-splash/dma-request-trial-2026-10-20/candidate-frame-1489.jpg
 DATA 095abfef584a31411c3428f197cdaf169f0071b6eb86bffbf4aa2dc06c22f318 docs/evidence/mainline-boot-splash/dma-request-trial-2026-10-20/candidate-frame-1494.jpg
 DATA 56583fb3d151f0134cfb9df79f30a5151d0cdc1b6bf76adc2300998dae7d424d docs/evidence/mainline-boot-splash/dma-request-trial-2026-10-20/candidate-frame-1499.jpg
+DATA db46cd51f93504cf2ad6e63473ba512c45af7b9be6286cd1fd056adee2ae0289 docs/evidence/mainline-boot-splash/dma-request-trial-2026-10-20/final/boot-and-calibration.mp4
+DATA 530c7ed5bfdd2ebd7cb06f6d2bc855ced16d3b60a1fb7d3d847c5d93e6f489dc docs/evidence/mainline-boot-splash/dma-request-trial-2026-10-20/final/frame-0350.jpg
+DATA fe32471546f39087964a47bb032e688ebce9adb9350c4122018d63b5e640a8b6 docs/evidence/mainline-boot-splash/dma-request-trial-2026-10-20/final/frame-0355.jpg
+DATA df21ce7f4c3b35cd1bbde7573c0c70876294bafcc2df37deb80c12f049cc7a0f docs/evidence/mainline-boot-splash/dma-request-trial-2026-10-20/final/frame-0360.jpg
+DATA ad29534e4fdf62d2540480c8a88bae22cd939d18a49e976f7a8b24f1cdbc6483 docs/evidence/mainline-boot-splash/dma-request-trial-2026-10-20/final/frame-6922.jpg
+DATA 035b04a22e5de9fd5f5a2a41e9b5df0a30cdcefd3be0ce2402fb0b1cec6c35e0 docs/evidence/mainline-boot-splash/dma-request-trial-2026-10-20/final/frame-6952.jpg
+DATA 978cbf2119bae4803fb9fef6edd6fd67947ff81388480f75f53711a84a8b842d docs/evidence/mainline-boot-splash/dma-request-trial-2026-10-20/final/frame-6982.jpg
+DATA 877160f6475b5e1befb89d6d320d0555430238f2394a182835203bc146a5ec45 docs/evidence/mainline-boot-splash/dma-request-trial-2026-10-20/final/frame-7017.jpg
+DATA d8cfe3266ef3aeb3c43f7ecfd32de6013d32bf637db58f840669db109c1698c9 docs/evidence/mainline-boot-splash/dma-request-trial-2026-10-20/final/frame-7048.jpg
+DATA 4ace712afa9bc03b4f7022be525e46aa8a35ba523ed3cef36a09b57f66ec63a2 docs/evidence/mainline-boot-splash/dma-request-trial-2026-10-20/final/frame-7079.jpg
+DATA 01b5c5ef63de3fed38058f55863d6cb1cab6e1996cb96af3c2f9f996ddc61ae6 docs/evidence/mainline-boot-splash/dma-request-trial-2026-10-20/final/frame-7109.jpg
+DATA ae75797fbec9a5fb7eb855595b7f2b2c7ec0562406d6c2bcdc0bf6ae06da86cf docs/evidence/mainline-boot-splash/dma-request-trial-2026-10-20/final/frame-7139.jpg
+DATA 95bdd638c97cfca7b5bf739a3e0f4ba4bdfbbbdf67033f91e2b8c9fee5080771 docs/evidence/mainline-boot-splash/dma-request-trial-2026-10-20/final/frames.jsonl.gz
+DATA 3fb586fb415d67425bb69b622de0a64818b2eddd43f0bf12a117ceec5aea34c6 docs/evidence/mainline-boot-splash/dma-request-trial-2026-10-20/final/host-clock.jsonl.gz
+DATA 09a52ca5c5b3b3732cec96e68ca4c5a7c3acffb6f42f00cc14540ffbce2cef61 docs/evidence/mainline-boot-splash/dma-request-trial-2026-10-20/final/timing-analysis.json.gz
 ```
 
 `group:` rows stand for a directory whose members are enumerated by
@@ -3855,3 +3870,26 @@ frame/neighbor JPEGs; final clock qualification remains open.
 | `docs/evidence/mainline-boot-splash/dma-request-trial-2026-10-20/candidate-frame-1489.jpg` | 36989 | DATA | `750bc4fab6ce79dc1d5cbee5fb7e65b108c7959768ec9f843a1cf3f123c5a387` |
 | `docs/evidence/mainline-boot-splash/dma-request-trial-2026-10-20/candidate-frame-1494.jpg` | 36987 | DATA | `095abfef584a31411c3428f197cdaf169f0071b6eb86bffbf4aa2dc06c22f318` |
 | `docs/evidence/mainline-boot-splash/dma-request-trial-2026-10-20/candidate-frame-1499.jpg` | 36645 | DATA | `56583fb3d151f0134cfb9df79f30a5151d0cdc1b6bf76adc2300998dae7d424d` |
+
+### Qualified splash DMA warm boot (2026-10-20)
+
+Complete8993-frame viewing proxy, original clock/frame metadata and original
+peak/calibration JPEGs. Empirical timing bound±75.244ms; see final proof README.
+
+| File | Bytes | Kind | SHA256 |
+| --- | ---: | --- | --- |
+| `docs/evidence/mainline-boot-splash/dma-request-trial-2026-10-20/final/boot-and-calibration.mp4` | 1305901 | DATA | `db46cd51f93504cf2ad6e63473ba512c45af7b9be6286cd1fd056adee2ae0289` |
+| `docs/evidence/mainline-boot-splash/dma-request-trial-2026-10-20/final/frame-0350.jpg` | 34946 | DATA | `530c7ed5bfdd2ebd7cb06f6d2bc855ced16d3b60a1fb7d3d847c5d93e6f489dc` |
+| `docs/evidence/mainline-boot-splash/dma-request-trial-2026-10-20/final/frame-0355.jpg` | 37405 | DATA | `fe32471546f39087964a47bb032e688ebce9adb9350c4122018d63b5e640a8b6` |
+| `docs/evidence/mainline-boot-splash/dma-request-trial-2026-10-20/final/frame-0360.jpg` | 37575 | DATA | `df21ce7f4c3b35cd1bbde7573c0c70876294bafcc2df37deb80c12f049cc7a0f` |
+| `docs/evidence/mainline-boot-splash/dma-request-trial-2026-10-20/final/frame-6922.jpg` | 36011 | DATA | `ad29534e4fdf62d2540480c8a88bae22cd939d18a49e976f7a8b24f1cdbc6483` |
+| `docs/evidence/mainline-boot-splash/dma-request-trial-2026-10-20/final/frame-6952.jpg` | 59014 | DATA | `035b04a22e5de9fd5f5a2a41e9b5df0a30cdcefd3be0ce2402fb0b1cec6c35e0` |
+| `docs/evidence/mainline-boot-splash/dma-request-trial-2026-10-20/final/frame-6982.jpg` | 43511 | DATA | `978cbf2119bae4803fb9fef6edd6fd67947ff81388480f75f53711a84a8b842d` |
+| `docs/evidence/mainline-boot-splash/dma-request-trial-2026-10-20/final/frame-7017.jpg` | 66278 | DATA | `877160f6475b5e1befb89d6d320d0555430238f2394a182835203bc146a5ec45` |
+| `docs/evidence/mainline-boot-splash/dma-request-trial-2026-10-20/final/frame-7048.jpg` | 35617 | DATA | `d8cfe3266ef3aeb3c43f7ecfd32de6013d32bf637db58f840669db109c1698c9` |
+| `docs/evidence/mainline-boot-splash/dma-request-trial-2026-10-20/final/frame-7079.jpg` | 64997 | DATA | `4ace712afa9bc03b4f7022be525e46aa8a35ba523ed3cef36a09b57f66ec63a2` |
+| `docs/evidence/mainline-boot-splash/dma-request-trial-2026-10-20/final/frame-7109.jpg` | 42881 | DATA | `01b5c5ef63de3fed38058f55863d6cb1cab6e1996cb96af3c2f9f996ddc61ae6` |
+| `docs/evidence/mainline-boot-splash/dma-request-trial-2026-10-20/final/frame-7139.jpg` | 63498 | DATA | `ae75797fbec9a5fb7eb855595b7f2b2c7ec0562406d6c2bcdc0bf6ae06da86cf` |
+| `docs/evidence/mainline-boot-splash/dma-request-trial-2026-10-20/final/frames.jsonl.gz` | 294304 | DATA | `95bdd638c97cfca7b5bf739a3e0f4ba4bdfbbbdf67033f91e2b8c9fee5080771` |
+| `docs/evidence/mainline-boot-splash/dma-request-trial-2026-10-20/final/host-clock.jsonl.gz` | 121406 | DATA | `3fb586fb415d67425bb69b622de0a64818b2eddd43f0bf12a117ceec5aea34c6` |
+| `docs/evidence/mainline-boot-splash/dma-request-trial-2026-10-20/final/timing-analysis.json.gz` | 171304 | DATA | `09a52ca5c5b3b3732cec96e68ca4c5a7c3acffb6f42f00cc14540ffbce2cef61` |
