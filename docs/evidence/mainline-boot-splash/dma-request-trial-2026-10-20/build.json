@@ -1,0 +1,17 @@
+{
+  "command": "nix build .#stage1 --no-link --print-out-paths --max-jobs 1 --cores 6",
+  "exit_code": 0,
+  "output": "/nix/store/g09p7ggqzx9zyggniwr2czsy7vmcl8kb-k230-stage1",
+  "uboot_derivation": "/nix/store/kh0ni1ilw2d80z3pklpd0mc4ldnh14xa-uboot-k230_canmv_v3_defconfig-riscv64-unknown-linux-gnu-2022.10.drv",
+  "started_at": "Wed Oct 21 01:02:49 UTC 2026",
+  "output_recorded_at": "2026-10-21T01:03:28.370382+00:00",
+  "full_log_sha256": "e87ca35c7b7b36f249a2edb2bb4b59a76f112ab78fb4e5d9c67c9df33416cca8",
+  "spl_size_check": [
+    "SPL size check: spl/u-boot-spl.bin is 222816 bytes (0x36660) against CONFIG_SPL_SIZE_LIMIT=0x80000 (524288 bytes)"
+  ],
+  "locks": [
+    "/home/jadams/tmp/truck-a2-heavy.lock",
+    "/tmp/k230-nix-build.lock"
+  ],
+  "proof_class": "Host source cross-build and artifact inspection; physical outcome pending."
+}

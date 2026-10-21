@@ -2135,6 +2135,11 @@ DATA  3fd83b6c03c5b15f3980e793acca5072d97fb20a537a4e115aa10ea5fb3f1875  docs/evi
 DATA  6407b53f691f0fa16e814fbbc1eb0e6561b5427505442e58f1758446976716e7  docs/evidence/mainline-boot-splash/current-baseline-2026-10-20/board/frames.jsonl.gz
 DATA 1580c39907dbfa971f3d8bf8236689d734341ddda8a17e2fa3ce0b835176abd9 docs/evidence/mainline-boot-splash/dma-request-trial-2026-10-20/camera-calibration.mp4
 DATA e9c1e3c374d9e6cdfdf3b2c62884dbdd45a8b06f3f398477d475ca9b8786ac26 docs/evidence/mainline-boot-splash/dma-request-trial-2026-10-20/calibration-frames.jsonl.gz
+DATA 53d58204ec7eb7b6860d3d3564a40ff9421033c5df421253851d70264829717e docs/evidence/mainline-boot-splash/dma-request-trial-2026-10-20/candidate-boot.mp4
+DATA d10957f38c4a58990b76473ae92bd5771e3f68dbed1606f6a2649802a4d9ed01 docs/evidence/mainline-boot-splash/dma-request-trial-2026-10-20/candidate-frames.jsonl.gz
+DATA 750bc4fab6ce79dc1d5cbee5fb7e65b108c7959768ec9f843a1cf3f123c5a387 docs/evidence/mainline-boot-splash/dma-request-trial-2026-10-20/candidate-frame-1489.jpg
+DATA 095abfef584a31411c3428f197cdaf169f0071b6eb86bffbf4aa2dc06c22f318 docs/evidence/mainline-boot-splash/dma-request-trial-2026-10-20/candidate-frame-1494.jpg
+DATA 56583fb3d151f0134cfb9df79f30a5151d0cdc1b6bf76adc2300998dae7d424d docs/evidence/mainline-boot-splash/dma-request-trial-2026-10-20/candidate-frame-1499.jpg
 ```
 
 `group:` rows stand for a directory whose members are enumerated by
@@ -3837,3 +3842,16 @@ early boot alignment remains UNVERIFIED. See the trial README.
 | --- | ---: | --- | --- |
 | `docs/evidence/mainline-boot-splash/dma-request-trial-2026-10-20/camera-calibration.mp4` | 123494 | DATA | `1580c39907dbfa971f3d8bf8236689d734341ddda8a17e2fa3ce0b835176abd9` |
 | `docs/evidence/mainline-boot-splash/dma-request-trial-2026-10-20/calibration-frames.jsonl.gz` | 18030 | DATA | `e9c1e3c374d9e6cdfdf3b2c62884dbdd45a8b06f3f398477d475ca9b8786ac26` |
+
+### Splash DMA-request candidate warm boot (2026-10-20)
+
+First120s viewing proxy, original7193-frame metadata, and untouched peak-score
+frame/neighbor JPEGs; final clock qualification remains open.
+
+| File | Bytes | Kind | SHA256 |
+| --- | ---: | --- | --- |
+| `docs/evidence/mainline-boot-splash/dma-request-trial-2026-10-20/candidate-boot.mp4` | 432129 | DATA | `53d58204ec7eb7b6860d3d3564a40ff9421033c5df421253851d70264829717e` |
+| `docs/evidence/mainline-boot-splash/dma-request-trial-2026-10-20/candidate-frames.jsonl.gz` | 235060 | DATA | `d10957f38c4a58990b76473ae92bd5771e3f68dbed1606f6a2649802a4d9ed01` |
+| `docs/evidence/mainline-boot-splash/dma-request-trial-2026-10-20/candidate-frame-1489.jpg` | 36989 | DATA | `750bc4fab6ce79dc1d5cbee5fb7e65b108c7959768ec9f843a1cf3f123c5a387` |
+| `docs/evidence/mainline-boot-splash/dma-request-trial-2026-10-20/candidate-frame-1494.jpg` | 36987 | DATA | `095abfef584a31411c3428f197cdaf169f0071b6eb86bffbf4aa2dc06c22f318` |
+| `docs/evidence/mainline-boot-splash/dma-request-trial-2026-10-20/candidate-frame-1499.jpg` | 36645 | DATA | `56583fb3d151f0134cfb9df79f30a5151d0cdc1b6bf76adc2300998dae7d424d` |

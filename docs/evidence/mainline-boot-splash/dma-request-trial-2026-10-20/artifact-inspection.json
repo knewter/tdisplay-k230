@@ -1,0 +1,64 @@
+{
+  "checked_at": "2026-10-21T01:07:25.817869+00:00",
+  "candidate_stage1": "/nix/store/g09p7ggqzx9zyggniwr2czsy7vmcl8kb-k230-stage1",
+  "candidate_files": {
+    "fn_ug_u-boot.bin": {
+      "bytes": 385932,
+      "sha256": "46437f404369b99b3300f89d8dd5dcbd3d3f9cf8f1c0a7724754ea74116814a9"
+    },
+    "tdisplay.env": {
+      "bytes": 1081,
+      "sha256": "99f9f629716debdee8bf4d4a6b55575f3675979ae505d2eb3d98e52fbccfc0ec"
+    },
+    "fw_jump.bin": {
+      "bytes": 270744,
+      "sha256": "74d08f8701dc72ea166d74be62fc3e5bff437d7c73ab68ad2f113cab289c38f9"
+    },
+    "fn_u-boot-spl.bin": {
+      "bytes": 223348,
+      "sha256": "fe3d537f62c34a3d01127c58fef4caec50f0e65b0192670712ecb1599584a954"
+    },
+    "SHA256SUMS": {
+      "bytes": 412,
+      "sha256": "915be4b93b5a047da1e6ed2310514ad6a7cc275af158cfaa52c8de8170012f61"
+    },
+    "env.env": {
+      "bytes": 8192,
+      "sha256": "cf108755a3cf3a8070a2f0ded84af672108e2301dfd58e5c2aa6a7555dbbd352"
+    },
+    "fw_jump_add_uboot_head.bin": {
+      "bytes": 270808,
+      "sha256": "9627edbeea9b115d7040beea27cc61b23b6aca61cd502fd7760d7ee179f42c99"
+    }
+  },
+  "baseline_class": "Verified installed original bootloader/SPL raw backup; evaluated unchanged baseline environment/OpenSBI artifact references, with current boot OpenSBI hash match. No baseline rebuild claimed.",
+  "unchanged_files": {
+    "env.env": "/nix/store/rr7f6q64svn9kxlbc6f0ghm8367xxjv1-k230-stage1-env/env.env",
+    "tdisplay.env": "/nix/store/rr7f6q64svn9kxlbc6f0ghm8367xxjv1-k230-stage1-env/tdisplay.env",
+    "fw_jump.bin": "/nix/store/7qrz2jiip1f26pkf9fvhb01qbk3kaiih-k230-fw-jump/fw_jump.bin",
+    "fw_jump_add_uboot_head.bin": "/nix/store/7qrz2jiip1f26pkf9fvhb01qbk3kaiih-k230-fw-jump/fw_jump_add_uboot_head.bin"
+  },
+  "spl_matches_both_installed_copies": true,
+  "installed_uboot_comparison": {
+    "original_sha256": "72ca1622efed5322d9dc77c148563b25ea3c3ee5719f5bc9c16b68846f9793ce",
+    "candidate_sha256": "3f4feb923e2d0deb33bec4f9e351e2726c2452dc6052517c6cb185c65efdb792",
+    "uncompressed_bytes": 765480,
+    "unmodified_byte_difference_count": 30,
+    "build_metadata_path_before": "/nix/store/zzz867rp8drrwkhibj0rlqc04sk9g7f8-uboot-k230_canmv_v3_defconfig-riscv64-unknown-linux-gnu-2022.10/lib",
+    "build_metadata_path_after": "/nix/store/blay9yis41g5wr52kwwr46m8sfxdkl68-uboot-k230_canmv_v3_defconfig-riscv64-unknown-linux-gnu-2022.10/lib",
+    "normalized_byte_difference_offsets": [
+      35566
+    ],
+    "instruction_offset": 35564,
+    "instruction_before_hex": "13070004",
+    "instruction_after_hex": "1307f004",
+    "instruction_before": "addi a4,zero,64",
+    "instruction_after": "addi a4,zero,79"
+  },
+  "source_delta_only_dma_request": true,
+  "source_patch_sha256": "b2383abda6366d991d53ecb1fe1863a16bc9a3cc04d1c58f42f187baa645365a",
+  "firmware_sha_and_legacy_crc_checks": true,
+  "host_checks_passed": true,
+  "physical_fix_verified": false,
+  "baseline_command_disposition": "Initial nix build <drv> selected the derivation file, not its output. Corrected output rebuild queued then cancelled while still waiting/no descendants: actual installed-byte comparison proves the needed behavior delta without an unnecessary rebuild."
+}

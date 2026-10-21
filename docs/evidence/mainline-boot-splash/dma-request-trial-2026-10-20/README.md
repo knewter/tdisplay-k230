@@ -1,6 +1,7 @@
 # Stage 1 splash DMA-request trial
 
-Status: **authorized source candidate; build and deployment pending**.
+Status: **source cross-build and direct installed-baseline artifact checks pass;
+candidate installed with direct readback and a clean filmed warm-boot trial**.
 Task 4.1 remains open. This report does not claim the flicker is fixed.
 
 The operator explicitly authorized extending the boot-splash change to test
@@ -23,7 +24,8 @@ region includes the saved environment. Firmware-header hashes were verified
 for both matching SPL copies and U-Boot; the latter was decompressed for the
 pending artifact comparison (`original-firmware-inspection.json`).
 
-No raw firmware write has occurred. Normal services, executable hashes,
+At the initial backup/calibration checkpoint no raw firmware write had occurred.
+Normal services, executable hashes,
 accepted system/kernel and landscape controls were checked after calibration.
 The board lease was released while the build waits for the shared heavy lock.
 
@@ -59,3 +61,72 @@ The complete 533-frame calibration is also committed as
 per-buffer sequence/clock/source/timestamp metadata in
 `calibration-frames.jsonl.gz`. Use those original timestamps, not proxy PTS,
 for timing calculations. Proxy encoding preserves the original camera orientation.
+
+## Candidate build and installed-byte comparison
+
+`build.json` records the successful `nix build .#stage1` invocation and SPL
+size check. `artifact-inspection.json` verifies firmware SHA-256 and legacy
+header/data CRCs, the unchanged environment/OpenSBI artifact references and
+the exact installed OpenSBI boot-file hash. The candidate's SPL is identical
+to both installed copies. The decompressed U-Boot binaries are both 765480
+bytes: 30 bytes differ, consisting solely of the embedded build-output path
+(29 bytes) and the intended instruction at byte offset35564:
+`addi a4,zero,64` (`13070004`) becomes `addi a4,zero,79` (`1307f004`). After
+normalizing only the exact single build-output path, the sole differing byte
+is offset35566. The installed original is the physical backup, rather than
+an assumed source baseline.
+
+The initial comparison-build command selected its `.drv` file, not the output;
+the attempted inspection correctly failed before deployment. An output build
+was queued correctly, then cancelled while still waiting with no descendants:
+the direct comparison above establishes the needed instruction change without
+another rebuild. No successful baseline rebuild is claimed.
+
+`deployment.json` records a once-only 385932-byte write at offset2097152 to
+`/dev/mmcblk1`. Before writing, the driver required the saved boot ID/system,
+partition start, every original boot-file hash and a direct4MiB read matching
+the complete backup. After fsync, a separate `dd iflag=direct` read matched the
+expected candidate bytes and every byte outside them. The remaining raw slot
+tail, SPL, environment and partition table were untouched. The recovery backup
+and exact slot-only restore command remain available on the board and host.
+This receipt proves installation, not boot success or defect removal.
+
+## First candidate warm boot: no earlier garbled-logo frame observed
+
+A once-only normal SSH warm reboot at2026-10-21T01:08:33.860666Z returned
+ordinary boot `327f8e02-899a-4637-aab0-4785c8aa732f`: current, booted and
+persistent systems all remain p501, with the same kernel notes and Sway/Rust
+executable hashes. Normal services, native Settings and landscape270°/
+logical1232×568 were verified (`postboot-normal-controls.json`). This is SSH
+runtime verification, not a new physical gesture acceptance. The bright
+post-handoff camera image is the normal light Foot terminal; a private
+read-only screencopy confirmed the terminal prompt.
+
+The complete240s recording has7193frames/399970278rawbytes, no sequence gaps,
+error flags, regressing/changing timestamps or incomplete summary. All camera
+controls were restored. Post-boot direct readback matched the deployed first
+4MiB hash `df7e9b6ab78879374cd0c2c503dd1a04ab5e6d0513cd30d7e09f9b13e495a5a4`;
+every protected boot-file hash remained unchanged.
+
+`candidate-boot.mp4` is a first3600frame/120s,640×480 nominal30fps viewing
+proxy covering the reboot through the shell's first visible replacement.
+`candidate-frames.jsonl.gz` contains the original metadata for all7193frames;
+use those camera timestamps rather than proxy PTS. The full raw MJPEG stays
+in protected host scratch, with its exact hash in `candidate-capture.json`.
+
+The same selector used on the reproduced baseline found no score≥0.8 in the
+interior dark-panel interval. Its highest score is0.553334 atframe1494,
+camera49.800835s; the unmodified original JPEG and ±5frame neighbors are
+committed. Visual inspection shows the logo intact in each. A full timeline
+and interval-boundary frames were reviewed; persistent transitions at initial
+panel lighting and takeover are distinct from transient garbled-logo frames.
+The dark-panel criterion includes initial black and final replacement-black
+frames, so its bounds are not asserted to be exact logo/compositor timestamps.
+This is one successful filmed sample at30fps, not a guarantee about every
+52Hz panel refresh or every future boot. No FIFO/underrun mechanism is proved.
+
+Task4.3's install/readback/warm-boot proof is complete. Task4.1 remains open:
+this recording still lacks the final qualified ±0.1s kernel/video mapping.
+A further normal warm-boot film with contemporaneous host raw-clock sampling
+and **post-handoff** optical calibration in the same camera stream is running
+for that remaining gate. No archive or cold-boot/second-card claim is made.

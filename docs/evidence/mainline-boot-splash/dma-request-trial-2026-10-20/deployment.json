@@ -1,0 +1,15 @@
+{
+  "status": "CANDIDATE_WRITTEN_AND_READBACK_VERIFIED",
+  "candidate_sha256": "46437f404369b99b3300f89d8dd5dcbd3d3f9cf8f1c0a7724754ea74116814a9",
+  "candidate_bytes": 385932,
+  "offset": 2097152,
+  "after_first4MiB_sha256": "df7e9b6ab78879374cd0c2c503dd1a04ab5e6d0513cd30d7e09f9b13e495a5a4",
+  "unchanged_prefix": true,
+  "unchanged_after_candidate": true,
+  "backup_sha256": "b4bac2e8c8513d37a95b6ce0aac8efb3043c755ee5f36410256b9384f744367e",
+  "reboot_requested": false,
+  "direct_readback": true,
+  "checked_at": "2026-10-21T01:08:13.077279+00:00",
+  "command_driver": "/home/jadams/tmp/codex-claude-handoff-20261019/3/splash-dma-deploy.py",
+  "candidate_stage1": "/nix/store/g09p7ggqzx9zyggniwr2czsy7vmcl8kb-k230-stage1"
+}

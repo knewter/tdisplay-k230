@@ -1,0 +1,32 @@
+{
+  "method": "Same baseline selector: minimum luma difference against \u00b15frames; logo ROI x190:700 y100:280 resized170x60; dark-panel interval determined from central panel mean<12 between camera10..110s, trimming5frames at both transitions. Candidate selector plus original-frame review, not by itself an absolute absence guarantee or clock proof.",
+  "frames_analyzed": 7193,
+  "dark_interval": {
+    "first_frame": 352,
+    "last_frame": 3220,
+    "first_elapsed_s": 11.732202,
+    "last_elapsed_s": 107.333811
+  },
+  "interior_frames": 2859,
+  "peak": {
+    "frame": 1494,
+    "camera_elapsed_s": 49.800835,
+    "transient_luma_score": 0.5533333420753479,
+    "control_transient_score": 0.42500001192092896,
+    "panel_mean": 3.9996428571428573
+  },
+  "threshold": 0.8,
+  "flagged_interior_frames": [],
+  "review_indices": [
+    351,
+    352,
+    353,
+    1489,
+    1494,
+    1499,
+    3219,
+    3220,
+    3221
+  ],
+  "kernel_video_alignment_qualified": false
+}

@@ -1,0 +1,44 @@
+{
+  "boot_id": "327f8e02-899a-4637-aab0-4785c8aa732f",
+  "systems": {
+    "/run/current-system": "/nix/store/p501mchy0dq9lyjnaxwkx5s2pdm4i2yj-nixos-system-nixos-26.11.20260919.20b1ddd",
+    "/run/booted-system": "/nix/store/p501mchy0dq9lyjnaxwkx5s2pdm4i2yj-nixos-system-nixos-26.11.20260919.20b1ddd",
+    "/nix/var/nix/profiles/system": "/nix/store/p501mchy0dq9lyjnaxwkx5s2pdm4i2yj-nixos-system-nixos-26.11.20260919.20b1ddd"
+  },
+  "kernel_notes_sha256": "1a98ea1e0a6e75f923c0fd53cfcf472f576ddb36de86b89361bfc224a305d9b6",
+  "rust_pid": 1071,
+  "rust_sha256": "32c8c445eb0e9467114880d0084762aa6649e69b1274ba7f87d24e300bee9148",
+  "sway_pid": 1058,
+  "sway_sha256": "9464072ac100e77500c7b6113920d2c2ed14e022612eddbc38a037ce9b006670",
+  "services": [
+    "active",
+    "active"
+  ],
+  "outputs": [
+    {
+      "name": "DSI-1",
+      "active": true,
+      "rect": {
+        "x": 0,
+        "y": 0,
+        "width": 1232,
+        "height": 568
+      },
+      "transform": "270",
+      "scale": 1.0,
+      "current_mode": {
+        "width": 568,
+        "height": 1232,
+        "refresh": 52190,
+        "picture_aspect_ratio": "none"
+      }
+    }
+  ],
+  "trace_environment_present": false,
+  "settings": "/nix/store/kdc5bmnqf6n5px5nfsv0iz8l02d1azah-k230-settings/bin/k230-settings",
+  "available_bytes": 163749888,
+  "mpv": "",
+  "rollback_directory": true,
+  "board_monotonic_ns": 130264331370,
+  "board_mutations": false
+}
