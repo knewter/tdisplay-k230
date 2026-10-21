@@ -1,0 +1,42 @@
+{
+  "checked_at": "2026-10-21T16:04:58.753949+00:00",
+  "branch": "bg-31-closure",
+  "worktree": ".claude/worktrees/bg31",
+  "base_revision": "d90f5943a3c56a180345f74adfc14a7e818100c6",
+  "checks": [
+    {
+      "command": "python3 docs/evidence/omarchy-themes/background-video-board-2026-10-21/log-destination/test-log-destination-analyze.py",
+      "result": "5 PASS"
+    },
+    {
+      "command": "python3 -m unittest tests.test_card_shell_board_tools",
+      "result": "30 PASS"
+    },
+    {
+      "command": "python3 docs/evidence/omarchy-themes/background-video-board-2026-10-21/log-destination/log-destination-analyze.py docs/evidence/omarchy-themes/background-video-board-2026-10-21/log-destination --repo .",
+      "result": [
+        "journal {\"elapsed_p95_ms\": 9.181151, \"tracking_p95_ms\": 38.312, \"journal_active_average_cores\": 0.10350897690882514}",
+        "file {\"elapsed_p95_ms\": 7.150094, \"tracking_p95_ms\": 38.315, \"journal_active_average_cores\": 0.0008684847709691535}",
+        "journal-return {\"elapsed_p95_ms\": 9.140956, \"tracking_p95_ms\": 38.319, \"journal_active_average_cores\": 0.1015813291497215}"
+      ]
+    },
+    {
+      "command": "openspec validate --all --strict",
+      "result": "49 PASS,0 FAIL"
+    },
+    {
+      "command": "All published Python AST parse; exact staged controller/collector/audit SHA256; private raw prefix SHA256",
+      "result": "PASS"
+    },
+    {
+      "command": "python3 tools/blob-scan.py --no-vendor (exact owned paths staged)",
+      "result": [
+        "  walked 7497 files: 1499 binary (1406 by file row, 93 by group row); 1414 inventory rows verified on disk, 59 not present here; 3 nix pins checked",
+        "blob-scan: ok -- every binary is accounted for"
+      ]
+    }
+  ],
+  "review": "Reviewed unchanged workload/runtime identity and logging properties, actual FD routing checks, separate global-journal/two-service resource evidence, measured phase bounds, strict normalized public telemetry, frozen metric equality, preserved first failure, and independent restoration audit. No acceptance threshold, runtime source, Nix input, or permanent setting changed.",
+  "remaining_gate": "Frozen tracking FAIL38.315 vs33.334 in file arm;three-card still-only diagnostic retains geometry/one-card warnings. Backgroundtask3.3 and archive4.2 open.",
+  "site_validation": "Exact-revision CI/Pages checked after commit. Local site build not repeated; prior local time-budget failures remain in ../tracking-elapsed/site-local-failure.json and handoff logs."
+}

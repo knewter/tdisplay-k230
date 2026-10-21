@@ -1,0 +1,183 @@
+{
+  "source_revision": "d90f5943a3c56a180345f74adfc14a7e818100c6",
+  "descriptor": {
+    "source_revision": "d90f5943a3c56a180345f74adfc14a7e818100c6",
+    "system": "/nix/store/2igpibpw4nn0clbda7p35dp5bhg28n35-nixos-system-nixos-26.11.20260919.20b1ddd",
+    "normal_sha256": "4fc7bf3a0c0818c9eb3d286de4579999b3fbbaf9abe0e4317c017bca1dc663ba",
+    "candidate": "/nix/store/0v1q7r9g3zfkl1g7n12gsir7xkcbvbg3-k230-card-shell-hdmi-trial",
+    "candidate_exe": "/nix/store/9gnx5456f2k7vb83jp4vl02vf88m66fi-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway",
+    "candidate_sha256": "2778ed3cdac48b83806117a8d96accba0163dae21ba12b7a1104f1c1289fa3be",
+    "prepared_utc": "2026-10-21T06:21:59.877657+00:00",
+    "reused_build_source": "1a8e72ac52df5c80540bdeedc22edfcc4e5c167a"
+  },
+  "before": {
+    "system": "/nix/store/2igpibpw4nn0clbda7p35dp5bhg28n35-nixos-system-nixos-26.11.20260919.20b1ddd",
+    "profile": "/nix/store/2igpibpw4nn0clbda7p35dp5bhg28n35-nixos-system-nixos-26.11.20260919.20b1ddd",
+    "boot_id": "9e664e59-dfd6-49ed-976a-2e38416c0a7f",
+    "sway_exe": "/nix/store/hy37k7zpyzawlnbmf5jd7cg2zdgybl3f-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway",
+    "sway_sha256": "4fc7bf3a0c0818c9eb3d286de4579999b3fbbaf9abe0e4317c017bca1dc663ba",
+    "outputs": [
+      {
+        "name": "DSI-1",
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "width": 1232,
+          "height": 568
+        },
+        "transform": "270",
+        "current_mode": {
+          "width": 568,
+          "height": 1232,
+          "refresh": 52190,
+          "picture_aspect_ratio": "none"
+        },
+        "max_render_time": 8
+      }
+    ],
+    "apps": [
+      "k230-terminal"
+    ],
+    "wallpaper": {
+      "schema": 1,
+      "generation": "2e583fb7dc1947e9d444c171",
+      "background_fingerprint": null,
+      "decoder_pid": null,
+      "state": "still",
+      "error_category": null,
+      "frames_decoded": 0,
+      "frames_submitted": 0,
+      "frame_callbacks": 0,
+      "last_decoded_monotonic_ms": null,
+      "last_submitted_monotonic_ms": null,
+      "last_callback_monotonic_ms": null
+    }
+  },
+  "original_properties": {
+    "StandardOutput": "journal",
+    "StandardError": "inherit",
+    "LogLevelMax": "-1",
+    "LogRateLimitIntervalUSec": "0",
+    "LogRateLimitBurst": "0"
+  },
+  "started_utc": "2026-10-21T15:54:29Z",
+  "runs": [
+    {
+      "label": "journal",
+      "destination": "journal",
+      "cards": 3,
+      "exit": 0,
+      "pid": 20996,
+      "fd2_kind": "journal-stream",
+      "properties": {
+        "StandardOutput": "journal",
+        "StandardError": "inherit",
+        "LogLevelMax": "-1",
+        "LogRateLimitIntervalUSec": "0",
+        "LogRateLimitBurst": "0"
+      },
+      "identity": {
+        "system": "/nix/store/2igpibpw4nn0clbda7p35dp5bhg28n35-nixos-system-nixos-26.11.20260919.20b1ddd",
+        "profile": "/nix/store/2igpibpw4nn0clbda7p35dp5bhg28n35-nixos-system-nixos-26.11.20260919.20b1ddd",
+        "boot_id": "9e664e59-dfd6-49ed-976a-2e38416c0a7f",
+        "sway_exe": "/nix/store/9gnx5456f2k7vb83jp4vl02vf88m66fi-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway",
+        "sway_sha256": "2778ed3cdac48b83806117a8d96accba0163dae21ba12b7a1104f1c1289fa3be",
+        "outputs": [
+          {
+            "name": "DSI-1",
+            "rect": {
+              "x": 0,
+              "y": 0,
+              "width": 1232,
+              "height": 568
+            },
+            "transform": "270",
+            "current_mode": {
+              "width": 568,
+              "height": 1232,
+              "refresh": 52190,
+              "picture_aspect_ratio": "none"
+            },
+            "max_render_time": 8
+          }
+        ],
+        "apps": [
+          "k230-terminal"
+        ],
+        "wallpaper": {
+          "schema": 1,
+          "generation": "2e583fb7dc1947e9d444c171",
+          "background_fingerprint": null,
+          "decoder_pid": null,
+          "state": "still",
+          "error_category": null,
+          "frames_decoded": 0,
+          "frames_submitted": 0,
+          "frame_callbacks": 0,
+          "last_decoded_monotonic_ms": null,
+          "last_submitted_monotonic_ms": null,
+          "last_callback_monotonic_ms": null
+        }
+      }
+    }
+  ],
+  "restore_unit": "k230-source3-log-destination-20261021",
+  "restored": {
+    "system": "/nix/store/2igpibpw4nn0clbda7p35dp5bhg28n35-nixos-system-nixos-26.11.20260919.20b1ddd",
+    "profile": "/nix/store/2igpibpw4nn0clbda7p35dp5bhg28n35-nixos-system-nixos-26.11.20260919.20b1ddd",
+    "boot_id": "9e664e59-dfd6-49ed-976a-2e38416c0a7f",
+    "sway_exe": "/nix/store/hy37k7zpyzawlnbmf5jd7cg2zdgybl3f-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway",
+    "sway_sha256": "4fc7bf3a0c0818c9eb3d286de4579999b3fbbaf9abe0e4317c017bca1dc663ba",
+    "outputs": [
+      {
+        "name": "DSI-1",
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "width": 1232,
+          "height": 568
+        },
+        "transform": "270",
+        "current_mode": {
+          "width": 568,
+          "height": 1232,
+          "refresh": 52190,
+          "picture_aspect_ratio": "none"
+        },
+        "max_render_time": 8
+      }
+    ],
+    "apps": [
+      "k230-terminal"
+    ],
+    "wallpaper": {
+      "schema": 1,
+      "generation": "2e583fb7dc1947e9d444c171",
+      "background_fingerprint": null,
+      "decoder_pid": null,
+      "state": "still",
+      "error_category": null,
+      "frames_decoded": 0,
+      "frames_submitted": 0,
+      "frame_callbacks": 0,
+      "last_decoded_monotonic_ms": null,
+      "last_submitted_monotonic_ms": null,
+      "last_callback_monotonic_ms": null
+    }
+  },
+  "restored_properties": {
+    "StandardOutput": "journal",
+    "StandardError": "inherit",
+    "LogLevelMax": "-1",
+    "LogRateLimitIntervalUSec": "0",
+    "LogRateLimitBurst": "0"
+  },
+  "test_input_devices": 0,
+  "normal_services": {
+    "shell": true,
+    "shell-ui": true,
+    "theme-helper": true
+  },
+  "restore_timer_active": false,
+  "finished_utc": "2026-10-21T15:55:50Z"
+}

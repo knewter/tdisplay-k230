@@ -1,0 +1,11 @@
+{
+  "file_arm_prefix_at_collector_return": {
+    "bytes": 842477,
+    "sha256": "15f2715b01c264a784b850f4611207ea580af4233b8ab1b6d43765c213c4de4f"
+  },
+  "exported_private_file_after_session_shutdown": {
+    "bytes": 845942,
+    "sha256": "ceda8d9c7ef54fb7d95e4f65c3b3b491ec96d36b472acee24cbd18748db88e91"
+  },
+  "limits": "Controller hash records the prefix at collector return; shutdown appends more private lines. Neither raw file nor arbitrary log payload is published. Public telemetry preserves strict-grammar normalized records only."
+}

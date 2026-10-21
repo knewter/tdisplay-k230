@@ -173,6 +173,15 @@ performance acceptance.
   closing its frozen performance gate:
   `docs/evidence/omarchy-themes/background-video-board-2026-10-21/render-profile/README.md`.
 
+  Logging comparison 2026-10-21: same-binary journal/file/journal three-card
+  arms give render elapsed p95 9.181/7.150/9.141 ms and journal-service mean
+  CPU 0.103509/0.000868/0.101581 cores. This supports benchmark logging cost;
+  file-arm frozen tracking still fails at 38.315 ms. All-present p95 is a
+  separate diagnostic, not a replacement gate. The failed first controller
+  assertion and complete retry are preserved; normal compositor, journal
+  routing, still, landscape, and timers were independently audited restored.
+  `docs/evidence/omarchy-themes/background-video-board-2026-10-21/log-destination/README.md`.
+
 - [x] 3.4 Confirm a user-supplied overlay stages, applies, and survives a
   shell/helper restart on the board, the same way the pinned/bundled
   background test in `docs/evidence/theme-picker/background-selection/README.md`

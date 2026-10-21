@@ -294,3 +294,9 @@ during slow renders in a loss-free isolated main-thread trace, bracketed by
 untraced arms. Logging contention is a hypothesis for a controlled follow-up;
 first-switched-to peer labels do not identify the owner of the whole wait.
 Tracking remains above target, and the normal landscape session was restored.
+
+The [journal/file/journal comparison](log-destination/README.md) then reduces
+render elapsed p95 from about 9.2 ms to 7.2 ms with file logging, returning to
+9.1 ms afterward. Journal-service CPU falls in the file arm, supporting a
+benchmark observer cost. Tracking still fails its frozen target; the normal
+compositor, journal routing, and landscape session were restored.

@@ -1,0 +1,11 @@
+{
+  "classification": "controller property serialization assertion; not a collector/performance failure",
+  "error_class": "AssertionError",
+  "assertion": "prop=={**original_properties,'StandardError':stderr}",
+  "failed_stdout_stderr_sha256": "43cd844e10850c5004ce9cf2d164a4b525c168c8995c923870022718c0ce9a9b",
+  "failed_stdout_stderr_bytes": 604,
+  "observed_status": "One journal arm captured. File service override started but failed property check before collection. Finally restored original compositor, theme, output, logging properties and stopped own timer.",
+  "correction": "StandardError DBus property reports append separately from path. Accept exact append type or full append representation, preserve all other original properties, and require FD2 regular-file device/inode equality with the exclusive owned log. Retry uses fresh staging/output/recovery directories and a unique timer.",
+  "retry_file_property": "append",
+  "limits": "Preserved first-arm data and exact failed controller/collector/result; raw stderr remains protected."
+}
