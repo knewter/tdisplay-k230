@@ -1,0 +1,15 @@
+{
+  "command": "python3 scripts/build_site.py",
+  "source_checkpoint": "1a8e72ac52df5c80540bdeedc22edfcc4e5c167a",
+  "additional_inputs": "The staged elapsed-probe evidence and task notes, before their evidence commit.",
+  "exit_code": 2,
+  "pages": 825,
+  "bytes": 22290233,
+  "seconds": 195.11,
+  "max_seconds": 120.0,
+  "max_bytes": 33554432,
+  "owner": "source3 Codex",
+  "render_and_link_checks": "passed; elapsed-time budget failed",
+  "log_sha256": "6065e2e984ea4d0d22a928d2a9f2d38d8eb4f36aa349e4281fa8645e6932b9a2",
+  "disposition": "Retain failure; one retry under shared heavy-work guard and exact-revision publication CI. No budget change or inferred contention cause."
+}

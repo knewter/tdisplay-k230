@@ -1,0 +1,8 @@
+{
+  "attempt": 1,
+  "status": "controller failed before usable capture",
+  "cause": "shell.service restart removed /run/shell staging, including collector; final result write also failed at that now-absent path",
+  "candidate_started": true,
+  "normal_restoration": "normal4fc/2ig/still/landscape independently re-audited after failure; timer inactive",
+  "disposition": "preserve failure; rerun from protected /var/lib/k230 path, unique attempt2 restore unit"
+}

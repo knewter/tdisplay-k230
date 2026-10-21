@@ -1,0 +1,19 @@
+{
+  "source_revision": "1a8e72ac52df5c80540bdeedc22edfcc4e5c167a",
+  "system": "/nix/store/2igpibpw4nn0clbda7p35dp5bhg28n35-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "normal_sha256": "4fc7bf3a0c0818c9eb3d286de4579999b3fbbaf9abe0e4317c017bca1dc663ba",
+  "candidate": "/nix/store/0v1q7r9g3zfkl1g7n12gsir7xkcbvbg3-k230-card-shell-hdmi-trial",
+  "candidate_exe": "/nix/store/9gnx5456f2k7vb83jp4vl02vf88m66fi-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway",
+  "candidate_sha256": "2778ed3cdac48b83806117a8d96accba0163dae21ba12b7a1104f1c1289fa3be",
+  "prepared_utc": "2026-10-21T05:20:28.447053+00:00",
+  "build_command": "nix build .#card-shell-hdmi-trial --out-link /home/jadams/tmp/codex-claude-handoff-20261019/3/cadence-timing-root --print-out-paths --max-jobs 1 --cores 6",
+  "guard_order": [
+    "/home/jadams/tmp/truck-a2-heavy.lock",
+    "/tmp/k230-nix-build.lock"
+  ],
+  "build_start": "2026-10-21T05:18:27Z",
+  "build_end": "2026-10-21T05:19:14Z",
+  "build_log_sha256": "76353331c44a6f74517c598fb39f63ea3709c60014cb1d37231aa374a5a0f539",
+  "host_tests": "35 PASS: unittest tests.test_card_shell_telemetry tests.test_card_shell_board_tools tests.test_card_shell_cache_session",
+  "deployment_class": "Temporary compositor-only probe completed and normal system compositor restored; no profile/boot change"
+}

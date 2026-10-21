@@ -282,3 +282,9 @@ keeps the original still and landscape, compares the 8/12/8 ms render allowance,
 and retains the failed gate. It distinguishes actual presentation gaps from
 correlated-input gaps without substituting either metric or changing budgets.
 The normal 8 ms setting and original runtime state were restored.
+
+The [elapsed-render probe](tracking-elapsed/README.md) then measured three-card
+render p95 8.946 ms against that 8 ms allowance, despite passing CPU budgets.
+Commit-return and render-start-delay boundaries are recorded separately;
+the frozen tracking gate still fails. The temporary diagnostic compositor was
+removed and the original installed compositor/system/theme restored.

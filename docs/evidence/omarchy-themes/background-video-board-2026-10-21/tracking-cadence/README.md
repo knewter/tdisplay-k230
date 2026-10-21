@@ -68,6 +68,10 @@ does not justify retrying the older boot-panic-producing register-latch patch.
 The next useful diagnostic is elapsed render/commit/scheduler correlation on
 the current runtime, before proposing any kernel timing change.
 
+That [elapsed-render diagnostic](../tracking-elapsed/README.md) is now captured:
+three-card elapsed render p95 is 8.946 ms while the allowance remains 8 ms.
+It preserves the gate and restores the normal compositor after the probe.
+
 ## Reproduction and restoration
 
 The exact installed-board driver is [run-board.py](run-board.py), using

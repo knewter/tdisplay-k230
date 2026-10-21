@@ -155,6 +155,14 @@ performance acceptance.
   were restored. Replay and exact commands:
   `docs/evidence/omarchy-themes/background-video-board-2026-10-21/tracking-cadence/README.md`.
 
+  Elapsed probe 2026-10-21: benchmark-only source `1a8e72ac` cross-builds and
+  runs on the reserved board. Three-card render wall p95 8.946 ms exceeds the
+  unchanged 8 ms allowance although CPU passes; commit-return p95 0.776 ms and
+  render-start lateness p95 0.521 ms do not isolate a kernel cause. One/three-card
+  tracking still fails. The normal compositor/system/still/landscape were
+  restored, including independent post-trial checks. Exact commands/results:
+  `docs/evidence/omarchy-themes/background-video-board-2026-10-21/tracking-elapsed/README.md`.
+
 - [x] 3.4 Confirm a user-supplied overlay stages, applies, and survives a
   shell/helper restart on the board, the same way the pinned/bundled
   background test in `docs/evidence/theme-picker/background-selection/README.md`

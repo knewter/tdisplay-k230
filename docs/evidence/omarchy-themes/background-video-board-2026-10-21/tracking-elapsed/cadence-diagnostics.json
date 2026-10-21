@@ -1,0 +1,124 @@
+{
+  "1-cards": {
+    "run": "2924157086999",
+    "cards": 1,
+    "input_dispatch_interval_ms": {
+      "count": 204,
+      "p50": 19.9971,
+      "p95": 23.20951,
+      "max": 24.654107
+    },
+    "all_present_intervals_during_motion_ms": {
+      "count": 202,
+      "p50": 19.161,
+      "p95": 19.17,
+      "max": 38.325
+    },
+    "all_present_vblank_buckets": {
+      "1": 199,
+      "2": 3
+    },
+    "tracking_present_interval_ms": {
+      "count": 202,
+      "p50": 19.161,
+      "p95": 38.318,
+      "max": 38.327
+    },
+    "tracking_intervals_above_33_334_ms": 12,
+    "over_budget_tracking_intervals_with_an_intermediate_present": 9,
+    "submit_to_present_ms": {
+      "count": 208,
+      "p50": 4.508505,
+      "p95": 5.374685,
+      "max": 20.212561
+    },
+    "repaint_stages": {
+      "render_cpu_ms": {
+        "count": 208,
+        "p50": 3.720114,
+        "p95": 3.955333,
+        "max": 4.094927
+      },
+      "prepare_cpu_ms": {
+        "count": 208,
+        "p50": 0.325815,
+        "p95": 0.486148,
+        "max": 0.599148
+      },
+      "build_cpu_ms": {
+        "count": 208,
+        "p50": 3.147851,
+        "p95": 3.353667,
+        "max": 3.55463
+      },
+      "commit_cpu_ms": {
+        "count": 208,
+        "p50": 0.261926,
+        "p95": 0.292482,
+        "max": 0.332038
+      }
+    },
+    "limits": "All-present intervals are a diagnostic across each gesture first/last motion window, not a replacement for the frozen correlated tracking metric. Presentation is backend feedback, not optical visibility. No kernel cause inferred."
+  },
+  "3-cards": {
+    "run": "2946372631442",
+    "cards": 3,
+    "input_dispatch_interval_ms": {
+      "count": 204,
+      "p50": 19.994616,
+      "p95": 22.367927,
+      "max": 28.376592
+    },
+    "all_present_intervals_during_motion_ms": {
+      "count": 197,
+      "p50": 19.161,
+      "p95": 38.312,
+      "max": 38.325
+    },
+    "all_present_vblank_buckets": {
+      "1": 187,
+      "2": 10
+    },
+    "tracking_present_interval_ms": {
+      "count": 196,
+      "p50": 19.161,
+      "p95": 38.322,
+      "max": 38.328
+    },
+    "tracking_intervals_above_33_334_ms": 20,
+    "over_budget_tracking_intervals_with_an_intermediate_present": 6,
+    "submit_to_present_ms": {
+      "count": 202,
+      "p50": 2.176889,
+      "p95": 16.969589,
+      "max": 19.78319
+    },
+    "repaint_stages": {
+      "render_cpu_ms": {
+        "count": 202,
+        "p50": 5.77526,
+        "p95": 6.401519,
+        "max": 7.077444
+      },
+      "prepare_cpu_ms": {
+        "count": 202,
+        "p50": 0.772408,
+        "p95": 0.859668,
+        "max": 1.086221
+      },
+      "build_cpu_ms": {
+        "count": 202,
+        "p50": 5.028409,
+        "p95": 5.348038,
+        "max": 5.970148
+      },
+      "commit_cpu_ms": {
+        "count": 202,
+        "p50": 0.265999,
+        "p95": 0.292703,
+        "max": 0.315888
+      }
+    },
+    "limits": "All-present intervals are a diagnostic across each gesture first/last motion window, not a replacement for the frozen correlated tracking metric. Presentation is backend feedback, not optical visibility. No kernel cause inferred."
+  }
+}
