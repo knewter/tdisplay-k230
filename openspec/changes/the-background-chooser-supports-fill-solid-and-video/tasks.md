@@ -139,6 +139,15 @@ performance acceptance.
   budgets (the same gate `the-shell-swaps-themes-without-a-python-stall`
   holds itself to). Do not enable video by default in `nix/shell.nix` until
   this passes.
+  Trial checkpoint 2026-10-21: the named installed-board command completed
+  playback/resource sampling and restoration. The original and first-candidate
+  cover failures are preserved; corrected source `88f04401` proves opaque-app
+  decoder pause/resume and reduced-motion startup on the board. CPU/input/
+  release/session-memory checks pass on the named landscape runs, but tracking
+  p95 remains about 38.323 ms against 33.334 ms in both still/video arms. No
+  performance waiver is inferred; this box remains open. Evidence:
+  `docs/evidence/omarchy-themes/background-video-board-2026-10-21/README.md`.
+
 - [x] 3.4 Confirm a user-supplied overlay stages, applies, and survives a
   shell/helper restart on the board, the same way the pinned/bundled
   background test in `docs/evidence/theme-picker/background-selection/README.md`
@@ -155,10 +164,15 @@ userspace feature.
 
 ## 4. Publish evidence and close deliberately
 
-- [ ] 4.1 Publish feature screenshots/video (each fit mode, the overlay
+- [x] 4.1 Publish feature screenshots/video (each fit mode, the overlay
   path, and video playback if enabled), measured limitations and the
   compatibility matrix entries this scope adds; verify site links with
   `python3 scripts/build_site.py`.
+  Done 2026-10-21: linked existing dark/light fit-mode and overlay gallery,
+  new native video/fallback/Home captures and a physical panel movie, plus
+  explicit compatibility/performance limits. Local site check: 823 pages,
+  22,201,074 bytes, 74.27 s, within unchanged limits. Evidence:
+  `docs/evidence/omarchy-themes/background-video-board-2026-10-21/README.md`.
 - [ ] 4.2 After every required task and physical gate passes, validate,
   archive/sync and push the change; verify `openspec validate --all
   --strict`, then inspect the resulting master/CI/Pages revision. Keep this

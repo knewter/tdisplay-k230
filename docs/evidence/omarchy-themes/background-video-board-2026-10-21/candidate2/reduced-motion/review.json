@@ -1,0 +1,7 @@
+{
+  "decoder_absent": true,
+  "decoded_and_submitted_stopped": true,
+  "visible_still_callbacks_advanced": 7,
+  "normal_flag_and_theme_restored": true,
+  "limits": "The raw all-counter-stopped field is false because the visible still receives frame callbacks. No decoder or decoded/submitted-video progress occurred. This is a startup session flag probe, not a live writable Settings-toggle test."
+}

@@ -1,0 +1,87 @@
+{
+  "system": "/nix/store/2igpibpw4nn0clbda7p35dp5bhg28n35-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "profile": "/nix/store/2igpibpw4nn0clbda7p35dp5bhg28n35-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "boot_id": "9e664e59-dfd6-49ed-976a-2e38416c0a7f",
+  "units": {
+    "shell": true,
+    "shell-ui": true,
+    "theme-helper": true
+  },
+  "owned_overrides_absent": true,
+  "owned_timers_inactive": true,
+  "owned_test_theme_absent": true,
+  "remaining_virtual_test_devices": 0,
+  "free_bytes": 97759232,
+  "boot_files": {
+    "Image": "d6b2153d97ac8382b5329c64397b8b46435e6a423b16796f8c37e052d4bcd642",
+    "initrd.uimg": "7d983aeffd4e47d2e36f825a731b485d55f05534a5dd28f036244d79c16f197c",
+    "logo.xrgb": "6c7a36086297597b359657ab53925ee0725e5201461484d543cbd950f5baa3af",
+    "k230-tdisplay.dtb": "ad16d217f59d8ead079f6395535071fb56b33b9d480773491f7fca638a2b8823",
+    "bootargs.txt": "ee635a63e41b750fba52b56900a0f04a8fab66ebd4966a57534c53bab2689c7b",
+    "force_dtb": "175342c82dd1b437cdafb6bb01090e7ff73c2769515654c48b02c1e9f73440c6",
+    "lcd_dtb": "175342c82dd1b437cdafb6bb01090e7ff73c2769515654c48b02c1e9f73440c6",
+    "hdmi_dtb": "175342c82dd1b437cdafb6bb01090e7ff73c2769515654c48b02c1e9f73440c6"
+  },
+  "before_home_coverage": {
+    "schema": 1,
+    "covered": true,
+    "monotonic_ms": 238765,
+    "width": 1232,
+    "height": 568
+  },
+  "home_command": [
+    {
+      "success": true
+    }
+  ],
+  "reduced_motion": "0",
+  "native_settings_path": "/nix/store/kdc5bmnqf6n5px5nfsv0iz8l02d1azah-k230-settings/bin/k230-settings",
+  "no_own_trace_environment": true,
+  "wallpaper_status": {
+    "schema": 1,
+    "generation": "2e583fb7dc1947e9d444c171",
+    "background_fingerprint": null,
+    "decoder_pid": null,
+    "state": "still",
+    "error_category": null,
+    "frames_decoded": 0,
+    "frames_submitted": 0,
+    "frame_callbacks": 0,
+    "last_decoded_monotonic_ms": null,
+    "last_submitted_monotonic_ms": null,
+    "last_callback_monotonic_ms": null
+  },
+  "coverage": {
+    "schema": 1,
+    "covered": false,
+    "monotonic_ms": 239781,
+    "width": 1232,
+    "height": 568
+  },
+  "settings_status_fields": [
+    "schema",
+    "controls"
+  ],
+  "settings_safe_controls": {
+    "brightness": {
+      "state": "writable",
+      "value": 100,
+      "label": "Brightness",
+      "unit": "percent"
+    },
+    "motion": {
+      "state": "read-only",
+      "value": false,
+      "label": "Reduced motion",
+      "detail": "Session preference"
+    },
+    "keyboard": {
+      "state": "action",
+      "value": null,
+      "label": "Toggle keyboard",
+      "action": "keyboard-toggle"
+    },
+    "power": null
+  },
+  "native_home_sha256": "c751f7951fccb20f9f5b5048ce070d9c731516a9e5edfa625c38ac1b4993b44d"
+}

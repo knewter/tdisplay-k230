@@ -1,0 +1,36 @@
+{
+  "system": "/nix/store/2igpibpw4nn0clbda7p35dp5bhg28n35-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "booted_system": "/nix/store/p501mchy0dq9lyjnaxwkx5s2pdm4i2yj-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "profile": "/nix/store/p501mchy0dq9lyjnaxwkx5s2pdm4i2yj-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "original_generation": "2e583fb7dc1947e9d444c171",
+  "units": {
+    "shell": {
+      "exe": "/nix/store/hy37k7zpyzawlnbmf5jd7cg2zdgybl3f-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway",
+      "sha256": "4fc7bf3a0c0818c9eb3d286de4579999b3fbbaf9abe0e4317c017bca1dc663ba",
+      "reduced_motion": "0"
+    },
+    "shell-ui": {
+      "exe": "/nix/store/fj1v8k4sl1v48qx1v7qafzd9c1g3i259-k230-shell-rust-riscv64-unknown-linux-gnu-0.1.0/bin/k230-shell-rust",
+      "sha256": "32c8c445eb0e9467114880d0084762aa6649e69b1274ba7f87d24e300bee9148",
+      "reduced_motion": "0"
+    }
+  },
+  "output": [
+    {
+      "name": "DSI-1",
+      "rect": {
+        "x": 0,
+        "y": 0,
+        "width": 1232,
+        "height": 568
+      },
+      "transform": "270",
+      "active": true
+    }
+  ],
+  "home": [
+    {
+      "success": true
+    }
+  ]
+}

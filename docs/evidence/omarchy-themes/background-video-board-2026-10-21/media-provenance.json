@@ -1,0 +1,59 @@
+{
+  "original_private_recording": {
+    "basename": "20261021T034156Z-background-card-trial.mp4",
+    "bytes": 8682954,
+    "sha256": "9dcff0f90487d67573b4ddd906e74929531aa82117454a14f97ec09d5e4e4890",
+    "duration_seconds": 200
+  },
+  "export": {
+    "name": "baseline-panel-video.mp4",
+    "source_interval_seconds": [
+      170,
+      200
+    ],
+    "resize": [
+      640,
+      360
+    ],
+    "command": "ffmpeg -ss 170 -i SOURCE -t 30 -vf scale=640:360 -an -c:v libx264 -preset veryfast -crf 23 -threads 1 -movflags +faststart baseline-panel-video.mp4"
+  },
+  "camera": {
+    "device": "/dev/video0",
+    "input_format": "mjpeg",
+    "video_size": "1280x720",
+    "framerate": 30
+  },
+  "review": {
+    "kind": "sampled camera frames and native captures",
+    "changing_pattern_visible_on_panel": true,
+    "actual_finger_contact": false,
+    "optical_latency_qualified": false
+  },
+  "published_files": [
+    {
+      "path": "docs/evidence/omarchy-themes/background-video-board-2026-10-21/baseline-covered.png",
+      "bytes": 5430,
+      "sha256": "b0f531e19c7ea4a8d64c911e57c996a784374ffd7552ab6ff4ca57f258a28051"
+    },
+    {
+      "path": "docs/evidence/omarchy-themes/background-video-board-2026-10-21/baseline-panel-video.mp4",
+      "bytes": 382648,
+      "sha256": "38d331f1606562c4cc6b359cfb4e7ef472a3be8f2c6b12f70b4aa7ae4f2c7899"
+    },
+    {
+      "path": "docs/evidence/omarchy-themes/background-video-board-2026-10-21/baseline-static.png",
+      "bytes": 121845,
+      "sha256": "ac95204a3fbc83d8cbd0e7ee60359809c96b88be8c0ee923698a24d0aeb2fca9"
+    },
+    {
+      "path": "docs/evidence/omarchy-themes/background-video-board-2026-10-21/baseline-video-second.png",
+      "bytes": 123271,
+      "sha256": "bad4d7951fccb5f1238a63703be1d701b6a62a9fd5545cbbaae6364e56abc421"
+    },
+    {
+      "path": "docs/evidence/omarchy-themes/background-video-board-2026-10-21/baseline-video.png",
+      "bytes": 137730,
+      "sha256": "b6525a11d4555f88dfc7fc37e501b0baa1d2a88e0c052c464fc96b9be3593323"
+    }
+  ]
+}

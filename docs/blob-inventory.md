@@ -2155,6 +2155,14 @@ DATA ae75797fbec9a5fb7eb855595b7f2b2c7ec0562406d6c2bcdc0bf6ae06da86cf docs/evide
 DATA 95bdd638c97cfca7b5bf739a3e0f4ba4bdfbbbdf67033f91e2b8c9fee5080771 docs/evidence/mainline-boot-splash/dma-request-trial-2026-10-20/final/frames.jsonl.gz
 DATA 3fb586fb415d67425bb69b622de0a64818b2eddd43f0bf12a117ceec5aea34c6 docs/evidence/mainline-boot-splash/dma-request-trial-2026-10-20/final/host-clock.jsonl.gz
 DATA 09a52ca5c5b3b3732cec96e68ca4c5a7c3acffb6f42f00cc14540ffbce2cef61 docs/evidence/mainline-boot-splash/dma-request-trial-2026-10-20/final/timing-analysis.json.gz
+DATA b0f531e19c7ea4a8d64c911e57c996a784374ffd7552ab6ff4ca57f258a28051 docs/evidence/omarchy-themes/background-video-board-2026-10-21/baseline-covered.png
+DATA 38d331f1606562c4cc6b359cfb4e7ef472a3be8f2c6b12f70b4aa7ae4f2c7899 docs/evidence/omarchy-themes/background-video-board-2026-10-21/baseline-panel-video.mp4
+DATA ac95204a3fbc83d8cbd0e7ee60359809c96b88be8c0ee923698a24d0aeb2fca9 docs/evidence/omarchy-themes/background-video-board-2026-10-21/baseline-static.png
+DATA bad4d7951fccb5f1238a63703be1d701b6a62a9fd5545cbbaae6364e56abc421 docs/evidence/omarchy-themes/background-video-board-2026-10-21/baseline-video-second.png
+DATA b6525a11d4555f88dfc7fc37e501b0baa1d2a88e0c052c464fc96b9be3593323 docs/evidence/omarchy-themes/background-video-board-2026-10-21/baseline-video.png
+DATA 99a2c6b0191ee7147957f6d9dd6c0df9745b2d7150f64148c3b28a8069851461 docs/evidence/omarchy-themes/background-video-board-2026-10-21/candidate2/panel-pause-resume.mp4
+DATA c751f7951fccb20f9f5b5048ce070d9c731516a9e5edfa625c38ac1b4993b44d docs/evidence/omarchy-themes/background-video-board-2026-10-21/candidate2/postboot-home.png
+DATA dac16dda343c1c88ed8888357c78bd83d690f037d9580a0945eb45528c0bd54e docs/evidence/omarchy-themes/background-video-board-2026-10-21/candidate2/reduced-motion/paused.png
 ```
 
 `group:` rows stand for a directory whose members are enumerated by
@@ -3893,3 +3901,25 @@ peak/calibration JPEGs. Empirical timing bound±75.244ms; see final proof README
 | `docs/evidence/mainline-boot-splash/dma-request-trial-2026-10-20/final/frames.jsonl.gz` | 294304 | DATA | `95bdd638c97cfca7b5bf739a3e0f4ba4bdfbbbdf67033f91e2b8c9fee5080771` |
 | `docs/evidence/mainline-boot-splash/dma-request-trial-2026-10-20/final/host-clock.jsonl.gz` | 121406 | DATA | `3fb586fb415d67425bb69b622de0a64818b2eddd43f0bf12a117ceec5aea34c6` |
 | `docs/evidence/mainline-boot-splash/dma-request-trial-2026-10-20/final/timing-analysis.json.gz` | 171304 | DATA | `09a52ca5c5b3b3732cec96e68ca4c5a7c3acffb6f42f00cc14540ffbce2cef61` |
+
+## Background video board trial — 2026-10-21
+
+Data only: native injected-board captures and a scaled camera excerpt.
+See `docs/evidence/omarchy-themes/background-video-board-2026-10-21/README.md`
+for the failed gates and distinct evidence classes.
+
+| Path | Bytes | Class | SHA-256 |
+| --- | ---: | --- | --- |
+| `docs/evidence/omarchy-themes/background-video-board-2026-10-21/baseline-covered.png` | 5430 | DATA | `b0f531e19c7ea4a8d64c911e57c996a784374ffd7552ab6ff4ca57f258a28051` |
+| `docs/evidence/omarchy-themes/background-video-board-2026-10-21/baseline-panel-video.mp4` | 382648 | DATA | `38d331f1606562c4cc6b359cfb4e7ef472a3be8f2c6b12f70b4aa7ae4f2c7899` |
+| `docs/evidence/omarchy-themes/background-video-board-2026-10-21/baseline-static.png` | 121845 | DATA | `ac95204a3fbc83d8cbd0e7ee60359809c96b88be8c0ee923698a24d0aeb2fca9` |
+| `docs/evidence/omarchy-themes/background-video-board-2026-10-21/baseline-video-second.png` | 123271 | DATA | `bad4d7951fccb5f1238a63703be1d701b6a62a9fd5545cbbaae6364e56abc421` |
+| `docs/evidence/omarchy-themes/background-video-board-2026-10-21/baseline-video.png` | 137730 | DATA | `b6525a11d4555f88dfc7fc37e501b0baa1d2a88e0c052c464fc96b9be3593323` |
+
+### Final coverage candidate media
+
+| Path | Bytes | Class | SHA-256 |
+| --- | ---: | --- | --- |
+| `docs/evidence/omarchy-themes/background-video-board-2026-10-21/candidate2/panel-pause-resume.mp4` | 900686 | DATA | `99a2c6b0191ee7147957f6d9dd6c0df9745b2d7150f64148c3b28a8069851461` |
+| `docs/evidence/omarchy-themes/background-video-board-2026-10-21/candidate2/postboot-home.png` | 106868 | DATA | `c751f7951fccb20f9f5b5048ce070d9c731516a9e5edfa625c38ac1b4993b44d` |
+| `docs/evidence/omarchy-themes/background-video-board-2026-10-21/candidate2/reduced-motion/paused.png` | 124538 | DATA | `dac16dda343c1c88ed8888357c78bd83d690f037d9580a0945eb45528c0bd54e` |

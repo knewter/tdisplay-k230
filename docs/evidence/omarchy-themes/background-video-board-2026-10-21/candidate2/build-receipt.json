@@ -1,0 +1,37 @@
+{
+  "system": "/nix/store/2igpibpw4nn0clbda7p35dp5bhg28n35-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "bundle": "/nix/store/k7iy85pr176mwcmys8qrac965dckjm10-k230-coherent-shell-boot-files",
+  "source": "88f04401dc941fce488423de927caab312e088cd",
+  "files": {
+    "Image": {
+      "bytes": 42752512,
+      "old_sha256": "d6b2153d97ac8382b5329c64397b8b46435e6a423b16796f8c37e052d4bcd642",
+      "new_sha256": "d6b2153d97ac8382b5329c64397b8b46435e6a423b16796f8c37e052d4bcd642",
+      "change": "identical"
+    },
+    "initrd.uimg": {
+      "bytes": 27328407,
+      "old_sha256": "7d983aeffd4e47d2e36f825a731b485d55f05534a5dd28f036244d79c16f197c",
+      "new_sha256": "7d983aeffd4e47d2e36f825a731b485d55f05534a5dd28f036244d79c16f197c",
+      "change": "identical"
+    },
+    "logo.xrgb": {
+      "bytes": 2799104,
+      "old_sha256": "6c7a36086297597b359657ab53925ee0725e5201461484d543cbd950f5baa3af",
+      "new_sha256": "6c7a36086297597b359657ab53925ee0725e5201461484d543cbd950f5baa3af",
+      "change": "identical"
+    },
+    "k230-tdisplay.dtb": {
+      "bytes": 19048,
+      "old_sha256": "ad61b8a70acba495b77761a6e73e935c4cd8ccd2a7ca6eb3da7fca6c256a18df",
+      "new_sha256": "ad16d217f59d8ead079f6395535071fb56b33b9d480773491f7fca638a2b8823",
+      "change": "only init= path"
+    },
+    "bootargs.txt": {
+      "bytes": 198,
+      "old_sha256": "38a90761c55914c426828c41d1c8b1cb636d19cda6893859d43afbe64c0fefc4",
+      "new_sha256": "ee635a63e41b750fba52b56900a0f04a8fab66ebd4966a57534c53bab2689c7b",
+      "change": "only init= path"
+    }
+  }
+}

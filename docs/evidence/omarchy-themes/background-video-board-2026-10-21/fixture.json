@@ -1,0 +1,15 @@
+{
+  "generator": "ffmpeg -f lavfi -i testsrc2=size=640x360:rate=30 -t 8 -an -c:v libx264 -preset veryfast -crf 23 -threads 1 -pix_fmt yuv420p -movflags +faststart 02-motion.mp4; ffmpeg -i 02-motion.mp4 -frames:v 1 01-still.png",
+  "source_revision": "7938986ad13fdfc624756f3ba7d318eefc1279cd",
+  "files": {
+    "02-motion.mp4": {
+      "bytes": 728265,
+      "sha256": "04a7cf81a0d594b6cf70d3ea4d81dfd21518b9b4449d9129b978d820604ebf17"
+    },
+    "01-still.png": {
+      "bytes": 47375,
+      "sha256": "ea48d609dd676822da69f5fd77f137cf2c466041c9d36c80dab6228d90ee18cc"
+    }
+  },
+  "limits": "One synthetic H264 640x360 30fps fixture, decoded to logical landscape1232x568. No universal codec/content performance claim."
+}

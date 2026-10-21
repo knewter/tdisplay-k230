@@ -1,0 +1,31 @@
+{
+  "sway_source": "/nix/store/2j7grygxd5da5r214vzz3y8b54rr739k-source",
+  "wlroots_source": "/nix/store/r2zcb3d3dgmz09qjaqsy945inal2h41r-source",
+  "inspected_at": "2026-10-21",
+  "findings": [
+    {
+      "path": "/nix/store/r2zcb3d3dgmz09qjaqsy945inal2h41r-source/types/scene/surface.c",
+      "sha256": "b8c83f292006bc44d349891b1d460245db9dae891e986e6dc2006572f99a7f97",
+      "start_line": 238,
+      "excerpt": "static void surface_reconfigure(struct wlr_scene_surface *scene_surface) {\n\tstruct wlr_scene_buffer *scene_buffer = scene_surface->buffer;\n\tstruct wlr_surface *surface = scene_surface->surface;\n\tstruct wlr_surface_state *state = &surface->current;\n\n\tstruct wlr_fbox src_box;\n\twlr_surface_get_buffer_source_box(surface, &src_box);\n\n\tpixman_region32_t opaque;\n\tpixman_region32_init(&opaque);\n\tpixman_region32_copy(&opaque, &surface->opaque_region);\n\n\tint width = state->width;\n\tint height = state->height;\n\n\tif (!wlr_box_empty(&scene_surface->clip)) {\n\t\tstruct wlr_box *clip = &scene_surface->clip;\n\n\t\tint buffer_width = state->buffer_width;\n\t\tint buffer_height = state->buffer_height;\n\t\twidth = min(clip->width, width - clip->x);\n\t\theight = min(clip->height, height - clip->y);\n\n\t\twlr_fbox_transform(&src_box, &src_box, state->transform,\n\t\t\tbuffer_width, buffer_height);\n\t\twlr_output_transform_coords(state->transform, &buffer_width, &buffer_height);\n\n\t\tsrc_box.x += (double)(clip->x * src_box.width) / state->width;\n\t\tsrc_box.y += (double)(clip->y * src_box.height) / state->height;\n\t\tsrc_box.width *= (double)width / state->width;\n\t\tsrc_box.height *= (double)height / state->height;\n\n\t\twlr_fbox_transform(&src_box, &src_box, wlr_output_transform_invert(state->transform),\n\t\t\tbuffer_width, buffer_height);\n\n\t\tpixman_region32_translate(&opaque, -clip->x, -clip->y);\n\t\tpixman_region32_intersect_rect(&opaque, &opaque, 0, 0, width, height);\n\t}\n\n\tif (width <= 0 || height <= 0) {"
+    },
+    {
+      "path": "/nix/store/2j7grygxd5da5r214vzz3y8b54rr739k-source/sway/desktop/transaction.c",
+      "sha256": "2ddeba32eaa95efb84e006f8ddf40d586bfa3405eede1af72f1355908fb01509",
+      "start_line": 559,
+      "excerpt": "static void disable_workspace(struct sway_workspace *ws) {\n\t// if any containers were just moved to a disabled workspace it will\n\t// have the parent of the old workspace. Move the workspace so that it won't\n\t// be shown.\n\tfor (int i = 0; i < ws->current.tiling->length; i++) {\n\t\tstruct sway_container *child = ws->current.tiling->items[i];\n\n\t\twlr_scene_node_reparent(&child->scene_tree->node, ws->layers.tiling);\n\t\tdisable_container(child);\n\t}\n\n\tfor (int i = 0; i < ws->current.floating->length; i++) {\n\t\tstruct sway_container *floater = ws->current.floating->items[i];\n\t\twlr_scene_node_reparent(&floater->scene_tree->node, root->layers.floating);\n\t\tdisable_container(floater);\n\t\twlr_scene_node_set_enabled(&floater->scene_tree->node, false);\n\t}\n}\n\nstatic void arrange_output(struct sway_output *output, int width, int height) {\n\tfor (int i = 0; i < output->current.workspaces->length; i++) {\n\t\tstruct sway_workspace *child = output->current.workspaces->items[i];\n\n\t\tbool activated = output->current.active_workspace == child && output->wlr_output->enabled;\n"
+    },
+    {
+      "path": "/nix/store/2j7grygxd5da5r214vzz3y8b54rr739k-source/sway/tree/root.c",
+      "sha256": "8c457c34c67b5de08b6f48760c1cf6b494de8a3964ab04a1ecb2ca8c08fc3027",
+      "start_line": 38,
+      "excerpt": "\n\tbool failed = false;\n\troot->staging = alloc_scene_tree(&root_scene->tree, &failed);\n\troot->layer_tree = alloc_scene_tree(&root_scene->tree, &failed);\n\n\troot->layers.shell_background = alloc_scene_tree(root->layer_tree, &failed);\n\troot->layers.shell_bottom = alloc_scene_tree(root->layer_tree, &failed);\n\troot->layers.tiling = alloc_scene_tree(root->layer_tree, &failed);\n\troot->layers.floating = alloc_scene_tree(root->layer_tree, &failed);\n\troot->layers.shell_top = alloc_scene_tree(root->layer_tree, &failed);\n\troot->layers.fullscreen = alloc_scene_tree(root->layer_tree, &failed);\n\troot->layers.fullscreen_global = alloc_scene_tree(root->layer_tree, &failed);\n#if WLR_HAS_XWAYLAND\n\troot->layers.unmanaged = alloc_scene_tree(root->layer_tree, &failed);\n#endif\n\troot->layers.shell_overlay = alloc_scene_tree(root->layer_tree, &failed);\n\troot->layers.popup = alloc_scene_tree(root->layer_tree, &failed);"
+    },
+    {
+      "path": "/nix/store/r2zcb3d3dgmz09qjaqsy945inal2h41r-source/types/wlr_compositor.c",
+      "sha256": "5bca185e78b6ec3137f563f00bbd2238dab4fa3ea1f8f22796a374354e23d668",
+      "start_line": 1246,
+      "excerpt": "void wlr_surface_get_buffer_source_box(struct wlr_surface *surface,\n\t\tstruct wlr_fbox *box) {\n\tbox->x = box->y = 0;\n\tbox->width = surface->current.buffer_width;\n\tbox->height = surface->current.buffer_height;\n\n\tif (surface->current.viewport.has_src) {\n\t\tbox->x = surface->current.viewport.src.x * surface->current.scale;\n\t\tbox->y = surface->current.viewport.src.y * surface->current.scale;\n\t\tbox->width = surface->current.viewport.src.width * surface->current.scale;\n\t\tbox->height = surface->current.viewport.src.height * surface->current.scale;\n\n\t\tint width, height;\n\t\tsurface_state_transformed_buffer_size(&surface->current, &width, &height);\n\t\twlr_fbox_transform(box, box,\n\t\t\twlr_output_transform_invert(surface->current.transform),\n\t\t\twidth, height);\n\t}\n}\n"
+    }
+  ]
+}

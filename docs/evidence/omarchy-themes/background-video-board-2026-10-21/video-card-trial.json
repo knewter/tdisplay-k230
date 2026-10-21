@@ -1,0 +1,228 @@
+{
+  "started_utc": "2026-10-21T03:44:47Z",
+  "arms": [
+    {
+      "role": "video",
+      "generation": "e8b024967af7299251ce3684",
+      "before": {
+        "schema": 1,
+        "generation": "e8b024967af7299251ce3684",
+        "background_fingerprint": "5a748e331194318541aaac2e",
+        "decoder_pid": 5669,
+        "state": "playing",
+        "error_category": null,
+        "frames_decoded": 25,
+        "frames_submitted": 13,
+        "frame_callbacks": 13,
+        "last_decoded_monotonic_ms": 8771006,
+        "last_submitted_monotonic_ms": 8771014,
+        "last_callback_monotonic_ms": 8770906
+      },
+      "runs": [
+        {
+          "cards": 1,
+          "exit": 0,
+          "directory": "/run/shell/source3-background-trial-20261021/cards-video/video-1-cards",
+          "status_after": {
+            "schema": 1,
+            "generation": "e8b024967af7299251ce3684",
+            "background_fingerprint": "5a748e331194318541aaac2e",
+            "decoder_pid": 5719,
+            "state": "playing",
+            "error_category": null,
+            "frames_decoded": 205,
+            "frames_submitted": 43,
+            "frame_callbacks": 43,
+            "last_decoded_monotonic_ms": 8810697,
+            "last_submitted_monotonic_ms": 8792328,
+            "last_callback_monotonic_ms": 8792120
+          }
+        },
+        {
+          "cards": 3,
+          "exit": 0,
+          "directory": "/run/shell/source3-background-trial-20261021/cards-video/video-3-cards",
+          "status_after": {
+            "schema": 1,
+            "generation": "e8b024967af7299251ce3684",
+            "background_fingerprint": "5a748e331194318541aaac2e",
+            "decoder_pid": 5757,
+            "state": "playing",
+            "error_category": null,
+            "frames_decoded": 273,
+            "frames_submitted": 57,
+            "frame_callbacks": 57,
+            "last_decoded_monotonic_ms": 8835672,
+            "last_submitted_monotonic_ms": 8815818,
+            "last_callback_monotonic_ms": 8815509
+          }
+        }
+      ],
+      "playing": {
+        "schema": 1,
+        "generation": "e8b024967af7299251ce3684",
+        "background_fingerprint": "5a748e331194318541aaac2e",
+        "decoder_pid": 5669,
+        "state": "playing",
+        "error_category": null,
+        "frames_decoded": 25,
+        "frames_submitted": 13,
+        "frame_callbacks": 13,
+        "last_decoded_monotonic_ms": 8771006,
+        "last_submitted_monotonic_ms": 8771014,
+        "last_callback_monotonic_ms": 8770906
+      },
+      "covered_before": {
+        "schema": 1,
+        "generation": "e8b024967af7299251ce3684",
+        "background_fingerprint": "5a748e331194318541aaac2e",
+        "decoder_pid": 5669,
+        "state": "playing",
+        "error_category": null,
+        "frames_decoded": 110,
+        "frames_submitted": 18,
+        "frame_callbacks": 18,
+        "last_decoded_monotonic_ms": 8783198,
+        "last_submitted_monotonic_ms": 8772309,
+        "last_callback_monotonic_ms": 8772002
+      },
+      "covered_pause_observed": false,
+      "coverage_signal": {
+        "schema": 1,
+        "covered": false,
+        "monotonic_ms": 8784055,
+        "width": 1232,
+        "height": 568
+      },
+      "coverage_signal_uid": 1000,
+      "coverage_signal_mode": "0o600",
+      "probe_monotonic_ms": 8784183,
+      "cover_app_geometry": [
+        {
+          "app_id": "k230.background.cover",
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "width": 1232,
+            "height": 568
+          },
+          "fullscreen_mode": 1,
+          "visible": true
+        }
+      ],
+      "covered_after": {
+        "schema": 1,
+        "generation": "e8b024967af7299251ce3684",
+        "background_fingerprint": "5a748e331194318541aaac2e",
+        "decoder_pid": 5669,
+        "state": "playing",
+        "error_category": null,
+        "frames_decoded": 131,
+        "frames_submitted": 18,
+        "frame_callbacks": 18,
+        "last_decoded_monotonic_ms": 8786249,
+        "last_submitted_monotonic_ms": 8772309,
+        "last_callback_monotonic_ms": 8772002
+      },
+      "covered_counters_stopped": false,
+      "uncovered_before": {
+        "schema": 1,
+        "generation": "e8b024967af7299251ce3684",
+        "background_fingerprint": "5a748e331194318541aaac2e",
+        "decoder_pid": 5669,
+        "state": "playing",
+        "error_category": null,
+        "frames_decoded": 131,
+        "frames_submitted": 18,
+        "frame_callbacks": 18,
+        "last_decoded_monotonic_ms": 8786249,
+        "last_submitted_monotonic_ms": 8772309,
+        "last_callback_monotonic_ms": 8772002
+      },
+      "uncovered_after": {
+        "schema": 1,
+        "generation": "e8b024967af7299251ce3684",
+        "background_fingerprint": "5a748e331194318541aaac2e",
+        "decoder_pid": 5669,
+        "state": "playing",
+        "error_category": null,
+        "frames_decoded": 143,
+        "frames_submitted": 28,
+        "frame_callbacks": 29,
+        "last_decoded_monotonic_ms": 8788205,
+        "last_submitted_monotonic_ms": 8788212,
+        "last_callback_monotonic_ms": 8788247
+      },
+      "resource_error": 1,
+      "after": {
+        "schema": 1,
+        "generation": "e8b024967af7299251ce3684",
+        "background_fingerprint": "5a748e331194318541aaac2e",
+        "decoder_pid": 5757,
+        "state": "playing",
+        "error_category": null,
+        "frames_decoded": 354,
+        "frames_submitted": 138,
+        "frame_callbacks": 138,
+        "last_decoded_monotonic_ms": 8849875,
+        "last_submitted_monotonic_ms": 8849883,
+        "last_callback_monotonic_ms": 8849773
+      }
+    }
+  ],
+  "restoration": "passed",
+  "interaction_provenance": "injected",
+  "physical_contact": "UNVERIFIED",
+  "candidate": {
+    "schema": 1,
+    "source_revision": "7938986ad13fdfc624756f3ba7d318eefc1279cd",
+    "system": "/nix/store/p501mchy0dq9lyjnaxwkx5s2pdm4i2yj-nixos-system-nixos-26.11.20260919.20b1ddd",
+    "theme_command": "/nix/store/kzcqkbs02ca7jrmlbrl3ws3j922xcx5z-handheld-theme-command-0.1/bin/k230-theme",
+    "capture_command": "/nix/store/hjllbawb3xs65bmcnyy66yf6g9hdaxk8-grim-riscv64-unknown-linux-gnu-1.5.0/bin/grim",
+    "default_generation": "/nix/store/7nz37ga0jxad5x48gggjbxn15p0lkwdh-handheld-theme-default-28ceaae7/generations/0d16475245f13b3d7d3f036f",
+    "state_root": "/home/shell/.local/state/omarchy/current",
+    "rust_socket": "/run/shell/k230-shell-rust-appearance.sock",
+    "deck_socket": "/run/shell/k230-card-appearance.sock",
+    "workload": {
+      "id": "cards-shade-static-v1",
+      "sha256": "b9b330e66cbbd694839e8096d9ff626d66e3b7c737376b6d107e2a218947f195",
+      "artifact": "/run/shell/source3-background-trial-20261021/workload.json"
+    },
+    "themes": {
+      "dark": "retro-82",
+      "light": "catppuccin-latte"
+    },
+    "background_trial": {
+      "duration_seconds": 12,
+      "interval_seconds": 0.25,
+      "choices": {
+        "static": {
+          "theme_name": "source3-background-trial",
+          "origin": "user",
+          "background_id": "d4f58dfc4d02412a1d12f368"
+        },
+        "video": {
+          "theme_name": "source3-background-trial",
+          "origin": "user",
+          "background_id": "7dd090323bb54627dc459b71"
+        }
+      }
+    }
+  },
+  "original_generation": "/home/shell/.local/state/omarchy/current/generations/2e583fb7dc1947e9d444c171",
+  "restored_status": {
+    "schema": 1,
+    "generation": "2e583fb7dc1947e9d444c171",
+    "background_fingerprint": null,
+    "decoder_pid": null,
+    "state": "still",
+    "error_category": null,
+    "frames_decoded": 0,
+    "frames_submitted": 0,
+    "frame_callbacks": 0,
+    "last_decoded_monotonic_ms": null,
+    "last_submitted_monotonic_ms": null,
+    "last_callback_monotonic_ms": null
+  },
+  "finished_utc": "2026-10-21T03:46:19Z"
+}

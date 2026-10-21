@@ -1,0 +1,165 @@
+{
+  "evidence_class": "board injected native touch; camera separate",
+  "mode": "full",
+  "started_utc": "2026-10-21T03:58:58Z",
+  "source_revision": "8dfcfc7ab03250bb4641b0161232e38b2ebb33b9",
+  "system": "/nix/store/p501mchy0dq9lyjnaxwkx5s2pdm4i2yj-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "gestures": [
+    {
+      "index": 0,
+      "from": [
+        616,
+        280
+      ],
+      "to": [
+        366,
+        280
+      ],
+      "down_monotonic_ns": 9620862797571,
+      "up_monotonic_ns": 9621614590827
+    },
+    {
+      "index": 1,
+      "from": [
+        616,
+        280
+      ],
+      "to": [
+        866,
+        280
+      ],
+      "down_monotonic_ns": 9622414915872,
+      "up_monotonic_ns": 9623166213861
+    },
+    {
+      "index": 2,
+      "from": [
+        616,
+        280
+      ],
+      "to": [
+        366,
+        280
+      ],
+      "down_monotonic_ns": 9623966436704,
+      "up_monotonic_ns": 9624717641125
+    },
+    {
+      "index": 3,
+      "from": [
+        616,
+        280
+      ],
+      "to": [
+        866,
+        280
+      ],
+      "down_monotonic_ns": 9625517848803,
+      "up_monotonic_ns": 9626268582995
+    },
+    {
+      "index": 4,
+      "from": [
+        616,
+        280
+      ],
+      "to": [
+        366,
+        280
+      ],
+      "down_monotonic_ns": 9627069284714,
+      "up_monotonic_ns": 9627820269439
+    },
+    {
+      "index": 5,
+      "from": [
+        616,
+        280
+      ],
+      "to": [
+        866,
+        280
+      ],
+      "down_monotonic_ns": 9628620427377,
+      "up_monotonic_ns": 9629371162387
+    }
+  ],
+  "output": {
+    "name": "DSI-1",
+    "transform": "270",
+    "rect": {
+      "x": 0,
+      "y": 0,
+      "width": 1232,
+      "height": 568
+    },
+    "current_mode": {
+      "width": 568,
+      "height": 1232,
+      "refresh": 52190,
+      "picture_aspect_ratio": "none"
+    }
+  },
+  "startup_terminal_ready_before_owned_apps": true,
+  "input_axes": {
+    "0": [
+      0,
+      1079
+    ],
+    "1": [
+      0,
+      2399
+    ],
+    "47": [
+      0,
+      9
+    ],
+    "48": [
+      0,
+      255
+    ],
+    "53": [
+      0,
+      1079
+    ],
+    "54": [
+      0,
+      2399
+    ],
+    "57": [
+      0,
+      65535
+    ]
+  },
+  "setup": {
+    "terminal_mapping": "serialized one then two; each must map before next launch",
+    "initial_app_count": 1,
+    "focused_app_before_benchmark": "k230-terminal",
+    "expected_app_set_verified": true,
+    "selected_app_before_gestures": "k230-terminal",
+    "initial_app_count_verified": 1
+  },
+  "start_monotonic_ns": 9616111336284,
+  "scene_counters_before_gestures": {
+    "scene_redraw_coalesced": 0,
+    "scene_timer_coalesced": 0,
+    "scene_render_syncs": 134,
+    "scene_structural_syncs": 1
+  },
+  "back_requested_ns": 9630637075169,
+  "back_acknowledged_ns": 9630644319502,
+  "scene_counters_after_benchmark": {
+    "scene_redraw_coalesced": 216,
+    "scene_timer_coalesced": 235,
+    "scene_render_syncs": 1090,
+    "scene_structural_syncs": 1
+  },
+  "scene_counter_deltas": {
+    "scene_redraw_coalesced": 216,
+    "scene_timer_coalesced": 235,
+    "scene_render_syncs": 956,
+    "scene_structural_syncs": 0
+  },
+  "end_monotonic_ns": 9634378495600,
+  "telemetry_lines": 1982
+}

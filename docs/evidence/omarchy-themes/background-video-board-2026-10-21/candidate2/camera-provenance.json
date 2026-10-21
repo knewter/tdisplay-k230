@@ -1,0 +1,40 @@
+{
+  "original_private_recordings": {
+    "background-camera-final-candidate": {
+      "basename": "20261021T042011Z-background-covered-final-candidate.mp4",
+      "bytes": 10888680,
+      "sha256": "86fb2c1da0e401feda5706a972dc810e4e8500814ab8000dee6f8c1b9e1d5d97",
+      "capture_source": {
+        "device": "/dev/video0",
+        "input_format": "mjpeg",
+        "video_size": "1280x720",
+        "framerate": 30
+      },
+      "duration_seconds": 180.0
+    },
+    "background-camera-ordinary-boot": {
+      "basename": "20261021T043358Z-background-coverage-ordinary-boot.mp4",
+      "bytes": 7442340,
+      "sha256": "ac3441f4fa637d269b931e382d8a13676c846fc2fb267bfb8d64d779b55d0fa5",
+      "capture_source": {
+        "device": "/dev/video0",
+        "input_format": "mjpeg",
+        "video_size": "1280x720",
+        "framerate": 30
+      },
+      "duration_seconds": 160.0
+    }
+  },
+  "published_excerpt": {
+    "path": "panel-pause-resume.mp4",
+    "source_interval_seconds": [
+      65,
+      125
+    ],
+    "resize": [
+      640,
+      360
+    ]
+  },
+  "limits": "Original camera recordings retained privately. Optical latency and frame-to-kernel alignment unqualified; numerical timing comes from compositor telemetry. No real-finger contact."
+}

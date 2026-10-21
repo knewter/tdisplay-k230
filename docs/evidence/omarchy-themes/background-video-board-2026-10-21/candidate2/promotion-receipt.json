@@ -1,0 +1,87 @@
+{
+  "phase": "PERSISTENT_SELECTED",
+  "started_utc": "2026-10-21T04:30:33.157538+00:00",
+  "previous_system": "/nix/store/p501mchy0dq9lyjnaxwkx5s2pdm4i2yj-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "candidate_system": "/nix/store/2igpibpw4nn0clbda7p35dp5bhg28n35-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "boot_id": "fbfdd9d3-7f95-4aec-978f-1a19b2a220f9",
+  "expected": {
+    "k230-tdisplay.dtb": [
+      "ad61b8a70acba495b77761a6e73e935c4cd8ccd2a7ca6eb3da7fca6c256a18df",
+      "ad16d217f59d8ead079f6395535071fb56b33b9d480773491f7fca638a2b8823"
+    ],
+    "bootargs.txt": [
+      "38a90761c55914c426828c41d1c8b1cb636d19cda6893859d43afbe64c0fefc4",
+      "ee635a63e41b750fba52b56900a0f04a8fab66ebd4966a57534c53bab2689c7b"
+    ]
+  },
+  "protected_before": {
+    "logo.xrgb": {
+      "sha256": "6c7a36086297597b359657ab53925ee0725e5201461484d543cbd950f5baa3af",
+      "bytes": 2799104
+    },
+    "fw_jump_add_uboot_head.bin": {
+      "sha256": "9627edbeea9b115d7040beea27cc61b23b6aca61cd502fd7760d7ee179f42c99",
+      "bytes": 270808
+    },
+    "lost+found": {
+      "directory": true
+    },
+    "Image": {
+      "sha256": "d6b2153d97ac8382b5329c64397b8b46435e6a423b16796f8c37e052d4bcd642",
+      "bytes": 42752512
+    },
+    "initrd.uimg": {
+      "sha256": "7d983aeffd4e47d2e36f825a731b485d55f05534a5dd28f036244d79c16f197c",
+      "bytes": 27328407
+    },
+    "hdmi_dtb": {
+      "sha256": "175342c82dd1b437cdafb6bb01090e7ff73c2769515654c48b02c1e9f73440c6",
+      "bytes": 17
+    },
+    "force_dtb": {
+      "sha256": "175342c82dd1b437cdafb6bb01090e7ff73c2769515654c48b02c1e9f73440c6",
+      "bytes": 17
+    },
+    "lcd_dtb": {
+      "sha256": "175342c82dd1b437cdafb6bb01090e7ff73c2769515654c48b02c1e9f73440c6",
+      "bytes": 17
+    }
+  },
+  "source_revision": "88f04401dc941fce488423de927caab312e088cd",
+  "ordinary_boot_verified": false,
+  "finished_utc": "2026-10-21T04:30:35.266205+00:00",
+  "profile_after": "/nix/store/2igpibpw4nn0clbda7p35dp5bhg28n35-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "protected_after": {
+    "logo.xrgb": {
+      "sha256": "6c7a36086297597b359657ab53925ee0725e5201461484d543cbd950f5baa3af",
+      "bytes": 2799104
+    },
+    "fw_jump_add_uboot_head.bin": {
+      "sha256": "9627edbeea9b115d7040beea27cc61b23b6aca61cd502fd7760d7ee179f42c99",
+      "bytes": 270808
+    },
+    "lost+found": {
+      "directory": true
+    },
+    "Image": {
+      "sha256": "d6b2153d97ac8382b5329c64397b8b46435e6a423b16796f8c37e052d4bcd642",
+      "bytes": 42752512
+    },
+    "initrd.uimg": {
+      "sha256": "7d983aeffd4e47d2e36f825a731b485d55f05534a5dd28f036244d79c16f197c",
+      "bytes": 27328407
+    },
+    "hdmi_dtb": {
+      "sha256": "175342c82dd1b437cdafb6bb01090e7ff73c2769515654c48b02c1e9f73440c6",
+      "bytes": 17
+    },
+    "force_dtb": {
+      "sha256": "175342c82dd1b437cdafb6bb01090e7ff73c2769515654c48b02c1e9f73440c6",
+      "bytes": 17
+    },
+    "lcd_dtb": {
+      "sha256": "175342c82dd1b437cdafb6bb01090e7ff73c2769515654c48b02c1e9f73440c6",
+      "bytes": 17
+    }
+  }
+}

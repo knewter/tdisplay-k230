@@ -125,8 +125,10 @@ jobs:
           python3 tests/test_pixman_quarter_turn.py
           python3 tests/test_card_rounded_clip.py
 
-      - name: Check opaque card scale pixels
-        run: python3 tests/test_card_scaled_cache.py
+      - name: Check opaque card scale and wallpaper coverage pixels
+        run: |
+          python3 tests/test_card_scaled_cache.py
+          python3 tests/test_wallpaper_cover.py
 
       - name: Check booted-card-smoke proof protocol
         run: python3 tests/test_qemu_card_shell_smoke.py

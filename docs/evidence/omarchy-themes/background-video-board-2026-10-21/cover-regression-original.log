@@ -1,0 +1,18 @@
+cover: /tmp/wallpaper-cover-_cf04cci/cover.c:102: main: Assertion `covers(&cover, &b)' failed.
+E
+======================================================================
+ERROR: test_full_viewport_and_conservative_exclusions (__main__.WallpaperCover.test_full_viewport_and_conservative_exclusions)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/background-original-cover-p_9lc569/tests/test_wallpaper_cover.py", line 114, in test_full_viewport_and_conservative_exclusions
+    subprocess.run([str(p / "cover")], check=True)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.14/subprocess.py", line 578, in run
+    raise CalledProcessError(retcode, process.args,
+                             output=stdout, stderr=stderr)
+subprocess.CalledProcessError: Command '['/tmp/wallpaper-cover-_cf04cci/cover']' died with <Signals.SIGABRT: 6>.
+
+----------------------------------------------------------------------
+Ran 1 test in 0.190s
+
+FAILED (errors=1)
