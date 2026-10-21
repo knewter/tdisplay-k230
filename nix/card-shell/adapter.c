@@ -316,6 +316,11 @@ static bool wallpaper_above(struct sway_output *output, struct wlr_scene_node *n
 			node == &output->layers.fullscreen->node ||
 			node == &output->layers.shell_top->node ||
 			node == &output->layers.shell_overlay->node) return true;
+		/* Floating views bypass the per-output app layers in Sway's
+		 * transaction tree. The output iterator already clips candidates to
+		 * this output; these global app layers are above its wallpaper too. */
+		if (node == &root->layers.floating->node ||
+			node == &root->layers.fullscreen_global->node) return true;
 	}
 	return false;
 }

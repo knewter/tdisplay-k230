@@ -41,6 +41,11 @@ struct sway_output {
             *fullscreen, *shell_top, *shell_overlay;
     } layers;
 };
+struct sway_root {
+    struct { struct wlr_scene_tree *floating, *fullscreen_global; } layers;
+};
+static struct sway_root root_data;
+static struct sway_root *root = &root_data;
 static bool wlr_buffer_is_opaque(struct wlr_buffer *buffer) { return buffer->opaque; }
 static bool wlr_box_empty(const struct wlr_box *box) {
     return box->width <= 0 || box->height <= 0;
@@ -54,7 +59,9 @@ static bool covers(struct wallpaper_cover *cover, struct wlr_scene_buffer *b) {
     return pixman_region32_contains_rectangle(&cover->opaque, &frame) == PIXMAN_REGION_IN;
 }
 int main(void) {
-    struct wlr_scene_tree upper = {0}, lower = {0};
+    struct wlr_scene_tree upper = {0}, lower = {0}, floating = {0}, global_fullscreen = {0};
+    root->layers.floating = &floating;
+    root->layers.fullscreen_global = &global_fullscreen;
     struct sway_output output = {.layers = {.tiling = &upper, .shell_bottom = &lower}};
     struct wallpaper_cover cover = {.output = &output};
     pixman_region32_init(&cover.opaque);
@@ -89,6 +96,12 @@ int main(void) {
     b.src_box = (struct wlr_fbox){0, 0, 1232, 568};
     b.node.parent = &lower;
     assert(!covers(&cover, &b));
+    /* Sway reparents ordinary floating apps directly to this global tree,
+     * bypassing every per-output app layer. Both are above wallpaper. */
+    b.node.parent = &floating;
+    assert(covers(&cover, &b));
+    b.node.parent = &global_fullscreen;
+    assert(covers(&cover, &b));
     b.node.parent = &upper;
     buffer.opaque = true;
     b.rounded_clip = (struct wlr_box){0, 0, 1232, 568};
