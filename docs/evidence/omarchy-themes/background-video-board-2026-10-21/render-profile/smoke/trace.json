@@ -1,0 +1,39 @@
+{
+  "buffer_total_kb": 32771,
+  "event_count": 42,
+  "events_sha256": "b949778ce21317a2b072effd6592fc66dc0bf0976b865a608ba37342bd83471a",
+  "global_before": {
+    "current_tracer": "64aec5a7fa151222572a241383c857738318e63cca7ee771952c95a31d92a19d",
+    "events/enable": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+    "set_event_pid": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "set_ftrace_pid": "cdf4d2acfdcd5cd2556f83eeb52ee253ea6afbaa941c760f77dcfae3c925cb78",
+    "trace_clock": "925ca315bd3de6ef99e08c002e320406936ae2da2f2c0afd8da1e87f7980a253",
+    "tracing_on": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865"
+  },
+  "markers": {
+    "end": {
+      "after_ns": 38756573802040,
+      "before_ns": 38756573139253
+    },
+    "start": {
+      "after_ns": 38756573004073,
+      "before_ns": 38756572245290
+    }
+  },
+  "pid": 19925,
+  "raw_bytes": 4270,
+  "raw_sha256": "aa94b65106fde2086f28ffd57cf9916eabeec4b1e3717467fa3b171e9e6c7803",
+  "schema": "landscape-hdmi-stall-trace-v1",
+  "stats": {
+    "cpu0": {
+      "bytes": 2264,
+      "commit overrun": 0,
+      "dropped events": 0,
+      "entries": 42,
+      "overrun": 0,
+      "read events": 0
+    }
+  },
+  "tool_sha256": "b98a6404bdd96afab1db9edb6779f325bc7958574e754b04dffbed73ae67f42b",
+  "trace_clock": "local global counter uptime perf [mono] mono_raw boot tai"
+}

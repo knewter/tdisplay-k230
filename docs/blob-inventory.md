@@ -651,6 +651,7 @@ Paths are relative to the repository root. `(sdk)` is
 so that building stage 1 from source does not silently drop them from view.
 
 ```
+DATA 10554387857e0f2befb3b3f7b5a95b50281d63d470345b6c01a328eb08603ae5 docs/evidence/omarchy-themes/background-video-board-2026-10-21/render-profile/traced/events.jsonl.gz
 DATA c17ccf67aa547ac359aee159ae2dc28452d8e68ff184cb2b6e92197690d2d1d6 docs/evidence/landscape-drm-holder/board/trial-a/traced/events.jsonl.gz
 DATA e60a160e2c036c989b8e3082cdf47e4d32d02060dd2a25982b63ed627bf5e858 docs/evidence/landscape-drm-holder/board/trial-a/traced/functions.jsonl.gz
 DATA 9f7545361103f1308392285dc905b982f98a6d7b2c0696ac20167b6d5f1c5413 docs/evidence/landscape-drm-holder/board/trial-a/traced-retry/events.jsonl.gz
@@ -3923,3 +3924,11 @@ for the failed gates and distinct evidence classes.
 | `docs/evidence/omarchy-themes/background-video-board-2026-10-21/candidate2/panel-pause-resume.mp4` | 900686 | DATA | `99a2c6b0191ee7147957f6d9dd6c0df9745b2d7150f64148c3b28a8069851461` |
 | `docs/evidence/omarchy-themes/background-video-board-2026-10-21/candidate2/postboot-home.png` | 106868 | DATA | `c751f7951fccb20f9f5b5048ce070d9c731516a9e5edfa625c38ac1b4993b44d` |
 | `docs/evidence/omarchy-themes/background-video-board-2026-10-21/candidate2/reduced-motion/paused.png` | 124538 | DATA | `dac16dda343c1c88ed8888357c78bd83d690f037d9580a0945eb45528c0bd54e` |
+
+## Render-profile numeric trace, 2026-10-21
+
+Compressed allowlisted numeric scheduler/syscall events; no raw trace or process names.
+
+| Path | Bytes | Class | SHA256 |
+| --- | ---: | --- | --- |
+| `docs/evidence/omarchy-themes/background-video-board-2026-10-21/render-profile/traced/events.jsonl.gz` | 558197 | DATA | `10554387857e0f2befb3b3f7b5a95b50281d63d470345b6c01a328eb08603ae5` |

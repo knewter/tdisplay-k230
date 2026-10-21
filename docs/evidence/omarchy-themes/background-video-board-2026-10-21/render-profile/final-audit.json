@@ -1,0 +1,91 @@
+{
+  "identity": {
+    "system": "/nix/store/2igpibpw4nn0clbda7p35dp5bhg28n35-nixos-system-nixos-26.11.20260919.20b1ddd",
+    "profile": "/nix/store/2igpibpw4nn0clbda7p35dp5bhg28n35-nixos-system-nixos-26.11.20260919.20b1ddd",
+    "boot_id": "9e664e59-dfd6-49ed-976a-2e38416c0a7f",
+    "sway_exe": "/nix/store/hy37k7zpyzawlnbmf5jd7cg2zdgybl3f-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway",
+    "sway_sha256": "4fc7bf3a0c0818c9eb3d286de4579999b3fbbaf9abe0e4317c017bca1dc663ba",
+    "outputs": [
+      {
+        "name": "DSI-1",
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "width": 1232,
+          "height": 568
+        },
+        "transform": "270",
+        "current_mode": {
+          "width": 568,
+          "height": 1232,
+          "refresh": 52190,
+          "picture_aspect_ratio": "none"
+        },
+        "max_render_time": 8
+      }
+    ],
+    "apps": [
+      "k230-terminal"
+    ],
+    "wallpaper": {
+      "schema": 1,
+      "generation": "2e583fb7dc1947e9d444c171",
+      "background_fingerprint": null,
+      "decoder_pid": null,
+      "state": "still",
+      "error_category": null,
+      "frames_decoded": 0,
+      "frames_submitted": 0,
+      "frame_callbacks": 0,
+      "last_decoded_monotonic_ms": null,
+      "last_submitted_monotonic_ms": null,
+      "last_callback_monotonic_ms": null
+    }
+  },
+  "trace_cleanup": {
+    "smoke": {
+      "instance_absent": true,
+      "cleanup_timer_active": false,
+      "receipt": {
+        "checked_at": "2026-10-21T15:20:27.856131+00:00",
+        "cleanup_timer_active": false,
+        "global_after": {
+          "current_tracer": "64aec5a7fa151222572a241383c857738318e63cca7ee771952c95a31d92a19d",
+          "events/enable": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+          "set_event_pid": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "set_ftrace_pid": "cdf4d2acfdcd5cd2556f83eeb52ee253ea6afbaa941c760f77dcfae3c925cb78",
+          "trace_clock": "925ca315bd3de6ef99e08c002e320406936ae2da2f2c0afd8da1e87f7980a253",
+          "tracing_on": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865"
+        },
+        "global_controls_unchanged": true,
+        "instance_removed": true
+      }
+    },
+    "traced": {
+      "instance_absent": true,
+      "cleanup_timer_active": false,
+      "receipt": {
+        "checked_at": "2026-10-21T15:21:59.846179+00:00",
+        "cleanup_timer_active": false,
+        "global_after": {
+          "current_tracer": "64aec5a7fa151222572a241383c857738318e63cca7ee771952c95a31d92a19d",
+          "events/enable": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+          "set_event_pid": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "set_ftrace_pid": "cdf4d2acfdcd5cd2556f83eeb52ee253ea6afbaa941c760f77dcfae3c925cb78",
+          "trace_clock": "925ca315bd3de6ef99e08c002e320406936ae2da2f2c0afd8da1e87f7980a253",
+          "tracing_on": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865"
+        },
+        "global_controls_unchanged": true,
+        "instance_removed": true
+      }
+    }
+  },
+  "override_absent": true,
+  "test_input_devices": 0,
+  "restore_timer_active": false,
+  "normal_services": {
+    "shell": true,
+    "shell-ui": true,
+    "theme-helper": true
+  }
+}

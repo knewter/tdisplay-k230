@@ -163,6 +163,16 @@ performance acceptance.
   restored, including independent post-trial checks. Exact commands/results:
   `docs/evidence/omarchy-themes/background-video-board-2026-10-21/tracking-elapsed/README.md`.
 
+  Scheduler profile 2026-10-21: untraced/traced/untraced three-card arms on
+  the same benchmark compositor retain tracking p95 38.320–38.321 ms. The
+  loss-free isolated trace shows main-thread runnable wait p95 2.835 ms
+  during render, with no blocked partition there. First-switched-to peer
+  labels do not establish causal CPU ownership; logging contention remains
+  a hypothesis. Normal system/compositor/still/landscape and trace controls
+  were restored and independently audited. This diagnoses task 3.3 without
+  closing its frozen performance gate:
+  `docs/evidence/omarchy-themes/background-video-board-2026-10-21/render-profile/README.md`.
+
 - [x] 3.4 Confirm a user-supplied overlay stages, applies, and survives a
   shell/helper restart on the board, the same way the pinned/bundled
   background test in `docs/evidence/theme-picker/background-selection/README.md`

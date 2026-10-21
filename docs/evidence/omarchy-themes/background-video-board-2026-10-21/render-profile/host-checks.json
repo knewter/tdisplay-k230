@@ -1,0 +1,38 @@
+{
+  "checked_at": "2026-10-21T15:28:46.309890+00:00",
+  "worktree": ".claude/worktrees/bg31",
+  "branch": "bg-31-closure",
+  "base_revision": "4459b06011fe8b164cee25f275bdeff7dec462d0",
+  "checks": [
+    {
+      "command": "python3 docs/evidence/omarchy-themes/background-video-board-2026-10-21/render-profile/test-render-profile-analyze.py",
+      "result": "4 PASS"
+    },
+    {
+      "command": "python3 tools/landscape-hdmi-stall-trace.py --self-test",
+      "result": "9 PASS"
+    },
+    {
+      "command": "python3 docs/evidence/omarchy-themes/background-video-board-2026-10-21/render-profile/replay.py",
+      "result": "untraced tracking p95 38.321 FAIL\ntraced tracking p95 38.32 FAIL\nuntraced-return tracking p95 38.321 FAIL"
+    },
+    {
+      "command": "openspec validate --all --strict",
+      "result": "49 PASS, 0 FAIL"
+    },
+    {
+      "command": "AST parse all published Python, staged controller/collector/audit SHA256 match",
+      "result": "PASS"
+    },
+    {
+      "command": "python3 tools/blob-scan.py --no-vendor (after exact evidence paths staged)",
+      "result": [
+        "  walked 7459 files: 1499 binary (1406 by file row, 93 by group row); 1414 inventory rows verified on disk, 59 not present here; 3 nix pins checked",
+        "blob-scan: ok -- every binary is accounted for"
+      ]
+    }
+  ],
+  "remaining_gate": "Frozen paired static/video tracking target remains unmet; task3.3 and archive4.2 unchecked. No physical-finger or optical proof claimed.",
+  "site_check": "Exact-revision CI and live publication checked after commit/push; local site build not repeated. Prior local timing failures are retained in ../tracking-elapsed/site-local-failure.json and the handoff logs.",
+  "review": "Reviewed public fixed-field telemetry/numeric trace schema, staged script hashes, clock/loss/partial-edge qualification, wait partition and phase assertions, descriptive subtraction limits, unchanged failed frozen gate, independent normal-session restoration. No runtime or kernel changes."
+}

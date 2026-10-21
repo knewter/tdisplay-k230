@@ -1,0 +1,203 @@
+{
+  "source_revision": "4459b06011fe8b164cee25f275bdeff7dec462d0",
+  "descriptor": {
+    "source_revision": "4459b06011fe8b164cee25f275bdeff7dec462d0",
+    "system": "/nix/store/2igpibpw4nn0clbda7p35dp5bhg28n35-nixos-system-nixos-26.11.20260919.20b1ddd",
+    "normal_sha256": "4fc7bf3a0c0818c9eb3d286de4579999b3fbbaf9abe0e4317c017bca1dc663ba",
+    "candidate": "/nix/store/0v1q7r9g3zfkl1g7n12gsir7xkcbvbg3-k230-card-shell-hdmi-trial",
+    "candidate_exe": "/nix/store/9gnx5456f2k7vb83jp4vl02vf88m66fi-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway",
+    "candidate_sha256": "2778ed3cdac48b83806117a8d96accba0163dae21ba12b7a1104f1c1289fa3be",
+    "prepared_utc": "2026-10-21T06:21:59.877657+00:00",
+    "reused_build_source": "1a8e72ac52df5c80540bdeedc22edfcc4e5c167a"
+  },
+  "before": {
+    "system": "/nix/store/2igpibpw4nn0clbda7p35dp5bhg28n35-nixos-system-nixos-26.11.20260919.20b1ddd",
+    "profile": "/nix/store/2igpibpw4nn0clbda7p35dp5bhg28n35-nixos-system-nixos-26.11.20260919.20b1ddd",
+    "boot_id": "9e664e59-dfd6-49ed-976a-2e38416c0a7f",
+    "sway_exe": "/nix/store/hy37k7zpyzawlnbmf5jd7cg2zdgybl3f-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway",
+    "sway_sha256": "4fc7bf3a0c0818c9eb3d286de4579999b3fbbaf9abe0e4317c017bca1dc663ba",
+    "outputs": [
+      {
+        "name": "DSI-1",
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "width": 1232,
+          "height": 568
+        },
+        "transform": "270",
+        "current_mode": {
+          "width": 568,
+          "height": 1232,
+          "refresh": 52190,
+          "picture_aspect_ratio": "none"
+        },
+        "max_render_time": 8
+      }
+    ],
+    "apps": [
+      "k230-terminal"
+    ],
+    "wallpaper": {
+      "schema": 1,
+      "generation": "2e583fb7dc1947e9d444c171",
+      "background_fingerprint": null,
+      "decoder_pid": null,
+      "state": "still",
+      "error_category": null,
+      "frames_decoded": 0,
+      "frames_submitted": 0,
+      "frame_callbacks": 0,
+      "last_decoded_monotonic_ms": null,
+      "last_submitted_monotonic_ms": null,
+      "last_callback_monotonic_ms": null
+    }
+  },
+  "started_utc": "2026-10-21T15:20:09Z",
+  "runs": [
+    {
+      "label": "untraced",
+      "cards": 3,
+      "traced": false,
+      "exit": 0
+    },
+    {
+      "label": "traced",
+      "cards": 3,
+      "traced": true,
+      "exit": 0
+    },
+    {
+      "label": "untraced-return",
+      "cards": 3,
+      "traced": false,
+      "exit": 0
+    }
+  ],
+  "restore_unit": "k230-source3-render-profile-20261021",
+  "candidate": {
+    "system": "/nix/store/2igpibpw4nn0clbda7p35dp5bhg28n35-nixos-system-nixos-26.11.20260919.20b1ddd",
+    "profile": "/nix/store/2igpibpw4nn0clbda7p35dp5bhg28n35-nixos-system-nixos-26.11.20260919.20b1ddd",
+    "boot_id": "9e664e59-dfd6-49ed-976a-2e38416c0a7f",
+    "sway_exe": "/nix/store/9gnx5456f2k7vb83jp4vl02vf88m66fi-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway",
+    "sway_sha256": "2778ed3cdac48b83806117a8d96accba0163dae21ba12b7a1104f1c1289fa3be",
+    "outputs": [
+      {
+        "name": "DSI-1",
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "width": 1232,
+          "height": 568
+        },
+        "transform": "270",
+        "current_mode": {
+          "width": 568,
+          "height": 1232,
+          "refresh": 52190,
+          "picture_aspect_ratio": "none"
+        },
+        "max_render_time": 8
+      }
+    ],
+    "apps": [
+      "k230-terminal"
+    ],
+    "wallpaper": {
+      "schema": 1,
+      "generation": "2e583fb7dc1947e9d444c171",
+      "background_fingerprint": null,
+      "decoder_pid": null,
+      "state": "still",
+      "error_category": null,
+      "frames_decoded": 0,
+      "frames_submitted": 0,
+      "frame_callbacks": 0,
+      "last_decoded_monotonic_ms": null,
+      "last_submitted_monotonic_ms": null,
+      "last_callback_monotonic_ms": null
+    }
+  },
+  "smoke": {
+    "abi": {
+      "ioctl": 29,
+      "write": 64,
+      "writev": 66
+    },
+    "checked_at": "2026-10-21T15:20:27.707847+00:00",
+    "event_count": 42,
+    "ioctl_return": -25,
+    "kernel": "7.3.0-rc5",
+    "machine": "riscv64",
+    "probe_fd": 3,
+    "schema": "landscape-hdmi-stall-trace-v1",
+    "status": "QUALIFIED",
+    "system": "/nix/store/2igpibpw4nn0clbda7p35dp5bhg28n35-nixos-system-nixos-26.11.20260919.20b1ddd",
+    "tool_sha256": "b98a6404bdd96afab1db9edb6779f325bc7958574e754b04dffbed73ae67f42b",
+    "write_return": 8,
+    "writev_return": 8
+  },
+  "target_pid": 20012,
+  "fd_labels": {
+    "1": "journal-stream",
+    "2": "journal-stream",
+    "10": "DRM-card",
+    "11": "DRM-card",
+    "12": "DRM-card"
+  },
+  "target_threads_before": [
+    20012,
+    20051
+  ],
+  "restored": {
+    "system": "/nix/store/2igpibpw4nn0clbda7p35dp5bhg28n35-nixos-system-nixos-26.11.20260919.20b1ddd",
+    "profile": "/nix/store/2igpibpw4nn0clbda7p35dp5bhg28n35-nixos-system-nixos-26.11.20260919.20b1ddd",
+    "boot_id": "9e664e59-dfd6-49ed-976a-2e38416c0a7f",
+    "sway_exe": "/nix/store/hy37k7zpyzawlnbmf5jd7cg2zdgybl3f-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway",
+    "sway_sha256": "4fc7bf3a0c0818c9eb3d286de4579999b3fbbaf9abe0e4317c017bca1dc663ba",
+    "outputs": [
+      {
+        "name": "DSI-1",
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "width": 1232,
+          "height": 568
+        },
+        "transform": "270",
+        "current_mode": {
+          "width": 568,
+          "height": 1232,
+          "refresh": 52190,
+          "picture_aspect_ratio": "none"
+        },
+        "max_render_time": 8
+      }
+    ],
+    "apps": [
+      "k230-terminal"
+    ],
+    "wallpaper": {
+      "schema": 1,
+      "generation": "2e583fb7dc1947e9d444c171",
+      "background_fingerprint": null,
+      "decoder_pid": null,
+      "state": "still",
+      "error_category": null,
+      "frames_decoded": 0,
+      "frames_submitted": 0,
+      "frame_callbacks": 0,
+      "last_decoded_monotonic_ms": null,
+      "last_submitted_monotonic_ms": null,
+      "last_callback_monotonic_ms": null
+    }
+  },
+  "test_input_devices": 0,
+  "normal_services": {
+    "shell": true,
+    "shell-ui": true,
+    "theme-helper": true
+  },
+  "restore_timer_active": false,
+  "finished_utc": "2026-10-21T15:22:41Z"
+}

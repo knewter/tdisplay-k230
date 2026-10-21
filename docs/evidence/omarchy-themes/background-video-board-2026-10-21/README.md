@@ -288,3 +288,9 @@ render p95 8.946 ms against that 8 ms allowance, despite passing CPU budgets.
 Commit-return and render-start-delay boundaries are recorded separately;
 the frozen tracking gate still fails. The temporary diagnostic compositor was
 removed and the original installed compositor/system/theme restored.
+
+The [scheduler/render profile](render-profile/README.md) finds runnable wait
+during slow renders in a loss-free isolated main-thread trace, bracketed by
+untraced arms. Logging contention is a hypothesis for a controlled follow-up;
+first-switched-to peer labels do not identify the owner of the whole wait.
+Tracking remains above target, and the normal landscape session was restored.

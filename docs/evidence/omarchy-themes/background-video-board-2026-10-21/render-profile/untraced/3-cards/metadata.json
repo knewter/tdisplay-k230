@@ -1,0 +1,165 @@
+{
+  "evidence_class": "board injected native touch; camera separate",
+  "mode": "full",
+  "started_utc": "2026-10-21T15:20:29Z",
+  "source_revision": "4459b06011fe8b164cee25f275bdeff7dec462d0",
+  "system": "/nix/store/2igpibpw4nn0clbda7p35dp5bhg28n35-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "gestures": [
+    {
+      "index": 0,
+      "from": [
+        616,
+        280
+      ],
+      "to": [
+        366,
+        280
+      ],
+      "down_monotonic_ns": 38765909366576,
+      "up_monotonic_ns": 38766662021906
+    },
+    {
+      "index": 1,
+      "from": [
+        616,
+        280
+      ],
+      "to": [
+        866,
+        280
+      ],
+      "down_monotonic_ns": 38767462180807,
+      "up_monotonic_ns": 38768213321427
+    },
+    {
+      "index": 2,
+      "from": [
+        616,
+        280
+      ],
+      "to": [
+        366,
+        280
+      ],
+      "down_monotonic_ns": 38769013490444,
+      "up_monotonic_ns": 38769764432634
+    },
+    {
+      "index": 3,
+      "from": [
+        616,
+        280
+      ],
+      "to": [
+        866,
+        280
+      ],
+      "down_monotonic_ns": 38770564583991,
+      "up_monotonic_ns": 38771315935244
+    },
+    {
+      "index": 4,
+      "from": [
+        616,
+        280
+      ],
+      "to": [
+        366,
+        280
+      ],
+      "down_monotonic_ns": 38772116093496,
+      "up_monotonic_ns": 38772866898999
+    },
+    {
+      "index": 5,
+      "from": [
+        616,
+        280
+      ],
+      "to": [
+        866,
+        280
+      ],
+      "down_monotonic_ns": 38773667046294,
+      "up_monotonic_ns": 38774417882765
+    }
+  ],
+  "output": {
+    "name": "DSI-1",
+    "transform": "270",
+    "rect": {
+      "x": 0,
+      "y": 0,
+      "width": 1232,
+      "height": 568
+    },
+    "current_mode": {
+      "width": 568,
+      "height": 1232,
+      "refresh": 52190,
+      "picture_aspect_ratio": "none"
+    }
+  },
+  "startup_terminal_ready_before_owned_apps": true,
+  "input_axes": {
+    "0": [
+      0,
+      1079
+    ],
+    "1": [
+      0,
+      2399
+    ],
+    "47": [
+      0,
+      9
+    ],
+    "48": [
+      0,
+      255
+    ],
+    "53": [
+      0,
+      1079
+    ],
+    "54": [
+      0,
+      2399
+    ],
+    "57": [
+      0,
+      65535
+    ]
+  },
+  "setup": {
+    "terminal_mapping": "serialized one then two; each must map before next launch",
+    "initial_app_count": 1,
+    "focused_app_before_benchmark": "k230.motion.one",
+    "expected_app_set_verified": true,
+    "selected_app_before_gestures": "k230.motion.one",
+    "initial_app_count_verified": 1
+  },
+  "start_monotonic_ns": 38761059679221,
+  "scene_counters_before_gestures": {
+    "scene_redraw_coalesced": 0,
+    "scene_timer_coalesced": 0,
+    "scene_render_syncs": 138,
+    "scene_structural_syncs": 1
+  },
+  "back_requested_ns": 38775645590717,
+  "back_acknowledged_ns": 38775663175612,
+  "scene_counters_after_benchmark": {
+    "scene_redraw_coalesced": 216,
+    "scene_timer_coalesced": 231,
+    "scene_render_syncs": 1008,
+    "scene_structural_syncs": 1
+  },
+  "scene_counter_deltas": {
+    "scene_redraw_coalesced": 216,
+    "scene_timer_coalesced": 231,
+    "scene_render_syncs": 870,
+    "scene_structural_syncs": 0
+  },
+  "end_monotonic_ns": 38779594739508,
+  "telemetry_lines": 2779
+}
