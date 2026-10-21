@@ -1,0 +1,22 @@
+{
+  "spl-a": {
+    "offset": 1048576,
+    "packaged_bytes": 223348,
+    "sha256": "fe3d537f62c34a3d01127c58fef4caec50f0e65b0192670712ecb1599584a954",
+    "firmware_message_sha256": "1adab94a19732542fdccf8ba53705fe8c1f331a357a9d71cc10add764fb96a19"
+  },
+  "spl-b": {
+    "offset": 1572864,
+    "packaged_bytes": 223348,
+    "sha256": "fe3d537f62c34a3d01127c58fef4caec50f0e65b0192670712ecb1599584a954",
+    "firmware_message_sha256": "1adab94a19732542fdccf8ba53705fe8c1f331a357a9d71cc10add764fb96a19"
+  },
+  "uboot": {
+    "offset": 2097152,
+    "packaged_bytes": 385932,
+    "sha256": "e0b5787f3e68267f997ca61d45afaf8945e6fe9be775cc6165f981978cf3f1bb",
+    "firmware_message_sha256": "9335a09e9f9960e1e7f0b1855b35709cb85aa2507aaa8ffafefc5d9fa57e14a8",
+    "uboot_image_bytes": 765480,
+    "uboot_image_sha256": "72ca1622efed5322d9dc77c148563b25ea3c3ee5719f5bc9c16b68846f9793ce"
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "boot_id": "3d59df47-0267-4ab3-8c1e-42a38ae4ae1e",
+  "device": "/dev/mmcblk1",
+  "backup": "/var/lib/k230/splash-dma-request-20261020/preboot-first-4MiB.bin",
+  "backup_sha256": "b4bac2e8c8513d37a95b6ce0aac8efb3043c755ee5f36410256b9384f744367e",
+  "backup_bytes": 4194304,
+  "uboot_offset": 2097152,
+  "uboot_slot_bytes": 1048576,
+  "uboot_slot_sha256": "018a60b7035ee0feda68a6046564db02526de88067428921dc2f548e8be43f9b",
+  "prefix_sha256": "6576afe6c9c3691d6ed34371257e17cfaa035d9952d402c7d6b16ee3cd83d25d",
+  "suffix_sha256": "4672110a0919024be8d022f76cd3e0944b0c644487e68c7b07c326901a20a9b0",
+  "systems": {
+    "/run/current-system": "/nix/store/p501mchy0dq9lyjnaxwkx5s2pdm4i2yj-nixos-system-nixos-26.11.20260919.20b1ddd",
+    "/run/booted-system": "/nix/store/p501mchy0dq9lyjnaxwkx5s2pdm4i2yj-nixos-system-nixos-26.11.20260919.20b1ddd",
+    "/nix/var/nix/profiles/system": "/nix/store/p501mchy0dq9lyjnaxwkx5s2pdm4i2yj-nixos-system-nixos-26.11.20260919.20b1ddd"
+  },
+  "partitions": {
+    "mmcblk1p1": {
+      "start": "8192",
+      "size": "229376"
+    },
+    "mmcblk1p2": {
+      "start": "262144",
+      "size": "30273503"
+    }
+  },
+  "host_backup": "/home/jadams/tmp/codex-claude-handoff-20261019/3/splash-dma-board/preboot-first-4MiB.bin",
+  "host_backup_sha256": "b4bac2e8c8513d37a95b6ce0aac8efb3043c755ee5f36410256b9384f744367e",
+  "checked_at": "2026-10-21T00:42:08.729422+00:00",
+  "backup_verified_both_sides": true,
+  "board_lease_pid": 2427792,
+  "restore_command": "dd if=/var/lib/k230/splash-dma-request-20261020/preboot-first-4MiB.bin of=/dev/mmcblk1 bs=512 skip=4096 seek=4096 count=2048 conv=notrunc,fsync status=none",
+  "restore_limits": "Restore only original 1MiB U-Boot-proper slot; no SPL/environment/partition writes. Verify full first4MiB hash after restore.",
+  "boot_files_note": "Complete exact before/after boot-file hashes retained in protected host/board preflight records; no boot-file writes are part of this trial."
+}

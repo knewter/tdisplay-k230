@@ -166,7 +166,7 @@ diff -urN a/board/canaan/common/logo/display_logo.c b/board/canaan/common/logo/d
 +
 +    writel((RM69A10_LOGO_WIDTH * 4) / 8,
 +           VO_BASE_ADDR + VO_OSD_STRIDE(RM69A10_LOGO_OSD));
-+    writel(0x40, VO_BASE_ADDR + VO_OSD_DMA_CTRL(RM69A10_LOGO_OSD));
++    writel(0x4f, VO_BASE_ADDR + VO_OSD_DMA_CTRL(RM69A10_LOGO_OSD));
 +    writel(0x1100, VO_BASE_ADDR + VO_OSD_ADDR_SEL_MODE(RM69A10_LOGO_OSD));
 +
 +    reg = readl(VO_BASE_ADDR + VO_DISP_ENABLE);

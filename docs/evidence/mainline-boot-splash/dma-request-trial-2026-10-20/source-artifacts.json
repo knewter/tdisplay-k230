@@ -1,0 +1,17 @@
+{
+  "splash-dma-board/preboot-first-4MiB.bin": {
+    "bytes": 4194304,
+    "sha256": "b4bac2e8c8513d37a95b6ce0aac8efb3043c755ee5f36410256b9384f744367e",
+    "location": "Protected host scratch; raw boot backup may contain private environment values and is deliberately not committed."
+  },
+  "splash-dma-camera-calibration/camera/frames.mjpeg": {
+    "bytes": 32126405,
+    "sha256": "14231cd9a2668aa20f44c6e645aac220a4d80b89f55900c6b6a847651e98d244",
+    "location": "Protected host scratch; raw boot backup may contain private environment values and is deliberately not committed."
+  },
+  "splash-dma-camera-calibration/camera/frames.jsonl": {
+    "bytes": 207912,
+    "sha256": "d31e8db4a22c86c6ad3b7aaac9be9c6a1617e7da7bbfa52864e267b17ceb0b37",
+    "location": "Protected host scratch; raw boot backup may contain private environment values and is deliberately not committed."
+  }
+}

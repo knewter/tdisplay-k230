@@ -1,0 +1,510 @@
+{
+  "started_at": "2026-10-21T00:43:16.395838+00:00",
+  "board_lease_pid": 2427792,
+  "purpose": "Empirical optical timestamp check using reversible panel-brightness transitions on accepted ordinary session; not a boot defect/fix proof.",
+  "camera_controls": "Format Video Capture:\n\tWidth/Height      : 960/720\n\tPixel Format      : 'MJPG' (Motion-JPEG)\n\tField             : None\n\tBytes per Line    : 0\n\tSize Image        : 1382400\n\tColorspace        : sRGB\n\tTransfer Function : Rec. 709\n\tYCbCr/HSV Encoding: ITU-R 601\n\tQuantization      : Default (maps to Full Range)\n\tFlags             : \nStreaming Parameters Video Capture:\n\tCapabilities     : timeperframe\n\tFrames per second: 30.000 (30/1)\n\tRead buffers     : 0\n\nUser Controls\n\n                     brightness 0x00980900 (int)    : min=0 max=255 step=1 default=128 value=128 flags=has-min-max\n                       contrast 0x00980901 (int)    : min=0 max=255 step=1 default=128 value=128 flags=has-min-max\n                     saturation 0x00980902 (int)    : min=0 max=255 step=1 default=128 value=128 flags=has-min-max\n        white_balance_automatic 0x0098090c (bool)   : default=1 value=0\n                           gain 0x00980913 (int)    : min=0 max=255 step=1 default=0 value=0 flags=has-min-max\n           power_line_frequency 0x00980918 (menu)   : min=0 max=2 default=2 value=2 (60 Hz)\n      white_balance_temperature 0x0098091a (int)    : min=2000 max=6500 step=1 default=4000 value=4513 flags=has-min-max\n                      sharpness 0x0098091b (int)    : min=0 max=255 step=1 default=128 value=128 flags=has-min-max\n         backlight_compensation 0x0098091c (int)    : min=0 max=1 step=1 default=0 value=0 flags=has-min-max\n\nCamera Controls\n\n                  auto_exposure 0x009a0901 (menu)   : min=0 max=3 default=3 value=1 (Manual Mode)\n         exposure_time_absolute 0x009a0902 (int)    : min=3 max=2047 step=1 default=250 value=100 flags=has-min-max\n     exposure_dynamic_framerate 0x009a0903 (bool)   : default=0 value=0\n                   pan_absolute 0x009a0908 (int)    : min=-36000 max=36000 step=3600 default=0 value=0 flags=has-min-max\n                  tilt_absolute 0x009a0909 (int)    : min=-36000 max=36000 step=3600 default=0 value=0 flags=has-min-max\n                 focus_absolute 0x009a090a (int)    : min=0 max=250 step=5 default=0 value=80 flags=has-min-max\n     focus_automatic_continuous 0x009a090c (bool)   : default=1 value=0\n                  zoom_absolute 0x009a090d (int)    : min=100 max=500 step=1 default=100 value=100 flags=has-min-max\n",
+  "remote_ready": {
+    "ready": true,
+    "original": "255"
+  },
+  "samples": [
+    {
+      "value": -1,
+      "before_raw_ns": 4352281772665,
+      "after_raw_ns": 4352281779813,
+      "before_monotonic_ns": 4352058980133,
+      "after_monotonic_ns": 4352058998242,
+      "readback": "255",
+      "host_before_ns": 270851138777527,
+      "host_after_ns": 270851856946749
+    },
+    {
+      "value": -1,
+      "before_raw_ns": 4352458352850,
+      "after_raw_ns": 4352458358924,
+      "before_monotonic_ns": 4352235537720,
+      "after_monotonic_ns": 4352235554718,
+      "readback": "255",
+      "host_before_ns": 270851856966476,
+      "host_after_ns": 270852033384509
+    },
+    {
+      "value": -1,
+      "before_raw_ns": 4352516990553,
+      "after_raw_ns": 4352516995109,
+      "before_monotonic_ns": 4352294169846,
+      "after_monotonic_ns": 4352294183214,
+      "readback": "255",
+      "host_before_ns": 270852033391342,
+      "host_after_ns": 270852100844000
+    },
+    {
+      "value": -1,
+      "before_raw_ns": 4352539899776,
+      "after_raw_ns": 4352539904442,
+      "before_monotonic_ns": 4352317076004,
+      "after_monotonic_ns": 4352317088855,
+      "readback": "255",
+      "host_before_ns": 270852100850382,
+      "host_after_ns": 270852114299015
+    },
+    {
+      "value": -1,
+      "before_raw_ns": 4352546943998,
+      "after_raw_ns": 4352546949183,
+      "before_monotonic_ns": 4352324118715,
+      "after_monotonic_ns": 4352324133046,
+      "readback": "255",
+      "host_before_ns": 270852114304205,
+      "host_after_ns": 270852121373158
+    },
+    {
+      "value": -1,
+      "before_raw_ns": 4352553277035,
+      "after_raw_ns": 4352553282072,
+      "before_monotonic_ns": 4352330451333,
+      "after_monotonic_ns": 4352330464813,
+      "readback": "255",
+      "host_before_ns": 270852121380361,
+      "host_after_ns": 270852127712240
+    },
+    {
+      "value": -1,
+      "before_raw_ns": 4352559886368,
+      "after_raw_ns": 4352559891479,
+      "before_monotonic_ns": 4352337059989,
+      "after_monotonic_ns": 4352337073802,
+      "readback": "255",
+      "host_before_ns": 270852127717420,
+      "host_after_ns": 270852134312457
+    },
+    {
+      "value": -1,
+      "before_raw_ns": 4352567502739,
+      "after_raw_ns": 4352567507553,
+      "before_monotonic_ns": 4352344675551,
+      "after_monotonic_ns": 4352344688808,
+      "readback": "255",
+      "host_before_ns": 270852134316835,
+      "host_after_ns": 270852143352329
+    },
+    {
+      "value": -1,
+      "before_raw_ns": 4352590312035,
+      "after_raw_ns": 4352590316739,
+      "before_monotonic_ns": 4352367482056,
+      "after_monotonic_ns": 4352367495239,
+      "readback": "255",
+      "host_before_ns": 270852143357238,
+      "host_after_ns": 270852172041644
+    },
+    {
+      "value": -1,
+      "before_raw_ns": 4352610377776,
+      "after_raw_ns": 4352610382442,
+      "before_monotonic_ns": 4352387544178,
+      "after_monotonic_ns": 4352387557806,
+      "readback": "255",
+      "host_before_ns": 270852172052915,
+      "host_after_ns": 270852185635792
+    },
+    {
+      "value": -1,
+      "before_raw_ns": 4352623882331,
+      "after_raw_ns": 4352623887442,
+      "before_monotonic_ns": 4352401047082,
+      "after_monotonic_ns": 4352401061192,
+      "readback": "255",
+      "host_before_ns": 270852185647133,
+      "host_after_ns": 270852205895970
+    },
+    {
+      "value": -1,
+      "before_raw_ns": 4352638957035,
+      "after_raw_ns": 4352638962146,
+      "before_monotonic_ns": 4352416120263,
+      "after_monotonic_ns": 4352416133928,
+      "readback": "255",
+      "host_before_ns": 270852205902683,
+      "host_after_ns": 270852213247588
+    },
+    {
+      "value": -1,
+      "before_raw_ns": 4352646069257,
+      "after_raw_ns": 4352646073924,
+      "before_monotonic_ns": 4352423230595,
+      "after_monotonic_ns": 4352423244741,
+      "readback": "255",
+      "host_before_ns": 270852213252468,
+      "host_after_ns": 270852221417344
+    },
+    {
+      "value": -1,
+      "before_raw_ns": 4352654384294,
+      "after_raw_ns": 4352654389146,
+      "before_monotonic_ns": 4352431545694,
+      "after_monotonic_ns": 4352431558656,
+      "readback": "255",
+      "host_before_ns": 270852221424979,
+      "host_after_ns": 270852228789461
+    },
+    {
+      "value": -1,
+      "before_raw_ns": 4352660143183,
+      "after_raw_ns": 4352660147553,
+      "before_monotonic_ns": 4352437303350,
+      "after_monotonic_ns": 4352437316682,
+      "readback": "255",
+      "host_before_ns": 270852228794711,
+      "host_after_ns": 270852235141598
+    },
+    {
+      "value": -1,
+      "before_raw_ns": 4352666476924,
+      "after_raw_ns": 4352666481220,
+      "before_monotonic_ns": 4352443636636,
+      "after_monotonic_ns": 4352443649412,
+      "readback": "255",
+      "host_before_ns": 270852235147209,
+      "host_after_ns": 270852244706754
+    },
+    {
+      "value": -1,
+      "before_raw_ns": 4352679950850,
+      "after_raw_ns": 4352679955442,
+      "before_monotonic_ns": 4352457108623,
+      "after_monotonic_ns": 4352457122177,
+      "readback": "255",
+      "host_before_ns": 270852244712154,
+      "host_after_ns": 270852256482962
+    },
+    {
+      "value": -1,
+      "before_raw_ns": 4352693605850,
+      "after_raw_ns": 4352693610998,
+      "before_monotonic_ns": 4352470761698,
+      "after_monotonic_ns": 4352470775622,
+      "readback": "255",
+      "host_before_ns": 270852256489264,
+      "host_after_ns": 270852268269109
+    },
+    {
+      "value": -1,
+      "before_raw_ns": 4352700617257,
+      "after_raw_ns": 4352700621813,
+      "before_monotonic_ns": 4352477772119,
+      "after_monotonic_ns": 4352477785302,
+      "readback": "255",
+      "host_before_ns": 270852268277335,
+      "host_after_ns": 270852275362940
+    },
+    {
+      "value": -1,
+      "before_raw_ns": 4352706832553,
+      "after_raw_ns": 4352706837257,
+      "before_monotonic_ns": 4352483987051,
+      "after_monotonic_ns": 4352484106924,
+      "readback": "255",
+      "host_before_ns": 270852275372027,
+      "host_after_ns": 270852282650236
+    },
+    {
+      "value": 32,
+      "before_raw_ns": 4352719136701,
+      "after_raw_ns": 4352721452961,
+      "before_monotonic_ns": 4352496289746,
+      "after_monotonic_ns": 4352498620331,
+      "readback": "32",
+      "host_before_ns": 270852282657680,
+      "host_after_ns": 270852299772228
+    },
+    {
+      "value": 255,
+      "before_raw_ns": 4353735836590,
+      "after_raw_ns": 4353737408812,
+      "before_monotonic_ns": 4353512857188,
+      "after_monotonic_ns": 4353514443463,
+      "readback": "255",
+      "host_before_ns": 270853299868366,
+      "host_after_ns": 270853315262248
+    },
+    {
+      "value": 32,
+      "before_raw_ns": 4355267692218,
+      "after_raw_ns": 4355269774478,
+      "before_monotonic_ns": 4355044514408,
+      "after_monotonic_ns": 4355046612137,
+      "readback": "32",
+      "host_before_ns": 270854315376371,
+      "host_after_ns": 270854845198672
+    },
+    {
+      "value": 255,
+      "before_raw_ns": 4356369946440,
+      "after_raw_ns": 4356372322662,
+      "before_monotonic_ns": 4356146625434,
+      "after_monotonic_ns": 4356149016162,
+      "readback": "255",
+      "host_before_ns": 270855845276354,
+      "host_after_ns": 270855954151096
+    },
+    {
+      "value": 32,
+      "before_raw_ns": 4357394477476,
+      "after_raw_ns": 4357395729773,
+      "before_monotonic_ns": 4357171024806,
+      "after_monotonic_ns": 4357172292199,
+      "readback": "32",
+      "host_before_ns": 270856954245179,
+      "host_after_ns": 270856972484164
+    },
+    {
+      "value": 255,
+      "before_raw_ns": 4358404205291,
+      "after_raw_ns": 4358405786883,
+      "before_monotonic_ns": 4358180622807,
+      "after_monotonic_ns": 4358182220565,
+      "readback": "255",
+      "host_before_ns": 270857972577425,
+      "host_after_ns": 270857984122356
+    },
+    {
+      "value": 32,
+      "before_raw_ns": 4359416325031,
+      "after_raw_ns": 4359417906920,
+      "before_monotonic_ns": 4359192613032,
+      "after_monotonic_ns": 4359194209716,
+      "readback": "32",
+      "host_before_ns": 270858984210608,
+      "host_after_ns": 270858993137286
+    },
+    {
+      "value": 255,
+      "before_raw_ns": 4360571583586,
+      "after_raw_ns": 4360573273660,
+      "before_monotonic_ns": 4360347723352,
+      "after_monotonic_ns": 4360349428579,
+      "readback": "255",
+      "host_before_ns": 270859993224404,
+      "host_after_ns": 270860149455697
+    },
+    {
+      "value": -1,
+      "before_raw_ns": 4361593112363,
+      "after_raw_ns": 4361593117030,
+      "before_monotonic_ns": 4361369122561,
+      "after_monotonic_ns": 4361369135263,
+      "readback": "255",
+      "host_before_ns": 270861149545801,
+      "host_after_ns": 270861169840174
+    },
+    {
+      "value": -1,
+      "before_raw_ns": 4361601145104,
+      "after_raw_ns": 4361601149659,
+      "before_monotonic_ns": 4361377153760,
+      "after_monotonic_ns": 4361377167092,
+      "readback": "255",
+      "host_before_ns": 270861169847198,
+      "host_after_ns": 270861178212363
+    },
+    {
+      "value": -1,
+      "before_raw_ns": 4361609852548,
+      "after_raw_ns": 4361609874770,
+      "before_monotonic_ns": 4361385859762,
+      "after_monotonic_ns": 4361385891610,
+      "readback": "255",
+      "host_before_ns": 270861178216922,
+      "host_after_ns": 270861183858755
+    },
+    {
+      "value": -1,
+      "before_raw_ns": 4361615799844,
+      "after_raw_ns": 4361615805178,
+      "before_monotonic_ns": 4361391806411,
+      "after_monotonic_ns": 4361391820706,
+      "readback": "255",
+      "host_before_ns": 270861183862652,
+      "host_after_ns": 270861190218757
+    },
+    {
+      "value": -1,
+      "before_raw_ns": 4361621548474,
+      "after_raw_ns": 4361621553104,
+      "before_monotonic_ns": 4361397555160,
+      "after_monotonic_ns": 4361397568381,
+      "readback": "255",
+      "host_before_ns": 270861190221452,
+      "host_after_ns": 270861195288037
+    },
+    {
+      "value": -1,
+      "before_raw_ns": 4361626956733,
+      "after_raw_ns": 4361626961289,
+      "before_monotonic_ns": 4361402961508,
+      "after_monotonic_ns": 4361402975432,
+      "readback": "255",
+      "host_before_ns": 270861195290602,
+      "host_after_ns": 270861201331230
+    },
+    {
+      "value": -1,
+      "before_raw_ns": 4361632649141,
+      "after_raw_ns": 4361632653955,
+      "before_monotonic_ns": 4361408653561,
+      "after_monotonic_ns": 4361408667855,
+      "readback": "255",
+      "host_before_ns": 270861201333624,
+      "host_after_ns": 270861206594266
+    },
+    {
+      "value": -1,
+      "before_raw_ns": 4361638265696,
+      "after_raw_ns": 4361638270696,
+      "before_monotonic_ns": 4361414269512,
+      "after_monotonic_ns": 4361414283213,
+      "readback": "255",
+      "host_before_ns": 270861206597823,
+      "host_after_ns": 270861212091076
+    },
+    {
+      "value": -1,
+      "before_raw_ns": 4361643968696,
+      "after_raw_ns": 4361643974363,
+      "before_monotonic_ns": 4361419971377,
+      "after_monotonic_ns": 4361419986635,
+      "readback": "255",
+      "host_before_ns": 270861212093310,
+      "host_after_ns": 270861217887622
+    },
+    {
+      "value": -1,
+      "before_raw_ns": 4361649748029,
+      "after_raw_ns": 4361649753029,
+      "before_monotonic_ns": 4361425750567,
+      "after_monotonic_ns": 4361425764343,
+      "readback": "255",
+      "host_before_ns": 270861217892982,
+      "host_after_ns": 270861223762366
+    },
+    {
+      "value": -1,
+      "before_raw_ns": 4361654957141,
+      "after_raw_ns": 4361654961770,
+      "before_monotonic_ns": 4361430959866,
+      "after_monotonic_ns": 4361430972679,
+      "readback": "255",
+      "host_before_ns": 270861223767615,
+      "host_after_ns": 270861228795868
+    },
+    {
+      "value": -1,
+      "before_raw_ns": 4361660104844,
+      "after_raw_ns": 4361660109326,
+      "before_monotonic_ns": 4361436106284,
+      "after_monotonic_ns": 4361436119097,
+      "readback": "255",
+      "host_before_ns": 270861228798333,
+      "host_after_ns": 270861233963053
+    },
+    {
+      "value": -1,
+      "before_raw_ns": 4361665101215,
+      "after_raw_ns": 4361665106252,
+      "before_monotonic_ns": 4361441101945,
+      "after_monotonic_ns": 4361441115425,
+      "readback": "255",
+      "host_before_ns": 270861233965999,
+      "host_after_ns": 270861238949968
+    },
+    {
+      "value": -1,
+      "before_raw_ns": 4361670569252,
+      "after_raw_ns": 4361670574029,
+      "before_monotonic_ns": 4361446569214,
+      "after_monotonic_ns": 4361446583175,
+      "readback": "255",
+      "host_before_ns": 270861238957061,
+      "host_after_ns": 270861257339407
+    },
+    {
+      "value": -1,
+      "before_raw_ns": 4361695688104,
+      "after_raw_ns": 4361695692918,
+      "before_monotonic_ns": 4361471684984,
+      "after_monotonic_ns": 4361471698205,
+      "readback": "255",
+      "host_before_ns": 270861257359195,
+      "host_after_ns": 270861272740363
+    },
+    {
+      "value": -1,
+      "before_raw_ns": 4361703994548,
+      "after_raw_ns": 4361704070881,
+      "before_monotonic_ns": 4361479990558,
+      "after_monotonic_ns": 4361480077177,
+      "readback": "255",
+      "host_before_ns": 270861272748328,
+      "host_after_ns": 270861278134408
+    },
+    {
+      "value": -1,
+      "before_raw_ns": 4361709688215,
+      "after_raw_ns": 4361709692881,
+      "before_monotonic_ns": 4361485682686,
+      "after_monotonic_ns": 4361485696351,
+      "readback": "255",
+      "host_before_ns": 270861278141792,
+      "host_after_ns": 270861283453881
+    },
+    {
+      "value": -1,
+      "before_raw_ns": 4361715107326,
+      "after_raw_ns": 4361715111955,
+      "before_monotonic_ns": 4361491101664,
+      "after_monotonic_ns": 4361491114848,
+      "readback": "255",
+      "host_before_ns": 270861283455955,
+      "host_after_ns": 270861289141892
+    },
+    {
+      "value": -1,
+      "before_raw_ns": 4361719772844,
+      "after_raw_ns": 4361719777141,
+      "before_monotonic_ns": 4361495767145,
+      "after_monotonic_ns": 4361495779773,
+      "readback": "255",
+      "host_before_ns": 270861289148464,
+      "host_after_ns": 270861293726235
+    },
+    {
+      "value": -1,
+      "before_raw_ns": 4361725067400,
+      "after_raw_ns": 4361725072029,
+      "before_monotonic_ns": 4361501060176,
+      "after_monotonic_ns": 4361501073767,
+      "readback": "255",
+      "host_before_ns": 270861293731395,
+      "host_after_ns": 270861298933486
+    }
+  ],
+  "camera_exit": 0,
+  "camera_summary": {
+    "kind": "summary",
+    "frames": 533,
+    "bytes": 32126405,
+    "sequence_gaps": 0,
+    "reason": "duration_limit",
+    "capture_complete": true,
+    "kernel_video_alignment_qualified": false,
+    "host_monotonic_ns": 270866737092068
+  },
+  "status": "CAPTURED_PENDING_OPTICAL_ANALYSIS",
+  "finished_at": "2026-10-21T00:43:34.591252+00:00",
+  "brightness_restoration": {
+    "exit": 0,
+    "readback": "255"
+  },
+  "restored_camera_controls": "Format Video Capture:\n\tWidth/Height      : 640/480\n\tPixel Format      : 'YUYV' (YUYV 4:2:2)\n\tField             : None\n\tBytes per Line    : 1280\n\tSize Image        : 614400\n\tColorspace        : sRGB\n\tTransfer Function : Rec. 709\n\tYCbCr/HSV Encoding: ITU-R 601\n\tQuantization      : Default (maps to Limited Range)\n\tFlags             : \nStreaming Parameters Video Capture:\n\tCapabilities     : timeperframe\n\tFrames per second: 30.000 (30/1)\n\tRead buffers     : 0\n\nUser Controls\n\n                     brightness 0x00980900 (int)    : min=0 max=255 step=1 default=128 value=128 flags=has-min-max\n                       contrast 0x00980901 (int)    : min=0 max=255 step=1 default=128 value=128 flags=has-min-max\n                     saturation 0x00980902 (int)    : min=0 max=255 step=1 default=128 value=128 flags=has-min-max\n        white_balance_automatic 0x0098090c (bool)   : default=1 value=1\n                           gain 0x00980913 (int)    : min=0 max=255 step=1 default=0 value=0 flags=has-min-max\n           power_line_frequency 0x00980918 (menu)   : min=0 max=2 default=2 value=2 (60 Hz)\n      white_balance_temperature 0x0098091a (int)    : min=2000 max=6500 step=1 default=4000 value=4513 flags=inactive, has-min-max\n                      sharpness 0x0098091b (int)    : min=0 max=255 step=1 default=128 value=128 flags=has-min-max\n         backlight_compensation 0x0098091c (int)    : min=0 max=1 step=1 default=0 value=0 flags=has-min-max\n\nCamera Controls\n\n                  auto_exposure 0x009a0901 (menu)   : min=0 max=3 default=3 value=3 (Aperture Priority Mode)\n         exposure_time_absolute 0x009a0902 (int)    : min=3 max=2047 step=1 default=250 value=99 flags=inactive, has-min-max\n     exposure_dynamic_framerate 0x009a0903 (bool)   : default=0 value=1\n                   pan_absolute 0x009a0908 (int)    : min=-36000 max=36000 step=3600 default=0 value=0 flags=has-min-max\n                  tilt_absolute 0x009a0909 (int)    : min=-36000 max=36000 step=3600 default=0 value=0 flags=has-min-max\n                 focus_absolute 0x009a090a (int)    : min=0 max=250 step=5 default=0 value=80 flags=inactive, has-min-max\n     focus_automatic_continuous 0x009a090c (bool)   : default=1 value=1\n                  zoom_absolute 0x009a090d (int)    : min=100 max=500 step=1 default=100 value=100 flags=has-min-max\n"
+}
