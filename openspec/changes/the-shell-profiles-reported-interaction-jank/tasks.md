@@ -4,8 +4,27 @@
 
 ## 2. Drawer measurement (parent 5.2 and 5.4, hardware-only)
 
-- [ ] 2.1 While scrolling on the installed board, read `K230_DRAWER_FRAME ms=` with `python3 tools/console.py /dev/ttyACM0 --wait=3 'journalctl -u shell-ui --since "2 minutes ago" --no-pager | rg K230_DRAWER_FRAME'`; commit the sustained workload and samples, compare the 17.3–34.6 ms estimate and ~20 ms target. This is render-cost measurement, not inferred presentation timing.
-- [ ] 2.2 If 2.1 shows a relevant shortfall, propose the scroll-direction damage-limited blitting follow-up in `docs/design/app-drawer-review.md` section 6; otherwise record why it is unnecessary. Proof: the recorded measured decision and `openspec validate --all --strict`. This preserves parent 5.4 without claiming an optimization already happened.
+- [x] 2.1 While scrolling on the installed board, read `K230_DRAWER_FRAME ms=` with `python3 tools/console.py /dev/ttyACM0 --wait=3 'journalctl -u shell-ui --since "2 minutes ago" --no-pager | rg K230_DRAWER_FRAME'`; commit the sustained workload and samples, compare the 17.3–34.6 ms estimate and ~20 ms target. This is render-cost measurement, not inferred presentation timing.
+  Done 2026-10-22 on installed system `8xkkpma4…` (landscape, 12 ms
+  allowance, one CPU, 19 apps), with injected native touch at the 8.14 ms
+  real-finger rate. The same `journalctl -u shell-ui` read was made over SSH
+  (the operator's preference) instead of the UART `console.py` wrapper.
+  Three 60 s runs give contact `K230_DRAWER_FRAME` medians of 38.9, 39.5
+  and 39.1 ms, with p95 53.4/53.4/52.9 ms. All 216 samples exceed both the
+  ~20 ms target and the 34.6 ms top of the estimate. Presented frame rate
+  during contact is 8.3 frames per second. A traced run (one `shell-ui`
+  restart with the opt-in recorder) shows a full `scene_rebuild` on every
+  scroll frame. No real glass or camera was used. A busy-waiting first
+  injector (run1) and a trace-permission failure (run5) are preserved, and
+  their data is not used:
+  `docs/evidence/interaction-jank/drawer-scroll/README.md`.
+- [x] 2.2 If 2.1 shows a relevant shortfall, propose the scroll-direction damage-limited blitting follow-up in `docs/design/app-drawer-review.md` section 6; otherwise record why it is unnecessary. Proof: the recorded measured decision and `openspec validate --all --strict`. This preserves parent 5.4 without claiming an optimization already happened.
+  Done 2026-10-22: the shortfall is relevant. `docs/design/app-drawer-review.md`
+  §6 now records the measurement and proposes a two-part follow-up, in order
+  of measured cost: stop the per-scroll full scene rebuild (a cached chrome
+  layer plus a grid-slice copy, then scroll-direction blitting if still
+  needed), and bound per-touch-event work and logging. Nothing has been
+  implemented, and no optimization is claimed.
 
 ## 3. Keyboard measurement (parent 3.3, hardware-only)
 

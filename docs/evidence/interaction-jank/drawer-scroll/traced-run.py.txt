@@ -1,0 +1,56 @@
+#!/usr/bin/env python3
+"""Traced drawer scroll: python3 traced-run.py OUT_DIR EXPECTED_SYSTEM
+
+Restarts shell-ui once with the installed client's opt-in numeric recorder
+(volatile /run drop-in), runs drawer-scroll.py for 30 s inside the recorder
+window, waits for the bounded trace, then removes the drop-in and restarts
+shell-ui normally. The compositor is not restarted.
+"""
+import json, os, pwd, subprocess, sys, time
+from pathlib import Path
+
+out = Path(sys.argv[1]); expected = sys.argv[2]
+here = Path(__file__).parent
+DROP = Path('/run/systemd/system/shell-ui.service.d/90-drawer-jank-trace.conf')
+assert not out.exists() and not DROP.exists()
+if str(Path('/run/current-system').resolve()) != expected:
+    raise SystemExit('installed system differs from expected')
+# The client runs as 'shell'; /var/lib/k230 is not traversable for it.
+tdir = Path('/var/tmp') / ('drawer-jank-' + out.name + '-trace'); assert not tdir.exists()
+tdir.mkdir(mode=0o700); acct = pwd.getpwnam('shell'); os.chown(tdir, acct.pw_uid, acct.pw_gid)
+trace = tdir / 'trace.json'
+
+def run(*a): return subprocess.run(a, check=True, capture_output=True, text=True, timeout=60).stdout.strip()
+def pid(u): return int(run('systemctl', 'show', u, '--property=MainPID', '--value'))
+before = {'sway_pid': pid('shell'), 'rust_pid': pid('shell-ui')}
+manifest = {'before': before, 'started': time.time()}
+try:
+    DROP.parent.mkdir(exist_ok=True)
+    DROP.write_text('[Service]\nEnvironment=K230_TRACE_PATH=' + str(trace)
+                    + '\nEnvironment=K230_TRACE_SECONDS=45\n'
+                    'Environment=K230_TRACE_ID=24000000000000000000000000000001\n')
+    run('systemctl', 'daemon-reload'); run('systemctl', 'restart', 'shell-ui')
+    time.sleep(4)
+    manifest['traced_rust_pid'] = pid('shell-ui')
+    assert pid('shell') == before['sway_pid']
+    r = subprocess.run([sys.executable, str(here / 'drawer-scroll.py'), str(out), expected, '30'],
+                       capture_output=True, text=True, timeout=120)
+    manifest['workload_rc'] = r.returncode; manifest['workload_tail'] = r.stdout[-200:]
+    deadline = time.monotonic() + 40
+    while time.monotonic() < deadline:
+        if trace.exists() and trace.read_bytes().endswith(b'\n'):
+            break
+        time.sleep(.5)
+    else:
+        raise RuntimeError('bounded trace did not finish')
+    report = json.loads(trace.read_bytes())
+    assert report['pid'] == manifest['traced_rust_pid'] and report['dropped'] == 0
+    manifest['trace_events'] = len(report['events'])
+finally:
+    if DROP.exists():
+        DROP.unlink(); run('systemctl', 'daemon-reload'); run('systemctl', 'restart', 'shell-ui'); time.sleep(3)
+    manifest['after'] = {'sway_pid': pid('shell'), 'rust_pid': pid('shell-ui'),
+                         'dropin_removed': not DROP.exists(),
+                         'shell_ui_active': run('systemctl', 'is-active', 'shell-ui')}
+    (tdir / 'manifest.json').write_text(json.dumps(manifest, indent=1))
+    print(json.dumps(manifest))

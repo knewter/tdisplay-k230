@@ -1,0 +1,66 @@
+#!/usr/bin/env python3
+"""Replay: python3 trace-analyze.py RUN_DIR TRACE_JSON
+
+Splits the installed client's recorder spans by the injected gesture windows.
+The recorder clock is CLOCK_MONOTONIC; meta.json records time.monotonic()
+(cpu_before.wall) immediately before time.time() (workload_start), which
+gives the offset to the gesture windows' wall-clock times (error well under
+1 ms on this board). Span wall time includes preemption; cpu_us is the
+thread's own CPU time (CLOCK_THREAD_CPUTIME_ID).
+"""
+import json, math, sys
+from pathlib import Path
+
+run = Path(sys.argv[1]); trace = json.loads(Path(sys.argv[2]).read_text())
+meta = json.loads((run / 'meta.json').read_text())
+offset_us = (meta['cpu_before']['wall'] - meta['workload_start']) * 1e6
+windows = [((g['start'] * 1e6 + offset_us), (g['end'] * 1e6 + offset_us)) for g in meta['gestures']]
+
+def gesture(t):
+    for i, (a, b) in enumerate(windows):
+        if a <= t <= b:
+            return i
+    return None
+
+def pct(v, p):
+    s = sorted(v)
+    return s[max(0, math.ceil(len(s) * p) - 1)] if s else None
+
+def summary(v):
+    return {'n': len(v), 'median': pct(v, .5), 'p95': pct(v, .95), 'max': max(v) if v else None,
+            'sum': sum(v)}
+
+ev = trace['events']
+contact = [e for e in ev if gesture(e['start_us']) is not None]
+by = {}
+for e in contact:
+    by.setdefault(e['kind'], []).append(e)
+contact_us = sum(b - a for a, b in windows)
+report = {'trace_events': len(ev), 'dropped': trace['dropped'], 'gestures': len(windows),
+          'contact_seconds': round(contact_us / 1e6, 3), 'kinds_in_contact': {}}
+for kind, rows in sorted(by.items()):
+    if rows[0]['span_id'] == 0:
+        report['kinds_in_contact'][kind] = {'count': len(rows)}
+        continue
+    report['kinds_in_contact'][kind] = {
+        'count': len(rows),
+        'wall_ms': summary([(r['end_us'] - r['start_us']) / 1e3 for r in rows]),
+        'cpu_ms': summary([r['cpu_us'] / 1e3 for r in rows]),
+    }
+pres = sorted(e['start_us'] for e in by.get('presented', []))
+gaps = [(b - a) / 1e3 for a, b in zip(pres, pres[1:]) if gesture(a) == gesture(b)]
+report['presented_interval_ms'] = summary(gaps)
+loop_cpu = sum(r['cpu_us'] for r in by.get('event_loop_work', [])) / 1e3
+render_cpu = sum(r['cpu_us'] for r in by.get('render_total', [])) / 1e3
+rebuild_cpu = sum(r['cpu_us'] for r in by.get('scene_rebuild', [])) / 1e3
+dispatch_cpu = sum(r['cpu_us'] for r in by.get('wayland_dispatch', [])) / 1e3
+report['contact_cpu_ms'] = {
+    'event_loop_work': round(loop_cpu, 1), 'render_total': round(render_cpu, 1),
+    'scene_rebuild': round(rebuild_cpu, 1), 'wayland_dispatch': round(dispatch_cpu, 1),
+    'client_main_thread_share_of_contact': round(loop_cpu / (contact_us / 1e3), 3),
+}
+frames = len(by.get('render_total', []))
+report['per_rendered_frame_ms'] = {k: round(v / max(1, frames), 2) for k, v in report['contact_cpu_ms'].items()
+                                   if k != 'client_main_thread_share_of_contact'}
+report['frames_with_scene_rebuild'] = f"{len(by.get('scene_rebuild', []))}/{frames}"
+print(json.dumps(report, indent=1))

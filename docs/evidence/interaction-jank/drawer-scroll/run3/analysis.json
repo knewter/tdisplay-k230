@@ -1,0 +1,78 @@
+{
+ "samples": 73,
+ "apps": [
+  19
+ ],
+ "scroll_values": [
+  0,
+  3,
+  11,
+  37,
+  48,
+  50,
+  53,
+  135,
+  138,
+  140,
+  154,
+  175,
+  183
+ ],
+ "groups": {
+  "contact": {
+   "n": 72,
+   "min": 37.51,
+   "median": 39.49,
+   "p95": 53.37,
+   "max": 75.78,
+   "over_20ms": 72,
+   "over_34_6ms": 72,
+   "distinct_scroll": 12
+  },
+  "outside-workload": {
+   "n": 1,
+   "min": 10.48,
+   "median": 10.48,
+   "p95": 10.48,
+   "max": 10.48,
+   "over_20ms": 0,
+   "over_34_6ms": 0,
+   "distinct_scroll": 1
+  }
+ },
+ "scrolling": {
+  "n": 72,
+  "median": 39.49,
+  "p95": 53.37,
+  "max": 75.78,
+  "over_20ms": 72
+ },
+ "frames": {
+  "contact_seconds": 31.39,
+  "frame_done_in_contact": 262,
+  "frames_per_second_in_contact": 8.35,
+  "frame_done_interval_ms": {
+   "median": 95.32,
+   "p95": 109.95,
+   "max": 179.35,
+   "n": 214
+  },
+  "touch_moves_delivered": 3408,
+  "touch_steps_injected": 3408
+ },
+ "cpu": {
+  "shell.service": {
+   "cores": 0.0985,
+   "seconds": 5.973
+  },
+  "shell-ui.service": {
+   "cores": 0.291,
+   "seconds": 17.644
+  },
+  "injector": {
+   "cores": 0.0162,
+   "seconds": 0.98
+  },
+  "shell_ui_ms_per_contact_frame_upper_bound": 67.34
+ }
+}

@@ -1,0 +1,81 @@
+#!/usr/bin/env python3
+"""Replay: python3 analyze.py RUN_DIR
+
+Classifies each rate-limited K230_DRAWER_FRAME sample by the injected gesture
+windows in meta.json: 'contact' (finger down), 'settle' (up to 600 ms after
+release, where the drawer's fling animates), or 'other'. Compares contact and
+settle samples with the design's 17.3-34.6 ms estimate and ~20 ms target.
+This is client render cost only; it says nothing about presentation timing.
+"""
+import json, math, re, sys
+from pathlib import Path
+
+run = Path(sys.argv[1])
+meta = json.loads((run / 'meta.json').read_text())
+line = re.compile(r'^(\d+\.\d+) .*K230_DRAWER_FRAME ms=([\d.]+) apps=(\d+) scroll=(-?\d+)')
+samples = []
+for text in (run / 'shell-ui-journal.txt').read_text().splitlines():
+    m = line.match(text)
+    if m:
+        samples.append((float(m[1]), float(m[2]), int(m[3]), int(m[4])))
+
+def gesture(t):
+    for i, g in enumerate(meta['gestures']):
+        if g['start'] <= t <= g['end']:
+            return i
+    return None
+
+def phase(t):
+    for g in meta['gestures']:
+        if g['start'] <= t <= g['end']:
+            return 'contact'
+        if g['end'] < t <= g['end'] + 0.6:
+            return 'settle'
+    return 'other'
+
+def pct(v, p):
+    s = sorted(v)
+    return s[max(0, math.ceil(len(s) * p) - 1)]
+
+groups = {}
+for t, ms, apps, scroll in samples:
+    in_run = meta['workload_start'] <= t <= meta['workload_end'] + 0.6
+    groups.setdefault(phase(t) if in_run else 'outside-workload', []).append((t, ms, scroll))
+
+report = {'samples': len(samples), 'apps': sorted({s[2] for s in samples}),
+          'scroll_values': sorted({s[3] for s in samples}), 'groups': {}}
+for name, rows in sorted(groups.items()):
+    v = [r[1] for r in rows]
+    report['groups'][name] = {
+        'n': len(v), 'min': min(v), 'median': pct(v, .5), 'p95': pct(v, .95), 'max': max(v),
+        'over_20ms': sum(x > 20 for x in v), 'over_34_6ms': sum(x > 34.6 for x in v),
+        'distinct_scroll': len({r[2] for r in rows}),
+    }
+moving = [r[1] for k in ('contact', 'settle') for r in groups.get(k, [])]
+report['scrolling'] = {'n': len(moving), 'median': pct(moving, .5), 'p95': pct(moving, .95),
+                       'max': max(moving), 'over_20ms': sum(x > 20 for x in moving)}
+# Presented-frame cadence from the client's own frame-done log (the
+# compositor's frame callback), and touch events delivered during contact.
+done = [float(l.split()[0]) for l in (run / 'shell-ui-journal.txt').read_text().splitlines()
+        if l.endswith(' frame-done')]
+moves = [float(l.split()[0]) for l in (run / 'shell-ui-journal.txt').read_text().splitlines()
+         if ' touch-move ' in l]
+contact_done = [t for t in done if phase(t) == 'contact']
+gaps = [b - a for a, b in zip(done, done[1:]) if gesture(a) is not None and gesture(a) == gesture(b)]
+contact_s = sum(g['end'] - g['start'] for g in meta['gestures'])
+report['frames'] = {
+    'contact_seconds': round(contact_s, 3),
+    'frame_done_in_contact': len(contact_done),
+    'frames_per_second_in_contact': round(len(contact_done) / contact_s, 2),
+    'frame_done_interval_ms': {'median': round(pct(gaps, .5) * 1e3, 2), 'p95': round(pct(gaps, .95) * 1e3, 2),
+                               'max': round(max(gaps) * 1e3, 2), 'n': len(gaps)},
+    'touch_moves_delivered': len(moves),
+    'touch_steps_injected': sum(g['steps'] for g in meta['gestures']),
+}
+if 'cpu_before' in meta:
+    a, b = meta['cpu_before'], meta['cpu_after']; wall = b['wall'] - a['wall']
+    report['cpu'] = {k: {'cores': round((b[k] - a[k]) / 1e6 / wall, 4), 'seconds': round((b[k] - a[k]) / 1e6, 3)}
+                     for k in a if k != 'wall'}
+    report['cpu']['shell_ui_ms_per_contact_frame_upper_bound'] = round(
+        (b['shell-ui.service'] - a['shell-ui.service']) / 1e3 / max(1, len(contact_done)), 2)
+print(json.dumps(report, indent=1))

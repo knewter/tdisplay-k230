@@ -1,0 +1,76 @@
+{
+ "samples": 74,
+ "apps": [
+  19
+ ],
+ "scroll_values": [
+  0,
+  3,
+  11,
+  86,
+  88,
+  89,
+  91,
+  92,
+  94,
+  95,
+  97,
+  100,
+  103,
+  111,
+  175,
+  183
+ ],
+ "groups": {
+  "contact": {
+   "n": 72,
+   "min": 72.62,
+   "median": 82.85,
+   "p95": 115.99,
+   "max": 123.17,
+   "over_20ms": 72,
+   "over_34_6ms": 72,
+   "distinct_scroll": 15
+  },
+  "outside-workload": {
+   "n": 1,
+   "min": 44.95,
+   "median": 44.95,
+   "p95": 44.95,
+   "max": 44.95,
+   "over_20ms": 1,
+   "over_34_6ms": 1,
+   "distinct_scroll": 1
+  },
+  "settle": {
+   "n": 1,
+   "min": 40.29,
+   "median": 40.29,
+   "p95": 40.29,
+   "max": 40.29,
+   "over_20ms": 1,
+   "over_34_6ms": 1,
+   "distinct_scroll": 1
+  }
+ },
+ "scrolling": {
+  "n": 73,
+  "median": 82.85,
+  "p95": 115.99,
+  "max": 123.17,
+  "over_20ms": 73
+ },
+ "frames": {
+  "contact_seconds": 31.419,
+  "frame_done_in_contact": 116,
+  "frames_per_second_in_contact": 3.69,
+  "frame_done_interval_ms": {
+   "median": 223.89,
+   "p95": 403.94,
+   "max": 445.59,
+   "n": 92
+  },
+  "touch_moves_delivered": 3408,
+  "touch_steps_injected": 3408
+ }
+}

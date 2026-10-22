@@ -345,15 +345,41 @@ stated limits: `docs/evidence/app-drawer/README.md`.
 
 ## 6. What remains open
 
-- **Board proof of §3.5's frame timing**: the actual `K230_DRAWER_FRAME
-  ms=` values on hardware, to replace §3.4's estimate with a measurement,
-  and confirm whether the ~20ms target is actually met.
+- **Board proof of §3.5's frame timing — measured 2026-10-22, target
+  missed.** In a sustained scroll with injected touch at the real-finger
+  report rate, contact samples were median 39 ms and p95 53 ms. All 252
+  samples were above §3.4's 34.6 ms upper estimate. The drawer presented
+  about 8.3 frames per second (median 97 ms between frames within a drag) on
+  the one online CPU. A traced run shows that every scroll frame takes
+  `RendererCache`'s full `scene_rebuild` path (about 33 ms thread CPU).
+  Another ~23 ms per frame goes to main-thread Wayland dispatch outside
+  rendering. Evidence and replay:
+  `docs/evidence/interaction-jank/drawer-scroll/README.md`.
 - **Board proof of the bug fix** (§1, tracked against its own commit):
   a real-finger scroll-then-reverse gesture on glass.
 - **Board proof of search**: real-finger taps on the search field and
   the compact keyboard, and real-finger scrolling of filtered results.
 - **The alphabetical fast-scroller**, explicitly scoped out (§2.4).
-- If §3.5's board measurement is still over budget despite the cache,
+- **Proposed follow-up, justified by the measurement above (not yet
+  implemented).** Two parts, in order of measured cost:
+  1. **Stop rebuilding the whole scene on scroll.** `RendererCache::
+     draw_with_hud` treats any scroll change of 0.25 px or more like a route
+     or size change. Each one allocates a new full-screen buffer and repaints
+     the drawer's chrome and background around the cached grid. For the
+     Drawer, keep the scroll-independent chrome in its own cached layer.
+     Each scroll frame should then copy only the visible grid slice from
+     `DrawerGridCache` into it. A further step is to shift the previous
+     frame's grid region and paint only the newly exposed strip; that is the
+     scroll-direction blitting described below. Proof: the same
+     `drawer-scroll.py` workload on the board, with the same `K230_DRAWER_FRAME`
+     probe and recorder trace, against the ~20 ms target.
+  2. **Bound per-touch-event work.** About 110 touch reports per second
+     arrive during a drag. Main-thread CPU outside rendering is about 23 ms
+     per presented frame, and the client logs a `touch-move` journal line for
+     every event. Coalesce motion to the latest position per dispatch, and
+     rate-limit or remove the per-event log. Then measure again, because the
+     recorder does not attribute this cost.
+- If the board measurement is still over budget after part 1,
   the next lever is damage-limited *scroll-direction* blitting (shift the
   already-composited on-screen bitmap by the scroll delta and paint only
   the newly-exposed strip, rather than re-blitting the full viewport from

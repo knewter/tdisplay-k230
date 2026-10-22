@@ -1,0 +1,16 @@
+{
+ "before": {
+  "sway_pid": 1049,
+  "rust_pid": 1062
+ },
+ "started": 1792640014.3068488,
+ "traced_rust_pid": 5278,
+ "workload_rc": 0,
+ "workload_tail": "DONE 24 24\n",
+ "after": {
+  "sway_pid": 1049,
+  "rust_pid": 5376,
+  "dropin_removed": true,
+  "shell_ui_active": "active"
+ }
+}

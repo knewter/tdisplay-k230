@@ -1,0 +1,180 @@
+{
+ "trace_events": 6934,
+ "dropped": 0,
+ "gestures": 24,
+ "contact_seconds": 15.694,
+ "kinds_in_contact": {
+  "canvas_copy": {
+   "count": 143,
+   "wall_ms": {
+    "n": 143,
+    "median": 0.721,
+    "p95": 1.551,
+    "max": 8.611,
+    "sum": 133.344
+   },
+   "cpu_ms": {
+    "n": 143,
+    "median": 0.72,
+    "p95": 0.784,
+    "max": 7.7,
+    "sum": 112.90599999999999
+   }
+  },
+  "commit": {
+   "count": 143
+  },
+  "draw_begin": {
+   "count": 1221
+  },
+  "draw_end": {
+   "count": 143
+  },
+  "event_loop_work": {
+   "count": 410,
+   "wall_ms": {
+    "n": 410,
+    "median": 0.361,
+    "p95": 106.735,
+    "max": 198.088,
+    "sum": 13032.038
+   },
+   "cpu_ms": {
+    "n": 410,
+    "median": 0.247,
+    "p95": 71.852,
+    "max": 82.921,
+    "sum": 8721.674
+   }
+  },
+  "frame_callback": {
+   "count": 131
+  },
+  "overlay_draw": {
+   "count": 1221,
+   "wall_ms": {
+    "n": 1221,
+    "median": 0.019,
+    "p95": 52.096,
+    "max": 86.896,
+    "sum": 7490.617
+   },
+   "cpu_ms": {
+    "n": 1221,
+    "median": 0.015,
+    "p95": 34.974,
+    "max": 45.182,
+    "sum": 5105.088
+   }
+  },
+  "presented": {
+   "count": 119
+  },
+  "render_total": {
+   "count": 154,
+   "wall_ms": {
+    "n": 154,
+    "median": 50.175,
+    "p95": 55.245,
+    "max": 86.696,
+    "sum": 7277.035
+   },
+   "cpu_ms": {
+    "n": 154,
+    "median": 34.563,
+    "p95": 35.769,
+    "max": 41.912,
+    "sum": 5043.431
+   }
+  },
+  "scene_rebuild": {
+   "count": 154,
+   "wall_ms": {
+    "n": 154,
+    "median": 49.388,
+    "p95": 53.416,
+    "max": 85.285,
+    "sum": 7112.646
+   },
+   "cpu_ms": {
+    "n": 154,
+    "median": 33.804,
+    "p95": 34.561,
+    "max": 36.453,
+    "sum": 4914.174
+   }
+  },
+  "thumbnail_poll": {
+   "count": 552,
+   "wall_ms": {
+    "n": 552,
+    "median": 0.007,
+    "p95": 0.012,
+    "max": 1.631,
+    "sum": 9.15
+   },
+   "cpu_ms": {
+    "n": 552,
+    "median": 0.007,
+    "p95": 0.01,
+    "max": 0.096,
+    "sum": 4.09
+   }
+  },
+  "wayland_dispatch": {
+   "count": 410,
+   "wall_ms": {
+    "n": 410,
+    "median": 0.248,
+    "p95": 105.231,
+    "max": 197.982,
+    "sum": 12774.306
+   },
+   "cpu_ms": {
+    "n": 410,
+    "median": 0.169,
+    "p95": 71.498,
+    "max": 82.747,
+    "sum": 8655.181
+   }
+  },
+  "wayland_flush": {
+   "count": 398,
+   "wall_ms": {
+    "n": 398,
+    "median": 0.005,
+    "p95": 0.893,
+    "max": 4.565,
+    "sum": 87.801
+   },
+   "cpu_ms": {
+    "n": 398,
+    "median": 0.005,
+    "p95": 0.115,
+    "max": 0.125,
+    "sum": 13.138
+   }
+  }
+ },
+ "presented_interval_ms": {
+  "n": 95,
+  "median": 96.002,
+  "p95": 119.105,
+  "max": 130.188,
+  "sum": 7457.164
+ },
+ "contact_cpu_ms": {
+  "event_loop_work": 8721.7,
+  "render_total": 5043.4,
+  "scene_rebuild": 4914.2,
+  "wayland_dispatch": 8655.2,
+  "client_main_thread_share_of_contact": 0.556
+ },
+ "per_rendered_frame_ms": {
+  "event_loop_work": 56.63,
+  "render_total": 32.75,
+  "scene_rebuild": 31.91,
+  "wayland_dispatch": 56.2
+ },
+ "frames_with_scene_rebuild": "154/154"
+}
