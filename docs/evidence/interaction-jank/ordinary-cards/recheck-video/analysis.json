@@ -1,0 +1,138 @@
+{
+ "arm": "video",
+ "arm_app_id": "k230-video-software",
+ "inputs": 1008,
+ "present_rows": 1179,
+ "not_presented": 0,
+ "restored_apps": [
+  "k230-terminal"
+ ],
+ "kinds": {
+  "entry": {
+   "touch_ack_ms": {
+    "n": 8,
+    "median": 62.976,
+    "p95": 76.694,
+    "max": 76.694
+   },
+   "gesture_ms": {
+    "n": 8,
+    "median": 602.762,
+    "p95": 615.886,
+    "max": 615.886
+   },
+   "release_to_settle_ms": {
+    "n": 8,
+    "median": 283.221,
+    "p95": 293.039,
+    "max": 293.039
+   },
+   "motion_to_present_ms": {
+    "n": 296,
+    "median": 39.622,
+    "p95": 51.888,
+    "max": 57.95
+   },
+   "tracking_interval_ms": {
+    "n": 76,
+    "median": 19.178,
+    "p95": 38.326,
+    "max": 38.352
+   },
+   "release_to_first_present_ms": {
+    "n": 8,
+    "median": 19.811,
+    "p95": 27.539,
+    "max": 27.539
+   },
+   "unsettled": 0,
+   "touch_ack_over_100ms": 0,
+   "gesture_over_400ms": 8,
+   "tracking_over_33_334ms": 38
+  },
+  "drag": {
+   "touch_ack_ms": {
+    "n": 8,
+    "median": 49.537,
+    "p95": 59.586,
+    "max": 59.586
+   },
+   "gesture_ms": {
+    "n": 8,
+    "median": 952.226,
+    "p95": 972.199,
+    "max": 972.199
+   },
+   "release_to_settle_ms": {
+    "n": 8,
+    "median": 246.077,
+    "p95": 258.223,
+    "max": 258.223
+   },
+   "motion_to_present_ms": {
+    "n": 688,
+    "median": 21.897,
+    "p95": 26.466,
+    "max": 46.14
+   },
+   "tracking_interval_ms": {
+    "n": 283,
+    "median": 19.16,
+    "p95": 19.176,
+    "max": 19.276
+   },
+   "release_to_first_present_ms": {
+    "n": 8,
+    "median": 19.302,
+    "p95": 25.724,
+    "max": 25.724
+   },
+   "unsettled": 0,
+   "touch_ack_over_100ms": 0,
+   "gesture_over_400ms": 8,
+   "tracking_over_33_334ms": 0
+  },
+  "tap": {
+   "touch_ack_ms": {
+    "n": 8,
+    "median": 119.757,
+    "p95": 126.899,
+    "max": 126.899
+   },
+   "gesture_ms": {
+    "n": 8,
+    "median": 325.069,
+    "p95": 332.177,
+    "max": 332.177
+   },
+   "release_to_settle_ms": {
+    "n": 8,
+    "median": 222.732,
+    "p95": 229.317,
+    "max": 229.317
+   },
+   "motion_to_present_ms": {
+    "n": 0,
+    "median": null,
+    "p95": null,
+    "max": null
+   },
+   "tracking_interval_ms": {
+    "n": 0,
+    "median": null,
+    "p95": null,
+    "max": null
+   },
+   "release_to_first_present_ms": {
+    "n": 8,
+    "median": 17.421,
+    "p95": 23.976,
+    "max": 23.976
+   },
+   "unsettled": 0,
+   "touch_ack_over_100ms": 6,
+   "gesture_over_400ms": 0,
+   "tracking_over_33_334ms": 0
+  }
+ }
+}

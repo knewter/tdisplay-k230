@@ -1,0 +1,154 @@
+{
+ "evidence_class": "board, injected native touch (persistent uinput); not real glass",
+ "system": "/nix/store/sgjam1h016dgvsvb18x28x0wg3mhy1hz-nixos-system-nixos-26.11.20260919.20b1ddd",
+ "arm": "video",
+ "bench": true,
+ "cycles": 8,
+ "step_ms": 8.1400000000000006,
+ "output": {
+  "name": "DSI-1",
+  "transform": "270",
+  "rect": {
+   "x": 0,
+   "y": 0,
+   "width": 1232,
+   "height": 568
+  },
+  "max_render_time": 12
+ },
+ "started_utc": "2026-10-22T16:53:03Z",
+ "events": [
+  {
+   "kind": "entry",
+   "start": 1792688011.2714241,
+   "release": 1792688011.5963395
+  },
+  {
+   "kind": "drag",
+   "start": 1792688013.111268,
+   "release": 1792688013.8143046
+  },
+  {
+   "kind": "tap",
+   "start": 1792688015.0167093,
+   "release": 1792688015.1176667
+  },
+  {
+   "kind": "entry",
+   "start": 1792688017.1187201,
+   "release": 1792688017.4336207
+  },
+  {
+   "kind": "drag",
+   "start": 1792688018.9534428,
+   "release": 1792688019.6593604
+  },
+  {
+   "kind": "tap",
+   "start": 1792688020.8614841,
+   "release": 1792688020.9639409
+  },
+  {
+   "kind": "entry",
+   "start": 1792688022.9653537,
+   "release": 1792688023.2837265
+  },
+  {
+   "kind": "drag",
+   "start": 1792688024.7844129,
+   "release": 1792688025.5071647
+  },
+  {
+   "kind": "tap",
+   "start": 1792688026.7099683,
+   "release": 1792688026.812067
+  },
+  {
+   "kind": "entry",
+   "start": 1792688028.8201272,
+   "release": 1792688029.1302905
+  },
+  {
+   "kind": "drag",
+   "start": 1792688030.6314268,
+   "release": 1792688031.3351824
+  },
+  {
+   "kind": "tap",
+   "start": 1792688032.5364466,
+   "release": 1792688032.6394839
+  },
+  {
+   "kind": "entry",
+   "start": 1792688034.6481032,
+   "release": 1792688034.9582148
+  },
+  {
+   "kind": "drag",
+   "start": 1792688036.4589586,
+   "release": 1792688037.1606457
+  },
+  {
+   "kind": "tap",
+   "start": 1792688038.3650086,
+   "release": 1792688038.4456303
+  },
+  {
+   "kind": "entry",
+   "start": 1792688040.4472742,
+   "release": 1792688040.7699032
+  },
+  {
+   "kind": "drag",
+   "start": 1792688042.2709033,
+   "release": 1792688042.9943147
+  },
+  {
+   "kind": "tap",
+   "start": 1792688044.1962678,
+   "release": 1792688044.3000994
+  },
+  {
+   "kind": "entry",
+   "start": 1792688046.3010793,
+   "release": 1792688046.6195288
+  },
+  {
+   "kind": "drag",
+   "start": 1792688048.1210105,
+   "release": 1792688048.8240583
+  },
+  {
+   "kind": "tap",
+   "start": 1792688050.0266955,
+   "release": 1792688050.1276882
+  },
+  {
+   "kind": "entry",
+   "start": 1792688052.1285605,
+   "release": 1792688052.4478958
+  },
+  {
+   "kind": "drag",
+   "start": 1792688053.9516451,
+   "release": 1792688054.6530986
+  },
+  {
+   "kind": "tap",
+   "start": 1792688055.8589704,
+   "release": 1792688055.939563
+  }
+ ],
+ "arm_app_id": "k230-video-software",
+ "workload_start": 1792688011.2713804,
+ "workload_start_mono": 6221.7327940269997,
+ "workload_end": 1792688057.9406521,
+ "apps_at_end": [
+  "k230-terminal",
+  "k230-video-software"
+ ],
+ "restored_apps": [
+  "k230-terminal"
+ ],
+ "finished_utc": "2026-10-22T16:54:23Z"
+}

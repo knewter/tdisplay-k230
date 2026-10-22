@@ -123,6 +123,50 @@ motion-to-present but its tracking p95 is 38.3 ms. Every one of these runs
 had sway running with `-d` (debug journal logging), as recorded in
 [the keyboard report](../keyboard/README.md).
 
+## Re-measurement after the compositor change
+
+On 2026-10-22, the same workload ran again with `--bench`, 8 cycles per arm:
+[recheck-busy](recheck-busy) at 16:52Z and [recheck-video](recheck-video) at
+16:53Z. The build was `sgjam1h0`, test-activated: sway without `-d`, at
+`SCHED_RR` 1
+([compositor-repaint](../compositor-repaint/README.md)), plus the
+`/proc`-based settings status
+([shade-pull](../shade-pull/README.md)). Each cell gives the median / max in
+ms, from `analyze.py`.
+
+| Arm, gesture | Touch ack, before → after | Tracking interval, before → after | Motion to present, before → after |
+| --- | --- | --- | --- |
+| video, entry | 136 / 195 → 63 / 77 | 115 / 211 → 19 / 38 | 88 / 173 → 40 / 58 |
+| video, drag | 122 / 154 → 50 / 60 | 57 / 96 → 19 / 19 | 56 / 103 → 22 / 46 |
+| video, tap | 137 / 205 → 120 / 127 | — | — |
+| busy, entry | 128 / 144 → 108 / 167 | 38 / 134 → 38 / 57 | 49 / 127 → 42 / 68 |
+| busy, drag | 58 / 90 → 65 / 78 | 19 / 57 → 19 / 38 | 23 / 71 → 23 / 58 |
+| busy, tap | 102 / 162 → 103 / 128 | — | — |
+
+Release to first present:
+
+| Arm | Before | After |
+| --- | --- | --- |
+| video tap | 50 / 67 ms | 17 / 24 ms |
+| busy tap | 22 / 52 ms | 17 / 24 ms |
+
+Tracking intervals over 33.334 ms:
+
+| Arm, gesture | Before | After |
+| --- | --- | --- |
+| video, drag | 95 | 0 |
+| busy, drag | 21 | 7 |
+| busy, entry | 32 | 39 |
+
+- **With a live video,** the deck now tracks every refresh while dragging.
+  Entry and drag acknowledge in about half the time.
+- **Busy entry is unchanged.** It still tracks at two refreshes, and 8/8 entry
+  acknowledgements exceed 100 ms from first contact. Part of that is the
+  gesture itself: the 72 px threshold takes about 83 ms at this swipe speed.
+- **Tap acknowledgement** includes the 80 ms contact.
+- None of these targets is declared passed. This is the same injected
+  evidence class as above, not glass or camera proof.
+
 ## Attempts
 
 - **probe-busy (failed):** btop was not on sway's exec PATH, so the arm
