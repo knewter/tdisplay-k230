@@ -2,11 +2,11 @@
 
 ### Requirement: Compositor repaints for drawer scroll and keyboard motion are measured against the render allowance
 
-*Grounding: `docs/evidence/interaction-jank/compositor-repaint/README.md`.
-Injected native touch on the board, test-activated build `g2yjvzv4`. Drawer:
-sway repaint 10.2 ms median, presented interval 21 ms median. Keyboard show,
-hold and hide contact: 19.2 ms. Keyboard show settle missed at 38.3 ms. The
-ordinary-boot check after promotion is pending.*
+*Grounding (2026-10-22): `docs/evidence/interaction-jank/compositor-repaint/README.md`.
+Injected native touch on the board, build `g2yjvzv4`, test-activated and then
+on an ordinary boot as the boot default. Drawer: sway repaint 10.2–10.3 ms
+median, presented interval 21 ms median. Keyboard show, hold and hide contact:
+19.2 ms. Keyboard show settle missed at 38.3 ms. sway ran `SCHED_RR` 1.*
 
 The shell's compositor SHALL be measured on the installed board during
 sustained drawer scroll and keyboard show, hold and hide. The measurement

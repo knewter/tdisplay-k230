@@ -115,6 +115,43 @@ and each keyboard run took `before`, `shown` and `hidden`. They are not
 committed. The m and l drawer captures show the drawer with its search chrome
 and grid intact, the same pixels as on k.
 
+## Promotion to the boot default
+
+On 2026-10-22, `g2yjvzv4` (commit `d724da4f`) replaced `z1basiwi` as the
+persistent system. The kernel, initrd and DTBs are identical between the two
+builds. [`promote.py`](promotion/promote.py.txt) ran as root under the board
+lock. It is the drawer promotion script with the paths changed. It:
+
+- swapped the system store path (one reference in each file) in
+  `/boot/k230-tdisplay.dtb` and `/boot/bootargs.txt`;
+- kept rollback copies, and added GC roots for both systems;
+- checked that no other `/boot` file changed;
+- set the system profile to `system-86-link`.
+
+An SSH-initiated reboot then booted `g2yjvzv4` as `/run/booted-system`, with
+`shell` and `shell-ui` active and no failed units. See the
+[receipt](promotion/receipt.json), boot ID `dd387e28…`.
+
+sway's main thread reported `SCHED_RR` 1 with `Max realtime priority 1`. The
+first `chrt -p` read, taken moments after SSH returned, showed `SCHED_OTHER`;
+every later read showed `SCHED_RR`. That fits a check taken during sway's
+startup, before it makes its request, but this was not proven.
+
+[run-boot](run-boot) repeated the same measurement on that ordinary boot:
+
+- drawer: 24.0 distinct fps, interval median 21 ms (p95 39 ms), sway repaint
+  median 10.3 ms;
+- keyboard contact: show 19.2 ms / 8.0 ms, hold-reverse 19.2 ms / 9.8 ms,
+  hide 19.2 ms / 8.6 ms (presented interval / render wall);
+- keyboard show settle: still a miss, at 38.3 ms / 16.6 ms.
+
+Its grim captures were normal.
+
+Rollback: write the copies under
+`/var/lib/k230/compositor-promote-20261022/promotion/rollback/` back to
+`/boot`, then run `nix-env --profile /nix/var/nix/profiles/system --set` with
+`z1basiwi`.
+
 ## Limits
 
 - Injected touch skips the Goodix interrupt and driver path.

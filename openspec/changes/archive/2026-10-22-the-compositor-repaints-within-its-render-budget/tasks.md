@@ -16,4 +16,4 @@
 ## 4. Close
 
 - [x] 4.1 Commit the measurements under `docs/evidence/interaction-jank/compositor-repaint/`, comparing each step against the 12 ms render allowance and the 33.334 ms card budget. Record any failed budget as failed.
-- [ ] 4.2 Promote the final build to the boot default, then verify an ordinary boot and a drawer run on it.
+- [x] 4.2 Promote the final build to the boot default, then verify an ordinary boot and a drawer run on it (`docs/evidence/interaction-jank/compositor-repaint/promotion/receipt.json`, run-boot).
