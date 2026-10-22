@@ -1,0 +1,127 @@
+#!/usr/bin/env python3
+"""Notification-shade pull workload with injected native touch.
+
+Usage: shade-pull.py OUT_DIR EXPECTED_SYSTEM PULLS
+Each pull starts one contact in the top edge band, drags it down 400 px over
+400 ms at the measured real-finger report rate (8.14 ms) and releases. The
+shade then stays open 1.5 s and is hidden with the installed client before a
+1 s pause. Saves gesture windows plus the shell-ui journal for the run.
+Derived from drawer-scroll.py. Evidence class: board, injected native touch.
+"""
+import fcntl, json, os, struct, subprocess, sys, time
+from pathlib import Path
+
+out = Path(sys.argv[1]); expected = sys.argv[2]; pulls = int(sys.argv[3])
+if str(Path('/run/current-system').resolve()) != expected:
+    raise SystemExit('installed system differs from expected')
+if not 1 <= pulls <= 30:
+    raise SystemExit('bad pull count')
+out.mkdir(mode=0o700)
+ENV = ['sudo', '-u', 'shell', 'env', 'XDG_RUNTIME_DIR=/run/shell',
+       'WAYLAND_DISPLAY=wayland-1', 'SWAYSOCK=/run/shell/sway-ipc.sock',
+       'PATH=/run/current-system/sw/bin']
+
+def run(*args, **kw):
+    return subprocess.run(ENV + list(args), check=True, timeout=25, **kw)
+
+def grim(name):
+    data = run('grim', '-', capture_output=True).stdout
+    assert data.startswith(b'\x89PNG')
+    (out / f'{name}.png').write_bytes(data)
+
+outputs = json.loads(run('swaymsg', '-t', 'get_outputs', '-r', capture_output=True).stdout)
+active = [o for o in outputs if o.get('active')]
+assert len(active) == 1 and active[0]['transform'] == '270'
+assert active[0]['rect']['width'] == 1232 and active[0]['rect']['height'] == 568
+meta = {
+    'evidence_class': 'board, injected native touch (persistent uinput); not real glass',
+    'system': expected,
+    'output': {k: active[0][k] for k in ('name', 'transform', 'rect', 'max_render_time')},
+    'started_utc': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime()),
+    'step_ms': 8.14, 'gestures': [],
+}
+
+real = os.open('/dev/input/event1', os.O_RDONLY)
+axes = [0, 1, 0x2f, 0x30, 0x35, 0x36, 0x39]; info = {}
+for a in axes:
+    b = bytearray(24); fcntl.ioctl(real, 0x80184540 + a, b); info[a] = struct.unpack('6i', b)
+os.close(real)
+fd = os.open('/dev/uinput', os.O_WRONLY | os.O_NONBLOCK)
+for bit in (0, 1, 3): fcntl.ioctl(fd, 0x40045564, bit)
+fcntl.ioctl(fd, 0x40045565, 0x14a)
+for a in axes: fcntl.ioctl(fd, 0x40045567, a)
+fcntl.ioctl(fd, 0x4004556e, 1)
+mx, mn = [0] * 64, [0] * 64
+for a, v in info.items(): mn[a], mx[a] = v[1], v[2]
+dev = (struct.pack('80sHHHHi', b'K230 injected touchscreen', 0x18, 0, 0, 0, 0)
+       + struct.pack('64i', *mx) + struct.pack('64i', *mn) + struct.pack('64i', *[0] * 64) * 2)
+os.write(fd, dev); fcntl.ioctl(fd, 0x5501); time.sleep(1.0)
+event = struct.Struct('@llHHi')
+
+def frame(events):
+    b = b''.join(event.pack(0, 0, *e) for e in [*events, (0, 0, 0)])
+    assert os.write(fd, b) == len(b)
+
+def position(x, y):
+    # Logical landscape -> native panel axes (same mapping as the card trials).
+    nx = y / 567; ny = 1 - x / 1231
+    def raw(a, f): return round(info[a][1] + f * (info[a][2] - info[a][1]))
+    return [(3, 0x35, raw(0x35, nx)), (3, 0x36, raw(0x36, ny)), (3, 0, raw(0, nx)), (3, 1, raw(1, ny))]
+
+tid = [200]
+def drag(x, y0, y1, ms, hold_ms=0):
+    steps = max(2, round(ms / 8.14)); start = time.time()
+    tid[0] += 1
+    frame([(3, 0x2f, 0), (3, 0x39, tid[0]), (3, 0x30, 20), *position(x, y0), (1, 0x14a, 1)])
+    t0 = time.monotonic()
+    for i in range(1, steps + 1):
+        # Sleep, never spin: the board has one CPU, so a busy-wait here
+        # steals time from the drawer being measured (run1 did this).
+        time.sleep(max(0, t0 + i * 0.00814 - time.monotonic()))
+        frame(position(x, y0 + (y1 - y0) * i / steps))
+    if hold_ms: time.sleep(hold_ms / 1000)
+    frame([(3, 0x2f, 0), (3, 0x39, -1), (1, 0x14a, 0)])
+    meta['gestures'].append({'start': start, 'end': time.time(), 'x': x, 'y0': y0, 'y1': y1,
+                             'ms': ms, 'steps': steps, 'hold_ms': hold_ms})
+
+try:
+    run('k230-shell-rust', '--surface', 'hide')
+    time.sleep(1.5)
+    grim('before')
+    def cpu():
+        r = {}
+        for unit in ('shell.service', 'shell-ui.service', 'systemd-journald.service'):
+            st = (Path('/sys/fs/cgroup/system.slice') / unit / 'cpu.stat').read_text()
+            r[unit] = int(dict(l.split() for l in st.splitlines())['usage_usec'])
+        t = os.times(); r['injector'] = int((t.user + t.system) * 1e6)
+        # Whole-CPU busy time (all non-idle, non-iowait jiffies, USER_HZ=100).
+        f = [int(x) for x in open('/proc/stat').readline().split()[1:]]
+        r['system_busy'] = (sum(f) - f[3] - f[4]) * 10000
+        r['wall'] = time.monotonic(); return r
+    meta['cpu_before'] = cpu()
+    meta['workload_start'] = time.time()
+    n = 0
+    for n in range(pulls):
+        drag(616, 4, 404, 400)
+        time.sleep(0.7)
+        if n == 0: grim('shade-open')
+        time.sleep(0.8)
+        run('k230-shell-rust', '--surface', 'hide')
+        time.sleep(1.0)
+    n = pulls
+    meta['workload_end'] = time.time()
+    meta['cpu_after'] = cpu()
+finally:
+    os.close(fd)
+    time.sleep(1.0)
+    subprocess.run(ENV + ['k230-shell-rust', '--surface', 'hide'], timeout=25)
+    time.sleep(1.0)
+    try: grim('after-close')
+    except Exception as e: meta['after_close_error'] = repr(e)
+    meta['finished_utc'] = time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())
+    (out / 'meta.json').write_text(json.dumps(meta, indent=1))
+    since = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(meta.get('workload_start', time.time()) - 5))
+    j = subprocess.run(['journalctl', '-u', 'shell-ui', '--since', since, '--no-pager', '-o', 'short-unix'],
+                       capture_output=True, text=True, timeout=60).stdout
+    (out / 'shell-ui-journal.txt').write_text(j)
+    print('DONE', n if 'n' in dir() else None, len(meta['gestures']))

@@ -1,0 +1,16 @@
+import json,re,sys
+from pathlib import Path
+for d in sys.argv[1:]:
+    run=Path(d); meta=json.loads((run/'meta.json').read_text())
+    rows=[]
+    for line in (run/'shell-ui-journal.txt').read_text().splitlines():
+        m=re.match(r'^(\d+\.\d+) .* (\d+)ms (frame-done|commit)$',line)
+        if m: rows.append((float(m[1]),int(m[2]),m[3]))
+    allg=[]; worst=[]
+    for g in meta['gestures']:
+        done=[r[1] for r in rows if r[2]=='frame-done' and g['start']<=r[0]<=g['end']+0.6]
+        dist=[t for i,t in enumerate(done) if i==0 or t-done[i-1]>3]
+        gaps=[b-a for a,b in zip(dist,dist[1:])]
+        allg+=gaps; worst.append(max(gaps) if gaps else None)
+    allg.sort(); q=lambda p: allg[min(len(allg)-1,int(len(allg)*p))]
+    print(run.name, 'n',len(allg),'median',q(.5),'p90',q(.9),'p99',q(.99),'max',allg[-1],'over50',sum(g>50 for g in allg),'per-pull max',worst)

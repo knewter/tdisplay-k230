@@ -1,0 +1,4 @@
+run-base n 216 median 23 p90 38 p99 38 max 53 over50 1 per-pull max [38, 38, 38, 38, 38, 38, 38, 38, 53, 38]
+run-n n 225 median 33 p90 38 p99 39 max 50 over50 0 per-pull max [50, 38, 35, 38, 35, 38, 38, 39, 38, 38]
+run-n2 n 216 median 34 p90 38 p99 39 max 53 over50 1 per-pull max [39, 38, 38, 39, 38, 39, 53, 38, 40, 38]
+run-n3 n 233 median 22 p90 36 p99 39 max 39 over50 0 per-pull max [35, 39, 37, 37, 35, 39, 37, 38, 38, 39]

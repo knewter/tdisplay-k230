@@ -5,18 +5,13 @@
 #define _POSIX_C_SOURCE 200809L
 #include <ctype.h>
 #include <dirent.h>
-#include <errno.h>
-#include <fcntl.h>
 #include <inttypes.h>
-#include <signal.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/types.h>
-#include <sys/wait.h>
-#include <time.h>
 #include <unistd.h>
 
 static bool integer(const char *path, uint64_t *value) {
@@ -114,42 +109,39 @@ static void brightness(const char *root) {
 	       access(writable_path, W_OK) == 0 ? "writable" : "read-only", percent);
 }
 
-static double monotonic_seconds(void) {
-	struct timespec now;
-	if (clock_gettime(CLOCK_MONOTONIC, &now)) return -1;
-	return (double)now.tv_sec + (double)now.tv_nsec / 1000000000.;
-}
-
-static bool keyboard_available(void) {
-	const char *pgrep = getenv("K230_PGREP");
-	if (!pgrep) pgrep = "pgrep";
-	char uid[32];
-	snprintf(uid, sizeof(uid), "%ju", (uintmax_t)getuid());
-	double start = monotonic_seconds();
-	if (start < 0) return false;
-	pid_t child = fork();
-	if (child < 0) return false;
-	if (!child) {
-		int null = open("/dev/null", O_RDWR);
-		if (null < 0) _exit(1);
-		for (int fd = 0; fd < 3; ++fd) if (dup2(null, fd) < 0) _exit(1);
-		if (null > 2) close(null);
-		execlp(pgrep, pgrep, "-u", uid, "-x", "wvkbd-mobintl", (char *)NULL);
-		_exit(1);
+/* `pgrep -u UID -x wvkbd-mobintl` without pgrep. procps's pgrep cost about
+ * 79 ms of CPU per call on the board (every /proc entry read in full, plus
+ * gconv setup for its regex), on the one CPU the shade animates on. This
+ * reads each process's comm, and its status only for a name match. pgrep -u
+ * matches the effective UID, the second Uid: field. */
+static bool keyboard_running(const char *proc, uintmax_t uid) {
+	DIR *dir = opendir(proc);
+	if (!dir) return false;
+	bool found = false;
+	struct dirent *entry;
+	while (!found && (entry = readdir(dir))) {
+		const char *pid = entry->d_name;
+		if (!*pid || strspn(pid, "0123456789") != strlen(pid)) continue;
+		char path[512], line[256];
+		if (snprintf(path, sizeof(path), "%s/%s/comm", proc, pid) >= (int)sizeof(path)) continue;
+		FILE *f = fopen(path, "r");
+		if (!f) continue;
+		bool named = fgets(line, sizeof(line), f) && !strcmp(line, "wvkbd-mobintl\n");
+		fclose(f);
+		if (!named) continue;
+		if (snprintf(path, sizeof(path), "%s/%s/status", proc, pid) >= (int)sizeof(path)) continue;
+		if (!(f = fopen(path, "r"))) continue;
+		while (fgets(line, sizeof(line), f)) {
+			uintmax_t real, effective;
+			if (!strncmp(line, "Uid:", 4)) {
+				found = sscanf(line + 4, "%ju %ju", &real, &effective) == 2 && effective == uid;
+				break;
+			}
+		}
+		fclose(f);
 	}
-	for (;;) {
-		int status;
-		pid_t result = waitpid(child, &status, WNOHANG);
-		if (result == child) return WIFEXITED(status) && WEXITSTATUS(status) == 0;
-		if (result < 0 && errno != EINTR) break;
-		double now = monotonic_seconds();
-		if (now < 0 || now - start >= 3.) break;
-		struct timespec pause = {.tv_sec = 0, .tv_nsec = 1000000};
-		nanosleep(&pause, NULL);
-	}
-	kill(child, SIGKILL);
-	while (waitpid(child, NULL, 0) < 0 && errno == EINTR) {}
-	return false;
+	closedir(dir);
+	return found;
 }
 
 static int print_status(const char *root, bool keyboard, const char *motion) {
@@ -166,5 +158,6 @@ static int print_status(const char *root, bool keyboard, const char *motion) {
 }
 
 int main(void) {
-	return print_status("/sys", keyboard_available(), getenv("K230_SETTINGS_REDUCED_MOTION"));
+	return print_status("/sys", keyboard_running("/proc", (uintmax_t)getuid()),
+	                    getenv("K230_SETTINGS_REDUCED_MOTION"));
 }

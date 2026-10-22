@@ -26,6 +26,7 @@ class StatusTests(unittest.TestCase):
                           str(ROOT / "nix/settings-status.c") +
                           '"\n#undef main\nint main(int argc, char **argv) {\n'
                           'if (argc == 1) return production_main();\n'
+                          'if (!strcmp(argv[1], "--proc")) return !keyboard_running(argv[2], strtoumax(argv[3], NULL, 10));\n'
                           'return print_status(argv[1], atoi(argv[2]), argc > 3 ? argv[3] : NULL);\n}\n')
         subprocess.run([os.environ.get("CC", "cc"), "-std=c11", "-O2", "-Wall", "-Wextra",
                         "-Werror", str(driver), "-o", str(cls.binary)], check=True)
@@ -131,39 +132,47 @@ class StatusTests(unittest.TestCase):
         for name in ["private-interface", "battery", "ssid", "address", str(self.root)]:
             self.assertNotIn(name, result)
 
-    def test_real_keyboard_command_arguments_and_exit_states(self):
-        command = self.root / "pgrep"
-        captured = self.root / "args"
-        command.write_text('#!/bin/sh\nprintf "%s\\n" "$@" > "' + str(captured) + '"\nexit 0\n')
-        command.chmod(0o700)
-        env = {**os.environ, "K230_PGREP": str(command)}
-        result = json.loads(subprocess.check_output([str(self.binary)], env=env))
-        self.assertEqual(captured.read_text().splitlines(), ["-u", str(os.getuid()), "-x", "wvkbd-mobintl"])
-        self.assertEqual(result["controls"]["keyboard"]["state"], "action")
-        for contents in ["#!/bin/sh\nexit 1\n", "#!/bin/sh\nkill -TERM $$\n"]:
-            command.write_text(contents)
-            result = json.loads(subprocess.check_output([str(self.binary)], env=env))
-            self.assertEqual(result["controls"]["keyboard"]["state"], "unavailable")
-        command.unlink()
-        result = json.loads(subprocess.check_output([str(self.binary)], env=env))
-        self.assertEqual(result["controls"]["keyboard"]["state"], "unavailable")
+    def process(self, proc, pid, comm, euid):
+        entry = proc / str(pid)
+        entry.mkdir(parents=True)
+        (entry / "comm").write_text(comm + "\n")
+        (entry / "status").write_text(f"Name:\t{comm}\nUmask:\t0022\nState:\tS (sleeping)\n"
+                                      f"Uid:\t7\t{euid}\t{euid}\t{euid}\n")
 
-    def test_keyboard_deadline_kills_and_reaps_owned_child(self):
+    def running(self, proc, uid):
+        return subprocess.run([str(self.binary), "--proc", str(proc), str(uid)]).returncode == 0
+
+    def test_keyboard_scan_matches_pgrep_u_x(self):
+        proc = self.root / "proc"
+        self.process(proc, 1, "systemd", 0)
+        (proc / "self").mkdir()
+        (proc / "sys").mkdir()
+        self.assertFalse(self.running(proc, 1000))
+        # pgrep -x: the whole name, not a prefix or substring.
+        self.process(proc, 40, "wvkbd-mobintl2", 1000)
+        self.process(proc, 41, "wvkbd", 1000)
+        self.assertFalse(self.running(proc, 1000))
+        # pgrep -u: the effective UID (second Uid: field), not the real one (7).
+        self.process(proc, 42, "wvkbd-mobintl", 1000)
+        self.assertTrue(self.running(proc, 1000))
+        self.assertFalse(self.running(proc, 7))
+        self.assertFalse(self.running(proc, 1001))
+        # A process that exits between readdir and open is skipped.
+        (proc / "43").mkdir()
+        self.assertTrue(self.running(proc, 1000))
+        self.assertFalse(self.running(self.root / "missing", 1000))
+
+    def test_production_status_reads_live_proc_without_children(self):
         command = self.root / "pgrep"
-        pid_file = self.root / "pid"
-        # exec prevents a shell grandchild escaping the helper-owned deadline.
-        command.write_text('#!/bin/sh\necho $$ > "' + str(pid_file) + '"\nexec sleep 30\n')
+        marker = self.root / "ran"
+        command.write_text('#!/bin/sh\ntouch "' + str(marker) + '"\nexit 0\n')
         command.chmod(0o700)
         start = time.monotonic()
         result = json.loads(subprocess.check_output([str(self.binary)],
                             env={**os.environ, "K230_PGREP": str(command)}, timeout=5))
-        elapsed = time.monotonic() - start
-        self.assertGreaterEqual(elapsed, 2.9)
-        self.assertLess(elapsed, 4.5)
-        self.assertEqual(result["controls"]["keyboard"]["state"], "unavailable")
-        with self.assertRaises(ProcessLookupError):
-            os.kill(int(pid_file.read_text()), 0)
-
+        self.assertLess(time.monotonic() - start, 2)
+        self.assertFalse(marker.exists())
+        self.assertIn(result["controls"]["keyboard"]["state"], ["action", "unavailable"])
 
 if __name__ == "__main__":
     unittest.main()

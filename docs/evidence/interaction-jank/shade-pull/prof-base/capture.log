@@ -1,0 +1,8 @@
+pid shell-ui 1075 7201 k230-shell-rust
+pid shell 1062 7014 sway
+start 2026-10-22T15:56:05Z
+workload_rc=0 perf_rc=130
+end 2026-10-22T15:56:46Z
+pid-after shell-ui 1075
+pid-after shell 1062
+script-warnings 5

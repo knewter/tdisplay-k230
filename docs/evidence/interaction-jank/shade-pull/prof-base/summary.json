@@ -1,0 +1,437 @@
+{
+ "cpu_ms": 5206.0,
+ "processes_cpu_ms": {
+  "sway": 2613.1,
+  "k230-shell-rust": 1522.6,
+  "pgrep": 788.9,
+  "k230-settings": 150.8,
+  "k230-settings-s": 130.7
+ },
+ "inclusive": [
+  {
+   "frame": "_start",
+   "cpu_ms": 5015.1,
+   "share": 0.9633
+  },
+  {
+   "frame": "__libc_start_main@@GLIBC_2.34",
+   "cpu_ms": 4984.9,
+   "share": 0.9575
+  },
+  {
+   "frame": "__libc_start_call_main",
+   "cpu_ms": 4984.9,
+   "share": 0.9575
+  },
+  {
+   "frame": "main",
+   "cpu_ms": 4984.9,
+   "share": 0.9575
+  },
+  {
+   "frame": "wl_display_run",
+   "cpu_ms": 2572.9,
+   "share": 0.4942
+  },
+  {
+   "frame": "wl_event_loop_dispatch",
+   "cpu_ms": 2537.7,
+   "share": 0.4875
+  },
+  {
+   "frame": "output_repaint_timer_handler.part.0",
+   "cpu_ms": 1979.9,
+   "share": 0.3803
+  },
+  {
+   "frame": "wlr_scene_output_build_state",
+   "cpu_ms": 1899.5,
+   "share": 0.3649
+  },
+  {
+   "frame": "output_repaint_timer_handler",
+   "cpu_ms": 1542.7,
+   "share": 0.2963
+  },
+  {
+   "frame": "k230_shell_rust::serve",
+   "cpu_ms": 1457.3,
+   "share": 0.2799
+  },
+  {
+   "frame": "std::sys::backtrace::__rust_begin_short_backtrace::<fn",
+   "cpu_ms": 1417.1,
+   "share": 0.2722
+  },
+  {
+   "frame": "std::rt::lang_start_internal",
+   "cpu_ms": 1417.1,
+   "share": 0.2722
+  },
+  {
+   "frame": "std::rt::lang_start::<",
+   "cpu_ms": 1417.1,
+   "share": 0.2722
+  },
+  {
+   "frame": "k230_shell_rust::main",
+   "cpu_ms": 1417.1,
+   "share": 0.2722
+  },
+  {
+   "frame": "render_pass_add_texture",
+   "cpu_ms": 1241.2,
+   "share": 0.2384
+  },
+  {
+   "frame": "k230_round_composite_impl",
+   "cpu_ms": 1236.2,
+   "share": 0.2375
+  },
+  {
+   "frame": "__irqentry_text_start_[k]",
+   "cpu_ms": 1175.9,
+   "share": 0.2259
+  },
+  {
+   "frame": "<k230_shell_rust::ShellClient>::draw",
+   "cpu_ms": 1135.7,
+   "share": 0.2181
+  },
+  {
+   "frame": "<k230_shell_rust::render::RendererCache>::draw",
+   "cpu_ms": 1090.5,
+   "share": 0.2095
+  },
+  {
+   "frame": "<k230_shell_rust::render::RendererCache>::draw_with_hud",
+   "cpu_ms": 1090.5,
+   "share": 0.2095
+  },
+  {
+   "frame": "do_trap_ecall_u_[k]",
+   "cpu_ms": 1085.4,
+   "share": 0.2085
+  },
+  {
+   "frame": "__internal_syscall_cancel",
+   "cpu_ms": 924.6,
+   "share": 0.1776
+  },
+  {
+   "frame": "<wayland_client::event_queue::EventQueue<k230_shell_rust::ShellClient>>::dispatching_impl",
+   "cpu_ms": 899.5,
+   "share": 0.1728
+  },
+  {
+   "frame": "__syscall_cancel",
+   "cpu_ms": 864.3,
+   "share": 0.166
+  },
+  {
+   "frame": "pixman_image_composite32",
+   "cpu_ms": 829.1,
+   "share": 0.1593
+  },
+  {
+   "frame": "rvv_composite_over_8888_0565",
+   "cpu_ms": 763.8,
+   "share": 0.1467
+  },
+  {
+   "frame": "k230_turn_copy_rect.isra.0",
+   "cpu_ms": 633.2,
+   "share": 0.1216
+  },
+  {
+   "frame": "render_pass_submit",
+   "cpu_ms": 633.2,
+   "share": 0.1216
+  },
+  {
+   "frame": "procps_pids_get",
+   "cpu_ms": 598.0,
+   "share": 0.1149
+  },
+  {
+   "frame": "readproc",
+   "cpu_ms": 567.8,
+   "share": 0.1091
+  },
+  {
+   "frame": "simple_readproc",
+   "cpu_ms": 522.6,
+   "share": 0.1004
+  },
+  {
+   "frame": "wl_signal_emit_mutable",
+   "cpu_ms": 522.6,
+   "share": 0.1004
+  },
+  {
+   "frame": "k230_rgb565_blit",
+   "cpu_ms": 472.4,
+   "share": 0.0907
+  },
+  {
+   "frame": "handle_frame",
+   "cpu_ms": 467.3,
+   "share": 0.0898
+  },
+  {
+   "frame": "wayland_client::event_queue::queue_callback::<wayland_client::protocol::wl_callback::WlCallback, wayland_client::protocol::wl_surface::WlSurface, k230_shell_rust::ShellClient>",
+   "cpu_ms": 462.3,
+   "share": 0.0888
+  },
+  {
+   "frame": "<k230_shell_rust::ShellClient as wayland_client::event_queue::Dispatch<wayland_client::protocol::wl_callback::WlCallback, wayland_client::protocol::wl_surface::WlSurface>>::event",
+   "cpu_ms": 462.3,
+   "share": 0.0888
+  },
+  {
+   "frame": "wl_event_loop_dispatch_idle",
+   "cpu_ms": 442.2,
+   "share": 0.0849
+  },
+  {
+   "frame": "wayland_client::event_queue::queue_callback::<wayland_protocols_wlr::layer_shell::v1::generated::client::zwlr_layer_surface_v1::ZwlrLayerSurfaceV1, smithay_client_toolkit::shell::wlr_layer::LayerSurfaceData, k230_shell_rust::ShellClient>",
+   "cpu_ms": 432.2,
+   "share": 0.083
+  },
+  {
+   "frame": "<k230_shell_rust::ShellClient>::apply_configure",
+   "cpu_ms": 432.2,
+   "share": 0.083
+  },
+  {
+   "frame": "<smithay_client_toolkit::shell::wlr_layer::LayerShell as wayland_client::event_queue::Dispatch<wayland_protocols_wlr::layer_shell::v1::generated::client::zwlr_layer_surface_v1::ZwlrLayerSurfaceV1, smithay_client_toolkit::shell::wlr_layer::LayerSurfaceData, k230_shell_rust::ShellClient>>::event",
+   "cpu_ms": 432.2,
+   "share": 0.083
+  }
+ ],
+ "self": [
+  {
+   "frame": "rvv_composite_over_8888_0565",
+   "cpu_ms": 763.8,
+   "share": 0.1467
+  },
+  {
+   "frame": "k230_turn_copy_rect.isra.0",
+   "cpu_ms": 633.2,
+   "share": 0.1216
+  },
+  {
+   "frame": "<k230_shell_rust::render::RendererCache>::draw_with_hud",
+   "cpu_ms": 542.7,
+   "share": 0.1042
+  },
+  {
+   "frame": "k230_rgb565_blit",
+   "cpu_ms": 472.4,
+   "share": 0.0907
+  },
+  {
+   "frame": "_wordcopy_fwd_aligned",
+   "cpu_ms": 150.8,
+   "share": 0.029
+  },
+  {
+   "frame": "finish_task_switch.isra.0_[k]",
+   "cpu_ms": 140.7,
+   "share": 0.027
+  },
+  {
+   "frame": "strcmp",
+   "cpu_ms": 135.7,
+   "share": 0.0261
+  },
+  {
+   "frame": "memset",
+   "cpu_ms": 95.5,
+   "share": 0.0183
+  },
+  {
+   "frame": "k230_shell_rust::bgra_frame_is_opaque",
+   "cpu_ms": 65.3,
+   "share": 0.0125
+  },
+  {
+   "frame": "_raw_spin_unlock_irqrestore_[k]",
+   "cpu_ms": 60.3,
+   "share": 0.0116
+  },
+  {
+   "frame": "__internal_syscall_cancel",
+   "cpu_ms": 40.2,
+   "share": 0.0077
+  },
+  {
+   "frame": "__check_object_size_[k]",
+   "cpu_ms": 35.2,
+   "share": 0.0068
+  },
+  {
+   "frame": "do_trap_ecall_u_[k]",
+   "cpu_ms": 35.2,
+   "share": 0.0068
+  },
+  {
+   "frame": "rvv_combine_over_u",
+   "cpu_ms": 30.2,
+   "share": 0.0058
+  },
+  {
+   "frame": "_int_malloc",
+   "cpu_ms": 25.1,
+   "share": 0.0048
+  },
+  {
+   "frame": "__libc_calloc",
+   "cpu_ms": 25.1,
+   "share": 0.0048
+  },
+  {
+   "frame": "__alloc_tagging_slab_alloc_hook_[k]",
+   "cpu_ms": 25.1,
+   "share": 0.0048
+  },
+  {
+   "frame": "do_epoll_wait_[k]",
+   "cpu_ms": 25.1,
+   "share": 0.0048
+  },
+  {
+   "frame": "ep_send_events_[k]",
+   "cpu_ms": 25.1,
+   "share": 0.0048
+  },
+  {
+   "frame": "read_conf_file.isra.0",
+   "cpu_ms": 20.1,
+   "share": 0.0039
+  },
+  {
+   "frame": "__syscall_cancel_arch",
+   "cpu_ms": 20.1,
+   "share": 0.0039
+  },
+  {
+   "frame": "__memcpy_generic",
+   "cpu_ms": 20.1,
+   "share": 0.0039
+  },
+  {
+   "frame": "_cairo_tor_scan_converter_generate",
+   "cpu_ms": 20.1,
+   "share": 0.0039
+  },
+  {
+   "frame": "rvv_fill",
+   "cpu_ms": 20.1,
+   "share": 0.0039
+  },
+  {
+   "frame": "alloc_fd_[k]",
+   "cpu_ms": 20.1,
+   "share": 0.0039
+  },
+  {
+   "frame": "_raw_spin_unlock_irq_[k]",
+   "cpu_ms": 20.1,
+   "share": 0.0039
+  },
+  {
+   "frame": "__printf_buffer",
+   "cpu_ms": 20.1,
+   "share": 0.0039
+  },
+  {
+   "frame": "insert_module",
+   "cpu_ms": 15.1,
+   "share": 0.0029
+  },
+  {
+   "frame": "__GI___strchrnul",
+   "cpu_ms": 15.1,
+   "share": 0.0029
+  },
+  {
+   "frame": "rvv_composite_over_n_8_8888",
+   "cpu_ms": 15.1,
+   "share": 0.0029
+  },
+  {
+   "frame": "kmem_cache_free_[k]",
+   "cpu_ms": 15.1,
+   "share": 0.0029
+  },
+  {
+   "frame": "unix_stream_sendmsg_[k]",
+   "cpu_ms": 15.1,
+   "share": 0.0029
+  },
+  {
+   "frame": "fput_[k]",
+   "cpu_ms": 15.1,
+   "share": 0.0029
+  },
+  {
+   "frame": "__GI_____strtoll_l_internal",
+   "cpu_ms": 15.1,
+   "share": 0.0029
+  },
+  {
+   "frame": "kmem_cache_alloc_noprof_[k]",
+   "cpu_ms": 15.1,
+   "share": 0.0029
+  },
+  {
+   "frame": "__alloc_tagging_slab_free_hook_[k]",
+   "cpu_ms": 15.1,
+   "share": 0.0029
+  },
+  {
+   "frame": "__vfscanf_internal",
+   "cpu_ms": 15.1,
+   "share": 0.0029
+  },
+  {
+   "frame": "status2proc",
+   "cpu_ms": 15.1,
+   "share": 0.0029
+  },
+  {
+   "frame": "queue_work_on_[k]",
+   "cpu_ms": 15.1,
+   "share": 0.0029
+  },
+  {
+   "frame": "__schedule_[k]",
+   "cpu_ms": 10.1,
+   "share": 0.0019
+  }
+ ],
+ "units": {
+  "shell-ui": {
+   "pid": 1075,
+   "starttime": 7201,
+   "comm": "k230-shell-rust"
+  },
+  "shell": {
+   "pid": 1062,
+   "starttime": 7014,
+   "comm": "sway"
+  }
+ },
+ "freq_hz": 199,
+ "call_graph": "dwarf,65528",
+ "host_wall_s": 45.8,
+ "capture": [
+  "start 2026-10-22T15:56:05Z",
+  "workload_rc=0 perf_rc=130",
+  "end 2026-10-22T15:56:46Z",
+  "pid-after shell-ui 1075",
+  "pid-after shell 1062",
+  "script-warnings 5"
+ ]
+}

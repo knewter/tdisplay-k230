@@ -1,0 +1,138 @@
+{
+ "evidence_class": "board, injected native touch (persistent uinput); not real glass",
+ "system": "/nix/store/sgjam1h016dgvsvb18x28x0wg3mhy1hz-nixos-system-nixos-26.11.20260919.20b1ddd",
+ "output": {
+  "name": "DSI-1",
+  "transform": "270",
+  "rect": {
+   "x": 0,
+   "y": 0,
+   "width": 1232,
+   "height": 568
+  },
+  "max_render_time": 12
+ },
+ "started_utc": "2026-10-22T16:02:29Z",
+ "step_ms": 8.1400000000000006,
+ "gestures": [
+  {
+   "start": 1792684952.1485713,
+   "end": 1792684952.5491166,
+   "x": 616,
+   "y0": 4,
+   "y1": 404,
+   "ms": 400,
+   "steps": 49,
+   "hold_ms": 0
+  },
+  {
+   "start": 1792684955.5260227,
+   "end": 1792684955.928988,
+   "x": 616,
+   "y0": 4,
+   "y1": 404,
+   "ms": 400,
+   "steps": 49,
+   "hold_ms": 0
+  },
+  {
+   "start": 1792684958.5981858,
+   "end": 1792684959.0124519,
+   "x": 616,
+   "y0": 4,
+   "y1": 404,
+   "ms": 400,
+   "steps": 49,
+   "hold_ms": 0
+  },
+  {
+   "start": 1792684961.7321932,
+   "end": 1792684962.1366,
+   "x": 616,
+   "y0": 4,
+   "y1": 404,
+   "ms": 400,
+   "steps": 49,
+   "hold_ms": 0
+  },
+  {
+   "start": 1792684964.8550351,
+   "end": 1792684965.2604768,
+   "x": 616,
+   "y0": 4,
+   "y1": 404,
+   "ms": 400,
+   "steps": 49,
+   "hold_ms": 0
+  },
+  {
+   "start": 1792684967.9804156,
+   "end": 1792684968.3829849,
+   "x": 616,
+   "y0": 4,
+   "y1": 404,
+   "ms": 400,
+   "steps": 49,
+   "hold_ms": 0
+  },
+  {
+   "start": 1792684971.1035652,
+   "end": 1792684971.5049946,
+   "x": 616,
+   "y0": 4,
+   "y1": 404,
+   "ms": 400,
+   "steps": 49,
+   "hold_ms": 0
+  },
+  {
+   "start": 1792684974.2250738,
+   "end": 1792684974.6299837,
+   "x": 616,
+   "y0": 4,
+   "y1": 404,
+   "ms": 400,
+   "steps": 49,
+   "hold_ms": 0
+  },
+  {
+   "start": 1792684977.300998,
+   "end": 1792684977.7131157,
+   "x": 616,
+   "y0": 4,
+   "y1": 404,
+   "ms": 400,
+   "steps": 49,
+   "hold_ms": 0
+  },
+  {
+   "start": 1792684980.4322796,
+   "end": 1792684980.8369167,
+   "x": 616,
+   "y0": 4,
+   "y1": 404,
+   "ms": 400,
+   "steps": 49,
+   "hold_ms": 0
+  }
+ ],
+ "cpu_before": {
+  "shell.service": 9335854,
+  "shell-ui.service": 5994958,
+  "systemd-journald.service": 6387720,
+  "injector": 340000,
+  "system_busy": 330520000,
+  "wall": 3162.6099145210001
+ },
+ "workload_start": 1792684952.1485412,
+ "workload_end": 1792684983.5057013,
+ "cpu_after": {
+  "shell.service": 12052271,
+  "shell-ui.service": 7746006,
+  "systemd-journald.service": 6914076,
+  "injector": 540000,
+  "system_busy": 338200000,
+  "wall": 3193.9707192850001
+ },
+ "finished_utc": "2026-10-22T16:03:05Z"
+}
