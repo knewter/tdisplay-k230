@@ -103,3 +103,29 @@ the band edges. The drawer closed normally after every run.
 - Sampling distorts timing on one CPU, so timing comes from the unprofiled
   runs.
 - sway ran with `-d` debug logging throughout.
+
+## Promotion to the boot default
+
+On 2026-10-22 at 05:42Z, `z1basiwi` replaced `8xkkpma4` as the persistent
+system. The kernel, initrd and DTBs are identical between the two builds.
+[`promote.py`](promotion/promote.py.txt) ran as root under the board lock. It:
+
+- swapped the system store path (one reference in each file) in
+  `/boot/k230-tdisplay.dtb` and `/boot/bootargs.txt`, with atomic writes;
+- kept rollback copies, and added GC roots for both systems;
+- checked that no other `/boot` file changed;
+- set the system profile to `system-85-link`.
+
+An SSH-initiated reboot then booted `z1basiwi` as `/run/booted-system`, with
+`shell` and `shell-ui` active and no failed units. See the
+[receipt](promotion/receipt.json), boot ID `98601ab7…`.
+
+A 30 s drawer-scroll run on that ordinary boot ([run-boot](run-boot)) measured:
+
+- contact render: median 6.1 ms, p95 10.2 ms;
+- 20.6 distinct presented frames per second.
+
+Its mid-scroll grim capture was clean. Rollback: write the copies under
+`/var/lib/k230/drawer-promote-20261022/promotion/rollback/` back to `/boot`,
+then run `nix-env --profile /nix/var/nix/profiles/system --set` with the
+previous system.

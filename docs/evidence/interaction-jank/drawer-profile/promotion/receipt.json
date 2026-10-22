@@ -1,0 +1,27 @@
+{
+  "phase": "PERSISTENT_SELECTED",
+  "started_utc": "2026-10-22T05:42:17.353084+00:00",
+  "previous_system": "/nix/store/8xkkpma4fvgw4fi6pl8qaz7d9d75kcdi-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "candidate_system": "/nix/store/z1basiwicixzdgqsdbklczd0prnlwbjd-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "boot_id": "311df800-369a-48a0-a740-86623e64dcb6",
+  "expected": {
+    "k230-tdisplay.dtb": {
+      "previous": "8d302c9412a2dc42897896098d66e7d0cddeb7aee403edae734b5804e59dcda4",
+      "old_refs": 1,
+      "current": "e40a21a517658f215ccf94ff7a9a5891438b38b418c8824f0897e5957b6d8a7b"
+    },
+    "bootargs.txt": {
+      "previous": "9b70ee98fc04ddfb96633f0aca34d09b0b71496692beca9bf94bc3029ee82850",
+      "old_refs": 1,
+      "current": "82082cd71b2a531e2a4c813073e4ebbb9f57662cbbe539e2e59689d227bd5a6d"
+    }
+  },
+  "source_revision": "23e00387163670e8eb78b41b623ab6c575114e7d",
+  "ordinary_boot_verified": true,
+  "finished_utc": "2026-10-22T05:42:19.123986+00:00",
+  "profile_after": "system-85-link",
+  "verified_boot_id": "98601ab7-d39e-4b64-b3ae-b172800fcdf8",
+  "booted_system": "/nix/store/z1basiwicixzdgqsdbklczd0prnlwbjd-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "verified_utc": "2026-10-22T05:45:29.217592+00:00"
+}
+

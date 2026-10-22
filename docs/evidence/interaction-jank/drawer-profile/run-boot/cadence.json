@@ -1,0 +1,15 @@
+{
+ "contact_seconds": 15.69,
+ "distinct_presented_fps": 20.58,
+ "distinct_interval_ms": {
+  "median": 36,
+  "p95": 39
+ },
+ "commits_per_presented": 1.0,
+ "callback_to_commit_ms": {
+  "median": 8,
+  "p10": 6,
+  "p90": 14,
+  "n": 322
+ }
+}

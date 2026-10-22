@@ -1,0 +1,86 @@
+{
+ "samples": 37,
+ "apps": [
+  19
+ ],
+ "scroll_values": [
+  0,
+  3,
+  7,
+  10,
+  11,
+  18,
+  165,
+  168,
+  170,
+  173,
+  175,
+  178,
+  183
+ ],
+ "groups": {
+  "contact": {
+   "n": 36,
+   "min": 5.6,
+   "median": 6.06,
+   "p95": 10.2,
+   "max": 13.97,
+   "over_20ms": 0,
+   "over_34_6ms": 0,
+   "distinct_scroll": 12
+  },
+  "outside-workload": {
+   "n": 1,
+   "min": 48.85,
+   "median": 48.85,
+   "p95": 48.85,
+   "max": 48.85,
+   "over_20ms": 1,
+   "over_34_6ms": 1,
+   "distinct_scroll": 1
+  }
+ },
+ "scrolling": {
+  "n": 36,
+  "median": 6.06,
+  "p95": 10.2,
+  "max": 13.97,
+  "over_20ms": 0
+ },
+ "frames": {
+  "contact_seconds": 15.693,
+  "frame_done_in_contact": 323,
+  "frames_per_second_in_contact": 20.58,
+  "frame_done_interval_ms": {
+   "median": 36.74,
+   "p95": 38.99,
+   "max": 77.62,
+   "n": 299
+  },
+  "touch_moves_delivered": 24,
+  "touch_steps_injected": 1704
+ },
+ "cpu": {
+  "shell.service": {
+   "cores": 0.1365,
+   "seconds": 4.156
+  },
+  "shell-ui.service": {
+   "cores": 0.0725,
+   "seconds": 2.208
+  },
+  "systemd-journald.service": {
+   "cores": 0.0144,
+   "seconds": 0.437
+  },
+  "injector": {
+   "cores": 0.0164,
+   "seconds": 0.5
+  },
+  "system_busy": {
+   "cores": 0.2921,
+   "seconds": 8.89
+  },
+  "shell_ui_ms_per_contact_frame_upper_bound": 6.84
+ }
+}
