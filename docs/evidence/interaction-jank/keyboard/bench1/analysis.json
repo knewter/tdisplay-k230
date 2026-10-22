@@ -1,0 +1,186 @@
+{
+ "present_rows": 592,
+ "not_presented": 0,
+ "repaint_rows": 592,
+ "gestures": 32,
+ "by_kind": {
+  "hide/contact": {
+   "presented_interval_ms": {
+    "n": 63,
+    "median": 38.322,
+    "p95": 38.342,
+    "max": 57.431
+   },
+   "over_33_334ms": 63,
+   "render_wall_ms": {
+    "n": 79,
+    "median": 21.058,
+    "p95": 28.81,
+    "max": 31.662
+   },
+   "render_over_12ms": 79
+  },
+  "hide/settle": {
+   "presented_interval_ms": {
+    "n": 91,
+    "median": 38.311,
+    "p95": 114.966,
+    "max": 670.638
+   },
+   "over_33_334ms": 46,
+   "render_wall_ms": {
+    "n": 91,
+    "median": 10.345,
+    "p95": 16.208,
+    "max": 23.228
+   },
+   "render_over_12ms": 25
+  },
+  "hold-reverse/contact": {
+   "presented_interval_ms": {
+    "n": 171,
+    "median": 38.323,
+    "p95": 57.489,
+    "max": 191.612
+   },
+   "over_33_334ms": 162,
+   "render_wall_ms": {
+    "n": 187,
+    "median": 23.021,
+    "p95": 29.771,
+    "max": 33.573
+   },
+   "render_over_12ms": 162
+  },
+  "hold-reverse/settle": {
+   "presented_interval_ms": {
+    "n": 35,
+    "median": 38.322,
+    "p95": 57.49,
+    "max": 306.58
+   },
+   "over_33_334ms": 32,
+   "render_wall_ms": {
+    "n": 35,
+    "median": 24.634,
+    "p95": 33.006,
+    "max": 33.201
+   },
+   "render_over_12ms": 29
+  },
+  "show/contact": {
+   "presented_interval_ms": {
+    "n": 22,
+    "median": 76.671,
+    "p95": 172.45,
+    "max": 172.453
+   },
+   "over_33_334ms": 22,
+   "render_wall_ms": {
+    "n": 37,
+    "median": 35.297,
+    "p95": 51.403,
+    "max": 64.101
+   },
+   "render_over_12ms": 30
+  },
+  "show/settle": {
+   "presented_interval_ms": {
+    "n": 66,
+    "median": 57.489,
+    "p95": 76.663,
+    "max": 325.751
+   },
+   "over_33_334ms": 63,
+   "render_wall_ms": {
+    "n": 67,
+    "median": 41.811,
+    "p95": 55.265,
+    "max": 61.458
+   },
+   "render_over_12ms": 64
+  },
+  "type/contact": {
+   "presented_interval_ms": {
+    "n": 88,
+    "median": 38.322,
+    "p95": 287.415,
+    "max": 287.419
+   },
+   "over_33_334ms": 48,
+   "render_wall_ms": {
+    "n": 96,
+    "median": 2.317,
+    "p95": 14.75,
+    "max": 15.121
+   },
+   "render_over_12ms": 13
+  },
+  "type/settle": {
+   "presented_interval_ms": {
+    "n": 0,
+    "median": null,
+    "p95": null,
+    "max": null
+   },
+   "over_33_334ms": 0,
+   "render_wall_ms": {
+    "n": 0,
+    "median": null,
+    "p95": null,
+    "max": null
+   },
+   "render_over_12ms": 0
+  },
+  "hide/damage": {
+   "damaged_fraction_of_output": {
+    "n": 170,
+    "median": 0.521,
+    "p95": 0.845,
+    "max": 1.0
+   }
+  },
+  "hold-reverse/damage": {
+   "damaged_fraction_of_output": {
+    "n": 222,
+    "median": 0.521,
+    "p95": 0.521,
+    "max": 0.845
+   }
+  },
+  "show/damage": {
+   "damaged_fraction_of_output": {
+    "n": 104,
+    "median": 1.0,
+    "p95": 1.0,
+    "max": 1.0
+   }
+  },
+  "type/damage": {
+   "damaged_fraction_of_output": {
+    "n": 96,
+    "median": 0.0,
+    "p95": 0.423,
+    "max": 0.423
+   }
+  }
+ },
+ "show_first_frame_ms": {
+  "n": 8,
+  "median": 79.012,
+  "p95": 91.159,
+  "max": 91.159
+ },
+ "show_last_frame_ms": {
+  "n": 8,
+  "median": 998.737,
+  "p95": 1336.318,
+  "max": 1336.318
+ },
+ "hide_last_frame_ms": {
+  "n": 8,
+  "median": 796.87,
+  "p95": 1442.32,
+  "max": 1442.32
+ }
+}

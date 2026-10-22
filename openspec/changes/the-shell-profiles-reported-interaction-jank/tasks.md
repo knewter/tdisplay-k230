@@ -28,7 +28,21 @@
 
 ## 3. Keyboard measurement (parent 3.3, hardware-only)
 
-- [ ] 3.1 Measure keyboard visibility and gesture workload against existing shell responsiveness budgets using installed compositor instrumentation. Commit exact show/type/hold/reverse/hide workload, concrete instrumentation invocation, identities and observed results under `docs/evidence/interaction-jank/`. Use `python3 tools/console.py /dev/ttyACM0 --wait=3` for the documented installed probe; static images cannot establish timing. Keep open until actual measurements exist.
+- [x] 3.1 Measure keyboard visibility and gesture workload against existing shell responsiveness budgets using installed compositor instrumentation. Commit exact show/type/hold/reverse/hide workload, concrete instrumentation invocation, identities and observed results under `docs/evidence/interaction-jank/`. Use `python3 tools/console.py /dev/ttyACM0 --wait=3` for the documented installed probe; static images cannot establish timing. Keep open until actual measurements exist.
+  Done 2026-10-22 with a measured miss. Two 8-cycle runs used injected
+  native touch at the real-finger rate on installed `8xkkpma4…` (landscape,
+  12 ms allowance, one CPU). The installed compositor benchmark (`card_shell
+  benchmark injected`) logged presentation and repaint timing for every frame.
+  The workload was show, type, hold and reverse, and hide. Presented
+  intervals: grip drag and hide median 38.3 ms (p95 38.3–57.5 ms), show
+  swipe median 76.7 ms (p95 172 ms). All miss the 33.334 ms card frame
+  budget. Render wall time is 21–42 ms against the 12 ms allowance. The show
+  motion repaints the full output, and every keyboard frame rearranges the
+  workspace. Sway runs with `-d` (about 90 DEBUG journal lines per second).
+  Per-input latency is not available for keyboard motion. The functional
+  probe and its captures were taken via SSH; no real glass or camera was
+  used, and nothing was optimized or waived:
+  `docs/evidence/interaction-jank/keyboard/README.md`.
 
 ## 4. Ordinary-card measurement (parent 5.1, hardware-only)
 

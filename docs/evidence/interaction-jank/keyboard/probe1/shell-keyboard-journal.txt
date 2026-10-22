@@ -1,0 +1,1 @@
+1792640678.137203 nixos k230-supervised-keyboard[1053]: Resize 1232x240 1.000000, 55 layouts

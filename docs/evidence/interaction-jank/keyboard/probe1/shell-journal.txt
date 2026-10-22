@@ -1,0 +1,520 @@
+1792640674.564796 nixos sway[1049]: 02:39:14.095 [DEBUG] [sway/ipc-server.c:196] New client: fd 48
+1792640674.577918 nixos sway[1049]: 02:39:14.099 [INFO] [sway/ipc-server.c:570] IPC Client 48 disconnected
+1792640674.660048 nixos sway[1049]: 02:39:14.190 [DEBUG] [sway/ipc-server.c:196] New client: fd 48
+1792640674.665423 nixos sway[1049]: 02:39:14.194 [INFO] [sway/ipc-server.c:570] IPC Client 48 disconnected
+1792640674.960066 nixos sway[1049]: 02:39:14.490 [DEBUG] [wlr] [backend/libinput/events.c:69] Adding K230 injected touchscreen [0:0]
+1792640674.960066 nixos sway[1049]: 02:39:14.490 [DEBUG] [sway/input/input-manager.c:240] adding device: '0:0:K230_injected_touchscreen'
+1792640674.960066 nixos sway[1049]: 02:39:14.490 [DEBUG] [sway/input/libinput.c:260] sway_input_configure_libinput_device('type:touch' on '0:0:K230_injected_touchscreen')
+1792640674.960066 nixos sway[1049]: 02:39:14.490 [DEBUG] [sway/input/seat.c:946] adding device 0:0:K230_injected_touchscreen to seat seat0
+1792640674.960066 nixos sway[1049]: 02:39:14.490 [DEBUG] [sway/input/seat.c:695] Applying input mapping to 0:0:K230_injected_touchscreen
+1792640674.960066 nixos sway[1049]: 02:39:14.490 [DEBUG] [sway/input/seat.c:741] Mapping input device 0:0:K230_injected_touchscreen to output DSI-1
+1792640674.960066 nixos sway[1049]: 02:39:14.490 [DEBUG] [sway/input/seat.c:761] Mapped to output DSI-1
+1792640675.756119 nixos sway[1049]: 02:39:15.286 [DEBUG] [sway/ipc-server.c:196] New client: fd 49
+1792640675.760802 nixos sway[1049]: 02:39:15.287 [INFO] [sway/commands.c:262] Handling command 'exec foot --app-id=k230.kbd.trial --title=Keyboard-trial sh -c 'cat >/dev/null''
+1792640675.760802 nixos sway[1049]: 02:39:15.287 [DEBUG] [sway/commands/exec_always.c:47] Executing foot --app-id=k230.kbd.trial --title=Keyboard-trial sh -c 'cat >/dev/null'
+1792640675.763835 nixos sway[1049]: 02:39:15.293 [DEBUG] [sway/commands/exec_always.c:73] Child process created with pid 5684
+1792640675.765536 nixos sway[1049]: 02:39:15.294 [DEBUG] [sway/commands/exec_always.c:75] Recording workspace for process 5684
+1792640675.768819 nixos sway[1049]: 02:39:15.298 [INFO] [sway/ipc-server.c:570] IPC Client 49 disconnected
+1792640675.915892 nixos sway[1049]: 02:39:15.445 [DEBUG] [sway/ipc-server.c:196] New client: fd 49
+1792640675.922069 nixos sway[1049]: 02:39:15.451 [INFO] [sway/ipc-server.c:570] IPC Client 49 disconnected
+1792640676.022798 nixos sway[5684]: warn: wayland.c:1888: compositor does not implement the xdg-toplevel-icon protocol
+1792640676.086305 nixos sway[1049]: 02:39:15.613 [DEBUG] [wlr] [types/wlr_compositor.c:785] New wlr_surface 0x315504c9a0 (res 0x3154fbf8d0)
+1792640676.086305 nixos sway[1049]: 02:39:15.613 [DEBUG] [wlr] [types/xdg_shell/wlr_xdg_surface.c:441] new xdg_surface 0x3155061690 (res 0x3155008310)
+1792640676.086305 nixos sway[1049]: 02:39:15.613 [DEBUG] [sway/desktop/xdg_shell.c:562] New xdg_shell toplevel title='(null)' app_id='(null)'
+1792640676.086305 nixos sway[1049]: 02:39:15.614 [DEBUG] [wlr] [types/wlr_xdg_decoration_v1.c:220] new xdg_toplevel_decoration 0x3155059ac0 (res 0x31550043d0)
+1792640676.086305 nixos sway[1049]: 02:39:15.614 [DEBUG] [wlr] [types/wlr_compositor.c:785] New wlr_surface 0x315504c020 (res 0x3154fc2f20)
+1792640676.197462 nixos sway[1049]: 02:39:15.726 [DEBUG] [sway/ipc-server.c:196] New client: fd 52
+1792640676.208288 nixos sway[1049]: 02:39:15.735 [INFO] [sway/ipc-server.c:570] IPC Client 52 disconnected
+1792640676.256685 nixos sway[1049]: 02:39:15.786 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x568@0,0
+1792640676.256685 nixos sway[1049]: 02:39:15.786 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+1792640676.256685 nixos sway[1049]: 02:39:15.786 [DEBUG] [sway/tree/arrange.c:76] Arranging 0x3ffa1dca58 horizontally
+1792640676.274976 nixos sway[1049]: 02:39:15.804 [DEBUG] [sway/tree/view.c:575] Checking criteria [app_id=".+"]
+1792640676.274976 nixos sway[1049]: 02:39:15.805 [DEBUG] [sway/tree/view.c:580] for_window '[app_id=".+"]' matches view 0x3155064c60, cmd: 'card_shell ordinary, floating enable, resize set 100 ppt 100 ppt, move position 0 0'
+1792640676.274976 nixos sway[1049]: 02:39:15.805 [INFO] [sway/commands.c:262] Handling command 'card_shell ordinary'
+1792640676.274976 nixos sway[1049]: 02:39:15.805 [INFO] [sway/commands.c:262] Handling command 'floating enable'
+1792640676.274976 nixos sway[1049]: 02:39:15.805 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x568@0,0
+1792640676.274976 nixos sway[1049]: 02:39:15.805 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+1792640676.274976 nixos sway[1049]: 02:39:15.805 [INFO] [sway/commands.c:262] Handling command 'resize set 100 ppt 100 ppt'
+1792640676.274976 nixos sway[1049]: 02:39:15.805 [INFO] [sway/commands.c:262] Handling command 'move position 0 0'
+1792640676.278424 nixos sway[1049]: 02:39:15.806 [DEBUG] [sway/desktop/transaction.c:821] Transaction 0x3154f352f0 committing with 4 instructions
+1792640676.278424 nixos sway[1049]: 02:39:15.806 [DEBUG] [sway/card_shell.c:2180] K230_CARD_SHELL state mode=0 actions=32 message=0 cards=2 entry_settling=0 entry_reversing=0 entry_interrupted_hold=0 entry_progress=0.000 blocked_until_up=0 blocked_contacts=0
+1792640676.278424 nixos sway[1049]: 02:39:15.806 [INFO] [sway/card_shell.c:2876] K230_CARD_SHELL map id=6 class=2
+1792640676.311270 nixos sway[1049]: 02:39:15.841 [DEBUG] [sway/desktop/transaction.c:907] Transaction 0x3154f352f0 is ready
+1792640676.311270 nixos sway[1049]: 02:39:15.841 [DEBUG] [sway/desktop/transaction.c:717] Applying transaction 0x3154f352f0
+1792640676.312696 nixos sway[1049]: 02:39:15.842 [DEBUG] [sway/desktop/transaction.c:821] Transaction 0x3155076c90 committing with 1 instructions
+1792640676.312696 nixos sway[1049]: 02:39:15.842 [DEBUG] [sway/desktop/transaction.c:717] Applying transaction 0x3155076c90
+1792640676.406498 nixos sway[1049]: 02:39:15.936 [DEBUG] [sway/ipc-server.c:196] New client: fd 52
+1792640676.411992 nixos sway[1049]: 02:39:15.940 [INFO] [sway/ipc-server.c:570] IPC Client 52 disconnected
+1792640676.494908 nixos sway[1049]: 02:39:16.025 [DEBUG] [sway/ipc-server.c:196] New client: fd 52
+1792640676.495863 nixos sway[1049]: 02:39:16.026 [DEBUG] [sway/criteria.c:841] Found pair: app_id=k230.kbd.trial
+1792640676.498337 nixos sway[1049]: 02:39:16.028 [INFO] [sway/commands.c:262] Handling command 'focus'
+1792640676.498337 nixos sway[1049]: 02:39:16.028 [DEBUG] [sway/desktop/transaction.c:821] Transaction 0x3154fdc410 committing with 1 instructions
+1792640676.498337 nixos sway[1049]: 02:39:16.028 [DEBUG] [sway/desktop/transaction.c:717] Applying transaction 0x3154fdc410
+1792640676.502949 nixos sway[1049]: 02:39:16.032 [INFO] [sway/ipc-server.c:570] IPC Client 52 disconnected
+1792640677.592519 nixos sway[1049]: 02:39:17.121 [DEBUG] [wlr] [types/output/render.c:142] Disabling direct scan-out on output 'DSI-1' (locks: 1)
+1792640677.798339 nixos sway[1049]: 02:39:17.327 [DEBUG] [wlr] [types/output/render.c:142] Enabling direct scan-out on output 'DSI-1' (locks: 0)
+1792640677.843121 nixos sway[1049]: 02:39:17.372 [INFO] [sway/card_shell.c:1036] K230_CARD_SHELL mirror id=5 format=34325241 width=1232 height=568 stride=5120
+1792640677.856553 nixos sway[1049]: 02:39:17.386 [INFO] [sway/card_shell.c:1036] K230_CARD_SHELL mirror id=6 format=34325241 width=1224 height=552 stride=5120
+1792640677.883559 nixos sway[1049]: 02:39:17.412 [DEBUG] [sway/card_shell.c:2180] K230_CARD_SHELL state mode=4 actions=35 message=0 cards=2 entry_settling=0 entry_reversing=0 entry_interrupted_hold=0 entry_progress=0.000 blocked_until_up=0 blocked_contacts=0
+1792640677.940635 nixos sway[1049]: 02:39:17.470 [DEBUG] [sway/card_shell.c:667] K230_CARD_SHELL mirror-release id=5
+1792640677.943694 nixos sway[1049]: 02:39:17.473 [DEBUG] [sway/card_shell.c:667] K230_CARD_SHELL mirror-release id=6
+1792640677.943694 nixos sway[1049]: 02:39:17.474 [INFO] [sway/card_shell.c:464] K230_CARD_SHELL scaled-cache hits=4 misses=2 fallbacks=0 bytes=0
+1792640677.945428 nixos sway[1049]: 02:39:17.474 [INFO] [sway/card_shell.c:472] K230_CARD_SHELL cache-alpha opaque=2 alpha=0
+1792640677.945428 nixos sway[1049]: 02:39:17.474 [INFO] [sway/card_shell.c:482] K230_CARD_SHELL filter-mode nearest=6 bilinear=0
+1792640677.945428 nixos sway[1049]: 02:39:17.475 [DEBUG] [sway/desktop/transaction.c:821] Transaction 0x31550dc350 committing with 1 instructions
+1792640677.945428 nixos sway[1049]: 02:39:17.475 [DEBUG] [sway/desktop/transaction.c:717] Applying transaction 0x31550dc350
+1792640677.945428 nixos sway[1049]: 02:39:17.475 [INFO] [sway/card_shell.c:2025] K230_CARD_SHELL restored focus=6 message=8
+1792640678.129804 nixos sway[1049]: 02:39:17.658 [DEBUG] [wlr] [types/wlr_compositor.c:785] New wlr_surface 0x31550d0f10 (res 0x315507ad00)
+1792640678.129804 nixos sway[1049]: 02:39:17.659 [DEBUG] [wlr] [types/wlr_layer_shell_v1.c:502] new layer_surface 0x31550e54a0 (res 0x3155086530)
+1792640678.129804 nixos sway[1049]: 02:39:17.659 [DEBUG] [sway/desktop/layer_shell.c:416] new layer surface: namespace wvkbd layer 3 anchor 0 size 0x0 margin 0,0,0,0,
+1792640678.135585 nixos sway[1049]: 02:39:17.663 [DEBUG] [wlr] [types/wlr_compositor.c:785] New wlr_surface 0x31550d0f10 (res 0x315507ad00)
+1792640678.135585 nixos sway[1049]: 02:39:17.664 [DEBUG] [wlr] [types/wlr_layer_shell_v1.c:502] new layer_surface 0x31550e54a0 (res 0x3155076e80)
+1792640678.135585 nixos sway[1049]: 02:39:17.664 [DEBUG] [sway/desktop/layer_shell.c:416] new layer surface: namespace wvkbd layer 3 anchor 0 size 0x0 margin 0,0,0,0,
+1792640678.350143 nixos sway[1049]: 02:39:17.880 [DEBUG] [wlr] [types/wlr_compositor.c:785] New wlr_surface 0x31550d13c0 (res 0x3155017a00)
+1792640678.350888 nixos sway[1049]: 02:39:17.880 [DEBUG] [wlr] [types/xdg_shell/wlr_xdg_surface.c:441] new xdg_surface 0x31550d1790 (res 0x3154fd4d70)
+1792640678.352110 nixos sway[1049]: 02:39:17.882 [DEBUG] [sway/desktop/layer_shell.c:98] Usable area changed, rearranging output
+1792640678.352110 nixos sway[1049]: 02:39:17.882 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x272@0,0
+1792640678.352110 nixos sway[1049]: 02:39:17.882 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+1792640678.353602 nixos sway[1049]: 02:39:17.883 [DEBUG] [sway/desktop/transaction.c:821] Transaction 0x3154fc3760 committing with 3 instructions
+1792640678.416763 nixos sway[1049]: 02:39:17.946 [DEBUG] [sway/desktop/transaction.c:907] Transaction 0x3154fc3760 is ready
+1792640678.416763 nixos sway[1049]: 02:39:17.947 [DEBUG] [sway/desktop/transaction.c:717] Applying transaction 0x3154fc3760
+1792640678.418568 nixos sway[1049]: 02:39:17.948 [DEBUG] [sway/desktop/transaction.c:821] Transaction 0x315509ff60 committing with 2 instructions
+1792640678.419677 nixos sway[1049]: 02:39:17.949 [DEBUG] [sway/desktop/transaction.c:717] Applying transaction 0x315509ff60
+1792640679.131176 nixos sway[1049]: 02:39:18.660 [DEBUG] [wlr] [types/output/render.c:142] Disabling direct scan-out on output 'DSI-1' (locks: 1)
+1792640679.345691 nixos sway[1049]: 02:39:18.874 [DEBUG] [wlr] [types/output/render.c:142] Enabling direct scan-out on output 'DSI-1' (locks: 0)
+1792640680.966322 nixos sway[1049]: 02:39:20.496 [DEBUG] [sway/desktop/layer_shell.c:98] Usable area changed, rearranging output
+1792640680.966322 nixos sway[1049]: 02:39:20.496 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x276@0,0
+1792640680.966322 nixos sway[1049]: 02:39:20.496 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+1792640680.985424 nixos sway[1049]: 02:39:20.514 [DEBUG] [sway/desktop/layer_shell.c:98] Usable area changed, rearranging output
+1792640680.985424 nixos sway[1049]: 02:39:20.515 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x278@0,0
+1792640680.985424 nixos sway[1049]: 02:39:20.515 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+1792640680.992067 nixos sway[1049]: 02:39:20.517 [DEBUG] [sway/desktop/layer_shell.c:98] Usable area changed, rearranging output
+1792640680.992067 nixos sway[1049]: 02:39:20.517 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x281@0,0
+1792640680.992067 nixos sway[1049]: 02:39:20.517 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+1792640680.992067 nixos sway[1049]: 02:39:20.521 [DEBUG] [sway/desktop/layer_shell.c:98] Usable area changed, rearranging output
+1792640680.992067 nixos sway[1049]: 02:39:20.521 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x284@0,0
+1792640680.992067 nixos sway[1049]: 02:39:20.521 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+1792640681.026322 nixos sway[1049]: 02:39:20.555 [DEBUG] [sway/desktop/layer_shell.c:98] Usable area changed, rearranging output
+1792640681.026322 nixos sway[1049]: 02:39:20.556 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x287@0,0
+1792640681.026322 nixos sway[1049]: 02:39:20.556 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+1792640681.029125 nixos sway[1049]: 02:39:20.556 [DEBUG] [sway/desktop/layer_shell.c:98] Usable area changed, rearranging output
+1792640681.029125 nixos sway[1049]: 02:39:20.558 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x290@0,0
+1792640681.029125 nixos sway[1049]: 02:39:20.558 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+1792640681.029125 nixos sway[1049]: 02:39:20.559 [DEBUG] [sway/desktop/layer_shell.c:98] Usable area changed, rearranging output
+1792640681.029125 nixos sway[1049]: 02:39:20.559 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x293@0,0
+1792640681.032452 nixos sway[1049]: 02:39:20.559 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+1792640681.032452 nixos sway[1049]: 02:39:20.562 [DEBUG] [sway/desktop/layer_shell.c:98] Usable area changed, rearranging output
+1792640681.032452 nixos sway[1049]: 02:39:20.562 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x297@0,0
+1792640681.032452 nixos sway[1049]: 02:39:20.562 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+1792640681.036695 nixos sway[1049]: 02:39:20.563 [DEBUG] [sway/desktop/layer_shell.c:98] Usable area changed, rearranging output
+1792640681.036695 nixos sway[1049]: 02:39:20.563 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x299@0,0
+1792640681.036695 nixos sway[1049]: 02:39:20.564 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+1792640681.064390 nixos sway[1049]: 02:39:20.591 [DEBUG] [sway/desktop/layer_shell.c:98] Usable area changed, rearranging output
+1792640681.064390 nixos sway[1049]: 02:39:20.593 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x303@0,0
+1792640681.064390 nixos sway[1049]: 02:39:20.593 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+1792640681.066107 nixos sway[1049]: 02:39:20.594 [DEBUG] [sway/desktop/layer_shell.c:98] Usable area changed, rearranging output
+1792640681.066107 nixos sway[1049]: 02:39:20.595 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x305@0,0
+1792640681.066107 nixos sway[1049]: 02:39:20.596 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+1792640681.066107 nixos sway[1049]: 02:39:20.596 [DEBUG] [sway/desktop/layer_shell.c:98] Usable area changed, rearranging output
+1792640681.066107 nixos sway[1049]: 02:39:20.596 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x309@0,0
+1792640681.066107 nixos sway[1049]: 02:39:20.596 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+1792640681.069130 nixos sway[1049]: 02:39:20.598 [DEBUG] [sway/desktop/layer_shell.c:98] Usable area changed, rearranging output
+1792640681.069130 nixos sway[1049]: 02:39:20.598 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x312@0,0
+1792640681.069130 nixos sway[1049]: 02:39:20.598 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+1792640681.073053 nixos sway[1049]: 02:39:20.603 [DEBUG] [sway/desktop/layer_shell.c:98] Usable area changed, rearranging output
+1792640681.073053 nixos sway[1049]: 02:39:20.603 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x315@0,0
+1792640681.073053 nixos sway[1049]: 02:39:20.603 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+1792640681.101423 nixos sway[1049]: 02:39:20.630 [DEBUG] [sway/desktop/layer_shell.c:98] Usable area changed, rearranging output
+1792640681.101423 nixos sway[1049]: 02:39:20.630 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x318@0,0
+1792640681.101423 nixos sway[1049]: 02:39:20.630 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+1792640681.101423 nixos sway[1049]: 02:39:20.631 [DEBUG] [sway/desktop/layer_shell.c:98] Usable area changed, rearranging output
+1792640681.104732 nixos sway[1049]: 02:39:20.631 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x321@0,0
+1792640681.104732 nixos sway[1049]: 02:39:20.632 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+1792640681.104732 nixos sway[1049]: 02:39:20.633 [DEBUG] [sway/desktop/layer_shell.c:98] Usable area changed, rearranging output
+1792640681.104732 nixos sway[1049]: 02:39:20.633 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x324@0,0
+1792640681.104732 nixos sway[1049]: 02:39:20.633 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+1792640681.108618 nixos sway[1049]: 02:39:20.636 [DEBUG] [sway/desktop/layer_shell.c:98] Usable area changed, rearranging output
+1792640681.108618 nixos sway[1049]: 02:39:20.636 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x327@0,0
+1792640681.108618 nixos sway[1049]: 02:39:20.636 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+1792640681.145274 nixos sway[1049]: 02:39:20.668 [DEBUG] [sway/desktop/layer_shell.c:98] Usable area changed, rearranging output
+1792640681.145274 nixos sway[1049]: 02:39:20.669 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x330@0,0
+1792640681.145274 nixos sway[1049]: 02:39:20.669 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+1792640681.145274 nixos sway[1049]: 02:39:20.671 [DEBUG] [sway/desktop/layer_shell.c:98] Usable area changed, rearranging output
+1792640681.145274 nixos sway[1049]: 02:39:20.671 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x333@0,0
+1792640681.145274 nixos sway[1049]: 02:39:20.671 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+1792640681.145274 nixos sway[1049]: 02:39:20.671 [DEBUG] [sway/desktop/layer_shell.c:98] Usable area changed, rearranging output
+1792640681.145274 nixos sway[1049]: 02:39:20.673 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x336@0,0
+1792640681.145274 nixos sway[1049]: 02:39:20.673 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+1792640681.145274 nixos sway[1049]: 02:39:20.673 [DEBUG] [sway/desktop/layer_shell.c:98] Usable area changed, rearranging output
+1792640681.145274 nixos sway[1049]: 02:39:20.673 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x340@0,0
+1792640681.145274 nixos sway[1049]: 02:39:20.673 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+1792640681.169854 nixos sway[1049]: 02:39:20.675 [DEBUG] [sway/desktop/layer_shell.c:98] Usable area changed, rearranging output
+1792640681.169854 nixos sway[1049]: 02:39:20.677 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x342@0,0
+1792640681.169854 nixos sway[1049]: 02:39:20.677 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+1792640681.184574 nixos sway[1049]: 02:39:20.714 [DEBUG] [sway/desktop/layer_shell.c:98] Usable area changed, rearranging output
+1792640681.184574 nixos sway[1049]: 02:39:20.714 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x346@0,0
+1792640681.186457 nixos sway[1049]: 02:39:20.716 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+1792640681.186457 nixos sway[1049]: 02:39:20.716 [DEBUG] [sway/desktop/layer_shell.c:98] Usable area changed, rearranging output
+1792640681.186457 nixos sway[1049]: 02:39:20.716 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x349@0,0
+1792640681.186457 nixos sway[1049]: 02:39:20.716 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+1792640681.190170 nixos sway[1049]: 02:39:20.718 [DEBUG] [sway/desktop/layer_shell.c:98] Usable area changed, rearranging output
+1792640681.190170 nixos sway[1049]: 02:39:20.719 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x351@0,0
+1792640681.190170 nixos sway[1049]: 02:39:20.719 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+1792640681.190170 nixos sway[1049]: 02:39:20.719 [DEBUG] [sway/desktop/layer_shell.c:98] Usable area changed, rearranging output
+1792640681.190170 nixos sway[1049]: 02:39:20.719 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x355@0,0
+1792640681.190170 nixos sway[1049]: 02:39:20.719 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+1792640681.195703 nixos sway[1049]: 02:39:20.724 [DEBUG] [sway/desktop/layer_shell.c:98] Usable area changed, rearranging output
+1792640681.195703 nixos sway[1049]: 02:39:20.724 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x358@0,0
+1792640681.195703 nixos sway[1049]: 02:39:20.724 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+1792640681.197890 nixos sway[1049]: 02:39:20.724 [DEBUG] [sway/desktop/layer_shell.c:98] Usable area changed, rearranging output
+1792640681.197890 nixos sway[1049]: 02:39:20.727 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x361@0,0
+1792640681.197890 nixos sway[1049]: 02:39:20.727 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+1792640681.204008 nixos sway[1049]: 02:39:20.734 [DEBUG] [sway/desktop/layer_shell.c:98] Usable area changed, rearranging output
+1792640681.204008 nixos sway[1049]: 02:39:20.734 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x364@0,0
+1792640681.204008 nixos sway[1049]: 02:39:20.734 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+1792640681.229460 nixos sway[1049]: 02:39:20.759 [DEBUG] [sway/desktop/layer_shell.c:98] Usable area changed, rearranging output
+1792640681.229460 nixos sway[1049]: 02:39:20.759 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x367@0,0
+1792640681.229460 nixos sway[1049]: 02:39:20.759 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+1792640681.232092 nixos sway[1049]: 02:39:20.761 [DEBUG] [sway/desktop/layer_shell.c:98] Usable area changed, rearranging output
+1792640681.232092 nixos sway[1049]: 02:39:20.761 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x370@0,0
+1792640681.232092 nixos sway[1049]: 02:39:20.761 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+1792640681.234519 nixos sway[1049]: 02:39:20.763 [DEBUG] [sway/desktop/layer_shell.c:98] Usable area changed, rearranging output
+1792640681.234519 nixos sway[1049]: 02:39:20.763 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x373@0,0
+1792640681.234519 nixos sway[1049]: 02:39:20.763 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+1792640681.236229 nixos sway[1049]: 02:39:20.766 [DEBUG] [sway/desktop/layer_shell.c:98] Usable area changed, rearranging output
+1792640681.236229 nixos sway[1049]: 02:39:20.766 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x376@0,0
+1792640681.236229 nixos sway[1049]: 02:39:20.766 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+1792640681.243318 nixos sway[1049]: 02:39:20.773 [DEBUG] [sway/desktop/layer_shell.c:98] Usable area changed, rearranging output
+1792640681.243318 nixos sway[1049]: 02:39:20.773 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x379@0,0
+1792640681.243318 nixos sway[1049]: 02:39:20.773 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+1792640681.268649 nixos sway[1049]: 02:39:20.797 [DEBUG] [sway/desktop/layer_shell.c:98] Usable area changed, rearranging output
+1792640681.268649 nixos sway[1049]: 02:39:20.798 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x383@0,0
+1792640681.268649 nixos sway[1049]: 02:39:20.798 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+1792640681.271255 nixos sway[1049]: 02:39:20.799 [DEBUG] [sway/desktop/layer_shell.c:98] Usable area changed, rearranging output
+1792640681.271255 nixos sway[1049]: 02:39:20.800 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x385@0,0
+1792640681.271255 nixos sway[1049]: 02:39:20.800 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+1792640681.271255 nixos sway[1049]: 02:39:20.801 [DEBUG] [sway/desktop/layer_shell.c:98] Usable area changed, rearranging output
+1792640681.271255 nixos sway[1049]: 02:39:20.801 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x388@0,0
+1792640681.273809 nixos sway[1049]: 02:39:20.801 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+1792640681.276997 nixos sway[1049]: 02:39:20.806 [DEBUG] [sway/desktop/layer_shell.c:98] Usable area changed, rearranging output
+1792640681.276997 nixos sway[1049]: 02:39:20.806 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x392@0,0
+1792640681.276997 nixos sway[1049]: 02:39:20.806 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+1792640681.284373 nixos sway[1049]: 02:39:20.814 [DEBUG] [sway/desktop/layer_shell.c:98] Usable area changed, rearranging output
+1792640681.284373 nixos sway[1049]: 02:39:20.814 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x394@0,0
+1792640681.284373 nixos sway[1049]: 02:39:20.814 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+1792640681.309329 nixos sway[1049]: 02:39:20.838 [DEBUG] [sway/desktop/layer_shell.c:98] Usable area changed, rearranging output
+1792640681.310588 nixos sway[1049]: 02:39:20.839 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x398@0,0
+1792640681.310588 nixos sway[1049]: 02:39:20.840 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+1792640681.310588 nixos sway[1049]: 02:39:20.840 [DEBUG] [sway/desktop/layer_shell.c:98] Usable area changed, rearranging output
+1792640681.310588 nixos sway[1049]: 02:39:20.840 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x400@0,0
+1792640681.310588 nixos sway[1049]: 02:39:20.840 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+1792640681.313186 nixos sway[1049]: 02:39:20.842 [DEBUG] [sway/desktop/layer_shell.c:98] Usable area changed, rearranging output
+1792640681.313186 nixos sway[1049]: 02:39:20.843 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x404@0,0
+1792640681.313186 nixos sway[1049]: 02:39:20.843 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+1792640681.320928 nixos sway[1049]: 02:39:20.846 [DEBUG] [sway/desktop/layer_shell.c:98] Usable area changed, rearranging output
+1792640681.320928 nixos sway[1049]: 02:39:20.846 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x406@0,0
+1792640681.320928 nixos sway[1049]: 02:39:20.846 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+1792640681.349708 nixos sway[1049]: 02:39:20.877 [DEBUG] [sway/desktop/layer_shell.c:98] Usable area changed, rearranging output
+1792640681.349708 nixos sway[1049]: 02:39:20.878 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x410@0,0
+1792640681.349708 nixos sway[1049]: 02:39:20.878 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+1792640681.349708 nixos sway[1049]: 02:39:20.878 [DEBUG] [sway/desktop/layer_shell.c:98] Usable area changed, rearranging output
+1792640681.349708 nixos sway[1049]: 02:39:20.878 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x413@0,0
+1792640681.349708 nixos sway[1049]: 02:39:20.878 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+1792640681.349708 nixos sway[1049]: 02:39:20.878 [DEBUG] [sway/desktop/layer_shell.c:98] Usable area changed, rearranging output
+1792640681.349708 nixos sway[1049]: 02:39:20.878 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x416@0,0
+1792640681.349708 nixos sway[1049]: 02:39:20.878 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+1792640681.353225 nixos sway[1049]: 02:39:20.881 [DEBUG] [sway/desktop/layer_shell.c:98] Usable area changed, rearranging output
+1792640681.353225 nixos sway[1049]: 02:39:20.881 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x419@0,0
+1792640681.353225 nixos sway[1049]: 02:39:20.881 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+1792640681.358394 nixos sway[1049]: 02:39:20.887 [DEBUG] [sway/desktop/layer_shell.c:98] Usable area changed, rearranging output
+1792640681.358394 nixos sway[1049]: 02:39:20.887 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x422@0,0
+1792640681.358394 nixos sway[1049]: 02:39:20.887 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+1792640681.666640 nixos sway[1049]: 02:39:21.196 [DEBUG] [sway/desktop/layer_shell.c:98] Usable area changed, rearranging output
+1792640681.666640 nixos sway[1049]: 02:39:21.196 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x419@0,0
+1792640681.666640 nixos sway[1049]: 02:39:21.197 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+1792640681.677406 nixos sway[1049]: 02:39:21.207 [DEBUG] [sway/desktop/layer_shell.c:98] Usable area changed, rearranging output
+1792640681.677406 nixos sway[1049]: 02:39:21.207 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x414@0,0
+1792640681.680343 nixos sway[1049]: 02:39:21.207 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+1792640681.683654 nixos sway[1049]: 02:39:21.213 [DEBUG] [sway/desktop/layer_shell.c:98] Usable area changed, rearranging output
+1792640681.683654 nixos sway[1049]: 02:39:21.213 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x410@0,0
+1792640681.683654 nixos sway[1049]: 02:39:21.213 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+1792640681.709101 nixos sway[1049]: 02:39:21.238 [DEBUG] [sway/desktop/layer_shell.c:98] Usable area changed, rearranging output
+1792640681.709101 nixos sway[1049]: 02:39:21.238 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x405@0,0
+1792640681.709101 nixos sway[1049]: 02:39:21.238 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+1792640681.709101 nixos sway[1049]: 02:39:21.238 [DEBUG] [sway/desktop/layer_shell.c:98] Usable area changed, rearranging output
+1792640681.711135 nixos sway[1049]: 02:39:21.238 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x402@0,0
+1792640681.711135 nixos sway[1049]: 02:39:21.240 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+1792640681.711135 nixos sway[1049]: 02:39:21.241 [DEBUG] [sway/desktop/layer_shell.c:98] Usable area changed, rearranging output
+1792640681.712956 nixos sway[1049]: 02:39:21.241 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x398@0,0
+1792640681.712956 nixos sway[1049]: 02:39:21.243 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+1792640681.716280 nixos sway[1049]: 02:39:21.246 [DEBUG] [sway/desktop/layer_shell.c:98] Usable area changed, rearranging output
+1792640681.716280 nixos sway[1049]: 02:39:21.246 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x394@0,0
+1792640681.716280 nixos sway[1049]: 02:39:21.246 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+1792640681.724451 nixos sway[1049]: 02:39:21.254 [DEBUG] [sway/desktop/layer_shell.c:98] Usable area changed, rearranging output
+1792640681.724451 nixos sway[1049]: 02:39:21.254 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x390@0,0
+1792640681.724451 nixos sway[1049]: 02:39:21.254 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+1792640681.749571 nixos sway[1049]: 02:39:21.278 [DEBUG] [sway/desktop/layer_shell.c:98] Usable area changed, rearranging output
+1792640681.749571 nixos sway[1049]: 02:39:21.278 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x385@0,0
+1792640681.749571 nixos sway[1049]: 02:39:21.278 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+1792640681.749571 nixos sway[1049]: 02:39:21.279 [DEBUG] [sway/desktop/layer_shell.c:98] Usable area changed, rearranging output
+1792640681.751496 nixos sway[1049]: 02:39:21.279 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x382@0,0
+1792640681.751496 nixos sway[1049]: 02:39:21.280 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+1792640681.751496 nixos sway[1049]: 02:39:21.281 [DEBUG] [sway/desktop/layer_shell.c:98] Usable area changed, rearranging output
+1792640681.753672 nixos sway[1049]: 02:39:21.281 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x377@0,0
+1792640681.753672 nixos sway[1049]: 02:39:21.283 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+1792640681.756766 nixos sway[1049]: 02:39:21.286 [DEBUG] [sway/desktop/layer_shell.c:98] Usable area changed, rearranging output
+1792640681.757405 nixos sway[1049]: 02:39:21.286 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x373@0,0
+1792640681.757405 nixos sway[1049]: 02:39:21.287 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+1792640681.786922 nixos sway[1049]: 02:39:21.316 [DEBUG] [sway/desktop/layer_shell.c:98] Usable area changed, rearranging output
+1792640681.786922 nixos sway[1049]: 02:39:21.316 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x369@0,0
+1792640681.786922 nixos sway[1049]: 02:39:21.316 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+1792640681.789643 nixos sway[1049]: 02:39:21.318 [DEBUG] [sway/desktop/layer_shell.c:98] Usable area changed, rearranging output
+1792640681.789643 nixos sway[1049]: 02:39:21.318 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x365@0,0
+1792640681.789643 nixos sway[1049]: 02:39:21.318 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+1792640681.792367 nixos sway[1049]: 02:39:21.319 [DEBUG] [sway/desktop/layer_shell.c:98] Usable area changed, rearranging output
+1792640681.792367 nixos sway[1049]: 02:39:21.321 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x361@0,0
+1792640681.792367 nixos sway[1049]: 02:39:21.321 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+1792640681.794573 nixos sway[1049]: 02:39:21.321 [DEBUG] [sway/desktop/layer_shell.c:98] Usable area changed, rearranging output
+1792640681.794573 nixos sway[1049]: 02:39:21.323 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x357@0,0
+1792640681.794573 nixos sway[1049]: 02:39:21.323 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+1792640681.797181 nixos sway[1049]: 02:39:21.326 [DEBUG] [sway/desktop/layer_shell.c:98] Usable area changed, rearranging output
+1792640681.797181 nixos sway[1049]: 02:39:21.327 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x353@0,0
+1792640681.797181 nixos sway[1049]: 02:39:21.327 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+1792640681.836084 nixos sway[1049]: 02:39:21.359 [DEBUG] [sway/desktop/layer_shell.c:98] Usable area changed, rearranging output
+1792640681.836084 nixos sway[1049]: 02:39:21.360 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x349@0,0
+1792640681.836084 nixos sway[1049]: 02:39:21.360 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+1792640681.836084 nixos sway[1049]: 02:39:21.361 [DEBUG] [sway/desktop/layer_shell.c:98] Usable area changed, rearranging output
+1792640681.836084 nixos sway[1049]: 02:39:21.361 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x345@0,0
+1792640681.836084 nixos sway[1049]: 02:39:21.361 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+1792640681.836084 nixos sway[1049]: 02:39:21.361 [DEBUG] [sway/desktop/layer_shell.c:98] Usable area changed, rearranging output
+1792640681.836084 nixos sway[1049]: 02:39:21.361 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x341@0,0
+1792640681.836084 nixos sway[1049]: 02:39:21.361 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+1792640681.836084 nixos sway[1049]: 02:39:21.361 [DEBUG] [sway/desktop/layer_shell.c:98] Usable area changed, rearranging output
+1792640681.836084 nixos sway[1049]: 02:39:21.362 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x336@0,0
+1792640681.836084 nixos sway[1049]: 02:39:21.362 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+1792640681.846391 nixos sway[1049]: 02:39:21.368 [DEBUG] [sway/desktop/layer_shell.c:98] Usable area changed, rearranging output
+1792640681.846391 nixos sway[1049]: 02:39:21.368 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x333@0,0
+1792640681.846391 nixos sway[1049]: 02:39:21.368 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+1792640681.869373 nixos sway[1049]: 02:39:21.398 [DEBUG] [sway/desktop/layer_shell.c:98] Usable area changed, rearranging output
+1792640681.869373 nixos sway[1049]: 02:39:21.398 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x329@0,0
+1792640681.870895 nixos sway[1049]: 02:39:21.399 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+1792640681.870895 nixos sway[1049]: 02:39:21.401 [DEBUG] [sway/desktop/layer_shell.c:98] Usable area changed, rearranging output
+1792640681.870895 nixos sway[1049]: 02:39:21.401 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x325@0,0
+1792640681.870895 nixos sway[1049]: 02:39:21.402 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+1792640681.874628 nixos sway[1049]: 02:39:21.403 [DEBUG] [sway/desktop/layer_shell.c:98] Usable area changed, rearranging output
+1792640681.874628 nixos sway[1049]: 02:39:21.403 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x320@0,0
+1792640681.874628 nixos sway[1049]: 02:39:21.403 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+1792640681.876821 nixos sway[1049]: 02:39:21.406 [DEBUG] [sway/desktop/layer_shell.c:98] Usable area changed, rearranging output
+1792640681.876821 nixos sway[1049]: 02:39:21.406 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x316@0,0
+1792640681.876821 nixos sway[1049]: 02:39:21.406 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+1792640681.903328 nixos sway[1049]: 02:39:21.433 [ERROR] [wlr] [libinput] event3  - K230 injected touchscreen: client bug: event processing lagging behind by 24ms, your system is too slow
+1792640681.903328 nixos sway[1049]: 02:39:21.433 [DEBUG] [sway/desktop/layer_shell.c:98] Usable area changed, rearranging output
+1792640681.903328 nixos sway[1049]: 02:39:21.433 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x313@0,0
+1792640681.905746 nixos sway[1049]: 02:39:21.433 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+1792640681.905746 nixos sway[1049]: 02:39:21.435 [DEBUG] [sway/desktop/layer_shell.c:98] Usable area changed, rearranging output
+1792640681.905746 nixos sway[1049]: 02:39:21.435 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x308@0,0
+1792640681.905746 nixos sway[1049]: 02:39:21.435 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+1792640681.908404 nixos sway[1049]: 02:39:21.435 [DEBUG] [sway/desktop/layer_shell.c:98] Usable area changed, rearranging output
+1792640681.908404 nixos sway[1049]: 02:39:21.437 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x304@0,0
+1792640681.908404 nixos sway[1049]: 02:39:21.437 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+1792640681.908404 nixos sway[1049]: 02:39:21.437 [DEBUG] [sway/desktop/layer_shell.c:98] Usable area changed, rearranging output
+1792640681.908404 nixos sway[1049]: 02:39:21.437 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x300@0,0
+1792640681.908404 nixos sway[1049]: 02:39:21.437 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+1792640681.913409 nixos sway[1049]: 02:39:21.440 [DEBUG] [sway/desktop/layer_shell.c:98] Usable area changed, rearranging output
+1792640681.913409 nixos sway[1049]: 02:39:21.441 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x297@0,0
+1792640681.913409 nixos sway[1049]: 02:39:21.441 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+1792640681.947542 nixos sway[1049]: 02:39:21.476 [DEBUG] [sway/desktop/layer_shell.c:98] Usable area changed, rearranging output
+1792640681.947542 nixos sway[1049]: 02:39:21.477 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x292@0,0
+1792640681.947542 nixos sway[1049]: 02:39:21.477 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+1792640681.949838 nixos sway[1049]: 02:39:21.479 [DEBUG] [sway/desktop/layer_shell.c:98] Usable area changed, rearranging output
+1792640681.949838 nixos sway[1049]: 02:39:21.480 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x288@0,0
+1792640681.949838 nixos sway[1049]: 02:39:21.480 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+1792640681.952907 nixos sway[1049]: 02:39:21.481 [DEBUG] [sway/desktop/layer_shell.c:98] Usable area changed, rearranging output
+1792640681.952907 nixos sway[1049]: 02:39:21.481 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x284@0,0
+1792640681.952907 nixos sway[1049]: 02:39:21.481 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+1792640681.952907 nixos sway[1049]: 02:39:21.482 [DEBUG] [sway/desktop/layer_shell.c:98] Usable area changed, rearranging output
+1792640681.952907 nixos sway[1049]: 02:39:21.482 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x279@0,0
+1792640681.952907 nixos sway[1049]: 02:39:21.482 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+1792640681.956015 nixos sway[1049]: 02:39:21.484 [DEBUG] [sway/desktop/layer_shell.c:98] Usable area changed, rearranging output
+1792640681.956015 nixos sway[1049]: 02:39:21.484 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x276@0,0
+1792640681.956015 nixos sway[1049]: 02:39:21.484 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+1792640681.985385 nixos sway[1049]: 02:39:21.514 [DEBUG] [sway/desktop/layer_shell.c:98] Usable area changed, rearranging output
+1792640681.985385 nixos sway[1049]: 02:39:21.514 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x272@0,0
+1792640681.985385 nixos sway[1049]: 02:39:21.515 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+1792640682.768667 nixos sway[1049]: 02:39:22.298 [DEBUG] [sway/desktop/layer_shell.c:98] Usable area changed, rearranging output
+1792640682.768667 nixos sway[1049]: 02:39:22.298 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x278@0,0
+1792640682.768667 nixos sway[1049]: 02:39:22.299 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+1792640682.784114 nixos sway[1049]: 02:39:22.313 [DEBUG] [sway/desktop/layer_shell.c:98] Usable area changed, rearranging output
+1792640682.784114 nixos sway[1049]: 02:39:22.313 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x284@0,0
+1792640682.784114 nixos sway[1049]: 02:39:22.313 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+1792640682.790594 nixos sway[1049]: 02:39:22.320 [DEBUG] [sway/desktop/layer_shell.c:98] Usable area changed, rearranging output
+1792640682.790594 nixos sway[1049]: 02:39:22.320 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x289@0,0
+1792640682.790594 nixos sway[1049]: 02:39:22.320 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+1792640682.793462 nixos sway[1049]: 02:39:22.323 [DEBUG] [sway/desktop/layer_shell.c:98] Usable area changed, rearranging output
+1792640682.793462 nixos sway[1049]: 02:39:22.323 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x297@0,0
+1792640682.793462 nixos sway[1049]: 02:39:22.323 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+1792640682.822175 nixos sway[1049]: 02:39:22.352 [ERROR] [wlr] [libinput] event3  - K230 injected touchscreen: client bug: event processing lagging behind by 21ms, your system is too slow
+1792640682.824835 nixos sway[1049]: 02:39:22.354 [DEBUG] [sway/desktop/layer_shell.c:98] Usable area changed, rearranging output
+1792640682.824835 nixos sway[1049]: 02:39:22.354 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x302@0,0
+1792640682.824835 nixos sway[1049]: 02:39:22.354 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+1792640682.824835 nixos sway[1049]: 02:39:22.354 [DEBUG] [sway/desktop/layer_shell.c:98] Usable area changed, rearranging output
+1792640682.827262 nixos sway[1049]: 02:39:22.354 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x308@0,0
+1792640682.827262 nixos sway[1049]: 02:39:22.356 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+1792640682.827262 nixos sway[1049]: 02:39:22.356 [DEBUG] [sway/desktop/layer_shell.c:98] Usable area changed, rearranging output
+1792640682.827262 nixos sway[1049]: 02:39:22.356 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x314@0,0
+1792640682.827262 nixos sway[1049]: 02:39:22.356 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+1792640682.831356 nixos sway[1049]: 02:39:22.359 [DEBUG] [sway/desktop/layer_shell.c:98] Usable area changed, rearranging output
+1792640682.831356 nixos sway[1049]: 02:39:22.360 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x320@0,0
+1792640682.831356 nixos sway[1049]: 02:39:22.360 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+1792640682.834904 nixos sway[1049]: 02:39:22.365 [DEBUG] [sway/desktop/layer_shell.c:98] Usable area changed, rearranging output
+1792640682.834904 nixos sway[1049]: 02:39:22.365 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x326@0,0
+1792640682.834904 nixos sway[1049]: 02:39:22.365 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+1792640682.863251 nixos sway[1049]: 02:39:22.392 [DEBUG] [sway/desktop/layer_shell.c:98] Usable area changed, rearranging output
+1792640682.863251 nixos sway[1049]: 02:39:22.392 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x332@0,0
+1792640682.863251 nixos sway[1049]: 02:39:22.392 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+1792640682.863251 nixos sway[1049]: 02:39:22.393 [DEBUG] [sway/desktop/layer_shell.c:98] Usable area changed, rearranging output
+1792640682.863251 nixos sway[1049]: 02:39:22.393 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x339@0,0
+1792640682.863251 nixos sway[1049]: 02:39:22.393 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+1792640682.863251 nixos sway[1049]: 02:39:22.393 [DEBUG] [sway/desktop/layer_shell.c:98] Usable area changed, rearranging output
+1792640682.863251 nixos sway[1049]: 02:39:22.393 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x345@0,0
+1792640682.863251 nixos sway[1049]: 02:39:22.393 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+1792640682.867004 nixos sway[1049]: 02:39:22.397 [DEBUG] [sway/desktop/layer_shell.c:98] Usable area changed, rearranging output
+1792640682.867004 nixos sway[1049]: 02:39:22.397 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x351@0,0
+1792640682.867004 nixos sway[1049]: 02:39:22.397 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+1792640682.875302 nixos sway[1049]: 02:39:22.404 [DEBUG] [sway/desktop/layer_shell.c:98] Usable area changed, rearranging output
+1792640682.875302 nixos sway[1049]: 02:39:22.404 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x357@0,0
+1792640682.875302 nixos sway[1049]: 02:39:22.404 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+1792640682.900410 nixos sway[1049]: 02:39:22.430 [DEBUG] [sway/desktop/layer_shell.c:98] Usable area changed, rearranging output
+1792640682.900410 nixos sway[1049]: 02:39:22.430 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x362@0,0
+1792640682.900410 nixos sway[1049]: 02:39:22.430 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+1792640682.902713 nixos sway[1049]: 02:39:22.432 [DEBUG] [sway/desktop/layer_shell.c:98] Usable area changed, rearranging output
+1792640682.902713 nixos sway[1049]: 02:39:22.432 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x368@0,0
+1792640682.902713 nixos sway[1049]: 02:39:22.432 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+1792640682.902713 nixos sway[1049]: 02:39:22.433 [DEBUG] [sway/desktop/layer_shell.c:98] Usable area changed, rearranging output
+1792640682.902713 nixos sway[1049]: 02:39:22.433 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x376@0,0
+1792640682.905076 nixos sway[1049]: 02:39:22.433 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+1792640682.907609 nixos sway[1049]: 02:39:22.437 [DEBUG] [sway/desktop/layer_shell.c:98] Usable area changed, rearranging output
+1792640682.907609 nixos sway[1049]: 02:39:22.437 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x381@0,0
+1792640682.907609 nixos sway[1049]: 02:39:22.437 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+1792640682.935445 nixos sway[1049]: 02:39:22.464 [DEBUG] [sway/desktop/layer_shell.c:98] Usable area changed, rearranging output
+1792640682.935445 nixos sway[1049]: 02:39:22.464 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x387@0,0
+1792640682.964136 nixos sway[1049]: 02:39:22.464 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+1792640682.964136 nixos sway[1049]: 02:39:22.467 [DEBUG] [sway/desktop/layer_shell.c:98] Usable area changed, rearranging output
+1792640682.964136 nixos sway[1049]: 02:39:22.467 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x393@0,0
+1792640682.964136 nixos sway[1049]: 02:39:22.467 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+1792640682.964136 nixos sway[1049]: 02:39:22.467 [DEBUG] [sway/desktop/layer_shell.c:98] Usable area changed, rearranging output
+1792640682.964136 nixos sway[1049]: 02:39:22.468 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x399@0,0
+1792640682.964136 nixos sway[1049]: 02:39:22.468 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+1792640682.964136 nixos sway[1049]: 02:39:22.471 [DEBUG] [sway/desktop/layer_shell.c:98] Usable area changed, rearranging output
+1792640682.964136 nixos sway[1049]: 02:39:22.471 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x405@0,0
+1792640682.964136 nixos sway[1049]: 02:39:22.471 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+1792640682.964136 nixos sway[1049]: 02:39:22.477 [DEBUG] [sway/desktop/layer_shell.c:98] Usable area changed, rearranging output
+1792640682.964136 nixos sway[1049]: 02:39:22.477 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x411@0,0
+1792640682.964136 nixos sway[1049]: 02:39:22.477 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+1792640682.980741 nixos sway[1049]: 02:39:22.509 [DEBUG] [sway/desktop/layer_shell.c:98] Usable area changed, rearranging output
+1792640682.980741 nixos sway[1049]: 02:39:22.510 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x417@0,0
+1792640682.980741 nixos sway[1049]: 02:39:22.510 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+1792640682.984140 nixos sway[1049]: 02:39:22.512 [DEBUG] [sway/desktop/layer_shell.c:98] Usable area changed, rearranging output
+1792640682.984140 nixos sway[1049]: 02:39:22.512 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x424@0,0
+1792640682.984140 nixos sway[1049]: 02:39:22.512 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+1792640682.984140 nixos sway[1049]: 02:39:22.512 [DEBUG] [sway/desktop/layer_shell.c:98] Usable area changed, rearranging output
+1792640682.994805 nixos sway[1049]: 02:39:22.512 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x430@0,0
+1792640682.994805 nixos sway[1049]: 02:39:22.515 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+1792640682.994805 nixos sway[1049]: 02:39:22.518 [DEBUG] [sway/desktop/layer_shell.c:98] Usable area changed, rearranging output
+1792640682.994805 nixos sway[1049]: 02:39:22.518 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x436@0,0
+1792640682.994805 nixos sway[1049]: 02:39:22.518 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+1792640682.994805 nixos sway[1049]: 02:39:22.520 [DEBUG] [sway/desktop/layer_shell.c:98] Usable area changed, rearranging output
+1792640682.994805 nixos sway[1049]: 02:39:22.520 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x441@0,0
+1792640682.994805 nixos sway[1049]: 02:39:22.521 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+1792640683.013412 nixos sway[1049]: 02:39:22.543 [DEBUG] [sway/desktop/layer_shell.c:98] Usable area changed, rearranging output
+1792640683.013412 nixos sway[1049]: 02:39:22.543 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x447@0,0
+1792640683.013412 nixos sway[1049]: 02:39:22.543 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+1792640683.015891 nixos sway[1049]: 02:39:22.545 [DEBUG] [sway/desktop/layer_shell.c:98] Usable area changed, rearranging output
+1792640683.015891 nixos sway[1049]: 02:39:22.545 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x453@0,0
+1792640683.015891 nixos sway[1049]: 02:39:22.545 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+1792640683.017962 nixos sway[1049]: 02:39:22.548 [DEBUG] [sway/desktop/layer_shell.c:98] Usable area changed, rearranging output
+1792640683.017962 nixos sway[1049]: 02:39:22.548 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x460@0,0
+1792640683.017962 nixos sway[1049]: 02:39:22.548 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+1792640683.021810 nixos sway[1049]: 02:39:22.551 [DEBUG] [sway/desktop/layer_shell.c:98] Usable area changed, rearranging output
+1792640683.021810 nixos sway[1049]: 02:39:22.551 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x466@0,0
+1792640683.021810 nixos sway[1049]: 02:39:22.551 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+1792640683.046201 nixos sway[1049]: 02:39:22.575 [DEBUG] [sway/desktop/layer_shell.c:98] Usable area changed, rearranging output
+1792640683.046201 nixos sway[1049]: 02:39:22.575 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x472@0,0
+1792640683.046201 nixos sway[1049]: 02:39:22.575 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+1792640683.048528 nixos sway[1049]: 02:39:22.577 [DEBUG] [sway/desktop/layer_shell.c:98] Usable area changed, rearranging output
+1792640683.048528 nixos sway[1049]: 02:39:22.577 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x478@0,0
+1792640683.048528 nixos sway[1049]: 02:39:22.577 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+1792640683.048528 nixos sway[1049]: 02:39:22.578 [DEBUG] [sway/desktop/layer_shell.c:98] Usable area changed, rearranging output
+1792640683.048528 nixos sway[1049]: 02:39:22.578 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x484@0,0
+1792640683.051049 nixos sway[1049]: 02:39:22.578 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+1792640683.054724 nixos sway[1049]: 02:39:22.584 [DEBUG] [sway/desktop/layer_shell.c:98] Usable area changed, rearranging output
+1792640683.054724 nixos sway[1049]: 02:39:22.585 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x490@0,0
+1792640683.056480 nixos sway[1049]: 02:39:22.585 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+1792640683.062865 nixos sway[1049]: 02:39:22.592 [DEBUG] [sway/desktop/layer_shell.c:98] Usable area changed, rearranging output
+1792640683.062865 nixos sway[1049]: 02:39:22.592 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x496@0,0
+1792640683.062865 nixos sway[1049]: 02:39:22.592 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+1792640683.080481 nixos sway[1049]: 02:39:22.610 [DEBUG] [sway/desktop/layer_shell.c:98] Usable area changed, rearranging output
+1792640683.080481 nixos sway[1049]: 02:39:22.610 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x501@0,0
+1792640683.080481 nixos sway[1049]: 02:39:22.611 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+1792640683.082849 nixos sway[1049]: 02:39:22.612 [DEBUG] [sway/desktop/layer_shell.c:98] Usable area changed, rearranging output
+1792640683.082849 nixos sway[1049]: 02:39:22.612 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x508@0,0
+1792640683.082849 nixos sway[1049]: 02:39:22.612 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+1792640683.086074 nixos sway[1049]: 02:39:22.616 [DEBUG] [sway/desktop/layer_shell.c:98] Usable area changed, rearranging output
+1792640683.086074 nixos sway[1049]: 02:39:22.616 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x514@0,0
+1792640683.086074 nixos sway[1049]: 02:39:22.616 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+1792640683.094342 nixos sway[1049]: 02:39:22.624 [DEBUG] [sway/desktop/layer_shell.c:98] Usable area changed, rearranging output
+1792640683.094342 nixos sway[1049]: 02:39:22.624 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x520@0,0
+1792640683.094342 nixos sway[1049]: 02:39:22.624 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+1792640683.102744 nixos sway[1049]: 02:39:22.632 [DEBUG] [sway/desktop/layer_shell.c:98] Usable area changed, rearranging output
+1792640683.102744 nixos sway[1049]: 02:39:22.632 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x526@0,0
+1792640683.102744 nixos sway[1049]: 02:39:22.632 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+1792640683.123568 nixos sway[1049]: 02:39:22.653 [DEBUG] [sway/desktop/layer_shell.c:98] Usable area changed, rearranging output
+1792640683.123568 nixos sway[1049]: 02:39:22.653 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x532@0,0
+1792640683.123568 nixos sway[1049]: 02:39:22.653 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+1792640683.139202 nixos sway[1049]: 02:39:22.669 [DEBUG] [sway/desktop/layer_shell.c:98] Usable area changed, rearranging output
+1792640683.139897 nixos sway[1049]: 02:39:22.670 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x549@0,0
+1792640683.139897 nixos sway[1049]: 02:39:22.670 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+1792640683.157792 nixos sway[1049]: 02:39:22.687 [DEBUG] [sway/desktop/layer_shell.c:98] Usable area changed, rearranging output
+1792640683.158830 nixos sway[1049]: 02:39:22.688 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x556@0,0
+1792640683.158830 nixos sway[1049]: 02:39:22.688 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+1792640683.175196 nixos sway[1049]: 02:39:22.705 [DEBUG] [sway/desktop/layer_shell.c:98] Usable area changed, rearranging output
+1792640683.175196 nixos sway[1049]: 02:39:22.705 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x559@0,0
+1792640683.175196 nixos sway[1049]: 02:39:22.705 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+1792640683.191897 nixos sway[1049]: 02:39:22.722 [DEBUG] [sway/desktop/layer_shell.c:98] Usable area changed, rearranging output
+1792640683.191897 nixos sway[1049]: 02:39:22.722 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x563@0,0
+1792640683.191897 nixos sway[1049]: 02:39:22.722 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+1792640683.208438 nixos sway[1049]: 02:39:22.738 [DEBUG] [sway/desktop/layer_shell.c:98] Usable area changed, rearranging output
+1792640683.209181 nixos sway[1049]: 02:39:22.739 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x564@0,0
+1792640683.209944 nixos sway[1049]: 02:39:22.740 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+1792640683.227607 nixos sway[1049]: 02:39:22.757 [DEBUG] [sway/desktop/layer_shell.c:98] Usable area changed, rearranging output
+1792640683.227607 nixos sway[1049]: 02:39:22.757 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x566@0,0
+1792640683.227607 nixos sway[1049]: 02:39:22.757 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+1792640683.250464 nixos sway[1049]: 02:39:22.780 [DEBUG] [sway/desktop/layer_shell.c:98] Usable area changed, rearranging output
+1792640683.250464 nixos sway[1049]: 02:39:22.780 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x567@0,0
+1792640683.250464 nixos sway[1049]: 02:39:22.780 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+1792640683.287892 nixos sway[1049]: 02:39:22.818 [DEBUG] [sway/desktop/layer_shell.c:98] Usable area changed, rearranging output
+1792640683.287892 nixos sway[1049]: 02:39:22.818 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x568@0,0
+1792640683.287892 nixos sway[1049]: 02:39:22.818 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+1792640683.422835 nixos sway[1049]: 02:39:22.952 [DEBUG] [sway/desktop/transaction.c:821] Transaction 0x315507c220 committing with 3 instructions
+1792640683.472550 nixos sway[1049]: 02:39:23.002 [DEBUG] [sway/desktop/transaction.c:907] Transaction 0x315507c220 is ready
+1792640683.472550 nixos sway[1049]: 02:39:23.002 [DEBUG] [sway/desktop/transaction.c:717] Applying transaction 0x315507c220
+1792640683.476341 nixos sway[1049]: 02:39:23.003 [DEBUG] [sway/desktop/transaction.c:821] Transaction 0x31550886f0 committing with 2 instructions
+1792640683.476341 nixos sway[1049]: 02:39:23.004 [DEBUG] [sway/desktop/transaction.c:717] Applying transaction 0x31550886f0
+1792640684.193358 nixos sway[1049]: 02:39:23.722 [DEBUG] [wlr] [types/output/render.c:142] Disabling direct scan-out on output 'DSI-1' (locks: 1)
+1792640684.388595 nixos sway[1049]: 02:39:23.917 [DEBUG] [wlr] [types/output/render.c:142] Enabling direct scan-out on output 'DSI-1' (locks: 0)
+1792640684.414759 nixos sway[1049]: 02:39:23.936 [DEBUG] [wlr] [backend/libinput/events.c:133] Removing K230 injected touchscreen [0:0]
+1792640684.414759 nixos sway[1049]: 02:39:23.936 [DEBUG] [sway/input/input-manager.c:208] removing device: '0:0:K230_injected_touchscreen'
+1792640684.414759 nixos sway[1049]: 02:39:23.936 [DEBUG] [sway/input/seat.c:968] removing device 0:0:K230_injected_touchscreen from seat seat0
+1792640684.553807 nixos sway[1049]: 02:39:24.081 [DEBUG] [sway/ipc-server.c:196] New client: fd 43
+1792640684.553807 nixos sway[1049]: 02:39:24.081 [DEBUG] [sway/criteria.c:841] Found pair: app_id=k230.kbd.trial
+1792640684.553807 nixos sway[1049]: 02:39:24.081 [INFO] [sway/commands.c:262] Handling command 'kill'
+1792640684.559170 nixos sway[1049]: 02:39:24.085 [INFO] [sway/ipc-server.c:570] IPC Client 43 disconnected
+1792640684.568803 nixos sway[1049]: 02:39:24.096 [DEBUG] [sway/card_shell.c:2180] K230_CARD_SHELL state mode=0 actions=32 message=8 cards=1 entry_settling=0 entry_reversing=0 entry_interrupted_hold=0 entry_progress=0.000 blocked_until_up=0 blocked_contacts=0
+1792640684.568803 nixos sway[1049]: 02:39:24.096 [INFO] [sway/card_shell.c:2914] K230_CARD_SHELL unmap id=6
+1792640684.568803 nixos sway[1049]: 02:39:24.096 [DEBUG] [sway/tree/arrange.c:274] Usable area for ws: 1232x568@0,0
+1792640684.568803 nixos sway[1049]: 02:39:24.097 [DEBUG] [sway/tree/arrange.c:308] Arranging workspace '1' at 0.000000, 0.000000
+1792640684.568803 nixos sway[1049]: 02:39:24.097 [DEBUG] [sway/desktop/transaction.c:821] Transaction 0x31550ebe10 committing with 4 instructions
+1792640684.573095 nixos sway[1049]: 02:39:24.097 [DEBUG] [sway/desktop/transaction.c:717] Applying transaction 0x31550ebe10
+1792640684.616970 nixos sway[5684]: warn: terminal.c:2034: slave exited with signal 1 (Hangup)
+1792640685.653850 nixos sway[1049]: 02:39:25.183 [DEBUG] [sway/ipc-server.c:196] New client: fd 43
+1792640685.660228 nixos sway[1049]: 02:39:25.189 [INFO] [sway/ipc-server.c:570] IPC Client 43 disconnected

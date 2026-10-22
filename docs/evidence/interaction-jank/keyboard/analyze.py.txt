@@ -1,0 +1,79 @@
+#!/usr/bin/env python3
+"""Replay: python3 analyze.py RUN_DIR
+
+Reads the compositor's own benchmark rows from shell-journal.txt
+(`event=present` and `repaint-timing`, CLOCK_MONOTONIC) and splits them by
+the workload windows in meta.json. A window runs from a gesture's first
+contact to the next gesture's first contact, so release settling belongs to
+the gesture before it. Compares presented intervals with the card frame
+budget (33.334 ms, i.e. at least 30 updates per second) and render wall time
+with the installed 12 ms allowance. Present rows with presented=0 are
+counted, not used as intervals.
+"""
+import json, math, re, sys
+from pathlib import Path
+
+run = Path(sys.argv[1]); meta = json.loads((run / 'meta.json').read_text())
+off_ns = (meta['workload_start_mono'] - meta['workload_start']) * 1e9
+evs = meta['events']
+windows = []
+for i, e in enumerate(evs):
+    end = evs[i + 1]['start'] if i + 1 < len(evs) else meta['workload_end']
+    windows.append((e['kind'], e['start'] * 1e9 + off_ns, e['end'] * 1e9 + off_ns, end * 1e9 + off_ns))
+
+def which(t):
+    for i, (k, a, c, b) in enumerate(windows):
+        if a <= t < b:
+            return i, ('contact' if t <= c else 'settle')
+    return None, None
+
+text = (run / 'shell-journal.txt').read_text()
+pres = [(int(m[1]), int(m[2])) for m in re.finditer(r'event=present frame_id=\d+ t_ns=(\d+) presented=(\d)', text)]
+rep = [(int(m[1]), int(m[2]), int(m[3])) for m in
+       re.finditer(r'repaint-timing run=\d+ frame_id=\d+ scheduled_ns=\d+ delay_ms=-?\d+ start_ns=(\d+) commit_start_ns=(\d+) end_ns=(\d+)', text)]
+
+def pct(v, p):
+    s = sorted(v); return round(s[max(0, math.ceil(len(s) * p) - 1)], 3) if s else None
+def summ(v):
+    return {'n': len(v), 'median': pct(v, .5), 'p95': pct(v, .95), 'max': round(max(v), 3) if v else None}
+
+report = {'present_rows': len(pres), 'not_presented': sum(1 for _, p in pres if not p),
+          'repaint_rows': len(rep), 'gestures': len(evs), 'by_kind': {}}
+shown = sorted(t for t, p in pres if p)
+for kind in sorted({w[0] for w in windows}):
+    for part in ('contact', 'settle'):
+        iv = []
+        for a, b in zip(shown, shown[1:]):
+            ia, pa = which(a); ib, pb = which(b)
+            if ia is not None and ia == ib and windows[ia][0] == kind and pa == pb == part:
+                iv.append((b - a) / 1e6)
+        rw = [(e - s) / 1e6 for s, c, e in rep if (lambda r: r[0] is not None and windows[r[0]][0] == kind and r[1] == part)(which(s))]
+        report['by_kind'][f'{kind}/{part}'] = {
+            'presented_interval_ms': summ(iv), 'over_33_334ms': sum(x > 33.334 for x in iv),
+            'render_wall_ms': summ(rw), 'render_over_12ms': sum(x > 12 for x in rw)}
+# Damage per repainted frame (the compositor's frame-damage rows, emitted
+# just before commit; frame_id is one ahead of commit_seq on success).
+dmg = {int(m[1]): int(m[2]) for m in re.finditer(r'frame-damage run=\d+ frame_id=(\d+) rects=\d+ damage_px=(\d+)', text)}
+rep_ids = [(int(m[1]), int(m[2])) for m in re.finditer(r'repaint-timing run=\d+ frame_id=(\d+) scheduled_ns=\d+ delay_ms=-?\d+ start_ns=(\d+)', text)]
+full = 1232 * 568
+for kind in sorted({w[0] for w in windows}):
+    v = [dmg[f] / full for f, s0 in rep_ids if f in dmg and (lambda r: r[0] is not None and windows[r[0]][0] == kind)(which(s0))]
+    report['by_kind'].setdefault(kind + '/damage', {})['damaged_fraction_of_output'] = summ(v)
+# Show visibility: first contact of each show to the first presented frame
+# after it, and to the last presented frame of its settle (motion complete).
+lat = []; settle = []
+for i, (k, a, c, b) in enumerate(windows):
+    if k != 'show':
+        continue
+    after = [t for t in shown if a <= t < b]
+    if after:
+        lat.append((after[0] - a) / 1e6); settle.append((after[-1] - a) / 1e6)
+report['show_first_frame_ms'] = summ(lat)
+report['show_last_frame_ms'] = summ(settle)
+hides = []
+for i, (k, a, c, b) in enumerate(windows):
+    if k == 'hide':
+        after = [t for t in shown if a <= t < b]
+        if after: hides.append((after[-1] - a) / 1e6)
+report['hide_last_frame_ms'] = summ(hides)
+print(json.dumps(report, indent=1))

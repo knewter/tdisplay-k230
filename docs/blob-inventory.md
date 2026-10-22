@@ -651,6 +651,9 @@ Paths are relative to the repository root. `(sdk)` is
 so that building stage 1 from source does not silently drop them from view.
 
 ```
+DATA 55381f254639278c06843516fe461cf2666da9674cdf9beec4182426e3988743 docs/evidence/interaction-jank/keyboard/probe1/before.png
+DATA 4f6eef5de15b27915e181b8b10faaf1c0a71bc5bcafebe50094c973df652917b docs/evidence/interaction-jank/keyboard/probe1/hidden.png
+DATA fc2b26d3cf54847501310ef5675d445d2f387a5d9a44d0ea1a875c136ea5889f docs/evidence/interaction-jank/keyboard/probe1/shown.png
 DATA 7a2f2289f6cb1dcf31e4d017265769563b9eb27d065cc0e9f351453f21a7315e docs/evidence/interaction-jank/drawer-scroll/run4/after-close.png
 DATA 63af3f4281611d470feaf69ce22843d7f7b50bf88d7cdf22a3ee06497dcb821e docs/evidence/interaction-jank/drawer-scroll/run4/drawer-open.png
 DATA 4cc7d9bc7a234671639008ec5c969923657d4de75b318b2f63beb4203aab1fd1 docs/evidence/interaction-jank/drawer-scroll/run4/mid-scroll.png
@@ -3945,3 +3948,13 @@ Native `grim` captures of the drawer before, during and after an injected scroll
 | `docs/evidence/interaction-jank/drawer-scroll/run4/after-close.png` | 6233 | DATA | `7a2f2289f6cb1dcf31e4d017265769563b9eb27d065cc0e9f351453f21a7315e` |
 | `docs/evidence/interaction-jank/drawer-scroll/run4/drawer-open.png` | 68768 | DATA | `63af3f4281611d470feaf69ce22843d7f7b50bf88d7cdf22a3ee06497dcb821e` |
 | `docs/evidence/interaction-jank/drawer-scroll/run4/mid-scroll.png` | 61738 | DATA | `4cc7d9bc7a234671639008ec5c969923657d4de75b318b2f63beb4203aab1fd1` |
+
+## On-screen keyboard probe captures, 2026-10-22
+
+Native `grim` captures of an owned trial window before, with and after the injected keyboard show.
+
+| Path | Bytes | Class | SHA256 |
+| --- | ---: | --- | --- |
+| `docs/evidence/interaction-jank/keyboard/probe1/before.png` | 3398 | DATA | `55381f254639278c06843516fe461cf2666da9674cdf9beec4182426e3988743` |
+| `docs/evidence/interaction-jank/keyboard/probe1/hidden.png` | 4148 | DATA | `4f6eef5de15b27915e181b8b10faaf1c0a71bc5bcafebe50094c973df652917b` |
+| `docs/evidence/interaction-jank/keyboard/probe1/shown.png` | 14778 | DATA | `fc2b26d3cf54847501310ef5675d445d2f387a5d9a44d0ea1a875c136ea5889f` |
