@@ -156,20 +156,6 @@
         "provenance": "QEMU capture"
       }
     },
-    "the-shell-profiles-reported-interaction-jank": {
-      "lane": "in-progress",
-      "source": "in-progress",
-      "physical": "pending",
-      "next": "Notification-shade drag diagnosis is recorded; preserve fresh-state behavior in a bounded follow-up. Deferred app-drawer, keyboard and ordinary-card measurements remain open.",
-      "dependencies": [],
-      "evidence": [
-        "docs/evidence/interaction-jank/notification-shade/README.md",
-        "docs/evidence/interaction-jank/notification-shade/comparison.json",
-        "docs/evidence/interaction-jank/notification-shade/final-control.json"
-      ],
-      "rationale": "One reported-route task is complete. Installed-board synthetic traces and a priority-only diagnostic identify settings-status CPU competition. No persistent shade source fix, optical acceptance or unrelated performance budget is claimed.",
-      "reviewRevision": "a1bc1e5706cc9d6187f9520229cb1ff7a2224a99"
-    },
     "2026-10-01-the-compositor-renders-ahead-of-scanout": {
       "lane": "archived",
       "source": "archived",
@@ -652,6 +638,23 @@
       ],
       "rationale": "17 host tests and matching cross-builds pass. Paired injected pulls reduce median gaps and status CPU while retaining the134.129ms worse maximum. Operator physical acceptance and persistent ordinary boot/control cleanup are separately committed; no universal smoothness/optical/portrait claim. Normal native Settings wrapper is selected without trace flags or a temporary override; landscape/kernel/compositor/Rust binaries remain accepted.",
       "reviewRevision": "8dce7634bee26a9c8eb2202e8fe61bde0623ab33"
+    },
+    "2026-10-21-the-shell-profiles-reported-interaction-jank": {
+      "lane": "archived",
+      "source": "archived",
+      "physical": "verified",
+      "next": "Closed at 6/6. Drawer, keyboard and ordinary-card measurements are recorded with their misses; the drawer follow-up is proposed in docs/design/app-drawer-review.md section 6, not implemented.",
+      "dependencies": [],
+      "evidence": [
+        "docs/evidence/interaction-jank/notification-shade/README.md",
+        "docs/evidence/interaction-jank/notification-shade/comparison.json",
+        "docs/evidence/interaction-jank/notification-shade/final-control.json",
+        "docs/evidence/interaction-jank/drawer-scroll/README.md",
+        "docs/evidence/interaction-jank/keyboard/README.md",
+        "docs/evidence/interaction-jank/ordinary-cards/README.md"
+      ],
+      "rationale": "Installed-board measurements with injected native touch at the real-finger rate (landscape, one CPU). The drawer scrolls at about 8 fps with a full scene rebuild per frame. Keyboard motion misses the card frame budget. Taps acknowledge within ~100 ms of release; the video-arm deck drag and contact-to-settled entry miss. No real glass, camera or optimization is claimed.",
+      "reviewRevision": "a1bc1e5706cc9d6187f9520229cb1ff7a2224a99"
     }
   }
 }
