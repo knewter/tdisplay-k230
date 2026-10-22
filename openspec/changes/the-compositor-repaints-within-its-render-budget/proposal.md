@@ -21,18 +21,21 @@ minimal, starting with sway's `-d` debug log.
 ## What Changes
 
 - Run sway without `-d` (`k230.shell.debugLog` off in the board image).
-- The drawer declares the opaque rows of its sheet as its opaque region when
-  the sheet pixels are fully opaque. sway then copies the drawer instead of
-  blending it, and skips the layers beneath.
-- Patch the on-screen keyboard (wvkbd) to declare its surface opaque when its
-  key and background colours are opaque.
-- Further iterations, each measured on the board with the same drawer and
-  keyboard workloads, until one stops giving a meaningful gain. Candidates
-  include a faster quarter-turn and a cheaper keyboard rearrangement.
+- Let sway take the `SCHED_RR` priority it already requests
+  (`LimitRTPRIO=1` on `shell.service`). On the one CPU its repaint was
+  otherwise preempted by the clients it composites.
+- Iterations were measured on the board with the same drawer and keyboard
+  workloads until the remaining levers were small or rejected. Three were
+  tried and not kept:
+  - a drawer opaque region: no gain, because the active theme's sheet is
+    translucent;
+  - an RVV quarter-turn: faster in isolation, no faster into the scanout
+    buffer;
+  - a wvkbd opaque region: rejected by the operator on 2026-10-22, because an
+    opaque keyboard while it slides looks wrong.
 - Non-goals:
   - visual changes;
-  - a translucent theme losing its translucency (opacity is declared only
-    when the pixels prove it);
+  - opaque regions on sliding surfaces;
   - the vector kernel trial.
 
 ## Capabilities
@@ -48,7 +51,7 @@ None.
 
 ## Impact
 
-`flake.nix`, `nix/shell.nix`, `nix/patches/wvkbd-k230-opaque-region.patch` and
-`nix/rust-shell-client`, plus any further compositor patches. Proof is
+`flake.nix` and `nix/shell.nix`; evidence in
+`docs/evidence/interaction-jank/compositor-repaint/`. Proof is
 board-only: injected native touch, landscape. Each step is test-activated
 before the final build is promoted.

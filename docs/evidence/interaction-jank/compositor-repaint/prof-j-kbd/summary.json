@@ -1,0 +1,433 @@
+{
+ "cpu_ms": 6623.1,
+ "processes_cpu_ms": {
+  "sway": 5160.8,
+  "pkill": 753.8,
+  ":3257": 261.3,
+  "k230-keyboard-g": 211.1,
+  ":3246": 95.5,
+  "mv": 85.4,
+  "id": 55.3
+ },
+ "inclusive": [
+  {
+   "frame": "[unknown]",
+   "cpu_ms": 5120.6,
+   "share": 0.7731
+  },
+  {
+   "frame": "wlr_scene_output_build_state",
+   "cpu_ms": 3060.3,
+   "share": 0.4621
+  },
+  {
+   "frame": "render_pass_add_texture",
+   "cpu_ms": 1778.9,
+   "share": 0.2686
+  },
+  {
+   "frame": "k230_round_composite_impl",
+   "cpu_ms": 1773.9,
+   "share": 0.2678
+  },
+  {
+   "frame": "__irqentry_text_start_[k]",
+   "cpu_ms": 1738.7,
+   "share": 0.2625
+  },
+  {
+   "frame": "pixman_image_composite32",
+   "cpu_ms": 1326.6,
+   "share": 0.2003
+  },
+  {
+   "frame": "do_trap_ecall_u_[k]",
+   "cpu_ms": 1231.2,
+   "share": 0.1859
+  },
+  {
+   "frame": "rvv_composite_over_8888_0565",
+   "cpu_ms": 1221.1,
+   "share": 0.1844
+  },
+  {
+   "frame": "render_pass_submit",
+   "cpu_ms": 1185.9,
+   "share": 0.1791
+  },
+  {
+   "frame": "k230_turn_copy_rect.isra.0",
+   "cpu_ms": 1175.9,
+   "share": 0.1775
+  },
+  {
+   "frame": "_start",
+   "cpu_ms": 1060.3,
+   "share": 0.1601
+  },
+  {
+   "frame": "__libc_start_main@@GLIBC_2.34",
+   "cpu_ms": 924.6,
+   "share": 0.1396
+  },
+  {
+   "frame": "main",
+   "cpu_ms": 924.6,
+   "share": 0.1396
+  },
+  {
+   "frame": "__libc_start_call_main",
+   "cpu_ms": 919.6,
+   "share": 0.1388
+  },
+  {
+   "frame": "__syscall_cancel",
+   "cpu_ms": 919.6,
+   "share": 0.1388
+  },
+  {
+   "frame": "__internal_syscall_cancel",
+   "cpu_ms": 919.6,
+   "share": 0.1388
+  },
+  {
+   "frame": "__syscall_cancel_arch",
+   "cpu_ms": 532.7,
+   "share": 0.0804
+  },
+  {
+   "frame": "procps_pids_get",
+   "cpu_ms": 527.6,
+   "share": 0.0797
+  },
+  {
+   "frame": "k230_rgb565_blit",
+   "cpu_ms": 517.6,
+   "share": 0.0781
+  },
+  {
+   "frame": "readproc",
+   "cpu_ms": 507.5,
+   "share": 0.0766
+  },
+  {
+   "frame": "simple_readproc",
+   "cpu_ms": 482.4,
+   "share": 0.0728
+  },
+  {
+   "frame": "handle_page_fault_[k]",
+   "cpu_ms": 472.4,
+   "share": 0.0713
+  },
+  {
+   "frame": "do_page_fault_[k]",
+   "cpu_ms": 467.3,
+   "share": 0.0706
+  },
+  {
+   "frame": "handle_mm_fault_[k]",
+   "cpu_ms": 437.2,
+   "share": 0.066
+  },
+  {
+   "frame": "__handle_mm_fault_[k]",
+   "cpu_ms": 417.1,
+   "share": 0.063
+  },
+  {
+   "frame": "__wcsmbs_load_conv",
+   "cpu_ms": 286.4,
+   "share": 0.0432
+  },
+  {
+   "frame": "__gconv_find_transform",
+   "cpu_ms": 286.4,
+   "share": 0.0432
+  },
+  {
+   "frame": "do_fault_[k]",
+   "cpu_ms": 271.4,
+   "share": 0.041
+  },
+  {
+   "frame": "_scene_nodes_in_box",
+   "cpu_ms": 246.2,
+   "share": 0.0372
+  },
+  {
+   "frame": "scene_node_update",
+   "cpu_ms": 236.2,
+   "share": 0.0357
+  },
+  {
+   "frame": "__pthread_once_slow.isra.0",
+   "cpu_ms": 231.2,
+   "share": 0.0349
+  },
+  {
+   "frame": "__gconv_read_conf",
+   "cpu_ms": 231.2,
+   "share": 0.0349
+  },
+  {
+   "frame": "pthread_once@@GLIBC_2.34",
+   "cpu_ms": 231.2,
+   "share": 0.0349
+  },
+  {
+   "frame": "scene_update_region",
+   "cpu_ms": 231.2,
+   "share": 0.0349
+  },
+  {
+   "frame": "read_conf_file.isra.0",
+   "cpu_ms": 216.1,
+   "share": 0.0326
+  },
+  {
+   "frame": "__fput_[k]",
+   "cpu_ms": 211.1,
+   "share": 0.0319
+  },
+  {
+   "frame": "__close",
+   "cpu_ms": 206.0,
+   "share": 0.0311
+  },
+  {
+   "frame": "ksys_read_[k]",
+   "cpu_ms": 206.0,
+   "share": 0.0311
+  },
+  {
+   "frame": "__riscv_sys_read_[k]",
+   "cpu_ms": 206.0,
+   "share": 0.0311
+  },
+  {
+   "frame": "__riscv_sys_close_[k]",
+   "cpu_ms": 201.0,
+   "share": 0.0303
+  }
+ ],
+ "self": [
+  {
+   "frame": "k230_turn_copy_rect.isra.0",
+   "cpu_ms": 1160.8,
+   "share": 0.1753
+  },
+  {
+   "frame": "rvv_composite_over_8888_0565",
+   "cpu_ms": 1115.6,
+   "share": 0.1684
+  },
+  {
+   "frame": "k230_rgb565_blit",
+   "cpu_ms": 467.3,
+   "share": 0.0706
+  },
+  {
+   "frame": "[unknown]",
+   "cpu_ms": 452.3,
+   "share": 0.0683
+  },
+  {
+   "frame": "_raw_spin_unlock_irq_[k]",
+   "cpu_ms": 180.9,
+   "share": 0.0273
+  },
+  {
+   "frame": "strcmp",
+   "cpu_ms": 150.8,
+   "share": 0.0228
+  },
+  {
+   "frame": "__memcpy_generic",
+   "cpu_ms": 130.7,
+   "share": 0.0197
+  },
+  {
+   "frame": ":3257",
+   "cpu_ms": 120.6,
+   "share": 0.0182
+  },
+  {
+   "frame": "_raw_spin_unlock_irqrestore_[k]",
+   "cpu_ms": 100.5,
+   "share": 0.0152
+  },
+  {
+   "frame": ":3246",
+   "cpu_ms": 60.3,
+   "share": 0.0091
+  },
+  {
+   "frame": "finish_task_switch.isra.0_[k]",
+   "cpu_ms": 60.3,
+   "share": 0.0091
+  },
+  {
+   "frame": "_scene_nodes_in_box",
+   "cpu_ms": 50.3,
+   "share": 0.0076
+  },
+  {
+   "frame": "clear_page_[k]",
+   "cpu_ms": 45.2,
+   "share": 0.0068
+  },
+  {
+   "frame": "__alloc_tagging_slab_alloc_hook_[k]",
+   "cpu_ms": 35.2,
+   "share": 0.0053
+  },
+  {
+   "frame": "_int_malloc",
+   "cpu_ms": 30.2,
+   "share": 0.0046
+  },
+  {
+   "frame": "malloc",
+   "cpu_ms": 30.2,
+   "share": 0.0046
+  },
+  {
+   "frame": "__schedule_[k]",
+   "cpu_ms": 30.2,
+   "share": 0.0046
+  },
+  {
+   "frame": "__memcg_slab_post_alloc_hook_[k]",
+   "cpu_ms": 30.2,
+   "share": 0.0046
+  },
+  {
+   "frame": "pixman_op",
+   "cpu_ms": 30.2,
+   "share": 0.0046
+  },
+  {
+   "frame": "next_uptodate_folio_[k]",
+   "cpu_ms": 30.2,
+   "share": 0.0046
+  },
+  {
+   "frame": "kmem_cache_free_[k]",
+   "cpu_ms": 25.1,
+   "share": 0.0038
+  },
+  {
+   "frame": "queue_work_on_[k]",
+   "cpu_ms": 25.1,
+   "share": 0.0038
+  },
+  {
+   "frame": "__memcpy_chk",
+   "cpu_ms": 25.1,
+   "share": 0.0038
+  },
+  {
+   "frame": "update_node_update_outputs",
+   "cpu_ms": 25.1,
+   "share": 0.0038
+  },
+  {
+   "frame": "rvv_fill",
+   "cpu_ms": 25.1,
+   "share": 0.0038
+  },
+  {
+   "frame": "do_trap_ecall_u_[k]",
+   "cpu_ms": 20.1,
+   "share": 0.003
+  },
+  {
+   "frame": "handle_page_fault_[k]",
+   "cpu_ms": 20.1,
+   "share": 0.003
+  },
+  {
+   "frame": "get_mem_cgroup_from_mm_[k]",
+   "cpu_ms": 20.1,
+   "share": 0.003
+  },
+  {
+   "frame": "mas_walk_[k]",
+   "cpu_ms": 20.1,
+   "share": 0.003
+  },
+  {
+   "frame": "_dl_relocate_object_no_relro",
+   "cpu_ms": 20.1,
+   "share": 0.003
+  },
+  {
+   "frame": "do_lookup_x",
+   "cpu_ms": 20.1,
+   "share": 0.003
+  },
+  {
+   "frame": "get_page_from_freelist_[k]",
+   "cpu_ms": 20.1,
+   "share": 0.003
+  },
+  {
+   "frame": "memset_[k]",
+   "cpu_ms": 20.1,
+   "share": 0.003
+  },
+  {
+   "frame": "memcpy_[k]",
+   "cpu_ms": 20.1,
+   "share": 0.003
+  },
+  {
+   "frame": "__libc_calloc",
+   "cpu_ms": 20.1,
+   "share": 0.003
+  },
+  {
+   "frame": "memset",
+   "cpu_ms": 20.1,
+   "share": 0.003
+  },
+  {
+   "frame": "buffer_get_shm",
+   "cpu_ms": 20.1,
+   "share": 0.003
+  },
+  {
+   "frame": "ep_send_events_[k]",
+   "cpu_ms": 20.1,
+   "share": 0.003
+  },
+  {
+   "frame": "pixman_region32_init",
+   "cpu_ms": 20.1,
+   "share": 0.003
+  },
+  {
+   "frame": "scene_node_get_size",
+   "cpu_ms": 20.1,
+   "share": 0.003
+  }
+ ],
+ "units": {
+  "shell": {
+   "pid": 2935,
+   "starttime": 209684,
+   "comm": "sway"
+  }
+ },
+ "freq_hz": 199,
+ "call_graph": "dwarf,65528",
+ "host_wall_s": 49.7,
+ "capture": [
+  "start 2026-10-22T06:20:22Z",
+  "workload_rc=0 perf_rc=130",
+  "end 2026-10-22T06:21:07Z",
+  "pid-after shell 2935",
+  "script-warnings 13"
+ ]
+}

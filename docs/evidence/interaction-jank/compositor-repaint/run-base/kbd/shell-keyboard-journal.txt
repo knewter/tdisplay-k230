@@ -1,0 +1,8 @@
+1792648598.715857 nixos k230-supervised-keyboard[1065]: Resize 1232x240 1.000000, 55 layouts
+1792648605.312440 nixos k230-supervised-keyboard[1065]: Resize 1232x240 1.000000, 55 layouts
+1792648611.307291 nixos k230-supervised-keyboard[1065]: Resize 1232x240 1.000000, 55 layouts
+1792648617.301528 nixos k230-supervised-keyboard[1065]: Resize 1232x240 1.000000, 55 layouts
+1792648623.299727 nixos k230-supervised-keyboard[1065]: Resize 1232x240 1.000000, 55 layouts
+1792648629.287975 nixos k230-supervised-keyboard[1065]: Resize 1232x240 1.000000, 55 layouts
+1792648635.283428 nixos k230-supervised-keyboard[1065]: Resize 1232x240 1.000000, 55 layouts
+1792648641.284099 nixos k230-supervised-keyboard[1065]: Resize 1232x240 1.000000, 55 layouts

@@ -1,0 +1,694 @@
+1792649463.048519 nixos k230-shell-rust[2351]: rust-shell 29020ms map-request
+1792649463.071376 nixos k230-shell-rust[2351]: rust-shell 29042ms configure 1232x568
+1792649463.119816 nixos k230-shell-rust[2351]: rust-shell 29091ms K230_DRAWER_FRAME ms=48.66 apps=19 scroll=0
+1792649463.120654 nixos k230-shell-rust[2351]: rust-shell 29092ms commit
+1792649463.120654 nixos k230-shell-rust[2351]: rust-shell 29092ms home-configure 1232x568
+1792649463.121941 nixos k230-shell-rust[2351]: rust-shell 29092ms wallpaper-configure 1232x568
+1792649463.125664 nixos k230-shell-rust[2351]: rust-shell 29097ms wallpaper-commit
+1792649463.142944 nixos k230-shell-rust[2351]: rust-shell 29113ms configure 1232x568
+1792649463.144813 nixos k230-shell-rust[2351]: rust-shell 29116ms commit
+1792649463.148818 nixos k230-shell-rust[2351]: rust-shell 29116ms home-configure 1232x568
+1792649463.148818 nixos k230-shell-rust[2351]: rust-shell 29117ms wallpaper-configure 1232x568
+1792649463.150877 nixos k230-shell-rust[2351]: rust-shell 29120ms wallpaper-commit
+1792649463.151545 nixos k230-shell-rust[2351]: rust-shell 29123ms frame-done
+1792649463.171238 nixos k230-shell-rust[2351]: rust-shell 29142ms frame-done
+1792649464.907144 nixos k230-shell-rust[2351]: rust-shell 30878ms touch-down 0 616.5 470.2
+1792649464.917035 nixos k230-shell-rust[2351]: rust-shell 30888ms touch-move 0 616.5 459.7
+1792649464.922904 nixos k230-shell-rust[2351]: rust-shell 30894ms K230_DRAWER_FRAME ms=5.65 apps=19 scroll=11
+1792649464.922904 nixos k230-shell-rust[2351]: rust-shell 30894ms commit
+1792649464.938281 nixos k230-shell-rust[2351]: rust-shell 30908ms frame-done
+1792649464.945477 nixos k230-shell-rust[2351]: rust-shell 30916ms commit
+1792649464.965992 nixos k230-shell-rust[2351]: rust-shell 30936ms frame-done
+1792649464.973014 nixos k230-shell-rust[2351]: rust-shell 30944ms commit
+1792649464.994794 nixos k230-shell-rust[2351]: rust-shell 30965ms frame-done
+1792649465.000911 nixos k230-shell-rust[2351]: rust-shell 30972ms commit
+1792649465.003525 nixos k230-shell-rust[2351]: rust-shell 30974ms frame-done
+1792649465.012406 nixos k230-shell-rust[2351]: rust-shell 30983ms commit
+1792649465.042107 nixos k230-shell-rust[2351]: rust-shell 31013ms frame-done
+1792649465.051016 nixos k230-shell-rust[2351]: rust-shell 31022ms commit
+1792649465.080391 nixos k230-shell-rust[2351]: rust-shell 31051ms frame-done
+1792649465.089572 nixos k230-shell-rust[2351]: rust-shell 31060ms commit
+1792649465.119015 nixos k230-shell-rust[2351]: rust-shell 31090ms frame-done
+1792649465.159846 nixos k230-shell-rust[2351]: rust-shell 31131ms touch-up 0
+1792649465.760048 nixos k230-shell-rust[2351]: rust-shell 31731ms touch-down 0 616.5 129.9
+1792649465.768946 nixos k230-shell-rust[2351]: rust-shell 31740ms touch-move 0 616.5 140.9
+1792649465.774844 nixos k230-shell-rust[2351]: rust-shell 31746ms K230_DRAWER_FRAME ms=5.99 apps=19 scroll=175
+1792649465.776572 nixos k230-shell-rust[2351]: rust-shell 31747ms commit
+1792649465.790483 nixos k230-shell-rust[2351]: rust-shell 31761ms frame-done
+1792649465.797142 nixos k230-shell-rust[2351]: rust-shell 31768ms commit
+1792649465.809208 nixos k230-shell-rust[2351]: rust-shell 31779ms frame-done
+1792649465.819360 nixos k230-shell-rust[2351]: rust-shell 31789ms commit
+1792649465.847012 nixos k230-shell-rust[2351]: rust-shell 31818ms frame-done
+1792649465.857661 nixos k230-shell-rust[2351]: rust-shell 31826ms commit
+1792649465.885158 nixos k230-shell-rust[2351]: rust-shell 31856ms frame-done
+1792649465.892831 nixos k230-shell-rust[2351]: rust-shell 31863ms commit
+1792649465.924114 nixos k230-shell-rust[2351]: rust-shell 31895ms frame-done
+1792649465.937528 nixos k230-shell-rust[2351]: rust-shell 31909ms commit
+1792649465.961243 nixos k230-shell-rust[2351]: rust-shell 31932ms frame-done
+1792649466.013450 nixos k230-shell-rust[2351]: rust-shell 31984ms touch-up 0
+1792649466.613427 nixos k230-shell-rust[2351]: rust-shell 32585ms touch-down 0 616.5 450.2
+1792649466.622192 nixos k230-shell-rust[2351]: rust-shell 32593ms touch-move 0 616.5 447.6
+1792649466.630480 nixos k230-shell-rust[2351]: rust-shell 32601ms K230_DRAWER_FRAME ms=7.88 apps=19 scroll=3
+1792649466.631967 nixos k230-shell-rust[2351]: rust-shell 32602ms commit
+1792649466.646556 nixos k230-shell-rust[2351]: rust-shell 32616ms frame-done
+1792649466.654580 nixos k230-shell-rust[2351]: rust-shell 32625ms commit
+1792649466.670954 nixos k230-shell-rust[2351]: rust-shell 32642ms frame-done
+1792649466.677330 nixos k230-shell-rust[2351]: rust-shell 32649ms commit
+1792649466.692102 nixos k230-shell-rust[2351]: rust-shell 32663ms frame-done
+1792649466.699894 nixos k230-shell-rust[2351]: rust-shell 32671ms commit
+1792649466.708819 nixos k230-shell-rust[2351]: rust-shell 32680ms frame-done
+1792649466.717201 nixos k230-shell-rust[2351]: rust-shell 32687ms commit
+1792649466.747779 nixos k230-shell-rust[2351]: rust-shell 32718ms frame-done
+1792649466.758078 nixos k230-shell-rust[2351]: rust-shell 32729ms commit
+1792649466.787556 nixos k230-shell-rust[2351]: rust-shell 32757ms frame-done
+1792649466.795232 nixos k230-shell-rust[2351]: rust-shell 32765ms commit
+1792649466.823988 nixos k230-shell-rust[2351]: rust-shell 32795ms frame-done
+1792649466.833557 nixos k230-shell-rust[2351]: rust-shell 32803ms commit
+1792649466.862541 nixos k230-shell-rust[2351]: rust-shell 32833ms frame-done
+1792649466.876146 nixos k230-shell-rust[2351]: rust-shell 32847ms commit
+1792649466.900511 nixos k230-shell-rust[2351]: rust-shell 32871ms frame-done
+1792649466.911786 nixos k230-shell-rust[2351]: rust-shell 32882ms commit
+1792649466.939667 nixos k230-shell-rust[2351]: rust-shell 32910ms frame-done
+1792649466.953050 nixos k230-shell-rust[2351]: rust-shell 32921ms commit
+1792649466.977292 nixos k230-shell-rust[2351]: rust-shell 32948ms frame-done
+1792649466.988133 nixos k230-shell-rust[2351]: rust-shell 32958ms commit
+1792649467.015839 nixos k230-shell-rust[2351]: rust-shell 32986ms frame-done
+1792649467.024821 nixos k230-shell-rust[2351]: rust-shell 32994ms commit
+1792649467.054525 nixos k230-shell-rust[2351]: rust-shell 33025ms frame-done
+1792649467.064642 nixos k230-shell-rust[2351]: rust-shell 33033ms commit
+1792649467.092071 nixos k230-shell-rust[2351]: rust-shell 33062ms frame-done
+1792649467.101678 nixos k230-shell-rust[2351]: rust-shell 33072ms commit
+1792649467.130680 nixos k230-shell-rust[2351]: rust-shell 33101ms frame-done
+1792649467.141879 nixos k230-shell-rust[2351]: rust-shell 33113ms K230_DRAWER_FRAME ms=11.32 apps=19 scroll=170
+1792649467.141879 nixos k230-shell-rust[2351]: rust-shell 33113ms commit
+1792649467.168899 nixos k230-shell-rust[2351]: rust-shell 33139ms frame-done
+1792649467.176455 nixos k230-shell-rust[2351]: rust-shell 33147ms commit
+1792649467.207044 nixos k230-shell-rust[2351]: rust-shell 33178ms frame-done
+1792649467.216080 nixos k230-shell-rust[2351]: rust-shell 33187ms commit
+1792649467.245134 nixos k230-shell-rust[2351]: rust-shell 33216ms frame-done
+1792649467.667713 nixos k230-shell-rust[2351]: rust-shell 33639ms touch-up 0
+1792649468.268260 nixos k230-shell-rust[2351]: rust-shell 34239ms touch-down 0 616.5 149.9
+1792649468.276795 nixos k230-shell-rust[2351]: rust-shell 34248ms touch-move 0 616.5 153.0
+1792649468.282972 nixos k230-shell-rust[2351]: rust-shell 34254ms K230_DRAWER_FRAME ms=6.30 apps=19 scroll=183
+1792649468.284646 nixos k230-shell-rust[2351]: rust-shell 34255ms commit
+1792649468.297921 nixos k230-shell-rust[2351]: rust-shell 34268ms frame-done
+1792649468.305821 nixos k230-shell-rust[2351]: rust-shell 34277ms commit
+1792649468.321568 nixos k230-shell-rust[2351]: rust-shell 34292ms frame-done
+1792649468.328085 nixos k230-shell-rust[2351]: rust-shell 34299ms commit
+1792649468.337728 nixos k230-shell-rust[2351]: rust-shell 34308ms frame-done
+1792649468.346436 nixos k230-shell-rust[2351]: rust-shell 34316ms commit
+1792649468.376665 nixos k230-shell-rust[2351]: rust-shell 34346ms frame-done
+1792649468.383760 nixos k230-shell-rust[2351]: rust-shell 34354ms commit
+1792649468.414284 nixos k230-shell-rust[2351]: rust-shell 34385ms frame-done
+1792649468.423674 nixos k230-shell-rust[2351]: rust-shell 34393ms commit
+1792649468.452494 nixos k230-shell-rust[2351]: rust-shell 34423ms frame-done
+1792649468.463204 nixos k230-shell-rust[2351]: rust-shell 34431ms commit
+1792649468.491988 nixos k230-shell-rust[2351]: rust-shell 34462ms frame-done
+1792649468.500847 nixos k230-shell-rust[2351]: rust-shell 34469ms commit
+1792649468.533007 nixos k230-shell-rust[2351]: rust-shell 34500ms frame-done
+1792649468.539672 nixos k230-shell-rust[2351]: rust-shell 34510ms commit
+1792649468.567894 nixos k230-shell-rust[2351]: rust-shell 34539ms frame-done
+1792649468.576612 nixos k230-shell-rust[2351]: rust-shell 34547ms commit
+1792649468.606173 nixos k230-shell-rust[2351]: rust-shell 34577ms frame-done
+1792649468.616842 nixos k230-shell-rust[2351]: rust-shell 34583ms commit
+1792649468.644257 nixos k230-shell-rust[2351]: rust-shell 34615ms frame-done
+1792649468.653297 nixos k230-shell-rust[2351]: rust-shell 34624ms commit
+1792649468.684058 nixos k230-shell-rust[2351]: rust-shell 34654ms frame-done
+1792649468.692142 nixos k230-shell-rust[2351]: rust-shell 34661ms commit
+1792649468.720756 nixos k230-shell-rust[2351]: rust-shell 34692ms frame-done
+1792649468.729666 nixos k230-shell-rust[2351]: rust-shell 34701ms commit
+1792649468.759247 nixos k230-shell-rust[2351]: rust-shell 34730ms frame-done
+1792649468.766926 nixos k230-shell-rust[2351]: rust-shell 34737ms commit
+1792649468.798648 nixos k230-shell-rust[2351]: rust-shell 34769ms frame-done
+1792649468.809154 nixos k230-shell-rust[2351]: rust-shell 34780ms K230_DRAWER_FRAME ms=10.95 apps=19 scroll=12
+1792649468.809154 nixos k230-shell-rust[2351]: rust-shell 34780ms commit
+1792649468.835831 nixos k230-shell-rust[2351]: rust-shell 34806ms frame-done
+1792649468.846512 nixos k230-shell-rust[2351]: rust-shell 34817ms commit
+1792649468.873866 nixos k230-shell-rust[2351]: rust-shell 34845ms frame-done
+1792649469.322039 nixos k230-shell-rust[2351]: rust-shell 35293ms touch-up 0
+1792649469.922476 nixos k230-shell-rust[2351]: rust-shell 35894ms touch-down 0 616.5 470.2
+1792649469.931365 nixos k230-shell-rust[2351]: rust-shell 35902ms touch-move 0 616.5 459.7
+1792649469.938146 nixos k230-shell-rust[2351]: rust-shell 35908ms K230_DRAWER_FRAME ms=6.02 apps=19 scroll=11
+1792649469.938146 nixos k230-shell-rust[2351]: rust-shell 35909ms commit
+1792649469.951666 nixos k230-shell-rust[2351]: rust-shell 35923ms frame-done
+1792649469.958982 nixos k230-shell-rust[2351]: rust-shell 35930ms commit
+1792649469.966031 nixos k230-shell-rust[2351]: rust-shell 35937ms frame-done
+1792649469.973892 nixos k230-shell-rust[2351]: rust-shell 35945ms commit
+1792649470.005050 nixos k230-shell-rust[2351]: rust-shell 35976ms frame-done
+1792649470.012529 nixos k230-shell-rust[2351]: rust-shell 35983ms commit
+1792649470.042961 nixos k230-shell-rust[2351]: rust-shell 36014ms frame-done
+1792649470.052170 nixos k230-shell-rust[2351]: rust-shell 36022ms commit
+1792649470.081281 nixos k230-shell-rust[2351]: rust-shell 36052ms frame-done
+1792649470.089068 nixos k230-shell-rust[2351]: rust-shell 36059ms commit
+1792649470.118956 nixos k230-shell-rust[2351]: rust-shell 36090ms frame-done
+1792649470.175394 nixos k230-shell-rust[2351]: rust-shell 36146ms touch-up 0
+1792649470.775761 nixos k230-shell-rust[2351]: rust-shell 36747ms touch-down 0 616.5 129.9
+1792649470.784526 nixos k230-shell-rust[2351]: rust-shell 36755ms touch-move 0 616.5 140.9
+1792649470.791023 nixos k230-shell-rust[2351]: rust-shell 36762ms K230_DRAWER_FRAME ms=6.66 apps=19 scroll=175
+1792649470.791023 nixos k230-shell-rust[2351]: rust-shell 36762ms commit
+1792649470.807245 nixos k230-shell-rust[2351]: rust-shell 36777ms frame-done
+1792649470.815508 nixos k230-shell-rust[2351]: rust-shell 36786ms commit
+1792649470.830741 nixos k230-shell-rust[2351]: rust-shell 36800ms frame-done
+1792649470.837564 nixos k230-shell-rust[2351]: rust-shell 36808ms commit
+1792649470.847502 nixos k230-shell-rust[2351]: rust-shell 36818ms frame-done
+1792649470.857082 nixos k230-shell-rust[2351]: rust-shell 36826ms commit
+1792649470.886467 nixos k230-shell-rust[2351]: rust-shell 36857ms frame-done
+1792649470.895837 nixos k230-shell-rust[2351]: rust-shell 36867ms commit
+1792649470.925735 nixos k230-shell-rust[2351]: rust-shell 36895ms frame-done
+1792649470.939688 nixos k230-shell-rust[2351]: rust-shell 36910ms commit
+1792649470.962599 nixos k230-shell-rust[2351]: rust-shell 36933ms frame-done
+1792649471.029335 nixos k230-shell-rust[2351]: rust-shell 37000ms touch-up 0
+1792649471.629969 nixos k230-shell-rust[2351]: rust-shell 37601ms touch-down 0 616.5 450.2
+1792649471.638571 nixos k230-shell-rust[2351]: rust-shell 37609ms touch-move 0 616.5 447.6
+1792649471.644193 nixos k230-shell-rust[2351]: rust-shell 37615ms K230_DRAWER_FRAME ms=5.69 apps=19 scroll=3
+1792649471.644193 nixos k230-shell-rust[2351]: rust-shell 37616ms commit
+1792649471.660016 nixos k230-shell-rust[2351]: rust-shell 37630ms frame-done
+1792649471.666790 nixos k230-shell-rust[2351]: rust-shell 37638ms commit
+1792649471.671799 nixos k230-shell-rust[2351]: rust-shell 37643ms frame-done
+1792649471.680808 nixos k230-shell-rust[2351]: rust-shell 37650ms commit
+1792649471.709996 nixos k230-shell-rust[2351]: rust-shell 37681ms frame-done
+1792649471.718917 nixos k230-shell-rust[2351]: rust-shell 37689ms commit
+1792649471.749189 nixos k230-shell-rust[2351]: rust-shell 37719ms frame-done
+1792649471.761787 nixos k230-shell-rust[2351]: rust-shell 37732ms commit
+1792649471.786480 nixos k230-shell-rust[2351]: rust-shell 37757ms frame-done
+1792649471.798772 nixos k230-shell-rust[2351]: rust-shell 37769ms commit
+1792649471.825453 nixos k230-shell-rust[2351]: rust-shell 37796ms frame-done
+1792649471.834332 nixos k230-shell-rust[2351]: rust-shell 37803ms commit
+1792649471.863179 nixos k230-shell-rust[2351]: rust-shell 37834ms frame-done
+1792649471.872329 nixos k230-shell-rust[2351]: rust-shell 37842ms commit
+1792649471.902664 nixos k230-shell-rust[2351]: rust-shell 37872ms frame-done
+1792649471.913070 nixos k230-shell-rust[2351]: rust-shell 37884ms commit
+1792649471.941176 nixos k230-shell-rust[2351]: rust-shell 37910ms frame-done
+1792649471.949361 nixos k230-shell-rust[2351]: rust-shell 37919ms commit
+1792649471.978982 nixos k230-shell-rust[2351]: rust-shell 37949ms frame-done
+1792649471.990258 nixos k230-shell-rust[2351]: rust-shell 37961ms commit
+1792649472.016724 nixos k230-shell-rust[2351]: rust-shell 37988ms frame-done
+1792649472.026315 nixos k230-shell-rust[2351]: rust-shell 37995ms commit
+1792649472.054744 nixos k230-shell-rust[2351]: rust-shell 38025ms frame-done
+1792649472.061757 nixos k230-shell-rust[2351]: rust-shell 38033ms commit
+1792649472.093061 nixos k230-shell-rust[2351]: rust-shell 38064ms frame-done
+1792649472.102218 nixos k230-shell-rust[2351]: rust-shell 38072ms commit
+1792649472.131370 nixos k230-shell-rust[2351]: rust-shell 38102ms frame-done
+1792649472.144598 nixos k230-shell-rust[2351]: rust-shell 38115ms commit
+1792649472.170645 nixos k230-shell-rust[2351]: rust-shell 38141ms frame-done
+1792649472.179255 nixos k230-shell-rust[2351]: rust-shell 38150ms K230_DRAWER_FRAME ms=8.37 apps=19 scroll=178
+1792649472.179255 nixos k230-shell-rust[2351]: rust-shell 38151ms commit
+1792649472.208351 nixos k230-shell-rust[2351]: rust-shell 38179ms frame-done
+1792649472.217538 nixos k230-shell-rust[2351]: rust-shell 38188ms commit
+1792649472.245766 nixos k230-shell-rust[2351]: rust-shell 38217ms frame-done
+1792649472.684529 nixos k230-shell-rust[2351]: rust-shell 38655ms touch-up 0
+1792649473.284685 nixos k230-shell-rust[2351]: rust-shell 39256ms touch-down 0 616.5 149.9
+1792649473.293606 nixos k230-shell-rust[2351]: rust-shell 39264ms touch-move 0 616.5 153.0
+1792649473.299401 nixos k230-shell-rust[2351]: rust-shell 39270ms K230_DRAWER_FRAME ms=5.72 apps=19 scroll=183
+1792649473.299401 nixos k230-shell-rust[2351]: rust-shell 39271ms commit
+1792649473.314810 nixos k230-shell-rust[2351]: rust-shell 39285ms frame-done
+1792649473.321925 nixos k230-shell-rust[2351]: rust-shell 39293ms commit
+1792649473.338758 nixos k230-shell-rust[2351]: rust-shell 39310ms frame-done
+1792649473.347446 nixos k230-shell-rust[2351]: rust-shell 39318ms commit
+1792649473.361978 nixos k230-shell-rust[2351]: rust-shell 39332ms frame-done
+1792649473.368375 nixos k230-shell-rust[2351]: rust-shell 39339ms commit
+1792649473.376679 nixos k230-shell-rust[2351]: rust-shell 39347ms frame-done
+1792649473.385371 nixos k230-shell-rust[2351]: rust-shell 39357ms commit
+1792649473.415310 nixos k230-shell-rust[2351]: rust-shell 39386ms frame-done
+1792649473.423350 nixos k230-shell-rust[2351]: rust-shell 39394ms commit
+1792649473.453737 nixos k230-shell-rust[2351]: rust-shell 39424ms frame-done
+1792649473.462660 nixos k230-shell-rust[2351]: rust-shell 39434ms commit
+1792649473.494556 nixos k230-shell-rust[2351]: rust-shell 39463ms frame-done
+1792649473.504986 nixos k230-shell-rust[2351]: rust-shell 39476ms commit
+1792649473.530677 nixos k230-shell-rust[2351]: rust-shell 39501ms frame-done
+1792649473.540185 nixos k230-shell-rust[2351]: rust-shell 39511ms commit
+1792649473.568390 nixos k230-shell-rust[2351]: rust-shell 39539ms frame-done
+1792649473.577924 nixos k230-shell-rust[2351]: rust-shell 39547ms commit
+1792649473.606753 nixos k230-shell-rust[2351]: rust-shell 39578ms frame-done
+1792649473.617157 nixos k230-shell-rust[2351]: rust-shell 39588ms commit
+1792649473.646139 nixos k230-shell-rust[2351]: rust-shell 39616ms frame-done
+1792649473.653082 nixos k230-shell-rust[2351]: rust-shell 39624ms commit
+1792649473.683785 nixos k230-shell-rust[2351]: rust-shell 39654ms frame-done
+1792649473.693085 nixos k230-shell-rust[2351]: rust-shell 39662ms commit
+1792649473.721915 nixos k230-shell-rust[2351]: rust-shell 39692ms frame-done
+1792649473.733074 nixos k230-shell-rust[2351]: rust-shell 39704ms commit
+1792649473.760462 nixos k230-shell-rust[2351]: rust-shell 39731ms frame-done
+1792649473.769085 nixos k230-shell-rust[2351]: rust-shell 39739ms commit
+1792649473.800004 nixos k230-shell-rust[2351]: rust-shell 39770ms frame-done
+1792649473.810906 nixos k230-shell-rust[2351]: rust-shell 39781ms K230_DRAWER_FRAME ms=10.72 apps=19 scroll=18
+1792649473.810906 nixos k230-shell-rust[2351]: rust-shell 39781ms commit
+1792649473.836672 nixos k230-shell-rust[2351]: rust-shell 39807ms frame-done
+1792649473.846420 nixos k230-shell-rust[2351]: rust-shell 39815ms commit
+1792649473.875175 nixos k230-shell-rust[2351]: rust-shell 39846ms frame-done
+1792649473.883782 nixos k230-shell-rust[2351]: rust-shell 39854ms commit
+1792649473.913053 nixos k230-shell-rust[2351]: rust-shell 39884ms frame-done
+1792649474.339069 nixos k230-shell-rust[2351]: rust-shell 40310ms touch-up 0
+1792649474.939480 nixos k230-shell-rust[2351]: rust-shell 40911ms touch-down 0 616.5 470.2
+1792649474.949206 nixos k230-shell-rust[2351]: rust-shell 40919ms touch-move 0 616.5 459.7
+1792649474.956984 nixos k230-shell-rust[2351]: rust-shell 40926ms K230_DRAWER_FRAME ms=7.03 apps=19 scroll=11
+1792649474.956984 nixos k230-shell-rust[2351]: rust-shell 40927ms commit
+1792649474.971276 nixos k230-shell-rust[2351]: rust-shell 40941ms frame-done
+1792649474.977402 nixos k230-shell-rust[2351]: rust-shell 40949ms commit
+1792649474.986227 nixos k230-shell-rust[2351]: rust-shell 40957ms frame-done
+1792649474.995752 nixos k230-shell-rust[2351]: rust-shell 40966ms commit
+1792649475.024883 nixos k230-shell-rust[2351]: rust-shell 40996ms frame-done
+1792649475.034248 nixos k230-shell-rust[2351]: rust-shell 41005ms commit
+1792649475.063359 nixos k230-shell-rust[2351]: rust-shell 41034ms frame-done
+1792649475.072311 nixos k230-shell-rust[2351]: rust-shell 41043ms commit
+1792649475.101591 nixos k230-shell-rust[2351]: rust-shell 41072ms frame-done
+1792649475.111682 nixos k230-shell-rust[2351]: rust-shell 41082ms commit
+1792649475.139355 nixos k230-shell-rust[2351]: rust-shell 41111ms frame-done
+1792649475.192407 nixos k230-shell-rust[2351]: rust-shell 41164ms touch-up 0
+1792649475.792863 nixos k230-shell-rust[2351]: rust-shell 41764ms touch-down 0 616.5 129.9
+1792649475.801623 nixos k230-shell-rust[2351]: rust-shell 41772ms touch-move 0 616.5 140.9
+1792649475.808177 nixos k230-shell-rust[2351]: rust-shell 41779ms K230_DRAWER_FRAME ms=6.70 apps=19 scroll=175
+1792649475.810069 nixos k230-shell-rust[2351]: rust-shell 41780ms commit
+1792649475.823795 nixos k230-shell-rust[2351]: rust-shell 41794ms frame-done
+1792649475.831156 nixos k230-shell-rust[2351]: rust-shell 41802ms commit
+1792649475.848525 nixos k230-shell-rust[2351]: rust-shell 41819ms frame-done
+1792649475.854959 nixos k230-shell-rust[2351]: rust-shell 41826ms commit
+1792649475.869851 nixos k230-shell-rust[2351]: rust-shell 41840ms frame-done
+1792649475.876651 nixos k230-shell-rust[2351]: rust-shell 41848ms commit
+1792649475.886513 nixos k230-shell-rust[2351]: rust-shell 41857ms frame-done
+1792649475.895799 nixos k230-shell-rust[2351]: rust-shell 41866ms commit
+1792649475.925322 nixos k230-shell-rust[2351]: rust-shell 41896ms frame-done
+1792649475.932638 nixos k230-shell-rust[2351]: rust-shell 41903ms commit
+1792649475.963684 nixos k230-shell-rust[2351]: rust-shell 41934ms frame-done
+1792649475.972641 nixos k230-shell-rust[2351]: rust-shell 41944ms commit
+1792649476.001391 nixos k230-shell-rust[2351]: rust-shell 41973ms frame-done
+1792649476.047308 nixos k230-shell-rust[2351]: rust-shell 42017ms touch-up 0
+1792649476.997837 nixos k230-shell-rust[2351]: rust-shell 42969ms touch-down 0 616.5 450.2
+1792649477.007007 nixos k230-shell-rust[2351]: rust-shell 42978ms touch-move 0 616.5 447.6
+1792649477.012963 nixos k230-shell-rust[2351]: rust-shell 42984ms K230_DRAWER_FRAME ms=5.85 apps=19 scroll=3
+1792649477.012963 nixos k230-shell-rust[2351]: rust-shell 42984ms commit
+1792649477.027962 nixos k230-shell-rust[2351]: rust-shell 42998ms frame-done
+1792649477.034384 nixos k230-shell-rust[2351]: rust-shell 43005ms commit
+1792649477.036470 nixos k230-shell-rust[2351]: rust-shell 43007ms frame-done
+1792649477.045451 nixos k230-shell-rust[2351]: rust-shell 43015ms commit
+1792649477.074790 nixos k230-shell-rust[2351]: rust-shell 43045ms frame-done
+1792649477.083311 nixos k230-shell-rust[2351]: rust-shell 43053ms commit
+1792649477.113648 nixos k230-shell-rust[2351]: rust-shell 43084ms frame-done
+1792649477.122753 nixos k230-shell-rust[2351]: rust-shell 43093ms commit
+1792649477.151475 nixos k230-shell-rust[2351]: rust-shell 43122ms frame-done
+1792649477.162245 nixos k230-shell-rust[2351]: rust-shell 43132ms commit
+1792649477.190010 nixos k230-shell-rust[2351]: rust-shell 43161ms frame-done
+1792649477.201082 nixos k230-shell-rust[2351]: rust-shell 43167ms commit
+1792649477.229181 nixos k230-shell-rust[2351]: rust-shell 43198ms frame-done
+1792649477.234865 nixos k230-shell-rust[2351]: rust-shell 43206ms commit
+1792649477.267023 nixos k230-shell-rust[2351]: rust-shell 43237ms frame-done
+1792649477.274908 nixos k230-shell-rust[2351]: rust-shell 43245ms commit
+1792649477.304829 nixos k230-shell-rust[2351]: rust-shell 43276ms frame-done
+1792649477.315066 nixos k230-shell-rust[2351]: rust-shell 43285ms commit
+1792649477.363313 nixos k230-shell-rust[2351]: rust-shell 43333ms frame-done
+1792649477.370304 nixos k230-shell-rust[2351]: rust-shell 43341ms commit
+1792649477.384844 nixos k230-shell-rust[2351]: rust-shell 43355ms frame-done
+1792649477.391511 nixos k230-shell-rust[2351]: rust-shell 43362ms commit
+1792649477.400368 nixos k230-shell-rust[2351]: rust-shell 43371ms frame-done
+1792649477.408984 nixos k230-shell-rust[2351]: rust-shell 43379ms commit
+1792649477.439431 nixos k230-shell-rust[2351]: rust-shell 43410ms frame-done
+1792649477.447774 nixos k230-shell-rust[2351]: rust-shell 43418ms commit
+1792649477.478256 nixos k230-shell-rust[2351]: rust-shell 43449ms frame-done
+1792649477.487176 nixos k230-shell-rust[2351]: rust-shell 43458ms commit
+1792649477.515537 nixos k230-shell-rust[2351]: rust-shell 43486ms frame-done
+1792649477.525692 nixos k230-shell-rust[2351]: rust-shell 43496ms K230_DRAWER_FRAME ms=8.86 apps=19 scroll=170
+1792649477.525692 nixos k230-shell-rust[2351]: rust-shell 43496ms commit
+1792649477.558455 nixos k230-shell-rust[2351]: rust-shell 43525ms frame-done
+1792649477.568372 nixos k230-shell-rust[2351]: rust-shell 43540ms commit
+1792649477.592654 nixos k230-shell-rust[2351]: rust-shell 43563ms frame-done
+1792649477.602373 nixos k230-shell-rust[2351]: rust-shell 43573ms commit
+1792649477.630141 nixos k230-shell-rust[2351]: rust-shell 43601ms frame-done
+1792649478.052298 nixos k230-shell-rust[2351]: rust-shell 44024ms touch-up 0
+1792649478.653165 nixos k230-shell-rust[2351]: rust-shell 44624ms touch-down 0 616.5 149.9
+1792649478.661708 nixos k230-shell-rust[2351]: rust-shell 44632ms touch-move 0 616.5 153.0
+1792649478.667558 nixos k230-shell-rust[2351]: rust-shell 44639ms K230_DRAWER_FRAME ms=6.01 apps=19 scroll=183
+1792649478.669283 nixos k230-shell-rust[2351]: rust-shell 44639ms commit
+1792649478.682148 nixos k230-shell-rust[2351]: rust-shell 44653ms frame-done
+1792649478.690883 nixos k230-shell-rust[2351]: rust-shell 44661ms commit
+1792649478.705131 nixos k230-shell-rust[2351]: rust-shell 44676ms frame-done
+1792649478.711379 nixos k230-shell-rust[2351]: rust-shell 44683ms commit
+1792649478.722462 nixos k230-shell-rust[2351]: rust-shell 44693ms frame-done
+1792649478.731529 nixos k230-shell-rust[2351]: rust-shell 44701ms commit
+1792649478.760847 nixos k230-shell-rust[2351]: rust-shell 44732ms frame-done
+1792649478.769550 nixos k230-shell-rust[2351]: rust-shell 44739ms commit
+1792649478.800642 nixos k230-shell-rust[2351]: rust-shell 44772ms frame-done
+1792649478.809249 nixos k230-shell-rust[2351]: rust-shell 44780ms commit
+1792649478.837817 nixos k230-shell-rust[2351]: rust-shell 44809ms frame-done
+1792649478.847465 nixos k230-shell-rust[2351]: rust-shell 44818ms commit
+1792649478.876013 nixos k230-shell-rust[2351]: rust-shell 44847ms frame-done
+1792649478.883532 nixos k230-shell-rust[2351]: rust-shell 44854ms commit
+1792649478.915331 nixos k230-shell-rust[2351]: rust-shell 44886ms frame-done
+1792649478.923775 nixos k230-shell-rust[2351]: rust-shell 44894ms commit
+1792649478.952670 nixos k230-shell-rust[2351]: rust-shell 44923ms frame-done
+1792649478.962029 nixos k230-shell-rust[2351]: rust-shell 44931ms commit
+1792649478.990999 nixos k230-shell-rust[2351]: rust-shell 44962ms frame-done
+1792649478.999567 nixos k230-shell-rust[2351]: rust-shell 44970ms commit
+1792649479.029228 nixos k230-shell-rust[2351]: rust-shell 44999ms frame-done
+1792649479.035878 nixos k230-shell-rust[2351]: rust-shell 45007ms commit
+1792649479.067988 nixos k230-shell-rust[2351]: rust-shell 45039ms frame-done
+1792649479.086151 nixos k230-shell-rust[2351]: rust-shell 45055ms commit
+1792649479.105900 nixos k230-shell-rust[2351]: rust-shell 45077ms frame-done
+1792649479.115134 nixos k230-shell-rust[2351]: rust-shell 45085ms commit
+1792649479.144472 nixos k230-shell-rust[2351]: rust-shell 45115ms frame-done
+1792649479.152855 nixos k230-shell-rust[2351]: rust-shell 45124ms commit
+1792649479.182799 nixos k230-shell-rust[2351]: rust-shell 45153ms frame-done
+1792649479.191412 nixos k230-shell-rust[2351]: rust-shell 45163ms K230_DRAWER_FRAME ms=8.14 apps=19 scroll=12
+1792649479.191412 nixos k230-shell-rust[2351]: rust-shell 45163ms commit
+1792649479.221490 nixos k230-shell-rust[2351]: rust-shell 45192ms frame-done
+1792649479.233163 nixos k230-shell-rust[2351]: rust-shell 45203ms commit
+1792649479.258829 nixos k230-shell-rust[2351]: rust-shell 45230ms frame-done
+1792649479.706858 nixos k230-shell-rust[2351]: rust-shell 45678ms touch-up 0
+1792649480.307321 nixos k230-shell-rust[2351]: rust-shell 46279ms touch-down 0 616.5 470.2
+1792649480.316193 nixos k230-shell-rust[2351]: rust-shell 46287ms touch-move 0 616.5 459.7
+1792649480.321764 nixos k230-shell-rust[2351]: rust-shell 46293ms K230_DRAWER_FRAME ms=5.68 apps=19 scroll=11
+1792649480.323410 nixos k230-shell-rust[2351]: rust-shell 46294ms commit
+1792649480.336887 nixos k230-shell-rust[2351]: rust-shell 46307ms frame-done
+1792649480.343487 nixos k230-shell-rust[2351]: rust-shell 46315ms commit
+1792649480.350959 nixos k230-shell-rust[2351]: rust-shell 46322ms frame-done
+1792649480.362412 nixos k230-shell-rust[2351]: rust-shell 46330ms commit
+1792649480.390353 nixos k230-shell-rust[2351]: rust-shell 46361ms frame-done
+1792649480.398325 nixos k230-shell-rust[2351]: rust-shell 46369ms commit
+1792649480.427927 nixos k230-shell-rust[2351]: rust-shell 46398ms frame-done
+1792649480.437998 nixos k230-shell-rust[2351]: rust-shell 46409ms commit
+1792649480.468833 nixos k230-shell-rust[2351]: rust-shell 46437ms frame-done
+1792649480.475625 nixos k230-shell-rust[2351]: rust-shell 46446ms commit
+1792649480.504052 nixos k230-shell-rust[2351]: rust-shell 46475ms frame-done
+1792649480.560237 nixos k230-shell-rust[2351]: rust-shell 46531ms touch-up 0
+1792649481.160446 nixos k230-shell-rust[2351]: rust-shell 47132ms touch-down 0 616.5 129.9
+1792649481.169795 nixos k230-shell-rust[2351]: rust-shell 47141ms touch-move 0 616.5 140.9
+1792649481.176056 nixos k230-shell-rust[2351]: rust-shell 47147ms K230_DRAWER_FRAME ms=6.24 apps=19 scroll=175
+1792649481.176056 nixos k230-shell-rust[2351]: rust-shell 47147ms commit
+1792649481.191576 nixos k230-shell-rust[2351]: rust-shell 47162ms frame-done
+1792649481.198535 nixos k230-shell-rust[2351]: rust-shell 47170ms commit
+1792649481.213620 nixos k230-shell-rust[2351]: rust-shell 47183ms frame-done
+1792649481.219905 nixos k230-shell-rust[2351]: rust-shell 47191ms commit
+1792649481.235166 nixos k230-shell-rust[2351]: rust-shell 47206ms frame-done
+1792649481.241105 nixos k230-shell-rust[2351]: rust-shell 47212ms commit
+1792649481.252072 nixos k230-shell-rust[2351]: rust-shell 47223ms frame-done
+1792649481.258808 nixos k230-shell-rust[2351]: rust-shell 47230ms commit
+1792649481.290263 nixos k230-shell-rust[2351]: rust-shell 47261ms frame-done
+1792649481.299274 nixos k230-shell-rust[2351]: rust-shell 47270ms commit
+1792649481.328502 nixos k230-shell-rust[2351]: rust-shell 47299ms frame-done
+1792649481.341969 nixos k230-shell-rust[2351]: rust-shell 47312ms commit
+1792649481.366504 nixos k230-shell-rust[2351]: rust-shell 47338ms frame-done
+1792649481.413397 nixos k230-shell-rust[2351]: rust-shell 47385ms touch-up 0
+1792649482.013628 nixos k230-shell-rust[2351]: rust-shell 47985ms touch-down 0 616.5 450.2
+1792649482.022520 nixos k230-shell-rust[2351]: rust-shell 47993ms touch-move 0 616.5 447.6
+1792649482.028033 nixos k230-shell-rust[2351]: rust-shell 47999ms K230_DRAWER_FRAME ms=5.61 apps=19 scroll=3
+1792649482.029679 nixos k230-shell-rust[2351]: rust-shell 48000ms commit
+1792649482.044526 nixos k230-shell-rust[2351]: rust-shell 48015ms frame-done
+1792649482.050635 nixos k230-shell-rust[2351]: rust-shell 48022ms commit
+1792649482.056405 nixos k230-shell-rust[2351]: rust-shell 48027ms frame-done
+1792649482.064879 nixos k230-shell-rust[2351]: rust-shell 48034ms commit
+1792649482.095993 nixos k230-shell-rust[2351]: rust-shell 48066ms frame-done
+1792649482.111425 nixos k230-shell-rust[2351]: rust-shell 48083ms commit
+1792649482.133133 nixos k230-shell-rust[2351]: rust-shell 48104ms frame-done
+1792649482.144145 nixos k230-shell-rust[2351]: rust-shell 48112ms commit
+1792649482.171925 nixos k230-shell-rust[2351]: rust-shell 48143ms frame-done
+1792649482.180800 nixos k230-shell-rust[2351]: rust-shell 48150ms commit
+1792649482.210548 nixos k230-shell-rust[2351]: rust-shell 48181ms frame-done
+1792649482.220033 nixos k230-shell-rust[2351]: rust-shell 48190ms commit
+1792649482.248489 nixos k230-shell-rust[2351]: rust-shell 48219ms frame-done
+1792649482.257716 nixos k230-shell-rust[2351]: rust-shell 48227ms commit
+1792649482.286653 nixos k230-shell-rust[2351]: rust-shell 48257ms frame-done
+1792649482.296163 nixos k230-shell-rust[2351]: rust-shell 48265ms commit
+1792649482.324753 nixos k230-shell-rust[2351]: rust-shell 48295ms frame-done
+1792649482.332809 nixos k230-shell-rust[2351]: rust-shell 48304ms commit
+1792649482.363089 nixos k230-shell-rust[2351]: rust-shell 48334ms frame-done
+1792649482.371921 nixos k230-shell-rust[2351]: rust-shell 48341ms commit
+1792649482.402105 nixos k230-shell-rust[2351]: rust-shell 48373ms frame-done
+1792649482.415129 nixos k230-shell-rust[2351]: rust-shell 48383ms commit
+1792649482.439695 nixos k230-shell-rust[2351]: rust-shell 48410ms frame-done
+1792649482.448009 nixos k230-shell-rust[2351]: rust-shell 48418ms commit
+1792649482.478848 nixos k230-shell-rust[2351]: rust-shell 48450ms frame-done
+1792649482.487194 nixos k230-shell-rust[2351]: rust-shell 48458ms commit
+1792649482.516465 nixos k230-shell-rust[2351]: rust-shell 48487ms frame-done
+1792649482.525792 nixos k230-shell-rust[2351]: rust-shell 48495ms commit
+1792649482.555194 nixos k230-shell-rust[2351]: rust-shell 48526ms frame-done
+1792649482.565384 nixos k230-shell-rust[2351]: rust-shell 48537ms K230_DRAWER_FRAME ms=10.43 apps=19 scroll=178
+1792649482.565384 nixos k230-shell-rust[2351]: rust-shell 48537ms commit
+1792649482.599474 nixos k230-shell-rust[2351]: rust-shell 48566ms frame-done
+1792649482.609243 nixos k230-shell-rust[2351]: rust-shell 48580ms commit
+1792649482.630799 nixos k230-shell-rust[2351]: rust-shell 48602ms frame-done
+1792649483.067726 nixos k230-shell-rust[2351]: rust-shell 49039ms touch-up 0
+1792649483.668156 nixos k230-shell-rust[2351]: rust-shell 49639ms touch-down 0 616.5 149.9
+1792649483.677074 nixos k230-shell-rust[2351]: rust-shell 49648ms touch-move 0 616.5 153.0
+1792649483.683694 nixos k230-shell-rust[2351]: rust-shell 49654ms K230_DRAWER_FRAME ms=5.73 apps=19 scroll=183
+1792649483.683694 nixos k230-shell-rust[2351]: rust-shell 49654ms commit
+1792649483.696753 nixos k230-shell-rust[2351]: rust-shell 49667ms frame-done
+1792649483.705142 nixos k230-shell-rust[2351]: rust-shell 49676ms commit
+1792649483.723296 nixos k230-shell-rust[2351]: rust-shell 49695ms frame-done
+1792649483.734722 nixos k230-shell-rust[2351]: rust-shell 49706ms commit
+1792649483.749163 nixos k230-shell-rust[2351]: rust-shell 49719ms frame-done
+1792649483.755435 nixos k230-shell-rust[2351]: rust-shell 49727ms commit
+1792649483.761766 nixos k230-shell-rust[2351]: rust-shell 49733ms frame-done
+1792649483.770718 nixos k230-shell-rust[2351]: rust-shell 49739ms commit
+1792649483.800298 nixos k230-shell-rust[2351]: rust-shell 49771ms frame-done
+1792649483.808097 nixos k230-shell-rust[2351]: rust-shell 49778ms commit
+1792649483.840488 nixos k230-shell-rust[2351]: rust-shell 49811ms frame-done
+1792649483.849989 nixos k230-shell-rust[2351]: rust-shell 49821ms commit
+1792649483.876928 nixos k230-shell-rust[2351]: rust-shell 49848ms frame-done
+1792649483.885834 nixos k230-shell-rust[2351]: rust-shell 49857ms commit
+1792649483.915299 nixos k230-shell-rust[2351]: rust-shell 49886ms frame-done
+1792649483.922945 nixos k230-shell-rust[2351]: rust-shell 49893ms commit
+1792649483.953988 nixos k230-shell-rust[2351]: rust-shell 49924ms frame-done
+1792649483.962545 nixos k230-shell-rust[2351]: rust-shell 49934ms commit
+1792649483.991847 nixos k230-shell-rust[2351]: rust-shell 49963ms frame-done
+1792649484.002892 nixos k230-shell-rust[2351]: rust-shell 49974ms commit
+1792649484.030247 nixos k230-shell-rust[2351]: rust-shell 50001ms frame-done
+1792649484.040154 nixos k230-shell-rust[2351]: rust-shell 50011ms commit
+1792649484.068647 nixos k230-shell-rust[2351]: rust-shell 50040ms frame-done
+1792649484.076532 nixos k230-shell-rust[2351]: rust-shell 50048ms commit
+1792649484.106794 nixos k230-shell-rust[2351]: rust-shell 50078ms frame-done
+1792649484.118303 nixos k230-shell-rust[2351]: rust-shell 50087ms commit
+1792649484.145230 nixos k230-shell-rust[2351]: rust-shell 50116ms frame-done
+1792649484.154538 nixos k230-shell-rust[2351]: rust-shell 50125ms commit
+1792649484.183327 nixos k230-shell-rust[2351]: rust-shell 50154ms frame-done
+1792649484.191147 nixos k230-shell-rust[2351]: rust-shell 50161ms K230_DRAWER_FRAME ms=7.17 apps=19 scroll=16
+1792649484.191147 nixos k230-shell-rust[2351]: rust-shell 50162ms commit
+1792649484.222342 nixos k230-shell-rust[2351]: rust-shell 50193ms frame-done
+1792649484.230948 nixos k230-shell-rust[2351]: rust-shell 50202ms commit
+1792649484.260092 nixos k230-shell-rust[2351]: rust-shell 50231ms frame-done
+1792649484.268159 nixos k230-shell-rust[2351]: rust-shell 50238ms commit
+1792649484.297840 nixos k230-shell-rust[2351]: rust-shell 50269ms frame-done
+1792649484.722542 nixos k230-shell-rust[2351]: rust-shell 50694ms touch-up 0
+1792649485.322979 nixos k230-shell-rust[2351]: rust-shell 51294ms touch-down 0 616.5 470.2
+1792649485.331891 nixos k230-shell-rust[2351]: rust-shell 51303ms touch-move 0 616.5 459.7
+1792649485.339284 nixos k230-shell-rust[2351]: rust-shell 51309ms K230_DRAWER_FRAME ms=6.41 apps=19 scroll=11
+1792649485.339284 nixos k230-shell-rust[2351]: rust-shell 51310ms commit
+1792649485.353611 nixos k230-shell-rust[2351]: rust-shell 51323ms frame-done
+1792649485.360016 nixos k230-shell-rust[2351]: rust-shell 51331ms commit
+1792649485.371206 nixos k230-shell-rust[2351]: rust-shell 51342ms frame-done
+1792649485.380664 nixos k230-shell-rust[2351]: rust-shell 51351ms commit
+1792649485.409919 nixos k230-shell-rust[2351]: rust-shell 51381ms frame-done
+1792649485.421046 nixos k230-shell-rust[2351]: rust-shell 51392ms commit
+1792649485.447994 nixos k230-shell-rust[2351]: rust-shell 51418ms frame-done
+1792649485.456598 nixos k230-shell-rust[2351]: rust-shell 51427ms commit
+1792649485.486967 nixos k230-shell-rust[2351]: rust-shell 51458ms frame-done
+1792649485.494263 nixos k230-shell-rust[2351]: rust-shell 51464ms commit
+1792649485.524322 nixos k230-shell-rust[2351]: rust-shell 51496ms frame-done
+1792649485.575904 nixos k230-shell-rust[2351]: rust-shell 51547ms touch-up 0
+1792649486.176117 nixos k230-shell-rust[2351]: rust-shell 52147ms touch-down 0 616.5 129.9
+1792649486.185036 nixos k230-shell-rust[2351]: rust-shell 52156ms touch-move 0 616.5 140.9
+1792649486.191251 nixos k230-shell-rust[2351]: rust-shell 52162ms K230_DRAWER_FRAME ms=6.24 apps=19 scroll=175
+1792649486.191251 nixos k230-shell-rust[2351]: rust-shell 52163ms commit
+1792649486.206065 nixos k230-shell-rust[2351]: rust-shell 52176ms frame-done
+1792649486.214018 nixos k230-shell-rust[2351]: rust-shell 52185ms commit
+1792649486.234306 nixos k230-shell-rust[2351]: rust-shell 52204ms frame-done
+1792649486.241269 nixos k230-shell-rust[2351]: rust-shell 52212ms commit
+1792649486.255955 nixos k230-shell-rust[2351]: rust-shell 52227ms frame-done
+1792649486.262558 nixos k230-shell-rust[2351]: rust-shell 52233ms commit
+1792649486.272004 nixos k230-shell-rust[2351]: rust-shell 52243ms frame-done
+1792649486.282254 nixos k230-shell-rust[2351]: rust-shell 52253ms commit
+1792649486.310699 nixos k230-shell-rust[2351]: rust-shell 52281ms frame-done
+1792649486.319879 nixos k230-shell-rust[2351]: rust-shell 52290ms commit
+1792649486.349354 nixos k230-shell-rust[2351]: rust-shell 52320ms frame-done
+1792649486.357812 nixos k230-shell-rust[2351]: rust-shell 52328ms commit
+1792649486.386419 nixos k230-shell-rust[2351]: rust-shell 52358ms frame-done
+1792649486.429367 nixos k230-shell-rust[2351]: rust-shell 52400ms touch-up 0
+1792649487.030039 nixos k230-shell-rust[2351]: rust-shell 53001ms touch-down 0 616.5 450.2
+1792649487.038782 nixos k230-shell-rust[2351]: rust-shell 53010ms touch-move 0 616.5 447.6
+1792649487.044298 nixos k230-shell-rust[2351]: rust-shell 53015ms K230_DRAWER_FRAME ms=5.62 apps=19 scroll=3
+1792649487.045969 nixos k230-shell-rust[2351]: rust-shell 53016ms commit
+1792649487.059371 nixos k230-shell-rust[2351]: rust-shell 53030ms frame-done
+1792649487.066456 nixos k230-shell-rust[2351]: rust-shell 53037ms commit
+1792649487.076505 nixos k230-shell-rust[2351]: rust-shell 53047ms frame-done
+1792649487.084738 nixos k230-shell-rust[2351]: rust-shell 53055ms commit
+1792649487.115017 nixos k230-shell-rust[2351]: rust-shell 53086ms frame-done
+1792649487.124099 nixos k230-shell-rust[2351]: rust-shell 53095ms commit
+1792649487.154395 nixos k230-shell-rust[2351]: rust-shell 53124ms frame-done
+1792649487.165430 nixos k230-shell-rust[2351]: rust-shell 53135ms commit
+1792649487.191981 nixos k230-shell-rust[2351]: rust-shell 53163ms frame-done
+1792649487.205759 nixos k230-shell-rust[2351]: rust-shell 53177ms commit
+1792649487.230146 nixos k230-shell-rust[2351]: rust-shell 53201ms frame-done
+1792649487.241542 nixos k230-shell-rust[2351]: rust-shell 53212ms commit
+1792649487.273241 nixos k230-shell-rust[2351]: rust-shell 53239ms frame-done
+1792649487.281059 nixos k230-shell-rust[2351]: rust-shell 53252ms commit
+1792649487.307023 nixos k230-shell-rust[2351]: rust-shell 53278ms frame-done
+1792649487.317036 nixos k230-shell-rust[2351]: rust-shell 53285ms commit
+1792649487.364642 nixos k230-shell-rust[2351]: rust-shell 53335ms frame-done
+1792649487.371011 nixos k230-shell-rust[2351]: rust-shell 53342ms commit
+1792649487.385944 nixos k230-shell-rust[2351]: rust-shell 53357ms frame-done
+1792649487.392788 nixos k230-shell-rust[2351]: rust-shell 53364ms commit
+1792649487.402430 nixos k230-shell-rust[2351]: rust-shell 53373ms frame-done
+1792649487.410693 nixos k230-shell-rust[2351]: rust-shell 53381ms commit
+1792649487.440747 nixos k230-shell-rust[2351]: rust-shell 53412ms frame-done
+1792649487.450444 nixos k230-shell-rust[2351]: rust-shell 53422ms commit
+1792649487.479379 nixos k230-shell-rust[2351]: rust-shell 53450ms frame-done
+1792649487.486024 nixos k230-shell-rust[2351]: rust-shell 53457ms commit
+1792649487.517585 nixos k230-shell-rust[2351]: rust-shell 53488ms frame-done
+1792649487.527499 nixos k230-shell-rust[2351]: rust-shell 53498ms commit
+1792649487.555737 nixos k230-shell-rust[2351]: rust-shell 53527ms frame-done
+1792649487.565719 nixos k230-shell-rust[2351]: rust-shell 53536ms K230_DRAWER_FRAME ms=9.23 apps=19 scroll=173
+1792649487.565719 nixos k230-shell-rust[2351]: rust-shell 53536ms commit
+1792649487.594507 nixos k230-shell-rust[2351]: rust-shell 53565ms frame-done
+1792649487.600972 nixos k230-shell-rust[2351]: rust-shell 53572ms commit
+1792649487.634256 nixos k230-shell-rust[2351]: rust-shell 53604ms frame-done
+1792649488.084671 nixos k230-shell-rust[2351]: rust-shell 54056ms touch-up 0
+1792649488.684918 nixos k230-shell-rust[2351]: rust-shell 54656ms touch-down 0 616.5 149.9
+1792649488.693990 nixos k230-shell-rust[2351]: rust-shell 54665ms touch-move 0 616.5 153.0
+1792649488.699604 nixos k230-shell-rust[2351]: rust-shell 54671ms K230_DRAWER_FRAME ms=5.57 apps=19 scroll=183
+1792649488.699604 nixos k230-shell-rust[2351]: rust-shell 54671ms commit
+1792649488.714194 nixos k230-shell-rust[2351]: rust-shell 54685ms frame-done
+1792649488.720473 nixos k230-shell-rust[2351]: rust-shell 54691ms commit
+1792649488.724326 nixos k230-shell-rust[2351]: rust-shell 54695ms frame-done
+1792649488.732106 nixos k230-shell-rust[2351]: rust-shell 54702ms commit
+1792649488.763107 nixos k230-shell-rust[2351]: rust-shell 54734ms frame-done
+1792649488.772139 nixos k230-shell-rust[2351]: rust-shell 54742ms commit
+1792649488.801333 nixos k230-shell-rust[2351]: rust-shell 54772ms frame-done
+1792649488.808010 nixos k230-shell-rust[2351]: rust-shell 54779ms commit
+1792649488.839751 nixos k230-shell-rust[2351]: rust-shell 54810ms frame-done
+1792649488.848027 nixos k230-shell-rust[2351]: rust-shell 54818ms commit
+1792649488.877869 nixos k230-shell-rust[2351]: rust-shell 54849ms frame-done
+1792649488.886546 nixos k230-shell-rust[2351]: rust-shell 54857ms commit
+1792649488.916302 nixos k230-shell-rust[2351]: rust-shell 54887ms frame-done
+1792649488.923907 nixos k230-shell-rust[2351]: rust-shell 54894ms commit
+1792649488.955036 nixos k230-shell-rust[2351]: rust-shell 54926ms frame-done
+1792649488.966851 nixos k230-shell-rust[2351]: rust-shell 54937ms commit
+1792649488.993096 nixos k230-shell-rust[2351]: rust-shell 54964ms frame-done
+1792649489.002470 nixos k230-shell-rust[2351]: rust-shell 54972ms commit
+1792649489.031213 nixos k230-shell-rust[2351]: rust-shell 55002ms frame-done
+1792649489.040910 nixos k230-shell-rust[2351]: rust-shell 55012ms commit
+1792649489.069105 nixos k230-shell-rust[2351]: rust-shell 55040ms frame-done
+1792649489.076785 nixos k230-shell-rust[2351]: rust-shell 55047ms commit
+1792649489.107710 nixos k230-shell-rust[2351]: rust-shell 55079ms frame-done
+1792649489.117171 nixos k230-shell-rust[2351]: rust-shell 55088ms commit
+1792649489.147255 nixos k230-shell-rust[2351]: rust-shell 55118ms frame-done
+1792649489.164304 nixos k230-shell-rust[2351]: rust-shell 55135ms commit
+1792649489.184353 nixos k230-shell-rust[2351]: rust-shell 55155ms frame-done
+1792649489.193178 nixos k230-shell-rust[2351]: rust-shell 55164ms commit
+1792649489.223324 nixos k230-shell-rust[2351]: rust-shell 55194ms frame-done
+1792649489.234498 nixos k230-shell-rust[2351]: rust-shell 55205ms K230_DRAWER_FRAME ms=10.54 apps=19 scroll=10
+1792649489.234498 nixos k230-shell-rust[2351]: rust-shell 55205ms commit
+1792649489.261026 nixos k230-shell-rust[2351]: rust-shell 55232ms frame-done
+1792649489.271037 nixos k230-shell-rust[2351]: rust-shell 55240ms commit
+1792649489.298833 nixos k230-shell-rust[2351]: rust-shell 55270ms frame-done
+1792649489.739276 nixos k230-shell-rust[2351]: rust-shell 55711ms touch-up 0
+1792649490.339706 nixos k230-shell-rust[2351]: rust-shell 56311ms touch-down 0 616.5 470.2
+1792649490.348653 nixos k230-shell-rust[2351]: rust-shell 56319ms touch-move 0 616.5 459.7
+1792649490.354786 nixos k230-shell-rust[2351]: rust-shell 56326ms K230_DRAWER_FRAME ms=6.18 apps=19 scroll=11
+1792649490.354786 nixos k230-shell-rust[2351]: rust-shell 56326ms commit
+1792649490.369837 nixos k230-shell-rust[2351]: rust-shell 56340ms frame-done
+1792649490.377647 nixos k230-shell-rust[2351]: rust-shell 56349ms commit
+1792649490.392992 nixos k230-shell-rust[2351]: rust-shell 56364ms frame-done
+1792649490.400120 nixos k230-shell-rust[2351]: rust-shell 56371ms commit
+1792649490.410555 nixos k230-shell-rust[2351]: rust-shell 56381ms frame-done
+1792649490.419987 nixos k230-shell-rust[2351]: rust-shell 56389ms commit
+1792649490.448979 nixos k230-shell-rust[2351]: rust-shell 56420ms frame-done
+1792649490.456475 nixos k230-shell-rust[2351]: rust-shell 56428ms commit
+1792649490.487892 nixos k230-shell-rust[2351]: rust-shell 56459ms frame-done
+1792649490.495431 nixos k230-shell-rust[2351]: rust-shell 56467ms commit
+1792649490.525243 nixos k230-shell-rust[2351]: rust-shell 56496ms frame-done
+1792649490.592730 nixos k230-shell-rust[2351]: rust-shell 56564ms touch-up 0
+1792649491.192915 nixos k230-shell-rust[2351]: rust-shell 57164ms touch-down 0 616.5 129.9
+1792649491.201987 nixos k230-shell-rust[2351]: rust-shell 57173ms touch-move 0 616.5 140.9
+1792649491.208025 nixos k230-shell-rust[2351]: rust-shell 57179ms K230_DRAWER_FRAME ms=6.00 apps=19 scroll=175
+1792649491.208025 nixos k230-shell-rust[2351]: rust-shell 57179ms commit
+1792649491.222753 nixos k230-shell-rust[2351]: rust-shell 57193ms frame-done
+1792649491.229429 nixos k230-shell-rust[2351]: rust-shell 57200ms commit
+1792649491.234949 nixos k230-shell-rust[2351]: rust-shell 57206ms frame-done
+1792649491.243993 nixos k230-shell-rust[2351]: rust-shell 57215ms commit
+1792649491.272885 nixos k230-shell-rust[2351]: rust-shell 57244ms frame-done
+1792649491.282225 nixos k230-shell-rust[2351]: rust-shell 57251ms commit
+1792649491.311205 nixos k230-shell-rust[2351]: rust-shell 57282ms frame-done
+1792649491.319734 nixos k230-shell-rust[2351]: rust-shell 57290ms commit
+1792649491.349419 nixos k230-shell-rust[2351]: rust-shell 57320ms frame-done
+1792649491.355816 nixos k230-shell-rust[2351]: rust-shell 57327ms commit
+1792649491.387443 nixos k230-shell-rust[2351]: rust-shell 57359ms frame-done
+1792649491.445784 nixos k230-shell-rust[2351]: rust-shell 57417ms touch-up 0
+1792649492.046325 nixos k230-shell-rust[2351]: rust-shell 58017ms touch-down 0 616.5 450.2
+1792649492.054894 nixos k230-shell-rust[2351]: rust-shell 58026ms touch-move 0 616.5 447.6
+1792649492.060470 nixos k230-shell-rust[2351]: rust-shell 58032ms K230_DRAWER_FRAME ms=5.69 apps=19 scroll=3
+1792649492.062108 nixos k230-shell-rust[2351]: rust-shell 58032ms commit
+1792649492.075839 nixos k230-shell-rust[2351]: rust-shell 58046ms frame-done
+1792649492.083517 nixos k230-shell-rust[2351]: rust-shell 58054ms commit
+1792649492.098529 nixos k230-shell-rust[2351]: rust-shell 58069ms frame-done
+1792649492.105259 nixos k230-shell-rust[2351]: rust-shell 58076ms commit
+1792649492.115770 nixos k230-shell-rust[2351]: rust-shell 58087ms frame-done
+1792649492.125099 nixos k230-shell-rust[2351]: rust-shell 58094ms commit
+1792649492.154436 nixos k230-shell-rust[2351]: rust-shell 58125ms frame-done
+1792649492.162260 nixos k230-shell-rust[2351]: rust-shell 58134ms commit
+1792649492.193368 nixos k230-shell-rust[2351]: rust-shell 58164ms frame-done
+1792649492.207140 nixos k230-shell-rust[2351]: rust-shell 58178ms commit
+1792649492.230807 nixos k230-shell-rust[2351]: rust-shell 58202ms frame-done
+1792649492.240152 nixos k230-shell-rust[2351]: rust-shell 58210ms commit
+1792649492.269785 nixos k230-shell-rust[2351]: rust-shell 58240ms frame-done
+1792649492.277818 nixos k230-shell-rust[2351]: rust-shell 58248ms commit
+1792649492.308161 nixos k230-shell-rust[2351]: rust-shell 58279ms frame-done
+1792649492.315735 nixos k230-shell-rust[2351]: rust-shell 58286ms commit
+1792649492.346046 nixos k230-shell-rust[2351]: rust-shell 58317ms frame-done
+1792649492.356412 nixos k230-shell-rust[2351]: rust-shell 58326ms commit
+1792649492.384282 nixos k230-shell-rust[2351]: rust-shell 58355ms frame-done
+1792649492.393763 nixos k230-shell-rust[2351]: rust-shell 58364ms commit
+1792649492.422431 nixos k230-shell-rust[2351]: rust-shell 58393ms frame-done
+1792649492.430262 nixos k230-shell-rust[2351]: rust-shell 58401ms commit
+1792649492.460669 nixos k230-shell-rust[2351]: rust-shell 58432ms frame-done
+1792649492.472655 nixos k230-shell-rust[2351]: rust-shell 58441ms commit
+1792649492.499811 nixos k230-shell-rust[2351]: rust-shell 58471ms frame-done
+1792649492.510487 nixos k230-shell-rust[2351]: rust-shell 58481ms commit
+1792649492.537778 nixos k230-shell-rust[2351]: rust-shell 58509ms frame-done
+1792649492.545260 nixos k230-shell-rust[2351]: rust-shell 58516ms commit
+1792649492.576710 nixos k230-shell-rust[2351]: rust-shell 58547ms frame-done
+1792649492.583921 nixos k230-shell-rust[2351]: rust-shell 58555ms K230_DRAWER_FRAME ms=7.49 apps=19 scroll=173
+1792649492.585316 nixos k230-shell-rust[2351]: rust-shell 58555ms commit
+1792649492.614339 nixos k230-shell-rust[2351]: rust-shell 58585ms frame-done
+1792649492.622199 nixos k230-shell-rust[2351]: rust-shell 58593ms commit
+1792649492.652102 nixos k230-shell-rust[2351]: rust-shell 58623ms frame-done
+1792649493.100115 nixos k230-shell-rust[2351]: rust-shell 59071ms touch-up 0
+1792649493.700599 nixos k230-shell-rust[2351]: rust-shell 59672ms touch-down 0 616.5 149.9
+1792649493.709643 nixos k230-shell-rust[2351]: rust-shell 59680ms touch-move 0 616.5 153.0
+1792649493.715448 nixos k230-shell-rust[2351]: rust-shell 59686ms K230_DRAWER_FRAME ms=5.69 apps=19 scroll=183
+1792649493.715448 nixos k230-shell-rust[2351]: rust-shell 59687ms commit
+1792649493.729991 nixos k230-shell-rust[2351]: rust-shell 59701ms frame-done
+1792649493.736334 nixos k230-shell-rust[2351]: rust-shell 59707ms commit
+1792649493.744431 nixos k230-shell-rust[2351]: rust-shell 59715ms frame-done
+1792649493.752856 nixos k230-shell-rust[2351]: rust-shell 59723ms commit
+1792649493.783719 nixos k230-shell-rust[2351]: rust-shell 59755ms frame-done
+1792649493.796294 nixos k230-shell-rust[2351]: rust-shell 59766ms commit
+1792649493.823035 nixos k230-shell-rust[2351]: rust-shell 59792ms frame-done
+1792649493.832201 nixos k230-shell-rust[2351]: rust-shell 59802ms commit
+1792649493.859568 nixos k230-shell-rust[2351]: rust-shell 59830ms frame-done
+1792649493.869837 nixos k230-shell-rust[2351]: rust-shell 59841ms commit
+1792649493.897864 nixos k230-shell-rust[2351]: rust-shell 59869ms frame-done
+1792649493.905784 nixos k230-shell-rust[2351]: rust-shell 59876ms commit
+1792649493.936288 nixos k230-shell-rust[2351]: rust-shell 59907ms frame-done
+1792649493.946486 nixos k230-shell-rust[2351]: rust-shell 59916ms commit
+1792649493.974920 nixos k230-shell-rust[2351]: rust-shell 59945ms frame-done
+1792649493.984026 nixos k230-shell-rust[2351]: rust-shell 59953ms commit
+1792649494.012931 nixos k230-shell-rust[2351]: rust-shell 59984ms frame-done
+1792649494.020356 nixos k230-shell-rust[2351]: rust-shell 59991ms commit
+1792649494.052491 nixos k230-shell-rust[2351]: rust-shell 60023ms frame-done
+1792649494.061281 nixos k230-shell-rust[2351]: rust-shell 60031ms commit
+1792649494.089438 nixos k230-shell-rust[2351]: rust-shell 60060ms frame-done
+1792649494.099596 nixos k230-shell-rust[2351]: rust-shell 60070ms commit
+1792649494.127846 nixos k230-shell-rust[2351]: rust-shell 60099ms frame-done
+1792649494.136165 nixos k230-shell-rust[2351]: rust-shell 60107ms commit
+1792649494.166422 nixos k230-shell-rust[2351]: rust-shell 60137ms frame-done
+1792649494.175848 nixos k230-shell-rust[2351]: rust-shell 60147ms commit
+1792649494.204934 nixos k230-shell-rust[2351]: rust-shell 60175ms frame-done
+1792649494.217319 nixos k230-shell-rust[2351]: rust-shell 60184ms commit
+1792649494.243545 nixos k230-shell-rust[2351]: rust-shell 60214ms frame-done
+1792649494.255206 nixos k230-shell-rust[2351]: rust-shell 60225ms K230_DRAWER_FRAME ms=10.80 apps=19 scroll=7
+1792649494.255206 nixos k230-shell-rust[2351]: rust-shell 60225ms commit
+1792649494.281525 nixos k230-shell-rust[2351]: rust-shell 60252ms frame-done
+1792649494.289162 nixos k230-shell-rust[2351]: rust-shell 60260ms commit
+1792649494.319517 nixos k230-shell-rust[2351]: rust-shell 60291ms frame-done
+1792649494.754703 nixos k230-shell-rust[2351]: rust-shell 60726ms touch-up 0
+1792649496.506493 nixos k230-shell-rust[2351]: rust-shell 62477ms unmap
+1792649496.526734 nixos k230-shell-rust[2351]: rust-shell 62498ms home-configure 1232x568
+1792649496.526734 nixos k230-shell-rust[2351]: rust-shell 62498ms wallpaper-configure 1232x568
+1792649496.530714 nixos k230-shell-rust[2351]: rust-shell 62502ms wallpaper-commit

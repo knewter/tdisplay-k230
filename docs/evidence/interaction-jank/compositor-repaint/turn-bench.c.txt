@@ -1,0 +1,59 @@
+#define _GNU_SOURCE
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
+#include <sys/auxv.h>
+#include <riscv_vector.h>
+#include "quarter-turn.h" /* nix/card-shell/quarter-turn.h */
+
+/* RVV variant: per source column x in a 16-row tile, gather the tile's rows
+ * with a strided load and store them contiguously into the destination row. */
+__attribute__((target("arch=+v")))
+static void turn565_rvv(uint8_t *restrict dst, const uint8_t *restrict src, int width, int height,
+        int stride, int source_stride, int transform, pixman_box32_t box, int tile) {
+    for (int by = box.y1; by < box.y2; by += tile) {
+        int end_y = by + tile < box.y2 ? by + tile : box.y2;
+        int left = transform == 1 ? by : height - end_y;
+        int right = transform == 1 ? end_y : height - by;
+        int first_y = transform == 1 ? left : height - 1 - left;
+        ptrdiff_t bstride = transform == 1 ? source_stride : -source_stride;
+        for (int x = box.x1; x < box.x2; x++) {
+            int dy = transform == 1 ? width - 1 - x : x;
+            uint16_t *target = (uint16_t *)(dst + (size_t)dy * stride) + left;
+            const uint8_t *pixel = src + (size_t)first_y * source_stride + (size_t)x * 2;
+            for (int n = right - left; n > 0; ) {
+                size_t vl = __riscv_vsetvl_e16m4(n);
+                vuint16m4_t v = __riscv_vlse16_v_u16m4((const uint16_t *)pixel, bstride, vl);
+                __riscv_vse16_v_u16m4(target, v, vl);
+                target += vl; pixel += bstride * (ptrdiff_t)vl; n -= vl;
+            }
+        }
+    }
+}
+
+static double now(void) { struct timespec t; clock_gettime(CLOCK_MONOTONIC, &t); return t.tv_sec + t.tv_nsec / 1e9; }
+
+int main(int argc, char **argv) {
+    int width = 1232, height = 568, transform = argc > 1 ? atoi(argv[1]) : 3, reps = 40;
+    /* the drawer band: logical rows 132..550 (514976 px ~ 1232 x 418) */
+    pixman_box32_t box = {0, 132, width, 550};
+    int ss = width * 2, ds = height * 2;
+    uint8_t *src = aligned_alloc(64, (size_t)ss * height), *a = aligned_alloc(64, (size_t)ds * width), *b = aligned_alloc(64, (size_t)ds * width);
+    for (size_t i = 0; i < (size_t)ss * height; i++) src[i] = (uint8_t)(i * 2654435761u >> 13);
+    memset(a, 0, (size_t)ds * width); memset(b, 0, (size_t)ds * width);
+    printf("hwcap V=%d\n", !!(getauxval(AT_HWCAP) & (1ul << ('V' - 'A'))));
+    double t0 = now();
+    for (int r = 0; r < reps; r++) k230_turn_copy_rect(a, src, width, height, 2, ds, ss, transform, box);
+    double scalar = (now() - t0) / reps * 1e3;
+    printf("scalar %.2f ms\n", scalar);
+    int tiles[] = {8, 16, 32, 64, 568};
+    for (int ti = 0; ti < 5; ti++) {
+        memset(b, 0, (size_t)ds * width);
+        t0 = now();
+        for (int r = 0; r < reps; r++) turn565_rvv(b, src, width, height, ds, ss, transform, box, tiles[ti]);
+        double v = (now() - t0) / reps * 1e3;
+        printf("rvv tile %3d %.2f ms identical=%d\n", tiles[ti], v, !memcmp(a, b, (size_t)ds * width));
+    }
+    return 0;
+}

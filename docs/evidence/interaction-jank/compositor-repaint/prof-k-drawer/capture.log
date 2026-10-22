@@ -1,0 +1,6 @@
+pid shell 4203 318425 sway
+start 2026-10-22T06:38:59Z
+workload_rc=0 perf_rc=130
+end 2026-10-22T06:39:28Z
+pid-after shell 4203
+script-warnings 0

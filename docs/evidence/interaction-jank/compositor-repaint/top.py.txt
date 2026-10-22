@@ -1,0 +1,10 @@
+import sys, collections
+inc=collections.Counter(); own=collections.Counter(); T=0
+for line in open(sys.argv[1]):
+    st,_,n=line.rstrip().rpartition(' '); n=int(n); f=st.split(';')
+    if f[0]!='sway': continue
+    T+=n; own[f[-1]]+=n
+    for x in set(f[1:]): inc[x]+=n
+print('sway',round(T/1e6),'ms')
+for k,n in own.most_common(10): print(f"  self {n/T*100:5.1f} {k}")
+for k,n in inc.most_common(25): print(f"  inc  {n/T*100:5.1f} {k}")

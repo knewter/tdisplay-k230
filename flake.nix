@@ -117,8 +117,10 @@
         # The board, with the shell on. runtime/shell: sway on Pixman, foot,
         # wvkbd, seatd. Switched on here rather than in nix/shell.nix so the
         # module's default stays off and the decision is visible in one place.
-        # probes/debugLog are the bring-up settings for this change's
-        # evidence; they should leave with it.
+        # probes are the bring-up settings for this change's evidence; they
+        # should leave with it. Sway's -d debug log is off: it wrote about 90
+        # journal lines a second during interaction (the-compositor-repaints-
+        # within-its-render-budget).
         k230 = nixpkgs.lib.nixosSystem {
           specialArgs = { inherit (self) k230Kernel; inherit bootSplashImage omawrite; };
           modules = [
@@ -127,7 +129,7 @@
             ./nix/modem.nix
             ./nix/shell.nix
             {
-              k230.shell = { enable = true; coherentShell = true; probes = true; debugLog = true; };
+              k230.shell = { enable = true; coherentShell = true; probes = true; };
               # The logo is proven in U-Boot, but its Linux handoff currently
               # corrupts physical scanout. Keep the daily shell image usable
               # until both owners pass the recorded handoff test.

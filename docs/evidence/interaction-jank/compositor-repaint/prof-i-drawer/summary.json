@@ -1,0 +1,427 @@
+{
+ "cpu_ms": 2768.8,
+ "processes_cpu_ms": {
+  "sway": 2768.8
+ },
+ "inclusive": [
+  {
+   "frame": "__libc_start_call_main",
+   "cpu_ms": 2718.6,
+   "share": 0.9819
+  },
+  {
+   "frame": "_start",
+   "cpu_ms": 2718.6,
+   "share": 0.9819
+  },
+  {
+   "frame": "__libc_start_main@@GLIBC_2.34",
+   "cpu_ms": 2718.6,
+   "share": 0.9819
+  },
+  {
+   "frame": "wl_display_run",
+   "cpu_ms": 2718.6,
+   "share": 0.9819
+  },
+  {
+   "frame": "main",
+   "cpu_ms": 2718.6,
+   "share": 0.9819
+  },
+  {
+   "frame": "wl_event_loop_dispatch",
+   "cpu_ms": 2623.1,
+   "share": 0.9474
+  },
+  {
+   "frame": "output_repaint_timer_handler.part.0",
+   "cpu_ms": 2115.6,
+   "share": 0.7641
+  },
+  {
+   "frame": "wlr_scene_output_build_state",
+   "cpu_ms": 2025.1,
+   "share": 0.7314
+  },
+  {
+   "frame": "output_repaint_timer_handler",
+   "cpu_ms": 1783.9,
+   "share": 0.6443
+  },
+  {
+   "frame": "render_pass_add_texture",
+   "cpu_ms": 1271.4,
+   "share": 0.4592
+  },
+  {
+   "frame": "k230_round_composite_impl",
+   "cpu_ms": 1266.3,
+   "share": 0.4574
+  },
+  {
+   "frame": "pixman_image_composite32",
+   "cpu_ms": 849.2,
+   "share": 0.3067
+  },
+  {
+   "frame": "rvv_composite_over_8888_0565",
+   "cpu_ms": 829.1,
+   "share": 0.2995
+  },
+  {
+   "frame": "render_pass_submit",
+   "cpu_ms": 703.5,
+   "share": 0.2541
+  },
+  {
+   "frame": "k230_turn_copy_rect.isra.0",
+   "cpu_ms": 698.5,
+   "share": 0.2523
+  },
+  {
+   "frame": "__irqentry_text_start_[k]",
+   "cpu_ms": 467.3,
+   "share": 0.1688
+  },
+  {
+   "frame": "do_trap_ecall_u_[k]",
+   "cpu_ms": 432.2,
+   "share": 0.1561
+  },
+  {
+   "frame": "k230_rgb565_blit",
+   "cpu_ms": 432.2,
+   "share": 0.1561
+  },
+  {
+   "frame": "wl_signal_emit_mutable",
+   "cpu_ms": 407.0,
+   "share": 0.147
+  },
+  {
+   "frame": "__syscall_cancel",
+   "cpu_ms": 386.9,
+   "share": 0.1397
+  },
+  {
+   "frame": "__internal_syscall_cancel",
+   "cpu_ms": 386.9,
+   "share": 0.1397
+  },
+  {
+   "frame": "__syscall_cancel_arch",
+   "cpu_ms": 376.9,
+   "share": 0.1361
+  },
+  {
+   "frame": "handle_frame",
+   "cpu_ms": 351.8,
+   "share": 0.127
+  },
+  {
+   "frame": "wl_event_loop_dispatch_idle",
+   "cpu_ms": 336.7,
+   "share": 0.1216
+  },
+  {
+   "frame": "epoll_pwait",
+   "cpu_ms": 191.0,
+   "share": 0.069
+  },
+  {
+   "frame": "tick",
+   "cpu_ms": 155.8,
+   "share": 0.0563
+  },
+  {
+   "frame": "__riscv_sys_epoll_pwait_[k]",
+   "cpu_ms": 150.8,
+   "share": 0.0544
+  },
+  {
+   "frame": "do_epoll_wait_[k]",
+   "cpu_ms": 145.7,
+   "share": 0.0526
+  },
+  {
+   "frame": "do_epoll_pwait.part.0_[k]",
+   "cpu_ms": 140.7,
+   "share": 0.0508
+  },
+  {
+   "frame": "wl_connection_flush",
+   "cpu_ms": 95.5,
+   "share": 0.0345
+  },
+  {
+   "frame": "wl_display_flush_clients",
+   "cpu_ms": 95.5,
+   "share": 0.0345
+  },
+  {
+   "frame": "__riscv_sys_sendmsg_[k]",
+   "cpu_ms": 90.5,
+   "share": 0.0327
+  },
+  {
+   "frame": "__sys_sendmsg_[k]",
+   "cpu_ms": 90.5,
+   "share": 0.0327
+  },
+  {
+   "frame": "handle_libinput_readable",
+   "cpu_ms": 90.5,
+   "share": 0.0327
+  },
+  {
+   "frame": "___sys_sendmsg_[k]",
+   "cpu_ms": 85.4,
+   "share": 0.0309
+  },
+  {
+   "frame": "ep_send_events_[k]",
+   "cpu_ms": 85.4,
+   "share": 0.0309
+  },
+  {
+   "frame": "____sys_sendmsg_[k]",
+   "cpu_ms": 80.4,
+   "share": 0.029
+  },
+  {
+   "frame": "__sock_sendmsg_[k]",
+   "cpu_ms": 80.4,
+   "share": 0.029
+  },
+  {
+   "frame": "unix_stream_sendmsg_[k]",
+   "cpu_ms": 75.4,
+   "share": 0.0272
+  },
+  {
+   "frame": "wlr_output_commit_state",
+   "cpu_ms": 70.4,
+   "share": 0.0254
+  }
+ ],
+ "self": [
+  {
+   "frame": "rvv_composite_over_8888_0565",
+   "cpu_ms": 824.1,
+   "share": 0.2976
+  },
+  {
+   "frame": "k230_turn_copy_rect.isra.0",
+   "cpu_ms": 693.5,
+   "share": 0.2505
+  },
+  {
+   "frame": "k230_rgb565_blit",
+   "cpu_ms": 427.1,
+   "share": 0.1543
+  },
+  {
+   "frame": "_raw_spin_unlock_irqrestore_[k]",
+   "cpu_ms": 45.2,
+   "share": 0.0163
+  },
+  {
+   "frame": "memset_[k]",
+   "cpu_ms": 30.2,
+   "share": 0.0109
+  },
+  {
+   "frame": "_raw_spin_unlock_irq_[k]",
+   "cpu_ms": 30.2,
+   "share": 0.0109
+  },
+  {
+   "frame": "__syscall_cancel_arch",
+   "cpu_ms": 25.1,
+   "share": 0.0091
+  },
+  {
+   "frame": "do_epoll_wait_[k]",
+   "cpu_ms": 25.1,
+   "share": 0.0091
+  },
+  {
+   "frame": "finish_task_switch.isra.0_[k]",
+   "cpu_ms": 25.1,
+   "share": 0.0091
+  },
+  {
+   "frame": "fput_[k]",
+   "cpu_ms": 20.1,
+   "share": 0.0073
+  },
+  {
+   "frame": "strncmp",
+   "cpu_ms": 20.1,
+   "share": 0.0073
+  },
+  {
+   "frame": "ep_send_events_[k]",
+   "cpu_ms": 15.1,
+   "share": 0.0054
+  },
+  {
+   "frame": "ep_item_poll.isra.0_[k]",
+   "cpu_ms": 15.1,
+   "share": 0.0054
+  },
+  {
+   "frame": "_wordcopy_fwd_aligned",
+   "cpu_ms": 15.1,
+   "share": 0.0054
+  },
+  {
+   "frame": "wl_event_loop_dispatch",
+   "cpu_ms": 10.1,
+   "share": 0.0036
+  },
+  {
+   "frame": "__internal_syscall_cancel",
+   "cpu_ms": 10.1,
+   "share": 0.0036
+  },
+  {
+   "frame": "evdev_poll_[k]",
+   "cpu_ms": 10.1,
+   "share": 0.0036
+  },
+  {
+   "frame": "getenv",
+   "cpu_ms": 10.1,
+   "share": 0.0036
+  },
+  {
+   "frame": "fallback_interface_process",
+   "cpu_ms": 10.1,
+   "share": 0.0036
+  },
+  {
+   "frame": "output_configure_scene",
+   "cpu_ms": 10.1,
+   "share": 0.0036
+  },
+  {
+   "frame": "wlr_addon_find",
+   "cpu_ms": 10.1,
+   "share": 0.0036
+  },
+  {
+   "frame": "queue_work_on_[k]",
+   "cpu_ms": 10.1,
+   "share": 0.0036
+  },
+  {
+   "frame": "clock_gettime@@GLIBC_2.27",
+   "cpu_ms": 10.1,
+   "share": 0.0036
+  },
+  {
+   "frame": "__d_alloc_[k]",
+   "cpu_ms": 10.1,
+   "share": 0.0036
+  },
+  {
+   "frame": "prepare_impl",
+   "cpu_ms": 10.1,
+   "share": 0.0036
+  },
+  {
+   "frame": "libinput_dispatch@plt",
+   "cpu_ms": 10.1,
+   "share": 0.0036
+  },
+  {
+   "frame": "__vdso_clock_gettime_[k]",
+   "cpu_ms": 5.0,
+   "share": 0.0018
+  },
+  {
+   "frame": "unix_maybe_add_creds_[k]",
+   "cpu_ms": 5.0,
+   "share": 0.0018
+  },
+  {
+   "frame": "_copy_from_iter_[k]",
+   "cpu_ms": 5.0,
+   "share": 0.0018
+  },
+  {
+   "frame": "is_vmalloc_addr_[k]",
+   "cpu_ms": 5.0,
+   "share": 0.0018
+  },
+  {
+   "frame": "__alloc_tagging_slab_alloc_hook_[k]",
+   "cpu_ms": 5.0,
+   "share": 0.0018
+  },
+  {
+   "frame": "__css_rstat_updated.part.0_[k]",
+   "cpu_ms": 5.0,
+   "share": 0.0018
+  },
+  {
+   "frame": "try_charge_memcg_[k]",
+   "cpu_ms": 5.0,
+   "share": 0.0018
+  },
+  {
+   "frame": "_copy_from_user_[k]",
+   "cpu_ms": 5.0,
+   "share": 0.0018
+  },
+  {
+   "frame": "__fget_files_[k]",
+   "cpu_ms": 5.0,
+   "share": 0.0018
+  },
+  {
+   "frame": "epoll_pwait",
+   "cpu_ms": 5.0,
+   "share": 0.0018
+  },
+  {
+   "frame": "do_trap_ecall_u_[k]",
+   "cpu_ms": 5.0,
+   "share": 0.0018
+  },
+  {
+   "frame": "do_epoll_pwait.part.0_[k]",
+   "cpu_ms": 5.0,
+   "share": 0.0018
+  },
+  {
+   "frame": "__ep_eventpoll_poll.isra.0_[k]",
+   "cpu_ms": 5.0,
+   "share": 0.0018
+  },
+  {
+   "frame": "unix_poll_[k]",
+   "cpu_ms": 5.0,
+   "share": 0.0018
+  }
+ ],
+ "units": {
+  "shell": {
+   "pid": 2339,
+   "starttime": 166814,
+   "comm": "sway"
+  }
+ },
+ "freq_hz": 199,
+ "call_graph": "dwarf,65528",
+ "host_wall_s": 33.2,
+ "capture": [
+  "start 2026-10-22T06:15:43Z",
+  "workload_rc=0 perf_rc=130",
+  "end 2026-10-22T06:16:12Z",
+  "pid-after shell 2339",
+  "script-warnings 0"
+ ]
+}

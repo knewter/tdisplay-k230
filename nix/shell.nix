@@ -1800,6 +1800,14 @@ in
       serviceConfig = {
         User = "shell";
         Group = "shell";
+        # Sway asks for SCHED_RR at the minimum priority and resets every
+        # child it forks to SCHED_OTHER (sway/realtime.c). Without this limit
+        # the request failed, and on the one CPU its repaint was preempted by
+        # the clients it was compositing: 14.7 ms wall for about 7.5 ms of
+        # work, so frames landed every second refresh
+        # (the-compositor-repaints-within-its-render-budget). Kernel 7.3's
+        # fair server still reserves 50 ms per second for ordinary tasks.
+        LimitRTPRIO = 1;
         # Sway inherits this into foot and every menu-launched client.  `/`
         # is readable but not a useful first terminal directory; the shell
         # account's home is writable and becomes the predictable session cwd.

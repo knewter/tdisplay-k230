@@ -1,0 +1,6 @@
+pid shell 5612 411413 sway
+start 2026-10-22T06:54:57Z
+workload_rc=0 perf_rc=130
+end 2026-10-22T06:55:43Z
+pid-after shell 5612
+script-warnings 8

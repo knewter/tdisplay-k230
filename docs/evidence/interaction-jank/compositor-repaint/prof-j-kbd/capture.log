@@ -1,0 +1,6 @@
+pid shell 2935 209684 sway
+start 2026-10-22T06:20:22Z
+workload_rc=0 perf_rc=130
+end 2026-10-22T06:21:07Z
+pid-after shell 2935
+script-warnings 13

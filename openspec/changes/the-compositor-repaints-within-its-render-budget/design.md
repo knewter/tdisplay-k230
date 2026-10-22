@@ -18,9 +18,22 @@ damaged region is drawn.
 
 - **Debug log off.** INFO-level card-shell telemetry still reaches the journal
   with `-V`, so the benchmark keeps working.
-- **Opacity is declared from pixels, not assumed.** The drawer scans its
-  cached sheet once per theme and size. wvkbd declares opacity only when every
-  colour it draws with SOURCE is fully opaque.
+- **sway runs `SCHED_RR` 1.**
+  - Profiles showed about 7.5 ms of sway CPU per drawer frame against a
+    14.7 ms repaint wall time. The difference was time lost to clients on the
+    single CPU.
+  - sway already requests `SCHED_RR` at the minimum priority, and resets the
+    children it forks to `SCHED_OTHER` (`sway/realtime.c`). The unit only
+    needed `LimitRTPRIO=1`.
+  - Kernel 7.3's fair server keeps 50 ms per second for ordinary tasks, so a
+    runaway compositor cannot starve SSH entirely.
+- **No opaque regions.**
+  - The drawer's sheet is translucent in the active theme, so a pixel-derived
+    region never applied.
+  - The keyboard's region improved renders but looked wrong while the keyboard
+    slid, and the operator rejected it.
+- **The quarter-turn stays scalar.** An RVV version was pixel-identical and
+  2.3x faster into heap memory, but no faster into the scanout buffer.
 - **Measurement.** Each candidate is test-activated and measured with the same
   harness: the 30 s drawer scroll with `card_shell benchmark injected` armed,
   then 8 keyboard cycles with the benchmark. Results are presented interval,
@@ -29,6 +42,7 @@ damaged region is drawn.
 
 ## Risks / Trade-offs
 
-- A wrongly declared opaque region would show stale pixels beneath. Both
-  declarations come from the actual pixels or colours, and a unit test covers
-  the drawer.
+- A realtime compositor that spins could starve ordinary tasks. The fair
+  server bounds this, and sway's event loop sleeps between frames.
+- Keyboard show settle still misses (16 ms repaint, 38 ms interval). Fixing it
+  needs either a cheaper ARGB blend or an operator decision on opacity.

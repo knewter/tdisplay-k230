@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+# measure.sh TAG SYSTEM -- drawer scroll (30 s) and keyboard (8 cycles), compositor benchmark armed.
+TAG=$1; SYS=$2
+S=${SCRATCH:?scratch directory}
+W=${WORKTREE:?repository checkout}
+R="ssh -F ${SSH_CONFIG:?private ssh config} k230"
+PY=/nix/store/v189xydz6qkcd4cbkixcmv91w8hbc560-python3-riscv64-unknown-linux-gnu-3.14.7/bin/python3
+SW="sudo -u shell env SWAYSOCK=/run/shell/sway-ipc.sock /run/current-system/sw/bin/swaymsg"
+OUT=$S/comp/$TAG; mkdir -p $OUT || exit 1
+$R "cat > /var/tmp/drawer-scroll.py" < $W/docs/evidence/interaction-jank/drawer-scroll/drawer-scroll.py.txt || exit 1
+$R "cat > /var/tmp/keyboard-cycles.py" < $W/docs/evidence/interaction-jank/keyboard/keyboard-cycles.py.txt || exit 1
+$R "flock -n /tmp/k230-board.lock sh -c 'S0=@\$(date +%s); $SW card_shell benchmark injected >/dev/null; $PY /var/tmp/drawer-scroll.py /var/tmp/comp-drawer $SYS 30; $SW card_shell benchmark-stop >/dev/null; journalctl -u shell --since \"\$S0\" --no-pager -o short-unix > /var/tmp/comp-drawer/shell-journal.txt; sleep 2; $PY /var/tmp/keyboard-cycles.py /var/tmp/comp-kbd $SYS 8 --bench'; rm -f /var/tmp/drawer-scroll.py /var/tmp/keyboard-cycles.py" || exit 1
+for d in drawer kbd; do mkdir -p $OUT/$d; $R "tar -C /var/tmp/comp-$d -cf - . && rm -rf /var/tmp/comp-$d" | tar -C $OUT/$d -xf -; done
+python3 $W/docs/evidence/interaction-jank/drawer-profile/cadence.py.txt $OUT/drawer > $OUT/drawer/cadence.json
+python3 $W/docs/evidence/interaction-jank/drawer-scroll/analyze.py.txt $OUT/drawer > $OUT/drawer/analysis.json
+python3 $W/docs/evidence/interaction-jank/keyboard/analyze.py.txt $OUT/kbd > $OUT/kbd/analysis.json
+python3 - $OUT <<'PY'
+import json,sys
+o=sys.argv[1]; c=json.load(open(o+'/drawer/cadence.json')); k=json.load(open(o+'/kbd/analysis.json'))
+print('drawer', {x:c[x] for x in ('distinct_presented_fps','distinct_interval_ms','sway_render_ms','damage_px')})
+[print(kind, v.get('presented_interval_ms'), (v.get('render_wall_ms') or {}).get('median')) for kind,v in k['by_kind'].items()]
+PY
