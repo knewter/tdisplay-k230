@@ -326,3 +326,7 @@ portrait-geometry item stays open.
 At the installed 8 ms allowance, the same real-finger trial
 [fails with three cards](touch-rate-trial-8ms/README.md): render wall p95 of
 about 10–11 ms misses the refresh, and frames are genuinely skipped.
+The operator then chose 12 ms as the shipped panel allowance. On the
+[installed 12 ms system](installed-12ms-trial/README.md) every numeric card
+metric passes in all four arms. The operator saw no bottom-band flicker on
+glass, and the persistent profile survived an ordinary reboot.

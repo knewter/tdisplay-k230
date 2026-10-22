@@ -1,0 +1,25 @@
+{
+  "checked_utc": "2026-10-22T01:05:45Z",
+  "evidence_class": "board SSH observation after ordinary reboot",
+  "previous_boot_id_prefix": "9e664e59",
+  "boot_id_prefix": "311df800",
+  "booted_system": "/nix/store/8xkkpma4fvgw4fi6pl8qaz7d9d75kcdi-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "current_system": "/nix/store/8xkkpma4fvgw4fi6pl8qaz7d9d75kcdi-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "profile": "/nix/store/8xkkpma4fvgw4fi6pl8qaz7d9d75kcdi-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "services_active": [
+    "shell",
+    "shell-ui",
+    "theme-helper"
+  ],
+  "DSI-1": {
+    "max_render_time": 12,
+    "transform": "270"
+  },
+  "postboot_native_capture": {
+    "sha256": "7a2f2289f6cb1dcf31e4d017265769563b9eb27d065cc0e9f351453f21a7315e",
+    "kind": "native grim, not committed",
+    "content": "normal startup terminal"
+  },
+  "root_filesystem_free": "25M of 15G (100% used) -- pre-existing, unrelated to this change",
+  "limits": "Ordinary boot proven by SSH identities; no camera observation."
+}

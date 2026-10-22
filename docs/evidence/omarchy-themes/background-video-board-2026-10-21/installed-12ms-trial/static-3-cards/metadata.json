@@ -1,0 +1,195 @@
+{
+  "evidence_class": "board injected native touch; camera separate",
+  "mode": "full",
+  "started_utc": "2026-10-22T00:32:24Z",
+  "source_revision": "d93863ec4453ff7f852d420a491ffaba288ff69a",
+  "system": "/nix/store/8xkkpma4fvgw4fi6pl8qaz7d9d75kcdi-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "gestures": [
+    {
+      "index": 0,
+      "from": [
+        616,
+        280
+      ],
+      "to": [
+        366,
+        280
+      ],
+      "down_monotonic_ns": 71880769729187,
+      "up_monotonic_ns": 71881521316853
+    },
+    {
+      "index": 1,
+      "from": [
+        616,
+        280
+      ],
+      "to": [
+        866,
+        280
+      ],
+      "down_monotonic_ns": 71882321480902,
+      "up_monotonic_ns": 71883073884510
+    },
+    {
+      "index": 2,
+      "from": [
+        616,
+        280
+      ],
+      "to": [
+        366,
+        280
+      ],
+      "down_monotonic_ns": 71883874042732,
+      "up_monotonic_ns": 71884628863192
+    },
+    {
+      "index": 3,
+      "from": [
+        616,
+        280
+      ],
+      "to": [
+        866,
+        280
+      ],
+      "down_monotonic_ns": 71885429009634,
+      "up_monotonic_ns": 71886180208702
+    },
+    {
+      "index": 4,
+      "from": [
+        616,
+        280
+      ],
+      "to": [
+        366,
+        280
+      ],
+      "down_monotonic_ns": 71886980363709,
+      "up_monotonic_ns": 71887731165245
+    },
+    {
+      "index": 5,
+      "from": [
+        616,
+        280
+      ],
+      "to": [
+        866,
+        280
+      ],
+      "down_monotonic_ns": 71888531324109,
+      "up_monotonic_ns": 71889282090783
+    }
+  ],
+  "output": {
+    "name": "DSI-1",
+    "transform": "270",
+    "rect": {
+      "x": 0,
+      "y": 0,
+      "width": 1232,
+      "height": 568
+    },
+    "current_mode": {
+      "width": 568,
+      "height": 1232,
+      "refresh": 52190,
+      "picture_aspect_ratio": "none"
+    },
+    "max_render_time": 12
+  },
+  "startup_terminal_ready_before_owned_apps": true,
+  "input_axes": {
+    "0": [
+      0,
+      1079
+    ],
+    "1": [
+      0,
+      2399
+    ],
+    "47": [
+      0,
+      9
+    ],
+    "48": [
+      0,
+      255
+    ],
+    "53": [
+      0,
+      1079
+    ],
+    "54": [
+      0,
+      2399
+    ],
+    "57": [
+      0,
+      65535
+    ]
+  },
+  "setup": {
+    "terminal_mapping": "serialized one then two; each must map before next launch",
+    "initial_app_count": 1,
+    "focused_app_before_benchmark": "k230.motion.one",
+    "expected_app_set_verified": true,
+    "selected_app_before_gestures": "k230.motion.one",
+    "initial_app_count_verified": 1
+  },
+  "log_destination": "file",
+  "start_monotonic_ns": 71875927370686,
+  "scene_counters_before_gestures": {
+    "scene_redraw_coalesced": 522,
+    "scene_timer_coalesced": 240,
+    "scene_render_syncs": 1305,
+    "scene_structural_syncs": 2
+  },
+  "wallpaper_before_gestures": {
+    "schema": 1,
+    "generation": "bac952f68086b1e433e84a0b",
+    "background_fingerprint": null,
+    "decoder_pid": null,
+    "state": "still",
+    "error_category": null,
+    "frames_decoded": 0,
+    "frames_submitted": 0,
+    "frame_callbacks": 0,
+    "last_decoded_monotonic_ms": null,
+    "last_submitted_monotonic_ms": null,
+    "last_callback_monotonic_ms": null
+  },
+  "wallpaper_after_gestures": {
+    "schema": 1,
+    "generation": "bac952f68086b1e433e84a0b",
+    "background_fingerprint": null,
+    "decoder_pid": null,
+    "state": "still",
+    "error_category": null,
+    "frames_decoded": 0,
+    "frames_submitted": 0,
+    "frame_callbacks": 0,
+    "last_decoded_monotonic_ms": null,
+    "last_submitted_monotonic_ms": null,
+    "last_callback_monotonic_ms": null
+  },
+  "back_requested_ns": 71890510311754,
+  "back_acknowledged_ns": 71890516953638,
+  "scene_counters_after_benchmark": {
+    "scene_redraw_coalesced": 1044,
+    "scene_timer_coalesced": 468,
+    "scene_render_syncs": 2254,
+    "scene_structural_syncs": 2
+  },
+  "scene_counter_deltas": {
+    "scene_redraw_coalesced": 522,
+    "scene_timer_coalesced": 228,
+    "scene_render_syncs": 949,
+    "scene_structural_syncs": 0
+  },
+  "end_monotonic_ns": 71894560846406,
+  "telemetry_lines": 4759
+}

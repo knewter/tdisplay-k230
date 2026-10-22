@@ -1,0 +1,440 @@
+{
+  "source_revision": "d93863ec4453ff7f852d420a491ffaba288ff69a",
+  "descriptor": {
+    "source_revision": "d93863ec4453ff7f852d420a491ffaba288ff69a",
+    "system": "/nix/store/8xkkpma4fvgw4fi6pl8qaz7d9d75kcdi-nixos-system-nixos-26.11.20260919.20b1ddd",
+    "normal_sha256": "2778ed3cdac48b83806117a8d96accba0163dae21ba12b7a1104f1c1289fa3be",
+    "candidate": "/nix/store/0v1q7r9g3zfkl1g7n12gsir7xkcbvbg3-k230-card-shell-hdmi-trial",
+    "candidate_exe": "/nix/store/9gnx5456f2k7vb83jp4vl02vf88m66fi-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway",
+    "candidate_sha256": "2778ed3cdac48b83806117a8d96accba0163dae21ba12b7a1104f1c1289fa3be",
+    "prepared_utc": "2026-10-22T00:30:06.790494+00:00",
+    "reused_build_source": "1a8e72ac52df5c80540bdeedc22edfcc4e5c167a",
+    "installed_allowance_ms": 12,
+    "drag_step_ms": 8.1400000000000006,
+    "drag_steps": 86,
+    "drag_duration_ms": 700,
+    "touch_rate_basis": "touch-rate/README.md"
+  },
+  "before": {
+    "system": "/nix/store/8xkkpma4fvgw4fi6pl8qaz7d9d75kcdi-nixos-system-nixos-26.11.20260919.20b1ddd",
+    "profile": "/nix/store/2igpibpw4nn0clbda7p35dp5bhg28n35-nixos-system-nixos-26.11.20260919.20b1ddd",
+    "boot_id": "9e664e59-dfd6-49ed-976a-2e38416c0a7f",
+    "sway_exe": "/nix/store/9gnx5456f2k7vb83jp4vl02vf88m66fi-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway",
+    "sway_sha256": "2778ed3cdac48b83806117a8d96accba0163dae21ba12b7a1104f1c1289fa3be",
+    "outputs": [
+      {
+        "name": "DSI-1",
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "width": 1232,
+          "height": 568
+        },
+        "transform": "270",
+        "current_mode": {
+          "width": 568,
+          "height": 1232,
+          "refresh": 52190,
+          "picture_aspect_ratio": "none"
+        },
+        "max_render_time": 12
+      }
+    ],
+    "apps": [
+      "k230-terminal"
+    ],
+    "wallpaper": {
+      "schema": 1,
+      "generation": "2e583fb7dc1947e9d444c171",
+      "background_fingerprint": null,
+      "decoder_pid": null,
+      "state": "still",
+      "error_category": null,
+      "frames_decoded": 0,
+      "frames_submitted": 0,
+      "frame_callbacks": 0,
+      "last_decoded_monotonic_ms": null,
+      "last_submitted_monotonic_ms": null,
+      "last_callback_monotonic_ms": null
+    }
+  },
+  "original_properties": {
+    "StandardOutput": "journal",
+    "StandardError": "inherit",
+    "LogLevelMax": "-1",
+    "LogRateLimitIntervalUSec": "0",
+    "LogRateLimitBurst": "0"
+  },
+  "theme_baseline": {
+    "original_generation": "2e583fb7dc1947e9d444c171",
+    "preferences_sha256": "608049fec22538747e626ff34dc4dd97227e6ece6ffcd690cfedd46b2b80c5cc",
+    "preferences_bytes": 2020,
+    "app_appearance_generation": "840dd88c7c505822038e5ecb",
+    "choices": {
+      "static": {
+        "theme_name": "source3-background-touchrateinst",
+        "origin": "user",
+        "background_id": "bde15f8f9e42e9a53f7e3bac"
+      },
+      "video": {
+        "theme_name": "source3-background-touchrateinst",
+        "origin": "user",
+        "background_id": "3b728f535530112fa23afb60"
+      }
+    }
+  },
+  "started_utc": "2026-10-22T00:30:24Z",
+  "runs": [
+    {
+      "label": "static-1-cards",
+      "role": "static",
+      "cards": 1,
+      "allowance_ms": 12,
+      "destination": "file",
+      "exit": 0,
+      "status_after": {
+        "schema": 1,
+        "generation": "bac952f68086b1e433e84a0b",
+        "background_fingerprint": null,
+        "decoder_pid": null,
+        "state": "still",
+        "error_category": null,
+        "frames_decoded": 0,
+        "frames_submitted": 0,
+        "frame_callbacks": 0,
+        "last_decoded_monotonic_ms": null,
+        "last_submitted_monotonic_ms": null,
+        "last_callback_monotonic_ms": null
+      }
+    },
+    {
+      "label": "static-3-cards",
+      "role": "static",
+      "cards": 3,
+      "allowance_ms": 12,
+      "destination": "file",
+      "exit": 0,
+      "status_after": {
+        "schema": 1,
+        "generation": "bac952f68086b1e433e84a0b",
+        "background_fingerprint": null,
+        "decoder_pid": null,
+        "state": "still",
+        "error_category": null,
+        "frames_decoded": 0,
+        "frames_submitted": 0,
+        "frame_callbacks": 0,
+        "last_decoded_monotonic_ms": null,
+        "last_submitted_monotonic_ms": null,
+        "last_callback_monotonic_ms": null
+      }
+    },
+    {
+      "label": "video-1-cards",
+      "role": "video",
+      "cards": 1,
+      "allowance_ms": 12,
+      "destination": "file",
+      "exit": 0,
+      "status_after": {
+        "schema": 1,
+        "generation": "3cf056475b4ea55d3a824e1e",
+        "background_fingerprint": "4b56c4b264985304c7c75273",
+        "decoder_pid": null,
+        "state": "paused-covered",
+        "error_category": null,
+        "frames_decoded": 146,
+        "frames_submitted": 102,
+        "frame_callbacks": 102,
+        "last_decoded_monotonic_ms": 71926060,
+        "last_submitted_monotonic_ms": 71925554,
+        "last_callback_monotonic_ms": 71925333
+      }
+    },
+    {
+      "label": "video-3-cards",
+      "role": "video",
+      "cards": 3,
+      "allowance_ms": 12,
+      "destination": "file",
+      "exit": 0,
+      "status_after": {
+        "schema": 1,
+        "generation": "3cf056475b4ea55d3a824e1e",
+        "background_fingerprint": "4b56c4b264985304c7c75273",
+        "decoder_pid": null,
+        "state": "playing",
+        "error_category": null,
+        "frames_decoded": 131,
+        "frames_submitted": 115,
+        "frame_callbacks": 116,
+        "last_decoded_monotonic_ms": 71948585,
+        "last_submitted_monotonic_ms": 71948590,
+        "last_callback_monotonic_ms": 71967982
+      }
+    }
+  ],
+  "roles": [
+    {
+      "role": "static",
+      "activation": {
+        "role": "static",
+        "generation": "bac952f68086b1e433e84a0b",
+        "background_id": "bde15f8f9e42e9a53f7e3bac"
+      },
+      "status_before": {
+        "schema": 1,
+        "generation": "bac952f68086b1e433e84a0b",
+        "background_fingerprint": null,
+        "decoder_pid": null,
+        "state": "still",
+        "error_category": null,
+        "frames_decoded": 0,
+        "frames_submitted": 0,
+        "frame_callbacks": 0,
+        "last_decoded_monotonic_ms": null,
+        "last_submitted_monotonic_ms": null,
+        "last_callback_monotonic_ms": null
+      },
+      "idle_resources": {
+        "units": [
+          "shell.service",
+          "shell-ui.service"
+        ],
+        "elapsed_s": 12.010729,
+        "sample_count": 48,
+        "cpu_usage_usec": 314136,
+        "mean_cpu_cores": 0.026200000000000001,
+        "process_rss_peak_bytes": 174858240,
+        "rss_complete": true,
+        "cgroup_memory_peak_bytes": 85278720,
+        "process_count_peak": 8,
+        "limitations": "Sampled peaks can miss spikes; cgroup memory includes caches. These counters do not prove decoded or presented frames."
+      }
+    },
+    {
+      "role": "video",
+      "activation": {
+        "role": "video",
+        "generation": "3cf056475b4ea55d3a824e1e",
+        "background_id": "3b728f535530112fa23afb60"
+      },
+      "status_before": {
+        "schema": 1,
+        "generation": "3cf056475b4ea55d3a824e1e",
+        "background_fingerprint": "4b56c4b264985304c7c75273",
+        "decoder_pid": 41028,
+        "state": "playing",
+        "error_category": null,
+        "frames_decoded": 14,
+        "frames_submitted": 0,
+        "frame_callbacks": 0,
+        "last_decoded_monotonic_ms": null,
+        "last_submitted_monotonic_ms": null,
+        "last_callback_monotonic_ms": null
+      },
+      "idle_resources": {
+        "units": [
+          "shell.service",
+          "shell-ui.service"
+        ],
+        "elapsed_s": 12.020345000000001,
+        "sample_count": 45,
+        "cpu_usage_usec": 10573547,
+        "mean_cpu_cores": 0.87960000000000005,
+        "process_rss_peak_bytes": 213987328,
+        "rss_complete": true,
+        "cgroup_memory_peak_bytes": 115957760,
+        "process_count_peak": 9,
+        "limitations": "Sampled peaks can miss spikes; cgroup memory includes caches. These counters do not prove decoded or presented frames."
+      },
+      "covered_before": {
+        "schema": 1,
+        "generation": "3cf056475b4ea55d3a824e1e",
+        "background_fingerprint": "4b56c4b264985304c7c75273",
+        "decoder_pid": null,
+        "state": "paused-covered",
+        "error_category": null,
+        "frames_decoded": 184,
+        "frames_submitted": 78,
+        "frame_callbacks": 78,
+        "last_decoded_monotonic_ms": 71915560,
+        "last_submitted_monotonic_ms": 71915405,
+        "last_callback_monotonic_ms": 71915095
+      },
+      "covered_after": {
+        "schema": 1,
+        "generation": "3cf056475b4ea55d3a824e1e",
+        "background_fingerprint": "4b56c4b264985304c7c75273",
+        "decoder_pid": null,
+        "state": "paused-covered",
+        "error_category": null,
+        "frames_decoded": 184,
+        "frames_submitted": 78,
+        "frame_callbacks": 78,
+        "last_decoded_monotonic_ms": 71915560,
+        "last_submitted_monotonic_ms": 71915405,
+        "last_callback_monotonic_ms": 71915095
+      },
+      "cover_signal": {
+        "schema": 1,
+        "covered": true,
+        "monotonic_ms": 71919269,
+        "width": 1232,
+        "height": 568
+      },
+      "covered_counters_stopped": true,
+      "uncovered_before": {
+        "schema": 1,
+        "generation": "3cf056475b4ea55d3a824e1e",
+        "background_fingerprint": "4b56c4b264985304c7c75273",
+        "decoder_pid": 41056,
+        "state": "playing",
+        "error_category": null,
+        "frames_decoded": 93,
+        "frames_submitted": 80,
+        "frame_callbacks": 80,
+        "last_decoded_monotonic_ms": 71920531,
+        "last_submitted_monotonic_ms": 71920536,
+        "last_callback_monotonic_ms": 71919572
+      },
+      "uncovered_after": {
+        "schema": 1,
+        "generation": "3cf056475b4ea55d3a824e1e",
+        "background_fingerprint": "4b56c4b264985304c7c75273",
+        "decoder_pid": 41056,
+        "state": "playing",
+        "error_category": null,
+        "frames_decoded": 98,
+        "frames_submitted": 85,
+        "frame_callbacks": 85,
+        "last_decoded_monotonic_ms": 71921588,
+        "last_submitted_monotonic_ms": 71921596,
+        "last_callback_monotonic_ms": 71921387
+      }
+    }
+  ],
+  "restore_unit": "k230-touchrateinst-20261021",
+  "candidate": {
+    "system": "/nix/store/8xkkpma4fvgw4fi6pl8qaz7d9d75kcdi-nixos-system-nixos-26.11.20260919.20b1ddd",
+    "profile": "/nix/store/2igpibpw4nn0clbda7p35dp5bhg28n35-nixos-system-nixos-26.11.20260919.20b1ddd",
+    "boot_id": "9e664e59-dfd6-49ed-976a-2e38416c0a7f",
+    "sway_exe": "/nix/store/9gnx5456f2k7vb83jp4vl02vf88m66fi-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway",
+    "sway_sha256": "2778ed3cdac48b83806117a8d96accba0163dae21ba12b7a1104f1c1289fa3be",
+    "outputs": [
+      {
+        "name": "DSI-1",
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "width": 1232,
+          "height": 568
+        },
+        "transform": "270",
+        "current_mode": {
+          "width": 568,
+          "height": 1232,
+          "refresh": 52190,
+          "picture_aspect_ratio": "none"
+        },
+        "max_render_time": 12
+      }
+    ],
+    "apps": [
+      "k230-terminal"
+    ],
+    "wallpaper": {
+      "schema": 1,
+      "generation": "2e583fb7dc1947e9d444c171",
+      "background_fingerprint": null,
+      "decoder_pid": null,
+      "state": "still",
+      "error_category": null,
+      "frames_decoded": 0,
+      "frames_submitted": 0,
+      "frame_callbacks": 0,
+      "last_decoded_monotonic_ms": null,
+      "last_submitted_monotonic_ms": null,
+      "last_callback_monotonic_ms": null
+    }
+  },
+  "basic": {
+    "named_background_command_exit": 0,
+    "trial": "completed-needs-operator-review",
+    "restoration": "passed"
+  },
+  "phase": "activate-video",
+  "activation_pending": {
+    "role": "video",
+    "generation": "3cf056475b4ea55d3a824e1e",
+    "background_id": "3b728f535530112fa23afb60"
+  },
+  "private_log_bytes": 4560855,
+  "private_log_sha256": "58a8e4fa15105f83b7da0298acd99d69930b26537635e73d4fd8a07a844f488d",
+  "theme_restoration": {
+    "theme_restored": true,
+    "generation": "2e583fb7dc1947e9d444c171",
+    "preferences_sha256": "608049fec22538747e626ff34dc4dd97227e6ece6ffcd690cfedd46b2b80c5cc",
+    "preferences_bytes": 2020,
+    "app_appearance_generation": "840dd88c7c505822038e5ecb",
+    "fixture_removed": true
+  },
+  "restored": {
+    "system": "/nix/store/8xkkpma4fvgw4fi6pl8qaz7d9d75kcdi-nixos-system-nixos-26.11.20260919.20b1ddd",
+    "profile": "/nix/store/2igpibpw4nn0clbda7p35dp5bhg28n35-nixos-system-nixos-26.11.20260919.20b1ddd",
+    "boot_id": "9e664e59-dfd6-49ed-976a-2e38416c0a7f",
+    "sway_exe": "/nix/store/9gnx5456f2k7vb83jp4vl02vf88m66fi-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway",
+    "sway_sha256": "2778ed3cdac48b83806117a8d96accba0163dae21ba12b7a1104f1c1289fa3be",
+    "outputs": [
+      {
+        "name": "DSI-1",
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "width": 1232,
+          "height": 568
+        },
+        "transform": "270",
+        "current_mode": {
+          "width": 568,
+          "height": 1232,
+          "refresh": 52190,
+          "picture_aspect_ratio": "none"
+        },
+        "max_render_time": 12
+      }
+    ],
+    "apps": [
+      "k230-terminal"
+    ],
+    "wallpaper": {
+      "schema": 1,
+      "generation": "2e583fb7dc1947e9d444c171",
+      "background_fingerprint": null,
+      "decoder_pid": null,
+      "state": "still",
+      "error_category": null,
+      "frames_decoded": 0,
+      "frames_submitted": 0,
+      "frame_callbacks": 0,
+      "last_decoded_monotonic_ms": null,
+      "last_submitted_monotonic_ms": null,
+      "last_callback_monotonic_ms": null
+    }
+  },
+  "restored_properties": {
+    "StandardOutput": "journal",
+    "StandardError": "inherit",
+    "LogLevelMax": "-1",
+    "LogRateLimitIntervalUSec": "0",
+    "LogRateLimitBurst": "0"
+  },
+  "test_input_devices": 0,
+  "normal_services": {
+    "shell": true,
+    "shell-ui": true,
+    "theme-helper": true
+  },
+  "restore_timer_active": false,
+  "finished_utc": "2026-10-22T00:34:28Z"
+}
