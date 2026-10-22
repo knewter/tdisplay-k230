@@ -140,7 +140,7 @@ Hold a small implementation set until this queue closes. Eight proposals have no
 | [the-boot-shows-a-computational-game-of-life](../../../../openspec/changes/the-boot-shows-a-computational-game-of-life/tasks.md) | 0/10 | No checked tasks |
 | [characterise-bootrom-usb-recovery](../../../../openspec/changes/characterise-bootrom-usb-recovery/tasks.md) | 0/11 | No checked tasks |
 | [the-shell-offers-quick-toggles-and-vision-options](../../../../openspec/changes/archive/2026-10-16-the-shell-offers-quick-toggles-and-vision-options/tasks.md) | 1/12 | Remaining implementation and/or proof |
-| [the-background-chooser-supports-fill-solid-and-video](../../../../openspec/changes/the-background-chooser-supports-fill-solid-and-video/tasks.md) | 0/12 | No checked tasks |
+| [the-background-chooser-supports-fill-solid-and-video](../../../../openspec/changes/archive/2026-10-21-the-background-chooser-supports-fill-solid-and-video/tasks.md) | 0/12 | No checked tasks |
 | [plugging-in-hdmi-moves-the-display](../../../../openspec/changes/plugging-in-hdmi-moves-the-display/tasks.md) | 8/21 | Remaining implementation and/or proof |
 | [the-handheld-evaluates-qtquick-and-quickshell](../../../../openspec/changes/the-handheld-evaluates-qtquick-and-quickshell/tasks.md) | 0/13 | No checked tasks |
 | [the-handheld-presents-a-coherent-shell](../../../../openspec/changes/the-handheld-presents-a-coherent-shell/tasks.md) | 22/35 | Remaining implementation and/or proof |

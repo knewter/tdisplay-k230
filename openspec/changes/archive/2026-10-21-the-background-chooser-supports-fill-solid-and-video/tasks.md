@@ -131,7 +131,7 @@ performance acceptance.
   Done 2026-10-16 with injected input on HDMI: all five modes on retro-82
   (dark) and catppuccin-latte (light), each captured by `grim` on Home, plus a
   shell-restart persistence check (`docs/evidence/omarchy-themes/background-fit-modes-board/README.md`).
-- [ ] 3.3 On the reserved board, run
+- [x] 3.3 On the reserved board, run
   `tools/handheld-theme-trial.py --workload backgrounds` against a paired
   static and video background; record combined CPU, RSS, decode/
   presentation cost and card input/frame budgets, and covered-media pause
@@ -224,6 +224,20 @@ performance acceptance.
   reduce three-card render time. Normal state was audited restored:
   `docs/evidence/omarchy-themes/background-video-board-2026-10-21/touch-rate-trial-8ms/README.md`.
 
+  Closed 2026-10-22 by operator decision, landscape accepted. Task 3.5
+  shipped the 12 ms allowance, and the installed paired real-rate trial
+  passes every frozen numeric metric in all four still/video, one/three-card
+  arms. Cover pause/resume and restoration also pass:
+  `docs/evidence/omarchy-themes/background-video-board-2026-10-21/installed-12ms-trial/README.md`.
+  **Known gap, not proved:** the trial tool's combined `board_budget_gate`
+  still reports `INCOMPLETE` because it requires an observed 568x1232
+  portrait session. Every run here was landscape, which the board keeps at
+  the operator's direction. The operator chose to record this gap rather
+  than keep the task open. No portrait result is inferred, and no frozen
+  target was changed. The drags were injected at the measured real-finger
+  rate. Real glass covered only the flicker check, and there was no camera
+  recording.
+
 - [x] 3.4 Confirm a user-supplied overlay stages, applies, and survives a
   shell/helper restart on the board, the same way the pinned/bundled
   background test in `docs/evidence/theme-picker/background-selection/README.md`
@@ -264,10 +278,13 @@ userspace feature.
   explicit compatibility/performance limits. Local site check: 823 pages,
   22,201,074 bytes, 74.27 s, within unchanged limits. Evidence:
   `docs/evidence/omarchy-themes/background-video-board-2026-10-21/README.md`.
-- [ ] 4.2 After every required task and physical gate passes, validate,
+- [x] 4.2 After every required task and physical gate passes, validate,
   archive/sync and push the change; verify `openspec validate --all
   --strict`, then inspect the resulting master/CI/Pages revision. Keep this
   change open if any required consumer or hardware proof is missing.
+  Archived 2026-10-22, after 3.3 closed with the operator-accepted portrait
+  gap. `openspec validate --strict` passed before archive. The master CI and
+  Pages revision is inspected after the push, with no claim made here.
 
 Proof: `openspec validate --all --strict` and `python3 scripts/build_site.py`,
 followed by exact-revision CI and published URL inspection.

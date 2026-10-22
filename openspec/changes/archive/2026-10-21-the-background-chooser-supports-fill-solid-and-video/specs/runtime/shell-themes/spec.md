@@ -2,7 +2,7 @@
 
 ### Requirement: Every promised background fit mode exists
 
-<!-- UNVERIFIED -->
+*Grounding (2026-10-16): host tests in `tests/background_decode_module.rs`, `tests/test_theme_preferences.py` and `tests/test_omarchy_theme_activation.py`; native board `grim` captures of all five modes on one dark and one light theme, and a user overlay staged, applied and kept across a shell/helper restart, in `docs/evidence/omarchy-themes/background-fit-modes-board/README.md`. Taps were injected over HDMI. The over-256 MiB overlay rejection is host-only.*
 The system SHALL support `crop`, `fit`, `center`, `fill`, and `solid`
 background placement modes, selectable the same way the existing modes
 already are. `fill` SHALL stretch the image to exactly cover the panel, ignoring its
@@ -34,7 +34,12 @@ escape).
 
 ### Requirement: A video-suffixed background plays, muted and bounded
 
-<!-- UNVERIFIED -->
+*Grounding (2026-10-22): board playback, cover pause/resume, reduced-motion startup and restoration in `docs/evidence/omarchy-themes/background-video-board-2026-10-21/README.md`. The paired still/video, one/three-card budget trial passes every frozen numeric metric at the shipped 12 ms panel allowance with injected drags at the measured real-finger rate, in `docs/evidence/omarchy-themes/background-video-board-2026-10-21/installed-12ms-trial/README.md`. The operator reported no flicker on real glass. Landscape only.*
+
+<!-- UNVERIFIED: the budget trial's portrait 568x1232 session (the board runs
+landscape by operator decision); unsupported-codec diagnostics and fallback
+on the board (host proof only, docs/evidence/omarchy-themes/background-video-audit.md);
+a live reduced-motion toggle (only the startup setting was tested). -->
 The system SHALL play a video-suffixed background from a theme's own
 `backgrounds/` directory, muted, bounded, and reusing the same decode path
 already justified for another wallpaper surface. It SHALL distinguish an
