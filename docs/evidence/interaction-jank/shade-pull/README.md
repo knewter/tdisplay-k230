@@ -28,6 +28,7 @@ start of each pull until 600 ms after release; its output is in
 | [base](run-base) | `g2yjvzv4` | boot default after the compositor change |
 | [n](run-n), [n2](run-n2), [n3](run-n3) | `sgjam1h0` | `k230-settings status` without `pgrep`, test-activated; n3 with the compositor benchmark |
 | [n-mrt15](run-n-mrt15), [n-mrtoff](run-n-mrtoff) | `sgjam1h0` | `max_render_time` 15 / off at runtime, restored to 12 afterwards |
+| [boot](run-boot) | `sgjam1h0` | boot default, ordinary boot after promotion; compositor benchmark armed |
 
 ## The `pgrep` cost
 
@@ -63,6 +64,7 @@ Both reported the keyboard as `action`, with wvkbd running.
 | n3 | 34.8 | 20 / 37 ms | 7 ms | 22 / 36 / 39 ms | 13.1 ms, 699,776 px every frame |
 | n-mrt15 | 34.8 | 20 / 38 ms | 20 ms | — | 13.0 ms |
 | n-mrtoff | 34.3 | 22 / 33 ms | 18 ms | — | 13.0 ms |
+| boot | 34.0 | 20 / 37 ms | 8 ms | 29 / 37 / 58 ms | 13.0 ms, 699,776 px on 155 of 158 frames |
 
 - **What removing `pgrep` changed.** The client now commits within 5–7 ms of
   its frame callback, down from 21 ms. Each status read costs about 75 ms
@@ -85,6 +87,33 @@ Both reported the keyboard as `action`, with wvkbd running.
   - An opaque region on a sliding surface is excluded by the operator's
     2026-10-22 decision, so the next step would need a cheaper full-screen
     composite or a change in what the shade redraws.
+
+## Promotion to the boot default
+
+On 2026-10-22, `sgjam1h0` (built from commit `31fbcb61`; master at `e7673f86`
+evaluates to the same path) replaced `g2yjvzv4` as the persistent system.
+[`promote.py`](promotion/promote.py.txt) is the compositor promotion script
+with the two system paths and the state directory changed. It ran as root
+under the board lock, swapped the one system reference in each of
+`/boot/k230-tdisplay.dtb` and `/boot/bootargs.txt`, kept rollback copies,
+rooted both systems, checked that no other `/boot` file changed, and set the
+system profile to `system-87-link`.
+
+An SSH-initiated reboot booted `sgjam1h0` as both `/run/booted-system` and
+`/run/current-system`, with `shell` and `shell-ui` active, no failed units,
+sway at `SCHED_RR` 1, and `k230-settings status` reporting the keyboard as
+`action`. See the [receipt](promotion/receipt.json), boot ID `8c8c0609…`.
+
+[run-boot](run-boot) repeated the ten pulls on that boot. It matches n3:
+34.0 distinct fps, interval median 20 ms, client callback → commit median
+8 ms, sway repaint median 13.0 ms. One pull had a 58 ms gap (three
+refreshes). Its grim captures (`before`, `shade-open`, `after-close`) were
+normal and are not committed.
+
+Rollback: write the copies under
+`/var/lib/k230/status-promote-20261022/promotion/rollback/` back to `/boot`,
+then run `nix-env --profile /nix/var/nix/profiles/system --set` with
+`g2yjvzv4`.
 
 ## Limits
 
