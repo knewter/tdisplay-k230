@@ -816,7 +816,7 @@ let
   # canaan-drm primary plane advertises, where wlroots' default XRGB8888 is
   # absent and fails at output_pick_format. docs/evidence/drm-info.txt.
   #
-  # max_render_time 8 fixes the flickering bottom band seen during finger
+  # max_render_time fixes the flickering bottom band seen during finger
   # gestures (docs/evidence/card-shell/bottom-band-flicker/). Without it,
   # sway starts compositing right after the previous page flip, so a busy
   # gesture frame's DDR traffic overlaps the VO's scanout of the panel's
@@ -826,13 +826,19 @@ let
   # away from the end of the scan. Board-verified on 2026-09-25 by the
   # operator on real glass, plus webcam frames.
   #
+  # The panel now uses 12 ms: three live cards render in about 10-11 ms
+  # (p95), which misses an 8 ms window and skips refreshes during a
+  # real-rate drag. 12 ms passes the card tracking budget
+  # (docs/evidence/omarchy-themes/background-video-board-2026-10-21/
+  # touch-rate-trial-8ms/). HDMI keeps 8 ms below.
+  #
   # map_to_output is written explicitly rather than trusting sway's
   # built-in heuristic (sway/input/seat.c get_builtin_output_name), so the
   # mapping does not depend on the output being named DSI-* or on the touch
   # device's udev ID_PATH. Whether the heuristic would have fired is
   # recorded in docs/evidence/shell-session.txt.
   swayConfig = pkgs.writeText "k230-sway.conf" ''
-    output DSI-1 mode 568x1232 transform ${cfg.panelTransform} scale 1 render_bit_depth 6 max_render_time 8
+    output DSI-1 mode 568x1232 transform ${cfg.panelTransform} scale 1 render_bit_depth 6 max_render_time 12
     input type:touch map_to_output DSI-1
     input type:touch calibration_matrix 1 0 0 0 1 0
 

@@ -233,6 +233,16 @@ performance acceptance.
   `shell-ui`/`theme-helper` restart; a symlink and a `.txt` file were reported
   under `unknown`. The over-256 MiB case was host-only (same README).
 
+- [ ] 3.5 Ship the panel render allowance the card budget needs. The operator
+  chose 12 ms on 2026-10-21. With real-rate input, 8 ms skips refreshes with
+  three live cards (`touch-rate-trial-8ms`), while 12 ms passes. Change
+  `output DSI-1 … max_render_time` in `nix/shell.nix` to 12 and leave HDMI
+  at 8. Build and activate it on the board. Rerun the paired real-rate card
+  trial against the installed allowance, with no 12 ms override. The
+  operator must also confirm on real glass that the bottom-band flicker
+  this allowance originally fixed (`docs/evidence/card-shell/bottom-band-flicker/`)
+  has not returned during gestures. Only then make it the persistent profile.
+
 Proof: the exact recorded build invocation and reserved-board commands
 above, with committed native captures and the workload's own sanitized
 result. No flash or full-image readback is inherently required by this
