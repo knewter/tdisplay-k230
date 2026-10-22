@@ -216,6 +216,14 @@ performance acceptance.
   Normal 8 ms/still/landscape were independently audited restored:
   `docs/evidence/omarchy-themes/background-video-board-2026-10-21/touch-rate-trial/README.md`.
 
+  Installed-allowance check 2026-10-21: the same real-finger paired trial
+  at the shipped 8 ms allowance passes both one-card arms. Three-card
+  still/video fail tracking p95 at 38.320/38.173 ms, and the all-present p95
+  is also 38 ms, so refreshes are genuinely skipped (render wall p95
+  10.9/10.0 ms). Closing 3.3 needs a decision: ship a larger allowance, or
+  reduce three-card render time. Normal state was audited restored:
+  `docs/evidence/omarchy-themes/background-video-board-2026-10-21/touch-rate-trial-8ms/README.md`.
+
 - [x] 3.4 Confirm a user-supplied overlay stages, applies, and survives a
   shell/helper restart on the board, the same way the pinned/bundled
   background test in `docs/evidence/theme-picker/background-selection/README.md`

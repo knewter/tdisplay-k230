@@ -1,0 +1,129 @@
+{
+  "arms": [
+    {
+      "app_appearance_state": "unknown",
+      "background_count": 2,
+      "capture": {
+        "bytes": 121452,
+        "kind": "native-unreviewed",
+        "sha256": "84f17249a1643ca0fe370fa51bbe904ccb0c25fe65d6ff6fccc44515080ba22e"
+      },
+      "generation": "7b4ddf10d423c8a51ca206fb",
+      "resources": {
+        "cgroup_memory_peak_bytes": 74096640,
+        "cpu_usage_usec": 186118,
+        "elapsed_s": 12.010726999999999,
+        "limitations": "Sampled peaks can miss spikes; cgroup memory includes caches. These counters do not prove decoded or presented frames.",
+        "mean_cpu_cores": 0.0155,
+        "process_count_peak": 8,
+        "process_rss_peak_bytes": 163352576,
+        "rss_complete": true,
+        "sample_count": 48,
+        "units": [
+          "shell.service",
+          "shell-ui.service"
+        ]
+      },
+      "role": "static",
+      "selected_background_id": "a4943fc418594363487b5fa7",
+      "theme_id": "bc96675a426537ffa3bb5238",
+      "workload": {
+        "id": "cards-shade-static-v1",
+        "sha256": "b9b330e66cbbd694839e8096d9ff626d66e3b7c737376b6d107e2a218947f195"
+      }
+    },
+    {
+      "app_appearance_state": "unknown",
+      "background_count": 2,
+      "capture": {
+        "bytes": 134428,
+        "kind": "native-unreviewed",
+        "sha256": "4f07e01299489599b68b93b441e2f1e408a35b086122700ea4291ddc4bc0652a"
+      },
+      "generation": "46b08988d6d1e634839640f1",
+      "playback": {
+        "frame_deltas": {
+          "frame_callbacks": 69,
+          "frames_decoded": 69,
+          "frames_submitted": 69
+        },
+        "limits": "Wayland callbacks and changing native captures do not prove panel presentation.",
+        "native_captures_distinct": true,
+        "second_capture": {
+          "bytes": 123253,
+          "kind": "native-unreviewed",
+          "sha256": "907745c3fb4309b7a00cd0e5aa2ab7ce1b40400dce4462f440e80f8899d1489a"
+        },
+        "source": "private-wallpaper-status-v1"
+      },
+      "resources": {
+        "cgroup_memory_peak_bytes": 101687296,
+        "cpu_usage_usec": 10668517,
+        "elapsed_s": 12.020875,
+        "limitations": "Sampled peaks can miss spikes; cgroup memory includes caches. These counters do not prove decoded or presented frames.",
+        "mean_cpu_cores": 0.88749999999999996,
+        "process_count_peak": 9,
+        "process_rss_peak_bytes": 197496832,
+        "rss_complete": true,
+        "sample_count": 45,
+        "units": [
+          "shell.service",
+          "shell-ui.service"
+        ]
+      },
+      "role": "video",
+      "selected_background_id": "b37c778916ed6c44a3c8abe8",
+      "theme_id": "bc96675a426537ffa3bb5238",
+      "workload": {
+        "id": "cards-shade-static-v1",
+        "sha256": "b9b330e66cbbd694839e8096d9ff626d66e3b7c737376b6d107e2a218947f195"
+      }
+    }
+  ],
+  "baseline": {
+    "capture": {
+      "bytes": 103396,
+      "kind": "native-unreviewed",
+      "sha256": "f70fd0d894f9f9e900c0ebe10c58fcf5bd925582aac670233319d6a1f1eb0c9f"
+    },
+    "generation": "2e583fb7dc1947e9d444c171",
+    "resources": {
+      "cgroup_memory_peak_bytes": 68390912,
+      "cpu_usage_usec": 178062,
+      "elapsed_s": 12.010057,
+      "limitations": "Sampled peaks can miss spikes; cgroup memory includes caches. These counters do not prove decoded or presented frames.",
+      "mean_cpu_cores": 0.014800000000000001,
+      "process_count_peak": 8,
+      "process_rss_peak_bytes": 154628096,
+      "rss_complete": true,
+      "sample_count": 48,
+      "units": [
+        "shell.service",
+        "shell-ui.service"
+      ]
+    },
+    "workload": {
+      "id": "cards-shade-static-v1",
+      "sha256": "b9b330e66cbbd694839e8096d9ff626d66e3b7c737376b6d107e2a218947f195"
+    }
+  },
+  "finished_utc": "2026-10-21T23:55:05+00:00",
+  "physical_observation": "UNVERIFIED",
+  "restoration": "passed",
+  "restored_capture": {
+    "bytes": 103581,
+    "kind": "native-unreviewed",
+    "sha256": "4381878b890601330f6a85c3ddfd81fdbe747ba0364b6e1bd012a20322ac1e8a"
+  },
+  "restored_generation": "2e583fb7dc1947e9d444c171",
+  "schema": 1,
+  "source_revision": "9b84b300744fa2360abcf52b6e308102829c2311",
+  "started_utc": "2026-10-21T23:54:06+00:00",
+  "system": "/nix/store/2igpibpw4nn0clbda7p35dp5bhg28n35-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "trial": "completed-needs-operator-review",
+  "workload": {
+    "id": "cards-shade-static-v1",
+    "sha256": "b9b330e66cbbd694839e8096d9ff626d66e3b7c737376b6d107e2a218947f195"
+  },
+  "workload_mode": "backgrounds"
+}

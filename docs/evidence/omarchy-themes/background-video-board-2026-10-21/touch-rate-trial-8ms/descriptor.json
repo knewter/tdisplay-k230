@@ -1,0 +1,15 @@
+{
+  "source_revision": "9b84b300744fa2360abcf52b6e308102829c2311",
+  "system": "/nix/store/2igpibpw4nn0clbda7p35dp5bhg28n35-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "normal_sha256": "4fc7bf3a0c0818c9eb3d286de4579999b3fbbaf9abe0e4317c017bca1dc663ba",
+  "candidate": "/nix/store/0v1q7r9g3zfkl1g7n12gsir7xkcbvbg3-k230-card-shell-hdmi-trial",
+  "candidate_exe": "/nix/store/9gnx5456f2k7vb83jp4vl02vf88m66fi-sway-unwrapped-riscv64-unknown-linux-gnu-1.12/bin/sway",
+  "candidate_sha256": "2778ed3cdac48b83806117a8d96accba0163dae21ba12b7a1104f1c1289fa3be",
+  "prepared_utc": "2026-10-21T23:53:20.848815+00:00",
+  "reused_build_source": "1a8e72ac52df5c80540bdeedc22edfcc4e5c167a",
+  "allowance_ms": 8,
+  "drag_step_ms": 8.14,
+  "drag_steps": 86,
+  "drag_duration_ms": 700,
+  "touch_rate_basis": "touch-rate/README.md"
+}

@@ -323,3 +323,6 @@ or two two-refresh intervals. The [touch-rate rerun](touch-rate-trial/README.md)
 repeats the same 12 ms trial with 8.14 ms steps, and every numeric metric passes
 in all four arms. The pass depends on the temporary 12 ms allowance, and the
 portrait-geometry item stays open.
+At the installed 8 ms allowance, the same real-finger trial
+[fails with three cards](touch-rate-trial-8ms/README.md): render wall p95 of
+about 10–11 ms misses the refresh, and frames are genuinely skipped.

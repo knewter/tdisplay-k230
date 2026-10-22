@@ -1,0 +1,195 @@
+{
+  "evidence_class": "board injected native touch; camera separate",
+  "mode": "full",
+  "started_utc": "2026-10-21T23:56:55Z",
+  "source_revision": "9b84b300744fa2360abcf52b6e308102829c2311",
+  "system": "/nix/store/2igpibpw4nn0clbda7p35dp5bhg28n35-nixos-system-nixos-26.11.20260919.20b1ddd",
+  "gestures": [
+    {
+      "index": 0,
+      "from": [
+        616,
+        280
+      ],
+      "to": [
+        366,
+        280
+      ],
+      "down_monotonic_ns": 69752903242114,
+      "up_monotonic_ns": 69753654429067
+    },
+    {
+      "index": 1,
+      "from": [
+        616,
+        280
+      ],
+      "to": [
+        866,
+        280
+      ],
+      "down_monotonic_ns": 69754454578650,
+      "up_monotonic_ns": 69755205434118
+    },
+    {
+      "index": 2,
+      "from": [
+        616,
+        280
+      ],
+      "to": [
+        366,
+        280
+      ],
+      "down_monotonic_ns": 69756005864480,
+      "up_monotonic_ns": 69756756713651
+    },
+    {
+      "index": 3,
+      "from": [
+        616,
+        280
+      ],
+      "to": [
+        866,
+        280
+      ],
+      "down_monotonic_ns": 69757556859282,
+      "up_monotonic_ns": 69758307612482
+    },
+    {
+      "index": 4,
+      "from": [
+        616,
+        280
+      ],
+      "to": [
+        366,
+        280
+      ],
+      "down_monotonic_ns": 69759107753904,
+      "up_monotonic_ns": 69759858584205
+    },
+    {
+      "index": 5,
+      "from": [
+        616,
+        280
+      ],
+      "to": [
+        866,
+        280
+      ],
+      "down_monotonic_ns": 69760658725817,
+      "up_monotonic_ns": 69761409562928
+    }
+  ],
+  "output": {
+    "name": "DSI-1",
+    "transform": "270",
+    "rect": {
+      "x": 0,
+      "y": 0,
+      "width": 1232,
+      "height": 568
+    },
+    "current_mode": {
+      "width": 568,
+      "height": 1232,
+      "refresh": 52190,
+      "picture_aspect_ratio": "none"
+    },
+    "max_render_time": 8
+  },
+  "startup_terminal_ready_before_owned_apps": true,
+  "input_axes": {
+    "0": [
+      0,
+      1079
+    ],
+    "1": [
+      0,
+      2399
+    ],
+    "47": [
+      0,
+      9
+    ],
+    "48": [
+      0,
+      255
+    ],
+    "53": [
+      0,
+      1079
+    ],
+    "54": [
+      0,
+      2399
+    ],
+    "57": [
+      0,
+      65535
+    ]
+  },
+  "setup": {
+    "terminal_mapping": "serialized one then two; each must map before next launch",
+    "initial_app_count": 1,
+    "focused_app_before_benchmark": "k230.motion.one",
+    "expected_app_set_verified": true,
+    "selected_app_before_gestures": "k230.motion.one",
+    "initial_app_count_verified": 1
+  },
+  "log_destination": "file",
+  "start_monotonic_ns": 69748190442893,
+  "scene_counters_before_gestures": {
+    "scene_redraw_coalesced": 1566,
+    "scene_timer_coalesced": 709,
+    "scene_render_syncs": 3432,
+    "scene_structural_syncs": 4
+  },
+  "wallpaper_before_gestures": {
+    "schema": 1,
+    "generation": "46b08988d6d1e634839640f1",
+    "background_fingerprint": "0f3905516b1593974a4f7e5a",
+    "decoder_pid": null,
+    "state": "paused-covered",
+    "error_category": null,
+    "frames_decoded": 149,
+    "frames_submitted": 118,
+    "frame_callbacks": 118,
+    "last_decoded_monotonic_ms": 69747520,
+    "last_submitted_monotonic_ms": 69747152,
+    "last_callback_monotonic_ms": 69746943
+  },
+  "wallpaper_after_gestures": {
+    "schema": 1,
+    "generation": "46b08988d6d1e634839640f1",
+    "background_fingerprint": "0f3905516b1593974a4f7e5a",
+    "decoder_pid": null,
+    "state": "paused-covered",
+    "error_category": null,
+    "frames_decoded": 149,
+    "frames_submitted": 118,
+    "frame_callbacks": 118,
+    "last_decoded_monotonic_ms": 69747520,
+    "last_submitted_monotonic_ms": 69747152,
+    "last_callback_monotonic_ms": 69746943
+  },
+  "back_requested_ns": 69762577582816,
+  "back_acknowledged_ns": 69762590453453,
+  "scene_counters_after_benchmark": {
+    "scene_redraw_coalesced": 2088,
+    "scene_timer_coalesced": 939,
+    "scene_render_syncs": 4342,
+    "scene_structural_syncs": 4
+  },
+  "scene_counter_deltas": {
+    "scene_redraw_coalesced": 522,
+    "scene_timer_coalesced": 230,
+    "scene_render_syncs": 910,
+    "scene_structural_syncs": 0
+  },
+  "end_monotonic_ns": 69766600557081,
+  "telemetry_lines": 4655
+}
