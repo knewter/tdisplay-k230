@@ -414,6 +414,10 @@ fn text_weight_resolved(cr: &Context, value: &str, x: f64, y: f64, width: f64,
 /// word) to `width` at `px` -- for layouts that must place wrapped text
 /// before there is a cairo context, such as `help::layout`.
 pub fn wrapped_line_count(value: &str, px: f64, width: f64, weight: pango::Weight) -> u32 {
+    let key = (value.to_owned(), px.to_bits(), width.to_bits(), pango::glib::translate::IntoGlib::into_glib(weight));
+    if let Some(count) = TEXT_MEASURES.with(|m| m.borrow().lines.get(&key).copied()) {
+        return count;
+    }
     let context = pango::prelude::FontMapExt::create_context(&pangocairo::FontMap::default());
     let layout = pango::Layout::new(&context);
     let mut font = FontDescription::new();
@@ -424,12 +428,50 @@ pub fn wrapped_line_count(value: &str, px: f64, width: f64, weight: pango::Weigh
     layout.set_text(value);
     layout.set_width((width.max(1.0) * f64::from(pango::SCALE)) as i32);
     layout.set_wrap(pango::WrapMode::WordChar);
-    u32::try_from(layout.line_count()).unwrap_or(1).max(1)
+    let count = u32::try_from(layout.line_count()).unwrap_or(1).max(1);
+    TEXT_MEASURES.with(|m| m.borrow_mut().remember_lines(key, count));
+    count
+}
+
+/// Layout code such as `theme_ui::chooser_layout` runs on every draw and
+/// measures the same strings each time; shaping them again cost about a
+/// third of the client's CPU during drawer scroll. The results depend only
+/// on the key and the installed fonts, so they are kept, up to a bound.
+#[derive(Default)]
+struct TextMeasures {
+    lines: std::collections::HashMap<(String, u64, u64, i32), u32>,
+    widths: std::collections::HashMap<(String, u64, i32), f64>,
+}
+
+const TEXT_MEASURES_MAX: usize = 1024;
+
+impl TextMeasures {
+    fn remember_lines(&mut self, key: (String, u64, u64, i32), count: u32) {
+        if self.lines.len() >= TEXT_MEASURES_MAX {
+            self.lines.clear();
+        }
+        self.lines.insert(key, count);
+    }
+
+    fn remember_width(&mut self, key: (String, u64, i32), width: f64) {
+        if self.widths.len() >= TEXT_MEASURES_MAX {
+            self.widths.clear();
+        }
+        self.widths.insert(key, width);
+    }
+}
+
+thread_local! {
+    static TEXT_MEASURES: std::cell::RefCell<TextMeasures> = std::cell::RefCell::new(TextMeasures::default());
 }
 
 /// The width `value` takes on one line at `px`, measured like
 /// `wrapped_line_count`, for layouts that place text beside other text.
 pub fn measured_text_width(value: &str, px: f64, weight: pango::Weight) -> f64 {
+    let key = (value.to_owned(), px.to_bits(), pango::glib::translate::IntoGlib::into_glib(weight));
+    if let Some(width) = TEXT_MEASURES.with(|m| m.borrow().widths.get(&key).copied()) {
+        return width;
+    }
     let context = pango::prelude::FontMapExt::create_context(&pangocairo::FontMap::default());
     let layout = pango::Layout::new(&context);
     let mut font = FontDescription::new();
@@ -438,7 +480,9 @@ pub fn measured_text_width(value: &str, px: f64, weight: pango::Weight) -> f64 {
     font.set_weight(weight);
     layout.set_font_description(Some(&font));
     layout.set_text(value);
-    f64::from(layout.pixel_size().0)
+    let width = f64::from(layout.pixel_size().0);
+    TEXT_MEASURES.with(|m| m.borrow_mut().remember_width(key, width));
+    width
 }
 
 /// `text` that wraps onto as many lines as `width` needs instead of
@@ -2441,10 +2485,23 @@ pub struct DrawerGridCache {
     key: Option<DrawerGridKey>,
     surface: Option<ImageSurface>,
     content_height: f64,
+    /// The drawer sheet (vision backdrop and themed background brush) from
+    /// `panel_top` down, painted once per theme and size. A gradient brush
+    /// takes pixman's generic path, which cost about 30% of the client's CPU
+    /// when it was refilled under every scroll frame.
+    sheet: Option<(DrawerSheetKey, ImageSurface)>,
     /// Bumped on every real rebuild -- test-only observability, the same
     /// role `IconCache::decode_count`/`RendererCache::rebuild_count`
     /// already play for their own caches.
     rebuilds: u64,
+}
+
+#[derive(Clone, PartialEq)]
+struct DrawerSheetKey {
+    theme_generation: Option<String>,
+    vision: bool,
+    width: u32,
+    height: u32,
 }
 
 #[derive(Clone, PartialEq)]
@@ -2525,6 +2582,73 @@ impl DrawerGridCache {
             self.content_height,
         )
     }
+
+    /// The cached sheet for `theme` at this size, and the whole-pixel row it
+    /// starts on; `None` if the surface cannot be allocated.
+    fn ensure_sheet(&mut self, theme: Option<&AppearanceSnapshot>, width: u32, height: u32) -> Option<(&ImageSurface, f64)> {
+        let key = DrawerSheetKey {
+            theme_generation: theme.map(|snapshot| snapshot.generation.clone()),
+            vision: vision_adjusted(theme),
+            width,
+            height,
+        };
+        let top = panel_top(height).floor();
+        if self.sheet.as_ref().is_none_or(|(cached, _)| *cached != key) {
+            self.sheet = None;
+            let rows = (f64::from(height) - top).max(1.0).ceil() as i32;
+            let surface = ImageSurface::create(Format::ARgb32, width.max(1) as i32, rows).ok()?;
+            {
+                let cr = Context::new(&surface).ok()?;
+                cr.translate(0.0, -top);
+                paint_drawer_sheet(&cr, theme, width, height);
+            }
+            surface.flush();
+            self.sheet = Some((key, surface));
+        }
+        self.sheet.as_ref().map(|(_, surface)| (surface, top))
+    }
+
+    /// Drops the cached sheet, for an appearance change that keeps its
+    /// generation name.
+    fn forget_sheet(&mut self) {
+        self.sheet = None;
+    }
+}
+
+/// Copies a cached sheet onto its rows of a cleared canvas.
+fn copy_drawer_sheet(cr: &Context, sheet: &ImageSurface, top: f64) {
+    let _ = cr.save();
+    cr.set_operator(Operator::Source);
+    cr.rectangle(0.0, top, f64::from(sheet.width()), f64::from(sheet.height()));
+    if cr.set_source_surface(sheet, 0.0, top).is_ok() {
+        let _ = cr.fill();
+    }
+    let _ = cr.restore();
+}
+
+/// The drawer's rounded sheet below `panel_top`: an opaque palette backdrop
+/// when a vision choice is active, then the themed background brush (or the
+/// palette background when the theme has none).
+fn paint_drawer_sheet(cr: &Context, theme: Option<&AppearanceSnapshot>, width: u32, height: u32) {
+    let w = f64::from(width);
+    let h = f64::from(height);
+    let panel_y = panel_top(height);
+    let _ = cr.save();
+    rounded_top(cr, 0.0, panel_y, w, h - panel_y, 28.0);
+    cr.clip();
+    if vision_adjusted(theme) {
+        // A translucent sheet lets the wallpaper fight larger text; a vision
+        // choice puts the drawer on a solid palette background first.
+        color(cr, palette_rgb_or(theme, "background", 0x1e1e2e), 1.0);
+        let _ = cr.paint();
+    }
+    if !theme_brush(theme, "launcher", "background")
+        .is_some_and(|brush| fill_brush(cr, brush, 0.0, panel_y, w, h - panel_y))
+    {
+        color(cr, palette_rgb_or(theme, "background", 0x1e1e2e), 1.0);
+        let _ = cr.paint();
+    }
+    let _ = cr.restore();
 }
 
 /// One tile's worth of content: an icon (no plate/box around it -- the
@@ -2928,7 +3052,6 @@ fn paint_drawer(
     let w = f64::from(width);
     let h = f64::from(height);
     let panel_y = panel_top(height);
-    let radius = 28.0;
     // `RendererCache::draw` always calls this at a fixed `progress: 1.0`
     // and does its own cheap post-bake row-shift for the live drag/settle
     // progress instead (see `scene`'s own doc); this translate only
@@ -2938,22 +3061,15 @@ fn paint_drawer(
     cr.translate(0.0, hidden * (h - panel_y));
 
     let style = visual_style(theme, "launcher");
-    let _ = cr.save();
-    rounded_top(cr, 0.0, panel_y, w, h - panel_y, radius);
-    cr.clip();
-    if vision_adjusted(theme) {
-        // A translucent sheet lets the wallpaper fight larger text; a vision
-        // choice puts the drawer on a solid palette background first.
-        color(cr, palette_rgb_or(theme, "background", 0x1e1e2e), 1.0);
-        let _ = cr.paint();
+    // The scene cleared this area, so copying the cached sheet over it gives
+    // the same pixels as painting it, provided the copy lands on whole pixels.
+    let m = cr.matrix();
+    let whole_pixels = m.xx() == 1.0 && m.yy() == 1.0 && m.xy() == 0.0 && m.yx() == 0.0
+        && m.x0().fract() == 0.0 && m.y0().fract() == 0.0;
+    match grid_cache.ensure_sheet(theme, width, height).filter(|_| whole_pixels) {
+        Some((sheet, top)) => copy_drawer_sheet(cr, sheet, top),
+        None => paint_drawer_sheet(cr, theme, width, height),
     }
-    if !theme_brush(theme, "launcher", "background")
-        .is_some_and(|brush| fill_brush(cr, brush, 0.0, panel_y, w, h - panel_y))
-    {
-        color(cr, palette_rgb_or(theme, "background", 0x1e1e2e), 1.0);
-        let _ = cr.paint();
-    }
-    let _ = cr.restore();
 
     paint_drawer_chrome(cr, theme, width, height, search);
 
@@ -2970,10 +3086,14 @@ fn paint_drawer(
     cr.clip();
     let max_scroll = (content_height - (bottom - row_start)).max(0.0);
     let clamped_scroll = scroll.clamp(0.0, max_scroll);
+    // A whole-pixel offset with a nearest filter lets pixman copy rows; a
+    // fractional scroll resampled the whole grid bilinearly every frame
+    // (about 37% of the client's CPU during a drawer scroll).
     if cr
-        .set_source_surface(grid_surface, 0.0, row_start - clamped_scroll)
+        .set_source_surface(grid_surface, 0.0, (row_start - clamped_scroll).round())
         .is_ok()
     {
+        cr.source().set_filter(Filter::Fast);
         let _ = cr.paint();
     }
     let _ = cr.restore();
@@ -5476,6 +5596,12 @@ pub struct RendererCache {
     static_pixels: Vec<u8>,
     /// Position/pressed-only picker changes since the last paint.
     picker_dirty_rows: u8,
+    /// Rows `[top, bottom)` that the last `draw_with_hud` changed, when it
+    /// was a drawer scroll band repaint at rest; `None` means the whole
+    /// frame may differ. The caller reports this as the surface damage.
+    band_damage: Option<(i32, i32)>,
+    /// The row shift the last frame was copied with.
+    last_shift: i32,
     rebuilds: u64,
     icons: IconCache,
     scroll: f64,
@@ -5927,6 +6053,7 @@ impl RendererCache {
         crate::set_layout_text_scale(vision_text_scale(theme.as_ref()));
         crate::set_layout_theme_font(theme_base_font(theme.as_ref()));
         self.theme = theme;
+        self.drawer_grid.forget_sheet();
         self.invalidate();
     }
     pub fn invalidate(&mut self) {
@@ -5958,6 +6085,11 @@ impl RendererCache {
     #[cfg(test)]
     pub(crate) fn drawer_grid_rebuilds(&self) -> u64 {
         self.drawer_grid.rebuilds()
+    }
+
+    /// See `band_damage`; cleared by the read.
+    pub fn take_band_damage(&mut self) -> Option<(i32, i32)> {
+        self.band_damage.take()
     }
 
     pub fn rebuild_count(&self) -> u64 {
@@ -6439,11 +6571,31 @@ impl RendererCache {
         }
         self.poll_theme_image(width, height);
         self.poll_theme_thumbnails(width);
-        if self.route != Some(route)
-            || self.width != width
-            || self.height != height
-            || (self.scroll - scroll).abs() >= 0.25
+        let same_scene = self.route == Some(route) && self.width == width && self.height == height;
+        let scrolled = (self.scroll - scroll).abs() >= 0.25;
+        self.band_damage = None;
+        let mut band = None;
+        if same_scene && scrolled && route == Route::Drawer && self.picker_dirty_rows == 0
+            && self.pressed.is_none()
         {
+            // Only the grid viewport depends on the drawer's scroll, so a
+            // scroll frame repaints that band of the cached frame; the
+            // chrome and sheet around it stay as last painted. A pressed
+            // tile's ring can reach past that band, so it takes a rebuild.
+            let _profile = crate::runtime_trace::Span::new("drawer_scroll_repaint");
+            let top = navigation::list_top(height).floor();
+            let bottom = (f64::from(self.drawer_search.viewport_height(height)) - GRID_BOTTOM_INSET).ceil();
+            draw_shm_with_icons(
+                &mut self.static_pixels,
+                RenderParams { progress: 1.0, ..params },
+                apps, &mut self.icons, self.theme.as_ref(), self.services.as_ref(),
+                self.chooser.as_ref(), self.preview_surface.as_ref(), self.preview_error,
+                Some(&self.thumbnails), self.pressed, &self.drawer_search,
+                &mut self.drawer_grid, self.pointer, Some((top, bottom.max(top))),
+            )?;
+            self.scroll = scroll;
+            band = Some((top as i32, bottom.max(top) as i32));
+        } else if !same_scene || scrolled {
             let _profile = crate::runtime_trace::Span::new("scene_rebuild");
             let mut painted = vec![0; size];
             card_sprites_scene(|| draw_shm_with_icons(
@@ -6496,6 +6648,10 @@ impl RendererCache {
         if shift != 0 {
             canvas.fill(0);
         }
+        if shift == 0 && self.last_shift == 0 && !hud.is_visible(hud_now_ms) {
+            self.band_damage = band;
+        }
+        self.last_shift = shift;
         for source_y in 0..height as i32 {
             let target_y = source_y + shift;
             if target_y < 0 || target_y >= height as i32 {
@@ -7287,6 +7443,48 @@ mod tests {
         assert_eq!(cache, renderer.static_pixels, "revealed input must not enter static scene cache");
         renderer.set_services(ServiceView::default());
         assert!(renderer.wifi_password_preview.is_none());
+    }
+
+    #[test]
+    fn the_cached_drawer_sheet_copies_the_same_pixels_it_paints() {
+        let stop = |offset, argb: &str| BrushStop { offset, argb: argb.into() };
+        let snapshot = AppearanceSnapshot {
+            generation: "0123456789abcdef0123cafe".into(),
+            path: "/tmp/public-visual-fixture".into(),
+            icon_theme: None,
+            background: None,
+            selected_background: None,
+            backgrounds: vec![],
+            palette: BTreeMap::new(),
+            sections: BTreeMap::from([(
+                "launcher".into(),
+                BTreeMap::from([(
+                    "background".into(),
+                    AppearanceToken::Brush(Brush {
+                        stops: vec![stop(0.0, "#cc172738"), stop(1.0, "#9927394e")],
+                        angle_degrees: 35.0,
+                        alpha: 0.9,
+                    }),
+                )]),
+            )]),
+            applied: vec![],
+            unavailable: vec![],
+            unknown: vec![],
+        };
+        for (width, height) in [(568, 1232), (1232, 568)] {
+            for theme in [None, Some(&snapshot)] {
+                let painted = ImageSurface::create(Format::ARgb32, width, height).unwrap();
+                paint_drawer_sheet(&Context::new(&painted).unwrap(), theme, width as u32, height as u32);
+                let copied = ImageSurface::create(Format::ARgb32, width, height).unwrap();
+                let mut cache = DrawerGridCache::default();
+                let (sheet, top) = cache.ensure_sheet(theme, width as u32, height as u32).unwrap();
+                copy_drawer_sheet(&Context::new(&copied).unwrap(), sheet, top);
+                painted.flush();
+                copied.flush();
+                let (mut painted, mut copied) = (painted, copied);
+                assert!(painted.data().unwrap()[..] == copied.data().unwrap()[..], "{width}x{height}");
+            }
+        }
     }
 
     #[test]
@@ -9384,7 +9582,19 @@ mod tests {
             &frame[300 * 568 * 4..360 * 568 * 4],
             &before[300 * 568 * 4..360 * 568 * 4]
         );
-        assert_eq!(cache.rebuild_count(), 2);
+        // The scroll repainted only the grid band, not the whole scene.
+        assert_eq!(cache.rebuild_count(), 1);
+        // That band repaint matches a frame built from scratch at the same
+        // scroll, fractional offsets included.
+        for scroll in [188.0, 251.6] {
+            cache.draw(&mut frame, RenderParams { scroll, ..params }, &apps).unwrap();
+            let mut fresh = vec![0; frame.len()];
+            RendererCache::default()
+                .draw(&mut fresh, RenderParams { scroll, ..params }, &apps)
+                .unwrap();
+            assert!(frame == fresh, "band repaint differs from a rebuild at scroll {scroll}");
+        }
+        assert_eq!(cache.rebuild_count(), 1);
     }
 
     #[test]

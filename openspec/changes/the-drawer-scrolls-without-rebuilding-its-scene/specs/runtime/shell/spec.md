@@ -2,7 +2,7 @@
 
 ### Requirement: A drawer scroll repaints only the scrolled band
 
-UNVERIFIED: no installed-board measurement of this change exists yet.
+*Grounding (2026-10-22): `docs/evidence/interaction-jank/drawer-profile/README.md`. On test-activated `z1basiwi…` in landscape, with injected native touch and no real glass, contact render had a median of 6.3 ms and sway received band-only damage. The fixed rebuild count is proven only by a host unit test. Persistent installation and portrait are unmeasured.*
 
 When only the app drawer's scroll offset changes between frames, the userspace
 shell SHALL repaint just the scrollable grid band of its cached frame. It SHALL
@@ -19,7 +19,7 @@ draw.
 
 ### Requirement: An operator can capture a CPU flamegraph of a board workload
 
-UNVERIFIED: the tool's first committed before/after capture is pending.
+*Grounding (2026-10-22): `tools/board-profile.py` captures in `docs/evidence/interaction-jank/drawer-profile/` (profile-before, after1, after2).*
 
 The repository SHALL provide a host tool that samples the call stacks of named
 systemd units on the installed board while a workload runs, under the board

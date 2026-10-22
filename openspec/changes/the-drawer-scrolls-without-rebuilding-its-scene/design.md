@@ -38,6 +38,20 @@ Non-goals:
   size, no pending picker rows and no pressed tile now repaints only the rows
   from `list_top` to the viewport bottom, in place. A pressed tile's ring can
   reach past the band, so it still takes a full rebuild.
+- **Draw on the frame callback.** After the first three fixes, the client
+  rendered about two frames per presented frame, because each touch sample
+  drew whenever a buffer was free. Drawer motion that arrives while a frame
+  is pending now only marks the surface dirty, as the theme picker already
+  does.
+- **Cached sheet.** The launcher background brush is a gradient, and pixman
+  fills it on its generic path. Painting the sheet into a surface once per
+  theme and size, and copying it at a whole-pixel offset, gives the same
+  pixels. A unit test compares direct painting with the cached copy for an
+  unthemed sheet and a translucent gradient, in both orientations.
+- **Band damage.** A scroll frame reports only the band rows as
+  `damage_buffer`. This applies only when the previous commit was also an
+  ordinary drawer frame, so no other path's pixels stay on screen. A
+  sliding-panel shift or a visible HUD falls back to full damage.
 - **Log the first move of each contact.** The drawer QEMU test waits for
   `touch-move N`, so the line stays, once per contact.
 - **Profiling tool.** It runs `perf record -p` on each unit's main PID under

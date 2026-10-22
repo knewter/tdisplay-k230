@@ -1258,6 +1258,14 @@ struct ShellClient {
     /// close drag, notification swipe/scroll and (on Settings) the
     /// wifi/theme handling that would otherwise see this touch.
     brightness_drag: Option<slider::Drag>,
+    /// The contact whose first `touch-move` was logged. Only the first move
+    /// of each contact reaches the journal; a line per touch sample cost
+    /// the client about 2% of its CPU during a drawer scroll.
+    move_logged: Option<i32>,
+    /// Whether the last committed overlay frame came from the ordinary
+    /// renderer on the Drawer route; only then can the next frame report
+    /// just the band it changed as damage.
+    drawer_frame_committed: bool,
     /// Rate-limits `K230_DRAWER_FRAME` (see `draw`'s own doc): the last
     /// time one was actually emitted, so a continuous scroll/fling logs a
     /// sample every `DRAWER_FRAME_LOG_INTERVAL` instead of once per frame.
@@ -4589,6 +4597,8 @@ impl ShellClient {
             self.buffers.push(buffer);
             (self.buffers.len() - 1, canvas)
         };
+        let mut band_damage = None;
+        let mut drawer_frame = false;
         if let Some(menu)=self.app_menu.as_ref() {
             if let Err(error)=self.renderer.draw_app_menu(canvas,self.width,self.height,menu) {
                 self.log(&format!("app-menu-render-failed {error}"));return false;
@@ -4698,6 +4708,8 @@ impl ShellClient {
                 self.log(&format!("render-failed {error}"));
                 return false;
             }
+            band_damage = self.renderer.take_band_damage().filter(|_| self.drawer_frame_committed);
+            drawer_frame = self.route == Route::Drawer;
         }
         if tracing {
             runtime_trace::event("draw_end", [self.trace_frame, self.trace_input,
@@ -4705,9 +4717,12 @@ impl ShellClient {
         }
         self.input_region();
         let layer = self.layer.as_ref().expect("mapped");
+        // A drawer scroll changes only the grid band, so the compositor need
+        // not recomposite the rest of the surface.
+        let (damage_y, damage_h) = band_damage.map_or((0, self.height as i32), |(top, bottom)| (top, bottom - top));
         layer
             .wl_surface()
-            .damage_buffer(0, 0, self.width as i32, self.height as i32);
+            .damage_buffer(0, damage_y, self.width as i32, damage_h);
         layer.wl_surface().frame(qh, layer.wl_surface().clone());
         if self.buffers[index].attach_to(layer.wl_surface()).is_err() {
             self.log("shm-attach-failed");
@@ -4736,6 +4751,7 @@ impl ShellClient {
         }
         self.frame_pending = true;
         self.dirty = false;
+        self.drawer_frame_committed = drawer_frame;
         self.log("commit");
         true
     }
@@ -5112,6 +5128,7 @@ impl ShellClient {
                 if self.wifi_view.page == WifiPage::Closed {
                     self.log(&format!("touch-down {id} {:.1} {:.1}", pos.0, pos.1));
                 }
+                self.move_logged = None;
                 if self.hud_touch_down(id, pos) {
                     // Handled entirely -- the HUD floats above whatever
                     // route is showing (task: "a vertical pill on the
@@ -5886,7 +5903,8 @@ impl ShellClient {
             return;
         }
         if self.touch.motion(id, pos) {
-            if self.wifi_view.page == WifiPage::Closed {
+            if self.wifi_view.page == WifiPage::Closed && self.move_logged != Some(id) {
+                self.move_logged = Some(id);
                 self.log(&format!("touch-move {id} {:.1} {:.1}", pos.0, pos.1));
             }
             if self
@@ -6260,7 +6278,12 @@ impl ShellClient {
                 self.sync_theme_pressed();
                 self.sync_background_pressed();
             }
-            if self.dirty && !self.coalesce_theme_motion() {
+            // A drawer scroll sample that arrives while a frame is still
+            // pending only marks the surface dirty; the frame callback draws
+            // the latest position. Drawing every sample rendered about two
+            // frames per presented one on the board.
+            let drawer_frame_pending = self.route == Route::Drawer && self.frame_pending;
+            if self.dirty && !self.coalesce_theme_motion() && !drawer_frame_pending {
                 self.draw(qh);
             }
         }
@@ -6854,6 +6877,8 @@ fn serve() -> Result<(), String> {
         panel_close_velocity: 0.0,
         panel_close_sample: None,
         brightness_drag: None,
+        move_logged: None,
+        drawer_frame_committed: false,
         drawer_frame_log_at: None,
         volume_drag: None,
         key_backlight_drag: None,

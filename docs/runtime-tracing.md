@@ -56,25 +56,48 @@ helper work is a lead for investigation, not proof it caused a stall.
 
 ## CPU flamegraphs
 
-The span timeline is not a sampled CPU flamegraph. Build the opt-in target sampler with `nix build .#runtime-perf`; it stays
-outside the normal image. Verify unwinding/symbols for the workload. With that tool,
-these are the bounded operator commands (the first physical trial is linked below):
+The span timeline is not a sampled CPU flamegraph. For that, build the opt-in
+target sampler with `nix build .#runtime-perf`. It stays outside the normal
+image, so copy it to the board. Then run the host tool:
 
 ```sh
-perf record -e cpu-clock -F 99 -g --call-graph fp \
-  -p COMMA_SEPARATED_VERIFIED_PIDS -o /run/profile-private.data -- sleep 20
-perf script -F comm,pid,tid,time,period,event,ip,sym,dso \
-  -i /run/profile-private.data > /run/stacks-private.txt
+tools/board-profile.py OUT_DIR --unit shell-ui --unit shell \
+  --title "drawer scroll" --fetch /var/tmp/drawer-run \
+  --workload docs/evidence/interaction-jank/drawer-scroll/drawer-scroll.py.txt \
+  -- /var/tmp/drawer-run SYSTEM 30
 ```
 
-Use the actual verified shell/compositor/helper PIDs; do not paste that literal
-placeholder. Record start times to catch PID reuse. Software `cpu-clock` avoids
-assuming hardware PMU support, but its availability and stack quality still
-need a board trial. Keep raw stacks private pending review; resolve addresses
-against the exact binaries/debug symbols, and report truncated/unknown stacks.
-Generate a flamegraph from the reviewed folded stacks using a pinned tool.
-Sampling, span instrumentation and combined tracing each need their own observer
-cost measurement against the same workload with instrumentation disabled.
+`SYSTEM` is the board's `readlink /run/current-system`. The workload refuses
+to run against any other system.
+
+The tool holds the board lock and samples the main process of each unit with
+`perf record -e cpu-clock -F 199 --call-graph dwarf,65528`. It starts the
+workload a second later and stops sampling when the workload exits. It records
+each PID with its start time and warns if a unit restarted. It runs
+`perf script` on the board and renders on the host with the flake-pinned
+FlameGraph scripts. `OUT_DIR` receives:
+
+- `flamegraph.svg`: aggregated stacks. Open the SVG on its own to zoom and
+  search.
+- `perf-script.txt.gz`: raw samples. Import into
+  [speedscope](https://www.speedscope.app) for a time-ordered flame chart per
+  thread.
+- `folded.txt` and `summary.json`: sampled CPU per process and the hottest
+  frames, inclusive and self.
+
+Unwinding notes:
+
+- Use DWARF unwinding. Frame pointers stop inside the nixpkgs C libraries.
+- A 16 KiB stack copy truncates inside pixman's `general_composite_rect`,
+  which keeps a large buffer on the stack. 65528 bytes holds full chains.
+- Stock nixpkgs binaries keep `.symtab`, so Rust, pango, cairo and pixman
+  frames resolve by name without debug packages.
+
+Sampling costs CPU on the one-CPU board. Use a profile to see where time goes,
+and take timing figures from a separate unprofiled run of the same workload.
+The output names processes, functions and store paths. Review it before
+committing, as with any capture. First use, with before/after flamegraphs:
+[drawer profile](evidence/interaction-jank/drawer-profile/README.md).
 
 The remaining work and physical evidence gates are tasks 13 and 15 of
 `the-shell-swaps-themes-without-a-python-stall`.

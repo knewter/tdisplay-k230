@@ -19,6 +19,11 @@ board.
 - On a drawer scroll, repaint only the grid band of the cached frame instead of
   rebuilding the whole scene.
 - Journal only the first `touch-move` of each contact, not every sample.
+- Draw drawer motion that arrives while a frame is pending on the next frame
+  callback, instead of rendering every touch sample.
+- Cache the drawer sheet (its vision backdrop and themed background brush) per
+  theme and size.
+- Report only the repainted band as surface damage on a scroll frame.
 - Add `tools/board-profile.py`. It samples DWARF-unwound CPU stacks of named
   units on the board during a workload, and renders a folded file, a flamegraph
   SVG, speedscope-readable `perf script` text and a summary on the host.

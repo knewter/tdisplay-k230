@@ -1,0 +1,435 @@
+{
+ "cpu_ms": 6296.5,
+ "processes_cpu_ms": {
+  "sway": 3924.6,
+  "k230-shell-rust": 2120.6,
+  "curl": 251.3
+ },
+ "inclusive": [
+  {
+   "frame": "_start",
+   "cpu_ms": 6211.1,
+   "share": 0.9864
+  },
+  {
+   "frame": "__libc_start_call_main",
+   "cpu_ms": 6180.9,
+   "share": 0.9816
+  },
+  {
+   "frame": "__libc_start_main@@GLIBC_2.34",
+   "cpu_ms": 6180.9,
+   "share": 0.9816
+  },
+  {
+   "frame": "main",
+   "cpu_ms": 6175.9,
+   "share": 0.9808
+  },
+  {
+   "frame": "wl_display_run",
+   "cpu_ms": 3894.5,
+   "share": 0.6185
+  },
+  {
+   "frame": "wl_event_loop_dispatch",
+   "cpu_ms": 3728.6,
+   "share": 0.5922
+  },
+  {
+   "frame": "output_repaint_timer_handler.part.0",
+   "cpu_ms": 3095.5,
+   "share": 0.4916
+  },
+  {
+   "frame": "wlr_scene_output_build_state",
+   "cpu_ms": 3010.0,
+   "share": 0.4781
+  },
+  {
+   "frame": "output_repaint_timer_handler",
+   "cpu_ms": 2613.1,
+   "share": 0.415
+  },
+  {
+   "frame": "std::sys::backtrace::__rust_begin_short_backtrace::<fn",
+   "cpu_ms": 2070.4,
+   "share": 0.3288
+  },
+  {
+   "frame": "std::rt::lang_start_internal",
+   "cpu_ms": 2070.4,
+   "share": 0.3288
+  },
+  {
+   "frame": "k230_shell_rust::main",
+   "cpu_ms": 2070.4,
+   "share": 0.3288
+  },
+  {
+   "frame": "k230_shell_rust::serve",
+   "cpu_ms": 2070.4,
+   "share": 0.3288
+  },
+  {
+   "frame": "std::rt::lang_start::<",
+   "cpu_ms": 2070.4,
+   "share": 0.3288
+  },
+  {
+   "frame": "pixman_image_composite32",
+   "cpu_ms": 1894.5,
+   "share": 0.3009
+  },
+  {
+   "frame": "render_pass_add_texture",
+   "cpu_ms": 1799.0,
+   "share": 0.2857
+  },
+  {
+   "frame": "k230_round_composite_impl",
+   "cpu_ms": 1778.9,
+   "share": 0.2825
+  },
+  {
+   "frame": "<wayland_client::event_queue::EventQueue<k230_shell_rust::ShellClient>>::dispatching_impl",
+   "cpu_ms": 1748.7,
+   "share": 0.2777
+  },
+  {
+   "frame": "<k230_shell_rust::ShellClient>::draw",
+   "cpu_ms": 1638.2,
+   "share": 0.2602
+  },
+  {
+   "frame": "<k230_shell_rust::render::RendererCache>::draw_with_hud",
+   "cpu_ms": 1562.8,
+   "share": 0.2482
+  },
+  {
+   "frame": "<k230_shell_rust::render::RendererCache>::draw",
+   "cpu_ms": 1562.8,
+   "share": 0.2482
+  },
+  {
+   "frame": "wayland_client::event_queue::queue_callback::<wayland_client::protocol::wl_callback::WlCallback, wayland_client::protocol::wl_surface::WlSurface, k230_shell_rust::ShellClient>",
+   "cpu_ms": 1517.6,
+   "share": 0.241
+  },
+  {
+   "frame": "<k230_shell_rust::ShellClient as wayland_client::event_queue::Dispatch<wayland_client::protocol::wl_callback::WlCallback, wayland_client::protocol::wl_surface::WlSurface>>::event",
+   "cpu_ms": 1512.6,
+   "share": 0.2402
+  },
+  {
+   "frame": "k230_shell_rust::render::draw_shm_with_icons",
+   "cpu_ms": 1296.5,
+   "share": 0.2059
+  },
+  {
+   "frame": "k230_shell_rust::render::scene",
+   "cpu_ms": 1281.4,
+   "share": 0.2035
+  },
+  {
+   "frame": "render_pass_submit",
+   "cpu_ms": 1155.8,
+   "share": 0.1836
+  },
+  {
+   "frame": "k230_turn_copy_rect.isra.0",
+   "cpu_ms": 1150.8,
+   "share": 0.1828
+  },
+  {
+   "frame": "rvv_composite_over_8888_0565",
+   "cpu_ms": 1130.7,
+   "share": 0.1796
+  },
+  {
+   "frame": "__irqentry_text_start_[k]",
+   "cpu_ms": 954.8,
+   "share": 0.1516
+  },
+  {
+   "frame": "clip_and_composite_boxes.part.0",
+   "cpu_ms": 944.7,
+   "share": 0.15
+  },
+  {
+   "frame": "do_trap_ecall_u_[k]",
+   "cpu_ms": 859.3,
+   "share": 0.1365
+  },
+  {
+   "frame": "cairo_paint",
+   "cpu_ms": 814.1,
+   "share": 0.1293
+  },
+  {
+   "frame": "_cairo_gstate_paint",
+   "cpu_ms": 814.1,
+   "share": 0.1293
+  },
+  {
+   "frame": "<cairo::context::Context>::paint",
+   "cpu_ms": 814.1,
+   "share": 0.1293
+  },
+  {
+   "frame": "_cairo_surface_paint",
+   "cpu_ms": 809.0,
+   "share": 0.1285
+  },
+  {
+   "frame": "_cairo_compositor_paint",
+   "cpu_ms": 809.0,
+   "share": 0.1285
+  },
+  {
+   "frame": "_cairo_spans_compositor_paint",
+   "cpu_ms": 804.0,
+   "share": 0.1277
+  },
+  {
+   "frame": "rvv_composite_over_8888_8888",
+   "cpu_ms": 738.7,
+   "share": 0.1173
+  },
+  {
+   "frame": "composite_boxes",
+   "cpu_ms": 738.7,
+   "share": 0.1173
+  },
+  {
+   "frame": "__syscall_cancel",
+   "cpu_ms": 703.5,
+   "share": 0.1117
+  }
+ ],
+ "self": [
+  {
+   "frame": "k230_turn_copy_rect.isra.0",
+   "cpu_ms": 1135.7,
+   "share": 0.1804
+  },
+  {
+   "frame": "rvv_composite_over_8888_0565",
+   "cpu_ms": 1115.6,
+   "share": 0.1772
+  },
+  {
+   "frame": "rvv_composite_over_8888_8888",
+   "cpu_ms": 718.6,
+   "share": 0.1141
+  },
+  {
+   "frame": "k230_rgb565_blit",
+   "cpu_ms": 618.1,
+   "share": 0.0982
+  },
+  {
+   "frame": "_wordcopy_fwd_aligned",
+   "cpu_ms": 236.2,
+   "share": 0.0375
+  },
+  {
+   "frame": "_raw_spin_unlock_irqrestore_[k]",
+   "cpu_ms": 135.7,
+   "share": 0.0215
+  },
+  {
+   "frame": "rvv_blt",
+   "cpu_ms": 125.6,
+   "share": 0.02
+  },
+  {
+   "frame": "finish_task_switch.isra.0_[k]",
+   "cpu_ms": 95.5,
+   "share": 0.0152
+  },
+  {
+   "frame": "rvv_fill",
+   "cpu_ms": 65.3,
+   "share": 0.0104
+  },
+  {
+   "frame": "_raw_spin_unlock_irq_[k]",
+   "cpu_ms": 50.3,
+   "share": 0.008
+  },
+  {
+   "frame": "free",
+   "cpu_ms": 30.2,
+   "share": 0.0048
+  },
+  {
+   "frame": "__memcpy_generic",
+   "cpu_ms": 30.2,
+   "share": 0.0048
+  },
+  {
+   "frame": "ep_send_events_[k]",
+   "cpu_ms": 30.2,
+   "share": 0.0048
+  },
+  {
+   "frame": "_int_malloc",
+   "cpu_ms": 25.1,
+   "share": 0.004
+  },
+  {
+   "frame": "do_trap_ecall_u_[k]",
+   "cpu_ms": 25.1,
+   "share": 0.004
+  },
+  {
+   "frame": "__schedule_[k]",
+   "cpu_ms": 25.1,
+   "share": 0.004
+  },
+  {
+   "frame": "malloc",
+   "cpu_ms": 20.1,
+   "share": 0.0032
+  },
+  {
+   "frame": "clock_gettime@@GLIBC_2.27",
+   "cpu_ms": 20.1,
+   "share": 0.0032
+  },
+  {
+   "frame": "__internal_syscall_cancel",
+   "cpu_ms": 20.1,
+   "share": 0.0032
+  },
+  {
+   "frame": "__memcg_slab_post_alloc_hook_[k]",
+   "cpu_ms": 20.1,
+   "share": 0.0032
+  },
+  {
+   "frame": "wl_connection_flush",
+   "cpu_ms": 20.1,
+   "share": 0.0032
+  },
+  {
+   "frame": "ep_done_scan_[k]",
+   "cpu_ms": 20.1,
+   "share": 0.0032
+  },
+  {
+   "frame": "output_configure_scene",
+   "cpu_ms": 20.1,
+   "share": 0.0032
+  },
+  {
+   "frame": "EVP_DecodeUpdate",
+   "cpu_ms": 15.1,
+   "share": 0.0024
+  },
+  {
+   "frame": "asn1_item_embed_d2i",
+   "cpu_ms": 15.1,
+   "share": 0.0024
+  },
+  {
+   "frame": "__alloc_tagging_slab_free_hook_[k]",
+   "cpu_ms": 15.1,
+   "share": 0.0024
+  },
+  {
+   "frame": "do_lookup_x",
+   "cpu_ms": 15.1,
+   "share": 0.0024
+  },
+  {
+   "frame": "memset_[k]",
+   "cpu_ms": 15.1,
+   "share": 0.0024
+  },
+  {
+   "frame": "k230_shell_rust::serve",
+   "cpu_ms": 15.1,
+   "share": 0.0024
+  },
+  {
+   "frame": "<wayland_backend::rs::client_impl::InnerReadEventsGuard>::read",
+   "cpu_ms": 15.1,
+   "share": 0.0024
+  },
+  {
+   "frame": "__mod_memcg_state_[k]",
+   "cpu_ms": 15.1,
+   "share": 0.0024
+  },
+  {
+   "frame": "irqentry_exit_[k]",
+   "cpu_ms": 15.1,
+   "share": 0.0024
+  },
+  {
+   "frame": "__alloc_skb_[k]",
+   "cpu_ms": 15.1,
+   "share": 0.0024
+  },
+  {
+   "frame": "memcmp",
+   "cpu_ms": 15.1,
+   "share": 0.0024
+  },
+  {
+   "frame": "__kmalloc_node_track_caller_noprof_[k]",
+   "cpu_ms": 15.1,
+   "share": 0.0024
+  },
+  {
+   "frame": "__fget_files_[k]",
+   "cpu_ms": 15.1,
+   "share": 0.0024
+  },
+  {
+   "frame": "__syscall_cancel_arch",
+   "cpu_ms": 15.1,
+   "share": 0.0024
+  },
+  {
+   "frame": "do_epoll_wait_[k]",
+   "cpu_ms": 15.1,
+   "share": 0.0024
+  },
+  {
+   "frame": "strncmp",
+   "cpu_ms": 15.1,
+   "share": 0.0024
+  },
+  {
+   "frame": "wlr_addon_find",
+   "cpu_ms": 15.1,
+   "share": 0.0024
+  }
+ ],
+ "units": {
+  "shell-ui": {
+   "pid": 9549,
+   "starttime": 1514153,
+   "comm": "k230-shell-rust"
+  },
+  "shell": {
+   "pid": 9502,
+   "starttime": 1513946,
+   "comm": "sway"
+  }
+ },
+ "freq_hz": 199,
+ "call_graph": "dwarf,65528",
+ "host_wall_s": 47.2,
+ "capture": [
+  "start 2026-10-22T05:21:06Z",
+  "workload_rc=0 perf_rc=130",
+  "end 2026-10-22T05:21:46Z",
+  "pid-after shell-ui 9549",
+  "pid-after shell 9502",
+  "script-warnings 5"
+ ]
+}

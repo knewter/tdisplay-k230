@@ -360,8 +360,30 @@ stated limits: `docs/evidence/app-drawer/README.md`.
 - **Board proof of search**: real-finger taps on the search field and
   the compact keyboard, and real-finger scrolling of filtered results.
 - **The alphabetical fast-scroller**, explicitly scoped out (§2.4).
-- **Proposed follow-up, justified by the measurement above (not yet
-  implemented).** Two parts, in order of measured cost:
+- **Follow-up implemented, 2026-10-22**
+  (`the-drawer-scrolls-without-rebuilding-its-scene`, evidence
+  `docs/evidence/interaction-jank/drawer-profile/README.md`). A DWARF-unwound
+  board CPU profile showed the measured cost was not mainly the rebuild
+  itself:
+  - bilinear resampling of the grid at fractional scroll offsets (about 37%
+    of the client);
+  - re-shaping the theme chooser's text on every draw (about 35%).
+
+  The shell now:
+  - caches text measurements;
+  - blits the grid on whole pixels;
+  - repaints only the grid band on a scroll;
+  - caches the sheet;
+  - draws motion on the frame callback;
+  - reports band-only damage;
+  - logs one `touch-move` per contact.
+
+  Contact render fell from a 39.5 ms median to 6.3 ms. Distinct presented
+  frames rose from 8.2 to about 20 per second, at 38.3 ms intervals. That
+  interval is set by sway's 18.3 ms repaint of the band, not by the client.
+  Scroll-direction blitting is therefore not pursued; the next lever is
+  compositor composition cost. The original proposal follows, for the record.
+- **Original proposed follow-up.** Two parts, in order of measured cost:
   1. **Stop rebuilding the whole scene on scroll.** `RendererCache::
      draw_with_hud` treats any scroll change of 0.25 px or more like a route
      or size change. Each one allocates a new full-screen buffer and repaints

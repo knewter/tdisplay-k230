@@ -1,0 +1,8 @@
+pid shell-ui 9099 1444980 k230-shell-rust
+pid shell 9058 1444795 sway
+start 2026-10-22T05:08:58Z
+workload_rc=0 perf_rc=130
+end 2026-10-22T05:09:39Z
+pid-after shell-ui 9099
+pid-after shell 9058
+script-warnings 8
