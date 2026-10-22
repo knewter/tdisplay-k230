@@ -1191,6 +1191,12 @@ static bool scaled_mirror(struct mirror *m, struct wlr_scene_buffer *source, dou
      * freshness rather than introducing the normal-output thumbnail cap. */
     bool due = output->transform != WL_OUTPUT_TRANSFORM_NORMAL || large ||
         !m->scaled_at_ms || now - m->scaled_at_ms >= 66;
+	/* While a card is resizing (entry, expand, collapse) every frame has a
+	 * new size, so a cached thumbnail is rescaled, scanned and composited
+	 * once each and never reused. Composite the source directly instead;
+	 * the cache returns once the size holds still. */
+	if (fast && (!m->scaled || m->scaled_width != width || m->scaled_height != height))
+		return false;
 	if (!m->scaled || m->scaled_width != width || m->scaled_height != height ||
         m->scaled_format != format || m->scaled_fast != fast ||
 		(due && m->scaled_generation != m->generation)) {

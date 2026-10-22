@@ -1,0 +1,437 @@
+{
+ "cpu_ms": 8231.2,
+ "processes_cpu_ms": {
+  "sway": 7175.9,
+  ":1364": 577.9,
+  ":1370": 316.6,
+  "k230-shell-rust": 90.5,
+  ":1355": 70.4
+ },
+ "inclusive": [
+  {
+   "frame": "__libc_start_call_main",
+   "cpu_ms": 6914.6,
+   "share": 0.84
+  },
+  {
+   "frame": "main",
+   "cpu_ms": 6914.6,
+   "share": 0.84
+  },
+  {
+   "frame": "__libc_start_main@@GLIBC_2.34",
+   "cpu_ms": 6914.6,
+   "share": 0.84
+  },
+  {
+   "frame": "_start",
+   "cpu_ms": 6914.6,
+   "share": 0.84
+  },
+  {
+   "frame": "wl_event_loop_dispatch",
+   "cpu_ms": 6839.2,
+   "share": 0.8309
+  },
+  {
+   "frame": "wl_display_run",
+   "cpu_ms": 6839.2,
+   "share": 0.8309
+  },
+  {
+   "frame": "output_repaint_timer_handler.part.0",
+   "cpu_ms": 4211.1,
+   "share": 0.5116
+  },
+  {
+   "frame": "output_repaint_timer_handler",
+   "cpu_ms": 3974.9,
+   "share": 0.4829
+  },
+  {
+   "frame": "sync_scene_impl",
+   "cpu_ms": 3462.3,
+   "share": 0.4206
+  },
+  {
+   "frame": "sync_card",
+   "cpu_ms": 3442.2,
+   "share": 0.4182
+  },
+  {
+   "frame": "prepare_impl",
+   "cpu_ms": 3417.1,
+   "share": 0.4151
+  },
+  {
+   "frame": "prepare_common",
+   "cpu_ms": 3417.1,
+   "share": 0.4151
+  },
+  {
+   "frame": "sync_node",
+   "cpu_ms": 3055.3,
+   "share": 0.3712
+  },
+  {
+   "frame": "wlr_scene_output_build_state",
+   "cpu_ms": 2246.2,
+   "share": 0.2729
+  },
+  {
+   "frame": "wl_signal_emit_mutable",
+   "cpu_ms": 2160.8,
+   "share": 0.2625
+  },
+  {
+   "frame": "handle_frame",
+   "cpu_ms": 1794.0,
+   "share": 0.2179
+  },
+  {
+   "frame": "card_scaled_buffer_create_format",
+   "cpu_ms": 1688.4,
+   "share": 0.2051
+  },
+  {
+   "frame": "drmHandleEvent",
+   "cpu_ms": 1673.4,
+   "share": 0.2033
+  },
+  {
+   "frame": "handle_drm_event",
+   "cpu_ms": 1673.4,
+   "share": 0.2033
+  },
+  {
+   "frame": "handle_page_flip",
+   "cpu_ms": 1658.3,
+   "share": 0.2015
+  },
+  {
+   "frame": "render_pass_submit",
+   "cpu_ms": 1407.0,
+   "share": 0.1709
+  },
+  {
+   "frame": "k230_turn_copy_rect.isra.0",
+   "cpu_ms": 1402.0,
+   "share": 0.1703
+  },
+  {
+   "frame": "pixman_image_composite32",
+   "cpu_ms": 1376.9,
+   "share": 0.1673
+  },
+  {
+   "frame": "__irqentry_text_start_[k]",
+   "cpu_ms": 1286.4,
+   "share": 0.1563
+  },
+  {
+   "frame": "card_scaled_buffer_prepare_rgb565_interior",
+   "cpu_ms": 1236.2,
+   "share": 0.1502
+  },
+  {
+   "frame": "card_scale_pixels",
+   "cpu_ms": 1226.1,
+   "share": 0.149
+  },
+  {
+   "frame": "do_trap_ecall_u_[k]",
+   "cpu_ms": 1055.3,
+   "share": 0.1282
+  },
+  {
+   "frame": "general_composite_rect",
+   "cpu_ms": 743.7,
+   "share": 0.0904
+  },
+  {
+   "frame": "render_pass_add_texture",
+   "cpu_ms": 738.7,
+   "share": 0.0897
+  },
+  {
+   "frame": "k230_round_composite_impl",
+   "cpu_ms": 728.6,
+   "share": 0.0885
+  },
+  {
+   "frame": "__memcpy_generic",
+   "cpu_ms": 708.5,
+   "share": 0.0861
+  },
+  {
+   "frame": "fast_fetch_bilinear_cover",
+   "cpu_ms": 603.0,
+   "share": 0.0733
+  },
+  {
+   "frame": "__syscall_cancel",
+   "cpu_ms": 577.9,
+   "share": 0.0702
+  },
+  {
+   "frame": "__internal_syscall_cancel",
+   "cpu_ms": 572.9,
+   "share": 0.0696
+  },
+  {
+   "frame": "__syscall_cancel_arch",
+   "cpu_ms": 567.8,
+   "share": 0.069
+  },
+  {
+   "frame": "k230_rgb565_blit",
+   "cpu_ms": 562.8,
+   "share": 0.0684
+  },
+  {
+   "frame": "fast_composite_scaled_nearest_8888_8888_cover_SRC",
+   "cpu_ms": 532.7,
+   "share": 0.0647
+  },
+  {
+   "frame": "tick",
+   "cpu_ms": 507.5,
+   "share": 0.0617
+  },
+  {
+   "frame": "card_pixels_argb_opaque",
+   "cpu_ms": 386.9,
+   "share": 0.047
+  },
+  {
+   "frame": "_sway_log",
+   "cpu_ms": 341.7,
+   "share": 0.0415
+  }
+ ],
+ "self": [
+  {
+   "frame": "k230_turn_copy_rect.isra.0",
+   "cpu_ms": 1402.0,
+   "share": 0.1703
+  },
+  {
+   "frame": ":1364",
+   "cpu_ms": 562.8,
+   "share": 0.0684
+  },
+  {
+   "frame": "__memcpy_generic",
+   "cpu_ms": 552.8,
+   "share": 0.0672
+  },
+  {
+   "frame": "card_scaled_buffer_prepare_rgb565_interior",
+   "cpu_ms": 522.6,
+   "share": 0.0635
+  },
+  {
+   "frame": "k230_rgb565_blit",
+   "cpu_ms": 427.1,
+   "share": 0.0519
+  },
+  {
+   "frame": "card_pixels_argb_opaque",
+   "cpu_ms": 386.9,
+   "share": 0.047
+  },
+  {
+   "frame": "fast_composite_scaled_nearest_8888_8888_cover_SRC",
+   "cpu_ms": 381.9,
+   "share": 0.0464
+  },
+  {
+   "frame": "fast_fetch_bilinear_cover",
+   "cpu_ms": 301.5,
+   "share": 0.0366
+  },
+  {
+   "frame": "fetch_horizontal.isra.0",
+   "cpu_ms": 301.5,
+   "share": 0.0366
+  },
+  {
+   "frame": ":1370",
+   "cpu_ms": 180.9,
+   "share": 0.022
+  },
+  {
+   "frame": "__memcpy_chk",
+   "cpu_ms": 155.8,
+   "share": 0.0189
+  },
+  {
+   "frame": "offset_0x2b7f0@plt",
+   "cpu_ms": 150.8,
+   "share": 0.0183
+  },
+  {
+   "frame": "_raw_spin_unlock_irqrestore_[k]",
+   "cpu_ms": 145.7,
+   "share": 0.0177
+  },
+  {
+   "frame": "card_label_weight",
+   "cpu_ms": 100.5,
+   "share": 0.0122
+  },
+  {
+   "frame": "_wordcopy_fwd_aligned",
+   "cpu_ms": 85.4,
+   "share": 0.0104
+  },
+  {
+   "frame": "memset",
+   "cpu_ms": 70.4,
+   "share": 0.0085
+  },
+  {
+   "frame": "do_trap_ecall_u_[k]",
+   "cpu_ms": 60.3,
+   "share": 0.0073
+  },
+  {
+   "frame": "_wordcopy_fwd_dest_aligned",
+   "cpu_ms": 50.3,
+   "share": 0.0061
+  },
+  {
+   "frame": "_raw_spin_unlock_irq_[k]",
+   "cpu_ms": 45.2,
+   "share": 0.0055
+  },
+  {
+   "frame": "__memcg_slab_post_alloc_hook_[k]",
+   "cpu_ms": 45.2,
+   "share": 0.0055
+  },
+  {
+   "frame": "__memcpy_chk@plt",
+   "cpu_ms": 40.2,
+   "share": 0.0049
+  },
+  {
+   "frame": "strncmp",
+   "cpu_ms": 40.2,
+   "share": 0.0049
+  },
+  {
+   "frame": "_scene_nodes_in_box",
+   "cpu_ms": 40.2,
+   "share": 0.0049
+  },
+  {
+   "frame": "__fget_files_[k]",
+   "cpu_ms": 35.2,
+   "share": 0.0043
+  },
+  {
+   "frame": "pixman_op",
+   "cpu_ms": 35.2,
+   "share": 0.0043
+  },
+  {
+   "frame": "clear_page_[k]",
+   "cpu_ms": 30.2,
+   "share": 0.0037
+  },
+  {
+   "frame": "__printf_buffer",
+   "cpu_ms": 30.2,
+   "share": 0.0037
+  },
+  {
+   "frame": "fast_fetch_r5g6b5",
+   "cpu_ms": 30.2,
+   "share": 0.0037
+  },
+  {
+   "frame": ":1355",
+   "cpu_ms": 25.1,
+   "share": 0.0031
+  },
+  {
+   "frame": "__account_obj_stock_[k]",
+   "cpu_ms": 25.1,
+   "share": 0.0031
+  },
+  {
+   "frame": "__kmalloc_cache_noprof_[k]",
+   "cpu_ms": 25.1,
+   "share": 0.0031
+  },
+  {
+   "frame": "__syscall_cancel_arch",
+   "cpu_ms": 25.1,
+   "share": 0.0031
+  },
+  {
+   "frame": "free",
+   "cpu_ms": 25.1,
+   "share": 0.0031
+  },
+  {
+   "frame": "rvv_combine_src_u",
+   "cpu_ms": 25.1,
+   "share": 0.0031
+  },
+  {
+   "frame": "getenv",
+   "cpu_ms": 25.1,
+   "share": 0.0031
+  },
+  {
+   "frame": "fetch_scanline_a8",
+   "cpu_ms": 25.1,
+   "share": 0.0031
+  },
+  {
+   "frame": "rvv_composite_over_8888_0565",
+   "cpu_ms": 25.1,
+   "share": 0.0031
+  },
+  {
+   "frame": "handle_page_fault_[k]",
+   "cpu_ms": 20.1,
+   "share": 0.0024
+  },
+  {
+   "frame": "rvv_composite_src_8888_8888",
+   "cpu_ms": 20.1,
+   "share": 0.0024
+  },
+  {
+   "frame": "_int_malloc",
+   "cpu_ms": 20.1,
+   "share": 0.0024
+  }
+ ],
+ "units": {
+  "shell": {
+   "pid": 1056,
+   "starttime": 7325,
+   "comm": "sway"
+  },
+  "shell-ui": {
+   "pid": 1069,
+   "starttime": 7506,
+   "comm": "k230-shell-rust"
+  }
+ },
+ "freq_hz": 199,
+ "call_graph": "dwarf,65528",
+ "host_wall_s": 52.0,
+ "capture": [
+  "start 2026-10-22T20:17:16Z",
+  "workload_rc=0 perf_rc=130",
+  "end 2026-10-22T20:18:02Z",
+  "pid-after shell 1056",
+  "pid-after shell-ui 1069",
+  "script-warnings 8"
+ ]
+}

@@ -1,0 +1,114 @@
+{
+ "evidence_class": "board, injected native touch (persistent uinput); not real glass",
+ "system": "/nix/store/sgjam1h016dgvsvb18x28x0wg3mhy1hz-nixos-system-nixos-26.11.20260919.20b1ddd",
+ "arm": "busy",
+ "bench": true,
+ "cycles": 8,
+ "step_ms": 8.1400000000000006,
+ "output": {
+  "name": "DSI-1",
+  "transform": "270",
+  "rect": {
+   "x": 0,
+   "y": 0,
+   "width": 1232,
+   "height": 568
+  },
+  "max_render_time": 12
+ },
+ "started_utc": "2026-10-22T20:17:18Z",
+ "events": [
+  {
+   "kind": "entry",
+   "start": 1792700245.7061801,
+   "release": 1792700246.0137222
+  },
+  {
+   "kind": "tap",
+   "start": 1792700247.5144832,
+   "release": 1792700247.5951517
+  },
+  {
+   "kind": "entry",
+   "start": 1792700249.6001706,
+   "release": 1792700249.9710026
+  },
+  {
+   "kind": "tap",
+   "start": 1792700251.4741657,
+   "release": 1792700251.5548322
+  },
+  {
+   "kind": "entry",
+   "start": 1792700253.5568166,
+   "release": 1792700253.9260864
+  },
+  {
+   "kind": "tap",
+   "start": 1792700255.4276989,
+   "release": 1792700255.5090978
+  },
+  {
+   "kind": "entry",
+   "start": 1792700257.5108986,
+   "release": 1792700257.8801842
+  },
+  {
+   "kind": "tap",
+   "start": 1792700259.382086,
+   "release": 1792700259.4627039
+  },
+  {
+   "kind": "entry",
+   "start": 1792700261.4635882,
+   "release": 1792700261.8590064
+  },
+  {
+   "kind": "tap",
+   "start": 1792700263.3597276,
+   "release": 1792700263.4403644
+  },
+  {
+   "kind": "entry",
+   "start": 1792700265.4412367,
+   "release": 1792700265.8222415
+  },
+  {
+   "kind": "tap",
+   "start": 1792700267.3230169,
+   "release": 1792700267.4052515
+  },
+  {
+   "kind": "entry",
+   "start": 1792700269.4069803,
+   "release": 1792700269.7773483
+  },
+  {
+   "kind": "tap",
+   "start": 1792700271.2788749,
+   "release": 1792700271.3594885
+  },
+  {
+   "kind": "entry",
+   "start": 1792700273.3603573,
+   "release": 1792700273.7279909
+  },
+  {
+   "kind": "tap",
+   "start": 1792700275.2287438,
+   "release": 1792700275.3101547
+  }
+ ],
+ "arm_app_id": "k230.busy.trial",
+ "workload_start": 1792700245.7061365,
+ "workload_start_mono": 295.16750833499998,
+ "workload_end": 1792700277.3111076,
+ "apps_at_end": [
+  "k230-terminal",
+  "k230.busy.trial"
+ ],
+ "restored_apps": [
+  "k230-terminal"
+ ],
+ "finished_utc": "2026-10-22T20:17:59Z"
+}

@@ -1,0 +1,128 @@
+#!/usr/bin/env python3
+"""Ordinary-card entry and touch acknowledgement, injected native touch.
+
+Usage: card-entry.py OUT_DIR EXPECTED_SYSTEM ARM CYCLES [--bench] [--probe]
+ARM is 'video' (the shipped Video app: `k230-video-session run`, live
+public stream through mpv) or 'busy' (btop in an owned Foot window at font size 7,
+since btop refuses the default landscape size of 102x23 cells;
+app id k230.busy.trial). The startup terminal stays the other card.
+Each cycle, from the focused app:
+  entry  one contact at the bottom edge (y=562, inside the 48 px band),
+         swiped up 262 px over 300 ms, released; 1.5 s settle
+  drag   one contact on the deck centre, dragged 300 px left over 700 ms,
+         released; 1.2 s settle
+  tap    80 ms tap on the deck centre, which expands that card; 2.0 s
+Reports are 8.14 ms apart with sleeps, never spins (one CPU). With --bench
+the compositor benchmark (`card_shell benchmark injected`) is armed for the
+workload and stopped after; --probe takes grim captures in cycle 0.
+Evidence class: board, injected native touch.
+"""
+import fcntl, json, os, struct, subprocess, sys, time
+from pathlib import Path
+
+out = Path(sys.argv[1]); expected = sys.argv[2]; arm = sys.argv[3]; cycles = int(sys.argv[4])
+bench = '--bench' in sys.argv[5:]; probe = '--probe' in sys.argv[5:]
+assert arm in ('video', 'busy') and 1 <= cycles <= 20
+if str(Path('/run/current-system').resolve()) != expected:
+    raise SystemExit('installed system differs from expected')
+out.mkdir(mode=0o700)
+ENV = ['sudo', '-u', 'shell', 'env', 'XDG_RUNTIME_DIR=/run/shell', 'WAYLAND_DISPLAY=wayland-1',
+       'SWAYSOCK=/run/shell/sway-ipc.sock', 'PATH=/run/current-system/sw/bin']
+def sh(*a, **kw): return subprocess.run(ENV + list(a), check=True, timeout=40, **kw)
+def sway(cmd): return sh('swaymsg', cmd, capture_output=True, text=True).stdout
+def tree(): return json.loads(sh('swaymsg', '-t', 'get_tree', '-r', capture_output=True).stdout)
+def apps(n=None):
+    n = n or tree(); r = {n.get('app_id')} if n.get('app_id') else set()
+    for c in n.get('nodes', []) + n.get('floating_nodes', []): r |= apps(c)
+    return r
+def grim(name):
+    data = sh('grim', '-', capture_output=True).stdout; assert data.startswith(b'\x89PNG')
+    (out / f'{name}.png').write_bytes(data)
+
+outs = [o for o in json.loads(sh('swaymsg', '-t', 'get_outputs', '-r', capture_output=True).stdout) if o.get('active')]
+assert len(outs) == 1 and outs[0]['transform'] == '270' and outs[0]['rect']['height'] == 568
+start_apps = apps()
+assert start_apps == {'k230-terminal'}, f'controlled workload needs only the startup terminal: {start_apps}'
+meta = {'evidence_class': 'board, injected native touch (persistent uinput); not real glass',
+        'system': expected, 'arm': arm, 'bench': bench, 'cycles': cycles, 'step_ms': 8.14,
+        'output': {k: outs[0][k] for k in ('name', 'transform', 'rect', 'max_render_time')},
+        'started_utc': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime()), 'events': []}
+
+real = os.open('/dev/input/event1', os.O_RDONLY)
+axes = [0, 1, 0x2f, 0x30, 0x35, 0x36, 0x39]; info = {}
+for a in axes:
+    b = bytearray(24); fcntl.ioctl(real, 0x80184540 + a, b); info[a] = struct.unpack('6i', b)
+os.close(real)
+fd = os.open('/dev/uinput', os.O_WRONLY | os.O_NONBLOCK)
+for bit in (0, 1, 3): fcntl.ioctl(fd, 0x40045564, bit)
+fcntl.ioctl(fd, 0x40045565, 0x14a)
+for a in axes: fcntl.ioctl(fd, 0x40045567, a)
+fcntl.ioctl(fd, 0x4004556e, 1)
+mx, mn = [0] * 64, [0] * 64
+for a, v in info.items(): mn[a], mx[a] = v[1], v[2]
+dev = (struct.pack('80sHHHHi', b'K230 injected touchscreen', 0x18, 0, 0, 0, 0)
+       + struct.pack('64i', *mx) + struct.pack('64i', *mn) + struct.pack('64i', *[0] * 64) * 2)
+os.write(fd, dev); fcntl.ioctl(fd, 0x5501); time.sleep(1.0)
+ev = struct.Struct('@llHHi')
+def frame(events):
+    b = b''.join(ev.pack(0, 0, *e) for e in [*events, (0, 0, 0)]); assert os.write(fd, b) == len(b)
+def raw(a, f): return round(info[a][1] + f * (info[a][2] - info[a][1]))
+def pos(x, y):
+    nx = y / 567; ny = 1 - x / 1231
+    return [(3, 0x35, raw(0x35, nx)), (3, 0x36, raw(0x36, ny)), (3, 0, raw(0, nx)), (3, 1, raw(1, ny))]
+tid = [400]
+def stroke(kind, x0, y0, x1, y1, ms):
+    t = time.time(); tid[0] += 1
+    frame([(3, 0x2f, 0), (3, 0x39, tid[0]), (3, 0x30, 20), *pos(x0, y0), (1, 0x14a, 1)])
+    steps = max(1, round(ms / 8.14)) if ms else 0; t0 = time.monotonic()
+    for i in range(1, steps + 1):
+        time.sleep(max(0, t0 + i * 0.00814 - time.monotonic()))
+        frame(pos(x0 + (x1 - x0) * i / steps, y0 + (y1 - y0) * i / steps))
+    if not ms: time.sleep(0.08)
+    up_t = time.time()
+    frame([(3, 0x2f, 0), (3, 0x39, -1), (1, 0x14a, 0)])
+    meta['events'].append({'kind': kind, 'start': t, 'release': up_t})
+
+target = 'k230-video-software' if arm == 'video' else 'k230.busy.trial'
+armed = False
+try:
+    if arm == 'video':
+        sway('exec /run/current-system/sw/bin/k230-video-session run')
+    else:
+        sway("exec foot --app-id=k230.busy.trial --title=Busy-trial --override=font=monospace:size=7 /run/current-system/sw/bin/btop")
+    deadline = time.monotonic() + 40
+    while not ({target, 'k230-video-mvx'} & apps() if arm == 'video' else target in apps()):
+        assert time.monotonic() < deadline, 'arm app did not map'
+        time.sleep(0.2)
+    target = (({target, 'k230-video-mvx'} & apps()).pop()) if arm == 'video' else target
+    meta['arm_app_id'] = target
+    time.sleep(6.0 if arm == 'video' else 3.0)
+    sway(f'[app_id="{target}"] focus'); time.sleep(1.0)
+    if probe: grim('arm-focused')
+    if bench:
+        sway('card_shell benchmark injected'); armed = True; time.sleep(1.0)
+    meta['workload_start'] = time.time(); meta['workload_start_mono'] = time.monotonic()
+    for c in range(cycles):
+        stroke('entry', 616, 562, 616, 300, 300); time.sleep(1.5)
+        if probe and c == 0: grim('deck')
+        stroke('tap', 616, 284, 616, 284, 0); time.sleep(2.0)
+        if probe and c == 0: grim('expanded')
+    meta['workload_end'] = time.time()
+    meta['apps_at_end'] = sorted(apps())
+finally:
+    if armed: sway('card_shell benchmark-stop')
+    os.close(fd)
+    if arm == 'video':
+        subprocess.run(ENV + ['k230-video-session', 'stop'], timeout=40)
+    else:
+        subprocess.run(ENV + ['swaymsg', '[app_id="k230.busy.trial"] kill'], timeout=25)
+    time.sleep(2.0)
+    meta['restored_apps'] = sorted(apps())
+    subprocess.run(ENV + ['swaymsg', '[app_id="k230-terminal"] focus'], timeout=25)
+    meta['finished_utc'] = time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())
+    (out / 'meta.json').write_text(json.dumps(meta, indent=1))
+    since = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(meta.get('workload_start', time.time()) - 3))
+    j = subprocess.run(['journalctl', '-u', 'shell', '--since', since, '--no-pager', '-o', 'short-unix'],
+                       capture_output=True, text=True, timeout=60).stdout
+    (out / 'shell-journal.txt').write_text(j)
+    print('DONE', len(meta['events']), meta.get('apps_at_end'), meta['restored_apps'])

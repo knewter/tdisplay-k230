@@ -1,0 +1,29 @@
+"""frames.py RUN_DIR [KIND] -- per-frame sway timing inside each gesture window (start .. release+400 ms)."""
+import json, re, sys, statistics as st
+d = sys.argv[1]; kind = sys.argv[2] if len(sys.argv) > 2 else 'entry'
+m = json.load(open(f'{d}/meta.json')); off = m['workload_start_mono'] - m['workload_start']
+rep, dmg, pres = {}, {}, {}
+for line in open(f'{d}/shell-journal.txt'):
+    kv = dict(re.findall(r'(\w+)=(\S+)', line))
+    if 'repaint-timing' in line: rep[int(kv['frame_id'])] = kv
+    elif 'frame-damage' in line: dmg[int(kv['frame_id'])] = int(kv['damage_px'])
+    elif 'event=present' in line: pres[int(kv['frame_id'])] = int(kv['t_ns'])
+walls, ivs, sched, delays = [], [], [], []
+for e in m['events']:
+    if e['kind'] != kind: continue
+    a = (e['start'] + off) * 1e9; b = (e['release'] + off + 0.4) * 1e9
+    fs = sorted(f for f, t in pres.items() if a <= t <= b and dmg.get(f, 0) > 0)
+    rows = []
+    for i, f in enumerate(fs):
+        r = rep.get(f); w = (int(r['commit_start_ns']) - int(r['start_ns'])) / 1e6 if r else None
+        iv = (pres[f] - pres[fs[i-1]]) / 1e6 if i else None
+        lag = (int(r['start_ns']) - int(r['scheduled_ns'])) / 1e6 if r else None
+        rows.append((f, dmg.get(f), w, iv, r and r['delay_ms'], lag))
+        if w: walls.append(w)
+        if iv: ivs.append(iv)
+        if lag is not None: sched.append(lag)
+    if '-v' in sys.argv:
+        print('gesture', e['start'])
+        for row in rows: print('  ', row)
+q = lambda v: (round(st.median(v), 1), round(sorted(v)[int(.9 * len(v))], 1), len(v))
+print(kind, 'sway wall med/p90/n', q(walls), 'interval', q(ivs), 'start lag', q(sched))
