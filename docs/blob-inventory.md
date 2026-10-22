@@ -651,6 +651,9 @@ Paths are relative to the repository root. `(sdk)` is
 so that building stage 1 from source does not silently drop them from view.
 
 ```
+DATA 7a2f2289f6cb1dcf31e4d017265769563b9eb27d065cc0e9f351453f21a7315e docs/evidence/interaction-jank/drawer-scroll/run4/after-close.png
+DATA 63af3f4281611d470feaf69ce22843d7f7b50bf88d7cdf22a3ee06497dcb821e docs/evidence/interaction-jank/drawer-scroll/run4/drawer-open.png
+DATA 4cc7d9bc7a234671639008ec5c969923657d4de75b318b2f63beb4203aab1fd1 docs/evidence/interaction-jank/drawer-scroll/run4/mid-scroll.png
 DATA 10554387857e0f2befb3b3f7b5a95b50281d63d470345b6c01a328eb08603ae5 docs/evidence/omarchy-themes/background-video-board-2026-10-21/render-profile/traced/events.jsonl.gz
 DATA c17ccf67aa547ac359aee159ae2dc28452d8e68ff184cb2b6e92197690d2d1d6 docs/evidence/landscape-drm-holder/board/trial-a/traced/events.jsonl.gz
 DATA e60a160e2c036c989b8e3082cdf47e4d32d02060dd2a25982b63ed627bf5e858 docs/evidence/landscape-drm-holder/board/trial-a/traced/functions.jsonl.gz
@@ -3932,3 +3935,13 @@ Compressed allowlisted numeric scheduler/syscall events; no raw trace or process
 | Path | Bytes | Class | SHA256 |
 | --- | ---: | --- | --- |
 | `docs/evidence/omarchy-themes/background-video-board-2026-10-21/render-profile/traced/events.jsonl.gz` | 558197 | DATA | `10554387857e0f2befb3b3f7b5a95b50281d63d470345b6c01a328eb08603ae5` |
+
+## App-drawer scroll captures, 2026-10-22
+
+Native `grim` captures of the drawer before, during and after an injected scroll.
+
+| Path | Bytes | Class | SHA256 |
+| --- | ---: | --- | --- |
+| `docs/evidence/interaction-jank/drawer-scroll/run4/after-close.png` | 6233 | DATA | `7a2f2289f6cb1dcf31e4d017265769563b9eb27d065cc0e9f351453f21a7315e` |
+| `docs/evidence/interaction-jank/drawer-scroll/run4/drawer-open.png` | 68768 | DATA | `63af3f4281611d470feaf69ce22843d7f7b50bf88d7cdf22a3ee06497dcb821e` |
+| `docs/evidence/interaction-jank/drawer-scroll/run4/mid-scroll.png` | 61738 | DATA | `4cc7d9bc7a234671639008ec5c969923657d4de75b318b2f63beb4203aab1fd1` |
