@@ -55,6 +55,10 @@
   };
   users.users.root.openssh.authorizedKeys.keyFiles = [ ./keys/k230-operator.pub ];
 
+  # The 15 GB SD root filled to 100% (2026-10-22) with the journal at 545 MB
+  # and no cap. Bound it so logging cannot starve deploys.
+  services.journald.settings.Journal.SystemMaxUse = "100M";
+
   # No graphical stack. The panel is a later change
   # (the-screen-comes-up-under-linux) and nothing here should pull one in.
   documentation.enable = false;
