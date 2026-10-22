@@ -2,9 +2,7 @@
 
 ### Requirement: A cheap per-frame timing signal exists for the app drawer
 
-<!-- UNVERIFIED: the signal is implemented, but sustained physical-board
-measurement from parent task 5.2 has not been obtained. Transferred from
-the-app-drawer-is-redesigned on operator-authorized closeout, 2026-10-01. -->
+*Grounding (2026-10-22): `docs/evidence/interaction-jank/drawer-scroll/README.md`. In a sustained injected scroll at the real-finger rate on installed `8xkkpma4…` (landscape), `K230_DRAWER_FRAME` reported median 39 ms and p95 53 ms. That misses the ~20 ms target and exceeds the 17.3–34.6 ms estimate. Presentation is separated using the client's own `frame-done` rows (about 8.3 frames per second) and an opt-in recorder trace. No real glass was used.*
 
 Whenever the app drawer route renders a frame, the userspace shell SHALL be
 able to report that frame's render duration in milliseconds through its
@@ -20,14 +18,13 @@ SHALL remain unmeasured until a recorded installed-board workload grounds them.
 
 ### Requirement: Reported slow shell interactions are evaluated with measured evidence
 
-<!-- UNVERIFIED: deferred board measurements; accepted functional reports
-are not quantitative performance proof. -->
+*Grounding (2026-10-22): installed-board measurements with injected native touch at the real-finger rate, landscape only, no real glass or camera. Sources: `docs/evidence/interaction-jank/notification-shade/README.md`, `docs/evidence/interaction-jank/drawer-scroll/README.md`, `docs/evidence/interaction-jank/keyboard/README.md` (keyboard motion misses the card frame budget) and `docs/evidence/interaction-jank/ordinary-cards/README.md` (taps acknowledge within ~100 ms of release; the video-arm deck drag and contact-to-settled entry do not meet their targets).*
 
 When investigating a reported slow interaction, the userspace shell's analysis
 SHALL name the workload and installed identities and compare measured results
 with the applicable existing shell responsiveness budgets. Keyboard visibility,
 held/reversed drag and release settlement, and ordinary-card sub-400ms entry
-and sub-100ms touch acknowledgement SHALL remain pending measurement;
+and sub-100ms touch acknowledgement SHALL be judged only from such recorded measurements;
 static captures and qualitative acceptance SHALL NOT substitute for those
 results. A failed budget SHALL remain a failed budget. Drawer damage-limited
 blitting SHALL be proposed only if measurement justifies that next change.

@@ -1,0 +1,25 @@
+{
+ "evidence_class": "board, injected native touch (persistent uinput); not real glass",
+ "system": "/nix/store/8xkkpma4fvgw4fi6pl8qaz7d9d75kcdi-nixos-system-nixos-26.11.20260919.20b1ddd",
+ "arm": "busy",
+ "bench": false,
+ "cycles": 1,
+ "step_ms": 8.1400000000000006,
+ "output": {
+  "name": "DSI-1",
+  "transform": "270",
+  "rect": {
+   "x": 0,
+   "y": 0,
+   "width": 1232,
+   "height": 568
+  },
+  "max_render_time": 12
+ },
+ "started_utc": "2026-10-22T03:51:49Z",
+ "events": [],
+ "restored_apps": [
+  "k230-terminal"
+ ],
+ "finished_utc": "2026-10-22T03:52:33Z"
+}

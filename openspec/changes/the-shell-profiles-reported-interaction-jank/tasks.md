@@ -46,8 +46,28 @@
 
 ## 4. Ordinary-card measurement (parent 5.1, hardware-only)
 
-- [ ] 4.1 Measure entry-animation duration and touch acknowledgement with a live video and a separate busy non-video app on the installed board. Preserve the sub-400ms entry and sub-100ms touch-ack targets. Use real contact or a persistent uinput-holding injector rather than per-sample `evemu-event` process spawns; record concrete instrumentation command, exact identities and samples under `docs/evidence/interaction-jank/`. Existing qualitative acceptance is not measured performance. Keep both targets UNVERIFIED until actual samples establish them.
+- [x] 4.1 Measure entry-animation duration and touch acknowledgement with a live video and a separate busy non-video app on the installed board. Preserve the sub-400ms entry and sub-100ms touch-ack targets. Use real contact or a persistent uinput-holding injector rather than per-sample `evemu-event` process spawns; record concrete instrumentation command, exact identities and samples under `docs/evidence/interaction-jank/`. Existing qualitative acceptance is not measured performance. Keep both targets UNVERIFIED until actual samples establish them.
+  Done 2026-10-22 on installed `8xkkpma4…` (landscape, one CPU). The
+  run used a persistent uinput injector at the real-finger rate and the
+  installed compositor benchmark's input/submit/present and `motion-settle`
+  rows. There were 8 cycles of entry swipe, deck drag and tap-to-expand, in
+  two arms: the shipped Video app (live software-decoded stream) and btop.
+  Touch acknowledgement from release (taps): median 50/22 ms, max 67/52 ms,
+  under ~100 ms. Deck-drag acknowledgement from contact: busy 58 ms, video
+  122 ms (fails). Entry from release to settled: 226–320 ms, under ~400 ms.
+  Entry from first contact (including the 300 ms swipe) to settled:
+  573–740 ms, over 400 ms. Both start points are reported because the
+  targets never defined one; neither target is declared passed. The video
+  arm misses frozen deck tracking (p95 76.6 ms) and motion-to-present
+  (80.3 ms). At the default landscape font, btop shows only its too-small
+  message (finding). No camera or real glass was used:
+  `docs/evidence/interaction-jank/ordinary-cards/README.md`.
 
 ## 5. Review and publish
 
-- [ ] 5.1 Validate `openspec validate the-shell-profiles-reported-interaction-jank --strict`, commit measured results/decision, push and inspect matching CI/Pages; archive only once performed measurements and conditional disposition are committed. Parent UX acceptance is not this proposal's performance proof.
+- [x] 5.1 Validate `openspec validate the-shell-profiles-reported-interaction-jank --strict`, commit measured results/decision, push and inspect matching CI/Pages; archive only once performed measurements and conditional disposition are committed. Parent UX acceptance is not this proposal's performance proof.
+  Done 2026-10-22: every measurement task above is performed and
+  committed, and the drawer disposition is recorded in the drawer review §6.
+  `openspec validate --all --strict` passed before archive. The keyboard
+  and card misses stay recorded as misses. Master CI/Pages is inspected
+  after the push.

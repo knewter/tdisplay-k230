@@ -1,0 +1,23 @@
+1792641150.236005 nixos sway[1049]: 02:47:09.766 [DEBUG] [sway/ipc-server.c:196] New client: fd 47
+1792641150.241088 nixos sway[1049]: 02:47:09.771 [INFO] [sway/ipc-server.c:570] IPC Client 47 disconnected
+1792641150.533722 nixos sway[1049]: 02:47:10.064 [DEBUG] [sway/ipc-server.c:196] New client: fd 47
+1792641150.542208 nixos sway[1049]: 02:47:10.071 [INFO] [sway/ipc-server.c:570] IPC Client 47 disconnected
+1792641150.828885 nixos sway[1049]: 02:47:10.359 [DEBUG] [sway/ipc-server.c:196] New client: fd 47
+1792641150.833922 nixos sway[1049]: 02:47:10.363 [INFO] [sway/ipc-server.c:570] IPC Client 47 disconnected
+1792641151.118697 nixos sway[1049]: 02:47:10.649 [DEBUG] [sway/ipc-server.c:196] New client: fd 47
+1792641151.122944 nixos sway[1049]: 02:47:10.653 [INFO] [sway/ipc-server.c:570] IPC Client 47 disconnected
+1792641151.144537 nixos sway[1049]: 02:47:10.667 [DEBUG] [wlr] [backend/libinput/events.c:133] Removing K230 injected touchscreen [0:0]
+1792641151.144537 nixos sway[1049]: 02:47:10.668 [DEBUG] [sway/input/input-manager.c:208] removing device: '0:0:K230_injected_touchscreen'
+1792641151.144537 nixos sway[1049]: 02:47:10.668 [DEBUG] [sway/input/seat.c:968] removing device 0:0:K230_injected_touchscreen from seat seat0
+1792641151.275802 nixos sway[1049]: 02:47:10.805 [DEBUG] [sway/ipc-server.c:196] New client: fd 43
+1792641151.277521 nixos sway[1049]: 02:47:10.807 [DEBUG] [sway/criteria.c:841] Found pair: app_id=k230.busy.trial
+1792641151.277521 nixos sway[1049]: 02:47:10.807 [INFO] [sway/commands.c:262] Handling command 'kill'
+1792641151.283207 nixos sway[1049]: 02:47:10.810 [INFO] [sway/ipc-server.c:570] IPC Client 43 disconnected
+1792641153.385835 nixos sway[1049]: 02:47:12.916 [DEBUG] [sway/ipc-server.c:196] New client: fd 43
+1792641153.392147 nixos sway[1049]: 02:47:12.921 [INFO] [sway/ipc-server.c:570] IPC Client 43 disconnected
+1792641153.478831 nixos sway[1049]: 02:47:13.009 [DEBUG] [sway/ipc-server.c:196] New client: fd 43
+1792641153.479762 nixos sway[1049]: 02:47:13.009 [DEBUG] [sway/criteria.c:841] Found pair: app_id=k230-terminal
+1792641153.479762 nixos sway[1049]: 02:47:13.010 [INFO] [sway/commands.c:262] Handling command 'focus'
+1792641153.482052 nixos sway[1049]: 02:47:13.010 [DEBUG] [sway/desktop/transaction.c:821] Transaction 0x31550ea4d0 committing with 1 instructions
+1792641153.482052 nixos sway[1049]: 02:47:13.010 [DEBUG] [sway/desktop/transaction.c:717] Applying transaction 0x31550ea4d0
+1792641153.482052 nixos sway[1049]: 02:47:13.012 [INFO] [sway/ipc-server.c:570] IPC Client 43 disconnected

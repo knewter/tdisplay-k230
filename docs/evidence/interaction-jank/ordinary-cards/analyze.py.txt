@@ -1,0 +1,82 @@
+#!/usr/bin/env python3
+"""Replay: python3 analyze.py RUN_DIR
+
+Uses the compositor's own benchmark rows in shell-journal.txt
+(K230_CARD_BENCH input/submit/present and K230_CARD_SHELL motion-settle,
+all CLOCK_MONOTONIC). Gestures are matched to the injected windows in
+meta.json (time.monotonic() was recorded beside time.time()).
+
+  touch_ack_ms     injected first contact -> first presented frame that
+                   carries any input of that gesture (target ~100 ms)
+  entry_ms         entry first contact -> motion-settle frame (target ~400 ms)
+  release_to_settle_ms   release input -> motion-settle frame
+  release_to_first_present_ms  release input -> first presented frame
+                   carrying it (a tap acts on release)
+  motion_to_present_ms   every motion input -> its first presented frame
+                   (frozen card budget p95 66.667 ms, max 133.334 ms)
+  tracking_interval_ms   presented intervals between frames carrying motion
+                   of one gesture (frozen card budget p95 33.334 ms)
+"""
+import json, math, re, sys
+from pathlib import Path
+
+run = Path(sys.argv[1]); meta = json.loads((run / 'meta.json').read_text())
+off = (meta['workload_start_mono'] - meta['workload_start']) * 1e9
+text = (run / 'shell-journal.txt').read_text()
+def rows(event):
+    for m in re.finditer(r'K230_CARD_BENCH v=1 (run=\d+ event=' + event + r' [^\n]*)', text):
+        yield dict(kv.split('=', 1) for kv in m[1].split())
+inputs = {int(r['input_id']): r for r in rows('input')}
+submits = list(rows('submit'))
+present = {int(r['frame_id']): (int(r['t_ns']), r['presented'] == '1') for r in rows('present')}
+settles = {int(m[1]): int(m[2]) for m in re.finditer(r'motion-settle run=\d+ input_id=(\d+) frame_id=\d+ t_ns=(\d+)', text)}
+
+first_frame = {}
+for s in submits:
+    i = int(s['input_id']); f = int(s['frame_id'])
+    if f in present and present[f][1]:
+        t = present[f][0]
+        if i not in first_frame or t < first_frame[i][0]:
+            first_frame[i] = (t, f)
+
+def pct(v, p):
+    s = sorted(v); return round(s[max(0, math.ceil(len(s) * p) - 1)], 3) if s else None
+def summ(v):
+    return {'n': len(v), 'median': pct(v, .5), 'p95': pct(v, .95), 'max': round(max(v), 3) if v else None}
+
+ev = meta['events']
+bounds = [(e['kind'], e['start'] * 1e9 + off, e['release'] * 1e9 + off,
+           (ev[i + 1]['start'] * 1e9 + off) if i + 1 < len(ev) else meta['workload_end'] * 1e9 + off)
+          for i, e in enumerate(ev)]
+per_kind = {}
+for kind, a, rel, b in bounds:
+    g = [i for i, r in inputs.items() if a <= int(r['t_ns']) < b]
+    d = per_kind.setdefault(kind, {'touch_ack_ms': [], 'gesture_ms': [], 'release_to_settle_ms': [],
+                                   'motion_to_present_ms': [], 'tracking_interval_ms': [], 'release_to_first_present_ms': [], 'unsettled': 0})
+    frames = sorted({first_frame[i] for i in g if i in first_frame})
+    if frames:
+        d['touch_ack_ms'].append((frames[0][0] - a) / 1e6)
+    rel_ids = [i for i in g if inputs[i]['kind'] == 'release']
+    settled = [settles[i] for i in rel_ids if i in settles]
+    if rel_ids and rel_ids[0] in first_frame:
+        d['release_to_first_present_ms'].append((first_frame[rel_ids[0]][0] - int(inputs[rel_ids[0]]['t_ns'])) / 1e6)
+    if settled:
+        d['gesture_ms'].append((settled[0] - a) / 1e6)
+        d['release_to_settle_ms'].append((settled[0] - int(inputs[rel_ids[0]]['t_ns'])) / 1e6)
+    else:
+        d['unsettled'] += 1
+    for i in g:
+        if inputs[i]['kind'] == 'motion' and i in first_frame:
+            d['motion_to_present_ms'].append((first_frame[i][0] - int(inputs[i]['t_ns'])) / 1e6)
+    mframes = sorted({first_frame[i][0] for i in g if inputs[i]['kind'] == 'motion' and i in first_frame})
+    d['tracking_interval_ms'] += [(y - x) / 1e6 for x, y in zip(mframes, mframes[1:])]
+
+report = {'arm': meta['arm'], 'arm_app_id': meta.get('arm_app_id'), 'inputs': len(inputs),
+          'present_rows': len(present), 'not_presented': sum(1 for t, p in present.values() if not p),
+          'restored_apps': meta['restored_apps'], 'kinds': {}}
+for kind, d in per_kind.items():
+    report['kinds'][kind] = {k: (summ(v) if isinstance(v, list) else v) for k, v in d.items()}
+    report['kinds'][kind]['touch_ack_over_100ms'] = sum(x > 100 for x in d['touch_ack_ms'])
+    report['kinds'][kind]['gesture_over_400ms'] = sum(x > 400 for x in d['gesture_ms'])
+    report['kinds'][kind]['tracking_over_33_334ms'] = sum(x > 33.334 for x in d['tracking_interval_ms'])
+print(json.dumps(report, indent=1))

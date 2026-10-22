@@ -651,6 +651,10 @@ Paths are relative to the repository root. `(sdk)` is
 so that building stage 1 from source does not silently drop them from view.
 
 ```
+DATA 5672cfb5929a3af54d211a76bac5ae34f791cf1f6721b996368ec7f1ae60cc4b docs/evidence/interaction-jank/ordinary-cards/probe-video/arm-focused.png
+DATA b4b2feb54cbe12d3b0cb53336d80bfc8cfd91a4b815b9f33b7ab929db068b45e docs/evidence/interaction-jank/ordinary-cards/probe-video/deck-dragged.png
+DATA d96ea9a35c885e2007c8a5cac2c52fc80895e2a4f89d1a1361cb0c7eac699f29 docs/evidence/interaction-jank/ordinary-cards/probe-video/deck.png
+DATA 0b0be5a757efced534c41d28eeafe9013f364edf9f1078cfcb2a9899f896a182 docs/evidence/interaction-jank/ordinary-cards/probe-video/expanded.png
 DATA 55381f254639278c06843516fe461cf2666da9674cdf9beec4182426e3988743 docs/evidence/interaction-jank/keyboard/probe1/before.png
 DATA 4f6eef5de15b27915e181b8b10faaf1c0a71bc5bcafebe50094c973df652917b docs/evidence/interaction-jank/keyboard/probe1/hidden.png
 DATA fc2b26d3cf54847501310ef5675d445d2f387a5d9a44d0ea1a875c136ea5889f docs/evidence/interaction-jank/keyboard/probe1/shown.png
@@ -3958,3 +3962,14 @@ Native `grim` captures of an owned trial window before, with and after the injec
 | `docs/evidence/interaction-jank/keyboard/probe1/before.png` | 3398 | DATA | `55381f254639278c06843516fe461cf2666da9674cdf9beec4182426e3988743` |
 | `docs/evidence/interaction-jank/keyboard/probe1/hidden.png` | 4148 | DATA | `4f6eef5de15b27915e181b8b10faaf1c0a71bc5bcafebe50094c973df652917b` |
 | `docs/evidence/interaction-jank/keyboard/probe1/shown.png` | 14778 | DATA | `fc2b26d3cf54847501310ef5675d445d2f387a5d9a44d0ea1a875c136ea5889f` |
+
+## Ordinary-card video probe captures, 2026-10-22
+
+Native `grim` captures of the live Video card before entry, in the deck, after a drag and expanded.
+
+| Path | Bytes | Class | SHA256 |
+| --- | ---: | --- | --- |
+| `docs/evidence/interaction-jank/ordinary-cards/probe-video/arm-focused.png` | 140435 | DATA | `5672cfb5929a3af54d211a76bac5ae34f791cf1f6721b996368ec7f1ae60cc4b` |
+| `docs/evidence/interaction-jank/ordinary-cards/probe-video/deck-dragged.png` | 191991 | DATA | `b4b2feb54cbe12d3b0cb53336d80bfc8cfd91a4b815b9f33b7ab929db068b45e` |
+| `docs/evidence/interaction-jank/ordinary-cards/probe-video/deck.png` | 148089 | DATA | `d96ea9a35c885e2007c8a5cac2c52fc80895e2a4f89d1a1361cb0c7eac699f29` |
+| `docs/evidence/interaction-jank/ordinary-cards/probe-video/expanded.png` | 401871 | DATA | `0b0be5a757efced534c41d28eeafe9013f364edf9f1078cfcb2a9899f896a182` |
