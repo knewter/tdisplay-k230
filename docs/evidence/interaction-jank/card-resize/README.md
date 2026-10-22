@@ -27,6 +27,7 @@ release):
 | [base-busy](run-base-busy) | `sgjam1h0` (boot default) | busy |
 | [o-busy](run-o-busy) | `pb5l6lmb`, test-activated | busy |
 | [o-video](run-o-video) | `pb5l6lmb`, test-activated | video |
+| [boot-busy](run-boot-busy) | `pb5l6lmb`, boot default, ordinary boot | busy |
 
 Video is compared with
 [recheck-video](../ordinary-cards/recheck-video) on `sgjam1h0`.
@@ -98,6 +99,33 @@ Cells give the median / p90 in ms, or a count.
 - Busy-arm entry still has 25 intervals over budget, and its touch
   acknowledgement includes about 83 ms of finger travel to the 72 px threshold
   (see ordinary-cards). Neither target is declared passed.
+
+## Promotion to the boot default
+
+On 2026-10-22, `pb5l6lmb` (commit `2905f5c8`, which is what master evaluates
+to) replaced `sgjam1h0` as the persistent system. The kernel and initrd are
+identical between the two. [`promote.py`](promotion/promote.py.txt) is the
+shade-pull promotion script with the system paths and the state directory
+changed. It ran as root under the board lock and set the profile to
+`system-88-link`.
+
+An SSH-initiated reboot booted `pb5l6lmb` as both `/run/booted-system` and
+`/run/current-system`, with `shell` and `shell-ui` active, no failed units,
+and sway at `SCHED_RR` 1. See the [receipt](promotion/receipt.json), boot ID
+`69d72d47…`.
+
+[run-boot-busy](run-boot-busy) repeated the busy arm on that boot, and it
+matches o-busy:
+
+- entry: sway repaint 9.2 / 12.5 ms, presented interval median 19.2 ms,
+  acknowledgement median 73 ms, 22 tracking intervals over budget;
+- tap-expand: presented interval median 19.2 ms;
+- drag: presented interval median 19.2 ms.
+
+Rollback: write the copies under
+`/var/lib/k230/card-resize-promote-20261022/promotion/rollback/` back to
+`/boot`, then run `nix-env --profile /nix/var/nix/profiles/system --set` with
+`sgjam1h0`.
 
 ## Visual check
 
