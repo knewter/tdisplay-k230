@@ -1,0 +1,20 @@
+erl: /nix/store/pzpfw992ymblaicnam6p4zw7xnmqnz45-erlang-riscv64-unknown-linux-gnu-28.5.0.6/bin/erl
+elixir: /nix/store/8pffv0drpxcnannwl7j3780q2wgdwmza-elixir-riscv64-unknown-linux-gnu-1.18.5/bin/elixir
+emu_flavor=emu otp=28 erts=16.4.0.6 wordsize=8 schedulers=1 arch=riscv64-unknown-linux-gnu
+elixir=1.18.5 otp=28
+erl_start_halt_s[1]=0.891
+erl_start_halt_s[2]=0.904
+erl_start_halt_s[3]=0.874
+erl_start_halt_s[4]=0.896
+elixir_start_halt_s[1]=1.393
+elixir_start_halt_s[2]=1.413
+elixir_start_halt_s[3]=1.390
+elixir_start_halt_s[4]=1.387
+iex_to_eval_halt_s[1]=1.753
+iex_to_eval_halt_s[2]=1.926
+iex_to_eval_halt_s[3]=1.799
+beam_memory_total_kb=33517 processes_kb=14487 code_kb=8478
+VmHWM:	   47116 kB VmRSS:	   47116 kB
+fib25=75025 ms=12
+reduce_1e6_ms=168
+spawn_1e4_ms=317

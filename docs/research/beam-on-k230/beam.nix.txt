@@ -1,0 +1,38 @@
+# Erlang/OTP and Elixir cross-built for the board from the flake's nixpkgs.
+# OTP's cross build needs a same-release OTP for the build machine on PATH.
+{ flake }:
+let
+  pkgs = flake.inputs.nixpkgs.legacyPackages.x86_64-linux;
+  cross = pkgs.pkgsCross.riscv64;
+  hostErlang = pkgs.beam_minimal.packages.erlang.erlang;
+  erlang = cross.beam_minimal.packages.erlang.erlang.overrideAttrs (old: {
+    nativeBuildInputs = (old.nativeBuildInputs or [ ]) ++ [ hostErlang ];
+    # Build-machine helper scripts run during the cross build.
+    preBuild = (old.preBuild or "") + ''
+      patchShebangs --build erts/emulator/utils make erts/autoconf
+    '';
+  });
+  # Runtime for the board: no sources, docs or GUI/telecom apps, and none of
+  # the host OTP paths that yecc writes into generated parser sources. The
+  # name keeps the store path length, so self-references are rewritten in place.
+  erlangSlim = pkgs.runCommand erlang.name {
+    nativeBuildInputs = [ pkgs.removeReferencesTo ];
+    passthru = erlang.passthru // { inherit (erlang) version; };
+  } ''
+    cp -a ${erlang} $out && chmod -R u+w $out
+    cd $out/lib/erlang/lib
+    rm -rf */src */doc */examples wx-* megaco-* snmp-* diameter-* et-* debugger-* \
+      observer-* reltool-* common_test-* odbc-* jinterface-* erl_interface-*
+    rm -rf $out/share $out/lib/erlang/misc $out/lib/erlang/usr/lib/*.a
+    find $out -type l | while read -r l; do
+      t=$(readlink "$l"); case $t in ${erlang}*) ln -sfn "$out''${t#${erlang}}" "$l";; esac
+    done
+    grep -rlZ ${erlang} $out | xargs -0 -r sed -i "s|${erlang}|$out|g"
+    find $out -type f -exec remove-references-to -t ${hostErlang} {} +
+  '';
+  beam = cross.beam_minimal.packages.erlang.overrideScope (final: prev: { erlang = erlangSlim; });
+  # Elixir is BEAM bytecode: compile it with the host OTP; it runs on the board's.
+  elixir = beam.elixir.overrideAttrs (old: {
+    nativeBuildInputs = (old.nativeBuildInputs or [ ]) ++ [ hostErlang ];
+  });
+in { inherit erlang erlangSlim hostErlang elixir; }

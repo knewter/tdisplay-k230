@@ -1,0 +1,28 @@
+#!/bin/sh
+# measure.sh ELIXIR_OUT ERLANG_OUT -- BEAM facts and timings on the board (run as root under the board lock).
+set -u
+EX=$1; ERLANG=$2
+export PATH=$EX/bin:$ERLANG/bin:$PATH
+export HOME=/var/tmp/beam-home; mkdir -p $HOME
+now() { date +%s.%N; }
+el() { awk "BEGIN{printf \"%.3f\", $2 - $1}"; }
+echo "erl: $(command -v erl)"; echo "elixir: $(command -v elixir)"
+erl -noshell -eval 'io:format("emu_flavor=~p otp=~s erts=~s wordsize=~p schedulers=~p arch=~s~n",[erlang:system_info(emu_flavor),erlang:system_info(otp_release),erlang:system_info(version),erlang:system_info(wordsize),erlang:system_info(schedulers),erlang:system_info(system_architecture)]), halt().'
+elixir -e 'IO.puts("elixir=#{System.version()} otp=#{System.otp_release()}")'
+for i in 1 2 3 4; do a=$(now); erl -noshell -eval 'halt().'; b=$(now); echo "erl_start_halt_s[$i]=$(el $a $b)"; done
+for i in 1 2 3 4; do a=$(now); elixir -e ':ok'; b=$(now); echo "elixir_start_halt_s[$i]=$(el $a $b)"; done
+for i in 1 2 3; do a=$(now); printf 'IO.puts(:ready)\nSystem.halt()\n' | script -qfec iex /dev/null | grep -q '^ready' ; b=$(now); echo "iex_to_eval_halt_s[$i]=$(el $a $b)"; done
+elixir -e '
+mem = :erlang.memory()
+IO.puts("beam_memory_total_kb=#{div(mem[:total],1024)} processes_kb=#{div(mem[:processes],1024)} code_kb=#{div(mem[:code],1024)}")
+{:ok, s} = File.read("/proc/self/status")
+IO.puts(s |> String.split("\n") |> Enum.filter(&String.starts_with?(&1, ["VmRSS","VmHWM"])) |> Enum.join(" "))
+defmodule F do def fib(0), do: 0; def fib(1), do: 1; def fib(n), do: fib(n-1)+fib(n-2) end
+{t, v} = :timer.tc(fn -> F.fib(25) end)
+IO.puts("fib25=#{v} ms=#{div(t,1000)}")
+{t2, _} = :timer.tc(fn -> Enum.reduce(1..1_000_000, 0, &+/2) end)
+IO.puts("reduce_1e6_ms=#{div(t2,1000)}")
+{t3, _} = :timer.tc(fn -> for _ <- 1..10_000, do: spawn(fn -> :ok end) end)
+IO.puts("spawn_1e4_ms=#{div(t3,1000)}")
+'
+rm -rf $HOME
