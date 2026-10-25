@@ -6,4 +6,4 @@
 
 - [x] 2.1 Byte-exact check of stock RVV, patched RVV and scalar Pixman on 112 OVER a8r8g8b8 → r5g6b5 cases (`docs/evidence/interaction-jank/keyboard-blend/exact.c.txt`: identical sha256 `a39338ae…`).
 - [x] 2.2 Run the drawer and keyboard measurement on the boot default (`pb5l6lmb`) and the candidate (`h4rqzlgr`, test-activated) on one boot, and pixel-compare their grim captures (`docs/evidence/interaction-jank/keyboard-blend/README.md`: show settle 38.3 → 19.2 ms interval median, render 16.0 → 10.0 ms; drawer repaint 10.19 → 10.22 ms; six captures identical).
-- [ ] 2.3 Promote the build from master to the boot default, and verify an ordinary boot, the loaded Pixman and one drawer-and-keyboard run on it.
+- [x] 2.3 Promote the build from master to the boot default, and verify an ordinary boot, the loaded Pixman and one drawer-and-keyboard run on it (`h4rqzlgr`, boot `b10247c0…`, run-boot: keyboard renders as run-final, show-settle interval median 38.3 ms at a 12.0 ms render, not passed; drawer repaint 10.13 ms).

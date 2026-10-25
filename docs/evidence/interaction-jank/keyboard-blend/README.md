@@ -19,6 +19,7 @@ hold-and-reverse, hide) with the compositor benchmark armed. The analysers are
 | [run-base](run-base) | `pb5l6lmb` (boot default), test-activated | stock RVV | 00:53 |
 | [run-first](run-first) | `jpc0hl8p`, test-activated | first patch: test every chunk | 00:51 |
 | [run-final](run-final) | `h4rqzlgr`, test-activated | final patch: per-row bail-out | 00:59 |
+| [run-boot](run-boot) | `h4rqzlgr`, boot default, ordinary boot | final patch | 01:07 |
 
 All three ran on the same boot within nine minutes, in the order first, base,
 final.
@@ -152,6 +153,34 @@ again, and `/proc/<sway>/maps` showed the stock Pixman afterwards.
 [`slowfast.py`](slowfast.py.txt) splits its settle frames into those under
 and over 11 ms ([slow-fast.txt](prof-trial/slow-fast.txt)).
 
+## Promotion to the boot default
+
+On 2026-10-25, `h4rqzlgr` (commit `44997ea3`, which is what master evaluates
+to) replaced `pb5l6lmb` as the persistent system. The kernel and initrd are
+identical between the two. [`promote.py`](promotion/promote.py.txt) is the
+card-resize promotion script with the system paths, state directory and
+source revision changed. It ran as root under the board lock and set the
+profile to `system-89-link`.
+
+An SSH-initiated reboot booted `h4rqzlgr` as both `/run/booted-system` and
+`/run/current-system`, with `shell`, `shell-ui` and `shell-keyboard` active,
+no failed units, sway at `SCHED_RR` and `sn5is273…-pixman` mapped in sway.
+See the [receipt](promotion/receipt.json), boot ID `b10247c0…`.
+
+[run-boot](run-boot) repeated the measurement on that boot:
+
+- keyboard renders match run-final: hold-reverse contact 6.9 ms, hide contact
+  6.2 ms, show settle 12.0 ms (p95 12.8 ms);
+- show settle's presented interval median was 38.3 ms (66 of 111 intervals
+  over budget), against 19.2 ms in run-final. Its render median sits at the
+  12 ms allowance, so this phase is at the edge and is not declared passed;
+- drawer: 23.4 distinct fps, sway repaint median 10.13 ms.
+
+Rollback: write the copies under
+`/var/lib/k230/keyboard-blend-promote-20261025/promotion/rollback/` back to
+`/boot`, then run `nix-env --profile /nix/var/nix/profiles/system --set` with
+`pb5l6lmb`.
+
 ## Limits
 
 - Injected touch skips the Goodix interrupt and driver path.
@@ -165,5 +194,4 @@ and over 11 ms ([slow-fast.txt](prof-trial/slow-fast.txt)).
   repaint wall time, so the profiles give shares, and timing comes from the
   unprofiled runs.
 
-The board was left test-activated on `h4rqzlgr` with `pb5l6lmb` as the boot
-default. Owned files under `/var/tmp` were removed.
+Owned files under `/var/tmp` were removed.
