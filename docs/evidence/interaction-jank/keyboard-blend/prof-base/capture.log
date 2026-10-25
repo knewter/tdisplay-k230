@@ -1,0 +1,6 @@
+pid shell 1057 6990 sway
+start 2026-10-25T00:14:16Z
+workload_rc=0 perf_rc=130
+end 2026-10-25T00:15:19Z
+pid-after shell 1057
+script-warnings 8

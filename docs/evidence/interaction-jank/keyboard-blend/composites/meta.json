@@ -1,0 +1,86 @@
+{
+ "evidence_class": "board, injected native touch (persistent uinput); not real glass",
+ "system": "/nix/store/pb5l6lmb9ys2bzjfdpgb7g6pffgx0hd4-nixos-system-nixos-26.11.20260919.20b1ddd",
+ "bench": true,
+ "cycles": 3,
+ "step_ms": 8.1400000000000006,
+ "output": {
+  "name": "DSI-1",
+  "transform": "270",
+  "rect": {
+   "x": 0,
+   "y": 0,
+   "width": 1232,
+   "height": 568
+  },
+  "max_render_time": 12
+ },
+ "started_utc": "2026-10-25T00:43:36Z",
+ "events": [
+  {
+   "kind": "show",
+   "start": 1792889020.2336292,
+   "end": 1792889020.698576
+  },
+  {
+   "kind": "type",
+   "start": 1792889021.8025358,
+   "end": 1792889023.0119507
+  },
+  {
+   "kind": "hold-reverse",
+   "start": 1792889023.4120944,
+   "end": 1792889024.4232304
+  },
+  {
+   "kind": "hide",
+   "start": 1792889025.2233751,
+   "end": 1792889025.5799944
+  },
+  {
+   "kind": "show",
+   "start": 1792889026.8690107,
+   "end": 1792889027.3359749
+  },
+  {
+   "kind": "type",
+   "start": 1792889028.1361406,
+   "end": 1792889029.3443568
+  },
+  {
+   "kind": "hold-reverse",
+   "start": 1792889029.7445118,
+   "end": 1792889030.7584155
+  },
+  {
+   "kind": "hide",
+   "start": 1792889031.5585752,
+   "end": 1792889031.9134827
+  },
+  {
+   "kind": "show",
+   "start": 1792889032.913624,
+   "end": 1792889033.3847394
+  },
+  {
+   "kind": "type",
+   "start": 1792889034.1848896,
+   "end": 1792889035.3928497
+  },
+  {
+   "kind": "hold-reverse",
+   "start": 1792889035.7929893,
+   "end": 1792889036.8020229
+  },
+  {
+   "kind": "hide",
+   "start": 1792889037.6021709,
+   "end": 1792889037.9593837
+  }
+ ],
+ "workload_start": 1792889020.2335961,
+ "workload_start_mono": 188095.687760659,
+ "workload_end": 1792889038.9595497,
+ "trial_window_closed": true,
+ "finished_utc": "2026-10-25T00:44:00Z"
+}

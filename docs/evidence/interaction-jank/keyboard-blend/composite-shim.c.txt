@@ -1,0 +1,40 @@
+#define _GNU_SOURCE
+#include <dlfcn.h>
+#include <pixman.h>
+#include <stdio.h>
+#include <string.h>
+#include <time.h>
+static FILE *out; static int active = -1;
+static void (*real)(pixman_op_t, pixman_image_t *, pixman_image_t *, pixman_image_t *,
+	int16_t, int16_t, int16_t, int16_t, int16_t, int16_t, uint16_t, uint16_t);
+static void (*real32)(pixman_op_t, pixman_image_t *, pixman_image_t *, pixman_image_t *,
+	int32_t, int32_t, int32_t, int32_t, int32_t, int32_t, int32_t, int32_t);
+static int on(void) {
+	if (active < 0) {
+		char comm[32] = {0}; FILE *f = fopen("/proc/self/comm", "r");
+		if (f) { if (!fgets(comm, sizeof comm, f)) comm[0] = 0; fclose(f); }
+		active = strncmp(comm, "sway", 4) == 0;
+		if (active) { char p[64]; snprintf(p, sizeof p, "/var/tmp/pxshim.log"); out = fopen(p, "w"); if (!out) active = 0; }
+	}
+	return active;
+}
+static void logc(pixman_op_t op, pixman_image_t *s, pixman_image_t *m, pixman_image_t *d, int w, int h) {
+	struct timespec t; clock_gettime(CLOCK_MONOTONIC, &t);
+	int st = s ? (pixman_image_get_data(s) ? 1 : 0) : -1;
+	fprintf(out, "%ld.%09ld %d %x %x %x %d %d %d %d\n", (long)t.tv_sec, t.tv_nsec, op,
+		s && st ? pixman_image_get_format(s) : 0, m && pixman_image_get_data(m) ? pixman_image_get_format(m) : 0,
+		d ? pixman_image_get_format(d) : 0, w, h, s ? pixman_image_get_width(s) : 0, s ? pixman_image_get_height(s) : 0);
+}
+void pixman_image_composite32(pixman_op_t op, pixman_image_t *s, pixman_image_t *m, pixman_image_t *d,
+	int32_t sx, int32_t sy, int32_t mx, int32_t my, int32_t dx, int32_t dy, int32_t w, int32_t h) {
+	if (!real32) real32 = dlsym(RTLD_NEXT, "pixman_image_composite32");
+	if (on()) logc(op, s, m, d, w, h);
+	real32(op, s, m, d, sx, sy, mx, my, dx, dy, w, h);
+}
+void pixman_image_composite(pixman_op_t op, pixman_image_t *s, pixman_image_t *m, pixman_image_t *d,
+	int16_t sx, int16_t sy, int16_t mx, int16_t my, int16_t dx, int16_t dy, uint16_t w, uint16_t h) {
+	if (!real) real = dlsym(RTLD_NEXT, "pixman_image_composite");
+	if (on()) logc(op, s, m, d, w, h);
+	real(op, s, m, d, sx, sy, mx, my, dx, dy, w, h);
+}
+__attribute__((destructor)) static void fin(void) { if (out) fclose(out); }

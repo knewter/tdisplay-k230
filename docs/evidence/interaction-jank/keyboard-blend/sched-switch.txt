@@ -1,0 +1,7 @@
+hide/c: frames 139 wall 8.3ms  sway 8.35
+hide/s: frames 107 wall 5.9ms  sway 5.94
+hold-reverse/c: frames 312 wall 9.3ms  sway 9.33
+hold-reverse/s: frames 35 wall 10.6ms  out:R 0.03/fr, sway 10.60
+show/c: frames 99 wall 10.7ms  sway 10.71
+show/s: frames 107 wall 14.2ms  sway 14.17
+type/c: frames 98 wall 3.9ms  out:R 0.01/fr, sway 3.95

@@ -1,0 +1,35 @@
+{
+ "contact_seconds": 15.72,
+ "distinct_presented_fps": 23.28,
+ "distinct_interval_ms": {
+  "median": 21,
+  "p95": 39
+ },
+ "commits_per_presented": 1.0,
+ "callback_to_commit_ms": {
+  "median": 9,
+  "p10": 7,
+  "p90": 22,
+  "n": 365
+ },
+ "sway_render_ms": {
+  "median": 10.79,
+  "p10": 10.69,
+  "p90": 10.9,
+  "n": 372
+ },
+ "damage_px": [
+  [
+   514976,
+   366
+  ],
+  [
+   699776,
+   3
+  ],
+  [
+   0,
+   3
+  ]
+ ]
+}

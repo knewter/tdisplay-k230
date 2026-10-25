@@ -1,0 +1,43 @@
+--- a/pixman/pixman-rvv.c
++++ b/pixman/pixman-rvv.c
+@@ -2518,6 +2518,8 @@
+ 
+     while (height--)
+     {
++	pixman_bool_t test = TRUE;
++
+ 	dst = dst_line;
+ 	dst_line += dst_stride;
+ 	src = src_line;
+@@ -2525,10 +2527,30 @@
+ 
+ 	RVV_FOREACH_2 (width, vl, e16m2, src, dst)
+ 	{
++	    vuint32m4_t s = __riscv_vle32_v_u32m4 (src, vl);
++
++	    /* Exact shortcuts. OVER with source alpha 0xff yields the source,
++	     * and a zero source leaves the destination as it was (the
++	     * 0565 -> 0888 -> 0565 round trip is lossless), so neither needs
++	     * the destination read or the blend. A chunk that is neither
++	     * stops the tests for the rest of the row, so a uniformly
++	     * translucent source pays for one test per row, not per chunk. */
++	    if (test)
++	    {
++		if (__riscv_vcpop (__riscv_vmsltu (s, 0xff000000, vl), vl) == 0)
++		{
++		    __riscv_vse16 (dst, rvv_convert_8888_to_0565_m2 (s, vl), vl);
++		    continue;
++		}
++		if (__riscv_vcpop (__riscv_vmsne (s, 0, vl), vl) == 0)
++		    continue;
++		test = FALSE;
++	    }
++
+ 	    __riscv_vse16 (
+ 		dst,
+ 		rvv_convert_8888_to_0565_m2 (
+-		    rvv_over_m4 (__riscv_vle32_v_u32m4 (src, vl),
++		    rvv_over_m4 (s,
+ 				 rvv_convert_0565_to_0888_m4 (
+ 				     __riscv_vle16_v_u16m2 (dst, vl), vl),
+ 				 vl),

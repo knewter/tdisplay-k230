@@ -1,0 +1,42 @@
+import gzip,json,re,sys,collections,bisect
+d=sys.argv[1]; SW=int(sys.argv[2]) if len(sys.argv)>2 else 1057
+meta=json.load(open(d+'/run/meta.json'));off=meta['workload_start_mono']-meta['workload_start']
+text=open(d+'/run/shell-journal.txt').read()
+rep=[(int(m[1])/1e9,int(m[2])/1e9) for m in re.finditer(r'repaint-timing run=\d+ frame_id=\d+ scheduled_ns=\d+ delay_ms=-?\d+ start_ns=(\d+) commit_start_ns=(\d+)',text)]
+evs=meta['events']
+def ph(t):
+  for i,e in enumerate(evs):
+    nxt=evs[i+1]['start'] if i+1<len(evs) else meta['workload_end']
+    if e['start']+off<=t<nxt+off: return e['kind']+('/c' if t<=e['end']+off else '/s')
+# build timeline of who is on cpu
+sw=[]
+for line in gzip.open(d+'/sched.txt.gz','rt'):
+  m=re.search(r'\s([\d.]+): sched:sched_switch: (.*):(\d+) \[(\d+)\] (\S+) ==> (.*):(\d+) \[(\d+)\]',line)
+  if m: sw.append((float(m[1]),m[2],int(m[3]),m[5],m[6],int(m[7]),int(m[8])))
+ts=[s[0] for s in sw]
+agg=collections.defaultdict(lambda: collections.defaultdict(float)); nfr=collections.Counter(); wall=collections.Counter()
+for s,c in rep:
+  p=ph(s)
+  if not p: continue
+  nfr[p]+=1; wall[p]+=c-s
+  i=bisect.bisect_right(ts,s)-1
+  # who is running at s
+  t=s; reason=None
+  while i+1<len(sw) and sw[i+1][0]<c or True:
+    cur_comm=sw[i][4]; cur_pid=sw[i][5]; prio=sw[i][6]
+    nxt=sw[i+1][0] if i+1<len(sw) else c
+    end=min(nxt,c); dur=max(0,end-max(t,sw[i][0] if i>=0 else t))
+    if cur_pid==SW: agg[p]['sway']+=dur
+    else:
+      # why sway is off: find the switch where sway left
+      agg[p][f'{cur_comm}[{prio}]']+=dur
+    if nxt>=c: break
+    i+=1; t=nxt
+  # sway switch-out states within window
+  j=bisect.bisect_left(ts,s)
+  while j<len(sw) and sw[j][0]<c:
+    if sw[j][2]==SW: agg[p]['out:'+sw[j][3]]+=1
+    j+=1
+for k in sorted(agg):
+  a=agg[k]; n=nfr[k]
+  print(f"{k}: frames {n} wall {wall[k]/n*1e3:.1f}ms ", ', '.join(f"{x} {v/n*1e3:.2f}" if not x.startswith('out:') else f"{x} {v/n:.2f}/fr" for x,v in sorted(a.items(),key=lambda kv:-kv[1]) if (v/n>0.05e-3 or x.startswith('out:'))))

@@ -1,0 +1,81 @@
+/* Byte-exact check for OVER a8r8g8b8 -> r5g6b5. Writes the destination bytes
+ * of every case to stdout-named files; run against two pixman builds and
+ * compare. Also times the keyboard-shaped composite (1232x240). */
+#include <pixman.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
+static uint32_t st = 0x230af101;
+static uint32_t rnd(void) { st ^= st << 13; st ^= st >> 17; st ^= st << 5; return st; }
+static uint32_t premul(uint32_t v, uint32_t a) {
+	uint32_t r = ((v >> 16) & 255) * a / 255, g = ((v >> 8) & 255) * a / 255, b = (v & 255) * a / 255;
+	return (a << 24) | (r << 16) | (g << 8) | b;
+}
+/* kind 0 random alpha, 1 opaque run, 2 zero run, 3 alpha-0 garbage rgb, 4 alpha 254/1 edges */
+static uint32_t pix(int kind) {
+	uint32_t v = rnd();
+	switch (kind) {
+	case 0: return premul(v, v >> 24);
+	case 1: return premul(v, 255);
+	case 2: return 0;
+	case 3: return v & 0x00ffffff;
+	default: return premul(v, (v >> 24) & 1 ? 254 : 1);
+	}
+}
+int main(int argc, char **argv) {
+	if (argc != 2) return 2;
+	FILE *out = fopen(argv[1], "wb");
+	if (!out) return 3;
+	const int widths[] = {1, 3, 7, 8, 15, 16, 17, 31, 32, 33, 63, 64, 65, 240, 568, 1232};
+	unsigned cases = 0;
+	for (unsigned wi = 0; wi < sizeof widths / sizeof *widths; wi++)
+	for (int pattern = 0; pattern < 7; pattern++) {
+		int w = widths[wi], h = 6, sw = w + 5, dw = w + 9, dh = h + 4;
+		int ss = sw * 4 + 12, ds = (dw * 2 + 3 & ~3) + 8;
+		uint32_t *s = malloc((size_t)ss * (h + 3)); uint16_t *d = malloc((size_t)ds * dh);
+		if (!s || !d) return 3;
+		for (int y = 0; y < h + 3; y++) for (int x = 0; x < sw; x++) {
+			int kind;
+			switch (pattern) {
+			case 0: kind = 1; break;                         /* all opaque */
+			case 1: kind = 2; break;                         /* all zero */
+			case 2: kind = 0; break;                         /* all mixed */
+			case 3: kind = (x / 11) % 3 == 0 ? 0 : (x / 11) % 3; break; /* runs */
+			case 4: kind = 3; break;                         /* alpha 0, rgb set */
+			case 5: kind = 4; break;                         /* near-edge alpha */
+			default: kind = (rnd() % 16 == 0) ? 0 : ((x / 37) & 1 ? 1 : 2); break; /* sparse */
+			}
+			s[y * (ss / 4) + x] = pix(kind);
+		}
+		for (int i = 0; i < ds * dh / 2; i++) d[i] = (uint16_t)rnd();
+		pixman_image_t *src = pixman_image_create_bits(PIXMAN_a8r8g8b8, sw, h + 3, s, ss);
+		pixman_image_t *dst = pixman_image_create_bits(PIXMAN_r5g6b5, dw, dh, (uint32_t *)d, ds);
+		pixman_image_composite32(PIXMAN_OP_OVER, src, NULL, dst, 2, 1, 0, 0, 3, 2, w, h);
+		fwrite(d, 1, (size_t)ds * dh, out);
+		pixman_image_unref(src); pixman_image_unref(dst); free(s); free(d); cases++;
+	}
+	fclose(out);
+	/* Keyboard-shaped timing: opaque and mixed 1232x240 sources. */
+	for (int opaque = 2; opaque >= 0; opaque--) {
+		int w = 1232, h = 240;
+		uint32_t *s = malloc((size_t)w * h * 4); uint16_t *d = malloc((size_t)w * h * 2);
+		for (int i = 0; i < w * h; i++) s[i] = opaque == 2 ? premul(rnd(), 242) : pix(opaque ? 1 : 0);
+		memset(d, 0x5a, (size_t)w * h * 2);
+		pixman_image_t *src = pixman_image_create_bits(PIXMAN_a8r8g8b8, w, h, s, w * 4);
+		pixman_image_t *dst = pixman_image_create_bits(PIXMAN_r5g6b5, w, h, (uint32_t *)d, w * 2);
+		double best = 1e9;
+		for (int r = 0; r < 30; r++) {
+			struct timespec a, b; clock_gettime(CLOCK_MONOTONIC, &a);
+			pixman_image_composite32(PIXMAN_OP_OVER, src, NULL, dst, 0, 0, 0, 0, 0, 0, w, h);
+			clock_gettime(CLOCK_MONOTONIC, &b);
+			double ms = (b.tv_sec - a.tv_sec) * 1e3 + (b.tv_nsec - a.tv_nsec) / 1e6;
+			if (ms < best) best = ms;
+		}
+		printf("timing %s 1232x240 best %.3f ms\n", opaque == 2 ? "translucent242" : opaque ? "opaque" : "mixed", best);
+		pixman_image_unref(src); pixman_image_unref(dst); free(s); free(d);
+	}
+	printf("cases %u\n", cases);
+	return 0;
+}

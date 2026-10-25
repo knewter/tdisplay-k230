@@ -1,6 +1,13 @@
-{ lib, symlinkJoin, writeShellScriptBin, sway, swayUnwrapped, dbus, coreutils, bash, librsvg, wlroots_0_20, quarterTurnTrial ? false }:
+{ lib, symlinkJoin, writeShellScriptBin, sway, swayUnwrapped, dbus, coreutils, bash, librsvg, wlroots_0_20, pixman, quarterTurnTrial ? false }:
 let
-  roundedWlroots = wlroots_0_20.overrideAttrs (old: {
+  # Only the compositor composites whole surfaces every frame, so only it
+  # gets the exact OVER shortcuts; the rest of the closure keeps the shared
+  # Pixman and is not rebuilt. sway names libpixman directly, so its own
+  # RUNPATH copy is the one loaded and cairo's request reuses it by soname.
+  compositorPixman = pixman.overrideAttrs (old: {
+    patches = (old.patches or [ ]) ++ [ ./patches/pixman-rvv-over-0565-exact-shortcuts.patch ];
+  });
+  roundedWlroots = (wlroots_0_20.override { pixman = compositorPixman; }).overrideAttrs (old: {
     patches = (old.patches or [ ]) ++ [ ./patches/wlroots-k230-rounded-clip.patch ./patches/wlroots-k230-opaque-interior.patch ]
       ++ lib.optionals quarterTurnTrial [
         ./patches/wlroots-k230-quarter-turn.patch
@@ -27,7 +34,9 @@ let
     # uses (nix/rust-shell-client/default.nix's own librsvg buildInput) --
     # a real installed theme resolves most app icons to SVG, not PNG, per
     # board evidence (docs/evidence/card-shell/webos-fan-switcher/).
-    buildInputs = (old.buildInputs or [ ]) ++ [ librsvg ];
+    # compositorPixman first: it must precede cairo's propagated Pixman in
+    # sway's RUNPATH, which is what resolves sway's own libpixman request.
+    buildInputs = [ compositorPixman ] ++ (old.buildInputs or [ ]) ++ [ librsvg ];
     postPatch = (old.postPatch or "") + ''
       cp ${./card-shell/adapter.c} sway/card_shell.c
       cp ${./card-shell/appearance.c} sway/card_shell_appearance.c

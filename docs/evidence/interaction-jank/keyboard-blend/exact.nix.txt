@@ -1,0 +1,19 @@
+{ flakePath }:
+let
+  f = builtins.getFlake flakePath;
+  pkgs = f.nixosConfigurations.k230.pkgs;
+  oldPix = f.packages.x86_64-linux.pixman-rvv;
+  newPix = oldPix.overrideAttrs (o: {
+    patches = o.patches ++ [ (/. + flakePath + "/nix/patches/pixman-rvv-over-0565-exact-shortcuts.patch") ];
+  });
+  probe = pkgs.stdenv.mkDerivation {
+    name = "k230-pixman-over-exact";
+    dontUnpack = true;
+    nativeBuildInputs = [ pkgs.buildPackages.pkg-config ];
+    buildInputs = [ newPix ];
+    buildPhase = "$CC -O2 -Wall $($PKG_CONFIG --cflags pixman-1) ${./exact.c} $($PKG_CONFIG --libs pixman-1) -o exact";
+    installPhase = "install -Dm755 exact $out/bin/exact";
+  };
+in pkgs.runCommand "pixman-over-exact-set" { } ''
+  mkdir -p $out; ln -s ${probe} $out/probe; ln -s ${newPix} $out/new; ln -s ${oldPix} $out/old
+''

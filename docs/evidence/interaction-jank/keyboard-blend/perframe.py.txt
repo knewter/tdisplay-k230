@@ -1,0 +1,43 @@
+import gzip,json,re,sys,collections,bisect
+d=sys.argv[1]; period=float(sys.argv[2])  # ms per sample
+meta=json.load(open(d+'/workload-out/meta.json'));off=meta['workload_start_mono']-meta['workload_start']
+text=open(d+'/workload-out/shell-journal.txt').read()
+dmg={int(m[1]):int(m[2]) for m in re.finditer(r'frame-damage run=\d+ frame_id=(\d+) rects=\d+ damage_px=(\d+)',text)}
+rep=[(int(m[2])/1e9,int(m[3])/1e9,dmg.get(int(m[1]))) for m in re.finditer(r'repaint-timing run=\d+ frame_id=(\d+) scheduled_ns=\d+ delay_ms=-?\d+ start_ns=(\d+) commit_start_ns=(\d+)',text)]
+evs=meta['events']
+def ph(t):
+  for i,e in enumerate(evs):
+    nxt=evs[i+1]['start'] if i+1<len(evs) else meta['workload_end']
+    if e['start']+off<=t<nxt+off: return e['kind']+('/c' if t<=e['end']+off else '/s')
+def key(r):
+  p=ph(r[0]); 
+  if not p: return None
+  return p+(' full' if r[2] and r[2]>=1232*568 else ' part')
+starts=[r[0] for r in rep]
+nfr=collections.Counter(); wall=collections.Counter()
+for r in rep:
+  k=key(r)
+  if k: nfr[k]+=1; wall[k]+=r[1]-r[0]
+inc=collections.defaultdict(collections.Counter)
+cur=None
+def flush():
+  if not cur: return
+  t,frames=cur; i=bisect.bisect_right(starts,t)-1
+  if i>=0 and rep[i][0]<=t<rep[i][1]:
+    k=key(rep[i])
+    if k:
+      inc[k]['TOTAL']+=1
+      for f in set(frames): inc[k][f]+=1
+for line in gzip.open(d+'/perf-script.txt.gz','rt'):
+  if not line.strip(): continue
+  if not line.startswith(('\t',' ')):
+    flush(); m=re.search(r'\s([\d.]+):',line); cur=(float(m[1]),[])
+  else:
+    cur[1].append(line.split()[1])
+flush()
+sel=sys.argv[3:] or sorted(nfr)
+for k in sel:
+  n=nfr[k]
+  if not n: continue
+  print(f"== {k}: frames {n} wall {wall[k]/n*1e3:.1f}ms sampled {inc[k]['TOTAL']*period/n:.1f}ms/frame")
+  print('  ', ', '.join(f"{f} {c*period/n:.2f}" for f,c in inc[k].most_common(40) if f not in ('TOTAL','_start','main','__libc_start_call_main','__libc_start_main@@GLIBC_2.34','wl_display_run','wl_event_loop_dispatch')))
