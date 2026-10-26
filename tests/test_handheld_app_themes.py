@@ -57,7 +57,14 @@ class AppAppearance(unittest.TestCase):
             keyfile = (target / "gtk-settings.keyfile").read_text()
             self.assertEqual(keyfile, "[org/gnome/desktop/interface]\n"
                               "color-scheme='prefer-dark'\ngtk-theme='Adwaita-dark'\n"
-                              "icon-theme='Yaru-blue'\n")
+                              "icon-theme='Yaru-blue'\n\n"
+                              "[org/gnome/desktop/wm/preferences]\nbutton-layout=':close'\n")
+            ini = (target / "gtk-3.0/settings.ini").read_text()
+            css = (target / "gtk-3.0/gtk.css").read_text()
+            self.assertTrue(ini.startswith("# Written by k230-app-appearance"))
+            self.assertTrue(css.startswith("/* Written by k230-app-appearance"))
+            self.assertIn("#101820", css)
+            self.assertIn("#778899", css)
 
     def test_gtk_appearance_reads_mode_and_icon_theme(self):
         with tempfile.TemporaryDirectory() as temporary:
@@ -65,6 +72,74 @@ class AppAppearance(unittest.TestCase):
             mode, icon_theme = app.gtk_appearance(generation)
             self.assertEqual(mode, "dark")
             self.assertIsNone(icon_theme)
+
+    def test_cached_gtk3_tamper_is_rejected(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            _, state, generation = prepared(Path(temporary))
+            target = app.prepare(generation, state)
+            (target / "gtk-3.0/gtk.css").write_text("tampered\n")
+            with self.assertRaisesRegex(app.AppAppearanceError, "cached app appearance changed"):
+                app.prepare(generation, state)
+
+    def test_palette_rejects_unsafe_accent_by_falling_back(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            _, _, generation = prepared(Path(temporary))
+            report = json.loads((generation / "report.json").read_text())
+            report["palette"]["accent"] = "#000000; } x {"
+            (generation / "report.json").write_text(json.dumps(report))
+            self.assertEqual(app.palette(generation)["accent"], app.palette(generation)["blue"])
+
+    def test_link_gtk3_creates_replaces_own_and_withholds_foreign(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            base = Path(temporary)
+            _, state, generation = prepared(base)
+            target = app.prepare(generation, state)
+            config = base / "config"
+            self.assertEqual(app.link_gtk3(target, config), [])
+            for name in ("settings.ini", "gtk.css"):
+                self.assertEqual(os.readlink(config / "gtk-3.0" / name), str(target / "gtk-3.0" / name))
+            self.assertEqual(app.link_gtk3(target, config), [])  # idempotent
+            # A stale link into an older generation of ours is replaced.
+            old = state / "app-appearance/generations" / ("0" * 24)
+            (old / "gtk-3.0").mkdir(parents=True)
+            (config / "gtk-3.0/gtk.css").unlink()
+            (config / "gtk-3.0/gtk.css").symlink_to(old / "gtk-3.0/gtk.css")
+            self.assertEqual(app.link_gtk3(target, config), [])
+            self.assertEqual(os.readlink(config / "gtk-3.0/gtk.css"), str(target / "gtk-3.0/gtk.css"))
+            # A regular file carrying our marker is replaced.
+            (config / "gtk-3.0/settings.ini").unlink()
+            (config / "gtk-3.0/settings.ini").write_text(app.GTK3_INI_MARKER + "\n[Settings]\n")
+            self.assertEqual(app.link_gtk3(target, config), [])
+            self.assertTrue((config / "gtk-3.0/settings.ini").is_symlink())
+
+    def test_link_gtk3_never_clobbers_foreign_files(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            base = Path(temporary)
+            _, state, generation = prepared(base)
+            target = app.prepare(generation, state)
+            config = base / "config"
+            (config / "gtk-3.0").mkdir(parents=True)
+            (config / "gtk-3.0/gtk.css").write_text("/* mine */\n")
+            elsewhere = base / "elsewhere.ini"
+            elsewhere.write_text("[Settings]\n")
+            (config / "gtk-3.0/settings.ini").symlink_to(elsewhere)
+            withheld = app.link_gtk3(target, config)
+            self.assertEqual(len(withheld), 2)
+            self.assertEqual((config / "gtk-3.0/gtk.css").read_text(), "/* mine */\n")
+            self.assertEqual(os.readlink(config / "gtk-3.0/settings.ini"), str(elsewhere))
+
+    def test_cli_sync_links_into_xdg_config_home(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            base = Path(temporary)
+            _, state, generation = prepared(base)
+            (state / "active").symlink_to(generation)
+            config = base / "xdg"
+            result = subprocess.run(
+                [sys.executable, str(ROOT / "tools/app_appearance.py"), "sync", "--state-root", str(state)],
+                env={**os.environ, "XDG_CONFIG_HOME": str(config)}, capture_output=True, text=True)
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertTrue((config / "gtk-3.0/gtk.css").resolve().is_file())
+            self.assertEqual(result.stdout.strip(), str((state / "app-appearance/active").resolve()))
 
     def test_cached_gtk_settings_tamper_is_rejected(self):
         with tempfile.TemporaryDirectory() as temporary:

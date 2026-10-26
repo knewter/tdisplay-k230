@@ -1,0 +1,71 @@
+/* Written by k230-app-appearance; edits are replaced. */
+@define-color theme_bg_color #1e1e2e;
+@define-color theme_fg_color #cdd6f4;
+@define-color theme_base_color #1e1e2e;
+@define-color theme_text_color #cdd6f4;
+@define-color theme_selected_bg_color #89b4fa;
+@define-color theme_selected_fg_color #1e1e2e;
+@define-color theme_unfocused_bg_color #1e1e2e;
+@define-color theme_unfocused_fg_color #cdd6f4;
+@define-color theme_unfocused_base_color #1e1e2e;
+@define-color theme_unfocused_text_color #cdd6f4;
+@define-color theme_unfocused_selected_bg_color #89b4fa;
+@define-color theme_unfocused_selected_fg_color #1e1e2e;
+@define-color insensitive_bg_color #28293a;
+@define-color insensitive_fg_color #7e839b;
+@define-color borders #44465a;
+@define-color unfocused_borders #44465a;
+@define-color k230_bar #28293a;
+@define-color k230_card #333446;
+@define-color k230_hover #4d5a7c;
+@define-color k230_accent #89b4fa;
+@define-color k230_on_accent #1e1e2e;
+
+window, dialog, .background { background-color: #1e1e2e; color: #cdd6f4; }
+.view, textview text, iconview, treeview.view { background-color: #1e1e2e; color: #cdd6f4; }
+headerbar, .titlebar, menubar, toolbar, .toolbar, statusbar, actionbar {
+  background-image: none; background-color: #28293a; color: #cdd6f4;
+  border-color: #44465a; box-shadow: none; }
+menubar > menuitem { padding: 10px 14px; font-size: 115%; min-height: 24px; }
+menubar > menuitem:hover, menubar > menuitem:checked { background-color: #4d5a7c; }
+menu, .menu, .popup, popover, popover.background {
+  background-color: #28293a; color: #cdd6f4; border-color: #44465a; }
+menu menuitem, .menu menuitem { padding: 10px 14px; min-height: 24px; }
+menuitem:hover, modelbutton:hover { background-color: #4d5a7c; }
+
+button, button.text-button, button.image-button {
+  min-height: 44px; min-width: 44px; padding: 6px 14px; border-radius: 10px;
+  background-image: none; background-color: #333446; color: #cdd6f4;
+  border: 1px solid #44465a; box-shadow: none; text-shadow: none; }
+button:hover { background-color: #4d5a7c; }
+button:active, button:checked { background-color: #89b4fa; color: #1e1e2e; }
+button:disabled { background-color: #28293a; color: #7e839b; }
+headerbar button, toolbar button { margin: 2px; }
+
+entry, spinbutton, combobox button {
+  min-height: 44px; padding: 4px 10px; border-radius: 10px;
+  background-image: none; background-color: #333446; color: #cdd6f4;
+  border: 1px solid #44465a; box-shadow: none; }
+entry:focus, spinbutton:focus { border-color: #89b4fa; }
+spinbutton button { min-height: 36px; border-radius: 0; }
+
+scale trough, progressbar trough, levelbar trough {
+  background-image: none; background-color: #333446; border: 1px solid #44465a;
+  min-height: 8px; min-width: 8px; }
+scale highlight, progressbar progress, levelbar block.filled {
+  background-image: none; background-color: #89b4fa; border-color: #89b4fa; }
+scale slider { min-width: 28px; min-height: 28px; background-image: none;
+  background-color: #cdd6f4; border: 1px solid #44465a; }
+switch { min-height: 32px; min-width: 60px; background-color: #333446; border-color: #44465a; }
+switch:checked { background-color: #89b4fa; }
+check, radio { min-width: 24px; min-height: 24px; }
+
+selection, *:selected, row:selected, treeview.view:selected, textview text selection {
+  background-color: #89b4fa; color: #1e1e2e; }
+notebook > header > tabs > tab { min-height: 40px; padding: 4px 14px; }
+notebook > header > tabs > tab:checked { background-color: #333446; }
+
+scrollbar { background-color: #1e1e2e; }
+scrollbar slider { min-width: 18px; min-height: 18px; border-radius: 9px;
+  background-color: #64687d; border: 2px solid #1e1e2e; }
+scrollbar slider:hover, scrollbar slider:active { background-color: #89b4fa; }

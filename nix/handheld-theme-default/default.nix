@@ -160,6 +160,8 @@ stdenvNoCC.mkDerivation {
       install -Dm644 ${./monitor-foot.ini} "$out/generations/$id/monitor-foot.ini"
       install -Dm644 ${./wvkbd.args} "$out/generations/$id/wvkbd.args"
       install -Dm644 ${./gtk-settings.keyfile} "$out/generations/$id/gtk-settings.keyfile"
+      install -Dm644 ${./gtk-3.0/settings.ini} "$out/generations/$id/gtk-3.0/settings.ini"
+      install -Dm644 ${./gtk-3.0/gtk.css} "$out/generations/$id/gtk-3.0/gtk.css"
     done
     install -Dm644 "$src/LICENSE" "$out/share/doc/handheld-theme-default/LICENSE"
     runHook postInstall

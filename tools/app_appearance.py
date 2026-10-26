@@ -17,7 +17,8 @@ import sys
 import tempfile
 import time
 
-from theme_gtk import GtkAppearanceError, render as gtk_keyfile
+from theme_gtk import (GTK3_CSS_MARKER, GTK3_INI_MARKER, GtkAppearanceError, render as gtk_keyfile,
+                       render_gtk3_css, render_gtk3_settings)
 from theme_transaction import TransactionError, _pointer
 
 
@@ -64,6 +65,10 @@ def palette(generation: Path) -> dict[str, str]:
         if not isinstance(value, str) or not COLOR.fullmatch(value):
             raise AppAppearanceError(f"invalid resolved color: {name}")
         result[name] = value.lower()
+    # The accent is optional in older reports; blue is what Omarchy themes use
+    # when they do not choose one.
+    accent = colors.get("accent")
+    result["accent"] = accent.lower() if isinstance(accent, str) and COLOR.fullmatch(accent) else result["blue"]
     return result
 
 
@@ -92,6 +97,15 @@ def gtk_appearance(generation: Path) -> tuple[str, str | None]:
     if icon_theme is not None and not isinstance(icon_theme, str):
         raise AppAppearanceError("invalid icon theme in generation report")
     return mode, icon_theme
+
+
+def gtk3_files(colors: dict[str, str], mode: str, icon_theme: str | None) -> dict[str, str]:
+    """GTK3 apps' `settings.ini` and `gtk.css`, keyed by path inside a generation."""
+    try:
+        return {"gtk-3.0/settings.ini": render_gtk3_settings(mode, icon_theme),
+                "gtk-3.0/gtk.css": render_gtk3_css(colors, mode)}
+    except GtkAppearanceError as error:
+        raise AppAppearanceError(str(error)) from error
 
 
 def foot_config(colors: dict[str, str], *, monitor: bool) -> str:
@@ -132,8 +146,9 @@ def prepare(generation: Path, state_root: Path) -> Path:
         gtk_settings = gtk_keyfile(mode, icon_theme)
     except GtkAppearanceError as error:
         raise AppAppearanceError(str(error)) from error
+    gtk3 = gtk3_files(colors, mode, icon_theme)
     identity = hashlib.sha256((generation.name + "\n" + json.dumps(colors, sort_keys=True)
-                               + "\n" + gtk_settings
+                               + "\n" + gtk_settings + json.dumps(gtk3, sort_keys=True)
                                + Path(__file__).read_text()).encode()).hexdigest()[:24]
     parent = root / "app-appearance"
     if parent.is_symlink():
@@ -154,12 +169,19 @@ def prepare(generation: Path, state_root: Path) -> Path:
         keyfile = target / "gtk-settings.keyfile"
         if keyfile.is_symlink() or not keyfile.is_file() or keyfile.read_text() != gtk_settings:
             raise AppAppearanceError("cached app appearance changed")
+        for name, text in gtk3.items():
+            file = target / name
+            if file.is_symlink() or not file.is_file() or file.read_text() != text:
+                raise AppAppearanceError("cached app appearance changed")
         return target
     with tempfile.TemporaryDirectory(prefix=".prepare-", dir=target_root) as scratch:
         work = Path(scratch)
         for name, monitor in (("terminal-foot.ini", False), ("monitor-foot.ini", True)):
             (work / name).write_text(foot_config(colors, monitor=monitor))
         (work / "gtk-settings.keyfile").write_text(gtk_settings)
+        (work / "gtk-3.0").mkdir()
+        for name, text in gtk3.items():
+            (work / name).write_text(text)
         coverage = {
             "generation": generation.name,
             "applied": ["Foot: generated terminal/monitor configs for new windows",
@@ -167,7 +189,11 @@ def prepare(generation: Path, state_root: Path) -> Path:
                         "GTK4/libadwaita (Portfolio, Nautilus): generated GSettings "
                         "keyfile-backend color-scheme + icon-theme, matching upstream "
                         "omarchy-theme-set-gnome's own dark/light + icon-only scope "
-                        "(no accent-color recolor, same as Omarchy itself)"],
+                        "(no accent-color recolor, same as Omarchy itself)",
+                        "GTK3 (puzzles, galculator, viewnior): generated gtk-3.0/"
+                        "settings.ini and gtk.css (palette, touch sizes), linked "
+                        "into the config directory by `sync`; close-only window "
+                        "buttons for GTK3 and GTK4"],
             "inherited": ["htop", "nano"],
             "limited": ["mpv: video surface does not consume terminal colors",
                         "Help: shell client uses shared shell tokens, not a separate app adapter",
@@ -180,8 +206,8 @@ def prepare(generation: Path, state_root: Path) -> Path:
                         "launch always resolves the current generation"],
             "withheld": ["theme foot.ini executable settings"]}
         (work / "coverage.json").write_text(json.dumps(coverage, indent=2, sort_keys=True) + "\n")
-        for entry in work.iterdir():
-            entry.chmod(0o600)
+        for entry in work.rglob("*"):
+            entry.chmod(0o700 if entry.is_dir() else 0o600)
         try:
             os.rename(work, target)
         except FileExistsError:
@@ -239,6 +265,46 @@ def sync(state_root: Path, *, expected_generation: str | None = None,
         return target
 
 
+def link_gtk3(target: Path, config_home: Path) -> list[str]:
+    """Point ~/.config/gtk-3.0/{settings.ini,gtk.css} at a prepared generation.
+
+    Idempotent. A file is replaced only when it is a symlink we made (into an
+    app-appearance generation) or a regular file starting with our marker;
+    anything else is left alone and named in the returned withheld list.
+    """
+    withheld = []
+    directory = config_home / "gtk-3.0"
+    if directory.is_symlink() or (directory.exists() and not directory.is_dir()):
+        return ["gtk-3.0 config directory is foreign"]
+    directory.mkdir(mode=0o755, parents=True, exist_ok=True)
+    for name, marker in (("settings.ini", GTK3_INI_MARKER), ("gtk.css", GTK3_CSS_MARKER)):
+        source = target / "gtk-3.0" / name
+        link = directory / name
+        if link.is_symlink():
+            raw = Path(os.readlink(link))
+            if raw == source:
+                continue
+            ours = "app-appearance" in raw.parts and "generations" in raw.parts
+        elif link.is_file():
+            with link.open("rb") as stream:
+                ours = stream.readline(256).decode("utf-8", "replace").rstrip("\n") == marker
+        else:
+            ours = not os.path.lexists(link)
+        if not ours:
+            withheld.append(f"gtk-3.0/{name} is not written by this adapter")
+            continue
+        with tempfile.TemporaryDirectory(prefix=".link-", dir=directory) as scratch:
+            candidate = Path(scratch) / name
+            candidate.symlink_to(source)
+            os.replace(candidate, link)
+    return withheld
+
+
+def config_home() -> Path:
+    configured = os.environ.get("XDG_CONFIG_HOME", "")
+    return Path(configured) if configured.startswith("/") else Path.home() / ".config"
+
+
 def emit_current(state_root: Path, stream, *, lock_timeout: float = 2.0) -> None:
     """Serialize selection and OSC flush with shell generation publication."""
     root = state_root.resolve(strict=True)
@@ -261,7 +327,16 @@ def main() -> None:
             parser.error("prepare requires --generation")
         print(prepare(args.generation, args.state_root))
     elif args.operation == "sync":
-        print(sync(args.state_root))
+        target = sync(args.state_root)
+        # Linking is best effort: a foreign GTK3 file must never fail the
+        # Foot/GTK4 sync, so it is reported on stderr and withheld.
+        try:
+            withheld = link_gtk3(target, config_home())
+        except OSError as error:
+            withheld = [f"gtk-3.0 link failed: {error}"]
+        for item in withheld:
+            print(f"k230-app-appearance: withheld: {item}", file=sys.stderr)
+        print(target)
     else:
         if args.generation is not None:
             parser.error("osc-current uses the acknowledged active generation")

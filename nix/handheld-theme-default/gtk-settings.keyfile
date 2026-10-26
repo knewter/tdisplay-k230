@@ -2,3 +2,6 @@
 color-scheme='prefer-dark'
 gtk-theme='Adwaita-dark'
 icon-theme='Yaru-purple'
+
+[org/gnome/desktop/wm/preferences]
+button-layout=':close'

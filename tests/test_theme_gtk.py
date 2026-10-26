@@ -14,13 +14,15 @@ class Render(unittest.TestCase):
         text = gtk.render("dark", "Yaru-purple")
         self.assertEqual(text, "[org/gnome/desktop/interface]\n"
                           "color-scheme='prefer-dark'\ngtk-theme='Adwaita-dark'\n"
-                          "icon-theme='Yaru-purple'\n")
+                          "icon-theme='Yaru-purple'\n\n"
+                          "[org/gnome/desktop/wm/preferences]\nbutton-layout=':close'\n")
 
     def test_light_mode_with_icon_theme(self):
         text = gtk.render("light", "Yaru-olive")
         self.assertEqual(text, "[org/gnome/desktop/interface]\n"
                           "color-scheme='prefer-light'\ngtk-theme='Adwaita'\n"
-                          "icon-theme='Yaru-olive'\n")
+                          "icon-theme='Yaru-olive'\n\n"
+                          "[org/gnome/desktop/wm/preferences]\nbutton-layout=':close'\n")
 
     def test_missing_icon_theme_falls_back_like_upstream(self):
         text = gtk.render("dark", None)
@@ -53,8 +55,53 @@ class Render(unittest.TestCase):
         # second keyfile section or break out of the single-quoted value,
         # because ICON_NAME forbids '[', ']', '\'', '\n' and whitespace.
         text = gtk.render("dark", "Yaru-blue")
-        self.assertEqual(text.count("["), 1)
-        self.assertEqual(text.count("\n["), 0)
+        self.assertEqual(text.count("["), 2)
+        self.assertEqual(text.count("\n["), 1)
+
+
+PALETTE = {"background": "#101820", "foreground": "#e0e5e8", "accent": "#778899"}
+
+
+class Gtk3(unittest.TestCase):
+    def test_mix_endpoints_and_midpoint(self):
+        self.assertEqual(gtk.mix("#000000", "#ffffff", 0), "#000000")
+        self.assertEqual(gtk.mix("#000000", "#ffffff", 1), "#ffffff")
+        self.assertEqual(gtk.mix("#000000", "#ffffff", 0.5), "#808080")
+
+    def test_readable_on_picks_higher_contrast(self):
+        self.assertEqual(gtk.readable_on("#ffffff", "#ffffff", "#000000"), "#000000")
+        self.assertEqual(gtk.readable_on("#000000", "#ffffff", "#000000"), "#ffffff")
+
+    def test_settings_dark_and_light(self):
+        dark = gtk.render_gtk3_settings("dark", "Yaru-blue")
+        self.assertEqual(dark.splitlines()[0], gtk.GTK3_INI_MARKER)
+        self.assertIn("gtk-application-prefer-dark-theme=true\n", dark)
+        self.assertIn("gtk-icon-theme-name=Yaru-blue\n", dark)
+        self.assertIn("gtk-decoration-layout=:close\n", dark)
+        self.assertIn("gtk-application-prefer-dark-theme=false\n",
+                      gtk.render_gtk3_settings("light", None))
+
+    def test_settings_reject_bad_input(self):
+        with self.assertRaises(gtk.GtkAppearanceError):
+            gtk.render_gtk3_settings("sepia", None)
+        with self.assertRaises(gtk.GtkAppearanceError):
+            gtk.render_gtk3_settings("dark", "x\n[Settings]")
+
+    def test_css_carries_marker_and_palette_without_canvas_rules(self):
+        css = gtk.render_gtk3_css(PALETTE, "dark")
+        self.assertEqual(css.splitlines()[0], gtk.GTK3_CSS_MARKER)
+        for value in PALETTE.values():
+            self.assertIn(value, css)
+        self.assertIn("min-height: 44px", css)
+        self.assertNotIn("drawingarea", css.lower())
+
+    def test_css_rejects_unsafe_colors(self):
+        for bad in ("red", "#12345", "#1234567", "#12345g", "#000000; } * { x", None, "#000000\n"):
+            for key in PALETTE:
+                with self.assertRaises(gtk.GtkAppearanceError):
+                    gtk.render_gtk3_css(PALETTE | {key: bad}, "dark")
+        with self.assertRaises(gtk.GtkAppearanceError):
+            gtk.render_gtk3_css({"background": "#000000"}, "dark")
 
 
 if __name__ == "__main__":
