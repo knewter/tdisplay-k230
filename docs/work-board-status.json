@@ -655,6 +655,24 @@
       ],
       "rationale": "Installed-board measurements with injected native touch at the real-finger rate (landscape, one CPU). The drawer scrolls at about 8 fps with a full scene rebuild per frame. Keyboard motion misses the card frame budget. Taps acknowledge within ~100 ms of release; the video-arm deck drag and contact-to-settled entry miss. No real glass, camera or optimization is claimed.",
       "reviewRevision": "a1bc1e5706cc9d6187f9520229cb1ff7a2224a99"
+    },
+    "the-handheld-pairs-over-a-usb-bluetooth-dongle": {
+      "lane": "planned",
+      "source": "not-started",
+      "physical": "pending",
+      "next": "Parked: needs a USB Bluetooth dongle, which the operator decided on 2026-10-26 not to use.",
+      "dependencies": [],
+      "rationale": "The operator decided to support the handheld's built-in hardware only, with no USB dongle. Neither the main board's RTL8189FS nor the base's nRF9151 has a Bluetooth radio, so this change has nothing to verify against.",
+      "reviewRevision": "b0a58892a9784a78dfc7b69e6cac6a4f15b528ad"
+    },
+    "the-handheld-plays-through-its-speaker": {
+      "lane": "in-progress",
+      "source": "in-progress",
+      "physical": "pending",
+      "next": "Parked: the speaker add-on is not fitted; the operator decided on 2026-10-26 to skip it.",
+      "dependencies": [],
+      "rationale": "The operator decided to support the handheld's built-in hardware only and to skip the speaker. The MAX98357A speaker needs the add-on board (task 5.5), which is not part of this handheld's hardware.",
+      "reviewRevision": "b0a58892a9784a78dfc7b69e6cac6a4f15b528ad"
     }
   }
 }

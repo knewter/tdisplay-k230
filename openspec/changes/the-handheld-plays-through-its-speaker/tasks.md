@@ -1,3 +1,5 @@
+> **Parked, 2026-10-26.** The operator decided to support the handheld's built-in hardware only and to skip the speaker. The MAX98357A speaker needs the add-on board (task 5.5), which is not part of this handheld's hardware. The change stays open with its remaining tasks and requirements intact. It is not archived, and nothing in it is claimed.
+
 All tasks below name the narrowest real command that proves them. Host
 build and QEMU boot are one evidence class; a console transcript or
 recording from the physical board is a different one, and no task here

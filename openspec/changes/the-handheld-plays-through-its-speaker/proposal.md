@@ -1,3 +1,5 @@
+> **Parked, 2026-10-26.** The operator decided to support the handheld's built-in hardware only and to skip the speaker. The MAX98357A speaker needs the add-on board (task 5.5), which is not part of this handheld's hardware. The change stays open with its remaining tasks and requirements intact. It is not archived, and nothing in it is claimed.
+
 ## Why
 
 A person cannot currently hear anything the handheld plays without plugging

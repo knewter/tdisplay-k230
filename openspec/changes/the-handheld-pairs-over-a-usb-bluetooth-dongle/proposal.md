@@ -1,3 +1,5 @@
+> **Parked, 2026-10-26.** The operator decided to support the handheld's built-in hardware only, with no USB dongle. Neither the main board's RTL8189FS nor the base's nRF9151 has a Bluetooth radio, so this change has nothing to verify against. The change stays open with its remaining tasks and requirements intact. It is not archived, and nothing in it is claimed.
+
 ## Why
 
 `the-handheld-talks-bluetooth` enabled the kernel Bluetooth stack
