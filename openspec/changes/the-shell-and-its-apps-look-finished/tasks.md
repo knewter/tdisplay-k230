@@ -39,5 +39,5 @@
 ## 9. Board (hardware-only)
 
 - [x] 9.1 Test-activate the build and capture every surface and app with grim (injected touch). Each finding from the review must be absent; record the captures' check results in `docs/evidence/shell-design-review/`. Captures that show private data are not committed.
-- [ ] 9.2 The operator looks over the shell and apps on glass and confirms the result. Physical proof: a timestamped operator report tied to the installed build.
-- [ ] 9.3 Promote the build from master to the boot default and verify an ordinary boot.
+- [x] 9.2 The operator looks over the shell and apps on glass and confirms the result. Physical proof: a timestamped operator report tied to the installed build (`docs/evidence/shell-design-review/operator-report.md`: "looks good" on `1r8zfd5s`, 2026-10-26).
+- [x] 9.3 Promote the build from master to the boot default and verify an ordinary boot (`1r8zfd5s`, boot `887f0c98…`, `docs/evidence/shell-design-review/promotion/receipt.json`).

@@ -87,3 +87,5 @@ What they showed:
 - **Weather and Timer input.** The Weather and Timer apps' tap targets were
   exercised only through a pty on the host (`tests/test_term_apps.py`), not by
   touch on the glass.
+
+The operator's on-glass check and the promotion are in [operator-report.md](operator-report.md).

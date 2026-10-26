@@ -22,7 +22,7 @@ recorded in this change's `design.md`/`tasks.md`, not a board measurement.
 Showing only Nautilus in the drawer is the operator's 2026-10-26 decision
 (`the-shell-and-its-apps-look-finished`).*
 
-<!-- UNVERIFIED: the single "Files" entry awaits a board capture of the drawer. -->
+<!-- Grounding: the board drawer capture docs/evidence/shell-design-review/build-9kam3kq9/r2-drawer.png shows one "Files" entry; the operator accepted the build on glass on 2026-10-26 (docs/evidence/shell-design-review/operator-report.md). -->
 The system SHALL install Nautilus and Portfolio, each cross-built for the
 board's riscv64 target (`k230.shell.filesAppNautilus` defaults to `true`).
 The drawer SHALL list Nautilus as the one "Files" entry; Portfolio SHALL

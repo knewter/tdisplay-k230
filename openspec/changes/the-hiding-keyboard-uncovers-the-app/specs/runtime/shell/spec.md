@@ -5,7 +5,7 @@
 *Grounding: operator acceptance in `docs/evidence/proposal-closeout/2026-10-01/keyboard.md`, with prior source and board/QEMU evidence retaining their original classes and limits.*
 
 <!-- Grounding: operator accepts keyboard gestures on 2026-10-01; see docs/evidence/proposal-closeout/2026-10-01/keyboard.md. Earlier source/QEMU/installed evidence remains distinct. Quantitative responsiveness measurement is deferred to the-shell-profiles-reported-interaction-jank; not claimed passed. -->
-<!-- UNVERIFIED: the hiding keyboard uncovering app content (the-hiding-keyboard-uncovers-the-app) awaits its board observation. -->
+<!-- Grounding: the hiding keyboard uncovering app content is shown by injected-touch grim frames in docs/evidence/interaction-jank/keyboard-hide, and the operator accepted it on glass on build 1r8zfd5s on 2026-10-26 (docs/evidence/shell-design-review/operator-report.md). -->
 During an accepted keyboard drag the system SHALL move the keyboard with direct proportional contact displacement, remain stationary while contact is held still, and reverse immediately with contact. Release SHALL settle from the displayed geometry and bounded measured velocity to shown or hidden without a position jump or abrupt end. Reduced motion SHALL preserve direct manipulation while shortening release settlement. Reserved app space MUST match the final visible keyboard and remain coherent during transition. While the keyboard moves toward hidden, the app SHALL already hold the space the hidden keyboard releases, so the keyboard uncovers app content rather than a fill; while it moves toward shown, reserved space SHALL follow the keyboard.
 
 #### Scenario: Drag and reconsider

@@ -107,3 +107,11 @@ median / p95 in ms.
 - Presentation time is not photon time.
 
 Owned files under `/var/tmp` were removed.
+
+## Operator check and promotion
+
+On 2026-10-26 the operator checked the keyboard hide on glass and reported
+"looks good". The check was made on `1r8zfd5s`, which also carries the shell
+design-review fixes. That build is now the boot default, and an ordinary boot
+was verified on it. See
+[`docs/evidence/shell-design-review/operator-report.md`](../../shell-design-review/operator-report.md).
