@@ -2174,6 +2174,29 @@ DATA b6525a11d4555f88dfc7fc37e501b0baa1d2a88e0c052c464fc96b9be3593323 docs/evide
 DATA 99a2c6b0191ee7147957f6d9dd6c0df9745b2d7150f64148c3b28a8069851461 docs/evidence/omarchy-themes/background-video-board-2026-10-21/candidate2/panel-pause-resume.mp4
 DATA c751f7951fccb20f9f5b5048ce070d9c731516a9e5edfa625c38ac1b4993b44d docs/evidence/omarchy-themes/background-video-board-2026-10-21/candidate2/postboot-home.png
 DATA dac16dda343c1c88ed8888357c78bd83d690f037d9580a0945eb45528c0bd54e docs/evidence/omarchy-themes/background-video-board-2026-10-21/candidate2/reduced-motion/paused.png
+DATA 01b122e485f94d6198afbc0eb8502cc06391277edf382f895d8c63d3c5d53ff7 docs/evidence/shell-design-review/build-1r8zfd5s/r3-themes.png
+DATA 1812d04b9e217008ff82a7834baa363d79189e00c6d9d7792411aa391517dbee docs/evidence/shell-design-review/build-9kam3kq9/files-buttons-zoom.png
+DATA 69bfb72118c3256f4356b77a2710d5e61c171e45d2b0ea411028fa75cc625603 docs/evidence/shell-design-review/build-9kam3kq9/r2-drawer.png
+DATA 7ea1fce0beb946d4a82aa40a4ea0b35f38ff35e76d76973c7d13588e5f67404e docs/evidence/shell-design-review/build-9kam3kq9/r2-files.png
+DATA 4343c20dc5e30f0445ce030cf121b68044afe36bca884a3622a1f10837d716ca docs/evidence/shell-design-review/build-9kam3kq9/r2-home1.png
+DATA 34e366cb0bb5b36e61057258a5819193ebb8a9dc15c7ba506a6d9268ee0e9247 docs/evidence/shell-design-review/build-9kam3kq9/r2-ov1.png
+DATA 85e1c182777512c610f2629a7ce62be0ddd27c0301355fe2262a638b51a9b941 docs/evidence/shell-design-review/build-9kam3kq9/r2-ov2.png
+DATA ed400d49773fcfa67bb1059062bfea76b6fe889b11234d598191e4417352d44e docs/evidence/shell-design-review/build-9kam3kq9/r2-settings.png
+DATA 03337109f40e66e8d74ab77c42d007340a864cc34040254ebe375a22b70a6e1c docs/evidence/shell-design-review/build-9kam3kq9/r2-shade.png
+DATA 91a7ab0408513305fcbde2180dcce8cabbf0a9a99f4400afd216dbbfe5937005 docs/evidence/shell-design-review/build-9rbjw6vl/04-settings-scrolled.png
+DATA 36cab3e01df021bb06a38d244df12c8f6ccf6890d30c77ad3fda0b706f658cfa docs/evidence/shell-design-review/build-9rbjw6vl/app-2048.png
+DATA 5dc1f1b00be815aff60431c57aca46db89de9ea4bf902583076caebd3735d832 docs/evidence/shell-design-review/build-9rbjw6vl/app-clock.png
+DATA 3c0827cb2de58efe9e1306e20989620c2d158addbe1aaeb8ca97680b68e9b408 docs/evidence/shell-design-review/build-9rbjw6vl/app-fifteen.png
+DATA 69a8038a2d73680c6c00b41dfa78831b0547a987936db32a4952e52ba793bfcb docs/evidence/shell-design-review/build-9rbjw6vl/app-galculator.png
+DATA f01245f4ac1379cb56c757e2de832b330bbfb3faa5d0b7c65c1b95b761fc289d docs/evidence/shell-design-review/build-9rbjw6vl/app-net.png
+DATA ae0dd731fc9c405e6f0a1e70abc4048e1e203b6196457efbbe01548278d805dc docs/evidence/shell-design-review/build-9rbjw6vl/app-nethack.png
+DATA c74e282b77e30a09409e1b1406f612768bb651ee035824b112914b586c137f32 docs/evidence/shell-design-review/build-9rbjw6vl/app-samegame.png
+DATA 32a96813757fe7feb0d533314aa1de7bb72c7d4094c72edb3588369731101fbf docs/evidence/shell-design-review/build-9rbjw6vl/app-sixteen.png
+DATA 2f99703c82316d3c4752faecfabbb59cd36a5e35ea04bc58357320ec21e8e3db docs/evidence/shell-design-review/build-9rbjw6vl/app-timer.png
+DATA 4cea40933d790e29bd13cd92b5004b8b22388eb8bac1fc8945b4c8808218f035 docs/evidence/shell-design-review/build-9rbjw6vl/app-viewnior2.png
+DATA 008f58267065c92f33871018f7d6f9e909d7326fea8efbc215224eab12bec22c docs/evidence/shell-design-review/build-9rbjw6vl/app-zathura.png
+DATA ea4ec7c895a41d1650724e712607beb0c2ef0c6b9a18c104bbefb1ecffbf878c docs/evidence/shell-design-review/build-9rbjw6vl/files-buttons-before-gtk4-ini.png
+DATA 9d3efc0ef39905ff634d3f3bd842cad02022d1ec894240c12760804639295ec2 docs/evidence/shell-design-review/build-9rbjw6vl/ov-2-after-side-tap.png
 ```
 
 `group:` rows stand for a directory whose members are enumerated by
@@ -3973,3 +3996,33 @@ Native `grim` captures of the live Video card before entry, in the deck, after a
 | `docs/evidence/interaction-jank/ordinary-cards/probe-video/deck-dragged.png` | 191991 | DATA | `b4b2feb54cbe12d3b0cb53336d80bfc8cfd91a4b815b9f33b7ab929db068b45e` |
 | `docs/evidence/interaction-jank/ordinary-cards/probe-video/deck.png` | 148089 | DATA | `d96ea9a35c885e2007c8a5cac2c52fc80895e2a4f89d1a1361cb0c7eac699f29` |
 | `docs/evidence/interaction-jank/ordinary-cards/probe-video/expanded.png` | 401871 | DATA | `0b0be5a757efced534c41d28eeafe9013f364edf9f1078cfcb2a9899f896a182` |
+
+## Shell design review captures, 2026-10-26
+
+Native `grim` captures of the fixed shell surfaces and drawer apps; see `docs/evidence/shell-design-review/README.md`.
+
+| Path | Bytes | Class | SHA256 |
+| --- | ---: | --- | --- |
+| `docs/evidence/shell-design-review/build-1r8zfd5s/r3-themes.png` | 88364 | DATA | `01b122e485f94d6198afbc0eb8502cc06391277edf382f895d8c63d3c5d53ff7` |
+| `docs/evidence/shell-design-review/build-9kam3kq9/files-buttons-zoom.png` | 15262 | DATA | `1812d04b9e217008ff82a7834baa363d79189e00c6d9d7792411aa391517dbee` |
+| `docs/evidence/shell-design-review/build-9kam3kq9/r2-drawer.png` | 70350 | DATA | `69bfb72118c3256f4356b77a2710d5e61c171e45d2b0ea411028fa75cc625603` |
+| `docs/evidence/shell-design-review/build-9kam3kq9/r2-files.png` | 15079 | DATA | `7ea1fce0beb946d4a82aa40a4ea0b35f38ff35e76d76973c7d13588e5f67404e` |
+| `docs/evidence/shell-design-review/build-9kam3kq9/r2-home1.png` | 107965 | DATA | `4343c20dc5e30f0445ce030cf121b68044afe36bca884a3622a1f10837d716ca` |
+| `docs/evidence/shell-design-review/build-9kam3kq9/r2-ov1.png` | 32922 | DATA | `34e366cb0bb5b36e61057258a5819193ebb8a9dc15c7ba506a6d9268ee0e9247` |
+| `docs/evidence/shell-design-review/build-9kam3kq9/r2-ov2.png` | 33689 | DATA | `85e1c182777512c610f2629a7ce62be0ddd27c0301355fe2262a638b51a9b941` |
+| `docs/evidence/shell-design-review/build-9kam3kq9/r2-settings.png` | 64202 | DATA | `ed400d49773fcfa67bb1059062bfea76b6fe889b11234d598191e4417352d44e` |
+| `docs/evidence/shell-design-review/build-9kam3kq9/r2-shade.png` | 26071 | DATA | `03337109f40e66e8d74ab77c42d007340a864cc34040254ebe375a22b70a6e1c` |
+| `docs/evidence/shell-design-review/build-9rbjw6vl/04-settings-scrolled.png` | 56419 | DATA | `91a7ab0408513305fcbde2180dcce8cabbf0a9a99f4400afd216dbbfe5937005` |
+| `docs/evidence/shell-design-review/build-9rbjw6vl/app-2048.png` | 11155 | DATA | `36cab3e01df021bb06a38d244df12c8f6ccf6890d30c77ad3fda0b706f658cfa` |
+| `docs/evidence/shell-design-review/build-9rbjw6vl/app-clock.png` | 7016 | DATA | `5dc1f1b00be815aff60431c57aca46db89de9ea4bf902583076caebd3735d832` |
+| `docs/evidence/shell-design-review/build-9rbjw6vl/app-fifteen.png` | 14696 | DATA | `3c0827cb2de58efe9e1306e20989620c2d158addbe1aaeb8ca97680b68e9b408` |
+| `docs/evidence/shell-design-review/build-9rbjw6vl/app-galculator.png` | 18725 | DATA | `69a8038a2d73680c6c00b41dfa78831b0547a987936db32a4952e52ba793bfcb` |
+| `docs/evidence/shell-design-review/build-9rbjw6vl/app-net.png` | 9951 | DATA | `f01245f4ac1379cb56c757e2de832b330bbfb3faa5d0b7c65c1b95b761fc289d` |
+| `docs/evidence/shell-design-review/build-9rbjw6vl/app-nethack.png` | 29011 | DATA | `ae0dd731fc9c405e6f0a1e70abc4048e1e203b6196457efbbe01548278d805dc` |
+| `docs/evidence/shell-design-review/build-9rbjw6vl/app-samegame.png` | 8065 | DATA | `c74e282b77e30a09409e1b1406f612768bb651ee035824b112914b586c137f32` |
+| `docs/evidence/shell-design-review/build-9rbjw6vl/app-sixteen.png` | 17330 | DATA | `32a96813757fe7feb0d533314aa1de7bb72c7d4094c72edb3588369731101fbf` |
+| `docs/evidence/shell-design-review/build-9rbjw6vl/app-timer.png` | 8204 | DATA | `2f99703c82316d3c4752faecfabbb59cd36a5e35ea04bc58357320ec21e8e3db` |
+| `docs/evidence/shell-design-review/build-9rbjw6vl/app-viewnior2.png` | 6581 | DATA | `4cea40933d790e29bd13cd92b5004b8b22388eb8bac1fc8945b4c8808218f035` |
+| `docs/evidence/shell-design-review/build-9rbjw6vl/app-zathura.png` | 4209 | DATA | `008f58267065c92f33871018f7d6f9e909d7326fea8efbc215224eab12bec22c` |
+| `docs/evidence/shell-design-review/build-9rbjw6vl/files-buttons-before-gtk4-ini.png` | 16460 | DATA | `ea4ec7c895a41d1650724e712607beb0c2ef0c6b9a18c104bbefb1ecffbf878c` |
+| `docs/evidence/shell-design-review/build-9rbjw6vl/ov-2-after-side-tap.png` | 106020 | DATA | `9d3efc0ef39905ff634d3f3bd842cad02022d1ec894240c12760804639295ec2` |

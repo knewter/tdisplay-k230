@@ -1,0 +1,4 @@
+#!/bin/bash
+# run.sh 'actions' -- run ui.py on the board, then fetch new captures into verify/
+S=/tmp/claude-1000/-mnt-MediaVolume-home-jadams-src-gitlab-daringbit-com-josh-tdisplay-k230/461bb0b7-55d6-4ddc-8322-97e307ed51ff/scratchpad
+ssh -F ~/tmp/k230-coordination/ssh_config.private k230 "flock -n /tmp/k230-board.lock /nix/store/v189xydz6qkcd4cbkixcmv91w8hbc560-python3-riscv64-unknown-linux-gnu-3.14.7/bin/python3 /var/tmp/ui.py /var/tmp/verify \"$1\"" && ssh -F ~/tmp/k230-coordination/ssh_config.private k230 'tar -C /var/tmp/verify -cf - . && rm -f /var/tmp/verify/*' | tar -C $S/verify -xf -

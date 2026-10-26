@@ -2,9 +2,9 @@
 
 ### Requirement: The drawer sheet covers the output and its chrome is consistent
 
-*Grounding: the 2026-10-26 design review of native grim captures on the board (`the-shell-and-its-apps-look-finished` design.md).*
+*Grounding: the 2026-10-26 design review of native grim captures on the board (`the-shell-and-its-apps-look-finished` design.md); fixed-build captures in `docs/evidence/shell-design-review/README.md`.*
 
-<!-- UNVERIFIED: awaits board captures of the fixed build (tasks group 9). -->
+<!-- UNVERIFIED: injected-touch grim captures only; the operator's on-glass check (task 9.2) is pending. -->
 The drawer sheet SHALL cover the output from its top edge, so no application content shows above the sheet's handle. The Help control SHALL be drawn as the same themed control as the search field, at its height, with its label centred. Tile labels SHALL NOT use a bold weight.
 
 #### Scenario: Drawer over an app
@@ -13,9 +13,9 @@ The drawer sheet SHALL cover the output from its top edge, so no application con
 
 ### Requirement: Every drawer entry opens a window with its own identity
 
-*Grounding: the 2026-10-26 design review of native grim captures on the board (`the-shell-and-its-apps-look-finished` design.md).*
+*Grounding: the 2026-10-26 design review of native grim captures on the board (`the-shell-and-its-apps-look-finished` design.md); fixed-build captures in `docs/evidence/shell-design-review/README.md`.*
 
-<!-- UNVERIFIED: awaits board captures of the fixed build (tasks group 9). -->
+<!-- UNVERIFIED: injected-touch grim captures only; the operator's on-glass check (task 9.2) is pending. -->
 Every application the drawer lists SHALL open a window when launched, including on this image without Xwayland, and SHALL open at a size it accepts. Each game, Clock and Timer SHALL show an icon no other drawer entry uses. An application launched in a terminal SHALL run under its own app id so its card shows its own name and icon.
 
 #### Scenario: Viewnior opens

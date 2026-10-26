@@ -2,9 +2,9 @@
 
 ### Requirement: Overview cards show their app and the footer cue's tap goes Home
 
-*Grounding: the 2026-10-26 design review of native grim captures on the board (`the-shell-and-its-apps-look-finished` design.md).*
+*Grounding: the 2026-10-26 design review of native grim captures on the board (`the-shell-and-its-apps-look-finished` design.md); fixed-build captures in `docs/evidence/shell-design-review/README.md`.*
 
-<!-- UNVERIFIED: awaits board captures of the fixed build (tasks group 9). -->
+<!-- UNVERIFIED: injected-touch grim captures only; the operator's on-glass check (task 9.2) is pending. -->
 The compositor SHALL resolve card names and icons from the same desktop entries the launcher uses. A plain tap on the overview's bottom band that hits no card SHALL go Home.
 
 #### Scenario: Terminal card
