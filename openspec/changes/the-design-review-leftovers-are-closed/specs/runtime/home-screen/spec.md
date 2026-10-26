@@ -15,7 +15,7 @@ the widget from the picker with the physical trackpad and accepted it
 
 *Grounding (2026-10-26): board grim captures of the fixed build in `docs/evidence/shell-design-review/README.md` record the cut input line and the background chooser's frameless side slice; the operator accepted them as open limits (`docs/evidence/shell-design-review/operator-report.md`).*
 
-<!-- UNVERIFIED: injected-touch grim captures only (docs/evidence/design-review-leftovers/README.md); the operator's on-glass check (task 2.4) is pending. -->
+<!-- Grounding: injected-touch grim captures in docs/evidence/design-review-leftovers/README.md, and the operator's on-glass acceptance of build qh3i7b3f on 2026-10-26 (docs/evidence/design-review-leftovers/operator-report.md). -->
 Home SHALL offer a "Battery - Details" widget occupying 4 columns by 2 rows,
 drawn by the shell and placeable on any grid page like the other widgets. It
 SHALL show the battery percentage prominently with the state word (Charging,

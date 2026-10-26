@@ -54,3 +54,5 @@ change sets no threshold for it, and nothing about Omawrite was changed.
 - **The cold run.** It is a single sample, taken on a board that had been up
   for 2 h 47 min.
 - **Weather.** Its tap was checked visually and the capture is not committed.
+
+The operator's on-glass check and the promotion are in [operator-report.md](operator-report.md).

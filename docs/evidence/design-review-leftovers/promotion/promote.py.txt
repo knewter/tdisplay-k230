@@ -1,0 +1,65 @@
+"""Make the test-activated design-review leftovers build the boot default, with rollback.
+Swaps the old system path for the new one in /boot/{k230-tdisplay.dtb,bootargs.txt}
+(same-length store paths, one occurrence each), roots both systems, then sets the profile."""
+from pathlib import Path
+import os, json, hashlib, subprocess, shutil, signal, datetime
+root = Path('/var/lib/k230/leftovers-promote-20261026'); stage = root / 'promotion'; boot = Path('/boot')
+profile = Path('/nix/var/nix/profiles/system')
+new = '/nix/store/qh3i7b3f6isbmjphxw133nrw5901m474-nixos-system-nixos-26.11.20260919.20b1ddd'
+old = '/nix/store/1r8zfd5s7jy0wqkvinpxch908nl3w6sz-nixos-system-nixos-26.11.20260919.20b1ddd'
+names = ['k230-tdisplay.dtb', 'bootargs.txt']
+sha = lambda p: hashlib.file_digest(Path(p).open('rb'), 'sha256').hexdigest()
+assert len(new) == len(old)
+assert str(Path('/run/current-system').resolve()) == new
+assert str(Path('/run/booted-system').resolve()) == old and str(profile.resolve()) == old
+assert Path(new, 'kernel').resolve() == Path(old, 'kernel').resolve() and Path(new, 'initrd').resolve() == Path(old, 'initrd').resolve()
+stage.mkdir(parents=True, mode=0o700)
+expected = {}
+for name in names:
+    data = (boot / name).read_bytes()
+    counts = (data.count(old.encode()), data.count(new.encode()))
+    expected[name] = {'previous': sha(boot / name), 'old_refs': counts[0]}
+    assert counts[0] >= 1 and counts[1] == 0, (name, counts)
+    (stage / name).write_bytes(data.replace(old.encode(), new.encode()))
+    expected[name]['current'] = sha(stage / name)
+assert shutil.disk_usage(boot).free > 1048576 and shutil.disk_usage('/').free > 16 * 1048576
+backup = stage / 'rollback'; backup.mkdir(mode=0o700)
+for name in names:
+    with (boot / name).open('rb') as s, (backup / name).open('xb') as d:
+        shutil.copyfileobj(s, d); d.flush(); os.fsync(d.fileno())
+for rootname, system in [('accepted-system-root', new), ('rollback-system-root', old)]:
+    subprocess.run(['nix-store', '--add-root', str(root / rootname), '--indirect', '--realise', system], capture_output=True, check=True, timeout=60)
+def protected():
+    r = {}
+    for p in boot.iterdir():
+        if p.name in names: continue
+        r[p.name] = {'symlink': os.readlink(p)} if p.is_symlink() else ({'sha256': sha(p)} if p.is_file() else {'directory': True})
+    return r
+before = protected()
+state = {'phase': 'ROLLBACK_PROTECTED', 'started_utc': datetime.datetime.now(datetime.timezone.utc).isoformat(),
+         'previous_system': old, 'candidate_system': new, 'boot_id': Path('/proc/sys/kernel/random/boot_id').read_text().strip(),
+         'expected': expected, 'source_revision': '8baf2c911f2a1d47bed77e8bf676e4747e5260ca', 'ordinary_boot_verified': False}
+def save():
+    t = stage / 'receipt.new'; t.write_text(json.dumps(state, indent=2) + '\n'); t.replace(stage / 'receipt.json')
+def replace(src, dest, h):
+    assert sha(src) == h and not dest.is_symlink()
+    t = dest.with_name(dest.name + '.compositor-new'); assert not t.exists()
+    with src.open('rb') as i, t.open('xb') as o: shutil.copyfileobj(i, o); o.flush(); os.fsync(o.fileno())
+    assert sha(t) == h; t.chmod(0o644); os.replace(t, dest); os.sync(); assert sha(dest) == h
+def interrupt(signum, frame): raise InterruptedError('promotion interrupted')
+for sig in (signal.SIGHUP, signal.SIGTERM, signal.SIGINT): signal.signal(sig, interrupt)
+save()
+try:
+    for name in names:
+        state['phase'] = 'replacing-' + name; save(); replace(stage / name, boot / name, expected[name]['current'])
+    assert protected() == before
+    subprocess.run(['nix-env', '--profile', str(profile), '--set', new], capture_output=True, check=True, timeout=60)
+    assert str(profile.resolve()) == new
+    state.update(phase='PERSISTENT_SELECTED', finished_utc=datetime.datetime.now(datetime.timezone.utc).isoformat(), profile_after=os.readlink(profile)); save()
+except BaseException as e:
+    state.update(phase='ROLLING_BACK', error_class=type(e).__name__); save()
+    for name in names:
+        (boot / (name + '.compositor-new')).unlink(missing_ok=True); replace(backup / name, boot / name, expected[name]['previous'])
+    subprocess.run(['nix-env', '--profile', str(profile), '--set', old], capture_output=True, check=True, timeout=60)
+    state['phase'] = 'ROLLED_BACK'; save(); raise
+print(json.dumps({k: state[k] for k in ('phase', 'expected', 'profile_after')}, indent=1))
