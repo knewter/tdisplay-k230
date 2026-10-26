@@ -119,6 +119,13 @@ def render_gtk3_settings(mode: str, icon_theme: str | None) -> str:
         ""])
 
 
+def render_gtk4_settings() -> str:
+    """GTK4 `settings.ini`: close-only decorations. libadwaita on this image
+    does not take `button-layout` from the GSettings keyfile backend, but does
+    read `gtk-decoration-layout` here."""
+    return "\n".join([GTK3_INI_MARKER, "[Settings]", "gtk-decoration-layout=:close", ""])
+
+
 def render_gtk3_css(colors: dict[str, str], mode: str) -> str:
     """GTK3 `gtk.css` over Adwaita from the generation's validated colors.
 

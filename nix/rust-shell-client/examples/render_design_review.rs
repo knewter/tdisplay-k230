@@ -29,8 +29,8 @@ fn board_settings() -> SettingsSnapshot {
     SettingsSnapshot {
         network: control(ControlState::ReadOnly, Some(ControlValue::Text("link-up".into())), "Network link available", None),
         brightness: control(ControlState::Writable, Some(ControlValue::Percent(58)), "Brightness", None),
-        keyboard: control(ControlState::Action, None, "Toggle keyboard", None),
-        motion: control(ControlState::Writable, Some(ControlValue::Boolean(false)), "Reduce motion", Some("Session preference")),
+        keyboard: control(ControlState::Action, None, "Show or hide", None),
+        motion: control(ControlState::Writable, Some(ControlValue::Boolean(false)), "Reduce motion", Some("Fewer animations")),
         volume: k230_shell_rust::service_data::unknown_volume_placeholder(),
     }
 }

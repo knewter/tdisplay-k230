@@ -149,10 +149,10 @@ static int print_status(const char *root, bool keyboard, const char *motion) {
 	network(root);
 	fputs(",\"brightness\":", stdout);
 	brightness(root);
-	printf(",\"keyboard\":{\"state\":\"%s\",\"value\":null,\"label\":\"Toggle keyboard\",\"action\":%s}",
+	printf(",\"keyboard\":{\"state\":\"%s\",\"value\":null,\"label\":\"Show or hide\",\"action\":%s}",
 	       keyboard ? "action" : "unavailable", keyboard ? "\"keyboard-toggle\"" : "null");
 	bool known = motion && (!strcmp(motion, "0") || !strcmp(motion, "1"));
-	printf(",\"motion\":{\"state\":\"%s\",\"value\":%s,\"label\":\"Reduced motion\",\"detail\":\"Session preference\"}}}\n",
+	printf(",\"motion\":{\"state\":\"%s\",\"value\":%s,\"label\":\"Reduced motion\",\"detail\":\"Fewer animations\"}}}\n",
 	       known ? "read-only" : "unavailable", known ? (!strcmp(motion, "1") ? "true" : "false") : "null");
 	return fflush(stdout) == 0 && !ferror(stdout) ? 0 : 1;
 }

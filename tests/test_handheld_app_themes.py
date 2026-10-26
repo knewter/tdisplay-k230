@@ -98,6 +98,8 @@ class AppAppearance(unittest.TestCase):
             self.assertEqual(app.link_gtk3(target, config), [])
             for name in ("settings.ini", "gtk.css"):
                 self.assertEqual(os.readlink(config / "gtk-3.0" / name), str(target / "gtk-3.0" / name))
+            self.assertEqual(os.readlink(config / "gtk-4.0/settings.ini"), str(target / "gtk-4.0/settings.ini"))
+            self.assertIn("gtk-decoration-layout=:close", (config / "gtk-4.0/settings.ini").read_text())
             self.assertEqual(app.link_gtk3(target, config), [])  # idempotent
             # A stale link into an older generation of ours is replaced.
             old = state / "app-appearance/generations" / ("0" * 24)

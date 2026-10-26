@@ -2851,19 +2851,10 @@ fn paint_drawer_chrome(
     color(cr, style.text, HANDLE_ALPHA);
     let _ = cr.fill();
 
-    // Help is a pill of the search field's height and fill, so the two
-    // read as one row of controls.
+    // Help is the same themed control card as the search field, at its
+    // height, so the two read as one row of controls.
     let (hx, hy, hw, hh) = navigation::help_rect(width, height);
-    rounded(cr, hx, hy, hw, hh, hh / 2.0);
-    let _ = cr.save();
-    cr.clip();
-    if !theme_brush(theme, "launcher", "search")
-        .is_some_and(|brush| fill_brush(cr, brush, hx, hy, hw, hh))
-    {
-        color(cr, palette_rgb_or(theme, "surface2", 0x2a2f3a), 1.0);
-        let _ = cr.paint();
-    }
-    let _ = cr.restore();
+    service_card_interaction(cr, theme, "launcher", hx, hy, hw, hh, false, false, false);
     let help_y = hy + (hh - context_font_size(cr, TYPE_LABEL) * 1.2) / 2.0;
     let help_w = text_advance(cr, "Help", TYPE_LABEL, pango::Weight::Normal).min(hw);
     text(cr, "Help", hx + (hw - help_w) / 2.0, help_y, hw, TYPE_LABEL, style.text);

@@ -36,7 +36,7 @@ What a person runs into today:
 ## What Changes
 
 - **Drawer:** the sheet covers the output from the top edge; Help matches
-  the search field's height and shape; tile labels use a lighter weight.
+  the search field's height, shape and fill; tile labels use a lighter weight.
 - **Apps:**
   - Viewnior runs on Wayland.
   - btop opens at a size it accepts.

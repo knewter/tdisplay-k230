@@ -347,6 +347,15 @@ static char *icon_theme_lookup(const struct icon_roots *roots, const char *theme
 					return guess;
 			}
 		}
+		/* An SVG-only icon package (nix/handheld-app-icons) ships just
+		 * scalable/<context>/<name>.svg and no index.theme of its own. */
+		for (size_t g = 0; g < sizeof(fallback_dirs) / sizeof(fallback_dirs[0]); g++) {
+			char subdir[128];
+			snprintf(subdir, sizeof(subdir), "scalable/%s", fallback_dirs[g]);
+			char *guess = icon_try_file(roots->paths[i], theme, subdir, name);
+			if (guess)
+				return guess;
+		}
 	}
 	if (*inherits) {
 		char copy[256];

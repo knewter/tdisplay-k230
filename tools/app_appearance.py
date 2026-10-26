@@ -18,6 +18,7 @@ import tempfile
 import time
 
 from theme_gtk import (GTK3_CSS_MARKER, GTK3_INI_MARKER, GtkAppearanceError, render as gtk_keyfile,
+                       render_gtk4_settings,
                        render_gtk3_css, render_gtk3_settings)
 from theme_transaction import TransactionError, _pointer
 
@@ -100,10 +101,12 @@ def gtk_appearance(generation: Path) -> tuple[str, str | None]:
 
 
 def gtk3_files(colors: dict[str, str], mode: str, icon_theme: str | None) -> dict[str, str]:
-    """GTK3 apps' `settings.ini` and `gtk.css`, keyed by path inside a generation."""
+    """GTK3 apps' `settings.ini` and `gtk.css`, and GTK4's `settings.ini`,
+    keyed by path inside a generation."""
     try:
         return {"gtk-3.0/settings.ini": render_gtk3_settings(mode, icon_theme),
-                "gtk-3.0/gtk.css": render_gtk3_css(colors, mode)}
+                "gtk-3.0/gtk.css": render_gtk3_css(colors, mode),
+                "gtk-4.0/settings.ini": render_gtk4_settings()}
     except GtkAppearanceError as error:
         raise AppAppearanceError(str(error)) from error
 
@@ -179,8 +182,8 @@ def prepare(generation: Path, state_root: Path) -> Path:
         for name, monitor in (("terminal-foot.ini", False), ("monitor-foot.ini", True)):
             (work / name).write_text(foot_config(colors, monitor=monitor))
         (work / "gtk-settings.keyfile").write_text(gtk_settings)
-        (work / "gtk-3.0").mkdir()
         for name, text in gtk3.items():
+            (work / name).parent.mkdir(exist_ok=True)
             (work / name).write_text(text)
         coverage = {
             "generation": generation.name,
@@ -265,20 +268,26 @@ def sync(state_root: Path, *, expected_generation: str | None = None,
         return target
 
 
+GTK_LINKS = (("gtk-3.0", "settings.ini", GTK3_INI_MARKER), ("gtk-3.0", "gtk.css", GTK3_CSS_MARKER),
+             ("gtk-4.0", "settings.ini", GTK3_INI_MARKER))
+
+
 def link_gtk3(target: Path, config_home: Path) -> list[str]:
-    """Point ~/.config/gtk-3.0/{settings.ini,gtk.css} at a prepared generation.
+    """Point ~/.config/gtk-3.0/{settings.ini,gtk.css} and
+    ~/.config/gtk-4.0/settings.ini at a prepared generation.
 
     Idempotent. A file is replaced only when it is a symlink we made (into an
     app-appearance generation) or a regular file starting with our marker;
     anything else is left alone and named in the returned withheld list.
     """
     withheld = []
-    directory = config_home / "gtk-3.0"
-    if directory.is_symlink() or (directory.exists() and not directory.is_dir()):
-        return ["gtk-3.0 config directory is foreign"]
-    directory.mkdir(mode=0o755, parents=True, exist_ok=True)
-    for name, marker in (("settings.ini", GTK3_INI_MARKER), ("gtk.css", GTK3_CSS_MARKER)):
-        source = target / "gtk-3.0" / name
+    for subdir, name, marker in GTK_LINKS:
+        directory = config_home / subdir
+        if directory.is_symlink() or (directory.exists() and not directory.is_dir()):
+            withheld.append(f"{subdir} config directory is foreign")
+            continue
+        directory.mkdir(mode=0o755, parents=True, exist_ok=True)
+        source = target / subdir / name
         link = directory / name
         if link.is_symlink():
             raw = Path(os.readlink(link))
@@ -291,7 +300,7 @@ def link_gtk3(target: Path, config_home: Path) -> list[str]:
         else:
             ours = not os.path.lexists(link)
         if not ours:
-            withheld.append(f"gtk-3.0/{name} is not written by this adapter")
+            withheld.append(f"{subdir}/{name} is not written by this adapter")
             continue
         with tempfile.TemporaryDirectory(prefix=".link-", dir=directory) as scratch:
             candidate = Path(scratch) / name

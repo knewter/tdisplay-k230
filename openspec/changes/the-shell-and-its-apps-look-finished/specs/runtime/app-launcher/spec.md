@@ -5,7 +5,7 @@
 *Grounding: the 2026-10-26 design review of native grim captures on the board (`the-shell-and-its-apps-look-finished` design.md).*
 
 <!-- UNVERIFIED: awaits board captures of the fixed build (tasks group 9). -->
-The drawer sheet SHALL cover the output from its top edge, so no application content shows above the sheet's handle. The Help control SHALL share the search field's height and fully rounded shape, with its label centred. Tile labels SHALL NOT use a bold weight.
+The drawer sheet SHALL cover the output from its top edge, so no application content shows above the sheet's handle. The Help control SHALL be drawn as the same themed control as the search field, at its height, with its label centred. Tile labels SHALL NOT use a bold weight.
 
 #### Scenario: Drawer over an app
 - **WHEN** the drawer is opened over a running application

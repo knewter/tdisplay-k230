@@ -1,6 +1,6 @@
 ## 1. Drawer
 
-- [ ] 1.1 Start the drawer sheet at the top edge, with no top corner radius there, and keep the handle, search and Help positions relative to it. Make Help a pill of the search field's height with its label centred. Draw tile labels at a medium weight. Proof: `cargo test --offline --manifest-path nix/rust-shell-client/Cargo.toml --lib` and a landscape render from `examples/render_landscape_surfaces.rs`.
+- [ ] 1.1 Start the drawer sheet at the top edge, with no top corner radius there, and keep the handle, search and Help positions relative to it. Draw Help as the search field's themed control at its height, with its label centred. Draw tile labels at a medium weight. Proof: `cargo test --offline --manifest-path nix/rust-shell-client/Cargo.toml --lib` and a landscape render from `examples/render_landscape_surfaces.rs`.
 
 ## 2. Apps
 
