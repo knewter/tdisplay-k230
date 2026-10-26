@@ -64,14 +64,13 @@ pub const GRID_BOTTOM_INSET: f64 = 24.0;
 const TILE_GAP: f64 = 24.0;
 const SIDE_MARGIN: f64 = 24.0;
 
-/// The sheet's own top inset from the very edge of the screen -- a small
-/// gap, not the old ~19%-of-height band, so the sheet fills nearly the
-/// whole panel once open (`docs/design/app-drawer-review.md` §2: "filling
-/// the screen from the top inset, with no black band above it"). Fixed in
-/// pixels, not proportional to `height`, like this module's other
-/// geometry constants -- this panel's physical size never changes.
+/// The sheet's own top inset from the very edge of the screen. Zero: the
+/// open sheet covers the whole output, because any band above it showed
+/// the app underneath (the-shell-and-its-apps-look-finished). Kept as a
+/// function so the handle, search, grid and close-drag geometry all stay
+/// relative to it.
 pub fn panel_top(_height: u32) -> f64 {
-    32.0
+    0.0
 }
 
 /// Height of the fixed top chrome below `panel_top`: the drag handle and
@@ -144,7 +143,7 @@ pub fn search_field_hit(point: (f64, f64), width: u32, height: u32) -> bool {
 /// Deliberately opened Help, outside the app grid and search hit region.
 pub fn help_rect(width: u32, height: u32) -> (f64, f64, f64, f64) {
     let w = help_width();
-    (f64::from(width) - SIDE_MARGIN - w, panel_top(height) + 22.0, w, search_field_height() + 8.0)
+    (f64::from(width) - SIDE_MARGIN - w, panel_top(height) + 22.0, w, search_field_height())
 }
 
 pub fn help_hit(point: (f64, f64), width: u32, height: u32) -> bool {

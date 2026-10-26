@@ -1372,6 +1372,9 @@ impl ThemeView {
                 let header = crate::render::settings_header(w);
                 if !(header.links_y.0..header.links_y.1).contains(&end.1) {
                     None
+                } else if end.0 >= header.themes_x.1 {
+                    // Done, when the links share the Title's row.
+                    None
                 } else if end.0 > header.themes_x.0 {
                     Some(ThemeIntent::Open)
                 } else if end.0 > header.vision_x.0 {
@@ -1875,11 +1878,14 @@ mod tests {
         let view = ThemeView::default();
         for (w, h) in [(568u32, 1232u32), (1280, 800)] {
             let tap = |x: f64, y: f64| view.hit((x, y), (x, y), w, h);
-            let w = f64::from(w);
-            assert_eq!(tap(w - 100.0, 120.0), Some(ThemeIntent::Open));
-            assert_eq!(tap(w - 250.0, 120.0), Some(ThemeIntent::OpenVision));
-            assert_eq!(tap(w - 400.0, 120.0), None);
-            assert_eq!(tap(w - 250.0, 200.0), None);
+            let head = crate::render::settings_header(f64::from(w));
+            let mid = |range: (f64, f64)| (range.0 + range.1) / 2.0;
+            let y = mid(head.links_y);
+            assert_eq!(tap(mid(head.themes_x), y), Some(ThemeIntent::Open));
+            assert_eq!(tap(mid(head.vision_x), y), Some(ThemeIntent::OpenVision));
+            assert!(head.vision_x.1 <= head.themes_x.0 + 1.0, "Vision sits left of Themes");
+            assert_eq!(tap(head.vision_x.0 - 40.0, y), None);
+            assert_eq!(tap(mid(head.vision_x), head.links_y.1 + 40.0), None);
         }
     }
 

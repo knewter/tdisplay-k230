@@ -31,7 +31,7 @@ use k230_shell_rust::{
         key_backlight_slider_frame, key_backlight_slider_hit, shade_panel_close_zone,
         notification_max_scroll, settings_body_top, settings_max_scroll, notification_swipe_hit, notification_swipe_offset,
         notification_swipe_release, notification_swipe_start, notification_swipe_valid,
-        panel_intent, settings_output_picker_hit, settings_slider_column_hit, settings_slider_frame,
+        panel_intent, settings_output_picker_hit, settings_slider_column_hit, settings_slider_frame, settings_slider_y,
         slider_band, volume_icon_tap_zone,
         volume_slider_band, Confirmation, DrawerSearch, NotificationCoast, NotificationSwipeSettle,
         PanelClose, PanelIntent, ServiceView, SWIPE_VERTICAL_CANCEL,
@@ -5254,9 +5254,10 @@ impl ShellClient {
                         settings_slider_frame(self.route, self.width, self.height);
                     let in_slider_column =
                         settings_slider_column_hit(self.route, self.width, self.height, pos.0);
+                    let slider_y = settings_slider_y(self.route, pos.1, self.width, self.height);
                     self.brightness_drag = if on_settings_capabilities_page
                         && in_slider_column
-                        && slider_band(self.route, pos.1, &self.service_view)
+                        && slider_band(self.route, slider_y, &self.service_view)
                     {
                         let mut drag = slider::Drag::start_at(id, slider_x, slider_w, slider::MIN_PERCENT);
                         let value = drag.value_at(pos.0);
@@ -5283,7 +5284,7 @@ impl ShellClient {
                     // row's Y band.
                     self.output_picker_touch = if on_settings_capabilities_page
                         && in_slider_column
-                        && settings_output_picker_hit(pos.1, self.route, &self.service_view)
+                        && settings_output_picker_hit(slider_y, self.route, &self.service_view)
                     {
                         Some(id)
                     } else {
@@ -5292,7 +5293,7 @@ impl ShellClient {
                     let volume_row_touched = self.output_picker_touch.is_none()
                         && on_settings_capabilities_page
                         && in_slider_column
-                        && volume_slider_band(self.route, pos.1, &self.service_view);
+                        && volume_slider_band(self.route, slider_y, &self.service_view);
                     // The speaker glyph shares the volume row's own Y band
                     // but must never arm a drag (`volume_icon_tap_zone` is
                     // left of `slider::track_bounds`'s own `left`, i.e.

@@ -431,14 +431,14 @@ impl IconCache {
 /// failure -- matching `decode`'s own "absent surface reads as absent,
 /// never as a panic" convention -- is simply an invisible label, not a
 /// crash.
-/// The label's Pango layout: bold, centred, wrapped onto at most `lines`
+/// The label's Pango layout: medium weight, centred, wrapped onto at most `lines`
 /// lines, the last one ellipsized.
 fn label_layout(cr: &Context, value: &str, width: f64, size: f64, lines: u32) -> pango::Layout {
     let layout = pangocairo::functions::create_layout(cr);
     let mut font = FontDescription::new();
     font.set_family(FONT_FAMILY);
     font.set_absolute_size(size * f64::from(pango::SCALE));
-    font.set_weight(pango::Weight::Bold);
+    font.set_weight(pango::Weight::Medium);
     layout.set_font_description(Some(&font));
     layout.set_text(value);
     layout.set_width((width * f64::from(pango::SCALE)) as i32);

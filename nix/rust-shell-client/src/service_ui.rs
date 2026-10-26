@@ -538,6 +538,18 @@ pub fn shade_panel_close_zone(pos: (f64, f64), width: u32, height: u32, view: &S
 /// actually being writable: when brightness is unavailable, no slider is
 /// drawn there at all (`render.rs`), so the band must not silently steal
 /// gestures from whatever plain text sits in its place instead.
+/// A screen y on the Settings page as the slider column's design y: the
+/// wide layout raises its columns under the one-row header
+/// (`render::settings_wide_offset`), so `slider_band`, `volume_slider_band`
+/// and `settings_output_picker_hit` take their y through this.
+pub fn settings_slider_y(route: Route, y: f64, width: u32, height: u32) -> f64 {
+    if route == Route::Settings && crate::settings_wide(width, height) {
+        y - crate::render::settings_wide_offset(0, false).1
+    } else {
+        y
+    }
+}
+
 pub fn slider_band(route: Route, y: f64, view: &ServiceView) -> bool {
     let writable = view
         .settings
@@ -898,7 +910,12 @@ pub fn shade_adopts_poll(
 /// header's last line.
 pub fn settings_body_top(width: u32, height: u32) -> f64 {
     let (scale, _) = crate::settings_content_transform(width, height);
-    (crate::render::settings_first_y() - 8.0) * scale
+    let first_y = if crate::settings_wide(width, height) {
+        crate::render::settings_wide_first_y()
+    } else {
+        crate::render::settings_first_y()
+    };
+    (first_y - 8.0) * scale
 }
 
 /// How far the Settings body can scroll: its content bottom against the
@@ -2136,7 +2153,7 @@ mod tests {
             let brightness = items.iter().find(|i| i.0 == "brightness").unwrap().1;
             let motion = items.iter().find(|i| i.0 == "motion").unwrap().1;
             view.settings_scroll = 0.0;
-            let band_y = brightness.1 + 10.0;
+            let band_y = settings_slider_y(Route::Settings, brightness.1 + 10.0, 1232, 568);
             assert!(slider_band(Route::Settings, band_y, &writable_brightness_view()));
             assert!(settings_slider_column_hit(Route::Settings, 1232, 568, brightness.0 + 40.0));
             assert!(!settings_slider_column_hit(Route::Settings, 1232, 568, motion.0 + 40.0));
@@ -2144,7 +2161,7 @@ mod tests {
             // Dead space above a column's first row, or below its last,
             // never reaches another column's row.
             for x in [200.0, 600.0, 1000.0] {
-                let tap = (x, 60.0 + 100.0);
+                let tap = (x, settings_body_top(1232, 568) + 2.0);
                 assert_eq!(panel_intent(Route::Settings, tap, tap, 1232, 568, &view), None);
             }
         }
@@ -2332,7 +2349,9 @@ mod tests {
             // The header bands do not overlap and the rows start below them.
             let head = crate::render::settings_header(f64::from(width));
             assert!(head.vision_x.1 <= head.themes_x.0 && head.vision_x.0 >= 0.0);
-            assert!(head.links_y.0 >= head.done_bottom && head.first_y > head.links_y.1);
+            // The links have their own row, or share the Title's row left of Done.
+            assert!(head.links_y.0 >= head.done_bottom || head.themes_x.1 <= head.done_x);
+            assert!(head.first_y > head.links_y.1);
             assert!(settings_body_top(width, height) >= head.links_y.1);
             if width == 568 {
                 // Scrolled to the end, Power off is tappable where it is drawn.

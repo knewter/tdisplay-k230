@@ -3431,10 +3431,13 @@ static bool input_up(struct sway_seat *seat, int32_t id, uint64_t event_ms) {
 		bool home = !edge.cancelled && !edge.moved && id == edge.id &&
 			edge.intent == EDGE_HOME && edge.x >= shell.policy.config.width * .35 &&
 			edge.x <= shell.policy.config.width * .65;
-		/* The Shade and side Back bands lie over the Overview backdrop, so a
-		 * plain tap there is a backdrop tap: Home, as cs_up's CS_HOME. */
+		/* The Shade, side Back and bottom Home bands lie over the Overview
+		 * backdrop, so a plain tap there outside every card is a backdrop
+		 * tap: Home, as cs_up's CS_HOME. The bottom band carries the
+		 * "Home · tap or swipe up" cue across its whole width. */
 		bool backdrop = !edge.cancelled && !edge.moved && id == edge.id &&
-			(edge.intent == EDGE_SHADE || edge.intent == EDGE_BACK) &&
+			(edge.intent == EDGE_SHADE || edge.intent == EDGE_BACK ||
+			 edge.intent == EDGE_HOME) &&
 			shell.active && shell.policy.mode == CS_DECK &&
 			cs_hit_test(&shell.policy, edge.x, edge.y) == SIZE_MAX;
 		if (!edge.cancelled && id == edge.id && !home && !backdrop) edge_client_up(event_ms);

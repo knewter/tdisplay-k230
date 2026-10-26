@@ -267,6 +267,11 @@ pub struct HomeLayout {
     /// failure.
     #[serde(default = "default_columns")]
     pub columns: usize,
+    /// Set once a dock whose icons were packed against its start has been
+    /// centred ([`Self::centre_packed_dock`]). Older files load as `false`
+    /// and are centred once; after that the person's own arrangement stands.
+    #[serde(default)]
+    pub dock_centred: bool,
 }
 
 impl Default for HomeLayout {
@@ -276,6 +281,7 @@ impl Default for HomeLayout {
             pages: Vec::new(),
             dock: Vec::new(),
             columns: home_grid::COLUMNS,
+            dock_centred: false,
         }
     }
 }
@@ -287,6 +293,7 @@ impl HomeLayout {
             pages: vec![Vec::new()],
             dock: vec![None; dock_slots],
             columns: home_grid::COLUMNS,
+            dock_centred: false,
         }
     }
 
@@ -351,6 +358,20 @@ impl HomeLayout {
                 self.place_first_fit(item, apps_per_page);
             }
         }
+    }
+
+    /// Centres a dock whose icons are packed against its start with at least
+    /// two free slots after them, splitting the free slots between both
+    /// ends, so a short dock does not sit to one side of its tray. A dock
+    /// with a gap inside its run was arranged by hand and is left alone.
+    pub fn centre_packed_dock(&mut self) {
+        self.dock_centred = true;
+        let used = self.dock.iter().rposition(Option::is_some).map_or(0, |last| last + 1);
+        let free = self.dock.len() - used;
+        if used == 0 || free < 2 || self.dock[..used].iter().any(Option::is_none) {
+            return;
+        }
+        self.dock.rotate_right(free / 2);
     }
 
     /// Number of pages, always at least 1 so a fresh/empty Home still has a
@@ -644,6 +665,7 @@ impl HomeLayout {
             let Some(id) = iter.next() else { break };
             *slot = Some(HomeItem::app(id));
         }
+        layout.centre_packed_dock();
         layout.ensure_page(0, apps_per_page);
         layout.place(HomeSlot::Grid { page: 0, slot: 0 }, HomeItem::Widget { widget: WidgetKind::Clock }, apps_per_page, false);
         for id in iter {
@@ -708,6 +730,7 @@ impl From<HomeLayoutV1> for HomeLayout {
             // Schema 1 predates per-column reflow entirely; its cells were
             // always laid out at the reference 4 columns.
             columns: home_grid::COLUMNS,
+            dock_centred: false,
         }
     }
 }
@@ -915,6 +938,18 @@ mod tests {
     }
 
     #[test]
+    fn centring_moves_only_a_packed_run_once() {
+        let app = |id: &str| Some(HomeItem::app(id));
+        let mut layout = HomeLayout { dock: vec![app("a"), app("b"), None, None, None, None], ..HomeLayout::default() };
+        layout.centre_packed_dock();
+        assert_eq!(layout.dock, vec![None, None, app("a"), app("b"), None, None]);
+        assert!(layout.dock_centred);
+        let mut gapped = HomeLayout { dock: vec![app("a"), None, app("c"), None, None, None], ..HomeLayout::default() };
+        gapped.centre_packed_dock();
+        assert_eq!(gapped.dock, vec![app("a"), None, app("c"), None, None, None], "a hand-made gap is kept");
+    }
+
+    #[test]
     fn fit_dock_grows_empty_and_shrinks_without_hiding_an_item() {
         let app = |id: &str| Some(HomeItem::app(id));
         let mut layout = HomeLayout { dock: vec![app("a"), None, app("c"), None], ..HomeLayout::default() };
@@ -1064,6 +1099,7 @@ mod tests {
             pages: vec![vec![Some(HomeItem::app("a.desktop")), None, Some(HomeItem::app("b.desktop"))]],
             dock: vec![Some(HomeItem::app("c.desktop")), None],
             columns: home_grid::COLUMNS,
+            dock_centred: true,
         };
         save(&path, &layout).unwrap();
         assert_eq!(load(&path), Some(layout));
@@ -1104,7 +1140,7 @@ mod tests {
         let path = dir.join("home.json");
         let apps = vec![app("foot.desktop", "Foot")];
         let first = load_or_seed(Some(&path), &apps, 4, 8);
-        assert_eq!(first.dock[0], Some(HomeItem::app("foot.desktop")));
+        assert_eq!(first.dock, vec![None, Some(HomeItem::app("foot.desktop")), None, None], "a one-app seed sits centred");
         let changed_apps = vec![app("other.desktop", "Other")];
         let second = load_or_seed(Some(&path), &changed_apps, 4, 8);
         assert_eq!(second, first);
@@ -1124,6 +1160,7 @@ mod tests {
             pages: vec![vec![Some(HomeItem::app("gone.desktop")), None]],
             dock: vec![None; 4],
             columns: home_grid::COLUMNS,
+            dock_centred: false,
         };
         save(&path, &layout).unwrap();
         let loaded = load(&path).unwrap();
@@ -1144,7 +1181,7 @@ mod tests {
         assert_eq!(load(&path), None);
         let apps = vec![app("foot.desktop", "Foot")];
         let layout = load_or_seed(Some(&path), &apps, 4, 8);
-        assert_eq!(layout.dock[0], Some(HomeItem::app("foot.desktop")));
+        assert_eq!(layout.dock, vec![None, Some(HomeItem::app("foot.desktop")), None, None], "a one-app seed sits centred");
         std::fs::remove_dir_all(&dir).unwrap();
     }
 

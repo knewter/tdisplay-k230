@@ -672,13 +672,22 @@ pub fn settings_header(width: f64) -> SettingsHeader {
     let links_fit = ((width - 28.0) / (estimated_text_w(16, TYPE_LABEL) + 72.0)).min(1.0);
     let themes_w = (estimated_text_w(8, TYPE_LABEL) + 48.0) * links_fit;
     let vision_w = (estimated_text_w(8, TYPE_LABEL) + 24.0) * links_fit;
-    let eyebrow_y = done_bottom + links_h + 4.0;
+    // A wide panel has room for the links beside Done on the Title's row,
+    // which gives that row back to the controls; a narrow one stacks them.
+    let title_w = estimated_text_w(8, TYPE_TITLE) + 28.0 + 24.0;
+    let one_row = title_w + vision_w + themes_w + done_w <= width;
+    let (links_y, links_right) = if one_row {
+        ((0.0, done_bottom), width - done_w)
+    } else {
+        ((done_bottom, done_bottom + links_h), width)
+    };
+    let eyebrow_y = links_y.1 + 4.0;
     SettingsHeader {
         done_x: width - done_w,
         done_bottom,
-        links_y: (done_bottom, done_bottom + links_h),
-        vision_x: (width - themes_w - vision_w, width - themes_w),
-        themes_x: (width - themes_w, width),
+        links_y,
+        vision_x: (links_right - themes_w - vision_w, links_right - themes_w),
+        themes_x: (links_right - themes_w, links_right),
         eyebrow_y,
         first_y: (eyebrow_y + vision_line(TYPE_LABEL) + 12.0).ceil(),
     }
@@ -687,6 +696,14 @@ pub fn settings_header(width: f64) -> SettingsHeader {
 /// The first row's top in the content column's design space.
 pub fn settings_first_y() -> f64 {
     settings_header(crate::DESIGN_WIDTH).first_y
+}
+
+/// The first row's top in the wide (landscape) layout, whose header is laid
+/// out across the three columns' full width -- one row when the links fit
+/// beside Done.
+pub fn settings_wide_first_y() -> f64 {
+    let width = crate::SETTINGS_WIDE_ORIGIN_X * 2.0 + crate::SETTINGS_WIDE_COL_PITCH * 2.0 + crate::SETTINGS_WIDE_COL_W;
+    settings_header(width).first_y
 }
 
 /// The Volume row's output line, from the row's top: between the heading
@@ -745,12 +762,14 @@ pub fn settings_row_column(row: u32) -> usize {
 /// their single-column design position: `(dx, dy)` added to the design x/y.
 /// Column 1's rows slide up to the top of the row area and column 2's Power
 /// heading takes the first row's y, so each column reads as its own stack
-/// starting at the header's `first_y`. `render` paints through this offset
+/// starting at the wide header's `first_y`. `render` paints through this offset
 /// and `service_ui::panel_intent` subtracts the same one, so a tap and its
 /// paint cannot drift apart.
 pub fn settings_wide_offset(column: usize, key_backlight: bool) -> (f64, f64) {
     let dx = crate::SETTINGS_WIDE_ORIGIN_X + column as f64 * crate::SETTINGS_WIDE_COL_PITCH;
-    let dy = match column {
+    // Every column also rises by whatever the wide header saves over the
+    // single column's stacked one.
+    let dy = settings_wide_first_y() - settings_first_y() + match column {
         0 => 0.0,
         1 => settings_first_y() - settings_row_y(3),
         _ => settings_first_y() - settings_layout(key_backlight).power_heading_y,
@@ -1045,6 +1064,10 @@ fn paint_control_border(cr: &Context, theme: Option<&AppearanceSnapshot>, sectio
 fn control_text(control: &Control) -> String {
     match &control.value {
         Some(ControlValue::Percent(value)) => format!("{value}%"),
+        // The helper's network states are protocol words; show the ones a
+        // person would use.
+        Some(ControlValue::Text(value)) if value == "link-up" => "Connected".into(),
+        Some(ControlValue::Text(value)) if value == "disconnected" => "Not connected".into(),
         Some(ControlValue::Text(value)) => value.clone(),
         Some(ControlValue::Boolean(value)) => {
             if *value { "On".into() } else { "Off".into() }
@@ -1052,6 +1075,12 @@ fn control_text(control: &Control) -> String {
         None => control.label.clone(),
     }
 }
+
+/// How wide the fade is at each outer edge of a wide carousel column.
+const CAROUSEL_EDGE_FADE: f64 = 56.0;
+
+/// How far below the Settings header a scrolled body fades out.
+const SETTINGS_SCROLL_FADE: f64 = 20.0;
 
 /// The box a slider-end glyph (sun, speaker) is drawn in, centred on the
 /// point the touch geometry already uses (`volume_icon_tap_zone`).
@@ -1667,12 +1696,33 @@ fn paint_theme_chooser(
     // `theme_ui::chooser_layout` is what `main.rs` hit-tests with too.
     let lay = view.layout(w as u32, h as u32);
     // The wide layout keeps each carousel's slices inside its own half.
+    // Slices are drawn into a group and painted back through a mask that
+    // fades the column's outer edges, so a neighbour's thumbnail thins out
+    // instead of ending in a hard cut at the column or output edge.
     let column_clip = |cr: &Context, cols: (f64, f64)| {
         let _ = cr.save();
         if lay.wide {
             cr.rectangle(cols.0, 0.0, cols.1 - cols.0, h);
             cr.clip();
+            cr.push_group();
         }
+    };
+    let column_end = |cr: &Context, cols: (f64, f64)| {
+        if lay.wide {
+            if let Ok(group) = cr.pop_group() {
+                let span = cols.1 - cols.0;
+                let edge = (CAROUSEL_EDGE_FADE / span).min(0.5);
+                let mask = cairo::LinearGradient::new(cols.0, 0.0, cols.1, 0.0);
+                mask.add_color_stop_rgba(0.0, 0.0, 0.0, 0.0, 0.0);
+                mask.add_color_stop_rgba(edge, 0.0, 0.0, 0.0, 1.0);
+                mask.add_color_stop_rgba(1.0 - edge, 0.0, 0.0, 0.0, 1.0);
+                mask.add_color_stop_rgba(1.0, 0.0, 0.0, 0.0, 0.0);
+                if cr.set_source(&group).is_ok() {
+                    let _ = cr.mask(&mask);
+                }
+            }
+        }
+        let _ = cr.restore();
     };
     if let Some(brush) = theme_brush(theme, "image-picker", "background") {
         let _ = fill_brush(cr, brush, 0.0, 0.0, w, h);
@@ -1746,7 +1796,7 @@ fn paint_theme_chooser(
                 view.applying_theme_index(),
                 pulse_phase,
             );
-            let _ = cr.restore();
+            column_end(cr, lay.theme_cols);
             let entry = &list.themes[centered];
             let is_current = list.active.id.as_deref() == Some(entry.id.as_str());
             let label_y = lay.theme_top + lay.theme_geometry.expanded_h + 12.0;
@@ -1851,7 +1901,7 @@ fn paint_theme_chooser(
                 view.applying_background_index(),
                 pulse_phase,
             );
-            let _ = cr.restore();
+            column_end(cr, lay.background_cols);
             let background = &preview.backgrounds[centered];
             let label_y = lay.background_top + lay.background_geometry.expanded_h + 12.0;
             heading(
@@ -2634,7 +2684,9 @@ fn paint_drawer_sheet(cr: &Context, theme: Option<&AppearanceSnapshot>, width: u
     let h = f64::from(height);
     let panel_y = panel_top(height);
     let _ = cr.save();
-    rounded_top(cr, 0.0, panel_y, w, h - panel_y, 28.0);
+    // Rounded only when the sheet stops short of the top edge; at the edge
+    // its corners would show the app underneath.
+    rounded_top(cr, 0.0, panel_y, w, h - panel_y, if panel_y > 0.0 { 28.0 } else { 0.0 });
     cr.clip();
     if vision_adjusted(theme) {
         // A translucent sheet lets the wallpaper fight larger text; a vision
@@ -2799,10 +2851,22 @@ fn paint_drawer_chrome(
     color(cr, style.text, HANDLE_ALPHA);
     let _ = cr.fill();
 
+    // Help is a pill of the search field's height and fill, so the two
+    // read as one row of controls.
     let (hx, hy, hw, hh) = navigation::help_rect(width, height);
-    service_card(cr, theme, "launcher", hx, hy, hw, hh, false);
+    rounded(cr, hx, hy, hw, hh, hh / 2.0);
+    let _ = cr.save();
+    cr.clip();
+    if !theme_brush(theme, "launcher", "search")
+        .is_some_and(|brush| fill_brush(cr, brush, hx, hy, hw, hh))
+    {
+        color(cr, palette_rgb_or(theme, "surface2", 0x2a2f3a), 1.0);
+        let _ = cr.paint();
+    }
+    let _ = cr.restore();
     let help_y = hy + (hh - context_font_size(cr, TYPE_LABEL) * 1.2) / 2.0;
-    text(cr, "Help", hx + 12.0, help_y, hw - 24.0, TYPE_LABEL, style.text);
+    let help_w = text_advance(cr, "Help", TYPE_LABEL, pango::Weight::Normal).min(hw);
+    text(cr, "Help", hx + (hw - help_w) / 2.0, help_y, hw, TYPE_LABEL, style.text);
     let (sx, sy, sw, sh) = search_field_rect(width, height);
     rounded(cr, sx, sy, sw, sh, sh / 2.0);
     let _ = cr.save();
@@ -2982,8 +3046,12 @@ fn paint_shade_header(
         // The Shade's one primary action takes the accent (design.md §10).
         text(cr, "Dismiss all", hw - 24.0 - dismiss_w, dismiss_y, dismiss_w, dismiss_size, style.accent);
     }
-    let count_room = hw - 56.0 - if count > 0 { dismiss_w + 16.0 } else { 0.0 };
-    text(cr, &count_label, 28.0, count_y + (count_h - line(count_size)) / 2.0, count_room, count_size, style.muted);
+    // The empty state says "No new notifications" already; a "0
+    // notifications" line beside it would repeat it.
+    if count > 0 {
+        let count_room = hw - 56.0 - dismiss_w - 16.0;
+        text(cr, &count_label, 28.0, count_y + (count_h - line(count_size)) / 2.0, count_room, count_size, style.muted);
+    }
 }
 
 /// The Settings header (`settings_header`): the Title fits beside Done, the
@@ -3313,7 +3381,7 @@ fn scene(
                 paint_card(cr, theme, "controls", CardJob::Control, 24.0, y, hw - 48.0, shade_toggle_h() - 8.0);
                 let available = keyboard.state == ControlState::Action;
                 let ink = if available { style.text } else { style.muted };
-                // The helper keeps the label "Toggle keyboard" in both states,
+                // The helper keeps the label "Show or hide" in both states,
                 // so the unavailable card says so instead of echoing it.
                 let detail = if available { control_text(keyboard) } else { "Unavailable".into() };
                 // The two lines centred by their drawn height
@@ -3342,10 +3410,20 @@ fn scene(
             };
             let preview = items.and_then(|snapshot| snapshot.preview.as_ref());
             let tile_h = shade_preview_tile_h(preview.is_some());
+            // Wide and empty: the message alone, centred in the list column,
+            // not a lone card pinned to its top.
+            let centred_empty = shade.wide && show_preview && preview.is_none() && items.is_some();
+            if centred_empty {
+                let size = context_font_size(cr, TYPE_BODY);
+                let msg = "No new notifications";
+                let msg_w = text_advance(cr, msg, TYPE_BODY, pango::Weight::Normal).min(pw);
+                let y = shade.list_top + (shade.list_bottom - shade.list_top - size * 1.25) / 2.0;
+                text(cr, msg, px + (pw - msg_w) / 2.0, y, pw, TYPE_BODY, style.muted);
+            }
             let _ = cr.save();
             cr.translate(px, py - 262.0);
             let w = pw;
-            if show_preview {
+            if show_preview && !centred_empty {
                 service_card(
                     cr,
                     theme,
@@ -3570,7 +3648,7 @@ fn scene(
                     (0u32, "Wi-Fi ›", &settings.network, Glyph::Wifi),
                     (1, "Brightness", &settings.brightness, Glyph::Sun),
                     (3, "Keyboard", &settings.keyboard, Glyph::Keyboard),
-                    (4, "Motion", &settings.motion, Glyph::Motion),
+                    (4, "Reduce motion", &settings.motion, Glyph::Motion),
                 ] {
                     place(settings_row_column(row));
                     let y = settings_row_y(row);
@@ -3624,7 +3702,7 @@ fn scene(
                     themed_role(cr, theme, "body", &label, value_x, volume_y + volume_lines.0, value_w, TYPE_BODY, style.text, pango::Weight::Normal);
                     themed_role_fit(
                         cr, theme, "caption",
-                        &format!("{} · tap to change output", sink.description),
+                        &format!("{} ›", sink.description),
                         row_text_x,
                         volume_y + settings_output_detail_y(),
                         row_text_width,
@@ -3716,6 +3794,28 @@ fn scene(
             }
             let _ = cr.restore();
             let _ = cr.restore();
+            // A scrolled body meets a hairline and fades into the page
+            // under it, so no line of text ends in a bare cut.
+            let scrolled = services.is_some_and(|view| view.settings_scroll > 0.0);
+            if scrolled && body_top > 0.0 {
+                let full_w = f64::from(width);
+                let bg = palette_rgb_or(theme, "background", 0x1e1e2e);
+                let (r, g, b) = (
+                    f64::from((bg >> 16) & 0xff) / 255.0,
+                    f64::from((bg >> 8) & 0xff) / 255.0,
+                    f64::from(bg & 0xff) / 255.0,
+                );
+                let fade = cairo::LinearGradient::new(0.0, body_top, 0.0, body_top + SETTINGS_SCROLL_FADE);
+                fade.add_color_stop_rgba(0.0, r, g, b, 0.95);
+                fade.add_color_stop_rgba(1.0, r, g, b, 0.0);
+                cr.rectangle(0.0, body_top, full_w, SETTINGS_SCROLL_FADE);
+                if cr.set_source(&fade).is_ok() {
+                    let _ = cr.fill();
+                }
+                cr.rectangle(24.0, body_top, full_w - 48.0, 1.0);
+                color(cr, style.muted, 0.35);
+                let _ = cr.fill();
+            }
         }
         Route::Help => paint_help(cr, theme, width, height, services),
         Route::Power => {
@@ -4762,7 +4862,9 @@ fn paint_battery_details(cr: &Context, style: &VisualStyle, rect: (f64, f64, f64
         .fold(0.0, f64::max);
     let width_room = if widest > 0.0 { cell_w * 0.96 / widest } else { 1.0 };
     let grid_room = (h - radius * 2.2 - line_size * 1.3) / (base_value * 1.3 * 2.0);
-    let grid_scale = crate::layout_text_scale().min(grid_room).min(width_room).max(1.0);
+    // A pair that would not fit even at 100% shrinks a little rather than
+    // losing its unit to an ellipsis.
+    let grid_scale = crate::layout_text_scale().min(grid_room).max(1.0).min(width_room.max(0.85));
     let label_size = base_label * grid_scale;
     let value_size = base_value * grid_scale;
     let row_h = value_size * 1.3;
@@ -4980,8 +5082,18 @@ fn paint_widget_card_content(cr: &Context, style: &VisualStyle, kind: WidgetKind
             let strip_y = y + h - pad * 0.6 - strip_h;
             let hl_y = strip_y - line_h - 4.0;
             let hero_top = loc_y + line_h;
-            let hero_size = (h * 0.24).min(((hl_y - hero_top) / 1.2).max(0.0) / context_font_size(cr, 1.0));
+            let mut hero_size = (h * 0.24).min(((hl_y - hero_top) / 1.2).max(0.0) / context_font_size(cr, 1.0));
             let hero = temp_c.map_or_else(|| "--".to_string(), crate::home_widgets::weather::fahrenheit_label);
+            // Where the temperature's line shares rows with the glyph, it
+            // keeps to the width left of the glyph's backdrop.
+            let glyph_bottom = y + pad + glyph_size * 0.4 + glyph_size * 0.62;
+            if hero_top < glyph_bottom {
+                let room = w - pad * 2.0 - glyph_size * 1.08 - 4.0;
+                let advance = text_advance(cr, &hero, hero_size, pango::Weight::Bold);
+                if advance > room && advance > 0.0 {
+                    hero_size *= (room / advance).max(0.0);
+                }
+            }
             hero_glow(cr, &hero, x + pad, hero_top, w, hero_size, style.text, pango::Weight::Bold, false, FONT_FAMILY);
             let high_low = match (high_c, low_c) {
                 (Some(high), Some(low)) => format!("H {}  L {}", crate::home_widgets::weather::fahrenheit_label(high),
@@ -7825,10 +7937,9 @@ mod tests {
                     frame[(600 * 568 + 10) * 4 + 3].abs_diff(expected_drawer_alpha) <= 1,
                     "drawer panel alpha must follow the active generation's launcher background"
                 );
-                assert_eq!(
-                    &frame[0..4],
-                    &[0, 0, 0, 0],
-                    "live deck stays visible above drawer"
+                assert!(
+                    frame[3].abs_diff(expected_drawer_alpha) <= 1,
+                    "the drawer sheet reaches the top edge"
                 );
             }
             if let Some(directory) = &output {
@@ -9399,13 +9510,13 @@ mod tests {
             .unwrap();
         let pixel = (900 * 568 + 280) * 4;
         assert_eq!(&frame[pixel..pixel + 4], &[0, 0, 255, 255]);
-        assert_eq!(&frame[0..4], &[0, 0, 0, 0]);
+        assert_eq!(&frame[0..4], &[0, 0, 255, 255], "the sheet reaches the top edge");
         renderer.draw_wallpaper(&mut frame, 568, 1232).unwrap();
         assert_eq!(&frame[0..4], &[0, 0, 255, 255]);
     }
 
     #[test]
-    fn drawer_keeps_live_scene_above_opaque_panel() {
+    fn drawer_sheet_covers_the_output_from_its_top_edge() {
         let apps = vec![AppEntry {
             id: "foot.desktop".into(),
             name: "Terminal".into(),
@@ -9414,7 +9525,7 @@ mod tests {
         }];
         let mut frame = vec![0; 568 * 1232 * 4];
         draw_shm(&mut frame, 568, 1232, Route::Drawer, &apps, 1.0).unwrap();
-        assert_eq!(&frame[0..4], &[0, 0, 0, 0]);
+        assert_eq!(frame[3], 255, "no live scene shows above the sheet");
         let panel_pixel = (900 * 568 + 280) * 4;
         assert_eq!(frame[panel_pixel + 3], 255);
         assert!(draw_shm(&mut frame[..100], 568, 1232, Route::Drawer, &apps, 1.0).is_err());

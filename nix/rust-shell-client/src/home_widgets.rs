@@ -56,10 +56,10 @@ pub mod battery {
         match state {
             BatteryState::Absent => "No battery info".to_string(),
             BatteryState::Present { percent, status } if status.eq_ignore_ascii_case("charging") => {
-                format!("{percent}% - Charging")
+                format!("{percent}% · Charging")
             }
             BatteryState::Present { percent, status } if status.eq_ignore_ascii_case("full") => {
-                format!("{percent}% - Full")
+                format!("{percent}% · Full")
             }
             BatteryState::Present { percent, .. } => format!("{percent}%"),
         }
@@ -308,12 +308,12 @@ pub mod battery {
         }
 
         /// The state word, with the charge type while charging
-        /// ("Charging - Fast"). `Not charging`/`Full` pass through.
+        /// ("Charging · Fast"). `Not charging`/`Full` pass through.
         pub fn state_label(&self) -> String {
             if self.is_charging() {
                 if let Some(kind) = self.input.as_ref().and_then(|input| input.charge_type.as_deref()) {
                     if !kind.eq_ignore_ascii_case("none") && !kind.eq_ignore_ascii_case("unknown") {
-                        return format!("Charging - {kind}");
+                        return format!("Charging · {kind}");
                     }
                 }
             }
@@ -328,14 +328,28 @@ pub mod battery {
             } else if self.is_charging() {
                 (self.time_to_full_s?, "to full")
             } else {
-                return None;
+                // Full or not charging: say where the power comes from
+                // rather than leave the line empty.
+                return self.on_charger().then(|| "On charger".to_string());
             };
             Some(format!("{} {suffix}", format_duration(seconds)))
         }
 
+        /// External power is present (the charger reports online).
+        pub fn on_charger(&self) -> bool {
+            self.input.as_ref().is_some_and(|input| input.online == Some(true))
+        }
+
+        /// Neither charging nor discharging: a gauge's zero current and power
+        /// then say nothing, so those readings are left out.
+        fn idle(&self) -> bool {
+            !self.is_charging() && !self.is_discharging()
+        }
+
         /// Signed battery current, "+600 mA" / "\u{2212}412 mA".
         pub fn current_label(&self) -> Option<String> {
-            self.current_ua.map(|ua| format_signed_ma(round_to(ua, 10_000)))
+            let ua = round_to(self.current_ua?, 10_000);
+            (ua != 0 || !self.idle()).then(|| format_signed_ma(ua))
         }
 
         /// Power in watts, signed like the current when known; the gauge's
@@ -352,7 +366,8 @@ pub mod battery {
                 Some(ua) => ua < 0,
                 None => self.power_uw.is_some_and(|power| power < 0),
             };
-            Some(format_watts(round_to(magnitude, 100_000), negative))
+            let rounded = round_to(magnitude, 100_000);
+            (rounded != 0 || !self.idle()).then(|| format_watts(rounded, negative))
         }
 
         pub fn voltage_label(&self) -> Option<String> {
@@ -388,12 +403,13 @@ pub mod battery {
             self.health_percent().map(|percent| format!("{percent}%"))
         }
 
+        /// A gauge that reports zero cycles is not counting them.
         pub fn cycles_label(&self) -> Option<String> {
-            self.cycles.map(|count| count.to_string())
+            self.cycles.filter(|count| *count > 0).map(|count| count.to_string())
         }
 
         /// The input line: where power comes from, then limit and targets.
-        /// E.g. "USB power - limit 3.25 A - 2.05 A @ 4.21 V".
+        /// E.g. "USB power · limit 3.25 A · 2.05 A @ 4.21 V".
         pub fn input_label(&self) -> Option<String> {
             let mut parts: Vec<String> = Vec::new();
             match &self.input {
@@ -430,7 +446,7 @@ pub mod battery {
             if parts.is_empty() {
                 None
             } else {
-                Some(parts.join(" - "))
+                Some(parts.join(" · "))
             }
         }
     }
@@ -538,7 +554,7 @@ pub mod battery {
             let state = read_state(&dir);
             assert_eq!(state, BatteryState::Present { percent: 72, status: "Charging".into() });
             assert!(state.is_charging());
-            assert_eq!(format(&state), "72% - Charging");
+            assert_eq!(format(&state), "72% · Charging");
             std::fs::remove_dir_all(&dir).unwrap();
         }
 
@@ -550,7 +566,7 @@ pub mod battery {
         #[test]
         fn a_full_battery_formats_distinctly_from_a_plain_percent() {
             let full = BatteryState::Present { percent: 100, status: "Full".into() };
-            assert_eq!(format(&full), "100% - Full");
+            assert_eq!(format(&full), "100% · Full");
             let discharging = BatteryState::Present { percent: 54, status: "Discharging".into() };
             assert_eq!(format(&discharging), "54%");
             assert!(!discharging.is_charging());
@@ -603,16 +619,16 @@ pub mod battery {
             let dir = root("charging", &[("bq25890-charger-0", CHARGER_ONLINE), ("bq27220-0", GAUGE_CHARGING)]);
             let d = present(read_details(&dir));
             assert_eq!(d.percent, 55);
-            assert_eq!(d.state_label(), "Charging - Fast");
+            assert_eq!(d.state_label(), "Charging · Fast");
             assert_eq!(d.time_label().as_deref(), Some("2 h 16 m to full"));
             assert_eq!(d.current_label().as_deref(), Some("+600 mA"));
             assert_eq!(d.power_label().as_deref(), Some("+2.5 W"));
             assert_eq!(d.voltage_label().as_deref(), Some("4.20 V"));
             assert_eq!(d.charge_label().as_deref(), Some("1627 / 3000 mAh"));
             assert_eq!(d.health_label().as_deref(), Some("100%"));
-            assert_eq!(d.cycles_label().as_deref(), Some("0"));
+            assert_eq!(d.cycles_label(), None, "a zero cycle count is not shown");
             assert_eq!(d.temperature_label().as_deref(), Some("38.1 \u{b0}C"));
-            assert_eq!(d.input_label().as_deref(), Some("USB power - limit 3.25 A - 2.05 A @ 4.21 V"));
+            assert_eq!(d.input_label().as_deref(), Some("USB power · limit 3.25 A · 2.05 A @ 4.21 V"));
             std::fs::remove_dir_all(&dir).unwrap();
         }
 

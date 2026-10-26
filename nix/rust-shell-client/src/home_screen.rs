@@ -330,6 +330,9 @@ impl HomeScreen {
         let apps_per_page = home_grid::apps_per_page(width, height);
         self.layout.reflow_to(columns, apps_per_page);
         self.layout.fit_dock(home_grid::dock_slots(width, height), apps_per_page);
+        if !self.layout.dock_centred {
+            self.layout.centre_packed_dock();
+        }
     }
 
     /// Clears every piece of cross-page-drag tracking state -- called at the
@@ -1386,6 +1389,7 @@ mod tests {
             dock: dock.iter().map(|entry| entry.map(HomeItem::app)).collect(),
             pages: vec![vec![Some(HomeItem::app("a.desktop")), Some(HomeItem::app("b.desktop")), None, None]],
             columns: home_grid::COLUMNS,
+            dock_centred: true,
         };
         HomeScreen::new(layout, WIDTH as f64)
     }
