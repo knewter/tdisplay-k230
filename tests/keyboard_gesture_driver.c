@@ -127,6 +127,21 @@ int main(int argc,char **argv) {
 		assert(kg_tick(&p,851)&KG_DIRTY);
 		assert(p.mode==KG_SHOWN && p.progress==1);
 		assert(kg_down(&p,8,100,900,860,1232,true,false,false)==KG_NONE);
+	} else if (!strcmp(argv[1],"hide-reserve")) {
+		p.mode=KG_SHOWN;p.progress=1;
+		near(kg_reserved(&p),1);
+		assert(kg_down(&p,3,100,780,110,1232,true,false,false)&KG_CONSUME);
+		kg_motion(&p,3,100,800,130); assert(p.progress<1);
+		near(kg_reserved(&p),0);
+		kg_motion(&p,3,100,900,150); near(kg_reserved(&p),0);
+		kg_motion(&p,3,100,900,170); near(kg_reserved(&p),0);
+		kg_motion(&p,3,100,850,190); near(kg_reserved(&p),p.progress);
+		kg_up(&p,3,200);
+		for (uint64_t t=216;p.mode==KG_SETTLE && t<3000;t+=16) {
+			double before=p.progress; kg_tick(&p,t);
+			double r=kg_reserved(&p);
+			if (p.progress<before) near(r,0); else near(r,p.progress);
+		}
 	} else assert(0);
 	printf("PASS %s\n",argv[1]);
 }

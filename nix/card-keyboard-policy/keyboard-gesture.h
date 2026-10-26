@@ -14,6 +14,7 @@ struct kg_policy {
 	double first_x, first_y, second_x, second_y, start_centroid;
 	double grip_start, start_progress, progress, velocity;
 	double height;
+	double reserved, reserved_seen;
 	bool first_live, second_live, reduced_motion, target_shown;
 	bool show_requested;
 	int32_t owned[16];
@@ -30,6 +31,11 @@ unsigned kg_up(struct kg_policy *p, int32_t id, uint64_t ms);
 unsigned kg_surface(struct kg_policy *p, bool mapped);
 unsigned kg_tick(struct kg_policy *p, uint64_t ms);
 unsigned kg_cancel(struct kg_policy *p);
+/* The share (0..1) of the keyboard's space the app gives up. It follows
+ * progress upward but drops to 0 as soon as progress falls, so a hiding
+ * keyboard uncovers app content already drawn at full height instead of a
+ * fill the app has not reached yet. */
+double kg_reserved(struct kg_policy *p);
 /* Device cancel/seat loss terminates the whole touch stream; no ups follow. */
 unsigned kg_end_stream(struct kg_policy *p, bool keyboard_mapped);
 #endif

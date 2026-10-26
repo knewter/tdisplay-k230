@@ -1,0 +1,2 @@
+held-a.png: grip_top=352 light_rows_above=84
+held-b.png: grip_top=352 light_rows_above=0

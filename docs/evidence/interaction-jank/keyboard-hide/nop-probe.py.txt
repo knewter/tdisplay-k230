@@ -1,0 +1,144 @@
+#!/usr/bin/env python3
+"""On-screen keyboard show/type/hold/reverse/hide workload, injected touch.
+
+Usage: keyboard-cycles.py OUT_DIR EXPECTED_SYSTEM CYCLES [--bench]
+Opens an owned Foot window (app id k230.kbd.trial, running `cat >/dev/null`)
+so typed keys go nowhere, then repeats CYCLES times:
+  show   two contacts in the bottom 72 px, 40 ms apart, 200 px apart,
+         swiped up 250 px over 400 ms; 800 ms settle
+  type   three key taps (100 ms contact, 300 ms apart); 400 ms pause
+  hold   grip drag down 150 px over 400 ms, hold 300 ms, back up over
+         300 ms, release; 800 ms settle
+  hide   grip drag down 260 px over 350 ms, release; 1000 ms settle
+Touch reports are spaced 8.14 ms (measured real-finger rate) with sleeps,
+never spins (one CPU). With --bench the compositor's own benchmark is armed
+(`card_shell benchmark injected`) for the whole workload and stopped after.
+Evidence class: board, injected native touch.
+"""
+import fcntl, json, os, struct, subprocess, sys, time
+from pathlib import Path
+
+out = Path(sys.argv[1]); expected = sys.argv[2]; cycles = 1
+bench = '--bench' in sys.argv[4:]
+if str(Path('/run/current-system').resolve()) != expected:
+    raise SystemExit('installed system differs from expected')
+assert 1 <= cycles <= 20
+out.mkdir(mode=0o700)
+ENV = ['sudo', '-u', 'shell', 'env', 'XDG_RUNTIME_DIR=/run/shell', 'WAYLAND_DISPLAY=wayland-1',
+       'SWAYSOCK=/run/shell/sway-ipc.sock', 'PATH=/run/current-system/sw/bin']
+def sh(*a, **kw): return subprocess.run(ENV + list(a), check=True, timeout=25, **kw)
+def sway(cmd): return sh('swaymsg', cmd, capture_output=True, text=True).stdout
+def tree(): return json.loads(sh('swaymsg', '-t', 'get_tree', '-r', capture_output=True).stdout)
+def apps(n=None):
+    n = n or tree(); r = {n.get('app_id')} if n.get('app_id') else set()
+    for c in n.get('nodes', []) + n.get('floating_nodes', []): r |= apps(c)
+    return r
+def grim(name):
+    data = sh('grim', '-', capture_output=True).stdout; assert data.startswith(b'\x89PNG')
+    (out / f'{name}.png').write_bytes(data)
+def layers():
+    # Layer-shell surfaces are not in get_tree; the keyboard is one.
+    return sh('swaymsg', '-t', 'get_outputs', '-r', capture_output=True, text=True).stdout
+
+outs = [o for o in json.loads(layers()) if o.get('active')]
+assert len(outs) == 1 and outs[0]['transform'] == '270' and outs[0]['rect']['height'] == 568
+assert 'k230.kbd.trial' not in apps()
+meta = {'evidence_class': 'board, injected native touch (persistent uinput); not real glass',
+        'system': expected, 'bench': bench, 'cycles': cycles, 'step_ms': 8.14,
+        'output': {k: outs[0][k] for k in ('name', 'transform', 'rect', 'max_render_time')},
+        'started_utc': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime()), 'events': []}
+
+real = os.open('/dev/input/event1', os.O_RDONLY)
+axes = [0, 1, 0x2f, 0x30, 0x35, 0x36, 0x39]; info = {}
+for a in axes:
+    b = bytearray(24); fcntl.ioctl(real, 0x80184540 + a, b); info[a] = struct.unpack('6i', b)
+os.close(real)
+fd = os.open('/dev/uinput', os.O_WRONLY | os.O_NONBLOCK)
+for bit in (0, 1, 3): fcntl.ioctl(fd, 0x40045564, bit)
+fcntl.ioctl(fd, 0x40045565, 0x14a)
+for a in axes: fcntl.ioctl(fd, 0x40045567, a)
+fcntl.ioctl(fd, 0x4004556e, 1)
+mx, mn = [0] * 64, [0] * 64
+for a, v in info.items(): mn[a], mx[a] = v[1], v[2]
+dev = (struct.pack('80sHHHHi', b'K230 injected touchscreen', 0x18, 0, 0, 0, 0)
+       + struct.pack('64i', *mx) + struct.pack('64i', *mn) + struct.pack('64i', *[0] * 64) * 2)
+os.write(fd, dev); fcntl.ioctl(fd, 0x5501); time.sleep(1.0)
+ev = struct.Struct('@llHHi')
+def frame(events):
+    b = b''.join(ev.pack(0, 0, *e) for e in [*events, (0, 0, 0)]); assert os.write(fd, b) == len(b)
+def raw(a, f): return round(info[a][1] + f * (info[a][2] - info[a][1]))
+def pos(x, y):
+    nx = y / 567; ny = 1 - x / 1231
+    return [(3, 0x35, raw(0x35, nx)), (3, 0x36, raw(0x36, ny))]
+tid = [300]
+def down(slot, x, y, first):
+    tid[0] += 1
+    e = [(3, 0x2f, slot), (3, 0x39, tid[0]), (3, 0x30, 20), *pos(x, y)]
+    if first: e += [(3, 0, raw(0, y / 567)), (3, 1, raw(1, 1 - x / 1231)), (1, 0x14a, 1)]
+    frame(e)
+def move(pts):
+    e = []
+    for slot, x, y in pts: e += [(3, 0x2f, slot), *pos(x, y)]
+    x, y = pts[0][1], pts[0][2]; e += [(3, 0, raw(0, y / 567)), (3, 1, raw(1, 1 - x / 1231))]
+    frame(e)
+def up(slots, last):
+    e = []
+    for s in slots: e += [(3, 0x2f, s), (3, 0x39, -1)]
+    if last: e += [(1, 0x14a, 0)]
+    frame(e)
+def path(pts0, pts1, ms):
+    steps = max(2, round(ms / 8.14)); t0 = time.monotonic()
+    for i in range(1, steps + 1):
+        time.sleep(max(0, t0 + i * 0.00814 - time.monotonic()))
+        f = i / steps
+        move([(s, x0 + (x1 - x0) * f, y0 + (y1 - y0) * f)
+              for (s, x0, y0), (_, x1, y1) in zip(pts0, pts1)])
+def mark(kind, start): meta['events'].append({'kind': kind, 'start': start, 'end': time.time()})
+
+import threading
+def app_h():
+    def walk(n):
+        if n.get('app_id') == 'k230.kbd.trial': return n
+        for c in n.get('nodes', []) + n.get('floating_nodes', []):
+            r = walk(c)
+            if r: return r
+    w = walk(tree()); return (w['rect']['height'], w.get('window_rect', {}).get('height')) if w else None
+log = []
+def sampler(stop, tag):
+    while not stop.is_set():
+        log.append((tag, round(time.monotonic(), 3), app_h())); time.sleep(0.05)
+def grab_at(delays, tag):
+    t0 = time.monotonic()
+    def run():
+        for i, d in enumerate(delays):
+            time.sleep(max(0, t0 + d - time.monotonic()))
+            log.append((tag, round(time.monotonic(), 3), f'grim {i} start'))
+            grim(f'{tag}-{i}'); log.append((tag, round(time.monotonic(), 3), f'grim {i} end'))
+    th = threading.Thread(target=run); th.start(); return th
+def show():
+    down(0, 516, 552, True); time.sleep(0.04); down(1, 716, 552, False)
+    path([(0, 516, 552), (1, 716, 552)], [(0, 516, 302), (1, 716, 302)], 400)
+    up([0, 1], True); time.sleep(1.0)
+def phase(tag, fn):
+    stop = threading.Event(); s = threading.Thread(target=sampler, args=(stop, tag)); s.start()
+    t = time.time(); fn(); mark(tag, t); stop.set(); s.join()
+
+try:
+    sway("exec foot --app-id=k230.kbd.trial --title=Keyboard-trial sh -c 'seq -f \"line %g ..........................................\" 1 60; cat >/dev/null'")
+    deadline = time.monotonic() + 15
+    while 'k230.kbd.trial' not in apps():
+        assert time.monotonic() < deadline, 'trial window did not map'
+        time.sleep(0.1)
+    sway('[app_id="k230.kbd.trial"] focus'); time.sleep(1.5)
+    show()
+    down(0, 616, 300, True); path([(0, 616, 300)], [(0, 616, 380)], 300)
+    time.sleep(0.5); grim('held-a'); log.append(('a', app_h()))
+    sway('nop'); time.sleep(0.5); grim('held-b'); log.append(('b', app_h()))
+    path([(0, 616, 380)], [(0, 616, 560)], 300); up([0], True); time.sleep(1.0)
+finally:
+    os.close(fd)
+    subprocess.run(ENV + ['swaymsg', '[app_id="k230.kbd.trial"] kill'], timeout=25)
+    time.sleep(1.0)
+    meta['trial_window_closed'] = 'k230.kbd.trial' not in apps(); meta['log'] = log
+    (out / 'meta.json').write_text(json.dumps(meta, indent=1))
+    print('DONE', meta['trial_window_closed'], log)

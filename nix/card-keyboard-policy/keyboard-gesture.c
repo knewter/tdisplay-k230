@@ -194,6 +194,12 @@ unsigned kg_tick(struct kg_policy *p, uint64_t ms) {
 	}
 	return KG_DIRTY;
 }
+double kg_reserved(struct kg_policy *p) {
+	if (p->progress < p->reserved_seen) p->reserved = 0;
+	else if (p->progress > p->reserved_seen) p->reserved = p->progress;
+	p->reserved_seen = p->progress;
+	return p->reserved;
+}
 unsigned kg_cancel(struct kg_policy *p) {
 	if (p->mode == KG_SHOWN && p->owned_count == 0 &&
 		p->overflow_contacts == 0) return KG_NONE;

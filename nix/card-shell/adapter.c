@@ -179,6 +179,7 @@ static struct {
 	struct sway_output *output;
 	struct wlr_box ordinary_usable;
 	bool ordinary_usable_valid;
+	bool ordinary_resize_pending;
 	struct sway_seat *seat;
 	/* Home hides app scene groups, never app windows or workspaces. */
 	bool home_selected, home_layers_saved[4];
@@ -2503,10 +2504,13 @@ void card_shell_keyboard_adjust_usable(struct sway_output *output, struct wlr_bo
 		return;
 	}
 	kg_surface(&shell.keyboard, true);
-	double progress = shell.keyboard.progress;
+	/* The keyboard and grip follow progress; the app's space follows
+	 * kg_reserved, which gives the app its full height as soon as the
+	 * keyboard starts down. */
+	double progress = shell.keyboard.progress, reserved = kg_reserved(&shell.keyboard);
 	int hidden = (int)lround((shell.keyboard.height + 56) * (1 - progress));
-	int grip = (int)lround(56 * progress);
-	int allocation = (int)lround(shell.keyboard.height * (1 - progress)) - grip;
+	int allocation = (int)lround(shell.keyboard.height * (1 - reserved)) -
+		(int)lround(56 * reserved);
 	if (usable->height + allocation > 0)
 		usable->height += allocation;
 	wlr_scene_node_set_position(&layer->scene->tree->node,
@@ -2690,19 +2694,25 @@ static void home_layer_sync(struct sway_output *output) {
 	wlr_scene_node_set_enabled(&output->layers.shell_bottom->node,
 		!shell.active || shell.home_gesture.contacts || shell.home_settling);
 }
+/* arrange_layers reports a new usable area without committing (commit is
+ * false there); the resize stays pending until the next call that may
+ * commit, normally the next frame's prepare. Without that carry-over a
+ * keyboard drag left the app at its old size until some unrelated event
+ * committed a transaction. */
 static void ordinary_sync_usable(struct sway_output *output, bool commit) {
 	ordinary_backdrop_sync(output);
-	if (shell.ordinary_usable_valid &&
-		wlr_box_equal(&shell.ordinary_usable, &output->usable_area))
-		return;
-	shell.ordinary_usable = output->usable_area;
-	shell.ordinary_usable_valid = true;
-	bool changed = false;
-	struct card *card;
-	wl_list_for_each(card, &shell.cards, link)
-		changed |= ordinary_resize(card->view, output);
-	if (changed && commit)
+	if (!shell.ordinary_usable_valid ||
+		!wlr_box_equal(&shell.ordinary_usable, &output->usable_area)) {
+		shell.ordinary_usable = output->usable_area;
+		shell.ordinary_usable_valid = true;
+		struct card *card;
+		wl_list_for_each(card, &shell.cards, link)
+			shell.ordinary_resize_pending |= ordinary_resize(card->view, output);
+	}
+	if (shell.ordinary_resize_pending && commit) {
+		shell.ordinary_resize_pending = false;
 		transaction_commit_dirty();
+	}
 }
 void card_shell_usable_area_changed(struct sway_output *output) {
 	if (shell.initialized && shell.output == output)

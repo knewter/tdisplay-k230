@@ -1,0 +1,10 @@
+before.png: no grip
+fast-0.png: no grip
+fast-after.png: no grip
+held-80.png: grip_top=352 light_rows_above=0
+reversed.png: grip_top=272 light_rows_above=4
+shown.png: grip_top=272 light_rows_above=4
+slow-0.png: grip_top=425 light_rows_above=0
+slow-1.png: no grip
+slow-2.png: no grip
+slow-after.png: no grip
