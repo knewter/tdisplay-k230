@@ -745,7 +745,8 @@ The system's coherent shell SHALL reveal the external keyboard with a deliberate
 *Grounding: operator acceptance in `docs/evidence/proposal-closeout/2026-10-01/keyboard.md`, with prior source and board/QEMU evidence retaining their original classes and limits.*
 
 <!-- Grounding: operator accepts keyboard gestures on 2026-10-01; see docs/evidence/proposal-closeout/2026-10-01/keyboard.md. Earlier source/QEMU/installed evidence remains distinct. Quantitative responsiveness measurement is deferred to the-shell-profiles-reported-interaction-jank; not claimed passed. -->
-During an accepted keyboard drag the system SHALL move the keyboard with direct proportional contact displacement, remain stationary while contact is held still, and reverse immediately with contact. Release SHALL settle from the displayed geometry and bounded measured velocity to shown or hidden without a position jump or abrupt end. Reduced motion SHALL preserve direct manipulation while shortening release settlement. Reserved app space MUST match the final visible keyboard and remain coherent during transition.
+<!-- Grounding: the hiding keyboard uncovering app content is shown by injected-touch grim frames in docs/evidence/interaction-jank/keyboard-hide, and the operator accepted it on glass on build 1r8zfd5s on 2026-10-26 (docs/evidence/shell-design-review/operator-report.md). -->
+During an accepted keyboard drag the system SHALL move the keyboard with direct proportional contact displacement, remain stationary while contact is held still, and reverse immediately with contact. Release SHALL settle from the displayed geometry and bounded measured velocity to shown or hidden without a position jump or abrupt end. Reduced motion SHALL preserve direct manipulation while shortening release settlement. Reserved app space MUST match the final visible keyboard and remain coherent during transition. While the keyboard moves toward hidden, the app SHALL already hold the space the hidden keyboard releases, so the keyboard uncovers app content rather than a fill; while it moves toward shown, reserved space SHALL follow the keyboard.
 
 #### Scenario: Drag and reconsider
 - **WHEN** a person drags the keyboard handle down, pauses, reverses, and releases before dismissal commits
@@ -754,6 +755,10 @@ During an accepted keyboard drag the system SHALL move the keyboard with direct 
 #### Scenario: Finish hiding
 - **WHEN** a downward dismiss gesture commits
 - **THEN** the keyboard smoothly leaves the output, its handle disappears and the app regains the available space
+
+#### Scenario: Hiding uncovers the app
+- **WHEN** the keyboard starts moving down
+- **THEN** the app is resized to the height it will have with the keyboard hidden, and the area the sliding keyboard uncovers shows the app's own content
 
 ### Requirement: Keyboard gestures preserve typing and touch ownership
 
@@ -1612,3 +1617,14 @@ surface that slides SHALL NOT declare an opaque region while it moves.
 
 - **WHEN** the on-screen keyboard is shown, held mid-motion or hidden
 - **THEN** it declares no opaque region, and the compositor blends it over the surfaces beneath
+
+### Requirement: Clock, Timer and Weather are full-screen touch apps
+
+*Grounding: the 2026-10-26 design review of native grim captures on the board (`the-shell-and-its-apps-look-finished` design.md); fixed-build captures in `docs/evidence/shell-design-review/README.md`.*
+
+<!-- Grounding: injected-touch grim captures in docs/evidence/shell-design-review/README.md, and the operator's on-glass acceptance of build 1r8zfd5s on 2026-10-26 (docs/evidence/shell-design-review/operator-report.md). -->
+Clock SHALL show the time in large digits centred on the output with the date beneath. Timer SHALL show its remaining time in large digits with tappable controls to start or pause, add or remove a minute, and reset. Weather SHALL show current conditions and the coming hours from the same wttr.in data as the Home Weather widget. All three SHALL follow the terminal's theme colours.
+
+#### Scenario: Timer by touch
+- **WHEN** a person taps Start in Timer
+- **THEN** the countdown starts, and a tap on Pause stops it

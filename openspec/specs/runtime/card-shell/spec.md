@@ -437,3 +437,18 @@ waive this change's new gate.
 - **THEN** committed evidence names both installed identities, cost and
   latency/frame/memory results, camera-visible movement and sampling limits,
   and an optimization is not accepted merely because it builds or looks faster
+
+### Requirement: Overview cards show their app and the footer cue's tap goes Home
+
+*Grounding: the 2026-10-26 design review of native grim captures on the board (`the-shell-and-its-apps-look-finished` design.md); fixed-build captures in `docs/evidence/shell-design-review/README.md`.*
+
+<!-- Grounding: injected-touch grim captures in docs/evidence/shell-design-review/README.md, and the operator's on-glass acceptance of build 1r8zfd5s on 2026-10-26 (docs/evidence/shell-design-review/operator-report.md). -->
+The compositor SHALL resolve card names and icons from the same desktop entries the launcher uses. A plain tap on the overview's bottom band that hits no card SHALL go Home.
+
+#### Scenario: Terminal card
+- **WHEN** the overview shows the Terminal's card
+- **THEN** the card header shows the Terminal's icon, not a letter badge
+
+#### Scenario: Tapping the cue
+- **WHEN** a person taps "Home · tap or swipe up" anywhere along the cue
+- **THEN** Home opens
