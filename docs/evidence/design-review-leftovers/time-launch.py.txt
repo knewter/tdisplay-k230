@@ -1,0 +1,33 @@
+"""Time an app from its drawer tap to its first mapped window, as root on the board:
+time-launch.py UI_PY OUT_DIR TILE_X TILE_Y RUNS
+Each run closes other apps, opens the drawer, stamps the time just before the
+injected tap, and takes the first sway `window` event with change "new" after it."""
+import json, subprocess, sys, threading, time
+ui, out, x, y, runs = sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4], int(sys.argv[5])
+PY = sys.executable
+ENV = ['sudo', '-u', 'shell', 'env', 'XDG_RUNTIME_DIR=/run/shell', 'WAYLAND_DISPLAY=wayland-1',
+       'SWAYSOCK=/run/shell/sway-ipc.sock', 'PATH=/run/current-system/sw/bin']
+events = []
+sub = subprocess.Popen(ENV + ['swaymsg', '-t', 'subscribe', '-m', '["window"]'], stdout=subprocess.PIPE, text=True)
+def reader():
+    for line in sub.stdout:
+        t = time.time()
+        try: e = json.loads(line)
+        except ValueError: continue
+        c = e.get('container') or {}
+        events.append((t, e.get('change'), c.get('app_id') or (c.get('window_properties') or {}).get('class')))
+threading.Thread(target=reader, daemon=True).start()
+def drive(actions):
+    r = subprocess.run([PY, ui, out, actions], capture_output=True, text=True, timeout=120)
+    return [l.split() for l in r.stdout.splitlines() if l.startswith('stamp ')]
+results = []
+for run in range(runs):
+    drive('killapps; wait 3000; surface drawer; wait 3000')
+    stamp = drive(f'stamp tap; tap {x} {y}; wait 25000')
+    t0 = float(stamp[0][2])
+    new = [(t, a) for t, ch, a in events if ch == 'new' and t > t0]
+    results.append({'run': run + 1, 'app_id': new[0][1] if new else None,
+                    'tap_to_new_window_s': round(new[0][0] - t0, 3) if new else None})
+    print(json.dumps(results[-1]), flush=True)
+drive('killapps')
+sub.terminate()

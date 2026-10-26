@@ -411,6 +411,25 @@ pub mod battery {
         /// The input line: where power comes from, then limit and targets.
         /// E.g. "USB power · limit 3.25 A · 2.05 A @ 4.21 V".
         pub fn input_label(&self) -> Option<String> {
+            self.input_label_with(true, true)
+        }
+
+        /// The input line from most to least detailed, for a widget too
+        /// narrow for the whole line: the charge target goes first, then
+        /// the limit. The source and a charger fault always stay.
+        pub fn input_label_choices(&self) -> Vec<String> {
+            let mut choices: Vec<String> = Vec::new();
+            for (limit, target) in [(true, true), (true, false), (false, false)] {
+                if let Some(label) = self.input_label_with(limit, target) {
+                    if !choices.contains(&label) {
+                        choices.push(label);
+                    }
+                }
+            }
+            choices
+        }
+
+        fn input_label_with(&self, show_limit: bool, show_target: bool) -> Option<String> {
             let mut parts: Vec<String> = Vec::new();
             match &self.input {
                 Some(input) => {
@@ -420,11 +439,12 @@ pub mod battery {
                         None => {}
                     }
                     if input.online != Some(false) {
-                        if let Some(limit) = input.input_limit_ua {
+                        if let Some(limit) = input.input_limit_ua.filter(|_| show_limit) {
                             parts.push(format!("limit {}", format_amps(limit)));
                         }
                         let volts = |uv: i64| format!("{:.2} V", round_to(uv, 10_000) as f64 / 1_000_000.0);
-                        match (input.charge_current_ua, input.charge_voltage_uv) {
+                        let target = (input.charge_current_ua, input.charge_voltage_uv);
+                        match if show_target { target } else { (None, None) } {
                             (Some(amps), Some(uv)) => parts.push(format!("{} @ {}", format_amps(amps), volts(uv))),
                             (Some(amps), None) => parts.push(format!("{} target", format_amps(amps))),
                             (None, Some(uv)) => parts.push(format!("{} target", volts(uv))),
@@ -629,6 +649,7 @@ pub mod battery {
             assert_eq!(d.cycles_label(), None, "a zero cycle count is not shown");
             assert_eq!(d.temperature_label().as_deref(), Some("38.1 \u{b0}C"));
             assert_eq!(d.input_label().as_deref(), Some("USB power · limit 3.25 A · 2.05 A @ 4.21 V"));
+            assert_eq!(d.input_label_choices(), ["USB power · limit 3.25 A · 2.05 A @ 4.21 V", "USB power · limit 3.25 A", "USB power"]);
             std::fs::remove_dir_all(&dir).unwrap();
         }
 
@@ -682,6 +703,8 @@ pub mod battery {
             let label = present(read_details(&dir)).input_label().unwrap();
             assert!(label.starts_with("USB power"), "{label}");
             assert!(label.ends_with("charger overheat"), "{label}");
+            let shortest = present(read_details(&dir)).input_label_choices().pop().unwrap();
+            assert_eq!(shortest, "USB power · charger overheat");
             std::fs::remove_dir_all(&dir).unwrap();
         }
 

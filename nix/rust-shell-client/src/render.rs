@@ -1359,6 +1359,16 @@ impl CardSprites {
                 let _ = cr.paint();
             }
         }
+        // A thin frame just inside the outline, in ink that contrasts with
+        // the page, so a narrow side slice of a pale image still reads as
+        // the edge of a card rather than a loose fragment.
+        let (fw, fh) = (f64::from(w), f64::from(h));
+        let skew = f64::from(key.skew) / 16.0;
+        rounded_skewed(&cr, 0.0, 0.0, skew, fw, 0.0, fw - skew, fh, 14.0);
+        let ink = if relative_luminance(dim_color) > 0.4 { 0x000000 } else { 0xffffff };
+        color(&cr, ink, 0.22);
+        cr.set_line_width(3.0);
+        let _ = cr.stroke();
         Some(())
     }
 
@@ -4868,7 +4878,14 @@ fn paint_battery_details(cr: &Context, style: &VisualStyle, rect: (f64, f64, f64
     // the input line only when it still fits under them.
     let free = h - radius * 2.2;
     let rows = ((free / row_h).floor() as usize).clamp(1, 3).min(cells.len().div_ceil(2));
-    let input = details.input_label().filter(|_| free - rows as f64 * row_h >= line_size * 1.3);
+    // The most detailed input line that fits the width uncut; failing
+    // that, the shortest, which the ellipsis may still trim.
+    let input = {
+        let choices = details.input_label_choices();
+        let fits = |line: &String| text_advance(cr, line, line_size, pango::Weight::Normal) <= inner_w * 0.98;
+        choices.iter().find(|line| fits(line)).or(choices.last()).cloned()
+    }
+    .filter(|_| free - rows as f64 * row_h >= line_size * 1.3);
     let blocks_h = radius * 2.2 + row_h * rows as f64 + if input.is_some() { line_size * 1.3 } else { 0.0 };
     let gap = ((h - blocks_h) / 4.0).max(0.0);
     let ring_cx = left + radius + radius * 0.2;

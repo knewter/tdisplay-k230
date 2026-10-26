@@ -2197,6 +2197,13 @@ DATA 4cea40933d790e29bd13cd92b5004b8b22388eb8bac1fc8945b4c8808218f035 docs/evide
 DATA 008f58267065c92f33871018f7d6f9e909d7326fea8efbc215224eab12bec22c docs/evidence/shell-design-review/build-9rbjw6vl/app-zathura.png
 DATA ea4ec7c895a41d1650724e712607beb0c2ef0c6b9a18c104bbefb1ecffbf878c docs/evidence/shell-design-review/build-9rbjw6vl/files-buttons-before-gtk4-ini.png
 DATA 9d3efc0ef39905ff634d3f3bd842cad02022d1ec894240c12760804639295ec2 docs/evidence/shell-design-review/build-9rbjw6vl/ov-2-after-side-tap.png
+DATA 921656fafa16535c04dcbe8cf22c52b94a72b596d0a1ec601e8dc12891225fa5 docs/evidence/design-review-leftovers/build-qh3i7b3f/home.png
+DATA 6af9d299f51851fa1f88dc0233920e6432cdc9b4421e53b550f8ca7f7c94403f docs/evidence/design-review-leftovers/build-qh3i7b3f/themes.png
+DATA 2f99703c82316d3c4752faecfabbb59cd36a5e35ea04bc58357320ec21e8e3db docs/evidence/design-review-leftovers/build-qh3i7b3f/timer-t0.png
+DATA e6035e1ecd65eafc79b32e6c978bac2c44da61262f730e48811b52dfdc7cbe79 docs/evidence/design-review-leftovers/build-qh3i7b3f/timer-t1-plus.png
+DATA 643da8791a919160b1d0b84b58616025febcaf0674143ffaaf3b8f618e8c2712 docs/evidence/design-review-leftovers/build-qh3i7b3f/timer-t2-minus2.png
+DATA 3963702782ed820274a077e7f8985bee545317fc43a8ae57193a1ac0e6c3f685 docs/evidence/design-review-leftovers/build-qh3i7b3f/timer-t3-start.png
+DATA 643da8791a919160b1d0b84b58616025febcaf0674143ffaaf3b8f618e8c2712 docs/evidence/design-review-leftovers/build-qh3i7b3f/timer-t4-reset.png
 ```
 
 `group:` rows stand for a directory whose members are enumerated by
@@ -4026,3 +4033,17 @@ Native `grim` captures of the fixed shell surfaces and drawer apps; see `docs/ev
 | `docs/evidence/shell-design-review/build-9rbjw6vl/app-zathura.png` | 4209 | DATA | `008f58267065c92f33871018f7d6f9e909d7326fea8efbc215224eab12bec22c` |
 | `docs/evidence/shell-design-review/build-9rbjw6vl/files-buttons-before-gtk4-ini.png` | 16460 | DATA | `ea4ec7c895a41d1650724e712607beb0c2ef0c6b9a18c104bbefb1ecffbf878c` |
 | `docs/evidence/shell-design-review/build-9rbjw6vl/ov-2-after-side-tap.png` | 106020 | DATA | `9d3efc0ef39905ff634d3f3bd842cad02022d1ec894240c12760804639295ec2` |
+
+## Design-review leftover captures, 2026-10-26
+
+Native `grim` captures of the charger line, the framed chooser slices and the Timer controls; see `docs/evidence/design-review-leftovers/README.md`.
+
+| Path | Bytes | Class | SHA256 |
+| --- | ---: | --- | --- |
+| `docs/evidence/design-review-leftovers/build-qh3i7b3f/home.png` | 102638 | DATA | `921656fafa16535c04dcbe8cf22c52b94a72b596d0a1ec601e8dc12891225fa5` |
+| `docs/evidence/design-review-leftovers/build-qh3i7b3f/themes.png` | 93800 | DATA | `6af9d299f51851fa1f88dc0233920e6432cdc9b4421e53b550f8ca7f7c94403f` |
+| `docs/evidence/design-review-leftovers/build-qh3i7b3f/timer-t0.png` | 8204 | DATA | `2f99703c82316d3c4752faecfabbb59cd36a5e35ea04bc58357320ec21e8e3db` |
+| `docs/evidence/design-review-leftovers/build-qh3i7b3f/timer-t1-plus.png` | 8206 | DATA | `e6035e1ecd65eafc79b32e6c978bac2c44da61262f730e48811b52dfdc7cbe79` |
+| `docs/evidence/design-review-leftovers/build-qh3i7b3f/timer-t2-minus2.png` | 8197 | DATA | `643da8791a919160b1d0b84b58616025febcaf0674143ffaaf3b8f618e8c2712` |
+| `docs/evidence/design-review-leftovers/build-qh3i7b3f/timer-t3-start.png` | 8081 | DATA | `3963702782ed820274a077e7f8985bee545317fc43a8ae57193a1ac0e6c3f685` |
+| `docs/evidence/design-review-leftovers/build-qh3i7b3f/timer-t4-reset.png` | 8197 | DATA | `643da8791a919160b1d0b84b58616025febcaf0674143ffaaf3b8f618e8c2712` |
