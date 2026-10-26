@@ -87,7 +87,7 @@ class Settings:
     def keyboard(self):
         available = self.command([os.environ.get("K230_PGREP", "pgrep"),
                                   "-u", str(os.getuid()), "-x", "wvkbd-mobintl"])
-        return control("action" if available else "unavailable", label="Toggle keyboard",
+        return control("action" if available else "unavailable", label="Show or hide",
                        action="keyboard-toggle" if available else None)
 
     def status(self):
@@ -97,7 +97,7 @@ class Settings:
             "keyboard": self.keyboard(),
             "motion": control("read-only" if motion in ("0", "1") else "unavailable",
                               motion == "1" if motion in ("0", "1") else None,
-                              label="Reduced motion", detail="Session preference"),
+                              label="Reduced motion", detail="Fewer animations"),
         }}
 
     def change_brightness(self, percent):

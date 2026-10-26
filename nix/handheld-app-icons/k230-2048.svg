@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48">
+  <rect width="48" height="48" rx="11" fill="#bbada0"/>
+  <rect x="5" y="5" width="17" height="17" rx="3" fill="#eee4da"/>
+  <rect x="26" y="5" width="17" height="17" rx="3" fill="#f2b179"/>
+  <rect x="5" y="26" width="17" height="17" rx="3" fill="#f67c5f"/>
+  <rect x="26" y="26" width="17" height="17" rx="3" fill="#edc22e"/>
+  <g font-family="DejaVu Sans" font-weight="bold" font-size="12" text-anchor="middle">
+    <text x="13.5" y="18" fill="#776e65">2</text>
+    <text x="34.5" y="18" fill="#ffffff">0</text>
+    <text x="13.5" y="39" fill="#ffffff">4</text>
+    <text x="34.5" y="39" fill="#ffffff">8</text>
+  </g>
+</svg>

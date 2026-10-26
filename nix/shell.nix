@@ -17,6 +17,11 @@ let
   hdmiTouchCalibration = import ./hdmi-touch-calibration.nix cfg.hdmiTransform;
   powerKeyd = pkgs.callPackage ./power-keyd.nix { };
   keyboardBased = pkgs.callPackage ./keyboard-base.nix { };
+  # Clock, Timer and Weather: one Python TUI behind three k230-* commands.
+  termApps = pkgs.callPackage ./term-apps { };
+  # Own icons for the games and terminal apps that would otherwise share
+  # `applications-games` / `clock-alt-symbolic`.
+  appIcons = pkgs.callPackage ./handheld-app-icons { };
   # Fn+LILYGO on the keyboard base: a full-output screenshot into
   # ~/Pictures, named by time.
   keyboardBaseScreenshot = pkgs.writeShellScript "k230-keyboard-base-screenshot" ''
@@ -334,9 +339,11 @@ let
   # resolve. Replace postInstall with a step that removes cmake's own
   # per-puzzle entries and installs exactly four touch-friendly picks that
   # need only a single tap (no secondary-button/right-click semantics),
-  # each pointed at the shared bundled `applications-games` icon instead of
-  # a per-puzzle screenshot: rotate (Net), remove same-colour groups (Same
-  # Game), shift a row/column (Sixteen), slide a tile (Fifteen).
+  # each with the icon the build platform's own sgt-puzzles package ships
+  # (nix/handheld-app-icons copies those PNGs as k230-puzzle-<name>, since
+  # the build platform can run the games to make them): rotate (Net),
+  # remove same-colour groups (Same Game), shift a row/column (Sixteen),
+  # slide a tile (Fifteen).
   sgtPuzzlesCurated = pkgs.sgt-puzzles.overrideAttrs (old: {
     postInstall = ''
       rm -f $out/share/applications/*.desktop
@@ -349,7 +356,7 @@ let
           --set-key Name --set-value "''${names[$i]}" \
           --set-key Comment --set-value "${old.meta.description}" \
           --set-key Categories --set-value "Game;LogicGame;" \
-          --set-key Icon --set-value applications-games \
+          --set-key Icon --set-value k230-puzzle-$i \
           $i.desktop
       done
     '';
@@ -373,10 +380,11 @@ let
     name = "k230-nethack";
     desktopName = "NetHack";
     genericName = "Roguelike";
-    icon = "applications-games";
+    icon = "k230-nethack";
     comment = "Classic roguelike (curses)";
-    exec = "${nethackFixed}/bin/nethack";
-    terminal = true;
+    exec = "${themedFoot}/bin/k230-foot terminal --app-id=k230-nethack -e ${nethackFixed}/bin/nethack";
+    terminal = false;
+    startupWMClass = "k230-nethack";
     categories = [ "Game" "AdventureGame" ];
   };
   # Upstream's Makefile invokes bare `pkg-config`, which this cross
@@ -393,70 +401,44 @@ let
     name = "k230-2048";
     desktopName = "2048";
     genericName = "Puzzle";
-    icon = "applications-games";
+    icon = "k230-2048";
     comment = "2048 in the terminal";
-    exec = "${game2048}/bin/2048-in-terminal";
-    terminal = true;
+    exec = "${themedFoot}/bin/k230-foot terminal --app-id=k230-2048 -e ${game2048}/bin/2048-in-terminal";
+    terminal = false;
+    startupWMClass = "k230-2048";
     categories = [ "Game" "LogicGame" ];
   };
-  # btop ships its own desktop entry upstream; no wrapper needed here.
-  weatherScript = pkgs.writeShellScriptBin "k230-weather" ''
-    export PATH=${pkgs.curl}/bin:${pkgs.coreutils}/bin:$PATH
-    clear
-    printf 'Weather (wttr.in)\n\n'
-    if ! curl -fsS --max-time 8 \
-        'https://wttr.in/?format=%l:+%C+%t+(feels+%f)+humidity+%h+wind+%w\n'; then
-      printf 'No network, or wttr.in is unreachable.\n'
-    fi
-    printf '\nPress any key to close.'
-    read -r -n1 _ || true
-  '';
+  # btop gets its own entry in nix/handheld-desktop-entries.nix (own app id,
+  # smaller font); Clock, Timer and Weather run k230-term-apps in a Foot
+  # window of their own, so each has its own app id for the overview.
   weatherDesktop = pkgs.makeDesktopItem {
     name = "k230-weather";
     desktopName = "Weather";
-    icon = "weather-clear-symbolic";
+    icon = "org.gnome.Weather";
     comment = "Current conditions from wttr.in (needs network)";
-    exec = "${weatherScript}/bin/k230-weather";
-    terminal = true;
+    exec = "${themedFoot}/bin/k230-foot terminal --app-id=k230-weather -e ${termApps}/bin/k230-weather";
+    terminal = false;
+    startupWMClass = "k230-weather";
     categories = [ "Utility" ];
   };
-  clockScript = pkgs.writeShellScriptBin "k230-clock" ''
-    export PATH=${pkgs.coreutils}/bin:$PATH
-    trap 'clear; exit 0' INT TERM
-    while true; do clear; date '+%A %e %B %Y%n%n%H:%M:%S'; sleep 1; done
-  '';
   clockDesktop = pkgs.makeDesktopItem {
     name = "k230-clock";
     desktopName = "Clock";
-    icon = "clock-alt-symbolic";
+    icon = "k230-clock";
     comment = "Full-screen clock";
-    exec = "${clockScript}/bin/k230-clock";
-    terminal = true;
+    exec = "${themedFoot}/bin/k230-foot terminal --app-id=k230-clock -e ${termApps}/bin/k230-clock";
+    terminal = false;
+    startupWMClass = "k230-clock";
     categories = [ "Utility" ];
   };
-  timerScript = pkgs.writeShellScriptBin "k230-timer" ''
-    export PATH=${pkgs.coreutils}/bin:$PATH
-    seconds="''${1:-300}"
-    trap 'clear; exit 0' INT TERM
-    end=$(( $(date +%s) + seconds ))
-    while [ "$(date +%s)" -lt "$end" ]; do
-      remaining=$(( end - $(date +%s) ))
-      clear
-      printf 'Timer\n\n%02d:%02d:%02d remaining\n' \
-        $(( remaining / 3600 )) $(( (remaining / 60) % 60 )) $(( remaining % 60 ))
-      sleep 1
-    done
-    clear
-    printf 'Time is up!\n\nPress any key to close.'
-    read -r -n1 _ || true
-  '';
   timerDesktop = pkgs.makeDesktopItem {
     name = "k230-timer";
     desktopName = "Timer";
-    icon = "clock-alt-symbolic";
-    comment = "5-minute countdown timer";
-    exec = "${timerScript}/bin/k230-timer 300";
-    terminal = true;
+    icon = "k230-timer";
+    comment = "Countdown timer with touch buttons";
+    exec = "${themedFoot}/bin/k230-foot terminal --app-id=k230-timer -e ${termApps}/bin/k230-timer 300";
+    terminal = false;
+    startupWMClass = "k230-timer";
     categories = [ "Utility" ];
   };
   touchLauncherBase = pkgs.callPackage ./touch-launcher { wlroots_0_20 = wlroots; };
@@ -484,7 +466,7 @@ let
     set -eu
     case "''${1:-}" in
       terminal|monitor) role="$1"; shift ;;
-      *) echo "k230-foot: expected terminal or monitor" >&2; exit 2 ;;
+      *) echo "k230-foot: expected terminal or monitor [foot options] [-e command]" >&2; exit 2 ;;
     esac
     ${if cfg.coherentShell then ''
       # Read only the adapter's acknowledged generation. Failed preparation
@@ -513,11 +495,18 @@ let
       session=( ${themeCommand}/bin/k230-foot-session
         --state-root "$appearance_root"
         --default-generation ${themeDefault}/generations/${themeDefaultId} -- )
-      if [ "$#" -eq 0 ]; then
-        set -- -e "''${session[@]}" ${pkgs.bashInteractive}/bin/bash -l
-      elif [ "$1" = -e ]; then
+      # Foot options (--app-id=..., --font=...) may precede -e; they pass
+      # through unchanged. Without -e the window runs a login shell.
+      foot_opts=()
+      while [ "$#" -gt 0 ] && [ "$1" != -e ]; do
+        foot_opts+=("$1")
         shift
-        set -- -e "''${session[@]}" "$@"
+      done
+      if [ "$#" -eq 0 ]; then
+        set -- "''${foot_opts[@]}" -e "''${session[@]}" ${pkgs.bashInteractive}/bin/bash -l
+      else
+        shift
+        set -- "''${foot_opts[@]}" -e "''${session[@]}" "$@"
       fi
     ''}
     # Ordinary coherent-shell apps fill the output in pixels. Foot otherwise
@@ -609,6 +598,9 @@ let
   };
   handheldDesktopEntries = pkgs.callPackage ./handheld-desktop-entries.nix {
     inherit themedFoot portfolioLauncher;
+    coreutils = pkgs.coreutils;
+    viewnior = pkgs.viewnior;
+    btop = pkgs.btop;
     # Passing the real derivation only when the flag is on -- not just
     # gating its *use* inside handheld-desktop-entries.nix -- is what keeps
     # an ordinary coherentShell build from forcing Nautilus's cross-build at
@@ -645,6 +637,11 @@ let
     export K230_JQ=${pkgs.jq}/bin/jq
     exec ${pkgs.bash}/bin/bash ${./window-catalog.sh}
   '';
+  # Desktop overrides precede package entries; icon roots remain reachable
+  # even when Nix has not merged them into the profile's share/icons tree.
+  # Sway gets the same list so the compositor resolves app names and icons
+  # (nix/card-shell desktop_identity, icon.c) exactly as the launcher does.
+  launcherDataDirs = "${lib.optionalString cfg.coherentShell "${handheldDesktopEntries}/share:${themeIcons}/share:${appIcons}/share:${pkgs.portfolio-filemanager}/share:"}${lib.optionalString (cfg.coherentShell && cfg.filesAppNautilus) "${pkgs.nautilus}/share:"}${pkgs.foot}/share:${pkgs.htop}/share:${videoProbe.player}/share";
   launcherEnvironment = ''
     export K230_LAUNCHER_ACTION=${touchLauncherAction}/bin/k230-launcher-action
     export K230_WINDOW_CATALOG=${windowCatalog}/bin/k230-window-catalog
@@ -652,9 +649,7 @@ let
     # Include Nix profiles because the systemd session does not run a login shell.
     export HTOPRC="''${HTOPRC:-${monitorHtopConfig}}"
     export PATH=${xdgTerminalExec}/bin:${launcherFoot}/bin:$HOME/.nix-profile/bin:/nix/profile/bin:$HOME/.local/state/nix/profile/bin:/etc/profiles/per-user/shell/bin:/nix/var/nix/profiles/default/bin:/run/current-system/sw/bin:$PATH
-    # Desktop overrides precede package entries; icon roots remain reachable
-    # even when Nix has not merged them into the profile's share/icons tree.
-    export XDG_DATA_DIRS="${lib.optionalString cfg.coherentShell "${handheldDesktopEntries}/share:${themeIcons}/share:${pkgs.portfolio-filemanager}/share:"}${lib.optionalString (cfg.coherentShell && cfg.filesAppNautilus) "${pkgs.nautilus}/share:"}${pkgs.foot}/share:${pkgs.htop}/share:${videoProbe.player}/share:''${XDG_DATA_DIRS:-$HOME/.nix-profile/share:/nix/profile/share:$HOME/.local/state/nix/profile/share:/etc/profiles/per-user/shell/share:/nix/var/nix/profiles/default/share:/run/current-system/sw/share}"
+    export XDG_DATA_DIRS="${launcherDataDirs}:''${XDG_DATA_DIRS:-$HOME/.nix-profile/share:/nix/profile/share:$HOME/.local/state/nix/profile/share:/etc/profiles/per-user/shell/share:/nix/var/nix/profiles/default/share:/run/current-system/sw/share}"
     export XDG_CURRENT_DESKTOP="''${XDG_CURRENT_DESKTOP:-sway}"
   '';
   touchLauncher = pkgs.writeShellScriptBin "k230-touch-launcher" ''
@@ -693,7 +688,12 @@ let
     fi
     export K230_SETTINGS=${settingsCommand}/bin/k230-settings
     export K230_THEME_COMMAND=${themeCommand}/bin/k230-theme
-    # nix/rust-shell-client/src/theme_catalog.rs's own direct-socket bridge
+    ${lib.optionalString cfg.coherentShell ''
+      # Link the acknowledged generation's GTK3/GTK4 files before any app
+      # starts; theme changes relink them through the theme transaction.
+      ${themeCommand}/bin/k230-app-appearance sync \
+        --state-root "${config.users.users.shell.home}/.local/state/omarchy/current" >/dev/null 2>&1 || true
+    ''}    # nix/rust-shell-client/src/theme_catalog.rs's own direct-socket bridge
     # target -- the same path theme-helper.service binds (--listen below)
     # and tools/theme_client.py's DEFAULT_SOCKET. Named explicitly rather
     # than relying on the Rust binary's own matching default, so the two
@@ -1785,6 +1785,9 @@ in
         SWAY_K230_KEYBOARD_SIGNAL = "${keyboardGestureSignal}/bin/k230-keyboard-gesture-signal";
         K230_SETTINGS_REDUCED_MOTION = if cfg.reducedMotion then "1" else "0";
         SWAY_K230_CARD_SCALED_CACHE = "1";
+        # Sway runs without a login shell's XDG_DATA_DIRS; give it the
+        # launcher's list so the shell's desktop overrides and icons resolve.
+        XDG_DATA_DIRS = "${launcherDataDirs}:/run/current-system/sw/share";
       } // lib.optionalAttrs cfg.initialSplash {
         # The derivation validates the fixed raw B,G,R,X asset before adding
         # it above layer-shell backgrounds. It is absent from the daily service.
@@ -1912,12 +1915,11 @@ in
       # Utilities
       pkgs.galculator
       pkgs.btop
-      weatherScript
+      termApps
       weatherDesktop
-      clockScript
       clockDesktop
-      timerScript
       timerDesktop
+      appIcons
     ] ++ lib.optionals cfg.themeReceiverTrial [ themeCommand ]
       ++ lib.optionals cfg.coherentShell [
         rustShell themedFoot themeCommand settingsCommand notificationCommand
