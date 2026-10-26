@@ -1076,7 +1076,7 @@ fn control_text(control: &Control) -> String {
     }
 }
 
-/// How wide the fade is at each outer edge of a wide carousel column.
+/// The narrowest fade at each outer edge of a wide carousel column.
 const CAROUSEL_EDGE_FADE: f64 = 56.0;
 
 /// How far below the Settings header a scrolled body fades out.
@@ -1707,15 +1707,20 @@ fn paint_theme_chooser(
             cr.push_group();
         }
     };
-    let column_end = |cr: &Context, cols: (f64, f64)| {
+    // The fade spans from the centred card's edge to the column's edge (at
+    // least CAROUSEL_EDGE_FADE), so the stacked neighbours thin out across
+    // the whole gap and the centred card itself is never dimmed.
+    let column_end = |cr: &Context, cols: (f64, f64), center_x: f64, card_w: f64| {
         if lay.wide {
             if let Ok(group) = cr.pop_group() {
                 let span = cols.1 - cols.0;
-                let edge = (CAROUSEL_EDGE_FADE / span).min(0.5);
+                let left = (center_x - card_w / 2.0 - cols.0).max(CAROUSEL_EDGE_FADE) / span;
+                let right = (cols.1 - center_x - card_w / 2.0).max(CAROUSEL_EDGE_FADE) / span;
+                let (left, right) = (left.min(0.5), right.min(0.5));
                 let mask = cairo::LinearGradient::new(cols.0, 0.0, cols.1, 0.0);
                 mask.add_color_stop_rgba(0.0, 0.0, 0.0, 0.0, 0.0);
-                mask.add_color_stop_rgba(edge, 0.0, 0.0, 0.0, 1.0);
-                mask.add_color_stop_rgba(1.0 - edge, 0.0, 0.0, 0.0, 1.0);
+                mask.add_color_stop_rgba(left, 0.0, 0.0, 0.0, 1.0);
+                mask.add_color_stop_rgba(1.0 - right, 0.0, 0.0, 0.0, 1.0);
                 mask.add_color_stop_rgba(1.0, 0.0, 0.0, 0.0, 0.0);
                 if cr.set_source(&group).is_ok() {
                     let _ = cr.mask(&mask);
@@ -1796,7 +1801,7 @@ fn paint_theme_chooser(
                 view.applying_theme_index(),
                 pulse_phase,
             );
-            column_end(cr, lay.theme_cols);
+            column_end(cr, lay.theme_cols, center_x, lay.theme_geometry.expanded_w);
             let entry = &list.themes[centered];
             let is_current = list.active.id.as_deref() == Some(entry.id.as_str());
             let label_y = lay.theme_top + lay.theme_geometry.expanded_h + 12.0;
@@ -1901,7 +1906,7 @@ fn paint_theme_chooser(
                 view.applying_background_index(),
                 pulse_phase,
             );
-            column_end(cr, lay.background_cols);
+            column_end(cr, lay.background_cols, center_x, lay.background_geometry.expanded_w);
             let background = &preview.backgrounds[centered];
             let label_y = lay.background_top + lay.background_geometry.expanded_h + 12.0;
             heading(
