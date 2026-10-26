@@ -56,13 +56,17 @@ and its settings. Code locations were mapped before this design:
   - The GTK4 keyfile gains `button-layout=':close'`; GTK3 gets
     `gtk-decoration-layout=:close`.
 - **Settings scrolling:** the body is still clipped at `settings_body_top`.
-  A hairline divider is drawn there and a 16 px gradient from the page
+  A hairline divider is drawn there and a 20 px gradient from the page
   background, so nothing is cut against bare background.
 - **Overview tap:** a plain tap in the bottom band that hits no card is a
   backdrop tap (Home), as the Shade and Back bands already are.
-- **Dock centring is visual only.** With free slots and no drag in
-  progress, the occupied run is centred, and drop targets keep their slot
-  geometry while a drag is active. The saved layout is not changed.
+- **Dock centring moves the items once.** A display-only offset would make
+  the icons jump when a drag starts and needs a second slot mapping for
+  hit tests and drop targets. Instead a dock packed against its start with
+  two or more free slots is rotated so the free slots split between both
+  ends: when a layout is seeded, and once for a saved layout (a
+  `dock_centred` flag, absent in older files). After that the person's own
+  arrangement stands; a dock with a gap inside its run is left alone.
 
 ## Risks / Trade-offs
 

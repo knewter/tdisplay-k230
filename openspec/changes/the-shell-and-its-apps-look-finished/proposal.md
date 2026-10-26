@@ -61,11 +61,13 @@ What a person runs into today:
   - The scrolled body is clipped below a divider with a short fade.
   - Values read as words: Wi-Fi "Connected", Motion as "Reduce motion".
   - The audio output name is shown without the "tap to change" suffix.
-  - Vision's group cards use the same treatment as Settings' cards.
+  - Vision's Text size card keeps its flat group tint: that treatment is
+    the shell's visual language for a container of choices, not a defect.
 - **Themes:** carousel columns fade at their edges instead of cutting a
   neighbour's thumbnail at the output edge.
 - **Home:**
-  - A dock with free slots centres its icons.
+  - A dock packed against its start is centred once; after that the
+    person's arrangement stands.
   - Battery – Details omits readings the gauge reports as zero while the
     battery is full and idle, and states "On charger".
   - Weather keeps the temperature clear of the glyph.
@@ -80,7 +82,8 @@ Non-goals:
 - Re-theming third-party icons, or restyling apps beyond GTK theming.
 - Changing gestures, motion, or the card layout.
 - Removing Portfolio from the image.
-- Moving items in an existing saved Home layout.
+- Moving items in an existing saved Home layout, beyond centring a packed
+  dock once.
 - Omawrite's start-up time: it is an external input and only measured here.
 
 ## Capabilities

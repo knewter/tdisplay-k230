@@ -22,7 +22,7 @@
 
 ## 5. Settings
 
-- [ ] 5.1 Move Vision and Themes into the title row. Draw a divider and a fade at the scrolled body's top edge. Show Wi-Fi as "Connected"/"Not connected" and Motion as "Reduce motion". Drop the audio subtitle's suffix. Give Vision's group cards the control-card treatment. Proof: `cargo test` and `python3 -m unittest` for `tools/device_settings.py`'s tests, plus landscape renders.
+- [ ] 5.1 Move Vision and Themes into the title row. Draw a divider and a fade at the scrolled body's top edge. Show Wi-Fi as "Connected"/"Not connected" and Motion as "Reduce motion". Drop the audio subtitle's suffix. Proof: `cargo test` and `python3 -m unittest` for `tools/device_settings.py`'s tests, plus landscape renders.
 
 ## 6. Themes
 
@@ -30,7 +30,7 @@
 
 ## 7. Home
 
-- [ ] 7.1 Centre the dock's occupied run when it has free slots and no drag is active. Omit zero readings in Battery – Details when the battery is full and idle, and add "On charger". Keep Weather's temperature clear of its glyph. Proof: `cargo test` and widget renders from `examples/render_battery_details_evidence.rs` and `render_widget_evidence.rs`.
+- [ ] 7.1 Centre a packed dock once (seed and existing layouts). Omit zero readings in Battery – Details while the battery is idle, and add "On charger". Keep Weather's temperature clear of its glyph. Proof: `cargo test` and widget renders from `examples/render_battery_details_evidence.rs` and `render_widget_evidence.rs`.
 
 ## 8. Overview
 
