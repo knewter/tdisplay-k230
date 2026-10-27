@@ -11,10 +11,10 @@
 
 ## 2. Board (hardware-only)
 
-- [ ] 2.1 With an app in front, inject LILYGO, `ti` and Enter. Timer
+- [x] 2.1 With an app in front, inject LILYGO, `ti` and Enter. Timer
   launches, and the terminal behind received no keys. Proof:
   `docs/evidence/base-keys/` with the injected key log and grim captures.
-- [ ] 2.2 Inject LILYGO+Tab, Right, Enter, then LILYGO+Tab, Esc, then type in
+- [x] 2.2 Inject LILYGO+Tab, Right, Enter, then LILYGO+Tab, Esc, then type in
   a terminal. The chosen app opens, Esc returns, and the terminal receives
   the plain keys afterwards (`swaymsg -t get_binding_state` reads `default`).
 - [ ] 2.3 The operator does 2.1 and 2.2 on the real base. Physical proof: a

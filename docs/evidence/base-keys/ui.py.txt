@@ -1,0 +1,125 @@
+#!/usr/bin/env python3
+"""Drive the shell for design captures: ui.py OUT_DIR 'action; action; ...'
+Actions: tap X Y | swipe X1 Y1 X2 Y2 MS | grim NAME | surface drawer|drawer-keys|shade|settings|hide
+| sway CMD | wait MS | stamp NAME | key CHORD... (e.g. key LEFTMETA+TAB RIGHT ENTER t i).
+Keys come from a separate uinput keyboard, so device-scoped Sway bindings (the
+base's LILYGO release) do not match it; `surface drawer-keys` is that binding's exec. Coordinates are landscape output pixels (1232x568).
+"""
+import fcntl, json, os, struct, subprocess, sys, time
+from pathlib import Path
+out = Path(sys.argv[1]); out.mkdir(mode=0o700, exist_ok=True)
+ENV = ['sudo', '-u', 'shell', 'env', 'XDG_RUNTIME_DIR=/run/shell', 'WAYLAND_DISPLAY=wayland-1',
+       'SWAYSOCK=/run/shell/sway-ipc.sock', 'PATH=/run/current-system/sw/bin']
+def sh(*a, **kw): return subprocess.run(ENV + list(a), check=True, timeout=25, **kw)
+def sway(cmd): return subprocess.run(ENV + ['swaymsg', cmd], capture_output=True, text=True, timeout=25).stdout
+def tree(): return json.loads(sh('swaymsg', '-t', 'get_tree', '-r', capture_output=True).stdout)
+def apps(n=None):
+    n = n or tree(); r = {n.get('app_id')} if n.get('app_id') else set()
+    for c in n.get('nodes', []) + n.get('floating_nodes', []): r |= apps(c)
+    return r
+def grim(name):
+    data = sh('grim', '-', capture_output=True).stdout; assert data.startswith(b'\x89PNG')
+    (out / f'{name}.png').write_bytes(data)
+def layers():
+    # Layer-shell surfaces are not in get_tree; the keyboard is one.
+    return sh('swaymsg', '-t', 'get_outputs', '-r', capture_output=True, text=True).stdout
+
+outs = [o for o in json.loads(layers()) if o.get('active')]
+assert len(outs) == 1 and outs[0]['transform'] == '270' and outs[0]['rect']['height'] == 568
+real = os.open('/dev/input/event1', os.O_RDONLY)
+axes = [0, 1, 0x2f, 0x30, 0x35, 0x36, 0x39]; info = {}
+for a in axes:
+    b = bytearray(24); fcntl.ioctl(real, 0x80184540 + a, b); info[a] = struct.unpack('6i', b)
+os.close(real)
+fd = os.open('/dev/uinput', os.O_WRONLY | os.O_NONBLOCK)
+for bit in (0, 1, 3): fcntl.ioctl(fd, 0x40045564, bit)
+fcntl.ioctl(fd, 0x40045565, 0x14a)
+for a in axes: fcntl.ioctl(fd, 0x40045567, a)
+fcntl.ioctl(fd, 0x4004556e, 1)
+mx, mn = [0] * 64, [0] * 64
+for a, v in info.items(): mn[a], mx[a] = v[1], v[2]
+dev = (struct.pack('80sHHHHi', b'K230 injected touchscreen', 0x18, 0, 0, 0, 0)
+       + struct.pack('64i', *mx) + struct.pack('64i', *mn) + struct.pack('64i', *[0] * 64) * 2)
+os.write(fd, dev); fcntl.ioctl(fd, 0x5501); time.sleep(1.0)
+ev = struct.Struct('@llHHi')
+def frame(events):
+    b = b''.join(ev.pack(0, 0, *e) for e in [*events, (0, 0, 0)]); assert os.write(fd, b) == len(b)
+def raw(a, f): return round(info[a][1] + f * (info[a][2] - info[a][1]))
+def pos(x, y):
+    nx = y / 567; ny = 1 - x / 1231
+    return [(3, 0x35, raw(0x35, nx)), (3, 0x36, raw(0x36, ny))]
+tid = [300]
+def down(slot, x, y, first):
+    tid[0] += 1
+    e = [(3, 0x2f, slot), (3, 0x39, tid[0]), (3, 0x30, 20), *pos(x, y)]
+    if first: e += [(3, 0, raw(0, y / 567)), (3, 1, raw(1, 1 - x / 1231)), (1, 0x14a, 1)]
+    frame(e)
+def move(pts):
+    e = []
+    for slot, x, y in pts: e += [(3, 0x2f, slot), *pos(x, y)]
+    x, y = pts[0][1], pts[0][2]; e += [(3, 0, raw(0, y / 567)), (3, 1, raw(1, 1 - x / 1231))]
+    frame(e)
+def up(slots, last):
+    e = []
+    for s in slots: e += [(3, 0x2f, s), (3, 0x39, -1)]
+    if last: e += [(1, 0x14a, 0)]
+    frame(e)
+def path(pts0, pts1, ms):
+    steps = max(2, round(ms / 8.14)); t0 = time.monotonic()
+    for i in range(1, steps + 1):
+        time.sleep(max(0, t0 + i * 0.00814 - time.monotonic()))
+        f = i / steps
+        move([(s, x0 + (x1 - x0) * f, y0 + (y1 - y0) * f)
+              for (s, x0, y0), (_, x1, y1) in zip(pts0, pts1)])
+
+KEYS = {'ESC': 1, 'BACKSPACE': 14, 'TAB': 15, 'ENTER': 28, 'LEFTMETA': 125, 'LEFTSHIFT': 42,
+        'LEFT': 105, 'RIGHT': 106, 'UP': 103, 'DOWN': 108, 'DELETE': 111, 'SPACE': 57}
+for i, ch in enumerate('qwertyuiop'): KEYS[ch] = 16 + i
+for i, ch in enumerate('asdfghjkl'): KEYS[ch] = 30 + i
+for i, ch in enumerate('zxcvbnm'): KEYS[ch] = 44 + i
+kbd = []
+def keyboard():
+    if kbd: return kbd[0]
+    k = os.open('/dev/uinput', os.O_WRONLY | os.O_NONBLOCK)
+    for bit in (0, 1): fcntl.ioctl(k, 0x40045564, bit)
+    for code in set(KEYS.values()): fcntl.ioctl(k, 0x40045565, code)
+    os.write(k, struct.pack('80sHHHHi', b'K230 injected keyboard', 0x03, 1, 1, 0, 0) + bytes(4 * 64 * 4))
+    fcntl.ioctl(k, 0x5501); time.sleep(1.0); kbd.append(k); return k
+def chord(spec):
+    k = keyboard(); codes = [KEYS[n] for n in spec.split('+')]
+    def send(code, value):
+        b = ev.pack(0, 0, 1, code, value) + ev.pack(0, 0, 0, 0, 0); assert os.write(k, b) == len(b)
+    for c in codes: send(c, 1); time.sleep(0.03)
+    for c in reversed(codes): send(c, 0); time.sleep(0.03)
+    time.sleep(0.12)
+
+try:
+    for act in sys.argv[2].split(';'):
+        a = act.split()
+        if not a: continue
+        if a[0] == 'tap':
+            x, y = float(a[1]), float(a[2]); down(0, x, y, True); time.sleep(0.08); up([0], True); time.sleep(0.3)
+        elif a[0] == 'swipe':
+            x1, y1, x2, y2, ms = map(float, a[1:6]); down(0, x1, y1, True)
+            path([(0, x1, y1)], [(0, x2, y2)], ms); up([0], True); time.sleep(0.3)
+        elif a[0] == 'grim': grim(a[1])
+        elif a[0] == 'surface': sh('k230-shell-rust', '--surface', a[1])
+        elif a[0] == 'sway': print(sway(' '.join(a[1:])).strip())
+        elif a[0] == 'wait': time.sleep(float(a[1]) / 1000)
+        elif a[0] == 'key':
+            for spec in a[1:]: chord(spec)
+        elif a[0] == 'stamp': print('stamp', a[1], f'{time.time():.3f}', flush=True)
+        elif a[0] == 'apps': print(sorted(x for x in apps() if x))
+        elif a[0] == 'killapps':
+            def views(n):
+                r = [n] if n.get('pid') and n.get('type') in ('con', 'floating_con') else []
+                for c in n.get('nodes', []) + n.get('floating_nodes', []): r += views(c)
+                return r
+            vs = views(tree())
+            keep = min((v['id'] for v in vs if v.get('app_id') == 'k230-terminal'), default=None)
+            for v in vs:
+                if v['id'] != keep:
+                    print('kill', v.get('app_id') or (v.get('window_properties') or {}).get('class'))
+                    sway(f"[con_id={v['id']}] kill")
+finally:
+    os.close(fd)

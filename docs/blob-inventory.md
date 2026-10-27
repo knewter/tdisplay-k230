@@ -2225,6 +2225,22 @@ DATA ffe2aedcb932831363b5fe0f47672478f1cd1c960dce341b1ddc30ad2bcc3a7a docs/evide
 DATA b7b162ede1268ba8152699d63252d77debbb00d04ac51b75fad0256b6c4ca2f3 docs/evidence/nrf9151/shell/board/location-on-searching.png
 DATA 7fbef27941c78089dd1dfa23197585dd9555a255b61bae29fbfa15fa24d82535 docs/evidence/nrf9151/shell/board/settings-rows.png
 DATA 4ffe1aee3d9c123f6a97264824126d2c830145dedafa22879e2155910f45224f docs/evidence/nrf9151/shell/board/shade-location-searching.png
+DATA 555d3f164a39bf46442619ca1f809f2b799d8cc58325f3d22f70372c6f88229a docs/evidence/shade-pass/host/shade-modem-location-off-4-1232x568.png
+DATA b05ead37b6e068cfc444d518712c8e18c86f3d806ea760557a9c1ff76eb2453e docs/evidence/shade-pass/host/shade-modem-location-on-4-1232x568.png
+DATA de4e1a572029cd2dcba7aeab262ad9805beccc7bd304dcfa1abfde7596eed831 docs/evidence/shade-pass/host/shade-modem-location-on-4-568x1232.png
+DATA ab62897f52ec497470d3d0f95fd012fb5341937b63e6ae7d6ad8cb251626e040 docs/evidence/shade-pass/host/shade-no-modem-2-1232x568.png
+DATA 8c767bb158c66c366fc42370d088844df6a68c9dd53e8d66f50a431ddc74ffe9 docs/evidence/shade-pass/host/shade-no-modem-empty-1232x568.png
+DATA 72f5b59602c2f755dfe7377fe6e361974799186b957e0d6152755cb7713f38cc docs/evidence/shade-pass/host/vision-100-shade-1232x568.png
+DATA 4fb9f45a606c35906ae0088d5ccf40eb3a3e48631838343373a43c6754246e1a docs/evidence/shade-pass/host/vision-200-shade-1232x568.png
+DATA 5a763fb2bd58bfaa97a1772cccadc9840a781494ef3afb05a3ad1cc55f611455 docs/evidence/shade-pass/board/shade-open.png
+DATA 647017c9fd5c13394d9f802b8c33519a6b7cc1b755df662893b27b2710f3b0dc docs/evidence/shade-pass/board/tile-cellular.png
+DATA 5932c81af1c19334cbd9743c6bb44b9a04ab07fda4afa2dfd6bcb106f430dba5 docs/evidence/shade-pass/board/tile-keyboard.png
+DATA 87f59585fd05235620a5269a4bcf65d4a194d1bdab3e2015fe0a41137ab5792b docs/evidence/shade-pass/board/tile-location-off.png
+DATA 3bc2788b3b27066248c37349f56d892822df1d24782e2b8a2bd62f60cbf4832f docs/evidence/shade-pass/board/tile-location-on.png
+DATA a2c14dbe49dfc069aaa1697a9e4dbd39fac7f4ba4da29228b8651c8683d091d6 docs/evidence/base-keys/board/keys-after-enter.png
+DATA ee7513ae8fcfc031781673cfef7cab622fc831f615df553c9507c0bea46f6b12 docs/evidence/base-keys/board/keys-drawer-open.png
+DATA 10f202da0963924b537d5a768e30ff7a30ae1309fb52204edbbbf8bec4c0ec0b docs/evidence/base-keys/board/keys-drawer-ti.png
+DATA 97ca6176dfc6c5e8a5cdbe45e807840855e652b0ea29cad1c30245d3a4270b0c docs/evidence/base-keys/board/keys-overview.png
 ```
 
 `group:` rows stand for a directory whose members are enumerated by
@@ -4103,3 +4119,40 @@ Native `grim` captures of the Cellular and Location pages and the shade indicato
 | `docs/evidence/nrf9151/shell/board/location-on-searching.png` | 16971 | DATA | `b7b162ede1268ba8152699d63252d77debbb00d04ac51b75fad0256b6c4ca2f3` |
 | `docs/evidence/nrf9151/shell/board/settings-rows.png` | 67976 | DATA | `7fbef27941c78089dd1dfa23197585dd9555a255b61bae29fbfa15fa24d82535` |
 | `docs/evidence/nrf9151/shell/board/shade-location-searching.png` | 27990 | DATA | `4ffe1aee3d9c123f6a97264824126d2c830145dedafa22879e2155910f45224f` |
+
+## Landscape shade host renders, 2026-10-27
+
+Host renders of the wide shade's time header, status line, tiles and list heading; see `docs/evidence/shade-pass/README.md`.
+
+| Path | Bytes | Class | SHA256 |
+| --- | ---: | --- | --- |
+| `docs/evidence/shade-pass/host/shade-modem-location-off-4-1232x568.png` | 94826 | DATA | `555d3f164a39bf46442619ca1f809f2b799d8cc58325f3d22f70372c6f88229a` |
+| `docs/evidence/shade-pass/host/shade-modem-location-on-4-1232x568.png` | 97254 | DATA | `b05ead37b6e068cfc444d518712c8e18c86f3d806ea760557a9c1ff76eb2453e` |
+| `docs/evidence/shade-pass/host/shade-modem-location-on-4-568x1232.png` | 68430 | DATA | `de4e1a572029cd2dcba7aeab262ad9805beccc7bd304dcfa1abfde7596eed831` |
+| `docs/evidence/shade-pass/host/shade-no-modem-2-1232x568.png` | 70156 | DATA | `ab62897f52ec497470d3d0f95fd012fb5341937b63e6ae7d6ad8cb251626e040` |
+| `docs/evidence/shade-pass/host/shade-no-modem-empty-1232x568.png` | 42462 | DATA | `8c767bb158c66c366fc42370d088844df6a68c9dd53e8d66f50a431ddc74ffe9` |
+| `docs/evidence/shade-pass/host/vision-100-shade-1232x568.png` | 63963 | DATA | `72f5b59602c2f755dfe7377fe6e361974799186b957e0d6152755cb7713f38cc` |
+| `docs/evidence/shade-pass/host/vision-200-shade-1232x568.png` | 83052 | DATA | `4fb9f45a606c35906ae0088d5ccf40eb3a3e48631838343373a43c6754246e1a` |
+
+## Landscape shade board captures, 2026-10-27
+
+Native `grim` captures of the wide shade and its tiles under injected touch; see `docs/evidence/shade-pass/README.md`.
+
+| Path | Bytes | Class | SHA256 |
+| --- | ---: | --- | --- |
+| `docs/evidence/shade-pass/board/shade-open.png` | 41547 | DATA | `5a763fb2bd58bfaa97a1772cccadc9840a781494ef3afb05a3ad1cc55f611455` |
+| `docs/evidence/shade-pass/board/tile-cellular.png` | 29498 | DATA | `647017c9fd5c13394d9f802b8c33519a6b7cc1b755df662893b27b2710f3b0dc` |
+| `docs/evidence/shade-pass/board/tile-keyboard.png` | 37838 | DATA | `5932c81af1c19334cbd9743c6bb44b9a04ab07fda4afa2dfd6bcb106f430dba5` |
+| `docs/evidence/shade-pass/board/tile-location-off.png` | 39183 | DATA | `87f59585fd05235620a5269a4bcf65d4a194d1bdab3e2015fe0a41137ab5792b` |
+| `docs/evidence/shade-pass/board/tile-location-on.png` | 40677 | DATA | `3bc2788b3b27066248c37349f56d892822df1d24782e2b8a2bd62f60cbf4832f` |
+
+## Base-key drawer and overview board captures, 2026-10-27
+
+Native `grim` captures of the key-focused drawer search and the overview under injected keys; see `docs/evidence/base-keys/README.md`.
+
+| Path | Bytes | Class | SHA256 |
+| --- | ---: | --- | --- |
+| `docs/evidence/base-keys/board/keys-after-enter.png` | 8165 | DATA | `a2c14dbe49dfc069aaa1697a9e4dbd39fac7f4ba4da29228b8651c8683d091d6` |
+| `docs/evidence/base-keys/board/keys-drawer-open.png` | 70373 | DATA | `ee7513ae8fcfc031781673cfef7cab622fc831f615df553c9507c0bea46f6b12` |
+| `docs/evidence/base-keys/board/keys-drawer-ti.png` | 10996 | DATA | `10f202da0963924b537d5a768e30ff7a30ae1309fb52204edbbbf8bec4c0ec0b` |
+| `docs/evidence/base-keys/board/keys-overview.png` | 77558 | DATA | `97ca6176dfc6c5e8a5cdbe45e807840855e652b0ea29cad1c30245d3a4270b0c` |
