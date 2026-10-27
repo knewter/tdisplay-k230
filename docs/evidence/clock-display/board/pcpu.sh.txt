@@ -1,0 +1,6 @@
+# pcpu.sh SECONDS -- utime+stime jiffies per process over SECONDS (sleep-paced), top 12
+snap() { for d in /proc/[0-9]*; do [ -r $d/stat ] && awk -v p=${d#/proc/} '{sub(/^[^)]*\) /,""); print p, $1, $12+$13}' $d/stat 2>/dev/null; done; }
+c() { awk '/^cpu /{print $2+$3+$4+$5+$6+$7+$8}' /proc/stat; }
+t0=$(c); snap > /var/tmp/p0; echo "start $(date -u +%T)Z"; sleep "$1"; snap > /var/tmp/p1; t1=$(c); echo "end $(date -u +%T)Z total $((t1-t0)) jiffies"
+for p in $(awk '{print $1}' /var/tmp/p1); do cat /proc/$p/comm 2>/dev/null | sed "s/^/$p /"; done > /var/tmp/pc
+awk -v T=$((t1-t0)) 'FNR==NR{a[$1]=$3; next} ($1 in a){d=$3-a[$1]; if(d>0) printf "%6d %5.2f%% %s\n", d, 100*d/T, $1}' /var/tmp/p0 /var/tmp/p1 | sort -rn | head -12 | while read d pct pid; do echo "$d $pct $pid $(cat /proc/$pid/comm 2>/dev/null) $(tr '\0' ' ' < /proc/$pid/cmdline 2>/dev/null | grep -o '[a-z0-9_-]*\.py\|k230-[a-z-]*' | head -1)"; done

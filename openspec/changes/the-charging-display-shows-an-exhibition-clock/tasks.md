@@ -50,7 +50,7 @@ test or build never closes a board task. Depends on
 
 ## 3. Build gates (no board)
 
-- [ ] 3.1 Build the system closure and read the units and the wrapper. Proof:
+- [x] 3.1 Build the system closure and read the units and the wrapper. Proof:
   `nix build .#nixosConfigurations.k230.config.system.build.toplevel --out-link
   "$SCRATCH/top"` (long; the coordinator owns the slot), then `cat
   "$SCRATCH/top/sw/bin/k230-exhibition"` execs `k230_exhibition.py`, the
@@ -66,7 +66,7 @@ Charger operations need the operator at the cable; say so before asking.
   `grep -H . /sys/class/power_supply/*/{type,online}`. Record which supply
   reports `online`, on charger and off, under `docs/evidence/clock-display/board/`.
   This grounds or corrects the "non-Battery supply with `online` 1" rule.
-- [ ] 4.2 Injected board: charger connected, preference Clock
+- [x] 4.2 Injected board: charger connected, preference Clock
   (`cat /var/lib/k230-shell-prefs/idle-on-charger` absent or `clock`), no input
   for 70 s; `$SM -t get_outputs -r | jq '.[].power'` prints `true`, `cat
   $D/brightness` is a quarter of the prior value, `$SM -t get_tree` lists
