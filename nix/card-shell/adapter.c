@@ -16,6 +16,7 @@
 #include "sway/input/cursor.h"
 #include "sway/input/input-manager.h"
 #include "sway/input/seat.h"
+#include "sway/ipc-server.h"
 #include "sway/layers.h"
 #include "sway/output.h"
 #include "sway/server.h"
@@ -1988,7 +1989,25 @@ static uint64_t focus_id(struct sway_seat *seat) {
 	struct sway_container *c = seat_get_focused_container(seat);
 	return c && c->view ? c->node.id : 0;
 }
+/* The overview's keys (nix/shell.nix, `mode "overview"`): arrows choose a
+ * card, Enter opens it, Esc goes back and Backspace closes it. Sway's
+ * binding mode follows the deck, however it was entered, so those plain
+ * keys are bound only while the deck is up and reach apps otherwise. */
+static void overview_key_mode(bool on) {
+	const char *want = on ? "overview" : "default";
+	if (!config->current_mode || strcmp(config->current_mode->name, want) == 0)
+		return;
+	for (int i = 0; i < config->modes->length; ++i) {
+		struct sway_mode *mode = config->modes->items[i];
+		if (strcmp(mode->name, want) == 0) {
+			config->current_mode = mode;
+			ipc_event_mode(mode->name, mode->pango);
+			return;
+		}
+	}
+}
 static void restore(struct cs_result result) {
+	overview_key_mode(false);
 	shell.home_settling = false;
 	shell.home_offset = 0;
 	memset(&shell.home_gesture, 0, sizeof(shell.home_gesture));
@@ -2100,6 +2119,7 @@ static void handle_result(struct cs_result r) {
 		sway_log(SWAY_INFO, "K230_CARD_SHELL source-gone id=%" PRIu64, r.source_gone_id);
 	if (r.actions & CS_SHRINK) {
 		shell.active = true;
+		overview_key_mode(true);
 		card_bench_phase(true, shell.policy.count);
 		wlr_scene_node_set_enabled(&shell.deck->node, false);
 		/* Withdraw the ordinary-maximized backdrop now that the deck is

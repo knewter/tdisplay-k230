@@ -932,6 +932,23 @@ let
       # Shift sits between Tab and LILYGO; a brushed Shift still means overview.
       bindsym Mod4+Shift+Tab card_shell enter
       bindsym Mod5+Super_L exec ${keyboardBaseScreenshot}
+      # The overview's own keys. The compositor enters this mode while the
+      # card deck is up (by touch or by key) and leaves it with the deck
+      # (nix/card-shell/adapter.c, overview_key_mode), so these plain keys
+      # never reach the shell while an app is in front. The base gives the
+      # arrows with Fn (Mod5) held, so each is bound with and without it.
+      mode "overview" {
+        bindsym Left card_shell previous
+        bindsym Right card_shell next
+        bindsym Mod5+Left card_shell previous
+        bindsym Mod5+Right card_shell next
+        bindsym Mod4+Tab card_shell next
+        bindsym Mod4+Shift+Tab card_shell previous
+        bindsym Return card_shell activate
+        bindsym Escape card_shell back
+        bindsym BackSpace card_shell close
+        bindsym Delete card_shell close
+      }
     ''}
 
     ${lib.optionalString cfg.coherentShell ''

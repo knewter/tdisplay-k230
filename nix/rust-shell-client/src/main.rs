@@ -3046,6 +3046,10 @@ impl ShellClient {
                 }
             }
             PanelIntent::OpenWifi => {
+                // The wide Shade's Wi-Fi tile: its page lives on Settings.
+                if self.route != Route::Settings && !self.show(qh, Route::Settings) {
+                    return;
+                }
                 let request = self.wifi_view.open();
                 self.submit_wifi(request);
             }
@@ -3060,6 +3064,10 @@ impl ShellClient {
                 self.modem_dirty();
             }
             PanelIntent::OpenCellular | PanelIntent::OpenLocation => {
+                // The wide Shade's Cellular tile: its page lives on Settings.
+                if self.route != Route::Settings && !self.show(qh, Route::Settings) {
+                    return;
+                }
                 self.refresh_modem();
                 self.modem_view.open(if intent == PanelIntent::OpenCellular {
                     ModemPage::Cellular
