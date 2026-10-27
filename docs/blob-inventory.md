@@ -2285,6 +2285,10 @@ DATA ca476068973c1ab5d96817129fb129c8fa30c472e52fdd6be0441655d597b19b docs/evide
 DATA edd9ea707a12271eded1a961224418217323d0677fd7d4be9865799fe82f8426 docs/evidence/home-notification-count/host/home-count3-100-568x1232.png
 DATA d0971b44ef6604cc9f0b5c11d07586a3a03636d66c36b57df382e3b61c84fa2c docs/evidence/home-notification-count/host/home-count3-200-1232x568.png
 DATA 01097affc6893ea9e3278d8ec8676e04926ca5489d0d343d25bca12c083a72cf docs/evidence/home-notification-count/host/home-count3-200-568x1232.png
+DATA 945cb4443ee71bdec39ad1e2fef64607872b73d6a018be0478a728e22cefa191 docs/evidence/apps-alert/board/banner-timer-card-open.png
+DATA aa4d659e60e2c11e8da922f1b4ba1f1b74156b4d5b70fdc2781e105958da8a9a docs/evidence/apps-alert/board/banner-timer-card-closed.png
+DATA 2ae369648201e9488c80979ce602087aa6c3de5717a0d0669cd8402beab4fd2b docs/evidence/apps-alert/board/timer-reopened-resumes.png
+DATA 9f3c0ab48bd43a4750b9961fc4978f09108e55486834401b0b6eda50bdbb8186 docs/evidence/a-focused-text-field/board/timer-focus-keyboard-down.png
 ```
 
 `group:` rows stand for a directory whose members are enumerated by
@@ -4278,3 +4282,14 @@ Host renders of Home with the pending-notification count 0, 3 and 100 from `rend
 | `docs/evidence/home-notification-count/host/home-count3-100-568x1232.png` | 52595 | DATA | `edd9ea707a12271eded1a961224418217323d0677fd7d4be9865799fe82f8426` |
 | `docs/evidence/home-notification-count/host/home-count3-200-1232x568.png` | 30623 | DATA | `d0971b44ef6604cc9f0b5c11d07586a3a03636d66c36b57df382e3b61c84fa2c` |
 | `docs/evidence/home-notification-count/host/home-count3-200-568x1232.png` | 61122 | DATA | `01097affc6893ea9e3278d8ec8676e04926ca5489d0d343d25bca12c083a72cf` |
+
+## Board evidence: Timer alerts and focus keyboard
+
+Native grim captures from the board of Timer expiry banners and the Timer with the on-screen keyboard kept down.
+
+| Path | Bytes | Class | SHA256 |
+| --- | ---: | --- | --- |
+| `docs/evidence/apps-alert/board/banner-timer-card-open.png` | 5801 | DATA | `945cb4443ee71bdec39ad1e2fef64607872b73d6a018be0478a728e22cefa191` |
+| `docs/evidence/apps-alert/board/banner-timer-card-closed.png` | 5762 | DATA | `aa4d659e60e2c11e8da922f1b4ba1f1b74156b4d5b70fdc2781e105958da8a9a` |
+| `docs/evidence/apps-alert/board/timer-reopened-resumes.png` | 7985 | DATA | `2ae369648201e9488c80979ce602087aa6c3de5717a0d0669cd8402beab4fd2b` |
+| `docs/evidence/a-focused-text-field/board/timer-focus-keyboard-down.png` | 7987 | DATA | `9f3c0ab48bd43a4750b9961fc4978f09108e55486834401b0b6eda50bdbb8186` |

@@ -49,7 +49,32 @@ posted one history entry, `source "Timer"`, `priority "important"`,
 the detached helper exited. No banner was captured and the reopen-before-expiry
 case was not run, so task 3.4 stays open.
 
+## Timer, 2026-10-27 (tasks 3.3, 3.4)
+
+Build `/nix/store/iw96wr9dykpm19a3zhjfrh9rgjw1xijs-nixos-system-nixos-26.11.20260919.20b1ddd`
+(commit `93dc4efb`), test-activated. Timer launched with the drawer keys
+(LILYGO, `ti`, Enter), set to 1:00 with four `-` presses, started with Space;
+all injected. `grim` ran once a second around the expiry.
+
+- **Card open:** started 15:19:52Z; the banner "Timer / Timer finished" with
+  the Timer icon was on screen from 15:20:53Z (`banner-timer-card-open.png`).
+- **Card closed:** started 15:21:40Z, card closed with the overview's
+  Backspace; the same banner at 15:22:40Z (`banner-timer-card-closed.png`);
+  history held one Timer entry, `important`, 15:22:40; the detached helper
+  process was gone afterwards.
+- **Reopen before expiry:** started 15:23:24.6Z, closed, Timer reopened at
+  15:23:54Z, which showed `00:31 Running` (`timer-reopened-resumes.png`); at
+  expiry history held one Timer entry, 15:24:24. Timer alerts carry a tag
+  that replaces the previous entry, so the count alone cannot exclude a
+  second post that replaced the first.
+
+## Idle cost (task 3.5)
+
+`/proc/<MainPID of shell-notification-dbus>/stat` utime+stime over
+15:17:09-15:18:09Z with no timer running: 86 ticks before and after
+(CLK_TCK 100), a delta of 0.
+
 ## Not covered
 
-A GTK app's `g_application_send_notification` (3.2), Timer with the card open
-(3.3), idle cost (3.5) and the operator's glass check (3.6).
+A GTK app's `g_application_send_notification` (3.2) and the operator's glass
+check (3.6).

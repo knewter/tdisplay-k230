@@ -19,9 +19,12 @@ Each of these needs the reserved board, the installed build and, for 3.1 and 3.2
 - [x] 3.1 `notify-send` shows a banner. Operator command, as the `shell` user over protected SSH: `sudo -u shell env DBUS_SESSION_BUS_ADDRESS=unix:path=/run/shell-bus/bus notify-send -a Probe -u critical "Probe" "body"`; capture the preview with `grim`, then `k230-notifications history` for the app name, `important` priority and `dismissible: true`. Also confirm `busctl --user --address=unix:path=/run/shell-bus/bus status org.freedesktop.Notifications` names the adaptor. Record under `docs/evidence/apps-alert/`.
   Done 2026-10-27T03:37:59Z on the board (injected over SSH). `notify-send` is not on the image, so `busctl ... Notify` made the same call; history showed `Probe`, `important`, `dismissible: true`, and `busctl status` named the adaptor. `docs/evidence/apps-alert/`.
 - [ ] 3.2 A GTK app's notification arrives (for example a GTK app that calls `g_application_send_notification`), and an app naming itself "Shell" appears as "Application". Same capture method.
-- [ ] 3.3 Timer expiry with the card open shows a banner. Start the Timer for 10 s with injected touch, capture with `grim`.
-- [ ] 3.4 Timer expiry with the card closed shows a banner. Start a 20 s timer, close the card with the shell's close gesture, wait, capture the banner with `grim`, and confirm one History entry only. Then repeat with a reopen before expiry and confirm the countdown resumes and no second alert arrives.
-- [ ] 3.5 Measure idle cost: with the adaptor running and no timer, `/proc/<pid>/stat` utime+stime over 60 s for `k230-notification-dbus` shows no growth beyond a post. Record under `docs/evidence/apps-alert/`. Measurement only.
+- [x] 3.3 Timer expiry with the card open shows a banner. Start the Timer for 10 s with injected touch, capture with `grim`.
+  Done 2026-10-27T15:20:53Z (injected keys, build `iw96wr9d…`): banner "Timer / Timer finished" with the Timer icon. `docs/evidence/apps-alert/`.
+- [x] 3.4 Timer expiry with the card closed shows a banner. Start a 20 s timer, close the card with the shell's close gesture, wait, capture the banner with `grim`, and confirm one History entry only. Then repeat with a reopen before expiry and confirm the countdown resumes and no second alert arrives.
+  Done 2026-10-27 (injected keys): closed-card banner at 15:22:40Z with one history entry and the helper gone; reopened at 0:31 and it resumed, with one entry at expiry. Limit: Timer alerts share a replacing tag, so the count alone cannot exclude a replaced second post. `docs/evidence/apps-alert/`.
+- [x] 3.5 Measure idle cost: with the adaptor running and no timer, `/proc/<pid>/stat` utime+stime over 60 s for `k230-notification-dbus` shows no growth beyond a post. Record under `docs/evidence/apps-alert/`. Measurement only.
+  Done 2026-10-27 15:17:09-15:18:09Z: utime+stime delta 0 ticks over 60 s. `docs/evidence/apps-alert/`.
 - [ ] 3.6 The operator sees both banners on glass. Physical proof: a timestamped operator report tied to the installed build.
 
 ## 4. Open

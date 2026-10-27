@@ -20,3 +20,10 @@ Build `/nix/store/kllh24ww1vhybcdf6z9z6jz859584jsb-nixos-system-nixos-26.11.2026
 
 Not yet run: a GTK entry (3.3), flapping while typing (3.4), suppression after
 a base key (3.5) and key integrity (3.6).
+
+## Touch-only terminal apps (build `iw96wr9d…`, commit `93dc4efb`)
+
+On build `kllh24ww…` focusing the Timer raised the keyboard over its
+buttons. With `focusKeyboardIgnoreAppIds`, `board/timer-focus-keyboard-down.png`
+(2026-10-27 ~15:19:55Z) shows the Timer focused and running with the
+keyboard down, and a terminal launched the same way still raised it.
