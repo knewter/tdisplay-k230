@@ -27,5 +27,14 @@ Not glass. Build `/nix/store/f0zn5j8l5a7b7a2j26cwvpqkahg61rsv-nixos-system-nixos
   "Timer / Timer finished" showed (`quiet-timer-breaks-through.png`).
 - Quiet was turned off again by the tile at ~16:05Z; the file read `off`.
 
-Not run: the reboot (3.4), the Settings row against the tile (3.3), the
-largest vision step on the board (3.2), the base-battery critical event.
+## Settings row against the tile (task 3.3), build `zs05li2k…` (commit `be58ff02`)
+
+`settings-row-and-tile-agree.png`, four native captures, injected taps:
+16:49:02Z the Settings "Do Not Disturb" row toggled to On; 16:49:05Z the shade
+opened afterwards shows the moon and "Quiet / On"; 16:49:07Z the tile toggled
+off reads "Quiet / Off"; 16:49:10Z Settings reopened shows the row "Off". The
+state file read `off` at the end. The red "dismissed" line in the shade
+captures is the leftover message fixed later in commit `308a7091`.
+
+Not run: the reboot (3.4), the largest vision step on the board (3.2), the
+base-battery critical event.

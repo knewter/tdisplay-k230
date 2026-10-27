@@ -27,3 +27,17 @@ On build `kllh24ww…` focusing the Timer raised the keyboard over its
 buttons. With `focusKeyboardIgnoreAppIds`, `board/timer-focus-keyboard-down.png`
 (2026-10-27 ~15:19:55Z) shows the Timer focused and running with the
 keyboard down, and a terminal launched the same way still raised it.
+
+## GTK4 entry did not raise the keyboard (task 3.3, failed on `zs05li2k…`)
+
+Tapping the Files search entry focused it ("Search everywhere") but the
+keyboard stayed down (`board/gtk-search-no-keyboard.png`, 2026-10-27
+~16:55Z). A `WAYLAND_DEBUG=1` trace of Nautilus
+(`board/gtk-late-text-input-trace.txt`) shows the cause: GTK4 creates its
+`zwp_text_input_v3` only after the first touch has already moved keyboard
+focus to it, Sway sends `enter` only on focus changes, so GTK's `enable`
+arrives for a text input with no focused surface and wlroots ignores it.
+Foot creates its text input at startup, which is why the terminal works.
+`nix/patches/sway-k230-text-input-late-enter.patch` sends `enter` when a text
+input is created for the client that already holds keyboard focus. Task 3.3
+stays open until a build with the patch raises the keyboard for the entry.

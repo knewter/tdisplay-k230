@@ -76,7 +76,7 @@ installed image (UNVERIFIED).
 - [ ] 3.2 Injected board: `grim` captures of the shade with the tile off and
   on show the moon glyph appear and disappear, and the sliders stay on the
   panel at the largest vision step. Same directory.
-- [ ] 3.3 Injected board: the Settings row and the tile agree after each is
+- [x] 3.3 Injected board: the Settings row and the tile agree after each is
   toggled. Same directory.
 - [ ] 3.4 Injected board: turn quiet mode on, reboot, and record that it is
   still on and that `/var/lib/k230-shell-prefs/do-not-disturb` reads `on`;

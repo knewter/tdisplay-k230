@@ -1,0 +1,33 @@
+# GTK4 Files search entry: text-input-v3 created after keyboard focus (board, injected taps)
+#
+# Build: zs05li2k (commit be58ff02), test-activated. 2026-10-27, board clock UTC in brackets.
+# Command: nautilus relaunched as the shell user with WAYLAND_DEBUG=1 into /var/tmp/naut.log;
+# taps injected with /var/tmp/ui.py (uinput touch). Excerpt:
+#   grep -n "text_input|wl_touch#9.down|wl_keyboard#29.enter" /var/tmp/naut.log
+#
+# Reading: the first touch gives Files keyboard focus (wl_keyboard.enter at 16:53:40.625);
+# GTK binds zwp_text_input_manager_v3 and creates its text input 200 ms later. Sway sends
+# zwp_text_input_v3.enter only on keyboard focus changes, so no enter ever arrives
+# (no "#43.enter" line in the whole 4084-line trace). GTK's enable at 16:55:18 is then
+# ignored by wlroots and the input method never activates: refocus-tap.png shows the
+# focused entry with no keyboard. Fix: nix/patches/sway-k230-text-input-late-enter.patch.
+#
+37:[16:51:56.673703] {Default Queue} wl_registry#2.global(22, "zwp_text_input_manager_v3", 1)
+199:[16:51:59.399643] {Default Queue} wl_keyboard#29.enter(324, wl_surface#37, array[0])
+323:[16:53:40.625364] {Default Queue} wl_touch#9.down(358, 51457084, wl_surface#37, 0, 79.41406250, 73.91015625)
+324:[16:53:40.625557] {Default Queue} wl_keyboard#29.enter(362, wl_surface#37, array[0])
+367:[16:53:40.832220] {Default Queue} wl_registry#42.global(22, "zwp_text_input_manager_v3", 1)
+368:[16:53:40.832244] {Default Queue}  -> wl_registry#42.bind(22, "zwp_text_input_manager_v3", 1, new id [unknown]#48)
+369:[16:53:40.832271] {Default Queue}  -> zwp_text_input_manager_v3#48.get_text_input(new id zwp_text_input_v3#43, wl_seat#3)
+2642:[16:55:18.067477] {Default Queue} wl_touch#9.down(379, 51554534, wl_surface#37, 0, 665.64062500, 94.94921875)
+2644:[16:55:18.071278] {Default Queue}  -> zwp_text_input_v3#43.set_surrounding_text("", 0, 0)
+2645:[16:55:18.071341] {Default Queue}  -> zwp_text_input_v3#43.set_text_change_cause(1)
+2646:[16:55:18.071381] {Default Queue}  -> zwp_text_input_v3#43.set_content_type(0, 0)
+2647:[16:55:18.071445] {Default Queue}  -> zwp_text_input_v3#43.set_cursor_rectangle(564, 39, 0, 88)
+2648:[16:55:18.071474] {Default Queue}  -> zwp_text_input_v3#43.commit()
+2702:[16:55:18.176276] {Default Queue}  -> zwp_text_input_v3#43.enable()
+2703:[16:55:18.176441] {Default Queue}  -> zwp_text_input_v3#43.set_surrounding_text("", 0, 0)
+2704:[16:55:18.176474] {Default Queue}  -> zwp_text_input_v3#43.set_text_change_cause(1)
+2705:[16:55:18.176513] {Default Queue}  -> zwp_text_input_v3#43.set_content_type(0, 0)
+2706:[16:55:18.176579] {Default Queue}  -> zwp_text_input_v3#43.set_cursor_rectangle(564, 39, 0, 88)
+2707:[16:55:18.176752] {Default Queue}  -> zwp_text_input_v3#43.commit()

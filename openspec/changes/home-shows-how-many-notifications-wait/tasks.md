@@ -24,7 +24,7 @@
 Each step needs the reserved board and an installed build. Record injected
 input and glass separately.
 
-- [ ] 2.1 Injected board: with the shade closed on Home, emit three events
+- [x] 2.1 Injected board: with the shade closed on Home, emit three events
   (`k230-notifications emit`, one an unknown sender) and capture Home with
   `grim`: the count reads 3 within about two seconds. Dismiss one in the shade
   and capture that it reads 2, and clear all to see it disappear. Proof

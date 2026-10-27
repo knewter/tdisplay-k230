@@ -2312,6 +2312,9 @@ DATA c00d29cabbc74b916ed778d2a34e0a41abea9824d41184ec7603f80d5582fb5f docs/evide
 DATA 921c91ba84c9a2d8bc3d2fcdfb8500a3fcea606edfc8fe8fcd0bb2e6ad4c7391 docs/evidence/home-notification-count/board/home-count-1-with-banner.png
 DATA f0efd92d6bba85833b24a870b39797d45796c17095a4494883cc90ea087e62ec docs/evidence/home-notification-count/board/home-count-3-quiet.png
 DATA 8b16c49b640f76d6be5603489d8b691ebb304fe2e8457e9cba9093368c8a81c4 docs/evidence/idle-dim/board/video-focused-playing.png
+DATA e0abacfe4af194dad1d36ba3ebd1bc0db81889d1ef0b2119ff0cca3e65077faf docs/evidence/home-notification-count/board/home-count-3-2-cleared.png
+DATA 704fc685540b6d5b80d2ed86e2f58a1015e79fe63e6301dd01faa9a595256943 docs/evidence/do-not-disturb/board/settings-row-and-tile-agree.png
+DATA f84e898df83a60269a81e48c65b2a427551d67a0bee6cb1cb83e58046c8321b6 docs/evidence/a-focused-text-field/board/gtk-search-no-keyboard.png
 ```
 
 `group:` rows stand for a directory whose members are enumerated by
@@ -4353,3 +4356,13 @@ Native grim captures from the board for Do Not Disturb, the Home notification co
 | `docs/evidence/home-notification-count/board/home-count-1-with-banner.png` | 209936 | DATA | `921c91ba84c9a2d8bc3d2fcdfb8500a3fcea606edfc8fe8fcd0bb2e6ad4c7391` |
 | `docs/evidence/home-notification-count/board/home-count-3-quiet.png` | 205857 | DATA | `f0efd92d6bba85833b24a870b39797d45796c17095a4494883cc90ea087e62ec` |
 | `docs/evidence/idle-dim/board/video-focused-playing.png` | 233581 | DATA | `8b16c49b640f76d6be5603489d8b691ebb304fe2e8457e9cba9093368c8a81c4` |
+
+## Board captures: notification count, quiet row, GTK entry
+
+Native grim captures from the board (injected touch, build zs05li2k): Home count 3/2/cleared, Settings Do Not Disturb row against the shade tile, Files search entry focused with no keyboard.
+
+| Path | Bytes | Class | SHA256 |
+| --- | ---: | --- | --- |
+| `docs/evidence/home-notification-count/board/home-count-3-2-cleared.png` | 291699 | DATA | `e0abacfe4af194dad1d36ba3ebd1bc0db81889d1ef0b2119ff0cca3e65077faf` |
+| `docs/evidence/do-not-disturb/board/settings-row-and-tile-agree.png` | 192515 | DATA | `704fc685540b6d5b80d2ed86e2f58a1015e79fe63e6301dd01faa9a595256943` |
+| `docs/evidence/a-focused-text-field/board/gtk-search-no-keyboard.png` | 27659 | DATA | `f84e898df83a60269a81e48c65b2a427551d67a0bee6cb1cb83e58046c8321b6` |
