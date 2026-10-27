@@ -16,6 +16,9 @@ libc = "=0.2.175"
 # keypad (openspec/changes/the-handheld-configures-wifi-from-settings).
 smithay-client-toolkit = { version = "=0.20.0", default-features = false, features = ["xkbcommon"] }
 wayland-client = "=0.31.11"
+# input-method-v2 for src/bin/k230-osk-focus.rs. 0.3.9 is already in
+# Cargo.lock (smithay-client-toolkit pulls it in): no new crate is vendored.
+wayland-protocols-misc = { version = "=0.3.9", features = ["client"] }
 cairo-rs = { version = "=0.21.5", features = ["png"] }
 pango = "=0.21.5"
 pangocairo = "=0.21.5"

@@ -670,6 +670,38 @@ let
     ${lib.optionalString cfg.themeReceiverTrial ''export K230_THEME_DEFAULT_GENERATION="${themeDefault}/generations/${themeDefaultId}"''}
     exec ${touchLauncherBase}/bin/k230-touch-launcher "$@"
   '';
+  # Input-method client that raises/lowers wvkbd on text-field focus
+  # (openspec/changes/a-focused-text-field-raises-the-keyboard). Finds the
+  # session's Wayland socket the same way rustShell does.
+  oskFocus = pkgs.writeShellScriptBin "k230-osk-focus-session" ''
+    if [ -z "''${WAYLAND_DISPLAY:-}" ]; then
+      for attempt in $(${pkgs.coreutils}/bin/seq 1 100); do
+        found=""
+        for candidate in "$XDG_RUNTIME_DIR"/wayland-*; do
+          if [ -S "$candidate" ]; then
+            if [ -n "$found" ]; then
+              echo "k230-osk-focus: ambiguous Wayland display" >&2
+              exit 1
+            fi
+            found="$candidate"
+          fi
+        done
+        if [ -n "$found" ]; then
+          export WAYLAND_DISPLAY="''${found##*/}"
+          break
+        fi
+        ${pkgs.coreutils}/bin/sleep 0.1
+      done
+      if [ -z "''${WAYLAND_DISPLAY:-}" ]; then
+        echo "k230-osk-focus: session Wayland display unavailable" >&2
+        exit 1
+      fi
+    fi
+    export K230_KEYBOARD_SIGNAL=${keyboardGestureSignal}/bin/k230-keyboard-gesture-signal
+    export K230_OSK_KEY_STAMP="$XDG_RUNTIME_DIR/k230-keyboard-base-last-key"
+    export K230_OSK_SUPPRESS_SECONDS=${toString cfg.focusKeyboardSuppressSeconds}
+    exec ${rustShellBase}/bin/k230-osk-focus
+  '';
   rustShell = pkgs.writeShellScriptBin "k230-shell-rust" ''
     ${launcherEnvironment}
     # The supervised UI starts after Sway's process, before its display may
@@ -1196,6 +1228,25 @@ in
       default = if cfg.panelTransform == "normal" then 400 else 240;
       defaultText = lib.literalExpression ''if panelTransform == "normal" then 400 else 240'';
       description = "Height of the on-screen keyboard in pixels.";
+    };
+
+    focusKeyboard = lib.mkOption {
+      type = lib.types.bool;
+      default = true;
+      description = ''
+        Run k230-osk-focus, an input-method-v2 client that raises the
+        on-screen keyboard when a text field takes focus and lowers it when
+        focus leaves. Needs cfg.coherentShell.
+      '';
+    };
+
+    focusKeyboardSuppressSeconds = lib.mkOption {
+      type = lib.types.ints.unsigned;
+      default = 10;
+      description = ''
+        A newly focused text field does not raise the on-screen keyboard
+        within this many seconds of the last key pressed on the keyboard base.
+      '';
     };
 
     compositor = lib.mkOption {
@@ -1741,6 +1792,28 @@ in
         ExecStart = "${keyboardBased}/bin/k230-keyboard-based --swaymsg ${sway}/bin/swaymsg --osk-signal ${keyboardGestureSignal}/bin/k230-keyboard-gesture-signal --escape-back";
         Restart = "on-failure";
         RestartSec = 2;
+        UMask = "0077";
+      };
+    };
+
+    # Text-field focus raises and lowers the on-screen keyboard
+    # (openspec/changes/a-focused-text-field-raises-the-keyboard). An
+    # input-method-v2 client with no keyboard grab: it never sees or alters
+    # keys. Blocks in the Wayland queue, so it costs nothing while idle.
+    systemd.services.shell-osk-focus = lib.mkIf (cfg.coherentShell && cfg.focusKeyboard) {
+      description = "Raise the on-screen keyboard when a text field takes focus";
+      wantedBy = [ "shell.service" ];
+      bindsTo = [ "shell.service" ];
+      partOf = [ "shell.service" ];
+      after = [ "shell.service" "shell-keyboard.service" ];
+      environment.XDG_RUNTIME_DIR = "/run/shell";
+      serviceConfig = {
+        Type = "exec";
+        User = "shell";
+        Group = "shell";
+        ExecStart = "${oskFocus}/bin/k230-osk-focus-session";
+        Restart = "on-failure";
+        RestartSec = 3;
         UMask = "0077";
       };
     };

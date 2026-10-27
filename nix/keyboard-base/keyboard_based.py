@@ -175,9 +175,20 @@ class Session:
         self.swaymsg = swaymsg
         self.osk_signal = osk_signal
         self.marker = Path(runtime_dir) / "k230-keyboard-visible"
+        self.key_stamp = Path(runtime_dir) / "k230-keyboard-base-last-key"
         self.panel_cache = (0.0, True)
 
+    def note_key(self):
+        """Record a base key press as the stamp's mtime. k230-osk-focus
+        reads it to keep a newly focused field from raising the on-screen
+        keyboard while someone is typing on the base."""
+        try:
+            self.key_stamp.touch()
+        except OSError:
+            pass
+
     def hide_osk(self):
+        self.note_key()
         try:
             shown = self.marker.read_text().strip() == "show"
         except OSError:

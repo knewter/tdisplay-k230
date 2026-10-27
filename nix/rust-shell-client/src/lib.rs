@@ -15,6 +15,7 @@ pub mod home_state;
 pub mod home_widgets;
 pub mod icon;
 pub mod keyboard_base;
+pub mod osk_focus;
 pub mod modem;
 pub mod modem_ui;
 pub mod navigation;

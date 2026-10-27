@@ -174,6 +174,18 @@ class WriteLed(unittest.TestCase):
             kbd.write_led("x", True, root)
             self.assertEqual((d / "brightness").read_text(), "1")
 
+    def test_a_key_press_stamps_the_time_for_the_osk_focus_client(self):
+        import os, tempfile, time
+        with tempfile.TemporaryDirectory() as root:
+            session = kbd.Session("swaymsg", "true", root)
+            stamp = Path(root) / "k230-keyboard-base-last-key"
+            self.assertFalse(stamp.exists())
+            session.hide_osk()
+            self.assertTrue(stamp.exists())
+            os.utime(stamp, (1.0, 1.0))
+            session.hide_osk()
+            self.assertGreater(stamp.stat().st_mtime, time.time() - 5)
+
 
 if __name__ == "__main__":
     unittest.main()

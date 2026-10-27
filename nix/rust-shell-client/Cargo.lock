@@ -441,6 +441,7 @@ dependencies = [
  "sha2",
  "smithay-client-toolkit",
  "wayland-client",
+ "wayland-protocols-misc",
 ]
 
 [[package]]
