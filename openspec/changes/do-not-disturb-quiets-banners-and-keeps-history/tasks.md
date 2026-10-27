@@ -78,7 +78,7 @@ installed image (UNVERIFIED).
   panel at the largest vision step. Same directory.
 - [x] 3.3 Injected board: the Settings row and the tile agree after each is
   toggled. Same directory.
-- [ ] 3.4 Injected board: turn quiet mode on, reboot, and record that it is
+- [x] 3.4 Injected board: turn quiet mode on, reboot, and record that it is
   still on and that `/var/lib/k230-shell-prefs/do-not-disturb` reads `on`;
   record the same after a shell restart. Console transcript under
   `docs/evidence/do-not-disturb/board/`.

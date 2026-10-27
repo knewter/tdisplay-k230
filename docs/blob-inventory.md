@@ -2332,6 +2332,7 @@ DATA a5fb249aa9a39cc6db81dcf032c531990b1e1144a25f361f1c2324aea33201e9 docs/evide
 DATA 1c4caacf7439f364abe723f25da69267291e6c9e51b27a310e2b67bbefa6ef10 docs/evidence/clock-display/board/centred-k230-expand-effect.png
 DATA 23927a2d1e9cccf4773df366e47f8e943408adf9f39676b388ade0cd265d2f3e docs/evidence/clock-display/board/centred-k230-banner-174021.jpg
 DATA 8804722be7641e327facab6b5f9e1694cbfa2f2aee5eef5ee0b8aedbeab15636 docs/evidence/clock-display/board/tap-closes-card-over-files.png
+DATA 67e63eb27db01ffcc19d94d7b110e3ce6e9eea2f9ce289bfcfa8852025e24285 docs/evidence/do-not-disturb/board/quiet-before-and-after-reboot.png
 ```
 
 `group:` rows stand for a directory whose members are enumerated by
@@ -4442,3 +4443,11 @@ Native grim captures from the board (build 3vk5qy3a): the centred K230 expand ef
 | `docs/evidence/clock-display/board/centred-k230-expand-effect.png` | 28688 | DATA | `1c4caacf7439f364abe723f25da69267291e6c9e51b27a310e2b67bbefa6ef10` |
 | `docs/evidence/clock-display/board/centred-k230-banner-174021.jpg` | 27856 | DATA | `23927a2d1e9cccf4773df366e47f8e943408adf9f39676b388ade0cd265d2f3e` |
 | `docs/evidence/clock-display/board/tap-closes-card-over-files.png` | 17037 | DATA | `8804722be7641e327facab6b5f9e1694cbfa2f2aee5eef5ee0b8aedbeab15636` |
+
+## Board capture: Quiet survives a reboot
+
+Native grim crops of the shade on the board (build 3vk5qy3a) before and after a reboot with Quiet on.
+
+| Path | Bytes | Class | SHA256 |
+| --- | ---: | --- | --- |
+| `docs/evidence/do-not-disturb/board/quiet-before-and-after-reboot.png` | 25134 | DATA | `67e63eb27db01ffcc19d94d7b110e3ce6e9eea2f9ce289bfcfa8852025e24285` |

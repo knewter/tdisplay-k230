@@ -38,3 +38,35 @@ captures is the leftover message fixed later in commit `308a7091`.
 
 Not run: the reboot (3.4), the largest vision step on the board (3.2), the
 base-battery critical event.
+
+## Reboot (task 3.4), build `3vk5qy3a…` (commit `8352919b`)
+
+Console transcript (board, over SSH; times UTC unless the board's own
+`uptime` local clock is shown):
+
+    # shade tile tapped (injected) at ~18:06:10Z
+    $ cat /var/lib/k230-shell-prefs/do-not-disturb
+    on
+    $ readlink /run/current-system
+    /nix/store/3vk5qy3a3vxj0yx6swg14iki1qq4i36x-nixos-system-…
+    $ date -u +%T; sudo systemctl reboot
+    18:06:23
+    # back on SSH
+    up 18:08:01Z
+    $ cat /var/lib/k230-shell-prefs/do-not-disturb
+    on
+    $ readlink /run/current-system
+    /nix/store/qh3i7b3f6isbmjphxw133nrw5901m474-nixos-system-…   (boot default)
+    $ sudo …3vk5qy3a…/bin/switch-to-configuration test; sudo systemctl restart shell
+    $ cat /var/lib/k230-shell-prefs/do-not-disturb
+    on
+
+`quiet-before-and-after-reboot.png`: the shade's top half before the reboot
+(13:06 local) and after re-activating the build and restarting the shell
+(13:10 local); both show the moon glyph and "Quiet / On". The reboot boots
+the older boot-default generation, which does not contain this change; the
+build under test was re-activated and the shell restarted before the second
+capture, so this run covers the file surviving the reboot and being read by
+the restarted shell, not this build running from boot. The earlier
+shell-restart check is above. Quiet was turned off again by the tile
+afterwards; the file read `off`.
