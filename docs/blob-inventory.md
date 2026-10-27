@@ -2329,6 +2329,9 @@ DATA 0135b004c98b8e966e35873b5944db39f8f10cd5c6cdece1cb2d572fba5ee102 docs/evide
 DATA 802ee26b6d5412269cd2a136e10a96aed417a6c706fe7a0cbd478cbb646ebc8f docs/evidence/clock-display/host/settings-no-modem-charger-sleep-200-1232x568.png
 DATA 2254e49d60b6e76e2165f749c8920d49655348662e07207ae5797fe576beaa8d docs/evidence/clock-display/board/docked-idle-70s-clock.png
 DATA a5fb249aa9a39cc6db81dcf032c531990b1e1144a25f361f1c2324aea33201e9 docs/evidence/clock-display/board/first-effect-top-left-cursor.png
+DATA 1c4caacf7439f364abe723f25da69267291e6c9e51b27a310e2b67bbefa6ef10 docs/evidence/clock-display/board/centred-k230-expand-effect.png
+DATA 23927a2d1e9cccf4773df366e47f8e943408adf9f39676b388ade0cd265d2f3e docs/evidence/clock-display/board/centred-k230-banner-174021.jpg
+DATA 8804722be7641e327facab6b5f9e1694cbfa2f2aee5eef5ee0b8aedbeab15636 docs/evidence/clock-display/board/tap-closes-card-over-files.png
 ```
 
 `group:` rows stand for a directory whose members are enumerated by
@@ -4429,3 +4432,13 @@ Native grim captures from the board (build fas6gqhw): the clock at 70 s docked i
 | --- | ---: | --- | --- |
 | `docs/evidence/clock-display/board/docked-idle-70s-clock.png` | 5904 | DATA | `2254e49d60b6e76e2165f749c8920d49655348662e07207ae5797fe576beaa8d` |
 | `docs/evidence/clock-display/board/first-effect-top-left-cursor.png` | 54759 | DATA | `a5fb249aa9a39cc6db81dcf032c531990b1e1144a25f361f1c2324aea33201e9` |
+
+## Board captures: centred exhibition effect and dismissal
+
+Native grim captures from the board (build 3vk5qy3a): the centred K230 expand effect, one held banner frame, and a tap closing the card over Files.
+
+| Path | Bytes | Class | SHA256 |
+| --- | ---: | --- | --- |
+| `docs/evidence/clock-display/board/centred-k230-expand-effect.png` | 28688 | DATA | `1c4caacf7439f364abe723f25da69267291e6c9e51b27a310e2b67bbefa6ef10` |
+| `docs/evidence/clock-display/board/centred-k230-banner-174021.jpg` | 27856 | DATA | `23927a2d1e9cccf4773df366e47f8e943408adf9f39676b388ade0cd265d2f3e` |
+| `docs/evidence/clock-display/board/tap-closes-card-over-files.png` | 17037 | DATA | `8804722be7641e327facab6b5f9e1694cbfa2f2aee5eef5ee0b8aedbeab15636` |

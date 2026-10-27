@@ -62,3 +62,37 @@ figure is inferred from the per-process table, not measured as a difference.
 the 12:30 clock, then the five-row `#` banner sliding in at the top left
 with a gradient, a cursor block under it at the end. ttfx fitted its canvas
 to the text at the default `sw` anchor and restored the cursor on exit.
+
+## Centred block banner (build `3vk5qy3a…`, commit `8352919b`)
+
+`centred-k230-expand-effect.png`: 24 captures 17:40:10–17:40:26Z
+(`grim -t jpeg`, about 0.7 s apart; `pgrep -x ttfx` true for frames 13–16).
+The clock, then the `expand` effect growing the six-row block "K230" from the
+centre, the finished banner held, then the clock back.
+`centred-k230-banner-174021.jpg` is one full frame of the held banner,
+centred, white-to-blue gradient, no cursor.
+
+## Touch and key over an app (task 4.4, tap and injected key; base key not run)
+
+Readings are `date`, backlight `brightness`, and the app ids and focus in
+`swaymsg -t get_tree` order (a `"focused": true` precedes its node's app id).
+
+- 17:40:51Z, card over the terminal, brightness 37, exhibition focused. An
+  injected tap at (616,300); at 17:40:57Z brightness 148, no exhibition,
+  terminal focused.
+- Files opened from the Home dock, left on its Home folder, no input.
+  17:42:24Z: brightness 37, `k230-exhibition` focused above
+  `org.gnome.Nautilus`. An injected tap at (80,232), where Files' "Starred"
+  row is; 17:42:31Z: brightness 148, the exhibition gone, Nautilus focused,
+  and `tap-closes-card-over-files.png` shows Files still on Home with Starred
+  not selected: the touch did not reach the app.
+- 17:43:33Z the card was up again over Files (brightness 37). The injected
+  uinput keyboard pressed `j`; 17:43:40Z brightness 148, the exhibition gone,
+  Nautilus focused, and Files showed no type-ahead search (the key did not
+  reach it).
+
+The card in front afterwards is the prior card, not Home. A key from the
+physical keyboard base was not pressed, so 4.4 stays open for that.
+
+One tap at 17:35:06Z, two seconds after the card's `exec` at 17:35:04Z, did
+not close it; that card was probably not mapped yet. Not investigated further.
