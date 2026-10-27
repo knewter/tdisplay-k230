@@ -30,7 +30,7 @@ input and glass separately.
   and capture that it reads 2, and clear all to see it disappear. Proof
   (injected board, not glass): captures and exact commands with timestamps
   under `docs/evidence/home-notification-count/board/`.
-- [ ] 2.2 Injected board: capture that the count shows no source or text from
+- [x] 2.2 Injected board: capture that the count shows no source or text from
   a private event, and that Home's drag between pages and the pull-down shade
   still behave with it showing (`tools/board-pointer.py` swipes). Same
   directory.

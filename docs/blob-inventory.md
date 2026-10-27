@@ -2318,6 +2318,7 @@ DATA f84e898df83a60269a81e48c65b2a427551d67a0bee6cb1cb83e58046c8321b6 docs/evide
 DATA 7f87db522bd6faf4abd885b5d6d2ccc144c5b3b4b77a64ec018b834e6a8f1202 docs/evidence/a-focused-text-field/board/gtk-search-keyboard-up.png
 DATA 4e147d7adf71287b85acd4520cf7f86128c921d6f5a15016842a4d93007ab7ce docs/evidence/a-focused-text-field/board/gtk-search-closed-keyboard-down.png
 DATA 3a0f023dccc5734c7a1505817d7074cec3565d3a91a0b21392ac49175c512428 docs/evidence/a-focused-text-field/board/foot-typing-no-flap.png
+DATA a43ab84ac42f8ff53470b7457ffc0a7062079e16e84a894c0eb633a59de5159b docs/evidence/home-notification-count/board/home-count-paging-and-shade.png
 ```
 
 `group:` rows stand for a directory whose members are enumerated by
@@ -4386,3 +4387,11 @@ Native grim captures from the board (injected touch and keys, build gpgh1vx6): t
 | Path | Bytes | Class | SHA256 |
 | --- | ---: | --- | --- |
 | `docs/evidence/a-focused-text-field/board/foot-typing-no-flap.png` | 97408 | DATA | `3a0f023dccc5734c7a1505817d7074cec3565d3a91a0b21392ac49175c512428` |
+
+## Board capture: notification count while paging and with the shade
+
+Native grim captures from the board (injected touch, build gpgh1vx6): Home count over both pages and around the pull-down shade; Weather widget covered.
+
+| Path | Bytes | Class | SHA256 |
+| --- | ---: | --- | --- |
+| `docs/evidence/home-notification-count/board/home-count-paging-and-shade.png` | 486684 | DATA | `a43ab84ac42f8ff53470b7457ffc0a7062079e16e84a894c0eb633a59de5159b` |

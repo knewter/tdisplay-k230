@@ -22,4 +22,14 @@ which matches no installed app, so every one came from an unknown sender
 rather than one of three. `k230-notifications emit` was not used; the D-Bus
 path is the one real apps take.
 
-Paging and the pull-down shade with the count showing (2.2) were not run.
+## Privacy, paging and the shade (task 2.2), build `gpgh1vx6…` (commit `e8056ece`)
+
+One event with the summary "Private summary" and body "private body" was
+sent over D-Bus `Notify` (app name "Probe"). `home-count-paging-and-shade.png`,
+five native captures 17:08:21Z–17:08:32Z, injected touch: Home shows only "1" at the
+top right, no source or text; a left drag moved to page 2 with the count
+still there; a right drag returned to page 1; a pull from the top edge opened
+the shade, which lists the event (the shade is where content belongs);
+closing it returned to Home with "1". Page 2's Weather widget is covered in
+the capture because it shows a location. Dismiss all in the shade then
+removed the count (checked with a crop of the corner, not committed).
