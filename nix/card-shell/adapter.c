@@ -9,6 +9,7 @@
 #include "sway/card_shell_scaled_cache.h"
 #include "sway/card_shell_route.h"
 #include "sway/card_shell_telemetry.h"
+#include "sway/card_shell_wake_gate.h"
 #include "sway/card_shell_test_input.h"
 #include "sway/commands.h"
 #include "sway/config.h"
@@ -3680,6 +3681,7 @@ void card_shell_pointer_reset(struct sway_seat *seat) {
     card_shell_cancel(seat);
 }
 bool card_shell_cancel(struct sway_seat *seat) {
+	wake_gate = (struct wake_gate){0};
 	bool edge_owned = edge.active && edge.seat == seat;
 	if (edge_owned) edge_reset(true);
     if (shell.trackpad_client && shell.trackpad_seat == seat && seat) {
@@ -3753,7 +3755,36 @@ static void touch_route_trace(struct sway_seat *seat, int32_t id, double x,
 		seat->cursor->simulating_pointer_from_touch, shell.policy.contact,
 		shell.policy.edge.tracking, shell.policy.blocked_until_up, shell.home_selected);
 }
+/* The single output is lit or dark by Sway's own power state (`output * power
+ * on|off`, as the power key and idle timer set it); wlr_output->enabled is
+ * what `swaymsg -t get_outputs` reports as "power". */
+static bool display_dark(void) {
+	return enabled() && shell.output && shell.output->enabled &&
+		shell.output->wlr_output && !shell.output->wlr_output->enabled;
+}
+/* Light the display with the same command the power key uses, so Sway's
+ * stored power state stays "on" and the idle timer/power key agree. */
+static void display_wake(void) {
+	char command[] = "output * power on";
+	list_t *results = execute_command(command, NULL, NULL);
+	if (modeset_is_pending()) force_modeset();
+	transaction_commit_dirty();
+	if (!results) return;
+	while (results->length) {
+		free_cmd_results(results->items[0]);
+		list_del(results, 0);
+	}
+	list_free(results);
+}
+static struct wake_gate wake_gate;
 bool card_shell_down(struct sway_seat *seat, struct wlr_touch *touch, int32_t id, double x, double y, uint32_t time_msec) {
+	/* A touch on a dark panel only wakes it: consume the whole sequence so
+	 * the app underneath never sees a tap it could not have been aimed at. */
+	bool wake = false;
+	if (wake_gate_down(&wake_gate, id, display_dark(), &wake)) {
+		if (wake) display_wake();
+		return true;
+	}
 	uint64_t source_ms = event_time_ms(time_msec);
 	touch_route_trace(seat, id, x, y, source_ms, true, false);
 	bool consumed = input_down(seat, id, x, y, source_ms);
@@ -3776,6 +3807,7 @@ static bool injected_touch(const struct wlr_touch *touch) {
 		 !strcmp(name, "Card shell headless fixture")));
 }
 bool card_shell_motion(struct sway_seat *seat, struct wlr_touch *touch, int32_t id, double x, double y, uint32_t time_msec) {
+	if (wake_gate_motion(&wake_gate, id)) return true;
 	bool active = shell.active;
 	card_bench_input_begin(shell.gesture_seq, "motion", injected_touch(touch));
 	card_bench_input_origin(event_time_ms(time_msec) * UINT64_C(1000000));
@@ -3784,6 +3816,7 @@ bool card_shell_motion(struct sway_seat *seat, struct wlr_touch *touch, int32_t 
 	return consumed;
 }
 bool card_shell_up(struct sway_seat *seat, struct wlr_touch *touch, int32_t id, uint32_t time_msec) {
+	if (wake_gate_up(&wake_gate, id)) return true;
 	bool active = shell.active;
 	card_bench_input_begin(shell.gesture_seq, "release", injected_touch(touch));
 	card_bench_input_origin(event_time_ms(time_msec) * UINT64_C(1000000));

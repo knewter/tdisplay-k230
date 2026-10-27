@@ -11,6 +11,7 @@ import logging
 import os
 from pathlib import Path
 import selectors
+import shlex
 import socket
 import struct
 import subprocess
@@ -70,7 +71,8 @@ def named_device(sys_class=Path("/sys/class/input")):
 
 
 class Actions:
-    def __init__(self, swaymsg, sway_socket, shell_socket):
+    def __init__(self, swaymsg, sway_socket, shell_socket, idle_wake=None):
+        self.idle_wake = idle_wake  # argv: restore idle dim and report activity
         self.swaymsg = swaymsg
         self.sway_socket = sway_socket
         self.shell_socket = shell_socket
@@ -109,6 +111,16 @@ class Actions:
         if active:
             self.dark = not any(item.get("power") is True for item in active)
 
+    def wake_idle(self):
+        # The key is grabbed here, so Sway never sees it as activity: tell
+        # the idle dimmer, which restores brightness and re-arms swayidle.
+        if not self.idle_wake:
+            return
+        try:
+            subprocess.run(self.idle_wake, check=True, capture_output=True, timeout=10)
+        except (OSError, subprocess.SubprocessError) as exc:
+            LOG.warning("idle wake failed: %s", exc)
+
     def show_sheet(self):
         try:
             with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as client:
@@ -123,10 +135,12 @@ class Actions:
     def __call__(self, action):
         self.sync()
         if action == "short":
-            self.output(self.dark)
+            if self.output(self.dark) and not self.dark:
+                self.wake_idle()
         elif action == "hold":
             if self.dark and not self.output(True):
                 return
+            self.wake_idle()
             self.show_sheet()
 
 
@@ -172,9 +186,12 @@ def main():
     parser.add_argument("--swaymsg", required=True)
     parser.add_argument("--sway-socket", default="/run/shell/sway-ipc.sock")
     parser.add_argument("--shell-socket", default="/run/shell/k230-shell-rust.sock")
+    parser.add_argument("--idle-wake", default="",
+                        help="command line run after the key lights the display")
     args = parser.parse_args()
     logging.basicConfig(level=logging.INFO, format="%(name)s: %(message)s")
-    actions = Actions(args.swaymsg, args.sway_socket, args.shell_socket)
+    actions = Actions(args.swaymsg, args.sway_socket, args.shell_socket,
+                      shlex.split(args.idle_wake) or None)
     # Recover a dark display after a daemon restart before waiting for input.
     actions.output(True)
     run(actions)

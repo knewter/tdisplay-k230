@@ -117,6 +117,28 @@ class KeyPolicyTests(unittest.TestCase):
                 actions.sync()
             self.assertTrue(actions.dark)
 
+    def test_waking_the_display_restores_idle_dim_but_blanking_does_not(self):
+        actions = MODULE.Actions("/unused", "/unused", "/unused", ["dimmer", "wake"])
+        woke = []
+        def fake_output(on):
+            actions.dark = not on
+            return True
+        actions.output = fake_output
+        actions.wake_idle = lambda: woke.append(1)
+        actions("short")  # lit -> off
+        self.assertEqual(woke, [])
+        actions("short")  # off -> on
+        self.assertEqual(woke, [1])
+
+    def test_idle_wake_runs_the_configured_command_and_survives_failure(self):
+        actions = MODULE.Actions("/unused", "/unused", "/unused", ["dimmer", "wake"])
+        with patch.object(MODULE.subprocess, "run") as run:
+            actions.wake_idle()
+        self.assertEqual(run.call_args.args[0], ["dimmer", "wake"])
+        with patch.object(MODULE.subprocess, "run", side_effect=OSError("gone")):
+            actions.wake_idle()
+        MODULE.Actions("/unused", "/unused", "/unused").wake_idle()  # unset: no-op
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -16,6 +16,11 @@ let
   cfg = config.k230.shell;
   hdmiTouchCalibration = import ./hdmi-touch-calibration.nix cfg.hdmiTransform;
   powerKeyd = pkgs.callPackage ./power-keyd.nix { };
+  # Idle dim after 30 s and display off after 60 s (openspec/changes/
+  # the-display-dims-and-sleeps-when-idle). swayidle runs this per event.
+  idleDimmer = pkgs.callPackage ./idle-dimmer.nix { };
+  idleDimmerCommand = "${idleDimmer}/bin/k230-idle-dimmer";
+  idleDimmerArgs = "--swaymsg ${sway}/bin/swaymsg --sway-socket /run/shell/sway-ipc.sock";
   keyboardBased = pkgs.callPackage ./keyboard-base.nix { };
   # Clock, Timer and Weather: one Python TUI behind three k230-* commands.
   termApps = pkgs.callPackage ./term-apps { };
@@ -1012,6 +1017,11 @@ let
       floating_maximum_size -1 x -1
       default_floating_border none
       for_window [app_id=".+"] card_shell ordinary, floating enable, resize set 100 ppt 100 ppt, move position 0 0
+      # The display stays lit while the Timer or a video player is the
+      # focused card. Sway tells swayidle (ext-idle-notify) about the
+      # inhibitor; the Home wallpaper video is deliberately not one.
+      for_window [app_id="^k230-timer$"] inhibit_idle focus
+      for_window [app_id="^k230-video-"] inhibit_idle focus
     ''}
 
     ${lib.optionalString (!cfg.coherentShell) ''
@@ -1765,9 +1775,51 @@ in
         Type = "exec";
         User = "shell";
         Group = "shell";
-        ExecStart = "${powerKeyd}/bin/k230-power-keyd --swaymsg ${sway}/bin/swaymsg";
+        ExecStart = "${powerKeyd}/bin/k230-power-keyd --swaymsg ${sway}/bin/swaymsg --idle-wake '${idleDimmerCommand} wake ${idleDimmerArgs}'";
         Restart = "on-failure";
         RestartSec = 1;
+        UMask = "0077";
+      };
+    };
+
+    # Idle policy: dim to 25% after 30 s, display off after 60 s, any input
+    # restores. swayidle uses Sway's ext-idle-notify, so Sway's idle
+    # inhibitors (video, Timer; see the for_window rules) apply and it is
+    # event driven, not polling. A touch on the dark panel is consumed by
+    # the compositor (card-shell wake gate), not by this service.
+    systemd.services.shell-idle = lib.mkIf cfg.coherentShell {
+      description = "Dim the panel after 30 s idle and turn the display off after 60 s";
+      wantedBy = [ "shell.service" ];
+      bindsTo = [ "shell.service" ];
+      partOf = [ "shell.service" ];
+      requires = [ "shell-ui.service" ];
+      after = [ "shell.service" "shell-ui.service" ];
+      environment.XDG_RUNTIME_DIR = "/run/shell";
+      serviceConfig = {
+        Type = "exec";
+        User = "shell";
+        Group = "shell";
+        ExecStart = pkgs.writeShellScript "k230-swayidle" ''
+          # Same single-socket discovery as k230-shell-rust: the display
+          # may not exist yet when the unit starts.
+          for attempt in $(${pkgs.coreutils}/bin/seq 1 100); do
+            for candidate in "$XDG_RUNTIME_DIR"/wayland-*; do
+              if [ -S "$candidate" ]; then
+                export WAYLAND_DISPLAY="''${candidate##*/}"
+                break 2
+              fi
+            done
+            ${pkgs.coreutils}/bin/sleep 0.1
+          done
+          [ -n "''${WAYLAND_DISPLAY:-}" ] || { echo "k230-swayidle: no Wayland display" >&2; exit 1; }
+          d='${idleDimmerCommand}'
+          a='${idleDimmerArgs}'
+          exec ${pkgs.swayidle}/bin/swayidle -w \
+            timeout 30 "$d dim $a" resume "$d resume $a" \
+            timeout 60 "$d off $a"
+        '';
+        Restart = "on-failure";
+        RestartSec = 2;
         UMask = "0077";
       };
     };

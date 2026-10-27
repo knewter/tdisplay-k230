@@ -48,6 +48,7 @@ let
       cp ${./card-shell/route.h} include/sway/card_shell_route.h
       cp ${./card-shell/telemetry.c} sway/card_shell_telemetry.c
       cp ${./card-shell/telemetry.h} include/sway/card_shell_telemetry.h
+      cp ${./card-shell/wake-gate.h} include/sway/card_shell_wake_gate.h
       cp ${./card-shell/render.c} sway/card_shell_render.c
       cp ${./card-shell/render.h} include/sway/card_shell_render.h
       cp ${./card-shell/icon.c} sway/card_shell_icon.c
