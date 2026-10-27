@@ -1,21 +1,21 @@
 ## 1. Host
 
-- [ ] 1.1 Keep `snapshot.count` from each `PreviewPoll` reply as
+- [x] 1.1 Keep `snapshot.count` from each `PreviewPoll` reply as
   `pending_count` in `main.rs`, and mark Home dirty only when it changes while
   Home is showing. Proof (host): `cargo test --offline --lib` in
   `nix/rust-shell-client`, with a test that a poll reply changing the count
   requests one Home redraw and an unchanged count requests none.
-- [ ] 1.2 Add the pure placement and label rule: digits, `99+` above 99,
+- [x] 1.2 Add the pure placement and label rule: digits, `99+` above 99,
   nothing at zero, and a rectangle in the top-right corner clamped clear of
   every occupied cell. Proof (host): `cargo test --offline --lib`, with tests
   on the default layout, a full page, and a count of 0, 1, 9, 99 and 100.
-- [ ] 1.3 Paint the count in `paint_home` and its callers, with no new
+- [x] 1.3 Paint the count in `paint_home` and its callers, with no new
   surface. Proof (host): `cargo test --offline --lib`, including a test that a
   painted Home frame with a count is still non-opaque under
   `bgra_frame_is_opaque`, and that the painted count reads only the integer
   (the test builds a snapshot whose rows hold the text "SECRET" and asserts no
   such text reaches the frame or the log line).
-- [ ] 1.3a Host renders of Home at 1232x568 with counts 0, 3 and 100, at 100%
+- [x] 1.3a Host renders of Home at 1232x568 with counts 0, 3 and 100, at 100%
   and the largest vision step, under `docs/evidence/home-notification-count/host/`.
   Host render, not glass.
 

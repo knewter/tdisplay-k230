@@ -2894,6 +2894,11 @@ impl ShellClient {
             let next = match reply.result {
                 Ok(ServiceResponse::Notifications(snapshot)) => {
                     let preview = snapshot.preview.clone();
+                    // Home's glance reads only the integer, never a row.
+                    if self.home.set_pending_count(snapshot.count) {
+                        self.log(&k230_shell_rust::home_screen::pending_count_log(snapshot.count));
+                        self.home_surface.dirty = true;
+                    }
                     if k230_shell_rust::service_ui::shade_adopts_poll(
                         self.route == Route::Shade,
                         self.notification_wait.is_some(),

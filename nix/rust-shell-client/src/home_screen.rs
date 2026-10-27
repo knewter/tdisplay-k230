@@ -205,6 +205,10 @@ pub struct HomeScreen {
     /// the caller from its own cache/fetch cadence; defaults to
     /// `Unavailable` until the first cache read/fetch completes.
     pub weather: WeatherDisplay,
+    /// How many events the broker retains, from each `PreviewPoll` reply's
+    /// `snapshot.count`. Only this integer is kept: Home never sees a row,
+    /// source or summary. Zero draws nothing.
+    pub pending_count: usize,
     contact: Option<Contact>,
     edge_held_ms: u32,
     edge_side: i8, // -1 left, 1 right, 0 neither
@@ -283,7 +287,59 @@ fn merge_two(dragged: HomeItem, existing: HomeItem) -> Option<HomeItem> {
     }
 }
 
+/// The text of Home's pending-notification count: digits, `99+` above 99,
+/// nothing at zero.
+pub fn count_label(count: usize) -> Option<String> {
+    match count {
+        0 => None,
+        1..=99 => Some(count.to_string()),
+        _ => Some("99+".to_string()),
+    }
+}
+
+/// The log line for a count change: the number and nothing else.
+pub fn pending_count_log(count: usize) -> String {
+    format!("home-pending-count {count}")
+}
+
+/// Gap kept between the count pill and the right edge and between it and the
+/// top of the panel.
+const COUNT_MARGIN: f64 = 8.0;
+
+/// Where Home's count pill sits: the top-right corner, `label_w` x `label_h`
+/// being the pill's own size. The pill hugs the right side margin and the top
+/// of the panel, then is moved up (never over a cell) until it clears every
+/// rectangle in `occupied`; if even the panel top overlaps, it stays at the
+/// top. Pure so it is host-tested.
+pub fn count_pill_rect(
+    width: u32,
+    label_w: f64,
+    label_h: f64,
+    occupied: &[(f64, f64, f64, f64)],
+) -> (f64, f64, f64, f64) {
+    let x = (f64::from(width) - COUNT_MARGIN - label_w).max(0.0);
+    let mut y = COUNT_MARGIN;
+    let overlaps = |y: f64| {
+        occupied.iter().any(|&(ox, oy, ow, oh)| {
+            x < ox + ow && x + label_w > ox && y < oy + oh && y + label_h > oy
+        })
+    };
+    if overlaps(y) {
+        y = 0.0;
+    }
+    (x, y, label_w, label_h)
+}
+
 impl HomeScreen {
+    /// Keeps the broker's retained-event count. Returns whether it changed,
+    /// i.e. whether Home needs one redraw; an unchanged poll reply asks for
+    /// none.
+    pub fn set_pending_count(&mut self, count: usize) -> bool {
+        let changed = self.pending_count != count;
+        self.pending_count = count;
+        changed
+    }
+
     pub fn new(layout: HomeLayout, page_width: f64) -> Self {
         let mut pager = HomePager::new(page_width);
         pager.set_page(0);
@@ -299,6 +355,7 @@ impl HomeScreen {
             battery_details: DetailsState::Absent,
             battery_history: Default::default(),
             weather: WeatherDisplay::Unavailable,
+            pending_count: 0,
             contact: None,
             edge_held_ms: 0,
             edge_side: 0,
@@ -1382,6 +1439,60 @@ mod tests {
 
     const WIDTH: u32 = 568;
     const HEIGHT: u32 = 1232;
+
+    #[test]
+    fn count_label_digits_cap_and_zero() {
+        assert_eq!(count_label(0), None);
+        assert_eq!(count_label(1).as_deref(), Some("1"));
+        assert_eq!(count_label(9).as_deref(), Some("9"));
+        assert_eq!(count_label(99).as_deref(), Some("99"));
+        assert_eq!(count_label(100).as_deref(), Some("99+"));
+        assert_eq!(count_label(5000).as_deref(), Some("99+"));
+    }
+
+    #[test]
+    fn poll_count_requests_redraw_only_on_change() {
+        let mut home = screen_with(&[None]);
+        assert!(!home.set_pending_count(0), "unchanged zero asks for nothing");
+        assert!(home.set_pending_count(3));
+        assert!(!home.set_pending_count(3), "an unchanged reply asks for nothing");
+        assert!(home.set_pending_count(0));
+    }
+
+    /// Every occupied cell of a full first page plus the dock, at each size.
+    fn occupied(width: u32, height: u32) -> Vec<(f64, f64, f64, f64)> {
+        let columns = home_grid::columns_for_width(width);
+        let per_page = home_grid::apps_per_page(width, height);
+        let mut cells: Vec<_> = (0..per_page).map(|s| home_grid::tile_rect(width, height, s, columns)).collect();
+        cells.extend((0..home_grid::dock_slots(width, height)).map(|s| home_grid::dock_rect(width, height, s)));
+        cells
+    }
+
+    #[test]
+    fn count_pill_clears_a_full_page_in_both_orientations() {
+        // Pill sizes cover 100% (about 40 high) and the 200% step (about 80).
+        for (w, h) in [(1232u32, 568u32), (568, 1232)] {
+            let cells = occupied(w, h);
+            for (pw, ph) in [(44.0, 40.0), (120.0, 80.0)] {
+                let (x, y, rw, rh) = count_pill_rect(w, pw, ph, &cells);
+                assert!(x + rw <= f64::from(w) && y >= 0.0, "{w}x{h} inside the panel");
+                assert!(x + rw > f64::from(w) - 24.0, "{w}x{h} hugs the right edge");
+                for &(ox, oy, ow, oh) in &cells {
+                    assert!(
+                        !(x < ox + ow && x + rw > ox && y < oy + oh && y + rh > oy),
+                        "{w}x{h} pill {pw}x{ph} overlaps cell {ox},{oy}"
+                    );
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn count_pill_moves_up_off_an_occupied_corner() {
+        let blocker = [(0.0, 0.0, 1000.0, 20.0)];
+        let (_, y, _, _) = count_pill_rect(1000, 40.0, 30.0, &blocker);
+        assert_eq!(y, 0.0, "clamped to the panel top, never below an occupied cell");
+    }
 
     fn screen_with(dock: &[Option<&str>]) -> HomeScreen {
         let layout = Layout {

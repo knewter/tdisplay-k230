@@ -369,6 +369,49 @@ pub fn render_home_with_open_folder(path: &Path, width: u32, height: u32, apps: 
     composited.write_to_png(&mut file).unwrap();
 }
 
+/// Home with the pending-notification count `count` over the flat backdrop,
+/// at the vision text `step` (1.0 to 2.0), through the production
+/// `render::paint_home`. Host render only.
+pub fn render_home_with_count(path: &Path, width: u32, height: u32, apps: &[AppEntry], count: usize, step: f64) {
+    use crate::appearance::{AppearanceSnapshot, AppearanceToken};
+    use std::collections::BTreeMap;
+    let theme = AppearanceSnapshot {
+        generation: "fixture".into(),
+        path: PathBuf::new(),
+        icon_theme: None,
+        background: None,
+        selected_background: None,
+        backgrounds: vec![],
+        palette: BTreeMap::new(),
+        sections: BTreeMap::from([(
+            "accessibility".to_string(),
+            BTreeMap::from([("text-scale".to_string(), AppearanceToken::Number(step))]),
+        )]),
+        applied: vec![],
+        unavailable: vec![],
+        unknown: vec![],
+    };
+    let mut home = HomeScreen::new(seed_layout(apps, width, height), f64::from(width));
+    home.sync_columns(width, height);
+    home.set_pending_count(count);
+    let content = ImageSurface::create(Format::ARgb32, width as i32, height as i32).unwrap();
+    {
+        let cr = Context::new(&content).unwrap();
+        let mut icons = IconCache::new();
+        render::paint_home(&cr, width, height, Some(&theme), &home, apps, &mut icons);
+    }
+    let composited = ImageSurface::create(Format::ARgb32, width as i32, height as i32).unwrap();
+    {
+        let cr = Context::new(&composited).unwrap();
+        cr.set_source_rgb(0x1e as f64 / 255.0, 0x1e as f64 / 255.0, 0x2e as f64 / 255.0);
+        cr.paint().unwrap();
+        cr.set_source_surface(&content, 0.0, 0.0).unwrap();
+        cr.paint().unwrap();
+    }
+    let mut file = std::fs::File::create(path).unwrap();
+    composited.write_to_png(&mut file).unwrap();
+}
+
 /// Home with the widget picker open on `widgets` (the Widgets page) or the
 /// Menu page, over a flat backdrop -- the picker's row geometry at a size.
 pub fn render_home_with_widget_picker(path: &Path, width: u32, height: u32, apps: &[AppEntry], widgets: bool) {

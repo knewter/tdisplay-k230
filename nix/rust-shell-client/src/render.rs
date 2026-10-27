@@ -5791,6 +5791,50 @@ fn paint_edge_page_indicator(cr: &Context, width: u32, height: u32, theme: Optio
     let _ = cr.stroke();
 }
 
+/// Home's pending-notification count: an accent pill with the number, in the
+/// top-right corner of Home's own buffer. Painted text only -- no surface, no
+/// opaque region, not a touch target -- and it reads nothing but the integer.
+/// Hidden at zero and while rearranging (the Done pill uses that corner).
+fn paint_pending_count(
+    cr: &Context,
+    width: u32,
+    height: u32,
+    _theme: Option<&AppearanceSnapshot>,
+    home: &HomeScreen,
+    style: &VisualStyle,
+) {
+    let Some(label) = crate::home_screen::count_label(home.pending_count) else { return };
+    if home.rearranging {
+        return;
+    }
+    let px = context_font_size(cr, TYPE_CAPTION);
+    let layout = pangocairo::functions::create_layout(cr);
+    let mut font = FontDescription::new();
+    font.set_family(FONT_FAMILY);
+    font.set_absolute_size(px * f64::from(pango::SCALE));
+    font.set_weight(pango::Weight::Bold);
+    layout.set_font_description(Some(&font));
+    layout.set_text(&label);
+    let (text_w, text_h) = layout.pixel_size();
+    let pad_x = visual_inset(cr, 14.0);
+    let pad_y = visual_inset(cr, 5.0);
+    let (pill_w, pill_h) = ((f64::from(text_w) + 2.0 * pad_x).max(f64::from(text_h) + 2.0 * pad_y), f64::from(text_h) + 2.0 * pad_y);
+    let columns = home.layout.columns;
+    let occupied: Vec<_> = (0..home_grid::apps_per_page(width, height))
+        .map(|slot| home_grid::tile_rect(width, height, slot, columns))
+        .collect();
+    let (x, y, w, h) = crate::home_screen::count_pill_rect(width, pill_w, pill_h, &occupied);
+    rounded(cr, x, y, w, h, h / 2.0);
+    color(cr, style.accent, 1.0);
+    let _ = cr.fill();
+    // Dark or light text, whichever contrasts with the accent fill.
+    let (r, g, b) = (f64::from((style.accent >> 16) & 255), f64::from((style.accent >> 8) & 255), f64::from(style.accent & 255));
+    let on_accent = if 0.299 * r + 0.587 * g + 0.114 * b > 150.0 { 0x11141a } else { 0xffffff };
+    color(cr, on_accent, 1.0);
+    cr.move_to(x + (w - f64::from(text_w)) / 2.0, y + (h - f64::from(text_h)) / 2.0);
+    pangocairo::functions::show_layout(cr, &layout);
+}
+
 pub fn paint_home(
     cr: &Context,
     width: u32,
@@ -5923,6 +5967,7 @@ pub fn paint_home(
     }
 
     paint_edge_page_indicator(cr, width, height, theme, home);
+    paint_pending_count(cr, width, height, theme, home, &style);
 
     // The dock: a translucent themed tray (matching the "launcher" section's
     // own background/border brushes, exactly like every other floating

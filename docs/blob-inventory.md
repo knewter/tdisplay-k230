@@ -2273,6 +2273,18 @@ DATA 72e64e56d9eb7291647bf4b5ef1031b0bda88821c444f8b17ae93690c936f51e docs/evide
 DATA 4e2e9d23596e3775f1a6d44ae4ad1d78cbdf77f920f7c4f5de3d1dc294cbe265 docs/evidence/a-focused-text-field/board/terminal-focus-keyboard-up.png
 DATA 9cb6b59a3a2c1f84a714320d30a57e93daea00191e1221d9fc0bdc08138f035e docs/evidence/settings-about/board/about-landscape.png
 DATA a806edf12f14f2e36e7fdb7b6b944b6385cb104dc0a421e67f770cc5120f07f1 docs/evidence/settings-about/board/date-time-landscape.png
+DATA 80010bf1889149b71c6214cd678e44e3deb640f066137e1654a17ec58ac7f67b docs/evidence/home-notification-count/host/home-count0-100-1232x568.png
+DATA af9dad629c977316c22a67cb1b3b776ef7e6a2ec082d5134bcd39d400701f6d7 docs/evidence/home-notification-count/host/home-count0-100-568x1232.png
+DATA 80010bf1889149b71c6214cd678e44e3deb640f066137e1654a17ec58ac7f67b docs/evidence/home-notification-count/host/home-count0-200-1232x568.png
+DATA 2460a23bcf6640f7f0597b517b123329aae0e7a70cb638259730ebf38e8f80f3 docs/evidence/home-notification-count/host/home-count0-200-568x1232.png
+DATA 13049fd83f80a62a1262ff3d5507525588fd63f3d0d2929c72678ad51700eeae docs/evidence/home-notification-count/host/home-count100-100-1232x568.png
+DATA 512670ef6c0f2fe4ad35642e59c675be1e924348fa5525bb22c736eb6bf6483d docs/evidence/home-notification-count/host/home-count100-100-568x1232.png
+DATA ab81f67c8fe591dd21b99d6344c5fa9efe33fb48b42b45b3cde75ffabdbe85f3 docs/evidence/home-notification-count/host/home-count100-200-1232x568.png
+DATA a53fbcf615bdc46a19122de89fcbf6ed30f5d64fcda44c316fa5d25d2676de7c docs/evidence/home-notification-count/host/home-count100-200-568x1232.png
+DATA ca476068973c1ab5d96817129fb129c8fa30c472e52fdd6be0441655d597b19b docs/evidence/home-notification-count/host/home-count3-100-1232x568.png
+DATA edd9ea707a12271eded1a961224418217323d0677fd7d4be9865799fe82f8426 docs/evidence/home-notification-count/host/home-count3-100-568x1232.png
+DATA d0971b44ef6604cc9f0b5c11d07586a3a03636d66c36b57df382e3b61c84fa2c docs/evidence/home-notification-count/host/home-count3-200-1232x568.png
+DATA 01097affc6893ea9e3278d8ec8676e04926ca5489d0d343d25bca12c083a72cf docs/evidence/home-notification-count/host/home-count3-200-568x1232.png
 ```
 
 `group:` rows stand for a directory whose members are enumerated by
@@ -4247,3 +4259,22 @@ Native grim captures from the board for the overview All apps entry, idle dim/of
 | `docs/evidence/a-focused-text-field/board/terminal-focus-keyboard-up.png` | 13000 | DATA | `4e2e9d23596e3775f1a6d44ae4ad1d78cbdf77f920f7c4f5de3d1dc294cbe265` |
 | `docs/evidence/settings-about/board/about-landscape.png` | 32208 | DATA | `9cb6b59a3a2c1f84a714320d30a57e93daea00191e1221d9fc0bdc08138f035e` |
 | `docs/evidence/settings-about/board/date-time-landscape.png` | 33323 | DATA | `a806edf12f14f2e36e7fdb7b6b944b6385cb104dc0a421e67f770cc5120f07f1` |
+
+## Home notification count host renders, 2026-10-27
+
+Host renders of Home with the pending-notification count 0, 3 and 100 from `render_home_notification_count`, over a synthetic 30-app layout; see the change `home-shows-how-many-notifications-wait`, task 1.3a. Host render, not glass.
+
+| Path | Bytes | Class | SHA256 |
+| --- | ---: | --- | --- |
+| `docs/evidence/home-notification-count/host/home-count0-100-1232x568.png` | 27974 | DATA | `80010bf1889149b71c6214cd678e44e3deb640f066137e1654a17ec58ac7f67b` |
+| `docs/evidence/home-notification-count/host/home-count0-100-568x1232.png` | 51169 | DATA | `af9dad629c977316c22a67cb1b3b776ef7e6a2ec082d5134bcd39d400701f6d7` |
+| `docs/evidence/home-notification-count/host/home-count0-200-1232x568.png` | 27974 | DATA | `80010bf1889149b71c6214cd678e44e3deb640f066137e1654a17ec58ac7f67b` |
+| `docs/evidence/home-notification-count/host/home-count0-200-568x1232.png` | 58603 | DATA | `2460a23bcf6640f7f0597b517b123329aae0e7a70cb638259730ebf38e8f80f3` |
+| `docs/evidence/home-notification-count/host/home-count100-100-1232x568.png` | 29704 | DATA | `13049fd83f80a62a1262ff3d5507525588fd63f3d0d2929c72678ad51700eeae` |
+| `docs/evidence/home-notification-count/host/home-count100-100-568x1232.png` | 52790 | DATA | `512670ef6c0f2fe4ad35642e59c675be1e924348fa5525bb22c736eb6bf6483d` |
+| `docs/evidence/home-notification-count/host/home-count100-200-1232x568.png` | 31024 | DATA | `ab81f67c8fe591dd21b99d6344c5fa9efe33fb48b42b45b3cde75ffabdbe85f3` |
+| `docs/evidence/home-notification-count/host/home-count100-200-568x1232.png` | 61530 | DATA | `a53fbcf615bdc46a19122de89fcbf6ed30f5d64fcda44c316fa5d25d2676de7c` |
+| `docs/evidence/home-notification-count/host/home-count3-100-1232x568.png` | 29486 | DATA | `ca476068973c1ab5d96817129fb129c8fa30c472e52fdd6be0441655d597b19b` |
+| `docs/evidence/home-notification-count/host/home-count3-100-568x1232.png` | 52595 | DATA | `edd9ea707a12271eded1a961224418217323d0677fd7d4be9865799fe82f8426` |
+| `docs/evidence/home-notification-count/host/home-count3-200-1232x568.png` | 30623 | DATA | `d0971b44ef6604cc9f0b5c11d07586a3a03636d66c36b57df382e3b61c84fa2c` |
+| `docs/evidence/home-notification-count/host/home-count3-200-568x1232.png` | 61122 | DATA | `01097affc6893ea9e3278d8ec8676e04926ca5489d0d343d25bca12c083a72cf` |
