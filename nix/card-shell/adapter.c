@@ -3682,6 +3682,8 @@ bool card_shell_pointer_axis(struct sway_seat *seat, struct wlr_pointer_axis_eve
     }
     return true;
 }
+/* Touches swallowed because they woke a dark panel (card_shell_down). */
+static struct wake_gate wake_gate;
 void card_shell_pointer_reset(struct sway_seat *seat) {
     if (shell.pointer_seat != seat && shell.axis_seat != seat && shell.trackpad_seat != seat) return;
     shell.pointer_owned = false;
@@ -3785,7 +3787,6 @@ static void display_wake(void) {
 	}
 	list_free(results);
 }
-static struct wake_gate wake_gate;
 bool card_shell_down(struct sway_seat *seat, struct wlr_touch *touch, int32_t id, double x, double y, uint32_t time_msec) {
 	/* A touch on a dark panel only wakes it: consume the whole sequence so
 	 * the app underneath never sees a tap it could not have been aimed at. */
