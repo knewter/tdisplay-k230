@@ -3038,6 +3038,16 @@ impl ShellClient {
                 let request = self.wifi_view.open();
                 self.submit_wifi(request);
             }
+            PanelIntent::ToggleLocation => {
+                self.refresh_modem();
+                if let Some(command) = self.modem_view.location_toggle_command() {
+                    if let Err(error) = self.modem_worker.try_submit(command) {
+                        self.modem_view.submit_failed("Request failed");
+                        self.log(&format!("modem-submit-failed {error}"));
+                    }
+                }
+                self.modem_dirty();
+            }
             PanelIntent::OpenCellular | PanelIntent::OpenLocation => {
                 self.refresh_modem();
                 self.modem_view.open(if intent == PanelIntent::OpenCellular {

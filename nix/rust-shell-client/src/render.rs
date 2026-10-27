@@ -3159,6 +3159,179 @@ fn shade_preview_tile_h(preview: bool) -> f64 {
     (lines + 2.0 * SHADE_TILE_INSET).ceil().max(72.0)
 }
 
+/// A design size for `value` that fits `room` at `weight`: `design` itself
+/// when it fits, otherwise shrunk in proportion rather than cut off.
+fn fitted_size(cr: &Context, value: &str, design: f64, room: f64, weight: pango::Weight) -> f64 {
+    let advance = text_advance(cr, value, design, weight);
+    if advance > room * 0.96 { design * room * 0.96 / advance } else { design }
+}
+
+/// The wide Shade's left column above its sliders: the time with the date
+/// under it and "Settings ›" beside it, the status line, and the quick tiles
+/// (`service_ui::shade_tiles`, which the hit-tests read too).
+fn paint_shade_wide_controls(
+    cr: &Context,
+    theme: Option<&AppearanceSnapshot>,
+    style: VisualStyle,
+    services: Option<&ServiceView>,
+    panel_y: f64,
+    hw: f64,
+) {
+    use crate::home_widgets::clock;
+    use crate::service_ui::{
+        shade_link_w, shade_tile_rect, shade_tiles, ShadeTile, SHADE_SETTINGS_BOTTOM, SHADE_WIDE_STATUS_TOP,
+        SHADE_WIDE_TILE_TOP,
+    };
+    let line = |size: f64| context_font_size(cr, size) * 1.25;
+    let link_w = shade_link_w(hw);
+    let settings_size = fitted_size(cr, "Settings ›", TYPE_LABEL, link_w - 24.0, pango::Weight::Normal);
+    let settings_w = text_advance(cr, "Settings ›", settings_size, pango::Weight::Normal) + 2.0;
+    text(cr, "Settings ›", hw - 24.0 - settings_w, panel_y + 20.0, settings_w, settings_size, style.text);
+
+    // The time, with the date under it while both fit the header band at
+    // full size; at a larger text step the date joins the status line.
+    let now = clock::now_local();
+    let date = now.map(clock::format_date);
+    let date_h = line(TYPE_CAPTION);
+    let time_full = context_font_size(cr, 52.0);
+    let stacked = 6.0 + time_full * 1.25 + date_h <= SHADE_SETTINGS_BOTTOM - 4.0;
+    if let Some(now) = now {
+        let room = hw - 28.0 - link_w;
+        let time = clock::format_time(now);
+        let mut time_px = if stacked { time_full } else { time_full.min((SHADE_SETTINGS_BOTTOM - 16.0) / 1.25) };
+        let advance = text_advance_resolved(cr, &time, time_px, pango::Weight::Bold);
+        if advance > room * 0.96 {
+            time_px *= room * 0.96 / advance;
+        }
+        let time_y = panel_y + 6.0;
+        text_weight_resolved(cr, &time, 28.0, time_y, room, time_px, style.text, pango::Weight::Bold);
+        if stacked {
+            text(cr, date.as_deref().unwrap_or(""), 28.0, time_y + time_px * 1.25, hw - 56.0, TYPE_CAPTION, style.muted);
+        }
+    }
+
+    // The status line: the date when it did not fit above, then the
+    // battery, then the modem glyphs while they are on. Wi-Fi's state is
+    // its tile's, so it is not repeated here.
+    let mut status = Vec::new();
+    if !stacked {
+        status.extend(date);
+    }
+    if let Some(battery) = services
+        .filter(|v| v.battery != crate::home_widgets::battery::BatteryState::Absent)
+        .map(|v| crate::home_widgets::battery::format(&v.battery))
+    {
+        status.push(battery);
+    }
+    let modem = services.and_then(|v| v.modem.as_ref());
+    let signal = modem.and_then(|m| m.cellular_indicator());
+    let location = modem.and_then(|m| m.location_indicator());
+    // The line keeps to its band (`SHADE_WIDE_STATUS_TOP..SHADE_WIDE_TILE_TOP`).
+    let band = SHADE_WIDE_TILE_TOP - SHADE_WIDE_STATUS_TOP - 4.0;
+    let status_design = TYPE_CAPTION.min(TYPE_CAPTION * band / line(TYPE_CAPTION));
+    let icon_size = line(status_design).ceil();
+    let icons_w = f64::from(u8::from(signal.is_some()) + u8::from(location.is_some())) * (icon_size + 8.0);
+    let status_y = panel_y + SHADE_WIDE_STATUS_TOP;
+    let status_text = status.join(" · ");
+    let status_room = hw - 56.0 - icons_w;
+    let status_size = fitted_size(cr, &status_text, status_design, status_room, pango::Weight::Normal);
+    text(cr, &status_text, 28.0, status_y + (icon_size - line(status_size)) / 2.0, status_room, status_size, style.muted);
+    let mut icon_x = hw - 28.0;
+    if let Some(indicator) = location {
+        icon_x -= icon_size;
+        glyph::paint_location(cr, indicator == crate::modem::LocationIndicator::Fix, icon_x, status_y, icon_size, style.text);
+        icon_x -= 8.0;
+    }
+    if let Some(indicator) = signal {
+        icon_x -= icon_size;
+        let (lit, none) = match indicator {
+            crate::modem::CellularIndicator::Bars(n) => (n, false),
+            crate::modem::CellularIndicator::NoService => (0, true),
+        };
+        glyph::paint_signal(cr, lit, none, icon_x, status_y, icon_size, style.text);
+    }
+
+    // The tiles: an icon and label over a state line. A tile that is on
+    // takes the accent for its state; an unavailable one is muted.
+    let Some(view) = services else { return };
+    let settings = view.settings.as_ref();
+    for (index, tile) in shade_tiles(view).into_iter().enumerate() {
+        let (x, y, w, h) = shade_tile_rect(index, hw);
+        let y = panel_y + y;
+        let (icon, label, state, on, available) = match tile {
+            ShadeTile::Wifi => {
+                let network = settings.map(|s| &s.network);
+                // "Connected" or "Not connected"; with no link state, where
+                // the tile leads.
+                let state = match network {
+                    None => "Loading".into(),
+                    Some(n) if n.value.is_none() => "Choose network".into(),
+                    Some(n) => control_text(n),
+                };
+                let on = network.is_some_and(|n| matches!(&n.value, Some(ControlValue::Text(v)) if v == "link-up"));
+                (Glyph::Wifi, "Wi-Fi", state, on, true)
+            }
+            ShadeTile::Keyboard => {
+                let available = settings.is_some_and(|s| s.keyboard.state == ControlState::Action);
+                (Glyph::Keyboard, "Keyboard", if available { "Show or hide" } else { "Unavailable" }.to_string(), false, available)
+            }
+            ShadeTile::Location => {
+                let on = view.modem.as_ref().is_some_and(|m| m.location);
+                (Glyph::Location, "Location", if on { "On" } else { "Off" }.to_string(), on, true)
+            }
+            ShadeTile::Cellular => {
+                let on = view.modem.as_ref().is_some_and(|m| m.cellular);
+                (Glyph::Signal, "Cellular", if on { "On" } else { "Off" }.to_string(), on, true)
+            }
+        };
+        paint_card(cr, theme, "controls", CardJob::Control, x, y, w, h);
+        let ink = if available { style.text } else { style.muted };
+        // Both lines shrink together when the capped tile cannot hold them.
+        let label_h = vision_line(TYPE_LABEL) / 1.25 * 1.2;
+        let state_h = vision_line(TYPE_CAPTION) / 1.25 * 1.2;
+        let k = ((h - 16.0) / (label_h + state_h)).min(1.0);
+        let label_y = y + (h - (label_h + state_h) * k) / 2.0;
+        let text_x = paint_line_glyph(cr, icon, x + 18.0, label_y, TYPE_LABEL * k, ink);
+        themed_role_fit(cr, theme, "body", label, text_x, label_y, x + w - 14.0 - text_x, TYPE_LABEL * k, ink, pango::Weight::Medium);
+        let state_ink = if on { style.accent } else if available { style.muted } else { ink };
+        themed_role_fit(cr, theme, "caption", &state, x + 18.0, label_y + label_h * k, w - 32.0, TYPE_CAPTION * k, state_ink, pango::Weight::Normal);
+    }
+}
+
+/// The wide Shade's list column heading: "Notifications" and its count, with
+/// "Dismiss all" at the right in the same `0..SHADE_SETTINGS_BOTTOM` band
+/// `panel_intent` tests.
+fn paint_shade_list_heading(
+    cr: &Context,
+    style: VisualStyle,
+    panel_y: f64,
+    shade: &crate::service_ui::ShadeLayout,
+    count: usize,
+) {
+    use crate::service_ui::{shade_link_w, SHADE_SETTINGS_BOTTOM};
+    let x = shade.list_x;
+    let w = shade.list_w;
+    let link_w = shade_link_w(w);
+    let room = w - 28.0 - link_w;
+    let title_y = panel_y + 12.0;
+    let label = if count == 1 { "1 notification".to_string() } else { format!("{count} notifications") };
+    // The Title and the count line shrink together to keep to the band.
+    let line = |size: f64| context_font_size(cr, size) * 1.25;
+    let lines_h = line(TYPE_TITLE) + if count > 0 { line(TYPE_CAPTION) } else { 0.0 };
+    let k = ((SHADE_SETTINGS_BOTTOM - 16.0) / lines_h).min(1.0);
+    let title = fitted_size(cr, "Notifications", TYPE_TITLE * k, room, pango::Weight::Bold);
+    heading(cr, "Notifications", x + 28.0, title_y, room, title, style.text);
+    if count > 0 {
+        let title_h = line(TYPE_TITLE * k);
+        let size = fitted_size(cr, &label, TYPE_CAPTION * k, room, pango::Weight::Normal);
+        text(cr, &label, x + 28.0, title_y + title_h, room, size, style.muted);
+        let dismiss = fitted_size(cr, "Dismiss all", TYPE_LABEL, link_w - 24.0, pango::Weight::Normal);
+        // The Shade's one primary action takes the accent (design.md §10).
+        let dismiss_w = text_advance(cr, "Dismiss all", dismiss, pango::Weight::Normal) + 2.0;
+        text(cr, "Dismiss all", x + w - 24.0 - dismiss_w, title_y + 8.0, dismiss_w, dismiss, style.accent);
+    }
+}
+
 fn paint_shade_header(
     cr: &Context,
     style: VisualStyle,
@@ -3562,7 +3735,14 @@ fn scene(
             let hw = shade.controls_w;
             let items = services.and_then(|view| view.notifications.as_ref());
             let count = items.map_or(0, |snapshot| snapshot.count);
-            paint_shade_header(cr, style, services, panel_y, hw, count);
+            if shade.wide {
+                paint_shade_wide_controls(cr, theme, style, services, panel_y, hw);
+                paint_shade_list_heading(cr, style, panel_y, &shade, count);
+            } else {
+                paint_shade_header(cr, style, services, panel_y, hw, count);
+            }
+            // The wide Shade's sliders sit under its tiles.
+            let shift = crate::service_ui::shade_slider_shift(shade.wide);
 
             // The shared brightness slider (task: "brightness should be a
             // slider" -- Android puts one at the top of its own quick
@@ -3576,7 +3756,7 @@ fn scene(
                         cr,
                         style,
                         hw,
-                        SHADE_SLIDER_TOP + SHADE_SLIDER_H / 2.0,
+                        shift + SHADE_SLIDER_TOP + SHADE_SLIDER_H / 2.0,
                         &settings.brightness,
                     );
                 }
@@ -3592,7 +3772,7 @@ fn scene(
                     cr,
                     style,
                     hw,
-                    SHADE_VOLUME_TOP + SHADE_VOLUME_H / 2.0,
+                    shift + SHADE_VOLUME_TOP + SHADE_VOLUME_H / 2.0,
                     volume::linear_to_percent(sink.linear_volume),
                     sink.muted,
                 );
@@ -3600,8 +3780,8 @@ fn scene(
             // The keyboard quick toggle: Settings' Keyboard row, in the
             // shade. Same `control_text` and the same muted treatment when
             // the capability is not an action (`panel_intent` gates the tap
-            // on the same `ControlState`).
-            if let Some(settings) = services.and_then(|view| view.settings.as_ref()) {
+            // on the same `ControlState`). The wide Shade shows it as a tile.
+            if let Some(settings) = services.and_then(|view| view.settings.as_ref()).filter(|_| !shade.wide) {
                 let keyboard = &settings.keyboard;
                 let y = SHADE_TOGGLE_TOP + 4.0;
                 paint_card(cr, theme, "controls", CardJob::Control, 24.0, y, hw - 48.0, shade_toggle_h() - 8.0);

@@ -219,6 +219,9 @@ pub enum PanelIntent {
     /// Flip the key backlight preference (a local file write, not a
     /// `k230-settings` request; see `keyboard_base`).
     ScrollNotifications(f64),
+    /// The wide Shade's Location tile: flips GNSS in place through the
+    /// modem worker, as the Location page's switch does.
+    ToggleLocation,
 }
 
 /// Room for the shared brightness slider (task: "brightness should be a
@@ -265,9 +268,80 @@ pub fn shade_panel_height(height: u32) -> f64 {
 /// Width of the wide Shade's left column (header, sliders); the notification
 /// list takes the rest of the landscape panel.
 pub const SHADE_WIDE_CONTROLS_W: f64 = 480.0;
-/// Top and bottom margins of the wide Shade's list, which now has the whole
-/// panel height to itself.
-pub const SHADE_WIDE_LIST_TOP: f64 = 24.0;
+/// Top of the wide Shade's list: under its own "Notifications" heading and
+/// "Dismiss all" band (`0..SHADE_SETTINGS_BOTTOM` in the list column).
+pub const SHADE_WIDE_LIST_TOP: f64 = SHADE_SETTINGS_BOTTOM;
+/// The wide Shade's status line (battery, Wi-Fi, modem glyphs), between the
+/// time header and the tiles. Text only, never a target.
+pub const SHADE_WIDE_STATUS_TOP: f64 = SHADE_SETTINGS_BOTTOM;
+/// The first row of quick tiles, under the status line.
+pub const SHADE_WIDE_TILE_TOP: f64 = 152.0;
+pub const SHADE_WIDE_TILE_GAP: f64 = 12.0;
+
+/// The wide Shade's quick tiles, in grid order (two per row).
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum ShadeTile {
+    Wifi,
+    Keyboard,
+    Location,
+    Cellular,
+}
+
+/// The tiles the wide Shade shows: Location and Cellular only once the
+/// modem has answered (`ServiceView::modem`), as on the Settings page.
+pub fn shade_tiles(view: &ServiceView) -> Vec<ShadeTile> {
+    let mut tiles = vec![ShadeTile::Wifi, ShadeTile::Keyboard];
+    if view.modem.is_some() {
+        tiles.extend([ShadeTile::Location, ShadeTile::Cellular]);
+    }
+    tiles
+}
+
+/// A tile's height: the keyboard toggle's own rule, so a larger vision step
+/// grows it and it never drops under the tap floor, capped so two rows and
+/// both sliders still fit the 568 px column (the tile's text shrinks to fit).
+pub const SHADE_TILE_MAX_H: f64 = 112.0;
+pub fn shade_tile_h() -> f64 {
+    shade_toggle_h().min(SHADE_TILE_MAX_H)
+}
+
+/// Tile `index`'s rect `(x, y, w, h)` in a `controls_w` column: two columns
+/// inside 24 px margins, rows `shade_tile_h()` apart plus the gap.
+pub fn shade_tile_rect(index: usize, controls_w: f64) -> (f64, f64, f64, f64) {
+    let w = (controls_w - 48.0 - SHADE_WIDE_TILE_GAP) / 2.0;
+    let h = shade_tile_h();
+    let x = 24.0 + (index % 2) as f64 * (w + SHADE_WIDE_TILE_GAP);
+    let y = SHADE_WIDE_TILE_TOP + (index / 2) as f64 * (h + SHADE_WIDE_TILE_GAP);
+    (x, y, w, h)
+}
+
+/// The wide Shade's slider stack starts under the two tile rows, whether or
+/// not the second row is shown, so the sliders never move with the modem.
+pub fn shade_wide_slider_top() -> f64 {
+    SHADE_WIDE_TILE_TOP + 2.0 * (shade_tile_h() + SHADE_WIDE_TILE_GAP) + 4.0
+}
+
+/// How far the wide Shade moves the sliders from their portrait bands
+/// (`SHADE_SLIDER_TOP`, `SHADE_VOLUME_TOP`); `settings_slider_y` maps a
+/// touch back by it, and `render.rs` paints with it.
+pub fn shade_slider_shift(wide: bool) -> f64 {
+    if wide {
+        shade_wide_slider_top() - SHADE_SLIDER_TOP
+    } else {
+        0.0
+    }
+}
+
+/// The tile under `pos` on the wide Shade, if any.
+pub fn shade_tile_at(pos: (f64, f64), layout: &ShadeLayout, view: &ServiceView) -> Option<ShadeTile> {
+    if !layout.wide {
+        return None;
+    }
+    shade_tiles(view).into_iter().enumerate().find_map(|(index, tile)| {
+        let (x, y, w, h) = shade_tile_rect(index, layout.controls_w);
+        (pos.0 >= x && pos.0 < x + w && pos.1 >= y && pos.1 < y + h).then_some(tile)
+    })
+}
 
 /// Where the Shade's pieces sit. Portrait and HDMI outputs keep the single
 /// column (the controls over the list, which starts at `notification_top()`);
@@ -522,7 +596,8 @@ pub fn drawer_close_candidate_after_scroll(candidate: bool, scroll: f64) -> bool
 pub fn shade_panel_close_zone(pos: (f64, f64), width: u32, height: u32, view: &ServiceView) -> bool {
     let y = pos.1;
     let in_controls = settings_slider_column_hit(Route::Shade, width, height, pos.0);
-    if in_controls && (slider_band(Route::Shade, y, view) || volume_slider_band(Route::Shade, y, view)) {
+    let slider_y = settings_slider_y(Route::Shade, y, width, height);
+    if in_controls && (slider_band(Route::Shade, slider_y, view) || volume_slider_band(Route::Shade, slider_y, view)) {
         // Owned entirely by the brightness or volume slider (task: "a
         // horizontal drag on the slider must not start a close drag") --
         // regardless of which way the touch actually moves, matching
@@ -553,6 +628,9 @@ pub fn shade_panel_close_zone(pos: (f64, f64), width: u32, height: u32, view: &S
 pub fn settings_slider_y(route: Route, y: f64, width: u32, height: u32) -> f64 {
     if route == Route::Settings && crate::settings_wide(width, height) {
         y - crate::render::settings_wide_offset(0, false).1
+    } else if route == Route::Shade {
+        // The wide Shade puts its sliders under the tiles.
+        y - shade_slider_shift(shade_layout(width, height).wide)
     } else {
         y
     }
@@ -1200,6 +1278,30 @@ pub fn panel_intent(
             }
             if end.1 < SHADE_SETTINGS_BOTTOM && end.0 > layout.controls_w - shade_link_w(layout.controls_w) && end.0 < layout.controls_w {
                 return Some(PanelIntent::OpenSettings);
+            }
+            if let Some(tile) = shade_tile_at(end, &layout, view) {
+                return match tile {
+                    ShadeTile::Wifi => Some(PanelIntent::OpenWifi),
+                    ShadeTile::Keyboard => {
+                        let keyboard = &view.settings.as_ref()?.keyboard;
+                        (keyboard.state == ControlState::Action)
+                            .then_some(PanelIntent::Request(ServiceRequest::KeyboardToggle))
+                    }
+                    ShadeTile::Location => Some(PanelIntent::ToggleLocation),
+                    ShadeTile::Cellular => Some(PanelIntent::OpenCellular),
+                };
+            }
+            // The wide Shade's "Dismiss all" heads the list column, beside
+            // its "Notifications" heading.
+            if layout.wide
+                && end.1 < SHADE_SETTINGS_BOTTOM
+                && end.0 > layout.list_x + layout.list_w - shade_link_w(layout.list_w)
+                && view.notifications.as_ref().is_some_and(|items| !items.events.is_empty())
+            {
+                return Some(PanelIntent::Request(ServiceRequest::NotificationDismissAll));
+            }
+            if layout.wide {
+                return None;
             }
             if (SHADE_TOGGLE_TOP..SHADE_TOGGLE_TOP + shade_toggle_h()).contains(&end.1)
                 && end.0 >= 24.0
@@ -2285,8 +2387,14 @@ mod tests {
     #[test]
     fn the_shade_keyboard_toggle_sends_the_settings_request_only_when_available() {
         for (w, h) in [(568, 1232), (1232, 568), (1280, 800)] {
-            let controls_w = shade_layout(w, h).controls_w;
-            let tap = (controls_w / 2.0, SHADE_TOGGLE_TOP + shade_toggle_h() / 2.0);
+            let layout = shade_layout(w, h);
+            // The wide Shade's keyboard toggle is its second tile.
+            let tap = if layout.wide {
+                let (x, y, tw, th) = shade_tile_rect(1, layout.controls_w);
+                (x + tw / 2.0, y + th / 2.0)
+            } else {
+                (layout.controls_w / 2.0, SHADE_TOGGLE_TOP + shade_toggle_h() / 2.0)
+            };
             let action = shade_view_with_keyboard(ControlState::Action, 1);
             assert_eq!(
                 panel_intent(Route::Shade, tap, tap, w, h, &action),
@@ -2299,7 +2407,11 @@ mod tests {
                 let view = shade_view_with_keyboard(state, 1);
                 assert_eq!(panel_intent(Route::Shade, tap, tap, w, h, &view), None, "{w}x{h} {state:?}");
             }
-            // Both edges of the band still hit; just outside does not.
+            // Both edges of the band still hit (the wide tile's are tested
+            // with the other tiles).
+            if layout.wide {
+                continue;
+            }
             for y in [SHADE_TOGGLE_TOP, SHADE_TOGGLE_TOP + shade_toggle_h() - 0.5] {
                 assert!(panel_intent(Route::Shade, (tap.0, y), (tap.0, y), w, h, &action).is_some());
             }
@@ -2952,22 +3064,23 @@ mod tests {
     fn every_wide_shade_control_is_inside_the_panel_and_taps_at_its_centre() {
         let layout = shade_layout(1232, 568);
         let view = wide_shade_view(6, true);
-        // Settings and Dismiss all, in the header column.
+        // Settings heads the controls column; Dismiss all heads the list.
         for (name, point, expected) in [
             ("settings", (layout.controls_w - 80.0, 50.0), PanelIntent::OpenSettings),
             (
                 "dismiss-all",
-                (layout.controls_w - 100.0, 150.0),
+                (layout.list_x + layout.list_w - 100.0, 50.0),
                 PanelIntent::Request(ServiceRequest::NotificationDismissAll),
             ),
         ] {
-            assert!(point.0 < layout.controls_w && point.1 < 568.0, "{name} on the panel");
+            assert!(point.0 < 1232.0 && point.1 < 568.0, "{name} on the panel");
             assert_eq!(panel_intent(Route::Shade, point, point, 1232, 568, &view), Some(expected), "{name}");
         }
         // Both sliders own their bands, only in the left column; the same
         // y on the list side is a notification row, not a slider.
+        let shift = shade_slider_shift(true);
         for top in [SHADE_SLIDER_TOP, SHADE_VOLUME_TOP] {
-            let y = top + 20.0;
+            let y = shift + top + 20.0;
             assert!(settings_slider_column_hit(Route::Shade, 1232, 568, 200.0));
             assert!(!settings_slider_column_hit(Route::Shade, 1232, 568, layout.list_x + 100.0));
             assert!(!shade_panel_close_zone((200.0, y), 1232, 568, &view), "slider at y {y} owns its gesture");
@@ -3036,8 +3149,40 @@ mod tests {
             Some(PanelIntent::Hide)
         );
         // Closing from the left column is allowed; from the list only at its end.
-        assert!(shade_panel_close_zone((200.0, 400.0), 1232, 568, &view));
+        assert!(shade_panel_close_zone((200.0, 140.0), 1232, 568, &view));
         assert!(!shade_panel_close_zone((layout.list_x + 100.0, 300.0), 1232, 568, &view));
+    }
+
+    #[test]
+    fn the_wide_shade_tiles_meet_the_tap_floor_and_open_their_pages() {
+        let layout = shade_layout(1232, 568);
+        let mut view = wide_shade_view(2, true);
+        assert_eq!(shade_tiles(&view), vec![ShadeTile::Wifi, ShadeTile::Keyboard], "no modem, no modem tiles");
+        view.modem = Some(present_modem());
+        let tiles = shade_tiles(&view);
+        assert_eq!(tiles.len(), 4);
+        let slider_top = shade_wide_slider_top();
+        let slider_bottom = slider_top + SHADE_VOLUME_TOP + SHADE_VOLUME_H - SHADE_SLIDER_TOP;
+        assert!(slider_bottom <= layout.list_bottom, "the sliders fit the column: {slider_bottom}");
+        for (index, tile) in tiles.iter().enumerate() {
+            let (x, y, w, h) = shade_tile_rect(index, layout.controls_w);
+            assert!(h >= SHADE_TAP_MIN && w >= SHADE_TAP_MIN, "{tile:?}: {w}x{h}");
+            assert!(x >= 24.0 && x + w <= layout.controls_w - 24.0 + 0.5, "{tile:?} inside the column");
+            assert!(y >= SHADE_SETTINGS_BOTTOM && y + h <= slider_top, "{tile:?} between the header and sliders");
+            let centre = (x + w / 2.0, y + h / 2.0);
+            assert!(!slider_band(Route::Shade, settings_slider_y(Route::Shade, centre.1, 1232, 568), &view));
+            let expected = match tile {
+                ShadeTile::Wifi => Some(PanelIntent::OpenWifi),
+                ShadeTile::Keyboard => Some(PanelIntent::Request(ServiceRequest::KeyboardToggle)),
+                ShadeTile::Location => Some(PanelIntent::ToggleLocation),
+                ShadeTile::Cellular => Some(PanelIntent::OpenCellular),
+            };
+            assert_eq!(panel_intent(Route::Shade, centre, centre, 1232, 568, &view), expected, "{tile:?}");
+        }
+        // Portrait has no tiles; its keyboard toggle stays a row.
+        let portrait = shade_layout(568, 1232);
+        assert_eq!(shade_tile_at((100.0, 200.0), &portrait, &view), None);
+        assert_eq!(shade_slider_shift(false), 0.0);
     }
 
     fn present_modem() -> crate::modem::ModemStatus {

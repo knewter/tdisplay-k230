@@ -131,6 +131,17 @@ impl ModemView {
         Some(command)
     }
 
+    /// The Shade's Location tile: the same flip with no page open.
+    pub fn location_toggle_command(&mut self) -> Option<Command> {
+        if self.pending.is_some() {
+            return None;
+        }
+        let command = Command::Location(!self.status.as_ref()?.location);
+        self.pending = Some(command.kind());
+        self.message = None;
+        Some(command)
+    }
+
     /// Takes the typed digits out of the view and into a command.
     pub fn pin_command(&mut self) -> Option<Command> {
         if self.pending.is_some() || !self.status.as_ref().is_some_and(ModemStatus::pin_needed) {
@@ -465,6 +476,16 @@ mod tests {
         v.digit(1);
         v.set_status(Some(status(|_| {})));
         assert_eq!(v.public().unwrap().pin_len, 0, "a satisfied SIM drops the digits");
+    }
+
+    #[test]
+    fn the_shade_tile_flips_location_with_no_page_open() {
+        let mut v = view(Page::Closed, status(|_| {}));
+        assert_eq!(v.location_toggle_command(), Some(Command::Location(true)));
+        assert!(v.location_toggle_command().is_none(), "one request at a time");
+        assert!(v.accept(&ModemReply { kind: Kind::Location, result: Ok(()) }));
+        let mut v = view(Page::Closed, status(|s| s["location"] = true.into()));
+        assert_eq!(v.location_toggle_command(), Some(Command::Location(false)));
     }
 
     #[test]
