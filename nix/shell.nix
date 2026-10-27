@@ -459,11 +459,14 @@ let
   notificationDbus = pkgs.callPackage ./handheld-notification-dbus.nix { python = notificationDbusPython; };
   # Keep the executable reference in string content: Nix attribute names
   # cannot carry a derivation context, but this allowlist must retain it.
+  # A Python program's key names the base interpreter, which is what
+  # /proc/PID/exe shows: a withPackages env's bin/python3 is a wrapper that
+  # execs it (board 2026-10-27: the env path never matched).
   notificationSources = pkgs.writeText "k230-notification-sources.json" ''
     {"${rustShellBase}/bin/k230-shell-rust": ${builtins.toJSON {
       id = "shell"; name = "Shell"; icon = "applications-system";
     }},
-     "${notificationDbusPython}/bin/python3 ${../tools/notification_dbus.py}": ${builtins.toJSON {
+     "${pkgs.python3}/bin/python3 ${../tools/notification_dbus.py}": ${builtins.toJSON {
       id = "dbus"; name = "Applications"; icon = null; delegate = true;
     }},
      "${pkgs.python3}/bin/python3 ${termApps}/lib/k230-term-apps/k230_term_apps.py": ${builtins.toJSON {

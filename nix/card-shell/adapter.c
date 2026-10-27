@@ -1773,6 +1773,23 @@ static const char *touch_deck_status(enum cs_message message) {
 	}
 	return "Cards unavailable";
 }
+/* "All apps ›" at the right of the overview's title row (rebuild_chrome): a
+ * tap there goes Home and opens the drawer, so another app is one swipe and
+ * one tap away (docs/design/shell-ux-review-webos-firefoxos-2026-10.md,
+ * gap 8). Both backdrop-tap paths read this band; it is at least the shell's
+ * 99 px tap floor tall and never overlaps a card (they test the backdrop). */
+#define OVERVIEW_APPS_W 220
+static bool overview_apps_hit(double x, double y) {
+	const struct cs_config *c = &shell.policy.config;
+	return x >= c->width - 48 - OVERVIEW_APPS_W && y >= 0 &&
+		y < fmax(99, c->top_reserved + c->title_height);
+}
+static void home_settle(bool open);
+static void overview_open_apps(void) {
+	home_settle(true);
+	if (!card_shell_launch_surface("drawer"))
+		sway_log(SWAY_INFO, "K230_CARD_SHELL overview apps: drawer helper unavailable");
+}
 static bool rebuild_chrome(void) {
 	struct cs_config *cfg = &shell.policy.config;
 	if (shell.chrome)
@@ -1805,6 +1822,16 @@ static bool rebuild_chrome(void) {
 			return false;
 		}
 		wlr_scene_node_set_position(&title->node, x + 24, y + 16);
+		struct wlr_scene_buffer *apps = themed_label(shell.chrome, "All apps ›", OVERVIEW_APPS_W,
+			title_h, CARD_TYPE_LABEL, appearance_text(false));
+		if (!apps) {
+			sway_log(SWAY_INFO, "K230_CARD_SHELL rebuild_chrome fail reason=apps-failed");
+			return false;
+		}
+		/* Right-aligned by its ink, as the label buffer is left-aligned. */
+		struct wlr_box ink;
+		int apps_w = card_label_ink_box(apps->buffer, &ink) ? ink.x + ink.width : OVERVIEW_APPS_W;
+		wlr_scene_node_set_position(&apps->node, x + cfg->width - 24 - apps_w, y + 16);
 		const char *text = touch_deck_status(shell.policy.message);
 		if (text) {
 			int status_y = shell.policy.message == CS_MESSAGE_EMPTY ? y + 210 : y + 16 + title_h + 8;
@@ -2112,7 +2139,10 @@ static void handle_result(struct cs_result r) {
 	}
 	/* A tap on the backdrop behind the cards: the footer tap's Home. */
 	if ((r.actions & CS_HOME) && shell.active) {
-		home_settle(true);
+		if (overview_apps_hit(shell.policy.backdrop_x, shell.policy.backdrop_y))
+			overview_open_apps();
+		else
+			home_settle(true);
 		return;
 	}
 	if (r.source_gone_id)
@@ -3464,6 +3494,7 @@ static bool input_up(struct sway_seat *seat, int32_t id, uint64_t event_ms) {
 		if (--edge.contacts == 0) {
 			edge_reset(false);
 			if (home) enter(seat);
+			else if (backdrop && overview_apps_hit(edge.x, edge.y)) overview_open_apps();
 			else if (backdrop) home_settle(true);
 		}
 		return true;
