@@ -3276,8 +3276,12 @@ fn paint_shade_wide_controls(
                 (Glyph::Keyboard, "Keyboard", if available { "Show or hide" } else { "Unavailable" }.to_string(), false, available)
             }
             ShadeTile::Location => {
-                let on = view.modem.as_ref().is_some_and(|m| m.location);
-                (Glyph::Location, "Location", if on { "On" } else { "Off" }.to_string(), on, true)
+                let state = match view.modem.as_ref().and_then(|m| m.location_indicator()) {
+                    Some(crate::modem::LocationIndicator::Fix) => "Fix",
+                    Some(crate::modem::LocationIndicator::Searching) => "Searching",
+                    None => "Off",
+                };
+                (Glyph::Location, "Location", state.to_string(), state != "Off", true)
             }
             ShadeTile::Cellular => {
                 let on = view.modem.as_ref().is_some_and(|m| m.cellular);

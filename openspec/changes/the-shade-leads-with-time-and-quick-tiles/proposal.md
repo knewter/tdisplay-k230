@@ -27,7 +27,8 @@ outputs keep their single-column layout.
 - **Left column, top to bottom:**
   1. The time in large type, the date under it, and "Settings ›" at the
      right.
-  2. One status line: battery, Wi-Fi, and the cellular and location glyphs.
+  2. One status line: battery, and the cellular and location glyphs. Wi-Fi's
+     state is on its tile.
   3. A grid of quick tiles, two columns wide, each at least 99 px tall:
      - **Wi-Fi:** shows its state and opens the Wi-Fi page.
      - **Keyboard:** show or hide, as now.
