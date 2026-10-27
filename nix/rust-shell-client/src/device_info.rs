@@ -304,13 +304,17 @@ pub fn layout_scale(width: u32, height: u32) -> (f64, f64) {
 
 pub fn layout_for(width: u32, height: u32, rows: usize) -> Layout {
     if crate::modem_ui::wide(width, height) {
-        build(f64::from(width), true, rows)
+        // Two columns give values like "14.2 GB free of 29.8 GB" and a long
+        // time zone room to read whole; three only when two would overflow
+        // the panel at a large text step.
+        let two = build(f64::from(width), true, rows, 2);
+        if two.bottom <= f64::from(height) - 12.0 { two } else { build(f64::from(width), true, rows, 3) }
     } else {
-        build(568.0, false, rows)
+        build(568.0, false, rows, 1)
     }
 }
 
-fn build(w: f64, wide: bool, rows: usize) -> Layout {
+fn build(w: f64, wide: bool, rows: usize, columns: usize) -> Layout {
     let s = crate::layout_text_scale().max(1.0) * crate::layout_theme_font();
     let (label, caption, body) = (
         crate::render::TYPE_LABEL * s,
@@ -328,7 +332,6 @@ fn build(w: f64, wide: bool, rows: usize) -> Layout {
     let content = title_y + title_h + if compact { 6.0 } else { 14.0 };
     let (pad, gap) = (10.0, 10.0);
     let card_h = 2.0 * pad + line(caption) + 2.0 + line(body);
-    let columns = if wide { 3 } else { 1 };
     let per_column = rows.div_ceil(columns).max(1);
     let col_w = (w - 48.0 - gap * (columns as f64 - 1.0)) / columns as f64;
     let cards: Vec<Rect> = (0..rows)
