@@ -1,0 +1,17 @@
+## 1. Host
+
+- [x] 1.1 Rework Help into Touch and Keys groups: columns when wide, stacked in
+  portrait, with the existing hit-testing, scroll model and 99 px floor. Proof:
+  `cargo test --offline --lib` in `nix/rust-shell-client` (614 passed), with
+  tests for the grouping and the column placement, and `cargo test --offline`
+  for the pixel-identity tests (no reference PNG changed).
+- [x] 1.2 Render Help at 1232x568 and 568x1232, at the top and scrolled to the
+  end. Proof: `docs/evidence/help-refresh/host/`, from
+  `cargo run --offline --example render_help_refresh`.
+
+## 2. Board (hardware-only)
+
+- [ ] 2.1 Test-activate the build and capture Help with grim at both
+  orientations, scrolled through. Proof: `docs/evidence/help-refresh/board/`.
+- [ ] 2.2 The operator reads Help on glass. Physical proof: a timestamped
+  operator report tied to the installed build.

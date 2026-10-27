@@ -3025,6 +3025,9 @@ fn paint_help(
     );
     let (ix, iy) = lay.intro;
     wrapped_text(cr, crate::help::INTRO, ix, iy, w, lay.caption_px, style.muted, pango::Weight::Normal);
+    for (name, &(gx, gy)) in crate::help::GROUPS.iter().zip(&lay.group_headings) {
+        wrapped_text(cr, name, gx, gy, w, lay.label_px, style.accent, pango::Weight::Bold);
+    }
     for ((title, detail), ((tx, ty), (dx, dy))) in crate::help::GUIDE.iter().zip(&lay.guide) {
         wrapped_text(cr, title, *tx, *ty, w, lay.label_px, style.text, pango::Weight::Medium);
         wrapped_text(cr, detail, *dx, *dy, w, lay.caption_px, style.muted, pango::Weight::Normal);

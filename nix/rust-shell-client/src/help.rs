@@ -16,22 +16,58 @@ pub enum Action {
     Back,
 }
 
+/// Help's guidance, in reading order: the first `TOUCH_COUNT` entries are
+/// the Touch group and the rest are the Keys group.
 pub const GUIDE: &[(&str, &str)] = &[
     (
         "Home and running apps",
         "Swipe up from the bottom to leave an app.",
     ),
+    (
+        "Switch apps",
+        "Slide sideways along the bottom edge, or curve an upward swipe sideways, to jump to the next app.",
+    ),
     ("All apps", "Swipe up on Home to open the app drawer."),
+    (
+        "App menu",
+        "Hold an app in the drawer for its windows and actions.",
+    ),
+    (
+        "Close an app",
+        "In the overview, throw its card up.",
+    ),
     (
         "Notifications and Settings",
         "Pull down from the top edge to open the shade.",
     ),
     (
         "Close a panel",
-        "Close a panel with its handle or Done control.",
+        "Swipe in from the left or right edge, or use its handle or Done control. This never sends Back to an app.",
     ),
-    ("Keyboard", "Use two fingers up at the bottom to show it."),
+    (
+        "Keyboard",
+        "Swipe up with two fingers at the bottom to show it. Drag its handle down to hide it.",
+    ),
+    ("LILYGO key", "Opens the app drawer."),
+    ("LILYGO + Tab", "Opens the overview."),
+    ("Fn + LILYGO", "Saves a screenshot."),
+    (
+        "Esc",
+        "Goes back in the shell when no app has focus. An app that has focus receives it.",
+    ),
+    (
+        "Typing on the base",
+        "Pressing a key hides the on-screen keyboard.",
+    ),
+    (
+        "Power key",
+        "Press to turn the display off or on. Hold to open the power sheet.",
+    ),
 ];
+/// How many leading `GUIDE` entries belong to the Touch group.
+pub const TOUCH_COUNT: usize = 8;
+/// The two group headings, in order: Touch, then Keys.
+pub const GROUPS: [&str; 2] = ["Touch", "Keys"];
 
 pub fn buttons(aid: bool) -> &'static [(Action, &'static str, &'static str)] {
     if aid {
@@ -75,6 +111,8 @@ pub struct HelpLayout {
     pub intro: (f64, f64),
     /// Each guide entry's title and detail origins.
     pub guide: Vec<((f64, f64), (f64, f64))>,
+    /// The Touch and Keys headings' origins (empty for the navigation aid).
+    pub group_headings: Vec<(f64, f64)>,
     pub buttons: Vec<(f64, f64, f64, f64)>,
     /// Each button's label and detail y.
     pub button_text: Vec<(f64, f64)>,
@@ -156,6 +194,7 @@ pub fn layout(width: u32, height: u32, aid: bool) -> HelpLayout {
         }
     }
     let mut guide = Vec::new();
+    let mut group_headings = Vec::new();
     if !aid {
         let items: Vec<(f64, f64)> = GUIDE
             .iter()
@@ -164,25 +203,20 @@ pub fn layout(width: u32, height: u32, aid: bool) -> HelpLayout {
                 (title_h, title_h + 2.0 + wrapped_h(detail, caption_px, TEXT_W, pango::Weight::Normal))
             })
             .collect();
-        let stack = |top: f64, items: &[(f64, f64)]| top + items.iter().map(|(_, h)| h + 20.0).sum::<f64>();
-        // Wide: the entries stay in reading order, the first `split` on the
-        // left and the rest under the buttons, split to keep the taller
-        // column as short as possible (ties keep more on the left).
-        let split = if wide {
-            (1..=items.len())
-                .rev()
-                .min_by(|a, b| {
-                    let tall = |k: usize| stack(left, &items[..k]).max(stack(right, &items[k..]));
-                    tall(*a).total_cmp(&tall(*b))
-                })
-                .unwrap_or(items.len())
-        } else {
-            items.len()
-        };
-        for (index, (title_h, item_h)) in items.into_iter().enumerate() {
-            let (column_x, top) = if index < split { (0.0, &mut left) } else { (COLUMN, &mut right) };
-            guide.push(((column_x + MARGIN, *top), (column_x + MARGIN, *top + title_h + 2.0)));
-            *top += item_h + 20.0;
+        let group_h = line(label_px) + 8.0;
+        // Wide: Touch fills the left column and Keys continues under the
+        // buttons on the right. Portrait stacks Touch, then Keys, then the
+        // buttons.
+        for (group, range) in [(0, 0..TOUCH_COUNT), (1, TOUCH_COUNT..items.len())] {
+            let column_x = if wide && group == 1 { COLUMN } else { 0.0 };
+            let top = if wide && group == 1 { &mut right } else { &mut left };
+            group_headings.push((column_x + MARGIN, *top));
+            *top += group_h;
+            for index in range {
+                let (title_h, item_h) = items[index];
+                guide.push(((column_x + MARGIN, *top), (column_x + MARGIN, *top + title_h + 2.0)));
+                *top += item_h + 20.0;
+            }
         }
     }
     if !wide {
@@ -202,6 +236,7 @@ pub fn layout(width: u32, height: u32, aid: bool) -> HelpLayout {
         heading_y,
         intro: (MARGIN, intro_y),
         guide,
+        group_headings,
         buttons: rects,
         button_text,
         message,
@@ -324,13 +359,56 @@ mod tests {
                 assert_eq!(navigation::tile_at(help, w, h, 64, 0.0), None);
             }
         }
-        // At 100% the panel needs no scrolling in either orientation.
+        // At 100% the navigation aid needs no scrolling in either orientation;
+        // the guide is longer than a screen and scrolls.
         crate::set_layout_text_scale(1.0);
         for (w, h) in [(568, 1232), (1232, 568)] {
-            for aid in [false, true] {
-                assert_eq!(layout(w, h, aid).max_scroll(h), 0.0, "{w}x{h} aid={aid}");
+            assert_eq!(layout(w, h, true).max_scroll(h), 0.0, "{w}x{h} aid");
+            assert!(layout(w, h, false).max_scroll(h) > 0.0, "{w}x{h} guide scrolls");
+        }
+    }
+    #[test]
+    fn guide_has_touch_and_keys_groups_in_columns_when_wide_and_stacked_otherwise() {
+        crate::set_layout_text_scale(1.0);
+        assert_eq!(GROUPS, ["Touch", "Keys"]);
+        assert!(TOUCH_COUNT > 0 && TOUCH_COUNT < GUIDE.len());
+        for step in [1.0, 2.0] {
+            crate::set_layout_text_scale(step);
+            for (w, h) in [(1232, 568), (568, 1232)] {
+                let lay = layout(w, h, false);
+                assert_eq!(lay.guide.len(), GUIDE.len());
+                assert_eq!(lay.group_headings.len(), 2);
+                let (touch, keys) = (lay.group_headings[0], lay.group_headings[1]);
+                let first_keys = lay.guide[TOUCH_COUNT].0;
+                let last_touch = lay.guide[TOUCH_COUNT - 1].0;
+                assert_eq!(touch.0, MARGIN, "Touch starts the left column");
+                if wide(w, h) {
+                    assert_eq!(keys.0, COLUMN + MARGIN, "Keys heads the right column");
+                    assert_eq!(first_keys.0, COLUMN + MARGIN);
+                    assert!(lay.guide[..TOUCH_COUNT].iter().all(|e| e.0 .0 == MARGIN));
+                    // Keys sits under the buttons, never over them.
+                    let buttons_bottom = lay.buttons.iter().map(|b| b.1 + b.3).fold(0.0, f64::max);
+                    assert!(keys.1 >= buttons_bottom);
+                } else {
+                    assert_eq!(keys.0, MARGIN, "portrait stacks the groups");
+                    assert!(keys.1 > last_touch.1, "Keys follows Touch");
+                    let buttons_top = lay.buttons.iter().map(|b| b.1).fold(f64::MAX, f64::min);
+                    assert!(buttons_top >= first_keys.1, "the buttons come after the guide");
+                }
+                // Entries never overlap the next one in their column.
+                for pair in lay.guide.windows(2) {
+                    if pair[0].0 .0 == pair[1].0 .0 {
+                        assert!(pair[1].0 .1 > pair[0].1 .1, "entries stay in reading order");
+                    }
+                }
+                // The text stays inside the scrollable content.
+                assert!(lay.guide.iter().all(|e| e.1 .1 < lay.content_h));
+                // The aid has no guide or headings.
+                let aid = layout(w, h, true);
+                assert!(aid.guide.is_empty() && aid.group_headings.is_empty());
             }
         }
+        crate::set_layout_text_scale(1.0);
     }
     #[test]
     fn drag_crossing_gap_or_nonfinite_touch_never_activates_a_route() {

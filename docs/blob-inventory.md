@@ -2241,6 +2241,11 @@ DATA a2c14dbe49dfc069aaa1697a9e4dbd39fac7f4ba4da29228b8651c8683d091d6 docs/evide
 DATA ee7513ae8fcfc031781673cfef7cab622fc831f615df553c9507c0bea46f6b12 docs/evidence/base-keys/board/keys-drawer-open.png
 DATA 10f202da0963924b537d5a768e30ff7a30ae1309fb52204edbbbf8bec4c0ec0b docs/evidence/base-keys/board/keys-drawer-ti.png
 DATA 97ca6176dfc6c5e8a5cdbe45e807840855e652b0ea29cad1c30245d3a4270b0c docs/evidence/base-keys/board/keys-overview.png
+||||||| parent of 12b3c404 (List the gestures and keys in Help as Touch and Keys groups)
+DATA b029a424e430376a5c2585c90fcec5423ecd637ac40c6e88a641be47fa8def00 docs/evidence/help-refresh/host/help-landscape-1232x568-end.png
+DATA 9b2f1e68bfccac9ae19112c283ada130eb49a946910ad5076370ccee931b1ec8 docs/evidence/help-refresh/host/help-landscape-1232x568-top.png
+DATA 2f77209944164ceb779e0f50f5cfd726a5b14adf8eadbfefd87d4aa14dd1bcbd docs/evidence/help-refresh/host/help-portrait-568x1232-end.png
+DATA e852cf5374353cfd8f06fab09aa5553df316da619c36590bafd73458bda0934d docs/evidence/help-refresh/host/help-portrait-568x1232-top.png
 ```
 
 `group:` rows stand for a directory whose members are enumerated by
@@ -4156,3 +4161,14 @@ Native `grim` captures of the key-focused drawer search and the overview under i
 | `docs/evidence/base-keys/board/keys-drawer-open.png` | 70373 | DATA | `ee7513ae8fcfc031781673cfef7cab622fc831f615df553c9507c0bea46f6b12` |
 | `docs/evidence/base-keys/board/keys-drawer-ti.png` | 10996 | DATA | `10f202da0963924b537d5a768e30ff7a30ae1309fb52204edbbbf8bec4c0ec0b` |
 | `docs/evidence/base-keys/board/keys-overview.png` | 77558 | DATA | `97ca6176dfc6c5e8a5cdbe45e807840855e652b0ea29cad1c30245d3a4270b0c` |
+||||||| parent of 12b3c404 (List the gestures and keys in Help as Touch and Keys groups)
+## Help refresh host renders, 2026-10-27
+
+Host renders of Help's Touch and Keys groups from `render_help_refresh`; see `docs/evidence/help-refresh/README.md`.
+
+| Path | Bytes | Class | SHA256 |
+| --- | ---: | --- | --- |
+| `docs/evidence/help-refresh/host/help-landscape-1232x568-end.png` | 79967 | DATA | `b029a424e430376a5c2585c90fcec5423ecd637ac40c6e88a641be47fa8def00` |
+| `docs/evidence/help-refresh/host/help-landscape-1232x568-top.png` | 87914 | DATA | `9b2f1e68bfccac9ae19112c283ada130eb49a946910ad5076370ccee931b1ec8` |
+| `docs/evidence/help-refresh/host/help-portrait-568x1232-end.png` | 94397 | DATA | `2f77209944164ceb779e0f50f5cfd726a5b14adf8eadbfefd87d4aa14dd1bcbd` |
+| `docs/evidence/help-refresh/host/help-portrait-568x1232-top.png` | 110636 | DATA | `e852cf5374353cfd8f06fab09aa5553df316da619c36590bafd73458bda0934d` |
