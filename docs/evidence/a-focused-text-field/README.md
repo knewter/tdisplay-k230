@@ -41,3 +41,15 @@ Foot creates its text input at startup, which is why the terminal works.
 `nix/patches/sway-k230-text-input-late-enter.patch` sends `enter` when a text
 input is created for the client that already holds keyboard focus. Task 3.3
 stays open until a build with the patch raises the keyboard for the entry.
+
+## GTK4 entry with the Sway patch (task 3.3), build `gpgh1vx6…` (commit `e8056ece`)
+
+Board, injected touch and keys, native `grim`, 2026-10-27. Files launched
+from the Home dock as usual (no tracing). `board/gtk-search-keyboard-up.png`:
+Home, Files open, the search button tapped at 17:01:46Z with the entry focused and
+the keyboard up, then a tap meant for the file area that landed on the raised
+keyboard's "h" key and typed "h" into the entry. `board/gtk-search-closed-keyboard-down.png`:
+Backspace emptied the entry, GTK closed the search bar and the keyboard went
+down; Starred then opened by touch at 17:02:15Z with the keyboard still down.
+`shell-osk-focus` logs nothing on show/hide, so its journal only shows the
+restart; the captures are the record. A GTK3 entry was not tried.

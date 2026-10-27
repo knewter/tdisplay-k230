@@ -2315,6 +2315,8 @@ DATA 8b16c49b640f76d6be5603489d8b691ebb304fe2e8457e9cba9093368c8a81c4 docs/evide
 DATA e0abacfe4af194dad1d36ba3ebd1bc0db81889d1ef0b2119ff0cca3e65077faf docs/evidence/home-notification-count/board/home-count-3-2-cleared.png
 DATA 704fc685540b6d5b80d2ed86e2f58a1015e79fe63e6301dd01faa9a595256943 docs/evidence/do-not-disturb/board/settings-row-and-tile-agree.png
 DATA f84e898df83a60269a81e48c65b2a427551d67a0bee6cb1cb83e58046c8321b6 docs/evidence/a-focused-text-field/board/gtk-search-no-keyboard.png
+DATA 7f87db522bd6faf4abd885b5d6d2ccc144c5b3b4b77a64ec018b834e6a8f1202 docs/evidence/a-focused-text-field/board/gtk-search-keyboard-up.png
+DATA 4e147d7adf71287b85acd4520cf7f86128c921d6f5a15016842a4d93007ab7ce docs/evidence/a-focused-text-field/board/gtk-search-closed-keyboard-down.png
 ```
 
 `group:` rows stand for a directory whose members are enumerated by
@@ -4366,3 +4368,12 @@ Native grim captures from the board (injected touch, build zs05li2k): Home count
 | `docs/evidence/home-notification-count/board/home-count-3-2-cleared.png` | 291699 | DATA | `e0abacfe4af194dad1d36ba3ebd1bc0db81889d1ef0b2119ff0cca3e65077faf` |
 | `docs/evidence/do-not-disturb/board/settings-row-and-tile-agree.png` | 192515 | DATA | `704fc685540b6d5b80d2ed86e2f58a1015e79fe63e6301dd01faa9a595256943` |
 | `docs/evidence/a-focused-text-field/board/gtk-search-no-keyboard.png` | 27659 | DATA | `f84e898df83a60269a81e48c65b2a427551d67a0bee6cb1cb83e58046c8321b6` |
+
+## Board captures: GTK entry raises the keyboard
+
+Native grim captures from the board (injected touch, build gpgh1vx6): Files search entry raising and lowering the focus keyboard after the Sway late-enter patch.
+
+| Path | Bytes | Class | SHA256 |
+| --- | ---: | --- | --- |
+| `docs/evidence/a-focused-text-field/board/gtk-search-keyboard-up.png` | 179675 | DATA | `7f87db522bd6faf4abd885b5d6d2ccc144c5b3b4b77a64ec018b834e6a8f1202` |
+| `docs/evidence/a-focused-text-field/board/gtk-search-closed-keyboard-down.png` | 19044 | DATA | `4e147d7adf71287b85acd4520cf7f86128c921d6f5a15016842a4d93007ab7ce` |
