@@ -160,9 +160,14 @@ def needs_release(data):
         i = end + 1
 
 
-def ttfx_command(ttfx, banner, effect):
+def ttfx_command(ttfx, banner, effect, rows):
+    """Centre the banner on a full-width canvas one row short of the
+    terminal, as Omarchy's screensaver does, so the last line cannot scroll;
+    leave the cursor hidden when the effect ends."""
     return [ttfx, "-i", banner, "--frame-rate", str(EFFECT_FRAME_RATE),
-            "--anchor-text", "c", effect]
+            "--canvas-width", "0", "--canvas-height", str(max(1, rows - 1)),
+            "--anchor-canvas", "c", "--anchor-text", "c",
+            "--no-eol", "--no-restore-cursor", effect]
 
 
 # ---------------------------------------------------------------------------
@@ -269,7 +274,8 @@ class Exhibition:
         """Run one effect; "input" if the person touched, otherwise "done"."""
         cfg = self.cfg
         self.sess._write("\x1b[2J\x1b[H")
-        child = subprocess.Popen(ttfx_command(cfg["ttfx"], cfg["banner"], effect),
+        _, rows = self.sess.size()
+        child = subprocess.Popen(ttfx_command(cfg["ttfx"], cfg["banner"], effect, rows),
                                  stdin=subprocess.DEVNULL)
         deadline = time.monotonic() + EFFECT_MAX_SECONDS
         result = "done"

@@ -154,17 +154,24 @@ class PureTests(unittest.TestCase):
             self.assertFalse(EX.display_on(drm), "a disconnected connector does not count")
 
     def test_ttfx_is_run_with_the_capped_frame_rate_and_the_banner(self):
-        cmd = EX.ttfx_command("/bin/ttfx", "/b/K230.txt", "wipe")
+        cmd = EX.ttfx_command("/bin/ttfx", "/b/K230.txt", "wipe", 24)
         self.assertEqual(cmd[:4], ["/bin/ttfx", "-i", "/b/K230.txt", "--frame-rate"])
         self.assertEqual(cmd[4], str(EX.EFFECT_FRAME_RATE))
         self.assertEqual(cmd[-1], "wipe")
+        # Centred on the whole terminal, one row short so nothing scrolls.
+        self.assertEqual(cmd[cmd.index("--canvas-width") + 1], "0")
+        self.assertEqual(cmd[cmd.index("--canvas-height") + 1], "23")
+        self.assertEqual(cmd[cmd.index("--anchor-canvas") + 1], "c")
+        self.assertIn("--no-restore-cursor", cmd)
         self.assertLessEqual(EX.EFFECT_FRAME_RATE, 15)
 
-    def test_the_banner_is_four_ascii_glyphs_in_five_rows(self):
+    def test_the_banner_is_six_rows_of_block_and_box_glyphs(self):
         text = (ROOT / "nix/exhibition/K230.txt").read_text()
         rows = text.splitlines()
-        self.assertEqual(len(rows), 5)
-        self.assertTrue(all(ord(ch) < 128 for ch in text))
+        self.assertEqual(len(rows), 6)
+        # Full blocks and box drawing only: foot draws both itself, so no
+        # font has to carry them.
+        self.assertTrue(set(text) <= set(" \n█╗╔╝╚═║"), set(text))
         self.assertLessEqual(max(len(r) for r in rows), 60)
 
 

@@ -76,8 +76,14 @@ clock never leaves the screen. The digits use the dim attribute on top of the
 
 ### Text: a committed banner file
 
-`nix/exhibition/K230.txt` is a hand-set five-row ASCII banner of the four
-characters, fed to `ttfx -i`. No figlet or font dependency.
+`nix/exhibition/K230.txt` is a hand-set six-row banner of the four characters
+in the "ANSI Shadow" figlet style Omarchy's own branding uses: full blocks and
+box-drawing lines, which foot draws itself, so no font has to carry them. It is
+fed to `ttfx -i` on a full-width canvas one row short of the terminal, both
+anchors at the centre (Omarchy's screensaver invocation), with
+`--no-restore-cursor` so the cursor stays hidden after the effect. No figlet
+dependency. The first board run used a five-row `#` banner anchored at the
+default `sw` corner; it drew at the top left with a cursor under it.
 
 ### Preference: one word, default Clock
 
