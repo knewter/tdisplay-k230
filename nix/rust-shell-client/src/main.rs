@@ -1599,7 +1599,15 @@ fn env_path(name: &str, default: &str) -> PathBuf {
 }
 
 fn suppresses_action_message(request: &ServiceRequest, outcome_error: Option<&str>) -> bool {
-    matches!(request, ServiceRequest::Brightness(_) | ServiceRequest::KeyboardToggle) && outcome_error.is_none()
+    // A dismissed row leaving the list is its own feedback; the raw
+    // "dismissed" state lingered in the shade as a red status line.
+    matches!(
+        request,
+        ServiceRequest::Brightness(_)
+            | ServiceRequest::KeyboardToggle
+            | ServiceRequest::NotificationDismiss(_)
+            | ServiceRequest::NotificationDismissAll
+    ) && outcome_error.is_none()
 }
 
 struct HudStreamDrag {
@@ -8396,6 +8404,14 @@ mod route_tests {
         assert!(!suppresses_action_message(
             &ServiceRequest::KeyboardToggle,
             Some("keyboard-unavailable")
+        ));
+        // A notification dismiss is the same: the row leaving is the
+        // feedback, and the bare "dismissed" state lingered in red.
+        assert!(suppresses_action_message(&ServiceRequest::NotificationDismiss(3), None));
+        assert!(suppresses_action_message(&ServiceRequest::NotificationDismissAll, None));
+        assert!(!suppresses_action_message(
+            &ServiceRequest::NotificationDismissAll,
+            Some("history-unavailable")
         ));
         // Every other request keeps its own message exactly as before,
         // success or failure.
