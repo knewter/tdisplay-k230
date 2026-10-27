@@ -187,6 +187,8 @@ static struct {
 	bool home_selected, home_layers_saved[4];
 	struct card_shell_drawer_gesture home_gesture;
 	bool home_settling, home_settle_open;
+	/* Open All apps once Home has settled (the overview's title-row entry). */
+	bool home_then_apps;
 	double home_offset, home_drag_origin, home_settle_from;
 	uint64_t home_settle_ms;
 	struct wl_listener output_destroy, seat_destroy;
@@ -1786,10 +1788,11 @@ static bool overview_apps_hit(double x, double y) {
 		y < fmax(99, c->top_reserved + c->title_height);
 }
 static void home_settle(bool open);
+/* The drawer is requested only after Home settles: requested at once, the
+ * settle's restore() ran after it and the drawer never showed. */
 static void overview_open_apps(void) {
 	home_settle(true);
-	if (!card_shell_launch_surface("drawer"))
-		sway_log(SWAY_INFO, "K230_CARD_SHELL overview apps: drawer helper unavailable");
+	shell.home_then_apps = true;
 }
 static bool rebuild_chrome(void) {
 	struct cs_config *cfg = &shell.policy.config;
@@ -2097,6 +2100,7 @@ static void home_begin(int32_t id, double x, double y) {
 	home_position(shell.home_offset);
 }
 static void home_settle(bool open) {
+	shell.home_then_apps = false;
 	shell.home_settle_open = open;
 	shell.home_settle_from = shell.home_offset;
 	shell.home_settle_ms = now_ms();
@@ -2120,7 +2124,12 @@ static void home_transition_tick(void) {
 		r.focus_id = 0;
 		restore(r);
 		sway_log(SWAY_INFO, "K230_CARD_SHELL home selected cards=%zu", shell.policy.count);
+		if (shell.home_then_apps && !card_shell_launch_surface("drawer"))
+			sway_log(SWAY_INFO, "K230_CARD_SHELL overview apps: drawer helper unavailable");
+		else if (shell.home_then_apps)
+			sway_log(SWAY_INFO, "K230_CARD_SHELL overview apps: drawer requested");
 	}
+	shell.home_then_apps = false;
 	home_position(0);
 }
 static void handle_result(struct cs_result r) {
