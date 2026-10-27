@@ -73,7 +73,7 @@ def path(pts0, pts1, ms):
               for (s, x0, y0), (_, x1, y1) in zip(pts0, pts1)])
 
 KEYS = {'ESC': 1, 'BACKSPACE': 14, 'TAB': 15, 'ENTER': 28, 'LEFTMETA': 125, 'LEFTSHIFT': 42,
-        'LEFT': 105, 'RIGHT': 106, 'UP': 103, 'DOWN': 108, 'DELETE': 111, 'SPACE': 57}
+        'LEFT': 105, 'RIGHT': 106, 'UP': 103, 'DOWN': 108, 'DELETE': 111, 'SPACE': 57, 'MINUS': 12, 'EQUAL': 13}
 for i, ch in enumerate('qwertyuiop'): KEYS[ch] = 16 + i
 for i, ch in enumerate('asdfghjkl'): KEYS[ch] = 30 + i
 for i, ch in enumerate('zxcvbnm'): KEYS[ch] = 44 + i

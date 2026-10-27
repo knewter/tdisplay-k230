@@ -113,3 +113,10 @@ focus changes and each action is one short `pkill` helper spawn.
   `vzizj58r…`). The compositor now sends `hide` when the overview opens
   (`CS_SHRINK` in `adapter.c`). Returning to the app does not raise it again,
   because no new `activate` arrives; the two-finger gesture still does.
+- **Touch-only terminal apps are skipped.** foot enables text input for
+  every window, so the Timer rose the keyboard over its own buttons (board,
+  build `kllh24ww…`, 2026-10-27). Before a show, `k230-osk-focus` reads the
+  focused window's `app_id` with one `get_tree` and skips ids in
+  `K230_OSK_FOCUS_IGNORE` (`focusKeyboardIgnoreAppIds`: Timer, Clock,
+  Weather, Monitor, btop). The terminal, NetHack and 2048 take keys and
+  still raise it.

@@ -124,6 +124,39 @@ pub fn parse_suppress(text: Option<&str>) -> Duration {
         .unwrap_or(DEFAULT_SUPPRESS)
 }
 
+/// App ids whose focused window never raises the keyboard, from a comma or
+/// whitespace separated list. Terminal-hosted apps such as the Timer run in
+/// foot, which enables text input for every window, but take only touch.
+pub fn parse_ignore(text: Option<&str>) -> Vec<String> {
+    text.unwrap_or("")
+        .split(|c: char| c == ',' || c.is_whitespace())
+        .filter(|id| !id.is_empty())
+        .map(str::to_string)
+        .collect()
+}
+
+/// The `app_id` of the focused window in a `get_tree` reply. The walk is
+/// bounded so a malformed tree cannot stall the client.
+pub fn focused_app_id(tree: &serde_json::Value) -> Option<String> {
+    let mut stack = vec![tree];
+    let mut budget = 4096;
+    while let Some(node) = stack.pop() {
+        budget -= 1;
+        if budget == 0 {
+            return None;
+        }
+        if node.get("focused").and_then(|f| f.as_bool()) == Some(true) {
+            return node.get("app_id").and_then(|a| a.as_str()).map(str::to_string);
+        }
+        for key in ["nodes", "floating_nodes"] {
+            if let Some(children) = node.get(key).and_then(|c| c.as_array()) {
+                stack.extend(children);
+            }
+        }
+    }
+    None
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -242,5 +275,16 @@ mod tests {
         assert_eq!(parse_suppress(Some("-1")), DEFAULT_SUPPRESS);
         assert_eq!(parse_suppress(Some("abc")), DEFAULT_SUPPRESS);
         assert_eq!(parse_suppress(Some("1e9")), DEFAULT_SUPPRESS);
+    }
+
+    #[test]
+    fn the_ignore_list_and_the_focused_app_id_are_read() {
+        assert_eq!(parse_ignore(Some("k230-timer, k230-clock k230-weather")), ["k230-timer", "k230-clock", "k230-weather"]);
+        assert!(parse_ignore(None).is_empty());
+        let tree = serde_json::json!({"focused": false, "nodes": [
+            {"focused": false, "nodes": [{"focused": false, "app_id": "k230-terminal"}],
+             "floating_nodes": [{"focused": true, "app_id": "k230-timer"}]}]});
+        assert_eq!(focused_app_id(&tree).as_deref(), Some("k230-timer"));
+        assert_eq!(focused_app_id(&serde_json::json!({"focused": false})), None);
     }
 }

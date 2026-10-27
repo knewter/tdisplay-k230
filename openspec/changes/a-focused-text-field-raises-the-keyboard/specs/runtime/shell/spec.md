@@ -6,7 +6,7 @@
 
 <!-- UNVERIFIED --> When a text field in the focused application becomes active for text input, the shell SHALL show the on-screen keyboard, and when it stops being active the shell SHALL hide it. The shell SHALL do so without receiving, altering or committing any text and without grabbing the keyboard.
 
-The shell SHALL NOT show the on-screen keyboard for a field that becomes active within 10 seconds of the last key pressed on the keyboard base. The on-screen keyboard SHALL remain available through its usual gesture.
+The shell SHALL NOT show the on-screen keyboard for a field that becomes active within 10 seconds of the last key pressed on the keyboard base. Terminal-hosted applications that take only touch or only display (Timer, Clock, Weather, Monitor, btop) SHALL NOT raise it on focus, and the card overview SHALL lower it. The on-screen keyboard SHALL remain available through its usual gesture.
 
 #### Scenario: Tapping a text field
 
@@ -17,6 +17,16 @@ The shell SHALL NOT show the on-screen keyboard for a field that becomes active 
 
 - **WHEN** the on-screen keyboard is up for a focused field and focus moves to a window with no text input
 - **THEN** the on-screen keyboard hides
+
+#### Scenario: A touch-only terminal app
+
+- **WHEN** the Timer, which runs in foot, takes focus
+- **THEN** the on-screen keyboard stays hidden and the Timer keeps the whole panel
+
+#### Scenario: Opening the overview
+
+- **WHEN** the on-screen keyboard is up for a focused terminal and the person opens the card overview
+- **THEN** the keyboard lowers and the cards keep their size
 
 #### Scenario: Typing on the base
 

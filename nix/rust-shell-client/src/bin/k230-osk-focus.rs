@@ -33,6 +33,24 @@ struct App {
     signal: PathBuf,
     stamp: Option<PathBuf>,
     suppress: Duration,
+    ignore: Vec<String>,
+    sway: Option<PathBuf>,
+}
+
+/// True when the focused window is one of `ignore`. Asked only before a
+/// show, so a focus change costs one `get_tree` at most.
+fn focused_is_ignored(ignore: &[String], sway: &Option<PathBuf>) -> bool {
+    let Some(path) = sway else { return false };
+    if ignore.is_empty() {
+        return false;
+    }
+    match k230_shell_rust::sway_ipc::query(path, 4, b"") {
+        Ok(tree) => osk_focus::focused_app_id(&tree).is_some_and(|id| ignore.iter().any(|i| *i == id)),
+        Err(e) => {
+            eprintln!("k230-osk-focus: get_tree failed: {e}");
+            false
+        }
+    }
 }
 
 fn secs(t: SystemTime) -> f64 {
@@ -53,6 +71,9 @@ impl App {
         let action = self
             .focus
             .handle(event, || since_last_key(stamp), self.suppress);
+        if action == Some(Action::Show) && focused_is_ignored(&self.ignore, &self.sway) {
+            return;
+        }
         if let Some(action) = action {
             let word = match action {
                 Action::Show => "show",
@@ -152,6 +173,8 @@ fn run() -> Result<(), String> {
         signal,
         stamp,
         suppress,
+        ignore: osk_focus::parse_ignore(std::env::var("K230_OSK_FOCUS_IGNORE").ok().as_deref()),
+        sway: std::env::var_os("SWAYSOCK").map(PathBuf::from),
     };
     loop {
         queue

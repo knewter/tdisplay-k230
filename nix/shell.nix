@@ -705,6 +705,8 @@ let
     export K230_KEYBOARD_SIGNAL=${keyboardGestureSignal}/bin/k230-keyboard-gesture-signal
     export K230_OSK_KEY_STAMP="$XDG_RUNTIME_DIR/k230-keyboard-base-last-key"
     export K230_OSK_SUPPRESS_SECONDS=${toString cfg.focusKeyboardSuppressSeconds}
+    export K230_OSK_FOCUS_IGNORE="${lib.concatStringsSep "," cfg.focusKeyboardIgnoreAppIds}"
+    export SWAYSOCK=/run/shell/sway-ipc.sock
     exec ${rustShellBase}/bin/k230-osk-focus
   '';
   rustShell = pkgs.writeShellScriptBin "k230-shell-rust" ''
@@ -1256,6 +1258,17 @@ in
       description = ''
         A newly focused text field does not raise the on-screen keyboard
         within this many seconds of the last key pressed on the keyboard base.
+      '';
+    };
+
+    focusKeyboardIgnoreAppIds = lib.mkOption {
+      type = lib.types.listOf lib.types.str;
+      default = [ "k230-timer" "k230-clock" "k230-weather" "k230-monitor" "k230-btop" ];
+      description = ''
+        App ids whose focused window does not raise the on-screen keyboard.
+        These run in foot, which enables text input for every window, but
+        are driven by touch or only display. The terminal, NetHack and 2048
+        take keys and are left out.
       '';
     };
 
