@@ -18,6 +18,7 @@
 #include "sway/input/input-manager.h"
 #include "sway/input/seat.h"
 #include "sway/ipc-server.h"
+#include "sway/desktop/idle_inhibit_v1.h"
 #include "sway/layers.h"
 #include "sway/output.h"
 #include "sway/server.h"
@@ -2075,6 +2076,10 @@ static void restore(struct cs_result result) {
 			seat_set_focus_workspace(shell.seat, shell.output->current.active_workspace);
 		if (!shell.output_teardown)
 			transaction_commit_dirty();
+		/* Sway re-checks idle inhibitors only on some transactions, so a
+		 * focus-scoped inhibitor (inhibit_idle focus: Video, Timer) stayed
+		 * active at Home after its window lost focus. */
+		sway_idle_inhibit_v1_check_active();
 	}
 	if (shell.seat) {
 		wl_list_remove(&shell.seat_destroy.link);
