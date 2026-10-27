@@ -83,6 +83,9 @@ pub struct ServiceView {
     /// through (`shell_prefs`). The tile, the status glyph and Settings'
     /// row all read this one value.
     pub do_not_disturb: bool,
+    /// What an idle display does on the charger (`shell_prefs`); Settings'
+    /// "Idle on charger" row reads and flips it.
+    pub idle_on_charger: crate::shell_prefs::ChargerIdle,
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -275,6 +278,9 @@ pub enum PanelIntent {
     /// The shade tile's and Settings row's Do Not Disturb switch: a local
     /// preference write (`shell_prefs`), not a service request.
     ToggleDoNotDisturb,
+    /// Settings' "Idle on charger" row: Clock or Sleep, a local preference
+    /// write (`shell_prefs`) read by the idle step.
+    ToggleChargerIdle,
 }
 
 /// Room for the shared brightness slider (task: "brightness should be a
@@ -1490,6 +1496,7 @@ pub fn panel_intent(
                 }
                 intents.extend([
                     PanelIntent::ToggleDoNotDisturb,
+                    PanelIntent::ToggleChargerIdle,
                     PanelIntent::OpenDateTime,
                     PanelIntent::OpenAbout,
                 ]);
@@ -3384,7 +3391,7 @@ mod tests {
     }
 
     #[test]
-    fn settings_ends_its_rows_with_do_not_disturb_date_and_time_then_about() {
+    fn settings_ends_its_rows_with_do_not_disturb_charger_idle_date_and_time_then_about() {
         use crate::render::{
             settings_info_row_index, settings_modem_row_h, settings_modem_row_y, settings_wide_offset_for,
         };
@@ -3399,7 +3406,12 @@ mod tests {
                 };
                 let row_h = settings_modem_row_h();
                 assert!(row_h >= SHADE_TAP_MIN, "rows meet the 99 px touch floor");
-                for (info, expected) in [(0u32, PanelIntent::ToggleDoNotDisturb), (1, PanelIntent::OpenDateTime), (2, PanelIntent::OpenAbout)] {
+                for (info, expected) in [
+                    (0u32, PanelIntent::ToggleDoNotDisturb),
+                    (1, PanelIntent::ToggleChargerIdle),
+                    (2, PanelIntent::OpenDateTime),
+                    (3, PanelIntent::OpenAbout),
+                ] {
                     let index = settings_info_row_index(modem, info);
                     let y = settings_modem_row_y(key_backlight, index);
                     // Wide: scroll the third column so the row is on screen.
@@ -3428,7 +3440,7 @@ mod tests {
                     );
                 }
                 // About is the last row: Power follows it.
-                let about = settings_modem_row_y(key_backlight, settings_info_row_index(modem, 2));
+                let about = settings_modem_row_y(key_backlight, settings_info_row_index(modem, 3));
                 assert!(crate::render::settings_layout_for(key_backlight, modem).power_heading_y > about + row_h);
             }
         }

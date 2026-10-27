@@ -20,7 +20,20 @@ let
   # the-display-dims-and-sleeps-when-idle). swayidle runs this per event.
   idleDimmer = pkgs.callPackage ./idle-dimmer.nix { };
   idleDimmerCommand = "${idleDimmer}/bin/k230-idle-dimmer";
-  idleDimmerArgs = "--swaymsg ${sway}/bin/swaymsg --sway-socket /run/shell/sway-ipc.sock";
+  idleDimmerBaseArgs = "--swaymsg ${sway}/bin/swaymsg --sway-socket /run/shell/sway-ipc.sock";
+  # While docked and idle the 30 s step opens this Foot card instead of the
+  # 60 s step blanking (openspec/changes/
+  # the-charging-display-shows-an-exhibition-clock). The card asks for the
+  # blank itself when the charger goes away.
+  ttfx = pkgs.callPackage ./ttfx.nix { };
+  exhibitionCard = pkgs.writeShellScript "k230-exhibition-card" ''
+    exec ${themedFoot}/bin/k230-foot terminal --app-id=k230-exhibition \
+      -e ${termApps}/bin/k230-exhibition \
+      --ttfx ${ttfx}/bin/ttfx --banner ${./exhibition/K230.txt} \
+      --pid-file /run/shell/exhibition.pid \
+      --on-end '${idleDimmerCommand} exhibit-end ${idleDimmerBaseArgs}'
+  '';
+  idleDimmerArgs = "${idleDimmerBaseArgs} --exhibit-exec ${exhibitionCard}";
   keyboardBased = pkgs.callPackage ./keyboard-base.nix { };
   # Clock, Timer and Weather: one Python TUI behind three k230-* commands.
   termApps = pkgs.callPackage ./term-apps { };

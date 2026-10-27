@@ -2597,6 +2597,22 @@ impl ShellClient {
         self.dirty = true;
     }
 
+    /// Flips "Idle on charger" between Clock and Sleep and stores it for the
+    /// idle step, which reads the file each time it runs. A failed write is
+    /// logged and the value still flips for this session.
+    fn toggle_charger_idle(&mut self) {
+        let choice = self.service_view.idle_on_charger.toggled();
+        self.service_view.idle_on_charger = choice;
+        if let Err(error) = k230_shell_rust::shell_prefs::write_idle_on_charger(
+            &k230_shell_rust::shell_prefs::idle_on_charger_path(),
+            choice,
+        ) {
+            self.log(&format!("idle-on-charger-preference-failed {error}"));
+        }
+        self.renderer.set_services(self.service_view.clone());
+        self.dirty = true;
+    }
+
     /// Stores the slider's level for `keyboard_based.py`, which polls it.
     fn commit_key_backlight(&mut self) {
         let Some(level) = self.service_view.key_backlight else {
@@ -3133,6 +3149,7 @@ impl ShellClient {
                 self.modem_dirty();
             }
             PanelIntent::ToggleDoNotDisturb => self.toggle_do_not_disturb(),
+            PanelIntent::ToggleChargerIdle => self.toggle_charger_idle(),
             PanelIntent::OpenDateTime | PanelIntent::OpenAbout => {
                 if self.route != Route::Settings && !self.show(qh, Route::Settings) {
                     return;
@@ -7125,6 +7142,9 @@ fn serve() -> Result<(), String> {
         service_view: ServiceView {
             do_not_disturb: k230_shell_rust::shell_prefs::read_do_not_disturb(
                 &k230_shell_rust::shell_prefs::do_not_disturb_path(),
+            ),
+            idle_on_charger: k230_shell_rust::shell_prefs::read_idle_on_charger(
+                &k230_shell_rust::shell_prefs::idle_on_charger_path(),
             ),
             ..ServiceView::default()
         },

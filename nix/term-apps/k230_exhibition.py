@@ -1,0 +1,416 @@
+#!/usr/bin/env python3
+"""Exhibition: the clock the handheld shows while idle on its charger.
+
+Opened by `k230-idle-dimmer dim` (nix/idle-dimmer/idle_dimmer.py) in a Foot
+card, on black, at the dimmed backlight. It shows the time and date, moves
+them a little every minute against burn-in, and about every five minutes plays
+one `ttfx` text effect over the committed K230 banner. Any touch or key closes
+it. It also closes, after asking the idle step to blank the display, when the
+charger goes away or after two hours.
+
+CPU is the budget: the board has one online CPU and Foot repaints in software.
+So the clock changes once a minute (no seconds), the card sleeps in select()
+between events (at most POLL_SECONDS), effects run at EFFECT_FRAME_RATE for at
+most EFFECT_MAX_SECONDS from a fixed list of finite effects, and nothing is
+drawn while the display is off.
+
+    k230_exhibition.py --ttfx PATH --banner PATH [--pid-file PATH] [--on-end CMD]
+    k230_exhibition.py --render-once WIDTHxHEIGHT      (debug: one frame)
+"""
+import argparse
+import math
+import os
+import select
+import shlex
+import subprocess
+import sys
+import time
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import k230_term_apps as apps  # noqa: E402  (sibling module in the same lib dir)
+
+POLL_SECONDS = 10
+FIRST_EFFECT_DELAY = 8
+EFFECT_INTERVAL = 300
+EFFECT_MAX_SECONDS = 20
+BANNER_HOLD_SECONDS = 4
+EFFECT_FRAME_RATE = 15
+MAX_UP_SECONDS = 2 * 3600
+RELEASE_WAIT_SECONDS = 0.25
+# Finite effects only, each measured on the host to end within the cap at the
+# frame rate above (docs/evidence/clock-display/host/README.md). decrypt and
+# spotlights run past 40 s at 15 fps and are left out.
+EFFECTS = ("slice", "expand", "slide", "middleout", "scattered", "wipe",
+           "highlight", "sweep", "beams")
+
+CLOCK_SGR = "\x1b[2;94m"
+DATE_SGR = "\x1b[2m"
+DRIFT_COLS = 6
+DRIFT_ROWS = 2
+
+POWER_SUPPLY_ROOT = "/sys/class/power_supply"
+DRM_ROOT = "/sys/class/drm"
+
+
+# ---------------------------------------------------------------------------
+# Pure decisions
+
+def effect_for(index):
+    """The effect for the `index`th play, in a fixed rotation."""
+    return EFFECTS[index % len(EFFECTS)]
+
+
+def next_effect_at(started_at, last_effect_at, interval=EFFECT_INTERVAL):
+    if last_effect_at is None:
+        return started_at + FIRST_EFFECT_DELAY
+    return last_effect_at + interval
+
+
+def drift(minute_index, max_dx=DRIFT_COLS, max_dy=DRIFT_ROWS):
+    """(dx, dy) for a minute: a stride walk over every offset in the range."""
+    width, height = 2 * max_dx + 1, 2 * max_dy + 1
+    count = width * height
+    stride = max(1, round(count * 0.43))
+    while math.gcd(stride, count) != 1:
+        stride += 1
+    k = (minute_index * stride) % count
+    return k % width - max_dx, k // width - max_dy
+
+
+def clock_layout(cols, rows, tm, minute_index):
+    """The frame for one minute: big HH:MM, a rule-free gap, the date, all
+    shifted by that minute's drift but kept entirely inside the frame."""
+    frame = apps.Frame(cols, rows)
+    text = time.strftime("%H:%M", tm)
+    date = time.strftime("%A %-d %B", tm)
+    sx, sy = apps.pick_scale(text, cols, rows, reserve_rows=9, width_fraction=0.6)
+    big_h = apps.GLYPH_ROWS * sy
+    big_w = apps.text_units(text) * sx
+    block_h = big_h + 2
+    block_w = max(big_w, len(date))
+    max_dx = max(0, min(DRIFT_COLS, (cols - block_w) // 2))
+    max_dy = max(0, min(DRIFT_ROWS, (rows - block_h) // 2))
+    # The stride walk over the room this window really has.
+    dx, dy = drift(minute_index, max_dx, max_dy)
+    top = 1 + apps.centre(block_h, rows) + dy
+    left = 1 + apps.centre(block_w, cols) + dx
+    frame.put_big(top, text, sx, sy, CLOCK_SGR, col=left + apps.centre(big_w, block_w))
+    frame.put(top + big_h + 1, left + apps.centre(len(date), block_w), date, DATE_SGR)
+    return frame
+
+
+def charger_online(root=POWER_SUPPLY_ROOT):
+    """True when any supply that is not the Battery reports online 1."""
+    try:
+        entries = sorted(Path(root).iterdir())
+    except OSError:
+        return False
+    for entry in entries:
+        try:
+            kind = (entry / "type").read_text().strip()
+            online = (entry / "online").read_text().strip()
+        except OSError:
+            continue
+        if kind != "Battery" and online == "1":
+            return True
+    return False
+
+
+def display_on(root=DRM_ROOT):
+    """False only when a connected DRM connector reports dpms Off. Anything
+    unreadable counts as on, so the card keeps drawing rather than freezing."""
+    try:
+        entries = sorted(Path(root).iterdir())
+    except OSError:
+        return True
+    seen = False
+    for entry in entries:
+        try:
+            if (entry / "status").read_text().strip() != "connected":
+                continue
+            dpms = (entry / "dpms").read_text().strip()
+        except OSError:
+            continue
+        seen = True
+        if dpms.lower() == "on":
+            return True
+    return not seen
+
+
+def needs_release(data):
+    """True when `data` holds an SGR mouse press with no release after it,
+    i.e. a touch is still down and its lift should be read before leaving."""
+    pressed = False
+    i = 0
+    while True:
+        start = data.find(b"\x1b[<", i)
+        if start < 0:
+            return pressed
+        end = start + 3
+        while end < len(data) and not 0x40 <= data[end] <= 0x7E:
+            end += 1
+        if end >= len(data):
+            return pressed
+        final = chr(data[end])
+        if final == "M":
+            pressed = True
+        elif final == "m":
+            pressed = False
+        i = end + 1
+
+
+def ttfx_command(ttfx, banner, effect):
+    return [ttfx, "-i", banner, "--frame-rate", str(EFFECT_FRAME_RATE),
+            "--anchor-text", "c", effect]
+
+
+# ---------------------------------------------------------------------------
+# Terminal side
+
+class ExhibitSession(apps.Session):
+    """The Session with every input byte reported, releases included."""
+
+    def __init__(self):
+        super().__init__(mouse=True)
+
+    def __enter__(self):
+        super().__enter__()
+        # Black default background whatever the theme says (AMOLED); undone
+        # in __exit__ with OSC 111.
+        self._write("\x1b]11;#000000\x1b\\")
+        return self
+
+    def __exit__(self, *exc):
+        self._write("\x1b]111\x1b\\")
+        return super().__exit__(*exc)
+
+    def wait(self, timeout):
+        if self.quit:
+            return [("quit",)]
+        try:
+            ready, _, _ = select.select([self.fd, self.wake_r], [], [], timeout)
+        except InterruptedError:
+            ready = []
+        events = []
+        if self.wake_r in ready:
+            try:
+                os.read(self.wake_r, 64)
+            except BlockingIOError:
+                pass
+        if self.quit:
+            return [("quit",)]
+        if self.resized:
+            self.resized = False
+            events.append(("resize",))
+        if self.fd in ready:
+            data = os.read(self.fd, 4096)
+            if not data:
+                return [("quit",)]
+            events.append(("input", data))
+        if not ready and not events:
+            events.append(("timeout",))
+        return events
+
+    def read_release(self, first):
+        """Keep the touch inside the card: read until its lift or a short
+        deadline."""
+        data = first
+        deadline = time.monotonic() + RELEASE_WAIT_SECONDS
+        while needs_release(data):
+            left = deadline - time.monotonic()
+            if left <= 0:
+                return
+            ready, _, _ = select.select([self.fd], [], [], left)
+            if not ready:
+                return
+            chunk = os.read(self.fd, 4096)
+            if not chunk:
+                return
+            data += chunk
+
+
+class Exhibition:
+    """The loop, with the clock, the machine's state and ttfx injectable."""
+
+    def __init__(self, sess, cfg, clock=time.time, charger=charger_online,
+                 display=display_on, play=None, end=None, localtime=time.localtime):
+        self.sess = sess
+        self.cfg = cfg
+        self.clock = clock
+        self.charger = charger
+        self.display = display
+        self.play = play or self.play_ttfx
+        self.end = end or self.run_on_end
+        self.localtime = localtime
+        self.started = clock()
+        self.last_effect = None
+        self.effects_played = 0
+        self.drawn_minute = None
+        self.next_poll = self.started + POLL_SECONDS
+        self.max_up = cfg.get("max_up", MAX_UP_SECONDS)
+        self.interval = cfg.get("interval", EFFECT_INTERVAL)
+
+    # -- drawing --------------------------------------------------------
+    def draw(self, now):
+        cols, rows = self.sess.size()
+        minute = int(now // 60)
+        self.sess.draw(clock_layout(cols, rows, self.localtime(now), minute))
+        self.sess._write("\x1b[?25l")
+        self.drawn_minute = minute
+
+    # -- effect ---------------------------------------------------------
+    def effect_due(self, now):
+        if not self.cfg.get("ttfx"):
+            return False
+        return now >= next_effect_at(self.started, self.last_effect, self.interval)
+
+    def play_ttfx(self, effect):
+        """Run one effect; "input" if the person touched, otherwise "done"."""
+        cfg = self.cfg
+        self.sess._write("\x1b[2J\x1b[H")
+        child = subprocess.Popen(ttfx_command(cfg["ttfx"], cfg["banner"], effect),
+                                 stdin=subprocess.DEVNULL)
+        deadline = time.monotonic() + EFFECT_MAX_SECONDS
+        result = "done"
+        try:
+            while child.poll() is None and time.monotonic() < deadline:
+                events = self.sess.wait(0.5)
+                if any(ev[0] == "quit" for ev in events):
+                    return "quit"
+                for ev in events:
+                    if ev[0] == "input":
+                        self.sess.read_release(ev[1])
+                        return "input"
+        finally:
+            if child.poll() is None:
+                child.terminate()
+            try:
+                child.wait(timeout=2)
+            except subprocess.TimeoutExpired:
+                child.kill()
+                child.wait()
+        return result
+
+    def hold_banner(self):
+        """Leave the finished banner up for a moment; "input"/"quit"/"done"."""
+        end = time.monotonic() + BANNER_HOLD_SECONDS
+        while time.monotonic() < end:
+            for ev in self.sess.wait(max(0.05, end - time.monotonic())):
+                if ev[0] == "quit":
+                    return "quit"
+                if ev[0] == "input":
+                    self.sess.read_release(ev[1])
+                    return "input"
+        return "done"
+
+    # -- ending ---------------------------------------------------------
+    def run_on_end(self):
+        command = self.cfg.get("on_end")
+        if not command:
+            return
+        try:
+            subprocess.run(shlex.split(command), timeout=15, check=False)
+        except (OSError, subprocess.SubprocessError):
+            pass
+
+    # -- the loop -------------------------------------------------------
+    def run(self):
+        """Returns why it ended: "input", "quit", "unplugged" or "cap"."""
+        lit = self.display()
+        while True:
+            now = self.clock()
+            if now >= self.next_poll:
+                self.next_poll = now + POLL_SECONDS
+                if not self.charger():
+                    self.end()
+                    return "unplugged"
+                if now - self.started >= self.max_up:
+                    self.end()
+                    return "cap"
+                lit = self.display()
+                if not lit:
+                    self.drawn_minute = None
+            if lit:
+                if self.effect_due(now):
+                    self.last_effect = now
+                    outcome = self.play(effect_for(self.effects_played))
+                    self.effects_played += 1
+                    if outcome == "done":
+                        outcome = self.hold_banner()
+                    if outcome in ("input", "quit"):
+                        return outcome
+                    self.draw(self.clock())
+                    continue
+                if self.drawn_minute != int(now // 60):
+                    self.draw(now)
+            events = self.sess.wait(self.timeout(now, lit))
+            for ev in events:
+                if ev[0] == "quit":
+                    return "quit"
+                if ev[0] == "input":
+                    self.sess.read_release(ev[1])
+                    return "input"
+                if ev[0] == "resize":
+                    self.drawn_minute = None
+
+    def timeout(self, now, lit):
+        """Seconds to sleep: the next minute, effect or poll, whichever is first."""
+        targets = [self.next_poll]
+        if lit:
+            targets.append((int(now // 60) + 1) * 60 + 0.05)
+            if self.cfg.get("ttfx"):
+                targets.append(next_effect_at(self.started, self.last_effect, self.interval))
+        return max(0.05, min(targets) - now)
+
+
+# ---------------------------------------------------------------------------
+
+def pid_file_write(path):
+    if path:
+        try:
+            Path(path).write_text(f"{os.getpid()}\n")
+        except OSError:
+            pass
+
+
+def pid_file_remove(path):
+    if path:
+        try:
+            Path(path).unlink()
+        except OSError:
+            pass
+
+
+def main(argv=None):
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--ttfx")
+    parser.add_argument("--banner")
+    parser.add_argument("--pid-file")
+    parser.add_argument("--on-end", help="command run before closing for the charger or the cap")
+    parser.add_argument("--interval", type=int, default=EFFECT_INTERVAL,
+                        help="seconds between effects (debug)")
+    parser.add_argument("--max-up", type=int, default=MAX_UP_SECONDS)
+    parser.add_argument("--render-once", metavar="WIDTHxHEIGHT")
+    args = parser.parse_args(argv)
+    if args.render_once:
+        cols, rows = (int(p) for p in args.render_once.lower().split("x"))
+        now = time.time()
+        print(clock_layout(cols, rows, time.localtime(now), int(now // 60)).plain())
+        return 0
+    if not sys.stdin.isatty():
+        print("k230-exhibition: needs a terminal", file=sys.stderr)
+        return 1
+    cfg = {"ttfx": args.ttfx, "banner": args.banner, "on_end": args.on_end,
+           "interval": args.interval, "max_up": args.max_up}
+    pid_file_write(args.pid_file)
+    try:
+        with ExhibitSession() as sess:
+            Exhibition(sess, cfg).run()
+    finally:
+        pid_file_remove(args.pid_file)
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

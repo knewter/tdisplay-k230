@@ -606,18 +606,18 @@ pub const SETTINGS_KEY_BACKLIGHT_ROW: u32 = 5;
 /// answered (`ServiceView::modem`). They are plain label-and-value rows, so
 /// they are placed from the base rows' bottom rather than by row index.
 pub const SETTINGS_MODEM_ROWS: u32 = 2;
-/// Do Not Disturb, Date and time, and About, the last plain rows before
-/// Power; always present.
+/// Do Not Disturb, Idle on charger, Date and time, and About, the last plain
+/// rows before Power; always present.
 /// They follow the modem rows when those exist, so About is the last row.
-pub const SETTINGS_INFO_ROWS: u32 = 3;
+pub const SETTINGS_INFO_ROWS: u32 = 4;
 
 /// How many plain label-and-value rows lead the Power column.
 pub fn settings_plain_row_count(modem: bool) -> u32 {
     SETTINGS_INFO_ROWS + if modem { SETTINGS_MODEM_ROWS } else { 0 }
 }
 
-/// Index among the plain rows of Do Not Disturb (`0`), Date and time (`1`)
-/// or About (`2`).
+/// Index among the plain rows of Do Not Disturb (`0`), Idle on charger (`1`),
+/// Date and time (`2`) or About (`3`).
 pub fn settings_info_row_index(modem: bool, info: u32) -> u32 {
     if modem { SETTINGS_MODEM_ROWS + info } else { info }
 }
@@ -4288,6 +4288,8 @@ fn scene(
                     rows.push(("Location \u{203a}", Glyph::Location, modem.location_label().to_string()));
                 }
                 rows.push(("Do Not Disturb", Glyph::Moon, if quiet { "On" } else { "Off" }.to_string()));
+                let charger_idle = services.map_or(crate::shell_prefs::ChargerIdle::default(), |view| view.idle_on_charger);
+                rows.push(("Idle on charger", Glyph::Clock, charger_idle.label().to_string()));
                 rows.push(("Date & time \u{203a}", Glyph::Clock, "Clock and time zone".to_string()));
                 rows.push(("About \u{203a}", Glyph::Info, "Device and build".to_string()));
                 for (index, (name, icon, value)) in rows.iter().enumerate() {

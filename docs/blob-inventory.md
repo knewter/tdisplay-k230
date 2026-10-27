@@ -2319,6 +2319,14 @@ DATA 7f87db522bd6faf4abd885b5d6d2ccc144c5b3b4b77a64ec018b834e6a8f1202 docs/evide
 DATA 4e147d7adf71287b85acd4520cf7f86128c921d6f5a15016842a4d93007ab7ce docs/evidence/a-focused-text-field/board/gtk-search-closed-keyboard-down.png
 DATA 3a0f023dccc5734c7a1505817d7074cec3565d3a91a0b21392ac49175c512428 docs/evidence/a-focused-text-field/board/foot-typing-no-flap.png
 DATA a43ab84ac42f8ff53470b7457ffc0a7062079e16e84a894c0eb633a59de5159b docs/evidence/home-notification-count/board/home-count-paging-and-shade.png
+DATA 18503cd696af72eaf4e2bf09bccfc0a28d01d867046cde5a30dea50ca720014c docs/evidence/clock-display/host/settings-modem-charger-clock-100-1232x568.png
+DATA b24c9e82ebdec6312c53dc2b6383afbc00b23082d2f57c28d9c15a450a7ffcbb docs/evidence/clock-display/host/settings-modem-charger-clock-200-1232x568.png
+DATA fedb89f7175f65e28d8094b09d1aec18920295313b5bbe0fc4772cb2db5a9d14 docs/evidence/clock-display/host/settings-modem-charger-sleep-100-1232x568.png
+DATA a7b22b301f436bc8a9d9728bfac5665b0f769f4bb08d43177c6c60e32c23787d docs/evidence/clock-display/host/settings-modem-charger-sleep-200-1232x568.png
+DATA ced3dbed070f2c6544af0e655650e279edb58bbcc8ee5d9f636b73935cf0bb78 docs/evidence/clock-display/host/settings-no-modem-charger-clock-100-1232x568.png
+DATA 7d64e3a4ba90c53b084eff25f7f3ecd5e7f19c4bae3df148fc05c17828d8d4aa docs/evidence/clock-display/host/settings-no-modem-charger-clock-200-1232x568.png
+DATA 0135b004c98b8e966e35873b5944db39f8f10cd5c6cdece1cb2d572fba5ee102 docs/evidence/clock-display/host/settings-no-modem-charger-sleep-100-1232x568.png
+DATA 802ee26b6d5412269cd2a136e10a96aed417a6c706fe7a0cbd478cbb646ebc8f docs/evidence/clock-display/host/settings-no-modem-charger-sleep-200-1232x568.png
 ```
 
 `group:` rows stand for a directory whose members are enumerated by
@@ -4286,6 +4294,21 @@ Host renders of the landscape shade (three tiles across, quiet mode off and on, 
 | `docs/evidence/do-not-disturb/host/shade-no-modem-dnd-off-200-1232x568.png` | 83675 | DATA | `d1e08c6a3cfeea0b9d727ebe3da13ccf7d011c617b51957ba52323f900990298` |
 | `docs/evidence/do-not-disturb/host/shade-no-modem-dnd-on-100-1232x568.png` | 69491 | DATA | `e76b806b6e6ab1feb082b3d61a64d7a2150ae25507bda362886f6833272245f7` |
 | `docs/evidence/do-not-disturb/host/shade-no-modem-dnd-on-200-1232x568.png` | 84252 | DATA | `55015f7afe14eb3039ac9c3748aede809a4763b8f5b08599506789fd7e21cdd5` |
+
+## Idle-on-charger Settings host renders, 2026-10-27
+
+Host renders of Settings' "Idle on charger" row (Clock and Sleep, with and without the modem, at 100% and 200%) from `render_charger_idle_evidence`, using fixture values; see `docs/evidence/clock-display/host/README.md`.
+
+| Path | Bytes | Class | SHA256 |
+| --- | ---: | --- | --- |
+| `docs/evidence/clock-display/host/settings-modem-charger-clock-100-1232x568.png` | 61877 | DATA | `18503cd696af72eaf4e2bf09bccfc0a28d01d867046cde5a30dea50ca720014c` |
+| `docs/evidence/clock-display/host/settings-modem-charger-clock-200-1232x568.png` | 58432 | DATA | `b24c9e82ebdec6312c53dc2b6383afbc00b23082d2f57c28d9c15a450a7ffcbb` |
+| `docs/evidence/clock-display/host/settings-modem-charger-sleep-100-1232x568.png` | 61742 | DATA | `fedb89f7175f65e28d8094b09d1aec18920295313b5bbe0fc4772cb2db5a9d14` |
+| `docs/evidence/clock-display/host/settings-modem-charger-sleep-200-1232x568.png` | 58008 | DATA | `a7b22b301f436bc8a9d9728bfac5665b0f769f4bb08d43177c6c60e32c23787d` |
+| `docs/evidence/clock-display/host/settings-no-modem-charger-clock-100-1232x568.png` | 82571 | DATA | `ced3dbed070f2c6544af0e655650e279edb58bbcc8ee5d9f636b73935cf0bb78` |
+| `docs/evidence/clock-display/host/settings-no-modem-charger-clock-200-1232x568.png` | 79319 | DATA | `7d64e3a4ba90c53b084eff25f7f3ecd5e7f19c4bae3df148fc05c17828d8d4aa` |
+| `docs/evidence/clock-display/host/settings-no-modem-charger-sleep-100-1232x568.png` | 82439 | DATA | `0135b004c98b8e966e35873b5944db39f8f10cd5c6cdece1cb2d572fba5ee102` |
+| `docs/evidence/clock-display/host/settings-no-modem-charger-sleep-200-1232x568.png` | 78838 | DATA | `802ee26b6d5412269cd2a136e10a96aed417a6c706fe7a0cbd478cbb646ebc8f` |
 
 ## Board evidence: Help, GTK touch floor, alerts, shade
 

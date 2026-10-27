@@ -1,6 +1,9 @@
 //! Shell-owned preferences kept in `/var/lib/k230-shell-prefs`, a
 //! shell-user directory created by `systemd.tmpfiles.rules` in
 //! `nix/shell.nix`. Do Not Disturb is the first: one word, `on` or `off`.
+//! "Idle on charger" is the second: `clock` or `sleep`, read by the idle
+//! step (`nix/idle-dimmer/idle_dimmer.py`), which keeps its own copy of the
+//! parse rule.
 //!
 //! The directory is new rather than `/var/lib/k230-keyboard-base`, which is
 //! named for the base. A missing, unreadable or unrecognised file means off,
@@ -13,6 +16,60 @@ pub const DO_NOT_DISTURB_FILE: &str = "do-not-disturb";
 
 pub fn do_not_disturb_path() -> PathBuf {
     Path::new(PREFERENCE_DIR).join(DO_NOT_DISTURB_FILE)
+}
+
+pub const IDLE_ON_CHARGER_FILE: &str = "idle-on-charger";
+
+/// What an idle display does while the charger is connected.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub enum ChargerIdle {
+    /// The exhibition clock instead of blanking (the default).
+    #[default]
+    Clock,
+    /// Dim and blank, exactly as on battery.
+    Sleep,
+}
+
+impl ChargerIdle {
+    pub fn word(self) -> &'static str {
+        match self {
+            ChargerIdle::Clock => "clock",
+            ChargerIdle::Sleep => "sleep",
+        }
+    }
+
+    /// The Settings row's value text.
+    pub fn label(self) -> &'static str {
+        match self {
+            ChargerIdle::Clock => "Clock",
+            ChargerIdle::Sleep => "Sleep",
+        }
+    }
+
+    pub fn toggled(self) -> Self {
+        match self {
+            ChargerIdle::Clock => ChargerIdle::Sleep,
+            ChargerIdle::Sleep => ChargerIdle::Clock,
+        }
+    }
+}
+
+pub fn idle_on_charger_path() -> PathBuf {
+    Path::new(PREFERENCE_DIR).join(IDLE_ON_CHARGER_FILE)
+}
+
+/// Only the exact word `sleep` (whitespace aside) selects sleep. Anything
+/// else, including a missing file, is the default: clock.
+pub fn parse_idle_on_charger(text: &str) -> ChargerIdle {
+    if text.trim() == "sleep" { ChargerIdle::Sleep } else { ChargerIdle::Clock }
+}
+
+pub fn read_idle_on_charger(path: &Path) -> ChargerIdle {
+    std::fs::read_to_string(path).map_or(ChargerIdle::Clock, |text| parse_idle_on_charger(&text))
+}
+
+pub fn write_idle_on_charger(path: &Path, choice: ChargerIdle) -> std::io::Result<()> {
+    std::fs::write(path, format!("{}\n", choice.word()))
 }
 
 /// Only the exact word `on` (whitespace aside) turns the mode on.
@@ -109,6 +166,45 @@ mod tests {
     fn writing_into_a_missing_directory_fails_without_panicking() {
         let dir = tempdir("nodir");
         assert!(write_do_not_disturb(&dir.join("gone").join(DO_NOT_DISTURB_FILE), true).is_err());
+        std::fs::remove_dir_all(&dir).unwrap();
+    }
+
+    #[test]
+    fn idle_on_charger_defaults_to_clock_and_only_sleep_disables_it() {
+        let dir = tempdir("charger-idle");
+        let path = dir.join(IDLE_ON_CHARGER_FILE);
+        assert_eq!(read_idle_on_charger(&path), ChargerIdle::Clock, "missing");
+        assert_eq!(ChargerIdle::default(), ChargerIdle::Clock);
+        for (junk, want) in [
+            ("sleep\n", ChargerIdle::Sleep),
+            (" sleep ", ChargerIdle::Sleep),
+            ("clock\n", ChargerIdle::Clock),
+            ("", ChargerIdle::Clock),
+            ("SLEEP", ChargerIdle::Clock),
+            ("sleeping", ChargerIdle::Clock),
+            ("sleep clock", ChargerIdle::Clock),
+        ] {
+            std::fs::write(&path, junk).unwrap();
+            assert_eq!(read_idle_on_charger(&path), want, "{junk:?}");
+        }
+        std::fs::write(&path, [0xff_u8, 0xfe]).unwrap();
+        assert_eq!(read_idle_on_charger(&path), ChargerIdle::Clock, "invalid UTF-8");
+        std::fs::remove_dir_all(&dir).unwrap();
+    }
+
+    #[test]
+    fn idle_on_charger_round_trips_as_one_word_and_toggles() {
+        let dir = tempdir("charger-idle-round");
+        let path = dir.join(IDLE_ON_CHARGER_FILE);
+        write_idle_on_charger(&path, ChargerIdle::Sleep).unwrap();
+        assert_eq!(std::fs::read_to_string(&path).unwrap(), "sleep\n");
+        assert_eq!(read_idle_on_charger(&path), ChargerIdle::Sleep);
+        write_idle_on_charger(&path, ChargerIdle::Clock).unwrap();
+        assert_eq!(std::fs::read_to_string(&path).unwrap(), "clock\n");
+        assert_eq!(ChargerIdle::Clock.toggled(), ChargerIdle::Sleep);
+        assert_eq!(ChargerIdle::Sleep.toggled(), ChargerIdle::Clock);
+        assert_eq!((ChargerIdle::Clock.label(), ChargerIdle::Sleep.label()), ("Clock", "Sleep"));
+        assert!(write_idle_on_charger(&dir.join("gone").join(IDLE_ON_CHARGER_FILE), ChargerIdle::Sleep).is_err());
         std::fs::remove_dir_all(&dir).unwrap();
     }
 

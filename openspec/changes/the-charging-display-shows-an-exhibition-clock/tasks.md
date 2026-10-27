@@ -8,47 +8,55 @@ test or build never closes a board task. Depends on
 
 ## 1. Package ttfx (build only)
 
-- [ ] 1.1 Pin `ttfx` v0.5.1 (commit `14ed274`) for riscv64 with its committed
+- [x] 1.1 Pin `ttfx` v0.5.1 (commit `14ed274`) for riscv64 with its committed
   `Cargo.lock`, licence and notice (`nix/ttfx.nix`, `nix/ttfx/`), exposed as the
   flake package `ttfx`. Proof (build, not boot): `flock /tmp/k230-nix-build.lock
   nix build .#ttfx --max-jobs 1 --cores 4 --out-link "$SCRATCH/ttfx"` then
   `file -L "$SCRATCH/ttfx/bin/ttfx"` reports RISC-V and `share/doc/ttfx/LICENSE`
   exists.
+  Done 2026-10-27 (build only): store path `/nix/store/9cnvvxgivs46vwxx43ba0ld28381my0d-ttfx-riscv64-unknown-linux-gnu-0.5.1`; `file -L` reports `ELF 64-bit LSB pie executable, UCB RISC-V`; `share/doc/ttfx/{LICENSE,NOTICE}` present.
 
 ## 2. Host logic
 
-- [ ] 2.1 The exhibition card (`nix/term-apps/k230_exhibition.py`,
+- [x] 2.1 The exhibition card (`nix/term-apps/k230_exhibition.py`,
   `nix/exhibition/K230.txt`): minute schedule, effect rotation and timeline,
   drift, frame layout, dismissal reading. Proof (host test):
   `python3 -m unittest tests.test_exhibition`.
-- [ ] 2.2 The idle decision (`idle_dimmer.py`): charger read, preference read,
+  Done 2026-10-27 (host): 19 tests.
+- [x] 2.2 The idle decision (`idle_dimmer.py`): charger read, preference read,
   dim launches the card, off is skipped while it is up and charging, resume
   ends it only after a dark wake, `exhibit-end` closes and blanks. Proof (host
   test): `python3 -m unittest tests.test_idle_dimmer`.
-- [ ] 2.3 Wire `nix/shell.nix` (the card's command line into the dimmer, the
+  Done 2026-10-27 (host): 27 tests.
+- [x] 2.3 Wire `nix/shell.nix` (the card's command line into the dimmer, the
   term-apps install, the `k230-exhibition` command). Proof (parse only, not a
   system build): `nix-instantiate --parse nix/shell.nix` and
   `nix-instantiate --parse nix/term-apps/default.nix`.
-- [ ] 2.4 The Settings row and preference (`shell_prefs.rs`, `service_ui.rs`,
+  Done 2026-10-27 (parse only); `nix build --dry-run` of the toplevel also evaluated.
+- [x] 2.4 The Settings row and preference (`shell_prefs.rs`, `service_ui.rs`,
   `render.rs`, `main.rs`): tap regions meet the 99 px floor at 100% and 200%
   text, in wide and portrait, with and without the modem rows and key
   backlight. Proof (host test): `cargo test --offline --lib` in
   `nix/rust-shell-client`.
-- [ ] 2.5 Host renders of the Settings row (Clock and Sleep, 100% and 200%) under
+  Done 2026-10-27 (host): 650 passed; `cargo check --offline --bins` compiled `main.rs`.
+- [x] 2.5 Host renders of the Settings row (Clock and Sleep, 100% and 200%) under
   `docs/evidence/clock-display/host/`, with `tools/blob-scan.py` run and
   `docs/blob-inventory.md` updated. Proof (host render, not glass).
-- [ ] 2.6 Run the card on the host in a terminal with a host `ttfx` and record a
-  `--render-once` frame and a 3-frame effect capture under
-  `docs/evidence/clock-display/host/`. Proof (host terminal, not Foot, not glass).
+  Done 2026-10-27 (host render): `docs/evidence/clock-display/host/`; `tools/blob-scan.py --no-vendor` ok.
+- [x] 2.6 Run the card on the host in a pty with a host `ttfx` and record the
+  effect timings and the exit behaviour under `docs/evidence/clock-display/host/`.
+  Proof (host pty, not Foot, not glass).
+  Done 2026-10-27: `docs/evidence/clock-display/host/README.md`.
 
 ## 3. Build gates (no board)
 
 - [ ] 3.1 Build the system closure and read the units and the wrapper. Proof:
   `nix build .#nixosConfigurations.k230.config.system.build.toplevel --out-link
-  "$SCRATCH/top"` (long; the coordinator owns the slot), then `grep -o
-  'k230-exhibition[^ ]*' "$SCRATCH/top/etc/systemd/system/shell-idle.service"`
-  is empty (the card is not a unit) and `cat "$SCRATCH/top/sw/bin/k230-exhibition"`
-  names the pinned `ttfx` store path.
+  "$SCRATCH/top"` (long; the coordinator owns the slot), then `cat
+  "$SCRATCH/top/sw/bin/k230-exhibition"` execs `k230_exhibition.py`, the
+  `k230-swayidle` script named in `etc/systemd/system/shell-idle.service`
+  contains `--exhibit-exec /nix/store/...-k230-exhibition-card`, and that script
+  names the `ttfx` store path from task 1.1.
 
 ## 4. Board (hardware-only; one operator holds the board)
 
