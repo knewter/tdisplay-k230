@@ -24,6 +24,10 @@ bool card_shell_down(struct sway_seat *seat, struct wlr_touch *touch, int32_t id
 bool card_shell_motion(struct sway_seat *seat, struct wlr_touch *touch, int32_t id, double x, double y, uint32_t time_msec);
 bool card_shell_up(struct sway_seat *seat, struct wlr_touch *touch, int32_t id, uint32_t time_msec);
 bool card_shell_cancel(struct sway_seat *seat);
+/* True when the card shell hides `view` although Sway counts it visible:
+ * Home is showing, or another app's card is in front. Sway's application
+ * idle inhibitors consult it (nix/card-shell.nix). */
+bool card_shell_view_hidden(struct sway_view *view);
 struct wlr_pointer_axis_event;
 bool card_shell_pointer_button(struct sway_seat *seat, uint32_t button,
     enum wl_pointer_button_state state, uint32_t time_ms);

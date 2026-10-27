@@ -66,6 +66,13 @@ let
         --replace-fail '#include "card-shell-policy.h"' '#include "sway/card-shell-policy.h"'
       substituteInPlace sway/card-keyboard-gesture.c \
         --replace-fail '#include "keyboard-gesture.h"' '#include "sway/card-keyboard-gesture.h"'
+      # An application inhibitor (mpv's) counts while Sway thinks its view
+      # is visible; the card shell hides cards at Home without telling Sway.
+      substituteInPlace sway/desktop/idle_inhibit_v1.c \
+        --replace-fail '#include "sway/desktop/idle_inhibit_v1.h"' '#include "sway/desktop/idle_inhibit_v1.h"
+#include "sway/card_shell.h"' \
+        --replace-fail 'return view && view->container && view_is_visible(view);' \
+          'return view && view->container && view_is_visible(view) && !card_shell_view_hidden(view);'
     '';
   });
   compositor = sway.override { enableXWayland = false; sway-unwrapped = unwrapped; };

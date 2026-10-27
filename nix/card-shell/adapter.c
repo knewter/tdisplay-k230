@@ -3699,6 +3699,16 @@ bool card_shell_pointer_axis(struct sway_seat *seat, struct wlr_pointer_axis_eve
     }
     return true;
 }
+bool card_shell_view_hidden(struct sway_view *view) {
+	if (!enabled() || !shell.initialized || !view) return false;
+	if (shell.home_selected) return true;
+	/* Cards stack as full-size floating windows, so only the focused one
+	 * shows. While the overview is up every card is on screen. */
+	if (shell.active) return false;
+	struct sway_seat *seat = input_manager_current_seat();
+	struct sway_container *focus = seat ? seat_get_focused_container(seat) : NULL;
+	return focus && focus->view && focus->view != view;
+}
 /* Touches swallowed because they woke a dark panel (card_shell_down). */
 static struct wake_gate wake_gate;
 void card_shell_pointer_reset(struct sway_seat *seat) {

@@ -41,3 +41,22 @@ Limits: the taps are uinput touches, so this shows that Sway receives touch
 on the off output for injected input; a webcam check that the physical panel
 lights, and a glass tap, are still open. The power key (3.3), video and
 Timer inhibit (3.5), slider while dim (3.6) and base key (3.7) were not run.
+
+## Inhibit (task 3.5), build `iw96wr9d…` (commit `93dc4efb`), 2026-10-27
+
+- **Timer focused:** last injected input 15:13:39Z; brightness 148 and power
+  true at 15:14:19, 15:14:41, 15:15:02 and 15:15:22 (103 s), while the
+  Timer counted down and expired.
+- **Video focused:** Video opened from Home at 15:28:31Z; brightness 148 and
+  power true at 15:29:08, 15:29:43 and 15:30:09. `get_tree` showed
+  `k230-video-software` focused with `inhibit_idle: true`;
+  `video-focused-playing.png` is the playing window (Big Buck Bunny test
+  clip).
+- **Back at Home (fails):** after LILYGO+Tab and a tap on the footer at
+  15:30:53Z, Home showed with nothing focused, but brightness stayed 148
+  with power true at 15:31:27 and 15:31:57, and `get_tree` still reported
+  the unfocused video's `inhibit_idle: true`. Sway re-evaluates inhibitors
+  only on some transactions, and the card shell's Home restore did not
+  trigger one. Commit after `5a1da698` calls
+  `sway_idle_inhibit_v1_check_active()` at the end of `restore()`; the
+  Home part of 3.5 is to be re-run on that build.
