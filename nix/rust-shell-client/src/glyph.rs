@@ -26,10 +26,14 @@ pub enum Glyph {
     Reboot,
     Power,
     Search,
+    /// Cellular signal; the shade's lit-bar form is `paint_signal`.
+    Signal,
+    /// Location; the shade's fix form is `paint_location`.
+    Location,
 }
 
 impl Glyph {
-    pub const ALL: [Glyph; 11] = [
+    pub const ALL: [Glyph; 13] = [
         Glyph::Wifi,
         Glyph::Sun,
         Glyph::SunSmall,
@@ -41,6 +45,8 @@ impl Glyph {
         Glyph::Reboot,
         Glyph::Power,
         Glyph::Search,
+        Glyph::Signal,
+        Glyph::Location,
     ];
 }
 
@@ -157,6 +163,93 @@ pub fn paint(cr: &Context, glyph: Glyph, x: f64, y: f64, size: f64, rgb: u32, al
             cr.line_to(21.0, 21.0);
             let _ = cr.stroke();
         }
+        Glyph::Signal => signal_path(cr),
+        Glyph::Location => pin_path(cr),
+    }
+    let _ = cr.restore();
+}
+
+/// Four bars rising to the right, each stroked as a round-capped line.
+fn signal_path(cr: &Context) {
+    for (i, height) in [5.0, 9.0, 14.0, 19.0].into_iter().enumerate() {
+        let x = 4.0 + i as f64 * 5.5;
+        cr.move_to(x, 21.0);
+        cr.line_to(x, 21.0 - height);
+    }
+    let _ = cr.stroke();
+}
+
+/// The map pin's outline: a ring on a tip, with a dot inside.
+fn pin_path(cr: &Context) {
+    cr.new_path();
+    pin_outline(cr);
+    cr.close_path();
+    let _ = cr.stroke();
+    cr.arc(12.0, 9.5, 2.0, 0.0, TAU);
+    let _ = cr.fill();
+}
+
+fn pin_outline(cr: &Context) {
+    let (cx, cy, r): (f64, f64, f64) = (12.0, 9.5, 7.0);
+    let tangent = (r / (22.0 - cy)).acos();
+    let (left, right) = (PI / 2.0 + tangent, PI / 2.0 - tangent + TAU);
+    cr.move_to(12.0, 22.0);
+    cr.line_to(cx + r * left.cos(), cy + r * left.sin());
+    cr.arc(cx, cy, r, left, right);
+    cr.line_to(12.0, 22.0);
+}
+
+/// The shade's signal glyph: `lit` of four bars at full strength and the rest
+/// faint; `no_service` draws all four faint under a slash.
+pub fn paint_signal(cr: &Context, lit: u8, no_service: bool, x: f64, y: f64, size: f64, rgb: u32) {
+    let _ = cr.save();
+    cr.translate(x, y);
+    let unit = size / 24.0;
+    cr.scale(unit, unit);
+    cr.set_line_width(stroke_width(size) / unit);
+    cr.set_line_cap(LineCap::Round);
+    cr.set_line_join(LineJoin::Round);
+    for i in 0..4u8 {
+        let lit_bar = !no_service && i < lit;
+        color(cr, rgb, if lit_bar { 1.0 } else { 0.3 });
+        let height = [5.0, 9.0, 14.0, 19.0][usize::from(i)];
+        let bar_x = 4.0 + f64::from(i) * 5.5;
+        cr.move_to(bar_x, 21.0);
+        cr.line_to(bar_x, 21.0 - height);
+        let _ = cr.stroke();
+    }
+    if no_service {
+        color(cr, rgb, 1.0);
+        cr.move_to(3.0, 3.0);
+        cr.line_to(21.0, 21.0);
+        let _ = cr.stroke();
+    }
+    let _ = cr.restore();
+}
+
+/// The shade's location glyph: a solid pin once there is a fix, an outline
+/// while searching.
+pub fn paint_location(cr: &Context, fix: bool, x: f64, y: f64, size: f64, rgb: u32) {
+    let _ = cr.save();
+    cr.translate(x, y);
+    let unit = size / 24.0;
+    cr.scale(unit, unit);
+    cr.set_line_width(stroke_width(size) / unit);
+    cr.set_line_cap(LineCap::Round);
+    cr.set_line_join(LineJoin::Round);
+    color(cr, rgb, 1.0);
+    if fix {
+        cr.new_path();
+        pin_outline(cr);
+        cr.close_path();
+        cr.new_sub_path();
+        cr.arc(12.0, 9.5, 2.6, 0.0, TAU);
+        cr.set_fill_rule(cairo::FillRule::EvenOdd);
+        let _ = cr.fill_preserve();
+        let _ = cr.stroke();
+    } else {
+        color(cr, rgb, 0.7);
+        pin_path(cr);
     }
     let _ = cr.restore();
 }

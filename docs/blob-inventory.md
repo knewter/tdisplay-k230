@@ -2204,6 +2204,22 @@ DATA e6035e1ecd65eafc79b32e6c978bac2c44da61262f730e48811b52dfdc7cbe79 docs/evide
 DATA 643da8791a919160b1d0b84b58616025febcaf0674143ffaaf3b8f618e8c2712 docs/evidence/design-review-leftovers/build-qh3i7b3f/timer-t2-minus2.png
 DATA 3963702782ed820274a077e7f8985bee545317fc43a8ae57193a1ac0e6c3f685 docs/evidence/design-review-leftovers/build-qh3i7b3f/timer-t3-start.png
 DATA 643da8791a919160b1d0b84b58616025febcaf0674143ffaaf3b8f618e8c2712 docs/evidence/design-review-leftovers/build-qh3i7b3f/timer-t4-reset.png
+DATA c85f4021902b8189254f6683290c85abc90314592827aebf283cd09a0b0070a9 docs/evidence/nrf9151/shell/host/cellular-no-sim-1232x568.png
+DATA 799a4c333cd811e18a245e8c78d4321641617b7ac7099311fd81c1f378efdd9b docs/evidence/nrf9151/shell/host/cellular-off-1232x568.png
+DATA b5f780d2421ceab8f1b00a930d4c4815334759d82099d4f7e5a83c4df14deea2 docs/evidence/nrf9151/shell/host/cellular-pin-1232x568.png
+DATA 2219d75492bf0b6ea234d9394321c3c74eeb9444f59e0d31413eadfe6751ec22 docs/evidence/nrf9151/shell/host/cellular-registered-1232x568.png
+DATA bd9ddb325b0de1968dfd44cbbfb1847186f9d340e3759a89211763db61051652 docs/evidence/nrf9151/shell/host/location-fix-1232x568.png
+DATA 0e3a0380935ea6f252b3808669b10ea2ffc2395f6df929c9b0c2e13828fb41bb docs/evidence/nrf9151/shell/host/location-off-1232x568.png
+DATA f2349ee140e8c47a067c17da59ada989de2b0b85623592568c8f56ecef1cdc64 docs/evidence/nrf9151/shell/host/location-searching-1232x568.png
+DATA b5da8264118b3ed15c47ebedac04580ab237b694965508532880607783a4fb3d docs/evidence/nrf9151/shell/host/settings-no-modem-1232x568.png
+DATA 3008eebb06ab7418fcaee1d030f688c0997b2628f6fac6241ccf4a90c9261804 docs/evidence/nrf9151/shell/host/settings-with-modem-1232x568.png
+DATA c5addf45b783fa6bc7535490d240cf9b2ece6fa918f5c6e3d451a5c1cdcfe90e docs/evidence/nrf9151/shell/host/settings-with-modem-no-sim-1232x568.png
+DATA 97ae17b3b6f5f9134bcac568a2b5da42fce12f1786bff574895fd80097d16e4f docs/evidence/nrf9151/shell/host/shade-both-off-1232x568.png
+DATA 03ca1b30d63eccd95480330ce8c1bbbde74d70db7d2d60e5ab9d47097a77dbb1 docs/evidence/nrf9151/shell/host/shade-both-searching-1232x568.png
+DATA 387a0f55f3eefe14779b63c7b8d7d0ad19c51d82e4ea96c7806a57e55f045e15 docs/evidence/nrf9151/shell/host/shade-both-searching-no-battery-1232x568.png
+DATA b8a86e5bc1196becc6376911e78b5bae384f4d6fb70c6da5cafa62fde7ba857b docs/evidence/nrf9151/shell/host/shade-cellular-3-bars-1232x568.png
+DATA f7ba6d11898be9a13ebf17d8f043b056e88d56ae483c138b7e4d715f231e33ea docs/evidence/nrf9151/shell/host/shade-fix-no-service-1232x568.png
+DATA 97ae17b3b6f5f9134bcac568a2b5da42fce12f1786bff574895fd80097d16e4f docs/evidence/nrf9151/shell/host/shade-no-modem-1232x568.png
 ```
 
 `group:` rows stand for a directory whose members are enumerated by
@@ -4047,3 +4063,26 @@ Native `grim` captures of the charger line, the framed chooser slices and the Ti
 | `docs/evidence/design-review-leftovers/build-qh3i7b3f/timer-t2-minus2.png` | 8197 | DATA | `643da8791a919160b1d0b84b58616025febcaf0674143ffaaf3b8f618e8c2712` |
 | `docs/evidence/design-review-leftovers/build-qh3i7b3f/timer-t3-start.png` | 8081 | DATA | `3963702782ed820274a077e7f8985bee545317fc43a8ae57193a1ac0e6c3f685` |
 | `docs/evidence/design-review-leftovers/build-qh3i7b3f/timer-t4-reset.png` | 8197 | DATA | `643da8791a919160b1d0b84b58616025febcaf0674143ffaaf3b8f618e8c2712` |
+
+## Modem shell UI host renders, 2026-10-26
+
+Host renders of the Cellular and Location pages and the shade indicators from fake state files; see `docs/evidence/nrf9151/shell/host/README.md`.
+
+| Path | Bytes | Class | SHA256 |
+| --- | ---: | --- | --- |
+| `docs/evidence/nrf9151/shell/host/cellular-no-sim-1232x568.png` | 39393 | DATA | `c85f4021902b8189254f6683290c85abc90314592827aebf283cd09a0b0070a9` |
+| `docs/evidence/nrf9151/shell/host/cellular-off-1232x568.png` | 38697 | DATA | `799a4c333cd811e18a245e8c78d4321641617b7ac7099311fd81c1f378efdd9b` |
+| `docs/evidence/nrf9151/shell/host/cellular-pin-1232x568.png` | 49156 | DATA | `b5f780d2421ceab8f1b00a930d4c4815334759d82099d4f7e5a83c4df14deea2` |
+| `docs/evidence/nrf9151/shell/host/cellular-registered-1232x568.png` | 44146 | DATA | `2219d75492bf0b6ea234d9394321c3c74eeb9444f59e0d31413eadfe6751ec22` |
+| `docs/evidence/nrf9151/shell/host/location-fix-1232x568.png` | 18148 | DATA | `bd9ddb325b0de1968dfd44cbbfb1847186f9d340e3759a89211763db61051652` |
+| `docs/evidence/nrf9151/shell/host/location-off-1232x568.png` | 17652 | DATA | `0e3a0380935ea6f252b3808669b10ea2ffc2395f6df929c9b0c2e13828fb41bb` |
+| `docs/evidence/nrf9151/shell/host/location-searching-1232x568.png` | 20935 | DATA | `f2349ee140e8c47a067c17da59ada989de2b0b85623592568c8f56ecef1cdc64` |
+| `docs/evidence/nrf9151/shell/host/settings-no-modem-1232x568.png` | 63650 | DATA | `b5da8264118b3ed15c47ebedac04580ab237b694965508532880607783a4fb3d` |
+| `docs/evidence/nrf9151/shell/host/settings-with-modem-1232x568.png` | 72644 | DATA | `3008eebb06ab7418fcaee1d030f688c0997b2628f6fac6241ccf4a90c9261804` |
+| `docs/evidence/nrf9151/shell/host/settings-with-modem-no-sim-1232x568.png` | 71564 | DATA | `c5addf45b783fa6bc7535490d240cf9b2ece6fa918f5c6e3d451a5c1cdcfe90e` |
+| `docs/evidence/nrf9151/shell/host/shade-both-off-1232x568.png` | 60791 | DATA | `97ae17b3b6f5f9134bcac568a2b5da42fce12f1786bff574895fd80097d16e4f` |
+| `docs/evidence/nrf9151/shell/host/shade-both-searching-1232x568.png` | 62196 | DATA | `03ca1b30d63eccd95480330ce8c1bbbde74d70db7d2d60e5ab9d47097a77dbb1` |
+| `docs/evidence/nrf9151/shell/host/shade-both-searching-no-battery-1232x568.png` | 60154 | DATA | `387a0f55f3eefe14779b63c7b8d7d0ad19c51d82e4ea96c7806a57e55f045e15` |
+| `docs/evidence/nrf9151/shell/host/shade-cellular-3-bars-1232x568.png` | 61061 | DATA | `b8a86e5bc1196becc6376911e78b5bae384f4d6fb70c6da5cafa62fde7ba857b` |
+| `docs/evidence/nrf9151/shell/host/shade-fix-no-service-1232x568.png` | 62186 | DATA | `f7ba6d11898be9a13ebf17d8f043b056e88d56ae483c138b7e4d715f231e33ea` |
+| `docs/evidence/nrf9151/shell/host/shade-no-modem-1232x568.png` | 60791 | DATA | `97ae17b3b6f5f9134bcac568a2b5da42fce12f1786bff574895fd80097d16e4f` |

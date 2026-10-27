@@ -408,68 +408,81 @@ fn a_failed_send_aborts_the_prompt_with_escape() {
 }
 
 #[test]
-fn nmea_burst_goes_to_the_pty_and_sets_the_gnss_state() {
-    let gga0 = with_checksum("GPGGA,000000.00,0100.0000,N,00100.0000,E,0,00,99.9,0.0,M,,M,,");
-    let gga1 = with_checksum("GPGGA,000001.00,0100.0000,N,00100.0000,E,1,06,1.2,0.0,M,,M,,");
-    let gsv = with_checksum("GPGSV,1,1,02,01,00,000,30,02,00,000,31");
-    let rmc = with_checksum("GNRMC,000001.00,A,0100.0000,N,00100.0000,E,0.0,0.0,010100,,,A");
+fn xgps_fixes_become_nmea_on_the_pty_and_set_the_gnss_state() {
+    // The URC forms are those the base's SLM 2.9.0 sent on 2026-10-26
+    // (status lines) and its documented fix form (UNVERIFIED: no fix yet).
     let t = format!(
         "{POWER_ON}
-> AT#XGNSS=0
-< OK
-> AT#XNMEA=1
-< OK
 > AT+CFUN=4
 < OK
 > AT%XSYSTEMMODE=0,0,1,0
 < OK
 > AT+CFUN=31
 < OK
-> AT#XNMEA=1
+> AT#XGPS=1,0,1
 < OK
-> AT#XGNSS=1,0,0,0
-< OK
-< #XGNSSNMEA: {gga0}
-< #XGNSSNMEA: {gsv}
-< #XGNSSNMEA: \"{gga1}\"
-< #XGNSSNMEA: {rmc}
-< #XGNSSNMEA: $GPGGA,garbled*00
+< #XGPS: 1,1
+< #XGPS: 1.000000,1.000000,0.0,5.0,0.0,0.0,\"2026-10-26 00:00:01\"
+< #XGPS: 91,garbled,0,0,0,0,\"x\"
 "
-    )
-    .replace("> AT#XGNSS=0\n< OK\n", "");
+    );
     let mut r = rig(&t);
     r.modem.set_radio(Radio::Gnss).unwrap();
     assert!(r.h.script_done());
     assert_eq!(r.modem.state.gnss, GnssState::Searching);
     assert_eq!(r.modem.state.sim, SimState::Unknown, "no cellular fields in GNSS-only");
-    for _ in 0..5 {
+    for _ in 0..4 {
         r.modem.poll(Duration::from_millis(1)).unwrap();
-        if r.nmea.borrow().len() == 1 {
-            assert_eq!(r.modem.state.gnss, GnssState::Searching);
-        }
     }
-    assert_eq!(*r.nmea.borrow(), vec![gga0, gsv, gga1, rmc], "bad checksum dropped, quotes stripped");
+    let nmea = r.nmea.borrow().clone();
+    assert_eq!(nmea.len(), 2, "one fix gives GGA and RMC; the garbled line is dropped");
+    assert!(nmea[0].starts_with("$GPGGA,000001.00,0100.0000,N,00100.0000,E,1"));
+    assert!(nmea[1].starts_with("$GPRMC,000001.00,A,"));
     assert_eq!(r.modem.state.gnss, GnssState::Fix);
     let log = r.log.borrow().join("\n");
-    assert!(!log.contains("GPGGA") && !log.contains("0100.0000"), "positions must not be logged");
+    assert!(!log.contains("1.000000") && !log.contains("0100.0000") && !log.contains("garbled"), "positions must not be logged");
     assert!(!json(&r).contains("0100.0000"));
+}
+
+#[test]
+fn legacy_nmea_urcs_still_reach_the_pty() {
+    let gga0 = with_checksum("GPGGA,000000.00,0100.0000,N,00100.0000,E,0,00,99.9,0.0,M,,M,,");
+    let gga1 = with_checksum("GPGGA,000001.00,0100.0000,N,00100.0000,E,1,06,1.2,0.0,M,,M,,");
+    let t = format!(
+        "{POWER_ON}
+> AT+CFUN=4
+< OK
+> AT%XSYSTEMMODE=0,0,1,0
+< OK
+> AT+CFUN=31
+< OK
+> AT#XGPS=1,0,1
+< OK
+< #XGNSSNMEA: {gga0}
+< #XGNSSNMEA: \"{gga1}\"
+< #XGNSSNMEA: $GPGGA,garbled*00
+"
+    );
+    let mut r = rig(&t);
+    r.modem.set_radio(Radio::Gnss).unwrap();
+    for _ in 0..4 {
+        r.modem.poll(Duration::from_millis(1)).unwrap();
+    }
+    assert_eq!(*r.nmea.borrow(), vec![gga0, gga1], "bad checksum dropped, quotes stripped");
+    assert_eq!(r.modem.state.gnss, GnssState::Fix);
 }
 
 #[test]
 fn turning_location_off_stops_gnss_and_powers_down() {
     let t = format!(
         "{POWER_ON}
-> AT#XNMEA=1
-< OK
 > AT+CFUN=4
 < OK
 > AT%XSYSTEMMODE=0,0,1,0
 < OK
 > AT+CFUN=31
 < OK
-> AT#XNMEA=1
-< OK
-> AT#XGNSS=1,0,0,0
+> AT#XGPS=1,0,1
 < OK
 > AT+CFUN=0
 < OK

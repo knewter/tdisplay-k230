@@ -256,6 +256,30 @@ impl Modem {
             self.pending_cmt = Some(CmtHeader { from, time, udhi: fo & 0x40 != 0 });
             return true;
         }
+        if l.starts_with("#XGPS:") {
+            match nmea::parse_xgps(l) {
+                Some(nmea::Xgps::Fix(sentences)) => {
+                    for s in sentences {
+                        self.on_nmea(&s);
+                    }
+                }
+                Some(nmea::Xgps::Status(status)) => {
+                    self.log(&format!("< #XGPS: 1,{status}"));
+                    if self.state.gnss != GnssState::Off {
+                        if status == 0 {
+                            self.state.gnss = GnssState::Off;
+                            self.gnss_running = false;
+                        } else if status != 4 {
+                            self.state.gnss = GnssState::Searching;
+                        }
+                    }
+                }
+                // Never logged: a line this parser rejects may still carry
+                // a position.
+                None => self.log("< #XGPS <withheld>"),
+            }
+            return true;
+        }
         if l.starts_with("#XGNSSNMEA:") {
             if let Some(s) = nmea::parse_urc(l) {
                 self.on_nmea(&s);
@@ -467,7 +491,7 @@ impl Modem {
         let tc = self.timeouts.cfun;
 
         if self.gnss_running && !target.location() {
-            self.soft("AT#XGNSS=0", t)?;
+            self.soft("AT#XGPS=0", t)?;
             self.gnss_running = false;
             self.state.gnss = GnssState::Off;
         }
@@ -479,10 +503,9 @@ impl Modem {
             // go quiet with 4 first; 4 does not write the network context
             // to flash the way 0 does.
             if self.gnss_running {
-                self.soft("AT#XGNSS=0", t)?;
+                self.soft("AT#XGPS=0", t)?;
                 self.gnss_running = false;
             }
-            self.soft("AT#XNMEA=1", t)?;
             self.soft("AT+CFUN=4", tc)?;
             self.soft("AT%XSYSTEMMODE=0,0,1,0", t)?;
             self.soft("AT+CFUN=31", tc)?;
@@ -523,8 +546,8 @@ impl Modem {
         }
 
         if target.location() && !self.gnss_running {
-            self.soft("AT#XNMEA=1", t)?;
-            match self.exec("AT#XGNSS=1,0,0,0", t) {
+            // Continuous navigation without cloud assistance.
+            match self.exec("AT#XGPS=1,0,1", t) {
                 Ok(_) => {
                     self.gnss_running = true;
                     self.state.gnss = GnssState::Searching;

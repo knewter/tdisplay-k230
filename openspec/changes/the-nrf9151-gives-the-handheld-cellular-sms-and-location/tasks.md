@@ -34,9 +34,16 @@ with `<redacted>` and the redaction is noted:
   commit the redacted output to `docs/evidence/nrf9151/probe/`. Also commit
   the operator's notes on the fitted antennas and SIM, with a **camera** frame
   of the base's antenna connectors if visible.
-- [ ] 1.3 With GNSS on, using the vendor recipe for 60 s, measure the NMEA URC
-  byte rate against 115200 baud and record any framing errors from
-  `/proc/tty/driver/serial`. Proof (**board-read**).
+- [ ] 1.3 With GNSS on for 60 s, measure the GNSS URC byte rate against
+  115200 baud and record any framing errors from `/proc/tty/driver/serial_8250`.
+  The vendor recipe (`AT#XNMEA`, `AT#XGNSS`) answers `ERROR` on this unit. The
+  firmware starts GNSS with `AT#XGPS=1,0,1` and has no NMEA output
+  (2026-10-26, `docs/evidence/nrf9151/gnss-rate/`). Proof (**board-read**).
+- [x] 1.4 Switch the service to `AT#XGPS`, and convert `#XGPS:` fixes into
+  GGA and RMC sentences on the NMEA pty. Proof (**host**): `cargo test
+  --offline` in `nix/k230-modem`, including a fix transcript whose position
+  never reaches the log or the state file. Done (host): 41 tests pass,
+  including `xgps_fixes_become_nmea_on_the_pty_and_set_the_gnss_state`.
 
 ## 2. Device tree (device tree)
 
@@ -128,13 +135,18 @@ These tasks need a GNSS antenna and sky view.
 
 ## 6. Shell use (Rust shell client)
 
-- [ ] 6.1 Add the shade's cellular and location indicators, the Settings
+- [x] 6.1 Add the shade's cellular and location indicators, the Settings
   Cellular and Location pages, PIN entry, and clearing stored messages. All
   of them are hidden until the modem has answered once. Proof (**host**):
   `cargo test` in `nix/rust-shell-client`, plus host renders from fake state
   files at 568x1232 and 1232x568.
-- [ ] 6.2 Route the service's SMS events to the notification center with the
+  Done (host): 612 lib tests pass; renders in
+  `docs/evidence/nrf9151/shell/host/`.
+- [x] 6.2 Route the service's SMS events to the notification center with the
   hidden-body preview. Proof (**host**): a test feeding a fake SMS event.
+  Done (host): the shell tails the service's `sms.jsonl` store, since the
+  service has no event channel. The notification source is "Shell", with the
+  sender in the summary.
 - [ ] 6.3 On the board, capture with `grim`: the shade indicators, both
   Settings pages, and an SMS preview and history entry. Record the operator
   turning Location on through Settings and the choice surviving a reboot.

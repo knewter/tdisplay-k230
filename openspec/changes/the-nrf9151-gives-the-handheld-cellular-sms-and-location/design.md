@@ -49,6 +49,20 @@ Sources read for this design:
 - GNSS: `AT#XNMEA=1`, `AT%XSYSTEMMODE=0,0,1,0`, `AT+CFUN=31`,
   `AT#XGNSS=1,0,0,0`. That is GNSS-only, with LTE off.
 
+**What the fitted unit accepts (board probe, 2026-10-26).** The installed
+firmware does not match the vendor recipe:
+
+- `AT#XCLAC` lists no `#XNMEA` and no `#XGNSS`, and both answer `ERROR`.
+- GNSS is `AT#XGPS=<op>[,<cloud_assistance>,<interval>[,<timeout>]]`:
+  - `AT#XGPS=1,0,1` (continuous) answers `OK` and `#XGPS: 1,1`;
+  - `AT#XGPS=1,0,0` (single fix) answers `#XGPS: 1,3` after 60 s indoors;
+  - `AT#XGPS=1,0,1,180` answers `ERROR`, because a timeout is only valid for
+    periodic navigation.
+- No NMEA output exists. A fix arrives as
+  `#XGPS: <lat>,<lon>,<alt>,<accuracy>,<speed>,<heading>,"<datetime>"`.
+
+See `docs/evidence/nrf9151/gnss-rate/`.
+
 **UART3 pads.** UART3 is available on IO50/51 (wired to CH342 channel 1) and
 IO28/29 (wired to the nRF). LILYGO's own kernel patch `0061` forces IO50/51
 back to GPIO for this reason.
@@ -173,15 +187,18 @@ that path is the socket, and nothing is stored.
 
 ### 6. GNSS through `gpsd` (userspace, Nix)
 
-The service writes `#XGNSSNMEA:` payloads, stripped of the prefix, to a pty at
-`/run/k230/modem/nmea`. `gpsd` is started on demand against that pty, so any
+The service starts continuous navigation with `AT#XGPS=1,0,1` and stops it
+with `AT#XGPS=0`. Each `#XGPS:` fix is turned into a GGA and an RMC sentence,
+which the service writes to a pty at `/run/k230/modem/nmea`.
+`#XGPS: 1,<status>` lines set "searching" or "off". A `#XGNSSNMEA:` payload
+from the vendor's firmware is still passed through. `gpsd` is started on demand against that pty, so any
 `gpsd` client works.
 
 GNSS and LTE share one radio. On the nRF91, GNSS runs only while LTE is idle,
 or with LTE off:
 - Location alone uses the vendor's GNSS-only recipe, which gives the fastest
   fix.
-- Location while Cellular is on uses system mode `1,1,1,0` with `AT#XGNSS`, and
+- Location while Cellular is on uses system mode `1,1,1,0` with `AT#XGPS`, and
   accepts slower or interrupted fixes. The UI says "searching" honestly rather
   than inventing a position.
 
@@ -204,10 +221,10 @@ No position is written to disk by the service.
 
 ## Risks / Trade-offs
 
-- **No flow control.** The UART is at 115200 with no flow control, so NMEA
-  bursts at 1 Hz with satellites enabled could overrun. Mitigation: measure
-  the URC rate in the probe. If needed, disable satellite sentences
-  (`AT#XNMEA`) or lower the rate.
+- **No flow control.** The UART is at 115200 with no flow control. The
+  installed firmware sends at most one short `#XGPS:` fix line per second
+  rather than an NMEA burst, so overrun is unlikely. Task 1.3 measures the
+  rate and the UART error counters.
 - **The second console channel is lost.** Mitigation: it is documented here,
   and the first boot re-checks channel 0.
 - **Auto-connect** could attach to a network before the service sets the

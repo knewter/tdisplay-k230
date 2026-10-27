@@ -51,6 +51,8 @@ use k230_shell_rust::{
     video_status::{self, VideoStatus},
     video_visibility::{self, should_decode},
     video_wallpaper::{VideoEvent, VideoKey, VideoWallpaper},
+    modem::{self, ModemReply, ModemWorker, SmsTail},
+    modem_ui::{self, Intent as ModemIntent, ModemView, Page as ModemPage},
     wifi_settings::{Kind as WifiKind, WifiRequest, WifiResult, WifiWorker},
     wifi_ui::{self, key_event_intent, Intent as WifiIntent, Page as WifiPage, WifiView},
     Route, TouchTrace,
@@ -1214,6 +1216,15 @@ struct ShellClient {
     wifi_view: WifiView,
     wifi_origin_scroll: f64,
     wifi_dragged: bool,
+    /// The nRF9151 modem service's control socket and the Cellular and
+    /// Location pages' state (`modem`, `modem_ui`). The status is `None`
+    /// until the service reports the modem has answered, which keeps every
+    /// modem control hidden.
+    modem_worker: ModemWorker,
+    modem_view: ModemView,
+    modem_state_path: PathBuf,
+    modem_sms: SmsTail,
+    modem_polled_at: Option<Instant>,
     themes: ThemeWorker,
     theme_view: ThemeView,
     theme_carousel: Carousel,
@@ -1568,6 +1579,11 @@ fn service_exit_label(route: Route) -> &'static str {
 /// A successful brightness change or keyboard toggle is its own feedback
 /// (the panel dims, the keyboard slides in), so its bare "requested" state
 /// is not shown as a message; a failure still is.
+/// A path from the environment, for tests and QEMU; `default` otherwise.
+fn env_path(name: &str, default: &str) -> PathBuf {
+    std::env::var_os(name).map(PathBuf::from).unwrap_or_else(|| PathBuf::from(default))
+}
+
 fn suppresses_action_message(request: &ServiceRequest, outcome_error: Option<&str>) -> bool {
     matches!(request, ServiceRequest::Brightness(_) | ServiceRequest::KeyboardToggle) && outcome_error.is_none()
 }
@@ -1632,6 +1648,88 @@ impl ShellClient {
         }
         Ok(VideoPlayback::new(key, ffmpeg, ffprobe))
     }
+    /// Hands the renderer the modem's state and the open page, if any.
+    fn modem_dirty(&mut self) {
+        self.service_view.modem = self.modem_view.status.clone();
+        self.service_view.modem_page = self.modem_view.public();
+        self.renderer.set_services(self.service_view.clone());
+        self.dirty = true;
+    }
+
+    fn close_modem_page(&mut self) {
+        if self.modem_view.page != ModemPage::Closed {
+            self.modem_view.close();
+            self.modem_dirty();
+        }
+    }
+
+    /// Re-reads the modem service's state, and announces texts that have
+    /// arrived since the last look. Never logs a PIN, a number or a body.
+    fn refresh_modem(&mut self) {
+        let status = modem::read_status(&self.modem_state_path);
+        if status != self.modem_view.status {
+            self.modem_view.set_status(status);
+            self.modem_dirty();
+        }
+        for text in self.modem_sms.poll() {
+            let (summary, body) = modem::notification_for(&text);
+            let request = ServiceRequest::NotificationEmit { summary, body };
+            if let Err(error) = self.services.try_submit(request) {
+                self.log(&format!("sms-notification-failed {error}"));
+            }
+        }
+    }
+
+    /// Polls the modem service's files: often while the shade or Settings is
+    /// showing, slowly otherwise (a text still reaches the shade's history).
+    fn tick_modem(&mut self, now: Instant) {
+        let visible = matches!(self.route, Route::Shade | Route::Settings);
+        let every = Duration::from_secs(if visible { 2 } else { 10 });
+        if self.modem_polled_at.is_none_or(|last| now.duration_since(last) >= every) {
+            self.modem_polled_at = Some(now);
+            self.refresh_modem();
+        }
+    }
+
+    fn modem_action(&mut self, intent: ModemIntent) {
+        let command = match intent {
+            ModemIntent::Back => {
+                self.close_modem_page();
+                return;
+            }
+            ModemIntent::Digit(digit) => {
+                self.modem_view.digit(digit);
+                None
+            }
+            ModemIntent::Backspace => {
+                self.modem_view.backspace();
+                None
+            }
+            ModemIntent::Toggle => self.modem_view.toggle_command(),
+            ModemIntent::SubmitPin => self.modem_view.pin_command(),
+            ModemIntent::ClearMessages => self.modem_view.clear_command(),
+        };
+        if let Some(command) = command {
+            if let Err(error) = self.modem_worker.try_submit(command) {
+                self.modem_view.submit_failed("Request failed");
+                self.log(&format!("modem-submit-failed {error}"));
+            }
+        }
+        self.modem_dirty();
+    }
+
+    fn modem_reply(&mut self, reply: ModemReply) {
+        if let Err(code) = &reply.result {
+            // The code word only; replies never repeat a PIN or a number.
+            self.log(&format!("modem-request-failed {:?} {code}", reply.kind));
+        }
+        if self.modem_view.accept(&reply) {
+            // The service publishes its new state as it finishes.
+            self.refresh_modem();
+            self.modem_dirty();
+        }
+    }
+
     fn wifi_dirty(&mut self) {
         self.sync_wifi_keyboard();
         self.service_view.wifi = Some(self.wifi_view.public());
@@ -2373,11 +2471,13 @@ impl ShellClient {
             // drag) shows here as well (task: "sync the value").
             Route::Shade => {
                 self.refresh_keyboard_base();
+                self.refresh_modem();
                 self.submit_service(ServiceRequest::RefreshNotifications);
                 self.submit_service(ServiceRequest::RefreshSettings);
             }
             Route::Settings | Route::Power => {
                 self.refresh_keyboard_base();
+                self.refresh_modem();
                 self.submit_service(ServiceRequest::RefreshSettings);
             }
             _ => {}
@@ -2740,6 +2840,14 @@ impl ShellClient {
             // drag itself already triggered.
             return;
         }
+        if let ServiceRequest::NotificationEmit { .. } = reply.request {
+            // The banner's poll picks the new event up. Only a failure is
+            // logged, and the log never carries the text.
+            if let Err(error) = &reply.result {
+                self.log(&format!("sms-notification-failed {error}"));
+            }
+            return;
+        }
         if let ServiceRequest::PreviewPoll = reply.request {
             self.banner_poll_inflight = false;
             let next = match reply.result {
@@ -2929,6 +3037,15 @@ impl ShellClient {
             PanelIntent::OpenWifi => {
                 let request = self.wifi_view.open();
                 self.submit_wifi(request);
+            }
+            PanelIntent::OpenCellular | PanelIntent::OpenLocation => {
+                self.refresh_modem();
+                self.modem_view.open(if intent == PanelIntent::OpenCellular {
+                    ModemPage::Cellular
+                } else {
+                    ModemPage::Location
+                });
+                self.modem_dirty();
             }
             PanelIntent::Request(request) => {
                 let accepted = self.submit_service(request.clone());
@@ -4267,6 +4384,9 @@ impl ShellClient {
             self.service_view.wifi = None;
             self.renderer.set_services(self.service_view.clone());
         }
+        if route != Route::Settings {
+            self.close_modem_page();
+        }
         if self.route != route {
             self.help_home_result = None;
             self.service_view.navigation_aid = false;
@@ -4329,6 +4449,9 @@ impl ShellClient {
             self.sync_wifi_keyboard();
             self.service_view.wifi = None;
             self.renderer.set_services(self.service_view.clone());
+        }
+        if message.surface != Route::Settings {
+            self.close_modem_page();
         }
         if self.route != message.surface {
             self.panel_start = None;
@@ -4456,6 +4579,7 @@ impl ShellClient {
         self.wifi_view.close();
         self.sync_wifi_keyboard();
         self.service_view.wifi = None;
+        self.close_modem_page();
         self.renderer.set_services(self.service_view.clone());
         self.theme_view = ThemeView::default();
         self.renderer.set_theme_view(self.theme_view.clone());
@@ -5246,6 +5370,7 @@ impl ShellClient {
                     // needs (`theme_view.page == ThemePage::Controls`).
                     let on_settings_capabilities_page = self.route != Route::Settings
                         || (self.wifi_view.page == WifiPage::Closed
+                            && self.modem_view.page == ModemPage::Closed
                             && self.theme_view.page == ThemePage::Controls);
                     // The wide (landscape) Settings page keeps its sliders in
                     // the first column; the track is that column's, not the
@@ -5699,7 +5824,11 @@ impl ShellClient {
                             }
                             self.dirty = true;
                         } else if self.route == Route::Settings {
-                            if self.wifi_view.page != WifiPage::Closed {
+                            if let Some(page) = self.modem_view.public() {
+                                if let Some(intent) = modem_ui::hit(&page, start, point, self.width, self.height) {
+                                    self.modem_action(intent);
+                                }
+                            } else if self.wifi_view.page != WifiPage::Closed {
                                 if !self.wifi_dragged {
                                     if let Some(intent) = wifi_ui::hit(
                                         &self.wifi_view.public(),
@@ -6158,6 +6287,7 @@ impl ShellClient {
             } else if self.route == Route::Settings
                 && self.input_ready
                 && self.wifi_view.page == WifiPage::Closed
+                && self.modem_view.page == ModemPage::Closed
                 && self.theme_view.page == ThemePage::Controls
                 && settings_max_scroll(self.width, self.height, &self.service_view) > 0.0
             {
@@ -6848,6 +6978,11 @@ fn serve() -> Result<(), String> {
         wifi_view: WifiView::default(),
         wifi_origin_scroll: 0.0,
         wifi_dragged: false,
+        modem_worker: ModemWorker::spawn(env_path("K230_MODEM_SOCKET", modem::CONTROL_PATH)),
+        modem_view: ModemView::default(),
+        modem_state_path: env_path("K230_MODEM_STATE", modem::STATE_PATH),
+        modem_sms: SmsTail::new(env_path("K230_MODEM_SMS", modem::SMS_PATH)),
+        modem_polled_at: None,
         themes,
         theme_view: ThemeView {
             default_theme_name: std::env::var_os("K230_THEME_DEFAULT_GENERATION")
@@ -7038,6 +7173,12 @@ fn serve() -> Result<(), String> {
                 break;
             };
             state.wifi_reply(reply);
+        }
+        for _ in 0..4 {
+            let Some(reply) = state.modem_worker.try_recv() else {
+                break;
+            };
+            state.modem_reply(reply);
         }
         for _ in 0..4 {
             let Some(reply) = state.themes.try_recv() else {
@@ -7542,6 +7683,7 @@ fn serve() -> Result<(), String> {
             state.dirty = true;
         }
         state.tick_home_widgets(now);
+        state.tick_modem(now);
         if state.home_touch_id != Some(TRACKPAD_PAN_ID) && state.home.tick(elapsed) {
             state.home_surface.dirty = true;
         }

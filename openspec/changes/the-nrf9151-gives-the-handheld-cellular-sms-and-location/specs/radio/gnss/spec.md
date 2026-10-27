@@ -6,8 +6,8 @@ Give the handheld a location from the keyboard base's nRF9151 GNSS receiver, thr
 
 ### Requirement: Location is available through gpsd while turned on
 
-<!-- UNVERIFIED: the GNSS-only recipe and `#XGNSSNMEA:` URCs come from LILYGO `docs/AT_COMMANDS.MD` and `CONFIG_SM_GNSS_NMEA_URC=y`; no fix has been observed on this unit, and the GNSS antenna is unknown. -->
-With Location on, the system SHALL feed the modem's NMEA output to `gpsd`, so that a `gpsd` client reports the receiver's state: no fix, then 2D or 3D fix with position and time. With Location off, GNSS SHALL be stopped and `gpsd` SHALL report no device.
+<!-- UNVERIFIED: the fitted Serial LTE Modem 2.9.0 starts GNSS with `AT#XGPS=1,0,1` and reports `#XGPS: 1,1` (board probe, 2026-10-26, docs/evidence/nrf9151/gnss-rate/). It has no NMEA output, so the service converts `#XGPS:` fixes to NMEA. No fix has been observed on this unit, and the GNSS antenna is unknown. -->
+With Location on, the system SHALL feed the modem's position reports to `gpsd` as NMEA, so that a `gpsd` client reports the receiver's state: no fix, then 2D or 3D fix with position and time. With Location off, GNSS SHALL be stopped and `gpsd` SHALL report no device.
 
 #### Scenario: A fix under open sky
 

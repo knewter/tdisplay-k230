@@ -330,6 +330,17 @@ pub fn parse_history(bytes: &[u8]) -> Result<NotificationSnapshot, String> {
     })
 }
 
+/// Text that only a notification may show, such as a received message's
+/// body. `Debug` redacts it, so a logged request or event never carries it.
+#[derive(Clone, Eq, PartialEq)]
+pub struct SecretText(pub String);
+
+impl std::fmt::Debug for SecretText {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str("<redacted>")
+    }
+}
+
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum PowerAction {
     Reboot,
@@ -360,6 +371,12 @@ pub enum ServiceRequest {
     NotificationDismiss(u64),
     NotificationDismissAll,
     NotificationAction(u64),
+    /// A received text for the broker (`modem::notification_for`). `SecretText`
+    /// prints as redacted, so a logged request never carries the text.
+    NotificationEmit {
+        summary: String,
+        body: SecretText,
+    },
 }
 
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -565,12 +582,25 @@ fn execute(
             )?)
             .map(ServiceResponse::Action)
         }
+        // No `private` flag: the broker's default keeps the body out of the
+        // preview and leaves the full text in the shade's history.
+        ServiceRequest::NotificationEmit { summary, body } => parse_action(&notification_request(
+            socket,
+            emit_request(summary, &body.0),
+        )?)
+        .map(ServiceResponse::Action),
         ServiceRequest::NotificationDismissAll => parse_action(&notification_request(
             socket,
             json!({"operation":"dismiss-all"}),
         )?)
         .map(ServiceResponse::Action),
     }
+}
+
+/// The broker request for a received text: an ordinary event with no
+/// `private` field, which the broker reads as private.
+fn emit_request(summary: &str, body: &str) -> Value {
+    json!({"operation":"emit","summary":summary,"body":body,"priority":"ordinary"})
 }
 
 fn confirmation_token(token: &str) -> bool {

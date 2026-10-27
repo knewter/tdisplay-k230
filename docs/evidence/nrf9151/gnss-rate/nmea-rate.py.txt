@@ -1,0 +1,50 @@
+"""Task 1.3: the NMEA byte rate with GNSS on, against 115200 baud, as root on the board.
+nmea-rate.py SECONDS
+Reads the modem service's NMEA pty and records only counts: bytes per second,
+sentences per talker/type, GGA fix quality and satellites in use. No sentence
+text (which can carry coordinates) is kept or printed. UART3 counters
+(/proc/tty/driver/serial_8250, line 3) are read before and after."""
+import json, os, re, select, subprocess, sys, time
+secs = float(sys.argv[1])
+def uart3():
+    for line in open('/proc/tty/driver/serial_8250'):
+        if line.startswith('3:'):
+            return {k: int(v) for k, v in re.findall(r'(\w+):(\d+)', line.split('base_baud')[0] + line.split('irq:')[1]) if k in ('tx', 'rx', 'fe', 'pe', 'brk', 'oe', 'bufoverrun')}
+def ctl(*a): return subprocess.run(['k230-modemctl', *a], capture_output=True, text=True, timeout=60).stdout.strip()
+before = uart3()
+ctl('gnss', 'on')
+t_on = time.time()
+fd = os.open('/run/k230/modem/nmea', os.O_RDONLY | os.O_NOCTTY | os.O_NONBLOCK)
+buf, total, first, per_sec, types, gga = b'', 0, None, {}, {}, []
+while time.time() - t_on < secs:
+    r, _, _ = select.select([fd], [], [], 0.5)
+    if not r: continue
+    try: chunk = os.read(fd, 4096)
+    except BlockingIOError: continue
+    now = time.time()
+    first = first or now
+    total += len(chunk)
+    per_sec[int(now - t_on)] = per_sec.get(int(now - t_on), 0) + len(chunk)
+    buf += chunk
+    *lines, buf = buf.split(b'\n')
+    for l in lines:
+        l = l.strip().decode('ascii', 'replace')
+        if not l.startswith('$'): continue
+        f = l.split('*')[0].split(',')
+        types[f[0][1:]] = types.get(f[0][1:], 0) + 1
+        if f[0].endswith('GGA') and len(f) > 7:
+            gga.append((f[6] or '-', f[7] or '-'))
+os.close(fd)
+ctl('gnss', 'off')
+after = uart3()
+busy = [v for k, v in sorted(per_sec.items())]
+print(json.dumps({
+    'seconds': secs, 'first_nmea_after_on_s': round(first - t_on, 2) if first else None,
+    'nmea_bytes': total, 'mean_bytes_per_s': round(total / secs, 1),
+    'peak_bytes_in_one_s': max(busy, default=0),
+    'line_capacity_bytes_per_s': 11520, 'peak_fraction_of_115200': round(max(busy, default=0) / 11520, 4),
+    'sentences': types, 'gga_quality_counts': {q: sum(1 for x in gga if x[0] == q) for q in sorted({x[0] for x in gga})},
+    'gga_sats_last': gga[-1][1] if gga else None,
+    'uart3_before': before, 'uart3_after': after,
+    'uart3_delta': {k: after[k] - before.get(k, 0) for k in after} if before and after else None,
+}, indent=1))

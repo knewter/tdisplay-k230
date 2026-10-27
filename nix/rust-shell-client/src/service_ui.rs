@@ -9,7 +9,7 @@ use crate::{
     render::{
         settings_confirm_layout, settings_layout, settings_row_y, POWER_BUTTON_H, POWER_CANCEL_Y,
         POWER_CONFIRM_SLOP, POWER_CONFIRM_Y, POWER_OFF_Y, POWER_REBOOT_Y, SETTINGS_KEY_BACKLIGHT_ROW,
-        settings_power_card_h, settings_row_h,
+        settings_layout_for, settings_power_card_h, settings_row_h,
     },
     service_data::{
         ActionOutcome, ControlState, NotificationSnapshot, PowerAction, Priority, ServiceRequest,
@@ -71,6 +71,12 @@ pub struct ServiceView {
     /// `Some(preference)` only while the base's key backlight LED exists;
     /// `None` hides Settings' Key backlight row and its tap.
     pub key_backlight: Option<crate::keyboard_base::KeyBacklight>,
+    /// The modem service's state, `Some` only once the modem has answered;
+    /// `None` hides the shade's indicators and Settings' Cellular and
+    /// Location rows (`modem`).
+    pub modem: Option<crate::modem::ModemStatus>,
+    /// The open Cellular or Location page, if any (`modem_ui`).
+    pub modem_page: Option<crate::modem_ui::ModemPublic>,
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -206,6 +212,8 @@ pub enum PanelIntent {
     Hide,
     OpenSettings,
     OpenWifi,
+    OpenCellular,
+    OpenLocation,
     Help(crate::help::Action),
     Request(ServiceRequest),
     /// Flip the key backlight preference (a local file write, not a
@@ -926,7 +934,7 @@ pub fn settings_max_scroll(width: u32, height: u32, view: &ServiceView) -> f64 {
     let bottom = if crate::settings_wide(width, height) {
         (0..3)
             .map(|column| {
-                let dy = crate::render::settings_wide_offset(column, key_backlight).1;
+                let dy = crate::render::settings_wide_offset_for(column, key_backlight, view.modem.is_some()).1;
                 let end = match column {
                     0 => settings_row_y(SETTINGS_VOLUME_ROW) + settings_row_h(SETTINGS_VOLUME_ROW),
                     1 => {
@@ -1048,8 +1056,18 @@ pub fn settings_wide_column(x: f64) -> usize {
 /// row, or below the last), so a column's offset can never make a tap land
 /// on a row that belongs to another column.
 pub fn settings_wide_design_point(point: (f64, f64), key_backlight: bool) -> Option<(f64, f64)> {
+    settings_wide_design_point_for(point, key_backlight, false)
+}
+
+/// `settings_wide_design_point` when the Cellular and Location rows lead
+/// column 2.
+pub fn settings_wide_design_point_for(
+    point: (f64, f64),
+    key_backlight: bool,
+    modem: bool,
+) -> Option<(f64, f64)> {
     let column = settings_wide_column(point.0);
-    let (dx, dy) = crate::render::settings_wide_offset(column, key_backlight);
+    let (dx, dy) = crate::render::settings_wide_offset_for(column, key_backlight, modem);
     let design = (point.0 - dx, point.1 - dy);
     // Slack of half a row gap above each column's first item.
     let first = |top: f64| top - crate::render::SETTINGS_ROW_GAP / 2.0;
@@ -1060,6 +1078,7 @@ pub fn settings_wide_design_point(point: (f64, f64), key_backlight: bool) -> Opt
             design.1 >= first(settings_row_y(3))
                 && design.1 < settings_row_y(last_row) + settings_row_h(last_row) + crate::render::SETTINGS_ROW_GAP / 2.0
         }
+        _ if modem => design.1 >= first(crate::render::settings_modem_row_y(key_backlight, 0)),
         _ => design.1 >= first(settings_layout(key_backlight).power_heading_y),
     };
     in_column.then_some(design)
@@ -1271,7 +1290,7 @@ pub fn panel_intent(
             }
             let end = (end.0, end.1 + view.settings_scroll);
             let end = if wide {
-                settings_wide_design_point(end, view.key_backlight.is_some())?
+                settings_wide_design_point_for(end, view.key_backlight.is_some(), view.modem.is_some())?
             } else {
                 ((end.0 - content_x) / content_scale, end.1 / content_scale)
             };
@@ -1280,7 +1299,7 @@ pub fn panel_intent(
                 if Instant::now() >= confirm.expires_at {
                     return None;
                 }
-                let card_y = settings_confirm_layout(settings_layout(view.key_backlight.is_some()).poweroff_bottom).card_y;
+                let card_y = settings_confirm_layout(settings_layout_for(view.key_backlight.is_some(), view.modem.is_some()).poweroff_bottom).card_y;
                 if (card_y..card_y + 110.0).contains(&end.1) {
                     return Some(PanelIntent::Request(if end.0 < w / 2.0 {
                         ServiceRequest::PowerCancel(confirm.token.clone())
@@ -1294,9 +1313,19 @@ pub fn panel_intent(
             // These ranges mirror the row rhythm `render.rs` paints the
             // Settings screen with (finding P0-4); call the same helpers
             // rather than repeating its literals, so the two cannot drift.
-            let layout = settings_layout(view.key_backlight.is_some());
+            let layout = settings_layout_for(view.key_backlight.is_some(), view.modem.is_some());
             if (settings_row_y(0)..settings_row_y(0) + settings_row_h(0)).contains(&end.1) {
                 return Some(PanelIntent::OpenWifi);
+            }
+            if view.modem.is_some() {
+                let key_backlight = view.key_backlight.is_some();
+                let row_h = crate::render::settings_modem_row_h();
+                for (index, intent) in [PanelIntent::OpenCellular, PanelIntent::OpenLocation].into_iter().enumerate() {
+                    let y = crate::render::settings_modem_row_y(key_backlight, index as u32);
+                    if (y..y + row_h).contains(&end.1) {
+                        return Some(intent);
+                    }
+                }
             }
             // Brightness (row 1) is no longer a tap-classified stepper --
             // the slider band (`slider_band`) owns that row's touches
@@ -3009,5 +3038,52 @@ mod tests {
         // Closing from the left column is allowed; from the list only at its end.
         assert!(shade_panel_close_zone((200.0, 400.0), 1232, 568, &view));
         assert!(!shade_panel_close_zone((layout.list_x + 100.0, 300.0), 1232, 568, &view));
+    }
+
+    fn present_modem() -> crate::modem::ModemStatus {
+        crate::modem::parse_status(
+            br#"{"schema":1,"present":true,"power":"on","cellular":true,"sim":"ready","registration":"registered_home","bars":3}"#,
+        )
+        .unwrap()
+    }
+
+    #[test]
+    fn settings_offers_cellular_and_location_only_once_the_modem_has_answered() {
+        use crate::render::{settings_modem_row_h, settings_modem_row_y, settings_wide_offset_for};
+        for key_backlight in [false, true] {
+            let kb = key_backlight.then_some(crate::keyboard_base::KeyBacklight::Off);
+            let hidden = ServiceView {
+                settings: Some(crate::evidence_render::fixture_settings()),
+                key_backlight: kb,
+                ..ServiceView::default()
+            };
+            let shown = ServiceView { modem: Some(present_modem()), ..hidden.clone() };
+            // Wide: the rows lead column 2, above Power; scrolled to show them.
+            let (dx, dy) = settings_wide_offset_for(2, key_backlight, true);
+            for (index, expected) in [PanelIntent::OpenCellular, PanelIntent::OpenLocation].into_iter().enumerate() {
+                let y = settings_modem_row_y(key_backlight, index as u32);
+                let tap = (dx + 24.0 + 100.0, y + dy + settings_modem_row_h() / 2.0);
+                assert!(tap.1 > settings_body_top(1232, 568) && tap.1 < 568.0, "row {index} is on screen unscrolled");
+                assert_eq!(panel_intent(Route::Settings, tap, tap, 1232, 568, &shown), Some(expected.clone()), "wide row {index}");
+                assert_ne!(panel_intent(Route::Settings, tap, tap, 1232, 568, &hidden), Some(expected), "wide row {index} hidden");
+                // Portrait: the same rows in the single column.
+                let (scale, x) = crate::settings_content_transform(568, 1232);
+                let tap = (x + 200.0 * scale, y * scale + settings_modem_row_h() * scale / 2.0);
+                let expected = [PanelIntent::OpenCellular, PanelIntent::OpenLocation][index].clone();
+                assert_eq!(panel_intent(Route::Settings, tap, tap, 568, 1232, &shown), Some(expected.clone()), "portrait row {index}");
+                assert_ne!(panel_intent(Route::Settings, tap, tap, 568, 1232, &hidden), Some(expected), "portrait row {index} hidden");
+            }
+            // Power still answers where the rows pushed it.
+            let layout = crate::render::settings_layout_for(key_backlight, true);
+            let tap = (dx + 24.0 + 100.0, layout.reboot_y + dy + 20.0);
+            let mut view = shown.clone();
+            view.settings_scroll = (tap.1 - 568.0 + 40.0).max(0.0).min(settings_max_scroll(1232, 568, &view));
+            let tap = (tap.0, tap.1 - view.settings_scroll);
+            assert_eq!(
+                panel_intent(Route::Settings, tap, tap, 1232, 568, &view),
+                Some(PanelIntent::Request(ServiceRequest::PowerRequest(PowerAction::Reboot))),
+                "reboot with the modem rows present (key backlight {key_backlight})"
+            );
+        }
     }
 }

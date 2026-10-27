@@ -601,6 +601,25 @@ pub const SETTINGS_POWER_CARD_H: f64 = 70.0;
 /// below it moves down one row only then.
 pub const SETTINGS_KEY_BACKLIGHT_ROW: u32 = 5;
 
+/// The Cellular and Location rows, after the last base row (Motion, or Key
+/// backlight when the base's LED exists); present only once the modem has
+/// answered (`ServiceView::modem`). They are plain label-and-value rows, so
+/// they are placed from the base rows' bottom rather than by row index.
+pub const SETTINGS_MODEM_ROWS: u32 = 2;
+
+pub fn settings_modem_row_h() -> f64 {
+    (SETTINGS_ROW_INSET + vision_line(TYPE_LABEL) + 2.0 + vision_line(TYPE_BODY) + SETTINGS_ROW_INSET)
+        .ceil()
+        .max(88.0)
+}
+
+/// Top of modem row `index` (0 Cellular, 1 Location).
+pub fn settings_modem_row_y(key_backlight: bool, index: u32) -> f64 {
+    settings_rows_bottom(SETTINGS_ROW_COUNT + u32::from(key_backlight))
+        + SETTINGS_ROW_GAP
+        + f64::from(index) * (settings_modem_row_h() + SETTINGS_ROW_GAP)
+}
+
 pub fn settings_row_y(index: u32) -> f64 {
     (0..index).fold(settings_first_y(), |y, row| y + settings_row_h(row) + SETTINGS_ROW_GAP)
 }
@@ -739,7 +758,16 @@ pub struct SettingsLayout {
 }
 
 pub fn settings_layout(key_backlight: bool) -> SettingsLayout {
-    let rows_bottom = settings_rows_bottom(SETTINGS_ROW_COUNT + u32::from(key_backlight));
+    settings_layout_for(key_backlight, false)
+}
+
+/// `settings_layout` with the Cellular and Location rows ahead of Power.
+pub fn settings_layout_for(key_backlight: bool, modem: bool) -> SettingsLayout {
+    let rows_bottom = if modem {
+        settings_modem_row_y(key_backlight, SETTINGS_MODEM_ROWS - 1) + settings_modem_row_h()
+    } else {
+        settings_rows_bottom(SETTINGS_ROW_COUNT + u32::from(key_backlight))
+    };
     let power_heading_y = rows_bottom + 22.0;
     let reboot_y = power_heading_y + (vision_line(TYPE_LABEL) + SPACE_IN_ROW).max(28.0);
     let poweroff_y = reboot_y + settings_power_card_h() + SETTINGS_ROW_GAP;
@@ -766,12 +794,19 @@ pub fn settings_row_column(row: u32) -> usize {
 /// and `service_ui::panel_intent` subtracts the same one, so a tap and its
 /// paint cannot drift apart.
 pub fn settings_wide_offset(column: usize, key_backlight: bool) -> (f64, f64) {
+    settings_wide_offset_for(column, key_backlight, false)
+}
+
+/// `settings_wide_offset` when the Cellular and Location rows lead column 2
+/// (the Power column), ahead of the Power heading.
+pub fn settings_wide_offset_for(column: usize, key_backlight: bool, modem: bool) -> (f64, f64) {
     let dx = crate::SETTINGS_WIDE_ORIGIN_X + column as f64 * crate::SETTINGS_WIDE_COL_PITCH;
     // Every column also rises by whatever the wide header saves over the
     // single column's stacked one.
     let dy = settings_wide_first_y() - settings_first_y() + match column {
         0 => 0.0,
         1 => settings_first_y() - settings_row_y(3),
+        _ if modem => settings_first_y() - settings_modem_row_y(key_backlight, 0),
         _ => settings_first_y() - settings_layout(key_backlight).power_heading_y,
     };
     (dx, dy)
@@ -2032,6 +2067,164 @@ fn entry_error_message(view: &WifiPublic) -> Option<&str> {
     })
 }
 
+/// The Settings Cellular and Location pages (`modem_ui`): the on/off switch,
+/// the service's reported state, the SIM PIN keypad while the SIM asks for
+/// one, and the stored-message clear control. Portrait paints the 568x1232
+/// artwork scaled to the surface; landscape paints two columns in real
+/// pixels. Every rect comes from `modem_ui::layout_for`, which the taps read
+/// too. The PIN shows as dots only: the view holds a length, not the digits.
+fn paint_modem(
+    cr: &Context,
+    view: &crate::modem_ui::ModemPublic,
+    theme: Option<&AppearanceSnapshot>,
+    width: f64,
+    height: f64,
+) {
+    use crate::modem_ui::Page as ModemPage;
+    let lay = crate::modem_ui::layout_for(width as u32, height as u32, view);
+    let _ = cr.save();
+    if !lay.wide {
+        cr.scale(width / 568.0, height / 1232.0);
+    }
+    let style = visual_style(theme, "controls");
+    let status = &view.status;
+    let cellular = view.page == ModemPage::Cellular;
+    let (bx, by, bw, bs) = lay.back_text;
+    text(cr, "\u{2039} Settings", bx, by, bw, bs, style.accent);
+    let (tx, ty, tw, ts) = lay.title;
+    heading(cr, if cellular { "Cellular" } else { "Location" }, tx, ty, tw, ts, style.text);
+
+    // The switch.
+    let (cx, cy, cw, ch) = lay.switch_card;
+    service_card(cr, theme, "controls", cx, cy, cw, ch, false);
+    let on = if cellular { status.cellular } else { status.location };
+    let working = matches!(view.pending, Some(crate::modem::Kind::Cellular | crate::modem::Kind::Location));
+    let pill = lay.switch_pill;
+    themed_role_fit(cr, theme, "body", if cellular { "Cellular" } else { "Location" }, cx + 18.0, cy + lay.switch_dy.0, pill.0 - cx - 30.0, TYPE_LABEL, style.text, pango::Weight::Medium);
+    let value = if working { "Working…" } else if on { "On" } else { "Off" };
+    themed_role_fit(cr, theme, "caption", value, cx + 18.0, cy + lay.switch_dy.1, pill.0 - cx - 30.0, TYPE_CAPTION, style.muted, pango::Weight::Normal);
+    let (px, py, pw, ph) = pill;
+    rounded(cr, px, py, pw, ph, ph / 2.0);
+    if on {
+        color(cr, style.accent, if working { 0.5 } else { 1.0 });
+    } else {
+        color(cr, style.muted, 0.35);
+    }
+    let _ = cr.fill();
+    let knob = ph - 8.0;
+    let knob_x = if on { px + pw - 4.0 - knob / 2.0 } else { px + 4.0 + knob / 2.0 };
+    cr.arc(knob_x, py + ph / 2.0, knob / 2.0, 0.0, std::f64::consts::TAU);
+    color(cr, if on { palette_rgb_or(theme, "background", 0x1e1e2e) } else { style.text }, 1.0);
+    let _ = cr.fill();
+
+    // The reported state.
+    let (sx, sy, sw, sh) = lay.status_card;
+    service_card(cr, theme, "controls", sx, sy, sw, sh, false);
+    let signal_text = status.signal_label();
+    let operator = status.operator.clone().unwrap_or_else(|| "\u{2014}".into());
+    let access = status.rat.clone().unwrap_or_else(|| "\u{2014}".into());
+    let rows: Vec<(&str, String)> = if cellular {
+        vec![
+            ("SIM", status.sim_label().into()),
+            ("Network", status.registration_label().into()),
+            ("Operator", operator),
+            ("Access", access),
+            ("Signal", signal_text.into()),
+        ]
+    } else {
+        vec![("Status", status.location_label().into())]
+    };
+    let label_w = (sw - 36.0) * 0.34;
+    for (index, (label, value)) in rows.iter().enumerate() {
+        let y = sy + lay.status_row0 + index as f64 * lay.status_pitch;
+        themed_role_fit(cr, theme, "caption", label, sx + 18.0, y, label_w - 8.0, TYPE_CAPTION, style.muted, pango::Weight::Normal);
+        let mut value_x = sx + 18.0 + label_w;
+        let mut value_w = sw - 36.0 - label_w;
+        if cellular && *label == "Signal" {
+            let size = vision_line(TYPE_CAPTION).ceil();
+            let (lit, none) = match status.cellular_indicator() {
+                Some(crate::modem::CellularIndicator::Bars(n)) => (n, false),
+                _ => (0, true),
+            };
+            glyph::paint_signal(cr, lit, none, value_x, y + (vision_line(TYPE_BODY) - size) / 2.0, size, style.text);
+            value_x += size + 10.0;
+            value_w -= size + 10.0;
+        }
+        if !cellular {
+            let size = vision_line(TYPE_CAPTION).ceil();
+            if let Some(indicator) = status.location_indicator() {
+                glyph::paint_location(cr, indicator == crate::modem::LocationIndicator::Fix, value_x, y + (vision_line(TYPE_BODY) - size) / 2.0, size, style.text);
+                value_x += size + 10.0;
+                value_w -= size + 10.0;
+            }
+        }
+        themed_role_fit(cr, theme, "body", value, value_x, y, value_w, TYPE_BODY, style.text, pango::Weight::Normal);
+    }
+
+    // One line for a pending request, its failure, or the modem's own error.
+    let (mx, my, mw) = lay.message;
+    if working || view.pending.is_some() {
+        themed_role_fit(cr, theme, "caption", "Working\u{2026}", mx, my, mw, TYPE_CAPTION, style.muted, pango::Weight::Normal);
+    } else if let Some(message) = &view.message {
+        themed_role_fit(cr, theme, "caption", message, mx, my, mw, TYPE_CAPTION, style.error, pango::Weight::Normal);
+    } else if status.power == crate::modem::Power::Error {
+        let reason = status.last_error.as_deref().unwrap_or("not responding");
+        themed_role_fit(cr, theme, "caption", &format!("Modem error: {reason}"), mx, my, mw, TYPE_CAPTION, style.error, pango::Weight::Normal);
+    }
+
+    if let Some(pin) = &lay.pin {
+        let (kx, ky, kw, kh) = pin.card;
+        service_card(cr, theme, "controls", kx, ky, kw, kh, false);
+        let prompt = match status.pin_attempts {
+            Some(1) => "Enter SIM PIN \u{b7} 1 try left".to_string(),
+            Some(n) => format!("Enter SIM PIN \u{b7} {n} tries left"),
+            None => "Enter SIM PIN".to_string(),
+        };
+        themed_role_fit(cr, theme, "caption", &prompt, pin.prompt.0, pin.prompt.1, pin.prompt.2, TYPE_CAPTION, style.text, pango::Weight::Normal);
+        let (fx, fy, fw, fh) = pin.field;
+        let well = palette_rgb_or(theme, "background", 0x1e1e2e);
+        rounded(cr, fx, fy, fw, fh, 12.0);
+        color(cr, well, 0.55);
+        let _ = cr.fill();
+        let dots = "\u{2022}".repeat(view.pin_len);
+        if dots.is_empty() {
+            themed_role_fit(cr, theme, "caption", "4 to 8 digits", fx + 18.0, fy + pin.field_text_dy, fw - 36.0, TYPE_CAPTION, style.muted, pango::Weight::Normal);
+        } else {
+            text(cr, &dots, fx + 18.0, fy + pin.field_text_dy, fw - 36.0, TYPE_BODY, style.text);
+        }
+        let ready = view.pin_len >= 4 && view.pending.is_none();
+        for (index, key) in pin.keys.iter().enumerate() {
+            let (x, y, w, h) = *key;
+            // A key is a darker well in the card, so each one reads as a button.
+            rounded(cr, x, y, w, h, 12.0);
+            color(cr, well, 0.55);
+            let _ = cr.fill();
+            let (label, rgb) = match index {
+                9 => ("\u{232b}", style.text),
+                11 => ("OK", if ready { style.accent } else { style.muted }),
+                10 => ("0", style.text),
+                n => (["1", "2", "3", "4", "5", "6", "7", "8", "9"][n], style.text),
+            };
+            centered_label(cr, label, x, y + pin.key_text_dy, w, TYPE_BODY, rgb);
+        }
+    }
+
+    if let Some((x, y, w, h)) = lay.clear {
+        let any = status.sms_count > 0;
+        service_card(cr, theme, "controls", x, y, w, h, view.clear_armed);
+        themed_role_fit(cr, theme, "body", "Clear stored messages", x + 18.0, y + lay.clear_dy.0, w - 36.0, TYPE_LABEL, if any { style.text } else { style.muted }, pango::Weight::Medium);
+        let (detail, rgb) = if view.clear_armed {
+            (format!("Tap again to delete {}", status.sms_count), style.error)
+        } else if any {
+            (format!("{} stored", status.sms_count), style.muted)
+        } else {
+            ("No stored messages".to_string(), style.muted)
+        };
+        themed_role_fit(cr, theme, "caption", &detail, x + 18.0, y + lay.clear_dy.1, w - 36.0, TYPE_CAPTION, rgb, pango::Weight::Normal);
+    }
+    let _ = cr.restore();
+}
+
 fn paint_wifi(
     cr: &Context,
     view: &WifiPublic,
@@ -2352,7 +2545,7 @@ pub fn settings_content_bottom(services: Option<&ServiceView>) -> f64 {
     if view.settings.is_none() {
         return empty_bottom;
     }
-    let mut bottom = settings_layout(view.key_backlight.is_some()).poweroff_bottom;
+    let mut bottom = settings_layout_for(view.key_backlight.is_some(), view.modem.is_some()).poweroff_bottom;
     if view.confirmation.is_some() {
         bottom = settings_confirm_layout(bottom).bottom;
     }
@@ -2424,6 +2617,10 @@ fn settings_panel_h(
     if wide {
         // The landscape panel's Settings controls, Wi-Fi pages and theme
         // chooser all lay out against the whole short panel.
+        return available_h;
+    }
+    // The Cellular and Location pages are fixed layouts over the whole panel.
+    if services.is_some_and(|s| s.modem_page.is_some()) {
         return available_h;
     }
     if let Some(view) = services
@@ -3029,7 +3226,15 @@ fn paint_shade_header(
     };
     let battery_size = battery.as_deref().map_or(caption, |label| fit(label, caption, (hw - 56.0) * 0.5));
     let battery_w = battery.as_deref().map_or(0.0, |label| text_advance(cr, label, battery_size, pango::Weight::Normal) + 2.0);
-    let hint_room = hw - 56.0 - if battery.is_some() { battery_w + 12.0 } else { 0.0 };
+    // The modem's signal and location glyphs sit left of the battery text,
+    // only while Cellular or Location is on (`ServiceView::modem`).
+    let modem = services.and_then(|view| view.modem.as_ref());
+    let signal = modem.and_then(|m| m.cellular_indicator());
+    let location = modem.and_then(|m| m.location_indicator());
+    let icon_size = line(caption).ceil();
+    let icons_w = f64::from(u8::from(signal.is_some()) + u8::from(location.is_some())) * (icon_size + 8.0);
+    let right_w = (if battery.is_some() { battery_w + 12.0 } else { 0.0 }) + if icons_w > 0.0 { icons_w + 4.0 } else { 0.0 };
+    let hint_room = hw - 56.0 - right_w;
     let hint_size = fit(hint, caption, hint_room);
     // The hint is left out rather than cut off; the battery stays.
     let hint_whole = text_advance(cr, hint, hint_size, pango::Weight::Normal) <= hint_room;
@@ -3039,6 +3244,21 @@ fn paint_shade_header(
     let count_y = if (hint_y + hint_h + 2.0).max(count_top) + count_h <= band_bottom {
         if let Some(label) = &battery {
             text(cr, label, hw - 24.0 - battery_w, hint_y, battery_w, battery_size, style.text);
+        }
+        let mut icon_x = hw - 24.0 - if battery.is_some() { battery_w + 12.0 } else { 0.0 };
+        let icon_y = hint_y + (hint_h - icon_size) / 2.0;
+        if let Some(indicator) = location {
+            icon_x -= icon_size;
+            glyph::paint_location(cr, indicator == crate::modem::LocationIndicator::Fix, icon_x, icon_y, icon_size, style.text);
+            icon_x -= 8.0;
+        }
+        if let Some(indicator) = signal {
+            icon_x -= icon_size;
+            let (lit, none) = match indicator {
+                crate::modem::CellularIndicator::Bars(n) => (n, false),
+                crate::modem::CellularIndicator::NoService => (0, true),
+            };
+            glyph::paint_signal(cr, lit, none, icon_x, icon_y, icon_size, style.text);
         }
         if hint_whole {
             text(cr, hint, 28.0, hint_y, hint_room, hint_size, style.muted);
@@ -3586,6 +3806,10 @@ fn scene(
                 paint_wifi(cr, view, theme, w, h);
                 return;
             }
+            if let Some(view) = services.and_then(|s| s.modem_page.as_ref()) {
+                paint_modem(cr, view, theme, w, h);
+                return;
+            }
             if let Some(view) = chooser.filter(|view| view.page == ThemePage::Vision) {
                 paint_vision(cr, w, h, view, theme);
                 return;
@@ -3632,11 +3856,12 @@ fn scene(
             cr.scale(content_scale, content_scale);
             let wide = crate::settings_wide(width, height);
             let key_backlight_row = services.is_some_and(|view| view.key_backlight.is_some());
+            let modem_rows = services.is_some_and(|view| view.modem.is_some());
             // The wide layout paints each item through its column's offset.
             let place = |column: usize| {
                 let _ = cr.save();
                 if wide {
-                    let (dx, dy) = settings_wide_offset(column, key_backlight_row);
+                    let (dx, dy) = settings_wide_offset_for(column, key_backlight_row, modem_rows);
                     cr.translate(dx, dy);
                 }
             };
@@ -3759,10 +3984,27 @@ fn scene(
                     style.muted,
                 );
             }
+            // Cellular and Location: shown only once the modem has answered.
+            if let Some(modem) = services.and_then(|view| view.modem.as_ref()) {
+                let rows = [
+                    ("Cellular ›", Glyph::Signal, modem.cellular_summary()),
+                    ("Location ›", Glyph::Location, modem.location_label().to_string()),
+                ];
+                for (index, (name, icon, value)) in rows.iter().enumerate() {
+                    place(2);
+                    let y = settings_modem_row_y(key_backlight_row, index as u32);
+                    paint_card(cr, theme, "controls", CardJob::Control, 24.0, y, w - 48.0, settings_modem_row_h());
+                    let label_x = paint_line_glyph(cr, *icon, row_text_x, y + SETTINGS_ROW_INSET, TYPE_LABEL, style.text);
+                    themed_role_fit(cr, theme, "body", name, label_x, y + SETTINGS_ROW_INSET, row_text_x + row_text_width - label_x, TYPE_LABEL, style.text, pango::Weight::Medium);
+                    let value_y = y + SETTINGS_ROW_INSET + vision_line(TYPE_LABEL) + 2.0;
+                    themed_role_fit(cr, theme, "body", value, row_text_x, value_y, row_text_width, TYPE_BODY, style.text, pango::Weight::Normal);
+                    let _ = cr.restore();
+                }
+            }
             // Power heading/actions and the confirm dialog are positioned
             // relative to the row rhythm above (finding P0-4), not as
             // independent literals that stay correct only by coincidence.
-            let layout = settings_layout(key_backlight_row);
+            let layout = settings_layout_for(key_backlight_row, modem_rows);
             let power_label_dy = (settings_power_card_h() - vision_line(TYPE_BODY)) / 2.0;
             place(2);
             if services.and_then(|view| view.settings.as_ref()).is_some() {
@@ -8962,6 +9204,90 @@ mod tests {
         assert_eq!(rows(&none, 104, 1232), rows(&discharging, 104, 1232));
         let absent = ServiceView { battery: BatteryState::Absent, ..ServiceView::default() };
         assert_eq!(none, draw_view(Route::Shade, absent), "Absent paints no battery element");
+    }
+
+    fn modem_state(edits: &[(&str, serde_json::Value)]) -> crate::modem::ModemStatus {
+        let mut state = serde_json::json!({
+            "schema": 1, "present": true, "power": "on", "cellular": true, "location": false,
+            "sim": "ready", "registration": "registered_home", "operator": "Example Net",
+            "rat": "LTE-M", "bars": 3, "gnss": "off", "sms_count": 2
+        });
+        for (key, value) in edits {
+            state[*key] = value.clone();
+        }
+        crate::modem::parse_status(state.to_string().as_bytes()).unwrap()
+    }
+
+    #[test]
+    fn the_shade_shows_modem_indicators_only_while_cellular_or_location_is_on() {
+        use serde_json::json;
+        let shade = |status: Option<crate::modem::ModemStatus>| draw_view(Route::Shade, ServiceView { modem: status, ..ServiceView::default() });
+        let none = shade(None);
+        let off = modem_state(&[("cellular", json!(false))]);
+        assert_eq!(none, shade(Some(off)), "both off: no indicator, nothing else moves");
+        let cellular = |bars: u64, reg: &str| shade(Some(modem_state(&[("bars", json!(bars)), ("registration", json!(reg))])));
+        let (one, four) = (cellular(1, "registered_home"), cellular(4, "registered_home"));
+        // The glyphs sit on the hint line under the Title, as the battery text does.
+        assert_ne!(rows(&none, 66, 104), rows(&one, 66, 104));
+        assert_ne!(rows(&one, 66, 104), rows(&four, 66, 104), "bars follow the service");
+        assert_eq!(rows(&none, 0, 66), rows(&one, 0, 66));
+        assert_eq!(rows(&none, 104, 1232), rows(&one, 104, 1232));
+        assert_ne!(cellular(0, "registered_home"), cellular(0, "searching"), "no service is not zero bars");
+        let location = |gnss: &str| shade(Some(modem_state(&[("cellular", json!(false)), ("location", json!(true)), ("gnss", json!(gnss))])));
+        assert_ne!(none, location("searching"));
+        assert_ne!(location("searching"), location("fix"), "searching differs from a fix");
+        assert_eq!(location("searching"), location("off"), "location on without a fix reads as searching");
+        let both = shade(Some(modem_state(&[("location", json!(true)), ("gnss", json!("fix"))])));
+        assert_ne!(both, one);
+        assert_ne!(both, location("fix"));
+    }
+
+    #[test]
+    fn settings_shows_cellular_and_location_only_once_the_modem_has_answered() {
+        use serde_json::json;
+        let view = |modem: Option<crate::modem::ModemStatus>| ServiceView {
+            settings: Some(crate::evidence_render::fixture_settings()),
+            modem,
+            ..ServiceView::default()
+        };
+        let absent = draw_view(Route::Settings, view(None));
+        let on = draw_view(Route::Settings, view(Some(modem_state(&[]))));
+        let off = draw_view(Route::Settings, view(Some(modem_state(&[("cellular", json!(false))]))));
+        let top = settings_modem_row_y(false, 0) as usize;
+        assert_eq!(rows(&absent, 0, top), rows(&on, 0, top), "rows above are untouched");
+        assert_ne!(rows(&absent, top, 1232), rows(&on, top, 1232));
+        assert_ne!(rows(&on, top, 1232), rows(&off, top, 1232), "the row says what Cellular is doing");
+    }
+
+    #[test]
+    fn the_cellular_and_location_pages_replace_the_settings_rows() {
+        use crate::modem_ui::{ModemView, Page};
+        use serde_json::json;
+        let page = |status: crate::modem::ModemStatus, which: Page| {
+            let mut modem = ModemView::default();
+            modem.set_status(Some(status.clone()));
+            modem.open(which);
+            draw_view(Route::Settings, ServiceView {
+                settings: Some(crate::evidence_render::fixture_settings()),
+                modem: Some(status),
+                modem_page: modem.public(),
+                ..ServiceView::default()
+            })
+        };
+        let rows_view = draw_view(Route::Settings, ServiceView {
+            settings: Some(crate::evidence_render::fixture_settings()),
+            modem: Some(modem_state(&[])),
+            ..ServiceView::default()
+        });
+        let cellular = page(modem_state(&[]), Page::Cellular);
+        assert_ne!(rows_view, cellular);
+        assert_ne!(cellular, page(modem_state(&[]), Page::Location));
+        // No SIM, unknown registration: a plain page with no keypad.
+        let no_sim = page(modem_state(&[("sim", json!("absent")), ("registration", json!("unknown")), ("bars", json!(0))]), Page::Cellular);
+        let pin = page(modem_state(&[("sim", json!("pin_required")), ("pin_attempts", json!(3))]), Page::Cellular);
+        assert_ne!(no_sim, pin, "the keypad appears only when the SIM asks for a PIN");
+        let location = |gnss: &str| page(modem_state(&[("cellular", json!(false)), ("location", json!(true)), ("gnss", json!(gnss))]), Page::Location);
+        assert_ne!(location("searching"), location("fix"));
     }
 
     #[test]
