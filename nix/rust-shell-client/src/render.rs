@@ -3581,6 +3581,18 @@ fn paint_drawer(
             let _ = cr.restore();
         }
     }
+    // Typing from the base's keys: Enter launches the first match, so it
+    // carries the hover cursor's outline.
+    if search.from_keys && !search.query.is_empty() && !matched.is_empty() {
+        let (x, y, tw, th) = tile_rect(width, height, 0, clamped_scroll);
+        if y + th > row_start && y < bottom {
+            let _ = cr.save();
+            cr.rectangle(0.0, row_start, w, (bottom - row_start).max(0.0));
+            cr.clip();
+            paint_control_border(cr, theme, "controls", "hover-cursor", (x, y, tw, th), CARD_RADIUS_CONTROL);
+            let _ = cr.restore();
+        }
+    }
     if let Some(display_index) = pressed {
         // `pressed` is already a *display* (filtered) index -- the same
         // one `tile_rect`/`tile_at` use everywhere else -- so its position

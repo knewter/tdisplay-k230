@@ -34,7 +34,7 @@ use k230_shell_rust::{
         panel_intent, settings_output_picker_hit, settings_slider_column_hit, settings_slider_frame, settings_slider_y,
         slider_band, volume_icon_tap_zone,
         volume_slider_band, Confirmation, DrawerSearch, NotificationCoast, NotificationSwipeSettle,
-        PanelClose, PanelIntent, ServiceView, SWIPE_VERTICAL_CANCEL,
+        PanelClose, PanelIntent, SearchKey, ServiceView, SWIPE_VERTICAL_CANCEL,
     },
     slider,
     volume,
@@ -579,7 +579,7 @@ fn connect_bounded(path: &std::path::Path, deadline: Instant) -> Result<UnixStre
 fn request(route: &str) -> Result<(), String> {
     let path = socket_path()?;
     let bytes = format!("{route}\n");
-    if Route::parse(bytes.as_bytes()).is_none() && bytes.as_bytes() != BACK_LINE {
+    if Route::parse(bytes.as_bytes()).is_none() && bytes.as_bytes() != BACK_LINE && bytes.as_bytes() != DRAWER_KEYS_LINE {
         return Err("unsupported route".into());
     }
     let deadline = Instant::now() + Duration::from_millis(500);
@@ -622,10 +622,14 @@ struct Peer {
 /// Side-edge Back's request line (`--surface back`), kept apart from
 /// `Route` because it is a dismiss step, not a place to show.
 const BACK_LINE: &[u8] = b"back\n";
+/// The base's LILYGO key (`--surface drawer-keys`): the drawer, with its
+/// search taking the keys rather than raising the on-screen keyboard.
+const DRAWER_KEYS_LINE: &[u8] = b"drawer-keys\n";
 
 enum Received {
     Route(Route, UnixStream),
     Back(UnixStream),
+    DrawerKeys(UnixStream),
     Reveal(RevealMessage),
     Abort,
 }
@@ -786,6 +790,10 @@ impl RouteServer {
         if line == BACK_LINE {
             let peer = self.peer.take().expect("in-flight peer");
             return Some(Received::Back(peer.stream));
+        }
+        if line == DRAWER_KEYS_LINE {
+            let peer = self.peer.take().expect("in-flight peer");
+            return Some(Received::DrawerKeys(peer.stream));
         }
         if let Some(message) = RevealMessage::parse(&line) {
             peer.progress_stream = true;
@@ -1134,6 +1142,9 @@ struct ShellClient {
     /// (write-only, from here) Wayland state.
     wifi_keyboard_active: bool,
     drawer_keyboard_active: bool,
+    /// Whether the drawer search has the on-screen keyboard raised (a tap
+    /// focus); a key focus holds the keyboard grab without it.
+    drawer_osk_shown: bool,
     drawer_keyboard_focused: bool,
     /// Mirrors whether Home's open-folder rename field currently holds
     /// keyboard focus (task 2, `HomeScreen::OpenFolder::editing_name`) --
@@ -3641,29 +3652,48 @@ impl ShellClient {
     fn sync_drawer_keyboard(&mut self) {
         let want = self.route == Route::Drawer && self.layer.is_some()
             && self.splash.is_none() && self.drawer_search.focused;
-        self.drawer_search.keyboard_inset = if want && self.keyboard_signal_path.is_some() {
+        // The base's key focused the field: the keys type, so the on-screen
+        // keyboard stays down.
+        let want_osk = want && !self.drawer_search.from_keys;
+        self.drawer_search.keyboard_inset = if want_osk && self.keyboard_signal_path.is_some() {
             self.keyboard_height_px + self.keyboard_grip_height_px
         } else { 0.0 };
-        if want == self.drawer_keyboard_active { return; }
-        self.drawer_keyboard_active = want;
-        self.drawer_keyboard_focused = false;
-        if let Some(layer) = &self.layer {
-            layer.set_keyboard_interactivity(if want {
-                KeyboardInteractivity::Exclusive
-            } else { KeyboardInteractivity::None });
-            layer.commit();
-        }
-        if let Some(path) = &self.keyboard_signal_path {
-            if let Err(error) = std::process::Command::new(path)
-                .arg(if want { "show" } else { "hide" }).spawn() {
-                self.log(&format!("drawer-keyboard-signal-failed {error}"));
+        if want != self.drawer_keyboard_active {
+            self.drawer_keyboard_active = want;
+            self.drawer_keyboard_focused = false;
+            if let Some(layer) = &self.layer {
+                layer.set_keyboard_interactivity(if want {
+                    KeyboardInteractivity::Exclusive
+                } else { KeyboardInteractivity::None });
+                layer.commit();
             }
+            self.dirty = true;
         }
-        self.dirty = true;
+        if want_osk != self.drawer_osk_shown {
+            self.drawer_osk_shown = want_osk;
+            if let Some(path) = &self.keyboard_signal_path {
+                if let Err(error) = std::process::Command::new(path)
+                    .arg(if want_osk { "show" } else { "hide" }).spawn() {
+                    self.log(&format!("drawer-keyboard-signal-failed {error}"));
+                }
+            }
+            self.dirty = true;
+        }
+    }
+
+    /// LILYGO's drawer (`--surface drawer-keys`): its search takes the
+    /// base's keys at once.
+    fn focus_drawer_from_keys(&mut self) {
+        if self.route == Route::Drawer {
+            self.drawer_search.focus_from_keys();
+            self.nav = DrawerNavigation::default();
+            self.sync_drawer_search();
+        }
     }
 
     fn forget_drawer_keyboard(&mut self) {
         self.drawer_keyboard_active = false;
+        self.drawer_osk_shown = false;
         self.drawer_keyboard_focused = false;
         self.drawer_search.unfocus();
         self.renderer.set_drawer_search(self.drawer_search.clone());
@@ -3674,11 +3704,19 @@ impl ShellClient {
         self.dirty = true;
     }
 
-    fn handle_drawer_key(&mut self, event: &KeyEvent) {
-        if self.drawer_keyboard_active && self.drawer_search.key_event(
-            u32::from(event.keysym), event.utf8.as_deref()) {
-            self.nav = DrawerNavigation::default();
-            self.sync_drawer_search();
+    fn handle_drawer_key(&mut self, qh: &QueueHandle<Self>, event: &KeyEvent) {
+        if !self.drawer_keyboard_active {
+            return;
+        }
+        match self.drawer_search.key_action(u32::from(event.keysym), event.utf8.as_deref()) {
+            SearchKey::Ignored => {}
+            SearchKey::Edited => {
+                self.nav = DrawerNavigation::default();
+                self.sync_drawer_search();
+            }
+            // The first match, which the drawer outlines while keys type.
+            SearchKey::Launch => self.launch_drawer_app(qh, 0),
+            SearchKey::Close => self.hide(),
         }
     }
 
@@ -6714,7 +6752,7 @@ impl KeyboardHandler for ShellClient {
             if u32::from(event.keysym)==0xff1b {self.close_app_menu(qh);}
             return;
         }
-        self.handle_drawer_key(&event);
+        self.handle_drawer_key(qh, &event);
         self.handle_wifi_key(event.clone());
         self.handle_home_key(qh, event);
     }
@@ -6727,7 +6765,7 @@ impl KeyboardHandler for ShellClient {
         event: KeyEvent,
     ) {
         if self.app_menu.is_some() { return; }
-        self.handle_drawer_key(&event);
+        self.handle_drawer_key(qh, &event);
         self.handle_wifi_key(event.clone());
         self.handle_home_key(qh, event);
     }
@@ -6945,6 +6983,7 @@ fn serve() -> Result<(), String> {
         keyboard_device: None,
         wifi_keyboard_active: false,
         drawer_keyboard_active: false,
+        drawer_osk_shown: false,
         drawer_keyboard_focused: false,
         home_keyboard_active: false,
         keyboard_signal_path: std::env::var_os("K230_KEYBOARD_SIGNAL").map(PathBuf::from),
@@ -8149,6 +8188,18 @@ fn serve() -> Result<(), String> {
                         };
                         let _ = peer.write_all(reply);
                     }
+                    Received::DrawerKeys(mut peer) => {
+                        let mapped = state.show(&qh, Route::Drawer);
+                        if mapped {
+                            state.focus_drawer_from_keys();
+                        }
+                        let reply: &[u8] = if mapped && queue.flush().is_ok() {
+                            b"OK\n"
+                        } else {
+                            b"ERR\n"
+                        };
+                        let _ = peer.write_all(reply);
+                    }
                     Received::Route(route, mut peer) => {
                         let mapped = state.show(&qh, route);
                         let reply: &[u8] = if mapped && queue.flush().is_ok() {
@@ -9088,6 +9139,12 @@ printf '%s\n' '{"type":"root","floating_nodes":[{"type":"floating_con","app_id":
         server.accept();
         client.write_all(b"back extra\n").unwrap();
         assert!(!matches!(server.receive(), Some(Received::Back(_))));
+        // LILYGO's line opens the drawer for the keys; it is not a Route.
+        assert_eq!(Route::parse(DRAWER_KEYS_LINE), None);
+        let mut client = UnixStream::connect(&path).unwrap();
+        server.accept();
+        client.write_all(DRAWER_KEYS_LINE).unwrap();
+        assert!(matches!(server.receive(), Some(Received::DrawerKeys(_))));
         drop(client);
         drop(server);
         fs::remove_dir_all(runtime).unwrap();

@@ -922,7 +922,7 @@ let
       # Right Alt, so ISO_Level3_Shift (Mod5); Fn+LILYGO saves a screenshot
       # as LILYGO's firmware does. Esc-as-back lives in the keyboard-base
       # service, because a Sway binding would take Esc away from apps.
-      bindsym --input-device=1:1:tca8418 --release Super_L exec ${rustShell}/bin/k230-shell-rust --surface drawer
+      bindsym --input-device=1:1:tca8418 --release Super_L exec ${rustShell}/bin/k230-shell-rust --surface drawer-keys
       # No --input-device on these: on the board Sway ran an --input-device
       # binding and still sent the key to the focused app (the terminal got
       # Super+Tab), while the same binding without it consumed the key

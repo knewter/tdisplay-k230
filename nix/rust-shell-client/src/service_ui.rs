@@ -134,9 +134,48 @@ pub struct DrawerSearch {
     pub focused: bool,
     /// Height reserved by the shared system keyboard, in output logical pixels.
     pub keyboard_inset: f64,
+    /// Focused by the base's LILYGO key rather than a tap: typing goes
+    /// straight to the query, the on-screen keyboard stays down, Enter
+    /// launches the first match and Esc clears, then closes.
+    pub from_keys: bool,
+}
+
+/// What a key did to a key-focused drawer search (`DrawerSearch::key_action`).
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum SearchKey {
+    Ignored,
+    Edited,
+    /// Launch the first match.
+    Launch,
+    /// Close the drawer.
+    Close,
 }
 
 impl DrawerSearch {
+    /// The base key's entry: focus without the on-screen keyboard.
+    pub fn focus_from_keys(&mut self) {
+        self.focused = true;
+        self.from_keys = true;
+    }
+
+    /// `key_event`, plus Enter and Esc's meanings when the base's key
+    /// focused the field.
+    pub fn key_action(&mut self, keysym: u32, utf8: Option<&str>) -> SearchKey {
+        if self.focused && self.from_keys {
+            match keysym {
+                0xff0d | 0xff8d if !self.query.is_empty() => return SearchKey::Launch,
+                0xff0d | 0xff8d => return SearchKey::Ignored,
+                0xff1b if !self.query.is_empty() => {
+                    self.query.clear();
+                    return SearchKey::Edited;
+                }
+                0xff1b => return SearchKey::Close,
+                _ => {}
+            }
+        }
+        if self.key_event(keysym, utf8) { SearchKey::Edited } else { SearchKey::Ignored }
+    }
+
     /// Applies ordinary Wayland text and control keys only while Search owns focus.
     /// This public query is independent of Wi-Fi's secret password state.
     pub fn key_event(&mut self, keysym: u32, utf8: Option<&str>) -> bool {
@@ -168,12 +207,14 @@ impl DrawerSearch {
     /// already focused (never clears an in-progress query).
     pub fn focus(&mut self) {
         self.focused = true;
+        self.from_keys = false;
     }
 
     /// Closes the keyboard without clearing the query -- the filtered grid
     /// stays exactly as typed.
     pub fn unfocus(&mut self) {
         self.focused = false;
+        self.from_keys = false;
         self.keyboard_inset = 0.0;
     }
 
@@ -1546,6 +1587,26 @@ mod tests {
         assert!(search.key_event(0xff1b, None));
         assert!(!search.focused);
         assert!(!search.key_event('z' as u32, Some("z")), "late keys cannot edit a closed field");
+    }
+
+    #[test]
+    fn a_key_focused_search_launches_on_enter_and_clears_then_closes_on_esc() {
+        let mut search = DrawerSearch::default();
+        search.focus_from_keys();
+        assert_eq!(search.key_action(0xff0d, Some("\r")), SearchKey::Ignored, "Enter on an empty query does nothing");
+        assert_eq!(search.key_action('t' as u32, Some("t")), SearchKey::Edited);
+        assert_eq!(search.key_action('i' as u32, Some("i")), SearchKey::Edited);
+        assert_eq!(search.key_action(0xff0d, Some("\r")), SearchKey::Launch);
+        assert_eq!(search.query, "ti", "Enter leaves the query for the launch to read");
+        assert_eq!(search.key_action(0xff1b, None), SearchKey::Edited);
+        assert!(search.query.is_empty() && search.focused, "the first Esc clears");
+        assert_eq!(search.key_action(0xff1b, None), SearchKey::Close, "the second Esc closes");
+        // A tap on the field hands it to the on-screen keyboard as before.
+        search.focus();
+        assert!(!search.from_keys);
+        search.query = "ti".into();
+        assert_eq!(search.key_action(0xff0d, Some("\r")), SearchKey::Edited);
+        assert!(!search.focused, "a tapped field's Enter still only dismisses the keyboard");
     }
 
     #[test]
