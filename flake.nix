@@ -450,6 +450,8 @@
         # NixOS configuration by default; see nix/touch-trackpad-service.nix.
         handheld-touch-trackpad = pkgsCross.callPackage ./nix/touch-trackpad { };
         power-keyd = pkgsCross.callPackage ./nix/power-keyd.nix { };
+        # Text-effect renderer the idle exhibition pipes its K230 banner into.
+        ttfx = pkgsCross.callPackage ./nix/ttfx.nix { };
         # nRF9151 modem service and control client (nix/modem.nix).
         k230-modem = pkgsCross.callPackage ./nix/k230-modem { };
         # Bounded diagnostic sampler, outside the normal image closure.
