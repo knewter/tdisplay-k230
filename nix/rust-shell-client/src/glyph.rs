@@ -34,10 +34,12 @@ pub enum Glyph {
     Clock,
     /// About: a circled "i".
     Info,
+    /// Do Not Disturb: a crescent moon.
+    Moon,
 }
 
 impl Glyph {
-    pub const ALL: [Glyph; 15] = [
+    pub const ALL: [Glyph; 16] = [
         Glyph::Wifi,
         Glyph::Sun,
         Glyph::SunSmall,
@@ -53,6 +55,7 @@ impl Glyph {
         Glyph::Location,
         Glyph::Clock,
         Glyph::Info,
+        Glyph::Moon,
     ];
 }
 
@@ -185,6 +188,21 @@ pub fn paint(cr: &Context, glyph: Glyph, x: f64, y: f64, size: f64, rgb: u32, al
             let _ = cr.stroke();
             cr.arc(12.0, 7.6, 1.3, 0.0, TAU);
             let _ = cr.fill();
+        }
+        Glyph::Moon => {
+            // The face (12,12 r9) minus a circle (16,8 r7) laid over its
+            // upper right; the two circles cross at (20.95,12.95) and
+            // (11.05,3.05).
+            let (p1, p2) = ((20.95_f64, 12.95_f64), (11.05_f64, 3.05_f64));
+            let outer_from = (p2.1 - 12.0).atan2(p2.0 - 12.0);
+            let outer_to = (p1.1 - 12.0).atan2(p1.0 - 12.0);
+            cr.new_sub_path();
+            cr.arc_negative(12.0, 12.0, 9.0, outer_from, outer_to);
+            let inner_from = (p1.1 - 8.0).atan2(p1.0 - 16.0);
+            let inner_to = (p2.1 - 8.0).atan2(p2.0 - 16.0) + TAU;
+            cr.arc(16.0, 8.0, 7.0, inner_from, inner_to);
+            cr.close_path();
+            let _ = cr.stroke();
         }
     }
     let _ = cr.restore();

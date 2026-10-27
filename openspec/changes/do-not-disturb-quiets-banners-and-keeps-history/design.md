@@ -76,6 +76,11 @@ the shell's 48dp-equivalent floor"). So the grid goes to three columns.
   `fitted_size` shrinks text that still does not fit. How far text may shrink
   is an acceptance gate of the host render, not a number guessed here.
   <!-- UNVERIFIED: that "Searching" and the Wi-Fi state words fit 136 px at the largest vision step without shrinking below the caption size; decided by the 100% and 200% host renders. -->
+- Host render result (2026-10-27): "Do Not Disturb" and the longer state words
+  do not fit a 136 px tile, so the tile's label is "Quiet" (Settings keeps the
+  full name), Wi-Fi says "Online"/"Offline" and Keyboard says "Toggle". At the
+  largest step the icon is dropped and every tile word shares one size, about
+  70% of the 100% size; see `docs/evidence/do-not-disturb/host/README.md`.
 - The sixth slot is empty with no modem; a later quick control fills it
   without another layout change.
 

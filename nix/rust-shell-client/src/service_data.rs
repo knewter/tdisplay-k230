@@ -126,6 +126,9 @@ pub struct NotificationPreview {
     pub summary: String,
     pub priority: Priority,
     pub ongoing: bool,
+    /// The broker's verdict that this banner may interrupt Do Not Disturb.
+    /// A missing field is false, so an older broker silences everything.
+    pub breakthrough: bool,
 }
 
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -320,6 +323,7 @@ pub fn parse_history(bytes: &[u8]) -> Result<NotificationSnapshot, String> {
                     .get("ongoing")
                     .and_then(Value::as_bool)
                     .ok_or("invalid preview ongoing")?,
+                breakthrough: row.get("breakthrough").and_then(Value::as_bool).unwrap_or(false),
             })
         }
     };

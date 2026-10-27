@@ -79,6 +79,10 @@ pub struct ServiceView {
     pub modem_page: Option<crate::modem_ui::ModemPublic>,
     /// The open About or Date & time page, if any (`device_info`).
     pub info_page: Option<crate::device_info::InfoPublic>,
+    /// Do Not Disturb: no banner unless the broker marks it as breaking
+    /// through (`shell_prefs`). The tile, the status glyph and Settings'
+    /// row all read this one value.
+    pub do_not_disturb: bool,
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -268,6 +272,9 @@ pub enum PanelIntent {
     /// The wide Shade's Location tile: flips GNSS in place through the
     /// modem worker, as the Location page's switch does.
     ToggleLocation,
+    /// The shade tile's and Settings row's Do Not Disturb switch: a local
+    /// preference write (`shell_prefs`), not a service request.
+    ToggleDoNotDisturb,
 }
 
 /// Room for the shared brightness slider (task: "brightness should be a
@@ -324,11 +331,16 @@ pub const SHADE_WIDE_STATUS_TOP: f64 = SHADE_SETTINGS_BOTTOM;
 pub const SHADE_WIDE_TILE_TOP: f64 = 152.0;
 pub const SHADE_WIDE_TILE_GAP: f64 = 12.0;
 
-/// The wide Shade's quick tiles, in grid order (two per row).
+/// Tiles per row in the wide Shade's grid: three across a 480 px column
+/// keeps two rows, so the sliders do not move.
+pub const SHADE_WIDE_TILE_COLUMNS: usize = 3;
+
+/// The wide Shade's quick tiles, in grid order (three per row).
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum ShadeTile {
     Wifi,
     Keyboard,
+    DoNotDisturb,
     Location,
     Cellular,
 }
@@ -336,7 +348,7 @@ pub enum ShadeTile {
 /// The tiles the wide Shade shows: Location and Cellular only once the
 /// modem has answered (`ServiceView::modem`), as on the Settings page.
 pub fn shade_tiles(view: &ServiceView) -> Vec<ShadeTile> {
-    let mut tiles = vec![ShadeTile::Wifi, ShadeTile::Keyboard];
+    let mut tiles = vec![ShadeTile::Wifi, ShadeTile::Keyboard, ShadeTile::DoNotDisturb];
     if view.modem.is_some() {
         tiles.extend([ShadeTile::Location, ShadeTile::Cellular]);
     }
@@ -351,13 +363,15 @@ pub fn shade_tile_h() -> f64 {
     shade_toggle_h().min(SHADE_TILE_MAX_H)
 }
 
-/// Tile `index`'s rect `(x, y, w, h)` in a `controls_w` column: two columns
-/// inside 24 px margins, rows `shade_tile_h()` apart plus the gap.
+/// Tile `index`'s rect `(x, y, w, h)` in a `controls_w` column:
+/// `SHADE_WIDE_TILE_COLUMNS` columns inside 24 px margins, rows
+/// `shade_tile_h()` apart plus the gap.
 pub fn shade_tile_rect(index: usize, controls_w: f64) -> (f64, f64, f64, f64) {
-    let w = (controls_w - 48.0 - SHADE_WIDE_TILE_GAP) / 2.0;
+    let columns = SHADE_WIDE_TILE_COLUMNS;
+    let w = (controls_w - 48.0 - SHADE_WIDE_TILE_GAP * (columns - 1) as f64) / columns as f64;
     let h = shade_tile_h();
-    let x = 24.0 + (index % 2) as f64 * (w + SHADE_WIDE_TILE_GAP);
-    let y = SHADE_WIDE_TILE_TOP + (index / 2) as f64 * (h + SHADE_WIDE_TILE_GAP);
+    let x = 24.0 + (index % columns) as f64 * (w + SHADE_WIDE_TILE_GAP);
+    let y = SHADE_WIDE_TILE_TOP + (index / columns) as f64 * (h + SHADE_WIDE_TILE_GAP);
     (x, y, w, h)
 }
 
@@ -1333,6 +1347,7 @@ pub fn panel_intent(
                         (keyboard.state == ControlState::Action)
                             .then_some(PanelIntent::Request(ServiceRequest::KeyboardToggle))
                     }
+                    ShadeTile::DoNotDisturb => Some(PanelIntent::ToggleDoNotDisturb),
                     ShadeTile::Location => Some(PanelIntent::ToggleLocation),
                     ShadeTile::Cellular => Some(PanelIntent::OpenCellular),
                 };
@@ -1473,7 +1488,11 @@ pub fn panel_intent(
                 if modem {
                     intents.extend([PanelIntent::OpenCellular, PanelIntent::OpenLocation]);
                 }
-                intents.extend([PanelIntent::OpenDateTime, PanelIntent::OpenAbout]);
+                intents.extend([
+                    PanelIntent::ToggleDoNotDisturb,
+                    PanelIntent::OpenDateTime,
+                    PanelIntent::OpenAbout,
+                ]);
                 for (index, intent) in intents.into_iter().enumerate() {
                     let y = crate::render::settings_modem_row_y(key_backlight, index as u32);
                     if (y..y + row_h).contains(&end.1) {
@@ -3235,10 +3254,17 @@ mod tests {
     fn the_wide_shade_tiles_meet_the_tap_floor_and_open_their_pages() {
         let layout = shade_layout(1232, 568);
         let mut view = wide_shade_view(2, true);
-        assert_eq!(shade_tiles(&view), vec![ShadeTile::Wifi, ShadeTile::Keyboard], "no modem, no modem tiles");
+        assert_eq!(
+            shade_tiles(&view),
+            vec![ShadeTile::Wifi, ShadeTile::Keyboard, ShadeTile::DoNotDisturb],
+            "no modem, no modem tiles"
+        );
         view.modem = Some(present_modem());
         let tiles = shade_tiles(&view);
-        assert_eq!(tiles.len(), 4);
+        assert_eq!(
+            tiles,
+            vec![ShadeTile::Wifi, ShadeTile::Keyboard, ShadeTile::DoNotDisturb, ShadeTile::Location, ShadeTile::Cellular]
+        );
         let slider_top = shade_wide_slider_top();
         let slider_bottom = slider_top + SHADE_VOLUME_TOP + SHADE_VOLUME_H - SHADE_SLIDER_TOP;
         assert!(slider_bottom <= layout.list_bottom, "the sliders fit the column: {slider_bottom}");
@@ -3252,6 +3278,7 @@ mod tests {
             let expected = match tile {
                 ShadeTile::Wifi => Some(PanelIntent::OpenWifi),
                 ShadeTile::Keyboard => Some(PanelIntent::Request(ServiceRequest::KeyboardToggle)),
+                ShadeTile::DoNotDisturb => Some(PanelIntent::ToggleDoNotDisturb),
                 ShadeTile::Location => Some(PanelIntent::ToggleLocation),
                 ShadeTile::Cellular => Some(PanelIntent::OpenCellular),
             };
@@ -3261,6 +3288,53 @@ mod tests {
         let portrait = shade_layout(568, 1232);
         assert_eq!(shade_tile_at((100.0, 200.0), &portrait, &view), None);
         assert_eq!(shade_slider_shift(false), 0.0);
+    }
+
+    #[test]
+    fn the_wide_shade_tiles_stay_three_across_and_two_deep_at_every_text_step() {
+        let layout = shade_layout(1232, 568);
+        let mut view = wide_shade_view(2, true);
+        view.modem = Some(present_modem());
+        for step in [1.0, 1.25, 1.5, 1.75, 2.0] {
+            crate::set_layout_text_scale(step);
+            let tiles = shade_tiles(&view);
+            assert_eq!(tiles.len(), 5);
+            let slider_top = shade_wide_slider_top();
+            let slider_bottom = slider_top + SHADE_VOLUME_TOP + SHADE_VOLUME_H - SHADE_SLIDER_TOP;
+            assert!(slider_bottom <= 568.0, "step {step}: the volume slider ends at {slider_bottom}");
+            let rects: Vec<_> = (0..tiles.len()).map(|i| shade_tile_rect(i, layout.controls_w)).collect();
+            let rows: std::collections::BTreeSet<u64> = rects.iter().map(|r| r.1 as u64).collect();
+            assert_eq!(rows.len(), 2, "step {step}: two rows");
+            for (i, &(x, y, w, h)) in rects.iter().enumerate() {
+                assert!(h >= SHADE_TAP_MIN, "step {step}: tile {i} is {h} tall");
+                assert!(x >= 24.0 && x + w <= layout.controls_w - 24.0 + 0.5, "step {step}: tile {i} inside the column");
+                assert!(y + h <= slider_top, "step {step}: tile {i} above the sliders");
+                for &(x2, y2, w2, h2) in &rects[i + 1..] {
+                    let apart = x + w <= x2 || x2 + w2 <= x || y + h <= y2 || y2 + h2 <= y;
+                    assert!(apart, "step {step}: tiles overlap");
+                }
+            }
+            assert_eq!(rects[0].1, rects[2].1, "Wi-Fi, Keyboard and Do Not Disturb share a row");
+            assert!(rects[3].1 > rects[2].1, "Location starts the second row");
+        }
+        crate::set_layout_text_scale(1.0);
+    }
+
+    #[test]
+    fn tapping_the_do_not_disturb_tile_toggles_it_with_and_without_the_modem() {
+        let layout = shade_layout(1232, 568);
+        for modem in [false, true] {
+            let mut view = wide_shade_view(2, true);
+            view.modem = modem.then(present_modem);
+            let (x, y, w, h) = shade_tile_rect(2, layout.controls_w);
+            for point in [(x + 2.0, y + 2.0), (x + w / 2.0, y + h / 2.0), (x + w - 2.0, y + h - 2.0)] {
+                assert_eq!(
+                    panel_intent(Route::Shade, point, point, 1232, 568, &view),
+                    Some(PanelIntent::ToggleDoNotDisturb),
+                    "modem {modem} at {point:?}"
+                );
+            }
+        }
     }
 
     fn present_modem() -> crate::modem::ModemStatus {
@@ -3310,7 +3384,7 @@ mod tests {
     }
 
     #[test]
-    fn settings_ends_its_rows_with_date_and_time_then_about() {
+    fn settings_ends_its_rows_with_do_not_disturb_date_and_time_then_about() {
         use crate::render::{
             settings_info_row_index, settings_modem_row_h, settings_modem_row_y, settings_wide_offset_for,
         };
@@ -3325,7 +3399,7 @@ mod tests {
                 };
                 let row_h = settings_modem_row_h();
                 assert!(row_h >= SHADE_TAP_MIN, "rows meet the 99 px touch floor");
-                for (info, expected) in [(0u32, PanelIntent::OpenDateTime), (1, PanelIntent::OpenAbout)] {
+                for (info, expected) in [(0u32, PanelIntent::ToggleDoNotDisturb), (1, PanelIntent::OpenDateTime), (2, PanelIntent::OpenAbout)] {
                     let index = settings_info_row_index(modem, info);
                     let y = settings_modem_row_y(key_backlight, index);
                     // Wide: scroll the third column so the row is on screen.
@@ -3354,7 +3428,7 @@ mod tests {
                     );
                 }
                 // About is the last row: Power follows it.
-                let about = settings_modem_row_y(key_backlight, settings_info_row_index(modem, 1));
+                let about = settings_modem_row_y(key_backlight, settings_info_row_index(modem, 2));
                 assert!(crate::render::settings_layout_for(key_backlight, modem).power_heading_y > about + row_h);
             }
         }

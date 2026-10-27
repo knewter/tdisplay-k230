@@ -2257,6 +2257,22 @@ DATA 35a944ae92b2c49f3f447a87e9cefe0500693680d15735ed3c156a87adcc07a5 docs/evide
 DATA e44d2b81c60d348ba3e6c396d8cc13e16fd24bff9c9a8db6ae49ac5e9b0bd754 docs/evidence/settings-about/host/settings-100-568x1232.png
 DATA 2813bdad2345e8a71f89c134e528744bfb3fb681acbc70c8a138e18eaf3185cf docs/evidence/settings-about/host/settings-200-1232x568.png
 DATA 86aa7eca83e2fd517d58f9d26e9ee2d0b76818569bd2f43d2ef55ed0fd13e416 docs/evidence/settings-about/host/settings-200-568x1232.png
+DATA 15dec396047d94d1aedf26f1ceb70dac174711285627106def9c585a1d65a0a3 docs/evidence/do-not-disturb/host/settings-modem-dnd-off-100-1232x568.png
+DATA 2ad24f78fb2c4dc2f832491e6083f5b8fadbd0778bb35a00bbaab41d6b049da1 docs/evidence/do-not-disturb/host/settings-modem-dnd-off-200-1232x568.png
+DATA 4684ddab1dda35dfc3f687c2bc5f0f546d06b06cbad24a0523368d0badc4cab7 docs/evidence/do-not-disturb/host/settings-modem-dnd-on-100-1232x568.png
+DATA 2ad24f78fb2c4dc2f832491e6083f5b8fadbd0778bb35a00bbaab41d6b049da1 docs/evidence/do-not-disturb/host/settings-modem-dnd-on-200-1232x568.png
+DATA bc448a0e7be03d738432bf3437ce21cfd3ed6f4e1242aa74aa02a1733a7b8e26 docs/evidence/do-not-disturb/host/settings-no-modem-dnd-off-100-1232x568.png
+DATA fba3b014bcf4c6de0752258cfe8134fd2543c55f2b102e2bfa654327bd9fe513 docs/evidence/do-not-disturb/host/settings-no-modem-dnd-off-200-1232x568.png
+DATA fee1336c96da1c6a42f26223a282bab45aecfef88432431f7ca94279154d8639 docs/evidence/do-not-disturb/host/settings-no-modem-dnd-on-100-1232x568.png
+DATA c0fbd05aea4d7bb9e1f325f9c79d923d6562f35b76d397cbedd39d00dc9bc00a docs/evidence/do-not-disturb/host/settings-no-modem-dnd-on-200-1232x568.png
+DATA 983767feab09655959f4b07df6ed880c8def0d67eb801762a79153e0f0f1e3db docs/evidence/do-not-disturb/host/shade-modem-dnd-off-100-1232x568.png
+DATA 2ef0c71171fcdd5a83da761efa0b20d7d16813ca41c67840d305f76efa9904de docs/evidence/do-not-disturb/host/shade-modem-dnd-off-200-1232x568.png
+DATA 606d263c15ff8f4308d023049ab462c7b0b08fd31ddc1e39b7c3c8343693e4d8 docs/evidence/do-not-disturb/host/shade-modem-dnd-on-100-1232x568.png
+DATA 93c471d5a0aaccf4f87d2c818022dc51130d75c4309ac8f69f345a43b8295187 docs/evidence/do-not-disturb/host/shade-modem-dnd-on-200-1232x568.png
+DATA 7155ae4fa8442848b6a58a7f126efc1a328101f6505ef1d5a46084283157ad7b docs/evidence/do-not-disturb/host/shade-no-modem-dnd-off-100-1232x568.png
+DATA d1e08c6a3cfeea0b9d727ebe3da13ccf7d011c617b51957ba52323f900990298 docs/evidence/do-not-disturb/host/shade-no-modem-dnd-off-200-1232x568.png
+DATA e76b806b6e6ab1feb082b3d61a64d7a2150ae25507bda362886f6833272245f7 docs/evidence/do-not-disturb/host/shade-no-modem-dnd-on-100-1232x568.png
+DATA 55015f7afe14eb3039ac9c3748aede809a4763b8f5b08599506789fd7e21cdd5 docs/evidence/do-not-disturb/host/shade-no-modem-dnd-on-200-1232x568.png
 DATA 92bd21cfb151dfd57daecc902631064f1fdf77b7fcfa0c6e01cf20c698e5343d docs/evidence/help-refresh/board/help-landscape-1.png
 DATA 2d7b38beb80c40e57368e45d08aeae55f65adaa7df11b5a589ed82e749427ec3 docs/evidence/help-refresh/board/help-landscape-2.png
 DATA b4da560e3ff60590e114fd9be71714ae1c4b9caa5d9568f7fbe089ef32f279c1 docs/evidence/help-refresh/board/help-landscape-3.png
@@ -4233,6 +4249,29 @@ Host renders of Settings with its Date & time and About rows and both pages from
 | `docs/evidence/settings-about/host/settings-100-568x1232.png` | 71041 | DATA | `e44d2b81c60d348ba3e6c396d8cc13e16fd24bff9c9a8db6ae49ac5e9b0bd754` |
 | `docs/evidence/settings-about/host/settings-200-1232x568.png` | 82442 | DATA | `2813bdad2345e8a71f89c134e528744bfb3fb681acbc70c8a138e18eaf3185cf` |
 | `docs/evidence/settings-about/host/settings-200-568x1232.png` | 78407 | DATA | `86aa7eca83e2fd517d58f9d26e9ee2d0b76818569bd2f43d2ef55ed0fd13e416` |
+
+## Do Not Disturb host renders, 2026-10-27
+
+Host renders of the landscape shade (three tiles across, quiet mode off and on, with and without the modem) and Settings' Do Not Disturb row from `render_do_not_disturb_evidence`, at 100% and 200%, using fixture values; see `docs/evidence/do-not-disturb/host/README.md`.
+
+| Path | Bytes | Class | SHA256 |
+| --- | ---: | --- | --- |
+| `docs/evidence/do-not-disturb/host/settings-modem-dnd-off-100-1232x568.png` | 79237 | DATA | `15dec396047d94d1aedf26f1ceb70dac174711285627106def9c585a1d65a0a3` |
+| `docs/evidence/do-not-disturb/host/settings-modem-dnd-off-200-1232x568.png` | 81674 | DATA | `2ad24f78fb2c4dc2f832491e6083f5b8fadbd0778bb35a00bbaab41d6b049da1` |
+| `docs/evidence/do-not-disturb/host/settings-modem-dnd-on-100-1232x568.png` | 79166 | DATA | `4684ddab1dda35dfc3f687c2bc5f0f546d06b06cbad24a0523368d0badc4cab7` |
+| `docs/evidence/do-not-disturb/host/settings-modem-dnd-on-200-1232x568.png` | 81674 | DATA | `2ad24f78fb2c4dc2f832491e6083f5b8fadbd0778bb35a00bbaab41d6b049da1` |
+| `docs/evidence/do-not-disturb/host/settings-no-modem-dnd-off-100-1232x568.png` | 77994 | DATA | `bc448a0e7be03d738432bf3437ce21cfd3ed6f4e1242aa74aa02a1733a7b8e26` |
+| `docs/evidence/do-not-disturb/host/settings-no-modem-dnd-off-200-1232x568.png` | 82904 | DATA | `fba3b014bcf4c6de0752258cfe8134fd2543c55f2b102e2bfa654327bd9fe513` |
+| `docs/evidence/do-not-disturb/host/settings-no-modem-dnd-on-100-1232x568.png` | 77610 | DATA | `fee1336c96da1c6a42f26223a282bab45aecfef88432431f7ca94279154d8639` |
+| `docs/evidence/do-not-disturb/host/settings-no-modem-dnd-on-200-1232x568.png` | 82872 | DATA | `c0fbd05aea4d7bb9e1f325f9c79d923d6562f35b76d397cbedd39d00dc9bc00a` |
+| `docs/evidence/do-not-disturb/host/shade-modem-dnd-off-100-1232x568.png` | 76917 | DATA | `983767feab09655959f4b07df6ed880c8def0d67eb801762a79153e0f0f1e3db` |
+| `docs/evidence/do-not-disturb/host/shade-modem-dnd-off-200-1232x568.png` | 89864 | DATA | `2ef0c71171fcdd5a83da761efa0b20d7d16813ca41c67840d305f76efa9904de` |
+| `docs/evidence/do-not-disturb/host/shade-modem-dnd-on-100-1232x568.png` | 77412 | DATA | `606d263c15ff8f4308d023049ab462c7b0b08fd31ddc1e39b7c3c8343693e4d8` |
+| `docs/evidence/do-not-disturb/host/shade-modem-dnd-on-200-1232x568.png` | 90414 | DATA | `93c471d5a0aaccf4f87d2c818022dc51130d75c4309ac8f69f345a43b8295187` |
+| `docs/evidence/do-not-disturb/host/shade-no-modem-dnd-off-100-1232x568.png` | 69154 | DATA | `7155ae4fa8442848b6a58a7f126efc1a328101f6505ef1d5a46084283157ad7b` |
+| `docs/evidence/do-not-disturb/host/shade-no-modem-dnd-off-200-1232x568.png` | 83675 | DATA | `d1e08c6a3cfeea0b9d727ebe3da13ccf7d011c617b51957ba52323f900990298` |
+| `docs/evidence/do-not-disturb/host/shade-no-modem-dnd-on-100-1232x568.png` | 69491 | DATA | `e76b806b6e6ab1feb082b3d61a64d7a2150ae25507bda362886f6833272245f7` |
+| `docs/evidence/do-not-disturb/host/shade-no-modem-dnd-on-200-1232x568.png` | 84252 | DATA | `55015f7afe14eb3039ac9c3748aede809a4763b8f5b08599506789fd7e21cdd5` |
 
 ## Board evidence: Help, GTK touch floor, alerts, shade
 

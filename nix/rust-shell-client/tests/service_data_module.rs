@@ -74,6 +74,17 @@ fn history_keeps_private_preview_redaction_distinct_from_history() {
 }
 
 #[test]
+fn the_preview_breakthrough_flag_defaults_to_false() {
+    let mut value = history();
+    let missing = parse_history(&serde_json::to_vec(&value).unwrap()).unwrap();
+    assert!(!missing.preview.unwrap().breakthrough, "an older broker silences everything");
+    value["preview"]["breakthrough"] = json!(true);
+    assert!(parse_history(&serde_json::to_vec(&value).unwrap()).unwrap().preview.unwrap().breakthrough);
+    value["preview"]["breakthrough"] = json!("yes");
+    assert!(!parse_history(&serde_json::to_vec(&value).unwrap()).unwrap().preview.unwrap().breakthrough);
+}
+
+#[test]
 fn history_rejects_focus_count_priority_and_unbounded_input() {
     let mut value = history();
     value["preview"]["focus"] = json!(true);

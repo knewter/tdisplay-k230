@@ -1415,7 +1415,15 @@ in
     # /var/lib/k230, not a child: that directory is root-only 0700 because it
     # guards the Wi-Fi credential, so the unprivileged shell user could not
     # traverse a subdirectory of it.
-    systemd.tmpfiles.rules = [ "d /var/lib/k230-keyboard-base 0700 shell shell -" ];
+    #
+    # /var/lib/k230-shell-prefs holds the shell's own preferences, today the
+    # one-word do-not-disturb file (nix/rust-shell-client/src/shell_prefs.rs).
+    # It is separate from the keyboard-base directory, which is named for the
+    # base.
+    systemd.tmpfiles.rules = [
+      "d /var/lib/k230-keyboard-base 0700 shell shell -"
+      "d /var/lib/k230-shell-prefs 0700 shell shell -"
+    ];
     users.users.shell = {
       isNormalUser = true;
       uid = 1000;

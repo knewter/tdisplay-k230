@@ -95,7 +95,7 @@ mod tests {
     use crate::service_data::Priority;
 
     fn preview(source: &str, summary: &str) -> NotificationPreview {
-        NotificationPreview { id: 7, source: source.into(), icon: None, summary: summary.into(), priority: Priority::Ordinary, ongoing: false }
+        NotificationPreview { id: 7, source: source.into(), icon: None, summary: summary.into(), priority: Priority::Ordinary, ongoing: false, breakthrough: false }
     }
 
     #[test]

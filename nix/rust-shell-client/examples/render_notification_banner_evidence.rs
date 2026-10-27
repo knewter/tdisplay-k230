@@ -19,8 +19,8 @@ fn main() {
     let apps = synthetic_apps(30);
     // The broker's own output: a trusted sender keeps its text; an unknown or
     // private sender arrives already reduced to these generic fields.
-    let trusted = NotificationPreview { id: 1, source: "Terminal".into(), icon: None, summary: "Build finished: 0 errors".into(), priority: Priority::Ordinary, ongoing: false };
-    let unknown = NotificationPreview { id: 2, source: "Notification".into(), icon: None, summary: "New notification".into(), priority: Priority::Ordinary, ongoing: false };
+    let trusted = NotificationPreview { id: 1, source: "Terminal".into(), icon: None, summary: "Build finished: 0 errors".into(), priority: Priority::Ordinary, ongoing: false, breakthrough: false };
+    let unknown = NotificationPreview { id: 2, source: "Notification".into(), icon: None, summary: "New notification".into(), priority: Priority::Ordinary, ongoing: false, breakthrough: false };
     for (w, h) in [(568u32, 1232u32), (1232, 568)] {
         let base = out.join(format!("base-{w}x{h}.tmp.png"));
         render_home(&base, w, h, &apps);

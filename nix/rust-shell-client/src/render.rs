@@ -606,16 +606,18 @@ pub const SETTINGS_KEY_BACKLIGHT_ROW: u32 = 5;
 /// answered (`ServiceView::modem`). They are plain label-and-value rows, so
 /// they are placed from the base rows' bottom rather than by row index.
 pub const SETTINGS_MODEM_ROWS: u32 = 2;
-/// Date & time and About, the last plain rows before Power; always present.
+/// Do Not Disturb, Date and time, and About, the last plain rows before
+/// Power; always present.
 /// They follow the modem rows when those exist, so About is the last row.
-pub const SETTINGS_INFO_ROWS: u32 = 2;
+pub const SETTINGS_INFO_ROWS: u32 = 3;
 
 /// How many plain label-and-value rows lead the Power column.
 pub fn settings_plain_row_count(modem: bool) -> u32 {
     SETTINGS_INFO_ROWS + if modem { SETTINGS_MODEM_ROWS } else { 0 }
 }
 
-/// Index among the plain rows of Date & time (`0`) or About (`1`).
+/// Index among the plain rows of Do Not Disturb (`0`), Date and time (`1`)
+/// or About (`2`).
 pub fn settings_info_row_index(modem: bool, info: u32) -> u32 {
     if modem { SETTINGS_MODEM_ROWS + info } else { info }
 }
@@ -3273,7 +3275,9 @@ fn paint_shade_wide_controls(
     let band = SHADE_WIDE_TILE_TOP - SHADE_WIDE_STATUS_TOP - 4.0;
     let status_design = TYPE_CAPTION.min(TYPE_CAPTION * band / line(TYPE_CAPTION));
     let icon_size = line(status_design).ceil();
-    let icons_w = f64::from(u8::from(signal.is_some()) + u8::from(location.is_some())) * (icon_size + 8.0);
+    let quiet = services.is_some_and(|v| v.do_not_disturb);
+    let icons_w = f64::from(u8::from(signal.is_some()) + u8::from(location.is_some()) + u8::from(quiet))
+        * (icon_size + 8.0);
     let status_y = panel_y + SHADE_WIDE_STATUS_TOP;
     let status_text = status.join(" · ");
     let status_room = hw - 56.0 - icons_w;
@@ -3292,31 +3296,48 @@ fn paint_shade_wide_controls(
             crate::modem::CellularIndicator::NoService => (0, true),
         };
         glyph::paint_signal(cr, lit, none, icon_x, status_y, icon_size, style.text);
+        icon_x -= 8.0;
+    }
+    // Do Not Disturb leads the glyphs (leftmost), so the Location and signal
+    // glyphs keep the corner they have today.
+    if quiet {
+        icon_x -= icon_size;
+        glyph::paint(cr, Glyph::Moon, icon_x, status_y, icon_size, style.text, 1.0);
     }
 
     // The tiles: an icon and label over a state line. A tile that is on
     // takes the accent for its state; an unavailable one is muted.
     let Some(view) = services else { return };
     let settings = view.settings.as_ref();
+    let mut cells = Vec::new();
     for (index, tile) in shade_tiles(view).into_iter().enumerate() {
         let (x, y, w, h) = shade_tile_rect(index, hw);
         let y = panel_y + y;
         let (icon, label, state, on, available) = match tile {
             ShadeTile::Wifi => {
                 let network = settings.map(|s| &s.network);
-                // "Connected" or "Not connected"; with no link state, where
-                // the tile leads.
+                // One short word: a 136 px tile holds about eight characters at
+                // the caption size. "Online" and "Offline" stand for the
+                // Settings row's "Connected" and "Not connected".
                 let state = match network {
-                    None => "Loading".into(),
-                    Some(n) if n.value.is_none() => "Choose network".into(),
-                    Some(n) => control_text(n),
+                    None => "Loading".to_string(),
+                    Some(n) if n.value.is_none() => "Choose".to_string(),
+                    Some(n) => match &n.value {
+                        Some(ControlValue::Text(v)) if v == "link-up" => "Online".to_string(),
+                        Some(ControlValue::Text(v)) if v == "disconnected" => "Offline".to_string(),
+                        _ => control_text(n),
+                    },
                 };
                 let on = network.is_some_and(|n| matches!(&n.value, Some(ControlValue::Text(v)) if v == "link-up"));
                 (Glyph::Wifi, "Wi-Fi", state, on, true)
             }
             ShadeTile::Keyboard => {
                 let available = settings.is_some_and(|s| s.keyboard.state == ControlState::Action);
-                (Glyph::Keyboard, "Keyboard", if available { "Show or hide" } else { "Unavailable" }.to_string(), false, available)
+                (Glyph::Keyboard, "Keyboard", if available { "Toggle" } else { "N/A" }.to_string(), false, available)
+            }
+            ShadeTile::DoNotDisturb => {
+                let on = view.do_not_disturb;
+                (Glyph::Moon, "Quiet", if on { "On" } else { "Off" }.to_string(), on, true)
             }
             ShadeTile::Location => {
                 let state = match view.modem.as_ref().and_then(|m| m.location_indicator()) {
@@ -3331,17 +3352,47 @@ fn paint_shade_wide_controls(
                 (Glyph::Signal, "Cellular", if on { "On" } else { "Off" }.to_string(), on, true)
             }
         };
+        cells.push((x, y, w, h, icon, label, state, on, available));
+    }
+    // Three tiles share the row, so each stacks its icon over its label over
+    // one state word. The icon is a fixed 34 px (not grown with the text
+    // step), and is left out when keeping it would shrink the words below
+    // four fifths of their size; the words come first. Every word on every
+    // tile takes one size, the largest at which the widest still fits, so
+    // the tiles read alike at each text step.
+    let Some(&(_, _, tile_w, tile_h, ..)) = cells.first() else { return };
+    let label_h = vision_line(TYPE_LABEL) / 1.25 * 1.2;
+    let state_h = vision_line(TYPE_CAPTION) / 1.25 * 1.2;
+    let icon_full = (TYPE_LABEL * 1.3).round();
+    let with_icon = ((tile_h - 16.0) / (icon_full + label_h + state_h)).min(1.0);
+    let (icon_h, k) = if with_icon >= 0.8 {
+        (icon_full, with_icon)
+    } else {
+        (0.0, ((tile_h - 12.0) / (label_h + state_h)).min(1.0))
+    };
+    let room = tile_w - 24.0;
+    let word_room = (room - 8.0) * 0.96;
+    let mut word_k: f64 = 1.0;
+    for (.., label, state, _, _) in &cells {
+        for (key, role, word, weight) in [
+            ("body", TYPE_LABEL, *label, pango::Weight::Medium),
+            ("caption", TYPE_CAPTION, state.as_str(), pango::Weight::Normal),
+        ] {
+            let resolved = theme_font_size(theme, key, role * k, role * k, role * k * 1.25);
+            word_k = word_k.min(word_room / text_advance_resolved(cr, word, resolved, weight));
+        }
+    }
+    for (x, y, w, h, icon, label, state, on, available) in cells {
         paint_card(cr, theme, "controls", CardJob::Control, x, y, w, h);
         let ink = if available { style.text } else { style.muted };
-        // Both lines shrink together when the capped tile cannot hold them.
-        let label_h = vision_line(TYPE_LABEL) / 1.25 * 1.2;
-        let state_h = vision_line(TYPE_CAPTION) / 1.25 * 1.2;
-        let k = ((h - 16.0) / (label_h + state_h)).min(1.0);
-        let label_y = y + (h - (label_h + state_h) * k) / 2.0;
-        let text_x = paint_line_glyph(cr, icon, x + 18.0, label_y, TYPE_LABEL * k, ink);
-        themed_role_fit(cr, theme, "body", label, text_x, label_y, x + w - 14.0 - text_x, TYPE_LABEL * k, ink, pango::Weight::Medium);
+        let top = y + (h - (icon_h + (label_h + state_h) * k)) / 2.0;
+        if icon_h > 0.0 {
+            glyph::paint(cr, icon, x + 14.0, top, icon_h, ink, 1.0);
+        }
+        let label_y = top + icon_h;
         let state_ink = if on { style.accent } else if available { style.muted } else { ink };
-        themed_role_fit(cr, theme, "caption", &state, x + 18.0, label_y + label_h * k, w - 32.0, TYPE_CAPTION * k, state_ink, pango::Weight::Normal);
+        themed_role_fit(cr, theme, "body", label, x + 14.0, label_y, room, TYPE_LABEL * k * word_k, ink, pango::Weight::Medium);
+        themed_role_fit(cr, theme, "caption", &state, x + 14.0, label_y + label_h * k, room, TYPE_CAPTION * k * word_k, state_ink, pango::Weight::Normal);
     }
 }
 
@@ -4231,10 +4282,12 @@ fn scene(
             // Date & time and About: plain label-and-value rows.
             {
                 let mut rows: Vec<(&str, Glyph, String)> = Vec::new();
+                let quiet = services.is_some_and(|view| view.do_not_disturb);
                 if let Some(modem) = services.and_then(|view| view.modem.as_ref()) {
                     rows.push(("Cellular \u{203a}", Glyph::Signal, modem.cellular_summary()));
                     rows.push(("Location \u{203a}", Glyph::Location, modem.location_label().to_string()));
                 }
+                rows.push(("Do Not Disturb", Glyph::Moon, if quiet { "On" } else { "Off" }.to_string()));
                 rows.push(("Date & time \u{203a}", Glyph::Clock, "Clock and time zone".to_string()));
                 rows.push(("About \u{203a}", Glyph::Info, "Device and build".to_string()));
                 for (index, (name, icon, value)) in rows.iter().enumerate() {
@@ -8323,6 +8376,7 @@ mod tests {
                     summary: "Connection needs attention".into(),
                     priority: Priority::Important,
                     ongoing: false,
+                    breakthrough: false,
                 }),
                 events: vec![NotificationEvent {
                     id: 1,
@@ -10065,6 +10119,7 @@ mod tests {
                     summary: "Ready".into(),
                     priority: Priority::Ordinary,
                     ongoing: false,
+                    breakthrough: false,
                 }),
             }),
             ..ServiceView::default()

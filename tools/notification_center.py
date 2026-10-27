@@ -108,6 +108,7 @@ class History:
                  "body": text(data.get("body"), 512), "priority": priority,
                  "private": data.get("private", True) is not False or not trusted or app,
                  "ongoing": trusted and not app and priority == "critical" and data.get("ongoing") is True,
+                 "breakthrough": bool(trusted and not app and priority in ("important", "critical")),
                  "tag": tag, "target": target, "received": self.clock(),
                  "timestamp": int(self.wall()), "error": None}
         self.events[identity] = event
@@ -132,7 +133,8 @@ class History:
                        "source": "Notification" if event["private"] else event["source"],
                        "summary": "New notification" if event["private"] else event["summary"],
                        "icon": None if event["private"] else event["icon"],
-                       "focus": False, "ongoing": event["ongoing"]}
+                       "focus": False, "ongoing": event["ongoing"],
+                       "breakthrough": event["breakthrough"]}
         return {"schema": 1, "count": len(rows), "events": [self.public(row) for row in rows], "preview": preview}
 
     def request(self, data, source):

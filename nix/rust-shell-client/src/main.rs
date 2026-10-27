@@ -2566,6 +2566,29 @@ impl ShellClient {
         }
     }
 
+    /// Flips Do Not Disturb for this session and stores it for the next. A
+    /// failed write is logged without the value; the mode still flips. Turning
+    /// it on takes down a banner that is showing unless it breaks through (the
+    /// next poll's preview is filtered the same way); turning it off does not
+    /// bring a dropped banner back.
+    fn toggle_do_not_disturb(&mut self) {
+        let on = !self.service_view.do_not_disturb;
+        self.service_view.do_not_disturb = on;
+        if let Err(error) = k230_shell_rust::shell_prefs::write_do_not_disturb(
+            &k230_shell_rust::shell_prefs::do_not_disturb_path(),
+            on,
+        ) {
+            self.log(&format!("do-not-disturb-preference-failed {error}"));
+        }
+        let shown = k230_shell_rust::shell_prefs::banner_allowed(on, self.banner_preview.take());
+        if shown != self.banner_preview {
+            self.banner_surface.dirty = true;
+        }
+        self.banner_preview = shown;
+        self.renderer.set_services(self.service_view.clone());
+        self.dirty = true;
+    }
+
     /// Stores the slider's level for `keyboard_based.py`, which polls it.
     fn commit_key_backlight(&mut self) {
         let Some(level) = self.service_view.key_backlight else {
@@ -2919,6 +2942,9 @@ impl ShellClient {
                 }
                 _ => None,
             };
+            // Do Not Disturb drops every banner the broker did not mark as
+            // breaking through; history and the count are untouched.
+            let next = k230_shell_rust::shell_prefs::banner_allowed(self.service_view.do_not_disturb, next);
             if next != self.banner_preview {
                 self.banner_preview = next;
                 self.banner_surface.dirty = true;
@@ -3098,6 +3124,7 @@ impl ShellClient {
                 }
                 self.modem_dirty();
             }
+            PanelIntent::ToggleDoNotDisturb => self.toggle_do_not_disturb(),
             PanelIntent::OpenDateTime | PanelIntent::OpenAbout => {
                 if self.route != Route::Settings && !self.show(qh, Route::Settings) {
                     return;
@@ -7087,7 +7114,12 @@ fn serve() -> Result<(), String> {
         swaymsg: std::env::var_os("K230_SWAYMSG").map(PathBuf::from),
         renderer: RendererCache::default(),
         services,
-        service_view: ServiceView::default(),
+        service_view: ServiceView {
+            do_not_disturb: k230_shell_rust::shell_prefs::read_do_not_disturb(
+                &k230_shell_rust::shell_prefs::do_not_disturb_path(),
+            ),
+            ..ServiceView::default()
+        },
         wifi_worker,
         wifi_view: WifiView::default(),
         wifi_origin_scroll: 0.0,

@@ -1,16 +1,16 @@
 ## 1. Host: broker and preference
 
-- [ ] 1.1 Add `breakthrough` to the broker preview: true for a critical
+- [x] 1.1 Add `breakthrough` to the broker preview: true for a critical
   event, or an important event from a trusted non-delegate source; false for
   delegated apps, SMS and unknown senders. History rows do not carry it.
   Proof (host): `python3 tests/test_notification_center.py`, with cases for
   the base battery, a Timer-shaped important event, a delegated important
   event, an ordinary event and an unknown sender.
-- [ ] 1.2 Parse `breakthrough` in `service_data.rs` (missing means false) and
+- [x] 1.2 Parse `breakthrough` in `service_data.rs` (missing means false) and
   add the preference module (`do-not-disturb`, missing or unreadable means
   off, one-word write). Proof (host): `cargo test --offline --lib` in
   `nix/rust-shell-client`, with a test per case, including a corrupt file.
-- [ ] 1.3 Filter the banner in `main.rs`: while quiet, a preview without
+- [x] 1.3 Filter the banner in `main.rs`: while quiet, a preview without
   `breakthrough` never reaches `banner_preview`, and a shown banner unmaps when
   the mode turns on. History and the count are untouched. Proof (host): the
   same `cargo test --offline --lib`, with a test on the filter function over a
@@ -18,13 +18,13 @@
 
 ## 2. Host: tile, indicator and Settings row
 
-- [ ] 2.1 Make the tile grid three columns (`SHADE_WIDE_TILE_COLUMNS`), add
+- [x] 2.1 Make the tile grid three columns (`SHADE_WIDE_TILE_COLUMNS`), add
   `ShadeTile::DoNotDisturb`, and keep every tile at least 99 px tall with the
   slider top unchanged. Proof (host): `cargo test --offline --lib`, with tests
   that every tile rect lies inside the 480 px column, tiles do not overlap,
   each is at least `SHADE_TAP_MIN` tall, and the volume slider's end is within
   568 px at every vision text step.
-- [ ] 2.2 Paint the tile (stacked icon, label, one-word state, accent when
+- [x] 2.2 Paint the tile (stacked icon, label, one-word state, accent when
   on) and the moon glyph on the status line, and add the Settings row. Proof
   (host): `cargo test --offline --lib`, then renders of the wide shade at
   1232x568 with quiet mode off and on, with and without the modem, at 100%
@@ -34,11 +34,35 @@
   word, and both sliders fully on the panel at the largest step. If a word
   still shrinks below the caption size, shorten the copy and rerender. Proof:
   the 100% and largest-step renders above.
+  Host status 2026-10-27: both sliders are fully on the panel at 100% and
+  200%, and no word is cut off, but the tile copy had to change and, at 200%,
+  the words still render at about 70% of the 100% size (below the caption
+  size) because "Searching" at full 200% size is wider than a 136 px tile.
+  The label is "Quiet" ("Do Not Disturb" did not fit), Wi-Fi says "Online" or
+  "Offline", Keyboard says "Toggle". Open until the coordinator accepts the
+  200% shrink or picks shorter copy. See `docs/evidence/do-not-disturb/host/README.md`.
 
 ## 3. Board (hardware-only; one operator holds the board)
 
 Each step needs the reserved board and an installed build. Record injected
 input and glass separately, and never assume the person is touching.
+
+Operator notes for the group (board reserved, build installed). With the
+shade open on the 1232x568 panel the Do Not Disturb tile is the third tile of
+the first row, x 320..456, y 152..251 (centre 388,201), per the host render
+(`docs/evidence/do-not-disturb/host/`); verify on a `grim` capture first.
+
+```
+# toggle the tile (injected touch, not glass); PY is the board's python3
+ssh k230 "$PY - 1232x568 'click 388 201'" < tools/board-pointer.py
+ssh k230 "grim /var/tmp/dnd-<case>.png"
+ssh k230 "cat /var/lib/k230-shell-prefs/do-not-disturb"
+```
+
+The ordinary and Timer-shaped events are emitted to the broker socket with a
+single `emit` request (`tools/notification_center.py`); the exact socket path
+and the trusted-source emit are not recorded here and must be taken from the
+installed image (UNVERIFIED).
 
 - [ ] 3.1 Injected board: toggle the tile with injected touch
   (`tools/board-pointer.py`), emit an ordinary event, and capture with `grim`

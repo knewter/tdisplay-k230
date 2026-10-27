@@ -41,6 +41,25 @@ class Notifications(unittest.TestCase):
         important = self.emit(priority="important")
         self.assertEqual([row["id"] for row in self.history.snapshot()["events"]], [critical, important, ordinary])
 
+    def breakthrough(self, data, source=SOURCE):
+        self.history = module.History(clock=lambda: self.now, wall=lambda: 1234)
+        self.history.emit({"summary": "Example", **data}, source)
+        state = self.history.snapshot()
+        self.assertNotIn("breakthrough", state["events"][0])
+        return state["preview"]["breakthrough"]
+
+    def test_preview_breakthrough_flag(self):
+        self.assertTrue(self.breakthrough({"priority": "critical", "ongoing": True}))
+        self.assertTrue(self.breakthrough({"priority": "important", "private": False}))
+        self.assertFalse(self.breakthrough({"priority": "ordinary"}))
+        delegate = {"id": "dbus", "name": "Desktop notifications", "icon": None, "delegate": True}
+        app = {"app": {"id": "chat", "name": "Chat"}}
+        self.assertFalse(self.breakthrough({"priority": "important", **app}, delegate))
+        self.assertFalse(self.breakthrough({"priority": "critical", **app}, delegate))
+        sms = {"id": "sms", "name": "Messages", "icon": None}
+        self.assertFalse(self.breakthrough({"priority": "ordinary"}, sms))
+        self.assertFalse(self.breakthrough({"priority": "important"}, None))
+
     def test_privacy(self):
         self.emit(body="private text", summary="Private subject", target=12)
         state = self.history.snapshot()
