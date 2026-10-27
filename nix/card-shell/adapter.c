@@ -1791,6 +1791,7 @@ static void home_settle(bool open);
 /* The drawer is requested only after Home settles: requested at once, the
  * settle's restore() ran after it and the drawer never showed. */
 static void overview_open_apps(void) {
+	sway_log(SWAY_INFO, "K230_CARD_SHELL overview apps: settling Home");
 	home_settle(true);
 	shell.home_then_apps = true;
 }
@@ -2149,6 +2150,8 @@ static void handle_result(struct cs_result r) {
 	}
 	/* A tap on the backdrop behind the cards: the footer tap's Home. */
 	if ((r.actions & CS_HOME) && shell.active) {
+		sway_log(SWAY_INFO, "K230_CARD_SHELL backdrop tap x=%.0f y=%.0f",
+			shell.policy.backdrop_x, shell.policy.backdrop_y);
 		if (overview_apps_hit(shell.policy.backdrop_x, shell.policy.backdrop_y))
 			overview_open_apps();
 		else
@@ -3502,9 +3505,14 @@ static bool input_up(struct sway_seat *seat, int32_t id, uint64_t event_ms) {
 			cs_hit_test(&shell.policy, edge.x, edge.y) == SIZE_MAX;
 		if (!edge.cancelled && id == edge.id && !home && !backdrop) edge_client_up(event_ms);
 		if (--edge.contacts == 0) {
+			/* edge_reset clears edge, so test the tap point first. */
+			bool apps = backdrop && overview_apps_hit(edge.x, edge.y);
+			if (backdrop)
+				sway_log(SWAY_INFO, "K230_CARD_SHELL edge backdrop tap x=%.0f y=%.0f apps=%d",
+					edge.x, edge.y, apps);
 			edge_reset(false);
 			if (home) enter(seat);
-			else if (backdrop && overview_apps_hit(edge.x, edge.y)) overview_open_apps();
+			else if (apps) overview_open_apps();
 			else if (backdrop) home_settle(true);
 		}
 		return true;
