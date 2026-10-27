@@ -32,13 +32,9 @@ support it. The Help hit regions and the 99 px touch floor do not change.
 ## Non-goals
 
 - No change to any gesture or key. Help only describes them.
-- Not documented: drawer search keys. The brief proposed "LILYGO opens the
-  drawer with search taking the keys; Enter launches the first match; Esc
-  clears, then closes". In `nix/rust-shell-client/src/service_ui.rs`, search
-  takes keys only after its field is tapped, Enter and Esc only dismiss the
-  keyboard and keep the query, and nothing launches a first match. The
-  keyboard-base spec's Enter scenario therefore has no matching code. Help
-  says only that LILYGO opens the drawer.
+- The drawer's key search and the overview's keys come from
+  `the-base-keys-launch-apps-and-drive-the-overview`; Help describes them
+  as that change implements them.
 
 ## Capabilities
 

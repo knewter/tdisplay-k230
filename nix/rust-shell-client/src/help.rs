@@ -48,8 +48,14 @@ pub const GUIDE: &[(&str, &str)] = &[
         "Keyboard",
         "Swipe up with two fingers at the bottom to show it. Drag its handle down to hide it.",
     ),
-    ("LILYGO key", "Opens the app drawer."),
-    ("LILYGO + Tab", "Opens the overview."),
+    (
+        "LILYGO key",
+        "Opens the app drawer. Type to search, Enter opens the first match, Esc clears.",
+    ),
+    (
+        "LILYGO + Tab",
+        "Opens the overview. Arrows choose, Enter opens, Backspace closes, Esc goes back.",
+    ),
     ("Fn + LILYGO", "Saves a screenshot."),
     (
         "Esc",

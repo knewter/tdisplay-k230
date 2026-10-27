@@ -28,12 +28,14 @@ stays true here.
   - App menu on a held drawer tile: `main.rs` `hold_drawer_app_menu` opens the
     menu with the window list, New Window and Add to Home; `app_actions.rs`
     reads desktop actions.
-  - LILYGO, LILYGO + Tab, Fn + LILYGO: `nix/shell.nix` bindings.
+  - LILYGO, LILYGO + Tab, Fn + LILYGO: `nix/shell.nix` bindings, including
+    the `overview` mode; the drawer's key search is `DrawerSearch::key_action`
+    (`the-base-keys-launch-apps-and-drive-the-overview`).
   - Esc: `nix/keyboard-base/keyboard_based.py` (`--escape-back`).
   - Power key: `nix/power-keyd/power_keyd.py` (`short` toggles the display,
     `hold` shows the sheet).
-- **Dropped.** The drawer-search key claims, which the code contradicts (see
-  the proposal's non-goals).
+- **Added after review.** The drawer-search and overview key entries, once
+  the base-keys change implemented them.
 
 ## Risks
 
