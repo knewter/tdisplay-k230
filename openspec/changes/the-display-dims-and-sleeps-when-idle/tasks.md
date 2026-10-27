@@ -16,22 +16,26 @@ Every board command needs the sole board reservation and the flock on
 
 ## 2. Build gates (host or QEMU, no board)
 
-- [ ] 2.1 Build the card-shell compositor with the adapter change.
+- [x] 2.1 Build the card-shell compositor with the adapter change.
   Verify: `nix build .#card-shell --out-link "$SCRATCH/card-shell"` (build only; adapter.c
   has not been compiled yet). Take the build slot first.
-- [ ] 2.2 Build the system closure with `shell-idle` and read the unit.
+  Done 2026-10-27: the landscape system build compiled the patched Sway after `2cc67965` fixed a declaration-order error (`wake_gate` was used before its declaration).
+- [x] 2.2 Build the system closure with `shell-idle` and read the unit.
   Verify: `nix build .#nixosConfigurations.k230.config.system.build.toplevel --out-link "$SCRATCH/top"`
   then `cat "$SCRATCH/top/etc/systemd/system/shell-idle.service"` shows the swayidle arguments.
+  Done 2026-10-27 with the landscape system (`kllh24ww…`): `shell-idle.service` runs `k230-swayidle`, which execs `swayidle -w timeout 30 "… dim …" resume "… resume …" timeout 60 "… off …"`.
 - [ ] 2.3 QEMU or headless smoke: on a headless Sway run `swaymsg output '*' power off`,
   inject a touch with the existing card-shell test input, and show the swallowed
   sequence never reaches a probe client. Record the evidence class as QEMU/headless.
 
 ## 3. Board proof (UNVERIFIED until run)
 
-- [ ] 3.1 Deploy to the board (operator action). Idle 30 s: `cat $D/brightness` is a quarter of the
+- [x] 3.1 Deploy to the board (operator action). Idle 30 s: `cat $D/brightness` is a quarter of the
   value read before; `systemctl status shell-idle` is active.
-- [ ] 3.2 Idle 60 s: `$SM -t get_outputs -r | jq '.[].power'` prints `false`; `cat /run/shell/idle-dimmer.json`
+  Done 2026-10-27T03:42:33Z (build `prk64sjw…`, read over SSH): brightness 148 dimmed to 37, power still true, `shell-idle` active. `docs/evidence/idle-dim/`.
+- [x] 3.2 Idle 60 s: `$SM -t get_outputs -r | jq '.[].power'` prints `false`; `cat /run/shell/idle-dimmer.json`
   shows `"off": true`; the session and open apps survive.
+  Done 2026-10-27T03:43:03Z: `"power": false`, `idle-dimmer.json` `{"saved": 148, "dimmed": 37, "off": true}`, and the terminal survived. `docs/evidence/idle-dim/`.
 - [ ] 3.3 Wake by power key: the display lights, `cat $D/brightness` equals the prior value, and a
   further 30 s idle dims again (proves the `seat * cursor move 0 0` re-arm).
 - [ ] 3.4 Wake by touch with an app open whose button sits under the finger: the display lights,

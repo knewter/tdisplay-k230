@@ -28,12 +28,13 @@
   `grim` per `docs/evidence/help-refresh/` practice, after
   `nix build .#nixosConfigurations.k230.config.system.build.toplevel --out-link <scratch>/system`
   and a live `switch-to-configuration test`.
-- [ ] 3.2 Record on the board whether `/run/systemd/timesync/synchronized`
+- [x] 3.2 Record on the board whether `/run/systemd/timesync/synchronized`
   exists after sync, and that About's system hash equals
   `readlink /run/current-system` there. Proof:
   `./tools/console.py /dev/ttyACM0 --wait=3 "ls -l /run/systemd/timesync/ /run/current-system; cat /etc/hostname /proc/sys/kernel/osrelease"`
   saved under `docs/evidence/settings-about/board/`. Until then the sync row stays
   UNVERIFIED.
+  Done 2026-10-27T03:53:32Z over SSH (build `kllh24ww…`): `/run/systemd/timesync/synchronized` exists (22:45 local), and About's System reads `kllh24ww · nixos-system-…`, matching `readlink /run/current-system`. `docs/evidence/settings-about/README.md`.
 - [ ] 3.3 The operator reads both pages on glass. Physical proof: a timestamped
   operator report tied to the installed build.
 

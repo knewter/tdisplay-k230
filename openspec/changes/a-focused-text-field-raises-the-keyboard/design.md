@@ -104,3 +104,12 @@ focus changes and each action is one short `pkill` helper spawn.
   the state machine only acts on active-to-inactive transitions, but an app
   that disables and re-enables per keystroke would hide and show repeatedly.
   Board task 3.4 watches for it. <!-- UNVERIFIED -->
+
+## Added after the first board run
+
+- **The overview lowers the keyboard.** A focused terminal keeps its text
+  input enabled while the card overview is shown, so the keyboard stayed up
+  over the deck and squeezed the card into a sliver above it (build
+  `vzizj58r…`). The compositor now sends `hide` when the overview opens
+  (`CS_SHRINK` in `adapter.c`). Returning to the app does not raise it again,
+  because no new `activate` arrives; the two-finger gesture still does.

@@ -8,14 +8,16 @@
 
 ## 2. Build
 
-- [ ] 2.1 Evaluate and cross-build the landscape system with the new service and jeepney, and record that `jeepney` builds under the cross toolchain. Proof (QEMU/host, not hardware): `nix build .#nixosConfigurations.k230-mainline-drm-shell-landscape-hdmi.config.system.build.toplevel --out-link <scratch>/result`, then `systemctl cat shell-notification-dbus.service` equivalent via `nix eval` of the unit text. Not run in this worktree.
+- [x] 2.1 Evaluate and cross-build the landscape system with the new service and jeepney, and record that `jeepney` builds under the cross toolchain. Proof (QEMU/host, not hardware): `nix build .#nixosConfigurations.k230-mainline-drm-shell-landscape-hdmi.config.system.build.toplevel --out-link <scratch>/result`, then `systemctl cat shell-notification-dbus.service` equivalent via `nix eval` of the unit text. Not run in this worktree.
+  Done 2026-10-27: the landscape system built on the host with `shell-notification-dbus.service` and `jeepney` (store path `dhmp8mdi…`, master `8b4f7d73`); see `docs/evidence/apps-alert/README.md`.
 - [ ] 2.2 Run the adaptor and `notify-send` under the QEMU shell, if `libnotify` is added to the test closure, and record the history entry. Proof (QEMU, not glass): the QEMU smoke harness, with the exact command recorded under `docs/evidence/apps-alert/`.
 
 ## 3. Board (hardware-only)
 
 Each of these needs the reserved board, the installed build and, for 3.1 and 3.2, grim captures of the glass (injected input is acceptable; do not assume the person is touching).
 
-- [ ] 3.1 `notify-send` shows a banner. Operator command, as the `shell` user over protected SSH: `sudo -u shell env DBUS_SESSION_BUS_ADDRESS=unix:path=/run/shell-bus/bus notify-send -a Probe -u critical "Probe" "body"`; capture the preview with `grim`, then `k230-notifications history` for the app name, `important` priority and `dismissible: true`. Also confirm `busctl --user --address=unix:path=/run/shell-bus/bus status org.freedesktop.Notifications` names the adaptor. Record under `docs/evidence/apps-alert/`.
+- [x] 3.1 `notify-send` shows a banner. Operator command, as the `shell` user over protected SSH: `sudo -u shell env DBUS_SESSION_BUS_ADDRESS=unix:path=/run/shell-bus/bus notify-send -a Probe -u critical "Probe" "body"`; capture the preview with `grim`, then `k230-notifications history` for the app name, `important` priority and `dismissible: true`. Also confirm `busctl --user --address=unix:path=/run/shell-bus/bus status org.freedesktop.Notifications` names the adaptor. Record under `docs/evidence/apps-alert/`.
+  Done 2026-10-27T03:37:59Z on the board (injected over SSH). `notify-send` is not on the image, so `busctl ... Notify` made the same call; history showed `Probe`, `important`, `dismissible: true`, and `busctl status` named the adaptor. `docs/evidence/apps-alert/`.
 - [ ] 3.2 A GTK app's notification arrives (for example a GTK app that calls `g_application_send_notification`), and an app naming itself "Shell" appears as "Application". Same capture method.
 - [ ] 3.3 Timer expiry with the card open shows a banner. Start the Timer for 10 s with injected touch, capture with `grim`.
 - [ ] 3.4 Timer expiry with the card closed shows a banner. Start a 20 s timer, close the card with the shell's close gesture, wait, capture the banner with `grim`, and confirm one History entry only. Then repeat with a reopen before expiry and confirm the countdown resumes and no second alert arrives.

@@ -2245,11 +2245,11 @@ DATA fac69f720ae8595aa5c6c9e8fe1c404cdc6bbff7da2014b551a3f57ec3055661 docs/evide
 DATA 4df953a8f63c648fb98e4d9b3f3384aa875ad7aeb4f9a0825ff1c264de0f3eb4 docs/evidence/help-refresh/host/help-landscape-1232x568-top.png
 DATA b7b8131dadb638854b5f0d0cadb4cd8d4bf3588ea16c73134f3ff076cd5bce8e docs/evidence/help-refresh/host/help-portrait-568x1232-end.png
 DATA e852cf5374353cfd8f06fab09aa5553df316da619c36590bafd73458bda0934d docs/evidence/help-refresh/host/help-portrait-568x1232-top.png
-DATA 1b960d6bc3fad9f782ac8f4a5253cdaad994075cd700d911fb462ac58bd9336a docs/evidence/settings-about/host/about-100-1232x568.png
+DATA cd13a6de926d5f23e04f9de840f731f55539da7a12a92cec4f9f2c49c0bc4f6c docs/evidence/settings-about/host/about-100-1232x568.png
 DATA f4a36975306e53dfbab3d21ad7b03fdaf557ce399d69f3d397e60ea0168b15e8 docs/evidence/settings-about/host/about-100-568x1232.png
 DATA 9466b3d658de0a0d4ec4c7d2b19ce60533b93f6794f4e6a9d2fad23528d14705 docs/evidence/settings-about/host/about-200-1232x568.png
 DATA 439715e345321a22b333f73d4a91ce5dffdf616e985eafec9909d2819e2cd5a5 docs/evidence/settings-about/host/about-200-568x1232.png
-DATA be7e17c5c37ffe1e65f3de757c8796d45dfd651354124131eb4df6a594540565 docs/evidence/settings-about/host/date-time-100-1232x568.png
+DATA 8d3f07c82194d46c6cf1ec3e665d7800deabdcc4d3bebd032cf7070d0d51d293 docs/evidence/settings-about/host/date-time-100-1232x568.png
 DATA 3061985905c888bfdda28d9aa59fdc9354e0b682d58f03527a32df8a8dbaa73e docs/evidence/settings-about/host/date-time-100-568x1232.png
 DATA eba08d7e6fa17267dd36fc8f4947bd7353b7df4fd89a61b4678105ac9fe760f7 docs/evidence/settings-about/host/date-time-200-1232x568.png
 DATA 1496cfa8ed436effba327ec09a5d3f2dbfa7a72355d7d92d82aa651fea3a26cf docs/evidence/settings-about/host/date-time-200-568x1232.png
@@ -2257,6 +2257,22 @@ DATA 35a944ae92b2c49f3f447a87e9cefe0500693680d15735ed3c156a87adcc07a5 docs/evide
 DATA e44d2b81c60d348ba3e6c396d8cc13e16fd24bff9c9a8db6ae49ac5e9b0bd754 docs/evidence/settings-about/host/settings-100-568x1232.png
 DATA 2813bdad2345e8a71f89c134e528744bfb3fb681acbc70c8a138e18eaf3185cf docs/evidence/settings-about/host/settings-200-1232x568.png
 DATA 86aa7eca83e2fd517d58f9d26e9ee2d0b76818569bd2f43d2ef55ed0fd13e416 docs/evidence/settings-about/host/settings-200-568x1232.png
+DATA 92bd21cfb151dfd57daecc902631064f1fdf77b7fcfa0c6e01cf20c698e5343d docs/evidence/help-refresh/board/help-landscape-1.png
+DATA 2d7b38beb80c40e57368e45d08aeae55f65adaa7df11b5a589ed82e749427ec3 docs/evidence/help-refresh/board/help-landscape-2.png
+DATA b4da560e3ff60590e114fd9be71714ae1c4b9caa5d9568f7fbe089ef32f279c1 docs/evidence/help-refresh/board/help-landscape-3.png
+DATA b4da560e3ff60590e114fd9be71714ae1c4b9caa5d9568f7fbe089ef32f279c1 docs/evidence/help-refresh/board/help-landscape-4.png
+DATA 7b020e6c5d2966120e47ab8060047cb63c7cfb4bb073ea0399385c2a994c4206 docs/evidence/gtk-touch-floor/board/files-landscape.png
+DATA 0972065dac53965f8d04136a7102a3a78654a41cde4cfd2e1c3cf3250a5e5f7e docs/evidence/gtk-touch-floor/board/net-landscape.png
+DATA 9a8a1484c0bf835b8e1db51cba8fbd43db9304b806b09a87099ec158bafb59cd docs/evidence/apps-alert/board/banner-critical.png
+DATA 9a8a1484c0bf835b8e1db51cba8fbd43db9304b806b09a87099ec158bafb59cd docs/evidence/apps-alert/board/banner-shell-claim.png
+DATA b5a84ae6de237ea79d49c7d1968230ba1449d60b4a46877fc14c4b589abed1ac docs/evidence/shade-pass/board/tile-location-searching.png
+DATA aa49129286a0bc7a64317e140d8eff66a333d683ebb3057d9d1709765057f428 docs/evidence/overview-all-apps/board/after-tap-drawer.png
+DATA 228673f5089241367a5e42a2a220898d92b8b5d0ce09c25e7b48e64d3576798e docs/evidence/overview-all-apps/board/overview-title-row.png
+DATA b2f023db4e9850349a87acdc556e3e592acde2a40cdfd574ac872ae6522476cd docs/evidence/idle-dim/board/after-wake-tap-on-video.png
+DATA 72e64e56d9eb7291647bf4b5ef1031b0bda88821c444f8b17ae93690c936f51e docs/evidence/a-focused-text-field/board/overview-keyboard-lowered.png
+DATA 4e2e9d23596e3775f1a6d44ae4ad1d78cbdf77f920f7c4f5de3d1dc294cbe265 docs/evidence/a-focused-text-field/board/terminal-focus-keyboard-up.png
+DATA 9cb6b59a3a2c1f84a714320d30a57e93daea00191e1221d9fc0bdc08138f035e docs/evidence/settings-about/board/about-landscape.png
+DATA a806edf12f14f2e36e7fdb7b6b944b6385cb104dc0a421e67f770cc5120f07f1 docs/evidence/settings-about/board/date-time-landscape.png
 ```
 
 `group:` rows stand for a directory whose members are enumerated by
@@ -4189,11 +4205,11 @@ Host renders of Settings with its Date & time and About rows and both pages from
 
 | Path | Bytes | Class | SHA256 |
 | --- | ---: | --- | --- |
-| `docs/evidence/settings-about/host/about-100-1232x568.png` | 37276 | DATA | `1b960d6bc3fad9f782ac8f4a5253cdaad994075cd700d911fb462ac58bd9336a` |
+| `docs/evidence/settings-about/host/about-100-1232x568.png` | 42819 | DATA | `cd13a6de926d5f23e04f9de840f731f55539da7a12a92cec4f9f2c49c0bc4f6c` |
 | `docs/evidence/settings-about/host/about-100-568x1232.png` | 49853 | DATA | `f4a36975306e53dfbab3d21ad7b03fdaf557ce399d69f3d397e60ea0168b15e8` |
 | `docs/evidence/settings-about/host/about-200-1232x568.png` | 59725 | DATA | `9466b3d658de0a0d4ec4c7d2b19ce60533b93f6794f4e6a9d2fad23528d14705` |
 | `docs/evidence/settings-about/host/about-200-568x1232.png` | 77086 | DATA | `439715e345321a22b333f73d4a91ce5dffdf616e985eafec9909d2819e2cd5a5` |
-| `docs/evidence/settings-about/host/date-time-100-1232x568.png` | 36787 | DATA | `be7e17c5c37ffe1e65f3de757c8796d45dfd651354124131eb4df6a594540565` |
+| `docs/evidence/settings-about/host/date-time-100-1232x568.png` | 41792 | DATA | `8d3f07c82194d46c6cf1ec3e665d7800deabdcc4d3bebd032cf7070d0d51d293` |
 | `docs/evidence/settings-about/host/date-time-100-568x1232.png` | 48268 | DATA | `3061985905c888bfdda28d9aa59fdc9354e0b682d58f03527a32df8a8dbaa73e` |
 | `docs/evidence/settings-about/host/date-time-200-1232x568.png` | 61421 | DATA | `eba08d7e6fa17267dd36fc8f4947bd7353b7df4fd89a61b4678105ac9fe760f7` |
 | `docs/evidence/settings-about/host/date-time-200-568x1232.png` | 72534 | DATA | `1496cfa8ed436effba327ec09a5d3f2dbfa7a72355d7d92d82aa651fea3a26cf` |
@@ -4201,3 +4217,33 @@ Host renders of Settings with its Date & time and About rows and both pages from
 | `docs/evidence/settings-about/host/settings-100-568x1232.png` | 71041 | DATA | `e44d2b81c60d348ba3e6c396d8cc13e16fd24bff9c9a8db6ae49ac5e9b0bd754` |
 | `docs/evidence/settings-about/host/settings-200-1232x568.png` | 82442 | DATA | `2813bdad2345e8a71f89c134e528744bfb3fb681acbc70c8a138e18eaf3185cf` |
 | `docs/evidence/settings-about/host/settings-200-568x1232.png` | 78407 | DATA | `86aa7eca83e2fd517d58f9d26e9ee2d0b76818569bd2f43d2ef55ed0fd13e416` |
+
+## Board evidence: Help, GTK touch floor, alerts, shade
+
+Native grim captures from the board for the Help refresh, GTK touch floor, app alerts and shade Location tile changes.
+
+| Path | Bytes | Class | SHA256 |
+| --- | ---: | --- | --- |
+| `docs/evidence/help-refresh/board/help-landscape-1.png` | 75356 | DATA | `92bd21cfb151dfd57daecc902631064f1fdf77b7fcfa0c6e01cf20c698e5343d` |
+| `docs/evidence/help-refresh/board/help-landscape-2.png` | 87922 | DATA | `2d7b38beb80c40e57368e45d08aeae55f65adaa7df11b5a589ed82e749427ec3` |
+| `docs/evidence/help-refresh/board/help-landscape-3.png` | 70890 | DATA | `b4da560e3ff60590e114fd9be71714ae1c4b9caa5d9568f7fbe089ef32f279c1` |
+| `docs/evidence/help-refresh/board/help-landscape-4.png` | 70890 | DATA | `b4da560e3ff60590e114fd9be71714ae1c4b9caa5d9568f7fbe089ef32f279c1` |
+| `docs/evidence/gtk-touch-floor/board/files-landscape.png` | 15254 | DATA | `7b020e6c5d2966120e47ab8060047cb63c7cfb4bb073ea0399385c2a994c4206` |
+| `docs/evidence/gtk-touch-floor/board/net-landscape.png` | 10348 | DATA | `0972065dac53965f8d04136a7102a3a78654a41cde4cfd2e1c3cf3250a5e5f7e` |
+| `docs/evidence/apps-alert/board/banner-critical.png` | 6699 | DATA | `9a8a1484c0bf835b8e1db51cba8fbd43db9304b806b09a87099ec158bafb59cd` |
+| `docs/evidence/apps-alert/board/banner-shell-claim.png` | 6699 | DATA | `9a8a1484c0bf835b8e1db51cba8fbd43db9304b806b09a87099ec158bafb59cd` |
+| `docs/evidence/shade-pass/board/tile-location-searching.png` | 47832 | DATA | `b5a84ae6de237ea79d49c7d1968230ba1449d60b4a46877fc14c4b589abed1ac` |
+
+## Board evidence: overview All apps, idle, focus keyboard, About
+
+Native grim captures from the board for the overview All apps entry, idle dim/off, focus-raised keyboard and the About and Date & time pages.
+
+| Path | Bytes | Class | SHA256 |
+| --- | ---: | --- | --- |
+| `docs/evidence/overview-all-apps/board/after-tap-drawer.png` | 90266 | DATA | `aa49129286a0bc7a64317e140d8eff66a333d683ebb3057d9d1709765057f428` |
+| `docs/evidence/overview-all-apps/board/overview-title-row.png` | 9846 | DATA | `228673f5089241367a5e42a2a220898d92b8b5d0ce09c25e7b48e64d3576798e` |
+| `docs/evidence/idle-dim/board/after-wake-tap-on-video.png` | 203546 | DATA | `b2f023db4e9850349a87acdc556e3e592acde2a40cdfd574ac872ae6522476cd` |
+| `docs/evidence/a-focused-text-field/board/overview-keyboard-lowered.png` | 94301 | DATA | `72e64e56d9eb7291647bf4b5ef1031b0bda88821c444f8b17ae93690c936f51e` |
+| `docs/evidence/a-focused-text-field/board/terminal-focus-keyboard-up.png` | 13000 | DATA | `4e2e9d23596e3775f1a6d44ae4ad1d78cbdf77f920f7c4f5de3d1dc294cbe265` |
+| `docs/evidence/settings-about/board/about-landscape.png` | 32208 | DATA | `9cb6b59a3a2c1f84a714320d30a57e93daea00191e1221d9fc0bdc08138f035e` |
+| `docs/evidence/settings-about/board/date-time-landscape.png` | 33323 | DATA | `a806edf12f14f2e36e7fdb7b6b944b6385cb104dc0a421e67f770cc5120f07f1` |

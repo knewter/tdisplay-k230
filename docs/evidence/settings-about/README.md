@@ -15,3 +15,19 @@ Limits: the page rows are fixture values (a made-up store hash, kernel, uptime
 and clock), not a reading of any installed build. The theme is the built-in
 default with only the vision text step set. No board capture and no operator
 reading on glass exist yet (change task 3).
+
+## Board captures (landscape)
+
+Evidence class: board, native `grim`, pages opened by injected taps on the
+Settings rows. Build `/nix/store/kllh24ww1vhybcdf6z9z6jz859584jsb-nixos-system-nixos-26.11.20260919.20b1ddd`,
+2026-10-27 ~03:52Z.
+
+- `board/about-landscape.png`: Device `nixos`, System `kllh24ww · nixos-system-…`,
+  Kernel `7.3.0-rc5`, Uptime, Storage `8.0 GB free of 15.2 GB`, Shell
+  `0.1.0 · kwwqrc8a`.
+- `board/date-time-landscape.png`: Network time `Synchronized`, time zone
+  `America/Chicago (UTC-05:00)` (the zone set in `nix/k230.nix`).
+
+Over SSH at 03:53:32Z: `/run/systemd/timesync/synchronized` exists, and
+`readlink /run/current-system` is the `kllh24ww…` path above. The portrait
+captures and the operator's reading on glass remain open.
