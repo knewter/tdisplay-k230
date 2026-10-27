@@ -2163,6 +2163,10 @@ static void handle_result(struct cs_result r) {
 	if (r.actions & CS_SHRINK) {
 		shell.active = true;
 		overview_key_mode(true);
+		/* A focused text field keeps the on-screen keyboard up
+		 * (k230-osk-focus), and over the deck it crushes the cards into
+		 * the strip above it. The overview takes no text, so lower it. */
+		keyboard_signal("hide");
 		card_bench_phase(true, shell.policy.count);
 		wlr_scene_node_set_enabled(&shell.deck->node, false);
 		/* Withdraw the ordinary-maximized backdrop now that the deck is
