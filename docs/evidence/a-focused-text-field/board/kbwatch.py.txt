@@ -1,0 +1,20 @@
+# kbwatch.py SECONDS -- print each replacement of /run/shell/k230-keyboard-visible
+# (one per k230-keyboard-gesture-signal call) with its time and content.
+import ctypes, os, struct, sys, time, select
+libc = ctypes.CDLL(None, use_errno=True)
+fd = libc.inotify_init1(os.O_CLOEXEC)
+IN_MOVED_TO = 0x80
+libc.inotify_add_watch(fd, b"/run/shell", IN_MOVED_TO)
+end = time.time() + float(sys.argv[1])
+while (left := end - time.time()) > 0:
+    r, _, _ = select.select([fd], [], [], left)
+    if not r:
+        break
+    buf = os.read(fd, 4096); i = 0
+    while i < len(buf):
+        _, mask, _, n = struct.unpack_from("iIII", buf, i)
+        name = buf[i + 16:i + 16 + n].rstrip(b"\0").decode()
+        i += 16 + n
+        if name == "k230-keyboard-visible":
+            v = open("/run/shell/" + name).read()
+            print(f"{time.strftime('%H:%M:%S', time.gmtime())}Z {v}", flush=True)

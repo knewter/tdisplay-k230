@@ -53,3 +53,19 @@ Backspace emptied the entry, GTK closed the search bar and the keyboard went
 down; Starred then opened by touch at 17:02:15Z with the keyboard still down.
 `shell-osk-focus` logs nothing on show/hide, so its journal only shows the
 restart; the captures are the record. A GTK3 entry was not tried.
+
+## foot while typing: no flapping (task 3.4), build `gpgh1vx6…`
+
+`shell-osk-focus` writes nothing per show/hide, so the journal cannot show
+flapping. Instead `board/kbwatch.py.txt` (run as `/var/tmp/kbwatch.py 100`)
+blocks on inotify and prints each replacement of
+`/run/shell/k230-keyboard-visible`, which `k230-keyboard-gesture-signal`
+rewrites on every show and hide call, from any caller. Log:
+`board/foot-typing-kbwatch.log`; captures: `board/foot-typing-no-flap.png`.
+
+From Home the dock's terminal was tapped at 17:06:13Z: one `show`. Then 26
+keys ("echo flap test one two three") typed through the injected uinput
+keyboard between 17:06:17Z and 17:06:23Z, plus Enter: no events, and the
+line echoed intact. Switching to the overview at 17:06:25Z gave `hide`, and
+tapping Home at 17:06:28Z a second `hide`. The keys came from the injected
+uinput device, not the base or the on-screen keyboard, so 3.5 and 3.6 remain.
