@@ -60,3 +60,15 @@ Timer inhibit (3.5), slider while dim (3.6) and base key (3.7) were not run.
   trigger one. Commit after `5a1da698` calls
   `sway_idle_inhibit_v1_check_active()` at the end of `restore()`; the
   Home part of 3.5 is to be re-run on that build.
+
+## Inhibit at Home, fixed (build `zs05li2k…`, commit `be58ff02`)
+
+The `restore()` re-check alone did not help (build `f0zn5j8l…`, 15:41Z: the
+unfocused video still reported `inhibit_idle: true`). mpv holds its own
+application idle inhibitor, which Sway counts while it believes the view is
+visible. `be58ff02` makes that check also ask `card_shell_view_hidden()`.
+
+Run at 15:45-15:47Z: Video playing, a Timer started, then Home through the
+overview footer (last input 15:46:19Z). `get_tree`: video and Timer
+unfocused, both `inhibit_idle: false`. Brightness 37 at 15:46:55, and the
+compositor logged `output * power off` at 15:47:17.

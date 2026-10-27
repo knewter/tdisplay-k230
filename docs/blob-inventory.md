@@ -2305,6 +2305,13 @@ DATA 945cb4443ee71bdec39ad1e2fef64607872b73d6a018be0478a728e22cefa191 docs/evide
 DATA aa4d659e60e2c11e8da922f1b4ba1f1b74156b4d5b70fdc2781e105958da8a9a docs/evidence/apps-alert/board/banner-timer-card-closed.png
 DATA 2ae369648201e9488c80979ce602087aa6c3de5717a0d0669cd8402beab4fd2b docs/evidence/apps-alert/board/timer-reopened-resumes.png
 DATA 9f3c0ab48bd43a4750b9961fc4978f09108e55486834401b0b6eda50bdbb8186 docs/evidence/a-focused-text-field/board/timer-focus-keyboard-down.png
+DATA e0628f324b14cc57e9417a21b67f3680c679af4e52176d8f4f60fda588aec89d docs/evidence/do-not-disturb/board/quiet-ordinary-no-banner-top.png
+DATA 945cb4443ee71bdec39ad1e2fef64607872b73d6a018be0478a728e22cefa191 docs/evidence/do-not-disturb/board/quiet-timer-breaks-through.png
+DATA b058ebff6eeaa61525733ce8256e7470f85e5ebd024c113e355c396d43dfb529 docs/evidence/do-not-disturb/board/shade-quiet-off.png
+DATA c00d29cabbc74b916ed778d2a34e0a41abea9824d41184ec7603f80d5582fb5f docs/evidence/do-not-disturb/board/shade-quiet-on.png
+DATA 921c91ba84c9a2d8bc3d2fcdfb8500a3fcea606edfc8fe8fcd0bb2e6ad4c7391 docs/evidence/home-notification-count/board/home-count-1-with-banner.png
+DATA f0efd92d6bba85833b24a870b39797d45796c17095a4494883cc90ea087e62ec docs/evidence/home-notification-count/board/home-count-3-quiet.png
+DATA 8b16c49b640f76d6be5603489d8b691ebb304fe2e8457e9cba9093368c8a81c4 docs/evidence/idle-dim/board/video-focused-playing.png
 ```
 
 `group:` rows stand for a directory whose members are enumerated by
@@ -4332,3 +4339,17 @@ Native grim captures from the board of Timer expiry banners and the Timer with t
 | `docs/evidence/apps-alert/board/banner-timer-card-closed.png` | 5762 | DATA | `aa4d659e60e2c11e8da922f1b4ba1f1b74156b4d5b70fdc2781e105958da8a9a` |
 | `docs/evidence/apps-alert/board/timer-reopened-resumes.png` | 7985 | DATA | `2ae369648201e9488c80979ce602087aa6c3de5717a0d0669cd8402beab4fd2b` |
 | `docs/evidence/a-focused-text-field/board/timer-focus-keyboard-down.png` | 7987 | DATA | `9f3c0ab48bd43a4750b9961fc4978f09108e55486834401b0b6eda50bdbb8186` |
+
+## Board evidence: Do Not Disturb, Home count, video at Home
+
+Native grim captures from the board for Do Not Disturb, the Home notification count and the idle video run.
+
+| Path | Bytes | Class | SHA256 |
+| --- | ---: | --- | --- |
+| `docs/evidence/do-not-disturb/board/quiet-ordinary-no-banner-top.png` | 11125 | DATA | `e0628f324b14cc57e9417a21b67f3680c679af4e52176d8f4f60fda588aec89d` |
+| `docs/evidence/do-not-disturb/board/quiet-timer-breaks-through.png` | 5801 | DATA | `945cb4443ee71bdec39ad1e2fef64607872b73d6a018be0478a728e22cefa191` |
+| `docs/evidence/do-not-disturb/board/shade-quiet-off.png` | 43220 | DATA | `b058ebff6eeaa61525733ce8256e7470f85e5ebd024c113e355c396d43dfb529` |
+| `docs/evidence/do-not-disturb/board/shade-quiet-on.png` | 43557 | DATA | `c00d29cabbc74b916ed778d2a34e0a41abea9824d41184ec7603f80d5582fb5f` |
+| `docs/evidence/home-notification-count/board/home-count-1-with-banner.png` | 209936 | DATA | `921c91ba84c9a2d8bc3d2fcdfb8500a3fcea606edfc8fe8fcd0bb2e6ad4c7391` |
+| `docs/evidence/home-notification-count/board/home-count-3-quiet.png` | 205857 | DATA | `f0efd92d6bba85833b24a870b39797d45796c17095a4494883cc90ea087e62ec` |
+| `docs/evidence/idle-dim/board/video-focused-playing.png` | 233581 | DATA | `8b16c49b640f76d6be5603489d8b691ebb304fe2e8457e9cba9093368c8a81c4` |

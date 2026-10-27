@@ -64,7 +64,7 @@ single `emit` request (`tools/notification_center.py`); the exact socket path
 and the trusted-source emit are not recorded here and must be taken from the
 installed image (UNVERIFIED).
 
-- [ ] 3.1 Injected board: toggle the tile with injected touch
+- [x] 3.1 Injected board: toggle the tile with injected touch
   (`tools/board-pointer.py`), emit an ordinary event, and capture with `grim`
   that no banner maps while history lists it; then emit a Timer-shaped
   important event from the Timer source and capture its banner. Proof
@@ -72,6 +72,7 @@ installed image (UNVERIFIED).
   timestamps under `docs/evidence/do-not-disturb/board/`. The base-battery
   critical event is exercised by the host test only unless the policy can be
   driven on the board; say which.
+  Done 2026-10-27 (injected, `ui.py` taps rather than `board-pointer.py`, D-Bus events): ordinary event with no banner and listed in history at 15:43:36Z; real Timer banner under Quiet at 16:03:22Z. Base-battery critical: host test only. `docs/evidence/do-not-disturb/board/`.
 - [ ] 3.2 Injected board: `grim` captures of the shade with the tile off and
   on show the moon glyph appear and disappear, and the sliders stay on the
   panel at the largest vision step. Same directory.

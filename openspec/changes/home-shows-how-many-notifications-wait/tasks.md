@@ -34,9 +34,10 @@ input and glass separately.
   a private event, and that Home's drag between pages and the pull-down shade
   still behave with it showing (`tools/board-pointer.py` swipes). Same
   directory.
-- [ ] 2.3 Injected board: with Do Not Disturb on (if that change has landed),
+- [x] 2.3 Injected board: with Do Not Disturb on (if that change has landed),
   an ordinary event shows no banner and the count still rises. Same directory.
   Skip and say so if the other change is not installed.
+  Done 2026-10-27 15:43Z (injected): with Quiet on two ordinary events showed no banner and the count rose to 3. `docs/evidence/home-notification-count/board/`.
 - [ ] 2.4 Glass: the operator confirms on the panel that the count is legible
   and not mistaken for a control. Physical proof: a timestamped operator report
   tied to the installed build, in the same directory. Keep this task open until

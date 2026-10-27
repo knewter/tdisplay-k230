@@ -43,9 +43,10 @@ Every board command needs the sole board reservation and the flock on
   and a lone `journalctl -u shell` shows no touch delivery. Use the webcam, not a user report.
   First confirm Sway still receives touch on the off output; if not, record that and design a
   libinput-level wake instead.
-- [ ] 3.5 Video inhibit: start the video app, leave it 90 s with no input; brightness stays and
+- [x] 3.5 Video inhibit: start the video app, leave it 90 s with no input; brightness stays and
   `get_outputs` power stays true. Return Home and confirm dim at 30 s and off at 60 s.
   Repeat with the Timer app.
+  Done 2026-10-27 (injected): Timer focused held 148 for 103 s; Video focused held it ~98 s; at Home with Video playing behind, build `zs05li2k…` (commit `be58ff02`) dimmed to 37 at 15:46:55Z and turned the output off at 15:47:17Z. Two earlier builds failed the Home part (unfocused video kept inhibiting). `docs/evidence/idle-dim/`.
 - [ ] 3.6 Slider while dim: dim, set brightness through the shade, then wake; `cat $D/brightness`
   keeps the slider value.
 - [ ] 3.7 Base-keyboard key on a dark panel lights the display (accepted to reach the app).
