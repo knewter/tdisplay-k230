@@ -40,8 +40,13 @@ or operator. It never asks for the IMEI, ICCID, IMSI or number.
   modem's network context to flash, and the probe writes nothing
   non-volatile. After the probe the line is left an output, low.
 
-## Still required for task 1.2
+## Operator notes, 2026-10-26 (task 1.2)
 
-- The operator's notes on which antennas (LTE, GNSS) are fitted.
-- Whether a SIM is present, with a camera frame of the antenna connectors if
-  visible.
+**Evidence class: operator, in chat.**
+
+- **Antennas:** "whatever the default two fold-out antennas on the keyboard
+  are". These are the keyboard base's two stock fold-out antennas. Which one
+  serves LTE and which GNSS was not stated.
+- **SIM:** none fitted ("no sim"). This agrees with the probe's `%XSIM: 0,9`.
+- **Camera frame:** none. The bench webcam does not see the base: its frame
+  at 2026-10-26T23:56Z showed cables and the desk, not the board.

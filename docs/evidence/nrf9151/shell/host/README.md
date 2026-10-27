@@ -38,8 +38,11 @@ pass, against 584 before. They cover:
 ## Limits
 
 - **How texts reach the shell.** The service writes received texts only to
-  `/var/lib/k230/modem/sms.jsonl`. The shell tails that file, so it needs read
-  access to it, which has not been checked on the board.
+  its store, `sms.jsonl`, and the shell tails that file. On the board on
+  2026-10-26 the shell user could not read the store at its first location,
+  `/var/lib/k230/modem/`, because `/var/lib/k230` is root-only (`0700`). The
+  store now lives in `/var/lib/k230-modem/` (`0750 root:k230-modem`), and the
+  service moves the old files there once.
 - **Notification source.** It is "Shell". The sender's number is in the
   summary instead.
 - **Not tested.** No SIM, so no real text, PIN or registration has been

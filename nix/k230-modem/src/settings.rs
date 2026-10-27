@@ -1,4 +1,4 @@
-//! The persisted choices, `/var/lib/k230/modem/settings.json`.
+//! The persisted choices, `/var/lib/k230-modem/settings.json`.
 
 use crate::state::write_atomic;
 use serde::{Deserialize, Serialize};
@@ -11,6 +11,10 @@ pub struct Settings {
     pub cellular: bool,
     #[serde(default)]
     pub location: bool,
+    /// The modem has answered at least once on this installation, so the
+    /// shell may offer Cellular and Location even before it is powered.
+    #[serde(default)]
+    pub seen: bool,
 }
 
 impl Settings {
@@ -33,9 +37,12 @@ mod tests {
         let dir = std::env::temp_dir().join(format!("k230-settings-test-{}", std::process::id()));
         fs::create_dir_all(&dir).unwrap();
         let p = dir.join("settings.json");
-        assert_eq!(Settings::load(&p), Settings { cellular: false, location: false });
-        Settings { cellular: true, location: false }.save(&p).unwrap();
-        assert_eq!(Settings::load(&p), Settings { cellular: true, location: false });
+        assert_eq!(Settings::load(&p), Settings::default());
+        let on = Settings { cellular: true, location: false, seen: true };
+        on.save(&p).unwrap();
+        assert_eq!(Settings::load(&p), on);
+        fs::write(&p, r#"{"cellular":true,"location":false}"#).unwrap();
+        assert!(!Settings::load(&p).seen, "older files load with seen false");
         fs::write(&p, "not json").unwrap();
         assert_eq!(Settings::load(&p), Settings::default());
         fs::remove_dir_all(&dir).unwrap();

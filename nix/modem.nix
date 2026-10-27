@@ -4,7 +4,7 @@
 # One root service, k230-modem, is the only process that opens /dev/ttyS3 and
 # the `nrf9151-enable` GPIO line. It drives the line low at startup, so the
 # modem stays off until a person turns Cellular or Location on (the choice is
-# persisted in /var/lib/k230/modem/settings.json). The shell reads
+# persisted in /var/lib/k230-modem/settings.json). The shell reads
 # /run/k230/modem/state.json and writes /run/k230/modem/control; both are
 # group `k230-modem`.
 #
@@ -55,13 +55,20 @@ in
       description = "nRF9151 modem service (power, SIM, SMS, GNSS)";
       wantedBy = [ "multi-user.target" ];
       unitConfig.ConditionPathExists = cfg.device;
+      # Carry settings and stored messages over from the old location once.
+      preStart = ''
+        if [ -d /var/lib/k230/modem ] && [ ! -e /var/lib/k230-modem/settings.json ]; then
+          cp -a /var/lib/k230/modem/. /var/lib/k230-modem/
+          rm -rf /var/lib/k230/modem
+        fi
+      '';
       serviceConfig = {
         ExecStart = lib.concatStringsSep " " [
           "${modem}/bin/k230-modem"
           "--device ${cfg.device}"
           "--enable-line ${cfg.enableLine}"
           "--run-dir /run/k230/modem"
-          "--state-dir /var/lib/k230/modem"
+          "--state-dir /var/lib/k230-modem"
           "--group k230-modem"
         ];
         # Root for the GPIO and tty; the group makes the runtime and state
@@ -72,7 +79,9 @@ in
         RuntimeDirectory = "k230/modem";
         RuntimeDirectoryMode = "0750";
         RuntimeDirectoryPreserve = false;
-        StateDirectory = "k230/modem";
+        # Its own top-level directory: /var/lib/k230 is root-only (0700), so
+        # the shell user could not reach a state directory nested in it.
+        StateDirectory = "k230-modem";
         StateDirectoryMode = "0750";
         Restart = "on-failure";
         RestartSec = 5;

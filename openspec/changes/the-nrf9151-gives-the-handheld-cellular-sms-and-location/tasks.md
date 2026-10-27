@@ -30,10 +30,13 @@ with `<redacted>` and the redaction is noted:
   the script reads the mux instead of switching it. It ends in `AT+CFUN=4`
   rather than `AT+CFUN=0`, which stores network context to flash on the
   nRF91. Board run: `docs/evidence/nrf9151/probe/`.
-- [ ] 1.2 Run it on the board, holding `flock /tmp/k230-board.lock`, and
+- [x] 1.2 Run it on the board, holding `flock /tmp/k230-board.lock`, and
   commit the redacted output to `docs/evidence/nrf9151/probe/`. Also commit
   the operator's notes on the fitted antennas and SIM, with a **camera** frame
-  of the base's antenna connectors if visible.
+  of the base's antenna connectors if visible. Done: the probe log of
+  2026-10-13, and the operator's notes of 2026-10-26 (the base's two stock
+  fold-out antennas, no SIM; the camera cannot see the base), both in
+  `docs/evidence/nrf9151/probe/README.md`.
 - [ ] 1.3 With GNSS on for 60 s, measure the GNSS URC byte rate against
   115200 baud and record any framing errors from `/proc/tty/driver/serial_8250`.
   The vendor recipe (`AT#XNMEA`, `AT#XGNSS`) answers `ERROR` on this unit. The
@@ -91,6 +94,9 @@ with `<redacted>` and the redaction is noted:
   Done (host): `nix/modem.nix` (option `k230.modem.enable`, default on; the
   modem stays off until Cellular or Location is turned on). The landscape
   toplevel builds.
+  2026-10-26: the state directory moved to `/var/lib/k230-modem`. The shell
+  user could not traverse the root-only `/var/lib/k230` to reach the message
+  store. The service moves the old files on its first start.
 - [x] 3.3 Install on the board. Record:
   - after a fresh boot: enable low and state `off` (**board-read**);
   - `k230-modemctl power on`, then `status` without a SIM or with one, per
@@ -151,6 +157,10 @@ These tasks need a GNSS antenna and sky view.
   Settings pages, and an SMS preview and history entry. Record the operator
   turning Location on through Settings and the choice surviving a reboot.
   Proof (**board-read** + **operator**): `docs/evidence/nrf9151/shell/`.
+  Partial 2026-10-27: Settings rows, both pages and the shade location
+  indicator captured with injected touch (`docs/evidence/nrf9151/shell/board/`).
+  The SMS captures (which need a SIM) and the operator's reboot check are still
+  open.
 
 ## 7. Close
 

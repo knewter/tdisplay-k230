@@ -28,7 +28,7 @@ use std::{
 pub const STATE_PATH: &str = "/run/k230/modem/state.json";
 pub const CONTROL_PATH: &str = "/run/k230/modem/control";
 /// The service's bounded store of received texts, one JSON object per line.
-pub const SMS_PATH: &str = "/var/lib/k230/modem/sms.jsonl";
+pub const SMS_PATH: &str = "/var/lib/k230-modem/sms.jsonl";
 
 const MAX_STATE: u64 = 8 * 1024;
 const MAX_SMS_FILE: u64 = 256 * 1024;
@@ -222,8 +222,10 @@ impl ModemStatus {
             Sim::PukRequired => "Locked (PUK needed)",
             Sim::Ready => "Ready",
             Sim::Error => "SIM error",
-            Sim::Unknown if self.power == Power::On => "Reading…",
-            Sim::Unknown => "Not read",
+            // GNSS alone powers the modem without reading the SIM.
+            Sim::Unknown if self.power == Power::On && self.cellular => "Reading…",
+            Sim::Unknown if self.cellular => "Not read",
+            Sim::Unknown => "—",
         }
     }
 
@@ -578,6 +580,23 @@ mod tests {
         assert_eq!(on("fix").location_label(), "Fix");
         assert_eq!(on("searching").location_label(), "Searching…");
         assert_eq!(status(|_| {}).location_label(), "Off");
+    }
+
+    #[test]
+    fn location_alone_does_not_claim_to_read_the_sim() {
+        let s = status(|v| {
+            v["sim"] = "unknown".into();
+            v["power"] = "on".into();
+            v["cellular"] = false.into();
+            v["location"] = true.into();
+        });
+        assert_eq!(s.sim_label(), "—");
+        let s = status(|v| {
+            v["sim"] = "unknown".into();
+            v["power"] = "on".into();
+            v["cellular"] = true.into();
+        });
+        assert_eq!(s.sim_label(), "Reading…");
     }
 
     #[test]

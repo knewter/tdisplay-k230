@@ -2220,6 +2220,11 @@ DATA 387a0f55f3eefe14779b63c7b8d7d0ad19c51d82e4ea96c7806a57e55f045e15 docs/evide
 DATA b8a86e5bc1196becc6376911e78b5bae384f4d6fb70c6da5cafa62fde7ba857b docs/evidence/nrf9151/shell/host/shade-cellular-3-bars-1232x568.png
 DATA f7ba6d11898be9a13ebf17d8f043b056e88d56ae483c138b7e4d715f231e33ea docs/evidence/nrf9151/shell/host/shade-fix-no-service-1232x568.png
 DATA 97ae17b3b6f5f9134bcac568a2b5da42fce12f1786bff574895fd80097d16e4f docs/evidence/nrf9151/shell/host/shade-no-modem-1232x568.png
+DATA 647017c9fd5c13394d9f802b8c33519a6b7cc1b755df662893b27b2710f3b0dc docs/evidence/nrf9151/shell/board/cellular-off.png
+DATA ffe2aedcb932831363b5fe0f47672478f1cd1c960dce341b1ddc30ad2bcc3a7a docs/evidence/nrf9151/shell/board/location-off.png
+DATA b7b162ede1268ba8152699d63252d77debbb00d04ac51b75fad0256b6c4ca2f3 docs/evidence/nrf9151/shell/board/location-on-searching.png
+DATA 7fbef27941c78089dd1dfa23197585dd9555a255b61bae29fbfa15fa24d82535 docs/evidence/nrf9151/shell/board/settings-rows.png
+DATA 4ffe1aee3d9c123f6a97264824126d2c830145dedafa22879e2155910f45224f docs/evidence/nrf9151/shell/board/shade-location-searching.png
 ```
 
 `group:` rows stand for a directory whose members are enumerated by
@@ -4086,3 +4091,15 @@ Host renders of the Cellular and Location pages and the shade indicators from fa
 | `docs/evidence/nrf9151/shell/host/shade-cellular-3-bars-1232x568.png` | 61061 | DATA | `b8a86e5bc1196becc6376911e78b5bae384f4d6fb70c6da5cafa62fde7ba857b` |
 | `docs/evidence/nrf9151/shell/host/shade-fix-no-service-1232x568.png` | 62186 | DATA | `f7ba6d11898be9a13ebf17d8f043b056e88d56ae483c138b7e4d715f231e33ea` |
 | `docs/evidence/nrf9151/shell/host/shade-no-modem-1232x568.png` | 60791 | DATA | `97ae17b3b6f5f9134bcac568a2b5da42fce12f1786bff574895fd80097d16e4f` |
+
+## Modem shell UI board captures, 2026-10-27
+
+Native `grim` captures of the Cellular and Location pages and the shade indicator; see `docs/evidence/nrf9151/shell/board/README.md`.
+
+| Path | Bytes | Class | SHA256 |
+| --- | ---: | --- | --- |
+| `docs/evidence/nrf9151/shell/board/cellular-off.png` | 29498 | DATA | `647017c9fd5c13394d9f802b8c33519a6b7cc1b755df662893b27b2710f3b0dc` |
+| `docs/evidence/nrf9151/shell/board/location-off.png` | 14570 | DATA | `ffe2aedcb932831363b5fe0f47672478f1cd1c960dce341b1ddc30ad2bcc3a7a` |
+| `docs/evidence/nrf9151/shell/board/location-on-searching.png` | 16971 | DATA | `b7b162ede1268ba8152699d63252d77debbb00d04ac51b75fad0256b6c4ca2f3` |
+| `docs/evidence/nrf9151/shell/board/settings-rows.png` | 67976 | DATA | `7fbef27941c78089dd1dfa23197585dd9555a255b61bae29fbfa15fa24d82535` |
+| `docs/evidence/nrf9151/shell/board/shade-location-searching.png` | 27990 | DATA | `4ffe1aee3d9c123f6a97264824126d2c830145dedafa22879e2155910f45224f` |

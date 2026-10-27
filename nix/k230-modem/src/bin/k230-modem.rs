@@ -38,7 +38,7 @@ fn parse_args() -> Result<Args, String> {
         device: "/dev/ttyS3".into(),
         enable_line: "nrf9151-enable".into(),
         run_dir: "/run/k230/modem".into(),
-        state_dir: "/var/lib/k230/modem".into(),
+        state_dir: "/var/lib/k230-modem".into(),
         group: None,
     };
     let mut it = std::env::args().skip(1);
@@ -91,7 +91,12 @@ impl App {
     }
 
     fn publish(&mut self) {
+        if self.modem.state.present && !self.settings.seen {
+            self.settings.seen = true;
+            self.persist();
+        }
         let mut st = self.modem.state.clone();
+        st.present |= self.settings.seen;
         st.sms_count = self.store.count() as u32;
         st.cellular = self.settings.cellular;
         st.location = self.settings.location;

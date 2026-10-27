@@ -150,7 +150,7 @@ code speaks AT.
 ### 3. Off by default, and power changes are explicit
 
 At boot the enable line is driven low and the service reports `off`.
-"Cellular on" or "Location on", persisted in `/var/lib/k230/modem/settings.json`,
+"Cellular on" or "Location on", persisted in `/var/lib/k230-modem/settings.json`,
 powers the modem.
 
 Because the firmware auto-connects, power on means:
@@ -179,7 +179,7 @@ that path is the socket, and nothing is stored.
   notification center's existing privacy default hides the body in the
   preview.
 - Received messages are kept in a bounded store,
-  `/var/lib/k230/modem/sms.jsonl`, with the last 200 messages, readable only by
+  `/var/lib/k230-modem/sms.jsonl`, with the last 200 messages, readable only by
   the shell user. The person can clear it from Settings.
 - Sending goes through `AT+CMGS`.
 - Concatenated (multi-part) messages are joined when their headers allow, and
