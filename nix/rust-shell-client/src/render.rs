@@ -606,11 +606,24 @@ pub const SETTINGS_KEY_BACKLIGHT_ROW: u32 = 5;
 /// answered (`ServiceView::modem`). They are plain label-and-value rows, so
 /// they are placed from the base rows' bottom rather than by row index.
 pub const SETTINGS_MODEM_ROWS: u32 = 2;
+/// Date & time and About, the last plain rows before Power; always present.
+/// They follow the modem rows when those exist, so About is the last row.
+pub const SETTINGS_INFO_ROWS: u32 = 2;
+
+/// How many plain label-and-value rows lead the Power column.
+pub fn settings_plain_row_count(modem: bool) -> u32 {
+    SETTINGS_INFO_ROWS + if modem { SETTINGS_MODEM_ROWS } else { 0 }
+}
+
+/// Index among the plain rows of Date & time (`0`) or About (`1`).
+pub fn settings_info_row_index(modem: bool, info: u32) -> u32 {
+    if modem { SETTINGS_MODEM_ROWS + info } else { info }
+}
 
 pub fn settings_modem_row_h() -> f64 {
     (SETTINGS_ROW_INSET + vision_line(TYPE_LABEL) + 2.0 + vision_line(TYPE_BODY) + SETTINGS_ROW_INSET)
         .ceil()
-        .max(88.0)
+        .max(crate::service_ui::SHADE_TAP_MIN)
 }
 
 /// Top of modem row `index` (0 Cellular, 1 Location).
@@ -763,11 +776,8 @@ pub fn settings_layout(key_backlight: bool) -> SettingsLayout {
 
 /// `settings_layout` with the Cellular and Location rows ahead of Power.
 pub fn settings_layout_for(key_backlight: bool, modem: bool) -> SettingsLayout {
-    let rows_bottom = if modem {
-        settings_modem_row_y(key_backlight, SETTINGS_MODEM_ROWS - 1) + settings_modem_row_h()
-    } else {
-        settings_rows_bottom(SETTINGS_ROW_COUNT + u32::from(key_backlight))
-    };
+    let rows_bottom =
+        settings_modem_row_y(key_backlight, settings_plain_row_count(modem) - 1) + settings_modem_row_h();
     let power_heading_y = rows_bottom + 22.0;
     let reboot_y = power_heading_y + (vision_line(TYPE_LABEL) + SPACE_IN_ROW).max(28.0);
     let poweroff_y = reboot_y + settings_power_card_h() + SETTINGS_ROW_GAP;
@@ -806,9 +816,9 @@ pub fn settings_wide_offset_for(column: usize, key_backlight: bool, modem: bool)
     let dy = settings_wide_first_y() - settings_first_y() + match column {
         0 => 0.0,
         1 => settings_first_y() - settings_row_y(3),
-        _ if modem => settings_first_y() - settings_modem_row_y(key_backlight, 0),
-        _ => settings_first_y() - settings_layout(key_backlight).power_heading_y,
+        _ => settings_first_y() - settings_modem_row_y(key_backlight, 0),
     };
+    let _ = modem;
     (dx, dy)
 }
 
@@ -2067,6 +2077,36 @@ fn entry_error_message(view: &WifiPublic) -> Option<&str> {
     })
 }
 
+/// The Settings About and Date & time pages (`device_info`): a Back link, the
+/// title, and one label-and-value card per row. Portrait paints the 568x1232
+/// artwork scaled to the surface; landscape paints three columns in real
+/// pixels. Every rect comes from `device_info::layout_for`, which the Back tap
+/// reads too. Read-only: nothing here but Back is a target.
+fn paint_info(
+    cr: &Context,
+    view: &crate::device_info::InfoPublic,
+    theme: Option<&AppearanceSnapshot>,
+    width: f64,
+    height: f64,
+) {
+    let lay = crate::device_info::layout_for(width as u32, height as u32, view.rows.len());
+    let _ = cr.save();
+    if !lay.wide {
+        cr.scale(width / 568.0, height / 1232.0);
+    }
+    let style = visual_style(theme, "controls");
+    let (bx, by, bw, bs) = lay.back_text;
+    text(cr, "\u{2039} Settings", bx, by, bw, bs, style.accent);
+    let (tx, ty, tw, ts) = lay.title;
+    heading(cr, view.page.title(), tx, ty, tw, ts, style.text);
+    for ((label, value), (x, y, w, h)) in view.rows.iter().zip(&lay.cards) {
+        service_card(cr, theme, "controls", *x, *y, *w, *h, false);
+        themed_role_fit(cr, theme, "caption", label, x + 18.0, y + lay.label_dy, w - 36.0, TYPE_CAPTION, style.muted, pango::Weight::Normal);
+        themed_role_fit(cr, theme, "body", value, x + 18.0, y + lay.value_dy, w - 36.0, TYPE_BODY, style.text, pango::Weight::Normal);
+    }
+    let _ = cr.restore();
+}
+
 /// The Settings Cellular and Location pages (`modem_ui`): the on/off switch,
 /// the service's reported state, the SIM PIN keypad while the SIM asks for
 /// one, and the stored-message clear control. Portrait paints the 568x1232
@@ -2620,7 +2660,7 @@ fn settings_panel_h(
         return available_h;
     }
     // The Cellular and Location pages are fixed layouts over the whole panel.
-    if services.is_some_and(|s| s.modem_page.is_some()) {
+    if services.is_some_and(|s| s.modem_page.is_some() || s.info_page.is_some()) {
         return available_h;
     }
     if let Some(view) = services
@@ -4009,6 +4049,10 @@ fn scene(
                 paint_modem(cr, view, theme, w, h);
                 return;
             }
+            if let Some(view) = services.and_then(|s| s.info_page.as_ref()) {
+                paint_info(cr, view, theme, w, h);
+                return;
+            }
             if let Some(view) = chooser.filter(|view| view.page == ThemePage::Vision) {
                 paint_vision(cr, w, h, view, theme);
                 return;
@@ -4183,12 +4227,16 @@ fn scene(
                     style.muted,
                 );
             }
-            // Cellular and Location: shown only once the modem has answered.
-            if let Some(modem) = services.and_then(|view| view.modem.as_ref()) {
-                let rows = [
-                    ("Cellular ›", Glyph::Signal, modem.cellular_summary()),
-                    ("Location ›", Glyph::Location, modem.location_label().to_string()),
-                ];
+            // Cellular and Location (only once the modem has answered), then
+            // Date & time and About: plain label-and-value rows.
+            {
+                let mut rows: Vec<(&str, Glyph, String)> = Vec::new();
+                if let Some(modem) = services.and_then(|view| view.modem.as_ref()) {
+                    rows.push(("Cellular \u{203a}", Glyph::Signal, modem.cellular_summary()));
+                    rows.push(("Location \u{203a}", Glyph::Location, modem.location_label().to_string()));
+                }
+                rows.push(("Date & time \u{203a}", Glyph::Clock, "Clock and time zone".to_string()));
+                rows.push(("About \u{203a}", Glyph::Info, "Device and build".to_string()));
                 for (index, (name, icon, value)) in rows.iter().enumerate() {
                     place(2);
                     let y = settings_modem_row_y(key_backlight_row, index as u32);
@@ -7795,7 +7843,12 @@ mod layout_tests {
             with_keys.power_heading_y,
             layout.power_heading_y + settings_row_h(SETTINGS_KEY_BACKLIGHT_ROW) + SETTINGS_ROW_GAP
         );
-        assert_eq!(layout.power_heading_y, settings_rows_bottom(SETTINGS_ROW_COUNT) + 22.0);
+        // Date & time and About are always the last rows before Power.
+        assert_eq!(
+            layout.power_heading_y,
+            settings_modem_row_y(false, SETTINGS_INFO_ROWS - 1) + settings_modem_row_h() + 22.0
+        );
+        assert!(settings_modem_row_y(false, 0) > settings_rows_bottom(SETTINGS_ROW_COUNT));
         assert_eq!(layout.reboot_y, layout.power_heading_y + TYPE_LABEL * 1.25 + SPACE_IN_ROW);
         assert_eq!(layout.poweroff_y, layout.reboot_y + settings_power_card_h() + SETTINGS_ROW_GAP);
         assert_eq!(layout.poweroff_bottom, layout.poweroff_y + settings_power_card_h());

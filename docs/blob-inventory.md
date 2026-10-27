@@ -2245,6 +2245,18 @@ DATA fac69f720ae8595aa5c6c9e8fe1c404cdc6bbff7da2014b551a3f57ec3055661 docs/evide
 DATA 4df953a8f63c648fb98e4d9b3f3384aa875ad7aeb4f9a0825ff1c264de0f3eb4 docs/evidence/help-refresh/host/help-landscape-1232x568-top.png
 DATA b7b8131dadb638854b5f0d0cadb4cd8d4bf3588ea16c73134f3ff076cd5bce8e docs/evidence/help-refresh/host/help-portrait-568x1232-end.png
 DATA e852cf5374353cfd8f06fab09aa5553df316da619c36590bafd73458bda0934d docs/evidence/help-refresh/host/help-portrait-568x1232-top.png
+DATA 1b960d6bc3fad9f782ac8f4a5253cdaad994075cd700d911fb462ac58bd9336a docs/evidence/settings-about/host/about-100-1232x568.png
+DATA f4a36975306e53dfbab3d21ad7b03fdaf557ce399d69f3d397e60ea0168b15e8 docs/evidence/settings-about/host/about-100-568x1232.png
+DATA 9466b3d658de0a0d4ec4c7d2b19ce60533b93f6794f4e6a9d2fad23528d14705 docs/evidence/settings-about/host/about-200-1232x568.png
+DATA 439715e345321a22b333f73d4a91ce5dffdf616e985eafec9909d2819e2cd5a5 docs/evidence/settings-about/host/about-200-568x1232.png
+DATA be7e17c5c37ffe1e65f3de757c8796d45dfd651354124131eb4df6a594540565 docs/evidence/settings-about/host/date-time-100-1232x568.png
+DATA 3061985905c888bfdda28d9aa59fdc9354e0b682d58f03527a32df8a8dbaa73e docs/evidence/settings-about/host/date-time-100-568x1232.png
+DATA eba08d7e6fa17267dd36fc8f4947bd7353b7df4fd89a61b4678105ac9fe760f7 docs/evidence/settings-about/host/date-time-200-1232x568.png
+DATA 1496cfa8ed436effba327ec09a5d3f2dbfa7a72355d7d92d82aa651fea3a26cf docs/evidence/settings-about/host/date-time-200-568x1232.png
+DATA 35a944ae92b2c49f3f447a87e9cefe0500693680d15735ed3c156a87adcc07a5 docs/evidence/settings-about/host/settings-100-1232x568.png
+DATA e44d2b81c60d348ba3e6c396d8cc13e16fd24bff9c9a8db6ae49ac5e9b0bd754 docs/evidence/settings-about/host/settings-100-568x1232.png
+DATA 2813bdad2345e8a71f89c134e528744bfb3fb681acbc70c8a138e18eaf3185cf docs/evidence/settings-about/host/settings-200-1232x568.png
+DATA 86aa7eca83e2fd517d58f9d26e9ee2d0b76818569bd2f43d2ef55ed0fd13e416 docs/evidence/settings-about/host/settings-200-568x1232.png
 ```
 
 `group:` rows stand for a directory whose members are enumerated by
@@ -4170,3 +4182,22 @@ Host renders of Help's Touch and Keys groups from `render_help_refresh`; see `do
 | `docs/evidence/help-refresh/host/help-landscape-1232x568-top.png` | 97118 | DATA | `4df953a8f63c648fb98e4d9b3f3384aa875ad7aeb4f9a0825ff1c264de0f3eb4` |
 | `docs/evidence/help-refresh/host/help-portrait-568x1232-end.png` | 100905 | DATA | `b7b8131dadb638854b5f0d0cadb4cd8d4bf3588ea16c73134f3ff076cd5bce8e` |
 | `docs/evidence/help-refresh/host/help-portrait-568x1232-top.png` | 110636 | DATA | `e852cf5374353cfd8f06fab09aa5553df316da619c36590bafd73458bda0934d` |
+
+## Settings About and Date & time host renders, 2026-10-26
+
+Host renders of Settings with its Date & time and About rows and both pages from `render_settings_about_evidence`, using fixture values; see `docs/evidence/settings-about/README.md`.
+
+| Path | Bytes | Class | SHA256 |
+| --- | ---: | --- | --- |
+| `docs/evidence/settings-about/host/about-100-1232x568.png` | 37276 | DATA | `1b960d6bc3fad9f782ac8f4a5253cdaad994075cd700d911fb462ac58bd9336a` |
+| `docs/evidence/settings-about/host/about-100-568x1232.png` | 49853 | DATA | `f4a36975306e53dfbab3d21ad7b03fdaf557ce399d69f3d397e60ea0168b15e8` |
+| `docs/evidence/settings-about/host/about-200-1232x568.png` | 59725 | DATA | `9466b3d658de0a0d4ec4c7d2b19ce60533b93f6794f4e6a9d2fad23528d14705` |
+| `docs/evidence/settings-about/host/about-200-568x1232.png` | 77086 | DATA | `439715e345321a22b333f73d4a91ce5dffdf616e985eafec9909d2819e2cd5a5` |
+| `docs/evidence/settings-about/host/date-time-100-1232x568.png` | 36787 | DATA | `be7e17c5c37ffe1e65f3de757c8796d45dfd651354124131eb4df6a594540565` |
+| `docs/evidence/settings-about/host/date-time-100-568x1232.png` | 48268 | DATA | `3061985905c888bfdda28d9aa59fdc9354e0b682d58f03527a32df8a8dbaa73e` |
+| `docs/evidence/settings-about/host/date-time-200-1232x568.png` | 61421 | DATA | `eba08d7e6fa17267dd36fc8f4947bd7353b7df4fd89a61b4678105ac9fe760f7` |
+| `docs/evidence/settings-about/host/date-time-200-568x1232.png` | 72534 | DATA | `1496cfa8ed436effba327ec09a5d3f2dbfa7a72355d7d92d82aa651fea3a26cf` |
+| `docs/evidence/settings-about/host/settings-100-1232x568.png` | 76764 | DATA | `35a944ae92b2c49f3f447a87e9cefe0500693680d15735ed3c156a87adcc07a5` |
+| `docs/evidence/settings-about/host/settings-100-568x1232.png` | 71041 | DATA | `e44d2b81c60d348ba3e6c396d8cc13e16fd24bff9c9a8db6ae49ac5e9b0bd754` |
+| `docs/evidence/settings-about/host/settings-200-1232x568.png` | 82442 | DATA | `2813bdad2345e8a71f89c134e528744bfb3fb681acbc70c8a138e18eaf3185cf` |
+| `docs/evidence/settings-about/host/settings-200-568x1232.png` | 78407 | DATA | `86aa7eca83e2fd517d58f9d26e9ee2d0b76818569bd2f43d2ef55ed0fd13e416` |

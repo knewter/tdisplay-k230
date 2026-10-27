@@ -5,6 +5,7 @@ pub mod app_watch;
 pub mod appearance;
 pub mod background_decode;
 pub mod catalog;
+pub mod device_info;
 pub mod evidence_render;
 pub mod glyph;
 pub mod help;

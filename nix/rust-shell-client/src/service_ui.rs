@@ -7,7 +7,7 @@ use crate::{
     home_widgets::battery::BatteryState,
     pipewire_ipc::GraphSnapshot,
     render::{
-        settings_confirm_layout, settings_layout, settings_row_y, POWER_BUTTON_H, POWER_CANCEL_Y,
+        settings_confirm_layout, settings_row_y, POWER_BUTTON_H, POWER_CANCEL_Y,
         POWER_CONFIRM_SLOP, POWER_CONFIRM_Y, POWER_OFF_Y, POWER_REBOOT_Y, SETTINGS_KEY_BACKLIGHT_ROW,
         settings_layout_for, settings_power_card_h, settings_row_h,
     },
@@ -77,6 +77,8 @@ pub struct ServiceView {
     pub modem: Option<crate::modem::ModemStatus>,
     /// The open Cellular or Location page, if any (`modem_ui`).
     pub modem_page: Option<crate::modem_ui::ModemPublic>,
+    /// The open About or Date & time page, if any (`device_info`).
+    pub info_page: Option<crate::device_info::InfoPublic>,
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -255,6 +257,9 @@ pub enum PanelIntent {
     OpenWifi,
     OpenCellular,
     OpenLocation,
+    /// Settings' Date & time and About rows (`device_info`).
+    OpenDateTime,
+    OpenAbout,
     Help(crate::help::Action),
     Request(ServiceRequest),
     /// Flip the key backlight preference (a local file write, not a
@@ -1197,9 +1202,9 @@ pub fn settings_wide_design_point_for(
             design.1 >= first(settings_row_y(3))
                 && design.1 < settings_row_y(last_row) + settings_row_h(last_row) + crate::render::SETTINGS_ROW_GAP / 2.0
         }
-        _ if modem => design.1 >= first(crate::render::settings_modem_row_y(key_backlight, 0)),
-        _ => design.1 >= first(settings_layout(key_backlight).power_heading_y),
+        _ => design.1 >= first(crate::render::settings_modem_row_y(key_backlight, 0)),
     };
+    let _ = modem;
     in_column.then_some(design)
 }
 
@@ -1460,10 +1465,16 @@ pub fn panel_intent(
             if (settings_row_y(0)..settings_row_y(0) + settings_row_h(0)).contains(&end.1) {
                 return Some(PanelIntent::OpenWifi);
             }
-            if view.modem.is_some() {
+            {
                 let key_backlight = view.key_backlight.is_some();
                 let row_h = crate::render::settings_modem_row_h();
-                for (index, intent) in [PanelIntent::OpenCellular, PanelIntent::OpenLocation].into_iter().enumerate() {
+                let modem = view.modem.is_some();
+                let mut intents = Vec::new();
+                if modem {
+                    intents.extend([PanelIntent::OpenCellular, PanelIntent::OpenLocation]);
+                }
+                intents.extend([PanelIntent::OpenDateTime, PanelIntent::OpenAbout]);
+                for (index, intent) in intents.into_iter().enumerate() {
                     let y = crate::render::settings_modem_row_y(key_backlight, index as u32);
                     if (y..y + row_h).contains(&end.1) {
                         return Some(intent);
@@ -1508,6 +1519,7 @@ pub fn panel_intent(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::render::settings_layout;
     use crate::pipewire_ipc::Sink;
     use crate::service_data::{Control, ControlValue, NotificationEvent, Priority};
     use std::path::PathBuf;
@@ -2574,7 +2586,12 @@ mod tests {
         crate::set_layout_text_scale(1.0);
         // At 100% the portrait rows and Power section nearly fit; the
         // header and rows use the same type roles at every step.
-        assert!(settings_max_scroll(568, 1232, &view) < settings_max_scroll(1232, 568, &view));
+        // The two always-present rows (Date & time, About) may push the
+        // portrait page past the panel, by no more than their own height
+        // plus 100 px of slack for the overflow it had before them.
+        let added = f64::from(crate::render::SETTINGS_INFO_ROWS)
+            * (crate::render::settings_modem_row_h() + crate::render::SETTINGS_ROW_GAP);
+        assert!(settings_max_scroll(568, 1232, &view) <= added + 100.0, "{}", settings_max_scroll(568, 1232, &view));
         assert!(crate::render::settings_header(568.0).first_y < head_first_y_at_200);
     }
 
@@ -3280,8 +3297,7 @@ mod tests {
                 assert_ne!(panel_intent(Route::Settings, tap, tap, 568, 1232, &hidden), Some(expected), "portrait row {index} hidden");
             }
             // Power still answers where the rows pushed it.
-            let layout = crate::render::settings_layout_for(key_backlight, true);
-            let tap = (dx + 24.0 + 100.0, layout.reboot_y + dy + 20.0);
+            let layout = crate::render::settings_layout_for(key_backlight, true);            let tap = (dx + 24.0 + 100.0, layout.reboot_y + dy + 20.0);
             let mut view = shown.clone();
             view.settings_scroll = (tap.1 - 568.0 + 40.0).max(0.0).min(settings_max_scroll(1232, 568, &view));
             let tap = (tap.0, tap.1 - view.settings_scroll);
@@ -3291,5 +3307,57 @@ mod tests {
                 "reboot with the modem rows present (key backlight {key_backlight})"
             );
         }
+    }
+
+    #[test]
+    fn settings_ends_its_rows_with_date_and_time_then_about() {
+        use crate::render::{
+            settings_info_row_index, settings_modem_row_h, settings_modem_row_y, settings_wide_offset_for,
+        };
+        for step in [1.0, 2.0] {
+            crate::set_layout_text_scale(step);
+            for (modem, key_backlight) in [(false, false), (false, true), (true, false), (true, true)] {
+                let view = ServiceView {
+                    settings: Some(crate::evidence_render::fixture_settings()),
+                    key_backlight: key_backlight.then_some(crate::keyboard_base::KeyBacklight::Off),
+                    modem: modem.then(present_modem),
+                    ..ServiceView::default()
+                };
+                let row_h = settings_modem_row_h();
+                assert!(row_h >= SHADE_TAP_MIN, "rows meet the 99 px touch floor");
+                for (info, expected) in [(0u32, PanelIntent::OpenDateTime), (1, PanelIntent::OpenAbout)] {
+                    let index = settings_info_row_index(modem, info);
+                    let y = settings_modem_row_y(key_backlight, index);
+                    // Wide: scroll the third column so the row is on screen.
+                    let (dx, dy) = settings_wide_offset_for(2, key_backlight, modem);
+                    let mut wide = view.clone();
+                    let max = settings_max_scroll(1232, 568, &wide);
+                    wide.settings_scroll = (y + dy + row_h / 2.0 - 400.0).clamp(0.0, max);
+                    let tap = (dx + 24.0 + 100.0, y + dy + row_h / 2.0 - wide.settings_scroll);
+                    assert!(tap.1 > settings_body_top(1232, 568) && tap.1 < 568.0, "wide {tap:?} step {step}");
+                    assert_eq!(
+                        panel_intent(Route::Settings, tap, tap, 1232, 568, &wide),
+                        Some(expected.clone()),
+                        "wide {expected:?} modem {modem} kb {key_backlight} step {step}"
+                    );
+                    // Portrait: the single column, scrolled the same way.
+                    let (scale, x) = crate::settings_content_transform(568, 1232);
+                    let mut tall = view.clone();
+                    let max = settings_max_scroll(568, 1232, &tall);
+                    tall.settings_scroll = (y * scale + row_h * scale / 2.0 - 800.0).clamp(0.0, max);
+                    let tap = (x + 200.0 * scale, y * scale + row_h * scale / 2.0 - tall.settings_scroll);
+                    assert!(tap.1 > settings_body_top(568, 1232) && tap.1 < 1232.0, "tall {tap:?} step {step}");
+                    assert_eq!(
+                        panel_intent(Route::Settings, tap, tap, 568, 1232, &tall),
+                        Some(expected.clone()),
+                        "portrait {expected:?} modem {modem} kb {key_backlight} step {step}"
+                    );
+                }
+                // About is the last row: Power follows it.
+                let about = settings_modem_row_y(key_backlight, settings_info_row_index(modem, 1));
+                assert!(crate::render::settings_layout_for(key_backlight, modem).power_heading_y > about + row_h);
+            }
+        }
+        crate::set_layout_text_scale(1.0);
     }
 }

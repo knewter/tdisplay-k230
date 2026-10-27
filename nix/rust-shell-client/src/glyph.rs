@@ -30,10 +30,14 @@ pub enum Glyph {
     Signal,
     /// Location; the shade's fix form is `paint_location`.
     Location,
+    /// Date & time: a clock face.
+    Clock,
+    /// About: a circled "i".
+    Info,
 }
 
 impl Glyph {
-    pub const ALL: [Glyph; 13] = [
+    pub const ALL: [Glyph; 15] = [
         Glyph::Wifi,
         Glyph::Sun,
         Glyph::SunSmall,
@@ -47,6 +51,8 @@ impl Glyph {
         Glyph::Search,
         Glyph::Signal,
         Glyph::Location,
+        Glyph::Clock,
+        Glyph::Info,
     ];
 }
 
@@ -165,6 +171,21 @@ pub fn paint(cr: &Context, glyph: Glyph, x: f64, y: f64, size: f64, rgb: u32, al
         }
         Glyph::Signal => signal_path(cr),
         Glyph::Location => pin_path(cr),
+        Glyph::Clock => {
+            cr.arc(12.0, 12.0, 9.0, 0.0, TAU);
+            cr.move_to(12.0, 6.5);
+            cr.line_to(12.0, 12.0);
+            cr.line_to(16.0, 14.5);
+            let _ = cr.stroke();
+        }
+        Glyph::Info => {
+            cr.arc(12.0, 12.0, 9.0, 0.0, TAU);
+            cr.move_to(12.0, 11.0);
+            cr.line_to(12.0, 17.0);
+            let _ = cr.stroke();
+            cr.arc(12.0, 7.6, 1.3, 0.0, TAU);
+            let _ = cr.fill();
+        }
     }
     let _ = cr.restore();
 }

@@ -52,6 +52,7 @@ use k230_shell_rust::{
     video_visibility::{self, should_decode},
     video_wallpaper::{VideoEvent, VideoKey, VideoWallpaper},
     modem::{self, ModemReply, ModemWorker, SmsTail},
+    device_info::{self, InfoView, Page as InfoPage, Sources as InfoSources},
     modem_ui::{self, Intent as ModemIntent, ModemView, Page as ModemPage},
     wifi_settings::{Kind as WifiKind, WifiRequest, WifiResult, WifiWorker},
     wifi_ui::{self, key_event_intent, Intent as WifiIntent, Page as WifiPage, WifiView},
@@ -1233,6 +1234,8 @@ struct ShellClient {
     /// modem control hidden.
     modem_worker: ModemWorker,
     modem_view: ModemView,
+    info_view: InfoView,
+    info_polled_at: Option<Instant>,
     modem_state_path: PathBuf,
     modem_sms: SmsTail,
     modem_polled_at: Option<Instant>,
@@ -1665,6 +1668,33 @@ impl ShellClient {
         self.service_view.modem_page = self.modem_view.public();
         self.renderer.set_services(self.service_view.clone());
         self.dirty = true;
+    }
+
+    /// Hands the renderer the open About or Date & time page, if any.
+    fn info_dirty(&mut self) {
+        self.service_view.info_page = self.info_view.public();
+        self.renderer.set_services(self.service_view.clone());
+        self.dirty = true;
+    }
+
+    fn close_info_page(&mut self) {
+        if self.info_view.page != InfoPage::Closed {
+            self.info_view.close();
+            self.info_dirty();
+        }
+    }
+
+    /// Re-reads the open info page once a second (uptime and the clock move).
+    fn tick_info(&mut self, now: Instant) {
+        if self.info_view.page == InfoPage::Closed || self.route != Route::Settings {
+            return;
+        }
+        if self.info_polled_at.is_none_or(|last| now.duration_since(last) >= Duration::from_secs(1)) {
+            self.info_polled_at = Some(now);
+            if self.info_view.refresh(&InfoSources::system()) {
+                self.info_dirty();
+            }
+        }
     }
 
     fn close_modem_page(&mut self) {
@@ -3063,6 +3093,17 @@ impl ShellClient {
                 }
                 self.modem_dirty();
             }
+            PanelIntent::OpenDateTime | PanelIntent::OpenAbout => {
+                if self.route != Route::Settings && !self.show(qh, Route::Settings) {
+                    return;
+                }
+                self.info_view.open(
+                    if intent == PanelIntent::OpenAbout { InfoPage::About } else { InfoPage::DateTime },
+                    &InfoSources::system(),
+                );
+                self.info_polled_at = Some(Instant::now());
+                self.info_dirty();
+            }
             PanelIntent::OpenCellular | PanelIntent::OpenLocation => {
                 // The wide Shade's Cellular tile: its page lives on Settings.
                 if self.route != Route::Settings && !self.show(qh, Route::Settings) {
@@ -4442,6 +4483,7 @@ impl ShellClient {
         }
         if route != Route::Settings {
             self.close_modem_page();
+            self.close_info_page();
         }
         if self.route != route {
             self.help_home_result = None;
@@ -4508,6 +4550,7 @@ impl ShellClient {
         }
         if message.surface != Route::Settings {
             self.close_modem_page();
+            self.close_info_page();
         }
         if self.route != message.surface {
             self.panel_start = None;
@@ -4636,6 +4679,7 @@ impl ShellClient {
         self.sync_wifi_keyboard();
         self.service_view.wifi = None;
         self.close_modem_page();
+        self.close_info_page();
         self.renderer.set_services(self.service_view.clone());
         self.theme_view = ThemeView::default();
         self.renderer.set_theme_view(self.theme_view.clone());
@@ -5427,6 +5471,7 @@ impl ShellClient {
                     let on_settings_capabilities_page = self.route != Route::Settings
                         || (self.wifi_view.page == WifiPage::Closed
                             && self.modem_view.page == ModemPage::Closed
+                            && self.info_view.page == InfoPage::Closed
                             && self.theme_view.page == ThemePage::Controls);
                     // The wide (landscape) Settings page keeps its sliders in
                     // the first column; the track is that column's, not the
@@ -5883,6 +5928,12 @@ impl ShellClient {
                             if let Some(page) = self.modem_view.public() {
                                 if let Some(intent) = modem_ui::hit(&page, start, point, self.width, self.height) {
                                     self.modem_action(intent);
+                                }
+                            } else if let Some(page) = self.info_view.public() {
+                                if let Some(device_info::Intent::Back) =
+                                    device_info::hit(&page, start, point, self.width, self.height)
+                                {
+                                    self.close_info_page();
                                 }
                             } else if self.wifi_view.page != WifiPage::Closed {
                                 if !self.wifi_dragged {
@@ -6344,6 +6395,7 @@ impl ShellClient {
                 && self.input_ready
                 && self.wifi_view.page == WifiPage::Closed
                 && self.modem_view.page == ModemPage::Closed
+                && self.info_view.page == InfoPage::Closed
                 && self.theme_view.page == ThemePage::Controls
                 && settings_max_scroll(self.width, self.height, &self.service_view) > 0.0
             {
@@ -7037,6 +7089,8 @@ fn serve() -> Result<(), String> {
         wifi_dragged: false,
         modem_worker: ModemWorker::spawn(env_path("K230_MODEM_SOCKET", modem::CONTROL_PATH)),
         modem_view: ModemView::default(),
+        info_view: InfoView::default(),
+        info_polled_at: None,
         modem_state_path: env_path("K230_MODEM_STATE", modem::STATE_PATH),
         modem_sms: SmsTail::new(env_path("K230_MODEM_SMS", modem::SMS_PATH)),
         modem_polled_at: None,
@@ -7741,6 +7795,7 @@ fn serve() -> Result<(), String> {
         }
         state.tick_home_widgets(now);
         state.tick_modem(now);
+        state.tick_info(now);
         if state.home_touch_id != Some(TRACKPAD_PAN_ID) && state.home.tick(elapsed) {
             state.home_surface.dirty = true;
         }
