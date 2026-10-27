@@ -1276,7 +1276,7 @@ in
 
     focusKeyboardIgnoreAppIds = lib.mkOption {
       type = lib.types.listOf lib.types.str;
-      default = [ "k230-timer" "k230-clock" "k230-weather" "k230-monitor" "k230-btop" ];
+      default = [ "k230-timer" "k230-clock" "k230-weather" "k230-monitor" "k230-btop" "k230-exhibition" ];
       description = ''
         App ids whose focused window does not raise the on-screen keyboard.
         These run in foot, which enables text input for every window, but
