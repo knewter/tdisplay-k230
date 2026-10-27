@@ -163,6 +163,7 @@ stdenvNoCC.mkDerivation {
       install -Dm644 ${./gtk-3.0/settings.ini} "$out/generations/$id/gtk-3.0/settings.ini"
       install -Dm644 ${./gtk-3.0/gtk.css} "$out/generations/$id/gtk-3.0/gtk.css"
       install -Dm644 ${./gtk-4.0/settings.ini} "$out/generations/$id/gtk-4.0/settings.ini"
+      install -Dm644 ${./gtk-4.0/gtk.css} "$out/generations/$id/gtk-4.0/gtk.css"
     done
     install -Dm644 "$src/LICENSE" "$out/share/doc/handheld-theme-default/LICENSE"
     runHook postInstall

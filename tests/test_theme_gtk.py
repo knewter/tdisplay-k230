@@ -92,8 +92,20 @@ class Gtk3(unittest.TestCase):
         self.assertEqual(css.splitlines()[0], gtk.GTK3_CSS_MARKER)
         for value in PALETTE.values():
             self.assertIn(value, css)
-        self.assertIn("min-height: 44px", css)
         self.assertNotIn("drawingarea", css.lower())
+
+    def test_gtk3_controls_reach_the_touch_floor(self):
+        css = gtk.render_gtk3_css(PALETTE, "dark")
+        self.assertIn("menubar > menuitem { padding: 12px 20px; font-size: 115%; min-height: 48px; }", css)
+        self.assertIn("min-height: 56px; min-width: 72px; padding: 8px 18px", css)
+        self.assertNotIn("min-height: 44px; min-width: 44px", css)
+
+    def test_gtk4_css_is_sizes_only_and_marked(self):
+        css = gtk.render_gtk4_css()
+        self.assertEqual(css.splitlines()[0], gtk.GTK4_CSS_MARKER)
+        self.assertNotIn("color", css)
+        self.assertIn("button { min-height: 72px;", css)
+        self.assertIn("popover modelbutton", css)
 
     def test_css_rejects_unsafe_colors(self):
         for bad in ("red", "#12345", "#1234567", "#12345g", "#000000; } * { x", None, "#000000\n"):

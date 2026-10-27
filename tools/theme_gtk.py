@@ -29,6 +29,7 @@ COLOR = re.compile(r"#[0-9a-fA-F]{6}\Z")
 # First line of every file this adapter writes under ~/.config/gtk-3.0; the
 # link step refuses to replace a file that does not start with it.
 GTK3_CSS_MARKER = "/* Written by k230-app-appearance; edits are replaced. */"
+GTK4_CSS_MARKER = GTK3_CSS_MARKER
 GTK3_INI_MARKER = "# Written by k230-app-appearance; edits are replaced."
 MODES = {
     "dark": ("prefer-dark", "Adwaita-dark"),
@@ -170,48 +171,77 @@ window, dialog, .background {{ background-color: {bg}; color: {fg}; }}
 headerbar, .titlebar, menubar, toolbar, .toolbar, statusbar, actionbar {{
   background-image: none; background-color: {bar}; color: {fg};
   border-color: {border}; box-shadow: none; }}
-menubar > menuitem {{ padding: 10px 14px; font-size: 115%; min-height: 24px; }}
+menubar > menuitem {{ padding: 12px 20px; font-size: 115%; min-height: 48px; }}
 menubar > menuitem:hover, menubar > menuitem:checked {{ background-color: {hover}; }}
 menu, .menu, .popup, popover, popover.background {{
   background-color: {bar}; color: {fg}; border-color: {border}; }}
-menu menuitem, .menu menuitem {{ padding: 10px 14px; min-height: 24px; }}
+menu menuitem, .menu menuitem {{ padding: 14px 20px; min-height: 48px; }}
+modelbutton {{ min-height: 48px; padding: 8px 20px; }}
 menuitem:hover, modelbutton:hover {{ background-color: {hover}; }}
 
 button, button.text-button, button.image-button {{
-  min-height: 44px; min-width: 44px; padding: 6px 14px; border-radius: 10px;
+  min-height: 56px; min-width: 72px; padding: 8px 18px; border-radius: 12px;
   background-image: none; background-color: {card}; color: {fg};
   border: 1px solid {border}; box-shadow: none; text-shadow: none; }}
 button:hover {{ background-color: {hover}; }}
 button:active, button:checked {{ background-color: {accent}; color: {on_accent}; }}
 button:disabled {{ background-color: {bar}; color: {dim}; }}
-headerbar button, toolbar button {{ margin: 2px; }}
+headerbar button, toolbar button {{ margin: 4px; }}
 
 entry, spinbutton, combobox button {{
-  min-height: 44px; padding: 4px 10px; border-radius: 10px;
+  min-height: 56px; padding: 8px 12px; border-radius: 12px;
   background-image: none; background-color: {card}; color: {fg};
   border: 1px solid {border}; box-shadow: none; }}
 entry:focus, spinbutton:focus {{ border-color: {accent}; }}
-spinbutton button {{ min-height: 36px; border-radius: 0; }}
+spinbutton button {{ min-height: 56px; min-width: 64px; border-radius: 0; }}
 
 scale trough, progressbar trough, levelbar trough {{
   background-image: none; background-color: {card}; border: 1px solid {border};
   min-height: 8px; min-width: 8px; }}
 scale highlight, progressbar progress, levelbar block.filled {{
   background-image: none; background-color: {accent}; border-color: {accent}; }}
-scale slider {{ min-width: 28px; min-height: 28px; background-image: none;
+scale slider {{ min-width: 48px; min-height: 48px; border-radius: 24px; background-image: none;
   background-color: {fg}; border: 1px solid {border}; }}
-switch {{ min-height: 32px; min-width: 60px; background-color: {card}; border-color: {border}; }}
+switch {{ min-height: 44px; min-width: 84px; background-color: {card}; border-color: {border}; }}
 switch:checked {{ background-color: {accent}; }}
-check, radio {{ min-width: 24px; min-height: 24px; }}
+check, radio {{ min-width: 40px; min-height: 40px; }}
+checkbutton, radiobutton {{ min-height: 56px; }}
 
 selection, *:selected, row:selected, treeview.view:selected, textview text selection {{
   background-color: {accent}; color: {on_accent}; }}
-notebook > header > tabs > tab {{ min-height: 40px; padding: 4px 14px; }}
+notebook > header > tabs > tab {{ min-height: 56px; padding: 8px 18px; }}
 notebook > header > tabs > tab:checked {{ background-color: {card}; }}
 
 scrollbar {{ background-color: {bg}; }}
-scrollbar slider {{ min-width: 18px; min-height: 18px; border-radius: 9px;
+scrollbar slider {{ min-width: 36px; min-height: 36px; border-radius: 18px;
   background-color: {mix(bg, fg, 0.40)}; border: 2px solid {bg}; }}
 scrollbar slider:hover, scrollbar slider:active {{ background-color: {accent}; }}
 """
     return css
+
+
+def render_gtk4_css() -> str:
+    """GTK4/libadwaita `gtk.css`: touch-sized hit areas only, no colours.
+
+    Colour already follows the generation's `color-scheme` (see `render`); this
+    file raises the controls libadwaita draws at about 30-36 px (Nautilus's
+    header buttons, list rows, menus, switches) to the same 72 px-class targets
+    `render_gtk3_css` gives GTK3. Node names are GTK4's, not GTK3's.
+    """
+    return f"""{GTK4_CSS_MARKER}
+headerbar {{ min-height: 80px; }}
+headerbar button, headerbar menubutton > button, headerbar splitbutton > button {{
+  min-height: 64px; min-width: 64px; padding: 8px 14px; margin: 4px 2px; }}
+button {{ min-height: 72px; min-width: 72px; padding: 8px 16px; }}
+entry, spinbutton, searchbar entry {{ min-height: 72px; padding: 8px 12px; }}
+spinbutton button {{ min-height: 72px; min-width: 64px; }}
+popover modelbutton, popover.menu modelbutton {{ min-height: 72px; padding: 8px 18px; }}
+popovermenubar > item {{ min-height: 72px; padding: 8px 18px; }}
+listview > row, list > row, .navigation-sidebar > row {{ min-height: 72px; padding: 6px 12px; }}
+tabbar tab, tab {{ min-height: 64px; padding: 8px 18px; }}
+check, radio {{ min-width: 40px; min-height: 40px; }}
+checkbutton, radiobutton {{ min-height: 64px; }}
+switch {{ min-height: 48px; min-width: 88px; }}
+scale slider {{ min-width: 48px; min-height: 48px; }}
+scrollbar slider {{ min-width: 36px; min-height: 36px; }}
+"""

@@ -18,7 +18,7 @@ import tempfile
 import time
 
 from theme_gtk import (GTK3_CSS_MARKER, GTK3_INI_MARKER, GtkAppearanceError, render as gtk_keyfile,
-                       render_gtk4_settings,
+                       render_gtk4_css, render_gtk4_settings,
                        render_gtk3_css, render_gtk3_settings)
 from theme_transaction import TransactionError, _pointer
 
@@ -101,12 +101,13 @@ def gtk_appearance(generation: Path) -> tuple[str, str | None]:
 
 
 def gtk3_files(colors: dict[str, str], mode: str, icon_theme: str | None) -> dict[str, str]:
-    """GTK3 apps' `settings.ini` and `gtk.css`, and GTK4's `settings.ini`,
+    """GTK3 apps' `settings.ini` and `gtk.css`, and GTK4's `settings.ini` and `gtk.css`,
     keyed by path inside a generation."""
     try:
         return {"gtk-3.0/settings.ini": render_gtk3_settings(mode, icon_theme),
                 "gtk-3.0/gtk.css": render_gtk3_css(colors, mode),
-                "gtk-4.0/settings.ini": render_gtk4_settings()}
+                "gtk-4.0/settings.ini": render_gtk4_settings(),
+                "gtk-4.0/gtk.css": render_gtk4_css()}
     except GtkAppearanceError as error:
         raise AppAppearanceError(str(error)) from error
 
@@ -192,7 +193,8 @@ def prepare(generation: Path, state_root: Path) -> Path:
                         "GTK4/libadwaita (Portfolio, Nautilus): generated GSettings "
                         "keyfile-backend color-scheme + icon-theme, matching upstream "
                         "omarchy-theme-set-gnome's own dark/light + icon-only scope "
-                        "(no accent-color recolor, same as Omarchy itself)",
+                        "(no accent-color recolor, same as Omarchy itself), plus a "
+                        "generated gtk-4.0/gtk.css that only enlarges touch targets",
                         "GTK3 (puzzles, galculator, viewnior): generated gtk-3.0/"
                         "settings.ini and gtk.css (palette, touch sizes), linked "
                         "into the config directory by `sync`; close-only window "
@@ -269,12 +271,12 @@ def sync(state_root: Path, *, expected_generation: str | None = None,
 
 
 GTK_LINKS = (("gtk-3.0", "settings.ini", GTK3_INI_MARKER), ("gtk-3.0", "gtk.css", GTK3_CSS_MARKER),
-             ("gtk-4.0", "settings.ini", GTK3_INI_MARKER))
+             ("gtk-4.0", "settings.ini", GTK3_INI_MARKER), ("gtk-4.0", "gtk.css", GTK3_CSS_MARKER))
 
 
 def link_gtk3(target: Path, config_home: Path) -> list[str]:
     """Point ~/.config/gtk-3.0/{settings.ini,gtk.css} and
-    ~/.config/gtk-4.0/settings.ini at a prepared generation.
+    ~/.config/gtk-4.0/{settings.ini,gtk.css} at a prepared generation.
 
     Idempotent. A file is replaced only when it is a symlink we made (into an
     app-appearance generation) or a regular file starting with our marker;
