@@ -10,6 +10,7 @@ terminal and network code is a thin shell around them.
     k230_term_apps.py clock
     k230_term_apps.py timer [seconds]
     k230_term_apps.py weather
+    k230_term_apps.py timerd DEADLINE INITIAL STATE   (internal: outlives a closed Timer card)
     k230_term_apps.py APP ... --render-once WIDTHxHEIGHT   (debug: one frame)
 """
 import json
@@ -18,6 +19,8 @@ import os
 import select
 import shutil
 import signal
+import socket
+import subprocess
 import sys
 import time
 from collections import namedtuple
@@ -321,6 +324,111 @@ def timer_tick(s, now):
     if s.running and s.deadline - now <= 1e-9:
         return s._replace(running=False, remaining=0, deadline=0.0, expired=True)
     return s
+
+
+# A silent device needs the shell's notification broker to alert the person.
+# The Timer and its detached helper are listed there as the trusted "Timer"
+# source (nix/shell.nix); a missing broker never disturbs the countdown.
+
+def notification_socket():
+    return os.environ.get("K230_NOTIFICATION_SOCKET", "/run/shell-notifications/events.sock")
+
+
+def timer_expiry_request(initial):
+    return {"operation": "emit", "summary": "Timer finished",
+            "body": f"{format_hms(initial)} elapsed" if initial else "",
+            "tag": "timer", "priority": "important", "private": False}
+
+
+def notify_broker(request, path=None):
+    """One request to the broker; True when it accepted. Never raises."""
+    try:
+        with socket.socket(socket.AF_UNIX) as conn:
+            conn.settimeout(3)
+            conn.connect(path or notification_socket())
+            conn.sendall(json.dumps(request, separators=(",", ":")).encode() + b"\n")
+            reply = b""
+            while b"\n" not in reply and len(reply) < 65536:
+                chunk = conn.recv(4096)
+                if not chunk:
+                    break
+                reply += chunk
+        return json.loads(reply.split(b"\n", 1)[0]).get("state") == "accepted"
+    except (OSError, ValueError, AttributeError):
+        return False
+
+
+def timer_state_path():
+    base = os.environ.get("K230_TIMER_STATE_DIR") or os.environ.get("XDG_RUNTIME_DIR") or "/tmp"
+    return os.path.join(base, "k230-timer.json")
+
+
+def timer_pending(path):
+    """The detached timer's record if its helper is still alive, else None."""
+    try:
+        with open(path) as handle:
+            record = json.load(handle)
+        pid, deadline, initial = int(record["pid"]), float(record["deadline"]), int(record["initial"])
+        with open(f"/proc/{pid}/cmdline", "rb") as handle:
+            if b"timerd" not in handle.read():
+                return None
+        return {"pid": pid, "deadline": deadline, "initial": initial}
+    except (OSError, ValueError, KeyError, TypeError):
+        return None
+
+
+def timer_adopt(path, now):
+    """Take back a countdown a closed card left behind: stop its helper and
+    return the running state, or None when nothing is pending or it is past."""
+    record = timer_pending(path)
+    if record is None:
+        return None
+    try:
+        os.kill(record["pid"], signal.SIGTERM)
+    except OSError:
+        pass
+    try:
+        os.unlink(path)
+    except OSError:
+        pass
+    left = record["deadline"] - now
+    if left <= 0:
+        return None
+    return TimerState(record["initial"], math.ceil(left), True, record["deadline"], False)
+
+
+def timer_detach(state, path):
+    """Leave a helper that posts the expiry after this card is gone."""
+    if not state.running:
+        return None
+    try:
+        child = subprocess.Popen(
+            [sys.executable, os.path.abspath(__file__), "timerd", repr(state.deadline), str(state.initial), path],
+            stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+            start_new_session=True, close_fds=True)
+        tmp = f"{path}.{child.pid}"
+        with open(tmp, "w") as handle:
+            json.dump({"pid": child.pid, "deadline": state.deadline, "initial": state.initial}, handle)
+        os.replace(tmp, path)
+        return child
+    except OSError:
+        return None
+
+
+def run_timerd(deadline, initial, path, clock=time.monotonic, sleep=time.sleep, notify=notify_broker):
+    """Sleep to the deadline (no polling), then alert once and clean up."""
+    while True:
+        left = deadline - clock()
+        if left <= 0:
+            break
+        sleep(left)
+    notify(timer_expiry_request(initial))
+    try:
+        with open(path) as handle:
+            if int(json.load(handle).get("pid", -1)) == os.getpid():
+                os.unlink(path)
+    except (OSError, ValueError, AttributeError):
+        pass
 
 
 def format_hms(seconds):
@@ -680,8 +788,9 @@ def run_clock(sess):
             return
 
 
-def run_timer(sess, seconds):
-    state = timer_new(seconds)
+def run_timer(sess, seconds, path=None):
+    path = path or timer_state_path()
+    state = timer_adopt(path, time.monotonic()) or timer_new(seconds)
     rang = False
     while True:
         cols, rows = sess.size()
@@ -690,6 +799,7 @@ def run_timer(sess, seconds):
         if state.expired and not rang:
             rang = True
             sess._write("\a")
+            notify_broker(timer_expiry_request(state.initial))
         elif not state.expired:
             rang = False
         sess.draw(timer_frame(cols, rows, state, now))
@@ -698,6 +808,7 @@ def run_timer(sess, seconds):
             now = time.monotonic()
             action = None
             if ev[0] == "quit":
+                timer_detach(timer_tick(state, now), path)
                 return
             if ev[0] == "click":
                 action = hit_test(buttons, ev[1], ev[2])
@@ -774,6 +885,12 @@ def main(argv):
         except IndexError:
             print("--render-once needs WIDTHxHEIGHT", file=sys.stderr)
             return 2
+    if args and args[0] == "timerd" and len(args) == 4:
+        try:
+            run_timerd(float(args[1]), int(args[2]), args[3])
+        except ValueError:
+            return 2
+        return 0
     if not args or args[0] not in ("clock", "timer", "weather"):
         print("usage: k230-term-apps clock|timer [seconds]|weather", file=sys.stderr)
         return 2

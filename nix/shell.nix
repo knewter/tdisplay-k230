@@ -455,11 +455,19 @@ let
   };
   settingsCommand = pkgs.callPackage ./handheld-settings.nix { };
   notificationCommand = pkgs.callPackage ./handheld-notifications.nix { };
+  notificationDbusPython = pkgs.python3.withPackages (ps: [ ps.jeepney ]);
+  notificationDbus = pkgs.callPackage ./handheld-notification-dbus.nix { python = notificationDbusPython; };
   # Keep the executable reference in string content: Nix attribute names
   # cannot carry a derivation context, but this allowlist must retain it.
   notificationSources = pkgs.writeText "k230-notification-sources.json" ''
     {"${rustShellBase}/bin/k230-shell-rust": ${builtins.toJSON {
       id = "shell"; name = "Shell"; icon = "applications-system";
+    }},
+     "${notificationDbusPython}/bin/python3 ${../tools/notification_dbus.py}": ${builtins.toJSON {
+      id = "dbus"; name = "Applications"; icon = null; delegate = true;
+    }},
+     "${pkgs.python3}/bin/python3 ${termApps}/lib/k230-term-apps/k230_term_apps.py": ${builtins.toJSON {
+      id = "timer"; name = "Timer"; icon = "k230-timer";
     }}}
   '';
   themedFoot = pkgs.writeShellScriptBin "k230-foot" ''
@@ -1448,6 +1456,32 @@ in
       };
     };
 
+    # org.freedesktop.Notifications on the application session bus, so
+    # notify-send and GTK/GLib notifications reach the broker above. Blocks in
+    # the bus read: no timers, no polling. Listed in the broker's trusted map
+    # as a delegate; apps behind it are labels, never "Shell" or "System".
+    systemd.services.shell-notification-dbus = lib.mkIf cfg.coherentShell {
+      description = "Handheld org.freedesktop.Notifications adaptor";
+      wantedBy = [ "multi-user.target" ];
+      requires = [ "shell-session-bus.service" ];
+      after = [ "shell-session-bus.service" "shell-notifications.service" ];
+      wants = [ "shell-notifications.service" ];
+      partOf = [ "shell-session-bus.service" ];
+      environment = {
+        DBUS_SESSION_BUS_ADDRESS = "unix:path=/run/shell-bus/bus";
+        K230_NOTIFICATION_SOCKET = "/run/shell-notifications/events.sock";
+      };
+      serviceConfig = {
+        User = "shell";
+        Group = "shell";
+        ExecStart = "${notificationDbus}/bin/k230-notification-dbus";
+        Restart = "on-failure";
+        RestartSec = 1;
+        UMask = "0077";
+        NoNewPrivileges = true;
+      };
+    };
+
     # PipeWire + WirePlumber, for the volume UX in
     # openspec/changes/the-handheld-controls-volume: a session-scoped sound
     # server so the shell can show/adjust the default sink's volume and
@@ -1939,7 +1973,7 @@ in
       appIcons
     ] ++ lib.optionals cfg.themeReceiverTrial [ themeCommand ]
       ++ lib.optionals cfg.coherentShell [
-        rustShell themedFoot themeCommand settingsCommand notificationCommand
+        rustShell themedFoot themeCommand settingsCommand notificationCommand notificationDbus
         portfolioLauncher pkgs.portfolio-filemanager
       ]
       ++ lib.optionals (cfg.coherentShell && cfg.filesAppNautilus) [

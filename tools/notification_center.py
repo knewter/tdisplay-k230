@@ -11,6 +11,7 @@ import fcntl
 import json
 import os
 from pathlib import Path
+import re
 import selectors
 import signal
 import socket
@@ -20,6 +21,10 @@ import subprocess
 import time
 
 MAX_EVENTS = 64
+APP_RESERVED = {"shell", "system", "notification", "unknownsource", "settings", "recovery", "k230"}
+APP_NAME_LIMIT = 40
+ICON_NAME = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]{0,63}")
+APP_ID = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]{0,63}")
 MAX_REQUEST = 4096
 MAX_RESPONSE = 128 * 1024
 PRIORITIES = {"ordinary": 0, "important": 1, "critical": 2}
@@ -29,6 +34,30 @@ def text(value, limit):
     if not isinstance(value, str):
         return ""
     return "".join(char for char in value if char.isprintable())[:limit]
+
+
+def delegated(data, source):
+    """Source for an app the delegate (the D-Bus adaptor) speaks for.
+
+    The delegate's own peer identity is what is trusted. The app identity is a
+    claim: it gets a namespaced id, a sanitised label and a themed icon name,
+    can never read as the shell or system, and can never raise its event above
+    important, mark it ongoing, or point it at a window.
+    """
+    if not source or not source.get("delegate"):
+        return source
+    app = data.get("app")
+    if not isinstance(app, dict):
+        return {"id": "app:unknown", "name": "Application", "icon": None, "app": True}
+    app_id = app.get("id") if isinstance(app.get("id"), str) else ""
+    app_id = app_id if APP_ID.fullmatch(app_id) else "unknown"
+    name = " ".join(text(app.get("name"), APP_NAME_LIMIT).split())
+    squashed = "".join(char for char in name.casefold() if char.isalnum())
+    if not name or squashed in APP_RESERVED or squashed.startswith("shell") or squashed.startswith("system"):
+        name = "Application"
+    icon = app.get("icon")
+    icon = icon if isinstance(icon, str) and ICON_NAME.fullmatch(icon) else None
+    return {"id": "app:" + app_id, "name": name, "icon": icon, "app": True}
 
 
 class History:
@@ -46,10 +75,14 @@ class History:
 
     def emit(self, data, source):
         self.prune()
+        source = delegated(data, source)
         trusted = source is not None
         priority = data.get("priority", "ordinary") if trusted else "ordinary"
         if priority not in PRIORITIES:
             return {"state": "failed", "error": "invalid-priority"}
+        app = trusted and source.get("app", False)
+        if app and priority == "critical":
+            priority = "important"
         name = source["name"] if trusted else "Unknown source"
         key = source["id"] if trusted else "unknown"
         tag = text(data.get("tag"), 64)
@@ -66,15 +99,15 @@ class History:
                 del self.events[disposable]
             self.sequence += 1
             identity = self.sequence
-        target = data.get("target") if trusted else None
+        target = data.get("target") if trusted and not app else None
         if type(target) is not int or not 0 < target < 2**53:
             target = None
         event = {"id": identity, "source_id": key, "source": name,
                  "icon": source.get("icon") if trusted else None,
                  "summary": text(data.get("summary"), 160) or "New notification",
                  "body": text(data.get("body"), 512), "priority": priority,
-                 "private": data.get("private", True) is not False or not trusted,
-                 "ongoing": trusted and priority == "critical" and data.get("ongoing") is True,
+                 "private": data.get("private", True) is not False or not trusted or app,
+                 "ongoing": trusted and not app and priority == "critical" and data.get("ongoing") is True,
                  "tag": tag, "target": target, "received": self.clock(),
                  "timestamp": int(self.wall()), "error": None}
         self.events[identity] = event
@@ -110,6 +143,18 @@ class History:
             return self.emit(data, source)
         if operation == "history":
             return self.snapshot()
+        if operation == "withdraw":
+            # Only the delegate may withdraw, and only an event of the same
+            # app and tag; a person's dismissal route is unchanged.
+            source = delegated(data, source)
+            tag = text(data.get("tag"), 64)
+            if not source or not source.get("app") or not tag:
+                return {"state": "failed", "error": "event-gone"}
+            for identity, event in list(self.events.items()):
+                if event["source_id"] == source["id"] and event["tag"] == tag and not event["ongoing"]:
+                    del self.events[identity]
+                    return {"state": "dismissed"}
+            return {"state": "failed", "error": "event-gone"}
         if operation == "dismiss-all":
             self.events = OrderedDict((key, row) for key, row in self.events.items() if row["ongoing"])
             return {"state": "dismissed", "remaining": len(self.events)}
@@ -173,6 +218,27 @@ class SwayActions:
             return False
 
 
+def normalize_trusted(raw):
+    """Resolve "EXE" and "EXE SCRIPT" keys so symlinked store paths match
+    /proc/PID/exe. A script key trusts one program run by a shared interpreter."""
+    result = {}
+    for key, value in raw.items():
+        try:
+            result[" ".join(str(Path(part).resolve()) for part in key.split(" ", 1))] = value
+        except (OSError, RuntimeError):
+            continue
+    return result
+
+
+def peer_script(pid):
+    try:
+        arguments = Path(f"/proc/{pid}/cmdline").read_bytes().split(b"\0")
+        script = next(arg for arg in arguments[1:] if arg and not arg.startswith(b"-"))
+        return str(Path(os.fsdecode(script)).resolve(strict=True))
+    except (OSError, StopIteration, RuntimeError):
+        return None
+
+
 def peer_source(connection, trusted):
     pid, uid, _ = struct.unpack("3i", connection.getsockopt(socket.SOL_SOCKET, socket.SO_PEERCRED, 12))
     if uid not in (0, os.getuid()):
@@ -183,6 +249,9 @@ def peer_source(connection, trusted):
         executable = str(Path(f"/proc/{pid}/exe").resolve(strict=True))
     except OSError:
         return None
+    script = peer_script(pid)
+    if script and f"{executable} {script}" in trusted:
+        return trusted[f"{executable} {script}"]
     return trusted.get(executable)
 
 
@@ -302,7 +371,7 @@ def main():
     parser.add_argument("--priority", choices=PRIORITIES, default="ordinary")
     args = parser.parse_args()
     if args.operation == "serve":
-        trusted = json.loads(args.trusted.read_text()) if args.trusted else {}
+        trusted = normalize_trusted(json.loads(args.trusted.read_text())) if args.trusted else {}
         serve(args.socket, trusted)
         return
     try:

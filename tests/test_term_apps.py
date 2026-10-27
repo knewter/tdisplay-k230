@@ -252,5 +252,95 @@ class WeatherTests(unittest.TestCase):
         self.assertEqual(apps.hit_test(buttons, buttons[0].x0, buttons[0].y0), "refresh")
 
 
+class TimerAlertTests(unittest.TestCase):
+    """Expiry reaches the broker, and survives a closed card (host only)."""
+
+    def serve(self, directory):
+        import socket
+        import threading
+        path = os.path.join(directory, "events.sock")
+        listener = socket.socket(socket.AF_UNIX)
+        listener.bind(path)
+        listener.listen(4)
+        received = []
+
+        def loop():
+            while True:
+                try:
+                    conn, _ = listener.accept()
+                except OSError:
+                    return
+                with conn:
+                    received.append(json.loads(conn.makefile().readline()))
+                    conn.sendall(b'{"state":"accepted","id":1}\n')
+
+        threading.Thread(target=loop, daemon=True).start()
+        self.addCleanup(listener.close)
+        return path, received
+
+    def test_expiry_request_is_important_and_unredacted(self):
+        request = apps.timer_expiry_request(300)
+        self.assertEqual((request["operation"], request["priority"], request["tag"]), ("emit", "important", "timer"))
+        self.assertIs(request["private"], False)
+        self.assertEqual(request["body"], "05:00 elapsed")
+
+    def test_notify_broker_posts_and_never_raises(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path, received = self.serve(directory)
+            self.assertTrue(apps.notify_broker(apps.timer_expiry_request(60), path))
+            self.assertEqual(received[0]["summary"], "Timer finished")
+            self.assertFalse(apps.notify_broker({}, os.path.join(directory, "missing.sock")))
+
+    def test_helper_sleeps_to_the_deadline_then_posts_once(self):
+        sent, naps, now = [], [], [0.0]
+        def sleep(seconds):
+            naps.append(seconds)
+            now[0] += seconds
+        with tempfile.TemporaryDirectory() as directory:
+            state = os.path.join(directory, "t.json")
+            with open(state, "w") as handle:
+                json.dump({"pid": os.getpid(), "deadline": 90.0, "initial": 90}, handle)
+            apps.run_timerd(90.0, 90, state, clock=lambda: now[0], sleep=sleep, notify=sent.append)
+            self.assertEqual(naps, [90.0])
+            self.assertEqual([r["body"] for r in sent], ["01:30 elapsed"])
+            self.assertFalse(os.path.exists(state))
+
+    def test_closing_the_card_leaves_a_helper_that_alerts(self):
+        with tempfile.TemporaryDirectory() as directory:
+            sock, received = self.serve(directory)
+            state_path = os.path.join(directory, "k230-timer.json")
+            now = time.monotonic()
+            state = apps.TimerState(5, 5, True, now + 0.4, False)
+            old = os.environ.get("K230_NOTIFICATION_SOCKET")
+            os.environ["K230_NOTIFICATION_SOCKET"] = sock
+            self.addCleanup(lambda: os.environ.pop("K230_NOTIFICATION_SOCKET", None) if old is None
+                            else os.environ.__setitem__("K230_NOTIFICATION_SOCKET", old))
+            child = apps.timer_detach(state, state_path)
+            self.assertIsNotNone(child)
+            self.assertEqual(apps.timer_pending(state_path)["initial"], 5)
+            child.wait(timeout=5)
+            self.assertEqual([r["summary"] for r in received], ["Timer finished"])
+            self.assertFalse(os.path.exists(state_path))
+
+    def test_reopened_card_adopts_the_running_countdown(self):
+        with tempfile.TemporaryDirectory() as directory:
+            state_path = os.path.join(directory, "k230-timer.json")
+            now = time.monotonic()
+            child = apps.timer_detach(apps.TimerState(120, 120, True, now + 60, False), state_path)
+            self.addCleanup(child.wait)
+            adopted = apps.timer_adopt(state_path, now + 10)
+            self.assertTrue(adopted.running)
+            self.assertEqual((adopted.initial, apps.timer_remaining(adopted, now + 10)), (120, 50))
+            child.wait(timeout=5)  # stopped by the adopter, so it never alerts
+            self.assertFalse(os.path.exists(state_path))
+            self.assertIsNone(apps.timer_adopt(state_path, now))
+
+    def test_paused_or_expired_timers_leave_no_helper(self):
+        with tempfile.TemporaryDirectory() as directory:
+            state_path = os.path.join(directory, "k230-timer.json")
+            self.assertIsNone(apps.timer_detach(apps.timer_new(30), state_path))
+            self.assertFalse(os.path.exists(state_path))
+
+
 if __name__ == "__main__":
     unittest.main()
