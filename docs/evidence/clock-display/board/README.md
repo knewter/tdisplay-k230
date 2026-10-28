@@ -152,3 +152,23 @@ exhibition and pressed a key, with the app beneath not reacting and the prior
 card returning, they answered: "it seems all good", "it works fine", and, to
 that exact question, "yup go". The report does not say which key or which
 app was beneath; the injected runs above cover those details.
+
+## CPU against a no-card baseline (task 4.6, still open)
+
+`cpuab.sh.txt` ran on the board on 2026-10-28, build `3vk5qy3a…`, charger in.
+It stopped `shell-idle` so the display stayed on with no idle steps, waited
+60 s, then took three 60 s `/proc/stat` samples with `cpu.sh`. Output is in
+`cpu-baseline-vs-clock.txt`.
+
+| Window (UTC) | State | System busy |
+|---|---|---|
+| 17:43:24–17:44:24 | terminal only, no card | 7.20 % (486/6752) |
+| 17:45:15–17:46:15 | exhibition up, clock-only (exec 17:44:24, no `ttfx` running) | 5.78 % (390/6752) |
+| 17:46:35–17:47:35 | card killed, no card again | 6.82 % (459/6731) |
+
+The clock-only phase lies inside the spread of the two no-card samples, so
+the card's increment is below what these 60 s samples can resolve. That bound
+is roughly ±1 %. The task's pass line of under 1 % for the whole system is
+not met, because the system floor without the card is 6–7 %. The `ps` `%CPU`
+column is a lifetime average and is not used here. A rerun at 17:38Z did not
+launch the card (empty card path) and is not counted.

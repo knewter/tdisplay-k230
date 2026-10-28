@@ -1,0 +1,16 @@
+#!/bin/sh
+# cpuab.sh -- whole-system busy with no card, with the exhibition (clock-only phase), and with no card again
+SM="swaymsg -s /run/shell/sway-ipc.sock"
+EX=$(ps -eo args | grep -o '/nix/store/[^ "]*-k230-exhibition-card' | head -1)
+apps() { $SM -t get_tree | grep -o '"app_id": "[^"]*"' | tr '\n' ' '; echo; }
+echo "card $EX"; [ -n "$EX" ] || exit 1
+sudo systemctl stop shell-idle
+echo "shell-idle stopped $(date -u +%T)Z; settling 60 s"; sleep 60
+apps; sh /var/tmp/cpu.sh baseline-no-card 60
+$SM exec $EX >/dev/null; echo "card exec $(date -u +%T)Z; waiting 50 s, past the +8 s effect"; sleep 50
+apps; pgrep -x ttfx || echo "no ttfx"
+sh /var/tmp/cpu.sh clock-only 60
+pgrep -x ttfx || echo "no ttfx"; apps
+kill "$(cat /run/shell/exhibition.pid)"; echo "card killed $(date -u +%T)Z"; sleep 20
+apps; sh /var/tmp/cpu.sh baseline-no-card-after 60
+sudo systemctl start shell-idle; echo "shell-idle started $(date -u +%T)Z"
