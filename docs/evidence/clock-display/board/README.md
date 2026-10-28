@@ -183,3 +183,12 @@ shows ttfx running 17:54:12–17:54:19Z, so the effect ended within 20 s. Over
 the 45 s window from exec, which includes card start-up, the system was
 21.87 % busy (1092/4994 jiffies). The effect does not pin the CPU, so the
 frame rate and the effect rotation are unchanged.
+
+## Operator reports: keyboard-base key and power key (tasks 4.4, 4.5)
+
+Evidence class: glass, operator report, build `3vk5qy3a…`, 2026-10-28.
+With the exhibition up, the operator pressed Space on the physical keyboard
+base and reported: "i pressed space and the terminal came up" (the terminal
+was the prior card, so this is the prior card, not Home). For the power-key
+half of 4.5 (blank while exhibiting, then wake), they reported "power works
+fine". Neither was read alongside `get_tree` or a logger.

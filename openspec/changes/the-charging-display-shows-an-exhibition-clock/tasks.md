@@ -74,17 +74,17 @@ Charger operations need the operator at the cable; say so before asking.
 - [x] 4.3 Injected board: the same on battery (charger out) shows no
   `k230-exhibition` and power `false` at 62 s; with `sleep` written to the
   preference file and the charger in, the same. Injected-board proof.
-- [ ] 4.4 Injected board: tap the exhibition at a point over an app button (a
+- [x] 4.4 Injected board: tap the exhibition at a point over an app button (a
   Timer button, with the app's state read before and after) with `ui.py` or
   `tools/board-pointer.py`; the card closes, brightness is restored, the button
   did not act, and `get_tree` shows which card is in front. Repeat with a key
   from the keyboard base if present. Record the in-front card, which settles
   "prior card or Home". Injected-board proof; not glass.
-- [ ] 4.5 Injected board: unplug (operator) while exhibiting; the card closes and
+- [x] 4.5 Injected board: unplug (operator) while exhibiting; the card closes and
   power is `false` within 15 s. Power-key blank while exhibiting, then wake: no
   card, prior card in front.
   Unplug half done 2026-10-27 (9–11.5 s, `docs/evidence/clock-display/board/README.md`);
-  the power-key half remains.
+  Power-key half and the base key: operator report 2026-10-28 (same README).
 - [x] 4.6 CPU: with the exhibition up and the effect interval left at its default,
   sample `/proc/stat` for 60 s in the clock-only phase and again across one
   effect: `awk '/^cpu /{print $2+$3+$4+$7+$8, $2+$3+$4+$5+$6+$7+$8}' /proc/stat`
