@@ -1,0 +1,7 @@
+card pid 4332 (k230_exhibition.py), foot pid 4329
+{"state":"accepted","id":3}
+history count: "count":3
+18:02:32 3 waiting: card 60 ms + foot 20 ms CPU over 120 s
+{"state":"dismissed","remaining":0}
+history count: "count":0
+18:04:34 0 waiting: card 50 ms + foot 20 ms CPU over 120 s

@@ -1,0 +1,2 @@
+18:05:03 card up (from the Clock tile) brightness=37 focused=k230-exhibition  exhibition=1 dimmer={"saved": 148, "dimmed": 37, "off": false}
+18:05:10 after one injected touch brightness=148 focused=k230-terminal  exhibition=0 dimmer=

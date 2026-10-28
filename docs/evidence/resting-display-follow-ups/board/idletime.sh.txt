@@ -1,0 +1,23 @@
+#!/bin/sh
+# Task 1.3: with no input, log brightness and output power every 5 s.
+# Arm 1: idle timeout 5m (expect dim ~150 s, off ~300 s). Arm 2: off (expect neither in 360 s).
+# "Idle on charger" is set to sleep for the run so the clock screen does not hold the display on.
+P=/var/lib/k230-shell-prefs
+M="$(dirname "$(readlink -f /proc/$(systemctl show -p MainPID --value shell)/exe)")/swaymsg -s /run/shell/sway-ipc.sock"
+B=$(ls -d /sys/class/backlight/* | head -1)
+prev=$(cat $P/idle-on-charger 2>/dev/null)
+log(){ echo "$(date +%T) t=$(( $(date +%s) - t0 ))s brightness=$(cat $B/brightness) power=$(sudo -u shell $M -t get_outputs -r | grep -o '"power": [a-z]*' | head -1 | cut -d' ' -f2)"; }
+arm(){ echo "== arm $1"; echo -n "$1" | sudo -u shell tee $P/idle-timeout >/dev/null; sleep 3
+  echo "swayidle: $(ps -eo args | grep '[s]wayidle -w' | grep -o 'timeout [0-9]*' | tr '\n' ' ')"
+  echo "shell-idle: $(systemctl is-active shell-idle) since $(systemctl show -p ActiveEnterTimestamp --value shell-idle)"
+  t0=$(date +%s); while [ $(( $(date +%s) - t0 )) -le $2 ]; do log; sleep 5; done; }
+echo -n sleep | sudo -u shell tee $P/idle-on-charger >/dev/null
+echo "charger online: $(cat /sys/class/power_supply/*/online | tr '\n' ' ')"
+echo -n 1m | sudo -u shell tee $P/idle-timeout >/dev/null; sleep 3
+arm 5m 330
+# wake the panel between arms with the dimmer's own wake
+sudo -u shell XDG_RUNTIME_DIR=/run/user/$(id -u shell) $(grep -o "d='[^']*'" "$(systemctl show -p ExecStart --value shell-idle | grep -o '/nix/store/[^ ;]*' | head -1)" | cut -d"'" -f2) wake --swaymsg "${M% -s*}" --sway-socket /run/shell/sway-ipc.sock >/dev/null 2>&1
+sleep 2; log
+arm off 370
+echo -n "${prev:-clock}" | sudo -u shell tee $P/idle-on-charger >/dev/null
+echo "restored idle-on-charger=$(cat $P/idle-on-charger)"

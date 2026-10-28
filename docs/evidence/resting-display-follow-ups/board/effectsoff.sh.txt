@@ -1,0 +1,24 @@
+#!/bin/sh
+# 4.2 effects/limit on the charger via the idle path, no input except the injected mouse that ends each arm.
+# Control: Clock effects 5m shows a ttfx process ~8 s after the card opens. Test: Off shows none in 360 s.
+P=/var/lib/k230-shell-prefs
+pref(){ echo -n "$2" | sudo -u shell tee $P/$1 >/dev/null; }
+mouse(){ /nix/store/v189xydz6qkcd4cbkixcmv91w8hbc560-python3-riscv64-unknown-linux-gnu-3.14.7/bin/python3 /var/tmp/mouse.py move 4 2 3 >/dev/null; }
+M="$(dirname "$(readlink -f /proc/$(systemctl show -p MainPID --value shell)/exe)")/swaymsg"
+up(){ $M -s /run/shell/sway-ipc.sock -t get_tree 2>/dev/null | grep -c "\"app_id\": \"k230-exhibition\""; }
+ttfx(){ pgrep -x ttfx >/dev/null && echo 1 || echo 0; }
+arm(){ pref clock-effects $1; pref clock-limit $2; mouse; t0=$(date +%s)
+  until [ "$(up)" -ge 1 ] || [ $(( $(date +%s) - t0 )) -gt 60 ]; do sleep 2; done
+  opened=$(date +%s); echo "$(date +%T) effects=$1 limit=$2: card up $(( opened - t0 )) s after the last input"
+  seen=""; while [ $(( $(date +%s) - opened )) -lt $3 ]; do
+    [ -z "$seen" ] && [ "$(ttfx)" = 1 ] && seen=$(( $(date +%s) - opened )) && echo "$(date +%T)   ttfx running at +${seen} s: $(ps -o args= -C ttfx | grep -o -- '--frame-rate [0-9]*.*' | cut -c1-60)"
+    [ "$(up)" = 0 ] && echo "$(date +%T)   card ended" && break
+    sleep 2; done
+  echo "$(date +%T)   after $3 s: ttfx ever seen=${seen:-never}, card up=$(up)"
+  mouse; sleep 4; }
+echo "charger online: $(cat /sys/class/power_supply/*/online | tr '\n' ' ') idle-timeout=$(cat $P/idle-timeout) idle-on-charger=$(cat $P/idle-on-charger)"
+arm 5m 2h 40
+arm off none 360
+journalctl -u shell -u shell-idle --since "-8min" --no-pager | grep -i -E 'exhibit-end|cap' | tail -3
+pref clock-effects 5m; pref clock-limit 2h
+echo "$(date +%T) restored: $(for f in idle-timeout clock-brightness clock-effects clock-limit idle-on-charger; do echo -n "$f=$(cat $P/$f) "; done)"

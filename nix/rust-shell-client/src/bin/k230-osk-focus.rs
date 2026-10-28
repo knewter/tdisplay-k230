@@ -6,13 +6,18 @@
 //! `k230-keyboard-gesture-signal show|hide` helper the two-finger gesture and
 //! the shell use. It never commits text, never sets preedit and never
 //! requests the keyboard grab, so every key still reaches the focused client.
-//! It blocks in the Wayland queue; there is no timer and no polling.
+//! It blocks in the Wayland queue; there is no timer and no polling (the one
+//! sleep is the bounded hide settle below).
 //!
 //! Environment:
 //!   K230_KEYBOARD_SIGNAL        helper to run (required)
 //!   K230_OSK_KEY_STAMP          file whose mtime is the last base key press
 //!                               (default $XDG_RUNTIME_DIR/k230-keyboard-base-last-key)
 //!   K230_OSK_SUPPRESS_SECONDS   suppression window (default 10)
+//!
+//! A focus-loss hide waits `HIDE_SETTLE` (400 ms), then stands aside when
+//! another surface wrote `show` to `$XDG_RUNTIME_DIR/k230-keyboard-visible`
+//! within the last second.
 
 use k230_shell_rust::osk_focus::{self, Action, Event, Focus};
 use std::path::PathBuf;
@@ -32,6 +37,8 @@ struct App {
     focus: Focus,
     signal: PathBuf,
     stamp: Option<PathBuf>,
+    /// `$XDG_RUNTIME_DIR/k230-keyboard-visible`, the signal helper's marker.
+    marker: Option<PathBuf>,
     suppress: Duration,
     ignore: Vec<String>,
     sway: Option<PathBuf>,
@@ -59,6 +66,18 @@ fn secs(t: SystemTime) -> f64 {
         .unwrap_or(0.0)
 }
 
+/// Whether another surface asked for the keyboard within the last second
+/// (`osk_focus::hide_superseded`), read from the signal helper's marker.
+fn fresh_show_elsewhere(marker: &Option<PathBuf>) -> bool {
+    let Some(path) = marker.as_ref() else { return false };
+    let text = std::fs::read_to_string(path).ok();
+    let age = std::fs::metadata(path)
+        .and_then(|m| m.modified())
+        .ok()
+        .and_then(|mtime| osk_focus::stamp_age(secs(SystemTime::now()), secs(mtime)));
+    osk_focus::hide_superseded(text.as_deref(), age)
+}
+
 fn since_last_key(stamp: &Option<PathBuf>) -> Option<Duration> {
     let path = stamp.as_ref()?;
     let mtime = std::fs::metadata(path).ok()?.modified().ok()?;
@@ -73,6 +92,16 @@ impl App {
             .handle(event, || since_last_key(stamp), self.suppress);
         if action == Some(Action::Show) && focused_is_ignored(&self.ignore, &self.sway) {
             return;
+        }
+        if action == Some(Action::Hide) {
+            // The surface taking focus (the drawer's tapped search field)
+            // writes its `show` about 160 ms after the tap on the board; a
+            // hide decided before that lands after it and wins. Wait out
+            // that window, then stand aside if a show arrived meanwhile.
+            std::thread::sleep(osk_focus::HIDE_SETTLE);
+            if fresh_show_elsewhere(&self.marker) {
+                return;
+            }
         }
         if let Some(action) = action {
             let word = match action {
@@ -172,6 +201,8 @@ fn run() -> Result<(), String> {
         focus: Focus::new(),
         signal,
         stamp,
+        marker: std::env::var_os("XDG_RUNTIME_DIR")
+            .map(|d| PathBuf::from(d).join("k230-keyboard-visible")),
         suppress,
         ignore: osk_focus::parse_ignore(std::env::var("K230_OSK_FOCUS_IGNORE").ok().as_deref()),
         sway: std::env::var_os("SWAYSOCK").map(PathBuf::from),

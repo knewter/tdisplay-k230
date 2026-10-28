@@ -40,3 +40,37 @@ its `t` and `e` keys typed the query.
   keystroke and 39.76 ms for the `e` frame. This is the drawer's own render
   cost, not the end-to-end latency to the panel. Only rate-limited frames are
   logged.
+
+## Keyboard over About after a Settings result (task 3.3), 2026-10-28
+
+Evidence class: injected board (`ui.py` touch and uinput keys), native `grim`.
+Nobody touched the glass.
+
+- **Before** (build `q8k8w3mb…`, with the first fix): `surface drawer-keys;
+  key a b o u t; key ENTER` opened About with the keyboard raised over it
+  (`osk-bug-keys-after-enter.png`). The first fix's stamp never got written,
+  because `K230_OSK_KEY_STAMP` is set only in `shell-osk-focus`'s unit and
+  `/run/shell/k230-keyboard-base-last-key` did not exist. When the terminal
+  took focus back, `k230-osk-focus` raised the keyboard for it.
+- **Tap on the field gave no usable keyboard.** The marker trace
+  (`markerwatch.py.txt`) showed the drawer's `show` about 160 ms after the tap.
+  `k230-osk-focus`'s `hide`, for the terminal losing focus, landed after it
+  and won. With a guard that skipped that hide, the keyboard that had been up
+  for the terminal stayed mapped under the translucent drawer
+  (`osk-under-drawer.png`).
+- **Fix** (build `whdjpxg9…`):
+  - The shell finds the stamp at the watcher's default path.
+  - `k230-osk-focus` waits 400 ms before a focus-loss hide and stands aside if
+    another surface wrote `show` in the last second.
+  - The drawer raises the keyboard with `hide` then `show`, so it maps above
+    the drawer.
+- **After:**
+  - The tap gave an opaque keyboard on top (`osk-fix-tapped.png`), and typing
+    worked (`osk-fix-typed.png`).
+  - A tap on the About result opened the page with the keyboard down
+    (`osk-fix-after-open.png`), still down 7 s later (`osk-fix-later.png`).
+  - The marker read hide→show at +118 ms and +460 ms after the tap, and
+    `hide` once at the result (`osk-fix-marker.txt`; epoch seconds, `stamp`
+    lines are the injector's).
+  - The keys path also opened About with the keyboard down
+    (`osk-fix-keys-after-enter.png`, build `3fj3fnnl…`).

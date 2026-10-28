@@ -2354,6 +2354,22 @@ DATA a2c14dbe49dfc069aaa1697a9e4dbd39fac7f4ba4da29228b8651c8683d091d6 docs/evide
 DATA a84b2af4f626e66bb0a061d41d72124bd430ea5a4620beab473f52991ba8c6c2 docs/evidence/drawer-search/board/ti-typed.png
 DATA 2e9b9de52d48eb758f34d58207256e7fbcb3fac86b923686c7f0db1ab59b97e1 docs/evidence/drawer-search/board/wifi-opened-title.png
 DATA 5b10ffef6f627e2e221c5025429a88257ec535ddff44313a29f39f122032eace docs/evidence/drawer-search/board/wifi-typed.png
+DATA aa14e8407f0bca6a0dba1281a59f4e2cd862d0a0449750b0afc4de84ba59a654 docs/evidence/drawer-search/board/osk-bug-keys-after-enter.png
+DATA 5128d5fce7c844fa623e089c6254e00200dc028d509b32d1235316dc6584bd8b docs/evidence/drawer-search/board/osk-fix-after-open.png
+DATA 899bceb716007abd22c18adfebc4786d1db42e7f8c1599e2a64d5c6c4cd7b9f3 docs/evidence/drawer-search/board/osk-fix-keys-after-enter.png
+DATA 5128d5fce7c844fa623e089c6254e00200dc028d509b32d1235316dc6584bd8b docs/evidence/drawer-search/board/osk-fix-later.png
+DATA 824e51a13bcf8269dc64ba528b9a2eed1df51f22d6c04ce3c43aa330b321bed1 docs/evidence/drawer-search/board/osk-fix-tapped.png
+DATA 6f82c3e12c1a791527d1cf82e46a0c020af7eb5c21d4f94418a50dfb4b7cd18e docs/evidence/drawer-search/board/osk-fix-typed.png
+DATA 824e51a13bcf8269dc64ba528b9a2eed1df51f22d6c04ce3c43aa330b321bed1 docs/evidence/drawer-search/board/osk-raised.png
+DATA 20104e075089ee23fd7bd29d80d783bff6e72ae7c4701363bead07c57bf7ea35 docs/evidence/drawer-search/board/osk-te.png
+DATA 4ac701d78889484debb9e1c7031496e77a9111cda391d7eb2fa71dbeb5a9c655 docs/evidence/drawer-search/board/osk-t.png
+DATA 5f46cefc1acdb313f64688c448d1c1cc3bd4c67d322c14dbe090a39d7361f873 docs/evidence/drawer-search/board/osk-under-drawer.png
+DATA 324f2c4c41a65ecbac2cf194fd740b1ebee8390e8c5bd266beef8fe1850c77bf docs/evidence/open-with/board/files-stays-short.png
+DATA 85f7fa0d98d8d5e6eb3dda2c79a100c3bf5f8a9cb76eaa032c34a0338df038de docs/evidence/open-with/board/viewnior-rotate-icons.png
+DATA 5c580a11e0473ed864c890d72b86eac27d68dd3d08ecaa5b061f1578b016b30e docs/evidence/resting-display-follow-ups/board/clock-dot-0.png
+DATA 8f4137e04f1b7571f4d8d0670466d048bc58901ebf2657c47b5b91bf1b41dde1 docs/evidence/resting-display-follow-ups/board/clock-dot-3.png
+DATA cdad9e553f3d513f28b33aa9d1b60744fcaca7000a43e2ebb9121695271a9d37 docs/evidence/resting-display-follow-ups/board/settings-idle-rows.png
+DATA 96c4071fd2bac7bffefda7761c1836a98e3362620ab06886925391a59b7aeef0 docs/evidence/resting-display-follow-ups/board/shade-clock-tile.png
 ```
 
 `group:` rows stand for a directory whose members are enumerated by
@@ -4506,3 +4522,40 @@ Native grim captures of drawer search over the terminal (wifi, about, ti) and wi
 | `docs/evidence/drawer-search/board/ti-typed.png` | 29328 | DATA | `a84b2af4f626e66bb0a061d41d72124bd430ea5a4620beab473f52991ba8c6c2` |
 | `docs/evidence/drawer-search/board/wifi-opened-title.png` | 3411 | DATA | `2e9b9de52d48eb758f34d58207256e7fbcb3fac86b923686c7f0db1ab59b97e1` |
 | `docs/evidence/drawer-search/board/wifi-typed.png` | 13983 | DATA | `5b10ffef6f627e2e221c5025429a88257ec535ddff44313a29f39f122032eace` |
+
+## Drawer search keyboard fix captures
+
+Native grim captures of the drawer search keyboard before and after the osk-focus settle fix (injected board, 2026-10-28)
+
+| Path | Bytes | Class | SHA256 |
+| --- | ---: | --- | --- |
+| `docs/evidence/drawer-search/board/osk-bug-keys-after-enter.png` | 36466 | DATA | `aa14e8407f0bca6a0dba1281a59f4e2cd862d0a0449750b0afc4de84ba59a654` |
+| `docs/evidence/drawer-search/board/osk-fix-after-open.png` | 31995 | DATA | `5128d5fce7c844fa623e089c6254e00200dc028d509b32d1235316dc6584bd8b` |
+| `docs/evidence/drawer-search/board/osk-fix-keys-after-enter.png` | 30165 | DATA | `899bceb716007abd22c18adfebc4786d1db42e7f8c1599e2a64d5c6c4cd7b9f3` |
+| `docs/evidence/drawer-search/board/osk-fix-later.png` | 31995 | DATA | `5128d5fce7c844fa623e089c6254e00200dc028d509b32d1235316dc6584bd8b` |
+| `docs/evidence/drawer-search/board/osk-fix-tapped.png` | 37629 | DATA | `824e51a13bcf8269dc64ba528b9a2eed1df51f22d6c04ce3c43aa330b321bed1` |
+| `docs/evidence/drawer-search/board/osk-fix-typed.png` | 25198 | DATA | `6f82c3e12c1a791527d1cf82e46a0c020af7eb5c21d4f94418a50dfb4b7cd18e` |
+| `docs/evidence/drawer-search/board/osk-raised.png` | 37629 | DATA | `824e51a13bcf8269dc64ba528b9a2eed1df51f22d6c04ce3c43aa330b321bed1` |
+| `docs/evidence/drawer-search/board/osk-te.png` | 24399 | DATA | `20104e075089ee23fd7bd29d80d783bff6e72ae7c4701363bead07c57bf7ea35` |
+| `docs/evidence/drawer-search/board/osk-t.png` | 24553 | DATA | `4ac701d78889484debb9e1c7031496e77a9111cda391d7eb2fa71dbeb5a9c655` |
+| `docs/evidence/drawer-search/board/osk-under-drawer.png` | 30791 | DATA | `5f46cefc1acdb313f64688c448d1c1cc3bd4c67d322c14dbe090a39d7361f873` |
+
+## Files and Viewnior defect captures
+
+Native grim captures: Files card staying short, and Viewnior rotate icons drawn (injected board, 2026-10-28)
+
+| Path | Bytes | Class | SHA256 |
+| --- | ---: | --- | --- |
+| `docs/evidence/open-with/board/files-stays-short.png` | 24505 | DATA | `324f2c4c41a65ecbac2cf194fd740b1ebee8390e8c5bd266beef8fe1850c77bf` |
+| `docs/evidence/open-with/board/viewnior-rotate-icons.png` | 8969 | DATA | `85f7fa0d98d8d5e6eb3dda2c79a100c3bf5f8a9cb76eaa032c34a0338df038de` |
+
+## Resting display follow-up captures
+
+Native grim captures of Settings idle rows, the shade Clock tile and the clock screen notification dot (board, 2026-10-28)
+
+| Path | Bytes | Class | SHA256 |
+| --- | ---: | --- | --- |
+| `docs/evidence/resting-display-follow-ups/board/clock-dot-0.png` | 6362 | DATA | `5c580a11e0473ed864c890d72b86eac27d68dd3d08ecaa5b061f1578b016b30e` |
+| `docs/evidence/resting-display-follow-ups/board/clock-dot-3.png` | 6968 | DATA | `8f4137e04f1b7571f4d8d0670466d048bc58901ebf2657c47b5b91bf1b41dde1` |
+| `docs/evidence/resting-display-follow-ups/board/settings-idle-rows.png` | 35050 | DATA | `cdad9e553f3d513f28b33aa9d1b60744fcaca7000a43e2ebb9121695271a9d37` |
+| `docs/evidence/resting-display-follow-ups/board/shade-clock-tile.png` | 43601 | DATA | `96c4071fd2bac7bffefda7761c1836a98e3362620ab06886925391a59b7aeef0` |

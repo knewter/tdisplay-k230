@@ -1,0 +1,25 @@
+#!/usr/bin/env python3
+"""Injected USB-style mouse for the board: `mouse.py move DX DY [N]` or `mouse.py click`.
+Creates a uinput relative pointer, waits for the compositor to add it, sends,
+then holds briefly before destroying it. Sleep-paced; no busy loop."""
+import fcntl, os, struct, sys, time
+EV_SYN, EV_KEY, EV_REL = 0, 1, 2
+REL_X, REL_Y, BTN_LEFT = 0, 1, 0x110
+fd = os.open("/dev/uinput", os.O_WRONLY | os.O_NONBLOCK)
+fcntl.ioctl(fd, 0x40045564, EV_KEY); fcntl.ioctl(fd, 0x40045564, EV_REL)
+fcntl.ioctl(fd, 0x40045565, BTN_LEFT)
+fcntl.ioctl(fd, 0x40045566, REL_X); fcntl.ioctl(fd, 0x40045566, REL_Y)
+dev = b"k230-injected-mouse".ljust(80, b"\0") + struct.pack("4HI", 3, 0x1234, 0x5678, 1, 0) + b"\0" * (4 * 64 * 4)
+os.write(fd, dev); fcntl.ioctl(fd, 0x5501)
+time.sleep(2.0)  # let libinput and sway add the device
+def ev(t, c, v): os.write(fd, struct.pack("qqHHi", 0, 0, t, c, v))
+def syn(): ev(EV_SYN, 0, 0)
+print(f"{time.strftime('%T')} {' '.join(sys.argv[1:])}", flush=True)
+if sys.argv[1] == "move":
+    dx, dy = int(sys.argv[2]), int(sys.argv[3]); n = int(sys.argv[4]) if len(sys.argv) > 4 else 5
+    for _ in range(n):
+        ev(EV_REL, REL_X, dx); ev(EV_REL, REL_Y, dy); syn(); time.sleep(0.02)
+elif sys.argv[1] == "click":
+    ev(EV_KEY, BTN_LEFT, 1); syn(); time.sleep(0.08); ev(EV_KEY, BTN_LEFT, 0); syn()
+time.sleep(0.5)
+fcntl.ioctl(fd, 0x5502); os.close(fd)

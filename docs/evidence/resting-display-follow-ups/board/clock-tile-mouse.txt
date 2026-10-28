@@ -1,0 +1,5 @@
+17:58:34 before-tap brightness=148 focused=k230-terminal  exhibition=0 dimmer=
+17:58:44 after Clock tile, 6 s brightness=37 focused=k230-exhibition  exhibition=1 dimmer={"saved": 148, "dimmed": 37, "off": false}
+17:58:54 card still up 14 s later (no input) brightness=37 focused=k230-exhibition  exhibition=1 dimmer={"saved": 148, "dimmed": 37, "off": false}
+17:58:57 move 6 3 5
+17:59:01 after injected mouse move brightness=148 focused=k230-terminal  exhibition=0 dimmer=

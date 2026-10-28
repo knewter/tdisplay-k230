@@ -2,7 +2,7 @@
 
 ### Requirement: Settings chooses the idle timeout
 
-<!-- UNVERIFIED: not built; the current timeout is a fixed 30 s dim and 60 s off, read from `shell-idle.service` on the board (docs/evidence/idle-dim/). -->
+*Grounding (2026-10-28): board, build `q8k8w3mb…`. An injected tap on Idle timeout wrote `5m` and restarted the idle service with 150 s and 300 s. Unattended, 5 min dimmed at 146–152 s and turned the output off at 298–303 s, and Off did neither in 366 s (docs/evidence/resting-display-follow-ups/README.md).*
 Settings SHALL offer Off, 1 minute and 5 minutes for when the display turns
 off when idle. The choice SHALL persist across reboots beside the other
 shell preferences. The idle service SHALL apply it from its next start.
@@ -18,7 +18,7 @@ Dimming SHALL come at half the chosen time. Off SHALL disable both steps.
 
 ### Requirement: Settings tunes the clock screen
 
-<!-- UNVERIFIED: host-only (Python and Rust unit tests, system build); no board or glass run has shown the rows, the brightness or the effect and cap changing. -->
+*Grounding (2026-10-28): board, build `q8k8w3mb…`, idle path on the charger. Clock brightness Full, Half and Dim held the panel at 148, 74 and 37 of 148 with the card up. Clock effects Off gave no `ttfx` in 360 s against one at +11 s with 5 min. Clock limit None did not close the card in that time; the 2 h and 8 h caps are host tests only (docs/evidence/resting-display-follow-ups/README.md).*
 Settings SHALL offer three rows for the clock screen shown while idle on the
 charger. Clock brightness SHALL offer Dim, Half and Full, which run the
 panel at 25%, 50% and 100% of the saved brightness while the clock screen is

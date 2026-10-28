@@ -13,7 +13,7 @@ idle dimmer lowered it, and the idle timer SHALL start again from zero.
 
 ### Requirement: Pointer activity closes the clock screen
 
-<!-- UNVERIFIED: no board run with an HDMI mouse and the clock screen exists. -->
+<!-- UNVERIFIED: no real mouse yet. Injected 2026-10-28: one move of a uinput relative pointer closed the card, restored 148 and refocused the terminal (docs/evidence/resting-display-follow-ups/README.md). -->
 Pointer motion or a button from a mouse SHALL close the clock screen in the
 same way a touch or key does, and SHALL NOT reach the app beneath it.
 
@@ -23,7 +23,7 @@ same way a touch or key does, and SHALL NOT reach the app beneath it.
 
 ### Requirement: The clock screen starts on demand
 
-<!-- UNVERIFIED: host-only. `k230-idle-dimmer exhibit-now` and the shade's Clock tile are covered by `tests/test_idle_dimmer.py` and `cargo test`; the tile, the dim, the focus handover from the closing shade and the brightness restore have not been run on the board. -->
+<!-- UNVERIFIED: the battery case (tile on battery starts nothing) is host-only. Injected 2026-10-28 on the charger: the shade tile opened the card at 37 of 148 with focus, and one touch closed it and restored 148 (docs/evidence/resting-display-follow-ups/README.md). -->
 A person SHALL be able to start the clock screen from the shade or Home
 without waiting for the idle timeout. It SHALL then behave as if idle opened
 it: input closes it, and on battery it SHALL NOT start.
@@ -38,7 +38,7 @@ it: input closes it, and on battery it SHALL NOT start.
 
 ### Requirement: The clock screen shows how many notifications wait
 
-<!-- UNVERIFIED: host-only. The count reader and the layout are unit-tested against a fake broker socket (`tests/test_exhibition.py`); the broker's real reply, the dot's legibility on the panel and the card's CPU with the read have not been observed on the board. -->
+*Grounding (2026-10-28): board, build `q8k8w3mb…`. Three broker events showed "● 3" under the date, and after `dismiss-all` the next redraw had no dot. The card used 60 ms of CPU with the dot and 50 ms without, per 120 s (docs/evidence/resting-display-follow-ups/README.md).*
 When the notification broker holds one or more events, the clock screen SHALL
 show a small dot and the number under the date, refreshed with the minute
 redraw. It SHALL show nothing when there are none or the broker cannot be

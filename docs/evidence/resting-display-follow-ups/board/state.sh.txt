@@ -1,0 +1,7 @@
+#!/bin/sh
+M="$(dirname "$(readlink -f /proc/$(systemctl show -p MainPID --value shell)/exe)")/swaymsg -s /run/shell/sway-ipc.sock"
+echo "$(date +%T) $1 brightness=$(cat /sys/class/backlight/*/brightness) focused=$(sudo -u shell $M -t get_tree | python3 -c 'import json,sys
+def walk(n):
+    if n.get("focused"): print(n.get("app_id") or n.get("name"), end=" ")
+    for c in n.get("nodes",[])+n.get("floating_nodes",[]): walk(c)
+walk(json.load(sys.stdin))') exhibition=$(sudo -u shell $M -t get_tree | grep -c '"app_id": "k230-exhibition"') dimmer=$(cat /run/k230-idle/idle-dimmer.json 2>/dev/null)"

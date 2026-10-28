@@ -1,0 +1,12 @@
+charger online: 1  idle-on-charger=clock
+pre-dim brightness=148
+cat: /run/k230-idle/idle-dimmer.json: No such file or directory
+18:06:13 Clock brightness=full: card up after 37 s, brightness=148, state=
+18:06:19   after mouse: brightness=148 card=
+18:06:58 Clock brightness=half: card up after 36 s, brightness=74, state={"saved": 148, "dimmed": 74, "off": false}
+18:07:04   after mouse: brightness=148 card=
+18:07:44 Clock brightness=dim: card up after 37 s, brightness=37, state={"saved": 148, "dimmed": 37, "off": false}
+18:07:50   after mouse: brightness=148 card=5127
+
+[Trimmed: the rest of this run sampled the effects-off arm with 'pgrep -f k230_exhibition.py', which matched the card's wrapper, so every 'child' it logged was the card itself, not ttfx. That arm is redone in effects-off.txt. Its last line, kept here, shows the prefs restored:]
+18:14:37 defaults restored: idle-timeout=1m clock-brightness=dim clock-effects=5m clock-limit=2h idle-on-charger=clock  brightness=148

@@ -49,7 +49,7 @@
   handler (if any) is listed. Proof: grim captures from the injector in
   `docs/evidence/open-with/board/`. Injected touch, not glass.
   Done 2026-10-28 (injected double tap): PNG→Viewnior, PDF→Zathura, folder navigated; the chooser lists Viewnior (default) and Zathura.
-- [ ] 2.4 Viewnior's rotate buttons draw their icons. Defect seen in
+- [x] 2.4 Viewnior's rotate buttons draw their icons. Defect seen in
   `docs/evidence/open-with/board/open-png.png`: the two toolbar buttons for
   `object-rotate-left` and `object-rotate-right` were blank. Likely cause (not seen on the board): GTK3 falls
   back to Adwaita, which has no such icons, and the Yaru copies sit in themes
@@ -58,6 +58,10 @@
   last stop of every theme chain. Host proof: GTK3 icon lookup with Adwaita as
   the theme resolves the names from the built tree. Board proof still open:
   `grim` of Viewnior shows both rotate icons.
+  Done 2026-10-28, injected on the board (build `q8k8w3mb…`): a double tap on
+  `open-test.png` in Files opened Viewnior, and the native `grim`
+  `docs/evidence/open-with/board/viewnior-rotate-icons.png` shows both rotate
+  icons drawn.
 - [ ] 2.5 Files opens as a full card. Reported: Files opened floating, about
   890 px wide. Host reading: the Sway rule `for_window [app_id=".+"] card_shell
   ordinary, floating enable, resize set 100 ppt 100 ppt, move position 0 0`
@@ -68,6 +72,17 @@
   open: after launch, `swaymsg -t get_tree` rect for `org.gnome.Nautilus` over
   10 s, and a `grim` once settled, to tell a slow first layout from a window
   that stays small.
+  Board, 2026-10-28 (injected, build `q8k8w3mb…`): it stays small; not a slow
+  layout. Opened from the drawer, the container rect is 1232x568 from +6 s
+  (`files-rect.txt`), but the visible window is a rounded card about 1232x380,
+  centred, with the terminal above and below. It is unchanged 20 s later,
+  after a tap inside it, and after `resize set 1232 568`
+  (`files-stays-short.png`). `get_tree` reports Nautilus's `geometry` as
+  890x550. Viewnior, under the same rule, fills 1232x568
+  (`files-viewnior-tree.txt`, `viewnior-rotate-icons.png`), so the rule is not
+  at fault. Next: log the xdg_toplevel configure and the size Nautilus commits
+  (`WAYLAND_DEBUG=1`) to see whether it refuses the configured height or
+  whether the card shell draws it short.
 
 ## 3. Glass (physical)
 

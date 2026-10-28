@@ -48,7 +48,7 @@
   that fit and the frame time. Proof: grim capture and the runtime trace file
   under `/var/tmp`, copied to the same directory.
   Done 2026-10-28 (injected): with the OSK raised, one full row plus part of a second fit; `K230_DRAWER_FRAME` 143 ms and 40 ms for the two keystrokes.
-- [ ] 3.3 Choosing a Settings result lowers the on-screen keyboard. Defect
+- [x] 3.3 Choosing a Settings result lowers the on-screen keyboard. Defect
   seen on the board: with the OSK raised for the search field, opening About
   from a result left the keyboard over the page. Fix: `choose_drawer_item`
   unfocuses the search and always signals `hide` before navigating, and stamps
@@ -58,6 +58,19 @@
   `service_ui::tests::activating_a_result_unfocuses_the_search_and_lowers_the_keyboard`
   passes; board proof still open: tap the field, type `about`, open the result,
   and `grim` shows About with the keyboard down.
+  Board, 2026-10-28 (injected, build `q8k8w3mb…`): not fixed. After `surface
+  drawer-keys; key a b o u t; key ENTER`, About opened with the keyboard raised
+  over it. Cause found: `K230_OSK_KEY_STAMP` is exported only in
+  `shell-osk-focus`'s unit, so the shell never wrote the stamp
+  (`/run/shell/k230-keyboard-base-last-key` did not exist) and the helper
+  re-raised the keyboard for the terminal. The shell now falls back to the
+  helper's default path, `$XDG_RUNTIME_DIR/k230-keyboard-base-last-key`.
+  Done 2026-10-28, injected board, build `whdjpxg9…`: with the further fixes
+  in `docs/evidence/drawer-search/board/README.md` § Keyboard over About (a
+  400 ms settle on `k230-osk-focus`'s focus-loss hide, and hide-then-show from
+  the drawer so the keyboard maps above it), tapping the field raised the
+  keyboard on top, and opening About from the result left it down
+  (`osk-fix-after-open.png`, `osk-fix-later.png`).
 
 ## 4. Glass (physical)
 

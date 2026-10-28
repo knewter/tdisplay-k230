@@ -1,0 +1,16 @@
+#!/bin/sh
+# 4.1: the card's CPU with the dot showing (3 waiting) and after dismiss-all (0).
+N=/nix/store/3hc220fbhzqrci7yamhp4p35bkh3bych-k230-notifications/bin/k230-notifications
+card=$(cat /run/shell/exhibition.pid); foot=$(ps -o ppid= -p $card | tr -d ' ')
+ticks(){ awk '{print $14+$15}' /proc/$1/stat; }
+hz=$(getconf CLK_TCK)
+win(){ a=$(ticks $card); b=$(ticks $foot); t0=$(date +%s); sleep 120
+  a2=$(ticks $card); b2=$(ticks $foot); t=$(( $(date +%s) - t0 ))
+  echo "$(date +%T) $1: card $(( (a2-a)*1000/hz )) ms + foot $(( (b2-b)*1000/hz )) ms CPU over ${t} s"; }
+echo "card pid $card ($(tr '\0' ' ' </proc/$card/cmdline | grep -o 'k230_exhibition[^ ]*')), foot pid $foot"
+sudo runuser -u shell -- $N emit --summary "Clock dot test 3" --tag clockdot3
+echo "history count: $(sudo runuser -u shell -- $N history | grep -o '"count": *[0-9]*')"
+win "3 waiting"
+sudo runuser -u shell -- $N dismiss-all
+echo "history count: $(sudo runuser -u shell -- $N history | grep -o '"count": *[0-9]*')"
+win "0 waiting"

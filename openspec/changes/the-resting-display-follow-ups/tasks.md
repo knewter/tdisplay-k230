@@ -8,8 +8,11 @@
   Proof: `python3 -m pytest tests/ -k idle` and `cargo test` for the settings request.
   Done (host): `python3 -m pytest tests/test_idle_dimmer.py tests/test_exhibition.py` and
   `cargo test --lib` in `nix/rust-shell-client` (see the commit message for counts).
-- [ ] 1.3 Board, injected: pick 5 min; the panel dims at 150 s and turns off at 300 s; pick
+- [x] 1.3 Board, injected: pick 5 min; the panel dims at 150 s and turns off at 300 s; pick
   Off; neither happens in 6 min. Proof: journal `output * power` and DCS brightness lines.
+  Done 2026-10-28, unattended board (build `q8k8w3mb…`), `docs/evidence/resting-display-follow-ups/README.md` § Idle timeout: 5 min dimmed
+  at 146–152 s and turned off at 298–303 s; Off did neither in 366 s. Read from sysfs brightness
+  and `get_outputs` power every 5 s, not from the journal. The row tap was injected.
 
 ## 2. HDMI unplug wake (from idle 4.2)
 
@@ -45,24 +48,32 @@
 
 ## 4. Clock screen follow-ups (from exhibition 5.1–5.5)
 
-- [ ] 4.1 Notification-count dot on the card (needs the broker count).
+- [x] 4.1 Notification-count dot on the card (needs the broker count).
   Host 2026-10-28: `k230-exhibition` asks the broker socket for `history` on each minute
   redraw and draws a dot and the count under the date (`tests/test_exhibition.py`; host-only).
   Board proof: with the card up on the charger, `notify-send test` three times; within a
   minute `grim` of the panel shows the dot and 3, `dismiss-all` removes it, and `top` shows
   the card's CPU unchanged.
-- [ ] 4.2 A separate Exhibition brightness, and a setting for the two-hour cap and the effect
+  Done 2026-10-28, board (build `q8k8w3mb…`), `docs/evidence/resting-display-follow-ups/README.md` § Notification dot: "● 3" with three
+  events (`k230-notifications emit`, the broker CLI, in place of `notify-send`), none after
+  `dismiss-all`; card CPU 60 ms vs 50 ms per 120 s.
+- [x] 4.2 A separate Exhibition brightness, and a setting for the two-hour cap and the effect
   interval. Host done: Clock brightness / Clock effects / Clock limit rows, the dimmer applies
   the brightness at open and the card reads the other two at start (unit tests). Board proof:
   on the charger pick Full, idle 30 s, `cat $D/brightness` equals the pre-dim value while
   `get_tree` shows `k230-exhibition`; pick Half (about half) and Dim (about a quarter); pick
   Clock limit None and Clock effects Off and confirm no `ttfx` child in 6 min and no cap close
   in the journal, then restore the defaults.
+  Done 2026-10-28, board (build `q8k8w3mb…`), `docs/evidence/resting-display-follow-ups/README.md` § Clock brightness: Full 148, Half 74,
+  Dim 37 of 148; effects Off gave no `ttfx` in 360 s against `ttfx` at +11 s with 5 min;
+  defaults restored. The limit check only shows no close in 6 min.
 - [ ] 4.3 Close the card on pointer-only activity (HDMI mouse) as well. Board proof with a
   mouse: the card closes and the app beneath gets nothing.
   Host, 2026-10-28: the card turns on any-motion reports (mode 1003) and motion is input, so a
   moved mouse closes it the way a press does; `needs_release` ignores motion reports
   (`tests/test_exhibition.py`, 20 passed). Board proof with a mouse still open.
+  Injected board, 2026-10-28: one move of a uinput relative pointer closed the card, restored
+  148 and returned focus to the terminal (`docs/evidence/resting-display-follow-ups/README.md` § Clock tile). A real mouse is still needed.
 - [ ] 4.4 A shade tile or a Home action to start the exhibition on demand.
   Host 2026-10-28: a "Clock" tile (last in the wide shade's grid) closes the shade and runs
   `k230-idle-dimmer exhibit-now`, which on the charger dims and opens the card with
@@ -72,6 +83,9 @@
   Board proof: on the charger, open the shade and tap Clock; the card shows and brightness
   reads a quarter in `$D/brightness`; one touch closes it without reaching an app and
   brightness returns to the saved value. Unplug and tap again: nothing starts.
+  Injected board, 2026-10-28: the tile opened the card at 37 of 148 with focus; one touch
+  closed it and restored 148 (`docs/evidence/resting-display-follow-ups/README.md` § Clock tile). The battery half (unplug, tap, nothing
+  starts) still needs the operator.
 - [ ] 4.5 Camera (exhibition 4.7, moved 2026-10-28 when the operator reassigned the webcam;
   optional, gates nothing): the webcam on the panel records a clock minute change, one
   position drift and one effect. Look at consecutive raw frames first. Camera evidence, not

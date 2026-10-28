@@ -3871,11 +3871,21 @@ impl ShellClient {
         }
         if want_osk != self.drawer_osk_shown {
             self.drawer_osk_shown = want_osk;
-            if let Some(path) = &self.keyboard_signal_path {
-                if let Err(error) = std::process::Command::new(path)
-                    .arg(if want_osk { "show" } else { "hide" }).spawn() {
-                    self.log(&format!("drawer-keyboard-signal-failed {error}"));
-                }
+            if let Some(path) = self.keyboard_signal_path.clone() {
+                // The keyboard may already be up for the app under the drawer,
+                // mapped beneath the drawer's layer; a bare `show` leaves it
+                // there. Hide and show again so it maps on top. The final
+                // `show` is also what k230-osk-focus's deferred focus-loss
+                // hide checks for before standing aside.
+                let words: &[&str] = if want_osk { &["hide", "show"] } else { &["hide"] };
+                let words: Vec<String> = words.iter().map(|w| w.to_string()).collect();
+                thread::spawn(move || {
+                    for word in words {
+                        if let Err(error) = std::process::Command::new(&path).arg(&word).status() {
+                            eprintln!("drawer-keyboard-signal-failed {word} {error}");
+                        }
+                    }
+                });
             }
             self.dirty = true;
         }
@@ -3983,7 +3993,13 @@ impl ShellClient {
             }
             self.drawer_osk_shown = false;
         }
-        if let Some(stamp) = std::env::var_os("K230_OSK_KEY_STAMP") {
+        // Same path and fallback as k230-osk-focus: the variable is set only
+        // in that helper's unit, so the shell must find the default itself.
+        let stamp = std::env::var_os("K230_OSK_KEY_STAMP").map(PathBuf::from).or_else(|| {
+            std::env::var_os("XDG_RUNTIME_DIR")
+                .map(|dir| PathBuf::from(dir).join("k230-keyboard-base-last-key"))
+        });
+        if let Some(stamp) = stamp {
             if let Err(error) = std::fs::OpenOptions::new().create(true).write(true).truncate(false)
                 .open(&stamp).and_then(|file| file.set_modified(std::time::SystemTime::now())) {
                 self.log(&format!("drawer-osk-stamp-failed {error}"));

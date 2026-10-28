@@ -1,0 +1,14 @@
+output: 
+launched from the drawer (tap on Files) just before this script
++1s 
++2s 
++3s 
++4s 
++5s 
++6s rect 0 0 1232 568 floating focused
++7s rect 0 0 1232 568 floating focused
++8s rect 0 0 1232 568 floating focused
++9s rect 0 0 1232 568 floating focused
++10s rect 0 0 1232 568 floating focused
++11s rect 0 0 1232 568 floating focused
++12s rect 0 0 1232 568 floating focused

@@ -1,0 +1,7 @@
+charger online: 1  idle-timeout=1m idle-on-charger=clock
+18:16:11 effects=5m limit=2h: card up 34 s after the last input
+18:16:22   ttfx running at +11 s: --frame-rate 15 --canvas-width 0 --canvas-height 22 --anchor
+18:16:51   after 40 s: ttfx ever seen=11, card up=1
+18:17:34 effects=off limit=none: card up 33 s after the last input
+18:23:35   after 360 s: ttfx ever seen=never, card up=1
+18:23:43 restored: idle-timeout=1m clock-brightness=dim clock-effects=5m clock-limit=2h idle-on-charger=clock 

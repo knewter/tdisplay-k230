@@ -1,0 +1,31 @@
+#!/bin/sh
+# 4.2 on the charger, idle path (timeout 1m, Idle on charger = clock), no input.
+P=/var/lib/k230-shell-prefs; B=$(ls -d /sys/class/backlight/* | head -1)
+pref(){ echo -n "$2" | sudo -u shell tee $P/$1 >/dev/null; }
+mouse(){ /nix/store/v189xydz6qkcd4cbkixcmv91w8hbc560-python3-riscv64-unknown-linux-gnu-3.14.7/bin/python3 /var/tmp/mouse.py move 4 2 3 >/dev/null; }
+card(){ pgrep -f 'k230_exhibition.py' | head -1; }
+echo "charger online: $(cat /sys/class/power_supply/*/online | tr '\n' ' ') idle-on-charger=$(cat $P/idle-on-charger)"
+pref idle-timeout 1m; sleep 4
+echo "pre-dim brightness=$(cat $B/brightness)"
+for level in full half dim; do
+  pref clock-brightness $level; mouse; t0=$(date +%s)
+  while [ -z "$(card)" ] && [ $(( $(date +%s) - t0 )) -lt 60 ]; do sleep 2; done
+  sleep 2
+  echo "$(date +%T) Clock brightness=$level: card up after $(( $(date +%s) - t0 )) s, brightness=$(cat $B/brightness), state=$(cat /run/k230-idle/idle-dimmer.json)"
+  mouse; sleep 3
+  echo "$(date +%T)   after mouse: brightness=$(cat $B/brightness) card=$(card)"
+done
+pref clock-effects off; pref clock-limit none; pref clock-brightness dim; mouse; t0=$(date +%s)
+while [ -z "$(card)" ] && [ $(( $(date +%s) - t0 )) -lt 60 ]; do sleep 2; done
+c=$(card); echo "$(date +%T) effects off, limit none: card $c up; args: $(tr '\0' ' ' </proc/$c/cmdline | grep -o -- '--interval[^-]*\|--max-up[^-]*' | tr '\n' ' ')"
+ttfx=0; t0=$(date +%s)
+while [ $(( $(date +%s) - t0 )) -lt 360 ]; do
+  [ -n "$(pgrep -P $c)" ] && ttfx=$((ttfx+1)) && echo "$(date +%T) child of card: $(ps -o args= --ppid $c | cut -c1-80)"
+  [ -z "$(card)" ] && echo "$(date +%T) card ended" && break
+  sleep 5
+done
+echo "$(date +%T) 360 s with effects off: samples with a child=$ttfx, card still up=$( [ -n "$(card)" ] && echo yes || echo no)"
+journalctl -u shell -u shell-idle --since "-7min" --no-pager | grep -i -E 'cap|exhibit-end' | tail -3
+mouse; sleep 3
+pref clock-effects 5m; pref clock-limit 2h; pref clock-brightness dim
+echo "$(date +%T) defaults restored: $(for f in idle-timeout clock-brightness clock-effects clock-limit idle-on-charger; do echo -n "$f=$(cat $P/$f) "; done) brightness=$(cat $B/brightness)"

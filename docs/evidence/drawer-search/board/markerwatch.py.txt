@@ -1,0 +1,11 @@
+import os, time, sys
+p = "/run/shell/k230-keyboard-visible"; last = None; end = time.time() + float(sys.argv[1])
+while time.time() < end:
+    try:
+        st = os.stat(p); key = (st.st_mtime_ns, open(p).read())
+    except OSError:
+        key = None
+    if key != last:
+        print(f"{time.time():.3f} marker={key[1] if key else None} mtime={key[0]/1e9:.3f}" if key else f"{time.time():.3f} missing", flush=True)
+        last = key
+    time.sleep(0.05)

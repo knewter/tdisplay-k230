@@ -116,6 +116,25 @@ pub fn stamp_age(now_secs: f64, mtime_secs: f64) -> Option<Duration> {
     }
 }
 
+/// How recent a `show` in the visibility marker must be for a focus-loss
+/// `hide` to stand aside.
+pub const FRESH_SHOW: Duration = Duration::from_secs(1);
+
+/// How long a focus-loss `hide` waits before deciding, so a `show` from the
+/// surface that took focus has time to be written (about 160 ms measured on
+/// the board, through a shell helper on one CPU).
+pub const HIDE_SETTLE: Duration = Duration::from_millis(400);
+
+/// True when the visibility marker (`k230-keyboard-visible`, written by the
+/// signal helper) reads `show` and is younger than [`FRESH_SHOW`]. A surface
+/// that has just taken the keyboard, such as the drawer's tapped search
+/// field, asks for the keyboard at the moment the app it took focus from
+/// deactivates its text input; this client's `hide` for that deactivation
+/// would otherwise land last and leave the field with no keyboard.
+pub fn hide_superseded(marker: Option<&str>, age: Option<Duration>) -> bool {
+    marker.is_some_and(|m| m.trim() == "show") && age.is_some_and(|a| a < FRESH_SHOW)
+}
+
 /// Parse `K230_OSK_SUPPRESS_SECONDS`; anything unusable is the default.
 pub fn parse_suppress(text: Option<&str>) -> Duration {
     text.and_then(|t| t.trim().parse::<f64>().ok())
@@ -286,5 +305,15 @@ mod tests {
              "floating_nodes": [{"focused": true, "app_id": "k230-timer"}]}]});
         assert_eq!(focused_app_id(&tree).as_deref(), Some("k230-timer"));
         assert_eq!(focused_app_id(&serde_json::json!({"focused": false})), None);
+    }
+
+    #[test]
+    fn a_fresh_show_from_another_surface_outlasts_a_focus_loss_hide() {
+        let ms = Duration::from_millis;
+        assert!(hide_superseded(Some("show"), Some(ms(200))));
+        assert!(!hide_superseded(Some("show"), Some(ms(1500))), "an old show does not");
+        assert!(!hide_superseded(Some("hide"), Some(ms(200))));
+        assert!(!hide_superseded(None, Some(ms(200))));
+        assert!(!hide_superseded(Some("show"), None), "an unreadable age does not");
     }
 }
