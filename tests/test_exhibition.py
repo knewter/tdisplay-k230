@@ -126,6 +126,13 @@ class PureTests(unittest.TestCase):
         self.assertFalse(EX.needs_release(b""))
         self.assertTrue(EX.needs_release(lift + press))
 
+    def test_focus_reports_are_not_input_and_focus_loss_is_seen(self):
+        press = b"\x1b[<0;10;20M"
+        self.assertEqual(EX.split_focus(b"\x1b[I"), (b"", False))
+        self.assertEqual(EX.split_focus(b"\x1b[O"), (b"", True))
+        self.assertEqual(EX.split_focus(b"\x1b[I" + press), (press, False))
+        self.assertEqual(EX.split_focus(press), (press, False))
+
     def test_charger_and_display_readers(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)

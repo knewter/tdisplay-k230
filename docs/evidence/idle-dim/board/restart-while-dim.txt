@@ -1,0 +1,8 @@
+16:53:07 charger=1  b=37
+16:53:08 after dim b=37 state={"saved": 148, "dimmed": 37, "off": false}
+16:53:35 after shell restart b=148 state=none shell=active idle=active
+[ 4845.476512] nixos systemd[1]: Stopped Dim the panel after 30 s idle and turn the display off after 60 s.
+[ 4845.481151] nixos systemd[1]: shell-idle.service: Consumed 2.634s CPU time over 1min 33.705s wall clock time, 10.8M memory peak.
+[ 4849.657762] nixos systemd[1]: Starting Dim the panel after 30 s idle and turn the display off after 60 s...
+[ 4850.217347] nixos systemd[1]: Started Dim the panel after 30 s idle and turn the display off after 60 s.
+[ 4857.882770] nixos qdmy78qxdsr69qk64j5ljfml18pmabdy-k230-swayidle[7138]: 2026-10-28 16:53:20 - [Line 277] Failed to parse get BlockInhibited property: Invalid argument

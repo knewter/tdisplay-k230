@@ -3,7 +3,8 @@
 Both parent changes are board-proved and archive alongside this one. The
 idle path is swayidle (`shell-idle.service`), which calls
 `k230-idle-dimmer dim|off|resume`. The dimmer owns the saved brightness in
-`/run/shell/idle-dimmer.json` and, on the charger, starts the clock screen
+`/run/k230-idle/idle-dimmer.json` (moved from `/run/shell`, which a shell
+restart wipes; task 6.1) and, on the charger, starts the clock screen
 (`k230-exhibition`, a Foot card running ttfx). Preferences live in
 `/var/lib/k230-shell-prefs/`. All of it is userspace, plus Nix for the unit
 arguments; no kernel, device-tree or stage-1 work is involved.

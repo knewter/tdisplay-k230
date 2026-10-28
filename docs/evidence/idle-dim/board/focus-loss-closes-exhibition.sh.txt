@@ -1,0 +1,15 @@
+#!/bin/sh
+# 6.2 check: open the exhibition card, move focus by IPC only, read the tree.
+x=$(grep -o -- '--exhibit-exec [^ ]*' "$(systemctl show -p ExecStart --value shell-idle | grep -o '/nix/store/[^ ;]*' | head -1)" | cut -d' ' -f2)
+m="sudo -u shell /run/current-system/sw/bin/swaymsg -s /run/shell/sway-ipc.sock"
+[ -x "$m" ] 2>/dev/null
+m="sudo -u shell $(readlink -f /proc/$(systemctl show -p MainPID --value shell)/exe | sed 's,/bin/.*,,')/bin/swaymsg -s /run/shell/sway-ipc.sock"
+apps(){ $m -t get_tree | grep -o '"app_id": "[^"]*"' | tr '\n' ' '; echo; }
+cards(){ ps -eo pid,args | grep -c '[k]230_exhibition\|[k]230-exhibition'; }
+sudo systemctl stop shell-idle
+echo "$(date +%T) open: $x"; $m exec "$x" >/dev/null; sleep 8
+echo "$(date +%T) tree: $(apps)"; echo "exhibition processes: $(cards)"
+$m '[app_id="k230-terminal"] focus' >/dev/null
+sleep 4
+echo "$(date +%T) after IPC focus, tree: $(apps)"; echo "exhibition processes: $(cards)"
+sudo systemctl start shell-idle

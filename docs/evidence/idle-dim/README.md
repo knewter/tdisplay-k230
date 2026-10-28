@@ -114,3 +114,25 @@ started from `output * power off` (brightness 0).
   (32 s) and the output went off at 13:50:12.48. This shows the re-arm.
 
 The preference file was removed afterwards, so the default is Clock again.
+
+## Follow-up defects 6.1 and 6.2 (build `lrx0026r…`, 2026-10-28)
+
+Evidence class: injected over SSH on the board. Nobody touched the glass.
+
+- **6.1, shell restart while dimmed.** swayidle had dimmed the panel to 37
+  on the charger. The dimmer's state now lives in `/run/k230-idle`, which
+  `shell.service` does not own, and `k230-swayidle` runs `resume` before
+  starting swayidle. After `systemctl restart shell` the state still read
+  `{"saved": 148, "dimmed": 37}`; 25 s later the brightness was back at 148,
+  and the state file had been cleared
+  ([`board/restart-while-dim.txt`](board/restart-while-dim.txt)). Before the
+  fix, the same restart took the panel from 37 to 9.
+- **6.2, exhibition loses focus without input.** The card now turns on
+  terminal focus reporting (mode 1004) and quits on a focus-out report.
+  [`board/focus-loss-closes-exhibition.sh.txt`](board/focus-loss-closes-exhibition.sh.txt)
+  opened the card, then moved focus with `swaymsg '[app_id="k230-terminal"]
+  focus'`. Within 4 s, `get_tree` no longer listed `k230-exhibition`
+  ([`board/focus-loss-closes-exhibition.txt`](board/focus-loss-closes-exhibition.txt)).
+  The one process still counted afterwards was swayidle, whose command line
+  contains `--exhibit-exec`; `ps` showed no card process.
+  The card did not quit on its own focus-in report when it opened.

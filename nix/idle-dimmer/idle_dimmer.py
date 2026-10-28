@@ -238,7 +238,7 @@ def main(argv=None):
     parser.add_argument("--exhibition-pid", default=EXHIBITION_PID_FILE)
     parser.add_argument("--swaymsg", required=True)
     parser.add_argument("--sway-socket", default="/run/shell/sway-ipc.sock")
-    parser.add_argument("--state", default="/run/shell/idle-dimmer.json")
+    parser.add_argument("--state", default="/run/k230-idle/idle-dimmer.json")
     parser.add_argument("--backlight")
     args = parser.parse_args(argv)
     logging.basicConfig(level=logging.INFO, format="%(name)s: %(message)s")

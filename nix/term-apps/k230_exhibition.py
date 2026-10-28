@@ -160,6 +160,18 @@ def needs_release(data):
         i = end + 1
 
 
+FOCUS_IN = b"\x1b[I"
+FOCUS_OUT = b"\x1b[O"
+
+
+def split_focus(data):
+    """Take the terminal's focus reports (mode 1004) out of `data`.
+    Returns the remaining bytes and whether focus was lost. Focus-in is not
+    input: the card gets it when it maps."""
+    lost = FOCUS_OUT in data
+    return data.replace(FOCUS_IN, b"").replace(FOCUS_OUT, b""), lost
+
+
 def ttfx_command(ttfx, banner, effect, rows):
     """Centre the banner on a full-width canvas one row short of the
     terminal, as Omarchy's screensaver does, so the last line cannot scroll;
@@ -182,12 +194,14 @@ class ExhibitSession(apps.Session):
     def __enter__(self):
         super().__enter__()
         # Black default background whatever the theme says (AMOLED); undone
-        # in __exit__ with OSC 111.
-        self._write("\x1b]11;#000000\x1b\\")
+        # in __exit__ with OSC 111. Focus reports let the card end when
+        # something else takes focus without input reaching it (a card
+        # focused over IPC), instead of lingering behind it.
+        self._write("\x1b]11;#000000\x1b\\\x1b[?1004h")
         return self
 
     def __exit__(self, *exc):
-        self._write("\x1b]111\x1b\\")
+        self._write("\x1b[?1004l\x1b]111\x1b\\")
         return super().__exit__(*exc)
 
     def wait(self, timeout):
@@ -212,7 +226,11 @@ class ExhibitSession(apps.Session):
             data = os.read(self.fd, 4096)
             if not data:
                 return [("quit",)]
-            events.append(("input", data))
+            data, lost = split_focus(data)
+            if lost:
+                return [("quit",)]
+            if data:
+                events.append(("input", data))
         if not ready and not events:
             events.append(("timeout",))
         return events

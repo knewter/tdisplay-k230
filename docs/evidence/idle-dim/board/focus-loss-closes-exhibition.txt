@@ -1,0 +1,5 @@
+16:54:00 open: /nix/store/hr31bnv6j5hg2ml7c8ck66v7hbpv5528-k230-exhibition-card'
+16:54:08 tree: "app_id": "k230-terminal" "app_id": "k230-exhibition" 
+exhibition processes: 4
+16:54:12 after IPC focus, tree: "app_id": "k230-terminal" 
+exhibition processes: 1

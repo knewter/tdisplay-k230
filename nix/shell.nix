@@ -1457,6 +1457,11 @@ in
     systemd.tmpfiles.rules = [
       "d /var/lib/k230-keyboard-base 0700 shell shell -"
       "d /var/lib/k230-shell-prefs 0700 shell shell -"
+      # The idle dimmer's saved brightness. /run/shell is shell.service's
+      # RuntimeDirectory and is emptied on every restart; losing the state
+      # while dimmed let the next session dim the dimmed value again (37 to
+      # 9, board 2026-10-28). This one lives until reboot.
+      "d /run/k230-idle 0700 shell shell -"
     ];
     users.users.shell = {
       isNormalUser = true;
@@ -1869,6 +1874,10 @@ in
           [ -n "''${WAYLAND_DISPLAY:-}" ] || { echo "k230-swayidle: no Wayland display" >&2; exit 1; }
           d='${idleDimmerCommand}'
           a='${idleDimmerArgs}'
+          # A shell restart while dimmed leaves the panel at the dimmed value
+          # with the saved one in /run/k230-idle; give it back now rather
+          # than after the next idle-and-input cycle.
+          $d resume $a || true
           exec ${pkgs.swayidle}/bin/swayidle -w \
             timeout 30 "$d dim $a" resume "$d resume $a" \
             timeout 60 "$d off $a"
